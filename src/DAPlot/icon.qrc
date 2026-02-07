@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/DAPlot/icon">
+        <file>icon/figure.svg</file>
+    </qresource>
+</RCC>

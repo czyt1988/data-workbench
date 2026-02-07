@@ -24,7 +24,7 @@ message(STATUS "DA Version is ${DA_VERSION}")
 # 定义工程
 ########################################################
 set(DA_PROJECT_NAME "DAWorkbench")
-
+set(DA_TARGETS_NAME "DAWorkbenchTargets")
 project(${DA_PROJECT_NAME}
         VERSION ${DA_VERSION}
         LANGUAGES CXX

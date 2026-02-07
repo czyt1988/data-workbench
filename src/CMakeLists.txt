@@ -48,6 +48,7 @@ add_subdirectory(DAWorkFlow)
 add_dependencies(DAWorkFlow DAGraphicsView)
 
 add_subdirectory(DAFigure)
+add_subdirectory(DAPlot)
 add_subdirectory(DAGui)
 
 add_subdirectory(DAInterface)
