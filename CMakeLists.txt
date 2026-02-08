@@ -66,6 +66,10 @@ option(DA_AUTO_GENERATE_CONFIG_INFO
 option(DA_BUILD_PLUGINS
     "This option will build plugin"
     ON)
+# 此选项将让da自动生成构建plugin
+option(DA_USE_QIM
+    "This option will use QIm instead QWT"
+    ON)
 if(DA_AUTO_INSTALL_PREFIX)
     message(STATUS "DA Auto Install")
     set(DA_BIN_DIR_NAME)

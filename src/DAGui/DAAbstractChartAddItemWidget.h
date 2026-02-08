@@ -2,7 +2,11 @@
 #define DAABSTRACTCHARTADDITEMWIDGET_H
 #include <QWidget>
 #include "DAGuiAPI.h"
+#if DA_USE_QIM
+#include "plot/QIm
+#else
 #include "qwt_plot_item.h"
+#endif
 #include "DAData.h"
 namespace DA
 {
@@ -22,7 +26,11 @@ public:
      * @brief 创建QwtPlotItem
      * @return 如果无法创建，返回nullptr
      */
+#if DA_USE_QIM
+
+#else
     virtual QwtPlotItem* createPlotItem() = 0;
+#endif
     // 设置datamanager，会触发dataManagerChanged信号
     virtual void setDataManager(DADataManager* dmgr);
     DADataManager* getDataManager() const;

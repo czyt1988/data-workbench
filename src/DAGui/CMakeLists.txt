@@ -23,6 +23,7 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Widgets
     Xml
     Svg
+    OpenGL
     REQUIRED
 )
 
@@ -357,10 +358,14 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
     Qt${QT_VERSION_MAJOR}::Svg
+    Qt${QT_VERSION_MAJOR}::OpenGL
 )
 if(${QT_VERSION_MAJOR} EQUAL 6)
-    find_package(Qt6 REQUIRED COMPONENTS Core5Compat)
-    target_link_libraries(${DA_LIB_NAME} PRIVATE Qt6::Core5Compat)
+    find_package(Qt6 REQUIRED COMPONENTS Core5Compat OpenGLWidgets)
+    target_link_libraries(${DA_LIB_NAME} PRIVATE
+        Qt6::Core5Compat
+        Qt6::OpenGLWidgets
+    )
 endif()
 
 
@@ -438,9 +443,6 @@ damacro_import_SARibbonBar(${DA_LIB_NAME})
 # -------------link QtAdvancedDockingSystem--------------------------
 damacro_import_QtAdvancedDocking(${DA_LIB_NAME})
 
-# -------------link qwt--------------------------
-damacro_import_qwt(${DA_LIB_NAME})
-
 # -------------link ctk--------------------------
 damacro_import_DALiteCtk(${DA_LIB_NAME})
 
@@ -460,7 +462,13 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
     $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/ChartSetting>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting>
 )
-
+if(DA_USE_QIM)
+    damacro_import_qim(${DA_LIB_NAME})
+    target_compile_definitions(${DA_LIB_NAME} PUBLIC DA_USE_QIM=1)
+else()
+    # -------------link qwt--------------------------
+    damacro_import_qwt(${DA_LIB_NAME})
+endif()
 ########################################################
 # 附加编译选项
 ########################################################
