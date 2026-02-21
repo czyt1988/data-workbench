@@ -5,7 +5,10 @@
 #include <QString>
 #include <QDomDocument>
 #include "DAAbstractArchiveTask.h"
+#if DA_USE_QIM
+#else
 #include "DAChartItemsManager.h"
+#endif
 namespace DA
 {
 
@@ -25,8 +28,12 @@ public:
 	std::shared_ptr< DAAbstractArchiveTask > appendByteSaveTask(const QString& zipRelatePath, const QByteArray& data);
 	std::shared_ptr< DAAbstractArchiveTask > appendXmlSaveTask(const QString& zipRelatePath, const QDomDocument& data);
 	std::shared_ptr< DAAbstractArchiveTask > appendFileSaveTask(const QString& zipRelatePath, const QString& localFilePath);
-	std::shared_ptr< DAAbstractArchiveTask > appendChartItemSaveTask(const QString& zipRelateFolderPath,
-																	 DAChartItemsManager chartItemMgr);
+#if DA_USE_QIM
+#else
+	std::shared_ptr< DAAbstractArchiveTask > appendChartItemSaveTask(
+		const QString& zipRelateFolderPath, DAChartItemsManager chartItemMgr
+	);
+#endif
 	// 读取任务
 	std::shared_ptr< DAAbstractArchiveTask > appendByteLoadTask(const QString& zipRelatePath, int code);
 	std::shared_ptr< DAAbstractArchiveTask > appendXmlLoadTask(const QString& zipRelatePath, int code);

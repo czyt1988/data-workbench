@@ -1,14 +1,12 @@
 ﻿#include "DAStandardItemPlot.h"
-#include "DAFigureTreeModel.h"
-#include "qwt_plot.h"
-#include "qwt_text.h"
+#include "plot/QImPlotNode.h"
 namespace DA
 {
-DAStandardItemPlot::DAStandardItemPlot(QwtPlot* plot, ItemType plotType)
+DAStandardItemPlot::DAStandardItemPlot(QIM::QImPlotNode* plot, ItemType plotType)
     : QStandardItem(), m_plot(plot), m_itemType(plotType)
 {
-    setData(DAFigureTreeModel::NodeTypePlot, DAFigureTreeModel::RoleNodeType);
-    setData(QVariant::fromValue(reinterpret_cast< quintptr >(plot)), DAFigureTreeModel::RolePlot);
+    setData(static_cast< int >(DAPlotTreeItemType::Plot), static_cast< int >(DAPlotTreeItemRole::RoleItemType));
+    setData(QVariant::fromValue(reinterpret_cast< quintptr >(plot)), static_cast< int >(DAPlotTreeItemRole::RoleInnerPointer));
     setEditable(false);
 }
 
@@ -44,20 +42,7 @@ QVariant DAStandardItemPlot::handleItemTextType(int role) const
     static QIcon s_plot_icon = QIcon(":/DAFigure/icon/layout.svg");
     switch (role) {
     case Qt::DisplayRole: {
-        if (!m_plot) {
-            return QVariant();
-        }
-        QString text;
-        if (m_plot->isParasitePlot()) {
-            int index = m_plot->hostPlot()->parasitePlotIndex(m_plot);
-            text      = QObject::tr("layout-%1").arg(index + 1);
-        } else {
-            text = m_plot->title().text();
-            if (text.isEmpty()) {
-                text = QObject::tr("layout");
-            }
-        }
-        return text;
+        return m_plot->title();
     } break;
     case Qt::DecorationRole: {
         // 返回类型图标
@@ -83,9 +68,6 @@ QVariant DAStandardItemPlot::handlePlotPropertyType(int role) const
     case Qt::DisplayRole: {
         if (!m_plot) {
             return QVariant();
-        }
-        if (m_plot->isParasitePlot()) {
-            return QObject::tr("Parasite Plot");  // cn: 寄生绘图
         }
     } break;
     default:

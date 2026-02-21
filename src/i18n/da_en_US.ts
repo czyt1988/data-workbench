@@ -1261,7 +1261,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddOHLCSeriesWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddOHLCSeriesWidget.cpp" line="+37"/>
+        <location filename="../DAGui/qwt/DAChartAddOHLCSeriesWidget.cpp" line="+37"/>
         <source>Time</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1363,7 +1363,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddXYESeriesWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddXYESeriesWidget.cpp" line="+21"/>
+        <location filename="../DAGui/qwt/DAChartAddXYESeriesWidget.cpp" line="+21"/>
         <source>x</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1470,7 +1470,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddXYSeriesWidget.cpp" line="+23"/>
+        <location filename="../DAGui/qwt/DAChartAddXYSeriesWidget.cpp" line="+23"/>
         <source>x</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1542,7 +1542,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddtGridRasterDataWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddtGridRasterDataWidget.cpp" line="+195"/>
+        <location filename="../DAGui/qwt/DAChartAddtGridRasterDataWidget.cpp" line="+195"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1565,7 +1565,7 @@ Config</source>
 <context>
     <name>DA::DAChartBarItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartBarItemSettingWidget.cpp" line="+18"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartBarItemSettingWidget.cpp" line="+18"/>
         <source>Auto Adjust Samples</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1588,7 +1588,7 @@ Config</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+143"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+143"/>
         <source>Lines</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1697,7 +1697,7 @@ Config</source>
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/DAChartManageWidget.cpp" line="+204"/>
+        <location filename="../DAGui/qwt/DAChartManageWidget.cpp" line="+204"/>
         <source>get figure create signal,but can not find figure index</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1710,7 +1710,7 @@ Config</source>
 <context>
     <name>DA::DAChartOperateWidget</name>
     <message>
-        <location filename="../DAGui/DAChartOperateWidget.cpp" line="+95"/>
+        <location filename="../DAGui/qwt/DAChartOperateWidget.cpp" line="+95"/>
         <source>figure-%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1728,7 +1728,7 @@ Config</source>
 <context>
     <name>DA::DAChartSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+177"/>
+        <location filename="../DAGui/qwt/DAChartSettingWidget.cpp" line="+177"/>
         <source>Chart Area</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1761,7 +1761,7 @@ Config</source>
 <context>
     <name>DA::DAChartSpectrogramItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+87"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+87"/>
         <source>Image Mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1774,7 +1774,7 @@ Config</source>
 <context>
     <name>DA::DAChartSymbolComboBox</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="+38"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartSymbolComboBox.cpp" line="+38"/>
         <source>No Symbol</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2062,7 +2062,7 @@ Config</source>
 <context>
     <name>DA::DADialogChartGuide</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogChartGuide.cpp" line="+70"/>
+        <location filename="../DAGui/qwt/DADialogChartGuide.cpp" line="+70"/>
         <source>curve</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2467,6 +2467,37 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DAGui/DANodeTreeWidget.cpp" line="+164"/>
         <source>Favorite</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAPlotManageWidget</name>
+    <message>
+        <location filename="../DAGui/qim/DAPlotManageWidget.cpp" line="+180"/>
+        <source>get figure create signal,but can not find figure index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>get figure close signal,but can not find figure index</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAPlotOperateWidget</name>
+    <message>
+        <location filename="../DAGui/qim/DAPlotOperateWidget.cpp" line="+95"/>
+        <source>figure-%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+248"/>
+        <source>question</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Whether to close the figure widget</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3258,7 +3289,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartAddCurveWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddCurveWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/DAChartAddCurveWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3302,7 +3333,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartAddOHLCSeriesWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddOHLCSeriesWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/DAChartAddOHLCSeriesWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3356,7 +3387,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartAddSpectrogramWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddSpectrogramWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/DAChartAddSpectrogramWidget.ui" line="+14"/>
         <source>Add Curve</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3379,7 +3410,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartAddXYESeriesWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddXYESeriesWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/DAChartAddXYESeriesWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3428,7 +3459,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddXYSeriesWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/DAChartAddXYSeriesWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3477,7 +3508,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartAddtGridRasterDataWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddtGridRasterDataWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/DAChartAddtGridRasterDataWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3500,7 +3531,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartAxisSetWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartAxisSetWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartAxisSetWidget.ui" line="+14"/>
         <source>Axis Set</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3558,7 +3589,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartBarItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartBarItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartBarItemSettingWidget.ui" line="+14"/>
         <source>Bar Chart Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3666,7 +3697,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartCanvasSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCanvasSettingWidget.ui" line="+16"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartCanvasSettingWidget.ui" line="+16"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3674,7 +3705,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartCommonItemsSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCommonItemsSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartCommonItemsSettingWidget.ui" line="+14"/>
         <source>Common Item Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3682,7 +3713,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartCurveItemSettingWidget.ui" line="+14"/>
         <location line="+57"/>
         <source>Curve Setting</source>
         <translation type="unfinished"></translation>
@@ -3797,7 +3828,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartErrorBarItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartErrorBarItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartErrorBarItemSettingWidget.ui" line="+14"/>
         <source>Curve Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3876,7 +3907,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartGridSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartGridSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartGridSettingWidget.ui" line="+14"/>
         <source>Chart Guide Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3904,7 +3935,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartLegendItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartLegendItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartLegendItemSettingWidget.ui" line="+14"/>
         <source>Chart Legend Item Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3977,7 +4008,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/DAChartManageWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/DAChartManageWidget.ui" line="+14"/>
         <source>Chart Manage</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3985,7 +4016,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartOperateWidget</name>
     <message>
-        <location filename="../DAGui/DAChartOperateWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/DAChartOperateWidget.ui" line="+14"/>
         <source>Chart Operate</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3993,7 +4024,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartPlotItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartPlotItemSettingWidget.ui" line="+20"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartPlotItemSettingWidget.ui" line="+20"/>
         <source>Plot Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4056,7 +4087,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartPlotSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartPlotSettingWidget.ui" line="+20"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartPlotSettingWidget.ui" line="+20"/>
         <source>Plot Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4079,7 +4110,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAChartSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/DAChartSettingWidget.ui" line="+14"/>
         <source>Chart Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4087,7 +4118,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartSpectrogramItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartSpectrogramItemSettingWidget.ui" line="+14"/>
         <location line="+57"/>
         <source>Curve Setting</source>
         <translation type="unfinished"></translation>
@@ -4132,7 +4163,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartSymbolEditWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="+26"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartSymbolEditWidget.ui" line="+26"/>
         <source>Chart Symbol Edit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4160,7 +4191,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAChartTradingCurveItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartTradingCurveItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAChartTradingCurveItemSettingWidget.ui" line="+14"/>
         <source>Curve Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4326,7 +4357,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DADialogChartGuide</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogChartGuide.ui" line="+14"/>
+        <location filename="../DAGui/qwt/DADialogChartGuide.ui" line="+14"/>
         <source>Chart Guide</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4934,42 +4965,50 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidgetSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/qim/DAFigureWidgetSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+14"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+21"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+21"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+6"/>
         <source>max width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+14"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+14"/>
         <source>min width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+7"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+7"/>
         <source>min height</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+14"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+14"/>
         <source>max height</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+24"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+24"/>
         <source>Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
+        <location filename="../DAGui/qwt/ChartSetting/DAFigureWidgetSettingWidget.ui" line="+6"/>
         <source>background color</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5181,6 +5220,38 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+1"/>
         <source> px</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAPlotCommonItemsSettingWidget</name>
+    <message>
+        <location filename="../DAGui/qim/DAPlotCommonItemsSettingWidget.ui" line="+14"/>
+        <source>Common Item Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAPlotManageWidget</name>
+    <message>
+        <location filename="../DAGui/qim/DAPlotManageWidget.ui" line="+14"/>
+        <source>Chart Manage</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAPlotOperateWidget</name>
+    <message>
+        <location filename="../DAGui/qim/DAPlotOperateWidget.ui" line="+14"/>
+        <source>Chart Operate</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAPlotSettingWidget</name>
+    <message>
+        <location filename="../DAGui/qim/DAPlotSettingWidget.ui" line="+14"/>
+        <source>Chart Setting</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6254,7 +6325,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+150"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+151"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6290,23 +6361,23 @@ To Excel</source>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+119"/>
+        <location line="+115"/>
         <source>load nodes occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-117"/>
+        <location line="-113"/>
         <source>load workflow nodes cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+117"/>
+        <location line="+113"/>
         <source>load nodes link occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-115"/>
+        <location line="-111"/>
         <source>load workflow links cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6341,7 +6412,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+89"/>
+        <location line="+85"/>
         <source>Load Nodes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6361,44 +6432,44 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+157"/>
-        <location line="+49"/>
-        <location line="+77"/>
+        <location line="+156"/>
+        <location line="+50"/>
+        <location line="+81"/>
         <source>node&apos;s id=%1 can not conver to qulonglong type ,will skip this node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-112"/>
+        <location line="-118"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+49"/>
-        <location line="+81"/>
+        <location line="+50"/>
+        <location line="+87"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-58"/>
-        <location line="+50"/>
+        <location line="-62"/>
+        <location line="+52"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-41"/>
-        <location line="+73"/>
-        <location line="+276"/>
+        <location line="+77"/>
+        <location line="+267"/>
         <source>can not find &lt;item&gt; tag under &lt;node&gt; tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-199"/>
-        <location line="+27"/>
+        <location line="-191"/>
+        <location line="+25"/>
         <source>node(prototype=%1,name=%2,group=%3) %4 tag loss child tag &lt;name&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+177"/>
+        <location line="+171"/>
         <source>node metadata(prototype=%1,name=%2,group=%3) can not create graphics item</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6410,44 +6481,44 @@ To Excel</source>
     <message>
         <location line="+26"/>
         <location line="+7"/>
-        <location line="+101"/>
+        <location line="+102"/>
         <location line="+19"/>
         <source>link info can not find node in workflow,id = %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-114"/>
-        <location line="+121"/>
+        <location line="-115"/>
+        <location line="+122"/>
         <source>can not get item by node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-115"/>
-        <location line="+121"/>
+        <location line="-116"/>
+        <location line="+122"/>
         <source>Unable to link to node %3&apos;s link point %4 through link point %2 of node %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-105"/>
         <location line="+28"/>
-        <location line="+93"/>
+        <location line="+94"/>
         <location line="+28"/>
         <source>linkitem load from xml return false</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-84"/>
+        <location line="-85"/>
         <location line="+19"/>
         <source>During the pasting process, the mapping corresponding to ID(%1) cannot be found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+167"/>
+        <location line="+168"/>
         <source>Unable to generate graphics item element during the saveing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+27"/>
         <source>Unable to load item information from &lt;%1&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6457,7 +6528,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+44"/>
         <source>An exception occurred during the process of processing pasted content XML, with the root node missing the type attribute</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6467,17 +6538,17 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+43"/>
         <source>Cannot create item by class name:%1,maybe unregist to DAGraphicsItemFactory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+185"/>
+        <location line="+184"/>
         <source>unknow except:get null figure widget at %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+868"/>
+        <location line="+873"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation type="unfinished"></translation>
     </message>

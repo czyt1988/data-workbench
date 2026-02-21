@@ -86,7 +86,6 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
 )
 # -------------link 3rdparty qwt--------------------------
 damacro_import_qwt(${DA_LIB_NAME})
-damacro_import_qim(${DA_LIB_NAME})
 ########################################################
 # 设置通用库属性
 ########################################################

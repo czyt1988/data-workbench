@@ -9,7 +9,7 @@
 namespace DA
 {
 
-DAAppChartOperateWidget::DAAppChartOperateWidget(QWidget* parent) : DAChartOperateWidget(parent)
+DAAppChartOperateWidget::DAAppChartOperateWidget(QWidget* parent) : DAPlotOperateWidget(parent)
 {
     mFigEventFilter = new DAEvenFilterDragPlotWithGuide(this);
     mFigEventFilter->setChartOptWidget(this);
@@ -34,7 +34,7 @@ void DAAppChartOperateWidget::setDataManager(DADataManager* mgr)
  */
 DAFigureWidget* DAAppChartOperateWidget::createFigure(const QString& name)
 {
-    DAFigureWidget* fig = DAChartOperateWidget::createFigure(name);
+    DAFigureWidget* fig = DAPlotOperateWidget::createFigure(name);
     if (DAAppFigureWidget* appFig = qobject_cast< DAAppFigureWidget* >(fig)) {
         appFig->installEventFilter(mFigEventFilter);
     }

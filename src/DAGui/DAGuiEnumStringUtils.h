@@ -38,7 +38,8 @@
 
 // DAUtils.DA::DAColorTheme::ColorThemeStyle
 DA_ENUM_STRING_DECLARE_EXPORT(DAGUI_API, DA::DAColorTheme::ColorThemeStyle)
-
+#if DA_USE_QIM
+#else
 // ------------------------------------------
 // qwt
 // ------------------------------------------
@@ -64,4 +65,5 @@ DA_ENUM_STRING_DECLARE_EXPORT(DAGUI_API, QwtScaleDraw::Alignment)
 DA_ENUM_STRING_DECLARE_EXPORT(DAGUI_API, QwtDate::Week0Type)
 // QWT.QwtDate::Week0Type
 DA_ENUM_STRING_DECLARE_EXPORT(DAGUI_API, QwtDate::IntervalType)
+#endif
 #endif  // DAGUIENUMSTRINGUTILS_H

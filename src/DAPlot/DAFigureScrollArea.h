@@ -1,4 +1,4 @@
-#ifndef DAFIGURESCROLLAREA_H
+﻿#ifndef DAFIGURESCROLLAREA_H
 #define DAFIGURESCROLLAREA_H
 #include "DAPlotAPI.h"
 #include <QScrollArea>
@@ -34,14 +34,18 @@ public:
     //----------------------------------------------------
     // subplot
     //----------------------------------------------------
-    void setSubplotGrid(int rows,
-                        int cols,
-                        const std::vector< float >& rowsRatios = std::vector< float >(),
-                        const std::vector< float >& colsRatios = std::vector< float >());
-    void setSubplotGrid_(int rows,
-                         int cols,
-                         const std::vector< float >& rowsRatios = std::vector< float >(),
-                         const std::vector< float >& colsRatios = std::vector< float >());
+    void setSubplotGrid(
+        int rows,
+        int cols,
+        const std::vector< float >& rowsRatios = std::vector< float >(),
+        const std::vector< float >& colsRatios = std::vector< float >()
+    );
+    void setSubplotGrid_(
+        int rows,
+        int cols,
+        const std::vector< float >& rowsRatios = std::vector< float >(),
+        const std::vector< float >& colsRatios = std::vector< float >()
+    );
     // 获取subplot的尺寸,width=columns,height = rows
     int subplotGridRows() const;
     int subplotGridColumns() const;
@@ -68,6 +72,9 @@ public:
     // 移除绘图，plot会被删除
     void removePlotNode(QIM::QImPlotNode* plot);
     // 设置为当前绘图,可设置为nullptr代表无当前绘图
+    //===============================================================
+    // current plot
+    //===============================================================
     void setCurrentPlot(QIM::QImPlotNode* plot);
     QIM::QImPlotNode* getCurrentPlot() const;
     //----------------------------------------------------
@@ -75,10 +82,15 @@ public:
     //----------------------------------------------------
     void setAutoTrackFigureChangedToUndoCommand(bool on);
     bool isAutoTrackFigureChangedToUndoCommand() const;
-
+Q_SIGNALS:
+    void plotAdded(QIM::QImPlotNode* plot);
+    void plotRemoved(QIM::QImPlotNode* plot);
+    void currentPlotChanged(QIM::QImPlotNode* oldPlot, QIM::QImPlotNode* newPlot);
 private Q_SLOTS:
     // 子图grid信息发生改变
     void onSubplotGridChanged();
+    //
+    void onPlotAttached(QIM::QImPlotNode* plot, bool on);
 
 private:
     void init();

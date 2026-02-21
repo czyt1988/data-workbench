@@ -1,6 +1,9 @@
 ﻿#include "DASettingContainerWidget.h"
 #include "DAWorkFlowNodeItemSettingWidget.h"
+#if DA_USE_QIM
+#else
 #include "DAChartSettingWidget.h"
+#endif
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -13,7 +16,7 @@ using namespace DA;
 DASettingContainerWidget::DASettingContainerWidget(QWidget* parent) : QStackedWidget(parent)
 {
 	// 初始化工作流相关的配置窗口
-	initWorkFlowSettingWidgets();
+	initSettingWidgets();
 }
 
 DASettingContainerWidget::~DASettingContainerWidget()
@@ -35,12 +38,15 @@ bool DASettingContainerWidget::isContainWidget(QWidget* w) const
 	return false;
 }
 
-void DASettingContainerWidget::initWorkFlowSettingWidgets()
+void DASettingContainerWidget::initSettingWidgets()
 {
 	mWorkFlowNodeItemSettingWidget = new DAWorkFlowNodeItemSettingWidget();
 	addWidget(mWorkFlowNodeItemSettingWidget);
+#if DA_USE_QIM
+#else
 	mChartSettingWidget = new DAChartSettingWidget();
 	addWidget(mChartSettingWidget);
+#endif
 }
 
 /**
@@ -59,7 +65,8 @@ void DASettingContainerWidget::showWorkFlowNodeItemSettingWidget()
 {
     setCurrentWidget(mWorkFlowNodeItemSettingWidget);
 }
-
+#if DA_USE_QIM
+#else
 /**
  * @brief 获取绘图设置窗口
  * @return
@@ -68,7 +75,6 @@ DAChartSettingWidget* DASettingContainerWidget::getChartSettingWidget()
 {
     return mChartSettingWidget;
 }
-
 /**
  * @brief 显示绘图设置窗口
  * @return
@@ -77,3 +83,4 @@ void DASettingContainerWidget::showChartSettingWidget()
 {
     setCurrentWidget(mChartSettingWidget);
 }
+#endif

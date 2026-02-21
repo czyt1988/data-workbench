@@ -580,7 +580,7 @@ DAFigureWidget* DAAppController::gcf()
  */
 DAChartWidget* DAAppController::getCurrentChart() const
 {
-    return getChartOperateWidget()->getCurrentChart();
+    return getChartOperateWidget()->getCurrentPlot();
 }
 
 /**

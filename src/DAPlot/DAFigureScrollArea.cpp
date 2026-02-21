@@ -1,4 +1,4 @@
-#include "DAFigureScrollArea.h"
+﻿#include "DAFigureScrollArea.h"
 #include <QUndoStack>
 #include <QUuid>
 #include <QPointer>
@@ -52,6 +52,7 @@ void DAFigureScrollArea::init()
     DA_D(d);
     setWindowIcon(QIcon(":/DAPlot/icon/icon/figure.svg"));
     d->figure = new QIM::QImFigureWidget();
+    connect(d->figure, &QIM::QImFigureWidget::plotNodeAttached, this, &DAFigureScrollArea::onPlotAttached);
     setWidget(d->figure);
     setAutoTrackFigureChangedToUndoCommand(true);
 }
@@ -81,18 +82,16 @@ QUndoStack* DAFigureScrollArea::undoStack() const
     return &(d_ptr->undoStack);
 }
 
-void DAFigureScrollArea::setSubplotGrid(int rows,
-                                        int cols,
-                                        const std::vector< float >& rowsRatios,
-                                        const std::vector< float >& colsRatios)
+void DAFigureScrollArea::setSubplotGrid(
+    int rows, int cols, const std::vector< float >& rowsRatios, const std::vector< float >& colsRatios
+)
 {
     d_ptr->figure->setSubplotGrid(rows, cols, rowsRatios, colsRatios);
 }
 
-void DAFigureScrollArea::setSubplotGrid_(int rows,
-                                         int cols,
-                                         const std::vector< float >& rowsRatios,
-                                         const std::vector< float >& colsRatios)
+void DAFigureScrollArea::setSubplotGrid_(
+    int rows, int cols, const std::vector< float >& rowsRatios, const std::vector< float >& colsRatios
+)
 {
     if (rows < 1 || cols < 1) {
         return;
@@ -176,7 +175,12 @@ void DAFigureScrollArea::removePlotNode(QIM::QImPlotNode* plot)
 
 void DAFigureScrollArea::setCurrentPlot(QIM::QImPlotNode* plot)
 {
+    QIM::QImPlotNode* oldplot = getCurrentPlot();
+    if (oldplot == plot) {
+        return;
+    }
     d_ptr->currentPlot = plot;
+    Q_EMIT currentPlotChanged(oldplot, plot);
 }
 
 QIM::QImPlotNode* DAFigureScrollArea::getCurrentPlot() const
@@ -219,8 +223,18 @@ void DAFigureScrollArea::onSubplotGridChanged()
         return;
     }
     DAPlotChangeSubplotGridCommand* cmd = new DAPlotChangeSubplotGridCommand(
-        this, subplot->rows(), subplot->columns(), subplot->rowRatios(), subplot->columnRatios());
+        this, subplot->rows(), subplot->columns(), subplot->rowRatios(), subplot->columnRatios()
+    );
     d->undoStack.push(cmd);
+}
+
+void DAFigureScrollArea::onPlotAttached(QIM::QImPlotNode* plot, bool on)
+{
+    if (on) {
+        Q_EMIT plotAdded(plot);
+    } else {
+        Q_EMIT plotRemoved(plot);
+    }
 }
 
 }

@@ -50,7 +50,6 @@ set(DA_GUI_HEADER_FILES
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
     DADataTableView.h
-    DAFigureFactory.h
     DAGraphicsPixmapItemSettingWidget.h
     DADataListView.h
     DADataManageTableView.h
@@ -81,7 +80,7 @@ set(DA_GUI_HEADER_FILES
     DAZipArchiveThreadWrapper.h
     DAZipArchiveTask_ByteArray.h
     DAZipArchiveTask_Xml.h
-    DAZipArchiveTask_ArchiveFil
+    DAZipArchiveTask_ArchiveFile.h
     DAXmlHelper.h
 )
 set(DA_GUI_SOURCE_FILES
@@ -95,7 +94,6 @@ set(DA_GUI_SOURCE_FILES
     DADataOperatePageWidget.cpp
     DADataOperateWidget.cpp
     DADataTableView.cpp
-    DAFigureFactory.cpp
     DAGraphicsPixmapItemSettingWidget.cpp
     DAGuiEnumStringUtils.cpp
     DAMessageLogViewWidget.cpp
@@ -122,7 +120,6 @@ set(DA_GUI_SOURCE_FILES
     DAZipArchiveTask_ByteArray.cpp
     DAZipArchiveTask_Xml.cpp
     DAZipArchiveTask_ArchiveFile.cpp
-
     DAXmlHelper.cpp
 )
 set(DA_GUI_QT_UI_FILES
@@ -149,6 +146,38 @@ set(DA_GUI_QT_RC_FILES
 
 if(DA_USE_QIM)
     # 使用qim
+    list(APPEND DA_GUI_HEADER_FILES_ChartWidgets
+        ${DA_GUI_SUBDIR_ChartBackend}/DAAbstractPlotAddItemWidget.h
+        ${DA_GUI_SUBDIR_ChartBackend}/DAPlotManageWidget.h
+        ${DA_GUI_SUBDIR_ChartBackend}/DAPlotOperateWidget.h
+        ${DA_GUI_SUBDIR_ChartBackend}/DAFigureFactory.h
+        ${DA_GUI_SUBDIR_ChartBackend}/DAPlotSettingWidget.h
+        ${DA_GUI_SUBDIR_ChartBackend}/DAFigureTreeView.h
+        ${DA_GUI_SUBDIR_ChartBackend}/DAPlotNodeSettingWidget.h
+        ${DA_GUI_SUBDIR_ChartBackend}/DAAbstractPlotItemSettingWidget.h
+        ${DA_GUI_SUBDIR_ChartBackend}/DAPlotCommonItemsSettingWidget.h
+        ${DA_GUI_SUBDIR_ChartBackend}/DAFigureWidgetSettingWidget.h
+    )
+    list(APPEND DA_GUI_SOURCE_FILES_ChartWidgets
+        ${DA_GUI_SUBDIR_ChartBackend}/DAAbstractPlotAddItemWidget.cpp
+        ${DA_GUI_SUBDIR_ChartBackend}/DAPlotManageWidget.cpp
+        ${DA_GUI_SUBDIR_ChartBackend}/DAPlotOperateWidget.cpp
+        ${DA_GUI_SUBDIR_ChartBackend}/DAFigureFactory.cpp
+        ${DA_GUI_SUBDIR_ChartBackend}/DAPlotSettingWidget.cpp
+        ${DA_GUI_SUBDIR_ChartBackend}/DAFigureTreeView.cpp
+        ${DA_GUI_SUBDIR_ChartBackend}/DAPlotNodeSettingWidget.cpp
+        ${DA_GUI_SUBDIR_ChartBackend}/DAAbstractPlotItemSettingWidget.cpp
+        ${DA_GUI_SUBDIR_ChartBackend}/DAPlotCommonItemsSettingWidget.cpp
+        ${DA_GUI_SUBDIR_ChartBackend}/DAFigureWidgetSettingWidget.cpp
+    )
+    list(APPEND DA_GUI_RESOURCE_FILES_ChartWidgets
+        ${DA_GUI_SUBDIR_ChartBackend}/DAPlotManageWidget.ui
+        ${DA_GUI_SUBDIR_ChartBackend}/DAPlotOperateWidget.ui
+        ${DA_GUI_SUBDIR_ChartBackend}/DAPlotSettingWidget.ui
+        ${DA_GUI_SUBDIR_ChartBackend}/DAPlotNodeSettingWidget.ui
+        ${DA_GUI_SUBDIR_ChartBackend}/DAPlotCommonItemsSettingWidget.ui
+        ${DA_GUI_SUBDIR_ChartBackend}/DAFigureWidgetSettingWidget.ui
+    )
 else()
     # 使用qwt，qwt相关的窗口在qwt文件夹下
     # 由于还需要进行python环境的判断，这里不能直接file(GLOB_RECURSE..)来扫描
@@ -159,6 +188,7 @@ else()
         ${DA_GUI_SUBDIR_ChartBackend}/DAChartManageWidget.h
         ${DA_GUI_SUBDIR_ChartBackend}/DAChartOperateWidget.h
         ${DA_GUI_SUBDIR_ChartBackend}/DAZipArchiveTask_ChartItem.h
+        ${DA_GUI_SUBDIR_ChartBackend}/DAFigureFactory.h
     )
     list(APPEND DA_GUI_SOURCE_FILES_ChartWidgets
         ${DA_GUI_SUBDIR_ChartBackend}/DAAbstractChartAddItemWidget.cpp
@@ -167,6 +197,7 @@ else()
         ${DA_GUI_SUBDIR_ChartBackend}/DAChartManageWidget.cpp
         ${DA_GUI_SUBDIR_ChartBackend}/DAChartOperateWidget.cpp
         ${DA_GUI_SUBDIR_ChartBackend}/DAZipArchiveTask_ChartItem.cpp
+        ${DA_GUI_SUBDIR_ChartBackend}/DAFigureFactory.cpp
     )
     list(APPEND DA_GUI_RESOURCE_FILES_ChartWidgets
         ${DA_GUI_SUBDIR_ChartBackend}/DAChartSettingWidget.ui
@@ -428,7 +459,6 @@ find_package(${DA_PROJECT_NAME} COMPONENTS
     DAData
     DACommonWidgets
     DAWorkFlow
-    DAFigure
 )
 if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAUtils")
@@ -436,7 +466,6 @@ if(${DA_PROJECT_NAME}_FOUND)
     message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAData")
     message(STATUS "  |-linked ${DA_PROJECT_NAME}::DACommonWidgets")
     message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAWorkFlow")
-    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAFigure")
 endif()
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAUtils
@@ -444,8 +473,17 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAData
     ${DA_PROJECT_NAME}::DACommonWidgets
     ${DA_PROJECT_NAME}::DAWorkFlow
-    ${DA_PROJECT_NAME}::DAFigure
 )
+if(DA_USE_QIM)
+    target_link_libraries(${DA_LIB_NAME} PUBLIC
+        ${DA_PROJECT_NAME}::DAPlot
+    )
+else()
+    target_link_libraries(${DA_LIB_NAME} PUBLIC
+        ${DA_PROJECT_NAME}::DAFigure
+    )
+endif()
+
 
 if(DA_ENABLE_PYTHON)
     find_package(${DA_PROJECT_NAME} COMPONENTS

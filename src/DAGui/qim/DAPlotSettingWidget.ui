@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DAPlotSettingWidget</class>
+ <widget class="QWidget" name="DAPlotSettingWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>361</width>
+    <height>844</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Chart Setting</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QComboBox" name="comboBoxSelectItem"/>
+   </item>
+   <item>
+    <widget class="QStackedWidget" name="stackedWidget">
+     <property name="currentIndex">
+      <number>2</number>
+     </property>
+     <widget class="DA::DAFigureWidgetSettingWidget" name="widgetFigureSetting"/>
+     <widget class="DA::DAChartPlotSettingWidget" name="widgetChartSetting"/>
+     <widget class="DA::DAPlotCommonItemsSettingWidget" name="widgetItemSetting"/>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DA::DAPlotCommonItemsSettingWidget</class>
+   <extends>QWidget</extends>
+   <header>DAPlotCommonItemsSettingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAChartPlotSettingWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartPlotSettingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAFigureWidgetSettingWidget</class>
+   <extends>QWidget</extends>
+   <header>DAFigureWidgetSettingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

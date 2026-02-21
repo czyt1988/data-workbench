@@ -14,7 +14,7 @@ class DAEvenFilterDragPlotWithGuide;
 /**
  * @brief DAChartOperateWidget的app特化
  */
-class DAAppChartOperateWidget : public DAChartOperateWidget
+class DAAppChartOperateWidget : public DAPlotOperateWidget
 {
     Q_OBJECT
 public:
