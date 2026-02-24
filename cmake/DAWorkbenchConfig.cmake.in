@@ -1,0 +1,11 @@
+# cmake/DAWorkbenchConfig.cmake.in
+@PACKAGE_INIT@
+
+# include all export targets
+include("${CMAKE_CURRENT_LIST_DIR}/DAWorkbenchTargets.cmake")
+
+# 设置包级变量
+set_and_check(DAWorkbench_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_INCLUDEDIR@")
+set_and_check(DAWorkbench_LIBRARY_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@")
+
+check_required_components(DAWorkbench)

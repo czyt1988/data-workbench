@@ -9,22 +9,8 @@ damacro_lib_setting(
     "Interface Of DAWorkbench | https://github.com/czyt1988"
     0
     0
-    1
+    2
 )
-
-########################################################
-# Qt
-########################################################
-set(DA_MIN_QT_VERSION 5.14)
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
-    Core
-    Gui
-    Widgets
-    Xml
-    REQUIRED
-)
-
 
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
@@ -78,9 +64,7 @@ add_library(${DA_LIB_NAME} SHARED
 # 构建库定义的宏
 target_compile_definitions(${DA_LIB_NAME} PRIVATE DAINTERFACE_BUILDLIB)#!!!!** 注意变更 **!!!!
 add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
-########################################################
-# 依赖链接 #!!!!** 注意变更 **!!!!
-########################################################
+
 # -------------link Qt--------------------------
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
@@ -88,9 +72,6 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
 )
-
-
-
 
 # -------------link SARibbon--------------------------
 damacro_import_SARibbonBar(${DA_LIB_NAME})
@@ -111,14 +92,6 @@ if(DA_ENABLE_PYTHON)
     damacro_import_pybind11(${DA_LIB_NAME})
 endif()
 
-
-find_package(${DA_PROJECT_NAME} COMPONENTS
-    DAGui
-)
-
-if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAGui")
-endif()
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAGui
 )

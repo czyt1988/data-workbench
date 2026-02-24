@@ -12,22 +12,6 @@ damacro_lib_setting(
     1
 )
 
-
-
-########################################################
-# Qt
-########################################################
-set(DA_MIN_QT_VERSION 5.14)
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
-    Core
-    Gui
-    Widgets
-    Xml
-    AxContainer
-    REQUIRED
-)
-
 ########################################################
 # 文件加载
 ########################################################
@@ -38,29 +22,20 @@ add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_SOURCE_FILES}
             ${DA_GLOBAL_HEADER}
 )	
-add_library(DAWorkbench::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
+add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 # 构建库定义的宏
 target_compile_definitions(${DA_LIB_NAME} PRIVATE DAAXOFFICEWRAPPER_BUILDLIB)
 ########################################################
 # 依赖链接
 ########################################################
-target_link_libraries(${DA_LIB_NAME} PRIVATE
+target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
     Qt${QT_VERSION_MAJOR}::AxContainer
 )
-message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
-
-# DAUtils
-# 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到DAWorkbench
-set(${DA_PROJECT_NAME}_DIR "${CMAKE_BINARY_DIR}")
-find_package(${DA_PROJECT_NAME} COMPONENTS DAUtils)
-if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAUtils")
-endif()
-target_link_libraries(${DA_LIB_NAME} PUBLIC
+target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
 )
 

@@ -59,8 +59,23 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Xml
     Svg
     PrintSupport
+    Concurrent
+    OpenGL
     REQUIRED
 )
+if(${QT_VERSION_MAJOR} EQUAL 6)
+    find_package(Qt${QT_VERSION_MAJOR} COMPONENTS
+        OpenGLWidgets
+        Core5Compat
+        REQUIRED
+    )
+endif()
+if(WIN32)
+    find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
+        AxContainer
+        REQUIRED
+    )
+endif()
 if(Qt5_POSITION_INDEPENDENT_CODE)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
