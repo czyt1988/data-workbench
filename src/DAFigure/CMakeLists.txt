@@ -22,6 +22,7 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Gui
     Widgets
     PrintSupport
+    Concurrent
     REQUIRED
 )
 
@@ -62,7 +63,10 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::PrintSupport
+    Qt${QT_VERSION_MAJOR}::Concurrent
+    Qt${QT_VERSION_MAJOR}::OpenGL
 )
+
 
 find_package(${DA_PROJECT_NAME} COMPONENTS DAUtils)
 if(${DA_PROJECT_NAME}_FOUND)

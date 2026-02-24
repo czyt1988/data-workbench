@@ -136,8 +136,22 @@ endif()
 ########################################################
 set(DA_MIN_QT_VERSION 5.14)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-
-
+find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
+    Core
+    Gui
+    Widgets
+    Svg
+    PrintSupport
+    Concurrent
+    REQUIRED
+)
+if(${QT_VERSION_MAJOR} EQUAL 6)
+    find_package(Qt${QT_VERSION_MAJOR} COMPONENTS
+        OpenGLWidgets
+        REQUIRED
+    )
+endif()
+find_package(OpenGL COMPONENTS OpenGL REQUIRED)
 ########################################################
 # 默认路径设置
 ########################################################
