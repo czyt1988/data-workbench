@@ -4926,7 +4926,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+66"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+69"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6254,7 +6254,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+150"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+147"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6290,23 +6290,23 @@ To Excel</source>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+119"/>
+        <location line="+115"/>
         <source>load nodes occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-117"/>
+        <location line="-113"/>
         <source>load workflow nodes cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+117"/>
+        <location line="+113"/>
         <source>load nodes link occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-115"/>
+        <location line="-111"/>
         <source>load workflow links cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6341,7 +6341,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+89"/>
+        <location line="+85"/>
         <source>Load Nodes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6361,44 +6361,44 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+157"/>
-        <location line="+49"/>
-        <location line="+77"/>
+        <location line="+156"/>
+        <location line="+50"/>
+        <location line="+81"/>
         <source>node&apos;s id=%1 can not conver to qulonglong type ,will skip this node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-112"/>
+        <location line="-118"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+49"/>
-        <location line="+81"/>
+        <location line="+50"/>
+        <location line="+87"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-58"/>
-        <location line="+50"/>
+        <location line="-62"/>
+        <location line="+52"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-41"/>
-        <location line="+73"/>
-        <location line="+276"/>
+        <location line="+77"/>
+        <location line="+267"/>
         <source>can not find &lt;item&gt; tag under &lt;node&gt; tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-199"/>
-        <location line="+27"/>
+        <location line="-191"/>
+        <location line="+25"/>
         <source>node(prototype=%1,name=%2,group=%3) %4 tag loss child tag &lt;name&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+177"/>
+        <location line="+171"/>
         <source>node metadata(prototype=%1,name=%2,group=%3) can not create graphics item</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6410,44 +6410,44 @@ To Excel</source>
     <message>
         <location line="+26"/>
         <location line="+7"/>
-        <location line="+101"/>
+        <location line="+102"/>
         <location line="+19"/>
         <source>link info can not find node in workflow,id = %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-114"/>
-        <location line="+121"/>
+        <location line="-115"/>
+        <location line="+122"/>
         <source>can not get item by node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-115"/>
-        <location line="+121"/>
+        <location line="-116"/>
+        <location line="+122"/>
         <source>Unable to link to node %3&apos;s link point %4 through link point %2 of node %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-105"/>
         <location line="+28"/>
-        <location line="+93"/>
+        <location line="+94"/>
         <location line="+28"/>
         <source>linkitem load from xml return false</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-84"/>
+        <location line="-85"/>
         <location line="+19"/>
         <source>During the pasting process, the mapping corresponding to ID(%1) cannot be found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+167"/>
+        <location line="+168"/>
         <source>Unable to generate graphics item element during the saveing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+27"/>
         <source>Unable to load item information from &lt;%1&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6457,7 +6457,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+44"/>
         <source>An exception occurred during the process of processing pasted content XML, with the root node missing the type attribute</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6467,17 +6467,17 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+43"/>
         <source>Cannot create item by class name:%1,maybe unregist to DAGraphicsItemFactory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+185"/>
+        <location line="+183"/>
         <source>unknow except:get null figure widget at %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+868"/>
+        <location line="+873"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation type="unfinished"></translation>
     </message>

@@ -5047,7 +5047,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+66"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+69"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
@@ -6497,19 +6497,19 @@ To Excel</source>
         <translation>转换列为索引</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+195"/>
-        <location line="+119"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+192"/>
+        <location line="+115"/>
         <source>load nodes occurce error</source>
         <translation>加载节点发生错误</translation>
     </message>
     <message>
-        <location line="-114"/>
-        <location line="+117"/>
+        <location line="-110"/>
+        <location line="+113"/>
         <source>load nodes link occurce error</source>
         <translation>加载节点连接发生错误</translation>
     </message>
     <message>
-        <location line="-112"/>
+        <location line="-108"/>
         <source>load special item occurce error</source>
         <translation>加载特殊图元发生错误</translation>
     </message>
@@ -6524,7 +6524,7 @@ To Excel</source>
         <translation>加载场景信息发射错误</translation>
     </message>
     <message>
-        <location line="+91"/>
+        <location line="+87"/>
         <source>Load Nodes</source>
         <translation>加载节点</translation>
     </message>
@@ -6544,22 +6544,22 @@ To Excel</source>
         <translation>通过节点的元信息（%1）无法找到对应的工厂</translation>
     </message>
     <message>
-        <location line="+157"/>
-        <location line="+49"/>
-        <location line="+77"/>
+        <location line="+156"/>
+        <location line="+50"/>
+        <location line="+81"/>
         <source>node&apos;s id=%1 can not conver to qulonglong type ,will skip this node</source>
         <translation>节点的id（%1）无法转换为qulonglong类型，将跳过此节点</translation>
     </message>
     <message>
-        <location line="+119"/>
-        <location line="+27"/>
+        <location line="+121"/>
+        <location line="+25"/>
         <source>node(prototype=%1,name=%2,group=%3) %4 tag loss child tag &lt;name&gt;</source>
         <translation>节点(原型=%1,名称=%2,分组=%3) %4 标签缺失&lt;name&gt;子标签</translation>
     </message>
     <message>
-        <location line="-177"/>
-        <location line="+73"/>
-        <location line="+276"/>
+        <location line="-178"/>
+        <location line="+77"/>
+        <location line="+267"/>
         <source>can not find &lt;item&gt; tag under &lt;node&gt; tag</source>
         <translation>无法在&lt;node&gt;标签下查询到&lt;item&gt;标签</translation>
     </message>
@@ -6569,19 +6569,19 @@ To Excel</source>
         <translation>无法创建节点(prototype=%1,name=%2,group=%3)-0</translation>
     </message>
     <message>
-        <location line="+72"/>
-        <location line="+50"/>
+        <location line="+75"/>
+        <location line="+52"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-1</source>
         <translation>无法创建节点(prototype=%1,name=%2,group=%3)-1</translation>
     </message>
     <message>
-        <location line="-73"/>
-        <location line="+81"/>
+        <location line="-77"/>
+        <location line="+87"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-2</source>
         <translation>无法创建节点(prototype=%1,name=%2,group=%3)-2</translation>
     </message>
     <message>
-        <location line="+305"/>
+        <location line="+298"/>
         <source>node metadata(prototype=%1,name=%2,group=%3) can not create graphics item</source>
         <translation>节点(原型=%1,名称=%2,分组=%3)无法创建图元</translation>
     </message>
@@ -6593,49 +6593,49 @@ To Excel</source>
     <message>
         <location line="+26"/>
         <location line="+7"/>
-        <location line="+101"/>
+        <location line="+102"/>
         <location line="+19"/>
         <source>link info can not find node in workflow,id = %1</source>
         <translation>加载连接信息时，无法在工作流中找到id=%1的节点</translation>
     </message>
     <message>
-        <location line="-114"/>
-        <location line="+121"/>
+        <location line="-115"/>
+        <location line="+122"/>
         <source>can not get item by node</source>
         <translation>无法通过节点获取图元</translation>
     </message>
     <message>
-        <location line="-115"/>
-        <location line="+121"/>
+        <location line="-116"/>
+        <location line="+122"/>
         <source>Unable to link to node %3&apos;s link point %4 through link point %2 of node %1</source>
         <translation>节点%1无法通过连接点%2链接到节点%3的连接点%4</translation>
     </message>
     <message>
         <location line="-105"/>
         <location line="+28"/>
-        <location line="+93"/>
+        <location line="+94"/>
         <location line="+28"/>
         <source>linkitem load from xml return false</source>
         <translation>链接线从xml加载信息返回了false</translation>
     </message>
     <message>
-        <location line="-84"/>
+        <location line="-85"/>
         <location line="+19"/>
         <source>During the pasting process, the mapping corresponding to ID(%1) cannot be found</source>
         <translation>在解析过程中ID(%1)的对应关系无法找到</translation>
     </message>
     <message>
-        <location line="+167"/>
+        <location line="+168"/>
         <source>Unable to generate graphics item element during the saveing</source>
         <translation>保存过程中，无法生成图元元素</translation>
     </message>
     <message>
-        <location line="+270"/>
+        <location line="+271"/>
         <source>current workflow file version:</source>
         <translation>当前工作流文件版本:</translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+44"/>
         <source>An exception occurred during the process of processing pasted content XML, with the root node missing the type attribute</source>
         <translation>在处理粘贴内容xml过程出现异常，根节点缺失type属性</translation>
     </message>
@@ -6645,17 +6645,17 @@ To Excel</source>
         <translation>解析粘贴内容过程出现异常,缺失workflow标签</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+43"/>
         <source>Cannot create item by class name:%1,maybe unregist to DAGraphicsItemFactory</source>
         <translation>无法通过类名:%1创建元件,类名没有注册到DAGraphicsItemFactory</translation>
     </message>
     <message>
-        <location line="+185"/>
+        <location line="+183"/>
         <source>unknow except:get null figure widget at %1</source>
         <translation>未知的异常:获取了一个空的绘图窗口，序号为%1</translation>
     </message>
     <message>
-        <location line="-523"/>
+        <location line="-521"/>
         <source>Unable to load item information from &lt;%1&gt;</source>
         <translation>无法通过&lt;%1&gt;加载元件信息</translation>
     </message>
@@ -6676,7 +6676,7 @@ To Excel</source>
         <translation>节点%1无法找到名字为%2的连接点</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+1391"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+1394"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>

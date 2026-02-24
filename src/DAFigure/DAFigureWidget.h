@@ -17,6 +17,7 @@ class QwtPlot;
 class QwtPlotCurve;
 class QwtPlotItem;
 class QwtFigure;
+class QwtPlotSeriesDataPickerGroup;
 namespace DA
 {
 class DAChartAxisRangeBinder;
@@ -99,6 +100,10 @@ public:
     bool unbindAxisRange(QwtPlot* source, QwtAxisId sourceAxisid, QwtPlot* follower, QwtAxisId followerAxisid);
     // 获取坐标轴绑定信息
     QList< DAChartAxisRangeBinder* > getBindAxisRangeInfos() const;
+    // 设置联动数据拾取，联动数据拾取会让当前所有绘图的QwtPlotSeriesDataPicker建立分组，进行联动
+    void setDataPickerGroupEnabled(bool on);
+    bool isDataPickerGroupEnabled() const;
+    QwtPlotSeriesDataPickerGroup* getDataPickerGroup() const;
     // 通过id查找qwtplot
     QwtPlot* findPlotById(const QString& id, bool findParasite = true) const;
     // 设置颜色主题
@@ -117,15 +122,9 @@ public:
     QRectF widgetNormRect(QWidget* w) const;
     // Add a widget with normalized coordinates/使用归一化坐标添加widget
     void addWidget(QWidget* widget, qreal left, qreal top, qreal width, qreal height);
-    void addWidget(QWidget* widget,
-                   int rowCnt,
-                   int colCnt,
-                   int row,
-                   int col,
-                   int rowSpan  = 1,
-                   int colSpan  = 1,
-                   qreal wspace = 0.0,
-                   qreal hspace = 0.0);
+    void addWidget(
+        QWidget* widget, int rowCnt, int colCnt, int row, int col, int rowSpan = 1, int colSpan = 1, qreal wspace = 0.0, qreal hspace = 0.0
+    );
     // 改变已经添加的窗口的位置占比,如果窗口还没添加，此函数无效
     void setWidgetNormPos(QWidget* widget, const QRectF& rect);
     // 获取在此坐标下的绘图，如果此坐标下没有，则返回nullptr，存在寄生轴情况只返回宿主轴
@@ -144,8 +143,9 @@ public:
     QwtPlotCurve* addScatter_(const QVector< QPointF >& xyDatas);
     // 添加柱状图
     QwtPlotBarChart* addBar_(const QVector< QPointF >& xyDatas);
-    QwtPlotIntervalCurve*
-    addErrorBar_(const QVector< double >& values, const QVector< double >& mins, const QVector< double >& maxs);
+    QwtPlotIntervalCurve* addErrorBar_(
+        const QVector< double >& values, const QVector< double >& mins, const QVector< double >& maxs
+    );
 
 public:
     // 推送一个命令
@@ -185,9 +185,12 @@ private slots:
     void onAxesAdded(QwtPlot* newAxes);
     void onAxesRemoved(QwtPlot* removedAxes);
     void onCurrentAxesChanged(QwtPlot* plot);
+    void onChartPropertyChanged(DA::DAChartWidget* chart, DAChartWidget::ChartPropertyChangeFlags flag);
 
 private:
     void init();
+    // 建立DataPickerGroup
+    void setupDataPickerGroup();
 };
 
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const DAFigureWidget* p);

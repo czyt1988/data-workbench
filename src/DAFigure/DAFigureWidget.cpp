@@ -31,6 +31,8 @@
 #include "qwt_figure.h"
 #include "qwt_figure_layout.h"
 #include "qwt_scale_draw.h"
+#include "qwt_plot_series_data_picker.h"
+#include "qwt_plot_series_data_picker_group.h"
 
 #ifndef DAFigureWidget_DEBUG_PRINT
 #define DAFigureWidget_DEBUG_PRINT 1
@@ -53,6 +55,7 @@ public:
     std::unique_ptr< DAChartFactory > m_factory;             ///< 绘图创建的工厂
     DAColorTheme m_colorTheme;  ///< 主题，注意，这里不要用DAColorTheme mColorTheme { DAColorTheme::ColorTheme_Archambault }这样的初始化，会被当作std::initializer_list< QColor >捕获
     QList< std::shared_ptr< DAChartAxisRangeBinder > > m_axisRangeBinders;
+    QwtPlotSeriesDataPickerGroup* m_pickerGroup { nullptr };
 
 public:
     PrivateData(DAFigureWidget* p) : q_ptr(p), m_colorTheme(DAColorTheme::Style_Matplotlib_Tab10)
@@ -130,6 +133,28 @@ void DAFigureWidget::init()
     connect(figure, &QwtFigure::axesAdded, this, &DAFigureWidget::onAxesAdded);
     connect(figure, &QwtFigure::axesRemoved, this, &DAFigureWidget::onAxesRemoved);
     connect(figure, &QwtFigure::currentAxesChanged, this, &DAFigureWidget::onCurrentAxesChanged);
+}
+
+void DAFigureWidget::setupDataPickerGroup()
+{
+    DA_D(d);
+    if (!d->m_pickerGroup) {
+        d->m_pickerGroup = new QwtPlotSeriesDataPickerGroup(this);
+    }
+    // 把所有绘图的picker添加到分组中
+    //  QwtPlotSeriesDataPickerGroup会自动过滤重复添加的picker
+    const QList< QwtPlot* > plots = figure()->allAxes();
+    for (QwtPlot* plot : plots) {
+        DAChartWidget* chart = qobject_cast< DAChartWidget* >(plot);
+        if (!chart) {
+            continue;
+        }
+        auto* picker = chart->getDataPicker();
+        if (!picker) {
+            continue;
+        }
+        d->m_pickerGroup->addPicker(picker);
+    }
 }
 
 DAChartFactory* DAFigureWidget::getChartFactory() const
@@ -248,14 +273,7 @@ void DAFigureWidget::addChart(DAChartWidget* chart, qreal xVersatile, qreal yVer
     Q_ASSERT(fig);
     // 将会发射QwtFigure::axesAdded信号
     fig->addAxes(chart, xVersatile, yVersatile, wVersatile, hVersatile);
-    //! 不清楚为何如果不加这句话，坐标轴的轴线不绘制出来
-    /*
-    //! TODO:未来需要确认是什么原因导致的
-    chart->axisWidget(QwtAxis::XBottom)->setScaleDraw(new QwtScaleDraw());
-    chart->axisWidget(QwtAxis::XTop)->setScaleDraw(new QwtScaleDraw());
-    chart->axisWidget(QwtAxis::YRight)->setScaleDraw(new QwtScaleDraw());
-    chart->axisWidget(QwtAxis::YLeft)->setScaleDraw(new QwtScaleDraw());
-    */
+    connect(chart, &DAChartWidget::chartPropertiesChanged, this, &DAFigureWidget::onChartPropertyChanged);
     // 由于使用了layout管理，因此要显示调用show
     chart->show();
 }
@@ -563,6 +581,32 @@ QList< DAChartAxisRangeBinder* > DAFigureWidget::getBindAxisRangeInfos() const
         res.push_back(b.get());
     }
     return res;
+}
+
+/**
+ * @brief 设置联动数据拾取，联动数据拾取会让当前所有绘图的QwtPlotSeriesDataPicker建立分组，进行联动
+ * @param on
+ */
+void DAFigureWidget::setDataPickerGroupEnabled(bool on)
+{
+    DA_D(d);
+    if (on && !d->m_pickerGroup) {
+        setupDataPickerGroup();
+    }
+    if (d->m_pickerGroup) {
+        d->m_pickerGroup->setEnabled(on);
+    }
+}
+
+bool DAFigureWidget::isDataPickerGroupEnabled() const
+{
+    DA_DC(d);
+    return d->m_pickerGroup && d->m_pickerGroup->isEnabled();
+}
+
+QwtPlotSeriesDataPickerGroup* DAFigureWidget::getDataPickerGroup() const
+{
+    return d_ptr->m_pickerGroup;
 }
 
 /**
@@ -902,6 +946,24 @@ void DAFigureWidget::onCurrentAxesChanged(QwtPlot* plot)
         d_ptr->m_chartEditorOverlay->setActiveWidget(plot);
     }
     Q_EMIT currentChartChanged(chartWidget);
+}
+
+void DAFigureWidget::onChartPropertyChanged(DAChartWidget* chart, DA::DAChartWidget::ChartPropertyChangeFlags flag)
+{
+    if (!chart) {
+        return;
+    }
+    if (flag.testFlag(DAChartWidget::DataPickingStateChanged) && isDataPickerGroupEnabled()) {
+        if (QwtPlotSeriesDataPickerGroup* group = getDataPickerGroup()) {
+            if (chart->isDataPickingEnabled()) {
+                QwtPlotSeriesDataPicker* picker = chart->getDataPicker();
+                if (!picker) {
+                    return;
+                }
+                group->addPicker(picker);
+            }
+        }
+    }
 }
 
 QDataStream& operator<<(QDataStream& out, const DAFigureWidget* p)
