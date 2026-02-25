@@ -160,6 +160,22 @@ DAFigureWidget* DAChartOperateWidget::getFigure(int index) const
 }
 
 /**
+ * @brief 查找绘图
+ * @param id
+ * @return
+ */
+DAFigureWidget* DAChartOperateWidget::findFigure(const QString& id) const
+{
+    const QList< DAFigureWidget* > figs = getFigureList();
+    for (DAFigureWidget* fig : figs) {
+        if (fig->getFigureId() == id) {
+            return fig;
+        }
+    }
+    return nullptr;
+}
+
+/**
  * @brief 获取fig的命名
  * @param index
  * @return
@@ -339,8 +355,7 @@ void DAChartOperateWidget::onTabCloseRequested(int index)
     if (!fig) {
         return;
     }
-    QMessageBox::StandardButton btn =
-        QMessageBox::question(this, tr("question"), tr("Whether to close the figure widget"));
+    QMessageBox::StandardButton btn = QMessageBox::question(this, tr("question"), tr("Whether to close the figure widget"));
     if (QMessageBox::Yes != btn) {
         return;
     }

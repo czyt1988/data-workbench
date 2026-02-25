@@ -418,10 +418,10 @@ MY_PACKAGE_TARGET_NAME是在顶层cmake定义的总的导出集，子模块的�
 │ ...
 │ ├─[APP]
 │ │  └─CMakeLists.txt
-│ ├─CMakeLists.txt
-│ └─DALibConfig.cmake.in(用于给各个子模块生成Config.cmake文件)
+│ └─CMakeLists.txt
 ├─CMakeLists.txt
-└─DAWorkbenchConfig.cmake.in(用于生成总包的Config.cmake文件)
+└─[cmake]
+     └─DAWorkbenchConfig.cmake.in(用于生成总包的Config.cmake文件)
 ```
 
 1. 指定统一的安装目录
@@ -442,6 +442,9 @@ set(my_install_dir_name bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${my_platform_na
 # 设置固定的安装目录路径，具体位置具体设置，这里设置为当前cmake文件所在目录
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/${my_install_dir_name}")
 ```
+
+!!! tips "提示"
+    这样操作对库开发还有个好处，可以有效区分不同版本qt，不同编译器的结果
 
 2. 第三方库
 

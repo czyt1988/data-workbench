@@ -20,6 +20,7 @@ class DAWorkFlowOperateWidget;
 class DAWorkFlowGraphicsScene;
 class DADataOperateWidget;
 class DAChartOperateWidget;
+class DAAppPluginManager;
 /**
  * @brief 负责整个节点的工程管理
  *
@@ -49,6 +50,8 @@ public:
     QString makeDataTemporaryFilePath(const QString& dataName);
     // 把数据名称转换为zip文档中的相对路径位置
     static QString makeDataArchiveFilePath(const QString& dataName);
+    // 设置插件
+    void setPluginMgr(DAAppPluginManager* plugin);
 public Q_SLOTS:
     // 清除工程
     virtual void clear() override;
@@ -89,6 +92,7 @@ private:
     DAXmlHelper mXml;
     std::unique_ptr< QTemporaryDir > mTempDir;
     DAChartItemsManager mChartItemManager;
+    DAAppPluginManager* m_pluginMgr { nullptr };
 };
 
 }  // namespace DA

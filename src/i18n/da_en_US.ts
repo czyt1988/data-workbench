@@ -875,7 +875,7 @@ Config</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="../APP/DAAppPluginManager.cpp" line="+60"/>
+        <location filename="../APP/DAAppPluginManager.cpp" line="+59"/>
         <source>succeed load plugin %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -883,8 +883,8 @@ Config</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+377"/>
-        <location line="+43"/>
+        <location filename="../APP/DAAppProject.cpp" line="+387"/>
+        <location line="+53"/>
         <source>current project is busy</source>
         <translation type="unfinished"></translation>
     </message>
@@ -899,7 +899,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+34"/>
         <source>failed to laod archive from %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1715,7 +1715,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+248"/>
+        <location line="+263"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6254,7 +6254,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+147"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+150"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6290,23 +6290,23 @@ To Excel</source>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+115"/>
+        <location line="+119"/>
         <source>load nodes occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-113"/>
+        <location line="-117"/>
         <source>load workflow nodes cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+113"/>
+        <location line="+117"/>
         <source>load nodes link occurce error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-111"/>
+        <location line="-115"/>
         <source>load workflow links cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6341,7 +6341,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+85"/>
+        <location line="+89"/>
         <source>Load Nodes</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6361,44 +6361,44 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+156"/>
-        <location line="+50"/>
-        <location line="+81"/>
+        <location line="+157"/>
+        <location line="+49"/>
+        <location line="+77"/>
         <source>node&apos;s id=%1 can not conver to qulonglong type ,will skip this node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-118"/>
+        <location line="-112"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+50"/>
-        <location line="+87"/>
+        <location line="+49"/>
+        <location line="+81"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-62"/>
-        <location line="+52"/>
+        <location line="-58"/>
+        <location line="+50"/>
         <source>Unable to create node by metadata(prototype=%1,name=%2,group=%3)-1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-41"/>
-        <location line="+77"/>
-        <location line="+267"/>
+        <location line="+73"/>
+        <location line="+276"/>
         <source>can not find &lt;item&gt; tag under &lt;node&gt; tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-191"/>
-        <location line="+25"/>
+        <location line="-199"/>
+        <location line="+27"/>
         <source>node(prototype=%1,name=%2,group=%3) %4 tag loss child tag &lt;name&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+171"/>
+        <location line="+177"/>
         <source>node metadata(prototype=%1,name=%2,group=%3) can not create graphics item</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6410,44 +6410,44 @@ To Excel</source>
     <message>
         <location line="+26"/>
         <location line="+7"/>
-        <location line="+102"/>
+        <location line="+101"/>
         <location line="+19"/>
         <source>link info can not find node in workflow,id = %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-115"/>
-        <location line="+122"/>
+        <location line="-114"/>
+        <location line="+121"/>
         <source>can not get item by node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-116"/>
-        <location line="+122"/>
+        <location line="-115"/>
+        <location line="+121"/>
         <source>Unable to link to node %3&apos;s link point %4 through link point %2 of node %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-105"/>
         <location line="+28"/>
-        <location line="+94"/>
+        <location line="+93"/>
         <location line="+28"/>
         <source>linkitem load from xml return false</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-85"/>
+        <location line="-84"/>
         <location line="+19"/>
         <source>During the pasting process, the mapping corresponding to ID(%1) cannot be found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+168"/>
+        <location line="+167"/>
         <source>Unable to generate graphics item element during the saveing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+26"/>
         <source>Unable to load item information from &lt;%1&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6457,7 +6457,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+45"/>
         <source>An exception occurred during the process of processing pasted content XML, with the root node missing the type attribute</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6467,12 +6467,12 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+42"/>
         <source>Cannot create item by class name:%1,maybe unregist to DAGraphicsItemFactory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+183"/>
+        <location line="+185"/>
         <source>unknow except:get null figure widget at %1</source>
         <translation type="unfinished"></translation>
     </message>

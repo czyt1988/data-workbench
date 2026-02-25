@@ -15,26 +15,26 @@ namespace DA
 //===================================================
 class DAProjectInterface::PrivateData
 {
-	DA_DECLARE_PUBLIC(DAProjectInterface)
+    DA_DECLARE_PUBLIC(DAProjectInterface)
 public:
-	PrivateData(DAProjectInterface* p);
-	// 存在路径
-	bool isHaveProjectFilePath() const;
+    PrivateData(DAProjectInterface* p);
+    // 存在路径
+    bool isHaveProjectFilePath() const;
 
 public:
-	bool mIsDirty { false };  ///< 脏标识
-	DADockingAreaInterface* mDockingArea { nullptr };
-	DAWorkFlowOperateWidget* mWorkFlowOperateWidget { nullptr };
-	DADataManagerInterface* mDataManagerInterface { nullptr };
-	QFileInfo mProjectFileInfo;  ///< 记录工程文件信息
+    bool mIsDirty { false };  ///< 脏标识
+    DADockingAreaInterface* mDockingArea { nullptr };
+    DAWorkFlowOperateWidget* mWorkFlowOperateWidget { nullptr };
+    DADataManagerInterface* mDataManagerInterface { nullptr };
+    QFileInfo mProjectFileInfo;  ///< 记录工程文件信息
 
-	static QString s_suffix;  ///< 工程文件后缀
+    static QString s_suffix;  ///< 工程文件后缀
 };
 
 /**
  * @brief 工程文件默认后缀
  */
-QString DAProjectInterface::PrivateData::s_suffix = QString("asproj");
+QString DAProjectInterface::PrivateData::s_suffix = QString("dapro");
 
 DAProjectInterface::PrivateData::PrivateData(DAProjectInterface* p) : q_ptr(p)
 {
@@ -58,12 +58,12 @@ DAProjectInterface::~DAProjectInterface()
 
 bool DAProjectInterface::isEmpty() const
 {
-	return !(d_ptr->isHaveProjectFilePath());
+    return !(d_ptr->isHaveProjectFilePath());
 }
 
 DADockingAreaInterface* DAProjectInterface::getDockingAreaInterface() const
 {
-	return d_ptr->mDockingArea;
+    return d_ptr->mDockingArea;
 }
 
 void DAProjectInterface::setDockingAreaInterface(DADockingAreaInterface* dock)
@@ -97,10 +97,10 @@ DADataManagerInterface* DAProjectInterface::getDataManagerInterface()
  */
 QString DAProjectInterface::getProjectBaseName() const
 {
-	if (!d_ptr->isHaveProjectFilePath()) {
-		return QString();
-	}
-	return (d_ptr->mProjectFileInfo.baseName());
+    if (!d_ptr->isHaveProjectFilePath()) {
+        return QString();
+    }
+    return (d_ptr->mProjectFileInfo.baseName());
 }
 
 /**
@@ -111,10 +111,10 @@ QString DAProjectInterface::getProjectBaseName() const
  */
 QString DAProjectInterface::getProjectDir() const
 {
-	if (!d_ptr->isHaveProjectFilePath()) {
-		return QString();
-	}
-	return d_ptr->mProjectFileInfo.absolutePath();
+    if (!d_ptr->isHaveProjectFilePath()) {
+        return QString();
+    }
+    return d_ptr->mProjectFileInfo.absolutePath();
 }
 
 /**
@@ -124,10 +124,10 @@ QString DAProjectInterface::getProjectDir() const
  */
 QString DAProjectInterface::getProjectFilePath() const
 {
-	if (!d_ptr->isHaveProjectFilePath()) {
-		return QString();
-	}
-	return d_ptr->mProjectFileInfo.absoluteFilePath();
+    if (!d_ptr->isHaveProjectFilePath()) {
+        return QString();
+    }
+    return d_ptr->mProjectFileInfo.absoluteFilePath();
 }
 
 /**
@@ -147,10 +147,10 @@ void DAProjectInterface::setProjectPath(const QString& projectPath)
  */
 QString DAProjectInterface::getWorkingDirectory() const
 {
-	if (!d_ptr->isHaveProjectFilePath()) {
-		return QString();
-	}
-	return d_ptr->mProjectFileInfo.absolutePath();
+    if (!d_ptr->isHaveProjectFilePath()) {
+        return QString();
+    }
+    return d_ptr->mProjectFileInfo.absolutePath();
 }
 /**
  * @brief 工程是否脏
@@ -166,9 +166,9 @@ bool DAProjectInterface::isDirty() const
  */
 void DAProjectInterface::clear()
 {
-	setModified(false);
-	d_ptr->mProjectFileInfo = QFileInfo();
-	Q_EMIT projectIsCleaned();
+    setModified(false);
+    d_ptr->mProjectFileInfo = QFileInfo();
+    Q_EMIT projectIsCleaned();
 }
 
 /**
@@ -177,8 +177,8 @@ void DAProjectInterface::clear()
  */
 QVersionNumber DAProjectInterface::getProjectVersion()
 {
-	static QVersionNumber s_version = QVersionNumber(1, 3, 0);
-	return s_version;
+    static QVersionNumber s_version = QVersionNumber(1, 3, 0);
+    return s_version;
 }
 
 /**
@@ -215,9 +215,9 @@ void DAProjectInterface::setProjectFileSuffix(const QString& f)
  */
 void DAProjectInterface::setModified(bool on)
 {
-	if (on != d_ptr->mIsDirty) {
-		d_ptr->mIsDirty = on;
-		Q_EMIT dirtyStateChanged(on);
-	}
+    if (on != d_ptr->mIsDirty) {
+        d_ptr->mIsDirty = on;
+        Q_EMIT dirtyStateChanged(on);
+    }
 }
 }

@@ -31,6 +31,7 @@
 #include "DAWaitCursorScoped.h"
 #include "DAChartItemsManager.h"
 #include "DAChartOperateWidget.h"
+#include "DAAppPluginManager.h"
 // python
 #if DA_ENABLE_PYTHON
 #include "DAPyScripts.h"
@@ -337,6 +338,15 @@ QString DAAppProject::makeDataArchiveFilePath(const QString& dataName)
 }
 
 /**
+ * @brief 设置插件管理器
+ * @param plugin
+ */
+void DAAppProject::setPluginMgr(DAAppPluginManager* plugin)
+{
+    m_pluginMgr = plugin;
+}
+
+/**
  * @brief 清除工程
  */
 void DAAppProject::clear()
@@ -392,6 +402,16 @@ bool DAAppProject::save(const QString& path)
     //! 绘图
     makeSaveChartTask(mArchive);
 
+    //! 插件
+    if (m_pluginMgr) {
+        const QList< DAAbstractPlugin* > plugins = m_pluginMgr->getAllPlugins();
+        for (DAAbstractPlugin* plugin : plugins) {
+            auto task = plugin->createArchiveTask();
+            if (task) {
+                mArchive->appendTask(task);
+            }
+        }
+    }
     //! 组件任务队列
     if (!mArchive->save(path)) {
         qCritical() << tr("failed to save archive to %1").arg(path);
@@ -443,6 +463,17 @@ bool DAAppProject::load(const QString& path)
     //! ChartItemLoadTask必须在chart info 的XmlLoadTask之前
     mArchive->appendChartItemLoadTask(c_chartitem_save_folder, DAAPPPROJECT_TASK_LOAD_ID_CHARTITEMMANAGER);
     mArchive->appendXmlLoadTask(c_chartsxml_save_filename, DAAPPPROJECT_TASK_LOAD_ID_CHARTS_INFO);
+
+    //! 插件
+    if (m_pluginMgr) {
+        const QList< DAAbstractPlugin* > plugins = m_pluginMgr->getAllPlugins();
+        for (DAAbstractPlugin* plugin : plugins) {
+            auto task = plugin->createArchiveTask();
+            if (task) {
+                mArchive->appendTask(task);
+            }
+        }
+    }
     //! 组件任务队列
     if (!mArchive->load(path)) {
         qCritical() << tr("failed to laod archive from %1").arg(path);

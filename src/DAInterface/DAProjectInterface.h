@@ -2,6 +2,8 @@
 #define DAPROJECTINTERFACE_H
 #include <QObject>
 #include <QVersionNumber>
+#include <functional>
+#include <QByteArray>
 #include "DAInterfaceAPI.h"
 #include "DABaseInterface.h"
 namespace DA

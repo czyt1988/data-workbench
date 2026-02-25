@@ -43,6 +43,7 @@ public:
     void setCurrentFigure(int index);
     // 获取figure
     DAFigureWidget* getFigure(int index) const;
+    DAFigureWidget* findFigure(const QString& id) const;
     // 获取figure的命名
     QString getFigureName(int index) const;
     QString getFigureName(DAFigureWidget* f) const;
