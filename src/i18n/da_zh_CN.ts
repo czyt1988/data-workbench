@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+320"/>
+        <location filename="../APP/DAAppActions.cpp" line="+322"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -378,6 +378,11 @@ All</source>
         <location line="+1"/>
         <source>At Canvas Right Top</source>
         <translation>在画布右上</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y Picker Show X Value</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -622,7 +627,7 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-68"/>
+        <location line="-69"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
@@ -632,7 +637,7 @@ Config</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+45"/>
         <source>Run 
 Workflow</source>
         <translation>运行
@@ -796,7 +801,7 @@ Table Area</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+572"/>
+        <location line="+591"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -1047,7 +1052,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+174"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+176"/>
         <source>Main</source>
         <translation>主页</translation>
     </message>
@@ -3341,7 +3346,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1980"/>
+        <location filename="../APP/DAAppController.cpp" line="-1999"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

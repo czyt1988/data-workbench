@@ -131,7 +131,7 @@ public:
     QAction* actionChartEnablePickerCross;      ///< 十字标记
     QAction* actionChartEnablePickerY;          ///< y拾取器
     QAction* actionChartEnablePickerXY;         ///< xy拾取器
-    QAction* actionLinkAllPicker;               ///< 联动所有绘图
+    QAction* actionChartLinkAllPickerEnabled;   ///< 联动所有绘图
     QAction* actionChartEnableLegend;           ///< legend
     QAction* actionCopyFigureInClipboard;       ///< 把图片复制到剪切板
 
@@ -141,6 +141,7 @@ public:
     QAction* actionChartPickerTextAtRightTop;        ///< ypicker的文字在绘图的右上角
     QAction* actionChartPickerTextAtRightBottom;     ///< ypicker的文字在绘图的右下角
     QAction* actionChartPickerTextFollowMouse;       ///< ypicker的文字跟随鼠标
+    QAction* actionChartYPickerShowXValueEnabled;    ///< ypicker显示x值
     //===================================================
     // 视图标签 View Category
     //===================================================

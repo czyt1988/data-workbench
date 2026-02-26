@@ -270,7 +270,7 @@ DAChartWidget* DAChartOperateWidget::gca() const
  * @brief 获取当前选中绘图的所有图表
  * @return
  */
-QList< DAChartWidget* > DAChartOperateWidget::getCurrentCharts() const
+QList< DAChartWidget* > DAChartOperateWidget::getAllCharts() const
 {
     DAFigureWidget* fig = getCurrentFigure();
     if (fig) {
@@ -285,7 +285,7 @@ QList< DAChartWidget* > DAChartOperateWidget::getCurrentCharts() const
  */
 QList< DAChartWidget* > DAChartOperateWidget::gcas() const
 {
-    return getCurrentCharts();
+    return getAllCharts();
 }
 
 QUndoStack* DAChartOperateWidget::getUndoStack()

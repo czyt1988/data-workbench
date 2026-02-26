@@ -259,9 +259,9 @@ void DAAppController::initConnection()
     connect(
         mActions->actionGroupChartPickerTextRegion, &QActionGroup::triggered, this, &DAAppController::onActionGroupChartPickerTextRegionTriggered
     );
-
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartYPickerShowXValueEnabled, onActionChartYPickerShowXValueEnabledTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerXY, onActionChartEnablePickerXYTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionLinkAllPicker, onActionLinkAllPickerTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartLinkAllPickerEnabled, onActionChartLinkAllPickerEnabledTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableLegend, onActionChartEnableLegendTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCopyFigureInClipboard, onActionCopyFigureToClipboardTriggered);
     for (QAction* act : std::as_const(mActions->actionListOfColorTheme)) {
@@ -587,14 +587,14 @@ DAChartWidget* DAAppController::getCurrentChart() const
  * @brief 获取当前的所有图表
  * @return
  */
-QList< DAChartWidget* > DAAppController::getCurrentCharts() const
+QList< DAChartWidget* > DAAppController::getAllCharts() const
 {
-    return getChartOperateWidget()->getCurrentCharts();
+    return getChartOperateWidget()->getAllCharts();
 }
 
 QList< DAChartWidget* > DAAppController::gcas() const
 {
-    return getCurrentCharts();
+    return getAllCharts();
 }
 
 /**
@@ -602,9 +602,9 @@ QList< DAChartWidget* > DAAppController::gcas() const
  * @param fp
  * @return 成功应用返回true,没有任何绘图返回false,执行过程出错也返回false
  */
-bool DAAppController::applyCurrentCharts(const DAAppController::FpChartWidgetApply& fp)
+bool DAAppController::applyToCharts(const DAAppController::FpChartWidgetApply& fp)
 {
-    const QList< DAChartWidget* > ws = getCurrentCharts();
+    const QList< DAChartWidget* > ws = needOperateCharts();
     for (DAChartWidget* w : ws) {
         if (!fp(w)) {
             return false;
@@ -621,7 +621,7 @@ QList< DAChartWidget* > DAAppController::needOperateCharts() const
 {
     QList< DAChartWidget* > ws;
     if (isApplyToAllCharts()) {
-        ws = getCurrentCharts();
+        ws = getAllCharts();
     } else {
         ws.append(getCurrentChart());
     }
@@ -1565,7 +1565,7 @@ void DAAppController::onActionChartAddCloudMapTriggered()
  */
 void DAAppController::onActionChartEnableGridTriggered(bool on)
 {
-    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
+    bool res = applyToCharts([ on ](DAChartWidget* w) -> bool {
         w->enableGrid(on);
         w->replot();
         return true;
@@ -1583,7 +1583,7 @@ void DAAppController::onActionChartEnableGridTriggered(bool on)
  */
 void DAAppController::onActionChartEnableGridXTriggered(bool on)
 {
-    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
+    bool res = applyToCharts([ on ](DAChartWidget* w) -> bool {
         w->enableGridX(on);
         w->replot();
         return true;
@@ -1598,7 +1598,7 @@ void DAAppController::onActionChartEnableGridXTriggered(bool on)
  */
 void DAAppController::onActionChartEnableGridYTriggered(bool on)
 {
-    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
+    bool res = applyToCharts([ on ](DAChartWidget* w) -> bool {
         w->enableGridY(on);
         w->replot();
         return true;
@@ -1613,7 +1613,7 @@ void DAAppController::onActionChartEnableGridYTriggered(bool on)
  */
 void DAAppController::onActionChartEnableGridXMinEnableTriggered(bool on)
 {
-    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
+    bool res = applyToCharts([ on ](DAChartWidget* w) -> bool {
         w->enableGridXMin(on);
         w->replot();
         return true;
@@ -1628,7 +1628,7 @@ void DAAppController::onActionChartEnableGridXMinEnableTriggered(bool on)
  */
 void DAAppController::onActionChartEnableGridYMinTriggered(bool on)
 {
-    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
+    bool res = applyToCharts([ on ](DAChartWidget* w) -> bool {
         w->enableGridYMin(on);
         w->replot();
         return true;
@@ -1644,7 +1644,7 @@ void DAAppController::onActionChartEnableGridYMinTriggered(bool on)
  */
 void DAAppController::onActionChartEnableZoomTriggered(bool on)
 {
-    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
+    bool res = applyToCharts([ on ](DAChartWidget* w) -> bool {
         w->enableZoom(on);
         return true;
     });
@@ -1658,7 +1658,7 @@ void DAAppController::onActionChartEnableZoomTriggered(bool on)
  */
 void DAAppController::onActionChartZoomInTriggered()
 {
-    applyCurrentCharts([](DAChartWidget* w) -> bool {
+    applyToCharts([](DAChartWidget* w) -> bool {
         w->zoomIn();
         return true;
     });
@@ -1669,7 +1669,7 @@ void DAAppController::onActionChartZoomInTriggered()
  */
 void DAAppController::onActionChartZoomOutTriggered()
 {
-    applyCurrentCharts([](DAChartWidget* w) -> bool {
+    applyToCharts([](DAChartWidget* w) -> bool {
         w->zoomOut();
         return true;
     });
@@ -1680,7 +1680,7 @@ void DAAppController::onActionChartZoomOutTriggered()
  */
 void DAAppController::onActionChartZoomAllTriggered()
 {
-    bool res = applyCurrentCharts([](DAChartWidget* w) -> bool {
+    bool res = applyToCharts([](DAChartWidget* w) -> bool {
         w->rescaleAxes();
         w->replot();
         return true;
@@ -1696,7 +1696,7 @@ void DAAppController::onActionChartZoomAllTriggered()
  */
 void DAAppController::onActionChartEnablePanTriggered(bool on)
 {
-    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
+    bool res = applyToCharts([ on ](DAChartWidget* w) -> bool {
         w->enablePan(on);
         return true;
     });
@@ -1711,7 +1711,7 @@ void DAAppController::onActionChartEnablePanTriggered(bool on)
  */
 void DAAppController::onActionChartEnablePickerCrossTriggered(bool on)
 {
-    applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
+    applyToCharts([ on ](DAChartWidget* w) -> bool {
         w->enableCrosshair(on);
         return true;
     });
@@ -1723,7 +1723,7 @@ void DAAppController::onActionChartEnablePickerCrossTriggered(bool on)
  */
 void DAAppController::onActionChartEnablePickerYTriggered(bool on)
 {
-    applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
+    applyToCharts([ on ](DAChartWidget* w) -> bool {
         w->enableYValuePicking(on);
         return true;
     });
@@ -1735,7 +1735,7 @@ void DAAppController::onActionChartEnablePickerYTriggered(bool on)
  */
 void DAAppController::onActionGroupChartPickerTextRegionTriggered(QAction* act)
 {
-    applyCurrentCharts([ act ](DAChartWidget* w) -> bool {
+    applyToCharts([ act ](DAChartWidget* w) -> bool {
         QwtPlotSeriesDataPicker* picker = w->getDataPicker();
         QwtPlotSeriesDataPicker::TextPlacement tp =
             static_cast< QwtPlotSeriesDataPicker::TextPlacement >(act->data().toInt());
@@ -1752,7 +1752,7 @@ void DAAppController::onActionGroupChartPickerTextRegionTriggered(QAction* act)
  */
 void DAAppController::onActionChartEnablePickerXYTriggered(bool on)
 {
-    applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
+    applyToCharts([ on ](DAChartWidget* w) -> bool {
         w->enableXYValuePicking(on);
         return true;
     });
@@ -1762,8 +1762,27 @@ void DAAppController::onActionChartEnablePickerXYTriggered(bool on)
  * @brief 连接所有picker
  * @param on
  */
-void DAAppController::onActionLinkAllPickerTriggered(bool on)
+void DAAppController::onActionChartLinkAllPickerEnabledTriggered(bool on)
 {
+    DAFigureWidget* fig = getCurrentFigure();
+    if (fig) {
+        fig->setDataPickerGroupEnabled(on);
+    }
+}
+
+/**
+ * @brief
+ * @param on
+ */
+void DAAppController::onActionChartYPickerShowXValueEnabledTriggered(bool on)
+{
+    applyToCharts([ on ](DAChartWidget* w) -> bool {
+        QwtPlotSeriesDataPicker* picker = w->getDataPicker();
+        if (picker) {
+            picker->setEnableShowXValue(on);
+        }
+        return true;
+    });
 }
 
 /**
@@ -1772,7 +1791,7 @@ void DAAppController::onActionLinkAllPickerTriggered(bool on)
  */
 void DAAppController::onActionChartEnableLegendTriggered(bool on)
 {
-    bool res = applyCurrentCharts([ on ](DAChartWidget* w) -> bool {
+    bool res = applyToCharts([ on ](DAChartWidget* w) -> bool {
         w->enableLegend(on);
         w->replot();
         return true;

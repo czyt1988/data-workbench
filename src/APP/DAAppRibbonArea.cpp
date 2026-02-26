@@ -160,6 +160,8 @@ void DAAppRibbonArea::buildMenu()
     m_menuChartPickSetting->addAction(m_actions->actionChartPickerTextAtRightTop);
     m_menuChartPickSetting->addAction(m_actions->actionChartPickerTextAtRightBottom);
     m_menuChartPickSetting->addAction(m_actions->actionChartPickerTextFollowMouse);
+    m_menuChartPickSetting->addSeparator();
+    m_menuChartPickSetting->addAction(m_actions->actionChartYPickerShowXValueEnabled);
 }
 
 void DAAppRibbonArea::retranslateUi()
@@ -519,22 +521,12 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
     m_pannelWorkflowGroup->addLargeAction(m_actions->actionWorkflowEnableItemLinkageMove);
     //
     // connect
-    connect(m_workflowShapeEditPannelWidget,
-            &DAShapeEditPannelWidget::borderPenChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemPen);
-    connect(m_workflowShapeEditPannelWidget,
-            &DAShapeEditPannelWidget::backgroundBrushChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemBrush);
-    connect(m_workflowFontEditPannel,
-            &DAFontEditPannelWidget::currentFontChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemFont);
-    connect(m_workflowFontEditPannel,
-            &DAFontEditPannelWidget::currentFontColorChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemFontColor);
+    connect(m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::borderPenChanged, this, &DAAppRibbonArea::selectedWorkflowItemPen);
+    connect(
+        m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::backgroundBrushChanged, this, &DAAppRibbonArea::selectedWorkflowItemBrush
+    );
+    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontChanged, this, &DAAppRibbonArea::selectedWorkflowItemFont);
+    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontColorChanged, this, &DAAppRibbonArea::selectedWorkflowItemFontColor);
 }
 
 void DAAppRibbonArea::buildContextCategoryWorkflowView_()
@@ -638,7 +630,7 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnablePickerXY);
     m_actions->actionChartEnablePickerY->setMenu(m_menuChartPickSetting);
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnablePickerY, QToolButton::MenuButtonPopup);
-    m_pannelChartSetting->addLargeAction(m_actions->actionLinkAllPicker);
+    m_pannelChartSetting->addLargeAction(m_actions->actionChartLinkAllPickerEnabled);
     // legend
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnableLegend);
 
@@ -783,6 +775,7 @@ void DAAppRibbonArea::updateFigureAboutRibbon(DAFigureWidget* fig)
     }
     DAChartWidget* chart = fig->getCurrentChart();
     updateChartAboutRibbon(chart);
+    m_actions->actionChartLinkAllPickerEnabled->setChecked(fig->isDataPickerGroupEnabled());
 }
 
 /**
@@ -795,7 +788,6 @@ void DAAppRibbonArea::updateChartAboutRibbon(DAChartWidget* chart)
         qDebug() << "updateChartAboutRibbon(chart:nullptr)";
         return;
     }
-    qDebug() << "updateChartAboutRibbon";
     updateChartGridAboutRibbon(chart);
     updateChartZoomPanAboutRibbon(chart);
     updateChartPickerAboutRibbon(chart);

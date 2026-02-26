@@ -114,9 +114,9 @@ public:
     // 获取绘图操作窗口,如果没有回返回nullptr
     DAChartWidget* getCurrentChart() const;
     DAChartWidget* gca() const;
-    QList< DAChartWidget* > getCurrentCharts() const;
+    QList< DAChartWidget* > getAllCharts() const;
     QList< DAChartWidget* > gcas() const;
-    bool applyCurrentCharts(const FpChartWidgetApply& fp);
+    bool applyToCharts(const FpChartWidgetApply& fp);
     // 获取需要操作的绘图
     QList< DAChartWidget* > needOperateCharts() const;
     // 获取设置窗口
@@ -224,7 +224,9 @@ private Q_SLOTS:
     // 允许绘图拾取XY
     void onActionChartEnablePickerXYTriggered(bool on);
     // 连接所有picker
-    void onActionLinkAllPickerTriggered(bool on);
+    void onActionChartLinkAllPickerEnabledTriggered(bool on);
+    // 是否在ypicker的时候显示x值
+    void onActionChartYPickerShowXValueEnabledTriggered(bool on);
     // 允许绘图图例
     void onActionChartEnableLegendTriggered(bool on);
     // 绘图样式选择

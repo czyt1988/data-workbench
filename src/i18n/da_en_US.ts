@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+320"/>
+        <location filename="../APP/DAAppActions.cpp" line="+322"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -380,6 +380,11 @@ All</source>
     <message>
         <location line="+1"/>
         <source>At Canvas Right Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y Picker Show X Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -772,7 +777,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+572"/>
+        <location line="+591"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1023,7 +1028,7 @@ Config</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+172"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+174"/>
         <source>File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3229,7 +3234,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1980"/>
+        <location filename="../APP/DAAppController.cpp" line="-1999"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
