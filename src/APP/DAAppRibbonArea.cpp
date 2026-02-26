@@ -519,12 +519,22 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
     m_pannelWorkflowGroup->addLargeAction(m_actions->actionWorkflowEnableItemLinkageMove);
     //
     // connect
-    connect(m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::borderPenChanged, this, &DAAppRibbonArea::selectedWorkflowItemPen);
-    connect(
-        m_workflowShapeEditPannelWidget, &DAShapeEditPannelWidget::backgroundBrushChanged, this, &DAAppRibbonArea::selectedWorkflowItemBrush
-    );
-    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontChanged, this, &DAAppRibbonArea::selectedWorkflowItemFont);
-    connect(m_workflowFontEditPannel, &DAFontEditPannelWidget::currentFontColorChanged, this, &DAAppRibbonArea::selectedWorkflowItemFontColor);
+    connect(m_workflowShapeEditPannelWidget,
+            &DAShapeEditPannelWidget::borderPenChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemPen);
+    connect(m_workflowShapeEditPannelWidget,
+            &DAShapeEditPannelWidget::backgroundBrushChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemBrush);
+    connect(m_workflowFontEditPannel,
+            &DAFontEditPannelWidget::currentFontChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemFont);
+    connect(m_workflowFontEditPannel,
+            &DAFontEditPannelWidget::currentFontColorChanged,
+            this,
+            &DAAppRibbonArea::selectedWorkflowItemFontColor);
 }
 
 void DAAppRibbonArea::buildContextCategoryWorkflowView_()
