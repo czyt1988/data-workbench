@@ -124,7 +124,13 @@ public:
      * @return
      */
     ads::CDockWidget* getChartManageDock() const override;
-
+    // 切换左侧边栏（工作流节点、图表管理、数据管理）的显示/隐藏
+    void toggleLeftSidebar(bool show);
+    // 切换右侧边栏（设置、日志）的显示/隐藏
+    void toggleRightSidebar(bool show);
+    // 获取左右侧边栏的当前状态
+    bool isLeftSidebarVisible() const;
+    bool isRightSidebarVisible() const;
 public slots:
     // 显示数据
     void showDataOperateWidget(const DA::DAData& data, const QString& name = QString());

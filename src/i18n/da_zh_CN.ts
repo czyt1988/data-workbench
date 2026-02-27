@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+322"/>
+        <location filename="../APP/DAAppActions.cpp" line="+350"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -508,7 +508,7 @@ Move</source>
         <translation>允许移动图元时，其它和此图元链接起来的图元跟随移动</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>grouping</source>
         <translation>分组</translation>
     </message>
@@ -600,7 +600,19 @@ Data Manager</source>
 管理视图</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
+        <source>Show Left 
+Side Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show Righ 
+Side Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Plugin 
 Config</source>
         <translation>插件
@@ -627,7 +639,7 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-69"/>
+        <location line="-70"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
@@ -637,7 +649,7 @@ Config</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+44"/>
         <source>Run 
 Workflow</source>
         <translation>运行
@@ -685,7 +697,7 @@ Table Area</source>
         <translation>设置窗口</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+13"/>
         <source>Redo</source>
         <translation>重做</translation>
     </message>
@@ -698,7 +710,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+886"/>
+        <location filename="../APP/DAAppController.cpp" line="+906"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -720,7 +732,7 @@ Table Area</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-474"/>
+        <location line="-476"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -735,7 +747,7 @@ Table Area</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Whether to overwrite the file:%1</source>
         <translation>是否覆盖文件“%1”</translation>
     </message>
@@ -746,7 +758,7 @@ Table Area</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+470"/>
+        <location line="+471"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
@@ -761,7 +773,7 @@ Table Area</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location line="+69"/>
         <source>Image files (*.png *.jpg)</source>
         <translation>图片文件 (*.png *.jpg)</translation>
     </message>
@@ -786,7 +798,7 @@ Table Area</source>
         <translation>空工程，接口异常</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
@@ -801,7 +813,7 @@ Table Area</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+591"/>
+        <location line="+599"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -912,7 +924,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+387"/>
+        <location filename="../APP/DAAppProject.cpp" line="+391"/>
         <location line="+53"/>
         <source>current project is busy</source>
         <translation>当前工程正繁忙</translation>
@@ -928,12 +940,12 @@ Table Area</source>
         <translation>文件%1不是正确的工程文件</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+43"/>
         <source>failed to laod archive from %1</source>
         <translation>无法从%1加载存档</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+12"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -948,7 +960,7 @@ Table Area</source>
         <translation>工程“%1”保存失败</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+21"/>
         <source>Save System Info</source>
         <translation>保存系统信息</translation>
     </message>
@@ -968,7 +980,7 @@ Table Area</source>
         <translation>保存工作流信息，包括工作流图元的层级关系渲染效果</translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+31"/>
         <source>An exception occurred while serializing the dataframe named %1 to %2</source>
         <translation>把名称为%1的dataframe序列化到%2时出现异常</translation>
     </message>
@@ -999,7 +1011,7 @@ Table Area</source>
         <translation>保存绘图元素的基本信息</translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+57"/>
         <source>begin save archive to %1</source>
         <translation>开始保存存档到%1</translation>
     </message>
@@ -1009,7 +1021,27 @@ Table Area</source>
         <translation>开始从%1加载存档</translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+33"/>
+        <source>Project saved successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed to save project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Project loaded successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Failed to load project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
         <source>Missing data content</source>
         <translation>保存</translation>
     </message>
@@ -1024,27 +1056,37 @@ Table Area</source>
         <translation>无法把文件%1序列化为Dataframe</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="-88"/>
         <source>get unknown task code:%1 ,name=%2</source>
         <translation>接收到未知的任务编码:%1,名称为:%2</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="-317"/>
+        <source>Saving project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+58"/>
+        <source>Loading project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+274"/>
         <source>Successfully save archive : %1</source>
         <translation>成功存档到:%1</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Failed to save archive : %1</source>
         <translation>无法存档到:%1</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+14"/>
         <source>Successfully load archive : %1</source>
         <translation>成功从%1加载存档</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Failed to load archive : %1</source>
         <translation>无法从%1加载存档</translation>
     </message>
@@ -1070,12 +1112,12 @@ Table Area</source>
         <location line="+1"/>
         <location line="+19"/>
         <location line="+88"/>
-        <location line="+186"/>
+        <location line="+189"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-292"/>
+        <location line="-295"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
@@ -1088,96 +1130,96 @@ Table Area</source>
     <message>
         <location line="+3"/>
         <location line="+21"/>
-        <location line="+333"/>
+        <location line="+346"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-353"/>
+        <location line="-366"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+181"/>
+        <location line="+184"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-180"/>
-        <location line="+182"/>
+        <location line="-183"/>
+        <location line="+185"/>
         <source>Operate</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location line="-181"/>
-        <location line="+184"/>
+        <location line="-184"/>
+        <location line="+187"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-183"/>
+        <location line="-186"/>
         <location line="+2"/>
-        <location line="+194"/>
+        <location line="+197"/>
         <location line="+6"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-196"/>
+        <location line="-199"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+286"/>
+        <location line="+289"/>
         <source>Workflow Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-285"/>
-        <location line="+290"/>
+        <location line="-288"/>
+        <location line="+293"/>
         <source>ClipBoard</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-289"/>
-        <location line="+294"/>
+        <location line="-292"/>
+        <location line="+297"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-293"/>
-        <location line="+302"/>
+        <location line="-296"/>
+        <location line="+305"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-301"/>
-        <location line="+306"/>
+        <location line="-304"/>
+        <location line="+309"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-303"/>
-        <location line="+374"/>
+        <location line="-306"/>
+        <location line="+387"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-373"/>
-        <location line="+376"/>
+        <location line="-386"/>
+        <location line="+389"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-374"/>
-        <location line="+231"/>
+        <location line="-387"/>
+        <location line="+234"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-230"/>
+        <location line="-233"/>
         <location line="+5"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
@@ -1194,13 +1236,13 @@ Table Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+380"/>
+        <location line="+393"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-380"/>
+        <location line="-393"/>
         <source>Chart Setting</source>
         <translation type="unfinished">绘图设置</translation>
     </message>
@@ -1236,7 +1278,7 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="+415"/>
+        <location line="+428"/>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
@@ -1246,12 +1288,12 @@ Table Area</source>
         <translation>最近打开的文件</translation>
     </message>
     <message>
-        <location line="-142"/>
+        <location line="-152"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+28"/>
         <source>Workflow View</source>
         <translation>显示</translation>
     </message>
@@ -1261,7 +1303,7 @@ Table Area</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location line="-397"/>
+        <location line="-410"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
@@ -2866,6 +2908,24 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DA::DAStatusBarWidget</name>
+    <message>
+        <location filename="../DAGui/DAStatusBarWidget.cpp" line="+47"/>
+        <source>Workflow</source>
+        <translation type="unfinished">工作流</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Data</source>
+        <translation type="unfinished">数据</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DATextReadWriter</name>
     <message>
         <location filename="../DAUtils/DATextReadWriter.cpp" line="+179"/>
@@ -3346,7 +3406,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1999"/>
+        <location filename="../APP/DAAppController.cpp" line="-2029"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -6686,7 +6746,7 @@ To Excel</source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>
     <message>
-        <location filename="../APP/main.cpp" line="+93"/>
+        <location filename="../APP/main.cpp" line="+99"/>
         <source>Kernel initialization failed</source>
         <translation>内核初始化失败</translation>
     </message>
@@ -7150,12 +7210,12 @@ To Excel</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+7"/>
         <source>The project file to open</source>
         <translation>要打开的工程文件</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Import data into the application, supporting formats such as CSV, XLSX, TXT, PKL, etc.If you want to import multiple datasets, you can use the command multiple times; the program will execute them one by one</source>
         <translation>导入数据到应用程序中，支持csv/xlsx/txt/pkl等格式，如果要导入多个数据，你可以使用多次命令，程序会逐一执行</translation>
     </message>

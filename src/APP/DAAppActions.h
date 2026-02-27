@@ -153,6 +153,8 @@ public:
     QAction* actionShowDataManagerArea;  ///< 显示数据管理区域
     QAction* actionShowMessageLogView;
     QAction* actionShowSettingWidget;
+    QAction* actionShowLeftSideBar;   ///< 显示/隐藏左边侧边栏
+    QAction* actionShowRightSideBar;  ///< 显示/隐藏右边侧边栏
     //===================================================
     // 主题
     //===================================================

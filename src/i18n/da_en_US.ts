@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+322"/>
+        <location filename="../APP/DAAppActions.cpp" line="+350"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -507,7 +507,7 @@ Move</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>grouping</source>
         <translation type="unfinished"></translation>
     </message>
@@ -635,6 +635,18 @@ Data Manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Show Left 
+Side Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show Righ 
+Side Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>Plugin 
 Config</source>
@@ -674,17 +686,17 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+478"/>
+        <location filename="../APP/DAAppController.cpp" line="+496"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+22"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-19"/>
+        <location line="-20"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -694,13 +706,13 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+12"/>
-        <location line="+470"/>
+        <location line="+471"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -737,7 +749,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location line="+69"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -762,7 +774,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -777,7 +789,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+591"/>
+        <location line="+599"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -888,7 +900,7 @@ Config</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+387"/>
+        <location filename="../APP/DAAppProject.cpp" line="+391"/>
         <location line="+53"/>
         <source>current project is busy</source>
         <translation type="unfinished"></translation>
@@ -904,12 +916,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+43"/>
         <source>failed to laod archive from %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+12"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -924,7 +936,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+21"/>
         <source>Save System Info</source>
         <translation type="unfinished"></translation>
     </message>
@@ -944,7 +956,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+31"/>
         <source>An exception occurred while serializing the dataframe named %1 to %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -975,7 +987,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+57"/>
         <source>begin save archive to %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -985,7 +997,27 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+33"/>
+        <source>Project saved successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed to save project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Project loaded successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Failed to load project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
         <source>Missing data content</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1000,27 +1032,37 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="-88"/>
         <source>get unknown task code:%1 ,name=%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="-317"/>
+        <source>Saving project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+58"/>
+        <source>Loading project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+274"/>
         <source>Successfully save archive : %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Failed to save archive : %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+14"/>
         <source>Successfully load archive : %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Failed to load archive : %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1051,12 +1093,12 @@ Config</source>
         <location line="+1"/>
         <location line="+19"/>
         <location line="+88"/>
-        <location line="+186"/>
+        <location line="+189"/>
         <source>Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-292"/>
+        <location line="-295"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation type="unfinished"></translation>
@@ -1069,96 +1111,96 @@ Config</source>
     <message>
         <location line="+3"/>
         <location line="+21"/>
-        <location line="+333"/>
+        <location line="+346"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-353"/>
+        <location line="-366"/>
         <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+181"/>
+        <location line="+184"/>
         <source>DataFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-180"/>
-        <location line="+182"/>
+        <location line="-183"/>
+        <location line="+185"/>
         <source>Operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-181"/>
-        <location line="+184"/>
+        <location line="-184"/>
+        <location line="+187"/>
         <source>Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-183"/>
+        <location line="-186"/>
         <location line="+2"/>
-        <location line="+194"/>
+        <location line="+197"/>
         <location line="+6"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-196"/>
+        <location line="-199"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+286"/>
+        <location line="+289"/>
         <source>Workflow Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-285"/>
-        <location line="+290"/>
+        <location line="-288"/>
+        <location line="+293"/>
         <source>ClipBoard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-289"/>
-        <location line="+294"/>
+        <location line="-292"/>
+        <location line="+297"/>
         <source>Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-293"/>
-        <location line="+302"/>
+        <location line="-296"/>
+        <location line="+305"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-301"/>
-        <location line="+306"/>
+        <location line="-304"/>
+        <location line="+309"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-303"/>
-        <location line="+374"/>
+        <location line="-306"/>
+        <location line="+387"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-373"/>
-        <location line="+376"/>
+        <location line="-386"/>
+        <location line="+389"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-374"/>
-        <location line="+231"/>
+        <location line="-387"/>
+        <location line="+234"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-230"/>
+        <location line="-233"/>
         <location line="+5"/>
         <source>Figure Setting</source>
         <translation type="unfinished"></translation>
@@ -1175,13 +1217,13 @@ Config</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+380"/>
+        <location line="+393"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-380"/>
+        <location line="-393"/>
         <source>Chart Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1217,12 +1259,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+290"/>
+        <location line="+293"/>
         <source>Group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+28"/>
         <source>Workflow View</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2754,6 +2796,24 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DA::DAStatusBarWidget</name>
+    <message>
+        <location filename="../DAGui/DAStatusBarWidget.cpp" line="+47"/>
+        <source>Workflow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DATextReadWriter</name>
     <message>
         <location filename="../DAUtils/DATextReadWriter.cpp" line="+179"/>
@@ -3234,7 +3294,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1999"/>
+        <location filename="../APP/DAAppController.cpp" line="-2029"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6988,7 +7048,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../APP/main.cpp" line="+93"/>
+        <location filename="../APP/main.cpp" line="+99"/>
         <source>Kernel initialization failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7022,12 +7082,12 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+7"/>
         <source>The project file to open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Import data into the application, supporting formats such as CSV, XLSX, TXT, PKL, etc.If you want to import multiple datasets, you can use the command multiple times; the program will execute them one by one</source>
         <translation type="unfinished"></translation>
     </message>

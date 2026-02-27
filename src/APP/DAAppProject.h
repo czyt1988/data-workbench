@@ -88,6 +88,13 @@ private Q_SLOTS:
     void onLoadFinish(bool success);
 
 private:
+    void loadedWorkflowInfo(const std::shared_ptr< DAAbstractArchiveTask >& t);
+    void loadedDataManager(const std::shared_ptr< DAAbstractArchiveTask >& t);
+    void loadedChartsInfo(const std::shared_ptr< DAAbstractArchiveTask >& t);
+    void setStatusBarInBusy(const QString& info = QString());
+    void setStatusBarNotBusy(const QString& info = QString());
+
+private:
     DAZipArchiveThreadWrapper* mArchive { nullptr };
     DAXmlHelper mXml;
     std::unique_ptr< QTemporaryDir > mTempDir;

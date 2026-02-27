@@ -79,9 +79,10 @@ public:
      * @brief 创建存档任务
      *
      * 插件的所有存档操作都可以通过存档任务完成
+     * @param isSave 是否是保存任务，此参数用于区分保存和加载
      * @return 默认返回nullptr，代表没有存档任务
      */
-    virtual std::shared_ptr< DAAbstractArchiveTask > createArchiveTask();
+    virtual std::shared_ptr< DAAbstractArchiveTask > createArchiveTask(bool isSave);
 
     // 获取core
     DACoreInterface* core() const;

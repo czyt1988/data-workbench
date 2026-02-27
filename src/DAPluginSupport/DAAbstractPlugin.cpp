@@ -49,8 +49,9 @@ DAAbstractSettingPage* DAAbstractPlugin::createSettingPage()
     return nullptr;
 }
 
-std::shared_ptr<DAAbstractArchiveTask> DAAbstractPlugin::createArchiveTask()
+std::shared_ptr<DAAbstractArchiveTask> DAAbstractPlugin::createArchiveTask(bool isSave)
 {
+    Q_UNUSED(isSave);
     return nullptr;
 }
 

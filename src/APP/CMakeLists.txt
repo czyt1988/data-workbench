@@ -13,6 +13,7 @@ damacro_app_setting(
 )
 
 
+
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
 ########################################################
@@ -152,10 +153,16 @@ endif()
 ########################################################
 damacro_set_app_properties(${DA_APP_NAME} ${DA_APP_VERSION})
 
+
+# Debug 模式使用控制台子系统
+target_link_options(${DA_APP_NAME} PRIVATE "$<$<CONFIG:Debug>:/SUBSYSTEM:CONSOLE>")
+# Release 模式使用 Windows 子系统（无控制台窗口）
+target_link_options(${DA_APP_NAME} PRIVATE "$<$<CONFIG:Release>:/SUBSYSTEM:WINDOWS>")
 ########################################################
 # 写入rc信息
 ########################################################
 if(WIN32)
+
     create_win32_resource_version(
         TARGET ${DA_APP_NAME}
         VERSION ${DA_APP_VERSION}

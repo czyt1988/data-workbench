@@ -88,6 +88,8 @@
         <file>Icon/right-top.svg</file>
         <file>Icon/follow-mouse.svg</file>
         <file>Icon/link-pick.svg</file>
+        <file>Icon/left-sider-bar.svg</file>
+        <file>Icon/right-sider-bar.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>
@@ -120,5 +122,4 @@
         <file>Icon/chart-type/chart-vectorfield.svg</file>
         <file>Icon/chart-type/chart-scatter-2d.svg</file>
     </qresource>
-    <qresource prefix="/"/>
 </RCC>

@@ -39,6 +39,7 @@ public Q_SLOTS:
 	bool load(const QString& filePath);
 private Q_SLOTS:
 	void onTaskFinish(int code);
+	void onTaskProgress(std::shared_ptr< DAAbstractArchiveTask > task, int mode);
 Q_SIGNALS:
 	/**
 	 * @brief 开始保存信号
