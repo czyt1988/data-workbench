@@ -92,6 +92,13 @@ void DAAbstractChartItemSettingWidget::updateUI(QwtPlotItem* item)
     Q_UNUSED(item);
 }
 
+void DAAbstractChartItemSettingWidget::replot()
+{
+    if (mPlot) {
+        mPlot->replot();
+    }
+}
+
 void DAAbstractChartItemSettingWidget::plotItemAttached(QwtPlotItem* plotItem, bool on)
 {
     if (!on && plotItem == mPlotItem) {

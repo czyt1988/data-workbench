@@ -9,39 +9,9 @@ damacro_app_setting(
     "DAWorkBench App"
     0
     0
-    2
+    4
 )
 
-########################################################
-# Qt
-########################################################
-set(DA_MIN_QT_VERSION 5.14)
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
-    Core
-    Gui
-    Widgets
-    Xml
-    Svg
-    Concurrent
-    PrintSupport
-    REQUIRED
-)
-
-if(WIN32)
-    find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
-        AxContainer
-        REQUIRED
-    )
-endif()
-
-# qt6,引入Core5Compat
-if(QT_VERSION_MAJOR EQUAL 6)
-    find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
-        Core5Compat
-        REQUIRED
-    )
-endif()
 
 
 ########################################################
@@ -116,7 +86,6 @@ target_link_libraries(${DA_APP_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
     Qt${QT_VERSION_MAJOR}::Svg
-    Qt${QT_VERSION_MAJOR}::Concurrent
     Qt${QT_VERSION_MAJOR}::AxContainer
 )
 if(WIN32)
@@ -124,6 +93,11 @@ if(WIN32)
         Qt${QT_VERSION_MAJOR}::AxContainer
     )
 endif()
+# -------------DAWorkbench--------------------------
+target_link_libraries(${DA_APP_NAME} PUBLIC
+    ${DA_PROJECT_NAME}::DAPluginSupport
+)
+
 # -------------link 3rdparty DALiteCtk--------------------------
 damacro_import_DALiteCtk(${DA_APP_NAME})
 # -------------link 3rdparty SARibbon--------------------------
@@ -139,15 +113,7 @@ if(DA_ENABLE_PYTHON)
     damacro_import_pybind11(${DA_APP_NAME})
 endif()
 
-find_package(${DA_PROJECT_NAME} COMPONENTS
-    DAPluginSupport
-)
-if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAPluginSupport")
-endif()
-target_link_libraries(${DA_APP_NAME} PUBLIC
-    ${DA_PROJECT_NAME}::DAPluginSupport
-)
+
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
@@ -187,10 +153,16 @@ endif()
 ########################################################
 damacro_set_app_properties(${DA_APP_NAME} ${DA_APP_VERSION})
 
+
+# Debug 模式使用控制台子系统
+target_link_options(${DA_APP_NAME} PRIVATE "$<$<CONFIG:Debug>:/SUBSYSTEM:CONSOLE>")
+# Release 模式使用 Windows 子系统（无控制台窗口）
+target_link_options(${DA_APP_NAME} PRIVATE "$<$<CONFIG:Release>:/SUBSYSTEM:WINDOWS>")
 ########################################################
 # 写入rc信息
 ########################################################
 if(WIN32)
+
     create_win32_resource_version(
         TARGET ${DA_APP_NAME}
         VERSION ${DA_APP_VERSION}

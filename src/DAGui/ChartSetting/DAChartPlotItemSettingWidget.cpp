@@ -61,6 +61,7 @@ void DAChartPlotItemSettingWidget::applySetting(QwtPlotItem* item)
     item->setAxes(static_cast< QwtAxisId >(axisids.first), static_cast< QwtAxisId >(axisids.second));
     item->setTitle(ui->lineEditTitle->text());
     item->setZ(ui->doubleSpinBoxZ->value());
+    replot();
 }
 
 /**
@@ -127,6 +128,7 @@ void DAChartPlotItemSettingWidget::onItemTitleEditingFinished()
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     auto item = getPlotItem();
     item->setTitle(ui->lineEditTitle->text());
+    replot();
 }
 
 void DAChartPlotItemSettingWidget::onItemZValueChanged(double z)
@@ -134,6 +136,7 @@ void DAChartPlotItemSettingWidget::onItemZValueChanged(double z)
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     auto item = getPlotItem();
     item->setZ(z);
+    replot();
 }
 
 void DAChartPlotItemSettingWidget::onButtonGroupAxisClicked(QAbstractButton* btn)
@@ -149,5 +152,6 @@ void DAChartPlotItemSettingWidget::onButtonGroupAxisClicked(QAbstractButton* btn
     } else if (btn == ui->toolButtonRightTop) {
         item->setAxes(QwtPlot::xTop, QwtPlot::yRight);
     }
+    replot();
 }
 }

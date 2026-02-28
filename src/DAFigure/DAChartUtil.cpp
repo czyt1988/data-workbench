@@ -309,7 +309,8 @@ QPointF DAChartUtil::transformValue(QwtPlot* chart, const QPointF& p, int orgXAx
 /// \param otherYAxis
 /// \return
 ///
-QPainterPath DAChartUtil::transformPath(QwtPlot* chart, const QPainterPath& p, int orgXAxis, int orgYAxis, int otherXAxis, int otherYAxis)
+QPainterPath
+DAChartUtil::transformPath(QwtPlot* chart, const QPainterPath& p, int orgXAxis, int orgYAxis, int otherXAxis, int otherYAxis)
 {
     QPainterPath shape = p;
     const int eleCount = p.elementCount();
@@ -543,7 +544,7 @@ QwtDateScaleDraw* DAChartUtil::setAxisDateTimeScale(QwtPlot* chart, int axisID, 
         return nullptr;
     }
     QwtDateScaleDraw* dateScale;
-    dateScale = new QwtDateScaleDraw;  // 原来的scaleDraw会再qwt自动delete
+    dateScale = new QwtDateScaleDraw(Qt::LocalTime);  // 原来的scaleDraw会再qwt自动delete
     setupSmartDateFormat(dateScale, fullDateformat);
     chart->setAxisScaleDraw(axisID, dateScale);
     /**
@@ -1394,6 +1395,33 @@ int DAChartUtil::dynamicGetPlotChartItemDataCount(const QwtPlotItem* item)
         return static_cast< int >(p->dataSize());
     }
     return -1;
+}
+
+/**
+ * @brief 确定是否为绘图item
+ *
+ * 确定是否为绘图item，例如QwtPlotItem::Rtti_PlotCurve就属于曲线属于绘图，例如QwtPlotItem::Rtti_PlotBarChart也属于绘图，
+ * 但QwtPlotItem::Rtti_PlotGrid和QwtPlotItem::Rtti_PlotMarker就不属于
+ * @param item
+ * @return
+ */
+bool DAChartUtil::isPlotGraphicsItem(QwtPlotItem* item)
+{
+    switch (item->rtti()) {
+    case QwtPlotItem::Rtti_PlotScale:
+    case QwtPlotItem::Rtti_PlotCurve:
+    case QwtPlotItem::Rtti_PlotSpectroCurve:
+    case QwtPlotItem::Rtti_PlotIntervalCurve:
+    case QwtPlotItem::Rtti_PlotHistogram:
+    case QwtPlotItem::Rtti_PlotSpectrogram:
+    case QwtPlotItem::Rtti_PlotTradingCurve:
+    case QwtPlotItem::Rtti_PlotBarChart:
+    case QwtPlotItem::Rtti_PlotMultiBarChart:
+        return true;
+    default:
+        break;
+    }
+    return false;
 }
 
 /**

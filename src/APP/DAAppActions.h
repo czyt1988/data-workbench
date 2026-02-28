@@ -1,6 +1,7 @@
 ﻿#ifndef DAAPPACTIONS_H
 #define DAAPPACTIONS_H
 #include "DAActionsInterface.h"
+#include <QPixmap>
 class QActionGroup;
 namespace DA
 {
@@ -31,6 +32,10 @@ protected:
     void buildWorkflowAction();
     // 建立其他的actions
     void buildOtherActions();
+    // 创建颜色主题actions
+    void buildColorThemeActions();
+    // 根据颜色系列，创建一个pixmap图标
+    QPixmap createColorThemePixmap(const QList< QColor >& clrs, const QSize& size) const;
 
 public:
     //===================================================
@@ -111,21 +116,32 @@ public:
     QAction* actionChartAddCloudMap;      ///< 云图
     QAction* actionChartAddVectorfield;   ///< 向量场图
 
-    QAction* actionChartEnableGrid;         ///< 网格显示总开关
-    QAction* actionChartEnableGridX;        ///< 网格显示X开关
-    QAction* actionChartEnableGridY;        ///< 网格显示Y开关
-    QAction* actionChartEnableGridXMin;     ///< 网格显示Xmin开关
-    QAction* actionChartEnableGridYMin;     ///< 网格显示Ymin开关
-    QAction* actionChartEnableZoom;         ///< 绘图允许缩放
-    QAction* actionChartZoomIn;             ///< 绘图放大
-    QAction* actionChartZoomOut;            ///< 绘图缩小
-    QAction* actionChartZoomAll;            ///< 显示全部
-    QAction* actionChartEnablePan;          ///< 绘图拖动
-    QActionGroup* actionGroupChartPickers;  ///< Chart Picker的actiongroup
-    QAction* actionChartEnablePickerCross;  ///< 十字标记
-    QAction* actionChartEnablePickerY;      ///< y拾取器
-    QAction* actionChartEnablePickerXY;     ///< xy拾取器
-    QAction* actionChartEnableLegend;       ///< legend
+    QAction* actionFigureSettingApplyAllChart;  ///< figure的设置应用到所有chart
+    QAction* actionChartEnableGrid;             ///< 网格显示总开关
+    QAction* actionChartEnableGridX;            ///< 网格显示X开关
+    QAction* actionChartEnableGridY;            ///< 网格显示Y开关
+    QAction* actionChartEnableGridXMin;         ///< 网格显示Xmin开关
+    QAction* actionChartEnableGridYMin;         ///< 网格显示Ymin开关
+    QAction* actionChartEnableZoom;             ///< 绘图允许缩放
+    QAction* actionChartZoomIn;                 ///< 绘图放大
+    QAction* actionChartZoomOut;                ///< 绘图缩小
+    QAction* actionChartZoomAll;                ///< 显示全部
+    QAction* actionChartEnablePan;              ///< 绘图拖动
+    QActionGroup* actionGroupChartPickers;      ///< Chart Picker的actiongroup
+    QAction* actionChartEnablePickerCross;      ///< 十字标记
+    QAction* actionChartEnablePickerY;          ///< y拾取器
+    QAction* actionChartEnablePickerXY;         ///< xy拾取器
+    QAction* actionChartLinkAllPickerEnabled;   ///< 联动所有绘图
+    QAction* actionChartEnableLegend;           ///< legend
+    QAction* actionCopyFigureInClipboard;       ///< 把图片复制到剪切板
+
+    QActionGroup* actionGroupChartPickerTextRegion;  ///< 设置ypicker时，picker text所在的位置
+    QAction* actionChartPickerTextAtLeftTop;         ///< ypicker的文字在绘图的左上角
+    QAction* actionChartPickerTextAtLeftBottom;      ///< ypicker的文字在绘图的左下角
+    QAction* actionChartPickerTextAtRightTop;        ///< ypicker的文字在绘图的右上角
+    QAction* actionChartPickerTextAtRightBottom;     ///< ypicker的文字在绘图的右下角
+    QAction* actionChartPickerTextFollowMouse;       ///< ypicker的文字跟随鼠标
+    QAction* actionChartYPickerShowXValueEnabled;    ///< ypicker显示x值
     //===================================================
     // 视图标签 View Category
     //===================================================
@@ -137,6 +153,8 @@ public:
     QAction* actionShowDataManagerArea;  ///< 显示数据管理区域
     QAction* actionShowMessageLogView;
     QAction* actionShowSettingWidget;
+    QAction* actionShowLeftSideBar;   ///< 显示/隐藏左边侧边栏
+    QAction* actionShowRightSideBar;  ///< 显示/隐藏右边侧边栏
     //===================================================
     // 主题
     //===================================================
@@ -145,6 +163,11 @@ public:
     QAction* actionRibbonThemeOffice2021Blue;  ///< office2021主题
     QAction* actionRibbonThemeDark;            ///< dark主题
     QActionGroup* actionGroupRibbonTheme;      ///< actionRibbonTheme* 的actionGroup
+
+    //===================================================
+    // 颜色主题
+    //===================================================
+    QList< QAction* > actionListOfColorTheme;
     //===================================================
     // 其他
     //===================================================

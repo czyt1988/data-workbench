@@ -21,6 +21,7 @@ namespace DA
 //===================================================
 // DAData
 //===================================================
+
 DAData::DAData() : mDataMgr(nullptr)
 {
 }
@@ -332,6 +333,7 @@ void DA::DAData::setPyObject(const pybind11::object& obj)
         break;
     }
 }
+
 #endif
 
 QString DAData::typeToString() const
@@ -349,6 +351,15 @@ QString DAData::typeToString() const
 DADataManager* DAData::getDataManager() const
 {
     return mDataMgr;
+}
+
+/**
+ * @brief 是否存在数据管理器
+ * @return
+ */
+bool DAData::isHaveDataManager() const
+{
+    return (mDataMgr != nullptr);
 }
 
 std::pair< size_t, size_t > DAData::shape() const
@@ -439,8 +450,11 @@ void DAData::setDataManager(DADataManager* mgr)
 {
     mDataMgr = mgr;
 }
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 uint qHash(const DAData& key, uint seed)
+#else
+std::size_t qHash(const DAData& key, std::size_t seed)
+#endif
 {
     return ::qHash(key.rawPointer(), seed);
 }

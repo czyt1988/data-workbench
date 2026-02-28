@@ -9,21 +9,7 @@ damacro_lib_setting(
     "DA GUI | https://github.com/czyt1988"
     0
     0
-    3
-)
-
-########################################################
-# Qt
-########################################################
-set(DA_MIN_QT_VERSION 5.14)
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
-    Core
-    Gui
-    Widgets
-    Xml
-    Svg
-    REQUIRED
+    5
 )
 
 ########################################################
@@ -40,7 +26,6 @@ set(DA_LIB_HEADER_FILES
     DADataTableView.h
     DAFigureFactory.h
     DAGraphicsPixmapItemSettingWidget.h
-    DAGlobalColorTheme.h
     DAChartListView.h
     DAChartManageWidget.h
     DAChartOperateWidget.h
@@ -48,6 +33,7 @@ set(DA_LIB_HEADER_FILES
     DADataListView.h
     DADataManageTableView.h
     DADataManageWidget.h
+    DADataManagerTreeWidget.h
     DADataOperateWidget.h
     DAGuiEnumStringUtils.h
     DAMessageLogViewWidget.h
@@ -88,6 +74,7 @@ set(DA_LIB_SOURCE_FILES
     DAChartItemsManager.cpp
     DADataListView.cpp
     DADataManageTableView.cpp
+    DADataManagerTreeWidget.cpp
     DADataManageWidget.cpp
     DADataManagerComboBox.cpp
     DADataOperatePageWidget.cpp
@@ -95,7 +82,6 @@ set(DA_LIB_SOURCE_FILES
     DADataTableView.cpp
     DAFigureFactory.cpp
     DAGraphicsPixmapItemSettingWidget.cpp
-    DAGlobalColorTheme.cpp
     DAGuiEnumStringUtils.cpp
     DAMessageLogViewWidget.cpp
     DANodeItemSettingWidget.cpp
@@ -129,6 +115,7 @@ set(DA_LIB_QT_UI_FILES
     DAChartOperateWidget.ui
     DAChartSettingWidget.ui
     DADataManageWidget.ui
+    DADataManagerTreeWidget.ui
     DADataOperateWidget.ui
     DAGraphicsPixmapItemSettingWidget.ui
     DAMessageLogViewWidget.ui
@@ -150,6 +137,7 @@ if(DA_ENABLE_PYTHON)
         DADataOperateOfDataFrameWidget.h
         DAPyDataFrameTableView.h
         DAPySeriesTableView.h
+        DAPySeriesListView.h
         DAChartAddXYSeriesWidget.h
         DAChartAddXYESeriesWidget.h
         DAChartAddOHLCSeriesWidget.h
@@ -165,6 +153,7 @@ if(DA_ENABLE_PYTHON)
         DADataOperateOfDataFrameWidget.cpp
         DAPyDataFrameTableView.cpp
         DAPySeriesTableView.cpp
+        DAPySeriesListView.cpp
         DAChartAddXYSeriesWidget.cpp
         DAChartAddXYESeriesWidget.cpp
         DAChartAddOHLCSeriesWidget.cpp
@@ -195,6 +184,7 @@ set(DA_LIB_SUBDIR_ChartSetting ${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting)
 set(DA_LIB_HEADER_FILES_Models
     ${DA_LIB_SUBDIR_Models}/DAAbstractCacheWindowTableModel.h
     ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.h
+    ${DA_LIB_SUBDIR_Models}/DADataManagerTreeFilterProxyModel.h
     ${DA_LIB_SUBDIR_Models}/DATreeModel.h
     ${DA_LIB_SUBDIR_Models}/DADataTableModel.h
     ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.h
@@ -204,6 +194,7 @@ set(DA_LIB_HEADER_FILES_Models
 set(DA_LIB_SOURCE_FILES_Models
     ${DA_LIB_SUBDIR_Models}/DAAbstractCacheWindowTableModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataManagerTreeModel.cpp
+    ${DA_LIB_SUBDIR_Models}/DADataManagerTreeFilterProxyModel.cpp
     ${DA_LIB_SUBDIR_Models}/DATreeModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataTableModel.cpp
     ${DA_LIB_SUBDIR_Models}/DADataManagerTableModel.cpp
@@ -346,7 +337,7 @@ add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 # 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################
 # -------------link Qt--------------------------
-target_link_libraries(${DA_LIB_NAME} PRIVATE
+target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
@@ -354,48 +345,7 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Svg
 )
 if(${QT_VERSION_MAJOR} EQUAL 6)
-    find_package(Qt6 REQUIRED COMPONENTS Core5Compat)
     target_link_libraries(${DA_LIB_NAME} PRIVATE Qt6::Core5Compat)
-endif()
-
-
-
-# -------------link DAWorkBench--------------------------
-# DAUtils
-# 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
-# find_package(${DA_PROJECT_NAME} COMPONENTS
-#     DAUtils
-#     DAMessageHandler
-#     DAData
-#     DACommonWidgets
-#     DAGraphicsView
-#     DAWorkFlow
-#     DAFigure
-# )
-# target_link_libraries(${DA_LIB_NAME} PUBLIC
-#     ${DA_PROJECT_NAME}::DAUtils
-#     ${DA_PROJECT_NAME}::DAMessageHandler
-#     ${DA_PROJECT_NAME}::DAData
-#     ${DA_PROJECT_NAME}::DACommonWidgets
-#     ${DA_PROJECT_NAME}::DAGraphicsView
-#     ${DA_PROJECT_NAME}::DAWorkFlow
-#     ${DA_PROJECT_NAME}::DAFigure
-# )
-find_package(${DA_PROJECT_NAME} COMPONENTS
-    DAUtils
-    DAMessageHandler
-    DAData
-    DACommonWidgets
-    DAWorkFlow
-    DAFigure
-)
-if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAUtils")
-    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAMessageHandler")
-    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAData")
-    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DACommonWidgets")
-    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAWorkFlow")
-    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAFigure")
 endif()
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAUtils
@@ -407,14 +357,6 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
 )
 
 if(DA_ENABLE_PYTHON)
-    find_package(${DA_PROJECT_NAME} COMPONENTS
-        DAPyBindQt
-        DAPyScripts
-        DAPyCommonWidgets
-    )
-    if(${DA_PROJECT_NAME}_FOUND)
-        message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAPyCommonWidgets")
-    endif()
     target_link_libraries(${DA_LIB_NAME} PUBLIC
         ${DA_PROJECT_NAME}::DAPyBindQt
         ${DA_PROJECT_NAME}::DAPyScripts
@@ -456,16 +398,6 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting>
 )
 
-########################################################
-# 附加编译选项
-########################################################
-if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
-    # 这里是为 MSVC 编译器设置的选项
-    target_link_options(${DA_LIB_NAME} PRIVATE /VERBOSE)
-    # 或者设置其他 MSVC 特定的编译或链接选项
-else()
-    # 这里是为非 MSVC 编译器设置的选项（如果有的话）
-endif()
 ########################################################
 # 安装
 ########################################################

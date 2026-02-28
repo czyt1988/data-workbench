@@ -131,6 +131,7 @@ void DAChartCurveItemSettingWidget::applySetting(QwtPlotCurve* item)
     if (item->orientation() != ori) {
         item->setOrientation(ori);
     }
+    replot();
 }
 
 /**
@@ -418,6 +419,7 @@ void DAChartCurveItemSettingWidget::onCheckBoxFittedClicked(bool checked)
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotCurve* c = s_cast< QwtPlotCurve* >();
     c->setCurveAttribute(QwtPlotCurve::Fitted, checked);
+    replot();
 }
 
 void DAChartCurveItemSettingWidget::on_checkBoxInverted_clicked(bool checked)
@@ -428,6 +430,7 @@ void DAChartCurveItemSettingWidget::on_checkBoxInverted_clicked(bool checked)
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotCurve* c = s_cast< QwtPlotCurve* >();
     c->setCurveAttribute(QwtPlotCurve::Inverted, checked);
+    replot();
 }
 
 void DAChartCurveItemSettingWidget::on_checkBoxLegendShowLine_clicked(bool checked)
@@ -438,6 +441,7 @@ void DAChartCurveItemSettingWidget::on_checkBoxLegendShowLine_clicked(bool check
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotCurve* c = s_cast< QwtPlotCurve* >();
     c->setLegendAttribute(QwtPlotCurve::LegendShowLine, checked);
+    replot();
 }
 
 void DAChartCurveItemSettingWidget::on_checkBoxLegendShowSymbol_clicked(bool checked)
@@ -448,6 +452,7 @@ void DAChartCurveItemSettingWidget::on_checkBoxLegendShowSymbol_clicked(bool che
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotCurve* c = s_cast< QwtPlotCurve* >();
     c->setLegendAttribute(QwtPlotCurve::LegendShowSymbol, checked);
+    replot();
 }
 
 void DAChartCurveItemSettingWidget::on_checkBoxLegendShowBrush_clicked(bool checked)
@@ -458,6 +463,7 @@ void DAChartCurveItemSettingWidget::on_checkBoxLegendShowBrush_clicked(bool chec
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotCurve* c = s_cast< QwtPlotCurve* >();
     c->setLegendAttribute(QwtPlotCurve::LegendShowBrush, checked);
+    replot();
 }
 
 void DAChartCurveItemSettingWidget::on_checkBoxEnableMarker_clicked(bool checked)
@@ -473,6 +479,7 @@ void DAChartCurveItemSettingWidget::on_checkBoxEnableMarker_clicked(bool checked
     } else {
         c->setSymbol(nullptr);
     }
+    replot();
 }
 
 void DAChartCurveItemSettingWidget::onSymbolStyleChanged(QwtSymbol::Style s)
@@ -514,6 +521,7 @@ void DAChartCurveItemSettingWidget::on_checkBoxEnableFill_clicked(bool checked)
     } else {
         c->setBrush(Qt::NoBrush);
     }
+    replot();
 }
 
 void DAChartCurveItemSettingWidget::on_lineEditBaseLine_editingFinished()
@@ -524,6 +532,7 @@ void DAChartCurveItemSettingWidget::on_lineEditBaseLine_editingFinished()
     if (!qFuzzyCompare(bl, c->baseline())) {
         c->setBaseline(bl);
     }
+    replot();
 }
 
 void DAChartCurveItemSettingWidget::onButtonGroupOrientationClicked(QAbstractButton* b)
@@ -534,6 +543,7 @@ void DAChartCurveItemSettingWidget::onButtonGroupOrientationClicked(QAbstractBut
     if (c->orientation() != ori) {
         c->setOrientation(ori);
     }
+    replot();
 }
 
 void DAChartCurveItemSettingWidget::onCurvePenChanged(const QPen& p)
@@ -541,6 +551,7 @@ void DAChartCurveItemSettingWidget::onCurvePenChanged(const QPen& p)
     DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
     QwtPlotCurve* c = s_cast< QwtPlotCurve* >();
     c->setPen(p);
+    replot();
 }
 
 }

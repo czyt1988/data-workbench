@@ -4,7 +4,7 @@
 #include <memory>
 // DA
 #include "da_algorithm.hpp"
-#include "DAVector.h"
+#include "DAVector.hpp"
 // Qt
 #include <QDebug>
 namespace DA

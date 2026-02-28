@@ -146,9 +146,10 @@ DASettingContainerWidget* DAAppDockingArea::getSettingContainerWidget() const
  * @brief 显示数据
  * @param data
  */
-void DAAppDockingArea::showDataOperateWidget(const DA::DAData& data)
+void DAAppDockingArea::showDataOperateWidget(const DA::DAData& data, const QString& name)
 {
     mDataOperateWidget->showData(data);
+    mDataOperateWidget->ensureCurrentTableColumnVisible(name);
     // 把表格窗口唤起
     raiseDockByWidget((QWidget*)getDataOperateWidget());
 }
@@ -185,14 +186,13 @@ void DAAppDockingArea::buildDockingArea()
     mWorkFlowOperateDock->setIcon(QIcon(":/app/bright/Icon/showWorkFlow.svg"));
     mWorkFlowOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
-    mChartOperateDock = createDockWidgetAsTab(
-        mChartOperateWidget, QStringLiteral("da_chartOperateWidgetDock"), mWorkFlowOperateDock->dockAreaWidget());
+    mChartOperateDock =
+        createDockWidgetTabAtCenterDockArea(mChartOperateWidget, QStringLiteral("da_chartOperateWidgetDock"));
     mChartOperateDock->setIcon(QIcon(":/app/bright/Icon/showChart.svg"));
     mChartOperateDock->setToggleViewActionMode(ads::CDockWidget::ActionModeToggle);
     mChartOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
-    mDataOperateDock = createDockWidgetAsTab(
-        mDataOperateWidget, QStringLiteral("da_dataOperateWidgetDock"), mWorkFlowOperateDock->dockAreaWidget());
+    mDataOperateDock = createDockWidgetTabAtCenterDockArea(mDataOperateWidget, QStringLiteral("da_dataOperateWidgetDock"));
     mDataOperateDock->setIcon(QIcon(":/app/bright/Icon/showTable.svg"));
     mDataOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
     mDataOperateDock->raise();
@@ -292,6 +292,10 @@ void DAAppDockingArea::initConnection()
 {
     // DADataManageWidget的数据双击，在DADataOperateWidget中显示
     connect(mDataManageWidget, &DADataManageWidget::dataDbClicked, this, &DAAppDockingArea::onDataManageWidgetDataDbClicked);
+    connect(mDataManageWidget,
+            &DADataManageWidget::dataSeriesDbClicked,
+            this,
+            &DAAppDockingArea::onDataManageWidgetDataSeriesDbClicked);
     // 设置窗口的绑定
     mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->setWorkFlowOperateWidget(mWorkFlowOperateWidget);
 }
@@ -301,9 +305,72 @@ void DAAppDockingArea::onDataManageWidgetDataDbClicked(const DA::DAData& data)
     showDataOperateWidget(data);
 }
 
+void DAAppDockingArea::onDataManageWidgetDataSeriesDbClicked(const DAData& data, const QString& name)
+{
+    showDataOperateWidget(data, name);
+}
+
 ads::CDockWidget* DAAppDockingArea::getChartManageDock() const
 {
     return mChartManageDock;
+}
+
+void DAAppDockingArea::toggleLeftSidebar(bool show)
+{
+    // 左侧边栏包含的dock widgets
+    QList< ads::CDockWidget* > leftSidebarDocks = { mWorkflowNodeListDock, mChartManageDock, mDataManageDock };
+
+    for (ads::CDockWidget* dock : leftSidebarDocks) {
+        if (dock) {
+            if (show) {
+                // 显示：如果当前是关闭状态，则打开
+                if (dock->isClosed()) {
+                    dock->toggleView(true);  // true表示打开
+                }
+            } else {
+                // 隐藏：如果当前是打开状态，则关闭
+                if (!dock->isClosed()) {
+                    dock->toggleView(false);  // false表示关闭
+                }
+            }
+        }
+    }
+}
+
+void DAAppDockingArea::toggleRightSidebar(bool show)
+{
+    // 右侧边栏包含的dock widgets
+    QList< ads::CDockWidget* > rightSidebarDocks = { mSettingContainerDock, mMessageLogDock };
+
+    for (ads::CDockWidget* dock : rightSidebarDocks) {
+        if (dock) {
+            if (show) {
+                // 显示
+                if (dock->isClosed()) {
+                    dock->toggleView(true);
+                }
+            } else {
+                // 隐藏
+                if (!dock->isClosed()) {
+                    dock->toggleView(false);
+                }
+            }
+        }
+    }
+}
+
+bool DAAppDockingArea::isLeftSidebarVisible() const
+{
+    // 检查左侧边栏是否至少有一个dock是可见的
+    return (mWorkflowNodeListDock && !mWorkflowNodeListDock->isClosed())
+           || (mChartManageDock && !mChartManageDock->isClosed()) || (mDataManageDock && !mDataManageDock->isClosed());
+}
+
+bool DAAppDockingArea::isRightSidebarVisible() const
+{
+    // 检查右侧边栏是否至少有一个dock是可见的
+    return (mSettingContainerDock && !mSettingContainerDock->isClosed())
+           || (mMessageLogDock && !mMessageLogDock->isClosed());
 }
 
 ads::CDockWidget* DAAppDockingArea::getDataManageDock() const

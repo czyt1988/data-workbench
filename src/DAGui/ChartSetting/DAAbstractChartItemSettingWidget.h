@@ -63,6 +63,8 @@ public:
     }
     // setPlotItem之后调用的虚函数,通过重写此函数可以执行一些设置item之后的界面更新
     virtual void updateUI(QwtPlotItem* item);
+    // 重绘
+    void replot();
 
 protected:
     // plot设置,此函数在setPlotItem会调用，避免误操作，设置为protected

@@ -240,7 +240,7 @@ void DAMessageLogViewWidget::copySelectionMessageToClipBoard()
     QSet< int > rowIndexs;
     QModelIndexList indexs = sm->selectedIndexes();
     QString text;
-    for (const QModelIndex& i : qAsConst(indexs)) {
+    for (const QModelIndex& i : std::as_const(indexs)) {
         if (!rowIndexs.contains(i.row())) {
             if (!rowIndexs.isEmpty()) {
                 text += "\n";

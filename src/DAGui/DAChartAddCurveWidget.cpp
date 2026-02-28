@@ -22,13 +22,14 @@ DAChartAddCurveWidget::~DAChartAddCurveWidget()
  */
 QwtPlotItem* DAChartAddCurveWidget::createPlotItem()
 {
-	QVector< QPointF > xy = getSeries();
-	if (xy.empty()) {
-		return nullptr;
-	}
-	QwtPlotCurve* item = new QwtPlotCurve();
-	item->setSamples(xy);
-	return item;
+    QVector< QPointF > xy = getSeries();
+    if (xy.empty()) {
+        return nullptr;
+    }
+    QwtPlotCurve* item = new QwtPlotCurve();
+    item->setSamples(xy);
+    item->setTitle(getNameHint());
+    return item;
 }
 
 }  // end DA

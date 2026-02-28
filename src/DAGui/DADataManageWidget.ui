@@ -30,65 +30,18 @@
     <number>1</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <property name="spacing">
-      <number>1</number>
-     </property>
-     <item>
-      <widget class="QToolButton" name="toolButtonShowTableView">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="icon.qrc">
-         <normaloff>:/DAGui/icon/showDataInList.svg</normaloff>:/DAGui/icon/showDataInList.svg</iconset>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-       <property name="autoRaise">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QStackedWidget" name="stackedWidget">
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="DA::DADataManageTableView" name="dataMgrTableView"/>
-    </widget>
+    <widget class="DA::DADataManagerTreeWidget" name="dataTreeWidget" native="true"/>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DA::DADataManageTableView</class>
+   <class>DA::DADataManagerTreeWidget</class>
    <extends>QWidget</extends>
-   <header>DADataManageTableView.h</header>
+   <header>DADataManagerTreeWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="icon.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

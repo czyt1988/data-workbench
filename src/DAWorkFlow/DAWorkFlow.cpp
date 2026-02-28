@@ -104,7 +104,7 @@ void DAWorkFlow::registFactory(std::shared_ptr< DAAbstractNodeFactory > factory)
 {
 	QList< DANodeMetaData > mds = factory->getNodesMetaData();
 
-	for (const DANodeMetaData& m : qAsConst(mds)) {
+	for (const DANodeMetaData& m : std::as_const(mds)) {
 		// qDebug() << "registFactory m=" << m.getNodePrototype();
 		d_ptr->mMetaToFactory[ m ] = factory;
 	}
@@ -118,7 +118,7 @@ void DAWorkFlow::registFactory(std::shared_ptr< DAAbstractNodeFactory > factory)
  */
 void DAWorkFlow::registFactorys(const QList< std::shared_ptr< DAAbstractNodeFactory > > factorys)
 {
-	for (std::shared_ptr< DAAbstractNodeFactory > f : qAsConst(factorys)) {
+	for (std::shared_ptr< DAAbstractNodeFactory > f : std::as_const(factorys)) {
 		registFactory(f);
 	}
 }
@@ -167,7 +167,7 @@ QList< std::shared_ptr< DAAbstractNodeFactory > > DAWorkFlow::usedFactorys() con
 	QList< DAAbstractNode::SharedPointer > ns = nodes();
 	// 获取到涉及的工厂
 	QSet< std::shared_ptr< DAAbstractNodeFactory > > factorys;
-	for (auto n : qAsConst(ns)) {
+	for (auto n : std::as_const(ns)) {
 		factorys.insert(n->factory());
 	}
 	return qset_to_qlist(factorys);
@@ -189,7 +189,7 @@ int DAWorkFlow::getFactoryCount() const
  */
 std::shared_ptr< DAAbstractNodeFactory > DAWorkFlow::getFactory(const QString& factoryPrototypes)
 {
-	for (auto f : qAsConst(d_ptr->mFactorys)) {
+	for (auto f : std::as_const(d_ptr->mFactorys)) {
 		if (0 == f->factoryPrototypes().compare(factoryPrototypes, Qt::CaseInsensitive)) {
 			return f;
 		}
@@ -516,7 +516,7 @@ DANodeGraphicsScene* DAWorkFlow::getScene() const
  */
 void DAWorkFlow::callWorkflowReady()
 {
-	for (auto fac : qAsConst(d_ptr->mFactorys)) {
+	for (auto fac : std::as_const(d_ptr->mFactorys)) {
 		fac->workflowReady();
 	}
 	emit workflowReady();

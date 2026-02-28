@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QList>
 #include <QVariant>
+#include <QDateTime>
 #include "DAPybind11InQt.h"
 #include "DAPyIndex.h"
 
@@ -33,7 +34,9 @@ public:
     DAPySeries& operator=(pybind11::object&& obj);
     DAPySeries& operator=(DAPySeries&& s);
     DAPySeries& operator=(DAPyObjectWrapper&& obj);
-    QVariant operator[](std::size_t i) const;
+    pybind11::object operator[](std::size_t i) const;
+    // 如果索引是字符串，可以使用此函数
+    pybind11::object operator[](const QString& colName) const;
 
 public:
     // 获取dtype
@@ -45,8 +48,11 @@ public:
     // Series.name
     QString name() const;
     // Series.iat
-    QVariant iat(std::size_t i) const;
-    bool iat(std::size_t r, const QVariant& v);
+    pybind11::object iat(std::size_t i) const;
+    void iat(std::size_t r, const pybind11::object& v);
+    //
+    QVariant value(std::size_t i) const;
+    bool setValue(std::size_t i, const QVariant& v);
     // 类型判断
     bool isNumeric() const;
     bool isDateTime() const;
@@ -122,13 +128,33 @@ void DAPySeries::castTo(VectLikeIte begin) const
 
         // 处理日期时间类型 (C++17兼容的方式)
         if (dtype_str.find("datetime64") == 0) {
-            // 转成 int64 (nanoseconds)
-            values = series.attr("astype")("int64").attr("values");
+            // 检查是否有时区信息
+            bool has_timezone = false;
+            try {
+                pybind11::object dt_accessor = series.attr("dt");
+                pybind11::object tz          = dt_accessor.attr("tz");
+                has_timezone                 = !tz.is_none();
+            } catch (...) {
+                has_timezone = false;
+            }
 
-            // 将纳秒转换为ms（Qwt需要的格式）
-            auto buf = values.cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
+            if (has_timezone) {
+                // 有时区信息：先转换为UTC，再处理
+                pybind11::object dt_accessor = series.attr("dt");
+                pybind11::object utc_series  = dt_accessor.attr("tz_convert")("UTC");
+                values                       = utc_series.attr("astype")("int64").attr("values");
+            } else {
+                // 没有时区信息：直接转换
+                values = series.attr("astype")("int64").attr("values");
+            }
+
+            // 转换时间戳到本地local
+            auto buf =
+                values.cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
+
             std::transform(buf.data(), buf.data() + buf.size(), begin, [](int64_t ns) -> double {
-                return static_cast< double >(ns) / 1e6;  // 纳秒转ms
+                qint64 utcMs = ns / 1'000'000;
+                return utcMs;
             });
             return;
         }
@@ -136,9 +162,13 @@ void DAPySeries::castTo(VectLikeIte begin) const
         else if (dtype_str.find("timedelta64") == 0) {
             // 转成 int64 (nanoseconds)
             values = series.attr("astype")("int64").attr("values");
-
+            //            pybind11::object ts_local = series.attr("dt")
+            //                                            .attr("tz_localize")(pybind11::none())  // 如果 naive，先声明为“本地”
+            //                                            .attr("tz_convert")(pybind11::str("local"));  // 有 tz 的也转到本地
+            //            values = ts_local.attr("astype")("int64").attr("values");
             // 将纳秒转换为秒
-            auto buf = values.cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
+            auto buf =
+                values.cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
             std::transform(buf.data(), buf.data() + buf.size(), begin, [](int64_t ns) -> double {
                 return static_cast< double >(ns) / 1e9;  // 纳秒转秒
             });

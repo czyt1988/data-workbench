@@ -41,6 +41,16 @@ void DAAbstractArchiveTask::setDescribe(const QString& describe)
 	mDescribe = describe;
 }
 
+void DAAbstractArchiveTask::setLoadedCallBack(const FpLoadedCallBack& callBack)
+{
+	mLoadedCallBack = callBack;
+}
+
+DAAbstractArchiveTask::FpLoadedCallBack DAAbstractArchiveTask::getLoadedCallBack() const
+{
+	return mLoadedCallBack;
+}
+
 }  // end DA
 DA_AUTO_REGISTER_META_TYPE(DA::DAAbstractArchiveTask::Mode)
 DA_AUTO_REGISTER_META_TYPE(std::shared_ptr< DA::DAAbstractArchiveTask >)

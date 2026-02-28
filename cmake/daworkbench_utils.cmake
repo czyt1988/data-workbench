@@ -107,6 +107,13 @@ macro(damacro_set_lib_properties _target_name _version_str)
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
     )
+    if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
+        # 这里是为 MSVC 编译器设置的选项
+        target_link_options(${_target_name} PRIVATE /VERBOSE)
+        # 或者设置其他 MSVC 特定的编译或链接选项
+    else()
+        # 这里是为非 MSVC 编译器设置的选项（如果有的话）
+    endif()
 endmacro(damacro_set_lib_properties)
 
 macro(damacro_set_app_properties _target_name _version_str)
@@ -158,48 +165,12 @@ macro(damacro_lib_install_no_rc)
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${DA_PROJECT_NAME}/DAShared>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../DAShared>
     )
-    # DALibConfig.cmake.in中，会让此变量和“${PACKAGE_PREFIX_DIR}/”进行拼接，也就是${PACKAGE_PREFIX_DIR}/@DA_LIB_INCLUDE_INSTALL_DIR@
-    # PACKAGE_PREFIX_DIR = ${CMAKE_CURRENT_LIST_DIR}/../..
-    # 最终变为${CMAKE_CURRENT_LIST_DIR}/../../include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
-    set(DA_LIB_INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/${DA_PROJECT_NAME}/${DA_LIB_NAME})
-
-    include(CMakePackageConfigHelpers)
-    # Generate library version info which will generate xxxConfigVersion.cmake,
-    # the ${PACKAGE_VERSION} is the version defined in project()
-    write_basic_package_version_file(
-        ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}ConfigVersion.cmake
-        VERSION ${DA_LIB_VERSION}
-        COMPATIBILITY SameMajorVersion
-    )
-    configure_package_config_file(
-      "${CMAKE_CURRENT_SOURCE_DIR}/../DALibConfig.cmake.in"
-      "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
-      INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${DA_PROJECT_NAME}
-      PATH_VARS DA_LIB_INCLUDE_INSTALL_DIR
-    )
-    # 声明导出target的名称
-    install(TARGETS ${DA_LIB_NAME}
-        EXPORT ${DA_LIB_NAME}Targets
-        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${DA_PROJECT_NAME}/${DA_LIB_NAME}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    # 导出到统一的目标
+    install(TARGETS ${DA_LIB_NAME} # 库的名字
+        EXPORT ${DA_TARGET_NAME}   # DAWorkbenchTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    )
-    install(EXPORT "${DA_LIB_NAME}Targets"
-        FILE ${DA_LIB_NAME}Targets.cmake # 导出的文件基准名。
-        NAMESPACE ${DA_PROJECT_NAME}::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${DA_PROJECT_NAME}
-    )
-
-    install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Config.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}ConfigVersion.cmake"
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${DA_PROJECT_NAME}
-    )
-
-    export(EXPORT ${DA_LIB_NAME}Targets
-       FILE ${CMAKE_CURRENT_BINARY_DIR}/${DA_LIB_NAME}Targets.cmake
-       NAMESPACE ${DA_PROJECT_NAME}::
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
     message(STATUS "${DA_LIB_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 endmacro(damacro_lib_install_no_rc)

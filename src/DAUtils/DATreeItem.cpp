@@ -531,7 +531,7 @@ QDebug& print_item_and_child_items(QDebug& dbg, const DATreeItem& item, int inde
 	print_one_item(dbg, item, str);
 
 	QList< DA::DATreeItem* > cis = item.getChildItems();
-	for (const DA::DATreeItem* i : qAsConst(cis)) {
+	for (const DA::DATreeItem* i : std::as_const(cis)) {
 		print_item_and_child_items(dbg, *i, indent + 2);
 	}
 	return (dbg);
@@ -548,7 +548,7 @@ QDebug& operator<<(QDebug& dbg, const DATreeItem& item)
 	dbg = DA::print_one_item(dbg, item, "");
 
 	QList< DATreeItem* > cis = item.getChildItems();
-	for (const DATreeItem* i : qAsConst(cis)) {
+	for (const DATreeItem* i : std::as_const(cis)) {
 		dbg = print_item_and_child_items(dbg, *i, 2);
 	}
 	return (dbg);

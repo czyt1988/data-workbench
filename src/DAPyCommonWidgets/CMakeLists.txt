@@ -9,21 +9,8 @@ damacro_lib_setting(
     "Common Widgets For Python | https://github.com/czyt1988"
     0
     0
-    1
+    2
 )
-
-########################################################
-# Qt
-########################################################
-set(DA_MIN_QT_VERSION 5.14)
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
-    Core
-    Gui
-    Widgets
-    REQUIRED
-)
-
 
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
@@ -47,7 +34,7 @@ add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 ########################################################
 # 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################
-target_link_libraries(${DA_LIB_NAME} PRIVATE
+target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
@@ -61,11 +48,6 @@ damacro_import_Python(${DA_LIB_NAME})
 damacro_import_pybind11(${DA_LIB_NAME})
 
 # DAPyBindQt
-# 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到DAWorkbench
-find_package(${DA_PROJECT_NAME} COMPONENTS DAPyBindQt)
-if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAPyBindQt")
-endif()
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAPyBindQt
 )

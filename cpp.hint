@@ -2,3 +2,4 @@
 // 如函数和宏的名称。
 // 有关详细信息，请参见 https://go.microsoft.com/fwlink/?linkid=865984
 #define DAXMLFILEINTERFACE_TYPE_MAKE_H(pod_type) static QDomElement makeElement(const pod_type& v, const QString& tagName, QDomDocument* doc); static bool loadElement(pod_type& p, const QDomElement* ele);
+#define QWT_PIMPL_CONSTRUCT m_data(std::make_unique< PrivateData >(this))

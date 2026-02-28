@@ -30,7 +30,9 @@
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
 #include "DAChartItemsManager.h"
+#include "DAChartAxisRangeBinder.h"
 // qwt
+#include "qwt_figure.h"
 #include "qwt_plot.h"
 #include "qwt_plot_canvas.h"
 #include "qwt_scale_draw.h"
@@ -243,7 +245,7 @@ void DAXmlHelper::PrivateData::saveWorkflowFromClipBoard(const QList< DAGraphics
     }
     //! 2.把工作流节点提取出来
     QList< DAAbstractNode::SharedPointer > nodes;
-    for (DAAbstractNodeGraphicsItem* i : qAsConst(nodeItems)) {
+    for (DAAbstractNodeGraphicsItem* i : std::as_const(nodeItems)) {
         auto n = i->node();
         if (n) {
             nodes.append(n);
@@ -273,7 +275,7 @@ void DAXmlHelper::PrivateData::saveWorkflowFromClipBoard(const QList< DAGraphics
     workflowEle.appendChild(nodesEle);
     //! 6.保存链接
     QDomElement linksEle = doc.createElement(QStringLiteral("links"));
-    for (auto li : qAsConst(linkItems)) {
+    for (auto li : std::as_const(linkItems)) {
         QDomElement linkEle = makeNodeLinkElement(li, QStringLiteral("link"), doc);
         linksEle.appendChild(linkEle);
     }
@@ -716,7 +718,7 @@ void DAXmlHelper::PrivateData::saveNodeInputOutput(const DAAbstractNode::SharedP
 {
     QDomElement inputsEle      = doc.createElement("inputs");
     QList< QString > inputKeys = node->getInputKeys();
-    for (const auto& key : qAsConst(inputKeys)) {
+    for (const auto& key : std::as_const(inputKeys)) {
         // 添加input
         QDomElement inputEle = doc.createElement("li");
         inputEle.setAttribute("name", key);
@@ -730,7 +732,7 @@ void DAXmlHelper::PrivateData::saveNodeInputOutput(const DAAbstractNode::SharedP
 
     QDomElement outputsEle      = doc.createElement("outputs");
     QList< QString > outputKeys = node->getOutputKeys();
-    for (const auto& key : qAsConst(outputKeys)) {
+    for (const auto& key : std::as_const(outputKeys)) {
         // 添加output
         QDomElement outputEle = doc.createElement("li");
         outputEle.setAttribute("name", key);
@@ -873,7 +875,7 @@ void DAXmlHelper::PrivateData::saveNodePropertys(const DAAbstractNode::SharedPoi
     savePropertys(props, doc, nodeEle);
     //    QDomElement propertysEle      = doc.createElement("props");
     //	QList< QString > propertyKeys = node->getPropertyKeys();
-    //	for (const QString& k : qAsConst(propertyKeys)) {
+    //	for (const QString& k : std::as_const(propertyKeys)) {
     //		QVariant v = node->getProperty(k);
     //		if (!v.isValid()) {
     //			continue;
@@ -990,7 +992,7 @@ void DAXmlHelper::PrivateData::saveNodeLinks(const DAWorkFlow* workflow, QDomDoc
     QSet< DAAbstractNodeLinkGraphicsItem* > itemSet;
     for (const auto& node : nodes) {
         auto links = node->graphicsItem()->getLinkItems();
-        for (auto link : qAsConst(links)) {
+        for (auto link : std::as_const(links)) {
             itemSet.insert(link);
         }
     }
@@ -1278,7 +1280,7 @@ QDomElement DAXmlHelper::PrivateData::makeCommonItemsElement(const QList< QGraph
 {
     QDomElement itemsElement = doc.createElement(tagName);
     // 背景不作为items保存
-    for (const QGraphicsItem* i : qAsConst(items)) {
+    for (const QGraphicsItem* i : std::as_const(items)) {
         if (isItemHaveDeal(i)) {
             // 已经保存过的不进行保存
             continue;
@@ -1933,7 +1935,13 @@ bool DAXmlHelper::loadElement(DAChartOperateWidget* chartOpt,
 QDomElement
 DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& tagName, QDomDocument* doc, DAChartItemsManager* itemsMgr)
 {
+    QwtFigure* qwtFig = fig->figure();
+    if (!qwtFig) {
+        return QDomElement();
+    }
     QDomElement eleFig = doc->createElement(tagName);
+    eleFig.setAttribute(QStringLiteral("id"), fig->getFigureId());
+    eleFig.setAttribute(QStringLiteral("pickgroup"), fig->isDataPickerGroupEnabled());
     // background
     QDomElement eleBKBrush = DAXMLFileInterface::makeElement(fig->getBackgroundColor(), QStringLiteral("background"), doc);
     eleFig.appendChild(eleBKBrush);
@@ -1956,6 +1964,36 @@ DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& tagName, QDom
         chartsEle.appendChild(chartEle);
     }
     eleFig.appendChild(chartsEle);
+    // 记录绑定关系
+    const QList< DAChartAxisRangeBinder* > axisRangeBinders = fig->getBindAxisRangeInfos();
+    if (axisRangeBinders.size() > 0) {
+        QDomElement axisRangeBindersEle = doc->createElement(QStringLiteral("axisRangeBinders"));
+        for (DAChartAxisRangeBinder* b : axisRangeBinders) {
+            QDomElement axisRangeBinderEle = makeElement(b, QStringLiteral("bind"), doc);
+            axisRangeBindersEle.appendChild(axisRangeBinderEle);
+        }
+        eleFig.appendChild(axisRangeBindersEle);
+    }
+    // 记录轴对齐
+    const int alimentCnt = qwtFig->axisAligmentCount();
+    if (alimentCnt > 0) {
+        QDomElement axisAlimentEle = doc->createElement(QStringLiteral("axisAliment"));
+        for (int i = 0; i < alimentCnt; ++i) {
+            QPair< QList< QwtPlot* >, int > alimentInfo = qwtFig->axisAligmentInfo(i);
+            if (alimentInfo.first.size() <= 0) {
+                continue;
+            }
+            QDomElement alimentInfoEle = doc->createElement(QStringLiteral("ali"));
+            alimentInfoEle.setAttribute("axisid", alimentInfo.second);
+            for (QwtPlot* p : std::as_const(alimentInfo.first)) {
+                QDomElement plotEle = doc->createElement(QStringLiteral("p"));
+                plotEle.setAttribute("id", p->plotId());
+                alimentInfoEle.appendChild(plotEle);
+            }
+            axisAlimentEle.appendChild(alimentInfoEle);
+        }
+        eleFig.appendChild(axisAlimentEle);
+    }
     return eleFig;
 }
 
@@ -1964,6 +2002,17 @@ bool DAXmlHelper::loadElement(DAFigureWidget* fig,
                               const DAChartItemsManager* itemsMgr,
                               const QVersionNumber& v)
 {
+    Q_UNUSED(v);
+    QwtFigure* qwtFig = fig->figure();
+    if (!qwtFig) {
+        return false;
+    }
+    QString id = tag->attribute(QStringLiteral("id"));
+    if (!id.isEmpty()) {
+        fig->setFigureId(id);
+    }
+    bool isPickGroupEnabled = tag->attribute(QStringLiteral("pickgroup")).toInt();
+
     auto eleBKBrush = tag->firstChildElement(QStringLiteral("background"));
     // background
     QBrush brush;
@@ -2002,6 +2051,50 @@ bool DAXmlHelper::loadElement(DAFigureWidget* fig,
         fig->addChart(chart.get(), pos);
         chart.release();
     }
+    // 恢复绑定关系
+    QDomElement axisRangeBindersEle = tag->firstChildElement(QStringLiteral("axisRangeBinders"));
+    auto axisRangeBindersNodes      = axisRangeBindersEle.childNodes();
+    for (int i = 0; i < axisRangeBindersNodes.size(); ++i) {
+        QDomElement axisRangeEle = axisRangeBindersNodes.at(i).toElement();
+        if (axisRangeEle.isNull()) {
+            continue;
+        }
+        loadChartAxisRangeElement(fig, &axisRangeEle, v);
+    }
+    // 设置对齐信息
+    QDomElement axisAlimentEle = tag->firstChildElement(QStringLiteral("axisAliment"));
+    if (!axisAlimentEle.isNull()) {
+        // 对齐信息
+        auto alimentInfoNodes = axisAlimentEle.childNodes();
+        for (int i = 0; i < alimentInfoNodes.size(); ++i) {
+            QDomElement alimentInfoEle = alimentInfoNodes.at(i).toElement();
+            if (alimentInfoEle.isNull()) {
+                continue;
+            }
+            int axisid = alimentInfoEle.attribute("axisid", "4").toInt();
+            QList< QwtPlot* > plots;
+            if (!QwtAxis::isValid(axisid)) {
+                continue;
+            }
+            auto plotNodes = alimentInfoEle.childNodes();
+            for (int j = 0; j < plotNodes.size(); ++j) {
+                QDomElement plotEle = plotNodes.at(j).toElement();
+                if (plotEle.isNull()) {
+                    continue;
+                }
+                QString id    = plotEle.attribute(QStringLiteral("id"));
+                QwtPlot* plot = fig->findPlotById(id);
+                if (plot) {
+                    plots.push_back(plot);
+                }
+            }
+            if (plots.size() > 0) {
+                qwtFig->addAxisAlignment(plots, axisid);
+            }
+        }
+    }
+    // 属性在chartitem加载完成后设置
+    fig->setDataPickerGroupEnabled(isPickGroupEnabled);
     return true;
 }
 
@@ -2019,16 +2112,15 @@ QDomElement DAXmlHelper::makeElement(const DAChartWidget* chart,
                                      DAChartItemsManager* itemsMgr)
 {
     QDomElement chartEle = doc->createElement(tagName);
+    // 记录id
+    chartEle.setAttribute(QStringLiteral("id"), chart->plotId());
     //!====================
-    //! plotLayout 不需要保存信息，根据窗口自动调整
+    //!  property
     //!====================
-    /*
-    const QwtPlotLayout* layout = chart->plotLayout();
-    if (layout) {
-        QDomElement layoutEle = makeElement(layout, QStringLiteral("layout"), doc);
-        chartEle.appendChild(layoutEle);
-    }
-    */
+    QDomElement propertyEle = doc->createElement(QStringLiteral("property"));
+    propertyEle.setAttribute(QStringLiteral("ypicker"), chart->isYValuePickingEnabled());
+    propertyEle.setAttribute(QStringLiteral("xypicker"), chart->isXYValuePickingEnabled());
+    chartEle.appendChild(propertyEle);
 
     //!====================
     //! title
@@ -2084,6 +2176,7 @@ QDomElement DAXmlHelper::makeElement(const DAChartWidget* chart,
         itemsEle.appendChild(itemEle);
     }
     chartEle.appendChild(itemsEle);
+
     return chartEle;
 }
 
@@ -2092,15 +2185,22 @@ bool DAXmlHelper::loadElement(DAChartWidget* chart,
                               const DAChartItemsManager* itemsMgr,
                               const QVersionNumber& v)
 {
-    // plotLayout
-    QDomElement layoutEle = tag->firstChildElement(QStringLiteral("layout"));
-    if (!layoutEle.isNull()) {
-        QwtPlotLayout* layout = chart->plotLayout();
-        if (!layout) {
-            layout = new QwtPlotLayout();
-            chart->setPlotLayout(layout);
+    Q_UNUSED(v);
+    QString id = tag->attribute(QStringLiteral("id"), QString());
+    if (!id.isEmpty()) {
+        chart->setPlotId(id);
+    }
+    // property
+    QDomElement propertyEle = tag->firstChildElement(QStringLiteral("property"));
+    if (!propertyEle.isNull()) {
+        bool isYPicker  = propertyEle.attribute(QStringLiteral("ypicker")).toInt();
+        bool isXYPicker = propertyEle.attribute(QStringLiteral("xypicker")).toInt();
+        if (isYPicker) {
+            chart->enableYValuePicking(true);
         }
-        loadElement(layout, &layoutEle);
+        if (isXYPicker) {
+            chart->enableXYValuePicking(true);
+        }
     }
     // title
     QDomElement titleEle = tag->firstChildElement(QStringLiteral("title"));
@@ -2162,6 +2262,33 @@ bool DAXmlHelper::loadElement(DAChartWidget* chart,
     chart->autoRefresh();
     chart->setAutoReplot(oldreplot);
     return true;
+}
+
+QDomElement DAXmlHelper::makeElement(const DAChartAxisRangeBinder* axisBinder, const QString& tagName, QDomDocument* doc)
+{
+    if (!axisBinder->isValid()) {
+        // 异常
+        return QDomElement();
+    }
+    QDomElement binderEle = doc->createElement(tagName);
+    binderEle.setAttribute(QStringLiteral("source"), axisBinder->getSourcePlot()->plotId());
+    binderEle.setAttribute(QStringLiteral("sourceAxis"), axisBinder->getSourceAxis());
+    binderEle.setAttribute(QStringLiteral("follower"), axisBinder->getFollowerPlot()->plotId());
+    binderEle.setAttribute(QStringLiteral("followerAxis"), axisBinder->getFollowerAxis());
+    return binderEle;
+}
+
+bool DAXmlHelper::loadChartAxisRangeElement(DAFigureWidget* fig, const QDomElement* tag, const QVersionNumber& v)
+{
+    Q_UNUSED(v);
+    QString sourcePlotId   = tag->attribute(QStringLiteral("source"));
+    int sourceAxisId       = tag->attribute(QStringLiteral("sourceAxis"), "4").toInt();  // 4是无效
+    QString followerPlotId = tag->attribute(QStringLiteral("follower"));
+    int followerAxisId     = tag->attribute(QStringLiteral("followerAxis"), "4").toInt();
+    // 找到QwtPlot
+    QwtPlot* sourcePlot   = fig->findPlotById(sourcePlotId);
+    QwtPlot* followerPlot = fig->findPlotById(followerPlotId);
+    return fig->bindAxisRange(sourcePlot, sourceAxisId, followerPlot, followerAxisId);
 }
 
 QDomElement

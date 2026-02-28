@@ -17,7 +17,68 @@ class QMimeData;
 
 namespace DA
 {
+/**
+ * @brief 针对DAData的dataframe的item
+ */
+class DAGUI_API DAStandardItemDataDataframe : public QStandardItem
+{
+public:
+    enum
+    {
+        Type = QStandardItem::UserType + 100  // 任意 >= UserType 的值
+    };
+    int type() const override
+    {
+        return Type;
+    }
+    explicit DAStandardItemDataDataframe(const DAData& data);
+    ~DAStandardItemDataDataframe();
+    QVariant data(int role = Qt::UserRole + 1) const override;
+    //    virtual void setData(const QVariant& value, int role = Qt::UserRole + 1) override;
+    // 获取dataframe
+    DAData getDataframe() const;
+    //
+    static bool isDataframeItem(QStandardItem* item);
 
+private:
+    DAData m_dataframe;
+};
+
+/**
+ * @brief 针对DAData的dataframe下的series的item
+ */
+class DAGUI_API DAStandardItemDataDataframeSeries : public QStandardItem
+{
+public:
+    enum
+    {
+        Type = QStandardItem::UserType + 101  // 任意 >= UserType 的值
+    };
+    int type() const override
+    {
+        return Type;
+    }
+    explicit DAStandardItemDataDataframeSeries(const DAData& data, const QString& seriesName);
+    ~DAStandardItemDataDataframeSeries();
+    QVariant data(int role = Qt::UserRole + 1) const override;
+    // 获取dataframe
+    DAData getDataframe() const;
+    // 获取series
+    DAPySeries getSeries() const;
+    // series的名字
+    void setSeriesName(const QString& name);
+    QString getSeriesName() const;
+    // 判断是否是series
+    static bool isDataframeSeriesItem(QStandardItem* item);
+    // 获取描述文字
+    static QString makeDescribeText(const DAData& data, const QString& seriesName);
+    // 获取图标
+    static QIcon seriesTypeToIcon(const DAData& data, const QString& seriesName);
+
+private:
+    DAData m_dataframe;
+    QString m_name;
+};
 
 /**
  * @brief 数据树模型，用于展示DADataManager中的数据
@@ -43,7 +104,7 @@ public:
     enum ColumnStyle
     {
         ColumnWithNameOnly = 1,  ///< 只有一列名字，默认
-        ColumnWithNameProperty   ///< 名称和属性两列
+        ColumnWithNameProperty   ///< 名称和属性两列（TODO）
     };
 
     /**
@@ -75,46 +136,45 @@ public:
     ColumnStyle getColumnStyle() const;
 
     // 数据查找
-    QStandardItem* findItemByData(const DAData& data) const;
-    QStandardItem* findItemByDataId(DAData::IdType id) const;
+    QStandardItem* findFirstDataframeItemByData(const DAData& data) const;
 
     // 数据转换
-    DAData itemToData(QStandardItem* item) const;
-    bool isDataframeItem(QStandardItem* item) const;
-    bool isDataframeSeriesItem(QStandardItem* item) const;
+    static DAData itemToData(QStandardItem* item);
 
     // 获取所有数据名称
-    QStringList getAllDataNames() const;
+    QStringList getAllDataframeNames() const;
 
     // 模型操作
     void clear();
 
-    // 设置是否可编辑，可编辑则可以改变名字
-    void setEnableEdit(bool on);
-    bool isEnableEdit() const;
-
     // 重写基类方法
+    /**
     virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
     virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+    **/
+
+    // drag
+    virtual Qt::DropActions supportedDragActions() const override;
+    QStringList mimeTypes() const override;
+    virtual QMimeData* mimeData(const QModelIndexList& indexs) const override;
+
+    //
+    static bool isDataframeItem(QStandardItem* item);
+    static bool isDataframeSeriesItem(QStandardItem* item);
+    // 创建数据项
+    static QStandardItem* createDataItem(const DAData& data);
+    // 创建DataFrame的Series项
+    static QStandardItem* createDataFrameSeriesItem(const QString& seriesName, const DAData& dataframeData);
 
 protected:
-    // 创建数据项
-    QStandardItem* createDataItem(const DAData& data);
-    // 创建DataFrame的Series项
-    QStandardItem* createDataFrameSeriesItem(const QString& seriesName, DAData::IdType dataframeId);
-
     // DataFrame展开处理
     void updateDataFrameExpansion();
     void updateDataFrameItemExpansion(QStandardItem* dataframeItem, bool expanded);
     // 创建tooltip
-    QString makeDataToolTip(const DAData& data);
 
 private:
     void initialize();
     void setupConnections();
-    void rebuildDataMap();
-    void clearDataMap();
 
     // 数据项管理
     void addDataItem(const DAData& data);
@@ -132,7 +192,6 @@ private slots:
 bool standardItemIterator(QStandardItem* startItem,
                           std::function< bool(QStandardItem*, QStandardItem*) > fun,
                           bool firstColumnOnly = false);
-
 
 }
 

@@ -105,7 +105,6 @@ void DAChartAxisSetWidget::onAxisLabelRotationChanged(double v)
     }
 }
 
-
 void DAChartAxisSetWidget::onAxisMarginValueChanged(int v)
 {
     if (m_plot) {
@@ -125,6 +124,7 @@ void DAChartAxisSetWidget::onAxisMaxScaleChanged(double v)
             return;
         }
         m_plot->setAxisScale(m_axisID, inv.minValue(), v);
+        m_plot->replot();
     }
 }
 
@@ -140,6 +140,7 @@ void DAChartAxisSetWidget::onAxisMinScaleChanged(double v)
             return;
         }
         m_plot->setAxisScale(m_axisID, v, inv.maxValue());
+        m_plot->replot();
     }
 }
 

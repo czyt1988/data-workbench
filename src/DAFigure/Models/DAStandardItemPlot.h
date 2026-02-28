@@ -2,6 +2,7 @@
 #define DASTANDARDITEMPLOT_H
 #include "DAFigureAPI.h"
 #include <QStandardItem>
+#include <QPointer>
 class QwtPlot;
 namespace DA
 {
@@ -45,7 +46,7 @@ public:
 
     bool isValid() const
     {
-        return (m_plot);
+        return (m_plot != nullptr);
     }
 
 private:

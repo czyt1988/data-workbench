@@ -1,6 +1,6 @@
 ﻿#include "DADialogInsertNewColumn.h"
 #include "ui_DADialogInsertNewColumn.h"
-#include "DAPybind11QtTypeCast.h"
+
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
 //===================================================
@@ -85,13 +85,107 @@ QVariant DADialogInsertNewColumn::fromString(const QString& str, const DAPyDType
     if (str.isEmpty()) {
         return QVariant();
     }
-    return DA::PY::toVariant(str, dt);
+    if (dt.isNone()) {
+        bool isok = false;
+        {
+            int v = str.toInt(&isok);
+            if (isok) {
+                return v;
+            }
+        }
+        {
+            double v = str.toDouble(&isok);
+            if (isok) {
+                return v;
+            }
+        }
+        return str;
+    }
+    switch (dt.char_()) {
+    case '?': {
+        if (str.toLower() == "false" || str == "0") {
+            return false;
+        } else {
+            return true;
+        }
+        break;
+    }
+    case 'b':
+    case 'h': {
+        bool isok = false;
+        short v   = str.toShort(&isok);
+        if (isok) {
+            return v;
+        }
+    } break;
+    case 'l': {
+        bool isok = false;
+        int v     = str.toInt(&isok);
+        if (isok) {
+            return v;
+        }
+    } break;
+    case 'q': {
+        bool isok   = false;
+        long long v = str.toLongLong(&isok);
+        if (isok) {
+            return v;
+        }
+    } break;
+    case 'B':
+    case 'H': {
+        bool isok        = false;
+        unsigned short v = str.toUShort(&isok);
+        if (isok) {
+            return v;
+        }
+    } break;
+    case 'L': {
+        bool isok      = false;
+        unsigned int v = str.toUInt(&isok);
+        if (isok) {
+            return v;
+        }
+    } break;
+    case 'Q': {
+        bool isok            = false;
+        unsigned long long v = str.toULongLong(&isok);
+        if (isok) {
+            return v;
+        }
+    } break;
+    case 'e':
+    case 'f': {
+        bool isok = false;
+        float v   = str.toFloat(&isok);
+        if (isok) {
+            return v;
+        }
+    } break;
+    case 'd': {
+        bool isok = false;
+        double v  = str.toDouble(&isok);
+        if (isok) {
+            return v;
+        }
+    } break;
+    case 'M': {
+        // 日期
+        QDateTime datetime = QDateTime::fromString(str, "yyyy-MM-dd HH:mm:ss");
+        if (datetime.isValid()) {
+            return datetime;
+        }
+    } break;
+    default:
+        break;
+    }
+    return str;
 }
 
 void DADialogInsertNewColumn::onCurrentDtypeChanged(const DAPyDType& dt)
 {
     if (!dt.isNumeral() || !dt.isDatetime()) {
-        //如果不是数字也不是日期，range不允许设置
+        // 如果不是数字也不是日期，range不允许设置
         if (ui->radioButtonRange->isChecked()) {
             ui->radioButtonFillInSame->setChecked(true);
         }

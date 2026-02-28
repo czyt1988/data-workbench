@@ -2,6 +2,8 @@
 #define DAPROJECTINTERFACE_H
 #include <QObject>
 #include <QVersionNumber>
+#include <functional>
+#include <QByteArray>
 #include "DAInterfaceAPI.h"
 #include "DABaseInterface.h"
 namespace DA
@@ -83,7 +85,8 @@ public Q_SLOTS:
     virtual void clear();
     // 设置为dirty,会发射becomeDirty
     void setModified(bool on = true);
-
+    // 请求保存,会弹出保存对话框让用户选择保存路径保存
+    virtual bool requestSave() = 0;
 Q_SIGNALS:
     /**
      * @brief 工程开始保存

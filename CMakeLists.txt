@@ -13,7 +13,7 @@ cmake_minimum_required(VERSION 3.12)
 ########################################################
 set(DA_VERSION_MAJOR 0)
 set(DA_VERSION_MINOR 0)
-set(DA_VERSION_PATCH 2)
+set(DA_VERSION_PATCH 3)
 set(DA_VERSION "${DA_VERSION_MAJOR}.${DA_VERSION_MINOR}.${DA_VERSION_PATCH}")
 string(TIMESTAMP DA_COMPILE_DATETIME %y%m%d)
 string(TIMESTAMP DA_COMPILE_DATETIME_YEAR %y)
@@ -24,6 +24,8 @@ message(STATUS "DA Version is ${DA_VERSION}")
 # 定义工程
 ########################################################
 set(DA_PROJECT_NAME "DAWorkbench")
+# 这是所有DAWorkbench模块的总targets，所有模块都向这个target导出
+set(DA_TARGET_NAME "DAWorkbenchTargets")
 
 project(${DA_PROJECT_NAME}
         VERSION ${DA_VERSION}
@@ -136,8 +138,34 @@ endif()
 ########################################################
 set(DA_MIN_QT_VERSION 5.14)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-
-
+find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
+    Core
+    Gui
+    Widgets
+    Svg
+    Xml
+    PrintSupport
+    Concurrent
+    OpenGL
+    REQUIRED
+)
+if(${QT_VERSION_MAJOR} EQUAL 6)
+    find_package(Qt${QT_VERSION_MAJOR} COMPONENTS
+        OpenGLWidgets
+        Core5Compat
+        REQUIRED
+    )
+endif()
+if(WIN32)
+    find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
+        AxContainer
+        REQUIRED
+    )
+endif()
+if(Qt5_POSITION_INDEPENDENT_CODE)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
+find_package(OpenGL COMPONENTS OpenGL REQUIRED)
 ########################################################
 # 默认路径设置
 ########################################################
@@ -172,59 +200,7 @@ message(STATUS "tsl-ordered-map_DIR=${tsl-ordered-map_DIR}")
 set(qt${QT_VERSION_MAJOR}advanceddocking_DIR  ${DA_INSTALL_LIB_CMAKE_PATH}/qt${QT_VERSION_MAJOR}advanceddocking)
 message(STATUS "qt${QT_VERSION_MAJOR}advanceddocking_DIR=${qt${QT_VERSION_MAJOR}advanceddocking_DIR}")
 
-##################################
-# 初步安装 install 通用内容
-##################################
-message(STATUS "CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}")
-message(STATUS "${DA_PROJECT_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-    VERSION ${DA_VERSION}
-    COMPATIBILITY AnyNewerVersion
-)
-configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}Config.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-    INSTALL_DESTINATION lib/cmake/${DA_PROJECT_NAME}
-    NO_CHECK_REQUIRED_COMPONENTS_MACRO
-)
-
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-    DESTINATION lib/cmake/${DA_PROJECT_NAME}
-)
-
-
-########################################################
-# 自动化生成配置头文件
-########################################################
-if(DA_AUTO_UPDATE_CONFIG_INFO)
-    configure_file (
-      "${CMAKE_CURRENT_LIST_DIR}/src/DAConfigs.h.in"
-      "${CMAKE_CURRENT_LIST_DIR}/src/DAConfigs.h"
-    )
-endif()
-#DAGlobal.h
-install(FILES
-    ${CMAKE_CURRENT_LIST_DIR}/src/DAGlobals.h
-    DESTINATION include/${DA_PROJECT_NAME}
-    COMPONENT headers
-)
-#DAConfigs.h
-install(FILES
-        ${CMAKE_CURRENT_LIST_DIR}/src/DAConfigs.h
-        DESTINATION include/${DA_PROJECT_NAME}
-        COMPONENT headers
- )
-#DAShared
-# install(DIRECTORY
-#         ${CMAKE_CURRENT_LIST_DIR}/src/DAShared
-#         DESTINATION include/${DA_PROJECT_NAME}
-#         COMPONENT headers
-#  )
 ########################################################
 # 添加预定义宏NOMINMAX,windows系统会定义max和min宏，这个宏和std::max冲突,因此在高版本的c++，应该取消minmax宏
 ########################################################
@@ -244,9 +220,43 @@ if(DA_BUILD_PLUGINS)
 endif()
 
 ##################################
-# 最终安装 install
+# 安装 install
 ##################################
+include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/${DA_PROJECT_NAME}ConfigVersion.cmake"
+    VERSION ${DA_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/DAWorkbenchConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/${DA_PROJECT_NAME}Config.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${DA_PROJECT_NAME}
+)
+#Unified export of all module targets
+install(EXPORT ${DA_TARGET_NAME}
+    FILE ${DA_TARGET_NAME}.cmake
+    NAMESPACE ${DA_PROJECT_NAME}::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${DA_PROJECT_NAME}
+)
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/${DA_PROJECT_NAME}ConfigVersion.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${DA_PROJECT_NAME}Config.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${DA_PROJECT_NAME}
+)
+#DAGlobal.h
+install(FILES
+    ${CMAKE_CURRENT_LIST_DIR}/src/DAGlobals.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${DA_PROJECT_NAME}
+    COMPONENT headers
+)
+#DAConfigs.h
+install(FILES
+        ${CMAKE_CURRENT_LIST_DIR}/src/DAConfigs.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${DA_PROJECT_NAME}
+        COMPONENT headers
+ )
 if(DA_ENABLE_PYTHON)
     # 把PyScripts文件夹复制过去
     install(DIRECTORY
@@ -278,7 +288,7 @@ endif()
 install(FILES
     "${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_plugin_utils.cmake"
     "${CMAKE_CURRENT_LIST_DIR}/cmake/create_win32_resource_version.cmake"
-    DESTINATION lib/cmake/${DA_PROJECT_NAME}
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${DA_PROJECT_NAME}
 )
 
 

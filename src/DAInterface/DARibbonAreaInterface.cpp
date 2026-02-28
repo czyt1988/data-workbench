@@ -64,7 +64,7 @@ QList< SARibbonCategory* > DARibbonAreaInterface::getCategorys() const
 SARibbonCategory* DARibbonAreaInterface::getCategoryByObjectName(const QString& objname) const
 {
     QList< SARibbonCategory* > categorys = getCategorys();
-    for (SARibbonCategory* c : qAsConst(categorys)) {
+    for (SARibbonCategory* c : std::as_const(categorys)) {
         if (c) {
             if (c->objectName() == objname) {
                 return c;
@@ -83,9 +83,9 @@ SARibbonCategory* DARibbonAreaInterface::getCategoryByObjectName(const QString& 
 SARibbonPanel* DARibbonAreaInterface::getPannelByObjectName(const QString& objname) const
 {
     QList< SARibbonCategory* > categorys = getCategorys();
-    for (SARibbonCategory* category : qAsConst(categorys)) {
+    for (SARibbonCategory* category : std::as_const(categorys)) {
         QList< SARibbonPanel* > pannels = category->panelList();
-        for (SARibbonPanel* pannel : qAsConst(pannels)) {
+        for (SARibbonPanel* pannel : std::as_const(pannels)) {
             if (pannel) {
                 if (pannel->objectName() == objname) {
                     return pannel;

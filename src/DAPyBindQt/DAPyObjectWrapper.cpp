@@ -1,5 +1,5 @@
 ﻿#include "DAPyObjectWrapper.h"
-#include "DAPybind11QtTypeCast.h"
+#include "DAPybind11QtCaster.hpp"
 #include <QDebug>
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -128,7 +128,7 @@ DAPyObjectWrapper DAPyObjectWrapper::deepCopy() const
 
 QVariant DAPyObjectWrapper::toVariant() const
 {
-    return DA::PY::toVariant(object());
+    return object().cast< QVariant >();
 }
 
 bool DAPyObjectWrapper::isinstance(const pybind11::handle& type) const
@@ -257,7 +257,7 @@ QString DAPyObjectWrapper::__name__() const
     }
     try {
         pybind11::str n = _object.attr("__name__");
-        return PY::toString(n);
+        return pybind11::cast< QString >(n);
     } catch (const std::exception& e) {
         dealException(e);
     }
@@ -270,7 +270,7 @@ QString DAPyObjectWrapper::__str__() const
         return QString();
     }
     try {
-        return PY::toString(pybind11::str(_object));
+        return pybind11::cast< QString >(pybind11::str(_object));
     } catch (const std::exception& e) {
         dealException(e);
     }
@@ -283,7 +283,7 @@ QString DAPyObjectWrapper::__repr__() const
         return QString();
     }
     try {
-        return PY::toString(pybind11::repr(_object));
+        return pybind11::cast< QString >(pybind11::repr(_object));
     } catch (const std::exception& e) {
         dealException(e);
     }
@@ -296,7 +296,7 @@ QString DAPyObjectWrapper::typeName() const
         return QString("none");
     }
     try {
-        return PY::toString(pybind11::str(_object.get_type().attr("__name__")));
+        return pybind11::cast< QString >(pybind11::str(_object.get_type().attr("__name__")));
     } catch (const std::exception& e) {
         dealException(e);
     }

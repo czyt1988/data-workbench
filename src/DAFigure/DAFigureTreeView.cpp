@@ -17,6 +17,7 @@ public:
     PrivateData(DAFigureTreeView* p);
     DAFigureTreeModel* figureModel() const;
     QPointer< DAFigureWidget > mFigureWidget;
+    bool isAutoResizeColumnToContents { true };  ///< 是否自动刷新内容
 };
 
 DAFigureTreeView::PrivateData::PrivateData(DAFigureTreeView* p) : q_ptr(p)
@@ -38,7 +39,9 @@ DAFigureTreeView::DAFigureTreeView(QWidget* parent) : QTreeView(parent), DA_PIMP
     // 连接点击/双击
     connect(this, &QTreeView::clicked, this, &DAFigureTreeView::onClicked);
     connect(this, &QTreeView::doubleClicked, this, &DAFigureTreeView::onDoubleClicked);
-    setModel(new DAFigureTreeModel(this));
+    DAFigureTreeModel* m = new DAFigureTreeModel(this);
+    connect(m, &DAFigureTreeModel::chartItemAttached, this, &DAFigureTreeView::onChartItemAttacted);
+    setModel(m);
     // 列宽自适应
     setColumnWidth(0, 200);
     setColumnWidth(1, 40);
@@ -89,6 +92,46 @@ void DAFigureTreeView::refresh()
 DAFigureTreeModel* DAFigureTreeView::getFigureTreeModel() const
 {
     return d_ptr->figureModel();
+}
+
+/**
+ * @brief 是否自动适应内容
+ * @return
+ */
+bool DAFigureTreeView::isAutoResizeColumnToContents() const
+{
+    return d_ptr->isAutoResizeColumnToContents;
+}
+
+/**
+ * @brief 设置自动适应内容
+ * @return
+ */
+void DAFigureTreeView::setAutoResizeColumnToContents(bool on)
+{
+    d_ptr->isAutoResizeColumnToContents = on;
+}
+
+/**
+ * @brief 让树形控件的水平头自适应内容
+ */
+void DAFigureTreeView::resizeHeaderToContents()
+{
+    auto m = model();
+    if (!m) {
+        return;
+    }
+    for (int i = 0, n = m->columnCount(); i < n; ++i) {
+        resizeColumnToContents(i);
+    }
+}
+
+void DAFigureTreeView::onChartItemAttacted(QwtPlotItem* item, bool on)
+{
+    if (on && isAutoResizeColumnToContents()) {
+        // 注意，只有on的时候才触发，否则删除的时候也触发会导致standarditem操作item或者plot导致崩溃
+        resizeHeaderToContents();
+    }
 }
 
 void DAFigureTreeView::onClicked(const QModelIndex& index)

@@ -36,6 +36,15 @@ public:
 
 public:
     static DAPyModule importModule(const char* module_n);
+
+public:
+    // 常用类型的判断
+    static bool isInstanceTime(const pybind11::handle& obj);
+    static bool isInstanceDate(const pybind11::handle& obj);
+    static bool isInstanceDateTime(const pybind11::handle& obj);
+    static bool isInstancePandasDateTime(const pybind11::handle& obj);
+    static bool isInstanceNumpyDateTime(const pybind11::handle& obj);
+    static bool isInstanceTimedelta(const pybind11::handle& obj);
 };
 }  // namespace DA
 #endif  // DAPYMODULE_H

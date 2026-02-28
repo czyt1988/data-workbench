@@ -227,9 +227,11 @@ protected:
 	// 注册工作流
 	void registFactory(const std::shared_ptr< DAAbstractNodeFactory >& fc);
 };
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 DAWORKFLOW_API uint qHash(const std::shared_ptr< DAAbstractNode >& ptr, uint seed = 0) noexcept;
-
+#else
+DAWORKFLOW_API std::size_t qHash(const std::shared_ptr< DAAbstractNode >& ptr, std::size_t seed = 0) noexcept;
+#endif
 }  // end DA
 // 为std::shared_ptr<DA::DAAbstractNode>定义qHash
 

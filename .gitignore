@@ -16,6 +16,8 @@ build*
 # 顶层的临时文件夹不追踪
 tmp
 ~
+.qtcreator
+
 
 #翻译文件暂时不追踪
 *.qm
@@ -90,6 +92,7 @@ Thumbs.db
 .vscode
 .vs
 CMakeSettings.json
+out
 
 # MinGW generated files
 *.Debug

@@ -9,8 +9,7 @@
 #include "DAData.h"
 #include "DADataManager.h"
 #include "DAPythonSignalHandler.h"
-#include "DAPybind11InQt.h"
-#include "DAPybind11QtTypeCast.h"
+#include "DAPybind11QtCaster.hpp"
 #include "DAPyJsonCast.h"
 
 PYBIND11_EMBEDDED_MODULE(da_interface, m)
@@ -65,7 +64,7 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 pybind11::dict pydict;
                 for (const DA::DAData& data : datas) {
                     if (data.isDataFrame()) {
-                        pydict[ DA::PY::toPyStr(data.getName()) ] = data.toPyObject();
+                        pydict[ DA::PY::toPyObject(data.getName()) ] = data.toPyObject();
                     }
                 }
                 return pydict;
@@ -101,7 +100,7 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 pybind11::dict pydict;
                 for (const DA::DAData& data : datas) {
                     if (data.isDataFrame()) {
-                        pydict[ DA::PY::toPyStr(data.getName()) ] = data.toPyObject();
+                        pydict[ DA::PY::toPyObject(data.getName()) ] = data.toPyObject();
                     }
                 }
                 return pydict;
@@ -251,6 +250,13 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             "Execute a generic settings dialog to retrieve configuration information. The input parameter is the JSON "
             "data used to construct the dialog. A cache key can be specified to avoid repeated dialog construction. "
             "This function will launch a modal dialog for users to input parameters.")
+        .def(
+            "getExistingDirectory",
+            [](DA::DAUIInterface& self, const std::string& title, const std::string& dir) -> std::string {
+                return self.getExistingDirectory(QString::fromStdString(title), QString::fromStdString(dir)).toStdString();
+            },
+            pybind11::arg("title") = "",
+            pybind11::arg("dir")   = "")
         .def("setDirty", &DA::DAUIInterface::setDirty, pybind11::arg("on") = true)  //
         ;
 

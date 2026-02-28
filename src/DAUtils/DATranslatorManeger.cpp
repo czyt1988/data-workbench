@@ -28,7 +28,7 @@ DATranslatorManeger::PrivateData::PrivateData(DATranslatorManeger* p) : q_ptr(p)
 
 void DATranslatorManeger::PrivateData::clearAllTranslator()
 {
-	for (QTranslator* t : qAsConst(mTranslatorLists)) {
+	for (QTranslator* t : std::as_const(mTranslatorLists)) {
 		delete t;
 	}
 	mTranslatorLists.clear();
@@ -127,7 +127,7 @@ QList< QTranslator* > DATranslatorManeger::getAvailableTranslators(const QString
 {
 	QList< QString > trPaths = getTranslatorFilePath();
 	QList< QTranslator* > translators;
-	for (const QString& p : qAsConst(trPaths)) {
+	for (const QString& p : std::as_const(trPaths)) {
         qDebug() << "search qm file in dir:" << p;
 		QDir dir(p);
 		if (!dir.exists()) {

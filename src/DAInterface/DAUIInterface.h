@@ -4,6 +4,7 @@
 #include "DAGlobals.h"
 #include <QObject>
 #include <QJsonObject>
+#include "DAColorTheme.h"
 #include "DABaseInterface.h"
 class SARibbonMainWindow;
 class QMainWindow;
@@ -68,6 +69,9 @@ public:
     // QApplication::processEvents();的wrapper
     void processEvents() const;
 
+    // 选择文件夹
+    QString getExistingDirectory(const QString& title = QString(), const QString& dir = QString());
+
 public:
     // 下面是默认的extend
     // 获取主程序,此函数和getRibbonArea()->app()是一样的返回结果
@@ -89,6 +93,9 @@ public:
                                         ) = 0;
     // 设置脏标志
     virtual void setDirty(bool on = true) = 0;
+    // 获取/设置程序的主题
+    void setColorTheme(const DAColorTheme& th);
+    virtual DAColorTheme getColorTheme() const;
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;

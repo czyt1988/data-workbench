@@ -389,7 +389,7 @@ bool fromJson(const QString& json, DATree* tree)
 QDebug& operator<<(QDebug& dbg, const DATree& tree)
 {
 	QList< DATreeItem* > items = tree.getItems();
-	for (const DATreeItem* i : qAsConst(items)) {
+    for (const DATreeItem* i : std::as_const(items)) {
 		dbg << *(i);
 	}
 	return dbg;

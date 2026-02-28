@@ -13,6 +13,13 @@ class DADataManager;
 /**
  * @brief DAAbstractData的封装
  * 可以放入QMap，QHash中，DAData的等于操作相当于创建一个引用
+ *
+ * 在数据管理器的DAData是顶层数据，它一般是dataframe类型，dataframe类型下面的series也可以创建一个DAData，这个DAData不在datamanager里面
+ *
+ * 从datamanager里面拿出的数据都能通过getDataManager获取数据管理器，他们之间的复制也会携带数据管理器，
+ * 可以通过@ref getDataManager 获取数据管理器的指针，@ref isHaveDataManager 函数会返回true
+ *
+ *
  */
 class DADATA_API DAData
 {
@@ -85,6 +92,8 @@ public:  // DAAbstractData Wrapper
     QString typeToString() const;
     // 获取数据对应的datamanager
     DADataManager* getDataManager() const;
+    // 是否在数据管理器中管理
+    bool isHaveDataManager() const;
     // 尺寸
     std::pair< std::size_t, std::size_t > shape() const;
 
@@ -103,8 +112,11 @@ private:
     DADataManager* mDataMgr;
 };
 // ADL原则，需要把qHash也放入DA命名空间中
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 DADATA_API uint qHash(const DA::DAData& key, uint seed);
-
+#else
+DADATA_API std::size_t qHash(const DA::DAData& key, std::size_t seed);
+#endif
 }  // namespace DA
 
 Q_DECLARE_METATYPE(DA::DAData)

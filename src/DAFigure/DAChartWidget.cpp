@@ -1425,7 +1425,6 @@ QList< int > DAChartWidget::dataRttis() const
     return rttis;
 }
 
-
 QwtPlotCurve* DAChartWidget::addCurve(const QVector< double >& xData, const QVector< double >& yData, const QString& title)
 {
     if (xData.isEmpty() || yData.isEmpty() || xData.size() != yData.size()) {
@@ -1606,7 +1605,6 @@ QwtPlotSpectrogram* DAChartWidget::addSpectrogram(QwtGridRasterData* gridData, c
     return spectrogram;
 }
 
-
 void DAChartWidget::removePlotItem(QwtPlotItem* item)
 {
     if (!item) {
@@ -1689,7 +1687,6 @@ QColor DAChartWidget::getBorderColor() const
 {
     return d_ptr->borderColor;
 }
-
 
 void DAChartWidget::setAxisLabel(int axisId, const QString& label)
 {
@@ -1936,7 +1933,7 @@ QColor DAChartWidget::getLegendTextColor() const
 
 void DAChartWidget::setupDateTimeAxis(int axisId, const QString& format)
 {
-    QwtDateScaleDraw* dateScale = new QwtDateScaleDraw();
+    QwtDateScaleDraw* dateScale = new QwtDateScaleDraw(Qt::LocalTime);
 
     if (!format.isEmpty()) {
         // 设置智能日期格式
@@ -1951,7 +1948,6 @@ bool DAChartWidget::isDateTimeAxis(int axisId) const
 {
     return dynamic_cast< const QwtDateScaleDraw* >(axisScaleDraw(axisId)) != nullptr;
 }
-
 
 // ==================== DAChartInteractionInterface 实现 ====================
 
@@ -2007,7 +2003,6 @@ void DAChartWidget::zoomOut()
     }
 }
 
-
 QwtPlotCanvasZoomer* DAChartWidget::getZoomer() const
 {
     return d_ptr->zoomer;
@@ -2061,7 +2056,6 @@ QwtPlotPicker* DAChartWidget::getCrosshair() const
 {
     return d_ptr->crosshair;
 }
-
 
 bool DAChartWidget::isDataPickingEnabled() const
 {
@@ -2163,7 +2157,6 @@ QwtLegend* DAChartWidget::getLegendPanel() const
     return d_ptr->legendPanel;
 }
 
-
 void DAChartWidget::registerPannerFactory(const PannerFactory& factory)
 {
     d_ptr->pannerFactory = factory;
@@ -2192,7 +2185,6 @@ DAFigureWidget* DAChartWidget::getFigure() const
     }
     return nullptr;
 }
-
 
 void DAChartWidget::notifyPropertiesChanged(ChartPropertyChangeFlags flag)
 {

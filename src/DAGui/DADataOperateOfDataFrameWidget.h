@@ -64,6 +64,8 @@ public:
     QList< DAData > getSlectedSeries() const;
     // 刷新表格
     void refreshTable();
+    // 确保列可见
+    void ensureColumnVisible(const QString& colName, bool selectCol = true);
 public Q_SLOTS:
     void setDAData(const DA::DAData& d);
     // 在选中行后面插入行

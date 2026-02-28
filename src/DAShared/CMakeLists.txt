@@ -9,7 +9,7 @@ damacro_lib_setting(
     "DA DAShared Lib | https://github.com/czyt1988"
     0
     0
-    3
+    4
 )
 
 ########################################################

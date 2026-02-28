@@ -1,5 +1,5 @@
 ﻿#include "DAPyScriptsIO.h"
-#include "DAPybind11QtTypeCast.h"
+#include "DAPybind11QtCaster.hpp"
 #include <QDebug>
 
 /**
@@ -41,7 +41,7 @@
                 qDebug() << "da_io.py have no attr " #pyFunctionName;                                                  \
                 return returnType();                                                                                   \
             }                                                                                                          \
-            pybind11::object v = fn(DA::PY::toPyStr(filepath), DA::PY::toPyDict(args));                                \
+            pybind11::object v = fn(pybind11::cast(filepath), pybind11::cast(args));                                   \
             return returnType(v);                                                                                      \
         } catch (const std::exception& e) {                                                                            \
             if (err) {                                                                                                 \
@@ -97,11 +97,7 @@ QList< QString > DAPyScriptsIO::getFileReadFilters() const
             qDebug() << "da_io.da_get_file_read_filters() = none";
             return res;
         }
-        QString err;
-        res = DA::PY::toStringList(f, &err);
-        if (!err.isEmpty()) {
-            qCritical() << err;
-        }
+        res = DA::PY::fromPyList< QString >(f);
     } catch (const std::exception& e) {
         qCritical() << e.what();
     }
@@ -134,7 +130,6 @@ FUNCTION_STR_DICT(DAPyObjectWrapper, read, da_read)
 //     return DAPyObjectWrapper();
 // }
 
-
 /**
  * @brief 读取csv
  * @param filepath
@@ -156,7 +151,6 @@ FUNCTION_STR_DICT(DAPyDataFrame, read_txt, read_txt)
  */
 FUNCTION_STR_DICT(DAPyDataFrame, read_pkl, read_pkl)
 
-
 /**
  * @brief 读取并直接添加到datamanager
  * @param filepath
@@ -171,7 +165,7 @@ void DAPyScriptsIO::read_and_add_to_datamanager(const QString& filepath, const Q
             qDebug() << "da_io.py have no attr da_read";
             return;
         }
-        fun(DA::PY::toPyStr(filepath), DA::PY::toPyDict(args));
+        fun(pybind11::cast(filepath), pybind11::cast(args));
     } catch (const std::exception& e) {
         if (err) {
             *err = e.what();

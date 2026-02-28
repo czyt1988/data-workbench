@@ -9,23 +9,8 @@ damacro_lib_setting(
     "Graphics View Lib | https://github.com/czyt1988"
     0
     0
-    1
+    2
 )
-
-########################################################
-# Qt
-########################################################
-set(DA_MIN_QT_VERSION 5.14)
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
-    Core
-    Gui
-    Widgets
-    Xml
-    Svg
-    REQUIRED
-)
-
 
 ########################################################
 # 文件加载 #!!!!** 注意变更 **!!!!
@@ -49,7 +34,7 @@ add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 # -------------link Qt--------------------------
 message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 
-target_link_libraries(${DA_LIB_NAME} PRIVATE
+target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
@@ -57,14 +42,7 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Svg
 )
 # -------------link DAWorkbench--------------------------
-# DAUtils
-# 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到DAWorkbench
-find_package(${DA_PROJECT_NAME} COMPONENTS DAUtils)
-if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAUtils")
-endif()
-
-target_link_libraries(${DA_LIB_NAME} PUBLIC
+target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
 )
 

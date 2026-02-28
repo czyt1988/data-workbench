@@ -33,7 +33,7 @@ class DAGUI_API DAChartManageWidget : public QWidget
 public:
     DAChartManageWidget(QWidget* parent = nullptr);
     ~DAChartManageWidget();
-    // 设置绘图炒作窗口，只有设置了绘图操作窗口，管理窗口才可以工作
+    // 设置绘图操作窗口，只有设置了绘图操作窗口，管理窗口才可以工作
     void setChartOperateWidget(DAChartOperateWidget* cow);
     // 设置item点击时如果不是当前chart，设置为当前chart
     void setCurrentChartOnItemClicked(bool on);
@@ -43,8 +43,13 @@ public:
     bool isSetCurrentChartOnItemDoubleClicked() const;
     // 通过plot获取figure
     DAFigureWidget* plotToFigureWidget(QwtPlot* plot) const;
+    // 获取当前的figure
+    DAFigureWidget* getCurrentFigure() const;
+public Q_SLOTS:
     // 把管理树展开
-    void expandAll();
+    void expandCurrentTree();
+    // 把管理树收起
+    void collapseCurrentTree();
 Q_SIGNALS:
     /**
      * @brief 绘图元素选中信号
@@ -53,6 +58,17 @@ Q_SIGNALS:
      */
     void figureElementClicked(const DAFigureElementSelection& selection);
     void figureElementDbClicked(const DAFigureElementSelection& selection);
+    /**
+     * @brief 请求绘图的设置
+     * @param fig
+     */
+    void requestFigureSetting(DA::DAFigureWidget* fig);
+
+    /**
+     * @brief 当前选中的绘图发生了改变
+     * @param fig
+     */
+    void selectFigureChanged(DA::DAFigureWidget* fig);
 
 protected:
     // 获取当前的tree
@@ -61,6 +77,9 @@ protected:
 private:
     // 设置当前显示的fig对应的view
     void setCurrentDisplayView(DA::DAFigureWidget* fig);
+    DAFigureWidget* getComboboxFigure(int index) const;
+    void setStackCurrentFigure(DA::DAFigureWidget* fig);
+    void setComboboxCurrentFigure(DA::DAFigureWidget* fig);
 private slots:
     void onFigureCreated(DA::DAFigureWidget* fig);
     void onFigureCloseing(DA::DAFigureWidget* fig);
@@ -69,6 +88,10 @@ private slots:
     void onPlotClicked(QwtPlot* plot, QStandardItem* treeItem);
     void onPlotItemClicked(QwtPlotItem* item, QwtPlot* plot, QStandardItem* treeItem);
     void onAxisClicked(QwtAxisId axisId, QwtPlot* plot, QStandardItem* treeItem);
+    // 绘图设置窗口点击
+    void onToolButtonFigureSettingClicked();
+    // combobox
+    void onComboboxCurrentIndexChanged(int index);
 
 private:
     Ui::DAChartManageWidget* ui;

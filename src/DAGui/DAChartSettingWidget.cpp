@@ -74,8 +74,7 @@ void DAChartSettingWidget::PrivateData::setupUi(QStackedWidget* stackWidget)
     stackWidget->addWidget(mPlotItemSettingWidget);
 }
 
-void DAChartSettingWidget::PrivateData::setComboboxFixSelectionArea(QComboBox* com,
-                                                                    DAChartSettingWidget::SettingWidgetType widType)
+void DAChartSettingWidget::PrivateData::setComboboxFixSelectionArea(QComboBox* com, DAChartSettingWidget::SettingWidgetType widType)
 {
     const int comboboxCount = com->count();
     for (int i = 0; i < comboboxCount; ++i) {
@@ -102,10 +101,9 @@ DAChartSettingWidget::DAChartSettingWidget(QWidget* parent)
     ui->setupUi(this);  // ui中有信号绑定槽
     d_ptr->setupUi(ui->stackedWidget);
 
-    connect(ui->comboBoxSelectItem,
-            QOverload< int >::of(&QComboBox::currentIndexChanged),
-            this,
-            &DAChartSettingWidget::onComboBoxItemIndexChanged);
+    connect(
+        ui->comboBoxSelectItem, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DAChartSettingWidget::onComboBoxItemIndexChanged
+    );
 }
 
 DAChartSettingWidget::~DAChartSettingWidget()
@@ -181,7 +179,7 @@ void DAChartSettingWidget::resetComboBox()
     ui->comboBoxSelectItem->addItem(s_icon_yleft_setting, tr("Y Left Scale"), SettingYLeftScale);        // cn:左Y轴
     ui->comboBoxSelectItem->addItem(s_icon_xbottom_setting, tr("X Bottom Scale"), SettingXBottomScale);  // cn:下X轴
     ui->comboBoxSelectItem->addItem(s_icon_yright_setting, tr("Y Right Scale"), SettingYRightScale);     // cn:右Y轴
-    ui->comboBoxSelectItem->addItem(s_icon_yright_setting, tr("X Top Scale"), SettingXTopScale);         // cn:上X轴
+    ui->comboBoxSelectItem->addItem(s_icon_xtop_setting, tr("X Top Scale"), SettingXTopScale);           // cn:上X轴
     // 下面是动态增加
     const QList< QwtPlotItem* > itemlist = d->mPlot->itemList();
     for (QwtPlotItem* item : itemlist) {
@@ -363,6 +361,36 @@ void DAChartSettingWidget::showScaleXTopSetting()
 void DAChartSettingWidget::showPlotItemSetting(QwtPlotItem* item)
 {
     setCurrentPlotItem(item);
+}
+
+DAChartPlotSettingWidget* DAChartSettingWidget::getChartPlotSettingWidget() const
+{
+    return d_ptr->mPlotSettingWidget;
+}
+
+DAChartCanvasSettingWidget* DAChartSettingWidget::getChartCanvasSettingWidget() const
+{
+    return d_ptr->mPlotCanvasSettingWidget;
+}
+
+DAChartAxisSetWidget* DAChartSettingWidget::getChartAxisSetWidget(int axisId) const
+{
+    switch (axisId) {
+    case QwtAxis::YLeft:
+        return d_ptr->mPlotScaleYLeftSettingWidget;
+    case QwtAxis::YRight:
+        return d_ptr->mPlotScaleYRightSettingWidget;
+    case QwtAxis::XBottom:
+        return d_ptr->mPlotScaleXBottomSettingWidget;
+    case QwtAxis::XTop:
+        return d_ptr->mPlotScaleXTopSettingWidget;
+    }
+    return nullptr;
+}
+
+DAChartCommonItemsSettingWidget* DAChartSettingWidget::getChartCommonItemsSettingWidget() const
+{
+    return d_ptr->mPlotItemSettingWidget;
 }
 
 void DAChartSettingWidget::changeEvent(QEvent* e)

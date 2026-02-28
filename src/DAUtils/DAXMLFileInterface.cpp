@@ -35,6 +35,7 @@
 #include <QVector4D>
 #include <QPointer>
 #include "DAQtEnumTypeStringUtils.h"
+#include "da_qt5qt6_compat.hpp"
 #ifndef DAXMLFileInterfaceCheckEleClass
 #define DAXMLFileInterfaceCheckEleClass(ele, className)                                                                \
 	do {                                                                                                               \
@@ -193,7 +194,7 @@ QDomElement DAXMLFileInterface::makeElement(const QColor& v, const QString& tagN
  */
 bool DAXMLFileInterface::loadElement(QColor& p, const QDomElement* ele)
 {
-	p.setNamedColor(ele->attribute(QStringLiteral("name")));
+    DA::compat::setNamedColor(p,ele->attribute(QStringLiteral("name")));
 	return true;
 }
 

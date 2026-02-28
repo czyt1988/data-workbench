@@ -41,17 +41,20 @@ QVariant DAStandardItemPlot::handleItemTextType(int role) const
     if (!isValid()) {
         return QVariant();
     }
-    static QIcon s_plot_icon = QIcon(":/DAFigure/icon/chart.svg");
+    static QIcon s_plot_icon = QIcon(":/DAFigure/icon/layout.svg");
     switch (role) {
     case Qt::DisplayRole: {
+        if (!m_plot) {
+            return QVariant();
+        }
         QString text;
         if (m_plot->isParasitePlot()) {
             int index = m_plot->hostPlot()->parasitePlotIndex(m_plot);
-            text      = QObject::tr("parasite-%1").arg(index + 1);
+            text      = QObject::tr("layout-%1").arg(index + 1);
         } else {
             text = m_plot->title().text();
             if (text.isEmpty()) {
-                text = QObject::tr("plot");
+                text = QObject::tr("layout");
             }
         }
         return text;
@@ -78,6 +81,9 @@ QVariant DAStandardItemPlot::handleScalePropertyType(int role) const
     }
     switch (role) {
     case Qt::DisplayRole: {
+        if (!m_plot) {
+            return QVariant();
+        }
         if (m_plot->isParasitePlot()) {
             return QObject::tr("Parasite Plot");  // cn: 寄生绘图
         }

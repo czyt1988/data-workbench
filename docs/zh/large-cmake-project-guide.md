@@ -1,36 +1,32 @@
 ﻿# 基于cmake的大型工程组织和构建
 
-一个大型工程，并不会单单只包括应用自身，还有此程序抽象出来的库，这些库除了自身模块化意外，还有可能是提供给第三方用户进行插件化的开发使用的，同时工程还包含了很多第三方库
+在大型C++项目中，构建系统的选择直接影响到项目的可维护性、可扩展性以及第三方开发的友好度。一个成熟的工程不仅仅包含应用程序本身，还包括为其核心功能抽象出的库。这些库一方面服务于项目自身的模块化解耦，另一方面也可能作为插件化开发的基础库提供给第三方开发者。此外，项目还不可避免地依赖于众多第三方库。
 
-一个大型工程通常由如内容组成:
+一个典型的大型工程通常由以下几部分组成：
 
-- 第三方库（例如 `OCCT`，`VTK`，`Qt`）
-- 自定义库
-- Gui 程序
-- 静态资源（例如脚本、图片、配置文件）
+-   **第三方库：** 如 `OCCT`、`VTK`、`Qt` 等。
+-   **自定义库：** 项目自身抽象出的功能模块。
+-   **可执行程序：** 如 GUI 程序、命令行工具等。
+-   **静态资源：** 脚本、图片、配置文件等。
 
-针对这些大型的工程，如果用一些简单的构建工具，是很难做到一键编译一键安装的，例如 `qmake`，缺少强大的安装和依赖管理功能，所以QT6已经弃用了`qmke`，而转用了`cmake`，目前来说，在C++领域，最适合进行构建管理的还是`cmake`，虽然`cmake` 有非常非常多的缺点，但它的功能暂时是最全面的
+针对这些大型的工程，如果用一些简单的构建工具，是很难做到一键编译一键安装的，例如 `qmake`，缺少强大的安装和依赖管理功能，这也就是为什么 Qt6 弃用 `qmake`，全面转向 `cmake`。目前来说，在C++领域，最适合进行构建管理的还是`cmake`，虽然`cmake` 有非常非常多的缺点，但它凭借强大的功能，依然是当前 C++ 领域构建管理的事实标准。
 
-针对大型系统目前还是推荐用`cmake`进行构建，通过`cmake`，你可以做到如下这些事情：
+通过 `cmake`，我们可以实现：
 
-- 组织庞大的工程关系
-- 自动化编译第三方库
-- 按照依赖关系自动构建出整个工程的各组件
-- 自动化安装
-- 形成一个第三方方便引入的插件开发环境
+-   **高效组织** 庞大且复杂的工程结构。
+-   **自动化编译** 第三方依赖库。
+-   **按依赖关系** 自动构建项目所有组件。
+-   **一键式安装** 部署整个项目。
+-   **生成** 便于第三方集成的插件开发环境。
 
-这里所谓第三方方便引入的开发环境，是能让第三方可以一键引入你的库，以及你依赖的第三方库
-
-但是`cmake`的缺点也是复杂，文档生涩，语法奇葩，说到底`cmake`就是一种高级别的宏
-
-下面根据我的经验，介绍一下如何通过`cmake`组织和构建一个大型的工程，适合大型工业软件的构建，构建出来的软件能给第三方用户方便的进行二次开发，同时，结合 `git` 的 `submodule` 管理第三方库，让整个工程变得更为简洁明了
+本文将结合实践经验，深入探讨如何利用 `cmake` 组织和构建一个大型工业级软件项目，最终生成一个可供第三方开发者一键引入、便捷地进行二次开发的完整环境。同时，本文也介绍了通过`git submodule` 来方便管理第三方库。
 
 ## 工程的目录结构
 
-工程的顶层文件夹应该包含如下几个文件夹：
+一个清晰、标准的目录结构是大型工程良好管理的开端，工程的顶层文件夹应该包含如下几个文件夹：
 
 - src 文件夹，这个文件夹用来放置你所有的源代码
-- doc 文件夹，这个文件夹用来放置你所有的文档
+- docs 文件夹，这个文件夹用来放置你所有的文档
 - 3rdparty 文件夹，这个文件夹用来放置你所有的第三方库，这个文件夹可以放在 src 文件夹里面，也可以放在外层目录
 - 针对整个工程的 `CMakeLists.txt` 文档
 - cmake 文件夹，这个文件夹放置了一些封装好的 cmake 文件，用来方便你的 cmake 的集成
@@ -39,18 +35,34 @@
 
 一般而言，在工程的顶层目录下，还会有`.clang-format`用于规范编码，`.clang-tidy`和`.clazy`用于代码检查这些按需提供，但作为一个开源的项目，还是建议提供的
 
-因此一个相对标准的源码目录如下图所示
+因此一个相对标准的源码目录如下所示：
 
-![标准的源码目录](../assets/PIC/standard-source-dir.png)
+```
+MyProject/
+├── .clang-format          # 代码格式化配置 (强烈建议有)
+├── .clang-tidy            # 静态代码检查配置 (可选)
+├── .clazy                 # Clang代码检查配置 (可选)
+├── CMakeLists.txt         # 顶层CMake构建文件
+├── 3rdparty/              # 第三方库源码 (也可置于 src 下)
+├── cmake/                 # 项目自定义的 CMake 模块和工具脚本
+├── docs/                  # 项目文档
+└── src/                   # 项目自身源代码
+    ├── CMakeLists.txt
+    ├── LibA/              # 自定义库 A
+    ├── LibB/              # 自定义库 B
+    ├── App/               # 主应用程序
+    └── ...
+```
 
 ## 第三方库的管理
 
-3rdparty 文件夹用来放置所有的第三方库的源代码，通常来讲，第三方库源代码不应该下载下来，放进 3rdparty 文件夹，而是通过 git 的 `submodule` 添加进去，通过 `submodule` 方式添加进去的源代码，可以随时更新到 github 上的最新版本，也可以指定这个第三方库是某个固定分支或者是某个 tag
+`3rdparty` 文件夹用来放置所有的第三方库的源代码，通常来讲，第三方库源代码不应该下载下来，放进 `3rdparty` 文件夹，而是通过 git 的 `submodule` 添加进去，通过 `submodule` 方式添加进去的源代码，可以随时更新到远程仓库上的最新版本，也可以指定这个第三方库是某个固定分支或者是某个 tag
 
 例如我这里需要使用ribbon界面，添加了SARibbon作为第三方库
 
 ```shell
 git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibbon
+# 或者放在 ./3rdparty/SARibbon
 ```
 
 > 注意，对于使用`submodule`管理第三方库的方式，首次拉取项目之后，需要执行：
@@ -87,27 +99,14 @@ git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibb
 
 > 上述的仿真集成平台不提供业务逻辑，所有业务逻辑都是通过插件实现，插件的开发就需要依赖此集成平台和所有第三方库
 
-首先，如前文所述，这个工程的目录结构大致如下：
+要驾驭大型工程的构建，必须深入理解和熟练运用 `cmake` 的 `install` 命令
 
-```
-data-workbench
-  |-doc
-  |-cmake
-  | |-此项目用到的cmake文件
-  |-src
-  | |-3rdparty
-  | |-DAUtils (utils模块，封装了通用功能)
-```
+`install` 命令的主要功能：
+1.  **复制文件/目录** 到指定位置。
+2.  **导出目标**，生成 `{库名}Targets.cmake` 文件，供其他 `cmake` 项目 `find_package`。
+3.  **为当前项目** 的其他模块提供依赖支持。
 
-这里的工程使用同一前缀
-
-在进行大型工程组织之前，`cmake` 的 `install` 命令是绝对要掌握的，而且要熟知通用的安装目录结构标准，不能过度自由的发挥，`install` 命令可以做下面这些事情：
-
-1. 复制文件或者文件夹到某个固定的目录下
-2. 导出能被其它工程 `cmake` 正确导入的 `cmake` 文件，一般是4个cmake文件：`{库名}Config.cmake`、`{库名}ConfigVersion.cmake`、`{库名}Targets.cmake`、`{库名}Targets-debug.cmake`
-3. 能给当前这个构件树下其他的模块提供依赖支持
-
-另外 `cmake` 有一个很重要的功能，可以区分构建环境和安装环境进行不同的依赖引用和头文件寻址，这样就可以区分当前的构建环境亦或是未来第三方用户，进行二次开发时候的安装环境，这两个环境的头文件寻址路径以及依赖的寻址路径是不一样的
+`cmake` 强大的一个地方在于它能通过 `$<BUILD_INTERFACE:` 和 `$<INSTALL_INTERFACE:` 生成器表达式，优雅地区分 **构建环境**（源代码目录）和 **安装环境**（安装目录），确保头文件路径和依赖关系在不同场景下都能正确工作。
 
 `cmake`的`install`用法是比较固定的，按照一个例子或者模板非常简单的就能实现自己的安装和部署，针对大型系统一个多组件的安装是必须的，类似于QT的包引入，能进行模块的划分，不需要整个QT所有库都一起引进工程里面，针对自己的大型系统也应该实现类似的引入，因此，下面将着重介绍如何进行模块化的`install`
 
@@ -115,31 +114,18 @@ data-workbench
 
 使用规范的安装路径，能让你工程的库以及第三方库安装在同一个目录下，这样你的工程就很容易被第三方使用者集成起来进行二次开发，因此，安装路径尽量使用规范化的安装路径，而不是过于自由的进行定制，一般规范化的安装路径如下：
 
-- bin
-- lib
-- lib/cmake
-- include
+-   `bin/`: 存放可执行文件和 Windows 下的 DLL 文件。
+-   `lib/`: 存放静态库（.a, .lib）和动态库的导入库（.lib）。
+-   `lib/cmake/<ProjectName>/`: 存放项目的 CMake 配置文件（如 `*Config.cmake`, `*Targets.cmake`）。
+-   `include/<ProjectName>/`: 存放项目的公共头文件。
 
-常见的cmake安装路径下的文件夹如图所示
+通常不建议在cmake里硬编码上诉路径，`GNUInstallDirs` 模块定义的标准路径
+
+使用 `include(GNUInstallDirs)` 后，你可以使用 `CMAKE_INSTALL_BINDIR`、`CMAKE_INSTALL_LIBDIR`、`CMAKE_INSTALL_INCLUDEDIR` 等变量，确保路径的规范性。
+
+下面是常见的cmake安装后的文件夹
 
 ![](../assets/PIC/cmake-standard-install-dir.png)
-
-cmake中提供了GNUInstallDirs来获取这些规范的路径命名，你可以通过`include(GNUInstallDirs)`导入，就可以使用：
-
-- `CMAKE_INSTALL_BINDIR`
-- `CMAKE_INSTALL_LIBDIR`
-- `CMAKE_INSTALL_INCLUDEDIR`
-- `CMAKE_INSTALL_DOCDIR`
-
-这些变量了提供了标准的命名
-
-bin目录放置编译完的二进制文件在WINDOWS系统上就是dll文件
-
-lib文件夹放置编译后的lib文件，在WINDOWS系统下，MSVC编译器编译出来就是.lib后缀的文件
-
-一般情况下，lib文件夹下还有一个`cmake`子文件夹，这个文件夹放置`cmake`的导出文件，通常来讲，这个文件夹下的导出文件放在它自身工程名的一个文件夹里，形成如：`lib/cmake/{LibName}`的文件夹结构
-
-include文件夹主要放置头文件，通常来讲头文件也是需要放在他自身工程名的一个文件夹里，形成如：`include/{LibName}`的文件夹结构
 
 基本上大部分的第三方库都是按照这个目录结构进行安装，这样当你的工程包含了大量的第三方库，以及你自身的库的情况下，最终所有的dll都会安装在`bin`录下，所有的库文件都会安装在`lib`目录下，所有的头文件都会在`include`文件夹下面对应的自身库名的文件夹下面，所有`cmake`需要用的文件都在`lib/cmake`文件夹下对应的自身库名的文件夹下面
 
@@ -164,197 +150,120 @@ lib
        |-SARibbonBarTargets-debug.cmake
 ```
 
-### install命令
+### 单模块库的 `install` 标准写法
 
-cmake的install是一组命令，有多个功能
+如果你作为一个库开发者，这个库只有一个模块，那么写法相对固定，单一模块的install写法基本就是如下步骤：
 
-#### 复制文件`install(FILES)`&`install(DIRECTORY)`
+#### 1.定义库名和版本
 
-最简单的就是拷贝，包括`install(FILES)`,`install(DIRECTORY)`这两个都是拷贝用的，一个拷贝文件，一个拷贝目录
-
-例如，[SARibbon库](https://github.com/czyt1988/SARibbon)的Cmake文件中，头文件都在`${SARIBBON_HEADER_FILES}`这个变量下面,把它拷贝到安装目录下的`include/${SARIBBON_LIB_NAME}`路径下，就如下这样写，安装路径按照上面说的标准化走
+这里定义一些基本信息，后续的步骤可使用这些变量
 
 ```cmake
-install(FILES
-    ${SARIBBON_HEADER_FILES}
-    DESTINATION include/${SARIBBON_LIB_NAME}
-    COMPONENT headers
+set(LIB_NAME MyLib)
+set(LIB_VERSION_MAJOR 1)
+set(LIB_VERSION_MINOR 0)
+set(LIB_VERSION_PATCH 0)
+set(LIB_VERSION "${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${LIB_VERSION_PATCH}")
+```
+
+#### 2.配置目标属性（关键！）
+
+使用 `target_include_directories` 并利用生成器表达式区分构建和安装环境。
+
+```cmake
+add_library(${LIB_NAME} ...)
+target_include_directories(${LIB_NAME} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>  # 构建时：源码中的 include 目录
+    $<INSTALL_INTERFACE:include/${LIB_NAME}>                # 安装后：相对于安装前缀的 include/MyLib 目录
+)
+target_compile_definitions(${LIB_NAME} PUBLIC ...) # 如果有公共宏定义，也用 target_ 形式
+```
+
+`target_include_directories`和`target_compile_definitions`这两个是cmake的核心函数，它告诉了cmake这个目标有哪些头文件和哪些预定义宏，并把信息传递给使用库的人
+
+#### 3.安装公共头文件
+
+通过install可以复制任意内容，把你要提供的头文件、甚至脚本、资源都移动到指定安装目录下
+
+```cmake
+set(PUBLIC_HEADERS ...) # 列出所有公共头文件
+install(FILES ${PUBLIC_HEADERS}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIB_NAME} # 安装到 include/MyLib
 )
 ```
 
-#### 生成cmake目标文件`install(TARGETS)`&`install(EXPORT)`
+#### 4.安装目标并导出（关键！）
 
-`install(TARGETS)`&`install(EXPORT)`这两个命令是要配合一起用，用来生成cmake目标文件，cmake目标文件描述了整个工程所有的依赖内容，最终生成`{LibName}Targets.cmake`和`{LibName}Targets-debug.cmake`文件
-
-这两个函数写法也比较固定,这里假如你自己的库名字叫${LIB_NAME}，那么`install(TARGETS)`&`install(EXPORT)`的写法基本如下：
+`EXPORT` 关键字将目标的信息保存到一个名为 `${LIB_NAME}Targets` 的导出集中。
 
 ```cmake
 install(TARGETS ${LIB_NAME}
     EXPORT ${LIB_NAME}Targets
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    INCLUDES DESTINATION include/${LIB_NAME}
-)
-
-install(EXPORT ${LIB_NAME}Targets
-    FILE ${LIB_NAME}Targets.cmake
-    DESTINATION lib/cmake/${LIB_NAME}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # bin目录，主要为DLL 文件
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # lib目录，主要为共享库 (.so, .dylib)
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIB_NAME}
 )
 ```
 
-这两个结合，把你的目标依赖内容，写到了`{LibName}Targets.cmake`文件中，并复制到安装目录下的`lib/cmake/${LIB_NAME}`下,`install(TARGETS)`用来把你的工程信息导出到`${LIB_NAME}Targets`这个变量中，`install(EXPORT)`把`${LIB_NAME}Targets`这个内容，生成到`${LIB_NAME}Targets.cmake`文件中，同时也会生成一个`{LibName}Targets-debug.cmake`文件
+> 这里不得不吐槽cmake，把install命令赋予了太多功能，导致理解困难
 
-这个文件就是第三方引入你的工程的关键，这里会把target_打头的函数相关信息写入这个文件中，例如`target_compile_definitions`和`target_include_directories`这些函数定义的信息，也会写入`${LIB_NAME}Targets.cmake`文件中，一些预定义的宏和头文件路径在加载`${LIB_NAME}Targets.cmake`后就自动加载进来了，因此，那些宏和头文件路径要暴露给第三方的，都应该使用target_xx的函数，同时也要区分构建环境还是安装环境，如果你的CMakeLists.txt作为一个子目录，那么这时属于构建环境，尤其针对include_directories，构建环境和安装环境肯定不一样的，因此要区别对待，否则作为子工程嵌入时会出错，如下区分构建环境和安装环境的路径引用
+#### 5.生成 `Config.cmake` 文件
 
-```cmake
-target_include_directories(${SARIBBON_LIB_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include/${SARIBBON_LIB_NAME}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-)
-```
+这里比较抽象但必不可少，会用到`write_basic_package_version_file`和`configure_package_config_file`两个函数，用于生成find_package所必须的Config.cmake文件
 
-#### 生成config文件`configure_package_config_file`
-
-cmake的find_package函数不是加载`${LIB_NAME}Targets.cmake`，而是加载`{LibName}Config.cmake`文件，`{LibName}Config.cmake`文件的生成，需要用到`configure_package_config_file`函数，一般还会配合`write_basic_package_version_file`,这两个函数在`CMakePackageConfigHelpers`里面，需要先引入
+首先，创建一个模板文件 `${LIB_NAME}Config.cmake.in`，一般内容可如下：
 
 ```cmake
-include(CMakePackageConfigHelpers)
-```
-
-你会留意到好多开源项目都会有个`{LibName}Config.cmake.in`文件在src目录下，这个文件就是用来生成`{LibName}Config.cmake`文件的，`{LibName}Config.cmake`的作用就是加载上面生成的`${LIB_NAME}Targets.cmake`文件，同时能加入一些自己的扩展内容，因此，`{LibName}Config.cmake.in`的通用写法是：
-
-```cmake
-# This module defines
-# @PROJECT_NAME@_FOUND, if false, do not try to link to @PROJECT_NAME@
-# @PROJECT_NAME@_INCLUDE_DIR, where to find the headers
-# @PROJECT_NAME@_LIBRARIES, where to find the libs
 @PACKAGE_INIT@
 
-set (PackageName @YOUR_LIB_NAME@)
-set (@YOUR_LIB_NAME@_VERSION @YOUR_LIB_VERSION@)
+include("${CMAKE_CURRENT_LIST_DIR}/@LIB_NAME@Targets.cmake")
 
-include ( ${CMAKE_CURRENT_LIST_DIR}/${PackageName}Targets.cmake )
+set_and_check(@LIB_NAME@_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_INCLUDEDIR@/@LIB_NAME@")
+set_and_check(@LIB_NAME@_LIBRARY_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@")
 
-set_and_check ( ${PackageName}_INCLUDE_DIR ${PACKAGE_PREFIX_DIR}/@YOUR_LIB_INCLUDE_INSTALL_DIR@ )
-
-set ( ${PackageName}_LIBRARIES)
-list ( APPEND ${PackageName}_LIBRARIES ${PackageName})
-
-check_required_components(${PackageName})
+check_required_components(@LIB_NAME@)
 ```
 
-其中@xx@是调用这个cmake.in文件的CMakeLists文件的变量，一般会传入三个变量
+上面的${LIB_NAME}Config.cmake.in是你为了生成Config.cmake文件使用的内嵌文件，具体位置视情况而定
 
-- `@YOUR_LIB_NAME@` 你的库名字,也可以用`PROJECT_NAME`替代，看习惯
-- `@YOUR_LIB_VERSION@` 你的库的版本号
-- `@YOUR_LIB_INCLUDE_INSTALL_DIR@` 你的库安装后的include文件位置，这个用来检查文件的完整性
-
-`${PACKAGE_PREFIX_DIR}`这个变量是在`@PACKAGE_INIT@`里面展开的
-
-`@PACKAGE_INIT@`这个变量会展开为下面这段
-
-```cmake
-####### Expanded from @PACKAGE_INIT@ by configure_package_config_file() #######
-####### Any changes to this file will be overwritten by the next CMake run ####
-####### The input file was DAWorkbenchConfig.cmake.in                            ########
-
-get_filename_component(PACKAGE_PREFIX_DIR "${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
-
-macro(set_and_check _var _file)
-  set(${_var} "${_file}")
-  if(NOT EXISTS "${_file}")
-    message(FATAL_ERROR "File or directory ${_file} referenced by variable ${_var} does not exist !")
-  endif()
-endmacro()
-
-####################################################################################
-```
-
-`@PACKAGE_INIT@`相当于提供了一个宏函数和一个变量，宏函数为`set_and_check`，用于检测文件是否存在，变量为`PACKAGE_PREFIX_DIR`，用于指定工程的绝对安装路径，用过这个变量可以直接指到安装路径的顶层目录
-
-### 单一模块的install写法
-
-如果你作为一个库开发者，这个库只有一个模块，那么写法相对固定，根据上面的介绍，单一模块的install写法基本就是如下步骤：
-
-1. 确定库名和版本号
-
-```cmake
-set(YOUR_LIB_NAME YOURLibName)
-set(YOUR_VERSION_MAJOR 1)
-set(YOUR_VERSION_MINOR 0)
-set(YOUR_VERSION_PATCH 0)
-set(YOUR_VERSION "${YOUR_VERSION_MAJOR}.${YOUR_VERSION_MINOR}.${YOUR_VERSION_PATCH}")
-```
-
-2. target_xx相关函数，定义宏、头文件路径等内容
-
-- 注意要区分安装模式还是构建模式，通过`$<INSTALL_INTERFACE:`指定安装模式，通过`$<BUILD_INTERFACE:`指定构建模式
-
-3. 文件复制
-
-复制头文件
-
-```cmake
-install(FILES
-    ${YOUR_HEADER_FILES}
-    DESTINATION include/${YOUR_LIB_NAME}
-    COMPONENT headers
-)
-```
-其中${YOUR_HEADER_FILES}为你头文件的列表
-
-通过install可以复制任意内容
-
-4.把依赖信息导出同时生成XXTargets.cmake文件
-
-```cmake
-install(TARGETS ${YOUR_LIB_NAME}
-    EXPORT ${YOUR_LIB_NAME}Targets
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    INCLUDES DESTINATION include/${YOUR_LIB_NAME}
-)
-install(EXPORT ${YOUR_LIB_NAME}Targets
-    FILE ${YOUR_LIB_NAME}Targets.cmake
-    DESTINATION lib/cmake/${YOUR_LIB_NAME}
-)
-```
-
-5. 生成config文件
+然后，在主 `CMakeLists.txt` 中使用 `CMakePackageConfigHelpers` 模块生成最终文件，这里比较抽象但写法固定。
 
 ```cmake
 include(CMakePackageConfigHelpers)
-set(YOUR_LIB_INCLUDE_INSTALL_DIR include/${YOUR_LIB_NAME})
-write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/${YOUR_LIB_NAME}ConfigVersion.cmake
-    VERSION ${YOUR_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
 configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/${YOUR_LIB_NAME}Config.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/${YOUR_LIB_NAME}Config.cmake"
-    INSTALL_DESTINATION lib/cmake/${YOUR_LIB_NAME}
-    PATH_VARS YOUR_LIB_INCLUDE_INSTALL_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/${LIB_NAME}Config.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${LIB_NAME}
+    PATH_VARS CMAKE_INSTALL_INCLUDEDIR  # 传递路径变量供 set_and_check 使用
+)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}ConfigVersion.cmake"
+    VERSION ${LIB_VERSION}
+    COMPATIBILITY SameMajorVersion
 )
 ```
 
-上面的${YOUR_LIB_NAME}Config.cmake.in是你为了生成Config.cmake文件使用的内嵌文件，具体位置视情况而定
+#### 6.安装生成的 CMake 文件
 
-YOUR_LIB_INCLUDE_INSTALL_DIR变量指定了安装位置，用于进行导入检查
-
-6. 复制cmake文件到lib/cmake
+上面的文件会在编译过程生成在${CMAKE_CURRENT_BINARY_DIR}目录下面，你要在安装过程中把这个文件复制到lib/cmake/你的库名的配置目录下，通常写法如下：
 
 ```cmake
 install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/${YOUR_LIB_NAME}Config.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/${YOUR_LIB_NAME}ConfigVersion.cmake"
-    DESTINATION lib/cmake/${YOUR_LIB_NAME}
+    "${CMAKE_CURRENT_BINARY_DIR}/MyLibConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/MyLibConfigVersion.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${LIB_NAME}
+)
+install(EXPORT ${LIB_NAME}Targets
+    FILE ${LIB_NAME}Targets.cmake
+    NAMESPACE ${LIB_NAME}::                     # 可选，添加命名空间
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${LIB_NAME}
 )
 ```
 
-上面6步完成了一个库的安装，能把库需要的东西都放到安装目录下，通过提供的cmake文件，能找到对应的内容
+----
+
+完成以上步骤后，其他项目就可以通过简单的 `find_package(MyLib)` 来使用你的库了。
 
 使用这个库仅仅需要以下步骤：
 
@@ -365,7 +274,7 @@ find_package(${YOUR_LIB_NAME})
 
 ### 多模块的install写法
 
-上面介绍了单一模块的写法，多模块有一点区别
+当一个项目包含多个库（如 Qt 的 Core、Gui、Widgets）时，我们需要将所有模块的导出信息合并到一个总的导出目标中，并提供一个顶层的 `Config.cmake` 文件
 
 Qt就是一个多模块的例子，Qt模块的引入是这样写的：
 
@@ -377,171 +286,108 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS
 )
 ```
 
-可以按需获取对应的模块
+多模块和单模块的区别就是导出这一步(`install(TARGETS xx EXPORT xxx ...)`)，多模块在每个模块的安装导出需要导出到同一个目标中，每个模块不需要再调用`write_basic_package_version_file`和`configure_package_config_file`
 
-多模块的`install`必须先有单模块的`install`，其实多模块的`install`就是遍历了所有单模块所生成的config文件，多模块的`install` 也是需要一个类似单模块的config文件，只是这个config文件和单模块不太一样，它会遍历所有子模块的Target，把这些子模块需要的头文件引用路径以及依赖的库加载进来，这样只需要调用findPackage函数就可以把这个子模块所有需要的内容加载进来
-
-对于多模块，你的工程目录可能是这样的
+多模块的文件组织示例如下
 
 ```
 root
+├CMakeLists.txt
 ├src
+│├─CMakeLists.txt
 │├─module-1
 ││ └─CMakeLists.txt
 │├─module-2
 ││ └─CMakeLists.txt
 │...
-│├─module-n
-││  └─CMakeLists.txt
-│├─CMakeLists.txt
-│└─LibConfig.cmake.in
-│CMakeLists.txt
-└PackageConfig.cmake.in
+│└─module-n
+│   └─CMakeLists.txt
+└cmake
+ └─{MyPackageName}Config.cmake.in
 ```
 
-这里有两个cmake.in文件，一个是`LibConfig.cmake.in`这个是给各个独自模块公用的，名字不固定，如果每个模块有特殊处理，可以用自己的，这个非必须，有个通用的方便一点，写法和单一模块的config文件写法一致
+为了更好的组织大型项目，一般会在项目的根目录下创建一个cmake文件夹，常用的cmake文件会统一放在此目录下
 
-但这个单一模块在构建时，应该加入命名空间，避免冲突，这时候，你的库在定义过程中应该如下：
+多模块的install写法有如下步骤：
 
-```cmake
-add_library(${YOUR_LIB_NAME} SHARED
-        ${YOUR_LIB_HEADER_FILES}
-        ${YOUR_LIB_SOURCE_FILES}
-)
-# 定义别名让YourNameSpace::${DA_LIB_NAME}也能获取到
-add_library(YourNameSpace::${YOUR_LIB_NAME} ALIAS ${YOUR_LIB_NAME})
-```
+#### 1.顶层`CMakeLists.txt`写法
 
-在安装过程中，生成的XXTargets.cmake也可以加个前缀也可以不加，只要能保证不重命名即可
+顶层的`CMakeLists.txt`里需要进行安装导出目标，它主要处理如下事情
 
+-   定义总包名 `MyPackage` 和总导出目标名 `MyPackageTargets`。
+-   负责生成和安装顶层的 `MyPackageConfig.cmake` 和 `MyPackageConfigVersion.cmake` 文件。
+-   **不安装任何具体的目标**，只导出所有子模块累积到 `MyPackageTargets` 中的信息。
 
-要实现模块化，最重要的是`PackageConfig.cmake.in`这个文件，这个文件作用是组织所有的模块，此cmake.in名字不固定，方便记忆即可
+对于模块化的cmake，首先要有个总的进入文件，以MyPackage命名，像Qt5就叫Qt5Config.cmake，自己模块就叫{MyPackageName}Config.cmake
 
-此文件用来生成整个模块包的Config.cmake文件，效果和单一模块写法类似，但它是遍历加载所有模块的{LibName}Targets.cmake文件,cmake的find_package原理就是找到对应的xxConfig.cmake文件并加载，如果是下面这段命令
-
-```cmake
-find_package(Qt5 COMPONENTS 
-    Core
-    Gui
-    Widgets
-)
-```
-
-它加载的是Qt5Config.cmake,因此，看看Qt5Config.cmake是如何实现的，就知道如何写package相关的Config.cmake文件
-
-Qt5Config.cmake的主要工作代码段是：
-
-```cmake
-foreach(module ${Qt5_FIND_COMPONENTS})
-    find_package(Qt5${module}
-        ${_Qt5_FIND_PARTS_QUIET}
-        ${_Qt5_FIND_PARTS_REQUIRED}
-        PATHS ${_qt5_module_paths} NO_DEFAULT_PATH
-    )
-    if (NOT Qt5${module}_FOUND)
-        string(CONFIGURE ${_qt5_module_location_template} _expected_module_location @ONLY)
-
-        if (Qt5_FIND_REQUIRED_${module})
-            set(_Qt5_NOTFOUND_MESSAGE "${_Qt5_NOTFOUND_MESSAGE}Failed to find Qt5 component \"${module}\" config file at \"${_expected_module_location}\"\n")
-        elseif(NOT Qt5_FIND_QUIETLY)
-            message(WARNING "Failed to find Qt5 component \"${module}\" config file at \"${_expected_module_location}\"")
-        endif()
-
-        unset(_expected_module_location)
-    endif()
-endforeach()
-```
-
-Qt5_FIND_COMPONENTS是调用`find_package(Qt5 COMPONENTS Core Gui Widgets)`命令COMPONENTS后面的内容列表
-
-其实就是遍历这些components，逐个find_package
-
-`find_package(Qt5 COMPONENTS Core Gui Widgets)`这段最后相当于执行了
-
-```cmake
-find_package(Qt5Core)
-find_package(Qt5Gui)
-find_package(Qt5Widgets)
-```
-
-一般没有哪个库有Qt如此大的规模，因此我们可以适当简化，这里给出一个简单的模块化cmake写法
-
-对于模块化的cmake，首先要有个总的进入文件，以YourPackage命名，像Qt5就叫Qt5Config.cmake，自己模块就叫{YourPackageName}Config.cmake
-
-一般{YourPackageName}Config.cmake会通过{YourPackageName}Config.cmake.in模板生成，一个相对通用的写法如下：
+和单一模块类似，{MyPackageName}Config.cmake会通过{MyPackageName}Config.cmake.in模板生成，一个相对通用的写法如下：
 
 ```cmake
 @PACKAGE_INIT@
 
-include(CMakeFindDependencyMacro)
-# 这里PROJECT_NAME就作为包名
-set(_package_name @PROJECT_NAME@)
+include("${CMAKE_CURRENT_LIST_DIR}/{MyPackageName}Targets.cmake")
 
-# 这里要修改为所支持的模块名
-set(_${_package_name}_supported_components Module1 Module2 Module3 ... ModuleN)
+set_and_check({MyPackageName}_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_INCLUDEDIR@")
+set_and_check({MyPackageName}_LIBRARY_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@")
 
-# 遍历所有要导入的模块
-foreach(_component ${${_package_name}_FIND_COMPONENTS})
-    # 首先判断是否在所支持列表中
-    if(_component IN_LIST _${_package_name}_supported_components)
-        set(__target ${_package_name}::${_component})
-        if(TARGET ${__target})
-            # 避免重复加载
-            continue()
-        else()
-            find_package(${_component} 
-                REQUIRED 
-                PATHS ${CMAKE_CURRENT_LIST_DIR}
-            )
-        endif()
-    else()
-        set(${_package_name}_FOUND FALSE)
-        set(${_package_name}_NOT_FOUND_MESSAGE "Unknown component: ${__target}.")
-        break()
-    endif()
-endforeach()
+check_required_components({MyPackageName})
 ```
 
-在你的工程的顶层目录的CMakeLists里，对此config文件进行生成即可
+上面{MyPackageName}需要替换为你的包名
 
-因此，对于多模块的install写法，总结步骤如下
-
-1. 各自单一模块实现各自的install，参考单一模块install写法，各个子模块的安装路径为lib/cmake/${TOP_PROJECT_NAME}目录
-
-${TOP_PROJECT_NAME}是顶层CMakeLists文件的project名称，按实际工程需求传递到子模块的CMakeLists中，可以通过变量或者固定
-
-2. 编写{YourPackageName}Config.cmake.in模板，模板内容参考上文描述
-
-3. 在工程的顶层目录的CMakeLists里，生成模块的{YourPackageName}Config.cmake文件：
+在顶层的`CMakeLists.txt`里需要进行安装导出目标，顶层`CMakeLists.txt`的安装写法如下
 
 ```cmake
+set(MY_PACKAGE_PROJECT_NAME "MyPackageName")
+# 这是所有模块的总targets，所有模块都向这个target导出
+set(MY_PACKAGE_TARGET_NAME "MyPackageNameTargets")
+
+# ... 添加子目录 add_subdirectory(src) ...
+...
+
 include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
 write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-    VERSION ${PROJECT_VERSION}
+    "${CMAKE_CURRENT_BINARY_DIR}/${MY_PACKAGE_PROJECT_NAME}ConfigVersion.cmake"
+    VERSION ${DA_VERSION}
     COMPATIBILITY AnyNewerVersion
 )
 configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}Config.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-    INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
-    NO_CHECK_REQUIRED_COMPONENTS_MACRO
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/{MyPackageName}Config.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/${MY_PACKAGE_PROJECT_NAME}Config.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${MY_PACKAGE_PROJECT_NAME}
+)
+#Unified export of all module targets
+install(EXPORT ${DA_TARGET_NAME}
+    FILE ${MY_PACKAGE_TARGET_NAME}.cmake
+    NAMESPACE ${MY_PACKAGE_PROJECT_NAME}::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${MY_PACKAGE_PROJECT_NAME}
 )
 ```
 
-这里${PROJECT_NAME}是工程名称，也可以使用自定义的名字
+顶层的`CMakeLists.txt`负责导出Config文件，后续所有模块的安装都往这个目标添加
 
-4. 把生成的{YourPackageName}Config.cmake文件复制到lib/cmake/${PROJECT_NAME}目录下，和子模块的路径一致
+#### 2.子模块`CMakeLists.txt`写法
 
-```cmake
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-    DESTINATION lib/cmake/${PROJECT_NAME}
-)
+多模块的子模块安装时不需要生成config文件，只需要将自己的目标**追加**到顶层定义的总导出集中（上诉例子的导出集名为MY_PACKAGE_TARGET_NAME）。
+
+多模块的子模块安装示例
+
+```
+# src/ModuleA/CMakeLists.txt
+add_library(ModuleA ...)
+add_library(${MyPackageName}::ModuleA ALIAS ModuleA) # 推荐使用${MyPackageName}::ModuleA别名，这个别名可以在模块内部间方便调用
+
+# 安装目标到总导出集 MY_PACKAGE_TARGET_NAME
+install(TARGETS ${子模块名字}    # 这里是你这个库库的名字
+        EXPORT ${MY_PACKAGE_TARGET_NAME}   # 注意：这里是顶层的导出集名称
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
 ```
 
-最终子模块的Config.cmake和包的Config.cmake都在lib/cmake/${PROJECT_NAME}
+MY_PACKAGE_TARGET_NAME是在顶层cmake定义的总的导出集，子模块的安装都导出到此导出集即可，这样就能像Qt一样，通过`find_package(MyPackageName COMPONENTS ModuleA ModuleB)`找到对应的库
 
 ## 工程的组织
 
@@ -572,10 +418,10 @@ install(FILES
 │ ...
 │ ├─[APP]
 │ │  └─CMakeLists.txt
-│ ├─CMakeLists.txt
-│ └─DALibConfig.cmake.in(用于给各个子模块生成Config.cmake文件)
+│ └─CMakeLists.txt
 ├─CMakeLists.txt
-└─DAWorkbenchConfig.cmake.in(用于生成总包的Config.cmake文件)
+└─[cmake]
+     └─DAWorkbenchConfig.cmake.in(用于生成总包的Config.cmake文件)
 ```
 
 1. 指定统一的安装目录
@@ -596,6 +442,9 @@ set(my_install_dir_name bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${my_platform_na
 # 设置固定的安装目录路径，具体位置具体设置，这里设置为当前cmake文件所在目录
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/${my_install_dir_name}")
 ```
+
+!!! tips "提示"
+    这样操作对库开发还有个好处，可以有效区分不同版本qt，不同编译器的结果
 
 2. 第三方库
 

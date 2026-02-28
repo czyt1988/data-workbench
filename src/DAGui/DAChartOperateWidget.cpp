@@ -16,16 +16,16 @@ int g_figure_cnt = 0;  ///< 绘图的数量，仅限当前程序创建计数
 //==============================================================
 class DAChartOperateWidgetPrivate
 {
-	DA_IMPL_PUBLIC(DAChartOperateWidget)
+    DA_IMPL_PUBLIC(DAChartOperateWidget)
 public:
-	DAChartOperateWidgetPrivate(DAChartOperateWidget* p);
+    DAChartOperateWidgetPrivate(DAChartOperateWidget* p);
 
 public:
-	std::unique_ptr< DAFigureFactory > mFigureFactory;
+    std::unique_ptr< DAFigureFactory > mFigureFactory;
 };
 DAChartOperateWidgetPrivate::DAChartOperateWidgetPrivate(DAChartOperateWidget* p) : q_ptr(p)
 {
-	mFigureFactory = std::make_unique< DAFigureFactory >();
+    mFigureFactory = std::make_unique< DAFigureFactory >();
 }
 
 //===================================================
@@ -34,14 +34,14 @@ DAChartOperateWidgetPrivate::DAChartOperateWidgetPrivate(DAChartOperateWidget* p
 DAChartOperateWidget::DAChartOperateWidget(QWidget* parent)
     : DAAbstractOperateWidget(parent), d_ptr(new DAChartOperateWidgetPrivate(this)), ui(new Ui::DAChartOperateWidget)
 {
-	ui->setupUi(this);
-	connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DAChartOperateWidget::onTabWidgetCurrentChanged);
-	connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &DAChartOperateWidget::onTabCloseRequested);
+    ui->setupUi(this);
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DAChartOperateWidget::onTabWidgetCurrentChanged);
+    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &DAChartOperateWidget::onTabCloseRequested);
 }
 
 DAChartOperateWidget::~DAChartOperateWidget()
 {
-	delete ui;
+    delete ui;
 }
 
 // 获取窗口数量
@@ -87,19 +87,39 @@ DAFigureFactory* DAChartOperateWidget::getFigureFactory() const
  * @note 重载此函数，如果没有调用DAChartOperateWidget::createFigure，必须调用initFigureConnect(fig);来初始化创建的fig，同时也要发射信号figureCreated
  * @return
  */
-DAFigureWidget* DAChartOperateWidget::createFigure()
+DAFigureWidget* DAChartOperateWidget::createFigure(const QString& name)
 {
-	++g_figure_cnt;
-	QString t           = tr("figure-%1").arg(g_figure_cnt);
-	DAFigureWidget* fig = getFigureFactory()->createFigure();
-	fig->setWindowTitle(t);
+    ++g_figure_cnt;
+    QString t = name;
+    if (name.isEmpty()) {
+        t = tr("figure-%1").arg(g_figure_cnt);
+    }
+    DAFigureWidget* fig = getFigureFactory()->createFigure();
+    fig->setWindowTitle(t);
 
-	// ui->tabWidget->addTab会触发currentFigureChanged信号，这里会发射figureCreated，不触发currentFigureChanged信号
-	QSignalBlocker b(ui->tabWidget);
-	ui->tabWidget->addTab(fig, t);
-	initFigureConnect(fig);
-	Q_EMIT figureCreated(fig);
-	return fig;
+    // ui->tabWidget->addTab会触发currentFigureChanged信号，这里会发射figureCreated，不触发currentFigureChanged信号
+    QSignalBlocker b(ui->tabWidget);
+    ui->tabWidget->addTab(fig, t);
+    initFigureConnect(fig);
+    Q_EMIT figureCreated(fig);
+    return fig;
+}
+
+/**
+ * @brief 获取所有的绘图
+ * @return
+ */
+QList< DAFigureWidget* > DAChartOperateWidget::getFigureList() const
+{
+    QList< DAFigureWidget* > res;
+    int count = getFigureCount();
+    for (int i = 0; i < count; ++i) {
+        DAFigureWidget* fig = getFigure(i);
+        if (fig) {
+            res.append(fig);
+        }
+    }
+    return res;
 }
 
 /**
@@ -121,6 +141,15 @@ DAFigureWidget* DAChartOperateWidget::gcf() const
 }
 
 /**
+ * @brief 把绘图设置为当前绘图
+ * @param index
+ */
+void DAChartOperateWidget::setCurrentFigure(int index)
+{
+    ui->tabWidget->setCurrentIndex(index);
+}
+
+/**
  * @brief 根据索引获取fig
  * @param index
  * @return
@@ -128,6 +157,22 @@ DAFigureWidget* DAChartOperateWidget::gcf() const
 DAFigureWidget* DAChartOperateWidget::getFigure(int index) const
 {
     return qobject_cast< DAFigureWidget* >(ui->tabWidget->widget(index));
+}
+
+/**
+ * @brief 查找绘图
+ * @param id
+ * @return
+ */
+DAFigureWidget* DAChartOperateWidget::findFigure(const QString& id) const
+{
+    const QList< DAFigureWidget* > figs = getFigureList();
+    for (DAFigureWidget* fig : figs) {
+        if (fig->getFigureId() == id) {
+            return fig;
+        }
+    }
+    return nullptr;
 }
 
 /**
@@ -142,11 +187,11 @@ QString DAChartOperateWidget::getFigureName(int index) const
 
 QString DAChartOperateWidget::getFigureName(DAFigureWidget* f) const
 {
-	int index = getFigureIndex(f);
-	if (index < 0) {
-		return QString();
-	}
-	return getFigureName(index);
+    int index = getFigureIndex(f);
+    if (index < 0) {
+        return QString();
+    }
+    return getFigureName(index);
 }
 
 /**
@@ -161,11 +206,11 @@ void DAChartOperateWidget::setFigureName(int index, const QString& name)
 
 void DAChartOperateWidget::setFigureName(DAFigureWidget* f, const QString& name)
 {
-	int index = getFigureIndex(f);
-	if (index < 0) {
-		return;
-	}
-	setFigureName(index, name);
+    int index = getFigureIndex(f);
+    if (index < 0) {
+        return;
+    }
+    setFigureName(index, name);
 }
 
 /**
@@ -185,18 +230,18 @@ int DAChartOperateWidget::getFigureIndex(DAFigureWidget* f) const
  */
 void DAChartOperateWidget::removeFigure(DAFigureWidget* f, bool deleteFigure)
 {
-	if (!f) {
-		return;
-	}
-	int index = getFigureIndex(f);
-	if (index < 0) {
-		return;
-	}
+    if (!f) {
+        return;
+    }
+    int index = getFigureIndex(f);
+    if (index < 0) {
+        return;
+    }
     Q_EMIT figureRemoving(f);
-	ui->tabWidget->removeTab(index);
-	if (deleteFigure) {
-		f->deleteLater();
-	}
+    ui->tabWidget->removeTab(index);
+    if (deleteFigure) {
+        f->deleteLater();
+    }
 }
 
 /**
@@ -205,11 +250,11 @@ void DAChartOperateWidget::removeFigure(DAFigureWidget* f, bool deleteFigure)
  */
 DAChartWidget* DAChartOperateWidget::getCurrentChart() const
 {
-	DAFigureWidget* fig = getCurrentFigure();
-	if (fig) {
-		return fig->getCurrentChart();
-	}
-	return nullptr;
+    DAFigureWidget* fig = getCurrentFigure();
+    if (fig) {
+        return fig->getCurrentChart();
+    }
+    return nullptr;
 }
 
 /**
@@ -221,13 +266,47 @@ DAChartWidget* DAChartOperateWidget::gca() const
     return getCurrentChart();
 }
 
+/**
+ * @brief 获取当前选中绘图的所有图表
+ * @return
+ */
+QList< DAChartWidget* > DAChartOperateWidget::getAllCharts() const
+{
+    DAFigureWidget* fig = getCurrentFigure();
+    if (fig) {
+        return fig->getCharts();
+    }
+    return QList< DAChartWidget* >();
+}
+
+/**
+ * @brief 获取当前选中绘图的所有图表
+ * @return
+ */
+QList< DAChartWidget* > DAChartOperateWidget::gcas() const
+{
+    return getAllCharts();
+}
+
 QUndoStack* DAChartOperateWidget::getUndoStack()
 {
-	DAFigureWidget* fig = getCurrentFigure();
-	if (fig) {
-		return fig->getUndoStack();
-	}
-	return nullptr;
+    DAFigureWidget* fig = getCurrentFigure();
+    if (fig) {
+        return fig->getUndoStack();
+    }
+    return nullptr;
+}
+
+/**
+ * @brief 清除所有绘图
+ */
+void DAChartOperateWidget::clear()
+{
+    const QList< DAFigureWidget* > figs = getFigureList();
+    for (DAFigureWidget* fig : figs) {
+        removeFigure(fig, true);
+    }
+    ui->tabWidget->clear();
 }
 
 /**
@@ -238,11 +317,11 @@ QUndoStack* DAChartOperateWidget::getUndoStack()
  */
 void DAChartOperateWidget::initFigureConnect(DAFigureWidget* fig)
 {
-	// 信号转发
-	connect(fig, &DAFigureWidget::chartAdded, this, &DAChartOperateWidget::chartAdded);
-	connect(fig, &DAFigureWidget::chartRemoved, this, &DAChartOperateWidget::chartRemoved);
-	connect(fig, &DAFigureWidget::currentChartChanged, this, &DAChartOperateWidget::currentChartChanged);
-	connect(fig, &DAFigureWidget::windowTitleChanged, this, &DAChartOperateWidget::onFigureTitleChanged);
+    // 信号转发
+    connect(fig, &DAFigureWidget::chartAdded, this, &DAChartOperateWidget::chartAdded);
+    connect(fig, &DAFigureWidget::chartRemoved, this, &DAChartOperateWidget::chartRemoved);
+    connect(fig, &DAFigureWidget::currentChartChanged, this, &DAChartOperateWidget::currentChartChanged);
+    connect(fig, &DAFigureWidget::windowTitleChanged, this, &DAChartOperateWidget::onFigureTitleChanged);
 }
 
 /**
@@ -251,18 +330,18 @@ void DAChartOperateWidget::initFigureConnect(DAFigureWidget* fig)
  */
 void DAChartOperateWidget::onTabWidgetCurrentChanged(int index)
 {
-	DAFigureWidget* fig = getFigure(index);
-	if (nullptr == fig) {
+    DAFigureWidget* fig = getFigure(index);
+    if (nullptr == fig) {
         // 这个是删除最后一个绘图
         // qCritical() << tr("chart operate widget's tab changed,but can not find figure");  // cn:绘图操作窗口的标签改变信号中，无法通过标签索引找到对应的绘图
-		return;
-	}
-	auto un = fig->getUndoStack();
-	if (un) {
-		if (!un->isActive()) {
-			un->setActive(true);
-		}
-	}
+        return;
+    }
+    auto un = fig->getUndoStack();
+    if (un) {
+        if (!un->isActive()) {
+            un->setActive(true);
+        }
+    }
     Q_EMIT currentFigureChanged(fig, index);
 }
 
@@ -272,16 +351,16 @@ void DAChartOperateWidget::onTabWidgetCurrentChanged(int index)
  */
 void DAChartOperateWidget::onTabCloseRequested(int index)
 {
-	DAFigureWidget* fig = getFigure(index);
-	if (!fig) {
-		return;
-	}
-	QMessageBox::StandardButton btn = QMessageBox::question(this, tr("question"), tr("Whether to close the figure widget"));
-	if (QMessageBox::Yes != btn) {
-		return;
-	}
+    DAFigureWidget* fig = getFigure(index);
+    if (!fig) {
+        return;
+    }
+    QMessageBox::StandardButton btn = QMessageBox::question(this, tr("question"), tr("Whether to close the figure widget"));
+    if (QMessageBox::Yes != btn) {
+        return;
+    }
     // 这里不能直接调用removeFigure，removeFigure里面会判断tab
-	removeFigure(fig, true);
+    removeFigure(fig, true);
 }
 
 /**
@@ -290,13 +369,14 @@ void DAChartOperateWidget::onTabCloseRequested(int index)
  */
 void DAChartOperateWidget::onFigureTitleChanged(const QString& t)
 {
-	DAFigureWidget* fig = qobject_cast< DAFigureWidget* >(sender());
-	if (fig) {
-		int i = getFigureIndex(fig);
-		if (i >= 0) {
-			ui->tabWidget->setTabText(i, t);
-		}
-	}
+    DAFigureWidget* fig = qobject_cast< DAFigureWidget* >(sender());
+    if (fig) {
+        int i = getFigureIndex(fig);
+        if (i >= 0) {
+            ui->tabWidget->setTabText(i, t);
+        }
+        Q_EMIT figureTitleChanged(fig, t);
+    }
 }
 
 }  // end DA

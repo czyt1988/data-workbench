@@ -23,24 +23,4 @@ DADataManager* DAAbstractChartAddItemWidget::getDataManager() const
     return mDataManager;
 }
 
-void DAAbstractChartAddItemWidget::setCurrentData(const DAData& d)
-{
-    if (mData != d) {
-        mData = d;
-        Q_EMIT currentDataChanged(d);
-    }
-}
-
-const DAData& DAAbstractChartAddItemWidget::getCurrentData() const
-{
-    return mData;
-}
-
-/**
- * @brief 可以通过此函数进行主动更新
- */
-void DAAbstractChartAddItemWidget::updateData()
-{
-}
-
 }  // end namespace of DA

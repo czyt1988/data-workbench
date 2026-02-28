@@ -3,14 +3,17 @@
 #include <QObject>
 #include <QEvent>
 #include <QPointer>
+#include "DAData.h"
 class QDragEnterEvent;
 class QDragMoveEvent;
 class QDragLeaveEvent;
 class QDropEvent;
 namespace DA
 {
+class DAChartAddCurveWidget;
 class DAAppChartOperateWidget;
 class DAFigureWidget;
+class DAChartWidget;
 /**
  * @brief 这个是针对DAAppFigureWidget的事件过滤器，可以为DAAppFigureWidget提供拖曳功能
  */
@@ -24,12 +27,13 @@ public:
 
 protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
-
-protected:
     bool dragEnterEvent(QDragEnterEvent* e, DAFigureWidget* fig);
     bool dragMoveEvent(QDragMoveEvent* e, DAFigureWidget* fig);
     bool dragLeaveEvent(QDragLeaveEvent* e, DAFigureWidget* fig);
     bool dropEvent(QDropEvent* e, DAFigureWidget* fig);
+
+private:
+    DAChartAddCurveWidget* getChartAddCurveWidget();
 
 private:
     QPointer< DAAppChartOperateWidget > mChartOptWidget;

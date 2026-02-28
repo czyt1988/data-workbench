@@ -1,5 +1,5 @@
 ﻿#include "DAPyScriptsDataFrame.h"
-#include "DAPybind11QtTypeCast.h"
+#include "DAPybind11QtCaster.hpp"
 #include <QDebug>
 namespace DA
 {
@@ -9,18 +9,18 @@ namespace DA
 //===================================================
 DAPyScriptsDataFrame::DAPyScriptsDataFrame(bool autoImport) : DAPyModule()
 {
-	if (autoImport) {
-		if (!import()) {
-			qCritical() << QObject::tr("can not import da_dataframe module");
-		}
-	}
+    if (autoImport) {
+        if (!import()) {
+            qCritical() << QObject::tr("can not import da_dataframe module");
+        }
+    }
 }
 
 DAPyScriptsDataFrame::DAPyScriptsDataFrame(const pybind11::object& obj) : DAPyModule(obj)
 {
-	if (isModule()) {
-		qCritical() << QObject::tr("can not import DAWorkBench.io");
-	}
+    if (isModule()) {
+        qCritical() << QObject::tr("can not import DAWorkBench.io");
+    }
 }
 
 DAPyScriptsDataFrame::~DAPyScriptsDataFrame()
@@ -35,14 +35,14 @@ DAPyScriptsDataFrame::~DAPyScriptsDataFrame()
  */
 bool DAPyScriptsDataFrame::drop_irow(DAPyDataFrame& df, const QList< int >& index) noexcept
 {
-	try {
-		pybind11::object da_drop_irow = attr("da_drop_irow");
-		da_drop_irow(df.object(), DA::PY::toPyList(index));
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_drop_irow = attr("da_drop_irow");
+        da_drop_irow(df.object(), DA::PY::toPyObject(index));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -53,14 +53,14 @@ bool DAPyScriptsDataFrame::drop_irow(DAPyDataFrame& df, const QList< int >& inde
  */
 bool DAPyScriptsDataFrame::drop_icolumn(DAPyDataFrame& df, const QList< int >& index) noexcept
 {
-	try {
-		pybind11::object da_drop_icolumn = attr("da_drop_icolumn");
-		da_drop_icolumn(df.object(), DA::PY::toPyList(index));
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_drop_icolumn = attr("da_drop_icolumn");
+        da_drop_icolumn(df.object(), DA::PY::toPyObject(index));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -71,14 +71,14 @@ bool DAPyScriptsDataFrame::drop_icolumn(DAPyDataFrame& df, const QList< int >& i
  */
 bool DAPyScriptsDataFrame::insert_nanrow(DAPyDataFrame& df, int r) noexcept
 {
-	try {
-		pybind11::object da_insert_nanrow = attr("da_insert_nanrow");
-		da_insert_nanrow(df.object(), pybind11::int_(r));
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_insert_nanrow = attr("da_insert_nanrow");
+        da_insert_nanrow(df.object(), pybind11::int_(r));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -91,21 +91,21 @@ bool DAPyScriptsDataFrame::insert_nanrow(DAPyDataFrame& df, int r) noexcept
  */
 bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df, int c, const QString& name, const QVariant& defaultvalue) noexcept
 {
-	try {
-		pybind11::object da_insert_column = attr("da_insert_column");
-		pybind11::dict args;
-		args[ "df" ]   = df.object();
-		args[ "col" ]  = pybind11::int_(c);
-		args[ "name" ] = DA::PY::toPyStr(name);
-		if (defaultvalue.isValid()) {
-			args[ "defaultvalue" ] = DA::PY::toPyObject(defaultvalue);
-		}
-		da_insert_column(**args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_insert_column = attr("da_insert_column");
+        pybind11::dict args;
+        args[ "df" ]   = df.object();
+        args[ "col" ]  = pybind11::int_(c);
+        args[ "name" ] = DA::PY::toPyObject(name);
+        if (defaultvalue.isValid()) {
+            args[ "defaultvalue" ] = pybind11::cast(defaultvalue);
+        }
+        da_insert_column(**args);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -117,30 +117,28 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df, int c, const QString
  * @param stop
  * @return
  */
-bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
-                                         int c,
-                                         const QString& name,
-                                         const QVariant& start,
-                                         const QVariant& stop) noexcept
+bool DAPyScriptsDataFrame::insert_column(
+    DAPyDataFrame& df, int c, const QString& name, const QVariant& start, const QVariant& stop
+) noexcept
 {
-	try {
-		pybind11::object da_insert_column = attr("da_insert_column");
-		pybind11::dict args;
-		args[ "df" ]    = df.object();
-		args[ "col" ]   = pybind11::int_(c);
-		args[ "name" ]  = DA::PY::toPyStr(name);
-		args[ "start" ] = DA::PY::toPyObject(start);
-		args[ "stop" ]  = DA::PY::toPyObject(stop);
-		if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-			|| start.canConvert(QMetaType::QTime)) {
-			args[ "dtype" ] = pybind11::dtype("datetime64");
-		}
-		da_insert_column(**args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_insert_column = attr("da_insert_column");
+        pybind11::dict args;
+        args[ "df" ]    = df.object();
+        args[ "col" ]   = pybind11::int_(c);
+        args[ "name" ]  = DA::PY::toPyObject(name);
+        args[ "start" ] = pybind11::cast(start);
+        args[ "stop" ]  = pybind11::cast(stop);
+        if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
+            || start.canConvert(QMetaType::QTime)) {
+            args[ "dtype" ] = pybind11::dtype("datetime64");
+        }
+        da_insert_column(**args);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -151,14 +149,14 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
  */
 bool DAPyScriptsDataFrame::to_csv(const DAPyDataFrame& df, const QString& path, const QString& sep) noexcept
 {
-	try {
-		pybind11::object da_to_csv = attr("da_to_csv");
-		da_to_csv(df.object(), DA::PY::toPyStr(path), DA::PY::toPyStr(sep));
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_to_csv = attr("da_to_csv");
+        da_to_csv(df.object(), DA::PY::toPyObject(path), DA::PY::toPyObject(sep));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -169,14 +167,14 @@ bool DAPyScriptsDataFrame::to_csv(const DAPyDataFrame& df, const QString& path, 
  */
 bool DAPyScriptsDataFrame::to_excel(const DAPyDataFrame& df, const QString& path) noexcept
 {
-	try {
-		pybind11::object da_to_excel = attr("da_to_excel");
-		da_to_excel(df.object(), DA::PY::toPyStr(path));
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_to_excel = attr("da_to_excel");
+        da_to_excel(df.object(), DA::PY::toPyObject(path));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -187,14 +185,14 @@ bool DAPyScriptsDataFrame::to_excel(const DAPyDataFrame& df, const QString& path
  */
 bool DAPyScriptsDataFrame::to_pickle(const DAPyDataFrame& df, const QString& path) noexcept
 {
-	try {
-		pybind11::object da_to_pickle = attr("da_to_pickle");
-		da_to_pickle(df.object(), DA::PY::toPyStr(path));
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_to_pickle = attr("da_to_pickle");
+        da_to_pickle(df.object(), DA::PY::toPyObject(path));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -205,14 +203,14 @@ bool DAPyScriptsDataFrame::to_pickle(const DAPyDataFrame& df, const QString& pat
  */
 bool DAPyScriptsDataFrame::to_parquet(const DAPyDataFrame& df, const QString& path) noexcept
 {
-	try {
-		pybind11::object da_to_parquet = attr("da_to_parquet");
-		da_to_parquet(df.object(), DA::PY::toPyStr(path));
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_to_parquet = attr("da_to_parquet");
+        da_to_parquet(df.object(), DA::PY::toPyObject(path));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -223,14 +221,14 @@ bool DAPyScriptsDataFrame::to_parquet(const DAPyDataFrame& df, const QString& pa
  */
 bool DAPyScriptsDataFrame::from_pickle(DAPyDataFrame& df, const QString& path) noexcept
 {
-	try {
-		pybind11::object da_from_pickle = attr("da_from_pickle");
-		da_from_pickle(df.object(), DA::PY::toPyStr(path));
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_from_pickle = attr("da_from_pickle");
+        da_from_pickle(df.object(), DA::PY::toPyObject(path));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -241,14 +239,14 @@ bool DAPyScriptsDataFrame::from_pickle(DAPyDataFrame& df, const QString& path) n
  */
 bool DAPyScriptsDataFrame::from_parquet(DAPyDataFrame& df, const QString& path) noexcept
 {
-	try {
-		pybind11::object da_from_parquet = attr("da_from_parquet");
-		da_from_parquet(df.object(), DA::PY::toPyStr(path));
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_from_parquet = attr("da_from_parquet");
+        da_from_parquet(df.object(), DA::PY::toPyObject(path));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -260,18 +258,18 @@ bool DAPyScriptsDataFrame::from_parquet(DAPyDataFrame& df, const QString& path) 
  */
 bool DAPyScriptsDataFrame::astype(DAPyDataFrame& df, const QList< int >& colsIndex, const DAPyDType& dt) noexcept
 {
-	try {
-		pybind11::object da_astype = attr("da_astype");
-		pybind11::list index;
-		for (int v : colsIndex) {
-			index.append(pybind11::int_(v));
-		}
-		da_astype(df.object(), index, dt.object());
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_astype = attr("da_astype");
+        pybind11::list index;
+        for (int v : colsIndex) {
+            index.append(pybind11::int_(v));
+        }
+        da_astype(df.object(), index, dt.object());
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -283,32 +281,32 @@ bool DAPyScriptsDataFrame::astype(DAPyDataFrame& df, const QList< int >& colsInd
  */
 bool DAPyScriptsDataFrame::setnan(DAPyDataFrame& df, const QList< int >& rowsIndex, const QList< int >& colsIndex) noexcept
 {
-	try {
-		pybind11::object da_setnan = attr("da_setnan");
-		pybind11::list rows;
-		pybind11::list columns;
-		for (int i = 0; i < rowsIndex.size(); ++i) {
-			rows.append(pybind11::int_(rowsIndex[ i ]));
-			columns.append(pybind11::int_(colsIndex[ i ]));
-		}
-		da_setnan(df.object(), rows, columns);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_setnan = attr("da_setnan");
+        pybind11::list rows;
+        pybind11::list columns;
+        for (int i = 0; i < rowsIndex.size(); ++i) {
+            rows.append(pybind11::int_(rowsIndex[ i ]));
+            columns.append(pybind11::int_(colsIndex[ i ]));
+        }
+        da_setnan(df.object(), rows, columns);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 bool DAPyScriptsDataFrame::import() noexcept
 {
-	try {
-		pybind11::module m = pybind11::module::import("DAWorkbench");
-		object()           = m.attr("dataframe");
-	} catch (const std::exception& e) {
-		qCritical() << e.what();
-		return false;
-	}
-	return true;
+    try {
+        pybind11::module m = pybind11::module::import("DAWorkbench");
+        object()           = m.attr("dataframe");
+    } catch (const std::exception& e) {
+        qCritical() << e.what();
+        return false;
+    }
+    return true;
 }
 
 /**
@@ -319,18 +317,18 @@ bool DAPyScriptsDataFrame::import() noexcept
  */
 bool DAPyScriptsDataFrame::cast_to_num(DAPyDataFrame& df, const QList< int >& colsIndex, pybind11::dict args) noexcept
 {
-	try {
-		pybind11::object da_cast_to_num = attr("da_cast_to_num");
-		pybind11::list index;
-		for (int v : colsIndex) {
-			index.append(pybind11::int_(v));
-		}
-		da_cast_to_num(df.object(), index, **args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_cast_to_num = attr("da_cast_to_num");
+        pybind11::list index;
+        for (int v : colsIndex) {
+            index.append(pybind11::int_(v));
+        }
+        da_cast_to_num(df.object(), index, **args);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 /**
  * @brief DAPyScriptsDataFrame::cast_to_num
@@ -340,18 +338,18 @@ bool DAPyScriptsDataFrame::cast_to_num(DAPyDataFrame& df, const QList< int >& co
  */
 bool DAPyScriptsDataFrame::cast_to_datetime(DAPyDataFrame& df, const QList< int >& colsIndex, pybind11::dict args) noexcept
 {
-	try {
-		pybind11::object da_cast_to_datetime = attr("da_cast_to_datetime");
-		pybind11::list index;
-		for (int v : colsIndex) {
-			index.append(pybind11::int_(v));
-		}
-		da_cast_to_datetime(df.object(), index, **args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_cast_to_datetime = attr("da_cast_to_datetime");
+        pybind11::list index;
+        for (int v : colsIndex) {
+            index.append(pybind11::int_(v));
+        }
+        da_cast_to_datetime(df.object(), index, **args);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -362,18 +360,18 @@ bool DAPyScriptsDataFrame::cast_to_datetime(DAPyDataFrame& df, const QList< int 
  */
 bool DAPyScriptsDataFrame::set_index(DAPyDataFrame& df, const QList< int >& colsIndex) noexcept
 {
-	try {
-		pybind11::object da_setindex = attr("da_setindex");
-		pybind11::list index;
-		for (int v : colsIndex) {
-			index.append(pybind11::int_(v));
-		}
-		da_setindex(df.object(), index);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_setindex = attr("da_setindex");
+        pybind11::list index;
+        for (int v : colsIndex) {
+            index.append(pybind11::int_(v));
+        }
+        da_setindex(df.object(), index);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -384,15 +382,15 @@ bool DAPyScriptsDataFrame::set_index(DAPyDataFrame& df, const QList< int >& cols
  */
 DAPySeries DAPyScriptsDataFrame::itake_column(DAPyDataFrame& df, int col) noexcept
 {
-	try {
-		pybind11::object da_itake_column = attr("da_itake_column");
-		// 执行
-		DAPySeries s = da_itake_column(df.object(), pybind11::int_(col));
-		return s;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return DAPySeries();
+    try {
+        pybind11::object da_itake_column = attr("da_itake_column");
+        // 执行
+        DAPySeries s = da_itake_column(df.object(), pybind11::int_(col));
+        return s;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return DAPySeries();
 }
 
 /**
@@ -404,14 +402,14 @@ DAPySeries DAPyScriptsDataFrame::itake_column(DAPyDataFrame& df, int col) noexce
  */
 bool DAPyScriptsDataFrame::insert_at(DAPyDataFrame& df, int col, const DAPySeries& series) noexcept
 {
-	try {
-		pybind11::object da_insert_at = attr("da_insert_at");
-		da_insert_at(df.object(), pybind11::int_(col), series.object());
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_insert_at = attr("da_insert_at");
+        da_insert_at(df.object(), pybind11::int_(col), series.object());
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -423,29 +421,27 @@ bool DAPyScriptsDataFrame::insert_at(DAPyDataFrame& df, int col, const DAPySerie
  * @param thresh
  * @return
  */
-bool DAPyScriptsDataFrame::dropna(DAPyDataFrame& df,
-                                  int axis,
-                                  const QString& how,
-                                  const QList< int >& indexs,
-                                  std::optional< int > thresh) noexcept
+bool DAPyScriptsDataFrame::dropna(
+    DAPyDataFrame& df, int axis, const QString& how, const QList< int >& indexs, std::optional< int > thresh
+) noexcept
 {
-	try {
-		pybind11::object da_drop_na = attr("da_drop_na");
-		pybind11::object threshobj  = pybind11::none();
-		if (thresh) {
-			threshobj = pybind11::int_(thresh.value());
-		}
-		pybind11::dict args;
-		args[ "axis" ]   = axis;
-		args[ "how" ]    = DA::PY::toPyStr(how);
-		args[ "index" ]  = DA::PY::toPyList(indexs);
-		args[ "thresh" ] = threshobj;
-		da_drop_na(df.object(), **args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_drop_na = attr("da_drop_na");
+        pybind11::object threshobj  = pybind11::none();
+        if (thresh) {
+            threshobj = pybind11::int_(thresh.value());
+        }
+        pybind11::dict args;
+        args[ "axis" ]   = axis;
+        args[ "how" ]    = DA::PY::toPyObject(how);
+        args[ "index" ]  = DA::PY::toPyObject(indexs);
+        args[ "thresh" ] = threshobj;
+        da_drop_na(df.object(), **args);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -457,21 +453,21 @@ bool DAPyScriptsDataFrame::dropna(DAPyDataFrame& df,
  */
 bool DAPyScriptsDataFrame::fillna(DAPyDataFrame& df, double value, int limit) noexcept
 {
-	try {
-		pybind11::object da_fill_na = attr("da_fill_na");
-		pybind11::object limitObj   = pybind11::none();
-		if (limit > 0) {
-			limitObj = pybind11::int_(limit);
-		}
-		pybind11::dict args;
-		args[ "value" ] = value;
-		args[ "limit" ] = limitObj;
-		da_fill_na(df.object(), **args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_fill_na = attr("da_fill_na");
+        pybind11::object limitObj   = pybind11::none();
+        if (limit > 0) {
+            limitObj = pybind11::int_(limit);
+        }
+        pybind11::dict args;
+        args[ "value" ] = value;
+        args[ "limit" ] = limitObj;
+        da_fill_na(df.object(), **args);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -483,21 +479,21 @@ bool DAPyScriptsDataFrame::fillna(DAPyDataFrame& df, double value, int limit) no
  */
 bool DAPyScriptsDataFrame::ffillna(DAPyDataFrame& df, int axis, int limit) noexcept
 {
-	try {
-		pybind11::object da_ffill_na = attr("da_ffill_na");
-		pybind11::object limitObj    = pybind11::none();
-		if (limit > 0) {
-			limitObj = pybind11::int_(limit);
-		}
-		pybind11::dict args;
-		args[ "axis" ]  = axis;
-		args[ "limit" ] = limitObj;
-		da_ffill_na(df.object(), **args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_ffill_na = attr("da_ffill_na");
+        pybind11::object limitObj    = pybind11::none();
+        if (limit > 0) {
+            limitObj = pybind11::int_(limit);
+        }
+        pybind11::dict args;
+        args[ "axis" ]  = axis;
+        args[ "limit" ] = limitObj;
+        da_ffill_na(df.object(), **args);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -509,21 +505,21 @@ bool DAPyScriptsDataFrame::ffillna(DAPyDataFrame& df, int axis, int limit) noexc
  */
 bool DAPyScriptsDataFrame::bfillna(DAPyDataFrame& df, int axis, int limit) noexcept
 {
-	try {
-		pybind11::object da_bfill_na = attr("da_bfill_na");
-		pybind11::object limitObj    = pybind11::none();
-		if (limit > 0) {
-			limitObj = pybind11::int_(limit);
-		}
-		pybind11::dict args;
-		args[ "axis" ]  = axis;
-		args[ "limit" ] = limitObj;
-		da_bfill_na(df.object(), **args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_bfill_na = attr("da_bfill_na");
+        pybind11::object limitObj    = pybind11::none();
+        if (limit > 0) {
+            limitObj = pybind11::int_(limit);
+        }
+        pybind11::dict args;
+        args[ "axis" ]  = axis;
+        args[ "limit" ] = limitObj;
+        da_bfill_na(df.object(), **args);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 /**
  * @brief interpolate方法的wrapper
@@ -535,22 +531,22 @@ bool DAPyScriptsDataFrame::bfillna(DAPyDataFrame& df, int axis, int limit) noexc
  */
 bool DAPyScriptsDataFrame::interpolate(DAPyDataFrame& df, const QString& method, int order, int limit) noexcept
 {
-	try {
-		pybind11::object da_interpolate = attr("da_fill_interpolate");
-		pybind11::object limitObj       = pybind11::none();
-		if (limit > 0) {
-			limitObj = pybind11::int_(limit);
-		}
-		pybind11::dict args;
-		args[ "method" ] = DA::PY::toPyStr(method);
-		args[ "order" ]  = order;
-		args[ "limit" ]  = limitObj;
-		da_interpolate(df.object(), **args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_interpolate = attr("da_fill_interpolate");
+        pybind11::object limitObj       = pybind11::none();
+        if (limit > 0) {
+            limitObj = pybind11::int_(limit);
+        }
+        pybind11::dict args;
+        args[ "method" ] = DA::PY::toPyObject(method);
+        args[ "order" ]  = order;
+        args[ "limit" ]  = limitObj;
+        da_interpolate(df.object(), **args);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 /**
  * @brief dropduplicates方法的wrapper
@@ -561,21 +557,21 @@ bool DAPyScriptsDataFrame::interpolate(DAPyDataFrame& df, const QString& method,
  */
 bool DAPyScriptsDataFrame::dropduplicates(DAPyDataFrame& df, const QString& keep, const QList< int >& indexs) noexcept
 {
-	try {
-		pybind11::object da_drop_duplicates = attr("da_drop_duplicates");
-		pybind11::dict args;
-		args[ "keep" ] = DA::PY::toPyStr(keep);
-		if (indexs.empty()) {
-			args[ "index" ] = pybind11::none();
-		} else {
-			args[ "index" ] = DA::PY::toPyList(indexs);
-		}
-		da_drop_duplicates(df.object(), **args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_drop_duplicates = attr("da_drop_duplicates");
+        pybind11::dict args;
+        args[ "keep" ] = DA::PY::toPyObject(keep);
+        if (indexs.empty()) {
+            args[ "index" ] = pybind11::none();
+        } else {
+            args[ "index" ] = DA::PY::toPyObject(indexs);
+        }
+        da_drop_duplicates(df.object(), **args);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -587,25 +583,25 @@ bool DAPyScriptsDataFrame::dropduplicates(DAPyDataFrame& df, const QString& keep
  */
 bool DAPyScriptsDataFrame::nstdfilteroutlier(DAPyDataFrame& df, double n, int axis, const QList< int >& indexs) noexcept
 {
-	try {
-		pybind11::object da_nstd_filter_outlier = attr("da_nstd_filter_outlier");
-		if (n > 10 || n < 0.1) {
-			throw std::invalid_argument("n must be between 0.1 and 10.");
-		}
-		pybind11::dict args;
-		args[ "n" ]    = n;
-		args[ "axis" ] = pybind11::int_(axis);
-		if (indexs.empty()) {
-			args[ "index" ] = pybind11::none();
-		} else {
-			args[ "index" ] = DA::PY::toPyList(indexs);
-		}
-		da_nstd_filter_outlier(df.object(), **args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_nstd_filter_outlier = attr("da_nstd_filter_outlier");
+        if (n > 10 || n < 0.1) {
+            throw std::invalid_argument("n must be between 0.1 and 10.");
+        }
+        pybind11::dict args;
+        args[ "n" ]    = n;
+        args[ "axis" ] = pybind11::int_(axis);
+        if (indexs.empty()) {
+            args[ "index" ] = pybind11::none();
+        } else {
+            args[ "index" ] = DA::PY::toPyObject(indexs);
+        }
+        da_nstd_filter_outlier(df.object(), **args);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -617,26 +613,26 @@ bool DAPyScriptsDataFrame::nstdfilteroutlier(DAPyDataFrame& df, double n, int ax
  */
 bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis) noexcept
 {
-	try {
-		pybind11::object da_clip_outlier = attr("da_clip_outlier");
-		pybind11::dict args;
-		if (lowervalue == 0.0) {
-			args[ "lower" ] = pybind11::none();
-		} else {
-			args[ "lower" ] = lowervalue;
-		}
-		if (uppervalue == 0.0) {
-			args[ "upper" ] = pybind11::none();
-		} else {
-			args[ "upper" ] = uppervalue;
-		}
-		args[ "axis" ] = pybind11::int_(axis);
-		da_clip_outlier(df.object(), **args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_clip_outlier = attr("da_clip_outlier");
+        pybind11::dict args;
+        if (lowervalue == 0.0) {
+            args[ "lower" ] = pybind11::none();
+        } else {
+            args[ "lower" ] = lowervalue;
+        }
+        if (uppervalue == 0.0) {
+            args[ "upper" ] = pybind11::none();
+        } else {
+            args[ "upper" ] = uppervalue;
+        }
+        args[ "axis" ] = pybind11::int_(axis);
+        da_clip_outlier(df.object(), **args);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -647,17 +643,17 @@ bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, dou
  */
 bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr) noexcept
 {
-	try {
-		if (expr.isEmpty()) {
-			return false;
-		}
-		pybind11::object da_query_datas = attr("da_query_datas");
-		da_query_datas(df.object(), DA::PY::toPyStr(expr));
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        if (expr.isEmpty()) {
+            return false;
+        }
+        pybind11::object da_query_datas = attr("da_query_datas");
+        da_query_datas(df.object(), DA::PY::toPyObject(expr));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -668,25 +664,26 @@ bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr) no
  */
 QList< QPair< int, int > > DAPyScriptsDataFrame::searchData(const DAPyDataFrame& df, const QString& expr) noexcept
 {
-	QList< QPair< int, int > > matches;
-	try {
-		if (expr.isEmpty()) {
-			return matches;
-		}
-		pybind11::object da_search_data = attr("da_search_data");
-		pybind11::object result         = da_search_data(df.object(), expr.toDouble());
+    QList< QPair< int, int > > matches;
+    try {
+        if (expr.isEmpty()) {
+            return matches;
+        }
+        pybind11::object da_search_data = attr("da_search_data");
+        pybind11::object result         = da_search_data(df.object(), expr.toDouble());
 
-		for (auto item : result) {
-			pybind11::tuple pos = item.cast< pybind11::tuple >();
-			matches.append(qMakePair(pos[ 0 ].cast< int >(),  // 行
-									 pos[ 1 ].cast< int >()   // 列
-									 ));
-		}
-		return matches;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return matches;
+        for (auto item : result) {
+            pybind11::tuple pos = item.cast< pybind11::tuple >();
+            matches.append(qMakePair(
+                pos[ 0 ].cast< int >(),  // 行
+                pos[ 1 ].cast< int >()   // 列
+            ));
+        }
+        return matches;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return matches;
 }
 
 /**
@@ -697,17 +694,17 @@ QList< QPair< int, int > > DAPyScriptsDataFrame::searchData(const DAPyDataFrame&
  */
 bool DAPyScriptsDataFrame::evalDatas(DAPyDataFrame& df, const QString& expr) noexcept
 {
-	try {
-		if (expr.isEmpty()) {
-			return false;
-		}
-		pybind11::object da_eval_datas = attr("da_eval_datas");
-		da_eval_datas(df.object(), DA::PY::toPyStr(expr));
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        if (expr.isEmpty()) {
+            return false;
+        }
+        pybind11::object da_eval_datas = attr("da_eval_datas");
+        da_eval_datas(df.object(), DA::PY::toPyObject(expr));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -719,22 +716,22 @@ bool DAPyScriptsDataFrame::evalDatas(DAPyDataFrame& df, const QString& expr) noe
  */
 bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QString& by, bool ascending) noexcept
 {
-	try {
-		pybind11::object da_sort = attr("da_sort");
-		pybind11::dict args;
+    try {
+        pybind11::object da_sort = attr("da_sort");
+        pybind11::dict args;
 
-		if (by.isEmpty()) {
-			return false;
-		}
+        if (by.isEmpty()) {
+            return false;
+        }
 
-		args[ "by" ]        = DA::PY::toPyStr(by);
-		args[ "ascending" ] = ascending;
-		da_sort(df.object(), **args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+        args[ "by" ]        = DA::PY::toPyObject(by);
+        args[ "ascending" ] = ascending;
+        da_sort(df.object(), **args);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -745,26 +742,26 @@ bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QString& by, bool ascen
  */
 bool DAPyScriptsDataFrame::dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QString& index) noexcept
 {
-	try {
-		pybind11::object da_data_select = attr("da_data_select");
-		pybind11::dict args;
-		if (lowervalue == 0.0) {
-			args[ "lower" ] = pybind11::none();
-		} else {
-			args[ "lower" ] = lowervalue;
-		}
-		if (uppervalue == 0.0) {
-			args[ "upper" ] = pybind11::none();
-		} else {
-			args[ "upper" ] = uppervalue;
-		}
-		args[ "index" ] = DA::PY::toPyStr(index);
-		da_data_select(df.object(), **args);
-		return true;
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return false;
+    try {
+        pybind11::object da_data_select = attr("da_data_select");
+        pybind11::dict args;
+        if (lowervalue == 0.0) {
+            args[ "lower" ] = pybind11::none();
+        } else {
+            args[ "lower" ] = lowervalue;
+        }
+        if (uppervalue == 0.0) {
+            args[ "upper" ] = pybind11::none();
+        } else {
+            args[ "upper" ] = uppervalue;
+        }
+        args[ "index" ] = DA::PY::toPyObject(index);
+        da_data_select(df.object(), **args);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -777,43 +774,45 @@ bool DAPyScriptsDataFrame::dataselect(DAPyDataFrame& df, double lowervalue, doub
  * @param sort 聚合后的结果排序
  * @return DAPyDataFrame
  */
-DAPyDataFrame DAPyScriptsDataFrame::pivotTable(const DAPyDataFrame& df,
-                                               const QStringList& values,
-                                               const QStringList& index,
-                                               const QStringList& columns,
-                                               const QString& aggfunc,
-                                               bool margins,
-                                               const QString& marginsName,
-                                               bool sort) noexcept
+DAPyDataFrame DAPyScriptsDataFrame::pivotTable(
+    const DAPyDataFrame& df,
+    const QStringList& values,
+    const QStringList& index,
+    const QStringList& columns,
+    const QString& aggfunc,
+    bool margins,
+    const QString& marginsName,
+    bool sort
+) noexcept
 {
-	try {
-		pybind11::object da_pivot_table = attr("da_create_pivot_table");
-		pybind11::dict args;
-		if (values.empty()) {
-			args[ "values" ] = pybind11::none();
-		} else {
-			args[ "values" ] = DA::PY::toPyList(values);
-		}
-		if (index.empty()) {
-			args[ "index" ] = pybind11::none();
-		} else {
-			args[ "index" ] = DA::PY::toPyList(index);
-		}
-		if (columns.empty()) {
-			args[ "columns" ] = pybind11::none();
-		} else {
-			args[ "columns" ] = DA::PY::toPyList(columns);
-		}
-		args[ "aggfunc" ]      = DA::PY::toPyStr(aggfunc);
-		args[ "margins" ]      = margins;
-		args[ "margins_name" ] = DA::PY::toPyStr(marginsName);
-		args[ "sort" ]         = sort;
+    try {
+        pybind11::object da_pivot_table = attr("da_create_pivot_table");
+        pybind11::dict args;
+        if (values.empty()) {
+            args[ "values" ] = pybind11::none();
+        } else {
+            args[ "values" ] = DA::PY::toPyObject(values);
+        }
+        if (index.empty()) {
+            args[ "index" ] = pybind11::none();
+        } else {
+            args[ "index" ] = DA::PY::toPyObject(index);
+        }
+        if (columns.empty()) {
+            args[ "columns" ] = pybind11::none();
+        } else {
+            args[ "columns" ] = DA::PY::toPyObject(columns);
+        }
+        args[ "aggfunc" ]      = DA::PY::toPyObject(aggfunc);
+        args[ "margins" ]      = margins;
+        args[ "margins_name" ] = DA::PY::toPyObject(marginsName);
+        args[ "sort" ]         = sort;
 
-		return da_pivot_table(df.object(), **args);
-	} catch (const std::exception& e) {
-		dealException(e);
-	}
-	return DAPyDataFrame();
+        return da_pivot_table(df.object(), **args);
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return DAPyDataFrame();
 }
 
 }  // end DA namespace

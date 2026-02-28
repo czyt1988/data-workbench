@@ -27,7 +27,6 @@ public:
     DAAppPluginManager(QObject* p = nullptr);
     ~DAAppPluginManager();
 
-
     // 初始化加载所有插件
     virtual void loadAllPlugins(DACoreInterface* c) override;
 
@@ -43,10 +42,8 @@ public:
     // 获取所有的元数据
     QList< DANodeMetaData > getAllNodeMetaDatas() const;
 
-
 private:
     QList< DAAbstractPlugin* > mPlugins;
-    QList< DAAbstractNodePlugin* > mNodePlugins;
     QList< DANodeMetaData > mNodeMetaDatas;
 };
 }  // namespace DA

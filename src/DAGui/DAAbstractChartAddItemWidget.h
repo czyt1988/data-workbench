@@ -12,25 +12,20 @@ class DADataManager;
  */
 class DAGUI_API DAAbstractChartAddItemWidget : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	DAAbstractChartAddItemWidget(QWidget* par = nullptr);
-	~DAAbstractChartAddItemWidget();
+    DAAbstractChartAddItemWidget(QWidget* par = nullptr);
+    ~DAAbstractChartAddItemWidget();
 
 public:
-	/**
-	 * @brief 创建QwtPlotItem
-	 * @return 如果无法创建，返回nullptr
-	 */
-	virtual QwtPlotItem* createPlotItem() = 0;
+    /**
+     * @brief 创建QwtPlotItem
+     * @return 如果无法创建，返回nullptr
+     */
+    virtual QwtPlotItem* createPlotItem() = 0;
     // 设置datamanager，会触发dataManagerChanged信号
-    void setDataManager(DADataManager* dmgr);
+    virtual void setDataManager(DADataManager* dmgr);
     DADataManager* getDataManager() const;
-    // 设置当前的data
-    void setCurrentData(const DAData& d);
-    const DAData& getCurrentData() const;
-    // 更新数据接口
-    virtual void updateData();
 Q_SIGNALS:
     /**
      * @brief dataManager发生改变的信号
@@ -45,7 +40,6 @@ Q_SIGNALS:
 
 private:
     DADataManager* mDataManager { nullptr };
-    DAData mData;
 };
 }  // end DA
 

@@ -194,7 +194,7 @@ DAData DADataManager::getData(int index) const
  */
 DAData DADataManager::findData(const QString& name, Qt::CaseSensitivity cs) const
 {
-    for (const DAData& data : qAsConst(d_ptr->_dataList)) {
+    for (const DAData& data : std::as_const(d_ptr->_dataList)) {
         if (data.isNull()) {
             continue;
         }
@@ -407,18 +407,16 @@ QList< DAData > DADataManager::findDatasReg(const QRegularExpression& regex) con
         return result;
     }
 
-    for (const DAData& data : qAsConst(d_ptr->_dataList)) {
+    for (const DAData& data : std::as_const(d_ptr->_dataList)) {
         if (data.isNull()) {
             continue;
         }
 
         QString dataName = data.getName();
-        qDebug() << "dataName=" << dataName;
         // 使用 match 并指定匹配范围（0 到末尾，即完全匹配）
         QRegularExpressionMatch match = regex.match(dataName, 0, QRegularExpression::NormalMatch);
         if (match.hasMatch()) {
             result.append(data);
-            qDebug() << "dataName=" << dataName << " hasMatch";
         }
     }
 
@@ -503,7 +501,7 @@ void DADataManager::setUniqueDataName(DAData& d) const
 QSet< QString > DADataManager::getDatasNameSet() const
 {
     QSet< QString > names;
-    for (const DAData& d : qAsConst(d_ptr->_dataList)) {
+    for (const DAData& d : std::as_const(d_ptr->_dataList)) {
         names.insert(d.getName());
     }
     return names;

@@ -25,18 +25,14 @@ DAChartAddXYSeriesWidget::DAChartAddXYSeriesWidget(QWidget* parent)
 #endif
     QFontMetrics fm = fontMetrics();
     ui->tableViewXY->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
-    connect(this, &DAChartAddXYSeriesWidget::dataManagerChanged, this, &DAChartAddXYSeriesWidget::onDataManagerChanged);
-    connect(this, &DAChartAddXYSeriesWidget::currentDataChanged, this, &DAChartAddXYSeriesWidget::onCurrentDataChanged);
-    connect(ui->comboBoxX,
-            &DADataManagerComboBox::currentDataframeSeriesChanged,
-            this,
-            &DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged);
-    connect(ui->comboBoxY,
-            &DADataManagerComboBox::currentDataframeSeriesChanged,
-            this,
-            &DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged);
+    ui->listViewX->setAcceptMode(DAPySeriesListView::AcceptOneSeries);
+    ui->listViewY->setAcceptMode(DAPySeriesListView::AcceptOneSeries);
     connect(ui->groupBoxXAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked);
     connect(ui->groupBoxYAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked);
+    connect(ui->listViewX, &DAPySeriesListView::seriesChanged, this, &DAChartAddXYSeriesWidget::onXSeriesChanged);
+    connect(ui->listViewY, &DAPySeriesListView::seriesChanged, this, &DAChartAddXYSeriesWidget::onYSeriesChanged);
+    connect(ui->toolButtonRemoveFromX, &QToolButton::clicked, this, &DAChartAddXYSeriesWidget::onButtonXRemoveClicked);
+    connect(ui->toolButtonRemoveFromY, &QToolButton::clicked, this, &DAChartAddXYSeriesWidget::onButtonYRemoveClicked);
 }
 
 DAChartAddXYSeriesWidget::~DAChartAddXYSeriesWidget()
@@ -62,6 +58,13 @@ bool DAChartAddXYSeriesWidget::isYAutoincrement() const
     return ui->groupBoxYAutoincrement->isChecked();
 }
 
+void DAChartAddXYSeriesWidget::setDataManager(DADataManager* dmgr)
+{
+    DAAbstractChartAddItemWidget::setDataManager(dmgr);
+    ui->listViewX->setDataManager(dmgr);
+    ui->listViewY->setDataManager(dmgr);
+}
+
 /**
  * @brief 根据配置获取数据
  * @return 如果没有符合条件，返回一个empty的vector
@@ -75,43 +78,32 @@ QVector< QPointF > DAChartAddXYSeriesWidget::getSeries() const
 }
 
 /**
- * @brief DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged
- * @param data
- * @param seriesName
+ * @brief 推荐的名字使用y值的参数名
+ * @return
  */
-void DAChartAddXYSeriesWidget::onComboBoxXCurrentDataframeSeriesChanged(const DAData& data, const QString& seriesName)
+QString DAChartAddXYSeriesWidget::getNameHint() const
 {
-    if (seriesName.isEmpty()) {
-        return;
-    }
-#if DA_ENABLE_PYTHON
-    DAPySeries series;
-    DAPyDataFrame df = data.toDataFrame();
-    if (!df.isNone()) {
-        series = df[ seriesName ];
-    }
-    ui->tableViewXY->setSeriesAt(0, series);
-#endif
+    return getY().second;
 }
 
 /**
- * @brief DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged
+ * @brief 设置当前的x到list中
  * @param data
  * @param seriesName
  */
-void DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged(const DAData& data, const QString& seriesName)
+void DAChartAddXYSeriesWidget::setX(const DAData& dataframeData, const QString& seriesName)
 {
-    if (seriesName.isEmpty()) {
-        return;
-    }
-#if DA_ENABLE_PYTHON
-    DAPySeries series;
-    DAPyDataFrame df = data.toDataFrame();
-    if (!df.isNone()) {
-        series = df[ seriesName ];
-    }
-    ui->tableViewXY->setSeriesAt(1, series);
-#endif
+    ui->listViewX->addSeries(dataframeData, seriesName);
+}
+
+/**
+ * @brief 设置当前的y到list中
+ * @param data
+ * @param seriesName
+ */
+void DAChartAddXYSeriesWidget::setY(const DAData& dataframeData, const QString& seriesName)
+{
+    ui->listViewY->addSeries(dataframeData, seriesName);
 }
 
 /**
@@ -120,23 +112,8 @@ void DAChartAddXYSeriesWidget::onComboBoxYCurrentDataframeSeriesChanged(const DA
  */
 void DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
 {
-#if DA_ENABLE_PYTHON
-    if (on) {
-        double base, step;
-        if (tryGetXSelfInc(base, step)) {
-            ui->tableViewXY->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
-        }
-    } else {
-        // 取消要读取回原来的设置
-        DAPySeries series;
-        DAData data = ui->comboBoxX->getCurrentDAData();
-        if (data) {
-            series = data.toSeries();
-        }
-        ui->tableViewXY->setSeriesAt(0, series);
-    }
-    ui->comboBoxX->setEnabled(!on);
-#endif
+    Q_UNUSED(on);
+    updateTable();
 }
 
 /**
@@ -145,35 +122,55 @@ void DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
  */
 void DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
 {
-#if DA_ENABLE_PYTHON
-    if (on) {
+    Q_UNUSED(on);
+    updateTable();
+}
+
+void DAChartAddXYSeriesWidget::onXSeriesChanged()
+{
+    updateTable();
+}
+
+void DAChartAddXYSeriesWidget::onYSeriesChanged()
+{
+    updateTable();
+}
+
+void DAChartAddXYSeriesWidget::updateTable()
+{
+    ui->tableViewXY->clear();
+    if (ui->groupBoxXAutoincrement->isChecked()) {
+        double base, step;
+        if (tryGetXSelfInc(base, step)) {
+            ui->tableViewXY->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
+        }
+    } else {
+        DAPySeries x = getXSeries();
+        if (!x.isNone()) {
+            ui->tableViewXY->setSeriesAt(0, x);
+        }
+    }
+    if (ui->groupBoxYAutoincrement->isChecked()) {
         double base, step;
         if (tryGetYSelfInc(base, step)) {
             ui->tableViewXY->setSeriesAt(1, DAAutoincrementSeries< double >(base, step));
         }
     } else {
-        // 取消要读取回原来的设置
-        DAPySeries series;
-        DAData data = ui->comboBoxY->getCurrentDAData();
-        if (data) {
-            series = data.toSeries();
+        DAPySeries y = getYSeries();
+        if (!y.isNone()) {
+            ui->tableViewXY->setSeriesAt(1, y);
         }
-        ui->tableViewXY->setSeriesAt(1, series);
     }
-    ui->comboBoxY->setEnabled(!on);
-#endif
 }
 
-void DAChartAddXYSeriesWidget::onDataManagerChanged(DADataManager* dmgr)
+void DAChartAddXYSeriesWidget::onButtonXRemoveClicked()
 {
-    ui->comboBoxX->setDataManager(dmgr);
-    ui->comboBoxY->setDataManager(dmgr);
+    ui->listViewX->removeCurrentSelect();
 }
 
-void DAChartAddXYSeriesWidget::onCurrentDataChanged(const DAData& d)
+void DAChartAddXYSeriesWidget::onButtonYRemoveClicked()
 {
-    ui->comboBoxX->setCurrentDAData(d);
-    ui->comboBoxY->setCurrentDAData(d);
+    ui->listViewY->removeCurrentSelect();
 }
 
 /**
@@ -263,14 +260,7 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
         if (!getXAutoIncFromUI(xinc)) {
             return false;
         }
-        DAData yd = ui->comboBoxY->getCurrentDAData();
-        if (!yd.isSeries()) {
-            QMessageBox::warning(this,
-                                 tr("Warning"),              // cn:警告
-                                 tr("y must be a series"));  // cn:y必须是序列
-            return false;
-        }
-        DAPySeries y = yd.toSeries();
+        DAPySeries y = getYSeries();
         if (y.isNone()) {
             QMessageBox::warning(this,
                                  tr("Warning"),                                          // cn:警告
@@ -303,15 +293,7 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
         if (!getYAutoIncFromUI(yinc)) {
             return false;
         }
-        DAData xd = ui->comboBoxX->getCurrentDAData();
-        if (!xd.isSeries()) {
-            QMessageBox::warning(this,
-                                 tr("Warning"),            // cn:警告
-                                 tr("x must be a series")  // cn:x必须是序列
-            );
-            return false;
-        }
-        DAPySeries x = xd.toSeries();
+        DAPySeries x = getXSeries();
         if (x.isNone()) {
             QMessageBox::warning(this,
                                  tr("Warning"),                                          // cn:警告
@@ -340,23 +322,8 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
             return false;
         }
     } else {
-        DAData xd = ui->comboBoxX->getCurrentDAData();
-        DAData yd = ui->comboBoxY->getCurrentDAData();
-        if (!xd.isSeries()) {
-            QMessageBox::warning(this,
-                                 tr("Warning"),            // cn:警告
-                                 tr("x must be a series")  // cn:x必须是序列
-            );
-            return false;
-        }
-        if (!yd.isSeries()) {
-            QMessageBox::warning(this,
-                                 tr("Warning"),              // cn:警告
-                                 tr("y must be a series"));  // cn:y必须是序列
-            return false;
-        }
-        DAPySeries x = xd.toSeries();
-        DAPySeries y = yd.toSeries();
+        DAPySeries x = getXSeries();
+        DAPySeries y = getYSeries();
         if (x.isNone() || y.isNone()) {
             QMessageBox::warning(this,
                                  tr("Warning"),                                          // cn:警告
@@ -430,6 +397,56 @@ bool DAChartAddXYSeriesWidget::tryGetYSelfInc(double& base, double& step)
     base = a;
     step = b;
     return true;
+}
+
+QPair< DAData, QString > DAChartAddXYSeriesWidget::getY() const
+{
+    QList< QPair< DAData, QStringList > > datas = ui->listViewY->getSeries();
+    return getFirstValue(datas);
+}
+
+QPair< DAData, QString > DAChartAddXYSeriesWidget::getX() const
+{
+    QList< QPair< DAData, QStringList > > datas = ui->listViewX->getSeries();
+    return getFirstValue(datas);
+}
+
+DAPySeries DAChartAddXYSeriesWidget::getYSeries() const
+{
+    QPair< DAData, QString > y = getY();
+    if (y.first.isNull()) {
+        return DAPySeries();
+    }
+    DAPyDataFrame df = y.first.toDataFrame();
+    if (df.isNone()) {
+        return DAPySeries();
+    }
+    return df[ y.second ];
+}
+
+DAPySeries DAChartAddXYSeriesWidget::getXSeries() const
+{
+    QPair< DAData, QString > x = getX();
+    if (x.first.isNull()) {
+        return DAPySeries();
+    }
+    DAPyDataFrame df = x.first.toDataFrame();
+    if (df.isNone()) {
+        return DAPySeries();
+    }
+    return df[ x.second ];
+}
+
+QPair< DAData, QString > DAChartAddXYSeriesWidget::getFirstValue(const QList< QPair< DAData, QStringList > >& datas) const
+{
+    if (datas.empty()) {
+        return qMakePair(DAData(), QString());
+    }
+    auto data = datas.first();
+    if (data.second.empty()) {
+        return qMakePair(DAData(), QString());
+    }
+    return qMakePair(data.first, data.second.first());
 }
 
 }

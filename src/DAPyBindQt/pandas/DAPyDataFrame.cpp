@@ -4,7 +4,7 @@
 #include <QHash>
 #include "../numpy/DAPyModuleNumpy.h"
 #include "DAPyModulePandas.h"
-#include "DAPybind11QtTypeCast.h"
+#include "DAPybind11QtCaster.hpp"
 #include "DAPyModulePandas.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -57,7 +57,7 @@ DAPyDataFrame::~DAPyDataFrame()
 DAPySeries DAPyDataFrame::operator[](const QString& n) const
 {
     try {
-        pybind11::object obj = object()[ DA::PY::toPyStr(n) ];
+        pybind11::object obj = object()[ pybind11::cast(n) ];
         return DAPySeries(obj);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
@@ -72,7 +72,7 @@ DAPySeries DAPyDataFrame::operator[](std::size_t n) const
         if (n >= headers.size()) {
             return DAPySeries();
         }
-        QString name = headers[ n ];
+        QString name = headers[ static_cast< int >(n) ];
         return operator[](name);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
@@ -143,12 +143,10 @@ QList< QString > DAPyDataFrame::columns() const
 {
     QList< QString > res;
     try {
-        pybind11::list obj_columns = object().attr("columns");
+        pybind11::list obj_columns = attr("columns");
         const size_t s             = obj_columns.size();
-        for (size_t i = 0; i < s; ++i) {
-            pybind11::str obj_str = obj_columns[ i ];
-            res.append(DA::PY::toString(obj_str));
-        }
+        res.reserve(static_cast< int >(s));
+        res = DA::PY::fromPyList< QString >(obj_columns);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
     }
@@ -164,9 +162,9 @@ QString DAPyDataFrame::columnName(size_t i) const
 {
     QString res;
     try {
-        pybind11::list obj_columns = object().attr("columns");
+        pybind11::list obj_columns = attr("columns");
         pybind11::object obj       = obj_columns[ i ];
-        res                        = DA::PY::toString(obj);
+        res                        = obj.cast< QString >();
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
     }
@@ -182,13 +180,13 @@ QString DAPyDataFrame::columnName(size_t i) const
 bool DAPyDataFrame::columns(std::size_t i, const QString& name)
 {
     try {
-        pybind11::list obj_columns = object().attr("columns");
+        pybind11::list obj_columns = attr("columns");
         const size_t s             = obj_columns.size();
         if (i >= s) {
             return false;
         }
-        obj_columns[ i ]         = DA::PY::toPyStr(name);
-        object().attr("columns") = obj_columns;
+        obj_columns[ i ] = pybind11::cast(name);
+        attr("columns")  = obj_columns;
         return true;
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
@@ -204,9 +202,9 @@ bool DAPyDataFrame::columns(std::size_t i, const QString& name)
 bool DAPyDataFrame::columns(const QList< QString >& cols)
 {
     try {
-        pybind11::list obj_columns = PY::toPyList(cols);
+        pybind11::list obj_columns = pybind11::cast(cols);
 
-        object().attr("columns") = obj_columns;
+        attr("columns") = obj_columns;
         return true;
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
@@ -221,7 +219,7 @@ bool DAPyDataFrame::columns(const QList< QString >& cols)
 bool DAPyDataFrame::empty() const
 {
     try {
-        pybind11::bool_ obj = object().attr("empty");
+        pybind11::bool_ obj = attr("empty");
         bool r              = obj.cast< bool >();
         return r;
     } catch (const std::exception& e) {
@@ -237,7 +235,7 @@ bool DAPyDataFrame::empty() const
 std::pair< std::size_t, std::size_t > DAPyDataFrame::shape() const
 {
     try {
-        pybind11::tuple obj = object().attr("shape");
+        pybind11::tuple obj = attr("shape");
         std::size_t row     = obj[ 0 ].cast< std::size_t >();
         std::size_t col     = obj[ 1 ].cast< std::size_t >();
         return std::make_pair(row, col);
@@ -254,7 +252,7 @@ std::pair< std::size_t, std::size_t > DAPyDataFrame::shape() const
 std::size_t DAPyDataFrame::size() const
 {
     try {
-        pybind11::int_ obj = object().attr("size");
+        pybind11::int_ obj = attr("size");
         return obj.cast< std::size_t >();
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
@@ -271,8 +269,8 @@ std::size_t DAPyDataFrame::size() const
 QVariant DAPyDataFrame::iat(std::size_t r, std::size_t c) const
 {
     try {
-        pybind11::object obj_v = object().attr("iat")[ pybind11::make_tuple(r, c) ];
-        return DA::PY::toVariant(obj_v);
+        pybind11::object obj_v = attr("iat")[ pybind11::make_tuple(r, c) ];
+        return obj_v.cast< QVariant >();
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
     }
@@ -288,7 +286,7 @@ QVariant DAPyDataFrame::iat(std::size_t r, std::size_t c) const
 pybind11::object DAPyDataFrame::iatObj(std::size_t r, std::size_t c) const
 {
     try {
-        return object().attr("iat")[ pybind11::make_tuple(r, c) ];
+        return attr("iat")[ pybind11::make_tuple(r, c) ];
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
     }
@@ -305,7 +303,7 @@ pybind11::object DAPyDataFrame::iatObj(std::size_t r, std::size_t c) const
 bool DAPyDataFrame::iat(std::size_t r, std::size_t c, const QVariant& v)
 {
     try {
-        object().attr("iat")[ pybind11::make_tuple(r, c) ] = DA::PY::toPyObject(v, dtypes(c));
+        attr("iat")[ pybind11::make_tuple(r, c) ] = DA::PY::toPyObject(v, dtypes(c));
         return true;
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
@@ -316,7 +314,7 @@ bool DAPyDataFrame::iat(std::size_t r, std::size_t c, const QVariant& v)
 bool DAPyDataFrame::iat(std::size_t r, std::size_t c, const pybind11::object& v)
 {
     try {
-        object().attr("iat")[ pybind11::make_tuple(r, c) ] = v;
+        attr("iat")[ pybind11::make_tuple(r, c) ] = v;
         return true;
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
@@ -327,7 +325,7 @@ bool DAPyDataFrame::iat(std::size_t r, std::size_t c, const pybind11::object& v)
 DAPySeries DAPyDataFrame::iloc(std::size_t c) const
 {
     try {
-        pybind11::object obj_series = object().attr("iloc")[ pybind11::int_(c) ];
+        pybind11::object obj_series = attr("iloc")[ pybind11::int_(c) ];
         return DAPySeries(obj_series);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
@@ -343,7 +341,7 @@ DAPySeries DAPyDataFrame::iloc(std::size_t c) const
 DAPySeries DAPyDataFrame::loc(const QString& n) const
 {
     try {
-        pybind11::object obj = object().attr("iloc")[ DA::PY::toPyStr(n) ];
+        pybind11::object obj = attr("iloc")[ pybind11::cast(n) ];
         return DAPySeries(obj);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
@@ -360,7 +358,7 @@ DAPySeries DAPyDataFrame::loc(const QString& n) const
 bool DAPyDataFrame::drop(std::size_t index, int axis)
 {
     try {
-        pybind11::object obj_drop = object().attr("drop");
+        pybind11::object obj_drop = attr("drop");
         using namespace pybind11::literals;
         obj_drop("index"_a = pybind11::int_(index), "axis"_a = pybind11::int_(axis), "inplace"_a = pybind11::bool_(true));
         return true;
@@ -377,7 +375,7 @@ bool DAPyDataFrame::drop(std::size_t index, int axis)
 DAPyIndex DAPyDataFrame::index() const
 {
     try {
-        return DAPyIndex(object().attr("index"));
+        return DAPyIndex(attr("index"));
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
     }
@@ -393,7 +391,7 @@ DAPyIndex DAPyDataFrame::index() const
 pybind11::dtype DAPyDataFrame::dtypes(std::size_t c) const
 {
     // dtypes返回的是series
-    return object().attr("dtypes").attr("iloc")[ pybind11::int_(c) ];
+    return attr("dtypes").attr("iloc")[ pybind11::int_(c) ];
 }
 
 /**
@@ -403,7 +401,7 @@ pybind11::dtype DAPyDataFrame::dtypes(std::size_t c) const
 DAPyDataFrame DAPyDataFrame::describe() const
 {
     try {
-        return object().attr("describe")();
+        return attr("describe")();
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
     }
@@ -418,9 +416,9 @@ DAPyDataFrame DAPyDataFrame::describe() const
 bool DAPyDataFrame::to_csv(const QString& path, const QVariantHash& args) const noexcept
 {
     try {
-        pybind11::object obj_to_csv = object().attr("to_csv");
-        pybind11::dict dictargs     = DA::PY::toPyDict(args);
-        obj_to_csv(DA::PY::toPyStr(path), **dictargs);
+        pybind11::object obj_to_csv = attr("to_csv");
+        pybind11::dict dictargs     = pybind11::cast(args);
+        obj_to_csv(pybind11::cast(path), **dictargs);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
         return false;
@@ -436,9 +434,9 @@ bool DAPyDataFrame::to_csv(const QString& path, const QVariantHash& args) const 
 bool DAPyDataFrame::to_pickle(const QString& path, const QVariantHash& args) const noexcept
 {
     try {
-        pybind11::object obj_to_pickle = object().attr("to_pickle");
-        pybind11::dict dictargs        = DA::PY::toPyDict(args);
-        obj_to_pickle(DA::PY::toPyStr(path), **dictargs);
+        pybind11::object obj_to_pickle = attr("to_pickle");
+        pybind11::dict dictargs        = pybind11::cast(args);
+        obj_to_pickle(pybind11::cast(path), **dictargs);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
         return false;
@@ -454,14 +452,31 @@ bool DAPyDataFrame::to_pickle(const QString& path, const QVariantHash& args) con
 bool DAPyDataFrame::to_parquet(const QString& path, const QVariantHash& args) const noexcept
 {
     try {
-        pybind11::object obj_to_parquet = object().attr("to_parquet");
-        pybind11::dict dictargs         = DA::PY::toPyDict(args);
-        obj_to_parquet(DA::PY::toPyStr(path), **dictargs);
+        pybind11::object obj_to_parquet = attr("to_parquet");
+        pybind11::dict dictargs         = pybind11::cast(args);
+        obj_to_parquet(pybind11::cast(path), **dictargs);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
         return false;
     }
     return true;
+}
+
+/**
+ * @brief 设置索引
+ * @param colName
+ * @param isDrop
+ * @return
+ */
+bool DAPyDataFrame::setIndex(const QString& colName, bool isDrop) noexcept
+{
+    try {
+        pybind11::object obj_set_index = attr("set_index");
+        obj_set_index(colName.toStdString(), pybind11::arg("inplace") = true, pybind11::arg("drop") = isDrop);
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+        return false;
+    }
 }
 
 void DAPyDataFrame::checkObjectValid()

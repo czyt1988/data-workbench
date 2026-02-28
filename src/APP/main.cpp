@@ -30,7 +30,6 @@
 #include "DAPybind11InQt.h"
 #include "DAPyScripts.h"
 #include "DAPyInterpreter.h"
-#include "DAPybind11QtTypeCast.h"
 #endif
 // SARibbon
 #include "SARibbonBar.h"
@@ -55,6 +54,12 @@ void initCommandLine(QCommandLineParser* cmd);
  */
 int main(int argc, char* argv[])
 {
+#ifdef Q_OS_WIN
+	// 设置控制台输出代码页为 UTF-8 (65001)
+	if (!SetConsoleOutputCP(CP_UTF8)) {
+		qWarning() << "Failed to set console output codepage to UTF-8";
+	}
+#endif
 	// 进行dump捕获
 	DA::DADumpCapture::initDump([]() -> QString { return appPreposeDump(); });
 	//
@@ -127,23 +132,23 @@ int main(int argc, char* argv[])
 void initCommandLine(QCommandLineParser* cmd)
 {
 	cmd->setApplicationDescription(QCoreApplication::translate("main", "version:%1,compile datetime:%2,enable python:%3")
-									   .arg(DA_VERSION)
-									   .arg(DA_COMPILE_DATETIME)
-									   .arg(DA_ENABLE_PYTHON));
+	                                   .arg(DA_VERSION)
+	                                   .arg(DA_COMPILE_DATETIME)
+	                                   .arg(DA_ENABLE_PYTHON));
 	cmd->addHelpOption();
 	cmd->addVersionOption();
 	cmd->addPositionalArgument("file",
-							   QCoreApplication::translate("main", "The project file to open"),  // cn:要打开的工程文件
-							   "[project]"  // 语法表示（可选）
+	                           QCoreApplication::translate("main", "The project file to open"),  // cn:要打开的工程文件
+	                           "[project]"                                                       // 语法表示（可选）
 	);
-	QCommandLineOption importDataOption(
-		CS_CMD_IMPORTDATA,
-		QCoreApplication::translate(
-			"main",
-			"Import data into the application, supporting formats such as CSV, XLSX, TXT, "
-			"PKL, etc.If you want to import multiple datasets, you can use the command "
-			"multiple times; the program will execute them one by one"),  // cn：导入数据到应用程序中，支持csv/xlsx/txt/pkl等格式，如果要导入多个数据，你可以使用多次命令，程序会逐一执行
-		"path");
+	QCommandLineOption
+	    importDataOption(CS_CMD_IMPORTDATA,
+	                     QCoreApplication::
+	                         translate("main",
+	                                   "Import data into the application, supporting formats such as CSV, XLSX, TXT, "
+	                                   "PKL, etc.If you want to import multiple datasets, you can use the command "
+	                                   "multiple times; the program will execute them one by one"),  // cn：导入数据到应用程序中，支持csv/xlsx/txt/pkl等格式，如果要导入多个数据，你可以使用多次命令，程序会逐一执行
+	                     "path");
 	cmd->addOption(importDataOption);
 }
 

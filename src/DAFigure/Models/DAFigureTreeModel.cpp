@@ -59,8 +59,7 @@ void DAFigureTreeModel::setFigure(QwtFigure* figure)
         m_figureConnections << connect(m_figure, &QwtFigure::axesAdded, this, &DAFigureTreeModel::onAxesAdded);
         m_figureConnections << connect(m_figure, &QwtFigure::axesRemoved, this, &DAFigureTreeModel::onAxesRemoved);
         m_figureConnections << connect(m_figure, &QwtFigure::figureCleared, this, &DAFigureTreeModel::onFigureCleared);
-        m_figureConnections << connect(
-            m_figure, &QwtFigure::currentAxesChanged, this, &DAFigureTreeModel::onCurrentAxesChanged);
+        m_figureConnections << connect(m_figure, &QwtFigure::currentAxesChanged, this, &DAFigureTreeModel::onCurrentAxesChanged);
     }
 
     setupModel();
@@ -87,9 +86,10 @@ void DAFigureTreeModel::setupModel()
 {
     clear();
     // 设置三列表头
-    setHorizontalHeaderLabels(QStringList() << tr("element")   // cn:绘图元素
-                                            << tr("visible")   // cn:可见性
-                                            << tr("property")  // cn:属性
+    setHorizontalHeaderLabels(
+        QStringList() << tr("element")   // cn:绘图元素
+                      << tr("visible")   // cn:可见性
+                      << tr("property")  // cn:属性
     );
     m_plotItems.clear();
     m_plotItemItems.clear();
@@ -301,6 +301,7 @@ void DAFigureTreeModel::onItemAttached(QwtPlotItem* item, bool on)
     } else {
         removePlotItem(item, itemsFolder);
     }
+    Q_EMIT chartItemAttached(item, on);
 }
 
 void DAFigureTreeModel::removePlotFromModel(QwtPlot* plot)
@@ -334,7 +335,7 @@ void DAFigureTreeModel::removePlotFromModel(QwtPlot* plot)
 
                 // 断开寄生绘图的连接
                 if (m_plotConnections.contains(parasite)) {
-                    for (const QMetaObject::Connection& conn : qAsConst(m_plotConnections[ parasite ])) {
+                    for (const QMetaObject::Connection& conn : std::as_const(m_plotConnections[ parasite ])) {
                         disconnect(conn);
                     }
                     m_plotConnections.remove(parasite);

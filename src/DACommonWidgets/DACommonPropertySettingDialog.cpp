@@ -182,13 +182,13 @@ QStringList DACommonPropertySettingDialog::PrivateData::getEnumDisplayTexts(cons
     QStringList displayTexts;
 
     if (propConfig.contains("enum_descriptions")) {
-        QJsonArray descriptions = propConfig[ "enum_descriptions" ].toArray();
+        const QJsonArray descriptions = propConfig[ "enum_descriptions" ].toArray();
         for (const QJsonValue& desc : descriptions) {
             displayTexts.append(desc.toString());
         }
     } else {
         // 如果没有描述，使用枚举值作为显示文本
-        QJsonArray enumItems = propConfig[ "enum_items" ].toArray();
+        const QJsonArray enumItems = propConfig[ "enum_items" ].toArray();
         for (const QJsonValue& item : enumItems) {
             displayTexts.append(item.toString());
         }
@@ -199,7 +199,7 @@ QStringList DACommonPropertySettingDialog::PrivateData::getEnumDisplayTexts(cons
 
 void DACommonPropertySettingDialog::PrivateData::clearProperties()
 {
-    QList< QtProperty* > properties = m_propertyBrowser->properties();
+    const QList< QtProperty* > properties = m_propertyBrowser->properties();
     for (QtProperty* prop : properties) {
         m_propertyBrowser->removeProperty(prop);
         delete prop;
@@ -264,8 +264,8 @@ void DACommonPropertySettingDialog::PrivateData::createProperty(const QJsonObjec
             QVariant defaultValue;
             if (type == "enum") {
                 // 处理枚举类型的默认值
-                QString enumValue    = propConfig[ "value" ].toString();
-                QJsonArray enumItems = propConfig[ "enum_items" ].toArray();
+                QString enumValue          = propConfig[ "value" ].toString();
+                const QJsonArray enumItems = propConfig[ "enum_items" ].toArray();
 
                 // 存储实际值列表
                 QStringList actualValues;
@@ -307,7 +307,7 @@ void DACommonPropertySettingDialog::PrivateData::createProperty(const QJsonObjec
                     } else if (type == "file" || type == "folder") {
                         defaultValue = propConfig[ "value" ].toString("");
                     } else if (type == "stringlist") {
-                        QJsonArray array = propConfig[ "value" ].toArray();
+                        const QJsonArray array = propConfig[ "value" ].toArray();
                         QStringList stringList;
                         for (const QJsonValue& item : array) {
                             stringList.append(item.toString());
@@ -349,20 +349,20 @@ QtVariantProperty* DACommonPropertySettingDialog::PrivateData::createVariantProp
         variantType = QMetaType::QString;
         value       = propConfig[ "value" ].toString("");
     } else if (type == "int") {
-        variantType = QVariant::Int;
+        variantType = QMetaType::Int;
         value       = propConfig[ "value" ].toInt(0);
     } else if (type == "double") {
-        variantType = QVariant::Double;
+        variantType = QMetaType::Double;
         value       = propConfig[ "value" ].toDouble(0.0);
     } else if (type == "bool") {
-        variantType = QVariant::Bool;
+        variantType = QMetaType::Bool;
         value       = propConfig[ "value" ].toBool(false);
     } else if (type == "color") {
-        variantType      = QVariant::Color;
+        variantType      = QMetaType::QColor;
         QString colorStr = propConfig[ "value" ].toString("#000000");
         value            = QColor(colorStr);
     } else if (type == "font") {
-        variantType     = QVariant::Font;
+        variantType     = QMetaType::QFont;
         QString fontStr = propConfig[ "value" ].toString("Arial,12,-1,5,50,0,0,0,0,0");
         QFont font;
         font.fromString(fontStr);
@@ -371,7 +371,7 @@ QtVariantProperty* DACommonPropertySettingDialog::PrivateData::createVariantProp
         variantType = QtVariantPropertyManager::enumTypeId();
 
         // 获取实际值和显示文本
-        QJsonArray enumItems = propConfig[ "enum_items" ].toArray();
+        const QJsonArray enumItems = propConfig[ "enum_items" ].toArray();
         QStringList actualValues;
         for (const QJsonValue& item : enumItems) {
             actualValues.append(item.toString());
@@ -410,8 +410,8 @@ QtVariantProperty* DACommonPropertySettingDialog::PrivateData::createVariantProp
         variantType = QMetaType::QString;
         value       = propConfig[ "value" ].toString("");
     } else if (type == "stringlist") {
-        variantType      = QVariant::StringList;
-        QJsonArray array = propConfig[ "value" ].toArray();
+        variantType            = QMetaType::QStringList;
+        const QJsonArray array = propConfig[ "value" ].toArray();
         QStringList stringList;
         for (const QJsonValue& item : array) {
             stringList.append(item.toString());
@@ -456,14 +456,32 @@ DACommonPropertySettingDialog::DACommonPropertySettingDialog(QWidget* parent)
 {
     ui->setupUi(this);
     d_ptr->setupUi(ui->propertyBrowser);
-    connect(d_ptr->m_variantManager,
-            &QtVariantPropertyManager::valueChanged,
-            this,
-            &DACommonPropertySettingDialog::onPropertyValueChanged);
+    connect(d_ptr->m_variantManager, &QtVariantPropertyManager::valueChanged, this, &DACommonPropertySettingDialog::onPropertyValueChanged);
 }
 
 DACommonPropertySettingDialog::~DACommonPropertySettingDialog()
 {
+    // 先断开所有信号连接
+    if (d_ptr->m_variantManager) {
+        disconnect(d_ptr->m_variantManager, nullptr, this, nullptr);
+    }
+
+    // 清理属性管理器
+    if (d_ptr->m_variantManager) {
+        // 清理所有属性
+        d_ptr->m_variantManager->clear();
+    }
+    // 清理属性浏览器
+    if (ui->propertyBrowser) {
+        // 阻塞浏览器信号
+        ui->propertyBrowser->blockSignals(true);
+
+        // 移除所有属性
+        const QList< QtProperty* > properties = ui->propertyBrowser->properties();
+        for (QtProperty* prop : properties) {
+            ui->propertyBrowser->removeProperty(prop);
+        }
+    }
     delete ui;
 }
 
@@ -529,7 +547,7 @@ bool DACommonPropertySettingDialog::loadFromJsonObject(const QJsonObject& jsonOb
 
     // 创建属性
     if (jsonObj.contains("properties")) {
-        QJsonArray propertiesArray = jsonObj[ "properties" ].toArray();
+        const QJsonArray propertiesArray = jsonObj[ "properties" ].toArray();
         if (propertiesArray.isEmpty()) {
             qDebug() << tr("Properties array is empty");
             return false;
@@ -581,15 +599,19 @@ QJsonObject DACommonPropertySettingDialog::getCurrentValues() const
                 result[ propertyName ] = "";
             }
         } else {
-            // 处理其他类型
+// 处理其他类型
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             int type = value.type();
+#else
+            int type = value.typeId();
+#endif
             if (type == QMetaType::QColor) {
                 result[ propertyName ] = value.value< QColor >().name();
             } else if (type == QMetaType::QFont) {
                 result[ propertyName ] = value.value< QFont >().toString();
             } else if (type == QMetaType::QStringList) {
                 QJsonArray array;
-                QStringList list = value.toStringList();
+                const QStringList list = value.toStringList();
                 for (const QString& item : list) {
                     array.append(item);
                 }
@@ -677,8 +699,14 @@ bool DACommonPropertySettingDialog::setValue(const QString& propertyName, const 
 
     // 检查类型是否匹配
     QVariant currentValue = d->m_variantManager->value(property);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (currentValue.type() != value.type()
-        && !(currentValue.canConvert(value.type()) || value.canConvert(currentValue.type()))) {
+        && !(currentValue.canConvert(value.type()) || value.canConvert(currentValue.type())))
+#else
+    if (currentValue.metaType() != value.metaType()
+        && !(currentValue.canConvert(value.metaType()) || value.canConvert(currentValue.metaType())))
+#endif
+    {
         qDebug() << tr("Type mismatch for property:") << propertyName << "expected:" << currentValue.typeName()
                  << "got:" << value.typeName();
         return false;

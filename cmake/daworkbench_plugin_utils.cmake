@@ -211,7 +211,8 @@ macro(damacro_import_qwt __target_name __install_dir)
     endif()
     # 链接的第三方库
     target_link_libraries(${__target_name} PUBLIC
-        qwt::qwt
+        qwt::plot
+        qwt::plot3d
     )
 endmacro(damacro_import_qwt)
 

@@ -55,7 +55,7 @@ int DAAppDataManager::importFromFiles(const QStringList& fileNames)
 #if 0
     qDebug() << "data manager begin import files:" << fileNames;
     QList< DAData > importDatas;
-    for (const QString& f : qAsConst(fileNames)) {
+    for (const QString& f : std::as_const(fileNames)) {
 #if DA_ENABLE_PYTHON
         qInfo() << tr("begin import file:%1").arg(f);
         DAPyObjectWrapper res = DAPyScripts::getInstance().getIO().read(f);
@@ -87,7 +87,7 @@ int DAAppDataManager::importFromFiles(const QStringList& fileNames)
 #else
     qDebug() << "data manager begin import files:" << fileNames;
     int successCnt = 0;
-    for (const QString& f : qAsConst(fileNames)) {
+    for (const QString& f : std::as_const(fileNames)) {
         if (importFromFile(f)) {
             ++successCnt;
         }
@@ -107,7 +107,7 @@ QList< DAData > DAAppDataManager::getSelectDatas() const
     if (!dmw) {
         return QList< DAData >();
     }
-    return dmw->getCurrentSelectDatas();
+    return dmw->getAllSelectDatas();
 }
 
 /**

@@ -51,12 +51,12 @@ void DADataManageTableView::init()
     setAlternatingRowColors(true);
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setSelectionMode(QAbstractItemView::SingleSelection);
-    //允许编辑
+    // 允许编辑
     setEditTriggers(QAbstractItemView::NoEditTriggers);
     horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     horizontalHeader()->setStretchLastSection(true);
     QFontMetrics fm = fontMetrics();
-    //高度为行高的1.2
+    // 高度为行高的1.2
     verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.2);
     verticalHeader()->hide();
     //
@@ -70,23 +70,23 @@ DAData DADataManageTableView::getOneSelectData() const
 {
     QItemSelectionModel* selectModel = selectionModel();
     if (nullptr == selectModel) {
-        //说明没有任何选中
+        // 说明没有任何选中
         return DAData();
     }
     if (!selectModel->hasSelection()) {
-        //说明没有任何选中
+        // 说明没有任何选中
         return DAData();
     }
     QModelIndexList sels = selectModel->selectedRows();
     if (sels.isEmpty()) {
-        //说明没有任何选中
+        // 说明没有任何选中
         return DAData();
     }
     QVariant v = sels.last().data(DA_ROLE_DADATAMANAGERTABLEMODEL_DATA);
     if (!v.isValid()) {
-        //说明没有任何选中
+        // 说明没有任何选中
         qWarning() << tr("The item is selected in the data management table, "
-                         "but the corresponding data cannot be obtained");  //在数据管理表中选中了条目，但无法获取对应数据
+                         "but the corresponding data cannot be obtained");  // 在数据管理表中选中了条目，但无法获取对应数据
         return DAData();
     }
     DAData d = v.value< DA::DAData >();
@@ -102,23 +102,23 @@ QList< DAData > DADataManageTableView::getCurrentSelectDatas() const
     QList< DAData > res;
     QItemSelectionModel* selectModel = selectionModel();
     if (nullptr == selectModel) {
-        //说明没有任何选中
+        // 说明没有任何选中
         return res;
     }
     if (!selectModel->hasSelection()) {
-        //说明没有任何选中
+        // 说明没有任何选中
         return res;
     }
     QModelIndexList sels = selectModel->selectedRows();
     if (sels.isEmpty()) {
-        //说明没有任何选中
+        // 说明没有任何选中
         return res;
     }
-    for (const QModelIndex& index : qAsConst(sels)) {
+    for (const QModelIndex& index : std::as_const(sels)) {
 
         QVariant v = index.data(DA_ROLE_DADATAMANAGERTABLEMODEL_DATA);
         if (!v.isValid()) {
-            //说明没有任何选中
+            // 说明没有任何选中
             continue;
         }
         DAData d = v.value< DA::DAData >();
@@ -158,9 +158,9 @@ void DADataManageTableView::dropEvent(QDropEvent* e)
 void DADataManageTableView::startDrag(Qt::DropActions supportedActions)
 {
     qDebug() << "startDrag:" << supportedActions;
-    DAData d                    = getOneSelectData();
+    DAData d                              = getOneSelectData();
     DAMimeDataForData* mimedata = new DAMimeDataForData();
-    mimedata->setDAData(d);
+    mimedata->appendDataframe(d);
     QDrag* drag = new QDrag(this);
     drag->setMimeData(mimedata);
     Qt::DropActions r = drag->exec(Qt::CopyAction | Qt::MoveAction);

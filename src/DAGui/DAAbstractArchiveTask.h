@@ -2,6 +2,7 @@
 #define DAABSTRACTARCHIVETASK_H
 #include "DAGuiAPI.h"
 #include <QObject>
+#include <functional>
 namespace DA
 {
 class DAAbstractArchive;
@@ -13,8 +14,10 @@ class DAAbstractArchive;
  *
  * @note 注意任务的执行是在别的线程中，不要在任务中操作ui
  */
-class DAGUI_API DAAbstractArchiveTask
+class DAGUI_API DAAbstractArchiveTask : std::enable_shared_from_this< DAAbstractArchiveTask >
 {
+public:
+	using FpLoadedCallBack = std::function< void(std::shared_ptr< DAAbstractArchiveTask >) >;
 public:
 	/**
 	 * @brief 模式用来区分读写
@@ -98,10 +101,13 @@ public:
 	QString getDescribe() const;
 	void setDescribe(const QString& describe);
 
+	void setLoadedCallBack(const FpLoadedCallBack& callBack);
+	FpLoadedCallBack getLoadedCallBack() const;
 private:
 	int mCode { 0 };
 	QString mName;
 	QString mDescribe;
+	FpLoadedCallBack mLoadedCallBack;
 };
 }  // end DA
 Q_DECLARE_METATYPE(DA::DAAbstractArchiveTask::Mode)

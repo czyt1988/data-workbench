@@ -358,7 +358,7 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnType(const DAPyDType& dt)
     DADataTableModel* modle = mModel;
     cmd->setCallBack([ modle, selColumns ]() {
         if (modle) {
-            for (int c : qAsConst(selColumns)) {
+            for (int c : std::as_const(selColumns)) {
                 modle->notifyColumnChanged(c);
             }
         }
@@ -400,7 +400,7 @@ void DADataOperateOfDataFrameWidget::castSelectToNum()
     DADataTableModel* modle = mModel;
     cmd->setCallBack([ modle, colsIndex ]() {
         if (modle) {
-            for (int c : qAsConst(colsIndex)) {
+            for (int c : std::as_const(colsIndex)) {
                 modle->notifyColumnChanged(c);
             }
         }
@@ -442,7 +442,7 @@ void DADataOperateOfDataFrameWidget::castSelectToDatetime()
     DADataTableModel* modle = mModel;
     cmd->setCallBack([ modle, colsIndex ]() {
         if (modle) {
-            for (int c : qAsConst(colsIndex)) {
+            for (int c : std::as_const(colsIndex)) {
                 modle->notifyColumnChanged(c);
             }
         }
@@ -1022,6 +1022,47 @@ void DADataOperateOfDataFrameWidget::refreshTable()
 {
     if (mModel) {
         mModel->refreshData();
+    }
+}
+
+/**
+ * @brief 确保列可见
+ * @param colName
+ */
+void DADataOperateOfDataFrameWidget::ensureColumnVisible(const QString& colName, bool selectCol)
+{
+    if (colName.isEmpty()) {
+        return;
+    }
+    QTableView* tv = ui->tableView;
+    if (!tv || !tv->model()) {
+        return;
+    }
+
+    // 直接找列号
+    int col       = -1;
+    const auto* m = tv->model();
+    for (int c = 0, total = m->columnCount(); c < total; ++c) {
+        if (m->headerData(c, Qt::Horizontal).toString() == colName) {
+            col = c;
+            break;
+        }
+    }
+    if (col < 0)
+        return;
+
+    tv->scrollTo(m->index(0, col), QAbstractItemView::EnsureVisible);
+    if (selectCol) {
+        QItemSelectionModel* sel = tv->selectionModel();
+        if (!sel) {
+            return;
+        }
+        QModelIndex topLeft     = m->index(0, col);
+        QModelIndex bottomRight = m->index(m->rowCount() - 1, col);
+        QItemSelection selection(topLeft, bottomRight);
+
+        sel->clearSelection();  // 去掉旧选区
+        sel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Columns);
     }
 }
 

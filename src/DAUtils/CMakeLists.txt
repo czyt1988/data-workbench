@@ -12,20 +12,6 @@ damacro_lib_setting(
     3
 )
 
-########################################################
-# Qt
-########################################################
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
-    Core
-    Gui
-    Xml
-    Widgets
-    REQUIRED
-)
-if(Qt5_POSITION_INDEPENDENT_CODE)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif()
 
 
 ########################################################
@@ -47,7 +33,7 @@ target_compile_definitions(${DA_LIB_NAME} PRIVATE DAUTILS_BUILD)
 ########################################################
 # 依赖链接
 ########################################################
-target_link_libraries(${DA_LIB_NAME} PRIVATE
+target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
@@ -55,7 +41,6 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
 )
 
 if(${QT_VERSION_MAJOR} EQUAL 6)
-    find_package(Qt6 REQUIRED COMPONENTS Core5Compat)
     target_link_libraries(${DA_LIB_NAME} PRIVATE Qt6::Core5Compat)
 endif()
 
@@ -70,23 +55,15 @@ endif()
 damacro_set_lib_properties(${DA_LIB_NAME} ${DA_LIB_VERSION})
 
 ########################################################
-# 附加编译选项
-########################################################
-if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
-    # 这里是为 MSVC 编译器设置的选项
-    target_link_options(${DA_LIB_NAME} PRIVATE /VERBOSE)
-    # 或者设置其他 MSVC 特定的编译或链接选项
-else()
-    # 这里是为非 MSVC 编译器设置的选项（如果有的话）
-endif()
-########################################################
 # 安装
 ########################################################
 damacro_lib_install()
+include(GNUInstallDirs)
+
 
 install(FILES
     ${DA_LIB_HEADER_FILES}
-    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${DA_PROJECT_NAME}/${DA_LIB_NAME}
     COMPONENT headers
 )
 

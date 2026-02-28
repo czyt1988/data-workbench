@@ -1,4 +1,4 @@
-#ifndef DAPYSERIESTABLEVIEW_H
+﻿#ifndef DAPYSERIESTABLEVIEW_H
 #define DAPYSERIESTABLEVIEW_H
 #include "DACacheWindowTableView.h"
 #include "DAData.h"
@@ -23,9 +23,8 @@ public:
     void setSeriesAt(int c, const DAAutoincrementSeries< double >& s);
     //
     void resizeVerticalHeader();
-
-private:
-    DAPySeriesTableModel* mModel { nullptr };
+    // 清除内容
+    void clear();
 };
 }
 

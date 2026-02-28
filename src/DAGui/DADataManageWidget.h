@@ -22,32 +22,18 @@ class DAGUI_API DADataManageWidget : public QWidget
 {
     Q_OBJECT
 public:
-    /**
-     * @brief 视图模式
-     */
-    enum DataViewMode
-    {
-        ViewDataInTable  ///< 以表格的方式显示
-    };
-    Q_ENUM(DataViewMode)
-public:
     DADataManageWidget(QWidget* parent = nullptr);
     ~DADataManageWidget();
-    //设置DADataManager
+    // 设置DADataManager
     void setDataManager(DADataManager* dmgr);
-    //获取mgr
+    // 获取mgr
     DADataManager* getDataManager() const;
-    //获取选择的数据，如果没有数据，返回一个空的data
-    DAData getOneSelectData() const;
-    //获取选中的数据
-    QList< DAData > getCurrentSelectDatas() const;
-    //判断当前是否为table模式
-    bool isTableView() const;
-    //当前的显示模式
-    DataViewMode getCurrentDataViewMode() const;
-
+    // 获取选择的数据，如果没有数据，返回一个空的data
+    DAData getCurrentSelectData() const;
+    // 获取选中的数据
+    QList< DAData > getAllSelectDatas() const;
 public slots:
-    //移除选中的数据
+    // 移除选中的数据
     void removeSelectData();
 
 protected:
@@ -60,18 +46,15 @@ signals:
      */
     void dataDbClicked(const DA::DAData& data);
     /**
-     * @brief 当显示模式改变的时候发射此信号
-     * @param v
+     * @brief series双击
+     * @param data
+     * @param seriesName
      */
-    void dataViewModeChanged(DADataManageWidget::DataViewMode v);
-private slots:
-    void onActionTableViewTriggered(bool on);
+    void dataSeriesDbClicked(const DA::DAData& data, const QString& seriesName);
 
 private:
     Ui::DADataManageWidget* ui;
     DADataManager* mDataManager;  ///< 数据管理器
-    QAction* mActionViewDataListByTable;
-    QActionGroup* mActionGroup;
 };
 }  // end of namespace DA
 #endif  // DADATAMANAGEWIDGET_H

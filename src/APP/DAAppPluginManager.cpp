@@ -56,7 +56,6 @@ void DAAppPluginManager::loadAllPlugins(DACoreInterface* c)
                 }
                 // 此操作是为了获取所有节点metadata
                 mNodeMetaDatas += fac->getNodesMetaData();
-                mNodePlugins.append(np);
                 qDebug() << tr("succeed load plugin %1").arg(np->getName());
             }
         }
@@ -90,7 +89,13 @@ QList< DAAbstractPlugin* > DAAppPluginManager::getAllPlugins() const
  */
 QList< DAAbstractNodePlugin* > DAAppPluginManager::getNodePlugins() const
 {
-    return (mNodePlugins);
+    QList< DAAbstractNodePlugin* > res;
+    for (DAAbstractPlugin* p : std::as_const(mPlugins)) {
+        if (DAAbstractNodePlugin* np = dynamic_cast< DAAbstractNodePlugin* >(p)) {
+            res.append(np);
+        }
+    }
+    return res;
 }
 
 /**
@@ -100,8 +105,8 @@ QList< DAAbstractNodePlugin* > DAAppPluginManager::getNodePlugins() const
 QList< std::shared_ptr< DAAbstractNodeFactory > > DAAppPluginManager::createNodeFactorys() const
 {
     QList< std::shared_ptr< DAAbstractNodeFactory > > res;
-
-    for (DAAbstractNodePlugin* d : qAsConst(mNodePlugins)) {
+    const QList< DAAbstractNodePlugin* > nodePlugins = getNodePlugins();
+    for (DAAbstractNodePlugin* d : std::as_const(nodePlugins)) {
         res.append(std::shared_ptr< DAAbstractNodeFactory >(d->createNodeFactory()));
     }
     return (res);
@@ -115,6 +120,5 @@ QList< DANodeMetaData > DAAppPluginManager::getAllNodeMetaDatas() const
 {
     return mNodeMetaDatas;
 }
-
 
 }

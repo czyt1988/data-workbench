@@ -55,7 +55,7 @@ void DANodeTreeWidget::addItems(const QList< DANodeMetaData >& nodeMetaDatas)
 	// 先提取分组，确认分组都建立
 	QList< QString > orderGroup;
 	QMap< DANodeMetaData, DANodeTreeWidgetItem* > nodeItems;
-	for (const DANodeMetaData& md : qAsConst(nodeMetaDatas)) {
+	for (const DANodeMetaData& md : std::as_const(nodeMetaDatas)) {
 		// 1.每个md都生成一个item
 		nodeItems[ md ] = new DANodeTreeWidgetItem(md);
 		// 2.每个md的分组按顺序去重归集
@@ -65,13 +65,13 @@ void DANodeTreeWidget::addItems(const QList< DANodeMetaData >& nodeMetaDatas)
 	}
 	// 创建分组的topitem
 	QHash< QString, QTreeWidgetItem* > groupItems;
-	for (const QString& g : qAsConst(orderGroup)) {
+	for (const QString& g : std::as_const(orderGroup)) {
 		QTreeWidgetItem* gitem = new QTreeWidgetItem({ g });
 		insertTopLevelItem(topLevelItemCount(), gitem);
 		groupItems[ g ] = gitem;
 	}
 	// 把节点item挂载到分组中
-	for (const DANodeMetaData& md : qAsConst(nodeMetaDatas)) {
+	for (const DANodeMetaData& md : std::as_const(nodeMetaDatas)) {
 		QTreeWidgetItem* gitem      = groupItems.value(md.getGroup(), nullptr);
 		DANodeTreeWidgetItem* nitem = nodeItems.value(md, nullptr);
 		if (gitem && nitem) {

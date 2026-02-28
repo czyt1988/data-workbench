@@ -781,7 +781,7 @@ QList< DAGraphicsStandardTextItem* > DAWorkFlowOperateWidget::getSelectTextItems
 	if (its.size() == 0) {
 		return res;
 	}
-	for (QGraphicsItem* item : qAsConst(its)) {
+	for (QGraphicsItem* item : std::as_const(its)) {
 		if (DAGraphicsStandardTextItem* textItem = dynamic_cast< DAGraphicsStandardTextItem* >(item)) {
 			res.append(textItem);
 		}

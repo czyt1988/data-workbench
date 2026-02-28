@@ -9,19 +9,7 @@ damacro_lib_setting(
     "Data Lib For DA | https://github.com/czyt1988"
     0
     0
-    2
-)
-
-########################################################
-# Qt
-########################################################
-set(DA_MIN_QT_VERSION 5.14)
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
-    Core
-    Gui
-    Widgets
-    REQUIRED
+    3
 )
 
 ########################################################
@@ -71,11 +59,9 @@ if(DA_ENABLE_PYTHON)
     target_compile_definitions(${DA_LIB_NAME} PUBLIC -DDA_ENABLE_PYTHON=1)
 endif()
 add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
-########################################################
-# 依赖链接 #!!!!** 注意变更 **!!!!
-########################################################
+
 # -------------link Qt--------------------------
-target_link_libraries(${DA_LIB_NAME} PRIVATE
+target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
@@ -91,25 +77,11 @@ if(DA_ENABLE_PYTHON)
     message(STATUS "  |-pybind11 include: ${pybind11_DIR}/include")
 endif()
 # -------------link DAWorkBench--------------------------
-# DAUtils DAPyBindQt DAPyScripts
-# 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到DAWorkbench
-find_package(${DA_PROJECT_NAME} COMPONENTS DAUtils)
-if(${DA_PROJECT_NAME}_FOUND)
-    message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAUtils")
-endif()
-target_link_libraries(${DA_LIB_NAME} PUBLIC
+target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
 )
 
 if(DA_ENABLE_PYTHON)
-    find_package(${DA_PROJECT_NAME} COMPONENTS
-        DAPyBindQt
-        DAPyScripts
-    )
-    if(${DA_PROJECT_NAME}_FOUND)
-        message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAPyBindQt")
-        message(STATUS "  |-linked ${DA_PROJECT_NAME}::DAPyScripts")
-    endif()
     # DAData的头文件包含了DAPyBindQt库的内容，因此DAPyBindQt需要公开链接
     target_link_libraries(${DA_LIB_NAME} PUBLIC
         ${DA_PROJECT_NAME}::DAPyBindQt

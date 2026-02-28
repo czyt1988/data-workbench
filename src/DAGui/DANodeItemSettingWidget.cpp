@@ -397,7 +397,7 @@ void DANodeItemSettingWidget::onCheckBoxResizableStateChanged(int state)
 void DANodeItemSettingWidget::onNodeItemsRemoved(const QList< DAAbstractNodeGraphicsItem* >& items)
 {
 	if (d_ptr->mItem) {
-		for (const DAAbstractNodeGraphicsItem* i : qAsConst(items)) {
+		for (const DAAbstractNodeGraphicsItem* i : std::as_const(items)) {
 			if (i == d_ptr->mItem.data()) {
 				d_ptr->mItem = nullptr;
 				updateData();

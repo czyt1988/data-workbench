@@ -8,10 +8,10 @@ namespace DA
 //===================================================
 class DAAbstractPlugin::PrivateData
 {
-	DA_DECLARE_PUBLIC(DAAbstractPlugin)
+    DA_DECLARE_PUBLIC(DAAbstractPlugin)
 public:
-	PrivateData(DAAbstractPlugin* p);
-	DACoreInterface* mCore { nullptr };
+    PrivateData(DAAbstractPlugin* p);
+    DACoreInterface* mCore { nullptr };
 };
 
 DAAbstractPlugin::PrivateData::PrivateData(DAAbstractPlugin* p) : q_ptr(p)
@@ -36,17 +36,23 @@ void DAAbstractPlugin::retranslate()
 
 bool DAAbstractPlugin::initialize()
 {
-	return true;
+    return true;
 }
 
 bool DAAbstractPlugin::finalize()
 {
-	return true;
+    return true;
 }
 
 DAAbstractSettingPage* DAAbstractPlugin::createSettingPage()
 {
-	return nullptr;
+    return nullptr;
+}
+
+std::shared_ptr<DAAbstractArchiveTask> DAAbstractPlugin::createArchiveTask(bool isSave)
+{
+    Q_UNUSED(isSave);
+    return nullptr;
 }
 
 /**
@@ -55,7 +61,7 @@ DAAbstractSettingPage* DAAbstractPlugin::createSettingPage()
  */
 DACoreInterface* DAAbstractPlugin::core() const
 {
-	return d_ptr->mCore;
+    return d_ptr->mCore;
 }
 
 /**
@@ -64,6 +70,6 @@ DACoreInterface* DAAbstractPlugin::core() const
  */
 void DAAbstractPlugin::setCore(DACoreInterface* c)
 {
-	d_ptr->mCore = c;
+    d_ptr->mCore = c;
 }
 }  // end DA

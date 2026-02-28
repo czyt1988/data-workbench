@@ -60,22 +60,9 @@
     </message>
 </context>
 <context>
-    <name>DA</name>
-    <message>
-        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
-        <source>Exception in get selected column:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Exception in get selected series:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+80"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+81"/>
         <source>Restore UI State</source>
         <translation type="unfinished"></translation>
     </message>
@@ -110,7 +97,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+46"/>
         <source>untitle</source>
         <translation type="unfinished"></translation>
     </message>
@@ -180,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+189"/>
+        <location filename="../APP/DAAppActions.cpp" line="+350"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -311,6 +298,16 @@ Vector Field</source>
     </message>
     <message>
         <location line="+2"/>
+        <source>Apply All Charts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>When this feature is selected, operations on the figure will apply to all plots, not just the currently selected one</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Enable Grid</source>
         <translation type="unfinished"></translation>
     </message>
@@ -372,12 +369,52 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>At Canvas Left Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>At Canvas Left Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>At Canvas Right Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y Picker Show X Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>At Canvas Right Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Follow Mouse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>XY Picker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
+        <source>Link All Picker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>legend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy To Clipboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -598,6 +635,18 @@ Data Manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Show Left 
+Side Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show Righ 
+Side Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>Plugin 
 Config</source>
@@ -637,24 +686,17 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+469"/>
-        <location line="+22"/>
+        <location filename="../APP/DAAppController.cpp" line="+496"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-20"/>
-        <source>Project Files (*.%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <location line="+32"/>
+        <location line="+22"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-19"/>
+        <location line="-20"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -664,23 +706,23 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+12"/>
-        <location line="+414"/>
+        <location line="+471"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-395"/>
+        <location line="-452"/>
         <source>Please select the data operation window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+286"/>
+        <location line="+343"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -747,7 +789,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+498"/>
+        <location line="+599"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -850,7 +892,7 @@ Config</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="../APP/DAAppPluginManager.cpp" line="+60"/>
+        <location filename="../APP/DAAppPluginManager.cpp" line="+59"/>
         <source>succeed load plugin %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -858,8 +900,8 @@ Config</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+371"/>
-        <location line="+43"/>
+        <location filename="../APP/DAAppProject.cpp" line="+391"/>
+        <location line="+53"/>
         <source>current project is busy</source>
         <translation type="unfinished"></translation>
     </message>
@@ -874,12 +916,27 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+43"/>
         <source>failed to laod archive from %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+12"/>
+        <source>Save Project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Project Files (*.%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Project saved failed!,path is %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
         <source>Save System Info</source>
         <translation type="unfinished"></translation>
     </message>
@@ -899,7 +956,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+31"/>
         <source>An exception occurred while serializing the dataframe named %1 to %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -930,7 +987,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+57"/>
         <source>begin save archive to %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -940,7 +997,37 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+17"/>
+        <source>Loading datas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Loading charts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Project saved successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed to save project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Project loaded successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Failed to load project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
         <source>Missing data content</source>
         <translation type="unfinished"></translation>
     </message>
@@ -955,27 +1042,32 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+35"/>
-        <source>get unknown task code:%1 ,name=%2</source>
+        <location line="-409"/>
+        <source>Saving project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+58"/>
+        <source>Loading project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+278"/>
         <source>Successfully save archive : %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Failed to save archive : %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+14"/>
         <source>Successfully load archive : %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Failed to load archive : %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -983,7 +1075,7 @@ Config</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+164"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+174"/>
         <source>File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1005,13 +1097,13 @@ Config</source>
     <message>
         <location line="+1"/>
         <location line="+19"/>
-        <location line="+85"/>
-        <location line="+186"/>
+        <location line="+88"/>
+        <location line="+189"/>
         <source>Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-289"/>
+        <location line="-295"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation type="unfinished"></translation>
@@ -1024,101 +1116,102 @@ Config</source>
     <message>
         <location line="+3"/>
         <location line="+21"/>
-        <location line="+340"/>
+        <location line="+346"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-360"/>
+        <location line="-366"/>
         <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+178"/>
+        <location line="+184"/>
         <source>DataFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-177"/>
-        <location line="+179"/>
+        <location line="-183"/>
+        <location line="+185"/>
         <source>Operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-178"/>
-        <location line="+181"/>
+        <location line="-184"/>
+        <location line="+187"/>
         <source>Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-180"/>
+        <location line="-186"/>
         <location line="+2"/>
-        <location line="+191"/>
+        <location line="+197"/>
         <location line="+6"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-193"/>
+        <location line="-199"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+283"/>
+        <location line="+289"/>
         <source>Workflow Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-282"/>
-        <location line="+287"/>
+        <location line="-288"/>
+        <location line="+293"/>
         <source>ClipBoard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-286"/>
-        <location line="+291"/>
+        <location line="-292"/>
+        <location line="+297"/>
         <source>Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-290"/>
-        <location line="+299"/>
+        <location line="-296"/>
+        <location line="+305"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-298"/>
-        <location line="+303"/>
+        <location line="-304"/>
+        <location line="+309"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-300"/>
-        <location line="+381"/>
+        <location line="-306"/>
+        <location line="+387"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-380"/>
-        <location line="+383"/>
+        <location line="-386"/>
+        <location line="+389"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-381"/>
-        <location line="+228"/>
+        <location line="-387"/>
+        <location line="+234"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-227"/>
+        <location line="-233"/>
+        <location line="+5"/>
         <source>Figure Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-4"/>
         <source>Add Chart</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1129,13 +1222,23 @@ Config</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+387"/>
+        <location line="+393"/>
         <location line="+2"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-387"/>
+        <location line="-393"/>
+        <source>Chart Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Figure Theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>theme</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1161,7 +1264,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+290"/>
+        <location line="+293"/>
         <source>Group</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1177,6 +1280,11 @@ Config</source>
     </message>
     <message>
         <location line="+71"/>
+        <source>Theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
         <source>Recent Files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1424,25 +1532,21 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+169"/>
+        <location line="+166"/>
         <location line="+8"/>
         <location line="+23"/>
         <location line="+9"/>
         <location line="+23"/>
         <location line="+14"/>
-        <location line="+7"/>
         <location line="+19"/>
         <location line="+14"/>
-        <location line="+8"/>
         <location line="+19"/>
         <location line="+11"/>
-        <location line="+7"/>
-        <location line="+8"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-169"/>
+        <location line="-139"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1468,34 +1572,22 @@ Config</source>
     </message>
     <message>
         <location line="+14"/>
-        <location line="+85"/>
-        <source>y must be a series</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-78"/>
-        <location line="+41"/>
-        <location line="+45"/>
+        <location line="+33"/>
+        <location line="+30"/>
         <source>The None value cannot be converted to a series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-72"/>
-        <location line="+41"/>
-        <location line="+50"/>
+        <location line="-49"/>
+        <location line="+33"/>
+        <location line="+35"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-86"/>
-        <location line="+41"/>
+        <location line="-63"/>
+        <location line="+33"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-27"/>
-        <location line="+38"/>
-        <source>x must be a series</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1548,7 +1640,7 @@ Config</source>
 <context>
     <name>DA::DAChartCurveItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+142"/>
+        <location filename="../DAGui/ChartSetting/DAChartCurveItemSettingWidget.cpp" line="+143"/>
         <source>Lines</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1657,12 +1749,12 @@ Config</source>
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/DAChartManageWidget.cpp" line="+155"/>
+        <location filename="../DAGui/DAChartManageWidget.cpp" line="+204"/>
         <source>get figure create signal,but can not find figure index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+20"/>
         <source>get figure close signal,but can not find figure index</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1670,12 +1762,12 @@ Config</source>
 <context>
     <name>DA::DAChartOperateWidget</name>
     <message>
-        <location filename="../DAGui/DAChartOperateWidget.cpp" line="+93"/>
+        <location filename="../DAGui/DAChartOperateWidget.cpp" line="+95"/>
         <source>figure-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+186"/>
+        <location line="+263"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1688,7 +1780,7 @@ Config</source>
 <context>
     <name>DA::DAChartSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+179"/>
+        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+177"/>
         <source>Chart Area</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1721,7 +1813,7 @@ Config</source>
 <context>
     <name>DA::DAChartSpectrogramItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+86"/>
+        <location filename="../DAGui/ChartSetting/DAChartSpectrogramItemSettingWidget.cpp" line="+87"/>
         <source>Image Mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1817,7 +1909,7 @@ Config</source>
 <context>
     <name>DA::DACommonPropertySettingDialog</name>
     <message>
-        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.cpp" line="+491"/>
+        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.cpp" line="+509"/>
         <source>JSON string is empty</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1842,7 +1934,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+80"/>
+        <location line="+84"/>
         <location line="+32"/>
         <source>Property not found:</source>
         <translation type="unfinished"></translation>
@@ -1858,7 +1950,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+17"/>
         <source>Type mismatch for property:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1879,13 +1971,8 @@ Config</source>
 <context>
     <name>DA::DADataManageWidget</name>
     <message>
-        <location filename="../DAGui/DADataManageWidget.cpp" line="+114"/>
+        <location filename="../DAGui/DADataManageWidget.cpp" line="+76"/>
         <source>Please select the data item to remove</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>show datas in table view</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1923,32 +2010,28 @@ Config</source>
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+70"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+264"/>
         <location line="+2"/>
-        <location line="+142"/>
+        <location line="+86"/>
         <location line="+3"/>
-        <location line="+95"/>
+        <location line="+97"/>
         <location line="+2"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-242"/>
-        <location line="+145"/>
-        <location line="+97"/>
+        <location line="-188"/>
+        <location line="+89"/>
+        <location line="+99"/>
         <source>Properties</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location line="+243"/>
-        <source>
-Type: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>
-Description: %1</source>
+        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+370"/>
+        <source>Search...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1992,7 +2075,7 @@ Description: %1</source>
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateWidget.cpp" line="+185"/>
+        <location filename="../DAGui/DADataOperateWidget.cpp" line="+200"/>
         <source>removing a widget that does not exist in tab</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2639,7 +2722,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAPyDataframeColumnsListWidget</name>
     <message>
-        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+20"/>
+        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
+        <source>Exception in get selected column:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <location line="+20"/>
         <source>Exception in get selected series:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2708,6 +2797,39 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DACommonWidgets/DASettingWidget.cpp" line="+96"/>
         <source>page changed,but can not catch the sender widget</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAStatusBarWidget</name>
+    <message>
+        <location filename="../DAGui/DAStatusBarWidget.cpp" line="+47"/>
+        <source>Workflow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Switch to Workflow Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Switch to Data Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Switch to Chart Mode</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2873,7 +2995,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAWorkFlowGraphicsView</name>
     <message>
-        <location filename="../DAGui/DAWorkFlowGraphicsView.cpp" line="+221"/>
+        <location filename="../DAGui/DAWorkFlowGraphicsView.cpp" line="+222"/>
         <source>cut</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3192,7 +3314,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1868"/>
+        <location filename="../APP/DAAppController.cpp" line="-2029"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3396,39 +3518,44 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+13"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
-        <location line="+61"/>
+        <location line="+23"/>
+        <location line="+72"/>
         <source>Autoincrement series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-46"/>
-        <location line="+61"/>
+        <location line="-57"/>
+        <location line="+72"/>
         <source>Initial value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-54"/>
+        <location line="-65"/>
         <location line="+14"/>
-        <location line="+47"/>
+        <location line="+58"/>
         <location line="+14"/>
         <source>1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-68"/>
-        <location line="+61"/>
+        <location line="-79"/>
+        <location line="+72"/>
         <source>Self increasing step size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-41"/>
+        <location line="-52"/>
         <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+85"/>
+        <source>Drag the data into the corresponding list</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4225,6 +4352,19 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DADataManagerTreeWidget</name>
+    <message>
+        <location filename="../DAGui/DADataManagerTreeWidget.ui" line="+14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+37"/>
+        <source>-</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DADataOperateOfDataFrameWidget</name>
     <message>
         <location filename="../DAGui/DADataOperateOfDataFrameWidget.ui" line="+14"/>
@@ -4871,7 +5011,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+57"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+70"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5496,13 +5636,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <name>DataAnalysisUI</name>
     <message>
         <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+69"/>
-        <location line="+83"/>
+        <location line="+86"/>
         <source>Data Cleaning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-50"/>
-        <location line="+81"/>
+        <location line="-51"/>
+        <location line="+82"/>
         <source>Data Filtering</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5675,7 +5815,7 @@ To Excel</source>
     <name>DataFrameExportRangeSelectDialog</name>
     <message>
         <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameExportRangeSelectDialog.ui" line="+14"/>
-        <source>Dialog</source>
+        <source>Export Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5805,27 +5945,27 @@ To Excel</source>
 <context>
     <name>DataframeIOWorker</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataframeIOWorker.cpp" line="+56"/>
+        <location filename="../../plugins/DataAnalysis/DataframeIOWorker.cpp" line="+55"/>
         <source>No data is selected. Please select the data to export first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+15"/>
         <source>Export Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+19"/>
         <source>Successfully exported %1 to %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+115"/>
+        <location line="+116"/>
         <source>%1 . Elapsed: %2:%3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+21"/>
         <source>%1,Cost %2:%3</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6078,7 +6218,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPyIndex.cpp" line="+159"/>
+        <location filename="../DAPyBindQt/pandas/DAPyIndex.cpp" line="+204"/>
         <source>DAPyIndex get python object type is not pandas.Index</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6088,7 +6228,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+322"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+341"/>
         <source>DAPySeries  get python object type is not pandas.Series</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6199,7 +6339,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+148"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+150"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6422,7 +6562,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+748"/>
+        <location line="+873"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation type="unfinished"></translation>
     </message>
@@ -6685,17 +6825,17 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+50"/>
-        <source>parasite-%1</source>
+        <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+53"/>
+        <source>layout-%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
-        <source>plot</source>
+        <source>layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+31"/>
         <source>Parasite Plot</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6928,7 +7068,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../APP/main.cpp" line="+94"/>
+        <location filename="../APP/main.cpp" line="+99"/>
         <source>Kernel initialization failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6948,6 +7088,11 @@ To Excel</source>
         <source>config file(%1) loss &lt;configs&gt; tag</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-297"/>
+        <source>%1.%2,size:%3</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>main</name>
@@ -6962,7 +7107,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Import data into the application, supporting formats such as CSV, XLSX, TXT, PKL, etc.If you want to import multiple datasets, you can use the command multiple times; the program will execute them one by one</source>
         <translation type="unfinished"></translation>
     </message>
