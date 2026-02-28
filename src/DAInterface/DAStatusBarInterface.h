@@ -24,8 +24,8 @@ public:
 	// 获取当前状态
 	virtual bool isProgressBarVisible() const = 0;
 	// 设置是否显示switch button 组，switch button组用于快速切换绘图、数据、工作流三个部分，在一些场景需要隐藏
-	virtual void setSwitchButtonVisible(bool visible) = 0;
-	virtual bool isSwitchButtonVisible() const        = 0;
+	virtual void setSwitchButtonVisible(DA::DAWorkbenchFeatureType type, bool visible) = 0;
+	virtual bool isSwitchButtonVisible(DA::DAWorkbenchFeatureType type) const          = 0;
 };
 }  // end DA
 #endif  // DASTATUSBARINTERFACE_H

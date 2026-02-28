@@ -707,8 +707,12 @@ void DAAppProject::onTaskProgress(std::shared_ptr< DAAbstractArchiveTask > t, in
 	}
 	// 读任务
 	switch (t->getCode()) {
-	default: {
-		qDebug() << tr("get unknown task code:%1 ,name=%2").arg(t->getCode()).arg(t->getName());
+	case DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW: {
+		// 错开，加载workflow时显示加载数据
+		setCurrentStatusText(tr("Loading datas"));
+	} break;
+	case DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER: {
+		setCurrentStatusText(tr("Loading charts"));
 	} break;
 	}
 }
@@ -849,6 +853,12 @@ void DAAppProject::setStatusBarNotBusy(const QString& info)
 	} else {
 		statusBar->clearMessage();
 	}
+}
+
+void DAAppProject::setCurrentStatusText(const QString& info)
+{
+	DAStatusBarInterface* statusBar = core()->getUiInterface()->getStatusBar();
+	statusBar->setProgressText(info);
 }
 
 }  // end DA

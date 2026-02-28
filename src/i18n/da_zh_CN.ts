@@ -62,7 +62,7 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+80"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+81"/>
         <source>Restore UI State</source>
         <translation>加载界面状态信息</translation>
     </message>
@@ -97,7 +97,7 @@
         <translation>无法移除ui状态文件%1</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+46"/>
         <source>untitle</source>
         <translation>未命名</translation>
     </message>
@@ -1021,7 +1021,17 @@ Table Area</source>
         <translation>开始从%1加载存档</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+18"/>
+        <source>Loading datas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Loading charts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
         <source>Project saved successfully</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1056,12 +1066,7 @@ Table Area</source>
         <translation>无法把文件%1序列化为Dataframe</translation>
     </message>
     <message>
-        <location line="-88"/>
-        <source>get unknown task code:%1 ,name=%2</source>
-        <translation>接收到未知的任务编码:%1,名称为:%2</translation>
-    </message>
-    <message>
-        <location line="-317"/>
+        <location line="-409"/>
         <source>Saving project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1071,7 +1076,7 @@ Table Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+274"/>
+        <location line="+278"/>
         <source>Successfully save archive : %1</source>
         <translation>成功存档到:%1</translation>
     </message>

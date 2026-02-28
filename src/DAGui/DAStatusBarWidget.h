@@ -18,17 +18,6 @@ class DAGUI_API DAStatusBarWidget : public QWidget
 	Q_OBJECT
 	DA_DECLARE_PRIVATE(DAStatusBarWidget)
 public:
-	/**
-	 * @brief 选择按钮类型
-	 */
-	enum SwitchButtonType
-	{
-		SwitchButtonWorkflow,
-		SwitchButtonData,
-		SwitchButtonChart
-	};
-	Q_ENUM(SwitchButtonType)
-public:
 	explicit DAStatusBarWidget(QWidget* parent = nullptr);
 	~DAStatusBarWidget();
 	// 消息窗口相关方法
@@ -52,12 +41,10 @@ public:
 	bool isProgressBarVisible() const;
 	QString getCurrentMessage() const;
 	// switch button的显示隐藏
-	void setSwitchButtonVisible(bool visible);
-	void setSwitchButtonVisible(SwitchButtonType type, bool visible);
-	bool isSwitchButtonVisible() const;
-	bool isSwitchButtonVisible(SwitchButtonType type) const;
+	void setSwitchButtonVisible(DA::DAWorkbenchFeatureType type, bool visible);
+	bool isSwitchButtonVisible(DA::DAWorkbenchFeatureType type) const;
 Q_SIGNALS:
-	void requestSwitch(DAStatusBarWidget::SwitchButtonType type);
+	void requestSwitch(DA::DAWorkbenchFeatureType type);
 
 protected:
 	void changeEvent(QEvent* event) override;

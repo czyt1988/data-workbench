@@ -62,7 +62,7 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+80"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+81"/>
         <source>Restore UI State</source>
         <translation type="unfinished"></translation>
     </message>
@@ -97,7 +97,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+46"/>
         <source>untitle</source>
         <translation type="unfinished"></translation>
     </message>
@@ -997,7 +997,17 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+18"/>
+        <source>Loading datas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Loading charts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
         <source>Project saved successfully</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1032,12 +1042,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-88"/>
-        <source>get unknown task code:%1 ,name=%2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-317"/>
+        <location line="-409"/>
         <source>Saving project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1047,7 +1052,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+274"/>
+        <location line="+278"/>
         <source>Successfully save archive : %1</source>
         <translation type="unfinished"></translation>
     </message>

@@ -40,7 +40,7 @@ void DAStatusBarWidget::PrivateData::setupUI(DAStatusBarWidget* par)
 	m_layout = new QHBoxLayout(par);
 	m_layout->setContentsMargins(0, 0, 0, 0);
 	m_layout->setSpacing(10);
-	//创建按钮组
+	// 创建按钮组
 	m_switchButtonWorkflow = new QToolButton(par);
 	m_switchButtonWorkflow->setIcon(QIcon(":/DAGui/icon/workflow.svg"));
 	m_switchButtonWorkflow->setAutoRaise(true);
@@ -122,6 +122,7 @@ DAStatusBarWidget::DAStatusBarWidget(QWidget* parent) : QWidget(parent), DA_PIMP
 	// 设置尺寸策略，横向为扩展
 	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	updateWidgetStyle();
+	initConnect();
 }
 
 DAStatusBarWidget::~DAStatusBarWidget()
@@ -158,10 +159,14 @@ void DAStatusBarWidget::updateWidgetStyle()
 void DA::DAStatusBarWidget::initConnect()
 {
 	connect(d_ptr->m_switchButtonWorkflow, &QToolButton::clicked, [ this ]() {
-		Q_EMIT requestSwitch(SwitchButtonWorkflow);
+		Q_EMIT requestSwitch(DA::DAWorkbenchFeatureType::Workflow);
 	});
-	connect(d_ptr->m_switchButtonData, &QToolButton::clicked, [ this ]() { Q_EMIT requestSwitch(SwitchButtonData); });
-	connect(d_ptr->m_switchButtonChart, &QToolButton::clicked, [ this ]() { Q_EMIT requestSwitch(SwitchButtonChart); });
+	connect(d_ptr->m_switchButtonData, &QToolButton::clicked, [ this ]() {
+		Q_EMIT requestSwitch(DA::DAWorkbenchFeatureType::Data);
+	});
+	connect(d_ptr->m_switchButtonChart, &QToolButton::clicked, [ this ]() {
+		Q_EMIT requestSwitch(DA::DAWorkbenchFeatureType::Chart);
+	});
 }
 
 void DAStatusBarWidget::showMessage(const QString& message, int timeout)
@@ -319,23 +324,21 @@ QString DAStatusBarWidget::getCurrentMessage() const
 	return d_ptr->m_currentMessage;
 }
 
-void DA::DAStatusBarWidget::setSwitchButtonVisible(bool visible)
-{
-	d_ptr->m_switchButtonChart->setVisible(visible);
-	d_ptr->m_switchButtonData->setVisible(visible);
-	d_ptr->m_switchButtonWorkflow->setVisible(visible);
-}
-
-void DA::DAStatusBarWidget::setSwitchButtonVisible(SwitchButtonType type, bool visible)
+void DA::DAStatusBarWidget::setSwitchButtonVisible(DA::DAWorkbenchFeatureType type, bool visible)
 {
 	switch (type) {
-	case SwitchButtonChart:
+	case DA::DAWorkbenchFeatureType::Chart:
 		d_ptr->m_switchButtonChart->setVisible(visible);
 		break;
-	case SwitchButtonData:
+	case DA::DAWorkbenchFeatureType::Data:
 		d_ptr->m_switchButtonData->setVisible(visible);
 		break;
-	case SwitchButtonWorkflow:
+	case DA::DAWorkbenchFeatureType::Workflow:
+		d_ptr->m_switchButtonWorkflow->setVisible(visible);
+		break;
+	case DA::DAWorkbenchFeatureType::All:
+		d_ptr->m_switchButtonChart->setVisible(visible);
+		d_ptr->m_switchButtonData->setVisible(visible);
 		d_ptr->m_switchButtonWorkflow->setVisible(visible);
 		break;
 	default:
@@ -343,21 +346,18 @@ void DA::DAStatusBarWidget::setSwitchButtonVisible(SwitchButtonType type, bool v
 	}
 }
 
-bool DA::DAStatusBarWidget::isSwitchButtonVisible() const
-{
-	return d_ptr->m_switchButtonChart->isVisible() || d_ptr->m_switchButtonData->isVisible()
-	       || d_ptr->m_switchButtonWorkflow->isVisible();
-}
-
-bool DA::DAStatusBarWidget::isSwitchButtonVisible(SwitchButtonType type) const
+bool DA::DAStatusBarWidget::isSwitchButtonVisible(DA::DAWorkbenchFeatureType type) const
 {
 	switch (type) {
-	case SwitchButtonChart:
+	case DA::DAWorkbenchFeatureType::Chart:
 		return d_ptr->m_switchButtonChart->isVisible();
-	case SwitchButtonData:
+	case DA::DAWorkbenchFeatureType::Data:
 		return d_ptr->m_switchButtonData->isVisible();
-	case SwitchButtonWorkflow:
+	case DA::DAWorkbenchFeatureType::Workflow:
 		return d_ptr->m_switchButtonWorkflow->isVisible();
+	case DA::DAWorkbenchFeatureType::All:
+		return d_ptr->m_switchButtonChart->isVisible() && d_ptr->m_switchButtonData->isVisible()
+		       && d_ptr->m_switchButtonWorkflow->isVisible();
 	default:
 		return false;
 	}

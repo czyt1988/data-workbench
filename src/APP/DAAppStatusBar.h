@@ -3,11 +3,11 @@
 #include "DAStatusBarInterface.h"
 class QStatusBar;
 class QToolButton;
+#include "DAStatusBarWidget.h"
 namespace DA
 {
 class AppMainWindow;
 class DAStatusBar;
-class DAStatusBarWidget;
 class DAAppDockingArea;
 class DAAppActions;
 
@@ -32,13 +32,15 @@ public:
 	// 获取当前状态
 	virtual bool isProgressBarVisible() const override;
 	// 设置是否显示switch button 组，switch button组用于快速切换绘图、数据、工作流三个部分，在一些场景需要隐藏
-	virtual void setSwitchButtonVisible(bool visible);
-	virtual bool isSwitchButtonVisible() const;
+	virtual void setSwitchButtonVisible(DA::DAWorkbenchFeatureType type, bool visible);
+	virtual bool isSwitchButtonVisible(DA::DAWorkbenchFeatureType type) const;
 	// 获取app
 	AppMainWindow* app() const;
 	//
 	void setAppDockingArea(DAAppDockingArea* dockingArea);
 	void setAppActions(DAAppActions* actions);
+private Q_SLOTS:
+	void onRequestSwitch(DA::DAWorkbenchFeatureType type);
 
 private:
 	void buildStatusBar(AppMainWindow* mainWindow);

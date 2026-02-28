@@ -78,14 +78,14 @@ bool DAAppStatusBar::isProgressBarVisible() const
 	return m_statusBarWidget->isProgressBarVisible();
 }
 
-void DAAppStatusBar::setSwitchButtonVisible(bool visible)
+void DAAppStatusBar::setSwitchButtonVisible(DA::DAWorkbenchFeatureType type, bool visible)
 {
-	m_statusBarWidget->setSwitchButtonVisible(visible);
+	m_statusBarWidget->setSwitchButtonVisible(type, visible);
 }
 
-bool DAAppStatusBar::isSwitchButtonVisible() const
+bool DAAppStatusBar::isSwitchButtonVisible(DA::DAWorkbenchFeatureType type) const
 {
-	return m_statusBarWidget->isSwitchButtonVisible();
+	return m_statusBarWidget->isSwitchButtonVisible(type);
 }
 
 AppMainWindow* DAAppStatusBar::app() const
@@ -101,7 +101,7 @@ void DAAppStatusBar::setAppDockingArea(DAAppDockingArea* dockingArea)
 void DAAppStatusBar::setAppActions(DAAppActions* actions)
 {
 	m_actions = actions;
-	//设置完action后，构建action相关的按钮
+	// 设置完action后，构建action相关的按钮
 	m_showLeftSideBarButton = new QToolButton(m_statusBar);
 	m_showLeftSideBarButton->setAutoRaise(true);
 	m_showLeftSideBarButton->setDefaultAction(actions->actionShowLeftSideBar);
@@ -118,6 +118,14 @@ void DAAppStatusBar::buildStatusBar(AppMainWindow* mainWindow)
 	m_statusBarWidget = new DAStatusBarWidget(m_statusBar);
 	m_statusBar->addWidget(m_statusBarWidget, 1);
 	mainWindow->setStatusBar(m_statusBar);
+	connect(m_statusBarWidget, &DAStatusBarWidget::requestSwitch, this, &DAAppStatusBar::onRequestSwitch);
 }
 
+void DAAppStatusBar::onRequestSwitch(DA::DAWorkbenchFeatureType type)
+{
+	if (!m_dockingArea) {
+		return;
+	}
+	m_dockingArea->raiseFeatureArea(type);
+}
 }
