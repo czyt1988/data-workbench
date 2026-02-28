@@ -449,7 +449,7 @@ bool DAAppProject::load(const QString& path)
 		qCritical() << tr("The file %1 is not a valid project file").arg(path);  // cn:文件%1不是正确的工程文件
 		return false;
 	}
-	setStatusBarInBusy(tr("Loading project"));
+	setStatusBarInBusy(tr("Loading project"));  // cn:正在加载工程
 
 	// 加载之前先清空
 	clear();
@@ -489,7 +489,7 @@ bool DAAppProject::load(const QString& path)
 	}
 	//! 组件任务队列
 	if (!mArchive->load(path)) {
-		qCritical() << tr("failed to laod archive from %1").arg(path);
+		qCritical() << tr("failed to laod archive from %1").arg(path);  // cn:文件%1加载失败
 		return false;
 	}
 	return true;
@@ -533,8 +533,8 @@ void DAAppProject::makeSaveSystemInfoTask(DAZipArchiveThreadWrapper* archive)
 	root.appendChild(sysEle);
 	// 创建archive任务队列
 	auto t = archive->appendXmlSaveTask(QStringLiteral("system.xml"), doc);
-	t->setName(tr("Save System Info"));  // cn:保存系统信息
-	t->setDescribe(tr("Save system information"));
+	t->setName(tr("Save System Info"));             // cn:保存系统信息
+	t->setDescribe(tr("Save system information"));  // cn:保存系统信息
 }
 
 /**
@@ -702,18 +702,18 @@ void DAAppProject::onBeginLoad(const QString& path)
 void DAAppProject::onTaskProgress(std::shared_ptr< DAAbstractArchiveTask > t, int mode)
 {
 	if (DAAbstractArchiveTask::WriteMode == mode) {
-		// 写任务不处理
-		return;
-	}
-	// 读任务
-	switch (t->getCode()) {
-	case DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW: {
-		// 错开，加载workflow时显示加载数据
-		setCurrentStatusText(tr("Loading datas"));
-	} break;
-	case DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER: {
-		setCurrentStatusText(tr("Loading charts"));
-	} break;
+
+	} else {
+		// 读任务
+		switch (t->getCode()) {
+		case DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW: {
+			// 错开，加载workflow时显示加载数据
+			setCurrentStatusText(tr("Loading datas"));  // cn:正在加载数据
+		} break;
+		case DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER: {
+			setCurrentStatusText(tr("Loading charts"));  // cn:正在加载绘图
+		} break;
+		}
 	}
 }
 
@@ -728,10 +728,10 @@ void DAAppProject::onSaveFinish(bool success)
 		setModified(false);
 		Q_EMIT projectSaved(savePath);
 		qInfo() << tr("Successfully save archive : %1").arg(savePath);  // cn:成功保存工程:%1
-		setStatusBarNotBusy(tr("Project saved successfully"));
+		setStatusBarNotBusy(tr("Project saved successfully"));          // cn:成功保存工程
 	} else {
 		qWarning() << tr("Failed to save archive : %1").arg(savePath);  // cn:无法保存工程:%1
-		setStatusBarNotBusy(tr("Failed to save project"));
+		setStatusBarNotBusy(tr("Failed to save project"));              // cn:无法保存工程
 	}
 }
 
@@ -746,11 +746,11 @@ void DAAppProject::onLoadFinish(bool success)
 		setModified(false);
 		qInfo() << tr("Successfully load archive : %1").arg(loadPath);  // cn:成功加载工程:%1
 		Q_EMIT projectLoaded(loadPath);
-		setStatusBarNotBusy(tr("Project loaded successfully"));
+		setStatusBarNotBusy(tr("Project loaded successfully"));  // cn:成功加载工程
 	} else {
 		setProjectPath(QString());
 		qWarning() << tr("Failed to load archive : %1").arg(loadPath);  // cn:无法加载工程:%1
-		setStatusBarNotBusy(tr("Failed to load project"));
+		setStatusBarNotBusy(tr("Failed to load project"));              // cn:无法加载工程
 	}
 }
 

@@ -1021,7 +1021,7 @@ Table Area</source>
         <translation>开始从%1加载存档</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+17"/>
         <source>Loading datas</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1031,7 +1031,7 @@ Table Area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+17"/>
         <source>Project saved successfully</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5117,7 +5117,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+69"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+70"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
