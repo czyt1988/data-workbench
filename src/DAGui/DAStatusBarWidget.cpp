@@ -1,4 +1,4 @@
-#include "DAStatusBarWidget.h"
+﻿#include "DAStatusBarWidget.h"
 #include <QStyle>
 #include <QApplication>
 #include <QPainter>
@@ -46,18 +46,23 @@ void DAStatusBarWidget::PrivateData::setupUI(DAStatusBarWidget* par)
 	m_switchButtonWorkflow->setAutoRaise(true);
 	m_switchButtonWorkflow->setText(tr("Workflow"));
 	m_switchButtonWorkflow->setMaximumWidth(50);
+	m_switchButtonWorkflow->setToolTip(tr("Switch to Workflow Mode"));  // cn:切换为工作流模式
 
 	m_switchButtonData = new QToolButton(par);
 	m_switchButtonData->setIcon(QIcon(":/DAGui/icon/data.svg"));
 	m_switchButtonData->setAutoRaise(true);
 	m_switchButtonData->setText(tr("Data"));
 	m_switchButtonData->setMaximumWidth(50);
+	m_switchButtonData->setToolTip(tr("Switch to Data Mode"));  // cn:切换为数据模式
 
 	m_switchButtonChart = new QToolButton(par);
 	m_switchButtonChart->setIcon(QIcon(":/DAGui/icon/chart.svg"));
 	m_switchButtonChart->setAutoRaise(true);
 	m_switchButtonChart->setText(tr("Chart"));
 	m_switchButtonChart->setMaximumWidth(50);
+	m_switchButtonChart->setToolTip(tr("Switch to Chart Mode"));  // cn:切换为图表模式
+
+	// 创建消息标签
 
 	// 创建消息标签
 	m_messageLabel = new QLabel(par);
@@ -357,7 +362,7 @@ bool DA::DAStatusBarWidget::isSwitchButtonVisible(DA::DAWorkbenchFeatureType typ
 		return d_ptr->m_switchButtonWorkflow->isVisible();
 	case DA::DAWorkbenchFeatureType::All:
 		return d_ptr->m_switchButtonChart->isVisible() && d_ptr->m_switchButtonData->isVisible()
-		       && d_ptr->m_switchButtonWorkflow->isVisible();
+			   && d_ptr->m_switchButtonWorkflow->isVisible();
 	default:
 		return false;
 	}
@@ -369,7 +374,7 @@ void DAStatusBarWidget::changeEvent(QEvent* event)
 
 	// 当系统主题变化时，更新样式
 	if (event->type() == QEvent::PaletteChange || event->type() == QEvent::StyleChange
-	    || event->type() == QEvent::ThemeChange) {
+		|| event->type() == QEvent::ThemeChange) {
 		updateWidgetStyle();
 	}
 }
