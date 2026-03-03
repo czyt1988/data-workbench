@@ -83,7 +83,7 @@ void DAAppActions::buildDataAction()
 void DAAppActions::buildChartAction()
 {
 	// 绘图标签 Chart Category
-	actionAddFigure         = createAction("actionAddFigure", ":/app/bright/Icon/addFigure.svg");
+	actionAddFigure = createAction("actionAddFigure", ":/app/bright/Icon/addFigure.svg");
 	actionFigureResizeChart = createAction("actionFigureResizeChart", ":/app/bright/Icon/figureResizeChart.svg", true, false);
 	actionFigureNewXYAxis   = createAction("actionFigureNewXYAxis", ":/app/bright/Icon/newAxis.svg");
 	actionChartAddCurve     = createAction("actionChartAddCurve", ":/app/chart-type/Icon/chart-type/chart-curve.svg");
@@ -121,17 +121,17 @@ void DAAppActions::buildChartAction()
 	actionGroupChartPickers = new QActionGroup(this);
 	actionGroupChartPickers->setObjectName(QStringLiteral("actionGroupChartPickers"));
 	actionGroupChartPickers->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许都不选中
-	actionChartEnablePickerCross    = createAction("actionChartEnablePickerCross",
-                                                ":/app/bright/Icon/chart-picker.svg",
-                                                true,
-                                                false,
-                                                actionGroupChartPickers);
-	actionChartEnablePickerXY       = createAction("actionChartEnablePickerXY",
+	actionChartEnablePickerCross = createAction("actionChartEnablePickerCross",
+	                                            ":/app/bright/Icon/chart-picker.svg",
+	                                            true,
+	                                            false,
+	                                            actionGroupChartPickers);
+	actionChartEnablePickerXY    = createAction("actionChartEnablePickerXY",
                                              ":/app/bright/Icon/chart-picker-xy.svg",
                                              true,
                                              false,
                                              actionGroupChartPickers);
-	actionChartEnablePickerY        = createAction("actionChartEnablePickerY",
+	actionChartEnablePickerY     = createAction("actionChartEnablePickerY",
                                             ":/app/bright/Icon/chart-picker-y.svg",
                                             true,
                                             false,
@@ -175,6 +175,10 @@ void DAAppActions::buildChartAction()
 
 	actionChartEnableLegend = createAction("actionChartEnableLegend", ":/app/bright/Icon/chart-legend.svg", true, false);
 	actionCopyFigureInClipboard = createAction("actionCopyFigureInClipboard", ":/app/bright/Icon/copy-figure.svg");
+
+	actionChartRectSelector = createAction("actionChartRectSelector", ":/app/bright/Icon/chart-selector-rect.svg");
+	actionChartEllipseSelector = createAction("actionChartEllipseSelector", ":/app/bright/Icon/chart-selector-ellipse.svg");
+	actionChartPolygonSelector = createAction("actionChartPolygonSelector", ":/app/bright/Icon/chart-selector-polygon.svg");
 }
 
 void DAAppActions::buildViewAction()
@@ -189,7 +193,7 @@ void DAAppActions::buildViewAction()
 	actionShowDataManagerArea  = createAction("actionShowDataManagerArea", ":/app/bright/Icon/data-manager-view.svg");
 	actionShowMessageLogView   = createAction("actionShowMessageLogView", ":/app/bright/Icon/showInfomation.svg");
 	actionShowSettingWidget    = createAction("actionShowSettingWidget", ":/app/bright/Icon/showSettingWidget.svg");
-	actionShowLeftSideBar  = createAction("actionShowLeftSideBar", ":/app/bright/Icon/left-sider-bar.svg", true, true);
+	actionShowLeftSideBar = createAction("actionShowLeftSideBar", ":/app/bright/Icon/left-sider-bar.svg", true, true);
 	actionShowRightSideBar = createAction("actionShowRightSideBar", ":/app/bright/Icon/right-sider-bar.svg", true, true);
 }
 
@@ -242,10 +246,10 @@ void DAAppActions::buildOtherActions()
 {
 	actionGroupRibbonTheme = new QActionGroup(this);
 	actionGroupRibbonTheme->setObjectName(QStringLiteral("actionGroupRibbonTheme"));
-	actionRibbonThemeOffice2013     = createAction("actionRibbonThemeOffice2013", true, true, actionGroupRibbonTheme);
+	actionRibbonThemeOffice2013 = createAction("actionRibbonThemeOffice2013", true, true, actionGroupRibbonTheme);
 	actionRibbonThemeOffice2016Blue = createAction("actionRibbonThemeOffice2016Blue", true, false, actionGroupRibbonTheme);
 	actionRibbonThemeOffice2021Blue = createAction("actionRibbonThemeOffice2021Blue", true, false, actionGroupRibbonTheme);
-	actionRibbonThemeDark           = createAction("actionRibbonThemeDark", true, false, actionGroupRibbonTheme);
+	actionRibbonThemeDark = createAction("actionRibbonThemeDark", true, false, actionGroupRibbonTheme);
 }
 
 void DAAppActions::buildColorThemeActions()
@@ -401,6 +405,10 @@ void DAAppActions::retranslateUi()
 	actionChartEnableLegend->setText(tr("legend"));                             // cn:图例
 	actionCopyFigureInClipboard->setText(tr("Copy To Clipboard"));              // cn:复制到剪切板
 
+	actionChartRectSelector->setText(tr("Rect Selector"));        // cn:矩形选框
+	actionChartEllipseSelector->setText(tr("Ellipse Selector"));  // cn:椭圆选框
+	actionChartPolygonSelector->setText(tr("Polygon Selector"));  // cn:多边形选框
+
 	// 数据操作的上下文标签 Data Operate Context Category
 	actionRemoveRow->setText(tr("Remove Row"));                  // cn:删除行
 	actionRemoveColumn->setText(tr("Remove Column"));            // cn:删除列
@@ -422,13 +430,13 @@ void DAAppActions::retranslateUi()
 	actionWorkflowEnableItemLinkageMove->setText(tr("Linkage \nMove"));  // cn:联动
 	actionWorkflowEnableItemLinkageMove->setToolTip(
 	    tr("When moving elements, other elements linked to this element follow the movement"));  // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
-	actionItemGrouping->setText(tr("grouping"));                                      // cn:分组
-	actionItemUngroup->setText(tr("ungroup"));                                        // cn:取消分组
-	actionWorkflowStartDrawRect->setText(tr("Draw \nRect"));                          // cn:绘制\n矩形
-	actionWorkflowStartDrawText->setText(tr("Draw \nText"));                          // cn:绘制\n文本
-	actionWorkflowShowGrid->setText(tr("Show \nGrid"));                               // cn:显示\n网格
-	actionWorkflowViewReadOnly->setText(tr("Lock \nView"));                           // cn:锁定\n视图
-	actionWorkflowRun->setText(tr("Run \nWorkflow"));                                 // cn:运行\n工作流
+	actionItemGrouping->setText(tr("grouping"));                                                 // cn:分组
+	actionItemUngroup->setText(tr("ungroup"));                                                   // cn:取消分组
+	actionWorkflowStartDrawRect->setText(tr("Draw \nRect"));                                     // cn:绘制\n矩形
+	actionWorkflowStartDrawText->setText(tr("Draw \nText"));                                     // cn:绘制\n文本
+	actionWorkflowShowGrid->setText(tr("Show \nGrid"));                                          // cn:显示\n网格
+	actionWorkflowViewReadOnly->setText(tr("Lock \nView"));                                      // cn:锁定\n视图
+	actionWorkflowRun->setText(tr("Run \nWorkflow"));                                            // cn:运行\n工作流
 	actionWorkflowTerminate->setText(tr("Terminate \nWorkflow"));                     // cn:停止\n工作流
 	actionWorkflowLinkEnable->setText(tr("Link"));                                    // cn:连线
 	actionWorkflowAddBackgroundPixmap->setText(tr("Add \nBackground"));               // cn:添加\n背景

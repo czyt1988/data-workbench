@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+350"/>
+        <location filename="../APP/DAAppActions.cpp" line="+354"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -416,6 +416,21 @@ All</source>
 剪切板</translation>
     </message>
     <message>
+        <location line="+2"/>
+        <source>Rect Selector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Ellipse Selector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Polygon Selector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+3"/>
         <source>Remove Row</source>
         <translation>删除行</translation>
@@ -639,7 +654,7 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-70"/>
+        <location line="-74"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
@@ -649,7 +664,7 @@ Config</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+48"/>
         <source>Run 
 Workflow</source>
         <translation>运行
@@ -1241,13 +1256,12 @@ Table Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+393"/>
-        <location line="+2"/>
+        <location line="+453"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-393"/>
+        <location line="-451"/>
         <source>Chart Setting</source>
         <translation type="unfinished">绘图设置</translation>
     </message>
@@ -1283,17 +1297,38 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="+428"/>
+        <location line="+381"/>
+        <location line="+2"/>
+        <source>Chart Operate</source>
+        <translation type="unfinished">绘图操作</translation>
+    </message>
+    <message>
+        <location line="+45"/>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+16"/>
+        <source>Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Select Operate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Assist Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
     <message>
-        <location line="-152"/>
+        <location line="-167"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>

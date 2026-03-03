@@ -50,7 +50,7 @@ class DAFigureWidget::PrivateData
 	DA_DECLARE_PUBLIC(DAFigureWidget)
 public:
 	QString m_id;
-	QPointer< DAFigureWidgetOverlay > m_chartEditorOverlay;  ///< 编辑模式
+    QPointer< DAFigureWidgetOverlay > m_figureResizeEditorOverlay;  ///< 编辑模式
 	QBrush m_backgroundBrush;                                ///< 背景
 	QUndoStack m_undoStack;                                  ///<
 	std::unique_ptr< DAChartFactory > m_factory;             ///< 绘图创建的工厂
@@ -199,8 +199,8 @@ DAChartWidget* DAFigureWidget::createChart(const QRectF& versatileSize)
 	addChart(chart, versatileSize);
 
 	// 对于有Overlay，需要把Overlay提升到最前面，否则会被覆盖
-	if (d_ptr->m_chartEditorOverlay) {
-		d_ptr->m_chartEditorOverlay->raise();  // 同时提升最前
+    if (d_ptr->m_figureResizeEditorOverlay) {
+        d_ptr->m_figureResizeEditorOverlay->raise();  // 同时提升最前
 	}
 	return chart;
 }
@@ -424,28 +424,28 @@ void DAFigureWidget::setSubChartEditorEnable(bool enable)
 	qDebug() << "DAFigureWidget::setSubChartEditorEnable=" << enable;
 #endif
 	if (enable) {
-		if (nullptr == d_ptr->m_chartEditorOverlay) {
-			d_ptr->m_chartEditorOverlay = new DAFigureWidgetOverlay(figure());
-			connect(d_ptr->m_chartEditorOverlay,
+        if (nullptr == d_ptr->m_figureResizeEditorOverlay) {
+            d_ptr->m_figureResizeEditorOverlay = new DAFigureWidgetOverlay(figure());
+            connect(d_ptr->m_figureResizeEditorOverlay,
 			        &DAFigureWidgetOverlay::widgetNormGeometryChanged,
 			        this,
 			        &DAFigureWidget::onWidgetGeometryChanged);
-			connect(d_ptr->m_chartEditorOverlay,
+            connect(d_ptr->m_figureResizeEditorOverlay,
 			        &DAFigureWidgetOverlay::activeWidgetChanged,
 			        this,
 			        &DAFigureWidget::onOverlayActiveWidgetChanged);
-			d_ptr->m_chartEditorOverlay->show();
-			d_ptr->m_chartEditorOverlay->raise();  // 同时提升最前
+            d_ptr->m_figureResizeEditorOverlay->show();
+            d_ptr->m_figureResizeEditorOverlay->raise();  // 同时提升最前
 		} else {
-			if (d_ptr->m_chartEditorOverlay->isHidden()) {
-				d_ptr->m_chartEditorOverlay->show();
-				d_ptr->m_chartEditorOverlay->raise();  // 同时提升最前
+            if (d_ptr->m_figureResizeEditorOverlay->isHidden()) {
+                d_ptr->m_figureResizeEditorOverlay->show();
+                d_ptr->m_figureResizeEditorOverlay->raise();  // 同时提升最前
 			}
 		}
 	} else {
-		if (d_ptr->m_chartEditorOverlay) {
-			delete d_ptr->m_chartEditorOverlay;
-			d_ptr->m_chartEditorOverlay = nullptr;
+        if (d_ptr->m_figureResizeEditorOverlay) {
+            delete d_ptr->m_figureResizeEditorOverlay;
+            d_ptr->m_figureResizeEditorOverlay = nullptr;
 		}
 	}
 }
@@ -458,7 +458,7 @@ void DAFigureWidget::setSubChartEditorEnable(bool enable)
 ///
 DAFigureWidgetOverlay* DAFigureWidget::getSubChartEditor() const
 {
-	return (d_ptr->m_chartEditorOverlay);
+    return (d_ptr->m_figureResizeEditorOverlay);
 }
 
 /**
@@ -467,8 +467,8 @@ DAFigureWidgetOverlay* DAFigureWidget::getSubChartEditor() const
  */
 bool DAFigureWidget::isEnableSubChartEditor() const
 {
-	if (d_ptr->m_chartEditorOverlay) {
-		return (d_ptr->m_chartEditorOverlay->isVisible());
+    if (d_ptr->m_figureResizeEditorOverlay) {
+        return (d_ptr->m_figureResizeEditorOverlay->isVisible());
 	}
 	return (false);
 }
@@ -906,8 +906,8 @@ void DAFigureWidget::onWidgetGeometryChanged(QWidget* w, const QRectF& oldNormGe
 	DAFigureWidgetCommandResizeWidget* cmd = new DAFigureWidgetCommandResizeWidget(this, w, oldNormGeo, newNormGeo);
 	push(cmd);
 	// 由于设置geo会有一定误差，因此，这里需要更新一下overlay
-	if (d_ptr->m_chartEditorOverlay) {
-		d_ptr->m_chartEditorOverlay->updateOverlay();
+    if (d_ptr->m_figureResizeEditorOverlay) {
+        d_ptr->m_figureResizeEditorOverlay->updateOverlay();
 	}
 }
 
@@ -957,8 +957,8 @@ void DAFigureWidget::onCurrentAxesChanged(QwtPlot* plot)
 {
 	DAChartWidget* chartWidget = plot ? qobject_cast< DAChartWidget* >(plot) : nullptr;
 	// 如果有子窗口编辑器，把编辑器的激活窗口改变
-	if (d_ptr->m_chartEditorOverlay) {
-		d_ptr->m_chartEditorOverlay->setActiveWidget(plot);
+    if (d_ptr->m_figureResizeEditorOverlay) {
+        d_ptr->m_figureResizeEditorOverlay->setActiveWidget(plot);
 	}
 	Q_EMIT currentChartChanged(chartWidget);
 }

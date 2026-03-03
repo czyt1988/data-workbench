@@ -212,7 +212,7 @@ void DAAppRibbonArea::resetText()
 	m_pannelChartAdd->setPanelName(tr("Add Chart"));             // cn:添加绘图
 	// 绘图上下文标签
 	m_contextChart->setContextTitle(tr("Chart"));                         // cn:绘图
-	m_categoryChartEdit->setCategoryName(tr("Chart Edit"));               // cn:绘图编辑
+	m_categoryChartOpt->setCategoryName(tr("Chart Edit"));                // cn:绘图编辑
 	m_pannelFigureSettingForContext->setPanelName(tr("Figure Setting"));  // cn:绘图窗口设置
 	m_pannelChartSetting->setPanelName(tr("Chart Setting"));              // cn:图表设置
 	m_panelFigureTheme->setPanelName(tr("Figure Theme"));                 // cn:绘图主题
@@ -605,19 +605,19 @@ void DAAppRibbonArea::buildContextCategoryWorkflowRun_()
  */
 void DAAppRibbonArea::buildContextCategoryChartEdit()
 {
-	m_contextChart = ribbonBar()->addContextCategory(tr("Chart Edit"));  // cn:绘图编辑
+	m_contextChart = ribbonBar()->addContextCategory(tr("Chart Operate"));  // cn:绘图操作
 	m_contextChart->setObjectName(QStringLiteral("da-ribbon-contextcategory-chart"));
-	m_categoryChartEdit = m_contextChart->addCategoryPage(tr("Chart Edit"));
-	m_categoryChartEdit->setObjectName(QStringLiteral("da-ribbon-category-chart.edit"));
+	m_categoryChartOpt = m_contextChart->addCategoryPage(tr("Chart Operate"));
+	m_categoryChartOpt->setObjectName(QStringLiteral("da-ribbon-category-chart.opt"));
 	// fig edit
-	m_pannelFigureSettingForContext = new SARibbonPanel(m_categoryChartEdit);
+	m_pannelFigureSettingForContext = new SARibbonPanel(m_categoryChartOpt);
 	m_pannelFigureSettingForContext->setObjectName(QStringLiteral("da-pannel-context-chartedit.fig_setting"));
 	m_pannelFigureSettingForContext->addLargeAction(m_actions->actionAddFigure);
 	m_pannelFigureSettingForContext->addLargeAction(m_actions->actionFigureResizeChart);
 	m_pannelFigureSettingForContext->addLargeAction(m_actions->actionFigureNewXYAxis);  // 新建坐标系
-	m_categoryChartEdit->addPanel(m_pannelFigureSettingForContext);
+	m_categoryChartOpt->addPanel(m_pannelFigureSettingForContext);
 	// chart edit
-	m_pannelChartSetting = new SARibbonPanel(m_categoryChartEdit);
+	m_pannelChartSetting = new SARibbonPanel(m_categoryChartOpt);
 	m_pannelChartSetting->setObjectName(QStringLiteral("da-pannel-context-chartedit.chart_setting"));
 	m_pannelChartSetting->addLargeAction(m_actions->actionFigureSettingApplyAllChart);
 	m_pannelChartSetting->addSeparator();
@@ -647,9 +647,9 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
 	// legend
 	m_pannelChartSetting->addLargeAction(m_actions->actionChartEnableLegend);
 
-	m_categoryChartEdit->addPanel(m_pannelChartSetting);
+	m_categoryChartOpt->addPanel(m_pannelChartSetting);
 
-	m_panelFigureTheme   = new SARibbonPanel(m_categoryChartEdit);
+	m_panelFigureTheme   = new SARibbonPanel(m_categoryChartOpt);
 	m_figureThemeGallery = m_panelFigureTheme->addGallery(true);
 	m_figureThemeGallery->setMinimumWidth(200);
 	SARibbonGalleryGroup* group1 = m_figureThemeGallery->addCategoryActions(tr("Theme"), m_actions->actionListOfColorTheme);
@@ -660,7 +660,22 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
 	m_panelFigureTheme->addAction(m_actions->actionCopyFigureInClipboard);
 	// 手动设置才能刷新当前界面的配置
 	m_figureThemeGallery->setCurrentViewGroup(group1);
-	m_categoryChartEdit->addPanel(m_panelFigureTheme);
+	m_categoryChartOpt->addPanel(m_panelFigureTheme);
+
+	//================================
+	// 绘图编辑
+	//================================
+	m_categoryChartEdit = m_contextChart->addCategoryPage(tr("Chart Edit"));
+	m_categoryChartEdit->setObjectName(QStringLiteral("da-ribbon-category-chart.edit"));
+	// 选区工具
+	m_pannelChartSelectTool = m_categoryChartEdit->addPanel(tr("Select"));
+	m_pannelChartSelectTool->addLargeAction(m_actions->actionChartRectSelector);
+	m_pannelChartSelectTool->addMediumAction(m_actions->actionChartEllipseSelector);
+	m_pannelChartSelectTool->addMediumAction(m_actions->actionChartPolygonSelector);
+	// 选区操作
+	m_pannelChartSelectOpt = m_categoryChartEdit->addPanel(tr("Select Operate"));
+	// 辅助工具
+	m_pannelChartAssistTool = m_categoryChartEdit->addPanel(tr("Assist Tools"));
 }
 
 void DAAppRibbonArea::buildApplicationMenu()

@@ -90,6 +90,9 @@
         <file>Icon/link-pick.svg</file>
         <file>Icon/left-sider-bar.svg</file>
         <file>Icon/right-sider-bar.svg</file>
+        <file>Icon/chart-selector-polygon.svg</file>
+        <file>Icon/chart-selector-rect.svg</file>
+        <file>Icon/chart-selector-ellipse.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>

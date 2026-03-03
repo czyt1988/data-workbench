@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+350"/>
+        <location filename="../APP/DAAppActions.cpp" line="+354"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -415,6 +415,21 @@ All</source>
     <message>
         <location line="+1"/>
         <source>Copy To Clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Rect Selector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Ellipse Selector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Polygon Selector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1222,13 +1237,12 @@ Config</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+393"/>
-        <location line="+2"/>
+        <location line="+453"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-393"/>
+        <location line="-451"/>
         <source>Chart Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1279,12 +1293,33 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+24"/>
+        <location line="+2"/>
+        <source>Chart Operate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+45"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+16"/>
+        <source>Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Select Operate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Assist Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Recent Files</source>
         <translation type="unfinished"></translation>
     </message>

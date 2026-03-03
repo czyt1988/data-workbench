@@ -5,7 +5,7 @@
 namespace DA
 {
 DAAbstractRegionSelectEditor::DAAbstractRegionSelectEditor(QwtPlot* parent)
-    : DAAbstractPlotEditor(parent)
+    : DAAbstractChartEditor(parent)
     , m_selectionMode(AdditionalSelection)  // SingleSelection
     , m_xAxis(QwtPlot::xBottom)
     , m_yAxis(QwtPlot::yLeft)
