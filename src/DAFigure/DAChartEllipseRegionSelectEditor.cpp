@@ -116,7 +116,7 @@ bool DAChartEllipseRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
     return true;
 }
 
-bool DAChartEllipseRegionSelectEditor::mouseMovedEvent(const QMouseEvent* e)
+bool DAChartEllipseRegionSelectEditor::mouseMoveEvent(const QMouseEvent* e)
 {
     if (!d_ptr->mIsStartDrawRegion) {
         return false;
@@ -136,7 +136,7 @@ bool DAChartEllipseRegionSelectEditor::mouseMovedEvent(const QMouseEvent* e)
     return true;
 }
 
-bool DAChartEllipseRegionSelectEditor::mouseReleasedEvent(const QMouseEvent* e)
+bool DAChartEllipseRegionSelectEditor::mouseReleaseEvent(const QMouseEvent* e)
 {
     if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;

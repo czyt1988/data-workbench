@@ -31,8 +31,8 @@ private slots:
 
 protected:
     bool mousePressEvent(const QMouseEvent* e);
-    bool mouseMovedEvent(const QMouseEvent* e);
-    bool mouseReleasedEvent(const QMouseEvent* e);
+    bool mouseMoveEvent(const QMouseEvent* e);
+    bool mouseReleaseEvent(const QMouseEvent* e);
 };
 }  // End Of Namespace DA
 #endif  // DACHARTELLIPSEREGIONSELECTEDITOR_H

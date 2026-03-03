@@ -725,7 +725,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+906"/>
+        <location filename="../APP/DAAppController.cpp" line="+908"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -747,7 +747,7 @@ Table Area</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-476"/>
+        <location line="-475"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -762,7 +762,7 @@ Table Area</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Whether to overwrite the file:%1</source>
         <translation>是否覆盖文件“%1”</translation>
     </message>
@@ -828,7 +828,7 @@ Table Area</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+599"/>
+        <location line="+616"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -3461,7 +3461,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2029"/>
+        <location filename="../APP/DAAppController.cpp" line="-2047"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

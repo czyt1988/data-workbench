@@ -90,7 +90,7 @@ bool DAAbstractChartEditor::eventFilter(QObject* object, QEvent* event)
 		case QEvent::MouseMove: {
 			const QMouseEvent* mouseEvent = dynamic_cast< QMouseEvent* >(event);
 			if (mouseEvent) {
-				return mouseMovedEvent(mouseEvent);
+				return mouseMoveEvent(mouseEvent);
 			} else {
 				return false;
 			}
@@ -99,7 +99,7 @@ bool DAAbstractChartEditor::eventFilter(QObject* object, QEvent* event)
 		case QEvent::MouseButtonRelease: {
 			const QMouseEvent* mouseEvent = dynamic_cast< QMouseEvent* >(event);
 			if (mouseEvent) {
-				return mouseReleasedEvent(mouseEvent);
+				return mouseReleaseEvent(mouseEvent);
 			} else {
 				return false;
 			}
@@ -142,13 +142,13 @@ bool DAAbstractChartEditor::mousePressEvent(const QMouseEvent* e)
 	return false;
 }
 
-bool DAAbstractChartEditor::mouseMovedEvent(const QMouseEvent* e)
+bool DAAbstractChartEditor::mouseMoveEvent(const QMouseEvent* e)
 {
 	Q_UNUSED(e);
 	return false;
 }
 
-bool DAAbstractChartEditor::mouseReleasedEvent(const QMouseEvent* e)
+bool DAAbstractChartEditor::mouseReleaseEvent(const QMouseEvent* e)
 {
 	Q_UNUSED(e);
 	return false;

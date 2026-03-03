@@ -701,17 +701,17 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+496"/>
+        <location filename="../APP/DAAppController.cpp" line="+499"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+21"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-20"/>
+        <location line="-19"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -721,7 +721,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -804,7 +804,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+599"/>
+        <location line="+616"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3349,7 +3349,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2029"/>
+        <location filename="../APP/DAAppController.cpp" line="-2047"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>

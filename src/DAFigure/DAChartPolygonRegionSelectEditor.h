@@ -26,7 +26,7 @@ private slots:
 
 protected:
     bool mousePressEvent(const QMouseEvent* e);
-    bool mouseMovedEvent(const QMouseEvent* e);
+    bool mouseMoveEvent(const QMouseEvent* e);
     bool keyPressEvent(const QKeyEvent* e);
     bool completeRegion();
     bool backspaceRegion();

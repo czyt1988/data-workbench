@@ -34,8 +34,8 @@ private slots:
 
 protected:
 	bool mousePressEvent(const QMouseEvent* e);
-	bool mouseMovedEvent(const QMouseEvent* e);
-	bool mouseReleasedEvent(const QMouseEvent* e);
+	bool mouseMoveEvent(const QMouseEvent* e);
+	bool mouseReleaseEvent(const QMouseEvent* e);
 	bool keyPressEvent(const QKeyEvent* e);
 	bool keyReleaseEvent(const QKeyEvent* e);
 };

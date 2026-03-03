@@ -97,7 +97,7 @@ bool DAChartPolygonRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
     return true;
 }
 
-bool DAChartPolygonRegionSelectEditor::mouseMovedEvent(const QMouseEvent* e)
+bool DAChartPolygonRegionSelectEditor::mouseMoveEvent(const QMouseEvent* e)
 {
     if (!d_ptr->mIsStartDrawRegion) {
         return false;

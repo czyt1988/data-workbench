@@ -71,7 +71,7 @@ bool DAChartRectRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
 	return true;
 }
 
-bool DAChartRectRegionSelectEditor::mouseMovedEvent(const QMouseEvent* e)
+bool DAChartRectRegionSelectEditor::mouseMoveEvent(const QMouseEvent* e)
 {
 	if (!d_ptr->m_isStartDrawRegion) {
 		return false;
@@ -91,7 +91,7 @@ bool DAChartRectRegionSelectEditor::mouseMovedEvent(const QMouseEvent* e)
 	return true;
 }
 
-bool DAChartRectRegionSelectEditor::mouseReleasedEvent(const QMouseEvent* e)
+bool DAChartRectRegionSelectEditor::mouseReleaseEvent(const QMouseEvent* e)
 {
 	if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
 		return false;
