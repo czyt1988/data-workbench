@@ -39,7 +39,16 @@ public:
     void setBlockKeys(const QList< int >& keys);
     const QList< int >& getBlockKeys() const;
 Q_SIGNALS:
-    void editorFinished(bool isCancel);
+    /**
+     * @brief 开始编辑
+     */
+    void beginEdit();
+
+    /**
+     * @brief 结束编辑
+     * @param isCancel
+     */
+    void finishedEdit(bool isCancel);
 
 protected:
     virtual bool eventFilter(QObject* object, QEvent* event);

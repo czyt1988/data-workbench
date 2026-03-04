@@ -8,6 +8,7 @@
 #include "DADataManageWidget.h"
 #include "DAWorkFlowGraphicsScene.h"
 #include "DAFigureElementSelection.h"
+#include "DAFigureWidget.h"
 #if DA_ENABLE_PYTHON
 #include "numpy/DAPyDType.h"
 #endif
@@ -41,7 +42,6 @@ class DAWorkFlowOperateWidget;
 class DADataOperateWidget;
 class DAAppChartOperateWidget;
 class DADataManageWidget;
-class DAFigureWidget;
 class DAChartWidget;
 class DADataOperatePageWidget;
 class DAAppSettingDialog;
@@ -233,7 +233,7 @@ private Q_SLOTS:
     // 复制到剪切板
     void onActionCopyFigureToClipboardTriggered();
     //
-    void onActionChartRectSelectorTriggered();
+    void onActionChartRectSelectorTriggered(bool on);
     //===================================================
     // 数据操作的上下文标签 Data Operate Context Category
     //===================================================
@@ -360,8 +360,6 @@ private slots:
     void onFigureCreated(DA::DAFigureWidget* f);
     // 绘图窗口当前窗口改变
     void onCurrentFigureChanged(DA::DAFigureWidget* f, int index);
-    // 图表有新窗口创建
-    void onChartAdded(DA::DAChartWidget* c);
     // 当前图表窗口改变
     void onCurrentChartChanged(DA::DAChartWidget* c);
     //===================================================

@@ -14,7 +14,7 @@
 // qwt
 #include "qwt_figure.h"
 #include "qwt_plot_series_data_picker.h"
-#include "DAChartRectRegionSelectEditor.h"
+
 // API
 #include "AppMainWindow.h"
 #include "DAAppCore.h"
@@ -233,7 +233,7 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveData, onActionRemoveDataTriggered);
     // Chart Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddFigure, onActionAddFigureTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureResizeChart, onActionFigureResizeChartTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEditorResizeSubChart, onActionFigureResizeChartTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureNewXYAxis, onActionFigureNewXYAxisTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddCurve, onActionChartAddCurveTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddScatter2D, onActionChartAddScatterTriggered);
@@ -267,7 +267,7 @@ void DAAppController::initConnection()
     for (QAction* act : std::as_const(mActions->actionListOfColorTheme)) {
         connect(act, &QAction::triggered, this, [ this, act ]() { onActionGroupFigureThemeTriggered(act); });
     }
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartRectSelector, onActionChartRectSelectorTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEditorRectSelector, onActionChartRectSelectorTriggered);
     // 数据操作的上下文标签 Data Operate Context Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertRow, onActionInsertRowTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertRowAbove, onActionInsertRowAboveTriggered);
@@ -372,8 +372,6 @@ void DAAppController::initConnection()
     DAChartOperateWidget* cow = mDock->getChartOperateWidget();
     connect(cow, &DAChartOperateWidget::figureCreated, this, &DAAppController::onFigureCreated);
     connect(cow, &DAChartOperateWidget::currentFigureChanged, this, &DAAppController::onCurrentFigureChanged);
-    connect(cow, &DAChartOperateWidget::chartAdded, this, &DAAppController::onChartAdded);
-    connect(cow, &DAChartOperateWidget::currentChartChanged, this, &DAAppController::onCurrentChartChanged);
     //
     DAWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
     // 鼠标动作完成的触发
@@ -1369,10 +1367,13 @@ void DAAppController::onFigureCreated(DAFigureWidget* f)
     }
     qDebug() << "DAAppController::onFigureCreate";
     if (mCommand) {
-        mCommand->addStack(f->getUndoStack());
+        QUndoStack* stack = f->getUndoStack();
+        mCommand->addStack(stack);
+        stack->setActive();
     }
     // updateFigureAboutRibbon(f);//在onActionAddFigureTriggered中调用了
     setDirty();
+    connect(f, &DAFigureWidget::currentChartChanged, this, &DAAppController::onCurrentChartChanged);
 }
 
 /**
@@ -1388,19 +1389,10 @@ void DAAppController::onCurrentFigureChanged(DAFigureWidget* f, int index)
     }
     qDebug() << "DAAppController::onCurrentFigureChanged";
     mRibbon->updateFigureAboutRibbon(f);
-}
-
-/**
- * @brief 新的chart创建
- * @param c
- */
-void DAAppController::onChartAdded(DAChartWidget* c)
-{
-    if (nullptr == c) {
-        return;
+    QUndoStack* stack = f->getUndoStack();
+    if (stack) {
+        stack->setActive();
     }
-    // qDebug() << "DAAppController::onChartAdded";
-    // updateChartAboutRibbon(c);//在onActionFigureNewXYAxisTriggered中调用了
 }
 
 /**
@@ -1493,7 +1485,11 @@ void DAAppController::onActionFigureResizeChartTriggered(bool on)
         return;
     }
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
-    fig->setSubChartEditorEnable(on);
+    if (on) {
+        fig->beginChartEditor(DAFigureWidget::SubChartEditor);
+    } else {
+        fig->endChartEditor();
+    }
 }
 
 /**
@@ -1852,16 +1848,17 @@ void DAAppController::onActionCopyFigureToClipboardTriggered()
  * @brief 开启矩形编辑器
  * @param on
  */
-void DAAppController::onActionChartRectSelectorTriggered()
+void DAAppController::onActionChartRectSelectorTriggered(bool on)
 {
     DAFigureWidget* fig = getCurrentFigure();
     if (!fig) {
         return;
     }
-    fig->setupChartEditor([](QwtPlot* plot) -> DAAbstractChartEditor* {
-        DAChartRectRegionSelectEditor* editor = new DAChartRectRegionSelectEditor(plot);
-        return editor;
-    });
+    if (on) {
+        fig->beginChartEditor(DAFigureWidget::RectSelectEditor);
+    } else {
+        fig->endChartEditor();
+    }
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 

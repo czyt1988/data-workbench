@@ -446,7 +446,7 @@ void DAAppRibbonArea::buildRibbonFigureCategory()
 	m_pannelFigureSetting = new SARibbonPanel(m_categoryFigure);
 	m_pannelFigureSetting->setObjectName(QStringLiteral("da-pannel-figure.fig_setting"));
 	m_pannelFigureSetting->addLargeAction(m_actions->actionAddFigure);
-	m_pannelFigureSetting->addLargeAction(m_actions->actionFigureResizeChart);
+	m_pannelFigureSetting->addLargeAction(m_actions->actionChartEditorResizeSubChart);
 	m_pannelFigureSetting->addLargeAction(m_actions->actionFigureNewXYAxis);  // 新建坐标系
 	m_categoryFigure->addPanel(m_pannelFigureSetting);
 
@@ -613,7 +613,7 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
 	m_pannelFigureSettingForContext = new SARibbonPanel(m_categoryChartOpt);
 	m_pannelFigureSettingForContext->setObjectName(QStringLiteral("da-pannel-context-chartedit.fig_setting"));
 	m_pannelFigureSettingForContext->addLargeAction(m_actions->actionAddFigure);
-	m_pannelFigureSettingForContext->addLargeAction(m_actions->actionFigureResizeChart);
+	m_pannelFigureSettingForContext->addLargeAction(m_actions->actionChartEditorResizeSubChart);
 	m_pannelFigureSettingForContext->addLargeAction(m_actions->actionFigureNewXYAxis);  // 新建坐标系
 	m_categoryChartOpt->addPanel(m_pannelFigureSettingForContext);
 	// chart edit
@@ -669,9 +669,9 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
 	m_categoryChartEdit->setObjectName(QStringLiteral("da-ribbon-category-chart.edit"));
 	// 选区工具
 	m_pannelChartSelectTool = m_categoryChartEdit->addPanel(tr("Select"));
-	m_pannelChartSelectTool->addLargeAction(m_actions->actionChartRectSelector);
-	m_pannelChartSelectTool->addMediumAction(m_actions->actionChartEllipseSelector);
-	m_pannelChartSelectTool->addMediumAction(m_actions->actionChartPolygonSelector);
+	m_pannelChartSelectTool->addLargeAction(m_actions->actionChartEditorRectSelector);
+	m_pannelChartSelectTool->addMediumAction(m_actions->actionChartEditorEllipseSelector);
+	m_pannelChartSelectTool->addMediumAction(m_actions->actionChartEditorPolygonSelector);
 	// 选区操作
 	m_pannelChartSelectOpt = m_categoryChartEdit->addPanel(tr("Select Operate"));
 	// 辅助工具

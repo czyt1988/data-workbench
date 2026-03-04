@@ -16,36 +16,36 @@ DAAbstractChartEditor::~DAAbstractChartEditor()
 
 const QwtPlot* DAAbstractChartEditor::plot() const
 {
-	return qobject_cast< const QwtPlot* >(parent());
+    return qobject_cast< const QwtPlot* >(parent());
 }
 
 QwtPlot* DAAbstractChartEditor::plot()
 {
-	return qobject_cast< QwtPlot* >(parent());
+    return qobject_cast< QwtPlot* >(parent());
 }
 
 void DAAbstractChartEditor::setEnabled(bool on)
 {
-	if (on == m_isEnable)
-		return;
+    if (on == m_isEnable)
+        return;
 
-	QwtPlot* p = plot();
-	if (p) {
-		m_isEnable = on;
+    QwtPlot* p = plot();
+    if (p) {
+        m_isEnable = on;
 
-		if (p->canvas()) {
-			if (on) {
-				p->canvas()->installEventFilter(this);
-			} else {
-				p->canvas()->removeEventFilter(this);
-			}
-		}
-	}
+        if (p->canvas()) {
+            if (on) {
+                p->canvas()->installEventFilter(this);
+            } else {
+                p->canvas()->removeEventFilter(this);
+            }
+        }
+    }
 }
 
 bool DAAbstractChartEditor::isEnabled() const
 {
-	return m_isEnable;
+    return m_isEnable;
 }
 
 /**
@@ -59,110 +59,110 @@ bool DAAbstractChartEditor::isEnabled() const
  */
 bool DAAbstractChartEditor::cancel()
 {
-	return true;
+    return true;
 }
 
 void DAAbstractChartEditor::setBlockKeys(const QList< int >& keys)
 {
-	m_blockKeys = keys;
+    m_blockKeys = keys;
 }
 
 const QList< int >& DAAbstractChartEditor::getBlockKeys() const
 {
-	return m_blockKeys;
+    return m_blockKeys;
 }
 
 bool DAAbstractChartEditor::eventFilter(QObject* object, QEvent* event)
 {
-	QwtPlot* plot = qobject_cast< QwtPlot* >(parent());
-	if (plot && (object == plot->canvas())) {
-		switch (event->type()) {
-			// 空格按下，鼠标事件不处理
-		case QEvent::MouseButtonPress: {
-			const QMouseEvent* mouseEvent = dynamic_cast< QMouseEvent* >(event);
-			if (mouseEvent) {
-				return mousePressEvent(mouseEvent);
-			} else {
-				return false;
-			}
-			break;
-		}
-		case QEvent::MouseMove: {
-			const QMouseEvent* mouseEvent = dynamic_cast< QMouseEvent* >(event);
-			if (mouseEvent) {
-				return mouseMoveEvent(mouseEvent);
-			} else {
-				return false;
-			}
-			break;
-		}
-		case QEvent::MouseButtonRelease: {
-			const QMouseEvent* mouseEvent = dynamic_cast< QMouseEvent* >(event);
-			if (mouseEvent) {
-				return mouseReleaseEvent(mouseEvent);
-			} else {
-				return false;
-			}
-			break;
-		}
-		case QEvent::KeyPress: {
-			const QKeyEvent* keyEvent = dynamic_cast< QKeyEvent* >(event);
-			if (keyEvent) {
-				if (m_blockKeys.size() > 0 && m_blockKeys.contains(keyEvent->key())) {
-					return QObject::eventFilter(object, event);
-				}
-				if (Qt::Key_Escape == keyEvent->key()) {
-					if (cancel()) {
-						setEnabled(false);
-						Q_EMIT editorFinished(true);
-					}
-				}
-				return keyPressEvent(keyEvent);
-			}
-			break;
-		}
-		case QEvent::KeyRelease: {
-			const QKeyEvent* keyEvent = dynamic_cast< QKeyEvent* >(event);
-			if (keyEvent) {
-				return keyReleaseEvent(keyEvent);
-			}
-			break;
-		}
-		default:
-			break;
-		}
-		return false;
-	}
-	return QObject::eventFilter(object, event);
+    QwtPlot* plot = qobject_cast< QwtPlot* >(parent());
+    if (plot && (object == plot->canvas())) {
+        switch (event->type()) {
+            // 空格按下，鼠标事件不处理
+        case QEvent::MouseButtonPress: {
+            const QMouseEvent* mouseEvent = static_cast< QMouseEvent* >(event);
+            if (mouseEvent) {
+                return mousePressEvent(mouseEvent);
+            } else {
+                return false;
+            }
+            break;
+        }
+        case QEvent::MouseMove: {
+            const QMouseEvent* mouseEvent = static_cast< QMouseEvent* >(event);
+            if (mouseEvent) {
+                return mouseMoveEvent(mouseEvent);
+            } else {
+                return false;
+            }
+            break;
+        }
+        case QEvent::MouseButtonRelease: {
+            const QMouseEvent* mouseEvent = static_cast< QMouseEvent* >(event);
+            if (mouseEvent) {
+                return mouseReleaseEvent(mouseEvent);
+            } else {
+                return false;
+            }
+            break;
+        }
+        case QEvent::KeyPress: {
+            const QKeyEvent* keyEvent = static_cast< QKeyEvent* >(event);
+            if (keyEvent) {
+                if (m_blockKeys.size() > 0 && m_blockKeys.contains(keyEvent->key())) {
+                    return QObject::eventFilter(object, event);
+                }
+                if (Qt::Key_Escape == keyEvent->key()) {
+                    if (cancel()) {
+                        setEnabled(false);
+                        Q_EMIT finishedEdit(true);
+                    }
+                }
+                return keyPressEvent(keyEvent);
+            }
+            break;
+        }
+        case QEvent::KeyRelease: {
+            const QKeyEvent* keyEvent = static_cast< QKeyEvent* >(event);
+            if (keyEvent) {
+                return keyReleaseEvent(keyEvent);
+            }
+            break;
+        }
+        default:
+            break;
+        }
+        return false;
+    }
+    return QObject::eventFilter(object, event);
 }
 
 bool DAAbstractChartEditor::mousePressEvent(const QMouseEvent* e)
 {
-	Q_UNUSED(e);
-	return false;
+    Q_UNUSED(e);
+    return false;
 }
 
 bool DAAbstractChartEditor::mouseMoveEvent(const QMouseEvent* e)
 {
-	Q_UNUSED(e);
-	return false;
+    Q_UNUSED(e);
+    return false;
 }
 
 bool DAAbstractChartEditor::mouseReleaseEvent(const QMouseEvent* e)
 {
-	Q_UNUSED(e);
-	return false;
+    Q_UNUSED(e);
+    return false;
 }
 
 bool DAAbstractChartEditor::keyPressEvent(const QKeyEvent* e)
 {
-	Q_UNUSED(e);
-	return false;
+    Q_UNUSED(e);
+    return false;
 }
 
 bool DAAbstractChartEditor::keyReleaseEvent(const QKeyEvent* e)
 {
-	Q_UNUSED(e);
-	return false;
+    Q_UNUSED(e);
+    return false;
 }
 }  // End Of Namespace DA

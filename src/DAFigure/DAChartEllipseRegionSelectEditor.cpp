@@ -105,7 +105,7 @@ bool DAChartEllipseRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
     d_ptr->mPressedPoint      = invTransform(p);
     d_ptr->createTmpItem();
     switch (getSelectionMode()) {
-    case SingleSelection:  //单一选择
+    case SingleSelection:  // 单一选择
     {
         d_ptr->mLastPainterPath = QPainterPath();
         break;
@@ -113,6 +113,7 @@ bool DAChartEllipseRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
     default:
         return false;
     }
+    Q_EMIT beginEdit();
     return true;
 }
 
@@ -144,7 +145,7 @@ bool DAChartEllipseRegionSelectEditor::mouseReleaseEvent(const QMouseEvent* e)
     QPoint p   = e->pos();
     QPointF pf = invTransform(p);
     if (pf == d_ptr->mPressedPoint) {
-        //如果点击和松开是一个点，就取消当前的选区
+        // 如果点击和松开是一个点，就取消当前的选区
         d_ptr->releaseTmpItem();
         d_ptr->mIsStartDrawRegion = false;
         return true;
@@ -177,7 +178,8 @@ bool DAChartEllipseRegionSelectEditor::mouseReleaseEvent(const QMouseEvent* e)
     }
     d_ptr->releaseTmpItem();
     d_ptr->mIsStartDrawRegion = false;
-    emit finishSelection(d_ptr->mLastPainterPath);
+    Q_EMIT finishSelection(d_ptr->mLastPainterPath);
+    Q_EMIT finishedEdit(false);
     return true;
 }
 }  // End Of Namespace DA

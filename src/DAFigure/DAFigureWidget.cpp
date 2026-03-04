@@ -28,6 +28,8 @@
 #include "DAFigureWidgetOverlay.h"
 #include "DAFigureWidgetCommands.h"
 #include "DAChartAxisRangeBinder.h"
+#include "DAChartRectRegionSelectEditor.h"
+#include "DAChartSelectRegionShapeItem.h"
 // qwt
 #include "qwt_figure.h"
 #include "qwt_figure_layout.h"
@@ -50,14 +52,13 @@ class DAFigureWidget::PrivateData
     DA_DECLARE_PUBLIC(DAFigureWidget)
 public:
     QString m_id;
-    QPointer< DAFigureWidgetOverlay > m_figureResizeEditorOverlay;  ///< 编辑模式
-    QBrush m_backgroundBrush;                                       ///< 背景
-    QUndoStack m_undoStack;                                         ///<
-    std::unique_ptr< DAChartFactory > m_factory;                    ///< 绘图创建的工厂
+    QBrush m_backgroundBrush;                     ///< 背景
+    QUndoStack m_undoStack;                       ///<
+    std::unique_ptr< DAChartFactory > m_factory;  ///< 绘图创建的工厂
     DAColorTheme m_colorTheme;  ///< 主题，注意，这里不要用DAColorTheme mColorTheme { DAColorTheme::ColorTheme_Archambault }这样的初始化，会被当作std::initializer_list< QColor >捕获
     QList< std::shared_ptr< DAChartAxisRangeBinder > > m_axisRangeBinders;
     QwtPlotSeriesDataPickerGroup* m_pickerGroup { nullptr };
-    DAFigureChartEditorWidgetOverlay* m_chartEditor { nullptr };  ///< 绘图编辑器
+    DAFigureWidgetOverlay* m_chartEditor { nullptr };  ///< 绘图编辑器
 public:
     PrivateData(DAFigureWidget* p) : q_ptr(p), m_colorTheme(DAColorTheme::Style_Matplotlib_Tab10)
     {
@@ -80,7 +81,54 @@ public:
         }
         return nullptr;
     }
+    void beginSubChartEditor();
+    void beginRectSelectEditor();
 };
+
+void DAFigureWidget::PrivateData::beginSubChartEditor()
+{
+    DAFigureWidget* fig = q_ptr;
+    m_chartEditor       = new DAFigureWidgetOverlay(fig->figure());
+    m_chartEditor->show();
+    m_chartEditor->raise();
+    DAFigureWidget::connect(
+        m_chartEditor, &DAFigureChartEditorWidgetOverlay::finished, fig, &DAFigureWidget::onFigureChartEditorFinished);
+    DAFigureWidget::connect(
+        m_chartEditor, &DAFigureWidgetOverlay::widgetNormGeometryChanged, fig, &DAFigureWidget::onWidgetGeometryChanged);
+    DAFigureWidget::connect(
+        m_chartEditor, &DAFigureWidgetOverlay::activeWidgetChanged, fig, &DAFigureWidget::onOverlayActiveWidgetChanged);
+}
+
+void DAFigureWidget::PrivateData::beginRectSelectEditor()
+{
+    DAFigureWidget* fig = q_ptr;
+    auto fun            = [ fig ](QwtPlot* plot) -> DAAbstractChartEditor* {
+        DAChartRectRegionSelectEditor* editor = new DAChartRectRegionSelectEditor(plot);
+        DAFigureWidget::connect(editor, &DAChartRectRegionSelectEditor::finishedEdit, fig, [ fig, editor, plot ](bool isCancel) {
+            if (isCancel) {
+                return;
+            }
+            DAChartSelectRegionShapeItem* item = editor->takeItem();
+            if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(plot)) {
+                fig->addItem_(chart, item, true);
+            } else {
+                // 异常
+                qCritical() << tr("Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
+                                             "type was added to the figure");  // cn::绘图操作异常，不属于DAChartWidget类型的chart被添加到figure";
+                item->detach();
+                delete item;
+            }
+        });
+        return editor;
+    };
+    m_chartEditor = new DAFigureChartEditorWidgetOverlay(fig->figure(), fun);
+    m_chartEditor->show();
+    m_chartEditor->raise();
+    DAFigureWidget::connect(
+        m_chartEditor, &DAFigureChartEditorWidgetOverlay::finished, q_ptr, &DAFigureWidget::onFigureChartEditorFinished);
+    DAFigureWidget::connect(
+        m_chartEditor, &DAFigureWidgetOverlay::activeWidgetChanged, q_ptr, &DAFigureWidget::onOverlayActiveWidgetChanged);
+}
 
 //===================================================
 // DAFigureWidget
@@ -194,11 +242,14 @@ DAChartWidget* DAFigureWidget::createChart(const QRectF& versatileSize)
     Q_ASSERT(fig);
 
     DAChartWidget* chart = d_ptr->m_factory->createChart(this);
+    // 设置AxisScale，让qwt内部的map数据和坐标系显示一致，注意不要设置为0~1000，坐标轴默认就是0~1000,会跳过设置
+    chart->setAxisScale(QwtAxis::XBottom, 0, 800);
+    chart->setAxisScale(QwtAxis::YLeft, 0, 500);
     addChart(chart, versatileSize);
 
     // 对于有Overlay，需要把Overlay提升到最前面，否则会被覆盖
-    if (d_ptr->m_figureResizeEditorOverlay) {
-        d_ptr->m_figureResizeEditorOverlay->raise();  // 同时提升最前
+    if (d_ptr->m_chartEditor) {
+        d_ptr->m_chartEditor->raise();  // 同时提升最前
     }
     return chart;
 }
@@ -409,66 +460,6 @@ DAChartWidget* DAFigureWidget::findChartFromItem(QwtPlotItem* item) const
         }
     }
     return (nullptr);
-}
-
-///
-/// \brief 是否开始子窗口编辑模式
-/// \param enable
-/// \param ptr 通过此参数可以指定自定义的编辑器，若为nullptr，将使用默认的编辑器，此指针的管理权将移交SAFigureWindow
-///
-void DAFigureWidget::setSubChartEditorEnable(bool enable)
-{
-#if DAFigureWidget_DEBUG_PRINT
-    qDebug() << "DAFigureWidget::setSubChartEditorEnable=" << enable;
-#endif
-    if (enable) {
-        if (nullptr == d_ptr->m_figureResizeEditorOverlay) {
-            d_ptr->m_figureResizeEditorOverlay = new DAFigureWidgetOverlay(figure());
-            connect(d_ptr->m_figureResizeEditorOverlay,
-                    &DAFigureWidgetOverlay::widgetNormGeometryChanged,
-                    this,
-                    &DAFigureWidget::onWidgetGeometryChanged);
-            connect(d_ptr->m_figureResizeEditorOverlay,
-                    &DAFigureWidgetOverlay::activeWidgetChanged,
-                    this,
-                    &DAFigureWidget::onOverlayActiveWidgetChanged);
-            d_ptr->m_figureResizeEditorOverlay->show();
-            d_ptr->m_figureResizeEditorOverlay->raise();  // 同时提升最前
-        } else {
-            if (d_ptr->m_figureResizeEditorOverlay->isHidden()) {
-                d_ptr->m_figureResizeEditorOverlay->show();
-                d_ptr->m_figureResizeEditorOverlay->raise();  // 同时提升最前
-            }
-        }
-    } else {
-        if (d_ptr->m_figureResizeEditorOverlay) {
-            delete d_ptr->m_figureResizeEditorOverlay;
-            d_ptr->m_figureResizeEditorOverlay = nullptr;
-        }
-    }
-}
-
-///
-/// \brief 获取子窗口编辑器指针，若没有此编辑器，返回nullptr
-///
-/// 此指针的管理权在SAFigureWindow上，不要在外部对此指针进行释放
-/// \return
-///
-DAFigureWidgetOverlay* DAFigureWidget::getSubChartEditor() const
-{
-    return (d_ptr->m_figureResizeEditorOverlay);
-}
-
-/**
- * @brief SAFigureWindow::isSubWindowEditingMode
- * @return
- */
-bool DAFigureWidget::isEnableSubChartEditor() const
-{
-    if (d_ptr->m_figureResizeEditorOverlay) {
-        return (d_ptr->m_figureResizeEditorOverlay->isVisible());
-    }
-    return (false);
 }
 
 /**
@@ -683,21 +674,44 @@ void DAFigureWidget::copyToClipboard()
     QApplication::clipboard()->setPixmap(screenshot);
 }
 
-/**
- * @brief 安装chartEditor
- * @param factory
- */
-void DAFigureWidget::setupChartEditor(DAFigureChartEditorWidgetOverlay::FpChartEditorFactory factory)
+void DAFigureWidget::endChartEditor()
 {
     DA_D(d);
     if (d->m_chartEditor) {
         d->m_chartEditor->hide();
         d->m_chartEditor->deleteLater();
+        d->m_chartEditor = nullptr;
     }
-    d->m_chartEditor = new DAFigureChartEditorWidgetOverlay(figure(), factory);
-    d->m_chartEditor->show();
-    d->m_chartEditor->raise();
-    connect(d->m_chartEditor, &DAFigureChartEditorWidgetOverlay::finished, this, &DAFigureWidget::onFigureChartEditorFinished);
+}
+
+/**
+ * @brief 当前是否有编辑器激活
+ * @return
+ */
+bool DAFigureWidget::isChartEditorActive() const
+{
+    return (d_ptr->m_chartEditor != nullptr);
+}
+
+void DAFigureWidget::beginChartEditor(ChartEditorType type)
+{
+    DA_D(d);
+    if (isChartEditorActive()) {
+        endChartEditor();
+    }
+    switch (type) {
+    case SubChartEditor:
+        d->beginSubChartEditor();
+        break;
+    case RectSelectEditor:
+        d->beginRectSelectEditor();
+        break;
+    case PolygonSelectEditor:
+        break;
+    default:
+        qWarning() << tr("Unsupported chart editor type: %1").arg(type);
+        break;
+    }
 }
 
 QRectF DAFigureWidget::axesNormRect(QwtPlot* plot) const
@@ -770,10 +784,11 @@ bool DAFigureWidget::addItem_(QwtPlotItem* item)
  * @brief 支持redo/undo的添加item
  * @param chart
  * @param item
+ * @param skipfirstRedo 跳过第一次redo操作，这种是针对当前item已经加入到plot里，只是通过此函数把它加入到redo/undo不进行item->attach操作
  */
-void DAFigureWidget::addItem_(DAChartWidget* chart, QwtPlotItem* item)
+void DAFigureWidget::addItem_(DAChartWidget* chart, QwtPlotItem* item, bool skipfirstRedo)
 {
-    push(new DAFigureWidgetCommandAttachItem(this, chart, item, false));
+    push(new DAFigureWidgetCommandAttachItem(this, chart, item, skipfirstRedo));
 }
 
 /**
@@ -919,8 +934,8 @@ void DAFigureWidget::onWidgetGeometryChanged(QWidget* w, const QRectF& oldNormGe
     DAFigureWidgetCommandResizeWidget* cmd = new DAFigureWidgetCommandResizeWidget(this, w, oldNormGeo, newNormGeo);
     push(cmd);
     // 由于设置geo会有一定误差，因此，这里需要更新一下overlay
-    if (d_ptr->m_figureResizeEditorOverlay) {
-        d_ptr->m_figureResizeEditorOverlay->updateOverlay();
+    if (d_ptr->m_chartEditor) {
+        d_ptr->m_chartEditor->updateOverlay();
     }
 }
 
@@ -970,8 +985,8 @@ void DAFigureWidget::onCurrentAxesChanged(QwtPlot* plot)
 {
     DAChartWidget* chartWidget = plot ? qobject_cast< DAChartWidget* >(plot) : nullptr;
     // 如果有子窗口编辑器，把编辑器的激活窗口改变
-    if (d_ptr->m_figureResizeEditorOverlay) {
-        d_ptr->m_figureResizeEditorOverlay->setActiveWidget(plot);
+    if (d_ptr->m_chartEditor) {
+        d_ptr->m_chartEditor->setActiveWidget(plot);
     }
     Q_EMIT currentChartChanged(chartWidget);
 }
@@ -996,15 +1011,7 @@ void DAFigureWidget::onChartPropertyChanged(DAChartWidget* chart, DA::DAChartWid
 
 void DAFigureWidget::onFigureChartEditorFinished(bool isCancel)
 {
-    Q_UNUSED(isCancel);
-    // 删除当前的chart editor
-    DA_D(d);
-    if (!d->m_chartEditor) {
-        return;
-    }
-    d->m_chartEditor->hide();
-    d->m_chartEditor->deleteLater();
-    d->m_chartEditor = nullptr;
+    endChartEditor();
 }
 
 QDataStream& operator<<(QDataStream& out, const DAFigureWidget* p)
@@ -1059,5 +1066,4 @@ QDataStream& operator>>(QDataStream& in, DAFigureWidget* p)
     }
     return (in);
 }
-
 }

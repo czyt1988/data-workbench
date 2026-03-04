@@ -37,6 +37,31 @@ class DAFIGURE_API DAFigureWidget : public QScrollArea
     Q_OBJECT
     DA_DECLARE_PRIVATE(DAFigureWidget)
 public:
+    /**
+     * @brief 内置的绘图编辑器类型
+     */
+    enum ChartEditorType
+    {
+        SubChartEditor = 0,
+        RectSelectEditor,
+        EllipseSelectEditor,
+        PolygonSelectEditor,
+        BuilinEditorCount,
+        UserDefineEditor = 1000
+    };
+    Q_ENUM(ChartEditorType)
+
+    /**
+     * @brief 绘图编辑器状态
+     */
+    enum ChartEditorStatus
+    {
+        EndEdit   = 0,
+        BeginEdit = 1,
+        UnknowEditStatus
+    };
+    Q_ENUM(ChartEditorStatus)
+public:
     explicit DAFigureWidget(QWidget* parent = nullptr);
     ~DAFigureWidget();
     // 获取绘图窗口
@@ -84,11 +109,7 @@ public:
     const QBrush& getBackgroundColor() const;
     // 通过item查找对应的SAChart2D，如果没有返回nullptr
     DAChartWidget* findChartFromItem(QwtPlotItem* item) const;
-    // 开启子窗口编辑模式
-    void setSubChartEditorEnable(bool enable = true);
-    DAFigureWidgetOverlay* getSubChartEditor() const;
-    // 判断是否在进行子窗口编辑
-    bool isEnableSubChartEditor() const;
+
     // 获取图表的数量
     int getChartCount() const;
     // 获取默认的绘图颜色
@@ -115,8 +136,12 @@ public:
     DAColorTheme& colorTheme();
     // 把当前绘图复制到剪切板
     void copyToClipboard();
-    // 设置chart editor在figure中
-    void setupChartEditor(DAFigureChartEditorWidgetOverlay::FpChartEditorFactory factory);
+    // 开始进行矩形选框交互
+    void beginChartEditor(ChartEditorType type);
+    // 结束chart editor
+    void endChartEditor();
+    // 当前是否有编辑器激活
+    bool isChartEditorActive() const;
 
 public:
     // figure的接口转接
@@ -147,7 +172,7 @@ public:
 
     // redo/undo的additem
     bool addItem_(QwtPlotItem* item);
-    void addItem_(DAChartWidget* chart, QwtPlotItem* item);
+    void addItem_(DAChartWidget* chart, QwtPlotItem* item, bool skipfirstRedo = false);
     // 支持redo/undo的addCurve，等同于gca()->addCurve
     QwtPlotCurve* addCurve_(const QVector< QPointF >& xyDatas);
     QwtPlotCurve* addScatter_(const QVector< QPointF >& xyDatas);
@@ -183,6 +208,11 @@ Q_SIGNALS:
      * @param w
      */
     void currentChartChanged(DA::DAChartWidget* c);
+
+    /**
+     * @brief chartEditorStatusChanged
+     */
+    void chartEditorStatusChanged(DA::DAFigureWidget::ChartEditorStatus status);
 
 protected:
     void keyPressEvent(QKeyEvent* e);

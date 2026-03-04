@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+354"/>
+        <location filename="../APP/DAAppActions.cpp" line="+332"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -701,7 +701,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+499"/>
+        <location filename="../APP/DAAppController.cpp" line="+497"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -799,12 +799,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+304"/>
+        <location line="+302"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+616"/>
+        <location line="+617"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1802,7 +1802,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+263"/>
+        <location line="+260"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2447,6 +2447,19 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+20"/>
         <source>plot item</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAFigureWidget</name>
+    <message>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+116"/>
+        <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+596"/>
+        <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3349,7 +3362,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2047"/>
+        <location filename="../APP/DAAppController.cpp" line="-2044"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5046,7 +5059,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+70"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-641"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>

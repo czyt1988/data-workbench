@@ -87,42 +87,49 @@ bool DAChartPolygonRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
     if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
-    QPoint p                  = e->pos();
-    d_ptr->mIsStartDrawRegion = true;
-    d_ptr->createTmpItem();
-    d_ptr->mPolygon.append(invTransform(p));
-    if (d_ptr->mTmpItem) {
-        d_ptr->mTmpItem->setPolygon(d_ptr->mPolygon);
+    QPoint p = e->pos();
+    DA_D(d);
+    bool firstBegin = (!d->mIsStartDrawRegion);
+    if (!d->mIsStartDrawRegion) {
+        d->mIsStartDrawRegion = true;
+        d->createTmpItem();
+    }
+    d->mPolygon.append(invTransform(p));
+    if (d->mTmpItem) {
+        d->mTmpItem->setPolygon(d->mPolygon);
+    }
+    if (firstBegin) {
+        Q_EMIT beginEdit();
     }
     return true;
 }
 
 bool DAChartPolygonRegionSelectEditor::mouseMoveEvent(const QMouseEvent* e)
 {
-    if (!d_ptr->mIsStartDrawRegion) {
-        return false;
-    }
-    if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
-        return false;
-    }
-    QPoint p      = e->pos();
-    QPointF pf    = invTransform(p);
-    QPolygonF tmp = d_ptr->mPolygon;
-    tmp.append(pf);
-    if (d_ptr->mTmpItem) {
-        d_ptr->mTmpItem->setPolygon(tmp);
-    }
-    return false;  //把移动的事件继续传递下去
+    // if (!d_ptr->mIsStartDrawRegion) {
+    //     return false;
+    // }
+    // if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
+    //     return false;
+    // }
+    // QPoint p      = e->pos();
+    // QPointF pf    = invTransform(p);
+    // QPolygonF tmp = d_ptr->mPolygon;
+    // tmp.append(pf);
+    // if (d_ptr->mTmpItem) {
+    //     d_ptr->mTmpItem->setPolygon(tmp);
+    // }
+    return DAAbstractRegionSelectEditor::mouseMoveEvent(e);  // 把移动的事件继续传递下去
 }
 
 bool DAChartPolygonRegionSelectEditor::keyPressEvent(const QKeyEvent* e)
 {
     if (Qt::Key_Enter == e->key() || Qt::Key_Return == e->key()) {
         return completeRegion();
-    } else if (Qt::Key_Escape == e->key() || Qt::Key_Backspace == e->key()) {
+    } else if (Qt::Key_Backspace == e->key()) {
         return backspaceRegion();
     }
-    return false;
+    return DAAbstractRegionSelectEditor::keyPressEvent(e);
 }
 
 bool DAChartPolygonRegionSelectEditor::completeRegion()
@@ -131,9 +138,9 @@ bool DAChartPolygonRegionSelectEditor::completeRegion()
         d_ptr->mPolygon.clear();
         d_ptr->releaseTmpItem();
         d_ptr->mIsStartDrawRegion = false;
-        return false;  //点数不足，完成失败
+        return false;  // 点数不足，完成失败
     } else {
-        //点数足够，封闭多边形
+        // 点数足够，封闭多边形
         if (d_ptr->mPolygon.last() != d_ptr->mPolygon.first()) {
             d_ptr->mPolygon.append(d_ptr->mPolygon.first());
         }
@@ -163,7 +170,8 @@ bool DAChartPolygonRegionSelectEditor::completeRegion()
     d_ptr->releaseTmpItem();
     d_ptr->mPolygon.clear();
     d_ptr->mIsStartDrawRegion = false;
-    emit finishSelection(d_ptr->mLastPainterPath);
+    Q_EMIT finishSelection(d_ptr->mLastPainterPath);
+    Q_EMIT finishedEdit(false);
     return true;
 }
 ///

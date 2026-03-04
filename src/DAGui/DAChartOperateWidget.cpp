@@ -318,9 +318,6 @@ void DAChartOperateWidget::clear()
 void DAChartOperateWidget::initFigureConnect(DAFigureWidget* fig)
 {
     // 信号转发
-    connect(fig, &DAFigureWidget::chartAdded, this, &DAChartOperateWidget::chartAdded);
-    connect(fig, &DAFigureWidget::chartRemoved, this, &DAChartOperateWidget::chartRemoved);
-    connect(fig, &DAFigureWidget::currentChartChanged, this, &DAChartOperateWidget::currentChartChanged);
     connect(fig, &DAFigureWidget::windowTitleChanged, this, &DAChartOperateWidget::onFigureTitleChanged);
 }
 
