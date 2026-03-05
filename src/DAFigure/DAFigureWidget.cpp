@@ -30,6 +30,8 @@
 #include "DAChartAxisRangeBinder.h"
 #include "DAChartRectRegionSelectEditor.h"
 #include "DAChartSelectRegionShapeItem.h"
+#include "DAChartEllipseRegionSelectEditor.h"
+#include "DAChartPolygonRegionSelectEditor.h"
 // qwt
 #include "qwt_figure.h"
 #include "qwt_figure_layout.h"
@@ -71,8 +73,9 @@ public:
         q_ptr->setWindowTitle(QApplication::translate("DAFigureWidget", "Figure", 0));
     }
 
-    std::shared_ptr< DAChartAxisRangeBinder >
-    findAxisRangeBinder(QwtPlot* source, QwtAxisId sourceAxisid, QwtPlot* follower, QwtAxisId followerAxisid)
+    std::shared_ptr< DAChartAxisRangeBinder > findAxisRangeBinder(
+        QwtPlot* source, QwtAxisId sourceAxisid, QwtPlot* follower, QwtAxisId followerAxisid
+    )
     {
         for (const auto& b : std::as_const(m_axisRangeBinders)) {
             if (b->isSame(source, sourceAxisid, follower, followerAxisid)) {
@@ -82,7 +85,45 @@ public:
         return nullptr;
     }
     void beginSubChartEditor();
+
+    template< typename EditorType >
+    void beginSelectEditor()
+    {
+        DAFigureWidget* fig = q_ptr;
+        auto fun            = [ fig ](QwtPlot* plot) -> DAAbstractChartEditor* {
+            EditorType* editor = new EditorType(plot);
+            DAFigureWidget::connect(editor, &EditorType::finishedEdit, fig, [ fig, editor, plot ](bool isCancel) {
+                if (isCancel) {
+                    return;
+                }
+                DAChartSelectRegionShapeItem* item = editor->takeItem();
+                if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(plot)) {
+                    fig->addItem_(chart, item, true);
+                } else {
+                    qCritical() << tr(
+                        "Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
+                                   "type was added to the figure"
+                    );
+                    item->detach();
+                    delete item;
+                }
+            });
+            return editor;
+        };
+
+        m_chartEditor = new DAFigureChartEditorWidgetOverlay(fig->figure(), fun);
+        m_chartEditor->show();
+        m_chartEditor->raise();
+        DAFigureWidget::connect(
+            m_chartEditor, &DAFigureChartEditorWidgetOverlay::finished, q_ptr, &DAFigureWidget::onFigureChartEditorFinished
+        );
+        DAFigureWidget::connect(
+            m_chartEditor, &DAFigureWidgetOverlay::activeWidgetChanged, q_ptr, &DAFigureWidget::onOverlayActiveWidgetChanged
+        );
+    }
     void beginRectSelectEditor();
+    void beginEllipseSelectEditor();
+    void beginPolygonSelectEditor();
 };
 
 void DAFigureWidget::PrivateData::beginSubChartEditor()
@@ -92,42 +133,29 @@ void DAFigureWidget::PrivateData::beginSubChartEditor()
     m_chartEditor->show();
     m_chartEditor->raise();
     DAFigureWidget::connect(
-        m_chartEditor, &DAFigureChartEditorWidgetOverlay::finished, fig, &DAFigureWidget::onFigureChartEditorFinished);
+        m_chartEditor, &DAFigureChartEditorWidgetOverlay::finished, fig, &DAFigureWidget::onFigureChartEditorFinished
+    );
     DAFigureWidget::connect(
-        m_chartEditor, &DAFigureWidgetOverlay::widgetNormGeometryChanged, fig, &DAFigureWidget::onWidgetGeometryChanged);
+        m_chartEditor, &DAFigureWidgetOverlay::widgetNormGeometryChanged, fig, &DAFigureWidget::onWidgetGeometryChanged
+    );
     DAFigureWidget::connect(
-        m_chartEditor, &DAFigureWidgetOverlay::activeWidgetChanged, fig, &DAFigureWidget::onOverlayActiveWidgetChanged);
+        m_chartEditor, &DAFigureWidgetOverlay::activeWidgetChanged, fig, &DAFigureWidget::onOverlayActiveWidgetChanged
+    );
 }
 
 void DAFigureWidget::PrivateData::beginRectSelectEditor()
 {
-    DAFigureWidget* fig = q_ptr;
-    auto fun            = [ fig ](QwtPlot* plot) -> DAAbstractChartEditor* {
-        DAChartRectRegionSelectEditor* editor = new DAChartRectRegionSelectEditor(plot);
-        DAFigureWidget::connect(editor, &DAChartRectRegionSelectEditor::finishedEdit, fig, [ fig, editor, plot ](bool isCancel) {
-            if (isCancel) {
-                return;
-            }
-            DAChartSelectRegionShapeItem* item = editor->takeItem();
-            if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(plot)) {
-                fig->addItem_(chart, item, true);
-            } else {
-                // 异常
-                qCritical() << tr("Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
-                                             "type was added to the figure");  // cn::绘图操作异常，不属于DAChartWidget类型的chart被添加到figure";
-                item->detach();
-                delete item;
-            }
-        });
-        return editor;
-    };
-    m_chartEditor = new DAFigureChartEditorWidgetOverlay(fig->figure(), fun);
-    m_chartEditor->show();
-    m_chartEditor->raise();
-    DAFigureWidget::connect(
-        m_chartEditor, &DAFigureChartEditorWidgetOverlay::finished, q_ptr, &DAFigureWidget::onFigureChartEditorFinished);
-    DAFigureWidget::connect(
-        m_chartEditor, &DAFigureWidgetOverlay::activeWidgetChanged, q_ptr, &DAFigureWidget::onOverlayActiveWidgetChanged);
+    beginSelectEditor< DAChartRectRegionSelectEditor >();
+}
+
+void DAFigureWidget::PrivateData::beginEllipseSelectEditor()
+{
+    beginSelectEditor< DAChartEllipseRegionSelectEditor >();
+}
+
+void DAFigureWidget::PrivateData::beginPolygonSelectEditor()
+{
+    beginSelectEditor< DAChartPolygonRegionSelectEditor >();
 }
 
 //===================================================
@@ -697,8 +725,10 @@ void DAFigureWidget::beginChartEditor(ChartEditorType type)
         d->beginRectSelectEditor();
         break;
     case EllipseSelectEditor:
+        d->beginEllipseSelectEditor();
         break;
     case PolygonSelectEditor:
+        d->beginPolygonSelectEditor();
         break;
     default:
         qWarning() << tr("Unsupported chart editor type: %1").arg(type);
@@ -731,7 +761,9 @@ void DAFigureWidget::addWidget(QWidget* widget, qreal left, qreal top, qreal wid
     figure()->addWidget(widget, left, top, width, height);
 }
 
-void DAFigureWidget::addWidget(QWidget* widget, int rowCnt, int colCnt, int row, int col, int rowSpan, int colSpan, qreal wspace, qreal hspace)
+void DAFigureWidget::addWidget(
+    QWidget* widget, int rowCnt, int colCnt, int row, int col, int rowSpan, int colSpan, qreal wspace, qreal hspace
+)
 {
     figure()->addWidget(widget, rowCnt, colCnt, row, col, rowSpan, colSpan, wspace, hspace);
 }
@@ -849,9 +881,9 @@ QwtPlotBarChart* DAFigureWidget::addBar_(const QVector< QPointF >& xyDatas)
  * @param xyDatas
  * @return 如果添加失败，返回一个nullptr
  */
-QwtPlotIntervalCurve* DAFigureWidget::addErrorBar_(const QVector< double >& values,
-                                                   const QVector< double >& mins,
-                                                   const QVector< double >& maxs)
+QwtPlotIntervalCurve* DAFigureWidget::addErrorBar_(
+    const QVector< double >& values, const QVector< double >& mins, const QVector< double >& maxs
+)
 {
     if (DAChartWidget* chart = gca()) {
         QwtPlotIntervalCurve* item = chart->addIntervalCurve(values, mins, maxs);

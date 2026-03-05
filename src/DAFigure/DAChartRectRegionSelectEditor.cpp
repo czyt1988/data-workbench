@@ -11,15 +11,14 @@ class DAChartRectRegionSelectEditor::PrivateData
 {
     DA_DECLARE_PUBLIC(DAChartRectRegionSelectEditor)
 public:
-    bool m_isStartDrawRegion;
-    DAChartSelectRegionShapeItem* m_tmpItem;
-    QPointF m_pressedPoint;
-    QRectF m_selectedRect;
+    bool m_isStartDrawRegion { false };
+    DAChartSelectRegionShapeItem* m_tmpItem { nullptr };
+    QPointF m_pressedPoint { 0, 0 };
+    QRectF m_selectedRect { 0, 0, 0, 0 };
     QPainterPath m_lastPainterPath;
     bool m_isPlotEnableZoom { false };  ///< 记录绘图是否允许缩放，在结束的时候还原状态
 public:
-    PrivateData(DAChartRectRegionSelectEditor* p)
-        : q_ptr(p), m_isStartDrawRegion(false), m_tmpItem(nullptr), m_selectedRect(QRectF())
+    PrivateData(DAChartRectRegionSelectEditor* p) : q_ptr(p)
     {
     }
     ~PrivateData()
@@ -60,7 +59,6 @@ bool DAChartRectRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
         return false;
     }
     QPoint p = compat::eventPos(e);
-    qDebug() << "DAChartRectRegionSelectEditor::mousePressEvent" << p;
     if (!d_ptr->m_isStartDrawRegion) {
         d_ptr->createTmpItem();
         DAChartWidget* chart      = qobject_cast< DAChartWidget* >(parent());
@@ -90,8 +88,7 @@ bool DAChartRectRegionSelectEditor::mouseMoveEvent(const QMouseEvent* e)
     if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
-    QPoint p = compat::eventPos(e);
-    qDebug() << "DAChartRectRegionSelectEditor::mouseMoveEvent" << p;
+    QPoint p   = compat::eventPos(e);
     QPointF pf = invTransform(p);
     d_ptr->m_selectedRect.setX(d_ptr->m_pressedPoint.x());
     d_ptr->m_selectedRect.setY(d_ptr->m_pressedPoint.y());
@@ -108,8 +105,7 @@ bool DAChartRectRegionSelectEditor::mouseReleaseEvent(const QMouseEvent* e)
     if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
-    QPoint p = compat::eventPos(e);
-    qDebug() << "DAChartRectRegionSelectEditor::mouseReleaseEvent" << p;
+    QPoint p   = compat::eventPos(e);
     QPointF pf = invTransform(p);
     if (pf == d_ptr->m_pressedPoint) {
         // 如果点击和松开是一个点，就取消当前的选区

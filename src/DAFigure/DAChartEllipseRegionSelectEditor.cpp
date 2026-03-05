@@ -1,6 +1,8 @@
 ﻿#include "DAChartEllipseRegionSelectEditor.h"
 #include <QMouseEvent>
 #include <QKeyEvent>
+#include "DAChartWidget.h"
+#include "da_qt5qt6_compat.hpp"
 namespace DA
 {
 class DAChartEllipseRegionSelectEditor::PrivateData
@@ -12,7 +14,7 @@ public:
     QPointF mPressedPoint;
     QRectF mSelectedRect;
     QPainterPath mLastPainterPath;
-
+    bool m_isPlotEnableZoom { false };  ///< 记录绘图是否允许缩放，在结束的时候还原状态
 public:
     PrivateData(DAChartEllipseRegionSelectEditor* p) : q_ptr(p)
     {
@@ -86,6 +88,19 @@ void DAChartEllipseRegionSelectEditor::clear()
     d_ptr->mLastPainterPath = QPainterPath();
 }
 
+bool DA::DAChartEllipseRegionSelectEditor::cancel()
+{
+    clear();
+    return true;
+}
+
+DAChartSelectRegionShapeItem* DA::DAChartEllipseRegionSelectEditor::takeItem()
+{
+    DAChartSelectRegionShapeItem* item = d_ptr->mTmpItem;
+    d_ptr->mTmpItem                    = nullptr;
+    return item;
+}
+
 void DAChartEllipseRegionSelectEditor::onItemAttached(QwtPlotItem* item, bool on)
 {
     if (!on) {
@@ -100,7 +115,15 @@ bool DAChartEllipseRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
     if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
-    QPoint p                  = e->pos();
+    QPoint p = compat::eventPos(e);
+    if (!d_ptr->mIsStartDrawRegion) {
+        d_ptr->createTmpItem();
+        DAChartWidget* chart      = qobject_cast< DAChartWidget* >(parent());
+        d_ptr->m_isPlotEnableZoom = chart->isZoomEnabled();
+        if (d_ptr->m_isPlotEnableZoom) {
+            chart->enableZoom(false);
+        }
+    }
     d_ptr->mIsStartDrawRegion = true;
     d_ptr->mPressedPoint      = invTransform(p);
     d_ptr->createTmpItem();
@@ -125,7 +148,7 @@ bool DAChartEllipseRegionSelectEditor::mouseMoveEvent(const QMouseEvent* e)
     if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
-    QPoint p   = e->pos();
+    QPoint p   = compat::eventPos(e);
     QPointF pf = invTransform(p);
     d_ptr->mSelectedRect.setX(d_ptr->mPressedPoint.x());
     d_ptr->mSelectedRect.setY(d_ptr->mPressedPoint.y());
@@ -142,7 +165,7 @@ bool DAChartEllipseRegionSelectEditor::mouseReleaseEvent(const QMouseEvent* e)
     if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
-    QPoint p   = e->pos();
+    QPoint p   = compat::eventPos(e);
     QPointF pf = invTransform(p);
     if (pf == d_ptr->mPressedPoint) {
         // 如果点击和松开是一个点，就取消当前的选区
@@ -176,8 +199,12 @@ bool DAChartEllipseRegionSelectEditor::mouseReleaseEvent(const QMouseEvent* e)
     default:
         break;
     }
-    d_ptr->releaseTmpItem();
     d_ptr->mIsStartDrawRegion = false;
+    if (d_ptr->m_isPlotEnableZoom) {
+        DAChartWidget* chart = qobject_cast< DAChartWidget* >(parent());
+        // 还原zoomer
+        chart->enableZoom(true);
+    }
     Q_EMIT finishSelection(d_ptr->mLastPainterPath);
     Q_EMIT finishedEdit(false);
     return true;

@@ -747,7 +747,7 @@ Table Area</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-475"/>
+        <location line="-476"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -762,7 +762,7 @@ Table Area</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Whether to overwrite the file:%1</source>
         <translation>是否覆盖文件“%1”</translation>
     </message>
@@ -823,7 +823,7 @@ Table Area</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+302"/>
+        <location line="+319"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
@@ -2565,12 +2565,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+116"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+103"/>
         <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+588"/>
+        <location line="+631"/>
         <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3474,7 +3474,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2064"/>
+        <location filename="../APP/DAAppController.cpp" line="-2081"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -5180,7 +5180,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-633"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-661"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>

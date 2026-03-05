@@ -14,18 +14,22 @@ class DAFIGURE_API DAChartEllipseRegionSelectEditor : public DAAbstractRegionSel
     Q_OBJECT
     DA_DECLARE_PRIVATE(DAChartEllipseRegionSelectEditor)
 public:
-    DAChartEllipseRegionSelectEditor(QwtPlot* parent);
+    explicit DAChartEllipseRegionSelectEditor(QwtPlot* parent);
     virtual ~DAChartEllipseRegionSelectEditor();
-    //获取选择的数据区域
+    // 获取选择的数据区域
     virtual QPainterPath getSelectRegion() const;
-    //设置选区
+    // 设置选区
     virtual void setSelectRegion(const QPainterPath& shape);
-    //设置选择模式
+    // 设置选择模式
     virtual void setSelectionMode(const SelectionMode& selectionMode);
     // rtti
     virtual int rtti() const;
-    //清理数据
+    // 清理数据
     void clear();
+    // 取消
+    virtual bool cancel() override;
+    // 获取选框绘制的item
+    DAChartSelectRegionShapeItem* takeItem();
 private slots:
     void onItemAttached(QwtPlotItem* item, bool on);
 

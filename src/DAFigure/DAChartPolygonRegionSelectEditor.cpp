@@ -1,6 +1,8 @@
 ﻿#include "DAChartPolygonRegionSelectEditor.h"
 #include <QMouseEvent>
 #include <QKeyEvent>
+#include "da_qt5qt6_compat.hpp"
+
 namespace DA
 {
 class DAChartPolygonRegionSelectEditor::PrivateData
@@ -12,7 +14,9 @@ public:
     DAChartSelectRegionShapeItem* mTmpItem { nullptr };
     QPolygonF mPolygon;  ///< 多边形
     QPainterPath mLastPainterPath;
+    static bool isPointClose(const QPoint& p1, const QPoint& p2, int threshold = 3);
 
+public:
     PrivateData(DAChartPolygonRegionSelectEditor* p) : q_ptr(p)
     {
     }
@@ -38,6 +42,12 @@ public:
     }
 };
 
+bool DAChartPolygonRegionSelectEditor::PrivateData::isPointClose(const QPoint& p1, const QPoint& p2, int threshold)
+{
+    int dx = p1.x() - p2.x();
+    int dy = p1.y() - p2.y();
+    return (dx * dx + dy * dy) < threshold * threshold;
+}
 //===================================================
 // DAChartPolygonRegionSelectEditor
 //===================================================
@@ -73,6 +83,26 @@ int DAChartPolygonRegionSelectEditor::rtti() const
     return RTTIPolygonRegionSelectEditor;
 }
 
+void DA::DAChartPolygonRegionSelectEditor::clear()
+{
+    d_ptr->releaseTmpItem();
+    d_ptr->mPolygon         = QPolygonF();
+    d_ptr->mLastPainterPath = QPainterPath();
+}
+
+bool DA::DAChartPolygonRegionSelectEditor::cancel()
+{
+    clear();
+    return true;
+}
+
+DAChartSelectRegionShapeItem* DA::DAChartPolygonRegionSelectEditor::takeItem()
+{
+    DAChartSelectRegionShapeItem* item = d_ptr->mTmpItem;
+    d_ptr->mTmpItem                    = nullptr;
+    return item;
+}
+
 void DAChartPolygonRegionSelectEditor::onItemAttached(QwtPlotItem* item, bool on)
 {
     if (!on) {
@@ -87,14 +117,24 @@ bool DAChartPolygonRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
     if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
-    QPoint p = e->pos();
+    QPoint p = compat::eventPos(e);
     DA_D(d);
     bool firstBegin = (!d->mIsStartDrawRegion);
     if (!d->mIsStartDrawRegion) {
         d->mIsStartDrawRegion = true;
         d->createTmpItem();
     }
-    d->mPolygon.append(invTransform(p));
+    QPointF pf = invTransform(p);
+    if (d->mPolygon.size() > 1) {
+        // 这里要检测pf是否和第一个点接近，如果接近，就相当于闭合多边形
+        QPoint firstScreenPos = transform(d->mPolygon.first()).toPoint();
+        if (PrivateData::isPointClose(p, firstScreenPos, 5)) {
+            completeRegion();
+            // 结束
+            return true;
+        }
+    }
+    d->mPolygon.append(pf);
     if (d->mTmpItem) {
         d->mTmpItem->setPolygon(d->mPolygon);
     }
@@ -167,8 +207,6 @@ bool DAChartPolygonRegionSelectEditor::completeRegion()
     default:
         break;
     }
-    d_ptr->releaseTmpItem();
-    d_ptr->mPolygon.clear();
     d_ptr->mIsStartDrawRegion = false;
     Q_EMIT finishSelection(d_ptr->mLastPainterPath);
     Q_EMIT finishedEdit(false);
