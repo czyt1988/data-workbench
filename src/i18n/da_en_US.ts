@@ -701,17 +701,17 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+496"/>
+        <location filename="../APP/DAAppController.cpp" line="+479"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+21"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-20"/>
+        <location line="-19"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -721,13 +721,13 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+12"/>
-        <location line="+471"/>
+        <location line="+470"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -764,7 +764,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+69"/>
+        <location line="+66"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -789,7 +789,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -799,12 +799,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+319"/>
+        <location line="+301"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+637"/>
+        <location line="+622"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2453,12 +2453,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+103"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+104"/>
         <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+631"/>
+        <location line="+630"/>
         <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3362,7 +3362,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2081"/>
+        <location filename="../APP/DAAppController.cpp" line="-2027"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>

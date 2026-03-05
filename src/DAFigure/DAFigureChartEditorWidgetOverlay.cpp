@@ -1,4 +1,4 @@
-#include "DAFigureChartEditorWidgetOverlay.h"
+﻿#include "DAFigureChartEditorWidgetOverlay.h"
 #include <QPoint>
 #include <QMouseEvent>
 #include <QDebug>
@@ -33,12 +33,8 @@ QPoint DAFigureChartEditorWidgetOverlay::PrivateData::mapPosToPlot(const QwtPlot
     if (!plot) {
         return QPoint();
     }
-    QwtFigure* fig = q_ptr->figure();
-    if (plot->parentWidget() == fig) {
-        return plot->mapFrom(fig, figPos);
-    }
     // 先转换到全局坐标
-    QPoint globalPos = fig->mapToGlobal(figPos);
+    QPoint globalPos = q_ptr->mapToGlobal(figPos);
     return plot->mapFromGlobal(globalPos);
 }
 
@@ -57,7 +53,7 @@ QPoint DAFigureChartEditorWidgetOverlay::PrivateData::mapMousePosToPlot()
 DAFigureChartEditorWidgetOverlay::DAFigureChartEditorWidgetOverlay(QwtFigure* fig, FpChartEditorFactory funFactory)
     : DAFigureWidgetOverlay(fig), DA_PIMPL_CONSTRUCT
 {
-    setTransparentForMouseEvents(true);  // 截取所有鼠标事件
+    setTransparentForMouseEvents(false);  // 让窗口能接收鼠标事件
     setBuiltInFunctionsEnable(QwtFigureWidgetOverlay::FunResizePlot, false);
     setChartEditorFactory(funFactory);
     d_ptr->m_activePlot = fig->currentAxes();
@@ -129,7 +125,9 @@ void DAFigureChartEditorWidgetOverlay::createChartEditor(QwtPlot* plot)
         d->m_activeEditor->setEnabled(false);
         d->m_activeEditor->deleteLater();
     }
-    d->m_activePlot   = plot;
+    if (d->m_activePlot != plot) {
+        d->m_activePlot = plot;
+    }
     d->m_activeEditor = d->m_funFactory(d->m_activePlot.data());
     if (d->m_activeEditor) {
         d->m_activeEditor->setEnabled(true);
@@ -177,7 +175,6 @@ void DAFigureChartEditorWidgetOverlay::mouseReleaseEvent(QMouseEvent* me)
 void DAFigureChartEditorWidgetOverlay::mousePressEvent(QMouseEvent* me)
 {
     DA_D(d);
-    DAFigureWidgetOverlay::mousePressEvent(me);
     d->m_lastFigureMousePos = compat::eventPos(me);
     if (d->m_activeEditor) {
         // 这里要把第一个点击传递过去

@@ -118,6 +118,7 @@ bool DAChartPolygonRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
         return false;
     }
     QPoint p = compat::eventPos(e);
+    p        = mapPlotPosToCanvasPos(p);
     DA_D(d);
     bool firstBegin = (!d->mIsStartDrawRegion);
     if (!d->mIsStartDrawRegion) {

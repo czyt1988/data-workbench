@@ -100,10 +100,9 @@ public:
                 if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(plot)) {
                     fig->addItem_(chart, item, true);
                 } else {
-                    qCritical() << tr(
-                        "Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
-                                   "type was added to the figure"
-                    );
+                    qCritical(
+                    ) << tr("Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
+                                       "type was added to the figure");
                     item->detach();
                     delete item;
                 }
@@ -112,6 +111,7 @@ public:
         };
 
         m_chartEditor = new DAFigureChartEditorWidgetOverlay(fig->figure(), fun);
+        m_chartEditor->setEnabled(true);
         m_chartEditor->show();
         m_chartEditor->raise();
         DAFigureWidget::connect(

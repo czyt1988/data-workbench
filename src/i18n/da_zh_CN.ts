@@ -725,7 +725,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+906"/>
+        <location filename="../APP/DAAppController.cpp" line="+887"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -747,7 +747,7 @@ Table Area</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-476"/>
+        <location line="-474"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -762,7 +762,7 @@ Table Area</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Whether to overwrite the file:%1</source>
         <translation>是否覆盖文件“%1”</translation>
     </message>
@@ -773,7 +773,7 @@ Table Area</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+471"/>
+        <location line="+470"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
@@ -788,7 +788,7 @@ Table Area</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
     <message>
-        <location line="+69"/>
+        <location line="+66"/>
         <source>Image files (*.png *.jpg)</source>
         <translation>图片文件 (*.png *.jpg)</translation>
     </message>
@@ -813,7 +813,7 @@ Table Area</source>
         <translation>空工程，接口异常</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
@@ -823,12 +823,12 @@ Table Area</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+319"/>
+        <location line="+301"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+637"/>
+        <location line="+622"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -2565,12 +2565,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+103"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+104"/>
         <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+631"/>
+        <location line="+630"/>
         <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3474,7 +3474,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2081"/>
+        <location filename="../APP/DAAppController.cpp" line="-2027"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

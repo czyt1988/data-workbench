@@ -47,6 +47,8 @@ public:
 	QPointF invTransform(const QPointF& pos) const;
 	// 数据坐标转换为屏幕坐标
 	QPointF transform(const QPointF& pos) const;
+	// 把绘图QwtPlot的坐标映射到canvas上面
+	QPoint mapPlotPosToCanvasPos(const QPoint& pos) const;
 	// 把当前区域转换为其它轴系
 	QPainterPath transformToOtherAxis(int axisX, int axisY) const;
 Q_SIGNALS:
