@@ -674,16 +674,6 @@ void DAFigureWidget::copyToClipboard()
     QApplication::clipboard()->setPixmap(screenshot);
 }
 
-void DAFigureWidget::endChartEditor()
-{
-    DA_D(d);
-    if (d->m_chartEditor) {
-        d->m_chartEditor->hide();
-        d->m_chartEditor->deleteLater();
-        d->m_chartEditor = nullptr;
-    }
-}
-
 /**
  * @brief 当前是否有编辑器激活
  * @return
@@ -706,11 +696,23 @@ void DAFigureWidget::beginChartEditor(ChartEditorType type)
     case RectSelectEditor:
         d->beginRectSelectEditor();
         break;
+    case EllipseSelectEditor:
+        break;
     case PolygonSelectEditor:
         break;
     default:
         qWarning() << tr("Unsupported chart editor type: %1").arg(type);
         break;
+    }
+}
+
+void DAFigureWidget::endChartEditor()
+{
+    DA_D(d);
+    if (d->m_chartEditor) {
+        d->m_chartEditor->hide();
+        d->m_chartEditor->deleteLater();
+        d->m_chartEditor = nullptr;
     }
 }
 

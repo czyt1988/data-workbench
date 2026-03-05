@@ -60,8 +60,8 @@ nav:
         - 第三方库构建: zh/build/third-party-build.md
         - 主程序构建: zh/build/main-program-build.md
         - 插件构建: zh/build/plugin-build.md
-        - Python环境说明 : zh/build/python-environment.md
-        - 构建常见错误 : zh/build/common-build-errors.md
+        - Python环境说明: zh/build/python-environment.md
+        - 构建常见错误: zh/build/common-build-errors.md
     - 开发指南:
         - 开发规范: 
             - 编码规范: zh/dev-guide/coding-standard.md
@@ -70,6 +70,9 @@ nav:
             - 工程组织: zh/large-cmake-project-guide.md
         - 架构说明:
             - 模块关系: zh/dev-guide/module-dependency.md
+            - 工程文件结构: zh/dev-guide/project-file-structure.md
+        - 数据模块:
+            - 数据模块说明: zh/dev-guide/data-module.md
         - 图元模块:
             - 可缩放图元模块: zh/dev-guide/scalable-graphic-module.md
         - 工作流模块:
@@ -83,11 +86,16 @@ nav:
             - 插件模块: zh/dev-guide/plugin-module.md
             - 接口模块: zh/dev-guide/interface-module.md
         - 主程序开发:
-            - action添加方法 : zh/dev-guide/adding-action-methods.md
+            - action添加方法: zh/dev-guide/adding-action-methods.md
         - 插件开发:
             - 插件项目组织: zh/dev-guide/plugin-project-create.md
+            - 插件界面开发: zh/dev-guide/plugin-dev-create-ui.md
+        - Python集成:
+            - C++与Python集成: zh/dev-guide/python-in-cpp.md
+            - 脚本国际化: zh/dev-guide/python-i18n.md
     - 使用指南:
-        - 程序命令参数 : zh/use-guide/command-line-arguments.md
+        - 使用指南概述: zh/use-guide/index.md
+        - 程序命令参数: zh/use-guide/command-line-arguments.md
     - API文档: 
         - 文档首页: doxygen/index.html
         - 类索引: doxygen/classes.html

@@ -42,11 +42,10 @@ DACoreInterface* core() const;
 
 ![uml-plugin](../assets/PIC/uml-Plugin.png)
 
-
 ## 通用插件
 
 `data-workbench`针对程序需求，提供了一些通用插件
 
 ### 工作流节点插件`DAAbstractNodePlugin`
 
-`DAAbstractNodePlugin`负责生成工作流的节点，可以通过编写此插件提供不同功能的节点，具体详见[工作流](./工作流.md)
+`DAAbstractNodePlugin`负责生成工作流的节点，可以通过编写此插件提供不同功能的节点，具体详见[工作流](./workflow.md)

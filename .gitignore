@@ -17,7 +17,7 @@ build*
 tmp
 ~
 .qtcreator
-
+.qoder
 
 #翻译文件暂时不追踪
 *.qm

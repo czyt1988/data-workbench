@@ -3,6 +3,25 @@
 !!! example "示例"
     脚本的国际化可参考插件`plugins/DataAnalysis/PyScripts/DADataAnalysis`
 
+## 概述
+
+DAWorkBench 的 Python 脚本使用 GNU gettext 标准实现国际化（i18n）。整个流程为：
+
+1. 在代码中使用 `_()` 标记需要翻译的文本
+2. 使用 `xgettext` 从代码中提取待翻译文本，生成 `.pot` 模板文件
+3. 使用 `msginit` 为每种语言生成 `.po` 翻译文件
+4. 手动翻译 `.po` 文件中的文本
+5. 使用 `msgfmt` 编译 `.po` 文件为 `.mo` 二进制文件
+6. 程序运行时加载对应语言的 `.mo` 文件
+
+文件类型说明：
+
+| 文件类型 | 说明 |
+|---------|------|
+| `.pot` | 翻译模板文件，从代码中提取的所有待翻译文本集合，不关联具体语言 |
+| `.po` | 翻译文件，记录"原文本 -> 目标语言文本"的映射关系 |
+| `.mo` | 编译文件，`.po` 的二进制版本，程序运行时加载 |
+
 ## 国际化目录结构
 
 脚本国际化的目录结构大致如下
@@ -178,6 +197,22 @@ def setup_i18n(
     return trans
 ```
 
+## 在代码中使用国际化
+
+在需要翻译的Python脚本中，使用 `_()` 函数包裹文本：
+
+```python
+# xxx.py
+from .i18n.core import setup_i18n
+
+# 初始化国际化
+setup_i18n()
+
+# 使用 _() 标记需要翻译的文本
+print(_("没有选中数据"))
+print(_("数据不是DataFrame类型"))
+```
+
 ## 生成语言模板文件
 
 通过`xgettext.exe`可以生成语言文件模板`.pot`，这个工具是GNU gettext的组成部分，你可以单独下载，一般你安装了git，它会自带这个工具。
@@ -193,6 +228,7 @@ def setup_i18n(
 ```
 
 xgettext的参数说明：
+
 ```bash
 xgettext [可选参数] -o 输出文件.pot 待扫描的代码文件1 代码文件2 ...
 ```
@@ -226,9 +262,9 @@ xgettext -d mylib -l python --from-code=utf-8 -o locale/mylib.pot utils.py i18n/
 ```bash
 xgettext -d mylib -l python --from-code=utf-8 -o locale/mylib.pot $(find . -name "*.py")
 ```
+
 - `find . -name "*.py"`：递归查找当前目录下所有 `.py` 文件；
 - `$(...)`：把查找结果作为参数传给 xgettext。
-
 
 执行命令后，`mylib.pot` 内容如下（自动提取所有 `_()` 文本）：
 
@@ -263,7 +299,6 @@ msgstr ""
 
 !!! warning "注意"
     中文如果乱码，说明没有加`--from-code=utf-8` 参数，因为 xgettext 默认可能用系统编码（如GBK），导致中文原文本乱码。
-
 
 !!! tip "Tip"
     `.pot`文件是翻译的模板文件，`.po` 文件是翻译文件，`.mo` 文件是编译文件。 `.pot` 是从代码中提取的所有待翻译文本的集合，**不关联任何具体语言**，仅记录需要翻译哪些文本。
@@ -301,19 +336,22 @@ msgid "删除缺失值后，是否重建索引"
 msgstr "Whether to rebuild the index after removing missing values"
 ```
 
-`po`文件记录“原文本→目标语言文本”的映射关系，是人工维护翻译的核心文件，最终会被 `msgfmt` 编译为 `.mo` 二进制文件供程序加载。
+`po`文件记录"原文本->目标语言文本"的映射关系，是人工维护翻译的核心文件，最终会被 `msgfmt` 编译为 `.mo` 二进制文件供程序加载。
 
 生成po文件后，你需要进行手动翻译并保存
 
 ### 更新翻译文件
 
 当代码中新增/修改了 `_()` 文本时：
+
 - 第一步：重新执行 `xgettext` 生成**新的 `.pot` 文件**（更新 `msgid` 列表）；
 - 第二步：用 `msgmerge` 命令将新 `.pot` 的变更同步到已有 `.po` 文件（保留原有翻译，新增未翻译的 `msgid`）：
+
   ```bash
   # 同步中文 .po 文件（保留已翻译内容，新增新的 msgid）
   msgmerge -U locale/zh_CN/LC_MESSAGES/mylib.po locale/mylib.pot
   ```
+
 - 第三步：手动补充新 `msgid` 的翻译，重新编译 `.mo`。
 
 ## 生成编译文件
@@ -329,16 +367,19 @@ msgstr "Whether to rebuild the index after removing missing values"
 例如：
 
 编译中文 .po 文件
+
 ```bash
 msgfmt -o locale/zh_CN/LC_MESSAGES/mylib.mo locale/zh_CN/LC_MESSAGES/mylib.po
 ```
 
 编译英文 .po 文件
+
 ```bash
 msgfmt -o locale/en/LC_MESSAGES/mylib.mo locale/en/LC_MESSAGES/mylib.po
 ```
 
 如果有多个语言（如 ja、fr），可写一个批量脚本（`compile_po.sh`），避免重复执行命令：
+
 ```bash
 #!/bin/bash
 # 遍历所有 .po 文件，编译为同名 .mo 文件
@@ -347,6 +388,7 @@ echo "所有 .po 文件已编译为 .mo 文件！"
 ```
 
 - 执行脚本：
+
   ```bash
   # 赋予执行权限
   chmod +x compile_po.sh
@@ -355,7 +397,6 @@ echo "所有 .po 文件已编译为 .mo 文件！"
   ```
 
 最终你的文件结构如下：
-
 
 ```txt
 你的插件脚本目录/              # 库根目录
@@ -432,17 +473,17 @@ info "===== 前置检查 =====\n"
 # 检查gettext工具
 for cmd in xgettext msgmerge msginit msgfmt; do
     if ! command -v $cmd &> /dev/null; then
-        error "❌ 未安装 $cmd 命令！请先安装：sudo apt install gettext 或 brew install gettext"
+        error "未安装 $cmd 命令！请先安装：sudo apt install gettext 或 brew install gettext"
     fi
 done
 
 # 查找Python文件
 PYTHON_FILES=$(find "${PROJECT_ROOT}" -name "*.py" -not -path "*/venv/*" -not -path "*/.git/*" -not -path "*/__pycache__/*")
 if [ -z "${PYTHON_FILES}" ]; then
-    warn "⚠️  未扫描到任何Python文件！继续执行可能无法提取翻译字符串"
+    warn "未扫描到任何Python文件！继续执行可能无法提取翻译字符串"
 else
     FILE_COUNT=$(echo "${PYTHON_FILES}" | wc -w)
-    info "✅ 扫描到Python文件数：${FILE_COUNT} 个"
+    info "扫描到Python文件数：${FILE_COUNT} 个"
 fi
 echo ""
 
@@ -467,14 +508,14 @@ xgettext --language=Python \
 if [ -f "${POT_FILE}" ]; then
     # 确保POT文件使用UTF-8编码
     sed -i 's/CHARSET/UTF-8/' "${POT_FILE}" 2>/dev/null || true
-    info "✅ POT模板生成成功：${POT_FILE}"
+    info "POT模板生成成功：${POT_FILE}"
     info "  包含字符串数: $(grep -c '^msgid' "${POT_FILE}" || echo "未知")"
 else
-    error "❌ POT文件生成失败"
+    error "POT文件生成失败"
 fi
 echo ""
 
-# ===================== 处理PO文件（关键修复）=====================
+# ===================== 处理PO文件 =====================
 info "第二步：同步/初始化PO文件"
 
 for LANG in "${SUPPORT_LANGUAGES[@]}"; do
@@ -488,17 +529,17 @@ for LANG in "${SUPPORT_LANGUAGES[@]}"; do
         
         # 检查文件编码
         if ! check_po_encoding "${PO_FILE}"; then
-            warn "⚠  ${LANG} PO文件编码可能有问题，尝试修复..."
+            warn "${LANG} PO文件编码可能有问题，尝试修复..."
             # 尝试转换为UTF-8
             if iconv -f GBK -t UTF-8 "${PO_FILE}" > "${PO_FILE}.utf8" 2>/dev/null; then
                 mv "${PO_FILE}.utf8" "${PO_FILE}"
-                info "  ✓ 已转换${LANG} PO文件为UTF-8编码"
+                info "  已转换${LANG} PO文件为UTF-8编码"
             fi
         fi
     fi
     
     if [ -f "${PO_FILE}" ]; then
-        info "🔄 同步 ${LANG} PO文件"
+        info "同步 ${LANG} PO文件"
         
         # 使用临时文件进行合并，避免直接覆盖
         PO_TEMP="${PO_FILE}.temp"
@@ -506,28 +547,28 @@ for LANG in "${SUPPORT_LANGUAGES[@]}"; do
         
         if msgmerge --quiet --update "${PO_TEMP}" "${POT_FILE}" --backup=none --no-wrap 2>/dev/null; then
             mv "${PO_TEMP}" "${PO_FILE}"
-            info "✅ ${LANG} PO同步完成"
+            info "${LANG} PO同步完成"
             
             # 统计翻译情况
             total_msg=$(grep -c '^msgid' "${PO_FILE}" || echo "0")
             translated_msg=$(grep -c '^msgstr' "${PO_FILE}" | grep -v 'msgstr ""' || echo "0")
             info "  统计: ${translated_msg}/${total_msg} 已翻译"
         else
-            warn "⚠  ${LANG} PO同步失败，保留原文件"
+            warn "${LANG} PO同步失败，保留原文件"
             rm -f "${PO_TEMP}"
         fi
         
     else
-        info "📝 初始化 ${LANG} PO文件"
+        info "初始化 ${LANG} PO文件"
         
         if msginit --input="${POT_FILE}" \
                    --output="${PO_FILE}" \
                    --locale="${LANG}" \
                    --no-translator \
                    --width=80 2>/dev/null; then
-            info "✅ ${LANG} PO初始化完成"
+            info "${LANG} PO初始化完成"
         else
-            warn "⚠  初始化 ${LANG} PO失败，创建空文件"
+            warn "初始化 ${LANG} PO失败，创建空文件"
             # 创建空的PO文件
             cat > "${PO_FILE}" << EOF
 # ${DOMAIN} translations for ${LANG}
@@ -566,22 +607,22 @@ for LANG in "${SUPPORT_LANGUAGES[@]}"; do
     MO_FILE="${LOCALE_DIR}/${LANG}/LC_MESSAGES/${DOMAIN}.mo"
     
     if [ -f "${PO_FILE}" ]; then
-        info "🔨 编译 ${LANG} MO文件"
+        info "编译 ${LANG} MO文件"
         
         if msgfmt --check --verbose -o "${MO_FILE}" "${PO_FILE}" 2>&1 | tee "/tmp/msgfmt_${LANG}.log"; then
-            info "✅ ${LANG} MO编译成功"
+            info "${LANG} MO编译成功"
         else
-            warn "⚠  ${LANG} MO编译失败，查看 /tmp/msgfmt_${LANG}.log 获取详情"
+            warn "${LANG} MO编译失败，查看 /tmp/msgfmt_${LANG}.log 获取详情"
         fi
     else
-        warn "⚠  ${LANG} PO文件不存在，跳过编译"
+        warn "${LANG} PO文件不存在，跳过编译"
     fi
 done
 echo ""
 
 # ===================== 完成 =====================
 info "===== 全部操作完成！====="
-info "📌 翻译状态："
+info "翻译状态："
 
 for LANG in "${SUPPORT_LANGUAGES[@]}"; do
     PO_FILE="${LOCALE_DIR}/${LANG}/LC_MESSAGES/${DOMAIN}.po"
@@ -594,7 +635,7 @@ for LANG in "${SUPPORT_LANGUAGES[@]}"; do
     fi
 done
 
-echo -e "\n💡 按任意键退出..."
+echo -e "\n按任意键退出..."
 read -n 1 -s -r
 ```
 
@@ -604,3 +645,15 @@ read -n 1 -s -r
 
 !!! tip "注意"
     如果你安装了git bash，用git bash打开脚本，而不是使用Windows自带的cmd，git bash默认已经安装了xgettext和msgfmt这些工具
+
+## 快速参考
+
+国际化操作的完整流程总结：
+
+| 步骤 | 命令 | 说明 |
+|------|------|------|
+| 1. 提取文本 | `xgettext -d DOMAIN --from-code=utf-8 -o xxx.pot *.py` | 从代码提取待翻译文本 |
+| 2. 初始化翻译 | `msginit -i xxx.pot -o xxx.po -l zh_CN` | 为目标语言创建翻译文件 |
+| 3. 翻译 | 手动编辑 `.po` 文件 | 填写 `msgstr` 翻译内容 |
+| 4. 更新翻译 | `msgmerge -U xxx.po xxx.pot` | 同步新增的待翻译文本 |
+| 5. 编译 | `msgfmt -o xxx.mo xxx.po` | 生成程序可加载的二进制文件 |

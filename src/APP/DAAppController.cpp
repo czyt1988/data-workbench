@@ -1862,6 +1862,26 @@ void DAAppController::onActionChartRectSelectorTriggered(bool on)
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
+void DAAppController::onActionGroupChartEditorTriggered(QAction* a)
+{
+    DAFigureWidget* fig = getCurrentFigure();
+    if (!fig || !a) {
+        return;
+    }
+    if (!a->isChecked()) {
+        // 都不选中
+        fig->endChartEditor();
+        return;
+    }
+    bool isok = false;
+    int type  = a->data().toInt(&isok);
+    if (!isok) {
+        return;
+    }
+    fig->beginChartEditor(static_cast< DAFigureWidget::ChartEditorType >(type));
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+}
+
 /**
  * @brief dataframe删除行
  */

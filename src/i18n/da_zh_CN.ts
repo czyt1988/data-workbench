@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+332"/>
+        <location filename="../APP/DAAppActions.cpp" line="+334"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -828,7 +828,7 @@ Table Area</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+617"/>
+        <location line="+637"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -2570,7 +2570,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+596"/>
+        <location line="+588"/>
         <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3474,7 +3474,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2044"/>
+        <location filename="../APP/DAAppController.cpp" line="-2064"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -5180,7 +5180,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-641"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-633"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>

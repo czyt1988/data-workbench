@@ -234,6 +234,8 @@ private Q_SLOTS:
     void onActionCopyFigureToClipboardTriggered();
     //
     void onActionChartRectSelectorTriggered(bool on);
+    // 绘图编辑器的切换
+    void onActionGroupChartEditorTriggered(QAction* a);
     //===================================================
     // 数据操作的上下文标签 Data Operate Context Category
     //===================================================

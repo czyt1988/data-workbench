@@ -5,6 +5,7 @@
 #include <cmath>
 #include "DAColorTheme.h"
 #include "qwt_plot_series_data_picker.h"
+#include "DAFigureWidget.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -83,9 +84,7 @@ void DAAppActions::buildDataAction()
 void DAAppActions::buildChartAction()
 {
     // 绘图标签 Chart Category
-    actionAddFigure = createAction("actionAddFigure", ":/app/bright/Icon/addFigure.svg");
-    actionChartEditorResizeSubChart =
-        createAction("actionChartEditorResizeSubChart", ":/app/bright/Icon/figureResizeChart.svg", true, false);
+    actionAddFigure       = createAction("actionAddFigure", ":/app/bright/Icon/addFigure.svg");
     actionFigureNewXYAxis = createAction("actionFigureNewXYAxis", ":/app/bright/Icon/newAxis.svg");
     actionChartAddCurve   = createAction("actionChartAddCurve", ":/app/chart-type/Icon/chart-type/chart-curve.svg");
     actionChartAddScatter2D =
@@ -156,16 +155,19 @@ void DAAppActions::buildChartAction()
     actionChartEnableLegend = createAction("actionChartEnableLegend", ":/app/bright/Icon/chart-legend.svg", true, false);
     actionCopyFigureInClipboard = createAction("actionCopyFigureInClipboard", ":/app/bright/Icon/copy-figure.svg");
 
-    actionChartEditorRectSelector =
-        createAction("actionChartEditorRectSelector", ":/app/bright/Icon/chart-selector-rect.svg", true, true);
-    actionChartEditorEllipseSelector =
-        createAction("actionChartEditorEllipseSelector", ":/app/bright/Icon/chart-selector-ellipse.svg", true, true);
-    actionChartEditorPolygonSelector =
-        createAction("actionChartEditorPolygonSelector", ":/app/bright/Icon/chart-selector-polygon.svg", true, true);
-    actionGroupChartEditor->addAction(actionChartEditorResizeSubChart);
-    actionGroupChartEditor->addAction(actionChartEditorRectSelector);
-    actionGroupChartEditor->addAction(actionChartEditorEllipseSelector);
-    actionGroupChartEditor->addAction(actionChartEditorPolygonSelector);
+    actionGroupChartEditor          = new QActionGroup(this);
+    actionChartEditorResizeSubChart = createAction(
+        "actionChartEditorResizeSubChart", ":/app/bright/Icon/figureResizeChart.svg", true, false, actionGroupChartEditor);
+    actionChartEditorRectSelector = createAction(
+        "actionChartEditorRectSelector", ":/app/bright/Icon/chart-selector-rect.svg", true, false, actionGroupChartEditor);
+    actionChartEditorEllipseSelector = createAction(
+        "actionChartEditorEllipseSelector", ":/app/bright/Icon/chart-selector-ellipse.svg", true, false, actionGroupChartEditor);
+    actionChartEditorPolygonSelector = createAction(
+        "actionChartEditorPolygonSelector", ":/app/bright/Icon/chart-selector-polygon.svg", true, false, actionGroupChartEditor);
+    actionChartEditorResizeSubChart->setData(static_cast< int >(DAFigureWidget::SubChartEditor));
+    actionChartEditorRectSelector->setData(static_cast< int >(DAFigureWidget::RectSelectEditor));
+    actionChartEditorEllipseSelector->setData(static_cast< int >(DAFigureWidget::EllipseSelectEditor));
+    actionChartEditorPolygonSelector->setData(static_cast< int >(DAFigureWidget::PolygonSelectEditor));
 }
 
 void DAAppActions::buildViewAction()

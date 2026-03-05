@@ -1,6 +1,6 @@
 # 构建`data-workbench`
 
-本文介绍如何构建`data-workbench`，在构建`data-workbench`之前，请确认已经完成了第三方库的构建并执行了`install`命令，构建第三方库的方法见：[构建第三方库](./构建第三方库.md)
+本文介绍如何构建`data-workbench`，在构建`data-workbench`之前，请确认已经完成了第三方库的构建并执行了`install`命令，构建第三方库的方法见：[构建第三方库](./third-party-build.md)
 
 ## 基于CMake构建data-workbench
 
