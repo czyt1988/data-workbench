@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+334"/>
+        <location filename="../APP/DAAppActions.cpp" line="+342"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -302,7 +302,7 @@ Vector Field</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>When this feature is selected, operations on the figure will apply to all plots, not just the currently selected one</source>
         <translation type="unfinished"></translation>
     </message>
@@ -522,7 +522,7 @@ Move</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>grouping</source>
         <translation type="unfinished"></translation>
     </message>
@@ -799,12 +799,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+301"/>
+        <location line="+303"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+622"/>
+        <location line="+621"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2458,7 +2458,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+630"/>
+        <location line="+641"/>
         <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3362,7 +3362,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2027"/>
+        <location filename="../APP/DAAppController.cpp" line="-2028"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5059,7 +5059,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-661"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-672"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>

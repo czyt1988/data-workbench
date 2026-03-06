@@ -57,9 +57,6 @@ DAFigureChartEditorWidgetOverlay::DAFigureChartEditorWidgetOverlay(QwtFigure* fi
     setBuiltInFunctionsEnable(QwtFigureWidgetOverlay::FunResizePlot, false);
     setChartEditorFactory(funFactory);
     d_ptr->m_activePlot = fig->currentAxes();
-    if (d_ptr->m_activePlot) {
-        createChartEditor(d_ptr->m_activePlot);
-    }
     connect(this, &DAFigureWidgetOverlay::activeWidgetChanged, this, &DAFigureChartEditorWidgetOverlay::onActiveWidgetChanged);
 }
 
@@ -176,6 +173,14 @@ void DAFigureChartEditorWidgetOverlay::mousePressEvent(QMouseEvent* me)
 {
     DA_D(d);
     d->m_lastFigureMousePos = compat::eventPos(me);
+    qDebug() << "DAFigureChartEditorWidgetOverlay::mousePressEvent(" << d->m_lastFigureMousePos
+             << "),m_activeEditor=" << d->m_activeEditor;
+
+    if (!d->m_activeEditor) {
+        qDebug() << "DAFigureChartEditorWidgetOverlay::mousePressEvent no active editor";
+        DAFigureWidgetOverlay::mousePressEvent(me);
+        // 上面代码会导致激活窗口切换，切换后看看是否激活了编辑器
+    }
     if (d->m_activeEditor) {
         // 这里要把第一个点击传递过去
         QPoint plotPos = d_ptr->mapMousePosToPlot();
@@ -184,10 +189,7 @@ void DAFigureChartEditorWidgetOverlay::mousePressEvent(QMouseEvent* me)
             QEvent::MouseButtonPress, plotPos, plotPos, me->globalPosition().toPoint(), me->button(), me->buttons(), me->modifiers()
         );
         d->m_activeEditor->mousePressEvent(&mappedEvent);
-    } else {
-        qDebug() << "DAFigureChartEditorWidgetOverlay::mousePressEvent no active editor";
-        // 没有激活的编辑器，激活
-        DAFigureWidgetOverlay::mousePressEvent(me);
+        me->accept();
     }
 }
 

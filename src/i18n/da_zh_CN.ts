@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+334"/>
+        <location filename="../APP/DAAppActions.cpp" line="+342"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -308,7 +308,7 @@ Vector Field</source>
 所有绘图</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>When this feature is selected, operations on the figure will apply to all plots, not just the currently selected one</source>
         <translation>此功能选中后，绘图面板上的操作将应用到所有绘图，而不仅仅是当前选中的绘图</translation>
     </message>
@@ -523,7 +523,7 @@ Move</source>
         <translation>允许移动图元时，其它和此图元链接起来的图元跟随移动</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>grouping</source>
         <translation>分组</translation>
     </message>
@@ -654,7 +654,7 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-74"/>
+        <location line="-75"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
@@ -664,7 +664,7 @@ Config</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+49"/>
         <source>Run 
 Workflow</source>
         <translation>运行
@@ -823,12 +823,12 @@ Table Area</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+301"/>
+        <location line="+303"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+622"/>
+        <location line="+621"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -2570,7 +2570,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+630"/>
+        <location line="+641"/>
         <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3474,7 +3474,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2027"/>
+        <location filename="../APP/DAAppController.cpp" line="-2028"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -5180,7 +5180,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-661"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-672"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>

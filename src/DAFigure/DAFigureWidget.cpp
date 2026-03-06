@@ -92,6 +92,7 @@ public:
         DAFigureWidget* fig = q_ptr;
         auto fun            = [ fig ](QwtPlot* plot) -> DAAbstractChartEditor* {
             EditorType* editor = new EditorType(plot);
+            DAFigureWidget::connect(editor, &EditorType::beginEdit, fig, [ fig ]() { fig->emitChartEditorBeginEdit(); });
             DAFigureWidget::connect(editor, &EditorType::finishedEdit, fig, [ fig, editor, plot ](bool isCancel) {
                 if (isCancel) {
                     return;
@@ -100,12 +101,14 @@ public:
                 if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(plot)) {
                     fig->addItem_(chart, item, true);
                 } else {
-                    qCritical(
-                    ) << tr("Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
-                                       "type was added to the figure");
+                    qCritical() << tr(
+                        "Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
+                                   "type was added to the figure"
+                    );
                     item->detach();
                     delete item;
                 }
+                fig->emitChartEditorFinishEdit();
             });
             return editor;
         };
@@ -132,9 +135,7 @@ void DAFigureWidget::PrivateData::beginSubChartEditor()
     m_chartEditor       = new DAFigureWidgetOverlay(fig->figure());
     m_chartEditor->show();
     m_chartEditor->raise();
-    DAFigureWidget::connect(
-        m_chartEditor, &DAFigureChartEditorWidgetOverlay::finished, fig, &DAFigureWidget::onFigureChartEditorFinished
-    );
+    fig->emitChartEditorBeginEdit();
     DAFigureWidget::connect(
         m_chartEditor, &DAFigureWidgetOverlay::widgetNormGeometryChanged, fig, &DAFigureWidget::onWidgetGeometryChanged
     );
@@ -231,6 +232,16 @@ void DAFigureWidget::setupDataPickerGroup()
         }
         d->m_pickerGroup->addPicker(picker);
     }
+}
+
+void DAFigureWidget::emitChartEditorBeginEdit()
+{
+    Q_EMIT chartEditorStatusChanged(BeginEdit);
+}
+
+void DAFigureWidget::emitChartEditorFinishEdit()
+{
+    Q_EMIT chartEditorStatusChanged(EndEdit);
 }
 
 DAChartFactory* DAFigureWidget::getChartFactory() const
@@ -1045,6 +1056,7 @@ void DAFigureWidget::onChartPropertyChanged(DAChartWidget* chart, DA::DAChartWid
 
 void DAFigureWidget::onFigureChartEditorFinished(bool isCancel)
 {
+    qDebug() << "DAFigureWidget::onFigureChartEditorFinished(" << isCancel << ")";
     endChartEditor();
 }
 

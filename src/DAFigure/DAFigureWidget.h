@@ -151,15 +151,9 @@ public:
     QRectF widgetNormRect(QWidget* w) const;
     // Add a widget with normalized coordinates/使用归一化坐标添加widget
     void addWidget(QWidget* widget, qreal left, qreal top, qreal width, qreal height);
-    void addWidget(QWidget* widget,
-                   int rowCnt,
-                   int colCnt,
-                   int row,
-                   int col,
-                   int rowSpan  = 1,
-                   int colSpan  = 1,
-                   qreal wspace = 0.0,
-                   qreal hspace = 0.0);
+    void addWidget(
+        QWidget* widget, int rowCnt, int colCnt, int row, int col, int rowSpan = 1, int colSpan = 1, qreal wspace = 0.0, qreal hspace = 0.0
+    );
     // 改变已经添加的窗口的位置占比,如果窗口还没添加，此函数无效
     void setWidgetNormPos(QWidget* widget, const QRectF& rect);
     // 获取在此坐标下的绘图，如果此坐标下没有，则返回nullptr，存在寄生轴情况只返回宿主轴
@@ -178,8 +172,9 @@ public:
     QwtPlotCurve* addScatter_(const QVector< QPointF >& xyDatas);
     // 添加柱状图
     QwtPlotBarChart* addBar_(const QVector< QPointF >& xyDatas);
-    QwtPlotIntervalCurve*
-    addErrorBar_(const QVector< double >& values, const QVector< double >& mins, const QVector< double >& maxs);
+    QwtPlotIntervalCurve* addErrorBar_(
+        const QVector< double >& values, const QVector< double >& mins, const QVector< double >& maxs
+    );
 
 public:
     // 推送一个命令
@@ -232,6 +227,9 @@ private:
     void init();
     // 建立DataPickerGroup
     void setupDataPickerGroup();
+    // 编辑器开始
+    void emitChartEditorBeginEdit();
+    void emitChartEditorFinishEdit();
 };
 
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const DAFigureWidget* p);
