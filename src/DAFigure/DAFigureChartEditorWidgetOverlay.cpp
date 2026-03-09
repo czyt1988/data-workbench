@@ -115,6 +115,7 @@ void DAFigureChartEditorWidgetOverlay::onEditorBegin()
 void DAFigureChartEditorWidgetOverlay::createChartEditor(QwtPlot* plot)
 {
     DA_D(d);
+    qDebug() << "DAFigureChartEditorWidgetOverlay::createChartEditor";
     if (!plot || !(d->m_funFactory)) {
         return;
     }
