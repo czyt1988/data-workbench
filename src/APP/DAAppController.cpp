@@ -1344,7 +1344,6 @@ void DAAppController::onFigureCreated(DAFigureWidget* f)
     if (nullptr == f) {
         return;
     }
-    qDebug() << "DAAppController::onFigureCreate";
     if (mCommand) {
         QUndoStack* stack = f->getUndoStack();
         mCommand->addStack(stack);
@@ -1384,7 +1383,6 @@ void DAAppController::onCurrentChartChanged(DAChartWidget* c)
     if (nullptr == c) {
         return;
     }
-    qDebug() << "DAAppController::onCurrentChartChanged";
     mRibbon->updateChartAboutRibbon(c);
 }
 
@@ -1394,7 +1392,6 @@ void DAAppController::onCurrentChartChanged(DAChartWidget* c)
  */
 void DAAppController::onChartEditorStatusChanged(DAFigureWidget::ChartEditorStatus status)
 {
-    qDebug() << "onChartEditorStatusChanged" << status;
     if (DAFigureWidget::ChartEditorStatus::EndEdit == status) {
         // 结束编辑
         // 触发结束编辑有可能是按键，或一些异常状态，为了避免和按钮的状态不同步，这里结束编辑后要把actiongroup管理的action都设置为unchecked

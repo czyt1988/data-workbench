@@ -116,7 +116,7 @@ bool DAChartEllipseRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
         return false;
     }
     QPoint p = compat::eventPos(e);
-    p        = mapPlotPosToCanvasPos(p);
+
     if (!d_ptr->mIsStartDrawRegion) {
         d_ptr->createTmpItem();
         DAChartWidget* chart      = qobject_cast< DAChartWidget* >(parent());
@@ -149,8 +149,8 @@ bool DAChartEllipseRegionSelectEditor::mouseMoveEvent(const QMouseEvent* e)
     if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
-    QPoint p   = compat::eventPos(e);
-    p          = mapPlotPosToCanvasPos(p);
+    QPoint p = compat::eventPos(e);
+
     QPointF pf = invTransform(p);
     d_ptr->mSelectedRect.setX(d_ptr->mPressedPoint.x());
     d_ptr->mSelectedRect.setY(d_ptr->mPressedPoint.y());
@@ -167,8 +167,8 @@ bool DAChartEllipseRegionSelectEditor::mouseReleaseEvent(const QMouseEvent* e)
     if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
-    QPoint p   = compat::eventPos(e);
-    p          = mapPlotPosToCanvasPos(p);
+    QPoint p = compat::eventPos(e);
+
     QPointF pf = invTransform(p);
     if (pf == d_ptr->mPressedPoint) {
         // 如果点击和松开是一个点，就取消当前的选区

@@ -799,7 +799,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+303"/>
+        <location line="+300"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3362,7 +3362,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2028"/>
+        <location filename="../APP/DAAppController.cpp" line="-2025"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>

@@ -823,7 +823,7 @@ Table Area</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+303"/>
+        <location line="+300"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
@@ -3474,7 +3474,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2028"/>
+        <location filename="../APP/DAAppController.cpp" line="-2025"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

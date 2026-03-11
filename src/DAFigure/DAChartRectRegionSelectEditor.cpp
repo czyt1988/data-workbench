@@ -59,7 +59,6 @@ bool DAChartRectRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
         return false;
     }
     QPoint p = compat::eventPos(e);
-    p        = mapPlotPosToCanvasPos(p);
     if (!d_ptr->m_isStartDrawRegion) {
         d_ptr->createTmpItem();
         DAChartWidget* chart      = qobject_cast< DAChartWidget* >(parent());
@@ -90,7 +89,6 @@ bool DAChartRectRegionSelectEditor::mouseMoveEvent(const QMouseEvent* e)
         return false;
     }
     QPoint p   = compat::eventPos(e);
-    p          = mapPlotPosToCanvasPos(p);
     QPointF pf = invTransform(p);
 
     d_ptr->m_selectedRect.setX(d_ptr->m_pressedPoint.x());
@@ -109,7 +107,6 @@ bool DAChartRectRegionSelectEditor::mouseReleaseEvent(const QMouseEvent* e)
         return false;
     }
     QPoint p   = compat::eventPos(e);
-    p          = mapPlotPosToCanvasPos(p);
     QPointF pf = invTransform(p);
     if (pf == d_ptr->m_pressedPoint) {
         // 如果点击和松开是一个点，就取消当前的选区
