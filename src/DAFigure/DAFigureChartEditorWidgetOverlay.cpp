@@ -2,6 +2,7 @@
 #include <QPoint>
 #include <QMouseEvent>
 #include <QDebug>
+#include <QKeyEvent>
 #include "qwt_figure.h"
 #include "qwt_plot.h"
 #include "da_qt5qt6_compat.hpp"
@@ -205,4 +206,27 @@ void DAFigureChartEditorWidgetOverlay::mousePressEvent(QMouseEvent* me)
     }
 }
 
+
+void DA::DAFigureChartEditorWidgetOverlay::keyPressEvent(QKeyEvent* ke)
+{
+    DA_D(d);
+    if (d->m_activeEditor) {
+        QKeyEvent nke(
+            ke->type(),
+            ke->key(),
+            ke->modifiers(),
+            ke->nativeScanCode(),
+            ke->nativeVirtualKey(),
+            ke->nativeModifiers(),
+            ke->text(),
+            ke->isAutoRepeat(),
+            ke->count()
+        );
+        if(d->m_activeEditor->keyPressEvent(&nke)){
+            ke->accept();
+            return;
+        }
+    }
+    DAFigureWidgetOverlay::keyPressEvent(ke);
+}
 }

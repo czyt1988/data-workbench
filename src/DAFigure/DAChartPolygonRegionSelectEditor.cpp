@@ -114,52 +114,63 @@ void DAChartPolygonRegionSelectEditor::onItemAttached(QwtPlotItem* item, bool on
 
 bool DAChartPolygonRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
 {
-    if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
+    if (Qt::MiddleButton == e->button()) {
         return false;
     }
     QPoint p = compat::eventPos(e);
 
     DA_D(d);
     bool firstBegin = (!d->mIsStartDrawRegion);
-    if (!d->mIsStartDrawRegion) {
-        d->mIsStartDrawRegion = true;
-        d->createTmpItem();
-    }
-    QPointF pf = invTransform(p);
-    if (d->mPolygon.size() > 1) {
-        // 这里要检测pf是否和第一个点接近，如果接近，就相当于闭合多边形
-        QPoint firstScreenPos = transform(d->mPolygon.first()).toPoint();
-        if (PrivateData::isPointClose(p, firstScreenPos, 5)) {
-            completeRegion();
-            // 结束
-            return true;
+    if (Qt::LeftButton == e->button()) {
+        if (!d->mIsStartDrawRegion) {
+            d->mIsStartDrawRegion = true;
+            d->createTmpItem();
         }
-    }
-    d->mPolygon.append(pf);
-    if (d->mTmpItem) {
-        d->mTmpItem->setPolygon(d->mPolygon);
-    }
-    if (firstBegin) {
-        Q_EMIT beginEdit();
+        QPointF pf = invTransform(p);
+        if (d->mPolygon.size() > 1) {
+            // 这里要检测pf是否和第一个点接近，如果接近，就相当于闭合多边形
+            QPoint firstScreenPos = transform(d->mPolygon.first()).toPoint();
+            if (PrivateData::isPointClose(p, firstScreenPos, 5)) {
+                completeRegion();
+                // 结束
+                return true;
+            }
+        }
+
+        d->mPolygon.append(pf);
+        if (d->mTmpItem) {
+            d->mTmpItem->setPolygon(d->mPolygon);
+        }
+        if (firstBegin) {
+            Q_EMIT beginEdit();
+        }
+    } else if (Qt::RightButton == e->button()) {
+        // 右键取消上个点击点
+        if (d->mPolygon.size() > 0) {
+            d->mPolygon.pop_back();
+            if (d->mTmpItem) {
+                d->mTmpItem->setPolygon(d->mPolygon);
+            }
+        }
     }
     return true;
 }
 
 bool DAChartPolygonRegionSelectEditor::mouseMoveEvent(const QMouseEvent* e)
 {
-    // if (!d_ptr->mIsStartDrawRegion) {
-    //     return false;
-    // }
-    // if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
-    //     return false;
-    // }
-    // QPoint p      = e->pos();
-    // QPointF pf    = invTransform(p);
-    // QPolygonF tmp = d_ptr->mPolygon;
-    // tmp.append(pf);
-    // if (d_ptr->mTmpItem) {
-    //     d_ptr->mTmpItem->setPolygon(tmp);
-    // }
+    if (!d_ptr->mIsStartDrawRegion) {
+        return false;
+    }
+    if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
+        return false;
+    }
+    QPoint p      = e->pos();
+    QPointF pf    = invTransform(p);
+    QPolygonF tmp = d_ptr->mPolygon;
+    tmp.append(pf);
+    if (d_ptr->mTmpItem) {
+        d_ptr->mTmpItem->setPolygon(tmp);
+    }
     return DAAbstractRegionSelectEditor::mouseMoveEvent(e);  // 把移动的事件继续传递下去
 }
 

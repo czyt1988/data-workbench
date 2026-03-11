@@ -6,6 +6,7 @@
 #include <QPointer>
 class QwtFigure;
 class QMouseEvent;
+class QKeyEvent;
 namespace DA
 {
 class DAAbstractChartEditor;
@@ -41,6 +42,7 @@ protected:
     void mouseMoveEvent(QMouseEvent* me) override;
     void mouseReleaseEvent(QMouseEvent* me) override;
     void mousePressEvent(QMouseEvent* me) override;
+    void keyPressEvent(QKeyEvent* ke) override;
 };
 
 }
