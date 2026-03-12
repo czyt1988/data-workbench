@@ -46,6 +46,9 @@ public:
         RectSelectEditor,
         EllipseSelectEditor,
         PolygonSelectEditor,
+        HLineMarker,
+        VLineMarker,
+        CrossMarker,
         BuilinEditorCount,
         UserDefineEditor = 1000
     };

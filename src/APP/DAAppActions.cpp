@@ -171,10 +171,22 @@ void DAAppActions::buildChartAction()
     actionChartEditorPolygonSelector = createAction(
         "actionChartEditorPolygonSelector", ":/app/bright/Icon/chart-selector-polygon.svg", true, false, actionGroupChartEditor
     );
+    actionChartEditorAddCrossMarker = createAction(
+        "actionChartEditorAddCrossMarker", ":/app/bright/Icon/chart-corss-marker.svg", true, false, actionGroupChartEditor
+    );
+    actionChartEditorAddHLineMarker = createAction(
+        "actionChartEditorAddHLineMarker", ":/app/bright/Icon/chart-hline-marker.svg", true, false, actionGroupChartEditor
+    );
+    actionChartEditorAddVLineMarker = createAction(
+        "actionChartEditorAddVLineMarker", ":/app/bright/Icon/chart-vline-marker.svg", true, false, actionGroupChartEditor
+    );
     actionChartEditorResizeSubChart->setData(static_cast< int >(DAFigureWidget::SubChartEditor));
     actionChartEditorRectSelector->setData(static_cast< int >(DAFigureWidget::RectSelectEditor));
     actionChartEditorEllipseSelector->setData(static_cast< int >(DAFigureWidget::EllipseSelectEditor));
     actionChartEditorPolygonSelector->setData(static_cast< int >(DAFigureWidget::PolygonSelectEditor));
+    actionChartEditorAddHLineMarker->setData(static_cast< int >(DAFigureWidget::HLineMarker));
+    actionChartEditorAddVLineMarker->setData(static_cast< int >(DAFigureWidget::VLineMarker));
+    actionChartEditorAddCrossMarker->setData(static_cast< int >(DAFigureWidget::CrossMarker));
 }
 
 void DAAppActions::buildViewAction()
@@ -394,10 +406,18 @@ void DAAppActions::retranslateUi()
     actionChartEnableLegend->setText(tr("legend"));                             // cn:图例
     actionCopyFigureInClipboard->setText(tr("Copy To Clipboard"));              // cn:复制到剪切板
 
-    actionChartEditorRectSelector->setText(tr("Rect Selector"));        // cn:矩形选框
-    actionChartEditorEllipseSelector->setText(tr("Ellipse Selector"));  // cn:椭圆选框
-    actionChartEditorPolygonSelector->setText(tr("Polygon Selector"));  // cn:多边形选框
-
+    actionChartEditorRectSelector->setText(tr("Add Rect"));                                // cn:添加矩形
+    actionChartEditorRectSelector->setToolTip(tr("Add a rectangle to the chart"));         // cn:添加矩形
+    actionChartEditorEllipseSelector->setText(tr("Add Ellipse"));                          // cn:添加椭圆
+    actionChartEditorEllipseSelector->setToolTip(tr("Add an ellipse to the chart"));       // cn:添加椭圆
+    actionChartEditorPolygonSelector->setText(tr("Add Polygon"));                          // cn:添加多边形
+    actionChartEditorPolygonSelector->setToolTip(tr("Add a polygon to the chart"));        // cn:添加多边形
+    actionChartEditorAddCrossMarker->setText(tr("Add Cross Marker"));                      // cn:添加十字
+    actionChartEditorAddCrossMarker->setToolTip(tr("Add a cross marker to the chart"));    // cn:添加十字标记
+    actionChartEditorAddHLineMarker->setText(tr("Add H Line Marker"));                     // cn:添加水平线
+    actionChartEditorAddHLineMarker->setToolTip(tr("Add an H line marker to the chart"));  // cn:添加水平线
+    actionChartEditorAddVLineMarker->setText(tr("Add V Line Marker"));                     // cn:添加垂直线
+    actionChartEditorAddVLineMarker->setToolTip(tr("Add a V line marker to the chart"));   // cn:添加垂直标记
     // 数据操作的上下文标签 Data Operate Context Category
     actionRemoveRow->setText(tr("Remove Row"));                  // cn:删除行
     actionRemoveColumn->setText(tr("Remove Column"));            // cn:删除列
