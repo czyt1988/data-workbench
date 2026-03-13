@@ -722,6 +722,10 @@ bool DAFigureWidget::isChartEditorActive() const
     return (d_ptr->m_chartEditor != nullptr);
 }
 
+/**
+ * @brief 开启图表编辑器
+ * @param type 编辑器类型
+ */
 void DAFigureWidget::beginChartEditor(ChartEditorType type)
 {
     DA_D(d);
@@ -747,6 +751,9 @@ void DAFigureWidget::beginChartEditor(ChartEditorType type)
     }
 }
 
+/**
+ * @brief 关闭图表编辑器
+ */
 void DAFigureWidget::endChartEditor()
 {
     DA_D(d);
@@ -756,6 +763,7 @@ void DAFigureWidget::endChartEditor()
         d->m_chartEditor = nullptr;
     }
 }
+
 
 QRectF DAFigureWidget::axesNormRect(QwtPlot* plot) const
 {

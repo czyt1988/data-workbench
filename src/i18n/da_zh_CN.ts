@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+342"/>
+        <location filename="../APP/DAAppActions.cpp" line="+354"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -183,13 +183,28 @@
     </message>
     <message>
         <location line="+1"/>
+        <source>Save file or project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Save As</source>
         <translation>另存为</translation>
     </message>
     <message>
         <location line="+1"/>
+        <source>Save file or project as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Append To Project</source>
         <translation>追加到工程</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Append file or project to current project</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
@@ -198,8 +213,18 @@
     </message>
     <message>
         <location line="+1"/>
+        <source>Rename columns in the selected table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Setting</source>
         <translation>设置</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Setting for the application</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -207,11 +232,21 @@
         <translation>关于</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>About the application</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>Add 
 Data</source>
         <translation>添加
 数据</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add data to the table</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -221,11 +256,21 @@ Data</source>
 数据</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
+        <source>Remove data from the table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Add 
 Figure</source>
         <translation>添加
 绘图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a figure to the workspace</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -236,10 +281,20 @@ Chart</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Resize the sub-chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>New 
 XY Axis</source>
         <translation>新建
 坐标系</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a new XY axis to the figure</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -249,9 +304,19 @@ Curve</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add a curve to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 Scatter</source>
         <translation>散点图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a scatter plot to the chart</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -261,9 +326,19 @@ Error Bar</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add an error bar to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 Box Plot</source>
         <translation>箱线图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a box plot to the chart</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -273,9 +348,19 @@ Bar</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add a bar chart to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 MultiBar</source>
         <translation>多重柱状图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a multi-bar chart to the chart</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -285,9 +370,19 @@ Histogram</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add a histogram to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 Contour Map</source>
         <translation>等高线图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a contour map to the chart</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -297,9 +392,19 @@ Cloud Map</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add a cloud map to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 Vector Field</source>
         <translation>向量场图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a vector field to the chart</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
@@ -319,8 +424,18 @@ Vector Field</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable grid in the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>X Grid</source>
         <translation>横向网格</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable X grid in the chart</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -329,8 +444,18 @@ Vector Field</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable Y grid in the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Xmin Grid</source>
         <translation>横向密集网格</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable Xmin grid in the chart</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -339,15 +464,40 @@ Vector Field</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable Ymin grid in the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Zoom</source>
         <translation>缩放</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+1"/>
+        <source>Enable or disable zoom in the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Zoom in on the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Zoom out of the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Show 
 All</source>
         <translation>显示
 全部</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Zoom to show all data in the chart</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -356,8 +506,18 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable pan in the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Cross</source>
         <translation>十字标记</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable cross picker in the chart</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -371,8 +531,18 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Set picker text at canvas left top corner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>At Canvas Left Bottom</source>
         <translation>在画布左下</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Set picker text at canvas left bottom corner</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -381,7 +551,17 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Set picker text at canvas right top corner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Y Picker Show X Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable X value display for Y picker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -391,8 +571,18 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Set picker text at canvas right bottom corner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Follow Mouse</source>
         <translation>跟随鼠标</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Set picker text to follow mouse cursor</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -401,7 +591,17 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable XY picker in the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Link All Picker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable all picker linked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -411,108 +611,73 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable legend in the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Copy To Clipboard</source>
         <translation>复制到
 剪切板</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Rect Selector</source>
+        <location line="+122"/>
+        <source>Undo the last action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Ellipse Selector</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Polygon Selector</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="-104"/>
         <source>Remove Row</source>
         <translation>删除行</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Remove Column</source>
         <translation>删除列</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Remove Cell</source>
         <translation>删除单元格</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Insert 
 Row</source>
         <translation>插入
 行</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Insert Row(Above)</source>
         <translation>插入行(上)</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Insert 
 Column</source>
         <translation>插入
 列(右)</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Insert Column(Left)</source>
         <translation>插入列(左)</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>to num</source>
-        <translation>转换为数值</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>cast to num type</source>
-        <translation>转换为数值类型</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>to str</source>
-        <translation>转换为文本</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>cast to string type</source>
-        <translation>转换为字符串类型</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>to datetime</source>
-        <translation>转换为日期</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>cast to datetime type</source>
-        <translation>转换为日期类型</translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+9"/>
         <source>To Index</source>
         <translation>转换为索引</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>New 
 Workflow</source>
         <translation>新建
 工作流</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Linkage 
 Move</source>
         <translation>联动</translation>
@@ -528,113 +693,107 @@ Move</source>
         <translation>分组</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>ungroup</source>
         <translation>取消分组</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Draw 
 Rect</source>
         <translation>绘制
 矩形</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Draw 
 Text</source>
         <translation>绘制
 文本</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Show 
 Grid</source>
         <translation>显示
 网格</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Lock 
 View</source>
         <translation>锁定
 视图</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>Terminate 
 Workflow</source>
         <translation>结束</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Link</source>
         <translation>连线</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+11"/>
         <source>Export To Image</source>
         <translation>导出为图片</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Export To PNG</source>
         <translation>导出PNG</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Show Marker</source>
         <translation>显示标记</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>Show 
 Workflow Area</source>
         <translation>工作流
 操作视图</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Show 
 Workflow Manager</source>
         <translation>工作流
 管理视图</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>Show 
 Chart Manager</source>
         <translation>绘图
 管理视图</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>Show 
 Data Manager</source>
         <translation>数据
 管理视图</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+6"/>
         <source>Show Left 
 Side Bar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Show Righ 
-Side Bar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>Plugin 
 Config</source>
         <translation>插件
 设置</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Office 2013 theme</source>
         <translation>Office 2013主题</translation>
     </message>
@@ -654,28 +813,218 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-75"/>
+        <location line="-140"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
     <message>
-        <location line="-1"/>
+        <location line="-2"/>
         <source>Zoom In</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location line="+30"/>
+        <source>Copy the figure to the clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Add Rect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a rectangle to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Ellipse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add an ellipse to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Polygon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a polygon to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Cross Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a cross marker to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add H Line Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add an H line marker to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add V Line Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a V line marker to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Remove a row from the table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Remove a column from the table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Remove a cell from the table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Insert a row into the table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Insert a row above the current row</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Insert a column to the right of the current column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Insert a column to the left of the current column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>To num</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cast to num type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>To str</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cast to string type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>To datetime</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cast to datetime type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Cast to index type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Create a new workflow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Group selected elements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Ungroup selected elements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Draw a rectangle on the workflow scene</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Draw text on the workflow scene</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Show grid on the workflow scene</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Lock the workflow view</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Run 
 Workflow</source>
         <translation>运行
 工作流</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+1"/>
+        <source>Run the workflow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Terminate the workflow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Enable or disable link between elements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 Background</source>
         <translation>添加
 背景</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a background pixmap to the workflow scene</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -684,27 +1033,87 @@ Background</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Lock the background pixmap in the workflow scene</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Move With Background</source>
         <translation>元件随背景移动</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+1"/>
+        <source>Enable or disable item move with background pixmap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Export the workflow scene to an image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Export the workflow scene to a PNG image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Show marker on the workflow scene</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Show the workflow area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Show the workflow manager area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Show 
 Chart Area</source>
         <translation>绘图
 操作视图</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Show the chart area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
+        <source>Show the chart manager area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Show 
 Table Area</source>
         <translation>数据
 操作区域</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Show the data area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
+        <source>Show the data manager area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Show Infomation Window</source>
         <translation>信息窗口</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the message log window</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -712,9 +1121,40 @@ Table Area</source>
         <translation>设置窗口</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+1"/>
+        <source>Show the setting window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Show the left side bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show Right 
+Side Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the right side bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Show the plugin manager</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Redo</source>
         <translation>重做</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Redo the last action</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1131,13 +1571,13 @@ Table Area</source>
     <message>
         <location line="+1"/>
         <location line="+19"/>
-        <location line="+88"/>
+        <location line="+91"/>
         <location line="+189"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-295"/>
+        <location line="-298"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
@@ -1150,96 +1590,96 @@ Table Area</source>
     <message>
         <location line="+3"/>
         <location line="+21"/>
-        <location line="+346"/>
+        <location line="+339"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-366"/>
+        <location line="-359"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+184"/>
+        <location line="+187"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-183"/>
-        <location line="+185"/>
+        <location line="-186"/>
+        <location line="+188"/>
         <source>Operate</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location line="-184"/>
-        <location line="+187"/>
+        <location line="-187"/>
+        <location line="+190"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-186"/>
+        <location line="-189"/>
         <location line="+2"/>
-        <location line="+197"/>
+        <location line="+200"/>
         <location line="+6"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-199"/>
+        <location line="-202"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+289"/>
+        <location line="+292"/>
         <source>Workflow Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-288"/>
-        <location line="+293"/>
+        <location line="-291"/>
+        <location line="+296"/>
         <source>ClipBoard</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-292"/>
-        <location line="+297"/>
+        <location line="-295"/>
+        <location line="+300"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-296"/>
-        <location line="+305"/>
+        <location line="-299"/>
+        <location line="+308"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-304"/>
-        <location line="+309"/>
+        <location line="-307"/>
+        <location line="+312"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-306"/>
-        <location line="+387"/>
+        <location line="-309"/>
+        <location line="+380"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-386"/>
-        <location line="+389"/>
+        <location line="-379"/>
+        <location line="+382"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-387"/>
-        <location line="+234"/>
+        <location line="-380"/>
+        <location line="+237"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-233"/>
+        <location line="-236"/>
         <location line="+5"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
@@ -1256,18 +1696,29 @@ Table Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+453"/>
+        <location line="+4"/>
+        <location line="+442"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-451"/>
+        <location line="-444"/>
         <source>Chart Setting</source>
         <translation type="unfinished">绘图设置</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Figure Theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Select Tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Chart Assist Tool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1297,7 +1748,7 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="+381"/>
+        <location line="+371"/>
         <location line="+2"/>
         <source>Chart Operate</source>
         <translation type="unfinished">绘图操作</translation>
@@ -1309,31 +1760,26 @@ Table Area</source>
     </message>
     <message>
         <location line="+16"/>
-        <source>Select</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
         <source>Select Operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>Assist Tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+12"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
     <message>
-        <location line="-167"/>
+        <location line="-158"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+18"/>
         <source>Workflow View</source>
         <translation>显示</translation>
     </message>
@@ -1343,7 +1789,7 @@ Table Area</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location line="-410"/>
+        <location line="-403"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
@@ -2570,7 +3016,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+641"/>
+        <location line="+645"/>
         <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5180,7 +5626,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-672"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-676"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>

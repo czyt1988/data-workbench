@@ -42,15 +42,15 @@ public:
      */
     enum ChartEditorType
     {
-        SubChartEditor = 0,
-        RectSelectEditor,
-        EllipseSelectEditor,
-        PolygonSelectEditor,
-        HLineMarker,
-        VLineMarker,
-        CrossMarker,
-        BuilinEditorCount,
-        UserDefineEditor = 1000
+        SubChartEditor = 0,      ///< 子图编辑器
+        RectSelectEditor,        ///< 矩形选择编辑器
+        EllipseSelectEditor,     ///< 椭圆选择编辑器
+        PolygonSelectEditor,     ///< 多边形选择编辑器
+        HLineMarker,             ///< 水平线标记
+        VLineMarker,             ///< 垂直线标记
+        CrossMarker,             ///< 交叉标记
+        BuilinEditorCount,       ///< 内置编辑器数量
+        UserDefineEditor = 1000  ///< 用户自定义编辑器
     };
     Q_ENUM(ChartEditorType)
 
@@ -59,9 +59,9 @@ public:
      */
     enum ChartEditorStatus
     {
-        EndEdit   = 0,
-        BeginEdit = 1,
-        UnknowEditStatus
+        EndEdit   = 0,    ///< 结束编辑
+        BeginEdit = 1,    ///< 开始编辑
+        UnknowEditStatus  ///< 未知编辑状态
     };
     Q_ENUM(ChartEditorStatus)
 public:

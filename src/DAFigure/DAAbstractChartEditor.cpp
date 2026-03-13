@@ -3,7 +3,7 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include <QDebug>
-
+#include "DAChartWidget.h"
 namespace DA
 {
 DAAbstractChartEditor::DAAbstractChartEditor(QwtPlot* parent) : QObject(parent), m_isEnable(false)
@@ -22,6 +22,16 @@ const QwtPlot* DAAbstractChartEditor::plot() const
 QwtPlot* DAAbstractChartEditor::plot()
 {
     return qobject_cast< QwtPlot* >(parent());
+}
+
+const DAChartWidget* DAAbstractChartEditor::chart() const
+{
+    return qobject_cast< const DAChartWidget* >(plot());
+}
+
+DAChartWidget* DAAbstractChartEditor::chart()
+{
+    return qobject_cast< DAChartWidget* >(plot());
 }
 
 void DAAbstractChartEditor::setEnabled(bool on)

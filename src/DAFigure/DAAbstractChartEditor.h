@@ -3,8 +3,10 @@
 #include "DAFigureAPI.h"
 #include <QObject>
 #include "qwt_plot.h"
+
 namespace DA
 {
+class DAChartWidget;
 
 /**
  * @brief 绘图编辑器
@@ -29,6 +31,8 @@ public:
 
     const QwtPlot* plot() const;
     QwtPlot* plot();
+    const DAChartWidget* chart() const;
+    DAChartWidget* chart();
     // 是否启用编辑器
     virtual void setEnabled(bool on);
     virtual bool isEnabled() const;
