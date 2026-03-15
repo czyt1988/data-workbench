@@ -1,4 +1,7 @@
 ﻿#include "DAFigureWidget.h"
+// stl
+#include <functional>
+// Qt
 #include <QApplication>
 #include <QMessageBox>
 #include <QGridLayout>
@@ -32,6 +35,7 @@
 #include "DAChartSelectRegionShapeItem.h"
 #include "DAChartEllipseRegionSelectEditor.h"
 #include "DAChartPolygonRegionSelectEditor.h"
+#include "DAChartItemCreatInteractor.h"
 // qwt
 #include "qwt_figure.h"
 #include "qwt_figure_layout.h"
@@ -84,49 +88,92 @@ public:
         }
         return nullptr;
     }
-    void beginSubChartEditor();
 
-    template< typename EditorType >
-    void beginSelectEditor()
+    // 嵌套类定义（在类作用域，允许模板）
+    template< typename EditorType, typename... Args >
+    struct EditorFactory
     {
-        DAFigureWidget* fig = q_ptr;
-        auto fun            = [ fig ](QwtPlot* plot) -> DAAbstractChartEditor* {
-            EditorType* editor = new EditorType(plot);
-            DAFigureWidget::connect(editor, &EditorType::beginEdit, fig, [ fig ]() { fig->emitChartEditorBeginEdit(); });
-            DAFigureWidget::connect(editor, &EditorType::finishedEdit, fig, [ fig, editor, plot ](bool isCancel) {
-                if (isCancel) {
+        DAFigureWidget* fig;
+        std::tuple< std::decay_t< Args >... > args;
+
+        EditorFactory(DAFigureWidget* f, Args&&... a) : fig(f), args(std::forward< Args >(a)...)
+        {
+        }
+
+        DAAbstractChartEditor* create(QwtPlot* plot)
+        {
+            return createImpl(plot, std::index_sequence_for< Args... > {});
+        }
+
+    private:
+        template< std::size_t... I >
+        EditorType* createImpl(QwtPlot* plot, std::index_sequence< I... >)
+        {
+            EditorType* editor = new EditorType(plot, std::get< I >(std::move(args))...);
+
+            // 信号连接 - 使用 fig 而不是 this
+            DAFigureWidget::connect(editor, &EditorType::beginEdit, fig, [ fig = this->fig ]() {
+                fig->emitChartEditorBeginEdit();
+            });
+
+            DAFigureWidget::connect(editor, &EditorType::finishedEdit, fig, [ fig = this->fig, editor, plot ](bool isCancel) {
+                if (isCancel)
                     return;
-                }
-                DAChartSelectRegionShapeItem* item = editor->takeItem();
+
+                QwtPlotItem* item = editor->takeItem();
                 if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(plot)) {
                     fig->addItem_(chart, item, true);
                 } else {
-                    qCritical() << tr(
+                    qCritical() << QObject::tr(
                         "Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
-                                   "type was added to the figure"
+                        "type was added to the figure"
                     );
                     item->detach();
                     delete item;
                 }
                 fig->emitChartEditorFinishEdit();
             });
-            return editor;
-        };
 
-        m_chartEditor = new DAFigureChartEditorWidgetOverlay(fig->figure(), fun);
-        m_chartEditor->setEnabled(true);
-        m_chartEditor->show();
-        m_chartEditor->raise();
+            return editor;
+        }
+    };
+
+    /**
+     * @brief 开始选择编辑器
+     *
+     * @tparam EditorType 选择编辑器类型
+     * @param 可变参数，为EditorType构造时传入的可变参数
+     */
+    template< typename EditorType, typename... Args >
+    DAFigureChartEditorWidgetOverlay* beginSelectEditor(Args&&... args)
+    {
+        DAFigureWidget* fig = q_ptr;
+
+        // 修正：显式指定模板参数
+        EditorFactory< EditorType, Args... > factory(fig, std::forward< Args >(args)...);
+
+        auto fun = [ factory ](QwtPlot* plot) mutable -> DAAbstractChartEditor* { return factory.create(plot); };
+
+        DAFigureChartEditorWidgetOverlay* figEditor = new DAFigureChartEditorWidgetOverlay(fig->figure(), fun);
+        figEditor->setEnabled(true);
+        figEditor->show();
+
         DAFigureWidget::connect(
-            m_chartEditor, &DAFigureChartEditorWidgetOverlay::finished, q_ptr, &DAFigureWidget::onFigureChartEditorFinished
+            figEditor, &DAFigureChartEditorWidgetOverlay::finished, q_ptr, &DAFigureWidget::onFigureChartEditorFinished
         );
         DAFigureWidget::connect(
-            m_chartEditor, &DAFigureWidgetOverlay::activeWidgetChanged, q_ptr, &DAFigureWidget::onOverlayActiveWidgetChanged
+            figEditor, &DAFigureWidgetOverlay::activeWidgetChanged, q_ptr, &DAFigureWidget::onOverlayActiveWidgetChanged
         );
+        return figEditor;
     }
+
+    void beginSubChartEditor();
     void beginRectSelectEditor();
     void beginEllipseSelectEditor();
     void beginPolygonSelectEditor();
+    void beginHLineMarkerEditor();
+    void beginVLineMarkerEditor();
+    void beginCrossLineMarkerEditor();
 };
 
 void DAFigureWidget::PrivateData::beginSubChartEditor()
@@ -146,17 +193,32 @@ void DAFigureWidget::PrivateData::beginSubChartEditor()
 
 void DAFigureWidget::PrivateData::beginRectSelectEditor()
 {
-    beginSelectEditor< DAChartRectRegionSelectEditor >();
+    m_chartEditor = beginSelectEditor< DAChartRectRegionSelectEditor >();
 }
 
 void DAFigureWidget::PrivateData::beginEllipseSelectEditor()
 {
-    beginSelectEditor< DAChartEllipseRegionSelectEditor >();
+    m_chartEditor = beginSelectEditor< DAChartEllipseRegionSelectEditor >();
 }
 
 void DAFigureWidget::PrivateData::beginPolygonSelectEditor()
 {
-    beginSelectEditor< DAChartPolygonRegionSelectEditor >();
+    m_chartEditor = beginSelectEditor< DAChartPolygonRegionSelectEditor >();
+}
+
+void DAFigureWidget::PrivateData::beginHLineMarkerEditor()
+{
+    m_chartEditor = beginSelectEditor< DAChartItemCreatInteractor >(createHLineMarkerPlotItem);
+}
+
+void DAFigureWidget::PrivateData::beginVLineMarkerEditor()
+{
+    m_chartEditor = beginSelectEditor< DAChartItemCreatInteractor >(createVLineMarkerPlotItem);
+}
+
+void DAFigureWidget::PrivateData::beginCrossLineMarkerEditor()
+{
+    m_chartEditor = beginSelectEditor< DAChartItemCreatInteractor >(createCrossLineMarkerPlotItem);
 }
 
 //===================================================
@@ -744,6 +806,15 @@ void DAFigureWidget::beginChartEditor(ChartEditorType type)
         break;
     case PolygonSelectEditor:
         d->beginPolygonSelectEditor();
+        break;
+    case HLineMarker:
+        d->beginHLineMarkerEditor();
+        break;
+    case VLineMarker:
+        d->beginVLineMarkerEditor();
+        break;
+    case CrossMarker:
+        d->beginCrossLineMarkerEditor();
         break;
     default:
         qWarning() << tr("Unsupported chart editor type: %1").arg(type);

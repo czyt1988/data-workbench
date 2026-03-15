@@ -29,7 +29,7 @@ public:
     // 取消
     virtual bool cancel() override;
     // 获取选框绘制的item
-    DAChartSelectRegionShapeItem* takeItem();
+    virtual QwtPlotItem* takeItem() override;
 private slots:
     void onItemAttached(QwtPlotItem* item, bool on);
 

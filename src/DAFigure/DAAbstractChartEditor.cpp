@@ -4,6 +4,8 @@
 #include <QKeyEvent>
 #include <QDebug>
 #include "DAChartWidget.h"
+#include "qwt_plot.h"
+#include "qwt_scale_map.h"
 namespace DA
 {
 DAAbstractChartEditor::DAAbstractChartEditor(QwtPlot* parent) : QObject(parent), m_isEnable(false)
@@ -80,6 +82,23 @@ void DAAbstractChartEditor::setBlockKeys(const QList< int >& keys)
 const QList< int >& DAAbstractChartEditor::getBlockKeys() const
 {
     return m_blockKeys;
+}
+
+
+/**
+ * @brief 把plot点映射到canvas上
+ * @param pos
+ * @return
+ */
+QPoint DAAbstractChartEditor::mapPlotPosToCanvasPos(const QPoint& pos) const
+{
+    const QwtPlot* p      = plot();
+    const QWidget* canvas = p->canvas();
+    if (!canvas) {
+        return pos;
+    }
+    QPoint gp = p->mapToGlobal(pos);
+    return canvas->mapFromGlobal(gp);
 }
 
 bool DAAbstractChartEditor::eventFilter(QObject* object, QEvent* event)
@@ -174,5 +193,28 @@ bool DAAbstractChartEditor::keyReleaseEvent(const QKeyEvent* e)
 {
     Q_UNUSED(e);
     return false;
+}
+
+
+QPointF DAAbstractChartEditor::invTransform(const QPointF& pos) const
+{
+    const QwtPlot* gca = plot();
+    if (!gca) {
+        return pos;
+    }
+    QwtScaleMap xMap = gca->canvasMap(gca->visibleXAxisId());
+    QwtScaleMap yMap = gca->canvasMap(gca->visibleYAxisId());
+    return QPointF(xMap.invTransform(pos.x()), yMap.invTransform(pos.y()));
+}
+
+QPointF DAAbstractChartEditor::transform(const QPointF& pos) const
+{
+    const QwtPlot* gca = plot();
+    if (!gca) {
+        return pos;
+    }
+    QwtScaleMap xMap = gca->canvasMap(gca->visibleXAxisId());
+    QwtScaleMap yMap = gca->canvasMap(gca->visibleYAxisId());
+    return QPointF(xMap.transform(pos.x()), yMap.transform(pos.y()));
 }
 }  // End Of Namespace DA

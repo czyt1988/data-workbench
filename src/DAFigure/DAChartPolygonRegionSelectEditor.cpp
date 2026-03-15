@@ -83,23 +83,23 @@ int DAChartPolygonRegionSelectEditor::rtti() const
     return RTTIPolygonRegionSelectEditor;
 }
 
-void DA::DAChartPolygonRegionSelectEditor::clear()
+void DAChartPolygonRegionSelectEditor::clear()
 {
     d_ptr->releaseTmpItem();
     d_ptr->mPolygon         = QPolygonF();
     d_ptr->mLastPainterPath = QPainterPath();
 }
 
-bool DA::DAChartPolygonRegionSelectEditor::cancel()
+bool DAChartPolygonRegionSelectEditor::cancel()
 {
     clear();
     return true;
 }
 
-DAChartSelectRegionShapeItem* DA::DAChartPolygonRegionSelectEditor::takeItem()
+QwtPlotItem* DAChartPolygonRegionSelectEditor::takeItem()
 {
-    DAChartSelectRegionShapeItem* item = d_ptr->mTmpItem;
-    d_ptr->mTmpItem                    = nullptr;
+    QwtPlotItem* item = d_ptr->mTmpItem;
+    d_ptr->mTmpItem   = nullptr;
     return item;
 }
 

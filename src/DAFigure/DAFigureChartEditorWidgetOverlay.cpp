@@ -150,6 +150,15 @@ QRect DAFigureChartEditorWidgetOverlay::mapRectTo(const QWidget* sourceWidget, c
     return QRect(topLeftTarget, bottomRightTarget);
 }
 
+/**
+ * @brief 获取图表编辑器
+ * @return 图表编辑器
+ */
+DAAbstractChartEditor* DA::DAFigureChartEditorWidgetOverlay::getChartEditor() const
+{
+    return d_ptr->m_activeEditor;
+}
+
 void DAFigureChartEditorWidgetOverlay::onActiveWidgetChanged(QWidget* oldActive, QWidget* newActive)
 {
     DA_D(d);
@@ -272,10 +281,10 @@ void DAFigureChartEditorWidgetOverlay::mousePressEvent(QMouseEvent* me)
     }
     if (d->m_activeEditor) {
         // 这里要把第一个点击传递过去
-        QPoint plotPos = d_ptr->mapMousePosToPlotCanvas();
+        QPoint canvasPos = d_ptr->mapMousePosToPlotCanvas();
         // 把事件传递给editor
         QMouseEvent mappedEvent(
-            QEvent::MouseButtonPress, plotPos, plotPos, me->globalPosition().toPoint(), me->button(), me->buttons(), me->modifiers()
+            QEvent::MouseButtonPress, canvasPos, canvasPos, me->globalPosition().toPoint(), me->button(), me->buttons(), me->modifiers()
         );
         d->m_activeEditor->mousePressEvent(&mappedEvent);
         grabMouse();

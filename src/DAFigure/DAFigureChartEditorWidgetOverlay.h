@@ -45,6 +45,8 @@ public:
     FpActiveChartCanvasPainter getActiveChartCanvasPainter() const;
     // 将源Widget的rect映射到目标Widget的坐标系
     static QRect mapRectTo(const QWidget* sourceWidget, const QWidget* targetWidget, const QRect& sourceRect);
+    // 获取图表编辑器
+    DAAbstractChartEditor* getChartEditor() const;
 private Q_SLOTS:
     void onActiveWidgetChanged(QWidget* oldActive, QWidget* newActive);
     void onEditorFinished(bool isCancel);

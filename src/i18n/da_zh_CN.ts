@@ -3011,12 +3011,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+104"/>
-        <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+645"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+820"/>
         <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5626,7 +5621,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-676"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-743"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
@@ -7714,6 +7709,26 @@ To Excel</source>
         <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-297"/>
         <source>%1.%2,size:%3</source>
         <translation>%1.%2,长度:%3</translation>
+    </message>
+    <message>
+        <location filename="../DAFigure/DAChartItemCreatInteractor.cpp" line="+111"/>
+        <source>Horizontal Vertical Line Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Vertical Line Marker</source>
+        <translation type="unfinished">垂直线标记</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Cross Line Marker</source>
+        <translation type="unfinished">十字线标记</translation>
+    </message>
+    <message>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+50"/>
+        <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

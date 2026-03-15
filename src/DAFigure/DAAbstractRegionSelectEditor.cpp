@@ -75,46 +75,6 @@ void DAAbstractRegionSelectEditor::setAxis(int xAxis, int yAxis)
 }
 
 ///
-/// \brief 屏幕坐标转换为数据坐标
-/// \param pos
-/// \return
-///
-QPointF DAAbstractRegionSelectEditor::invTransform(const QPointF& pos) const
-{
-    QwtScaleMap xMap = plot()->canvasMap(getXAxis());
-    QwtScaleMap yMap = plot()->canvasMap(getYAxis());
-
-    return QPointF(xMap.invTransform(pos.x()), yMap.invTransform(pos.y()));
-}
-///
-/// \brief 数据坐标转换为屏幕坐标
-/// \param pos
-/// \return
-///
-QPointF DAAbstractRegionSelectEditor::transform(const QPointF& pos) const
-{
-    QwtScaleMap xMap = plot()->canvasMap(getXAxis());
-    QwtScaleMap yMap = plot()->canvasMap(getYAxis());
-    return QwtScaleMap::transform(xMap, yMap, pos);
-}
-
-/**
- * @brief 把plot点映射到canvas上
- * @param pos
- * @return
- */
-QPoint DAAbstractRegionSelectEditor::mapPlotPosToCanvasPos(const QPoint& pos) const
-{
-    const QwtPlot* p      = plot();
-    const QWidget* canvas = p->canvas();
-    if (!canvas) {
-        return pos;
-    }
-    QPoint gp = p->mapToGlobal(pos);
-    return canvas->mapFromGlobal(gp);
-}
-
-///
 /// \brief 把当前区域转换为其它轴系
 /// \param axisX
 /// \param axisY

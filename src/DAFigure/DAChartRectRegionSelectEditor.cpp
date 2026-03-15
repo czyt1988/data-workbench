@@ -25,6 +25,18 @@ public:
     {
         releaseTmpItem();
     }
+    /**
+     * @brief 清除临时项
+     *
+     * 不释放临时项的内存，只是清除指针
+     */
+    void clearTmpItem()
+    {
+        m_tmpItem = nullptr;
+    }
+    /**
+     * @brief 释放临时项
+     */
     void releaseTmpItem()
     {
         if (m_tmpItem) {
@@ -161,12 +173,13 @@ bool DAChartRectRegionSelectEditor::cancel()
  * @brief 获取选框对应的item
  * @return
  */
-DAChartSelectRegionShapeItem* DAChartRectRegionSelectEditor::takeItem()
+QwtPlotItem* DAChartRectRegionSelectEditor::takeItem()
 {
     DAChartSelectRegionShapeItem* item = d_ptr->m_tmpItem;
     d_ptr->m_tmpItem                   = nullptr;
     return item;
 }
+
 
 ///
 /// \brief 处理按钮事件

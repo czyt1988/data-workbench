@@ -88,16 +88,16 @@ void DAChartEllipseRegionSelectEditor::clear()
     d_ptr->mLastPainterPath = QPainterPath();
 }
 
-bool DA::DAChartEllipseRegionSelectEditor::cancel()
+bool DAChartEllipseRegionSelectEditor::cancel()
 {
     clear();
     return true;
 }
 
-DAChartSelectRegionShapeItem* DA::DAChartEllipseRegionSelectEditor::takeItem()
+QwtPlotItem* DAChartEllipseRegionSelectEditor::takeItem()
 {
-    DAChartSelectRegionShapeItem* item = d_ptr->mTmpItem;
-    d_ptr->mTmpItem                    = nullptr;
+    QwtPlotItem* item = d_ptr->mTmpItem;
+    d_ptr->mTmpItem   = nullptr;
     return item;
 }
 
