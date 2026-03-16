@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+354"/>
+        <location filename="../APP/DAAppActions.cpp" line="+357"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -621,7 +621,17 @@ All</source>
 剪切板</translation>
     </message>
     <message>
-        <location line="+122"/>
+        <location line="+15"/>
+        <source>Add Arrow Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add an arrow marker to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+108"/>
         <source>Undo the last action</source>
         <translation type="unfinished"></translation>
     </message>
@@ -813,7 +823,7 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-140"/>
+        <location line="-142"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
@@ -888,7 +898,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+7"/>
         <source>Remove a row from the table</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1769,12 +1779,12 @@ Side Bar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+13"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
     <message>
-        <location line="-158"/>
+        <location line="-159"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
@@ -3011,7 +3021,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+820"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+830"/>
         <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5621,7 +5631,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-743"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-752"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>

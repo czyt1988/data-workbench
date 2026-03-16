@@ -36,6 +36,7 @@
 #include "DAChartEllipseRegionSelectEditor.h"
 #include "DAChartPolygonRegionSelectEditor.h"
 #include "DAChartItemCreatInteractor.h"
+#include "DAChartArrowEditor.h"
 // qwt
 #include "qwt_figure.h"
 #include "qwt_figure_layout.h"
@@ -174,6 +175,7 @@ public:
     void beginHLineMarkerEditor();
     void beginVLineMarkerEditor();
     void beginCrossLineMarkerEditor();
+    void beginArrowMarkerEditor();
 };
 
 void DAFigureWidget::PrivateData::beginSubChartEditor()
@@ -219,6 +221,11 @@ void DAFigureWidget::PrivateData::beginVLineMarkerEditor()
 void DAFigureWidget::PrivateData::beginCrossLineMarkerEditor()
 {
     m_chartEditor = beginSelectEditor< DAChartItemCreatInteractor >(createCrossLineMarkerPlotItem);
+}
+
+void DAFigureWidget::PrivateData::beginArrowMarkerEditor()
+{
+    m_chartEditor = beginSelectEditor< DAChartArrowEditor >();
 }
 
 //===================================================
@@ -815,6 +822,9 @@ void DAFigureWidget::beginChartEditor(ChartEditorType type)
         break;
     case CrossMarker:
         d->beginCrossLineMarkerEditor();
+        break;
+    case ArrowMarker:
+        d->beginArrowMarkerEditor();
         break;
     default:
         qWarning() << tr("Unsupported chart editor type: %1").arg(type);

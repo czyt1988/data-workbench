@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+354"/>
+        <location filename="../APP/DAAppActions.cpp" line="+357"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -685,6 +685,16 @@ All</source>
     <message>
         <location line="+1"/>
         <source>Add a V line marker to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Arrow Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add an arrow marker to the chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1765,7 +1775,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+13"/>
         <source>Recent Files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2899,7 +2909,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+820"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+830"/>
         <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5500,7 +5510,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-743"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-752"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>

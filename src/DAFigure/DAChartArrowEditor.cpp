@@ -209,61 +209,13 @@ QwtPlotItem* createArrowMarkerPlotItem(QwtPlot* plot, const QPointF& startPoint,
     marker->setValue(endPoint);  // 箭头尖端在终点位置
 
     // 设置标签
-    QString label = QString("Arrow (%1, %2) -> (%3, %4)")
-                        .arg(startPoint.x(), 0, 'f', 2)
-                        .arg(startPoint.y(), 0, 'f', 2)
-                        .arg(endPoint.x(), 0, 'f', 2)
-                        .arg(endPoint.y(), 0, 'f', 2);
+    QString label = QString("Arrow (%1, %2)").arg(startPoint.x(), 0, 'f', 2).arg(startPoint.y(), 0, 'f', 2);
     marker->setLabel(QwtText(label));
     marker->setLabelAlignment(Qt::AlignRight | Qt::AlignTop);
-
-    // 创建线条（从起点到终点）
-    QwtPlotCurve* lineCurve = new QwtPlotCurve();
-    lineCurve->setRenderHint(QwtPlotItem::RenderAntialiased);
-
-    QPen linePen(Qt::red, 1.0);
-    lineCurve->setPen(linePen);
-
-    QVector< QPointF > points;
-    points.append(startPoint);
-    points.append(endPoint);
-    lineCurve->setSamples(points);
-
-    // 将线条附加到图表
-    lineCurve->attach(plot);
 
     // 返回标记（线条由图表管理）
     marker->attach(plot);
     return marker;
 }
 
-QwtPlotItem* createLinePlotItem(QwtPlot* plot, const QPointF& startPoint, const QPointF& endPoint)
-{
-    // 创建曲线项
-    QwtPlotCurve* curve = new QwtPlotCurve();
-    curve->setRenderHint(QwtPlotItem::RenderAntialiased);
-
-    // 设置线条属性
-    QPen pen(Qt::blue, 1.0, Qt::SolidLine);
-    curve->setPen(pen);
-
-    // 设置数据点
-    QVector< QPointF > points;
-    points.append(startPoint);
-    points.append(endPoint);
-    curve->setSamples(points);
-
-    // 设置标题
-    QString title = QString("Line (%1, %2) -> (%3, %4)")
-                        .arg(startPoint.x(), 0, 'f', 2)
-                        .arg(startPoint.y(), 0, 'f', 2)
-                        .arg(endPoint.x(), 0, 'f', 2)
-                        .arg(endPoint.y(), 0, 'f', 2);
-    curve->setTitle(title);
-
-    // 附加到图表
-    curve->attach(plot);
-
-    return curve;
-}
 }  // End Of Namespace DA

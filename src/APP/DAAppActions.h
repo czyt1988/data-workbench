@@ -149,6 +149,7 @@ public:
     QAction* actionChartEditorAddCrossMarker;   ///< 添加十字标记
     QAction* actionChartEditorAddHLineMarker;   ///< 添加水平标记
     QAction* actionChartEditorAddVLineMarker;   ///< 添加垂直标记
+    QAction* actionChartEditorAddArrowMarker;   ///< 添加箭头标记
     QActionGroup* actionGroupChartEditor;  ///< charteditor的action group，注意，这个actiongroup包含了actionChartEditorResizeSubChart
     //===================================================
     // 视图标签 View Category

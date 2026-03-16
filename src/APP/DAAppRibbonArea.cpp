@@ -670,6 +670,7 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
     m_pannelChartAssistTool->addLargeAction(m_actions->actionChartEditorAddCrossMarker);
     m_pannelChartAssistTool->addMediumAction(m_actions->actionChartEditorAddHLineMarker);
     m_pannelChartAssistTool->addMediumAction(m_actions->actionChartEditorAddVLineMarker);
+    m_pannelChartAssistTool->addLargeAction(m_actions->actionChartEditorAddArrowMarker);
 }
 
 void DAAppRibbonArea::buildApplicationMenu()

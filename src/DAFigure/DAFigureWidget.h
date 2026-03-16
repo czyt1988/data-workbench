@@ -49,6 +49,7 @@ public:
         HLineMarker,             ///< 水平线标记
         VLineMarker,             ///< 垂直线标记
         CrossMarker,             ///< 交叉标记
+        ArrowMarker,             ///< 箭头标记
         BuilinEditorCount,       ///< 内置编辑器数量
         UserDefineEditor = 1000  ///< 用户自定义编辑器
     };

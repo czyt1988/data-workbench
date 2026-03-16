@@ -180,6 +180,8 @@ void DAAppActions::buildChartAction()
     actionChartEditorAddVLineMarker = createAction(
         "actionChartEditorAddVLineMarker", ":/app/bright/Icon/chart-vline-marker.svg", true, false, actionGroupChartEditor
     );
+    actionChartEditorAddArrowMarker =
+        createAction("actionChartEditorAddArrowMarker", ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
     actionChartEditorResizeSubChart->setData(static_cast< int >(DAFigureWidget::SubChartEditor));
     actionChartEditorRectSelector->setData(static_cast< int >(DAFigureWidget::RectSelectEditor));
     actionChartEditorEllipseSelector->setData(static_cast< int >(DAFigureWidget::EllipseSelectEditor));
@@ -187,6 +189,7 @@ void DAAppActions::buildChartAction()
     actionChartEditorAddHLineMarker->setData(static_cast< int >(DAFigureWidget::HLineMarker));
     actionChartEditorAddVLineMarker->setData(static_cast< int >(DAFigureWidget::VLineMarker));
     actionChartEditorAddCrossMarker->setData(static_cast< int >(DAFigureWidget::CrossMarker));
+    actionChartEditorAddArrowMarker->setData(static_cast< int >(DAFigureWidget::ArrowMarker));
 }
 
 void DAAppActions::buildViewAction()
@@ -462,6 +465,8 @@ void DAAppActions::retranslateUi()
     actionChartEditorAddHLineMarker->setToolTip(tr("Add an H line marker to the chart"));  // cn:添加水平线
     actionChartEditorAddVLineMarker->setText(tr("Add V Line Marker"));                     // cn:添加垂直线
     actionChartEditorAddVLineMarker->setToolTip(tr("Add a V line marker to the chart"));   // cn:添加垂直标记
+    actionChartEditorAddArrowMarker->setText(tr("Add Arrow Marker"));                      // cn:添加箭头
+    actionChartEditorAddArrowMarker->setToolTip(tr("Add an arrow marker to the chart"));   // cn:添加箭头标记
     //-----------------------------------------------------
     // 数据操作的上下文标签 Data Operate Context Category
     //-----------------------------------------------------
