@@ -40,13 +40,10 @@ public:
 
 protected:
     // 创建图表项
-    virtual QwtPlotItem* createPlotItem(const QPointF& startPoint, const QPointF& endPoint) override;
+    virtual QwtPlotItem* createPlotItem(const QPointF& startPoint, const QPointF& endPoint);
 
     // 更新预览项
     virtual void updatePreviewItem(const QPointF& startPoint, const QPointF& currentPoint) override;
-
-    // 清理预览项
-    virtual void clearPreviewItem() override;
 
 private:
     // 创建箭头标记项

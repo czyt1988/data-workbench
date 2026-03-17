@@ -21,10 +21,12 @@ class DAChartArrowEditor::PrivateData
     DA_DECLARE_PUBLIC(DAChartArrowEditor)
 public:
     QColor m_arrowColor { Qt::red };
-    qreal m_arrowSize { 10.0 };
-    DAArrowSymbol::ArrowStyle m_arrowStyle { DAArrowSymbol::FilledArrow };
+    qreal m_arrowSize { 8.0 };
     qreal m_arrowLineWidth { 1.0 };
-    QwtPlotItem* m_previewCurve { nullptr };
+    DAArrowSymbol::ArrowEndType m_startEndType { DAArrowSymbol::NoEnd };
+    DAArrowSymbol::ArrowEndType m_endEndType { DAArrowSymbol::SimpleEnd };
+    DAArrowSymbol::OriginPosition m_originPosition { DAArrowSymbol::OriginAtEnd };
+    qreal m_arrowLength { 20.0 };
 
 public:
     PrivateData(DAChartArrowEditor* p) : q_ptr(p)
@@ -33,16 +35,6 @@ public:
 
     ~PrivateData()
     {
-        releasePreviewCurve();
-    }
-
-    void releasePreviewCurve()
-    {
-        if (m_previewCurve) {
-            m_previewCurve->detach();
-            delete m_previewCurve;
-            m_previewCurve = nullptr;
-        }
     }
 };
 
@@ -89,14 +81,34 @@ qreal DAChartArrowEditor::getArrowSize() const
     return d_ptr->m_arrowSize;
 }
 
-void DAChartArrowEditor::setArrowStyle(DAArrowSymbol::ArrowStyle style)
+void DAChartArrowEditor::setStartEndType(DAArrowSymbol::ArrowEndType type)
 {
-    d_ptr->m_arrowStyle = style;
+    d_ptr->m_startEndType = type;
 }
 
-DAArrowSymbol::ArrowStyle DAChartArrowEditor::getArrowStyle() const
+DAArrowSymbol::ArrowEndType DAChartArrowEditor::getStartEndType() const
 {
-    return d_ptr->m_arrowStyle;
+    return d_ptr->m_startEndType;
+}
+
+void DAChartArrowEditor::setEndEndType(DAArrowSymbol::ArrowEndType type)
+{
+    d_ptr->m_endEndType = type;
+}
+
+DAArrowSymbol::ArrowEndType DAChartArrowEditor::getEndEndType() const
+{
+    return d_ptr->m_endEndType;
+}
+
+void DAChartArrowEditor::setOriginPosition(DAArrowSymbol::OriginPosition pos)
+{
+    d_ptr->m_originPosition = pos;
+}
+
+DAArrowSymbol::OriginPosition DAChartArrowEditor::getOriginPosition() const
+{
+    return d_ptr->m_originPosition;
 }
 
 QwtPlotItem* DAChartArrowEditor::createPlotItem(const QPointF& startPoint, const QPointF& endPoint)
@@ -106,9 +118,6 @@ QwtPlotItem* DAChartArrowEditor::createPlotItem(const QPointF& startPoint, const
 
 void DAChartArrowEditor::updatePreviewItem(const QPointF& startPoint, const QPointF& currentPoint)
 {
-    // 清理之前的预览曲线
-    d_ptr->releasePreviewCurve();
-
     // 创建预览曲线
     QwtPlotCurve* curve = new QwtPlotCurve();
     curve->setRenderHint(QwtPlotItem::RenderAntialiased);
@@ -125,17 +134,12 @@ void DAChartArrowEditor::updatePreviewItem(const QPointF& startPoint, const QPoi
 
     // 附加到图表
     curve->attach(plot());
-    d_ptr->m_previewCurve = curve;
+
 
     // 调用基类方法创建箭头预览
     DAAbstractTwoPointEditor::updatePreviewItem(startPoint, currentPoint);
 }
 
-void DAChartArrowEditor::clearPreviewItem()
-{
-    d_ptr->releasePreviewCurve();
-    DAAbstractTwoPointEditor::clearPreviewItem();
-}
 
 QwtPlotItem* DAChartArrowEditor::createArrowMarker(const QPointF& startPoint, const QPointF& endPoint)
 {

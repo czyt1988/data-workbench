@@ -195,7 +195,11 @@ bool DAAbstractChartEditor::keyReleaseEvent(const QKeyEvent* e)
     return false;
 }
 
-
+/**
+ * @brief 屏幕坐标转换为数据坐标
+ * @param pos 屏幕坐标
+ * @return 数据坐标
+ */
 QPointF DAAbstractChartEditor::invTransform(const QPointF& pos) const
 {
     const QwtPlot* gca = plot();
@@ -207,6 +211,11 @@ QPointF DAAbstractChartEditor::invTransform(const QPointF& pos) const
     return QPointF(xMap.invTransform(pos.x()), yMap.invTransform(pos.y()));
 }
 
+/**
+ * @brief 数据坐标转换为屏幕坐标
+ * @param pos 数据坐标
+ * @return 屏幕坐标
+ */
 QPointF DAAbstractChartEditor::transform(const QPointF& pos) const
 {
     const QwtPlot* gca = plot();

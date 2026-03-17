@@ -18,8 +18,6 @@ public:
     bool m_isFirstPointSet { false };
     QPointF m_firstPoint { 0, 0 };
     QPointF m_secondPoint { 0, 0 };
-    QwtPlotItem* m_previewItem { nullptr };
-    QwtPlotItem* m_finalItem { nullptr };
     bool m_isPlotEnableZoom { false };  ///< 记录绘图是否允许缩放，在结束的时候还原状态
 
 public:
@@ -29,26 +27,6 @@ public:
 
     ~PrivateData()
     {
-        releasePreviewItem();
-        releaseFinalItem();
-    }
-
-    void releasePreviewItem()
-    {
-        if (m_previewItem) {
-            m_previewItem->detach();
-            delete m_previewItem;
-            m_previewItem = nullptr;
-        }
-    }
-
-    void releaseFinalItem()
-    {
-        if (m_finalItem) {
-            m_finalItem->detach();
-            delete m_finalItem;
-            m_finalItem = nullptr;
-        }
     }
 
     void clear()
@@ -57,8 +35,6 @@ public:
         m_isFirstPointSet = false;
         m_firstPoint      = QPointF();
         m_secondPoint     = QPointF();
-        releasePreviewItem();
-        releaseFinalItem();
     }
 };
 
@@ -111,15 +87,6 @@ bool DAAbstractTwoPointEditor::mousePressEvent(const QMouseEvent* e)
         // 第二个点，终点
         d_ptr->m_secondPoint = pf;
 
-        // 创建最终的图表项
-        d_ptr->m_finalItem = createPlotItem(d_ptr->m_firstPoint, d_ptr->m_secondPoint);
-        if (d_ptr->m_finalItem) {
-            d_ptr->m_finalItem->attach(plot());
-        }
-
-        // 清理预览项
-        clearPreviewItem();
-
         // 恢复缩放
         if (d_ptr->m_isPlotEnableZoom) {
             DAChartWidget* chart = qobject_cast< DAChartWidget* >(parent());
@@ -155,10 +122,6 @@ bool DAAbstractTwoPointEditor::mouseMoveEvent(const QMouseEvent* e)
 
     // 更新预览
     updatePreviewItem(d_ptr->m_firstPoint, pf);
-
-    // 发射更新信号
-    Q_EMIT pointsUpdated(d_ptr->m_firstPoint, pf);
-
     return true;
 }
 
@@ -213,26 +176,20 @@ bool DAAbstractTwoPointEditor::cancel()
     return true;
 }
 
-QwtPlotItem* DAAbstractTwoPointEditor::takeItem()
-{
-    QwtPlotItem* item  = d_ptr->m_finalItem;
-    d_ptr->m_finalItem = nullptr;
-    return item;
-}
 
+/**
+ * @brief 更新预览项
+ *
+ * 用于更新预览项，主要在鼠标移动事件中调用
+ *
+ * 在DAAbstractTwoPointEditor中此方法没有任何实现，如果需要实时更新预览项，需要在子类中实现此方法
+ * @param startPoint 起点
+ * @param currentPoint 当前点
+ */
 void DAAbstractTwoPointEditor::updatePreviewItem(const QPointF& startPoint, const QPointF& currentPoint)
 {
-    // 默认实现：创建预览项
-    clearPreviewItem();
-    d_ptr->m_previewItem = createPlotItem(startPoint, currentPoint);
-    if (d_ptr->m_previewItem) {
-        d_ptr->m_previewItem->attach(plot());
-    }
-}
-
-void DAAbstractTwoPointEditor::clearPreviewItem()
-{
-    d_ptr->releasePreviewItem();
+    Q_UNUSED(startPoint);
+    Q_UNUSED(currentPoint);
 }
 
 }  // End Of Namespace DA

@@ -1,64 +1,104 @@
 #ifndef DAARROWSYMBOL_H
 #define DAARROWSYMBOL_H
 #include "DAFigureAPI.h"
+#include "DAArrowGenerator.h"
 #include <qwt_symbol.h>
 namespace DA
 {
 /**
+ * \if ENGLISH
+ * @brief Arrow symbol
+ * \endif
+ *
+ * \if CHINESE
  * @brief 箭头符号
- * 
- * 用于在图表上绘制箭头符号，支持自定义箭头大小、颜色和方向
+ * \endif
  */
 class DAFIGURE_API DAArrowSymbol : public QwtSymbol
 {
 public:
     /**
-     * @brief 箭头样式
+     * \if ENGLISH
+     * @brief Arrow end type
+     * \endif
+     *
+     * \if CHINESE
+     * @brief 箭头端点类型
+     * \endif
      */
-    enum ArrowStyle
+    enum ArrowEndType
     {
-        SimpleArrow,    ///< 简单箭头
-        FilledArrow,    ///< 填充箭头
-        DoubleArrow     ///< 双箭头
+        NoEnd      = DAArrowGenerator::NoEnd,       ///< 无端点
+        SimpleEnd  = DAArrowGenerator::SimpleEnd,   ///< 简单V形端点
+        FilledEnd  = DAArrowGenerator::FilledEnd,   ///< 填充三角形端点
+        CircleEnd  = DAArrowGenerator::CircleEnd,   ///< 圆形端点
+        DiamondEnd = DAArrowGenerator::DiamondEnd,  ///< 菱形端点
+        SquareEnd  = DAArrowGenerator::SquareEnd    ///< 方形端点
     };
-    
+
+    /**
+     * \if ENGLISH
+     * @brief Arrow origin position
+     * \endif
+     *
+     * \if CHINESE
+     * @brief 箭头原点位置
+     * \endif
+     */
+    enum OriginPosition
+    {
+        OriginAtStart = DAArrowGenerator::OriginAtStart,  ///< 原点在开始端
+        OriginAtEnd   = DAArrowGenerator::OriginAtEnd     ///< 原点在结束端
+    };
+
 public:
     DAArrowSymbol();
-    DAArrowSymbol(const QColor& color, qreal arrowSize = 10.0, ArrowStyle style = SimpleArrow);
+    DAArrowSymbol(const QColor& color, qreal arrowSize = 10.0, ArrowEndType startEnd = NoEnd, ArrowEndType endEnd = SimpleEnd);
     virtual ~DAArrowSymbol();
-    
-    // 设置箭头大小
+
+    // Set arrow size
     void setArrowSize(qreal size);
     qreal getArrowSize() const;
-    
-    // 设置箭头样式
-    void setArrowStyle(ArrowStyle style);
-    ArrowStyle getArrowStyle() const;
-    
-    // 设置箭头颜色
+
+    // Set start end type
+    void setStartEndType(ArrowEndType type);
+    ArrowEndType getStartEndType() const;
+
+    // Set end end type
+    void setEndEndType(ArrowEndType type);
+    ArrowEndType getEndEndType() const;
+
+    // Set arrow length
+    void setArrowLength(qreal length);
+    qreal getArrowLength() const;
+
+    // Set arrow color
     void setArrowColor(const QColor& color);
     QColor getArrowColor() const;
-    
-    // 设置箭头方向（角度，以度为单位，0度表示向右）
+
+    // Set arrow angle
     void setArrowAngle(qreal angle);
     qreal getArrowAngle() const;
-    
-    // 设置箭头线宽
+
+    // Set arrow line width
     void setArrowLineWidth(qreal width);
     qreal getArrowLineWidth() const;
-    
-    // 创建箭头路径
-    static QPainterPath createArrowPath(qreal arrowSize, ArrowStyle style = SimpleArrow, qreal angle = 0.0);
-    
+
+    // Set origin position
+    void setOriginPosition(OriginPosition pos);
+    OriginPosition getOriginPosition() const;
+
+    // Create arrow path with full parameters
+    static QPainterPath createArrowPath(
+        qreal arrowSize, ArrowEndType startEnd, ArrowEndType endEnd, qreal length, qreal angle = 0.0, OriginPosition originPos = OriginAtEnd
+    );
+
 private:
     void updatePath();
-    
+
 private:
-    qreal m_arrowSize;
-    ArrowStyle m_arrowStyle;
+    DAArrowGenerator m_generator;
     QColor m_arrowColor;
-    qreal m_arrowAngle;
-    qreal m_arrowLineWidth;
 };
 }  // End Of Namespace DA
 #endif  // DAARROWSYMBOL_H

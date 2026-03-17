@@ -60,18 +60,10 @@ public:
      */
     virtual QwtPlotItem* takeItem() = 0;
 
-        /**
-     * @brief 屏幕坐标转换为数据坐标
-     * @param pos 屏幕坐标
-     * @return 数据坐标
-     */
+    // 屏幕坐标转换为数据坐标
     QPointF invTransform(const QPointF& pos) const;
 
-    /**
-     * @brief 数据坐标转换为屏幕坐标
-     * @param pos 数据坐标
-     * @return 屏幕坐标
-     */
+    // 数据坐标转换为屏幕坐标
     QPointF transform(const QPointF& pos) const;
 Q_SIGNALS:
     /**
