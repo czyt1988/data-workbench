@@ -8,10 +8,8 @@
 #include "DAChartWidget.h"
 #include "da_qt5qt6_compat.hpp"
 #include "qwt_plot.h"
-#include "qwt_plot_marker.h"
-#include "qwt_plot_curve.h"
-#include "qwt_symbol.h"
 #include "qwt_text.h"
+
 #include <cmath>
 
 namespace DA
@@ -20,13 +18,14 @@ class DAChartArrowEditor::PrivateData
 {
     DA_DECLARE_PUBLIC(DAChartArrowEditor)
 public:
-    QColor m_arrowColor { Qt::red };
+    QPen m_arrowPen { Qt::black };
     qreal m_arrowSize { 8.0 };
     qreal m_arrowLineWidth { 1.0 };
-    DAArrowSymbol::ArrowEndType m_startEndType { DAArrowSymbol::NoEnd };
-    DAArrowSymbol::ArrowEndType m_endEndType { DAArrowSymbol::SimpleEnd };
-    DAArrowSymbol::OriginPosition m_originPosition { DAArrowSymbol::OriginAtEnd };
+    QwtPlotArrowMarker::EndpointStyle m_startEndType { QwtPlotArrowMarker::NoEndpoint };
+    QwtPlotArrowMarker::EndpointStyle m_endEndType { QwtPlotArrowMarker::Triangle };
+
     qreal m_arrowLength { 20.0 };
+    QwtPlotArrowMarker* m_marker { nullptr };
 
 public:
     PrivateData(DAChartArrowEditor* p) : q_ptr(p)
@@ -35,6 +34,11 @@ public:
 
     ~PrivateData()
     {
+        if (m_marker) {
+            m_marker->detach();
+            delete m_marker;
+            m_marker = nullptr;
+        }
     }
 };
 
@@ -61,14 +65,14 @@ qreal DAChartArrowEditor::getArrowLineWidth() const
     return d_ptr->m_arrowLineWidth;
 }
 
-void DAChartArrowEditor::setArrowColor(const QColor& color)
+void DAChartArrowEditor::setArrowLinePen(const QPen& pen)
 {
-    d_ptr->m_arrowColor = color;
+    d_ptr->m_arrowPen = pen;
 }
 
-QColor DAChartArrowEditor::getArrowColor() const
+QPen DAChartArrowEditor::getArrowLinePen() const
 {
-    return d_ptr->m_arrowColor;
+    return d_ptr->m_arrowPen;
 }
 
 void DAChartArrowEditor::setArrowSize(qreal size)
@@ -81,34 +85,31 @@ qreal DAChartArrowEditor::getArrowSize() const
     return d_ptr->m_arrowSize;
 }
 
-void DAChartArrowEditor::setStartEndType(DAArrowSymbol::ArrowEndType type)
+void DAChartArrowEditor::setStartEndType(QwtPlotArrowMarker::EndpointStyle type)
 {
     d_ptr->m_startEndType = type;
 }
 
-DAArrowSymbol::ArrowEndType DAChartArrowEditor::getStartEndType() const
+QwtPlotArrowMarker::EndpointStyle DAChartArrowEditor::getStartEndType() const
 {
     return d_ptr->m_startEndType;
 }
 
-void DAChartArrowEditor::setEndEndType(DAArrowSymbol::ArrowEndType type)
+void DAChartArrowEditor::setEndEndType(QwtPlotArrowMarker::EndpointStyle type)
 {
     d_ptr->m_endEndType = type;
 }
 
-DAArrowSymbol::ArrowEndType DAChartArrowEditor::getEndEndType() const
+QwtPlotArrowMarker::EndpointStyle DAChartArrowEditor::getEndEndType() const
 {
     return d_ptr->m_endEndType;
 }
 
-void DAChartArrowEditor::setOriginPosition(DAArrowSymbol::OriginPosition pos)
+QwtPlotItem* DAChartArrowEditor::takeItem()
 {
-    d_ptr->m_originPosition = pos;
-}
-
-DAArrowSymbol::OriginPosition DAChartArrowEditor::getOriginPosition() const
-{
-    return d_ptr->m_originPosition;
+    QwtPlotItem* item = d_ptr->m_marker;
+    d_ptr->m_marker   = nullptr;
+    return item;
 }
 
 QwtPlotItem* DAChartArrowEditor::createPlotItem(const QPointF& startPoint, const QPointF& endPoint)
@@ -116,110 +117,37 @@ QwtPlotItem* DAChartArrowEditor::createPlotItem(const QPointF& startPoint, const
     return createArrowMarker(startPoint, endPoint);
 }
 
-void DAChartArrowEditor::updatePreviewItem(const QPointF& startPoint, const QPointF& currentPoint)
+void DAChartArrowEditor::updatePreview(const QVector< QPointF >& points)
 {
-    // 创建预览曲线
-    QwtPlotCurve* curve = new QwtPlotCurve();
-    curve->setRenderHint(QwtPlotItem::RenderAntialiased);
-
-    // 设置线条样式
-    QPen pen(Qt::gray, 1, Qt::DashLine);
-    curve->setPen(pen);
-
-    // 设置数据点
-    QVector< QPointF > points;
-    points.append(startPoint);
-    points.append(currentPoint);
-    curve->setSamples(points);
-
-    // 附加到图表
-    curve->attach(plot());
-
-
-    // 调用基类方法创建箭头预览
-    DAAbstractTwoPointEditor::updatePreviewItem(startPoint, currentPoint);
+    DA_D(d);
+    if (points.size() < 2) {
+        return;
+    }
+    QPointF startPoint = points[ 0 ];
+    QPointF endPoint   = points[ 1 ];
+    if (!d->m_marker) {
+        d->m_marker = createArrowMarker(startPoint, endPoint);
+        d->m_marker->attach(plot());
+    } else {
+        // 更新标记位置
+        d->m_marker->setPoints(startPoint, endPoint);
+    }
 }
 
 
-QwtPlotItem* DAChartArrowEditor::createArrowMarker(const QPointF& startPoint, const QPointF& endPoint)
+QwtPlotArrowMarker* DAChartArrowEditor::createArrowMarker(const QPointF& startPoint, const QPointF& endPoint)
 {
-    // 计算箭头角度
-    qreal angle = calculateArrowAngle(startPoint, endPoint);
-
-    // 创建箭头符号（不使用拷贝构造函数）
-    DAArrowSymbol* arrowSymbol = new DAArrowSymbol(getArrowColor(), getArrowSize(), getArrowStyle());
-    arrowSymbol->setArrowAngle(angle);
-    arrowSymbol->setArrowLineWidth(getArrowLineWidth());
-
     // 创建标记
-    QwtPlotMarker* marker = new QwtPlotMarker();
-    marker->setSymbol(arrowSymbol);
-    marker->setValue(endPoint);  // 箭头尖端在终点位置
-
-    // 设置标签（可选）
-    QString label = QString("Arrow (%1, %2) -> (%3, %4)")
-                        .arg(startPoint.x(), 0, 'f', 2)
-                        .arg(startPoint.y(), 0, 'f', 2)
-                        .arg(endPoint.x(), 0, 'f', 2)
-                        .arg(endPoint.y(), 0, 'f', 2);
-    marker->setLabel(QwtText(label));
-    marker->setLabelAlignment(Qt::AlignRight | Qt::AlignTop);
-
-    // 创建线条（从起点到终点）
-    QwtPlotCurve* line = new QwtPlotCurve();
-    line->setRenderHint(QwtPlotItem::RenderAntialiased);
-
-    QPen linePen(getArrowColor(), getArrowLineWidth());
-    line->setPen(linePen);
-
-    QVector< QPointF > points;
-    points.append(startPoint);
-    points.append(endPoint);
-    line->setSamples(points);
-
-    // 将线条附加到图表
-    line->attach(plot());
+    QwtPlotArrowMarker* marker = new QwtPlotArrowMarker();
+    marker->setLinePen(getArrowLinePen());
+    marker->setHeadStyle(getStartEndType());
+    marker->setTailStyle(getEndEndType());
+    marker->setTailSize(getArrowSize());
+    marker->setPoints(startPoint, endPoint);
 
     // 返回标记（线条由图表管理）
     return marker;
 }
 
-qreal DAChartArrowEditor::calculateArrowAngle(const QPointF& startPoint, const QPointF& endPoint) const
-{
-    // 计算角度（以度为单位）
-    // QLineF的角度是从水平向右开始，逆时针为正
-    QLineF line(startPoint, endPoint);
-    qreal angle = line.angle();  // 返回0-360度
-
-    // QwtSymbol的0度是向右，我们需要调整
-    // 默认箭头是向右的（0度），我们需要旋转到线条方向
-    return angle;
-}
-
-
-QwtPlotItem* createArrowMarkerPlotItem(QwtPlot* plot, const QPointF& startPoint, const QPointF& endPoint)
-{
-    // 计算箭头角度
-    QLineF line(startPoint, endPoint);
-    qreal angle = line.angle();  // 返回0-360度
-
-    // 创建箭头符号
-    DAArrowSymbol* arrowSymbol = new DAArrowSymbol(Qt::red, 10.0, DAArrowSymbol::FilledArrow);
-    arrowSymbol->setArrowAngle(angle);
-
-    // 创建标记
-    QwtPlotMarker* marker = new QwtPlotMarker();
-    marker->setSymbol(arrowSymbol);
-    marker->setValue(endPoint);  // 箭头尖端在终点位置
-
-    // 设置标签
-    QString label = QString("Arrow (%1, %2)").arg(startPoint.x(), 0, 'f', 2).arg(startPoint.y(), 0, 'f', 2);
-    marker->setLabel(QwtText(label));
-    marker->setLabelAlignment(Qt::AlignRight | Qt::AlignTop);
-
-    // 返回标记（线条由图表管理）
-    marker->attach(plot);
-    return marker;
-}
 
 }  // End Of Namespace DA

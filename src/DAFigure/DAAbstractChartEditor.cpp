@@ -226,4 +226,19 @@ QPointF DAAbstractChartEditor::transform(const QPointF& pos) const
     QwtScaleMap yMap = gca->canvasMap(gca->visibleYAxisId());
     return QPointF(xMap.transform(pos.x()), yMap.transform(pos.y()));
 }
+/**
+ * @brief 更新预览项
+ *
+ * 此函数用于编辑器更新预览项，预览项坐标为绘图坐标
+ *
+ * 在@ref DAAbstractChartEditor 中,此函数默认实现为空
+ *
+ * 在其它编辑器中，你可以根据鼠标移动事件来更新预览项，例如绘制矩形的情况，在确定第一个点后，
+ * 鼠标的移动过程中就需要不停的更新矩形的预览，那么可以通过重写此函数来实现
+ * @param points 预览项坐标(绘图坐标)
+ */
+void DAAbstractChartEditor::updatePreview(const QVector< QPointF >& points)
+{
+    Q_UNUSED(points);
+}
 }  // End Of Namespace DA

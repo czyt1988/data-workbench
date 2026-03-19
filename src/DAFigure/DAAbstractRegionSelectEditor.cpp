@@ -10,16 +10,8 @@ DAAbstractRegionSelectEditor::DAAbstractRegionSelectEditor(QwtPlot* parent)
     , m_xAxis(QwtPlot::xBottom)
     , m_yAxis(QwtPlot::yLeft)
 {
-    m_xAxis             = QwtPlot::xBottom;
-    const QwtPlot* plot = parent;
-    if (!plot->axisEnabled(QwtPlot::xBottom) && plot->axisEnabled(QwtPlot::xTop)) {
-        m_xAxis = QwtPlot::xTop;
-    }
-
-    m_yAxis = QwtPlot::yLeft;
-    if (!plot->axisEnabled(QwtPlot::yLeft) && plot->axisEnabled(QwtPlot::yRight)) {
-        m_yAxis = QwtPlot::yRight;
-    }
+    m_xAxis = parent->visibleXAxisId();
+    m_yAxis = parent->visibleYAxisId();
 }
 
 DAAbstractRegionSelectEditor::~DAAbstractRegionSelectEditor()

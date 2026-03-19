@@ -65,6 +65,9 @@ public:
 
     // 数据坐标转换为屏幕坐标
     QPointF transform(const QPointF& pos) const;
+
+    // 更新预览项
+    virtual void updatePreview(const QVector< QPointF >& points);
 Q_SIGNALS:
     /**
      * @brief 开始编辑

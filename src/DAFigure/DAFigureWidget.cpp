@@ -139,9 +139,11 @@ public:
         }
     };
 
+
     /**
      * @brief 开始选择编辑器
      *
+     * 选择编辑器适合单一点击操作，多次点击操作
      * @tparam EditorType 选择编辑器类型
      * @param 可变参数，为EditorType构造时传入的可变参数
      */
@@ -167,6 +169,7 @@ public:
         );
         return figEditor;
     }
+
 
     void beginSubChartEditor();
     void beginRectSelectEditor();

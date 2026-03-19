@@ -116,6 +116,13 @@ bool DAFigureChartEditorWidgetOverlay::isChartEditorActive() const
     return d_ptr->m_activeEditor != nullptr;
 }
 
+/**
+ * @brief 可以设置一个函数，用于在激活canvas后绘制
+ *
+ * 这种情况是在激活canvas后，需要在canvas上绘制一些内容，例如我要做个添加垂直线的编辑器，鼠标在激活的canvas上移动时，
+ * 我需要在canvas上绘制一条垂直线，用于表示鼠标的位置。则可以通过此函数指针进行非侵入式的绘制。
+ * @param painterFp
+ */
 void DAFigureChartEditorWidgetOverlay::setActiveChartCanvasPainter(FpActiveChartCanvasPainter painterFp)
 {
     d_ptr->m_activeChartCanvasPainter = painterFp;

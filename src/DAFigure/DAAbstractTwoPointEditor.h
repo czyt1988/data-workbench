@@ -47,13 +47,6 @@ protected:
     virtual bool mouseReleaseEvent(const QMouseEvent* e) override;
     virtual bool keyPressEvent(const QKeyEvent* e) override;
     virtual bool keyReleaseEvent(const QKeyEvent* e) override;
-
-    /**
-     * @brief 更新预览项
-     * @param startPoint 起点
-     * @param currentPoint 当前鼠标位置
-     */
-    virtual void updatePreviewItem(const QPointF& startPoint, const QPointF& currentPoint);
 };
 }  // End Of Namespace DA
 #endif  // DAABSTRACTTWOPOINTEDITOR_H

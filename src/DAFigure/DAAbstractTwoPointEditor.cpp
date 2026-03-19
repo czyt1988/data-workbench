@@ -121,7 +121,7 @@ bool DAAbstractTwoPointEditor::mouseMoveEvent(const QMouseEvent* e)
     QPointF pf = invTransform(p);
 
     // 更新预览
-    updatePreviewItem(d_ptr->m_firstPoint, pf);
+    updatePreview({ d_ptr->m_firstPoint, pf });
     return true;
 }
 
@@ -176,20 +176,5 @@ bool DAAbstractTwoPointEditor::cancel()
     return true;
 }
 
-
-/**
- * @brief 更新预览项
- *
- * 用于更新预览项，主要在鼠标移动事件中调用
- *
- * 在DAAbstractTwoPointEditor中此方法没有任何实现，如果需要实时更新预览项，需要在子类中实现此方法
- * @param startPoint 起点
- * @param currentPoint 当前点
- */
-void DAAbstractTwoPointEditor::updatePreviewItem(const QPointF& startPoint, const QPointF& currentPoint)
-{
-    Q_UNUSED(startPoint);
-    Q_UNUSED(currentPoint);
-}
 
 }  // End Of Namespace DA

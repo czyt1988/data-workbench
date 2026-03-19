@@ -2,7 +2,7 @@
 #define DACHARTARROWEDITOR_H
 #include "DAFigureAPI.h"
 #include "DAAbstractTwoPointEditor.h"
-#include "DAArrowSymbol.h"
+#include "qwt_plot_arrowmarker.h"
 class QKeyEvent;
 namespace DA
 {
@@ -26,43 +26,35 @@ public:
     void setArrowLineWidth(qreal width);
     qreal getArrowLineWidth() const;
 
-    // 设置箭头颜色
-    void setArrowColor(const QColor& color);
-    QColor getArrowColor() const;
+    // 设置箭头线笔
+    void setArrowLinePen(const QPen& pen);
+    QPen getArrowLinePen() const;
 
     // 设置箭头大小
     void setArrowSize(qreal size);
     qreal getArrowSize() const;
 
-    // 设置箭头样式
-    void setArrowStyle(DAArrowSymbol::ArrowStyle style);
-    DAArrowSymbol::ArrowStyle getArrowStyle() const;
+    // 箭头起始箭头类型
+    void setStartEndType(QwtPlotArrowMarker::EndpointStyle type);
+    QwtPlotArrowMarker::EndpointStyle getStartEndType() const;
+
+    // 箭头结束箭头类型
+    void setEndEndType(QwtPlotArrowMarker::EndpointStyle type);
+    QwtPlotArrowMarker::EndpointStyle getEndEndType() const;
+
+    QwtPlotItem* takeItem() override;
 
 protected:
     // 创建图表项
     virtual QwtPlotItem* createPlotItem(const QPointF& startPoint, const QPointF& endPoint);
 
     // 更新预览项
-    virtual void updatePreviewItem(const QPointF& startPoint, const QPointF& currentPoint) override;
+    virtual void updatePreview(const QVector< QPointF >& points) override;
 
 private:
     // 创建箭头标记项
-    QwtPlotItem* createArrowMarker(const QPointF& startPoint, const QPointF& endPoint);
-
-    // 计算箭头角度
-    qreal calculateArrowAngle(const QPointF& startPoint, const QPointF& endPoint) const;
+    QwtPlotArrowMarker* createArrowMarker(const QPointF& startPoint, const QPointF& endPoint);
 };
-
-
-/**
- * @brief 在pos位置创建箭头标记
- *
- * @param plot 图表
- * @param startPoint 起点位置
- * @param endPoint 终点位置
- * @return QwtPlotItem* 图表项
- */
-DAFIGURE_API QwtPlotItem* createArrowMarkerPlotItem(QwtPlot* plot, const QPointF& startPoint, const QPointF& endPoint);
 
 
 }  // End Of Namespace DA
