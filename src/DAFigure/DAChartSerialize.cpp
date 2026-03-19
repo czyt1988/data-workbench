@@ -30,11 +30,12 @@
 #include "qwt_plot_textlabel.h"
 #include "qwt_plot_zoneitem.h"
 #include "qwt_plot_vectorfield.h"
+#include "qwt_plot_arrowmarker.h"
+#include "qwt_plot_shapeitem.h"
 
 #ifndef INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR
 #define INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(RttiValue, ClassName)                                                  \
-    std::make_pair(&DAChartItemSerialize::serializeIn_T< ClassName, RttiValue >,                                       \
-                   &DAChartItemSerialize::serializeOut_T< ClassName >)
+    std::make_pair(&DAChartItemSerialize::serializeIn_T< ClassName, RttiValue >, &DAChartItemSerialize::serializeOut_T< ClassName >)
 #endif
 
 #ifndef DECLARE_INITCHARTITEMSERIALIZE_FUN
@@ -170,9 +171,9 @@ DAChartItemSerialize::~DAChartItemSerialize()
 {
 }
 
-void DAChartItemSerialize::registSerializeFun(int rtti,
-                                              DAChartItemSerialize::FpSerializeIn fpIn,
-                                              DAChartItemSerialize::FpSerializeOut fpOut)
+void DAChartItemSerialize::registSerializeFun(
+    int rtti, DAChartItemSerialize::FpSerializeIn fpIn, DAChartItemSerialize::FpSerializeOut fpOut
+)
 {
     serializeFun()[ rtti ] = std::make_pair(fpIn, fpOut);
 }
@@ -250,6 +251,9 @@ int DAChartItemSerialize::getRtti(const QByteArray& byte) const noexcept
 
 // === 显式实例化定义 ===
 // QwtPlotCurve ---------------------------------------------------------
+// DECLARE_INITCHARTITEMSERIALIZE_FUN(RttiI, T)
+// 注册序列化函数
+
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotCurve, QwtPlotCurve)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotGrid, QwtPlotGrid)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotLegend, QwtPlotLegendItem)
@@ -257,7 +261,8 @@ DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotMarker, QwtPlotMarker)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotSpectroCurve, QwtPlotSpectroCurve)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotBarChart, QwtPlotBarChart)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotIntervalCurve, QwtPlotIntervalCurve)
-
+DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotShape, QwtPlotShapeItem)
+DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotArrowMarker, QwtPlotArrowMarker)
 QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > > initChartItemSerialize()
 {
     QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > > res;
@@ -273,11 +278,14 @@ QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize
         INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotBarChart, QwtPlotBarChart);
     res[ QwtPlotItem::Rtti_PlotIntervalCurve ] =
         INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotIntervalCurve, QwtPlotIntervalCurve);
+    res[ QwtPlotItem::Rtti_PlotShape ] =
+        INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotShape, QwtPlotShapeItem);
+    res[ QwtPlotItem::Rtti_PlotArrowMarker ] =
+        INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotArrowMarker, QwtPlotArrowMarker);
     return res;
 }
 
-QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > >&
-DAChartItemSerialize::serializeFun()
+QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > >& DAChartItemSerialize::serializeFun()
 {
     static QHash< int, std::pair< FpSerializeIn, FpSerializeOut > > s_serializeMap = initChartItemSerialize();
     return s_serializeMap;
@@ -840,6 +848,10 @@ QDataStream& operator>>(QDataStream& in, QwtPlotSpectroCurve* item)
     item->setPaintAttribute(QwtPlotSpectroCurve::ClipPoints, attClipPoints);
     return in;
 }
+
+//============================================
+// QwtPlotBarChart
+//============================================
 ///
 /// \brief QwtPlotBarChart指针的序列化
 /// \param out
@@ -920,6 +932,125 @@ QDataStream& operator>>(QDataStream& in, QwtPlotBarChart* item)
     }
     return in;
 }
+
+//============================================
+// QwtPlotArrowMarker
+//============================================
+
+QDataStream& operator<<(QDataStream& out, const QwtPlotArrowMarker* item)
+{
+    out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
+    out << (const QwtPlotItem*)item;
+    out << item->startPoint() << item->endPoint() << item->length() << item->linePen()
+        << static_cast< int >(item->positionMode());
+    out << static_cast< int >(item->headStyle()) << item->headSize() << item->headBrush() << item->headPen();
+    if (item->headStyle() == QwtPlotArrowMarker::CustomPath) {
+        out << item->headCustomPath();
+    }
+    out << static_cast< int >(item->tailStyle()) << item->tailSize() << item->tailBrush() << item->tailPen();
+    if (item->tailStyle() == QwtPlotArrowMarker::CustomPath) {
+        out << item->tailCustomPath();
+    }
+    return out;
+}
+
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotArrowMarker* item)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (DA::gc_dachart_magic_mark != magic) {
+        throw DA::DABadSerializeExpection();
+        return in;
+    }
+    in >> (QwtPlotItem*)item;
+    QPointF startPoint;
+    QPointF endPoint;
+    int length;
+    QPen linePen;
+    int positionMode;
+    in >> startPoint >> endPoint >> length >> linePen >> positionMode;
+    item->setStartPoint(startPoint);
+    item->setEndPoint(endPoint);
+    item->setLength(length);
+    item->setLinePen(linePen);
+    item->setPositionMode(static_cast< QwtPlotArrowMarker::PositionMode >(positionMode));
+    // load head
+    int headStyle;
+    QSizeF headSize;
+    QBrush headBrush;
+    QPen headPen;
+    in >> headStyle >> headSize >> headBrush >> headPen;
+    item->setHeadStyle(static_cast< QwtPlotArrowMarker::EndpointStyle >(headStyle));
+    item->setHeadSize(headSize);
+    item->setHeadBrush(headBrush);
+    item->setHeadPen(headPen);
+    if (item->headStyle() == QwtPlotArrowMarker::CustomPath) {
+        QPainterPath path;
+        in >> path;
+        item->setHeadCustomPath(path);
+    }
+    // load tail
+    int tailStyle;
+    QSizeF tailSize;
+    QBrush tailBrush;
+    QPen tailPen;
+    in >> tailStyle >> tailSize >> tailBrush >> tailPen;
+    item->setTailStyle(static_cast< QwtPlotArrowMarker::EndpointStyle >(tailStyle));
+    item->setTailSize(tailSize);
+    item->setTailBrush(tailBrush);
+    item->setTailPen(tailPen);
+    if (item->tailStyle() == QwtPlotArrowMarker::CustomPath) {
+        QPainterPath path;
+        in >> path;
+        item->setTailCustomPath(path);
+    }
+    return in;
+}
+
+//============================================
+// QwtPlotShapeItem
+//============================================
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotShapeItem* item)
+{
+    out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
+    out << (const QwtPlotItem*)item;
+    out << item->brush() << item->pen() << item->shape();
+    out << item->testPaintAttribute(QwtPlotShapeItem::ClipPolygons) << static_cast< int >(item->legendMode())
+        << item->renderTolerance();
+    return out;
+}
+
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotShapeItem* item)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (DA::gc_dachart_magic_mark != magic) {
+        throw DA::DABadSerializeExpection();
+        return in;
+    }
+    in >> (QwtPlotItem*)item;
+    QBrush brush;
+    QPen pen;
+    QPainterPath shape;
+    bool isClipPolygons;
+    int legendMode;
+    double renderTolerance;
+    in >> brush >> pen >> shape;
+    in >> isClipPolygons >> legendMode >> renderTolerance;
+    item->setPaintAttribute(QwtPlotShapeItem::ClipPolygons, isClipPolygons);
+    item->setLegendMode(static_cast< QwtPlotShapeItem::LegendMode >(legendMode));
+    item->setRenderTolerance(renderTolerance);
+    item->setBrush(brush);
+    item->setPen(pen);
+    item->setShape(shape);
+    return in;
+}
+
+//============================================
+// QwtPlotIntervalCurve
+//============================================
 
 QDataStream& operator<<(QDataStream& out, const QwtPlotIntervalCurve* item)
 {
