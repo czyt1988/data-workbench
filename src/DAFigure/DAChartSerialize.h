@@ -280,6 +280,12 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotBarChart* item);
 // QwtPlotIntervalCurve指针的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotIntervalCurve* item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotIntervalCurve* item);
+// QwtPlotArrowMarker的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotArrowMarker* item);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotArrowMarker* item);
+// QwtPlotShapeItem的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotShapeItem* item);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotShapeItem* item);
 
 // QwtPlotCanvas的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotCanvas* c);
@@ -309,13 +315,11 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtIntervalSample& item);
 // QwtInterval的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtInterval& item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtInterval& item);
-// QwtPlotArrowMarker的序列化
-DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotArrowMarker* item);
-DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotArrowMarker* item);
-// QwtPlotShapeItem的序列化
-DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotShapeItem* item);
-DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotShapeItem* item);
 
-// 下面这两个要放到DA命名空间外，因为使用了QVector<T>的<<
+
+// -----------------------------
+// 注意：
+// DA的序列化还依赖枚举转换为文字，如果新增PlotItem，需要更新DAGuiEnumStringUtils
+// ------------------------------
 
 #endif  // SAQWTSERIALIZE_H

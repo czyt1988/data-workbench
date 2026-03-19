@@ -3022,7 +3022,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+833"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+831"/>
         <source>Unsupported chart editor type: %1</source>
         <translation>不支持的绘图编辑器类型：%1</translation>
     </message>

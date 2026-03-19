@@ -23,9 +23,9 @@ public:
     virtual ~DAAbstractChartEditor();
     enum RTTI
     {
-        RTTIRectRegionSelectEditor,     ///< 用于给图标添加矩形选框，对应DAChartRectRegionSelectEditor
-        RTTIEllipseRegionSelectEditor,  ///< 用于给图标添加椭圆选框，对应DAChartEllipseRegionSelectEditor
-        RTTIPolygonRegionSelectEditor,  ///< 用于给图标添加多边形选框，对应DAChartPolygonRegionSelectEditor
+        RTTIRectRegionSelectEditor,     ///< 用于给图标添加矩形选框，对应DAChartRegionSelectEditor::RectShape
+        RTTIEllipseRegionSelectEditor,  ///< 用于给图标添加椭圆选框，对应DAChartRegionSelectEditor::EllipseShape
+        RTTIPolygonRegionSelectEditor,  ///< 用于给图标添加多边形选框，对应DAChartRegionSelectEditor::PolygonShape
         RTTICreatInteractor,            ///< 用于创建图表项，对应DAChartItemCreatInteractor
         RTTIArrowEditor,                ///< 用于给图表添加箭头，对应DAChartArrowEditor
         RTTILineEditor,                 ///< 用于给图表添加线段，对应DAChartLineEditor

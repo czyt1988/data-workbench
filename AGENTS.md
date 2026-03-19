@@ -60,24 +60,6 @@ data-workbench/
 - Qt 5.14+ 或 Qt 6
 - Python 3.7+
 
-### 第三方库
-
-项目使用 git submodule 管理大部分第三方库，需要执行：
-
-```shell
-git submodule update --init --recursive
-```
-
-需要编译的第三方库：
-
-- SARibbon
-- Qt-Advanced-Docking-System
-- ctk (精简版)
-- qwt
-- QtPropertyBrowser
-- spdlog
-- pybind11
-- ordered-map
 
 ## Qt 集成方案
 
@@ -198,41 +180,6 @@ public:
 - 相关文件列表
 - 关联到计划书（如果适用）
 
-## 测试与调试
 
-### 测试策略
-
-- 确保新功能有相应的测试用例
-- 测试数据处理和图表生成的正确性
-- 验证工作流执行的可靠性
-
-### 调试技巧
-
-- 使用 Qt 的调试工具
-- 利用 spdlog 进行日志记录
-- 检查 Python 集成的错误信息
-
-## 常见问题与解决方案
-
-### 编译问题
-
-- 确保所有第三方库已正确拉取和编译
-- 检查 Qt 版本兼容性
-- 验证 CMake 配置是否正确
-
-### 运行问题
-
-- 检查 Python 环境和依赖
-- 验证插件加载是否正常
-- 查看日志文件了解错误详情
-
-## 项目文档
-
-项目文档位于 `docs` 目录，包括：
-
-- 构建指南
-- 开发指南
-- 使用指南
-- API 文档
 
 详细文档可访问：[https://czyt1988.github.io/data-workbench](https://czyt1988.github.io/data-workbench)
