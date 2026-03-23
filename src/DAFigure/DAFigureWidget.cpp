@@ -42,6 +42,7 @@
 #include "qwt_plot_series_data_picker.h"
 #include "qwt_plot_series_data_picker_group.h"
 
+
 #ifndef DAFigureWidget_DEBUG_PRINT
 #define DAFigureWidget_DEBUG_PRINT 1
 #endif

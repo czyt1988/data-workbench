@@ -318,8 +318,11 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtInterval& item);
 
 
 // -----------------------------
-// 注意：
+// 注意1：
 // DA的序列化还依赖枚举转换为文字，如果新增PlotItem，需要更新DAGuiEnumStringUtils
+//
+// 注意2：
+// DA的序列化过程的内存分配需要调用DAChartPlotItemFactory的createItem方法创建plotitem，如果新增PlotItem，需要在DAChartPlotItemFactory中注册该PlotItem
 // ------------------------------
 
 #endif  // SAQWTSERIALIZE_H

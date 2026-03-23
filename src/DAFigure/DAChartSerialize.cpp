@@ -200,7 +200,8 @@ QByteArray DAChartItemSerialize::serializeOut(const QwtPlotItem* item) const
     int rtti          = item->rtti();
     FpSerializeOut fp = getSerializeOutFun(rtti);
     if (!fp) {
-        qDebug() << QString("While serializing the plot item, an unregistered RTTI value was encountered.");
+        qDebug() << QString("While serializing the plot item, an unregistered RTTI value (%1) was encountered.")
+                        .arg(rtti);  // cn:序列化plotitem时，遇到未注册的RTTI值(%1)
         return QByteArray();
     }
     return fp(item);
@@ -215,6 +216,8 @@ QwtPlotItem* DAChartItemSerialize::serializeIn(const QByteArray& byte) const noe
     }
     FpSerializeIn fp = getSerializeInFun(rtti);
     if (!fp) {
+        qDebug() << QString("While deserializing the plot item, an unregistered RTTI value (%1) was encountered.")
+                        .arg(rtti);  // cn:反序列化plotitem时，遇到未注册的RTTI值(%1)
         return nullptr;
     }
     QwtPlotItem* item = nullptr;

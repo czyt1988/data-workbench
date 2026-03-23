@@ -93,6 +93,9 @@ nav:
         - Python集成:
             - C++与Python集成: zh/dev-guide/python-in-cpp.md
             - 脚本国际化: zh/dev-guide/python-i18n.md
+        - 项目序列化架构:
+            - 项目序列化架构: zh/dev-guide/project-serialization-architecture.md
+            - 绘图的序列化: zh/dev-guide/qwt-serialization-guide.md
     - 使用指南:
         - 使用指南概述: zh/use-guide/index.md
         - 程序命令参数: zh/use-guide/command-line-arguments.md
