@@ -1,7 +1,6 @@
 ﻿#ifndef DAFIGUREWIDGETOVERLAY_H
 #define DAFIGUREWIDGETOVERLAY_H
 #include "qwt_figure_widget_overlay.h"
-#include "DAFigureWidget.h"
 #include "DAFigureAPI.h"
 namespace DA
 {

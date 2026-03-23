@@ -8,6 +8,7 @@
 #include "DADataManageWidget.h"
 #include "DAWorkFlowGraphicsScene.h"
 #include "DAFigureElementSelection.h"
+#include "DAFigureWidget.h"
 #if DA_ENABLE_PYTHON
 #include "numpy/DAPyDType.h"
 #endif
@@ -41,7 +42,6 @@ class DAWorkFlowOperateWidget;
 class DADataOperateWidget;
 class DAAppChartOperateWidget;
 class DADataManageWidget;
-class DAFigureWidget;
 class DAChartWidget;
 class DADataOperatePageWidget;
 class DAAppSettingDialog;
@@ -97,8 +97,9 @@ public:
 
 public:
 	// 获取当前dataframeOperateWidget,如果没有返回nullptr,此函数不返回nullptr的前提是
-	DADataOperateOfDataFrameWidget* getCurrentDataFrameOperateWidget(bool checkDataOperateAreaFocused = true,
-	                                                                 bool isShowMessage               = true);
+	DADataOperateOfDataFrameWidget* getCurrentDataFrameOperateWidget(
+		bool checkDataOperateAreaFocused = true, bool isShowMessage = true
+	);
 	// 获取工作流操作窗口
 	DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
 	// 获取数据操作窗口
@@ -175,8 +176,6 @@ private Q_SLOTS:
 	//===================================================
 	// 添加绘图
 	void onActionAddFigureTriggered();
-	// 添加绘图
-	void onActionFigureResizeChartTriggered(bool on);
 	// 新坐标系
 	void onActionFigureNewXYAxisTriggered();
 	// 添加曲线
@@ -232,6 +231,8 @@ private Q_SLOTS:
 	void onActionGroupFigureThemeTriggered(QAction* act);
 	// 复制到剪切板
 	void onActionCopyFigureToClipboardTriggered();
+	// 绘图编辑器的切换
+	void onActionGroupChartEditorTriggered(QAction* a);
 	//===================================================
 	// 数据操作的上下文标签 Data Operate Context Category
 	//===================================================
@@ -358,10 +359,10 @@ private slots:
 	void onFigureCreated(DA::DAFigureWidget* f);
 	// 绘图窗口当前窗口改变
 	void onCurrentFigureChanged(DA::DAFigureWidget* f, int index);
-	// 图表有新窗口创建
-	void onChartAdded(DA::DAChartWidget* c);
 	// 当前图表窗口改变
 	void onCurrentChartChanged(DA::DAChartWidget* c);
+	// 图表编辑器状态改变
+	void onChartEditorStatusChanged(DA::DAFigureWidget::ChartEditorStatus status);
 	//===================================================
 	// project
 	//===================================================
@@ -422,7 +423,7 @@ private:
 	QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
 	//
 	LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
-	                                                        //
+															//
 	DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
 	DAAppConfig* mConfig;                                   ///< 设置类
 };

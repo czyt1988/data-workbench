@@ -3,7 +3,7 @@
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # DA WorkBench 源码目录Cmake文件
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 
 ########################################################

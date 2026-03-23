@@ -101,26 +101,6 @@ Q_SIGNALS:
      * @param index 当前激活的figure对应的index
      */
     void currentFigureChanged(DA::DAFigureWidget* f, int index);
-    /**
-     * @brief 添加了chart
-     * @param chart指针
-     */
-    void chartAdded(DA::DAChartWidget* c);
-
-    /**
-     * @brief 绘图移除
-     * @param plot 移除的绘图，此时指针还有效
-     */
-    void chartRemoved(DA::DAChartWidget* c);
-
-    // 当前选中的发生改变
-    /**
-     * @brief 当前的绘图发生了变更
-     *
-     * 当前窗口是figure的默认窗口，任何对figure的动作会作用于当前绘图
-     * @param w
-     */
-    void currentChartChanged(DA::DAChartWidget* c);
 
 private:
     Ui::DAChartOperateWidget* ui;

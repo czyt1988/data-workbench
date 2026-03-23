@@ -5,21 +5,13 @@
 namespace DA
 {
 DAAbstractRegionSelectEditor::DAAbstractRegionSelectEditor(QwtPlot* parent)
-    : DAAbstractPlotEditor(parent)
+    : DAAbstractChartEditor(parent)
     , m_selectionMode(AdditionalSelection)  // SingleSelection
     , m_xAxis(QwtPlot::xBottom)
     , m_yAxis(QwtPlot::yLeft)
 {
-    m_xAxis             = QwtPlot::xBottom;
-    const QwtPlot* plot = parent;
-    if (!plot->axisEnabled(QwtPlot::xBottom) && plot->axisEnabled(QwtPlot::xTop)) {
-        m_xAxis = QwtPlot::xTop;
-    }
-
-    m_yAxis = QwtPlot::yLeft;
-    if (!plot->axisEnabled(QwtPlot::yLeft) && plot->axisEnabled(QwtPlot::yRight)) {
-        m_yAxis = QwtPlot::yRight;
-    }
+    m_xAxis = parent->visibleXAxisId();
+    m_yAxis = parent->visibleYAxisId();
 }
 
 DAAbstractRegionSelectEditor::~DAAbstractRegionSelectEditor()
@@ -72,30 +64,6 @@ void DAAbstractRegionSelectEditor::setAxis(int xAxis, int yAxis)
 {
     m_xAxis = xAxis;
     m_yAxis = yAxis;
-}
-
-///
-/// \brief 屏幕坐标转换为数据坐标
-/// \param pos
-/// \return
-///
-QPointF DAAbstractRegionSelectEditor::invTransform(const QPointF& pos) const
-{
-    QwtScaleMap xMap = plot()->canvasMap(getXAxis());
-    QwtScaleMap yMap = plot()->canvasMap(getYAxis());
-
-    return QPointF(xMap.invTransform(pos.x()), yMap.invTransform(pos.y()));
-}
-///
-/// \brief 数据坐标转换为屏幕坐标
-/// \param pos
-/// \return
-///
-QPointF DAAbstractRegionSelectEditor::transform(const QPointF& pos) const
-{
-    QwtScaleMap xMap = plot()->canvasMap(getXAxis());
-    QwtScaleMap yMap = plot()->canvasMap(getYAxis());
-    return QwtScaleMap::transform(xMap, yMap, pos);
 }
 
 ///

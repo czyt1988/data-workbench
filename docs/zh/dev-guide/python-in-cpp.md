@@ -11,8 +11,8 @@
 1. 界面中调用python脚本,例如数据都是python的dataframe
 2. python脚本中能操作界面，在脚本中你能把读取的dataframe传递给C++的界面，让界面能显示这个参数
 
-!!! tips "提示"
-	DAWorkBench的表格能支持上亿行dataframe的快速可视化，支持上亿个点的绘图，这也是为什么用Qt(c++)来实现界面而不是pyqt或electron来实现
+!!! tip "提示"
+ DAWorkBench的表格能支持上亿行dataframe的快速可视化，支持上亿个点的绘图，这也是为什么用Qt(c++)来实现界面而不是pyqt或electron来实现
 
 能实现c++和python的双向调用后，你的程序的很多业务都可以搬迁到python来实现，c++端只需要处理大规模的渲染工作
 
@@ -20,7 +20,7 @@
 
 搭建C++与Python的双向桥梁是依赖`pybind11`这个库来实现,pybind11是一个C++库，用于将C++代码与Python进行交互，能在c++里操作python，也能把c++的数据和方法导出给python
 
-### 2.1 环境搭建与项目配置
+### 环境搭建与项目配置
 
 ```cmake
 # CMakeLists.txt 关键配置
@@ -39,7 +39,7 @@ target_link_libraries(DAWorkBench PRIVATE ${PYTHON_LIBRARIES})
 target_include_directories(DAWorkBench PRIVATE ${PYTHON_INCLUDE_DIRS})
 ```
 
-### 2.2 C++调用Python脚本：数据读取的实例
+### C++调用Python脚本：数据读取的实例
 
 在我们的应用中，数据读取是个高频操作，下面展示如何通过C++调用Python的pandas库读取CSV文件：
 
@@ -89,11 +89,12 @@ bool DAPyScriptsIO::read(const QString& filepath,
 ```
 
 **关键点分析：**
+
 - **GIL（全局解释器锁）管理**：多线程环境下必须使用 `pybind11::gil_scoped_acquire` 确保线程安全
 - **模块缓存**：避免重复导入Python模块，提高性能
 - **异常处理**：捕获Python异常并转换为C++错误信息
 
-### 2.3 导出C++类给Python：数据管理器的双向绑定
+### 导出C++类给Python：数据管理器的双向绑定
 
 让Python能够操作C++的数据管理器是双向调用的核心。以下是简化后的绑定代码：
 
@@ -132,11 +133,12 @@ PYBIND11_EMBEDDED_MODULE(da_data, m) {
 ```
 
 **所有权策略详解：**
+
 - `pybind11::return_value_policy::reference`：用于单例对象，告诉Python不要接管所有权
 - `pybind11::return_value_policy::reference_internal`：用于返回内部对象引用，生命周期与父对象绑定
 - `std::shared_ptr` 作为持有者类型：确保C++和Python共享引用计数
 
-### 2.4 Python脚本调用C++：完整业务流程示例
+### Python脚本调用C++：完整业务流程示例
 
 ```python
 # data_processing.py - Python插件示例
@@ -193,7 +195,7 @@ def clean_sensor_data(df: pd.DataFrame) -> pd.DataFrame:
     return df.reset_index()
 ```
 
-### 2.5 双向调用架构示意图
+### 双向调用架构示意图
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -235,13 +237,14 @@ def clean_sensor_data(df: pd.DataFrame) -> pd.DataFrame:
 └─────────────────────────────────────────────────────────┘
 ```
 
-## 三、实践中的关键问题与解决方案
+## 实践中的关键问题与解决方案
 
-### 3.1 对象生命周期管理：避免双重释放
+### 对象生命周期管理：避免双重释放
 
 **问题：** 最初绑定 `DAAppCore` 时未指定所有权策略，Python尝试删除C++单例对象导致崩溃。
 
 **错误示例：**
+
 ```cpp
 // 错误：默认的automatic策略可能导致Python接管所有权
 pybind11::class_<DAAppCore>(m, "DAAppCore")
@@ -258,7 +261,7 @@ pybind11::class_<DAAppCore, std::shared_ptr<DAAppCore>>(m, "DAAppCore")
                 pybind11::return_value_policy::reference);
 ```
 
-### 3.2 GIL锁与多线程安全
+### GIL锁与多线程安全
 
 **问题：** 多线程环境下，C++线程直接调用Python函数可能导致崩溃。
 
@@ -282,7 +285,7 @@ void processInBackground() {
 }
 ```
 
-### 3.3 异常传递与错误处理
+### 异常传递与错误处理
 
 **问题：** Python异常在C++中崩溃，难以调试。
 
@@ -304,69 +307,37 @@ try {
 }
 ```
 
-## 四、插件化架构的优势与未来展望
+## DAWorkBench 中的相关模块
 
-### 4.1 技术架构优势
+DAWorkBench 中与 Python 集成相关的模块如下：
 
-1.  **开发效率的飞跃**：业务逻辑用Python开发，速度提升3-5倍
-2.  **生态无缝集成**：直接使用Python庞大的数据科学库（pandas、numpy、scikit-learn等）
-3.  **热重载能力**：修改Python插件无需重新编译和重启主程序
-4.  **团队分工优化**：C++团队专注核心框架，算法团队专注Python业务逻辑
+| 模块 | 说明 |
+|------|------|
+| `DAPyBindQt` | Python与Qt绑定的核心模块，基于pybind11实现 |
+| `DAPyScripts` | Python脚本包装模块，封装了常用的Python操作 |
+| `DAPyCommonWidgets` | Python相关的通用控件模块 |
+| `DAData` | 数据处理模块，包含 `DAPyDataFrame` 和 `DAPySeries` 等类型 |
 
-### 4.2 业务价值体现
+### DAPyBindQt 模块
 
-在我们的工业数据分析软件中，这种架构带来了显著的改进：
+`DAPyBindQt` 是Python绑定的基础模块，提供了以下核心功能：
 
-| 指标 | 改进前 (纯C++) | 改进后 (C++ + Python) | 提升效果 |
-|------|---------------|----------------------|----------|
-| 新算法上线时间 | 2-3周（含编译测试） | 2-3天（仅Python开发） | 85% |
-| 用户自定义流程 | 不支持 | 完全支持 | 100% |
-| 第三方库集成 | 需要C++包装 | 直接使用Python库 | 90% |
-| 团队并行开发 | 强耦合 | 松耦合，独立开发 | 60% |
+- Qt类型与Python类型的互相转换（如 `QString` <-> `str`，`QVariant` <-> `PyObject`）
+- Python解释器的初始化和管理
+- GIL锁的管理工具
 
-### 4.3 实际应用场景示例
+### DAPyScripts 模块
 
-**场景：** 某工厂需要实时检测设备异常，但不同产线的检测逻辑不同。
+`DAPyScripts` 在 `DAPyBindQt` 基础上，封装了常用的Python操作：
 
-**传统方式：** 为每条产线编译不同版本软件，维护成本极高。
+- `DAPyScriptsIO`：数据读写操作（CSV、Excel等）
+- `DAPyScriptsDataFrame`：DataFrame操作（清洗、转换等）
+- Python环境初始化和模块加载
 
-**我们的插件化方案：**
+## 最佳实践
 
-```python
-# production_line_a_plugin.py
-def detect_anomaly(sensor_data):
-    """A产线专用异常检测算法"""
-    # 使用Python丰富的机器学习库
-    from sklearn.ensemble import IsolationForest
-    
-    model = IsolationForest(contamination=0.1)
-    predictions = model.fit_predict(sensor_data)
-    return predictions
-
-# production_line_b_plugin.py  
-def detect_anomaly(sensor_data):
-    """B产线专用异常检测算法"""
-    # 基于统计规则的检测
-    import numpy as np
-    
-    mean = np.mean(sensor_data)
-    std = np.std(sensor_data)
-    anomalies = np.abs(sensor_data - mean) > 3 * std
-    return anomalies
-```
-
-**部署方式：** 工厂工程师只需将对应的Python文件放入插件目录，无需改动C++主程序。
-
-## 五、总结与最佳实践
-
-通过这次深度集成Python的实践，我们总结出以下最佳实践：
-
-1.  **明确所有权边界**：C++管理的对象使用 `reference` 策略，Python创建的对象使用 `take_ownership`
-2.  **统一异常处理**：建立跨语言的异常传递和错误报告机制
-3.  **线程安全第一**：所有跨语言调用都要考虑GIL和线程同步
-4.  **性能热点分析**：Python适合胶水逻辑和快速原型，性能敏感部分仍用C++
-5.  **文档和示例驱动**：为插件开发者提供丰富的示例和文档
-
-**最后的技术箴言：** 在C++和Python的混合架构中，C++应该是坚实的地基和支柱，Python则是灵活多变的内部装饰和功能模块。正确划分两者的边界，才能构建出既稳定又灵活的系统。
-
-这种架构不仅解决了我们当前的问题，更重要的是为软件的未来发展打开了无限可能。用户现在可以通过Python脚本定制任何功能，而我们作为开发者，可以专注于核心框架的优化和提升。
+1. **明确所有权边界**：C++管理的对象使用 `reference` 策略，Python创建的对象使用 `take_ownership`
+2. **统一异常处理**：建立跨语言的异常传递和错误报告机制
+3. **线程安全第一**：所有跨语言调用都要考虑GIL和线程同步
+4. **性能热点分析**：Python适合胶水逻辑和快速原型，性能敏感部分仍用C++
+5. **模块缓存**：避免重复导入Python模块，使用静态变量缓存常用模块引用

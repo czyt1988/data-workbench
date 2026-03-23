@@ -93,8 +93,8 @@ public:
     QAction* actionWorkflowLockBackgroundPixmap;          ///< 锁定背景图
     QAction* actionWorkflowEnableItemMoveWithBackground;  ///< 背景图跟随元件移动
     QAction* actionWorkflowEnableItemLinkageMove;  ///< 图元联动，所谓联动，就是随着一个图元的移动，所有和这个图元链接的图元跟随移动
-    QAction* actionItemGrouping;        ///< 分组
-    QAction* actionItemUngroup;         ///< 取消分组
+    QAction* actionItemGrouping;                   ///< 分组
+    QAction* actionItemUngroup;                    ///< 取消分组
     QAction* actionWorkflowLinkEnable;  ///< 允许连接
     // workflow的运行操作
     QAction* actionWorkflowRun;        ///< 运行工作流
@@ -102,19 +102,19 @@ public:
     //===================================================
     // 绘图标签 Chart Category
     //===================================================
-    QAction* actionAddFigure;             ///< 添加绘图
-    QAction* actionFigureResizeChart;     ///< 改变fig的chart大小
-    QAction* actionFigureNewXYAxis;       ///< 新增加一个2D绘图
-    QAction* actionChartAddCurve;         ///< 添加曲线
-    QAction* actionChartAddScatter2D;     ///< 添加散点图
-    QAction* actionChartAddErrorBar;      ///< 添加误差棒图
-    QAction* actionChartAddBoxPlot;       ///< 添加箱线图
-    QAction* actionChartAddBar;           ///< 添加柱状图
-    QAction* actionChartAddMultiBar;      ///< 添加多维柱状图
-    QAction* actionChartAddHistogramBar;  ///< 添加统计图
-    QAction* actionChartAddContourMap;    ///< 等高线图
-    QAction* actionChartAddCloudMap;      ///< 云图
-    QAction* actionChartAddVectorfield;   ///< 向量场图
+    QAction* actionAddFigure;                  ///< 添加绘图
+    QAction* actionChartEditorResizeSubChart;  ///< 改变fig的chart大小
+    QAction* actionFigureNewXYAxis;            ///< 新增加一个2D绘图
+    QAction* actionChartAddCurve;              ///< 添加曲线
+    QAction* actionChartAddScatter2D;          ///< 添加散点图
+    QAction* actionChartAddErrorBar;           ///< 添加误差棒图
+    QAction* actionChartAddBoxPlot;            ///< 添加箱线图
+    QAction* actionChartAddBar;                ///< 添加柱状图
+    QAction* actionChartAddMultiBar;           ///< 添加多维柱状图
+    QAction* actionChartAddHistogramBar;       ///< 添加统计图
+    QAction* actionChartAddContourMap;         ///< 等高线图
+    QAction* actionChartAddCloudMap;           ///< 云图
+    QAction* actionChartAddVectorfield;        ///< 向量场图
 
     QAction* actionFigureSettingApplyAllChart;  ///< figure的设置应用到所有chart
     QAction* actionChartEnableGrid;             ///< 网格显示总开关
@@ -142,6 +142,15 @@ public:
     QAction* actionChartPickerTextAtRightBottom;     ///< ypicker的文字在绘图的右下角
     QAction* actionChartPickerTextFollowMouse;       ///< ypicker的文字跟随鼠标
     QAction* actionChartYPickerShowXValueEnabled;    ///< ypicker显示x值
+
+    QAction* actionChartEditorRectSelector;     ///< 矩形选框
+    QAction* actionChartEditorEllipseSelector;  ///< 椭圆选框
+    QAction* actionChartEditorPolygonSelector;  ///< 多边形选框
+    QAction* actionChartEditorAddCrossMarker;   ///< 添加十字标记
+    QAction* actionChartEditorAddHLineMarker;   ///< 添加水平标记
+    QAction* actionChartEditorAddVLineMarker;   ///< 添加垂直标记
+    QAction* actionChartEditorAddArrowMarker;   ///< 添加箭头标记
+    QActionGroup* actionGroupChartEditor;  ///< charteditor的action group，注意，这个actiongroup包含了actionChartEditorResizeSubChart
     //===================================================
     // 视图标签 View Category
     //===================================================

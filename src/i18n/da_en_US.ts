@@ -60,6 +60,19 @@
     </message>
 </context>
 <context>
+    <name>DA</name>
+    <message>
+        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
+        <source>Exception in get selected column:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Exception in get selected series:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::AppMainWindow</name>
     <message>
         <location filename="../APP/AppMainWindow.cpp" line="+81"/>
@@ -167,7 +180,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+350"/>
+        <location filename="../APP/DAAppActions.cpp" line="+357"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -183,12 +196,27 @@
     </message>
     <message>
         <location line="+1"/>
+        <source>Save file or project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Save As</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
+        <source>Save file or project as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Append To Project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Append file or project to current project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -198,7 +226,17 @@
     </message>
     <message>
         <location line="+1"/>
+        <source>Rename columns in the selected table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Setting for the application</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -207,9 +245,19 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>About the application</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>Add 
 Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add data to the table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -219,9 +267,19 @@ Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
+        <source>Remove data from the table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Add 
 Figure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a figure to the workspace</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -232,8 +290,18 @@ Chart</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Resize the sub-chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>New 
 XY Axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a new XY axis to the figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -244,8 +312,18 @@ Curve</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add a curve to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 Scatter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a scatter plot to the chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -256,8 +334,18 @@ Error Bar</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add an error bar to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 Box Plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a box plot to the chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -268,8 +356,18 @@ Bar</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add a bar chart to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 MultiBar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a multi-bar chart to the chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -280,8 +378,18 @@ Histogram</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add a histogram to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 Contour Map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a contour map to the chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -292,8 +400,18 @@ Cloud Map</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add a cloud map to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 Vector Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a vector field to the chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -302,7 +420,7 @@ Vector Field</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>When this feature is selected, operations on the figure will apply to all plots, not just the currently selected one</source>
         <translation type="unfinished"></translation>
     </message>
@@ -313,7 +431,17 @@ Vector Field</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable grid in the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>X Grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable X grid in the chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -323,7 +451,17 @@ Vector Field</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable Y grid in the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Xmin Grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable Xmin grid in the chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -333,7 +471,17 @@ Vector Field</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable Ymin grid in the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Zoom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable zoom in the chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -343,7 +491,17 @@ Vector Field</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Zoom in on the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Zoom Out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Zoom out of the chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -354,12 +512,27 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Zoom to show all data in the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Pan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable pan in the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Cross</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable cross picker in the chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -374,7 +547,17 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Set picker text at canvas left top corner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>At Canvas Left Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Set picker text at canvas left bottom corner</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -384,7 +567,17 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Set picker text at canvas right top corner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Y Picker Show X Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable X value display for Y picker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -394,7 +587,17 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Set picker text at canvas right bottom corner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Follow Mouse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Set picker text to follow mouse cursor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -404,7 +607,17 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable XY picker in the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Link All Picker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable all picker linked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -414,12 +627,153 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable legend in the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Copy To Clipboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+1"/>
+        <source>Copy the figure to the clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Add Rect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a rectangle to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Ellipse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add an ellipse to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Polygon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a polygon to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Cross Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a cross marker to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add H Line Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add an H line marker to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add V Line Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a V line marker to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Arrow Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add an arrow marker to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Insert a column to the left of the current column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>To num</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cast to num type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>To str</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cast to string type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>To datetime</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cast to datetime type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+66"/>
+        <source>Show the left side bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show Right 
+Side Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the right side bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Undo the last action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-104"/>
         <source>Remove Row</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Remove a row from the table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -429,7 +783,17 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Remove a column from the table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Remove Cell</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Remove a cell from the table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -440,7 +804,17 @@ Row</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Insert a row into the table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Insert Row(Above)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Insert a row above the current row</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -451,48 +825,33 @@ Column</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Insert a column to the right of the current column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Insert Column(Left)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>to num</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>cast to num type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>to str</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>cast to string type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>to datetime</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>cast to datetime type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+9"/>
         <source>To Index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
+        <source>Cast to index type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>New 
 Workflow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Create a new workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -507,13 +866,23 @@ Move</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>grouping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
+        <source>Group selected elements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>ungroup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Ungroup selected elements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -524,8 +893,18 @@ Rect</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Draw a rectangle on the workflow scene</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Draw 
 Text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Draw text on the workflow scene</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -536,8 +915,18 @@ Grid</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Show grid on the workflow scene</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Lock 
 View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Lock the workflow view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -548,13 +937,28 @@ Workflow</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Run the workflow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Terminate 
 Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
+        <source>Terminate the workflow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Link</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable link between elements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -565,7 +969,17 @@ Background</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add a background pixmap to the workflow scene</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Lock Background</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Lock the background pixmap in the workflow scene</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -574,8 +988,18 @@ Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
+        <source>Enable or disable item move with background pixmap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Export To Image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export the workflow scene to an image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -585,13 +1009,28 @@ Background</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Export the workflow scene to a PNG image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Show Marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
+        <source>Show marker on the workflow scene</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Show 
 Workflow Area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the workflow area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -602,8 +1041,18 @@ Workflow Manager</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Show the workflow manager area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Show 
 Chart Area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the chart area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -614,8 +1063,18 @@ Chart Manager</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Show the chart manager area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Show 
 Table Area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the data area</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -626,7 +1085,17 @@ Data Manager</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Show the data manager area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Show Infomation Window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the message log window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -636,20 +1105,24 @@ Data Manager</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Show the setting window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Show Left 
 Side Bar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Show Righ 
-Side Bar</source>
+        <location line="+5"/>
+        <source>Plugin 
+Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Plugin 
-Config</source>
+        <location line="+1"/>
+        <source>Show the plugin manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -678,6 +1151,11 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Redo the last action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+3"/>
         <source>Undo</source>
         <translation type="unfinished"></translation>
@@ -686,17 +1164,17 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+496"/>
+        <location filename="../APP/DAAppController.cpp" line="+479"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+21"/>
         <source>Project saved failed!,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-20"/>
+        <location line="-19"/>
         <source>project file (*.%1)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -706,13 +1184,13 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Whether to overwrite the file:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+12"/>
-        <location line="+471"/>
+        <location line="+470"/>
         <source>Project saved successfully,path is %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -749,7 +1227,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+69"/>
+        <location line="+66"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -774,7 +1252,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -784,12 +1262,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+304"/>
+        <location line="+300"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+599"/>
+        <location line="+621"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1097,13 +1575,13 @@ Config</source>
     <message>
         <location line="+1"/>
         <location line="+19"/>
-        <location line="+88"/>
+        <location line="+91"/>
         <location line="+189"/>
         <source>Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-295"/>
+        <location line="-298"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation type="unfinished"></translation>
@@ -1116,96 +1594,96 @@ Config</source>
     <message>
         <location line="+3"/>
         <location line="+21"/>
-        <location line="+346"/>
+        <location line="+339"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-366"/>
+        <location line="-359"/>
         <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+184"/>
+        <location line="+187"/>
         <source>DataFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-183"/>
-        <location line="+185"/>
+        <location line="-186"/>
+        <location line="+188"/>
         <source>Operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-184"/>
-        <location line="+187"/>
+        <location line="-187"/>
+        <location line="+190"/>
         <source>Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-186"/>
+        <location line="-189"/>
         <location line="+2"/>
-        <location line="+197"/>
+        <location line="+200"/>
         <location line="+6"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-199"/>
+        <location line="-202"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+289"/>
+        <location line="+292"/>
         <source>Workflow Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-288"/>
-        <location line="+293"/>
+        <location line="-291"/>
+        <location line="+296"/>
         <source>ClipBoard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-292"/>
-        <location line="+297"/>
+        <location line="-295"/>
+        <location line="+300"/>
         <source>Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-296"/>
-        <location line="+305"/>
+        <location line="-299"/>
+        <location line="+308"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-304"/>
-        <location line="+309"/>
+        <location line="-307"/>
+        <location line="+312"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-306"/>
-        <location line="+387"/>
+        <location line="-309"/>
+        <location line="+380"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-386"/>
-        <location line="+389"/>
+        <location line="-379"/>
+        <location line="+382"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-387"/>
-        <location line="+234"/>
+        <location line="-380"/>
+        <location line="+237"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-233"/>
+        <location line="-236"/>
         <location line="+5"/>
         <source>Figure Setting</source>
         <translation type="unfinished"></translation>
@@ -1222,19 +1700,29 @@ Config</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+393"/>
-        <location line="+2"/>
+        <location line="+4"/>
+        <location line="+442"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-393"/>
+        <location line="-444"/>
         <source>Chart Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Figure Theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Select Tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Chart Assist Tool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1269,7 +1757,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+18"/>
         <source>Workflow View</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1279,12 +1767,28 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+24"/>
+        <location line="+2"/>
+        <source>Chart Operate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+45"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+16"/>
+        <source>Select Operate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Assist Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
         <source>Recent Files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1767,7 +2271,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+263"/>
+        <location line="+260"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2416,6 +2920,14 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DA::DAFigureWidget</name>
+    <message>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+832"/>
+        <source>Unsupported chart editor type: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAGraphicsTextItem</name>
     <message>
         <location filename="../DAGraphicsView/DAGraphicsTextItem.cpp" line="+40"/>
@@ -2722,13 +3234,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAPyDataframeColumnsListWidget</name>
     <message>
-        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
-        <source>Exception in get selected column:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <location line="+20"/>
+        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+20"/>
         <source>Exception in get selected series:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3314,7 +3820,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2029"/>
+        <location filename="../APP/DAAppController.cpp" line="-2025"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5011,7 +5517,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+70"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-755"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7091,6 +7597,26 @@ To Excel</source>
     <message>
         <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-297"/>
         <source>%1.%2,size:%3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAFigure/DAChartItemCreatInteractor.cpp" line="+111"/>
+        <source>Horizontal Vertical Line Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Vertical Line Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Cross Line Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+50"/>
+        <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

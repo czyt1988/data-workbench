@@ -1,7 +1,7 @@
 ﻿# 顶级测试目录的 CMakeLists.txt
 # 这个文件管理所有子目录的单元测试
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.10)
 project(DATests)
 
 # 启用测试

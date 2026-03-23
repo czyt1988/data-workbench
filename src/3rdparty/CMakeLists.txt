@@ -2,7 +2,7 @@
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.10)
 project(DAWorkBench-3rdparty-build
         DESCRIPTION "DataWorkBench : 3rdparty build"
 )
@@ -56,7 +56,10 @@ set(QUAZIP_ENABLE_TESTS OFF CACHE BOOL "force set QUAZIP_ENABLE_TESTS oFF" FORCE
 # 禁用QUAZIP_BZIP2避免每次都联网下载
 set(QUAZIP_BZIP2 OFF CACHE BOOL "force set QUAZIP_BZIP2 oFF" FORCE)
 set(QUAZIP_BZIP2_STDIO OFF CACHE BOOL "force set QUAZIP_BZIP2_STDIO oFF" FORCE)
-
+# pybind11
+set(PYBIND11_INSTALL ON CACHE BOOL "force set PYBIND11_INSTALL ON" FORCE)
+set(PYBIND11_TEST OFF CACHE BOOL "force set PYBIND11_TEST OFF" FORCE)
+set(PYBIND11_NOPYTHON ON CACHE BOOL "force set PYBIND11_NOPYTHON OFF" FORCE)
 # quazip依赖zlib，先看看zlib是否安装
 find_package(ZLIB QUIET)
 if(NOT ZLIB_FOUND)
@@ -90,7 +93,8 @@ add_subdirectory(ADS)
 add_subdirectory(spdlog)
 
 # pybind11直接把文件夹复制过去
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/pybind11/include/pybind11" DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+add_subdirectory(pybind11)
+#file(COPY "${CMAKE_CURRENT_LIST_DIR}/pybind11/include/pybind11" DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 
 # 这精简化的ctk库，只用到了一些组件
 add_subdirectory(ctk)

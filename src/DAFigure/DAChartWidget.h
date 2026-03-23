@@ -19,7 +19,7 @@
 #include "qwt_plot_spectrogram.h"
 
 class QwtDateScaleDraw;
-
+class QwtFigure;
 
 namespace DA
 {
@@ -229,8 +229,8 @@ public:
     void registerDataPickerFactory(const DataPickerFactory& factory) override;
 
     // ==================== 工具函数 ====================
-    DAFigureWidget* getFigure() const;
-
+    QwtFigure* figure() const;
+    DAFigureWidget* figureWidget() const;
     void notifyPropertiesChanged(ChartPropertyChangeFlags flag);
 
 public Q_SLOTS:
@@ -244,11 +244,6 @@ protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
-    // 初始化函数
-    void initializeChart();
-    void setupCanvas();
-    void initializeInteractions();
-
     // 组件管理
     void setupZoomer();
     void setupPanner();

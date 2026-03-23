@@ -90,6 +90,13 @@
         <file>Icon/link-pick.svg</file>
         <file>Icon/left-sider-bar.svg</file>
         <file>Icon/right-sider-bar.svg</file>
+        <file>Icon/chart-selector-polygon.svg</file>
+        <file>Icon/chart-selector-rect.svg</file>
+        <file>Icon/chart-selector-ellipse.svg</file>
+        <file>Icon/chart-corss-marker.svg</file>
+        <file>Icon/chart-hline-marker.svg</file>
+        <file>Icon/chart-vline-marker.svg</file>
+        <file>Icon/arrow.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>
