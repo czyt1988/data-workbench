@@ -104,7 +104,7 @@ macro(damacro_plugin_setting _plugin_name _plugin_description _plugin_ver_major 
 src目录的CMake文件首先应该这写：
 
 ```cmake
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 # 定义插件的信息，自动设置安装位置
 damacro_plugin_setting(
     "MyDAPlugin"
@@ -155,7 +155,7 @@ damacro_import_orderedmap(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 根目录`CMakeLists.txt`文件：
 
 ```cmake
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(MyDAPlugin
         DESCRIPTION "this cmake file is the top cmake file of MyDAPlugin"
 )
@@ -197,7 +197,7 @@ endif()
 src目录的`CMakeLists.txt`文件：
 
 ```cmake
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 # 定义插件的信息，自动设置安装位置
 damacro_plugin_setting(
     "MyDAPlugin"
@@ -238,7 +238,7 @@ add_library(${DA_PLUGIN_NAME} SHARED
             ${DA_PLUGIN_SOURCE_FILES}
             ${DA_PLUGIN_QT_UI_FILES}
             ${DA_PLUGIN_QT_RC_FILES}
-)	
+) 
 
 ########################################################
 # 依赖链接 #!!!!** 注意变更 **!!!!
@@ -325,7 +325,7 @@ damacro_plugin_install()
 
 ```json
 {
-	"plugin-base-name":"My",
+ "plugin-base-name":"My",
     "plugin-display-name":"My Plugin",
     "plugin-description":"This is My Plugin",
     "plugin-iid":"Plugin.MyPlugin",

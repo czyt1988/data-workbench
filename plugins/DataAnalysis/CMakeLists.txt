@@ -3,7 +3,7 @@
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # DataAnalysisPlugin 库
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 ########################################################
 # 获取安装目录名称

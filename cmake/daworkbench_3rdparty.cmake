@@ -166,15 +166,36 @@ endmacro(damacro_import_Python)
 macro(damacro_import_pybind11 __target_name)
     # pybind11
     # pybind11是header only
-    if(DEFINED DA_SRC_DIR)
-        set(_src_dir ${DA_SRC_DIR})
+#    if(DEFINED DA_SRC_DIR)
+#        set(_src_dir ${DA_SRC_DIR})
+#    else()
+#        set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/..)
+#    endif()
+#    target_include_directories(${__target_name} PUBLIC
+#        $<INSTALL_INTERFACE:include/pybind11>
+#        $<BUILD_INTERFACE:${_src_dir}/3rdparty/pybind11/include>
+#    )
+
+    # pybind11的安装位置不是在lib/cmake
+    # 而是在share/cmake下面
+    find_package(pybind11)
+    if(pybind11_FOUND)
+        message(STATUS "  |-finded tsl-ordered-map")
     else()
-        set(_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/..)
+        message(STATUS "  |-can not find tsl-ordered-map")
+        if(DEFINED DA_INSTALL_LIB_SHARE_PATH)
+            set(_lib_dir ${DA_INSTALL_LIB_SHARE_PATH}/pybind11)
+            message(STATUS "  |-try to find in ${_lib_dir}")
+            find_package(pybind11 PATHS ${_lib_dir})
+        endif()
     endif()
-    target_include_directories(${__target_name} PUBLIC
-        $<INSTALL_INTERFACE:include/pybind11>
-        $<BUILD_INTERFACE:${_src_dir}/3rdparty/pybind11/include>
-    )
+    # 链接的第三方库
+    if(pybind11_FOUND)
+        target_link_libraries(${__target_name} PUBLIC pybind11::headers)
+        message(STATUS "  |-link pybind11::headers")
+    else()
+        message(FATAL_ERROR "  can not find pybind11")
+    endif()
 endmacro(damacro_import_pybind11)
 
 macro(damacro_import_orderedmap __target_name)
