@@ -149,15 +149,19 @@ bool DAChartEllipseRegionSelectEditor::mouseMoveEvent(const QMouseEvent* e)
     if (Qt::MiddleButton == e->button() || Qt::RightButton == e->button()) {
         return false;
     }
+    DA_D(d);
     QPoint p = compat::eventPos(e);
 
     QPointF pf = invTransform(p);
-    d_ptr->mSelectedRect.setX(d_ptr->mPressedPoint.x());
-    d_ptr->mSelectedRect.setY(d_ptr->mPressedPoint.y());
-    d_ptr->mSelectedRect.setWidth(pf.x() - d_ptr->mPressedPoint.x());
-    d_ptr->mSelectedRect.setHeight(pf.y() - d_ptr->mPressedPoint.y());
-    if (d_ptr->mTmpItem) {
-        d_ptr->mTmpItem->setEllipse(d_ptr->mSelectedRect);
+    d->mSelectedRect.setX(d->mPressedPoint.x());
+    d->mSelectedRect.setY(d->mPressedPoint.y());
+    d->mSelectedRect.setWidth(pf.x() - d->mPressedPoint.x());
+    d->mSelectedRect.setHeight(pf.y() - d->mPressedPoint.y());
+    if (d->mTmpItem) {
+        d->mTmpItem->setEllipse(d->mSelectedRect);
+        if(QwtPlot* p = d->mTmpItem->plot()){
+            p->replot();
+        }
     }
     return true;
 }

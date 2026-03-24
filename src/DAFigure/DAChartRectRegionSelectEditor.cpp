@@ -109,6 +109,9 @@ bool DAChartRectRegionSelectEditor::mouseMoveEvent(const QMouseEvent* e)
     d_ptr->m_selectedRect.setHeight(pf.y() - d_ptr->m_pressedPoint.y());
     if (d_ptr->m_tmpItem) {
         d_ptr->m_tmpItem->setRect(d_ptr->m_selectedRect);
+        if(QwtPlot* p = d_ptr->m_tmpItem->plot()){
+            p->replot();
+        }
     }
     return true;
 }

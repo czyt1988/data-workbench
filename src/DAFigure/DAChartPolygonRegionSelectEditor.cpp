@@ -150,6 +150,9 @@ bool DAChartPolygonRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
             d->mPolygon.pop_back();
             if (d->mTmpItem) {
                 d->mTmpItem->setPolygon(d->mPolygon);
+                if(QwtPlot* p = d_ptr->mTmpItem->plot()){
+                    p->replot();
+                }
             }
         }
     }
@@ -170,6 +173,9 @@ bool DAChartPolygonRegionSelectEditor::mouseMoveEvent(const QMouseEvent* e)
     tmp.append(pf);
     if (d_ptr->mTmpItem) {
         d_ptr->mTmpItem->setPolygon(tmp);
+        if(QwtPlot* p = d_ptr->mTmpItem->plot()){
+            p->replot();
+        }
     }
     return DAAbstractRegionSelectEditor::mouseMoveEvent(e);  // 把移动的事件继续传递下去
 }
