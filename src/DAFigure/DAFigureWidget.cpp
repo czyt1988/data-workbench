@@ -31,8 +31,10 @@
 #include "DAFigureWidgetOverlay.h"
 #include "DAFigureWidgetCommands.h"
 #include "DAChartAxisRangeBinder.h"
-#include "DAChartRegionSelectEditor.h"
+#include "DAChartRectRegionSelectEditor.h"
 #include "DAChartSelectRegionShapeItem.h"
+#include "DAChartEllipseRegionSelectEditor.h"
+#include "DAChartPolygonRegionSelectEditor.h"
 #include "DAChartItemCreatInteractor.h"
 #include "DAChartArrowEditor.h"
 // qwt
@@ -197,17 +199,17 @@ void DAFigureWidget::PrivateData::beginSubChartEditor()
 
 void DAFigureWidget::PrivateData::beginRectSelectEditor()
 {
-    m_chartEditor = beginSelectEditor< DAChartRegionSelectEditor >(DAChartRegionSelectEditor::RectShape);
+    m_chartEditor = beginSelectEditor< DAChartRectRegionSelectEditor >();
 }
 
 void DAFigureWidget::PrivateData::beginEllipseSelectEditor()
 {
-    m_chartEditor = beginSelectEditor< DAChartRegionSelectEditor >(DAChartRegionSelectEditor::EllipseShape);
+    m_chartEditor = beginSelectEditor< DAChartEllipseRegionSelectEditor >();
 }
 
 void DAFigureWidget::PrivateData::beginPolygonSelectEditor()
 {
-    m_chartEditor = beginSelectEditor< DAChartRegionSelectEditor >(DAChartRegionSelectEditor::PolygonShape);
+    m_chartEditor = beginSelectEditor< DAChartPolygonRegionSelectEditor >();
 }
 
 void DAFigureWidget::PrivateData::beginHLineMarkerEditor()

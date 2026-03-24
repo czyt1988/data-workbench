@@ -60,19 +60,6 @@
     </message>
 </context>
 <context>
-    <name>DA</name>
-    <message>
-        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
-        <source>Exception in get selected column:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Exception in get selected series:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::AppMainWindow</name>
     <message>
         <location filename="../APP/AppMainWindow.cpp" line="+81"/>
@@ -2922,7 +2909,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+832"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+834"/>
         <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3234,7 +3221,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAPyDataframeColumnsListWidget</name>
     <message>
-        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+20"/>
+        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
+        <source>Exception in get selected column:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <location line="+20"/>
         <source>Exception in get selected series:%1</source>
         <translation type="unfinished"></translation>
     </message>

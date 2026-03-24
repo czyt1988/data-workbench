@@ -131,6 +131,9 @@ void DAChartArrowEditor::updatePreview(const QVector< QPointF >& points)
     } else {
         // 更新标记位置
         d->m_marker->setPoints(startPoint, endPoint);
+        if(QwtPlot* p = d->m_marker->plot()){
+            p->replot();
+        }
     }
 }
 

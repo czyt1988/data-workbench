@@ -255,6 +255,20 @@ macro(damacro_import_Python __target_name)
     target_include_directories(${__target_name} PUBLIC ${Python3_INCLUDE_DIRS})
 endmacro(damacro_import_Python)
 
+
+macro(damacro_import_pybind11 __target_name __install_dir)
+    # 3rdparty - orderedmap
+    find_package(pybind11 PATHS ${__install_dir}/share/cmake)
+    if(pybind11_FOUND)
+        message(STATUS "  |-link pybind11")
+        message(STATUS "  | |-include dir:${pybind11_INCLUDE_DIR}")
+    else()
+        message(STATUS "  × can not find pybind11")
+    endif()
+    # 链接的第三方库
+    target_link_libraries(${__target_name} PUBLIC pybind11::headers)
+endmacro(damacro_import_pybind11)
+
 macro(damacro_import_orderedmap __target_name __install_dir)
     # 3rdparty - orderedmap
     find_package(tsl-ordered-map PATHS ${__install_dir}/share/cmake)
