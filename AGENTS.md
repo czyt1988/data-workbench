@@ -163,6 +163,13 @@ public:
 
 插件位于 `plugins` 目录下，每个插件是一个独立的模块，可以扩展软件功能。
 
+## 编译运行
+
+项目使用cmake构建，如果项目目录下存在build目录，说明已经生成过，直接在此目录下编译即可
+```shell
+cmake --build build --config Debug --target install
+```
+
 ### 插件开发
 
 - 参考现有的插件结构（如 DataAnalysis 插件）
