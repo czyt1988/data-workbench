@@ -14,17 +14,11 @@ python环境有如下要求：
 
 python环境需要安装的库：
 
-```
-pip install Loguru "numpy<=1.26.4" pandas scipy openpyxl chardet PyWavelets pyarrow
-```
-
-如果你的python版本小于3.8，还需额外导入`typing_extensions`库
-
-```
-pip install typing_extensions
+```shell
+pip install -r "{DataWorkBench_Dir}/requirements.txt"
 ```
 
-为了兼容性，numpy建议2.0以下，这里推荐使用1.26.4（python3.7等低版本python不用考虑此问题）
+> {DataWorkBench_Dir}是data-workbench的根目录
 
 下面是`data-workbench`依赖的python库说明
 
@@ -34,13 +28,59 @@ pip install typing_extensions
 - PyWavelets是进行小波分析的库
 - pyarrow是dataframe进行扩展数据导入的库，支持parquet（Partitioning Parquet files）和Feather
 
-python在win11操作系统下，安装package会把包安装到`用户名\AppData\Roaming\Python\Pythonxx\site-packages`下，这对于把整个python打包是不利的，因此需要在执行pip install时加上参数`--target`指定安装路径，例如：
+python在win10~11操作系统下，安装package会把包安装到`用户名\AppData\Roaming\Python\Pythonxx\site-packages`下，这对于把整个python打包是不利的，因此需要在执行pip install时加上参数`--target`指定安装路径，例如：
 
 ```shell
-pip install --target="../Lib/site-packages" loguru numpy==1.26.4 pandas scipy openpyxl chardet PyWavelets pyarrow
+pip install --target="../Lib/site-packages" -r "{DataWorkBench_Dir}/requirements.txt"
 ```
 
-项目目录下已经把所有依赖放到了`requirements.txt`文件里，可以直接使用`pip install -r requirements.txt`进行安装
+## python选择
+
+这里建议使用python3.11版本，后续的ai操作基本都要求3.11以上版本
+
+建议使用`Windows embeddable package`，windows版本下载地址：[https://www.python.org/downloads/windows](https://www.python.org/downloads/windows)
+
+### 配置embeddable package方法
+
+`embeddable package`是一个独立的python环境，不需要安装到系统环境，只需要解压到程序安装目录下即可，但缺乏pip，需要进行如下设置
+
+#### 步骤一：修改embeddable package配置文件
+
+1. 在Python解压目录下，找到名为 `python3xx._pth` 的文件（其中 `xx` 是版本号，例如 `python313._pth`）。
+2. 用**记事本**打开它。
+3. 找到 `#import site` 这一行，**删除行首的 `#`**，使其变为 `import site`。
+4. **保存并关闭文件**。
+
+#### 步骤二：安装pip工具
+
+1. **下载安装脚本**：在浏览器中打开 `https://bootstrap.pypa.io/get-pip.py`，将网页内容**另存为** `get-pip.py` 文件，并保存到你的Python解压目录下。
+
+2. **打开命令行并安装**：
+    - 在Python目录的空白处，按住 `Shift` 键并点击鼠标右键，选择“在此处打开PowerShell窗口”或“打开命令窗口”。
+    - 在弹出的窗口中输入以下命令并回车：
+
+       ```bash
+       .\python.exe get-pip.py
+       ```
+
+    - 等待安装完成，pip 就会被成功安装。
+    - 安装完成后可以删除`get-pip.py`文件。
+
+#### 步骤三：安装setuptools 和 wheel
+
+需要先安装 `setuptools` 和 `wheel` 这两个基础工具
+
+```shell
+.\python.exe -m pip install --target="./Lib/site-packages" setuptools wheel
+```
+
+#### 安装所有依赖
+
+现在，你可以像往常一样使用pip来安装第三方库了。关键是在所有pip命令前，都要加上 `.\python.exe -m` 前缀，以确保命令是在这个嵌入式环境中执行。
+
+```bash
+.\python.exe -m pip install --target="./Lib/site-packages" -r "{DataWorkBench_Dir}/requirements.txt"
+```
 
 ## 程序运行时查找python逻辑
 
@@ -58,4 +98,4 @@ dataworkbench查找python的逻辑是：
 
   > 程序安装目录可以使用`${current-app-dir}`变量替代，例如python安装在程序安装目录下，那么`${current-app-dir}`的值就是程序安装目录，如：${current-app-dir}/python311/python.exe
 
-2. 如果没有`python-config.json`文件，将使用`where python`来查找系统的python环境
+1. 如果没有`python-config.json`文件，将使用`where python`来查找系统的python环境

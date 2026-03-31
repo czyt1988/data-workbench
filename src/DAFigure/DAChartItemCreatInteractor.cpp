@@ -89,6 +89,10 @@ bool DAChartItemCreatInteractor::mousePressEvent(const QMouseEvent* e)
         QwtPlotItem* item = d_ptr->m_createPlotItem(gca, pos);
         if (item) {
             d_ptr->mTmpItem = item;
+            QwtPlot* p      = item->plot();
+            if (p) {
+                p->replot();
+            }
         }
         Q_EMIT finishedEdit(false);
     }

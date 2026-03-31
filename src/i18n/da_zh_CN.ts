@@ -7722,7 +7722,7 @@ To Excel</source>
         <translation>%1.%2,长度:%3</translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAChartItemCreatInteractor.cpp" line="+111"/>
+        <location filename="../DAFigure/DAChartItemCreatInteractor.cpp" line="+115"/>
         <source>Horizontal Vertical Line Marker</source>
         <translation>水平垂直线标记</translation>
     </message>

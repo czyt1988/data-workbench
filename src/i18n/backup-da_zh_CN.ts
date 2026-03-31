@@ -60,22 +60,9 @@
     </message>
 </context>
 <context>
-    <name>DA</name>
-    <message>
-        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
-        <source>Exception in get selected column:%1</source>
-        <translation>获取选中的列发生异常：%1</translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Exception in get selected series:%1</source>
-        <translation>获取选中的系列发生异常：%1</translation>
-    </message>
-</context>
-<context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+80"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+81"/>
         <source>Restore UI State</source>
         <translation>加载界面状态信息</translation>
     </message>
@@ -110,7 +97,7 @@
         <translation>无法移除ui状态文件%1</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+46"/>
         <source>untitle</source>
         <translation>未命名</translation>
     </message>
@@ -180,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+319"/>
+        <location filename="../APP/DAAppActions.cpp" line="+357"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -196,13 +183,28 @@
     </message>
     <message>
         <location line="+1"/>
+        <source>Save file or project</source>
+        <translation>保存文件或项目</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Save As</source>
         <translation>另存为</translation>
     </message>
     <message>
         <location line="+1"/>
+        <source>Save file or project as</source>
+        <translation>保存文件或项目为</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Append To Project</source>
         <translation>追加到工程</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Append file or project to current project</source>
+        <translation>附加文件或项目到当前项目</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -211,8 +213,18 @@
     </message>
     <message>
         <location line="+1"/>
+        <source>Rename columns in the selected table</source>
+        <translation>重命名选中表格的列</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Setting</source>
         <translation>设置</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Setting for the application</source>
+        <translation>应用程序设置</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -220,11 +232,21 @@
         <translation>关于</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>About the application</source>
+        <translation>关于应用程序</translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>Add 
 Data</source>
         <translation>添加
 数据</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add data to the table</source>
+        <translation>添加数据到表格</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -234,11 +256,21 @@ Data</source>
 数据</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
+        <source>Remove data from the table</source>
+        <translation>从表格中移除数据</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Add 
 Figure</source>
         <translation>添加
 绘图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a figure to the workspace</source>
+        <translation>添加绘图到工作区</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -249,10 +281,20 @@ Chart</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Resize the sub-chart</source>
+        <translation>调整子图尺寸</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>New 
 XY Axis</source>
         <translation>新建
 坐标系</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a new XY axis to the figure</source>
+        <translation>新建坐标系</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -262,9 +304,19 @@ Curve</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add a curve to the chart</source>
+        <translation>添加折线图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 Scatter</source>
         <translation>散点图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a scatter plot to the chart</source>
+        <translation>添加散点图</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -274,9 +326,19 @@ Error Bar</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add an error bar to the chart</source>
+        <translation>添加误差棒图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 Box Plot</source>
         <translation>箱线图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a box plot to the chart</source>
+        <translation>添加箱线图</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -286,9 +348,19 @@ Bar</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add a bar chart to the chart</source>
+        <translation>添加柱状图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 MultiBar</source>
         <translation>多重柱状图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a multi-bar chart to the chart</source>
+        <translation>添加多重柱状图</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -298,9 +370,19 @@ Histogram</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add a histogram to the chart</source>
+        <translation>添加分布图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 Contour Map</source>
         <translation>等高线图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a contour map to the chart</source>
+        <translation>添加等高线图</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -310,9 +392,19 @@ Cloud Map</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Add a cloud map to the chart</source>
+        <translation>添加云图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 Vector Field</source>
         <translation>向量场图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a vector field to the chart</source>
+        <translation>添加向量场图</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -321,7 +413,7 @@ Vector Field</source>
 所有绘图</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>When this feature is selected, operations on the figure will apply to all plots, not just the currently selected one</source>
         <translation>此功能选中后，绘图面板上的操作将应用到所有绘图，而不仅仅是当前选中的绘图</translation>
     </message>
@@ -332,8 +424,18 @@ Vector Field</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable grid in the chart</source>
+        <translation>启用或禁用图表中的网格</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>X Grid</source>
         <translation>横向网格</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable X grid in the chart</source>
+        <translation>启用或禁用图表中的横向网格</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -342,8 +444,18 @@ Vector Field</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable Y grid in the chart</source>
+        <translation>启用或禁用图表中的纵向网格</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Xmin Grid</source>
         <translation>横向密集网格</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable Xmin grid in the chart</source>
+        <translation>启用或禁用图表中的横向密集网格</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -352,15 +464,40 @@ Vector Field</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable Ymin grid in the chart</source>
+        <translation>启用或禁用图表中的纵向密集网格</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Zoom</source>
         <translation>缩放</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+1"/>
+        <source>Enable or disable zoom in the chart</source>
+        <translation>启用或禁用图表中的缩放</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Zoom in on the chart</source>
+        <translation>放大</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Zoom out of the chart</source>
+        <translation>缩小</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Show 
 All</source>
         <translation>显示
 全部</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Zoom to show all data in the chart</source>
+        <translation>缩放以显示所有数据</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -369,8 +506,18 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable pan in the chart</source>
+        <translation>启用或禁用图表中的拖动</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Cross</source>
         <translation>十字标记</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable cross picker in the chart</source>
+        <translation>启用或禁用图表中的十字标记</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -384,8 +531,18 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Set picker text at canvas left top corner</source>
+        <translation>设置拾取文本在画布左上角</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>At Canvas Left Bottom</source>
         <translation>在画布左下</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Set picker text at canvas left bottom corner</source>
+        <translation>设置拾取文本在画布左下角</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -394,8 +551,28 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Set picker text at canvas right top corner</source>
+        <translation>设置拾取文本在画布右上角</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y Picker Show X Value</source>
+        <translation>y拾取显示x值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable X value display for Y picker</source>
+        <translation>启用或禁用y拾取显示x值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>At Canvas Right Bottom</source>
         <translation>在画布右下</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Set picker text at canvas right bottom corner</source>
+        <translation>设置拾取文本在画布右下角</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -404,8 +581,29 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Set picker text to follow mouse cursor</source>
+        <translation>设置拾取文本跟随鼠标</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>XY Picker</source>
         <translation>点拾取</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable XY picker in the chart</source>
+        <translation>启用或禁用图表中的点拾取</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Link All Picker</source>
+        <translation>联动
+拾取</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable or disable all picker linked</source>
+        <translation>启用或禁用所有拾取联动</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -414,93 +612,83 @@ All</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Enable or disable legend in the chart</source>
+        <translation>启用或禁用图表中的图例</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Copy To Clipboard</source>
         <translation>复制到
 剪切板</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+15"/>
+        <source>Add Arrow Marker</source>
+        <translation>添加箭头</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add an arrow marker to the chart</source>
+        <translation>添加箭头标记</translation>
+    </message>
+    <message>
+        <location line="+108"/>
+        <source>Undo the last action</source>
+        <translation>撤销</translation>
+    </message>
+    <message>
+        <location line="-104"/>
         <source>Remove Row</source>
         <translation>删除行</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Remove Column</source>
         <translation>删除列</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Remove Cell</source>
         <translation>删除单元格</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Insert 
 Row</source>
         <translation>插入
 行</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Insert Row(Above)</source>
         <translation>插入行(上)</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Insert 
 Column</source>
         <translation>插入
 列(右)</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Insert Column(Left)</source>
         <translation>插入列(左)</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>to num</source>
-        <translation>转换为数值</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>cast to num type</source>
-        <translation>转换为数值类型</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>to str</source>
-        <translation>转换为文本</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>cast to string type</source>
-        <translation>转换为字符串类型</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>to datetime</source>
-        <translation>转换为日期</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>cast to datetime type</source>
-        <translation>转换为日期类型</translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+9"/>
         <source>To Index</source>
         <translation>转换为索引</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>New 
 Workflow</source>
         <translation>新建
 工作流</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Linkage 
 Move</source>
         <translation>联动</translation>
@@ -516,101 +704,107 @@ Move</source>
         <translation>分组</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>ungroup</source>
         <translation>取消分组</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Draw 
 Rect</source>
         <translation>绘制
 矩形</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Draw 
 Text</source>
         <translation>绘制
 文本</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Show 
 Grid</source>
         <translation>显示
 网格</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Lock 
 View</source>
         <translation>锁定
 视图</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>Terminate 
 Workflow</source>
         <translation>结束</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Link</source>
         <translation>连线</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+11"/>
         <source>Export To Image</source>
         <translation>导出为图片</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Export To PNG</source>
         <translation>导出PNG</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Show Marker</source>
         <translation>显示标记</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>Show 
 Workflow Area</source>
         <translation>工作流
 操作视图</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Show 
 Workflow Manager</source>
         <translation>工作流
 管理视图</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>Show 
 Chart Manager</source>
         <translation>绘图
 管理视图</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>Show 
 Data Manager</source>
         <translation>数据
 管理视图</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+6"/>
+        <source>Show Left 
+Side Bar</source>
+        <translation>左侧边栏</translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Plugin 
 Config</source>
         <translation>插件
 设置</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Office 2013 theme</source>
         <translation>Office 2013主题</translation>
     </message>
@@ -630,28 +824,218 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-67"/>
+        <location line="-142"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
     <message>
-        <location line="-1"/>
+        <location line="-2"/>
         <source>Zoom In</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+30"/>
+        <source>Copy the figure to the clipboard</source>
+        <translation>将绘图复制到剪切板</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Add Rect</source>
+        <translation>添加矩形</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a rectangle to the chart</source>
+        <translation>添加矩形</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Ellipse</source>
+        <translation>添加椭圆</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add an ellipse to the chart</source>
+        <translation>添加椭圆</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Polygon</source>
+        <translation>添加多边形</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a polygon to the chart</source>
+        <translation>添加多边形</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Cross Marker</source>
+        <translation>添加十字</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a cross marker to the chart</source>
+        <translation>添加十字标记</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add H Line Marker</source>
+        <translation>添加水平线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add an H line marker to the chart</source>
+        <translation>添加水平线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add V Line Marker</source>
+        <translation>添加垂直线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a V line marker to the chart</source>
+        <translation>添加垂直标记</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Remove a row from the table</source>
+        <translation>从表中删除行</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Remove a column from the table</source>
+        <translation>从表中删除列</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Remove a cell from the table</source>
+        <translation>从表中移除单元格</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Insert a row into the table</source>
+        <translation>插入行</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Insert a row above the current row</source>
+        <translation>插入行(上)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Insert a column to the right of the current column</source>
+        <translation>插入列(右)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Insert a column to the left of the current column</source>
+        <translation>插入列(左)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>To num</source>
+        <translation>转换为数值类型</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cast to num type</source>
+        <translation>转换为数值类型</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>To str</source>
+        <translation>转换为字符串类型</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cast to string type</source>
+        <translation>转换为字符串类型</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>To datetime</source>
+        <translation>转换为日期类型</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cast to datetime type</source>
+        <translation>转换为日期类型</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Cast to index type</source>
+        <translation>转换为索引类型</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Create a new workflow</source>
+        <translation>创建新工作流</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Group selected elements</source>
+        <translation>对选中的元素进行分组</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Ungroup selected elements</source>
+        <translation>对选中的元素进行取消分组</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Draw a rectangle on the workflow scene</source>
+        <translation>在工作流场景中绘制矩形</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Draw text on the workflow scene</source>
+        <translation>在工作流场景中绘制文本</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Show grid on the workflow scene</source>
+        <translation>在工作流场景中显示网格</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Lock the workflow view</source>
+        <translation>锁定工作流视图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Run 
 Workflow</source>
         <translation>运行
 工作流</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+1"/>
+        <source>Run the workflow</source>
+        <translation>运行工作流</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Terminate the workflow</source>
+        <translation>停止工作流</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Enable or disable link between elements</source>
+        <translation>启用或禁用元素之间连线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add 
 Background</source>
         <translation>添加
 背景</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a background pixmap to the workflow scene</source>
+        <translation>在工作流场景中添加背景图片</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -660,27 +1044,87 @@ Background</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Lock the background pixmap in the workflow scene</source>
+        <translation>锁定工作流场景中的背景图片</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Move With Background</source>
         <translation>元件随背景移动</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+1"/>
+        <source>Enable or disable item move with background pixmap</source>
+        <translation>启用或禁用元件随背景移动</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Export the workflow scene to an image</source>
+        <translation>导出工作流场景为图片</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Export the workflow scene to a PNG image</source>
+        <translation>导出工作流场景为PNG图片</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Show marker on the workflow scene</source>
+        <translation>在工作流场景中显示标记</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Show the workflow area</source>
+        <translation>显示工作流区域</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Show the workflow manager area</source>
+        <translation>显示工作流管理区域</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Show 
 Chart Area</source>
         <translation>绘图
 操作视图</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Show the chart area</source>
+        <translation>显示绘图区域</translation>
+    </message>
+    <message>
         <location line="+2"/>
+        <source>Show the chart manager area</source>
+        <translation>显示绘图管理区域</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Show 
 Table Area</source>
         <translation>数据
 操作区域</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Show the data area</source>
+        <translation>显示数据区域</translation>
+    </message>
+    <message>
         <location line="+2"/>
+        <source>Show the data manager area</source>
+        <translation>显示数据管理区域</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Show Infomation Window</source>
         <translation>信息窗口</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the message log window</source>
+        <translation>显示信息窗口</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -688,8 +1132,39 @@ Table Area</source>
         <translation>设置窗口</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+1"/>
+        <source>Show the setting window</source>
+        <translation>显示设置窗口</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Show the left side bar</source>
+        <translation>显示左侧边栏</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show Right 
+Side Bar</source>
+        <translation>右侧边栏</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the right side bar</source>
+        <translation>显示右侧边栏</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Show the plugin manager</source>
+        <translation>显示插件管理器</translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Redo</source>
+        <translation>重做</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Redo the last action</source>
         <translation>重做</translation>
     </message>
     <message>
@@ -701,7 +1176,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+872"/>
+        <location filename="../APP/DAAppController.cpp" line="+887"/>
         <location line="+49"/>
         <source>project file(*.%1)</source>
         <translation>工程文件(*.%1)</translation>
@@ -723,7 +1198,7 @@ Table Area</source>
         <translation>加载工程文件“%1”失败</translation>
     </message>
     <message>
-        <location line="-462"/>
+        <location line="-474"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -749,17 +1224,17 @@ Table Area</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+458"/>
+        <location line="+470"/>
         <source>Project saved successfully,path is %1</source>
         <translation>工程保存成功，路径位于:%1</translation>
     </message>
     <message>
-        <location line="-440"/>
+        <location line="-452"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
-        <location line="+457"/>
+        <location line="+469"/>
         <source>Project load successfully,path is %1</source>
         <translation>工程加载成功，路径为：%1</translation>
     </message>
@@ -799,12 +1274,12 @@ Table Area</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+304"/>
+        <location line="+300"/>
         <source>Before creating a new coordinate,you need to create a figure</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="+564"/>
+        <location line="+621"/>
         <source>new workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -907,7 +1382,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="../APP/DAAppPluginManager.cpp" line="+60"/>
+        <location filename="../APP/DAAppPluginManager.cpp" line="+59"/>
         <source>succeed load plugin %1</source>
         <translation>成功加载插件“%1”</translation>
     </message>
@@ -915,8 +1390,8 @@ Table Area</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+377"/>
-        <location line="+43"/>
+        <location filename="../APP/DAAppProject.cpp" line="+391"/>
+        <location line="+53"/>
         <source>current project is busy</source>
         <translation>当前工程正繁忙</translation>
     </message>
@@ -931,12 +1406,12 @@ Table Area</source>
         <translation>文件%1不是正确的工程文件</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+43"/>
         <source>failed to laod archive from %1</source>
         <translation>无法从%1加载存档</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+12"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -951,7 +1426,7 @@ Table Area</source>
         <translation>工程“%1”保存失败</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+21"/>
         <source>Save System Info</source>
         <translation>保存系统信息</translation>
     </message>
@@ -971,7 +1446,7 @@ Table Area</source>
         <translation>保存工作流信息，包括工作流图元的层级关系渲染效果</translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+31"/>
         <source>An exception occurred while serializing the dataframe named %1 to %2</source>
         <translation>把名称为%1的dataframe序列化到%2时出现异常</translation>
     </message>
@@ -1002,7 +1477,7 @@ Table Area</source>
         <translation>保存绘图元素的基本信息</translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+57"/>
         <source>begin save archive to %1</source>
         <translation>开始保存存档到%1</translation>
     </message>
@@ -1012,7 +1487,37 @@ Table Area</source>
         <translation>开始从%1加载存档</translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+17"/>
+        <source>Loading datas</source>
+        <translation>正在加载数据</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Loading charts</source>
+        <translation>正在加载绘图</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Project saved successfully</source>
+        <translation>成功保存工程</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed to save project</source>
+        <translation>无法保存工程</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Project loaded successfully</source>
+        <translation>成功加载工程</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Failed to load project</source>
+        <translation>无法加载工程</translation>
+    </message>
+    <message>
+        <location line="+23"/>
         <source>Missing data content</source>
         <translation>保存</translation>
     </message>
@@ -1027,27 +1532,32 @@ Table Area</source>
         <translation>无法把文件%1序列化为Dataframe</translation>
     </message>
     <message>
-        <location line="+35"/>
-        <source>get unknown task code:%1 ,name=%2</source>
-        <translation>接收到未知的任务编码:%1,名称为:%2</translation>
+        <location line="-409"/>
+        <source>Saving project</source>
+        <translation>正在保存工程</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+58"/>
+        <source>Loading project</source>
+        <translation>正在加载工程</translation>
+    </message>
+    <message>
+        <location line="+278"/>
         <source>Successfully save archive : %1</source>
         <translation>成功存档到:%1</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Failed to save archive : %1</source>
         <translation>无法存档到:%1</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+14"/>
         <source>Successfully load archive : %1</source>
         <translation>成功从%1加载存档</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Failed to load archive : %1</source>
         <translation>无法从%1加载存档</translation>
     </message>
@@ -1055,7 +1565,7 @@ Table Area</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+174"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+176"/>
         <source>Main</source>
         <translation>主页</translation>
     </message>
@@ -1072,13 +1582,13 @@ Table Area</source>
     <message>
         <location line="+1"/>
         <location line="+19"/>
-        <location line="+85"/>
-        <location line="+186"/>
+        <location line="+91"/>
+        <location line="+189"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-289"/>
+        <location line="-298"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
@@ -1091,101 +1601,102 @@ Table Area</source>
     <message>
         <location line="+3"/>
         <location line="+21"/>
-        <location line="+330"/>
+        <location line="+339"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-350"/>
+        <location line="-359"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+178"/>
+        <location line="+187"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-177"/>
-        <location line="+179"/>
+        <location line="-186"/>
+        <location line="+188"/>
         <source>Operate</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location line="-178"/>
-        <location line="+181"/>
+        <location line="-187"/>
+        <location line="+190"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-180"/>
+        <location line="-189"/>
         <location line="+2"/>
-        <location line="+191"/>
+        <location line="+200"/>
         <location line="+6"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-193"/>
+        <location line="-202"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+283"/>
+        <location line="+292"/>
         <source>Workflow Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-282"/>
-        <location line="+287"/>
+        <location line="-291"/>
+        <location line="+296"/>
         <source>ClipBoard</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-286"/>
-        <location line="+291"/>
+        <location line="-295"/>
+        <location line="+300"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-290"/>
-        <location line="+299"/>
+        <location line="-299"/>
+        <location line="+308"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-298"/>
-        <location line="+303"/>
+        <location line="-307"/>
+        <location line="+312"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-300"/>
-        <location line="+371"/>
+        <location line="-309"/>
+        <location line="+380"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-370"/>
-        <location line="+373"/>
+        <location line="-379"/>
+        <location line="+382"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-371"/>
-        <location line="+228"/>
+        <location line="-380"/>
+        <location line="+237"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-227"/>
+        <location line="-236"/>
+        <location line="+5"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-4"/>
         <source>Add Chart</source>
         <translation>添加绘图</translation>
     </message>
@@ -1196,13 +1707,33 @@ Table Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+377"/>
-        <location line="+2"/>
+        <location line="+4"/>
+        <location line="+442"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-377"/>
+        <location line="-444"/>
+        <source>Chart Setting</source>
+        <translation>绘图设置</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Figure Theme</source>
+        <translation>主题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Select Tool</source>
+        <translation>选区工具</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Chart Assist Tool</source>
+        <translation>图表辅助工具</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>theme</source>
         <translation>主题</translation>
     </message>
@@ -1228,17 +1759,33 @@ Table Area</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="+414"/>
+        <location line="+371"/>
+        <location line="+2"/>
+        <source>Chart Operate</source>
+        <translation>绘图操作</translation>
+    </message>
+    <message>
+        <location line="+45"/>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+16"/>
+        <source>Select Operate</source>
+        <translation>选区操作</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Assist Tools</source>
+        <translation>辅助工具</translation>
+    </message>
+    <message>
+        <location line="+13"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
     <message>
-        <location line="-141"/>
+        <location line="-159"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
@@ -1253,7 +1800,7 @@ Table Area</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location line="-394"/>
+        <location line="-403"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
@@ -1736,7 +2283,7 @@ Table Area</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="+248"/>
+        <location line="+260"/>
         <source>question</source>
         <translation>疑问</translation>
     </message>
@@ -1749,7 +2296,7 @@ Table Area</source>
 <context>
     <name>DA::DAChartSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+179"/>
+        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+177"/>
         <source>Chart Area</source>
         <translation>图表区</translation>
     </message>
@@ -1878,7 +2425,7 @@ Table Area</source>
 <context>
     <name>DA::DACommonPropertySettingDialog</name>
     <message>
-        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.cpp" line="+491"/>
+        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.cpp" line="+509"/>
         <source>JSON string is empty</source>
         <translation></translation>
     </message>
@@ -1903,7 +2450,7 @@ Table Area</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+80"/>
+        <location line="+84"/>
         <location line="+32"/>
         <source>Property not found:</source>
         <translation></translation>
@@ -1919,7 +2466,7 @@ Table Area</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+17"/>
         <source>Type mismatch for property:</source>
         <translation></translation>
     </message>
@@ -2473,6 +3020,14 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DA::DAFigureWidget</name>
+    <message>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+834"/>
+        <source>Unsupported chart editor type: %1</source>
+        <translation>不支持的绘图编辑器类型：%1</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAGraphicsTextItem</name>
     <message>
         <location filename="../DAGraphicsView/DAGraphicsTextItem.cpp" line="+40"/>
@@ -2779,7 +3334,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAPyDataframeColumnsListWidget</name>
     <message>
-        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+20"/>
+        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
+        <source>Exception in get selected column:%1</source>
+        <translation type="unfinished">获取选中的列发生异常：%1</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <location line="+20"/>
         <source>Exception in get selected series:%1</source>
         <translation>获取选中的序列发生异常：%1</translation>
     </message>
@@ -2849,6 +3410,39 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location filename="../DACommonWidgets/DASettingWidget.cpp" line="+96"/>
         <source>page changed,but can not catch the sender widget</source>
         <translation>检测到配置页的改变，但无法捕获改变的配置页</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAStatusBarWidget</name>
+    <message>
+        <location filename="../DAGui/DAStatusBarWidget.cpp" line="+47"/>
+        <source>Workflow</source>
+        <translation>工作流</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Switch to Workflow Mode</source>
+        <translation>切换为工作流模式</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Data</source>
+        <translation>数据</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Switch to Data Mode</source>
+        <translation>切换为数据模式</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Chart</source>
+        <translation>绘图</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Switch to Chart Mode</source>
+        <translation>切换为图表模式</translation>
     </message>
 </context>
 <context>
@@ -3013,7 +3607,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAWorkFlowGraphicsView</name>
     <message>
-        <location filename="../DAGui/DAWorkFlowGraphicsView.cpp" line="+221"/>
+        <location filename="../DAGui/DAWorkFlowGraphicsView.cpp" line="+222"/>
         <source>cut</source>
         <translation>剪切</translation>
     </message>
@@ -3332,7 +3926,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1959"/>
+        <location filename="../APP/DAAppController.cpp" line="-2025"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -5038,7 +5632,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+59"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-755"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
@@ -6488,7 +7082,7 @@ To Excel</source>
         <translation>转换列为索引</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+193"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+195"/>
         <location line="+119"/>
         <source>load nodes occurce error</source>
         <translation>加载节点发生错误</translation>
@@ -6667,12 +7261,12 @@ To Excel</source>
         <translation>节点%1无法找到名字为%2的连接点</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+1271"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+1396"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation>%3标签属性%1=%2无法转换为double类型 </translation>
     </message>
     <message>
-        <location filename="../APP/main.cpp" line="+93"/>
+        <location filename="../APP/main.cpp" line="+99"/>
         <source>Kernel initialization failed</source>
         <translation>内核初始化失败</translation>
     </message>
@@ -6953,7 +7547,7 @@ To Excel</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="-2492"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="-2617"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation></translation>
     </message>
@@ -7073,17 +7667,17 @@ To Excel</source>
         <translation>无法在“%1”中创建存档，原因为：%2</translation>
     </message>
     <message>
-        <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+50"/>
-        <source>parasite-%1</source>
-        <translation>寄生绘图-%1</translation>
+        <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+53"/>
+        <source>layout-%1</source>
+        <translation>图层-%1</translation>
     </message>
     <message>
         <location line="+4"/>
-        <source>plot</source>
-        <translation>绘图</translation>
+        <source>layout</source>
+        <translation>图层</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+31"/>
         <source>Parasite Plot</source>
         <translation>寄生绘图</translation>
     </message>
@@ -7127,6 +7721,26 @@ To Excel</source>
         <source>%1.%2,size:%3</source>
         <translation>%1.%2,长度:%3</translation>
     </message>
+    <message>
+        <location filename="../DAFigure/DAChartItemCreatInteractor.cpp" line="+115"/>
+        <source>Horizontal Vertical Line Marker</source>
+        <translation>水平垂直线标记</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Vertical Line Marker</source>
+        <translation>垂直线标记</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Cross Line Marker</source>
+        <translation>十字线标记</translation>
+    </message>
+    <message>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+50"/>
+        <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>main</name>
@@ -7136,12 +7750,12 @@ To Excel</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+7"/>
         <source>The project file to open</source>
         <translation>要打开的工程文件</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Import data into the application, supporting formats such as CSV, XLSX, TXT, PKL, etc.If you want to import multiple datasets, you can use the command multiple times; the program will execute them one by one</source>
         <translation>导入数据到应用程序中，支持csv/xlsx/txt/pkl等格式，如果要导入多个数据，你可以使用多次命令，程序会逐一执行</translation>
     </message>

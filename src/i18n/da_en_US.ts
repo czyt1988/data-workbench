@@ -7593,7 +7593,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAChartItemCreatInteractor.cpp" line="+111"/>
+        <location filename="../DAFigure/DAChartItemCreatInteractor.cpp" line="+115"/>
         <source>Horizontal Vertical Line Marker</source>
         <translation type="unfinished"></translation>
     </message>

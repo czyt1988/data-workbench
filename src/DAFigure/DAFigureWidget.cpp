@@ -1028,13 +1028,13 @@ void DAFigureWidget::keyPressEvent(QKeyEvent* e)
     QScrollArea::keyPressEvent(e);
 }
 
-void DA::DAFigureWidget::showEvent(QShowEvent* e)
+void DAFigureWidget::showEvent(QShowEvent* e)
 {
     QScrollArea::showEvent(e);
     // 对齐坐标轴
     QTimer::singleShot(100, this, [ this ]() {
         if (QwtFigure* fig = figure()) {
-            fig->applyAllAxisAlignments(false);
+            fig->applyAllAxisAlignments(true);
         }
     });
 }

@@ -129,6 +129,12 @@ class MyClass {
 public:
     // Constructor for MyClass (English only)
     MyClass(); 
+   /**
+	* @brief 枚举说明
+	*/
+    enum EnumType{
+		Type1 ///< 枚举的注释方式
+    }
 };
 ```
 
@@ -166,8 +172,9 @@ public:
 ## 编译运行
 
 项目使用cmake构建，如果项目目录下存在build目录，说明已经生成过，直接在此目录下编译即可
+
 ```shell
-cmake --build build --config Debug --target install
+cmake --build build --config Debug --parallel
 ```
 
 ### 插件开发

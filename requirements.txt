@@ -1,4 +1,4 @@
-numpy<=1.21.6
+numpy
 loguru
 pandas
 scipy
@@ -7,3 +7,8 @@ chardet
 PyWavelets
 pyarrow
 typing_extensions
+matplotlib
+seaborn
+langgraph
+langchain-openai
+langgraph-cli[inmem]
