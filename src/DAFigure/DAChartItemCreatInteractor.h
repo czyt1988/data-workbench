@@ -71,6 +71,24 @@ DAFIGURE_API QwtPlotItem* createVLineMarkerPlotItem(QwtPlot* plot, const QPointF
  */
 DAFIGURE_API QwtPlotItem* createCrossLineMarkerPlotItem(QwtPlot* plot, const QPointF& pos);
 
+/**
+ * @brief Create a vertical data probe at the specified position
+ *
+ * @param plot The plot to attach the probe to
+ * @param pos The position in plot coordinates
+ * @return The created probe marker
+ */
+DAFIGURE_API QwtPlotItem* createVerticalDataProbePlotItem(QwtPlot* plot, const QPointF& pos);
+
+/**
+ * @brief Create a horizontal data probe at the specified position
+ *
+ * @param plot The plot to attach the probe to
+ * @param pos The position in plot coordinates
+ * @return The created probe marker
+ */
+DAFIGURE_API QwtPlotItem* createHorizontalDataProbePlotItem(QwtPlot* plot, const QPointF& pos);
+
 
 }  // namespace DA
 

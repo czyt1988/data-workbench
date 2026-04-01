@@ -60,7 +60,6 @@ data-workbench/
 - Qt 5.14+ 或 Qt 6
 - Python 3.7+
 
-
 ## Qt 集成方案
 
 ### 1. 信号槽设计
@@ -86,98 +85,99 @@ Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibilityChanged
 
 ## 注释与文档规范
 
-### 1️. 代码风格
+### 代码风格
 
 - 严格保持与现有代码一致（命名规范、缩进、头文件组织等）
+- 代码文件、类名统一`DA`开头，并放入DA命名空间
 - 遵循 Qt 开发最佳实践（使用 `Q_PROPERTY`、`Q_SIGNALS`、`Q_SLOT` 等宏，禁止使用 `slot`、`signal` 等小写命名的宏）
 
-### 2️. 注释规范（强制）
+### 注释规范（强制）
 
 #### 2.1 源文件（.cpp）注释规范
 
-所有新增代码必须使用 **Doxygen 格式**，并区分中英文：
+函数的doxygen注释写在cpp文件中，不要把函数的doxygen注释写在头文件中，以保证头文件的简洁。
+
+cpp文件的doxygen注释示例
 
 ```cpp
 /**
- * \if ENGLISH
- * @brief [English brief description]
- * @param[in] param_name [English parameter description]
- * @return [English return value description]
- * @details [English detailed explanation]
- * \endif
- * 
- * \if CHINESE
  * @brief [中文简要说明]
+ * 
+ * [空一行后，写中文详细说明]
+ * 如果有代码示例，可添加代码示例在 `@code` 和 `@endcode` 之间。
+ * @code
+ * @endcode
+ * 
  * @param[in] param_name [中文参数描述]
  * @return [中文返回值描述]
- * @details [中文详细说明]
- * \endif
+ * @note [中文备注][如有可添加]
+ * @see [相关函数][如有可添加]
  */
+void MyClass::myFunction(int param_name)
+{
+    // 函数体
+}
 ```
 
 **注意:**原则上详细函数注释应该写在对应的 `.cpp` 文件中，而不是头文件中。
 
 #### 2.2 头文件（.h）注释规范
 
-- 头文件中的 `public` 函数声明旁，仅添加**单行英文简要注释**（使用 `//` 或简洁的 `/** */`）。
-- **不要**在头文件中写入详细的双语 Doxygen 块（类的 doxygen 注释除外、信号的 doxygen 注释除外），详细内容应保留在对应的 `.cpp` 文件中，以保持头文件整洁。
-- 示例：
+- 头文件中的 `public` 函数声明旁，添加**单行中文简要注释**（使用 `//`）。
+- **不要**在头文件中写入**类成员函数**的 Doxygen 块
 
-```cpp
-// 类的注释规范建见下一节
-class MyClass {
-public:
-    // Constructor for MyClass (English only)
-    MyClass(); 
-   /**
-	* @brief 枚举说明
-	*/
-    enum EnumType{
-		Type1 ///< 枚举的注释方式
-    }
-};
-```
+头文件中可写的doxygen注释包括：
 
-- 但有些特例，例如 Qt 的信号（头文件中 Q_SIGNALS 关键字下面的函数），它没有在 cpp 中的定义，这些函数的 doxygen 注释需要在头文件中按上面中英文要求添加，你需要把信号的 doxygen 注释转换为中英双语。
-- 另外类的 doxygen 注释也需要在头文件中按上面中英文要求添加。
+- 类的 doxygen 注释
+- 信号的 doxygen 注释(因为信号没有在cpp的实现内容，需要在头文件中添加)
+- 枚举的 doxygen 注释
+- 枚举值的 doxygen 注释
 
-#### 2.3 类的 doxygen 注释规范
+类成员函数的doxygen注释在对应的 `.cpp` 文件中，以保持头文件整洁。
 
-- 类的 doxygen 注释需要在头文件中按上面中英文要求添加。
-- 示例：
+头文件注释示例：
 
 ```cpp
 /**
- * \if ENGLISH
- * @brief [English description]
- * \endif
- *
- * \if CHINESE
  * @brief [中文说明]
- * \endif
+ * 
+ * [空一行后，写中文详细说明]
+ * 如果有代码示例，可添加代码示例在 `@code` 和 `@endcode` 之间。对于功能性较强的类，类的注释中应该加入使用示例，以便使用者了解如何使用
+ * @code
+ * @endcode
+ * @see [相关类][如有可添加]
  */
 class MyClass {
 public:
-    // Constructor for MyClass (English only)
-    MyClass(); 
+    /**
+     * @brief 枚举说明
+     */
+    enum EnumType{
+        Type1 ///< 枚举的注释方式
+    }
+public:
+    // （默认构造函数、析构函数可不用写注释）
+    MyClass();
+
+    // 中文简要说明（详细说明位于.cpp文件中）
+    void myFunction(int param_name);
 };
 ```
 
-- 对于功能性较强的类，类的注释中应该加入使用示例，以便使用者了解如何使用
+**注：** Qt 的信号（头文件中 Q_SIGNALS 关键字下面的函数），它没有在 cpp 中的定义，这些函数的 doxygen 注释需要在头文件中添加
 
 ## 插件系统
 
 插件位于 `plugins` 目录下，每个插件是一个独立的模块，可以扩展软件功能。
 
-## 编译运行
-
-项目使用cmake构建，如果项目目录下存在build目录，说明已经生成过，直接在此目录下编译即可
-
-```shell
-cmake --build build --config Debug --parallel
-```
-
 ### 插件开发
+
+如果涉及插件开发，你可以阅读:
+
+- [创建插件项目](./docs/zh/dev-guide/plugin-project-create.md)
+- [插件与接口](./docs/zh/dev-guide/plugins-interfaces.md)
+- [插件模块DAPluginSupport](./docs/zh/dev-guide/plugin-module.md)
+- [插件开发创建 UI](./docs/zh/dev-guide/plugin-dev-create-ui.md)
 
 - 参考现有的插件结构（如 DataAnalysis 插件）
 - 遵循项目的代码规范和架构设计
@@ -194,6 +194,52 @@ cmake --build build --config Debug --parallel
 - 相关文件列表
 - 关联到计划书（如果适用）
 
+## 编译构建
 
+项目使用cmake构建，如果项目目录下存在build目录，说明已经生成过，直接在此目录下编译即可
 
-详细文档可访问：[https://czyt1988.github.io/data-workbench](https://czyt1988.github.io/data-workbench)
+构建此项目**必须**使用 Qt 工具链文件，否则会出现 Windows SDK 头文件找不到的问题
+
+下面是构建参考：
+
+```powershell
+# 正确的配置命令
+cmake -S . -B build -G Ninja `
+    -DCMAKE_BUILD_TYPE:STRING=Release `
+    -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE `
+    -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake" `
+    -DQT_QML_GENERATE_QMLLS_INI:STRING=ON `
+    "-DCMAKE_CXX_FLAGS_DEBUG_INIT:STRING=-DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG" `
+    "-DCMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT:STRING=-DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG"
+```
+
+### 参数说明
+
+| 参数 | 说明 |
+|------|------|
+| `-DCMAKE_TOOLCHAIN_FILE` | **必须**指定 Qt 工具链文件，否则无法正确找到 Windows SDK |
+| `-DCMAKE_BUILD_TYPE` | 构建类型：`Debug` 或 `Release` |
+| `-G Ninja` | 使用 Ninja 生成器 |
+
+### 构建命令
+
+```powershell
+# 构建项目
+cmake --build build --config Release --parallel
+
+# 构建并安装
+cmake --build build --config Release --target install
+
+# 仅构建特定目标
+cmake --build build --config Release --target DAFigure
+```
+
+## 注意事项
+
+- QwtPlotItem相关的类不继承QObject，不要使用Qt的信号槽机制，继承 Qwt 非 QObject 类时**不能使用 Q_OBJECT 宏**
+- 项目使用PIMPL模式，PIMPL相关宏定义在`src/DAGlobals.h`中,主要有如下宏需要使用：
+  - `DA_DECLARE_PRIVATE`:在`MyClass`中定义
+  - `DA_DECLARE_PUBLIC`:在`MyClass::PrivateData`中声明
+  - `DA_PIMPL_CONSTRUCT`:在`MyClass::在MyClass`构造函数中初始化
+  - `DA_D`:在`MyClass::fun()`中获取`MyClass::PrivateData`的指针
+  - `DA_DC`:在`MyClass::fun() const`中获取`MyClass::PrivateData`的const指针

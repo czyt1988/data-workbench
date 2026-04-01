@@ -2909,7 +2909,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+834"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+854"/>
         <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5510,7 +5510,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-755"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-773"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7593,7 +7593,7 @@ To Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAChartItemCreatInteractor.cpp" line="+115"/>
+        <location filename="../DAFigure/DAChartItemCreatInteractor.cpp" line="+116"/>
         <source>Horizontal Vertical Line Marker</source>
         <translation type="unfinished"></translation>
     </message>

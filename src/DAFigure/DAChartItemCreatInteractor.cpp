@@ -3,6 +3,7 @@
 #include <QPen>
 #include <QDebug>
 #include "DAChartWidget.h"
+#include "DADataProbeMarker.h"
 #include "da_qt5qt6_compat.hpp"
 
 #include "qwt_plot_item.h"
@@ -142,6 +143,26 @@ QwtPlotItem* createCrossLineMarkerPlotItem(QwtPlot* plot, const QPointF& pos)
     );
     marker->attach(plot);
     return marker;
+}
+
+QwtPlotItem* createVerticalDataProbePlotItem(QwtPlot* plot, const QPointF& pos)
+{
+    DADataProbeMarker* probe = new DADataProbeMarker(DADataProbeMarker::VerticalProbe);
+    probe->setXValue(pos.x());
+    probe->setProbeColor(Qt::blue);
+    probe->attach(plot);
+    probe->captureData(true);
+    return probe;
+}
+
+QwtPlotItem* createHorizontalDataProbePlotItem(QwtPlot* plot, const QPointF& pos)
+{
+    DADataProbeMarker* probe = new DADataProbeMarker(DADataProbeMarker::HorizontalProbe);
+    probe->setYValue(pos.y());
+    probe->setProbeColor(Qt::darkGreen);
+    probe->attach(plot);
+    probe->captureData(true);
+    return probe;
 }
 
 }  // namespace DA

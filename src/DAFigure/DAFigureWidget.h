@@ -1,4 +1,4 @@
-﻿#ifndef DAFIGUREWIDGET_H
+#ifndef DAFIGUREWIDGET_H
 #define DAFIGUREWIDGET_H
 #include "DAFigureAPI.h"
 #include <QScrollArea>
@@ -24,6 +24,7 @@ namespace DA
 {
 class DAChartAxisRangeBinder;
 class DAFigureWidgetOverlay;
+class DADataProbeMarker;
 /**
  * @brief 绘图窗口
  *
@@ -50,6 +51,8 @@ public:
         VLineMarker,             ///< 垂直线标记
         CrossMarker,             ///< 交叉标记
         ArrowMarker,             ///< 箭头标记
+        VerticalDataProbe,       ///< 垂直数据探针
+        HorizontalDataProbe,     ///< 水平数据探针
         BuilinEditorCount,       ///< 内置编辑器数量
         UserDefineEditor = 1000  ///< 用户自定义编辑器
     };
@@ -148,6 +151,26 @@ public:
     bool isChartEditorActive() const;
 
 public:
+    // ========== 数据探针相关接口 ==========
+
+    // Create a vertical data probe at specified x value
+    DADataProbeMarker* createVerticalProbe(double xValue, const QString& name = QString());
+    // Create a horizontal data probe at specified y value
+    DADataProbeMarker* createHorizontalProbe(double yValue, const QString& name = QString());
+    // Remove all data probes from the current chart
+    void removeAllProbes();
+    // Get all data probes
+    QList< DADataProbeMarker* > getProbes() const;
+    // Get data probe by name
+    DADataProbeMarker* getProbeByName(const QString& name) const;
+    // Rename a data probe
+    bool renameProbe(DADataProbeMarker* probe, const QString& newName);
+    // Start vertical probe creation interaction mode
+    void beginVerticalProbeEditor();
+    // Start horizontal probe creation interaction mode
+    void beginHorizontalProbeEditor();
+
+public:
     // figure的接口转接
     //  Get the normalized rectangle for a axes/获取绘图的归一化矩形
     QRectF axesNormRect(QwtPlot* plot) const;
@@ -234,6 +257,9 @@ private:
     // 编辑器开始
     void emitChartEditorBeginEdit();
     void emitChartEditorFinishEdit();
+    // Probe name generation (internal use)
+    QString generateProbeName();
+    bool isProbeNameExists(const QString& name) const;
 };
 
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const DAFigureWidget* p);

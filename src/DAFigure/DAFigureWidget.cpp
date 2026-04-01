@@ -37,6 +37,7 @@
 #include "DAChartPolygonRegionSelectEditor.h"
 #include "DAChartItemCreatInteractor.h"
 #include "DAChartArrowEditor.h"
+#include "DADataProbeMarker.h"
 // qwt
 #include "qwt_figure.h"
 #include "qwt_figure_layout.h"
@@ -67,6 +68,7 @@ public:
     QList< std::shared_ptr< DAChartAxisRangeBinder > > m_axisRangeBinders;
     QwtPlotSeriesDataPickerGroup* m_pickerGroup { nullptr };
     DAFigureWidgetOverlay* m_chartEditor { nullptr };  ///< 绘图编辑器
+    int m_probeNameCounter { 0 };                      ///< 探针命名计数器
 public:
     PrivateData(DAFigureWidget* p) : q_ptr(p), m_colorTheme(DAColorTheme::Style_Matplotlib_Tab10)
     {
@@ -180,6 +182,8 @@ public:
     void beginVLineMarkerEditor();
     void beginCrossLineMarkerEditor();
     void beginArrowMarkerEditor();
+    void beginVerticalProbeEditor();
+    void beginHorizontalProbeEditor();
 };
 
 void DAFigureWidget::PrivateData::beginSubChartEditor()
@@ -230,6 +234,16 @@ void DAFigureWidget::PrivateData::beginCrossLineMarkerEditor()
 void DAFigureWidget::PrivateData::beginArrowMarkerEditor()
 {
     m_chartEditor = beginSelectEditor< DAChartArrowEditor >();
+}
+
+void DAFigureWidget::PrivateData::beginVerticalProbeEditor()
+{
+    m_chartEditor = beginSelectEditor< DAChartItemCreatInteractor >(createVerticalDataProbePlotItem);
+}
+
+void DAFigureWidget::PrivateData::beginHorizontalProbeEditor()
+{
+    m_chartEditor = beginSelectEditor< DAChartItemCreatInteractor >(createHorizontalDataProbePlotItem);
 }
 
 //===================================================
@@ -830,6 +844,12 @@ void DAFigureWidget::beginChartEditor(ChartEditorType type)
     case ArrowMarker:
         d->beginArrowMarkerEditor();
         break;
+    case VerticalDataProbe:
+        d->beginVerticalProbeEditor();
+        break;
+    case HorizontalDataProbe:
+        d->beginHorizontalProbeEditor();
+        break;
     default:
         qWarning() << tr("Unsupported chart editor type: %1").arg(type);
         break;
@@ -1205,4 +1225,266 @@ QDataStream& operator>>(QDataStream& in, DAFigureWidget* p)
     }
     return (in);
 }
+
+/**
+ * \if ENGLISH
+ * @brief Generate a unique probe name
+ * @return Generated probe name (A, B, C, ..., Z, AA, AB, ...)
+ * \endif
+ *
+ * \if CHINESE
+ * @brief 生成唯一的探针名称
+ * @return 生成的探针名称 (A, B, C, ..., Z, AA, AB, ...)
+ * \endif
+ */
+QString DAFigureWidget::generateProbeName()
+{
+    DA_D(d);
+    int counter = d->m_probeNameCounter++;
+
+    if (counter < 26) {
+        return QChar('A' + counter);
+    }
+
+    QString name;
+    counter++;
+    while (counter > 0) {
+        counter--;
+        name.prepend(QChar('A' + (counter % 26)));
+        counter /= 26;
+    }
+
+    return name;
+}
+
+/**
+ * \if ENGLISH
+ * @brief Check if a probe name already exists
+ * @param name Probe name to check
+ * @return True if name exists
+ * \endif
+ *
+ * \if CHINESE
+ * @brief 检查探针名称是否已存在
+ * @param name 要检查的探针名称
+ * @return 如果名称已存在返回true
+ * \endif
+ */
+bool DAFigureWidget::isProbeNameExists(const QString& name) const
+{
+    QList< DADataProbeMarker* > probes = getProbes();
+    for (const DADataProbeMarker* probe : probes) {
+        if (probe->probeName() == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * \if ENGLISH
+ * @brief Create a vertical data probe at specified x value
+ * @param xValue The x-axis value for the probe
+ * @param name Optional custom name for the probe
+ * @return Pointer to the created probe
+ * \endif
+ *
+ * \if CHINESE
+ * @brief 在指定x值位置创建垂直数据探针
+ * @param xValue 探针的x轴值
+ * @param name 探针的自定义名称（可选）
+ * @return 创建的探针指针
+ * \endif
+ */
+DADataProbeMarker* DAFigureWidget::createVerticalProbe(double xValue, const QString& name)
+{
+    DAChartWidget* chart = gca();
+    if (!chart) {
+        return nullptr;
+    }
+
+    QString probeName = name.isEmpty() ? generateProbeName() : name;
+    DADataProbeMarker* probe = new DADataProbeMarker(DADataProbeMarker::VerticalProbe, probeName);
+    probe->setXValue(xValue);
+    probe->attach(chart);
+    probe->captureData(true);
+    chart->replot();
+
+    return probe;
+}
+
+/**
+ * \if ENGLISH
+ * @brief Create a horizontal data probe at specified y value
+ * @param yValue The y-axis value for the probe
+ * @param name Optional custom name for the probe
+ * @return Pointer to the created probe
+ * \endif
+ *
+ * \if CHINESE
+ * @brief 在指定y值位置创建水平数据探针
+ * @param yValue 探针的y轴值
+ * @param name 探针的自定义名称（可选）
+ * @return 创建的探针指针
+ * \endif
+ */
+DADataProbeMarker* DAFigureWidget::createHorizontalProbe(double yValue, const QString& name)
+{
+    DAChartWidget* chart = gca();
+    if (!chart) {
+        return nullptr;
+    }
+
+    QString probeName = name.isEmpty() ? generateProbeName() : name;
+    DADataProbeMarker* probe = new DADataProbeMarker(DADataProbeMarker::HorizontalProbe, probeName);
+    probe->setYValue(yValue);
+    probe->attach(chart);
+    probe->captureData(true);
+    chart->replot();
+
+    return probe;
+}
+
+/**
+ * \if ENGLISH
+ * @brief Remove all data probes from the current chart
+ * \endif
+ *
+ * \if CHINESE
+ * @brief 删除当前图表中的所有数据探针
+ * \endif
+ */
+void DAFigureWidget::removeAllProbes()
+{
+    QList< DAChartWidget* > charts = getCharts();
+    for (DAChartWidget* chart : charts) {
+        const QwtPlotItemList& items = chart->itemList();
+        QList< QwtPlotItem* > probesToRemove;
+        for (QwtPlotItem* item : items) {
+            if (item->rtti() == DADataProbeMarker::Rtti_DataProbeMarker) {
+                probesToRemove.append(item);
+            }
+        }
+        for (QwtPlotItem* item : probesToRemove) {
+            item->detach();
+            delete item;
+        }
+        if (!probesToRemove.isEmpty()) {
+            chart->replot();
+        }
+    }
+    d_ptr->m_probeNameCounter = 0;
+}
+
+/**
+ * \if ENGLISH
+ * @brief Get all data probes
+ * @return List of all data probes
+ * \endif
+ *
+ * \if CHINESE
+ * @brief 获取所有数据探针
+ * @return 所有数据探针列表
+ * \endif
+ */
+QList< DADataProbeMarker* > DAFigureWidget::getProbes() const
+{
+    QList< DADataProbeMarker* > probes;
+    QList< DAChartWidget* > charts = getCharts();
+    for (DAChartWidget* chart : charts) {
+        const QwtPlotItemList& items = chart->itemList();
+        for (QwtPlotItem* item : items) {
+            if (item->rtti() == DADataProbeMarker::Rtti_DataProbeMarker) {
+                probes.append(static_cast< DADataProbeMarker* >(item));
+            }
+        }
+    }
+    return probes;
+}
+
+/**
+ * \if ENGLISH
+ * @brief Get data probe by name
+ * @param name The probe name to search for
+ * @return Pointer to the probe, or nullptr if not found
+ * \endif
+ *
+ * \if CHINESE
+ * @brief 通过名称获取数据探针
+ * @param name 要搜索的探针名称
+ * @return 探针指针，如果未找到则返回nullptr
+ * \endif
+ */
+DADataProbeMarker* DAFigureWidget::getProbeByName(const QString& name) const
+{
+    QList< DADataProbeMarker* > probes = getProbes();
+    for (DADataProbeMarker* probe : probes) {
+        if (probe->probeName() == name) {
+            return probe;
+        }
+    }
+    return nullptr;
+}
+
+/**
+ * \if ENGLISH
+ * @brief Rename a data probe
+ * @param probe The probe to rename
+ * @param newName The new name
+ * @return true if successful, false if name already exists
+ * \endif
+ *
+ * \if CHINESE
+ * @brief 重命名数据探针
+ * @param probe 要重命名的探针
+ * @param newName 新名称
+ * @return 成功返回true，名称已存在返回false
+ * \endif
+ */
+bool DAFigureWidget::renameProbe(DADataProbeMarker* probe, const QString& newName)
+{
+    if (!probe) {
+        return false;
+    }
+    if (probe->probeName() == newName) {
+        return true;
+    }
+    if (isProbeNameExists(newName)) {
+        return false;
+    }
+    probe->setProbeName(newName);
+    if (QwtPlot* p = probe->plot()) {
+        p->replot();
+    }
+    return true;
+}
+
+/**
+ * \if ENGLISH
+ * @brief Start vertical probe creation interaction mode
+ * \endif
+ *
+ * \if CHINESE
+ * @brief 开始垂直探针创建交互模式
+ * \endif
+ */
+void DAFigureWidget::beginVerticalProbeEditor()
+{
+    beginChartEditor(VerticalDataProbe);
+}
+
+/**
+ * \if ENGLISH
+ * @brief Start horizontal probe creation interaction mode
+ * \endif
+ *
+ * \if CHINESE
+ * @brief 开始水平探针创建交互模式
+ * \endif
+ */
+void DAFigureWidget::beginHorizontalProbeEditor()
+{
+    beginChartEditor(HorizontalDataProbe);
+}
+
 }
