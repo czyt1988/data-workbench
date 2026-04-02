@@ -35,7 +35,7 @@ DAPyInterpreter::DAPyInterpreter() : DA_PIMPL_CONSTRUCT
 
 DAPyInterpreter::~DAPyInterpreter()
 {
-    ensureShutdown();
+    // ensureShutdown();
 }
 
 DAPyInterpreter& DAPyInterpreter::getInstance()
@@ -72,7 +72,7 @@ QList< QFileInfo > DAPyInterpreter::wherePython()
     return validFis;
 }
 
-QList< QFileInfo > DA::DAPyInterpreter::wherePythonFromConfig()
+QList< QFileInfo > DAPyInterpreter::wherePythonFromConfig()
 {
     QList< QFileInfo > validFis;
     //! 先查看根目录下python-config.json
@@ -234,7 +234,7 @@ void DAPyInterpreter::ensureShutdown()
 
    @return $RETURN
  */
-QString DA::DAPyInterpreter::getAppPythonConfigFile()
+QString DAPyInterpreter::getAppPythonConfigFile()
 {
     QString appDir = QCoreApplication::applicationDirPath();
     return QDir::toNativeSeparators(appDir + "/python-config.json");
@@ -246,7 +246,7 @@ QString DA::DAPyInterpreter::getAppPythonConfigFile()
    @param $PARAMS
    @return $RETURN
  */
-QString DA::DAPyInterpreter::getPythonInterpreterPath()
+QString DAPyInterpreter::getPythonInterpreterPath()
 {
     QList< QFileInfo > validFis;
     //! 先查看根目录下python-config.json
@@ -262,4 +262,4 @@ QString DA::DAPyInterpreter::getPythonInterpreterPath()
     return QString();
 }
 
-}
+}  // end DA
