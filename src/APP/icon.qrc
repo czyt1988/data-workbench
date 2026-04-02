@@ -97,6 +97,7 @@
         <file>Icon/chart-hline-marker.svg</file>
         <file>Icon/chart-vline-marker.svg</file>
         <file>Icon/arrow.svg</file>
+        <file>Icon/plot-probe.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>

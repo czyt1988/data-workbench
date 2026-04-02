@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+357"/>
+        <location filename="../APP/DAAppActions.cpp" line="+363"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -632,6 +632,26 @@ All</source>
         <translation>添加箭头标记</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Add Horizontal Probe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a horizontal plot probe marker to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Vertical Probe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a vertical plot probe marker to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+108"/>
         <source>Undo the last action</source>
         <translation>撤销</translation>
@@ -824,7 +844,7 @@ Config</source>
         <translation>暗色主题</translation>
     </message>
     <message>
-        <location line="-142"/>
+        <location line="-146"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
@@ -899,7 +919,7 @@ Config</source>
         <translation>添加垂直标记</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+11"/>
         <source>Remove a row from the table</source>
         <translation>从表中删除行</translation>
     </message>

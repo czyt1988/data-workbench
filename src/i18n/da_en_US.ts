@@ -167,7 +167,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+357"/>
+        <location filename="../APP/DAAppActions.cpp" line="+363"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -695,6 +695,26 @@ All</source>
     <message>
         <location line="+1"/>
         <source>Add an arrow marker to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Horizontal Probe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a horizontal plot probe marker to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Vertical Probe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a vertical plot probe marker to the chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

@@ -22,18 +22,18 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             [](DA::DAPythonSignalHandler& self, pybind11::function pyFunc) {
                 // 将Python函数包装成std::function
                 // 增加引用计数，确保函数对象在执行前不被释放
-                pyFunc.inc_ref();
+                //pyFunc.inc_ref();
                 self.callInMainThread([ pyFunc ]() {
                     try {
                         pybind11::gil_scoped_acquire acquire;  // 获取GIL
                         pyFunc();                              // 调用Python函数
-                        pyFunc.dec_ref();                      // 执行后释放
+                        //pyFunc.dec_ref();                      // 执行后释放
                     } catch (const pybind11::error_already_set& e) {
                         qCritical() << "Python error in main thread callback:" << e.what();
-                        pyFunc.dec_ref();  // 异常时也要释放
+                        //pyFunc.dec_ref();  // 异常时也要释放
                     } catch (const std::exception& e) {
                         qCritical() << "C++ error in main thread callback:" << e.what();
-                        pyFunc.dec_ref();  // 异常时也要释放
+                        //pyFunc.dec_ref();  // 异常时也要释放
                     }
                 });
             },

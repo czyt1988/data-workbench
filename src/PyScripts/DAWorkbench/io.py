@@ -95,13 +95,13 @@ def read_pkl(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
 
 @log_function_call
 def read_txt(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
-    '''
+    r'''
     读取txt文件
 
-    sep 默认‘\t’(制表位)字符串，默认‘\t’(制表位),此外，长度超过1个字符且不同于的分隔符 '\s+' 将被解释为正则表达式，并且还将强制使用Python解析引擎。
+    sep 默认'\t'(制表位)字符串，默认'\t'(制表位),此外，长度超过1个字符且不同于'\s+'的分隔符将被解释为正则表达式，并且还将强制使用Python解析引擎。
     header 指定表头，数据从指定后开始解析，如果没有表头，要设置为None,header=None
     skiprows 指定跳过的内容，第一行为表头，
-    skipfooter 文件底部要跳过的行数(引擎=‘c’不支持)。
+    skipfooter 文件底部要跳过的行数(引擎='c'不支持)。
     nrows 要读取的文件行数。对于读取大文件片段非常有用。
     skip_blank_lines 如果为True，则跳过空行，而不是解释为NaN值
     skipinitialspace 布尔值，默认为False，跳过分隔符后面的空格。

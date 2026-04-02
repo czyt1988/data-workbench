@@ -40,6 +40,21 @@ pip install --target="../Lib/site-packages" -r "{DataWorkBench_Dir}/requirements
 
 建议使用`Windows embeddable package`，windows版本下载地址：[https://www.python.org/downloads/windows](https://www.python.org/downloads/windows)
 
+`embeddable package`是专门为了嵌入程序准备的，不需要安装到系统环境，只需要解压到程序安装目录下即可。
+
+但对于开发来说，需要引入Python的lib文件和头尾文件，因此非embeddable版本也是必须的
+
+你的电脑应该已经安装了python3.xx版本，这个版本是你平时使用的python环境。但对于data-workbench来说，你的环境有很多没有必要的库，不需要打包进来，为了真正发布能有一个相对干净的python环境，建议使用你当前电脑同样版本的`embeddable package`
+
+这样，你可以在程序中使用python的库，而不会影响到系统的python环境。你系统的python环境安装的其它库也不会在打包时带入程序中
+
+因此你的系统应该有如下两个python环境：
+
+- 系统python环境，3.xx版本
+- 需要打包到data-workbench的python环境，3.xx版本，用于打包python相关模块
+
+这两个版本一定要完全匹配，包括版本号、架构
+
 ### 配置embeddable package方法
 
 `embeddable package`是一个独立的python环境，不需要安装到系统环境，只需要解压到程序安装目录下即可，但缺乏pip，需要进行如下设置
@@ -81,6 +96,12 @@ pip install --target="../Lib/site-packages" -r "{DataWorkBench_Dir}/requirements
 ```bash
 .\python.exe -m pip install --target="./Lib/site-packages" -r "{DataWorkBench_Dir}/requirements.txt"
 ```
+
+#### 完善库路径
+
+为了避免库路径查找异常，把python3xx.zip的内容解压到Lib目录下，形成一个完整的python环境。
+
+或者把Lib/site-packages目录添加到python3xx.zip中
 
 ## 程序运行时查找python逻辑
 

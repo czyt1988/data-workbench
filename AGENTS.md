@@ -37,7 +37,6 @@ data-workbench/
 │   ├── DAGui/        # GUI 相关模块
 ├── AI_AGENT_GUID.md  # AI Agent 指南
 ├── CMakeLists.txt    # 主 CMake 文件
-├── LICENSE           # 许可证
 ├── readme.md         # 项目说明
 └── requirements.txt  # Python 依赖
 ```
@@ -60,13 +59,19 @@ data-workbench/
 - Qt 5.14+ 或 Qt 6
 - Python 3.7+
 
-## Qt 集成方案
+## 编码规范
 
-### 1. 信号槽设计
+### 代码风格
+
+- 严格保持与现有代码一致（命名规范、缩进、头文件组织等）
+- 代码文件、类名统一`DA`开头，并放入DA命名空间
+- 遵循 Qt 开发最佳实践（使用 `Q_PROPERTY`、`Q_SIGNALS`、`Q_SLOT` 等宏，禁止使用 `slot`、`signal` 等小写命名的宏）
+
+### 信号槽设计
 
 充分发挥 Qt 的信号槽机制，工具类使用信号和槽进行事件通讯。
 
-### 2. 属性暴露方式
+### 属性暴露方式
 
 为了贴合 Qt 框架，类的属性使用 `Q_PROPERTY` 暴露：
 
@@ -83,13 +88,19 @@ Q_PROPERTY(float opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
 Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibilityChanged)
 ```
 
+### qt版本兼容性
+
+代码需兼容Qt5和Qt6,如果一些方法在Qt6中取消了，需要使用宏来判断使用那种版本的方法，例如：
+
+```cpp
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    // 使用Qt5的方法
+#else
+    // 使用Qt6的方法
+#endif
+```
+
 ## 注释与文档规范
-
-### 代码风格
-
-- 严格保持与现有代码一致（命名规范、缩进、头文件组织等）
-- 代码文件、类名统一`DA`开头，并放入DA命名空间
-- 遵循 Qt 开发最佳实践（使用 `Q_PROPERTY`、`Q_SIGNALS`、`Q_SLOT` 等宏，禁止使用 `slot`、`signal` 等小写命名的宏）
 
 ### 注释规范（强制）
 
@@ -183,17 +194,6 @@ public:
 - 遵循项目的代码规范和架构设计
 - 确保插件与主程序的接口兼容性
 
-## Git 提交规范
-
-在完成当前任务后，需提交所有更改到 Git 仓库。
-创建有意义的提交信息保证下次任务能清楚了解这次任务的实现情况
-提交信息最好包含以下信息：
-
-- 任务类型（例如：实现、修复、文档更新）
-- 实现内容的简要描述
-- 相关文件列表
-- 关联到计划书（如果适用）
-
 ## 编译构建
 
 项目使用cmake构建，如果项目目录下存在build目录，说明已经生成过，直接在此目录下编译即可
@@ -212,6 +212,17 @@ cmake -S . -B build -G Ninja `
     "-DCMAKE_CXX_FLAGS_DEBUG_INIT:STRING=-DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG" `
     "-DCMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT:STRING=-DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG"
 ```
+
+## Git 提交规范
+
+在完成当前任务后，需提交所有更改到 Git 仓库。
+创建有意义的提交信息保证下次任务能清楚了解这次任务的实现情况
+提交信息最好包含以下信息：
+
+- 任务类型（例如：实现、修复、文档更新）
+- 实现内容的简要描述
+- 相关文件列表
+- 关联到计划书（如果适用）
 
 ### 参数说明
 

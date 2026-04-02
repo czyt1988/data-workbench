@@ -182,6 +182,10 @@ void DAAppActions::buildChartAction()
     );
     actionChartEditorAddArrowMarker =
         createAction("actionChartEditorAddArrowMarker", ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
+    actionAddHorizontalPlotProbeMarker =
+        createAction("actionAddHorizontalPlotProbeMarker", ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
+    actionAddVerticalPlotProbeMarker =
+        createAction("actionAddVerticalPlotProbeMarker", ":/app/bright/Icon/plot-probe.svg", true, false, actionGroupChartEditor);
     actionChartEditorResizeSubChart->setData(static_cast< int >(DAFigureWidget::SubChartEditor));
     actionChartEditorRectSelector->setData(static_cast< int >(DAFigureWidget::RectSelectEditor));
     actionChartEditorEllipseSelector->setData(static_cast< int >(DAFigureWidget::EllipseSelectEditor));
@@ -190,6 +194,8 @@ void DAAppActions::buildChartAction()
     actionChartEditorAddVLineMarker->setData(static_cast< int >(DAFigureWidget::VLineMarker));
     actionChartEditorAddCrossMarker->setData(static_cast< int >(DAFigureWidget::CrossMarker));
     actionChartEditorAddArrowMarker->setData(static_cast< int >(DAFigureWidget::ArrowMarker));
+    actionAddHorizontalPlotProbeMarker->setData(static_cast< int >(DAFigureWidget::VerticalDataProbe));
+    actionAddVerticalPlotProbeMarker->setData(static_cast< int >(DAFigureWidget::HorizontalDataProbe));
 }
 
 void DAAppActions::buildViewAction()
@@ -467,6 +473,10 @@ void DAAppActions::retranslateUi()
     actionChartEditorAddVLineMarker->setToolTip(tr("Add a V line marker to the chart"));   // cn:添加垂直标记
     actionChartEditorAddArrowMarker->setText(tr("Add Arrow Marker"));                      // cn:添加箭头
     actionChartEditorAddArrowMarker->setToolTip(tr("Add an arrow marker to the chart"));   // cn:添加箭头标记
+    actionAddHorizontalPlotProbeMarker->setText(tr("Add Horizontal Probe"));               // cn:添加水平数据探针标记
+    actionAddHorizontalPlotProbeMarker->setToolTip(tr("Add a horizontal plot probe marker to the chart"));  // cn:水平数据探针
+    actionAddVerticalPlotProbeMarker->setText(tr("Add Vertical Probe"));  // cn:垂直数据探针
+    actionAddVerticalPlotProbeMarker->setToolTip(tr("Add a vertical plot probe marker to the chart"));  // cn:添加垂直数据探针标记
     //-----------------------------------------------------
     // 数据操作的上下文标签 Data Operate Context Category
     //-----------------------------------------------------

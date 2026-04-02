@@ -136,7 +136,13 @@ void DAPyInterpreter::setPythonHomePath(const QString& path)
 void DAPyInterpreter::initializePythonInterpreter()
 {
     try {
+        qDebug() << "Python DLL version from header:" << PY_VERSION;
+        qDebug() << "Python hex version:" << PY_VERSION_HEX;
         d_ptr->interpreter = std::make_unique< pybind11::scoped_interpreter >();
+        qDebug() << "Python runtime version:" << Py_GetVersion();
+        qDebug() << "Python path:" << Py_GetPath();
+        // 检查编译版本 vs 运行版本
+        qDebug() << "Compiled against:" << PY_MAJOR_VERSION << "." << PY_MINOR_VERSION << "." << PY_MICRO_VERSION;
     } catch (const std::exception& e) {
         qWarning() << e.what();
     }

@@ -477,6 +477,7 @@ bool DAPyDataFrame::setIndex(const QString& colName, bool isDrop) noexcept
         qCritical().noquote() << e.what();
         return false;
     }
+    return true;
 }
 
 void DAPyDataFrame::checkObjectValid()
