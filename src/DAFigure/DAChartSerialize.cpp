@@ -969,7 +969,7 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotArrowMarker* item)
     in >> (QwtPlotItem*)item;
     QPointF startPoint;
     QPointF endPoint;
-    int length;
+    double length;
     QPen linePen;
     int positionMode;
     in >> startPoint >> endPoint >> length >> linePen >> positionMode;

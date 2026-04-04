@@ -31,6 +31,12 @@ public:
     QList< QString > keys() const;
     // 获取所有item
     QList< QwtPlotItem* > items() const;
+    // 设置keyid的基准
+    void setKeyID(int id);
+    // 获取keyid的基准
+    int keyID() const;
+    // 自动更新keyid，这个是在序列化时，已经通过recordItem后，自动计算keyid
+    void updateKeyID();
 
 private:
     QHash< QwtPlotItem*, QString > mItemToKey;

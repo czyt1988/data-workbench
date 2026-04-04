@@ -33,18 +33,18 @@ const DAChartItemsManager& DAZipArchiveTask_ChartItem::getChartItemsManager() co
 
 bool DAZipArchiveTask_ChartItem::exec(DAAbstractArchive* archive, DAAbstractArchiveTask::Mode mode)
 {
-	if (!archive) {
-		return false;
-	}
-	DAZipArchive* zip = static_cast< DAZipArchive* >(archive);
-	if (mode == DAAbstractArchiveTask::WriteMode) {
-		// 写模式
+    if (!archive) {
+        return false;
+    }
+    DAZipArchive* zip = static_cast< DAZipArchive* >(archive);
+    if (mode == DAAbstractArchiveTask::WriteMode) {
+        // 写模式
         return writeChartItems(zip, &mItemsManager);
-	} else {
-		// 读取数据模式
+    } else {
+        // 读取数据模式
         return readChartItems(zip, &mItemsManager);
-	}
-	return true;
+    }
+    return true;
 }
 
 /**
@@ -70,21 +70,21 @@ QwtPlotItem* DAZipArchiveTask_ChartItem::qwtitemSerialization(const QByteArray& 
  */
 QByteArray DAZipArchiveTask_ChartItem::toXml() const
 {
-	QDomDocument doc("chart-items");
-	QDomElement root = doc.createElement("items");
-	doc.appendChild(root);
+    QDomDocument doc("chart-items");
+    QDomElement root = doc.createElement("items");
+    doc.appendChild(root);
     const QList< QwtPlotItem* > items = mItemsManager.items();
-	for (QwtPlotItem* item : items) {
+    for (QwtPlotItem* item : items) {
         QString key = mItemsManager.itemToKey(item);
-		if (key.isEmpty()) {
+        if (key.isEmpty()) {
             qDebug() << "plot item cannot find id";  // cn:plotitem 无法找到id
-			continue;
-		}
-		QDomElement itemEle = doc.createElement(QStringLiteral("item"));
-		itemEle.setAttribute(QStringLiteral("key"), key);
-		itemEle.setAttribute(QStringLiteral("rtti"), item->rtti());
-		root.appendChild(itemEle);
-	}
+            continue;
+        }
+        QDomElement itemEle = doc.createElement(QStringLiteral("item"));
+        itemEle.setAttribute(QStringLiteral("key"), key);
+        itemEle.setAttribute(QStringLiteral("rtti"), item->rtti());
+        root.appendChild(itemEle);
+    }
     return doc.toByteArray();
 }
 
@@ -93,19 +93,22 @@ bool DAZipArchiveTask_ChartItem::fromXml(DAZipArchive* zip, QList< QPair< QStrin
     const QString chartItemXmlPath = mZipRelateFolderPath + "/" + chartItemsMgrXmlFileName();
     if (!zip->isOpened()) {
         if (!zip->open()) {
-            setLastError(TR_("open archive error:%1(task code:%2)").arg(zip->getBaseFilePath()).arg(getCode()));  // cn:打开存档%1发生异常(任务id%2)
+            setLastError(TR_("open archive error:%1(task code:%2)").arg(zip->getBaseFilePath()).arg(getCode())
+            );  // cn:打开存档%1发生异常(任务id%2)
             return false;
         }
     }
     if (!zip->contains(chartItemXmlPath)) {
         // 没有这个文件也返回true,说明是空的绘图或者旧版本
-        setLastError(TR_("The archive is missing %1.(task code:%2)").arg(chartItemXmlPath).arg(getCode()));  // cn:存档文件中缺失%1。(任务id%2)
+        setLastError(TR_("The archive is missing %1.(task code:%2)").arg(chartItemXmlPath).arg(getCode())
+        );  // cn:存档文件中缺失%1。(任务id%2)
         return true;
     }
     QByteArray data = zip->read(chartItemXmlPath);
     if (data.isEmpty()) {
         setLastError(
-            TR_("can not read %1 from %2(task code:%3)").arg(chartItemXmlPath, zip->getBaseFilePath()).arg(getCode()));  // cn:无法在%2中提取%1(任务id%3)
+            TR_("can not read %1 from %2(task code:%3)").arg(chartItemXmlPath, zip->getBaseFilePath()).arg(getCode())
+        );  // cn:无法在%2中提取%1(任务id%3)
         return false;
     }
     QDomDocument chartItemDoc;
@@ -134,33 +137,34 @@ bool DAZipArchiveTask_ChartItem::fromXml(DAZipArchive* zip, QList< QPair< QStrin
 
 bool DAZipArchiveTask_ChartItem::writeChartItems(DAZipArchive* zip, const DAChartItemsManager* itemsData)
 {
-	//! 1.先把key和type信息保存到xml
-	QByteArray itemsInfoXmlData = toXml();
-	if (itemsInfoXmlData.isEmpty()) {
+    //! 1.先把key和type信息保存到xml
+    QByteArray itemsInfoXmlData = toXml();
+    if (itemsInfoXmlData.isEmpty()) {
         setLastError(TR_("Failed to generate description information(task code %1)").arg(getCode()));  // cn:生成描述信息异常
-		return false;
-	}
-	if (!zip->write(QString("%1/%2").arg(mZipRelateFolderPath, chartItemsMgrXmlFileName()), itemsInfoXmlData)) {
-        setLastError(TR_("An error occurred while writing %1/%2").arg(mZipRelateFolderPath, chartItemsMgrXmlFileName()));  // cn:写%1/%2异常
-		return false;
-	}
-	//! 2.写绘图的数据到文件中
-	const QList< QwtPlotItem* > items = itemsData->items();
-	for (QwtPlotItem* item : items) {
-		QString key = itemsData->itemToKey(item);
-		if (key.isEmpty()) {
+        return false;
+    }
+    if (!zip->write(QString("%1/%2").arg(mZipRelateFolderPath, chartItemsMgrXmlFileName()), itemsInfoXmlData)) {
+        setLastError(TR_("An error occurred while writing %1/%2").arg(mZipRelateFolderPath, chartItemsMgrXmlFileName())
+        );  // cn:写%1/%2异常
+        return false;
+    }
+    //! 2.写绘图的数据到文件中
+    const QList< QwtPlotItem* > items = itemsData->items();
+    for (QwtPlotItem* item : items) {
+        QString key = itemsData->itemToKey(item);
+        if (key.isEmpty()) {
             setLastError(TR_("plot item cannot find id"));
-			continue;
-		}
-		QByteArray byteData = qwtitemSerialization(item);
-		// 写文件
-		QString writeBytePath = QString("%1/%2").arg(mZipRelateFolderPath, key);
-		if (!zip->write(writeBytePath, byteData)) {
+            continue;
+        }
+        QByteArray byteData = qwtitemSerialization(item);
+        // 写文件
+        QString writeBytePath = QString("%1/%2").arg(mZipRelateFolderPath, key);
+        if (!zip->write(writeBytePath, byteData)) {
             setLastError(TR_("An error occurred while writing %1").arg(writeBytePath));  // cn:写%1发生错误
-			continue;
-		}
-	}
-	return true;
+            continue;
+        }
+    }
+    return true;
 }
 
 bool DAZipArchiveTask_ChartItem::readChartItems(DAZipArchive* zip, DAChartItemsManager* itemsData)
@@ -181,9 +185,9 @@ bool DAZipArchiveTask_ChartItem::readChartItems(DAZipArchive* zip, DAChartItemsM
         const QString itemPath = QString("%1/%2").arg(mZipRelateFolderPath, item.first);
         QByteArray byte        = zip->read(itemPath);
         if (byte.isEmpty()) {
-            setLastError(TR_("Failed to read %1 from the archive. Reason: %2")
-                             .arg(zip->getLastErrorString())
-                             .arg(zip->getLastErrorString()));  // cn:无法从存档中读取%1，原因是%2
+            setLastError(
+                TR_("Failed to read %1 from the archive. Reason: %2").arg(zip->getLastErrorString()).arg(zip->getLastErrorString())
+            );  // cn:无法从存档中读取%1，原因是%2
             continue;
         }
         // 读取完成后生成item
@@ -196,13 +200,14 @@ bool DAZipArchiveTask_ChartItem::readChartItems(DAZipArchive* zip, DAChartItemsM
         // 序列化完成，存入DAChartItemsManager
         itemsData->recordItem(plotitem, item.first);
     }
+    itemsData->updateKeyID();
     return true;
 }
 
 QString DAZipArchiveTask_ChartItem::chartItemsMgrXmlFileName()
 {
-	const static QString s_chartItemsMgrXmlFileName = QStringLiteral("chart-items.xml");
-	return s_chartItemsMgrXmlFileName;
+    const static QString s_chartItemsMgrXmlFileName = QStringLiteral("chart-items.xml");
+    return s_chartItemsMgrXmlFileName;
 }
 
 QString DAZipArchiveTask_ChartItem::getLastError() const

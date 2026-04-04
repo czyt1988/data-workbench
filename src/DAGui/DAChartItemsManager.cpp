@@ -56,4 +56,28 @@ QList< QwtPlotItem* > DAChartItemsManager::items() const
     return mItemToKey.keys();
 }
 
+void DAChartItemsManager::setKeyID(int id)
+{
+    mKeyID = id;
+}
+
+int DAChartItemsManager::keyID() const
+{
+    return mKeyID;
+}
+void DAChartItemsManager::updateKeyID()
+{
+    // 获取最大的keyid
+    int maxKeyID = 0;
+    for (const QString& key : keys()) {
+        bool ok;
+        // 提取keyid
+        int id = key.toInt(&ok);
+        if (ok && id > maxKeyID) {
+            maxKeyID = id;
+        }
+    }
+    mKeyID = maxKeyID + 1;
+}
+
 }
