@@ -1,17 +1,17 @@
-#include "DataframeOperateWorker.h"
+﻿#include "DataframeOperateWorker.h"
 #include <QDebug>
 #include "DADataManagerInterface.h"
 #include "DAUIInterface.h"
 #include "DAData.h"
 #include "DAPyModule.h"
-#include "pandas/DAPyDataFrame.h"
 #include "DADockingAreaInterface.h"
 #include "DADataOperateWidget.h"
 #include "DADataOperateOfDataFrameWidget.h"
 #include "DADataTableView.h"
 #include "DAPyScripts.h"
 #include "DACoreInterface.h"
-#include "DADataTableModel.h"
+#include "SARibbonMainWindow.h"
+#include "Models/DADataTableModel.h"
 // Commands
 #include "Commands.h"
 // Dialogs
@@ -20,6 +20,7 @@
 #include "Dialogs/DataFrameSortDialog.h"
 #include "Dialogs/DataFrameQueryDatasDialog.h"
 #include "Dialogs/DataFrameEvalDatasDialog.h"
+#include "Dialogs/DataFrameCreatePivotTableDialog.h"
 
 
 DataframeOperateWorker::DataframeOperateWorker(QObject* par) : DataAnalysisBaseWorker(par)
@@ -52,7 +53,8 @@ void DataframeOperateWorker::createDataframeDescribe()
         return;
     }
     if (!optData.isDataFrame()) {
-        uiInterface()->addWarningLogMessage(tr("This function only supports data in the pandas DataFrame format."));  // cn:只支持dataframe格式数据
+        uiInterface()->addWarningLogMessage(tr("This function only supports data in the pandas DataFrame format.")
+        );  // cn:只支持dataframe格式数据
         return;
     }
     DA::DAPyDataFrame df          = optData.toDataFrame();
@@ -82,14 +84,40 @@ void DataframeOperateWorker::createPivotTable()
     if (!dfopt) {
         return;
     }
-    DA::DAPyDataFrame df = dfopt->createPivotTable();
-    if (df.empty()) {
+    DA::DAData optData   = dfopt->data();
+    DA::DAPyDataFrame df = dfopt->getDataframe();
+    if (df.isNone()) {
         return;
     }
-    DA::DAData originData = dfopt->data();
-    DA::DAData data       = df;
-    data.setName(tr("%1_PviotTable").arg(originData.getName()));
-    data.setDescribe(tr("Generate pivot table of %1").arg(originData.getName()));
+
+    if (!m_pivotTableDialog) {
+        m_pivotTableDialog = new DataFrameCreatePivotTableDialog(uiInterface()->mainWindow());
+    }
+    m_pivotTableDialog->setDataframe(df);
+    if (QDialog::Accepted != m_pivotTableDialog->exec()) {
+        // 说明用户取消
+        return;
+    }
+    // 获取创建透视表的参数
+    QStringList value   = m_pivotTableDialog->getPivotTableValue();
+    QStringList index   = m_pivotTableDialog->getPivotTableIndex();
+    QStringList columns = m_pivotTableDialog->getPivotTableColumn();
+    QString aggfunc     = m_pivotTableDialog->getPivotTableAggfunc();
+    bool margins        = m_pivotTableDialog->isEnableMarginsName();
+    QString marginsName = m_pivotTableDialog->getMarginsName();
+    bool sort           = m_pivotTableDialog->isEnableSort();
+    // 如果用户没有选定分组，则返回
+    if (index.empty()) {
+        return;
+    }
+
+    DA::DAPyDataFrame df_pivottable = createPivotTable(df, value, index, columns, aggfunc, margins, marginsName, sort);
+    if (df_pivottable.isNone()) {
+        return;
+    }
+    DA::DAData data = df_pivottable;
+    data.setName(tr("%1_PviotTable").arg(optData.getName()));
+    data.setDescribe(tr("Generate pivot table of %1").arg(optData.getName()));
     dataManagerInterface()->addData_(data);
     uiInterface()->setDirty(true);
     // 把数据界面抬起
@@ -97,6 +125,35 @@ void DataframeOperateWorker::createPivotTable()
     if (doptWidget) {
         doptWidget->showData(data);
     }
+}
+
+/**
+ * @brief 创建数据透视表
+ *
+ * @param df 输入的dataframe
+ * @param value 数据透视表的行索引
+ * @param index 数据透视表的列索引
+ * @param columns 数据透视表的列
+ * @param aggfunc 数据透视表的聚合函数
+ * @param margins 是否显示分组
+ * @param marginsName 分组名称
+ * @param sort 是否排序
+ * @return DA::DAPyDataFrame 数据透视表
+ */
+DA::DAPyDataFrame DataframeOperateWorker::createPivotTable(
+    const DA::DAPyDataFrame& df,
+    const QStringList value,
+    const QStringList index,
+    const QStringList columns,
+    const QString& aggfunc,
+    bool margins,
+    const QString& marginsName,
+    bool sort
+)
+{
+    DA::DAPyScriptsDataFrame& pydf  = DA::DAPyScripts::getDataFrame();
+    DA::DAPyDataFrame df_pivottable = pydf.pivotTable(df, value, index, columns, aggfunc, margins, marginsName, sort);
+    return df_pivottable;
 }
 
 void DataframeOperateWorker::evalDatas()
@@ -109,12 +166,16 @@ void DataframeOperateWorker::evalDatas()
     if (!dfopt) {
         return;
     }
+    DA::DAPyDataFrame df = dfopt->getDataframe();
+    if (df.isNone()) {
+        return;
+    }
     if (!m_evalDatasDialog) {
-        m_evalDatasDialog = new DataFrameEvalDatasDialog(this);
+        m_evalDatasDialog = new DataFrameEvalDatasDialog(uiInterface()->mainWindow());
     }
     if (QDialog::Accepted != m_evalDatasDialog->exec()) {
         // 说明用户取消
-        return false;
+        return;
     }
     // 获取填充值
     QString exper                  = m_evalDatasDialog->getExpr();
@@ -132,10 +193,10 @@ void DataframeOperateWorker::evalDatas()
     }
 }
 
-QUndoCommand* DataframeOperateWorker::evalDatas(const DAPyDataFrame& df, const QString& exper, Callback fp)
+QUndoCommand* DataframeOperateWorker::evalDatas(const DA::DAPyDataFrame& df, const QString& exper, Callback fp)
 {
-    std::make_unique< CommandDataFrame_evalDatas > cmd = std::make_unique< CommandDataFrame_evalDatas >(df, exper);
-    cmd->setCallback(fp);
+    std::unique_ptr< CommandDataFrame_evalDatas > cmd = std::make_unique< CommandDataFrame_evalDatas >(df, exper);
+    cmd->setCallBack(fp);
     if (!cmd->exec()) {
         return nullptr;
     }
@@ -157,11 +218,11 @@ void DataframeOperateWorker::queryDatas()
         return;
     }
     if (!m_queryDatasDialog) {
-        m_queryDatasDialog = new DataFrameQueryDatasDialog(this);
+        m_queryDatasDialog = new DataFrameQueryDatasDialog(uiInterface()->mainWindow());
     }
     if (QDialog::Accepted != m_queryDatasDialog->exec()) {
         // 说明用户取消
-        return false;
+        return;
     }
     // 获取填充值
     QString exper                  = m_queryDatasDialog->getExpr();
@@ -180,10 +241,10 @@ void DataframeOperateWorker::queryDatas()
     }
 }
 
-QUndoCommand* DataframeOperateWorker::queryDatas(const DAPyDataFrame& df, const QString& exper, Callback fp)
+QUndoCommand* DataframeOperateWorker::queryDatas(const DA::DAPyDataFrame& df, const QString& exper, Callback fp)
 {
-    std::make_unique< DACommandDataFrame_querydatas > cmd = std::make_unique< DACommandDataFrame_querydatas >(df, exper);
-    cmd->setCallback(fp);
+    std::unique_ptr< CommandDataFrame_querydatas > cmd = std::make_unique< CommandDataFrame_querydatas >(df, exper);
+    cmd->setCallBack(fp);
     if (!cmd->exec()) {
         return nullptr;
     }
@@ -210,13 +271,9 @@ void DataframeOperateWorker::searchData()
     if (df.isNone()) {
         return;
     }
-    DA::DAPyScripts* script = DACoreInterface::getDAScripts();
-    if (!script) {
-        return;
-    }
 
     if (!m_searchDialog) {
-        m_searchDialog = new DataFrameDataSearchDialog(script, this);
+        m_searchDialog = new DataFrameDataSearchDialog(uiInterface()->mainWindow());
     }
     DA::DADataTableView* tableView = dfopt->getDataTableView();
     if (!tableView) {
@@ -247,7 +304,7 @@ void DataframeOperateWorker::filterByColumn()
         return;
     }
     if (!m_selectDialog) {
-        m_selectDialog = new DataFrameDataSelectDialog(this);
+        m_selectDialog = new DataFrameDataSelectDialog(uiInterface()->mainWindow());
     }
     m_selectDialog->setDataframe(df);
     // 获取选中的列
@@ -319,15 +376,15 @@ void DataframeOperateWorker::sortDatas()
         return;
     }
     if (!m_sortDialog) {
-        m_sortDialog = new DataFrameSortDialog(this);
+        m_sortDialog = new DataFrameSortDialog(uiInterface()->mainWindow());
     }
     m_sortDialog->setDataframe(df);
     // 获取选中的列
-    if (dfopt->childrenRect()) {
+    if (dfopt->isDataframeTableHaveSelection()) {
         m_sortDialog->setSortBy(dfopt->getSelectedOneDataframeColumn());
     }
     if (QDialog::Accepted != m_sortDialog->exec()) {
-        return false;
+        return;
     }
     // 获取排序参数
     QString by                     = m_sortDialog->getSortBy();
@@ -358,7 +415,7 @@ void DataframeOperateWorker::sortDatas()
  * @param fp 回调函数
  * @return QUndoCommand* 排序命令,返回nullptr代表执行失败
  */
-QUndoCommand* DataframeOperateWorker::sortDatas(const DAPyDataFrame& df, const QString& by, const bool ascending, Callback fp)
+QUndoCommand* DataframeOperateWorker::sortDatas(const DA::DAPyDataFrame& df, const QString& by, const bool ascending, Callback fp)
 {
     std::unique_ptr< CommandDataFrame_sort > cmd = std::make_unique< CommandDataFrame_sort >(df, by, ascending);
     cmd->setCallBack(fp);

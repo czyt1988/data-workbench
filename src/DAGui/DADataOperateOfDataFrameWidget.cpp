@@ -11,22 +11,15 @@
 #include <QHeaderView>
 #include <QSet>
 #include <QMessageBox>
-// python
-#include "DAPyScripts.h"
-#include "DAPyScriptsDataFrame.h"
 // cmd
 #include "Commands/DACommandsDataFrame.h"
+#include "DADataManager.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
 #include "Dialog/DADialogDataframeColumnCastToDatetime.h"
 #include "Dialog/DADialogInsertNewColumn.h"
-#include "Dialog/DADialogDataFrameDataSelect.h"
-#include "Dialog/DADialogDataFrameEvalDatas.h"
-#include "Dialog/DADialogDataFrameQueryDatas.h"
-#include "Dialog/DADialogDataFrameDataSearch.h"
-#include "Dialog/DADialogCreatePivotTable.h"
-#include "Dialog/DADialogDataFrameSort.h"
+
 
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
@@ -489,8 +482,6 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
     return true;
 }
 
-
-
 /**
  * @brief 创建一个数据描述
  * @return
@@ -505,70 +496,6 @@ DAPyDataFrame DADataOperateOfDataFrameWidget::createDataDescribe()
 }
 
 /**
- * @brief 创建数据透视表。
- * @return
- */
-
-DAPyDataFrame DADataOperateOfDataFrameWidget::createPivotTable()
-{
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return DAPyDataFrame();
-    }
-    if (!mDialogCreatePivotTable) {
-        mDialogCreatePivotTable = new DADialogCreatePivotTable(this);
-    }
-    mDialogCreatePivotTable->setDataframe(df);
-    if (QDialog::Accepted != mDialogCreatePivotTable->exec()) {
-        // 说明用户取消
-        return DAPyDataFrame();
-    }
-    // 获取创建透视表的参数
-    QStringList value   = mDialogCreatePivotTable->getPivotTableValue();
-    QStringList index   = mDialogCreatePivotTable->getPivotTableIndex();
-    QStringList columns = mDialogCreatePivotTable->getPivotTableColumn();
-    QString aggfunc     = mDialogCreatePivotTable->getPivotTableAggfunc();
-    bool margins        = mDialogCreatePivotTable->isEnableMarginsName();
-    QString marginsName = mDialogCreatePivotTable->getMarginsName();
-    bool sort           = mDialogCreatePivotTable->isEnableSort();
-
-    // 如果用户没有选定分组，则返回空
-    if (index.empty())
-        return DAPyDataFrame();
-
-    return createPivotTable(df, value, index, columns, aggfunc, margins, marginsName, sort);
-}
-
-/**
- * @brief 创建数据透视表。
- * @param value 可选参数，要进行汇总的数据值
- * @param index 可选参数，被分析的特征，列、数组、列表
- * @param columns 可选参数，进行分组的特征，列、数组、列表
- * @param aggfunc 可选参数，聚合函数，计算类型
- * @param margins 可选参数，行列数据的统计
- * @param marginsName 可选参数，行列数据的统计的名称
- * @param sort 可选参数，聚合后的结果排序
- * @return
- */
-DAPyDataFrame DADataOperateOfDataFrameWidget::createPivotTable(
-    const DAPyDataFrame& df,
-    const QStringList value,
-    const QStringList index,
-    const QStringList columns,
-    const QString& aggfunc,
-    bool margins,
-    const QString& marginsName,
-    bool sort
-)
-{
-
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-
-    DAPyDataFrame df_pivottable = pydf.pivotTable(df, value, index, columns, aggfunc, margins, marginsName, sort);
-    return df_pivottable;
-}
-
-/**
  * @brief dataframe表格是否有选中项
  * @return
  */
@@ -579,6 +506,16 @@ bool DADataOperateOfDataFrameWidget::isDataframeTableHaveSelection() const
         return false;
     }
     return selectionModel->hasSelection();
+}
+
+/**
+ * @brief 获取dataframe表格的tableview
+ *
+ * @return DADataTableView*
+ */
+DADataTableView* DADataOperateOfDataFrameWidget::getDataTableView() const
+{
+    return ui->tableView;
 }
 
 /**

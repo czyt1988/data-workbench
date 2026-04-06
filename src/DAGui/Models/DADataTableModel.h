@@ -15,7 +15,7 @@ namespace DA
  *
  * 如果不希望共享，可以使用DAPyDataFrameTableModel
  */
-class DADataTableModel : public DAAbstractCacheWindowTableModel
+class DAGUI_API DADataTableModel : public DAAbstractCacheWindowTableModel
 {
     Q_OBJECT
     DA_DECLARE_PRIVATE(DADataTableModel)

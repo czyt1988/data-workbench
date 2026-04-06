@@ -38,6 +38,7 @@
 #include "DAAppPluginManager.h"
 // python
 #if DA_ENABLE_PYTHON
+#include "DAPyInterpreter.h"
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
 #endif
@@ -804,9 +805,8 @@ void DAAppProject::loadedDataManager(const std::shared_ptr< DAAbstractArchiveTas
         switch (t) {
 #if DA_ENABLE_PYTHON
         case DAAbstractData::TypePythonDataFrame: {
-            DAPyScripts* scripts = DACoreInterface::getDAScripts();
-            if (!scripts) {
-                qCritical() << tr("Unable to get DAPyScripts instance");  // cn:无法脚本没有初始化
+            if (!DAPyScripts::isInitScripts()) {
+                qCritical() << tr("Python script is not initialized");  // cn:脚本没有初始化
                 return;
             }
             QString tempLocalFilePath = datamgrTask->getLocalTempFilePath(valueText);
@@ -814,7 +814,7 @@ void DAAppProject::loadedDataManager(const std::shared_ptr< DAAbstractArchiveTas
                 qCritical() << tr("Unable to find the temporary file corresponding to %1").arg(valueText);  // cn:无法在找到%1对应的临时文件
                 return;
             }
-            DAPyScriptsDataFrame& pydf = scripts->getDataFrame();
+            DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
             DAPyDataFrame df;
             if (!pydf.from_parquet(df, tempLocalFilePath)) {
                 qCritical() << tr("Unable to serialize the file %1 into a Dataframe").arg(tempLocalFilePath);  // cn:无法把文件%1序列化为Dataframe

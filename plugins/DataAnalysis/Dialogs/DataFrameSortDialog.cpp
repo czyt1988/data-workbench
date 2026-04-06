@@ -1,4 +1,4 @@
-#include "DataFrameSortDialog.h"
+﻿#include "DataFrameSortDialog.h"
 #include "ui_DataFrameSortDialog.h"
 
 
@@ -15,7 +15,7 @@ DataFrameSortDialog::~DataFrameSortDialog()
     delete ui;
 }
 
-void DataFrameSortDialog::setDataframe(const DAPyDataFrame& df)
+void DataFrameSortDialog::setDataframe(const DA::DAPyDataFrame& df)
 {
     QStringList para = df.columns();
 

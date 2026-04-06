@@ -1,9 +1,9 @@
-#ifndef COMMANDS_H
+﻿#ifndef COMMANDS_H
 #define COMMANDS_H
 #include <QUndoCommand>
-#include "DACommandWithTemporaryData.h"
+#include "Commands/DACommandWithTemporaryData.h"
+#include "pandas/DAPyDataFrame.h"
 #include "DACallBackInterface.h"
-#include "DAPyDataFrame.h"
 
 
 /**
@@ -65,10 +65,10 @@ private:
 /**
  * @brief evaldatas
  */
-class CommandDataFrame_evalDatas : public DACommandWithTemporaryData, public DACallBackInterface
+class CommandDataFrame_evalDatas : public DA::DACommandWithTemporaryData, public DA::DACallBackInterface
 {
 public:
-    CommandDataFrame_evalDatas(const DAPyDataFrame& df, const QString& exper, QUndoCommand* par = nullptr);
+    CommandDataFrame_evalDatas(const DA::DAPyDataFrame& df, const QString& exper, QUndoCommand* par = nullptr);
     virtual void undo() override;
     virtual bool exec() override;
 

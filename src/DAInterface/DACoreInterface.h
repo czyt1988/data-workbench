@@ -15,7 +15,6 @@ namespace DA
 class DAUIInterface;
 class DADataManagerInterface;
 class DAProjectInterface;
-class DAPyScripts;
 /**
  * @brief APP的核心接口
  *
@@ -47,9 +46,7 @@ public:
     // 获取python 脚本路径
     static QString getPythonScriptsPath();
     // python内核是否初始化成功
-    bool isPythonInterpreterInitialized();
-    // 获取da脚本
-    static DAPyScripts* getDAScripts();
+    static bool isPythonInterpreterInitialized();
 #endif
 public:
     // 工程是否dirty的操作

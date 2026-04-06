@@ -1018,13 +1018,12 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
  */
 void DAAppController::initScripts()
 {
-    if (!mCore->isPythonInterpreterInitialized()) {
+    if (!DAPyScripts::isInitScripts()) {
         return;
     }
-    DAPyScripts* daScripts = DACoreInterface::getDAScripts();
-    if (daScripts) {
-        mFileReadFilters = QStringList(daScripts->getIO().getFileReadFilters());
-    }
+
+    mFileReadFilters = QStringList(DAPyScripts::getIO().getFileReadFilters());
+
     qDebug() << mFileReadFilters;
 }
 /**

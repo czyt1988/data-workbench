@@ -14,26 +14,27 @@ namespace DA
  *
  * 此类在初始化的时候就会加载对应的脚本，da的业务逻辑将使用这些脚本进行
  *
- * @note 不建议在插件中创建DAPy相关的类，因为插件析构的顺序目前没有做保证，有可能python在插件之前析构而导致问题
+ * @note 需要在DAPyInterpreter初始化之后调用此类，否则无法正常初始化
  */
 class DAPYSCRIPTS_API DAPyScripts
 {
-    DA_DECLARE_PRIVATE(DAPyScripts)
-
 public:
     DAPyScripts();
     ~DAPyScripts();
     // 初始化脚本
-    void appendSysPath(const QString& path);
-    bool isInitScripts() const;
-
-    DAPyScriptsIO& getIO();
-    DAPyScriptsDataFrame& getDataFrame();
-    DAPyScriptsDataProcess& getDataProcess();
+    static void appendSysPath(const QString& path);
+    // 是否初始化了脚本
+    static bool isInitScripts();
+    // 初始化脚本
+    static bool initScripts();
+    static DAPyScriptsIO& getIO();
+    static DAPyScriptsDataFrame& getDataFrame();
+    static DAPyScriptsDataProcess& getDataProcess();
 
 protected:
-    // import sys
-    bool loadSysModule();
+    // 内部模块
+    class InnerModules;
+    static std::unique_ptr< InnerModules > s_models;
 };
 }  // namespace DA
 #endif  // DAPYSCRIPTS_H

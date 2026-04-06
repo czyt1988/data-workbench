@@ -16,15 +16,11 @@ class DADataOperateOfDataFrameWidget;
 namespace DA
 {
 class DADataTableModel;
+class DADataTableView;
 class DAAppRibbonArea;
 class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
-class DataFrameDataSelectDialog;
-class DADialogDataFrameEvalDatas;
-class DADialogDataFrameQueryDatas;
-class DADialogDataFrameDataSearch;
-class DADialogDataFrameSort;
-class DADialogCreatePivotTable;
+
 
 /**
  * @brief 针对DataFrame的操作窗口
@@ -92,18 +88,6 @@ public Q_SLOTS:
     void castSelectToDatetime();
     // 把选择的列转换为索引
     bool changeSelectColumnToIndex();
-    // 创建数据透视表
-    DAPyDataFrame createPivotTable();
-    DAPyDataFrame createPivotTable(
-        const DAPyDataFrame& df,
-        const QStringList value    = QStringList(),
-        const QStringList index    = QStringList(),
-        const QStringList columns  = QStringList(),
-        const QString& aggfunc     = QStringLiteral("mean"),
-        bool margins               = false,
-        const QString& marginsName = QStringLiteral("All"),
-        bool sort                  = false
-    );
 Q_SIGNALS:
     /**
      * @brief 选中的列或者类型发生了变化
@@ -126,12 +110,6 @@ private:
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
-    DataFrameDataSelectDialog* mDialogDataFrameDataSelect { nullptr };
-    DADialogCreatePivotTable* mDialogCreatePivotTable { nullptr };
-    DADialogDataFrameEvalDatas* mDialogDataFrameEvalDatas { nullptr };
-    DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas { nullptr };
-    DADialogDataFrameDataSearch* mDialogDataFrameDataSearch { nullptr };
-    DADialogDataFrameSort* mDADialogDataFrameSort { nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

@@ -52,7 +52,7 @@ void DACommandDataFrame_insertNanRow::undo()
 
 bool DACommandDataFrame_insertNanRow::exec()
 {
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
     if (!pydf.insert_nanrow(dataframe(), mRow)) {
         return false;
     }
@@ -115,14 +115,14 @@ DACommandDataFrame_insertColumn::DACommandDataFrame_insertColumn(
 
 void DACommandDataFrame_insertColumn::undo()
 {
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
     mInsertedSeries            = pydf.itake_column(dataframe(), mCol);
     callback();
 }
 
 bool DACommandDataFrame_insertColumn::exec()
 {
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
     if (mInsertedSeries.isNone()) {
         if (mIsRangeMode) {
             if (!pydf.insert_column(dataframe(), mCol, mName, mStart, mStop)) {
@@ -166,7 +166,7 @@ void DACommandDataFrame_dropIRow::undo()
 
 bool DACommandDataFrame_dropIRow::exec()
 {
-    DAPyScriptsDataFrame& py = DAPyScripts::getInstance().getDataFrame();
+    DAPyScriptsDataFrame& py = DAPyScripts::getDataFrame();
     if (!py.drop_irow(mDataframe, mIndex)) {
         return false;
     }
@@ -190,7 +190,7 @@ void DACommandDataFrame_dropIColumn::undo()
 
 bool DACommandDataFrame_dropIColumn::exec()
 {
-    DAPyScriptsDataFrame& py = DAPyScripts::getInstance().getDataFrame();
+    DAPyScriptsDataFrame& py = DAPyScripts::getDataFrame();
     if (!py.drop_icolumn(mDataframe, mIndex)) {
         return false;
     }
@@ -257,7 +257,7 @@ bool DACommandDataFrame_astype::exec()
     if (mDtype.isNone()) {
         return false;
     }
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
     if (!pydf.astype(mDataframe, mIndex, mDtype)) {
         return false;
     }
@@ -288,7 +288,7 @@ void DACommandDataFrame_setnan::undo()
 
 bool DACommandDataFrame_setnan::exec()
 {
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
     if (!pydf.setnan(mDataframe, mRows, mColumns)) {
         return false;
     }
@@ -315,7 +315,7 @@ void DACommandDataFrame_evalDatas::undo()
 
 bool DACommandDataFrame_evalDatas::exec()
 {
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
     if (!pydf.evalDatas(dataframe(), mExper)) {
         return false;
     }
@@ -342,7 +342,7 @@ void DACommandDataFrame_castNum::undo()
 
 bool DACommandDataFrame_castNum::exec()
 {
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
     if (!pydf.cast_to_num(mDataframe, mIndex, mArgs)) {
         return false;
     }
@@ -368,7 +368,7 @@ void DACommandDataFrame_castDatetime::undo()
 
 bool DACommandDataFrame_castDatetime::exec()
 {
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
     if (!pydf.cast_to_datetime(dataframe(), mIndex, mArgs)) {
         return false;
     }
@@ -392,7 +392,7 @@ void DACommandDataFrame_setIndex::undo()
 
 bool DACommandDataFrame_setIndex::exec()
 {
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
     if (!pydf.set_index(dataframe(), mIndex)) {
         return false;
     }

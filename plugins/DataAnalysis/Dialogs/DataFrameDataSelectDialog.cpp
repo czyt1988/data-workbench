@@ -1,9 +1,8 @@
-#include "DataFrameDataSelectDialog.h"
+﻿#include "DataFrameDataSelectDialog.h"
 #include "ui_DataFrameDataSelectDialog.h"
 #include <QDebug>
 #include <QMessageBox>
-namespace DA
-{
+
 
 DataFrameDataSelectDialog::DataFrameDataSelectDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::DataFrameDataSelectDialog)
@@ -67,5 +66,3 @@ double DataFrameDataSelectDialog::getUpperValue() const
     }
     return v;
 }
-
-}  // end DA

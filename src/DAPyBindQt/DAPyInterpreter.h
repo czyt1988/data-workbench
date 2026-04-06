@@ -1,31 +1,43 @@
-﻿#ifndef DAPYINTERPRETER_H
+#ifndef DAPYINTERPRETER_H
 #define DAPYINTERPRETER_H
-#include <QtCore/qglobal.h>
+#include <memory>
 #include <QString>
-#include "DAPyBindQtGlobal.h"
-#include <vector>
-#include <functional>
+#include <QList>
 #include <QFileInfo>
+#include "DAPyBindQtGlobal.h"
+#include "DAPybind11InQt.h"
 namespace DA
 {
 /**
  * @brief python 环境管理类，这个了封装了pybind11的pybind11::scoped_interpreter
  *
- * 这个类的封装是为了可以实现一些结束python环境的回调
+ * 这个类的封装了一些常用方法
+ *
+ * 1. 设置python环境路径
+ * 2. 开启python环境
+ * 3. 关闭python环境
+ * 4. 获取python配置文件
+ * 5. 获取python Interpreter
+ * 6. 系统的where命令
+ * 7. 从配置文件获取python
+ * 8. 获取python环境路径
+ *
+ * 这个类共享一个全局的pybind11::scoped_interpreter，在首次实例化DAPyInterpreter时会初始化，也可以手动调用DAPyInterpreter::initializePythonInterpreter初始化
  */
 class DAPYBINDQT_API DAPyInterpreter
 {
-    DA_DECLARE_PRIVATE(DAPyInterpreter)
 public:
     DAPyInterpreter();
     ~DAPyInterpreter();
     // 设置python环境路径
-    void setPythonHomePath(const QString& path);
+    static void setPythonHomePath(const QString& path);
     // 开启python环境
-    void initializePythonInterpreter();
+    static void initializePythonInterpreter();
+    // 开启python环境（带Python Home路径参数）
+    static void initializePythonInterpreter(const QString& pythonHomePath);
     // 关闭
-    void shutdown();
-    void ensureShutdown();
+    static void shutdown();
+    static void ensureShutdown();
     // 获取python配置文件
     static QString getAppPythonConfigFile();
     // 获取python Interpreter
@@ -34,6 +46,11 @@ public:
     static QList< QFileInfo > wherePython();
     // 从配置文件获取python
     static QList< QFileInfo > wherePythonFromConfig();
+    // 是否初始化了python环境
+    static bool isPythonInitialized();
+
+public:
+    static std::shared_ptr< pybind11::scoped_interpreter > interpreter;
 };
 }  // namespace DA
 #endif  // DAPYINTERPRETER_H

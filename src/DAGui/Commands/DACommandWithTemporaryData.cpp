@@ -13,9 +13,9 @@ namespace DA
 DACommandWithTemporaryData::DACommandWithTemporaryData(const DAPyDataFrame& df, QUndoCommand* par, bool saveOnConstruct)
     : DACommandWithRedoCount(par), mDataframe(df)
 {
-	if (saveOnConstruct) {
-		save();
-	}
+    if (saveOnConstruct) {
+        save();
+    }
 }
 
 DACommandWithTemporaryData::~DACommandWithTemporaryData()
@@ -38,8 +38,8 @@ QString DACommandWithTemporaryData::getTemplateFileName() const
  */
 QDir DACommandWithTemporaryData::templateDir() const
 {
-	QDir dir(getDataframeTempPath());
-	return dir;
+    QDir dir(getDataframeTempPath());
+    return dir;
 }
 
 /**
@@ -57,8 +57,7 @@ QString DACommandWithTemporaryData::getTemplateFilePath() const
  */
 bool DACommandWithTemporaryData::save()
 {
-	DAPyScriptsDataFrame& py = DAPyScripts::getInstance().getDataFrame();
-	return py.to_pickle(mDataframe, getTemplateFilePath());
+    return mDataframe.to_pickle(getTemplateFilePath());
 }
 
 /**
@@ -67,24 +66,24 @@ bool DACommandWithTemporaryData::save()
  */
 bool DACommandWithTemporaryData::load()
 {
-	DAPyScriptsDataFrame& py = DAPyScripts::getInstance().getDataFrame();
-	return py.from_pickle(mDataframe, getTemplateFilePath());
+    DAPyScriptsDataFrame& py = DAPyScripts::getDataFrame();
+    return py.from_pickle(mDataframe, getTemplateFilePath());
 }
 
 DAPyDataFrame& DACommandWithTemporaryData::dataframe()
 {
-	return mDataframe;
+    return mDataframe;
 }
 
 const DAPyDataFrame& DACommandWithTemporaryData::dataframe() const
 {
-	return mDataframe;
+    return mDataframe;
 }
 
 QString DACommandWithTemporaryData::getDataframeTempPath()
 {
-	static QString s_temp_dataframe = DADir::getTempPath("dataframe");
-	return s_temp_dataframe;
+    static QString s_temp_dataframe = DADir::getTempPath("dataframe");
+    return s_temp_dataframe;
 }
 
 }

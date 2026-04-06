@@ -1,6 +1,7 @@
-#include "Commands.h"
+﻿#include "Commands.h"
 #include "DACoreInterface.h"
-
+#include "DAPyScripts.h"
+#include "DAPyScriptsDataFrame.h"
 /**
  * @brief 数据过滤
  *
@@ -32,11 +33,7 @@ void CommandDataFrame_filterByColumn::undo()
 
 bool CommandDataFrame_filterByColumn::exec()
 {
-    DA::DAPyScripts* script = DA::DACoreInterface::getDAScripts();
-    if (!script) {
-        return false;
-    }
-    DA::DAPyScriptsDataFrame& pydf = script->getDataFrame();
+    DA::DAPyScriptsDataFrame& pydf = DA::DAPyScripts::getDataFrame();
     if (!pydf.dataselect(dataframe(), mlowervalue, mUppervalue, mIndex)) {
         return false;
     }
@@ -72,11 +69,7 @@ void CommandDataFrame_sort::undo()
 
 bool CommandDataFrame_sort::exec()
 {
-    DA::DAPyScripts* script = DA::DACoreInterface::getDAScripts();
-    if (!script) {
-        return false;
-    }
-    DA::DAPyScriptsDataFrame& pydf = script->getDataFrame();
+    DA::DAPyScriptsDataFrame& pydf = DA::DAPyScripts::getDataFrame();
     if (!pydf.sort(dataframe(), mBy, mAscending)) {
         return false;
     }
@@ -108,11 +101,7 @@ void CommandDataFrame_querydatas::undo()
 
 bool CommandDataFrame_querydatas::exec()
 {
-    DA::DAPyScripts* script = DA::DACoreInterface::getDAScripts();
-    if (!script) {
-        return false;
-    }
-    DA::DAPyScriptsDataFrame& pydf = script->getDataFrame();
+    DA::DAPyScriptsDataFrame& pydf = DA::DAPyScripts::getDataFrame();
     if (!pydf.queryDatas(dataframe(), mExper)) {
         return false;
     }
@@ -132,25 +121,21 @@ bool CommandDataFrame_querydatas::exec()
  * @param exper  运算表达式
  * @param par
  */
-CommandDataFrame_evalDatas::CommandDataFrame_evalDatas(const DAPyDataFrame& df, const QString& exper, QUndoCommand* par)
+CommandDataFrame_evalDatas::CommandDataFrame_evalDatas(const DA::DAPyDataFrame& df, const QString& exper, QUndoCommand* par)
     : DA::DACommandWithTemporaryData(df, par), DA::DACallBackInterface(), mExper(exper)
 {
     setText(QObject::tr("eval datas"));  // cn:列运算
 }
 
-void DACommandDataFrame_evalDatas::undo()
+void CommandDataFrame_evalDatas::undo()
 {
     load();
     callback();
 }
 
-bool DACommandDataFrame_evalDatas::exec()
+bool CommandDataFrame_evalDatas::exec()
 {
-    DA::DAPyScripts* script = DA::DACoreInterface::getDAScripts();
-    if (!script) {
-        return false;
-    }
-    DA::DAPyScriptsDataFrame& pydf = script->getDataFrame();
+    DA::DAPyScriptsDataFrame& pydf = DA::DAPyScripts::getDataFrame();
     if (!pydf.evalDatas(dataframe(), mExper)) {
         return false;
     }

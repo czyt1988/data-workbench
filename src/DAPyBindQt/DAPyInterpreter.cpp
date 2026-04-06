@@ -1,5 +1,4 @@
-﻿#include "DAPyInterpreter.h"
-#include "DAPybind11InQt.h"
+#include "DAPyInterpreter.h"
 #include <QDebug>
 #include <QProcess>
 #include <QFile>
@@ -13,29 +12,20 @@
 namespace DA
 {
 
-class DAPyInterpreter::PrivateData
-{
-    DA_DECLARE_PUBLIC(DAPyInterpreter)
-public:
-    PrivateData(DAPyInterpreter* p);
 
-public:
-    std::unique_ptr< pybind11::scoped_interpreter > interpreter;
-};
-
-DAPyInterpreter::PrivateData::PrivateData(DAPyInterpreter* p) : q_ptr(p)
-{
-}
+std::shared_ptr< pybind11::scoped_interpreter > DAPyInterpreter::interpreter = nullptr;
 //===================================================
 // DAPyInterpreter
 //===================================================
-DAPyInterpreter::DAPyInterpreter() : DA_PIMPL_CONSTRUCT
+DAPyInterpreter::DAPyInterpreter()
 {
+    if (interpreter == nullptr) {
+        initializePythonInterpreter();
+    }
 }
 
 DAPyInterpreter::~DAPyInterpreter()
 {
-    ensureShutdown();
 }
 
 
@@ -109,6 +99,17 @@ QList< QFileInfo > DAPyInterpreter::wherePythonFromConfig()
 }
 
 /**
+ * @brief 是否初始化了python环境
+ *
+ * @return true 已初始化
+ * @return false 未初始化
+ */
+bool DAPyInterpreter::isPythonInitialized()
+{
+    return interpreter != nullptr;
+}
+
+/**
  * @brief 设置python的运行路径
  *
  * @param path
@@ -128,15 +129,57 @@ void DAPyInterpreter::setPythonHomePath(const QString& path)
     }
 }
 
+/**
+ * @brief 初始化Python解释器
+ *
+ * 使用默认配置初始化Python解释器
+ */
 void DAPyInterpreter::initializePythonInterpreter()
+{
+    initializePythonInterpreter(QString());
+}
+
+/**
+ * @brief 初始化Python解释器（带Python Home路径参数）
+ *
+ * 使用指定的Python Home路径初始化Python解释器。
+ * 对于Python 3.8+，使用PyConfig API来正确设置Python Home路径。
+ *
+ * @param pythonHomePath Python Home路径，指向Python安装目录（如C:\Python311）
+ */
+void DAPyInterpreter::initializePythonInterpreter(const QString& pythonHomePath)
 {
     try {
         qDebug() << "Python DLL version from header:" << PY_VERSION;
         qDebug() << "Python hex version:" << PY_VERSION_HEX;
-        d_ptr->interpreter = std::make_unique< pybind11::scoped_interpreter >();
+
+#if PY_VERSION_HEX >= 0x03080000
+        if (!pythonHomePath.isEmpty()) {
+            PyConfig config;
+            PyConfig_InitPythonConfig(&config);
+            config.parse_argv = 0;
+
+            std::vector< wchar_t > wp((pythonHomePath.size() + 1) * 4, 0);
+            pythonHomePath.toWCharArray(wp.data());
+            PyStatus status = PyConfig_SetString(&config, &config.home, wp.data());
+            if (PyStatus_Exception(status) != 0) {
+                qWarning() << "Failed to set Python home path:" << pythonHomePath;
+            } else {
+                qDebug() << "Python home path set to:" << pythonHomePath;
+            }
+            interpreter = std::make_shared< pybind11::scoped_interpreter >(&config);
+        } else {
+            interpreter = std::make_shared< pybind11::scoped_interpreter >();
+        }
+#else
+        if (!pythonHomePath.isEmpty()) {
+            setPythonHomePath(pythonHomePath);
+        }
+        interpreter = std::make_shared< pybind11::scoped_interpreter >();
+#endif
+
         qDebug() << "Python runtime version:" << Py_GetVersion();
         qDebug() << "Python path:" << Py_GetPath();
-        // 检查编译版本 vs 运行版本
         qDebug() << "Compiled against:" << PY_MAJOR_VERSION << "." << PY_MINOR_VERSION << "." << PY_MICRO_VERSION;
     } catch (const std::exception& e) {
         qWarning() << e.what();
@@ -209,14 +252,14 @@ void DAPyInterpreter::shutdown()
 
     // ===== 第三步：最终释放解释器 =====
     qDebug() << "Shutdow Python Interpreter...";
-    d_ptr->interpreter.reset();  // 这会触发 pybind11::finalize_interpreter
+    interpreter = nullptr;  // 这会触发 pybind11::finalize_interpreter
     qDebug() << "Python Interpreter Shutdowed";
 }
 
 void DAPyInterpreter::ensureShutdown()
 {
     static std::once_flag onceFlag;
-    std::call_once(onceFlag, [ this ]() { shutdown(); });
+    std::call_once(onceFlag, []() { DAPyInterpreter::shutdown(); });
 }
 
 /**

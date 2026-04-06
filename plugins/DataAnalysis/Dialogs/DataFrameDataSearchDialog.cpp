@@ -5,9 +5,10 @@
 #include "DAPyScripts.h"
 #include "DAPyDataFrameTableView.h"
 #include "DADataTableView.h"
+#include "DAWaitCursorScoped.h"
 
-DataFrameDataSearchDialog::DataFrameDataSearchDialog(DA::DAPyScripts* script, QWidget* parent)
-    : QDialog(parent), ui(new Ui::DataFrameDataSearchDialog), mPyScript(script)
+DataFrameDataSearchDialog::DataFrameDataSearchDialog(QWidget* parent)
+    : QDialog(parent), ui(new Ui::DataFrameDataSearchDialog)
 {
     ui->setupUi(this);
     connect(ui->lineEditFindItem, &QLineEdit::textChanged, this, &DataFrameDataSearchDialog::onLineEditTextChanged);
@@ -68,9 +69,9 @@ void DataFrameDataSearchDialog::setDataTableView(DA::DADataTableView* v)
 
 void DataFrameDataSearchDialog::searchData()
 {
-    DA_WAIT_CURSOR_SCOPED();
+    DA_WAIT_CURSOR_SCOPED_NS();
     DA::DAPyDataFrame df           = mDataTableView->getData().toDataFrame();
-    DA::DAPyScriptsDataFrame& pydf = mPyScript->getDataFrame();
+    DA::DAPyScriptsDataFrame& pydf = DA::DAPyScripts::getDataFrame();
     mMatches                       = pydf.searchData(df, getSearchText());
     mIndex                         = 0;
 }

@@ -1,4 +1,4 @@
-#ifndef DATAFRAMEQUERYDATASDIALOG_H
+﻿#ifndef DATAFRAMEQUERYDATASDIALOG_H
 #define DATAFRAMEQUERYDATASDIALOG_H
 
 #include <QDialog>
@@ -7,8 +7,7 @@ namespace Ui
 {
 class DataFrameQueryDatasDialog;
 }
-namespace DA
-{
+
 
 /**
  * @brief querydatas参数设置
@@ -24,8 +23,8 @@ public:
     QString getExpr() const;
 
 private:
-    Ui::DADialogDataFrameQueryDatas* ui;
+    Ui::DataFrameQueryDatasDialog* ui;
 };
-}
+
 
 #endif  // DATAFRAMEQUERYDATASDIALOG_H

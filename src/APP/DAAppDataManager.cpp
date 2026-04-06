@@ -12,7 +12,6 @@
 // DAUtils
 #include "DAStringUtil.h"
 #if DA_ENABLE_PYTHON
-// DAPyScript
 #include "DAPyScripts.h"
 #endif
 
@@ -36,9 +35,8 @@ bool DAAppDataManager::importFromFile(const QString& f, const QVariantMap& args,
 #if DA_ENABLE_PYTHON
     qInfo() << tr("begin import file:%1").arg(f);
     try {
-        DAPyScripts* daScripts = DACoreInterface::getDAScripts();
-        if (daScripts) {
-            daScripts->getIO().read(f, args, err);
+        if (DAPyScripts::isInitScripts()) {
+            DAPyScripts::getIO().read(f, args, err);
         }
         return true;
     } catch (const std::exception& e) {
@@ -61,11 +59,10 @@ int DAAppDataManager::importFromFiles(const QStringList& fileNames)
     for (const QString& f : std::as_const(fileNames)) {
 #if DA_ENABLE_PYTHON
         qInfo() << tr("begin import file:%1").arg(f);
-        DAPyScripts* daScripts = DACoreInterface::getDAScripts();
-        if (!daScripts) {
+        if (!DAPyInterpreter::isPythonInitialized()) {
             return 0;
         }
-        DAPyObjectWrapper res = daScripts->getIO().read(f);
+        DAPyObjectWrapper res = DAPyScripts::getIO().read(f);
         if (DAPyDataFrame::isDataFrame(res.object())) {
             qInfo() << tr("file:%1,conver to dataframe").arg(f);
             QFileInfo fi(f);

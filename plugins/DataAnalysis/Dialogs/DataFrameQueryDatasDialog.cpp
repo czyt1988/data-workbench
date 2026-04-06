@@ -1,9 +1,8 @@
-#include "DataFrameQueryDatasDialog.h"
+﻿#include "DataFrameQueryDatasDialog.h"
 #include "ui_DataFrameQueryDatasDialog.h"
 #include <QLineEdit>
 
-namespace DA
-{
+
 DataFrameQueryDatasDialog::DataFrameQueryDatasDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::DataFrameQueryDatasDialog)
 {
@@ -84,5 +83,3 @@ QString DataFrameQueryDatasDialog::getExpr() const
 {
     return ui->textEdit->toPlainText();
 }
-
-}  // end DA

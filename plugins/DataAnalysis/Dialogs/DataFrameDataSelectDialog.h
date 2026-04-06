@@ -1,4 +1,4 @@
-#ifndef DATAFRAMEDATASELECTDIALOG_H
+﻿#ifndef DATAFRAMEDATASELECTDIALOG_H
 #define DATAFRAMEDATASELECTDIALOG_H
 
 #include <QDialog>
@@ -40,7 +40,7 @@ public:
     double getUpperValue() const;
 
 private:
-    Ui::DADialogDataFrameDataSelect* ui;
+    Ui::DataFrameDataSelectDialog* ui;
 };
 
 
