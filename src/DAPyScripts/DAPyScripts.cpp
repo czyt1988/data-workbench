@@ -48,8 +48,7 @@ DAPyScripts::~DAPyScripts()
 void DAPyScripts::appendSysPath(const QString& path)
 {
     try {
-        DAPyModule pySys("sys");
-        pybind11::object obj_path_append = pySys.attr("path").attr("append");
+        pybind11::object obj_path_append = d_ptr->mPySys.attr("path").attr("append");
         obj_path_append(DA::PY::toPyObject(path));
     } catch (const std::exception& e) {
         qCritical() << QObject::tr("Initialized import sys module error:%1").arg(e.what());
@@ -67,12 +66,6 @@ bool DAPyScripts::isInitScripts() const
         return false;
     }
     return true;
-}
-
-DAPyScripts& DAPyScripts::getInstance()
-{
-    static DAPyScripts s_pyscripts;
-    return s_pyscripts;
 }
 
 /**

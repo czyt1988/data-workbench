@@ -1,13 +1,12 @@
-#include "DADialogDataFrameEvalDatas.h"
-#include "ui_DADialogDataFrameEvalDatas.h"
+#include "DataFrameEvalDatasDialog.h"
+#include "ui_DataFrameEvalDatasDialog.h"
 #include <QLineEdit>
 
-namespace DA
+
+DataFrameEvalDatasDialog::DataFrameEvalDatasDialog(QWidget* parent)
+    : QDialog(parent), ui(new Ui::DataFrameEvalDatasDialog)
 {
-DADialogDataFrameEvalDatas::DADialogDataFrameEvalDatas(QWidget* parent)
-    : QDialog(parent), ui(new Ui::DADialogDataFrameEvalDatas)
-{
-	ui->setupUi(this);
+    ui->setupUi(this);
     ui->textBrowser->setMarkdown(
         tr("# I. Basic Syntax"
            "\n"
@@ -70,7 +69,8 @@ DADialogDataFrameEvalDatas::DADialogDataFrameEvalDatas(QWidget* parent)
            "\nname.str.contains(\"John\")"
            "\n```"
            "\n"
-           "\nThis can be used to filter rows where the name contains \" John \"."));  // cn:
+           "\nThis can be used to filter rows where the name contains \" John \".")
+    );  // cn:
     // # 一、基本语法
     //
     // 您可以使用以下内容编写表达式：
@@ -134,14 +134,12 @@ DADialogDataFrameEvalDatas::DADialogDataFrameEvalDatas(QWidget* parent)
     // 可用于筛选名字中包含 "John" 的行。
 }
 
-DADialogDataFrameEvalDatas::~DADialogDataFrameEvalDatas()
+DataFrameEvalDatasDialog::~DataFrameEvalDatasDialog()
 {
     delete ui;
 }
 
-QString DADialogDataFrameEvalDatas::getExpr() const
+QString DataFrameEvalDatasDialog::getExpr() const
 {
     return ui->textEdit->toPlainText();
 }
-
-}  // end DA

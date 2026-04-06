@@ -1,36 +1,35 @@
-﻿#include "DADialogDataFrameDataSearch.h"
-#include "ui_DADialogDataFrameDataSearch.h"
+﻿#include "DataFrameDataSearchDialog.h"
+#include "ui_DataFrameDataSearchDialog.h"
 #include "DAWaitCursorScoped.h"
 #include "DAPyScriptsDataFrame.h"
 #include "DAPyScripts.h"
 #include "DAPyDataFrameTableView.h"
 #include "DADataTableView.h"
-namespace DA
-{
-DADialogDataFrameDataSearch::DADialogDataFrameDataSearch(QWidget* parent)
-    : QDialog(parent), ui(new Ui::DADialogDataFrameDataSearch)
+
+DataFrameDataSearchDialog::DataFrameDataSearchDialog(DA::DAPyScripts* script, QWidget* parent)
+    : QDialog(parent), ui(new Ui::DataFrameDataSearchDialog), mPyScript(script)
 {
     ui->setupUi(this);
-    connect(ui->lineEditFindItem, &QLineEdit::textChanged, this, &DADialogDataFrameDataSearch::onLineEditTextChanged);
-    connect(ui->pushButtonNext, &QPushButton::clicked, this, &DADialogDataFrameDataSearch::onPushButtonNextClicked);
+    connect(ui->lineEditFindItem, &QLineEdit::textChanged, this, &DataFrameDataSearchDialog::onLineEditTextChanged);
+    connect(ui->pushButtonNext, &QPushButton::clicked, this, &DataFrameDataSearchDialog::onPushButtonNextClicked);
 }
 
-DADialogDataFrameDataSearch::~DADialogDataFrameDataSearch()
+DataFrameDataSearchDialog::~DataFrameDataSearchDialog()
 {
     delete ui;
 }
 
-QString DADialogDataFrameDataSearch::getSearchText() const
+QString DataFrameDataSearchDialog::getSearchText() const
 {
     return ui->lineEditFindItem->text();
 }
 
-QList< QPair< int, int > > DADialogDataFrameDataSearch::getItemCoor() const
+QList< QPair< int, int > > DataFrameDataSearchDialog::getItemCoor() const
 {
     return mMatches;
 }
 
-void DADialogDataFrameDataSearch::onPushButtonNextClicked()
+void DataFrameDataSearchDialog::onPushButtonNextClicked()
 {
     // 直接在此函数上操作
     if (mIsNeedResearch) {
@@ -52,12 +51,12 @@ void DADialogDataFrameDataSearch::onPushButtonNextClicked()
     ++mIndex;
 }
 
-DADataTableView* DADialogDataFrameDataSearch::getDataTableView() const
+DA::DADataTableView* DataFrameDataSearchDialog::getDataTableView() const
 {
     return mDataTableView;
 }
 
-void DADialogDataFrameDataSearch::setDataTableView(DADataTableView* v)
+void DataFrameDataSearchDialog::setDataTableView(DA::DADataTableView* v)
 {
     if (mDataTableView == v) {
         return;
@@ -67,20 +66,18 @@ void DADialogDataFrameDataSearch::setDataTableView(DADataTableView* v)
     mIsNeedResearch = true;
 }
 
-void DADialogDataFrameDataSearch::searchData()
+void DataFrameDataSearchDialog::searchData()
 {
     DA_WAIT_CURSOR_SCOPED();
-    DAPyDataFrame df           = mDataTableView->getData().toDataFrame();
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-    mMatches                   = pydf.searchData(df, getSearchText());
-    mIndex                     = 0;
+    DA::DAPyDataFrame df           = mDataTableView->getData().toDataFrame();
+    DA::DAPyScriptsDataFrame& pydf = mPyScript->getDataFrame();
+    mMatches                       = pydf.searchData(df, getSearchText());
+    mIndex                         = 0;
 }
 
-void DADialogDataFrameDataSearch::onLineEditTextChanged(const QString& t)
+void DataFrameDataSearchDialog::onLineEditTextChanged(const QString& t)
 {
     Q_UNUSED(t);
     // 搜索内容发生改变时，标记重新搜索
     mIsNeedResearch = true;
 }
-
-}  // end DA

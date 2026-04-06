@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DADialogDataFrameEvalDatas</class>
- <widget class="QDialog" name="DADialogDataFrameEvalDatas">
+ <class>DataFrameEvalDatasDialog</class>
+ <widget class="QDialog" name="DataFrameEvalDatasDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -51,10 +51,6 @@
        <property name="text">
         <string>OK</string>
        </property>
-       <property name="icon">
-        <iconset resource="../icon.qrc">
-         <normaloff>:/DAGui/icon/accept.svg</normaloff>:/DAGui/icon/accept.svg</iconset>
-       </property>
        <property name="default">
         <bool>true</bool>
        </property>
@@ -64,10 +60,6 @@
       <widget class="QPushButton" name="pushButtonCancel">
        <property name="text">
         <string>Cancel</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../icon.qrc">
-         <normaloff>:/DAGui/icon/cancel.svg</normaloff>:/DAGui/icon/cancel.svg</iconset>
        </property>
       </widget>
      </item>
@@ -89,7 +81,7 @@
   <connection>
    <sender>pushButtonOK</sender>
    <signal>clicked()</signal>
-   <receiver>DADialogDataFrameEvalDatas</receiver>
+   <receiver>DataFrameEvalDatasDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -105,7 +97,7 @@
   <connection>
    <sender>pushButtonCancel</sender>
    <signal>clicked()</signal>
-   <receiver>DADialogDataFrameEvalDatas</receiver>
+   <receiver>DataFrameEvalDatasDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

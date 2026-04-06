@@ -1,4 +1,4 @@
-﻿
+
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # DA WorkBench 顶层Cmake文件
@@ -324,19 +324,70 @@ if(DA_ENABLE_AUTO_TRANSLATE)
         ${CMAKE_CURRENT_SOURCE_DIR}/plugins/DataAnalysis
     )
 
-    # 自动 update + release → 生成 DA_QM_FILES
-    if(QT_VERSION_MAJOR EQUAL 5)
-        qt5_create_translation(DA_QM_FILES ${DA_LUPDATE_SOURCE_DIRS} ${DA_TS_FILES}
-            OPTIONS -locations relative -no-obsolete)
-    elseif(QT_VERSION_MAJOR EQUAL 6)
-        qt6_create_translation(DA_QM_FILES ${DA_LUPDATE_SOURCE_DIRS} ${DA_TS_FILES}
-            OPTIONS -locations relative -no-obsolete)
-    endif()
+    # 根据Qt版本选择不同的翻译API
+    # Qt 6.2+ 推荐使用分离的 lupdate/lrelease 流程
+    if(QT_VERSION_MAJOR EQUAL 6 AND QT_VERSION VERSION_GREATER_EQUAL "6.2")
+        # 使用新API：手动分离 lupdate (更新.ts) 和 lrelease (生成.qm)
+        # 优点：
+        # - update_translations 目标（手动触发，更新.ts文件）
+        # - release_translations 目标（自动构建，生成.qm文件）
+        # - 避免每次构建都重写.ts文件
+        
+        # 1. 创建手动触发的lupdate目标（不加入ALL，避免每次构建运行）
+        add_custom_target(update_translations
+            COMMAND Qt${QT_VERSION_MAJOR}::lupdate
+                -locations relative
+                -no-obsolete
+                ${DA_LUPDATE_SOURCE_DIRS}
+                -ts ${DA_TS_FILES}
+            COMMENT "Updating translation files (.ts) - run manually when needed"
+            VERBATIM
+        )
 
-    add_custom_target(da_translations ALL DEPENDS ${DA_QM_FILES})
+        # 2. 自动构建的lrelease目标（只从.ts生成.qm）
+        set(DA_QM_FILES)
+        foreach(ts_file ${DA_TS_FILES})
+            get_filename_component(ts_name ${ts_file} NAME_WE)
+            set(qm_file "${CMAKE_CURRENT_BINARY_DIR}/${ts_name}.qm")
+            list(APPEND DA_QM_FILES ${qm_file})
+
+            add_custom_command(OUTPUT ${qm_file}
+                COMMAND Qt${QT_VERSION_MAJOR}::lrelease
+                    ${ts_file}
+                    -qm ${qm_file}
+                DEPENDS ${ts_file}
+                COMMENT "Compiling ${ts_name}.ts -> ${ts_name}.qm"
+                VERBATIM
+            )
+        endforeach()
+
+        # 3. 将release目标加入默认构建
+        add_custom_target(da_translations ALL DEPENDS ${DA_QM_FILES})
+
+        message(STATUS "Translation enabled (Qt6.2+ separated API)")
+        message(STATUS "  QM files: ${DA_QM_FILES}")
+        message(STATUS "  To update .ts files: cmake --build <dir> --target update_translations")
+
+    else()
+        # 兼容旧版API：qt5_create_translation / qt6_create_translation
+        # 注意：此方式会在每次构建时运行 lupdate，可能导致.ts文件被无意义地重写
+        # 建议升级到 Qt 6.2+ 以使用新API
+        if(QT_VERSION_MAJOR EQUAL 5)
+            qt5_create_translation(DA_QM_FILES ${DA_LUPDATE_SOURCE_DIRS} ${DA_TS_FILES}
+                OPTIONS -locations relative -no-obsolete)
+        elseif(QT_VERSION_MAJOR EQUAL 6)
+            qt6_create_translation(DA_QM_FILES ${DA_LUPDATE_SOURCE_DIRS} ${DA_TS_FILES}
+                OPTIONS -locations relative -no-obsolete)
+        endif()
+
+        add_custom_target(da_translations ALL DEPENDS ${DA_QM_FILES})
+
+        message(STATUS "Translation enabled (legacy API, consider upgrading to Qt 6.2+)")
+        message(STATUS "  QM files: ${DA_QM_FILES}")
+        message(STATUS "  WARNING: .ts files may be rewritten on every build")
+    endif()
 
     install(FILES ${DA_QM_FILES}
                 DESTINATION ${CMAKE_INSTALL_BINDIR}/translations
                 COMPONENT translations)
-    message(STATUS "Translation enabled,qm files is ${DA_QM_FILES}")
 endif()

@@ -1021,10 +1021,12 @@ void DAAppController::initScripts()
     if (!mCore->isPythonInterpreterInitialized()) {
         return;
     }
-    mFileReadFilters = QStringList(DAPyScripts::getInstance().getIO().getFileReadFilters());
+    DAPyScripts* daScripts = DACoreInterface::getDAScripts();
+    if (daScripts) {
+        mFileReadFilters = QStringList(daScripts->getIO().getFileReadFilters());
+    }
     qDebug() << mFileReadFilters;
 }
-
 /**
  * @brief 选择的样式改变信号
  * @param column

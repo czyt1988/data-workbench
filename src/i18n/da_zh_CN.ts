@@ -7765,17 +7765,17 @@ To Excel</source>
 <context>
     <name>main</name>
     <message>
-        <location filename="../APP/main.cpp" line="+35"/>
+        <location filename="../APP/main.cpp" line="+36"/>
         <source>version:%1,compile datetime:%2,enable python:%3</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+9"/>
         <source>The project file to open</source>
         <translation>要打开的工程文件</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Import data into the application, supporting formats such as CSV, XLSX, TXT, PKL, etc.If you want to import multiple datasets, you can use the command multiple times; the program will execute them one by one</source>
         <translation>导入数据到应用程序中，支持csv/xlsx/txt/pkl等格式，如果要导入多个数据，你可以使用多次命令，程序会逐一执行</translation>
     </message>

@@ -15,6 +15,7 @@ namespace DA
 class DAUIInterface;
 class DADataManagerInterface;
 class DAProjectInterface;
+class DAPyScripts;
 /**
  * @brief APP的核心接口
  *
@@ -23,6 +24,7 @@ class DAProjectInterface;
 class DAINTERFACE_API DACoreInterface : public QObject
 {
     Q_OBJECT
+    DA_DECLARE_PRIVATE(DACoreInterface)
 public:
     DACoreInterface(QObject* parent = nullptr);
     virtual ~DACoreInterface();
@@ -37,10 +39,17 @@ public:
     // 获取数据管理接口
     virtual DADataManagerInterface* getDataManagerInterface() const = 0;
 #if DA_ENABLE_PYTHON
+    // python相关
+    // 初始化python环境
+    bool initializePythonEnv();
     // 获取python信号投递器，通过它可以把python脚本信号里的函数投递到主线程执行
-    virtual DAPythonSignalHandler* getPythonSignalHandler() const = 0;
+    virtual DAPythonSignalHandler* getPythonSignalHandler() const;
     // 获取python 脚本路径
     static QString getPythonScriptsPath();
+    // python内核是否初始化成功
+    bool isPythonInterpreterInitialized();
+    // 获取da脚本
+    static DAPyScripts* getDAScripts();
 #endif
 public:
     // 工程是否dirty的操作
@@ -53,9 +62,6 @@ public:
 public:
     // 调用此函数，创建DAAppRibbonAreaInterface，此函数的调用应该发生在SARibbonMainWindow的构造过程
     virtual void createUi(SARibbonMainWindow* mainwindow) = 0;
-
-private:
-    QTemporaryDir mTempDir;
 };
 }  // namespace DA
 

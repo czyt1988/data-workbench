@@ -56,12 +56,9 @@ class DAPyDataFrameTableModel;
 class DAGUI_API DACommandDataFrame_iat : public DACommandWithRedoCount, public DACallBackInterface
 {
 public:
-    DACommandDataFrame_iat(const DAPyDataFrame& df,
-                           int row,
-                           int col,
-                           const QVariant& olddata,
-                           const QVariant& newdata,
-                           QUndoCommand* par = nullptr);
+    DACommandDataFrame_iat(
+        const DAPyDataFrame& df, int row, int col, const QVariant& olddata, const QVariant& newdata, QUndoCommand* par = nullptr
+    );
     virtual void undo() override;
     virtual bool exec() override;
 
@@ -93,17 +90,12 @@ private:
 class DAGUI_API DACommandDataFrame_insertColumn : public DACommandWithTemporaryData, public DACallBackInterface
 {
 public:
-    DACommandDataFrame_insertColumn(const DAPyDataFrame& df,
-                                    int col,
-                                    const QString& name,
-                                    const QVariant& defaultvalue,
-                                    QUndoCommand* par = nullptr);
-    DACommandDataFrame_insertColumn(const DAPyDataFrame& df,
-                                    int col,
-                                    const QString& name,
-                                    const QVariant& start,
-                                    const QVariant& stop,
-                                    QUndoCommand* par = nullptr);
+    DACommandDataFrame_insertColumn(
+        const DAPyDataFrame& df, int col, const QString& name, const QVariant& defaultvalue, QUndoCommand* par = nullptr
+    );
+    DACommandDataFrame_insertColumn(
+        const DAPyDataFrame& df, int col, const QString& name, const QVariant& start, const QVariant& stop, QUndoCommand* par = nullptr
+    );
     virtual void undo() override;
     virtual bool exec() override;
 
@@ -152,15 +144,16 @@ private:
 class DAGUI_API DACommandDataFrame_renameColumns : public DACommandWithRedoCount, public DACallBackInterface
 {
 public:
-    DACommandDataFrame_renameColumns(const DAPyDataFrame& df,
-                                     const QList< QString >& cols,
-                                     QHeaderView* hv   = nullptr,
-                                     QUndoCommand* par = nullptr);
-    DACommandDataFrame_renameColumns(const DAPyDataFrame& df,
-                                     const QList< QString >& cols,
-                                     const QList< QString >& oldcols,
-                                     QHeaderView* hv   = nullptr,
-                                     QUndoCommand* par = nullptr);
+    DACommandDataFrame_renameColumns(
+        const DAPyDataFrame& df, const QList< QString >& cols, QHeaderView* hv = nullptr, QUndoCommand* par = nullptr
+    );
+    DACommandDataFrame_renameColumns(
+        const DAPyDataFrame& df,
+        const QList< QString >& cols,
+        const QList< QString >& oldcols,
+        QHeaderView* hv   = nullptr,
+        QUndoCommand* par = nullptr
+    );
     virtual void undo() override;
     virtual bool exec() override;
 
@@ -177,10 +170,7 @@ private:
 class DAGUI_API DACommandDataFrame_astype : public DACommandWithTemporaryData, public DACallBackInterface
 {
 public:
-    DACommandDataFrame_astype(const DAPyDataFrame& df,
-                              const QList< int >& index,
-                              const DAPyDType& dt,
-                              QUndoCommand* par = nullptr);
+    DACommandDataFrame_astype(const DAPyDataFrame& df, const QList< int >& index, const DAPyDType& dt, QUndoCommand* par = nullptr);
     virtual void undo() override;
     virtual bool exec() override;
 
@@ -195,10 +185,9 @@ private:
 class DAGUI_API DACommandDataFrame_setnan : public DACommandWithRedoCount, public DACallBackInterface
 {
 public:
-    DACommandDataFrame_setnan(const DAPyDataFrame& df,
-                              const QList< int >& rows,
-                              const QList< int >& columns,
-                              QUndoCommand* par = nullptr);
+    DACommandDataFrame_setnan(
+        const DAPyDataFrame& df, const QList< int >& rows, const QList< int >& columns, QUndoCommand* par = nullptr
+    );
     virtual void undo() override;
     virtual bool exec() override;
 
@@ -223,55 +212,6 @@ private:
     QString mExper;
 };
 
-/**
- * @brief querydatas
- */
-class DAGUI_API DACommandDataFrame_querydatas : public DACommandWithTemporaryData, public DACallBackInterface
-{
-public:
-    DACommandDataFrame_querydatas(const DAPyDataFrame& df, const QString& exper, QUndoCommand* par = nullptr);
-    virtual void undo() override;
-    virtual bool exec() override;
-
-private:
-    QString mExper;
-};
-
-/**
- * @brief dataselect
- */
-
-class DAGUI_API DACommandDataFrame_filterByColumn : public DACommandWithTemporaryData, public DACallBackInterface
-{
-public:
-    DACommandDataFrame_filterByColumn(const DAPyDataFrame& df,
-                                      double lowervalue,
-                                      double uppervalue,
-                                      const QString& index,
-                                      QUndoCommand* par = nullptr);
-    virtual void undo() override;
-    virtual bool exec() override;
-
-private:
-    double mlowervalue { 0.0 };
-    double mUppervalue { 0.0 };
-    QString mIndex;
-};
-
-/**
- * @brief sort
- */
-class DAGUI_API DACommandDataFrame_sort : public DACommandWithTemporaryData, public DACallBackInterface
-{
-public:
-    DACommandDataFrame_sort(const DAPyDataFrame& df, const QString& by, const bool ascending, QUndoCommand* par = nullptr);
-    virtual void undo() override;
-    virtual bool exec() override;
-
-private:
-    QString mBy;
-    bool mAscending;
-};
 
 /**
  * @brief 转换列的数据类型
@@ -279,10 +219,9 @@ private:
 class DAGUI_API DACommandDataFrame_castNum : public DACommandWithTemporaryData, public DACallBackInterface
 {
 public:
-    DACommandDataFrame_castNum(const DAPyDataFrame& df,
-                               const QList< int >& index,
-                               const pybind11::dict& args,
-                               QUndoCommand* par = nullptr);
+    DACommandDataFrame_castNum(
+        const DAPyDataFrame& df, const QList< int >& index, const pybind11::dict& args, QUndoCommand* par = nullptr
+    );
     virtual void undo() override;
     virtual bool exec() override;
 
@@ -297,10 +236,9 @@ private:
 class DAGUI_API DACommandDataFrame_castDatetime : public DACommandWithTemporaryData, public DACallBackInterface
 {
 public:
-    DACommandDataFrame_castDatetime(const DAPyDataFrame& df,
-                                    const QList< int >& index,
-                                    const pybind11::dict& args,
-                                    QUndoCommand* par = nullptr);
+    DACommandDataFrame_castDatetime(
+        const DAPyDataFrame& df, const QList< int >& index, const pybind11::dict& args, QUndoCommand* par = nullptr
+    );
     virtual void undo() override;
     virtual bool exec() override;
 

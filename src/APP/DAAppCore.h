@@ -27,17 +27,8 @@ public:
     virtual DAProjectInterface* getProjectInterface() const override;
     // 调用此函数，创建DAAppUIInterface，此函数的调用应该发生在SARibbonMainWindow的构造过程
     void createUi(SARibbonMainWindow* mainwindow) override;
-    // python内核是否初始化成功
-    bool isPythonInterpreterInitialized() const;
     // 获取数据管理接口
     DADataManagerInterface* getDataManagerInterface() const override;
-#if DA_ENABLE_PYTHON
-    // python相关
-    // python脚本信号投递器
-    virtual DAPythonSignalHandler* getPythonSignalHandler() const;
-    // 初始化python环境
-    bool initializePythonEnv();
-#endif
 
 public:
     // 获取DAAppUI，省去qobject_cast
@@ -55,9 +46,6 @@ private:
     DAAppDataManager* mDataManager { nullptr };
     bool mIsPythonInterpreterInitialized;
     DAAppProject* mProject { nullptr };
-#if DA_ENABLE_PYTHON
-    DAPythonSignalHandler* m_pythonHandler { nullptr };
-#endif
 };
 
 DACoreInterface* getAppCorePtr();

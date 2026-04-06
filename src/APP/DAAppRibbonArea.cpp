@@ -31,7 +31,6 @@
 
 #if DA_ENABLE_PYTHON
 // Py
-#include "DAPyScripts.h"
 #include "pandas/DAPyDataFrame.h"
 #include "numpy/DAPyDType.h"
 // Widget

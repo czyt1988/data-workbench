@@ -35,14 +35,9 @@ DAPyInterpreter::DAPyInterpreter() : DA_PIMPL_CONSTRUCT
 
 DAPyInterpreter::~DAPyInterpreter()
 {
-    // ensureShutdown();
+    ensureShutdown();
 }
 
-DAPyInterpreter& DAPyInterpreter::getInstance()
-{
-    static DAPyInterpreter s_python;
-    return s_python;
-}
 
 /**
  * @brief 获取系统记录的python环境
@@ -146,11 +141,6 @@ void DAPyInterpreter::initializePythonInterpreter()
     } catch (const std::exception& e) {
         qWarning() << e.what();
     }
-}
-
-void DAPyInterpreter::registerFinalizeCallback(DAPyInterpreter::callback_finalize fp)
-{
-    mFinalizeCallbacks.push_back(fp);
 }
 
 void DAPyInterpreter::shutdown()

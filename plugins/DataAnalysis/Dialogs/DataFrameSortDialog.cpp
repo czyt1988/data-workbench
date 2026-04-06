@@ -1,10 +1,8 @@
-#include "DADialogDataFrameSort.h"
-#include "ui_DADialogDataFrameSort.h"
+#include "DataFrameSortDialog.h"
+#include "ui_DataFrameSortDialog.h"
 
-namespace DA
-{
 
-DADialogDataFrameSort::DADialogDataFrameSort(QWidget* parent) : QDialog(parent), ui(new Ui::DADialogDataFrameSort)
+DataFrameSortDialog::DataFrameSortDialog(QWidget* parent) : QDialog(parent), ui(new Ui::DataFrameSortDialog)
 {
     ui->setupUi(this);
 
@@ -12,12 +10,12 @@ DADialogDataFrameSort::DADialogDataFrameSort(QWidget* parent) : QDialog(parent),
     ui->comboBoxSortType->addItem(tr("Descending"), QStringLiteral("Descending"));  // cn:降序
 }
 
-DADialogDataFrameSort::~DADialogDataFrameSort()
+DataFrameSortDialog::~DataFrameSortDialog()
 {
     delete ui;
 }
 
-void DADialogDataFrameSort::setDataframe(const DAPyDataFrame& df)
+void DataFrameSortDialog::setDataframe(const DAPyDataFrame& df)
 {
     QStringList para = df.columns();
 
@@ -27,17 +25,17 @@ void DADialogDataFrameSort::setDataframe(const DAPyDataFrame& df)
     }
 }
 
-void DADialogDataFrameSort::setSortBy(const int index)
+void DataFrameSortDialog::setSortBy(const int index)
 {
     ui->comboBoxColumns->setCurrentIndex(index);
 }
 
-QString DADialogDataFrameSort::getSortBy() const
+QString DataFrameSortDialog::getSortBy() const
 {
     return ui->comboBoxColumns->currentText();
 }
 
-bool DADialogDataFrameSort::getSortType() const
+bool DataFrameSortDialog::getSortType() const
 {
     QString type = ui->comboBoxSortType->itemData(ui->comboBoxSortType->currentIndex()).toString();
     if (type == "Ascending")
@@ -46,8 +44,7 @@ bool DADialogDataFrameSort::getSortType() const
         return false;
 }
 
-void DADialogDataFrameSort::onAccepted()
+void DataFrameSortDialog::onAccepted()
 {
     accept();
-}
 }

@@ -1,0 +1,57 @@
+#!/bin/bash
+#
+# Git pre-commit hook: 检查.ts文件是否有实质性翻译变化
+# 安装方法：cp scripts/git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+#
+
+TS_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.ts$' || true)
+
+if [ -z "$TS_FILES" ]; then
+    exit 0
+fi
+
+echo "🔍 Checking .ts files for substantive translation changes..."
+echo ""
+
+HAS_FAKE_CHANGES=false
+
+for ts_file in $TS_FILES; do
+    # Check if there are actual <translation> content changes
+    # Exclude <location> tag changes (these are just source location info)
+    
+    real_changes=$(git diff --cached "$ts_file" | \
+        grep -E '^\+.*<translation>|^-.*<translation>' | \
+        grep -v '<translation></translation>' | \
+        grep -v '^\+\+\+|^\-\-\-' | \
+        wc -l)
+    
+    location_changes=$(git diff --cached "$ts_file" | \
+        grep -E '^\+.*<location|^-.*<location' | \
+        wc -l)
+    
+    total_changes=$(git diff --cached "$ts_file" | grep -E '^\+|^\-' | wc -l)
+    
+    if [ "$real_changes" -eq 0 ] && [ "$total_changes" -gt 0 ]; then
+        echo "⚠️  $ts_file"
+        echo "   Detected non-substantive formatting changes (likely caused by lupdate rewrite)"
+        echo "   - Translation content changes: $real_changes"
+        echo "   - Location info changes: $location_changes"
+        echo ""
+        HAS_FAKE_CHANGES=true
+    fi
+done
+
+if [ "$HAS_FAKE_CHANGES" = true ]; then
+    echo ""
+    echo "❌ Commit blocked: .ts files contain non-substantive formatting changes"
+    echo ""
+    echo "Solutions:"
+    echo "  1. Restore these files:"
+    echo "     git checkout -- <ts_file>"
+    echo ""
+    echo "  2. If you really need to update translations, ensure <translation> tag contents have actual changes"
+    echo ""
+    exit 1
+fi
+
+exit 0

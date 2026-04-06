@@ -12,12 +12,9 @@ namespace DA
 //===================================================
 // DACommandDataFrame_iat
 //===================================================
-DACommandDataFrame_iat::DACommandDataFrame_iat(const DAPyDataFrame& df,
-                                               int row,
-                                               int col,
-                                               const QVariant& olddata,
-                                               const QVariant& newdata,
-                                               QUndoCommand* par)
+DACommandDataFrame_iat::DACommandDataFrame_iat(
+    const DAPyDataFrame& df, int row, int col, const QVariant& olddata, const QVariant& newdata, QUndoCommand* par
+)
     : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mRow(row), mCol(col), mOldData(olddata), mNewData(newdata)
 {
     setText(QObject::tr("set dataframe data"));  // cn:改变单元格数据
@@ -76,11 +73,9 @@ bool DACommandDataFrame_insertNanRow::exec()
  * @param model
  * @param par
  */
-DACommandDataFrame_insertColumn::DACommandDataFrame_insertColumn(const DAPyDataFrame& df,
-                                                                 int col,
-                                                                 const QString& name,
-                                                                 const QVariant& defaultvalue,
-                                                                 QUndoCommand* par)
+DACommandDataFrame_insertColumn::DACommandDataFrame_insertColumn(
+    const DAPyDataFrame& df, int col, const QString& name, const QVariant& defaultvalue, QUndoCommand* par
+)
     : DACommandWithTemporaryData(df, par)
     , DACallBackInterface()
     , mIsRangeMode(false)
@@ -104,12 +99,9 @@ DACommandDataFrame_insertColumn::DACommandDataFrame_insertColumn(const DAPyDataF
  * @param model
  * @param par
  */
-DACommandDataFrame_insertColumn::DACommandDataFrame_insertColumn(const DAPyDataFrame& df,
-                                                                 int col,
-                                                                 const QString& name,
-                                                                 const QVariant& start,
-                                                                 const QVariant& stop,
-                                                                 QUndoCommand* par)
+DACommandDataFrame_insertColumn::DACommandDataFrame_insertColumn(
+    const DAPyDataFrame& df, int col, const QString& name, const QVariant& start, const QVariant& stop, QUndoCommand* par
+)
     : DACommandWithTemporaryData(df, par)
     , DACallBackInterface()
     , mIsRangeMode(true)
@@ -184,9 +176,7 @@ bool DACommandDataFrame_dropIRow::exec()
 
 ////////////////////
 
-DACommandDataFrame_dropIColumn::DACommandDataFrame_dropIColumn(const DAPyDataFrame& df,
-                                                               const QList< int >& index,
-                                                               QUndoCommand* par)
+DACommandDataFrame_dropIColumn::DACommandDataFrame_dropIColumn(const DAPyDataFrame& df, const QList< int >& index, QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), DACallBackInterface(), mIndex(index)
 {
     setText(QObject::tr("drop dataframe columns"));  // cn:移除dataframe列
@@ -210,20 +200,17 @@ bool DACommandDataFrame_dropIColumn::exec()
 
 ////////////////////
 
-DACommandDataFrame_renameColumns::DACommandDataFrame_renameColumns(const DAPyDataFrame& df,
-                                                                   const QList< QString >& cols,
-                                                                   QHeaderView* hv,
-                                                                   QUndoCommand* par)
+DACommandDataFrame_renameColumns::DACommandDataFrame_renameColumns(
+    const DAPyDataFrame& df, const QList< QString >& cols, QHeaderView* hv, QUndoCommand* par
+)
     : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mCols(cols), mHeaderView(hv)
 {
     mOldcols = df.columns();
 }
 
-DACommandDataFrame_renameColumns::DACommandDataFrame_renameColumns(const DAPyDataFrame& df,
-                                                                   const QList< QString >& cols,
-                                                                   const QList< QString >& oldcols,
-                                                                   QHeaderView* hv,
-                                                                   QUndoCommand* par)
+DACommandDataFrame_renameColumns::DACommandDataFrame_renameColumns(
+    const DAPyDataFrame& df, const QList< QString >& cols, const QList< QString >& oldcols, QHeaderView* hv, QUndoCommand* par
+)
     : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mCols(cols), mHeaderView(hv), mOldcols(oldcols)
 {
 }
@@ -251,10 +238,9 @@ bool DACommandDataFrame_renameColumns::exec()
 
 ////////////////////////////
 
-DACommandDataFrame_astype::DACommandDataFrame_astype(const DAPyDataFrame& df,
-                                                     const QList< int >& index,
-                                                     const DAPyDType& dt,
-                                                     QUndoCommand* par)
+DACommandDataFrame_astype::DACommandDataFrame_astype(
+    const DAPyDataFrame& df, const QList< int >& index, const DAPyDType& dt, QUndoCommand* par
+)
     : DACommandWithTemporaryData(df, par), DACallBackInterface(), mIndex(index), mDtype(dt)
 {
     setText(QObject::tr("change column type"));  // cn:改变列数据类型
@@ -281,10 +267,9 @@ bool DACommandDataFrame_astype::exec()
 
 ///////////////////////////
 
-DACommandDataFrame_setnan::DACommandDataFrame_setnan(const DAPyDataFrame& df,
-                                                     const QList< int >& rows,
-                                                     const QList< int >& columns,
-                                                     QUndoCommand* par)
+DACommandDataFrame_setnan::DACommandDataFrame_setnan(
+    const DAPyDataFrame& df, const QList< int >& rows, const QList< int >& columns, QUndoCommand* par
+)
     : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mRows(rows), mColumns(columns)
 {
     // 先把原来数据提取出来
@@ -337,98 +322,13 @@ bool DACommandDataFrame_evalDatas::exec()
     callback();
     return true;
 }
-//----------------------------------------------------
-//
-//----------------------------------------------------
-///////////////////
 
-DACommandDataFrame_querydatas::DACommandDataFrame_querydatas(const DAPyDataFrame& df, const QString& exper, QUndoCommand* par)
-    : DACommandWithTemporaryData(df, par), DACallBackInterface(), mExper(exper)
-{
-    setText(QObject::tr("query datas"));  // cn:条件查询
-}
-
-void DACommandDataFrame_querydatas::undo()
-{
-    load();
-    callback();
-}
-
-bool DACommandDataFrame_querydatas::exec()
-{
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-    if (!pydf.queryDatas(dataframe(), mExper)) {
-        return false;
-    }
-    callback();
-    return true;
-}
 
 ///////////////////
 
-DACommandDataFrame_filterByColumn::DACommandDataFrame_filterByColumn(const DAPyDataFrame& df,
-                                                                     double lowervalue,
-                                                                     double uppervalue,
-                                                                     const QString& index,
-                                                                     QUndoCommand* par)
-    : DACommandWithTemporaryData(df, par)
-    , DACallBackInterface()
-    , mlowervalue(lowervalue)
-    , mUppervalue(uppervalue)
-    , mIndex(index)
-{
-    setText(QObject::tr("data select"));  // cn:数据过滤
-}
-
-void DACommandDataFrame_filterByColumn::undo()
-{
-    load();
-    callback();
-}
-
-bool DACommandDataFrame_filterByColumn::exec()
-{
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-    if (!pydf.dataselect(dataframe(), mlowervalue, mUppervalue, mIndex)) {
-        return false;
-    }
-    callback();
-    return true;
-}
-
-///////////////////
-
-DACommandDataFrame_sort::DACommandDataFrame_sort(const DAPyDataFrame& df,
-                                                 const QString& by,
-                                                 const bool ascending,
-                                                 QUndoCommand* par)
-    : DACommandWithTemporaryData(df, par), DACallBackInterface(), mBy(by), mAscending(ascending)
-{
-    setText(QObject::tr("sort datas"));  // cn:对相关数据进行排序
-}
-
-void DACommandDataFrame_sort::undo()
-{
-    load();
-    callback();
-}
-
-bool DACommandDataFrame_sort::exec()
-{
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-    if (!pydf.sort(dataframe(), mBy, mAscending)) {
-        return false;
-    }
-    callback();
-    return true;
-}
-
-///////////////////
-
-DACommandDataFrame_castNum::DACommandDataFrame_castNum(const DAPyDataFrame& df,
-                                                       const QList< int >& index,
-                                                       const pybind11::dict& args,
-                                                       QUndoCommand* par)
+DACommandDataFrame_castNum::DACommandDataFrame_castNum(
+    const DAPyDataFrame& df, const QList< int >& index, const pybind11::dict& args, QUndoCommand* par
+)
     : DACommandWithTemporaryData(df, par), DACallBackInterface(), mIndex(index), mArgs(args)
 {
     setText(QObject::tr("cast column to num"));  // cn:改变列数据为数值
@@ -452,10 +352,9 @@ bool DACommandDataFrame_castNum::exec()
 
 ///////////////////////////////
 
-DACommandDataFrame_castDatetime::DACommandDataFrame_castDatetime(const DAPyDataFrame& df,
-                                                                 const QList< int >& index,
-                                                                 const pybind11::dict& args,
-                                                                 QUndoCommand* par)
+DACommandDataFrame_castDatetime::DACommandDataFrame_castDatetime(
+    const DAPyDataFrame& df, const QList< int >& index, const pybind11::dict& args, QUndoCommand* par
+)
     : DACommandWithTemporaryData(df, par), DACallBackInterface(), mIndex(index), mArgs(args)
 {
     setText(QObject::tr("cast column to datetime"));  // cn:改变列数据为日期

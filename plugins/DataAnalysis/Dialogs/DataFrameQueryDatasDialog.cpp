@@ -1,13 +1,13 @@
-#include "DADialogDataFrameQueryDatas.h"
-#include "ui_DADialogDataFrameQueryDatas.h"
+#include "DataFrameQueryDatasDialog.h"
+#include "ui_DataFrameQueryDatasDialog.h"
 #include <QLineEdit>
 
 namespace DA
 {
-DADialogDataFrameQueryDatas::DADialogDataFrameQueryDatas(QWidget* parent)
-    : QDialog(parent), ui(new Ui::DADialogDataFrameQueryDatas)
+DataFrameQueryDatasDialog::DataFrameQueryDatasDialog(QWidget* parent)
+    : QDialog(parent), ui(new Ui::DataFrameQueryDatasDialog)
 {
-	ui->setupUi(this);
+    ui->setupUi(this);
     ui->textBrowser->setMarkdown(
         tr("Using the **Query Data** feature, you can filter data using expressions:"
            "\n"
@@ -42,7 +42,8 @@ DADialogDataFrameQueryDatas::DADialogDataFrameQueryDatas(QWidget* parent)
            "\n"
            "\n**Note**:  "
            "\nIf a column name contains spaces or special characters, enclose it in backticks (`` ` ``), e.g., `` "
-           "`Embarked On` ``."));  // cn:
+           "`Embarked On` ``.")
+    );  // cn:
     // 通过 **Query Data** 功能，你可以通过表达式进行数据筛选：
     //
     // 1 **支持比较运算符**：如 `==`、`>`、`<`、`>=`、`<=`、`!=`，可直接对列名和值进行比较。
@@ -74,12 +75,12 @@ DADialogDataFrameQueryDatas::DADialogDataFrameQueryDatas(QWidget* parent)
     // 列名含空格或特殊字符时，需用反引号 `` ` `` 包裹，例如：`Embarked On`。
 }
 
-DADialogDataFrameQueryDatas::~DADialogDataFrameQueryDatas()
+DataFrameQueryDatasDialog::~DataFrameQueryDatasDialog()
 {
     delete ui;
 }
 
-QString DADialogDataFrameQueryDatas::getExpr() const
+QString DataFrameQueryDatasDialog::getExpr() const
 {
     return ui->textEdit->toPlainText();
 }

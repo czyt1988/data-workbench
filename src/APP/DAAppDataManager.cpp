@@ -36,13 +36,16 @@ bool DAAppDataManager::importFromFile(const QString& f, const QVariantMap& args,
 #if DA_ENABLE_PYTHON
     qInfo() << tr("begin import file:%1").arg(f);
     try {
-        DAPyScripts::getInstance().getIO().read_and_add_to_datamanager(f, args, err);
+        DAPyScripts* daScripts = DACoreInterface::getDAScripts();
+        if (daScripts) {
+            daScripts->getIO().read(f, args, err);
+        }
+        return true;
     } catch (const std::exception& e) {
         qCritical() << e.what();
-        return false;
     }
 #endif
-    return true;
+    return false;
 }
 
 /**
@@ -58,7 +61,11 @@ int DAAppDataManager::importFromFiles(const QStringList& fileNames)
     for (const QString& f : std::as_const(fileNames)) {
 #if DA_ENABLE_PYTHON
         qInfo() << tr("begin import file:%1").arg(f);
-        DAPyObjectWrapper res = DAPyScripts::getInstance().getIO().read(f);
+        DAPyScripts* daScripts = DACoreInterface::getDAScripts();
+        if (!daScripts) {
+            return 0;
+        }
+        DAPyObjectWrapper res = daScripts->getIO().read(f);
         if (DAPyDataFrame::isDataFrame(res.object())) {
             qInfo() << tr("file:%1,conver to dataframe").arg(f);
             QFileInfo fi(f);

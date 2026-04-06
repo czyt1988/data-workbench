@@ -172,16 +172,18 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
     std::unique_ptr< DACommandDataFrame_insertColumn > cmd;
     QString name = dlg.getName();
     if (name.isEmpty()) {
-        QMessageBox::warning(this,
-                             tr("warning"),                                                     // cn: 警告
-                             tr("The name of the new column to be inserted must be specified")  // cn:必须指定列的名字
+        QMessageBox::warning(
+            this,
+            tr("warning"),                                                     // cn: 警告
+            tr("The name of the new column to be inserted must be specified")  // cn:必须指定列的名字
         );
         return;
     }
     DAPyDType dt = dlg.getDType();
     if (dlg.isRangeMode()) {
         cmd.reset(
-            new DACommandDataFrame_insertColumn(mData.toDataFrame(), col, name, dlg.getStartValue(), dlg.getStopValue()));
+            new DACommandDataFrame_insertColumn(mData.toDataFrame(), col, name, dlg.getStartValue(), dlg.getStopValue())
+        );
     } else {
         cmd.reset(new DACommandDataFrame_insertColumn(mData.toDataFrame(), col, name, dlg.getDefaultValue()));
     }
@@ -487,225 +489,7 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
     return true;
 }
 
-/**
- * @brief 过滤给定条件外的数据
- * @return 成功返回true,反之返回false
- */
-bool DADataOperateOfDataFrameWidget::queryDatas()
-{
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return false;
-    }
-    if (!mDialogDataFrameQueryDatas) {
-        mDialogDataFrameQueryDatas = new DADialogDataFrameQueryDatas(this);
-    }
-    if (QDialog::Accepted != mDialogDataFrameQueryDatas->exec()) {
-        // 说明用户取消
-        return false;
-    }
-    // 获取填充值
-    QString exper = mDialogDataFrameQueryDatas->getExpr();
-    return queryDatas(df, exper);
-}
 
-/**
- * @brief 过滤给定条件外的数据。
- * @return 成功返回true,反之返回false
- */
-bool DADataOperateOfDataFrameWidget::queryDatas(const DAPyDataFrame& df, const QString& exper)
-{
-    std::unique_ptr< DACommandDataFrame_querydatas > cmd = std::make_unique< DACommandDataFrame_querydatas >(df, exper);
-    DADataTableModel* modle                              = mModel;
-    cmd->setCallBack([ modle ]() {
-        if (modle) {
-            modle->refreshData();
-        }
-    });
-    if (!cmd->exec()) {
-        return false;
-    }
-    getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
-    return true;
-}
-
-/**
- * @brief 检索给定的数据
- * @return 成功返回true,反之返回false
- */
-bool DADataOperateOfDataFrameWidget::searchData()
-{
-    DAPyDataFrame df = getDataframe();
-    //	ui->tableView->showActualRow(20);
-    if (df.isNone()) {
-        return false;
-    }
-
-    if (!mDialogDataFrameDataSearch) {
-        mDialogDataFrameDataSearch = new DADialogDataFrameDataSearch(this);
-    }
-    mDialogDataFrameDataSearch->setDataTableView(ui->tableView);
-    mDialogDataFrameDataSearch->exec();
-    return true;
-}
-
-/**
- * @brief 检索给定的数据
- * @param exper 可选参数
- * @return 返回坐标
- */
-QList< QPair< int, int > > DADataOperateOfDataFrameWidget::searchData(const DAPyDataFrame& df, const QString& exper) const
-{
-    DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-    return pydf.searchData(df, exper);
-}
-
-/**
- * @brief 列运算
- * @return 成功返回true,反之返回false
- */
-bool DADataOperateOfDataFrameWidget::evalDatas()
-{
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return false;
-    }
-    if (!mDialogDataFrameEvalDatas) {
-        mDialogDataFrameEvalDatas = new DADialogDataFrameEvalDatas(this);
-    }
-    if (QDialog::Accepted != mDialogDataFrameEvalDatas->exec()) {
-        // 说明用户取消
-        return false;
-    }
-    // 获取填充值
-    QString exper = mDialogDataFrameEvalDatas->getExpr();
-    return evalDatas(df, exper);
-}
-
-/**
- * @brief 列运算
- * @param df
- * @param exper
- * @return
- */
-bool DADataOperateOfDataFrameWidget::evalDatas(const DAPyDataFrame& df, const QString& exper)
-{
-    std::unique_ptr< DACommandDataFrame_evalDatas > cmd = std::make_unique< DACommandDataFrame_evalDatas >(df, exper);
-    DADataTableModel* modle                             = mModel;
-    cmd->setCallBack([ modle ]() {
-        if (modle) {
-            modle->refreshData();
-        }
-    });
-    if (!cmd->exec()) {
-        return false;
-    }
-    getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
-    return true;
-}
-
-/**
- * @brief 数据排序
- * @return
- */
-bool DADataOperateOfDataFrameWidget::sortDatas()
-{
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return false;
-    }
-
-    if (!mDADialogDataFrameSort) {
-        mDADialogDataFrameSort = new DADialogDataFrameSort(this);
-    }
-
-    mDADialogDataFrameSort->setDataframe(df);
-
-    // 获取选中的列
-    if (isDataframeTableHaveSelection())
-        mDADialogDataFrameSort->setSortBy(getSelectedOneDataframeColumn());
-
-    if (QDialog::Accepted != mDADialogDataFrameSort->exec())
-        return false;
-
-    // 获取排序参数
-    QString by     = mDADialogDataFrameSort->getSortBy();
-    bool ascending = mDADialogDataFrameSort->getSortType();
-    return sortDatas(df, by, ascending);
-}
-
-/**
- * @brief 数据排序
- * @return
- */
-bool DADataOperateOfDataFrameWidget::sortDatas(const DAPyDataFrame& df, const QString& by, const bool ascending)
-{
-    std::unique_ptr< DACommandDataFrame_sort > cmd = std::make_unique< DACommandDataFrame_sort >(df, by, ascending);
-    DADataTableModel* modle                        = mModel;
-    cmd->setCallBack([ modle ]() {
-        if (modle) {
-            modle->refreshData();
-        }
-    });
-    if (!cmd->exec()) {
-        return false;
-    }
-    getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
-    return true;
-}
-
-/**
- * @brief 过滤给定条件外的数据
- * @return 成功返回true,反之返回false
- */
-bool DADataOperateOfDataFrameWidget::filterByColumn()
-{
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return false;
-    }
-    if (!mDialogDataFrameDataSelect)
-        mDialogDataFrameDataSelect = new DADialogDataFrameDataSelect(this);
-
-    mDialogDataFrameDataSelect->setDataframe(df);
-
-    // 获取选中的列
-    if (isDataframeTableHaveSelection())
-        mDialogDataFrameDataSelect->setFilterData(getSelectedOneDataframeColumn());
-
-    if (QDialog::Accepted != mDialogDataFrameDataSelect->exec())
-        return false;
-
-    // 获取过滤参数
-    QString index     = mDialogDataFrameDataSelect->getFilterData();
-    double lowervalue = mDialogDataFrameDataSelect->getLowerValue();
-    double uppervalue = mDialogDataFrameDataSelect->getUpperValue();
-
-    return filterByColumn(df, lowervalue, uppervalue, index);
-}
-
-/**
- * @brief 过滤给定条件外的数据
- * @param lower 可选参数，下界值
- * @param upper 可选参数，上界值。
- * @return 成功返回true,反之返回false
- */
-bool DADataOperateOfDataFrameWidget::filterByColumn(const DAPyDataFrame& df, double lower, double upper, const QString& index)
-{
-    std::unique_ptr< DACommandDataFrame_filterByColumn > cmd =
-        std::make_unique< DACommandDataFrame_filterByColumn >(df, lower, upper, index);
-    DADataTableModel* modle = mModel;
-    cmd->setCallBack([ modle ]() {
-        if (modle) {
-            modle->refreshData();
-        }
-    });
-    if (!cmd->exec()) {
-        return false;
-    }
-    getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
-    return true;
-}
 
 /**
  * @brief 创建一个数据描述
@@ -766,14 +550,16 @@ DAPyDataFrame DADataOperateOfDataFrameWidget::createPivotTable()
  * @param sort 可选参数，聚合后的结果排序
  * @return
  */
-DAPyDataFrame DADataOperateOfDataFrameWidget::createPivotTable(const DAPyDataFrame& df,
-                                                               const QStringList value,
-                                                               const QStringList index,
-                                                               const QStringList columns,
-                                                               const QString& aggfunc,
-                                                               bool margins,
-                                                               const QString& marginsName,
-                                                               bool sort)
+DAPyDataFrame DADataOperateOfDataFrameWidget::createPivotTable(
+    const DAPyDataFrame& df,
+    const QStringList value,
+    const QStringList index,
+    const QStringList columns,
+    const QString& aggfunc,
+    bool margins,
+    const QString& marginsName,
+    bool sort
+)
 {
 
     DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();

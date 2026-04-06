@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DADialogDataFrameDataSearch</class>
- <widget class="QDialog" name="DADialogDataFrameDataSearch">
+ <class>DataFrameDataSearchDialog</class>
+ <widget class="QDialog" name="DataFrameDataSearchDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -101,7 +101,7 @@
   <connection>
    <sender>pushButtonClose</sender>
    <signal>clicked()</signal>
-   <receiver>DADialogDataFrameDataSearch</receiver>
+   <receiver>DataFrameDataSearchDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

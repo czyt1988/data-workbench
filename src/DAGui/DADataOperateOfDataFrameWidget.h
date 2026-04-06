@@ -19,7 +19,7 @@ class DADataTableModel;
 class DAAppRibbonArea;
 class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
-class DADialogDataFrameDataSelect;
+class DataFrameDataSelectDialog;
 class DADialogDataFrameEvalDatas;
 class DADialogDataFrameQueryDatas;
 class DADialogDataFrameDataSearch;
@@ -59,6 +59,8 @@ public:
     QList< QPoint > getSelectedDataframeCells(bool ensureInDataframe = true) const;
     int getSelectedOneDataframeRow(bool ensureInDataframe = true) const;
     int getSelectedOneDataframeColumn(bool ensureInDataframe = true) const;
+    // 获取tableview
+    DADataTableView* getDataTableView() const;
 
     // 获取选中的序列，如果用户打开一个表格，选中了其中一列，那么将返回那一列pd.Series作为数据，如果用户选中了多列，那么每列作为一个DAData并组成list返回
     QList< DAData > getSlectedSeries() const;
@@ -90,31 +92,18 @@ public Q_SLOTS:
     void castSelectToDatetime();
     // 把选择的列转换为索引
     bool changeSelectColumnToIndex();
-    // 过滤给定条件外的数据
-    bool queryDatas();
-    bool queryDatas(const DAPyDataFrame& df, const QString& exper);
-    // 检索给定的数据
-    bool searchData();
-    QList< QPair< int, int > > searchData(const DAPyDataFrame& df, const QString& exper) const;
-    // 列运算
-    bool evalDatas();
-    bool evalDatas(const DAPyDataFrame& df, const QString& exper);
-    // 过滤给定条件外的数据
-    bool filterByColumn();
-    bool filterByColumn(const DAPyDataFrame& df, double lower = 0.0, double upper = 0.0, const QString& index = QString());
-    // 数据排序
-    bool sortDatas();
-    bool sortDatas(const DAPyDataFrame& df, const QString& by, const bool ascending);
     // 创建数据透视表
     DAPyDataFrame createPivotTable();
-    DAPyDataFrame createPivotTable(const DAPyDataFrame& df,
-                                   const QStringList value    = QStringList(),
-                                   const QStringList index    = QStringList(),
-                                   const QStringList columns  = QStringList(),
-                                   const QString& aggfunc     = QStringLiteral("mean"),
-                                   bool margins               = false,
-                                   const QString& marginsName = QStringLiteral("All"),
-                                   bool sort                  = false);
+    DAPyDataFrame createPivotTable(
+        const DAPyDataFrame& df,
+        const QStringList value    = QStringList(),
+        const QStringList index    = QStringList(),
+        const QStringList columns  = QStringList(),
+        const QString& aggfunc     = QStringLiteral("mean"),
+        bool margins               = false,
+        const QString& marginsName = QStringLiteral("All"),
+        bool sort                  = false
+    );
 Q_SIGNALS:
     /**
      * @brief 选中的列或者类型发生了变化
@@ -137,7 +126,7 @@ private:
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
-    DADialogDataFrameDataSelect* mDialogDataFrameDataSelect { nullptr };
+    DataFrameDataSelectDialog* mDialogDataFrameDataSelect { nullptr };
     DADialogCreatePivotTable* mDialogCreatePivotTable { nullptr };
     DADialogDataFrameEvalDatas* mDialogDataFrameEvalDatas { nullptr };
     DADialogDataFrameQueryDatas* mDialogDataFrameQueryDatas { nullptr };

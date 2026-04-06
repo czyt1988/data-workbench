@@ -79,6 +79,14 @@ public:  // DAAbstractData Wrapper
     bool isSeries() const;
     // 是否为datapackage
     bool isDataPackage() const;
+    // 数据类型转换为文字
+    QString typeToString() const;
+    // 获取数据对应的datamanager
+    DADataManager* getDataManager() const;
+    // 是否在数据管理器中管理
+    bool isHaveDataManager() const;
+    // 尺寸
+    std::pair< std::size_t, std::size_t > shape() const;
 #if DA_ENABLE_PYTHON
     // 转换为pyDataframe
     DAPyDataFrame toDataFrame() const;
@@ -88,20 +96,8 @@ public:  // DAAbstractData Wrapper
     // 设置python对象，此函数会替换掉数据管理的对象内容
     void setPyObject(const pybind11::object& obj);
 #endif
-    // 数据类型转换为文字
-    QString typeToString() const;
-    // 获取数据对应的datamanager
-    DADataManager* getDataManager() const;
-    // 是否在数据管理器中管理
-    bool isHaveDataManager() const;
-    // 尺寸
-    std::pair< std::size_t, std::size_t > shape() const;
-
-public:
     // 把数据写到文件
     static bool writeToFile(const DAData& data, const QString& filePath);
-    // 导出数据
-    static bool exportToFile(const DAData& data, const QString& filePath, const QString& sep = ",");
 
 protected:
     // 设置变量管理器，在data添加如变量管理器后，data内部就会维护变量管理器的指针

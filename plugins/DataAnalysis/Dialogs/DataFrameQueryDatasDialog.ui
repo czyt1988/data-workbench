@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DADialogDataFrameQueryDatas</class>
- <widget class="QDialog" name="DADialogDataFrameQueryDatas">
+ <class>DataFrameQueryDatasDialog</class>
+ <widget class="QDialog" name="DataFrameQueryDatasDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -64,10 +64,6 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <property name="text">
         <string>OK</string>
        </property>
-       <property name="icon">
-        <iconset resource="../icon.qrc">
-         <normaloff>:/DAGui/icon/accept.svg</normaloff>:/DAGui/icon/accept.svg</iconset>
-       </property>
        <property name="default">
         <bool>true</bool>
        </property>
@@ -77,10 +73,6 @@ li.checked::marker { content: &quot;\2612&quot;; }
       <widget class="QPushButton" name="pushButtonCancel">
        <property name="text">
         <string>Cancel</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../icon.qrc">
-         <normaloff>:/DAGui/icon/cancel.svg</normaloff>:/DAGui/icon/cancel.svg</iconset>
        </property>
       </widget>
      </item>
@@ -102,7 +94,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
   <connection>
    <sender>pushButtonOK</sender>
    <signal>clicked()</signal>
-   <receiver>DADialogDataFrameQueryDatas</receiver>
+   <receiver>DataFrameQueryDatasDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -118,7 +110,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
   <connection>
    <sender>pushButtonCancel</sender>
    <signal>clicked()</signal>
-   <receiver>DADialogDataFrameQueryDatas</receiver>
+   <receiver>DataFrameQueryDatasDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

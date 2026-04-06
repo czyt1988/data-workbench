@@ -15,7 +15,7 @@
 #include <QTextStream>
 #include <QSysInfo>
 #include <QVersionNumber>
-
+#include "DADir.h"
 // win32
 #ifdef Q_OS_WIN
 #ifdef Q_CC_MSVC
@@ -141,7 +141,7 @@ public:
         // 设置默认前置处理函数
         if (nullptr == fpPre) {
             fpPre = []() -> QString {
-                QString dumppath = QDir::toNativeSeparators(QApplication::applicationDirPath() + "/dumps");
+                QString dumppath = getDefaultDumpDirectory();
                 QDir dir;
                 if (!dir.exists(dumppath)) {
                     if (!dir.mkpath(dumppath)) {
@@ -194,7 +194,7 @@ public:
      */
     static QString getDefaultDumpDirectory()
     {
-        QString dumppath = QDir::toNativeSeparators(QApplication::applicationDirPath() + "/dumps");
+        QString dumppath = DADir::getDumpFilePath();
         QDir dir;
         if (!dir.exists(dumppath)) {
             dir.mkpath(dumppath);
@@ -231,8 +231,8 @@ public:
         }
 
         QDateTime cutoffDate = QDateTime::currentDateTime().addDays(-daysToKeep);
-        QFileInfoList files  = dir.entryInfoList(QStringList() << "*.dmp" << "*_info.txt",
-                                                QDir::Files | QDir::NoDotAndDotDot);
+        QFileInfoList files =
+            dir.entryInfoList(QStringList() << "*.dmp" << "*_info.txt", QDir::Files | QDir::NoDotAndDotDot);
 
         int removedCount = 0;
         for (const QFileInfo& file : files) {
@@ -270,12 +270,13 @@ LONG applicationCrashHandler(_EXCEPTION_POINTERS* pException)
             createPath = fpDump();
         } else {
             // 默认路径生成
-            QString dumppath = QDir::toNativeSeparators(QApplication::applicationDirPath() + "/dumps");
+            QString dumppath = DADumpCapture::getDefaultDumpDirectory();
             QDir dir;
             if (!dir.exists(dumppath)) {
                 dir.mkpath(dumppath);
             }
-            createPath = QString("%1/dump_%2.dmp").arg(dumppath).arg(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss_zzz"));
+            createPath =
+                QString("%1/dump_%2.dmp").arg(dumppath).arg(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss_zzz"));
         }
 
         qDebug() << "Application crashed, writing dump file at:" << createPath;
@@ -302,9 +303,11 @@ LONG applicationCrashHandler(_EXCEPTION_POINTERS* pException)
 
             // 崩溃时间信息
             fprintf(infoFile, "\n=== Crash Information ===\n");
-            fprintf(infoFile,
-                    "Crash Time: %s\n",
-                    QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz").toLocal8Bit().constData());
+            fprintf(
+                infoFile,
+                "Crash Time: %s\n",
+                QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz").toLocal8Bit().constData()
+            );
             fprintf(infoFile, "Process ID: %lu\n", GetCurrentProcessId());
             fprintf(infoFile, "Thread ID: %lu\n", GetCurrentThreadId());
             fprintf(infoFile, "Exception Code: 0x%08lX\n", pException->ExceptionRecord->ExceptionCode);
@@ -337,12 +340,14 @@ LONG applicationCrashHandler(_EXCEPTION_POINTERS* pException)
             dumpInfo.ClientPointers    = TRUE;  // 设置为TRUE以获取更多信息
 
             // 使用更详细的dump类型
-            MINIDUMP_TYPE dumpType = static_cast< MINIDUMP_TYPE >(MiniDumpNormal | MiniDumpWithDataSegs
-                                                                  | MiniDumpWithHandleData | MiniDumpWithUnloadedModules
-                                                                  | MiniDumpWithProcessThreadData);
+            MINIDUMP_TYPE dumpType = static_cast< MINIDUMP_TYPE >(
+                MiniDumpNormal | MiniDumpWithDataSegs | MiniDumpWithHandleData | MiniDumpWithUnloadedModules
+                | MiniDumpWithProcessThreadData
+            );
 
             // 写入Dump文件内容
-            BOOL result = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, dumpType, &dumpInfo, NULL, NULL);
+            BOOL result =
+                MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, dumpType, &dumpInfo, NULL, NULL);
 
             if (result) {
                 qDebug() << "Dump file created successfully:" << createPath;

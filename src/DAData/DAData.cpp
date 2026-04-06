@@ -5,11 +5,9 @@
 #include "DAData.h"
 #include "DADataManager.h"
 #if DA_ENABLE_PYTHON
-#include "DAPyScripts.h"
 #include "DADataPyObject.h"
 #include "DADataPyDataFrame.h"
 #include "DADataPySeries.h"
-#include "DAPyScriptsDataFrame.h"
 #endif
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -112,7 +110,8 @@ DAData& DAData::operator=(const DAPyDataFrame& d)
 
 DAData& DAData::operator=(const DAPySeries& d)
 {
-    std::shared_ptr< DAAbstractData > p = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
+    std::shared_ptr< DAAbstractData > p =
+        std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
     mData = p;
     return *this;
 }
@@ -334,7 +333,29 @@ void DA::DAData::setPyObject(const pybind11::object& obj)
     }
 }
 
+
 #endif
+
+/**
+ * @brief 把数据写到文件
+ * @param data
+ * @param filePath
+ * @return
+ */
+bool DAData::writeToFile(const DAData& data, const QString& filePath)
+{
+    if (data.isNull()) {
+        return false;
+    }
+    switch (data.getDataType()) {
+    case DAAbstractData::TypePythonDataFrame: {
+        return data.toDataFrame().to_parquet(filePath);
+    } break;
+    default:
+        break;
+    }
+    return true;
+}
 
 QString DAData::typeToString() const
 {
@@ -379,67 +400,6 @@ std::pair< size_t, size_t > DAData::shape() const
     return std::make_pair(0, 0);
 }
 
-/**
- * @brief 把数据写到文件
- * @param data
- * @param filePath
- * @return
- */
-bool DAData::writeToFile(const DAData& data, const QString& filePath)
-{
-    if (data.isNull()) {
-        return false;
-    }
-    switch (data.getDataType()) {
-#if DA_ENABLE_PYTHON
-    case DAAbstractData::TypePythonDataFrame: {
-        return data.toDataFrame().to_parquet(filePath);
-    } break;
-#endif
-    default:
-        break;
-    }
-    return true;
-}
-
-/**
- * @brief 导出数据
- * @param data
- * @param filePath
- * @return
- */
-bool DAData::exportToFile(const DAData& data, const QString& filePath, const QString& sep)
-{
-    if (data.isNull()) {
-        return false;
-    }
-
-    QFileInfo dataFilePath(filePath);
-    QString dataSuffix = dataFilePath.suffix();
-
-    switch (data.getDataType()) {
-#if DA_ENABLE_PYTHON
-    case DAAbstractData::TypePythonDataFrame: {
-        DAPyScriptsDataFrame& pydf = DAPyScripts::getInstance().getDataFrame();
-        if (dataSuffix == "txt" || dataSuffix == "csv") {
-            return pydf.to_csv(data.toDataFrame(), filePath, sep);
-        } else if (dataSuffix == "xlsx") {
-            return pydf.to_excel(data.toDataFrame(), filePath);
-        } else if (dataSuffix == "parquet") {
-            return pydf.to_parquet(data.toDataFrame(), filePath);
-        } else if (dataSuffix == "pkl") {
-            return pydf.to_pickle(data.toDataFrame(), filePath);
-        } else {
-            // 没有后缀统一使用parquet
-            return pydf.to_parquet(data.toDataFrame(), filePath);
-        }
-    } break;
-#endif
-    default:
-        break;
-    }
-    return true;
-}
 
 /**
  * @brief 设置变量管理器，在data添加如变量管理器后，data内部就会记录变量管理器的指针

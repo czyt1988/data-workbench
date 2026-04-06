@@ -235,13 +235,7 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSelect.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSearch.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameEvalDatas.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSort.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.h
-		
     )
     list(APPEND DA_LIB_SOURCE_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.cpp
@@ -251,11 +245,6 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSelect.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSearch.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameEvalDatas.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSort.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES_Dialog
@@ -265,11 +254,6 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSelect.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameQueryDatas.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameDataSearch.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameEvalDatas.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSort.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogCreatePivotTable.ui
     )
 endif()
