@@ -1,4 +1,4 @@
-﻿#ifndef DAPYSCRIPTS_H
+#ifndef DAPYSCRIPTS_H
 #define DAPYSCRIPTS_H
 #include <QObject>
 #include <QtCore/qglobal.h>
@@ -25,6 +25,8 @@ public:
     static bool isInitScripts();
     // 初始化脚本
     static bool initScripts();
+    // 清理脚本模块，必须在Python解释器销毁之前调用
+    static void cleanup();
     static DAPyScriptsIO& getIO();
     static DAPyScriptsDataFrame& getDataFrame();
     static DAPyScriptsDataProcess& getDataProcess();
@@ -33,7 +35,6 @@ protected:
     // 内部模块
     class InnerModules;
     static std::unique_ptr< InnerModules > s_models;
-    static std::unique_ptr< DAPyModule > s_sys;
 };
 }  // namespace DA
 #endif  // DAPYSCRIPTS_H

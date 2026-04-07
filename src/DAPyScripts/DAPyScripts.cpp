@@ -1,4 +1,4 @@
-﻿#include "DAPyScripts.h"
+#include "DAPyScripts.h"
 #include <QObject>
 #include <QDebug>
 #include "DAPyScriptsIO.h"
@@ -18,12 +18,10 @@ public:
         if (!interpreter) {
             qCritical() << QObject::tr("DAPyInterpreter is not initialized");  // cn:python环境未初始化
         }
-        sys.import("sys");
     }
 
 public:
     DAPyWorkBench workBench;
-    DAPyModule sys { "sys" };
     std::shared_ptr< pybind11::scoped_interpreter > interpreter;  ///< 解析器，为了增加引用计数，避免python环境析构了，此类还存在
 };
 
@@ -91,6 +89,11 @@ DAPyScriptsDataFrame& DAPyScripts::getDataFrame()
 DAPyScriptsDataProcess& DAPyScripts::getDataProcess()
 {
     return s_models->workBench.getDataProcess();
+}
+
+void DAPyScripts::cleanup()
+{
+    s_models.reset();
 }
 
 }  // namespace DA

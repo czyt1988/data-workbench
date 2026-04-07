@@ -1,4 +1,4 @@
-﻿#include "DACoreInterface.h"
+#include "DACoreInterface.h"
 #include "DAUIInterface.h"
 #include <QPointer>
 #include <QApplication>
@@ -47,8 +47,10 @@ DACoreInterface::DACoreInterface(QObject* parent) : QObject(parent), DA_PIMPL_CO
 DACoreInterface::~DACoreInterface()
 {
 #if DA_ENABLE_PYTHON
-    // 析构过程需要先析构脚本，再析构解释器，否则会导致异常
+    d_ptr->pythonHandler.reset();
+    DAPyScripts::cleanup();
     d_ptr->interpreter = nullptr;
+    DAPyInterpreter::shutdown();
 #endif
 }
 

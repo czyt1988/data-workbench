@@ -10,6 +10,8 @@
 //
 #include "DADir.h"
 #include "DAPybind11QtCaster.hpp"
+#include "DAPyModule.h"
+#include "DAPyObjectWrapper.h"
 namespace DA
 {
 
@@ -213,6 +215,10 @@ void DAPyInterpreter::initializePythonInterpreter(const QString& pythonHomePath)
 
 void DAPyInterpreter::shutdown()
 {
+    if (interpreter == nullptr) {
+        qDebug() << "Python Interpreter already shutdown";
+        return;
+    }
     // ===== 第一步：执行 Python 端的预清理 =====
     try {
         {
@@ -275,7 +281,11 @@ void DAPyInterpreter::shutdown()
         qWarning() << "wait to kill thread occ error:" << e.what();
     }
 
-    // ===== 第三步：最终释放解释器 =====
+    // ===== 第三步：清理静态缓存 =====
+    DAPyModule::cleanupStaticCache();
+    DAPyObjectWrapper::cleanupStaticCache();
+
+    // ===== 第四步：最终释放解释器 =====
     qDebug() << "Shutdow Python Interpreter...";
     interpreter = nullptr;  // 这会触发 pybind11::finalize_interpreter
     qDebug() << "Python Interpreter Shutdowed";

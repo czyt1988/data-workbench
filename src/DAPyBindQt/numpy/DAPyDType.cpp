@@ -284,23 +284,11 @@ bool DAPyDType::isExtensionDtype() const
         return false;
     }
     try {
-        QString n = name();
-        if (isNullableInt() || isNullableUInt() || isNullableBool() || isNullableString()) {
-            return true;
+        pybind11::module np = pybind11::module::import("numpy");
+        if (pybind11::isinstance(object(), np.attr("dtype"))) {
+            return false;
         }
-        if (n == "category") {
-            return true;
-        }
-        if (n.startsWith("period[") || n.startsWith("interval[")) {
-            return true;
-        }
-        if (n.startsWith("datetime64[") && n.contains("tz=")) {
-            return true;
-        }
-        if (n.startsWith("string[")) {
-            return true;
-        }
-        return false;
+        return true;
     } catch (...) {
     }
     return false;

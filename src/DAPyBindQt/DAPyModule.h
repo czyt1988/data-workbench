@@ -1,4 +1,4 @@
-﻿#ifndef DAPYMODULE_H
+#ifndef DAPYMODULE_H
 #define DAPYMODULE_H
 #include "DAPyBindQtGlobal.h"
 #include "DAPybind11InQt.h"
@@ -45,6 +45,8 @@ public:
     static bool isInstancePandasDateTime(const pybind11::handle& obj);
     static bool isInstanceNumpyDateTime(const pybind11::handle& obj);
     static bool isInstanceTimedelta(const pybind11::handle& obj);
+    // 清理静态缓存，必须在Python解释器销毁之前调用
+    static void cleanupStaticCache();
 };
 }  // namespace DA
 #endif  // DAPYMODULE_H
