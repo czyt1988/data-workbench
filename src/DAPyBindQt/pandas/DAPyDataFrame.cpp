@@ -1,4 +1,4 @@
-﻿#include "DAPyDataFrame.h"
+#include "DAPyDataFrame.h"
 #include <vector>
 #include <map>
 #include <QHash>
@@ -390,8 +390,28 @@ DAPyIndex DAPyDataFrame::index() const
  */
 pybind11::dtype DAPyDataFrame::dtypes(std::size_t c) const
 {
-    // dtypes返回的是series
-    return attr("dtypes").attr("iloc")[ pybind11::int_(c) ];
+    pybind11::object dtype_obj = attr("dtypes").attr("iloc")[ pybind11::int_(c) ];
+    pybind11::module np        = pybind11::module::import("numpy");
+    if (pybind11::isinstance(dtype_obj, np.attr("dtype"))) {
+        return dtype_obj.cast< pybind11::dtype >();
+    }
+    return np.attr("dtype")("O");
+}
+
+/**
+ * @brief 获取某一列对应的 dtype 对象，支持 numpy dtype 和 pandas 扩展类型
+ * @param c 列索引
+ * @return DAPyDType 对象
+ */
+DAPyDType DAPyDataFrame::dtypeObject(std::size_t c) const
+{
+    try {
+        pybind11::object dtype_obj = attr("dtypes").attr("iloc")[ pybind11::int_(c) ];
+        return DAPyDType::fromObject(dtype_obj);
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return DAPyDType();
 }
 
 /**

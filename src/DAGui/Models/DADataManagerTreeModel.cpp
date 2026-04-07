@@ -1,4 +1,4 @@
-﻿#include "DADataManagerTreeModel.h"
+#include "DADataManagerTreeModel.h"
 // Qt
 #include <QHash>
 #include <QDebug>
@@ -176,8 +176,11 @@ QIcon DAStandardItemDataDataframeSeries::seriesTypeToIcon(const DAData& data, co
     try {
         DAPyDataFrame df  = data.toDataFrame();
         DAPySeries series = df[ seriesName ];
-        auto dtype        = series.dtype();
-        char c            = dtype.char_();
+        DAPyDType dtype  = series.dtypeObject();
+        if (dtype.isNone()) {
+            return QIcon();
+        }
+        char c = dtype.kind();
         switch (c) {
         case 'd':
         case 'f':
@@ -202,6 +205,9 @@ QIcon DAStandardItemDataDataframeSeries::seriesTypeToIcon(const DAData& data, co
         } break;
         case 'O': {
             return s_obj_type;
+        } break;
+        case '?': {
+            return s_int_type;
         } break;
         default:
             break;

@@ -75,8 +75,9 @@ bool DACoreInterface::initializePythonEnv()
         // 把脚本路径加载到系统路径下，这样才能引入库
         QString scriptPath = getPythonScriptsPath();
         qInfo() << tr("Python scripts path is %1").arg(scriptPath);
-        DAPyScripts::appendSysPath(scriptPath);
-        // 初始化完成，初始化da脚本
+        DAPyInterpreter::appendSysPath(scriptPath);
+
+        // python环境初始化完成，初始化da脚本
         DAPyScripts::initScripts();
 
         // DA::DAPyScripts::appendSysPath必须在getInstance前执行

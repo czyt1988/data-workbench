@@ -1,4 +1,4 @@
-﻿#ifndef DAPYDTYPE_H
+#ifndef DAPYDTYPE_H
 #define DAPYDTYPE_H
 #include "DAPyBindQtGlobal.h"
 #include "DAPyObjectWrapper.h"
@@ -8,7 +8,11 @@
 namespace DA
 {
 /**
- * @brief 对numpy.dtype的封装
+ * @brief 对numpy.dtype和pandas扩展类型的封装
+ *
+ * 此类可以封装两种类型：
+ * 1. numpy.dtype - 标准 numpy 数据类型
+ * 2. pandas 扩展类型 - 如 StringDtype, Int64Dtype, BooleanDtype 等
  *
  * python dtype 信息如下：
  * name=bool,kind=b,char=?,str=|b1,num=0
@@ -29,8 +33,19 @@ namespace DA
  * name=datetime64,kind=M,char=M,str=<M8,num=21
  * name=timedelta64,kind=m,char=m,str=<m8,num=22
  * name=bytes,kind=S,char=S,str=|S0,num=18
- * name=void,kind=V,char=V,str=|V0,num=20
+ * name=void,kind=V,char=|V0,num=20
  * name=object,kind=O,char=O,str=|O,num=17
+ *
+ * pandas 扩展类型：
+ * - StringDtype: 可空字符串类型
+ * - Int64Dtype, Int32Dtype, Int16Dtype, Int8Dtype: 可空整数类型
+ * - UInt64Dtype, UInt32Dtype, UInt16Dtype, UInt8Dtype: 可空无符号整数类型
+ * - BooleanDtype: 可空布尔类型
+ * - CategoricalDtype: 分类类型
+ * - DatetimeTZDtype: 带时区的日期时间类型
+ * - PeriodDtype: 周期类型
+ * - IntervalDtype: 区间类型
+ * - ArrowDtype: PyArrow 类型
  *
  */
 class DAPYBINDQT_API DAPyDType : public DAPyObjectWrapper
@@ -54,15 +69,10 @@ public:
     bool operator!=(const DAPyDType& other) const;
 
 public:
-    //创建变量
     pybind11::object type(const QVariant& v) const;
-    // dtype.name
     QString name() const;
-    // dtype.kind
     char kind() const;
-    // dtype.char
     char char_() const;
-    // dtype.num
     int num() const;
 
 public:
@@ -75,14 +85,27 @@ public:
     bool isBool() const;
     bool isStr() const;
     bool isNumeral() const;
+    bool isExtensionDtype() const;
+    bool isNullableInt() const;
+    bool isNullableUInt() const;
+    bool isNullableBool() const;
+    bool isNullableString() const;
+    bool isCategorical() const;
+    bool isDatetimeTZ() const;
+    bool isPeriod() const;
+    bool isInterval() const;
+    bool isArrow() const;
 
 public:
-    //获取所有的dtype类型名称
+    pybind11::dtype toNumpyDtype() const;
+    static DAPyDType fromObject(const pybind11::object& obj);
     static QStringList dtypeNames();
+    static QStringList extensionDtypeNames();
+    QString displayName() const;
 
 protected:
-    //检测是否为numpy.dtype，如果不是将会设置为none
     void checkObjectValid();
+    void detectExtensionType();
 };
 }  // namespace DA
 Q_DECLARE_METATYPE(DA::DAPyDType)

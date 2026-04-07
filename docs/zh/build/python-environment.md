@@ -97,6 +97,12 @@ pip install --target="../Lib/site-packages" -r "{DataWorkBench_Dir}/requirements
 .\python.exe -m pip install --target="./Lib/site-packages" -r "{DataWorkBench_Dir}/requirements.txt"
 ```
 
+如果速度慢，你可以加上清华的镜像源或其它镜像源，例如：
+
+```bash
+.\python.exe -m pip install --target="./Lib/site-packages" -r "{DataWorkBench_Dir}/requirements.txt" -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
 #### 完善库路径
 
 为了避免库路径查找异常，把python3xx.zip的内容解压到Lib目录下，形成一个完整的python环境。

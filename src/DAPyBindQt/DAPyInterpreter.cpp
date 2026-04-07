@@ -9,6 +9,7 @@
 #include <QThread>
 //
 #include "DADir.h"
+#include "DAPybind11QtCaster.hpp"
 namespace DA
 {
 
@@ -107,6 +108,30 @@ QList< QFileInfo > DAPyInterpreter::wherePythonFromConfig()
 bool DAPyInterpreter::isPythonInitialized()
 {
     return interpreter != nullptr;
+}
+
+/**
+ * @brief 添加python环境路径
+ *
+ * 等同于：
+ * @code
+ * import sys
+ * sys.path.append(xx)
+ * @endcode
+ *
+ * @param path
+ *
+ * @note 此函数必须在环境初始化后使用
+ */
+void DAPyInterpreter::appendSysPath(const QString& path)
+{
+    if(!isPythonInitialized()){
+      qCritical() << "Python Is Not Initialized";
+        return;
+    }
+    pybind11::module_ sys = pybind11::module_::import("sys");
+    pybind11::object obj_path_append = sys.attr("path").attr("append");
+    obj_path_append(DA::PY::toPyObject(path));
 }
 
 /**

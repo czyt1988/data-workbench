@@ -1,4 +1,4 @@
-﻿#include "DAPySeries.h"
+#include "DAPySeries.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DAPyModulePandas.h"
 #include "numpy/DAPyDType.h"
@@ -105,16 +105,44 @@ pybind11::object DAPySeries::operator[](const QString& colName) const
 }
 /**
  * @brief Return the dtype object of the underlying data.
+ *
+ * 对于 pandas 扩展类型（如 StringDtype、Int64Dtype、ArrowDtype 等），
+ * 由于它们不是 numpy.dtype 的实例，无法直接转换为 pybind11::dtype。
+ * 此函数会检测扩展类型，并返回等效的 numpy dtype：
+ * - StringDtype -> numpy.dtype('O') (object)
+ * - 其他扩展类型 -> numpy.dtype('O')
  * @return
  */
 pybind11::dtype DAPySeries::dtype() const
 {
     try {
-        return object().attr("dtype");
+        pybind11::object dtype_obj = object().attr("dtype");
+        pybind11::module np        = pybind11::module::import("numpy");
+        if (pybind11::isinstance(dtype_obj, np.attr("dtype"))) {
+            return dtype_obj.cast< pybind11::dtype >();
+        }
+        return np.attr("dtype")("O");
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
     }
     return pybind11::none();
+}
+
+/**
+ * @brief 获取 dtype 对象，支持 numpy dtype 和 pandas 扩展类型
+ *
+ * 此方法返回 DAPyDType 对象，可以正确处理 numpy dtype 和 pandas 扩展类型。
+ * 对于扩展类型，可以通过 DAPyDType 的方法获取扩展类型信息。
+ * @return
+ */
+DAPyDType DAPySeries::dtypeObject() const
+{
+    try {
+        return DAPyDType::fromObject(object().attr("dtype"));
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return DAPyDType();
 }
 /**
  * @brief Indicator whether Series/DataFrame is empty.

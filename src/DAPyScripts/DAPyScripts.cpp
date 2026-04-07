@@ -28,7 +28,6 @@ public:
 };
 
 std::unique_ptr< DAPyScripts::InnerModules > DAPyScripts::s_models = nullptr;
-
 //===================================================
 // DAPyScripts
 //===================================================
@@ -39,27 +38,6 @@ DAPyScripts::DAPyScripts()
 
 DAPyScripts::~DAPyScripts()
 {
-}
-
-/**
- * @brief 添加python环境路径
- *
- * 等同于：
- * @code
- * import sys
- * sys.path.append(xx)
- * @endcode
- *
- * @param path
- */
-void DAPyScripts::appendSysPath(const QString& path)
-{
-    try {
-        pybind11::object obj_path_append = s_models->sys.attr("path").attr("append");
-        obj_path_append(DA::PY::toPyObject(path));
-    } catch (const std::exception& e) {
-        qCritical() << QObject::tr("Initialized import sys module error:%1").arg(e.what());  // cn:初始化sys模块失败
-    }
 }
 
 /**

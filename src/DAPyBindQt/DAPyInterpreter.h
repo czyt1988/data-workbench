@@ -48,7 +48,8 @@ public:
     static QList< QFileInfo > wherePythonFromConfig();
     // 是否初始化了python环境
     static bool isPythonInitialized();
-
+    // 添加系统路径
+    static void appendSysPath(const QString& path);
 public:
     static std::shared_ptr< pybind11::scoped_interpreter > interpreter;
 };

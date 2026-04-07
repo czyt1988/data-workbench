@@ -1,4 +1,4 @@
-﻿#include "DADataOperateOfDataFrameWidget.h"
+#include "DADataOperateOfDataFrameWidget.h"
 #include "ui_DADataOperateOfDataFrameWidget.h"
 #include "Models/DADataTableModel.h"
 #include "DADataPyObject.h"
@@ -389,7 +389,7 @@ void DADataOperateOfDataFrameWidget::castSelectToNum()
     if (QDialog::Accepted != mDialogCastNumArgs->exec()) {
         return;
     }
-    DAPyDType dt        = df.dtypes(colsIndex.first());
+    DAPyDType dt        = df.dtypeObject(colsIndex.first());
     pybind11::dict args = mDialogCastNumArgs->getArgs();
     std::unique_ptr< DACommandDataFrame_castNum > cmd(new DACommandDataFrame_castNum(df, colsIndex, args));
     DADataTableModel* modle = mModel;
@@ -404,8 +404,7 @@ void DADataOperateOfDataFrameWidget::castSelectToNum()
         return;
     }
     getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
-    // 如果类型改变了刷新类型
-    DAPyDType dt2 = df.dtypes(colsIndex.first());
+    DAPyDType dt2 = df.dtypeObject(colsIndex.first());
     if (dt != dt2) {
         emit selectTypeChanged(colsIndex, dt2);
     }
@@ -431,7 +430,7 @@ void DADataOperateOfDataFrameWidget::castSelectToDatetime()
     if (QDialog::Accepted != mDialogCastDatetimeArgs->exec()) {
         return;
     }
-    DAPyDType dt        = df.dtypes(colsIndex.first());
+    DAPyDType dt        = df.dtypeObject(colsIndex.first());
     pybind11::dict args = mDialogCastDatetimeArgs->getArgs();
     std::unique_ptr< DACommandDataFrame_castDatetime > cmd(new DACommandDataFrame_castDatetime(df, colsIndex, args));
     DADataTableModel* modle = mModel;
@@ -445,9 +444,8 @@ void DADataOperateOfDataFrameWidget::castSelectToDatetime()
     if (!cmd->exec()) {
         return;
     }
-    getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
-    // 如果类型改变了刷新类型
-    DAPyDType dt2 = df.dtypes(colsIndex.first());
+    getUndoStack()->push(cmd.release());
+    DAPyDType dt2 = df.dtypeObject(colsIndex.first());
     if (dt != dt2) {
         emit selectTypeChanged(colsIndex, dt2);
     }
@@ -837,7 +835,7 @@ void DADataOperateOfDataFrameWidget::onTableViewClicked(const QModelIndex& index
     }
     DAPyDType t;
     try {
-        t = df.dtypes(index.column());
+        t = df.dtypeObject(index.column());
     } catch (const std::exception& e) {
         qCritical() << e.what();
     }

@@ -36,7 +36,7 @@ bool DAAppDataManager::importFromFile(const QString& f, const QVariantMap& args,
     qInfo() << tr("begin import file:%1").arg(f);
     try {
         if (DAPyScripts::isInitScripts()) {
-            DAPyScripts::getIO().read(f, args, err);
+            DAPyScripts::getIO().read_and_add_to_datamanager(f, args, err);
         }
         return true;
     } catch (const std::exception& e) {

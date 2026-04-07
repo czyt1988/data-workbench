@@ -21,8 +21,6 @@ class DAPYSCRIPTS_API DAPyScripts
 public:
     DAPyScripts();
     ~DAPyScripts();
-    // 初始化脚本
-    static void appendSysPath(const QString& path);
     // 是否初始化了脚本
     static bool isInitScripts();
     // 初始化脚本
@@ -35,6 +33,7 @@ protected:
     // 内部模块
     class InnerModules;
     static std::unique_ptr< InnerModules > s_models;
+    static std::unique_ptr< DAPyModule > s_sys;
 };
 }  // namespace DA
 #endif  // DAPYSCRIPTS_H

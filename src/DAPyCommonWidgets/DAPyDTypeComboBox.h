@@ -7,10 +7,16 @@
 namespace DA
 {
 /**
- * @brief dtype选择器
- * 此combox构建时默认插入如下信息:
+ * @brief dtype 选择器
+ *
+ * 此 ComboBox 支持两种类型的 dtype 选择：
+ * 1. numpy dtype - 标准 numpy 数据类型
+ * 2. pandas 扩展类型 - 如 StringDtype, Int64Dtype, BooleanDtype 等
+ *
+ * 构建时默认插入如下信息:
  *
  * @code
+ * // numpy dtype
  * addItem(tr("float64"), "d");
  * addItem(tr("float32"), "f");
  * addItem(tr("float16"), "e");
@@ -36,6 +42,20 @@ namespace DA
  * insertSeparator(count());
  * addItem(tr("bytes"), "S");
  * addItem(tr("object"), "O");
+ * insertSeparator(count());
+ * // pandas 扩展类型
+ * addItem(tr("Int64 (nullable)"), "Int64");
+ * addItem(tr("Int32 (nullable)"), "Int32");
+ * addItem(tr("Int16 (nullable)"), "Int16");
+ * addItem(tr("Int8 (nullable)"), "Int8");
+ * addItem(tr("UInt64 (nullable)"), "UInt64");
+ * addItem(tr("UInt32 (nullable)"), "UInt32");
+ * addItem(tr("UInt16 (nullable)"), "UInt16");
+ * addItem(tr("UInt8 (nullable)"), "UInt8");
+ * insertSeparator(count());
+ * addItem(tr("boolean (nullable)"), "boolean");
+ * addItem(tr("string (nullable)"), "string");
+ * addItem(tr("category"), "category");
  * @endcode
  */
 class DAPYCOMMONWIDGETS_API DAPyDTypeComboBox : public QComboBox
@@ -45,21 +65,22 @@ public:
     explicit DAPyDTypeComboBox(QWidget* parent = nullptr);
 
 public:
-    //获取选中的dtype
     DAPyDType selectedDType() const;
-    //通过char获取图标
     static QIcon getIconByDtypeChar(char c);
-public slots:
-    //设置当前的dtype
+    static QIcon getIconByDType(const DAPyDType& dt);
+
+public Q_SLOTS:
     void setCurrentDType(const DAPyDType& dt);
-private slots:
+
+private Q_SLOTS:
     void onComboxCurrentIndexChanged(int index);
-signals:
-    /**
-     * @brief 当前选择的dtype改变信号
-     * @param dt
-     */
+
+Q_SIGNALS:
     void currentDTypeChanged(const DAPyDType& dt);
+
+private:
+    void initItems();
+    int findDTypeIndex(const DAPyDType& dt) const;
 };
 }  // namespace DA
 #endif  // DAPYDTYPECOMBOBOX_H

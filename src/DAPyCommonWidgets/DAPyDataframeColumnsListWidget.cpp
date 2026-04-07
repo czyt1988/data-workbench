@@ -1,4 +1,4 @@
-﻿#include "DAPyDataframeColumnsListWidget.h"
+#include "DAPyDataframeColumnsListWidget.h"
 #include "DAPyDTypeComboBox.h"
 #include <QDebug>
 namespace DA
@@ -129,7 +129,8 @@ void DAPyDataframeColumnsListWidget::updateColumnsInfo(const DAPyDataFrame& df)
 	QList< QString > cols = df.columns();
 	for (int i = 0; i < cols.size(); ++i) {
 		QListWidgetItem* item = new QListWidgetItem(cols[ i ], this);
-		item->setIcon(DAPyDTypeComboBox::getIconByDtypeChar(df[ cols[ i ] ].dtype().char_()));
+		DAPyDType dt = df[ cols[ i ] ].dtypeObject();
+		item->setIcon(DAPyDTypeComboBox::getIconByDType(dt));
 	}
 }
 
