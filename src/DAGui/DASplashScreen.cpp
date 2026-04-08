@@ -41,8 +41,7 @@ DASplashScreen::PrivateData::PrivateData(DASplashScreen* p) : q_ptr(p)
  *
  * 创建一个使用程序化绘制的默认背景的启动画面
  */
-DASplashScreen::DASplashScreen()
-    : QSplashScreen(generateDefaultPixmap()), DA_PIMPL_CONSTRUCT
+DASplashScreen::DASplashScreen() : QSplashScreen(generateDefaultPixmap()), DA_PIMPL_CONSTRUCT
 {
     setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
 }
@@ -212,9 +211,9 @@ QPixmap DASplashScreen::generateDefaultPixmap(const QSize& size)
 
     // 1. 绘制深蓝色渐变背景
     QLinearGradient bgGradient(0, 0, w, h);
-    bgGradient.setColorAt(0.0, QColor(26, 35, 126));   // #1a237e
-    bgGradient.setColorAt(0.5, QColor(13, 27, 62));     // #0d1b3e
-    bgGradient.setColorAt(1.0, QColor(10, 15, 40));     // 深色
+    bgGradient.setColorAt(0.0, QColor(26, 35, 126));  // #1a237e
+    bgGradient.setColorAt(0.5, QColor(13, 27, 62));   // #0d1b3e
+    bgGradient.setColorAt(1.0, QColor(10, 15, 40));   // 深色
     painter.fillRect(0, 0, w, h, bgGradient);
 
     // 2. 绘制装饰性网格线（代表数据流/工作流连接）
@@ -230,16 +229,14 @@ QPixmap DASplashScreen::generateDefaultPixmap(const QSize& size)
     // 3. 绘制装饰性节点圆点
     painter.setPen(Qt::NoPen);
     // 随机分布的节点点
-    struct NodePoint {
+    struct NodePoint
+    {
         int x, y, r;
         int alpha;
     };
-    const NodePoint nodes[] = {
-        { 120, 80, 4, 60 },  { 280, 120, 3, 40 },  { 450, 60, 5, 50 },
-        { 580, 140, 3, 35 }, { 100, 200, 4, 45 },   { 350, 180, 6, 55 },
-        { 600, 220, 4, 40 }, { 180, 300, 3, 30 },   { 500, 280, 5, 50 },
-        { 650, 100, 3, 35 }, { 50, 350, 4, 25 },    { 400, 340, 3, 30 }
-    };
+    const NodePoint nodes[] = { { 120, 80, 4, 60 },  { 280, 120, 3, 40 }, { 450, 60, 5, 50 },  { 580, 140, 3, 35 },
+                                { 100, 200, 4, 45 }, { 350, 180, 6, 55 }, { 600, 220, 4, 40 }, { 180, 300, 3, 30 },
+                                { 500, 280, 5, 50 }, { 650, 100, 3, 35 }, { 50, 350, 4, 25 },  { 400, 340, 3, 30 } };
 
     for (const auto& node : nodes) {
         painter.setBrush(QColor(100, 140, 230, node.alpha));

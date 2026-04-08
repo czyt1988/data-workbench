@@ -79,21 +79,20 @@ int main(int argc, char* argv[])
     QApplication app(argc, argv);
     QApplication::setApplicationVersion(DA_VERSION);
     QApplication::setApplicationName(DA_PROJECT_NAME);
-
-    //  安装翻译
-    DA::DATranslatorManeger datr;
-    datr.installAllTranslator();
-
     // 命令初始化
     QCommandLineParser cmdParser;
     initCommandLine(&cmdParser);
     // 解析命令行参数
     cmdParser.process(app);
-
     // 字体设置
     setAppFont();
 
-    // 创建并显示启动画面
+    //  安装翻译
+    DA::DATranslatorManeger datr;
+    datr.installAllTranslator();
+
+
+    // 创建并显示启动画面(启动画面必须在QApplication之后创建)
     DA::DASplashScreen splash;
     // 支持从外部文件加载自定义背景图片
     QString customSplashPath = QApplication::applicationDirPath() + QStringLiteral("/splash.png");
