@@ -10,8 +10,6 @@
 //
 #include "DADir.h"
 #include "DAPybind11QtCaster.hpp"
-#include "DAPyModule.h"
-#include "DAPyObjectWrapper.h"
 namespace DA
 {
 
@@ -127,11 +125,11 @@ bool DAPyInterpreter::isPythonInitialized()
  */
 void DAPyInterpreter::appendSysPath(const QString& path)
 {
-    if(!isPythonInitialized()){
-      qCritical() << "Python Is Not Initialized";
+    if (!isPythonInitialized()) {
+        qCritical() << "Python Is Not Initialized";
         return;
     }
-    pybind11::module_ sys = pybind11::module_::import("sys");
+    pybind11::module_ sys            = pybind11::module_::import("sys");
     pybind11::object obj_path_append = sys.attr("path").attr("append");
     obj_path_append(DA::PY::toPyObject(path));
 }
@@ -157,12 +155,28 @@ void DAPyInterpreter::setPythonHomePath(const QString& path)
 }
 
 /**
+ * @brief 初始化python解释器
+ *
+ * @param interp 解释器指针
+ */
+void DAPyInterpreter::initializePythonInterpreter(std::shared_ptr< pybind11::scoped_interpreter > interp)
+{
+    qDebug() << "Python DLL version from header:" << PY_VERSION;
+    qDebug() << "Python hex version:" << PY_VERSION_HEX;
+    qDebug() << "Python runtime version:" << Py_GetVersion();
+    qDebug() << "Python path:" << Py_GetPath();
+    qDebug() << "Compiled against:" << PY_MAJOR_VERSION << "." << PY_MINOR_VERSION << "." << PY_MICRO_VERSION;
+    interpreter = interp;
+}
+
+/**
  * @brief 初始化Python解释器
  *
  * 使用默认配置初始化Python解释器
  */
 void DAPyInterpreter::initializePythonInterpreter()
 {
+
     initializePythonInterpreter(QString());
 }
 
@@ -177,9 +191,7 @@ void DAPyInterpreter::initializePythonInterpreter()
 void DAPyInterpreter::initializePythonInterpreter(const QString& pythonHomePath)
 {
     try {
-        qDebug() << "Python DLL version from header:" << PY_VERSION;
-        qDebug() << "Python hex version:" << PY_VERSION_HEX;
-
+        std::shared_ptr< pybind11::scoped_interpreter > pythonInterpreter = nullptr;
 #if PY_VERSION_HEX >= 0x03080000
         if (!pythonHomePath.isEmpty()) {
             PyConfig config;
@@ -194,20 +206,17 @@ void DAPyInterpreter::initializePythonInterpreter(const QString& pythonHomePath)
             } else {
                 qDebug() << "Python home path set to:" << pythonHomePath;
             }
-            interpreter = std::make_shared< pybind11::scoped_interpreter >(&config);
+            pythonInterpreter = std::make_shared< pybind11::scoped_interpreter >(&config);
         } else {
-            interpreter = std::make_shared< pybind11::scoped_interpreter >();
+            pythonInterpreter = std::make_shared< pybind11::scoped_interpreter >();
         }
 #else
         if (!pythonHomePath.isEmpty()) {
             setPythonHomePath(pythonHomePath);
         }
-        interpreter = std::make_shared< pybind11::scoped_interpreter >();
+        pythonInterpreter = std::make_shared< pybind11::scoped_interpreter >();
 #endif
-
-        qDebug() << "Python runtime version:" << Py_GetVersion();
-        qDebug() << "Python path:" << Py_GetPath();
-        qDebug() << "Compiled against:" << PY_MAJOR_VERSION << "." << PY_MINOR_VERSION << "." << PY_MICRO_VERSION;
+        initializePythonInterpreter(pythonInterpreter);
     } catch (const std::exception& e) {
         qWarning() << e.what();
     }
@@ -281,11 +290,7 @@ void DAPyInterpreter::shutdown()
         qWarning() << "wait to kill thread occ error:" << e.what();
     }
 
-    // ===== 第三步：清理静态缓存 =====
-    DAPyModule::cleanupStaticCache();
-    DAPyObjectWrapper::cleanupStaticCache();
-
-    // ===== 第四步：最终释放解释器 =====
+    // ===== 第三步：最终释放解释器 =====
     qDebug() << "Shutdow Python Interpreter...";
     interpreter = nullptr;  // 这会触发 pybind11::finalize_interpreter
     qDebug() << "Python Interpreter Shutdowed";

@@ -31,6 +31,8 @@ public:
     ~DAPyInterpreter();
     // 设置python环境路径
     static void setPythonHomePath(const QString& path);
+    // 设置python解释器,这个函数可以在外部创建解析器传入，也可以在DAPyInterpreter中创建
+    static void initializePythonInterpreter(std::shared_ptr< pybind11::scoped_interpreter > interp);
     // 开启python环境
     static void initializePythonInterpreter();
     // 开启python环境（带Python Home路径参数）
@@ -50,6 +52,7 @@ public:
     static bool isPythonInitialized();
     // 添加系统路径
     static void appendSysPath(const QString& path);
+
 public:
     static std::shared_ptr< pybind11::scoped_interpreter > interpreter;
 };

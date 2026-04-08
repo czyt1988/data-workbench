@@ -109,16 +109,6 @@ void DAPyObjectWrapper::dealException(const std::exception& e) const
     }
 }
 
-static pybind11::handle s_copy_mod;
-
-void DAPyObjectWrapper::cleanupStaticCache()
-{
-    if (s_copy_mod) {
-        Py_DECREF(s_copy_mod.ptr());
-        s_copy_mod = pybind11::handle();
-    }
-}
-
 DAPyObjectWrapper DAPyObjectWrapper::deepCopy() const
 {
     if (isNone()) {
@@ -129,12 +119,8 @@ DAPyObjectWrapper DAPyObjectWrapper::deepCopy() const
     }
 
     try {
-        if (!s_copy_mod) {
-            pybind11::object copy_mod = pybind11::module::import("copy");
-            s_copy_mod = copy_mod.release();
-            Py_INCREF(s_copy_mod.ptr());
-        }
-        pybind11::object copied = s_copy_mod.attr("deepcopy")(_object);
+        pybind11::object copy_mod = pybind11::module::import("copy");
+        pybind11::object copied   = copy_mod.attr("deepcopy")(_object);
         return DAPyObjectWrapper(copied);
     } catch (const std::exception& e) {
         dealException(e);

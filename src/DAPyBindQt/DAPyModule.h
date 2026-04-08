@@ -45,8 +45,6 @@ public:
     static bool isInstancePandasDateTime(const pybind11::handle& obj);
     static bool isInstanceNumpyDateTime(const pybind11::handle& obj);
     static bool isInstanceTimedelta(const pybind11::handle& obj);
-    // 清理静态缓存，必须在Python解释器销毁之前调用
-    static void cleanupStaticCache();
 };
 }  // namespace DA
 #endif  // DAPYMODULE_H

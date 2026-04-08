@@ -102,8 +102,6 @@ public:
     // 对象信息
     QString typeName() const;
     size_t refCount() const;
-    // 清理静态缓存，必须在Python解释器销毁之前调用
-    static void cleanupStaticCache();
 
 protected:
     pybind11::object _object;

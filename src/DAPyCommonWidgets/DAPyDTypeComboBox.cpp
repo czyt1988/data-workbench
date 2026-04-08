@@ -86,7 +86,13 @@ DAPyDType DAPyDTypeComboBox::selectedDType() const
         } else if (dtypeStr == "category") {
             dtype_obj = pd.attr("CategoricalDtype")();
         } else if (dtypeStr.startsWith("Int") || dtypeStr.startsWith("UInt")) {
-            dtype_obj = pd.attr(dtypeStr.toStdString().c_str())();
+            std::string dtype_name = dtypeStr.toStdString() + "Dtype";
+            if (pybind11::hasattr(pd, dtype_name.c_str())) {
+                dtype_obj = pd.attr(dtype_name.c_str())();
+            } else {
+                pybind11::module arr = pybind11::module::import("pandas.core.arrays.integer");
+                dtype_obj             = arr.attr(dtype_name.c_str())();
+            }
         } else {
             return DAPyDType(dtypeStr);
         }
