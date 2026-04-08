@@ -62,6 +62,7 @@ set(DA_LIB_HEADER_FILES
     DAZipArchiveTask_ArchiveFile.h
     DAZipArchiveTask_ChartItem.h
     DAXmlHelper.h
+    DASplashScreen.h
 )
 set(DA_LIB_SOURCE_FILES
     DAAbstractChartAddItemWidget.cpp
@@ -109,6 +110,7 @@ set(DA_LIB_SOURCE_FILES
     DAZipArchiveTask_ArchiveFile.cpp
     DAZipArchiveTask_ChartItem.cpp
     DAXmlHelper.cpp
+    DASplashScreen.cpp
 )
 set(DA_LIB_QT_UI_FILES
     DAChartManageWidget.ui

@@ -26,6 +26,7 @@
 #include "DADir.h"
 #include "DACoreInterface.h"
 #include "DAAbstractArchiveTask.h"
+#include "DASplashScreen.h"
 #if DA_ENABLE_PYTHON
 #include "DAPybind11InQt.h"
 #include "DAPyInterpreter.h"
@@ -92,7 +93,16 @@ int main(int argc, char* argv[])
     // 字体设置
     setAppFont();
 
+    // 创建并显示启动画面
+    DA::DASplashScreen splash;
+    // 支持从外部文件加载自定义背景图片
+    QString customSplashPath = QApplication::applicationDirPath() + QStringLiteral("/splash.png");
+    splash.loadBackgroundPixmap(customSplashPath);  // 若文件不存在则保持默认背景
+    splash.show();
+    splash.showMessage(QObject::tr("Initializing..."));  // cn:正在初始化...
+
     // 接口初始化，同步会初始化python环境
+    splash.showMessage(QObject::tr("Initializing core components..."));  // cn:正在初始化核心组件...
     DA::DAAppCore& core = DA::DAAppCore::getInstance();
     if (!core.initialized()) {
         qCritical() << QObject::tr("Kernel initialization failed");  // cn:内核初始化失败
@@ -100,6 +110,7 @@ int main(int argc, char* argv[])
     }
 
     // gui初始化
+    splash.showMessage(QObject::tr("Loading user interface..."));  // cn:正在加载用户界面...
     DA::AppMainWindow w;
     QStringList positionalArgs = cmdParser.positionalArguments();
     qDebug() << "positionalArgs:" << positionalArgs;
@@ -107,18 +118,22 @@ int main(int argc, char* argv[])
         // 说明有可能是双击文件打开，这时候要看参数是否为一个工程文件
         QFileInfo openfi(positionalArgs[ 0 ]);
         if (openfi.exists()) {
+            splash.showMessage(QObject::tr("Opening project..."));  // cn:正在打开工程...
             w.openProject(openfi.absoluteFilePath());
         }
     }
     // 处理其它命令
     if (cmdParser.isSet(CS_CMD_IMPORTDATA)) {
+        splash.showMessage(QObject::tr("Importing data..."));  // cn:正在导入数据...
         // impot-data 命令
         const QStringList filePaths = cmdParser.values(CS_CMD_IMPORTDATA);
         for (const QString& path : filePaths) {
             w.importData(path, QVariantMap());
         }
     }
+    splash.showMessage(QObject::tr("Ready"));  // cn:启动完成
     w.show();
+    splash.finish(&w);
     int r = app.exec();
     DA::daUnregisterMessageHandler();
     return r;

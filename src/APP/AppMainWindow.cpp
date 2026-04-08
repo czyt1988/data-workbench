@@ -10,6 +10,8 @@
 #include <QCloseEvent>
 #include <QFile>
 #include <QBuffer>
+#include <QSplashScreen>
+#include <QApplication>
 //
 #include "SARibbonBar.h"
 // 插件相关
@@ -48,6 +50,19 @@ namespace DA
 //===================================================
 AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
 {
+	// 查找活动的启动画面并更新消息的辅助函数
+	auto updateSplash = [](const QString& msg) {
+		const QWidgetList widgets = QApplication::topLevelWidgets();
+		for (QWidget* w : widgets) {
+			QSplashScreen* sp = qobject_cast< QSplashScreen* >(w);
+			if (sp && sp->isVisible()) {
+				sp->showMessage(msg, Qt::AlignBottom | Qt::AlignHCenter, Qt::white);
+				QApplication::processEvents();
+				return;
+			}
+		}
+	};
+
 	// 标签可高亮
 	ads::CDockManager::setConfigFlag(ads::CDockManager::FocusHighlighting, true);
 	// 让dock可以最小化到一个标签
@@ -55,8 +70,10 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
 	// 建立ribbonArea，此函数的构造函数会生成界面
 	QIcon icon(QStringLiteral(":/app/bright/Icon/icon.svg"));
 	setWindowIcon(icon);
+	updateSplash(tr("Initializing core interface..."));  // cn:正在初始化核心接口...
 	DAAppCore& core = DAAppCore::getInstance();
 	// 创建界面
+	updateSplash(tr("Creating user interface..."));  // cn:正在创建用户界面...
 	core.createUi(this);
 	mCore     = &core;
 	mUI       = qobject_cast< DAAppUI* >(core.getUiInterface());
@@ -81,7 +98,9 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
 		qInfo().noquote() << tr("Restore UI State");  // cn:加载界面状态信息
 	}
 	// 首次调用此函数会加载插件，可放置在main函数中调用
+	updateSplash(tr("Loading plugins..."));  // cn:正在加载插件...
 	init();
+	updateSplash(tr("Preparing interface..."));  // cn:正在准备界面...
 	retranslateUi();
 	setContentsMargins(3, 0, 3, 1);
 	if (!hasUIStateFile) {
