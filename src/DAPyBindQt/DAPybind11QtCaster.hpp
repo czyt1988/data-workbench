@@ -12,6 +12,123 @@
 
 #include <QVariant>
 
+namespace DA
+{
+namespace PY
+{
+
+template< typename T >
+inline pybind11::object toPyObject(const QList< T >& qt_list);
+
+template< typename K, typename V >
+inline pybind11::object toPyObject(const QMap< K, V >& qt_map);
+
+template< typename K, typename V >
+inline pybind11::object toPyObject(const QHash< K, V >& qt_hash);
+
+template< typename T >
+inline pybind11::object toPyObject(const QSet< T >& qt_set);
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+template< typename T >
+inline pybind11::object toPyObject(const QVector< T >& qt_vector);
+#endif
+
+inline pybind11::object toPyObject(const QVariant& qt_var);
+inline pybind11::object toPyObject(const QString& qt_str);
+inline pybind11::object toPyObject(const QDate& qt_date);
+inline pybind11::object toPyObject(const QTime& qt_time);
+inline pybind11::object toPyObject(const QDateTime& qt_datetime);
+
+class safe_pyobject
+{
+public:
+    safe_pyobject() : m_ptr(nullptr)
+    {
+    }
+
+    safe_pyobject(pybind11::object&& obj) : m_ptr(obj.release().ptr())
+    {
+    }
+
+    safe_pyobject(const safe_pyobject&)            = delete;
+    safe_pyobject& operator=(const safe_pyobject&) = delete;
+
+    safe_pyobject(safe_pyobject&& other) noexcept : m_ptr(other.m_ptr)
+    {
+        other.m_ptr = nullptr;
+    }
+
+    safe_pyobject& operator=(safe_pyobject&& other) noexcept
+    {
+        if (this != &other) {
+            reset();
+            m_ptr       = other.m_ptr;
+            other.m_ptr = nullptr;
+        }
+        return *this;
+    }
+
+    ~safe_pyobject()
+    {
+        if (m_ptr && Py_IsInitialized()) {
+            Py_DECREF(m_ptr);
+        }
+        m_ptr = nullptr;
+    }
+
+    void reset()
+    {
+        if (m_ptr && Py_IsInitialized()) {
+            Py_DECREF(m_ptr);
+        }
+        m_ptr = nullptr;
+    }
+
+    bool is_none() const
+    {
+        return m_ptr == nullptr || m_ptr == Py_None;
+    }
+
+    pybind11::handle get() const
+    {
+        return pybind11::handle(m_ptr);
+    }
+
+    operator bool() const
+    {
+        return m_ptr != nullptr && m_ptr != Py_None;
+    }
+
+    pybind11::object object() const
+    {
+        if (m_ptr) {
+            return pybind11::reinterpret_borrow< pybind11::object >(m_ptr);
+        }
+        return pybind11::none();
+    }
+
+private:
+    PyObject* m_ptr;
+};
+
+inline safe_pyobject import_type_safe(const char* module_name, const char* type_name)
+{
+    if (!Py_IsInitialized()) {
+        return safe_pyobject();
+    }
+    try {
+        pybind11::module_ mod     = pybind11::module_::import(module_name);
+        pybind11::object type_obj = mod.attr(type_name);
+        return safe_pyobject(std::move(type_obj));
+    } catch (...) {
+        return safe_pyobject();
+    }
+}
+
+}
+}
+
 namespace pybind11
 {
 namespace detail
@@ -173,10 +290,9 @@ struct type_caster< QDate >
 {
     PYBIND11_TYPE_CASTER(QDate, _("datetime.date"));
 
-    // 延迟加载datetime模块
-    static pybind11::object& get_date_type()
+    static DA::PY::safe_pyobject& get_date_type()
     {
-        static pybind11::object date_type = []() { return pybind11::module::import("datetime").attr("date"); }();
+        static DA::PY::safe_pyobject date_type = DA::PY::import_type_safe("datetime", "date");
         return date_type;
     }
 
@@ -185,7 +301,8 @@ struct type_caster< QDate >
         if (!src)
             return false;
 
-        if (pybind11::isinstance(src, get_date_type())) {
+        auto& date_type = get_date_type();
+        if (date_type && pybind11::isinstance(src, date_type.get())) {
             int year  = src.attr("year").cast< int >();
             int month = src.attr("month").cast< int >();
             int day   = src.attr("day").cast< int >();
@@ -203,7 +320,11 @@ struct type_caster< QDate >
         if (!src.isValid()) {
             Py_RETURN_NONE;
         }
-        return get_date_type()(src.year(), src.month(), src.day()).release();
+        auto& date_type = get_date_type();
+        if (!date_type) {
+            Py_RETURN_NONE;
+        }
+        return date_type.object()(src.year(), src.month(), src.day()).release();
     }
 };
 
@@ -213,9 +334,9 @@ struct type_caster< QTime >
 {
     PYBIND11_TYPE_CASTER(QTime, _("datetime.time"));
 
-    static pybind11::object& get_time_type()
+    static DA::PY::safe_pyobject& get_time_type()
     {
-        static pybind11::object time_type = []() { return pybind11::module::import("datetime").attr("time"); }();
+        static DA::PY::safe_pyobject time_type = DA::PY::import_type_safe("datetime", "time");
         return time_type;
     }
 
@@ -224,7 +345,8 @@ struct type_caster< QTime >
         if (!src)
             return false;
 
-        if (pybind11::isinstance(src, get_time_type())) {
+        auto& time_type = get_time_type();
+        if (time_type && pybind11::isinstance(src, time_type.get())) {
             int hour        = src.attr("hour").cast< int >();
             int minute      = src.attr("minute").cast< int >();
             int second      = src.attr("second").cast< int >();
@@ -244,7 +366,11 @@ struct type_caster< QTime >
         if (!src.isValid()) {
             Py_RETURN_NONE;
         }
-        return get_time_type()(src.hour(), src.minute(), src.second(), src.msec() * 1000).release();
+        auto& time_type = get_time_type();
+        if (!time_type) {
+            Py_RETURN_NONE;
+        }
+        return time_type.object()(src.hour(), src.minute(), src.second(), src.msec() * 1000).release();
     }
 };
 
@@ -254,37 +380,19 @@ struct type_caster< QDateTime >
 {
     PYBIND11_TYPE_CASTER(QDateTime, _("datetime.datetime"));
 
-    static pybind11::object& get_datetime_type()
+    static DA::PY::safe_pyobject& get_datetime_type()
     {
-        static pybind11::object datetime_type = []() -> pybind11::object {
-            try {
-                return pybind11::module::import("datetime").attr("datetime");
-            } catch (...) {
-                return pybind11::none();
-            }
-        }();
+        static DA::PY::safe_pyobject datetime_type = DA::PY::import_type_safe("datetime", "datetime");
         return datetime_type;
     }
-    static pybind11::object& get_pandas_timestamp_type()
+    static DA::PY::safe_pyobject& get_pandas_timestamp_type()
     {
-        static pybind11::object pd_Timestamp = []() -> pybind11::object {
-            try {
-                return pybind11::module::import("pandas").attr("Timestamp");
-            } catch (...) {
-                return pybind11::none();
-            }
-        }();
+        static DA::PY::safe_pyobject pd_Timestamp = DA::PY::import_type_safe("pandas", "Timestamp");
         return pd_Timestamp;
     }
-    static pybind11::object& get_numpy_timestamp_type()
+    static DA::PY::safe_pyobject& get_numpy_timestamp_type()
     {
-        static pybind11::object np_datetime64 = []() -> pybind11::object {
-            try {
-                return pybind11::module::import("numpy").attr("datetime64");
-            } catch (...) {
-                return pybind11::none();
-            }
-        }();
+        static DA::PY::safe_pyobject np_datetime64 = DA::PY::import_type_safe("numpy", "datetime64");
         return np_datetime64;
     }
     bool load(pybind11::handle src, bool convert)
@@ -292,26 +400,22 @@ struct type_caster< QDateTime >
         if (!src) {
             return false;
         }
-        static pybind11::object& datetime_type = get_datetime_type();
-        if (!datetime_type.is_none() && pybind11::isinstance(src, datetime_type)) {
+        auto& datetime_type = get_datetime_type();
+        if (datetime_type && pybind11::isinstance(src, datetime_type.get())) {
             try {
-                // 使用 timestamp() 方法，它自动处理时区转换
                 pybind11::object timestamp = src.attr("timestamp");
                 double ts                  = timestamp().cast< double >();
                 qint64 msecs_since_epoch   = static_cast< qint64 >(ts * 1000);
 
-                // 检查是否有时区信息
                 pybind11::object tzinfo = src.attr("tzinfo");
                 bool has_tzinfo         = !tzinfo.is_none();
 
                 if (has_tzinfo) {
-                    // 有时区信息，使用 timestamp() 方法，它自动处理时区转换
                     pybind11::object timestamp = src.attr("timestamp");
                     double ts                  = timestamp().cast< double >();
                     qint64 msecs_since_epoch   = static_cast< qint64 >(ts * 1000);
                     value                      = QDateTime::fromMSecsSinceEpoch(msecs_since_epoch, Qt::UTC);
                 } else {
-                    // naive datetime，直接从属性构建 QDateTime（不经过 timestamp 转换）
                     int year        = src.attr("year").cast< int >();
                     int month       = src.attr("month").cast< int >();
                     int day         = src.attr("day").cast< int >();
@@ -325,7 +429,6 @@ struct type_caster< QDateTime >
                     QTime time(hour, minute, second, msec);
 
                     if (date.isValid() && time.isValid()) {
-                        // 创建本地时间的 QDateTime
                         value = QDateTime(date, time);
                         return true;
                     }
@@ -335,9 +438,8 @@ struct type_caster< QDateTime >
                 return false;
             }
         }
-        static pybind11::object& np_timestamp = get_numpy_timestamp_type();
-        if (!np_timestamp.is_none() && pybind11::isinstance(src, np_timestamp)) {
-            // numpy datetime64
+        auto& np_timestamp = get_numpy_timestamp_type();
+        if (np_timestamp && pybind11::isinstance(src, np_timestamp.get())) {
             try {
                 int64_t ns = src.attr("astype")("datetime64[ns]").attr("view")("int64").cast< int64_t >();
                 value      = QDateTime::fromMSecsSinceEpoch(ns / 1000000, Qt::UTC);
@@ -347,21 +449,16 @@ struct type_caster< QDateTime >
             }
         }
 
-        static pybind11::object& pd_timestamp = get_pandas_timestamp_type();
-        if (!pd_timestamp.is_none() && pybind11::isinstance(src, pd_timestamp)) {
-            // pandas Timestamp
+        auto& pd_timestamp = get_pandas_timestamp_type();
+        if (pd_timestamp && pybind11::isinstance(src, pd_timestamp.get())) {
             try {
-                // pandas Timestamp 有自己的 tz 属性
                 pybind11::object tz = src.attr("tz");
                 bool has_tz         = !tz.is_none();
 
                 if (has_tz) {
-                    // 有时区信息，使用 UTC
                     double ts = src.attr("timestamp")().cast< double >();
                     value     = QDateTime::fromMSecsSinceEpoch(static_cast< qint64 >(ts * 1000), Qt::UTC);
                 } else {
-                    // 无时区信息，当作本地时间处理
-                    // 对于 pandas Timestamp，我们使用 to_pydatetime() 转换为 python datetime，然后按照上面的逻辑处理
                     pybind11::object py_dt = src.attr("to_pydatetime")();
                     return load(py_dt, convert);
                 }
@@ -370,12 +467,10 @@ struct type_caster< QDateTime >
                 return false;
             }
         }
-        // 所有方法都失败
         return false;
     }
 
-    static pybind11::handle
-    cast(const QDateTime& src, pybind11::return_value_policy /* policy */, pybind11::handle /* parent */)
+    static pybind11::handle cast(const QDateTime& src, pybind11::return_value_policy /* policy */, pybind11::handle /* parent */)
     {
         if (!src.isValid()) {
             Py_RETURN_NONE;
@@ -676,21 +771,14 @@ struct type_caster< QVariant >
     static bool is_numpy_array(handle src)
     {
         try {
-            static pybind11::object numpy_module = []() -> pybind11::object {
-                try {
-                    return pybind11::module::import("numpy");
-                } catch (...) {
-                    return pybind11::none();
-                }
-            }();
-
-            if (!numpy_module.is_none()) {
-                static pybind11::object ndarray_type = numpy_module.attr("ndarray");
-                static pybind11::object generic_type = numpy_module.attr("generic");
-                return pybind11::isinstance(src, ndarray_type) || pybind11::isinstance(src, generic_type);
+            static DA::PY::safe_pyobject numpy_module = DA::PY::import_type_safe("numpy", "ndarray");
+            if (numpy_module) {
+                static DA::PY::safe_pyobject ndarray_type = DA::PY::import_type_safe("numpy", "ndarray");
+                static DA::PY::safe_pyobject generic_type = DA::PY::import_type_safe("numpy", "generic");
+                return (ndarray_type && pybind11::isinstance(src, ndarray_type.get()))
+                       || (generic_type && pybind11::isinstance(src, generic_type.get()));
             }
         } catch (...) {
-            // 忽略异常，说明 numpy 不可用
         }
         return false;
     }
@@ -791,17 +879,9 @@ struct type_caster< QVariant >
                     // 转换为 QDateTime
                     pybind11::object item = np_obj.attr("item")();
 
-                    // 尝试作为 Python datetime 对象处理
                     try {
-                        static pybind11::object datetime_type = []() -> pybind11::object {
-                            try {
-                                return pybind11::module::import("datetime").attr("datetime");
-                            } catch (...) {
-                                return pybind11::none();
-                            }
-                        }();
-
-                        if (!datetime_type.is_none() && pybind11::isinstance(item, datetime_type)) {
+                        static DA::PY::safe_pyobject datetime_type = DA::PY::import_type_safe("datetime", "datetime");
+                        if (datetime_type && pybind11::isinstance(item, datetime_type.get())) {
                             QDateTime dt_val = item.cast< QDateTime >();
                             value            = dt_val;
                             return true;
@@ -1032,11 +1112,8 @@ struct type_caster< QVariant >
             // 9. 日期和时间类型
             // 检查是否是 datetime.datetime
             try {
-                static pybind11::object datetime_type = []() {
-                    return pybind11::module::import("datetime").attr("datetime");
-                }();
-
-                if (pybind11::isinstance(src, datetime_type)) {
+                static DA::PY::safe_pyobject datetime_type = DA::PY::import_type_safe("datetime", "datetime");
+                if (datetime_type && pybind11::isinstance(src, datetime_type.get())) {
                     QDateTime dt_val = src.cast< QDateTime >();
                     value            = QVariant(dt_val);
                     return true;
@@ -1044,11 +1121,9 @@ struct type_caster< QVariant >
             } catch (...) {
             }
 
-            // 检查是否是 datetime.date
             try {
-                static pybind11::object date_type = []() { return pybind11::module::import("datetime").attr("date"); }();
-
-                if (pybind11::isinstance(src, date_type)) {
+                static DA::PY::safe_pyobject date_type = DA::PY::import_type_safe("datetime", "date");
+                if (date_type && pybind11::isinstance(src, date_type.get())) {
                     QDate date_val = src.cast< QDate >();
                     value          = QVariant(date_val);
                     return true;
@@ -1056,11 +1131,9 @@ struct type_caster< QVariant >
             } catch (...) {
             }
 
-            // 检查是否是 datetime.time
             try {
-                static pybind11::object time_type = []() { return pybind11::module::import("datetime").attr("time"); }();
-
-                if (pybind11::isinstance(src, time_type)) {
+                static DA::PY::safe_pyobject time_type = DA::PY::import_type_safe("datetime", "time");
+                if (time_type && pybind11::isinstance(src, time_type.get())) {
                     QTime time_val = src.cast< QTime >();
                     value          = QVariant(time_val);
                     return true;
@@ -1386,31 +1459,16 @@ inline bool canCastToQDateTime(pybind11::handle src)
         return false;
 
     try {
-        // 1. datetime.datetime
-        static pybind11::object datetime_type = pybind11::module::import("datetime").attr("datetime");
-        if (pybind11::isinstance(src, datetime_type))
+        static DA::PY::safe_pyobject datetime_type = DA::PY::import_type_safe("datetime", "datetime");
+        if (datetime_type && pybind11::isinstance(src, datetime_type.get()))
             return true;
 
-        // 2. pandas.Timestamp
-        static pybind11::object pd_Timestamp = []() -> pybind11::object {
-            try {
-                return pybind11::module::import("pandas").attr("Timestamp");
-            } catch (...) {
-                return pybind11::none();
-            }
-        }();
-        if (!pd_Timestamp.is_none() && pybind11::isinstance(src, pd_Timestamp))
+        static DA::PY::safe_pyobject pd_Timestamp = DA::PY::import_type_safe("pandas", "Timestamp");
+        if (pd_Timestamp && pybind11::isinstance(src, pd_Timestamp.get()))
             return true;
 
-        // 3. numpy.datetime64
-        static pybind11::object np_datetime64 = []() -> pybind11::object {
-            try {
-                return pybind11::module::import("numpy").attr("datetime64");
-            } catch (...) {
-                return pybind11::none();
-            }
-        }();
-        if (!np_datetime64.is_none() && pybind11::isinstance(src, np_datetime64))
+        static DA::PY::safe_pyobject np_datetime64 = DA::PY::import_type_safe("numpy", "datetime64");
+        if (np_datetime64 && pybind11::isinstance(src, np_datetime64.get()))
             return true;
     } catch (...) {
     }
@@ -1422,8 +1480,8 @@ inline bool canCastToQDate(pybind11::handle src)
     if (!src)
         return false;
     try {
-        static pybind11::object date_type = pybind11::module::import("datetime").attr("date");
-        return pybind11::isinstance(src, date_type);
+        static DA::PY::safe_pyobject date_type = DA::PY::import_type_safe("datetime", "date");
+        return date_type && pybind11::isinstance(src, date_type.get());
     } catch (...) {
     }
     return false;
@@ -1434,8 +1492,8 @@ inline bool canCastToQTime(pybind11::handle src)
     if (!src)
         return false;
     try {
-        static pybind11::object time_type = pybind11::module::import("datetime").attr("time");
-        return pybind11::isinstance(src, time_type);
+        static DA::PY::safe_pyobject time_type = DA::PY::import_type_safe("datetime", "time");
+        return time_type && pybind11::isinstance(src, time_type.get());
     } catch (...) {
     }
     return false;

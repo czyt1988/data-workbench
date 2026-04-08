@@ -36,6 +36,8 @@
 void setAppFont();
 QString appPreposeDump();
 void enableHDPIScaling();
+void initializePythonInterpreter();
+
 
 const static QString CS_CMD_IMPORTDATA = QStringLiteral("import-data");
 // 初始化所有命令
@@ -68,6 +70,8 @@ int main(int argc, char* argv[])
     }
     // 打印程序默认路径
     qDebug() << DA::DADir();
+    // 初始化python环境,不启用python直接返回
+    initializePythonInterpreter();
     // 高清屏的适配
     enableHDPIScaling();
     // 启动app
@@ -189,4 +193,19 @@ QString appPreposeDump()
     QString baseName     = QDateTime::currentDateTime().toString("yyyyMMddhhmmss.zzz");
     QString dumpfileName = QString("dump%1.dmp").arg(baseName);
     return QDir::toNativeSeparators(dumpFileDir + "/" + dumpfileName);
+}
+
+void initializePythonInterpreter()
+{
+#if DA_ENABLE_PYTHON
+    QString pythonHomePath;
+    QString pypath = DA::DAPyInterpreter::getPythonInterpreterPath();
+    if (!pypath.isEmpty()) {
+        qInfo() << QObject::tr("Python interpreter path is %1").arg(pypath);
+        QFileInfo fi(pypath);
+        pythonHomePath = fi.absolutePath();
+        qInfo() << QObject::tr("Python home path is %1").arg(pythonHomePath);
+    }
+    DA::DAPyInterpreter::initializePythonInterpreter(pythonHomePath);
+#endif
 }

@@ -37,8 +37,12 @@ DAPyObjectWrapper::DAPyObjectWrapper(pybind11::object&& obj)
 
 DAPyObjectWrapper::~DAPyObjectWrapper()
 {
-    if (!_object.is_none() && Py_IsInitialized()) {
-        _object = pybind11::none();
+    if (!_object.is_none()) {
+        if (Py_IsInitialized()) {
+            _object = pybind11::none();
+        } else {
+            _object.release();
+        }
     }
 }
 
@@ -298,7 +302,7 @@ QString DAPyObjectWrapper::typeName() const
         return QString("none");
     }
     try {
-        return pybind11::cast< QString >(pybind11::str(_object.get_type().attr("__name__")));
+        return pybind11::cast< QString >(pybind11::str(pybind11::type::handle_of(_object).attr("__name__")));
     } catch (const std::exception& e) {
         dealException(e);
     }

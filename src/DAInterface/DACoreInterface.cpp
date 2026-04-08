@@ -40,7 +40,7 @@ DACoreInterface::DACoreInterface(QObject* parent) : QObject(parent), DA_PIMPL_CO
 {
     d_ptr->mTempDir.setAutoRemove(true);
 #if DA_ENABLE_PYTHON
-    initializePythonEnv();
+    initializePythonScripts();
 #endif
 }
 
@@ -50,30 +50,26 @@ DACoreInterface::~DACoreInterface()
     d_ptr->pythonHandler.reset();
     DAPyScripts::cleanup();
     d_ptr->interpreter = nullptr;
-    DAPyInterpreter::shutdown();
+    DAPyInterpreter::ensureShutdown();
 #endif
 }
 
 #if DA_ENABLE_PYTHON
-bool DACoreInterface::initializePythonEnv()
+/**
+ * @brief 初始化python环境,加载默认脚本
+ *
+ * @return true 初始化成功
+ * @return false 初始化失败
+ */
+bool DACoreInterface::initializePythonScripts()
 {
     DA_D(d);
-    if (DAPyInterpreter::isPythonInitialized()) {
-        qCritical() << tr("Python interpreter is already initialized");  // cn:python解释器已初始化
-        d->interpreter = DAPyInterpreter::interpreter;
+    if (!DAPyInterpreter::isPythonInitialized()) {
+        qCritical() << tr("Python interpreter is not initialized");  // cn:python解释器未初始化
         return false;
     }
+    d->interpreter = DAPyInterpreter::interpreter;
     try {
-
-        QString pythonHomePath;
-        QString pypath = DAPyInterpreter::getPythonInterpreterPath();
-        if (!pypath.isEmpty()) {
-            qInfo() << tr("Python interpreter path is %1").arg(pypath);
-            QFileInfo fi(pypath);
-            pythonHomePath = fi.absolutePath();
-            qInfo() << tr("Python home path is %1").arg(pythonHomePath);
-        }
-        DAPyInterpreter::initializePythonInterpreter(pythonHomePath);
         // 把脚本路径加载到系统路径下，这样才能引入库
         QString scriptPath = getPythonScriptsPath();
         qInfo() << tr("Python scripts path is %1").arg(scriptPath);

@@ -40,7 +40,7 @@ public:
 #if DA_ENABLE_PYTHON
     // python相关
     // 初始化python环境
-    bool initializePythonEnv();
+    bool initializePythonScripts();
     // 获取python信号投递器，通过它可以把python脚本信号里的函数投递到主线程执行
     virtual DAPythonSignalHandler* getPythonSignalHandler() const;
     // 获取python 脚本路径

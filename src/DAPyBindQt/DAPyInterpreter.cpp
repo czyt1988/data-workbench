@@ -3,7 +3,6 @@
 #include <QProcess>
 #include <QFile>
 #include <QDir>
-#include <QCoreApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QThread>
@@ -144,6 +143,10 @@ void DAPyInterpreter::setPythonHomePath(const QString& path)
     if (path.isEmpty()) {
         return;
     }
+#if PY_VERSION_HEX >= 0x030B0000
+    Q_UNUSED(path);
+    qWarning() << "Py_SetPythonHome is deprecated in Python 3.11+, use initializePythonInterpreter with pythonHomePath parameter instead";
+#else
     std::vector< wchar_t > wp((path.size() + 1) * 4, 0);
 
     path.toWCharArray(wp.data());
@@ -152,6 +155,7 @@ void DAPyInterpreter::setPythonHomePath(const QString& path)
     } catch (const std::exception& e) {
         qCritical() << e.what();
     }
+#endif
 }
 
 /**
@@ -176,7 +180,6 @@ void DAPyInterpreter::initializePythonInterpreter(std::shared_ptr< pybind11::sco
  */
 void DAPyInterpreter::initializePythonInterpreter()
 {
-
     initializePythonInterpreter(QString());
 }
 
@@ -305,11 +308,13 @@ void DAPyInterpreter::ensureShutdown()
 /**
    @brief 获取python配置文件
 
-   @return $RETURN
+   使用DADir::getExecutablePath()获取程序路径，不依赖QCoreApplication，
+   因此可以在QCoreApplication初始化之前调用。
+   @return 返回python-config.json的完整路径
  */
 QString DAPyInterpreter::getAppPythonConfigFile()
 {
-    QString appDir = QCoreApplication::applicationDirPath();
+    QString appDir = DADir::getExecutablePath();
     return QDir::toNativeSeparators(appDir + "/python-config.json");
 }
 
