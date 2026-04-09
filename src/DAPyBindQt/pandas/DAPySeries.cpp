@@ -258,7 +258,11 @@ bool DAPySeries::isString() const
         return false;
     }
     std::string dtype_str = pybind11::str(dtype()).cast< std::string >();
-    return dtype_str == "object";
+    // 支持 object, str, string, string[pyarrow] 等类型
+    if (dtype_str == "object") return true;
+    if (dtype_str == "str") return true;
+    if (dtype_str.find("string") == 0) return true;
+    return false;
 }
 
 bool DAPySeries::isCategorical() const

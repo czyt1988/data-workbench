@@ -16,6 +16,66 @@ import da_app,da_interface,da_data
 本文件da_打头的变量和函数属于da系统的默认函数，如果改动会导致da系统异常
 '''
 
+def _try_convert_to_datetime(series: pd.Series, sample_size: int = 100) -> pd.Series:
+    '''
+    尝试将Series转换为datetime类型
+    
+    如果Series可以被解析为有效的datetime，则返回转换后的Series，
+    否则返回原始Series。
+    
+    @param series: pd.Series 要尝试转换的Series
+    @param sample_size: int 用于检测的样本数量，默认100
+    @return: pd.Series 转换后的Series或原始Series
+    '''
+    # 如果已经是datetime类型，直接返回
+    if pd.api.types.is_datetime64_any_dtype(series):
+        return series
+    
+    # 只处理object或string类型的列
+    if not (pd.api.types.is_object_dtype(series) or pd.api.types.is_string_dtype(series)):
+        return series
+    
+    # 获取非空样本进行测试
+    non_null = series.dropna()
+    if len(non_null) == 0:
+        return series
+    
+    sample = non_null.head(sample_size)
+    
+    try:
+        # 尝试转换为datetime
+        converted = pd.to_datetime(sample, errors='coerce')
+        
+        # 检查转换成功率
+        # 如果超过80%的值成功转换，则认为这是日期列
+        success_rate = converted.notna().sum() / len(sample)
+        if success_rate >= 0.8:
+            # 对整个列进行转换
+            full_converted = pd.to_datetime(series, errors='coerce')
+            logger.debug(f"Column '{series.name}' detected as datetime, converted successfully")
+            return full_converted
+    except Exception as e:
+        logger.debug(f"Failed to convert column '{series.name}' to datetime: {e}")
+    
+    return series
+
+def _auto_detect_datetime_columns(df: pd.DataFrame, sample_size: int = 100) -> pd.DataFrame:
+    '''
+    自动检测DataFrame中的日期时间列并转换
+    
+    遍历DataFrame的所有列，尝试检测并转换日期时间列。
+    只有当列的数据类型是object或string，且大部分值可以被解析为有效日期时，
+    才会进行转换。
+    
+    @param df: pd.DataFrame 要处理的DataFrame
+    @param sample_size: int 用于检测的样本数量，默认100
+    @return: pd.DataFrame 处理后的DataFrame
+    '''
+    for col in df.columns:
+        df[col] = _try_convert_to_datetime(df[col], sample_size)
+    
+    return df
+
 def detect_encoding(file_path, chunk_size=1024):
     """
     检测文件的编码，适用于大文件和小文件。
@@ -70,11 +130,48 @@ def read_csv(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
     '''
     if args is None:
         args = {}
-    encoding = detect_encoding(path)
-    df = pd.read_csv(path,encoding=encoding,**args)
-    # 所有列名转为字符串,（header=None时自动生成的表头是int64或者表头是数字时,索引的时候使用字符串会报错）
-    df.columns = df.columns.astype(str) 
-    return df
+    
+    # 如果用户已经指定了编码，直接使用
+    if 'encoding' in args:
+        df = pd.read_csv(path, **args)
+        df.columns = df.columns.astype(str)
+        # 自动检测并转换日期列
+        df = _auto_detect_datetime_columns(df)
+        return df
+    
+    # 尝试检测编码
+    detected_encoding = detect_encoding(path)
+    
+    # 编码尝试顺序：检测到的编码优先，然后是常见中文编码
+    encodings_to_try = [detected_encoding] if detected_encoding else []
+    # 添加常见中文编码作为备选
+    fallback_encodings = ['utf-8', 'gbk', 'gb2312', 'gb18030', 'utf-8-sig', 'latin1']
+    for enc in fallback_encodings:
+        if enc not in encodings_to_try:
+            encodings_to_try.append(enc)
+    
+    last_error = None
+    for encoding in encodings_to_try:
+        try:
+            df = pd.read_csv(path, encoding=encoding, **args)
+            df.columns = df.columns.astype(str)
+            logger.debug(f"Successfully read CSV with encoding: {encoding}")
+            # 自动检测并转换日期列
+            df = _auto_detect_datetime_columns(df)
+            return df
+        except UnicodeDecodeError as e:
+            last_error = e
+            logger.debug(f"Failed to read CSV with encoding {encoding}: {e}")
+            continue
+        except Exception as e:
+            last_error = e
+            logger.debug(f"Error reading CSV with encoding {encoding}: {e}")
+            continue
+    
+    # 所有编码都失败，抛出最后一个错误
+    if last_error:
+        raise last_error
+    raise UnicodeDecodeError('utf-8', b'', 0, 1, f"Failed to read CSV file with all tried encodings: {encodings_to_try}")
 
 @log_function_call
 def read_pkl(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
@@ -90,6 +187,9 @@ def read_pkl(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
     
     #判断df的表头是否为str以外的类型，如果不是str类型，转换为str类型（header=None时自动生成的表头是int64,索引的时候使用字符串会报错）
     df.columns = df.columns.astype(str)
+    
+    # 自动检测并转换日期列
+    df = _auto_detect_datetime_columns(df)
     
     return df
 
@@ -110,7 +210,9 @@ def read_txt(path:str,args:Optional[Dict] = None) -> pd.DataFrame:
         args = {}
     df = pd.read_table(path,**args)
     #判断df的表头是否为str以外的类型，如果不是str类型，转换为str类型（header=None时自动生成的表头是int64,索引的时候使用字符串会报错）
-    df.columns = df.columns.astype(str)  
+    df.columns = df.columns.astype(str)
+    # 自动检测并转换日期列
+    df = _auto_detect_datetime_columns(df)
     return df
 
 @log_function_call
@@ -122,7 +224,9 @@ def read_excel(path:str,args:Optional[Dict] = None)-> pd.DataFrame:
     if args is None:
         args = {}
     df = pd.read_excel(path,**args)
-    df.columns = df.columns.astype(str)  
+    df.columns = df.columns.astype(str)
+    # 自动检测并转换日期列
+    df = _auto_detect_datetime_columns(df)
     return df
 
 @log_function_call
@@ -134,7 +238,9 @@ def read_parquet(path:str,args:Optional[Dict] = None)-> pd.DataFrame:
     if args is None:
         args = {}
     df = pd.read_parquet(path,**args)
-    df.columns = df.columns.astype(str)  
+    df.columns = df.columns.astype(str)
+    # 自动检测并转换日期列
+    df = _auto_detect_datetime_columns(df)
     return df
 
 @log_function_call

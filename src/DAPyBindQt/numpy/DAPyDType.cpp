@@ -271,7 +271,7 @@ bool DAPyDType::isStr() const
  */
 bool DAPyDType::isNumeral() const
 {
-    return isInt() || isUInt() || isFloat();
+    return isInt() || isUInt() || isFloat() || isNullableInt() || isNullableUInt();
 }
 
 /**

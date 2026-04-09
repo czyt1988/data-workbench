@@ -84,12 +84,12 @@ void DASplashScreen::setBackgroundPixmap(const QPixmap& pixmap)
 bool DASplashScreen::loadBackgroundPixmap(const QString& filePath)
 {
     if (!QFileInfo::exists(filePath)) {
-        qWarning() << "DASplashScreen: background image file not found:" << filePath;
+        qDebug() << "DASplashScreen: background image file not found:" << filePath;
         return false;
     }
     QPixmap pix(filePath);
     if (pix.isNull()) {
-        qWarning() << "DASplashScreen: failed to load background image:" << filePath;
+        qDebug() << "DASplashScreen: failed to load background image:" << filePath;
         return false;
     }
     setPixmap(pix);
