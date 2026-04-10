@@ -19,6 +19,7 @@ tmp
 .qtcreator
 .qoder
 .trae
+.kilo
 
 #翻译文件暂时不追踪
 *.qm

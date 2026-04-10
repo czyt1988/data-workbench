@@ -634,22 +634,22 @@ All</source>
     <message>
         <location line="+1"/>
         <source>Add Horizontal Probe</source>
-        <translation type="unfinished"></translation>
+        <translation>水平探针</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Add a horizontal plot probe marker to the chart</source>
-        <translation type="unfinished"></translation>
+        <translation>添加水平数据探针标记</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Add Vertical Probe</source>
-        <translation type="unfinished"></translation>
+        <translation>垂直探针</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Add a vertical plot probe marker to the chart</source>
-        <translation type="unfinished"></translation>
+        <translation>:添加垂直数据探针标记</translation>
     </message>
     <message>
         <location line="+108"/>
@@ -3356,7 +3356,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
         <source>Exception in get selected column:%1</source>
-        <translation type="unfinished">获取选中的列发生异常：%1</translation>
+        <translation>获取选中的列发生异常：%1</translation>
     </message>
     <message>
         <location line="+16"/>
