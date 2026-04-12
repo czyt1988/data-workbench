@@ -1,27 +1,32 @@
 # 数据模块 DAData
 
-数据模块 `DAData` 负责管理 DAWorkBench 中所有数据对象的创建、存储、查询和操作。它是连接 Python 数据处理能力和 C++ GUI 框架的核心桥梁。
+数据模块 `DAData` 负责管理 DAWorkBench 中所有数据对象的创建、存储、查询和操作，是连接 Python 数据处理能力和 C++ GUI 框架的核心桥梁。
+
+## 主要功能特性
+
+**特性**
+
+- ✅ **隐式共享设计**：`DAData` 使用隐式共享，可安全地进行值传递
+- ✅ **Python 对象包装**：完整封装 pandas DataFrame 和 Series
+- ✅ **统一数据管理**：`DADataManager` 提供数据的增删改查和信号通知
+- ✅ **多格式支持**：通过 pandas 支持 CSV、Excel、Pickle 等格式读写
 
 ## 模块依赖
 
 `DAData` 模块依赖以下模块：
 
-- `DAUtils` - 基础工具类
-- `DAPyBindQt` - Python与Qt绑定
-- `DAPyScripts` - Python脚本包装
-- `Qt::Core`、`Qt::Gui`、`Qt::Widgets`
+| 模块 | 说明 |
+|------|------|
+| `DAUtils` | 基础工具类 |
+| `DAPyBindQt` | Python 与 Qt 绑定 |
+| `DAPyScripts` | Python 脚本包装 |
+| `Qt::Core`、`Qt::Gui`、`Qt::Widgets` | Qt 基础模块 |
 
 ## 核心类
 
 ### DAData
 
 `DAData` 是数据对象的智能指针包装类，是整个数据模块对外暴露的核心类型。
-
-特点：
-
-- 使用隐式共享（Implicit Sharing），可安全地进行值传递
-- 可放入 `QMap`、`QHash` 等容器中
-- 支持与 Python 对象的互相转换
 
 ```cpp
 // 创建一个包含 DataFrame 的数据对象
@@ -31,26 +36,50 @@ data.setName("sensor_data");
 data.setDescribe("传感器原始数据");
 ```
 
-### DAAbstractData
+**核心特性**
 
-`DAAbstractData` 是所有数据类型的抽象基类，定义了数据对象的基本接口：
-
-- `getName()` / `setName()` - 数据名称
-- `getDescribe()` / `setDescribe()` - 数据描述
-- `getDataType()` - 获取数据类型
+- 使用隐式共享（Implicit Sharing），可安全地进行值传递
+- 可放入 `QMap`、`QHash` 等容器中
+- 支持与 Python 对象的互相转换
 
 ### 数据类型继承体系
 
-```
-DAAbstractData (抽象基类)
-└── DADataPyObject (Python对象包装)
-    ├── DADataPyDataFrame (pandas DataFrame)
-    └── DADataPySeries (pandas Series)
+```mermaid
+classDiagram
+    class DAAbstractData {
+        <<abstract>>
+        +getName() QString
+        +setName(QString)
+        +getDescribe() QString
+        +setDescribe(QString)
+        +getDataType() int
+    }
+    
+    class DADataPyObject {
+        +toDataFrame() DAPyDataFrame
+        +toSeries() DAPySeries
+    }
+    
+    class DADataPyDataFrame {
+        +rowCount() int
+        +columnCount() int
+        +columnNames() QStringList
+    }
+    
+    class DADataPySeries {
+        +size() int
+        +values() QVariantList
+    }
+    
+    DAAbstractData <|-- DADataPyObject
+    DADataPyObject <|-- DADataPyDataFrame
+    DADataPyObject <|-- DADataPySeries
 ```
 
 | 类名 | 说明 |
 |------|------|
-| `DADataPyObject` | 通用Python对象的包装类 |
+| `DAAbstractData` | 所有数据类型的抽象基类，定义基本接口 |
+| `DADataPyObject` | 通用 Python 对象的包装类 |
 | `DADataPyDataFrame` | pandas DataFrame 的包装类，支持行列操作 |
 | `DADataPySeries` | pandas Series 的包装类 |
 
@@ -58,7 +87,7 @@ DAAbstractData (抽象基类)
 
 `DADataManager` 是数据管理器，负责管理所有 `DAData` 对象的生命周期。
 
-主要功能：
+**主要功能**
 
 - 添加/删除数据（支持 Undo/Redo）
 - 按名称或正则表达式查找数据
@@ -87,12 +116,12 @@ for (int i = 0; i < mgr->getDataCount(); ++i) {
 
 `DADataManager` 提供以下信号用于通知数据变化：
 
-| 信号 | 说明 |
-|------|------|
-| `dataAdded(const DAData&)` | 数据添加时触发 |
-| `dataRemoved(const DAData&)` | 数据删除时触发 |
-| `dataChanged(const DAData&)` | 数据内容变化时触发 |
-| `datasCleared()` | 所有数据被清空时触发 |
+| 信号 | 参数 | 触发时机 |
+|------|------|----------|
+| `dataAdded(const DAData&)` | DAData | 数据添加时触发 |
+| `dataRemoved(const DAData&)` | DAData | 数据删除时触发 |
+| `dataChanged(const DAData&)` | DAData | 数据内容变化时触发 |
+| `datasCleared()` | 无 | 所有数据被清空时触发 |
 
 ## 支持的文件格式
 
@@ -104,12 +133,31 @@ for (int i = 0; i < mgr->getDataCount(); ++i) {
 | Excel | `.xlsx` / `.xls` | 支持 | 支持 |
 | 文本文件 | `.txt` | 支持 | 支持 |
 | Pickle | `.pkl` | 支持 | 支持 |
+| Parquet | `.parquet` | 支持 | 支持 |
 
 ## 与其他模块的交互
 
 ### 与工作流模块
 
 工作流节点可以通过输入/输出端口传递 `DAData` 对象，节点之间的数据流动通过数据管理器统一协调。
+
+```mermaid
+flowchart LR
+    subgraph Node1["节点1"]
+        O1["输出端口"]
+    end
+    
+    subgraph DM["数据管理器"]
+        D["DAData"]
+    end
+    
+    subgraph Node2["节点2"]
+        I2["输入端口"]
+    end
+    
+    O1 --> D
+    D --> I2
+```
 
 ### 与绘图模块
 
@@ -128,3 +176,45 @@ DADataManagerInterface* dataMgr = c->getDataManagerInterface();
 connect(dataMgr, &DADataManagerInterface::dataAdded,
         this, &MyPlugin::onDataAdded);
 ```
+
+## API 参考
+
+### DAData 核心方法
+
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `setName(name)` | QString | void | 设置数据名称 |
+| `getName()` | 无 | QString | 获取数据名称 |
+| `setDescribe(desc)` | QString | void | 设置数据描述 |
+| `getDescribe()` | 无 | QString | 获取数据描述 |
+| `isDataFrame()` | 无 | bool | 是否为 DataFrame 类型 |
+| `toDataFrame()` | 无 | DAPyDataFrame | 转换为 DataFrame |
+
+### DADataManagerInterface 核心方法
+
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `addData(data)` | DAData | void | 立即添加数据 |
+| `addData_(data)` | DAData | void | 添加数据（支持 undo） |
+| `removeData(data)` | DAData | void | 立即删除数据 |
+| `getDataCount()` | 无 | int | 获取数据数量 |
+| `getData(index)` | int | DAData | 获取指定索引数据 |
+| `getAllDatas()` | 无 | QList<DAData> | 获取所有数据 |
+| `getSelectDatas()` | 无 | QList<DAData> | 获取选中数据 |
+
+## 注意事项
+
+!!! warning "Python GIL 管理"
+    操作 Python 数据对象时，需要正确管理 GIL，避免多线程问题。
+
+!!! tip "数据生命周期"
+    `DAData` 使用隐式共享，复制操作不会深拷贝数据，修改会影响所有引用。
+
+!!! note "数据类型检查"
+    在使用 `toDataFrame()` 或 `toSeries()` 前，应先使用 `isDataFrame()` 或 `isSeries()` 检查类型。
+
+## 参考资料
+
+- [Python 集成指南](./python-in-cpp.md)
+- [工作流系统概述](../workflow.md)
+- [插件开发指南](./plugin-project-create.md)
