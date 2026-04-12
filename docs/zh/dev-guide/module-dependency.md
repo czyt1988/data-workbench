@@ -1,5 +1,81 @@
 # 模块依赖关系说明
 
+data-workbench采用分层模块化架构，各模块之间有明确的依赖关系。本文档详细说明模块的层次结构和依赖配置。
+
+## 主要模块概览
+
+**模块分类**
+
+- ✅ **基础层模块**：DAShared、DAUtils - 提供基础工具和共享定义
+- ✅ **功能层模块**：DAData、DAFigure、DAWorkFlow - 核心业务功能
+- ✅ **界面层模块**：DAGui、DACommonWidgets - GUI界面组件
+- ✅ **接口层模块**：DAInterface、DAPluginSupport - 插件和扩展接口
+- ✅ **应用层模块**：APP - 主应用程序
+
+## 分层架构说明
+
+data-workbench采用五层架构设计，从底层到应用层依次为：基础层、功能层、界面层、接口层和应用层。
+
+### 架构层次图
+
+```mermaid
+flowchart TB
+    subgraph Layer5["应用层 (Layer 5)"]
+        APP["APP<br/>主应用程序"]
+    end
+    
+    subgraph Layer4["接口层 (Layer 4)"]
+        DAInterface["DAInterface<br/>接口定义"]
+        DAPluginSupport["DAPluginSupport<br/>插件支持"]
+    end
+    
+    subgraph Layer3["界面层 (Layer 3)"]
+        DAGui["DAGui<br/>GUI模块"]
+        DACommonWidgets["DACommonWidgets<br/>通用控件"]
+    end
+    
+    subgraph Layer2["功能层 (Layer 2)"]
+        DAData["DAData<br/>数据处理"]
+        DAFigure["DAFigure<br/>图表模块"]
+        DAWorkFlow["DAWorkFlow<br/>工作流"]
+        DAGraphicsView["DAGraphicsView<br/>图形视图"]
+        DAPyCommonWidgets["DAPyCommonWidgets<br/>Python控件"]
+        DAPyScripts["DAPyScripts<br/>Python脚本"]
+    end
+    
+    subgraph Layer1["基础层 (Layer 1)"]
+        DAUtils["DAUtils<br/>核心工具"]
+        DAShared["DAShared<br/>共享定义"]
+        DAMessageHandler["DAMessageHandler<br/>日志处理"]
+        DAPyBindQt["DAPyBindQt<br/>Python绑定"]
+    end
+    
+    APP --> DAPluginSupport
+    DAPluginSupport --> DAInterface
+    DAInterface --> DAGui
+    DAGui --> DAData & DAFigure & DAWorkFlow & DACommonWidgets
+    DAData --> DAPyBindQt & DAPyScripts
+    DAFigure --> DAUtils
+    DAWorkFlow --> DAGraphicsView
+    DAGraphicsView --> DAUtils
+    DACommonWidgets --> DAUtils
+    DAPyBindQt --> DAUtils
+    DAMessageHandler --> DAUtils
+    DAUtils --> DAShared
+```
+
+### 各层职责说明
+
+| 层次 | 职责 | 模块 |
+|------|------|------|
+| **基础层** | 提供基础工具类、模板类、日志处理和Python绑定 | DAShared, DAUtils, DAMessageHandler, DAPyBindQt |
+| **功能层** | 实现核心业务功能：数据处理、图表绑制、工作流、图形视图 | DAData, DAFigure, DAWorkFlow, DAGraphicsView, DAPyScripts, DAPyCommonWidgets |
+| **界面层** | 提供GUI组件和界面功能，整合所有可视化元素 | DAGui, DACommonWidgets |
+| **接口层** | 定义插件接口和扩展机制，实现模块间通信 | DAInterface, DAPluginSupport |
+| **应用层** | 主程序入口，整合所有模块实现完整功能 | APP |
+
+## 模块依赖表
+
 data-workbench主要有以下模块：
 
 | 模块名 | 模块简述 | 依赖模块 |
@@ -27,9 +103,11 @@ data-workbench主要有以下模块：
     3. DAAxOfficeWrapper模块仅在Windows平台上构建
     4. 第三方依赖包括：Qt、Qwt、SARibbonBar、QtAdvancedDocking、spdlog、pybind11、Python、DALiteCtk、tsl-ordered-map、quazip等
 
+## 模块依赖关系图
+
 DA各个模块的依赖关系图如下：
 
-``` mermaid
+```mermaid
 graph BT
     subgraph "DA Modules Dependency"
         DAUtils
@@ -94,3 +172,137 @@ graph BT
     style DAAxOfficeWrapper fill:#e1f5fe
     style APP fill:#fff3e0
 ```
+
+## 核心模块详解
+
+### 基础层模块
+
+基础层模块提供底层支撑，是所有上层模块的基础。
+
+**DAUtils模块**
+
+DAUtils是核心工具模块，几乎所有其他模块都依赖它。提供：
+
+- 通用工具函数
+- 基础类定义
+- 日志宏封装
+- 类型定义
+
+**DAShared模块**
+
+DAShared提供共享头文件和模板类，是最底层的模块，仅依赖Qt::Core。
+
+### 功能层模块
+
+功能层模块实现核心业务逻辑，不涉及界面显示。
+
+**DAData模块**
+
+数据处理模块，管理数据对象和操作：
+
+- 数据容器管理
+- 数据类型定义
+- Python数据交互
+
+**DAWorkFlow模块**
+
+工作流模块，基于有向图描述数据处理流程：
+
+- 节点和连接管理
+- 图形场景扩展
+- 工作流执行引擎
+
+**DAFigure模块**
+
+图表模块，基于Qwt实现科学图表功能：
+
+- 多图表管理
+- Undo/Redo支持
+- 交互编辑功能
+
+### 界面层模块
+
+界面层模块整合所有可视化功能。
+
+**DAGui模块**
+
+DAGui是最大的GUI模块，整合了：
+
+- Ribbon界面
+- Dock窗口管理
+- 属性编辑器
+- 图表样式设置
+
+### 接口层模块
+
+接口层定义插件和扩展机制。
+
+**DAInterface模块**
+
+定义核心接口：
+
+- `DACoreInterface` - 核心接口
+- `DAUIInterface` - UI接口
+- 数据、图表、工作流接口
+
+**DAPluginSupport模块**
+
+提供插件支持：
+
+- `DAAbstractPlugin` - 插件基类
+- `DAPluginManager` - 插件管理器
+- `DAAbstractNodePlugin` - 节点插件基类
+
+## 依赖配置示例
+
+在CMake中配置模块依赖：
+
+```cmake
+# 添加模块依赖示例
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
+
+# 创建DAUtils模块
+add_library(DAUtils
+    src/DAUtils/DAUtils.cpp
+)
+target_link_libraries(DAUtils
+    PUBLIC
+        Qt6::Core
+        Qt6::Gui
+)
+
+# 创建DAFigure模块，依赖DAUtils
+add_library(DAFigure
+    src/DAFigure/DAFigureWidget.cpp
+    src/DAFigure/DAChartWidget.cpp
+)
+target_link_libraries(DAFigure
+    PUBLIC
+        DAUtils
+        Qt6::Core
+        Qt6::Widgets
+        Qt6::Concurrent
+    PRIVATE
+        qwt
+)
+```
+
+## 注意事项
+
+!!! warning "依赖顺序"
+    模块链接顺序很重要，上层模块必须在上层模块之后链接。
+
+!!! tip "模块隔离"
+    功能层模块之间尽量减少直接依赖，通过接口层进行通信。
+
+!!! note "Python模块"
+    Python相关模块需要Python环境和pybind11支持，未启用Python时这些模块不会构建。
+
+!!! note "平台差异"
+    DAAxOfficeWrapper仅在Windows平台构建，使用Qt::AxContainer组件。
+
+## 参考资料
+
+- [项目构建指南](../build/build-guide.md)
+- [插件模块DAPluginSupport](./plugin-module.md)
+- [绘图模块概述](./figure-abstract.md)
