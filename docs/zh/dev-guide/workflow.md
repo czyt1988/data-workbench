@@ -1,262 +1,458 @@
-# 工作流说明
+# 工作流模块
 
-一个普通的工作流如下所示
+DAWorkFlow 模块是 DAWorkBench 的核心引擎，提供基于有向图的数据处理流程管理能力，支持通过节点连接构建复杂的数据处理管道。
 
-![normal-workflow](../assets/PIC/normal-workflow.png)
+## 主要功能特性
 
-普通的工作流是一个有向图，出度和入度没有名字属性，只有数量属性（如上图节点4有2个入度），这种工作流非常适合处理事务，尤其适合进行一些网络业务的处理，许多大规模事件处理框架都是基于此类工作流
+**特性**
 
-但针对一些相对复杂的情景，工作流中的节点要具体化，节点不仅仅代表一个事务，而是一个带有参数的函数，那么节点的入度和出度就需要有名字属性，如下图所示
+- ✅ **有向图管理**：管理节点和连接线，构建数据处理流程
+- ✅ **命名连接点**：节点输入输出点带有名称属性，支持复杂数据传递
+- ✅ **插件扩展**：通过节点工厂和元数据系统支持自定义节点类型
+- ✅ **redo/undo 操作**：场景操作支持撤销重做
+- ✅ **多线程执行**：工作流在独立线程执行，不阻塞主界面
+- ✅ **信号通知**：节点添加、删除、执行完成等事件通过信号通知
+- ✅ **属性系统**：节点支持动态属性配置和持久化
 
-![workflow](../assets/PIC/workflow.png)
+## 基本概念
 
-而本程序的workflow就是这种出入度带有名字属性的工作流
+### 工作流（DAWorkFlow）
 
-## 工作流模块`DAWorkFlow`
+工作流是有向图的逻辑容器，负责节点的生命周期管理、工厂注册和执行调度。工作流本身不包含渲染信息，可通过 `DANodeGraphicsScene` 进行可视化展示。
 
-工作流主要的类有3个，为`DAWorkFlow`、`DAAbstractNodeFactory`和`DAAbstractNode`，`DAWorkFlow`负责整个工作流图的组织，`DAAbstractNode`为每个工作流的节点，节点的生成通过`DAAbstractNodeFactory`
+工作流的核心职责：
 
-另外还有`DAWorkFlowExecuter`负责工作流的执行，这几个类的UML图如下图所示：
+| 职责 | 说明 |
+|------|------|
+| 工厂管理 | 注册和管理节点工厂，提供节点创建能力 |
+| 节点管理 | 创建、添加、删除节点，维护节点 ID 唯一性 |
+| 执行调度 | 设置起始节点，启动和终止工作流执行 |
+| 信号通知 | 发射节点添加、移除、执行完成等信号 |
 
-![workflow](../assets/PIC/uml-workflow.png)
+### 节点（DAAbstractNode）
 
-插件库提供了`DAAbstractNodePlugin`插件，负责管理工作流的节点
+节点是工作流的核心处理单元，可理解为带有命名参数的函数。节点包含以下组成部分：
 
-## 节点元数据`DANodeMetaData`
+| 组成部分 | 说明 |
+|----------|------|
+| 元数据（DANodeMetaData） | 节点的唯一标识和显示信息 |
+| 输入连接点（inputKeys） | 数据输入接口，支持 0~n 个命名输入 |
+| 输出连接点（outputKeys） | 数据输出接口，支持 0~n 个命名输出 |
+| 属性（properties） | 节点的配置参数，支持持久化 |
+| 唯一 ID | 节点在工作流中的唯一标识（uint64_t） |
 
-工作流的每个节点都有一个唯一的元数据，`DAAbstractNodeFactory`通过元数据生产出对应的节点
+!!! tip "节点设计理念"
+    节点可以理解为函数：输入连接点是函数参数，输出连接点是返回值。多个输出支持分支逻辑（类似 if-else）。
 
-节点元数据描述了节点的固定信息，如节点名称、节点图标、节点描述等，最核心的是节点原型(Node Prototype),通过此信息区分每个不同的节点，因此，自定义节点需要提供一个不会和其他节点重复的原型(Node Prototype)信息
+### 连接点（DANodeLinkPoint）
 
-## 节点
+连接点描述节点之间的数据传输接口，包含以下属性：
 
-节点`DAAbstractNode`包含了如下信息：
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `name` | QString | 连接点名称，用于数据匹配和连接识别 |
+| `way` | Way | 输入（Input）或输出（Output） |
+| `position` | QPointF | 在图元中的相对位置（用于渲染） |
+| `direction` | AspectDirection | 连线伸出方向（东、南、西、北） |
 
-- 元数据`DANodeMetaData`
-- 入度（入口）和出度（出口）信息（名称，数量）
-- 入度出度对应的数据
-- 入度节点和出度节点
-- 一个唯一id
+### 元数据（DANodeMetaData）
 
-通过上述信息基本可描述一个有向图结构，而`DAWorkFlow`就是用于管理和生成这个有向图
+元数据描述节点的静态信息，由节点工厂管理，用于节点创建和显示：
 
-### 生成节点
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `NodePrototype` | QString | 节点原型，区分不同节点类型的唯一标识 |
+| `NodeName` | QString | 节点显示名称 |
+| `Icon` | QIcon | 节点图标 |
+| `Group` | QString | 节点所属分组 |
+| `NodeTooltip` | QString | 节点说明信息 |
 
-每个节点对应一个`DAAbstractNode`类，每个节点内部保留着它的`MetaData`,而节点的创建是通过`DAAbstractNodeFactory`来实现的，`DAWorkFlow`负责节点的管理
+### 节点工厂（DAAbstractNodeFactory）
 
-生成一个节点的方式可以通过`DAWorkFlow`生成也可以通过`DANodeGraphicsScene`生成:
+节点工厂负责创建特定类型的节点，每个插件通常提供一个工厂实现。工厂管理一组相关节点的元数据和创建逻辑。
 
-- `DAWorkFlow::createNode`
-- `DANodeGraphicsScene::createNode`
-- `DANodeGraphicsScene::createNode_`
+## 类架构
 
-`DAWorkFlow`只会生成节点，`DANodeGraphicsScene`可以把节点和和图元一起生成，同时`DANodeGraphicsScene`还提供了`createNode`和`createNode_`函数，在data-work-flow中，所有带xxx_函数一般是表示可支持redo/undo的函数
+### 核心类关系图
 
-通过上面的函数，只要传入`DANodeMetaData`即可生成对应的节点
-
-节点生成过程实际是调用了工作流中的节点工厂，其生成过程如下：
-
-![](../assets/PIC/workflow-node-create.png)
-
-### 连接点
-
-你可以把节点理解为一个函数，输入节点是函数的输入参数，输出节点是函数的返回参数
-
-在工作流中，节点的链接点是一个名字，`DAAbstractNode::getInputKeys`用来获取输入的连接点，`DAAbstractNode::getOutputKeys`用来获取输出的连接点
-
-连接点携带的参数统一通过`QVariant`携带，你可以通过`DAAbstractNode::getInputData`和`DAAbstractNode::getOutputData`获取输入或输出连接点的数据
-
-连接点是可以动态添加和删除的，通过`DAAbstractNode::addInputKey`/`DAAbstractNode::addOutputKey`可以对连接点进行添加，通过`DAAbstractNode::removeInputKey`/`DAAbstractNode::removeOutputKey`可以对连接点进行删除
-
-
-## 工作流渲染
-
-工作流的渲染绘制通过`DANodeGraphicsScene`配合`DAAbstractNodeGraphicsItem`完成，`DAWorkFlow`的渲染依赖`DAGraphicsView`库，`DAGraphicsView`库提供了可缩放图元及redo/undo的集成
-
-工作流渲染相关的关键类如下：
-
-- `DANodeGraphicsScene`：负责场景的管理
-- `DAAbstractNodeGraphicsItem`：每个节点在场景的渲染
-- `DAAbstractNodeLinkGraphicsItem`：节点之间连接线的渲染
-- `DANodeLinkPoint`：节点连接点的渲染
-
-### 场景和工作流的关系
-
-工作流场景包含工作流，场景设置了工作流后，可执行工作流的操作，这时场景相当于工作流的wrapper，但场景具有对工作流的渲染功能，如果类比为MVC架构，工作流相当于是Model，场景这是Control和view层
-
-![](../assets/PIC/workflow-scene.png)
-
-`DANodeGraphicsScene`必须设置工作流后才能正常工作：`DANodeGraphicsScene::setWorkFlow`
-
-### 节点的显示
-
-节点`DAAbstractNode`类提供纯虚函数`createGraphicsItem`接口，用于生图元：
-
-```cpp
-//节点对应的item显示接口，所有node都需要提供一个供前端的显示接口
-virtual DAAbstractNodeGraphicsItem* createGraphicsItem() = 0;
-```
-
-通过此函数返回一个`DAAbstractNodeGraphicsItem`对象，`DAAbstractNodeGraphicsItem`对象负责节点在画布（`DANodeGraphicsScene`）上的显示
-
-`DAAbstractNodeGraphicsItem`内部维护了`DAAbstractNode`的weak point,通过`DAAbstractNodeGraphicsItem::node`函数可以获取节点的指针实例，如果节点已经删除，将获取空的节点指针
-
-节点渲染第一步是调用`DAAbstractNode::createGraphicsItem`生成`DAAbstractNodeGraphicsItem`，并把它添加到场景中
-
-场景中的操作会反应到工作流和ui中，因此，在GUI层面，直接操作场景可实现工作流的读写也可以同步实现渲染
-
-`DANodeGraphicsScene`提供了`DANodeGraphicsScene::createNode`函数可以创建节点，此函数会先调用`DAWorkFlow::createNode`，然后通过创建的node，调用`DAAbstractNode::createGraphicsItem`接口，获取节点对应的item，并把生成的item返回，此时就完成了节点的生成和渲染
-
-节点在场景中包含了位置坐标，渲染方式，但实际上，对于一个有向图来说，节点是不存在这些信息，一个工作流图仅仅包含关系属性
-
-## 节点连接点的绘制
-
-连接点由`DANodeLinkPoint`来描述，主要包含4个信息：
-
-```cpp
-class DAWORKFLOW_API DANodeLinkPoint
-{
-public:
-    QPointF position;     ///< 连接点相对DAAbstractNodeGraphicsItem的位置
-    QString name;         ///< 连接点名字
-    Way way;              ///< 连接点的属性，是输入还是输出
-    Direction direction;  ///< 连接点引线的伸出方向（用于绘制连线的时候指定方向）
-    ......
-```
-
-`DAAbstractNodeGraphicsItem`的`generateLinkPoint`函数负责生成`DANodeLinkPoint`，此函数是虚函数，用户可以自定义改变连接点的信息，`DAAbstractNodeGraphicsItem`在构造时会调用`resetLinkPoint`函数，`resetLinkPoint`函数内部会调用`generateLinkPoint`生成连接点信息
-
-正常连接点信息生成完成就不会发生变化，但如果节点图元缩放时，需要更新连接点的位置信息，需要通过`DAAbstractNodeGraphicsItem::updateLinkPointPos`函数进行位置信息的更新，此函数会遍历每个连接点，并调用`DAAbstractNodeGraphicsItem::changeLinkPointPos`函数，对每个连接点进行重新设置
-
-```cpp
-//更新连接点，传入已有的连接点和总体尺寸，通过此函数的重写可以改变连接点的位置，如果想改变连接点的绘制应该通过setLinkPointDrawDelegate实现
-virtual void changeLinkPointPos(QList< DANodeLinkPoint >& lps, const QRectF& bodyRect) const;
-```
-
-`DAAbstractNodeGraphicsItem::changeLinkPointPos`是虚函数，用户如果有自己设置连接点位置的方式可以重载此函数
-
-连接点的生成到更新的相关函数关系如下：
-
-![](../assets/PIC/workflow-linkpoint-create-update.png)
-
-`DAAbstractNodeGraphicsItem`已经继承了节点连接点的绘制，如果要绘制自己的连接点，可注入`DANodeLinkPointDrawDelegate`
-
-节点连接点的绘制主要通过`DAAbstractNodeGraphicsItem`的成员函数`paintLinkPoints`实现：
-```cpp
-void paintLinkPoints(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
-```
-
-注意，`paintLinkPoints`函数并非虚函数，因此，若想更改连接点的绘制，可通过`setLinkPointDrawDelegate`来设置绘制代理实行连接点的自定义绘制
-
-```cpp
-void setLinkPointDrawDelegate(DANodeLinkPointDrawDelegate* delegate);
-```
-
-`DAWorkFlow`库已经提供了`DAStandardNode***GraphicsItem`相关的图元，用户无需关注过多的连接点重绘即可快速实现自己的图元绘制
-
-## 连接线的绘制
-
-连接线实际上也是一个图元，由`DAAbstractNodeLinkGraphicsItem`负责绘制，实际上用户并不需要关心连接线是如何绘制的
-
-连接线提供了几种绘制方案，通过`DAAbstractNodeLinkGraphicsItem::LinkLineStyle`枚举：
-
-```cpp
-/**
-* @brief 连接点的样式
-*/
-enum LinkLineStyle
-{
-    LinkLineBezier,    ///< 贝塞尔曲线连接
-    LinkLineStraight,  ///< 直线连接
-    LinkLineKnuckle    ///< 肘形连接（直角）
-};
-```
-
-通过`void setLinkLineStyle(LinkLineStyle s)`函数即可实现连接线绘制的改变
-
-## 节点连接过程
-
-连接线连接过程主要由`DANodeGraphicsScene`触发和管理，`DANodeGraphicsScene`的`mousePressEvent`对每次鼠标的点击会进行如下判断:
-
-- 判断是否点击到了节点
-- 判断当前的StartLink状态，如果是非开始连接状态调用`DAAbstractNodeGraphicsItem::prepareLinkInput`回调，如果是开始连接状态，掉用`DAAbstractNodeGraphicsItem::prepareLinkOutput`回调
-- 判断是否点击到连接点
-- 如果点击到连接点，发射`DANodeGraphicsScene::nodeItemLinkPointSelected`信号
-
-其流程图如下
-
-![workflow-secene-mouse-press](../assets/PIC/workflow-secene-mouse-press.png)
-
-`DANodeGraphicsScene`内部绑定了`nodeItemLinkPointSelected`信号的槽函数，具体连接线的建立在此槽函数中实现，具体流程如下图所示，这里不再描述
-
-![workflow-ItemLinkPointSelected](../assets/PIC/workflow-ItemLinkPointSelected.png)
-
-prepareLinkInput和prepareLinkOutput的回调针对大部分情况是不需要实现的，这两个回调主要是针对一些不确定连接点的情况，连接点不是固定的，只有点击节点时才能判断是否应该存在连接点，这时候就可以重载这两个回调函数来动态生成连接点
-
-## 工作流执行
-
-工作流通过`DAWorkFlowExecuter`执行，每次执行都会生成一个`DAWorkFlowExecuter`并把它转移到线程中执行,`DAWorkFlowExecuter`继承于`QObject`,这里线程调用使用QObject的moveToThread方法，把`DAWorkFlowExecuter`转移到线程中执行
-
-```cpp
-/**
- * @brief 创建执行器
- */
-void DAWorkFlowPrivate::createExecuter()
-{
-    if (_executerThread) {
-        _executerThread->quit();  // quit会触发finished，从而进行内存清除
+```mermaid
+classDiagram
+    class DAWorkFlow {
+        -m_nodes: QList~SharedPointer~
+        -m_factorys: QList~Factory~
+        +registFactory(factory)
+        +createNode(metaData) SharedPointer
+        +addNode(node)
+        +removeNode(node)
+        +exec()
+        +terminate()
+        +setStartNode(node)
+        +getNode(id) SharedPointer
+        --signal--
+        +nodeAdded(node)
+        +nodeRemoved(node)
+        +startExecute()
+        +finished(success)
     }
-    _executerThread = new QThread();
-    _executer       = new DA::DAWorkFlowExecuter();
-    //设置开始节点
-    _executer->setStartNode(_startNode.lock());
-    _executer->setWorkFlow(q_ptr);
-    _executer->moveToThread(_executerThread);
-    QObject::connect(_executerThread, &QThread::finished, _executer, &QObject::deleteLater);
-    QObject::connect(_executerThread, &QThread::finished, _executerThread, &QObject::deleteLater);
-    //
-    QObject::connect(q_ptr, &DAWorkFlow::startExecute, _executer, &DA::DAWorkFlowExecuter::startExecute);
-    QObject::connect(_executer, &DA::DAWorkFlowExecuter::nodeExecuteFinished, q_ptr, &DAWorkFlow::nodeExecuteFinished);
-    QObject::connect(_executer, &DA::DAWorkFlowExecuter::finished, q_ptr, &DAWorkFlow::onExecuteFinished);
-    _executerThread->start();
+    
+    class DAAbstractNodeFactory {
+        +factoryPrototypes() QString
+        +factoryName() QString
+        +create(metaData) SharedPointer
+        +getNodesMetaData() QList~DANodeMetaData~
+        +initializNode(node)
+        +nodeAddedToWorkflow(node)
+    }
+    
+    class DAAbstractNode {
+        -m_id: IdType
+        -m_name: QString
+        -m_metaData: DANodeMetaData
+        +exec() bool
+        +createGraphicsItem() Item*
+        +linkTo(outKey, inNode, inKey) bool
+        +getInputKeys() QList~QString~
+        +getOutputKeys() QList~QString~
+        +setInputData(key, data)
+        +getOutputData(key) QVariant
+        +setWorkflow(wf)
+    }
+    
+    class DANodeMetaData {
+        +mPrototype: QString
+        +mNodeName: QString
+        +mNodeIcon: QIcon
+        +mGroup: QString
+        +getNodePrototype() QString
+        +getNodeName() QString
+        +getIcon() QIcon
+        +getGroup() QString
+    }
+    
+    class DAWorkFlowExecuter {
+        +setStartNode(node)
+        +setWorkFlow(wf)
+        +startExecute()
+        +terminateRequest()
+        --signal--
+        +nodeExecuteFinished(node, state)
+        +finished(success)
+    }
+    
+    DAWorkFlow "1" *-- "n" DAAbstractNode : 管理
+    DAWorkFlow "1" o-- "n" DAAbstractNodeFactory : 注册
+    DAAbstractNodeFactory "1" --> "n" DAAbstractNode : 创建
+    DAAbstractNode --> DANodeMetaData : 持有
+    DAWorkFlow --> DAWorkFlowExecuter : 使用
+```
+
+### 渲染相关类图
+
+```mermaid
+classDiagram
+    class DANodeGraphicsScene {
+        -m_workflow: DAWorkFlow*
+        +setWorkFlow(workflow)
+        +createNode_(metaData, pos) Item*
+        +addNodeItem_(item)
+        +removeNodeItem_(item)
+    }
+    
+    class DAAbstractNodeGraphicsItem {
+        -m_node: DAAbstractNode*
+        +node() DAAbstractNode*
+        +getLinkPoints() QList~DANodeLinkPoint~
+        +paintLinkPoints(painter)
+    }
+    
+    class DAAbstractNodeLinkGraphicsItem {
+        +attachFrom(item, lp)
+        +attachTo(item, lp)
+        +setLinkLineStyle(style)
+    }
+    
+    class DANodeLinkPoint {
+        +position: QPointF
+        +name: QString
+        +way: Way
+        +direction: AspectDirection
+    }
+    
+    DANodeGraphicsScene "1" *-- "n" DAAbstractNodeGraphicsItem : 管理
+    DANodeGraphicsScene "1" *-- "n" DAAbstractNodeLinkGraphicsItem : 管理
+    DAAbstractNodeGraphicsItem --> DANodeLinkPoint : 生成
+    DAAbstractNodeLinkGraphicsItem --> DANodeLinkPoint : 引用
+    DAAbstractNode --> DAAbstractNodeGraphicsItem : 创建
+```
+
+## 使用方法
+
+### 创建工作流和注册工厂
+
+创建工作流需要先注册节点工厂，工厂通常由插件提供：
+
+```cpp
+// 创建工作流实例
+DA::DAWorkFlow* workflow = new DA::DAWorkFlow(this);
+
+// 注册节点工厂（工厂通常由插件提供）
+workflow->registFactory(std::make_shared<MyDataProcessFactory>());
+workflow->registFactory(std::make_shared<MyDataSourceFactory>());
+
+// 效果：工作流注册了数据处理和数据源两类节点的工厂
+```
+
+### 通过元数据创建节点
+
+通过工厂获取节点元数据，然后创建节点实例：
+
+```cpp
+// 获取节点元数据，元数据名称格式为 "分组/节点原型"
+DA::DANodeMetaData metaData = workflow->getNodeMetaData("DataProcess/FilterNode");
+
+// 通过元数据创建节点，工作流保留节点的内存管理权
+DA::DAAbstractNode::SharedPointer node = workflow->createNode(metaData);
+
+// 设置节点属性
+node->setNodeName("数据过滤节点");
+node->setProperty("threshold", 0.5);
+node->setProperty("filterType", "lowpass");
+
+// 将节点添加到工作流
+workflow->addNode(node);
+
+// 效果：工作流中创建了一个名为"数据过滤节点"的处理节点
+```
+
+### 建立节点连接
+
+通过连接点名称建立节点之间的数据流：
+
+```cpp
+// 获取两个节点
+DA::DAAbstractNode::SharedPointer sourceNode = workflow->getNode(sourceId);
+DA::DAAbstractNode::SharedPointer processNode = workflow->getNode(processId);
+
+// 建立连接：sourceNode 的 "output_data" 连接到 processNode 的 "input_data"
+// 连接后，sourceNode 的输出数据将自动传递到 processNode 的输入接口
+bool success = sourceNode->linkTo("output_data", processNode, "input_data");
+
+if (success) {
+    qDebug() << "节点连接成功";
 }
+
+// 效果：两个节点建立了数据传递通道
 ```
 
-在工作流执行和结束前，可以注册执行和结束的回调函数
+### 使用场景创建可视化节点
+
+场景（DANodeGraphicsScene）提供可视化节点管理，支持 redo/undo：
 
 ```cpp
-//DAWorkFlow
-public:
-    using CallbackPrepareStartExecute = std::function< bool(DAWorkFlowExecuter*) >;
-    using CallbackPrepareEndExecute   = std::function< bool(DAWorkFlowExecuter*) >;
-    //注册开始执行的回调
-    void registStartWorkflowCallback(CallbackPrepareStartExecute fn);
-    //注册开始结束的回调
-    void registEndWorkflowCallback(CallbackPrepareEndExecute fn);
+// 创建场景并设置工作流
+DA::DANodeGraphicsScene* scene = new DA::DANodeGraphicsScene(this);
+scene->setWorkFlow(workflow);
+
+// 通过元数据和位置创建可视化节点
+// 带 _ 后缀的函数支持 redo/undo 操作
+DA::DAAbstractNodeGraphicsItem* item = scene->createNode_(metaData, QPointF(100, 100));
+
+// 获取节点实例进行配置
+DA::DAAbstractNode::SharedPointer node = item->node();
+
+// 效果：场景中显示一个可视化节点，位置在 (100, 100)
 ```
 
-这两个回调函数都会在线程中执行，因此务必注意，**注册的回调函数不要进行界面的操作**，否则会导致程序崩溃
+!!! note "函数命名约定"
+    带有 `_` 后缀的函数（如 `createNode_`、`addNodeItem_`）表示支持 redo/undo 操作，通过撤销栈可以撤销和重做这些操作。
 
-工作流在执行的时候会涉及到3个信号：
+### 执行工作流
+
+工作流执行在独立线程中，通过信号通知执行状态：
 
 ```cpp
-//DAWorkFlow
-/**
-* @brief 开始执行，exec函数调用后会触发此信号
-*/
-void startExecute();
+// 设置起始节点，工作流从此节点开始执行
+workflow->setStartNode(startNode);
 
-/**
-* @brief 执行到某个节点发射的信号
-* @param n
-*/
-void nodeExecuteFinished(DAAbstractNode::SharedPointer n, bool state);
+// 注册执行前的回调（在线程中执行，不要操作界面）
+workflow->registStartWorkflowCallback([](DA::DAWorkFlowExecuter* executer) {
+    // 准备执行环境，如初始化数据
+    return true;  // 返回 false 可取消执行
+});
 
-/**
-* @brief 工作流执行完毕信号
-* @param success 成功全部执行完成为true
-*/
-void finished(bool success);
+// 注册执行结束的回调
+workflow->registEndWorkflowCallback([](DA::DAWorkFlowExecuter* executer) {
+    // 清理执行环境
+    return true;
+});
+
+// 连接执行完成信号
+connect(workflow, &DA::DAWorkFlow::finished, this, [](bool success) {
+    if (success) {
+        qDebug() << "工作流执行成功";
+    } else {
+        qDebug() << "工作流执行失败";
+    }
+});
+
+// 连接单个节点执行完成信号
+connect(workflow, &DA::DAWorkFlow::nodeExecuteFinished, this,
+        [](DA::DAAbstractNode::SharedPointer node, bool state) {
+            qDebug() << "节点" << node->getNodeName() << "执行" << (state ? "成功" : "失败");
+        });
+
+// 执行工作流（非阻塞，在独立线程中执行）
+workflow->exec();
+
+// 效果：工作流在独立线程中执行，完成后触发 finished 信号
 ```
 
-`finished`信号可以判断工作流是否执行成功
+## 执行流程
+
+### 工作流执行时序图
+
+```mermaid
+sequenceDiagram
+    participant User as 用户
+    participant Workflow as DAWorkFlow
+    participant Executer as DAWorkFlowExecuter
+    participant Thread as 执行线程
+    participant Node as DAAbstractNode
+    
+    User->>Workflow: setStartNode(startNode)
+    User->>Workflow: exec()
+    Workflow->>Workflow: createExecuter()
+    Workflow->>Executer: moveToThread(Thread)
+    Workflow->>Executer: setStartNode(node)
+    Workflow->>Executer: setWorkFlow(workflow)
+    activate Thread
+    Workflow-->>Thread: start()
+    Workflow-->>User: startExecute signal
+    
+    loop 按依赖顺序执行节点
+        Executer->>Node: exec()
+        Node->>Node: 处理数据
+        Node-->>Executer: 返回结果
+        Executer-->>Workflow: nodeExecuteFinished(node, state)
+        Workflow-->>User: nodeExecuteFinished signal
+    end
+    
+    Executer-->>Workflow: finished(success)
+    Workflow-->>User: finished(success) signal
+    deactivate Thread
+```
+
+### 节点连接流程
+
+```mermaid
+flowchart TD
+    A[用户点击连接点] --> B{判断点击位置}
+    B -->|点击节点空白处| C[准备创建输出连接]
+    B -->|点击连接点| D[选择目标连接点]
+    
+    C --> E[获取连接点信息]
+    E --> F[创建临时连接线]
+    
+    D --> G{判断连接状态}
+    G -->|开始连接| F
+    G -->|完成连接| H[建立节点链接]
+    
+    F --> I[等待目标连接点]
+    I --> J{用户操作}
+    J -->|点击目标连接点| K[完成连接]
+    J -->|点击空白处| L[取消连接]
+    
+    H --> M[更新节点依赖关系]
+    K --> M
+    M --> N[触发工厂回调]
+    L --> O[清理临时状态]
+```
+
+## API 参考
+
+### DAWorkFlow 核心方法
+
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `registFactory` | std::shared_ptr&lt;Factory&gt; | void | 注册节点工厂 |
+| `createNode` | DANodeMetaData | SharedPointer | 创建节点实例 |
+| `addNode` | SharedPointer | void | 添加节点到工作流 |
+| `removeNode` | SharedPointer | void | 从工作流移除节点 |
+| `exec` | 无 | void | 执行工作流（非阻塞） |
+| `terminate` | 无 | void | 终止工作流执行 |
+| `setStartNode` | SharedPointer | void | 设置起始执行节点 |
+| `getNode` | IdType | SharedPointer | 通过 ID 获取节点 |
+| `nodes` | 无 | QList&lt;SharedPointer&gt; | 获取所有节点 |
+
+### DAWorkFlow 核心信号
+
+| 信号 | 参数 | 触发时机 |
+|------|------|----------|
+| `nodeAdded` | SharedPointer | 添加节点时 |
+| `nodeRemoved` | SharedPointer | 移除节点后 |
+| `nodeStartRemove` | SharedPointer | 开始移除节点时 |
+| `nodeNameChanged` | node, oldName, newName | 节点名称变更时 |
+| `startExecute` | 无 | 开始执行时 |
+| `nodeExecuteFinished` | node, success | 单个节点执行完成 |
+| `finished` | bool | 工作流执行完成 |
+| `workflowReady` | 无 | 工作流加载完成 |
+
+### DAAbstractNode 核心方法
+
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `exec` | 无 | bool | 执行节点逻辑（纯虚函数，需继承实现） |
+| `createGraphicsItem` | 无 | Item* | 创建可视化图元（纯虚函数） |
+| `linkTo` | outKey, inNode, inKey | bool | 建立节点连接 |
+| `detachLink` | key | bool | 断开指定连接点的所有连接 |
+| `getInputKeys` | 无 | QList&lt;QString&gt; | 获取所有输入连接点名称 |
+| `getOutputKeys` | 无 | QList&lt;QString&gt; | 获取所有输出连接点名称 |
+| `setInputData` | key, QVariant | void | 设置输入数据 |
+| `getOutputData` | key | QVariant | 获取输出数据 |
+| `setProperty` | key, QVariant | void | 设置属性值 |
+| `getProperty` | key, default | QVariant | 获取属性值 |
+
+### DAAbstractNodeFactory 核心方法
+
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `factoryPrototypes` | 无 | QString | 工厂唯一标识（不可翻译） |
+| `factoryName` | 无 | QString | 工厂显示名称（可翻译） |
+| `create` | DANodeMetaData | SharedPointer | 创建节点实例（纯虚函数） |
+| `getNodesMetaData` | 无 | QList&lt;DANodeMetaData&gt; | 获取所有节点元数据 |
+| `initializNode` | SharedPointer | void | 初始化节点 |
+| `nodeAddedToWorkflow` | SharedPointer | void | 节点添加到工作流时的回调 |
+
+## 注意事项
+
+!!! warning "线程安全"
+    工作流执行在独立线程中，注册的回调函数不要进行界面操作，否则会导致程序崩溃。如需更新界面，请使用信号槽机制。
+
+!!! warning "节点内存管理"
+    工作流保留节点的内存管理权，不要手动删除节点，使用 `removeNode` 函数移除。节点使用 `std::shared_ptr` 管理。
+
+!!! tip "自定义节点开发"
+    开发自定义节点需要：
+    1. 继承 `DAAbstractNode` 实现 `exec()` 和 `createGraphicsItem()`
+    2. 继承 `DAAbstractNodeFactory` 实现 `create()` 和元数据管理
+    3. 继承 `DAAbstractNodeGraphicsItem` 实现可视化渲染
+
+!!! note "Qt 版本兼容性"
+    `qHash` 函数在 Qt5 和 Qt6 中返回类型不同：
+    - **Qt5**: 返回 `uint`
+    - **Qt6**: 返回 `std::size_t`
+    源码已使用宏处理此差异，自定义代码需注意。
+
+!!! info "PIMPL 模式"
+    核心类使用 PIMPL 模式实现，相关宏定义见 `DAGlobals.h`：
+    - `DA_DECLARE_PRIVATE` - 在类中声明私有数据指针
+    - `DA_DECLARE_PUBLIC` - 在 PrivateData 中声明公有类指针
+    - `DA_D` - 获取私有数据指针
+    - `DA_DC` - 获取私有数据 const 指针
+
+## 参考资料
+
+- [插件开发指南](plugin-project-create.md)
+- [插件与接口](plugins-interfaces.md)
+- [插件模块 DAPluginSupport](plugin-module.md)
+- 源码目录：`src/DAWorkFlow`
