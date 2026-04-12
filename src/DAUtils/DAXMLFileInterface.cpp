@@ -194,7 +194,7 @@ QDomElement DAXMLFileInterface::makeElement(const QColor& v, const QString& tagN
  */
 bool DAXMLFileInterface::loadElement(QColor& p, const QDomElement* ele)
 {
-    DA::compat::setNamedColor(p,ele->attribute(QStringLiteral("name")));
+	DA::compat::setNamedColor(p, ele->attribute(QStringLiteral("name")));
 	return true;
 }
 
@@ -484,7 +484,7 @@ QDomElement DAXMLFileInterface::makeElement(const QFont& v, const QString& tagNa
 	fontEle.setAttribute("class", "QFont");
 	fontEle.setAttribute("bold", v.bold());
 	fontEle.setAttribute("italic", v.italic());
-	fontEle.setAttribute("pointSizeF", v.pointSizeF());  // 这里不需要用doubleToString
+	fontEle.setAttribute("pointSizeF", v.pointSizeF());  // 这里不需要用doubleToString，注意pointSizeF如果是-1，说明使用默认字体
 	// QFont::Weight的枚举值在qt5和qt6不一致，为了避免直接传值，都需要转换为QFont::Weight
 #if QT_VERSION_MAJOR >= 6
 	fontEle.setAttribute("weight", enumToString(v.weight()));
@@ -505,7 +505,12 @@ bool DAXMLFileInterface::loadElement(QFont& p, const QDomElement* ele)
 {
 	p.setBold(ele->attribute("bold").toInt());
 	p.setItalic(ele->attribute("italic").toInt());
-	p.setPointSizeF(ele->attribute("pointSizeF").toDouble());
+	// QFont默认构造时pointSizeF=-1表示使用系统默认字体大小
+	// 如果序列化的值为-1或<=0，不设置pointSizeF，保持QFont默认行为
+	double pointSizeF = ele->attribute("pointSizeF").toDouble();
+	if (pointSizeF > 0) {
+		p.setPointSizeF(pointSizeF);
+	}
 	p.setWeight(stringToEnum< QFont::Weight >(ele->attribute("weight"), QFont::Normal));
 	p.setFamily(ele->attribute("family"));
 	return true;
@@ -866,7 +871,7 @@ QString DA::variantToString(const QVariant& var)
 	case QMetaType::QLineF: {
 		QLineF d = var.toLineF();
 		return (QString("%1;%2;%3;%4")
-		            .arg(doubleToString(d.x1()), doubleToString(d.y1()), doubleToString(d.x2()), doubleToString(d.y2())));
+					.arg(doubleToString(d.x1()), doubleToString(d.y1()), doubleToString(d.x2()), doubleToString(d.y2())));
 	}
 
 	case QMetaType::QVariantList: {
@@ -888,36 +893,36 @@ QString DA::variantToString(const QVariant& var)
 	case QMetaType::QTransform: {
 		QTransform d = var.value< QTransform >();
 		return (QString("%1;%2;%3;%4;%5;%6;%7;%8;%9")
-		            .arg(d.m11())
-		            .arg(d.m12())
-		            .arg(d.m13())
-		            .arg(d.m21())
-		            .arg(d.m22())
-		            .arg(d.m23())
-		            .arg(d.m31())
-		            .arg(d.m32())
-		            .arg(d.m33()));
+					.arg(d.m11())
+					.arg(d.m12())
+					.arg(d.m13())
+					.arg(d.m21())
+					.arg(d.m22())
+					.arg(d.m23())
+					.arg(d.m31())
+					.arg(d.m32())
+					.arg(d.m33()));
 	}
 
 	case QMetaType::QMatrix4x4: {
 		QMatrix4x4 d = var.value< QMatrix4x4 >();
 		return (QString("%1;%2;%3;%4;%5;%6;%7;%8;%9;%10;%11;%12;%13;%14;%15;%16")
-		            .arg(d(0, 0))
-		            .arg(d(0, 1))
-		            .arg(d(0, 2))
-		            .arg(d(0, 3))
-		            .arg(d(1, 0))
-		            .arg(d(1, 1))
-		            .arg(d(1, 2))
-		            .arg(d(1, 3))
-		            .arg(d(2, 0))
-		            .arg(d(2, 1))
-		            .arg(d(2, 2))
-		            .arg(d(2, 3))
-		            .arg(d(3, 0))
-		            .arg(d(3, 1))
-		            .arg(d(3, 2))
-		            .arg(d(3, 3)));
+					.arg(d(0, 0))
+					.arg(d(0, 1))
+					.arg(d(0, 2))
+					.arg(d(0, 3))
+					.arg(d(1, 0))
+					.arg(d(1, 1))
+					.arg(d(1, 2))
+					.arg(d(1, 3))
+					.arg(d(2, 0))
+					.arg(d(2, 1))
+					.arg(d(2, 2))
+					.arg(d(2, 3))
+					.arg(d(3, 0))
+					.arg(d(3, 1))
+					.arg(d(3, 2))
+					.arg(d(3, 3)));
 	}
 
 	case QMetaType::QPalette: {
@@ -979,9 +984,8 @@ QString DA::variantToString(const QVariant& var)
 
 	case QMetaType::QRectF: {
 		QRectF d = var.toRectF();
-		return (
-		    QString("%1;%2;%3;%4")
-		        .arg(doubleToString(d.x()), doubleToString(d.y()), doubleToString(d.width()), doubleToString(d.height())));
+		return (QString("%1;%2;%3;%4")
+					.arg(doubleToString(d.x()), doubleToString(d.y()), doubleToString(d.width()), doubleToString(d.height())));
 	}
 
 	case QMetaType::QRegularExpression: {
@@ -1190,15 +1194,17 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
 		if (list.size() != 9) {
 			return (QVariant());
 		}
-		QTransform d(list[ 0 ].toDouble(),
-		             list[ 1 ].toDouble(),
-		             list[ 2 ].toDouble(),
-		             list[ 3 ].toDouble(),
-		             list[ 4 ].toDouble(),
-		             list[ 5 ].toDouble(),
-		             list[ 6 ].toDouble(),
-		             list[ 7 ].toDouble(),
-		             list[ 8 ].toDouble());
+		QTransform d(
+			list[ 0 ].toDouble(),
+			list[ 1 ].toDouble(),
+			list[ 2 ].toDouble(),
+			list[ 3 ].toDouble(),
+			list[ 4 ].toDouble(),
+			list[ 5 ].toDouble(),
+			list[ 6 ].toDouble(),
+			list[ 7 ].toDouble(),
+			list[ 8 ].toDouble()
+		);
 		return (d);
 	}
 
@@ -1207,22 +1213,24 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
 		if (list.size() != 16) {
 			return (QVariant());
 		}
-		QMatrix4x4 d(list[ 0 ].toDouble(),
-		             list[ 1 ].toDouble(),
-		             list[ 2 ].toDouble(),
-		             list[ 3 ].toDouble(),
-		             list[ 4 ].toDouble(),
-		             list[ 5 ].toDouble(),
-		             list[ 6 ].toDouble(),
-		             list[ 7 ].toDouble(),
-		             list[ 8 ].toDouble(),
-		             list[ 9 ].toDouble(),
-		             list[ 10 ].toDouble(),
-		             list[ 11 ].toDouble(),
-		             list[ 12 ].toDouble(),
-		             list[ 13 ].toDouble(),
-		             list[ 14 ].toDouble(),
-		             list[ 15 ].toDouble());
+		QMatrix4x4 d(
+			list[ 0 ].toDouble(),
+			list[ 1 ].toDouble(),
+			list[ 2 ].toDouble(),
+			list[ 3 ].toDouble(),
+			list[ 4 ].toDouble(),
+			list[ 5 ].toDouble(),
+			list[ 6 ].toDouble(),
+			list[ 7 ].toDouble(),
+			list[ 8 ].toDouble(),
+			list[ 9 ].toDouble(),
+			list[ 10 ].toDouble(),
+			list[ 11 ].toDouble(),
+			list[ 12 ].toDouble(),
+			list[ 13 ].toDouble(),
+			list[ 14 ].toDouble(),
+			list[ 15 ].toDouble()
+		);
 		return (d);
 	}
 

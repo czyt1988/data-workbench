@@ -517,8 +517,8 @@ DAAbstractNode::SharedPointer DAXmlHelper::PrivateData::loadNode(const QDomEleme
     bool isok     = false;
     qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
     if (!isok) {
-        qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node")
-                          .arg(nodeEle.attribute("id"));
+        qWarning(
+        ) << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node").arg(nodeEle.attribute("id"));
         return nullptr;
     }
     if (workflow->hasNodeID(id)) {
@@ -567,8 +567,8 @@ DAAbstractNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDom
     // 这个id暂时要记录下来
     qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
     if (!isok) {
-        qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node")
-                          .arg(nodeEle.attribute("id"));
+        qWarning(
+        ) << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node").arg(nodeEle.attribute("id"));
         return nullptr;
     }
     if (workflow->hasNodeID(id)) {
@@ -648,8 +648,8 @@ DAAbstractNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(
     // 这个id暂时要记录下来
     qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
     if (!isok) {
-        qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node")
-                          .arg(nodeEle.attribute("id"));
+        qWarning(
+        ) << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node").arg(nodeEle.attribute("id"));
         return nullptr;
     }
     QString name      = nodeEle.attribute("name");
@@ -769,8 +769,9 @@ bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v110(DAAbstractNode::Share
             }
             QDomElement nameEle = inputEle.firstChildElement("name");
             if (nameEle.isNull()) {
-                qWarning() << QObject::tr("node(prototype=%1,name=%2,group=%3) %4 tag loss child tag <name>")
-                                  .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
+                qWarning(
+                ) << QObject::tr("node(prototype=%1,name=%2,group=%3) %4 tag loss child tag <name>")
+                         .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
                 continue;
             }
             QString key = nameEle.text();
@@ -793,8 +794,9 @@ bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v110(DAAbstractNode::Share
             }
             QDomElement nameEle = outputEle.firstChildElement("name");
             if (nameEle.isNull()) {
-                qWarning() << QObject::tr("node(prototype=%1,name=%2,group=%3) %4 tag loss child tag <name>")
-                                  .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
+                qWarning(
+                ) << QObject::tr("node(prototype=%1,name=%2,group=%3) %4 tag loss child tag <name>")
+                         .arg(node->getNodePrototype(), node->getNodeName(), node->getNodeGroup(), ks.at(i).nodeName());
                 continue;
             }
             QString key = nameEle.text();
@@ -1064,8 +1066,7 @@ bool DAXmlHelper::PrivateData::loadNodeLinks(DAWorkFlowGraphicsScene* scene, DAW
         // 建立链接线
         DAAbstractNodeLinkGraphicsItem* linkitem = fromItem->linkToByName(fromKey, toItem, toKey);
         if (nullptr == linkitem) {
-            qWarning() << QObject::tr(
-                              "Unable to link to node %3's link point %4 through link point %2 of node %1"
+            qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1"
             )  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
                               .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
             continue;
@@ -1146,8 +1147,8 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(
         if (idMap) {
             qulonglong realId = idMap->value(id, 0);
             if (0 == realId) {
-                qWarning() << QObject::tr("During the pasting process, the mapping corresponding to ID(%1) cannot be found")
-                                  .arg(id);
+                qWarning(
+                ) << QObject::tr("During the pasting process, the mapping corresponding to ID(%1) cannot be found").arg(id);
                 continue;
             }
             fromNode = wf->getNode(realId);
@@ -1165,8 +1166,8 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(
         if (idMap) {
             qulonglong realId = idMap->value(id, 0);
             if (0 == realId) {
-                qWarning() << QObject::tr("During the pasting process, the mapping corresponding to ID(%1) cannot be found")
-                                  .arg(id);
+                qWarning(
+                ) << QObject::tr("During the pasting process, the mapping corresponding to ID(%1) cannot be found").arg(id);
                 continue;
             }
             toNode = wf->getNode(realId);
@@ -1187,8 +1188,7 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(
         // 建立链接线
         DAAbstractNodeLinkGraphicsItem* linkitem = fromItem->linkToByName(fromKey, toItem, toKey);
         if (nullptr == linkitem) {
-            qWarning() << QObject::tr(
-                              "Unable to link to node %3's link point %4 through link point %2 of node %1"
+            qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1"
             )  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
                               .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
             continue;
@@ -1335,7 +1335,8 @@ bool DAXmlHelper::PrivateData::saveItem(const QGraphicsItem* i, QDomDocument& do
     } else {
         auto itemEle = DAXmlHelper::makeElement(i, QStringLiteral("item"), &doc);
         if (itemEle.isNull()) {
-            qDebug() << QObject::tr("Unable to generate graphics item element during the saveing");  // cn:保存过程中，无法生成图元元素
+            qDebug() << QObject::tr("Unable to generate graphics item element during the saveing"
+            );  // cn:保存过程中，无法生成图元元素
             return false;
         }
         parentElement.appendChild(itemEle);
@@ -1649,10 +1650,8 @@ bool DAXmlHelper::loadClipBoardElement(const QDomElement* clipBoardElement, DAWo
     //! 先识别类型
     QString typestr = clipBoardElement->attribute("type");
     if (typestr.isEmpty()) {
-        qDebug() << QObject::tr(
-            "An exception occurred during the process of processing pasted content XML, with the "
-            "root node missing the type attribute"
-        );  // cn:在处理粘贴内容xml过程出现异常，根节点缺失type属性
+        qDebug() << QObject::tr("An exception occurred during the process of processing pasted content XML, with the "
+                                "root node missing the type attribute");  // cn:在处理粘贴内容xml过程出现异常，根节点缺失type属性
         return false;
     }
     QDomElement workflowEle = clipBoardElement->firstChildElement("workflow");
@@ -2419,7 +2418,8 @@ bool DAXmlHelper::loadQwtPlotAxisElement(DAChartWidget* chart, const QDomElement
             }
             QDomElement datescaleDrawEle = scaleDrawEle.firstChildElement(QStringLiteral("datescale"));
             if (!datescaleDrawEle.isNull()) {
-                dateScaleDraw->setTimeSpec(stringToEnum(datescaleDrawEle.attribute(QStringLiteral("timeSpec")), Qt::LocalTime));
+                dateScaleDraw->setTimeSpec(stringToEnum(datescaleDrawEle.attribute(QStringLiteral("timeSpec")), Qt::LocalTime)
+                );
                 dateScaleDraw->setUtcOffset(datescaleDrawEle.attribute(QStringLiteral("utcOffset")).toInt());
                 dateScaleDraw->setWeek0Type(
                     stringToEnum(datescaleDrawEle.attribute(QStringLiteral("week0Type")), QwtDate::FirstThursday)
@@ -2474,8 +2474,7 @@ bool DAXmlHelper::loadQwtPlotAxisElement(DAChartWidget* chart, const QDomElement
         QString scaleEngineType     = scaleEngineEle.attribute(QStringLiteral("type")).toLower();
 
         if (scaleEngineType == QStringLiteral("line")) {
-            if (
-                !scaleEngine || dynamic_cast< QwtLinearScaleEngine* >(scaleEngine) == nullptr
+            if (!scaleEngine || dynamic_cast< QwtLinearScaleEngine* >(scaleEngine) == nullptr
                 // || dynamic_cast< QwtDateScaleEngine* >(scaleEngine)
             ) {  // QwtDateScaleEngine是为了确保如果原来如果是QwtDateScaleEngine，把它变回QwtLinearScaleEngine，但实际不会出现这种情况，省略
                 scaleEngine = new QwtLinearScaleEngine();
@@ -2634,6 +2633,7 @@ QDomElement DAXmlHelper::makeElement(const QwtText* value, const QString& tagNam
     QDomElement textEle = doc->createElement(QStringLiteral("text"));
     textEle.setAttribute(QStringLiteral("format"), enumToString(value->format()));
     textEle.appendChild(doc->createTextNode(value->text()));
+    rootEle.appendChild(textEle);
     // font
     QDomElement fontEle = DAXMLFileInterface::makeElement(value->font(), QStringLiteral("font"), doc);
     rootEle.appendChild(fontEle);

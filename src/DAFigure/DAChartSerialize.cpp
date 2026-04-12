@@ -1,8 +1,10 @@
 ﻿#include "DAChartSerialize.h"
 #include "DAChartUtil.h"
 #include <cstring>
+#include <cmath>
 #include <QBuffer>
 #include <QDebug>
+#include <QFontInfo>
 // qwt
 #include "qwt_plot.h"
 #include "qwt_symbol.h"
@@ -45,6 +47,68 @@
 #endif
 namespace DA
 {
+/**
+ * @brief 规范化QFont，确保pointSizeF合法
+ *
+ * QFont默认构造时pointSizeF=-1，表示使用系统默认字体大小。
+ * 当QFont被序列化（pointSizeF=-1）后反序列化，可能导致Qt警告：
+ * "QFont::setPointSizeF: Point size <= 0 (-1.000000), must be greater than 0"
+ *
+ * 此函数检测非法值并修复，保持其他字体属性不变。
+ *
+ * @param font 需要规范化检查的QFont对象
+ */
+inline void normalizeQFontPointSize(QFont& font)
+{
+    if (font.pointSizeF() <= 0) {
+        // pointSizeF <= 0 表示使用系统默认字体大小
+        // 使用QFontInfo获取实际有效的字体大小
+        QFontInfo fi(font);
+        qreal validSize = fi.pointSizeF();
+        if (validSize > 0) {
+            font.setPointSizeF(validSize);
+        } else {
+            // 如果QFontInfo也返回无效值，使用合理的默认值
+            // 12pt是常见的默认字体大小
+            font.setPointSizeF(12.0);
+        }
+    }
+}
+
+/**
+ * @brief 验证double值是否为有效的数值（非NaN/Infinity）
+ *
+ * 反序列化过程中，如果数据损坏或格式不兼容，可能产生NaN或Infinity值。
+ * 这些值可能导致渲染异常或程序崩溃。
+ *
+ * @param value 需要验证的double值
+ * @param defaultValue 如果值无效，使用的默认值
+ * @return 如果值有效返回原值，否则返回defaultValue
+ */
+inline double validateDoubleValue(double value, double defaultValue = 0.0)
+{
+    if (!std::isfinite(value)) {
+        return defaultValue;
+    }
+    return value;
+}
+
+/**
+ * @brief 验证并确保double值在有效范围内
+ *
+ * @param value 需要验证的double值
+ * @param minValue 允许的最小值（包含）
+ * @param defaultValue 如果值无效，使用的默认值
+ * @return 如果值有效且在范围内返回原值，否则返回defaultValue
+ */
+inline double validateDoubleRange(double value, double minValue, double defaultValue)
+{
+    if (!std::isfinite(value) || value < minValue) {
+        return defaultValue;
+    }
+    return value;
+}
+
 void serialize_out_scale_widge(QDataStream& out, const QwtPlot* chart, int axis);
 void serialize_in_scale_widge(QDataStream& in, QwtPlot* chart, int axis);
 
@@ -336,7 +400,7 @@ QDataStream& operator>>(QDataStream& in, QwtText& t)
     t.setFont(font);
     t.setRenderFlags(renderFlags);
     t.setColor(clr);
-    t.setBorderRadius(borderRadius);
+    t.setBorderRadius(DA::validateDoubleRange(borderRadius, 0.0, 0.0));  // borderRadius必须>=0
     t.setBorderPen(borderPen);
     t.setBackgroundBrush(backgroundBrush);
     t.setPaintAttribute(QwtText::PaintUsingTextFont, isPaintUsingTextFont);
@@ -751,7 +815,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotLegendItem* item)
     item->setBackgroundBrush(backgroundBrush);
     item->setBackgroundMode(static_cast< QwtPlotLegendItem::BackgroundMode >(backgroundMode));
     item->setBorderPen(borderPen);
-    item->setBorderRadius(borderRadius);
+    item->setBorderRadius(DA::validateDoubleRange(borderRadius, 0.0, 0.0));  // borderRadius必须>=0
     item->setFont(font);
     item->setOffsetInCanvas(Qt::Horizontal, offsetInCanvasHorizontal);
     item->setOffsetInCanvas(Qt::Vertical, offsetInCanvasVertical);
@@ -846,7 +910,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotSpectroCurve* item)
     double penWidth;
     bool attClipPoints;
     in >> penWidth >> orientation >> attClipPoints;
-    item->setPenWidth(penWidth);
+    item->setPenWidth(DA::validateDoubleRange(penWidth, 0.0, 1.0));  // penWidth必须>=0，默认1.0
     item->setOrientation(static_cast< Qt::Orientation >(orientation));
     item->setPaintAttribute(QwtPlotSpectroCurve::ClipPoints, attClipPoints);
     return in;
@@ -985,6 +1049,10 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotArrowMarker* item)
     QPen headPen;
     in >> headStyle >> headSize >> headBrush >> headPen;
     item->setHeadStyle(static_cast< QwtPlotArrowMarker::EndpointStyle >(headStyle));
+    // 验证headSize的宽度和高度是否有效
+    if (!std::isfinite(headSize.width()) || !std::isfinite(headSize.height())) {
+        headSize = QSizeF(12.0, 12.0);  // 使用默认值
+    }
     item->setHeadSize(headSize);
     item->setHeadBrush(headBrush);
     item->setHeadPen(headPen);
@@ -1000,6 +1068,10 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotArrowMarker* item)
     QPen tailPen;
     in >> tailStyle >> tailSize >> tailBrush >> tailPen;
     item->setTailStyle(static_cast< QwtPlotArrowMarker::EndpointStyle >(tailStyle));
+    // 验证tailSize的宽度和高度是否有效
+    if (!std::isfinite(tailSize.width()) || !std::isfinite(tailSize.height())) {
+        tailSize = QSizeF(12.0, 12.0);  // 使用默认值
+    }
     item->setTailSize(tailSize);
     item->setTailBrush(tailBrush);
     item->setTailPen(tailPen);
@@ -1044,7 +1116,7 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotShapeItem* item)
     in >> isClipPolygons >> legendMode >> renderTolerance;
     item->setPaintAttribute(QwtPlotShapeItem::ClipPolygons, isClipPolygons);
     item->setLegendMode(static_cast< QwtPlotShapeItem::LegendMode >(legendMode));
-    item->setRenderTolerance(renderTolerance);
+    item->setRenderTolerance(DA::validateDoubleRange(renderTolerance, 0.0, 0.0));  // renderTolerance必须>=0
     item->setBrush(brush);
     item->setPen(pen);
     item->setShape(shape);
@@ -1354,7 +1426,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotCanvas* c)
     bool isBackingStore, isOpaque, isHackStyledBackground, isImmediatePaint;
     in >> focusIndicator >> borderRadius >> isBackingStore >> isOpaque >> isHackStyledBackground >> isImmediatePaint;
     c->setFocusIndicator(static_cast< QwtPlotCanvas::FocusIndicator >(focusIndicator));
-    c->setBorderRadius(borderRadius);
+    c->setBorderRadius(DA::validateDoubleRange(borderRadius, 0.0, 0.0));  // borderRadius必须>=0
     c->setPaintAttribute(QwtPlotCanvas::BackingStore, isBackingStore);
     c->setPaintAttribute(QwtPlotCanvas::Opaque, isOpaque);
     c->setPaintAttribute(QwtPlotCanvas::HackStyledBackground, isHackStyledBackground);
