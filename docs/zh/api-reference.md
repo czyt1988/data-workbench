@@ -2,8 +2,6 @@
 
 本页面提供 DAWorkBench API 文档的快速导航。
 
----
-
 ## Doxygen API 文档
 
 完整的 API 文档由 Doxygen 生成，包含所有类、函数、枚举的详细说明。
@@ -11,8 +9,6 @@
 - [:material-file-document: API 文档首页](../doxygen/index.html)
 - [:material-format-list-bulleted: 类索引](../doxygen/classes.html)
 - [:material-folder: 文件列表](../doxygen/files.html)
-
----
 
 ## 核心接口速览
 
@@ -62,8 +58,6 @@ public:
     virtual void addSettingsPage(const QString& name, QWidget* page) = 0;
 };
 ```
-
----
 
 ## 插件开发 API
 
@@ -163,8 +157,6 @@ public:
 };
 ```
 
----
-
 ## 工作流 API
 
 ### DAWorkFlow
@@ -221,8 +213,6 @@ public:
 };
 ```
 
----
-
 ## 数据 API
 
 ### DADataManagerInterface
@@ -269,8 +259,6 @@ public:
 };
 ```
 
----
-
 ## 图形视图 API
 
 ### DANodeGraphicsScene
@@ -301,8 +289,6 @@ signals:
 };
 ```
 
----
-
 ## 日志 API
 
 ### 日志函数
@@ -317,8 +303,6 @@ DA_LOG_ERROR("error message {}", arg);
 DA_LOG_CRITICAL("critical message {}", arg);
 ```
 
----
-
 ## 模块列表
 
 | 模块 | 说明 | 主要类 |
@@ -331,8 +315,6 @@ DA_LOG_CRITICAL("critical message {}", arg);
 | DAGui | 界面模块 | DARibbonArea, DADockingArea |
 | DAInterface | 接口模块 | DACoreInterface, DAAppUIInterface |
 | DAPluginSupport | 插件模块 | DAAbstractPlugin, DAPluginManager |
-
----
 
 ## 下一步
 

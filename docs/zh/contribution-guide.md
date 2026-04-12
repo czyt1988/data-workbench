@@ -2,8 +2,6 @@
 
 感谢您对 DAWorkBench 项目的关注！本指南说明如何参与项目开发。
 
----
-
 ## 贡献方式
 
 | 方式 | 说明 |
@@ -12,8 +10,6 @@
 | **功能建议** | 在 GitHub Discussions 讨论 |
 | **代码贡献** | 提交 Pull Request |
 | **文档改进** | 改进文档内容或翻译 |
-
----
 
 ## 开发环境准备
 
@@ -42,8 +38,6 @@ git checkout -b feature/my-feature
 # 或创建修复分支
 git checkout -b fix/my-fix
 ```
-
----
 
 ## 代码规范
 
@@ -117,8 +111,6 @@ public:
 };
 ```
 
----
-
 ## 提交规范
 
 ### Commit 信息格式
@@ -155,8 +147,6 @@ Add a new node type for data validation with configurable rules.
 
 Closes #123
 ```
-
----
 
 ## Pull Request 流程
 
@@ -206,8 +196,6 @@ git push origin feature/my-feature
 - 修改代码
 - 直到审核通过
 
----
-
 ## PR 检查清单
 
 提交 PR 前请确认：
@@ -236,8 +224,6 @@ git push origin feature/my-feature
 - [ ] 新功能有测试
 - [ ] 现有测试通过
 - [ ] Qt5 和 Qt6 兼容
-
----
 
 ## 文档贡献
 
@@ -278,8 +264,6 @@ git push origin feature/my-feature
 - 开发文档：`docs/zh/dev-guide/`
 - 构建文档：`docs/zh/build/`
 
----
-
 ## 问题反馈
 
 ### Bug 报告
@@ -304,8 +288,6 @@ git push origin feature/my-feature
 - 使用场景
 - 预期效果
 
----
-
 ## 社区准则
 
 ### 行为准则
@@ -321,8 +303,6 @@ git push origin feature/my-feature
 - GitHub Discussions：功能讨论
 - Pull Requests：代码审查
 
----
-
 ## 许可证
 
 贡献的代码将采用 LGPL 3.0 许可证，与项目保持一致。
@@ -332,8 +312,6 @@ git push origin feature/my-feature
 1. 您的贡献将按 LGPL 3.0 许可
 2. 您有权利贡献这些代码
 3. 您同意代码被包含在项目中
-
----
 
 ## 联系方式
 

@@ -1,6 +1,6 @@
 # 附录
 
----
+本页面汇总 DAWorkBench 项目的补充信息，包括配置格式、术语表、CMake 宏说明等。
 
 ## 配置文件格式说明
 
@@ -85,8 +85,6 @@
 }
 ```
 
----
-
 ## 术语表
 
 | 术语 | 英文 | 说明 |
@@ -108,8 +106,6 @@
 | **序列化** | Serialization | 对象到数据格式的转换 |
 | **持久化** | Persistence | 数据的长期存储 |
 
----
-
 ## 缩略语解释
 
 | 缩略语 | 全称 | 说明 |
@@ -126,8 +122,6 @@
 | **JSON** | JavaScript Object Notation | JSON 数据格式 |
 | **XML** | Extensible Markup Language | XML 标记语言 |
 | **CSV** | Comma-Separated Values | CSV 数据格式 |
-
----
 
 ## CMake 辅助宏说明
 
@@ -173,8 +167,6 @@ damacro_import_orderedmap(${DA_PLUGIN_NAME} ${INSTALL_DIR})
 damacro_plugin_install()
 ```
 
----
-
 ## 模块组件列表
 
 | 模块 | 可用组件 |
@@ -188,8 +180,6 @@ damacro_plugin_install()
 | **DAGui** | Ribbon、Dock、主界面 |
 | **DAInterface** | 所有接口定义 |
 | **DAPluginSupport** | 插件管理器、插件基类 |
-
----
 
 ## 社区支持与反馈渠道
 
@@ -219,8 +209,6 @@ damacro_plugin_install()
 - 参与讨论：GitHub Discussions
 - 查看更新：Release Notes
 
----
-
 ## 更新日志摘要
 
 ### v0.0.3 (当前版本)
@@ -242,8 +230,6 @@ damacro_plugin_install()
 - 基础框架搭建
 - 插件系统原型
 
----
-
 ## 相关项目
 
 | 项目 | 说明 |
@@ -252,8 +238,6 @@ damacro_plugin_install()
 | **Qt-Advanced-Docking** | 高级 Dock 窗口系统 |
 | **qwt** | 科学图表库 |
 | **pybind11** | Python/C++ 绑定 |
-
----
 
 ## 许可证说明
 
