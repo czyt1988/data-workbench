@@ -2,8 +2,6 @@
 
 本文档提供 DAWorkBench 插件和节点开发的性能优化建议。
 
----
-
 ## 数据处理优化
 
 ### 1. 避免深拷贝
@@ -94,8 +92,6 @@ private:
 };
 ```
 
----
-
 ## 内存管理优化
 
 ### 1. 使用智能指针
@@ -140,8 +136,6 @@ void MyPlugin::checkCacheLimit()
     }
 }
 ```
-
----
 
 ## UI 性能优化
 
@@ -194,9 +188,7 @@ void MyChartWidget::paintEvent(QPaintEvent* event)
 }
 ```
 
----
-
-## 线程优化
+## 程优化
 
 ### 1. 避免在 exec() 中阻塞
 
@@ -246,8 +238,6 @@ int maxThreads = QThreadPool::globalInstance()->maxThreadCount();
 QThreadPool::globalInstance()->setMaxThreadCount(std::min(maxThreads, 4));
 ```
 
----
-
 ## 工作流执行优化
 
 ### 1. 合理设置拓扑顺序
@@ -296,8 +286,6 @@ bool ConditionalNode::exec()
 }
 ```
 
----
-
 ## 配置优化
 
 ### 1. 合理设置缓存过期
@@ -320,8 +308,6 @@ DA_LOG_SET_LEVEL(spdlog::level::info);
 // 调试时使用详细日志
 DA_LOG_SET_LEVEL(spdlog::level::debug);
 ```
-
----
 
 ## 性能监控
 
@@ -364,8 +350,6 @@ void MyPlugin::checkMemoryUsage()
 }
 ```
 
----
-
 ## 最佳实践总结
 
 | 领域 | 建议 |
@@ -375,8 +359,6 @@ void MyPlugin::checkMemoryUsage()
 | **UI 性能** | 批量更新、异步加载、延迟渲染 |
 | **线程使用** | 控制并发、避免阻塞、合理等待 |
 | **工作流** | 优化拓扑、合并节点、条件执行 |
-
----
 
 ## 下一步
 

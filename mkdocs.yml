@@ -87,7 +87,10 @@ nav:
       - 插件界面开发: zh/dev-guide/plugin-dev-create-ui.md
       - 插件模块详解: zh/dev-guide/plugin-module.md
   - 使用指南:
+      - 使用指南概述: zh/use-guide/index.md
       - 命令行参数: zh/use-guide/command-line-arguments.md
+      - 绘图功能:
+          - 数据探针: zh/use-guide/plot/data-probe.md
       - 配置文件说明: zh/configuration.md
   - 最佳实践:
       - 开发最佳实践: zh/best-practices.md

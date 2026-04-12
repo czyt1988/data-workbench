@@ -9,8 +9,9 @@
 | 要求 | 版本 | 说明 |
 |------|------|------|
 | **Qt** | 5.14+ 或 6.x | GUI 框架 |
-| **Python** | 3.8+ | 数据处理（可选） |
-| **CMake** | 3.12+ | 构建系统 |
+| **Python** | 3.7+ (推荐 3.11) | 数据处理（可选） |
+| **CMake** | 3.16+ | 构建系统 |
+| **Ninja** | 推荐 | 快速构建工具 |
 | **编译器** | C++17 支持 | MSVC/GCC/Clang |
 
 ---
@@ -35,55 +36,49 @@ git submodule update --init --recursive
 
 ## 构建步骤
 
-### 第一步：构建 zlib
+!!! warning "重要：必须使用 Qt 工具链文件"
+    构建项目**必须**指定 Qt 工具链文件（`qt.toolchain.cmake`），否则会出现 Windows SDK 头文件找不到的问题。
 
-```bash
-cmake -S src/3rdparty/zlib -B build/zlib -DCMAKE_BUILD_TYPE=Release
-cmake --build build/zlib --config Release
-cmake --install build/zlib --prefix ./bin_Release
+### 一键构建（推荐）
+
+```powershell
+# Windows PowerShell - 使用 Qt 6 工具链文件
+cmake -S . -B build -G Ninja `
+    -DCMAKE_BUILD_TYPE=Release `
+    -DCMAKE_TOOLCHAIN_FILE="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
+
+cmake --build build --config Release --parallel
+cmake --build build --config Release --target install
 ```
 
-### 第二步：构建第三方库
+!!! info "Qt 路径"
+    请根据实际 Qt 安装路径修改 `CMAKE_TOOLCHAIN_FILE` 参数。
 
-```bash
-cmake -S src/3rdparty -B build/3rdparty -DCMAKE_BUILD_TYPE=Release
-cmake --build build/3rdparty --config Release
-cmake --install build/3rdparty --prefix ./bin_Release
-```
+### 分步构建
+
+如需分步构建第三方库，请参阅 [构建说明](./build/build-instructions.md#分步构建)。
 
 !!! tip "提示"
-    构建完成后，所有第三方库将安装到 `bin_Release` 目录。
-
-### 第三步：构建主程序
-
-```bash
-cmake -S . -B build/main -DCMAKE_BUILD_TYPE=Release
-cmake --build build/main --config Release
-cmake --install build/main --prefix ./bin_Release
-```
+    构建完成后，所有文件将安装到 `bin_Release_qt{版本}_{编译器}_x64` 目录。
 
 ---
 
 ## 运行程序
 
+构建输出目录格式：`bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}`
+
 ### Windows
 
-```bash
-# 进入 bin 目录
-cd bin_Release_qt5.x_MSVC_x64/bin
-
-# 运行程序
-DAWorkbench.exe
+```powershell
+# 进入输出目录（示例：Qt 6.7.3, Release, MSVC）
+.\bin_Release_qt6.7.3_MSVC_x64\DAWorkbench.exe
 ```
 
 ### Linux
 
 ```bash
-# 进入 bin 目录
-cd bin_Release_qt5.x_GNU_x64/bin
-
-# 运行程序
-./DAWorkbench
+# 进入输出目录（示例：Qt 6.7.3, Release, GCC）
+./bin_Release_qt6.7.3_GCC_x64/DAWorkbench
 ```
 
 ---
@@ -129,54 +124,24 @@ git submodule update --init --recursive
 cmake -DDA_ENABLE_AUTO_INSTALL_PYTHON_ENV=ON ...
 ```
 
-### 问题 3：Qt 版本不匹配
+### 问题 3：Qt 工具链文件找不到
 
-**原因**：系统安装了多个 Qt 版本
+**原因**：未指定 Qt 工具链文件路径
 
-**解决**：指定 Qt 路径：
-```bash
-cmake -DCMAKE_PREFIX_PATH=/path/to/Qt/5.15.2/msvc2019_64 ...
+**解决**：使用正确的工具链文件路径：
+```powershell
+# Qt 6 工具链文件通常位于：
+-D CMAKE_TOOLCHAIN_FILE="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
+
+# Qt 5 工具链文件通常位于：
+-D CMAKE_TOOLCHAIN_FILE="C:\Qt\5.15.2\msvc2019_64\lib\cmake\Qt5\qt.toolchain.cmake"
 ```
 
 ---
 
-## 完整构建命令（一键脚本）
+## 详细构建文档
 
-### Windows PowerShell
+如需更多构建选项和详细说明，请参阅：
 
-```powershell
-# 设置 Qt 路径（根据实际安装位置修改）
-$QtPath = "C:/Qt/5.15.2/msvc2019_64"
-
-# 构建所有
-cmake -S src/3rdparty/zlib -B build/zlib -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$QtPath
-cmake --build build/zlib --config Release
-cmake --install build/zlib --prefix ./bin_Release
-
-cmake -S src/3rdparty -B build/3rdparty -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$QtPath
-cmake --build build/3rdparty --config Release
-cmake --install build/3rdparty --prefix ./bin_Release
-
-cmake -S . -B build/main -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$QtPath
-cmake --build build/main --config Release
-cmake --install build/main --prefix ./bin_Release
-```
-
-### Linux Bash
-
-```bash
-# 设置 Qt 路径
-export QtPath=/opt/Qt5.15.2
-
-cmake -S src/3rdparty/zlib -B build/zlib -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$QtPath
-cmake --build build/zlib
-cmake --install build/zlib --prefix ./bin_Release
-
-cmake -S src/3rdparty -B build/3rdparty -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$QtPath
-cmake --build build/3rdparty
-cmake --install build/3rdparty --prefix ./bin_Release
-
-cmake -S . -B build/main -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$QtPath
-cmake --build build/main
-cmake --install build/main --prefix ./bin_Release
-```
+- [构建说明](./build/build-instructions.md) - 完整构建指南
+- [Python 环境配置](./build/python-environment.md) - Python 环境设置

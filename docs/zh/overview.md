@@ -73,8 +73,8 @@ graph LR
 |------|------|----------|
 | 语言 | C++ | C++17 |
 | GUI 框架 | Qt | 5.14+ / 6.x |
-| 数据处理 | Python + pandas | Python 3.8+ |
-| 构建系统 | CMake | 3.12+ |
+| 数据处理 | Python + pandas | Python 3.7+ (推荐 3.11) |
+| 构建系统 | CMake | 3.16+ |
 | 绑定框架 | pybind11 | - |
 
 ### 核心第三方库
@@ -127,8 +127,9 @@ graph LR
 
 !!! tip "前置条件"
     - Qt 5.14+ 或 Qt 6.x 开发环境
-    - Python 3.8+ 环境
-    - CMake 3.12+
+    - Python 3.7+ 环境（推荐 3.11）
+    - CMake 3.16+
+    - Ninja 构建工具（推荐）
     - Git（用于拉取第三方库）
 
 ### 克隆项目
@@ -139,33 +140,34 @@ cd data-workbench
 git submodule update --init --recursive
 ```
 
-### 构建步骤
+!!! warning "构建必须使用 Qt 工具链文件"
+    构建**必须**指定 Qt 工具链文件，否则会出现 Windows SDK 头文件找不到的问题。
 
-```bash
-# 1. 构建 zlib（quazip 依赖）
-cmake -S src/3rdparty/zlib -B build/zlib
-cmake --build build/zlib --config Release
-cmake --install build/zlib --prefix ./bin_Release
+### 构建步骤（Windows）
 
-# 2. 构建所有第三方库
-cmake -S src/3rdparty -B build/3rdparty
-cmake --build build/3rdparty --config Release
-cmake --install build/3rdparty --prefix ./bin_Release
+```powershell
+# 配置项目（必须指定 Qt 工具链文件）
+cmake -S . -B build -G Ninja `
+    -DCMAKE_BUILD_TYPE=Release `
+    -DCMAKE_TOOLCHAIN_FILE="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
 
-# 3. 构建主程序
-cmake -S . -B build/main
-cmake --build build/main --config Release
-cmake --install build/main --prefix ./bin_Release
+# 构建项目
+cmake --build build --config Release --parallel
+
+# 安装
+cmake --build build --config Release --target install
 ```
+
+详细构建说明请参阅 [构建说明](./build/build-instructions.md)。
 
 ### 运行程序
 
-```bash
+```powershell
 # Windows
-./bin_Release/bin/DAWorkbench.exe
+.\bin_Release_qt6.7.3_MSVC_x64\DAWorkbench.exe
 
 # Linux
-./bin_Release/bin/DAWorkbench
+./bin_Release_qt6.7.3_GCC_x64/DAWorkbench
 ```
 
 ---

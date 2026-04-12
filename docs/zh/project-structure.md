@@ -27,19 +27,28 @@ data-workbench/
 │   ├── DAAxOfficeWrapper/    # Office 自动化模块（Windows）
 │   ├── 3rdparty/             # 第三方库源码
 │   ├── PyScripts/            # Python 脚本资源
-│   └── i18n/                 # 国际化翻译文件
+│   ├── i18n/                 # 国际化翻译文件
+│   ├── tst/                  # 测试代码目录
+│   ├── DAConfigs.h           # 编译后生成的配置头文件
+│   ├── DAConfigs.h.in        # 配置文件生成模板
+│   ├── DAGlobals.h           # 全局定义和宏
+│   └── template-python-config.json  # Python 环境配置模板
 ├── plugins/                  # 插件目录
 │   ├── DataAnalysis/         # 数据分析插件（示例）
-│   └── plugin-template/      # 插件模板生成工具
+│   ├── plugin-template/      # 插件模板生成工具
+│   └── CMakeLists.txt        # 插件构建配置
 ├── docs/                     # 文档目录
 │   ├── zh/                   # 中文文档
 │   ├── assets/               # 文档资源文件
 │   └── stylesheets/          # 文档样式文件
 ├── cmake/                    # CMake 辅助脚本
+├── scripts/                  # 构建辅助脚本
 ├── stubs/                    # Python stubs 文件
 ├── mkdocs.yml                # 文档配置文件
 ├── CMakeLists.txt            # 主 CMake 配置文件
-└── readme.md                 # 项目说明文件
+├── readme.md                 # 项目说明文件
+├── requirements.txt          # Python 运行依赖
+└── requirements-docs.txt     # 文档生成依赖
 ```
 
 ---
@@ -139,7 +148,7 @@ graph TB
 | `DAWorkbenchConfig.cmake.in` | CMake 导出配置模板 |
 | `readme.md` | 项目说明和快速上手指南 |
 | `mkdocs.yml` | MkDocs 文档配置 |
-| `requirements.txt` | Python 运行依赖 |
+| `requirements.txt` | Python 运行依赖（pandas, numpy, scipy 等） |
 | `requirements-docs.txt` | 文档生成依赖 |
 
 ### src 目录关键文件

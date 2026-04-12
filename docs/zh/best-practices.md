@@ -2,8 +2,6 @@
 
 本指南汇集插件开发的最佳实践、性能优化建议、常见问题解答，帮助开发者高效开发高质量插件。
 
----
-
 ## 插件开发最佳实践
 
 ### 1. 架构设计原则
@@ -81,14 +79,7 @@ bool MyWorker::exec()
     
     return true;
 }
-
-// UI 线程处理信号
-connect(worker, &MyWorker::processingComplete,
-        this, &MyPlugin::onProcessingComplete,
-        Qt::QueuedConnection);  // 跨线程连接
 ```
-
----
 
 ## 性能优化建议
 
@@ -186,8 +177,6 @@ void MyDockWidget::updateDataView()
 }
 ```
 
----
-
 ## 错误处理规范
 
 ### 1. 统一错误处理
@@ -253,8 +242,6 @@ void MyPlugin::handleOperation()
     }
 }
 ```
-
----
 
 ## 常见问题解答 (FAQ)
 
@@ -418,8 +405,6 @@ dock->addDockWidget(m_widget,
                     "myplugin.dock.widget");
 ```
 
----
-
 ## 兼容性注意事项
 
 ### 跨版本适配
@@ -456,8 +441,6 @@ void MyPlugin::loadConfig()
 #endif
 ```
 
----
-
 ## 贡献指南
 
 ### 提交 PR 前检查清单
@@ -488,8 +471,6 @@ int m_memberVariable;   // m_ prefix + camelCase
  * @note 注意事项
  */
 ```
-
----
 
 ## 下一步
 
