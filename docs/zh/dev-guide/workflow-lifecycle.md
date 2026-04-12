@@ -1,109 +1,505 @@
 # 工作流生命周期
 
-## 节点创建过程生命周期
+工作流生命周期描述了节点从创建到销毁、从连接到执行过程中涉及的回调机制。通过生命周期回调，开发者可以在关键节点注入自定义逻辑，实现节点编号、拓扑检查、动态连接点生成等功能。
 
-节点从创建到销毁涉及到的回调如下表所示：
+## 主要功能特性
 
-表 节点添加过程生命周期
+**特性**
 
-|顺序|类|函数/信号|说明|
-|:-|:-|:-|:-|
-|1|DAAbstractNodeFactory|nodeAddedToWorkflow|节点即将加入workflow的回调|
-|2|DAWorkFlow|nodeAdded|添加节点完成触发的信号|
+- ✅ **节点创建回调**：在节点添加和移除时触发回调，支持全局属性设置
+- ✅ **节点连接回调**：连接过程中多次回调，支持动态连接点生成
+- ✅ **连接验证回调**：连接前后触发验证回调，支持连接合法性检查
+- ✅ **生命周期状态管理**：场景自动管理连接状态，提供状态查询接口
 
-表 节点移除过程生命周期
+## 生命周期概览
 
-|顺序|类|函数/信号|说明|
-|:-|:-|:-|:-|
-|1|DAAbstractNodeFactory|nodeStartRemove|节点即将移出workflow的回|调
-|2|DAWorkFlow|nodeRemoved|移除节点完成触发的信号|
+工作流节点生命周期包含三个主要阶段：创建、连接、执行。下图展示了各阶段的状态流转：
 
-节点在添加和删除前都会触发工厂的回调，针对一些全局属性可以通过工厂的回调进行操作，例如对节点进行编号或者拓扑检查等等
-
-## 节点连线过程生命周期
-
-节点连线过程的生命周期涉及的回调较多，这些回调的目的是辅助判断节点的连接交互过程使能，以及针对一些特殊的节点实现动态连接，节点开始连接到连接成功涉及到的回调有如下函数
-
-表 节点开始连接过程的调用过程
-
-|顺序|类|函数|说明|
-|:-|:-|:-|:-|
-|1|DAAbstractNodeGraphicsItem|tryLinkOnItemPos|节点点击会触发此回调，此回调可以针对没有固定节点的元件进行动态连接点生成的操作|
-|2|DAAbstractNodeGraphicsItem|getLinkPointByPos|获取是否点击到连接点，只有点击到连接点，才会进入连接模式|
-|3|DANodeGraphicsScene|nodeItemLinkPointSelected|**EMIT** 发射连接点被选中信号|
-|4|DAAbstractNodeGraphicsItem|createLinkItem|创建连接线|
-|5|DAAbstractNodeLinkGraphicsItem|attachFrom|建立开始连接方法，只有此方法返回true，才会进入连接模式|
-|6|DAGraphicsScene|beginLink|开始连接，连接线交由场景管理|
-
-用户在点击节点的输出连接点时，首先会调用`DAAbstractNodeGraphicsItem::tryLinkOnItemPos`回调函数，这个函数的作用是用于给元件判断是否要动态生成连接点，有些特殊的节点没有固定的连接点，需要根据情景动态生成的时候，可以重写此函数，在用户点击的位置进行连接点的生成
-
-`DAAbstractNodeGraphicsItem::tryLinkOnItemPos`函数之后将会调用`DAAbstractNodeGraphicsItem::getLinkPointByPos`来看看是否点击到了连接点，如果是则准备进入连接状态，如果不是就跳过，因此，针对那些需要动态生成连接点的特殊元件，`DAAbstractNodeGraphicsItem::tryLinkOnItemPos`函数可以在点击的位置生成一个连接点，以便`DAAbstractNodeGraphicsItem::getLinkPointByPos`能获取到一个具体连接点从而进入连接状态
-
-如果`DAAbstractNodeGraphicsItem::getLinkPointByPos`返回一个有效的连接点，则进入连接状态，`DANodeGraphicsScene`会发射`nodeItemLinkPointSelected`信号：
-
-```cpp
-void nodeItemLinkPointSelected(DA::DAAbstractNodeGraphicsItem* item,const DA::DANodeLinkPoint& lp,QGraphicsSceneMouseEvent* event);
+```mermaid
+stateDiagram-v2
+    [*] --> 创建阶段: 用户拖入节点
+    
+    创建阶段 --> 连接阶段: 节点创建完成
+    创建阶段 --> [*]: 节点被删除
+    
+    连接阶段 --> 执行阶段: 连接完成
+    连接阶段 --> 连接阶段: 继续连接其他节点
+    连接阶段 --> 创建阶段: 取消连接
+    
+    执行阶段 --> 连接阶段: 执行完成
+    执行阶段 --> [*]: 工作流销毁
+    
+    state 创建阶段 {
+        [*] --> 节点初始化
+        节点初始化 --> nodeAddedToWorkflow: 工厂回调
+        nodeAddedToWorkflow --> nodeAdded: 信号发射
+        nodeAdded --> [*]
+    }
+    
+    state 连接阶段 {
+        [*] --> 点击输出点
+        点击输出点 --> tryLinkOnItemPos: 动态连接点生成
+        tryLinkOnItemPos --> prepareLinkOutput: 准备输出
+        prepareLinkOutput --> 开始连接模式
+        开始连接模式 --> 点击输入点
+        点击输入点 --> prepareLinkInput: 准备输入
+        prepareLinkInput --> attachTo: 建立连接
+        attachTo --> 连接完成
+        连接完成 --> [*]
+    }
 ```
 
-此信号发射完成后，会调用`DAAbstractNodeGraphicsItem::createLinkItem`函数，来生成一个连接线的图元，如果此函数返回值为`nullptr`，则不会创建连接线，但上面的信号会发射
+## 节点创建生命周期
 
-生成连接线后，会调用连接线图元的 `DAAbstractLinkGraphicsItem::attachFrom`函数，这个函数将连接线与节点关联起来，如果节点不接受连接线，此函数会返回`false`，结束连接，返回`true`则说明可以开始连接
+节点创建过程涉及工厂回调和工作流信号，允许在节点添加前后执行自定义逻辑。
 
-创建完连接线后，连接线会绑定图元所点击的连接点，同时，调用`DAGraphicsScene::beginLink`方法。`DAGraphicsScene::beginLink`是一个很关键的方法，`DAGraphicsScene`所有涉及连接的操作都需要用到此方法。这个方法会把连接线加入场景中，并交由场景管理，这时，在连接线未完成时，连接线的末端会随着鼠标移动而移动。调用`DAGraphicsScene::beginLink`后，`DAGraphicsScene::isStartLink`方法会返回true
+### 创建过程时序图
 
-上面是连接线从开始连接点连接的调用过程
+```mermaid
+sequenceDiagram
+    participant User as 用户
+    participant Scene as DANodeGraphicsScene
+    participant Factory as DAAbstractNodeFactory
+    participant Workflow as DAWorkFlow
+    participant Node as DAAbstractNode
+    
+    User->>Scene: 拖入节点
+    Scene->>Workflow: createNode(metaData)
+    Workflow->>Factory: create(metaData)
+    Factory-->>Node: 创建节点实例
+    Node-->>Workflow: 返回节点
+    
+    Workflow->>Factory: nodeAddedToWorkflow(node)
+    Note over Factory: 回调：节点即将加入工作流<br/>可进行编号、拓扑检查等
+    
+    Workflow->>Workflow: addNode(node)
+    Workflow-->>Scene: nodeAdded(node) SIGNAL
+    Note over Scene: 信号：节点添加完成
+```
 
-连接过程从图元的输出连接点点击后开始，到点击到其它图元的输入连接点为结束，连接点结束连接过程的调用过程如下：
+### 创建过程回调说明
 
-表 节点结束连接过程的调用过程
+| 顺序 | 类 | 函数/信号 | 类型 | 说明 |
+|------|-----|-----------|------|------|
+| 1 | DAAbstractNodeFactory | `nodeAddedToWorkflow` | 回调 | 节点即将加入工作流，可在此设置全局属性 |
+| 2 | DAWorkFlow | `nodeAdded` | 信号 | 添加节点完成，通知界面更新 |
 
-|顺序|类|函数|说明|
-|:-|:-|:-|:-|
-|1|DAGraphicsScene|isStartLink|判断当前是否在连接状态|
-|2|DAGraphicsScene|getCurrentLinkItem|获取当前管理的连接线|
-|3|DAAbstractNodeGraphicsItem|tryLinkOnItemPos|节点点击会触发此回调，此回调可以针对没有固定节点的元件进行动态连接点生成的操作|
-|4|DAAbstractNodeGraphicsItem|getLinkPointByPos|获取是否点击到连接点，只有点击到连接点，才会进入连接模式|
-|5|DANodeGraphicsScene|nodeItemLinkPointSelected|**EMIT** 发射连接点被选中信号|
-|6|DAAbstractNodeLinkGraphicsItem|attachTo|调用连接线的 attachTo方法，只有此方法返回 true，才会进入后面的结束连接过程|
-|  6.1| - DAAbstractNode|linkTo|节点的linkto方法|
-|  6.2| - DAAbstractNode|finishLink|如果连接完成，会分别调用DAAbstractNode的finishLink回调方法|
-|  6.3| - DAAbstractNodeLinkGraphicsItem|finishedNodeLink|node的finishLink回调结束后，调用连接线的finishedNodeLink回调，通知item，节点完成了连接|
-|7|DANodeGraphicsScene|addNodeLink_|把连接线用命令管理起来，可以实现**redo/undo**|
-|8|DAGraphicsScene|endLink|调用结束连接方法，通知场景，结束连接线的管理，这时连接线不会跟随鼠标移动，场景不在管理连接线的状态|
-|9|DAAbstractNodeLinkGraphicsItem|willCompleteLink|调用连接线结束连接回调，这个回调可以实现一些连接线完成连接后的动作，例如改变颜色，改变渲染方式等等|
-|10|DAGraphicsScene|linkCompleted|**EMIT** 发射连接完成信号|
+### 移除过程时序图
 
-首先通过`DAGraphicsScene::isStartLink`判断当前是否处于连接状态，如果是，则会调用`DAGraphicsScene::getCurrentLinkItem`获取场景当前正在管理的连接线图元，连接线图元是通过`DAGraphicsScene::beginLink`函数设置进去的
+```mermaid
+sequenceDiagram
+    participant User as 用户
+    participant Scene as DANodeGraphicsScene
+    participant Factory as DAAbstractNodeFactory
+    participant Workflow as DAWorkFlow
+    participant Node as DAAbstractNode
+    
+    User->>Scene: 删除节点
+    Scene->>Factory: nodeStartRemove(node)
+    Note over Factory: 回调：节点即将移除<br/>可进行资源清理
+    
+    Factory-->>Scene: 返回继续
+    Scene->>Workflow: removeNode(node)
+    Workflow-->>Scene: nodeRemoved(node) SIGNAL
+    Note over Scene: 信号：节点移除完成
+```
 
-接着和开始连接一样，结束连接过程也会调用`DAAbstractNodeGraphicsItem::tryLinkOnItemPos`回调函数，`DAAbstractNodeGraphicsItem::tryLinkOnItemPos`函数之后将会调用`DAAbstractNodeGraphicsItem::getLinkPointByPos`
+### 移除过程回调说明
 
-如果`DAAbstractNodeGraphicsItem::getLinkPointByPos`返回一个有效的连接点，则开始进入结束连接状态，和开始连接过程一样，`DANodeGraphicsScene`会发射`nodeItemLinkPointSelected`信号
+| 顺序 | 类 | 函数/信号 | 类型 | 说明 |
+|------|-----|-----------|------|------|
+| 1 | DAAbstractNodeFactory | `nodeStartRemove` | 回调 | 节点即将移除，可进行资源清理 |
+| 2 | DAWorkFlow | `nodeRemoved` | 信号 | 移除节点完成，通知界面更新 |
 
-接下来将会调用`DAAbstractNodeLinkGraphicsItem::attachTo`方法,这个方法是绝对是否连接完成的关键，此方法返回`true`，则表示连接成功，节点接受连接，否则失败，如果失败，则会结束连接状态判定，用户可以继续连接，场景依旧处于连接状态
+### 工厂回调使用示例
 
-`DAAbstractNodeLinkGraphicsItem::attachTo`方法返回`true`,说明这次连接完成
+通过工厂回调可以实现全局属性的设置，例如自动编号：
 
-`DAAbstractNodeLinkGraphicsItem::attachTo`方法里涉及较多节点相关的操作：
-- 首先会调用节点`DAAbstractNode::linkTo`方法
-- 然后，调用节点的`DAAbstractNode::finishLink`回调
-- 最后调用`DAAbstractNodeLinkGraphicsItem::finishedNodeLink`回调
+```cpp
+class MyNodeFactory : public DA::DAAbstractNodeFactory
+{
+public:
+    // 节点添加回调
+    void nodeAddedToWorkflow(DA::DAAbstractNode::SharedPointer node) override
+    {
+        // 自动为节点编号
+        node->setProperty("nodeIndex", m_nodeCounter++);
+        
+        // 执行拓扑检查
+        if (!validateTopology(node)) {
+            qWarning() << "节点拓扑验证失败";
+        }
+    }
+    
+    // 节点移除回调
+    void nodeStartRemove(DA::DAAbstractNode::SharedPointer node) override
+    {
+        // 清理节点相关资源
+        cleanupNodeResources(node);
+        
+        // 更新拓扑记录
+        m_topology.removeNode(node->getID());
+    }
 
-`DAAbstractNodeLinkGraphicsItem::attachTo`之后会调用`DANodeGraphicsScene::addNodeLink_`函数，把连接线添加到回退栈中，可以实现连接线的redo/undo
+private:
+    int m_nodeCounter = 0;
+};
 
-之后调用`DAGraphicsScene::endLink`函数，此函数会告诉场景结束连接，并清除连接线的管理，这个函数里面会调用`DAAbstractNodeLinkGraphicsItem::willCompleteLink`回调，这个回调可以进行一些操作，这个回调可以实现一些连接线完成连接后的动作，例如改变颜色，改变渲染方式等等
+// 效果：每个新节点都会自动获得唯一编号，移除时自动清理资源
+```
 
-> 注意：`finishedNodeLink`和`willCompleteLink`都是表示连接完成，但`finishedNodeLink`更早，它代表了节点完成了连接，是逻辑层面的完成，`willCompleteLink`是代表视图层面的完成连接，它发生的更晚，原则上，`finishedNodeLink`如果触发，那么`willCompleteLink`就应该返回`ture`，如果`finishedNodeLink`触发了，但`willCompleteLink`就应该返回`false`，将导致逻辑和视图的不一致，会引发一些问题
+## 节点连接生命周期
 
-最后，场景将会发出`DAGraphicsScene::linkCompleted`信号，这时，一个完整的连接过程结束
+节点连接是工作流中最复杂的交互过程，涉及多个回调函数，支持动态连接点生成和连接验证。
 
-![点击输出点的回调过程](../assets/PIC/workflow-node-beginlink.png)
+### 连接生命周期状态图
 
-节点在连接过程可以进行中断操作，中断会触发prepareLinkOutputFailed回调
+```mermaid
+stateDiagram-v2
+    [*] --> 空闲状态
+    
+    空闲状态 --> 开始连接: 点击输出连接点
+    开始连接 --> 动态生成连接点: tryLinkOnItemPos
+    动态生成连接点 --> 获取连接点: getLinkPointByPos
+    
+    获取连接点 --> 连接模式: 返回有效连接点
+    获取连接点 --> 空闲状态: 返回无效
+    
+    连接模式 --> 等待目标: 创建临时连接线
+    等待目标 --> 连接验证: 点击目标连接点
+    等待目标 --> 取消连接: ESC或点击空白
+    
+    连接验证 --> 建立连接: attachTo返回true
+    连接验证 --> 等待目标: attachTo返回false
+    
+    建立连接 --> 完成回调: finishedNodeLink
+    完成回调 --> 视图完成: willCompleteLink
+    视图完成 --> 空闲状态: linkCompleted信号
+    
+    取消连接 --> 空闲状态: prepareLinkOutputFailed
 
-![中断连接回调](../assets/PIC/workflow-node-cancellink.png)
+state 连接验证 {
+    [*] --> prepareLinkInput
+    prepareLinkInput --> 验证通过: 输入点接受
+    prepareLinkInput --> 验证失败: 输入点拒绝
+    验证通过 --> attachTo方法
+    验证失败 --> prepareLinkInputFailed
+}
+```
 
-节点1的输出完成连接到节点2的输入，首先会触发节点2的prepareLinkInput回调，再根据结果触发触发prepareLinkInputSucceed或prepareLinkInputFailed回调
+### 开始连接过程时序图
 
-![完成节点连接的回调](../assets/PIC/workflow-node-finishlink.png)
+```mermaid
+sequenceDiagram
+    participant User as 用户
+    participant Item as DAAbstractNodeGraphicsItem
+    participant Scene as DANodeGraphicsScene
+    participant LinkItem as DAAbstractNodeLinkGraphicsItem
+    participant GScene as DAGraphicsScene
+    
+    User->>Item: 点击节点
+    Item->>Item: tryLinkOnItemPos(pos)
+    Note over Item: 回调：判断是否动态生成连接点<br/>特殊节点可重写此方法
+    
+    Item->>Item: getLinkPointByPos(pos)
+    Note over Item: 回调：获取点击的连接点<br/>返回无效则取消连接
+    
+    alt 返回有效连接点
+        Item-->>Scene: 连接点信息
+        Scene-->>Scene: nodeItemLinkPointSelected SIGNAL
+        Note over Scene: 信号：连接点被选中
+        
+        Item->>Item: createLinkItem(lp)
+        Note over Item: 创建连接线图元<br/>返回nullptr则取消连接
+        
+        LinkItem-->>Item: 创建临时连接线
+        
+        LinkItem->>LinkItem: attachFrom(item, lp)
+        Note over LinkItem: 回调：建立起始连接<br/>返回false则取消
+        
+        alt attachFrom成功
+            LinkItem-->>GScene: 连接线信息
+            GScene->>GScene: beginLink(linkItem)
+            Note over GScene: 场景接管连接线<br/>连接线跟随鼠标移动
+            GScene-->>GScene: isStartLink() = true
+        else attachFrom失败
+            LinkItem-->>Item: 连接被拒绝
+        end
+    else 返回无效连接点
+        Item-->>User: 不进入连接模式
+    end
+```
 
-通过节点连接线的回调，可以实现不固定的输入或输出点
+### 结束连接过程时序图
+
+```mermaid
+sequenceDiagram
+    participant User as 用户
+    participant GScene as DAGraphicsScene
+    participant Item as DAAbstractNodeGraphicsItem
+    participant Scene as DANodeGraphicsScene
+    participant LinkItem as DAAbstractNodeLinkGraphicsItem
+    participant Node as DAAbstractNode
+    
+    User->>GScene: 点击目标节点
+    GScene->>GScene: isStartLink()
+    Note over GScene: 判断是否处于连接状态
+    
+    GScene->>GScene: getCurrentLinkItem()
+    Note over GScene: 获取当前连接线
+    
+    Item->>Item: tryLinkOnItemPos(pos)
+    Item->>Item: getLinkPointByPos(pos)
+    
+    alt 返回有效连接点
+        Scene-->>Scene: nodeItemLinkPointSelected SIGNAL
+        
+        LinkItem->>LinkItem: attachTo(item, lp)
+        Note over LinkItem: 关键方法：建立目标连接<br/>返回true表示连接成功
+        
+        alt attachTo成功
+            LinkItem->>Node: linkTo(outKey, inNode, inKey)
+            Note over Node: 建立逻辑层连接
+            
+            Node->>Node: finishLink(outKey, inNode, inKey)
+            Note over Node: 回调：节点完成连接<br/>逻辑层面完成
+            
+            Node-->>LinkItem: 连接信息
+            LinkItem->>LinkItem: finishedNodeLink()
+            Note over LinkItem: 回调：连接线完成连接<br/>通知item节点完成
+            
+            Scene->>Scene: addNodeLink_(linkItem)
+            Note over Scene: 加入redo/undo栈
+            
+            GScene->>GScene: endLink()
+            
+            LinkItem->>LinkItem: willCompleteLink()
+            Note over LinkItem: 回调：视图层完成<br/>可改变颜色、渲染方式
+            
+            GScene-->>GScene: linkCompleted SIGNAL
+            Note over GScene: 信号：连接完成
+        else attachTo失败
+            LinkItem-->>GScene: 连接被拒绝
+            Note over GScene: 保持连接状态<br/>可继续连接其他节点
+        end
+    else 返回无效连接点
+        GScene-->>User: 继续等待
+    end
+```
+
+### 连接回调函数详解
+
+#### 开始连接回调
+
+| 顺序 | 类 | 函数 | 说明 |
+|------|-----|------|------|
+| 1 | DAAbstractNodeGraphicsItem | `tryLinkOnItemPos` | 动态生成连接点回调，特殊节点可重写 |
+| 2 | DAAbstractNodeGraphicsItem | `getLinkPointByPos` | 获取点击位置的连接点 |
+| 3 | DAAbstractNodeGraphicsItem | `createLinkItem` | 创建连接线图元，返回nullptr取消连接 |
+| 4 | DAAbstractNodeLinkGraphicsItem | `attachFrom` | 建立起始连接，返回false取消连接 |
+
+#### 结束连接回调
+
+| 顺序 | 类 | 函数 | 说明 |
+|------|-----|------|------|
+| 1 | DAAbstractNodeLinkGraphicsItem | `attachTo` | 建立目标连接，关键判断点 |
+| 2 | DAAbstractNode | `linkTo` | 逻辑层建立连接 |
+| 3 | DAAbstractNode | `finishLink` | 逻辑层完成连接回调 |
+| 4 | DAAbstractNodeLinkGraphicsItem | `finishedNodeLink` | 连接线完成连接回调 |
+| 5 | DAAbstractNodeLinkGraphicsItem | `willCompleteLink` | 视图层完成连接回调 |
+
+### 动态连接点生成示例
+
+某些特殊节点需要根据上下文动态生成连接点：
+
+```cpp
+class DynamicNodeGraphicsItem : public DA::DAAbstractNodeGraphicsItem
+{
+public:
+    // 动态生成连接点
+    bool tryLinkOnItemPos(const QPointF& pos, DA::DANodeLinkPoint& lp) override
+    {
+        // 判断是否在动态区域
+        if (isInDynamicZone(pos)) {
+            // 根据位置生成新的连接点
+            DA::DANodeLinkPoint newLp;
+            newLp.name     = generateLinkPointName();
+            newLp.way      = DA::DANodeLinkPoint::Output;
+            newLp.position = pos;
+            
+            // 添加到节点
+            addLinkPoint(newLp);
+            lp = newLp;
+            return true;
+        }
+        return false;
+    }
+    
+    // 创建自定义连接线
+    DA::DAAbstractNodeLinkGraphicsItem* createLinkItem(const DA::DANodeLinkPoint& lp) override
+    {
+        // 创建特定样式的连接线
+        auto* linkItem = new MyCustomLinkItem();
+        linkItem->setLinkLineStyle(DA::DAAbstractNodeLinkGraphicsItem::LinkLineBezier);
+        return linkItem;
+    }
+};
+
+// 效果：节点可根据点击位置动态创建连接点
+```
+
+### 连接验证示例
+
+在连接完成前进行验证：
+
+```cpp
+class MyNode : public DA::DAAbstractNode
+{
+public:
+    // 连接完成回调
+    bool finishLink(const QString& outKey, DA::DAAbstractNode* inNode, const QString& inKey) override
+    {
+        // 验证连接是否合法
+        if (!validateConnection(outKey, inNode, inKey)) {
+            qWarning() << "连接验证失败：数据类型不匹配";
+            return false;
+        }
+        
+        // 记录连接信息
+        m_connectionRecords.append({ outKey, inNode->getID(), inKey });
+        
+        return true;
+    }
+    
+private:
+    bool validateConnection(const QString& outKey, DA::DAAbstractNode* inNode, const QString& inKey)
+    {
+        // 获取输出数据类型
+        DataType outType = getOutputDataType(outKey);
+        
+        // 获取输入期望类型
+        DataType expectedType = inNode->getInputExpectedType(inKey);
+        
+        // 类型匹配检查
+        return isTypeCompatible(outType, expectedType);
+    }
+};
+
+// 效果：连接时自动验证数据类型兼容性
+```
+
+## 节点执行生命周期
+
+节点执行生命周期描述了工作流执行过程中节点的状态变化。
+
+### 执行过程时序图
+
+```mermaid
+sequenceDiagram
+    participant User as 用户
+    participant Workflow as DAWorkFlow
+    participant Executer as DAWorkFlowExecuter
+    participant Thread as 执行线程
+    participant Node as DAAbstractNode
+    
+    User->>Workflow: exec()
+    Workflow->>Workflow: createExecuter()
+    Workflow->>Executer: moveToThread(Thread)
+    
+    User->>Workflow: startExecute SIGNAL
+    Workflow->>Executer: startExecute()
+    Note over Executer: 在独立线程中执行
+    
+    loop 按依赖顺序执行
+        Executer->>Node: exec()
+        Note over Node: 执行节点逻辑
+        Node->>Node: 处理输入数据
+        Node->>Node: 生成输出数据
+        Node-->>Executer: 返回执行结果
+        
+        alt 执行成功
+            Executer-->>Workflow: nodeExecuteFinished(node, true)
+        else 执行失败
+            Executer-->>Workflow: nodeExecuteFinished(node, false)
+            Executer-->>Workflow: finished(false)
+            Note over Workflow: 执行终止
+        end
+    end
+    
+    Executer-->>Workflow: finished(true)
+    Note over Workflow: 所有节点执行完成
+```
+
+### 执行回调说明
+
+| 回调/信号 | 触发时机 | 说明 |
+|-----------|----------|------|
+| `DAAbstractNode::prepare` | 节点执行前 | 准备执行环境，可进行资源初始化 |
+| `DAAbstractNode::exec` | 节点执行时 | 执行核心逻辑，必须实现 |
+| `DAWorkFlow::nodeExecuteFinished` | 单个节点完成 | 通知界面更新节点状态 |
+| `DAWorkFlow::finished` | 工作流完成 | 所有节点执行完成或失败 |
+
+## 回调函数总结
+
+### 回调函数分类
+
+| 类别 | 回调函数 | 用途 |
+|------|----------|------|
+| 节点创建 | `nodeAddedToWorkflow` | 全局属性设置、编号 |
+| 节点创建 | `nodeStartRemove` | 资源清理、拓扑更新 |
+| 连接准备 | `tryLinkOnItemPos` | 动态生成连接点 |
+| 连接准备 | `getLinkPointByPos` | 获取连接点信息 |
+| 连接创建 | `createLinkItem` | 创建自定义连接线 |
+| 连接建立 | `attachFrom`/`attachTo` | 连接验证、建立连接 |
+| 连接完成 | `finishLink` | 逻辑层连接完成 |
+| 连接完成 | `finishedNodeLink` | 通知连接线节点完成 |
+| 连接完成 | `willCompleteLink` | 视图层连接完成 |
+
+### 回调执行顺序
+
+```mermaid
+flowchart LR
+    subgraph 创建阶段
+        A[nodeAddedToWorkflow] --> B[nodeAdded SIGNAL]
+    end
+    
+    subgraph 连接阶段
+        C[tryLinkOnItemPos] --> D[getLinkPointByPos]
+        D --> E[createLinkItem]
+        E --> F[attachFrom]
+        F --> G[attachTo]
+        G --> H[finishLink]
+        H --> I[finishedNodeLink]
+        I --> J[willCompleteLink]
+        J --> K[linkCompleted SIGNAL]
+    end
+    
+    subgraph 移除阶段
+        L[nodeStartRemove] --> M[nodeRemoved SIGNAL]
+    end
+    
+    B --> C
+    K --> L
+```
+
+## 注意事项
+
+!!! warning "finishedNodeLink 与 willCompleteLink 的区别"
+    - `finishedNodeLink`：逻辑层面完成，代表节点间数据通道建立
+    - `willCompleteLink`：视图层面完成，可以改变连接线样式
+    - 如果 `finishedNodeLink` 触发但 `willCompleteLink` 返回 false，将导致逻辑和视图不一致
+
+!!! warning "线程安全"
+    节点执行回调在工作流执行线程中调用，不要在回调中进行界面操作，使用信号通知主线程更新。
+
+!!! tip "动态连接点"
+    需要动态生成连接点的节点应重写 `tryLinkOnItemPos` 方法，在点击位置创建连接点后再调用父类方法。
+
+!!! info "redo/undo 支持"
+    通过 `DANodeGraphicsScene::addNodeLink_` 添加的连接线支持撤销重做操作，函数名带 `_` 后缀表示支持命令模式。
+
+## 参考资料
+
+- [工作流模块](workflow.md)
+- [插件开发指南](plugin-project-create.md)
+- 源码目录：`src/DAWorkFlow`、`src/DAGraphicsView`
