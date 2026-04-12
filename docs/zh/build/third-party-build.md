@@ -109,11 +109,7 @@ cmake --build build --config Release --target install
 ```
 
 !!! note "自动查找 zlib"
-    CMake 会自动通过 `find_package(ZLIB)` 查找已安装的 zlib。如果找不到，请设置环境变量：
-    
-    ```powershell
-    $env:ZLIB_ROOT = "C:\local\zlib"
-    ```
+    CMake 会自动通过 `find_package(ZLIB)` 查找已安装的 zlib。如果找不到，请设置环境变量 `$env:ZLIB_ROOT = "C:\local\zlib"`
 
 ### 步骤三：验证安装
 
@@ -122,59 +118,14 @@ cmake --build build --config Release --target install
 ls ..\bin_Release_qt*
 ```
 
-安装目录命名格式：`bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}`
-
-## 安装目录结构
-
-安装目录包含以下内容：
-
-```
-bin_Release_qt6.7.3_MSVC_x64/
-├── bin/                    # 可执行文件和动态库
-│   ├── qwt.dll
-│   ├── SARibbon.dll
-│   └── ...
-├── lib/                    # 静态库和导入库
-│   ├── qwt.lib
-│   ├── SARibbon.lib
-│   └── ...
-├── include/                # 头文件
-│   ├── qwt/
-│   ├── SARibbon/
-│   └── ...
-└── cmake/                  # CMake 配置文件
-    ├── qwt/
-    ├── SARibbon/
-    └── ...
-```
+安装目录命名格式：`bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}`，包含 `bin/`、`lib/`、`include/`、`cmake/` 等子目录。
 
 ## 使用 Qt Creator 构建
 
-除了命令行方式，也可以使用 Qt Creator 进行构建：
+除了命令行方式，也可以使用 Qt Creator：
 
 1. 打开 `src/3rdparty/zlib/CMakeLists.txt`，配置项目后构建并安装
 2. 打开 `src/3rdparty/CMakeLists.txt`，配置项目后构建并安装
-
-## 主项目构建
-
-第三方库构建完成后，可以构建 data-workbench 主项目：
-
-```powershell
-# 返回项目根目录
-cd ../..
-
-# 配置主项目
-cmake -S . -B build -G Ninja `
-    -DCMAKE_BUILD_TYPE:STRING=Release `
-    -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE `
-    -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
-
-# 构建主项目
-cmake --build build --config Release --parallel
-```
-
-!!! tip "自动链接第三方库"
-    主项目的 CMakeLists.txt 会自动在 `bin_*` 目录下查找已安装的第三方库。
 
 ## 常见问题
 
@@ -182,11 +133,7 @@ cmake --build build --config Release --parallel
 
 **现象**：首次构建时出现 moc 相关错误。
 
-**解决方案**：重新运行构建命令，这是 Qt moc 程序在处理大量项目时的已知问题。
-
-```powershell
-cmake --build build --config Release --parallel
-```
+**解决方案**：重新运行构建命令，这是 Qt moc 程序的已知问题。
 
 ### 找不到 zlib
 
