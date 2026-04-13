@@ -1459,6 +1459,12 @@ inline bool canCastToQDateTime(pybind11::handle src)
         return false;
 
     try {
+        // NaT (Not a Time) 是 pandas.Timestamp 的子类，需要先排除
+        // 否则 isinstance(src, Timestamp) 会返回 true，但无法转换为 QDateTime
+        static DA::PY::safe_pyobject pd_NaT = DA::PY::import_type_safe("pandas", "NaT");
+        if (pd_NaT && pybind11::isinstance(src, pd_NaT.get()))
+            return false;
+
         static DA::PY::safe_pyobject datetime_type = DA::PY::import_type_safe("datetime", "datetime");
         if (datetime_type && pybind11::isinstance(src, datetime_type.get()))
             return true;
