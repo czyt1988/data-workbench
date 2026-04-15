@@ -17,6 +17,8 @@
 
 ### 核心类关系图
 
+绘图模块的核心类通过继承关系组织，`DAGraphicsResizeableItem` 提供缩放控制功能，派生出矩形、图片等具体图元类型。下图展示了类的继承和依赖关系：
+
 ```mermaid
 classDiagram
     class QGraphicsObject {
@@ -89,7 +91,15 @@ classDiagram
     DAGraphicsView --> DAGraphicsScene : 显示
 ```
 
+上图展示了可缩放图元模块的类继承关系：
+- `DAGraphicsItem` 是所有图元的基类，提供 XML 序列化、边框、可选、可移动等基础功能
+- `DAGraphicsResizeableItem` 在基类基础上添加 8 控制点缩放功能
+- `DAGraphicsRectItem` 和 `DAGraphicsPixmapItem` 是具体的图元实现
+- `DAGraphicsScene` 和 `DAGraphicsView` 提供场景管理和视图显示
+
 ### 模块依赖
+
+可缩放图元模块的依赖关系如下，从视图到场景再到具体图元层层递进：
 
 ```mermaid
 flowchart LR
@@ -98,6 +108,8 @@ flowchart LR
     C --> D[DAGraphicsItem]
     D --> E[Qt Graphics View Framework]
 ```
+
+上图展示了模块的依赖层次：视图依赖场景，场景管理图元，图元继承基类，最终依赖 Qt Graphics View 框架。
 
 ## 核心类详解
 
@@ -142,7 +154,7 @@ enum ControlType {
 
 #### 绘制流程
 
-`DAGraphicsResizeableItem::paint` 的完整绘制流程如下：
+`DAGraphicsResizeableItem::paint` 的完整绘制流程如下。该流程自动处理选中状态、控制点、边框的绘制，用户只需实现 `paintBody`：
 
 ```mermaid
 flowchart TD
@@ -155,6 +167,11 @@ flowchart TD
     F --> G[paintBorder]
     G --> H[paint 结束]
 ```
+
+上图展示了完整的绘制流程：
+- 选中状态决定是否绘制选中边框和控制点
+- 无论是否选中，都会绘制背景和内容体
+- 最后绘制边框，完成整体渲染
 
 ## 使用方法
 
@@ -276,7 +293,7 @@ scene->setGridLinePen(QPen(QColor(200, 200, 200), 1, Qt::DotLine));
 
 ## 与工作流模块的关系
 
-可缩放图元模块是工作流可视化编辑的基础：
+可缩放图元模块是工作流可视化编辑的基础，工作流节点图元继承可缩放图元获得完整的编辑能力。下图展示了两个模块的关系：
 
 ```mermaid
 flowchart TD
@@ -289,6 +306,11 @@ flowchart TD
     H[鼠标事件处理] --> I[节点交互]
     J[redo/undo] --> K[操作历史]
 ```
+
+上图展示了可缩放图元模块如何支撑工作流可视化编辑：
+- `DAAbstractNodeGraphicsItem` 继承 `DAGraphicsResizeableItem`，获得 8 控制点缩放能力
+- 缩放控制点支持节点尺寸调整，鼠标事件处理支持节点交互
+- redo/undo 支持操作历史，实现完整的编辑体验
 
 工作流模块中的 `DAAbstractNodeGraphicsItem` 继承 `DAGraphicsResizeableItem`，通过可缩放图元的能力实现工作流节点的可视化编辑。
 

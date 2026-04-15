@@ -1,5 +1,7 @@
 # 项目序列化架构详解
 
+项目序列化架构提供项目文件的完整保存和加载解决方案，采用多线程处理避免阻塞 UI，支持任务队列机制实现可扩展的序列化内容管理。
+
 ## 1. 概述
 
 ### 1.1 设计目标
@@ -13,6 +15,8 @@ Data Workbench 项目的序列化架构旨在实现以下核心目标：
 5. **进度反馈**：提供任务进度信号，支持状态栏显示
 
 ### 1.2 整体架构
+
+序列化架构采用分层设计，从项目管理核心类到底层 ZIP 归档库形成清晰的层次结构。下图展示了各层组件的关系：
 
 ```mermaid
 graph TB
@@ -42,7 +46,14 @@ graph TB
     UIThread -->|"信号/槽"| WorkerThread
 ```
 
+上图展示了三层架构设计：
+- **DAAppProject**：项目管理核心类，协调各模块的序列化任务
+- **DAZipArchiveThreadWrapper**：多线程封装层，UI 线程创建任务，工作线程执行 I/O
+- **DAZipArchive**：ZIP 归档实现，基于 QuaZip 库处理压缩文件
+
 ### 1.3 核心类关系图
+
+核心类通过抽象接口和任务模式组织，实现可扩展的序列化机制。下图展示了核心类的继承关系和任务类型：
 
 ```mermaid
 classDiagram
@@ -93,6 +104,12 @@ classDiagram
     DAAbstractArchiveTask <|-- DAZipArchiveTask_ArchiveFile
     DAAbstractArchiveTask <|-- DAZipArchiveTask_ChartItem
 ```
+
+上图展示了核心类的继承关系：
+- **DAAbstractArchive**：抽象归档基类，定义 write、read、remove 等核心接口
+- **DAZipArchive**：ZIP 归档的具体实现
+- **DAAbstractArchiveTask**：抽象任务基类，定义 exec 执行接口
+- 四种任务类型：ByteArray（字节数组）、Xml（XML文档）、ArchiveFile（本地文件）、ChartItem（图表项）
 
 ## 2. 核心组件详解
 
@@ -524,7 +541,7 @@ void DAAppProject::makeSaveChartTask(DAZipArchiveThreadWrapper* archive)
 
 ### 4.3 临时文件处理机制
 
-保存过程使用临时文件确保事务安全：
+保存过程使用临时文件确保事务安全，避免保存失败破坏原有文件。下图展示了临时文件处理的完整流程：
 
 ```mermaid
 flowchart TD
@@ -536,6 +553,8 @@ flowchart TD
     E --> G["保存成功"]
     F --> H["保存失败<br/>原文件未受影响"]
 ```
+
+上图展示了临时文件机制的工作原理：所有数据先写入临时文件，成功后替换原文件，失败时删除临时文件，原文件保持不变。
 
 ## 5. 项目加载流程
 
@@ -634,6 +653,8 @@ void DAAppProject::loadedChartsInfo(const std::shared_ptr<DAAbstractArchiveTask>
 
 ### 5.3 加载顺序与依赖关系
 
+加载过程遵循严格的顺序，确保依赖关系正确。下图展示了加载的顺序和各阶段的数据流：
+
 ```mermaid
 flowchart TD
     A["1. workflow.xml"] -->|"恢复工作流UI"| A1["工作流恢复完成"]
@@ -647,6 +668,13 @@ flowchart TD
     E -->|"加载插件数据"| E1["全部加载完成"]
 ```
 
+上图展示了加载的五个阶段及其依赖关系：
+- 工作流先加载，恢复节点和连接
+- 数据管理器加载数据索引和实际数据文件
+- 图表项二进制数据先加载，为图表 UI 恢复做准备
+- 图表 XML 后加载，引用已加载的图表项
+- 插件数据最后加载
+
 **关键依赖**：
 
 - `charts.xml` 依赖 `chart-data/*` 必须先加载完成
@@ -655,6 +683,8 @@ flowchart TD
 ## 6. 多线程架构
 
 ### 6.1 线程模型设计
+
+序列化操作在独立工作线程中执行，避免阻塞 UI。下图展示了主线程和工作线程的职责分工：
 
 ```mermaid
 graph TB
@@ -687,6 +717,11 @@ graph TB
     WorkerThread -->|"Qt::QueuedConnection"| MainThread
 ```
 
+上图展示了线程模型的设计：
+- **主线程**：响应用户操作、创建任务、处理回调、更新状态栏
+- **工作线程**：执行 ZIP I/O、循环执行任务队列、发射进度信号
+- **通信方式**：使用 Qt::QueuedConnection 实现跨线程安全通信
+
 ### 6.2 信号槽通信机制
 
 ```cpp title="信号连接初始化"
@@ -709,6 +744,8 @@ void DAZipArchiveThreadWrapper::init()
 
 **信号流向**：
 
+保存和加载操作通过信号槽实现跨线程通信。下图展示了保存和加载操作的信号流向：
+
 ```mermaid
 sequenceDiagram
     participant UI as UI线程
@@ -726,6 +763,10 @@ sequenceDiagram
     Worker->>UI: emit taskProgress(task, mode)
     UI->>UI: onTaskProgress(task, mode) → 执行回调 → 恢复UI
 ```
+
+上图展示了两个操作的信号流向：
+- **保存操作**：UI 发射 beginSave → Worker 执行 saveAll → Worker 发射 taskFinished → UI 更新状态
+- **加载操作**：UI 发射 beginLoad → Worker 执行 loadAll → Worker 发射 taskProgress → UI 执行回调恢复界面
 
 ### 6.3 UI线程安全考虑
 
@@ -765,6 +806,8 @@ void DAZipArchiveThreadWrapper::onTaskProgress(std::shared_ptr<DAAbstractArchive
 
 ### 7.2 ZIP 内部结构
 
+ZIP 文件内部按模块组织，各模块数据存放在独立文件或目录中。下图展示了项目 ZIP 文件的内部结构：
+
 ```mermaid
 graph LR
     subgraph project.da
@@ -786,6 +829,12 @@ graph LR
         end
     end
 ```
+
+上图展示了 ZIP 文件的内部组织：
+- **根目录文件**：system.xml、workflow.xml、data-manager.xml、charts.xml
+- **datas/ 目录**：存储数据文件（parquet 格式）
+- **chart-data/ 目录**：存储图表项的二进制数据和索引
+- **plugins/ 目录**：存储各插件的序列化数据
 
 ### 7.3 XML 文件格式示例
 

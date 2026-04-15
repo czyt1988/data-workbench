@@ -1,5 +1,7 @@
 # 构建插件
 
+本文档介绍 data-workbench 插件的构建方法，插件是软件业务功能的载体，必须构建后软件才能正常使用。
+
 `data-workbench` 的业务功能均通过插件提供，如果不构建 `plugins`，编译完成的 `data-workbench` 将无任何功能。在构建插件之前，请确认已经完成了主程序的构建，具体见：[构建主程序](./main-program-build.md)。
 
 ## 主要功能特性
@@ -41,6 +43,33 @@
 | Qt | 5.14+ 或 Qt6 | 界面框架 |
 | C++ 编译器 | C++17 支持 | MSVC 2019+ / GCC 7+ / Clang 5+ |
 
+## 插件构建流程概览
+
+下面的流程图展示了插件构建的完整过程，从准备阶段到最终验证。
+
+```mermaid
+flowchart TD
+    A[确认主程序已构建] --> B[确认第三方库已安装]
+    B --> C[打开插件项目]
+    C --> D[配置构建目录]
+    D --> E{主程序路径非默认?}
+    E -->|是| F[设置 DAWorkbench_INSTALL_PATH]
+    E -->|否| G[编译插件]
+    F --> G
+    G --> H[安装插件]
+    H --> I[启动主程序验证]
+    I --> J{插件加载成功?}
+    J -->|是| K[构建完成]
+    J -->|否| L[检查依赖/路径]
+    L --> G
+    
+    style A fill:#ffeb3b
+    style B fill:#ffeb3b
+    style K fill:#4caf50
+```
+
+上图展示了插件构建的核心步骤：首先确认主程序和第三方库已准备就绪（黄色节点表示前置条件），然后配置并编译插件，最后通过启动主程序验证插件是否正确加载。如果加载失败，需检查依赖库和路径配置后重新构建。
+
 ## 基于 Qt Creator 构建插件
 
 ### 1. 打开插件项目
@@ -62,10 +91,11 @@ data-workbench/
 
 ### 3. 设置 CMake 参数
 
-如果主程序安装路径非默认路径，需要设置 `DAWorkbench_INSTALL_PATH` 变量：
+如果主程序安装路径非默认路径，需要设置 `DAWorkbench_INSTALL_PATH` 变量。以下 CMake 参数指定主程序安装路径，使插件能找到 `DAWorkbenchConfig.cmake` 配置文件：
 
 ```cmake
 # 指定 DAWorkbench 安装路径
+# 用于定位 DAWorkbenchConfig.cmake 和 daworkbench_plugin_utils.cmake
 -DDAWorkbench_INSTALL_PATH=/path/to/install/dir
 ```
 
@@ -80,16 +110,19 @@ data-workbench/
 
 ### 使用 CMake 命令行
 
-对于习惯使用命令行的开发者，可以使用以下命令构建插件：
+对于习惯使用命令行的开发者，可以使用以下命令构建插件。以下是完整的命令行构建流程，包含详细的中文注释：
 
 ```bash
 # 进入插件目录
 cd plugins
 
 # 创建构建目录
+# 建议使用独立的构建目录，便于清理和管理
 mkdir build && cd build
 
 # 配置项目（以 Qt6 + MSVC 为例）
+# CMAKE_TOOLCHAIN_FILE 用于正确识别 Qt 环境
+# DAWorkbench_INSTALL_PATH 指定主程序安装路径（如非默认路径）
 cmake -G "Ninja" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=/path/to/Qt6/lib/cmake/Qt6/qt.toolchain.cmake \
@@ -97,11 +130,15 @@ cmake -G "Ninja" \
     ..
 
 # 构建插件
+# 使用 --parallel 参数加速编译
 cmake --build . --config Release
 
 # 安装插件
+# 将插件 DLL 复制到主程序的 plugins 目录
 cmake --install .
 ```
+
+构建完成后，插件将安装到主程序安装目录下的 `bin/plugins` 文件夹。
 
 ## 插件安装位置
 
@@ -161,13 +198,14 @@ cmake --install .
 
 ### 5. 日志查看
 
-如果插件加载出现问题，可以查看运行日志：
+如果插件加载出现问题，可以查看运行日志。以下命令用于查看插件加载日志，日志中会记录详细的错误信息：
 
 ```bash
-# Windows
+# Windows - 查看最新日志
+# 日志文件位于用户 AppData 目录下
 type %APPDATA%\DAWorkbench\logs\latest.log
 
-# Linux/macOS
+# Linux/macOS - 查看最新日志
 cat ~/.config/DAWorkbench/logs/latest.log
 ```
 

@@ -18,6 +18,8 @@ data-workbench采用五层架构设计，从底层到应用层依次为：基础
 
 ### 架构层次图
 
+下图展示了 data-workbench 的五层架构设计，从基础层到应用层的模块依赖关系：
+
 ```mermaid
 flowchart TB
     subgraph Layer5["应用层 (Layer 5)"]
@@ -61,8 +63,15 @@ flowchart TB
     DACommonWidgets --> DAUtils
     DAPyBindQt --> DAUtils
     DAMessageHandler --> DAUtils
-    DAUtils --> DAShared
-```
+DAUtils --> DAShared
+    ```
+
+上图展示了五层架构结构：
+- **Layer 1 基础层**：DAUtils、DAShared、DAMessageHandler、DAPyBindQt 提供底层支撑
+- **Layer 2 功能层**：DAData、DAFigure、DAWorkFlow、DAGraphicsView 等实现核心业务
+- **Layer 3 界面层**：DAGui、DACommonWidgets 整合可视化功能
+- **Layer 4 接口层**：DAInterface、DAPluginSupport 定义插件和扩展机制
+- **Layer 5 应用层**：APP 主程序整合所有模块
 
 ### 各层职责说明
 
@@ -106,6 +115,8 @@ data-workbench主要有以下模块：
 ## 模块依赖关系图
 
 DA各个模块的依赖关系图如下：
+
+下图展示了所有 DA 模块之间的详细依赖关系，箭头表示依赖方向：
 
 ```mermaid
 graph BT
@@ -170,8 +181,15 @@ graph BT
     style DAInterface fill:#e1f5fe
     style DAPluginSupport fill:#e1f5fe
     style DAAxOfficeWrapper fill:#e1f5fe
-    style APP fill:#fff3e0
-```
+style APP fill:#fff3e0
+    ```
+
+上图展示了模块依赖的详细关系：
+- `DAUtils` 是核心基础模块，几乎所有模块都依赖它
+- `DAGui` 是最大的 GUI 模块，整合多个功能模块
+- `DAInterface` 依赖 `DAGui`，定义核心接口
+- `DAPluginSupport` 依赖 `DAInterface`，提供插件支持
+- `APP` 依赖 `DAPluginSupport`，是最终的应用程序
 
 ## 核心模块详解
 
@@ -257,6 +275,8 @@ DAGui是最大的GUI模块，整合了：
 
 在CMake中配置模块依赖：
 
+以下代码展示了 CMake 中模块依赖配置的基本示例，包括 Qt 查找和库链接：
+
 ```cmake
 # 添加模块依赖示例
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
@@ -283,9 +303,15 @@ target_link_libraries(DAFigure
         Qt6::Widgets
         Qt6::Concurrent
     PRIVATE
-        qwt
-)
+qwt
+    )
 ```
+
+上述 CMake 配置的关键点：
+- 使用 `find_package` 查找 Qt6 组件
+- 使用 `add_library` 创建模块库
+- 使用 `PUBLIC` 链接导出依赖，使用 `PRIVATE` 链接内部依赖
+- DAFigure 依赖 DAUtils 和 Qt 组件，内部依赖 qwt
 
 ## 注意事项
 

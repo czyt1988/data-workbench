@@ -16,13 +16,18 @@ Action 添加方法文档介绍如何在 DAWorkBench 主程序中添加新的菜
 
 ## 添加流程概述
 
-一个 action 的添加需要在三个类中操作：
+一个 action 的添加需要在三个类中操作，形成清晰的职责分离。下图展示了 action 从定义到可用的完整流程：
 
 ```mermaid
 flowchart LR
     A["DAAppActions<br/>定义 action"] --> B["DAAppRibbonArea<br/>构建界面"]
     B --> C["DAAppController<br/>绑定槽函数"]
 ```
+
+上图说明了 action 添加的三步流程：
+- **步骤 1**：在 `DAAppActions` 中定义和初始化 action 对象
+- **步骤 2**：在 `DAAppRibbonArea` 中将 action 添加到 Ribbon 界面
+- **步骤 3**：在 `DAAppController` 中绑定 action 的 triggered 信号到具体槽函数
 
 | 步骤 | 类 | 职责 |
 |------|-----|------|
@@ -133,20 +138,28 @@ void DAAppController::open()
 
 ## createAction 方法说明
 
-`DAAppActions` 提供 `createAction` 方法简化 action 创建：
+`DAAppActions` 提供 `createAction` 方法简化 action 创建，自动设置 objectName 和图标。该方法封装了创建 action 的通用逻辑，避免重复代码。
+
+以下代码展示了 `createAction` 方法的实现，接收两个参数：对象名称和图标路径：
 
 ```cpp
 QAction* DAAppActions::createAction(const QString& objName, const QString& iconPath)
 {
+    // 创建 action 对象
     QAction* action = new QAction(this);
+    // 设置唯一标识，用于样式表和调试查找
     action->setObjectName(objName);
     
+    // 如果提供了图标路径，加载图标
     if (!iconPath.isEmpty()) {
         action->setIcon(QIcon(iconPath));
     }
     
     return action;
 }
+```
+
+执行上述代码后，返回一个配置好 objectName 和图标的 QAction 对象，可直接添加到界面中。
 ```
 
 | 参数 | 说明 |
@@ -156,7 +169,9 @@ QAction* DAAppActions::createAction(const QString& objName, const QString& iconP
 
 ## SARibbonPannel 添加方式
 
-SARibbonPannel 提供多种添加 action 的方法：
+SARibbonPannel 提供多种添加 action 的方法，根据按钮大小选择不同的添加方式。大按钮适合主要功能，小按钮适合次要操作。
+
+下表列出了 SARibbonPannel 的添加方法及其适用场景：
 
 | 方法 | 说明 |
 |------|------|
@@ -165,32 +180,42 @@ SARibbonPannel 提供多种添加 action 的方法：
 | `addSmallAction(action)` | 小按钮 |
 | `addAction(action, size)` | 指定大小添加 |
 
+以下示例展示了不同大小按钮的添加方式，大按钮占整行，中等按钮两列布局，小按钮三列布局：
+
 ```cpp
-// 大按钮 - 占一整行
+// 大按钮 - 占一整行，适合主要操作如打开、保存
 pannel->addLargeAction(actionOpen);
 
-// 中等按钮 - 两列布局
+// 中等按钮 - 两列布局，适合常用操作
 pannel->addMediumAction(actionSave);
 pannel->addMediumAction(actionSaveAs);
 
-// 小按钮 - 三列布局
+// 小按钮 - 三列布局，适合次要操作如剪贴板功能
 pannel->addSmallAction(actionCut);
 pannel->addSmallAction(actionCopy);
 pannel->addSmallAction(actionPaste);
 ```
 
+执行上述代码后，Ribbon 面板将按不同大小排列按钮，形成清晰的视觉层次。
+
 ## 添加分隔符
 
+在 Ribbon 面板中添加分隔符可以组织按钮分组，提升界面可读性。以下示例展示如何添加分隔符和带下拉菜单的按钮：
+
 ```cpp
-// 添加分隔符
+// 在按钮之间添加水平分隔符，分隔不同功能组
 pannel->addSeparator();
 
-// 添加菜单按钮
+// 创建下拉菜单，包含多个关联操作
 QMenu* menu = new QMenu(pannel);
-menu->addAction(actionNew);
-menu->addAction(actionOpen);
+menu->addAction(actionNew);  // 添加"新建"到菜单
+menu->addAction(actionOpen); // 添加"打开"到菜单
+
+// 添加带下拉菜单的按钮，点击显示菜单而非执行单一操作
 pannel->addLargeActionButton(actionRecent, menu);
 ```
+
+执行上述代码后，面板中出现分隔符和带下拉箭头的按钮，点击按钮会弹出关联菜单。
 
 ## 注意事项
 

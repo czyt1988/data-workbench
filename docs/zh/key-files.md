@@ -1,6 +1,18 @@
 # 关键文件说明
 
-本文档详细说明 DAWorkBench 项目中的关键文件及其用途。
+本文档详细说明 DAWorkBench 项目中的关键文件及其用途，帮助开发者快速定位重要的配置和源文件。
+
+## 主要功能特性
+
+**特性**
+
+- ✅ **根目录关键文件**：CMakeLists.txt、DAWorkbenchConfig.cmake.in、readme.md 等顶层文件
+- ✅ **src 目录关键文件**：DAConfigs.h.in、DAGlobals.h 等源码核心文件
+- ✅ **cmake 目录关键脚本**：daworkbench_utils.cmake 等构建辅助脚本
+- ✅ **plugins 目录文件**：插件模板生成工具和配置文件
+- ✅ **docs 目录文件**：文档首页、资源文件、样式文件
+- ✅ **构建输出目录**：bin 目录结构和配置文件优先级
+- ✅ **文件编辑注意事项**：可编辑和自动生成文件的区分
 
 ---
 
@@ -8,24 +20,28 @@
 
 ### CMakeLists.txt
 
-**用途**：主构建配置文件
+**用途**：主构建配置文件，定义项目版本、编译选项、模块依赖和安装规则。
 
 **关键配置项**：
 
+下面的 CMake 示例展示了主配置文件的核心设置：
+
 ```cmake
-# 版本定义
+# 版本定义 - 项目版本号设置
 set(DA_VERSION_MAJOR 0)
 set(DA_VERSION_MINOR 0)
 set(DA_VERSION_PATCH 3)
 
-# 编译选项
-option(DA_ENABLE_PYTHON "Enable Python support" ON)
-option(DA_BUILD_PLUGINS "Build plugins" ON)
-option(DA_AUTO_INSTALL_PREFIX "Auto install" ON)
+# 编译选项 - 可自定义的构建开关
+option(DA_ENABLE_PYTHON "Enable Python support" ON)      # Python 支持开关
+option(DA_BUILD_PLUGINS "Build plugins" ON)              # 插件构建开关
+option(DA_AUTO_INSTALL_PREFIX "Auto install" ON)         # 自动安装路径
 
-# Qt 版本
+# Qt 版本 - 最低 Qt 版本要求
 set(DA_MIN_QT_VERSION 5.14)
 ```
+
+上述配置项决定了项目的基本构建行为，可根据需求调整各选项。
 
 **构建流程**：
 

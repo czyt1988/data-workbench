@@ -28,6 +28,8 @@
 
 `DAData` 是数据对象的智能指针包装类，是整个数据模块对外暴露的核心类型。
 
+以下代码展示了如何创建一个包含 DataFrame 的数据对象并设置名称和描述：
+
 ```cpp
 // 创建一个包含 DataFrame 的数据对象
 DA::DAPyDataFrame df(pyObject);
@@ -36,6 +38,12 @@ data.setName("sensor_data");
 data.setDescribe("传感器原始数据");
 ```
 
+上述代码展示了 DAData 的基本用法：
+- 创建 `DAPyDataFrame` 包装 Python DataFrame 对象
+- 使用 `DAData` 创建数据对象并传入 DataFrame
+- 通过 `setName()` 设置数据名称，用于标识和搜索
+- 通过 `setDescribe()` 设置数据描述，用于说明数据来源
+
 **核心特性**
 
 - 使用隐式共享（Implicit Sharing），可安全地进行值传递
@@ -43,6 +51,8 @@ data.setDescribe("传感器原始数据");
 - 支持与 Python 对象的互相转换
 
 ### 数据类型继承体系
+
+下图展示了数据类型的类继承关系，从抽象基类到具体的 DataFrame 和 Series 包装类：
 
 ```mermaid
 classDiagram
@@ -73,8 +83,14 @@ classDiagram
     
     DAAbstractData <|-- DADataPyObject
     DADataPyObject <|-- DADataPyDataFrame
-    DADataPyObject <|-- DADataPySeries
-```
+DADataPyObject <|-- DADataPySeries
+    ```
+
+上图展示了数据类型的继承层次：
+- `DAAbstractData` 是抽象基类，定义基本接口（名称、描述、数据类型）
+- `DADataPyObject` 继承抽象基类，封装通用 Python 对象
+- `DADataPyDataFrame` 继承 `DADataPyObject`，封装 pandas DataFrame
+- `DADataPySeries` 继承 `DADataPyObject`，封装 pandas Series
 
 | 类名 | 说明 |
 |------|------|
@@ -95,6 +111,8 @@ classDiagram
 - 脏标记管理（标识数据是否已修改）
 - 信号通知机制
 
+以下代码展示了如何通过接口获取数据管理器并进行数据操作：
+
 ```cpp
 // 通过接口获取数据管理器
 DADataManagerInterface* mgr = core->getDataManager();
@@ -111,6 +129,12 @@ for (int i = 0; i < mgr->getDataCount(); ++i) {
     // ...
 }
 ```
+
+上述代码展示了数据管理器的基本操作：
+- 通过核心接口获取数据管理器实例
+- 使用 `addData()` 添加数据对象
+- 使用 `getDataByName()` 按名称查找数据
+- 使用循环遍历所有数据，通过 `getData(i)` 获取指定索引的数据
 
 ### 信号机制
 
@@ -141,6 +165,8 @@ for (int i = 0; i < mgr->getDataCount(); ++i) {
 
 工作流节点可以通过输入/输出端口传递 `DAData` 对象，节点之间的数据流动通过数据管理器统一协调。
 
+下图展示了工作流节点通过数据管理器传递数据的流程：
+
 ```mermaid
 flowchart LR
     subgraph Node1["节点1"]
@@ -156,8 +182,14 @@ flowchart LR
     end
     
     O1 --> D
-    D --> I2
-```
+D --> I2
+    ```
+
+上图展示了数据在工作流节点间传递的方式：
+- 节点1的输出端口将数据发送到数据管理器
+- 数据管理器存储 DAData 对象
+- 节点2的输入端口从数据管理器获取数据
+- 数据管理器作为中间协调者，解耦了节点间的直接依赖
 
 ### 与绘图模块
 
@@ -166,6 +198,8 @@ flowchart LR
 ### 与插件
 
 插件通过 `DADataManagerInterface` 接口访问数据管理器，可以添加、修改、删除数据，也可以监听数据变化信号进行响应。
+
+以下代码展示了插件如何获取数据管理器并监听数据变化信号：
 
 ```cpp
 // 在插件中获取数据管理器
@@ -176,6 +210,11 @@ DADataManagerInterface* dataMgr = c->getDataManagerInterface();
 connect(dataMgr, &DADataManagerInterface::dataAdded,
         this, &MyPlugin::onDataAdded);
 ```
+
+上述代码展示了插件与数据管理器的交互方式：
+- 通过 `core()` 获取核心接口，再获取数据管理接口
+- 使用 Qt 信号槽机制监听 `dataAdded` 信号
+- 当数据添加时，触发 `onDataAdded` 回调函数
 
 ## API 参考
 

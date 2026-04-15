@@ -1,46 +1,65 @@
 # 功能定制与扩展能力
 
-本指南说明如何通过插件扩展 DAWorkBench 的界面和功能，包括添加菜单项、工具栏按钮、Dock 窗口等。
+本指南说明如何通过插件扩展 DAWorkBench 的界面和功能，包括添加菜单项、工具栏按钮、Dock 窗口、自定义节点等。
+
+## 主要功能特性
+
+**特性**
+
+- ✅ **界面扩展点**：Ribbon 区域、Docking 区域、Actions 管理、Commands 管理
+- ✅ **Ribbon 界面扩展**：添加 Category、Panel、Action 按钮
+- ✅ **Dock 窗口扩展**：创建自定义 Dock 窗口、布局管理
+- ✅ **菜单扩展**：添加上下文菜单、自定义触发逻辑
+- ✅ **快捷键扩展**：注册全局快捷键
+- ✅ **自定义节点类型**：注册节点元数据、创建自定义图元
+- ✅ **数据类型扩展**：注册自定义数据类型、创建数据对象
+- ✅ **事件监听与响应**：监听项目、数据、工作流事件
 
 ---
 
 ## 扩展点概览
 
+下面的 mermaid 图表展示了插件可用的各类扩展点：
+
+图表展示了插件可以扩展的界面、数据和功能三个维度的扩展点，以及它们之间的关系：
+
 ```mermaid
 graph TB
     subgraph "界面扩展点"
-        RA[Ribbon 区域]
-        DA[Docking 区域]
-        AC[Actions 管理]
-        CM[Commands 管理]
+        RA[Ribbon 区域]      # 工具栏按钮扩展
+        DA[Docking 区域]     # 停靠窗口扩展
+        AC[Actions 管理]     # 动作对象管理
+        CM[Commands 管理]    # 命令管理
     end
     
     subgraph "数据扩展点"
-        DM[数据管理器]
-        DT[数据类型]
-        DP[数据处理]
+        DM[数据管理器]       # 数据对象管理
+        DT[数据类型]         # 自定义数据类型
+        DP[数据处理]         # 数据处理扩展
     end
     
     subgraph "工作流扩展点"
-        NF[节点工厂]
-        NM[节点元数据]
-        NE[节点执行]
+        NF[节点工厂]         # 节点创建工厂
+        NM[节点元数据]       # 节点信息注册
+        NE[节点执行]         # 节点执行逻辑
     end
     
-    Plugin --> RA
-    Plugin --> DA
-    Plugin --> AC
-    Plugin --> CM
-    Plugin --> NF
+    Plugin --> RA           # 插件可扩展 Ribbon
+    Plugin --> DA           # 插件可扩展 Dock
+    Plugin --> AC           # 插件可注册 Action
+    Plugin --> CM           # 插件可管理命令
+    Plugin --> NF           # 插件提供节点工厂
     
-    NF --> NM
-    NF --> NE
+    NF --> NM               # 工厂注册节点元数据
+    NF --> NE               # 工厂创建执行节点
     
     style Plugin fill:#fff3e0
     style RA fill:#e1f5fe
     style DA fill:#e1f5fe
     style NF fill:#f3e5f5
 ```
+
+上述扩展点覆盖了界面、数据和功能三个维度，插件可以根据需求选择合适的扩展点进行集成。
 
 ---
 

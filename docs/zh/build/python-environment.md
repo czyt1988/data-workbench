@@ -1,5 +1,7 @@
 # Python 环境配置
 
+本文档介绍 Python 环境的配置方法，Python 是数据处理模块的后端引擎，正确配置对软件功能至关重要。
+
 本文档说明 DAWorkBench 的 Python 环境配置方法，包括构建时和运行时的 Python 环境设置。
 
 ## 主要功能特性
@@ -55,8 +57,22 @@ DAWorkBench 可选择是否依赖 Python：
 
 安装依赖：
 
+以下命令安装项目所需的 Python 依赖库。建议使用 requirements.txt 批量安装：
+
 ```shell
+# 使用 pip 批量安装依赖
+# requirements.txt 位于项目根目录
 pip install -r requirements.txt
+```
+
+如需单独安装核心库，可使用以下命令：
+
+```shell
+# 安装数据处理核心库
+pip install pandas numpy scipy
+
+# 安装辅助库（Excel、编码检测等）
+pip install openpyxl chardet loguru
 ```
 
 ---
@@ -82,29 +98,36 @@ pip install -r requirements.txt
 
 ### 步骤三：安装 pip
 
+以下命令下载并安装 pip 到嵌入式 Python 环境中。pip 是 Python 的包管理工具，必需安装：
+
 ```powershell
 # 下载 get-pip.py
-# https://bootstrap.pypa.io/get-pip.py 保存到 Python 目录
+# 从 pypa.io 获取 pip 安装脚本，保存到 Python 目录
+# 访问 https://bootstrap.pypa.io/get-pip.py 下载
 
 # 安装 pip
+# 使用嵌入式 Python 执行安装脚本
 .\python.exe get-pip.py
 
-# 删除 get-pip.py
+# 删除安装脚本（可选清理）
 del get-pip.py
 ```
 
 ### 步骤四：安装依赖
 
-使用 `--target` 参数安装到嵌入式环境：
+使用 `--target` 参数安装依赖到嵌入式环境的 `Lib/site-packages` 目录。这种方式便于打包发布：
 
 ```powershell
 # 安装基础工具
+# setuptools 和 wheel 是 pip 安装包的基础依赖
 .\python.exe -m pip install --target="./Lib/site-packages" setuptools wheel
 
 # 安装项目依赖
+# 批量安装 requirements.txt 中列出的所有库
 .\python.exe -m pip install --target="./Lib/site-packages" -r requirements.txt
 
-# 使用清华镜像加速
+# 使用清华镜像加速（推荐国内用户）
+# -i 参数指定镜像源，大幅提升下载速度
 .\python.exe -m pip install --target="./Lib/site-packages" -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
@@ -121,7 +144,7 @@ del get-pip.py
 
 ### 配置文件方式
 
-创建 `python-config.json` 文件：
+创建 `python-config.json` 文件指定 Python 解释器路径。此文件放在程序目录下，程序启动时优先读取：
 
 ```json
 {
@@ -136,6 +159,7 @@ del get-pip.py
     ```
     ${current-app-dir}/python311/python.exe
     ```
+    此路径变量使配置文件可移植，无需修改即可在不同安装位置使用。
 
 ### 系统环境方式
 
@@ -153,12 +177,18 @@ del get-pip.py
 
 ### 禁用 Python 构建
 
+如果仅需使用绘图功能，可通过 CMake 参数禁用 Python 模块。以下命令展示如何构建不包含 Python 支持的版本：
+
 ```powershell
+# 配置项目并禁用 Python 模块
+# DA_ENABLE_PYTHON=OFF 跳过 Python 相关代码编译
 cmake -S . -B build -G Ninja `
     -DCMAKE_BUILD_TYPE=Release `
     -DCMAKE_TOOLCHAIN_FILE="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake" `
     -DDA_ENABLE_PYTHON=OFF
 ```
+
+禁用 Python 后，软件仅保留绘图和数据可视化功能，无法执行 pandas 数据处理操作。
 
 ---
 
@@ -182,11 +212,16 @@ cmake -S . -B build -G Ninja `
 
 ### Python.h 找不到
 
-**原因**：未安装 Python 开发包
+**原因**：未安装 Python 开发包（Windows 下通常需要安装完整 Python，而非仅解释器）
 
-**解决**：安装 Python 开发库，或指定 Python 路径：
+**解决**：安装 Python 开发库，或指定 Python 路径使 CMake 正确定位头文件：
 
 ```powershell
+# 方式一：设置 Python_ROOT_DIR 环境变量
+# 指定 Python 安装根目录
+$env:Python_ROOT_DIR = "C:\Python311"
+
+# 方式二：CMake 参数指定路径
 cmake -DPython_ROOT_DIR="C:\Python311" ...
 ```
 

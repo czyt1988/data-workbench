@@ -1,5 +1,18 @@
 # 在Qt/C++应用中集成Python实现插件化架构
 
+本文档详细说明如何在 **DAWorkBench** 中实现 C++ 与 Python 的双向调用，构建完整的插件化架构。通过 `pybind11` 库，我们能够实现跨语言的对象生命周期管理和线程安全的通信机制。
+
+## 主要功能特性
+
+**特性**
+
+- ✅ **C++ 调用 Python**：从 C++ 代码调用 Python 脚本和库函数
+- ✅ **Python 操作 C++**：从 Python 脚本操作 C++ 界面组件和数据管理器
+- ✅ **跨语言对象管理**：实现跨语言的对象生命周期管理
+- ✅ **线程安全通信**：构建线程安全的跨语言通信机制
+- ✅ **Qt 类型转换**：支持 QString、QVariant、QList 等 Qt 类型自动转换
+- ✅ **GIL 管理**：提供完整的 GIL（全局解释器锁）管理方案
+
 ## 概述
 
 本文档详细说明如何在 **DAWorkBench** 中实现 C++ 与 Python 的双向调用，构建完整的插件化架构。通过 `pybind11` 库，我们能够：
@@ -16,6 +29,8 @@
     - **胶水语言特性**：天然适合作为各模块间的协调层
 
 ## 架构总览
+
+下图展示了 C++ 与 Python 集成的完整架构，包括主框架、绑定层和 Python 插件层：
 
 ```mermaid
 flowchart TB
@@ -59,14 +74,21 @@ flowchart TB
     DD --> Scripts
     
     Scripts -->|调用| PB
-    Scripts -->|操作| IF
-```
+Scripts -->|操作| IF
+    ```
+
+上图展示了 C++/Python 集成的三层架构：
+- **C++ 主框架**：包含核心控制器、界面接口、数据管理器和跨线程信号处理器
+- **pybind11 绑定层**：包含 Qt 类型转换器、解释器管理和接口绑定
+- **Python 插件层**：包含 da_app、da_interface、da_data 模块和业务脚本
 
 ---
 
 ## 第一部分：环境搭建与项目配置
 
 ### 1.1 CMake 配置详解
+
+以下配置展示了 Python 集成的基础 CMake 设置，包括 Python 开发库查找和 pybind11 配置：
 
 === "基础配置"
 
@@ -82,6 +104,13 @@ flowchart TB
     # 设置 Python 模块输出目录
     set(PYTHON_MODULE_OUTPUT_DIR "${CMAKE_BINARY_DIR}/python_modules")
     ```
+
+上述基础配置的关键点：
+- 使用 `find_package` 查找 Python 3.8+ 开发库
+- 使用 `find_package` 查找 pybind11 绑定库
+- 设置 Python 模块输出目录用于存放编译后的绑定模块
+
+以下配置展示了如何将 Python 解释器嵌入到主程序中：
 
 === "嵌入式解释器配置"
 
@@ -105,6 +134,13 @@ flowchart TB
     )
     ```
 
+上述嵌入式配置的关键点：
+- 链接 `Python3::Python` 和 `Python3::Module` 获取 Python 库支持
+- 包含 `Python3_INCLUDE_DIRS` 获取 Python 头文件
+- 定义 `DA_ENABLE_PYTHON=1` 宏标记 Python 功能启用
+
+以下配置展示了如何创建 Python 绑定模块：
+
 === "Python 模块绑定配置"
 
     ```cmake
@@ -126,6 +162,11 @@ flowchart TB
         LIBRARY_OUTPUT_DIRECTORY "${PYTHON_MODULE_OUTPUT_DIR}"
     )
     ```
+
+上述模块绑定配置的关键点：
+- 使用 `pybind11_add_module` 创建 Python 绑定模块
+- 链接 `DAInterface` 和 `DAPyBindQt` 获取接口和类型转换支持
+- 设置输出目录确保 Python 能正确导入模块
 
 ### 1.2 目录结构
 
@@ -210,6 +251,8 @@ bool DAAppCore::initializePythonEnv()
 !!! danger "线程安全警告"
     在多线程环境下调用 Python 代码时，必须正确管理 GIL，否则会导致程序崩溃或死锁。
 
+下图展示了 GIL 管理的两种典型场景，帮助理解 C++ 和 Python 之间的锁获取机制：
+
 ```mermaid
 sequenceDiagram
     participant Cpp as C++ 线程
@@ -228,8 +271,14 @@ sequenceDiagram
     Note over Cpp,Py: 场景2：Python 回调 C++
     Py->>Cpp: 调用绑定的 C++ 函数
     Note over Cpp: 此时已持有 GIL
-    Cpp->>Py: 如需调用其他 Python 代码<br/>GIL 已被持有，无需再次获取
-```
+Cpp->>Py: 如需调用其他 Python 代码<br/>GIL 已被持有，无需再次获取
+    ```
+
+上图展示了 GIL 管理的两种场景：
+- **场景1**：C++ 调用 Python 时，使用 `gil_scoped_acquire` 获取锁
+- **场景2**：Python 回调 C++ 时，GIL 已被持有，无需再次获取
+
+以下代码展示了 GIL 管理的不同实现方式：
 
 === "基本 GIL 管理"
 
@@ -364,6 +413,8 @@ bool DAPyScriptsIO::read(const QString& filepath,
 
 ### 3.1 接口绑定架构
 
+下图展示了 Python 绑定的核心接口层次结构，包括核心接口、UI 接口、数据管理接口和信号处理器：
+
 ```mermaid
 classDiagram
     class DACoreInterface {
@@ -408,8 +459,14 @@ classDiagram
     DACoreInterface --> DADataManagerInterface : getDataManagerInterface
     DACoreInterface --> DAPythonSignalHandler : getPythonSignalHandler
     DAUIInterface --> DAStatusBarInterface : getStatusBar
-    DAUIInterface --> DACommandInterface : getCommandInterface
-```
+DAUIInterface --> DACommandInterface : getCommandInterface
+    ```
+
+上图展示了接口绑定的层次结构：
+- `DACoreInterface` 是核心入口，提供获取其他接口的方法
+- `DAUIInterface` 提供界面操作功能，包含状态栏和命令接口
+- `DADataManagerInterface` 提供数据管理功能
+- `DAPythonSignalHandler` 提供跨线程通信功能
 
 ### 3.2 接口绑定实现
 
@@ -685,6 +742,8 @@ def execute_in_main_thread():
 
 ### 4.2 DAPythonSignalHandler 设计
 
+下图展示了 `DAPythonSignalHandler` 如何实现线程安全的 UI 操作，从 Python 后台线程到 Qt 主线程的完整流程：
+
 ```mermaid
 sequenceDiagram
     participant PT as Python 线程
@@ -704,9 +763,17 @@ sequenceDiagram
         QT->>SH: 6. onExecuteRequested(id)
         SH->>SH: 7. 取出 FunctionWrapper
         SH->>UI: 8. 执行 func()
-        UI-->>SH: 完成
+UI-->>SH: 完成
     end
-```
+    ```
+
+上图展示了线程安全 UI 操作的完整流程：
+1. Python 线程调用 `callInMainThread(func)` 请求执行
+2. 信号处理器检查当前是否在主线程
+3. 若已在主线程，直接执行函数
+4. 若不在主线程，包装函数并发射信号
+5. Qt 主线程接收信号并执行回调函数
+6. UI 操作在主线程中安全完成
 
 ### 4.3 实现代码
 
@@ -1030,6 +1097,8 @@ struct type_caster<QVariant>
 
 ### 6.1 问题诊断流程
 
+下图展示了 Python 调用失败时的诊断流程，帮助快速定位问题类型和解决方案：
+
 ```mermaid
 flowchart TD
     A[Python 调用失败] --> B{错误类型?}
@@ -1050,8 +1119,14 @@ flowchart TD
     E1 --> E2[设置正确的 return_value_policy]
     
     F --> F1[检查 PYTHONPATH]
-    F1 --> F2[检查模块是否正确编译]
-```
+F1 --> F2[检查模块是否正确编译]
+    ```
+
+上图展示了问题诊断的流程：
+- 段错误 → 检查 GIL 管理，确保在调用 Python 前获取锁
+- 类型错误 → 检查类型转换器，查看支持的类型映射
+- 引用错误 → 检查所有权策略，设置正确的 `return_value_policy`
+- 导入错误 → 检查模块路径和编译状态
 
 ### 6.2 常见错误及解决方案
 

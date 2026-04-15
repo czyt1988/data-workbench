@@ -1,5 +1,7 @@
 # 构建说明
 
+本文档提供 DAWorkBench 项目的完整构建指南，涵盖从环境准备到最终验证的全流程。
+
 本文档详细说明 DAWorkBench 项目的构建流程，帮助开发者快速搭建开发环境并成功编译项目。
 
 ## 主要功能特性
@@ -53,6 +55,8 @@ pip install pandas numpy scipy
 
 ## 构建流程概览
 
+下面的流程图展示了从克隆仓库到验证构建结果的完整过程，其中黄色节点表示首次构建必需步骤，绿色节点表示主项目编译，蓝色节点表示最终验证。
+
 ```mermaid
 flowchart TD
     A[克隆仓库] --> B[拉取子模块]
@@ -71,6 +75,17 @@ flowchart TD
     style G fill:#4caf50
     style J fill:#2196f3
 ```
+
+上图展示了构建的整体流程：首先克隆仓库并拉取子模块获取依赖，然后根据是否首次构建决定是否需要编译 zlib，接着编译第三方库和主项目，最后安装并验证结果。图中各节点含义如下：
+
+- **克隆仓库**：获取项目源码
+- **拉取子模块**：获取第三方库源码（zlib、SARibbon、ADS 等）
+- **编译 zlib**：zlib 是 quazip 的依赖，必须独立编译（黄色标注表示首次必需）
+- **编译第三方库**：统一构建除 zlib 外的所有第三方库
+- **编译主项目**：构建核心模块和插件
+- **安装到 bin 目录**：生成最终输出目录
+- **复制 DLL 文件**：确保运行时依赖完整
+- **验证构建结果**：检查可执行文件和库文件是否正确生成
 
 构建过程分为三个阶段：
 
@@ -106,11 +121,16 @@ git submodule update --init --recursive
 
 ### 完整构建流程
 
+以下代码展示了 Windows 平台下使用 PowerShell 从配置到安装的完整构建流程。每个步骤都有详细的中文注释说明其作用。
+
 ```powershell
 # 步骤1：进入项目根目录
+# 这是所有构建操作的起始点，确保在正确的目录下执行命令
 cd C:\path\to\data-workbench
 
 # 步骤2：配置项目（必须指定 Qt 工具链文件）
+# -S 指定源码目录，-B 指定构建目录
+# CMAKE_TOOLCHAIN_FILE 是必需参数，用于正确识别 Windows SDK
 cmake -S . -B build -G Ninja `
     -DCMAKE_BUILD_TYPE:STRING=Release `
     -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE `
@@ -118,14 +138,19 @@ cmake -S . -B build -G Ninja `
     -DQT_QML_GENERATE_QMLLS_INI:STRING=ON
 
 # 步骤3：构建项目（使用所有 CPU 核心）
+# --parallel 参数启用并行编译，充分利用多核 CPU 加速构建
 cmake --build build --config Release --parallel
 
 # 步骤4：安装到 bin 目录
+# install 目标将编译产物复制到 bin_{配置信息} 目录
 cmake --build build --config Release --target install
 
 # 步骤5：复制 zlib DLL（首次构建需要）
+# quazip 依赖 zlib，需确保 zlib.dll 在输出目录中
 copy build\src\3rdparty\zlib\Release\zlib.dll bin_Release_qt6.7.3_MSVC_x64\
 ```
+
+执行上述命令后，构建产物将输出到 `bin_Release_qt6.7.3_MSVC_x64` 目录，包含可执行文件和所有依赖库。
 
 ### CMake 参数说明
 
@@ -139,46 +164,58 @@ copy build\src\3rdparty\zlib\Release\zlib.dll bin_Release_qt6.7.3_MSVC_x64\
 
 ### 分步构建
 
-如果需要分步构建，按以下顺序执行：
+如果需要分步构建（例如调试特定库的问题），可按以下顺序执行。分步构建有助于排查编译问题，每个步骤独立执行便于定位错误。
 
 ```powershell
 # 第一步：编译 zlib（首次构建需要）
+# zlib 是纯 C 库，需要独立构建以便 quazip 能通过 find_package 找到
 cmake -S src/3rdparty/zlib -B build/zlib -G Ninja `
     -DCMAKE_BUILD_TYPE:STRING=Release `
     -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
 cmake --build build/zlib --config Release --target install
 
 # 第二步：编译第三方库
+# 统一构建除 zlib 外的所有第三方库（qwt、SARibbon、ADS 等）
 cmake -S src/3rdparty -B build/3rdparty -G Ninja `
     -DCMAKE_BUILD_TYPE:STRING=Release `
     -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
 cmake --build build/3rdparty --config Release --target install
 
 # 第三步：编译主项目
+# 构建核心模块（DAFigure、DAData、DAGui 等）和主程序
 cmake -S . -B build -G Ninja `
     -DCMAKE_BUILD_TYPE:STRING=Release `
     -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
 cmake --build build --config Release --target install
 ```
 
+分步构建的产物会累积安装到同一输出目录，最终结果与完整构建一致。
+
 !!! note "构建顺序说明"
     第三方库 `quazip` 依赖 `zlib`，必须按顺序编译：zlib → 第三方库 → 主项目。
 
 ## 命令行构建步骤（Linux）
 
+Linux 平台的构建流程与 Windows 类似，但路径格式和工具链文件位置不同。以下命令适用于使用 GCC 编译器的环境。
+
 ```bash
 # 步骤1：配置项目
+# 注意：Linux 下 Qt 工具链文件路径通常在 /opt/Qt 或用户安装目录下
 cmake -S . -B build -G Ninja \
     -DCMAKE_BUILD_TYPE:STRING=Release \
     -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE \
     -DCMAKE_TOOLCHAIN_FILE:FILEPATH=/opt/Qt/6.7.3/gcc_64/lib/cmake/Qt6/qt.toolchain.cmake
 
 # 步骤2：构建项目
+# Linux 下 --parallel 参数同样有效，自动检测 CPU 核心数
 cmake --build build --config Release --parallel
 
 # 步骤3：安装到 bin 目录
+# 输出目录命名规则与 Windows 相同，但编译器标识为 GCC
 cmake --build build --config Release --target install
 ```
+
+构建完成后，输出目录为 `bin_Release_qt6.7.3_GCC_x64`，包含可执行文件 `DataWorkbench` 和相关动态库。
 
 ## Qt Creator 构建步骤
 
@@ -241,24 +278,35 @@ bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}
 
 ## 验证构建结果
 
+构建完成后，需要验证输出文件是否正确生成。以下命令用于检查关键文件是否存在。
+
 ### 检查输出文件
 
 ```powershell
-# Windows
+# Windows - 检查可执行文件
+# 应显示 DataWorkbench.exe
 dir bin_Release_qt6.7.3_MSVC_x64\*.exe
+
+# Windows - 检查动态库
+# 应显示 DAFigure.dll、DAData.dll 等核心库
 dir bin_Release_qt6.7.3_MSVC_x64\*.dll
 
-# Linux
+# Linux - 检查输出目录内容
 ls bin_Release_qt6.7.3_GCC_x64/
 ```
 
+如果文件列表正常显示，说明编译过程成功。
+
 ### 运行程序
 
+验证程序能否正常启动是最终确认步骤。运行程序并检查主窗口是否正确显示。
+
 ```powershell
-# Windows
+# Windows - 启动程序
+# 如果出现 DLL 缺失错误，需复制第三方库 DLL 到此目录
 .\bin_Release_qt6.7.3_MSVC_x64\DataWorkbench.exe
 
-# Linux
+# Linux - 启动程序
 ./bin_Release_qt6.7.3_GCC_x64/DataWorkbench
 ```
 

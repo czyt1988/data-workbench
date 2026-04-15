@@ -1,6 +1,18 @@
 # 插件开发全流程
 
-本指南详细说明从创建插件项目到实现完整功能的全部流程。
+本指南详细说明从创建插件项目到实现完整功能的全部流程，帮助开发者快速开发高质量的 DAWorkBench 插件。
+
+## 主要功能特性
+
+**特性**
+
+- ✅ **创建新插件**：模板生成工具和手动创建两种方式
+- ✅ **CMake 配置**：根目录和 src 目录的完整 CMakeLists.txt 配置
+- ✅ **插件主类实现**：MyPlugin 类的头文件和实现文件详解
+- ✅ **节点工厂实现**：MyNodeFactory 类的节点创建和元数据注册
+- ✅ **工作节点实现**：MyWorker 类的执行逻辑和图元创建
+- ✅ **内置服务使用**：日志、配置、数据管理等服务的调用方法
+- ✅ **构建和安装**：完整的构建流程和验证方法
 
 ---
 
@@ -9,52 +21,64 @@
 ### 方式一：使用模板生成工具
 
 !!! tip "推荐方式"
-    使用 `plugins/plugin-template/make-plugin.py` 自动生成插件项目。
+    使用 `plugins/plugin-template/make-plugin.py` 自动生成插件项目，无需手动创建文件结构。
 
 1. 配置 `template.json`：
 
+下面的 JSON 示例展示了模板配置文件的格式：
+
 ```json
 {
-    "plugin-base-name": "My",
-    "plugin-display-name": "My Plugin",
-    "plugin-description": "This is My Plugin for DAWorkbench",
-    "plugin-iid": "Plugin.MyPlugin",
-    "factory-prototypes": "My.Factory",
-    "factory-name": "My Factory",
-    "factory-description": "My Plugin Node Factory"
+    "plugin-base-name": "My",                           # 插件基础名称
+    "plugin-display-name": "My Plugin",                 # 插件显示名称
+    "plugin-description": "This is My Plugin for DAWorkbench",  # 插件描述
+    "plugin-iid": "Plugin.MyPlugin",                    # 插件唯一标识符
+    "factory-prototypes": "My.Factory",                 # 节点工厂原型前缀
+    "factory-name": "My Factory",                       # 节点工厂名称
+    "factory-description": "My Plugin Node Factory"     # 节点工厂描述
 }
 ```
 
+上述配置定义了插件的基本信息，脚本将根据此配置生成完整的插件项目。
+
 2. 运行生成脚本：
+
+下面的命令展示了如何运行模板生成脚本：
 
 ```bash
 cd plugins/plugin-template
 python make-plugin.py
 ```
 
-脚本将在上级目录生成完整的插件项目结构。
+脚本将在上级目录生成完整的插件项目结构，包含所有必需的文件和目录。
 
 ### 方式二：手动创建
 
 #### 项目目录结构
 
+下面的目录结构展示了标准插件项目的组织方式：
+
 ```text
 MyPlugin/
-├── CMakeLists.txt
+├── CMakeLists.txt            # 插件构建配置文件 - 定义编译选项和依赖
 ├── src/
-│   ├── MyPlugin.h
-│   ├── MyPlugin.cpp
-│   ├── MyNodeFactory.h
-│   ├── MyNodeFactory.cpp
-│   ├── MyWorker.h
-│   ├── MyWorker.cpp
-│   ├── MyResource.qrc
+│   ├── MyPlugin.h            # 插件主类头文件 - 插件入口类定义
+│   ├── MyPlugin.cpp          # 插件主类实现 - 初始化和生命周期管理
+│   ├── MyNodeFactory.h       # 节点工厂头文件 - 节点创建和管理
+│   ├── MyNodeFactory.cpp     # 节点工厂实现 - 节点元数据注册
+│   ├── MyWorker.h            # 工作节点头文件 - 数据处理逻辑
+│   ├── MyWorker.cpp          # 工作节点实现 - exec() 方法实现
+│   ├── MyResource.qrc        # Qt 资源文件 - 图标、翻译等资源
 │   └── icon/
-│       └── my-icon.png
-└── data-workbench/          # git submodule
+│       └── my-icon.png       # 节点图标 - 显示在节点列表中
+└── data-workbench/           # 主项目子模块引用 - 确保版本兼容
 ```
 
+上述结构将插件功能按职责分离，便于代码维护和团队协作。
+
 #### 添加 data-workbench 子模块
+
+下面的命令展示了如何添加主项目作为子模块：
 
 ```bash
 cd MyPlugin
@@ -62,36 +86,42 @@ git submodule add https://gitee.com/czyt1988/data-workbench.git ./data-workbench
 git submodule update --init --recursive
 ```
 
+添加主项目子模块确保插件能正确引用主程序提供的接口和库。
+
 ---
 
 ## CMake 配置
 
 ### 根目录 CMakeLists.txt
 
+根目录 CMake 文件负责查找 Qt、指定 data-workbench 安装目录、引入辅助工具等基础配置。
+
+下面的 CMake 示例展示了根目录配置文件的完整内容：
+
 ```cmake
 cmake_minimum_required(VERSION 3.5)
 project(MyPlugin)
 
-# 系统位数判断
+# 系统位数判断 - 用于生成安装目录名称
 if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
     set(_platform_name "x86")
 else()
     set(_platform_name "x64")
 endif()
 
-# Qt 依赖
+# Qt 依赖 - 自动选择 Qt6 或 Qt5
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 
-# 指定 data-workbench 安装目录
+# 指定 data-workbench 安装目录 - 必须与主程序安装目录一致
 set(DAWorkbench_INSTALL_FOLDER_NAME "bin_${CMAKE_BUILD_TYPE}_qt${QT_VERSION}_${CMAKE_CXX_COMPILER_ID}_${_platform_name}")
 set(DAWorkbench_INSTALL_DIR "${CMAKE_CURRENT_LIST_DIR}/data-workbench/${DAWorkbench_INSTALL_FOLDER_NAME}")
 set(DAWorkbench_DIR "${DAWorkbench_INSTALL_DIR}/lib/cmake/DAWorkbench")
 
-# 引入辅助工具
+# 引入辅助工具 - 使用主项目提供的 cmake 宏
 list(APPEND CMAKE_MODULE_PATH ${DAWorkbench_DIR})
 include(${DAWorkbench_DIR}/daworkbench_plugin_utils.cmake)
 
-# 设置安装目录
+# 设置安装目录 - 插件安装到主程序目录
 set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_DIR})
 
 # 添加 src 目录
@@ -100,32 +130,36 @@ add_subdirectory(src)
 
 ### src 目录 CMakeLists.txt
 
+src 目录 CMake 文件负责具体的插件配置，包括设置插件信息、链接依赖、设置属性等。
+
+下面的 CMake 示例展示了 src 目录配置文件的完整内容：
+
 ```cmake
 cmake_minimum_required(VERSION 3.5)
 
-# 插件信息设置
+# 插件信息设置 - 使用辅助宏简化配置
 damacro_plugin_setting(
-    "MyPlugin"
-    "My Plugin for DAWorkbench"
-    0
-    0
-    1
-    ${DAWorkbench_INSTALL_DIR}
+    "MyPlugin"                       # 插件名称
+    "My Plugin for DAWorkbench"      # 插件描述
+    0                                # 主版本号
+    0                                # 次版本号
+    1                                # 补丁版本号
+    ${DAWorkbench_INSTALL_DIR}       # 安装目录
 )
 
-# Qt 依赖
+# Qt 依赖 - 查找所需的 Qt 模块
 find_package(Qt${QT_VERSION_MAJOR} 5.14 COMPONENTS
     Core Gui Widgets Xml Svg PrintSupport
     REQUIRED
 )
 
-# 源文件
+# 源文件 - 使用 file(GLOB) 自动收集源文件
 file(GLOB DA_PLUGIN_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_PLUGIN_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB DA_PLUGIN_QT_UI_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.ui")
 file(GLOB DA_PLUGIN_QT_RC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.qrc")
 
-# 创建动态库
+# 创建动态库 - 插件必须是动态库
 add_library(${DA_PLUGIN_NAME} SHARED
     ${DA_PLUGIN_HEADER_FILES}
     ${DA_PLUGIN_SOURCE_FILES}
@@ -133,7 +167,7 @@ add_library(${DA_PLUGIN_NAME} SHARED
     ${DA_PLUGIN_QT_RC_FILES}
 )
 
-# 链接 Qt
+# 链接 Qt - 使用 Qt 版本变量
 target_link_libraries(${DA_PLUGIN_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
@@ -142,14 +176,14 @@ target_link_libraries(${DA_PLUGIN_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Svg
 )
 
-# 导入第三方库（使用辅助宏）
+# 导入第三方库（使用辅助宏）- 自动处理依赖路径
 damacro_import_SARibbonBar(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 damacro_import_DALiteCtk(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 damacro_import_QtAdvancedDocking(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 damacro_import_QtPropertyBrowser(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 damacro_import_qwt(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 
-# 导入 DA 模块
+# 导入 DA 模块 - 使用 find_package 查找主程序模块
 find_package(DAWorkbench COMPONENTS
     DAUtils DAMessageHandler DAData DAWorkFlow
     DAFigure DACommonWidgets DAGui DAInterface DAPluginSupport
@@ -162,15 +196,15 @@ target_link_libraries(${DA_PLUGIN_NAME} PUBLIC
     DAWorkbench::DAPluginSupport
 )
 
-# 设置属性
+# 设置属性 - 启用 Qt 自动处理工具
 set_target_properties(${DA_PLUGIN_NAME} PROPERTIES
-    AUTOMOC ON
-    AUTOUIC ON
-    AUTORCC ON
-    RUNTIME_OUTPUT_DIRECTORY "${DAWorkbench_INSTALL_DIR}/bin/plugins"
+    AUTOMOC ON                       # 自动处理 Q_OBJECT 宏
+    AUTOUIC ON                       # 自动处理 .ui 文件
+    AUTORCC ON                       # 自动处理 .qrc 文件
+    RUNTIME_OUTPUT_DIRECTORY "${DAWorkbench_INSTALL_DIR}/bin/plugins"  # 输出到插件目录
 )
 
-# 安装插件
+# 安装插件 - 使用辅助宏
 damacro_plugin_install()
 ```
 

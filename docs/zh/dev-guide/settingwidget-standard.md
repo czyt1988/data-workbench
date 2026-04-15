@@ -1,6 +1,6 @@
 # 设置类窗口规范
 
-设置类窗口规范定义了 DAWorkBench 中所有配置窗口的标准接口和生命周期管理方式。
+设置类窗口规范定义了 DAWorkBench 中所有配置窗口的标准接口和生命周期管理方式，通过 QPointer 避免野指针问题，支持多目标复用。
 
 ## 主要功能特性
 
@@ -37,7 +37,7 @@
 
 ## 设置目标的生命周期管理
 
-设置的目标应该使用 `QPointer` 管理，避免对象删除后导致显示异常。
+设置的目标应该使用 `QPointer` 管理，避免对象删除后导致显示异常。以下代码展示了如何在类中声明 QPointer 成员：
 
 ```cpp
 // header file
@@ -46,45 +46,52 @@
 class MySettingWidget : public QWidget
 {
 private:
-    QPointer<Target> m_target;  // 使用 QPointer 管理目标
+    // 使用 QPointer 管理目标，对象删除时自动变为 nullptr
+    QPointer<Target> m_target;
 };
 ```
+
+执行上述代码后，当目标对象被删除时，`m_target` 自动变为 `nullptr`，避免野指针访问导致的崩溃。
 
 `setTarget` 应该支持传入 `nullptr`，表示清空目标没有管理的设置对象。
 
 ## 窗体复用实现
 
-为了多个对象复用一个设置窗体，`setTarget` 时应该先解绑旧目标，再绑定新目标：
+为了多个对象复用一个设置窗体，`setTarget` 时应该先解绑旧目标，再绑定新目标。以下代码展示了完整的 `setTarget` 实现流程：
 
 ```cpp
 // header: QPointer<Target> m_target;
 
 void MySettingWidget::setTarget(Target* opt)
 {
-    // 1. 避免重复设置
+    // 1. 避免重复设置，提高效率
     if (m_target == opt) {
         return;
     }
     
-    // 2. 旧目标信号槽断开连接
+    // 2. 旧目标信号槽断开连接，避免内存泄漏
     if (m_target) {
         unbindTarget();
     }
     
-    // 3. 设置新目标
+    // 3. 设置新目标指针
     m_target = opt;
     
-    // 4. 绑定新目标信号槽
+    // 4. 绑定新目标信号槽，建立双向通信
     if (opt) {
         bindTarget();
     }
     
-    // 5. 更新界面
+    // 5. 更新界面，显示新目标的属性
     updateUI();
 }
 ```
 
+执行上述代码后，设置窗口成功切换到新目标，旧目标的信号槽被正确解绑，界面显示新目标的属性值。
+
 ### 绑定与解绑实现示例
+
+以下代码展示 `bindTarget` 和 `unbindTarget` 的实现，建立目标与窗体的双向信号连接：
 
 ```cpp
 void MySettingWidget::bindTarget()
@@ -94,10 +101,12 @@ void MySettingWidget::bindTarget()
     }
     
     // 建立目标 → 窗体的信号连接
+    // 当目标属性变化时，窗体自动更新显示
     connect(m_target, &Target::propertyChanged,
             this, &MySettingWidget::onTargetPropertyChanged);
     
     // 建立窗体 → 目标的信号连接（如需要）
+    // 当窗体设置变化时，目标自动应用
     // connect(this, &MySettingWidget::settingChanged,
     //         m_target, &Target::applySetting);
 }
@@ -108,14 +117,18 @@ void MySettingWidget::unbindTarget()
         return;
     }
     
-    // 断开所有连接
+    // 断开所有连接，防止信号继续触发
     disconnect(m_target, nullptr, this, nullptr);
 }
 ```
 
+执行上述代码后，目标与窗体建立信号连接，属性变化自动同步，解绑时所有连接被正确断开。
+
 ## 刷新显示与应用设置
 
 ### updateUI 实现
+
+以下代码展示 `updateUI` 的实现，从目标读取属性并更新界面控件：
 
 ```cpp
 void MySettingWidget::updateUI()
@@ -126,32 +139,39 @@ void MySettingWidget::updateUI()
         return;
     }
     
-    // 从目标读取属性，更新界面控件
+    // 从目标读取属性，更新界面控件（只读操作）
     m_nameEdit->setText(m_target->getName());
     m_valueSlider->setValue(m_target->getValue());
     m_colorCombo->setCurrentColor(m_target->getColor());
 }
 ```
 
+执行上述代码后，界面控件显示目标当前的属性值，此操作是只读的，不修改目标状态。
+
 ### applySetting 实现
+
+以下代码展示 `applySetting` 的实现，将界面控件的值写回目标：
 
 ```cpp
 void MySettingWidget::applySetting(Target* t)
 {
+    // 如果传入目标，使用传入的；否则使用当前管理的目标
     Target* target = t ? t : m_target;
     if (!target) {
         return;
     }
     
-    // 将界面控件的值写回目标
+    // 将界面控件的值写回目标（修改操作）
     target->setName(m_nameEdit->text());
     target->setValue(m_valueSlider->value());
     target->setColor(m_colorCombo->currentColor());
     
-    // 触发目标更新
+    // 触发目标更新通知
     target->notifyChanged();
 }
 ```
+
+执行上述代码后，界面控件的值被写入目标对象，目标状态被修改。
 
 ## 完整示例
 

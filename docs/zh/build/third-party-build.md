@@ -1,5 +1,7 @@
 # 第三方库构建
 
+本文档介绍 data-workbench 依赖的第三方库构建方法，第三方库是项目的基础组件，必须按正确顺序构建。
+
 本文档介绍 data-workbench 项目依赖的第三方库构建方法。第三方库使用 CMake 构建，需要按照特定顺序进行。
 
 ## 主要功能特性
@@ -29,6 +31,8 @@
 
 ## 依赖关系图
 
+下图展示了各第三方库之间的依赖关系。zlib 作为基础库被 quazip 依赖，必须首先独立构建；其他库无相互依赖，可统一构建。
+
 ```mermaid
 flowchart TD
     A[zlib<br/>压缩库基础库] -->|find_package| B[quazip<br/>Qt zip 压缩库]
@@ -49,6 +53,12 @@ flowchart TD
     style B fill:#bbf,stroke:#333,stroke-width:2px
 ```
 
+上图含义说明：
+
+- **zlib（粉色节点）**：压缩库基础库，无任何依赖，必须**独立构建并安装**，以便后续库能通过 `find_package` 找到
+- **quazip（蓝色节点）**：Qt ZIP 压缩库，依赖 zlib，必须在 zlib 安装后才能构建
+- **统一构建区域**：除 zlib 外的所有库（包括 quazip）可使用统一的 CMakeLists.txt 构建，无相互依赖顺序要求
+
 !!! warning "构建顺序要求"
     由于 quazip 依赖 zlib，必须先独立构建并安装 zlib，然后再构建其他第三方库。
 
@@ -63,18 +73,21 @@ flowchart TD
 
 ### 步骤一：构建 zlib
 
-zlib 是纯 C 库，需要独立构建并安装，以便后续构建能通过 `find_package` 找到。
+zlib 是纯 C 库，需要独立构建并安装，以便后续构建能通过 `find_package(ZLIB)` 找到。以下命令展示完整的 zlib 构建流程：
 
 ```powershell
 # 进入 zlib 目录
+# zlib 位于 src/3rdparty 子目录下
 cd src/3rdparty/zlib
 
 # 配置项目（使用 Qt 工具链文件）
+# Qt 工具链文件确保正确识别编译器和 Windows SDK
 cmake -S . -B build -G Ninja `
     -DCMAKE_BUILD_TYPE:STRING=Release `
     -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
 
 # 构建并安装
+# --parallel 启用并行编译，install 目标将产物安装到预设目录
 cmake --build build --config Release --parallel
 cmake --build build --config Release --target install
 ```
@@ -83,6 +96,8 @@ cmake --build build --config Release --target install
     请根据实际 Qt 安装路径修改 `qt.toolchain.cmake` 的路径。如果不使用管理员权限，可指定 `CMAKE_INSTALL_PREFIX`：
     
     ```powershell
+    # 指定自定义安装路径
+    # 适用于非管理员权限或需要安装到特定位置的情况
     cmake -S . -B build -G Ninja `
         -DCMAKE_BUILD_TYPE:STRING=Release `
         -DCMAKE_INSTALL_PREFIX:PATH="C:\local\zlib" `
@@ -91,34 +106,53 @@ cmake --build build --config Release --target install
 
 ### 步骤二：构建其他第三方库
 
-zlib 安装完成后，使用项目提供的 CMakeLists.txt 统一构建其他库。
+zlib 安装完成后，使用项目提供的 CMakeLists.txt 统一构建其他库。以下命令构建除 zlib 外的所有第三方库：
 
 ```powershell
 # 进入第三方库目录
+# 此目录包含所有第三方库的 CMake 配置
 cd src/3rdparty
 
 # 配置项目
+# 统一的 CMakeLists.txt 自动管理所有库的构建
 cmake -S . -B build -G Ninja `
     -DCMAKE_BUILD_TYPE:STRING=Release `
     -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE `
     -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
 
 # 构建并安装
+# 所有库将编译并安装到同一输出目录
 cmake --build build --config Release --parallel
 cmake --build build --config Release --target install
 ```
 
 !!! note "自动查找 zlib"
-    CMake 会自动通过 `find_package(ZLIB)` 查找已安装的 zlib。如果找不到，请设置环境变量 `$env:ZLIB_ROOT = "C:\local\zlib"`
+    CMake 会自动通过 `find_package(ZLIB)` 查找已安装的 zlib。如果找不到，请设置环境变量：
+    
+    ```powershell
+    # 设置 zlib 安装路径环境变量
+    # 使 CMake 能定位 zlib 的头文件和库文件
+    $env:ZLIB_ROOT = "C:\local\zlib"
+    ```
 
 ### 步骤三：验证安装
 
+以下命令检查构建产物是否正确安装。输出目录应包含 `bin/`、`lib/`、`include/` 等子目录：
+
 ```powershell
 # 查看生成的安装目录
+# 安装目录命名格式：bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}
 ls ..\bin_Release_qt*
 ```
 
-安装目录命名格式：`bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}`，包含 `bin/`、`lib/`、`include/`、`cmake/` 等子目录。
+安装目录命名格式：`bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}`，包含以下内容：
+
+| 子目录 | 内容 |
+|--------|------|
+| `bin/` | 动态库 DLL/SO 文件 |
+| `lib/` | 铙入库和 CMake 配置文件 |
+| `include/` | 头文件 |
+| `cmake/` | CMake 查找模块 |
 
 ## 使用 Qt Creator 构建
 
@@ -139,13 +173,15 @@ ls ..\bin_Release_qt*
 
 **现象**：构建 quazip 时报错找不到 zlib。
 
-**解决方案**：
+**解决方案**：设置环境变量或 CMake 参数指定 zlib 安装路径：
 
 ```powershell
 # 方式一：设置环境变量
+# 推荐方式，CMake 会自动搜索此路径
 $env:ZLIB_ROOT = "C:\local\zlib"
 
 # 方式二：CMake 参数
+# 直接在配置命令中指定路径
 cmake -S . -B build -DZLIB_ROOT="C:\local\zlib" ...
 ```
 

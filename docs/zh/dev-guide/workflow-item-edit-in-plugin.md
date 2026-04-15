@@ -15,7 +15,7 @@
 
 ### 架构层次
 
-工作流的对象是节点（`DAAbstractNode`），但节点是抽象的，要在画布上呈现，则通过节点图元（`DAAbstractNodeGraphicsItem`）来呈现。
+工作流的对象是节点（`DAAbstractNode`），但节点是抽象的，要在画布上呈现，则通过节点图元（`DAAbstractNodeGraphicsItem`）来呈现。下图展示了 Model 层和 View 层的分离架构：
 
 ```mermaid
 flowchart LR
@@ -35,18 +35,28 @@ flowchart LR
     N -.->|createGraphicsItem| GI
 ```
 
+上图展示了工作流的分层架构：
+- **Model 层**：`DAWorkFlow` 管理节点的图结构和逻辑，`DAAbstractNode` 定义节点的抽象接口
+- **View 层**：`DANodeGraphicsScene` 渲染节点图元的场景，`DAAbstractNodeGraphicsItem` 提供节点的可视化表示
+- **桥接关系**：节点通过 `createGraphicsItem` 方法创建对应的图元
+
 - `DAWorkFlow`：管理节点的工作流，维护节点图结构（Model 层）
 - `DANodeGraphicsScene`：渲染节点的场景，管理节点图元的显示工作（View 层）
 
 ## 获取场景
 
-所有插件都会有 `core()` 接口，通过接口链可获取当前场景：
+所有插件都会有 `core()` 接口，通过接口链可获取当前场景。以下代码展示了获取场景的完整调用：
 
 ```cpp
+// 通过接口链获取当前工作流场景
 DAWorkFlowGraphicsScene* sc = core()->getUiInterface()->getDockingArea()->getCurrentScene();
 ```
 
+执行上述代码后，`sc` 指向当前活动的图形场景，可用于添加节点、创建连接等操作。
+
 ### 接口调用链
+
+获取场景需要通过一系列接口调用，从插件核心接口到 Dock 区域再到当前场景。下图展示了完整的调用链：
 
 ```mermaid
 flowchart LR
@@ -56,50 +66,58 @@ flowchart LR
     DA --> SC["DAWorkFlowGraphicsScene"]
 ```
 
+上图展示了接口调用链：插件通过 `core()` 获取核心接口，进而获取 UI 接口，再获取 Dock 区域接口，最终获得当前工作流场景。
+
 ## 节点的创建和显示
 
 ### 节点创建
 
-节点可以直接 `new` 出来或者通过插件工厂的 `create` 方法创建：
+节点可以直接 `new` 出来或者通过插件工厂的 `create` 方法创建。以下代码展示了两种创建方式：
 
 ```cpp
-// 方式1：直接创建
+// 方式1：直接创建，适合简单场景
 std::shared_ptr<MyNode> node = std::make_shared<MyNode>();
 
-// 方式2：工厂创建（推荐）
+// 方式2：工厂创建（推荐），会调用 initializNode 记录创建工厂
 std::shared_ptr<MyNode> node = std::static_pointer_cast<MyNode>(
     create(DA::DANodeMetaData(QString("My.Node"), QString(u8"My Group"))));
 ```
 
+执行上述代码后，创建了一个 `MyNode` 节点实例。工厂创建方式会自动初始化节点的工厂引用。
+
 !!! tip "推荐工厂创建"
-    使用插件工厂的 `create` 方法会调用 `initializNode`，让节点记录创建它的工厂。
+    使用插件工厂的 `create` 方法会调用 `initializNode`，让节点记录创建它的工厂，便于后续序列化和管理。
 
 ### 添加节点到工作流
 
-创建节点后，需要把节点添加到工作流中：
+创建节点后，需要把节点添加到工作流中才能参与数据流处理。以下代码展示了添加节点的流程：
 
 ```cpp
-// 获取工作流
+// 获取工作流管理器
 DAWorkFlow* wf = sc->getWorkflow();
 
-// 添加节点到工作流
+// 添加节点到工作流，节点开始参与工作流逻辑
 wf->addNode(node);
 ```
 
+执行上述代码后，节点被添加到工作流的节点列表中，但此时节点尚未在场景中显示。
+
 ### 图元创建与添加
 
-节点创建后不会在场景中显示，需要创建图元并添加到场景：
+节点创建后不会在场景中显示，需要创建图元并添加到场景。以下代码展示了图元的创建和添加流程：
 
 ```cpp
-// 创建图元
+// 创建图元，节点通过 createGraphicsItem 生成对应的可视化图元
 DAAbstractNodeGraphicsItem* item = node->createGraphicsItem();
 
-// 设置位置
+// 设置图元位置（场景坐标）
 item->setPos(QPointF(100, 100));
 
-// 添加到场景（带 redo/undo）
+// 添加到场景（带 redo/undo，支持撤销）
 sc->addNodeItem_(item);
 ```
+
+执行上述代码后，场景中出现节点图元，位于坐标 (100, 100)，可通过控制点进行缩放编辑。
 
 !!! warning "方法命名规则"
     - `addItem` / `addNodeItem`：不支持 redo/undo
@@ -120,49 +138,54 @@ sc->addNodeItem_(item);
 
 ### 图元连接方法
 
-节点连接应通过图元进行，这会同时建立逻辑层和视图层的连接：
+节点连接应通过图元进行，这会同时建立逻辑层和视图层的连接。以下代码展示了两种连接方式：
 
 ```cpp
-// 通过端口名称连接
+// 通过端口名称连接，适合已知端口名称的场景
 DAAbstractNodeLinkGraphicsItem* linkItem = fromItem->linkToByName("out", toItem, "in");
 
-// 通过端口对象连接
+// 通过端口对象连接，适合需要精确控制端口对象的场景
 DAAbstractNodeLinkGraphicsItem* linkItem = fromItem->linkTo(fromPort, toPort);
 ```
 
+执行上述代码后，两个节点之间建立数据连接，连接线图元显示在场景中。
+
 ### 添加连接线到场景
 
+创建连接后，需要添加到场景并刷新位置。以下代码展示了连接线的添加和刷新流程：
+
 ```cpp
-// 添加连接线（带 redo/undo）
+// 添加连接线到场景（带 redo/undo）
 sc->addItem_(linkItem);
 
-// 刷新连接线位置
+// 刷新连接线位置，确保连接线正确显示在两个节点之间
 fromItem->updateLinkItems();
 toItem->updateLinkItems();
 ```
 
+执行上述代码后，连接线被添加到场景并正确定位在两个节点的端口之间。
+
 !!! tip "注意"
-    连接线不会立即刷新，需要调用 `updateLinkItems` 函数刷新连接线的位置。
+    连接线不会立即刷新，需要调用 `updateLinkItems` 函数刷新连接线的位置，否则连接线可能显示在错误的位置。
 
 ## 命令打包
 
-有些情况一个过程涉及多个命令，对用户应该执行一次回退操作：
+有些情况一个过程涉及多个命令，对用户应该执行一次回退操作。使用 `beginMacro`/`endMacro` 将多个命令打包为一个宏命令。以下代码展示了命令打包的用法：
 
 ```cpp
 DAWorkFlowGraphicsScene* sc = core()->getUiInterface()->getDockingArea()->getCurrentScene();
 
-// 开始宏
+// 开始宏命令，后续所有操作记录到一个宏中
 sc->undoStack()->beginMacro("create workflow");
 
-// 创建多个节点
-// 连接节点
-// ...
+// 创建多个节点、连接节点等操作
+// 这些操作会被打包，undo 时一次性撤销所有操作
 
-// 结束宏
+// 结束宏命令
 sc->undoStack()->endMacro();
 ```
 
-用户点击回退按钮时，会执行宏中的所有命令。
+执行上述代码后，宏中的所有操作被记录为一个整体。用户点击撤销按钮时，整个宏中的所有操作被一次性撤销。
 
 ## 完整示例
 

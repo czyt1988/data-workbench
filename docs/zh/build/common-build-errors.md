@@ -1,6 +1,17 @@
 # 构建过程常见错误
 
+本文档汇总 data-workbench 构建过程中的常见错误及解决方案，帮助开发者快速定位并解决构建问题。
+
 本文档汇总data-workbench构建过程中的常见错误及解决方案，按错误类型分类便于快速定位。
+
+## 主要功能特性
+
+**特性**
+
+- ✅ **错误分类索引**：按错误类型分类，便于快速定位问题
+- ✅ **详细原因分析**：每个错误提供完整的原因分析表格
+- ✅ **多种解决方案**：提供多种解决方案，适应不同场景
+- ✅ **诊断流程图**：通过流程图引导错误排查步骤
 
 ## 错误分类概览
 
@@ -30,28 +41,32 @@
 
 避免中文路径，在项目根目录下的`CMakeSettings.json`中指定构建目录：
 
+下面的代码展示了 CMakeSettings.json 的典型配置，用于指定构建目录并避免中文路径问题。关键参数说明见代码注释。
+
 ```json
 {
   "configurations": [
     {
-      "name": "x64-Debug",
-      "generator": "Ninja",
-      "configurationType": "Debug",
-      "inheritEnvironments": [ "msvc_x64" ],
-      "buildRoot": "${workspaceRoot}\\build\\x64-Debug",
+      "name": "x64-Debug",               // 配置名称，用于识别构建类型
+      "generator": "Ninja",               // 使用 Ninja 生成器，构建更快
+      "configurationType": "Debug",       // Debug 模式，便于调试
+      "inheritEnvironments": [ "msvc_x64" ],  // 继承 MSVC x64 环境
+      "buildRoot": "${workspaceRoot}\\build\\x64-Debug",  // 构建目录，使用英文路径
       "cmakeCommandArgs": "",
       "ctestCommandArgs": ""
     },
     {
-      "name": "x64-Release",
+      "name": "x64-Release",              // Release 配置
       "generator": "Ninja",
-      "configurationType": "Release",
+      "configurationType": "Release",     // Release 模式，性能优化
       "inheritEnvironments": [ "msvc_x64" ],
-      "buildRoot": "${workspaceRoot}\\build\\x64-Release"
+      "buildRoot": "${workspaceRoot}\\build\\x64-Release"  // Release 构建目录
     }
   ]
 }
 ```
+
+配置完成后，Visual Studio 将使用指定的构建目录，避免中文路径问题。
 
 #### 方案二：启用长路径支持
 
@@ -174,12 +189,16 @@ MinGW编译器线程数据空间不足，属于编译器自身问题。
 
 通过配置文件指定Python环境：
 
+下面的代码展示了 python-config.json 的配置格式，用于指定 Python 解释器路径。`${current-app-dir}` 变量代表程序安装目录。
+
 ```json
 {
-  "pythonPath": "D:/Python39/python.exe",
-  "pythonHome": "D:/Python39"
+  "pythonPath": "D:/Python39/python.exe",   // Python 解释器完整路径
+  "pythonHome": "D:/Python39"               // Python 安装根目录
 }
 ```
+
+将此文件放置在程序目录下，程序启动时会优先读取此配置。
 
 #### 方案二：正确配置Python环境
 
@@ -196,7 +215,9 @@ MinGW编译器线程数据空间不足，属于编译器自身问题。
 
 ## 错误诊断流程
 
-遇到构建错误时，按以下流程诊断：
+遇到构建错误时，按以下流程诊断。流程图展示了从错误类型判断到最终解决方案的完整排查路径。
+
+下图展示了构建错误的诊断决策树，根据错误类型分支到相应的处理步骤：
 
 ```mermaid
 flowchart TD
@@ -219,6 +240,22 @@ flowchart TD
     G --> G1[配置python-config.json]
 ```
 
+流程图各节点含义说明：
+
+| 节点 | 含义 |
+|------|------|
+| A-构建错误 | 构建过程的起始问题点 |
+| B-错误类型 | 根据错误信息判断所属类型 |
+| C-检查路径 | VS 编译器错误首先排查路径问题 |
+| C1-含中文? | 判断路径是否包含中文字符 |
+| C2-配置build目录 | 通过 CMakeSettings.json 指定纯英文路径 |
+| C3-启用长路径 | 通过组策略启用 Windows 长路径支持 |
+| D/E-多次构建 | MOC/MinGW 错误通过重复构建解决 |
+| F-检查DLL | 运行时错误检查动态库依赖 |
+| G-检查Python环境 | Python 相关错误检查环境配置 |
+
+按照流程图指引，可以快速定位问题并执行相应的解决步骤。
+
 ## 构建检查清单
 
 构建前请确认以下事项：
@@ -232,10 +269,11 @@ flowchart TD
 | Qt工具链 | 使用Qt官方工具链文件 |
 
 !!! warning "工具链文件"
-    构建**必须**使用Qt工具链文件，否则会出现Windows SDK头文件找不到的问题：
+    构建**必须**使用Qt工具链文件，否则会出现Windows SDK头文件找不到的问题。以下是正确的 CMake 配置命令示例：
     
     ```powershell
-    cmake -S . -B build -G Ninja \
+    # 正确的配置命令示例
+    cmake -S . -B build -G Ninja `
         -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
     ```
 

@@ -50,6 +50,8 @@ project.dapro (ZIP Archive)
 
 ### 保存流程
 
+工程文件保存采用分层保存机制，按模块依赖顺序依次保存。下图展示了保存的完整流程：
+
 ```mermaid
 flowchart TD
     A["开始保存"] --> B["保存系统信息<br/>system-info.xml"]
@@ -58,6 +60,12 @@ flowchart TD
     D --> E["保存图表<br/>charts.xml + chart-data/"]
     E --> F["保存完成"]
 ```
+
+上图展示了工程保存的四个阶段：
+- **第一阶段**：保存系统信息到 `system-info.xml`，记录创建环境
+- **第二阶段**：保存工作流到 `workflow.xml`，包含节点、连接、图元
+- **第三阶段**：保存数据管理器配置和实际数据文件
+- **第四阶段**：保存图表配置和图表数据
 
 **保存顺序详解**
 
@@ -80,6 +88,8 @@ flowchart TD
 
 ### 加载流程
 
+工程文件加载采用分层加载机制，按依赖顺序依次恢复各模块状态。下图展示了加载的完整流程：
+
 ```mermaid
 flowchart TD
     A["开始加载"] --> B["加载工作流<br/>workflow.xml"]
@@ -91,6 +101,8 @@ flowchart TD
     G --> H["workflowReady 回调"]
     H --> I["加载完成"]
 ```
+
+上图展示了工程加载的完整流程，从工作流信息到场景配置依次恢复。注意加载完成后会调用 `workflowReady` 回调函数，通知各工厂执行后处理。
 
 **加载顺序详解**
 
@@ -108,6 +120,8 @@ flowchart TD
     工厂的额外信息加载是在节点之后，可以把节点的全局性信息存入工厂的额外信息中。加载时已加载完所有节点，可以对节点进一步操作。加载完成后会调用 `DAAbstractNodeFactory::workflowReady` 回调函数。
 
 ## Workflow XML 结构示例
+
+`workflow.xml` 是工作流的核心配置文件，存储节点定义、连接关系、图元信息等。以下示例展示了典型的 Workflow XML 结构：
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -165,7 +179,17 @@ flowchart TD
 </root>
 ```
 
+上述 XML 结构展示了工作流的完整数据组织：
+- `<workflows>`：顶层节点，包含版本号和当前索引
+- `<workflow>`：单个工作流定义，包含名称属性
+- `<nodes>`：节点集合，每个节点包含 ID、名称、原型类型、输入输出端口、属性、图元信息
+- `<links>`：连接集合，定义节点之间的数据流向
+- `<factorys>`：工厂信息，存储节点工厂的扩展数据
+- `<scene>`：场景配置，存储视图位置和背景信息
+
 ## Charts XML 结构示例
+
+`charts.xml` 存储图表的配置信息，包含图表布局、颜色主题、绑定数据等。以下示例展示了典型的 Charts XML 结构：
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -189,9 +213,15 @@ flowchart TD
 </root>
 ```
 
+上述 XML 结构展示了图表配置的数据组织：
+- `<figure>`：图表画布定义，包含 ID、分组、名称
+- `<background>`：背景色配置
+- `<colortheme>`：颜色主题，可自定义颜色列表
+- `<charts>`：图表集合，使用归一化坐标定义位置和大小
+
 ## 本地信息记录 `<local-info>`
 
-`<local-info>` 位于 `<root>` 节点下，用于保存保存文件的本地计算机信息：
+`<local-info>` 位于 `<root>` 节点下，用于记录保存文件时的本地计算机环境信息。这些信息有助于追踪文件的创建来源。以下示例展示了本地信息的数据结构：
 
 ```xml
 <local-info>
@@ -264,6 +294,8 @@ DA 在进行复制粘贴时，通过 XML 传递复制粘贴内容。
 
 ## 核心类关系
 
+项目文件管理涉及多个核心类，通过接口与实现分离的模式组织。下图展示了项目管理的类关系：
+
 ```mermaid
 flowchart LR
     PI["DAProjectInterface<br/>接口定义"]
@@ -277,6 +309,13 @@ flowchart LR
     
     PI -.->|实现| AP
 ```
+
+上图展示了项目管理的核心类架构：
+- **DAProjectInterface**：项目接口定义，提供加载、保存等标准方法
+- **DAAppProject**：具体实现类，协调各模块的序列化操作
+- **DAZipArchive**：ZIP 压缩包处理，基于 QuaZip 实现
+- **DAXmlHelper**：XML 序列化工具类
+- 各操作模块（WorkFlow、Data、Chart）：负责各自领域的序列化数据收集
 
 ## 参考资料
 

@@ -1,6 +1,17 @@
 # 贡献指南
 
-感谢您对 DAWorkBench 项目的关注！本指南说明如何参与项目开发。
+感谢您对 DAWorkBench 项目的关注！本指南说明如何参与项目开发，包括 Bug 报告、功能建议、代码贡献和文档改进。
+
+## 主要功能特性
+
+**特性**
+
+- ✅ **多种贡献方式**：Bug 报告、功能建议、代码贡献、文档改进
+- ✅ **开发环境准备**：必要工具清单和仓库克隆步骤
+- ✅ **代码规范**：命名规范、注释规范、头文件组织
+- ✅ **提交规范**：Commit 信息格式和 Type 类型说明
+- ✅ **PR 流程**：创建分支、开发测试、提交变更的完整流程
+- ✅ **检查清单**：代码、功能、文档、测试的 PR 前检查项
 
 ## 贡献方式
 
@@ -43,71 +54,86 @@ git checkout -b fix/my-fix
 
 ### 编码风格
 
-遵循项目编码规范：
+遵循项目编码规范，保持与现有代码一致的风格。
+
+下面的代码展示了项目的命名规范：
 
 ```cpp
-// 类命名：PascalCase，DA 前缀
+// 类命名：PascalCase，DA 前缀 - 保持与项目风格一致
 class MyPluginClass { };
 
-// 函数命名：camelCase
+// 函数命名：camelCase - 小驼峰命名
 void processData();
 
-// 变量命名：m_ 前缀 + camelCase（成员）
+// 变量命名：m_ 前缀 + camelCase（成员变量）
 int m_counter;
 
-// 常量命名：UPPER_CASE
+// 常量命名：UPPER_CASE - 全大写加下划线
 const int MAX_ITERATIONS = 1000;
 
-// 枚举命名：PascalCase，值 camelCase
+// 枚举命名：PascalCase，值 camelCase - 类型大驼峰，值小驼峰
 enum NodeStatus {
-    StatusIdle,
-    StatusRunning,
-    StatusFinished
+    StatusIdle,      // 空闲状态
+    StatusRunning,   // 运行状态
+    StatusFinished   // 完成状态
 };
 ```
 
+命名规范确保代码风格统一，便于阅读和维护。
+
 ### 注释规范
+
+使用 Doxygen 格式注释，详细说明函数用途、参数和返回值。
+
+下面的代码展示了标准的注释格式：
 
 ```cpp
 /**
- * @brief 简短描述（一行）
+ * @brief 简短描述（一行） - 函数的简要说明
  * 
- * 详细描述（多行）
+ * 详细描述（多行） - 函数的详细功能说明
  * 
- * @param param1 参数1说明
- * @param param2 参数2说明
- * @return 返回值说明
+ * @param param1 参数1说明 - 参数用途描述
+ * @param param2 参数2说明 - 参数用途描述
+ * @return 返回值说明 - 返回值的含义
  * 
- * @note 注意事项
- * @warning 警告信息
+ * @note 注意事项 - 使用时需要注意的问题
+ * @warning 警告信息 - 可能导致错误的情况
  * 
  * @example
  * @code
- * // 使用示例代码
+ * // 使用示例代码 - 展示函数调用方式
+ * processData("input", 100);
  * @endcode
  */
 bool processData(const QString& param1, int param2);
 ```
 
+Doxygen 注释支持自动生成 API 文档，建议在头文件中使用简短注释，详细注释放在 cpp 文件中。
+
 ### 头文件规范
 
-```cpp
-#pragma once
+头文件使用 `#pragma once` 防止重复包含，遵循 Qt 的编码风格。
 
-#include <QObject>
-#include "DAAbstractNode.h"
+下面的代码展示了标准头文件结构：
+
+```cpp
+#pragma once                     // 使用 pragma once 替代 #ifndef
+
+#include <QObject>               // Qt 头文件
+#include "DAAbstractNode.h"      // 项目头文件
 
 /**
- * @brief 我的自定义节点类
+ * @brief 我的自定义节点类 - 类的简要说明
  */
 class MyCustomNode : public DA::DAAbstractNode
 {
-    Q_OBJECT
+    Q_OBJECT                     // Qt 元对象系统支持
 public:
-    // 构造函数
+    // 构造函数 - 头文件中使用简短注释
     MyCustomNode(const DA::DANodeMetaData& meta, DA::DACoreInterface* core);
     
-    // ...
+    // ... 其他方法声明
 };
 ```
 

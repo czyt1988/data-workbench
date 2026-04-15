@@ -1,6 +1,6 @@
 # 第三方库管理
 
-第三方库管理文档说明如何在 DAWorkBench 项目中添加、更新和管理第三方依赖库。
+第三方库管理模块提供基于 Git Submodule 的依赖管理方案，支持 GitHub 和 Gitee 双源配置，统一构建入口简化开发流程。
 
 ## 主要功能特性
 
@@ -29,11 +29,13 @@
 
 ## 添加第三方库
 
-如果开发时想添加一个第三方库，以 `pybind11` 举例，可以执行下面语句进行添加：
+如果开发时想添加一个第三方库，以 `pybind11` 举例，可以执行下面语句进行添加。Git submodule 会自动更新 `.gitmodules` 文件：
 
 ```bash
 git submodule add https://github.com/pybind/pybind11 ./src/3rdparty/pybind11
 ```
+
+执行上述命令后，`pybind11` 仓库被克隆到 `src/3rdparty/pybind11` 目录，`.gitmodules` 文件自动添加对应配置。
 
 !!! tip "注意"
     最后路径是 `./src/3rdparty/pybind11`，库名称文件夹要指定。
@@ -51,21 +53,27 @@ src/3rdparty/
 
 ## 更新 Submodule
 
-如果某个 submodule 更新了，使用 `git submodule update --remote` 进行更新。例如 SARibbon 项目更新了，可以执行：
+如果某个 submodule 更新了，使用 `git submodule update --remote` 进行更新。以下命令更新 SARibbon 到最新版本：
 
 ```bash
 git submodule update --remote src/3rdparty/SARibbon
 ```
 
+执行上述命令后，SARibbon submodule 被更新到远程仓库的最新提交。
+
 ### 更新所有 submodule
+
+以下命令批量更新所有 submodule 到最新版本：
 
 ```bash
 # 更新所有 submodule 到最新版本
 git submodule update --remote
 
-# 更新并合并到当前分支
+# 更新并合并到当前分支（自动处理冲突）
 git submodule update --remote --merge
 ```
+
+执行上述命令后，所有 submodule 被更新，第二个命令会自动合并远程变更到当前分支。
 
 ## Submodule 源管理
 

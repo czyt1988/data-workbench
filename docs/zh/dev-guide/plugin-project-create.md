@@ -1,5 +1,17 @@
 # 创建插件项目
 
+本文档介绍如何创建基于 data-workbench 的插件项目，包括项目结构组织、CMake 配置和工程文件生成方法。
+
+## 主要功能特性
+
+**特性**
+
+- ✅ **标准化项目结构**：提供推荐的插件项目目录组织方式
+- ✅ **CMake 辅助宏**：提供 `damacro_plugin_setting` 等宏简化插件配置
+- ✅ **依赖导入宏**：提供 `damacro_import_*` 系列宏自动导入第三方库
+- ✅ **一键安装配置**：通过 `damacro_plugin_install` 宏自动配置插件安装
+- ✅ **模板脚本生成**：提供 `make-plugin.py` 脚本自动生成工程文件
+
 `data-workbench`作为一个基础框架，业务功能应该由插件提供
 
 ## 插件项目结构组织方式
@@ -17,15 +29,29 @@
 
 建议在你项目的根目录执行如下操作，即可添加`data-workbench`作为你项目的子模块
 
+以下命令将 data-workbench 添加为 Git 子模块，这是最推荐的依赖管理方式：
+
 ```bash
 git submodule add https://gitee.com/czyt1988/data-workbench.git ./data-workbench
 ```
 
+上述命令的效果：
+- 在当前项目根目录下创建 `data-workbench` 子目录
+- 将 data-workbench 仓库作为子模块添加到项目中
+- 自动更新 `.gitmodules` 文件记录子模块信息
+
 首次拉取插件项目，需要执行：
+
+以下命令用于初始化并更新所有子模块，包括 data-workbench 及其第三方依赖：
 
 ```shell
 git submodule update --init --recursive
 ```
+
+上述命令的效果：
+- 初始化所有已配置的 Git 子模块
+- 递归更新子模块及其子模块的子模块
+- 拉取 data-workbench 及其所有第三方依赖库
 
 执行上面语句会把`data-workbench`以及它所有的第三方依赖都拉取
 
@@ -37,7 +63,7 @@ git submodule update --init --recursive
 
 顶层目录的`CMakeLists.txt`文件用于指定`data-workbench`目录记忆相关信息
 
-你的顶层目录`CMakeLists.txt`文件需要有如下内容：
+你的顶层目录`CMakeLists.txt`文件需要有如下内容，用于设置 data-workbench 的安装目录和引入辅助工具：
 
 ```cmake
 # 确认系统的位数，data-workbench的安装目录会进行区分，因此需要此拼接data-workbench的安装目录
@@ -63,6 +89,12 @@ set(DAWorkbench_DIR "${DAWorkbench_INSTALL_DIR}/lib/cmake/DAWorkbench")
 include(${DAWorkbench_DIR}/daworkbench_plugin_utils.cmake)
 ```
 
+上述 CMake 配置的关键点：
+- `DAWorkbench_INSTALL_FOLDER_NAME` 根据构建类型、Qt版本和编译器自动命名
+- `DAWorkbench_INSTALL_DIR` 指定 data-workbench 的安装路径
+- `DAWorkbench_DIR` 用于查找 data-workbench 的 CMake 配置文件
+- `daworkbench_plugin_utils.cmake` 包含所有插件辅助宏
+
 有了上面内容，你就可以方便的引入`data-workbench`工程
 
 ### src目录CMake文件
@@ -77,11 +109,18 @@ src目录主要是你的代码，src目录由顶层目录通过`add_subdirectory
 
 插件设置宏
 
-此宏如下定义：
+此宏用于设置插件的基本信息，包括名称、描述和版本号：
 
 ```cmake
 macro(damacro_plugin_setting _plugin_name _plugin_description _plugin_ver_major _plugin_ver_minor _plugin_ver_path _daworkbench_intall_dir)
 ```
+
+上述宏的输入参数说明：
+- `_plugin_name`：插件库名称，决定生成的 DLL/SO 文件名
+- `_plugin_description`：插件功能描述文本
+- `_plugin_ver_major`：主版本号
+- `_plugin_ver_minor`：次版本号
+- `_plugin_ver_path`：修订版本号
 
 输入参数：
 
@@ -101,7 +140,7 @@ macro(damacro_plugin_setting _plugin_name _plugin_description _plugin_ver_major 
 - `DA_PLUGIN_FULL_DESCRIPTION`：完整的项目描述，由`${DA_PLUGIN_NAME} ${DA_PLUGIN_VERSION} | ${DA_PLUGIN_DESCRIPTION}`三个变量拼接
 - `DA_MIN_QT_VERSION`：最低qt版本要求
 
-src目录的CMake文件首先应该这写：
+src目录的CMake文件首先应该这写，使用 `damacro_plugin_setting` 宏设置插件基本信息：
 
 ```cmake
 cmake_minimum_required(VERSION 3.10)
@@ -115,6 +154,11 @@ damacro_plugin_setting(
     ${DAWorkbench_INSTALL_DIR}
 )
 ```
+
+上述配置将生成以下变量：
+- `DA_PLUGIN_NAME = MyDAPlugin`：插件名称
+- `DA_PLUGIN_VERSION = 0.0.1`：完整版本号
+- `DA_PLUGIN_FULL_DESCRIPTION`：包含名称、版本和描述的完整信息
 
 上面这段语句，会自动设置好下面这些参数：
 
@@ -133,7 +177,7 @@ DA_PLUGIN_FULL_DESCRIPTION = MyDAPlugin 0.0.0|Plugin For DAWorkbench
 
 如：`damacro_import_SARibbonBar`就是导入`SARibbonBar`到项目中
 
-由于`damacro_plugin_setting`已经设置好了变量，你可以直接复制下面这段话到你的`src`目录`cmake`文件中而不需要进行改动
+由于`damacro_plugin_setting`已经设置好了变量，你可以直接复制下面这段导入第三方库的配置到你的`src`目录`cmake`文件中：
 
 ```cmake
 damacro_import_SARibbonBar(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
@@ -144,13 +188,25 @@ damacro_import_qwt(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 damacro_import_orderedmap(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 ```
 
+上述配置导入的第三方库说明：
+- `SARibbonBar`：Ribbon 界面库
+- `DALiteCtk`：轻量级 CTK 医疗图像组件
+- `QtAdvancedDocking`：高级 Dock 窗口系统
+- `QtPropertyBrowser`：属性浏览器组件
+- `qwt`：科学绘图库
+- `orderedmap`：有序映射容器
+
 #### damacro_plugin_install
 
 `damacro_plugin_install`宏用于插件的安装，无需任何参数，只需要在`src`目录`cmake`文件最后添加即可
 
 ## 插件项目CMake文件示例
 
-一个较为完整的插件项目`CMake`文件示例如下
+一个较为完整的插件项目`CMake`文件示例如下，展示了根目录和 src 目录的完整配置：
+
+### 根目录 CMakeLists.txt
+
+以下示例展示了插件项目根目录的完整 CMake 配置，包括子模块设置和构建环境配置：
 
 根目录`CMakeLists.txt`文件：
 
@@ -194,7 +250,16 @@ if(MSVC)
 endif()
 ```
 
+上述根目录 CMake 配置的关键点：
+- 设置最低 Qt 版本要求为 5.14
+- 根据系统位数（x86/x64）自动命名安装目录
+- 查找 Qt 并设置 data-workbench 的安装路径
+- 引入插件辅助工具并添加 src 子目录
+- MSVC 编译器禁用清单文件生成
+
 src目录的`CMakeLists.txt`文件：
+
+以下示例展示了 src 目录的完整 CMake 配置，包括插件信息设置、Qt 依赖和 DAWorkbench 模块链接：
 
 ```cmake
 cmake_minimum_required(VERSION 3.10)
@@ -313,15 +378,24 @@ set_target_properties(${DA_PLUGIN_NAME} PROPERTIES
 damacro_plugin_install()
 ```
 
+上述 src 目录 CMake 配置的关键点：
+- 使用 `damacro_plugin_setting` 设置插件信息
+- 查找并链接 Qt 组件（Core、Gui、Widgets 等）
+- 使用 `file(GLOB)` 收集源文件、头文件、UI 文件和资源文件
+- 使用 `damacro_import_*` 导入第三方库
+- 查找并链接 DAWorkbench 各模块
+- 设置 AUTOMOC、AUTOUIC、AUTORCC 自动处理 Qt 元对象
+- 使用 `damacro_plugin_install` 配置插件安装
+
 通过上面的操作，可以构建一个基于`data-workbench`的插件
 
 ## 工程文件生成
 
 插件工程文件可通过`plugins/plugin-template/make-plugin.py`脚本文件生成
 
-只需要配置`plugins/plugin-template/template.json`即可生成工程文件
+只需要配置`plugins/plugin-template/template.json`即可生成工程文件，无需手动创建文件。
 
-配置文件格式如下：
+配置文件格式如下，包含插件的基本信息和工厂配置：
 
 ```json
 {
@@ -334,5 +408,14 @@ damacro_plugin_install()
     "factory-description":"My Plugin Node Factory"
 }
 ```
+
+上述配置文件的字段说明：
+- `plugin-base-name`：插件基础名称，用于生成类名和文件名
+- `plugin-display-name`：插件显示名称，用于界面展示
+- `plugin-description`：插件功能描述
+- `plugin-iid`：插件接口标识符，需保持唯一
+- `factory-prototypes`：节点工厂原型标识
+- `factory-name`：工厂显示名称
+- `factory-description`：工厂功能描述
 
 配置后，运行`make-plugin.py`脚本，会在上级目录生成插件工程文件

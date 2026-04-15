@@ -1,5 +1,17 @@
 # 开发规范
 
+本文档定义了 data-workbench 项目的代码编写规范，包括命名规则、注释规范、调试开关和 Qt 编程注意事项，确保代码风格统一、易于维护。
+
+## 主要功能特性
+
+**特性**
+
+- ✅ **统一命名风格**：驼峰命名法用于类和函数，下划线命名用于全局变量
+- ✅ **IDE 搜索优化**：命名遵循 IDE 最优搜索原则，便于快速定位符号
+- ✅ **Doxygen 注释**：头文件简短注释，源文件完整 Doxygen 注释
+- ✅ **宏开关控制**：使用宏而非注释控制调试功能和代码开关
+- ✅ **Qt 兼容性**：涵盖 Qt5/Qt6 差异处理和多线程 UI 操作规范
+
 ## 命名规则
 
 ### 总体原则
@@ -29,6 +41,8 @@
 
 
 示例代码：
+
+以下代码展示了各类标识符的正确命名方式，涵盖全局变量、类、函数、成员变量和枚举：
 
 ```cpp
 int g_total_count;//全局变量以g开头，下划线命名
@@ -73,6 +87,12 @@ enum DockingArea
 };
 ```
 
+上述代码展示了命名规范的应用：
+- 全局变量 `g_total_count` 使用 `g_` 前缀和下划线命名
+- 类名 `ExampleClass` 使用首字母大写的驼峰命名
+- 公有成员 `publicMemberValue` 无前缀，私有成员 `mResultValue` 使用 `m` 前缀
+- 枚举值 `DockingAreaWorkFlowOperate` 使用统一前缀便于 IDE 搜索
+
 !!! tips "说明"
     `QStyleOption*`系列就是比较好的例子，所有相似功能的类都是以`QStyleOption`打头，例如`QStyleOptionToolButton`，而不是命名为`QToolButtonStyleOption`
 
@@ -89,6 +109,8 @@ enum DockingArea
 - **统一使用 `set` 前缀**，使 IDE 能通过输入 `set` 联想所有可配置项。
 
 总之尽量使用`set`，让编译器能通过`set`联想出所有可设置属性，用`get`和`is`能联想出所有可读属性
+
+以下代码展示了属性命名规范的应用，包括普通属性、引用属性和布尔属性：
 
 ```cpp
 class ExampleClass{
@@ -108,10 +130,17 @@ public:
 }
 ```
 
+上述代码展示了属性命名规范：
+- 普通属性使用 `setText()` / `getText()` 配对
+- 返回引用的属性不加 `get`，直接命名 `text()`
+- 布尔属性使用 `setSelectable()` 设置能力，`isSelected()` 查询状态
+
 ### 虚函数重写
 
 - 重写虚函数时，**必须**使用 `override`；
 - **建议保留 `virtual` 关键字**，以增强可读性，明确其为虚函数。
+
+以下代码展示了虚函数重写的正确方式：
 
 ```cpp
 class ChildClass : public ExampleClass{
@@ -120,6 +149,10 @@ public:
     virtual void virtualFunction() override;//虚函数后面接override，为了更好发现，前面的virtual关键字不省略
 };
 ```
+
+上述代码展示了虚函数重写规范：
+- 使用 `override` 关键字确保正确重写基类虚函数
+- 保留 `virtual` 关键字增强可读性，明确这是一个虚函数
 
 ## 注释规范
 
@@ -138,7 +171,7 @@ public:
 
 示例：（`//!`为示例的说明）
 
-h文件注释示范
+h文件注释示范，展示头文件中应保留简短注释而非完整 Doxygen 注释：
 
 ```cpp
 class DAAbstractNode{
@@ -184,7 +217,12 @@ signals:
 };
 ```
 
-cpp文件注释示范
+上述头文件注释规范：
+- 成员函数只保留简短普通注释，不写完整 Doxygen 注释
+- get/set 配对函数可共用一条注释
+- 信号（signals）没有 cpp 实现，可以在头文件中写详细 Doxygen 注释
+
+cpp文件注释示范，展示源文件中应写完整 Doxygen 注释：
 
 ```cpp
 
@@ -209,12 +247,20 @@ void DAAbstractNode::setNodeTooltip(const QString& tp)
 }
 ```
 
+上述源文件注释规范：
+- 函数实现前写完整 Doxygen 注释，使用 `/** ... */` 格式
+- 注释前空一行，与代码分隔
+- 使用 `@brief`、`@param`、`@return`、`@sa` 等标签
+- Doxygen 注释应包含中文说明，便于理解
+
 ## 调试与功能开关
 
 - 对于大段功能的开关，**禁止使用注释屏蔽代码**
 - 应使用 **宏开关** 控制调试输出或功能启用。
 
 示例：
+
+以下代码展示了如何使用宏开关控制调试输出，而非使用注释屏蔽代码：
 
 ```cpp
 /**
@@ -245,6 +291,11 @@ int DAAbstractNode::getInputNodesCount() const
 }
 ```
 
+上述代码展示了宏开关的正确使用方式：
+- 定义宏 `DA_DAABSTRACTNODE_DEBUG_PRINT` 控制调试输出开关
+- 使用 `#if` 宏包裹调试代码，而非注释屏蔽
+- 宏值为 0 时关闭调试输出，为 1 时开启
+
 包括功能的调整，禁止使用注释而应该使用宏
 
 ## 编码禁止列表
@@ -272,7 +323,7 @@ int DAAbstractNode::getInputNodesCount() const
 
 操作符重载函数**必须定义在所属类的命名空间内**，以支持 ADL（Argument-Dependent Lookup）。
 
-✅ 如下是**正确**的做法：
+✅ 如下是**正确**的做法，操作符定义在命名空间内：
 
 ```cpp
 namespace DA
@@ -285,7 +336,7 @@ bool operator==(const DANodeLinkPoint& a, const DANodeLinkPoint& b);
 }// end namespace DA
 ```
 
-❌ 如下是**错误**的做法：
+❌ 如下是**错误**的做法，操作符定义在命名空间外会导致 ADL 失效：
 
 ```cpp
 namespace DA
@@ -305,6 +356,8 @@ bool operator==(const DA::DANodeLinkPoint& a, const DA::DANodeLinkPoint& b);
 在高 DPI 或缩放比例 ≠ 100% 的环境下，`QPixmap` 的物理尺寸与逻辑尺寸不一致。  
 **必须除以 `devicePixelRatio()` 获取逻辑尺寸**，否则绘制位置会偏移。
 
+以下代码展示了 QPixmap 的基本设置：
+
 ```cpp
 QPixmap mPixmap;
 QIcon mIcon;
@@ -316,7 +369,7 @@ mPixmap = mIcon.pixmap(getBodySize().toSize());
 
 在paintEvent里绘制,这里演示是要把pixmap绘制到bodyRect的中心，下面是错误的绘制方法
 
-❌ 如下是**错误**的做法：
+❌ 如下是**错误**的做法，未考虑 devicePixelRatio 导致位置偏移：
 
 ```cpp
 void xxx::paintBody(QPainter* painter,
@@ -338,7 +391,7 @@ void xxx::paintBody(QPainter* painter,
 
 上面方法之所以错误，是因为没有考虑devicePixelRatio，在缩放比例为100%时，上面代码绘制的图片没有问题，但缩放比例不是100%，上面的代码绘制出来是不正确的位置，主要异常在xoffset和yoffset，因为pixmapRect.width()/height()并非QPixmap在当前绘图坐标系下的宽高，这时两个坐标系是不一致的，你要获取当前绘图坐标系下的宽高，需要除以devicePixelRatio
 
-✅ 如下是**正确**的做法：
+✅ 如下是**正确**的做法，使用 devicePixelRatio 正确计算绘制位置：
 
 ```cpp
 void xxx::paintBody(QPainter* painter,
@@ -366,6 +419,8 @@ void xxx::paintBody(QPainter* painter,
 
 例如一个窗口，用QtConcurrent来执行一个耗时操作，操作结束后要进行界面刷新，那么可以如下执行（QtConcurrent::run就在当前界面的函数中）
 
+以下代码展示了如何在后台线程中安全地更新 UI，使用 `QMetaObject::invokeMethod` 切回主线程：
+
 ```cpp
 QtConcurrent::run([this] {//this是当前窗口的指正，为了最后进行刷新
         // 执行耗时数据加载
@@ -389,6 +444,8 @@ QtConcurrent::run([this] {//this是当前窗口的指正，为了最后进行刷
 自定义数据类型，例如`MyClass`要作为参数在信号和槽中使用，那么必须写全命名空间，否则信号和槽无法识别
 
 例如：
+
+以下代码展示了自定义类型在信号槽中使用的正确声明方式，必须写全命名空间：
 
 ```cpp hl_lines="5 14"
 namespace DA{
@@ -420,6 +477,8 @@ namespace DA{
 ### 信号和槽的参数要匹配
 
 所谓匹配是不要信号定义值传递，槽定义了一个常引用来接收，例如
+
+以下代码展示了信号槽参数不匹配的错误示例，信号值传递而槽使用常引用会导致识别失败：
 
 ```cpp hl_lines="11 19"
 namespace DA{

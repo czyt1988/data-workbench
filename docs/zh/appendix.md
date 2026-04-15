@@ -1,10 +1,24 @@
 # 附录
 
-本页面汇总 DAWorkBench 项目的补充信息，包括配置格式、术语表、CMake 宏说明等。
+本页面汇总 DAWorkBench 项目的补充信息，包括配置文件格式、术语表、CMake 宏说明、社区支持等，作为开发文档的参考附录。
+
+## 主要功能特性
+
+**特性**
+
+- ✅ **配置文件格式说明**：项目、工作流、插件的配置文件 JSON 格式定义
+- ✅ **术语表**：项目核心术语的中英文对照和解释
+- ✅ **缩略语解释**：常用缩略语的全称和含义
+- ✅ **CMake 辅助宏**：插件构建常用的宏命令说明
+- ✅ **社区支持渠道**：问题反馈和开发交流的联系方式
 
 ## 配置文件格式说明
 
 ### 项目配置文件 (.dawproj)
+
+项目配置文件使用 JSON 格式，存储项目的基本信息、工作流关联、数据文件列表和插件配置。
+
+下面的 JSON 示例展示了典型项目配置文件的结构：
 
 ```json
 {
@@ -12,78 +26,92 @@
     "name": "MyProject",
     "created": "2024-03-10T10:30:00",
     "workflow": {
-        "path": "workflow.daw",
+        "path": "workflow.daw",           // 工作流文件路径
         "nodes": [
             {
-                "id": "node_001",
-                "prototype": "DataAnalysis.IO.CSVReader",
-                "position": {"x": 100, "y": 100}
+                "id": "node_001",          // 节点唯一标识
+                "prototype": "DataAnalysis.IO.CSVReader",  // 节点原型
+                "position": {"x": 100, "y": 100}  // 节点位置
             }
         ]
     },
     "data": {
         "files": [
-            "data/input.csv",
+            "data/input.csv",              // 数据文件列表
             "data/output.xlsx"
         ]
     },
     "plugins": {
         "MyPlugin": {
-            "config": "plugins/MyPlugin/config.json"
+            "config": "plugins/MyPlugin/config.json"  // 插件配置路径
         }
     }
 }
 ```
 
+上述配置文件包含项目名称、创建时间、工作流信息、数据文件和插件配置等核心内容。
+
 ### 工作流配置文件 (.daw)
+
+工作流配置文件存储节点列表、连接关系和分组信息，是工作流持久化的核心文件。
+
+下面的 JSON 示例展示了工作流配置文件的结构：
 
 ```json
 {
     "version": "1.0",
     "nodes": [
         {
-            "id": "node_001",
-            "prototype": "My.Factory.Process",
-            "name": "Data Process",
-            "position": {"x": 200, "y": 150},
+            "id": "node_001",                       // 节点唯一标识
+            "prototype": "My.Factory.Process",      // 节点原型（工厂.节点名）
+            "name": "Data Process",                 // 节点显示名称
+            "position": {"x": 200, "y": 150},       // 画布位置坐标
             "data": {
-                "algorithm": "default",
-                "threshold": 0.5
+                "algorithm": "default",             // 节点自定义数据
+                "threshold": 0.5                    // 配置参数
             }
         }
     ],
     "links": [
         {
-            "from_node": "node_001",
-            "from_key": "output",
-            "to_node": "node_002",
-            "to_key": "input"
+            "from_node": "node_001",                // 连接起始节点
+            "from_key": "output",                   // 起始节点输出端口
+            "to_node": "node_002",                  // 连接目标节点
+            "to_key": "input"                       // 目标节点输入端口
         }
     ]
 }
 ```
 
+工作流文件通过节点 ID 和端口名称建立连接关系，支持节点的自定义数据存储。
+
 ### 插件配置文件格式
+
+插件配置文件支持 JSON 和 INI 两种格式，用于存储插件的设置参数。
+
+下面的 JSON 示例展示了插件配置文件的典型结构：
 
 ```json
 {
-    "version": 2,
+    "version": 2,                            // 配置文件版本号
     "general": {
-        "auto_save": true,
-        "max_cache_size": 100,
-        "log_level": "info"
+        "auto_save": true,                   // 自动保存开关
+        "max_cache_size": 100,               // 最大缓存大小（MB）
+        "log_level": "info"                  // 日志级别
     },
     "processing": {
-        "algorithm": "advanced",
-        "threshold": 0.7,
-        "filters": ["filter1", "filter2"]
+        "algorithm": "advanced",             // 处理算法选择
+        "threshold": 0.7,                    // 阈值参数
+        "filters": ["filter1", "filter2"]    // 过滤器列表
     },
     "ui": {
-        "dock_position": "right",
-        "show_toolbar": true
+        "dock_position": "right",            // Dock 窗口位置
+        "show_toolbar": true                 // 工具栏显示开关
     }
 }
 ```
+
+插件配置建议包含版本号，以便后续升级时的兼容性处理。配置文件通常存储在项目的 `plugins/[插件名]/` 目录下。
 
 ## 术语表
 
@@ -127,20 +155,22 @@
 
 ### damacro_plugin_setting
 
-设置插件基本信息：
+设置插件基本信息，包括名称、描述和版本号。此宏简化了插件 CMake 配置的编写。
+
+下面的 CMake 示例展示了插件设置宏的使用方法：
 
 ```cmake
 damacro_plugin_setting(
-    "PluginName"        # 插件名称
-    "Description"       # 插件描述
+    "PluginName"        # 插件名称 - 将生成 DA_PLUGIN_NAME 变量
+    "Description"       # 插件描述 - 将生成 DA_PLUGIN_FULL_DESCRIPTION 变量
     0                   # 主版本号
-    0                   # 次版本号
+    0                   # 欯版本号
     1                   # 补丁版本号
-    ${INSTALL_DIR}      # 安装目录
+    ${INSTALL_DIR}      # 安装目录路径
 )
 ```
 
-生成的变量：
+执行此宏后，将生成以下可用变量：
 
 - `DA_PLUGIN_NAME` - 插件名称
 - `DA_PLUGIN_VERSION` - 完整版本号
@@ -148,24 +178,31 @@ damacro_plugin_setting(
 
 ### damacro_import_*
 
-导入第三方库：
+导入第三方库，简化第三方库的链接配置。这些宏自动处理库路径和依赖关系。
+
+下面的 CMake 示例展示了第三方库导入宏的使用方法：
 
 ```cmake
-damacro_import_SARibbonBar(${DA_PLUGIN_NAME} ${INSTALL_DIR})
-damacro_import_DALiteCtk(${DA_PLUGIN_NAME} ${INSTALL_DIR})
-damacro_import_QtAdvancedDocking(${DA_PLUGIN_NAME} ${INSTALL_DIR})
-damacro_import_QtPropertyBrowser(${DA_PLUGIN_NAME} ${INSTALL_DIR})
-damacro_import_qwt(${DA_PLUGIN_NAME} ${INSTALL_DIR})
-damacro_import_orderedmap(${DA_PLUGIN_NAME} ${INSTALL_DIR})
+# 导入各类第三方库 - 参数为目标名称和安装目录
+damacro_import_SARibbonBar(${DA_PLUGIN_NAME} ${INSTALL_DIR})    # Ribbon 界面框架
+damacro_import_DALiteCtk(${DA_PLUGIN_NAME} ${INSTALL_DIR})      # CTK 精简版
+damacro_import_QtAdvancedDocking(${DA_PLUGIN_NAME} ${INSTALL_DIR})  # Dock 窗口系统
+damacro_import_QtPropertyBrowser(${DA_PLUGIN_NAME} ${INSTALL_DIR})  # 属性浏览器
+damacro_import_qwt(${DA_PLUGIN_NAME} ${INSTALL_DIR})            # 科学图表库
+damacro_import_orderedmap(${DA_PLUGIN_NAME} ${INSTALL_DIR})     # 有序 map 实现
 ```
+
+这些宏将自动设置链接库路径和依赖，确保插件能正确使用主程序安装的第三方库。
 
 ### damacro_plugin_install
 
-安装插件到目标目录：
+安装插件到目标目录，将编译产物复制到主程序的插件目录。
 
 ```cmake
 damacro_plugin_install()
 ```
+
+此宏无需参数，自动将插件安装到 `bin/plugins/` 目录下。
 
 ## 模块组件列表
 

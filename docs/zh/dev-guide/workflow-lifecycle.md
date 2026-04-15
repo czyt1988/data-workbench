@@ -24,6 +24,14 @@
 
 ### 核心类关系
 
+下图展示了工作流生命周期涉及的核心类及其关系，帮助理解各组件之间的协作方式：
+
+- **DAWorkFlow**：工作流容器，负责节点管理和执行调度
+- **DAAbstractNodeFactory**：节点工厂，提供节点创建和生命周期回调
+- **DAAbstractNode**：节点抽象基类，定义执行和连接接口
+- **DAAbstractNodeGraphicsItem**：节点的可视化图元，处理连接交互
+- **DAAbstractNodeLinkGraphicsItem**：连接线图元，管理连接建立过程
+
 ```mermaid
 classDiagram
     class DAWorkFlow {
@@ -59,10 +67,14 @@ classDiagram
     DAWorkFlow --> DAAbstractNodeFactory
     DAWorkFlow --> DAAbstractNode
     DAAbstractNodeFactory --> DAAbstractNode
-    DAAbstractNode --> DAAbstractNodeGraphicsItem
-```
+DAAbstractNode --> DAAbstractNodeGraphicsItem
+    ```
+
+上图展示了生命周期相关类的依赖关系：工作流管理工厂和节点，工厂创建节点，节点关联图形图元用于可视化展示。
 
 ## 生命周期概览
+
+下图展示了节点从创建到销毁的完整生命周期状态转换，包含四个主要阶段：
 
 ```mermaid
 stateDiagram-v2
@@ -87,15 +99,23 @@ stateDiagram-v2
         tryLinkOnItemPos --> attachFrom
         attachFrom --> attachTo
         attachTo --> finishedNodeLink
-        finishedNodeLink --> willCompleteLink
+finishedNodeLink --> willCompleteLink
     }
-```
+    ```
+
+上图展示了节点生命周期状态机：
+
+- **创建阶段**：从工厂创建节点到加入工作流，触发 `nodeAddedToWorkflow` 回调
+- **连接阶段**：从开始连接到完成连接，支持动态连接点生成
+- **执行阶段**：节点执行数据处理逻辑，执行完成后可回到连接阶段继续修改
 
 ## 节点创建生命周期
 
 节点创建涉及工厂回调和工作流信号，允许在添加前后执行自定义逻辑。
 
 ### 创建时序图
+
+下图展示了节点创建的完整时序过程，描述了工厂回调和工作流信号的触发顺序：
 
 ```mermaid
 sequenceDiagram
@@ -109,8 +129,10 @@ sequenceDiagram
     Factory-->>Node: 创建实例
     Workflow->>Factory: nodeAddedToWorkflow(node)
     Note over Factory: 回调：编号、拓扑检查
-    Workflow-->>Workflow: nodeAdded SIGNAL
-```
+Workflow-->>Workflow: nodeAdded SIGNAL
+    ```
+
+上图展示了节点创建的时序流程：用户请求创建节点后，工作流调用工厂创建实例，然后触发 `nodeAddedToWorkflow` 回调允许自定义处理，最后发射 `nodeAdded` 信号通知界面。
 
 ### 创建回调
 
@@ -121,6 +143,8 @@ sequenceDiagram
 
 ### 自动编号示例
 
+以下代码演示了如何在工厂回调中为节点自动编号，实现节点的统一管理：
+
 ```cpp
 class MyNodeFactory : public DA::DAAbstractNodeFactory
 {
@@ -130,9 +154,15 @@ public:
         node->setProperty("nodeIndex", m_counter++);
     }
 private:
-    int m_counter = 0;
+    int m_counter = 0;  // 节点计数器，用于自动编号
 };
 ```
+
+上述代码展示了自动编号的实现方式：
+
+- 重写 `nodeAddedToWorkflow` 回调函数
+- 在回调中使用 `setProperty` 设置节点的编号属性
+- 每次创建节点时计数器递增，保证编号唯一
 
 ## 节点移除生命周期
 
@@ -148,19 +178,29 @@ private:
 
 ### 资源清理示例
 
+以下代码演示了如何在节点移除回调中清理相关资源，确保不留残留数据：
+
 ```cpp
 void MyNodeFactory::nodeStartRemove(DA::DAAbstractNode::SharedPointer node)
 {
     cleanupNodeResources(node->getID());
-    m_topology.removeNode(node->getID());
+    m_topology.removeNode(node->getID());  // 从拓扑结构中移除节点
 }
 ```
+
+上述代码展示了资源清理的实现方式：
+
+- 重写 `nodeStartRemove` 回调函数
+- 在回调中清理节点关联的资源，如拓扑结构中的记录
+- 使用节点 ID 进行资源定位和清理
 
 ## 节点连接生命周期
 
 连接是最复杂的交互过程，涉及多个回调，支持动态连接点生成和验证。
 
 ### 连接时序图
+
+下图展示了节点连接的完整交互过程，从用户点击输出点到连接建立完成：
 
 ```mermaid
 sequenceDiagram
@@ -181,8 +221,16 @@ sequenceDiagram
     Note over LinkItem: 关键验证点
     LinkItem->>Node: linkTo()
     LinkItem->>LinkItem: finishedNodeLink()
-    LinkItem->>LinkItem: willCompleteLink()
-```
+LinkItem->>LinkItem: willCompleteLink()
+    ```
+
+上图展示了连接建立的详细交互过程：
+
+1. 用户点击节点的输出连接点，触发 `tryLinkOnItemPos` 判断是否动态生成连接点
+2. 获取连接点位置信息并创建连接线图元
+3. 用户点击目标节点的输入连接点，建立目标连接
+4. 调用 `linkTo` 在逻辑层建立连接关系
+5. 触发 `finishedNodeLink` 和 `willCompleteLink` 完成连接
 
 ### 连接回调详解
 
@@ -206,6 +254,8 @@ sequenceDiagram
 
 ### 动态连接点示例
 
+以下代码演示了如何实现动态连接点生成，允许用户在特定区域创建新的连接点：
+
 ```cpp
 void DynamicNodeItem::tryLinkOnItemPos(const QPointF& pos,
                                         DAAbstractNodeLinkGraphicsItem* link,
@@ -217,11 +267,19 @@ void DynamicNodeItem::tryLinkOnItemPos(const QPointF& pos,
         lp.way = DANodeLinkPoint::Output;
         addLinkPoint(lp);
     }
-    DAAbstractNodeGraphicsItem::tryLinkOnItemPos(pos, link, way);
+    DAAbstractNodeGraphicsItem::tryLinkOnItemPos(pos, link, way);  // 调用父类方法完成连接
 }
 ```
 
+上述代码展示了动态连接点的实现方式：
+
+- 重写 `tryLinkOnItemPos` 方法检测动态区域
+- 在动态区域内创建新的连接点并添加到节点
+- 最后调用父类方法完成标准连接流程
+
 ### 连接验证示例
+
+以下代码演示了如何在建立连接前进行类型兼容性验证，确保数据流安全：
 
 ```cpp
 bool TypedNode::linkTo(const QString& outKey,
@@ -232,9 +290,15 @@ bool TypedNode::linkTo(const QString& outKey,
                           inNode->getInputType(inKey))) {
         return false;
     }
-    return DAAbstractNode::linkTo(outKey, inNode, inKey);
+    return DAAbstractNode::linkTo(outKey, inNode, inKey);  // 类型兼容则建立连接
 }
 ```
+
+上述代码展示了连接验证的实现方式：
+
+- 重写 `linkTo` 方法添加类型检查逻辑
+- 使用 `isTypeCompatible` 检查输出和输入类型是否兼容
+- 类型不兼容则拒绝连接，兼容则调用父类方法建立连接
 
 ## 节点执行生命周期
 

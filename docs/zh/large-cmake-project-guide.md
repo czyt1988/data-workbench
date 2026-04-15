@@ -1,4 +1,17 @@
-﻿# 基于cmake的大型工程组织和构建
+# 基于 cmake 的大型工程组织和构建
+
+本文档介绍如何使用 cmake 组织和构建大型 C++ 工程，实现一键编译安装和第三方开发者集成。通过 cmake 可以高效组织庞大的工程结构，自动化编译第三方依赖库，并生成便于插件开发的环境。
+
+## 主要功能特性
+
+**特性**
+
+- ✅ **工程目录结构**：标准的 src、docs、3rdparty、cmake 目录组织方式
+- ✅ **第三方库管理**：使用 git submodule 管理第三方库源码
+- ✅ **规范安装路径**：bin、lib、include、lib/cmake 的标准化目录结构
+- ✅ **单模块库 install**：完整的单模块 CMake 配置和安装流程
+- ✅ **多模块 install**：多模块统一导出的 CMake 配置方法
+- ✅ **第三方用户引入**：find_package 引入库的标准方式
 
 在大型C++项目中，构建系统的选择直接影响到项目的可维护性、可扩展性以及第三方开发的友好度。一个成熟的工程不仅仅包含应用程序本身，还包括为其核心功能抽象出的库。这些库一方面服务于项目自身的模块化解耦，另一方面也可能作为插件化开发的基础库提供给第三方开发者。此外，项目还不可避免地依赖于众多第三方库。
 
@@ -56,30 +69,35 @@ MyProject/
 
 ## 第三方库的管理
 
-`3rdparty` 文件夹用来放置所有的第三方库的源代码，通常来讲，第三方库源代码不应该下载下来，放进 `3rdparty` 文件夹，而是通过 git 的 `submodule` 添加进去，通过 `submodule` 方式添加进去的源代码，可以随时更新到远程仓库上的最新版本，也可以指定这个第三方库是某个固定分支或者是某个 tag
+`3rdparty` 文件夹用来放置所有的第三方库的源代码，通常来讲，第三方库源代码不应该下载下来放进 `3rdparty` 文件夹，而是通过 git 的 `submodule` 添加进去，通过 `submodule` 方式添加进去的源代码，可以随时更新到远程仓库上的最新版本，也可以指定这个第三方库是某个固定分支或者是某个 tag。
 
-例如我这里需要使用ribbon界面，添加了SARibbon作为第三方库
+### 添加 submodule
+
+下面的示例展示了如何使用 git submodule 添加第三方库：
+
+例如我这里需要使用 ribbon 界面，添加了 SARibbon 作为第三方库：
 
 ```shell
 git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibbon
 # 或者放在 ./3rdparty/SARibbon
 ```
 
-> 注意，对于使用`submodule`管理第三方库的方式，首次拉取项目之后，需要执行：
-> 
-> ```shell
-> git submodule update --init --recursive
-> ```
-> 
-> 把所有库拉取下来
->
-> 也可以clone的时候使用--recursive参数
-> 
-> ```shell
-> git clone --recursive
-> ```
+上述命令会将 SARibbon 库作为子模块添加到项目的 3rdparty 目录下。
 
-大部分的第三方库都提供了 `cmake`，如果不提供的话，我会 fork 一个，写一个带有 `cmake` 的版本，例如 [qwt库](https://github.com/czyt1988/QWT)，[QtPropertyBroswer库](https://github.com/czyt1988/QtPropertyBrowser)，3rdparty 文件夹下会写一个 `cmake` 文件，用来集中编译所有的第三方库，一般我会在 `cmake` 中就指定安装目录，确保第三方库的安装目录和我的程序的安装目录是一致的，这样的好处是，如果你的程序需要给其他人进行二次开发的话，能保证你程序编译出来的库和第三方库是在一个安装环境下，这样可以解决第三方库和你自身程序库的依赖问题，不需要用户在编译你的程序之前先进行大量的第三方库的编译，只需要一次统一的编译即可把所有的第三方库安装到固定目录下,最后install后，形成一个完整的开发环境
+!!! note "首次拉取项目"
+    对于使用 `submodule` 管理第三方库的方式，首次拉取项目之后，需要执行：
+    
+    ```shell
+    git submodule update --init --recursive
+    ```
+    
+    把所有库拉取下来。也可以 clone 的时候使用 `--recursive` 参数：
+    
+    ```shell
+    git clone --recursive
+    ```
+
+大部分的第三方库都提供了 `cmake`，如果不提供的话，我会 fork 一个，写一个带有 `cmake` 的版本，例如 [qwt库](https://github.com/czyt1988/QWT)，[QtPropertyBroswer库](https://github.com/czyt1988/QtPropertyBrowser)，3rdparty 文件夹下会写一个 `cmake` 文件，用来集中编译所有的第三方库，一般我会在 `cmake` 中就指定安装目录，确保第三方库的安装目录和我的程序的安装目录是一致的，这样的好处是，如果你的程序需要给其他人进行二次开发的话，能保证你程序编译出来的库和第三方库是在一个安装环境下，这样可以解决第三方库和你自身程序库的依赖问题，不需要用户在编译你的程序之前先进行大量的第三方库的编译，只需要一次统一的编译即可把所有的第三方库安装到固定目录下,最后 install 后，形成一个完整的开发环境。
 
 
 连同第三方库一起发布的开发环境bin目录
@@ -152,26 +170,30 @@ lib
 
 ### 单模块库的 `install` 标准写法
 
-如果你作为一个库开发者，这个库只有一个模块，那么写法相对固定，单一模块的install写法基本就是如下步骤：
+如果你作为一个库开发者，这个库只有一个模块，那么写法相对固定，单一模块的 install 写法基本就是如下步骤：
 
-#### 1.定义库名和版本
+#### 1. 定义库名和版本
 
-这里定义一些基本信息，后续的步骤可使用这些变量
+首先定义库的基本信息，后续的步骤可使用这些变量。
+
+下面的 CMake 示例展示了库信息的定义：
 
 ```cmake
-set(LIB_NAME MyLib)
-set(LIB_VERSION_MAJOR 1)
-set(LIB_VERSION_MINOR 0)
-set(LIB_VERSION_PATCH 0)
-set(LIB_VERSION "${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${LIB_VERSION_PATCH}")
+set(LIB_NAME MyLib)              # 库名称变量
+set(LIB_VERSION_MAJOR 1)         # 主版本号
+set(LIB_VERSION_MINOR 0)         # 次版本号
+set(LIB_VERSION_PATCH 0)         # 补丁版本号
+set(LIB_VERSION "${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${LIB_VERSION_PATCH}")  # 完整版本号
 ```
 
-#### 2.配置目标属性（关键！）
+#### 2. 配置目标属性（关键！）
 
-使用 `target_include_directories` 并利用生成器表达式区分构建和安装环境。
+使用 `target_include_directories` 并利用生成器表达式区分构建和安装环境，这是 cmake 的核心功能。
+
+下面的 CMake 示例展示了目标属性配置：
 
 ```cmake
-add_library(${LIB_NAME} ...)
+add_library(${LIB_NAME} ...)      # 创建库目标
 target_include_directories(${LIB_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>  # 构建时：源码中的 include 目录
     $<INSTALL_INTERFACE:include/${LIB_NAME}>                # 安装后：相对于安装前缀的 include/MyLib 目录
@@ -179,11 +201,13 @@ target_include_directories(${LIB_NAME} PUBLIC
 target_compile_definitions(${LIB_NAME} PUBLIC ...) # 如果有公共宏定义，也用 target_ 形式
 ```
 
-`target_include_directories`和`target_compile_definitions`这两个是cmake的核心函数，它告诉了cmake这个目标有哪些头文件和哪些预定义宏，并把信息传递给使用库的人
+`target_include_directories` 和 `target_compile_definitions` 是 cmake 的核心函数，它告诉 cmake 这个目标有哪些头文件和哪些预定义宏，并把信息传递给使用库的人。
 
-#### 3.安装公共头文件
+#### 3. 安装公共头文件
 
-通过install可以复制任意内容，把你要提供的头文件、甚至脚本、资源都移动到指定安装目录下
+通过 install 可以复制任意内容，把你要提供的头文件、甚至脚本、资源都移动到指定安装目录下。
+
+下面的 CMake 示例展示了头文件安装配置：
 
 ```cmake
 set(PUBLIC_HEADERS ...) # 列出所有公共头文件
@@ -192,27 +216,30 @@ install(FILES ${PUBLIC_HEADERS}
 )
 ```
 
-#### 4.安装目标并导出（关键！）
+#### 4. 安装目标并导出（关键！）
 
-`EXPORT` 关键字将目标的信息保存到一个名为 `${LIB_NAME}Targets` 的导出集中。
+`EXPORT` 关键字将目标的信息保存到一个名为 `${LIB_NAME}Targets` 的导出集中，这是实现 find_package 的关键。
+
+下面的 CMake 示例展示了目标导出配置：
 
 ```cmake
 install(TARGETS ${LIB_NAME}
     EXPORT ${LIB_NAME}Targets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # bin目录，主要为DLL 文件
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # bin目录，主要为 DLL 文件
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # lib目录，主要为共享库 (.so, .dylib)
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIB_NAME}
 )
 ```
 
-> 这里不得不吐槽cmake，把install命令赋予了太多功能，导致理解困难
+!!! note "cmake install 功能"
+    install 命令功能较多，包含复制文件、导出目标等，理解需要一定的学习成本。
 
-#### 5.生成 `Config.cmake` 文件
+#### 5. 生成 `Config.cmake` 文件
 
-这里比较抽象但必不可少，会用到`write_basic_package_version_file`和`configure_package_config_file`两个函数，用于生成find_package所必须的Config.cmake文件
+这里比较抽象但必不可少，会用到 `write_basic_package_version_file` 和 `configure_package_config_file` 两个函数，用于生成 find_package 所必须的 Config.cmake 文件。
 
-首先，创建一个模板文件 `${LIB_NAME}Config.cmake.in`，一般内容可如下：
+首先，创建一个模板文件 `${LIB_NAME}Config.cmake.in`，内容如下：
 
 ```cmake
 @PACKAGE_INIT@
@@ -225,9 +252,9 @@ set_and_check(@LIB_NAME@_LIBRARY_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDI
 check_required_components(@LIB_NAME@)
 ```
 
-上面的${LIB_NAME}Config.cmake.in是你为了生成Config.cmake文件使用的内嵌文件，具体位置视情况而定
+上述 `${LIB_NAME}Config.cmake.in` 是用于生成 Config.cmake 文件的模板，其中的变量会在 cmake 配置时被替换。
 
-然后，在主 `CMakeLists.txt` 中使用 `CMakePackageConfigHelpers` 模块生成最终文件，这里比较抽象但写法固定。
+然后，在主 `CMakeLists.txt` 中使用 `CMakePackageConfigHelpers` 模块生成最终文件：
 
 ```cmake
 include(CMakePackageConfigHelpers)
@@ -244,9 +271,11 @@ write_basic_package_version_file(
 )
 ```
 
-#### 6.安装生成的 CMake 文件
+#### 6. 安装生成的 CMake 文件
 
-上面的文件会在编译过程生成在${CMAKE_CURRENT_BINARY_DIR}目录下面，你要在安装过程中把这个文件复制到lib/cmake/你的库名的配置目录下，通常写法如下：
+上述文件会在编译过程生成在 `${CMAKE_CURRENT_BINARY_DIR}` 目录下面，你要在安装过程中把这些文件复制到 lib/cmake/你的库名的配置目录下。
+
+下面的 CMake 示例展示了 cmake 文件安装：
 
 ```cmake
 install(FILES

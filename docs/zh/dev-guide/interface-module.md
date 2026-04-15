@@ -19,6 +19,8 @@
 
 ### 接口继承关系
 
+接口体系采用分层架构设计，通过 `DABaseInterface` 基类统一管理，形成清晰的依赖关系。下图展示了各接口类的继承关系和核心方法：
+
 ```mermaid
 classDiagram
     class DABaseInterface {
@@ -79,13 +81,17 @@ classDiagram
     DABaseInterface <|-- DAUIInterface
     DABaseInterface <|-- DAProjectInterface
     DABaseInterface <|-- DADataManagerInterface
-    DABaseInterface <|-- DAUIExtendInterface
-    DABaseInterface <|-- DAActionsInterface
-    DABaseInterface <|-- DACommandInterface
+DABaseInterface <|-- DAUIExtendInterface
     DAUIExtendInterface <|-- DARibbonAreaInterface
     DAUIExtendInterface <|-- DADockingAreaInterface
     DAUIExtendInterface <|-- DAStatusBarInterface
 ```
+
+上图展示了接口体系的核心设计：
+- **DABaseInterface**：所有接口的基类，提供 `core()` 方法获取核心接口
+- **DACoreInterface**：顶层核心接口，通过它可以获取所有其他功能接口
+- **DAUIExtendInterface**：UI 扩展接口的基类，提供 `ui()` 方法获取 UI 接口
+- 功能层接口（UI、Project、DataManager）直接继承 BaseInterface，提供各自领域的功能
 
 ### 接口层次说明
 
@@ -115,24 +121,28 @@ classDiagram
 
 ### 使用示例
 
+以下示例展示如何通过核心接口获取其他功能接口，实现插件与主程序的交互：
+
 ```cpp
 // 通过核心接口获取其他接口
 DA::DACoreInterface* core = getCoreInterface();
 
-// 获取 UI 接口
+// 获取 UI 接口，用于界面操作
 DA::DAUIInterface* ui = core->getUiInterface();
 
-// 获取工程接口
+// 获取工程接口，用于项目文件操作
 DA::DAProjectInterface* project = core->getProjectInterface();
 
-// 获取数据管理接口
+// 获取数据管理接口，用于数据增删查改
 DA::DADataManagerInterface* dataMgr = core->getDataManagerInterface();
 
-// 检查工程是否有未保存更改
+// 检查工程是否有未保存更改，提示用户保存
 if (core->isProjectDirty()) {
     // 提示用户保存
 }
 ```
+
+执行上述代码后，插件可获得主程序的 UI、工程、数据管理等核心功能接口，实现与主程序的深度集成。
 
 ## DAUIInterface 详解
 
@@ -156,20 +166,22 @@ if (core->isProjectDirty()) {
 
 ### 使用示例
 
+以下示例展示如何通过 UI 接口获取主窗口、显示日志、创建 Dock 窗口等操作：
+
 ```cpp
 // 获取 UI 接口
 DA::DAUIInterface* ui = core->getUiInterface();
 
-// 获取主窗口
+// 获取主窗口指针，用于对话框父窗口等
 SARibbonMainWindow* mainWindow = ui->mainWindow();
 
-// 显示日志信息
+// 显示日志信息，第二个参数表示是否在状态栏显示
 ui->addInfoLogMessage(tr("操作成功完成"), true);
 
-// 获取 Dock 区域接口
+// 获取 Dock 区域接口，用于添加自定义停靠窗口
 DA::DADockingAreaInterface* dockArea = ui->getDockingArea();
 
-// 创建自定义 Dock 窗口
+// 创建自定义 Dock 窗口，添加到右侧区域
 QWidget* myWidget = new QWidget(mainWindow);
 ads::CDockWidget* dock = dockArea->createDockWidget(
     myWidget, 
@@ -177,6 +189,8 @@ ads::CDockWidget* dock = dockArea->createDockWidget(
     tr("我的窗口")
 );
 ```
+
+执行上述代码后，主窗口状态栏显示"操作成功完成"提示，右侧 Dock 区域出现自定义窗口。
 
 ## DADataManagerInterface 详解
 
@@ -208,27 +222,31 @@ ads::CDockWidget* dock = dockArea->createDockWidget(
 
 ### 使用示例
 
+以下示例展示如何通过数据管理接口进行数据的增删查改操作，以及监听数据变化事件：
+
 ```cpp
 // 获取数据管理接口
 DA::DADataManagerInterface* dataMgr = core->getDataManagerInterface();
 
-// 添加数据
+// 添加数据到管理器
 DAData data = createDataFrame();
 dataMgr->addData(data);
 
-// 获取选中的数据
+// 获取当前选中的数据列表
 QList<DAData> selectedDatas = dataMgr->getSelectDatas();
 
-// 获取当前操作的数据
+// 获取当前正在操作的数据（如正在编辑的数据）
 DAData operateData = dataMgr->getOperateData();
 
 // 按名称查找数据
 DAData foundData = dataMgr->findData("my_data");
 
-// 监听数据变化
+// 监听数据添加事件，响应数据变化
 connect(dataMgr, &DA::DADataManagerInterface::dataAdded,
         this, &MyClass::onDataAdded);
 ```
+
+执行上述代码后，数据被添加到管理器，可通过名称查找、监听变化事件，实现数据的完整生命周期管理。
 
 ## DAProjectInterface 详解
 
@@ -263,82 +281,92 @@ connect(dataMgr, &DA::DADataManagerInterface::dataAdded,
 
 ### 使用示例
 
+以下示例展示如何通过工程接口进行项目的加载、保存、状态查询等操作：
+
 ```cpp
 // 获取工程接口
 DA::DAProjectInterface* project = core->getProjectInterface();
 
-// 加载工程
+// 加载工程文件，返回是否成功
 if (project->load("/path/to/project.dapro")) {
     qDebug() << "工程加载成功";
 }
 
-// 保存工程
+// 保存工程到指定路径
 if (project->save("/path/to/project.dapro")) {
     qDebug() << "工程保存成功";
 }
 
-// 获取工程信息
+// 获取工程目录和名称信息
 QString projectDir = project->getProjectDir();
 QString projectName = project->getProjectBaseName();
 
-// 监听工程状态变化
+// 监听工程保存完成事件
 connect(project, &DA::DAProjectInterface::projectSaved,
         this, &MyClass::onProjectSaved);
 ```
+
+执行上述代码后，工程文件被加载或保存，可通过信号槽监听工程状态变化，实现自动化的项目管理。
 
 ## 接口获取方法
 
 ### 从插件获取接口
 
-插件开发中，通常通过 `DACoreInterface` 获取其他接口：
+插件开发中，通常通过 `DACoreInterface` 获取其他接口。插件初始化时会接收到核心接口指针，应保存以备后续使用。以下示例展示插件初始化时的接口获取流程：
 
 ```cpp
 // 插件初始化时获取核心接口
 void MyPlugin::initialize(DA::DACoreInterface* core)
 {
-    mCore = core;
+    mCore = core;  // 保存核心接口指针
     
-    // 获取 UI 接口
+    // 获取 UI 接口，用于界面扩展
     mUI = core->getUiInterface();
     
-    // 获取 Dock 区域接口
+    // 获取 Dock 区域接口，用于添加自定义窗口
     mDockArea = mUI->getDockingArea();
     
-    // 获取数据管理接口
+    // 获取数据管理接口，用于数据操作
     mDataMgr = core->getDataManagerInterface();
     
-    // 获取工程接口
+    // 获取工程接口，用于项目管理
     mProject = core->getProjectInterface();
 }
 ```
 
+执行上述代码后，插件保存了所有核心接口指针，可在后续操作中直接使用，无需重复获取。
+
 ### 从子接口获取核心接口
 
-所有继承自 `DABaseInterface` 的接口都可以通过 `core()` 方法获取核心接口：
+所有继承自 `DABaseInterface` 的接口都可以通过 `core()` 方法获取核心接口。这种方式便于在扩展接口中获取其他功能接口。以下示例展示从 UI 接口获取其他接口：
 
 ```cpp
 // 在扩展接口中获取核心接口
 DA::DACoreInterface* core = uiInterface->core();
 
-// 获取其他接口
+// 通过核心接口获取工程接口
 DA::DAProjectInterface* project = core->getProjectInterface();
 ```
 
+执行上述代码后，从 UI 接口获得了核心接口，进而获取工程等其他功能接口。
+
 ### 从 UI 扩展接口获取 UI 接口
 
-继承自 `DAUIExtendInterface` 的接口可以通过 `ui()` 方法获取 UI 接口：
+继承自 `DAUIExtendInterface` 的接口（如 Ribbon、Dock、StatusBar）可以通过 `ui()` 方法直接获取 UI 接口。以下示例展示从 Ribbon 接口获取其他 UI 组件：
 
 ```cpp
 // 在 Ribbon 或 Dock 接口中获取 UI 接口
 DA::DAUIInterface* ui = ribbonArea->ui();
 
-// 然后获取其他接口
+// 通过 UI 接口获取状态栏接口
 DA::DAStatusBarInterface* statusBar = ui->getStatusBar();
 ```
 
+执行上述代码后，从 Ribbon 接口直接获取了 UI 接口，无需通过核心接口中转。
+
 ## 接口创建顺序
 
-接口创建过程有严格的先后顺序，以避免在一个接口中调用尚未创建的接口。
+接口创建过程有严格的先后顺序，以避免在一个接口中调用尚未创建的接口导致空指针异常。下图展示了接口创建的完整时序：
 
 ```mermaid
 sequenceDiagram
@@ -366,6 +394,11 @@ sequenceDiagram
     App->>Dock: 12. 创建 DADockingAreaInterface
     App->>Ribbon: 13. 创建 DARibbonAreaInterface
 ```
+
+上图展示了接口创建的完整流程，从核心接口到 UI 扩展接口依次创建，确保依赖关系正确。重点关注：
+- **步骤 1-5**：创建基础功能层接口（Core、DataManager、Project）
+- **步骤 6-7**：构造主界面窗口
+- **步骤 8-13**：创建 UI 相关接口（UI、Command、Actions、Dock、Ribbon）
 
 ### 详细创建顺序
 

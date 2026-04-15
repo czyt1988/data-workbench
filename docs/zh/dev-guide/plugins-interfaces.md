@@ -135,6 +135,8 @@ public:
 
 ### 类继承关系
 
+下图展示了插件基类的继承层次，从抽象基类到具体的节点插件实现：
+
 ```mermaid
 classDiagram
     direction TB
@@ -168,15 +170,22 @@ classDiagram
         -m_ui: DataAnalysisUI*
         -m_ioWorker: DataframeIOWorker*
         +initialize() bool
-        +createNodeFactory()
++createNodeFactory()
     }
-```
+    ```
+
+上图展示了插件类的继承层次：
+- `DAAbstractPlugin` 是抽象基类，定义所有插件必须实现的接口
+- `DAAbstractNodePlugin` 继承 `DAAbstractPlugin`，专门用于提供工作流节点
+- `DataAnalysisPlugin` 和自定义节点插件继承 `DAAbstractNodePlugin`，实现具体功能
 
 ## 接口使用方法
 
 ### 核心接口层次
 
 `DACoreInterface` 是访问主程序所有功能的顶层入口，其结构如下图所示：
+
+下图展示了核心接口的层次结构，`DACoreInterface` 作为顶层入口，提供多个子接口：
 
 ```mermaid
 graph TB
@@ -205,12 +214,20 @@ graph TB
     UI --> SB
     
     style CI fill:#e8f5e9
-    style UI fill:#e1f5fe
-```
+style UI fill:#e1f5fe
+    ```
+
+上图展示了接口的层次结构：
+- `DACoreInterface` 是核心入口，提供获取其他接口的方法
+- `DAUIInterface` 提供 UI 相关功能，包含 Ribbon 区域、Dock 区域、Actions 管理和状态栏
+- `DAProjectInterface` 提供项目管理功能
+- `DADataManagerInterface` 提供数据管理功能
 
 ### 获取接口实例
 
 在插件的 `initialize()` 方法中获取各个接口：
+
+以下代码展示了如何在插件初始化时获取核心接口和各个子接口：
 
 ```cpp
 bool MyPlugin::initialize()
@@ -238,7 +255,15 @@ bool MyPlugin::initialize()
 }
 ```
 
+上述代码的关键点：
+- 通过 `this->core()` 获取核心接口，这是唯一入口
+- 获取接口后应检查指针有效性，避免空指针异常
+- 通过 UI 接口可以获取 Ribbon 区域、Dock 区域等子接口
+- 接口指针由主程序管理，插件不应删除这些指针
+
 ### 添加 Ribbon 菜单项
+
+以下代码展示了如何在插件初始化时添加 Ribbon 分类、面板和按钮：
 
 ```cpp
 bool MyPlugin::initialize()
@@ -264,7 +289,15 @@ bool MyPlugin::initialize()
 }
 ```
 
+上述代码展示了 Ribbon 界面的创建流程：
+- 通过 `getRibbonArea()` 获取 Ribbon 区域接口
+- 使用 `addCategoryByPlugin()` 创建分类，传入名称和 ID
+- 使用 `addPannel()` 在分类中创建面板
+- 创建 `QAction` 并添加到面板中
+
 ### 添加 Dock 窗口
+
+以下代码展示了如何在插件初始化时添加自定义 Dock 窗口：
 
 ```cpp
 bool MyPlugin::initialize()
@@ -281,6 +314,11 @@ bool MyPlugin::initialize()
 }
 ```
 
+上述代码展示了 Dock 窗口的添加流程：
+- 通过 `getDockingArea()` 获取 Dock 区域接口
+- 创建自定义 Dock 窗口实例
+- 使用 `addDockWidget()` 添加到指定区域（如右侧区域）
+
 ## 与 DAPluginSupport 的关系
 
 `DAPluginSupport` 模块提供了插件开发的核心支持类：
@@ -294,6 +332,8 @@ bool MyPlugin::initialize()
 | `DAPluginOption` | 插件选项 | 封装插件元数据和加载状态 |
 
 ### 插件加载流程
+
+下图展示了插件从扫描到初始化完成的完整加载时序：
 
 ```mermaid
 sequenceDiagram
@@ -312,14 +352,26 @@ sequenceDiagram
     IF-->>PL: 返回界面接口
     PL->>PL: 初始化界面、注册节点
     PL-->>PM: 返回 true
-    PM->>PM: 注册插件到管理器
-```
+PM->>PM: 注册插件到管理器
+    ```
+
+上图展示了插件加载的完整流程：
+
+1. 主程序扫描 plugins/ 目录发现动态库文件
+2. 使用 `QPluginLoader` 加载动态库
+3. 插件返回 `DAAbstractPlugin*` 指针
+4. 调用 `setCore(interface)` 设置核心接口
+5. 调用 `initialize()` 初始化插件
+6. 插件通过核心接口获取 UI 接口并初始化界面
+7. 返回 `true` 后注册到插件管理器
 
 ## 插件注册与声明
 
 ### Qt 插件声明
 
 使用 Qt 插件机制进行注册：
+
+以下代码展示了如何使用 Qt 插件元数据声明插件，使系统能够正确识别和加载：
 
 ```cpp
 // MyPlugin.h
@@ -348,7 +400,15 @@ public:
 };
 ```
 
+上述代码的关键点：
+- `Q_OBJECT` 宏启用 Qt 元对象系统
+- `Q_PLUGIN_METADATA` 声明插件 IID，必须与系统定义一致
+- `Q_INTERFACES` 声明实现的接口类型
+- 继承顺序：QObject 必须是第一个基类
+
 ### CMake 配置
+
+以下代码展示了插件的 CMake 配置，包括自动 MOC/RCC 和依赖链接：
 
 ```cmake
 # 设置为 Qt 插件
@@ -370,6 +430,13 @@ target_link_libraries(MyPlugin
         Qt6::Widgets
 )
 ```
+
+上述 CMake 配置的关键点：
+- `CMAKE_AUTOMOC` 自动处理 Qt 元对象编译
+- `CMAKE_AUTORCC` 自动处理 Qt 资源文件编译
+- 创建 `SHARED` 库生成动态链接库
+- 链接 `DAPluginSupport` 和 `DAInterface` 模块获取接口支持
+- 链接 Qt 组件获取基础功能
 
 ## 注意事项
 

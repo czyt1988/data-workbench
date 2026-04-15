@@ -42,6 +42,8 @@ DACommandInterface* getCommandInterface() const;
 
 ## 界面架构图
 
+插件界面开发涉及主程序的多个 UI 组件，下图展示了主程序界面结构与插件操作的关系：
+
 ```mermaid
 flowchart TD
     subgraph "主程序界面"
@@ -68,11 +70,15 @@ flowchart TD
     end
 ```
 
+上图说明了插件界面开发的两个层面：
+- **主程序界面**：展示了 UI 接口管理的 Ribbon、DockingArea、Actions、Command 四大组件及其子结构
+- **插件操作流程**：展示了插件初始化时获取 UI 接口，然后进行 Ribbon 按钮、Dock 窗口、隐藏组件等操作的流程
+
 ## 插件操作界面
 
 ### 隐藏系统窗口
 
-下面例子演示如何隐藏工作流相关的界面：
+插件可以隐藏主程序中不需要的系统窗口，实现定制化界面。以下示例演示如何隐藏工作流相关的界面组件：
 
 ```cpp
 void MyPlugin::initialize()
@@ -80,23 +86,25 @@ void MyPlugin::initialize()
     // 获取UI接口
     DA::DAUIInterface* ui = core()->getUiInterface();
     
-    // 获取各个界面区域
+    // 获取各个界面区域接口
     DA::DADockingAreaInterface* dockArea    = ui->getDockingArea();
     DA::DAActionsInterface* actionInterface = ui->getActionInterface();
     DA::DARibbonAreaInterface* ribbonArea   = ui->getRibbonArea();
     
-    // 隐藏不需要的Dock窗口
+    // 隐藏不需要的Dock窗口，如工作流操作窗口和节点列表窗口
     dockArea->hideDockWidget(dockArea->getWorkFlowOperateWidget());
     dockArea->hideDockWidget(dockArea->getWorkflowNodeListWidget());
     
-    // 隐藏不需要的Ribbon面板
+    // 隐藏不需要的Ribbon面板，如工作流面板
     safeHideRibbonPanel(ribbonArea, "da-pannel-main.workflow");
 }
 ```
 
+执行上述代码后，工作流相关的 Dock 窗口和 Ribbon 面板被隐藏，用户界面更加简洁。
+
 ### 添加自定义Dock窗口
 
-创建并添加自定义Dock窗口：
+创建并添加自定义 Dock 窗口是插件扩展界面的常用方式。Dock 窗口可以停靠在主窗口的任意边缘区域。以下示例展示创建和添加 Dock 窗口的流程：
 
 ```cpp
 bool MyPlugin::initialize()
@@ -104,11 +112,12 @@ bool MyPlugin::initialize()
     DA::DAUIInterface* ui = core()->getUiInterface();
     DA::DADockingAreaInterface* dockArea = ui->getDockingArea();
     
-    // 创建自定义Dock窗口
+    // 创建自定义Dock窗口，设置标题和父窗口
     QDockWidget* myDock = new QDockWidget("数据分析", core()->getMainWindow());
+    // 设置窗口内容控件
     myDock->setWidget(new MyDataAnalysisWidget(myDock));
     
-    // 添加到DockingArea
+    // 添加到右侧Dock区域，用户可拖动调整位置
     dockArea->addDockWidget(myDock, DA::DADockingAreaInterface::RightDockArea);
     
     // 效果：在右侧Dock区域显示自定义数据分析窗口
@@ -116,9 +125,11 @@ bool MyPlugin::initialize()
 }
 ```
 
+执行上述代码后，右侧 Dock 区域出现"数据分析"窗口，用户可拖动到其他位置或隐藏。
+
 ### 添加Ribbon按钮
 
-添加自定义Ribbon按钮和面板：
+添加自定义 Ribbon 按钮和面板是插件扩展 Ribbon 界面的常用方式。Ribbon 面板按 Category（标签页）和 Panel（功能组）组织。以下示例展示添加 Ribbon 按钮的完整流程：
 
 ```cpp
 bool MyPlugin::initialize()
@@ -127,21 +138,21 @@ bool MyPlugin::initialize()
     DA::DARibbonAreaInterface* ribbonArea = ui->getRibbonArea();
     DA::DAActionsInterface* actionMgr = ui->getActionInterface();
     
-    // 在主页Category下创建自定义Panel
+    // 在主页Category下创建自定义Panel（功能组）
     SARibbonPanel* myPanel = ribbonArea->addPanelInCategory(
-        "主页",           // Category名称
-        "自定义工具"      // Panel名称
+        "主页",           // Category名称（已有标签页）
+        "自定义工具"      // Panel名称（新建功能组）
     );
     
-    // 创建Action并添加到Panel
+    // 创建Action并设置图标
     QAction* action1 = actionMgr->createAction("数据导入", this);
     QAction* action2 = actionMgr->createAction("数据导出", this);
     
-    // 连接信号槽
+    // 连接信号槽，处理按钮点击事件
     connect(action1, &QAction::triggered, this, &MyPlugin::onDataImport);
     connect(action2, &QAction::triggered, this, &MyPlugin::onDataExport);
     
-    // 添加到Ribbon面板
+    // 添加到Ribbon面板，指定按钮大小
     myPanel->addAction(action1, SARibbonActionButtonOption::LargeButtonWithText);
     myPanel->addAction(action2, SARibbonActionButtonOption::SmallButtonWithText);
     
@@ -150,9 +161,13 @@ bool MyPlugin::initialize()
 }
 ```
 
+执行上述代码后，主页 Ribbon 标签页出现"自定义工具"面板，包含大号"数据导入"按钮和小号"数据导出"按钮。
+
 ### 完整界面开发示例
 
-以下是一个完整的插件界面开发示例，包含Dock窗口、Ribbon按钮和菜单项：
+以下是一个完整的插件界面开发示例，包含 Dock 窗口、Ribbon 按钮和菜单项的创建。该示例展示了插件界面开发的典型结构：
+
+**头文件声明**（定义插件类和成员变量）：
 
 ```cpp
 // MyPlugin.h
@@ -181,6 +196,8 @@ private:
 };
 ```
 
+**源文件实现**（分步骤完成界面初始化）：
+
 ```cpp
 // MyPlugin.cpp
 bool MyPlugin::initialize()
@@ -208,7 +225,7 @@ void MyPlugin::setupDockWindows()
     m_dataDock = new QDockWidget(tr("数据分析工具"), core()->getMainWindow());
     QWidget* dataWidget = new MyDataAnalysisWidget(m_dataDock);
     m_dataDock->setWidget(dataWidget);
-    m_dataDock->setObjectName("plugin.dataAnalysis.dock");
+    m_dataDock->setObjectName("plugin.dataAnalysis.dock");  // 设置唯一标识
     
     // 添加到右侧Dock区域
     dockArea->addDockWidget(m_dataDock, DA::DADockingAreaInterface::RightDockArea);
@@ -220,19 +237,19 @@ void MyPlugin::setupRibbonButtons()
     DA::DARibbonAreaInterface* ribbonArea = ui->getRibbonArea();
     DA::DAActionsInterface* actionMgr = ui->getActionInterface();
     
-    // 获取或创建Category
+    // 获取或创建Category（标签页）
     SARibbonCategory* category = ribbonArea->category("数据分析");
     if (!category) {
         category = ribbonArea->addCategory("数据分析");
     }
     
-    // 创建Panel
+    // 创建Panel（功能组）
     SARibbonPanel* panel = category->panel("导入导出");
     if (!panel) {
         panel = category->addPanel("导入导出");
     }
     
-    // 创建Actions
+    // 创建Actions并设置图标
     m_actionImport = actionMgr->createAction(tr("导入数据"), this);
     m_actionImport->setIcon(QIcon(":/icons/import.png"));
     
@@ -247,7 +264,7 @@ void MyPlugin::setupRibbonButtons()
     connect(m_actionExport, &QAction::triggered, this, &MyPlugin::onDataExport);
     connect(actionSettings, &QAction::triggered, this, &MyPlugin::onSettings);
     
-    // 添加到Ribbon面板
+    // 添加到Ribbon面板，设置按钮大小
     panel->addAction(m_actionImport, SARibbonActionButtonOption::LargeButtonWithText);
     panel->addAction(m_actionExport, SARibbonActionButtonOption::LargeButtonWithText);
     panel->addAction(actionSettings, SARibbonActionButtonOption::SmallButtonWithText);
@@ -259,14 +276,14 @@ void MyPlugin::setupMenuItems()
     DA::DAUIInterface* ui = core()->getUiInterface();
     DA::DAActionsInterface* actionMgr = ui->getActionInterface();
     
-    // 可以通过Action管理器添加到系统菜单
+    // 将Action添加到系统菜单的"工具"菜单下
     actionMgr->addActionToMenu("工具", m_actionImport);
     actionMgr->addActionToMenu("工具", m_actionExport);
 }
 
 void MyPlugin::onDataImport()
 {
-    // 处理数据导入逻辑
+    // 处理数据导入逻辑，弹出文件选择对话框
     QString fileName = QFileDialog::getOpenFileName(
         nullptr,
         tr("选择数据文件"),
@@ -275,7 +292,7 @@ void MyPlugin::onDataImport()
     );
     
     if (!fileName.isEmpty()) {
-        // 执行导入操作
+        // 执行导入操作，加载文件到数据管理器
     }
 }
 
@@ -290,11 +307,16 @@ void MyPlugin::onSettings()
 }
 ```
 
+执行上述完整代码后，插件界面包含：
+- 右侧 Dock 区域的"数据分析工具"窗口
+- Ribbon 的"数据分析"标签页和"导入导出"面板
+- "工具"菜单下的导入/导出菜单项
+
 ## Dock窗口布局策略
 
 ### Dock区域划分
 
-data-workbench的Dock区域划分为四个主要区域：
+data-workbench 的 Dock 区域划分为四个主要区域，每个区域有典型的用途。下表列出了各区域的位置和推荐用途：
 
 | 区域 | 常用位置 | 典型用途 |
 |------|----------|----------|
@@ -304,6 +326,8 @@ data-workbench的Dock区域划分为四个主要区域：
 | BottomDockArea | 底部 | 输出日志、状态信息 |
 
 ### Dock窗口示例
+
+以下示例展示如何创建一个可停靠的数据分析窗口，包含数据选择和分析结果显示功能：
 
 ```cpp
 // 创建可停靠的数据分析窗口
@@ -322,11 +346,11 @@ private:
     {
         QVBoxLayout* layout = new QVBoxLayout(this);
         
-        // 添加数据选择控件
+        // 添加数据选择下拉框
         QComboBox* dataSelector = new QComboBox(this);
         layout->addWidget(dataSelector);
         
-        // 添加分析结果显示区域
+        // 添加分析结果显示区域（只读文本框）
         QTextEdit* resultView = new QTextEdit(this);
         resultView->setReadOnly(true);
         layout->addWidget(resultView);
@@ -337,6 +361,8 @@ private:
     }
 };
 ```
+
+执行上述代码后，创建了一个包含数据选择、结果显示和分析按钮的 Dock 窗口控件，可添加到 Dock 区域中使用。
 
 ## API 参考
 

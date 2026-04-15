@@ -30,7 +30,7 @@
 
 ### 类关系图
 
-绘图模块的核心类通过接口分离模式组织，`DAChartWidget`继承三个功能接口：
+绘图模块的核心类通过接口分离模式组织，将数据管理、样式设置、用户交互三个方面的功能分离到独立接口。下图展示了 `DAChartWidget` 的类继承和接口实现关系：
 
 ```mermaid
 classDiagram
@@ -77,6 +77,12 @@ classDiagram
     DAChartStyleInterface <|.. DAChartWidget
     DAChartInteractionInterface <|.. DAChartWidget
 ```
+
+上图展示了以下设计要点：
+- `DAChartWidget` 继承 `QwtPlot`，获得基础绑图能力
+- 通过实现 `DAChartDataInterface`，提供数据添加和图表创建功能
+- 通过实现 `DAChartStyleInterface`，提供样式设置和显示配置功能
+- 通过实现 `DAChartInteractionInterface`，提供缩放、平移、十字线等交互控制功能
 
 ### 核心类层次
 
@@ -140,7 +146,7 @@ DAFigureWidget (画布容器)
 
 ### 基本使用：创建图表和曲线
 
-以下示例演示如何创建图表并添加曲线：
+以下示例演示如何创建图表并添加曲线，展示绘图模块的基本使用流程。首先创建画布容器，然后添加图表，最后绑定曲线数据：
 
 ```cpp
 // 创建画布
@@ -165,16 +171,20 @@ chart->enableZoom(true);
 chart->enableCrosshair(true);
 ```
 
+执行上述代码后，画布中出现一个占据 80% 区域的图表，带有标题、网格、曲线数据，并支持鼠标缩放和十字线交互。
+
 ### 多图表布局
 
-使用归一化坐标创建多个图表：
+使用归一化坐标创建多个图表，便于实现灵活的布局方案。归一化坐标范围为 0-1，表示相对于画布的比例位置。以下示例创建上下两个图表：
 
 ```cpp
 // 创建画布
 DA::DAFigureWidget* figure = new DA::DAFigureWidget();
 
 // 创建上下两个图表，占据不同区域
+// 上方图表：x=5%, y=5%, 宽度=90%, 高度=40%
 DA::DAChartWidget* topChart = figure->createChart(QRectF(0.05, 0.05, 0.9, 0.4));
+// 下方图表：x=5%, y=55%, 宽度=90%, 高度=40%
 DA::DAChartWidget* bottomChart = figure->createChart(QRectF(0.05, 0.55, 0.9, 0.4));
 
 // 设置标题
@@ -182,9 +192,11 @@ topChart->setChartTitle("温度变化");
 bottomChart->setChartTitle("压力变化");
 ```
 
+执行上述代码后，画布中出现两个图表，上方显示温度变化曲线，下方显示压力变化曲线，两个图表各占据画布的 40% 高度。
+
 ### 坐标轴范围绑定
 
-多个图表的坐标轴可以绑定联动：
+多个图表的坐标轴可以绑定联动，实现同步缩放效果。当用户缩放其中一个图表时，绑定的图表自动同步缩放。以下示例绑定两个图表的 X 轴：
 
 ```cpp
 // 绑定两个图表的X轴范围
@@ -193,27 +205,31 @@ figure->bindAxisRange(topChart, bottomChart, QwtAxisId::xBottom);
 // 效果：缩放任一图表的X轴，另一图表自动同步
 ```
 
+执行上述代码后，缩放任一图表的 X 轴时，另一图表的 X 轴范围会自动同步变化，便于对比分析两个关联数据。
+
 ### 数据探针使用
 
-数据探针用于标记特定位置的数据：
+数据探针用于标记特定位置的数据，辅助数据分析和标注。探针会显示在指定位置，并自动获取该位置的数值信息。以下示例创建和使用数据探针：
 
 ```cpp
-// 创建垂直数据探针，在x=2.5位置
+// 创建垂直数据探针，在x=2.5位置，显示标签"关键点"
 DA::DADataProbeMarker* probe = figure->createVerticalProbe(2.5, "关键点");
 
-// 获取所有探针
+// 获取所有探针列表
 QList<DA::DADataProbeMarker*> probes = figure->getProbes();
 
 // 删除所有探针
 figure->removeAllProbes();
 ```
 
+执行上述代码后，图表的 x=2.5 位置出现一条垂直标记线，带有"关键点"标签，可用于标注重要数据点。
+
 ### Undo/Redo 操作
 
-所有支持undo/redo的操作使用带`_`后缀的函数：
+所有支持 undo/redo 的操作使用带 `_` 后缀的函数，这些函数会自动将操作记录到撤销栈。不带 `_` 的函数为直接操作，不记录历史。以下示例展示 undo/redo 的使用方式：
 
 ```cpp
-// 使用支持undo的接口添加曲线
+// 使用支持undo的接口添加曲线（带_后缀）
 QwtPlotCurve* curve = figure->addCurve_(xyData);
 
 // 使用undo栈撤销操作
@@ -223,8 +239,10 @@ figure->getUndoStack()->undo();
 figure->getUndoStack()->redo();
 ```
 
+执行上述代码后，`addCurve_` 添加的曲线可以通过 undo 撤销，或通过 redo 恢复，支持完整的操作回退功能。
+
 !!! note "Undo/Redo 说明"
-    带`_`后缀的函数（如`addCurve_`、`addItem_`）会自动记录到undo栈，支持撤销。不带`_`的函数为直接操作。
+    带 `_` 后缀的函数（如 `addCurve_`、`addItem_`）会自动记录到 undo 栈，支持撤销。不带 `_` 的函数为直接操作，无法撤销。
 
 ## 关键文件说明
 

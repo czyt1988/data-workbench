@@ -1,5 +1,7 @@
 # 构建主程序
 
+本文档介绍 DAWorkBench 主程序的构建方法，涵盖命令行和 Qt Creator 两种构建方式。
+
 本文档介绍如何构建 DAWorkBench 主程序。构建前请确认已完成第三方库的构建，详见 [构建第三方库](./third-party-build.md)。
 
 ## 主要功能特性
@@ -20,30 +22,42 @@
 
 ### Windows PowerShell
 
+以下命令展示了 Windows 平台使用 PowerShell 构建主程序的完整流程。命令中包含详细的中文注释说明各参数的作用。
+
 ```powershell
 # 进入项目根目录
+# 所有构建命令需在项目根目录下执行
 cd C:\path\to\data-workbench
 
 # 配置项目（必须指定 Qt 工具链文件）
+# -S 指定源码目录，-B 指定构建目录（build 目录可复用）
+# CMAKE_TOOLCHAIN_FILE 用于正确识别 Windows SDK 和 Qt 环境
 cmake -S . -B build -G Ninja `
     -DCMAKE_BUILD_TYPE:STRING=Release `
     -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE `
     -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
 
 # 构建项目（使用所有 CPU 核心）
+# --parallel 启用并行编译，充分利用多核处理器
 cmake --build build --config Release --parallel
 
 # 安装到 bin 目录
+# install 目标将编译产物复制到 bin_{配置信息} 输出目录
 cmake --build build --config Release --target install
 ```
 
+构建完成后，输出目录为 `bin_Release_qt6.7.3_MSVC_x64`，包含主程序可执行文件和所有依赖库。
+
 ### Linux Bash
+
+Linux 平台的构建流程与 Windows 相似，主要差异在于路径格式和工具链文件位置。以下命令适用于 GCC 编译环境。
 
 ```bash
 # 进入项目根目录
 cd /path/to/data-workbench
 
 # 配置项目
+# Linux 下 Qt 通常安装在 /opt/Qt 或 ~/Qt 目录
 cmake -S . -B build -G Ninja \
     -DCMAKE_BUILD_TYPE:STRING=Release \
     -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE \
@@ -55,6 +69,8 @@ cmake --build build --config Release --parallel
 # 安装到 bin 目录
 cmake --build build --config Release --target install
 ```
+
+构建输出目录为 `bin_Release_qt6.7.3_GCC_x64`。
 
 ### CMake 参数说明
 
@@ -106,20 +122,22 @@ cmake --build build --config Release --target install
 !!! info "默认配置"
     如果未修改第三方库安装路径，此步骤可省略。
 
-主项目的 `CMakeLists.txt` 已预配置第三方库路径：
+主项目的 `CMakeLists.txt` 已预配置第三方库路径。以下代码展示了第三方库查找路径的定义方式，CMake 通过这些路径定位已安装的库：
 
 ```cmake
 # 定义第三方库路径
+# DA_INSTALL_LIB_CMAKE_PATH 是安装目录下的 cmake 配置路径
 set(SARibbonBar_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/SARibbonBar)
 set(DALiteCtk_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/DALiteCtk)
 set(qwt_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/qwt)
 set(QtPropertyBrowser_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/QtPropertyBrowser)
 set(spdlog_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/spdlog)
 set(tsl-ordered-map_DIR ${DA_INSTALL_LIB_SHARE_PATH}/tsl-ordered-map)
+# qt${QT_VERSION_MAJOR}advanceddocking 根据 Qt 版本自动选择 qt5 或 qt6
 set(qt${QT_VERSION_MAJOR}advanceddocking_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/qt${QT_VERSION_MAJOR}advanceddocking)
 ```
 
-如修改了安装路径，需在构建时指定正确位置。
+如修改了安装路径，需在构建时通过 CMake 参数指定正确位置。
 
 ---
 
@@ -141,16 +159,23 @@ bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}
 
 ## 验证构建
 
+以下命令用于检查构建产物是否正确生成。首先检查可执行文件和动态库是否存在，然后启动程序验证功能是否正常。
+
 ```powershell
 # Windows - 检查输出文件
+# 应显示 DataWorkbench.exe（或 DAWorkbench.exe）
 dir bin_Release_qt6.7.3_MSVC_x64\*.exe
+
+# Windows - 检查动态库
+# 应显示 DAFigure.dll、DAData.dll 等核心模块
 dir bin_Release_qt6.7.3_MSVC_x64\*.dll
 
 # 运行程序
+# 启动主程序验证构建结果
 .\bin_Release_qt6.7.3_MSVC_x64\DAWorkbench.exe
 ```
 
-程序启动后显示主窗口界面，表示构建成功。
+程序启动后显示主窗口界面，表示构建成功。如果出现 DLL 缺失错误，请参考下一节解决。
 
 ---
 
@@ -158,12 +183,18 @@ dir bin_Release_qt6.7.3_MSVC_x64\*.dll
 
 ### DLL 缺失
 
-运行时提示缺少 DLL，可使用 `windeployqt` 自动复制依赖：
+运行时提示缺少 DLL，可使用 Qt 自带的 `windeployqt` 工具自动复制依赖。该工具会分析可执行文件的依赖并复制所需的 Qt 库。
 
 ```powershell
+# 进入输出目录
 cd bin_Release_qt6.7.3_MSVC_x64
+
+# 使用 windeployqt 自动部署 Qt 依赖
+# 此命令会复制 Qt 核心 DLL 和插件到当前目录
 windeployqt DAWorkbench.exe
 ```
+
+执行后，程序目录将包含所有必需的 Qt 依赖库。
 
 ### 第三方库找不到
 

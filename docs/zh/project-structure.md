@@ -1,49 +1,64 @@
 # 项目结构详解
 
-本文档详细说明 DAWorkBench 的目录结构、模块职责和关键文件，帮助开发者快速理解项目组织方式。
+本文档详细说明 DAWorkBench 的目录结构、模块职责和关键文件，帮助开发者快速理解项目组织方式和各模块的功能。
+
+## 主要功能特性
+
+**特性**
+
+- ✅ **目录结构总览**：src、plugins、docs、cmake 等顶层目录说明
+- ✅ **核心模块架构**：应用层、插件层、界面层、业务层、基础层的分层架构
+- ✅ **模块详细说明**：各模块职责和依赖关系的完整表格
+- ✅ **关键文件说明**：根目录、src 目录、cmake 目录的关键文件列表
+- ✅ **模块设计原则**：分层架构、插件化设计、命名约定、Qt 信号槽机制
+- ✅ **插件目录结构**：标准插件结构和模板生成方法
+- ✅ **第三方库目录**：src/3rdparty 结构和构建顺序
+- ✅ **输出目录结构**：构建输出的 bin 目录组织方式
 
 ---
 
 ## 目录结构总览
 
+下面的目录结构展示了项目的整体组织方式：
+
 ```text
 data-workbench/
-├── src/                      # 源代码目录
-│   ├── APP/                  # 主应用程序
-│   ├── DAInterface/          # 接口模块（插件和主程序通信桥梁）
-│   ├── DAPluginSupport/      # 插件支持模块
-│   ├── DAGui/                # GUI 界面模块
-│   ├── DAWorkFlow/           # 工作流核心模块
-│   ├── DAData/               # 数据管理模块
-│   ├── DAFigure/             # 图表模块
-│   ├── DAGraphicsView/       # 图形视图模块
-│   ├── DACommonWidgets/      # 通用控件模块
-│   ├── DAUtils/              # 核心工具模块
-│   ├── DAMessageHandler/     # 日志处理模块
-│   ├── DAPyBindQt/           # Python-Qt 绑定模块
-│   ├── DAPyScripts/          # Python 脚本包装模块
-│   ├── DAPyCommonWidgets/    # Python 相关控件模块
-│   ├── DAShared/             # 共享头文件模块
-│   ├── DAAxOfficeWrapper/    # Office 自动化模块（Windows）
-│   ├── 3rdparty/             # 第三方库源码
-│   ├── PyScripts/            # Python 脚本资源
-│   ├── i18n/                 # 国际化翻译文件
-│   ├── tst/                  # 测试代码目录
-│   ├── DAConfigs.h           # 编译后生成的配置头文件
+├── src/                      # 源代码目录 - 所有模块源码
+│   ├── APP/                  # 主应用程序 - 程序入口和主窗口
+│   ├── DAInterface/          # 接口模块 - 插件和主程序通信桥梁
+│   ├── DAPluginSupport/      # 插件支持模块 - 插件加载和管理
+│   ├── DAGui/                # GUI 界面模块 - Ribbon、Dock 等
+│   ├── DAWorkFlow/           # 工作流核心模块 - 有向图管理
+│   ├── DAData/               # 数据管理模块 - DataFrame 操作
+│   ├── DAFigure/             # 图表模块 - 基于 qwt 的科学图表
+│   ├── DAGraphicsView/       # 图形视图模块 - 可缩放视图
+│   ├── DACommonWidgets/      # 通用控件模块 - 常用 UI 控件
+│   ├── DAUtils/              # 核心工具模块 - 基础函数和类
+│   ├── DAMessageHandler/     # 日志处理模块 - 基于 spdlog
+│   ├── DAPyBindQt/           # Python-Qt 绑定模块 - pybind11 封装
+│   ├── DAPyScripts/          # Python 脚本包装模块 - Python API
+│   ├── DAPyCommonWidgets/    # Python 相关控件模块 - Python UI
+│   ├── DAShared/             # 共享头文件模块 - 公共定义
+│   ├── DAAxOfficeWrapper/    # Office 自动化模块 - 仅 Windows
+│   ├── 3rdparty/             # 第三方库源码 - submodule 管理
+│   ├── PyScripts/            # Python 脚本资源 - 内置脚本
+│   ├── i18n/                 # 国际化翻译文件 - .ts 文件
+│   ├── tst/                  # 测试代码目录 - 单元测试
+│   ├── DAConfigs.h           # 编译生成的配置头文件
 │   ├── DAConfigs.h.in        # 配置文件生成模板
 │   ├── DAGlobals.h           # 全局定义和宏
 │   └── template-python-config.json  # Python 环境配置模板
-├── plugins/                  # 插件目录
+├── plugins/                  # 插件目录 - 各功能插件
 │   ├── DataAnalysis/         # 数据分析插件（示例）
 │   ├── plugin-template/      # 插件模板生成工具
 │   └── CMakeLists.txt        # 插件构建配置
-├── docs/                     # 文档目录
+├── docs/                     # 文档目录 - MkDocs 文档
 │   ├── zh/                   # 中文文档
 │   ├── assets/               # 文档资源文件
 │   └── stylesheets/          # 文档样式文件
-├── cmake/                    # CMake 辅助脚本
-├── scripts/                  # 构建辅助脚本
-├── stubs/                    # Python stubs 文件
+├── cmake/                    # CMake 辅助脚本 - 构建工具
+├── scripts/                  # 构建辅助脚本 - 自动化脚本
+├── stubs/                    # Python stubs 文件 - 类型提示
 ├── mkdocs.yml                # 文档配置文件
 ├── CMakeLists.txt            # 主 CMake 配置文件
 ├── readme.md                 # 项目说明文件
@@ -51,69 +66,77 @@ data-workbench/
 └── requirements-docs.txt     # 文档生成依赖
 ```
 
+上述目录结构遵循标准的大型 C++ 项目组织方式，便于维护和扩展。
+
 ---
 
 ## 模块职责划分
 
 ### 核心模块架构
 
+下面的 mermaid 图表展示了项目的分层架构和模块依赖关系：
+
+图表展示了应用层、插件层、界面层、业务层、基础层、Python 层六个层次及其依赖关系：
+
 ```mermaid
 graph TB
     subgraph "应用层"
-        APP[APP 主程序]
+        APP[APP 主程序]       # 程序入口和主窗口
     end
     
     subgraph "插件层"
-        PS[DAPluginSupport]
-        IF[DAInterface]
+        PS[DAPluginSupport]  # 插件加载和管理
+        IF[DAInterface]      # 接口定义
     end
     
     subgraph "界面层"
-        GUI[DAGui]
-        CW[DACommonWidgets]
+        GUI[DAGui]           # 界面整合
+        CW[DACommonWidgets]  # 通用控件
     end
     
     subgraph "业务层"
-        WF[DAWorkFlow]
-        DATA[DAData]
-        FIG[DAFigure]
-        GV[DAGraphicsView]
+        WF[DAWorkFlow]       # 工作流逻辑
+        DATA[DAData]         # 数据管理
+        FIG[DAFigure]        # 图表绘制
+        GV[DAGraphicsView]   # 图形视图
     end
     
     subgraph "基础层"
-        UTILS[DAUtils]
-        SHARED[DAShared]
-        MSG[DAMessageHandler]
+        UTILS[DAUtils]       # 核心工具
+        SHARED[DAShared]     # 共享定义
+        MSG[DAMessageHandler] # 日志系统
     end
     
     subgraph "Python层"
-        PB[DAPyBindQt]
-        PS2[DAPyScripts]
-        PCW[DAPyCommonWidgets]
+        PB[DAPyBindQt]       # Python 绑定
+        PS2[DAPyScripts]     # Python 脚本
+        PCW[DAPyCommonWidgets] # Python 控件
     end
     
-    APP --> PS
-    PS --> IF
-    IF --> GUI
-    GUI --> WF
-    GUI --> DATA
-    GUI --> FIG
-    GUI --> CW
-    WF --> GV
-    DATA --> PB
-    PB --> PS2
-    CW --> UTILS
-    MSG --> UTILS
-    UTILS --> SHARED
+    APP --> PS               # 应用依赖插件支持
+    PS --> IF                # 插件支持依赖接口
+    IF --> GUI               # 接口依赖界面
+    GUI --> WF               # 界面依赖工作流
+    GUI --> DATA             # 界面依赖数据
+    GUI --> FIG              # 界面依赖图表
+    GUI --> CW               # 界面依赖通用控件
+    WF --> GV                # 工作流依赖图形视图
+    DATA --> PB              # 数据依赖 Python 绑定
+    PB --> PS2               # 绑定依赖脚本
+    CW --> UTILS             # 控件依赖工具
+    MSG --> UTILS            # 日志依赖工具
+    UTILS --> SHARED         # 工具依赖共享定义
     
-    style APP fill:#fff3e0
-    style PS fill:#e8f5e9
-    style IF fill:#e8f5e9
-    style GUI fill:#e1f5fe
-    style WF fill:#f3e5f5
-    style DATA fill:#f3e5f5
-    style FIG fill:#f3e5f5
+    style APP fill:#fff3e0   # 橙色：应用层
+    style PS fill:#e8f5e9    # 绿色：插件层
+    style IF fill:#e8f5e9    # 绿色：接口层
+    style GUI fill:#e1f5fe   # 蓝色：界面层
+    style WF fill:#f3e5f5    # 紫色：业务层
+    style DATA fill:#f3e5f5  # 紫色：业务层
+    style FIG fill:#f3e5f5   # 紫色：业务层
 ```
+
+项目采用清晰的分层架构，上层依赖下层，下层不依赖上层，确保模块职责明确。
 
 ### 模块详细说明
 
