@@ -66,6 +66,8 @@ nav:
       - 架构说明:
           - 模块依赖关系: zh/dev-guide/module-dependency.md
           - 接口模块: zh/dev-guide/interface-module.md
+          - Python/C++ 集成: zh/dev-guide/python-in-cpp.md
+          - 嵌入式 Python 调试指南: zh/dev-guide/embedded-python-debugging.md
       - 核心模块:
           - 工作流模块:
               - 工作流说明: zh/dev-guide/workflow.md
