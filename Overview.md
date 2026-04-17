@@ -119,41 +119,9 @@ data-workbench/
 
 ---
 
-## 快速开始
-
-### 环境要求
-
-| 要求 | 版本 | 说明 |
-|------|------|------|
-| Qt | 5.14+ 或 6.x | GUI 框架 |
-| Python | 3.7+ (推荐 3.11) | 数据处理 |
-| CMake | 3.16+ | 构建系统 |
-| 编译器 | C++17 支持 | MSVC/GCC/Clang |
-
-### 最简构建命令
-
-```powershell
-# 配置（必须指定 Qt 工具链文件）
-cmake -S . -B build -G Ninja `
-    -DCMAKE_BUILD_TYPE=Release `
-    -DCMAKE_TOOLCHAIN_FILE="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
-
-# 构建
-cmake --build build --config Release --parallel
-
-# 安装
-cmake --build build --config Release --target install
-```
-
-### 运行程序
-
-```powershell
-.\bin_Release_qt6.7.3_MSVC_x64\DAWorkbench.exe
-```
-
----
-
 ## AI Agent 提示
+
+涉及代码开发，你需要先阅读[开发规范](docs/zh/coding-standard.md)
 
 ### 快速定位核心代码
 
@@ -205,44 +173,6 @@ Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
 - `DA_DECLARE_PRIVATE` - 在类中声明私有数据指针
 - `DA_DECLARE_PUBLIC` - 在 PrivateData 中声明公有类指针
 - `DA_D` / `DA_DC` - 获取私有数据指针
-
-### 常用术语对照
-
-| 英文术语 | 中文翻译 | 说明 |
-|----------|----------|------|
-| Workflow | 工作流 | 有向图描述的数据处理流程 |
-| Node | 节点 | 工作流中的处理单元 |
-| Link | 连接 | 节点之间的数据连接 |
-| Port | 端口 | 节点的输入输出接口 |
-| Plugin | 插件 | 扩展模块 |
-| Item | 图元 | 图形场景中的元素 |
-| Scene | 场景 | 图形场景管理 |
-| Figure | 图表 | 可视化图表 |
-| Plot | 绑图 | 绑制图表的动作或区域 |
-
-### 开发任务快速参考
-
-**创建新节点类型**：
-1. 继承 `DAAbstractNode`
-2. 实现虚函数 `execute()`、`getMetaData()` 等
-3. 创建对应的 `DAAbstractNodeFactory` 子类
-4. 在插件中注册工厂
-
-**创建新插件**：
-1. 参考 `docs/zh/dev-guide/plugin-project-create.md`
-2. 使用 `plugins/plugin-template/make-plugin.py` 生成模板
-3. 继承 `DAAbstractNodePlugin` 或 `DAAbstractPlugin`
-
-**添加界面元素**：
-1. 获取 `DAUIInterface` 接口
-2. 使用 `getRibbonBar()` 添加 Ribbon 按钮
-3. 使用 `getDockWidgetArea()` 添加 Dock 窗口
-4. 参考 `docs/zh/dev-guide/plugin-dev-create-ui.md`
-
-**数据传递**：
-1. 通过 `DADataManager` 存取数据
-2. 监听 `dataAdded` / `dataRemoved` 信号
-3. 使用 `DADataPackage` 封装数据
 
 ---
 
