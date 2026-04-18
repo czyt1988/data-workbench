@@ -1,12 +1,13 @@
-﻿#include "DAChartSettingWidget.h"
+#include "DAChartSettingWidget.h"
 #include "ui_DAChartSettingWidget.h"
 #include <QPointer>
 #include <QScrollArea>
 #include "Models/DAFigureTreeModel.h"
-#include "DAChartPlotSettingWidget.h"
-#include "DAChartCanvasSettingWidget.h"
-#include "DAChartAxisSetWidget.h"
+#include "DAChartPlotSettingPanel.h"
+#include "DAChartCanvasSettingPanel.h"
+#include "DAChartAxisSettingPanel.h"
 #include "DAChartCommonItemsSettingWidget.h"
+#include "DAChartItemSettingPanelFactory.h"
 #include <QDebug>
 #include "DASignalBlockers.hpp"
 #include "DAChartUtil.h"
@@ -29,13 +30,13 @@ public:
 
 public:
     QPointer< QwtPlot > mPlot;
-    DAChartPlotSettingWidget* mPlotSettingWidget { nullptr };             /// 对应图表设置
-    DAChartCanvasSettingWidget* mPlotCanvasSettingWidget { nullptr };     /// 对应绘图区域设置
-    DAChartAxisSetWidget* mPlotScaleYLeftSettingWidget { nullptr };       /// 对应yleft设置
-    DAChartAxisSetWidget* mPlotScaleXBottomSettingWidget { nullptr };     /// 对应xbottom设置
-    DAChartAxisSetWidget* mPlotScaleYRightSettingWidget { nullptr };      /// 对应yright设置
-    DAChartAxisSetWidget* mPlotScaleXTopSettingWidget { nullptr };        /// 对应xtop设置
-    DAChartCommonItemsSettingWidget* mPlotItemSettingWidget { nullptr };  ///< 对应plotItem设置
+    DAChartPlotSettingPanel* mPlotSettingWidget { nullptr };             /// 对应图表设置
+    DAChartCanvasSettingPanel* mPlotCanvasSettingWidget { nullptr };     /// 对应绘图区域设置
+    DAChartAxisSettingPanel* mPlotScaleYLeftSettingWidget { nullptr };   /// 对应yleft设置
+    DAChartAxisSettingPanel* mPlotScaleXBottomSettingWidget { nullptr }; /// 对应xbottom设置
+    DAChartAxisSettingPanel* mPlotScaleYRightSettingWidget { nullptr };  /// 对应yright设置
+    DAChartAxisSettingPanel* mPlotScaleXTopSettingWidget { nullptr };    /// 对应xtop设置
+    DAChartCommonItemsSettingWidget* mPlotItemSettingWidget { nullptr }; ///< 对应plotItem设置
 };
 
 DAChartSettingWidget::PrivateData::PrivateData(DAChartSettingWidget* p) : q_ptr(p)
@@ -58,12 +59,12 @@ DAChartWidget* DAChartSettingWidget::PrivateData::plotToChart(QwtPlot* plot) con
 
 void DAChartSettingWidget::PrivateData::setupUi(QStackedWidget* stackWidget)
 {
-    mPlotSettingWidget             = new DAChartPlotSettingWidget(stackWidget);
-    mPlotCanvasSettingWidget       = new DAChartCanvasSettingWidget(stackWidget);
-    mPlotScaleYLeftSettingWidget   = new DAChartAxisSetWidget(stackWidget);
-    mPlotScaleXBottomSettingWidget = new DAChartAxisSetWidget(stackWidget);
-    mPlotScaleYRightSettingWidget  = new DAChartAxisSetWidget(stackWidget);
-    mPlotScaleXTopSettingWidget    = new DAChartAxisSetWidget(stackWidget);
+    mPlotSettingWidget             = new DAChartPlotSettingPanel(stackWidget);
+    mPlotCanvasSettingWidget       = new DAChartCanvasSettingPanel(stackWidget);
+    mPlotScaleYLeftSettingWidget   = new DAChartAxisSettingPanel(QwtAxis::YLeft, stackWidget);
+    mPlotScaleXBottomSettingWidget = new DAChartAxisSettingPanel(QwtAxis::XBottom, stackWidget);
+    mPlotScaleYRightSettingWidget  = new DAChartAxisSettingPanel(QwtAxis::YRight, stackWidget);
+    mPlotScaleXTopSettingWidget    = new DAChartAxisSettingPanel(QwtAxis::XTop, stackWidget);
     mPlotItemSettingWidget         = new DAChartCommonItemsSettingWidget(stackWidget);
     stackWidget->addWidget(mPlotSettingWidget);
     stackWidget->addWidget(mPlotCanvasSettingWidget);
@@ -99,6 +100,10 @@ DAChartSettingWidget::DAChartSettingWidget(QWidget* parent)
     : QWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartSettingWidget)
 {
     ui->setupUi(this);  // ui中有信号绑定槽
+
+    // 注册所有已知面板类型（只需调用一次）
+    DAChartItemSettingPanelFactory::instance().registerAllKnownPanels();
+
     d_ptr->setupUi(ui->stackedWidget);
 
     connect(
@@ -131,12 +136,13 @@ void DAChartSettingWidget::setPlot(QwtPlot* plot)
         // 关联信号
         connect(plot, &QwtPlot::itemAttached, this, &DAChartSettingWidget::onItemAttached);
     }
-    d->mPlotSettingWidget->setPlot(plot);
-    d->mPlotCanvasSettingWidget->setPlot(plot);
-    d->mPlotScaleYLeftSettingWidget->setPlot(plot, QwtAxis::YLeft);
-    d->mPlotScaleXBottomSettingWidget->setPlot(plot, QwtAxis::XBottom);
-    d->mPlotScaleYRightSettingWidget->setPlot(plot, QwtAxis::YRight);
-    d->mPlotScaleXTopSettingWidget->setPlot(plot, QwtAxis::XTop);
+    // Panel类使用setTarget接口
+    d->mPlotSettingWidget->setTarget(plot);
+    d->mPlotCanvasSettingWidget->setTarget(plot);
+    d->mPlotScaleYLeftSettingWidget->setTarget(plot);
+    d->mPlotScaleXBottomSettingWidget->setTarget(plot);
+    d->mPlotScaleYRightSettingWidget->setTarget(plot);
+    d->mPlotScaleXTopSettingWidget->setTarget(plot);
 }
 
 /**
@@ -363,17 +369,17 @@ void DAChartSettingWidget::showPlotItemSetting(QwtPlotItem* item)
     setCurrentPlotItem(item);
 }
 
-DAChartPlotSettingWidget* DAChartSettingWidget::getChartPlotSettingWidget() const
+DAChartPlotSettingPanel* DAChartSettingWidget::getChartPlotSettingWidget() const
 {
     return d_ptr->mPlotSettingWidget;
 }
 
-DAChartCanvasSettingWidget* DAChartSettingWidget::getChartCanvasSettingWidget() const
+DAChartCanvasSettingPanel* DAChartSettingWidget::getChartCanvasSettingWidget() const
 {
     return d_ptr->mPlotCanvasSettingWidget;
 }
 
-DAChartAxisSetWidget* DAChartSettingWidget::getChartAxisSetWidget(int axisId) const
+DAChartAxisSettingPanel* DAChartSettingWidget::getChartAxisSetWidget(int axisId) const
 {
     switch (axisId) {
     case QwtAxis::YLeft:

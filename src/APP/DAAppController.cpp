@@ -1,4 +1,4 @@
-﻿#include "DAAppController.h"
+#include "DAAppController.h"
 // Qt
 #include <QFileDialog>
 #include <QFileInfo>
@@ -37,7 +37,7 @@
 #include "DAAppChartOperateWidget.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
-#include "DAChartAxisSetWidget.h"
+#include "DAChartAxisSettingPanel.h"
 #include "DAAppChartManageWidget.h"
 #include "SettingPages/DASettingPageCommon.h"
 #include "DASettingContainerWidget.h"
@@ -773,7 +773,7 @@ void DAAppController::onFigureElementDbClicked(const DAFigureElementSelection& s
             // 对于设置窗口要进行更新
             if (setting) {
                 if (DAChartSettingWidget* chartSetting = setting->getChartSettingWidget()) {
-                    if (DAChartAxisSetWidget* axisSettingWidget = chartSetting->getChartAxisSetWidget(selection.axisId)) {
+                    if (DAChartAxisSettingPanel* axisSettingWidget = chartSetting->getChartAxisSetWidget(selection.axisId)) {
                         axisSettingWidget->updateUI();
                     }
                 }

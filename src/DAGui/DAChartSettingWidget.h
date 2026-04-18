@@ -1,4 +1,4 @@
-﻿#ifndef DACHARTSETTINGWIDGET_H
+#ifndef DACHARTSETTINGWIDGET_H
 #define DACHARTSETTINGWIDGET_H
 
 #include <QWidget>
@@ -7,6 +7,7 @@
 #include "DAChartWidget.h"
 #include "qwt_plot_item.h"
 #include "DAFigureElementSelection.h"
+#include "qwt_axis.h"
 class QScrollArea;
 namespace Ui
 {
@@ -16,9 +17,9 @@ class DAChartSettingWidget;
 namespace DA
 {
 class DAChartOperateWidget;
-class DAChartPlotSettingWidget;
-class DAChartCanvasSettingWidget;
-class DAChartAxisSetWidget;
+class DAChartPlotSettingPanel;
+class DAChartCanvasSettingPanel;
+class DAChartAxisSettingPanel;
 class DAChartCommonItemsSettingWidget;
 /**
  * @brief 绘图设置窗口
@@ -85,9 +86,9 @@ public:
     void showPlotItemSetting(QwtPlotItem* item);
 
     // 获取设置窗口
-    DAChartPlotSettingWidget* getChartPlotSettingWidget() const;
-    DAChartCanvasSettingWidget* getChartCanvasSettingWidget() const;
-    DAChartAxisSetWidget* getChartAxisSetWidget(int axisId) const;
+    DAChartPlotSettingPanel* getChartPlotSettingWidget() const;
+    DAChartCanvasSettingPanel* getChartCanvasSettingWidget() const;
+    DAChartAxisSettingPanel* getChartAxisSetWidget(int axisId) const;
     DAChartCommonItemsSettingWidget* getChartCommonItemsSettingWidget() const;
 
 protected:

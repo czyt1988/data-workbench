@@ -18,37 +18,25 @@
     <widget class="QComboBox" name="comboBoxSelectItem"/>
    </item>
    <item>
-    <widget class="QStackedWidget" name="stackedWidget">
-     <property name="currentIndex">
-      <number>2</number>
-     </property>
-     <widget class="DA::DAFigureWidgetSettingWidget" name="widgetFigureSetting"/>
-     <widget class="DA::DAChartPlotSettingWidget" name="widgetChartSetting"/>
-     <widget class="DA::DAChartCommonItemsSettingWidget" name="widgetItemSetting"/>
-    </widget>
+     <widget class="QStackedWidget" name="stackedWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="pageFigureSetting"/>
+      <widget class="QWidget" name="pageChartSetting"/>
+      <widget class="DA::DAChartCommonItemsSettingWidget" name="widgetItemSetting"/>
+     </widget>
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>DA::DAChartCommonItemsSettingWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartCommonItemsSettingWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DA::DAChartPlotSettingWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartPlotSettingWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DA::DAFigureWidgetSettingWidget</class>
-   <extends>QWidget</extends>
-   <header>DAFigureWidgetSettingWidget.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
+  <customwidgets>
+   <customwidget>
+    <class>DA::DAChartCommonItemsSettingWidget</class>
+    <extends>QWidget</extends>
+    <header>DAChartCommonItemsSettingWidget.h</header>
+    <container>1</container>
+   </customwidget>
+  </customwidgets>
  <resources/>
  <connections/>
  <buttongroups>

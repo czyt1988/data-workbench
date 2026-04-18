@@ -146,16 +146,16 @@
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
-         <widget class="DA::DAChartSpectrogramItemSettingWidget" name="pageSpectrogram">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>630</width>
-            <height>412</height>
-           </rect>
-          </property>
-         </widget>
+          <widget class="QWidget" name="pageSpectrogram">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>630</width>
+             <height>412</height>
+            </rect>
+           </property>
+          </widget>
         </widget>
        </item>
       </layout>
@@ -171,12 +171,7 @@
    <header>DAChartAddXYSeriesWidget.h</header>
    <container>1</container>
   </customwidget>
-  <customwidget>
-   <class>DA::DAChartSpectrogramItemSettingWidget</class>
-   <extends>QWidget</extends>
-   <header>DAChartSpectrogramItemSettingWidget.h</header>
-   <container>1</container>
-  </customwidget>
+
  </customwidgets>
  <resources/>
  <connections/>
