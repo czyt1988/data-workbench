@@ -1,5 +1,5 @@
 #include "DAFigureWidgetSettingPanel.h"
-#include "DAPropertyPanelWidget.h"
+#include "DAPropertyPanelContainerWidget.h"
 #include "DAFigureWidget.h"
 #include "qwt_figure.h"
 #include <QSignalBlocker>
@@ -17,15 +17,16 @@ DAFigureWidgetSettingPanel::DAFigureWidgetSettingPanel(QWidget* parent)
     , mPanel(nullptr)
 {
     // 创建DAPropertyPanelWidget并设为自身主布局
-    mPanel = new DAPropertyPanelWidget(this);
+    mPanel = new DAPropertyPanelContainerWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(mPanel);
     setLayout(layout);
 
     // 连接propertyValueChanged信号
-    connect(mPanel, &DAPropertyPanelWidget::propertyValueChanged,
+    connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged,
             this, &DAFigureWidgetSettingPanel::onPanelPropertyValueChanged);
+    connect(this, &DAFigureWidgetSettingPanel::propertyValueChanged, this, &DAFigureWidgetSettingPanel::onPropertyValueChanged);
 
     buildPropertyPanel();
 }
@@ -41,7 +42,7 @@ DAFigureWidgetSettingPanel::~DAFigureWidgetSettingPanel()
  * @brief 获取通用属性面板指针
  * @return DAPropertyPanelWidget指针
  */
-DAPropertyPanelWidget* DAFigureWidgetSettingPanel::propertyPanel() const
+DAPropertyPanelContainerWidget* DAFigureWidgetSettingPanel::propertyPanel() const
 {
     return mPanel;
 }
@@ -122,13 +123,13 @@ void DAFigureWidgetSettingPanel::buildPropertyPanel()
 {
     auto panel = propertyPanel();
 
-    panel->addGroupLabel(tr("Size"));
+    panel->addCollapsibleGroup(tr("Size"));
     panel->addIntProperty(PID_MinWidth, tr("Min Width"), 0, 0, 999999999);
     panel->addIntProperty(PID_MinHeight, tr("Min Height"), 0, 0, 999999999);
     panel->addIntProperty(PID_MaxWidth, tr("Max Width"), 0, 0, 999999999);
     panel->addIntProperty(PID_MaxHeight, tr("Max Height"), 0, 0, 999999999);
 
-    panel->addGroupLabel(tr("Background"));
+    panel->addCollapsibleGroup(tr("Background"));
     panel->addBrushProperty(PID_BackgroundBrush, tr("Background Brush"));
 }
 

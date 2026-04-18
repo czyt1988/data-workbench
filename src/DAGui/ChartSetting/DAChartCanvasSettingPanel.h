@@ -8,21 +8,21 @@ class QwtPlot;
 
 namespace DA
 {
-class DAPropertyPanelWidget;
+class DAPropertyPanelContainerWidget;
 
 /**
  * @brief QwtPlotCanvas级别的属性设置面板
  *
  * 用于设置QwtPlotCanvas的背景、边框等画布属性。
  * 不继承DAAbstractChartItemSettingWidget，因为目标不是QwtPlotItem。
- *
+
  * 属性列表：
  * - PID_BackgroundBrush: 背景画刷
  * - PID_BorderWidth: 边框宽度
  * - PID_BorderPen: 边框画笔
  * - PID_FrameStyle: 边框样式
- *
- * @see DAPropertyPanelWidget
+
+ * @see DAPropertyPanelContainerWidget
  * @see QwtPlotCanvas
  */
 class DAGUI_API DAChartCanvasSettingPanel : public QWidget
@@ -43,7 +43,7 @@ public:
     ~DAChartCanvasSettingPanel() override;
 
     // 获取通用的属性面板指针
-    DAPropertyPanelWidget* propertyPanel() const;
+    DAPropertyPanelContainerWidget* propertyPanel() const;
 
     // 设置/获取目标QwtPlot（通过QwtPlot获取canvas）
     void setTarget(QwtPlot* plot);
@@ -73,7 +73,7 @@ protected Q_SLOTS:
     void onPropertyValueChanged(int propertyId);
 
 private:
-    DAPropertyPanelWidget* mPanel;
+    DAPropertyPanelContainerWidget* mPanel;
     QPointer< QwtPlot > mPlot;
 };
 

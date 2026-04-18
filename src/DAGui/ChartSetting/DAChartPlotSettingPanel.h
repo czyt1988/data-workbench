@@ -8,14 +8,14 @@
 
 namespace DA
 {
-class DAPropertyPanelWidget;
+class DAPropertyPanelContainerWidget;
 
 /**
  * @brief QwtPlot级别的属性设置面板
  *
  * 用于设置QwtPlot的标题、脚注等全局属性。
  * 不继承DAAbstractChartItemSettingWidget，因为目标不是QwtPlotItem。
- *
+
  * 属性列表：
  * - PID_TitleText: 标题文本
  * - PID_TitleFont: 标题字体
@@ -23,8 +23,8 @@ class DAPropertyPanelWidget;
  * - PID_FooterText: 脚注文本
  * - PID_FooterFont: 脚注字体
  * - PID_FooterColor: 脚注颜色
- *
- * @see DAPropertyPanelWidget
+
+ * @see DAPropertyPanelContainerWidget
  * @see QwtPlot
  */
 class DAGUI_API DAChartPlotSettingPanel : public QWidget
@@ -47,7 +47,7 @@ public:
     ~DAChartPlotSettingPanel() override;
 
     // 获取通用的属性面板指针
-    DAPropertyPanelWidget* propertyPanel() const;
+    DAPropertyPanelContainerWidget* propertyPanel() const;
 
     // 设置/获取目标QwtPlot
     void setTarget(QwtPlot* plot);
@@ -77,7 +77,7 @@ protected Q_SLOTS:
     void onPropertyValueChanged(int propertyId);
 
 private:
-    DAPropertyPanelWidget* mPanel;
+    DAPropertyPanelContainerWidget* mPanel;
     QPointer< QwtPlot > mPlot;
 };
 

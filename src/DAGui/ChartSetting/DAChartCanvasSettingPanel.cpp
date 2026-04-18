@@ -1,5 +1,5 @@
 #include "DAChartCanvasSettingPanel.h"
-#include "DAPropertyPanelWidget.h"
+#include "DAPropertyPanelContainerWidget.h"
 #include "qwt_plot.h"
 #include "qwt_plot_canvas.h"
 #include <QSignalBlocker>
@@ -18,14 +18,14 @@ DAChartCanvasSettingPanel::DAChartCanvasSettingPanel(QWidget* parent)
     , mPanel(nullptr)
 {
     // 创建DAPropertyPanelWidget并设为自身主布局
-    mPanel = new DAPropertyPanelWidget(this);
+    mPanel = new DAPropertyPanelContainerWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(mPanel);
     setLayout(layout);
 
     // 连接propertyValueChanged信号
-    connect(mPanel, &DAPropertyPanelWidget::propertyValueChanged,
+    connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged,
             this, &DAChartCanvasSettingPanel::onPanelPropertyValueChanged);
     connect(this, &DAChartCanvasSettingPanel::propertyValueChanged, this, &DAChartCanvasSettingPanel::onPropertyValueChanged);
 
@@ -43,7 +43,7 @@ DAChartCanvasSettingPanel::~DAChartCanvasSettingPanel()
  * @brief 获取通用属性面板指针
  * @return DAPropertyPanelWidget指针
  */
-DAPropertyPanelWidget* DAChartCanvasSettingPanel::propertyPanel() const
+DAPropertyPanelContainerWidget* DAChartCanvasSettingPanel::propertyPanel() const
 {
     return mPanel;
 }
@@ -130,14 +130,14 @@ void DAChartCanvasSettingPanel::buildPropertyPanel()
 {
     auto panel = propertyPanel();
 
-    panel->addGroupLabel(tr("Background"));
+    panel->addCollapsibleGroup(tr("Background"));
     panel->addBrushProperty(PID_BackgroundBrush, tr("Background Brush"));
 
-    panel->addGroupLabel(tr("Border"));
+    panel->addCollapsibleGroup(tr("Border"));
     panel->addIntProperty(PID_BorderWidth, tr("Border Width"), 0, 0, 20);
     panel->addPenProperty(PID_BorderPen, tr("Border Pen"));
 
-    panel->addGroupLabel(tr("Style"));
+    panel->addCollapsibleGroup(tr("Style"));
     // FrameStyle: 使用QComboBox填充QFrame::Shape枚举
     QComboBox* frameStyleCombo = new QComboBox(this);
     frameStyleCombo->addItem(tr("No Frame"), static_cast< int >(QFrame::NoFrame));
@@ -147,7 +147,7 @@ void DAChartCanvasSettingPanel::buildPropertyPanel()
     frameStyleCombo->addItem(tr("Win Panel"), static_cast< int >(QFrame::WinPanel));
 
     connect(frameStyleCombo, QOverload< int >::of(&QComboBox::currentIndexChanged),
-            panel, &DAPropertyPanelWidget::propertyValueChanged);
+            panel, &DAPropertyPanelContainerWidget::propertyValueChanged);
 
     panel->addProperty(PID_FrameStyle, tr("Frame Shape"), frameStyleCombo);
 }

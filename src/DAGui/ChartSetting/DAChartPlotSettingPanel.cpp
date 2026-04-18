@@ -1,5 +1,5 @@
 #include "DAChartPlotSettingPanel.h"
-#include "DAPropertyPanelWidget.h"
+#include "DAPropertyPanelContainerWidget.h"
 #include "qwt_text.h"
 #include <QSignalBlocker>
 #include <QVBoxLayout>
@@ -16,14 +16,14 @@ DAChartPlotSettingPanel::DAChartPlotSettingPanel(QWidget* parent)
     , mPanel(nullptr)
 {
     // 创建DAPropertyPanelWidget并设为自身主布局
-    mPanel = new DAPropertyPanelWidget(this);
+    mPanel = new DAPropertyPanelContainerWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(mPanel);
     setLayout(layout);
 
     // 连接propertyValueChanged信号
-    connect(mPanel, &DAPropertyPanelWidget::propertyValueChanged,
+    connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged,
             this, &DAChartPlotSettingPanel::onPanelPropertyValueChanged);
     connect(this, &DAChartPlotSettingPanel::propertyValueChanged, this, &DAChartPlotSettingPanel::onPropertyValueChanged);
 
@@ -41,7 +41,7 @@ DAChartPlotSettingPanel::~DAChartPlotSettingPanel()
  * @brief 获取通用属性面板指针
  * @return DAPropertyPanelWidget指针
  */
-DAPropertyPanelWidget* DAChartPlotSettingPanel::propertyPanel() const
+DAPropertyPanelContainerWidget* DAChartPlotSettingPanel::propertyPanel() const
 {
     return mPanel;
 }
@@ -114,12 +114,12 @@ void DAChartPlotSettingPanel::buildPropertyPanel()
 {
     auto panel = propertyPanel();
 
-    panel->addGroupLabel(tr("Title"));
+    panel->addCollapsibleGroup(tr("Title"));
     panel->addStringProperty(PID_TitleText, tr("Title Text"));
     panel->addFontProperty(PID_TitleFont, tr("Title Font"));
     panel->addColorProperty(PID_TitleColor, tr("Title Color"));
 
-    panel->addGroupLabel(tr("Footer"));
+    panel->addCollapsibleGroup(tr("Footer"));
     panel->addStringProperty(PID_FooterText, tr("Footer Text"));
     panel->addFontProperty(PID_FooterFont, tr("Footer Font"));
     panel->addColorProperty(PID_FooterColor, tr("Footer Color"));

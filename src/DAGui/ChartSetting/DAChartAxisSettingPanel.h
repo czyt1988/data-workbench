@@ -10,7 +10,7 @@ class QButtonGroup;
 
 namespace DA
 {
-class DAPropertyPanelWidget;
+class DAPropertyPanelContainerWidget;
 
 /**
  * @brief QwtScaleWidget级别的属性设置面板
@@ -18,7 +18,7 @@ class DAPropertyPanelWidget;
  * 用于设置坐标轴的标签、刻度、边距等属性。
  * 不继承DAAbstractChartItemSettingWidget，因为目标不是QwtPlotItem。
  * 构造函数需要接收axisId参数以标识当前操作的坐标轴。
- *
+
  * 属性列表：
  * - PID_EnableAxis: 坐标轴启用开关
  * - PID_LabelText: 坐标轴标签文本
@@ -30,8 +30,8 @@ class DAPropertyPanelWidget;
  * - PID_MinScale: 最小刻度值
  * - PID_MaxScale: 最大刻度值
  * - PID_ScaleStyle: 刻度样式（普通/日期时间）
- *
- * @see DAPropertyPanelWidget
+
+ * @see DAPropertyPanelContainerWidget
  * @see QwtScaleWidget
  */
 class DAGUI_API DAChartAxisSettingPanel : public QWidget
@@ -71,7 +71,7 @@ public:
     ~DAChartAxisSettingPanel() override;
 
     // 获取通用的属性面板指针
-    DAPropertyPanelWidget* propertyPanel() const;
+    DAPropertyPanelContainerWidget* propertyPanel() const;
 
     // 设置/获取目标QwtPlot（需要配合axisId）
     void setTarget(QwtPlot* plot);
@@ -108,7 +108,7 @@ private:
     void setScaleStyleValue(int style);
 
 private:
-    DAPropertyPanelWidget* mPanel;
+    DAPropertyPanelContainerWidget* mPanel;
     QPointer< QwtPlot > mPlot;
     QwtAxis::Position mAxisId;
     QButtonGroup* mScaleStyleButtonGroup;

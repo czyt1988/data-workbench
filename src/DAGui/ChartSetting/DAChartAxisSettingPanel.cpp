@@ -1,5 +1,5 @@
 #include "DAChartAxisSettingPanel.h"
-#include "DAPropertyPanelWidget.h"
+#include "DAPropertyPanelContainerWidget.h"
 #include "DAChartUtil.h"
 #include "qwt_plot.h"
 #include "qwt_scale_widget.h"
@@ -28,14 +28,14 @@ DAChartAxisSettingPanel::DAChartAxisSettingPanel(QwtAxis::Position axisId, QWidg
     , mScaleStyleButtonGroup(nullptr)
 {
     // 创建DAPropertyPanelWidget并设为自身主布局
-    mPanel = new DAPropertyPanelWidget(this);
+    mPanel = new DAPropertyPanelContainerWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(mPanel);
     setLayout(layout);
 
     // 连接propertyValueChanged信号
-    connect(mPanel, &DAPropertyPanelWidget::propertyValueChanged,
+    connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged,
             this, &DAChartAxisSettingPanel::onPanelPropertyValueChanged);
     connect(this, &DAChartAxisSettingPanel::propertyValueChanged, this, &DAChartAxisSettingPanel::onPropertyValueChanged);
 
@@ -53,7 +53,7 @@ DAChartAxisSettingPanel::~DAChartAxisSettingPanel()
  * @brief 获取通用属性面板指针
  * @return DAPropertyPanelWidget指针
  */
-DAPropertyPanelWidget* DAChartAxisSettingPanel::propertyPanel() const
+DAPropertyPanelContainerWidget* DAChartAxisSettingPanel::propertyPanel() const
 {
     return mPanel;
 }
@@ -194,17 +194,17 @@ void DAChartAxisSettingPanel::buildPropertyPanel()
 {
     auto panel = propertyPanel();
 
-    panel->addGroupLabel(tr("Enable"));
+    panel->addCollapsibleGroup(tr("Enable"));
     panel->addBoolProperty(PID_EnableAxis, tr("Enable Axis"));
 
-    panel->addGroupLabel(tr("Label"));
+    panel->addCollapsibleGroup(tr("Label"));
     panel->addStringProperty(PID_LabelText, tr("Label Text"));
     panel->addFontProperty(PID_LabelFont, tr("Label Font"));
     panel->addColorProperty(PID_LabelFontColor, tr("Label Font Color"));
     panel->addAlignmentProperty(PID_LabelAlignment, tr("Label Alignment"));
     panel->addDoubleProperty(PID_LabelRotation, tr("Label Rotation"), 0.0, -360.0, 360.0, 1);
 
-    panel->addGroupLabel(tr("Scale"));
+    panel->addCollapsibleGroup(tr("Scale"));
     panel->addIntProperty(PID_Margin, tr("Margin"), 0, -20, 100);
     panel->addDoubleProperty(PID_MinScale, tr("Min Scale"), 0.0, -1e15, 1e15, 5);
     panel->addDoubleProperty(PID_MaxScale, tr("Max Scale"), 0.0, -1e15, 1e15, 5);

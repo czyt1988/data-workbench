@@ -8,22 +8,22 @@
 namespace DA
 {
 class DAFigureWidget;
-class DAPropertyPanelWidget;
+class DAPropertyPanelContainerWidget;
 
 /**
  * @brief DAFigureWidget级别的属性设置面板
  *
  * 用于设置DAFigureWidget的尺寸限制和背景等属性。
  * 不继承DAAbstractChartItemSettingWidget，因为目标不是QwtPlotItem。
- *
+
  * 属性列表：
  * - PID_MinWidth: 最小宽度
  * - PID_MinHeight: 最小高度
  * - PID_MaxWidth: 最大宽度
  * - PID_MaxHeight: 最大高度
  * - PID_BackgroundBrush: 背景画刷
- *
- * @see DAPropertyPanelWidget
+
+ * @see DAPropertyPanelContainerWidget
  * @see DAFigureWidget
  */
 class DAGUI_API DAFigureWidgetSettingPanel : public QWidget
@@ -45,7 +45,7 @@ public:
     ~DAFigureWidgetSettingPanel() override;
 
     // 获取通用的属性面板指针
-    DAPropertyPanelWidget* propertyPanel() const;
+    DAPropertyPanelContainerWidget* propertyPanel() const;
 
     // 设置/获取目标DAFigureWidget
     void setTarget(DAFigureWidget* fig);
@@ -75,7 +75,7 @@ protected Q_SLOTS:
     void onPropertyValueChanged(int propertyId);
 
 private:
-    DAPropertyPanelWidget* mPanel;
+    DAPropertyPanelContainerWidget* mPanel;
     QPointer< DAFigureWidget > mFigure;
 };
 
