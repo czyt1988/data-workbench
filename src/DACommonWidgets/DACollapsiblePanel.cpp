@@ -16,8 +16,7 @@ class DACollapsiblePanelHeader : public QFrame
 {
     Q_OBJECT
 public:
-    explicit DACollapsiblePanelHeader(const QString& title, QWidget* parent = nullptr)
-        : QFrame(parent), mTitle(title)
+    explicit DACollapsiblePanelHeader(const QString& title, QWidget* parent = nullptr) : QFrame(parent), mTitle(title)
     {
         setCursor(Qt::PointingHandCursor);
     }
@@ -28,7 +27,10 @@ public:
         update();
     }
 
-    QString title() const { return mTitle; }
+    QString title() const
+    {
+        return mTitle;
+    }
 
     void setExpanded(bool expanded)
     {
@@ -39,7 +41,7 @@ public:
     QSize sizeHint() const override
     {
         QFontMetrics fm(font());
-        int textWidth = fm.horizontalAdvance(mTitle) + mArrowSize + 8 + mMargin * 2;
+        int textWidth  = fm.horizontalAdvance(mTitle) + mArrowSize + 8 + mMargin * 2;
         int textHeight = fm.height() + 8;
         return QSize(textWidth, textHeight);
     }
@@ -80,7 +82,7 @@ protected:
         // 绘制标题文本
         QFontMetrics fm(font());
         int textX = mArrowSize + 4 + mMargin;
-        int textY = (height() - fm.height()) / 2 + fm.ascent();
+        int textY = (height() - fm.height()) / 2;
         painter.drawText(textX, textY, titleWidth(), fm.height(), Qt::AlignLeft | Qt::AlignVCenter, mTitle);
     }
 
@@ -98,7 +100,7 @@ private:
     QString mTitle;
     bool mExpanded = true;
     int mArrowSize = 10;
-    int mMargin = 6;
+    int mMargin    = 6;
 };
 
 //===================================================
@@ -112,9 +114,9 @@ public:
     PrivateData(DACollapsiblePanel* p);
 
     DACollapsiblePanelHeader* mHeaderWidget = nullptr;
-    QWidget* mContentWidget = nullptr;
-    QVBoxLayout* mContentLayout = nullptr;
-    QVBoxLayout* mMainLayout = nullptr;
+    QWidget* mContentWidget                 = nullptr;
+    QVBoxLayout* mContentLayout             = nullptr;
+    QVBoxLayout* mMainLayout                = nullptr;
 
     bool mExpanded = true;
     QString mTitle;
@@ -147,8 +149,7 @@ DACollapsiblePanel::PrivateData::PrivateData(DACollapsiblePanel* p) : q_ptr(p)
  * @brief 构造函数（无标题）
  * @param[in] parent 父控件
  */
-DACollapsiblePanel::DACollapsiblePanel(QWidget* parent)
-    : QWidget(parent), DA_PIMPL_CONSTRUCT
+DACollapsiblePanel::DACollapsiblePanel(QWidget* parent) : QWidget(parent), DA_PIMPL_CONSTRUCT
 {
     DA_D(d);
     connect(d->mHeaderWidget, &DACollapsiblePanelHeader::clicked, this, &DACollapsiblePanel::onHeaderClicked);
@@ -159,8 +160,7 @@ DACollapsiblePanel::DACollapsiblePanel(QWidget* parent)
  * @param[in] title 面板标题
  * @param[in] parent 父控件
  */
-DACollapsiblePanel::DACollapsiblePanel(const QString& title, QWidget* parent)
-    : QWidget(parent), DA_PIMPL_CONSTRUCT
+DACollapsiblePanel::DACollapsiblePanel(const QString& title, QWidget* parent) : QWidget(parent), DA_PIMPL_CONSTRUCT
 {
     DA_D(d);
     d->mTitle = title;
@@ -179,7 +179,7 @@ DACollapsiblePanel::~DACollapsiblePanel()
 /**
  * @brief 设置内容区域控件
  * @param[in] widget 内容控件（若为nullptr则创建默认容器）
- * 
+ *
  * 内容控件将作为折叠/展开的目标。当面板收起时，contentWidget->setVisible(false)；
  * 展开时contentWidget->setVisible(true)。sizeHint据此动态调整高度。
  */
@@ -193,10 +193,28 @@ void DACollapsiblePanel::setContentWidget(QWidget* widget)
 
     d->mContentWidget = widget ? widget : new QWidget(this);
     d->mContentWidget->setObjectName(QStringLiteral("contentWidget"));
-    d->mContentLayout = new QVBoxLayout(d->mContentWidget);
-    d->mContentLayout->setObjectName(QStringLiteral("contentLayout"));
-    d->mContentLayout->setContentsMargins(4, 4, 4, 4);
-    d->mContentLayout->setSpacing(4);
+
+    // 检查内容控件是否已存在布局（如DAPropertyPanelWidget等自带布局的控件）
+    QLayout* existingLayout = d->mContentWidget->layout();
+    if (existingLayout) {
+        // 已有布局，尝试复用为 QVBoxLayout
+        d->mContentLayout = qobject_cast<QVBoxLayout*>(existingLayout);
+        if (!d->mContentLayout) {
+            // 非 QVBoxLayout 类型，重新创建（安全保护）
+            d->mContentLayout = new QVBoxLayout(d->mContentWidget);
+            d->mContentLayout->setObjectName(QStringLiteral("contentLayout"));
+            d->mContentLayout->setContentsMargins(4, 4, 4, 4);
+            d->mContentLayout->setSpacing(4);
+        }
+        // 若成功复用，保留原布局的边距与间距设置
+    } else {
+        // 无布局时创建默认 QVBoxLayout
+        d->mContentLayout = new QVBoxLayout(d->mContentWidget);
+        d->mContentLayout->setObjectName(QStringLiteral("contentLayout"));
+        d->mContentLayout->setContentsMargins(4, 4, 4, 4);
+        d->mContentLayout->setSpacing(4);
+    }
+
     d->mMainLayout->addWidget(d->mContentWidget);
 
     // 根据当前展开状态设置可见性
@@ -266,7 +284,7 @@ QString DACollapsiblePanel::title() const
 
 /**
  * @brief 计算推荐大小
- * 
+ *
  * 展开状态：头部高度 + 内容区域高度
  * 收起状态：仅头部高度
  */
