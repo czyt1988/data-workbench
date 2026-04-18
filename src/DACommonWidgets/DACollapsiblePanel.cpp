@@ -3,6 +3,7 @@
 #include <QMouseEvent>
 #include <QStyle>
 #include <QPainter>
+#include <QPaintEvent>
 #include <QFontMetrics>
 #include "DAGlobals.h"
 
@@ -38,12 +39,22 @@ public:
         update();
     }
 
+    void setStyleMode(DACollapsiblePanel::StyleMode mode)
+    {
+        mStyleMode = mode;
+        update();
+    }
+
     QSize sizeHint() const override
     {
         QFontMetrics fm(font());
-        int textWidth  = fm.horizontalAdvance(mTitle) + mArrowSize + 8 + mMargin * 2;
-        int textHeight = fm.height() + 8;
-        return QSize(textWidth, textHeight);
+        int h = fm.height() + 8;
+        if (mStyleMode == DACollapsiblePanel::GroupBox) {
+            // GroupBox模式下标题在边框线上，头部仅显示箭头
+            return QSize(mArrowSize + mMargin * 2, h);
+        }
+        int textWidth = Qt5Qt6Compat_fontMetrics_width(fm, mTitle) + mArrowSize + 8 + mMargin * 2;
+        return QSize(textWidth, h);
     }
 
 Q_SIGNALS:
@@ -79,11 +90,13 @@ protected:
             style()->drawPrimitive(QStyle::PE_IndicatorArrowRight, &arrowOpt, &painter, this);
         }
 
-        // 绘制标题文本
-        QFontMetrics fm(font());
-        int textX = mArrowSize + 4 + mMargin;
-        int textY = (height() - fm.height()) / 2;
-        painter.drawText(textX, textY, titleWidth(), fm.height(), Qt::AlignLeft | Qt::AlignVCenter, mTitle);
+        // 绘制标题文本（GroupBox模式下标题由父控件在边框线上绘制，此处不绘制）
+        if (mStyleMode != DACollapsiblePanel::GroupBox) {
+            QFontMetrics fm(font());
+            int textX = mArrowSize + 4 + mMargin;
+            int textY = (height() - fm.height()) / 2;
+            painter.drawText(textX, textY, titleWidth(), fm.height(), Qt::AlignLeft | Qt::AlignVCenter, mTitle);
+        }
     }
 
 private:
@@ -101,6 +114,7 @@ private:
     bool mExpanded = true;
     int mArrowSize = 10;
     int mMargin    = 6;
+    DACollapsiblePanel::StyleMode mStyleMode = DACollapsiblePanel::Flat;
 };
 
 //===================================================
@@ -120,6 +134,7 @@ public:
 
     bool mExpanded = true;
     QString mTitle;
+    DACollapsiblePanel::StyleMode mStyleMode = DACollapsiblePanel::Flat;
 };
 
 DACollapsiblePanel::PrivateData::PrivateData(DACollapsiblePanel* p) : q_ptr(p)
@@ -307,6 +322,145 @@ void DACollapsiblePanel::onHeaderClicked()
 {
     DA_D(d);
     setExpanded(!d->mExpanded);
+}
+
+/**
+ * @brief 设置面板样式模式
+ * @param[in] mode 样式模式（Flat/GroupBox/Bordered）
+ *
+ * 根据样式模式调整边距：Flat模式无边距变化，GroupBox模式内容区域增加内边距，
+ * Bordered模式整体增加外边距。
+ */
+void DACollapsiblePanel::setStyleMode(StyleMode mode)
+{
+    DA_D(d);
+    if (d->mStyleMode == mode) {
+        return;
+    }
+    d->mStyleMode = mode;
+    d->mHeaderWidget->setStyleMode(mode);  // 传播样式模式到头部控件
+    // 根据样式模式调整边距
+    switch (mode) {
+    case Flat:
+        d->mMainLayout->setContentsMargins(0, 0, 0, 0);
+        if (d->mContentLayout) {
+            d->mContentLayout->setContentsMargins(4, 4, 4, 4);
+        }
+        break;
+    case GroupBox:
+        d->mMainLayout->setContentsMargins(0, 0, 0, 0);
+        if (d->mContentLayout) {
+            d->mContentLayout->setContentsMargins(8, 8, 8, 8);
+        }
+        break;
+    case Bordered:
+        d->mMainLayout->setContentsMargins(2, 2, 2, 2);
+        if (d->mContentLayout) {
+            d->mContentLayout->setContentsMargins(4, 4, 4, 4);
+        }
+        break;
+    }
+    update();       // 触发重绘
+    updateGeometry();
+    emit styleModeChanged(mode);
+}
+
+/**
+ * @brief 获取当前样式模式
+ * @return 当前样式模式
+ */
+DACollapsiblePanel::StyleMode DACollapsiblePanel::styleMode() const
+{
+    DA_DC(d);
+    return d->mStyleMode;
+}
+
+/**
+ * @brief 绘制事件，根据样式模式绘制边框
+ * @param[in] event 绘制事件
+ *
+ * Flat模式使用默认QWidget渲染（保持向后兼容）；GroupBox模式在内容区域周围绘制边框，
+ * 标题文本断开顶部边线；Bordered模式在整体面板周围绘制简单矩形边框。
+ */
+void DACollapsiblePanel::paintEvent(QPaintEvent* event)
+{
+    Q_UNUSED(event);
+    DA_D(d);
+
+    if (d->mStyleMode == Flat) {
+        // Flat模式：无需自定义绘制，使用默认QWidget渲染
+        // 保持向后兼容——与当前外观完全一致
+        QStyleOption opt;
+        opt.initFrom(this);
+        QPainter painter(this);
+        style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
+        return;
+    }
+
+    QPainter painter(this);
+    painter.setClipRect(event->rect());
+
+    // 使用palette颜色——不使用硬编码颜色值
+    QPalette pal = palette();
+
+    if (d->mStyleMode == GroupBox) {
+        // GroupBox样式：边框包围内容区域，标题文本断开顶部边线
+        QPen borderPen(pal.color(QPalette::Window).lighter(120));
+        borderPen.setWidth(1);
+        painter.setPen(borderPen);
+
+        // 计算内容区域矩形（头部下方）
+        int headerHeight = d->mHeaderWidget ? d->mHeaderWidget->height() : 0;
+        QRect contentRect = rect();
+        contentRect.setTop(headerHeight);
+
+        // 计算标题文本在顶部边线上的位置和宽度，用于断开边线
+        int titleTextWidth = 0;
+        int titleStartX   = 0;
+        if (d->mHeaderWidget) {
+            QFontMetrics fm(d->mHeaderWidget->font());
+            int arrowSize = 10;
+            int margin    = 6;
+            titleStartX   = arrowSize + 4 + margin;
+            titleTextWidth = Qt5Qt6Compat_fontMetrics_width(fm, d->mTitle);
+            // 标题文本两侧添加间距以形成"断开"效果
+            titleTextWidth += 8;   // 左右各4px间距
+            titleStartX -= 4;      // 左侧4px间距
+        }
+
+        int topY = contentRect.top();
+
+        // 顶部边线——左段（标题左侧）
+        painter.drawLine(contentRect.left(), topY, titleStartX, topY);
+        // 顶部边线——右段（标题右侧）
+        painter.drawLine(titleStartX + titleTextWidth, topY, contentRect.right(), topY);
+
+        // 左、右、底部边线（完整线条）
+        painter.drawLine(contentRect.left(), topY, contentRect.left(), contentRect.bottom());
+        painter.drawLine(contentRect.right(), topY, contentRect.right(), contentRect.bottom());
+        painter.drawLine(contentRect.left(), contentRect.bottom(), contentRect.right(), contentRect.bottom());
+
+        // 在顶部边线断口处绘制标题文本（GroupBox风格）
+        if (d->mHeaderWidget && !d->mTitle.isEmpty()) {
+            QFont titleFont = d->mHeaderWidget->font();
+            painter.setFont(titleFont);
+            painter.setPen(pal.color(QPalette::WindowText));
+            QFontMetrics fm(titleFont);
+            int textY = topY + fm.ascent() / 2 - fm.height() / 2;
+            painter.drawText(titleStartX + 4,
+                             textY,
+                             titleTextWidth - 8,
+                             fm.height(),
+                             Qt::AlignLeft | Qt::AlignVCenter,
+                             d->mTitle);
+        }
+    } else if (d->mStyleMode == Bordered) {
+        // Bordered样式：简单矩形边框包围整个面板
+        QPen borderPen(pal.color(QPalette::Window).lighter(120));
+        borderPen.setWidth(1);
+        painter.setPen(borderPen);
+        painter.drawRect(rect().adjusted(0, 0, -1, -1));  // -1确保边框在控件边界内
+    }
 }
 
 /**

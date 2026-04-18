@@ -7,6 +7,7 @@
 #include <QFrame>
 #include <QLabel>
 #include <QStyleOption>
+#include <QPainter>
 
 namespace DA
 {
@@ -43,8 +44,20 @@ class DACOMMONWIDGETS_API DACollapsiblePanel : public QWidget
 
     Q_PROPERTY(bool expanded READ isExpanded WRITE setExpanded NOTIFY expandedChanged)
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
+    Q_PROPERTY(StyleMode styleMode READ styleMode WRITE setStyleMode NOTIFY styleModeChanged)
 
 public:
+    /**
+     * @brief 面板样式模式
+     */
+    enum StyleMode
+    {
+        Flat,     ///< 无边框，当前默认外观
+        GroupBox, ///< 类似QGroupBox，边框包围内容区域，标题断开顶部边线
+        Bordered  ///< 简单矩形边框包围整个面板（头部+内容）
+    };
+    Q_ENUM(StyleMode)
+
     // 构造函数
     explicit DACollapsiblePanel(QWidget* parent = nullptr);
     explicit DACollapsiblePanel(const QString& title, QWidget* parent = nullptr);
@@ -62,6 +75,10 @@ public:
     void setTitle(const QString& title);
     QString title() const;
 
+    // 样式模式
+    void setStyleMode(StyleMode mode);
+    StyleMode styleMode() const;
+
     // 大小提示
     QSize sizeHint() const override;
 
@@ -78,10 +95,17 @@ Q_SIGNALS:
      */
     void titleChanged(const QString& title);
 
+    /**
+     * @brief 样式模式变化信号
+     * @param mode 新的样式模式
+     */
+    void styleModeChanged(StyleMode mode);
+
 private Q_SLOTS:
     void onHeaderClicked();
 
 protected:
+    void paintEvent(QPaintEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
 };
 
