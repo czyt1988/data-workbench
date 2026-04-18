@@ -1,37 +1,47 @@
 ---
 name: create-setting-panel
-description: Use when creating setting panels, property panels, or configuration UI in the data-workbench Qt/C++ project. Triggers include "add a setting panel", "create property panel", "chart item settings", "axis settings", or "app settings page".
+description: Use when creating property panels or configuration UI in the data-workbench Qt/C++ project. Triggers include "add a setting panel", "create property panel", "node settings", "workflow property editor", "chart item settings", or "app settings page".
 ---
 
 # Create Setting Panel
 
 ## Overview
 
-Three categories of setting panels exist in data-workbench. Identify which category before implementing. All use `DAPropertyPanelWidget` for property UI and follow an immediate-apply pattern (write to target + `replot()` on each change).
+Setting panels in data-workbench use `DAPropertyPanelWidget` for property UI. Three patterns exist. Identify your target before implementing.
 
 ## Decision Tree
 
 ```
-Do you need to configure a QwtPlotItem (curve, bar, grid, legend)?
-  YES → Category 1: ChartItemSettingPanel (inherit DAChartItemSettingPanel)
-  NO → Is the target a QwtScaleWidget/axis (NOT a QwtPlotItem)?
-    YES → Category 2: Non-Item Panel (inherit QWidget directly)
-    NO → Is this an app-level configuration (preferences, options)?
-      YES → Category 3: App Setting Page (inherit DAAbstractSettingPage)
+What are you configuring?
+  QwtPlotItem (curve, bar, grid)?
+    → Scenario A: ChartItem Panel (inherit DAChartItemSettingPanel)
+  Arbitrary object (node, custom data model)?
+    → Scenario B: Standalone Panel (inherit QWidget + DAPropertyPanelWidget)
+  Application-level config (preferences, options)?
+    → Scenario C: App Setting Page (inherit DAAbstractSettingPage)
 ```
 
-## Category 1: ChartItemSettingPanel
+## Core Pattern — 7 Universal Steps
 
-**Target**: QwtPlotItem subclasses (QwtPlotCurve, QwtPlotBarChart, etc.)
+These steps apply to **all** DAPropertyPanelWidget-based panels (Scenarios A and B):
+
+1. **Define PropertyId enum** — values start from 1
+2. **Create DAPropertyPanelWidget** in constructor
+3. **Add properties** — call `addXxxProperty(PID_*, name, ...)` in `buildPropertyPanel()`
+4. **Connect signal chain** — `mPanel->propertyValueChanged` to handler slot
+5. **Dispatch in handler** — `switch(propertyId)` with `case PID_*:` blocks
+6. **Read values** — use `getxxxValue(PID_*)` in handler
+7. **Write back** — apply to target + call target's refresh mechanism
+
+## Scenario A: ChartItem Panel (QwtPlotItem)
 
 **Inheritance**: `DAChartItemSettingPanel` → `DAAbstractChartItemSettingWidget` → `QWidget`
 
-**Key conventions**:
-- `buildPropertyPanel()` is **pure virtual**. Subclass calls it at constructor end.
-- Define `PropertyID` enum starting from 1.
-- `updateUI(QwtPlotItem*)` reads item state into panel (use `QSignalBlocker`).
-- `onXxxPropertyValueChanged(int)` writes changes back + calls `replot()`.
-- Register via `DAChartItemSettingPanelFactory::registerPanel(rtti, creator)`.
+**Key pattern**:
+- `buildPropertyPanel()` is **pure virtual**, called at end of subclass constructor
+- `updateUI(QwtPlotItem*)` reads state back (`QSignalBlocker` recommended)
+- Signal chain is **automatic** via base class
+- Refresh by calling `replot()`
 
 **Skeleton**:
 ```cpp
@@ -47,43 +57,35 @@ private Q_SLOTS:
     void onPropertyValueChanged(int propertyId);
 };
 
-// Constructor: buildPropertyPanel() called LAST
 MyPanel::MyPanel(QWidget* parent) : DAChartItemSettingPanel(parent) {
     connect(this, &DAChartItemSettingPanel::propertyValueChanged,
             this, &MyPanel::onPropertyValueChanged);
     buildPropertyPanel();
 }
-
-// Signal chain is automatic: propertyPanel → onPanelPropertyValueChanged → propertyValueChanged
 ```
 
-**Reference files**:
-- `src/DAGui/ChartSetting/DAChartItemSettingPanel.h` — base class, pure virtual + Qwt methods
-- `src/DAGui/ChartSetting/DAChartCurveSettingPanel.{h,cpp}` — complete implementation example
-- `src/DAGui/ChartSetting/DAChartItemSettingPanelFactory.{h,cpp}` — singleton factory with 7 built-in registrations
+Register via `DAChartItemSettingPanelFactory::registerPanel(rtti, creator)`.
 
-## Category 2: Non-Item Panel
+**References**: `src/DAGui/ChartSetting/DAChartItemSettingPanel.h`, `src/DAGui/ChartSetting/DAChartCurveSettingPanel.{h,cpp}`
 
-**Target**: QwtPlot-level objects (axes, scales) — NOT QwtPlotItem subclasses.
+## Scenario B: Standalone Panel (Any Target)
 
-**Inheritance**: `QWidget` directly (NOT DAAbstractChartItemSettingWidget)
+**Inheritance**: `QWidget` directly, owns `DAPropertyPanelWidget*`
 
-**Key conventions**:
-- `buildPropertyPanel()` is a **protected slot**, called directly in constructor (NOT pure virtual).
-- Constructor requires an identifier parameter (e.g., `QwtAxis::Position axisId`).
-- **Signal chain MUST be manually wired** in constructor:
-  1. `mPanel->propertyValueChanged → this->onPanelPropertyValueChanged(int)`
-  2. `this->propertyValueChanged(int) → this->onPropertyValueChanged(int)`
-- Uses `QPointer<QwtPlot>` for target management.
-- Call `replot()` on `mPlot` after each property change.
+**Key pattern**:
+- `buildPropertyPanel()` is a **protected slot**, called directly in constructor
+- Constructor takes a target identifier (e.g., node type, object ID)
+- **Signal chain MUST be manually wired** — two connections (see skeleton)
+- Refresh by calling target's own notify/redraw mechanism (NOT `replot()`)
 
-**Skeleton**:
+**Skeleton** (workflow node example):
 ```cpp
-class MyAxisPanel : public QWidget {
+class DANodePropertyPanel : public QWidget {
     Q_OBJECT
 public:
-    enum PropertyId { PID_Enable = 1, PID_Label = 2 };
-    explicit MyAxisPanel(QwtAxis::Position axisId, QWidget* parent = nullptr);
+    enum PropertyId { PID_Name = 1, PID_Color = 2 };
+    explicit DANodePropertyPanel(QWidget* parent = nullptr);
+    void setTarget(DAWorkFlowNode* node);
 protected Q_SLOTS:
     void buildPropertyPanel();
     void onPanelPropertyValueChanged(int propertyId);
@@ -92,33 +94,32 @@ Q_SIGNALS:
     void propertyValueChanged(int propertyId);
 };
 
-// Constructor: connect BOTH links in signal chain
-MyAxisPanel::MyAxisPanel(QwtAxis::Position axisId, QWidget* parent)
-    : QWidget(parent), mAxisId(axisId) {
+// Constructor: wire BOTH signal links
+DANodePropertyPanel::DANodePropertyPanel(QWidget* parent)
+    : QWidget(parent) {
     mPanel = new DAPropertyPanelWidget(this);
+    // Link 1: panel → forwarding slot
     connect(mPanel, &DAPropertyPanelWidget::propertyValueChanged,
-            this, &MyAxisPanel::onPanelPropertyValueChanged);
-    connect(this, &MyAxisPanel::propertyValueChanged,
-            this, &MyAxisPanel::onPropertyValueChanged);
-    buildPropertyPanel();  // called directly, NOT pure virtual
+            this, &DANodePropertyPanel::onPanelPropertyValueChanged);
+    // Link 2: self → handler slot (P0: often forgotten)
+    connect(this, &DANodePropertyPanel::propertyValueChanged,
+            this, &DANodePropertyPanel::onPropertyValueChanged);
+    buildPropertyPanel();
 }
 ```
 
-**Reference files**:
-- `src/DAGui/ChartSetting/DAChartAxisSettingPanel.{h,cpp}` — complete implementation example
-- `src/DACommonWidgets/DAPropertyPanelWidget.h` — all `addXxxProperty` + `getXxxValue`/`setXxxValue` methods
+**Note**: Non-chart targets do not call `replot()`. Emit the target object's own change signal or call its refresh method instead.
 
-## Category 3: App Setting Page
+**References**: `src/DAGui/ChartSetting/DAChartAxisSettingPanel.{h,cpp}` (composition pattern), `src/DAGui/DAWorkFlowNodeItemSettingWidget.h` (target domain)
 
-**Target**: Application-level configuration (preferences, options, file paths).
+## Scenario C: App Setting Page
 
 **Inheritance**: `DAAbstractSettingPage` → `QWidget`
 
-**Key conventions**:
-- `apply()` is **pure virtual** — called when user clicks Apply/OK.
-- `getSettingPageTitle()` and `getSettingPageIcon()` define sidebar display.
-- Emit `settingChanged()` when any property changes, otherwise `apply()` is never called.
-- Emit `settingApplyed()` after apply completes.
+**Key pattern**:
+- `apply()` is **pure virtual** — called on Apply/OK click
+- Emit `settingChanged()` on any property change (otherwise `apply()` is skipped)
+- Emit `settingApplyed()` after apply completes
 
 **Skeleton**:
 ```cpp
@@ -132,31 +133,26 @@ public:
 };
 ```
 
-**Reference files**:
-- `src/DACommonWidgets/DAAbstractSettingPage.h` — base class interface
+**Reference**: `src/DACommonWidgets/DAAbstractSettingPage.h`
 
 ## Key Differences
 
-| Aspect | ChartItemSettingPanel | Non-Item Panel | App Setting Page |
-|--------|----------------------|----------------|------------------|
+| Aspect | ChartItem (A) | Standalone (B) | App Page (C) |
+|--------|--------------|----------------|--------------|
 | **Inherits** | DAChartItemSettingPanel | QWidget | DAAbstractSettingPage |
-| **buildPropertyPanel()** | Pure virtual, called by subclass | Protected slot, called by base | N/A |
-| **Signal chain** | Automatic via base class | Manual: 2 connections required | `settingChanged()` signal |
-| **Apply style** | Immediate (write + replot) | Immediate (write + replot) | Deferred (`apply()` on OK) |
-| **Target** | QwtPlotItem via `setPlotItem()` | QwtPlot + axisId via `setTarget()` | N/A |
+| **Target** | QwtPlotItem via `setPlotItem()` | Any object via `setTarget()` | N/A |
+| **buildPropertyPanel()** | Pure virtual, called by subclass | Protected slot, called directly | N/A |
+| **Signal chain** | Automatic via base | Manual: 2 connections required | `settingChanged()` signal |
+| **Apply style** | Immediate (write + replot) | Immediate (write + notify) | Deferred (`apply()` on OK) |
+| **Qwt extras** | addCurveStyle/Axis/SymbolProperty | Not available | N/A |
 | **Factory** | DAChartItemSettingPanelFactory | Manually created | DASettingWidget manages |
 
-## Common Utilities
+## Compatibility Notes
 
-**DAPropertyPanelWidget methods** (available to all categories):
-- `addXxxProperty(int id, name)` — addBoolProperty, addStringProperty, addDoubleProperty, addIntProperty, addColorProperty, addFontProperty, addPenProperty, addBrushProperty, addEnumProperty, addAlignmentProperty, addFilePathProperty
-- `getXxxValue(id)` / `setXxxValue(id, value)` — matching getters/setters per type
-- `setPropertyEnabled(id, bool)`, `setPropertyVisible(id, bool)`
-- `addGroupLabel(text)` — section headers
-
-**PropertyId convention**: Enum values start from 1. Used in `addProperty()` calls and `onPropertyValueChanged()` switch dispatch.
-
-**Immediate-apply pattern**: Property changes write directly to target object + call `replot()`. No separate `apply()` step needed for Categories 1 and 2.
+**DAPropertyPanelWidget API** (all scenarios):
+- `addXxxProperty` — addBool/String/Double/Int/Color/Font/Pen/Brush/Enum/Alignment/FilePathProperty
+- `getXxxValue(id)` / `setXxxValue(id, value)` — matching getters/setters
+- `setPropertyEnabled/Visible`, `addGroupLabel`
 
 **QButtonGroup Qt5/Qt6 compat**:
 ```cpp
@@ -167,6 +163,16 @@ public:
 #endif
 ```
 
+**Qt5/Qt6 QButtonGroup addButton**:
+```cpp
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    group->addButton(rb, id);
+#else
+    group->setId(rb, id);
+    group->addButton(rb);
+#endif
+```
+
 ## What NOT to Duplicate
 
-The 6-function lifecycle (`setTarget`, `getTarget`, `bindTarget`, `unbindTarget`, `updateUI`, `applySetting`) is documented in `docs/zh/dev-guide/settingwidget-standard.md`. Reference that document for general setting widget conventions — do not re-explain it here.
+The 6-function lifecycle (`setTarget`, `getTarget`, `bindTarget`, `unbindTarget`, `updateUI`, `applySetting`) is documented in `docs/zh/dev-guide/settingwidget-standard.md`. Reference that document — do not re-explain it here.
