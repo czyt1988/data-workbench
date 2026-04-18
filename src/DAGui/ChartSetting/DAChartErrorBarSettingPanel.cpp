@@ -1,5 +1,5 @@
 #include "DAChartErrorBarSettingPanel.h"
-#include "DAPropertyPanelWidget.h"
+#include "DAPropertyPanelContainerWidget.h"
 #include "qwt_interval_symbol.h"
 #include "qwt_text.h"
 #include <QSignalBlocker>

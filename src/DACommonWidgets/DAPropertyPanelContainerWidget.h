@@ -8,13 +8,12 @@
 #include <QMap>
 #include <functional>
 #include "DAPropertyItemWidget.h"
+#include "DAPropertyPanelWidget.h"
 
 class QScrollArea;
 
 namespace DA
 {
-// Forward declarations
-class DAPropertyPanelWidget;
 
 /**
  * @brief 属性面板容器控件，提供滚动区域并代理DAPropertyPanelWidget的完整API

@@ -1,5 +1,5 @@
 #include "DAChartItemSettingPanel.h"
-#include "DAPropertyPanelWidget.h"
+#include "DAPropertyPanelContainerWidget.h"
 #include <QComboBox>
 #include <QRadioButton>
 #include <QButtonGroup>
@@ -18,15 +18,15 @@ DAChartItemSettingPanel::DAChartItemSettingPanel(QWidget* parent)
     : DAAbstractChartItemSettingWidget(parent)
     , mPanel(nullptr)
 {
-    // 创建DAPropertyPanelWidget并设为自身主布局
-    mPanel = new DAPropertyPanelWidget(this);
+    // 创建DAPropertyPanelContainerWidget并设为自身主布局
+    mPanel = new DAPropertyPanelContainerWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(mPanel);
     setLayout(layout);
 
     // 连接propertyValueChanged信号
-    connect(mPanel, &DAPropertyPanelWidget::propertyValueChanged, this, &DAChartItemSettingPanel::onPanelPropertyValueChanged);
+    connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged, this, &DAChartItemSettingPanel::onPanelPropertyValueChanged);
 
     // 注意：不在此调用buildPropertyPanel()，由子类构造函数末尾自行调用
 }
@@ -40,9 +40,9 @@ DAChartItemSettingPanel::~DAChartItemSettingPanel()
 
 /**
  * @brief 获取通用属性面板指针
- * @return DAPropertyPanelWidget指针
+ * @return DAPropertyPanelContainerWidget指针
  */
-DAPropertyPanelWidget* DAChartItemSettingPanel::propertyPanel() const
+DAPropertyPanelContainerWidget* DAChartItemSettingPanel::propertyPanel() const
 {
     return mPanel;
 }
@@ -76,7 +76,7 @@ void DAChartItemSettingPanel::addCurveStyleProperty(int id, const QString& name)
     combo->addItem(tr("No Curve"), static_cast< int >(QwtPlotCurve::NoCurve));
 
     connect(combo, QOverload< int >::of(&QComboBox::currentIndexChanged),
-            mPanel, &DAPropertyPanelWidget::propertyValueChanged);
+            mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged);
 
     mPanel->addProperty(id, name, combo);
 }
@@ -154,7 +154,7 @@ void DAChartItemSettingPanel::addAxisProperty(int id, const QString& name, bool 
     }
 
     connect(combo, QOverload< int >::of(&QComboBox::currentIndexChanged),
-            mPanel, &DAPropertyPanelWidget::propertyValueChanged);
+            mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged);
 
     mPanel->addProperty(id, name, combo);
 }

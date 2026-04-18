@@ -2,6 +2,8 @@
 #define DACHARTITEMSETTINGPANEL_H
 #include "DAGuiAPI.h"
 #include "DAAbstractChartItemSettingWidget.h"
+#include "DAPropertyPanelWidget.h"
+#include "DAPropertyPanelContainerWidget.h"
 // Qwt（基类已引入qwt_plot.h，此处引入完整类型定义）
 #include "qwt_plot_curve.h"
 #include "qwt_axis.h"
@@ -15,18 +17,17 @@ class QAbstractButton;
 
 namespace DA
 {
-class DAPropertyPanelWidget;
 
 /**
  * @brief Qwt专有图表项属性设置面板基类
  *
- * 继承DAAbstractChartItemSettingWidget，内部持有DAPropertyPanelWidget，
+* 继承DAAbstractChartItemSettingWidget，内部持有DAPropertyPanelContainerWidget，
  * 在通用属性便捷方法之上叠加Qwt专有属性创建方法和值读写方法。
  *
  * 使用方式：
  * 1. 继承此类，实现buildPropertyPanel()
  * 2. 在buildPropertyPanel()中调用addXxxProperty方法构建面板
- * 3. 通过propertyPanel()调用DAPropertyPanelWidget通用便捷方法
+ * 3. 通过propertyPanel()调用DAPropertyPanelContainerWidget通用便捷方法
  * 4. 使用get/setXxxValue进行Qwt专有类型的值读写
  *
  * @code
@@ -43,7 +44,7 @@ class DAPropertyPanelWidget;
  * @endcode
  *
  * @see DAAbstractChartItemSettingWidget
- * @see DAPropertyPanelWidget
+ * @see DAPropertyPanelContainerWidget
  */
 class DAGUI_API DAChartItemSettingPanel : public DAAbstractChartItemSettingWidget
 {
@@ -52,8 +53,8 @@ public:
 	explicit DAChartItemSettingPanel(QWidget* parent = nullptr);
 	~DAChartItemSettingPanel() override;
 
-	// 获取通用的属性面板，子类可通过此指针调用DAPropertyPanelWidget的通用便捷方法
-	DAPropertyPanelWidget* propertyPanel() const;
+	// 获取通用的属性面板，子类可通过此指针调用DAPropertyPanelContainerWidget的通用便捷方法
+	DAPropertyPanelContainerWidget* propertyPanel() const;
 
 	// === Qwt专有属性创建方法 ===
 
@@ -97,7 +98,7 @@ Q_SIGNALS:
 	/**
 	 * @brief Qwt专有属性值变化信号
 	 * @param propertyId 属性ID
-	 * @note 此信号转发自DAPropertyPanelWidget::propertyValueChanged
+	 * @note 此信号转发自DAPropertyPanelContainerWidget::propertyValueChanged
 	 */
 	void propertyValueChanged(int propertyId);
 
@@ -106,11 +107,11 @@ protected:
 	virtual void buildPropertyPanel() = 0;
 
 protected Q_SLOTS:
-	// 转发DAPropertyPanelWidget::propertyValueChanged到propertyValueChanged信号
+	// 转发DAPropertyPanelContainerWidget::propertyValueChanged到propertyValueChanged信号
 	void onPanelPropertyValueChanged(int propertyId);
 
 private:
-	DAPropertyPanelWidget* mPanel;
+	DAPropertyPanelContainerWidget* mPanel;
 	QMap<int, QButtonGroup*> mButtonGroupMap;     // 方向属性QButtonGroup
 	QMap<int, QButtonGroup*> mScaleStyleGroupMap; // 刻度样式属性QButtonGroup
 };

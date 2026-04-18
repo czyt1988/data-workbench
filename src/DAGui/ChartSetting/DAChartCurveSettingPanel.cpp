@@ -1,5 +1,5 @@
 #include "DAChartCurveSettingPanel.h"
-#include "DAPropertyPanelWidget.h"
+#include "DAPropertyPanelContainerWidget.h"
 #include <QSignalBlocker>
 #include <QPen>
 #include "qwt_plot_curve.h"
@@ -41,7 +41,7 @@ DAChartCurveSettingPanel::~DAChartCurveSettingPanel()
  */
 void DAChartCurveSettingPanel::buildPropertyPanel()
 {
-    DAPropertyPanelWidget* pp = propertyPanel();
+    DAPropertyPanelContainerWidget* pp = propertyPanel();
 
     // ── 通用属性 ──
     pp->addGroupLabel(tr("General"));
@@ -117,7 +117,7 @@ void DAChartCurveSettingPanel::updateUI(QwtPlotItem* item)
     // 调用基类更新
     DAChartItemSettingPanel::updateUI(item);
 
-    DAPropertyPanelWidget* pp = propertyPanel();
+    DAPropertyPanelContainerWidget* pp = propertyPanel();
     QSignalBlocker blocker(pp);
 
     // 通用属性
@@ -185,7 +185,7 @@ void DAChartCurveSettingPanel::onCurvePropertyValueChanged(int propertyId)
         return;
     }
 
-    DAPropertyPanelWidget* pp = propertyPanel();
+    DAPropertyPanelContainerWidget* pp = propertyPanel();
 
     switch (propertyId) {
     case PID_Title: {

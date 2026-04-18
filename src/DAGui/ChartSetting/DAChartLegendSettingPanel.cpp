@@ -1,5 +1,5 @@
 #include "DAChartLegendSettingPanel.h"
-#include "DAPropertyPanelWidget.h"
+#include "DAPropertyPanelContainerWidget.h"
 #include <QSignalBlocker>
 #include "qwt_text.h"
 

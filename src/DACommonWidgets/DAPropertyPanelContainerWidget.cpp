@@ -12,7 +12,7 @@ namespace DA
 class DAPropertyPanelContainerWidget::PrivateData
 {
 	DA_DECLARE_PUBLIC(DAPropertyPanelContainerWidget)
-
+public:
 	explicit PrivateData(DAPropertyPanelContainerWidget* p)
 	    : q_ptr(p)
 	{
