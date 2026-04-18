@@ -85,6 +85,7 @@ data-workbench/
 | [project-serialization-architecture.md](docs/zh/dev-guide/project-serialization-architecture.md) | 项目序列化架构 |
 | [settingwidget-standard.md](docs/zh/dev-guide/settingwidget-standard.md) | 设置控件规范 |
 | [third-party-manage.md](docs/zh/dev-guide/third-party-manage.md) | 第三方库管理 |
+| [creating-setting-panel.md](docs/zh/dev-guide/creating-setting-panel.md)| 创建设置面板 |
 
 ### 构建文档（build）
 
