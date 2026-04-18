@@ -16,10 +16,11 @@ namespace DA
 class DACollapsiblePanelHeader;
 
 /**
- * @brief 可折叠面板控件，支持点击头部展开/收起内容区域
+ * @brief 可折叠面板控件，支持点击头部展开/收起内容区域，并提供多种样式模式
  *
  * 基于QWidget的轻量级折叠容器，使用setVisible+sizeHint实现折叠机制，
  * 不依赖QGroupBox，无动画。适用于DAPropertyPanelWidget的分组嵌套。
+ * 支持三种样式模式：Flat（无边框默认外观）、GroupBox（边框+标题断开顶部边线）、Bordered（矩形边框）。
  *
  * @code
  * // 创建折叠面板
@@ -33,6 +34,11 @@ class DACollapsiblePanelHeader;
  * // 程序化控制展开/收起
  * panel->setExpanded(false);  // 收起
  * panel->setExpanded(true);   // 展开
+ *
+ * // 设置样式模式
+ * panel->setStyleMode(DACollapsiblePanel::GroupBox);  // GroupBox风格边框
+ * panel->setStyleMode(DACollapsiblePanel::Bordered);  // 简单矩形边框
+ * panel->setStyleMode(DACollapsiblePanel::Flat);      // 无边框默认外观
  * @endcode
  *
  * @see DAPropertyPanelWidget
