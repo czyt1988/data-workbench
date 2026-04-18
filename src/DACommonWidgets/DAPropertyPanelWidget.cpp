@@ -1,5 +1,5 @@
 #include "DAPropertyPanelWidget.h"
-#include <QScrollArea>
+#include "DACollapsiblePanel.h"
 #include <QVBoxLayout>
 #include <QFrame>
 #include <QFontMetrics>
@@ -36,12 +36,24 @@ public:
 	int mPropertyNameWidth = -1;                       // -1表示自动计算
 	int mSpacing = 4;                                  // 属性项间距
 
-	QScrollArea* mScrollArea = nullptr;
 	QWidget* mContentWidget = nullptr;
 	QVBoxLayout* mContentLayout = nullptr;
 
+	// 分组管理
+	int mNextGroupId = 1;
+	QMap<int, DACollapsiblePanel*> mGroups;            // groupId -> collapsible panel wrapper
+	QMap<int, DAPropertyPanelWidget*> mGroupPanels;    // groupId -> inner property panel
+	DAPropertyPanelWidget* mCurrentGroupPanel = nullptr; // 当前活动分组面板（null=根面板）
+
+	// 子面板管理
+	QMap<int, DAPropertyPanelWidget*> mSubPanels;       // subPanelId -> sub-panel
+	QMap<int, QMetaObject::Connection> mSubPanelConnections; // subPanelId -> signal connection
+
+	QWidget* getTargetContentWidget() const;
+
 	int generateAutoId();
 	void addItemToContent(QWidget* widget, int index);
+	void addItemToRoot(QWidget* widget, int index);
 	void removeItemFromContent(QWidget* widget);
 	int calculateAutoPropertyNameWidth() const;
 	void updateAllItemsNameLabelWidth();
@@ -62,15 +74,13 @@ DAPropertyPanelWidget::PrivateData::PrivateData(DAPropertyPanelWidget* p) : q_pt
 		p->setObjectName(QStringLiteral("DAPropertyPanelWidget"));
 	}
 
-	// 创建ScrollArea
-	mScrollArea = new QScrollArea(p);
-	mScrollArea->setObjectName(QStringLiteral("scrollArea"));
-	mScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	mScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-	mScrollArea->setWidgetResizable(true);
-	mScrollArea->setFrameShape(QFrame::NoFrame);
+	// 创建主布局
+	QVBoxLayout* mainLayout = new QVBoxLayout(p);
+	mainLayout->setObjectName(QStringLiteral("mainLayout"));
+	mainLayout->setContentsMargins(0, 0, 0, 0);
+	mainLayout->setSpacing(0);
 
-	// 创建内容Widget
+	// 创建内容Widget（直接子控件，不再嵌入ScrollArea）
 	mContentWidget = new QWidget();
 	mContentWidget->setObjectName(QStringLiteral("contentWidget"));
 	mContentLayout = new QVBoxLayout(mContentWidget);
@@ -81,14 +91,16 @@ DAPropertyPanelWidget::PrivateData::PrivateData(DAPropertyPanelWidget* p) : q_pt
 	// 底部弹性空间
 	mContentLayout->addStretch(1);
 
-	mScrollArea->setWidget(mContentWidget);
+	mainLayout->addWidget(mContentWidget);
+}
 
-	// 将ScrollArea设为DAPropertyPanelWidget的主布局
-	QVBoxLayout* mainLayout = new QVBoxLayout(p);
-	mainLayout->setObjectName(QStringLiteral("mainLayout"));
-	mainLayout->setContentsMargins(0, 0, 0, 0);
-	mainLayout->setSpacing(0);
-	mainLayout->addWidget(mScrollArea);
+QWidget* DAPropertyPanelWidget::PrivateData::getTargetContentWidget() const
+{
+	if (mCurrentGroupPanel) {
+		// Access PrivateData of another DAPropertyPanelWidget instance (same class, class-level access)
+		return mCurrentGroupPanel->d_func()->mContentWidget;
+	}
+	return mContentWidget;
 }
 
 int DAPropertyPanelWidget::PrivateData::generateAutoId()
@@ -99,12 +111,10 @@ int DAPropertyPanelWidget::PrivateData::generateAutoId()
 	return mNextAutoId++;
 }
 
-void DAPropertyPanelWidget::PrivateData::addItemToContent(QWidget* widget, int index)
+void DAPropertyPanelWidget::PrivateData::addItemToRoot(QWidget* widget, int index)
 {
-	// stretch项始终在最后，所以插入位置需要在stretch之前调整
-	int stretchIndex = mContentLayout->count() - 1;  // stretch是最后一个项
+	int stretchIndex = mContentLayout->count() - 1;
 	if (index < 0 || index >= stretchIndex) {
-		// 插入到stretch之前（即末尾）
 		mContentLayout->insertWidget(stretchIndex, widget);
 	} else {
 		mContentLayout->insertWidget(index, widget);
@@ -113,12 +123,36 @@ void DAPropertyPanelWidget::PrivateData::addItemToContent(QWidget* widget, int i
 
 void DAPropertyPanelWidget::PrivateData::removeItemFromContent(QWidget* widget)
 {
-	mContentLayout->removeWidget(widget);
+	if (mCurrentGroupPanel) {
+		mCurrentGroupPanel->d_func()->mContentLayout->removeWidget(widget);
+	} else {
+		mContentLayout->removeWidget(widget);
+	}
+}
+
+void DAPropertyPanelWidget::PrivateData::addItemToContent(QWidget* widget, int index)
+{
+	int stretchIndex;
+	QVBoxLayout* targetLayout;
+
+	if (mCurrentGroupPanel) {
+		targetLayout = mCurrentGroupPanel->d_func()->mContentLayout;
+	} else {
+		targetLayout = mContentLayout;
+	}
+
+	// stretch项始终在最后
+	stretchIndex = targetLayout->count() - 1;
+	if (index < 0 || index >= stretchIndex) {
+		targetLayout->insertWidget(stretchIndex, widget);
+	} else {
+		targetLayout->insertWidget(index, widget);
+	}
 }
 
 int DAPropertyPanelWidget::PrivateData::calculateAutoPropertyNameWidth() const
 {
-	int maxWidth = 60;  // 最小宽度
+	int maxWidth = 60;
 	QFontMetrics fm(mContentWidget->font());
 
 	for (auto it = mPropertyItems.begin(); it != mPropertyItems.end(); ++it) {
@@ -126,11 +160,11 @@ int DAPropertyPanelWidget::PrivateData::calculateAutoPropertyNameWidth() const
 		if (item->layoutMode() == DAPropertyItemWidget::InlineLayout) {
 			QString name = item->propertyName();
 			int w = Qt5Qt6Compat_fontMetrics_width(fm, name);
-			maxWidth = qMax(maxWidth, w + 10);  // 加10px边距
+			maxWidth = qMax(maxWidth, w + 10);
 		}
 	}
 
-	return qMin(maxWidth, 200);  // 最大200px
+	return qMin(maxWidth, 200);
 }
 
 void DAPropertyPanelWidget::PrivateData::updateAllItemsNameLabelWidth()
@@ -161,7 +195,6 @@ DAPropertyItemWidget* DAPropertyPanelWidget::PrivateData::createPropertyItem(int
 	item->setLayoutMode(mode);
 	item->setFrameVisible(false);
 
-	// 设置属性名宽度
 	int width = mPropertyNameWidth;
 	if (width < 0) {
 		width = calculateAutoPropertyNameWidth();
@@ -183,11 +216,166 @@ DAPropertyPanelWidget::~DAPropertyPanelWidget()
 {
 }
 
+// === 分组管理 ===
+
+/**
+ * @brief 添加可折叠分组，后续addXxxProperty自动添加到该分组
+ * @param[in] title 分组标题
+ * @return 分组ID（从1开始递增）
+ */
+int DAPropertyPanelWidget::addCollapsibleGroup(const QString& title)
+{
+	DA_D(d);
+	// 创建折叠面板包装
+	DACollapsiblePanel* groupPanel = new DACollapsiblePanel(title, d->mContentWidget);
+	groupPanel->setObjectName(QStringLiteral("groupPanel_") + QString::number(d->mNextGroupId));
+
+	// 创建分组内部属性面板作为内容控件
+	DAPropertyPanelWidget* innerPanel = new DAPropertyPanelWidget(groupPanel);
+	innerPanel->setObjectName(QStringLiteral("groupInnerPanel_") + QString::number(d->mNextGroupId));
+	groupPanel->setContentWidget(innerPanel);
+
+	int groupId = d->mNextGroupId++;
+
+	// 连接折叠信号
+	connect(groupPanel, &DACollapsiblePanel::expandedChanged, this, [this, groupId](bool expanded) {
+		Q_UNUSED(expanded);
+		// 可通过emit groupExpandedChanged(groupId, expanded)扩展
+	});
+
+	// 存储到分组映射
+	d->mGroups[groupId] = groupPanel;
+	d->mGroupPanels[groupId] = innerPanel;
+
+	// 将折叠面板添加到根布局
+	d->addItemToContent(groupPanel, -1);
+
+	// 设置为当前活动分组
+	d->mCurrentGroupPanel = innerPanel;
+
+	return groupId;
+}
+
+/**
+ * @brief 结束当前分组，后续addXxxProperty回到根面板
+ */
+void DAPropertyPanelWidget::endGroup()
+{
+	DA_D(d);
+	d->mCurrentGroupPanel = nullptr;
+}
+
+/**
+ * @brief 添加嵌套子面板（带ID映射和信号转发）
+ * @param[in] id 子面板ID（由调用者指定）
+ * @param[in] groupName 子面板标题
+ * @return 子面板指针
+ */
+DAPropertyPanelWidget* DAPropertyPanelWidget::addSubPanel(int id, const QString& groupName)
+{
+	DA_D(d);
+	// 创建折叠面板包装
+	DACollapsiblePanel* subPanelWrapper = new DACollapsiblePanel(groupName, d->mContentWidget);
+	subPanelWrapper->setObjectName(QStringLiteral("subPanelWrapper_") + QString::number(id));
+
+	// 创建子面板作为内容控件
+	DAPropertyPanelWidget* subPanel = new DAPropertyPanelWidget(subPanelWrapper);
+	subPanel->setObjectName(QStringLiteral("subPanel_") + QString::number(id));
+	subPanelWrapper->setContentWidget(subPanel);
+
+	// 存储到子面板映射
+	d->mSubPanels[id] = subPanel;
+
+	// 将折叠面板添加到目标布局（有活动分组时进入分组，否则到根布局）
+	d->addItemToContent(subPanelWrapper, -1);
+
+	// 信号转发（子面板的属性变化自动冒泡到父面板）
+	QMetaObject::Connection conn = connect(subPanel, &DAPropertyPanelWidget::propertyValueChanged,
+	                                       this, &DAPropertyPanelWidget::propertyValueChanged);
+	d->mSubPanelConnections[id] = conn;
+
+	return subPanel;
+}
+
+/**
+ * @brief 根据ID获取子面板
+ * @param[in] id 子面板ID
+ * @return 子面板指针，不存在则返回nullptr
+ */
+DAPropertyPanelWidget* DAPropertyPanelWidget::getSubPanel(int id) const
+{
+	DA_DC(d);
+	return d->mSubPanels.value(id, nullptr);
+}
+
+/**
+ * @brief 获取子面板对应的ID
+ * @param[in] subPanel 子面板指针
+ * @return 子面板ID，不存在则返回-1
+ */
+int DAPropertyPanelWidget::getSubPanelId(DAPropertyPanelWidget* subPanel) const
+{
+	DA_DC(d);
+	return d->mSubPanels.key(subPanel, -1);
+}
+
+/**
+ * @brief 获取分组面板指针
+ * @param[in] groupId 分组ID
+ * @return 分组面板指针（内部属性面板），不存在则返回nullptr
+ */
+DAPropertyPanelWidget* DAPropertyPanelWidget::getGroupPanel(int groupId) const
+{
+	DA_DC(d);
+	return d->mGroupPanels.value(groupId, nullptr);
+}
+
+/**
+ * @brief 获取分组展开状态
+ * @param[in] groupId 分组ID
+ * @return true为展开，false为收起
+ */
+bool DAPropertyPanelWidget::isGroupExpanded(int groupId) const
+{
+	DA_DC(d);
+	DACollapsiblePanel* group = d->mGroups.value(groupId, nullptr);
+	if (group) {
+		return group->isExpanded();
+	}
+	return false;
+}
+
+/**
+ * @brief 设置分组展开状态
+ * @param[in] groupId 分组ID
+ * @param[in] expanded true为展开，false为收起
+ */
+void DAPropertyPanelWidget::setGroupExpanded(int groupId, bool expanded)
+{
+	DA_D(d);
+	DACollapsiblePanel* group = d->mGroups.value(groupId, nullptr);
+	if (group) {
+		group->setExpanded(expanded);
+	}
+}
+
 // === 添加属性项（末尾添加）===
 
 /**
+ * @brief 获取当前目标面板（有活动分组时返回分组面板，否则返回根面板）
+ */
+DAPropertyPanelWidget* DAPropertyPanelWidget::getTargetPanel() const
+{
+	DA_DC(d);
+	if (d->mCurrentGroupPanel) {
+		return d->mCurrentGroupPanel;
+	}
+	return const_cast<DAPropertyPanelWidget*>(this);
+}
+
+/**
  * @brief 添加属性项（简化版，无description）
- * 
+ *
  * @param[in] name 属性名称
  * @param[in] editor 编辑Widget
  * @param[in] mode 布局模式，默认Inline
@@ -202,7 +390,7 @@ int DAPropertyPanelWidget::addProperty(const QString& name,
 
 /**
  * @brief 添加属性项（指定ID，无description）
- * 
+ *
  * @param[in] id 用户指定的属性ID
  * @param[in] name 属性名称
  * @param[in] editor 编辑Widget
@@ -219,7 +407,7 @@ int DAPropertyPanelWidget::addProperty(int id,
 
 /**
  * @brief 添加属性项（完整参数）
- * 
+ *
  * @param[in] name 属性名称
  * @param[in] description 属性描述（tooltip）
  * @param[in] editor 编辑Widget
@@ -236,7 +424,7 @@ int DAPropertyPanelWidget::addProperty(const QString& name,
 
 /**
  * @brief 添加属性项（完整参数，指定ID）
- * 
+ *
  * @param[in] id 用户指定的属性ID，-1表示自动分配
  * @param[in] name 属性名称
  * @param[in] description 属性描述（tooltip）
@@ -251,13 +439,17 @@ int DAPropertyPanelWidget::addProperty(int id,
                                        DAPropertyItemWidget::LayoutMode mode)
 {
 	DA_D(d);
-	// 如果id为-1，自动分配
+	// 如果有活动分组，路由到分组面板
+	if (d->mCurrentGroupPanel) {
+		return d->mCurrentGroupPanel->addProperty(id, name, description, editor, mode);
+	}
+
+	// 根面板逻辑（保持原有行为）
 	if (id < 0) {
 		id = d->generateAutoId();
 	}
-	// 检查ID是否已存在
 	if (d->mPropertyItems.contains(id)) {
-		return -1;  // ID冲突
+		return -1;
 	}
 
 	DAPropertyItemWidget* item = d->createPropertyItem(id, name, description, editor, mode);
@@ -266,7 +458,6 @@ int DAPropertyPanelWidget::addProperty(int id,
 	d->addItemToContent(item, -1);
 	connectItemSignals(item);
 
-	// 自动计算宽度可能需要更新
 	if (d->mPropertyNameWidth < 0 && mode == DAPropertyItemWidget::InlineLayout) {
 		d->updateAllItemsNameLabelWidth();
 	}
@@ -278,7 +469,7 @@ int DAPropertyPanelWidget::addProperty(int id,
 
 /**
  * @brief 在指定索引位置插入属性项
- * 
+ *
  * @param[in] index 插入位置索引，-1表示末尾
  * @param[in] name 属性名称
  * @param[in] editor 编辑Widget
@@ -319,7 +510,7 @@ int DAPropertyPanelWidget::insertProperty(int index,
 
 /**
  * @brief 在指定索引位置插入属性项（完整参数，指定ID）
- * 
+ *
  * @param[in] index 插入位置索引，-1表示末尾
  * @param[in] id 属性ID，-1表示自动分配
  * @param[in] name 属性名称
@@ -336,6 +527,12 @@ int DAPropertyPanelWidget::insertProperty(int index,
                                           DAPropertyItemWidget::LayoutMode mode)
 {
 	DA_D(d);
+	// 如果有活动分组，路由到分组面板
+	if (d->mCurrentGroupPanel) {
+		return d->mCurrentGroupPanel->insertProperty(index, id, name, description, editor, mode);
+	}
+
+	// 根面板逻辑（保持原有行为）
 	if (id < 0) {
 		id = d->generateAutoId();
 	}
@@ -346,7 +543,6 @@ int DAPropertyPanelWidget::insertProperty(int index,
 	DAPropertyItemWidget* item = d->createPropertyItem(id, name, description, editor, mode);
 	d->mPropertyItems[id] = item;
 
-	// 插入到指定位置
 	if (index < 0 || index >= d->mWidgetList.size()) {
 		d->mWidgetList.append(item);
 	} else {
@@ -365,8 +561,8 @@ int DAPropertyPanelWidget::insertProperty(int index,
 // === 分隔项 ===
 
 /**
- * @brief 添加空白间距分隔（末尾）
- * 
+ * @brief 添加空白间距分隔（末尾）— 始终添加到根布局
+ *
  * @param[in] height 间距高度（像素），默认8
  */
 void DAPropertyPanelWidget::addSpacer(int height)
@@ -375,7 +571,8 @@ void DAPropertyPanelWidget::addSpacer(int height)
 	QWidget* spacerWidget = new QWidget(d->mContentWidget);
 	spacerWidget->setObjectName(QStringLiteral("spacerWidget"));
 	spacerWidget->setFixedHeight(height);
-	d->addItemToContent(spacerWidget, -1);
+	// 始终添加到根布局
+	d->addItemToRoot(spacerWidget, -1);
 	d->mWidgetList.append(spacerWidget);
 }
 
@@ -393,11 +590,12 @@ void DAPropertyPanelWidget::insertSpacer(int index, int height)
 	} else {
 		d->mWidgetList.insert(index, spacerWidget);
 	}
-	d->addItemToContent(spacerWidget, index);
+	// 始终添加到根布局
+	d->addItemToRoot(spacerWidget, index);
 }
 
 /**
- * @brief 添加水平线分隔（末尾）
+ * @brief 添加水平线分隔（末尾）— 始终添加到根布局
  */
 void DAPropertyPanelWidget::addSeparator()
 {
@@ -420,14 +618,15 @@ void DAPropertyPanelWidget::insertSeparator(int index)
 	} else {
 		d->mWidgetList.insert(index, line);
 	}
-	d->addItemToContent(line, index);
+	// 始终添加到根布局
+	d->addItemToRoot(line, index);
 }
 
 // === 属性项管理 ===
 
 /**
  * @brief 移除属性项
- * 
+ *
  * @param[in] id 属性ID
  */
 void DAPropertyPanelWidget::removeProperty(int id)
@@ -439,7 +638,6 @@ void DAPropertyPanelWidget::removeProperty(int id)
 		d->removeItemFromContent(item);
 		item->deleteLater();
 
-		// 重新计算宽度
 		if (d->mPropertyNameWidth < 0) {
 			d->updateAllItemsNameLabelWidth();
 		}
@@ -460,10 +658,17 @@ void DAPropertyPanelWidget::clearProperties()
 	d->mWidgetList.clear();
 	d->mPropertyItems.clear();
 
-	// 重新计算宽度
-	if (d->mPropertyNameWidth < 0) {
-		d->updateAllItemsNameLabelWidth();
+	// 清除分组映射
+	d->mGroups.clear();
+	d->mGroupPanels.clear();
+	d->mCurrentGroupPanel = nullptr;
+
+	// 清除子面板及信号连接
+	for (auto it = d->mSubPanelConnections.begin(); it != d->mSubPanelConnections.end(); ++it) {
+		disconnect(it.value());
 	}
+	d->mSubPanelConnections.clear();
+	d->mSubPanels.clear();
 }
 
 /**
@@ -534,7 +739,7 @@ int DAPropertyPanelWidget::propertyCount() const
 
 /**
  * @brief 遍历所有属性项
- * 
+ *
  * @param[in] callback 遍历回调函数，返回false停止遍历
  */
 void DAPropertyPanelWidget::traverseItems(TraverseCallback callback)
@@ -586,7 +791,7 @@ DAPropertyPanelWidget::PropertyItemList DAPropertyPanelWidget::allPropertyItems(
 
 /**
  * @brief 设置属性名标签宽度（Inline模式）
- * 
+ *
  * @param[in] width 宽度（像素），设为-1则自动计算
  */
 void DAPropertyPanelWidget::setPropertyNameWidth(int width)
@@ -660,8 +865,9 @@ void DAPropertyPanelWidget::connectItemSignals(DAPropertyItemWidget* item)
 int DAPropertyPanelWidget::addColorProperty(int id, const QString& name, const QColor& color)
 {
 	DA_D(d);
-	DAColorPickerButton* btn = new DAColorPickerButton(d->mContentWidget);
+	DAColorPickerButton* btn = new DAColorPickerButton(d->getTargetContentWidget());
 	btn->setColor(color);
+	// 路由到目标面板（有分组时添加到分组，无分组时添加到根）
 	int propId = addProperty(id, name, btn);
 	// DAColorPickerButton 继承自 SAColorToolButton，colorChanged 信号来自基类
 	connect(btn, &SAColorToolButton::colorChanged, this, [this, propId](const QColor&) {
@@ -681,8 +887,9 @@ int DAPropertyPanelWidget::addColorProperty(const QString& name, const QColor& c
 int DAPropertyPanelWidget::addFontProperty(int id, const QString& name, const QFont& font)
 {
 	DA_D(d);
-	DAFontEditPannelWidget* editor = new DAFontEditPannelWidget(d->mContentWidget);
+	DAFontEditPannelWidget* editor = new DAFontEditPannelWidget(d->getTargetContentWidget());
 	editor->setCurrentFont(font);
+	// 路由到目标面板
 	int propId = addProperty(id, name, editor, DAPropertyItemWidget::BelowLayout);
 	connect(editor, &DAFontEditPannelWidget::currentFontChanged, this, [this, propId](const QFont&) {
 		emit propertyValueChanged(propId);
@@ -704,8 +911,9 @@ int DAPropertyPanelWidget::addFontProperty(const QString& name, const QFont& fon
 int DAPropertyPanelWidget::addBrushProperty(int id, const QString& name, const QBrush& brush)
 {
 	DA_D(d);
-	DABrushEditWidget* editor = new DABrushEditWidget(d->mContentWidget);
+	DABrushEditWidget* editor = new DABrushEditWidget(d->getTargetContentWidget());
 	editor->setCurrentBrush(brush);
+	// 路由到目标面板
 	int propId = addProperty(id, name, editor, DAPropertyItemWidget::BelowLayout);
 	connect(editor, &DABrushEditWidget::brushChanged, this, [this, propId](const QBrush&) {
 		emit propertyValueChanged(propId);
@@ -724,8 +932,9 @@ int DAPropertyPanelWidget::addBrushProperty(const QString& name, const QBrush& b
 int DAPropertyPanelWidget::addPenProperty(int id, const QString& name, const QPen& pen)
 {
 	DA_D(d);
-	DAPenEditWidget* editor = new DAPenEditWidget(d->mContentWidget);
+	DAPenEditWidget* editor = new DAPenEditWidget(d->getTargetContentWidget());
 	editor->setCurrentPen(pen);
+	// 路由到目标面板
 	int propId = addProperty(id, name, editor, DAPropertyItemWidget::BelowLayout);
 	connect(editor, &DAPenEditWidget::penChanged, this, [this, propId](const QPen&) {
 		emit propertyValueChanged(propId);
@@ -744,9 +953,10 @@ int DAPropertyPanelWidget::addPenProperty(const QString& name, const QPen& pen)
 int DAPropertyPanelWidget::addIntProperty(int id, const QString& name, int value, int min, int max)
 {
 	DA_D(d);
-	QSpinBox* spin = new QSpinBox(d->mContentWidget);
+	QSpinBox* spin = new QSpinBox(d->getTargetContentWidget());
 	spin->setRange(min, max);
 	spin->setValue(value);
+	// 路由到目标面板
 	int propId = addProperty(id, name, spin);
 	connect(spin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this, propId](int) {
 		emit propertyValueChanged(propId);
@@ -765,10 +975,11 @@ int DAPropertyPanelWidget::addIntProperty(const QString& name, int value, int mi
 int DAPropertyPanelWidget::addDoubleProperty(int id, const QString& name, double value, double min, double max, int decimals)
 {
 	DA_D(d);
-	QDoubleSpinBox* spin = new QDoubleSpinBox(d->mContentWidget);
+	QDoubleSpinBox* spin = new QDoubleSpinBox(d->getTargetContentWidget());
 	spin->setRange(min, max);
 	spin->setValue(value);
 	spin->setDecimals(decimals);
+	// 路由到目标面板
 	int propId = addProperty(id, name, spin);
 	connect(spin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, [this, propId](double) {
 		emit propertyValueChanged(propId);
@@ -787,8 +998,9 @@ int DAPropertyPanelWidget::addDoubleProperty(const QString& name, double value, 
 int DAPropertyPanelWidget::addBoolProperty(int id, const QString& name, bool checked)
 {
 	DA_D(d);
-	QCheckBox* checkBox = new QCheckBox(d->mContentWidget);
+	QCheckBox* checkBox = new QCheckBox(d->getTargetContentWidget());
 	checkBox->setChecked(checked);
+	// 路由到目标面板
 	int propId = addProperty(id, name, checkBox);
 	connect(checkBox, &QCheckBox::toggled, this, [this, propId](bool) {
 		emit propertyValueChanged(propId);
@@ -807,8 +1019,9 @@ int DAPropertyPanelWidget::addBoolProperty(const QString& name, bool checked)
 int DAPropertyPanelWidget::addStringProperty(int id, const QString& name, const QString& text)
 {
 	DA_D(d);
-	QLineEdit* editor = new QLineEdit(d->mContentWidget);
+	QLineEdit* editor = new QLineEdit(d->getTargetContentWidget());
 	editor->setText(text);
+	// 路由到目标面板
 	int propId = addProperty(id, name, editor);
 	connect(editor, &QLineEdit::textEdited, this, [this, propId](const QString&) {
 		emit propertyValueChanged(propId);
@@ -827,7 +1040,7 @@ int DAPropertyPanelWidget::addStringProperty(const QString& name, const QString&
 int DAPropertyPanelWidget::addEnumProperty(int id, const QString& name, const QStringList& items, const QList<int>& dataValues, int currentIndex)
 {
 	DA_D(d);
-	QComboBox* combo = new QComboBox(d->mContentWidget);
+	QComboBox* combo = new QComboBox(d->getTargetContentWidget());
 	combo->addItems(items);
 	// 设置 item data
 	for (int i = 0; i < items.size(); ++i) {
@@ -837,6 +1050,7 @@ int DAPropertyPanelWidget::addEnumProperty(int id, const QString& name, const QS
 	if (currentIndex >= 0 && currentIndex < items.size()) {
 		combo->setCurrentIndex(currentIndex);
 	}
+	// 路由到目标面板
 	int propId = addProperty(id, name, combo);
 	connect(combo, &QComboBox::currentIndexChanged, this, [this, propId](int) {
 		emit propertyValueChanged(propId);
@@ -855,8 +1069,9 @@ int DAPropertyPanelWidget::addEnumProperty(const QString& name, const QStringLis
 int DAPropertyPanelWidget::addAlignmentProperty(int id, const QString& name, Qt::Alignment alignment)
 {
 	DA_D(d);
-	DAAligmentEditWidget* editor = new DAAligmentEditWidget(d->mContentWidget);
+	DAAligmentEditWidget* editor = new DAAligmentEditWidget(d->getTargetContentWidget());
 	editor->setCurrentAlignment(alignment);
+	// 路由到目标面板
 	int propId = addProperty(id, name, editor);
 	connect(editor, &DAAligmentEditWidget::alignmentChanged, this, [this, propId](Qt::Alignment) {
 		emit propertyValueChanged(propId);
@@ -875,8 +1090,9 @@ int DAPropertyPanelWidget::addAlignmentProperty(const QString& name, Qt::Alignme
 int DAPropertyPanelWidget::addAlignmentPositionProperty(int id, const QString& name, Qt::Alignment alignment)
 {
 	DA_D(d);
-	DAAligmentPositionEditWidget* editor = new DAAligmentPositionEditWidget(d->mContentWidget);
+	DAAligmentPositionEditWidget* editor = new DAAligmentPositionEditWidget(d->getTargetContentWidget());
 	editor->setAligmentPosition(alignment);
+	// 路由到目标面板
 	int propId = addProperty(id, name, editor);
 	connect(editor, &DAAligmentPositionEditWidget::aligmentPositionChanged, this, [this, propId](Qt::Alignment) {
 		emit propertyValueChanged(propId);
@@ -895,10 +1111,11 @@ int DAPropertyPanelWidget::addAlignmentPositionProperty(const QString& name, Qt:
 int DAPropertyPanelWidget::addFilePathProperty(int id, const QString& name, const QString& filter)
 {
 	DA_D(d);
-	DAFilePathEditWidget* editor = new DAFilePathEditWidget(d->mContentWidget);
+	DAFilePathEditWidget* editor = new DAFilePathEditWidget(d->getTargetContentWidget());
 	if (!filter.isEmpty()) {
 		editor->setNameFilter(filter);
 	}
+	// 路由到目标面板
 	int propId = addProperty(id, name, editor);
 	connect(editor, &DAFilePathEditWidget::selectedPath, this, [this, propId](const QString&) {
 		emit propertyValueChanged(propId);
@@ -915,6 +1132,7 @@ int DAPropertyPanelWidget::addFilePathProperty(const QString& name, const QStrin
 
 /**
  * @brief 添加分组标签
+ * @deprecated 建议使用addCollapsibleGroup代替，此方法仅创建装饰性标签不具备折叠功能
  */
 void DAPropertyPanelWidget::addGroupLabel(const QString& text)
 {
@@ -926,7 +1144,8 @@ void DAPropertyPanelWidget::addGroupLabel(const QString& text)
 	label->setFont(font);
 	label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 	label->setContentsMargins(0, 8, 0, 4);
-	d->addItemToContent(label, -1);
+	// 始终添加到根布局
+	d->addItemToRoot(label, -1);
 	d->mWidgetList.append(label);
 }
 
@@ -948,7 +1167,8 @@ void DAPropertyPanelWidget::insertGroupLabel(int index, const QString& text)
 	} else {
 		d->mWidgetList.insert(index, label);
 	}
-	d->addItemToContent(label, index);
+	// 始终添加到根布局
+	d->addItemToRoot(label, index);
 }
 
 // === 值读写方法 ===

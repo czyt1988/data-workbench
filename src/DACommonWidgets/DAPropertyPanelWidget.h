@@ -4,22 +4,33 @@
 #include <QWidget>
 #include <QString>
 #include <QPen>
+#include <QMap>
 #include <functional>
 #include "DAPropertyItemWidget.h"
 
 namespace DA
 {
+// Forward declaration
+class DACollapsiblePanel;
+
 /**
  * @brief 属性面板控件，用于组织和管理多个属性项
  * 
- * 内置QScrollArea，必要时显示滚动条。
- * 属性项通过addProperty()/insertProperty()添加，支持用户指定ID或面板自动分配ID。
+ * 支持分组折叠和嵌套子面板。属性项通过addProperty()/insertProperty()添加，
+ * 支持用户指定ID或面板自动分配ID。可通过addCollapsibleGroup()创建可折叠分组，
+ * 后续添加的属性自动归入当前分组。
  * 
  * @code
  * // 创建属性面板并添加属性项
  * DAPropertyPanelWidget* panel = new DAPropertyPanelWidget(this);
  * int id1 = panel->addProperty("颜色", new DAColorPickerButton(this));
  * int id2 = panel->addProperty(5, "画笔", "设置画笔样式", new DAPenEditWidget(this), DAPropertyItemWidget::BelowLayout);
+ * 
+ * // 使用折叠分组
+ * int groupId = panel->addCollapsibleGroup("外观设置");
+ * panel->addColorProperty("线条颜色", Qt::red);
+ * panel->addIntProperty("线条宽度", 1, 1, 10);
+ * panel->endGroup();
  * 
  * // 遍历所有属性项
  * panel->traverseItems([](DAPropertyItemWidget* item) {
@@ -28,7 +39,7 @@ namespace DA
  * });
  * @endcode
  * 
- * @see DAPropertyItemWidget
+ * @see DAPropertyItemWidget, DACollapsiblePanel
  */
 class DACOMMONWIDGETS_API DAPropertyPanelWidget : public QWidget
 {
@@ -101,14 +112,55 @@ public:
 
 	// === 分隔项 ===
 
-	// 添加空白间距（末尾）
+	// 添加空白间距（末尾）— 始终添加到根布局，不进入当前分组
 	void addSpacer(int height = 8);
 	// 插入空白间距
 	void insertSpacer(int index, int height = 8);
-	// 添加水平线分隔（末尾）
+	// 添加水平线分隔（末尾）— 始终添加到根布局，不进入当前分组
 	void addSeparator();
 	// 插入水平线分隔
 	void insertSeparator(int index);
+
+	// === 分组管理 ===
+
+	/// @brief 添加可折叠分组，后续addXxxProperty自动添加到该分组
+	/// @param[in] title 分组标题
+	/// @return 分组ID（从1开始递增）
+	int addCollapsibleGroup(const QString& title);
+
+	/// @brief 结束当前分组，后续addXxxProperty回到根面板
+	void endGroup();
+
+	/// @brief 添加嵌套子面板（带ID映射和信号转发）
+	/// @param[in] id 子面板ID（由调用者指定）
+	/// @param[in] groupName 子面板标题
+	/// @return 子面板指针
+	DAPropertyPanelWidget* addSubPanel(int id, const QString& groupName);
+
+	/// @brief 根据ID获取子面板
+	/// @param[in] id 子面板ID
+	/// @return 子面板指针，不存在则返回nullptr
+	DAPropertyPanelWidget* getSubPanel(int id) const;
+
+	/// @brief 获取子面板对应的ID
+	/// @param[in] subPanel 子面板指针
+	/// @return 子面板ID，不存在则返回-1
+	int getSubPanelId(DAPropertyPanelWidget* subPanel) const;
+
+	/// @brief 获取分组面板指针
+	/// @param[in] groupId 分组ID
+	/// @return 分组面板指针，不存在则返回nullptr
+	DAPropertyPanelWidget* getGroupPanel(int groupId) const;
+
+	/// @brief 获取分组展开状态
+	/// @param[in] groupId 分组ID
+	/// @return true为展开，false为收起
+	bool isGroupExpanded(int groupId) const;
+
+	/// @brief 设置分组展开状态
+	/// @param[in] groupId 分组ID
+	/// @param[in] expanded true为展开，false为收起
+	void setGroupExpanded(int groupId, bool expanded);
 
 	// === 属性项管理 ===
 
@@ -191,7 +243,7 @@ public:
 
 	// === 分组标签 ===
 
-	// 添加分组标签
+	/// @deprecated 建议使用addCollapsibleGroup代替，此方法仅创建装饰性标签不具备折叠功能
 	void addGroupLabel(const QString& text);
 	void insertGroupLabel(int index, const QString& text);
 
@@ -258,7 +310,7 @@ Q_SIGNALS:
 	/**
 	 * @brief 属性值变化信号
 	 * @param propertyId 属性ID
-	 * @note 此信号转发自DAPropertyItemWidget::valueChanged
+	 * @note 此信号转发自DAPropertyItemWidget::valueChanged或子面板的propertyValueChanged
 	 */
 	void propertyValueChanged(int propertyId);
 
@@ -267,6 +319,9 @@ private Q_SLOTS:
 
 private:
 	void connectItemSignals(DAPropertyItemWidget* item);
+
+	/// @brief 获取当前目标面板（有活动分组时返回分组面板，否则返回根面板）
+	DAPropertyPanelWidget* getTargetPanel() const;
 };
 }  // namespace DA
 #endif  // DAPROPERTYPANELWIDGET_H
