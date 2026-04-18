@@ -44,47 +44,47 @@ void DAChartCurveSettingPanel::buildPropertyPanel()
     DAPropertyPanelContainerWidget* pp = propertyPanel();
 
     // ── 通用属性 ──
-    pp->addGroupLabel(tr("General"));
+    pp->addCollapsibleGroup(tr("General"));
     pp->addStringProperty(PID_Title, tr("Title"));
     pp->addDoubleProperty(PID_ZValue, tr("Z Value"), 0.0, -9999.0, 9999.0, 1);
     addAxisProperty(PID_XAxis, tr("X Axis"), false);
     addAxisProperty(PID_YAxis, tr("Y Axis"), true);
 
     // ── 曲线样式 ──
-    pp->addGroupLabel(tr("Curve Style"));
+    pp->addCollapsibleGroup(tr("Curve Style"));
     addCurveStyleProperty(PID_CurveStyle, tr("Style"));
 
     // ── 画笔 ──
-    pp->addGroupLabel(tr("Pen"));
+    pp->addCollapsibleGroup(tr("Pen"));
     pp->addPenProperty(PID_Pen, tr("Pen"));
 
     // ── 标记 ──
-    pp->addGroupLabel(tr("Marker"));
+    pp->addCollapsibleGroup(tr("Marker"));
     pp->addBoolProperty(PID_EnableMarker, tr("Enable Marker"));
     addSymbolProperty(PID_Symbol, tr("Symbol"));
 
     // ── 属性 ──
-    pp->addGroupLabel(tr("Attributes"));
+    pp->addCollapsibleGroup(tr("Attributes"));
     pp->addBoolProperty(PID_Fitted, tr("Fitted"));
     pp->addBoolProperty(PID_Inverted, tr("Inverted"));
 
     // ── 图例 ──
-    pp->addGroupLabel(tr("Legend"));
+    pp->addCollapsibleGroup(tr("Legend"));
     pp->addBoolProperty(PID_LegendShowLine, tr("Show Line"));
     pp->addBoolProperty(PID_LegendShowSymbol, tr("Show Symbol"));
     pp->addBoolProperty(PID_LegendShowBrush, tr("Show Brush"));
 
     // ── 填充 ──
-    pp->addGroupLabel(tr("Fill"));
+    pp->addCollapsibleGroup(tr("Fill"));
     pp->addBoolProperty(PID_EnableFill, tr("Enable Fill"));
     pp->addBrushProperty(PID_Fill, tr("Fill Brush"));
 
     // ── 基线 ──
-    pp->addGroupLabel(tr("Baseline"));
+    pp->addCollapsibleGroup(tr("Baseline"));
     pp->addStringProperty(PID_BaseLine, tr("Baseline"));
 
     // ── 方向 ──
-    pp->addGroupLabel(tr("Orientation"));
+    pp->addCollapsibleGroup(tr("Orientation"));
     addOrientationProperty(PID_Orientation, tr("Orientation"));
 }
 

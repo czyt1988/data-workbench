@@ -45,17 +45,17 @@ void DAChartSpectrogramSettingPanel::buildPropertyPanel()
     auto panel = propertyPanel();
 
     // 基础属性组
-    panel->addGroupLabel(tr("Basic"));
+    panel->addCollapsibleGroup(tr("Basic"));
     panel->addStringProperty(PropTitle, tr("Title"));
     panel->addDoubleProperty(PropZValue, tr("Z Value"));
 
     // 坐标轴属性组
-    panel->addGroupLabel(tr("Axis"));
+    panel->addCollapsibleGroup(tr("Axis"));
     addAxisProperty(PropXAxis, tr("X Axis"), false);
     addAxisProperty(PropYAxis, tr("Y Axis"), true);
 
     // 显示属性组
-    panel->addGroupLabel(tr("Display"));
+    panel->addCollapsibleGroup(tr("Display"));
     // QwtPlotSpectrogram::DisplayMode: ImageMode=1, ContourMode=2
     panel->addEnumProperty(PropDisplayMode, tr("Display Mode"),
                            QStringList() << tr("Image Mode") << tr("Contour Mode"),
@@ -63,12 +63,12 @@ void DAChartSpectrogramSettingPanel::buildPropertyPanel()
                                                 << static_cast< int >(QwtPlotSpectrogram::ContourMode));
 
     // 颜色属性组
-    panel->addGroupLabel(tr("Color"));
+    panel->addCollapsibleGroup(tr("Color"));
     panel->addColorProperty(PropFromColor, tr("From Color"));
     panel->addColorProperty(PropToColor, tr("To Color"));
 
     // 轮廓线属性组
-    panel->addGroupLabel(tr("Contour"));
+    panel->addCollapsibleGroup(tr("Contour"));
     panel->addPenProperty(PropContourPen, tr("Contour Pen"));
     panel->setPropertyEnabled(PropContourPen, false);
 }

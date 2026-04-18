@@ -51,18 +51,18 @@ void DAChartLegendSettingPanel::buildPropertyPanel()
     auto panel = propertyPanel();
 
     // 基础属性组
-    panel->addGroupLabel(tr("Basic"));
+    panel->addCollapsibleGroup(tr("Basic"));
     panel->addStringProperty(PropTitle, tr("Title"));
     panel->addDoubleProperty(PropZValue, tr("Z Value"));
 
     // 位置属性组
-    panel->addGroupLabel(tr("Position"));
+    panel->addCollapsibleGroup(tr("Position"));
     panel->addAlignmentProperty(PropAlignment, tr("Alignment"));
     panel->addIntProperty(PropHorizontalOffset, tr("Horizontal Offset"), 0, -1000, 1000);
     panel->addIntProperty(PropVerticalOffset, tr("Vertical Offset"), 0, -1000, 1000);
 
     // 间距属性组
-    panel->addGroupLabel(tr("Spacing"));
+    panel->addCollapsibleGroup(tr("Spacing"));
     panel->addIntProperty(PropMargin, tr("Margin"), 0, 0, 1000);
     panel->addIntProperty(PropSpacing, tr("Spacing"), 0, 0, 1000);
     panel->addIntProperty(PropItemMargin, tr("Item Margin"), 0, 0, 1000);
@@ -70,7 +70,7 @@ void DAChartLegendSettingPanel::buildPropertyPanel()
     panel->addIntProperty(PropMaxColumns, tr("Max Columns"), 0, 0, 100);
 
     // 外观属性组
-    panel->addGroupLabel(tr("Appearance"));
+    panel->addCollapsibleGroup(tr("Appearance"));
     panel->addDoubleProperty(PropBorderRadius, tr("Border Radius"), 0.0, 0.0, 100.0);
     panel->addPenProperty(PropBorderPen, tr("Border Pen"));
     panel->addFontProperty(PropFont, tr("Font"));

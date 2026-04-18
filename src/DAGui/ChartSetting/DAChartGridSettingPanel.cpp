@@ -43,17 +43,17 @@ void DAChartGridSettingPanel::buildPropertyPanel()
     auto panel = propertyPanel();
 
     // 基础属性组
-    panel->addGroupLabel(tr("Basic"));
+    panel->addCollapsibleGroup(tr("Basic"));
     panel->addStringProperty(PropTitle, tr("Title"));
     panel->addDoubleProperty(PropZValue, tr("Z Value"));
 
     // 坐标轴属性组
-    panel->addGroupLabel(tr("Axis"));
+    panel->addCollapsibleGroup(tr("Axis"));
     addAxisProperty(PropXAxis, tr("X Axis"), false);
     addAxisProperty(PropYAxis, tr("Y Axis"), true);
 
     // 线条样式属性组
-    panel->addGroupLabel(tr("Line Style"));
+    panel->addCollapsibleGroup(tr("Line Style"));
     panel->addPenProperty(PropMajorPen, tr("Major Pen"));
     panel->addPenProperty(PropMinorPen, tr("Minor Pen"));
 }

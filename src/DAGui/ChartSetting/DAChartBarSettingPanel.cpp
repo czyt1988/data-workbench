@@ -50,40 +50,40 @@ void DAChartBarSettingPanel::buildPropertyPanel()
     auto panel = propertyPanel();
 
     // 基础属性组
-    panel->addGroupLabel(tr("Basic"));
+    panel->addCollapsibleGroup(tr("Basic"));
     panel->addStringProperty(PropTitle, tr("Title"));
     panel->addDoubleProperty(PropZValue, tr("Z Value"));
 
     // 坐标轴属性组
-    panel->addGroupLabel(tr("Axis"));
+    panel->addCollapsibleGroup(tr("Axis"));
     addAxisProperty(PropXAxis, tr("X Axis"), false);
     addAxisProperty(PropYAxis, tr("Y Axis"), true);
 
     // 图例属性组
-    panel->addGroupLabel(tr("Legend"));
+    panel->addCollapsibleGroup(tr("Legend"));
     // QwtPlotBarChart::LegendMode: ChartMode=0, BarMode=1
     panel->addEnumProperty(PropLegendMode, tr("Legend Mode"),
                            QStringList() << tr("Chart Mode") << tr("Bar Mode"),
                            QList< int >() << 0 << 1);
 
     // 填充属性组
-    panel->addGroupLabel(tr("Fill"));
+    panel->addCollapsibleGroup(tr("Fill"));
     panel->addBoolProperty(PropEnableFill, tr("Enable Fill"));
     panel->addBrushProperty(PropFillBrush, tr("Fill Brush"));
     propertyPanel()->setPropertyEnabled(PropFillBrush, false);
 
     // 边框属性组
-    panel->addGroupLabel(tr("Edge"));
+    panel->addCollapsibleGroup(tr("Edge"));
     panel->addBoolProperty(PropEnableEdge, tr("Enable Edge"));
     panel->addPenProperty(PropEdgePen, tr("Edge Pen"));
     propertyPanel()->setPropertyEnabled(PropEdgePen, false);
 
     // 基线属性组
-    panel->addGroupLabel(tr("Baseline"));
+    panel->addCollapsibleGroup(tr("Baseline"));
     panel->addStringProperty(PropBaseline, tr("Baseline"));
 
     // 布局属性组
-    panel->addGroupLabel(tr("Layout"));
+    panel->addCollapsibleGroup(tr("Layout"));
     // LayoutPolicy枚举：AutoAdjustSamples=0, ScaleSamplesToAxes=1, ScaleSampleToCanvas=2, FixedSampleSize=3
     panel->addEnumProperty(PropLayoutPolicy, tr("Layout Policy"),
                            QStringList() << tr("Auto Adjust Samples") << tr("Scale Samples To Axes")

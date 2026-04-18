@@ -48,17 +48,17 @@ void DAChartErrorBarSettingPanel::buildPropertyPanel()
     auto panel = propertyPanel();
 
     // 基础属性组
-    panel->addGroupLabel(tr("Basic"));
+    panel->addCollapsibleGroup(tr("Basic"));
     panel->addStringProperty(PropTitle, tr("Title"));
     panel->addDoubleProperty(PropZValue, tr("Z Value"));
 
     // 坐标轴属性组
-    panel->addGroupLabel(tr("Axis"));
+    panel->addCollapsibleGroup(tr("Axis"));
     addAxisProperty(PropXAxis, tr("X Axis"), false);
     addAxisProperty(PropYAxis, tr("Y Axis"), true);
 
     // 误差棒属性组
-    panel->addGroupLabel(tr("Error Bar"));
+    panel->addCollapsibleGroup(tr("Error Bar"));
     panel->addBoolProperty(PropEnableErrorBar, tr("Enable Error Bar"));
     // QwtIntervalSymbol样式：Bar, Box
     panel->addEnumProperty(PropErrorBarStyle, tr("Error Bar Style"),
@@ -70,13 +70,13 @@ void DAChartErrorBarSettingPanel::buildPropertyPanel()
     panel->setPropertyEnabled(PropErrorBarPen, false);
 
     // 填充属性组
-    panel->addGroupLabel(tr("Fill"));
+    panel->addCollapsibleGroup(tr("Fill"));
     panel->addBoolProperty(PropEnableFill, tr("Enable Fill"));
     panel->addBrushProperty(PropFillBrush, tr("Fill Brush"));
     panel->setPropertyEnabled(PropFillBrush, false);
 
     // 曲线属性组
-    panel->addGroupLabel(tr("Curve"));
+    panel->addCollapsibleGroup(tr("Curve"));
     addOrientationProperty(PropOrientation, tr("Orientation"));
     panel->addPenProperty(PropCurvePen, tr("Curve Pen"));
 }
