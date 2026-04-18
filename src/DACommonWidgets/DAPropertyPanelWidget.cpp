@@ -4,7 +4,23 @@
 #include <QFrame>
 #include <QFontMetrics>
 #include <QSpacerItem>
+#include <QLabel>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
+#include <QCheckBox>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QSignalBlocker>
 #include "DAGlobals.h"
+
+// 编辑器Widget头文件（仅在cpp中引入）
+#include "DAColorPickerButton.h"
+#include "DAFontEditPannelWidget.h"
+#include "DABrushEditWidget.h"
+#include "DAPenEditWidget.h"
+#include "DAAligmentEditWidget.h"
+#include "DAAligmentPositionEditWidget.h"
+#include "DAFilePathEditWidget.h"
 
 namespace DA
 {
@@ -130,10 +146,10 @@ void DAPropertyPanelWidget::PrivateData::updateAllItemsNameLabelWidth()
 }
 
 DAPropertyItemWidget* DAPropertyPanelWidget::PrivateData::createPropertyItem(int id,
-                                                                            const QString& name,
-                                                                            const QString& description,
-                                                                            QWidget* editor,
-                                                                            DAPropertyItemWidget::LayoutMode mode)
+                                                                             const QString& name,
+                                                                             const QString& description,
+                                                                             QWidget* editor,
+                                                                             DAPropertyItemWidget::LayoutMode mode)
 {
 	DAPropertyItemWidget* item = new DAPropertyItemWidget(q_ptr);
 	item->setPropertyId(id);
@@ -356,15 +372,11 @@ int DAPropertyPanelWidget::insertProperty(int index,
 void DAPropertyPanelWidget::addSpacer(int height)
 {
 	DA_D(d);
-	QSpacerItem* spacer = new QSpacerItem(0, height, QSizePolicy::Minimum, QSizePolicy::Fixed);
-	int stretchIndex = d->mContentLayout->count() - 1;
-	d->mContentLayout->insertItem(stretchIndex, spacer);
-	// 记录一个占位widget用于索引计算
 	QWidget* spacerWidget = new QWidget(d->mContentWidget);
-	spacerWidget->setFixedHeight(height);
 	spacerWidget->setObjectName(QStringLiteral("spacerWidget"));
-	d->mWidgetList.append(spacerWidget);
+	spacerWidget->setFixedHeight(height);
 	d->addItemToContent(spacerWidget, -1);
+	d->mWidgetList.append(spacerWidget);
 }
 
 /**
@@ -633,7 +645,748 @@ void DAPropertyPanelWidget::onItemValueChanged(int propertyId)
 
 void DAPropertyPanelWidget::connectItemSignals(DAPropertyItemWidget* item)
 {
+	// 注意：DAPropertyItemWidget::valueChanged 信号当前未被触发。
+	// 便捷属性方法（addColorProperty等）通过 lambda 直接连接编辑器 Widget 的信号到 propertyValueChanged，
+	// 这是当前唯一的信号转发路径。如果未来 DAPropertyItemWidget 自身开始触发 valueChanged，
+	// 需要同时移除便捷方法中的 lambda 连接以避免双重发射。
 	connect(item, &DAPropertyItemWidget::valueChanged, this, &DAPropertyPanelWidget::onItemValueChanged);
+}
+
+// === 便捷属性添加方法 ===
+
+/**
+ * @brief 添加颜色属性
+ */
+int DAPropertyPanelWidget::addColorProperty(int id, const QString& name, const QColor& color)
+{
+	DA_D(d);
+	DAColorPickerButton* btn = new DAColorPickerButton(d->mContentWidget);
+	btn->setColor(color);
+	int propId = addProperty(id, name, btn);
+	// DAColorPickerButton 继承自 SAColorToolButton，colorChanged 信号来自基类
+	connect(btn, &SAColorToolButton::colorChanged, this, [this, propId](const QColor&) {
+		emit propertyValueChanged(propId);
+	});
+	return propId;
+}
+
+int DAPropertyPanelWidget::addColorProperty(const QString& name, const QColor& color)
+{
+	return addColorProperty(-1, name, color);
+}
+
+/**
+ * @brief 添加字体属性
+ */
+int DAPropertyPanelWidget::addFontProperty(int id, const QString& name, const QFont& font)
+{
+	DA_D(d);
+	DAFontEditPannelWidget* editor = new DAFontEditPannelWidget(d->mContentWidget);
+	editor->setCurrentFont(font);
+	int propId = addProperty(id, name, editor, DAPropertyItemWidget::BelowLayout);
+	connect(editor, &DAFontEditPannelWidget::currentFontChanged, this, [this, propId](const QFont&) {
+		emit propertyValueChanged(propId);
+	});
+	connect(editor, &DAFontEditPannelWidget::currentFontColorChanged, this, [this, propId](const QColor&) {
+		emit propertyValueChanged(propId);
+	});
+	return propId;
+}
+
+int DAPropertyPanelWidget::addFontProperty(const QString& name, const QFont& font)
+{
+	return addFontProperty(-1, name, font);
+}
+
+/**
+ * @brief 添加画刷属性
+ */
+int DAPropertyPanelWidget::addBrushProperty(int id, const QString& name, const QBrush& brush)
+{
+	DA_D(d);
+	DABrushEditWidget* editor = new DABrushEditWidget(d->mContentWidget);
+	editor->setCurrentBrush(brush);
+	int propId = addProperty(id, name, editor, DAPropertyItemWidget::BelowLayout);
+	connect(editor, &DABrushEditWidget::brushChanged, this, [this, propId](const QBrush&) {
+		emit propertyValueChanged(propId);
+	});
+	return propId;
+}
+
+int DAPropertyPanelWidget::addBrushProperty(const QString& name, const QBrush& brush)
+{
+	return addBrushProperty(-1, name, brush);
+}
+
+/**
+ * @brief 添加画笔属性
+ */
+int DAPropertyPanelWidget::addPenProperty(int id, const QString& name, const QPen& pen)
+{
+	DA_D(d);
+	DAPenEditWidget* editor = new DAPenEditWidget(d->mContentWidget);
+	editor->setCurrentPen(pen);
+	int propId = addProperty(id, name, editor, DAPropertyItemWidget::BelowLayout);
+	connect(editor, &DAPenEditWidget::penChanged, this, [this, propId](const QPen&) {
+		emit propertyValueChanged(propId);
+	});
+	return propId;
+}
+
+int DAPropertyPanelWidget::addPenProperty(const QString& name, const QPen& pen)
+{
+	return addPenProperty(-1, name, pen);
+}
+
+/**
+ * @brief 添加整数属性
+ */
+int DAPropertyPanelWidget::addIntProperty(int id, const QString& name, int value, int min, int max)
+{
+	DA_D(d);
+	QSpinBox* spin = new QSpinBox(d->mContentWidget);
+	spin->setRange(min, max);
+	spin->setValue(value);
+	int propId = addProperty(id, name, spin);
+	connect(spin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this, propId](int) {
+		emit propertyValueChanged(propId);
+	});
+	return propId;
+}
+
+int DAPropertyPanelWidget::addIntProperty(const QString& name, int value, int min, int max)
+{
+	return addIntProperty(-1, name, value, min, max);
+}
+
+/**
+ * @brief 添加浮点属性
+ */
+int DAPropertyPanelWidget::addDoubleProperty(int id, const QString& name, double value, double min, double max, int decimals)
+{
+	DA_D(d);
+	QDoubleSpinBox* spin = new QDoubleSpinBox(d->mContentWidget);
+	spin->setRange(min, max);
+	spin->setValue(value);
+	spin->setDecimals(decimals);
+	int propId = addProperty(id, name, spin);
+	connect(spin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, [this, propId](double) {
+		emit propertyValueChanged(propId);
+	});
+	return propId;
+}
+
+int DAPropertyPanelWidget::addDoubleProperty(const QString& name, double value, double min, double max, int decimals)
+{
+	return addDoubleProperty(-1, name, value, min, max, decimals);
+}
+
+/**
+ * @brief 添加布尔属性
+ */
+int DAPropertyPanelWidget::addBoolProperty(int id, const QString& name, bool checked)
+{
+	DA_D(d);
+	QCheckBox* checkBox = new QCheckBox(d->mContentWidget);
+	checkBox->setChecked(checked);
+	int propId = addProperty(id, name, checkBox);
+	connect(checkBox, &QCheckBox::toggled, this, [this, propId](bool) {
+		emit propertyValueChanged(propId);
+	});
+	return propId;
+}
+
+int DAPropertyPanelWidget::addBoolProperty(const QString& name, bool checked)
+{
+	return addBoolProperty(-1, name, checked);
+}
+
+/**
+ * @brief 添加字符串属性
+ */
+int DAPropertyPanelWidget::addStringProperty(int id, const QString& name, const QString& text)
+{
+	DA_D(d);
+	QLineEdit* editor = new QLineEdit(d->mContentWidget);
+	editor->setText(text);
+	int propId = addProperty(id, name, editor);
+	connect(editor, &QLineEdit::textEdited, this, [this, propId](const QString&) {
+		emit propertyValueChanged(propId);
+	});
+	return propId;
+}
+
+int DAPropertyPanelWidget::addStringProperty(const QString& name, const QString& text)
+{
+	return addStringProperty(-1, name, text);
+}
+
+/**
+ * @brief 添加枚举属性（下拉框）
+ */
+int DAPropertyPanelWidget::addEnumProperty(int id, const QString& name, const QStringList& items, const QList<int>& dataValues, int currentIndex)
+{
+	DA_D(d);
+	QComboBox* combo = new QComboBox(d->mContentWidget);
+	combo->addItems(items);
+	// 设置 item data
+	for (int i = 0; i < items.size(); ++i) {
+		int dataVal = (i < dataValues.size()) ? dataValues[i] : i;
+		combo->setItemData(i, dataVal);
+	}
+	if (currentIndex >= 0 && currentIndex < items.size()) {
+		combo->setCurrentIndex(currentIndex);
+	}
+	int propId = addProperty(id, name, combo);
+	connect(combo, &QComboBox::currentIndexChanged, this, [this, propId](int) {
+		emit propertyValueChanged(propId);
+	});
+	return propId;
+}
+
+int DAPropertyPanelWidget::addEnumProperty(const QString& name, const QStringList& items, const QList<int>& dataValues, int currentIndex)
+{
+	return addEnumProperty(-1, name, items, dataValues, currentIndex);
+}
+
+/**
+ * @brief 添加对齐属性
+ */
+int DAPropertyPanelWidget::addAlignmentProperty(int id, const QString& name, Qt::Alignment alignment)
+{
+	DA_D(d);
+	DAAligmentEditWidget* editor = new DAAligmentEditWidget(d->mContentWidget);
+	editor->setCurrentAlignment(alignment);
+	int propId = addProperty(id, name, editor);
+	connect(editor, &DAAligmentEditWidget::alignmentChanged, this, [this, propId](Qt::Alignment) {
+		emit propertyValueChanged(propId);
+	});
+	return propId;
+}
+
+int DAPropertyPanelWidget::addAlignmentProperty(const QString& name, Qt::Alignment alignment)
+{
+	return addAlignmentProperty(-1, name, alignment);
+}
+
+/**
+ * @brief 添加对齐位置属性
+ */
+int DAPropertyPanelWidget::addAlignmentPositionProperty(int id, const QString& name, Qt::Alignment alignment)
+{
+	DA_D(d);
+	DAAligmentPositionEditWidget* editor = new DAAligmentPositionEditWidget(d->mContentWidget);
+	editor->setAligmentPosition(alignment);
+	int propId = addProperty(id, name, editor);
+	connect(editor, &DAAligmentPositionEditWidget::aligmentPositionChanged, this, [this, propId](Qt::Alignment) {
+		emit propertyValueChanged(propId);
+	});
+	return propId;
+}
+
+int DAPropertyPanelWidget::addAlignmentPositionProperty(const QString& name, Qt::Alignment alignment)
+{
+	return addAlignmentPositionProperty(-1, name, alignment);
+}
+
+/**
+ * @brief 添加文件路径属性
+ */
+int DAPropertyPanelWidget::addFilePathProperty(int id, const QString& name, const QString& filter)
+{
+	DA_D(d);
+	DAFilePathEditWidget* editor = new DAFilePathEditWidget(d->mContentWidget);
+	if (!filter.isEmpty()) {
+		editor->setNameFilter(filter);
+	}
+	int propId = addProperty(id, name, editor);
+	connect(editor, &DAFilePathEditWidget::selectedPath, this, [this, propId](const QString&) {
+		emit propertyValueChanged(propId);
+	});
+	return propId;
+}
+
+int DAPropertyPanelWidget::addFilePathProperty(const QString& name, const QString& filter)
+{
+	return addFilePathProperty(-1, name, filter);
+}
+
+// === 分组标签 ===
+
+/**
+ * @brief 添加分组标签
+ */
+void DAPropertyPanelWidget::addGroupLabel(const QString& text)
+{
+	DA_D(d);
+	QLabel* label = new QLabel(text, d->mContentWidget);
+	label->setObjectName(QStringLiteral("groupLabel"));
+	QFont font = label->font();
+	font.setBold(true);
+	label->setFont(font);
+	label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+	label->setContentsMargins(0, 8, 0, 4);
+	d->addItemToContent(label, -1);
+	d->mWidgetList.append(label);
+}
+
+/**
+ * @brief 在指定位置插入分组标签
+ */
+void DAPropertyPanelWidget::insertGroupLabel(int index, const QString& text)
+{
+	DA_D(d);
+	QLabel* label = new QLabel(text, d->mContentWidget);
+	label->setObjectName(QStringLiteral("groupLabel"));
+	QFont font = label->font();
+	font.setBold(true);
+	label->setFont(font);
+	label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+	label->setContentsMargins(0, 8, 0, 4);
+	if (index < 0 || index >= d->mWidgetList.size()) {
+		d->mWidgetList.append(label);
+	} else {
+		d->mWidgetList.insert(index, label);
+	}
+	d->addItemToContent(label, index);
+}
+
+// === 值读写方法 ===
+
+/**
+ * @brief 获取颜色值
+ */
+QColor DAPropertyPanelWidget::getColorValue(int id) const
+{
+	DA_DC(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return QColor();
+	QWidget* editor = item->editorWidget();
+	if (!editor) return QColor();
+	DAColorPickerButton* btn = qobject_cast<DAColorPickerButton*>(editor);
+	if (btn) return btn->color();
+	return QColor();
+}
+
+/**
+ * @brief 设置颜色值
+ */
+void DAPropertyPanelWidget::setColorValue(int id, const QColor& color)
+{
+	DA_D(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return;
+	DAColorPickerButton* btn = qobject_cast<DAColorPickerButton*>(editor);
+	if (btn) {
+		QSignalBlocker blocker(btn);
+		btn->setColor(color);
+	}
+}
+
+/**
+ * @brief 获取字体值
+ */
+QFont DAPropertyPanelWidget::getFontValue(int id) const
+{
+	DA_DC(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return QFont();
+	QWidget* editor = item->editorWidget();
+	if (!editor) return QFont();
+	DAFontEditPannelWidget* w = qobject_cast<DAFontEditPannelWidget*>(editor);
+	if (w) return w->getCurrentFont();
+	return QFont();
+}
+
+/**
+ * @brief 设置字体值
+ */
+void DAPropertyPanelWidget::setFontValue(int id, const QFont& font)
+{
+	DA_D(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return;
+	DAFontEditPannelWidget* w = qobject_cast<DAFontEditPannelWidget*>(editor);
+	if (w) {
+		QSignalBlocker blocker(w);
+		w->setCurrentFont(font);
+	}
+}
+
+/**
+ * @brief 获取画刷值
+ */
+QBrush DAPropertyPanelWidget::getBrushValue(int id) const
+{
+	DA_DC(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return QBrush();
+	QWidget* editor = item->editorWidget();
+	if (!editor) return QBrush();
+	DABrushEditWidget* w = qobject_cast<DABrushEditWidget*>(editor);
+	if (w) return w->getCurrentBrush();
+	return QBrush();
+}
+
+/**
+ * @brief 设置画刷值
+ */
+void DAPropertyPanelWidget::setBrushValue(int id, const QBrush& brush)
+{
+	DA_D(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return;
+	DABrushEditWidget* w = qobject_cast<DABrushEditWidget*>(editor);
+	if (w) {
+		QSignalBlocker blocker(w);
+		w->setCurrentBrush(brush);
+	}
+}
+
+/**
+ * @brief 获取画笔值
+ */
+QPen DAPropertyPanelWidget::getPenValue(int id) const
+{
+	DA_DC(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return QPen();
+	QWidget* editor = item->editorWidget();
+	if (!editor) return QPen();
+	DAPenEditWidget* w = qobject_cast<DAPenEditWidget*>(editor);
+	if (w) return w->getCurrentPen();
+	return QPen();
+}
+
+/**
+ * @brief 设置画笔值
+ */
+void DAPropertyPanelWidget::setPenValue(int id, const QPen& pen)
+{
+	DA_D(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return;
+	DAPenEditWidget* w = qobject_cast<DAPenEditWidget*>(editor);
+	if (w) {
+		QSignalBlocker blocker(w);
+		w->setCurrentPen(pen);
+	}
+}
+
+/**
+ * @brief 获取整数值
+ */
+int DAPropertyPanelWidget::getIntValue(int id) const
+{
+	DA_DC(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return 0;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return 0;
+	QSpinBox* spin = qobject_cast<QSpinBox*>(editor);
+	if (spin) return spin->value();
+	return 0;
+}
+
+/**
+ * @brief 设置整数值
+ */
+void DAPropertyPanelWidget::setIntValue(int id, int value)
+{
+	DA_D(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return;
+	QSpinBox* spin = qobject_cast<QSpinBox*>(editor);
+	if (spin) {
+		QSignalBlocker blocker(spin);
+		spin->setValue(value);
+	}
+}
+
+/**
+ * @brief 获取浮点值
+ */
+double DAPropertyPanelWidget::getDoubleValue(int id) const
+{
+	DA_DC(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return 0.0;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return 0.0;
+	QDoubleSpinBox* spin = qobject_cast<QDoubleSpinBox*>(editor);
+	if (spin) return spin->value();
+	return 0.0;
+}
+
+/**
+ * @brief 设置浮点值
+ */
+void DAPropertyPanelWidget::setDoubleValue(int id, double value)
+{
+	DA_D(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return;
+	QDoubleSpinBox* spin = qobject_cast<QDoubleSpinBox*>(editor);
+	if (spin) {
+		QSignalBlocker blocker(spin);
+		spin->setValue(value);
+	}
+}
+
+/**
+ * @brief 获取布尔值
+ */
+bool DAPropertyPanelWidget::getBoolValue(int id) const
+{
+	DA_DC(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return false;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return false;
+	QCheckBox* cb = qobject_cast<QCheckBox*>(editor);
+	if (cb) return cb->isChecked();
+	return false;
+}
+
+/**
+ * @brief 设置布尔值
+ */
+void DAPropertyPanelWidget::setBoolValue(int id, bool checked)
+{
+	DA_D(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return;
+	QCheckBox* cb = qobject_cast<QCheckBox*>(editor);
+	if (cb) {
+		QSignalBlocker blocker(cb);
+		cb->setChecked(checked);
+	}
+}
+
+/**
+ * @brief 获取字符串值
+ */
+QString DAPropertyPanelWidget::getStringValue(int id) const
+{
+	DA_DC(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return QString();
+	QWidget* editor = item->editorWidget();
+	if (!editor) return QString();
+	QLineEdit* edit = qobject_cast<QLineEdit*>(editor);
+	if (edit) return edit->text();
+	return QString();
+}
+
+/**
+ * @brief 设置字符串值
+ */
+void DAPropertyPanelWidget::setStringValue(int id, const QString& text)
+{
+	DA_D(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return;
+	QLineEdit* edit = qobject_cast<QLineEdit*>(editor);
+	if (edit) {
+		QSignalBlocker blocker(edit);
+		edit->setText(text);
+	}
+}
+
+/**
+ * @brief 获取枚举值（如果设置了itemData，返回data值；否则返回索引）
+ */
+int DAPropertyPanelWidget::getEnumValue(int id) const
+{
+	DA_DC(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return -1;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return -1;
+	QComboBox* combo = qobject_cast<QComboBox*>(editor);
+	if (combo) {
+		QVariant data = combo->currentData();
+		if (data.isValid()) {
+			return data.toInt();
+		}
+		return combo->currentIndex();
+	}
+	return -1;
+}
+
+/**
+ * @brief 设置枚举值（如果设置了itemData，按data值查找；否则按索引设置）
+ */
+void DAPropertyPanelWidget::setEnumValue(int id, int value)
+{
+	DA_D(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return;
+	QComboBox* combo = qobject_cast<QComboBox*>(editor);
+	if (combo) {
+		QSignalBlocker blocker(combo);
+		QVariant data = combo->itemData(0);
+		if (data.isValid()) {
+			int idx = combo->findData(value);
+			if (idx >= 0) {
+				combo->setCurrentIndex(idx);
+			}
+		} else {
+			combo->setCurrentIndex(value);
+		}
+	}
+}
+
+/**
+ * @brief 获取对齐值
+ */
+Qt::Alignment DAPropertyPanelWidget::getAlignmentValue(int id) const
+{
+	DA_DC(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return Qt::Alignment();
+	QWidget* editor = item->editorWidget();
+	if (!editor) return Qt::Alignment();
+	DAAligmentEditWidget* w = qobject_cast<DAAligmentEditWidget*>(editor);
+	if (w) return w->getCurrentAlignment();
+	return Qt::Alignment();
+}
+
+/**
+ * @brief 设置对齐值
+ */
+void DAPropertyPanelWidget::setAlignmentValue(int id, Qt::Alignment alignment)
+{
+	DA_D(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return;
+	DAAligmentEditWidget* w = qobject_cast<DAAligmentEditWidget*>(editor);
+	if (w) {
+		QSignalBlocker blocker(w);
+		w->setCurrentAlignment(alignment);
+	}
+}
+
+/**
+ * @brief 获取对齐位置值
+ */
+Qt::Alignment DAPropertyPanelWidget::getAlignmentPositionValue(int id) const
+{
+	DA_DC(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return Qt::Alignment();
+	QWidget* editor = item->editorWidget();
+	if (!editor) return Qt::Alignment();
+	DAAligmentPositionEditWidget* w = qobject_cast<DAAligmentPositionEditWidget*>(editor);
+	if (w) return w->getAligmentPosition();
+	return Qt::Alignment();
+}
+
+/**
+ * @brief 设置对齐位置值
+ */
+void DAPropertyPanelWidget::setAlignmentPositionValue(int id, Qt::Alignment alignment)
+{
+	DA_D(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return;
+	DAAligmentPositionEditWidget* w = qobject_cast<DAAligmentPositionEditWidget*>(editor);
+	if (w) {
+		QSignalBlocker blocker(w);
+		w->setAligmentPosition(alignment);
+	}
+}
+
+/**
+ * @brief 获取文件路径值
+ */
+QString DAPropertyPanelWidget::getFilePathValue(int id) const
+{
+	DA_DC(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return QString();
+	QWidget* editor = item->editorWidget();
+	if (!editor) return QString();
+	DAFilePathEditWidget* w = qobject_cast<DAFilePathEditWidget*>(editor);
+	if (w) return w->getFilePath();
+	return QString();
+}
+
+/**
+ * @brief 设置文件路径值
+ */
+void DAPropertyPanelWidget::setFilePathValue(int id, const QString& path)
+{
+	DA_D(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (!item) return;
+	QWidget* editor = item->editorWidget();
+	if (!editor) return;
+	DAFilePathEditWidget* w = qobject_cast<DAFilePathEditWidget*>(editor);
+	if (w) {
+		QSignalBlocker blocker(w);
+		w->setFilePath(path);
+	}
+}
+
+// === 可见性与状态控制 ===
+
+/**
+ * @brief 设置属性可见性
+ */
+void DAPropertyPanelWidget::setPropertyVisible(int id, bool visible)
+{
+	DA_D(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (item) {
+		if (visible)
+			item->show();
+		else
+			item->hide();
+	}
+}
+
+/**
+ * @brief 设置属性启用状态
+ */
+void DAPropertyPanelWidget::setPropertyEnabled(int id, bool enabled)
+{
+	DA_D(d);
+	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+	if (item) {
+		item->setEnabled(enabled);
+	}
+}
+
+/**
+ * @brief 检查属性是否存在
+ */
+bool DAPropertyPanelWidget::propertyExists(int id) const
+{
+	DA_DC(d);
+	return d->mPropertyItems.contains(id);
 }
 
 }  // namespace DA

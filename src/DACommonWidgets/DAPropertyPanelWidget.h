@@ -1,8 +1,9 @@
-﻿#ifndef DAPROPERTYPANELWIDGET_H
+#ifndef DAPROPERTYPANELWIDGET_H
 #define DAPROPERTYPANELWIDGET_H
 #include "DACommonWidgetsAPI.h"
 #include <QWidget>
 #include <QString>
+#include <QPen>
 #include <functional>
 #include "DAPropertyItemWidget.h"
 
@@ -137,6 +138,121 @@ public:
 
 	// 重新计算属性名标签宽度
 	void recalculatePropertyNameWidth();
+
+	// === 便捷属性添加方法 ===
+
+	// 添加颜色属性
+	int addColorProperty(int id, const QString& name, const QColor& color = Qt::black);
+	int addColorProperty(const QString& name, const QColor& color = Qt::black);
+
+	// 添加字体属性
+	int addFontProperty(int id, const QString& name, const QFont& font = QFont());
+	int addFontProperty(const QString& name, const QFont& font = QFont());
+
+	// 添加画刷属性
+	int addBrushProperty(int id, const QString& name, const QBrush& brush = QBrush());
+	int addBrushProperty(const QString& name, const QBrush& brush = QBrush());
+
+	// 添加画笔属性
+	int addPenProperty(int id, const QString& name, const QPen& pen = QPen());
+	int addPenProperty(const QString& name, const QPen& pen = QPen());
+
+	// 添加整数属性
+	int addIntProperty(int id, const QString& name, int value = 0, int min = 0, int max = 100);
+	int addIntProperty(const QString& name, int value = 0, int min = 0, int max = 100);
+
+	// 添加浮点属性
+	int addDoubleProperty(int id, const QString& name, double value = 0.0, double min = 0.0, double max = 100.0, int decimals = 2);
+	int addDoubleProperty(const QString& name, double value = 0.0, double min = 0.0, double max = 100.0, int decimals = 2);
+
+	// 添加布尔属性
+	int addBoolProperty(int id, const QString& name, bool checked = false);
+	int addBoolProperty(const QString& name, bool checked = false);
+
+	// 添加字符串属性
+	int addStringProperty(int id, const QString& name, const QString& text = QString());
+	int addStringProperty(const QString& name, const QString& text = QString());
+
+	// 添加枚举属性（下拉框）
+	int addEnumProperty(int id, const QString& name, const QStringList& items, const QList<int>& dataValues = QList<int>(), int currentIndex = 0);
+	int addEnumProperty(const QString& name, const QStringList& items, const QList<int>& dataValues = QList<int>(), int currentIndex = 0);
+
+	// 添加对齐属性
+	int addAlignmentProperty(int id, const QString& name, Qt::Alignment alignment = Qt::AlignLeft);
+	int addAlignmentProperty(const QString& name, Qt::Alignment alignment = Qt::AlignLeft);
+
+	// 添加对齐位置属性
+	int addAlignmentPositionProperty(int id, const QString& name, Qt::Alignment alignment = Qt::AlignLeft | Qt::AlignTop);
+	int addAlignmentPositionProperty(const QString& name, Qt::Alignment alignment = Qt::AlignLeft | Qt::AlignTop);
+
+	// 添加文件路径属性
+	int addFilePathProperty(int id, const QString& name, const QString& filter = QString());
+	int addFilePathProperty(const QString& name, const QString& filter = QString());
+
+	// === 分组标签 ===
+
+	// 添加分组标签
+	void addGroupLabel(const QString& text);
+	void insertGroupLabel(int index, const QString& text);
+
+	// === 值读写方法 ===
+
+	// 颜色值读写
+	QColor getColorValue(int id) const;
+	void setColorValue(int id, const QColor& color);
+
+	// 字体值读写
+	QFont getFontValue(int id) const;
+	void setFontValue(int id, const QFont& font);
+
+	// 画刷值读写
+	QBrush getBrushValue(int id) const;
+	void setBrushValue(int id, const QBrush& brush);
+
+	// 画笔值读写
+	QPen getPenValue(int id) const;
+	void setPenValue(int id, const QPen& pen);
+
+	// 整数值读写
+	int getIntValue(int id) const;
+	void setIntValue(int id, int value);
+
+	// 浮点值读写
+	double getDoubleValue(int id) const;
+	void setDoubleValue(int id, double value);
+
+	// 布尔值读写
+	bool getBoolValue(int id) const;
+	void setBoolValue(int id, bool checked);
+
+	// 字符串值读写
+	QString getStringValue(int id) const;
+	void setStringValue(int id, const QString& text);
+
+	// 枚举值读写（下拉框索引）
+	int getEnumValue(int id) const;
+	void setEnumValue(int id, int index);
+
+	// 对齐值读写
+	Qt::Alignment getAlignmentValue(int id) const;
+	void setAlignmentValue(int id, Qt::Alignment alignment);
+
+	// 对齐位置值读写
+	Qt::Alignment getAlignmentPositionValue(int id) const;
+	void setAlignmentPositionValue(int id, Qt::Alignment alignment);
+
+	// 文件路径值读写
+	QString getFilePathValue(int id) const;
+	void setFilePathValue(int id, const QString& path);
+
+	// === 可见性与状态控制 ===
+
+	// 设置属性可见性
+	void setPropertyVisible(int id, bool visible);
+	// 设置属性启用状态
+	void setPropertyEnabled(int id, bool enabled);
+	// 检查属性是否存在
+	bool propertyExists(int id) const;
 
 Q_SIGNALS:
 	/**
