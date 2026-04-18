@@ -111,9 +111,9 @@ private:
     }
 
     QString mTitle;
-    bool mExpanded = true;
-    int mArrowSize = 10;
-    int mMargin    = 6;
+    bool mExpanded                           = true;
+    int mArrowSize                           = 10;
+    int mMargin                              = 6;
     DACollapsiblePanel::StyleMode mStyleMode = DACollapsiblePanel::Flat;
 };
 
@@ -213,7 +213,7 @@ void DACollapsiblePanel::setContentWidget(QWidget* widget)
     QLayout* existingLayout = d->mContentWidget->layout();
     if (existingLayout) {
         // 已有布局，尝试复用为 QVBoxLayout
-        d->mContentLayout = qobject_cast<QVBoxLayout*>(existingLayout);
+        d->mContentLayout = qobject_cast< QVBoxLayout* >(existingLayout);
         if (!d->mContentLayout) {
             // 非 QVBoxLayout 类型，重新创建（安全保护）
             d->mContentLayout = new QVBoxLayout(d->mContentWidget);
@@ -360,7 +360,7 @@ void DACollapsiblePanel::setStyleMode(StyleMode mode)
         }
         break;
     }
-    update();       // 触发重绘
+    update();  // 触发重绘
     updateGeometry();
     emit styleModeChanged(mode);
 }
@@ -410,22 +410,22 @@ void DACollapsiblePanel::paintEvent(QPaintEvent* event)
         painter.setPen(borderPen);
 
         // 计算内容区域矩形（头部下方）
-        int headerHeight = d->mHeaderWidget ? d->mHeaderWidget->height() : 0;
+        int headerHeight  = d->mHeaderWidget ? d->mHeaderWidget->height() : 0;
         QRect contentRect = rect();
         contentRect.setTop(headerHeight);
 
         // 计算标题文本在顶部边线上的位置和宽度，用于断开边线
         int titleTextWidth = 0;
-        int titleStartX   = 0;
+        int titleStartX    = 0;
         if (d->mHeaderWidget) {
             QFontMetrics fm(d->mHeaderWidget->font());
-            int arrowSize = 10;
-            int margin    = 6;
-            titleStartX   = arrowSize + 4 + margin;
+            int arrowSize  = 10;
+            int margin     = 6;
+            titleStartX    = arrowSize + 4 + margin;
             titleTextWidth = Qt5Qt6Compat_fontMetrics_width(fm, d->mTitle);
             // 标题文本两侧添加间距以形成"断开"效果
-            titleTextWidth += 8;   // 左右各4px间距
-            titleStartX -= 4;      // 左侧4px间距
+            titleTextWidth += 8;  // 左右各4px间距
+            titleStartX -= 4;     // 左侧4px间距
         }
 
         int topY = contentRect.top();
@@ -447,12 +447,7 @@ void DACollapsiblePanel::paintEvent(QPaintEvent* event)
             painter.setPen(pal.color(QPalette::WindowText));
             QFontMetrics fm(titleFont);
             int textY = topY + fm.ascent() / 2 - fm.height() / 2;
-            painter.drawText(titleStartX + 4,
-                             textY,
-                             titleTextWidth - 8,
-                             fm.height(),
-                             Qt::AlignLeft | Qt::AlignVCenter,
-                             d->mTitle);
+            painter.drawText(titleStartX + 4, textY, titleTextWidth - 8, fm.height(), Qt::AlignLeft | Qt::AlignVCenter, d->mTitle);
         }
     } else if (d->mStyleMode == Bordered) {
         // Bordered样式：简单矩形边框包围整个面板
