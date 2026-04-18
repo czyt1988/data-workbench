@@ -8,7 +8,7 @@
 
 | 层次 | 模块 | 说明 |
 |------|------|------|
-| 通用层 | DACommonWidgets | `DAPropertyPanelWidget`、`DAAbstractSettingPage`，提供属性项管理和通用 UI |
+| 通用层 | DACommonWidgets | `DAPropertyPanelWidget`、`DAPropertyPanelContainerWidget`、`DACollapsiblePanel`、`DAAbstractSettingPage`，提供属性项管理、分组折叠和通用 UI |
 | 图表层 | DAGui | `DAChartItemSettingPanel`、`DAAbstractChartItemSettingWidget`，叠加 Qwt 专有方法 |
 | 应用层 | APP | 组合使用上述组件，管理具体的面板实例和工厂注册 |
 
@@ -22,6 +22,8 @@
 ```mermaid
 classDiagram
     QWidget <|-- DAPropertyPanelWidget
+    QWidget <|-- DAPropertyPanelContainerWidget
+    QWidget <|-- DACollapsiblePanel
     QWidget <|-- DAAbstractChartItemSettingWidget
     QWidget <|-- DAAbstractSettingPage
 
@@ -44,6 +46,15 @@ classDiagram
     DAPropertyPanelWidget : addXxxProperty()
     DAPropertyPanelWidget : getXxxValue()/setXxxValue()
     DAPropertyPanelWidget : propertyValueChanged(int)
+    DAPropertyPanelWidget : addCollapsibleGroup()
+    DAPropertyPanelWidget : addSubPanel()
+    DAPropertyPanelWidget : endGroup()
+
+    DAPropertyPanelContainerWidget : rootPanel()
+    DAPropertyPanelContainerWidget : 代理DAPropertyPanelWidget全部API
+
+    DACollapsiblePanel : setExpanded()/isExpanded()
+    DACollapsiblePanel : expandedChanged(bool)
 
     DAChartItemSettingPanel : buildPropertyPanel() 纯虚函数
     DAChartItemSettingPanel : addCurveStyleProperty()
@@ -67,7 +78,7 @@ classDiagram
     DAAbstractSettingPage : settingChanged() 信号
 ```
 
-上图中，`DAChartItemSettingPanel` 持有一个 `DAPropertyPanelWidget`（mPanel），在此基础上叠加了 Qwt 类型专有的 add/get/set 方法。独立属性面板（如 `DAChartAxisSettingPanel`，以及建议新增的 `DANodePropertyPanel`）直接继承 QWidget，自行持有 `DAPropertyPanelWidget` 并管理信号链。应用级设置页面继承 `DAAbstractSettingPage`，用于全局偏好配置。
+上图中，`DAChartItemSettingPanel` 持有一个 `DAPropertyPanelContainerWidget`（它内部封装了 `DAPropertyPanelWidget` 和 `QScrollArea`），在此基础上叠加了 Qwt 类型专有的 add/get/set 方法。独立属性面板（如 `DAChartAxisSettingPanel`，以及建议新增的 `DANodePropertyPanel`）直接继承 QWidget，自行持有 `DAPropertyPanelWidget` 或 `DAPropertyPanelContainerWidget` 并管理信号链。`DACollapsiblePanel` 是轻量级折叠容器，由 `DAPropertyPanelWidget` 的 `addCollapsibleGroup()` 内部创建。应用级设置页面继承 `DAAbstractSettingPage`，用于全局偏好配置。
 
 !!! note "DANodePropertyPanel 是建议新增示例"
     `DANodePropertyPanel` 在当前代码库中并不存在。工作流节点设置目前使用 `DANodeSettingWidget`（PIMPL + QWidget 组合，不基于 `DAPropertyPanelWidget`）。这里将其作为示范，展示如何为非图表目标创建独立属性面板。
@@ -128,12 +139,14 @@ classDiagram
 
     void MyItemSettingPanel::buildPropertyPanel()
     {
-        DAPropertyPanelWidget* pp = propertyPanel();
-        pp->addGroupLabel(tr("General"));
+        DAPropertyPanelContainerWidget* pp = propertyPanel();
+        pp->addCollapsibleGroup(tr("General"));
         pp->addStringProperty(PID_Title, tr("Title"));
         pp->addDoubleProperty(PID_ZValue, tr("Z Value"), 0.0, -9999.0, 9999.0, 1);
-        pp->addGroupLabel(tr("Custom"));
+        pp->endGroup();
+        pp->addCollapsibleGroup(tr("Custom"));
         addCurveStyleProperty(PID_CustomStyle, tr("Style"));
+        pp->endGroup();
     }
 
     void MyItemSettingPanel::updateUI(QwtPlotItem* item)
@@ -171,7 +184,7 @@ classDiagram
 
     #### 关键模式
 
-    **buildPropertyPanel 模式**：获取 `propertyPanel()` 指针，按分区调用 `addGroupLabel()` → `addXxxProperty()` → 基类 Qwt 专有方法。
+    **buildPropertyPanel 模式**：获取 `propertyPanel()` 指针，按分区调用 `addCollapsibleGroup()` → `addXxxProperty()` → `endGroup()` → 基类 Qwt 专有方法。每个可折叠分组形成一个独立的 `DACollapsiblePanel`，后续属性自动归入当前分组。
 
     **updateUI 模式**：`QSignalBlocker` 全局 block → `checkItemRTTI` 类型检查 → `d_cast` 安全转换 → 逐项 `setXxxValue`。
 
@@ -269,9 +282,10 @@ classDiagram
     void DANodePropertyPanel::buildPropertyPanel()
     {
         auto* pp = propertyPanel();
-        pp->addGroupLabel(tr("Node Info"));
+        int groupId = pp->addCollapsibleGroup(tr("Node Info"));
         pp->addStringProperty(PID_Name, tr("Name"));
         pp->addColorProperty(PID_Color, tr("Color"));
+        pp->endGroup();
     }
 
     void DANodePropertyPanel::setTarget(DAWorkFlowNode* node)
@@ -317,10 +331,13 @@ classDiagram
     !!! warning "buildPropertyPanel() 调用约定"
         独立属性面板的 `buildPropertyPanel()` 是 **protected slot**，不是纯虚函数。构造函数中直接调用。如果你忘了在构造函数中调用它，面板同样为空，但不像 ChartItem 面板那样编译器不会提醒你。
 
-    !!! danger "信号链必连（P0 级 Bug）"
-        构造函数中必须连接 `this->propertyValueChanged → this->onPropertyValueChanged`。漏掉这条连接会导致属性变化不写回目标，这是已确认的 P0 级 Bug。
+!!! info "信号冒泡转发机制"
+    当使用 `addSubPanel()` 创建嵌套子面板时，子面板的 `propertyValueChanged` 信号会自动转发（冒泡）到父面板。这意味着无论属性项位于根面板还是嵌套子面板中，`propertyValueChanged` 信号始终从根面板发出，外部监听者无需关心属性的嵌套层级。这条规则同样适用于 `addCollapsibleGroup()` 创建的分组面板：分组内的属性变化通过分组面板冒泡到根面板，再从根面板发出。
 
-    !!! info "非绘图目标的刷新方式"
+!!! danger "信号链必连（P0 级 Bug）"
+    构造函数中必须连接 `this->propertyValueChanged → this->onPropertyValueChanged`。漏掉这条连接会导致属性变化不写回目标，这是已确认的 P0 级 Bug。
+
+!!! info "非绘图目标的刷新方式"
         非 `QwtPlotItem` 目标不调用 `replot()`。属性写回后，通过自己的刷新或通知机制触发更新，例如 `emit nodeChanged()` 通知外部监听者，或 `target->refresh()` 让目标对象自行刷新。具体方式取决于目标对象的接口设计。
 
     #### 3-hop 信号链
@@ -406,6 +423,8 @@ classDiagram
 | 对比项 | ChartItem面板 | 独立属性面板 | 应用级设置页面 |
 |--------|-------------|-------------|--------------|
 | 适用目标 | QwtPlotItem | 任意对象 | 无目标（持久化配置） |
+| 面板容器 | DAPropertyPanelContainerWidget | DAPropertyPanelWidget / DAPropertyPanelContainerWidget | DAPropertyPanelWidget |
+| 分组方式 | addCollapsibleGroup + endGroup | addCollapsibleGroup + endGroup | addGroupLabel（简单场景） |
 | Qwt专有方法 | 有（addCurveStyleProperty等） | 无 | 无 |
 | `buildPropertyPanel()` | 纯虚函数，子类ctor末尾自行调用 | protected slot，ctor中直接调用 | 无此方法 |
 | 属性变化应用方式 | 即时写回 + replot() | 即时写回 + 自定义通知机制 | apply() 按需调用 |
@@ -496,11 +515,209 @@ enum PropertyID {
 
 | 方法 | 说明 |
 |------|------|
-| `addGroupLabel(text)` | 添加分组标题标签 |
+| `addCollapsibleGroup(title)` | 添加可折叠分组，后续 `addXxxProperty` 自动归入该分组，返回分组ID |
+| `endGroup()` | 结束当前分组，后续属性回到根面板 |
+| `addSubPanel(id, groupName)` | 添加嵌套子面板（带ID映射和信号冒泡转发），返回子面板指针 |
+| `getSubPanel(id)` | 根据ID获取子面板指针 |
+| `getSubPanelId(subPanel)` | 获取子面板对应的ID，不存在返回 -1 |
+| `getGroupPanel(groupId)` | 获取分组对应的内部面板指针 |
+| `isGroupExpanded(groupId)` | 获取分组展开状态 |
+| `setGroupExpanded(groupId, expanded)` | 设置分组展开/收起 |
+| `addGroupLabel(text)` | ⚠️ **已废弃**，建议使用 `addCollapsibleGroup` 代替，此方法仅创建装饰性标签不具备折叠功能 |
 | `addSeparator()` | 添加水平分隔线 |
 | `addSpacer(height)` | 添加空白间距（默认 8px） |
 | `setPropertyVisible(id, visible)` | 控制属性项可见性 |
 | `setPropertyEnabled(id, enabled)` | 控制属性项启用/禁用 |
+
+## DACollapsiblePanel 介绍
+
+`DACollapsiblePanel` 是基于 QWidget 的轻量级折叠容器，使用 `setVisible` + `sizeHint` 实现展开/收起机制，不依赖 `QGroupBox`，不提供动画效果。
+
+### 核心特性
+
+- 点击头部区域切换展开/收起状态
+- 头部带有箭头指示器（展开时 ▼，收起时 ▶）
+- `expanded` 属性通过 `Q_PROPERTY` 暴露，支持样式表和动画绑定
+- `getContentWidget()` 返回内容区域 QWidget，可自由添加子控件
+- 发出 `expandedChanged(bool)` 信号，可用于联动控制
+
+### 基本用法
+
+```cpp
+// 直接创建折叠面板（通常不需要手动创建，addCollapsibleGroup会自动创建）
+DACollapsiblePanel* panel = new DACollapsiblePanel("数据设置", parent);
+
+// 获取内容区域并添加子控件
+QWidget* content = panel->getContentWidget();
+QVBoxLayout* layout = new QVBoxLayout(content);
+layout->addWidget(someWidget);
+
+// 程序化控制展开/收起
+panel->setExpanded(false);  // 收起
+panel->setExpanded(true);   // 展开
+```
+
+!!! note "通常无需手动创建"
+    `DACollapsiblePanel` 由 `DAPropertyPanelWidget::addCollapsibleGroup()` 内部自动创建和管理。大多数场景下你只需调用 `addCollapsibleGroup()` 即可，不需要手动实例化 `DACollapsiblePanel`。
+
+## 可折叠分组使用指南
+
+### addCollapsibleGroup + endGroup 模式
+
+`addCollapsibleGroup(title)` 创建一个可折叠分组，后续调用的 `addXxxProperty()` 自动归入当前分组，直到调用 `endGroup()` 结束分组。
+
+```cpp
+// buildPropertyPanel() 中的典型用法
+DAPropertyPanelContainerWidget* pp = propertyPanel();
+
+// 创建"通用属性"分组
+pp->addCollapsibleGroup(tr("General"));
+pp->addStringProperty(PID_Title, tr("Title"));
+pp->addDoubleProperty(PID_ZValue, tr("Z Value"), 0.0, -9999.0, 9999.0, 1);
+addAxisProperty(PID_XAxis, tr("X Axis"), false);
+addAxisProperty(PID_YAxis, tr("Y Axis"), true);
+pp->endGroup();
+
+// 创建"画笔"分组
+pp->addCollapsibleGroup(tr("Pen"));
+pp->addPenProperty(PID_Pen, tr("Pen"));
+pp->endGroup();
+
+// 创建"标记"分组
+pp->addCollapsibleGroup(tr("Marker"));
+pp->addBoolProperty(PID_EnableMarker, tr("Enable Marker"));
+addSymbolProperty(PID_Symbol, tr("Symbol"));
+pp->endGroup();
+```
+
+!!! warning "endGroup() 调用约定"
+    每个 `addCollapsibleGroup()` 必须配套一个 `endGroup()`。忘记调用 `endGroup()` 会导致后续所有属性都被归入最后一个分组，破坏面板布局。建议采用"创建分组 → 添加属性 → 立即 endGroup"的紧凑写法。
+
+### 分组ID与状态控制
+
+`addCollapsibleGroup()` 返回分组 ID（从 1 开始递增），可用于后续控制分组状态：
+
+```cpp
+int generalGroup = pp->addCollapsibleGroup(tr("General"));
+pp->addStringProperty(PID_Title, tr("Title"));
+pp->endGroup();
+
+// 程序化控制展开/收起
+pp->setGroupExpanded(generalGroup, false);  // 收起分组
+bool expanded = pp->isGroupExpanded(generalGroup);  // 查询状态
+
+// 获取分组内部面板指针（高级用法）
+DAPropertyPanelWidget* groupPanel = pp->getGroupPanel(generalGroup);
+```
+
+### 迁移 addGroupLabel → addCollapsibleGroup
+
+已有的 `addGroupLabel()` 代码可按以下模式迁移：
+
+```cpp
+// 旧写法（装饰性标签，不可折叠）
+pp->addGroupLabel(tr("General"));
+pp->addStringProperty(PID_Title, tr("Title"));
+
+// 新写法（可折叠分组）
+pp->addCollapsibleGroup(tr("General"));
+pp->addStringProperty(PID_Title, tr("Title"));
+pp->endGroup();
+```
+
+迁移要点：
+
+1. 将 `addGroupLabel(text)` 替换为 `addCollapsibleGroup(text)`
+2. 在分组最后一个属性后添加 `endGroup()`
+3. 如果多个分组紧邻，每个分组都要有独立的 `endGroup()`
+4. 所有 11 个 ChartSetting 面板已完成此迁移，可参考 `DAChartCurveSettingPanel.cpp`
+
+## 嵌套子面板使用指南
+
+### addSubPanel 创建嵌套子面板
+
+`addSubPanel(id, groupName)` 在当前面板中创建一个嵌套的子 `DAPropertyPanelWidget`，子面板本身包装在 `DACollapsiblePanel` 中，具备折叠功能。
+
+```cpp
+// 在根面板中创建一个嵌套子面板
+DAPropertyPanelWidget* subPanel = pp->addSubPanel(100, tr("Advanced Settings"));
+
+// 在子面板中添加属性（子面板有自己的命名空间，ID可与根面板不冲突）
+subPanel->addIntProperty(PID_AdvancedOption1, tr("Option 1"));
+subPanel->addDoubleProperty(PID_AdvancedOption2, tr("Option 2"));
+subPanel->addColorProperty(PID_AdvancedColor, tr("Highlight Color"));
+
+// 获取子面板
+DAPropertyPanelWidget* retrieved = pp->getSubPanel(100);
+int subId = pp->getSubPanelId(subPanel);  // 返回 100
+```
+
+!!! info "子面板的 ID 映射"
+    `addSubPanel(id, groupName)` 的 `id` 参数是子面板的映射 ID，与属性项的 PropertyID 是不同的概念。子面板 ID 用于 `getSubPanel(id)` 和 `getSubPanelId(subPanel)` 的查找，而属性项 ID 用于 `getXxxValue(id)` / `setXxxValue(id, ...)` 的读写。
+
+### 信号冒泡转发
+
+子面板的 `propertyValueChanged` 信号自动转发到父面板。无论属性项位于哪一层嵌套，根面板始终会发出 `propertyValueChanged` 信号：
+
+```
+子面板 propertyValueChanged  ──冒泡──→  分组面板 propertyValueChanged  ──冒泡──→  根面板 propertyValueChanged
+```
+
+这意味着外部监听者只需连接根面板的信号，无需关心属性的嵌套层级。
+
+!!! warning "冒泡转发不可关闭"
+    信号冒泡是内部自动连接的，没有开关。如果你需要阻止某个子面板的信号冒泡，需要用 `QSignalBlocker` 在特定场景下临时阻断。
+
+## DAPropertyPanelContainerWidget 介绍
+
+`DAPropertyPanelContainerWidget` 是属性面板的顶层容器控件，封装了 `QScrollArea` 和根 `DAPropertyPanelWidget`。
+
+### 为什么需要容器
+
+属性面板可能包含大量属性项和多个折叠分组，总高度远超可视区域。容器提供单一滚动条策略：
+
+- 容器持有 `QScrollArea`，负责整体滚动
+- 根 `DAPropertyPanelWidget` 不再包含内部滚动区域
+- 所有分组和子面板都在同一个滚动区域内展开/收起
+- 用户不需要在多个嵌套滚动条之间操作
+
+### API 代理
+
+`DAPropertyPanelContainerWidget` 将 `DAPropertyPanelWidget` 的全部公共 API 代理到根面板。这意味着你可以用完全相同的接口操作容器，就像直接操作 `DAPropertyPanelWidget`：
+
+```cpp
+// 通过容器操作（API完全相同）
+DAPropertyPanelContainerWidget* container = new DAPropertyPanelContainerWidget(this);
+int id = container->addColorProperty(PID_Color, tr("线条颜色"), Qt::red);
+container->addCollapsibleGroup(tr("外观设置"));
+container->addIntProperty(PID_Width, tr("线条宽度"), 1, 1, 10);
+container->endGroup();
+
+// 连接信号（同样与DAPropertyPanelWidget一致）
+connect(container, &DAPropertyPanelContainerWidget::propertyValueChanged,
+        this, &MyClass::onPropertyChanged);
+
+// 如果需要直接访问根面板
+DAPropertyPanelWidget* root = container->rootPanel();
+```
+
+### ChartItem 面板使用容器
+
+从迁移版本开始，`DAChartItemSettingPanel` 的 `propertyPanel()` 返回类型已从 `DAPropertyPanelWidget*` 变为 `DAPropertyPanelContainerWidget*`。子类的 `buildPropertyPanel()` 中通过容器指针操作，接口不变：
+
+```cpp
+void DAChartCurveSettingPanel::buildPropertyPanel()
+{
+    DAPropertyPanelContainerWidget* pp = propertyPanel();  // 返回容器指针
+    pp->addCollapsibleGroup(tr("General"));  // 与DAPropertyPanelWidget接口一致
+    pp->addStringProperty(PID_Title, tr("Title"));
+    pp->endGroup();
+    // ...
+}
+```
+
+!!! note "独立面板选择"
+    独立属性面板可以选择直接使用 `DAPropertyPanelWidget`（无滚动区域，适合少量属性），或者使用 `DAPropertyPanelContainerWidget`（有滚动区域，适合多分组场景）。ChartItem 面板统一使用容器版本。
 
 ## 即时应用 vs 按需应用
 
@@ -530,7 +747,9 @@ enum PropertyID {
 
 | 文件路径 | 功能说明 |
 |---------|---------|
-| `src/DACommonWidgets/DAPropertyPanelWidget.h` | 属性面板核心控件，所有 add/set 便捷方法 |
+| `src/DACommonWidgets/DAPropertyPanelWidget.h` | 属性面板核心控件，所有 add/set 便捷方法，分组与子面板管理 |
+| `src/DACommonWidgets/DAPropertyPanelContainerWidget.h` | 属性面板容器控件，QScrollArea + API 代理 |
+| `src/DACommonWidgets/DACollapsiblePanel.h` | 可折叠面板控件，展开/收起机制 |
 | `src/DACommonWidgets/DAAbstractSettingPage.h` | 应用级设置页面基类 |
 | `src/DAGui/ChartSetting/DAAbstractChartItemSettingWidget.h` | 图表项设置基类，d_cast/s_cast/ReturnWhenItemNull |
 | `src/DAGui/ChartSetting/DAChartItemSettingPanel.h` | ChartItem 面板基类，Qwt 专有方法，纯虚 buildPropertyPanel |

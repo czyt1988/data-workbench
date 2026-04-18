@@ -28,10 +28,28 @@ These steps apply to **all** DAPropertyPanelWidget-based panels (Scenarios A and
 1. **Define PropertyId enum** — values start from 1
 2. **Create DAPropertyPanelWidget** in constructor
 3. **Add properties** — call `addXxxProperty(PID_*, name, ...)` in `buildPropertyPanel()`
+   - Group properties with `addCollapsibleGroup(title)` → `addXxxProperty(...)` → `endGroup()`
+   - Nest sub-panels with `addSubPanel(id, groupName)` for independent property groups
 4. **Connect signal chain** — `mPanel->propertyValueChanged` to handler slot
 5. **Dispatch in handler** — `switch(propertyId)` with `case PID_*:` blocks
 6. **Read values** — use `getxxxValue(PID_*)` in handler
 7. **Write back** — apply to target + call target's refresh mechanism
+
+### Grouping & Nesting Rules
+
+- After `addCollapsibleGroup(title)`, all subsequent `addXxxProperty()` calls go into that group automatically
+- Call `endGroup()` to exit the current group and return to root-level layout
+- Groups can be nested: call `addCollapsibleGroup()` inside another group
+- `addSubPanel(id, groupName)` creates a nested `DAPropertyPanelWidget` with its own property IDs
+- Sub-panel signals bubble up: `propertyValueChanged` from sub-panel forwards to parent panel automatically
+
+### Signal Chain
+
+| Scenario | Signal Chain |
+|----------|-------------|
+| ChartItem (A) | mPanel → base class forwards → `propertyValueChanged` → subclass slot |
+| Standalone (B) | 3-hop: `mPanel`→`onPanelPropertyValueChanged`→`emit`→`onPropertyValueChanged` ← P0 critical |
+| Nested sub-panel | subPanel `propertyValueChanged` → auto forwards to parent `propertyValueChanged` → no extra wiring needed |
 
 ## Scenario A: ChartItem Panel (QwtPlotItem)
 
@@ -48,7 +66,7 @@ These steps apply to **all** DAPropertyPanelWidget-based panels (Scenarios A and
 class MyPanel : public DAChartItemSettingPanel {
     Q_OBJECT
 public:
-    enum PropertyID { PID_Title = 1, PID_Color = 2 };
+    enum PropertyID { PID_Title = 1, PID_Color = 2, PID_LineWidth = 3 };
     explicit MyPanel(QWidget* parent = nullptr);
     void updateUI(QwtPlotItem* item) override;
 protected:
@@ -61,6 +79,16 @@ MyPanel::MyPanel(QWidget* parent) : DAChartItemSettingPanel(parent) {
     connect(this, &DAChartItemSettingPanel::propertyValueChanged,
             this, &MyPanel::onPropertyValueChanged);
     buildPropertyPanel();
+}
+
+void MyPanel::buildPropertyPanel() {
+    auto* pp = propertyPanel();
+    // Collapsible group for appearance properties
+    pp->addCollapsibleGroup(tr("Appearance"));
+    pp->addStringProperty(PID_Title, tr("Title"));
+    pp->addColorProperty(PID_Color, tr("Color"));
+    pp->addIntProperty(PID_LineWidth, tr("Line Width"), 1, 1, 100);
+    pp->endGroup();
 }
 ```
 
@@ -106,11 +134,77 @@ DANodePropertyPanel::DANodePropertyPanel(QWidget* parent)
             this, &DANodePropertyPanel::onPropertyValueChanged);
     buildPropertyPanel();
 }
+
+void DANodePropertyPanel::buildPropertyPanel() {
+    // Collapsible group for node info
+    mPanel->addCollapsibleGroup(tr("Node Info"));
+    mPanel->addStringProperty(PID_Name, tr("Name"));
+    mPanel->addColorProperty(PID_Color, tr("Color"));
+    mPanel->endGroup();
+}
 ```
 
 **Note**: Non-chart targets do not call `replot()`. Emit the target object's own change signal or call its refresh method instead.
 
 **References**: `src/DAGui/ChartSetting/DAChartAxisSettingPanel.{h,cpp}` (composition pattern), `src/DAGui/DAWorkFlowNodeItemSettingWidget.h` (target domain)
+
+## Nested Sub-Panel Pattern
+
+Use `addSubPanel()` when a group of properties needs its own independent property ID namespace or separate update cycle.
+
+```cpp
+void MyPanel::buildPropertyPanel() {
+    auto* pp = propertyPanel();
+
+    // Root-level group
+    pp->addCollapsibleGroup(tr("General"));
+    pp->addStringProperty(PID_Title, tr("Title"));
+    pp->endGroup();
+
+    // Nested sub-panel with its own property IDs
+    auto* subPanel = pp->addSubPanel(SID_AxisSettings, tr("Axis Settings"));
+    subPanel->addCollapsibleGroup(tr("X Axis"));
+    subPanel->addDoubleProperty(PID_XMin, tr("Min"), 0.0);
+    subPanel->addDoubleProperty(PID_XMax, tr("Max"), 100.0);
+    subPanel->endGroup();
+
+    subPanel->addCollapsibleGroup(tr("Y Axis"));
+    subPanel->addDoubleProperty(PID_YMin, tr("Min"), 0.0);
+    subPanel->addDoubleProperty(PID_YMax, tr("Max"), 100.0);
+    subPanel->endGroup();
+    // No extra signal wiring needed — sub-panel propertyValueChanged
+    // bubbles up to parent panel automatically
+}
+
+// Access sub-panel later for state updates:
+void MyPanel::updateUI() {
+    auto* subPanel = mPanel->getSubPanel(SID_AxisSettings);
+    QSignalBlocker blocker(subPanel);
+    subPanel->setDoubleValue(PID_XMin, ...);
+    // ...
+}
+```
+
+**Key rules**:
+- Sub-panel IDs (`SID_*`) are separate from root panel IDs (`PID_*`), no collision
+- `getSubPanel(id)` returns the `DAPropertyPanelWidget*` for direct read/write
+- `getSubPanelId(subPanel)` reverse-lookups the ID from a pointer
+- Sub-panel `propertyValueChanged` auto-forwards to parent, no manual `connect` needed
+
+## Using DAPropertyPanelContainerWidget
+
+`DAPropertyPanelContainerWidget` wraps `DAPropertyPanelWidget` inside a `QScrollArea` and proxies **all** its public API. Use it when the panel may grow tall and needs scrolling.
+
+```cpp
+// Container delegates all DAPropertyPanelWidget methods:
+DAPropertyPanelContainerWidget* container = new DAPropertyPanelContainerWidget(this);
+container->addCollapsibleGroup(tr("Settings"));
+container->addStringProperty(PID_Name, tr("Name"));
+container->endGroup();
+connect(container, &DAPropertyPanelContainerWidget::propertyValueChanged, ...);
+```
+
+**Reference**: `src/DACommonWidgets/DAPropertyPanelContainerWidget.h`
 
 ## Scenario C: App Setting Page
 
@@ -143,16 +237,44 @@ public:
 | **Target** | QwtPlotItem via `setPlotItem()` | Any object via `setTarget()` | N/A |
 | **buildPropertyPanel()** | Pure virtual, called by subclass | Protected slot, called directly | N/A |
 | **Signal chain** | Automatic via base | Manual: 2 connections required | `settingChanged()` signal |
+| **Sub-panel signals** | Auto bubble-up to parent | Auto bubble-up to parent | N/A |
 | **Apply style** | Immediate (write + replot) | Immediate (write + notify) | Deferred (`apply()` on OK) |
 | **Qwt extras** | addCurveStyle/Axis/SymbolProperty | Not available | N/A |
 | **Factory** | DAChartItemSettingPanelFactory | Manually created | DASettingWidget manages |
+| **Grouping** | addCollapsibleGroup + endGroup | addCollapsibleGroup + endGroup | N/A |
+
+## DAPropertyPanelWidget API Quick Reference
+
+### Property Adding & Value Access
+
+| Method | Purpose | Read / Write |
+|--------|---------|-------------|
+| `addColorProperty` / `addFontProperty` / `addBrushProperty` | Color/Font/Brush | `getColorValue`/`setColorValue` etc. |
+| `addPenProperty` | Pen | `getPenValue`/`setPenValue` |
+| `addIntProperty` / `addDoubleProperty` / `addBoolProperty` | Numeric/Bool | `getIntValue`/`setIntValue` etc. |
+| `addStringProperty` / `addEnumProperty` | String/Enum | `getStringValue`/`setStringValue` etc. |
+| `addAlignmentProperty` / `addFilePathProperty` | Alignment/Path | `getAlignmentValue`/`setAlignmentValue` etc. |
+| `addProperty` | Custom Widget | `getPropertyItem(id)` |
+
+### Grouping & Nesting
+
+| Method | Purpose | Notes |
+|--------|---------|-------|
+| `addCollapsibleGroup(title)` | Start collapsible group | Returns group ID (1-based). Subsequent addXxxProperty auto-tracked into this group |
+| `endGroup()` | Exit current group | Next addXxxProperty goes to root layout |
+| `addSubPanel(id, groupName)` | Create nested sub-panel | Returns `DAPropertyPanelWidget*` with signal bubble-up |
+| `getSubPanel(id)` | Get sub-panel by ID | Returns nullptr if not found |
+| `getSubPanelId(subPanel)` | Reverse-lookup sub-panel ID | Returns -1 if not found |
+| `getGroupPanel(groupId)` | Get group's internal panel | Returns `DAPropertyPanelWidget*` for the group |
+| `isGroupExpanded(groupId)` | Check group expand state | Returns true/false |
+| `setGroupExpanded(groupId, expanded)` | Set group expand state | Programmatic control of collapse/expand |
+| `addGroupLabel(text)` | **Deprecated** decorative label | Use `addCollapsibleGroup` instead. No collapse functionality |
+
+### DAPropertyPanelContainerWidget
+
+`DAPropertyPanelContainerWidget` proxies **all** `DAPropertyPanelWidget` methods listed above. Use `rootPanel()` to access the underlying `DAPropertyPanelWidget` directly if needed.
 
 ## Compatibility Notes
-
-**DAPropertyPanelWidget API** (all scenarios):
-- `addXxxProperty` — addBool/String/Double/Int/Color/Font/Pen/Brush/Enum/Alignment/FilePathProperty
-- `getXxxValue(id)` / `setXxxValue(id, value)` — matching getters/setters
-- `setPropertyEnabled/Visible`, `addGroupLabel`
 
 **QButtonGroup Qt5/Qt6 compat**:
 ```cpp
