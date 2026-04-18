@@ -62,6 +62,7 @@ nav:
           - 编码规范: zh/dev-guide/coding-standard.md
           - 第三方库管理: zh/dev-guide/third-party-manage.md
           - 设置类窗体规范: zh/dev-guide/settingwidget-standard.md
+          - 创建设置面板: zh/dev-guide/creating-setting-panel.md
           - 工程组织: zh/large-cmake-project-guide.md
       - 架构说明:
           - 模块依赖关系: zh/dev-guide/module-dependency.md
