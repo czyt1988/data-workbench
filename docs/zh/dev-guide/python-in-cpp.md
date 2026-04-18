@@ -1298,3 +1298,1042 @@ F1 --> F2[检查模块是否正确编译]
 - [pybind11 官方文档](https://pybind11.readthedocs.io/)
 - [Python C API 文档](https://docs.python.org/3/c-api/)
 - [Qt 线程基础](https://doc.qt.io/qt-5/thread-basics.html)
+
+---
+
+## 第八部分：绑定开发实操流程
+
+本部分详细说明从零开始开发一个 pybind11 绑定模块的完整流程，涵盖从识别绑定目标到构建验证的全过程。
+
+### 绑定开发总览
+
+下图展示了绑定开发的完整流程，每个步骤环环相扣：
+
+```mermaid
+flowchart TD
+    A[识别绑定目标] --> B[创建绑定文件]
+    B --> C[编写绑定代码]
+    C --> D[处理Qt类型]
+    D --> E[设置所有权策略]
+    E --> F[CMake配置]
+    F --> G[构建与测试]
+    G --> H[更新stubs/mock]
+    
+    C -.->|slots冲突| C1[DAPybind11InQt.h解决]
+    D -.->|自动转换| D1[DAPybind11QtCaster]
+    D -.->|手动转换| D2[Lambda包装]
+    E -.->|决策树| E1[return_value_policy选择]
+    
+    style A fill:#e1f5fe
+    style G fill:#c8e6c9
+    style H fill:#fff9c4
+```
+
+上图展示了绑定开发的关键步骤和分支路径：
+
+- **主线流程**（A→H）：从识别目标到最终验证的完整链路
+- **slots 冲突分支**（C1）：Qt 的 `slots` 宏与 Python 头文件冲突，需特殊处理
+- **Qt 类型处理分支**（D1/D2）：自动转换与手动 Lambda 包装两条路径
+- **所有权策略分支**（E1）：根据对象生命周期选择正确的 `return_value_policy`
+
+### 步骤一：识别绑定目标
+
+在开发新绑定模块之前，需要明确哪些类和函数需要暴露给 Python。识别原则如下：
+
+!!! tip "绑定目标识别原则"
+    1. **优先绑定接口层**：暴露 `XXXInterface` 而非内部实现类，保持与 C++ 架构一致的抽象层次
+    2. **只绑定 public API**：PIMPL 类只绑定其公共接口，不暴露 `PrivateData` 内部成员
+    3. **避免绑定非 QObject 的 Qt 子类**：`QwtPlotItem` 等非 QObject 类不能使用 `Q_OBJECT` 宏，绑定需特别注意
+    4. **评估使用频率**：Python 脚本高频调用的类优先绑定，低频使用的可通过已有接口间接访问
+
+**识别流程示例**：假设需要为 `DAFigure` 模块创建绑定，识别步骤如下：
+
+1. 查看该模块对外提供的接口类（如 `DAFigureInterface`）
+2. 确认 Python 脚本需要直接操作的功能（如创建图表、设置坐标轴属性）
+3. 检查是否存在 `QwtPlotItem` 子类——这类类不能使用信号槽，绑定时只能暴露方法
+4. 列出需要 `QString` 参数的方法——这些需要 Lambda 包装转换
+
+### 步骤二：创建绑定文件
+
+绑定文件的命名和位置遵循以下约定：
+
+| 约定 | 说明 | 示例 |
+|------|------|------|
+| 文件命名 | `XXXPythonBinding.h` / `XXXPythonBinding.cpp` | `DADataPythonBinding.h/.cpp` |
+| 文件位置 | 与被绑定模块同目录 | `src/DAData/DADataPythonBinding.cpp` |
+| 模块名 | `PYBIND11_EMBEDDED_MODULE` 中的名称应简短明确 | `da_app`, `da_data`, `da_interface` |
+
+!!! warning "文件命名一致性"
+    头文件和源文件必须同名，且 `.h` 中声明初始化函数，`.cpp` 中实现绑定逻辑。模块名（如 `da_data`）需与 Python 端 `import da_data` 一致。
+
+**头文件模板**：
+
+```cpp title="XXXPythonBinding.h - 头文件模板"
+#ifndef XXXPYTHONBINDING_H
+#define XXXPYTHONBINDING_H
+
+#include "DAPyBindQtGlobal.h"
+
+namespace DA
+{
+
+/**
+ * @brief 初始化 XXX 模块的 Python 绑定
+ * 
+ * 此函数在 DAAppCore 初始化 Python 环境时调用，
+ * 确保 embedded module 在解释器启动时自动注册
+ */
+void initXXXPythonBinding();
+
+}  // namespace DA
+
+#endif  // XXXPYTHONBINDING_H
+```
+
+**源文件模板**（基于 `DAAppPythonBinding.cpp` 的最小骨架）：
+
+```cpp title="XXXPythonBinding.cpp - 最简绑定骨架"
+#include "XXXPythonBinding.h"
+#include "DAPybind11InQt.h"  // 必须！解决 slots 宏冲突
+
+namespace DA
+{
+
+// 如有需要，在此定义辅助函数（如 std::string 版本的重包装）
+
+}  // namespace DA
+
+PYBIND11_EMBEDDED_MODULE(da_xxx, m)
+{
+    // 1. 绑定核心类
+    pybind11::class_<DA::DAClassName>(m, "DAClassName")
+        .def(pybind11::init<>())
+        .def("methodName", &DA::DAClassName::methodName,
+             pybind11::arg("param"), "Brief description");
+    
+    // 2. 绑定枚举（如有）
+    pybind11::enum_<DA::EnumType>(m, "EnumType")
+        .value("Value1", DA::EnumType::Value1)
+        .export_values();
+    
+    // 3. 绑定单例或全局函数（如有）
+    m.def("getXXX", &DA::getXXXPtr,
+          "Return the XXX singleton",
+          pybind11::return_value_policy::reference);
+}
+```
+
+!!! danger "slots 宏冲突 —— 必须使用 DAPybind11InQt.h"
+    Qt 的 `slots` 关键字与 Python 头文件中的 `slots` 宏存在**严重冲突**。如果直接在绑定文件中 `#include <pybind11/pybind11.h>`，编译时会因为 `slots` 被 Qt 预定义为空而导致 Python 头文件解析错误。
+    
+    **必须**使用 `DAPybind11InQt.h` 替代直接引入 pybind11 头文件。此头文件的处理方式如下：
+    
+    ```cpp title="DAPybind11InQt.h - slots 冲突解决方案（源码）"
+    #undef slots                       // 1. 先取消 Qt 的 slots 宏定义
+    #ifndef PY_SSIZE_T_CLEAN
+    #define PY_SSIZE_T_CLEAN           // 2. Python 要求的定义
+    #endif
+    #include "pybind11/pybind11.h"     // 3. 安全引入 pybind11
+    #include "pybind11/numpy.h"
+    #include "pybind11/cast.h"
+    #include "pybind11/embed.h"
+    #include "pybind11/stl.h"
+    #include "pybind11/chrono.h"
+    #include "pybind11/operators.h"
+    #define slots Q_SLOTS              // 4. 恢复为 Qt 正确的宏定义
+    ```
+    
+    **所有绑定 `.cpp` 文件**的第一行 include 应为 `#include "DAPybind11InQt.h"`，**不要**直接 `#include <pybind11/...>`。
+
+### 步骤三：编写绑定代码
+
+#### 3.1 QString → std::string Lambda 包装模式
+
+C++ 方法通常接受 `QString` 参数，但 pybind11 的 `DAPybind11QtCaster` 自动转换仅在直接类型匹配时生效。对于需要 `QString` 参数的方法，如果 caster 已注册则可自动转换，但很多场景下为了保持接口简洁，会使用 Lambda 将 `std::string` 转为 `QString`：
+
+=== "直接绑定（caster 自动转换）"
+
+    当 `DAPybind11QtCaster.hpp` 已注册 `QString` 的 `type_caster` 时，Python `str` 可自动转换为 `QString`：
+    
+    ```cpp
+    // 如果 QString caster 已生效，可直接绑定
+    pybind11::class_<DA::DAClass>(m, "DAClass")
+        .def("setName", &DA::DAClass::setName,
+             pybind11::arg("name"));
+    // Python: obj.setName("hello") → QString("hello") 自动转换
+    ```
+
+=== "Lambda 包装（显式转换）"
+
+    为确保兼容性和明确性，实际项目中大量使用 Lambda 包装模式：
+    
+    ```cpp title="Lambda 包装 std::string→QString"
+    pybind11::class_<DA::DAUIInterface>(m, "DAUIInterface")
+        .def("addInfoLogMessage",
+             [](DA::DAUIInterface& self, const std::string& msg, bool showInStatusBar) {
+                 self.addInfoLogMessage(
+                     QString::fromStdString(msg), showInStatusBar);
+             },
+             pybind11::arg("msg"),
+             pybind11::arg("showInStatusBar") = true)
+    ```
+    
+    Lambda 包装的优势：
+    - 参数类型明确为 `std::string`，Python 端传入 `str` 无歧义
+    - 可添加默认参数值（如 `showInStatusBar = true`）
+    - 可组合多个转换步骤
+
+!!! info "何时使用 Lambda 包装？"
+    - 方法参数为 `QString` 且需要设置默认值 → **Lambda 包装**
+    - 方法返回值为 `QString` → **Lambda 包装**（返回 `std::string`）
+    - 方法参数为 `QJsonObject` → **Lambda 包装**（使用 `DAPyJsonCast` 辅助）
+    - 参数为简单 `int`/`double`/`bool` → **直接绑定**
+
+#### 3.2 QList<绑定类型> 手动转换模式
+
+当 `QList<T>` 中的 `T` 是已绑定的类型时，`DAPybind11QtCaster` 的自动转换会将 `QList<DAData>` 转为 Python `list`，但列表元素类型可能不正确。为确保列表中的每个元素以正确的绑定类型返回，需手动遍历转换：
+
+```cpp title="QList<DAData> 手动转换（源自 DAInterfacePythonBinding.cpp）"
+.def("getAllDatas",
+    [](DA::DADataManagerInterface& self) {
+        QList<DA::DAData> datas = self.getAllDatas();
+        pybind11::list pyList;
+        for (const DA::DAData& data : datas) {
+            pyList.append(data);  // 每个 DAData 以绑定类型加入
+        }
+        return pyList;
+    },
+    "Get all data objects as a list")
+```
+
+**对比：自动转换 vs 手动转换**
+
+| 方式 | 代码 | 适用场景 |
+|------|------|----------|
+| 自动转换（caster） | `.def("getXxx", &Class::getXxx)` | `QList<int>`、`QList<QString>` 等基本类型 |
+| 手动转换（Lambda） | Lambda 遍历 append | `QList<DAData>` 等绑定类型，需确保元素类型正确 |
+
+!!! tip "QList<int> 也建议手动转换"
+    虽然 `QList<int>` 有自动 caster，但在 `DAInterfacePythonBinding.cpp` 中 `getOperateDataSeries()` 仍使用了手动转换，以保持风格统一并避免隐式依赖：
+    
+    ```cpp
+    .def("getOperateDataSeries",
+        [](DA::DADataManagerInterface& self) {
+            QList<int> colindex = self.getOperateDataSeries();
+            pybind11::list list;
+            for (int v : colindex) {
+                list.append(v);
+            }
+            return list;
+        })
+    ```
+
+#### 3.3 return_value_policy 决策树
+
+选择正确的 `return_value_policy` 是避免内存泄漏和崩溃的关键。下图展示了策略选择的决策流程：
+
+```mermaid
+flowchart TD
+    A[返回值类型?] --> B{C++单例对象?}
+    B -->|是| C[reference<br/>Python不接管所有权]
+    B -->|否| D{内部成员对象?}
+    D -->|是| E[reference_internal<br/>生命周期与父对象绑定]
+    D -->|否| F{新创建的值?}
+    F -->|是| G[automatic<br/>pybind11自动决定]
+    F -->|否| H{需要副本?}
+    H -->|是| I[copy<br/>始终返回新副本]
+    H -->|否| C
+    
+    style C fill:#ffcdd2
+    style E fill:#fff9c4
+    style G fill:#c8e6c9
+    style I fill:#e1f5fe
+```
+
+**各策略的实际使用示例**（源自项目绑定代码）：
+
+```cpp title="return_value_policy 使用示例"
+// 1. 单例对象 — reference（最常见！）
+m.def("getCore", &DA::getAppCorePtr,
+      "Return the application core interface (singleton)",
+      pybind11::return_value_policy::reference);
+// ^^^ 务必指定 reference，否则 pybind11 会尝试析构单例！
+
+// 2. 内部成员 — reference_internal
+pybind11::class_<DA::DACoreInterface>(m, "DACoreInterface")
+    .def("getUiInterface", &DA::DACoreInterface::getUiInterface,
+         pybind11::return_value_policy::reference_internal)
+    .def("getDataManagerInterface", 
+         &DA::DACoreInterface::getDataManagerInterface,
+         pybind11::return_value_policy::reference_internal);
+// ^^^ 返回的 UI/DataManager 接口与 CoreInterface 生命周期绑定
+
+// 3. 新值 — automatic（默认，无需显式指定）
+pybind11::class_<DA::DAData>(m, "DAData")
+    .def(pybind11::init<>());  // Python 创建，Python 管理
+```
+
+!!! danger "单例务必指定 reference"
+    `PYBIND11_EMBEDDED_MODULE(da_app, m)` 中 `getCore()` 如果不指定 `return_value_policy::reference`，pybind11 默认使用 `automatic`，会在 Python 端对象析构时尝试 `delete` C++ 单例，导致程序崩溃。
+
+#### 3.4 枚举导出模式
+
+枚举导出使用 `pybind11::enum_` 绑定，并调用 `.export_values()` 使枚举值在模块级别可见：
+
+```cpp title="枚举导出示例（源自 DADataPythonBinding.cpp）"
+// 导出 da_data.DataChangeType (enum)
+pybind11::enum_<DA::DADataManager::ChangeType>(m, "DataChangeType")
+    .value("Name", DA::DADataManager::ChangeName)
+    .value("Describe", DA::DADataManager::ChangeDescribe)
+    .value("Value", DA::DADataManager::ChangeValue)
+    .value("ColumnName", DA::DADataManager::ChangeDataframeColumnName)
+    .export_values();
+
+// Python 端使用方式：
+// import da_data
+// da_data.DataChangeType.Name      # 直接访问枚举值
+// da_data.DataChangeType.Value     # 不需要通过类实例
+```
+
+!!! tip "枚举命名规范"
+    - pybind11 模块名中的枚举类型名应与 C++ 枚举名一致
+    - `.value()` 的第一个参数是 Python 端可见的名称，建议与 C++ 枚举值名一致（去掉前缀）
+    - **务必调用 `.export_values()`**，否则枚举值只能在 `da_data.DataChangeType.Name` 方式访问，不能在模块级别直接访问
+
+#### 3.5 重载函数的处理
+
+C++ 类中常有同名重载函数（如 `addData` 与 `addData_`），绑定时需使用 `static_cast` 消歧：
+
+```cpp title="重载函数消歧示例（源自 DADataPythonBinding.cpp）"
+pybind11::class_<DA::DADataManager>(m, "DADataManager")
+    .def("addData",
+         static_cast<void(DA::DADataManager::*)(DA::DAData&)>(
+             &DA::DADataManager::addData),
+         "Add a DAData object to manager")
+    .def("addData_",
+         static_cast<void(DA::DADataManager::*)(DA::DAData&)>(
+             &DA::DADataManager::addData_),
+         "Add data with undo/redo support");
+```
+
+!!! warning "重载消歧的两个要点"
+    1. 使用 `static_cast<返回类型(类名::*)(参数类型)>(&函数名)` 精确指定重载版本
+    2. 不同重载建议使用不同 Python 方法名（如 `addData` vs `addData_`），避免 Python 端混淆
+
+### 步骤四：处理 Qt 类型
+
+Qt 类型与 Python 类型之间的转换是绑定的核心难点。`DAPybind11QtCaster.hpp` 提供了自动转换支持，但并非所有场景都能覆盖。
+
+#### 4.1 自动转换类型表
+
+以下 Qt 类型已通过 `type_caster` 特化实现自动双向转换：
+
+| Qt 类型 | Python 类型 | caster 实现位置 | 说明 |
+|---------|-------------|-----------------|------|
+| `QString` | `str` | `DAPybind11QtCaster.hpp` | UTF-8 编码自动转换 |
+| `QByteArray` | `bytes` | `DAPybind11QtCaster.hpp` | 支持二进制数据 |
+| `QDate` | `datetime.date` | `DAPybind11QtCaster.hpp` | 日期类型 |
+| `QTime` | `datetime.time` | `DAPybind11QtCaster.hpp` | 时间类型 |
+| `QDateTime` | `datetime.datetime` | `DAPybind11QtCaster.hpp` | 支持 pandas.Timestamp、numpy.datetime64 |
+| `QList<T>` | `list` | `DAPybind11QtCaster.hpp` | 泛型支持（T 需有 caster） |
+| `QVector<T>` | `list` | `DAPybind11QtCaster.hpp` | Qt5 专用 |
+| `QSet<T>` | `set` | `DAPybind11QtCaster.hpp` | 集合类型 |
+| `QHash<K,V>` | `dict` | `DAPybind11QtCaster.hpp` | 哈希映射 |
+| `QMap<K,V>` | `dict` | `DAPybind11QtCaster.hpp` | 有序映射 |
+| `QVariant` | `Any` | `DAPybind11QtCaster.hpp` | 通用类型，支持 numpy 数组/标量 |
+
+#### 4.2 需要 Lambda 包装的场景
+
+以下场景即使有 caster 也需要 Lambda 包装：
+
+| 场景 | 原因 | 示例 |
+|------|------|------|
+| `QString` 参数 + 默认值 | caster 不支持参数默认值 | `addInfoLogMessage(msg, showInStatusBar=true)` |
+| `QJsonObject` 返回值 | caster 未覆盖 `QJsonObject` → `dict` | `getConfigValues()` 使用 `DAPyJsonCast` |
+| `QList<绑定类型>` 返回值 | 需确保元素为正确绑定类型 | `getAllDatas()` 手动遍历 |
+| `QRegularExpression` 参数 | caster 未覆盖 | `findDatasReg()` Lambda 构造 |
+| 函数重载消歧 | caster 无法区分重载版本 | `static_cast` + Lambda |
+
+!!! info "DAPyJsonCast 辅助工具"
+    对于 `QJsonObject` ↔ Python `dict` 的转换，项目提供了 `DAPyJsonCast.h` 中的辅助函数：
+    
+    ```cpp
+    // QJsonObject → Python dict
+    return DA::PY::qjsonObjectToPyDict(jsonObj);
+    ```
+    
+    此函数处理了 `QJsonObject` 中各种值类型（字符串、数字、数组、嵌套对象）到 Python 对象的完整转换。
+
+### 步骤五：CMake 配置
+
+Python 绑定代码必须通过 `DA_ENABLE_PYTHON` 条件编译控制，确保在不启用 Python 时项目仍可正常编译：
+
+```cmake title="CMakeLists.txt - Python 绑定条件编译配置"
+# 在模块的 CMakeLists.txt 中
+if(DA_ENABLE_PYTHON)
+    # 添加绑定源文件
+    target_sources(${PROJECT_NAME} PRIVATE
+        DADataPythonBinding.h
+        DADataPythonBinding.cpp
+    )
+    
+    # 链接 pybind11
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        pybind11::embed
+        DAPyBindQt  # Qt 类型 caster 模块
+    )
+    
+    # 确保绑定头文件可被其他模块引用
+    target_include_directories(${PROJECT_NAME} PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+endif()
+```
+
+!!! warning "条件编译的重要性"
+    - `DA_ENABLE_PYTHON` 由主 `CMakeLists.txt` 根据是否找到 Python 决定
+    - 绑定文件中所有 `#include "DAPybind11InQt.h"` 等依赖应包裹在 `#ifdef DA_ENABLE_PYTHON` 中
+    - 头文件中的 `initXXXPythonBinding()` 声明也应在 `DA_ENABLE_PYTHON` 条件下
+    - **不启用 Python 时**，绑定代码完全不参与编译，不影响无 Python 环境的用户
+
+### 步骤六：构建与测试
+
+绑定代码完成后，需要验证其正确性：
+
+**构建验证步骤**：
+
+1. **编译检查**：确认 `DA_ENABLE_PYTHON=ON` 时绑定文件编译无错误
+2. **无 Python 编译检查**：确认 `DA_ENABLE_PYTHON=OFF` 时项目仍可正常编译
+3. **运行测试**：在 Python 解释器中验证绑定模块
+
+```python title="Python 端验证绑定"
+# 在 DAWorkBench 内嵌 Python 中执行
+import da_app
+import da_data
+
+# 1. 验证单例获取
+core = da_app.getCore()
+assert core is not None, "getCore() should return non-None singleton"
+
+# 2. 验证接口链路
+ui = core.getUiInterface()
+data_mgr = core.getDataManagerInterface()
+assert ui is not None
+assert data_mgr is not None
+
+# 3. 集成测试 - 完整调用链路
+dadata = da_data.DAData()
+dadata.setName("test_data")
+assert dadata.getName() == "test_data"
+
+# 4. 验证枚举
+assert da_data.DataChangeType.Name is not None
+assert da_data.DataChangeType.Value is not None
+
+# 5. 验证 QString 转换
+ui.addInfoLogMessage("测试消息")  # std::string → QString 自动转换
+```
+
+!!! tip "逐步验证策略"
+    - 先验证最简绑定（如 `da_app` 的 `getCore()`）能否正常返回
+    - 再验证 Lambda 包装的 QString 转换是否生效
+    - 最后验证 QList 手动转换和 return_value_policy 是否正确
+    - **每添加一个绑定类就测试一次**，不要积攒到最后
+
+### 常见陷阱清单
+
+!!! failure "陷阱1：忘记 GIL 管理"
+
+    **症状**：在后台线程调用 Python 代码时程序崩溃（段错误）
+    
+    **原因**：非 Python 线程调用 Python API 时未获取 GIL
+    
+    ```cpp
+    // ❌ 错误：后台线程直接调用 Python
+    void backgroundThread() {
+        py::object result = py::module::import("pandas");  // 崩溃！
+    }
+    
+    // ✅ 正确：获取 GIL 后再调用
+    void backgroundThread() {
+        pybind11::gil_scoped_acquire acquire;
+        py::object result = py::module::import("pandas");  // OK
+    }
+    ```
+
+!!! failure "陷阱2：错误的所有权策略"
+
+    **症状**：程序退出时崩溃，或 Python 对象被意外释放
+    
+    **原因**：未对单例和内部引用指定 `return_value_policy::reference` 或 `reference_internal`
+    
+    ```cpp
+    // ❌ 错误：单例默认策略可能导致 Python 尝试 delete
+    m.def("getCore", &DA::getAppCorePtr);
+    
+    // ✅ 正确：显式指定 reference
+    m.def("getCore", &DA::getAppCorePtr,
+          pybind11::return_value_policy::reference);
+    ```
+
+!!! failure "陷阱3：PIMPL 类只绑定 public 接口"
+
+    **症状**：编译错误或运行时访问非法内存
+    
+    **原因**：尝试绑定 PIMPL 类的 `PrivateData` 成员
+    
+    ```cpp
+    // ❌ 错误：绑定私有实现
+    py::class_<DA::DAPyModuleNumpy>(m, "DAPyModuleNumpy")
+        .def_readwrite("m_ptr", &DA::DAPyModuleNumpy::m_ptr);  // 私有成员！
+    
+    // ✅ 正确：只绑定公共方法
+    py::class_<DA::DAPyModuleNumpy>(m, "DAPyModuleNumpy")
+        .def("isInstanceNumber", &DA::DAPyModuleNumpy::isInstanceNumber);
+    ```
+
+!!! failure "陷阱4：QwtPlotItem 子类不能使用 Q_OBJECT"
+
+    **症状**：编译报错 `meta-object compiler cannot process this class`
+    
+    **原因**：`QwtPlotItem` 不继承 `QObject`，其子类不能使用 `Q_OBJECT` 宏和信号槽
+    
+    ```cpp
+    // ❌ 错误：QwtPlotItem 子类加 Q_OBJECT
+    class DAChartItem : public QwtPlotItem {
+        Q_OBJECT  // 编译错误！QwtPlotItem 不是 QObject
+    };
+    
+    // ✅ 正确：QwtPlotItem 子类不加 Q_OBJECT，绑定只暴露方法
+    class DAChartItem : public QwtPlotItem {
+        // 不加 Q_OBJECT，不能使用信号槽
+    };
+    
+    // 绑定时只能绑定普通方法
+    py::class_<DAChartItem>(m, "DAChartItem")
+        .def("setItemAttribute", &DAChartItem::setItemAttribute);
+    ```
+
+!!! failure "陷阱5：忘记 #include DAPybind11InQt.h"
+
+    **症状**：编译报错 `slots` 相关的语法错误
+    
+    **原因**：直接 `#include <pybind11/pybind11.h>` 导致 Qt `slots` 宏冲突
+    
+    ```cpp
+    // ❌ 错误：直接引入 pybind11 头文件
+    #include <pybind11/pybind11.h>  // slots 宏冲突！
+    
+    // ✅ 正确：使用 DAPybind11InQt.h
+    #include "DAPybind11InQt.h"  // 安全引入，已处理 slots 冲突
+    ```
+
+---
+
+## 第九部分：模块绑定路线图
+
+### 已完成模块
+
+| 模块 | 绑定文件 | Python 模块名 | 主要导出类 | 说明 |
+|------|----------|---------------|-----------|------|
+| APP | `src/APP/PythonBinding/DAAppPythonBinding.cpp` | `da_app` | 全局函数 | 最简绑定，仅暴露 `getCore()` 单例和日志函数 |
+| Interface | `src/DAInterface/DAInterfacePythonBinding.cpp` | `da_interface` | `DAPythonSignalHandler`, `DADataManagerInterface`, `DAStatusBarInterface`, `DACommandInterface`, `DAUIInterface`, `DACoreInterface` | 最复杂绑定，大量 Lambda 包装处理 Qt 类型和跨线程回调 |
+| Data | `src/DAData/DADataPythonBinding.cpp` | `da_data` | `DAData`, `DataChangeType`, `DADataManager` | 数据类型绑定，包含枚举导出和重载消歧 |
+
+### 规划中模块
+
+| 模块 | 当前状态 | 建议下一步 | 优先级理由 |
+|------|----------|-----------|-----------|
+| DAFigure | 未绑定 | 创建 `DAFigurePythonBinding.cpp`，绑定 `DAFigureInterface` | Python 脚本高频需要创建/编辑图表，是数据分析的核心输出 |
+| DAProject | 未绑定 | 创建 `DAProjectPythonBinding.cpp`，绑定 `DAProjectInterface` | 项目保存/加载是工作流持久化的基础，脚本需要操作项目状态 |
+| DAGui | 未绑定 | 创建 `DAGuiPythonBinding.cpp`，绑定关键 GUI 接口 | GUI 组件多数可通过 `da_interface` 的 `DAUIInterface` 间接访问，优先级较低 |
+| DAGraphicsView | 未绑定 | 创建 `DAGraphicsViewPythonBinding.cpp`，绑定工作流节点接口 | 工作流操作复杂，需先完成 Figure 和 Project 绑定后再考虑 |
+
+### 绑定优先级排序逻辑
+
+优先级排序遵循以下原则：
+
+1. **Figure > Project**：图表是数据分析的核心输出，Python 脚本最常用的功能是创建和编辑图表
+2. **Project > Workflow**：项目持久化是工作流执行的前提，保存/加载项目比操作工作流节点更基础
+3. **Workflow > Gui**：工作流节点的 Python 操作需求较少，多数 GUI 功能已通过 `DAUIInterface` 间接暴露
+
+!!! info "路线图说明"
+    上述路线图为当前规划，实际优先级可能根据功能需求和用户反馈调整。建议在开始新模块绑定前，先在 `da_interface` 中检查是否已有相关接口可以间接满足需求。
+
+---
+
+## 第十部分：Python 脚本开发实战
+
+本部分详细说明如何在 DAWorkBench 中编写 Python 脚本，通过已绑定的 C++ 接口实现数据分析、界面交互和跨线程操作。
+
+### 四种交互模式总览
+
+DAWorkBench 中 C++ 与 Python 的交互存在四种模式，每种模式有不同的适用场景：
+
+```mermaid
+flowchart LR
+    subgraph M1["模式1: 嵌入式模块"]
+        direction TB
+        PY1["Python 脚本"] -->|"import da_app<br/>import da_interface<br/>import da_data"| CPP1["C++ 绑定对象"]
+    end
+    
+    subgraph M2["模式2: DAPyModule 导入"]
+        direction TB
+        CPP2["C++ 代码"] -->|"DAPyModule::import()"| PY2["Python 模块<br/>(如 numpy)"]
+    end
+    
+    subgraph M3["模式3: DAPyScripts 包装"]
+        direction TB
+        CPP3["C++ 单例"] -->|"DAPyScriptsDataFrame<br/>等包装类"| PY3["Python 函数<br/>(如 pandas API)"]
+    end
+    
+    subgraph M4["模式4: 线程轮询"]
+        direction TB
+        CPP4["C++ QTimer"] -->|"gil_scoped_release<br/>+ 定时检查"| PY4["Python 进程进度"]
+    end
+    
+    style M1 fill:#e1f5fe
+    style M2 fill:#fff9c4
+    style M3 fill:#c8e6c9
+    style M4 fill:#ffcdd2
+```
+
+四种模式的详细说明：
+
+| 模式 | 方向 | 机制 | 典型示例 | 适用场景 |
+|------|------|------|----------|----------|
+| 嵌入式模块 | Python → C++ | `PYBIND11_EMBEDDED_MODULE` | `da_app`, `da_interface`, `da_data` | Python 脚本主动操作 C++ 对象 |
+| DAPyModule 导入 | C++ → Python | `DAPyModule::import("模块名")` | `DAPyModuleNumpy` | C++ 需调用 Python 库函数 |
+| DAPyScripts 包装 | C++ → Python | C++ 单例包装 Python 函数 | `DAPyScriptsDataFrame`, `DAPyScriptsIO` | C++ 高频调用 Python 固定 API |
+| 线程轮询 | C++ ↔ Python | `gil_scoped_release` + QTimer | 长时间运算进度报告 | Python 后台任务进度反馈 |
+
+### 标准脚本开发流程
+
+DAWorkBench 中 Python 脚本的标准开发流程遵循五步模式，以 `dataframe_cleaner.py` 为参考：
+
+```mermaid
+flowchart TD
+    S1["Step 1: 获取核心接口<br/>core = da_app.getCore()"] --> S2["Step 2: 获取数据<br/>utils.get_select_dataframe<br/>_and_subset_index()"]
+    S2 --> S3["Step 3: 构建配置对话框<br/>PropertyConfigBuilder<br/>+ ui.getConfigValues()"]
+    S3 --> S4["Step 4: 执行操作<br/>beginDataOperateCommand<br/>/endDataOperateCommand"]
+    S4 --> S5["Step 5: 通知刷新<br/>notifyDataChangedSignal<br/>+ addMessage"]
+    
+    S3 -.->|用户取消| EXIT["返回 None"]
+    S4 -.->|异常| CATCH["捕获异常<br/>addCriticalLogMessage"]
+    
+    style S1 fill:#e1f5fe
+    style S3 fill:#fff9c4
+    style S4 fill:#c8e6c9
+```
+
+#### Step 1：获取核心接口
+
+所有脚本操作的起点是获取 `DACoreInterface` 单例，再通过它获取所需的子接口：
+
+```python title="Step 1: 获取核心接口"
+import da_app, da_interface, da_data
+
+# 获取核心接口单例
+core = da_app.getCore()
+
+# 通过核心接口获取子接口
+ui = core.getUiInterface()                # 界面操作接口
+data_mgr = core.getDataManagerInterface()  # 数据管理接口
+handler = core.getPythonSignalHandler()    # 跨线程信号处理器
+```
+
+#### Step 2：获取数据
+
+脚本通常需要获取用户当前选中的数据对象。标准模式是获取选中数据列表并提取第一个：
+
+```python title="Step 2: 获取选中的数据"
+# 获取用户选中的数据列表
+select_datas = data_mgr.getSelectDatas()
+if not select_datas:
+    ui.addWarningLogMessage("请先选择要处理的数据")
+    return None
+
+# 取第一个选中的数据
+dadata = select_datas[0]
+
+# 检查数据类型
+if not dadata.isDataFrame():
+    ui.addWarningLogMessage("请选择 DataFrame 类型的数据")
+    return None
+
+# 获取 pandas DataFrame 对象
+df = dadata.toDataFrame()
+```
+
+!!! tip "数据获取辅助函数"
+    项目提供了 `DAWorkbench.utils` 模块中的辅助函数，可一步完成"获取选中 DataFrame + 子集索引"：
+    
+    ```python
+    from DAWorkbench import utils
+    df, subset_index = utils.get_select_dataframe_and_subset_index()
+    ```
+    
+    此函数封装了上述获取数据 + 类型检查 + 提取子集索引的完整流程。
+
+#### Step 3：构建配置对话框
+
+使用 `PropertyConfigBuilder` 构建参数配置界面，然后通过 `ui.getConfigValues()` 在 C++ 端弹出对话框：
+
+```python title="Step 3: 构建配置对话框（源自 dataframe_cleaner.py）"
+import DAWorkbench.property_config_builder as cfgBuilder
+
+builder = cfgBuilder.PropertyConfigBuilder("删除缺失值设置")
+
+# 添加枚举选项
+builder.add_enum(
+    name="how",
+    display_name="删除条件",
+    default_value="any",
+    enum_items=["any", "all"],
+    enum_descriptions=[
+        "行中任意值为空时删除",
+        "行中所有值为空时删除"
+    ]
+)
+
+# 添加布尔选项
+builder.add_bool(
+    name="reindex",
+    display_name="重置行号",
+    default_value=True
+)
+
+# 显示对话框并获取用户输入
+config = ui.getConfigValues(builder.to_json(), "dataframecleaner.dropna")
+if not config:
+    return None  # 用户取消了对话框
+```
+
+!!! info "PropertyConfigBuilder 详细文档"
+    `PropertyConfigBuilder` 支持的属性类型包括：`string`, `int`, `double`, `bool`, `enum`, `color`, `font`, `file`, `folder`, `stringlist`，还支持 `begin_group()`/`end_group()` 分组以及 `from_function_signature()` 自动生成配置。
+    
+    完整源码参见：`src/PyScripts/DAWorkbench/property_config_builder.py`
+
+#### Step 4：执行操作并包装撤销/重做
+
+数据修改操作应使用 `beginDataOperateCommand`/`endDataOperateCommand` 包装，以支持撤销/重做：
+
+```python title="Step 4: 执行操作（撤销/重做包装）"
+command = ui.getCommandInterface()
+
+# 开始数据操作命令（记录修改前的状态）
+command.beginDataOperateCommand(dadata, "删除缺失值", True, True)
+
+# 执行 pandas 操作
+how = config.get("how", "any")
+reindex = config.get("reindex", True)
+df = dadata.toDataFrame()
+old_len = len(df)
+
+df = df.dropna(how=how)
+if reindex:
+    df = df.reset_index(drop=True)
+
+# 更新数据对象
+dadata.setPyObject(df)
+
+# 结束数据操作命令（记录修改后的状态）
+command.endDataOperateCommand(dadata)
+```
+
+!!! warning "beginDataOperateCommand 参数说明"
+    - `data`：操作的 `DAData` 对象
+    - `text`：撤销/重做列表中显示的操作描述（`std::string`）
+    - `isObjectPersist`：是否保留对象引用（默认 `True`）
+    - `isSkipFirstRedo`：是否跳过首次重做（默认 `True`，因为操作已执行）
+    
+    **务必**在操作完成后调用 `endDataOperateCommand`，否则撤销栈会处于不一致状态。
+
+#### Step 5：通知界面刷新与日志
+
+操作完成后，需要通知 C++ 界面刷新数据显示，并记录操作日志：
+
+```python title="Step 5: 通知刷新与日志"
+# 通知数据变化（触发 C++ 界面刷新）
+data_mgr.notifyDataChangedSignal(dadata, da_data.DataChangeType.Value)
+
+# 记录操作日志
+removed = old_len - len(df)
+ui.addInfoLogMessage(f"已删除 {removed} 行包含缺失值的数据")
+
+# 标记项目为已修改
+core.setProjectDirty(True)
+```
+
+!!! tip "notifyDataChangedSignal 的枚举参数"
+    `notifyDataChangedSignal` 的第二个参数为 `DataChangeType` 枚举，决定界面刷新的范围：
+    
+    | 枚举值 | 说明 | 刷新范围 |
+    |--------|------|----------|
+    | `da_data.DataChangeType.Name` | 数据名称变更 | 刷新数据列表标题 |
+    | `da_data.DataChangeType.Describe` | 数据描述变更 | 刷新数据描述信息 |
+    | `da_data.DataChangeType.Value` | 数据值变更 | 刷新数据表格和图表 |
+    | `da_data.DataChangeType.ColumnName` | 列名变更 | 刷新列标题 |
+
+### getConfigValues JSON 对话框模式
+
+`getConfigValues` 是 Python 脚本与 C++ 界面交互的核心桥梁。它的工作原理是：
+
+1. Python 端通过 `PropertyConfigBuilder` 生成 JSON 配置描述
+2. 将 JSON 字符串传给 C++ 的 `getConfigValues()` 方法
+3. C++ 端解析 JSON，弹出 `DACommonPropertySettingDialog` 对话框
+4. 用户在对话框中设置参数后点击确认
+5. C++ 将用户设置转为 `QJsonObject` 并通过 `DAPyJsonCast` 转为 Python `dict` 返回
+
+```python title="getConfigValues 完整使用示例"
+import da_app
+import DAWorkbench.property_config_builder as cfgBuilder
+
+core = da_app.getCore()
+ui = core.getUiInterface()
+
+# 1. 构建配置
+builder = cfgBuilder.PropertyConfigBuilder("数据处理参数")
+
+builder.add_int(name="threshold", display_name="阈值",
+                default_value=100, min_value=0, max_value=1000)
+
+builder.add_double(name="ratio", display_name="比例",
+                   default_value=0.5, min_value=0.0, max_value=1.0, step=0.01)
+
+builder.add_enum(name="method", display_name="方法",
+                 default_value="linear",
+                 enum_items=["linear", "polynomial", "spline"],
+                 enum_descriptions=["线性插值", "多项式插值", "样条插值"])
+
+builder.add_bool(name="preview", display_name="预览结果", default_value=False)
+
+# 2. 生成 JSON 并弹出对话框
+json_config = builder.to_json()
+config = ui.getConfigValues(json_config, "my_module.my_function")
+
+# 3. 用户取消则返回空 dict
+if not config:
+    print("用户取消了操作")
+    return None
+
+# 4. 使用返回的参数
+threshold = config.get("threshold", 100)     # int
+ratio = config.get("ratio", 0.5)             # float
+method = config.get("method", "linear")       # str
+preview = config.get("preview", False)        # bool
+
+print(f"阈值: {threshold}, 比例: {ratio}, 方法: {method}")
+```
+
+!!! warning "getConfigValues 的 cacheKey 参数"
+    `cacheKey` 参数用于记住用户上次设置的参数，下次打开对话框时自动恢复。建议使用 `"模块名.函数名"` 格式作为 cacheKey，如 `"dataframecleaner.dropna"`。
+    
+    如果 cacheKey 为空字符串，对话框每次都使用默认值。
+
+### 撤销/重做命令模式
+
+`DACommandInterface` 提供的撤销/重做机制是数据操作的标准包装方式：
+
+```python title="撤销/重做标准使用模式"
+import da_app, da_data
+
+core = da_app.getCore()
+ui = core.getUiInterface()
+command = ui.getCommandInterface()
+data_mgr = core.getDataManagerInterface()
+
+# 获取数据
+select_datas = data_mgr.getSelectDatas()
+dadata = select_datas[0]
+
+# ① 开始命令 — 记录当前状态作为"撤销点"
+command.beginDataOperateCommand(dadata, "数据标准化操作", True, True)
+
+try:
+    # ② 执行数据修改
+    df = dadata.toDataFrame()
+    df = (df - df.mean()) / df.std()  # Z-score 标准化
+    dadata.setPyObject(df)
+    
+    # ③ 结束命令 — 记录新状态作为"重做点"
+    command.endDataOperateCommand(dadata)
+    
+    # ④ 通知界面刷新
+    data_mgr.notifyDataChangedSignal(dadata, da_data.DataChangeType.Value)
+    ui.addInfoLogMessage("数据标准化完成")
+    
+except Exception as e:
+    # ⑤ 异常时也需要结束命令（避免撤销栈不一致）
+    command.endDataOperateCommand(dadata)
+    ui.addCriticalLogMessage(f"操作失败: {str(e)}")
+```
+
+!!! info "撤销/重做的工作原理"
+    `beginDataOperateCommand` 在调用时会序列化当前数据状态作为撤销点，`endDataOperateCommand` 会序列化修改后的状态作为重做点。用户执行撤销（Ctrl+Z）时恢复到 begin 时的状态，执行重做（Ctrl+Y）时恢复到 end 时的状态。
+
+### 跨线程操作模式
+
+当 Python 脚本在后台线程运行时，需要通过 `DAPythonSignalHandler.callInMainThread` 安全地操作 UI：
+
+```python title="DAPythonSignalHandler.callInMainThread 使用示例"
+import da_app
+
+core = da_app.getCore()
+handler = core.getPythonSignalHandler()
+ui = core.getUiInterface()
+
+def background_task():
+    """在后台线程中执行耗时计算"""
+    import pandas as pd
+    import numpy as np
+    
+    # 耗时计算（不需要 UI）
+    df = pd.DataFrame(np.random.randn(1000000, 10))
+    result = df.describe()
+    
+    # 需要更新 UI 时，通过 callInMainThread 投递到主线程
+    def update_ui():
+        ui.addInfoLogMessage("后台计算完成")
+        # 在主线程中安全地操作 UI
+    
+    handler.callInMainThread(update_ui)
+    
+    return result
+
+# 在后台线程中调用
+background_task()
+```
+
+!!! warning "callInMainThread 的 GIL 管理"
+    `callInMainThread` 在 C++ 绑定中已正确处理了 GIL 管理：
+    
+    ```cpp title="DAInterfacePythonBinding.cpp - callInMainThread 绑定实现"
+    .def("callInMainThread",
+        [](DA::DAPythonSignalHandler& self, pybind11::function pyFunc) {
+            self.callInMainThread([pyFunc]() {
+                try {
+                    pybind11::gil_scoped_acquire acquire;  // 在主线程执行时获取 GIL
+                    pyFunc();
+                } catch (const pybind11::error_already_set& e) {
+                    qCritical() << "Python error in main thread callback:" << e.what();
+                }
+            });
+        })
+    ```
+    
+    绑定层已在回调执行前自动获取 GIL，Python 脚本无需额外处理 GIL。但需注意回调函数 `pyFunc` 的引用计数已被绑定层正确管理（通过 Lambda 捕获）。
+
+### Thread Status Manager 使用指南
+
+对于长时间运行的 Python 任务，`DAWorkbench` 提供了进度报告机制：
+
+```python title="进度报告简要示例"
+import da_app
+
+core = da_app.getCore()
+ui = core.getUiInterface()
+status_bar = ui.getStatusBar()
+
+# 显示进度条
+status_bar.showProgressBar()
+status_bar.setProgressText("正在处理数据...")
+
+# 在循环中更新进度
+for i, item in enumerate(data_list):
+    # 处理每个数据项
+    process_item(item)
+    
+    # 更新进度
+    progress = int((i + 1) / len(data_list) * 100)
+    status_bar.setProgress(progress)
+    ui.processEvents()  # 让 UI 有机会刷新
+
+# 完成后隐藏进度条
+status_bar.hideProgressBar()
+```
+
+!!! info "Thread Status Manager"
+    更复杂的后台任务进度报告可通过 `DAWorkbench.thread_status_manager` 模块实现，支持线程状态查询、进度回调等功能。
+    
+    完整源码参见：`src/PyScripts/DAWorkbench/` 目录下的线程状态管理相关文件。
+
+### !!!tip 最佳实践
+
+!!! tip "Python 脚本开发最佳实践"
+
+    1. **先用 Mock 测试逻辑**
+    
+        在没有 C++ 界面时，使用 Mock 对象验证脚本逻辑：
+        
+        ```python title="Mock 测试示例"
+        # test_dataframe_cleaner.py
+        from unittest.mock import MagicMock
+        
+        # Mock C++ 绑定对象
+        mock_core = MagicMock()
+        mock_ui = MagicMock()
+        mock_data_mgr = MagicMock()
+        
+        mock_core.getUiInterface.return_value = mock_ui
+        mock_core.getDataManagerInterface.return_value = mock_data_mgr
+        
+        # Mock 数据对象
+        mock_data = MagicMock()
+        mock_data.isDataFrame.return_value = True
+        import pandas as pd
+        test_df = pd.DataFrame({"A": [1, None, 3], "B": [4, 5, None]})
+        mock_data.toDataFrame.return_value = test_df
+        
+        mock_data_mgr.getSelectDatas.return_value = [mock_data]
+        
+        # 测试逻辑
+        # ... 使用 mock 对象执行脚本逻辑 ...
+        
+        # 验证调用
+        mock_data.setPyObject.assert_called_once()
+        mock_ui.addInfoLogMessage.assert_called_once()
+        ```
+    
+    2. **使用 assert 在 Mock 中验证关键行为**
+    
+        ```python
+        # 验证数据确实被更新
+        assert mock_data.setPyObject.called
+        
+        # 验证日志消息包含关键信息
+        call_args = mock_ui.addInfoLogMessage.call_args
+        assert "删除" in call_args[0][0]
+        ```
+    
+    3. **始终检查用户取消**
+    
+        ```python
+        config = ui.getConfigValues(builder.to_json(), cache_key)
+        if not config:
+            return None  # 用户取消是正常流程，不是异常
+        ```
+    
+    4. **异常处理要完整**
+    
+        ```python
+        try:
+            # 数据操作
+            command.beginDataOperateCommand(dadata, "操作描述", True, True)
+            # ... 处理逻辑 ...
+            command.endDataOperateCommand(dadata)
+        except Exception as e:
+            command.endDataOperateCommand(dadata)  # 异常时也要结束命令
+            ui.addCriticalLogMessage(f"操作失败: {str(e)}")
+            return None
+        ```
+    
+    5. **跨线程操作务必使用 callInMainThread**
+    
+        ```python
+        # 后台线程中操作 UI 的唯一正确方式
+        handler.callInMainThread(lambda: ui.addInfoLogMessage("消息"))
+        
+        # 绝对不要在后台线程直接操作 UI！
+        # ui.addInfoLogMessage("消息")  ← 崩溃风险
+        ```
