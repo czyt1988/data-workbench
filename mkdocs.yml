@@ -67,7 +67,12 @@ nav:
       - 架构说明:
           - 模块依赖关系: zh/dev-guide/module-dependency.md
           - 接口模块: zh/dev-guide/interface-module.md
-          - Python/C++ 集成: zh/dev-guide/python-in-cpp.md
+          - Python/C++ 集成:
+              - 总览: zh/dev-guide/python-binding/index.md
+              - C++ 调用 Python: zh/dev-guide/python-binding/cpp-calling-python.md
+              - Python 绑定开发: zh/dev-guide/python-binding/python-binding-development.md
+              - 故障排除与最佳实践: zh/dev-guide/python-binding/troubleshooting-and-best-practices.md
+              - Python 脚本开发实战: zh/dev-guide/python-binding/python-script-development.md
           - 嵌入式 Python 调试指南: zh/dev-guide/embedded-python-debugging.md
       - 核心模块:
           - 工作流模块:

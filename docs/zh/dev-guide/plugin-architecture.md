@@ -1980,4 +1980,4 @@ UI->>User: 显示结果
 - [插件与接口说明](./plugins-interfaces.md)
 - [插件模块详解](./plugin-module.md)
 - [接口模块详解](./interface-module.md)
-- [C++ 与 Python 集成](./python-in-cpp.md)
+- [C++ 与 Python 集成](./python-binding/index.md)

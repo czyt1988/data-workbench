@@ -254,6 +254,6 @@ connect(dataMgr, &DADataManagerInterface::dataAdded,
 
 ## 参考资料
 
-- [Python 集成指南](./python-in-cpp.md)
+- [Python 集成指南](./python-binding/index.md)
 - [工作流系统概述](../workflow.md)
 - [插件开发指南](./plugin-project-create.md)
