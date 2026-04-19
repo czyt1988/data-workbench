@@ -1,4 +1,4 @@
-#include "DAChartBarSettingPanel.h"
+﻿#include "DAChartBarSettingPanel.h"
 #include "DAPropertyPanelWidget.h"
 #include <QSignalBlocker>
 #include "qwt_text.h"
@@ -10,11 +10,9 @@ namespace DA
  * @brief 构造函数
  * @param parent 父控件
  */
-DAChartBarSettingPanel::DAChartBarSettingPanel(QWidget* parent)
-    : DAChartItemSettingPanel(parent)
+DAChartBarSettingPanel::DAChartBarSettingPanel(QWidget* parent) : DAChartItemSettingPanel(parent)
 {
-    connect(this, &DAChartItemSettingPanel::propertyValueChanged,
-            this, &DAChartBarSettingPanel::onPropertyValueChanged);
+    connect(this, &DAChartItemSettingPanel::propertyValueChanged, this, &DAChartBarSettingPanel::onPropertyValueChanged);
 
     buildPropertyPanel();
 }
@@ -53,48 +51,59 @@ void DAChartBarSettingPanel::buildPropertyPanel()
     panel->addCollapsibleGroup(tr("Basic"));
     panel->addStringProperty(PropTitle, tr("Title"));
     panel->addDoubleProperty(PropZValue, tr("Z Value"));
+    panel->endGroup();
 
     // 坐标轴属性组
     panel->addCollapsibleGroup(tr("Axis"));
     addAxisProperty(PropXAxis, tr("X Axis"), false);
     addAxisProperty(PropYAxis, tr("Y Axis"), true);
+    panel->endGroup();
 
     // 图例属性组
     panel->addCollapsibleGroup(tr("Legend"));
     // QwtPlotBarChart::LegendMode: ChartMode=0, BarMode=1
-    panel->addEnumProperty(PropLegendMode, tr("Legend Mode"),
-                           QStringList() << tr("Chart Mode") << tr("Bar Mode"),
-                           QList< int >() << 0 << 1);
+    panel->addEnumProperty(
+        PropLegendMode, tr("Legend Mode"), QStringList() << tr("Chart Mode") << tr("Bar Mode"), QList< int >() << 0 << 1
+    );
+    panel->endGroup();
+
 
     // 填充属性组
     panel->addCollapsibleGroup(tr("Fill"));
     panel->addBoolProperty(PropEnableFill, tr("Enable Fill"));
     panel->addBrushProperty(PropFillBrush, tr("Fill Brush"));
-    propertyPanel()->setPropertyEnabled(PropFillBrush, false);
+    panel->setPropertyEnabled(PropFillBrush, false);
+    panel->endGroup();
 
     // 边框属性组
     panel->addCollapsibleGroup(tr("Edge"));
     panel->addBoolProperty(PropEnableEdge, tr("Enable Edge"));
     panel->addPenProperty(PropEdgePen, tr("Edge Pen"));
-    propertyPanel()->setPropertyEnabled(PropEdgePen, false);
+    panel->setPropertyEnabled(PropEdgePen, false);
+    panel->endGroup();
 
     // 基线属性组
     panel->addCollapsibleGroup(tr("Baseline"));
     panel->addStringProperty(PropBaseline, tr("Baseline"));
+    panel->endGroup();
 
     // 布局属性组
     panel->addCollapsibleGroup(tr("Layout"));
     // LayoutPolicy枚举：AutoAdjustSamples=0, ScaleSamplesToAxes=1, ScaleSampleToCanvas=2, FixedSampleSize=3
-    panel->addEnumProperty(PropLayoutPolicy, tr("Layout Policy"),
-                           QStringList() << tr("Auto Adjust Samples") << tr("Scale Samples To Axes")
-                                         << tr("Scale Sample To Canvas") << tr("Fixed Sample Size"),
-                           QList< int >() << static_cast< int >(QwtPlotAbstractBarChart::AutoAdjustSamples)
-                                               << static_cast< int >(QwtPlotAbstractBarChart::ScaleSamplesToAxes)
-                                               << static_cast< int >(QwtPlotAbstractBarChart::ScaleSampleToCanvas)
-                                               << static_cast< int >(QwtPlotAbstractBarChart::FixedSampleSize));
+    panel->addEnumProperty(
+        PropLayoutPolicy,
+        tr("Layout Policy"),
+        QStringList() << tr("Auto Adjust Samples") << tr("Scale Samples To Axes") << tr("Scale Sample To Canvas")
+                      << tr("Fixed Sample Size"),
+        QList< int >() << static_cast< int >(QwtPlotAbstractBarChart::AutoAdjustSamples)
+                       << static_cast< int >(QwtPlotAbstractBarChart::ScaleSamplesToAxes)
+                       << static_cast< int >(QwtPlotAbstractBarChart::ScaleSampleToCanvas)
+                       << static_cast< int >(QwtPlotAbstractBarChart::FixedSampleSize)
+    );
     panel->addDoubleProperty(PropLayoutHint, tr("Layout Hint"));
     panel->addIntProperty(PropSpacing, tr("Spacing"), 0, 0, 1000);
     panel->addIntProperty(PropMargin, tr("Margin"), 0, 0, 1000);
+    panel->endGroup();
 }
 
 /**
@@ -111,7 +120,7 @@ void DAChartBarSettingPanel::updateUI(QwtPlotItem* item)
     }
 
     QwtPlotBarChart* barChart = static_cast< QwtPlotBarChart* >(item);
-    auto panel = propertyPanel();
+    auto panel                = propertyPanel();
 
     // 使用QSignalBlocker防止触发信号
     QSignalBlocker blocker(panel);
@@ -126,7 +135,7 @@ void DAChartBarSettingPanel::updateUI(QwtPlotItem* item)
 
     // 图例模式
     QwtPlotBarChart::LegendMode mode = barChart->legendMode();
-    int legendModeIndex = (mode & QwtPlotBarChart::LegendBarTitles) ? 1 : 0;
+    int legendModeIndex              = (mode & QwtPlotBarChart::LegendBarTitles) ? 1 : 0;
     panel->setEnumValue(PropLegendMode, legendModeIndex);
 
     // 填充属性
@@ -139,7 +148,7 @@ void DAChartBarSettingPanel::updateUI(QwtPlotItem* item)
     panel->setPropertyEnabled(PropFillBrush, hasFill);
 
     // 边框属性
-    QPen pen = barChart->pen();
+    QPen pen     = barChart->pen();
     bool hasEdge = (pen.style() != Qt::NoPen);
     panel->setBoolValue(PropEnableEdge, hasEdge);
     if (hasEdge) {
@@ -218,16 +227,16 @@ void DAChartBarSettingPanel::onPropertyValueChanged(int propertyId)
         break;
     case PropBaseline: {
         QString text = panel->getStringValue(PropBaseline);
-        bool ok = false;
-        double val = text.toDouble(&ok);
+        bool ok      = false;
+        double val   = text.toDouble(&ok);
         if (ok) {
             barChart->setBaseline(val);
         }
         break;
     }
     case PropLayoutPolicy: {
-        QwtPlotAbstractBarChart::LayoutPolicy policy
-            = static_cast< QwtPlotAbstractBarChart::LayoutPolicy >(panel->getEnumValue(PropLayoutPolicy));
+        QwtPlotAbstractBarChart::LayoutPolicy policy =
+            static_cast< QwtPlotAbstractBarChart::LayoutPolicy >(panel->getEnumValue(PropLayoutPolicy));
         barChart->setLayoutPolicy(policy);
         break;
     }

@@ -1,4 +1,4 @@
-#include "DAChartErrorBarSettingPanel.h"
+﻿#include "DAChartErrorBarSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "qwt_interval_symbol.h"
 #include "qwt_text.h"
@@ -11,11 +11,9 @@ namespace DA
  * @brief 构造函数
  * @param parent 父控件
  */
-DAChartErrorBarSettingPanel::DAChartErrorBarSettingPanel(QWidget* parent)
-    : DAChartItemSettingPanel(parent)
+DAChartErrorBarSettingPanel::DAChartErrorBarSettingPanel(QWidget* parent) : DAChartItemSettingPanel(parent)
 {
-    connect(this, &DAChartItemSettingPanel::propertyValueChanged,
-            this, &DAChartErrorBarSettingPanel::onPropertyValueChanged);
+    connect(this, &DAChartItemSettingPanel::propertyValueChanged, this, &DAChartErrorBarSettingPanel::onPropertyValueChanged);
 
     buildPropertyPanel();
 }
@@ -51,34 +49,41 @@ void DAChartErrorBarSettingPanel::buildPropertyPanel()
     panel->addCollapsibleGroup(tr("Basic"));
     panel->addStringProperty(PropTitle, tr("Title"));
     panel->addDoubleProperty(PropZValue, tr("Z Value"));
+    panel->endGroup();
 
     // 坐标轴属性组
     panel->addCollapsibleGroup(tr("Axis"));
     addAxisProperty(PropXAxis, tr("X Axis"), false);
     addAxisProperty(PropYAxis, tr("Y Axis"), true);
+    panel->endGroup();
 
     // 误差棒属性组
     panel->addCollapsibleGroup(tr("Error Bar"));
     panel->addBoolProperty(PropEnableErrorBar, tr("Enable Error Bar"));
     // QwtIntervalSymbol样式：Bar, Box
-    panel->addEnumProperty(PropErrorBarStyle, tr("Error Bar Style"),
-                           QStringList() << tr("Bar") << tr("Box"),
-                           QList< int >() << static_cast< int >(QwtIntervalSymbol::Bar)
-                                               << static_cast< int >(QwtIntervalSymbol::Box));
+    panel->addEnumProperty(
+        PropErrorBarStyle,
+        tr("Error Bar Style"),
+        QStringList() << tr("Bar") << tr("Box"),
+        QList< int >() << static_cast< int >(QwtIntervalSymbol::Bar) << static_cast< int >(QwtIntervalSymbol::Box)
+    );
     panel->addPenProperty(PropErrorBarPen, tr("Error Bar Pen"));
     panel->setPropertyEnabled(PropErrorBarStyle, false);
     panel->setPropertyEnabled(PropErrorBarPen, false);
+    panel->endGroup();
 
     // 填充属性组
     panel->addCollapsibleGroup(tr("Fill"));
     panel->addBoolProperty(PropEnableFill, tr("Enable Fill"));
     panel->addBrushProperty(PropFillBrush, tr("Fill Brush"));
     panel->setPropertyEnabled(PropFillBrush, false);
+    panel->endGroup();
 
     // 曲线属性组
     panel->addCollapsibleGroup(tr("Curve"));
     addOrientationProperty(PropOrientation, tr("Orientation"));
     panel->addPenProperty(PropCurvePen, tr("Curve Pen"));
+    panel->endGroup();
 }
 
 /**
@@ -95,7 +100,7 @@ void DAChartErrorBarSettingPanel::updateUI(QwtPlotItem* item)
     }
 
     QwtPlotIntervalCurve* curve = static_cast< QwtPlotIntervalCurve* >(item);
-    auto panel = propertyPanel();
+    auto panel                  = propertyPanel();
 
     // 使用QSignalBlocker防止触发信号
     QSignalBlocker blocker(panel);
@@ -164,8 +169,8 @@ void DAChartErrorBarSettingPanel::onPropertyValueChanged(int propertyId)
         panel->setPropertyEnabled(PropErrorBarStyle, enabled);
         panel->setPropertyEnabled(PropErrorBarPen, enabled);
         if (enabled) {
-            QwtIntervalSymbol::Style style = static_cast< QwtIntervalSymbol::Style >(
-                panel->getEnumValue(PropErrorBarStyle));
+            QwtIntervalSymbol::Style style =
+                static_cast< QwtIntervalSymbol::Style >(panel->getEnumValue(PropErrorBarStyle));
             QwtIntervalSymbol* symbol = new QwtIntervalSymbol(style);
             symbol->setPen(panel->getPenValue(PropErrorBarPen));
             curve->setSymbol(symbol);
@@ -178,8 +183,8 @@ void DAChartErrorBarSettingPanel::onPropertyValueChanged(int propertyId)
     case PropErrorBarPen: {
         if (curve->symbol()) {
             // QwtIntervalSymbol* symbol = curve->symbol(); returns const, so recreate
-            QwtIntervalSymbol::Style style = static_cast< QwtIntervalSymbol::Style >(
-                panel->getEnumValue(PropErrorBarStyle));
+            QwtIntervalSymbol::Style style =
+                static_cast< QwtIntervalSymbol::Style >(panel->getEnumValue(PropErrorBarStyle));
             QwtIntervalSymbol* newSymbol = new QwtIntervalSymbol(style);
             newSymbol->setPen(panel->getPenValue(PropErrorBarPen));
             newSymbol->setWidth(curve->symbol()->width());

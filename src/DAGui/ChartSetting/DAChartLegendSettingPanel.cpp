@@ -1,4 +1,4 @@
-#include "DAChartLegendSettingPanel.h"
+﻿#include "DAChartLegendSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include <QSignalBlocker>
 #include "qwt_text.h"
@@ -10,11 +10,9 @@ namespace DA
  * @brief 构造函数
  * @param parent 父控件
  */
-DAChartLegendSettingPanel::DAChartLegendSettingPanel(QWidget* parent)
-    : DAChartItemSettingPanel(parent)
+DAChartLegendSettingPanel::DAChartLegendSettingPanel(QWidget* parent) : DAChartItemSettingPanel(parent)
 {
-    connect(this, &DAChartItemSettingPanel::propertyValueChanged,
-            this, &DAChartLegendSettingPanel::onPropertyValueChanged);
+    connect(this, &DAChartItemSettingPanel::propertyValueChanged, this, &DAChartLegendSettingPanel::onPropertyValueChanged);
 
     buildPropertyPanel();
 }
@@ -54,12 +52,14 @@ void DAChartLegendSettingPanel::buildPropertyPanel()
     panel->addCollapsibleGroup(tr("Basic"));
     panel->addStringProperty(PropTitle, tr("Title"));
     panel->addDoubleProperty(PropZValue, tr("Z Value"));
+    panel->endGroup();
 
     // 位置属性组
     panel->addCollapsibleGroup(tr("Position"));
     panel->addAlignmentProperty(PropAlignment, tr("Alignment"));
     panel->addIntProperty(PropHorizontalOffset, tr("Horizontal Offset"), 0, -1000, 1000);
     panel->addIntProperty(PropVerticalOffset, tr("Vertical Offset"), 0, -1000, 1000);
+    panel->endGroup();
 
     // 间距属性组
     panel->addCollapsibleGroup(tr("Spacing"));
@@ -68,6 +68,7 @@ void DAChartLegendSettingPanel::buildPropertyPanel()
     panel->addIntProperty(PropItemMargin, tr("Item Margin"), 0, 0, 1000);
     panel->addIntProperty(PropItemSpacing, tr("Item Spacing"), 0, 0, 1000);
     panel->addIntProperty(PropMaxColumns, tr("Max Columns"), 0, 0, 100);
+    panel->endGroup();
 
     // 外观属性组
     panel->addCollapsibleGroup(tr("Appearance"));
@@ -76,6 +77,7 @@ void DAChartLegendSettingPanel::buildPropertyPanel()
     panel->addFontProperty(PropFont, tr("Font"));
     panel->addColorProperty(PropFontColor, tr("Font Color"));
     panel->addBrushProperty(PropBackgroundBrush, tr("Background Brush"));
+    panel->endGroup();
 }
 
 /**
@@ -180,7 +182,7 @@ void DAChartLegendSettingPanel::onPropertyValueChanged(int propertyId)
         break;
     case PropFontColor: {
         QColor fc = panel->getColorValue(PropFontColor);
-        QPen tp = legend->textPen();
+        QPen tp   = legend->textPen();
         tp.setColor(fc);
         legend->setTextPen(tp);
         break;

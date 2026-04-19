@@ -1,4 +1,4 @@
-#include "DAFigureWidgetSettingPanel.h"
+﻿#include "DAFigureWidgetSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAFigureWidget.h"
 #include "qwt_figure.h"
@@ -12,20 +12,17 @@ namespace DA
  * @brief 构造函数
  * @param parent 父控件
  */
-DAFigureWidgetSettingPanel::DAFigureWidgetSettingPanel(QWidget* parent)
-    : QWidget(parent)
-    , mPanel(nullptr)
+DAFigureWidgetSettingPanel::DAFigureWidgetSettingPanel(QWidget* parent) : QWidget(parent), mPanel(nullptr)
 {
     // 创建DAPropertyPanelWidget并设为自身主布局
-    mPanel = new DAPropertyPanelContainerWidget(this);
+    mPanel              = new DAPropertyPanelContainerWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(mPanel);
     setLayout(layout);
 
     // 连接propertyValueChanged信号
-    connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged,
-            this, &DAFigureWidgetSettingPanel::onPanelPropertyValueChanged);
+    connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged, this, &DAFigureWidgetSettingPanel::onPanelPropertyValueChanged);
     connect(this, &DAFigureWidgetSettingPanel::propertyValueChanged, this, &DAFigureWidgetSettingPanel::onPropertyValueChanged);
 
     buildPropertyPanel();
@@ -128,9 +125,11 @@ void DAFigureWidgetSettingPanel::buildPropertyPanel()
     panel->addIntProperty(PID_MinHeight, tr("Min Height"), 0, 0, 999999999);
     panel->addIntProperty(PID_MaxWidth, tr("Max Width"), 0, 0, 999999999);
     panel->addIntProperty(PID_MaxHeight, tr("Max Height"), 0, 0, 999999999);
+    panel->endGroup();
 
     panel->addCollapsibleGroup(tr("Background"));
     panel->addBrushProperty(PID_BackgroundBrush, tr("Background Brush"));
+    panel->endGroup();
 }
 
 /**
@@ -153,7 +152,7 @@ void DAFigureWidgetSettingPanel::onPropertyValueChanged(int propertyId)
     }
 
     QwtFigure* qwtfig = mFigure->figure();
-    auto panel = propertyPanel();
+    auto panel        = propertyPanel();
 
     switch (propertyId) {
     case PID_MinWidth: {

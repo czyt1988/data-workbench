@@ -1,4 +1,4 @@
-#include "DAChartCanvasSettingPanel.h"
+﻿#include "DAChartCanvasSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "qwt_plot.h"
 #include "qwt_plot_canvas.h"
@@ -13,20 +13,17 @@ namespace DA
  * @brief 构造函数
  * @param parent 父控件
  */
-DAChartCanvasSettingPanel::DAChartCanvasSettingPanel(QWidget* parent)
-    : QWidget(parent)
-    , mPanel(nullptr)
+DAChartCanvasSettingPanel::DAChartCanvasSettingPanel(QWidget* parent) : QWidget(parent), mPanel(nullptr)
 {
     // 创建DAPropertyPanelWidget并设为自身主布局
-    mPanel = new DAPropertyPanelContainerWidget(this);
+    mPanel              = new DAPropertyPanelContainerWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(mPanel);
     setLayout(layout);
 
     // 连接propertyValueChanged信号
-    connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged,
-            this, &DAChartCanvasSettingPanel::onPanelPropertyValueChanged);
+    connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged, this, &DAChartCanvasSettingPanel::onPanelPropertyValueChanged);
     connect(this, &DAChartCanvasSettingPanel::propertyValueChanged, this, &DAChartCanvasSettingPanel::onPropertyValueChanged);
 
     buildPropertyPanel();
@@ -132,10 +129,12 @@ void DAChartCanvasSettingPanel::buildPropertyPanel()
 
     panel->addCollapsibleGroup(tr("Background"));
     panel->addBrushProperty(PID_BackgroundBrush, tr("Background Brush"));
+    panel->endGroup();
 
     panel->addCollapsibleGroup(tr("Border"));
     panel->addIntProperty(PID_BorderWidth, tr("Border Width"), 0, 0, 20);
     panel->addPenProperty(PID_BorderPen, tr("Border Pen"));
+    panel->endGroup();
 
     panel->addCollapsibleGroup(tr("Style"));
     // FrameStyle: 使用QComboBox填充QFrame::Shape枚举
@@ -146,10 +145,12 @@ void DAChartCanvasSettingPanel::buildPropertyPanel()
     frameStyleCombo->addItem(tr("Styled Panel"), static_cast< int >(QFrame::StyledPanel));
     frameStyleCombo->addItem(tr("Win Panel"), static_cast< int >(QFrame::WinPanel));
 
-    connect(frameStyleCombo, QOverload< int >::of(&QComboBox::currentIndexChanged),
-            panel, &DAPropertyPanelContainerWidget::propertyValueChanged);
+    connect(
+        frameStyleCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), panel, &DAPropertyPanelContainerWidget::propertyValueChanged
+    );
 
     panel->addProperty(PID_FrameStyle, tr("Frame Shape"), frameStyleCombo);
+    panel->endGroup();
 }
 
 /**

@@ -1,4 +1,4 @@
-#include "DAChartGridSettingPanel.h"
+﻿#include "DAChartGridSettingPanel.h"
 #include "DAPropertyPanelWidget.h"
 #include <QSignalBlocker>
 #include "qwt_text.h"
@@ -10,12 +10,10 @@ namespace DA
  * @brief 构造函数
  * @param parent 父控件
  */
-DAChartGridSettingPanel::DAChartGridSettingPanel(QWidget* parent)
-    : DAChartItemSettingPanel(parent)
+DAChartGridSettingPanel::DAChartGridSettingPanel(QWidget* parent) : DAChartItemSettingPanel(parent)
 {
     // 连接属性值变化信号
-    connect(this, &DAChartItemSettingPanel::propertyValueChanged,
-            this, &DAChartGridSettingPanel::onPropertyValueChanged);
+    connect(this, &DAChartItemSettingPanel::propertyValueChanged, this, &DAChartGridSettingPanel::onPropertyValueChanged);
 
     buildPropertyPanel();
 }
@@ -46,16 +44,19 @@ void DAChartGridSettingPanel::buildPropertyPanel()
     panel->addCollapsibleGroup(tr("Basic"));
     panel->addStringProperty(PropTitle, tr("Title"));
     panel->addDoubleProperty(PropZValue, tr("Z Value"));
+    panel->endGroup();
 
     // 坐标轴属性组
     panel->addCollapsibleGroup(tr("Axis"));
     addAxisProperty(PropXAxis, tr("X Axis"), false);
     addAxisProperty(PropYAxis, tr("Y Axis"), true);
+    panel->endGroup();
 
     // 线条样式属性组
     panel->addCollapsibleGroup(tr("Line Style"));
     panel->addPenProperty(PropMajorPen, tr("Major Pen"));
     panel->addPenProperty(PropMinorPen, tr("Minor Pen"));
+    panel->endGroup();
 }
 
 /**

@@ -1,4 +1,4 @@
-#include "DAChartSpectrogramSettingPanel.h"
+﻿#include "DAChartSpectrogramSettingPanel.h"
 #include "DAPropertyPanelWidget.h"
 #include "qwt_color_map.h"
 #include "qwt_text.h"
@@ -11,11 +11,9 @@ namespace DA
  * @brief 构造函数
  * @param parent 父控件
  */
-DAChartSpectrogramSettingPanel::DAChartSpectrogramSettingPanel(QWidget* parent)
-    : DAChartItemSettingPanel(parent)
+DAChartSpectrogramSettingPanel::DAChartSpectrogramSettingPanel(QWidget* parent) : DAChartItemSettingPanel(parent)
 {
-    connect(this, &DAChartItemSettingPanel::propertyValueChanged,
-            this, &DAChartSpectrogramSettingPanel::onPropertyValueChanged);
+    connect(this, &DAChartItemSettingPanel::propertyValueChanged, this, &DAChartSpectrogramSettingPanel::onPropertyValueChanged);
 
     buildPropertyPanel();
 }
@@ -48,29 +46,35 @@ void DAChartSpectrogramSettingPanel::buildPropertyPanel()
     panel->addCollapsibleGroup(tr("Basic"));
     panel->addStringProperty(PropTitle, tr("Title"));
     panel->addDoubleProperty(PropZValue, tr("Z Value"));
+    panel->endGroup();
 
     // 坐标轴属性组
     panel->addCollapsibleGroup(tr("Axis"));
     addAxisProperty(PropXAxis, tr("X Axis"), false);
     addAxisProperty(PropYAxis, tr("Y Axis"), true);
+    panel->endGroup();
 
     // 显示属性组
     panel->addCollapsibleGroup(tr("Display"));
     // QwtPlotSpectrogram::DisplayMode: ImageMode=1, ContourMode=2
-    panel->addEnumProperty(PropDisplayMode, tr("Display Mode"),
-                           QStringList() << tr("Image Mode") << tr("Contour Mode"),
-                           QList< int >() << static_cast< int >(QwtPlotSpectrogram::ImageMode)
-                                                << static_cast< int >(QwtPlotSpectrogram::ContourMode));
-
+    panel->addEnumProperty(
+        PropDisplayMode,
+        tr("Display Mode"),
+        QStringList() << tr("Image Mode") << tr("Contour Mode"),
+        QList< int >() << static_cast< int >(QwtPlotSpectrogram::ImageMode)
+                       << static_cast< int >(QwtPlotSpectrogram::ContourMode)
+    );
+    panel->endGroup();
     // 颜色属性组
     panel->addCollapsibleGroup(tr("Color"));
     panel->addColorProperty(PropFromColor, tr("From Color"));
     panel->addColorProperty(PropToColor, tr("To Color"));
-
+    panel->endGroup();
     // 轮廓线属性组
     panel->addCollapsibleGroup(tr("Contour"));
     panel->addPenProperty(PropContourPen, tr("Contour Pen"));
     panel->setPropertyEnabled(PropContourPen, false);
+    panel->endGroup();
 }
 
 /**
@@ -87,7 +91,7 @@ void DAChartSpectrogramSettingPanel::updateUI(QwtPlotItem* item)
     }
 
     QwtPlotSpectrogram* spectrogram = static_cast< QwtPlotSpectrogram* >(item);
-    auto panel = propertyPanel();
+    auto panel                      = propertyPanel();
 
     // 使用QSignalBlocker防止触发信号
     QSignalBlocker blocker(panel);
@@ -101,8 +105,8 @@ void DAChartSpectrogramSettingPanel::updateUI(QwtPlotItem* item)
     setAxisValue(PropYAxis, static_cast< QwtAxis::Position >(spectrogram->yAxis()));
 
     // 显示模式
-    bool isContour = spectrogram->testDisplayMode(QwtPlotSpectrogram::ContourMode);
-    bool isImage = spectrogram->testDisplayMode(QwtPlotSpectrogram::ImageMode);
+    bool isContour       = spectrogram->testDisplayMode(QwtPlotSpectrogram::ContourMode);
+    bool isImage         = spectrogram->testDisplayMode(QwtPlotSpectrogram::ImageMode);
     int displayModeIndex = isContour ? 1 : (isImage ? 0 : -1);
     panel->setEnumValue(PropDisplayMode, displayModeIndex);
 
@@ -111,7 +115,7 @@ void DAChartSpectrogramSettingPanel::updateUI(QwtPlotItem* item)
     panel->setPenValue(PropContourPen, spectrogram->defaultContourPen());
 
     // 颜色属性（从colorMap中提取）
-    const QwtColorMap* currentMap = spectrogram->colorMap();
+    const QwtColorMap* currentMap      = spectrogram->colorMap();
     const QwtLinearColorMap* linearMap = dynamic_cast< const QwtLinearColorMap* >(currentMap);
     if (linearMap) {
         panel->setColorValue(PropFromColor, linearMap->color1());
@@ -166,7 +170,7 @@ void DAChartSpectrogramSettingPanel::onPropertyValueChanged(int propertyId)
     case PropFromColor:
     case PropToColor: {
         QColor fromColor = panel->getColorValue(PropFromColor);
-        QColor toColor = panel->getColorValue(PropToColor);
+        QColor toColor   = panel->getColorValue(PropToColor);
         spectrogram->setColorMap(new QwtLinearColorMap(fromColor, toColor));
         break;
     }

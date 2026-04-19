@@ -1,4 +1,4 @@
-#include "DAChartPlotSettingPanel.h"
+﻿#include "DAChartPlotSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "qwt_text.h"
 #include <QSignalBlocker>
@@ -11,20 +11,17 @@ namespace DA
  * @brief 构造函数
  * @param parent 父控件
  */
-DAChartPlotSettingPanel::DAChartPlotSettingPanel(QWidget* parent)
-    : QWidget(parent)
-    , mPanel(nullptr)
+DAChartPlotSettingPanel::DAChartPlotSettingPanel(QWidget* parent) : QWidget(parent), mPanel(nullptr)
 {
     // 创建DAPropertyPanelWidget并设为自身主布局
-    mPanel = new DAPropertyPanelContainerWidget(this);
+    mPanel              = new DAPropertyPanelContainerWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(mPanel);
     setLayout(layout);
 
     // 连接propertyValueChanged信号
-    connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged,
-            this, &DAChartPlotSettingPanel::onPanelPropertyValueChanged);
+    connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged, this, &DAChartPlotSettingPanel::onPanelPropertyValueChanged);
     connect(this, &DAChartPlotSettingPanel::propertyValueChanged, this, &DAChartPlotSettingPanel::onPropertyValueChanged);
 
     buildPropertyPanel();
@@ -80,7 +77,7 @@ void DAChartPlotSettingPanel::updateUI()
     QwtText titleText;
     QwtText footerText;
     if (mPlot) {
-        titleText = mPlot->title();
+        titleText  = mPlot->title();
         footerText = mPlot->footer();
     }
 
@@ -118,11 +115,13 @@ void DAChartPlotSettingPanel::buildPropertyPanel()
     panel->addStringProperty(PID_TitleText, tr("Title Text"));
     panel->addFontProperty(PID_TitleFont, tr("Title Font"));
     panel->addColorProperty(PID_TitleColor, tr("Title Color"));
+    panel->endGroup();
 
     panel->addCollapsibleGroup(tr("Footer"));
     panel->addStringProperty(PID_FooterText, tr("Footer Text"));
     panel->addFontProperty(PID_FooterFont, tr("Footer Font"));
     panel->addColorProperty(PID_FooterColor, tr("Footer Color"));
+    panel->endGroup();
 }
 
 /**

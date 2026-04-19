@@ -1,4 +1,4 @@
-#include "DAChartAxisSettingPanel.h"
+﻿#include "DAChartAxisSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAChartUtil.h"
 #include "qwt_plot.h"
@@ -21,22 +21,17 @@ namespace DA
  * @param parent 父控件
  */
 DAChartAxisSettingPanel::DAChartAxisSettingPanel(QwtAxis::Position axisId, QWidget* parent)
-    : QWidget(parent)
-    , mPanel(nullptr)
-    , mPlot(nullptr)
-    , mAxisId(axisId)
-    , mScaleStyleButtonGroup(nullptr)
+    : QWidget(parent), mPanel(nullptr), mPlot(nullptr), mAxisId(axisId), mScaleStyleButtonGroup(nullptr)
 {
     // 创建DAPropertyPanelWidget并设为自身主布局
-    mPanel = new DAPropertyPanelContainerWidget(this);
+    mPanel              = new DAPropertyPanelContainerWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(mPanel);
     setLayout(layout);
 
     // 连接propertyValueChanged信号
-    connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged,
-            this, &DAChartAxisSettingPanel::onPanelPropertyValueChanged);
+    connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged, this, &DAChartAxisSettingPanel::onPanelPropertyValueChanged);
     connect(this, &DAChartAxisSettingPanel::propertyValueChanged, this, &DAChartAxisSettingPanel::onPropertyValueChanged);
 
     buildPropertyPanel();
@@ -166,7 +161,7 @@ void DAChartAxisSettingPanel::setScaleStyleValue(int style)
         return;
     }
     bool wasBlocked = mScaleStyleButtonGroup->blockSignals(true);
-    auto buttons = mScaleStyleButtonGroup->buttons();
+    auto buttons    = mScaleStyleButtonGroup->buttons();
     for (auto btn : buttons) {
         int btnId = mScaleStyleButtonGroup->id(btn);
         if (btnId == style) {
@@ -196,6 +191,7 @@ void DAChartAxisSettingPanel::buildPropertyPanel()
 
     panel->addCollapsibleGroup(tr("Enable"));
     panel->addBoolProperty(PID_EnableAxis, tr("Enable Axis"));
+    panel->endGroup();
 
     panel->addCollapsibleGroup(tr("Label"));
     panel->addStringProperty(PID_LabelText, tr("Label Text"));
@@ -203,19 +199,21 @@ void DAChartAxisSettingPanel::buildPropertyPanel()
     panel->addColorProperty(PID_LabelFontColor, tr("Label Font Color"));
     panel->addAlignmentProperty(PID_LabelAlignment, tr("Label Alignment"));
     panel->addDoubleProperty(PID_LabelRotation, tr("Label Rotation"), 0.0, -360.0, 360.0, 1);
+    panel->endGroup();
 
     panel->addCollapsibleGroup(tr("Scale"));
     panel->addIntProperty(PID_Margin, tr("Margin"), 0, -20, 100);
     panel->addDoubleProperty(PID_MinScale, tr("Min Scale"), 0.0, -1e15, 1e15, 5);
     panel->addDoubleProperty(PID_MaxScale, tr("Max Scale"), 0.0, -1e15, 1e15, 5);
+    panel->endGroup();
 
     // 刻度样式: Normal/DateTime 两个RadioButton
     QWidget* scaleStyleContainer = new QWidget(this);
-    QHBoxLayout* hLayout = new QHBoxLayout(scaleStyleContainer);
+    QHBoxLayout* hLayout         = new QHBoxLayout(scaleStyleContainer);
     hLayout->setContentsMargins(0, 0, 0, 0);
     hLayout->setSpacing(8);
 
-    QRadioButton* rbNormal = new QRadioButton(tr("Normal"), scaleStyleContainer);
+    QRadioButton* rbNormal   = new QRadioButton(tr("Normal"), scaleStyleContainer);
     QRadioButton* rbDateTime = new QRadioButton(tr("DateTime"), scaleStyleContainer);
     rbNormal->setChecked(true);
 
@@ -235,11 +233,11 @@ void DAChartAxisSettingPanel::buildPropertyPanel()
     hLayout->addStretch();
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    connect(mScaleStyleButtonGroup, QOverload<int>::of(&QButtonGroup::buttonClicked), this, [this](int) {
+    connect(mScaleStyleButtonGroup, QOverload< int >::of(&QButtonGroup::buttonClicked), this, [ this ](int) {
         onPanelPropertyValueChanged(PID_ScaleStyle);
     });
 #else
-    connect(mScaleStyleButtonGroup, &QButtonGroup::idClicked, this, [this](int) {
+    connect(mScaleStyleButtonGroup, &QButtonGroup::idClicked, this, [ this ](int) {
         onPanelPropertyValueChanged(PID_ScaleStyle);
     });
 #endif
@@ -275,7 +273,7 @@ void DAChartAxisSettingPanel::onPropertyValueChanged(int propertyId)
         break;
     }
     case PID_LabelText: {
-        QString text = panel->getStringValue(PID_LabelText);
+        QString text  = panel->getStringValue(PID_LabelText);
         QwtText title = mPlot->axisTitle(mAxisId);
         title.setText(text);
         mPlot->setAxisTitle(mAxisId, title);
@@ -287,7 +285,7 @@ void DAChartAxisSettingPanel::onPropertyValueChanged(int propertyId)
         break;
     }
     case PID_LabelFontColor: {
-        QColor color = panel->getColorValue(PID_LabelFontColor);
+        QColor color                = panel->getColorValue(PID_LabelFontColor);
         QwtScaleWidget* scaleWidget = mPlot->axisWidget(mAxisId);
         if (scaleWidget) {
             scaleWidget->setTextColor(color);
@@ -295,7 +293,7 @@ void DAChartAxisSettingPanel::onPropertyValueChanged(int propertyId)
         break;
     }
     case PID_LabelAlignment: {
-        Qt::Alignment alignment = panel->getAlignmentValue(PID_LabelAlignment);
+        Qt::Alignment alignment     = panel->getAlignmentValue(PID_LabelAlignment);
         QwtScaleWidget* scaleWidget = mPlot->axisWidget(mAxisId);
         if (scaleWidget && scaleWidget->scaleDraw()) {
             scaleWidget->scaleDraw()->setLabelAlignment(alignment);
@@ -303,7 +301,7 @@ void DAChartAxisSettingPanel::onPropertyValueChanged(int propertyId)
         break;
     }
     case PID_LabelRotation: {
-        double rotation = panel->getDoubleValue(PID_LabelRotation);
+        double rotation             = panel->getDoubleValue(PID_LabelRotation);
         QwtScaleWidget* scaleWidget = mPlot->axisWidget(mAxisId);
         if (scaleWidget && scaleWidget->scaleDraw()) {
             scaleWidget->scaleDraw()->setLabelRotation(rotation);
@@ -311,7 +309,7 @@ void DAChartAxisSettingPanel::onPropertyValueChanged(int propertyId)
         break;
     }
     case PID_Margin: {
-        int margin = panel->getIntValue(PID_Margin);
+        int margin                  = panel->getIntValue(PID_Margin);
         QwtScaleWidget* scaleWidget = mPlot->axisWidget(mAxisId);
         if (scaleWidget) {
             scaleWidget->setMargin(margin);
@@ -320,13 +318,13 @@ void DAChartAxisSettingPanel::onPropertyValueChanged(int propertyId)
     }
     case PID_MinScale: {
         QwtInterval inv = mPlot->axisInterval(mAxisId);
-        double min = panel->getDoubleValue(PID_MinScale);
+        double min      = panel->getDoubleValue(PID_MinScale);
         mPlot->setAxisScale(mAxisId, min, inv.maxValue());
         break;
     }
     case PID_MaxScale: {
         QwtInterval inv = mPlot->axisInterval(mAxisId);
-        double max = panel->getDoubleValue(PID_MaxScale);
+        double max      = panel->getDoubleValue(PID_MaxScale);
         mPlot->setAxisScale(mAxisId, inv.minValue(), max);
         break;
     }

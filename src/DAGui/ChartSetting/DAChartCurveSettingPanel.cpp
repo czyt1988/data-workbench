@@ -1,4 +1,4 @@
-#include "DAChartCurveSettingPanel.h"
+﻿#include "DAChartCurveSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include <QSignalBlocker>
 #include <QPen>
@@ -15,12 +15,10 @@ namespace DA
  *
  * @param parent 父控件
  */
-DAChartCurveSettingPanel::DAChartCurveSettingPanel(QWidget* parent)
-    : DAChartItemSettingPanel(parent)
+DAChartCurveSettingPanel::DAChartCurveSettingPanel(QWidget* parent) : DAChartItemSettingPanel(parent)
 {
     // 连接属性值变化信号到曲线属性处理槽
-    connect(this, &DAChartItemSettingPanel::propertyValueChanged,
-            this, &DAChartCurveSettingPanel::onCurvePropertyValueChanged);
+    connect(this, &DAChartItemSettingPanel::propertyValueChanged, this, &DAChartCurveSettingPanel::onCurvePropertyValueChanged);
 
     // 构建属性面板
     buildPropertyPanel();
@@ -49,43 +47,52 @@ void DAChartCurveSettingPanel::buildPropertyPanel()
     pp->addDoubleProperty(PID_ZValue, tr("Z Value"), 0.0, -9999.0, 9999.0, 1);
     addAxisProperty(PID_XAxis, tr("X Axis"), false);
     addAxisProperty(PID_YAxis, tr("Y Axis"), true);
+    pp->endGroup();
 
     // ── 曲线样式 ──
     pp->addCollapsibleGroup(tr("Curve Style"));
     addCurveStyleProperty(PID_CurveStyle, tr("Style"));
+    pp->endGroup();
 
     // ── 画笔 ──
     pp->addCollapsibleGroup(tr("Pen"));
     pp->addPenProperty(PID_Pen, tr("Pen"));
+    pp->endGroup();
 
     // ── 标记 ──
     pp->addCollapsibleGroup(tr("Marker"));
     pp->addBoolProperty(PID_EnableMarker, tr("Enable Marker"));
     addSymbolProperty(PID_Symbol, tr("Symbol"));
+    pp->endGroup();
 
     // ── 属性 ──
     pp->addCollapsibleGroup(tr("Attributes"));
     pp->addBoolProperty(PID_Fitted, tr("Fitted"));
     pp->addBoolProperty(PID_Inverted, tr("Inverted"));
+    pp->endGroup();
 
     // ── 图例 ──
     pp->addCollapsibleGroup(tr("Legend"));
     pp->addBoolProperty(PID_LegendShowLine, tr("Show Line"));
     pp->addBoolProperty(PID_LegendShowSymbol, tr("Show Symbol"));
     pp->addBoolProperty(PID_LegendShowBrush, tr("Show Brush"));
+    pp->endGroup();
 
     // ── 填充 ──
     pp->addCollapsibleGroup(tr("Fill"));
     pp->addBoolProperty(PID_EnableFill, tr("Enable Fill"));
     pp->addBrushProperty(PID_Fill, tr("Fill Brush"));
+    pp->endGroup();
 
     // ── 基线 ──
     pp->addCollapsibleGroup(tr("Baseline"));
     pp->addStringProperty(PID_BaseLine, tr("Baseline"));
+    pp->endGroup();
 
     // ── 方向 ──
     pp->addCollapsibleGroup(tr("Orientation"));
     addOrientationProperty(PID_Orientation, tr("Orientation"));
+    pp->endGroup();
 }
 
 /**
@@ -298,7 +305,7 @@ void DAChartCurveSettingPanel::onCurvePropertyValueChanged(int propertyId)
         break;
     }
     case PID_BaseLine: {
-        bool ok = false;
+        bool ok         = false;
         double baseline = pp->getStringValue(PID_BaseLine).toDouble(&ok);
         if (ok) {
             curve->setBaseline(baseline);
