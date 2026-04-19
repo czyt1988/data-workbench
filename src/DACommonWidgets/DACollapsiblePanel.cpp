@@ -1,4 +1,4 @@
-#include "DACollapsiblePanel.h"
+﻿#include "DACollapsiblePanel.h"
 #include <QVBoxLayout>
 #include <QPainter>
 #include <QPaintEvent>
@@ -56,7 +56,8 @@ DACollapsiblePanel::DACollapsiblePanel(QWidget* parent) : DACollapsibleGroupBox(
  *
  * 默认展开状态，标题通过父类DACollapsibleGroupBox::setTitle设置。
  */
-DACollapsiblePanel::DACollapsiblePanel(const QString& title, QWidget* parent) : DACollapsibleGroupBox(parent), DA_PIMPL_CONSTRUCT
+DACollapsiblePanel::DACollapsiblePanel(const QString& title, QWidget* parent)
+    : DACollapsibleGroupBox(parent), DA_PIMPL_CONSTRUCT
 {
     setChecked(true);  // 默认展开
     setFlat(true);     // 默认Flat模式
@@ -147,7 +148,7 @@ bool DACollapsiblePanel::isExpanded() const
 void DACollapsiblePanel::setTitle(const QString& title)
 {
     DACollapsibleGroupBox::setTitle(title);
-    emit titleChanged(title);
+    Q_EMIT titleChanged(title);
 }
 
 /**
@@ -198,7 +199,7 @@ void DACollapsiblePanel::setStyleMode(StyleMode mode)
         break;
     }
 
-    update();       // 触发重绘
+    update();  // 触发重绘
     updateGeometry();
     emit styleModeChanged(mode);
 }
