@@ -590,8 +590,31 @@ addSymbolProperty(PID_Symbol, tr("Symbol"));
 pp->endGroup();
 ```
 
-!!! warning "endGroup() 调用约定"
-    每个 `addCollapsibleGroup()` 必须配套一个 `endGroup()`。忘记调用 `endGroup()` 会导致后续所有属性都被归入最后一个分组，破坏面板布局。建议采用"创建分组 → 添加属性 → 立即 endGroup"的紧凑写法。
+!!! danger "endGroup() 强制调用约定（P0 级 Bug 防范）"
+    每个 `addCollapsibleGroup()` 必须**立即配对**一个 `endGroup()`。忘记调用 `endGroup()` 会导致严重后果：
+    - ❌ 后续所有分组都将变成前一个分组的**子嵌套分组**，而非同级分组
+    - ❌ 面板布局完全破坏，分组嵌套层次混乱
+    - ❌ 属性归类错误，用户体验极差
+    
+    **正确模式（必须严格遵循）**：
+    ```cpp
+    // ✅ 正确：创建分组 → 添加属性 → 立即 endGroup
+    pp->addCollapsibleGroup(tr("Group 1"));
+    pp->addStringProperty(...);
+    pp->addIntProperty(...);
+    pp->endGroup();  // 立即结束
+    
+    // ✅ 正确：下一个分组重新开始，与上一个同级
+    pp->addCollapsibleGroup(tr("Group 2"));
+    pp->addPenProperty(...);
+    pp->endGroup();  // 立即结束
+    
+    // ❌ 错误：只 addCollapsibleGroup，不 endGroup
+    pp->addCollapsibleGroup(tr("Group 1"));
+    pp->addStringProperty(...);
+    pp->addCollapsibleGroup(tr("Group 2"));  // ❌ 这会变成 Group 1 的子分组！
+    ```
+    建议采用"创建分组 → 添加属性 → 立即 endGroup"的紧凑写法，避免遗漏。
 
 ### 分组ID与状态控制
 

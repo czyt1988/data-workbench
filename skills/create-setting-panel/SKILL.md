@@ -43,6 +43,10 @@ These steps apply to **all** DAPropertyPanelWidget-based panels (Scenarios A and
 - `addSubPanel(id, groupName)` creates a nested `DAPropertyPanelWidget` with its own property IDs
 - Sub-panel signals bubble up: `propertyValueChanged` from sub-panel forwards to parent panel automatically
 
+!!! danger "MANDATORY: Always call `endGroup()` immediately after `addCollapsibleGroup()`"
+    Failing to call `endGroup()` will cause all subsequent properties and groups to be nested under the current group, resulting in broken layout and wrong hierarchy.
+    Strictly follow: `addCollapsibleGroup(title)` → add properties → `endGroup()`
+
 ### Signal Chain
 
 | Scenario | Signal Chain |
