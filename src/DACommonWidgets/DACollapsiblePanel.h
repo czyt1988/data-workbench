@@ -2,24 +2,17 @@
 #define DACOLLAPSIBLEPANEL_H
 
 #include "DACommonWidgetsAPI.h"
-#include <QWidget>
-#include <QString>
-#include <QFrame>
-#include <QLabel>
-#include <QStyleOption>
-#include <QPainter>
+#include "DACollapsibleGroupBox.h"
 
 namespace DA
 {
 
-// Forward declaration
-class DACollapsiblePanelHeader;
-
 /**
- * @brief 可折叠面板控件，支持点击头部展开/收起内容区域，并提供多种样式模式
+ * @brief 可折叠面板控件，继承自DACollapsibleGroupBox，复用ctkCollapsibleGroupBox的成熟折叠机制
  *
- * 基于QWidget的轻量级折叠容器，使用setVisible+sizeHint实现折叠机制，
- * 不依赖QGroupBox，无动画。适用于DAPropertyPanelWidget的分组嵌套。
+ * 支持点击标题区域展开/收起内容区域，并提供多种样式模式。
+ * 继承DACollapsibleGroupBox（ctkCollapsibleGroupBox → QGroupBox），复用CTK的折叠逻辑和箭头指示器，
+ * 不再使用自定义头部控件。适用于DAPropertyPanelWidget的分组嵌套。
  * 支持三种样式模式：Flat（无边框默认外观）、GroupBox（边框+标题断开顶部边线）、Bordered（矩形边框）。
  *
  * @code
@@ -41,9 +34,9 @@ class DACollapsiblePanelHeader;
  * panel->setStyleMode(DACollapsiblePanel::Flat);      // 无边框默认外观
  * @endcode
  *
- * @see DAPropertyPanelWidget
+ * @see DAPropertyPanelWidget, DACollapsibleGroupBox
  */
-class DACOMMONWIDGETS_API DACollapsiblePanel : public QWidget
+class DACOMMONWIDGETS_API DACollapsiblePanel : public DACollapsibleGroupBox
 {
     Q_OBJECT
     DA_DECLARE_PRIVATE(DACollapsiblePanel)
@@ -60,7 +53,7 @@ public:
     {
         Flat,     ///< 无边框，当前默认外观
         GroupBox, ///< 类似QGroupBox，边框包围内容区域，标题断开顶部边线
-        Bordered  ///< 简单矩形边框包围整个面板（头部+内容）
+        Bordered  ///< 简单矩形边框包围整个面板（标题+内容）
     };
     Q_ENUM(StyleMode)
 
@@ -85,9 +78,6 @@ public:
     void setStyleMode(StyleMode mode);
     StyleMode styleMode() const;
 
-    // 大小提示
-    QSize sizeHint() const override;
-
 Q_SIGNALS:
     /**
      * @brief 展开状态变化信号
@@ -107,12 +97,8 @@ Q_SIGNALS:
      */
     void styleModeChanged(StyleMode mode);
 
-private Q_SLOTS:
-    void onHeaderClicked();
-
 protected:
     void paintEvent(QPaintEvent* event) override;
-    void resizeEvent(QResizeEvent* event) override;
 };
 
 }  // namespace DA
