@@ -1,4 +1,4 @@
-﻿#ifndef DASETTINGCONTAINERWIDGET_H
+#ifndef DASETTINGCONTAINERWIDGET_H
 #define DASETTINGCONTAINERWIDGET_H
 #include <QStackedWidget>
 #include <QList>
@@ -8,6 +8,7 @@ namespace DA
 {
 class DAWorkFlowNodeItemSettingWidget;
 class DAChartSettingWidget;
+class DAFigureWidgetSettingPanel;
 /**
  * @brief 这是一个类似QStackedWidget的窗体，只内部有一个scallview
  */
@@ -28,6 +29,10 @@ public:
     DAChartSettingWidget* getChartSettingWidget();
     // 显示默认的工作流节点设置窗口
     void showChartSettingWidget();
+    // Figure 设置
+    DAFigureWidgetSettingPanel* getFigureWidgetSettingWidget();
+    // 显示 Figure 设置窗口
+    void showFigureWidgetSettingWidget();
 
 protected:
     void initWorkFlowSettingWidgets();
@@ -35,6 +40,7 @@ protected:
 private:
     DAWorkFlowNodeItemSettingWidget* mWorkFlowNodeItemSettingWidget { nullptr };
 	DAChartSettingWidget* mChartSettingWidget { nullptr };
+    DAFigureWidgetSettingPanel* mFigureWidgetSettingWidget { nullptr };
 };
 }  // namespace DA
 #endif  // DASETTINGCONTAINERWIDGET_H

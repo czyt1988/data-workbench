@@ -1,4 +1,4 @@
-#include "DAAppController.h"
+﻿#include "DAAppController.h"
 // Qt
 #include <QFileDialog>
 #include <QFileInfo>
@@ -44,6 +44,7 @@
 #include "DARecentFilesManager.h"
 #include "DAChartSettingWidget.h"
 #include "DAColorTheme.h"
+#include "DAGui/ChartSetting/DAFigureWidgetSettingPanel.h"
 // Dialog
 #include "DAPluginManagerDialog.h"
 #include "DAAppSettingDialog.h"
@@ -362,6 +363,19 @@ void DAAppController::initConnection()
     DAChartManageWidget* cmw = mDock->getChartManageWidget();
     connect(cmw, &DAChartManageWidget::figureElementClicked, this, &DAAppController::onFigureElementClicked);
     connect(cmw, &DAChartManageWidget::figureElementClicked, this, &DAAppController::onFigureElementDbClicked);
+    // figure 窗口设置按钮信号
+    connect(cmw, &DAChartManageWidget::requestFigureSetting, this, [this](DA::DAFigureWidget* fig) {
+        DASettingContainerWidget* setting = getSettingContainerWidget();
+        if (setting) {
+            DAFigureWidgetSettingPanel* panel = setting->getFigureWidgetSettingWidget();
+            if (panel) {
+                panel->setTarget(fig);
+                setting->showFigureWidgetSettingWidget();
+            }
+        }
+        // 显示设置窗口 dock
+        mDock->raiseDockByWidget((QWidget*)(mDock->getSettingContainerWidget()));
+    });
     // DAChartOperateWidget
     DAChartOperateWidget* cow = mDock->getChartOperateWidget();
     connect(cow, &DAChartOperateWidget::figureCreated, this, &DAAppController::onFigureCreated);

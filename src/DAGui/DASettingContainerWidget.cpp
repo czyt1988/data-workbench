@@ -1,6 +1,7 @@
 ﻿#include "DASettingContainerWidget.h"
 #include "DAWorkFlowNodeItemSettingWidget.h"
 #include "DAChartSettingWidget.h"
+#include "ChartSetting/DAFigureWidgetSettingPanel.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -41,6 +42,8 @@ void DASettingContainerWidget::initWorkFlowSettingWidgets()
 	addWidget(mWorkFlowNodeItemSettingWidget);
 	mChartSettingWidget = new DAChartSettingWidget();
 	addWidget(mChartSettingWidget);
+	mFigureWidgetSettingWidget = new DAFigureWidgetSettingPanel();
+	addWidget(mFigureWidgetSettingWidget);
 }
 
 /**
@@ -76,4 +79,21 @@ DAChartSettingWidget* DASettingContainerWidget::getChartSettingWidget()
 void DASettingContainerWidget::showChartSettingWidget()
 {
     setCurrentWidget(mChartSettingWidget);
+}
+
+/**
+ * @brief 获取 Figure 设置窗口
+ * @return
+ */
+DAFigureWidgetSettingPanel* DASettingContainerWidget::getFigureWidgetSettingWidget()
+{
+    return mFigureWidgetSettingWidget;
+}
+
+/**
+ * @brief 显示 Figure 设置窗口
+ */
+void DASettingContainerWidget::showFigureWidgetSettingWidget()
+{
+    setCurrentWidget(mFigureWidgetSettingWidget);
 }
