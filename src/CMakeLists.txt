@@ -40,6 +40,9 @@ if(DA_ENABLE_PYTHON)
     add_subdirectory(DAPyCommonWidgets)
     add_dependencies(DAPyCommonWidgets DAPyBindQt)
 
+    add_subdirectory(DAPyWorkFlow)
+    add_dependencies(DAPyWorkFlow DAUtils DAPyBindQt DAWorkFlow)
+
     add_subdirectory(DAData)
     add_dependencies(DAData DAUtils DAPyBindQt DAPyScripts)
 else()

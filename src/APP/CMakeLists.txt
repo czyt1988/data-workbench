@@ -1,4 +1,4 @@
-﻿
+
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # DAPyCommonWidgets 库
@@ -97,6 +97,12 @@ endif()
 target_link_libraries(${DA_APP_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAPluginSupport
 )
+if(DA_ENABLE_PYTHON)
+    # -------------link DAPyWorkFlow--------------------------
+    target_link_libraries(${DA_APP_NAME} PUBLIC
+        ${DA_PROJECT_NAME}::DAPyWorkFlow
+    )
+endif()
 
 # -------------link 3rdparty DALiteCtk--------------------------
 damacro_import_DALiteCtk(${DA_APP_NAME})
