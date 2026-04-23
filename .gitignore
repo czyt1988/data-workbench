@@ -1,4 +1,4 @@
-﻿bin_*
+bin_*
 build*
 # 但是，不要忽略 docs 目录下任何以 build 开头的内容
 !docs/**/build*/
@@ -108,6 +108,7 @@ out
 *.pyc
 .idea
 __pycache__
+.pytest_cache
 
 # Binaries
 # --------
