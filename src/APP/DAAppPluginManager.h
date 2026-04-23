@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QList>
 #include <QSet>
+#include <memory>
 
 #include "DANodeMetaData.h"
 #include "DAPluginManager.h"
@@ -16,6 +17,9 @@ class _DAPrivateWorkflowNodePluginData;
 class DAAbstractNodePlugin;
 class DAAbstractPlugin;
 class DAAbstractNodeFactory;
+#if DA_ENABLE_PYTHON
+class DAPyNodeFactory;
+#endif
 /**
  * @brief 此app的插件管理类
  *
@@ -43,8 +47,15 @@ public:
     QList< DANodeMetaData > getAllNodeMetaDatas() const;
 
 private:
+#if DA_ENABLE_PYTHON
+    // 初始化Python节点工厂
+    void initPyNodeFactory();
+#endif
     QList< DAAbstractPlugin* > mPlugins;
     QList< DANodeMetaData > mNodeMetaDatas;
+#if DA_ENABLE_PYTHON
+    std::shared_ptr< DAPyNodeFactory > mPyNodeFactory;  // Python节点工厂
+#endif
 };
 }  // namespace DA
 #endif  // FCMETHODEDITORPLUGINMANAGER_H

@@ -1,4 +1,4 @@
-﻿#include "DAAppController.h"
+#include "DAAppController.h"
 // Qt
 #include <QFileDialog>
 #include <QFileInfo>
@@ -69,6 +69,9 @@
 #include "numpy/DAPyDType.h"
 // Widget
 #include "DADataOperateOfDataFrameWidget.h"
+// Python workflow
+#include "DAPyWorkFlowExecuter.h"
+#include "DAPyWorkFlowScene.h"
 #endif
 //
 #include "SettingPages/DAAppConfig.h"
@@ -215,6 +218,7 @@ void DAAppController::initialize()
     initConnection();
 #if DA_ENABLE_PYTHON
     initScripts();
+    initPyWorkflowConnections();
 #endif
 }
 
@@ -313,6 +317,13 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionItemUngroup, onActionItemUngroupTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowRun, onActionRunCurrentWorkflowTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowTerminate, onActionTerminateCurrentWorkflowTriggered);
+#if DA_ENABLE_PYTHON
+    // Python workflow 操作
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionPyWorkflowNew, onActionPyWorkflowNewTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionPyWorkflowOpen, onActionPyWorkflowOpenTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionPyWorkflowExecute, onActionPyWorkflowExecuteTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionPyWorkflowTerminate, onActionPyWorkflowTerminateTriggered);
+#endif
     // workflow edit 工作流编辑/data edit 绘图编辑
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawRect, onActionStartDrawRectTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawText, onActionStartDrawTextTriggered);
@@ -1040,6 +1051,27 @@ void DAAppController::initScripts()
 
     qDebug() << mFileReadFilters;
 }
+
+#if DA_ENABLE_PYTHON
+/**
+ * @brief 初始化Python工作流信号槽连接
+ *
+ * 此函数在initialize()中调用，用于设置Python工作流相关的
+ * 信号槽连接。当前为占位实现，待DAPyWorkFlowScene和
+ * DAPyWorkFlowExecuter完整集成后添加具体连接逻辑。
+ *
+ * 计划的信号槽连接包括：
+ * 1. DAPyWorkFlowExecuter::finished → 更新Action启用状态
+ * 2. DAPyWorkFlowExecuter::nodeExecuteFinished → 更新节点状态显示
+ * 3. DAPyWorkFlowExecuter::progressChanged → 更新进度显示
+ */
+void DAAppController::initPyWorkflowConnections()
+{
+    // TODO: 在DAPyWorkFlowScene编辑器集成后完善信号槽连接
+    // 当前Action的信号槽已在initConnection中通过DAAPPCONTROLLER_ACTION_BIND宏绑定
+    qDebug() << "Python workflow connections initialized (placeholder)";
+}
+#endif
 /**
  * @brief 选择的样式改变信号
  * @param column
@@ -1206,6 +1238,75 @@ void DAAppController::onActionTerminateCurrentWorkflowTriggered()
     qDebug() << "onActionTerminateCurrentWorkflowTriggered";
     mDock->getWorkFlowOperateWidget()->terminateCurrentWorkFlow();
 }
+
+#if DA_ENABLE_PYTHON
+/**
+ * @brief 新建Python工作流
+ *
+ * 创建一个新的DAPyWorkFlowScene并设置到编辑器中。
+ * 此操作先检查Python环境是否就绪，然后创建空Python工作流。
+ */
+void DAAppController::onActionPyWorkflowNewTriggered()
+{
+    qDebug() << "onActionPyWorkflowNewTriggered";
+    // TODO: 完整实现需在DAPyWorkFlowScene编辑器集成后完善
+    // 当前为占位实现，仅记录操作意图
+    qInfo() << tr("Create new Python workflow (placeholder)");
+}
+
+/**
+ * @brief 打开已保存的Python工作流
+ *
+ * 通过文件对话框选择Python工作流XML文件并加载到编辑器中。
+ */
+void DAAppController::onActionPyWorkflowOpenTriggered()
+{
+    qDebug() << "onActionPyWorkflowOpenTriggered";
+    // TODO: 完整实现需在DAPyWorkFlowScene序列化功能完善后添加
+    // 当前为占位实现，仅记录操作意图
+    qInfo() << tr("Open Python workflow (placeholder)");
+}
+
+/**
+ * @brief 执行Python工作流
+ *
+ * 创建DAPyWorkFlowExecuter实例，设置当前Python工作流对象，
+ * 在独立线程中执行，并更新UI状态（禁用执行按钮，启用终止按钮）。
+ *
+ * @note 执行前需确保Python环境已初始化且工作流中有可执行节点
+ */
+void DAAppController::onActionPyWorkflowExecuteTriggered()
+{
+    qDebug() << "onActionPyWorkflowExecuteTriggered";
+    // TODO: 完整实现需在DAPyWorkFlowScene和DAPyWorkFlowExecuter编辑器集成后完善
+    // 当前为占位实现，仅记录操作意图
+    // 实际实现流程：
+    // 1. 检查Python环境是否就绪
+    // 2. 获取当前DAPyWorkFlowScene的pyWorkflow对象
+    // 3. 创建DAPyWorkFlowExecuter并设置workflow
+    // 4. moveToThread并开始执行
+    // 5. 更新action启用状态
+    mActions->actionPyWorkflowExecute->setEnabled(false);
+    mActions->actionPyWorkflowTerminate->setEnabled(true);
+    qInfo() << tr("Execute Python workflow (placeholder)");
+}
+
+/**
+ * @brief 终止Python工作流执行
+ *
+ * 向正在执行的DAPyWorkFlowExecuter发送终止请求，
+ * 并恢复UI状态（启用执行按钮，禁用终止按钮）。
+ */
+void DAAppController::onActionPyWorkflowTerminateTriggered()
+{
+    qDebug() << "onActionPyWorkflowTerminateTriggered";
+    // TODO: 完整实现需在DAPyWorkFlowExecuter集成后完善
+    // 当前为占位实现，仅恢复UI状态
+    mActions->actionPyWorkflowExecute->setEnabled(true);
+    mActions->actionPyWorkflowTerminate->setEnabled(false);
+    qInfo() << tr("Terminate Python workflow (placeholder)");
+}
+#endif
 
 void DAAppController::onEditFontChanged(const QFont& f)
 {

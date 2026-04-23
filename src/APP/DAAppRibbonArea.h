@@ -1,4 +1,4 @@
-﻿#ifndef DAAPPRIBBONAREA_H
+#ifndef DAAPPRIBBONAREA_H
 #define DAAPPRIBBONAREA_H
 #include <QObject>
 #include <QAction>
@@ -11,6 +11,7 @@
 #if DA_ENABLE_PYTHON
 // Py
 #include "numpy/DAPyDType.h"
+#include "DAPyWorkFlowRibbonGroup.h"
 #endif
 
 #define DAAPPRIBBONAREA_COMMON_SETTING_H(MiddleName)                                                                   \
@@ -204,6 +205,10 @@ private:
 	void buildContextCategoryWorkflowView_();
 	// 构建workflow-运行的上下文标签
 	void buildContextCategoryWorkflowRun_();
+#if DA_ENABLE_PYTHON
+	// 构建Python workflow的Ribbon面板（嵌入到workflow上下文中）
+	void buildPyWorkflowRibbonGroup();
+#endif
 	// 构建chart上下文
 	void buildContextCategoryChartEdit();
 	// 构建ApplicationMenu
@@ -376,6 +381,10 @@ private:
 	//----------------------------------------------------
 	SARibbonCategory* m_categoryWorkflowRun;  ///< 工作流运行
 	SARibbonPanel* m_pannelWorkflowRun;       ///< 运行视图pannel
+#if DA_ENABLE_PYTHON
+	SARibbonPanel* m_pannelPyWorkflow;        ///< Python工作流面板
+	DAPyWorkFlowRibbonGroup* m_pyWorkflowRibbonGroup;  ///< Python工作流Ribbon组构建辅助
+#endif
 	//----------------------------------------------------
 	// Context - chart
 	//----------------------------------------------------

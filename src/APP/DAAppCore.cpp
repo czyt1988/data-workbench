@@ -1,4 +1,4 @@
-﻿#include "DAAppCore.h"
+#include "DAAppCore.h"
 #include <QFileInfo>
 #include <QApplication>
 #include <QDebug>
@@ -13,6 +13,7 @@
 #include "DAAppCommand.h"
 #if DA_ENABLE_PYTHON
 // DA Python
+#include "DAPyInterpreter.h"
 #else
 #include <QProcess>
 #include <QList>
@@ -46,6 +47,10 @@ bool DAAppCore::initialized()
     qDebug() << "core have been initialized App Data Manager";
     mProject = new DAAppProject(this, this);
     mProject->setDataManagerInterface(mDataManager);
+#if DA_ENABLE_PYTHON
+    // 初始化Python环境路径（在插件加载之前完成，确保sys.path包含PyScripts）
+    initPythonEnvPaths();
+#endif
     return true;
 }
 
@@ -118,5 +123,35 @@ DACoreInterface* getAppCorePtr()
 {
     return &(DAAppCore::getInstance());
 }
+
+#if DA_ENABLE_PYTHON
+/**
+ * @brief 初始化Python环境路径
+ *
+ * 将DAPyWorkFlow的PyScripts源码路径添加到Python sys.path中，
+ * 确保在开发环境下DAWorkFlowPy模块可被正确导入。
+ * 此方法在initialized()中调用，在插件加载之前完成路径配置。
+ *
+ * 添加的路径：
+ * - 源码路径：用于开发环境，指向src/DAPyWorkFlow/PyScripts目录
+ * - 安装路径：用于发布环境，指向applicationDirPath/PyScripts（由initPyNodeFactory添加）
+ *
+ * @note 此函数仅添加源码路径，安装路径由DAAppPluginManager::initPyNodeFactory()负责
+ */
+void DAAppCore::initPythonEnvPaths()
+{
+    if (!DAPyInterpreter::isPythonInitialized()) {
+        qWarning() << tr("Python interpreter not initialized, skip Python env paths setup");
+        return;
+    }
+    // 添加源码路径（开发环境使用）
+    QString sourcePyScriptsPath = QApplication::applicationDirPath() + "/../src/DAPyWorkFlow/PyScripts";
+    QDir sourceDir(sourcePyScriptsPath);
+    if (sourceDir.exists()) {
+        DAPyInterpreter::appendSysPath(sourceDir.absolutePath());
+        qInfo() << tr("Added Python source path: %1").arg(sourceDir.absolutePath());
+    }
+}
+#endif
 
 }  // end namespace DA

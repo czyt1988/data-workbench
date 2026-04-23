@@ -1,4 +1,4 @@
-﻿#ifndef DAAPPCONTROLLER_H
+#ifndef DAAPPCONTROLLER_H
 #define DAAPPCONTROLLER_H
 #include <QObject>
 #include <functional>
@@ -337,6 +337,13 @@ private Q_SLOTS:
     void onActionRunCurrentWorkflowTriggered();
     // 终止
     void onActionTerminateCurrentWorkflowTriggered();
+#if DA_ENABLE_PYTHON
+    // Python workflow操作
+    void onActionPyWorkflowNewTriggered();
+    void onActionPyWorkflowOpenTriggered();
+    void onActionPyWorkflowExecuteTriggered();
+    void onActionPyWorkflowTerminateTriggered();
+#endif
     //===================================================
     // 其他
     //===================================================
@@ -408,6 +415,8 @@ private:
 #if DA_ENABLE_PYTHON
     // 初始化脚本信息
     void initScripts();
+    // 初始化Python工作流信号槽
+    void initPyWorkflowConnections();
 #endif
 
 private:

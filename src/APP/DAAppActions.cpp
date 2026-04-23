@@ -1,4 +1,4 @@
-﻿#include "DAAppActions.h"
+#include "DAAppActions.h"
 #include <QActionGroup>
 #include <QPainter>
 #include <QVector>
@@ -249,6 +249,14 @@ void DAAppActions::buildWorkflowAction()
     actionExportWorkflowSceneToImage =
         createAction("actionExportWorkflowSceneToImage", ":/app/bright/Icon/exportToPic.svg");
     actionExportWorkflowSceneToPNG = createAction("actionExportWorkflowSceneToPNG", ":/app/bright/Icon/exportToPng.svg");
+#if DA_ENABLE_PYTHON
+    // Python workflow 操作
+    actionPyWorkflowNew       = createAction("actionPyWorkflowNew", ":/app/bright/Icon/newWorkflow.svg");
+    actionPyWorkflowOpen      = createAction("actionPyWorkflowOpen", ":/app/bright/Icon/open.svg");
+    actionPyWorkflowExecute   = createAction("actionPyWorkflowExecute", ":/app/bright/Icon/run.svg");
+    actionPyWorkflowTerminate = createAction("actionPyWorkflowTerminate", ":/app/bright/Icon/stop.svg");
+    actionPyWorkflowTerminate->setEnabled(false);
+#endif
 }
 
 void DAAppActions::buildOtherActions()
@@ -545,6 +553,19 @@ void DAAppActions::retranslateUi()
     actionExportWorkflowSceneToPNG->setToolTip(tr("Export the workflow scene to a PNG image"));  // cn:导出工作流场景为PNG图片
     actionWorkflowViewMarker->setText(tr("Show Marker"));                                        // cn:显示标记
     actionWorkflowViewMarker->setToolTip(tr("Show marker on the workflow scene"));  // cn:在工作流场景中显示标记
+#if DA_ENABLE_PYTHON
+    //-----------------------------------------------------
+    // Python workflow 操作
+    //-----------------------------------------------------
+    actionPyWorkflowNew->setText(tr("New \nPy Workflow"));                          // cn:新建\nPy工作流
+    actionPyWorkflowNew->setToolTip(tr("Create a new Python workflow"));             // cn:创建新的Python工作流
+    actionPyWorkflowOpen->setText(tr("Open \nPy Workflow"));                         // cn:打开\nPy工作流
+    actionPyWorkflowOpen->setToolTip(tr("Open a saved Python workflow"));            // cn:打开已保存的Python工作流
+    actionPyWorkflowExecute->setText(tr("Execute \nPy Workflow"));                   // cn:执行\nPy工作流
+    actionPyWorkflowExecute->setToolTip(tr("Execute the Python workflow"));          // cn:执行Python工作流
+    actionPyWorkflowTerminate->setText(tr("Terminate \nPy Workflow"));               // cn:终止\nPy工作流
+    actionPyWorkflowTerminate->setToolTip(tr("Terminate the Python workflow"));      // cn:终止Python工作流执行
+#endif
     //-----------------------------------------------------
     // View Category
     //-----------------------------------------------------

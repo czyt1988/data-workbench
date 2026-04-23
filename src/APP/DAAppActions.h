@@ -1,4 +1,4 @@
-﻿#ifndef DAAPPACTIONS_H
+#ifndef DAAPPACTIONS_H
 #define DAAPPACTIONS_H
 #include "DAActionsInterface.h"
 #include <QPixmap>
@@ -99,6 +99,13 @@ public:
     // workflow的运行操作
     QAction* actionWorkflowRun;        ///< 运行工作流
     QAction* actionWorkflowTerminate;  ///< 停止工作流
+#if DA_ENABLE_PYTHON
+    // Python workflow的操作
+    QAction* actionPyWorkflowNew;       ///< 新建Python工作流
+    QAction* actionPyWorkflowOpen;      ///< 打开Python工作流
+    QAction* actionPyWorkflowExecute;   ///< 执行Python工作流
+    QAction* actionPyWorkflowTerminate; ///< 终止Python工作流执行
+#endif
     //===================================================
     // 绘图标签 Chart Category
     //===================================================

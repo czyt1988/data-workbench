@@ -3,6 +3,11 @@
 #include "DAAbstractPlugin.h"
 #include "DAPluginManager.h"
 #include "DAAbstractNodeFactory.h"
+#include <QApplication>
+#if DA_ENABLE_PYTHON
+#include "DAPyNodeFactory.h"
+#include "DAPyInterpreter.h"
+#endif
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -24,7 +29,11 @@ DAAppPluginManager::~DAAppPluginManager()
 
 /**
  * @brief 初始化加载所有的插件
- * @param 核心接口
+ *
+ * 加载C++插件节点后，如果Python环境已启用，还会初始化Python节点工厂，
+ * 将Python节点元数据合并到节点列表中，实现Python和C++节点共存。
+ *
+ * @param[in] c 核心接口
  */
 void DAAppPluginManager::loadAllPlugins(DACoreInterface* c)
 {
@@ -60,6 +69,10 @@ void DAAppPluginManager::loadAllPlugins(DACoreInterface* c)
             }
         }
     }
+#if DA_ENABLE_PYTHON
+    // 初始化Python节点工厂
+    initPyNodeFactory();
+#endif
     // 最后对_nodeMetaDatas去重，此去重要保证原来的顺序
     QMap< DANodeMetaData, int > mapcnt;
     // 说明有重复项，需要去除
@@ -100,7 +113,10 @@ QList< DAAbstractNodePlugin* > DAAppPluginManager::getNodePlugins() const
 
 /**
  * @brief 获取所有的节点工厂
- * @return
+ *
+ * 返回C++插件节点工厂和Python节点工厂的合并列表
+ *
+ * @return 所有节点工厂的共享指针列表
  */
 QList< std::shared_ptr< DAAbstractNodeFactory > > DAAppPluginManager::createNodeFactorys() const
 {
@@ -109,6 +125,11 @@ QList< std::shared_ptr< DAAbstractNodeFactory > > DAAppPluginManager::createNode
     for (DAAbstractNodePlugin* d : std::as_const(nodePlugins)) {
         res.append(std::shared_ptr< DAAbstractNodeFactory >(d->createNodeFactory()));
     }
+#if DA_ENABLE_PYTHON
+    if (mPyNodeFactory) {
+        res.append(mPyNodeFactory);
+    }
+#endif
     return (res);
 }
 
@@ -120,5 +141,47 @@ QList< DANodeMetaData > DAAppPluginManager::getAllNodeMetaDatas() const
 {
     return mNodeMetaDatas;
 }
+
+#if DA_ENABLE_PYTHON
+/**
+ * @brief 初始化Python节点工厂
+ *
+ * 创建DAPyNodeFactory实例，调用discoverNodes()发现Python节点，
+ * 并将Python节点元数据合并到mNodeMetaDatas中。
+ *
+ * 发现流程：
+ * 1. 检查Python解释器是否已初始化
+ * 2. 将PyScripts目录添加到Python sys.path
+ * 3. 创建DAPyNodeFactory并调用discoverNodes()
+ * 4. 合并Python节点元数据到mNodeMetaDatas
+ *
+ * @note 如果Python未初始化或发现失败，不会影响C++节点的正常加载
+ */
+void DAAppPluginManager::initPyNodeFactory()
+{
+    if (!DAPyInterpreter::isPythonInitialized()) {
+        qWarning() << tr("Python interpreter not initialized, skip Python node discovery");
+        return;
+    }
+    try {
+        // 将PyScripts目录添加到sys.path，确保DAWorkFlowPy可被导入
+        DAPyInterpreter::appendSysPath(QApplication::applicationDirPath() + "/PyScripts");
+
+        mPyNodeFactory = std::make_shared< DAPyNodeFactory >();
+        if (!mPyNodeFactory->discoverNodes()) {
+            qWarning() << tr("Python node discovery failed");
+            mPyNodeFactory.reset();
+            return;
+        }
+        // 合并Python节点元数据
+        mNodeMetaDatas += mPyNodeFactory->getNodesMetaData();
+        qDebug() << tr("Python node factory initialized, discovered %1 nodes")
+                     .arg(mPyNodeFactory->getNodesMetaData().size());
+    } catch (const std::exception& e) {
+        qCritical() << tr("Python node factory initialization failed: %1").arg(e.what());
+        mPyNodeFactory.reset();
+    }
+}
+#endif
 
 }

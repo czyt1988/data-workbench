@@ -1,4 +1,4 @@
-﻿#include "DAAppRibbonArea.h"
+#include "DAAppRibbonArea.h"
 #include "AppMainWindow.h"
 #include <QActionGroup>
 // SARibbon
@@ -590,6 +590,10 @@ void DAAppRibbonArea::buildContextCategoryWorkflowRun_()
     m_pannelWorkflowRun->setObjectName(QStringLiteral("da-pannel-context.workflow.run"));
     m_pannelWorkflowRun->addLargeAction(m_actions->actionWorkflowRun);
     m_pannelWorkflowRun->addLargeAction(m_actions->actionWorkflowTerminate);
+#if DA_ENABLE_PYTHON
+    // Python Workflow面板
+    buildPyWorkflowRibbonGroup();
+#endif
 }
 
 /**
@@ -968,5 +972,19 @@ void DAAppRibbonArea::setDataframeOperateCurrentDType(const DAPyDType& d)
     QSignalBlocker blocker(m_comboxColumnTypes);
     Q_UNUSED(blocker);
     m_comboxColumnTypes->setCurrentDType(d);
+}
+
+/**
+ * @brief 构建Python workflow的Ribbon面板
+ *
+ * 在Workflow Run category中创建Python Workflow面板，
+ * 提供新建、打开、执行和终止Python工作流的操作按钮。
+ */
+void DAAppRibbonArea::buildPyWorkflowRibbonGroup()
+{
+    m_pyWorkflowRibbonGroup = new DAPyWorkFlowRibbonGroup(this);
+    m_pannelPyWorkflow      = m_categoryWorkflowRun->addPanel(tr("Python Workflow"));  // cn:Python工作流
+    m_pannelPyWorkflow->setObjectName(QStringLiteral("da-pannel-context.workflow.pyworkflow"));
+    m_pyWorkflowRibbonGroup->buildPyWorkflowPanel(m_pannelPyWorkflow, m_actions);
 }
 #endif
