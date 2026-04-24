@@ -1,14 +1,14 @@
-﻿#include "DAAppWorkFlowOperateWidget.h"
+#include "DAAppWorkFlowOperateWidget.h"
 #include "DADataWorkFlow.h"
-#include "DAWorkFlowEditWidget.h"
+#include "DAPyWorkFlowEditWidget.h"
 #include "DAAppCore.h"
 #include "DAAppCommand.h"
 #include "DAAppPluginManager.h"
-#include "DAAbstractNodeFactory.h"
+#include "DAPyNodeFactory.h"
 #include <QDebug>
 namespace DA
 {
-DAAppWorkFlowOperateWidget::DAAppWorkFlowOperateWidget(QWidget* parent) : DAWorkFlowOperateWidget(parent)
+DAAppWorkFlowOperateWidget::DAAppWorkFlowOperateWidget(QWidget* parent) : DAPyWorkFlowOperateWidget(parent)
 {
     connect(this, &DAAppWorkFlowOperateWidget::workflowCreated, this, &DAAppWorkFlowOperateWidget::onWorkflowCreated);
     connect(this, &DAAppWorkFlowOperateWidget::workflowRemoving, this, &DAAppWorkFlowOperateWidget::onWorkflowRemoving);
@@ -23,17 +23,14 @@ DAAppWorkFlowOperateWidget::~DAAppWorkFlowOperateWidget()
 {
 }
 
-DAWorkFlow* DAAppWorkFlowOperateWidget::createWorkflow()
+DAPyWorkFlow* DAAppWorkFlowOperateWidget::createWorkflow()
 {
     DADataWorkFlow* wf = new DADataWorkFlow();
     if (!mPluginMgr) {
         return wf;
     }
-    const auto factorys = mPluginMgr->createNodeFactorys();
-    for (const auto& factory : factorys) {
-        // 注册工厂
-        wf->registFactory(factory);
-    }
+    // TODO: DAPyWorkFlow不再使用registFactory模式，工厂注册需要通过DAPyNodeFactory管理
+    // 旧的registFactory接口已移除，后续需要适配新的插件加载方式
     return wf;
 }
 
@@ -42,7 +39,7 @@ void DAAppWorkFlowOperateWidget::setPluginManager(DAAppPluginManager* pluginMgr)
     mPluginMgr = pluginMgr;
 }
 
-void DAAppWorkFlowOperateWidget::onWorkflowCreated(DAWorkFlowEditWidget* wfw)
+void DAAppWorkFlowOperateWidget::onWorkflowCreated(DAPyWorkFlowEditWidget* wfw)
 {
     cmd()->addStack(wfw->getUndoStack());
 }
@@ -51,14 +48,14 @@ void DAAppWorkFlowOperateWidget::onWorkflowCreated(DAWorkFlowEditWidget* wfw)
  * @brief 切换workflow
  * @param w
  */
-void DAAppWorkFlowOperateWidget::onCurrentWorkFlowWidgetChanged(DAWorkFlowEditWidget* w)
+void DAAppWorkFlowOperateWidget::onCurrentWorkFlowWidgetChanged(DAPyWorkFlowEditWidget* w)
 {
     if (w) {
         w->getUndoStack()->setActive(true);
     }
 }
 
-void DAAppWorkFlowOperateWidget::onWorkflowRemoving(DAWorkFlowEditWidget* w)
+void DAAppWorkFlowOperateWidget::onWorkflowRemoving(DAPyWorkFlowEditWidget* w)
 {
     cmd()->removeStack(w->getUndoStack());
 }
@@ -66,8 +63,8 @@ void DAAppWorkFlowOperateWidget::onWorkflowRemoving(DAWorkFlowEditWidget* w)
 void DAAppWorkFlowOperateWidget::onWorkflowClearing()
 {
     // 把所有的stack脱离
-    const QList< DAWorkFlowEditWidget* > all = getAllWorkFlowWidgets();
-    for (DAWorkFlowEditWidget* w : all) {
+    const QList< DAPyWorkFlowEditWidget* > all = getAllWorkFlowWidgets();
+    for (DAPyWorkFlowEditWidget* w : all) {
         cmd()->removeStack(w->getUndoStack());
     }
 }

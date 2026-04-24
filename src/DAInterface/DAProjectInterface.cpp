@@ -1,7 +1,7 @@
-﻿#include "DAProjectInterface.h"
+#include "DAProjectInterface.h"
 #include <QFileInfo>
 #include <QSysInfo>
-#include "DAWorkFlowOperateWidget.h"
+#include "DAPyWorkFlowOperateWidget.h"
 #include "DAStringUtil.h"
 #include "DAXmlHelper.h"
 #include "DAQtContainerUtil.hpp"
@@ -24,7 +24,7 @@ public:
 public:
     bool mIsDirty { false };  ///< 脏标识
     DADockingAreaInterface* mDockingArea { nullptr };
-    DAWorkFlowOperateWidget* mWorkFlowOperateWidget { nullptr };
+    DAPyWorkFlowOperateWidget* mWorkFlowOperateWidget { nullptr };
     DADataManagerInterface* mDataManagerInterface { nullptr };
     QFileInfo mProjectFileInfo;  ///< 记录工程文件信息
 

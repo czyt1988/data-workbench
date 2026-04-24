@@ -45,12 +45,12 @@ set(DA_LIB_HEADER_FILES
     DANodeTreeWidget.h
     DARecentFilesManager.h
     DAToolBox.h
-    DAWorkFlowEditWidget.h
-    DAWorkFlowGraphicsScene.h
-    DAWorkFlowGraphicsView.h
-    DAWorkFlowNodeListWidget.h
-    DAWorkFlowNodeItemSettingWidget.h
-    DAWorkFlowOperateWidget.h
+    DAPyWorkFlowEditWidget.h
+    DAPyWorkFlowGraphicsScene.h
+    DAPyWorkFlowGraphicsView.h
+    DAPyWorkFlowNodeListWidget.h
+    DAPyWorkFlowNodeItemSettingWidget.h
+    DAPyWorkFlowOperateWidget.h
     DASettingContainerWidget.h
     DAStatusBarWidget.h
     DAAbstractArchive.h
@@ -93,12 +93,12 @@ set(DA_LIB_SOURCE_FILES
     DANodeTreeWidget.cpp
     DARecentFilesManager.cpp
     DAToolBox.cpp
-    DAWorkFlowEditWidget.cpp
-    DAWorkFlowGraphicsScene.cpp
-    DAWorkFlowGraphicsView.cpp
-    DAWorkFlowNodeListWidget.cpp
-    DAWorkFlowNodeItemSettingWidget.cpp
-    DAWorkFlowOperateWidget.cpp
+    DAPyWorkFlowEditWidget.cpp
+    DAPyWorkFlowGraphicsScene.cpp
+    DAPyWorkFlowGraphicsView.cpp
+    DAPyWorkFlowNodeListWidget.cpp
+    DAPyWorkFlowNodeItemSettingWidget.cpp
+    DAPyWorkFlowOperateWidget.cpp
     DASettingContainerWidget.cpp
     DAStatusBarWidget.cpp
     DAAbstractArchive.cpp
@@ -124,10 +124,10 @@ set(DA_LIB_QT_UI_FILES
     DANodeItemSettingWidget.ui
     DANodeLinkItemSettingWidget.ui
     DANodeSettingWidget.ui
-    DAWorkFlowOperateWidget.ui
-    DAWorkFlowEditWidget.ui
-    DAWorkFlowNodeListWidget.ui
-    DAWorkFlowNodeItemSettingWidget.ui
+    DAPyWorkFlowOperateWidget.ui
+    DAPyWorkFlowEditWidget.ui
+    DAPyWorkFlowNodeListWidget.ui
+    DAPyWorkFlowNodeItemSettingWidget.ui
 )
 set(DA_LIB_QT_RC_FILES
     icon.qrc
@@ -150,8 +150,12 @@ if(DA_ENABLE_PYTHON)
         DAChartAddTradingCurveWidget.h
         DAChartAddSpectrogramWidget.h
         DAPyWorkFlowRibbonGroup.h
+        DAPyWorkflowActions.h
+        DAPyNodeConfigDialog.h
+        DAPyNodeWidget.h
+        DAPyParamTypeHelper.h
     )
-    list(APPEND DA_LIB_HEADER_FILES
+    list(APPEND DA_LIB_SOURCE_FILES
         DADataframeToVectorPointWidget.cpp
         DADataOperateOfDataFrameWidget.cpp
         DAPyDataFrameTableView.cpp
@@ -167,6 +171,9 @@ if(DA_ENABLE_PYTHON)
         DAChartAddSpectrogramWidget.cpp
         DAChartAddTradingCurveWidget.cpp
         DAPyWorkFlowRibbonGroup.cpp
+        DAPyNodeConfigDialog.cpp
+        DAPyNodeWidget.cpp
+        DAPyParamTypeHelper.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES
         DADataframeToVectorPointWidget.ui
@@ -337,7 +344,7 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAMessageHandler
     ${DA_PROJECT_NAME}::DAData
     ${DA_PROJECT_NAME}::DACommonWidgets
-    ${DA_PROJECT_NAME}::DAWorkFlow
+    ${DA_PROJECT_NAME}::DAPyWorkFlow
     ${DA_PROJECT_NAME}::DAFigure
 )
 

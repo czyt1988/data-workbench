@@ -3,8 +3,6 @@
 // SARibbon
 #include "SARibbonCategory.h"
 #include "SARibbonPanel.h"
-// APP
-#include "DAAppActions.h"
 
 namespace DA
 {
@@ -48,16 +46,24 @@ DAPyWorkFlowRibbonGroup::~DAPyWorkFlowRibbonGroup()
  * - Terminate Python Workflow (终止Python工作流)
  *
  * @param[in] panel 目标Ribbon面板
- * @param[in] actions Action管理器，用于获取Python workflow相关Action
+ * @param[in] actions Python工作流Action集合
  */
-void DAPyWorkFlowRibbonGroup::buildPyWorkflowPanel(SARibbonPanel* panel, DAAppActions* actions)
+void DAPyWorkFlowRibbonGroup::buildPyWorkflowPanel(SARibbonPanel* panel, const DAPyWorkflowActions& actions)
 {
 #if DA_ENABLE_PYTHON
-    panel->addLargeAction(actions->actionPyWorkflowNew);
-    panel->addLargeAction(actions->actionPyWorkflowOpen);
+    if (actions.actionPyWorkflowNew) {
+        panel->addLargeAction(actions.actionPyWorkflowNew);
+    }
+    if (actions.actionPyWorkflowOpen) {
+        panel->addLargeAction(actions.actionPyWorkflowOpen);
+    }
     panel->addSeparator();
-    panel->addLargeAction(actions->actionPyWorkflowExecute);
-    panel->addLargeAction(actions->actionPyWorkflowTerminate);
+    if (actions.actionPyWorkflowExecute) {
+        panel->addLargeAction(actions.actionPyWorkflowExecute);
+    }
+    if (actions.actionPyWorkflowTerminate) {
+        panel->addLargeAction(actions.actionPyWorkflowTerminate);
+    }
     initConnections(actions);
 #endif
 }
@@ -69,10 +75,10 @@ void DAPyWorkFlowRibbonGroup::buildPyWorkflowPanel(SARibbonPanel* panel, DAAppAc
  * 添加新建、打开、执行和终止操作按钮。
  *
  * @param[in] category 目标Ribbon category
- * @param[in] actions Action管理器
+ * @param[in] actions Python工作流Action集合
  * @return 传入的category指针（便于链式调用）
  */
-SARibbonCategory* DAPyWorkFlowRibbonGroup::buildPyWorkflowCategory(SARibbonCategory* category, DAAppActions* actions)
+SARibbonCategory* DAPyWorkFlowRibbonGroup::buildPyWorkflowCategory(SARibbonCategory* category, const DAPyWorkflowActions& actions)
 {
 #if DA_ENABLE_PYTHON
     SARibbonPanel* pyWorkflowPanel = category->addPanel(QObject::tr("Python Workflow"));  // cn:Python工作流
@@ -94,34 +100,33 @@ void DAPyWorkFlowRibbonGroup::setExecutingState(bool isExecuting)
 {
     DA_D(d);
     d->mIsExecuting = isExecuting;
-    // 状态由DAAppController统一管理，此处仅记录状态
+    // 状态由Controller统一管理，此处仅记录状态
 }
 
 /**
  * @brief 语言变更时更新文本
  *
  * 更新Python工作流面板中各Action的显示文本和提示信息。
- * 此函数由DAAppActions::retranslateUi()统一管理，
  * 此处仅提供接口供外部调用。
  */
 void DAPyWorkFlowRibbonGroup::retranslateUi()
 {
-    // 文本翻译由DAAppActions::retranslateUi()统一管理
+    // 文本翻译由Actions管理器的retranslateUi()统一管理
     // 此处仅预留接口，面板标题由buildPyWorkflowCategory中的tr()处理
 }
 
 /**
  * @brief 初始化信号槽连接
  *
- * 将Python工作流Action的triggered信号连接到DAAppController的对应处理槽。
- * 注意：实际的信号槽连接在DAAppController::initialize()中完成，
+ * 将Python工作流Action的triggered信号连接到Controller的对应处理槽。
+ * 注意：实际的信号槽连接在Controller初始化中完成，
  * 此处仅预留扩展接口。
  *
- * @param[in] actions Action管理器
+ * @param[in] actions Python工作流Action集合
  */
-void DAPyWorkFlowRibbonGroup::initConnections(DAAppActions* actions)
+void DAPyWorkFlowRibbonGroup::initConnections(const DAPyWorkflowActions& actions)
 {
-    // 信号槽连接由DAAppController::initConnection()统一管理
+    // 信号槽连接由Controller初始化统一管理
     // 此处仅预留接口，无需在此处额外连接
 }
 

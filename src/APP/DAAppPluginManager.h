@@ -1,4 +1,4 @@
-﻿#ifndef DAAPPPLUGINMANAGER_H
+#ifndef DAAPPPLUGINMANAGER_H
 #define DAAPPPLUGINMANAGER_H
 
 #include <QtCore/qglobal.h>
@@ -9,17 +9,14 @@
 #include <QSet>
 #include <memory>
 
-#include "DANodeMetaData.h"
+#include "DAPyNodeFactory.h"
 #include "DAPluginManager.h"
 namespace DA
 {
 class _DAPrivateWorkflowNodePluginData;
 class DAAbstractNodePlugin;
 class DAAbstractPlugin;
-class DAAbstractNodeFactory;
-#if DA_ENABLE_PYTHON
 class DAPyNodeFactory;
-#endif
 /**
  * @brief 此app的插件管理类
  *
@@ -41,10 +38,10 @@ public:
     QList< DAAbstractNodePlugin* > getNodePlugins() const;
 
     // 获取所有的节点工厂
-    QList< std::shared_ptr< DAAbstractNodeFactory > > createNodeFactorys() const;
+    QList< std::shared_ptr< DAPyNodeFactory > > createNodeFactorys() const;
 
     // 获取所有的元数据
-    QList< DANodeMetaData > getAllNodeMetaDatas() const;
+    QList< DAPyNodeMetaData > getAllNodeMetaDatas() const;
 
 private:
 #if DA_ENABLE_PYTHON
@@ -52,7 +49,7 @@ private:
     void initPyNodeFactory();
 #endif
     QList< DAAbstractPlugin* > mPlugins;
-    QList< DANodeMetaData > mNodeMetaDatas;
+    QList< DAPyNodeMetaData > mNodeMetaDatas;
 #if DA_ENABLE_PYTHON
     std::shared_ptr< DAPyNodeFactory > mPyNodeFactory;  // Python节点工厂
 #endif

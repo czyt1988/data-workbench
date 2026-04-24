@@ -1,4 +1,4 @@
-﻿#ifndef DAAPPPROJECT_H
+#ifndef DAAPPPROJECT_H
 #define DAAPPPROJECT_H
 #include <QObject>
 #include <QDomElement>
@@ -6,7 +6,7 @@
 #include <QTemporaryDir>
 #include "DAProjectInterface.h"
 #include "DAGlobals.h"
-#include "DAAbstractNodeLinkGraphicsItem.h"
+#include "DAPyLinkGraphicsItem.h"
 #include <QThread>
 #include "DAXmlHelper.h"
 #include "DAZipArchiveThreadWrapper.h"
@@ -16,8 +16,8 @@ namespace DA
 {
 class DAAbstractArchiveTask;
 class DAZipArchiveThreadWrapper;
-class DAWorkFlowOperateWidget;
-class DAWorkFlowGraphicsScene;
+class DAPyWorkFlowOperateWidget;
+class DAPyWorkFlowGraphicsScene;
 class DADataOperateWidget;
 class DAChartOperateWidget;
 class DAAppPluginManager;
@@ -34,7 +34,7 @@ public:
 	DAAppProject(DACoreInterface* c, QObject* p = nullptr);
 	~DAAppProject();
 	// 工作流操作窗口
-	DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
+	DAPyWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
 	// 数据操作窗口
 	DADataOperateWidget* getDataOperateWidget() const;
 	// 绘图窗口

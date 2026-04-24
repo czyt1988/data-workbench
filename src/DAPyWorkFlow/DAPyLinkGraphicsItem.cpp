@@ -2,11 +2,12 @@
 #include <QPainter>
 #include <QTimer>
 #include <QDebug>
+#include <QJsonArray>
 #include <QGraphicsScene>
 #include <QStyleOptionGraphicsItem>
 #include "DAPyNodeGraphicsItem.h"
 #include "../DAPyBindQt/DAPythonSignalHandler.h"
-#include "../DAWorkFlow/DANodeLinkPoint.h"
+#include "DAPyLinkPoint.h"
 
 namespace DA
 {

@@ -1,14 +1,15 @@
-﻿#include "DANodeItemSettingWidget.h"
+#include "DANodeItemSettingWidget.h"
 #include <QDebug>
 #include <QSignalBlocker>
 #include <QActionGroup>
 #include <QPointer>
 #include <QButtonGroup>
 #include "ui_DANodeItemSettingWidget.h"
-#include "DANodeGraphicsScene.h"
+#include "DAPyWorkFlowGraphicsScene.h"
 #include "DAGraphicsResizeableItem.h"
 #include "DACommandsForGraphics.h"
-#include "DAAbstractNodeGraphicsItem.h"
+#include "DAPyNodeGraphicsItem.h"
+#include "DAPyLinkPoint.h"
 #include "DAGraphicsCommandsFactory.h"
 namespace DA
 {
@@ -18,7 +19,7 @@ class DANodeItemSettingWidget::PrivateData
 public:
 	PrivateData(DANodeItemSettingWidget* p);
 	QPointer< DAGraphicsResizeableItem > mItem { nullptr };
-	QPointer< DANodeGraphicsScene > mScene { nullptr };
+	QPointer< DAPyWorkFlowGraphicsScene > mScene { nullptr };
 	QButtonGroup* mButtonGroupInputLocation { nullptr };
 	QButtonGroup* mButtonGroupOutputLocation { nullptr };
 };
@@ -110,18 +111,18 @@ DAGraphicsResizeableItem* DANodeItemSettingWidget::getItem() const
  * 如果设置nullptr，将不使用redo/undo
  * @param sc
  */
-void DANodeItemSettingWidget::setScene(DANodeGraphicsScene* sc)
+void DANodeItemSettingWidget::setScene(DAPyWorkFlowGraphicsScene* sc)
 {
 	if (d_ptr->mScene == sc) {
 		return;
 	}
 	if (d_ptr->mScene) {
 		disconnect(
-			d_ptr->mScene.data(), &DANodeGraphicsScene::nodeItemsRemoved, this, &DANodeItemSettingWidget::onNodeItemsRemoved);
+			d_ptr->mScene.data(), &DAPyWorkFlowScene::pyNodeItemsRemoved, this, &DANodeItemSettingWidget::onNodeItemsRemoved);
 	}
 	d_ptr->mScene = sc;
 	if (d_ptr->mScene) {
-		connect(d_ptr->mScene.data(), &DANodeGraphicsScene::nodeItemsRemoved, this, &DANodeItemSettingWidget::onNodeItemsRemoved);
+		connect(d_ptr->mScene.data(), &DAPyWorkFlowScene::pyNodeItemsRemoved, this, &DANodeItemSettingWidget::onNodeItemsRemoved);
 	}
 }
 
@@ -199,7 +200,7 @@ void DANodeItemSettingWidget::updateLinkPointLocation()
 	if (nullptr == d_ptr->mItem) {
 		return;
 	}
-	DAAbstractNodeGraphicsItem* nodeItem = qobject_cast< DAAbstractNodeGraphicsItem* >(d_ptr->mItem);
+	DAPyNodeGraphicsItem* nodeItem = qobject_cast< DAPyNodeGraphicsItem* >(d_ptr->mItem);
 	if (nullptr == nodeItem) {
 		// 说明不是node link
 		return;
@@ -207,35 +208,39 @@ void DANodeItemSettingWidget::updateLinkPointLocation()
 	QSignalBlocker b1(d_ptr->mButtonGroupInputLocation), b2(d_ptr->mButtonGroupOutputLocation);
 	Q_UNUSED(b1);
 	Q_UNUSED(b2);
-	DAAbstractNodeGraphicsItem::LinkPointLocation ll = nodeItem->getLinkPointLocation(DANodeLinkPoint::Input);
-	switch (ll) {
-	case DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide:
+	// TODO: DAPyNodeGraphicsItem needs getLinkPointDirection/getLinkPointLocation API
+	// For now, check the direction of the first input/output link point
+	QList<DAPyLinkPoint> inputPoints = nodeItem->getInputLinkPoints();
+	AspectDirection inputDir = (inputPoints.isEmpty()) ? AspectDirection::West : inputPoints.first().direction;
+	switch (inputDir) {
+	case AspectDirection::West:
 		ui->toolButtonInLeft->setChecked(true);
 		break;
-	case DAAbstractNodeGraphicsItem::LinkPointLocationOnTopSide:
+	case AspectDirection::North:
 		ui->toolButtonInTop->setChecked(true);
 		break;
-	case DAAbstractNodeGraphicsItem::LinkPointLocationOnRightSide:
+	case AspectDirection::East:
 		ui->toolButtonInRight->setChecked(true);
 		break;
-	case DAAbstractNodeGraphicsItem::LinkPointLocationOnBottomSide:
+	case AspectDirection::South:
 		ui->toolButtonInBottom->setChecked(true);
 		break;
 	default:
 		break;
 	}
-	ll = nodeItem->getLinkPointLocation(DANodeLinkPoint::Output);
-	switch (ll) {
-	case DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide:
+	QList<DAPyLinkPoint> outputPoints = nodeItem->getOutputLinkPoints();
+	AspectDirection outputDir = (outputPoints.isEmpty()) ? AspectDirection::East : outputPoints.first().direction;
+	switch (outputDir) {
+	case AspectDirection::West:
 		ui->toolButtonOutLeft->setChecked(true);
 		break;
-	case DAAbstractNodeGraphicsItem::LinkPointLocationOnTopSide:
+	case AspectDirection::North:
 		ui->toolButtonOutTop->setChecked(true);
 		break;
-	case DAAbstractNodeGraphicsItem::LinkPointLocationOnRightSide:
+	case AspectDirection::East:
 		ui->toolButtonOutRight->setChecked(true);
 		break;
-	case DAAbstractNodeGraphicsItem::LinkPointLocationOnBottomSide:
+	case AspectDirection::South:
 		ui->toolButtonOutBottom->setChecked(true);
 		break;
 	default:
@@ -394,10 +399,10 @@ void DANodeItemSettingWidget::onCheckBoxResizableStateChanged(int state)
 	}
 }
 
-void DANodeItemSettingWidget::onNodeItemsRemoved(const QList< DAAbstractNodeGraphicsItem* >& items)
+void DANodeItemSettingWidget::onNodeItemsRemoved(const QList< DAPyNodeGraphicsItem* >& items)
 {
 	if (d_ptr->mItem) {
-		for (const DAAbstractNodeGraphicsItem* i : std::as_const(items)) {
+		for (const DAPyNodeGraphicsItem* i : std::as_const(items)) {
 			if (i == d_ptr->mItem.data()) {
 				d_ptr->mItem = nullptr;
 				updateData();
@@ -411,39 +416,40 @@ void DANodeItemSettingWidget::onButtonGroupClicked(int id)
 	if (nullptr == d_ptr->mItem) {
 		return;
 	}
-	DAAbstractNodeGraphicsItem* nodeItem = qobject_cast< DAAbstractNodeGraphicsItem* >(d_ptr->mItem);
+	DAPyNodeGraphicsItem* nodeItem = qobject_cast< DAPyNodeGraphicsItem* >(d_ptr->mItem);
 	if (nullptr == nodeItem) {
 		return;
 	}
 	switch (id) {
 	case 0:
-		nodeItem->setLinkPointLocation(DANodeLinkPoint::Input, DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide);
+		// TODO: DAPyNodeGraphicsItem needs setLinkPointDirection API
+		// nodeItem->setLinkPointDirection(DAPyLinkPoint::Way::Input, AspectDirection::West);
 		break;
 	case 1:
-		nodeItem->setLinkPointLocation(DANodeLinkPoint::Input, DAAbstractNodeGraphicsItem::LinkPointLocationOnTopSide);
+		// nodeItem->setLinkPointDirection(DAPyLinkPoint::Way::Input, AspectDirection::North);
 		break;
 	case 2:
-		nodeItem->setLinkPointLocation(DANodeLinkPoint::Input, DAAbstractNodeGraphicsItem::LinkPointLocationOnRightSide);
+		// nodeItem->setLinkPointDirection(DAPyLinkPoint::Way::Input, AspectDirection::East);
 		break;
 	case 3:
-		nodeItem->setLinkPointLocation(DANodeLinkPoint::Input, DAAbstractNodeGraphicsItem::LinkPointLocationOnBottomSide);
+		// nodeItem->setLinkPointDirection(DAPyLinkPoint::Way::Input, AspectDirection::South);
 		break;
 	case 4:
-		nodeItem->setLinkPointLocation(DANodeLinkPoint::Output, DAAbstractNodeGraphicsItem::LinkPointLocationOnLeftSide);
+		// nodeItem->setLinkPointDirection(DAPyLinkPoint::Way::Output, AspectDirection::West);
 		break;
 	case 5:
-		nodeItem->setLinkPointLocation(DANodeLinkPoint::Output, DAAbstractNodeGraphicsItem::LinkPointLocationOnTopSide);
+		// nodeItem->setLinkPointDirection(DAPyLinkPoint::Way::Output, AspectDirection::North);
 		break;
 	case 6:
-		nodeItem->setLinkPointLocation(DANodeLinkPoint::Output, DAAbstractNodeGraphicsItem::LinkPointLocationOnRightSide);
+		// nodeItem->setLinkPointDirection(DAPyLinkPoint::Way::Output, AspectDirection::East);
 		break;
 	case 7:
-		nodeItem->setLinkPointLocation(DANodeLinkPoint::Output, DAAbstractNodeGraphicsItem::LinkPointLocationOnBottomSide);
+		// nodeItem->setLinkPointDirection(DAPyLinkPoint::Way::Output, AspectDirection::South);
 		break;
 	default:
 		break;
 	}
-	nodeItem->updateLinkPointPos();
+	nodeItem->updateLinkPoints();
 	nodeItem->update();
 }
 

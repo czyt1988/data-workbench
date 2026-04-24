@@ -1,4 +1,4 @@
-﻿#include "DAAppProject.h"
+#include "DAAppProject.h"
 #include <memory>
 // Qt
 #include <QBuffer>
@@ -17,7 +17,7 @@
 #include "DAUIInterface.h"
 #include "DAStatusBarInterface.h"
 
-#include "DAWorkFlowOperateWidget.h"
+#include "DAPyWorkFlowOperateWidget.h"
 #include "DAXmlHelper.h"
 #include "DAQtContainerUtil.hpp"
 #include "DAStringUtil.h"
@@ -201,7 +201,7 @@ DAAppProject::~DAAppProject()
 {
 }
 
-DAWorkFlowOperateWidget* DAAppProject::getWorkFlowOperateWidget() const
+DAPyWorkFlowOperateWidget* DAAppProject::getWorkFlowOperateWidget() const
 {
     return getDockingAreaInterface()->getWorkFlowOperateWidget();
 }
@@ -227,7 +227,7 @@ DAChartOperateWidget* DAAppProject::getChartOperateWidget() const
 bool DAAppProject::appendWorkflowInProject(const QDomDocument& doc, bool skipIndex)
 {
     // 加载之前先清空
-    DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
     Q_CHECK_PTR(wfo);
     int oldProjectHaveWorkflow = wfo->count();  // 已有的工作流数量
     bool isok                  = true;
@@ -263,7 +263,7 @@ bool DAAppProject::appendWorkflowInProject(const QDomDocument& doc, bool skipInd
         // 生成一个唯一名字
         name = DA::makeUniqueString(names, name);
         // 建立工作流窗口
-        DAWorkFlowEditWidget* wfe = wfo->appendWorkflow(name);
+        DAPyWorkFlowEditWidget* wfe = wfo->appendWorkflow(name);
         isok &= mXml.loadElement(wfe, &workflowEle);
     }
     if (skipIndex) {
@@ -357,7 +357,7 @@ void DAAppProject::setPluginMgr(DAAppPluginManager* plugin)
 void DAAppProject::clear()
 {
     // 清除工作流
-    DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
     Q_CHECK_PTR(wfo);
     wfo->clear();
     //! 清除数据
@@ -645,7 +645,7 @@ void DAAppProject::makeSaveChartTask(DAZipArchiveThreadWrapper* archive)
 
 QDomDocument DAAppProject::createWorkflowUIDomDocument()
 {
-    DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
     Q_CHECK_PTR(wfo);
     QDomDocument doc;
     QDomProcessingInstruction processInstruction =
@@ -691,7 +691,7 @@ QDomDocument DAAppProject::createChartsUIDomDocument(DAChartItemsManager& chartI
 bool DAAppProject::loadWorkflowUI(const QByteArray& data)
 {
     // 加载之前先清空
-    DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
     Q_CHECK_PTR(wfo);
     bool isok = appendWorkflowInProject(data, true);
     return isok;

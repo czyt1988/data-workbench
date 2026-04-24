@@ -1,4 +1,4 @@
-﻿#ifndef DATAANALYSISPLUGIN_H
+#ifndef DATAANALYSISPLUGIN_H
 #define DATAANALYSISPLUGIN_H
 #include <QtCore/qglobal.h>
 #include <QObject>
@@ -12,7 +12,7 @@ class DataframeCleanerWorker;
 class DataframeOperateWorker;
 namespace DA
 {
-class DAAbstractNodeFactory;
+class DAPyNodeFactory;
 }
 
 class DataAnalysisPlugin : public QObject, public DA::DAAbstractNodePlugin
@@ -51,13 +51,13 @@ public:
      * @brief 创建一个节点工厂
      * @return
      */
-    virtual DA::DAAbstractNodeFactory* createNodeFactory() override;
+    virtual DA::DAPyNodeFactory* createNodeFactory() override;
 
     /**
      * @brief 删除一个节点工厂(谁创建谁删除原则)
      * @param p
      */
-    virtual void destoryNodeFactory(DA::DAAbstractNodeFactory* p) override;
+    virtual void destroyNodeFactory(DA::DAPyNodeFactory* p) override;
     /**
      * @brief 获取设置页，默认返回nullptr，代表没有设置页
      * @return

@@ -6,6 +6,8 @@
 #include "DAPyWorkFlow/DAPyNodeGraphicsItem.h"
 #include "DAPyWorkFlow/DAPyLinkGraphicsItem.h"
 #include "DAPyWorkFlow/DAPyPainterProxy.h"
+#include "DAPyWorkFlow/DAPyLinkPoint.h"
+#include "DAPyWorkFlow/DAPyNodeFactory.h"
 #include "DAPyBindQt/DAPybind11QtCaster.hpp"
 #include "DAPyBindQt/DAPyJsonCast.h"
 #include "DAPyBindQt/DAPybind11InQt.h"  // slots workaround，必须第一个pybind11相关头文件
@@ -14,14 +16,14 @@ namespace DA {
 
 /**
  * @brief 通过 qualified_name 获取 DAPyNodeProxy 实例
- * @param qualified_name Python 节点的完整限定名（模块.类名）
- * @return 代理节点引用，如果节点未注册返回空代理
+ * @param[in] qualified_name Python 节点的完整限定名（模块.类名）
+ * @return 代理节点智能指针，如果节点未注册返回空指针
  */
-DAPyNodeProxy getNodeProxy(const std::string& qualified_name)
+std::shared_ptr< DA::DAPyNodeProxy > getNodeProxy(const std::string& qualified_name)
 {
     // TODO: 实现通过 DAPyModuleWorkflow 获取 Python 节点类并创建代理
-    // 目前返回空代理，待 DAPyModuleWorkflow 和节点注册系统实现后完善
-    return DAPyNodeProxy();
+    // 目前返回空指针，待 DAPyModuleWorkflow 和节点注册系统实现后完善
+    return std::shared_ptr< DA::DAPyNodeProxy >();
 }
 
 }  // namespace DA
@@ -38,7 +40,85 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .value("Skipped", DA::DAPyNodeState::Skipped)
         .export_values();
 
-// 绑定 DAPyWorkFlowScene 类（Scenario B 模式：Qt 接口类 + lambda 包装）
+    // 导出 DAPyLinkPoint::Way 枚举
+    pybind11::enum_< DA::DAPyLinkPoint::Way >(m, "DAPyLinkPointWay")
+        .value("Input", DA::DAPyLinkPoint::Way::Input)
+        .value("Output", DA::DAPyLinkPoint::Way::Output)
+        .export_values();
+
+    // 绑定 DAPyLinkPoint 类
+    pybind11::class_< DA::DAPyLinkPoint >(m, "DAPyLinkPoint")
+        .def(pybind11::init<>())
+        .def(pybind11::init< const QPointF&, const QString&, DA::DAPyLinkPoint::Way, DA::AspectDirection >(),
+             pybind11::arg("position"),
+             pybind11::arg("name"),
+             pybind11::arg("way")         = DA::DAPyLinkPoint::Way::Output,
+             pybind11::arg("direction")   = DA::AspectDirection::East)
+        .def_readwrite("position", &DA::DAPyLinkPoint::position,
+                       "Connection point position relative to graphics item")
+        .def_readwrite("name", &DA::DAPyLinkPoint::name,
+                       "Connection point name")
+        .def_readwrite("way", &DA::DAPyLinkPoint::way,
+                       "Input or Output attribute")
+        .def_readwrite("direction", &DA::DAPyLinkPoint::direction,
+                       "Link line extending direction")
+        .def("isValid", &DA::DAPyLinkPoint::isValid,
+             "Check if connection point is valid (name not empty)")
+        .def("isInput", &DA::DAPyLinkPoint::isInput,
+             "Check if this is an input connection point")
+        .def("isOutput", &DA::DAPyLinkPoint::isOutput,
+             "Check if this is an output connection point")
+        .def("__eq__",
+             [](const DA::DAPyLinkPoint& a, const DA::DAPyLinkPoint& b) { return a == b; },
+             pybind11::arg("other"),
+             "Equality comparison with another DAPyLinkPoint")
+        .def("__eq__",
+             [](const DA::DAPyLinkPoint& a, const std::string& b) { return a == QString::fromStdString(b); },
+             pybind11::arg("other"),
+             "Equality comparison with a string (by name)")
+        .def("__repr__",
+             [](const DA::DAPyLinkPoint& a) {
+                 return QString("DAPyLinkPoint(name=%1, way=%2)")
+                     .arg(a.name)
+                     .arg(a.way == DA::DAPyLinkPoint::Way::Input ? "Input" : "Output")
+                     .toStdString();
+             });
+
+    // 绑定 DAPyNodeMetaData 结构体
+    pybind11::class_< DA::DAPyNodeMetaData >(m, "DAPyNodeMetaData")
+        .def(pybind11::init<>())
+        .def_readwrite("name", &DA::DAPyNodeMetaData::name,
+                       "Node display name")
+        .def_readwrite("prototype", &DA::DAPyNodeMetaData::prototype,
+                       "Node unique prototype identifier (qualified_name)")
+        .def_readwrite("group", &DA::DAPyNodeMetaData::group,
+                       "Node group/category")
+        .def_readwrite("iconPath", &DA::DAPyNodeMetaData::iconPath,
+                       "Node icon path")
+        .def_readwrite("tooltip", &DA::DAPyNodeMetaData::tooltip,
+                       "Node tooltip text")
+        .def_readwrite("inputKeys", &DA::DAPyNodeMetaData::inputKeys,
+                       "Input key list")
+        .def_readwrite("outputKeys", &DA::DAPyNodeMetaData::outputKeys,
+                       "Output key list")
+        .def("isValid", &DA::DAPyNodeMetaData::isValid,
+             "Check if metadata is valid (prototype not empty)")
+        .def("__eq__",
+             [](const DA::DAPyNodeMetaData& a, const DA::DAPyNodeMetaData& b) { return a == b; },
+             pybind11::arg("other"),
+             "Equality comparison by prototype")
+        .def("__repr__",
+             [](const DA::DAPyNodeMetaData& m) {
+                 return QString("DAPyNodeMetaData(name=%1, prototype=%2, group=%3, inputs=%4, outputs=%5)")
+                     .arg(m.name)
+                     .arg(m.prototype)
+                     .arg(m.group)
+                     .arg(m.inputKeys.size())
+                     .arg(m.outputKeys.size())
+                     .toStdString();
+             });
+
+    // 绑定 DAPyWorkFlowScene 类（Scenario B 模式：Qt 接口类 + lambda 包装）
     pybind11::class_< DA::DAPyWorkFlowScene >(m, "DAPyWorkFlowScene")
         .def(pybind11::init<>())
         .def(pybind11::init< QObject* >(), pybind11::arg("parent") = nullptr)
@@ -124,7 +204,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         // 清空场景
         .def("clearPyScene", &DA::DAPyWorkFlowScene::clearPyScene, "Clear scene, remove all nodes and links");
 
-    // 绑定 DAPyNodeProxy 类（Scenario B 模式）
+    // 绑定 DAPyNodeProxy 类（独立类，不再继承DAAbstractNode）
     pybind11::class_< DA::DAPyNodeProxy >(m, "DAPyNodeProxy")
         // 状态管理
         .def("getNodeState", &DA::DAPyNodeProxy::getNodeState, "Get current node state")
@@ -157,7 +237,62 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             pybind11::arg("key"),
             "Get output data (Python object reference)"
         )
-        // 信息查询
+        // 信息查询（新增方法）
+        .def(
+            "getNodeName",
+            [](const DA::DAPyNodeProxy& self) { return self.getNodeName().toStdString(); },
+            "Get node display name"
+        )
+        .def(
+            "setNodeName",
+            [](DA::DAPyNodeProxy& self, const std::string& name) { self.setNodeName(QString::fromStdString(name)); },
+            pybind11::arg("name"),
+            "Set node display name"
+        )
+        .def(
+            "getInputKeys",
+            [](const DA::DAPyNodeProxy& self) {
+                pybind11::list pyList;
+                for (const QString& key : self.getInputKeys()) {
+                    pyList.append(key.toStdString());
+                }
+                return pyList;
+            },
+            "Get input key list"
+        )
+        .def(
+            "getOutputKeys",
+            [](const DA::DAPyNodeProxy& self) {
+                pybind11::list pyList;
+                for (const QString& key : self.getOutputKeys()) {
+                    pyList.append(key.toStdString());
+                }
+                return pyList;
+            },
+            "Get output key list"
+        )
+        .def(
+            "getNodePrototype",
+            [](const DA::DAPyNodeProxy& self) { return self.getNodePrototype().toStdString(); },
+            "Get node prototype (qualified_name)"
+        )
+        .def(
+            "getNodeGroup",
+            [](const DA::DAPyNodeProxy& self) { return self.getNodeGroup().toStdString(); },
+            "Get node group/category"
+        )
+        .def(
+            "getID",
+            [](const DA::DAPyNodeProxy& self) { return self.getID(); },
+            "Get node ID"
+        )
+        .def(
+            "setID",
+            [](DA::DAPyNodeProxy& self, unsigned int id) { self.setID(id); },
+            pybind11::arg("id"),
+            "Set node ID"
+        )
+        // 原有信息查询
         .def(
             "getQualifiedName",
             [](const DA::DAPyNodeProxy& self) { return self.getQualifiedName().toStdString(); },
@@ -170,6 +305,68 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 return DA::PY::qjsonObjectToPyDict(json);
             },
             "Get node descriptor dictionary (inputs/outputs/parameters metadata)"
+        );
+
+    // 绑定 DAPyNodeFactory 类（独立QObject，不再继承DAAbstractNodeFactory）
+    pybind11::class_< DA::DAPyNodeFactory, QObject >(m, "DAPyNodeFactory")
+        .def(pybind11::init< QObject* >(), pybind11::arg("parent") = nullptr,
+             "Create Python node factory with optional parent")
+        // 节点发现
+        .def(
+            "discoverNodes",
+            [](DA::DAPyNodeFactory& self, const std::vector< std::string >& scanPaths, bool useEntryPoints) {
+                QStringList paths;
+                for (const auto& p : scanPaths) {
+                    paths.append(QString::fromStdString(p));
+                }
+                return self.discoverNodes(paths, useEntryPoints);
+            },
+            pybind11::arg("scan_paths")    = std::vector< std::string >(),
+            pybind11::arg("use_entry_points") = false,
+            "Discover Python nodes in specified paths"
+        )
+        // 节点创建
+        .def(
+            "createNodeProxy",
+            [](DA::DAPyNodeFactory& self, const std::string& qualifiedName) {
+                return self.createNodeProxy(QString::fromStdString(qualifiedName));
+            },
+            pybind11::arg("qualified_name"),
+            "Create DAPyNodeProxy by qualified name"
+        )
+        // 元数据查询
+        .def(
+            "getNodeMetadataList",
+            [](DA::DAPyNodeFactory& self) {
+                pybind11::list pyList;
+                for (const DA::DAPyNodeMetaData& meta : self.getNodeMetadataList()) {
+                    pyList.append(meta);
+                }
+                return pyList;
+            },
+            "Get all discovered node metadata as list"
+        )
+        .def(
+            "getNodePrototypes",
+            [](DA::DAPyNodeFactory& self) {
+                pybind11::list pyList;
+                for (const QString& proto : self.getNodePrototypes()) {
+                    pyList.append(proto.toStdString());
+                }
+                return pyList;
+            },
+            "Get all discovered node prototype identifiers"
+        )
+        // 工厂信息
+        .def(
+            "factoryName",
+            [](DA::DAPyNodeFactory& self) { return self.factoryName().toStdString(); },
+            "Get factory name"
+        )
+        .def(
+            "factoryDescribe",
+            [](DA::DAPyNodeFactory& self) { return self.factoryDescribe().toStdString(); },
+            "Get factory description"
         );
 
     // 绑定 DAPyPainterProxy 类（Scenario B 模式：非QObject代理类）

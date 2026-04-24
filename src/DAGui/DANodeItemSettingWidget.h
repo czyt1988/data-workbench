@@ -1,9 +1,9 @@
-﻿#ifndef DANODEITEMSETTINGWIDGET_H
+#ifndef DANODEITEMSETTINGWIDGET_H
 #define DANODEITEMSETTINGWIDGET_H
 #include "DAGuiAPI.h"
 #include <QWidget>
 #include <QSizeF>
-#include "DAAbstractNodeGraphicsItem.h"
+#include "DAPyNodeGraphicsItem.h"
 namespace Ui
 {
 class DANodeItemSettingWidget;
@@ -11,7 +11,7 @@ class DANodeItemSettingWidget;
 
 namespace DA
 {
-class DANodeGraphicsScene;
+class DAPyWorkFlowGraphicsScene;
 class DAGraphicsResizeableItem;
 class DAGUI_API DANodeItemSettingWidget : public QWidget
 {
@@ -25,7 +25,7 @@ public:
     // 获取维护的item
     DAGraphicsResizeableItem* getItem() const;
     // 设置了DAGraphicsSceneWithUndoStack 能实现redo/undo
-    void setScene(DANodeGraphicsScene* sc);
+    void setScene(DAPyWorkFlowGraphicsScene* sc);
     // 更新
     void updateData();
     // 更新位置信息
@@ -46,7 +46,7 @@ private slots:
     void onDoubleSpinBoxYValueChanged(double v);
     void onCheckBoxMovableStateChanged(int state);
     void onCheckBoxResizableStateChanged(int state);
-    void onNodeItemsRemoved(const QList< DA::DAAbstractNodeGraphicsItem* >& items);
+    void onNodeItemsRemoved(const QList< DA::DAPyNodeGraphicsItem* >& items);
     void onButtonGroupClicked(int id);
     void onTextEditTooltipTextChanged();
 

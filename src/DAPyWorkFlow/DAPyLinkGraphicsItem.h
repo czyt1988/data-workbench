@@ -1,4 +1,4 @@
-﻿#ifndef DAPYLINKGRAPHICSITEM_H
+#ifndef DAPYLINKGRAPHICSITEM_H
 #define DAPYLINKGRAPHICSITEM_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAGraphicsLinkItem.h"

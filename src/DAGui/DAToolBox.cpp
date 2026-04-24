@@ -1,4 +1,4 @@
-﻿#include "DAToolBox.h"
+#include "DAToolBox.h"
 #include "DANodeListWidget.h"
 #include <QToolBox>
 #include <QDebug>
@@ -25,7 +25,7 @@ DAToolBox::DAToolBox(QWidget* parent) : QScrollArea(parent), _favoriteList(nullp
  * @param datas
  * @note 注意已淘汰
  */
-void DAToolBox::addItems(const QMap< QString, QList< DANodeMetaData > >& datas)
+void DAToolBox::addItems(const QMap< QString, QList< DAPyNodeMetaData > >& datas)
 {
     for (auto i = datas.begin(); i != datas.end(); ++i) {
         DANodeListWidget* nlw = new DANodeListWidget(this);
@@ -39,12 +39,12 @@ void DAToolBox::addItems(const QMap< QString, QList< DANodeMetaData > >& datas)
  * @brief 添加items
  * @param datas
  */
-void DAToolBox::addItems(const QList< DANodeMetaData >& datas)
+void DAToolBox::addItems(const QList< DAPyNodeMetaData >& datas)
 {
     // 先提取分组，确认分组都建立
     QList< QString > orderGroup;
-    QHash< QString, QList< DANodeMetaData > > groupOrderNodes;
-    for (const DANodeMetaData& md : std::as_const(datas)) {
+    QHash< QString, QList< DAPyNodeMetaData > > groupOrderNodes;
+    for (const DAPyNodeMetaData& md : std::as_const(datas)) {
         // 每个md的分组按顺序去重归集
         if (!orderGroup.contains(md.getGroup())) {
             orderGroup.append(md.getGroup());
@@ -93,7 +93,7 @@ DANodeListWidget* DAToolBox::createFavoriteList()
  * @brief 添加到收藏
  * @param md
  */
-void DAToolBox::addToFavorite(const DANodeMetaData& md)
+void DAToolBox::addToFavorite(const DAPyNodeMetaData& md)
 {
     DANodeListWidget* fav = getFavoriteList();
     fav->addItem(md);
@@ -103,7 +103,7 @@ void DAToolBox::addToFavorite(const DANodeMetaData& md)
  * @brief 移除收藏
  * @param md
  */
-void DAToolBox::removeFavorite(const DANodeMetaData& md)
+void DAToolBox::removeFavorite(const DAPyNodeMetaData& md)
 {
     DANodeListWidget* fav = getFavoriteList();
     int c                 = fav->count();
@@ -127,11 +127,11 @@ void DAToolBox::removeFavorite(const DANodeMetaData& md)
  * @param p
  * @return
  */
-DANodeMetaData DAToolBox::getNodeMetaData(const QPoint& p) const
+DAPyNodeMetaData DAToolBox::getNodeMetaData(const QPoint& p) const
 {
     DANodeListWidget* nl = qobject_cast< DANodeListWidget* >(_toolBox->currentWidget());
     if (!nl) {
-        return DANodeMetaData();
+        return DAPyNodeMetaData();
     }
     return nl->getNodeMetaData(nl->mapFromGlobal(mapToGlobal(p)));
 }

@@ -320,7 +320,7 @@ if(DA_ENABLE_AUTO_TRANSLATE)
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAPyCommonWidgets
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAPyScripts
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAUtils
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/DAWorkFlow
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/DAPyWorkFlow
         ${CMAKE_CURRENT_SOURCE_DIR}/plugins/DataAnalysis
     )
 

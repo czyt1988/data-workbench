@@ -1,4 +1,4 @@
-﻿#include "DataAnalysisPlugin.h"
+#include "DataAnalysisPlugin.h"
 #include "DataAnalysisNodeFactory.h"
 #include <QDebug>
 #include "DataAnalysisUI.h"
@@ -58,7 +58,7 @@ QString DataAnalysisPlugin::getDescription() const
     return u8"This is the fundamental data analysis plugin of the DA project";
 }
 
-DA::DAAbstractNodeFactory* DataAnalysisPlugin::createNodeFactory()
+DA::DAPyNodeFactory* DataAnalysisPlugin::createNodeFactory()
 {
     auto fac = new DataAnalysisNodeFactory();
     fac->setCore(core());
@@ -66,7 +66,7 @@ DA::DAAbstractNodeFactory* DataAnalysisPlugin::createNodeFactory()
     return fac;
 }
 
-void DataAnalysisPlugin::destoryNodeFactory(DA::DAAbstractNodeFactory* p)
+void DataAnalysisPlugin::destroyNodeFactory(DA::DAPyNodeFactory* p)
 {
     if (p) {
         p->deleteLater();

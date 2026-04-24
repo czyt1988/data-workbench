@@ -1,31 +1,31 @@
-﻿#include "DANodeTreeWidget.h"
+#include "DANodeTreeWidget.h"
 #include <QMouseEvent>
 #include <QApplication>
 #include <QDrag>
-#include "DAWorkFlowNodeListWidget.h"
+#include "DAPyWorkFlowNodeListWidget.h"
 #include "DANodeMimeData.h"
-#include "DANodeMetaData.h"
+#include "DAPyNodeFactory.h"
 #define ROLE_META_DATA (Qt::UserRole + 1)
 namespace DA
 {
 
-DANodeTreeWidgetItem::DANodeTreeWidgetItem(const DANodeMetaData& md) : QTreeWidgetItem(ThisItemType)
+DANodeTreeWidgetItem::DANodeTreeWidgetItem(const DAPyNodeMetaData& md) : QTreeWidgetItem(ThisItemType)
 {
     setNodeMetaData(md);
 }
 
-DANodeTreeWidgetItem::DANodeTreeWidgetItem(QTreeWidgetItem* parent, const DANodeMetaData& md)
+DANodeTreeWidgetItem::DANodeTreeWidgetItem(QTreeWidgetItem* parent, const DAPyNodeMetaData& md)
     : QTreeWidgetItem(parent, ThisItemType)
 {
     setNodeMetaData(md);
 }
 
-DANodeMetaData DANodeTreeWidgetItem::getNodeMetaData() const
+DAPyNodeMetaData DANodeTreeWidgetItem::getNodeMetaData() const
 {
-    return (data(0, ROLE_META_DATA).value< DANodeMetaData >());
+    return (data(0, ROLE_META_DATA).value< DAPyNodeMetaData >());
 }
 
-void DANodeTreeWidgetItem::setNodeMetaData(const DANodeMetaData& md)
+void DANodeTreeWidgetItem::setNodeMetaData(const DAPyNodeMetaData& md)
 {
 	setIcon(0, md.getIcon());
 	setText(0, md.getNodeName());
@@ -50,12 +50,12 @@ DANodeTreeWidget::DANodeTreeWidget(QWidget* par) : QTreeWidget(par), _favoriteIt
  * @param nodeMetaDatas
  * @param grouped
  */
-void DANodeTreeWidget::addItems(const QList< DANodeMetaData >& nodeMetaDatas)
+void DANodeTreeWidget::addItems(const QList< DAPyNodeMetaData >& nodeMetaDatas)
 {
 	// 先提取分组，确认分组都建立
 	QList< QString > orderGroup;
-	QMap< DANodeMetaData, DANodeTreeWidgetItem* > nodeItems;
-	for (const DANodeMetaData& md : std::as_const(nodeMetaDatas)) {
+	QMap< DAPyNodeMetaData, DANodeTreeWidgetItem* > nodeItems;
+	for (const DAPyNodeMetaData& md : std::as_const(nodeMetaDatas)) {
 		// 1.每个md都生成一个item
 		nodeItems[ md ] = new DANodeTreeWidgetItem(md);
 		// 2.每个md的分组按顺序去重归集
@@ -71,7 +71,7 @@ void DANodeTreeWidget::addItems(const QList< DANodeMetaData >& nodeMetaDatas)
 		groupItems[ g ] = gitem;
 	}
 	// 把节点item挂载到分组中
-	for (const DANodeMetaData& md : std::as_const(nodeMetaDatas)) {
+	for (const DAPyNodeMetaData& md : std::as_const(nodeMetaDatas)) {
 		QTreeWidgetItem* gitem      = groupItems.value(md.getGroup(), nullptr);
 		DANodeTreeWidgetItem* nitem = nodeItems.value(md, nullptr);
 		if (gitem && nitem) {
@@ -87,7 +87,7 @@ void DANodeTreeWidget::addItems(const QList< DANodeMetaData >& nodeMetaDatas)
  * @param md
  * @param grouped
  */
-void DANodeTreeWidget::addItem(const DANodeMetaData& md)
+void DANodeTreeWidget::addItem(const DAPyNodeMetaData& md)
 {
 	QTreeWidgetItem* root = nullptr;
 
@@ -112,7 +112,7 @@ void DANodeTreeWidget::addItem(const DANodeMetaData& md)
  * @brief 添加到收藏
  * @param md
  */
-void DANodeTreeWidget::addToFavorite(const DANodeMetaData& md)
+void DANodeTreeWidget::addToFavorite(const DAPyNodeMetaData& md)
 {
 	QTreeWidgetItem* favItem = createFavoriteItem();
 	DANodeTreeWidgetItem* i  = new DANodeTreeWidgetItem(favItem, md);
@@ -123,7 +123,7 @@ void DANodeTreeWidget::addToFavorite(const DANodeMetaData& md)
  * @brief 移除收藏
  * @param md
  */
-void DANodeTreeWidget::removeFavorite(const DANodeMetaData& md)
+void DANodeTreeWidget::removeFavorite(const DAPyNodeMetaData& md)
 {
 	QTreeWidgetItem* favItem = getFavoriteItem();
 	int c                    = favItem->childCount();
@@ -172,14 +172,14 @@ QTreeWidgetItem* DANodeTreeWidget::createFavoriteItem()
  * @param p
  * @return
  */
-DANodeMetaData DANodeTreeWidget::getNodeMetaData(const QPoint& p) const
+DAPyNodeMetaData DANodeTreeWidget::getNodeMetaData(const QPoint& p) const
 {
 	QTreeWidgetItem* item = itemAt(p);
 	if (!item) {
-		return DANodeMetaData();
+		return DAPyNodeMetaData();
 	}
 	if (DANodeTreeWidgetItem::ThisItemType != item->type()) {
-		return DANodeMetaData();
+		return DAPyNodeMetaData();
 	}
 	DANodeTreeWidgetItem* nitem = static_cast< DANodeTreeWidgetItem* >(item);
 	return nitem->getNodeMetaData();
@@ -203,8 +203,8 @@ void DANodeTreeWidget::mouseMoveEvent(QMouseEvent* event)
 				return;
 			}
 			DANodeTreeWidgetItem* nitem = static_cast< DANodeTreeWidgetItem* >(pitem);
-			DANodeMetaData nodemd       = nitem->getNodeMetaData();
-			QDrag* drag                 = DAWorkFlowNodeListWidget::createDrag(this, nodemd);
+			DAPyNodeMetaData nodemd       = nitem->getNodeMetaData();
+			QDrag* drag                 = DAPyWorkFlowNodeListWidget::createDrag(this, nodemd);
 			drag->exec(Qt::MoveAction | Qt::CopyAction);
 			return;
 

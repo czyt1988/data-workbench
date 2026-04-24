@@ -8,12 +8,12 @@
 namespace DA
 {
 
-class DAPyNodePalettePrivate
+class DAPyNodePalette::PrivateData
 {
     DA_DECLARE_PUBLIC(DAPyNodePalette)
 public:
-    DAPyNodePalettePrivate(DAPyNodePalette* p);
-    ~DAPyNodePalettePrivate();
+    PrivateData(DAPyNodePalette* p);
+    ~PrivateData();
 
 public:
     QColor mIdleColor;      ///< 空闲状态颜色
@@ -24,7 +24,7 @@ public:
     QColor mSkippedColor;   ///< 跳过状态颜色
 };
 
-DAPyNodePalettePrivate::DAPyNodePalettePrivate(DAPyNodePalette* p) : q_ptr(p)
+DAPyNodePalette::PrivateData::PrivateData(DAPyNodePalette* p) : q_ptr(p)
 {
     // 设置默认颜色
     mIdleColor    = QColor();                     // 默认颜色（透明）
@@ -35,7 +35,7 @@ DAPyNodePalettePrivate::DAPyNodePalettePrivate(DAPyNodePalette* p) : q_ptr(p)
     mSkippedColor = QColor(128, 128, 128, 200);   // 灰色填充
 }
 
-DAPyNodePalettePrivate::~DAPyNodePalettePrivate()
+DAPyNodePalette::PrivateData::~PrivateData()
 {
 }
 
@@ -47,9 +47,8 @@ DAPyNodePalettePrivate::~DAPyNodePalettePrivate()
  * @brief 构造函数
  * @param parent 父对象
  */
-DAPyNodePalette::DAPyNodePalette(QObject* parent) : QObject(parent)
+DAPyNodePalette::DAPyNodePalette(QObject* parent) : QObject(parent), DA_PIMPL_CONSTRUCT
 {
-    DA_PIMPL_CONSTRUCT(DAPyNodePalette);
 }
 
 /**
@@ -75,7 +74,8 @@ DAPyNodePalette& DAPyNodePalette::getGlobalPalette()
  */
 QColor DAPyNodePalette::getIdleColor() const
 {
-    return (DA_DC->mIdleColor);
+    DA_DC(d);
+    return d->mIdleColor;
 }
 
 /**
@@ -84,7 +84,8 @@ QColor DAPyNodePalette::getIdleColor() const
  */
 QColor DAPyNodePalette::getWaitingColor() const
 {
-    return (DA_DC->mWaitingColor);
+    DA_DC(d);
+    return d->mWaitingColor;
 }
 
 /**
@@ -93,7 +94,8 @@ QColor DAPyNodePalette::getWaitingColor() const
  */
 QColor DAPyNodePalette::getRunningColor() const
 {
-    return (DA_DC->mRunningColor);
+    DA_DC(d);
+    return d->mRunningColor;
 }
 
 /**
@@ -102,7 +104,8 @@ QColor DAPyNodePalette::getRunningColor() const
  */
 QColor DAPyNodePalette::getSuccessColor() const
 {
-    return (DA_DC->mSuccessColor);
+    DA_DC(d);
+    return d->mSuccessColor;
 }
 
 /**
@@ -111,7 +114,8 @@ QColor DAPyNodePalette::getSuccessColor() const
  */
 QColor DAPyNodePalette::getErrorColor() const
 {
-    return (DA_DC->mErrorColor);
+    DA_DC(d);
+    return d->mErrorColor;
 }
 
 /**
@@ -120,7 +124,8 @@ QColor DAPyNodePalette::getErrorColor() const
  */
 QColor DAPyNodePalette::getSkippedColor() const
 {
-    return (DA_DC->mSkippedColor);
+    DA_DC(d);
+    return d->mSkippedColor;
 }
 
 /**
@@ -129,8 +134,9 @@ QColor DAPyNodePalette::getSkippedColor() const
  */
 void DAPyNodePalette::setIdleColor(const QColor& color)
 {
-    if (DA_D->mIdleColor != color) {
-        DA_D->mIdleColor = color;
+    DA_D(d);
+    if (d->mIdleColor != color) {
+        d->mIdleColor = color;
         Q_EMIT idleColorChanged(color);
     }
 }
@@ -141,8 +147,9 @@ void DAPyNodePalette::setIdleColor(const QColor& color)
  */
 void DAPyNodePalette::setWaitingColor(const QColor& color)
 {
-    if (DA_D->mWaitingColor != color) {
-        DA_D->mWaitingColor = color;
+    DA_D(d);
+    if (d->mWaitingColor != color) {
+        d->mWaitingColor = color;
         Q_EMIT waitingColorChanged(color);
     }
 }
@@ -153,8 +160,9 @@ void DAPyNodePalette::setWaitingColor(const QColor& color)
  */
 void DAPyNodePalette::setRunningColor(const QColor& color)
 {
-    if (DA_D->mRunningColor != color) {
-        DA_D->mRunningColor = color;
+    DA_D(d);
+    if (d->mRunningColor != color) {
+        d->mRunningColor = color;
         Q_EMIT runningColorChanged(color);
     }
 }
@@ -165,8 +173,9 @@ void DAPyNodePalette::setRunningColor(const QColor& color)
  */
 void DAPyNodePalette::setSuccessColor(const QColor& color)
 {
-    if (DA_D->mSuccessColor != color) {
-        DA_D->mSuccessColor = color;
+    DA_D(d);
+    if (d->mSuccessColor != color) {
+        d->mSuccessColor = color;
         Q_EMIT successColorChanged(color);
     }
 }
@@ -177,8 +186,9 @@ void DAPyNodePalette::setSuccessColor(const QColor& color)
  */
 void DAPyNodePalette::setErrorColor(const QColor& color)
 {
-    if (DA_D->mErrorColor != color) {
-        DA_D->mErrorColor = color;
+    DA_D(d);
+    if (d->mErrorColor != color) {
+        d->mErrorColor = color;
         Q_EMIT errorColorChanged(color);
     }
 }
@@ -189,8 +199,9 @@ void DAPyNodePalette::setErrorColor(const QColor& color)
  */
 void DAPyNodePalette::setSkippedColor(const QColor& color)
 {
-    if (DA_D->mSkippedColor != color) {
-        DA_D->mSkippedColor = color;
+    DA_D(d);
+    if (d->mSkippedColor != color) {
+        d->mSkippedColor = color;
         Q_EMIT skippedColorChanged(color);
     }
 }

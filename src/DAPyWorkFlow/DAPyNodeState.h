@@ -1,4 +1,4 @@
-﻿#ifndef DAPYNODESTATE_H
+#ifndef DAPYNODESTATE_H
 #define DAPYNODESTATE_H
 #include <QtCore/qglobal.h>
 #include "DAPyWorkFlowAPI.h"
@@ -20,9 +20,8 @@ enum DAPyNodeState
     Skipped      ///< 跳过状态，节点被跳过执行
 };
 
-// 枚举字符串转换声明
-DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeState)
-
 }  // end of namespace DA
+
+// 枚举字符串转换声明已移至DAPyWorkFlowEnumStringUtils.h，避免重复声明导致C2766错误
 
 #endif  // DAPYNODESTATE_H

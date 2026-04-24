@@ -1,8 +1,8 @@
-﻿#ifndef DANODESETTINGWIDGET_H
+#ifndef DANODESETTINGWIDGET_H
 #define DANODESETTINGWIDGET_H
 #include "DAGuiAPI.h"
 #include <QWidget>
-#include "DAAbstractNode.h"
+#include "DAPyNodeProxy.h"
 namespace Ui
 {
 class DANodeSettingWidget;
@@ -20,8 +20,8 @@ public:
     explicit DANodeSettingWidget(QWidget* parent = nullptr);
     ~DANodeSettingWidget();
     //设置节点
-    void setNode(DAAbstractNode::SharedPointer p);
-    DAAbstractNode::SharedPointer getNode() const;
+    void setNode(DAPyNodeProxy* p);
+    DAPyNodeProxy* getNode() const;
     //刷新数据
     void updateData();
 private slots:
@@ -29,7 +29,7 @@ private slots:
 
 private:
     Ui::DANodeSettingWidget* ui;
-    DAAbstractNode::WeakPointer _nodePtr;
+    DAPyNodeProxy* _nodePtr;
 };
 }  // end of namespace DA
 #endif  // DANODESETTINGWIDGET_H

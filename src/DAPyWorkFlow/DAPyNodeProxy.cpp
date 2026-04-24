@@ -1,4 +1,4 @@
-#include "DAPyNodeProxy.h"
+﻿#include "DAPyNodeProxy.h"
 #include "DAPybind11InQt.h"
 #include "DAPyModuleWorkflow.h"
 #include "DAPyGILGuard.h"
@@ -16,16 +16,25 @@ public:
     PrivateData(DAPyNodeProxy* p);
 
     // 统一异常处理（参考DAPyModulePandas模式）
-    void dealException(const std::exception& e);
+    void dealException(const std::exception& e) const;
 
     // 清理Python节点引用
     void clearPyNodeRef();
 
+    // 从Python节点同步元信息到本地缓存
+    void syncMetaFromPyNode(const pybind11::object& pyNode);
+
 public:
     QString mQualifiedName;                 ///< Python节点的限定名（如"package.module.ClassName"）
+    QString mNodeName;                      ///< 节点名称（本地缓存，也从Python node_name读取）
+    QList<QString> mInputKeys;              ///< 输入key列表（本地缓存）
+    QList<QString> mOutputKeys;             ///< 输出key列表（本地缓存）
+    QString mNodePrototype;                 ///< 节点原型（本地缓存）
+    QString mNodeGroup;                     ///< 节点分组（本地缓存）
+    unsigned int mId { 0 };                 ///< 节点ID（独立管理）
     DAPySafePyObjectHolder mPyNodeRef;      ///< Python节点实例的安全持有者
     DAPyNodeState mNodeState { DAPyNodeState::Idle };  ///< 节点执行状态
-    QString mLastErrorString;               ///< 最后一次错误信息
+    mutable QString mLastErrorString;       ///< 最后一次错误信息（mutable允许const方法修改）
 };
 
 //===================================================
@@ -45,7 +54,7 @@ DAPyNodeProxy::PrivateData::PrivateData(DAPyNodeProxy* p) : q_ptr(p)
  *
  * @param[in] e 捕获的异常对象
  */
-void DAPyNodeProxy::PrivateData::dealException(const std::exception& e)
+void DAPyNodeProxy::PrivateData::dealException(const std::exception& e) const
 {
     mLastErrorString = e.what();
     qCritical() << "DAPyNodeProxy error:" << mLastErrorString;
@@ -55,11 +64,85 @@ void DAPyNodeProxy::PrivateData::dealException(const std::exception& e)
  * @brief 清理Python节点引用
  *
  * 安全释放Python节点对象引用。
- * 析构时检查Py_IsInitialized()，如果Python已终止则使用release()避免崩溃。
+ * DAPySafePyObjectHolder析构时检查Py_IsInitialized()确保安全释放。
  */
 void DAPyNodeProxy::PrivateData::clearPyNodeRef()
 {
     mPyNodeRef = DAPySafePyObjectHolder();
+}
+
+/**
+ * @brief 从Python节点同步元信息到本地缓存
+ *
+ * 在setPyNodeRef时调用，从Python节点提取元信息缓存到C++本地变量，
+ * 避免每次查询都需要获取GIL访问Python属性。
+ *
+ * 提取内容：qualified_name、node_name、input_keys、output_keys、
+ * node_prototype、group、tooltip
+ *
+ * @param[in] pyNode Python节点实例对象
+ * @note 需在GIL保护下调用此函数
+ */
+void DAPyNodeProxy::PrivateData::syncMetaFromPyNode(const pybind11::object& pyNode)
+{
+    try {
+        // 提取限定名
+        if (pybind11::hasattr(pyNode, "qualified_name")) {
+            pybind11::object qname = pyNode.attr("qualified_name");
+            mQualifiedName         = pybind11::cast< QString >(qname);
+        }
+
+        // 提取节点名称
+        if (pybind11::hasattr(pyNode, "node_name")) {
+            pybind11::object nodeNameObj = pyNode.attr("node_name");
+            mNodeName                    = pybind11::cast< QString >(nodeNameObj);
+        }
+
+        // 同步输入key
+        mInputKeys.clear();
+        if (pybind11::hasattr(pyNode, "input_keys")) {
+            pybind11::object inputKeysObj = pyNode.attr("input_keys");
+            if (pybind11::isinstance< pybind11::list >(inputKeysObj)
+                || pybind11::isinstance< pybind11::tuple >(inputKeysObj)) {
+                pybind11::list inputKeysList = pybind11::cast< pybind11::list >(inputKeysObj);
+                for (auto item : inputKeysList) {
+                    mInputKeys.append(pybind11::cast< QString >(item));
+                }
+            }
+        }
+
+        // 同步输出key
+        mOutputKeys.clear();
+        if (pybind11::hasattr(pyNode, "output_keys")) {
+            pybind11::object outputKeysObj = pyNode.attr("output_keys");
+            if (pybind11::isinstance< pybind11::list >(outputKeysObj)
+                || pybind11::isinstance< pybind11::tuple >(outputKeysObj)) {
+                pybind11::list outputKeysList = pybind11::cast< pybind11::list >(outputKeysObj);
+                for (auto item : outputKeysList) {
+                    mOutputKeys.append(pybind11::cast< QString >(item));
+                }
+            }
+        }
+
+        // 提取节点原型
+        if (pybind11::hasattr(pyNode, "node_prototype")) {
+            pybind11::object protoObj = pyNode.attr("node_prototype");
+            mNodePrototype             = pybind11::cast< QString >(protoObj);
+        }
+
+        // 提取分组信息
+        if (pybind11::hasattr(pyNode, "group")) {
+            pybind11::object groupObj = pyNode.attr("group");
+            mNodeGroup                 = pybind11::cast< QString >(groupObj);
+        }
+
+    } catch (const pybind11::error_already_set& e) {
+        mLastErrorString = e.what();
+        dealException(e);
+    } catch (const std::exception& e) {
+        mLastErrorString = e.what();
+        dealException(e);
+    }
 }
 
 //===================================================
@@ -69,12 +152,12 @@ void DAPyNodeProxy::PrivateData::clearPyNodeRef()
 /**
  * @brief 构造Python节点代理
  *
- * 构造时初始化DAAbstractNode基类和DAPyNodeProxy的私有数据。
- * 代理节点初始状态为DAPyNodeState::Idle，未关联任何Python节点实例。
+ * 构造独立代理节点，初始状态为DAPyNodeState::Idle，未关联任何Python节点实例。
+ * 不继承任何QObject或DAAbstractNode基类，使用PIMPL模式管理私有数据。
  *
  * @note 需后续调用setPyNodeRef()关联Python节点实例才能执行
  */
-DAPyNodeProxy::DAPyNodeProxy() : DAAbstractNode(), DA_PIMPL_CONSTRUCT
+DAPyNodeProxy::DAPyNodeProxy() : DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -83,8 +166,6 @@ DAPyNodeProxy::DAPyNodeProxy() : DAAbstractNode(), DA_PIMPL_CONSTRUCT
  *
  * 析构时安全释放Python节点引用。
  * DAPySafePyObjectHolder会检查Py_IsInitialized()确保安全释放。
- *
- * @note DAAbstractNode基类的析构会自动detachAll()解除所有连接
  */
 DAPyNodeProxy::~DAPyNodeProxy()
 {
@@ -100,13 +181,13 @@ DAPyNodeProxy::~DAPyNodeProxy()
  * 3. 获取Python GIL（DAPyGILGuard RAII守卫）
  * 4. 调用Python节点的execute()方法
  * 5. 在GIL作用域内捕获error_already_set异常 → 提取错误信息 → 设置节点状态为Error
- * 6. 释放GIL后通过DAPythonSignalHandler发射完成信号
+ * 6. 释放GIL
  *
  * error_already_set异常必须在gil_scoped_acquire作用域内消费，
  * 否则异常析构时尝试获取GIL会导致死锁。
  *
  * @return true表示执行成功，false表示执行失败或节点无效
- * @see DAPyGILGuard DAPyNodeState DAPyModuleWorkflow
+ * @see DAPyGILGuard DAPyNodeState
  */
 bool DAPyNodeProxy::exec()
 {
@@ -156,14 +237,12 @@ bool DAPyNodeProxy::exec()
 
     } catch (const pybind11::error_already_set& e) {
         // error_already_set必须在GIL作用域内消费
-        // 提取Python异常信息并存储到mLastErrorString
         d->mLastErrorString = e.what();
         d->mNodeState       = DAPyNodeState::Error;
         d->dealException(e);
         return false;
 
     } catch (const std::exception& e) {
-        // 其他C++标准异常
         d->mLastErrorString = e.what();
         d->mNodeState       = DAPyNodeState::Error;
         d->dealException(e);
@@ -174,29 +253,14 @@ bool DAPyNodeProxy::exec()
 }
 
 /**
- * @brief 创建节点对应的图形项
- *
- * 返回DAPyNodeGraphicsItem实例用于在前端显示此代理节点。
- * 当前返回nullptr，待DAPyNodeGraphicsItem实现后替换。
- *
- * @return 节点对应的DAAbstractNodeGraphicsItem指针，当前为nullptr
- * @note 此函数由DAWorkFlow在创建节点图形时调用
- */
-DAAbstractNodeGraphicsItem* DAPyNodeProxy::createGraphicsItem()
-{
-    // TODO: 待DAPyNodeGraphicsItem实现后，创建并返回DAPyNodeGraphicsItem实例
-    return nullptr;
-}
-
-/**
  * @brief 设置Python节点实例引用
  *
  * 关联一个Python节点对象到此C++代理节点。
- * 设置后会从Python节点提取元信息（输入/输出key等）。
+ * 设置后会从Python节点提取元信息（名称、输入/输出key、原型、分组等），
+ * 缓存到C++本地变量，避免后续查询频繁获取GIL。
  *
  * @param[in] pyNode Python节点实例对象（必须具有execute()方法）
  * @note 需在GIL保护下调用此函数
- * @note 如果Python节点具有input_keys/output_keys属性，将自动同步到DAAbstractNode
  */
 void DAPyNodeProxy::setPyNodeRef(const pybind11::object& pyNode)
 {
@@ -208,81 +272,14 @@ void DAPyNodeProxy::setPyNodeRef(const pybind11::object& pyNode)
 
     d->mPyNodeRef = DAPySafePyObjectHolder(pyNode);
 
-    // 尝试从Python节点提取元信息
+    // 获取GIL并同步元信息
     DAPyGILGuard gilGuard;
     if (!gilGuard.isAcquired()) {
         qWarning() << "DAPyNodeProxy::setPyNodeRef: Failed to acquire GIL";
         return;
     }
 
-    try {
-        // 提取限定名
-        if (pybind11::hasattr(pyNode, "qualified_name")) {
-            pybind11::object qname = pyNode.attr("qualified_name");
-            d->mQualifiedName      = pybind11::cast< QString >(qname);
-        }
-
-        // 同步输入key
-        if (pybind11::hasattr(pyNode, "input_keys")) {
-            pybind11::object inputKeysObj = pyNode.attr("input_keys");
-            if (pybind11::isinstance< pybind11::list >(inputKeysObj)
-                || pybind11::isinstance< pybind11::tuple >(inputKeysObj)) {
-                pybind11::list inputKeysList = pybind11::cast< pybind11::list >(inputKeysObj);
-                for (auto item : inputKeysList) {
-                    QString keyStr = pybind11::cast< QString >(item);
-                    addInputKey(keyStr);
-                }
-            }
-        }
-
-        // 同步输出key
-        if (pybind11::hasattr(pyNode, "output_keys")) {
-            pybind11::object outputKeysObj = pyNode.attr("output_keys");
-            if (pybind11::isinstance< pybind11::list >(outputKeysObj)
-                || pybind11::isinstance< pybind11::tuple >(outputKeysObj)) {
-                pybind11::list outputKeysList = pybind11::cast< pybind11::list >(outputKeysObj);
-                for (auto item : outputKeysList) {
-                    QString keyStr = pybind11::cast< QString >(item);
-                    addOutputKey(keyStr);
-                }
-            }
-        }
-
-        // 提取节点名称
-        if (pybind11::hasattr(pyNode, "node_name")) {
-            pybind11::object nodeNameObj = pyNode.attr("node_name");
-            QString nodeName             = pybind11::cast< QString >(nodeNameObj);
-            setNodeName(nodeName);
-        }
-
-        // 提取节点原型
-        if (pybind11::hasattr(pyNode, "node_prototype")) {
-            pybind11::object protoObj = pyNode.attr("node_prototype");
-            QString proto             = pybind11::cast< QString >(protoObj);
-            metaData().setNodePrototype(proto);
-        }
-
-        // 提取分组信息
-        if (pybind11::hasattr(pyNode, "group")) {
-            pybind11::object groupObj = pyNode.attr("group");
-            QString group             = pybind11::cast< QString >(groupObj);
-            metaData().setGroup(group);
-        }
-
-        // 提取tooltip
-        if (pybind11::hasattr(pyNode, "tooltip")) {
-            pybind11::object tooltipObj = pyNode.attr("tooltip");
-            QString tooltip             = pybind11::cast< QString >(tooltipObj);
-            setNodeTooltip(tooltip);
-        }
-
-    } catch (const pybind11::error_already_set& e) {
-        d->mLastErrorString = e.what();
-        d->dealException(e);
-    } catch (const std::exception& e) {
-        d->mLastErrorString = e.what();
-        d->dealException(e);
-    }
+    d->syncMetaFromPyNode(pyNode);
 }
 
 /**
@@ -292,7 +289,7 @@ void DAPyNodeProxy::setPyNodeRef(const pybind11::object& pyNode)
  * 调用者需确保在GIL保护下使用返回的对象。
  *
  * @return Python节点实例的pybind11::object引用
- * @note 调用者需确保持有GIL后再使用返回值进行Python操作
+ * @note 调用者需确持有GIL后再使用返回值进行Python操作
  */
 pybind11::object DAPyNodeProxy::getPyNodeRef() const
 {
@@ -331,6 +328,133 @@ QString DAPyNodeProxy::getQualifiedName() const
 {
     DA_DC(d);
     return d->mQualifiedName;
+}
+
+/**
+ * @brief 获取节点名称
+ *
+ * 返回本地缓存的节点名称。
+ * 节点名称在setPyNodeRef时从Python节点的node_name属性同步，
+ * 也可通过setNodeName()手动设置。
+ *
+ * @return 节点名称字符串
+ */
+QString DAPyNodeProxy::getNodeName() const
+{
+    DA_DC(d);
+    return d->mNodeName;
+}
+
+/**
+ * @brief 设置节点名称
+ *
+ * 设置本地缓存的节点名称。
+ * 此方法仅修改C++侧的缓存，不回写到Python节点。
+ *
+ * @param[in] name 要设置的节点名称
+ */
+void DAPyNodeProxy::setNodeName(const QString& name)
+{
+    DA_D(d);
+    d->mNodeName = name;
+}
+
+/**
+ * @brief 获取输入key列表
+ *
+ * 返回本地缓存的输入key列表。
+ * 输入key在setPyNodeRef时从Python节点的input_keys属性同步。
+ *
+ * @return 输入key的QList<QString>列表
+ */
+QList<QString> DAPyNodeProxy::getInputKeys() const
+{
+    DA_DC(d);
+    return d->mInputKeys;
+}
+
+/**
+ * @brief 获取输出key列表
+ *
+ * 返回本地缓存的输出key列表。
+ * 输出key在setPyNodeRef时从Python节点的output_keys属性同步。
+ *
+ * @return 输出key的QList<QString>列表
+ */
+QList<QString> DAPyNodeProxy::getOutputKeys() const
+{
+    DA_DC(d);
+    return d->mOutputKeys;
+}
+
+/**
+ * @brief 获取节点原型
+ *
+ * 返回本地缓存的节点原型字符串。
+ * 节点原型在setPyNodeRef时从Python节点的node_prototype属性同步。
+ *
+ * @return 节点原型字符串，如"package.module.ClassName"
+ */
+QString DAPyNodeProxy::getNodePrototype() const
+{
+    DA_DC(d);
+    return d->mNodePrototype;
+}
+
+/**
+ * @brief 获取节点分组
+ *
+ * 返回本地缓存的节点分组字符串。
+ * 分组信息在setPyNodeRef时从Python节点的group属性同步。
+ *
+ * @return 节点分组字符串
+ */
+QString DAPyNodeProxy::getNodeGroup() const
+{
+    DA_DC(d);
+    return d->mNodeGroup;
+}
+
+/**
+ * @brief 获取Python节点描述符
+ *
+ * 从Python节点获取元信息描述符，包含节点的输入/输出定义、
+ * 参数说明等，转换为QJsonObject供C++侧使用。
+ * 此方法每次调用都会获取GIL访问Python节点，开销较高，
+ * 建议仅在需要完整描述信息时调用。
+ *
+ * @return QJsonObject格式的节点描述符，若获取失败返回空QJsonObject
+ */
+QJsonObject DAPyNodeProxy::getDescriptor() const
+{
+    DA_DC(d);
+    if (!d->mPyNodeRef) {
+        return QJsonObject();
+    }
+
+    DAPyGILGuard gilGuard;
+    if (!gilGuard.isAcquired()) {
+        return QJsonObject();
+    }
+
+    try {
+        pybind11::object pyNode = d->mPyNodeRef.object();
+        if (pybind11::hasattr(pyNode, "get_descriptor")) {
+            pybind11::object descObj = pyNode.attr("get_descriptor")();
+            if (pybind11::isinstance< pybind11::dict >(descObj)) {
+                pybind11::dict descDict = pybind11::cast< pybind11::dict >(descObj);
+                return DA::PY::pyDictToQJsonObject(descDict);
+            }
+        }
+    } catch (const pybind11::error_already_set& e) {
+        d->mLastErrorString = e.what();
+        d->dealException(e);
+    } catch (const std::exception& e) {
+        d->mLastErrorString = e.what();
+        d->dealException(e);
+    }
+
+    return QJsonObject();
 }
 
 /**
@@ -449,62 +573,6 @@ pybind11::object DAPyNodeProxy::getPyOutputData(const QString& key) const
 }
 
 /**
- * @brief 获取Python节点描述符
- *
- * 从Python节点获取元信息描述符，包含节点的输入/输出定义、
- * 参数说明等，转换为QJsonObject供C++侧使用。
- *
- * @return QJsonObject格式的节点描述符，若获取失败返回空QJsonObject
- */
-QJsonObject DAPyNodeProxy::getDescriptor() const
-{
-    DA_DC(d);
-    if (!d->mPyNodeRef) {
-        return QJsonObject();
-    }
-
-    DAPyGILGuard gilGuard;
-    if (!gilGuard.isAcquired()) {
-        return QJsonObject();
-    }
-
-    try {
-        pybind11::object pyNode = d->mPyNodeRef.object();
-        if (pybind11::hasattr(pyNode, "get_descriptor")) {
-            pybind11::object descObj = pyNode.attr("get_descriptor")();
-            if (pybind11::isinstance< pybind11::dict >(descObj)) {
-                pybind11::dict descDict = pybind11::cast< pybind11::dict >(descObj);
-                return DA::PY::pyDictToQJsonObject(descDict);
-            }
-        }
-    } catch (const pybind11::error_already_set& e) {
-        d->mLastErrorString = e.what();
-        d->dealException(e);
-    } catch (const std::exception& e) {
-        d->mLastErrorString = e.what();
-        d->dealException(e);
-    }
-
-    return QJsonObject();
-}
-
-/**
- * @brief 检查代理节点是否有效
- *
- * 有效条件：Python解释器已初始化且已关联有效的Python节点实例。
- *
- * @return true表示代理节点有效可执行，false表示无效
- */
-bool DAPyNodeProxy::isValid() const
-{
-    DA_DC(d);
-    if (!Py_IsInitialized()) {
-        return false;
-    }
-    return static_cast< bool >(d->mPyNodeRef);
-}
-
-/**
  * @brief 设置Python节点配置参数
  *
  * 通过QJsonObject设置Python节点的配置参数，
@@ -582,6 +650,48 @@ QJsonObject DAPyNodeProxy::getConfig() const
     }
 
     return QJsonObject();
+}
+
+/**
+ * @brief 获取节点ID
+ *
+ * 返回独立管理的节点ID，不继承DAAbstractNode的ID系统。
+ *
+ * @return 节点ID（unsigned int）
+ */
+unsigned int DAPyNodeProxy::getID() const
+{
+    DA_DC(d);
+    return d->mId;
+}
+
+/**
+ * @brief 设置节点ID
+ *
+ * 设置独立管理的节点ID。
+ *
+ * @param[in] id 要设置的节点ID
+ */
+void DAPyNodeProxy::setID(unsigned int id)
+{
+    DA_D(d);
+    d->mId = id;
+}
+
+/**
+ * @brief 检查代理节点是否有效
+ *
+ * 有效条件：Python解释器已初始化且已关联有效的Python节点实例。
+ *
+ * @return true表示代理节点有效可执行，false表示无效
+ */
+bool DAPyNodeProxy::isValid() const
+{
+    DA_DC(d);
+    if (!Py_IsInitialized()) {
+        return false;
+    }
+    return static_cast< bool >(d->mPyNodeRef);
 }
 
 }  // namespace DA

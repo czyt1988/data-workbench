@@ -2,8 +2,7 @@
 #include "DAPyPainterProxy.h"
 #include "DAPyNodeProxy.h"
 #include "DAPyNodePalette.h"
-#include "DAPyNodeConfigDialog.h"
-#include "DANodeLinkPoint.h"
+#include "DAPyLinkPoint.h"
 #include <QPainter>
 #include <QSvgRenderer>
 #include <QGraphicsProxyWidget>
@@ -35,7 +34,7 @@ public:
     ~PrivateData();
 
     // 根据描述符生成连接点
-    QList<DANodeLinkPoint> generateLinkPointsFromDescriptor() const;
+    QList<DAPyLinkPoint> generateLinkPointsFromDescriptor() const;
     // 更新连接点位置
     void updateLinkPointPositions(const QRectF& bodyRect);
     // 清理widget
@@ -54,8 +53,8 @@ public:
     QWidget* mWidget { nullptr };                   ///< 嵌入的widget
     DAPyNodeState mNodeState { Idle };              ///< 节点状态
     QJsonObject mDescriptor;                        ///< 节点描述符
-    QList<DANodeLinkPoint> mInputLinkPoints;        ///< 输入连接点
-    QList<DANodeLinkPoint> mOutputLinkPoints;       ///< 输出连接点
+    QList<DAPyLinkPoint> mInputLinkPoints;        ///< 输入连接点
+    QList<DAPyLinkPoint> mOutputLinkPoints;       ///< 输出连接点
     DAPySafePyObjectHolder mPaintCallback;          ///< 自定义绘制回调（Python函数对象）
     bool mPaintCallbackError { false };              ///< 绘制回调是否发生过异常
 };
@@ -81,9 +80,9 @@ DAPyNodeGraphicsItem::PrivateData::~PrivateData()
  * @brief 从描述符生成连接点
  * @return 连接点列表
  */
-QList<DANodeLinkPoint> DAPyNodeGraphicsItem::PrivateData::generateLinkPointsFromDescriptor() const
+QList<DAPyLinkPoint> DAPyNodeGraphicsItem::PrivateData::generateLinkPointsFromDescriptor() const
 {
-    QList<DANodeLinkPoint> result;
+    QList<DAPyLinkPoint> result;
 
     if (mDescriptor.isEmpty()) {
         return result;
@@ -93,8 +92,8 @@ QList<DANodeLinkPoint> DAPyNodeGraphicsItem::PrivateData::generateLinkPointsFrom
     QJsonArray inputs = mDescriptor.value("inputs").toArray();
     int inputCount    = inputs.size();
     for (int i = 0; i < inputCount; ++i) {
-        DANodeLinkPoint lp;
-        lp.way       = DANodeLinkPoint::Input;
+        DAPyLinkPoint lp;
+        lp.way       = DAPyLinkPoint::Input;
         lp.direction = AspectDirection::West;
         QJsonObject inputObj = inputs.at(i).toObject();
         lp.name              = inputObj.value("name").toString(QString("input_%1").arg(i));
@@ -105,8 +104,8 @@ QList<DANodeLinkPoint> DAPyNodeGraphicsItem::PrivateData::generateLinkPointsFrom
     QJsonArray outputs = mDescriptor.value("outputs").toArray();
     int outputCount    = outputs.size();
     for (int i = 0; i < outputCount; ++i) {
-        DANodeLinkPoint lp;
-        lp.way       = DANodeLinkPoint::Output;
+        DAPyLinkPoint lp;
+        lp.way       = DAPyLinkPoint::Output;
         lp.direction = AspectDirection::East;
         QJsonObject outputObj = outputs.at(i).toObject();
         lp.name               = outputObj.value("name").toString(QString("output_%1").arg(i));
@@ -467,7 +466,7 @@ QJsonObject DAPyNodeGraphicsItem::getDescriptor() const
  * @brief 获取输入连接点
  * @return 输入连接点列表
  */
-QList<DANodeLinkPoint> DAPyNodeGraphicsItem::getInputLinkPoints() const
+QList<DAPyLinkPoint> DAPyNodeGraphicsItem::getInputLinkPoints() const
 {
     return d_ptr->mInputLinkPoints;
 }
@@ -476,7 +475,7 @@ QList<DANodeLinkPoint> DAPyNodeGraphicsItem::getInputLinkPoints() const
  * @brief 获取输出连接点
  * @return 输出连接点列表
  */
-QList<DANodeLinkPoint> DAPyNodeGraphicsItem::getOutputLinkPoints() const
+QList<DAPyLinkPoint> DAPyNodeGraphicsItem::getOutputLinkPoints() const
 {
     return d_ptr->mOutputLinkPoints;
 }
@@ -486,7 +485,7 @@ QList<DANodeLinkPoint> DAPyNodeGraphicsItem::getOutputLinkPoints() const
  */
 void DAPyNodeGraphicsItem::updateLinkPoints()
 {
-    QList<DANodeLinkPoint> allPoints = generateLinkPoints();
+    QList<DAPyLinkPoint> allPoints = generateLinkPoints();
 
     d_ptr->mInputLinkPoints.clear();
     d_ptr->mOutputLinkPoints.clear();
@@ -506,7 +505,7 @@ void DAPyNodeGraphicsItem::updateLinkPoints()
  * @brief 生成连接点
  * @return 连接点列表
  */
-QList<DANodeLinkPoint> DAPyNodeGraphicsItem::generateLinkPoints() const
+QList<DAPyLinkPoint> DAPyNodeGraphicsItem::generateLinkPoints() const
 {
     // 优先从描述符生成
     if (!d_ptr->mDescriptor.isEmpty()) {
@@ -514,15 +513,15 @@ QList<DANodeLinkPoint> DAPyNodeGraphicsItem::generateLinkPoints() const
     }
 
     // 从代理节点生成
-    QList<DANodeLinkPoint> result;
+    QList<DAPyLinkPoint> result;
     if (d_ptr->mProxy) {
         QStringList inputs = d_ptr->mProxy->getInputKeys();
         QStringList outputs = d_ptr->mProxy->getOutputKeys();
 
         // 生成输入连接点
         for (const QString& key : inputs) {
-            DANodeLinkPoint lp;
-            lp.way = DANodeLinkPoint::Input;
+            DAPyLinkPoint lp;
+            lp.way = DAPyLinkPoint::Input;
             lp.direction = AspectDirection::West;
             lp.name = key;
             result.append(lp);
@@ -530,8 +529,8 @@ QList<DANodeLinkPoint> DAPyNodeGraphicsItem::generateLinkPoints() const
 
         // 生成输出连接点
         for (const QString& key : outputs) {
-            DANodeLinkPoint lp;
-            lp.way = DANodeLinkPoint::Output;
+            DAPyLinkPoint lp;
+            lp.way = DAPyLinkPoint::Output;
             lp.direction = AspectDirection::East;
             lp.name = key;
             result.append(lp);
@@ -970,8 +969,9 @@ void DAPyNodeGraphicsItem::clearPaintCallback()
 /**
  * @brief 鼠标双击事件处理
  *
- * 双击节点时打开参数配置对话框，允许用户编辑节点参数。
- * 对话框通过DAPyNodeConfigDialog实现，支持OK/Cancel/Apply操作。
+ * 双击节点时发射nodeDoubleClicked信号，由DAGui层的场景负责弹出配置对话框。
+ * 此方法仅负责检测有效代理并发射信号，不直接创建任何对话框，
+ * 以保持DAPyWorkFlow模块不依赖QDialog/QWidget的约束。
  *
  * @param[in] event 鼠标事件
  */
@@ -987,17 +987,8 @@ void DAPyNodeGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event
         return;
     }
 
-    // 获取描述符，检查是否有参数
-    QJsonObject descriptor = d_ptr->mDescriptor;
-    QJsonArray parameters = descriptor.value("parameters").toArray();
-    if (parameters.isEmpty()) {
-        // 无参数，不显示对话框
-        return;
-    }
-
-    // 创建并显示参数配置对话框
-    DAPyNodeConfigDialog dialog(d_ptr->mProxy);
-    dialog.exec();
+    // 发射信号，由DAGui层（DAPyWorkFlowGraphicsScene）处理配置对话框
+    emit nodeDoubleClicked(d_ptr->mProxy);
 }
 
 }  // end of namespace DA

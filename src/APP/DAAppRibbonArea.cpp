@@ -58,6 +58,9 @@
 #include "DAFontEditPannelWidget.h"
 #include "DAShapeEditPannelWidget.h"
 // Workflow
+#include "DAPyWorkFlowOperateWidget.h"
+#include "DAPyWorkFlowEditWidget.h"
+#include "DAPyWorkFlowGraphicsView.h"
 // project
 
 // 快速链接信号槽
@@ -487,16 +490,16 @@ void DAAppRibbonArea::buildContextCategoryWorkflow()
  */
 void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
 {
-    DAWorkFlowOperateWidget* wfo   = m_dockArea->getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* wfo   = m_dockArea->getWorkFlowOperateWidget();
     m_categoryWorkflowGraphicsEdit = m_contextWorkflow->addCategoryPage(tr("Workflow Edit"));
     m_categoryWorkflowGraphicsEdit->setObjectName(QStringLiteral("da-ribbon-category-workflow.edit"));
     // 条目pannel
 
     // 剪切板
     m_pannelClipBoard = m_categoryWorkflowGraphicsEdit->addPanel(tr("ClipBoard"));  // cn:剪切板
-    m_pannelClipBoard->addLargeAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionPaste));
-    m_pannelClipBoard->addSmallAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionCut));
-    m_pannelClipBoard->addSmallAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionCopy));
+    m_pannelClipBoard->addLargeAction(wfo->getInnerAction(DAPyWorkFlowOperateWidget::ActionPaste));
+    m_pannelClipBoard->addSmallAction(wfo->getInnerAction(DAPyWorkFlowOperateWidget::ActionCut));
+    m_pannelClipBoard->addSmallAction(wfo->getInnerAction(DAPyWorkFlowOperateWidget::ActionCopy));
     //  Item
     m_pannelWorkflowItem = m_categoryWorkflowGraphicsEdit->addPanel(tr("Item"));
     m_pannelWorkflowItem->setObjectName(QStringLiteral("da-pannel-context.workflow.item"));
@@ -536,7 +539,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
 
 void DAAppRibbonArea::buildContextCategoryWorkflowView_()
 {
-    DAWorkFlowOperateWidget* wfo   = m_dockArea->getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* wfo   = m_dockArea->getWorkFlowOperateWidget();
     m_categoryWorkflowGraphicsView = m_contextWorkflow->addCategoryPage(tr("Workflow View"));  // cn:工作流视图
     m_categoryWorkflowGraphicsView->setObjectName(QStringLiteral("da-ribbon-category-workflow.view"));
     // View
@@ -545,22 +548,22 @@ void DAAppRibbonArea::buildContextCategoryWorkflowView_()
     m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowViewReadOnly);
     m_pannelWorkflowView->addLargeAction(m_actions->actionWorkflowShowGrid);
     m_pannelWorkflowView->addSeparator();
-    m_pannelWorkflowView->addLargeAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomFit));
-    m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomIn));
-    m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionZoomOut));
+    m_pannelWorkflowView->addLargeAction(wfo->getInnerAction(DAPyWorkFlowOperateWidget::ActionZoomFit));
+    m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAPyWorkFlowOperateWidget::ActionZoomIn));
+    m_pannelWorkflowView->addMediumAction(wfo->getInnerAction(DAPyWorkFlowOperateWidget::ActionZoomOut));
 
     m_menuViewLineMarkers = new SARibbonMenu(m_app);
     m_menuViewLineMarkers->setObjectName("menuViewLineMarkers");
     m_menuViewLineMarkers->setIcon(QIcon(":/app/bright/Icon/view-marker.svg"));
-    m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionCrossLineMarker));
-    m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionHLineMarker));
-    m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionVLineMarker));
-    m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker));
+    m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAPyWorkFlowOperateWidget::ActionCrossLineMarker));
+    m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAPyWorkFlowOperateWidget::ActionHLineMarker));
+    m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAPyWorkFlowOperateWidget::ActionVLineMarker));
+    m_menuViewLineMarkers->addAction(wfo->getInnerAction(DAPyWorkFlowOperateWidget::ActionNoneMarker));
 
     if (QActionGroup* ag = wfo->getLineMarkerActionGroup()) {
         connect(ag, &QActionGroup::triggered, this, [ this, wfo ](QAction* act) {
             QAction* actMarker = m_actions->actionWorkflowViewMarker;
-            QAction* noneAct   = wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker);
+            QAction* noneAct   = wfo->getInnerAction(DAPyWorkFlowOperateWidget::ActionNoneMarker);
             if (act != noneAct && act->isChecked()) {
                 actMarker->setIcon(act->icon());
                 actMarker->setChecked(true);
@@ -884,15 +887,15 @@ void DAAppRibbonArea::updateChartLegendAboutRibbon(DAChartWidget* chart)
  * @brief DAAppRibbonArea::updateWorkflowViewAboutRibbon
  * @param wf
  */
-void DAAppRibbonArea::updateWorkflowAboutRibbon(DAWorkFlowOperateWidget* wfo)
+void DAAppRibbonArea::updateWorkflowAboutRibbon(DAPyWorkFlowOperateWidget* wfo)
 {
-    DAWorkFlowEditWidget* wf     = wfo->getCurrentWorkFlowWidget();
-    DAWorkFlowGraphicsView* view = wf->getWorkFlowGraphicsView();
-    // 要判断DAWorkFlowGraphicsView的MarkerStyle
+    DAPyWorkFlowEditWidget* wf     = wfo->getCurrentWorkFlowWidget();
+    DAPyWorkFlowGraphicsView* view = wf->getWorkFlowGraphicsView();
+    // 要判断DAPyWorkFlowGraphicsView的MarkerStyle
     if (view) {
         QAction* actMarker = m_actions->actionWorkflowViewMarker;
         QAction* act       = wfo->getLineMarkerActionGroup()->checkedAction();
-        if (!act || act == wfo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker)) {
+        if (!act || act == wfo->getInnerAction(DAPyWorkFlowOperateWidget::ActionNoneMarker)) {
             actMarker->setIcon(QIcon(":/app/bright/Icon/view-marker.svg"));
             actMarker->setChecked(false);
         } else {
@@ -985,6 +988,11 @@ void DAAppRibbonArea::buildPyWorkflowRibbonGroup()
     m_pyWorkflowRibbonGroup = new DAPyWorkFlowRibbonGroup(this);
     m_pannelPyWorkflow      = m_categoryWorkflowRun->addPanel(tr("Python Workflow"));  // cn:Python工作流
     m_pannelPyWorkflow->setObjectName(QStringLiteral("da-pannel-context.workflow.pyworkflow"));
-    m_pyWorkflowRibbonGroup->buildPyWorkflowPanel(m_pannelPyWorkflow, m_actions);
+    DA::DAPyWorkflowActions pyActions;
+    pyActions.actionPyWorkflowNew       = m_actions->actionPyWorkflowNew;
+    pyActions.actionPyWorkflowOpen      = m_actions->actionPyWorkflowOpen;
+    pyActions.actionPyWorkflowExecute   = m_actions->actionPyWorkflowExecute;
+    pyActions.actionPyWorkflowTerminate = m_actions->actionPyWorkflowTerminate;
+    m_pyWorkflowRibbonGroup->buildPyWorkflowPanel(m_pannelPyWorkflow, pyActions);
 }
 #endif

@@ -1,12 +1,10 @@
-﻿#include "DACommandsForWorkFlow.h"
+#include "DACommandsForWorkFlow.h"
 // qt
 #include <QObject>
 // workflow
-#include "DANodeGraphicsScene.h"
-#include "DAWorkFlowGraphicsScene.h"
+#include "DAPyWorkFlowGraphicsScene.h"
 #include "DAGraphicsPixmapItem.h"
-#include "DAAbstractNodeLinkGraphicsItem.h"
-#include "DAWorkFlow.h"
+#include "DAPyWorkFlow.h"
 #include "DAGraphicsItem.h"
 #include "DAGraphicsTextItem.h"
 #include "DAGraphicsStandardTextItem.h"
@@ -15,7 +13,7 @@ namespace DA
 //===================================================
 // DACommandWorkFlowSceneAddBackgroundPixmap
 //===================================================
-DACommandWorkFlowSceneAddBackgroundPixmap::DACommandWorkFlowSceneAddBackgroundPixmap(DAWorkFlowGraphicsScene* scene,
+DACommandWorkFlowSceneAddBackgroundPixmap::DACommandWorkFlowSceneAddBackgroundPixmap(DAPyWorkFlowGraphicsScene* scene,
                                                                                      const QPixmap& pixmap,
                                                                                      QUndoCommand* parent)
     : QUndoCommand(parent), _scene(scene), _needDeleteOldItem(false), _needDeleteNewItem(false)

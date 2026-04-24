@@ -1,4 +1,4 @@
-﻿#ifndef DACOMMANDSFORWORKFLOW_H
+#ifndef DACOMMANDSFORWORKFLOW_H
 #define DACOMMANDSFORWORKFLOW_H
 #include "DAGuiAPI.h"
 // qt
@@ -9,14 +9,12 @@
 #include <QTextDocument>
 #include <QPointer>
 // workflow
-#include "DANodeMetaData.h"
-#include "DANodeLinkPoint.h"
-#include "DAAbstractNode.h"
+#include "DAPyNodeFactory.h"
 
 namespace DA
 {
 class DAGraphicsPixmapItem;
-class DAWorkFlowGraphicsScene;
+class DAPyWorkFlowGraphicsScene;
 class DAGraphicsItem;
 class DAGraphicsStandardTextItem;
 class DAGraphicsTextItem;
@@ -27,7 +25,7 @@ class DAGraphicsTextItem;
 class DAGUI_API DACommandWorkFlowSceneAddBackgroundPixmap : public QUndoCommand
 {
 public:
-	DACommandWorkFlowSceneAddBackgroundPixmap(DAWorkFlowGraphicsScene* scene,
+	DACommandWorkFlowSceneAddBackgroundPixmap(DAPyWorkFlowGraphicsScene* scene,
 											  const QPixmap& pixmap,
 											  QUndoCommand* parent = nullptr);
 	~DACommandWorkFlowSceneAddBackgroundPixmap();
@@ -35,7 +33,7 @@ public:
 	void undo();
 
 private:
-	DAWorkFlowGraphicsScene* _scene;
+	DAPyWorkFlowGraphicsScene* _scene;
 	DAGraphicsPixmapItem* _oldItem;
 	DAGraphicsPixmapItem* _newItem;
 	bool _needDeleteOldItem;

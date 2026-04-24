@@ -6,7 +6,7 @@
 #include <QUndoStack>
 #include <QScopedPointer>
 #include "DADataManageWidget.h"
-#include "DAWorkFlowGraphicsScene.h"
+#include "DAPyWorkFlowGraphicsScene.h"
 #include "DAFigureElementSelection.h"
 #include "DAFigureWidget.h"
 #if DA_ENABLE_PYTHON
@@ -38,7 +38,7 @@ class DAAppActions;
 class DAAppDataManager;
 class DASettingContainerWidget;
 class DADataOperateOfDataFrameWidget;
-class DAWorkFlowOperateWidget;
+class DAPyWorkFlowOperateWidget;
 class DADataOperateWidget;
 class DAAppChartOperateWidget;
 class DADataManageWidget;
@@ -46,7 +46,7 @@ class DAChartWidget;
 class DADataOperatePageWidget;
 class DAAppSettingDialog;
 class DAAppConfig;
-class DAWorkFlowEditWidget;
+class DAPyWorkFlowEditWidget;
 /**
  * @brief 控制层负责逻辑的对接
  */
@@ -101,7 +101,7 @@ public:
         bool checkDataOperateAreaFocused = true, bool isShowMessage = true
     );
     // 获取工作流操作窗口
-    DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
+    DAPyWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
     // 获取数据操作窗口
     DADataOperateWidget* getDataOperateWidget() const;
     // 获取绘图操作窗口
@@ -351,14 +351,14 @@ private Q_SLOTS:
     void onActionGroupRibbonThemeTriggered(QAction* a);
 private Q_SLOTS:
     //===================================================
-    // DAWorkFlowOperateWidget的槽
+    // DAPyWorkFlowOperateWidget的槽
     //===================================================
     void onWorkflowSceneSelectionItemChanged(QGraphicsItem* lastSelectItem);
-    void onWorkflowStartExecute(DA::DAWorkFlowEditWidget* wfw);
-    void onWorkflowFinished(DA::DAWorkFlowEditWidget* wfw, bool success);
+    void onWorkflowStartExecute(DA::DAPyWorkFlowEditWidget* wfw);
+    void onWorkflowFinished(DA::DAPyWorkFlowEditWidget* wfw, bool success);
     void onWorkflowSceneitemsAdded(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
     void onWorkflowSceneitemsRemoved(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
-    void onCurrentWorkflowWidgetChanged(DA::DAWorkFlowEditWidget* wfw);
+    void onCurrentWorkflowWidgetChanged(DA::DAPyWorkFlowEditWidget* wfw);
     //===================================================
     // DAChartOperateWidget
     //===================================================
@@ -394,12 +394,12 @@ private Q_SLOTS:
     // 一些界面的联动槽在此
 
     //===================================================
-    // DAWorkFlowGraphicsScene
+    // DAPyWorkFlowGraphicsScene
     //===================================================
     // 鼠标动作结束
     void onWorkFlowGraphicsSceneActionDeactive(DA::DAAbstractGraphicsSceneAction* scAction);
     // 工作流页面创建槽
-    void onWorkflowCreated(DA::DAWorkFlowEditWidget* wfw);
+    void onWorkflowCreated(DA::DAPyWorkFlowEditWidget* wfw);
 
     //===================================================
     //   其它

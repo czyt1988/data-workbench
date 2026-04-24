@@ -1,8 +1,8 @@
-﻿#ifndef DANODETREEWIDGET_H
+#ifndef DANODETREEWIDGET_H
 #define DANODETREEWIDGET_H
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
-#include "DANodeMetaData.h"
+#include "DAPyNodeFactory.h"
 #include "DAGuiAPI.h"
 
 class QMouseEvent;
@@ -18,10 +18,10 @@ public:
     };
 
 public:
-    DANodeTreeWidgetItem(const DANodeMetaData& md);
-    DANodeTreeWidgetItem(QTreeWidgetItem* parent, const DANodeMetaData& md);
-    DANodeMetaData getNodeMetaData() const;
-    void setNodeMetaData(const DANodeMetaData& md);
+    DANodeTreeWidgetItem(const DAPyNodeMetaData& md);
+    DANodeTreeWidgetItem(QTreeWidgetItem* parent, const DAPyNodeMetaData& md);
+    DAPyNodeMetaData getNodeMetaData() const;
+    void setNodeMetaData(const DAPyNodeMetaData& md);
 };
 
 /**
@@ -33,18 +33,18 @@ class DAGUI_API DANodeTreeWidget : public QTreeWidget
 public:
     DANodeTreeWidget(QWidget* par = nullptr);
     //添加items
-    void addItems(const QList< DANodeMetaData >& nodeMetaDatas);
+    void addItems(const QList< DAPyNodeMetaData >& nodeMetaDatas);
     //逐个添加 注意此效率非常低
-    void addItem(const DANodeMetaData& md);
+    void addItem(const DAPyNodeMetaData& md);
     //添加到收藏
-    void addToFavorite(const DANodeMetaData& md);
-    void removeFavorite(const DANodeMetaData& md);
+    void addToFavorite(const DAPyNodeMetaData& md);
+    void removeFavorite(const DAPyNodeMetaData& md);
     //
     QTreeWidgetItem* getFavoriteItem();
     //创建收藏列
     QTreeWidgetItem* createFavoriteItem();
     //
-    DANodeMetaData getNodeMetaData(const QPoint& p) const;
+    DAPyNodeMetaData getNodeMetaData(const QPoint& p) const;
 
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;

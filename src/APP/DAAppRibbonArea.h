@@ -7,7 +7,7 @@
 #include <QWidgetAction>
 #include "DARibbonAreaInterface.h"
 #include "DADataManageWidget.h"
-#include "DAWorkFlowGraphicsScene.h"
+#include "DAPyWorkFlowGraphicsScene.h"
 #if DA_ENABLE_PYTHON
 // Py
 #include "numpy/DAPyDType.h"
@@ -68,8 +68,8 @@ class DAFigureWidget;
 class DAChartOperateWidget;
 class DAChartWidget;
 class DADataOperateWidget;
-class DAWorkFlowEditWidget;
-class DAWorkFlowOperateWidget;
+class DAPyWorkFlowEditWidget;
+class DAPyWorkFlowOperateWidget;
 /**
  * @brief App的Ribbon区域接口，负责ribbon层的管理和调度
  *
@@ -168,7 +168,7 @@ public:
 	void updateChartPickerAboutRibbon(DAChartWidget* chart);
 	void updateChartLegendAboutRibbon(DAChartWidget* chart);
 	//
-	void updateWorkflowAboutRibbon(DAWorkFlowOperateWidget* wfo);
+	void updateWorkflowAboutRibbon(DAPyWorkFlowOperateWidget* wfo);
 	// 重置文字
 	void resetText();
 

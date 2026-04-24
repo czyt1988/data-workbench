@@ -4,10 +4,10 @@
 #include <QObject>
 #include <QColor>
 #include "DAPyWorkFlowAPI.h"
+#include "DAPyNodeState.h"
 
 namespace DA
 {
-class DAPyNodePalettePrivate;
 
 /**
  * @brief Python节点调色板

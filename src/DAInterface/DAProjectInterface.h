@@ -1,4 +1,4 @@
-﻿#ifndef DAPROJECTINTERFACE_H
+#ifndef DAPROJECTINTERFACE_H
 #define DAPROJECTINTERFACE_H
 #include <QObject>
 #include <QVersionNumber>
@@ -10,7 +10,7 @@ namespace DA
 {
 class DADockingAreaInterface;
 class DACoreInterface;
-class DAWorkFlowOperateWidget;
+class DAPyWorkFlowOperateWidget;
 class DADataManagerInterface;
 /**
  * @brief 负责总体工程的接口

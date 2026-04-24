@@ -1,4 +1,4 @@
-﻿#ifndef DAGRAPHICSVIEWGLOBAL_H
+#ifndef DAGRAPHICSVIEWGLOBAL_H
 #define DAGRAPHICSVIEWGLOBAL_H
 #include <QtCore/QtGlobal>
 #include "DAGlobals.h"
@@ -90,7 +90,10 @@ enum DAGraphicsItemType
 	ItemType_DAGraphicsLinkItem     = ItemType_DAGraphicsLinkItem_Begin + 1,    ///< 针对DAGraphicsLinkItem的类型
 	ItemType_DAGraphicsLinkItem_End = ItemType_DAGraphicsLinkItem_Begin + 500,  ///< DAGraphicsLinkItem的结束范围
 
-	ItemType_DAGraphicsItem_End = ItemType_DAGraphicsLinkItem_End + 1
+	//====NodeItem====== (原 DAWorkFlow 模块迁移，用于 DAPyWorkFlow 的节点图形项类型)
+	ItemType_GraphicsNodeUserType = ItemType_DAGraphicsLinkItem_End + 1,  ///< Python工作流节点图形项的类型起始值
+
+	ItemType_DAGraphicsItem_End = ItemType_DAGraphicsLinkItem_End + 100
 };
 
 }

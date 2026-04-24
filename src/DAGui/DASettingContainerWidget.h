@@ -6,7 +6,7 @@
 
 namespace DA
 {
-class DAWorkFlowNodeItemSettingWidget;
+class DAPyWorkFlowNodeItemSettingWidget;
 class DAChartSettingWidget;
 class DAFigureWidgetSettingPanel;
 /**
@@ -22,7 +22,7 @@ public:
     // 判断当前是否已经有这个窗口
     bool isContainWidget(QWidget* w) const;
     // 工作流设置
-    DAWorkFlowNodeItemSettingWidget* getWorkFlowNodeItemSettingWidget();
+    DAPyWorkFlowNodeItemSettingWidget* getWorkFlowNodeItemSettingWidget();
     // 显示默认的工作流节点设置窗口
     void showWorkFlowNodeItemSettingWidget();
     // 绘图设置
@@ -38,7 +38,7 @@ protected:
     void initWorkFlowSettingWidgets();
 
 private:
-    DAWorkFlowNodeItemSettingWidget* mWorkFlowNodeItemSettingWidget { nullptr };
+    DAPyWorkFlowNodeItemSettingWidget* mWorkFlowNodeItemSettingWidget { nullptr };
 	DAChartSettingWidget* mChartSettingWidget { nullptr };
     DAFigureWidgetSettingPanel* mFigureWidgetSettingWidget { nullptr };
 };

@@ -2,37 +2,35 @@
 #define DAPYNODEPROXY_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyNodeState.h"
-#include "DAAbstractNode.h"
-#include "DAPyGILGuard.h"
+#include "DAGlobals.h"
+#include "DAPybind11InQt.h"
 #include <QString>
 #include <QJsonObject>
+#include <QList>
 
 namespace DA
 {
 
-class DAPyNodeGraphicsItem;
-
 /**
- * @brief Python节点的C++代理类
+ * @brief Python节点的C++独立代理类
  *
- * 代理Python定义的节点，继承DAAbstractNode接口，
+ * 代理Python定义的节点，不继承DAAbstractNode或任何QObject基类，
+ * 遵循非QObject+PIMPL+pybind11::object模式（参考DAPyDataFrame）。
  * 通过pybind11桥接C++节点操作到Python节点执行。
- * 遵循PIMPL模式，使用DA_DECLARE_PRIVATE宏。
  *
  * @code
- * // 创建代理节点并执行
- * auto proxy = std::make_shared<DA::DAPyNodeProxy>();
- * proxy->setPyNodeRef(pyNodeObj);
- * if (proxy->exec()) {
+ * DAPyNodeProxy proxy;
+ * proxy.setPyNodeRef(pyNodeObj);
+ * if (proxy.exec()) {
  *     qDebug() << "Node executed successfully";
  * } else {
- *     qDebug() << "Error:" << proxy->getLastErrorString();
+ *     qDebug() << "Error:" << proxy.getLastErrorString();
  * }
  * @endcode
  *
- * @see DAAbstractNode DAPyGILGuard DAPyModuleWorkflow DAPyNodeState
+ * @see DAPyGILGuard DAPyModuleWorkflow DAPyNodeState DAPyDataFrame
  */
-class DAPYWORKFLOW_API DAPyNodeProxy : public DAAbstractNode
+class DAPYWORKFLOW_API DAPyNodeProxy
 {
     DA_DECLARE_PRIVATE(DAPyNodeProxy)
 public:
@@ -40,21 +38,34 @@ public:
     DAPyNodeProxy();
     ~DAPyNodeProxy();
 
-    // 执行节点（重写DAAbstractNode::exec）
-    bool exec() override;
-
-    // 创建图形项（重写DAAbstractNode::createGraphicsItem）
-    DAAbstractNodeGraphicsItem* createGraphicsItem() override;
+    // 执行节点（GIL+Python execute）
+    bool exec();
 
     // Python节点引用操作
     void setPyNodeRef(const pybind11::object& pyNode);
     pybind11::object getPyNodeRef() const;
     bool hasPyNodeRef() const;
 
-    // 设置Python限定名
+    // Python限定名
     void setQualifiedName(const QString& name);
-    // 获取Python限定名
     QString getQualifiedName() const;
+
+    // 节点名称（从Python描述符或本地存储）
+    QString getNodeName() const;
+    void setNodeName(const QString& name);
+
+    // 输入/输出key列表（从Python描述符获取）
+    QList<QString> getInputKeys() const;
+    QList<QString> getOutputKeys() const;
+
+    // 节点原型（从Python描述符获取）
+    QString getNodePrototype() const;
+
+    // 节点分组（从Python描述符获取）
+    QString getNodeGroup() const;
+
+    // 节点描述符（从Python _node_descriptor获取）
+    QJsonObject getDescriptor() const;
 
     // 状态管理
     DAPyNodeState getNodeState() const;
@@ -67,17 +78,16 @@ public:
     void setPyInputData(const QString& key, const pybind11::object& data);
     pybind11::object getPyOutputData(const QString& key) const;
 
-    // 获取节点描述符（从Python节点获取元信息）
-    QJsonObject getDescriptor() const;
+    // 配置参数（QJsonObject <-> Python dict）
+    bool setConfig(const QJsonObject& config);
+    QJsonObject getConfig() const;
+
+    // 节点ID（独立管理，不继承DAAbstractNode）
+    unsigned int getID() const;
+    void setID(unsigned int id);
 
     // 有效性检查
     bool isValid() const;
-
-    // 设置Python节点的配置参数（通过dict传递）
-    bool setConfig(const QJsonObject& config);
-
-    // 获取Python节点的配置参数
-    QJsonObject getConfig() const;
 };
 
 }  // namespace DA

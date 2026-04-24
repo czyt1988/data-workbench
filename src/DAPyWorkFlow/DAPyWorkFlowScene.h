@@ -6,6 +6,7 @@
 #include "DAPyNodeState.h"
 #include <QPointF>
 #include <QJsonObject>
+#include <QVersionNumber>
 class QDomDocument;
 class QDomElement;
 

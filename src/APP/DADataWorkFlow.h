@@ -1,10 +1,9 @@
-﻿#ifndef DAMETHODEDITORWORKFLOW_H
-#define DAMETHODEDITORWORKFLOW_H
+#ifndef DADATAWORKFLOW_H
+#define DADATAWORKFLOW_H
 #include <QtCore/qglobal.h>
 #include <QHash>
 #include <QPointer>
-#include "DAWorkFlow.h"
-#include "DAAbstractNodeGraphicsItem.h"
+#include "DAPyWorkFlow.h"
 namespace DA
 {
 /**
@@ -12,13 +11,12 @@ namespace DA
  *
  * 这里所有工作流是共享一批工厂
  */
-class DADataWorkFlow : public DAWorkFlow
+class DADataWorkFlow : public DAPyWorkFlow
 {
-    Q_OBJECT
 public:
-    explicit DADataWorkFlow(QObject* p = nullptr);
+    explicit DADataWorkFlow();
     ~DADataWorkFlow();
     //
 };
 }  // namespace DA
-#endif  // FCMETHODEDITORNODEFACTORY_H
+#endif  // DADATAWORKFLOW_H

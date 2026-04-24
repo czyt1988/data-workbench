@@ -8,7 +8,7 @@
 #include "DAPyModuleWorkflow.h"
 #include "DAPyGILGuard.h"
 #include "DAPyNodeProxy.h"
-#include "DANodeLinkPoint.h"
+#include "DAPyLinkPoint.h"
 #include "DAGraphicsScene.h"
 #include "DAPyWorkFlowSceneSerializer.h"
 
@@ -519,15 +519,15 @@ DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(DAPyNodeGraphicsItem* fro
     link->setToNode(toItem, toInput);
 
     // 设置连接线的起止位置
-    QList<DANodeLinkPoint> outputPoints = fromItem->getOutputLinkPoints();
-    for (const DANodeLinkPoint& lp : outputPoints) {
+    QList<DAPyLinkPoint> outputPoints = fromItem->getOutputLinkPoints();
+    for (const DAPyLinkPoint& lp : outputPoints) {
         if (lp.name == fromOutput) {
             link->setStartScenePosition(fromItem->mapToScene(lp.position));
             break;
         }
     }
-    QList<DANodeLinkPoint> inputPoints = toItem->getInputLinkPoints();
-    for (const DANodeLinkPoint& lp : inputPoints) {
+    QList<DAPyLinkPoint> inputPoints = toItem->getInputLinkPoints();
+    for (const DAPyLinkPoint& lp : inputPoints) {
         if (lp.name == toInput) {
             link->setEndScenePosition(toItem->mapToScene(lp.position));
             break;
@@ -987,9 +987,9 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                 DAPyLinkGraphicsItem* linkItem = dynamic_cast<DAPyLinkGraphicsItem*>(getCurrentLinkItem());
                 if (linkItem) {
                     // 查找输入端口
-                    QList<DANodeLinkPoint> inputPoints = nodeItem->getInputLinkPoints();
-                    DANodeLinkPoint matchedPoint;
-                    for (const DANodeLinkPoint& lp : inputPoints) {
+                    QList<DAPyLinkPoint> inputPoints = nodeItem->getInputLinkPoints();
+                    DAPyLinkPoint matchedPoint;
+                    for (const DAPyLinkPoint& lp : inputPoints) {
                         QPointF lpScenePos = nodeItem->mapToScene(lp.position);
                         double dist = QLineF(mouseEvent->scenePos(), lpScenePos).length();
                         if (dist < 15) {  // 连接点命中阈值
@@ -1016,9 +1016,9 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                 }
             } else {
                 // 非连线状态，点击输出端口开始连线
-                QList<DANodeLinkPoint> outputPoints = nodeItem->getOutputLinkPoints();
-                DANodeLinkPoint matchedPoint;
-                for (const DANodeLinkPoint& lp : outputPoints) {
+                QList<DAPyLinkPoint> outputPoints = nodeItem->getOutputLinkPoints();
+                DAPyLinkPoint matchedPoint;
+                for (const DAPyLinkPoint& lp : outputPoints) {
                     QPointF lpScenePos = nodeItem->mapToScene(lp.position);
                     double dist = QLineF(mouseEvent->scenePos(), lpScenePos).length();
                     if (dist < 15) {

@@ -1,4 +1,5 @@
 #include "DANodeSettingWidget.h"
+#include "DAPyNodeProxy.h"
 #include "ui_DANodeSettingWidget.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -20,20 +21,20 @@ DANodeSettingWidget::~DANodeSettingWidget()
     delete ui;
 }
 
-void DANodeSettingWidget::setNode(DAAbstractNode::SharedPointer p)
+void DANodeSettingWidget::setNode(DAPyNodeProxy* p)
 {
     _nodePtr = p;
     updateData();
 }
 
-DAAbstractNode::SharedPointer DANodeSettingWidget::getNode() const
+DAPyNodeProxy* DANodeSettingWidget::getNode() const
 {
-    return _nodePtr.lock();
+    return _nodePtr;
 }
 
 void DANodeSettingWidget::updateData()
 {
-    DAAbstractNode::SharedPointer n = getNode();
+    DAPyNodeProxy* n = getNode();
     if (n) {
         QSignalBlocker b(ui->lineEditName);
         Q_UNUSED(b);
@@ -49,7 +50,7 @@ void DANodeSettingWidget::updateData()
 
 void DANodeSettingWidget::onLineEditNameTextEdited(const QString& t)
 {
-    DAAbstractNode::SharedPointer p = getNode();
+    DAPyNodeProxy* p = getNode();
     if (p) {
         p->setNodeName(t);
         //设置完成后重新设置回editor

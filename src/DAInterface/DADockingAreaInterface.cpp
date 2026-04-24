@@ -15,6 +15,8 @@
 //
 #include "DADataManageWidget.h"
 #include "DADataOperateWidget.h"
+#include "DAPyWorkFlowOperateWidget.h"
+#include "DAPyWorkFlowGraphicsScene.h"
 namespace DA
 {
 class DADockingAreaInterface::PrivateData
@@ -143,21 +145,27 @@ DAData DADockingAreaInterface::getCurrentOperateData() const
 	return dow->getCurrentOperateData();
 }
 
-bool DADockingAreaInterface::isDataOperateWidgetDockOnFource() const
+bool DADockingAreaInterface::isDataOperateWidgetDockOnFocus() const
 {
-	ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
-	return (currentFource->widget() == getDataOperateWidget());
+	ads::CDockWidget* currentFocus = dockManager()->focusedDockWidget();
+	if (!currentFocus) {
+		return false;
+	}
+	return (currentFocus->widget() == getDataOperateWidget());
 }
 
-bool DADockingAreaInterface::isDataManageWidgetDockOnFource() const
+bool DADockingAreaInterface::isDataManageWidgetDockOnFocus() const
 {
-	ads::CDockWidget* currentFource = dockManager()->focusedDockWidget();
-	return (currentFource->widget() == getDataManageWidget());
+	ads::CDockWidget* currentFocus = dockManager()->focusedDockWidget();
+	if (!currentFocus) {
+		return false;
+	}
+	return (currentFocus->widget() == getDataManageWidget());
 }
 
-DAWorkFlowGraphicsScene* DADockingAreaInterface::getCurrentScene() const
+DAPyWorkFlowGraphicsScene* DADockingAreaInterface::getCurrentScene() const
 {
-	DAWorkFlowOperateWidget* ow = getWorkFlowOperateWidget();
+	DAPyWorkFlowOperateWidget* ow = getWorkFlowOperateWidget();
 	if (ow) {
 		return ow->getCurrentWorkFlowScene();
 	}

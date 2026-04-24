@@ -1,8 +1,8 @@
-﻿#include "DAAppPluginManager.h"
+#include "DAAppPluginManager.h"
 #include "DAAbstractNodePlugin.h"
 #include "DAAbstractPlugin.h"
 #include "DAPluginManager.h"
-#include "DAAbstractNodeFactory.h"
+#include "DAPyNodeFactory.h"
 #include <QApplication>
 #if DA_ENABLE_PYTHON
 #include "DAPyNodeFactory.h"
@@ -58,13 +58,13 @@ void DAAppPluginManager::loadAllPlugins(DACoreInterface* c)
                 // 说明是节点插件
                 // 这里工厂仅仅为了获取节点的meta数据
                 // 此处未来看看是否优化，否则启动会相对较慢
-                std::unique_ptr< DAAbstractNodeFactory > fac(np->createNodeFactory());
+                std::unique_ptr< DAPyNodeFactory > fac(np->createNodeFactory());
                 if (nullptr == fac) {
                     // 创建工厂失败,是没有工作流的界面
                     continue;
                 }
                 // 此操作是为了获取所有节点metadata
-                mNodeMetaDatas += fac->getNodesMetaData();
+                mNodeMetaDatas += fac->getNodeMetadataList();
                 qDebug() << tr("succeed load plugin %1").arg(np->getName());
             }
         }
@@ -74,7 +74,7 @@ void DAAppPluginManager::loadAllPlugins(DACoreInterface* c)
     initPyNodeFactory();
 #endif
     // 最后对_nodeMetaDatas去重，此去重要保证原来的顺序
-    QMap< DANodeMetaData, int > mapcnt;
+    QMap< DAPyNodeMetaData, int > mapcnt;
     // 说明有重复项，需要去除
     for (auto i = mNodeMetaDatas.begin(); i != mNodeMetaDatas.end();) {
         if (!mapcnt.contains(*i)) {
@@ -118,12 +118,12 @@ QList< DAAbstractNodePlugin* > DAAppPluginManager::getNodePlugins() const
  *
  * @return 所有节点工厂的共享指针列表
  */
-QList< std::shared_ptr< DAAbstractNodeFactory > > DAAppPluginManager::createNodeFactorys() const
+QList< std::shared_ptr< DAPyNodeFactory > > DAAppPluginManager::createNodeFactorys() const
 {
-    QList< std::shared_ptr< DAAbstractNodeFactory > > res;
+    QList< std::shared_ptr< DAPyNodeFactory > > res;
     const QList< DAAbstractNodePlugin* > nodePlugins = getNodePlugins();
     for (DAAbstractNodePlugin* d : std::as_const(nodePlugins)) {
-        res.append(std::shared_ptr< DAAbstractNodeFactory >(d->createNodeFactory()));
+        res.append(std::shared_ptr< DAPyNodeFactory >(d->createNodeFactory()));
     }
 #if DA_ENABLE_PYTHON
     if (mPyNodeFactory) {
@@ -137,7 +137,7 @@ QList< std::shared_ptr< DAAbstractNodeFactory > > DAAppPluginManager::createNode
  * @brief 获取所有的元数据
  * @return
  */
-QList< DANodeMetaData > DAAppPluginManager::getAllNodeMetaDatas() const
+QList< DAPyNodeMetaData > DAAppPluginManager::getAllNodeMetaDatas() const
 {
     return mNodeMetaDatas;
 }
@@ -174,9 +174,9 @@ void DAAppPluginManager::initPyNodeFactory()
             return;
         }
         // 合并Python节点元数据
-        mNodeMetaDatas += mPyNodeFactory->getNodesMetaData();
+        mNodeMetaDatas += mPyNodeFactory->getNodeMetadataList();
         qDebug() << tr("Python node factory initialized, discovered %1 nodes")
-                     .arg(mPyNodeFactory->getNodesMetaData().size());
+                     .arg(mPyNodeFactory->getNodeMetadataList().size());
     } catch (const std::exception& e) {
         qCritical() << tr("Python node factory initialization failed: %1").arg(e.what());
         mPyNodeFactory.reset();

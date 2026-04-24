@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsLinkItem.h"
+#include "DAGraphicsLinkItem.h"
 #include <QPainter>
 #include <QDebug>
 #include <QGraphicsScene>
@@ -368,7 +368,7 @@ void DAGraphicsLinkItem::paintEndPoint(QPainter* painter,
 	if (etStart == EndPointNone && etEnd == EndPointNone) {
 		return;
 	}
-	// 根据DANodeLinkPoint计算旋转的角度
+	// 根据DAPyLinkPoint计算旋转的角度
 	painter->save();
 	QPen pen = getPainterPen(option);
 	painter->setPen(pen);

@@ -49,7 +49,7 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
 # -------------link DAWorkbench--------------------------
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAUtils
-    ${DA_PROJECT_NAME}::DAWorkFlow
+    ${DA_PROJECT_NAME}::DAGraphicsView
     ${DA_PROJECT_NAME}::DAPyBindQt
 )
 

@@ -1,8 +1,8 @@
-﻿#include "DAAbstractNodePlugin.h"
+#include "DAAbstractNodePlugin.h"
 #include "DACoreInterface.h"
 #include "DAUIInterface.h"
 #include "DADockingAreaInterface.h"
-#include "DAWorkFlowOperateWidget.h"
+#include "DAPyWorkFlowOperateWidget.h"
 namespace DA
 {
 DAAbstractNodePlugin::DAAbstractNodePlugin() : DAAbstractPlugin()
@@ -17,7 +17,7 @@ void DAAbstractNodePlugin::afterLoadedNodes()
 {
 }
 
-DAWorkFlowOperateWidget* DAAbstractNodePlugin::getCurrentActiveWorkflowOperateWidget() const
+DAPyWorkFlowOperateWidget* DAAbstractNodePlugin::getCurrentActiveWorkflowOperateWidget() const
 {
     auto c = core();
     if (!c) {
@@ -34,7 +34,7 @@ DAWorkFlowOperateWidget* DAAbstractNodePlugin::getCurrentActiveWorkflowOperateWi
     return d->getWorkFlowOperateWidget();
 }
 
-DAWorkFlow* DAAbstractNodePlugin::getCurrentActiveWorkFlow() const
+DAPyWorkFlow* DAAbstractNodePlugin::getCurrentActiveWorkFlow() const
 {
     auto optWF = getCurrentActiveWorkflowOperateWidget();
 	if (!optWF) {

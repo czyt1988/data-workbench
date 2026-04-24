@@ -1,6 +1,7 @@
 #ifndef DAPYNODEGRAPHICSITEM_H
 #define DAPYNODEGRAPHICSITEM_H
 #include "DAPyWorkFlowAPI.h"
+#include "DAPyLinkPoint.h"
 #include "DAGraphicsResizeableItem.h"
 #include "DAPyGILGuard.h"
 #include "DAPyNodeState.h"
@@ -18,7 +19,6 @@ namespace DA
 
 class DAPyNodeProxy;
 class DAPyNodePalette;
-class DANodeLinkPoint;
 
 /**
  * @brief Python工作流节点的图形项
@@ -115,16 +115,26 @@ public:
     void clearPaintCallback();
 
     // 连接点管理
-    QList<DANodeLinkPoint> getInputLinkPoints() const;
-    QList<DANodeLinkPoint> getOutputLinkPoints() const;
+    QList<DAPyLinkPoint> getInputLinkPoints() const;
+    QList<DAPyLinkPoint> getOutputLinkPoints() const;
     void updateLinkPoints();
 
     // 保存/加载
     bool saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const override;
     bool loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver) override;
 
-    // 鼠标双击事件 - 打开参数配置对话框
+    // 设置body尺寸（重写基类public虚函数，须保持public可见性）
+    void setBodySize(const QSizeF& s) override;
+
+    // 鼠标双击事件
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event) override;
+
+Q_SIGNALS:
+    /**
+     * @brief 节点双击信号，通知上层（DAGui）弹出配置对话框
+     * @param[in] proxy 双击的节点代理
+     */
+    void nodeDoubleClicked(DAPyNodeProxy* proxy);
 
 protected:
     // 绘制body（根据模板类型选择绘制方式）
@@ -144,11 +154,8 @@ protected:
     void paintSvgTemplate(QPainter* painter, const QRectF& bodyRect);
     void paintWidgetTemplate(QPainter* painter, const QRectF& bodyRect);
 
-    // 尺寸变化时更新
-    void setBodySize(const QSizeF& s) override;
-
     // 生成连接点
-    QList<DANodeLinkPoint> generateLinkPoints() const;
+    QList<DAPyLinkPoint> generateLinkPoints() const;
 
 private:
     // 获取当前状态颜色

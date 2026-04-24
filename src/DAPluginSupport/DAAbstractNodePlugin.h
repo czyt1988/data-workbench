@@ -1,13 +1,14 @@
-﻿#ifndef DAABSTRACTNODEPLUGIN_H
+#ifndef DAABSTRACTNODEPLUGIN_H
 #define DAABSTRACTNODEPLUGIN_H
 #include <QtPlugin>
 #include "DAPluginSupportGlobal.h"
-#include "DAAbstractNodeFactory.h"
+#include "DAPyNodeFactory.h"
 #include "DAAbstractPlugin.h"
 
 namespace DA
 {
-class DAWorkFlowOperateWidget;
+class DAPyWorkFlowOperateWidget;
+class DAPyWorkFlow;
 /**
  * @brief 节点插件
  *
@@ -43,13 +44,13 @@ public:
 	 * @brief 创建一个节点工厂
 	 * @return
 	 */
-	virtual DAAbstractNodeFactory* createNodeFactory() = 0;
+	virtual DAPyNodeFactory* createNodeFactory() = 0;
 
 	/**
 	 * @brief 删除一个节点工厂(谁创建谁删除原则)
 	 * @param p
 	 */
-	virtual void destoryNodeFactory(DAAbstractNodeFactory* p) = 0;
+	virtual void destroyNodeFactory(DAPyNodeFactory* p) = 0;
 
 	/**
 	 * @brief 这是一个回调函数，在节点生成完成，并加入到APP后调用
@@ -64,13 +65,13 @@ public:
      * @brief 获取当前激活的工作流编辑窗口，所谓当前激活就是当前界面上正在打开的工作流编辑窗口
      * @return
      */
-    DAWorkFlowOperateWidget* getCurrentActiveWorkflowOperateWidget() const;
+    DAPyWorkFlowOperateWidget* getCurrentActiveWorkflowOperateWidget() const;
 
 	/**
 	 * @brief 获取当前激活的工作流，所谓当前激活就是当前界面上正在打开的工作流
 	 * @return
 	 */
-	DAWorkFlow* getCurrentActiveWorkFlow() const;
+	DAPyWorkFlow* getCurrentActiveWorkFlow() const;
 };
 }  // end da
 // 封装成插件需要在原本封装dll的基础上添加以下语句

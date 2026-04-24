@@ -1,4 +1,4 @@
-﻿#ifndef DAXMLHELPER_H
+#ifndef DAXMLHELPER_H
 #define DAXMLHELPER_H
 #include "DAGuiAPI.h"
 #include <QDomDocument>
@@ -7,7 +7,7 @@
 #include <QHash>
 #include "DAData.h"
 #include "DADataManager.h"
-#include "DAAbstractNode.h"
+#include "DAPyNodeProxy.h"
 #include "DAGraphicsItemGroup.h"
 /**
  *@file xml文件的帮助类
@@ -21,11 +21,11 @@ class QwtDateScaleDraw;
 class QwtScaleWidget;
 namespace DA
 {
-class DAWorkFlowEditWidget;
-class DAWorkFlow;
-class DAWorkFlowGraphicsScene;
-class DAWorkFlowGraphicsView;
-class DAWorkFlowOperateWidget;
+class DAPyWorkFlowEditWidget;
+class DAPyWorkFlow;
+class DAPyWorkFlowGraphicsScene;
+class DAPyWorkFlowGraphicsView;
+class DAPyWorkFlowOperateWidget;
 class DAGraphicsItem;
 class DAGraphicsScene;
 class DAGraphicsResizeableItem;
@@ -57,18 +57,18 @@ public:
     void setLoadedVersionNumber(const QVersionNumber& v);
     QVersionNumber getLoaderVersionNumber() const;
     static QVersionNumber getCurrentVersionNumber();
-    // 标准保存—— DAWorkFlowEditWidget
-    QDomElement makeElement(DAWorkFlowEditWidget* wfe, const QString& tagName, QDomDocument* doc);
-    bool loadElement(DAWorkFlowEditWidget* wfe, const QDomElement* ele);
-    // 标准保存—— DAWorkFlowEditWidget
-    QDomElement makeElement(DAWorkFlowOperateWidget* wfo, const QString& tagName, QDomDocument* doc);
-    bool loadElement(DAWorkFlowOperateWidget* wfo, const QDomElement* workflowsEle);
+    // 标准保存—— DAPyWorkFlowEditWidget
+    QDomElement makeElement(DAPyWorkFlowEditWidget* wfe, const QString& tagName, QDomDocument* doc);
+    bool loadElement(DAPyWorkFlowEditWidget* wfe, const QDomElement* ele);
+    // 标准保存—— DAPyWorkFlowEditWidget
+    QDomElement makeElement(DAPyWorkFlowOperateWidget* wfo, const QString& tagName, QDomDocument* doc);
+    bool loadElement(DAPyWorkFlowOperateWidget* wfo, const QDomElement* workflowsEle);
     // 创建剪切板描述xml
     QDomElement makeClipBoardElement(const QList< DAGraphicsItem* > its,
                                      const QString& tagName,
                                      QDomDocument* doc,
                                      bool isCopyType = true);
-    bool loadClipBoardElement(const QDomElement* clipBoardElement, DAWorkFlowGraphicsScene* sc);
+    bool loadClipBoardElement(const QDomElement* clipBoardElement, DAPyWorkFlowGraphicsScene* sc);
     // DAGraphicsItem的通用保存
     static QDomElement makeElement(const DAGraphicsItem* item, const QString& tagName, QDomDocument* doc);
     static bool loadElement(DAGraphicsItem* item, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());

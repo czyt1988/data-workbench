@@ -54,8 +54,8 @@
 #include "DAFontEditPannelWidget.h"
 #include "DAShapeEditPannelWidget.h"
 // Workflow
-#include "DAWorkFlowOperateWidget.h"
-#include "DAWorkFlowGraphicsView.h"
+#include "DAPyWorkFlowOperateWidget.h"
+#include "DAPyWorkFlowGraphicsView.h"
 #include "DAGraphicsDrawRectSceneAction.h"
 #include "DAGraphicsDrawTextItemSceneAction.h"
 // project
@@ -392,17 +392,17 @@ void DAAppController::initConnection()
     connect(cow, &DAChartOperateWidget::figureCreated, this, &DAAppController::onFigureCreated);
     connect(cow, &DAChartOperateWidget::currentFigureChanged, this, &DAAppController::onCurrentFigureChanged);
     //
-    DAWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
     // 鼠标动作完成的触发
-    connect(workflowOpt, &DAWorkFlowOperateWidget::sceneActionDeactived, this, &DAAppController::onWorkFlowGraphicsSceneActionDeactive);
-    connect(workflowOpt, &DAWorkFlowOperateWidget::selectionItemChanged, this, &DAAppController::onWorkflowSceneSelectionItemChanged);
-    connect(workflowOpt, &DAWorkFlowOperateWidget::currentWorkFlowWidgetChanged, this, &DAAppController::onCurrentWorkflowWidgetChanged);
-    connect(workflowOpt, &DAWorkFlowOperateWidget::workflowStartExecute, this, &DAAppController::onWorkflowStartExecute);
-    connect(workflowOpt, &DAWorkFlowOperateWidget::workflowFinished, this, &DAAppController::onWorkflowFinished);
-    connect(workflowOpt, &DAWorkFlowOperateWidget::itemsAdded, this, &DAAppController::onWorkflowSceneitemsAdded);
-    connect(workflowOpt, &DAWorkFlowOperateWidget::itemsRemoved, this, &DAAppController::onWorkflowSceneitemsRemoved);
-    connect(mActions->actionWorkflowShowGrid, &QAction::triggered, workflowOpt, &DAWorkFlowOperateWidget::setCurrentWorkflowShowGrid);
-    connect(workflowOpt, &DAWorkFlowOperateWidget::workflowCreated, this, &DAAppController::onWorkflowCreated);
+    connect(workflowOpt, &DAPyWorkFlowOperateWidget::sceneActionDeactived, this, &DAAppController::onWorkFlowGraphicsSceneActionDeactive);
+    connect(workflowOpt, &DAPyWorkFlowOperateWidget::selectionItemChanged, this, &DAAppController::onWorkflowSceneSelectionItemChanged);
+    connect(workflowOpt, &DAPyWorkFlowOperateWidget::currentWorkFlowWidgetChanged, this, &DAAppController::onCurrentWorkflowWidgetChanged);
+    connect(workflowOpt, &DAPyWorkFlowOperateWidget::workflowStartExecute, this, &DAAppController::onWorkflowStartExecute);
+    connect(workflowOpt, &DAPyWorkFlowOperateWidget::workflowFinished, this, &DAAppController::onWorkflowFinished);
+    connect(workflowOpt, &DAPyWorkFlowOperateWidget::itemsAdded, this, &DAAppController::onWorkflowSceneitemsAdded);
+    connect(workflowOpt, &DAPyWorkFlowOperateWidget::itemsRemoved, this, &DAAppController::onWorkflowSceneitemsRemoved);
+    connect(mActions->actionWorkflowShowGrid, &QAction::triggered, workflowOpt, &DAPyWorkFlowOperateWidget::setCurrentWorkflowShowGrid);
+    connect(workflowOpt, &DAPyWorkFlowOperateWidget::workflowCreated, this, &DAAppController::onWorkflowCreated);
 
     connect(mActions->recentFilesManager, &DARecentFilesManager::fileSelected, this, &DAAppController::onRecentFileSelected);
 }
@@ -555,7 +555,7 @@ DADataOperateOfDataFrameWidget* DAAppController::getCurrentDataFrameOperateWidge
  * @brief 获取工作流操作窗口
  * @return
  */
-DAWorkFlowOperateWidget* DAAppController::getWorkFlowOperateWidget() const
+DAPyWorkFlowOperateWidget* DAAppController::getWorkFlowOperateWidget() const
 {
     return mDock->getWorkFlowOperateWidget();
 }
@@ -719,10 +719,10 @@ void DAAppController::onWorkFlowGraphicsSceneActionDeactive(DA::DAAbstractGraphi
 }
 
 /**
- * @brief DAWorkFlowOperateWidget有新的工作流窗口创建会触发此槽
+ * @brief DAPyWorkFlowOperateWidget有新的工作流窗口创建会触发此槽
  * @param wfw
  */
-void DAAppController::onWorkflowCreated(DAWorkFlowEditWidget* wfw)
+void DAAppController::onWorkflowCreated(DAPyWorkFlowEditWidget* wfw)
 {
     if (mCommand) {
         mCommand->addStack(wfw->getUndoStack());
@@ -990,7 +990,7 @@ void DAAppController::onProjectSaved(const QString& path)
     DAAppProject* project = DA_APP_CORE.getAppProject();
     updateWindowTitle();
     if (mDock) {
-        DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
+        DAPyWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
         if (wf) {
             wf->setCurrentWorkflowName(project->getProjectBaseName());
         }
@@ -1007,7 +1007,7 @@ void DAAppController::onProjectLoaded(const QString& path)
     DAAppProject* project = DA_APP_CORE.getAppProject();
     updateWindowTitle();
     if (mDock) {
-        DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
+        DAPyWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
         if (wf) {
             wf->setCurrentWorkflowName(project->getProjectBaseName());
         }
@@ -1112,7 +1112,7 @@ void DAAppController::onActionAddBackgroundPixmapTriggered()
     }
     QStringList f = dialog.selectedFiles();
     if (!f.isEmpty()) {
-        DAWorkFlowOperateWidget* ow = mDock->getWorkFlowOperateWidget();
+        DAPyWorkFlowOperateWidget* ow = mDock->getWorkFlowOperateWidget();
         ow->addBackgroundPixmap(f.first());
         mDock->raiseDockingArea(DAAppDockingArea::DockingAreaWorkFlowOperate);
     }
@@ -1125,7 +1125,7 @@ void DAAppController::onActionLockBackgroundPixmapTriggered(bool on)
 
 void DAAppController::onActionEnableItemMoveWithBackgroundTriggered(bool on)
 {
-    if (DAWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
+    if (DAPyWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
         s->enableItemMoveWithBackground(on);
     }
 }
@@ -1136,7 +1136,7 @@ void DAAppController::onActionEnableItemMoveWithBackgroundTriggered(bool on)
  */
 void DAAppController::onActionWorkflowEnableItemLinkageMoveTriggered(bool on)
 {
-    if (DAWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
+    if (DAPyWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
         s->setEnableItemLinkageMove(on);
     }
 }
@@ -1146,7 +1146,7 @@ void DAAppController::onActionWorkflowEnableItemLinkageMoveTriggered(bool on)
  */
 void DAAppController::onActionItemGroupingTriggered()
 {
-    if (DAWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
+    if (DAPyWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
         s->groupingSelectItems_();
     }
 }
@@ -1156,7 +1156,7 @@ void DAAppController::onActionItemGroupingTriggered()
  */
 void DAAppController::onActionItemUngroupTriggered()
 {
-    if (DAWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
+    if (DAPyWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
         s->removeSelectItemGroup_();
     }
 }
@@ -1166,7 +1166,7 @@ void DAAppController::onActionItemUngroupTriggered()
  */
 void DAAppController::onActionExportWorkflowScenePNGTriggered()
 {
-    if (DAWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
+    if (DAPyWorkFlowGraphicsScene* s = mDock->getWorkFlowOperateWidget()->getCurrentWorkFlowScene()) {
         DAExportToPngSettingDialog dlg(mMainWindow);
         if (QDialog::Accepted != dlg.exec()) {
             return;
@@ -1187,7 +1187,7 @@ void DAAppController::onActionExportWorkflowScenePNGTriggered()
  */
 void DAAppController::onActionWorkflowViewReadOnlyTriggered(bool on)
 {
-    if (DAWorkFlowOperateWidget* s = mDock->getWorkFlowOperateWidget()) {
+    if (DAPyWorkFlowOperateWidget* s = mDock->getWorkFlowOperateWidget()) {
         s->setCurrentWorkflowReadOnly(on);
     }
 }
@@ -1342,7 +1342,7 @@ void DAAppController::onEditPenChanged(const QPen& p)
 
 void DAAppController::onCurrentWorkflowFontChanged(const QFont& f)
 {
-    DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
     wf->setDefaultTextFont(f);
     wf->setSelectTextFont(f);
     // 同步
@@ -1351,7 +1351,7 @@ void DAAppController::onCurrentWorkflowFontChanged(const QFont& f)
 
 void DAAppController::onCurrentWorkflowFontColorChanged(const QColor& c)
 {
-    DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
     wf->setDefaultTextColor(c);
     wf->setSelectTextColor(c);
     // 同步
@@ -1361,7 +1361,7 @@ void DAAppController::onCurrentWorkflowFontColorChanged(const QColor& c)
 
 void DAAppController::onCurrentWorkflowShapeBackgroundBrushChanged(const QBrush& b)
 {
-    DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
     wf->setSelectShapeBackgroundBrush(b);
     // 同步
     mRibbon->setEditBrush(b);
@@ -1370,7 +1370,7 @@ void DAAppController::onCurrentWorkflowShapeBackgroundBrushChanged(const QBrush&
 
 void DAAppController::onCurrentWorkflowShapeBorderPenChanged(const QPen& p)
 {
-    DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
     wf->setSelectShapeBorderPen(p);
     // 同步
     mRibbon->setEditPen(p);
@@ -1403,7 +1403,7 @@ void DAAppController::onWorkflowSceneSelectionItemChanged(QGraphicsItem* lastSel
  * @brief 工作流开始执行的关联槽
  * @param wfw
  */
-void DAAppController::onWorkflowStartExecute(DAWorkFlowEditWidget* wfw)
+void DAAppController::onWorkflowStartExecute(DAPyWorkFlowEditWidget* wfw)
 {
     Q_UNUSED(wfw);
     mActions->actionWorkflowRun->setEnabled(false);
@@ -1415,7 +1415,7 @@ void DAAppController::onWorkflowStartExecute(DAWorkFlowEditWidget* wfw)
  * @param wfw
  * @param success
  */
-void DAAppController::onWorkflowFinished(DAWorkFlowEditWidget* wfw, bool success)
+void DAAppController::onWorkflowFinished(DAPyWorkFlowEditWidget* wfw, bool success)
 {
     mActions->actionWorkflowRun->setEnabled(true);
     mActions->actionWorkflowTerminate->setEnabled(false);
@@ -1445,9 +1445,9 @@ void DAAppController::onWorkflowSceneitemsRemoved(DAGraphicsScene* sc, const QLi
  * @brief 当前的wf切换
  * @param wfw
  */
-void DAAppController::onCurrentWorkflowWidgetChanged(DAWorkFlowEditWidget* wfw)
+void DAAppController::onCurrentWorkflowWidgetChanged(DAPyWorkFlowEditWidget* wfw)
 {
-    DAWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
     mRibbon->updateWorkflowAboutRibbon(workflowOpt);
 }
 
@@ -2180,14 +2180,14 @@ void DAAppController::onActionWorkflowViewMarkerTriggered(bool on)
     }
     if (on) {
         // 激活marker
-        auto actionCross = wo->getInnerAction(DAWorkFlowOperateWidget::ActionCrossLineMarker);
+        auto actionCross = wo->getInnerAction(DAPyWorkFlowOperateWidget::ActionCrossLineMarker);
         if (!actionCross) {
             return;
         }
         actionCross->trigger();
     } else {
         // 激活marker
-        auto actionNone = wo->getInnerAction(DAWorkFlowOperateWidget::ActionNoneMarker);
+        auto actionNone = wo->getInnerAction(DAPyWorkFlowOperateWidget::ActionNoneMarker);
         if (!actionNone) {
             return;
         }
@@ -2222,7 +2222,7 @@ void DAAppController::onActionNewWorkflowTriggered()
     if (!ok || text.isEmpty()) {
         return;
     }
-    DAWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
     wf->appendWorkflow(text);
     setDirty();
 }
@@ -2236,7 +2236,7 @@ void DAAppController::onActionNewWorkflowTriggered()
 void DAAppController::onActionStartDrawRectTriggered(bool on)
 {
     if (on) {
-        mDock->getWorkFlowOperateWidget()->setPreDefineSceneAction(DAWorkFlowGraphicsScene::AddRectItemAction);
+        mDock->getWorkFlowOperateWidget()->setPreDefineSceneAction(DAPyWorkFlowGraphicsScene::AddRectItemAction);
     }
 }
 /**
@@ -2248,7 +2248,7 @@ void DAAppController::onActionStartDrawRectTriggered(bool on)
 void DAAppController::onActionStartDrawTextTriggered(bool on)
 {
     if (on) {
-        mDock->getWorkFlowOperateWidget()->setPreDefineSceneAction(DAWorkFlowGraphicsScene::AddTextItemAction);
+        mDock->getWorkFlowOperateWidget()->setPreDefineSceneAction(DAPyWorkFlowGraphicsScene::AddTextItemAction);
     }
 }
 

@@ -1,4 +1,4 @@
-﻿#include "AppMainWindow.h"
+#include "AppMainWindow.h"
 // Qt 相关
 #include <QMessageBox>
 #include <QDir>
@@ -29,14 +29,12 @@
 // 对话框
 
 // 节点相关
-#include "DANodeMetaData.h"
+#include "DAPyNodeFactory.h"
 
 //
 #include "DAGraphicsItemFactory.h"
-#include "DAWorkFlowNodeListWidget.h"
-#include "DAWorkFlowOperateWidget.h"
-#include "DAWorkFlowOperateWidget.h"
-#include "DAWorkFlowOperateWidget.h"
+#include "DAPyWorkFlowNodeListWidget.h"
+#include "DAPyWorkFlowOperateWidget.h"
 //
 #include "DAAppSettingDialog.h"
 #include "SettingPages/DAAppConfig.h"
@@ -215,7 +213,7 @@ void AppMainWindow::initPlugins()
 void AppMainWindow::initWorkflowNodes()
 {
     // 提取所有的元数据
-    QList< DANodeMetaData > nodeMetaDatas = mPluginMgr->getAllNodeMetaDatas();
+    QList< DAPyNodeMetaData > nodeMetaDatas = mPluginMgr->getAllNodeMetaDatas();
     // 把数据写入toolbox
     mDockArea->getWorkflowNodeListWidget()->addItems(nodeMetaDatas);
     // 此时才创建第一个workflow，这个workflow创建时，插件已经加载好

@@ -1,4 +1,4 @@
-﻿#ifndef {{PLUGIN-BASE-NAME}}NODEFACTORY_H
+#ifndef {{PLUGIN-BASE-NAME}}NODEFACTORY_H
 #define {{PLUGIN-BASE-NAME}}NODEFACTORY_H
 #include "{{plugin-base-name}}Global.h"
 #include "DAAbstractNodeFactory.h"
@@ -7,9 +7,9 @@ class QMainWindow;
 namespace DA
 {
 class DACoreInterface;
-class DAWorkFlowEditWidget;
+class DAPyWorkFlowEditWidget;
 class DAAbstractNodeLinkGraphicsItem;
-class DAWorkFlowGraphicsScene;
+class DAPyWorkFlowGraphicsScene;
 }
 
 
@@ -25,9 +25,9 @@ public:
     void setCore(DA::DACoreInterface* c);
 
 public:
-    // 工厂设置了workflow，此函数设置为虚函数，在某些工厂可以通过此函数的重载来绑定DAWorkFlow的信号,以及注册回调
+    // 工厂设置了workflow，此函数设置为虚函数，在某些工厂可以通过此函数的重载来绑定DAPyWorkFlow的信号,以及注册回调
     //  此函数同样可以作为scene创建的回调
-    virtual void registWorkflow(DA::DAWorkFlow* wf) override;
+    virtual void registWorkflow(DA::DAPyWorkFlow* wf) override;
 
     /**
      * @brief 工厂的唯一标识
@@ -54,8 +54,8 @@ public:
      * @brief 工厂函数，创建一个DAAbstractNode，工厂不持有FCAbstractNode的管理权
      * @param meta 元对象
      * @return
-     * @note 此函数会在@sa DAWorkFlow::createNode 中调用，用户不要直接调用此函数，
-     * 因为@sa DAWorkFlow::createNode 中会有其他的操作
+     * @note 此函数会在@sa DAPyWorkFlow::createNode 中调用，用户不要直接调用此函数，
+     * 因为@sa DAPyWorkFlow::createNode 中会有其他的操作
      */
     virtual DA::DAAbstractNode::SharedPointer create(const DA::DANodeMetaData& meta) override;
 
