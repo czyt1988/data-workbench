@@ -4,6 +4,8 @@
 #include "DAPluginManager.h"
 #include "DAPyNodeFactory.h"
 #include <QApplication>
+#include <QDir>
+#include <QFileInfo>
 #if DA_ENABLE_PYTHON
 #include "DAPyNodeFactory.h"
 #include "DAPyInterpreter.h"
@@ -143,6 +145,57 @@ QList< DAPyNodeMetaData > DAAppPluginManager::getAllNodeMetaDatas() const
 }
 
 #if DA_ENABLE_PYTHON
+
+/**
+ * @brief 扫描pyplugins目录，收集有效的Python插件路径
+ *
+ * 遍历pyplugins目录下的一级子目录，检查每个子目录是否包含
+ * PyScripts子目录，且PyScripts下是否有含__init__.py的Python包。
+ * 满足条件的PyScripts路径将被收集并返回。
+ *
+ * @param[in] pyPluginsDir pyplugins目录的绝对路径
+ * @return 有效的Python插件PyScripts目录路径列表
+ */
+static QStringList scanPyPluginsDir(const QString& pyPluginsDir)
+{
+    QStringList result;
+    QDir dir(pyPluginsDir);
+    if (!dir.exists()) {
+        qDebug() << "pyplugins dir not found:" << pyPluginsDir << ", skip Python plugin scan";
+        return result;
+    }
+
+    const QStringList subDirs = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const QString& subDirName : subDirs) {
+        QString pyScriptsPath = pyPluginsDir + "/" + subDirName + "/PyScripts";
+        QDir pyScriptsDir(pyScriptsPath);
+        if (!pyScriptsDir.exists()) {
+            qDebug() << "pyplugins/" << subDirName << " has no PyScripts dir, skip";
+            continue;
+        }
+
+        // 检查 PyScripts 下是否有包含 __init__.py 的 Python 包
+        bool hasPyPackage                = false;
+        const QStringList packageDirList = pyScriptsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+        for (const QString& pkgName : packageDirList) {
+            QString initFile = pyScriptsPath + "/" + pkgName + "/__init__.py";
+            if (QFileInfo::exists(initFile)) {
+                hasPyPackage = true;
+                qDebug() << "Found Python plugin package: pyplugins/" << subDirName << "/PyScripts/" << pkgName;
+                break;
+            }
+        }
+
+        if (hasPyPackage) {
+            result.append(pyScriptsPath);
+        } else {
+            qDebug() << "pyplugins/" << subDirName << "/PyScripts has no valid Python package, skip";
+        }
+    }
+
+    return result;
+}
+
 /**
  * @brief 初始化Python节点工厂
  *
@@ -164,11 +217,17 @@ void DAAppPluginManager::initPyNodeFactory()
         return;
     }
     try {
-        // 将PyScripts目录添加到sys.path，确保DAWorkbench.DAWorkFlowPy可被导入
+        // 将内置PyScripts目录添加到sys.path，确保DAWorkbench.DAWorkFlowPy可被导入
         DAPyInterpreter::appendSysPath(QApplication::applicationDirPath() + "/PyScripts");
 
+        // 扫描pyplugins目录，收集有效的Python插件路径
+        QString pyPluginsDir  = QApplication::applicationDirPath() + "/pyplugins";
+        QStringList scanPaths = scanPyPluginsDir(pyPluginsDir);
+        qDebug() << tr("pyplugins scan completed, found %1 valid Python plugin paths").arg(scanPaths.size());
+
+        // 创建Python节点工厂，传入扫描路径并启用entry_points模式
         mPyNodeFactory = std::make_shared< DAPyNodeFactory >();
-        if (!mPyNodeFactory->discoverNodes()) {
+        if (!mPyNodeFactory->discoverNodes(scanPaths, true)) {
             qWarning() << tr("Python node discovery failed");
             mPyNodeFactory.reset();
             return;
