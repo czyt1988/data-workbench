@@ -304,6 +304,26 @@ if(DA_ENABLE_AUTO_TRANSLATE)
         ${CMAKE_CURRENT_LIST_DIR}/src/i18n/da_en_US.ts
     )
 
+    # 确保i18n目录存在
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/src/i18n)
+
+    # 如果.ts文件不存在，创建有效的空占位符文件，避免首次构建时lrelease因找不到.ts文件而失败
+    # 后续可通过 cmake --build <dir> --target update_translations 填充实际翻译内容
+    foreach(_ts_file ${DA_TS_FILES})
+        if(NOT EXISTS ${_ts_file})
+            get_filename_component(_ts_name ${_ts_file} NAME_WE)
+            # 从文件名推断语言代码，如 da_zh_CN -> zh_CN
+            string(REGEX REPLACE "^da_" "" _lang_code ${_ts_name})
+            string(REPLACE "_" "-" _lang_tag ${_lang_code})
+            message(STATUS "Creating placeholder translation file: ${_ts_file}")
+            file(WRITE ${_ts_file}
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\
+<!DOCTYPE TS>\n\
+<TS version=\"2.1\" language=\"${_lang_tag}\">\n\
+</TS>\n")
+        endif()
+    endforeach()
+
     # 扫描的源码目录（按需增删）
     set(DA_LUPDATE_SOURCE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/src/APP
