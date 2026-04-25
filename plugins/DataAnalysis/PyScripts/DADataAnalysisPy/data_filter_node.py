@@ -7,7 +7,7 @@
 """
 
 import pandas as pd
-from DAWorkFlowPy import NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
 @NodeDef(name="Data Filter", category="Data Analysis", icon="data_filter")
@@ -68,7 +68,8 @@ class DataFilterNode:
                 filtered_df = df
 
             self._output_data["filtered"] = filtered_df
-            self._output_data["removed_count"] = original_len - len(filtered_df)
+            self._output_data["removed_count"] = original_len - \
+                len(filtered_df)
             return True
         except Exception:
             self._output_data["filtered"] = df

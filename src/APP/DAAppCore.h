@@ -40,10 +40,6 @@ public:
     // 获取DAAppCommand，省去qobject_cast
     DAAppCommand* getAppCmd();
 
-#if DA_ENABLE_PYTHON
-    // 初始化Python环境路径（添加PyScripts源码路径到sys.path）
-    void initPythonEnvPaths();
-#endif
 private:
     DAAppCommand* mAppCmd { nullptr };
     DAAppUI* mAppUI { nullptr };

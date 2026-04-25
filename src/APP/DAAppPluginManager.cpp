@@ -164,7 +164,7 @@ void DAAppPluginManager::initPyNodeFactory()
         return;
     }
     try {
-        // 将PyScripts目录添加到sys.path，确保DAWorkFlowPy可被导入
+        // 将PyScripts目录添加到sys.path，确保DAWorkbench.DAWorkFlowPy可被导入
         DAPyInterpreter::appendSysPath(QApplication::applicationDirPath() + "/PyScripts");
 
         mPyNodeFactory = std::make_shared< DAPyNodeFactory >();
@@ -175,8 +175,7 @@ void DAAppPluginManager::initPyNodeFactory()
         }
         // 合并Python节点元数据
         mNodeMetaDatas += mPyNodeFactory->getNodeMetadataList();
-        qDebug() << tr("Python node factory initialized, discovered %1 nodes")
-                     .arg(mPyNodeFactory->getNodeMetadataList().size());
+        qDebug() << tr("Python node factory initialized, discovered %1 nodes").arg(mPyNodeFactory->getNodeMetadataList().size());
     } catch (const std::exception& e) {
         qCritical() << tr("Python node factory initialization failed: %1").arg(e.what());
         mPyNodeFactory.reset();

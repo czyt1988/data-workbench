@@ -19,11 +19,11 @@ DACrewAIAdapterPy — AI Agent CrewAI 适配器节点包
     descriptor = AgentNode._node_descriptor
 
 依赖：
-- DAWorkFlowPy: 提供 NodeDef/Input/Output/Parameter 基础类型
+- DAWorkbench.DAWorkFlowPy: 提供 NodeDef/Input/Output/Parameter 基础类型
 - crewai: 可选依赖，若未安装则节点以占位模式运行
 """
 
-from DAWorkFlowPy import NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 from .agent_node import AgentNode
 from .task_node import TaskNode

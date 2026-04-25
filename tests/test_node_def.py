@@ -6,8 +6,8 @@ test_node_def — NodeDef 装饰器、Input/Output/Parameter 类型、DANodeDesc
 """
 
 import pytest
-from DAWorkFlowPy import NodeDef, Input, Output, Parameter
-from DAWorkFlowPy.node_descriptor import DANodeDescriptor
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy.node_descriptor import DANodeDescriptor
 
 
 # ==================== Input 测试 ====================
@@ -172,6 +172,7 @@ class TestNodeDef:
             class Inputs:
                 data = Input("DataFrame", required=True)
                 config = Input("dict", required=False)
+
             def execute(self, inputs, params):
                 pass
         inputs = InputTestNode._node_descriptor["inputs"]
@@ -186,6 +187,7 @@ class TestNodeDef:
         class OutputTestNode:
             class Outputs:
                 result = Output("DataFrame", description="结果")
+
             def execute(self, inputs, params):
                 pass
         outputs = OutputTestNode._node_descriptor["outputs"]
@@ -198,6 +200,7 @@ class TestNodeDef:
         class ParamTestNode:
             threshold = Parameter(float, default=0.5, description="阈值")
             column = Parameter(str, default="value", description="列名")
+
             def execute(self, inputs, params):
                 pass
         params = ParamTestNode._node_descriptor["parameters"]
@@ -265,9 +268,12 @@ class TestDANodeDescriptor:
         desc = DANodeDescriptor(
             name="Filter", category="Data", icon="filter",
             qualified_name="my.Filter",
-            inputs=[{"name": "data", "data_type": "DataFrame", "required": True, "description": ""}],
-            outputs=[{"name": "filtered", "data_type": "DataFrame", "description": ""}],
-            parameters=[{"name": "col", "type": "str", "default": "val", "description": "列名"}],
+            inputs=[{"name": "data", "data_type": "DataFrame",
+                     "required": True, "description": ""}],
+            outputs=[{"name": "filtered",
+                      "data_type": "DataFrame", "description": ""}],
+            parameters=[{"name": "col", "type": "str",
+                         "default": "val", "description": "列名"}],
         )
         d = desc.to_dict()
         assert d["name"] == "Filter"
@@ -281,10 +287,13 @@ class TestDANodeDescriptor:
         @NodeDef(name="FromClass", category="Test")
         class FromClassNode:
             threshold = Parameter(float, default=0.5)
+
             class Inputs:
                 data = Input("DataFrame", required=True)
+
             class Outputs:
                 result = Output("DataFrame")
+
             def execute(self, inputs, params):
                 pass
         desc = DANodeDescriptor.from_class(FromClassNode)
@@ -315,7 +324,8 @@ class TestDANodeDescriptor:
 
     def test_descriptor_repr(self):
         """DANodeDescriptor repr 格式"""
-        desc = DANodeDescriptor(name="Filter", category="Data", qualified_name="mod.Filter")
+        desc = DANodeDescriptor(
+            name="Filter", category="Data", qualified_name="mod.Filter")
         r = repr(desc)
         assert "DANodeDescriptor" in r
         assert "Filter" in r

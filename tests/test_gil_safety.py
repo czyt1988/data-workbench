@@ -9,7 +9,7 @@ test_gil_safety — GIL 安全性测试
 import threading
 import time
 import pytest
-from DAWorkFlowPy import DAWorkflow, DAConnection, DAWorkflowExecutor, DAExecutorState, NodeDef, Input, Output
+from DAWorkbench.DAWorkFlowPy import DAWorkflow, DAConnection, DAWorkflowExecutor, DAExecutorState, NodeDef, Input, Output
 
 
 # ==================== 辅助节点 ====================
@@ -18,8 +18,10 @@ from DAWorkFlowPy import DAWorkflow, DAConnection, DAWorkflowExecutor, DAExecuto
 class ConcurrentSourceNode:
     class Outputs:
         data = Output("DataFrame")
+
     def __init__(self):
         self._output_data = {"data": [1, 2, 3]}
+
     def execute(self, inputs=None, params=None):
         return True
 
@@ -28,10 +30,13 @@ class ConcurrentSourceNode:
 class ConcurrentSinkNode:
     class Inputs:
         data = Input("DataFrame", required=True)
+
     def __init__(self):
         self._input_data = {}
+
     def set_input_data(self, channel, data):
         self._input_data[channel] = data
+
     def execute(self, inputs=None, params=None):
         return True
 
@@ -55,7 +60,8 @@ class TestGILSafetyConcurrent:
             except Exception as e:
                 errors.append(e)
 
-        threads = [threading.Thread(target=create_workflow, args=(i,)) for i in range(10)]
+        threads = [threading.Thread(
+            target=create_workflow, args=(i,)) for i in range(10)]
         for t in threads:
             t.start()
         for t in threads:
@@ -71,7 +77,8 @@ class TestGILSafetyConcurrent:
         sink = ConcurrentSinkNode()
         wf.add_node(src)
         wf.add_node(sink)
-        wf.add_connection(DAConnection(src.node_id, "data", sink.node_id, "data"))
+        wf.add_connection(DAConnection(
+            src.node_id, "data", sink.node_id, "data"))
 
         ex = DAWorkflowExecutor(wf)
         ex.execute_async()
@@ -86,7 +93,8 @@ class TestGILSafetyConcurrent:
         sink = ConcurrentSinkNode()
         wf.add_node(src)
         wf.add_node(sink)
-        wf.add_connection(DAConnection(src.node_id, "data", sink.node_id, "data"))
+        wf.add_connection(DAConnection(
+            src.node_id, "data", sink.node_id, "data"))
 
         ex = DAWorkflowExecutor(wf)
         ex.execute_async()

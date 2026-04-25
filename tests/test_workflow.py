@@ -5,7 +5,7 @@ test_workflow — DAWorkflow DAG 模型测试
 """
 
 import pytest
-from DAWorkFlowPy import DAWorkflow, DAConnection, NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy import DAWorkflow, DAConnection, NodeDef, Input, Output, Parameter
 
 
 # ==================== 辅助：创建带 NodeDef 的节点类 ====================
@@ -14,8 +14,10 @@ from DAWorkFlowPy import DAWorkflow, DAConnection, NodeDef, Input, Output, Param
 class _SourceNode:
     class Outputs:
         data = Output("DataFrame", description="输出数据")
+
     def __init__(self):
         self._output_data = {"data": [1, 2, 3]}
+
     def execute(self, inputs=None, params=None):
         return True
 
@@ -24,13 +26,17 @@ class _SourceNode:
 class _MiddleNode:
     class Inputs:
         data = Input("DataFrame", required=True)
+
     class Outputs:
         processed = Output("DataFrame", description="处理结果")
+
     def __init__(self):
         self._input_data = {}
         self._output_data = {"processed": None}
+
     def set_input_data(self, channel, data):
         self._input_data[channel] = data
+
     def execute(self, inputs=None, params=None):
         return True
 
@@ -39,10 +45,13 @@ class _MiddleNode:
 class _SinkNode:
     class Inputs:
         data = Input("DataFrame", required=True)
+
     def __init__(self):
         self._input_data = {}
+
     def set_input_data(self, channel, data):
         self._input_data[channel] = data
+
     def execute(self, inputs=None, params=None):
         return True
 
@@ -252,7 +261,8 @@ class TestDAWorkflow:
         wf.add_node(n2)
         wf.add_node(n3)
         wf.add_connection(DAConnection(n1.node_id, "data", n2.node_id, "data"))
-        wf.add_connection(DAConnection(n2.node_id, "processed", n3.node_id, "data"))
+        wf.add_connection(DAConnection(
+            n2.node_id, "processed", n3.node_id, "data"))
         assert wf.is_valid_dag() is True
 
     def test_workflow_is_valid_dag_empty(self):
@@ -273,8 +283,10 @@ class TestDAWorkflow:
         n2 = _MiddleNode()
         wf.add_node(n1)
         wf.add_node(n2)
-        wf.add_connection(DAConnection(n1.node_id, "processed", n2.node_id, "data"))
-        wf.add_connection(DAConnection(n2.node_id, "processed", n1.node_id, "data"))
+        wf.add_connection(DAConnection(
+            n1.node_id, "processed", n2.node_id, "data"))
+        wf.add_connection(DAConnection(
+            n2.node_id, "processed", n1.node_id, "data"))
         assert wf.is_valid_dag() is False
 
     def test_workflow_topological_sort(self):
@@ -287,7 +299,8 @@ class TestDAWorkflow:
         wf.add_node(n2)
         wf.add_node(n3)
         wf.add_connection(DAConnection(n1.node_id, "data", n2.node_id, "data"))
-        wf.add_connection(DAConnection(n2.node_id, "processed", n3.node_id, "data"))
+        wf.add_connection(DAConnection(
+            n2.node_id, "processed", n3.node_id, "data"))
         order = wf.topological_sort()
         assert len(order) == 3
         assert order.index(n1.node_id) < order.index(n2.node_id)
@@ -300,8 +313,10 @@ class TestDAWorkflow:
         n2 = _MiddleNode()
         wf.add_node(n1)
         wf.add_node(n2)
-        wf.add_connection(DAConnection(n1.node_id, "processed", n2.node_id, "data"))
-        wf.add_connection(DAConnection(n2.node_id, "processed", n1.node_id, "data"))
+        wf.add_connection(DAConnection(
+            n1.node_id, "processed", n2.node_id, "data"))
+        wf.add_connection(DAConnection(
+            n2.node_id, "processed", n1.node_id, "data"))
         with pytest.raises(ValueError, match="存在环"):
             wf.topological_sort()
 
@@ -385,6 +400,7 @@ class TestDAWorkflow:
     def test_workflow_node_no_qualified_name_raises(self):
         """添加无 qualified_name 的节点抛 ValueError"""
         wf = DAWorkflow()
+
         class PlainObj:
             pass
         with pytest.raises(ValueError, match="qualified_name"):

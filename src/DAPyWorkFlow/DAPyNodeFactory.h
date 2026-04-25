@@ -1,4 +1,4 @@
-#ifndef DAPYNODEFACTORY_H
+﻿#ifndef DAPYNODEFACTORY_H
 #define DAPYNODEFACTORY_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAGlobals.h"
@@ -13,20 +13,20 @@ namespace DA
 class DAPyNodeProxy;
 
 /**
- * @brief Python节点的元数据结构体，独立于DAWorkFlow模块
+ * @brief Python节点的元数据结构体
  *
  * 替代原DANodeMetaData，用于描述Python节点的注册信息。
  * 由discoverNodes()从Python侧DANodeDescriptor.to_dict()提取填充。
  */
 struct DAPYWORKFLOW_API DAPyNodeMetaData
 {
-    QString name;                // 节点显示名称
-    QString prototype;           // 节点唯一原型标识（qualified_name）
-    QString group;               // 节点分组/分类
-    QString iconPath;            // 节点图标路径
-    QString tooltip;             // 节点提示文本
-    QList< QString > inputKeys;  // 输入key列表
-    QList< QString > outputKeys; // 输出key列表
+    QString name;                 // 节点显示名称
+    QString prototype;            // 节点唯一原型标识（qualified_name）
+    QString group;                // 节点分组/分类
+    QString iconPath;             // 节点图标路径
+    QString tooltip;              // 节点提示文本
+    QList< QString > inputKeys;   // 输入key列表
+    QList< QString > outputKeys;  // 输出key列表
 
     // 有效性判断
     bool isValid() const;

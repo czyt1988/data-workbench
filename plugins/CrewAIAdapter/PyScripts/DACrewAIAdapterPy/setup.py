@@ -16,7 +16,7 @@ setup(
     packages=find_packages(),
     python_requires=">=3.7",
     install_requires=[
-        "DAWorkFlowPy>=1.0.0",
+        "DAWorkbench>=1.0.0",
     ],
     extras_require={
         "crewai": ["crewai>=0.1.0"],

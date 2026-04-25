@@ -3,7 +3,7 @@
 DADataAnalysisPy - 数据分析示例节点包
 
 本包提供基于 pandas 的数据分析工作流节点，
-使用 @NodeDef 装饰器定义，可通过 DAWorkFlowPy 节点注册表自动发现。
+使用 @NodeDef 装饰器定义，可通过 DAWorkbench.DAWorkFlowPy 节点注册表自动发现。
 
 节点列表：
 - DataSourceNode: CSV 数据读取

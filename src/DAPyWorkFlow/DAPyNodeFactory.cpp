@@ -1,4 +1,4 @@
-#include "DAPyNodeFactory.h"
+﻿#include "DAPyNodeFactory.h"
 #include "DAPybind11InQt.h"
 #include "DAPyGILGuard.h"
 #include "DAPyModuleWorkflow.h"
@@ -6,6 +6,7 @@
 #include "DAPyInterpreter.h"
 #include <QDebug>
 #include <QJsonObject>
+#include <QHash>
 
 namespace DA
 {
@@ -159,9 +160,8 @@ QString DAPyNodeMetaData::getNodeTooltip() const
  */
 QDebug operator<<(QDebug dbg, const DAPyNodeMetaData& meta)
 {
-    dbg.nospace() << "DAPyNodeMetaData(name=" << meta.name << ", prototype=" << meta.prototype
-                  << ", group=" << meta.group << ", inputs=" << meta.inputKeys.size()
-                  << ", outputs=" << meta.outputKeys.size() << ")";
+    dbg.nospace() << "DAPyNodeMetaData(name=" << meta.name << ", prototype=" << meta.prototype << ", group=" << meta.group
+                  << ", inputs=" << meta.inputKeys.size() << ", outputs=" << meta.outputKeys.size() << ")";
     return dbg.space();
 }
 
@@ -203,22 +203,22 @@ static DAPyNodeMetaData convertDescriptorToMetaData(const pybind11::dict& descDi
 
     // qualified_name → prototype
     if (descDict.contains("qualified_name")) {
-        metaData.prototype = QString::fromStdString(pybind11::str(descDict["qualified_name"]));
+        metaData.prototype = QString::fromStdString(pybind11::str(descDict[ "qualified_name" ]));
     }
 
     // name → name
     if (descDict.contains("name")) {
-        metaData.name = QString::fromStdString(pybind11::str(descDict["name"]));
+        metaData.name = QString::fromStdString(pybind11::str(descDict[ "name" ]));
     }
 
     // category → group
     if (descDict.contains("category")) {
-        metaData.group = QString::fromStdString(pybind11::str(descDict["category"]));
+        metaData.group = QString::fromStdString(pybind11::str(descDict[ "category" ]));
     }
 
     // icon → iconPath
     if (descDict.contains("icon")) {
-        metaData.iconPath = QString::fromStdString(pybind11::str(descDict["icon"]));
+        metaData.iconPath = QString::fromStdString(pybind11::str(descDict[ "icon" ]));
     }
 
     // tooltip: 使用name + qualified_name组合
@@ -229,22 +229,22 @@ static DAPyNodeMetaData convertDescriptorToMetaData(const pybind11::dict& descDi
 
     // inputs → inputKeys（提取每项的name字段）
     if (descDict.contains("inputs")) {
-        pybind11::list inputs = descDict["inputs"].cast< pybind11::list >();
+        pybind11::list inputs = descDict[ "inputs" ].cast< pybind11::list >();
         for (pybind11::handle item : inputs) {
             pybind11::dict inputDict = item.cast< pybind11::dict >();
             if (inputDict.contains("name")) {
-                metaData.inputKeys.append(QString::fromStdString(pybind11::str(inputDict["name"])));
+                metaData.inputKeys.append(QString::fromStdString(pybind11::str(inputDict[ "name" ])));
             }
         }
     }
 
     // outputs → outputKeys（提取每项的name字段）
     if (descDict.contains("outputs")) {
-        pybind11::list outputs = descDict["outputs"].cast< pybind11::list >();
+        pybind11::list outputs = descDict[ "outputs" ].cast< pybind11::list >();
         for (pybind11::handle item : outputs) {
             pybind11::dict outputDict = item.cast< pybind11::dict >();
             if (outputDict.contains("name")) {
-                metaData.outputKeys.append(QString::fromStdString(pybind11::str(outputDict["name"])));
+                metaData.outputKeys.append(QString::fromStdString(pybind11::str(outputDict[ "name" ])));
             }
         }
     }
@@ -268,7 +268,7 @@ public:
     // 已发现的节点元数据列表
     QList< DAPyNodeMetaData > mNodeMetaDataList;
     // prototype到qualified_name的映射（用于快速查找创建函数）
-    QMap< QString, QString > mPrototypeToQualifiedName;
+    QHash< QString, QString > mPrototypeToQualifiedName;
     // 缓存的Python DANodeRegistry实例
     DAPySafePyObjectHolder mPyNodeRegistry;
     // 最后的错误信息
@@ -324,7 +324,7 @@ DAPyNodeFactory::~DAPyNodeFactory()
  *
  * 发现流程：
  * 1. 将scanPaths添加到Python sys.path（通过DAPyInterpreter::appendSysPath）
- * 2. 获取DAPyModuleWorkflow单例并导入DAWorkFlowPy模块
+ * 2. 获取DAPyModuleWorkflow单例并导入DAWorkbench.DAWorkFlowPy模块
  * 3. 创建DANodeRegistry Python实例
  * 4. 调用DANodeRegistry.discover(scan_paths, use_entry_points)
  * 5. 遍历返回的DANodeDescriptor列表，转换为DAPyNodeMetaData并缓存
@@ -349,7 +349,7 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
         DAPyModuleWorkflow& pyModule = DAPyModuleWorkflow::getInstance();
         if (!pyModule.isImport()) {
             if (!pyModule.import()) {
-                d->mLastErrorString = "无法导入DAWorkFlowPy模块";
+                d->mLastErrorString = "无法导入DAWorkbench.DAWorkFlowPy模块";
                 qCritical() << d->mLastErrorString;
                 return false;
             }
@@ -364,7 +364,7 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
         }
 
         pybind11::object registryInstance = registryClass();
-        d->mPyNodeRegistry = DAPySafePyObjectHolder(registryInstance);
+        d->mPyNodeRegistry                = DAPySafePyObjectHolder(registryInstance);
 
         // 4. 构建Python参数并调用discover
         pybind11::list pyScanPaths;
@@ -384,7 +384,7 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
             if (pybind11::hasattr(descriptorObj, "to_dict")) {
                 pybind11::object toDictMethod = descriptorObj.attr("to_dict");
                 pybind11::object descDictObj  = toDictMethod();
-                descDict = descDictObj.cast< pybind11::dict >();
+                descDict                      = descDictObj.cast< pybind11::dict >();
             } else if (pybind11::isinstance< pybind11::dict >(descriptorObj)) {
                 descDict = descriptorObj.cast< pybind11::dict >();
             } else {
@@ -402,7 +402,7 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
             // 提取qualified_name作为创建节点时的映射key
             QString qualifiedName;
             if (descDict.contains("qualified_name")) {
-                qualifiedName = QString::fromStdString(pybind11::str(descDict["qualified_name"]));
+                qualifiedName = QString::fromStdString(pybind11::str(descDict[ "qualified_name" ]));
             }
 
             // 注册prototype到qualified_name的映射
@@ -452,7 +452,7 @@ DAPyNodeProxy* DAPyNodeFactory::createNodeProxy(const QString& qualifiedName)
     try {
         // 通过qualified_name导入Python模块并获取节点类
         std::string qn = qualifiedName.toStdString();
-        size_t dotPos = qn.rfind('.');
+        size_t dotPos  = qn.rfind('.');
         if (dotPos == std::string::npos) {
             d->mLastErrorString = QString("无效的qualified_name: %1").arg(qualifiedName);
             qWarning() << d->mLastErrorString;
@@ -461,7 +461,7 @@ DAPyNodeProxy* DAPyNodeFactory::createNodeProxy(const QString& qualifiedName)
         std::string moduleName = qn.substr(0, dotPos);
         std::string className  = qn.substr(dotPos + 1);
 
-        pybind11::module_ pyMod = pybind11::module_::import(moduleName.c_str());
+        pybind11::module_ pyMod       = pybind11::module_::import(moduleName.c_str());
         pybind11::object nodeClassObj = pyMod.attr(className.c_str());
 
         // 创建Python节点实例

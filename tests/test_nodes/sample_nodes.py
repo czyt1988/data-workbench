@@ -4,7 +4,7 @@
 提供多种 @NodeDef 装饰的节点类，用于工作流和执行器测试。
 """
 
-from DAWorkFlowPy import NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
 @NodeDef(name="Data Source", category="Data", icon="source", render_template="rect")

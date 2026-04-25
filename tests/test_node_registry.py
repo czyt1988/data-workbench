@@ -9,8 +9,8 @@ import os
 import sys
 import tempfile
 import pytest
-from DAWorkFlowPy import DANodeRegistry, NodeDef, Input, Output, Parameter
-from DAWorkFlowPy.node_descriptor import DANodeDescriptor
+from DAWorkbench.DAWorkFlowPy import DANodeRegistry, NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy.node_descriptor import DANodeDescriptor
 
 
 # ==================== 辅助节点 ====================
@@ -19,9 +19,11 @@ from DAWorkFlowPy.node_descriptor import DANodeDescriptor
 class RegistryTestNode:
     class Inputs:
         data = Input("DataFrame", required=True)
+
     class Outputs:
         result = Output("DataFrame")
     threshold = Parameter(float, default=0.5, description="阈值")
+
     def execute(self, inputs=None, params=None):
         return True
 
@@ -30,6 +32,7 @@ class RegistryTestNode:
 class SecondTestNode:
     class Outputs:
         output = Output("int")
+
     def execute(self, inputs=None, params=None):
         return True
 
@@ -63,6 +66,7 @@ class TestDANodeRegistryRegister:
     def test_register_node_without_descriptor_raises(self):
         """注册无 _node_descriptor 的类抛 ValueError"""
         registry = DANodeRegistry()
+
         class PlainClass:
             pass
         with pytest.raises(ValueError, match="没有 _node_descriptor"):
@@ -78,7 +82,8 @@ class TestDANodeRegistryQuery:
         """获取指定节点的描述符"""
         registry = DANodeRegistry()
         registry.register_node(RegistryTestNode)
-        desc = registry.get_descriptor(RegistryTestNode._node_descriptor["qualified_name"])
+        desc = registry.get_descriptor(
+            RegistryTestNode._node_descriptor["qualified_name"])
         assert desc.name == "RegistryTestNode"
 
     def test_get_descriptor_not_registered_raises(self):
@@ -143,7 +148,7 @@ class TestDANodeRegistryScanDirectory:
         # 创建临时目录和有效节点文件
         with tempfile.TemporaryDirectory() as tmpdir:
             node_content = '''
-from DAWorkFlowPy import NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 @NodeDef(name="TmpNode", category="Tmp")
 class TmpNode:
@@ -252,7 +257,7 @@ class TestDANodeRegistryDeduplication:
         # discover 返回 unique_discovered 列表
         with tempfile.TemporaryDirectory() as tmpdir:
             node_content = '''
-from DAWorkFlowPy import NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 @NodeDef(name="RegistryTestNode", category="Registry Test", icon="test")
 class RegistryTestNode:

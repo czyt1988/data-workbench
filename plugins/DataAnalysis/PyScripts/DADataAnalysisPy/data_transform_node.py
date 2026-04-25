@@ -7,7 +7,7 @@
 """
 
 import pandas as pd
-from DAWorkFlowPy import NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
 @NodeDef(name="Data Transform", category="Data Analysis", icon="data_transform")
@@ -15,7 +15,8 @@ class DataTransformNode:
     """列变换节点"""
 
     column = Parameter(str, default="", description="操作目标列名")
-    operation = Parameter(str, default="rename", description="操作类型：rename/drop/fillna")
+    operation = Parameter(str, default="rename",
+                          description="操作类型：rename/drop/fillna")
     new_name = Parameter(str, default="", description="rename 操作的新列名")
     fill_value = Parameter(str, default="0", description="fillna 操作的填充值")
 

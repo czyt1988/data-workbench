@@ -26,7 +26,7 @@ CrewNode 是 CrewAI 工作流的核心编排节点，
 - "crew_done": Crew 整体执行完成
 """
 
-from DAWorkFlowPy import NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
 @NodeDef(name="Crew", category="AI Agent", icon="crew")
@@ -39,11 +39,14 @@ class CrewNode:
     通过状态推送机制通知工作流引擎 Crew 的运行状态。
     """
 
-    process = Parameter(str, default="sequential", description="执行流程模式: sequential(顺序执行) 或 hierarchical(层级管理)")
+    process = Parameter(str, default="sequential",
+                        description="执行流程模式: sequential(顺序执行) 或 hierarchical(层级管理)")
 
     class Inputs:
-        agents = Input("Agent", required=True, description="参与协作的 Agent 列表（来自 AgentNode 输出）")
-        tasks = Input("Task", required=True, description="需要执行的 Task 列表（来自 TaskNode 输出）")
+        agents = Input("Agent", required=True,
+                       description="参与协作的 Agent 列表（来自 AgentNode 输出）")
+        tasks = Input("Task", required=True,
+                      description="需要执行的 Task 列表（来自 TaskNode 输出）")
 
     class Outputs:
         result = Output("String", description="Crew 执行的最终结果文本")

@@ -21,7 +21,7 @@ AgentNode 是 CrewAI 工作流的核心组件之一，它封装了 CrewAI Agent 
 - "done": Agent 完成任务
 """
 
-from DAWorkFlowPy import NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
 @NodeDef(name="Agent", category="AI Agent", icon="agent")
@@ -35,15 +35,20 @@ class AgentNode:
     """
 
     role = Parameter(str, default="分析师", description="智能体角色定义，描述 Agent 的专业职能")
-    goal = Parameter(str, default="分析数据并提取洞察", description="智能体目标，描述 Agent 期望达成的结果")
-    backstory = Parameter(str, default="你是一位资深数据分析师", description="智能体背景故事，为 Agent 提供上下文和人格设定")
+    goal = Parameter(str, default="分析数据并提取洞察",
+                     description="智能体目标，描述 Agent 期望达成的结果")
+    backstory = Parameter(str, default="你是一位资深数据分析师",
+                          description="智能体背景故事，为 Agent 提供上下文和人格设定")
 
     class Inputs:
-        tools = Input("Tool", required=False, description="Agent 可使用的工具列表（来自 ToolNode 输出）")
-        task = Input("Task", required=False, description="分配给 Agent 的任务（来自 TaskNode 输出）")
+        tools = Input("Tool", required=False,
+                      description="Agent 可使用的工具列表（来自 ToolNode 输出）")
+        task = Input("Task", required=False,
+                     description="分配给 Agent 的任务（来自 TaskNode 输出）")
 
     class Outputs:
-        agent = Output("Agent", description="创建的 CrewAI Agent 实例，可传递给 CrewNode")
+        agent = Output(
+            "Agent", description="创建的 CrewAI Agent 实例，可传递给 CrewNode")
         result = Output("String", description="Agent 执行任务的文本结果")
 
     def __init__(self):

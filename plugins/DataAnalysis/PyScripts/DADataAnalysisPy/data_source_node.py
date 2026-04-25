@@ -7,7 +7,7 @@
 """
 
 import pandas as pd
-from DAWorkFlowPy import NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
 @NodeDef(name="Data Source", category="Data Analysis", icon="data_source")

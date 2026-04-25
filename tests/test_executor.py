@@ -8,7 +8,7 @@ error handling、节点状态追踪。
 import pytest
 import threading
 import time
-from DAWorkFlowPy import DAWorkflow, DAConnection, DAWorkflowExecutor, DAExecutorState, NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy import DAWorkflow, DAConnection, DAWorkflowExecutor, DAExecutorState, NodeDef, Input, Output, Parameter
 
 
 # ==================== 辅助节点 ====================
@@ -17,8 +17,10 @@ from DAWorkFlowPy import DAWorkflow, DAConnection, DAWorkflowExecutor, DAExecuto
 class ExecSourceNode:
     class Outputs:
         data = Output("DataFrame")
+
     def __init__(self):
         self._output_data = {"data": [1, 2, 3]}
+
     def execute(self, inputs=None, params=None):
         return True
 
@@ -27,13 +29,17 @@ class ExecSourceNode:
 class ExecMiddleNode:
     class Inputs:
         data = Input("DataFrame", required=True)
+
     class Outputs:
         processed = Output("DataFrame")
+
     def __init__(self):
         self._input_data = {}
         self._output_data = {"processed": None}
+
     def set_input_data(self, channel, data):
         self._input_data[channel] = data
+
     def execute(self, inputs=None, params=None):
         data = self._input_data.get("data")
         self._output_data["processed"] = data
@@ -44,10 +50,13 @@ class ExecMiddleNode:
 class ExecSinkNode:
     class Inputs:
         data = Input("DataFrame", required=True)
+
     def __init__(self):
         self._input_data = {}
+
     def set_input_data(self, channel, data):
         self._input_data[channel] = data
+
     def execute(self, inputs=None, params=None):
         return True
 
@@ -56,13 +65,17 @@ class ExecSinkNode:
 class ExecErrorNode:
     class Inputs:
         data = Input("any", required=True)
+
     class Outputs:
         result = Output("any")
+
     def __init__(self):
         self._input_data = {}
         self._output_data = {}
+
     def set_input_data(self, channel, data):
         self._input_data[channel] = data
+
     def execute(self, inputs=None, params=None):
         raise RuntimeError("ExecErrorNode 测试异常")
 
@@ -71,8 +84,10 @@ class ExecErrorNode:
 class ExecReturnNoneNode:
     class Outputs:
         data = Output("any")
+
     def __init__(self):
         self._output_data = {"data": "result"}
+
     def execute(self, inputs=None, params=None):
         return None
 
@@ -80,10 +95,13 @@ class ExecReturnNoneNode:
 @NodeDef(name="ExecGlobal", category="Test")
 class ExecGlobalNode:
     is_global = True
+
     class Outputs:
         config = Output("dict")
+
     def __init__(self):
         self._output_data = {"config": {"key": "val"}}
+
     def execute(self, inputs=None, params=None):
         return True
 
@@ -130,7 +148,8 @@ class TestDAWorkflowExecutorBasic:
         mid = ExecMiddleNode()
         wf.add_node(src)
         wf.add_node(mid)
-        wf.add_connection(DAConnection(src.node_id, "data", mid.node_id, "data"))
+        wf.add_connection(DAConnection(
+            src.node_id, "data", mid.node_id, "data"))
         ex = DAWorkflowExecutor(wf)
         success = ex.execute()
         assert success is True
@@ -146,8 +165,10 @@ class TestDAWorkflowExecutorBasic:
         wf.add_node(src)
         wf.add_node(mid)
         wf.add_node(sink)
-        wf.add_connection(DAConnection(src.node_id, "data", mid.node_id, "data"))
-        wf.add_connection(DAConnection(mid.node_id, "processed", sink.node_id, "data"))
+        wf.add_connection(DAConnection(
+            src.node_id, "data", mid.node_id, "data"))
+        wf.add_connection(DAConnection(
+            mid.node_id, "processed", sink.node_id, "data"))
         ex = DAWorkflowExecutor(wf)
         success = ex.execute()
         assert success is True
@@ -186,7 +207,8 @@ class TestDAWorkflowExecutorErrorHandling:
         err = ExecErrorNode()
         wf.add_node(src)
         wf.add_node(err)
-        wf.add_connection(DAConnection(src.node_id, "data", err.node_id, "data"))
+        wf.add_connection(DAConnection(
+            src.node_id, "data", err.node_id, "data"))
         ex = DAWorkflowExecutor(wf)
         success = ex.execute()
         assert success is False
@@ -252,7 +274,8 @@ class TestDAWorkflowExecutorCallbacks:
         wf = DAWorkflow()
         node = ExecSourceNode()
         wf.add_node(node)
-        ex = DAWorkflowExecutor(wf, on_node_finished=lambda nid, ok: finished_nodes.append((nid, ok)))
+        ex = DAWorkflowExecutor(
+            wf, on_node_finished=lambda nid, ok: finished_nodes.append((nid, ok)))
         ex.execute()
         assert len(finished_nodes) == 1
         nid, ok = finished_nodes[0]
@@ -264,7 +287,8 @@ class TestDAWorkflowExecutorCallbacks:
         wf = DAWorkflow()
         node = ExecSourceNode()
         wf.add_node(node)
-        ex = DAWorkflowExecutor(wf, on_state_change=lambda o, n: states.append((o, n)))
+        ex = DAWorkflowExecutor(
+            wf, on_state_change=lambda o, n: states.append((o, n)))
         ex.execute()
         assert len(states) >= 2
         # 至少有 Idle→Running 和 Running→Finished
@@ -277,7 +301,8 @@ class TestDAWorkflowExecutorCallbacks:
         wf = DAWorkflow()
         node = ExecSourceNode()
         wf.add_node(node)
-        ex = DAWorkflowExecutor(wf, on_progress=lambda c, t: progress_calls.append((c, t)))
+        ex = DAWorkflowExecutor(wf, on_progress=lambda c,
+                                t: progress_calls.append((c, t)))
         ex.execute()
         assert len(progress_calls) >= 1
 
@@ -287,7 +312,8 @@ class TestDAWorkflowExecutorCallbacks:
         node = ExecReturnNoneNode()
         wf.add_node(node)
         finished_nodes = []
-        ex = DAWorkflowExecutor(wf, on_node_finished=lambda nid, ok: finished_nodes.append((nid, ok)))
+        ex = DAWorkflowExecutor(
+            wf, on_node_finished=lambda nid, ok: finished_nodes.append((nid, ok)))
         ex.execute()
         assert finished_nodes[0][1] is True
 
@@ -358,7 +384,8 @@ class TestDAWorkflowExecutorClassification:
         sink = ExecSinkNode()
         wf.add_node(src)
         wf.add_node(sink)
-        wf.add_connection(DAConnection(src.node_id, "data", sink.node_id, "data"))
+        wf.add_connection(DAConnection(
+            src.node_id, "data", sink.node_id, "data"))
         ex = DAWorkflowExecutor(wf)
         global_nodes, isolated_nodes, begin_nodes = ex._classify_nodes()
         assert src.node_id in begin_nodes

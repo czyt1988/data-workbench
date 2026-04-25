@@ -15,7 +15,7 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 import pandas as pd
-from DAWorkFlowPy import NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
 @NodeDef(name="Data Plot", category="Data Analysis", icon="data_plot")
@@ -23,7 +23,8 @@ class DataPlotNode:
     """数据绘图节点"""
 
     column = Parameter(str, default="", description="绘图目标列名")
-    chart_type = Parameter(str, default="bar", description="图表类型：bar/line/scatter")
+    chart_type = Parameter(
+        str, default="bar", description="图表类型：bar/line/scatter")
 
     class Inputs:
         data = Input("DataFrame", required=True, description="输入 DataFrame")
@@ -91,7 +92,8 @@ class DataPlotNode:
                     ax.set_title("Line Chart")
             elif chart_type == "scatter":
                 # 散点图需要两个数值列
-                numeric_cols = df.select_dtypes(include=["number"]).columns.tolist()
+                numeric_cols = df.select_dtypes(
+                    include=["number"]).columns.tolist()
                 if len(numeric_cols) >= 2:
                     x_col = column if column and column in numeric_cols else numeric_cols[0]
                     y_col = numeric_cols[1] if x_col == numeric_cols[0] else numeric_cols[0]

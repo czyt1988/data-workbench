@@ -9,7 +9,7 @@ DAPyPainterProxy 是 C++ 类（通过 pybind11 绑定暴露给 Python），
 """
 
 import pytest
-from DAWorkFlowPy import NodeDef, Output, DANodeDescriptor
+from DAWorkbench.DAWorkFlowPy import NodeDef, Output, DANodeDescriptor
 
 
 class TestCustomPaintRenderTemplate:
@@ -21,6 +21,7 @@ class TestCustomPaintRenderTemplate:
         class RectNode:
             class Outputs:
                 data = Output("DataFrame")
+
             def execute(self, inputs=None, params=None):
                 pass
         desc = RectNode._node_descriptor
@@ -32,6 +33,7 @@ class TestCustomPaintRenderTemplate:
         class SVGNode:
             class Outputs:
                 data = Output("DataFrame")
+
             def execute(self, inputs=None, params=None):
                 pass
         desc = SVGNode._node_descriptor
@@ -43,6 +45,7 @@ class TestCustomPaintRenderTemplate:
         class WidgetNode:
             class Outputs:
                 data = Output("DataFrame")
+
             def execute(self, inputs=None, params=None):
                 pass
         desc = WidgetNode._node_descriptor
@@ -76,7 +79,7 @@ class TestCustomPaintConcept:
 
     def test_painter_proxy_is_cpp_binding_not_python(self):
         """DAPyPainterProxy 是 C++ 绑定，不在 DAWorkFlowPy Python 包中"""
-        import DAWorkFlowPy
+        import DAWorkbench.DAWorkFlowPy as DAWorkFlowPy
         # DAPyPainterProxy 不在 Python 包导出列表中
         assert "DAPyPainterProxy" not in DAWorkFlowPy.__all__
 
@@ -86,6 +89,7 @@ class TestCustomPaintConcept:
         class PaintableNode:
             class Outputs:
                 data = Output("DataFrame")
+
             def execute(self, inputs=None, params=None):
                 pass
         desc = PaintableNode._node_descriptor

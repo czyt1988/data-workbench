@@ -81,13 +81,3 @@ install(FILES
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/PythonBinding
     COMPONENT headers
 )
-
-# 安装Python脚本
-install(DIRECTORY
-    ${CMAKE_CURRENT_SOURCE_DIR}/PyScripts/DAWorkFlowPy
-    DESTINATION ${CMAKE_INSTALL_BINDIR}/PyScripts
-)
-
-# 为了能调试的时候运行，需要把PyScripts/DAWorkFlowPy文件夹复制到${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/PyScripts/DAWorkFlowPy" 
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts)

@@ -21,7 +21,7 @@ TaskNode 是 CrewAI 工作流中描述任务需求的节点，
     )
 """
 
-from DAWorkFlowPy import NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
 @NodeDef(name="Task", category="AI Agent", icon="task")
@@ -34,12 +34,16 @@ class TaskNode:
     该 Task 可传递给 CrewNode 进行统一编排执行。
     """
 
-    description = Parameter(str, default="分析数据并生成报告", description="任务描述，详细说明 Agent 需要完成的工作")
-    expected_output = Parameter(str, default="一份详细的分析报告", description="期望输出，描述任务完成后应产生的结果格式和内容")
+    description = Parameter(str, default="分析数据并生成报告",
+                            description="任务描述，详细说明 Agent 需要完成的工作")
+    expected_output = Parameter(
+        str, default="一份详细的分析报告", description="期望输出，描述任务完成后应产生的结果格式和内容")
 
     class Inputs:
-        agent = Input("Agent", required=False, description="分配给此任务的 Agent（来自 AgentNode 输出）")
-        context = Input("Task", required=False, description="前置任务，此任务的输出将作为上下文输入")
+        agent = Input("Agent", required=False,
+                      description="分配给此任务的 Agent（来自 AgentNode 输出）")
+        context = Input("Task", required=False,
+                        description="前置任务，此任务的输出将作为上下文输入")
 
     class Outputs:
         task = Output("Task", description="创建的 CrewAI Task 实例，可传递给 CrewNode")

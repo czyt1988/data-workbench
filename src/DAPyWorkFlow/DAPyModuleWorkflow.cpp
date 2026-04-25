@@ -34,10 +34,10 @@ void DAPyModuleWorkflow::PrivateData::del()
     if (!q_ptr->isImport()) {
         return;
     }
-    q_ptr->object() = pybind11::none();
-    mObjWorkflowClass    = pybind11::none();
+    q_ptr->object()       = pybind11::none();
+    mObjWorkflowClass     = pybind11::none();
     mObjNodeRegistryClass = pybind11::none();
-    mObjNodeDefDecorator = pybind11::none();
+    mObjNodeDefDecorator  = pybind11::none();
 }
 
 //===================================================
@@ -93,7 +93,7 @@ QString DAPyModuleWorkflow::getLastErrorString() const
  */
 bool DAPyModuleWorkflow::import()
 {
-    return DAPyModule::import("DAWorkFlowPy");  // 3. 调用基类 importModule
+    return DAPyModule::import("DAWorkbench.DAWorkFlowPy");  // 3. 调用基类 importModule
 }
 
 /**

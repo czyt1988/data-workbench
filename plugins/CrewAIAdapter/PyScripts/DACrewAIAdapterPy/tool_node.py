@@ -21,7 +21,7 @@ ToolNode 是 CrewAI 工作流中为 Agent 提供工具能力的节点，
     )
 """
 
-from DAWorkFlowPy import NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
 @NodeDef(name="Tool", category="AI Agent", icon="tool")
@@ -35,10 +35,12 @@ class ToolNode:
     """
 
     tool_name = Parameter(str, default="数据查询", description="工具名称，标识工具的功能类型")
-    tool_description = Parameter(str, default="查询数据库中的数据记录", description="工具描述，详细说明工具的功能和使用方式")
+    tool_description = Parameter(
+        str, default="查询数据库中的数据记录", description="工具描述，详细说明工具的功能和使用方式")
 
     class Inputs:
-        config = Input("String", required=False, description="工具配置参数（JSON 格式字符串）")
+        config = Input("String", required=False,
+                       description="工具配置参数（JSON 格式字符串）")
 
     class Outputs:
         tool = Output("Tool", description="创建的 CrewAI Tool 实例，可传递给 AgentNode")

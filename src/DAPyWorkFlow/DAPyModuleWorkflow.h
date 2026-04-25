@@ -8,7 +8,7 @@ namespace DA
  * @brief Python工作流引擎模块导入包装
  *
  * 遵循 Scenario D 模式（Python 模块导入），继承 DAPyModule（不是 QObject，不是自定义桥接类）。
- * 负责导入 DAWorkFlowPy Python 包并缓存关键类引用，供 C++ 侧调用。
+ * 负责导入 DAWorkbench.DAWorkFlowPy Python 包并缓存关键类引用，供 C++ 侧调用。
  */
 class DAPYWORKFLOW_API DAPyModuleWorkflow : public DAPyModule
 {
