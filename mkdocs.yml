@@ -76,9 +76,11 @@ nav:
           - 嵌入式 Python 调试指南: zh/dev-guide/embedded-python-debugging.md
       - 核心模块:
           - 工作流模块:
-              - 工作流说明: zh/dev-guide/workflow.md
-              - 工作流生命周期: zh/dev-guide/workflow-lifecycle.md
-              - 节点操作详解: zh/dev-guide/workflow-item-edit-in-plugin.md
+              - 工作流总览: zh/dev-guide/workflow-overview.md
+              - Python节点开发: zh/dev-guide/workflow-python-node-dev.md
+              - 生命周期与执行: zh/dev-guide/workflow-lifecycle.md
+              - C++层集成: zh/dev-guide/workflow-cpp-integration.md
+              - 场景操作与可视化: zh/dev-guide/workflow-scene-operation.md
           - 图元模块:
               - 可缩放图元模块: zh/dev-guide/scalable-graphic-module.md
           - 绘图模块:

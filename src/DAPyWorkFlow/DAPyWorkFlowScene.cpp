@@ -23,7 +23,7 @@ public:
     // Python DAWorkflow对象引用
     DAPySafePyObjectHolder mPyWorkflow;
     // Python信号处理器
-    QPointer<DAPythonSignalHandler> mSignalHandler;
+    QPointer< DAPythonSignalHandler > mSignalHandler;
 };
 
 DAPyWorkFlowScene::PrivateData::PrivateData(DAPyWorkFlowScene* p) : q_ptr(p)
@@ -45,6 +45,7 @@ DAPyWorkFlowScene::PrivateData::PrivateData(DAPyWorkFlowScene* p) : q_ptr(p)
 DAPyWorkFlowScene::DAPyWorkFlowScene(QObject* parent) : DAGraphicsScene(parent), DA_PIMPL_CONSTRUCT
 {
     initConnect();
+    initPyWorkflow();
 }
 
 /**
@@ -57,6 +58,7 @@ DAPyWorkFlowScene::DAPyWorkFlowScene(const QRectF& sceneRect, QObject* parent)
     : DAGraphicsScene(sceneRect, parent), DA_PIMPL_CONSTRUCT
 {
     initConnect();
+    initPyWorkflow();
 }
 
 /**
@@ -72,6 +74,7 @@ DAPyWorkFlowScene::DAPyWorkFlowScene(qreal x, qreal y, qreal width, qreal height
     : DAGraphicsScene(x, y, width, height, parent), DA_PIMPL_CONSTRUCT
 {
     initConnect();
+    initPyWorkflow();
 }
 
 /**
@@ -187,27 +190,26 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const QJsonObject& descrip
                 delete proxy;
                 return nullptr;
             }
-            // 调用Python DAWorkflow.add_node()创建节点
-            pybind11::dict descDict;
-            // 将QJsonObject转为Python dict
-            for (auto it = descriptor.begin(); it != descriptor.end(); ++it) {
-                QString key = it.key();
-                QJsonValue val = it.value();
-                if (val.isString()) {
-                    descDict[key.toStdString().c_str()] = pybind11::str(val.toString().toStdString());
-                } else if (val.isBool()) {
-                    descDict[key.toStdString().c_str()] = pybind11::bool_(val.toBool());
-                } else if (val.isDouble()) {
-                    descDict[key.toStdString().c_str()] = pybind11::float_(val.toDouble());
-                } else if (val.isObject()) {
-                    // 嵌套对象暂时跳过，后续可递归处理
-                    descDict[key.toStdString().c_str()] = pybind11::dict();
-                }
+            // 通过qualified_name导入Python模块并创建节点实例
+            std::string qn = qualifiedName.toStdString();
+            size_t dotPos  = qn.rfind('.');
+            if (dotPos == std::string::npos) {
+                qWarning() << tr("DAPyWorkFlowScene::createPyNode: invalid qualified_name: %1").arg(qualifiedName);
+                delete proxy;
+                return nullptr;
             }
-            pybind11::object pyNode = workflowObj.attr("add_node")(descDict);
-            if (pyNode) {
-                proxy->setPyNodeRef(pyNode);
-            }
+            std::string moduleName = qn.substr(0, dotPos);
+            std::string className  = qn.substr(dotPos + 1);
+
+            pybind11::module_ pyMod       = pybind11::module_::import(moduleName.c_str());
+            pybind11::object nodeClassObj = pyMod.attr(className.c_str());
+
+            // 创建Python节点实例
+            pybind11::object pyNodeInstance = nodeClassObj();
+
+            // 调用Python DAWorkflow.add_node()注册节点实例
+            workflowObj.attr("add_node")(pyNodeInstance);
+            proxy->setPyNodeRef(pyNodeInstance);
         } catch (const pybind11::error_already_set& e) {
             qWarning() << tr("DAPyWorkFlowScene::createPyNode: Python error: %1").arg(e.what());
             delete proxy;
@@ -240,8 +242,8 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const QJsonObject& descrip
     // 设置描述符中的body尺寸（如果有）
     if (descriptor.contains("size")) {
         QJsonObject sizeObj = descriptor.value("size").toObject();
-        double w = sizeObj.value("width").toDouble(120);
-        double h = sizeObj.value("height").toDouble(80);
+        double w            = sizeObj.value("width").toDouble(120);
+        double h            = sizeObj.value("height").toDouble(80);
         item->setBodySize(QSizeF(w, h));
     }
 
@@ -292,8 +294,8 @@ bool DAPyWorkFlowScene::removePyNodeItem(DAPyNodeGraphicsItem* item)
     DA_D(d);
 
     // 先移除所有关联的连接线
-    QList<DAPyLinkGraphicsItem*> relatedLinks;
-    QList<DAPyLinkGraphicsItem*> allLinks = getPyNodeLinkItems();
+    QList< DAPyLinkGraphicsItem* > relatedLinks;
+    QList< DAPyLinkGraphicsItem* > allLinks = getPyNodeLinkItems();
     for (DAPyLinkGraphicsItem* link : allLinks) {
         if (link->getFromNode() == item || link->getToNode() == item) {
             relatedLinks.append(link);
@@ -307,10 +309,12 @@ bool DAPyWorkFlowScene::removePyNodeItem(DAPyNodeGraphicsItem* item)
             try {
                 pybind11::object workflowObj = d->mPyWorkflow.object();
                 if (workflowObj) {
-                    workflowObj.attr("remove_connection")(link->getFromNode()->getProxy()->getPyNodeRef(),
-                                                         link->getFromOutputName().toStdString(),
-                                                         link->getToNode()->getProxy()->getPyNodeRef(),
-                                                         link->getToInputName().toStdString());
+                    workflowObj.attr("remove_connection")(
+                        link->getFromNode()->getProxy()->getPyNodeRef(),
+                        link->getFromOutputName().toStdString(),
+                        link->getToNode()->getProxy()->getPyNodeRef(),
+                        link->getToInputName().toStdString()
+                    );
                 }
             } catch (const pybind11::error_already_set& e) {
                 qWarning() << tr("DAPyWorkFlowScene::removePyNodeItem: Python error removing connection: %1").arg(e.what());
@@ -363,8 +367,8 @@ void DAPyWorkFlowScene::removePyNodeItem_(DAPyNodeGraphicsItem* item)
         return;
     }
     // 先移除所有关联的连接线（带undo）
-    QList<DAPyLinkGraphicsItem*> relatedLinks;
-    QList<DAPyLinkGraphicsItem*> allLinks = getPyNodeLinkItems();
+    QList< DAPyLinkGraphicsItem* > relatedLinks;
+    QList< DAPyLinkGraphicsItem* > allLinks = getPyNodeLinkItems();
     for (DAPyLinkGraphicsItem* link : allLinks) {
         if (link->getFromNode() == item || link->getToNode() == item) {
             relatedLinks.append(link);
@@ -389,9 +393,9 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::findNodeItemByProxy(DAPyNodeProxy* prox
     if (!proxy) {
         return nullptr;
     }
-    QList<QGraphicsItem*> its = items();
+    QList< QGraphicsItem* > its = items();
     for (QGraphicsItem* i : std::as_const(its)) {
-        if (DAPyNodeGraphicsItem* ni = dynamic_cast<DAPyNodeGraphicsItem*>(i)) {
+        if (DAPyNodeGraphicsItem* ni = dynamic_cast< DAPyNodeGraphicsItem* >(i)) {
             if (ni->getProxy() == proxy) {
                 return ni;
             }
@@ -408,9 +412,9 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::findNodeItemByProxy(DAPyNodeProxy* prox
  */
 DAPyNodeGraphicsItem* DAPyWorkFlowScene::findNodeItemById(const QString& nodeId) const
 {
-    QList<QGraphicsItem*> its = items();
+    QList< QGraphicsItem* > its = items();
     for (QGraphicsItem* i : std::as_const(its)) {
-        if (DAPyNodeGraphicsItem* ni = dynamic_cast<DAPyNodeGraphicsItem*>(i)) {
+        if (DAPyNodeGraphicsItem* ni = dynamic_cast< DAPyNodeGraphicsItem* >(i)) {
             DAPyNodeProxy* proxy = ni->getProxy();
             if (proxy && proxy->hasPyNodeRef()) {
                 DAPyGILGuard gil;
@@ -441,14 +445,14 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::findNodeItemById(const QString& nodeId)
  */
 DAPyNodeGraphicsItem* DAPyWorkFlowScene::nodeItemAt(const QPointF& scenePos) const
 {
-    DAPyNodeGraphicsItem* nodeItem = dynamic_cast<DAPyNodeGraphicsItem*>(itemAt(scenePos, QTransform()));
+    DAPyNodeGraphicsItem* nodeItem = dynamic_cast< DAPyNodeGraphicsItem* >(itemAt(scenePos, QTransform()));
     if (nodeItem) {
         return nodeItem;
     }
     // 如果没找到，检查此点下的所有item
-    QList<QGraphicsItem*> its = topItems(scenePos);
+    QList< QGraphicsItem* > its = topItems(scenePos);
     for (QGraphicsItem* i : std::as_const(its)) {
-        if (DAPyNodeGraphicsItem* n = dynamic_cast<DAPyNodeGraphicsItem*>(i)) {
+        if (DAPyNodeGraphicsItem* n = dynamic_cast< DAPyNodeGraphicsItem* >(i)) {
             return n;
         }
     }
@@ -460,12 +464,12 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::nodeItemAt(const QPointF& scenePos) con
  *
  * @return 所有顶层DAPyNodeGraphicsItem列表
  */
-QList<DAPyNodeGraphicsItem*> DAPyWorkFlowScene::getPyNodeItems() const
+QList< DAPyNodeGraphicsItem* > DAPyWorkFlowScene::getPyNodeItems() const
 {
-    QList<DAPyNodeGraphicsItem*> res;
-    QList<QGraphicsItem*> its = topItems();
+    QList< DAPyNodeGraphicsItem* > res;
+    QList< QGraphicsItem* > its = topItems();
     for (QGraphicsItem* i : std::as_const(its)) {
-        if (DAPyNodeGraphicsItem* ni = dynamic_cast<DAPyNodeGraphicsItem*>(i)) {
+        if (DAPyNodeGraphicsItem* ni = dynamic_cast< DAPyNodeGraphicsItem* >(i)) {
             res.append(ni);
         }
     }
@@ -477,12 +481,12 @@ QList<DAPyNodeGraphicsItem*> DAPyWorkFlowScene::getPyNodeItems() const
  *
  * @return 当前选中的DAPyNodeGraphicsItem列表
  */
-QList<DAPyNodeGraphicsItem*> DAPyWorkFlowScene::getSelectedPyNodeItems() const
+QList< DAPyNodeGraphicsItem* > DAPyWorkFlowScene::getSelectedPyNodeItems() const
 {
-    QList<DAPyNodeGraphicsItem*> res;
-    QList<QGraphicsItem*> sits = selectedItems();
+    QList< DAPyNodeGraphicsItem* > res;
+    QList< QGraphicsItem* > sits = selectedItems();
     for (QGraphicsItem* i : std::as_const(sits)) {
-        if (DAPyNodeGraphicsItem* gi = dynamic_cast<DAPyNodeGraphicsItem*>(i)) {
+        if (DAPyNodeGraphicsItem* gi = dynamic_cast< DAPyNodeGraphicsItem* >(i)) {
             res.append(gi);
         }
     }
@@ -503,10 +507,9 @@ QList<DAPyNodeGraphicsItem*> DAPyWorkFlowScene::getSelectedPyNodeItems() const
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 返回的link未添加到场景，需要调用方自行添加
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(DAPyNodeGraphicsItem* fromItem,
-                                                        const QString& fromOutput,
-                                                        DAPyNodeGraphicsItem* toItem,
-                                                        const QString& toInput)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(
+    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
+)
 {
     if (!fromItem || !toItem) {
         return nullptr;
@@ -519,14 +522,14 @@ DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(DAPyNodeGraphicsItem* fro
     link->setToNode(toItem, toInput);
 
     // 设置连接线的起止位置
-    QList<DAPyLinkPoint> outputPoints = fromItem->getOutputLinkPoints();
+    QList< DAPyLinkPoint > outputPoints = fromItem->getOutputLinkPoints();
     for (const DAPyLinkPoint& lp : outputPoints) {
         if (lp.name == fromOutput) {
             link->setStartScenePosition(fromItem->mapToScene(lp.position));
             break;
         }
     }
-    QList<DAPyLinkPoint> inputPoints = toItem->getInputLinkPoints();
+    QList< DAPyLinkPoint > inputPoints = toItem->getInputLinkPoints();
     for (const DAPyLinkPoint& lp : inputPoints) {
         if (lp.name == toInput) {
             link->setEndScenePosition(toItem->mapToScene(lp.position));
@@ -548,8 +551,7 @@ DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(DAPyNodeGraphicsItem* fro
                 pybind11::object fromPyNode = fromItem->getProxy()->getPyNodeRef();
                 pybind11::object toPyNode   = toItem->getProxy()->getPyNodeRef();
                 if (fromPyNode && toPyNode) {
-                    workflowObj.attr("add_connection")(fromPyNode, fromOutput.toStdString(),
-                                                      toPyNode, toInput.toStdString());
+                    workflowObj.attr("add_connection")(fromPyNode, fromOutput.toStdString(), toPyNode, toInput.toStdString());
                 }
             }
         } catch (const pybind11::error_already_set& e) {
@@ -574,10 +576,9 @@ DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(DAPyNodeGraphicsItem* fro
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 函数名后缀"_"表示支持undo/redo操作
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(DAPyNodeGraphicsItem* fromItem,
-                                                         const QString& fromOutput,
-                                                         DAPyNodeGraphicsItem* toItem,
-                                                         const QString& toInput)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(
+    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
+)
 {
     DAPyLinkGraphicsItem* link = addPyNodeLink(fromItem, fromOutput, toItem, toInput);
     if (!link) {
@@ -613,10 +614,12 @@ bool DAPyWorkFlowScene::removePyNodeLink(DAPyLinkGraphicsItem* linkItem)
             try {
                 pybind11::object workflowObj = d->mPyWorkflow.object();
                 if (workflowObj) {
-                    workflowObj.attr("remove_connection")(fromNode->getProxy()->getPyNodeRef(),
-                                                         linkItem->getFromOutputName().toStdString(),
-                                                         toNode->getProxy()->getPyNodeRef(),
-                                                         linkItem->getToInputName().toStdString());
+                    workflowObj.attr("remove_connection")(
+                        fromNode->getProxy()->getPyNodeRef(),
+                        linkItem->getFromOutputName().toStdString(),
+                        toNode->getProxy()->getPyNodeRef(),
+                        linkItem->getToInputName().toStdString()
+                    );
                 }
             } catch (const pybind11::error_already_set& e) {
                 qWarning() << tr("DAPyWorkFlowScene::removePyNodeLink: Python error: %1").arg(e.what());
@@ -651,12 +654,12 @@ void DAPyWorkFlowScene::removePyNodeLink_(DAPyLinkGraphicsItem* linkItem)
  *
  * @return 所有DAPyLinkGraphicsItem列表
  */
-QList<DAPyLinkGraphicsItem*> DAPyWorkFlowScene::getPyNodeLinkItems() const
+QList< DAPyLinkGraphicsItem* > DAPyWorkFlowScene::getPyNodeLinkItems() const
 {
-    QList<DAPyLinkGraphicsItem*> res;
-    QList<QGraphicsItem*> its = topItems();
+    QList< DAPyLinkGraphicsItem* > res;
+    QList< QGraphicsItem* > its = topItems();
     for (QGraphicsItem* i : std::as_const(its)) {
-        if (DAPyLinkGraphicsItem* li = dynamic_cast<DAPyLinkGraphicsItem*>(i)) {
+        if (DAPyLinkGraphicsItem* li = dynamic_cast< DAPyLinkGraphicsItem* >(i)) {
             res.append(li);
         }
     }
@@ -668,12 +671,12 @@ QList<DAPyLinkGraphicsItem*> DAPyWorkFlowScene::getPyNodeLinkItems() const
  *
  * @return 当前选中的DAPyLinkGraphicsItem列表
  */
-QList<DAPyLinkGraphicsItem*> DAPyWorkFlowScene::getSelectedPyNodeLinkItems() const
+QList< DAPyLinkGraphicsItem* > DAPyWorkFlowScene::getSelectedPyNodeLinkItems() const
 {
-    QList<DAPyLinkGraphicsItem*> res;
-    QList<QGraphicsItem*> sits = selectedItems();
+    QList< DAPyLinkGraphicsItem* > res;
+    QList< QGraphicsItem* > sits = selectedItems();
     for (QGraphicsItem* i : std::as_const(sits)) {
-        if (DAPyLinkGraphicsItem* gi = dynamic_cast<DAPyLinkGraphicsItem*>(i)) {
+        if (DAPyLinkGraphicsItem* gi = dynamic_cast< DAPyLinkGraphicsItem* >(i)) {
             res.append(gi);
         }
     }
@@ -692,19 +695,19 @@ int DAPyWorkFlowScene::removeSelectedItems_()
 {
     cancelLink();
 
-    QList<QGraphicsItem*> sits = selectedItems();
+    QList< QGraphicsItem* > sits = selectedItems();
     if (sits.isEmpty()) {
         return 0;
     }
 
     // 对选中项进行分类
-    QList<DAPyNodeGraphicsItem*> nodeItems;
-    QList<DAPyLinkGraphicsItem*> linkItems;
-    QList<QGraphicsItem*> normalItems;
+    QList< DAPyNodeGraphicsItem* > nodeItems;
+    QList< DAPyLinkGraphicsItem* > linkItems;
+    QList< QGraphicsItem* > normalItems;
     classifyItems(sits, nodeItems, linkItems, normalItems);
 
     // 获取节点关联的所有连接线（包括未选中但关联的）
-    QList<DAPyLinkGraphicsItem*> nodeLinks = getNodesAllLinkItems(nodeItems);
+    QList< DAPyLinkGraphicsItem* > nodeLinks = getNodesAllLinkItems(nodeItems);
     // 合并选中的连接线和节点关联的连接线（去重）
     for (DAPyLinkGraphicsItem* link : linkItems) {
         if (!nodeLinks.contains(link)) {
@@ -753,8 +756,8 @@ void DAPyWorkFlowScene::clearPyScene()
 {
     DA_D(d);
     // 获取所有节点和连接线
-    QList<DAPyNodeGraphicsItem*> nodeItems = getPyNodeItems();
-    QList<DAPyLinkGraphicsItem*> linkItems = getPyNodeLinkItems();
+    QList< DAPyNodeGraphicsItem* > nodeItems = getPyNodeItems();
+    QList< DAPyLinkGraphicsItem* > linkItems = getPyNodeLinkItems();
 
     // 先移除所有连接线
     for (DAPyLinkGraphicsItem* link : linkItems) {
@@ -899,7 +902,7 @@ bool DAPyWorkFlowScene::loadFromFile(const QString& filePath, const QVersionNumb
  */
 void DAPyWorkFlowScene::cancelLink()
 {
-    DAPyLinkGraphicsItem* linkItem = dynamic_cast<DAPyLinkGraphicsItem*>(getCurrentLinkItem());
+    DAPyLinkGraphicsItem* linkItem = dynamic_cast< DAPyLinkGraphicsItem* >(getCurrentLinkItem());
     if (linkItem) {
 #ifdef DA_PYWORKFLOW_DEBUG
         DAPyNodeGraphicsItem* fromNode = linkItem->getFromNode();
@@ -922,7 +925,7 @@ void DAPyWorkFlowScene::cancelLink()
  */
 void DAPyWorkFlowScene::onSelectItemChanged(DAGraphicsItem* item)
 {
-    if (DAPyNodeGraphicsItem* gi = dynamic_cast<DAPyNodeGraphicsItem*>(item)) {
+    if (DAPyNodeGraphicsItem* gi = dynamic_cast< DAPyNodeGraphicsItem* >(item)) {
         emit selectPyNodeItemChanged(gi);
     }
 }
@@ -934,7 +937,7 @@ void DAPyWorkFlowScene::onSelectItemChanged(DAGraphicsItem* item)
  */
 void DAPyWorkFlowScene::onSelectLinkChanged(DAGraphicsLinkItem* item)
 {
-    if (DAPyLinkGraphicsItem* gi = dynamic_cast<DAPyLinkGraphicsItem*>(item)) {
+    if (DAPyLinkGraphicsItem* gi = dynamic_cast< DAPyLinkGraphicsItem* >(item)) {
         emit selectPyNodeLinkChanged(gi);
     }
 }
@@ -984,14 +987,14 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 
             if (isStartLink()) {
                 // 正在连线状态，点击目标输入端口完成连线
-                DAPyLinkGraphicsItem* linkItem = dynamic_cast<DAPyLinkGraphicsItem*>(getCurrentLinkItem());
+                DAPyLinkGraphicsItem* linkItem = dynamic_cast< DAPyLinkGraphicsItem* >(getCurrentLinkItem());
                 if (linkItem) {
                     // 查找输入端口
-                    QList<DAPyLinkPoint> inputPoints = nodeItem->getInputLinkPoints();
+                    QList< DAPyLinkPoint > inputPoints = nodeItem->getInputLinkPoints();
                     DAPyLinkPoint matchedPoint;
                     for (const DAPyLinkPoint& lp : inputPoints) {
                         QPointF lpScenePos = nodeItem->mapToScene(lp.position);
-                        double dist = QLineF(mouseEvent->scenePos(), lpScenePos).length();
+                        double dist        = QLineF(mouseEvent->scenePos(), lpScenePos).length();
                         if (dist < 15) {  // 连接点命中阈值
                             matchedPoint = lp;
                             break;
@@ -1011,16 +1014,15 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                     linkItem->updateBoundingRect();
 
                     // 带undo的添加连接线
-                    addPyNodeLink_(linkItem->getFromNode(), linkItem->getFromOutputName(),
-                                   nodeItem, matchedPoint.name);
+                    addPyNodeLink_(linkItem->getFromNode(), linkItem->getFromOutputName(), nodeItem, matchedPoint.name);
                 }
             } else {
                 // 非连线状态，点击输出端口开始连线
-                QList<DAPyLinkPoint> outputPoints = nodeItem->getOutputLinkPoints();
+                QList< DAPyLinkPoint > outputPoints = nodeItem->getOutputLinkPoints();
                 DAPyLinkPoint matchedPoint;
                 for (const DAPyLinkPoint& lp : outputPoints) {
                     QPointF lpScenePos = nodeItem->mapToScene(lp.position);
-                    double dist = QLineF(mouseEvent->scenePos(), lpScenePos).length();
+                    double dist        = QLineF(mouseEvent->scenePos(), lpScenePos).length();
                     if (dist < 15) {
                         matchedPoint = lp;
                         break;
@@ -1053,18 +1055,20 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
  * @param linkItems 分离出的连接线item列表
  * @param normalItems 分离出的普通item列表
  */
-void DAPyWorkFlowScene::classifyItems(const QList<QGraphicsItem*>& sourceItems,
-                                       QList<DAPyNodeGraphicsItem*>& nodeItems,
-                                       QList<DAPyLinkGraphicsItem*>& linkItems,
-                                       QList<QGraphicsItem*>& normalItems)
+void DAPyWorkFlowScene::classifyItems(
+    const QList< QGraphicsItem* >& sourceItems,
+    QList< DAPyNodeGraphicsItem* >& nodeItems,
+    QList< DAPyLinkGraphicsItem* >& linkItems,
+    QList< QGraphicsItem* >& normalItems
+)
 {
     if (sourceItems.isEmpty()) {
         return;
     }
     for (QGraphicsItem* i : std::as_const(sourceItems)) {
-        if (DAPyNodeGraphicsItem* ni = dynamic_cast<DAPyNodeGraphicsItem*>(i)) {
+        if (DAPyNodeGraphicsItem* ni = dynamic_cast< DAPyNodeGraphicsItem* >(i)) {
             nodeItems.append(ni);
-        } else if (DAPyLinkGraphicsItem* li = dynamic_cast<DAPyLinkGraphicsItem*>(i)) {
+        } else if (DAPyLinkGraphicsItem* li = dynamic_cast< DAPyLinkGraphicsItem* >(i)) {
             linkItems.append(li);
         } else {
             normalItems.append(i);
@@ -1080,14 +1084,14 @@ void DAPyWorkFlowScene::classifyItems(const QList<QGraphicsItem*>& sourceItems,
  * @param nodeItems 节点item列表
  * @return 与节点关联的连接线列表
  */
-QList<DAPyLinkGraphicsItem*> DAPyWorkFlowScene::getNodesAllLinkItems(const QList<DAPyNodeGraphicsItem*>& nodeItems)
+QList< DAPyLinkGraphicsItem* > DAPyWorkFlowScene::getNodesAllLinkItems(const QList< DAPyNodeGraphicsItem* >& nodeItems)
 {
-    QList<DAPyLinkGraphicsItem*> res;
+    QList< DAPyLinkGraphicsItem* > res;
     for (DAPyNodeGraphicsItem* n : std::as_const(nodeItems)) {
         // 遍历所有连接线检查关联
-        QList<QGraphicsItem*> its = n->scene()->items();
+        QList< QGraphicsItem* > its = n->scene()->items();
         for (QGraphicsItem* i : std::as_const(its)) {
-            if (DAPyLinkGraphicsItem* link = dynamic_cast<DAPyLinkGraphicsItem*>(i)) {
+            if (DAPyLinkGraphicsItem* link = dynamic_cast< DAPyLinkGraphicsItem* >(i)) {
                 if (link->getFromNode() == n || link->getToNode() == n) {
                     if (!res.contains(link)) {
                         res.append(link);
@@ -1108,6 +1112,46 @@ void DAPyWorkFlowScene::initConnect()
 {
     connect(this, &DAGraphicsScene::selectItemChanged, this, &DAPyWorkFlowScene::onSelectItemChanged);
     connect(this, &DAGraphicsScene::selectLinkChanged, this, &DAPyWorkFlowScene::onSelectLinkChanged);
+}
+
+/**
+ * @brief 初始化Python DAWorkflow实例
+ *
+ * 通过DAPyModuleWorkflow获取DAWorkflow类引用，创建实例并设置到场景中，
+ * 使得createPyNode()等方法可以正常工作。
+ *
+ * @note 如果Python未初始化或创建失败，不会影响场景的其他功能，
+ * 后续仍可通过setPyWorkflow()手动设置。
+ */
+void DAPyWorkFlowScene::initPyWorkflow()
+{
+    DA_D(d);
+    if (!d->mPyWorkflow.isNone()) {
+        // 已设置，无需重复初始化
+        return;
+    }
+    DAPyGILGuard gil;
+    try {
+        DAPyModuleWorkflow& pyModule = DAPyModuleWorkflow::getInstance();
+        if (!pyModule.isImport()) {
+            if (!pyModule.import()) {
+                qWarning() << "DAPyWorkFlowScene::initPyWorkflow: cannot import DAWorkbench.DAWorkFlowPy";
+                return;
+            }
+        }
+        pybind11::object workflowClass = pyModule.getWorkflowClass();
+        if (workflowClass.is_none()) {
+            qWarning() << "DAPyWorkFlowScene::initPyWorkflow: DAWorkflow class is not available";
+            return;
+        }
+        pybind11::object workflowInstance = workflowClass();
+        d->mPyWorkflow                    = DAPySafePyObjectHolder(workflowInstance);
+        qDebug() << "DAPyWorkFlowScene::initPyWorkflow: Python DAWorkflow instance created";
+    } catch (const pybind11::error_already_set& e) {
+        qWarning() << "DAPyWorkFlowScene::initPyWorkflow: Python error:" << e.what();
+    } catch (const std::exception& e) {
+        qWarning() << "DAPyWorkFlowScene::initPyWorkflow: error:" << e.what();
+    }
 }
 
 }  // namespace DA

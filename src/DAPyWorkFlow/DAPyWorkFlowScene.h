@@ -58,22 +58,20 @@ public:
     DAPyNodeGraphicsItem* findNodeItemByProxy(DAPyNodeProxy* proxy) const;
     DAPyNodeGraphicsItem* findNodeItemById(const QString& nodeId) const;
     DAPyNodeGraphicsItem* nodeItemAt(const QPointF& scenePos) const;
-    QList<DAPyNodeGraphicsItem*> getPyNodeItems() const;
-    QList<DAPyNodeGraphicsItem*> getSelectedPyNodeItems() const;
+    QList< DAPyNodeGraphicsItem* > getPyNodeItems() const;
+    QList< DAPyNodeGraphicsItem* > getSelectedPyNodeItems() const;
 
     // 连接管理
-    DAPyLinkGraphicsItem* addPyNodeLink(DAPyNodeGraphicsItem* fromItem,
-                                        const QString& fromOutput,
-                                        DAPyNodeGraphicsItem* toItem,
-                                        const QString& toInput);
-    DAPyLinkGraphicsItem* addPyNodeLink_(DAPyNodeGraphicsItem* fromItem,
-                                         const QString& fromOutput,
-                                         DAPyNodeGraphicsItem* toItem,
-                                         const QString& toInput);
+    DAPyLinkGraphicsItem* addPyNodeLink(
+        DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
+    );
+    DAPyLinkGraphicsItem* addPyNodeLink_(
+        DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
+    );
     bool removePyNodeLink(DAPyLinkGraphicsItem* linkItem);
     void removePyNodeLink_(DAPyLinkGraphicsItem* linkItem);
-    QList<DAPyLinkGraphicsItem*> getPyNodeLinkItems() const;
-    QList<DAPyLinkGraphicsItem*> getSelectedPyNodeLinkItems() const;
+    QList< DAPyLinkGraphicsItem* > getPyNodeLinkItems() const;
+    QList< DAPyLinkGraphicsItem* > getSelectedPyNodeLinkItems() const;
 
     // 删除选中项（支持undo/redo）
     int removeSelectedItems_();
@@ -99,13 +97,13 @@ Q_SIGNALS:
     void pyNodeItemCreated(DAPyNodeGraphicsItem* item);
 
     // Python节点item被移除
-    void pyNodeItemsRemoved(const QList<DAPyNodeGraphicsItem*>& items);
+    void pyNodeItemsRemoved(const QList< DAPyNodeGraphicsItem* >& items);
 
     // Python连接线被创建
     void pyNodeLinkCreated(DAPyLinkGraphicsItem* link);
 
     // Python连接线被移除
-    void pyNodeLinksRemoved(const QList<DAPyLinkGraphicsItem*>& links);
+    void pyNodeLinksRemoved(const QList< DAPyLinkGraphicsItem* >& links);
 
     // Python节点选中变更
     void selectPyNodeItemChanged(DAPyNodeGraphicsItem* item);
@@ -128,16 +126,20 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
 
     // 对scene中的item进行分类
-    static void classifyItems(const QList<QGraphicsItem*>& sourceItems,
-                              QList<DAPyNodeGraphicsItem*>& nodeItems,
-                              QList<DAPyLinkGraphicsItem*>& linkItems,
-                              QList<QGraphicsItem*>& normalItems);
+    static void classifyItems(
+        const QList< QGraphicsItem* >& sourceItems,
+        QList< DAPyNodeGraphicsItem* >& nodeItems,
+        QList< DAPyLinkGraphicsItem* >& linkItems,
+        QList< QGraphicsItem* >& normalItems
+    );
 
     // 获取节点item的所有连接线
-    static QList<DAPyLinkGraphicsItem*> getNodesAllLinkItems(const QList<DAPyNodeGraphicsItem*>& nodeItems);
+    static QList< DAPyLinkGraphicsItem* > getNodesAllLinkItems(const QList< DAPyNodeGraphicsItem* >& nodeItems);
 
 private:
     void initConnect();
+    // 初始化Python DAWorkflow实例
+    void initPyWorkflow();
 };
 
 }  // namespace DA

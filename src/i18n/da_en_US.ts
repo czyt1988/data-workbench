@@ -1346,19 +1346,6 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DAAppCore</name>
-    <message>
-        <location filename="../APP/DAAppCore.cpp" line="+144"/>
-        <source>Python interpreter not initialized, skip Python env paths setup</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Added Python source path: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::DAAppDataManager</name>
     <message>
         <location filename="../APP/DAAppDataManager.cpp" line="+36"/>
@@ -1448,7 +1435,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
         <source>Python node factory initialization failed: %1</source>
         <translation type="unfinished"></translation>
     </message>
