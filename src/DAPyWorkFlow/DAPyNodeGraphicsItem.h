@@ -1,4 +1,4 @@
-#ifndef DAPYNODEGRAPHICSITEM_H
+﻿#ifndef DAPYNODEGRAPHICSITEM_H
 #define DAPYNODEGRAPHICSITEM_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyLinkPoint.h"
@@ -134,7 +134,7 @@ Q_SIGNALS:
      * @brief 节点双击信号，通知上层（DAGui）弹出配置对话框
      * @param[in] proxy 双击的节点代理
      */
-    void nodeDoubleClicked(DAPyNodeProxy* proxy);
+    void nodeDoubleClicked(DA::DAPyNodeProxy* proxy);
 
 protected:
     // 绘制body（根据模板类型选择绘制方式）

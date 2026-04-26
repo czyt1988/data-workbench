@@ -85,29 +85,29 @@ class DataFilter:
 flowchart TB
     subgraph Python_Layer [Python 层]
         direction TB
-        NodeDef[@NodeDef 装饰器]
-        DAWorkflow[DAWorkflow<br/>DAG 模型]
-        DANodeRegistry[DANodeRegistry<br/>节点注册表]
-        DAWorkflowExecutor[DAWorkflowExecutor<br/>执行引擎]
-        DASignalManager[DASignalManager<br/>信号管理器]
-        DAConnection[DAConnection<br/>连接描述]
+        NodeDef["@NodeDef 装饰器"]
+        DAWorkflow["DAWorkflow<br/>DAG 模型"]
+        DANodeRegistry["DANodeRegistry<br/>节点注册表"]
+        DAWorkflowExecutor["DAWorkflowExecutor<br/>执行引擎"]
+        DASignalManager["DASignalManager<br/>信号管理器"]
+        DAConnection["DAConnection<br/>连接描述"]
     end
 
     subgraph Bridge_Layer [桥接层 pybind11]
         direction TB
-        PyJsonCast[DAPyJsonCast<br/>JSON 序列化]
-        PyGILGuard[DAPyGILGuard<br/>GIL 管理]
-        PySignalHandler[DAPythonSignalHandler<br/>跨线程信号]
+        PyJsonCast["DAPyJsonCast<br/>JSON 序列化"]
+        PyGILGuard["DAPyGILGuard<br/>GIL 管理"]
+        PySignalHandler["DAPythonSignalHandler<br/>跨线程信号"]
     end
 
     subgraph CPP_Layer [C++ 层 Qt]
         direction TB
-        DAPyWorkFlowScene[DAPyWorkFlowScene<br/>场景管理]
-        DAPyNodeGraphicsItem[DAPyNodeGraphicsItem<br/>节点图元]
-        DAPyLinkGraphicsItem[DAPyLinkGraphicsItem<br/>连接线]
-        DAPyNodeProxy[DAPyNodeProxy<br/>节点代理]
-        DAPyNodeFactory[DAPyNodeFactory<br/>节点工厂]
-        DAPyWorkFlowExecuter[DAPyWorkFlowExecuter<br/>执行调度]
+        DAPyWorkFlowScene["DAPyWorkFlowScene<br/>场景管理"]
+        DAPyNodeGraphicsItem["DAPyNodeGraphicsItem<br/>节点图元"]
+        DAPyLinkGraphicsItem["DAPyLinkGraphicsItem<br/>连接线"]
+        DAPyNodeProxy["DAPyNodeProxy<br/>节点代理"]
+        DAPyNodeFactory["DAPyNodeFactory<br/>节点工厂"]
+        DAPyWorkFlowExecuter["DAPyWorkFlowExecuter<br/>执行调度"]
     end
 
     NodeDef --> DAWorkflow

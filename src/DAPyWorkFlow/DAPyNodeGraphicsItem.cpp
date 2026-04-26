@@ -1,4 +1,4 @@
-#include "DAPyNodeGraphicsItem.h"
+﻿#include "DAPyNodeGraphicsItem.h"
 #include "DAPyPainterProxy.h"
 #include "DAPyNodeProxy.h"
 #include "DAPyNodePalette.h"
@@ -490,7 +490,7 @@ void DAPyNodeGraphicsItem::updateLinkPoints()
     d_ptr->mInputLinkPoints.clear();
     d_ptr->mOutputLinkPoints.clear();
 
-    for (const auto& lp : allPoints) {
+    for (const auto& lp : std::as_const(allPoints)) {
         if (lp.isInput()) {
             d_ptr->mInputLinkPoints.append(lp);
         } else {
@@ -718,14 +718,14 @@ void DAPyNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOption
     painter->setPen(pen);
 
     // 绘制输入连接点
-    for (const auto& lp : d_ptr->mInputLinkPoints) {
+    for (const auto& lp : std::as_const(d_ptr->mInputLinkPoints)) {
         QRectF linkRect(lp.position.x() - 4, lp.position.y() - 4, 8, 8);
         painter->setBrush(QBrush(Qt::white));
         painter->drawEllipse(linkRect);
     }
 
     // 绘制输出连接点
-    for (const auto& lp : d_ptr->mOutputLinkPoints) {
+    for (const auto& lp : std::as_const(d_ptr->mOutputLinkPoints)) {
         QRectF linkRect(lp.position.x() - 4, lp.position.y() - 4, 8, 8);
         painter->setBrush(QBrush(Qt::darkGray));
         painter->drawEllipse(linkRect);

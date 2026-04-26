@@ -1,4 +1,4 @@
-#include "DAPyWorkFlowPythonBinding.h"
+﻿#include "DAPyWorkFlowPythonBinding.h"
 #include <QPointF>
 #include "DAPyWorkFlow/DAPyWorkFlowScene.h"
 #include "DAPyWorkFlow/DAPyNodeProxy.h"
@@ -155,7 +155,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             [](DA::DAPyWorkFlowScene& self) {
                 QList< DA::DAPyNodeGraphicsItem* > items = self.getPyNodeItems();
                 pybind11::list pyList;
-                for (DA::DAPyNodeGraphicsItem* item : items) {
+                for (DA::DAPyNodeGraphicsItem* item : std::as_const(items)) {
                     pyList.append(item);
                 }
                 return pyList;
@@ -194,7 +194,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             [](DA::DAPyWorkFlowScene& self) {
                 QList< DA::DAPyLinkGraphicsItem* > links = self.getPyNodeLinkItems();
                 pybind11::list pyList;
-                for (DA::DAPyLinkGraphicsItem* link : links) {
+                for (DA::DAPyLinkGraphicsItem* link : std::as_const(links)) {
                     pyList.append(link);
                 }
                 return pyList;
