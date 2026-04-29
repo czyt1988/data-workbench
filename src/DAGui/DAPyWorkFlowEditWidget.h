@@ -149,6 +149,7 @@ private:
 private:
 	Ui::DAPyWorkFlowEditWidget* ui;
 	DAPyWorkFlowGraphicsScene* mScene { nullptr };
+	QThread* mWorkFlowThread { nullptr };
 };
 }  // end of DA
 #endif  // DAPyWorkFlowEditWidget_H

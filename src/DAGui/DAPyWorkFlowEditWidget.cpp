@@ -35,6 +35,16 @@ DAPyWorkFlowEditWidget::DAPyWorkFlowEditWidget(QWidget* parent)
 DAPyWorkFlowEditWidget::~DAPyWorkFlowEditWidget()
 {
 	qDebug() << "destroy DAPyWorkFlowEditWidget";
+	// 断开子对象到 this 的信号连接，防止析构期间信号发给已析构对象
+	const auto allChildren = findChildren<QObject*>();
+	for (auto* obj : allChildren) {
+		obj->disconnect(this);
+	}
+	// 停止工作流执行线程
+	if (mWorkFlowThread && mWorkFlowThread->isRunning()) {
+		mWorkFlowThread->quit();
+		mWorkFlowThread->wait();
+	}
 	delete ui;
 }
 
@@ -109,11 +119,11 @@ void DAPyWorkFlowEditWidget::runWorkFlow()
 	executer->setWorkflow(scene->getPyWorkflow());
 
 	// 创建独立线程
-	QThread* thread = new QThread(this);
-	executer->moveToThread(thread);
+	mWorkFlowThread = new QThread(this);
+	executer->moveToThread(mWorkFlowThread);
 
 	// 连接信号：线程启动时开始执行
-	connect(thread, &QThread::started, executer, &DA::DAPyWorkFlowExecuter::startExecute);
+	connect(mWorkFlowThread, &QThread::started, executer, &DA::DAPyWorkFlowExecuter::startExecute);
 	// 节点执行完成信号转发（类型适配：shared_ptr -> raw pointer）
 	connect(executer, &DA::DAPyWorkFlowExecuter::nodeExecuteFinished,
 	        this, [this](std::shared_ptr< DA::DAPyNodeProxy > nodeProxy, bool success) {
@@ -124,10 +134,10 @@ void DAPyWorkFlowEditWidget::runWorkFlow()
 		emit finished(success);
 	});
 	// 线程结束后清理资源
-	connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-	connect(thread, &QThread::finished, executer, &QObject::deleteLater);
+	connect(mWorkFlowThread, &QThread::finished, mWorkFlowThread, &QThread::deleteLater);
+	connect(mWorkFlowThread, &QThread::finished, executer, &QObject::deleteLater);
 	// 执行完成时停止线程
-	connect(executer, &DA::DAPyWorkFlowExecuter::finished, thread, &QThread::quit);
+	connect(executer, &DA::DAPyWorkFlowExecuter::finished, mWorkFlowThread, &QThread::quit);
 	// 进度信号转发
 	connect(executer, &DA::DAPyWorkFlowExecuter::progressChanged,
 	        this, [](int current, int total) {
@@ -135,7 +145,7 @@ void DAPyWorkFlowEditWidget::runWorkFlow()
 		});
 
 	// 启动线程
-	thread->start();
+	mWorkFlowThread->start();
 }
 
 void DAPyWorkFlowEditWidget::setPreDefineSceneAction(DAPyWorkFlowGraphicsScene::SceneActionFlag mf)

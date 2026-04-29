@@ -67,6 +67,11 @@ DAPyWorkFlowOperateWidget::~DAPyWorkFlowOperateWidget()
 {
 	qDebug() << "DAPyWorkFlowOperateWidget begin delete ui";
 	d_ptr->mIsDestroying = true;
+	// 断开所有子对象到 this 的信号连接，防止析构期间信号发给已析构对象
+	const auto allChildren = findChildren<QObject*>();
+	for (auto* obj : allChildren) {
+		obj->disconnect(this);
+	}
 	delete ui;
 	qDebug() << "DAPyWorkFlowOperateWidget end delete ui";
 }
