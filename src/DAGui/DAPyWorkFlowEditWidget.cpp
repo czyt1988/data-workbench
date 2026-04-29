@@ -11,11 +11,13 @@
 #include <QClipboard>
 #include <QApplication>
 #include <QFileInfo>
+#include <QThread>
 #include "DAGraphicsTextItem.h"
 // workflow
 #include "DAPyWorkFlowGraphicsView.h"
 #include "DAPyWorkFlowGraphicsScene.h"
 #include "DAGraphicsLinkItem.h"
+#include "DAPyWorkFlowExecuter.h"
 #include "DAGraphicsPixmapItem.h"
 //
 #include "Commands/DACommandsForWorkFlow.h"
@@ -96,14 +98,44 @@ QUndoStack* DAPyWorkFlowEditWidget::getUndoStack()
 
 void DAPyWorkFlowEditWidget::runWorkFlow()
 {
-	DAPyWorkFlow* wf = ui->workflowGraphicsView->getWorkflow();
-	if (nullptr == wf) {
+	auto scene = getWorkFlowGraphicsScene();
+	if (!scene || !scene->hasPyWorkflow()) {
 		qCritical() << tr("no workflow set");
 		return;
 	}
-	// TODO: DAPyWorkFlow no longer has exec(). Execution is now handled by DAPyWorkFlowExecuter.
-	// Create a DAPyWorkFlowExecuter, set the workflow, and call startExecute() in a separate thread.
-	qWarning() << tr("Workflow execution not yet implemented via DAPyWorkFlowExecuter");
+
+	// 创建执行器并设置 Python 工作流对象
+	auto executer = new DA::DAPyWorkFlowExecuter(this);
+	executer->setWorkflow(scene->getPyWorkflow());
+
+	// 创建独立线程
+	QThread* thread = new QThread(this);
+	executer->moveToThread(thread);
+
+	// 连接信号：线程启动时开始执行
+	connect(thread, &QThread::started, executer, &DA::DAPyWorkFlowExecuter::startExecute);
+	// 节点执行完成信号转发（类型适配：shared_ptr -> raw pointer）
+	connect(executer, &DA::DAPyWorkFlowExecuter::nodeExecuteFinished,
+	        this, [this](std::shared_ptr< DA::DAPyNodeProxy > nodeProxy, bool success) {
+		        emit nodeExecuteFinished(nodeProxy.get(), success);
+	        });
+	// 执行完成信号转发
+	connect(executer, &DA::DAPyWorkFlowExecuter::finished, this, [this](bool success) {
+		emit finished(success);
+	});
+	// 线程结束后清理资源
+	connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+	connect(thread, &QThread::finished, executer, &QObject::deleteLater);
+	// 执行完成时停止线程
+	connect(executer, &DA::DAPyWorkFlowExecuter::finished, thread, &QThread::quit);
+	// 进度信号转发
+	connect(executer, &DA::DAPyWorkFlowExecuter::progressChanged,
+	        this, [](int current, int total) {
+			qDebug() << "Workflow progress:" << current << "/" << total;
+		});
+
+	// 启动线程
+	thread->start();
 }
 
 void DAPyWorkFlowEditWidget::setPreDefineSceneAction(DAPyWorkFlowGraphicsScene::SceneActionFlag mf)
