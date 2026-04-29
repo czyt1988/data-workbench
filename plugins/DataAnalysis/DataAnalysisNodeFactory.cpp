@@ -1,6 +1,7 @@
 #include "DataAnalysisNodeFactory.h"
 //
 #include <QMainWindow>
+#include <QDir>
 #include "DACoreInterface.h"
 #include "DADockingAreaInterface.h"
 #include "DAUIInterface.h"
@@ -8,13 +9,20 @@
 
 //! 注册节点在构造函数中执行REGISTE_CLASS宏，即可把节点类注册
 //! REGISTE_CLASS(XXXXNode)
+//! 本工厂通过 discoverNodes 自动发现 Python @NodeDef 节点（entry_points + 目录扫描）
 
 
 DataAnalysisNodeFactory::DataAnalysisNodeFactory() : DA::DAPyNodeFactory()
 {
-   //注册节点创建的函数指针
-   // REGISTE_CLASS(MyNode1);
-   // REGISTE_CLASS(MyNode2);
+   // 自动发现 DADataAnalysisPy 中的 Python 工作流节点
+   // 1. 通过 entry_points 发现（setup.py 中注册的 "data_workbench.plugin" 组）
+   discoverNodes(QStringList(), true);
+
+   // 2. 额外扫描插件 PyScripts 目录（作为 entry_points 的补充）
+   QString pluginPyPath = QDir::currentPath() + "/plugins/DataAnalysis/PyScripts/DADataAnalysisPy";
+   if (QDir(pluginPyPath).exists()) {
+       discoverNodes(QStringList() << pluginPyPath, false);
+   }
 }
 
 DataAnalysisNodeFactory::~DataAnalysisNodeFactory()
