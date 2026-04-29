@@ -1,65 +1,106 @@
 # data-workbench 项目指南
 
-## 项目概述
+**Generated:** 2026-04-28
+**Commit:** `9676dc3`
+**Branch:** `workflow-rebuild`
 
-data-workbench 是一个数据工作流设计器，旨在实现工作流驱动的数据 ETL（提取、转换、加载），集成 pandas 的数据处理能力，实现高效的交互式数据可视化，并能固定输出论文级别的图片。
+## OVERVIEW
 
-### 核心功能
+AI Agent 驱动的数据分析工作平台 — C++17/Qt 有向图工作流引擎 + 内嵌 Python (pandas/numpy) + 交互式图表。核心栈: Qt 5.14+/6, pybind11, SARibbon, qwt, Qt-Advanced-Docking-System。
 
-- **工作流驱动**：通过有向图描述工作流，解决固定流程的数据处理问题
-- **数据处理**：集成 pandas 核心功能，提供类似 Excel 的操作界面，无需编程即可使用
-- **数据可视化**：交互式图表编辑，支持生成论文级别的图片
-- **插件系统**：支持自定义扩展模块，集成自己的数据清洗和分析方法
-- **一维仿真**：基于工作流框架，可实现类似 Amesim 的一维仿真
-
-### 技术栈
-
-- C++17
-- Qt 5.14+ 或 Qt 6
-- Python (pandas, numpy, scipy)
-- 第三方库：SARibbon, Qt-Advanced-Docking-System, ctk, qwt, QtPropertyBrowser, spdlog, pybind11, ordered-map
-
-## 目录结构
+## STRUCTURE
 
 ```
 data-workbench/
-├── .github/          # GitHub 工作流配置
-├── cmake/            # CMake 配置文件
-├── docs/             # 项目文档
-├── plugins/          # 插件目录
-├── src/              # 源码目录
-│   ├── 3rdparty/     # 第三方库
-│   ├── APP/          # 应用主程序
-│   ├── DACommonWidgets/ # 通用 widgets
-│   ├── DAData/       # 数据处理模块
-│   ├── DAFigure/     # 图表模块
-│   ├── DAGraphicsView/ # 图形视图模块
-│   ├── DAGui/        # GUI 相关模块
-├── AI_AGENT_GUID.md  # AI Agent 指南
-├── CMakeLists.txt    # 主 CMake 文件
-├── readme.md         # 项目说明
-└── requirements.txt  # Python 依赖
+├── .github/workflows/  # CI (build.yml, page.yml)
+├── cmake/              # CMake 工具链 (daworkbench_utils.cmake, 3rdparty.cmake, plugin_utils.cmake)
+├── docs/zh/            # 中文技术文档 (dev-guide/, use-guide/, build/)
+├── plugins/            # 插件 (DataAnalysis, CrewAIAdapter, plugin-template)
+├── src/
+│   ├── 3rdparty/       # 第三方库 (qwt, SARibbon, qt-advanced-docking 等)
+│   ├── DAShared/       # 共享基础类型 (20 files)
+│   ├── DAUtils/        # 工具类 (40 files)
+│   ├── DAAxOfficeWrapper/ # Windows Office 封装 (10 files, 仅 Win)
+│   ├── DAMessageHandler/  # 日志/消息 (9 files)
+│   ├── DAPyBindQt/     # Python↔Qt 绑定层 (28 files)
+│   ├── DAPyScripts/    # Python 脚本加载 (12 files)
+│   ├── DAPyCommonWidgets/ # Python 通用 Widgets (13 files)
+│   ├── DAPyWorkFlow/   # Python 工作流节点 (43 files)
+│   ├── DAData/         # 数据管理/结构 (22 files)
+│   ├── DACommonWidgets/ # 通用 UI 组件 (82 files)
+│   ├── DAGraphicsView/ # 图形视图框架 (54 files)
+│   ├── DAFigure/       # 图表/Figure 容器 (103 files)
+│   ├── DAGui/          # GUI Widgets/面板/对话框 (326 files, 最大模块)
+│   │   ├── ChartSetting/  # 图表属性设置面板
+│   │   ├── Commands/      # QUndoCommand 子类
+│   │   ├── Dialog/        # 各种对话框
+│   │   ├── MimeData/      # 拖放 MIME 数据
+│   │   └── Models/        # Qt Model/View 模型
+│   ├── DAInterface/    # 核心接口定义 (28 files)
+│   ├── DAPluginSupport/ # 插件框架 (10 files)
+│   ├── APP/            # 应用主程序 (190 files)
+│   │   ├── Dialog/     # 应用级对话框
+│   │   ├── Icon/       # 图标资源
+│   │   ├── PythonBinding/ # Python 绑定初始化
+│   │   └── SettingPages/  # 设置页面
+│   ├── PyScripts/      # 内置 Python 脚本 (23 files)
+│   ├── i18n/           # 国际化翻译
+│   └── tst/            # 测试 (7 files)
+├── CMakeLists.txt      # 顶层 CMake (项目名 DAWorkbench)
+└── requirements.txt    # Python 依赖
 ```
 
-### 核心模块说明
+### 模块构建依赖顺序
 
-1. **APP**：应用主程序，包含主窗口、控制器、项目管理等核心功能
-2. **DAData**：数据处理模块，负责数据管理、数据结构定义等
-3. **DAFigure**：图表模块，负责图表绘制、编辑和导出
-4. **DAGui**：GUI 相关模块，包含各种界面组件和工具
-5. **DAGraphicsView**：图形视图模块，提供图形编辑功能
-6. **DACommonWidgets**：通用 widgets，提供基础 UI 组件
+```
+DAShared → DAUtils → DAAxOfficeWrapper(win) → DAMessageHandler
+→ DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPyWorkFlow
+→ DAData → DACommonWidgets → DAGraphicsView → DAFigure
+→ DAGui → DAInterface → DAPluginSupport → APP
+```
 
-## 开发环境
+## WHERE TO LOOK
 
-### 编译依赖
+| Task | Location | Notes |
+|------|----------|-------|
+| 程序入口 / main() | `src/APP/main.cpp` | QApplication, Python 初始化, AppMainWindow |
+| 主窗口 | `src/APP/AppMainWindow.h/.cpp` | 继承 SARibbonMainWindow, 管理 Docking/UI/Controller |
+| 应用核心(单例) | `src/APP/DAAppCore.h/.cpp` | 初始化所有子系统 |
+| 插件管理 | `src/APP/DAAppPluginManager.h/.cpp` | 加载/卸载插件 |
+| 项目管理 | `src/APP/DAAppProject.h/.cpp` | 工程文件读写 |
+| 数据处理接口 | `src/DAData/` | 数据容器, DataFrame 封装 |
+| 图表创建/编辑 | `src/DAFigure/`, `src/DAGui/ChartSetting/` | QwtFigure 容器 + 属性面板 |
+| 图形视图交互 | `src/DAGraphicsView/` | QGraphicsView 子类, 节点/连线编辑 |
+| Python 绑定 | `src/DAPyBindQt/` | pybind11 胶水代码 |
+| Python 工作流节点 | `src/DAPyWorkFlow/` | Python 脚本节点执行 |
+| 命令行参数 | `src/APP/main.cpp` → `initCommandLine()` | --version, --help, import-data, 工程文件 |
+| UI 状态持久化 | `src/APP/AppMainWindow` | saveUIState/restoreUIState |
+| 翻译/国际化 | `src/i18n/`, `src/APP/App_zh_CN.ts` | DATranslatorManeger |
+| 崩溃转储 | `src/APP/DADumpCapture.h` | Windows dump 文件生成 |
+| PIMPL 宏定义 | `src/DAGlobals.h` | DA_DECLARE_PRIVATE, DA_D, DA_DC 等 |
+| Qt5/Qt6 兼容宏 | `src/DAGlobals.h` | Qt5Qt6Compat_* 系列宏 |
+| 通用 Widgets | `src/DACommonWidgets/` | 按钮、列表、树等基础组件 |
+| 插件开发参考 | `plugins/DataAnalysis/` | 最完整的插件示例 |
+| 插件模板 | `plugins/plugin-template/` | 新插件脚手架 |
+| 文档源码 | `docs/zh/` | Doxygen Wiki 中文 |
 
-- CMake 3.16+
-- C++17 兼容编译器
-- Qt 5.14+ 或 Qt 6
-- Python 3.7+
+## CODE MAP
 
-## 编码规范
+| Symbol | Type | Location | Role |
+|--------|------|----------|------|
+| `DA::AppMainWindow` | class | `src/APP/AppMainWindow.h` | 主窗口, 继承 SARibbonMainWindow |
+| `DA::DAAppCore` | class | `src/APP/DAAppCore.h` | 核心单例, 子系统初始化 |
+| `DA::DAAppController` | class | `src/APP/DAAppController.h` | MVC 控制器 |
+| `DA::DAAppUI` | class | `src/APP/DAAppUI.h` | Ribbon/Docking 布局管理 |
+| `DA::DAAppPluginManager` | class | `src/APP/DAAppPluginManager.h` | 插件生命周期管理 |
+| `DA::DAAppProject` | class | `src/APP/DAAppProject.h` | 工程文件序列化 |
+| `DAWorkbenchFeatureType` | enum | `src/DAGlobals.h` | Workflow/Data/Chart 功能域标识 |
+| `QwtFigure` | class | `src/3rdparty/qwt/` | 多绘图布局容器 (类似 matplotlib Figure) |
+| `DA_DECLARE_PRIVATE` | macro | `src/DAGlobals.h` | PIMPL 私有数据声明 |
+| `DA_D` / `DA_DC` | macro | `src/DAGlobals.h` | PIMPL d-pointer 访问 |
+| `DA_PIMPL_CONSTRUCT` | macro | `src/DAGlobals.h` | PIMPL 构造函数初始化 |
+
+## CONVENTIONS
 
 ### 代码风格
 
@@ -88,7 +129,7 @@ Q_PROPERTY(float opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
 Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibilityChanged)
 ```
 
-### qt版本兼容性
+### Qt 版本兼容性
 
 代码需兼容Qt5和Qt6,如果一些方法在Qt6中取消了，需要使用宏来判断使用那种版本的方法，例如：
 
@@ -99,6 +140,8 @@ Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibilityChanged
     // 使用Qt6的方法
 #endif
 ```
+
+Qt5/Qt6 兼容宏定义在 `src/DAGlobals.h`（`Qt5Qt6Compat_*` 系列）
 
 ## 注释与文档规范
 
@@ -205,7 +248,7 @@ public:
 - 相关文件列表
 - 关联到计划书（如果适用）
 
-## 编译构建
+## COMMANDS
 
 项目使用cmake构建，如果项目目录下存在build目录，说明已经生成过，直接在此目录下编译即可
 
@@ -245,12 +288,30 @@ cmake --build build --config Release --target install
 cmake --build build --config Release --target DAFigure
 ```
 
-## 注意事项
+## ANTI-PATTERNS (THIS PROJECT)
 
 - QwtPlotItem相关的类不继承QObject，不要使用Qt的信号槽机制，继承 Qwt 非 QObject 类时**不能使用 Q_OBJECT 宏**
+- 禁止使用 `slot`、`signal` 小写命名的宏，统一使用 `Q_SLOTS`、`Q_SIGNALS`
+- 禁止在头文件中写入类成员函数的 Doxygen 块注释（仅限类的注释、信号注释、枚举注释）
+- 禁止在 QwtPlotItem 子类中使用信号槽
+
+## UNIQUE STYLES
+
 - 项目使用PIMPL模式，PIMPL相关宏定义在`src/DAGlobals.h`中,主要有如下宏需要使用：
   - `DA_DECLARE_PRIVATE`:在`MyClass`中定义
   - `DA_DECLARE_PUBLIC`:在`MyClass::PrivateData`中声明
   - `DA_PIMPL_CONSTRUCT`:在`MyClass::在MyClass`构造函数中初始化
   - `DA_D`:在`MyClass::fun()`中获取`MyClass::PrivateData`的指针
   - `DA_DC`:在`MyClass::fun() const`中获取`MyClass::PrivateData`的const指针
+- 所有类、文件名统一 `DA` 前缀，放入 `DA` 命名空间
+- Doxygen 注释使用中文
+- 头文件保持简洁：仅单行中文注释，详细文档在 .cpp 中
+
+## NOTES
+
+- Python 解释器路径通过 `DAPyInterpreter::getPythonInterpreterPath()` 自动检测
+- 第三方库 (SARibbon, qwt, Qt-Advanced-Docking-System 等) 需先通过 `src/3rdparty/CMakeLists.txt` 编译安装
+- `src/3rdparty/qwt/` 是 Qwt 7.x 维护分支, 有自己的 AGENTS.md
+- CI 通过 `.github/workflows/build.yml` 自动构建
+- 崩溃转储 (.dmp) 生成在 `dumps/` 目录，由 `DADumpCapture` 管理
+- 翻译文件通过 CMake option `DA_ENABLE_AUTO_TRANSLATE` 自动生成
