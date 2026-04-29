@@ -2,7 +2,7 @@
 """
 数据导出节点 — 将 DataFrame 导出到文件
 
-本节点接收上游 DataFrame，支持导出为 CSV 或 JSON 格式文件。
+本节点接收上游 DataFrame，支持导出为 CSV、JSON、Excel、Parquet、Feather 格式文件。
 """
 
 import os
@@ -15,7 +15,7 @@ class DataExportNode:
     """数据导出节点"""
 
     file_path = Parameter(str, default="", description="导出文件路径")
-    format = Parameter(str, default="csv", description="导出格式：csv/json")
+    export_format = Parameter(str, default="csv", description="导出格式：csv/json/excel/parquet/feather")
 
     class Inputs:
         data = Input("DataFrame", required=True, description="输入 DataFrame")
@@ -41,18 +41,16 @@ class DataExportNode:
         """
         执行数据导出
 
-        根据 format 参数将 DataFrame 导出为指定格式文件：
-        - csv: 使用 df.to_csv 导出，不含索引列
-        - json: 使用 df.to_json 导出，force_ascii=False
+        根据 export_format 参数将 DataFrame 导出为指定格式文件。
 
         :param inputs: 输入数据字典
-        :param params: 参数字典，包含 file_path、format
+        :param params: 参数字典，包含 file_path、export_format
         :return: 执行成功返回 True，失败返回 False
         """
         if params is None:
             params = {}
         file_path = params.get("file_path", self.file_path.default)
-        fmt = params.get("format", self.format.default)
+        fmt = params.get("export_format", self.export_format.default).strip().lower()
 
         df = self._input_data.get("data")
         if df is None or not file_path:
@@ -68,8 +66,13 @@ class DataExportNode:
                 df.to_csv(file_path, index=False)
             elif fmt == "json":
                 df.to_json(file_path, force_ascii=False)
+            elif fmt in ("excel", "xlsx"):
+                df.to_excel(file_path, index=False)
+            elif fmt == "parquet":
+                df.to_parquet(file_path, index=False)
+            elif fmt == "feather":
+                df.reset_index().to_feather(file_path)
             else:
-                # 默认以 CSV 格式导出
                 df.to_csv(file_path, index=False)
 
             self._output_data["success"] = True
