@@ -176,8 +176,8 @@ class DANodeRegistry:
             # 排除 __pycache__ 目录
             if "__pycache__" in py_file.parts:
                 continue
-            # 排除 __init__.py
-            if py_file.name == "__init__.py":
+            # 排除 __init__.py、setup.py、conftest.py 等非节点文件
+            if py_file.name in ("__init__.py", "setup.py", "conftest.py"):
                 continue
 
             module_name = _module_name_from_path(py_file, dir_path)

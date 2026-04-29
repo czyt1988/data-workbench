@@ -8,23 +8,26 @@ DADataAnalysisPy 安装配置
 
 from setuptools import setup, find_packages
 
-setup(
-    name="DADataAnalysisPy",
-    version="1.0.0",
-    description="数据分析示例节点包 — 基于 pandas 的数据处理工作流节点",
-    author="DA WorkBench Team",
-    packages=find_packages(),
-    python_requires=">=3.7",
-    install_requires=[
+SETUP_CONFIG = {
+    "name": "DADataAnalysisPy",
+    "version": "1.0.0",
+    "description": "数据分析示例节点包 — 基于 pandas 的数据处理工作流节点",
+    "author": "DA WorkBench Team",
+    "packages": find_packages(),
+    "python_requires": ">=3.7",
+    "install_requires": [
         "pandas",
     ],
-    extras_require={
+    "extras_require": {
         "plot": ["matplotlib"],
         "export": ["openpyxl", "pyarrow"],  # Excel 和 Parquet/Feather 支持
     },
-    entry_points={
+    "entry_points": {
         "data_workbench.plugin": [
             "DADataAnalysisPy = DADataAnalysisPy",
         ],
     },
-)
+}
+
+if __name__ == '__main__':
+    setup(**SETUP_CONFIG)
