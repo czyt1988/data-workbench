@@ -10,9 +10,10 @@ import inspect
 此文件封装日志相关的操作
 '''
 _initialized = False
+_file_sink_id = None  # 记录文件日志sink的id，用于后续移除
 
 def setup_logging():
-    global _initialized
+    global _initialized, _file_sink_id
     if _initialized:
         return logger
 
@@ -21,17 +22,19 @@ def setup_logging():
     os.makedirs(da_log_path, exist_ok=True)
     log_file = os.path.join(da_log_path, "da_pyscript.log")
 
-    logger.add(log_file, rotation="10 MB", level="DEBUG", enqueue=True)
+    _file_sink_id = logger.add(log_file, rotation="10 MB", level="DEBUG", enqueue=True)
     _initialized = True
     return logger
 
 def shutdown_logging():
-    global _initialized
+    global _initialized, _file_sink_id
     if not _initialized:
         return
-    
-    logger.remove()
-    # ... 其他清理逻辑
+
+    # 仅移除文件日志sink，保留默认的stderr sink
+    if _file_sink_id is not None:
+        logger.remove(_file_sink_id)
+        _file_sink_id = None
     _initialized = False
     
 
