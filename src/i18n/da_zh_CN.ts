@@ -60,6 +60,19 @@
     </message>
 </context>
 <context>
+    <name>DA</name>
+    <message>
+        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
+        <source>Exception in get selected column:%1</source>
+        <translation type="unfinished">获取选中的列发生异常：%1</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Exception in get selected series:%1</source>
+        <translation type="unfinished">获取选中的序列发生异常：%1</translation>
+    </message>
+</context>
+<context>
     <name>DA::AppMainWindow</name>
     <message>
         <location filename="../APP/AppMainWindow.cpp" line="+71"/>
@@ -1440,17 +1453,22 @@ Config</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="../APP/DAAppPluginManager.cpp" line="+68"/>
+        <location filename="../APP/DAAppPluginManager.cpp" line="+70"/>
         <source>succeed load plugin %1</source>
         <translation>成功加载插件“%1”</translation>
     </message>
     <message>
-        <location line="+95"/>
+        <location line="+146"/>
         <source>Python interpreter not initialized, skip Python node discovery</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+10"/>
+        <source>pyplugins scan completed, found %1 valid Python plugin paths</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Python node discovery failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4087,13 +4105,7 @@ Config</source>
 <context>
     <name>DA::DAPyDataframeColumnsListWidget</name>
     <message>
-        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
-        <source>Exception in get selected column:%1</source>
-        <translation type="unfinished">获取选中的列发生异常：%1</translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <location line="+20"/>
+        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+20"/>
         <source>Exception in get selected series:%1</source>
         <translation>获取选中的序列发生异常：%1</translation>
     </message>
@@ -4144,13 +4156,8 @@ Config</source>
 <context>
     <name>DA::DAPyWorkFlowEditWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowEditWidget.cpp" line="+101"/>
+        <location filename="../DAGui/DAPyWorkFlowEditWidget.cpp" line="+102"/>
         <source>no workflow set</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Workflow execution not yet implemented via DAPyWorkFlowExecuter</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4354,7 +4361,7 @@ Config</source>
 <context>
     <name>DA::DAPyWorkFlowScene</name>
     <message>
-        <location filename="../DAPyWorkFlow/DAPyWorkFlowScene.cpp" line="+165"/>
+        <location filename="../DAPyWorkFlow/DAPyWorkFlowScene.cpp" line="+168"/>
         <source>DAPyWorkFlowScene::createPyNode: Python workflow is not set</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4369,12 +4376,17 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+8"/>
+        <source>DAPyWorkFlowScene::createPyNode: invalid qualified_name: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
         <source>DAPyWorkFlowScene::createPyNode: Python error: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+104"/>
+        <location line="+106"/>
         <source>DAPyWorkFlowScene::removePyNodeItem: Python error removing connection: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4384,12 +4396,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+222"/>
+        <location line="+220"/>
         <source>DAPyWorkFlowScene::addPyNodeLink: Python error: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location line="+67"/>
         <source>DAPyWorkFlowScene::removePyNodeLink: Python error: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7551,13 +7563,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>改变列数据类型</translation>
     </message>
     <message>
-        <location line="+61"/>
         <location filename="../../plugins/DataAnalysis/Commands.cpp" line="+127"/>
+        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+61"/>
         <source>eval datas</source>
         <translation>列运算</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+27"/>
         <source>cast column to num</source>
         <translation>改变列数据为数值</translation>
     </message>
