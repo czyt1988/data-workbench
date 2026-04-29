@@ -34,6 +34,7 @@ from .connection import DAConnection
 from .workflow import DAWorkflow
 from .signal_manager import DASignalManager, DAWorkflowState
 from .executor import DAWorkflowExecutor, DAExecutorState
+from .syntax import NodeProxy, NodeOutputProxy, NodeInputProxy
 
 __all__ = [
     "NodeDef",
@@ -48,4 +49,7 @@ __all__ = [
     "DAConnection",
     "DAWorkflowExecutor",
     "DAExecutorState",
+    "NodeProxy",
+    "NodeOutputProxy",
+    "NodeInputProxy",
 ]
