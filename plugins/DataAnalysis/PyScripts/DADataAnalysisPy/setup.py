@@ -20,6 +20,7 @@ setup(
     ],
     extras_require={
         "plot": ["matplotlib"],
+        "export": ["openpyxl", "pyarrow"],  # Excel 和 Parquet/Feather 支持
     },
     entry_points={
         "data_workbench.plugin": [
