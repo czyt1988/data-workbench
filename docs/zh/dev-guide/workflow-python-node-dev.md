@@ -7,6 +7,7 @@
 本系列文档包含以下章节：
 
 - [DAPyWorkFlow 模块概述](./workflow-overview.md)
+- [插件与节点发现机制](./workflow-plugin-discovery.md)
 - [Python 节点开发指南](./workflow-python-node-dev.md) ← 当前页
 - [工作流生命周期](./workflow-lifecycle.md)
 - [C++ 集成指南](./workflow-cpp-integration.md)
