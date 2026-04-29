@@ -167,24 +167,12 @@ static QStringList scanPyPluginsDir(const QString& pyPluginsDir)
 
     const QStringList subDirs = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
     for (const QString& subDirName : subDirs) {
-        QString pyScriptsPath = pyPluginsDir + "/" + subDirName + "/PyScripts";
+        QString pyScriptsPath = QDir::toNativeSeparators(pyPluginsDir + "/" + subDirName);
         QDir pyScriptsDir(pyScriptsPath);
-        if (!pyScriptsDir.exists()) {
-            qDebug() << "pyplugins/" << subDirName << " has no PyScripts dir, skip";
-            continue;
-        }
-
+        QString initFilePath = pyScriptsDir.filePath("__init__.py");
+        bool hasPyPackage = QFile::exists(initFilePath);
         // 检查 PyScripts 下是否有包含 __init__.py 的 Python 包
-        bool hasPyPackage                = false;
         const QStringList packageDirList = pyScriptsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-        for (const QString& pkgName : packageDirList) {
-            QString initFile = pyScriptsPath + "/" + pkgName + "/__init__.py";
-            if (QFileInfo::exists(initFile)) {
-                hasPyPackage = true;
-                qDebug() << "Found Python plugin package: pyplugins/" << subDirName << "/PyScripts/" << pkgName;
-                break;
-            }
-        }
 
         if (hasPyPackage) {
             result.append(pyScriptsPath);
@@ -218,10 +206,11 @@ void DAAppPluginManager::initPyNodeFactory()
     }
     try {
         // 将内置PyScripts目录添加到sys.path，确保DAWorkbench.DAWorkFlowPy可被导入
-        DAPyInterpreter::appendSysPath(QApplication::applicationDirPath() + "/PyScripts");
+
+        DAPyInterpreter::appendSysPath(QDir::toNativeSeparators(QApplication::applicationDirPath() + "/PyScripts"));
 
         // 扫描pyplugins目录，收集有效的Python插件路径
-        QString pyPluginsDir  = QApplication::applicationDirPath() + "/pyplugins";
+        QString pyPluginsDir  = QDir::toNativeSeparators(QApplication::applicationDirPath() + "/pyplugins");
         QStringList scanPaths = scanPyPluginsDir(pyPluginsDir);
         qDebug() << tr("pyplugins scan completed, found %1 valid Python plugin paths").arg(scanPaths.size());
 
