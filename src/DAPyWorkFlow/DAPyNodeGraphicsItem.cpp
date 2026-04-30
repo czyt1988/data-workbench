@@ -12,6 +12,7 @@
 #include <QJsonArray>
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
+#include <QFontMetrics>
 
 namespace DA
 {
@@ -303,6 +304,44 @@ void DAPyNodeGraphicsItem::setNodeName(const QString& name)
 {
     if (d_ptr->mNodeName != name) {
         d_ptr->mNodeName = name;
+
+        // 仅 RectTemplate 模式下自适应尺寸
+        if (d_ptr->mRenderTemplate == RectTemplate && !name.isEmpty()) {
+            QFont font;
+            font.setPointSize(9);
+            QFontMetrics fm(font);
+
+            constexpr qreal kIconSpace = 36;      // 图标占用的左侧空间
+            constexpr qreal kRightMargin = 8;     // 右侧边距
+            constexpr qreal kLinkPointSpace = 12; // 连接点额外空间
+            constexpr qreal kMinWidth = 120;      // 最小宽度
+            constexpr qreal kMaxWidth = 280;      // 最大宽度
+            constexpr qreal kHeightPadding = 12;  // 上下间距
+            constexpr qreal kMinHeight = 60;      // 最小高度
+
+            // 文本宽度测量（单行）
+            qreal textWidth = fm.horizontalAdvance(name);
+            qreal desiredWidth = kIconSpace + textWidth + kRightMargin + kLinkPointSpace;
+
+            // 判断是否需要换行
+            qreal availableTextWidth = kMaxWidth - kIconSpace - kRightMargin - kLinkPointSpace;
+            bool needsWrap = textWidth > availableTextWidth;
+            qreal finalWidth = qBound(kMinWidth, desiredWidth, kMaxWidth);
+            qreal desiredHeight = kMinHeight;
+
+            if (needsWrap) {
+                // 使用 boundingRect 计算多行文本高度
+                QRect textBounds(0, 0, qRound(availableTextWidth), 0);
+                textBounds = fm.boundingRect(textBounds,
+                                             Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap,
+                                             name);
+                desiredHeight = qMax(kMinHeight, textBounds.height() + kHeightPadding);
+            }
+
+            setBodySize(QSizeF(finalWidth, desiredHeight));
+            d_ptr->updateLinkPointPositions(getBodyRect());
+        }
+
         update();
     }
 }
@@ -820,7 +859,7 @@ void DAPyNodeGraphicsItem::paintRectTemplate(QPainter* painter, const QRectF& bo
 
         // 计算文本绘制区域（留出图标空间）
         QRectF textRect = bodyRect.adjusted(36, 0, -8, 0);
-        painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, d_ptr->mNodeName);
+        painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextWordWrap, d_ptr->mNodeName);
     }
 
     painter->restore();

@@ -155,6 +155,16 @@ def NodeDef(name: str, category: str = "", icon: str = "", render_template: str 
         # 在类上设置 _node_descriptor 属性
         cls._node_descriptor = descriptor
 
+        # Also set input_keys and output_keys as class attributes for C++ syncMetaFromPyNode
+        cls.input_keys = [inp["name"] for inp in inputs]
+        cls.output_keys = [outp["name"] for outp in outputs]
+
+        @classmethod
+        def _get_descriptor(cls):
+            return getattr(cls, '_node_descriptor', {})
+
+        cls.get_descriptor = _get_descriptor
+
         return cls
 
     return decorator
