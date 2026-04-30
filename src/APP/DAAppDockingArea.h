@@ -32,7 +32,6 @@ class DASettingContainerWidget;
 // 日志窗口
 class DAMessageLogViewWidget;
 //
-class DAPyNodeGraphicsItem;
 class DAPyNodeWidget;
 
 /**

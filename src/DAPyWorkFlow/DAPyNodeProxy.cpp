@@ -3,6 +3,7 @@
 #include "DAPyModuleWorkflow.h"
 #include "DAPyGILGuard.h"
 #include "DAPyJsonCast.h"
+#include "DAPybind11QtCaster.hpp"
 #include <QDebug>
 #include <QJsonObject>
 #include <QJsonDocument>
@@ -25,16 +26,16 @@ public:
     void syncMetaFromPyNode(const pybind11::object& pyNode);
 
 public:
-    QString mQualifiedName;                 ///< Python节点的限定名（如"package.module.ClassName"）
-    QString mNodeName;                      ///< 节点名称（本地缓存，也从Python node_name读取）
-    QList<QString> mInputKeys;              ///< 输入key列表（本地缓存）
-    QList<QString> mOutputKeys;             ///< 输出key列表（本地缓存）
-    QString mNodePrototype;                 ///< 节点原型（本地缓存）
-    QString mNodeGroup;                     ///< 节点分组（本地缓存）
-    unsigned int mId { 0 };                 ///< 节点ID（独立管理）
-    DAPySafePyObjectHolder mPyNodeRef;      ///< Python节点实例的安全持有者
+    QString mQualifiedName;                            ///< Python节点的限定名（如"package.module.ClassName"）
+    QString mNodeName;                                 ///< 节点名称（本地缓存，也从Python node_name读取）
+    QList< QString > mInputKeys;                       ///< 输入key列表（本地缓存）
+    QList< QString > mOutputKeys;                      ///< 输出key列表（本地缓存）
+    QString mNodePrototype;                            ///< 节点原型（本地缓存）
+    QString mNodeGroup;                                ///< 节点分组（本地缓存）
+    unsigned int mId { 0 };                            ///< 节点ID（独立管理）
+    DAPySafePyObjectHolder mPyNodeRef;                 ///< Python节点实例的安全持有者
     DAPyNodeState mNodeState { DAPyNodeState::Idle };  ///< 节点执行状态
-    mutable QString mLastErrorString;       ///< 最后一次错误信息（mutable允许const方法修改）
+    mutable QString mLastErrorString;                  ///< 最后一次错误信息（mutable允许const方法修改）
 };
 
 //===================================================
@@ -127,13 +128,13 @@ void DAPyNodeProxy::PrivateData::syncMetaFromPyNode(const pybind11::object& pyNo
         // 提取节点原型
         if (pybind11::hasattr(pyNode, "node_prototype")) {
             pybind11::object protoObj = pyNode.attr("node_prototype");
-            mNodePrototype             = pybind11::cast< QString >(protoObj);
+            mNodePrototype            = pybind11::cast< QString >(protoObj);
         }
 
         // 提取分组信息
         if (pybind11::hasattr(pyNode, "group")) {
             pybind11::object groupObj = pyNode.attr("group");
-            mNodeGroup                 = pybind11::cast< QString >(groupObj);
+            mNodeGroup                = pybind11::cast< QString >(groupObj);
         }
 
     } catch (const pybind11::error_already_set& e) {
@@ -367,7 +368,7 @@ void DAPyNodeProxy::setNodeName(const QString& name)
  *
  * @return 输入key的QList<QString>列表
  */
-QList<QString> DAPyNodeProxy::getInputKeys() const
+QList< QString > DAPyNodeProxy::getInputKeys() const
 {
     DA_DC(d);
     return d->mInputKeys;
@@ -381,7 +382,7 @@ QList<QString> DAPyNodeProxy::getInputKeys() const
  *
  * @return 输出key的QList<QString>列表
  */
-QList<QString> DAPyNodeProxy::getOutputKeys() const
+QList< QString > DAPyNodeProxy::getOutputKeys() const
 {
     DA_DC(d);
     return d->mOutputKeys;
