@@ -41,6 +41,7 @@ void initializePythonInterpreter();
 
 
 const static QString CS_CMD_IMPORTDATA = QStringLiteral("import-data");
+const static QString CS_CMD_NOSPLASH   = QStringLiteral("no-splash");
 // 初始化所有命令
 void initCommandLine(QCommandLineParser* cmd);
 /**
@@ -93,23 +94,35 @@ int main(int argc, char* argv[])
 
 
     // 创建并显示启动画面(启动画面必须在QApplication之后创建)
-    DA::DASplashScreen splash;
-    // 支持从外部文件加载自定义背景图片
-    QString customSplashPath = QApplication::applicationDirPath() + QStringLiteral("/splash.png");
-    splash.loadBackgroundPixmap(customSplashPath);  // 若文件不存在则保持默认背景
-    splash.show();
-    splash.showMessage(QObject::tr("Initializing..."));  // cn:正在初始化...
+    // --no-splash 参数可跳过启动画面，适用于调试场景
+    bool showSplash = !cmdParser.isSet(CS_CMD_NOSPLASH);
+    DA::DASplashScreen* splash = nullptr;
+    if (showSplash) {
+        splash = new DA::DASplashScreen();
+        // 支持从外部文件加载自定义背景图片
+        QString customSplashPath = QApplication::applicationDirPath() + QStringLiteral("/splash.png");
+        splash->loadBackgroundPixmap(customSplashPath);  // 若文件不存在则保持默认背景
+        splash->show();
+        splash->showMessage(QObject::tr("Initializing..."));  // cn:正在初始化...
+    }
 
     // 接口初始化，同步会初始化python环境
-    splash.showMessage(QObject::tr("Initializing core components..."));  // cn:正在初始化核心组件...
+    if (splash) {
+        splash->showMessage(QObject::tr("Initializing core components..."));  // cn:正在初始化核心组件...
+    }
     DA::DAAppCore& core = DA::DAAppCore::getInstance();
     if (!core.initialized()) {
         qCritical() << QObject::tr("Kernel initialization failed");  // cn:内核初始化失败
+        if (splash) {
+            delete splash;
+        }
         return -1;
     }
 
     // gui初始化
-    splash.showMessage(QObject::tr("Loading user interface..."));  // cn:正在加载用户界面...
+    if (splash) {
+        splash->showMessage(QObject::tr("Loading user interface..."));  // cn:正在加载用户界面...
+    }
     DA::AppMainWindow w;
     QStringList positionalArgs = cmdParser.positionalArguments();
     qDebug() << "positionalArgs:" << positionalArgs;
@@ -117,22 +130,31 @@ int main(int argc, char* argv[])
         // 说明有可能是双击文件打开，这时候要看参数是否为一个工程文件
         QFileInfo openfi(positionalArgs[ 0 ]);
         if (openfi.exists()) {
-            splash.showMessage(QObject::tr("Opening project..."));  // cn:正在打开工程...
+            if (splash) {
+                splash->showMessage(QObject::tr("Opening project..."));  // cn:正在打开工程...
+            }
             w.openProject(openfi.absoluteFilePath());
         }
     }
     // 处理其它命令
     if (cmdParser.isSet(CS_CMD_IMPORTDATA)) {
-        splash.showMessage(QObject::tr("Importing data..."));  // cn:正在导入数据...
+        if (splash) {
+            splash->showMessage(QObject::tr("Importing data..."));  // cn:正在导入数据...
+        }
         // impot-data 命令
         const QStringList filePaths = cmdParser.values(CS_CMD_IMPORTDATA);
         for (const QString& path : filePaths) {
             w.importData(path, QVariantMap());
         }
     }
-    splash.showMessage(QObject::tr("Ready"));  // cn:启动完成
+    if (splash) {
+        splash->showMessage(QObject::tr("Ready"));  // cn:启动完成
+    }
     w.show();
-    splash.finish(&w);
+    if (splash) {
+        splash->finish(&w);
+        delete splash;
+    }
     int r = app.exec();
     DA::daUnregisterMessageHandler();
     return r;
@@ -168,6 +190,15 @@ void initCommandLine(QCommandLineParser* cmd)
         "path"
     );
     cmd->addOption(importDataOption);
+    QCommandLineOption noSplashOption(
+        CS_CMD_NOSPLASH,
+        QCoreApplication::translate(
+            "main",
+            "Disable the splash screen during startup, useful for debugging to avoid "
+            "the splash window blocking the IDE"
+        )  // cn:禁用启动画面，适用于调试时避免启动窗口遮挡IDE
+    );
+    cmd->addOption(noSplashOption);
 }
 
 /**

@@ -51,6 +51,9 @@ public:
     // 显示加载消息（便捷方法，始终居底部显示）
     void showMessage(const QString& message);
 
+    // 检测是否有调试器附加（调试时不置顶启动画面）
+    static bool isDebuggerPresent();
+
     // 默认启动画面尺寸
     static QSize defaultSize();
 

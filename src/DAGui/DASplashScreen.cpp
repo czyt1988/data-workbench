@@ -6,6 +6,10 @@
 #include <QFont>
 #include <QFileInfo>
 #include <QDebug>
+#include <cstdlib>
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 #include "DAConfigs.h"
 
 namespace DA
@@ -43,7 +47,10 @@ DASplashScreen::PrivateData::PrivateData(DASplashScreen* p) : q_ptr(p)
  */
 DASplashScreen::DASplashScreen() : QSplashScreen(generateDefaultPixmap()), DA_PIMPL_CONSTRUCT
 {
-    setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+    // 调试时不置顶，避免遮挡IDE
+    if (!isDebuggerPresent()) {
+        setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+    }
 }
 
 /**
@@ -54,7 +61,10 @@ DASplashScreen::DASplashScreen() : QSplashScreen(generateDefaultPixmap()), DA_PI
 DASplashScreen::DASplashScreen(const QPixmap& pixmap)
     : QSplashScreen(pixmap.isNull() ? generateDefaultPixmap() : pixmap), DA_PIMPL_CONSTRUCT
 {
-    setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+    // 调试时不置顶，避免遮挡IDE
+    if (!isDebuggerPresent()) {
+        setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+    }
 }
 
 DASplashScreen::~DASplashScreen()
@@ -178,6 +188,27 @@ void DASplashScreen::showMessage(const QString& message)
     // 调用基类方法，位置设为底部居中，颜色为设定颜色
     QSplashScreen::showMessage(message, Qt::AlignBottom | Qt::AlignHCenter, d->m_messageColor);
     QApplication::processEvents();
+}
+
+/**
+ * @brief 检测是否有调试器附加到当前进程
+ *
+ * 在 Windows 下使用 IsDebuggerPresent() API 检测，
+ * 在其他平台下通过环境变量 DA_DEBUG 检测（需手动设置）。
+ * 调试器附加时返回 true，此时启动画面不会设置 WindowStaysOnTopHint，
+ * 避免遮挡 IDE 等调试工具窗口。
+ *
+ * @return 有调试器附加返回 true，否则返回 false
+ */
+bool DASplashScreen::isDebuggerPresent()
+{
+#ifdef Q_OS_WIN
+    return IsDebuggerPresent();
+#else
+    // 非 Windows 平台通过环境变量检测，用户可设置 DA_DEBUG=1 来模拟
+    const char* debugEnv = std::getenv("DA_DEBUG");
+    return (debugEnv != nullptr && debugEnv[0] != '0');
+#endif
 }
 
 /**
