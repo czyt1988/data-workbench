@@ -342,11 +342,11 @@ bool DAPyWorkFlowScene::removePyNodeItem(DAPyNodeGraphicsItem* item)
     // 从场景移除图形项
     removeItem(item);
 
-    // 清理代理
-    if (proxy) {
-        delete proxy;
+    // 销毁图形项（unique_ptr自动释放proxy，需GIL保护proxy析构中的Python引用释放）
+    {
+        DAPyGILGuard gil;
+        delete item;
     }
-    delete item;
 
     return true;
 }
@@ -778,13 +778,12 @@ void DAPyWorkFlowScene::clearPyScene()
         }
     }
 
-    // 移除所有节点
-    for (DAPyNodeGraphicsItem* node : nodeItems) {
-        DAPyNodeProxy* proxy = node->getProxy();
-        removeItem(node);
-        delete node;
-        if (proxy) {
-            delete proxy;
+    // 移除所有节点（unique_ptr自动释放proxy，需GIL保护Python引用释放）
+    {
+        DAPyGILGuard gil;
+        for (DAPyNodeGraphicsItem* node : nodeItems) {
+            removeItem(node);
+            delete node;
         }
     }
 

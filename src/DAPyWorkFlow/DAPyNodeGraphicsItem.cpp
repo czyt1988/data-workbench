@@ -3,6 +3,7 @@
 #include "DAPyNodeProxy.h"
 #include "DAPyNodePalette.h"
 #include "DAPyLinkPoint.h"
+#include <memory>
 #include <QPainter>
 #include <QSvgRenderer>
 #include <QGraphicsProxyWidget>
@@ -35,7 +36,7 @@ public:
     ~PrivateData();
 
     // 根据描述符生成连接点
-    QList<DAPyLinkPoint> generateLinkPointsFromDescriptor() const;
+    QList< DAPyLinkPoint > generateLinkPointsFromDescriptor() const;
     // 更新连接点位置
     void updateLinkPointPositions(const QRectF& bodyRect);
     // 清理widget
@@ -44,20 +45,20 @@ public:
     void cleanupSvg();
 
 public:
-    DAPyNodeProxy* mProxy { nullptr };              ///< Python节点代理
-    RenderTemplate mRenderTemplate { RectTemplate }; ///< 当前渲染模板
-    QString mNodeName;                              ///< 节点名称
-    QIcon mIcon;                                    ///< 节点图标
-    QString mSvgPath;                               ///< SVG文件路径
-    QSvgRenderer* mSvgRenderer { nullptr };         ///< SVG渲染器
-    QGraphicsProxyWidget* mProxyWidget { nullptr }; ///< Widget代理
-    QWidget* mWidget { nullptr };                   ///< 嵌入的widget
-    DAPyNodeState mNodeState { Idle };              ///< 节点状态
-    QJsonObject mDescriptor;                        ///< 节点描述符
-    QList<DAPyLinkPoint> mInputLinkPoints;        ///< 输入连接点
-    QList<DAPyLinkPoint> mOutputLinkPoints;       ///< 输出连接点
-    DAPySafePyObjectHolder mPaintCallback;          ///< 自定义绘制回调（Python函数对象）
-    bool mPaintCallbackError { false };              ///< 绘制回调是否发生过异常
+    std::unique_ptr< DAPyNodeProxy > mProxy;           ///< Python节点代理（独占所有权）
+    RenderTemplate mRenderTemplate { RectTemplate };  ///< 当前渲染模板
+    QString mNodeName;                                ///< 节点名称
+    QIcon mIcon;                                      ///< 节点图标
+    QString mSvgPath;                                 ///< SVG文件路径
+    QSvgRenderer* mSvgRenderer { nullptr };           ///< SVG渲染器
+    QGraphicsProxyWidget* mProxyWidget { nullptr };   ///< Widget代理
+    QWidget* mWidget { nullptr };                     ///< 嵌入的widget
+    DAPyNodeState mNodeState { Idle };                ///< 节点状态
+    QJsonObject mDescriptor;                          ///< 节点描述符
+    QList< DAPyLinkPoint > mInputLinkPoints;          ///< 输入连接点
+    QList< DAPyLinkPoint > mOutputLinkPoints;         ///< 输出连接点
+    DAPySafePyObjectHolder mPaintCallback;            ///< 自定义绘制回调（Python函数对象）
+    bool mPaintCallbackError { false };               ///< 绘制回调是否发生过异常
 };
 
 /**
@@ -81,9 +82,9 @@ DAPyNodeGraphicsItem::PrivateData::~PrivateData()
  * @brief 从描述符生成连接点
  * @return 连接点列表
  */
-QList<DAPyLinkPoint> DAPyNodeGraphicsItem::PrivateData::generateLinkPointsFromDescriptor() const
+QList< DAPyLinkPoint > DAPyNodeGraphicsItem::PrivateData::generateLinkPointsFromDescriptor() const
 {
-    QList<DAPyLinkPoint> result;
+    QList< DAPyLinkPoint > result;
 
     if (mDescriptor.isEmpty()) {
         return result;
@@ -94,8 +95,8 @@ QList<DAPyLinkPoint> DAPyNodeGraphicsItem::PrivateData::generateLinkPointsFromDe
     int inputCount    = inputs.size();
     for (int i = 0; i < inputCount; ++i) {
         DAPyLinkPoint lp;
-        lp.way       = DAPyLinkPoint::Input;
-        lp.direction = AspectDirection::West;
+        lp.way               = DAPyLinkPoint::Input;
+        lp.direction         = AspectDirection::West;
         QJsonObject inputObj = inputs.at(i).toObject();
         lp.name              = inputObj.value("name").toString(QString("input_%1").arg(i));
         result.append(lp);
@@ -106,8 +107,8 @@ QList<DAPyLinkPoint> DAPyNodeGraphicsItem::PrivateData::generateLinkPointsFromDe
     int outputCount    = outputs.size();
     for (int i = 0; i < outputCount; ++i) {
         DAPyLinkPoint lp;
-        lp.way       = DAPyLinkPoint::Output;
-        lp.direction = AspectDirection::East;
+        lp.way                = DAPyLinkPoint::Output;
+        lp.direction          = AspectDirection::East;
         QJsonObject outputObj = outputs.at(i).toObject();
         lp.name               = outputObj.value("name").toString(QString("output_%1").arg(i));
         result.append(lp);
@@ -127,7 +128,7 @@ void DAPyNodeGraphicsItem::PrivateData::updateLinkPointPositions(const QRectF& b
     if (inputCount > 0) {
         qreal spacing = bodyRect.height() / (inputCount + 1);
         for (int i = 0; i < inputCount; ++i) {
-            mInputLinkPoints[i].position = QPointF(bodyRect.left(), bodyRect.top() + spacing * (i + 1));
+            mInputLinkPoints[ i ].position = QPointF(bodyRect.left(), bodyRect.top() + spacing * (i + 1));
         }
     }
 
@@ -136,7 +137,7 @@ void DAPyNodeGraphicsItem::PrivateData::updateLinkPointPositions(const QRectF& b
     if (outputCount > 0) {
         qreal spacing = bodyRect.height() / (outputCount + 1);
         for (int i = 0; i < outputCount; ++i) {
-            mOutputLinkPoints[i].position = QPointF(bodyRect.right(), bodyRect.top() + spacing * (i + 1));
+            mOutputLinkPoints[ i ].position = QPointF(bodyRect.right(), bodyRect.top() + spacing * (i + 1));
         }
     }
 }
@@ -177,7 +178,7 @@ void DAPyNodeGraphicsItem::PrivateData::cleanupSvg()
 DAPyNodeGraphicsItem::DAPyNodeGraphicsItem(DAPyNodeProxy* proxy, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
-    d_ptr->mProxy = proxy;
+    d_ptr->mProxy.reset(proxy);
 
     // 设置默认尺寸
     setBodySize(QSizeF(120, 60));
@@ -188,9 +189,9 @@ DAPyNodeGraphicsItem::DAPyNodeGraphicsItem(DAPyNodeProxy* proxy, QGraphicsItem* 
 
     // 如果代理有效，同步信息
     if (proxy) {
-        d_ptr->mNodeName = proxy->getNodeName();
+        d_ptr->mNodeName   = proxy->getNodeName();
         d_ptr->mDescriptor = proxy->getDescriptor();
-        d_ptr->mNodeState = proxy->getNodeState();
+        d_ptr->mNodeState  = proxy->getNodeState();
         updateLinkPoints();
     }
 }
@@ -277,7 +278,7 @@ QString DAPyNodeGraphicsItem::getRenderTemplateName() const
  */
 DAPyNodeProxy* DAPyNodeGraphicsItem::getProxy() const
 {
-    return d_ptr->mProxy;
+    return d_ptr->mProxy.get();
 }
 
 /**
@@ -286,11 +287,11 @@ DAPyNodeProxy* DAPyNodeGraphicsItem::getProxy() const
  */
 void DAPyNodeGraphicsItem::setProxy(DAPyNodeProxy* proxy)
 {
-    d_ptr->mProxy = proxy;
+    d_ptr->mProxy.reset(proxy);
     if (proxy) {
-        d_ptr->mNodeName = proxy->getNodeName();
+        d_ptr->mNodeName   = proxy->getNodeName();
         d_ptr->mDescriptor = proxy->getDescriptor();
-        d_ptr->mNodeState = proxy->getNodeState();
+        d_ptr->mNodeState  = proxy->getNodeState();
         updateLinkPoints();
         update();
     }
@@ -311,30 +312,28 @@ void DAPyNodeGraphicsItem::setNodeName(const QString& name)
             font.setPointSize(9);
             QFontMetrics fm(font);
 
-            constexpr qreal kIconSpace = 36;      // 图标占用的左侧空间
-            constexpr qreal kRightMargin = 8;     // 右侧边距
-            constexpr qreal kLinkPointSpace = 12; // 连接点额外空间
-            constexpr qreal kMinWidth = 120;      // 最小宽度
-            constexpr qreal kMaxWidth = 280;      // 最大宽度
-            constexpr qreal kHeightPadding = 12;  // 上下间距
-            constexpr qreal kMinHeight = 60;      // 最小高度
+            constexpr qreal kIconSpace      = 36;   // 图标占用的左侧空间
+            constexpr qreal kRightMargin    = 8;    // 右侧边距
+            constexpr qreal kLinkPointSpace = 12;   // 连接点额外空间
+            constexpr qreal kMinWidth       = 120;  // 最小宽度
+            constexpr qreal kMaxWidth       = 280;  // 最大宽度
+            constexpr qreal kHeightPadding  = 12;   // 上下间距
+            constexpr qreal kMinHeight      = 60;   // 最小高度
 
             // 文本宽度测量（单行）
-            qreal textWidth = fm.horizontalAdvance(name);
+            qreal textWidth    = fm.horizontalAdvance(name);
             qreal desiredWidth = kIconSpace + textWidth + kRightMargin + kLinkPointSpace;
 
             // 判断是否需要换行
             qreal availableTextWidth = kMaxWidth - kIconSpace - kRightMargin - kLinkPointSpace;
-            bool needsWrap = textWidth > availableTextWidth;
-            qreal finalWidth = qBound(kMinWidth, desiredWidth, kMaxWidth);
-            qreal desiredHeight = kMinHeight;
+            bool needsWrap           = textWidth > availableTextWidth;
+            qreal finalWidth         = qBound(kMinWidth, desiredWidth, kMaxWidth);
+            qreal desiredHeight      = kMinHeight;
 
             if (needsWrap) {
                 // 使用 boundingRect 计算多行文本高度
                 QRect textBounds(0, 0, qRound(availableTextWidth), 0);
-                textBounds = fm.boundingRect(textBounds,
-                                             Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap,
-                                             name);
+                textBounds    = fm.boundingRect(textBounds, Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, name);
                 desiredHeight = qMax(kMinHeight, textBounds.height() + kHeightPadding);
             }
 
@@ -505,7 +504,7 @@ QJsonObject DAPyNodeGraphicsItem::getDescriptor() const
  * @brief 获取输入连接点
  * @return 输入连接点列表
  */
-QList<DAPyLinkPoint> DAPyNodeGraphicsItem::getInputLinkPoints() const
+QList< DAPyLinkPoint > DAPyNodeGraphicsItem::getInputLinkPoints() const
 {
     return d_ptr->mInputLinkPoints;
 }
@@ -514,7 +513,7 @@ QList<DAPyLinkPoint> DAPyNodeGraphicsItem::getInputLinkPoints() const
  * @brief 获取输出连接点
  * @return 输出连接点列表
  */
-QList<DAPyLinkPoint> DAPyNodeGraphicsItem::getOutputLinkPoints() const
+QList< DAPyLinkPoint > DAPyNodeGraphicsItem::getOutputLinkPoints() const
 {
     return d_ptr->mOutputLinkPoints;
 }
@@ -524,7 +523,7 @@ QList<DAPyLinkPoint> DAPyNodeGraphicsItem::getOutputLinkPoints() const
  */
 void DAPyNodeGraphicsItem::updateLinkPoints()
 {
-    QList<DAPyLinkPoint> allPoints = generateLinkPoints();
+    QList< DAPyLinkPoint > allPoints = generateLinkPoints();
 
     d_ptr->mInputLinkPoints.clear();
     d_ptr->mOutputLinkPoints.clear();
@@ -544,7 +543,7 @@ void DAPyNodeGraphicsItem::updateLinkPoints()
  * @brief 生成连接点
  * @return 连接点列表
  */
-QList<DAPyLinkPoint> DAPyNodeGraphicsItem::generateLinkPoints() const
+QList< DAPyLinkPoint > DAPyNodeGraphicsItem::generateLinkPoints() const
 {
     // 优先从描述符生成
     if (!d_ptr->mDescriptor.isEmpty()) {
@@ -552,26 +551,26 @@ QList<DAPyLinkPoint> DAPyNodeGraphicsItem::generateLinkPoints() const
     }
 
     // 从代理节点生成
-    QList<DAPyLinkPoint> result;
+    QList< DAPyLinkPoint > result;
     if (d_ptr->mProxy) {
-        QStringList inputs = d_ptr->mProxy->getInputKeys();
+        QStringList inputs  = d_ptr->mProxy->getInputKeys();
         QStringList outputs = d_ptr->mProxy->getOutputKeys();
 
         // 生成输入连接点
         for (const QString& key : inputs) {
             DAPyLinkPoint lp;
-            lp.way = DAPyLinkPoint::Input;
+            lp.way       = DAPyLinkPoint::Input;
             lp.direction = AspectDirection::West;
-            lp.name = key;
+            lp.name      = key;
             result.append(lp);
         }
 
         // 生成输出连接点
         for (const QString& key : outputs) {
             DAPyLinkPoint lp;
-            lp.way = DAPyLinkPoint::Output;
+            lp.way       = DAPyLinkPoint::Output;
             lp.direction = AspectDirection::East;
-            lp.name = key;
+            lp.name      = key;
             result.append(lp);
         }
     }
@@ -606,7 +605,7 @@ bool DAPyNodeGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentEleme
     }
 
     // 保存状态
-    pyNodeEle.setAttribute("nodeState", static_cast<int>(d_ptr->mNodeState));
+    pyNodeEle.setAttribute("nodeState", static_cast< int >(d_ptr->mNodeState));
 
     parentElement->appendChild(pyNodeEle);
     return true;
@@ -643,8 +642,8 @@ bool DAPyNodeGraphicsItem::loadFromXml(const QDomElement* itemElement, const QVe
     }
 
     // 加载状态
-    int state = pyNodeEle.attribute("nodeState", "0").toInt();
-    d_ptr->mNodeState = static_cast<DAPyNodeState>(state);
+    int state         = pyNodeEle.attribute("nodeState", "0").toInt();
+    d_ptr->mNodeState = static_cast< DAPyNodeState >(state);
 
     return true;
 }
@@ -664,9 +663,9 @@ bool DAPyNodeGraphicsItem::loadFromXml(const QDomElement* itemElement, const QVe
  * @param[in] bodyRect 主体矩形区域
  */
 void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
-                                       const QStyleOptionGraphicsItem* option,
-                                       QWidget* widget,
-                                       const QRectF& bodyRect)
+                                     const QStyleOptionGraphicsItem* option,
+                                     QWidget* widget,
+                                     const QRectF& bodyRect)
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
@@ -678,8 +677,8 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
         DAPyGILGuard gil;
         try {
             DAPyPainterProxy proxy(painter);
-            pybind11::tuple bodyTuple = pybind11::make_tuple(
-                bodyRect.x(), bodyRect.y(), bodyRect.width(), bodyRect.height());
+            pybind11::tuple bodyTuple =
+                pybind11::make_tuple(bodyRect.x(), bodyRect.y(), bodyRect.width(), bodyRect.height());
             d_ptr->mPaintCallback.object()(proxy, bodyTuple);
             d_ptr->mPaintCallbackError = false;
             // 回调成功，绘制连接点后返回
@@ -969,7 +968,7 @@ void DAPyNodeGraphicsItem::setPaintCallback(const pybind11::object& callback)
     }
     DAPyGILGuard gil;
     try {
-        d_ptr->mPaintCallback = DAPySafePyObjectHolder(callback);
+        d_ptr->mPaintCallback      = DAPySafePyObjectHolder(callback);
         d_ptr->mPaintCallbackError = false;
     } catch (const std::exception& e) {
         qWarning() << "DAPyNodeGraphicsItem setPaintCallback exception:" << e.what();
@@ -1027,7 +1026,7 @@ void DAPyNodeGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event
     }
 
     // 发射信号，由DAGui层（DAPyWorkFlowGraphicsScene）处理配置对话框
-    emit nodeDoubleClicked(d_ptr->mProxy);
+    Q_EMIT nodeDoubleClicked(d_ptr->mProxy.get());
 }
 
 }  // end of namespace DA
