@@ -421,7 +421,7 @@ DAPyNodeGraphicsItem* DAPyWorkFlowGraphicsView::createNode(const DAPyNodeMetaDat
 	}
 	// Convert DAPyNodeMetaData to descriptor for createPyNode
 	QJsonObject descriptor;
-	descriptor["qualified_name"] = md.prototype;
+	descriptor["qualified_name"] = md.qualifiedName;
 	descriptor["name"] = md.name;
 	descriptor["group"] = md.group;
 	return secen->createPyNode(descriptor, mapToScene(pos));
@@ -435,10 +435,30 @@ DAPyNodeGraphicsItem* DAPyWorkFlowGraphicsView::createNode_(const DAPyNodeMetaDa
 	}
 	// Convert DAPyNodeMetaData to descriptor for createPyNode_
 	QJsonObject descriptor;
-	descriptor["qualified_name"] = md.prototype;
+	descriptor["qualified_name"] = md.qualifiedName;
 	descriptor["name"] = md.name;
 	descriptor["group"] = md.group;
-	return secen->createPyNode_(descriptor, mapToScene(pos));
+return secen->createPyNode_(descriptor, mapToScene(pos));
+}
+
+DAPyNodeGraphicsItem* DAPyWorkFlowGraphicsView::createNode(const DAPyNodeMetaData& md, const QPointF& pos)
+{
+	auto secen = getWorkFlowGraphicsScene();
+	if (!secen) {
+		return nullptr;
+	}
+	// 直接传递元数据，避免QJsonObject中间转换导致数据丢失
+	return secen->createPyNode(md, pos);
+}
+
+DAPyNodeGraphicsItem* DAPyWorkFlowGraphicsView::createNode_(const DAPyNodeMetaData& md, const QPointF& pos)
+{
+	auto secen = getWorkFlowGraphicsScene();
+	if (!secen) {
+		return nullptr;
+	}
+	// 直接传递元数据，避免QJsonObject中间转换导致数据丢失
+	return secen->createPyNode_(md, pos);
 }
 
 void DAPyWorkFlowGraphicsView::mouseMoveEvent(QMouseEvent* event)
@@ -594,7 +614,7 @@ void DAPyWorkFlowGraphicsView::dropEvent(QDropEvent* event)
 		} else {
 			// 正常的拖入操作
 			clearSelection();
-            createNode_(nodemeta,evpos);
+            createNode_(nodemeta, mapToScene(evpos));
 		}
 	}
 	DAGraphicsView::dropEvent(event);

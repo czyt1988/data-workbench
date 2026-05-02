@@ -67,6 +67,9 @@ public:
 	// 通过node元对象创建工作流节点
 	DAPyNodeGraphicsItem* createNode(const DAPyNodeMetaData& md, const QPoint& pos);
 	DAPyNodeGraphicsItem* createNode_(const DAPyNodeMetaData& md, const QPoint& pos);
+	// 通过node元对象创建工作流节点（直接传递元数据，避免QJsonObject中间转换导致数据丢失）
+	DAPyNodeGraphicsItem* createNode(const DAPyNodeMetaData& md, const QPointF& pos);
+	DAPyNodeGraphicsItem* createNode_(const DAPyNodeMetaData& md, const QPointF& pos);
 
 signals:
 
