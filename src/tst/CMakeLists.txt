@@ -1,11 +1,6 @@
 ﻿# 顶级测试目录的 CMakeLists.txt
 # 这个文件管理所有子目录的单元测试
-
-cmake_minimum_required(VERSION 3.10)
-project(DATests)
-
-# 启用测试
-enable_testing()
+# 注意：顶层 CMakeLists.txt 已调用 project() 和 enable_testing()
 
 # 设置 C++ 标准
 set(CMAKE_CXX_STANDARD 17)
@@ -23,12 +18,13 @@ file(GLOB test_subdirectories RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} */)
 foreach(subdir ${test_subdirectories})
     if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${subdir})
         # 跳过非测试目录（如CMakeFiles等）
-        if(NOT subdir MATCHES "^\\..*" AND 
-           NOT subdir STREQUAL "CMakeFiles" AND
-           NOT subdir STREQUAL "Testing")
-            message(STATUS "Adding test subdirectory: ${subdir}")
-            add_subdirectory(${subdir})
-        endif()
+            if(NOT subdir MATCHES "^\\..*" AND
+               NOT subdir STREQUAL "CMakeFiles" AND
+               NOT subdir STREQUAL "Testing" AND
+               EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/CMakeLists.txt)
+                message(STATUS "Adding test subdirectory: ${subdir}")
+                add_subdirectory(${subdir})
+            endif()
     endif()
 endforeach()
 

@@ -147,6 +147,7 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     PrintSupport
     Concurrent
     OpenGL
+    Test
     REQUIRED
 )
 if(${QT_VERSION_MAJOR} EQUAL 6)
@@ -218,6 +219,10 @@ add_subdirectory(src)
 if(DA_BUILD_PLUGINS)
     add_subdirectory(plugins)
 endif()
+
+# 测试
+enable_testing()
+add_subdirectory(src/tst)
 
 ##################################
 # 安装 install
