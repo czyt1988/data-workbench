@@ -388,7 +388,7 @@ QDomElement DAXmlHelper::PrivateData::makeNodeElement(
     if (proxy) {
         nodeEle.setAttribute("id", proxy->getID());
         nodeEle.setAttribute("name", proxy->getNodeName());
-        nodeEle.setAttribute("protoType", proxy->getNodePrototype());
+        nodeEle.setAttribute("qualified_name", proxy->getNodePrototype());
         // 保存节点input和output的key和propertys
         saveNodeInputOutput(proxy, doc, nodeEle);
         // 保存节点属性(config)
@@ -471,26 +471,32 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
         qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node").arg(nodeEle.attribute("id"));
         return nullptr;
     }
-    QString name      = nodeEle.attribute("name");
-    QString protoType = nodeEle.attribute("protoType");
+    QString name = nodeEle.attribute("name");
+    QString qualifiedName = nodeEle.attribute("qualified_name");
+    if (qualifiedName.isEmpty()) {
+        qualifiedName = nodeEle.attribute("prototype");  // backward compat: 旧版本使用prototype属性
+    }
+    if (qualifiedName.isEmpty()) {
+        qualifiedName = nodeEle.attribute("protoType");  // backward compat: DAXmlHelper旧格式使用protoType属性
+    }
 
     // 构建节点描述符，用于createPyNode
     QJsonObject descriptor;
-    descriptor[ "qualified_name" ] = protoType;
+    descriptor[ "qualified_name" ] = qualifiedName;
     descriptor[ "name" ]           = name;
 
     // 通过场景创建节点图形项
     DAPyNodeGraphicsItem* item = workFlowScene->createPyNode(descriptor, QPointF(0, 0));
     if (!item) {
         qWarning() << QObject::tr("Unable to create node by prototype=%1,name=%2")
-                          .arg(protoType, name);
+                          .arg(qualifiedName, name);
         return nullptr;
     }
 
     DAPyNodeProxy* proxy = item->getProxy();
     if (!proxy) {
         qWarning() << QObject::tr("Node item has no proxy, prototype=%1,name=%2")
-                          .arg(protoType, name);
+                          .arg(qualifiedName, name);
         workFlowScene->removePyNodeItem(item);
         return nullptr;
     }
@@ -541,26 +547,32 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(
         qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node").arg(nodeEle.attribute("id"));
         return nullptr;
     }
-    QString name      = nodeEle.attribute("name");
-    QString protoType = nodeEle.attribute("protoType");
+    QString name = nodeEle.attribute("name");
+    QString qualifiedName = nodeEle.attribute("qualified_name");
+    if (qualifiedName.isEmpty()) {
+        qualifiedName = nodeEle.attribute("prototype");  // backward compat: 旧版本使用prototype属性
+    }
+    if (qualifiedName.isEmpty()) {
+        qualifiedName = nodeEle.attribute("protoType");  // backward compat: DAXmlHelper旧格式使用protoType属性
+    }
 
     // 构建节点描述符
     QJsonObject descriptor;
-    descriptor[ "qualified_name" ] = protoType;
+    descriptor[ "qualified_name" ] = qualifiedName;
     descriptor[ "name" ]           = name;
 
     // 通过场景创建节点图形项（带undo/redo）
     DAPyNodeGraphicsItem* item = workFlowScene->createPyNode_(descriptor, QPointF(0, 0));
     if (!item) {
         qWarning() << QObject::tr("Unable to create node by prototype=%1,name=%2")
-                          .arg(protoType, name);
+                          .arg(qualifiedName, name);
         return nullptr;
     }
 
     DAPyNodeProxy* proxy = item->getProxy();
     if (!proxy) {
         qWarning() << QObject::tr("Node item has no proxy, prototype=%1,name=%2")
-                          .arg(protoType, name);
+                          .arg(qualifiedName, name);
         return nullptr;
     }
 

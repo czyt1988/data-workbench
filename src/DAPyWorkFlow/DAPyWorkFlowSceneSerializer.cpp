@@ -335,6 +335,12 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
     QDomElement nodeEle  = nodesEle.firstChildElement("node");
     while (!nodeEle.isNull()) {
         QString qualifiedName = nodeEle.attribute("qualified_name");
+        if (qualifiedName.isEmpty()) {
+            qualifiedName = nodeEle.attribute("prototype");  // backward compat: 旧版本使用prototype属性
+        }
+        if (qualifiedName.isEmpty()) {
+            qualifiedName = nodeEle.attribute("protoType");  // backward compat: DAXmlHelper旧格式使用protoType属性
+        }
         QString nodeId        = nodeEle.attribute("node_id");
 
         // 获取节点位置
