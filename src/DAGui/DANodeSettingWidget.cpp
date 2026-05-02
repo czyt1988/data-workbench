@@ -39,7 +39,7 @@ void DANodeSettingWidget::updateData()
         QSignalBlocker b(ui->lineEditName);
         Q_UNUSED(b);
         ui->lineEditGroup->setText(n->getNodeGroup());
-        ui->lineEditPrototype->setText(n->getNodePrototype());
+        ui->lineEditPrototype->setText(n->getQualifiedName());
         ui->lineEditName->setText(n->getNodeName());
     } else {
         ui->lineEditGroup->clear();

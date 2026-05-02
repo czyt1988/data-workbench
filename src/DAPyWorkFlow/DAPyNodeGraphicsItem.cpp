@@ -547,7 +547,11 @@ QList< DAPyLinkPoint > DAPyNodeGraphicsItem::generateLinkPoints() const
 {
     // 优先从描述符生成
     if (!d_ptr->mDescriptor.isEmpty()) {
-        return d_ptr->generateLinkPointsFromDescriptor();
+        QList<DAPyLinkPoint> descriptorPoints = d_ptr->generateLinkPointsFromDescriptor();
+        if (!descriptorPoints.isEmpty()) {
+            return descriptorPoints;  // 描述符有完整的I/O信息，直接使用
+        }
+        // 描述符为薄描述符（没有inputs/outputs数组），回退到代理路径
     }
 
     // 从代理节点生成

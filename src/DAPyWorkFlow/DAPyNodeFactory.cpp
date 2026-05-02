@@ -18,28 +18,28 @@ namespace DA
 /**
  * @brief 判断元数据是否有效
  *
- * 有效条件：prototype字段非空，prototype是节点的唯一标识，
+ * 有效条件：qualifiedName字段非空，qualifiedName是节点的唯一标识，
  * 是创建节点和查找注册信息的必要字段。
  *
  * @return true表示元数据有效，false表示无效
  */
 bool DAPyNodeMetaData::isValid() const
 {
-    return !prototype.isEmpty();
+    return !qualifiedName.isEmpty();
 }
 
 /**
  * @brief 相等比较运算符
  *
- * 以prototype作为唯一标识判断两个元数据是否相等，
- * prototype对应Python侧的qualified_name，保证唯一性。
+ * 以qualifiedName作为唯一标识判断两个元数据是否相等，
+ * qualifiedName对应Python侧的qualified_name，保证唯一性。
  *
  * @param[in] other 要比较的另一个元数据对象
- * @return true表示prototype相同，false表示不同
+ * @return true表示qualifiedName相同，false表示不同
  */
 bool DAPyNodeMetaData::operator==(const DAPyNodeMetaData& other) const
 {
-    return prototype == other.prototype;
+    return qualifiedName == other.qualifiedName;
 }
 
 /**
@@ -69,15 +69,15 @@ DAPyNodeMetaData::operator bool() const
 /**
  * @brief 小于运算符
  *
- * 以prototype作为比较基准，用于QMap等有序容器。
- * prototype是节点的唯一标识，保证排序一致性。
+ * 以qualifiedName作为比较基准，用于QMap等有序容器。
+ * qualifiedName是节点的唯一标识，保证排序一致性。
  *
  * @param[in] other 要比较的另一个元数据对象
- * @return true表示当前对象的prototype小于other的prototype
+ * @return true表示当前对象的qualifiedName小于other的qualifiedName
  */
 bool DAPyNodeMetaData::operator<(const DAPyNodeMetaData& other) const
 {
-    return prototype < other.prototype;
+    return qualifiedName < other.qualifiedName;
 }
 
 /**
@@ -94,16 +94,16 @@ QString DAPyNodeMetaData::getNodeName() const
 }
 
 /**
- * @brief 获取节点原型标识
+ * @brief 获取节点唯一标识名
  *
  * 兼容原DANodeMetaData的getNodePrototype()方法，
- * 直接返回prototype字段。
+ * 直接返回qualifiedName字段。
  *
- * @return 节点原型标识字符串
+ * @return 节点唯一标识名字符串
  */
-QString DAPyNodeMetaData::getNodePrototype() const
+QString DAPyNodeMetaData::getNodeQualifiedName() const
 {
-    return prototype;
+    return qualifiedName;
 }
 
 /**
@@ -152,7 +152,7 @@ QString DAPyNodeMetaData::getNodeTooltip() const
  * @brief QDebug输出运算符
  *
  * 格式化输出DAPyNodeMetaData的主要字段，便于调试和日志追踪。
- * 输出格式：DAPyNodeMetaData(name=xxx, prototype=xxx, group=xxx, inputs=N, outputs=N)
+ * 输出格式：DAPyNodeMetaData(name=xxx, qualifiedName=xxx, group=xxx, inputs=N, outputs=N)
  *
  * @param[in] dbg QDebug流对象
  * @param[in] meta 要输出的元数据对象
@@ -160,7 +160,7 @@ QString DAPyNodeMetaData::getNodeTooltip() const
  */
 QDebug operator<<(QDebug dbg, const DAPyNodeMetaData& meta)
 {
-    dbg.nospace() << "DAPyNodeMetaData(name=" << meta.name << ", prototype=" << meta.prototype << ", group=" << meta.group
+    dbg.nospace() << "DAPyNodeMetaData(name=" << meta.name << ", qualifiedName=" << meta.qualifiedName << ", group=" << meta.group
                   << ", inputs=" << meta.inputKeys.size() << ", outputs=" << meta.outputKeys.size() << ")";
     return dbg.space();
 }
@@ -168,7 +168,7 @@ QDebug operator<<(QDebug dbg, const DAPyNodeMetaData& meta)
 /**
  * @brief qHash函数
  *
- * 以prototype作为hash基准，用于QHash/QSet容器。
+ * 以qualifiedName作为hash基准，用于QHash/QSet容器。
  *
  * @param[in] key 元数据对象
  * @param[in] seed hash种子
@@ -176,7 +176,7 @@ QDebug operator<<(QDebug dbg, const DAPyNodeMetaData& meta)
  */
 uint qHash(const DAPyNodeMetaData& key, uint seed)
 {
-    return qHash(key.prototype, seed);
+    return qHash(key.qualifiedName, seed);
 }
 
 //===================================================
@@ -201,9 +201,9 @@ static DAPyNodeMetaData convertDescriptorToMetaData(const pybind11::dict& descDi
 {
     DAPyNodeMetaData metaData;
 
-    // qualified_name → prototype
+    // qualified_name → qualifiedName
     if (descDict.contains("qualified_name")) {
-        metaData.prototype = QString::fromStdString(pybind11::str(descDict[ "qualified_name" ]));
+        metaData.qualifiedName = QString::fromStdString(pybind11::str(descDict[ "qualified_name" ]));
     }
 
     // name → name
@@ -223,8 +223,8 @@ static DAPyNodeMetaData convertDescriptorToMetaData(const pybind11::dict& descDi
 
     // tooltip: 使用name + qualified_name组合
     metaData.tooltip = metaData.name;
-    if (!metaData.prototype.isEmpty()) {
-        metaData.tooltip += " (" + metaData.prototype + ")";
+    if (!metaData.qualifiedName.isEmpty()) {
+        metaData.tooltip += " (" + metaData.qualifiedName + ")";
     }
 
     // inputs → inputKeys（提取每项的name字段）
@@ -267,8 +267,6 @@ public:
 
     // 已发现的节点元数据列表
     QList< DAPyNodeMetaData > mNodeMetaDataList;
-    // prototype到qualified_name的映射（用于快速查找创建函数）
-    QHash< QString, QString > mPrototypeToQualifiedName;
     // 缓存的Python DANodeRegistry实例
     DAPySafePyObjectHolder mPyNodeRegistry;
     // 最后的错误信息
@@ -405,8 +403,6 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
                 qualifiedName = QString::fromStdString(pybind11::str(descDict[ "qualified_name" ]));
             }
 
-            // 注册prototype到qualified_name的映射
-            d->mPrototypeToQualifiedName[ metaData.prototype ] = qualifiedName;
             discoveredList.append(metaData);
         }
 
@@ -416,7 +412,7 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
         qDebug() << "DAPyNodeFactory discovered" << d->mNodeMetaDataList.size() << "Python nodes";
 
         // 6. 发射信号通知UI
-        emit nodeDiscovered(d->mNodeMetaDataList);
+        Q_EMIT nodeDiscovered(d->mNodeMetaDataList);
         return true;
 
     } catch (const pybind11::error_already_set& e) {
@@ -434,9 +430,8 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
  * @brief 通过限定名创建DAPyNodeProxy实例
  *
  * 核心创建流程：
- * 1. 从prototype映射中查找qualified_name
- * 2. 获取GIL保护（DAPyGILGuard RAII）
- * 3. 通过qualified_name导入Python模块并获取节点类
+ * 1. 获取GIL保护（DAPyGILGuard RAII）
+ * 2. 通过qualified_name导入Python模块并获取节点类
  * 4. 创建Python节点实例
  * 5. 创建DAPyNodeProxy并设置Python节点引用
  *
@@ -486,6 +481,26 @@ DAPyNodeProxy* DAPyNodeFactory::createNodeProxy(const QString& qualifiedName)
 }
 
 /**
+ * @brief 通过节点元数据创建DAPyNodeProxy实例
+ *
+ * 此方法为便捷接口，从DAPyNodeMetaData中提取qualifiedName，
+ * 然委托给createNodeProxy(const QString&)方法完成实际的代理创建。
+ * 如果元数据无效（qualifiedName为空），直接返回nullptr。
+ *
+ * @param[in] metaData 节点元数据对象
+ * @return 创建的DAPyNodeProxy实例指针，元数据无效时返回nullptr
+ * @note 此方法不存储元数据到代理对象，代理对象仍通过qualifiedName标识
+ * @see createNodeProxy(const QString&)
+ */
+DAPyNodeProxy* DAPyNodeFactory::createNodeProxy(const DAPyNodeMetaData& metaData)
+{
+    if (!metaData.isValid()) {
+        return nullptr;
+    }
+    return createNodeProxy(metaData.qualifiedName);
+}
+
+/**
  * @brief 获取所有已发现节点的元数据列表
  *
  * @return DAPyNodeMetaData列表
@@ -507,7 +522,7 @@ QStringList DAPyNodeFactory::getNodePrototypes() const
     QStringList res;
     res.reserve(d->mNodeMetaDataList.size());
     for (const DAPyNodeMetaData& meta : d->mNodeMetaDataList) {
-        res.append(meta.prototype);
+        res.append(meta.qualifiedName);
     }
     return res;
 }

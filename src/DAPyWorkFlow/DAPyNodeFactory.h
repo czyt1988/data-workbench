@@ -21,7 +21,7 @@ class DAPyNodeProxy;
 struct DAPYWORKFLOW_API DAPyNodeMetaData
 {
     QString name;                 // 节点显示名称
-    QString prototype;            // 节点唯一原型标识（qualified_name）
+    QString qualifiedName;        // 节点唯一标识名（Python qualified_name）
     QString group;                // 节点分组/分类
     QString iconPath;             // 节点图标路径
     QString tooltip;              // 节点提示文本
@@ -39,7 +39,7 @@ struct DAPYWORKFLOW_API DAPyNodeMetaData
 
     // 兼容原DANodeMetaData的getter方法
     QString getNodeName() const;
-    QString getNodePrototype() const;
+    QString getNodeQualifiedName() const;
     QString getGroup() const;
     QIcon getIcon() const;
     QString getNodeTooltip() const;
@@ -80,6 +80,8 @@ public:
 
     // 通过限定名创建DAPyNodeProxy实例
     DAPyNodeProxy* createNodeProxy(const QString& qualifiedName);
+    // 通过节点元数据创建DAPyNodeProxy实例
+    DAPyNodeProxy* createNodeProxy(const DAPyNodeMetaData& metaData);
 
     // 获取所有已发现节点的元数据列表
     QList< DAPyNodeMetaData > getNodeMetadataList() const;

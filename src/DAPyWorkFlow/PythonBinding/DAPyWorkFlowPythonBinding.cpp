@@ -89,8 +89,8 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .def(pybind11::init<>())
         .def_readwrite("name", &DA::DAPyNodeMetaData::name,
                        "Node display name")
-        .def_readwrite("prototype", &DA::DAPyNodeMetaData::prototype,
-                       "Node unique prototype identifier (qualified_name)")
+        .def_readwrite("qualifiedName", &DA::DAPyNodeMetaData::qualifiedName,
+                       "Node unique qualified name (qualified_name)")
         .def_readwrite("group", &DA::DAPyNodeMetaData::group,
                        "Node group/category")
         .def_readwrite("iconPath", &DA::DAPyNodeMetaData::iconPath,
@@ -102,16 +102,16 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .def_readwrite("outputKeys", &DA::DAPyNodeMetaData::outputKeys,
                        "Output key list")
         .def("isValid", &DA::DAPyNodeMetaData::isValid,
-             "Check if metadata is valid (prototype not empty)")
+             "Check if metadata is valid (qualifiedName not empty)")
         .def("__eq__",
              [](const DA::DAPyNodeMetaData& a, const DA::DAPyNodeMetaData& b) { return a == b; },
              pybind11::arg("other"),
-             "Equality comparison by prototype")
+             "Equality comparison by qualifiedName")
         .def("__repr__",
-             [](const DA::DAPyNodeMetaData& m) {
-                 return QString("DAPyNodeMetaData(name=%1, prototype=%2, group=%3, inputs=%4, outputs=%5)")
-                     .arg(m.name)
-                     .arg(m.prototype)
+              [](const DA::DAPyNodeMetaData& m) {
+                  return QString("DAPyNodeMetaData(name=%1, qualifiedName=%2, group=%3, inputs=%4, outputs=%5)")
+                      .arg(m.name)
+                      .arg(m.qualifiedName)
                      .arg(m.group)
                      .arg(m.inputKeys.size())
                      .arg(m.outputKeys.size())
