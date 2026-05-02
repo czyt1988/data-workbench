@@ -42,6 +42,13 @@ void DAAppWorkFlowOperateWidget::setPluginManager(DAAppPluginManager* pluginMgr)
 void DAAppWorkFlowOperateWidget::onWorkflowCreated(DAPyWorkFlowEditWidget* wfw)
 {
     cmd()->addStack(wfw->getUndoStack());
+    // 注入Python节点工厂到场景
+    if (mPluginMgr) {
+        DAPyWorkFlowGraphicsScene* scene = wfw->getWorkFlowGraphicsScene();
+        if (scene) {
+            scene->setPyNodeFactory(mPluginMgr->getPyNodeFactory());
+        }
+    }
 }
 
 /**

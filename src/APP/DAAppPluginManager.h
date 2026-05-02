@@ -43,6 +43,9 @@ public:
     // 获取所有的元数据
     QList< DAPyNodeMetaData > getAllNodeMetaDatas() const;
 
+    // 获取Python节点工厂（可能为nullptr如果Python未启用或初始化失败）
+    std::shared_ptr< DAPyNodeFactory > getPyNodeFactory() const;
+
 private:
 #if DA_ENABLE_PYTHON
     // 初始化Python节点工厂

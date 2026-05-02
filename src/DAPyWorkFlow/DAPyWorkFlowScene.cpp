@@ -8,6 +8,7 @@
 #include "DAPyModuleWorkflow.h"
 #include "DAPyGILGuard.h"
 #include "DAPyNodeProxy.h"
+#include "DAPyNodeFactory.h"
 #include "DAPyLinkPoint.h"
 #include "DAGraphicsScene.h"
 #include "DAPyWorkFlowSceneSerializer.h"
@@ -24,6 +25,8 @@ public:
     DAPySafePyObjectHolder mPyWorkflow;
     // Python信号处理器
     QPointer< DAPythonSignalHandler > mSignalHandler;
+    // Python节点工厂（用于创建DAPyNodeProxy实例）
+    std::shared_ptr< DAPyNodeFactory > mPyNodeFactory;
 };
 
 DAPyWorkFlowScene::PrivateData::PrivateData(DAPyWorkFlowScene* p) : q_ptr(p)
@@ -150,6 +153,32 @@ DAPythonSignalHandler* DAPyWorkFlowScene::getSignalHandler() const
 }
 
 /**
+ * @brief 设置Python节点工厂
+ *
+ * 设置DAPyNodeFactory用于创建DAPyNodeProxy实例，
+ * 工厂负责Python模块导入、节点实例创建和代理设置。
+ * 如果未设置工厂，createPyNode()会回退到直接创建DAPyNodeProxy。
+ *
+ * @param[in] factory Python节点工厂的共享指针
+ */
+void DAPyWorkFlowScene::setPyNodeFactory(std::shared_ptr<DAPyNodeFactory> factory)
+{
+    DA_D(d);
+    d->mPyNodeFactory = factory;
+}
+
+/**
+ * @brief 获取Python节点工厂
+ *
+ * @return 当前设置的Python节点工厂共享指针，未设置时返回nullptr
+ */
+std::shared_ptr<DAPyNodeFactory> DAPyWorkFlowScene::getPyNodeFactory() const
+{
+    DA_DC(d);
+    return d->mPyNodeFactory;
+}
+
+/**
  * @brief 创建Python节点图形项（不添加到场景）
  *
  * 根据描述符字典创建DAPyNodeGraphicsItem和DAPyNodeProxy，
@@ -177,10 +206,21 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const QJsonObject& descrip
     }
 
     // 创建DAPyNodeProxy
-    DAPyNodeProxy* proxy = new DAPyNodeProxy();
-    proxy->setQualifiedName(qualifiedName);
+    DAPyNodeProxy* proxy = nullptr;
+    if (d->mPyNodeFactory) {
+        // 通过工厂创建代理，工厂内部处理Python模块导入和setPyNodeRef
+        proxy = d->mPyNodeFactory->createNodeProxy(qualifiedName);
+        if (!proxy) {
+            qWarning() << tr("DAPyWorkFlowScene::createPyNode: factory failed to create proxy for %1").arg(qualifiedName);
+            return nullptr;
+        }
+    } else {
+        // 未设置工厂时回退到直接创建（向后兼容）
+        proxy = new DAPyNodeProxy();
+        proxy->setQualifiedName(qualifiedName);
+    }
 
-    // 在Python侧创建节点并获取引用
+    // 在Python侧注册节点到DAWorkflow
     {
         DAPyGILGuard gil;
         try {
@@ -190,26 +230,31 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const QJsonObject& descrip
                 delete proxy;
                 return nullptr;
             }
-            // 通过qualified_name导入Python模块并创建节点实例
-            std::string qn = qualifiedName.toStdString();
-            size_t dotPos  = qn.rfind('.');
-            if (dotPos == std::string::npos) {
-                qWarning() << tr("DAPyWorkFlowScene::createPyNode: invalid qualified_name: %1").arg(qualifiedName);
-                delete proxy;
-                return nullptr;
+            if (d->mPyNodeFactory) {
+                // 工厂已创建实例并设置setPyNodeRef，只需注册到workflow
+                workflowObj.attr("add_node")(proxy->getPyNodeRef());
+            } else {
+                // 无工厂时，手动导入Python模块创建节点实例
+                std::string qn = qualifiedName.toStdString();
+                size_t dotPos  = qn.rfind('.');
+                if (dotPos == std::string::npos) {
+                    qWarning() << tr("DAPyWorkFlowScene::createPyNode: invalid qualified_name: %1").arg(qualifiedName);
+                    delete proxy;
+                    return nullptr;
+                }
+                std::string moduleName = qn.substr(0, dotPos);
+                std::string className  = qn.substr(dotPos + 1);
+
+                pybind11::module_ pyMod       = pybind11::module_::import(moduleName.c_str());
+                pybind11::object nodeClassObj = pyMod.attr(className.c_str());
+
+                // 创建Python节点实例
+                pybind11::object pyNodeInstance = nodeClassObj();
+
+                // 调用Python DAWorkflow.add_node()注册节点实例
+                workflowObj.attr("add_node")(pyNodeInstance);
+                proxy->setPyNodeRef(pyNodeInstance);
             }
-            std::string moduleName = qn.substr(0, dotPos);
-            std::string className  = qn.substr(dotPos + 1);
-
-            pybind11::module_ pyMod       = pybind11::module_::import(moduleName.c_str());
-            pybind11::object nodeClassObj = pyMod.attr(className.c_str());
-
-            // 创建Python节点实例
-            pybind11::object pyNodeInstance = nodeClassObj();
-
-            // 调用Python DAWorkflow.add_node()注册节点实例
-            workflowObj.attr("add_node")(pyNodeInstance);
-            proxy->setPyNodeRef(pyNodeInstance);
         } catch (const pybind11::error_already_set& e) {
             qWarning() << tr("DAPyWorkFlowScene::createPyNode: Python error: %1").arg(e.what());
             delete proxy;
@@ -268,6 +313,140 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const QJsonObject& descrip
 DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode_(const QJsonObject& descriptor, const QPointF& pos)
 {
     DAPyNodeGraphicsItem* item = createPyNode(descriptor, pos);
+    if (!item) {
+        return nullptr;
+    }
+    // 通过addItem_()添加到场景并推入undo栈
+    addItem_(item);
+    emit pyNodeItemCreated(item);
+    return item;
+}
+
+/**
+ * @brief 创建Python节点图形项（通过元数据，不添加到场景）
+ *
+ * 推荐的节点创建路径，通过DAPyNodeMetaData创建节点，
+ * 避免了QJsonObject路径中setDescriptor()覆盖完整描述符的数据丢失问题。
+ * 工厂创建代理时已获取Python侧完整descriptor（含inputs/outputs），
+ * DAPyNodeGraphicsItem构造函数自动从代理同步描述符和连接点，
+ * 此方法不再调用setDescriptor()覆盖，仅设置元数据中的显示属性。
+ *
+ * @param[in] metaData 节点元数据，包含qualified_name、name、icon等
+ * @param[in] pos 节点在场景中的初始位置
+ * @return 创建的DAPyNodeGraphicsItem指针，创建失败返回nullptr
+ * @note 返回的item未添加到场景，需要调用方自行添加
+ * @note 不调用setDescriptor()（Bug 2修复），保留代理中的完整描述符
+ * @see createPyNode(const QJsonObject&, const QPointF&)
+ */
+DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& metaData, const QPointF& pos)
+{
+    DA_D(d);
+    if (!d->mPyWorkflow) {
+        qWarning() << tr("DAPyWorkFlowScene::createPyNode: Python workflow is not set");
+        return nullptr;
+    }
+
+    if (!metaData.isValid()) {
+        qWarning() << tr("DAPyWorkFlowScene::createPyNode: invalid metadata (qualified_name: %1)")
+                       .arg(metaData.qualifiedName);
+        return nullptr;
+    }
+
+    // 创建DAPyNodeProxy
+    DAPyNodeProxy* proxy = nullptr;
+    if (d->mPyNodeFactory) {
+        // 通过工厂创建代理，工厂内部处理Python模块导入、实例创建和setPyNodeRef
+        proxy = d->mPyNodeFactory->createNodeProxy(metaData);
+        if (!proxy) {
+            qWarning() << tr("DAPyWorkFlowScene::createPyNode: factory failed to create proxy for %1")
+                           .arg(metaData.qualifiedName);
+            return nullptr;
+        }
+    } else {
+        // 未设置工厂时回退到直接创建（向后兼容）
+        proxy = new DAPyNodeProxy();
+        proxy->setQualifiedName(metaData.qualifiedName);
+    }
+
+    // 在Python侧注册节点到DAWorkflow
+    {
+        DAPyGILGuard gil;
+        try {
+            pybind11::object workflowObj = d->mPyWorkflow.object();
+            if (!workflowObj) {
+                qWarning() << tr("DAPyWorkFlowScene::createPyNode: workflow object is invalid");
+                delete proxy;
+                return nullptr;
+            }
+            if (d->mPyNodeFactory) {
+                // 工厂已创建实例并设置setPyNodeRef，只需注册到workflow
+                workflowObj.attr("add_node")(proxy->getPyNodeRef());
+            } else {
+                // 无工厂时，手动导入Python模块创建节点实例
+                std::string qn = metaData.qualifiedName.toStdString();
+                size_t dotPos  = qn.rfind('.');
+                if (dotPos == std::string::npos) {
+                    qWarning() << tr("DAPyWorkFlowScene::createPyNode: invalid qualified_name: %1")
+                                   .arg(metaData.qualifiedName);
+                    delete proxy;
+                    return nullptr;
+                }
+                std::string moduleName = qn.substr(0, dotPos);
+                std::string className  = qn.substr(dotPos + 1);
+
+                pybind11::module_ pyMod       = pybind11::module_::import(moduleName.c_str());
+                pybind11::object nodeClassObj = pyMod.attr(className.c_str());
+
+                // 创建Python节点实例
+                pybind11::object pyNodeInstance = nodeClassObj();
+
+                // 调用Python DAWorkflow.add_node()注册节点实例
+                workflowObj.attr("add_node")(pyNodeInstance);
+                proxy->setPyNodeRef(pyNodeInstance);
+            }
+        } catch (const pybind11::error_already_set& e) {
+            qWarning() << tr("DAPyWorkFlowScene::createPyNode: Python error: %1").arg(e.what());
+            delete proxy;
+            return nullptr;
+        }
+    }
+
+    // Bug 2修复：构造函数已从proxy获取完整descriptor（含inputs/outputs），
+    // 不再调用setDescriptor()覆盖为薄描述符，保留代理中的完整数据
+    DAPyNodeGraphicsItem* item = new DAPyNodeGraphicsItem(proxy);
+
+    // 设置节点显示名称（metadata.name可能不同于Python默认名称）
+    if (!metaData.name.isEmpty()) {
+        item->setNodeName(metaData.name);
+    }
+
+    // 设置图标（如果有）
+    if (!metaData.iconPath.isEmpty()) {
+        item->setIcon(QIcon(metaData.iconPath));
+    }
+
+    // 设置位置（未添加到场景）
+    item->setPos(pos);
+
+    return item;
+}
+
+/**
+ * @brief 创建Python节点（通过元数据，带undo/redo）
+ *
+ * 通过QUndoStack记录创建操作，支持撤销和重做。
+ * 先调用createPyNode(DAPyNodeMetaData)创建节点图形项（不添加到场景），
+ * 然后通过addItem_()将item添加到场景并推入undo栈。
+ *
+ * @param[in] metaData 节点元数据
+ * @param[in] pos 节点在场景中的初始位置
+ * @return 创建的DAPyNodeGraphicsItem指针，创建失败返回nullptr
+ * @note 函数名后缀"_"表示支持undo/redo操作
+ * @see createPyNode(const DAPyNodeMetaData&, const QPointF&)
+ */
+DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode_(const DAPyNodeMetaData& metaData, const QPointF& pos)
+{
+    DAPyNodeGraphicsItem* item = createPyNode(metaData, pos);
     if (!item) {
         return nullptr;
     }

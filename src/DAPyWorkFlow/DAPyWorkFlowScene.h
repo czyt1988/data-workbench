@@ -7,6 +7,7 @@
 #include <QPointF>
 #include <QJsonObject>
 #include <QVersionNumber>
+#include <memory>
 class QDomDocument;
 class QDomElement;
 
@@ -15,6 +16,8 @@ namespace DA
 class DAPyNodeGraphicsItem;
 class DAPyLinkGraphicsItem;
 class DAPythonSignalHandler;
+class DAPyNodeFactory;
+struct DAPyNodeMetaData;
 
 /**
  * @brief Python工作流场景管理类
@@ -48,9 +51,17 @@ public:
     void setSignalHandler(DAPythonSignalHandler* handler);
     DAPythonSignalHandler* getSignalHandler() const;
 
+    // 设置Python节点工厂（用于创建DAPyNodeProxy实例）
+    void setPyNodeFactory(std::shared_ptr<DAPyNodeFactory> factory);
+    std::shared_ptr<DAPyNodeFactory> getPyNodeFactory() const;
+
     // 节点管理
     DAPyNodeGraphicsItem* createPyNode(const QJsonObject& descriptor, const QPointF& pos);
     DAPyNodeGraphicsItem* createPyNode_(const QJsonObject& descriptor, const QPointF& pos);
+    // 通过节点元数据创建Python工作流节点（推荐路径，避免数据丢失）
+    DAPyNodeGraphicsItem* createPyNode(const DAPyNodeMetaData& metaData, const QPointF& pos);
+    // 通过节点元数据创建Python工作流节点（undo版本）
+    DAPyNodeGraphicsItem* createPyNode_(const DAPyNodeMetaData& metaData, const QPointF& pos);
     bool removePyNodeItem(DAPyNodeGraphicsItem* item);
     void removePyNodeItem_(DAPyNodeGraphicsItem* item);
 

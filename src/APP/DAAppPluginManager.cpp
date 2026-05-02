@@ -144,6 +144,23 @@ QList< DAPyNodeMetaData > DAAppPluginManager::getAllNodeMetaDatas() const
     return mNodeMetaDatas;
 }
 
+/**
+ * @brief 获取Python节点工厂
+ *
+ * 返回Python节点工厂的共享指针，如果Python未启用或初始化失败则返回nullptr。
+ * 此工厂可用于创建DAPyNodeProxy实例并注入到DAPyWorkFlowScene中。
+ *
+ * @return Python节点工厂共享指针，未初始化时返回nullptr
+ */
+std::shared_ptr< DAPyNodeFactory > DAAppPluginManager::getPyNodeFactory() const
+{
+#if DA_ENABLE_PYTHON
+    return mPyNodeFactory;
+#else
+    return nullptr;
+#endif
+}
+
 #if DA_ENABLE_PYTHON
 
 /**
