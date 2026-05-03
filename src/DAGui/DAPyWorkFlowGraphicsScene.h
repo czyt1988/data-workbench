@@ -1,4 +1,4 @@
-#ifndef DAPYWORKFLOWGRAPHICSSCENE_H
+﻿#ifndef DAPYWORKFLOWGRAPHICSSCENE_H
 #define DAPYWORKFLOWGRAPHICSSCENE_H
 #include <QGraphicsScene>
 #include "DAGuiAPI.h"
@@ -74,19 +74,19 @@ private slots:
 	void backgroundPixmapItemXChanged();
 	void backgroundPixmapItemYChanged();
 #endif
-	void onItemsPositionChanged(const QList< QGraphicsItem* >& items,
-								const QList< QPointF >& oldPos,
-								const QList< QPointF >& newPos);
+	void onItemsPositionChanged(
+		const QList< QGraphicsItem* >& items, const QList< QPointF >& oldPos, const QList< QPointF >& newPos
+	);
 	/**
 	 * @brief 节点双击处理槽，弹出参数配置对话框
 	 * @param[in] proxy 双击的节点代理
 	 */
-	void onNodeDoubleClicked(DAPyNodeProxy* proxy);
+	void onNodeDoubleClicked(DA::DAPyNodeProxy* proxy);
 	/**
 	 * @brief 节点创建时连接其双击信号
 	 * @param[in] item 新创建的节点图形项
 	 */
-	void onPyNodeItemCreated(DAPyNodeGraphicsItem* item);
+	void onPyNodeItemCreated(DA::DAPyNodeGraphicsItem* item);
 
 private:
 	DAGraphicsPixmapItem* mBackgroundPixmapItem;

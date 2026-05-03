@@ -1,4 +1,4 @@
-#ifndef DAPYLINKGRAPHICSITEM_H
+﻿#ifndef DAPYLINKGRAPHICSITEM_H
 #define DAPYLINKGRAPHICSITEM_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAGraphicsLinkItem.h"
@@ -55,10 +55,6 @@ public:
     // 设置/获取数据流状态
     void setDataFlowing(bool flowing);
     bool isDataFlowing() const;
-
-    // 设置Python信号处理器（用于接收数据流通知）
-    void setSignalHandler(DAPythonSignalHandler* handler);
-    DAPythonSignalHandler* getSignalHandler() const;
 
     // 设置连接的源节点和目标节点
     void setFromNode(DAPyNodeGraphicsItem* node, const QString& outputName);

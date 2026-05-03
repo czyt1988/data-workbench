@@ -1044,9 +1044,9 @@ bool DAGraphicsScene::isItemCanMove(QGraphicsItem* positem, const QPointF& scene
  * @param oldPos
  * @param newPos
  */
-void DAGraphicsScene::emitItemsPositionChanged(const QList< QGraphicsItem* >& items,
-                                               const QList< QPointF >& oldPos,
-                                               const QList< QPointF >& newPos)
+void DAGraphicsScene::emitItemsPositionChanged(
+	const QList< QGraphicsItem* >& items, const QList< QPointF >& oldPos, const QList< QPointF >& newPos
+)
 {
     emit itemsPositionChanged(items, oldPos, newPos);
 }
@@ -1196,7 +1196,7 @@ void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		// 如果 移动 过程 鼠标移出scene在释放，可能无法捕获
 		// 注意，这里不能这样使用：emit itemsPositionChanged(cmd->getItems(), cmd->getStartsPos(), cmd->getEndsPos());
 		// 因为命令会合并，合并后的cmd是一个悬空指针
-		emit itemsPositionChanged(moveItems, startsPos, endsPos);
+		Q_EMIT itemsPositionChanged(moveItems, startsPos, endsPos);
 	}
 }
 
