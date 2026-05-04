@@ -3,6 +3,7 @@
 #include "DAPyNodeProxy.h"
 #include "DAPyNodePalette.h"
 #include "DAPyLinkPoint.h"
+#include "DAPyWorkFlowScene.h"
 #include <memory>
 #include <QPainter>
 #include <QSvgRenderer>
@@ -746,6 +747,13 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
  * @param[in] painter 画笔
  * @param[in] option 样式选项
  * @param[in] widget 窗口
+ *
+ * 连接点根据方向绘制不同形状：
+ * - East/West 方向：水平矩形 14×10
+ * - North/South 方向：垂直矩形 10×14
+ *
+ * 输入连接点使用白色填充，输出连接点使用深灰色填充。
+ * 文字标签根据方向定位在连接点的对侧。
  */
 void DAPyNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
@@ -754,23 +762,128 @@ void DAPyNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOption
 
     painter->save();
 
-    // 设置连接点样式
+    // 连接点尺寸常量
+    const qreal cLPHWidth  = 14;  // 水平连接点宽度
+    const qreal cLPHHeight = 10;  // 水平连接点高度
+    const qreal spacing    = 2;   // 文字与连接点间距
+
+    // 设置画笔样式
     QPen pen(Qt::black);
     pen.setWidth(1);
     painter->setPen(pen);
 
-    // 绘制输入连接点
+    // 设置小字体用于绘制连接点名称
+    QFont smallFont = painter->font();
+    smallFont.setPointSize(7);
+    painter->setFont(smallFont);
+    QFontMetrics fm(smallFont);
+
+    // 绘制输入连接点（白色填充 + 深色边框）
     for (const auto& lp : std::as_const(d_ptr->mInputLinkPoints)) {
-        QRectF linkRect(lp.position.x() - 4, lp.position.y() - 4, 8, 8);
+        // 根据方向确定矩形尺寸
+        qreal halfW, halfH;
+        if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
+            // 水平方向：14×10
+            halfW = cLPHWidth / 2;
+            halfH = cLPHHeight / 2;
+        } else {
+            // 垂直方向：10×14
+            halfW = cLPHHeight / 2;
+            halfH = cLPHWidth / 2;
+        }
+
+        // 绘制连接点矩形
+        QRectF linkRect(lp.position.x() - halfW, lp.position.y() - halfH, halfW * 2, halfH * 2);
         painter->setBrush(QBrush(Qt::white));
-        painter->drawEllipse(linkRect);
+        painter->drawRect(linkRect);
+
+        // 绘制连接点名称（方向感知定位）
+        QRect textRect = fm.boundingRect(lp.name);
+        textRect.adjust(0, 0, spacing, spacing);
+        QPointF textPos;
+
+        switch (lp.direction) {
+        case AspectDirection::East:
+            // 文本在左侧：←◁文本
+            textPos.setX(lp.position.x() - halfW - textRect.width() - spacing);
+            textPos.setY(lp.position.y() - textRect.height() / 2);
+            break;
+        case AspectDirection::West:
+            // 文本在右侧：文本▷→
+            textPos.setX(lp.position.x() + halfW + spacing);
+            textPos.setY(lp.position.y() - textRect.height() / 2);
+            break;
+        case AspectDirection::North:
+            // 文本在下方：↑△文本
+            textPos.setX(lp.position.x() - textRect.width() / 2);
+            textPos.setY(lp.position.y() + halfH + spacing);
+            break;
+        case AspectDirection::South:
+            // 文本在上方：文本▽↓
+            textPos.setX(lp.position.x() - textRect.width() / 2);
+            textPos.setY(lp.position.y() - halfH - textRect.height());
+            break;
+        default:
+            textPos = lp.position;
+            break;
+        }
+
+        textRect.moveTopLeft(textPos.toPoint());
+        painter->drawText(textRect, Qt::AlignCenter, lp.name);
     }
 
-    // 绘制输出连接点
+    // 绘制输出连接点（深灰填充 + 黑色边框）
     for (const auto& lp : std::as_const(d_ptr->mOutputLinkPoints)) {
-        QRectF linkRect(lp.position.x() - 4, lp.position.y() - 4, 8, 8);
+        // 根据方向确定矩形尺寸
+        qreal halfW, halfH;
+        if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
+            // 水平方向：14×10
+            halfW = cLPHWidth / 2;
+            halfH = cLPHHeight / 2;
+        } else {
+            // 垂直方向：10×14
+            halfW = cLPHHeight / 2;
+            halfH = cLPHWidth / 2;
+        }
+
+        // 绘制连接点矩形
+        QRectF linkRect(lp.position.x() - halfW, lp.position.y() - halfH, halfW * 2, halfH * 2);
         painter->setBrush(QBrush(Qt::darkGray));
-        painter->drawEllipse(linkRect);
+        painter->drawRect(linkRect);
+
+        // 绘制连接点名称（方向感知定位）
+        QRect textRect = fm.boundingRect(lp.name);
+        textRect.adjust(0, 0, spacing, spacing);
+        QPointF textPos;
+
+        switch (lp.direction) {
+        case AspectDirection::East:
+            // 文本在左侧：←◁文本
+            textPos.setX(lp.position.x() - halfW - textRect.width() - spacing);
+            textPos.setY(lp.position.y() - textRect.height() / 2);
+            break;
+        case AspectDirection::West:
+            // 文本在右侧：文本▷→
+            textPos.setX(lp.position.x() + halfW + spacing);
+            textPos.setY(lp.position.y() - textRect.height() / 2);
+            break;
+        case AspectDirection::North:
+            // 文本在下方：↑△文本
+            textPos.setX(lp.position.x() - textRect.width() / 2);
+            textPos.setY(lp.position.y() + halfH + spacing);
+            break;
+        case AspectDirection::South:
+            // 文本在上方：文本▽↓
+            textPos.setX(lp.position.x() - textRect.width() / 2);
+            textPos.setY(lp.position.y() - halfH - textRect.height());
+            break;
+        default:
+            textPos = lp.position;
+            break;
+        }
+
+        textRect.moveTopLeft(textPos.toPoint());
+        painter->drawText(textRect, Qt::AlignCenter, lp.name);
     }
 
     painter->restore();
@@ -1006,6 +1119,61 @@ void DAPyNodeGraphicsItem::clearPaintCallback()
     }
     d_ptr->mPaintCallbackError = false;
     update();
+}
+
+/**
+ * @brief 位置变化时刷新连接线
+ *
+ * 当节点位置发生变化后（拖拽移动），立即刷新所有连接线的端点位置，
+ * 保证连接线跟随节点实时移动，而不是仅在鼠标释放后才更新。
+ * 基类DAGraphicsResizeableItem::itemChange()已处理网格对齐（ItemPositionChange），
+ * 本方法仅关注ItemPositionHasChanged事件，在位置确定后委托给场景刷新连接线。
+ *
+ * @param[in] change 图形项变更类型
+ * @param[in] value 变更值
+ * @return 基类处理后的返回值
+ * @note ItemPositionChange不触发连接线更新，仅ItemPositionHasChanged触发
+ * @see updateLinkItems() DAGraphicsResizeableItem::itemChange()
+ */
+QVariant DAPyNodeGraphicsItem::itemChange(GraphicsItemChange change, const QVariant& value)
+{
+    // 先调用基类，基类处理网格对齐等逻辑
+    QVariant r = DAGraphicsResizeableItem::itemChange(change, value);
+    if (change == ItemPositionHasChanged && scene()) {
+        updateLinkItems();
+    }
+    return r;
+}
+
+/**
+ * @brief 刷新连接线位置
+ *
+ * 将连接线更新委托给DAPyWorkFlowScene::updateNodeLinkPositions()，
+ * 通过场景级的mNodeLinksMap映射表查找节点关联的所有连接线并更新端点。
+ * 不维护per-node的连接线列表，避免与场景映射表重复。
+ *
+ * @see DAPyWorkFlowScene::updateNodeLinkPositions()
+ */
+void DAPyNodeGraphicsItem::updateLinkItems()
+{
+    DAPyWorkFlowScene* sc = dynamic_cast<DAPyWorkFlowScene*>(scene());
+    if (sc) {
+        sc->updateNodeLinkPositions(this);
+    }
+}
+
+/**
+ * @brief 分组位置变化时刷新连接线
+ *
+ * 当节点作为分组的一部分被整体移动时，基类DAGraphicsItem::groupPositionChanged()
+ * 会触发此虚函数。调用updateLinkItems()确保连接线跟随节点组同步更新。
+ *
+ * @param[in] pos 分组移动后的新位置
+ */
+void DAPyNodeGraphicsItem::groupPositionChanged(const QPointF& pos)
+{
+    DAGraphicsItem::groupPositionChanged(pos);
+    updateLinkItems();
 }
 
 /**

@@ -28,6 +28,8 @@ public:
     DAPyNodeGraphicsItem* mToNode { nullptr };    ///< 目标节点
     QString mFromOutputName;                      ///< 源节点输出名称
     QString mToInputName;                         ///< 目标节点输入名称
+    AspectDirection mFromDirection { AspectDirection::East };  ///< 源连接点引线方向
+    AspectDirection mToDirection { AspectDirection::East };    ///< 目标连接点引线方向
 };
 
 DAPyLinkGraphicsItem::PrivateData::PrivateData(DAPyLinkGraphicsItem* p) : q_ptr(p)
@@ -88,28 +90,96 @@ bool DAPyLinkGraphicsItem::isDataFlowing() const
  * @brief 设置连接的源节点
  *
  * 设置连接线的源节点和输出端口名称。
+ * 验证连接点的way属性必须为Output，如果不是则拒绝连接并输出警告。
+ * 同时从连接点获取引线方向并存储到mFromDirection。
  *
  * @param node 源节点图形项
  * @param outputName 输出端口名称
+ * @note 如果连接点的way不是Output，将设置mFromNode为nullptr并提前返回
  */
 void DAPyLinkGraphicsItem::setFromNode(DAPyNodeGraphicsItem* node, const QString& outputName)
 {
-    d_ptr->mFromNode       = node;
     d_ptr->mFromOutputName = outputName;
+
+    // 从源节点查找输出连接点，获取方向并验证way属性
+    QList< DAPyLinkPoint > outputPoints = node->getOutputLinkPoints();
+    bool found = false;
+    for (const DAPyLinkPoint& lp : outputPoints) {
+        if (lp.name == outputName) {
+            d_ptr->mFromDirection = lp.direction;
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        // 尝试从输入连接点查找（可能用户指定了错误的端口类型）
+        QList< DAPyLinkPoint > inputPoints = node->getInputLinkPoints();
+        for (const DAPyLinkPoint& lp : inputPoints) {
+            if (lp.name == outputName) {
+                // 连接点是Input类型，不是Output，拒绝连接
+                qDebug() << "DAPyLinkGraphicsItem::setFromNode: link point '" << outputName
+                         << "' is Input, expected Output. Connection rejected.";
+                d_ptr->mFromNode = nullptr;
+                return;
+            }
+        }
+        // 端口名称不存在，也拒绝
+        qDebug() << "DAPyLinkGraphicsItem::setFromNode: link point '" << outputName
+                 << "' not found in node. Connection rejected.";
+        d_ptr->mFromNode = nullptr;
+        return;
+    }
+
+    d_ptr->mFromNode = node;
 }
 
 /**
  * @brief 设置连接的目标节点
  *
  * 设置连接线的目标节点和输入端口名称。
+ * 验证连接点的way属性必须为Input，如果不是则拒绝连接并输出警告。
+ * 同时从连接点获取引线方向并存储到mToDirection。
  *
  * @param node 目标节点图形项
  * @param inputName 输入端口名称
+ * @note 如果连接点的way不是Input，将设置mToNode为nullptr并提前返回
  */
 void DAPyLinkGraphicsItem::setToNode(DAPyNodeGraphicsItem* node, const QString& inputName)
 {
-    d_ptr->mToNode      = node;
     d_ptr->mToInputName = inputName;
+
+    // 从目标节点查找输入连接点，获取方向并验证way属性
+    QList< DAPyLinkPoint > inputPoints = node->getInputLinkPoints();
+    bool found = false;
+    for (const DAPyLinkPoint& lp : inputPoints) {
+        if (lp.name == inputName) {
+            d_ptr->mToDirection = lp.direction;
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        // 尝试从输出连接点查找（可能用户指定了错误的端口类型）
+        QList< DAPyLinkPoint > outputPoints = node->getOutputLinkPoints();
+        for (const DAPyLinkPoint& lp : outputPoints) {
+            if (lp.name == inputName) {
+                // 连接点是Output类型，不是Input，拒绝连接
+                qDebug() << "DAPyLinkGraphicsItem::setToNode: link point '" << inputName
+                         << "' is Output, expected Input. Connection rejected.";
+                d_ptr->mToNode = nullptr;
+                return;
+            }
+        }
+        // 端口名称不存在，也拒绝
+        qDebug() << "DAPyLinkGraphicsItem::setToNode: link point '" << inputName
+                 << "' not found in node. Connection rejected.";
+        d_ptr->mToNode = nullptr;
+        return;
+    }
+
+    d_ptr->mToNode = node;
 }
 
 /**
@@ -205,6 +275,41 @@ bool DAPyLinkGraphicsItem::willCompleteLink()
 
     // 如果无法获取类型信息，默认允许连接
     return true;
+}
+
+/**
+ * @brief 生成连接线的绘制路径
+ *
+ * 重写基类的generateLinePainterPath方法，使用存储在PIMPL中的
+ * mFromDirection和mToDirection来生成贝塞尔曲线和肘形连接线，
+ * 而不是基类通过relativeDirectionOfPoint猜测的方向。
+ * 直线模式不需要方向参数，直接使用基类的直线生成方法。
+ *
+ * @param fromPoint 起始点位置
+ * @param toPoint 终止点位置
+ * @param linestyle 连线样式（贝塞尔、直线、肘形）
+ * @return 连接线的QPainterPath
+ * @see DAGraphicsLinkItem::generateLinePainterPath
+ */
+QPainterPath DAPyLinkGraphicsItem::generateLinePainterPath(const QPointF& fromPoint,
+                                                            const QPointF& toPoint,
+                                                            LinkLineStyle linestyle)
+{
+    QPainterPath res;
+    switch (linestyle) {
+    case LinkLineBezier:
+        res = generateLinkLineBezierPainterPath(fromPoint, d_ptr->mFromDirection, toPoint, d_ptr->mToDirection);
+        break;
+    case LinkLineStraight:
+        res = generateLinkLineStraightPainterPath(fromPoint, toPoint);
+        break;
+    case LinkLineKnuckle:
+        res = generateLinkLineKnucklePainterPath(fromPoint, d_ptr->mFromDirection, toPoint, d_ptr->mToDirection);
+        break;
+    default:
+        break;
+    }
+    return res;
 }
 
 /**

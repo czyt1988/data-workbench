@@ -30,6 +30,9 @@ private Q_SLOTS:
     // 集成测试：DAPyNodeProxy → DAPyNodeGraphicsItem → 连接点
     // 验证薄描述符+代理回退的完整管线（Bug 1数据丢失消除、Bug 2 setDescriptor覆写移除、Bug 3代理回退生效）
     void testIntegrationProxyToLinkPoints();
+
+    // 方向工具方法测试（委托给 DAGraphicsLinkItem 静态方法）
+    void testDirectionUtils();
 };
 
 }  // namespace DA

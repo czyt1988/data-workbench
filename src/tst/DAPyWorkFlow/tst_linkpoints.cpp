@@ -8,6 +8,7 @@
 #include <QtTest/QtTest>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QtMath>
 
 namespace DA
 {
@@ -337,6 +338,91 @@ class _TestIntegrationNode:
     } catch (...) {
         QSKIP("未知异常");
     }
+}
+
+// ============================================================
+// Direction utility methods tests (TDD: test before implement)
+// ============================================================
+
+/**
+ * @brief 测试 DAPyLinkPoint 方向工具方法
+ *
+ * 测试实例方法和静态方法是否正确委托给 DAGraphicsLinkItem:
+ * - elongation(): 按方向延伸位置
+ * - isDirectionOpposite(): 判断方向是否相对
+ * - isEqualWayName(): 比较 way+name（忽略位置方向）
+ * - 静态方法: isDirectionParallel, isPointInFront, isPointCanMeet,
+ *   oppositeDirection, relativeDirectionOfPoint
+ */
+void TestLinkPoints::testDirectionUtils()
+{
+    // ---- elongation() ----
+    DAPyLinkPoint eastPt(QPointF(10, 20), "east", DAPyLinkPoint::Output, AspectDirection::East);
+    auto elEast = eastPt.elongation(5);
+    QCOMPARE(elEast.x(), 15.0);
+    QCOMPARE(elEast.y(), 20.0);
+
+    DAPyLinkPoint southPt(QPointF(10, 20), "south", DAPyLinkPoint::Output, AspectDirection::South);
+    auto elSouth = southPt.elongation(5);
+    QCOMPARE(elSouth.x(), 10.0);
+    QCOMPARE(elSouth.y(), 25.0);
+
+    DAPyLinkPoint westPt(QPointF(10, 20), "west", DAPyLinkPoint::Output, AspectDirection::West);
+    auto elWest = westPt.elongation(5);
+    QCOMPARE(elWest.x(), 5.0);
+    QCOMPARE(elWest.y(), 20.0);
+
+    DAPyLinkPoint northPt(QPointF(10, 20), "north", DAPyLinkPoint::Output, AspectDirection::North);
+    auto elNorth = northPt.elongation(5);
+    QCOMPARE(elNorth.x(), 10.0);
+    QCOMPARE(elNorth.y(), 15.0);
+
+    // ---- isDirectionOpposite() ----
+    QVERIFY(eastPt.isDirectionOpposite(AspectDirection::West));
+    QVERIFY(!eastPt.isDirectionOpposite(AspectDirection::East));
+    QVERIFY(!eastPt.isDirectionOpposite(AspectDirection::North));
+    QVERIFY(northPt.isDirectionOpposite(AspectDirection::South));
+
+    // ---- isEqualWayName() ----
+    DAPyLinkPoint a(QPointF(0, 0), "port", DAPyLinkPoint::Output, AspectDirection::East);
+    DAPyLinkPoint b(QPointF(100, 100), "port", DAPyLinkPoint::Output, AspectDirection::West);
+    DAPyLinkPoint c(QPointF(0, 0), "port", DAPyLinkPoint::Input, AspectDirection::East);
+    DAPyLinkPoint d(QPointF(0, 0), "other", DAPyLinkPoint::Output, AspectDirection::East);
+    QVERIFY(a.isEqualWayName(b));  // 相同way+name，位置方向不同
+    QVERIFY(!a.isEqualWayName(c)); // way不同
+    QVERIFY(!a.isEqualWayName(d)); // name不同
+
+    // ---- 静态方法: isDirectionParallel ----
+    QVERIFY(DAPyLinkPoint::isDirectionParallel(AspectDirection::East, AspectDirection::West));
+    QVERIFY(DAPyLinkPoint::isDirectionParallel(AspectDirection::North, AspectDirection::North));
+    QVERIFY(!DAPyLinkPoint::isDirectionParallel(AspectDirection::East, AspectDirection::North));
+
+    // ---- 静态方法: isPointInFront ----
+    QPointF p1(0, 0);
+    QPointF p2(10, 0);
+    QVERIFY(DAPyLinkPoint::isPointInFront(p1, AspectDirection::East, p2));  // p2在p1东边前面
+    QVERIFY(!DAPyLinkPoint::isPointInFront(p1, AspectDirection::East, QPointF(-10, 0)));
+    QVERIFY(DAPyLinkPoint::isPointInFront(p1, AspectDirection::South, QPointF(0, 10)));
+    QVERIFY(DAPyLinkPoint::isPointInFront(p1, AspectDirection::West, QPointF(-10, 0)));
+    QVERIFY(DAPyLinkPoint::isPointInFront(p1, AspectDirection::North, QPointF(0, -10)));
+
+    // ---- 静态方法: isPointCanMeet ----
+    // 两个点方向不平行且垂直相交时可以相遇
+    QVERIFY(DAPyLinkPoint::isPointCanMeet(QPointF(0, 10), AspectDirection::East, QPointF(10, 0), AspectDirection::South));
+    // 平行方向不能相遇
+    QVERIFY(!DAPyLinkPoint::isPointCanMeet(QPointF(0, 0), AspectDirection::East, QPointF(10, 0), AspectDirection::East));
+
+    // ---- 静态方法: oppositeDirection ----
+    QCOMPARE(DAPyLinkPoint::oppositeDirection(AspectDirection::East), AspectDirection::West);
+    QCOMPARE(DAPyLinkPoint::oppositeDirection(AspectDirection::West), AspectDirection::East);
+    QCOMPARE(DAPyLinkPoint::oppositeDirection(AspectDirection::North), AspectDirection::South);
+    QCOMPARE(DAPyLinkPoint::oppositeDirection(AspectDirection::South), AspectDirection::North);
+
+    // ---- 静态方法: relativeDirectionOfPoint ----
+    QCOMPARE(DAPyLinkPoint::relativeDirectionOfPoint(QPointF(10, 5), QPointF(0, 5)), AspectDirection::East);
+    QCOMPARE(DAPyLinkPoint::relativeDirectionOfPoint(QPointF(-10, 5), QPointF(0, 5)), AspectDirection::West);
+    QCOMPARE(DAPyLinkPoint::relativeDirectionOfPoint(QPointF(5, 10), QPointF(5, 0)), AspectDirection::South);
+    QCOMPARE(DAPyLinkPoint::relativeDirectionOfPoint(QPointF(5, -10), QPointF(5, 0)), AspectDirection::North);
 }
 
 }  // namespace DA

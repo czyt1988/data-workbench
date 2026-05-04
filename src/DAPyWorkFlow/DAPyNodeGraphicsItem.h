@@ -143,6 +143,12 @@ protected:
                    QWidget* widget,
                    const QRectF& bodyRect) override;
 
+    // 位置变化时刷新连接线
+    QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value) override;
+
+    // 分组位置变化时刷新连接线
+    void groupPositionChanged(const QPointF& pos) override;
+
     // 绘制连接点
     void paintLinkPoints(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
 
@@ -158,6 +164,8 @@ protected:
     QList<DAPyLinkPoint> generateLinkPoints() const;
 
 private:
+    // 刷新连接线位置（委托给场景的updateNodeLinkPositions）
+    void updateLinkItems();
     // 获取当前状态颜色
     QColor getStateColor() const;
     // 更新widget位置

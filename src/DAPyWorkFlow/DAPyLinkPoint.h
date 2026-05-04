@@ -36,6 +36,26 @@ public:
     // 判断是否是输出节点
     bool isOutput() const;
 
+    // 按方向延伸连接点位置
+    QPointF elongation(int externLen) const;
+    // 判断此连接点的方向是否与给定方向相反
+    bool isDirectionOpposite(AspectDirection other) const;
+    // 比较 way+name 是否相同（忽略位置和方向）
+    bool isEqualWayName(const DAPyLinkPoint& other) const;
+
+    // ==== 静态方向工具方法（委托给 DAGraphicsLinkItem） ====
+
+    // 判断两个方向是否平行
+    static bool isDirectionParallel(AspectDirection d1, AspectDirection d2);
+    // 顺着点1的方向看，点2是否在前面
+    static bool isPointInFront(const QPointF& p1, AspectDirection d1, const QPointF& p2);
+    // 两个点是否会相遇
+    static bool isPointCanMeet(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
+    // 翻转方向
+    static AspectDirection oppositeDirection(AspectDirection d);
+    // 返回点1相对点2的方位
+    static AspectDirection relativeDirectionOfPoint(const QPointF& p1, const QPointF& p2);
+
 public:
     QPointF position;           ///< 连接点相对图形项的位置
     QString name;               ///< 连接点名字

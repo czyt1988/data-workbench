@@ -245,6 +245,12 @@ void DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         setNodeSettingEnable(false);
         setItemSettingEnable(false);
         setPixmapItemSettingEnable(false);
+        // 取消选中时，移除节点参数配置tab并清理widget
+        if (nullptr != mLastSetNodeWidget) {
+            removeWidget(mLastSetNodeWidget.data());
+            mLastSetNodeWidget->deleteLater();
+            mLastSetNodeWidget = nullptr;
+        }
         return;
     }
     QGraphicsItem* item = its.last();
@@ -280,22 +286,14 @@ void DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         }
         //! 节点选择发生了变化,
         //! 获取节点对应的设置窗口，把设置窗口作为一个tab设置进去
-        // TODO: DAPyNodeGraphicsItem needs getNodeWidget() API or equivalent
-        // For now, node widget creation is handled differently
-        DAPyNodeWidget* w = nullptr;
-        // w = nodeItem->getNodeWidget();
-        if (nullptr == w) {
-            // 没有设置窗口，看看当前是否显示着设置窗口，如果有就取消掉
-            if (nullptr != mLastSetNodeWidget) {
-                removeWidget(mLastSetNodeWidget.data());
-            }
-        } else {
-            // 设置窗口不为空，就把
-            if (mLastSetNodeWidget != w) {
-                removeWidget(mLastSetNodeWidget.data());
-                addWidget(w, QIcon(":/DAGui/icon/node-settting.svg"), tr("property"));
-            }
+        // 创建节点参数配置widget（从代理获取参数信息）
+        DAPyNodeWidget* w = new DAPyNodeWidget(nodeItem->getProxy());
+        if (nullptr != mLastSetNodeWidget && mLastSetNodeWidget != w) {
+            removeWidget(mLastSetNodeWidget.data());
+            // removeWidget不会删除widget，需要手动删除
+            mLastSetNodeWidget->deleteLater();
         }
+        addWidget(w, QIcon(":/DAGui/icon/node-settting.svg"), tr("property"));
         mLastSetNodeWidget = w;
     } else if (DAPyLinkGraphicsItem* linkItem = dynamic_cast< DAPyLinkGraphicsItem* >(item)) {
         // 说明是link
@@ -303,6 +301,12 @@ void DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         setNodeSettingEnable(false);
         setItemSettingEnable(false);
         setPixmapItemSettingEnable(false);
+        // 选中连线时，移除节点参数配置tab并清理widget
+        if (nullptr != mLastSetNodeWidget) {
+            removeWidget(mLastSetNodeWidget.data());
+            mLastSetNodeWidget->deleteLater();
+            mLastSetNodeWidget = nullptr;
+        }
         if (isTabContainWidget(ui->tabNodeSetting)) {
             ui->tabNodeSetting->setNode(nullptr);
         }
@@ -316,6 +320,12 @@ void DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         // 说明是其他item
         setLinkSettingEnable(false);
         setNodeSettingEnable(false);
+        // 选中其他item时，移除节点参数配置tab并清理widget
+        if (nullptr != mLastSetNodeWidget) {
+            removeWidget(mLastSetNodeWidget.data());
+            mLastSetNodeWidget->deleteLater();
+            mLastSetNodeWidget = nullptr;
+        }
         if (isTabContainWidget(ui->tabNodeSetting)) {
             ui->tabNodeSetting->setNode(nullptr);
         }

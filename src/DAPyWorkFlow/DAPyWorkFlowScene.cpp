@@ -1433,8 +1433,15 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                     DAPyLinkPoint matchedPoint;
                     for (const DAPyLinkPoint& lp : inputPoints) {
                         QPointF lpScenePos = nodeItem->mapToScene(lp.position);
-                        double dist        = QLineF(mouseEvent->scenePos(), lpScenePos).length();
-                        if (dist < 15) {  // 连接点命中阈值
+                        // 根据连接点方向计算方向感知的命中区域
+                        qreal halfW, halfH;
+                        if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
+                            halfW = 8; halfH = 6;  // 水平方向: 16x12
+                        } else {
+                            halfW = 6; halfH = 8;  // 垂直方向: 12x16
+                        }
+                        QRectF hitRegion(lpScenePos.x() - halfW, lpScenePos.y() - halfH, halfW * 2, halfH * 2);
+                        if (hitRegion.contains(mouseEvent->scenePos())) {
                             matchedPoint = lp;
                             break;
                         }
@@ -1464,8 +1471,15 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                 DAPyLinkPoint matchedPoint;
                 for (const DAPyLinkPoint& lp : outputPoints) {
                     QPointF lpScenePos = nodeItem->mapToScene(lp.position);
-                    double dist        = QLineF(mouseEvent->scenePos(), lpScenePos).length();
-                    if (dist < 15) {
+                    // 根据连接点方向计算方向感知的命中区域
+                    qreal halfW, halfH;
+                    if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
+                        halfW = 8; halfH = 6;  // 水平方向: 16x12
+                    } else {
+                        halfW = 6; halfH = 8;  // 垂直方向: 12x16
+                    }
+                    QRectF hitRegion(lpScenePos.x() - halfW, lpScenePos.y() - halfH, halfW * 2, halfH * 2);
+                    if (hitRegion.contains(mouseEvent->scenePos())) {
                         matchedPoint = lp;
                         break;
                     }
