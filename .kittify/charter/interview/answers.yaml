@@ -1,0 +1,72 @@
+schema_version: "1.0.0"
+mission: "software-dev"
+profile: "comprehensive"
+answers:
+  project_intent: >
+    AI Agent驱动的数据分析工作平台 — C++17/Qt有向图工作流引擎 + 内嵌Python(pandas/numpy/crewAI/LangChain)
+    + 交互式图表。四大核心模块：Agent编排、Workflow引擎、Data数据处理、Chart可视化。
+    软件以AI Agent为核心，原有工作流模块作为智能体有向图调用链的可视化载体，
+    支持拖拽式编排Agent工作流，内嵌Python环境无缝对接主流AI框架。
+
+  languages_frameworks: >
+    C++17, Qt 5.14+/6 (跨版本兼容), pybind11 (Python↔Qt绑定), CMake (构建系统),
+    Python (pandas/numpy/scipy/crewAI/LangChain/LangGraph), Qt Test (测试框架),
+    SARibbon, qwt, Qt-Advanced-Docking-System, QtPropertyBrowser, spdlog。
+
+  testing_requirements: >
+    TDD强制要求：所有核心模块(DAPyBindQt, DAGui, DAFigure, DAData, DAPyWorkFlow)必须测试先行开发。
+    最低测试覆盖率要求针对核心模块，非核心模块无硬性覆盖率要求。
+    测试框架使用Qt Test，测试文件位于src/tst/目录。
+    Windows上Qt Test stdout不可见，必须使用-o标志输出到文件。
+
+  quality_gates: >
+    不强制要求PR审批数量和预提交钩子。
+    CI通过GitHub Actions(build.yml)自动构建验证。
+    代码质量通过现有严格代码规范保障：DA前缀命名、PIMPL模式、Q_PROPERTY属性暴露、
+    Q_SIGNALS/Q_SLOTS宏(禁止slot/signal小写)、Doxygen中文注释在.cpp中(头文件仅单行注释)。
+
+  review_policy: >
+    不强制要求代码评审审批。分支策略采用GitFlow：master为稳定发布分支，
+    feature/*分支开发后合并进入dev分支，dev稳定后合并进入master。
+    当前主分支为workflow-rebuild(开发重构阶段)。
+
+  performance_targets: >
+    当前无硬性性能指标要求。作为桌面数据分析软件，
+    大数据集(10万+行)处理和图表渲染是关注方向，但暂未设定量化目标。
+
+  deployment_constraints: >
+    桌面应用安装包分发(Windows平台为主)。
+    构建使用CMake + Visual Studio生成器，提供scripts/build.ps1自动化构建脚本。
+    第三方库通过git submodule管理，需先编译安装到bin目录。
+
+  documentation_policy: >
+    架构变更必须更新文档。插件开发文档必须与代码同步。
+    Doxygen注释规范强制执行：.cpp文件写详细中文Doxygen注释，
+    .h文件仅写单行中文简要注释(类注释、信号注释、枚举注释除外)。
+    文档源码位于docs/zh/目录(Doxygen Wiki中文)。
+
+  risk_boundaries: >
+    src/3rdparty/第三方库目录绝不可修改——这是硬性红线。
+    核心模块(Python绑定层DAPyBindQt、工作流引擎、插件接口)的稳定性为关键关注点。
+    禁止使用已废弃的DAPyNodeConfigDialog/DAPyNodeWidget——统一使用NodeSetting通用参数面板。
+    QwtPlotItem子类不可使用QObject信号槽机制和Q_OBJECT宏。
+
+  amendment_process: >
+    简单讨论后直接修改charter。无正式审批流程。
+    修订时应更新charter.md并运行spec-kitty charter sync重新提取结构化配置。
+
+  exception_policy: >
+    默认例外政策：紧急修复可临时绕过治理规则(如先修bug再补测试)，
+    但必须在后续补齐所有治理要求(测试、文档等)。实验性功能开发同样允许临时绕过，
+    合入dev分支前必须补齐。例外情况应在commit message中注明。
+
+selected_paradigms:
+  - test-first
+
+selected_directives:
+  - TEST_FIRST
+
+available_tools:
+  - spec-kitty
+  - git
+  - powershell-syntax
