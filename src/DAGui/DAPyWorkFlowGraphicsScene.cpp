@@ -28,7 +28,6 @@
 #include "DAGraphicsTextItem.h"
 #include "DAGraphicsDrawRectSceneAction.h"
 #include "DAGraphicsDrawTextItemSceneAction.h"
-#include "DAPyNodeConfigDialog.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
 //===================================================
@@ -394,11 +393,11 @@ void DAPyWorkFlowGraphicsScene::setDefaultTextFont(const QFont& f)
 #endif
 
 /**
- * @brief 节点双击处理槽，弹出参数配置对话框
+ * @brief 节点双击处理槽，发射节点双击信号
  *
  * 当DAPyNodeGraphicsItem发射nodeDoubleClicked信号时，
- * 此槽被触发，创建DAPyNodeConfigDialog并显示给用户。
- * 仅当节点有参数时才弹出对话框。
+ * 此槽被触发，并发射scene级别的nodeDoubleClicked信号，
+ * 由外部连接的槽（如设置面板）处理双击行为。
  *
  * @param[in] proxy 双击的节点代理
  */
@@ -407,19 +406,7 @@ void DAPyWorkFlowGraphicsScene::onNodeDoubleClicked(DAPyNodeProxy* proxy)
 	if (!proxy) {
 		return;
 	}
-	// 查找对应的节点图形项，获取描述符检查是否有参数
-	DAPyNodeGraphicsItem* item = findNodeItemByProxy(proxy);
-	if (item) {
-		QJsonObject descriptor = item->getDescriptor();
-		QJsonArray parameters  = descriptor.value("parameters").toArray();
-		if (parameters.isEmpty()) {
-			// 无参数，不显示对话框
-			return;
-		}
-	}
-	// 创建并显示参数配置对话框
-	DAPyNodeConfigDialog dialog(proxy);
-	dialog.exec();
+	Q_EMIT nodeDoubleClicked(proxy);
 }
 
 /**

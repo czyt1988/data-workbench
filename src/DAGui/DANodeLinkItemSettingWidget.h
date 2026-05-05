@@ -4,13 +4,12 @@
 #include <QWidget>
 #include <QPen>
 #include "DAPyLinkGraphicsItem.h"
-namespace Ui
-{
-class DANodeLinkItemSettingWidget;
-}
+class QComboBox;
+
 namespace DA
 {
 class DAPyWorkFlowGraphicsScene;
+class DAPropertyPanelContainerWidget;
 /**
  * @brief 链接设置
  */
@@ -51,15 +50,23 @@ signals:
      */
     void linkLinePenChanged(const QPen& p);
 private slots:
-    void onComboBoxLinkStyleCurrentIndexChanged(int index);
-    void onLinkLinePenChanged(const QPen& p);
-    void onNodeLinksRemoved(const QList< DAPyLinkGraphicsItem* >& items);
-    void onSpinBoxEndpointSizeValueChanged(int arg1);
+    void onPropertyValueChanged(int propertyId);
     void onComboBoxFrontStyleCurrentIndexChanged(int index);
     void onComboBoxEndStyleCurrentIndexChanged(int index);
+    void onNodeLinksRemoved(const QList< DAPyLinkGraphicsItem* >& items);
 
 private:
-    Ui::DANodeLinkItemSettingWidget* ui;
+    // 属性ID定义
+    enum PropertyId {
+        PropertyPen = 1,
+        PropertyLinkStyle = 2,
+        PropertyEndpointSize = 3,
+        PropertyFrontStyle = 4,
+        PropertyEndStyle = 5
+    };
+    DAPropertyPanelContainerWidget* mPanel;
+    QComboBox* _comboBoxFrontStyle;
+    QComboBox* _comboBoxEndStyle;
     DAPyLinkGraphicsItem* _linkItem;
     DAPyWorkFlowGraphicsScene* _scene;
     QSize _endpointIconSize;

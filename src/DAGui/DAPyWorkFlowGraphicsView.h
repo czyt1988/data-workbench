@@ -6,7 +6,6 @@
 #include "DAGuiAPI.h"
 #include "DAGraphicsView.h"
 #include "DAGraphicsItem.h"
-#include "DAPyNodeWidget.h"
 #include "DAPyNodeFactory.h"
 
 class QDragEnterEvent;

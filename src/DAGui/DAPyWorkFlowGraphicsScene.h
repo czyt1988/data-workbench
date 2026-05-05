@@ -14,10 +14,17 @@ class DAGraphicsPixmapItem;
 /**
  * @brief The DAPyWorkFlowGraphicsScene class
  */
-class DAGUI_API DAPyWorkFlowGraphicsScene : public DAPyWorkFlowScene
-{
-	Q_OBJECT
-public:
+	class DAGUI_API DAPyWorkFlowGraphicsScene : public DAPyWorkFlowScene
+	{
+		Q_OBJECT
+Q_SIGNALS:
+		/**
+		 * @brief 节点被双击时发射的信号
+		 * @param[in] proxy 双击的节点代理
+		 */
+		void nodeDoubleClicked(DA::DAPyNodeProxy* proxy);
+
+	public:
 	/**
 	 * @brief 鼠标动作标记
 	 */

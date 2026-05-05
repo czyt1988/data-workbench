@@ -18,7 +18,7 @@ namespace DA
 class DAPyWorkFlowEditWidget;
 class DAPyWorkFlowOperateWidget;
 class DAGraphicsPixmapItem;
-class DAPyNodeWidget;
+class DANodeParamSettingPanelWidget;
 
 /**
  * @brief 节点设置窗口
@@ -68,6 +68,8 @@ public:
 private slots:
     // 选择改变
     void onSceneSelectionChanged();
+    // 节点双击处理：切换到参数tab
+    void onSceneNodeDoubleClicked(DA::DAPyNodeProxy* proxy);
     // 条目的位置改变触发的槽
     void onSceneItemsPositionChanged(const QList< QGraphicsItem* >& items,
                                      const QList< QPointF >& oldPos,
@@ -89,7 +91,7 @@ private:
     Ui::DAPyWorkFlowNodeItemSettingWidget* ui;
     QPointer< DAPyWorkFlowOperateWidget > _workflowOptWidget;
     QPointer< DAPyWorkFlowEditWidget > _workflowEditWidget;
-    QPointer< DAPyNodeWidget > mLastSetNodeWidget;
+    DANodeParamSettingPanelWidget* mParamSettingWidget;  // 参数设置面板调度器
     int _lastTabIndex;
 };
 }  // namespace DA

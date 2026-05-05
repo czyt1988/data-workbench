@@ -31,8 +31,6 @@ class DADataOperateWidget;
 class DASettingContainerWidget;
 // 日志窗口
 class DAMessageLogViewWidget;
-//
-class DAPyNodeWidget;
 
 /**
  * @brief 负责docking窗口区域的管理，APP分两大区域-RibbonArea和DockArea
@@ -176,8 +174,6 @@ private:
     // 日志窗口
     DAMessageLogViewWidget* mMessageLogViewWidget;  ///< 日志窗口
     ads::CDockWidget* mMessageLogDock;
-    //
-    DAPyNodeWidget* mLastSetNodeWidget;
 };
 }  // namespace DA
 #endif  // DAAPPDOCKINGAREA_H

@@ -18,6 +18,7 @@ damacro_lib_setting(
 set(DA_LIB_HEADER_FILES
     DAGuiAPI.h
     DAAbstractChartAddItemWidget.h
+    DAAbstractNodeSettingWidget.h
     DAAbstractOperateWidget.h
     DACacheWindowTableView.h
     DAChartItemsManager.h
@@ -66,6 +67,7 @@ set(DA_LIB_HEADER_FILES
 )
 set(DA_LIB_SOURCE_FILES
     DAAbstractChartAddItemWidget.cpp
+    DAAbstractNodeSettingWidget.cpp
     DAAbstractOperateWidget.cpp
     DACacheWindowTableView.cpp
     DAChartListView.cpp
@@ -151,9 +153,6 @@ if(DA_ENABLE_PYTHON)
         DAChartAddSpectrogramWidget.h
         DAPyWorkFlowRibbonGroup.h
         DAPyWorkflowActions.h
-        DAPyNodeConfigDialog.h
-        DAPyNodeWidget.h
-        DAPyParamTypeHelper.h
     )
     list(APPEND DA_LIB_SOURCE_FILES
         DADataframeToVectorPointWidget.cpp
@@ -171,9 +170,6 @@ if(DA_ENABLE_PYTHON)
         DAChartAddSpectrogramWidget.cpp
         DAChartAddTradingCurveWidget.cpp
         DAPyWorkFlowRibbonGroup.cpp
-        DAPyNodeConfigDialog.cpp
-        DAPyNodeWidget.cpp
-        DAPyParamTypeHelper.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES
         DADataframeToVectorPointWidget.ui
@@ -190,6 +186,7 @@ set(DA_LIB_SUBDIR_Dialog ${CMAKE_CURRENT_SOURCE_DIR}/Dialog)
 set(DA_LIB_SUBDIR_MimeData ${CMAKE_CURRENT_SOURCE_DIR}/MimeData)
 set(DA_LIB_SUBDIR_Commands ${CMAKE_CURRENT_SOURCE_DIR}/Commands)
 set(DA_LIB_SUBDIR_ChartSetting ${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting)
+set(DA_LIB_SUBDIR_NodeSetting ${CMAKE_CURRENT_SOURCE_DIR}/NodeSetting)
 
 # Models
 set(DA_LIB_HEADER_FILES_Models
@@ -297,6 +294,25 @@ file(GLOB DA_LIB_HEADER_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.h)
 file(GLOB DA_LIB_SOURCE_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.cpp)
 file(GLOB DA_LIB_UI_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.ui)
 
+#NodeSetting
+set(DA_LIB_HEADER_FILES_NodeSetting
+    ${DA_LIB_SUBDIR_NodeSetting}/ParameterDescriptor.h
+)
+if(DA_ENABLE_PYTHON)
+    list(APPEND DA_LIB_HEADER_FILES_NodeSetting
+        ${DA_LIB_SUBDIR_NodeSetting}/DAParamTypeRegistry.h
+        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanel.h
+        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelFactory.h
+        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelWidget.h
+    )
+    list(APPEND DA_LIB_SOURCE_FILES_NodeSetting
+        ${DA_LIB_SUBDIR_NodeSetting}/DAParamTypeRegistry.cpp
+        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanel.cpp
+        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelFactory.cpp
+        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelWidget.cpp
+    )
+endif()
+
 add_library(${DA_LIB_NAME} SHARED
             #Root
             ${DA_LIB_HEADER_FILES}
@@ -320,7 +336,10 @@ add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES_ChartSetting}
             ${DA_LIB_SOURCE_FILES_ChartSetting}
             ${DA_LIB_UI_FILES_ChartSetting}
-)   
+            #NodeSetting
+            ${DA_LIB_HEADER_FILES_NodeSetting}
+            ${DA_LIB_SOURCE_FILES_NodeSetting}
+)
 
 # 构建库定义的宏
 target_compile_definitions(${DA_LIB_NAME} PRIVATE DAGUI_BUILDLIB)#!!!!** 注意变更 **!!!!
@@ -389,6 +408,10 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
     $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/ChartSetting>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting>
 )
+target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/NodeSetting>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/NodeSetting>
+)
 
 ########################################################
 # 安装
@@ -428,6 +451,12 @@ install(FILES
 install(FILES
     ${DA_LIB_HEADER_FILES_ChartSetting}
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/ChartSetting
+    COMPONENT headers
+)
+#NodeSetting
+install(FILES
+    ${DA_LIB_HEADER_FILES_NodeSetting}
+    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/NodeSetting
     COMPONENT headers
 )
 
