@@ -1,4 +1,4 @@
-#include "DANodeListWidget.h"
+﻿#include "DANodeListWidget.h"
 #include "DANodeMimeData.h"
 #include "DAPyWorkFlowNodeListWidget.h"
 #include <QMouseEvent>
@@ -31,7 +31,13 @@ DAPyNodeMetaData DANodeListWidgetItem::getNodeMetaData() const
 
 void DANodeListWidgetItem::setNodeMetaData(const DAPyNodeMetaData& md)
 {
-	setIcon(md.getIcon());
+	static QIcon defaultIcon = QIcon(":/DAGui/icon/node.svg");
+	QIcon nodeIcon           = md.getIcon();
+	if (nodeIcon.isNull()) {
+		setIcon(defaultIcon);
+	} else {
+		setIcon(nodeIcon);
+	}
 	setText(md.getNodeName());
 	QString tt = QString("<b>%1</b><br/>%2").arg(md.getNodeName(), md.getNodeTooltip());
 	setToolTip(tt);
@@ -91,7 +97,7 @@ void DANodeListWidget::mouseMoveEvent(QMouseEvent* event)
 			DANodeListWidgetItem* item = static_cast< DANodeListWidgetItem* >(itemAt(_startPressPos));
 			if (item) {
 				DAPyNodeMetaData nodemd = item->getNodeMetaData();
-				QDrag* drag           = DAPyWorkFlowNodeListWidget::createDrag(this, nodemd);
+				QDrag* drag             = DAPyWorkFlowNodeListWidget::createDrag(this, nodemd);
 				drag->exec(Qt::MoveAction | Qt::CopyAction);
 				return;
 			}
