@@ -4,6 +4,7 @@
 #include "DAPyWorkFlowAPI.h"
 #include "DAEnumStringUtils.hpp"
 #include "DAGraphicsViewGlobal.h"
+#include "DAGraphicsViewEnumStringUtils.h"
 #include <QString>
 
 /**
@@ -89,10 +90,10 @@ DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::IconPosition)
  */
 using PortSide = AspectDirection;
 
-// 为 PortSide 提供便捷的别名访问（AspectDirection 已在 DA 命名空间下）
-// East=0, South=1, West=2, North=3 的值保持不变
-
-DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::PortSide)
+// PortSide 是 AspectDirection 的类型别名，其 DAEnumTraits 已在
+// DAGraphicsViewEnumStringUtils.h 中声明（DA_ENUM_STRING_DECLARE_EXPORT(DAGRAPHICSVIEW_API, DA::AspectDirection)）
+// 不重复声明，避免 C2766 重复模板特化错误
+// enumToString(PortSide::West) 和 stringToEnum<PortSide>() 自动复用 AspectDirection 的转换
 
 // =================================================================================
 //                          BodyIconType — 节点体图标类型

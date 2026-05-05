@@ -38,12 +38,10 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::IconPosition,
                                   { DA::IconPosition::AboveText, "above_text" });
 
 // ================================== DA::PortSide (AspectDirection) ==================================
-DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::PortSide,
-                                  DA::PortSide::East,
-                                  { DA::PortSide::East, "east" },
-                                  { DA::PortSide::South, "south" },
-                                  { DA::PortSide::West, "west" },
-                                  { DA::PortSide::North, "north" });
+// PortSide 是 AspectDirection 的类型别名，其 DAEnumTraits 定义已在
+// DAGraphicsViewEnumStringUtils.cpp 中完成（DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::AspectDirection, ...)）
+// 不重复定义，避免 ODR 违反和链接时多重定义错误
+// enumToString(PortSide::West) 和 stringToEnum<PortSide>() 自动复用 AspectDirection 的转换
 
 // ================================== DA::BodyIconType ==================================
 DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::BodyIconType,
