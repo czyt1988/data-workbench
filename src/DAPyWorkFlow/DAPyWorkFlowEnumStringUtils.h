@@ -29,4 +29,7 @@
 // ------------------------------------------
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::DAPyNodeState)
 
+// 节点样式定义枚举在 DAPyNodeStyleDefine.h 中声明
+// LinkPointLayoutStrategy 在 DAPyNodeStyle.h 中声明
+
 #endif  // DAPYWORKFLOWENUMSTRINGUTILS_H

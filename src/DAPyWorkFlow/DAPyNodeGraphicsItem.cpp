@@ -12,6 +12,8 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonParseError>
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
 #include <QFontMetrics>
@@ -60,6 +62,7 @@ public:
     QList< DAPyLinkPoint > mOutputLinkPoints;         ///< 输出连接点
     DAPySafePyObjectHolder mPaintCallback;            ///< 自定义绘制回调（Python函数对象）
     bool mPaintCallbackError { false };               ///< 绘制回调是否发生过异常
+    DANodeStyle mStyle;                               ///< 节点样式配置
 };
 
 /**
@@ -356,6 +359,34 @@ QString DAPyNodeGraphicsItem::getNodeName() const
 }
 
 /**
+ * @brief 设置节点样式
+ * @param[in] style 节点样式配置
+ */
+void DAPyNodeGraphicsItem::setStyle(const DANodeStyle& style)
+{
+    d_ptr->mStyle = style;
+    update();
+}
+
+/**
+ * @brief 获取节点样式（非常量引用，允许修改）
+ * @return 节点样式引用
+ */
+DANodeStyle& DAPyNodeGraphicsItem::getStyle()
+{
+    return d_ptr->mStyle;
+}
+
+/**
+ * @brief 获取节点样式（常量引用）
+ * @return 节点样式常量引用
+ */
+const DANodeStyle& DAPyNodeGraphicsItem::getStyle() const
+{
+    return d_ptr->mStyle;
+}
+
+/**
  * @brief 设置图标
  * @param[in] icon 图标
  */
@@ -598,19 +629,30 @@ bool DAPyNodeGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentEleme
 
     QDomElement pyNodeEle = doc->createElement("pyNodeItem");
 
-    // 保存渲染模板
-    pyNodeEle.setAttribute("renderTemplate", getRenderTemplateName());
+    // 保存渲染模板（始终保存为 nodestyle，升级旧的 rect/svg）
+    pyNodeEle.setAttribute("renderTemplate", "nodestyle");
 
     // 保存节点名称
     pyNodeEle.setAttribute("nodeName", d_ptr->mNodeName);
 
-    // 保存SVG路径
+    // 保存SVG路径（保留向后兼容）
     if (!d_ptr->mSvgPath.isEmpty()) {
         pyNodeEle.setAttribute("svgPath", d_ptr->mSvgPath);
     }
 
     // 保存状态
     pyNodeEle.setAttribute("nodeState", static_cast< int >(d_ptr->mNodeState));
+
+    // 保存样式配置（稀疏JSON）
+    const QJsonObject styleJson = DANodeStyleToJson(d_ptr->mStyle);
+    if (!styleJson.isEmpty()) {
+        const QJsonDocument styleDoc(styleJson);
+        QDomElement styleEle = doc->createElement("style");
+        QDomCDATASection cdata = doc->createCDATASection(
+            QString::fromUtf8(styleDoc.toJson(QJsonDocument::Compact)));
+        styleEle.appendChild(cdata);
+        pyNodeEle.appendChild(styleEle);
+    }
 
     parentElement->appendChild(pyNodeEle);
     return true;
@@ -633,17 +675,49 @@ bool DAPyNodeGraphicsItem::loadFromXml(const QDomElement* itemElement, const QVe
         return false;
     }
 
-    // 加载渲染模板
+    // 加载渲染模板（含遗留迁移）
     QString tmplName = pyNodeEle.attribute("renderTemplate", "rect");
-    setRenderTemplate(tmplName);
+    if (tmplName == "rect" || tmplName == "svg" || tmplName == "nodestyle") {
+        // 遗留迁移：rect/svg/nodestyle → RectTemplate（NodeStyleTemplate）
+        setRenderTemplate(RectTemplate);
+        if (tmplName == "svg") {
+            // SVG迁移：记录旧的svgPath到style
+            QString svgPath = pyNodeEle.attribute("svgPath");
+            if (!svgPath.isEmpty()) {
+                d_ptr->mStyle.bodyIconType = BodyIconType::Svg;
+                d_ptr->mStyle.bodyIconSource = svgPath;
+            }
+        }
+    } else if (tmplName == "widget") {
+        setRenderTemplate(WidgetTemplate);
+    } else {
+        // 未知类型，回退到矩形
+        setRenderTemplate(RectTemplate);
+    }
 
     // 加载节点名称
     d_ptr->mNodeName = pyNodeEle.attribute("nodeName");
 
-    // 加载SVG路径
+    // 加载SVG路径（保留向后兼容）
     QString svgPath = pyNodeEle.attribute("svgPath");
     if (!svgPath.isEmpty()) {
         loadSvg(svgPath);
+    }
+
+    // 加载样式配置（如果存在）
+    QDomElement styleEle = pyNodeEle.firstChildElement("style");
+    if (!styleEle.isNull()) {
+        QDomCDATASection cdata = styleEle.firstChild().toCDATASection();
+        if (!cdata.isNull()) {
+            QJsonParseError error;
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(cdata.data().toUtf8(), &error);
+            if (error.error == QJsonParseError::NoError && jsonDoc.isObject()) {
+                d_ptr->mStyle = DANodeStyleFromJson(jsonDoc.object());
+            } else {
+                qWarning() << "DAPyNodeGraphicsItem::loadFromXml: style JSON parse error:"
+                           << error.errorString();
+            }
+        }
     }
 
     // 加载状态

@@ -1,4 +1,6 @@
 ﻿#include "DAPyWorkFlowEnumStringUtils.h"
+#include "DAPyNodeStyleDefine.h"
+#include "DAPyNodeStyle.h"
 
 // ================================== DA::DAPyNodeState ==================================
 DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAPyNodeState,
@@ -9,3 +11,55 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAPyNodeState,
                                   { DA::Success, "success" },
                                   { DA::Error, "error" },
                                   { DA::Skipped, "skipped" });
+
+// ================================== DA::BodyShape ==================================
+DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::BodyShape,
+                                  DA::BodyShape::RoundedRect,
+                                  { DA::BodyShape::RoundedRect, "rounded_rect" },
+                                  { DA::BodyShape::Ellipse, "ellipse" });
+
+// ================================== DA::PortShape ==================================
+DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::PortShape,
+                                  DA::PortShape::Rect,
+                                  { DA::PortShape::Rect, "rect" },
+                                  { DA::PortShape::Circle, "circle" },
+                                  { DA::PortShape::Diamond, "diamond" });
+
+// ================================== DA::NamePosition ==================================
+DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::NamePosition,
+                                  DA::NamePosition::Inside,
+                                  { DA::NamePosition::Inside, "inside" },
+                                  { DA::NamePosition::Below, "below" });
+
+// ================================== DA::IconPosition ==================================
+DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::IconPosition,
+                                  DA::IconPosition::LeftOfText,
+                                  { DA::IconPosition::LeftOfText, "left_of_text" },
+                                  { DA::IconPosition::AboveText, "above_text" });
+
+// ================================== DA::PortSide (AspectDirection) ==================================
+DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::PortSide,
+                                  DA::PortSide::East,
+                                  { DA::PortSide::East, "east" },
+                                  { DA::PortSide::South, "south" },
+                                  { DA::PortSide::West, "west" },
+                                  { DA::PortSide::North, "north" });
+
+// ================================== DA::BodyIconType ==================================
+DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::BodyIconType,
+                                  DA::BodyIconType::None,
+                                  { DA::BodyIconType::None, "none" },
+                                  { DA::BodyIconType::Pixmap, "pixmap" },
+                                  { DA::BodyIconType::Svg, "svg" });
+
+// ================================== DA::RenderTemplate ==================================
+DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::RenderTemplate,
+                                  DA::RenderTemplate::NodeStyleTemplate,
+                                  { DA::RenderTemplate::NodeStyleTemplate, "node_style" },
+                                  { DA::RenderTemplate::WidgetTemplate, "widget" });
+
+// ================================== DA::LinkPointLayoutStrategy ==================================
+DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::LinkPointLayoutStrategy,
+                                  DA::LinkPointLayoutStrategy::Auto,
+                                  { DA::LinkPointLayoutStrategy::Auto, "auto" },
+                                  { DA::LinkPointLayoutStrategy::Manual, "manual" });

@@ -5,6 +5,7 @@
 #include "DAGraphicsResizeableItem.h"
 #include "DAPyGILGuard.h"
 #include "DAPyNodeState.h"
+#include "DAPyNodeStyle.h"
 #include <QIcon>
 #include <QJsonObject>
 #include <QGraphicsSceneMouseEvent>
@@ -108,6 +109,11 @@ public:
     // 节点描述符（用于获取输入/输出信息）
     void setDescriptor(const QJsonObject& desc);
     QJsonObject getDescriptor() const;
+
+    // 节点样式
+    void setStyle(const DANodeStyle& style);
+    DANodeStyle& getStyle();
+    const DANodeStyle& getStyle() const;
 
     // 自定义绘制回调接口
     void setPaintCallback(const pybind11::object& callback);
