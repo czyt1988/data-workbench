@@ -85,6 +85,8 @@ DAPyNodeGraphicsItem::PrivateData::~PrivateData()
 /**
  * @brief 从描述符生成连接点
  * @return 连接点列表
+ *
+ * 根据 mStyle.inputPortSide / outputPortSide 设置每个连接点的方向。
  */
 QList< DAPyLinkPoint > DAPyNodeGraphicsItem::PrivateData::generateLinkPointsFromDescriptor() const
 {
@@ -94,13 +96,16 @@ QList< DAPyLinkPoint > DAPyNodeGraphicsItem::PrivateData::generateLinkPointsFrom
         return result;
     }
 
+    const PortSide inputSide  = mStyle.inputPortSide;
+    const PortSide outputSide = mStyle.outputPortSide;
+
     // 从描述符解析输入连接点
     QJsonArray inputs = mDescriptor.value("inputs").toArray();
     int inputCount    = inputs.size();
     for (int i = 0; i < inputCount; ++i) {
         DAPyLinkPoint lp;
         lp.way               = DAPyLinkPoint::Input;
-        lp.direction         = AspectDirection::West;
+        lp.direction         = inputSide;
         QJsonObject inputObj = inputs.at(i).toObject();
         lp.name              = inputObj.value("name").toString(QString("input_%1").arg(i));
         result.append(lp);
@@ -112,7 +117,7 @@ QList< DAPyLinkPoint > DAPyNodeGraphicsItem::PrivateData::generateLinkPointsFrom
     for (int i = 0; i < outputCount; ++i) {
         DAPyLinkPoint lp;
         lp.way                = DAPyLinkPoint::Output;
-        lp.direction          = AspectDirection::East;
+        lp.direction          = outputSide;
         QJsonObject outputObj = outputs.at(i).toObject();
         lp.name               = outputObj.value("name").toString(QString("output_%1").arg(i));
         result.append(lp);
@@ -124,24 +129,49 @@ QList< DAPyLinkPoint > DAPyNodeGraphicsItem::PrivateData::generateLinkPointsFrom
 /**
  * @brief 更新连接点位置
  * @param[in] bodyRect 节点主体矩形区域
+ *
+ * 根据 d_ptr->mStyle.inputPortSide / outputPortSide 在四个方向上定位连接点。
+ * West/East：沿垂直方向均匀分布；North/South：沿水平方向均匀分布。
  */
 void DAPyNodeGraphicsItem::PrivateData::updateLinkPointPositions(const QRectF& bodyRect)
 {
-    // 计算输入连接点位置（左侧）
+    // 更新输入连接点位置
     int inputCount = mInputLinkPoints.size();
     if (inputCount > 0) {
-        qreal spacing = bodyRect.height() / (inputCount + 1);
+        const PortSide side = mStyle.inputPortSide;
         for (int i = 0; i < inputCount; ++i) {
-            mInputLinkPoints[ i ].position = QPointF(bodyRect.left(), bodyRect.top() + spacing * (i + 1));
+            mInputLinkPoints[i].direction = side;
+            if (side == PortSide::West || side == PortSide::East) {
+                // 垂直均匀分布
+                const qreal spacing = bodyRect.height() / (inputCount + 1);
+                const qreal x = (side == PortSide::West) ? bodyRect.left() : bodyRect.right();
+                mInputLinkPoints[i].position = QPointF(x, bodyRect.top() + spacing * (i + 1));
+            } else {
+                // North/South：水平均匀分布
+                const qreal spacing = bodyRect.width() / (inputCount + 1);
+                const qreal y = (side == PortSide::North) ? bodyRect.top() : bodyRect.bottom();
+                mInputLinkPoints[i].position = QPointF(bodyRect.left() + spacing * (i + 1), y);
+            }
         }
     }
 
-    // 计算输出连接点位置（右侧）
+    // 更新输出连接点位置
     int outputCount = mOutputLinkPoints.size();
     if (outputCount > 0) {
-        qreal spacing = bodyRect.height() / (outputCount + 1);
+        const PortSide side = mStyle.outputPortSide;
         for (int i = 0; i < outputCount; ++i) {
-            mOutputLinkPoints[ i ].position = QPointF(bodyRect.right(), bodyRect.top() + spacing * (i + 1));
+            mOutputLinkPoints[i].direction = side;
+            if (side == PortSide::West || side == PortSide::East) {
+                // 垂直均匀分布
+                const qreal spacing = bodyRect.height() / (outputCount + 1);
+                const qreal x = (side == PortSide::West) ? bodyRect.left() : bodyRect.right();
+                mOutputLinkPoints[i].position = QPointF(x, bodyRect.top() + spacing * (i + 1));
+            } else {
+                // North/South：水平均匀分布
+                const qreal spacing = bodyRect.width() / (outputCount + 1);
+                const qreal y = (side == PortSide::North) ? bodyRect.top() : bodyRect.bottom();
+                mOutputLinkPoints[i].position = QPointF(bodyRect.left() + spacing * (i + 1), y);
+            }
         }
     }
 }
@@ -594,11 +624,14 @@ QList< DAPyLinkPoint > DAPyNodeGraphicsItem::generateLinkPoints() const
         QStringList inputs  = d_ptr->mProxy->getInputKeys();
         QStringList outputs = d_ptr->mProxy->getOutputKeys();
 
+        const PortSide inputSide  = d_ptr->mStyle.inputPortSide;
+        const PortSide outputSide = d_ptr->mStyle.outputPortSide;
+
         // 生成输入连接点
         for (const QString& key : inputs) {
             DAPyLinkPoint lp;
             lp.way       = DAPyLinkPoint::Input;
-            lp.direction = AspectDirection::West;
+            lp.direction = inputSide;
             lp.name      = key;
             result.append(lp);
         }
@@ -607,7 +640,7 @@ QList< DAPyLinkPoint > DAPyNodeGraphicsItem::generateLinkPoints() const
         for (const QString& key : outputs) {
             DAPyLinkPoint lp;
             lp.way       = DAPyLinkPoint::Output;
-            lp.direction = AspectDirection::East;
+            lp.direction = outputSide;
             lp.name      = key;
             result.append(lp);
         }
@@ -854,112 +887,141 @@ void DAPyNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOption
     painter->setFont(smallFont);
     QFontMetrics fm(smallFont);
 
-    // 绘制输入连接点（白色填充 + 深色边框）
-    for (const auto& lp : std::as_const(d_ptr->mInputLinkPoints)) {
-        // 根据方向确定矩形尺寸
-        qreal halfW, halfH;
-        if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
-            // 水平方向：14×10
-            halfW = cLPHWidth / 2;
-            halfH = cLPHHeight / 2;
-        } else {
-            // 垂直方向：10×14
-            halfW = cLPHHeight / 2;
-            halfH = cLPHWidth / 2;
+    // 形状绘制辅助函数
+    auto drawLinkPointShape = [painter](const QRectF& linkRect, PortShape shape) {
+        switch (shape) {
+        case PortShape::Circle:
+            painter->drawEllipse(linkRect);
+            break;
+        case PortShape::Diamond: {
+            QPainterPath diamond;
+            const qreal cx = linkRect.center().x();
+            const qreal cy = linkRect.center().y();
+            const qreal hw = linkRect.width() / 2;
+            const qreal hh = linkRect.height() / 2;
+            diamond.moveTo(cx, cy - hh);    // top
+            diamond.lineTo(cx + hw, cy);     // right
+            diamond.lineTo(cx, cy + hh);     // bottom
+            diamond.lineTo(cx - hw, cy);     // left
+            diamond.closeSubpath();
+            painter->drawPath(diamond);
+            break;
         }
-
-        // 绘制连接点矩形
-        QRectF linkRect(lp.position.x() - halfW, lp.position.y() - halfH, halfW * 2, halfH * 2);
-        painter->setBrush(QBrush(Qt::white));
-        painter->drawRect(linkRect);
-
-        // 绘制连接点名称（方向感知定位）
-        QRect textRect = fm.boundingRect(lp.name);
-        textRect.adjust(0, 0, spacing, spacing);
-        QPointF textPos;
-
-        switch (lp.direction) {
-        case AspectDirection::East:
-            // 文本在左侧：←◁文本
-            textPos.setX(lp.position.x() - halfW - textRect.width() - spacing);
-            textPos.setY(lp.position.y() - textRect.height() / 2);
-            break;
-        case AspectDirection::West:
-            // 文本在右侧：文本▷→
-            textPos.setX(lp.position.x() + halfW + spacing);
-            textPos.setY(lp.position.y() - textRect.height() / 2);
-            break;
-        case AspectDirection::North:
-            // 文本在下方：↑△文本
-            textPos.setX(lp.position.x() - textRect.width() / 2);
-            textPos.setY(lp.position.y() + halfH + spacing);
-            break;
-        case AspectDirection::South:
-            // 文本在上方：文本▽↓
-            textPos.setX(lp.position.x() - textRect.width() / 2);
-            textPos.setY(lp.position.y() - halfH - textRect.height());
-            break;
+        case PortShape::Rect:
         default:
-            textPos = lp.position;
+            painter->drawRect(linkRect);
             break;
         }
+    };
 
-        textRect.moveTopLeft(textPos.toPoint());
-        painter->drawText(textRect, Qt::AlignCenter, lp.name);
+    // 绘制输入连接点
+    {
+        const DAPyLinkPointStyle& portStyle = d_ptr->mStyle.inputPortStyle;
+        QBrush fillBrush(portStyle.isFillColorValid() ? portStyle.fillColor : Qt::white);
+        QPen borderPen(portStyle.isBorderColorValid() ? portStyle.borderColor : Qt::black);
+        borderPen.setWidthF(portStyle.borderWidth);
+        painter->setBrush(fillBrush);
+        painter->setPen(borderPen);
+
+        for (const auto& lp : std::as_const(d_ptr->mInputLinkPoints)) {
+            // 根据方向确定矩形尺寸
+            qreal halfW, halfH;
+            if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
+                halfW = cLPHWidth / 2;
+                halfH = cLPHHeight / 2;
+            } else {
+                halfW = cLPHHeight / 2;
+                halfH = cLPHWidth / 2;
+            }
+
+            QRectF linkRect(lp.position.x() - halfW, lp.position.y() - halfH, halfW * 2, halfH * 2);
+            drawLinkPointShape(linkRect, portStyle.shape);
+
+            // 绘制连接点名称（方向感知定位）
+            QRect textRect = fm.boundingRect(lp.name);
+            textRect.adjust(0, 0, spacing, spacing);
+            QPointF textPos;
+
+            switch (lp.direction) {
+            case AspectDirection::East:
+                textPos.setX(lp.position.x() - halfW - textRect.width() - spacing);
+                textPos.setY(lp.position.y() - textRect.height() / 2);
+                break;
+            case AspectDirection::West:
+                textPos.setX(lp.position.x() + halfW + spacing);
+                textPos.setY(lp.position.y() - textRect.height() / 2);
+                break;
+            case AspectDirection::North:
+                textPos.setX(lp.position.x() - textRect.width() / 2);
+                textPos.setY(lp.position.y() + halfH + spacing);
+                break;
+            case AspectDirection::South:
+                textPos.setX(lp.position.x() - textRect.width() / 2);
+                textPos.setY(lp.position.y() - halfH - textRect.height());
+                break;
+            default:
+                textPos = lp.position;
+                break;
+            }
+
+            textRect.moveTopLeft(textPos.toPoint());
+            painter->drawText(textRect, Qt::AlignCenter, lp.name);
+        }
     }
 
-    // 绘制输出连接点（深灰填充 + 黑色边框）
-    for (const auto& lp : std::as_const(d_ptr->mOutputLinkPoints)) {
-        // 根据方向确定矩形尺寸
-        qreal halfW, halfH;
-        if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
-            // 水平方向：14×10
-            halfW = cLPHWidth / 2;
-            halfH = cLPHHeight / 2;
-        } else {
-            // 垂直方向：10×14
-            halfW = cLPHHeight / 2;
-            halfH = cLPHWidth / 2;
+    // 绘制输出连接点
+    {
+        const DAPyLinkPointStyle& portStyle = d_ptr->mStyle.outputPortStyle;
+        QBrush fillBrush(portStyle.isFillColorValid() ? portStyle.fillColor : Qt::darkGray);
+        QPen borderPen(portStyle.isBorderColorValid() ? portStyle.borderColor : Qt::black);
+        borderPen.setWidthF(portStyle.borderWidth);
+        painter->setBrush(fillBrush);
+        painter->setPen(borderPen);
+
+        for (const auto& lp : std::as_const(d_ptr->mOutputLinkPoints)) {
+            // 根据方向确定矩形尺寸
+            qreal halfW, halfH;
+            if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
+                halfW = cLPHWidth / 2;
+                halfH = cLPHHeight / 2;
+            } else {
+                halfW = cLPHHeight / 2;
+                halfH = cLPHWidth / 2;
+            }
+
+            QRectF linkRect(lp.position.x() - halfW, lp.position.y() - halfH, halfW * 2, halfH * 2);
+            drawLinkPointShape(linkRect, portStyle.shape);
+
+            // 绘制连接点名称（方向感知定位）
+            QRect textRect = fm.boundingRect(lp.name);
+            textRect.adjust(0, 0, spacing, spacing);
+            QPointF textPos;
+
+            switch (lp.direction) {
+            case AspectDirection::East:
+                textPos.setX(lp.position.x() - halfW - textRect.width() - spacing);
+                textPos.setY(lp.position.y() - textRect.height() / 2);
+                break;
+            case AspectDirection::West:
+                textPos.setX(lp.position.x() + halfW + spacing);
+                textPos.setY(lp.position.y() - textRect.height() / 2);
+                break;
+            case AspectDirection::North:
+                textPos.setX(lp.position.x() - textRect.width() / 2);
+                textPos.setY(lp.position.y() + halfH + spacing);
+                break;
+            case AspectDirection::South:
+                textPos.setX(lp.position.x() - textRect.width() / 2);
+                textPos.setY(lp.position.y() - halfH - textRect.height());
+                break;
+            default:
+                textPos = lp.position;
+                break;
+            }
+
+            textRect.moveTopLeft(textPos.toPoint());
+            painter->drawText(textRect, Qt::AlignCenter, lp.name);
         }
-
-        // 绘制连接点矩形
-        QRectF linkRect(lp.position.x() - halfW, lp.position.y() - halfH, halfW * 2, halfH * 2);
-        painter->setBrush(QBrush(Qt::darkGray));
-        painter->drawRect(linkRect);
-
-        // 绘制连接点名称（方向感知定位）
-        QRect textRect = fm.boundingRect(lp.name);
-        textRect.adjust(0, 0, spacing, spacing);
-        QPointF textPos;
-
-        switch (lp.direction) {
-        case AspectDirection::East:
-            // 文本在左侧：←◁文本
-            textPos.setX(lp.position.x() - halfW - textRect.width() - spacing);
-            textPos.setY(lp.position.y() - textRect.height() / 2);
-            break;
-        case AspectDirection::West:
-            // 文本在右侧：文本▷→
-            textPos.setX(lp.position.x() + halfW + spacing);
-            textPos.setY(lp.position.y() - textRect.height() / 2);
-            break;
-        case AspectDirection::North:
-            // 文本在下方：↑△文本
-            textPos.setX(lp.position.x() - textRect.width() / 2);
-            textPos.setY(lp.position.y() + halfH + spacing);
-            break;
-        case AspectDirection::South:
-            // 文本在上方：文本▽↓
-            textPos.setX(lp.position.x() - textRect.width() / 2);
-            textPos.setY(lp.position.y() - halfH - textRect.height());
-            break;
-        default:
-            textPos = lp.position;
-            break;
-        }
-
-        textRect.moveTopLeft(textPos.toPoint());
-        painter->drawText(textRect, Qt::AlignCenter, lp.name);
     }
 
     painter->restore();
@@ -1204,11 +1266,13 @@ void DAPyNodeGraphicsItem::paintWidgetTemplate(QPainter* painter, const QRectF& 
  * @return 边界矩形
  *
  * 当名称位置为 Below 时，向下扩展以容纳名称文本。
+ * 当输入或输出端口方位为 North/South 时，垂直扩展以容纳连接点。
  */
 QRectF DAPyNodeGraphicsItem::boundingRect() const
 {
     QRectF rect = DAGraphicsResizeableItem::boundingRect();
 
+    // 名称位置扩展（Below 模式）
     if (d_ptr->mStyle.namePosition == NamePosition::Below && !d_ptr->mNodeName.isEmpty()) {
         QFont font;
         font.setPointSize(9);
@@ -1216,6 +1280,21 @@ QRectF DAPyNodeGraphicsItem::boundingRect() const
         const qreal textHeight = fm.height() + 4;  // 额外4px间距
         rect.adjust(0, 0, 0, textHeight);
     }
+
+    // 端口扩展
+    const PortSide inputSide  = d_ptr->mStyle.inputPortSide;
+    const PortSide outputSide = d_ptr->mStyle.outputPortSide;
+
+    // 端口突出间距常量
+    constexpr qreal kPortOffset = 8.0;
+
+    // 计算各方向扩展量（独立计算左右上下）
+    qreal leftOff   = (inputSide == PortSide::West || outputSide == PortSide::West) ? kPortOffset : 0;
+    qreal rightOff  = (inputSide == PortSide::East || outputSide == PortSide::East) ? kPortOffset : 0;
+    qreal topOff    = (inputSide == PortSide::North || outputSide == PortSide::North) ? kPortOffset : 0;
+    qreal bottomOff = (inputSide == PortSide::South || outputSide == PortSide::South) ? kPortOffset : 0;
+
+    rect.adjust(-leftOff, -topOff, rightOff, bottomOff);
 
     return rect;
 }
