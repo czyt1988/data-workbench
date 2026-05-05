@@ -14,8 +14,8 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 class DataExportNode:
     """数据导出节点"""
 
-    file_path = Parameter(str, default="", description="导出文件路径")
-    export_format = Parameter(str, default="csv", description="导出格式：csv/json/excel/parquet/feather")
+    file_path = Parameter("file", default="", description="导出文件路径", file_filter="All Files (*.*);;CSV Files (*.csv);;JSON Files (*.json);;Excel Files (*.xlsx);;Parquet Files (*.parquet);;Feather Files (*.feather)")
+    export_format = Parameter("enum", default="csv", description="导出格式", enum_values=["csv", "json", "excel", "parquet", "feather"])
 
     class Inputs:
         data = Input("DataFrame", required=True, description="输入 DataFrame")

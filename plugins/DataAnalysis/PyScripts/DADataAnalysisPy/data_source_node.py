@@ -15,8 +15,8 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 class DataSourceNode:
     """多格式数据源节点"""
 
-    file_path = Parameter(str, default="", description="文件路径")
-    file_type = Parameter(str, default="csv", description="文件格式：csv, excel, json, parquet")
+    file_path = Parameter("file", default="", description="数据文件路径", file_filter="All Supported (*.csv *.xlsx *.xls *.json *.parquet);;CSV Files (*.csv);;Excel Files (*.xlsx *.xls);;JSON Files (*.json);;Parquet Files (*.parquet);;All Files (*.*)")
+    file_type = Parameter("enum", default="csv", description="文件格式", enum_values=["csv", "excel", "json", "parquet"])
     encoding = Parameter(str, default="utf-8", description="文件编码（仅 CSV 有效）")
     separator = Parameter(str, default=",", description="字段分隔符（仅 CSV 有效）")
     sheet_name = Parameter(str, default="0", description="Excel 工作表名称或索引（仅 Excel 有效）")

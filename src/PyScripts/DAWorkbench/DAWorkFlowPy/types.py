@@ -103,9 +103,10 @@ class Parameter:
             column = Parameter(str, default="value", description="要筛选的列名")
             threshold = Parameter(float, default=0.0, description="筛选阈值")
 
-    :param param_type: 参数的 Python 类型（如 str、int、float、bool 等）
+    :param param_type: 参数的 Python 类型（如 str、int、float、bool 等）或字符串类型标签（如 "file"、"enum" 等）
     :param default: 参数的默认值，默认为 None 表示无默认值
     :param description: 参数的描述信息
+    :param kwargs: 扩展字段，用于支持额外属性（如 file_filter、enum_options 等）
     """
 
     # 支持的参数类型到字符串标签的映射
@@ -116,13 +117,21 @@ class Parameter:
         bool: "bool",
         list: "list",
         dict: "dict",
+        # Extended types from DAParamTypeRegistry
+        "file": "file",
+        "folder": "folder",
+        "enum": "enum",
+        "color": "color",
+        "font": "font",
+        "code": "code",
     }
 
-    def __init__(self, param_type: type, default=None, description: str = ""):
+    def __init__(self, param_type, default=None, description: str = "", **kwargs):
         # 注意：name 属性在 NodeDef 装饰器处理时通过类属性名自动设置
         self.param_type = param_type
         self.default = default
         self.description = description
+        self._extra_kwargs = kwargs
 
     def get_type_label(self) -> str:
         """
@@ -133,6 +142,8 @@ class Parameter:
 
         :return: 类型标签字符串
         """
+        if isinstance(self.param_type, str):
+            return self._TYPE_LABELS.get(self.param_type, self.param_type)
         return self._TYPE_LABELS.get(self.param_type, self.param_type.__name__)
 
     def to_dict(self, name: str) -> dict:
@@ -150,8 +161,11 @@ class Parameter:
         # 仅在 default 不为 None 时写入，避免将 None 与"无默认值"混淆
         if self.default is not None:
             result["default"] = self.default
+        # Merge extended kwargs for extended parameter types
+        result.update(self._extra_kwargs)
         return result
 
     def __repr__(self) -> str:
         default_str = f", default={self.default!r}" if self.default is not None else ""
-        return f"Parameter({self.param_type.__name__}{default_str}, description='{self.description}')"
+        type_str = self.param_type if isinstance(self.param_type, str) else self.param_type.__name__
+        return f"Parameter({type_str}{default_str}, description='{self.description}')"
