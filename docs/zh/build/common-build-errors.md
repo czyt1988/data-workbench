@@ -17,7 +17,7 @@
 
 | 错误类型 | 常见原因 | 解决难度 |
 |----------|----------|----------|
-| 编译器错误 | VS路径问题、路径长度限制 | 中等 |
+| 编译器错误 | VS路径问题、路径长度限制、Ninja 在 PowerShell 中的环境变量缺失 | 中等 |
 | MOC错误 | 批量MOC操作异常 | 低 |
 | MinGW错误 | 线程数据空间不足 | 低 |
 | 运行时错误 | DLL缺失、Python环境 | 中等 |
@@ -82,6 +82,50 @@
 
 !!! tip "替代方案"
     如果以上方法都不生效，可以将项目移动到更短的路径下（如D盘或C盘根目录）。
+
+## Ninja 在 PowerShell 中的 MSVC 环境变量错误
+
+### 错误现象
+
+```
+fatal error C1083: 无法打开包括文件: "memory"/"type_traits"
+ninja: build stopped: subcommand failed.
+```
+
+### 错误原因
+
+在 PowerShell 中运行 Ninja 生成器时，MSVC 编译器环境变量未正确配置。PowerShell 调用 `vcvars64.bat` 后，环境变量不会传递给后续命令，导致编译器找不到 C++ 标准库头文件。这是 PowerShell 与 bat 脚本交互的已知限制。
+
+| 原因 | 说明 |
+|------|------|
+| `vcvars64.bat` 在 PowerShell 中不生效 | PowerShell 的 `&` 调用创建的进程退出后环境变量丢失 |
+| Ninja 需要 MSVC 环境变量 | Ninja 生成器不自动检测 MSVC，需手动设置 `INCLUDE`、`LIB` 等变量 |
+
+### 解决方案
+
+#### 方案一（推荐）：改用 Visual Studio 生成器
+
+Visual Studio 生成器自动检测 MSVC 编译器，无需手动配置环境变量：
+
+```powershell
+# 配置（VS 生成器）
+cmake -S . -B build -G "Visual Studio 16 2019" -A x64 `
+    -DCMAKE_PREFIX_PATH="C:/Qt/6.7.3/msvc2019_64"
+# 编译
+cmake --build build --config Release --parallel
+```
+
+#### 方案二：在 Developer Command Prompt (CMD) 中运行
+
+如果必须使用 Ninja，直接在 Developer Command Prompt 中运行，该环境已自动配置好 MSVC 变量：
+
+```cmd
+cmake -S . -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
+cmake --build build
+```
+
+!!! warning "注意"
+    不要在 PowerShell 中运行 Ninja 构建，**必须**使用 Developer Command Prompt (CMD)。
 
 ## MOC相关错误
 

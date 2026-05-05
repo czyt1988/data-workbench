@@ -17,10 +17,10 @@
 
 ## 命令行构建（推荐）
 
-!!! warning "必须使用 Qt 工具链文件"
-    构建项目**必须**指定 Qt 工具链文件（`qt.toolchain.cmake`），否则会出现 Windows SDK 头文件找不到的问题。
+!!! warning "生成器选择"
+    Windows 平台**推荐使用 Visual Studio 生成器**。Ninja 生成器在本地 PowerShell 中存在 MSVC 编译器环境变量无法传递的问题，会导致 `fatal error C1083`。详见项目根目录 `build.md`。
 
-### Windows PowerShell
+### Windows PowerShell（Visual Studio 生成器，推荐）
 
 以下命令展示了 Windows 平台使用 PowerShell 构建主程序的完整流程。命令中包含详细的中文注释说明各参数的作用。
 
@@ -29,24 +29,42 @@
 # 所有构建命令需在项目根目录下执行
 cd C:\path\to\data-workbench
 
-# 配置项目（必须指定 Qt 工具链文件）
+# 配置项目
 # -S 指定源码目录，-B 指定构建目录（build 目录可复用）
-# CMAKE_TOOLCHAIN_FILE 用于正确识别 Windows SDK 和 Qt 环境
-cmake -S . -B build -G Ninja `
-    -DCMAKE_BUILD_TYPE:STRING=Release `
-    -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE `
-    -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
+# CMAKE_PREFIX_PATH 指定 Qt 安装路径（VS 生成器不需 CMAKE_TOOLCHAIN_FILE）
+cmake -S . -B build -G "Visual Studio 16 2019" -A x64 `
+    -DCMAKE_PREFIX_PATH="C:/Qt/6.7.3/msvc2019_64"
 
 # 构建项目（使用所有 CPU 核心）
 # --parallel 启用并行编译，充分利用多核处理器
 cmake --build build --config Release --parallel
 
-# 安装到 bin 目录
+# 安装到 bin 目录（可选）
 # install 目标将编译产物复制到 bin_{配置信息} 输出目录
 cmake --build build --config Release --target install
 ```
 
 构建完成后，输出目录为 `bin_Release_qt6.7.3_MSVC_x64`，包含主程序可执行文件和所有依赖库。
+
+!!! tip "VS 版本选择"
+    - VS 2019 使用 `-G "Visual Studio 16 2019"`
+    - VS 2022 使用 `-G "Visual Studio 17 2022"`
+    - Qt 版本必须与 Visual Studio 编译器版本匹配（如 Qt 6.7.3 msvc2019_64 配 VS 2019）
+
+### Windows PowerShell（Ninja 生成器，需 Developer Command Prompt）
+
+如果已安装 Ninja 且**在 Developer Command Prompt (CMD) 中**运行，可以使用 Ninja：
+
+```powershell
+# ⚠️ 必须先在 Developer Command Prompt 中运行 vcvars64.bat
+cmake -S . -B build -G Ninja `
+    -DCMAKE_BUILD_TYPE:STRING=Release `
+    -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
+cmake --build build --config Release --parallel
+```
+
+!!! warning "PowerShell 中 Ninja 的限制"
+    在 PowerShell 中通过 `& vcvars64.bat` 调用后，环境变量不会传递给 PowerShell 后续命令。如果遇到 `fatal error C1083: 无法打开包括文件`，请改用 Visual Studio 生成器。
 
 ### Linux Bash
 
@@ -76,9 +94,12 @@ cmake --build build --config Release --target install
 
 | 参数 | 必需 | 说明 |
 |------|:----:|------|
-| `-DCMAKE_TOOLCHAIN_FILE` | ✅ | Qt 工具链文件路径，**必须指定** |
-| `-DCMAKE_BUILD_TYPE` | ✅ | 构建类型：`Debug` 或 `Release` |
-| `-G Ninja` | 推荐 | 使用 Ninja 生成器，构建更快 |
+| `-G "Visual Studio 16 2019"` | ✅ (VS) | VS 2019 生成器；VS 2022 用 `"Visual Studio 17 2022"` |
+| `-A x64` | ✅ (VS) | 64 位架构，仅 VS 生成器需要 |
+| `-DCMAKE_PREFIX_PATH` | ✅ (VS) | Qt 安装路径，VS 生成器用此参数指定 Qt 位置 |
+| `-DCMAKE_TOOLCHAIN_FILE` | ✅ (Ninja) | Qt 工具链文件路径，Ninja 生成器用此参数 |
+| `-DCMAKE_BUILD_TYPE` | ✅ (Ninja) | 构建类型：`Debug` 或 `Release`（VS 生成器用 `--config` 代替） |
+| `-G Ninja` | 可选 | Ninja 生成器（必须在 Developer Command Prompt 中运行） |
 | `-DCMAKE_EXPORT_COMPILE_COMMANDS` | 可选 | 生成 LSP 配置文件 |
 
 ---
@@ -199,6 +220,21 @@ windeployqt DAWorkbench.exe
 ### 第三方库找不到
 
 确保第三方库已正确编译并安装。参考 [构建第三方库](./third-party-build.md)。
+
+### 快速构建脚本
+
+项目提供了 `scripts/build.ps1` 脚本，自动检测环境（Qt 路径、VS 版本）并执行正确的构建命令：
+
+```powershell
+# 编译指定模块
+.\scripts\build.ps1 -Target DAPyWorkFlow
+
+# 编译并运行测试
+.\scripts\build.ps1 -Target DAPyWorkFlow -Test
+
+# 完整构建
+.\scripts\build.ps1 -Full
+```
 
 ---
 
