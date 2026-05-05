@@ -365,6 +365,11 @@ QWidget* DAParamTypeRegistry::PrivateData::createFileEditor(const QJsonObject& d
     if (!defaultVal.isNull() && defaultVal.isString()) {
         fileEdit->setFilePath(defaultVal.toString());
     }
+    // 设置文件过滤器
+    QJsonValue filterVal = desc.value("file_filter");
+    if (!filterVal.isNull() && filterVal.isString()) {
+        fileEdit->setNameFilter(filterVal.toString());
+    }
     return fileEdit;
 }
 

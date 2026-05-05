@@ -6,6 +6,7 @@
 #include "QCheckBox"
 #include "QLineEdit"
 #include "QComboBox"
+#include "DAFilePathEditWidget.h"
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QJsonArray>
@@ -195,6 +196,12 @@ QJsonObject DANodeParamSettingPanel::testCollectConfig() const
             } else if (type == "enum") {
                 auto* combo = qobject_cast<QComboBox*>(item->editorWidget());
                 if (combo) config[name] = combo->currentText();
+            } else if (type == "file") {
+                auto* fileEdit = qobject_cast<DA::DAFilePathEditWidget*>(item->editorWidget());
+                if (fileEdit) config[name] = fileEdit->getFilePath();
+            } else if (type == "folder") {
+                auto* foldEdit = qobject_cast<DA::DAFilePathEditWidget*>(item->editorWidget());
+                if (foldEdit) config[name] = foldEdit->getFilePath();
             }
         }
         ++currentId;
