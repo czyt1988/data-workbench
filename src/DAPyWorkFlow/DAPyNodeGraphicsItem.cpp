@@ -310,8 +310,10 @@ void DAPyNodeGraphicsItem::setNodeName(const QString& name)
     if (d_ptr->mNodeName != name) {
         d_ptr->mNodeName = name;
 
-        // 仅 RectTemplate 模式下自适应尺寸
-        if (d_ptr->mRenderTemplate == RectTemplate && !name.isEmpty()) {
+        // 仅 RectTemplate 模式下且名称在节点内部时自适应尺寸
+        // 当名称在节点下方时，bodySize 不需要为文本扩展
+        if (d_ptr->mRenderTemplate == RectTemplate && !name.isEmpty()
+            && d_ptr->mStyle.namePosition != NamePosition::Below) {
             QFont font;
             font.setPointSize(9);
             QFontMetrics fm(font);
@@ -788,7 +790,7 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
         break;
     case RectTemplate:
     default:
-        paintRectTemplate(painter, bodyRect);
+        paintNodeStyleBody(painter, bodyRect);
         break;
     }
 
@@ -987,7 +989,12 @@ void DAPyNodeGraphicsItem::paintStateDecoration(QPainter* painter, const QRectF&
         pen.setWidth(3);
         painter->setPen(pen);
         painter->setBrush(Qt::NoBrush);
-        painter->drawRoundedRect(bodyRect.adjusted(1, 1, -1, -1), 4, 4);
+        // 边框始终跟随 bodyShape
+        if (d_ptr->mStyle.bodyShape == BodyShape::Ellipse) {
+            painter->drawEllipse(bodyRect.adjusted(1, 1, -1, -1));
+        } else {
+            painter->drawRoundedRect(bodyRect.adjusted(1, 1, -1, -1), 4, 4);
+        }
         break;
     }
     case Success:
@@ -997,7 +1004,15 @@ void DAPyNodeGraphicsItem::paintStateDecoration(QPainter* painter, const QRectF&
         QBrush brush(stateColor);
         painter->setBrush(brush);
         painter->setPen(Qt::NoPen);
-        painter->drawRoundedRect(bodyRect, 4, 4);
+
+        // 根据 bodyShape 裁剪填充区域
+        if (d_ptr->mStyle.bodyShape == BodyShape::Ellipse) {
+            QPainterPath clipPath;
+            clipPath.addEllipse(bodyRect);
+            painter->setClipPath(clipPath);
+        }
+
+        painter->drawRect(bodyRect);
         break;
     }
     case Idle:
@@ -1010,33 +1025,106 @@ void DAPyNodeGraphicsItem::paintStateDecoration(QPainter* painter, const QRectF&
 }
 
 /**
- * @brief 绘制矩形模板
+ * @brief 绘制统一节点样式模板
  * @param[in] painter 画笔
  * @param[in] bodyRect 主体矩形区域
+ *
+ * 根据 d_ptr->mStyle (DANodeStyle) 配置绘制节点主体，
+ * 包括形状、背景色、边框、图标和名称。
  */
-void DAPyNodeGraphicsItem::paintRectTemplate(QPainter* painter, const QRectF& bodyRect)
+void DAPyNodeGraphicsItem::paintNodeStyleBody(QPainter* painter, const QRectF& bodyRect)
 {
     painter->save();
 
-    // 绘制背景（如果状态装饰未填充）
-    if (d_ptr->mNodeState == Idle || d_ptr->mNodeState == Waiting) {
-        QBrush brush(QColor(240, 240, 240));
-        painter->setBrush(brush);
-        QPen pen(QColor(180, 180, 180));
-        painter->setPen(pen);
-        painter->drawRoundedRect(bodyRect, 4, 4);
+    const DANodeStyle& style = d_ptr->mStyle;
+
+    // 确定背景色（无效时使用默认值）
+    QColor bgColor = style.backgroundColor.isValid() ? style.backgroundColor : QColor(240, 240, 240);
+    QColor bdrColor = style.borderColor.isValid() ? style.borderColor : QColor(180, 180, 180);
+
+    // 绘制主体形状
+    painter->setBrush(QBrush(bgColor));
+    QPen pen(bdrColor);
+    pen.setWidthF(style.borderWidth);
+    painter->setPen(pen);
+
+    switch (style.bodyShape) {
+    case BodyShape::Ellipse:
+        painter->drawEllipse(bodyRect);
+        break;
+    case BodyShape::RoundedRect:
+    default:
+        painter->drawRoundedRect(bodyRect, style.cornerRadius, style.cornerRadius);
+        break;
     }
 
-    // 绘制图标（如果有）
+    // 计算内部可用区域（考虑边框宽度）
+    const qreal margin = style.borderWidth / 2.0 + 4.0;
+    QRectF contentRect = bodyRect.adjusted(margin, margin, -margin, -margin);
+
+    // 绘制用户图标（setIcon 设置的图标）
     if (!d_ptr->mIcon.isNull()) {
-        QPixmap pixmap = d_ptr->mIcon.pixmap(QSize(24, 24));
+        QPixmap pixmap = d_ptr->mIcon.pixmap(QSize(static_cast<int>(style.iconSize),
+                                                      static_cast<int>(style.iconSize)));
         if (!pixmap.isNull()) {
             qreal dr = pixmap.devicePixelRatio();
-            QRectF iconRect(bodyRect.left() + 8,
-                            bodyRect.top() + (bodyRect.height() - pixmap.height() / dr) / 2,
-                            pixmap.width() / dr,
-                            pixmap.height() / dr);
-            painter->drawPixmap(iconRect.topLeft(), pixmap);
+            qreal iconW = pixmap.width() / dr;
+            qreal iconH = pixmap.height() / dr;
+            QPointF iconPos;
+
+            switch (style.iconPosition) {
+            case IconPosition::AboveText:
+                iconPos.setX(bodyRect.center().x() - iconW / 2);
+                iconPos.setY(contentRect.top());
+                // 收缩内容区域避开图标
+                contentRect.setTop(iconPos.y() + iconH + 2);
+                break;
+            case IconPosition::LeftOfText:
+            default:
+                iconPos.setX(bodyRect.left() + 8);
+                iconPos.setY(bodyRect.top() + (bodyRect.height() - iconH) / 2);
+                // 收缩内容区域避开图标
+                contentRect.setLeft(iconPos.x() + iconW + 8);
+                break;
+            }
+
+            painter->setPen(Qt::NoPen);
+            painter->drawPixmap(iconPos, pixmap);
+        }
+    }
+
+    // 绘制节点体图标（bodyIconSource）
+    if (style.bodyIconType == BodyIconType::Svg && !style.bodyIconSource.isEmpty()) {
+        QSvgRenderer iconRenderer(style.bodyIconSource);
+        if (iconRenderer.isValid()) {
+            QSizeF iconSize = iconRenderer.defaultSize();
+            iconSize.scale(bodyRect.size() * style.bodyIconScale, Qt::KeepAspectRatio);
+
+            QRectF iconRect;
+            iconRect.setSize(iconSize);
+            iconRect.moveCenter(bodyRect.center());
+            // 稍微上移，给名称留空间
+            iconRect.moveTop(iconRect.top() - 8);
+
+            iconRenderer.render(painter, iconRect);
+
+            // 收缩内容区域，名称显示在图标下方
+            contentRect.setTop(iconRect.bottom() + 2);
+        }
+    } else if (style.bodyIconType == BodyIconType::Pixmap && !style.bodyIconSource.isEmpty()) {
+        QPixmap pm(style.bodyIconSource);
+        if (!pm.isNull()) {
+            QSizeF pmSize = pm.size();
+            pmSize.scale(bodyRect.size() * style.bodyIconScale, Qt::KeepAspectRatio);
+
+            QRectF pmRect;
+            pmRect.setSize(pmSize);
+            pmRect.moveCenter(bodyRect.center() - QPointF(0, 8));
+
+            painter->setPen(Qt::NoPen);
+            painter->drawPixmap(pmRect.topLeft(), pm);
+
+            contentRect.setTop(pmRect.bottom() + 2);
         }
     }
 
@@ -1047,52 +1135,52 @@ void DAPyNodeGraphicsItem::paintRectTemplate(QPainter* painter, const QRectF& bo
         painter->setFont(font);
         painter->setPen(Qt::black);
 
-        // 计算文本绘制区域（留出图标空间）
-        QRectF textRect = bodyRect.adjusted(36, 0, -8, 0);
-        painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextWordWrap, d_ptr->mNodeName);
+        switch (style.namePosition) {
+        case NamePosition::Below: {
+            // 名称绘制在主体下方，水平居中
+            QFont font = painter->font();
+            font.setPointSize(9);
+            painter->setFont(font);
+            painter->setPen(Qt::black);
+
+            QFontMetrics fm(font);
+            QRect textRect = fm.boundingRect(d_ptr->mNodeName);
+            qreal textY = bodyRect.bottom() + 2;
+            textRect.moveLeft(qRound(bodyRect.center().x() - textRect.width() / 2.0));
+            textRect.moveTop(qRound(textY));
+            painter->drawText(textRect, Qt::AlignLeft | Qt::AlignTop, d_ptr->mNodeName);
+            break;
+        }
+        case NamePosition::Inside:
+        default:
+            painter->drawText(contentRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextWordWrap, d_ptr->mNodeName);
+            break;
+        }
     }
 
     painter->restore();
 }
 
 /**
+ * @brief 绘制矩形模板
+ * @deprecated 使用 paintNodeStyleBody() 替代
+ * @param[in] painter 画笔
+ * @param[in] bodyRect 主体矩形区域
+ */
+void DAPyNodeGraphicsItem::paintRectTemplate(QPainter* painter, const QRectF& bodyRect)
+{
+    paintNodeStyleBody(painter, bodyRect);
+}
+
+/**
  * @brief 绘制SVG模板
+ * @deprecated 使用 paintNodeStyleBody() 替代
  * @param[in] painter 画笔
  * @param[in] bodyRect 主体矩形区域
  */
 void DAPyNodeGraphicsItem::paintSvgTemplate(QPainter* painter, const QRectF& bodyRect)
 {
-    if (!d_ptr->mSvgRenderer || !d_ptr->mSvgRenderer->isValid()) {
-        // SVG无效时回退到矩形模板
-        paintRectTemplate(painter, bodyRect);
-        return;
-    }
-
-    painter->save();
-
-    // 计算SVG绘制区域（保持比例）
-    QSizeF svgSize = d_ptr->mSvgRenderer->defaultSize();
-    svgSize.scale(bodyRect.size() * 0.8, Qt::KeepAspectRatio);
-
-    QRectF svgRect;
-    svgRect.setSize(svgSize);
-    svgRect.moveCenter(bodyRect.center() - QPointF(0, 8));  // 稍微上移，给名称留空间
-
-    // 绘制SVG
-    d_ptr->mSvgRenderer->render(painter, svgRect);
-
-    // 绘制节点名称（在SVG下方）
-    if (!d_ptr->mNodeName.isEmpty()) {
-        QFont font = painter->font();
-        font.setPointSize(8);
-        painter->setFont(font);
-        painter->setPen(Qt::black);
-
-        QRectF textRect(bodyRect.left(), svgRect.bottom() + 2, bodyRect.width(), 16);
-        painter->drawText(textRect, Qt::AlignCenter | Qt::AlignTop, d_ptr->mNodeName);
-    }
-
-    painter->restore();
+    paintNodeStyleBody(painter, bodyRect);
 }
 
 /**
@@ -1109,6 +1197,48 @@ void DAPyNodeGraphicsItem::paintWidgetTemplate(QPainter* painter, const QRectF& 
     if (d_ptr->mProxyWidget) {
         updateWidgetGeometry();
     }
+}
+
+/**
+ * @brief 计算边界矩形
+ * @return 边界矩形
+ *
+ * 当名称位置为 Below 时，向下扩展以容纳名称文本。
+ */
+QRectF DAPyNodeGraphicsItem::boundingRect() const
+{
+    QRectF rect = DAGraphicsResizeableItem::boundingRect();
+
+    if (d_ptr->mStyle.namePosition == NamePosition::Below && !d_ptr->mNodeName.isEmpty()) {
+        QFont font;
+        font.setPointSize(9);
+        QFontMetrics fm(font);
+        const qreal textHeight = fm.height() + 4;  // 额外4px间距
+        rect.adjust(0, 0, 0, textHeight);
+    }
+
+    return rect;
+}
+
+/**
+ * @brief 计算碰撞形状
+ * @return 碰撞路径
+ *
+ * 当 bodyShape 为 Ellipse 时，返回椭圆路径而非矩形路径，
+ * 确保矩形角落的点击不会被误检测为命中。
+ */
+QPainterPath DAPyNodeGraphicsItem::shape() const
+{
+    QPainterPath path;
+
+    if (d_ptr->mStyle.bodyShape == BodyShape::Ellipse) {
+        path.addEllipse(getBodyControlRect());
+    } else {
+        // RoundedRect 等保持默认矩形路径（复用基类行为）
+        path = DAGraphicsResizeableItem::shape();
+    }
+
+    return path;
 }
 
 /**
