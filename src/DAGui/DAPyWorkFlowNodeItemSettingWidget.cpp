@@ -19,7 +19,7 @@ using namespace DA;
 // DAPyWorkFlowNodeItemSettingWidget
 //===================================================
 DAPyWorkFlowNodeItemSettingWidget::DAPyWorkFlowNodeItemSettingWidget(QWidget* parent)
-    : QWidget(parent), ui(new Ui::DAPyWorkFlowNodeItemSettingWidget), _lastTabIndex(0)
+    : QWidget(parent), ui(new Ui::DAPyWorkFlowNodeItemSettingWidget), _lastTabIndex(1)
 {
     ui->setupUi(this);
     init();
@@ -37,7 +37,8 @@ void DAPyWorkFlowNodeItemSettingWidget::init()
     // 创建参数设置面板调度器，插入为第一个tab页（index 0）
     mParamSettingWidget = new DANodeParamSettingPanelWidget(this);
     ui->tabWidget->insertTab(0, mParamSettingWidget, tr("参数"));
-    ui->tabWidget->setCurrentIndex(0);
+    // 默认显示Node设置tab（参数tab为占位stub，待后续任务完善后再设为默认）
+    ui->tabWidget->setCurrentIndex(1);
 
     // 注册默认面板（当前为空实现，后续任务将注册具体面板）
     DANodeParamSettingPanelFactory::instance().registerDefaultPanels();

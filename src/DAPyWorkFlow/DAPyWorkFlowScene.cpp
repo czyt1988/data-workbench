@@ -63,7 +63,9 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkAdd(DAPyLinkGraphicsItem* lin
                 pybind11::object fromPyNode = fromItem->getProxy()->getPyNodeRef();
                 pybind11::object toPyNode   = toItem->getProxy()->getPyNodeRef();
                 if (fromPyNode && toPyNode) {
-                    workflowObj.attr("add_connection")(fromPyNode, fromOutput.toStdString(), toPyNode, toInput.toStdString());
+                    std::string srcId = fromPyNode.attr("node_id").cast<std::string>();
+                    std::string dstId = toPyNode.attr("node_id").cast<std::string>();
+                    workflowObj.attr("connect_node")(srcId, fromOutput.toStdString(), dstId, toInput.toStdString());
                 }
             }
         } catch (const pybind11::error_already_set& e) {
