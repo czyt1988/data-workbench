@@ -1,6 +1,7 @@
 # data-workbench 项目指南
 
 **Generated:** 2026-04-28
+**Updated:** 2026-05-05
 **Commit:** `9676dc3`
 **Branch:** `workflow-rebuild`
 
@@ -30,8 +31,9 @@ data-workbench/
 │   ├── DACommonWidgets/ # 通用 UI 组件 (82 files)
 │   ├── DAGraphicsView/ # 图形视图框架 (54 files)
 │   ├── DAFigure/       # 图表/Figure 容器 (103 files)
-│   ├── DAGui/          # GUI Widgets/面板/对话框 (326 files, 最大模块)
+│   ├── DAGui/          # GUI Widgets/面板/对话框 (334 files, 最大模块)
 │   │   ├── ChartSetting/  # 图表属性设置面板
+│   │   ├── NodeSetting/   # 工作流节点通用设置面板 (参数类型注册+SceneB模式)
 │   │   ├── Commands/      # QUndoCommand 子类
 │   │   ├── Dialog/        # 各种对话框
 │   │   ├── MimeData/      # 拖放 MIME 数据
@@ -69,6 +71,7 @@ DAShared → DAUtils → DAAxOfficeWrapper(win) → DAMessageHandler
 | 插件管理 | `src/APP/DAAppPluginManager.h/.cpp` | 加载/卸载插件 |
 | 项目管理 | `src/APP/DAAppProject.h/.cpp` | 工程文件读写 |
 | 数据处理接口 | `src/DAData/` | 数据容器, DataFrame 封装 |
+| 工作流节点通用设置 | `src/DAGui/NodeSetting/` | 11种参数类型自动渲染, SceneB模式属性面板, PIMPL |
 | 图表创建/编辑 | `src/DAFigure/`, `src/DAGui/ChartSetting/` | QwtFigure 容器 + 属性面板 |
 | 图形视图交互 | `src/DAGraphicsView/` | QGraphicsView 子类, 节点/连线编辑 |
 | Python 绑定 | `src/DAPyBindQt/` | pybind11 胶水代码 |
@@ -99,6 +102,12 @@ DAShared → DAUtils → DAAxOfficeWrapper(win) → DAMessageHandler
 | `DA_DECLARE_PRIVATE` | macro | `src/DAGlobals.h` | PIMPL 私有数据声明 |
 | `DA_D` / `DA_DC` | macro | `src/DAGlobals.h` | PIMPL d-pointer 访问 |
 | `DA_PIMPL_CONSTRUCT` | macro | `src/DAGlobals.h` | PIMPL 构造函数初始化 |
+| `DA::DAParamTypeRegistry` | class | `src/DAGui/NodeSetting/DAParamTypeRegistry.h` | 11种参数类型注册+编辑器创建 |
+| `DA::DAAbstractNodeSettingWidget` | class | `src/DAGui/DAAbstractNodeSettingWidget.h` | 节点设置基类, 持有 DAPyNodeProxy* |
+| `DA::DANodeParamSettingPanel` | class | `src/DAGui/NodeSetting/DANodeParamSettingPanel.h` | 通用参数面板, SceneB 3-hop信号链 |
+| `DA::DANodeParamSettingPanelFactory` | class | `src/DAGui/NodeSetting/DANodeParamSettingPanelFactory.h` | 面板单例工厂, qualifiedName 路由 |
+| `DA::DANodeParamSettingPanelWidget` | class | `src/DAGui/NodeSetting/DANodeParamSettingPanelWidget.h` | QStackedWidget 调度器, 惰性加载缓存 |
+| `DA::ParameterDescriptor` | struct | `src/DAGui/NodeSetting/ParameterDescriptor.h` | Python 参数描述符, fromJson/fromJsonArray |
 
 ## CONVENTIONS
 
@@ -250,43 +259,98 @@ public:
 
 ## COMMANDS
 
-项目使用cmake构建，如果项目目录下存在build目录，说明已经生成过，直接在此目录下编译即可
+项目使用 cmake 构建。如果项目目录下存在 `build` 目录，说明已经生成过，直接在此目录下编译即可。
 
-构建此项目**必须**使用 Qt 工具链文件，否则会出现 Windows SDK 头文件找不到的问题
+> **⚠️ 构建前请阅读 root `build.md`**：该文件包含当前环境的实际构建命令和常见问题，尤其是 Ninja 在 PowerShell 中的限制说明。
 
-下面是构建参考：
+### 生成器选择（关键）
+
+| 生成器 | 是否可用 | 条件 |
+|--------|:------:|------|
+| **Visual Studio** | ✅ 推荐 | 任何环境均可用，自动检测 MSVC |
+| **Ninja** | ⚠️ 有限制 | **必须**在 Developer Command Prompt (CMD) 中运行；PowerShell 中 MSVC 环境变量无法通过 `vcvars64.bat` 注入 |
+
+**PowerShell 中必须使用 Visual Studio 生成器。** 详见 root `build.md` 第59-61行。
+
+### 配置与构建（Visual Studio 生成器）
 
 ```powershell
-# 正确的配置命令
-cmake -S . -B build -G Ninja `
-    -DCMAKE_BUILD_TYPE:STRING=Release `
-    -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE `
-    -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake" `
-    -DQT_QML_GENERATE_QMLLS_INI:STRING=ON `
-    "-DCMAKE_CXX_FLAGS_DEBUG_INIT:STRING=-DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG" `
-    "-DCMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT:STRING=-DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG"
+# === 首次配置 ===
+cmake -S . -B build -G "Visual Studio 16 2019" -A x64 `
+    -DCMAKE_PREFIX_PATH="C:/Qt/6.7.3/msvc2019_64"
+
+# === 后续编译（增量） ===
+cmake --build build --config Release --parallel
+
+# === 仅构建特定目标 ===
+cmake --build build --config Release --target DAPyWorkFlow --parallel
+
+# === 构建 + 测试 ===
+cmake --build build --config Release --target DAPyWorkFlowTests --parallel
 ```
 
 ### 参数说明
 
-| 参数 | 说明 |
-|------|------|
-| `-DCMAKE_TOOLCHAIN_FILE` | **必须**指定 Qt 工具链文件，否则无法正确找到 Windows SDK |
-| `-DCMAKE_BUILD_TYPE` | 构建类型：`Debug` 或 `Release` |
-| `-G Ninja` | 使用 Ninja 生成器 |
+| 参数 | 必需 | 说明 |
+|------|:----:|------|
+| `-G "Visual Studio 16 2019"` | ✅ | VS 2019 生成器；VS 2022 用 `"Visual Studio 17 2022"` |
+| `-A x64` | ✅ | 64 位架构 |
+| `-DCMAKE_PREFIX_PATH` | ✅ | VS 生成器用此参数指定 Qt 路径，而非 `CMAKE_TOOLCHAIN_FILE` |
+| `-DCMAKE_BUILD_TYPE` | Ninja 用 | VS 生成器**不需**此参数（用 `--config Release` 代替） |
 
-### 构建命令
+### 运行测试
 
 ```powershell
-# 构建项目
-cmake --build build --config Release --parallel
+# 测试 exe 位于 build/src/tst/<模块>/<Config>/ 下（VS 生成器路径）
+# ⚠️ Qt Test 在 Windows 上 stdout 不可见，必须用 -o 标志输出到文件
 
-# 构建并安装
-cmake --build build --config Release --target install
+# 运行全部测试并输出到文件
+.\build\src\tst\DAPyWorkFlow\Release\DAPyWorkFlowTests.exe -o test_result.txt
 
-# 仅构建特定目标
-cmake --build build --config Release --target DAFigure
+# 查看测试结果
+Get-Content test_result.txt
 ```
+
+| 注意事项 | 说明 |
+|----------|------|
+| 测试 exe 路径 | VS 生成器：`build\src\tst\<模块>\<Config>\`；Ninja：`build\bin\<Config>\` |
+| 输出捕获 | Windows 上**必须**用 `-o file.txt` 标志，不能使用 `> file.txt` 重定向 |
+| 退出码 | `$LASTEXITCODE` 为 0 表示全部通过；非 0 表示有失败 |
+| XML 输出 | `-xml` 标志可输出 JUnit 兼容的 XML |
+
+### 快速脚本
+
+项目提供了 `scripts/build.ps1` 脚本，自动检测 Qt 版本和 Visual Studio 版本，封装了上述所有细节。**Agent 应优先使用此脚本**，避免手动选择生成器和参数。
+
+```powershell
+# === 常用命令 ===
+
+# 编译指定模块（自动检测 Qt + VS，增量编译）
+.\scripts\build.ps1 -Target DAPyWorkFlow
+
+# 编译并运行测试
+.\scripts\build.ps1 -Target DAPyWorkFlow -Test
+
+# 编译指定模块 + Debug 配置
+.\scripts\build.ps1 -Target DAPyWorkFlow -Config Debug
+
+# 完整构建
+.\scripts\build.ps1 -Full
+
+# 清理并重新配置
+.\scripts\build.ps1 -Clean
+```
+
+| 参数 | 说明 |
+|------|------|
+| `-Config` | 构建类型：`Release`（默认）或 `Debug` |
+| `-Target` | 指定 CMake 目标（如 `DAPyWorkFlow`、`DAGui`） |
+| `-Test` | 编译 `<Target>Tests` 目标并运行测试 exe |
+| `-Full` | 构建所有目标 |
+| `-Clean` | 删除 `build/` 目录后重新配置 |
+| `-Parallel` | 并行编译（默认开启） |
+
+> **注意**：如果遇到执行策略限制，使用 `powershell -ExecutionPolicy Bypass -File .\scripts\build.ps1 -Target ...`
 
 ## ANTI-PATTERNS (THIS PROJECT)
 
@@ -294,6 +358,7 @@ cmake --build build --config Release --target DAFigure
 - 禁止使用 `slot`、`signal` 小写命名的宏，统一使用 `Q_SLOTS`、`Q_SIGNALS`
 - 禁止在头文件中写入类成员函数的 Doxygen 块注释（仅限类的注释、信号注释、枚举注释）
 - 禁止在 QwtPlotItem 子类中使用信号槽
+- 禁止使用已废弃的 DAPyNodeConfigDialog / DAPyNodeWidget — 统一使用 `src/DAGui/NodeSetting/` 中的通用参数面板
 
 ## UNIQUE STYLES
 
@@ -315,3 +380,5 @@ cmake --build build --config Release --target DAFigure
 - CI 通过 `.github/workflows/build.yml` 自动构建
 - 崩溃转储 (.dmp) 生成在 `dumps/` 目录，由 `DADumpCapture` 管理
 - 翻译文件通过 CMake option `DA_ENABLE_AUTO_TRANSLATE` 自动生成
+- 构建请优先阅读 root `build.md`（包含 PowerShell 专用说明），或直接使用 `scripts/build.ps1`
+- `src/DAGui/NodeSetting/` 为工作流节点通用设置面板模块，遵循 ChartSetting 的三层架构 (基类→面板→具体面板 + 单例工厂 + QStackedWidget 调度器)

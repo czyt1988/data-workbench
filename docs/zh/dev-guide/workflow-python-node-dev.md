@@ -234,6 +234,9 @@ class Parameter:
 | `list` | `"list"` | 列表 |
 | `dict` | `"dict"` | 字典 |
 
+!!! info "C++ 端扩展类型支持"
+    Python `Parameter` 原生仅支持上述 6 种类型，但 C++ 端的 `DAParamTypeRegistry` 已扩展至 **11 种编辑器类型**：`str→QLineEdit, int→QSpinBox, float→QDoubleSpinBox, bool→QCheckBox, enum→QComboBox, list→QListWidget, file→DAFilePathEditWidget, folder→DAFilePathEditWidget(dir), color→DAColorPickerButton, font→DAFontEditPannelWidget, code→QPlainTextEdit`。当 Python 节点的参数描述符 JSON 传入 C++ 通用参数面板时，`DAParamTypeRegistry` 根据 `type` 字段创建对应的编辑器控件。参见 [创建属性设置面板](./creating-setting-panel.md) 和 `src/DAGui/NodeSetting/DAParamTypeRegistry.h`。
+
 #### 使用示例
 
 ```python

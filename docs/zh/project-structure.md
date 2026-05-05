@@ -153,7 +153,7 @@ graph TB
 | **DAGraphicsView** | 可缩放图形视图、redo/undo | DAUtils |
 | **DAWorkFlow** | 工作流核心逻辑、有向图管理 | DAUtils, DAGraphicsView |
 | **DAFigure** | 科学图表绘制（基于 qwt） | DAUtils, qwt |
-| **DAGui** | 界面整合、Ribbon、Dock 管理 | 所有业务模块 |
+| **DAGui** | 界面整合、Ribbon、Dock 管理（含 `ChartSetting/` 图表属性面板和 `NodeSetting/` 工作流节点通用设置面板） | 所有业务模块 |
 | **DAInterface** | 插件接口定义 | DAGui |
 | **DAPluginSupport** | 插件加载、管理 | DAInterface |
 | **DAAxOfficeWrapper** | Office 自动化（仅 Windows） | DAUtils |
