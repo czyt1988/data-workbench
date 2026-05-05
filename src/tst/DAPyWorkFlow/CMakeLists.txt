@@ -6,10 +6,22 @@ set(CMAKE_AUTOMOC ON)
 # 添加包含目录 - DAPyWorkFlow 库头文件
 include_directories(
     ${CMAKE_CURRENT_LIST_DIR}/../../DAPyWorkFlow
+    ${CMAKE_SOURCE_DIR}/src/DAGui/NodeSetting
+    ${CMAKE_SOURCE_DIR}/src/DAGui
+    ${CMAKE_SOURCE_DIR}/src/DAPyWorkFlow
+    ${CMAKE_SOURCE_DIR}/src/DACommonWidgets
 )
 
 # 创建测试可执行文件
-add_executable(DAPyWorkFlowTests main.cpp tst_dapynodemetadata.cpp tst_dapynodemetadata.h tst_linkpoints.cpp tst_linkpoints.h)
+add_executable(DAPyWorkFlowTests
+    main.cpp
+    tst_dapynodemetadata.cpp tst_dapynodemetadata.h
+    tst_linkpoints.cpp tst_linkpoints.h
+    tst_param_type_registry.cpp tst_param_type_registry.h
+    tst_node_param_setting_panel.cpp tst_node_param_setting_panel.h
+    tst_node_param_setting_factory.cpp tst_node_param_setting_factory.h
+    tst_node_param_setting_widget.cpp tst_node_param_setting_widget.h
+)
 
 # 设置目标属性
 set_target_properties(DAPyWorkFlowTests PROPERTIES
@@ -29,6 +41,8 @@ target_link_libraries(DAPyWorkFlowTests PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Test
     ${DA_PROJECT_NAME}::DAPyWorkFlow
+    ${DA_PROJECT_NAME}::DAGui
+    ${DA_PROJECT_NAME}::DACommonWidgets
 )
 
 # Python/pybind11 embed 支持（用于 scoped_interpreter 和代理测试）
