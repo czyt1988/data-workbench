@@ -121,11 +121,9 @@ void DANodeSettingWidget::buildPropertyPanel()
 {
     auto panel = propertyPanel();
 
-    panel->addCollapsibleGroup(tr("Meta Data"));
+    panel->addGroupLabel(tr("Meta Data"));
     panel->addStringProperty(PID_Prototype, tr("Prototype"));
     panel->addStringProperty(PID_Group, tr("Group"));
-    panel->endGroup();
-
     panel->addStringProperty(PID_Name, tr("Name"));
 }
 

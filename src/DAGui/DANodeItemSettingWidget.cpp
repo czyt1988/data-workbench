@@ -81,34 +81,30 @@ void DANodeItemSettingWidget::buildPanel()
 	mainLayout->addWidget(d->mPanel);
 
 	// 尺寸组
-	d->mPanel->addCollapsibleGroup(QString::fromUtf8("尺寸"));
+	d->mPanel->addGroupLabel(QString::fromUtf8("尺寸"));
 	d->mPanel->addDoubleProperty(PropWidth, QString::fromUtf8("宽度"), 0, 0, 99999, 2);
 	d->mPanel->addDoubleProperty(PropHeight, QString::fromUtf8("高度"), 0, 0, 99999, 2);
 	d->mPanel->addBoolProperty(PropLockAspectRatio, QString::fromUtf8("锁定纵横比"), false);
 	d->mPanel->addSeparator();
 	d->mPanel->addDoubleProperty(PropRotation, QString::fromUtf8("旋转"), 0, 0, 360, 1);
-	d->mPanel->endGroup();
 
 	// 位置组
-	d->mPanel->addCollapsibleGroup(QString::fromUtf8("位置"));
+	d->mPanel->addGroupLabel(QString::fromUtf8("位置"));
 	d->mPanel->addDoubleProperty(PropX, QString::fromUtf8("X"), 0, -999999, 9999999, 2);
 	d->mPanel->addDoubleProperty(PropY, QString::fromUtf8("Y"), 0, -9999999, 9999999, 2);
-	d->mPanel->endGroup();
 
 	// 属性组
-	d->mPanel->addCollapsibleGroup(QString::fromUtf8("属性"));
+	d->mPanel->addGroupLabel(QString::fromUtf8("属性"));
 	d->mPanel->addBoolProperty(PropMovable, QString::fromUtf8("可移动"), false);
 	d->mPanel->addBoolProperty(PropResizable, QString::fromUtf8("可缩放"), false);
-	d->mPanel->endGroup();
 
 	// 提示文本
 	d->mPanel->addStringProperty(PropTooltip, QString::fromUtf8("提示"), QString());
 
 	// 连接点位置组
-	d->mPanel->addCollapsibleGroup(QString::fromUtf8("连接点位置"));
+	d->mPanel->addGroupLabel(QString::fromUtf8("连接点位置"));
 	QWidget* linkPointWidget = createLinkPointWidget();
 	d->mPanel->addProperty(QString::fromUtf8("方向"), linkPointWidget);
-	d->mPanel->endGroup();
 
 	// 连接属性值变化信号
 	connect(d->mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged, this,
