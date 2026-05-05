@@ -8,6 +8,7 @@
 #include "DAPyWorkFlow/DAPyPainterProxy.h"
 #include "DAPyWorkFlow/DAPyLinkPoint.h"
 #include "DAPyWorkFlow/DAPyNodeFactory.h"
+#include "DAPyWorkFlow/DAPyNodeStyle.h"
 #include "DAPyBindQt/DAPybind11QtCaster.hpp"
 #include "DAPyBindQt/DAPyJsonCast.h"
 #include "DAPyBindQt/DAPybind11InQt.h"  // slots workaround，必须第一个pybind11相关头文件
@@ -408,6 +409,170 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
              "Set no brush (disable fill)")
         .def("isValid", &DA::DAPyPainterProxy::isValid,
              "Check if painter proxy is valid");
+
+    // =================================================================================
+    //                      样式枚举绑定
+    // =================================================================================
+
+    // 导出 BodyShape 枚举
+    pybind11::enum_< DA::BodyShape >(m, "BodyShape")
+        .value("RoundedRect", DA::BodyShape::RoundedRect)
+        .value("Ellipse", DA::BodyShape::Ellipse)
+        .export_values();
+
+    // 导出 PortShape 枚举
+    pybind11::enum_< DA::PortShape >(m, "PortShape")
+        .value("Rect", DA::PortShape::Rect)
+        .value("Circle", DA::PortShape::Circle)
+        .value("Diamond", DA::PortShape::Diamond)
+        .export_values();
+
+    // 导出 NamePosition 枚举
+    pybind11::enum_< DA::NamePosition >(m, "NamePosition")
+        .value("Inside", DA::NamePosition::Inside)
+        .value("Below", DA::NamePosition::Below)
+        .export_values();
+
+    // 导出 IconPosition 枚举
+    pybind11::enum_< DA::IconPosition >(m, "IconPosition")
+        .value("LeftOfText", DA::IconPosition::LeftOfText)
+        .value("AboveText", DA::IconPosition::AboveText)
+        .export_values();
+
+    // 导出 AspectDirection 枚举（PortSide 是 AspectDirection 的类型别名）
+    pybind11::enum_< DA::AspectDirection >(m, "AspectDirection")
+        .value("East", DA::AspectDirection::East)
+        .value("South", DA::AspectDirection::South)
+        .value("West", DA::AspectDirection::West)
+        .value("North", DA::AspectDirection::North)
+        .export_values();
+    // PortSide 是 AspectDirection 的别名，在 Python 中也作为属性导出
+    m.attr("PortSide") = m.attr("AspectDirection");
+
+    // 导出 BodyIconType 枚举
+    pybind11::enum_< DA::BodyIconType >(m, "BodyIconType")
+        .value("None", DA::BodyIconType::None)
+        .value("Pixmap", DA::BodyIconType::Pixmap)
+        .value("Svg", DA::BodyIconType::Svg)
+        .export_values();
+
+    // 导出 LinkPointLayoutStrategy 枚举
+    pybind11::enum_< DA::LinkPointLayoutStrategy >(m, "LinkPointLayoutStrategy")
+        .value("Auto", DA::LinkPointLayoutStrategy::Auto)
+        .value("Manual", DA::LinkPointLayoutStrategy::Manual)
+        .export_values();
+
+    // 导出 RenderTemplate 枚举
+    pybind11::enum_< DA::RenderTemplate >(m, "RenderTemplate")
+        .value("NodeStyleTemplate", DA::RenderTemplate::NodeStyleTemplate)
+        .value("WidgetTemplate", DA::RenderTemplate::WidgetTemplate)
+        .export_values();
+
+    // =================================================================================
+    //                      DAPyLinkPointStyle 绑定
+    // =================================================================================
+
+    pybind11::class_< DA::DAPyLinkPointStyle >(m, "DAPyLinkPointStyle")
+        .def(pybind11::init<>())
+        .def_readwrite("shape", &DA::DAPyLinkPointStyle::shape,
+                       "Port shape (PortShape enum)")
+        .def_readwrite("borderWidth", &DA::DAPyLinkPointStyle::borderWidth,
+                       "Border width (default 1.0)")
+        .def("setFillColor",
+             [](DA::DAPyLinkPointStyle& s, int r, int g, int b, int a) { s.fillColor = QColor(r, g, b, a); },
+             pybind11::arg("r"), pybind11::arg("g"), pybind11::arg("b"), pybind11::arg("a") = 255,
+             "Set fill color (RGBA, a defaults to 255)")
+        .def("getFillColor",
+             [](const DA::DAPyLinkPointStyle& s) {
+                 return pybind11::make_tuple(s.fillColor.red(), s.fillColor.green(), s.fillColor.blue(), s.fillColor.alpha());
+             },
+             "Get fill color as (r, g, b, a) tuple")
+        .def("setBorderColor",
+             [](DA::DAPyLinkPointStyle& s, int r, int g, int b, int a) { s.borderColor = QColor(r, g, b, a); },
+             pybind11::arg("r"), pybind11::arg("g"), pybind11::arg("b"), pybind11::arg("a") = 255,
+             "Set border color (RGBA, a defaults to 255)")
+        .def("getBorderColor",
+             [](const DA::DAPyLinkPointStyle& s) {
+                 return pybind11::make_tuple(s.borderColor.red(), s.borderColor.green(), s.borderColor.blue(), s.borderColor.alpha());
+             },
+             "Get border color as (r, g, b, a) tuple")
+        .def("isFillColorValid", &DA::DAPyLinkPointStyle::isFillColorValid,
+             "Check if fill color is valid (non-default)")
+        .def("isBorderColorValid", &DA::DAPyLinkPointStyle::isBorderColorValid,
+             "Check if border color is valid (non-default)");
+
+    // =================================================================================
+    //                      DANodeStyle 绑定
+    // =================================================================================
+
+    pybind11::class_< DA::DANodeStyle >(m, "DANodeStyle")
+        .def(pybind11::init<>())
+        // 主体样式
+        .def_readwrite("bodyShape", &DA::DANodeStyle::bodyShape,
+                       "Node body shape (BodyShape enum)")
+        .def_readwrite("namePosition", &DA::DANodeStyle::namePosition,
+                       "Name position (NamePosition enum)")
+        .def_readwrite("iconPosition", &DA::DANodeStyle::iconPosition,
+                       "Icon position (IconPosition enum)")
+        .def_readwrite("borderWidth", &DA::DANodeStyle::borderWidth,
+                       "Border width (default 1.0)")
+        .def_readwrite("cornerRadius", &DA::DANodeStyle::cornerRadius,
+                       "Corner radius (default 4.0)")
+        .def_readwrite("iconSize", &DA::DANodeStyle::iconSize,
+                       "Icon size (default 24.0)")
+        // 颜色设置（QColor 不能直接 def_readwrite，使用 setter/getter）
+        .def("setBackgroundColor",
+             [](DA::DANodeStyle& s, int r, int g, int b) { s.backgroundColor = QColor(r, g, b); },
+             pybind11::arg("r"), pybind11::arg("g"), pybind11::arg("b"),
+             "Set background color (RGB)")
+        .def("getBackgroundColor",
+             [](const DA::DANodeStyle& s) {
+                 return pybind11::make_tuple(s.backgroundColor.red(), s.backgroundColor.green(), s.backgroundColor.blue());
+             },
+             "Get background color as (r, g, b) tuple")
+        .def("setBorderColor",
+             [](DA::DANodeStyle& s, int r, int g, int b) { s.borderColor = QColor(r, g, b); },
+             pybind11::arg("r"), pybind11::arg("g"), pybind11::arg("b"),
+             "Set border color (RGB)")
+        .def("getBorderColor",
+             [](const DA::DANodeStyle& s) {
+                 return pybind11::make_tuple(s.borderColor.red(), s.borderColor.green(), s.borderColor.blue());
+             },
+             "Get border color as (r, g, b) tuple")
+        // 端口配置
+        .def_readwrite("inputPortSide", &DA::DANodeStyle::inputPortSide,
+                       "Input port side (AspectDirection/PortSide enum)")
+        .def_readwrite("outputPortSide", &DA::DANodeStyle::outputPortSide,
+                       "Output port side (AspectDirection/PortSide enum)")
+        .def_readwrite("inputPortStyle", &DA::DANodeStyle::inputPortStyle,
+                       "Input port style (DAPyLinkPointStyle)")
+        .def_readwrite("outputPortStyle", &DA::DANodeStyle::outputPortStyle,
+                       "Output port style (DAPyLinkPointStyle)")
+        .def_readwrite("layoutStrategy", &DA::DANodeStyle::layoutStrategy,
+                       "Link point layout strategy (LinkPointLayoutStrategy enum)")
+        // 节点体图标
+        .def_readwrite("bodyIconType", &DA::DANodeStyle::bodyIconType,
+                       "Body icon type (BodyIconType enum)")
+        .def_readwrite("bodyIconSource", &DA::DANodeStyle::bodyIconSource,
+                       "Body icon source path (SVG file path or resource path)")
+        .def_readwrite("bodyIconScale", &DA::DANodeStyle::bodyIconScale,
+                       "Body icon scale ratio (default 0.8)")
+        // 辅助方法
+        .def("setDefaults", &DA::DANodeStyle::setDefaults,
+             "Reset all fields to default values")
+        .def("toJson",
+             [](const DA::DANodeStyle& s) {
+                 QJsonObject json = DA::DANodeStyleToJson(s);
+                 return DA::PY::qjsonObjectToPyDict(json);
+             },
+             "Serialize style to Python dict (sparse, only non-default fields)")
+        .def_static("fromJson",
+             [](const pybind11::dict& d) {
+                 QJsonObject json = DA::PY::pyDictToQJsonObject(d);
+                 return DA::DANodeStyleFromJson(json);
+             },
+             pybind11::arg("dict"),
+             "Deserialize style from Python dict");
 
     // 自由函数（Scenario A 模式）
     m.def("getNodeProxy",

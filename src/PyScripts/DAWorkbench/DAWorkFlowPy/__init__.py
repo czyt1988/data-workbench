@@ -36,6 +36,9 @@ from .signal_manager import DASignalManager, DAWorkflowState
 from .executor import DAWorkflowExecutor, DAExecutorState
 from .syntax import NodeProxy, NodeOutputProxy, NodeInputProxy
 
+# 导入节点模块（供 DANodeRegistry 发现）
+from . import nodes
+
 __all__ = [
     "NodeDef",
     "Input",

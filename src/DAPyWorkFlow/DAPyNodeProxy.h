@@ -2,6 +2,7 @@
 #define DAPYNODEPROXY_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyNodeState.h"
+#include "DAPyNodeStyle.h"
 #include "DAGlobals.h"
 #include "DAPybind11InQt.h"
 #include <QString>
@@ -66,6 +67,9 @@ public:
 
     // 节点描述符（从Python _node_descriptor获取）
     QJsonObject getDescriptor() const;
+
+    // 节点样式（从Python描述符同步）
+    DANodeStyle getNodeStyle() const;
 
     // 状态管理
     DAPyNodeState getNodeState() const;

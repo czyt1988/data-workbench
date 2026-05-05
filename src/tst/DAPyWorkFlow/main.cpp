@@ -7,6 +7,7 @@
 #include "tst_node_param_setting_factory.h"
 #include "tst_node_param_setting_widget.h"
 #include "tst_danodestyle.h"
+#include "tst_body_rendering.h"
 
 // 测试入口
 int main(int argc, char* argv[])
@@ -30,6 +31,7 @@ int main(int argc, char* argv[])
     RUN_TEST(DA::TestNodeParamSettingFactory);
     RUN_TEST(DA::TestDANodeParamSettingPanelWidget);
     RUN_TEST(DA::TestDANodeStyle);
+    RUN_TEST(DA::TestBodyRendering);
 
     return status;
 }

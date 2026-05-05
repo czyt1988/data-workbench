@@ -4,6 +4,7 @@
 #include "DAPyGILGuard.h"
 #include "DAPyJsonCast.h"
 #include "DAPybind11QtCaster.hpp"
+#include "DAPyNodeStyle.h"
 #include <QDebug>
 #include <QJsonObject>
 #include <QJsonDocument>
@@ -36,6 +37,7 @@ public:
     DAPySafePyObjectHolder mPyNodeRef;                 ///< Python节点实例的安全持有者
     DAPyNodeState mNodeState { DAPyNodeState::Idle };  ///< 节点执行状态
     mutable QString mLastErrorString;                  ///< 最后一次错误信息（mutable允许const方法修改）
+    DANodeStyle mNodeStyle;                            ///< 节点样式配置（从Python描述符同步）
 };
 
 //===================================================
@@ -135,6 +137,25 @@ void DAPyNodeProxy::PrivateData::syncMetaFromPyNode(const pybind11::object& pyNo
         if (pybind11::hasattr(pyNode, "group")) {
             pybind11::object groupObj = pyNode.attr("group");
             mNodeGroup                = pybind11::cast< QString >(groupObj);
+        }
+
+        // 同步样式信息（从 _node_descriptor 提取）
+        if (pybind11::hasattr(pyNode, "_node_descriptor")) {
+            pybind11::object descObj = pyNode.attr("_node_descriptor");
+            if (pybind11::isinstance< pybind11::dict >(descObj)) {
+                pybind11::dict descDict = pybind11::cast< pybind11::dict >(descObj);
+                if (descDict.contains("style")) {
+                    pybind11::object styleObj = descDict["style"];
+                    if (!styleObj.is_none()) {
+                        // 将 pybind11::dict 转换为 QJsonObject
+                        pybind11::dict styleDict = pybind11::cast< pybind11::dict >(styleObj);
+                        QJsonObject styleJson = DA::PY::pyDictToQJsonObject(styleDict);
+                        if (!styleJson.isEmpty()) {
+                            mNodeStyle = DANodeStyleFromJson(styleJson);
+                        }
+                    }
+                }
+            }
         }
 
     } catch (const pybind11::error_already_set& e) {
@@ -456,6 +477,20 @@ QJsonObject DAPyNodeProxy::getDescriptor() const
     }
 
     return QJsonObject();
+}
+
+/**
+ * @brief 获取节点样式配置
+ *
+ * 返回从 Python 侧 _node_descriptor 中同步的 DANodeStyle。
+ * 若 Python 侧未提供样式信息，返回默认样式。
+ *
+ * @return 节点样式配置
+ */
+DANodeStyle DAPyNodeProxy::getNodeStyle() const
+{
+    DA_DC(d);
+    return d->mNodeStyle;
 }
 
 /**

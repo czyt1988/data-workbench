@@ -360,8 +360,15 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const QJsonObject& descrip
     item->setNodeName(descriptor.value("name").toString(qualifiedName));
 
     // 根据描述符设置渲染模板
-    QString renderTemplate = descriptor.value("render_template").toString("rect");
+    QString renderTemplate = descriptor.value("render_template").toString("nodestyle");
+    // 兼容旧的 rect/svg 值
+    if (renderTemplate == "rect" || renderTemplate == "svg") {
+        renderTemplate = "nodestyle";
+    }
     item->setRenderTemplate(renderTemplate);
+
+    // 从代理同步样式配置
+    item->setStyle(proxy->getNodeStyle());
 
     // 设置图标路径（如果有）
     QString iconPath = descriptor.value("icon").toString();
@@ -510,6 +517,9 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
     if (!metaData.name.isEmpty()) {
         item->setNodeName(metaData.name);
     }
+
+    // 从代理同步样式配置
+    item->setStyle(proxy->getNodeStyle());
 
     // 设置图标（如果有）
     if (!metaData.iconPath.isEmpty()) {

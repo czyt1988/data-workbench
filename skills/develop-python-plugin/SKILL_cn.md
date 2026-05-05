@@ -247,7 +247,8 @@ setup(
 | `name` | str | 是 | 节点显示名称 |
 | `category` | str | 否 | 节点分组/分类 |
 | `icon` | str | 否 | 图标标识或路径 |
-| `render_template` | str | 否 | 渲染模板：`"rect"`(默认), `"svg"`, `"widget"` |
+| `style` | `DANodeStyle` | 否 | 节点渲染样式，DANodeStyle 实例 |
+| `render_template` | str | 否 | 渲染模板：`"nodestyle"`(默认), `"widget"` |
 
 ### 装饰器自动生成的属性
 
@@ -263,6 +264,7 @@ _node_descriptor = {
     "outputs": [...],      # 从 Outputs 嵌套类收集
     "parameters": [...],   # 从类属性中的 Parameter 实例收集
     "render_template": render_template,
+    "style": style_dict if style else {},  # DANodeStyle.toJson() 返回的样式字典
 }
 ```
 
@@ -603,9 +605,22 @@ DANodeParamSettingPanelFactory::instance().registerPanel(
     "parameters": [            # 参数列表 → C++ 侧渲染为通用属性设置面板（见「Python 节点属性设置」）
         {"name": str, "type": str, "default": Any, "description": str}
     ],
-    "render_template": str,    # "rect" | "svg" | "widget"
+    "style": dict,             # DANodeStyle.toJson() 返回的样式字典，可选
+    "render_template": str,    # "nodestyle" | "widget"
 }
 ```
+
+### 节点渲染样式
+
+从 T7 版本开始，节点渲染由 `DANodeStyle` 统一控制。`@NodeDef` 的 `style` 参数接收 `DANodeStyle` 实例，其 `toJson()` 方法生成的字典会存入 `_node_descriptor["style"]`，C++ 侧据此渲染节点外观（形状、颜色、端口样式等）。
+
+`render_template` 参数控制模板类型：
+- `"nodestyle"`（默认）：使用 `DANodeStyle` 中的样式配置进行绘制
+- `"widget"`：嵌入自定义 Qt Widget
+
+旧版参数 `"rect"` 和 `"svg"` 自动映射到 `"nodestyle"`，无需修改现有代码。
+
+详细说明请参阅 [节点渲染设置文档](../../docs/zh/dev-guide/node-rendering-settings.md)。
 
 ### C++ DAPyNodeProxy 同步读取的 Python 属性
 

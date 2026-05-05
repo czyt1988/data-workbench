@@ -132,6 +132,12 @@ public:
     // 设置body尺寸（重写基类public虚函数，须保持public可见性）
     void setBodySize(const QSizeF& s) override;
 
+    // 边界矩形（扩展以容纳下方名称）
+    QRectF boundingRect() const override;
+
+    // 碰撞形状（椭圆时使用椭圆路径）
+    QPainterPath shape() const override;
+
     // 鼠标双击事件
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event) override;
 
@@ -161,7 +167,10 @@ protected:
     // 绘制状态边框/背景
     void paintStateDecoration(QPainter* painter, const QRectF& bodyRect);
 
-    // 各种模板绘制函数
+    // 统一节点样式模板绘制（T7新增）
+    void paintNodeStyleBody(QPainter* painter, const QRectF& bodyRect);
+
+    // 各种模板绘制函数（旧版，已废弃）
     void paintRectTemplate(QPainter* painter, const QRectF& bodyRect);
     void paintSvgTemplate(QPainter* painter, const QRectF& bodyRect);
     void paintWidgetTemplate(QPainter* painter, const QRectF& bodyRect);

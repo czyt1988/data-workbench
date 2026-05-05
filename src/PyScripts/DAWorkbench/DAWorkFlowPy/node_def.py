@@ -31,6 +31,20 @@ NodeDef 装饰器会收集类中的 Input、Output、Parameter 声明，
 from .types import Input, Output, Parameter
 
 
+def _normalize_render_template(render_template: str) -> str:
+    """
+    规范化渲染模板值，将旧的 rect/svg 映射到 nodestyle。
+
+    :param render_template: 原始渲染模板字符串
+    :return: 规范化后的模板字符串（'nodestyle' 或 'widget'）
+    """
+    if render_template in ("rect", "svg"):
+        return "nodestyle"
+    if render_template == "widget":
+        return "widget"
+    return "nodestyle"
+
+
 def _collect_parameters(cls: type) -> list:
     """
     从类属性中收集 Parameter 声明
@@ -75,7 +89,7 @@ def _collect_from_nested_class(cls: type, nested_name: str, decl_type: type) -> 
     return items
 
 
-def NodeDef(name: str, category: str = "", icon: str = "", render_template: str = "rect"):
+def NodeDef(name: str, category: str = "", icon: str = "", render_template: str = "rect", style=None):
     """
     工作流节点定义装饰器
 
@@ -91,6 +105,7 @@ def NodeDef(name: str, category: str = "", icon: str = "", render_template: str 
     - outputs: 输出端口列表
     - parameters: 参数列表
     - render_template: 渲染模板类型
+    - style: 节点样式配置（DANodeStyle 实例或字典）
 
     使用示例::
 
@@ -107,16 +122,11 @@ def NodeDef(name: str, category: str = "", icon: str = "", render_template: str 
     :param name: 节点显示名称
     :param category: 节点所属分类，默认为空字符串
     :param icon: 节点图标标识，默认为空字符串
-    :param render_template: 渲染模板类型，默认为 'rect'，支持 'rect'、'svg'、'widget'
+    :param render_template: 渲染模板类型，默认为 'rect'（映射到 'nodestyle'），支持 'nodestyle'、'widget'
+    :param style: 节点样式配置，可为 DANodeStyle 实例或样式参数字典，默认为 None
     :return: 装饰器函数
     """
-    # 校验渲染模板
-    valid_templates = ("rect", "svg", "widget")
-    if render_template not in valid_templates:
-        raise ValueError(
-            f"无效的渲染模板 '{render_template}'，"
-            f"支持的模板类型为: {', '.join(valid_templates)}"
-        )
+    normalized_template = _normalize_render_template(render_template)
 
     def decorator(cls: type) -> type:
         """
@@ -149,8 +159,21 @@ def NodeDef(name: str, category: str = "", icon: str = "", render_template: str 
             "inputs": inputs,
             "outputs": outputs,
             "parameters": parameters,
-            "render_template": render_template,
+            "render_template": normalized_template,
         }
+
+        # 处理样式参数
+        if style is not None:
+            # 尝试将样式转换为可序列化的字典
+            style_dict = None
+            if hasattr(style, "toJson"):
+                style_dict = style.toJson()
+            elif isinstance(style, dict):
+                style_dict = style
+            elif hasattr(style, "__dict__"):
+                style_dict = {k: v for k, v in vars(style).items() if not k.startswith("_")}
+            if style_dict is not None:
+                descriptor["style"] = style_dict
 
         # 在类上设置 _node_descriptor 属性
         cls._node_descriptor = descriptor

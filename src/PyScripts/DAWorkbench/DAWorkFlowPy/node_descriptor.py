@@ -52,7 +52,7 @@ class DANodeDescriptor:
     """
 
     # 支持的渲染模板类型
-    VALID_RENDER_TEMPLATES = ("rect", "svg", "widget")
+    VALID_RENDER_TEMPLATES = ("nodestyle", "widget")
 
     def __init__(
         self,
@@ -63,7 +63,8 @@ class DANodeDescriptor:
         inputs: list = None,
         outputs: list = None,
         parameters: list = None,
-        render_template: str = "rect",
+        render_template: str = "nodestyle",
+        style: dict = None,
     ):
         self.name = name
         self.category = category
@@ -73,6 +74,7 @@ class DANodeDescriptor:
         self.outputs = outputs if outputs is not None else []
         self.parameters = parameters if parameters is not None else []
         self.render_template = render_template
+        self.style = style  # 样式参数字典
 
         # 校验渲染模板
         if self.render_template not in self.VALID_RENDER_TEMPLATES:
@@ -90,7 +92,7 @@ class DANodeDescriptor:
 
         :return: JSON 可序列化的字典，包含节点的完整元数据
         """
-        return {
+        d = {
             "name": self.name,
             "category": self.category,
             "icon": self.icon,
@@ -100,6 +102,9 @@ class DANodeDescriptor:
             "parameters": self.parameters,
             "render_template": self.render_template,
         }
+        if self.style is not None:
+            d["style"] = self.style
+        return d
 
     @classmethod
     def from_class(cls, node_class: type, **kwargs) -> "DANodeDescriptor":

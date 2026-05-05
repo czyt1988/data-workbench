@@ -22,6 +22,7 @@ add_executable(DAPyWorkFlowTests
     tst_node_param_setting_factory.cpp tst_node_param_setting_factory.h
     tst_node_param_setting_widget.cpp tst_node_param_setting_widget.h
     tst_danodestyle.cpp tst_danodestyle.h
+    tst_body_rendering.cpp tst_body_rendering.h
 )
 
 # 设置目标属性
