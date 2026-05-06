@@ -193,6 +193,12 @@ install(DIRECTORY
     ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysis
     DESTINATION ${CMAKE_INSTALL_BINDIR}/PyScripts
 )
+
+# 把DADataAnalysisPy文件夹复制到pyplugins作为python插件
+install(DIRECTORY
+    ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisPy
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/pyplugins
+)
 # 为了能调试的时候运行，需要把DADataAnalysis文件夹复制到${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScrips下
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysis" DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts)
-
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisPy" DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/pyplugins)
