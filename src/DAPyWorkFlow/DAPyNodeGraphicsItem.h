@@ -52,9 +52,8 @@ public:
      */
     enum RenderTemplate
     {
-        RectTemplate,   ///< 矩形模板
-        SvgTemplate,    ///< SVG图标模板
-        WidgetTemplate  ///< 嵌入Widget模板
+        NodeStyleTemplate,  ///< 以NodeStyle作为渲染模板
+        WidgetTemplate      ///< 嵌入Widget模板
     };
 
     /**
@@ -93,11 +92,6 @@ public:
     void setIcon(const QIcon& icon);
     QIcon getIcon() const;
 
-    // SVG相关（用于svg模式）
-    void setSvgPath(const QString& path);
-    QString getSvgPath() const;
-    bool loadSvg(const QString& path);
-
     // Widget相关（用于widget模式）
     void setWidget(QWidget* widget);
     QWidget* getWidget() const;
@@ -111,9 +105,9 @@ public:
     QJsonObject getDescriptor() const;
 
     // 节点样式
-    void setStyle(const DANodeStyle& style);
-    DANodeStyle& getStyle();
-    const DANodeStyle& getStyle() const;
+    void setNodeStyle(const DANodeStyle& style);
+    DANodeStyle& nodeStyle();
+    const DANodeStyle& nodeStyle() const;
 
     // 自定义绘制回调接口
     void setPaintCallback(const pybind11::object& callback);
@@ -121,8 +115,8 @@ public:
     void clearPaintCallback();
 
     // 连接点管理
-    QList<DAPyLinkPoint> getInputLinkPoints() const;
-    QList<DAPyLinkPoint> getOutputLinkPoints() const;
+    QList< DAPyLinkPoint > getInputLinkPoints() const;
+    QList< DAPyLinkPoint > getOutputLinkPoints() const;
     void updateLinkPoints();
 
     // 保存/加载
@@ -140,7 +134,12 @@ public:
 
     // 鼠标双击事件
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event) override;
-
+    // 更新节点形状信息，在设置节点名字图标后，估算一个最优的尺寸
+    void updateNodeBody();
+    // 更新widget位置
+    void updateWidgetGeometry();
+    // 更新nodestyle位置
+    void updateNodeStyleGeometry();
 Q_SIGNALS:
     /**
      * @brief 节点双击信号，通知上层（DAGui）弹出配置对话框
@@ -150,10 +149,7 @@ Q_SIGNALS:
 
 protected:
     // 绘制body（根据模板类型选择绘制方式）
-    void paintBody(QPainter* painter,
-                   const QStyleOptionGraphicsItem* option,
-                   QWidget* widget,
-                   const QRectF& bodyRect) override;
+    void paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect) override;
 
     // 位置变化时刷新连接线
     QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value) override;
@@ -171,20 +167,16 @@ protected:
     void paintNodeStyleBody(QPainter* painter, const QRectF& bodyRect);
 
     // 各种模板绘制函数（旧版，已废弃）
-    void paintRectTemplate(QPainter* painter, const QRectF& bodyRect);
-    void paintSvgTemplate(QPainter* painter, const QRectF& bodyRect);
     void paintWidgetTemplate(QPainter* painter, const QRectF& bodyRect);
 
     // 生成连接点
-    QList<DAPyLinkPoint> generateLinkPoints() const;
+    QList< DAPyLinkPoint > generateLinkPoints() const;
 
 private:
     // 刷新连接线位置（委托给场景的updateNodeLinkPositions）
     void updateLinkItems();
     // 获取当前状态颜色
     QColor getStateColor() const;
-    // 更新widget位置
-    void updateWidgetGeometry();
 };
 
 }  // end of namespace DA

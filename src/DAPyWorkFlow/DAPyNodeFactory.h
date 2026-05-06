@@ -20,10 +20,10 @@ class DAPyNodeProxy;
  */
 struct DAPYWORKFLOW_API DAPyNodeMetaData
 {
-    QString name;                 // 节点显示名称
-    QString qualifiedName;        // 节点唯一标识名（Python qualified_name）
-    QString group;                // 节点分组/分类
-    QString iconPath;             // 节点图标路径
+    QString name;           // 节点显示名称
+    QString qualifiedName;  // 节点唯一标识名（Python qualified_name）
+    QString group;          // 节点分组/分类
+    QString iconPath;  // 节点图标路径,注意这个图标仅仅用于进行节点树的图标展示，不作为场景显示的图标，场景显示的图标可以通过DANodeStyle定义
     QString tooltip;              // 节点提示文本
     QList< QString > inputKeys;   // 输入key列表
     QList< QString > outputKeys;  // 输出key列表

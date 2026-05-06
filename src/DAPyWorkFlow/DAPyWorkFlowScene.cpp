@@ -18,7 +18,6 @@
 namespace DA
 {
 
-
 class DAPyWorkFlowScene::PrivateData
 {
     DA_DECLARE_PUBLIC(DAPyWorkFlowScene)
@@ -63,8 +62,8 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkAdd(DAPyLinkGraphicsItem* lin
                 pybind11::object fromPyNode = fromItem->getProxy()->getPyNodeRef();
                 pybind11::object toPyNode   = toItem->getProxy()->getPyNodeRef();
                 if (fromPyNode && toPyNode) {
-                    std::string srcId = fromPyNode.attr("node_id").cast<std::string>();
-                    std::string dstId = toPyNode.attr("node_id").cast<std::string>();
+                    std::string srcId = fromPyNode.attr("node_id").cast< std::string >();
+                    std::string dstId = toPyNode.attr("node_id").cast< std::string >();
                     workflowObj.attr("connect_node")(srcId, fromOutput.toStdString(), dstId, toInput.toStdString());
                 }
             }
@@ -109,12 +108,10 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkRemove(DAPyLinkGraphicsItem* 
             try {
                 pybind11::object workflowObj = this->mPyWorkflow.object();
                 if (workflowObj) {
-                    workflowObj.attr("remove_connection")(
-                        fromNode->getProxy()->getPyNodeRef(),
-                        linkItem->getFromOutputName().toStdString(),
-                        toNode->getProxy()->getPyNodeRef(),
-                        linkItem->getToInputName().toStdString()
-                    );
+                    workflowObj.attr("remove_connection")(fromNode->getProxy()->getPyNodeRef(),
+                                                          linkItem->getFromOutputName().toStdString(),
+                                                          toNode->getProxy()->getPyNodeRef(),
+                                                          linkItem->getToInputName().toStdString());
                 }
             } catch (const pybind11::error_already_set& e) {
                 qWarning() << tr("DAPyWorkFlowScene::removePyNodeLink: Python error: %1").arg(e.what());
@@ -122,7 +119,6 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkRemove(DAPyLinkGraphicsItem* 
         }
     }
 }
-
 
 ////////////////////////////////////////////////////
 /// DAPyWorkFlowScene
@@ -368,16 +364,12 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const QJsonObject& descrip
     item->setRenderTemplate(renderTemplate);
 
     // 从代理同步样式配置
-    item->setStyle(proxy->getNodeStyle());
-
+    item->setNodeStyle(proxy->getNodeStyle());
+    item->updateNodeBody();
     // 设置图标路径（如果有）
     QString iconPath = descriptor.value("icon").toString();
     if (!iconPath.isEmpty()) {
-        if (renderTemplate == "svg") {
-            item->setSvgPath(iconPath);
-        } else {
-            item->setIcon(QIcon(iconPath));
-        }
+        item->setIcon(QIcon(iconPath));
     }
 
     // 更新连接点
@@ -456,8 +448,7 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
         // 通过工厂创建代理，工厂内部处理Python模块导入、实例创建和setPyNodeRef
         proxy = d->mPyNodeFactory->createNodeProxy(metaData);
         if (!proxy) {
-            qWarning(
-            ) << tr("DAPyWorkFlowScene::createPyNode: factory failed to create proxy for %1").arg(metaData.qualifiedName);
+            qWarning() << tr("DAPyWorkFlowScene::createPyNode: factory failed to create proxy for %1").arg(metaData.qualifiedName);
             return nullptr;
         }
     } else {
@@ -484,8 +475,7 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
                 std::string qn = metaData.qualifiedName.toStdString();
                 size_t dotPos  = qn.rfind('.');
                 if (dotPos == std::string::npos) {
-                    qWarning(
-                    ) << tr("DAPyWorkFlowScene::createPyNode: invalid qualified_name: %1").arg(metaData.qualifiedName);
+                    qWarning() << tr("DAPyWorkFlowScene::createPyNode: invalid qualified_name: %1").arg(metaData.qualifiedName);
                     delete proxy;
                     return nullptr;
                 }
@@ -519,7 +509,7 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
     }
 
     // 从代理同步样式配置
-    item->setStyle(proxy->getNodeStyle());
+    item->setNodeStyle(proxy->getNodeStyle());
 
     // 设置图标（如果有）
     if (!metaData.iconPath.isEmpty()) {
@@ -592,12 +582,10 @@ bool DAPyWorkFlowScene::removePyNodeItem(DAPyNodeGraphicsItem* item)
             try {
                 pybind11::object workflowObj = d->mPyWorkflow.object();
                 if (workflowObj) {
-                    workflowObj.attr("remove_connection")(
-                        link->getFromNode()->getProxy()->getPyNodeRef(),
-                        link->getFromOutputName().toStdString(),
-                        link->getToNode()->getProxy()->getPyNodeRef(),
-                        link->getToInputName().toStdString()
-                    );
+                    workflowObj.attr("remove_connection")(link->getFromNode()->getProxy()->getPyNodeRef(),
+                                                          link->getFromOutputName().toStdString(),
+                                                          link->getToNode()->getProxy()->getPyNodeRef(),
+                                                          link->getToInputName().toStdString());
                 }
             } catch (const pybind11::error_already_set& e) {
                 qWarning() << tr("DAPyWorkFlowScene::removePyNodeItem: Python error removing connection: %1").arg(e.what());
@@ -787,9 +775,10 @@ QList< DAPyNodeGraphicsItem* > DAPyWorkFlowScene::getSelectedPyNodeItems() const
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 返回的link未添加到场景，需要调用方自行添加
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(
-    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
-)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(DAPyNodeGraphicsItem* fromItem,
+                                                       const QString& fromOutput,
+                                                       DAPyNodeGraphicsItem* toItem,
+                                                       const QString& toInput)
 {
     if (!fromItem || !toItem) {
         return nullptr;
@@ -848,9 +837,10 @@ void DAPyWorkFlowScene::addPyNodeLink(DAPyLinkGraphicsItem* linkItem)
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 函数名后缀"_"表示支持undo/redo操作
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(
-    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
-)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(DAPyNodeGraphicsItem* fromItem,
+                                                        const QString& fromOutput,
+                                                        DAPyNodeGraphicsItem* toItem,
+                                                        const QString& toInput)
 {
     DAPyLinkGraphicsItem* link = addPyNodeLink(fromItem, fromOutput, toItem, toInput);
     if (!link) {
@@ -1448,9 +1438,11 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                         // 根据连接点方向计算方向感知的命中区域
                         qreal halfW, halfH;
                         if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
-                            halfW = 8; halfH = 6;  // 水平方向: 16x12
+                            halfW = 8;
+                            halfH = 6;  // 水平方向: 16x12
                         } else {
-                            halfW = 6; halfH = 8;  // 垂直方向: 12x16
+                            halfW = 6;
+                            halfH = 8;  // 垂直方向: 12x16
                         }
                         QRectF hitRegion(lpScenePos.x() - halfW, lpScenePos.y() - halfH, halfW * 2, halfH * 2);
                         if (hitRegion.contains(mouseEvent->scenePos())) {
@@ -1486,9 +1478,11 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                     // 根据连接点方向计算方向感知的命中区域
                     qreal halfW, halfH;
                     if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
-                        halfW = 8; halfH = 6;  // 水平方向: 16x12
+                        halfW = 8;
+                        halfH = 6;  // 水平方向: 16x12
                     } else {
-                        halfW = 6; halfH = 8;  // 垂直方向: 12x16
+                        halfW = 6;
+                        halfH = 8;  // 垂直方向: 12x16
                     }
                     QRectF hitRegion(lpScenePos.x() - halfW, lpScenePos.y() - halfH, halfW * 2, halfH * 2);
                     if (hitRegion.contains(mouseEvent->scenePos())) {
@@ -1520,12 +1514,10 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
  * @param linkItems 分离出的连接线item列表
  * @param normalItems 分离出的普通item列表
  */
-void DAPyWorkFlowScene::classifyItems(
-    const QList< QGraphicsItem* >& sourceItems,
-    QList< DAPyNodeGraphicsItem* >& nodeItems,
-    QList< DAPyLinkGraphicsItem* >& linkItems,
-    QList< QGraphicsItem* >& normalItems
-)
+void DAPyWorkFlowScene::classifyItems(const QList< QGraphicsItem* >& sourceItems,
+                                      QList< DAPyNodeGraphicsItem* >& nodeItems,
+                                      QList< DAPyLinkGraphicsItem* >& linkItems,
+                                      QList< QGraphicsItem* >& normalItems)
 {
     if (sourceItems.isEmpty()) {
         return;

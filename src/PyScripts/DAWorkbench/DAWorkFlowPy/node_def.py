@@ -7,7 +7,7 @@ NodeDef 装饰器会收集类中的 Input、Output、Parameter 声明，
 
 使用示例::
 
-    @NodeDef(name="Data Filter", category="Data Processing", icon="filter")
+    @NodeDef(name="Data Filter", category="Data Processing")
     class DataFilter:
         column = Parameter(str, default="value", description="要筛选的列名")
 
@@ -89,7 +89,7 @@ def _collect_from_nested_class(cls: type, nested_name: str, decl_type: type) -> 
     return items
 
 
-def NodeDef(name: str, category: str = "", icon: str = "", render_template: str = "rect", style=None):
+def NodeDef(name: str, category: str = "", render_template: str = "rect", style=None):
     """
     工作流节点定义装饰器
 
@@ -99,7 +99,6 @@ def NodeDef(name: str, category: str = "", icon: str = "", render_template: str 
     _node_descriptor 字典包含以下键：
     - name: 节点显示名称
     - category: 节点所属分类
-    - icon: 节点图标标识
     - qualified_name: 节点的唯一标识（模块名.类名）
     - inputs: 输入端口列表
     - outputs: 输出端口列表
@@ -109,7 +108,7 @@ def NodeDef(name: str, category: str = "", icon: str = "", render_template: str 
 
     使用示例::
 
-        @NodeDef(name="Data Filter", category="Data Processing", icon="filter")
+        @NodeDef(name="Data Filter", category="Data Processing")
         class DataFilter:
             column = Parameter(str, default="value")
             class Inputs:
@@ -121,7 +120,6 @@ def NodeDef(name: str, category: str = "", icon: str = "", render_template: str 
 
     :param name: 节点显示名称
     :param category: 节点所属分类，默认为空字符串
-    :param icon: 节点图标标识，默认为空字符串
     :param render_template: 渲染模板类型，默认为 'rect'（映射到 'nodestyle'），支持 'nodestyle'、'widget'
     :param style: 节点样式配置，可为 DANodeStyle 实例或样式参数字典，默认为 None
     :return: 装饰器函数
@@ -154,7 +152,6 @@ def NodeDef(name: str, category: str = "", icon: str = "", render_template: str 
         descriptor = {
             "name": name,
             "category": category,
-            "icon": icon,
             "qualified_name": qualified_name,
             "inputs": inputs,
             "outputs": outputs,
@@ -171,7 +168,9 @@ def NodeDef(name: str, category: str = "", icon: str = "", render_template: str 
             elif isinstance(style, dict):
                 style_dict = style
             elif hasattr(style, "__dict__"):
-                style_dict = {k: v for k, v in vars(style).items() if not k.startswith("_")}
+                style_dict = {
+                    k: v for k, v in vars(style).items() if not k.startswith("_")
+                }
             if style_dict is not None:
                 descriptor["style"] = style_dict
 
@@ -184,7 +183,7 @@ def NodeDef(name: str, category: str = "", icon: str = "", render_template: str 
 
         @classmethod
         def _get_descriptor(cls):
-            return getattr(cls, '_node_descriptor', {})
+            return getattr(cls, "_node_descriptor", {})
 
         cls.get_descriptor = _get_descriptor
 

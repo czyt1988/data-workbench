@@ -5,6 +5,7 @@
 #include "DAPyLinkPoint.h"
 #include "DAPyWorkFlowScene.h"
 #include <memory>
+#include <QImage>
 #include <QPainter>
 #include <QSvgRenderer>
 #include <QGraphicsProxyWidget>
@@ -17,7 +18,7 @@
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
 #include <QFontMetrics>
-
+#include "DAGraphicsViewGlobal.h"
 namespace DA
 {
 
@@ -46,23 +47,31 @@ public:
     void cleanupWidget();
     // 清理SVG
     void cleanupSvg();
+    // 准备nodestyle需要的数据，包括预加载图标，预计算好位置
+    void updateNodeStyle(const QRectF& bodyRect);
 
 public:
-    std::unique_ptr< DAPyNodeProxy > mProxy;           ///< Python节点代理（独占所有权）
-    RenderTemplate mRenderTemplate { RectTemplate };  ///< 当前渲染模板
-    QString mNodeName;                                ///< 节点名称
-    QIcon mIcon;                                      ///< 节点图标
-    QString mSvgPath;                                 ///< SVG文件路径
-    QSvgRenderer* mSvgRenderer { nullptr };           ///< SVG渲染器
-    QGraphicsProxyWidget* mProxyWidget { nullptr };   ///< Widget代理
-    QWidget* mWidget { nullptr };                     ///< 嵌入的widget
-    DAPyNodeState mNodeState { Idle };                ///< 节点状态
-    QJsonObject mDescriptor;                          ///< 节点描述符
-    QList< DAPyLinkPoint > mInputLinkPoints;          ///< 输入连接点
-    QList< DAPyLinkPoint > mOutputLinkPoints;         ///< 输出连接点
-    DAPySafePyObjectHolder mPaintCallback;            ///< 自定义绘制回调（Python函数对象）
-    bool mPaintCallbackError { false };               ///< 绘制回调是否发生过异常
-    DANodeStyle mStyle;                               ///< 节点样式配置
+    std::unique_ptr< DAPyNodeProxy > mProxy;                                     ///< Python节点代理（独占所有权）
+    RenderTemplate mRenderTemplate { DAPyNodeGraphicsItem::NodeStyleTemplate };  ///< 当前渲染模板
+    QString mNodeName;                                                           ///< 节点名称
+    QIcon mIcon;                                                                 ///< 节点图标
+    QSvgRenderer* mSvgRenderer { nullptr };                                      ///< SVG渲染器
+    QGraphicsProxyWidget* mProxyWidget { nullptr };                              ///< Widget代理
+    QWidget* mWidget { nullptr };                                                ///< 嵌入的widget
+    DAPyNodeState mNodeState { Idle };                                           ///< 节点状态
+    QJsonObject mDescriptor;                                                     ///< 节点描述符
+    QList< DAPyLinkPoint > mInputLinkPoints;                                     ///< 输入连接点
+    QList< DAPyLinkPoint > mOutputLinkPoints;                                    ///< 输出连接点
+    qreal linkPointDrawWidth { 14 };        ///< 连接点的绘制宽度（宽度相对于东西方向的宽度）
+    qreal linkPointDrawHeight { 10 };       ///< 连接点的绘制高度（高度相对于东西方向的高度）
+    DAPySafePyObjectHolder mPaintCallback;  ///< 自定义绘制回调（Python函数对象）
+    bool mPaintCallbackError { false };     ///< 绘制回调是否发生过异常
+    DANodeStyle mStyle;                     ///< 节点样式配置
+    QRectF mIconRect;                       ///< 绘制Icon的区域，仅仅有icon时才有用
+    QRectF mTextRect;                       ///< 绘制text的区域
+    QPixmap mIconPixmap;                    ///< 记录图标的pixmap
+    int smallFontSize { 7 };                ///< 小字体大小（用于渲染节点的名字）
+    int normalFontSize { 9 };               ///< 普通字体大小（用于渲染节点名称）
 };
 
 /**
@@ -140,17 +149,17 @@ void DAPyNodeGraphicsItem::PrivateData::updateLinkPointPositions(const QRectF& b
     if (inputCount > 0) {
         const PortSide side = mStyle.inputPortSide;
         for (int i = 0; i < inputCount; ++i) {
-            mInputLinkPoints[i].direction = side;
+            mInputLinkPoints[ i ].direction = side;
             if (side == PortSide::West || side == PortSide::East) {
                 // 垂直均匀分布
-                const qreal spacing = bodyRect.height() / (inputCount + 1);
-                const qreal x = (side == PortSide::West) ? bodyRect.left() : bodyRect.right();
-                mInputLinkPoints[i].position = QPointF(x, bodyRect.top() + spacing * (i + 1));
+                const qreal spacing            = bodyRect.height() / (inputCount + 1);
+                const qreal x                  = (side == PortSide::West) ? bodyRect.left() : bodyRect.right();
+                mInputLinkPoints[ i ].position = QPointF(x, bodyRect.top() + spacing * (i + 1));
             } else {
                 // North/South：水平均匀分布
-                const qreal spacing = bodyRect.width() / (inputCount + 1);
-                const qreal y = (side == PortSide::North) ? bodyRect.top() : bodyRect.bottom();
-                mInputLinkPoints[i].position = QPointF(bodyRect.left() + spacing * (i + 1), y);
+                const qreal spacing            = bodyRect.width() / (inputCount + 1);
+                const qreal y                  = (side == PortSide::North) ? bodyRect.top() : bodyRect.bottom();
+                mInputLinkPoints[ i ].position = QPointF(bodyRect.left() + spacing * (i + 1), y);
             }
         }
     }
@@ -160,17 +169,17 @@ void DAPyNodeGraphicsItem::PrivateData::updateLinkPointPositions(const QRectF& b
     if (outputCount > 0) {
         const PortSide side = mStyle.outputPortSide;
         for (int i = 0; i < outputCount; ++i) {
-            mOutputLinkPoints[i].direction = side;
+            mOutputLinkPoints[ i ].direction = side;
             if (side == PortSide::West || side == PortSide::East) {
                 // 垂直均匀分布
-                const qreal spacing = bodyRect.height() / (outputCount + 1);
-                const qreal x = (side == PortSide::West) ? bodyRect.left() : bodyRect.right();
-                mOutputLinkPoints[i].position = QPointF(x, bodyRect.top() + spacing * (i + 1));
+                const qreal spacing             = bodyRect.height() / (outputCount + 1);
+                const qreal x                   = (side == PortSide::West) ? bodyRect.left() : bodyRect.right();
+                mOutputLinkPoints[ i ].position = QPointF(x, bodyRect.top() + spacing * (i + 1));
             } else {
                 // North/South：水平均匀分布
-                const qreal spacing = bodyRect.width() / (outputCount + 1);
-                const qreal y = (side == PortSide::North) ? bodyRect.top() : bodyRect.bottom();
-                mOutputLinkPoints[i].position = QPointF(bodyRect.left() + spacing * (i + 1), y);
+                const qreal spacing             = bodyRect.width() / (outputCount + 1);
+                const qreal y                   = (side == PortSide::North) ? bodyRect.top() : bodyRect.bottom();
+                mOutputLinkPoints[ i ].position = QPointF(bodyRect.left() + spacing * (i + 1), y);
             }
         }
     }
@@ -197,6 +206,122 @@ void DAPyNodeGraphicsItem::PrivateData::cleanupSvg()
     if (mSvgRenderer) {
         delete mSvgRenderer;
         mSvgRenderer = nullptr;
+    }
+}
+
+void DAPyNodeGraphicsItem::PrivateData::updateNodeStyle(const QRectF& bodyRect)
+{
+    const DANodeStyle& s = mStyle;
+    // 根据端口方向计算各方向的连接点预留偏移量
+    const qreal halfLpW = linkPointDrawWidth / 2;
+    qreal lpLeft = 0, lpRight = 0, lpTop = 0, lpBottom = 0;
+    if (!mInputLinkPoints.isEmpty()) {
+        switch (s.inputPortSide) {
+        case AspectDirection::West:
+            lpLeft = halfLpW;
+            break;
+        case AspectDirection::East:
+            lpRight = halfLpW;
+            break;
+        case AspectDirection::North:
+            lpTop = halfLpW;
+            break;
+        case AspectDirection::South:
+            lpBottom = halfLpW;
+            break;
+        }
+    }
+    if (!mOutputLinkPoints.isEmpty()) {
+        switch (s.outputPortSide) {
+        case AspectDirection::West:
+            lpLeft = halfLpW;
+            break;
+        case AspectDirection::East:
+            lpRight = halfLpW;
+            break;
+        case AspectDirection::North:
+            lpTop = halfLpW;
+            break;
+        case AspectDirection::South:
+            lpBottom = halfLpW;
+            break;
+        }
+    }
+    qreal iconSize = s.iconSize;
+    if (s.bodyIconSource.isEmpty()) {
+        iconSize = 0.0;
+    }
+    if (s.isNameInside()) {
+        // 如果名字是在里面，iconPosition才有用
+        // 布局icon位置和text位置，存入mIconRect和mTextRect中
+
+        const int space = qMin(4.0, s.cornerRadius);
+        if (s.isIconLeftOfText()) {
+            // icon在左文字在右
+            // 定位icon位置，icon位于最左边
+            mIconRect.setLeft(bodyRect.left() + space + lpLeft);
+            mIconRect.setTop(bodyRect.top() + (bodyRect.height() - iconSize) / 2.0 + lpTop);
+            mIconRect.setWidth(iconSize);
+            mIconRect.setHeight(iconSize);
+            // 剩下的为文字区域
+            mTextRect.setLeft(mIconRect.right() + space);
+            mTextRect.setTop(bodyRect.top() + space + lpTop);
+            mTextRect.setWidth(bodyRect.right() - mIconRect.right() - 2 * space - lpRight);
+            mTextRect.setHeight(bodyRect.height() - 2 * space - lpTop - lpBottom);
+        } else {
+            // icon在上文字在下
+            mIconRect.setLeft(bodyRect.left() + (bodyRect.width() - iconSize - lpRight - lpLeft) / 2.0 + lpLeft);
+            mIconRect.setTop(bodyRect.top() + space + lpTop);
+            mIconRect.setWidth(iconSize);
+            mIconRect.setHeight(iconSize);
+            // 布局text
+            mTextRect.setLeft(bodyRect.left() + space + lpLeft);
+            mTextRect.setTop(mIconRect.bottom() + space);
+            mTextRect.setWidth(bodyRect.width() - 2 * space - lpRight - lpLeft);
+            mTextRect.setHeight(bodyRect.bottom() - mIconRect.bottom() - 2 * space - lpBottom);
+        }
+    } else {
+        // 文字放外面，icon居中布局
+        // 布局icon位置和text位置，存入mIconRect和mTextRect中
+        mIconRect.setLeft(bodyRect.left() + (bodyRect.width() - iconSize - lpRight - lpLeft) / 2.0 + lpLeft);
+        mIconRect.setTop(bodyRect.top() + (bodyRect.height() - iconSize - lpTop - lpBottom) / 2.0 + lpTop);
+        mIconRect.setWidth(iconSize);
+        mIconRect.setHeight(iconSize);
+        // 文字
+        QFont font;
+        font.setPointSize(normalFontSize);
+        QFontMetricsF fm(font);
+        mTextRect.setTop(bodyRect.bottom() + 2);
+        mTextRect.setLeft(bodyRect.left());
+        mTextRect.setWidth(bodyRect.width());
+        mTextRect.setHeight(fm.height() + 2);
+    }
+    // 获取图标，转换为pixmap，存入mIconPixmap中（仅在尺寸变化时重渲染）
+    if (!s.bodyIconSource.isEmpty()) {
+        if (s.bodyIconType == BodyIconType::Svg) {
+            if (!mSvgRenderer) {
+                mSvgRenderer = new QSvgRenderer(q_ptr);
+                mSvgRenderer->load(s.bodyIconSource);
+            }
+            if (!mSvgRenderer->isValid()) {
+                mSvgRenderer->load(s.bodyIconSource);
+            }
+            if (mSvgRenderer->isValid()) {
+                // 仅在mIconRect尺寸变化或pixmap无效时重渲染，避免频繁开销
+                QSize targetSize = mIconRect.size().toSize();
+                if (mIconPixmap.isNull() || mIconPixmap.size() != targetSize) {
+                    QPixmap pixmap(targetSize);
+                    pixmap.fill(Qt::transparent);
+                    QPainter painter(&pixmap);
+                    mSvgRenderer->render(&painter, pixmap.rect());
+                    mIconPixmap = pixmap;
+                }
+            }
+        } else {
+            // 通过QImage加载到QPixmap
+        }
+    } else {
+        mIconPixmap = QPixmap();
     }
 }
 
@@ -248,7 +373,7 @@ void DAPyNodeGraphicsItem::setRenderTemplate(RenderTemplate tmpl)
     }
 
     // 清理之前的资源
-    if (d_ptr->mRenderTemplate == SvgTemplate) {
+    if (d_ptr->mRenderTemplate == NodeStyleTemplate) {
         d_ptr->cleanupSvg();
     } else if (d_ptr->mRenderTemplate == WidgetTemplate) {
         d_ptr->cleanupWidget();
@@ -259,8 +384,9 @@ void DAPyNodeGraphicsItem::setRenderTemplate(RenderTemplate tmpl)
     // 初始化新的资源
     if (tmpl == WidgetTemplate && !d_ptr->mProxyWidget) {
         d_ptr->mProxyWidget = new QGraphicsProxyWidget(this);
+    } else {
+        d_ptr->updateNodeStyle(getBodyRect());
     }
-
     update();
 }
 
@@ -271,12 +397,10 @@ void DAPyNodeGraphicsItem::setRenderTemplate(RenderTemplate tmpl)
 void DAPyNodeGraphicsItem::setRenderTemplate(const QString& tmplName)
 {
     QString lowerName = tmplName.toLower();
-    if (lowerName == "svg" || lowerName == "icon") {
-        setRenderTemplate(SvgTemplate);
-    } else if (lowerName == "widget") {
+    if (lowerName == "widget") {
         setRenderTemplate(WidgetTemplate);
     } else {
-        setRenderTemplate(RectTemplate);
+        setRenderTemplate(NodeStyleTemplate);
     }
 }
 
@@ -296,14 +420,14 @@ DAPyNodeGraphicsItem::RenderTemplate DAPyNodeGraphicsItem::getRenderTemplate() c
 QString DAPyNodeGraphicsItem::getRenderTemplateName() const
 {
     switch (d_ptr->mRenderTemplate) {
-    case SvgTemplate:
-        return QString("svg");
+    case NodeStyleTemplate:
+        return QString("nodestyle");
     case WidgetTemplate:
         return QString("widget");
-    case RectTemplate:
     default:
-        return QString("rect");
+        break;
     }
+    return QString("nodestyle");
 }
 
 /**
@@ -326,59 +450,25 @@ void DAPyNodeGraphicsItem::setProxy(DAPyNodeProxy* proxy)
         d_ptr->mNodeName   = proxy->getNodeName();
         d_ptr->mDescriptor = proxy->getDescriptor();
         d_ptr->mNodeState  = proxy->getNodeState();
-        updateLinkPoints();
-        update();
     }
+    updateLinkPoints();
+    update();
 }
 
 /**
  * @brief 设置节点名称
  * @param[in] name 节点名称
+ *
+ * 设置名称后自动调用updateNodeBody()重新估算节点尺寸，
+ * 确保名称文字不会被裁剪。
  */
 void DAPyNodeGraphicsItem::setNodeName(const QString& name)
 {
-    if (d_ptr->mNodeName != name) {
-        d_ptr->mNodeName = name;
-
-        // 仅 RectTemplate 模式下且名称在节点内部时自适应尺寸
-        // 当名称在节点下方时，bodySize 不需要为文本扩展
-        if (d_ptr->mRenderTemplate == RectTemplate && !name.isEmpty()
-            && d_ptr->mStyle.namePosition != NamePosition::Below) {
-            QFont font;
-            font.setPointSize(9);
-            QFontMetrics fm(font);
-
-            constexpr qreal kIconSpace      = 36;   // 图标占用的左侧空间
-            constexpr qreal kRightMargin    = 8;    // 右侧边距
-            constexpr qreal kLinkPointSpace = 12;   // 连接点额外空间
-            constexpr qreal kMinWidth       = 120;  // 最小宽度
-            constexpr qreal kMaxWidth       = 280;  // 最大宽度
-            constexpr qreal kHeightPadding  = 12;   // 上下间距
-            constexpr qreal kMinHeight      = 60;   // 最小高度
-
-            // 文本宽度测量（单行）
-            qreal textWidth    = fm.horizontalAdvance(name);
-            qreal desiredWidth = kIconSpace + textWidth + kRightMargin + kLinkPointSpace;
-
-            // 判断是否需要换行
-            qreal availableTextWidth = kMaxWidth - kIconSpace - kRightMargin - kLinkPointSpace;
-            bool needsWrap           = textWidth > availableTextWidth;
-            qreal finalWidth         = qBound(kMinWidth, desiredWidth, kMaxWidth);
-            qreal desiredHeight      = kMinHeight;
-
-            if (needsWrap) {
-                // 使用 boundingRect 计算多行文本高度
-                QRect textBounds(0, 0, qRound(availableTextWidth), 0);
-                textBounds    = fm.boundingRect(textBounds, Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, name);
-                desiredHeight = qMax(kMinHeight, textBounds.height() + kHeightPadding);
-            }
-
-            setBodySize(QSizeF(finalWidth, desiredHeight));
-            d_ptr->updateLinkPointPositions(getBodyRect());
-        }
-
-        update();
+    if (d_ptr->mNodeName == name) {
+        return;
     }
+    d_ptr->mNodeName = name;
+    updateNodeBody();
 }
 
 /**
@@ -394,9 +484,10 @@ QString DAPyNodeGraphicsItem::getNodeName() const
  * @brief 设置节点样式
  * @param[in] style 节点样式配置
  */
-void DAPyNodeGraphicsItem::setStyle(const DANodeStyle& style)
+void DAPyNodeGraphicsItem::setNodeStyle(const DANodeStyle& style)
 {
     d_ptr->mStyle = style;
+    d_ptr->updateNodeStyle(getBodyRect());
     update();
 }
 
@@ -404,7 +495,7 @@ void DAPyNodeGraphicsItem::setStyle(const DANodeStyle& style)
  * @brief 获取节点样式（非常量引用，允许修改）
  * @return 节点样式引用
  */
-DANodeStyle& DAPyNodeGraphicsItem::getStyle()
+DANodeStyle& DAPyNodeGraphicsItem::nodeStyle()
 {
     return d_ptr->mStyle;
 }
@@ -413,7 +504,7 @@ DANodeStyle& DAPyNodeGraphicsItem::getStyle()
  * @brief 获取节点样式（常量引用）
  * @return 节点样式常量引用
  */
-const DANodeStyle& DAPyNodeGraphicsItem::getStyle() const
+const DANodeStyle& DAPyNodeGraphicsItem::nodeStyle() const
 {
     return d_ptr->mStyle;
 }
@@ -435,55 +526,6 @@ void DAPyNodeGraphicsItem::setIcon(const QIcon& icon)
 QIcon DAPyNodeGraphicsItem::getIcon() const
 {
     return d_ptr->mIcon;
-}
-
-/**
- * @brief 设置SVG文件路径
- * @param[in] path SVG文件路径
- */
-void DAPyNodeGraphicsItem::setSvgPath(const QString& path)
-{
-    d_ptr->mSvgPath = path;
-    if (!path.isEmpty()) {
-        loadSvg(path);
-    }
-}
-
-/**
- * @brief 获取SVG文件路径
- * @return SVG文件路径
- */
-QString DAPyNodeGraphicsItem::getSvgPath() const
-{
-    return d_ptr->mSvgPath;
-}
-
-/**
- * @brief 加载SVG文件
- * @param[in] path SVG文件路径
- * @return 加载成功返回true
- */
-bool DAPyNodeGraphicsItem::loadSvg(const QString& path)
-{
-    // 清理旧的渲染器
-    d_ptr->cleanupSvg();
-
-    // 创建新的渲染器
-    d_ptr->mSvgRenderer = new QSvgRenderer(this);
-    if (!d_ptr->mSvgRenderer->load(path)) {
-        d_ptr->cleanupSvg();
-        return false;
-    }
-
-    d_ptr->mSvgPath = path;
-
-    // 如果当前不是SVG模式，切换到SVG模式
-    if (d_ptr->mRenderTemplate != SvgTemplate) {
-        d_ptr->mRenderTemplate = SvgTemplate;
-    }
-
-    update();
-    return true;
 }
 
 /**
@@ -611,7 +653,7 @@ QList< DAPyLinkPoint > DAPyNodeGraphicsItem::generateLinkPoints() const
 {
     // 优先从描述符生成
     if (!d_ptr->mDescriptor.isEmpty()) {
-        QList<DAPyLinkPoint> descriptorPoints = d_ptr->generateLinkPointsFromDescriptor();
+        QList< DAPyLinkPoint > descriptorPoints = d_ptr->generateLinkPointsFromDescriptor();
         if (!descriptorPoints.isEmpty()) {
             return descriptorPoints;  // 描述符有完整的I/O信息，直接使用
         }
@@ -670,11 +712,6 @@ bool DAPyNodeGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentEleme
     // 保存节点名称
     pyNodeEle.setAttribute("nodeName", d_ptr->mNodeName);
 
-    // 保存SVG路径（保留向后兼容）
-    if (!d_ptr->mSvgPath.isEmpty()) {
-        pyNodeEle.setAttribute("svgPath", d_ptr->mSvgPath);
-    }
-
     // 保存状态
     pyNodeEle.setAttribute("nodeState", static_cast< int >(d_ptr->mNodeState));
 
@@ -682,9 +719,8 @@ bool DAPyNodeGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentEleme
     const QJsonObject styleJson = DANodeStyleToJson(d_ptr->mStyle);
     if (!styleJson.isEmpty()) {
         const QJsonDocument styleDoc(styleJson);
-        QDomElement styleEle = doc->createElement("style");
-        QDomCDATASection cdata = doc->createCDATASection(
-            QString::fromUtf8(styleDoc.toJson(QJsonDocument::Compact)));
+        QDomElement styleEle   = doc->createElement("style");
+        QDomCDATASection cdata = doc->createCDATASection(QString::fromUtf8(styleDoc.toJson(QJsonDocument::Compact)));
         styleEle.appendChild(cdata);
         pyNodeEle.appendChild(styleEle);
     }
@@ -714,30 +750,24 @@ bool DAPyNodeGraphicsItem::loadFromXml(const QDomElement* itemElement, const QVe
     QString tmplName = pyNodeEle.attribute("renderTemplate", "rect");
     if (tmplName == "rect" || tmplName == "svg" || tmplName == "nodestyle") {
         // 遗留迁移：rect/svg/nodestyle → RectTemplate（NodeStyleTemplate）
-        setRenderTemplate(RectTemplate);
+        setRenderTemplate(NodeStyleTemplate);
         if (tmplName == "svg") {
             // SVG迁移：记录旧的svgPath到style
             QString svgPath = pyNodeEle.attribute("svgPath");
             if (!svgPath.isEmpty()) {
-                d_ptr->mStyle.bodyIconType = BodyIconType::Svg;
+                d_ptr->mStyle.bodyIconType   = BodyIconType::Svg;
                 d_ptr->mStyle.bodyIconSource = svgPath;
             }
         }
     } else if (tmplName == "widget") {
         setRenderTemplate(WidgetTemplate);
     } else {
-        // 未知类型，回退到矩形
-        setRenderTemplate(RectTemplate);
+        // 未知类型，回退到NodeStyleTemplate
+        setRenderTemplate(NodeStyleTemplate);
     }
 
     // 加载节点名称
     d_ptr->mNodeName = pyNodeEle.attribute("nodeName");
-
-    // 加载SVG路径（保留向后兼容）
-    QString svgPath = pyNodeEle.attribute("svgPath");
-    if (!svgPath.isEmpty()) {
-        loadSvg(svgPath);
-    }
 
     // 加载样式配置（如果存在）
     QDomElement styleEle = pyNodeEle.firstChildElement("style");
@@ -749,8 +779,7 @@ bool DAPyNodeGraphicsItem::loadFromXml(const QDomElement* itemElement, const QVe
             if (error.error == QJsonParseError::NoError && jsonDoc.isObject()) {
                 d_ptr->mStyle = DANodeStyleFromJson(jsonDoc.object());
             } else {
-                qWarning() << "DAPyNodeGraphicsItem::loadFromXml: style JSON parse error:"
-                           << error.errorString();
+                qWarning() << "DAPyNodeGraphicsItem::loadFromXml: style JSON parse error:" << error.errorString();
             }
         }
     }
@@ -815,15 +844,13 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
 
     // 根据模板类型绘制
     switch (d_ptr->mRenderTemplate) {
-    case SvgTemplate:
-        paintSvgTemplate(painter, bodyRect);
+    case NodeStyleTemplate:
+        paintNodeStyleBody(painter, bodyRect);
         break;
     case WidgetTemplate:
         paintWidgetTemplate(painter, bodyRect);
         break;
-    case RectTemplate:
     default:
-        paintNodeStyleBody(painter, bodyRect);
         break;
     }
 
@@ -852,6 +879,124 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
 }
 
 /**
+ * @brief 绘制一组连接点（输入或输出）
+ *
+ * 根据端口样式绘制连接点形状和方向感知的文字标签。
+ * East/West方向文字水平绘制；North/South方向文字旋转90度绘制。
+ *
+ * @param[in] painter 画笔
+ * @param[in] points 连接点列表
+ * @param[in] portStyle 端口样式配置
+ * @param[in] defaultFillColor 默认填充色（输入为白色，输出为深灰色）
+ * @param[in] linkPointDrawWidth 连接点绘制宽度
+ * @param[in] linkPointDrawHeight 连接点绘制高度
+ * @param[in] smallFontSize 连接点标签字体大小
+ */
+static void drawLinkPointGroup(QPainter* painter,
+                               const QList< DAPyLinkPoint >& points,
+                               const DAPyLinkPointStyle& portStyle,
+                               const QColor& defaultFillColor,
+                               qreal linkPointDrawWidth,
+                               qreal linkPointDrawHeight,
+                               int smallFontSize)
+{
+    const qreal spacing = 2;  // 文字与连接点间距
+
+    QBrush fillBrush(portStyle.isFillColorValid() ? portStyle.fillColor : defaultFillColor);
+    QPen borderPen(portStyle.isBorderColorValid() ? portStyle.borderColor : Qt::black);
+    borderPen.setWidthF(portStyle.borderWidth);
+    painter->setBrush(fillBrush);
+    painter->setPen(borderPen);
+
+    QFont smallFont = painter->font();
+    smallFont.setPointSize(smallFontSize);
+    QFontMetricsF fm(smallFont);
+
+    for (const auto& lp : std::as_const(points)) {
+        // 根据方向确定矩形尺寸（East/West为水平矩形，North/South为垂直矩形）
+        qreal halfW, halfH;
+        if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
+            halfW = linkPointDrawWidth / 2;
+            halfH = linkPointDrawHeight / 2;
+        } else {
+            halfW = linkPointDrawHeight / 2;
+            halfH = linkPointDrawWidth / 2;
+        }
+
+        QRectF linkRect(lp.position.x() - halfW, lp.position.y() - halfH, halfW * 2, halfH * 2);
+
+        // 绘制连接点形状
+        switch (portStyle.shape) {
+        case PortShape::Circle:
+            painter->drawEllipse(linkRect);
+            break;
+        case PortShape::Diamond: {
+            QPainterPath diamond;
+            const qreal cx = linkRect.center().x();
+            const qreal cy = linkRect.center().y();
+            const qreal hw = linkRect.width() / 2;
+            const qreal hh = linkRect.height() / 2;
+            diamond.moveTo(cx, cy - hh);
+            diamond.lineTo(cx + hw, cy);
+            diamond.lineTo(cx, cy + hh);
+            diamond.lineTo(cx - hw, cy);
+            diamond.closeSubpath();
+            painter->drawPath(diamond);
+            break;
+        }
+        case PortShape::Rect:
+        default:
+            painter->drawRect(linkRect);
+            break;
+        }
+
+        // 绘制连接点名称（方向感知定位）
+        QRectF textRect = fm.boundingRect(lp.name);
+        textRect.adjust(0, 0, spacing, spacing);
+
+        switch (lp.direction) {
+        case AspectDirection::East: {
+            QPointF textPos(lp.position.x() + halfW + spacing, lp.position.y() - textRect.height() / 2);
+            textRect.moveTopLeft(textPos);
+            painter->drawText(textRect, Qt::AlignCenter, lp.name);
+        } break;
+        case AspectDirection::West: {
+            QPointF textPos(lp.position.x() - halfW - spacing - textRect.width(), lp.position.y() - textRect.height() / 2);
+            textRect.moveTopLeft(textPos);
+            painter->drawText(textRect, Qt::AlignCenter, lp.name);
+        } break;
+        case AspectDirection::North: {
+            // 顺时针旋转90度绘制文字
+            painter->save();
+            QTransform transform;
+            transform.translate(lp.position.x(), lp.position.y() + halfH + spacing + textRect.width() / 2);
+            transform.rotate(90);
+            painter->setTransform(transform, true);
+            QRectF rotatedRect(-textRect.height() / 2, -textRect.width() / 2, textRect.height(), textRect.width());
+            painter->drawText(rotatedRect, Qt::AlignCenter, lp.name);
+            painter->restore();
+        } break;
+        case AspectDirection::South: {
+            // 顺时针旋转90度绘制文字
+            painter->save();
+            QTransform transform;
+            transform.translate(lp.position.x(), lp.position.y() - halfH - spacing - textRect.width() / 2);
+            transform.rotate(90);
+            painter->setTransform(transform, true);
+
+            QRectF rotatedRect(-textRect.height() / 2, -textRect.width() / 2, textRect.height(), textRect.width());
+            painter->drawText(rotatedRect, Qt::AlignCenter, lp.name);
+            painter->restore();
+        } break;
+        default:
+            textRect.moveTopLeft(lp.position);
+            painter->drawText(textRect, Qt::AlignCenter, lp.name);
+            break;
+        }
+    }
+}
+
+/**
  * @brief 绘制连接点
  * @param[in] painter 画笔
  * @param[in] option 样式选项
@@ -868,161 +1013,32 @@ void DAPyNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOption
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
+    DA_D(d);
 
     painter->save();
 
-    // 连接点尺寸常量
-    const qreal cLPHWidth  = 14;  // 水平连接点宽度
-    const qreal cLPHHeight = 10;  // 水平连接点高度
-    const qreal spacing    = 2;   // 文字与连接点间距
-
-    // 设置画笔样式
-    QPen pen(Qt::black);
-    pen.setWidth(1);
-    painter->setPen(pen);
-
-    // 设置小字体用于绘制连接点名称
+    // 设置字体用于连接点标签
     QFont smallFont = painter->font();
-    smallFont.setPointSize(7);
+    smallFont.setPointSize(d->smallFontSize);
     painter->setFont(smallFont);
-    QFontMetrics fm(smallFont);
 
-    // 形状绘制辅助函数
-    auto drawLinkPointShape = [painter](const QRectF& linkRect, PortShape shape) {
-        switch (shape) {
-        case PortShape::Circle:
-            painter->drawEllipse(linkRect);
-            break;
-        case PortShape::Diamond: {
-            QPainterPath diamond;
-            const qreal cx = linkRect.center().x();
-            const qreal cy = linkRect.center().y();
-            const qreal hw = linkRect.width() / 2;
-            const qreal hh = linkRect.height() / 2;
-            diamond.moveTo(cx, cy - hh);    // top
-            diamond.lineTo(cx + hw, cy);     // right
-            diamond.lineTo(cx, cy + hh);     // bottom
-            diamond.lineTo(cx - hw, cy);     // left
-            diamond.closeSubpath();
-            painter->drawPath(diamond);
-            break;
-        }
-        case PortShape::Rect:
-        default:
-            painter->drawRect(linkRect);
-            break;
-        }
-    };
+    // 绘制输入连接点（默认白色填充）
+    drawLinkPointGroup(painter,
+                       d_ptr->mInputLinkPoints,
+                       d_ptr->mStyle.inputPortStyle,
+                       Qt::white,
+                       d->linkPointDrawWidth,
+                       d->linkPointDrawHeight,
+                       d->smallFontSize);
 
-    // 绘制输入连接点
-    {
-        const DAPyLinkPointStyle& portStyle = d_ptr->mStyle.inputPortStyle;
-        QBrush fillBrush(portStyle.isFillColorValid() ? portStyle.fillColor : Qt::white);
-        QPen borderPen(portStyle.isBorderColorValid() ? portStyle.borderColor : Qt::black);
-        borderPen.setWidthF(portStyle.borderWidth);
-        painter->setBrush(fillBrush);
-        painter->setPen(borderPen);
-
-        for (const auto& lp : std::as_const(d_ptr->mInputLinkPoints)) {
-            // 根据方向确定矩形尺寸
-            qreal halfW, halfH;
-            if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
-                halfW = cLPHWidth / 2;
-                halfH = cLPHHeight / 2;
-            } else {
-                halfW = cLPHHeight / 2;
-                halfH = cLPHWidth / 2;
-            }
-
-            QRectF linkRect(lp.position.x() - halfW, lp.position.y() - halfH, halfW * 2, halfH * 2);
-            drawLinkPointShape(linkRect, portStyle.shape);
-
-            // 绘制连接点名称（方向感知定位）
-            QRect textRect = fm.boundingRect(lp.name);
-            textRect.adjust(0, 0, spacing, spacing);
-            QPointF textPos;
-
-            switch (lp.direction) {
-            case AspectDirection::East:
-                textPos.setX(lp.position.x() - halfW - textRect.width() - spacing);
-                textPos.setY(lp.position.y() - textRect.height() / 2);
-                break;
-            case AspectDirection::West:
-                textPos.setX(lp.position.x() + halfW + spacing);
-                textPos.setY(lp.position.y() - textRect.height() / 2);
-                break;
-            case AspectDirection::North:
-                textPos.setX(lp.position.x() - textRect.width() / 2);
-                textPos.setY(lp.position.y() + halfH + spacing);
-                break;
-            case AspectDirection::South:
-                textPos.setX(lp.position.x() - textRect.width() / 2);
-                textPos.setY(lp.position.y() - halfH - textRect.height());
-                break;
-            default:
-                textPos = lp.position;
-                break;
-            }
-
-            textRect.moveTopLeft(textPos.toPoint());
-            painter->drawText(textRect, Qt::AlignCenter, lp.name);
-        }
-    }
-
-    // 绘制输出连接点
-    {
-        const DAPyLinkPointStyle& portStyle = d_ptr->mStyle.outputPortStyle;
-        QBrush fillBrush(portStyle.isFillColorValid() ? portStyle.fillColor : Qt::darkGray);
-        QPen borderPen(portStyle.isBorderColorValid() ? portStyle.borderColor : Qt::black);
-        borderPen.setWidthF(portStyle.borderWidth);
-        painter->setBrush(fillBrush);
-        painter->setPen(borderPen);
-
-        for (const auto& lp : std::as_const(d_ptr->mOutputLinkPoints)) {
-            // 根据方向确定矩形尺寸
-            qreal halfW, halfH;
-            if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
-                halfW = cLPHWidth / 2;
-                halfH = cLPHHeight / 2;
-            } else {
-                halfW = cLPHHeight / 2;
-                halfH = cLPHWidth / 2;
-            }
-
-            QRectF linkRect(lp.position.x() - halfW, lp.position.y() - halfH, halfW * 2, halfH * 2);
-            drawLinkPointShape(linkRect, portStyle.shape);
-
-            // 绘制连接点名称（方向感知定位）
-            QRect textRect = fm.boundingRect(lp.name);
-            textRect.adjust(0, 0, spacing, spacing);
-            QPointF textPos;
-
-            switch (lp.direction) {
-            case AspectDirection::East:
-                textPos.setX(lp.position.x() - halfW - textRect.width() - spacing);
-                textPos.setY(lp.position.y() - textRect.height() / 2);
-                break;
-            case AspectDirection::West:
-                textPos.setX(lp.position.x() + halfW + spacing);
-                textPos.setY(lp.position.y() - textRect.height() / 2);
-                break;
-            case AspectDirection::North:
-                textPos.setX(lp.position.x() - textRect.width() / 2);
-                textPos.setY(lp.position.y() + halfH + spacing);
-                break;
-            case AspectDirection::South:
-                textPos.setX(lp.position.x() - textRect.width() / 2);
-                textPos.setY(lp.position.y() - halfH - textRect.height());
-                break;
-            default:
-                textPos = lp.position;
-                break;
-            }
-
-            textRect.moveTopLeft(textPos.toPoint());
-            painter->drawText(textRect, Qt::AlignCenter, lp.name);
-        }
-    }
+    // 绘制输出连接点（默认深灰色填充）
+    drawLinkPointGroup(painter,
+                       d_ptr->mOutputLinkPoints,
+                       d_ptr->mStyle.outputPortStyle,
+                       Qt::darkGray,
+                       d->linkPointDrawWidth,
+                       d->linkPointDrawHeight,
+                       d->smallFontSize);
 
     painter->restore();
 }
@@ -1096,12 +1112,13 @@ void DAPyNodeGraphicsItem::paintStateDecoration(QPainter* painter, const QRectF&
  */
 void DAPyNodeGraphicsItem::paintNodeStyleBody(QPainter* painter, const QRectF& bodyRect)
 {
+    DA_D(d);
     painter->save();
 
     const DANodeStyle& style = d_ptr->mStyle;
 
     // 确定背景色（无效时使用默认值）
-    QColor bgColor = style.backgroundColor.isValid() ? style.backgroundColor : QColor(240, 240, 240);
+    QColor bgColor  = style.backgroundColor.isValid() ? style.backgroundColor : QColor(240, 240, 240);
     QColor bdrColor = style.borderColor.isValid() ? style.borderColor : QColor(180, 180, 180);
 
     // 绘制主体形状
@@ -1120,129 +1137,23 @@ void DAPyNodeGraphicsItem::paintNodeStyleBody(QPainter* painter, const QRectF& b
         break;
     }
 
-    // 计算内部可用区域（考虑边框宽度）
-    const qreal margin = style.borderWidth / 2.0 + 4.0;
-    QRectF contentRect = bodyRect.adjusted(margin, margin, -margin, -margin);
-
-    // 绘制用户图标（setIcon 设置的图标）
-    if (!d_ptr->mIcon.isNull()) {
-        QPixmap pixmap = d_ptr->mIcon.pixmap(QSize(static_cast<int>(style.iconSize),
-                                                      static_cast<int>(style.iconSize)));
-        if (!pixmap.isNull()) {
-            qreal dr = pixmap.devicePixelRatio();
-            qreal iconW = pixmap.width() / dr;
-            qreal iconH = pixmap.height() / dr;
-            QPointF iconPos;
-
-            switch (style.iconPosition) {
-            case IconPosition::AboveText:
-                iconPos.setX(bodyRect.center().x() - iconW / 2);
-                iconPos.setY(contentRect.top());
-                // 收缩内容区域避开图标
-                contentRect.setTop(iconPos.y() + iconH + 2);
-                break;
-            case IconPosition::LeftOfText:
-            default:
-                iconPos.setX(bodyRect.left() + 8);
-                iconPos.setY(bodyRect.top() + (bodyRect.height() - iconH) / 2);
-                // 收缩内容区域避开图标
-                contentRect.setLeft(iconPos.x() + iconW + 8);
-                break;
-            }
-
-            painter->setPen(Qt::NoPen);
-            painter->drawPixmap(iconPos, pixmap);
-        }
-    }
-
-    // 绘制节点体图标（bodyIconSource）
-    if (style.bodyIconType == BodyIconType::Svg && !style.bodyIconSource.isEmpty()) {
-        QSvgRenderer iconRenderer(style.bodyIconSource);
-        if (iconRenderer.isValid()) {
-            QSizeF iconSize = iconRenderer.defaultSize();
-            iconSize.scale(bodyRect.size() * style.bodyIconScale, Qt::KeepAspectRatio);
-
-            QRectF iconRect;
-            iconRect.setSize(iconSize);
-            iconRect.moveCenter(bodyRect.center());
-            // 稍微上移，给名称留空间
-            iconRect.moveTop(iconRect.top() - 8);
-
-            iconRenderer.render(painter, iconRect);
-
-            // 收缩内容区域，名称显示在图标下方
-            contentRect.setTop(iconRect.bottom() + 2);
-        }
-    } else if (style.bodyIconType == BodyIconType::Pixmap && !style.bodyIconSource.isEmpty()) {
-        QPixmap pm(style.bodyIconSource);
-        if (!pm.isNull()) {
-            QSizeF pmSize = pm.size();
-            pmSize.scale(bodyRect.size() * style.bodyIconScale, Qt::KeepAspectRatio);
-
-            QRectF pmRect;
-            pmRect.setSize(pmSize);
-            pmRect.moveCenter(bodyRect.center() - QPointF(0, 8));
-
-            painter->setPen(Qt::NoPen);
-            painter->drawPixmap(pmRect.topLeft(), pm);
-
-            contentRect.setTop(pmRect.bottom() + 2);
-        }
-    }
-
-    // 绘制节点名称
-    if (!d_ptr->mNodeName.isEmpty()) {
+    // 绘制pixmap
+    painter->drawPixmap(d->mIconRect.toRect(), d->mIconPixmap);
+    // 绘制文字
+    if (!d->mNodeName.isEmpty()) {
         QFont font = painter->font();
-        font.setPointSize(9);
+        font.setPointSize(d->normalFontSize);
         painter->setFont(font);
         painter->setPen(Qt::black);
-
-        switch (style.namePosition) {
-        case NamePosition::Below: {
-            // 名称绘制在主体下方，水平居中
-            QFont font = painter->font();
-            font.setPointSize(9);
-            painter->setFont(font);
-            painter->setPen(Qt::black);
-
-            QFontMetrics fm(font);
-            QRect textRect = fm.boundingRect(d_ptr->mNodeName);
-            qreal textY = bodyRect.bottom() + 2;
-            textRect.moveLeft(qRound(bodyRect.center().x() - textRect.width() / 2.0));
-            textRect.moveTop(qRound(textY));
-            painter->drawText(textRect, Qt::AlignLeft | Qt::AlignTop, d_ptr->mNodeName);
-            break;
+        // 若文字超出mTextRect宽度，自动省略显示，避免裁剪
+        QFontMetricsF fm(font);
+        QString displayName = d->mNodeName;
+        if (fm.horizontalAdvance(displayName) > d->mTextRect.width()) {
+            displayName = fm.elidedText(displayName, Qt::ElideRight, d->mTextRect.width());
         }
-        case NamePosition::Inside:
-        default:
-            painter->drawText(contentRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextWordWrap, d_ptr->mNodeName);
-            break;
-        }
+        painter->drawText(d->mTextRect, Qt::AlignCenter, displayName);
     }
-
     painter->restore();
-}
-
-/**
- * @brief 绘制矩形模板
- * @deprecated 使用 paintNodeStyleBody() 替代
- * @param[in] painter 画笔
- * @param[in] bodyRect 主体矩形区域
- */
-void DAPyNodeGraphicsItem::paintRectTemplate(QPainter* painter, const QRectF& bodyRect)
-{
-    paintNodeStyleBody(painter, bodyRect);
-}
-
-/**
- * @brief 绘制SVG模板
- * @deprecated 使用 paintNodeStyleBody() 替代
- * @param[in] painter 画笔
- * @param[in] bodyRect 主体矩形区域
- */
-void DAPyNodeGraphicsItem::paintSvgTemplate(QPainter* painter, const QRectF& bodyRect)
-{
-    paintNodeStyleBody(painter, bodyRect);
 }
 
 /**
@@ -1265,7 +1176,8 @@ void DAPyNodeGraphicsItem::paintWidgetTemplate(QPainter* painter, const QRectF& 
  * @brief 计算边界矩形
  * @return 边界矩形
  *
- * 当名称位置为 Below 时，向下扩展以容纳名称文本。
+ * 当名称位置为 Below 时，向下扩展以容纳名称文本，
+ * 且当文字宽度超出body时水平扩展以确保文字完整可见。
  * 当输入或输出端口方位为 North/South 时，垂直扩展以容纳连接点。
  */
 QRectF DAPyNodeGraphicsItem::boundingRect() const
@@ -1275,10 +1187,13 @@ QRectF DAPyNodeGraphicsItem::boundingRect() const
     // 名称位置扩展（Below 模式）
     if (d_ptr->mStyle.namePosition == NamePosition::Below && !d_ptr->mNodeName.isEmpty()) {
         QFont font;
-        font.setPointSize(9);
-        QFontMetrics fm(font);
+        font.setPointSize(d_ptr->normalFontSize);
+        QFontMetricsF fm(font);
         const qreal textHeight = fm.height() + 4;  // 额外4px间距
-        rect.adjust(0, 0, 0, textHeight);
+        const qreal textWidth  = fm.horizontalAdvance(d_ptr->mNodeName) + 4;
+        // 如果文字比body宽，水平扩展
+        qreal extraWidth = qMax(0.0, textWidth - rect.width());
+        rect.adjust(0, 0, extraWidth, textHeight);
     }
 
     // 端口扩展
@@ -1326,9 +1241,14 @@ QPainterPath DAPyNodeGraphicsItem::shape() const
  */
 void DAPyNodeGraphicsItem::setBodySize(const QSizeF& s)
 {
+    DA_D(d);
     DAGraphicsResizeableItem::setBodySize(s);
-    d_ptr->updateLinkPointPositions(getBodyRect());
-    updateWidgetGeometry();
+    d->updateLinkPointPositions(getBodyRect());
+    if (d->mRenderTemplate == NodeStyleTemplate) {
+        updateNodeStyleGeometry();
+    } else {
+        updateWidgetGeometry();
+    }
 }
 
 /**
@@ -1348,6 +1268,14 @@ void DAPyNodeGraphicsItem::updateWidgetGeometry()
     if (d_ptr->mProxyWidget && d_ptr->mWidget) {
         d_ptr->mProxyWidget->setGeometry(getBodyRect().toRect());
     }
+}
+
+/**
+ * @brief 更新样式的几何位置
+ */
+void DAPyNodeGraphicsItem::updateNodeStyleGeometry()
+{
+    d_ptr->updateNodeStyle(getBodyRect());
 }
 
 /**
@@ -1439,7 +1367,7 @@ QVariant DAPyNodeGraphicsItem::itemChange(GraphicsItemChange change, const QVari
  */
 void DAPyNodeGraphicsItem::updateLinkItems()
 {
-    DAPyWorkFlowScene* sc = dynamic_cast<DAPyWorkFlowScene*>(scene());
+    DAPyWorkFlowScene* sc = dynamic_cast< DAPyWorkFlowScene* >(scene());
     if (sc) {
         sc->updateNodeLinkPositions(this);
     }
@@ -1470,8 +1398,6 @@ void DAPyNodeGraphicsItem::groupPositionChanged(const QPointF& pos)
  */
 void DAPyNodeGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event)
 {
-    Q_UNUSED(event)
-
     // 调用基类实现
     DAGraphicsResizeableItem::mouseDoubleClickEvent(event);
 
@@ -1482,6 +1408,65 @@ void DAPyNodeGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event
 
     // 发射信号，由DAGui层（DAPyWorkFlowGraphicsScene）处理配置对话框
     Q_EMIT nodeDoubleClicked(d_ptr->mProxy.get());
+}
+
+/**
+ * @brief  估算一个最优的body尺寸
+ */
+void DAPyNodeGraphicsItem::updateNodeBody()
+{
+    DA_D(d);
+    QFont font;
+    font.setPointSize(d->normalFontSize);
+    QFontMetricsF fm(font);
+    // 文本信息
+    QRectF textBoundRect = fm.boundingRect(d->mNodeName);
+    // 计算推荐
+    qreal bodyWidth      = 0.0;
+    qreal bodyHeight     = 0.0;
+    const DANodeStyle& s = d->mStyle;
+    const int space      = qMin(4.0, s.cornerRadius);
+    qreal iconSize       = s.iconSize;
+    if (s.bodyIconSource.isEmpty()) {
+        iconSize = 0.0;
+    }
+    if (s.isNameInside()) {
+        if (s.isIconLeftOfText()) {
+            // icon在左文字在右
+            bodyWidth  = iconSize + 3 * space + textBoundRect.width();
+            bodyHeight = qMax(iconSize + 2 * space, textBoundRect.height() + 2 * space);
+        } else {
+            // icon在上文字在下
+            bodyWidth  = qMax(textBoundRect.width() + 2 * space, iconSize + 2 * space);
+            bodyHeight = iconSize + textBoundRect.height() + 3 * space;
+        }
+    } else {
+        // name在外面(Below)，body宽度需容纳文字宽度（取icon和文字宽度的最大值）
+        qreal textContentWidth = textBoundRect.width() + 2 * space;
+        qreal iconContentWidth = (s.bodyIconSource.isEmpty()) ? 2 * space : iconSize + 2 * space;
+        bodyWidth              = qMax(textContentWidth, iconContentWidth);
+        bodyHeight             = qMax(iconSize + 2 * space, 2.0 * space);  // 最小高度保障
+    }
+    // 还需要预留连接点的位置
+    if (d->mInputLinkPoints.size() > 0) {
+        if (s.inputPortSide == AspectDirection::East || s.inputPortSide == AspectDirection::West) {
+            // 输入在水平方向
+            bodyWidth += d->linkPointDrawWidth / 2;
+        } else {
+            bodyHeight += d->linkPointDrawWidth / 2;
+        }
+    }
+    if (d->mOutputLinkPoints.size() > 0) {
+        if (s.outputPortSide == AspectDirection::East || s.outputPortSide == AspectDirection::West) {
+            // 输入在水平方向
+            bodyWidth += d->linkPointDrawWidth / 2;
+        } else {
+            bodyHeight += d->linkPointDrawWidth / 2;
+        }
+    }
+    setBodySize(QSizeF(bodyWidth, bodyHeight));
+    d->updateNodeStyle(getBodyRect());
+    update();
 }
 
 }  // end of namespace DA

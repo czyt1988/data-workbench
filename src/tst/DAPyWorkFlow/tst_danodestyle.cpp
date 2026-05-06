@@ -67,7 +67,7 @@ void TestDANodeStyle::testJsonRoundTrip()
     style.cornerRadius  = 8.0;
     style.inputPortSide = PortSide::North;
 
-    QJsonObject json = DANodeStyleToJson(style);
+    QJsonObject json     = DANodeStyleToJson(style);
     DANodeStyle restored = DANodeStyleFromJson(json);
 
     QCOMPARE(restored.bodyShape, BodyShape::Ellipse);
@@ -145,10 +145,10 @@ void TestDANodeStyle::testJsonSafeDefaults()
 void TestDANodeStyle::testXmlRoundTrip()
 {
     DAPyNodeGraphicsItem item(nullptr);
-    item.getStyle().setDefaults();
-    item.getStyle().bodyShape    = BodyShape::Ellipse;
-    item.getStyle().cornerRadius = 10.0;
-    item.getStyle().namePosition = NamePosition::Below;
+    item.nodeStyle().setDefaults();
+    item.nodeStyle().bodyShape    = BodyShape::Ellipse;
+    item.nodeStyle().cornerRadius = 10.0;
+    item.nodeStyle().namePosition = NamePosition::Below;
 
     // 保存到XML
     QDomDocument doc("test");
@@ -166,14 +166,14 @@ void TestDANodeStyle::testXmlRoundTrip()
     DAPyNodeGraphicsItem loadedItem(nullptr);
     QVERIFY(loadedItem.loadFromXml(&container, QVersionNumber(1, 0, 0)));
 
-    QCOMPARE(loadedItem.getStyle().bodyShape, BodyShape::Ellipse);
-    QCOMPARE(loadedItem.getStyle().cornerRadius, 10.0);
-    QCOMPARE(loadedItem.getStyle().namePosition, NamePosition::Below);
+    QCOMPARE(loadedItem.nodeStyle().bodyShape, BodyShape::Ellipse);
+    QCOMPARE(loadedItem.nodeStyle().cornerRadius, 10.0);
+    QCOMPARE(loadedItem.nodeStyle().namePosition, NamePosition::Below);
 
     // 未修改字段应保持默认
-    QCOMPARE(loadedItem.getStyle().iconPosition, IconPosition::LeftOfText);
-    QCOMPARE(loadedItem.getStyle().inputPortSide, PortSide::West);
-    QCOMPARE(loadedItem.getStyle().outputPortSide, PortSide::East);
+    QCOMPARE(loadedItem.nodeStyle().iconPosition, IconPosition::LeftOfText);
+    QCOMPARE(loadedItem.nodeStyle().inputPortSide, PortSide::West);
+    QCOMPARE(loadedItem.nodeStyle().outputPortSide, PortSide::East);
 }
 
 // ============================================================
@@ -238,15 +238,15 @@ void TestDANodeStyle::testXmlBackwardCompat()
     QVERIFY(loadedItem.loadFromXml(&itemContainer, QVersionNumber(1, 0, 0)));
 
     // renderTemplate应为RectTemplate（rect → NodeStyleTemplate 映射）
-    QCOMPARE(loadedItem.getRenderTemplate(), DAPyNodeGraphicsItem::RectTemplate);
+    QCOMPARE(loadedItem.getRenderTemplate(), DAPyNodeGraphicsItem::NodeStyleTemplate);
 
     // style应保持默认值（无style元素→mStyle未修改）
     DANodeStyle defaults;
-    QCOMPARE(loadedItem.getStyle().bodyShape, defaults.bodyShape);
-    QCOMPARE(loadedItem.getStyle().namePosition, defaults.namePosition);
-    QCOMPARE(loadedItem.getStyle().cornerRadius, defaults.cornerRadius);
-    QCOMPARE(loadedItem.getStyle().inputPortSide, defaults.inputPortSide);
-    QCOMPARE(loadedItem.getStyle().outputPortSide, defaults.outputPortSide);
+    QCOMPARE(loadedItem.nodeStyle().bodyShape, defaults.bodyShape);
+    QCOMPARE(loadedItem.nodeStyle().namePosition, defaults.namePosition);
+    QCOMPARE(loadedItem.nodeStyle().cornerRadius, defaults.cornerRadius);
+    QCOMPARE(loadedItem.nodeStyle().inputPortSide, defaults.inputPortSide);
+    QCOMPARE(loadedItem.nodeStyle().outputPortSide, defaults.outputPortSide);
 }
 
 // ============================================================
@@ -290,8 +290,8 @@ void TestDANodeStyle::testColorSerialization()
 {
     // 构造含非默认颜色的样式
     DANodeStyle style;
-    style.backgroundColor = QColor("#ff0000");   // 红色
-    style.borderColor     = QColor("#00ff00");   // 绿色
+    style.backgroundColor = QColor("#ff0000");  // 红色
+    style.borderColor     = QColor("#00ff00");  // 绿色
 
     QJsonObject json = DANodeStyleToJson(style);
 

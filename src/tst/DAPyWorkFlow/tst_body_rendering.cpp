@@ -107,11 +107,11 @@ static bool isNearWhite(const QColor& c)
 void TestBodyRendering::testEllipseBodyRendering()
 {
     DAPyNodeGraphicsItem item(nullptr);
-    item.getStyle().setDefaults();
-    item.getStyle().bodyShape      = BodyShape::Ellipse;
-    item.getStyle().backgroundColor = QColor(255, 0, 0);
-    item.getStyle().borderColor     = QColor(0, 0, 0);
-    item.getStyle().borderWidth     = 1.0;
+    item.nodeStyle().setDefaults();
+    item.nodeStyle().bodyShape      = BodyShape::Ellipse;
+    item.nodeStyle().backgroundColor = QColor(255, 0, 0);
+    item.nodeStyle().borderColor     = QColor(0, 0, 0);
+    item.nodeStyle().borderWidth     = 1.0;
     item.setBodySize(QSizeF(120, 60));
 
     QPixmap pm = renderItemToPixmap(&item, QSize(200, 160));
@@ -140,7 +140,7 @@ void TestBodyRendering::testEllipseBodyRendering()
 void TestBodyRendering::testRoundedRectBackCompat()
 {
     DAPyNodeGraphicsItem item(nullptr);
-    item.getStyle().setDefaults();
+    item.nodeStyle().setDefaults();
     item.setBodySize(QSizeF(120, 60));
 
     QPixmap pm = renderItemToPixmap(&item, QSize(200, 160));
@@ -166,8 +166,8 @@ void TestBodyRendering::testRoundedRectBackCompat()
 void TestBodyRendering::testNameBelowBoundingRect()
 {
     DAPyNodeGraphicsItem item(nullptr);
-    item.getStyle().setDefaults();
-    item.getStyle().namePosition = NamePosition::Below;
+    item.nodeStyle().setDefaults();
+    item.nodeStyle().namePosition = NamePosition::Below;
     item.setNodeName("TestNodeName");
     item.setBodySize(QSizeF(120, 60));
 
@@ -190,14 +190,14 @@ void TestBodyRendering::testNameBelowBoundingRect()
 void TestBodyRendering::testNameInsideNoExpansion()
 {
     DAPyNodeGraphicsItem item(nullptr);
-    item.getStyle().setDefaults();
-    item.getStyle().namePosition = NamePosition::Inside;
+    item.nodeStyle().setDefaults();
+    item.nodeStyle().namePosition = NamePosition::Inside;
     item.setNodeName("TestNode");
     item.setBodySize(QSizeF(120, 60));
 
     DAPyNodeGraphicsItem baseline(nullptr);
-    baseline.getStyle().setDefaults();
-    baseline.getStyle().namePosition = NamePosition::Inside;
+    baseline.nodeStyle().setDefaults();
+    baseline.nodeStyle().namePosition = NamePosition::Inside;
     baseline.setBodySize(QSizeF(120, 60));
 
     QCOMPARE(item.boundingRect().height(), baseline.boundingRect().height());
@@ -219,9 +219,9 @@ void TestBodyRendering::testIconAboveLayout()
     iconPm.fill(QColor(255, 0, 0));
 
     DAPyNodeGraphicsItem item(nullptr);
-    item.getStyle().setDefaults();
-    item.getStyle().iconPosition = IconPosition::AboveText;
-    item.getStyle().iconSize     = 24.0;
+    item.nodeStyle().setDefaults();
+    item.nodeStyle().iconPosition = IconPosition::AboveText;
+    item.nodeStyle().iconSize     = 24.0;
     item.setIcon(QIcon(iconPm));
     item.setNodeName("TestNode");
     item.setBodySize(QSizeF(120, 80));
@@ -264,7 +264,7 @@ void TestBodyRendering::testIconLeftBackCompat()
     iconPm.fill(QColor(255, 0, 0));
 
     DAPyNodeGraphicsItem item(nullptr);
-    item.getStyle().setDefaults();
+    item.nodeStyle().setDefaults();
     item.setIcon(QIcon(iconPm));
     item.setNodeName("TestNode");
     item.setBodySize(QSizeF(120, 60));
@@ -303,10 +303,10 @@ void TestBodyRendering::testIconLeftBackCompat()
 void TestBodyRendering::testStateDecorationClippedToEllipse()
 {
     DAPyNodeGraphicsItem item(nullptr);
-    item.getStyle().setDefaults();
-    item.getStyle().bodyShape = BodyShape::Ellipse;
-    item.getStyle().backgroundColor = QColor(240, 240, 240);
-    item.getStyle().borderWidth = 1.0;
+    item.nodeStyle().setDefaults();
+    item.nodeStyle().bodyShape = BodyShape::Ellipse;
+    item.nodeStyle().backgroundColor = QColor(240, 240, 240);
+    item.nodeStyle().borderWidth = 1.0;
     item.setNodeState(Success);
     item.setBodySize(QSizeF(120, 60));
 
@@ -356,8 +356,8 @@ void TestBodyRendering::testStateDecorationClippedToEllipse()
 void TestBodyRendering::testEllipseShapeHitTest()
 {
     DAPyNodeGraphicsItem item(nullptr);
-    item.getStyle().setDefaults();
-    item.getStyle().bodyShape = BodyShape::Ellipse;
+    item.nodeStyle().setDefaults();
+    item.nodeStyle().bodyShape = BodyShape::Ellipse;
     item.setBodySize(QSizeF(120, 60));
 
     QPainterPath shapePath = item.shape();
@@ -387,15 +387,15 @@ void TestBodyRendering::testCornerRadiusConfigurable()
     QColor fillColor(200, 100, 50);
 
     DAPyNodeGraphicsItem itemLarge(nullptr);
-    itemLarge.getStyle().setDefaults();
-    itemLarge.getStyle().cornerRadius    = 10.0;
-    itemLarge.getStyle().backgroundColor = fillColor;
+    itemLarge.nodeStyle().setDefaults();
+    itemLarge.nodeStyle().cornerRadius    = 10.0;
+    itemLarge.nodeStyle().backgroundColor = fillColor;
     itemLarge.setBodySize(QSizeF(120, 60));
 
     DAPyNodeGraphicsItem itemSmall(nullptr);
-    itemSmall.getStyle().setDefaults();
-    itemSmall.getStyle().cornerRadius    = 4.0;
-    itemSmall.getStyle().backgroundColor = fillColor;
+    itemSmall.nodeStyle().setDefaults();
+    itemSmall.nodeStyle().cornerRadius    = 4.0;
+    itemSmall.nodeStyle().backgroundColor = fillColor;
     itemSmall.setBodySize(QSizeF(120, 60));
 
     QPixmap pmLarge = renderItemToPixmap(&itemLarge, QSize(200, 160));

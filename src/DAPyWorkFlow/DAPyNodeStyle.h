@@ -65,30 +65,34 @@ struct DAPYWORKFLOW_API DAPyLinkPointStyle
      * - borderColor: 无效颜色（使用默认值）
      * - borderWidth: 1.0
      */
-    DAPyLinkPointStyle()
-        : shape(PortShape::Rect)
-        , borderWidth(1.0)
+    DAPyLinkPointStyle() : shape(PortShape::Rect), borderWidth(1.0)
     {
     }
 
     // 公共字段
-    PortShape shape;        ///< 端口形状
-    QColor fillColor;       ///< 填充颜色（无效时使用默认值：输入=白色，输出=深灰色）
-    QColor borderColor;     ///< 边框颜色（无效时使用默认值：黑色）
-    qreal borderWidth;      ///< 边框宽度（默认 1.0）
+    PortShape shape;     ///< 端口形状
+    QColor fillColor;    ///< 填充颜色（无效时使用默认值：输入=白色，输出=深灰色）
+    QColor borderColor;  ///< 边框颜色（无效时使用默认值：黑色）
+    qreal borderWidth;   ///< 边框宽度（默认 1.0）
 
     // 辅助方法
     /**
      * @brief 判断填充颜色是否有效
      * @return true 表示 fillColor 有效，false 表示应使用默认值
      */
-    bool isFillColorValid() const { return fillColor.isValid(); }
+    bool isFillColorValid() const
+    {
+        return fillColor.isValid();
+    }
 
     /**
      * @brief 判断边框颜色是否有效
      * @return true 表示 borderColor 有效，false 表示应使用默认值
      */
-    bool isBorderColorValid() const { return borderColor.isValid(); }
+    bool isBorderColorValid() const
+    {
+        return borderColor.isValid();
+    }
 };
 
 // =================================================================================
@@ -120,29 +124,32 @@ struct DAPYWORKFLOW_API DANodeStyle
      *
      * 调用 setDefaults() 将所有字段初始化为默认值。
      */
-    DANodeStyle() { setDefaults(); }
+    DANodeStyle()
+    {
+        setDefaults();
+    }
 
     // 公共字段 — 主体样式
-    BodyShape bodyShape;              ///< 节点体形状（默认 RoundedRect）
-    NamePosition namePosition;        ///< 节点名称位置（默认 Inside）
-    IconPosition iconPosition;        ///< 图标位置（默认 LeftOfText）
-    QColor backgroundColor;           ///< 背景颜色（默认 QColor(240, 240, 240)）
-    QColor borderColor;               ///< 边框颜色（默认 QColor(180, 180, 180)）
-    qreal borderWidth;                ///< 边框宽度（默认 1.0）
-    qreal cornerRadius;               ///< 圆角半径（默认 4.0）
-    qreal iconSize;                   ///< 图标尺寸（默认 24.0）
+    BodyShape bodyShape;        ///< 节点体形状（默认 RoundedRect）
+    NamePosition namePosition;  ///< 节点名称位置（默认 Inside）
+    IconPosition iconPosition;  ///< 图标位置（默认 LeftOfText）
+    QColor backgroundColor;     ///< 背景颜色（默认 QColor(240, 240, 240)）
+    QColor borderColor;         ///< 边框颜色（默认 QColor(180, 180, 180)）
+    qreal borderWidth;          ///< 边框宽度（默认 1.0）
+    qreal cornerRadius;         ///< 圆角半径（默认 4.0）
+    qreal iconSize;             ///< 图标尺寸（默认 24.0）
 
     // 公共字段 — 端口配置
-    PortSide inputPortSide;           ///< 输入端口方位（默认 West）
-    PortSide outputPortSide;          ///< 输出端口方位（默认 East）
-    DAPyLinkPointStyle inputPortStyle;   ///< 输入端口样式（默认构造）
-    DAPyLinkPointStyle outputPortStyle;  ///< 输出端口样式（默认构造）
+    PortSide inputPortSide;                  ///< 输入端口方位（默认 West）
+    PortSide outputPortSide;                 ///< 输出端口方位（默认 East）
+    DAPyLinkPointStyle inputPortStyle;       ///< 输入端口样式（默认构造）
+    DAPyLinkPointStyle outputPortStyle;      ///< 输出端口样式（默认构造）
     LinkPointLayoutStrategy layoutStrategy;  ///< 连接点布局策略（默认 Auto）
 
     // 公共字段 — 节点体图标（SVG支持）
-    BodyIconType bodyIconType;        ///< 节点体图标类型（默认 None）
-    QString bodyIconSource;           ///< 图标源路径（SVG文件路径或资源路径，默认空）
-    qreal bodyIconScale;              ///< 图标缩放比例（默认 0.8，相对于bodyRect）
+    BodyIconType bodyIconType;  ///< 节点体图标类型（默认 None）
+    QString bodyIconSource;     ///< 图标源路径（SVG文件路径或资源路径，默认空）
+    qreal bodyIconScale;        ///< 图标缩放比例（默认 0.8，相对于bodyRect）
 
     // 辅助方法
     /**
@@ -157,26 +164,35 @@ struct DAPYWORKFLOW_API DANodeStyle
     void setDefaults()
     {
         // 主体样式
-        bodyShape = BodyShape::RoundedRect;
-        namePosition = NamePosition::Inside;
-        iconPosition = IconPosition::LeftOfText;
+        bodyShape       = BodyShape::RoundedRect;
+        namePosition    = NamePosition::Inside;
+        iconPosition    = IconPosition::LeftOfText;
         backgroundColor = QColor(240, 240, 240);
-        borderColor = QColor(180, 180, 180);
-        borderWidth = 1.0;
-        cornerRadius = 4.0;
-        iconSize = 24.0;
+        borderColor     = QColor(180, 180, 180);
+        borderWidth     = 1.0;
+        cornerRadius    = 4.0;
+        iconSize        = 24.0;
 
         // 端口配置
-        inputPortSide = PortSide::West;
-        outputPortSide = PortSide::East;
-        inputPortStyle = DAPyLinkPointStyle();
+        inputPortSide   = PortSide::West;
+        outputPortSide  = PortSide::East;
+        inputPortStyle  = DAPyLinkPointStyle();
         outputPortStyle = DAPyLinkPointStyle();
-        layoutStrategy = LinkPointLayoutStrategy::Auto;
+        layoutStrategy  = LinkPointLayoutStrategy::Auto;
 
         // 节点体图标
         bodyIconType = BodyIconType::None;
         bodyIconSource.clear();
         bodyIconScale = 0.8;
+    }
+    // 辅助函数
+    inline bool isNameInside() const
+    {
+        return namePosition == NamePosition::Inside;
+    }
+    inline bool isIconLeftOfText() const
+    {
+        return iconPosition == IconPosition::LeftOfText;
     }
 };
 

@@ -119,7 +119,6 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
     // 绑定 DAPyWorkFlowScene 类（Scenario B 模式：Qt 接口类 + lambda 包装）
     pybind11::class_< DA::DAPyWorkFlowScene >(m, "DAPyWorkFlowScene")
         .def(pybind11::init<>())
-        .def(pybind11::init< QObject* >(), pybind11::arg("parent") = nullptr)
         // 节点管理
         .def(
             "createPyNode",
@@ -278,8 +277,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             "Get node descriptor dictionary (inputs/outputs/parameters metadata)");
 
     // 绑定 DAPyNodeFactory 类（独立QObject，不再继承DAAbstractNodeFactory）
-    pybind11::class_< DA::DAPyNodeFactory, QObject >(m, "DAPyNodeFactory")
-        .def(pybind11::init< QObject* >(), pybind11::arg("parent") = nullptr, "Create Python node factory with optional parent")
+    pybind11::class_< DA::DAPyNodeFactory >(m, "DAPyNodeFactory")
         // 节点发现
         .def(
             "discoverNodes",
