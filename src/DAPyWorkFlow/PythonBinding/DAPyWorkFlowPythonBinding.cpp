@@ -9,6 +9,9 @@
 #include "DAPyWorkFlow/DAPyLinkPoint.h"
 #include "DAPyWorkFlow/DAPyNodeFactory.h"
 #include "DAPyWorkFlow/DAPyNodeStyle.h"
+#include "DAPyWorkFlow/DAPortDescriptor.h"
+#include "DAPyWorkFlow/DANodeDescriptor.h"
+#include "DAPyWorkFlow/ParameterDescriptor.h"
 #include "DAPyBindQt/DAPybind11QtCaster.hpp"
 #include "DAPyBindQt/DAPyJsonCast.h"
 #include "DAPyBindQt/DAPybind11InQt.h"  // slots workaround，必须第一个pybind11相关头文件
@@ -549,6 +552,304 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             },
             pybind11::arg("dict"),
             "Deserialize style from Python dict");
+
+    // =================================================================================
+    //                      DAPortDescriptor 绑定
+    // =================================================================================
+
+    /**
+     * @brief 绑定 DAPortDescriptor 端口描述符结构体
+     *
+     * 暴露端口名称、数据类型、是否必需、描述信息四个字段，
+     * 以及 isValid() 验证方法和 toJson()/fromJson() JSON 序列化方法。
+     * toJson() 返回 Python dict（通过 qjsonObjectToPyDict 转换），
+     * fromJson() 接受 Python dict（通过 pyDictToQJsonObject 转换）。
+     */
+    pybind11::class_< DA::DAPortDescriptor >(m, "DAPortDescriptor")
+        .def(pybind11::init<>())
+        .def(pybind11::init< const QString&, const QString&, bool, const QString& >(),
+             pybind11::arg("name"),
+             pybind11::arg("data_type"),
+             pybind11::arg("required")    = true,
+             pybind11::arg("description") = QString())
+        .def_readwrite("name", &DA::DAPortDescriptor::name, "端口名称（唯一标识）")
+        .def_readwrite("dataType", &DA::DAPortDescriptor::dataType, "数据类型（如 DataFrame、Series、int 等）")
+        .def_readwrite("required", &DA::DAPortDescriptor::required, "是否为必需端口（默认 true）")
+        .def_readwrite("description", &DA::DAPortDescriptor::description, "端口描述信息（可选）")
+        .def("isValid", &DA::DAPortDescriptor::isValid, "判断端口描述符是否有效（name 和 dataType 均非空）")
+        .def(
+            "toJson",
+            [](const DA::DAPortDescriptor& desc) {
+                QJsonObject json = desc.toJson();
+                return DA::PY::qjsonObjectToPyDict(json);
+            },
+            "序列化为 Python dict（snake_case 键名，稀疏策略）")
+        .def_static(
+            "fromJson",
+            [](const pybind11::dict& d) {
+                QJsonObject json = DA::PY::pyDictToQJsonObject(d);
+                return DA::DAPortDescriptor::fromJson(json);
+            },
+            pybind11::arg("dict"),
+            "从 Python dict 反序列化")
+        .def("__repr__", [](const DA::DAPortDescriptor& desc) {
+            return QString("DAPortDescriptor(name=%1, dataType=%2, required=%3)")
+                .arg(desc.name)
+                .arg(desc.dataType)
+                .arg(desc.required ? "True" : "False")
+                .toStdString();
+        });
+
+    // =================================================================================
+    //                      ParameterDescriptor 绑定
+    // =================================================================================
+
+    /**
+     * @brief 绑定 ParameterDescriptor 参数描述符结构体
+     *
+     * 暴露 name/type/description 字段（def_readwrite），
+     * defaultValue 使用自定义 setDefaultValue/getDefaultValue 方法，
+     * 支持 None/bool/int/float/str/list 类型转换，兼容 Qt5/Qt6 QVariant API。
+     * rawDescriptor 使用自定义 setRawDescriptor/getRawDescriptor 方法，
+     * 通过 pyDictToQJsonObject/qjsonObjectToPyDict 实现 Python dict ↔ QJsonObject 转换。
+     * 不暴露 propertyId 为 def_readwrite（仅由面板构建器内部设置）。
+     */
+    pybind11::class_< DA::ParameterDescriptor >(m, "ParameterDescriptor")
+        .def(pybind11::init<>())
+        .def_readwrite("name", &DA::ParameterDescriptor::name, "参数名称")
+        .def_readwrite("type", &DA::ParameterDescriptor::type, "参数类型 (str/int/float/bool/list/dict)")
+        .def_readwrite("description", &DA::ParameterDescriptor::description, "参数描述")
+        // defaultValue: 自定义 getter/setter，兼容 Qt5/Qt6 QVariant API
+        .def(
+            "setDefaultValue",
+            [](DA::ParameterDescriptor& pd, pybind11::object py) {
+                if (py.is_none()) {
+                    pd.defaultValue = QVariant();
+                } else if (pybind11::isinstance< pybind11::bool_ >(py)) {
+                    pd.defaultValue = QVariant(py.cast< bool >());
+                } else if (pybind11::isinstance< pybind11::int_ >(py)) {
+                    pd.defaultValue = QVariant(py.cast< int >());
+                } else if (pybind11::isinstance< pybind11::float_ >(py)) {
+                    pd.defaultValue = QVariant(py.cast< double >());
+                } else if (pybind11::isinstance< pybind11::str >(py)) {
+                    pd.defaultValue = QVariant(QString::fromStdString(py.cast< std::string >()));
+                } else if (pybind11::isinstance< pybind11::list >(py)) {
+                    QJsonArray arr  = DA::PY::pyListToQJsonArray(py.cast< pybind11::list >());
+                    pd.defaultValue = arr.toVariantList();
+                } else {
+                    pd.defaultValue = QVariant();
+                }
+            },
+            pybind11::arg("value"),
+            "设置默认值（支持 None/bool/int/float/str/list）")
+        .def(
+            "getDefaultValue",
+            [](const DA::ParameterDescriptor& pd) -> pybind11::object {
+                if (!pd.defaultValue.isValid()) {
+                    return pybind11::none();
+                }
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                switch (pd.defaultValue.type()) {
+                case QVariant::String:
+                    return pybind11::cast(pd.defaultValue.toString().toStdString());
+                case QVariant::Bool:
+                    return pybind11::cast(pd.defaultValue.toBool());
+                case QVariant::Int:
+                    return pybind11::cast(pd.defaultValue.toInt());
+                case QVariant::Double:
+                    return pybind11::cast(pd.defaultValue.toDouble());
+                case QVariant::List:
+                    return DA::PY::qjsonValueToPyObject(QJsonValue::fromVariant(pd.defaultValue));
+                default:
+                    return DA::PY::qjsonValueToPyObject(QJsonValue::fromVariant(pd.defaultValue));
+                }
+#else
+                switch (pd.defaultValue.metaType().id()) {
+                case QMetaType::QString:
+                    return pybind11::cast(pd.defaultValue.toString().toStdString());
+                case QMetaType::Bool:
+                    return pybind11::cast(pd.defaultValue.toBool());
+                case QMetaType::Int:
+                    return pybind11::cast(pd.defaultValue.toInt());
+                case QMetaType::Double:
+                    return pybind11::cast(pd.defaultValue.toDouble());
+                case QMetaType::QVariantList:
+                    return DA::PY::qjsonValueToPyObject(QJsonValue::fromVariant(pd.defaultValue));
+                default:
+                    return DA::PY::qjsonValueToPyObject(QJsonValue::fromVariant(pd.defaultValue));
+                }
+#endif
+            },
+            "获取默认值（返回 None 或对应的 Python 类型）")
+        // rawDescriptor: 自定义 getter/setter，Python dict ↔ QJsonObject
+        .def(
+            "setRawDescriptor",
+            [](DA::ParameterDescriptor& pd, const pybind11::dict& d) {
+                pd.rawDescriptor = DA::PY::pyDictToQJsonObject(d);
+            },
+            pybind11::arg("dict"),
+            "设置原始 JSON 描述符（从 Python dict 转换）")
+        .def(
+            "getRawDescriptor",
+            [](const DA::ParameterDescriptor& pd) { return DA::PY::qjsonObjectToPyDict(pd.rawDescriptor); },
+            "获取原始 JSON 描述符（转换为 Python dict）")
+        // 静态方法
+        .def_static(
+            "fromJson",
+            [](const pybind11::dict& d) {
+                QJsonObject json = DA::PY::pyDictToQJsonObject(d);
+                return DA::ParameterDescriptor::fromJson(json);
+            },
+            pybind11::arg("dict"),
+            "从 Python dict 构造参数描述符")
+        .def_static(
+            "fromJsonArray",
+            [](const pybind11::list& l) {
+                QJsonArray arr                            = DA::PY::pyListToQJsonArray(l);
+                QVector< DA::ParameterDescriptor > result = DA::ParameterDescriptor::fromJsonArray(arr);
+                pybind11::list pyList;
+                for (const DA::ParameterDescriptor& desc : result) {
+                    pyList.append(desc);
+                }
+                return pyList;
+            },
+            pybind11::arg("list"),
+            "从 Python list 批量构造参数描述符列表")
+        .def(
+            "hasField",
+            [](const DA::ParameterDescriptor& pd, const std::string& fieldName) {
+                return pd.hasField(QString::fromStdString(fieldName));
+            },
+            pybind11::arg("field_name"),
+            "检查原始描述符中是否包含指定字段")
+        .def(
+            "getField",
+            [](const DA::ParameterDescriptor& pd, const std::string& fieldName) {
+                QJsonValue val = pd.getField(QString::fromStdString(fieldName));
+                return DA::PY::qjsonValueToPyObject(val);
+            },
+            pybind11::arg("field_name"),
+            "获取原始描述符中指定字段的值（返回对应的 Python 类型）")
+        .def("__repr__", [](const DA::ParameterDescriptor& pd) {
+            return QString("ParameterDescriptor(name=%1, type=%2, description=%3)")
+                .arg(pd.name)
+                .arg(pd.type)
+                .arg(pd.description)
+                .toStdString();
+        });
+
+    // =================================================================================
+    //                      DANodeDescriptor 绑定
+    // =================================================================================
+
+    /**
+     * @brief 绑定 DANodeDescriptor 节点描述符结构体
+     *
+     * 暴露 name/qualifiedName/category/icon/renderTemplate/style 字段（def_readwrite），
+     * inputs/outputs/parameters QVector 字段使用自定义 setInputs/getInputs 等 lambda 方法，
+     * 逐项转换 Python list ↔ QVector<T>。style 字段可直接 def_readwrite（DANodeStyle 已绑定）。
+     * 暴露 isValid()/toMetaData()/toJson()/fromJson() 方法。
+     */
+    pybind11::class_< DA::DANodeDescriptor >(m, "DANodeDescriptor")
+        .def(pybind11::init<>())
+        .def_readwrite("name", &DA::DANodeDescriptor::name, "节点显示名称")
+        .def_readwrite("qualifiedName", &DA::DANodeDescriptor::qualifiedName, "节点唯一标识名（Python qualified_name）")
+        .def_readwrite("category", &DA::DANodeDescriptor::category, "节点分组/分类")
+        .def_readwrite("icon", &DA::DANodeDescriptor::icon, "节点图标路径")
+        .def_readwrite("renderTemplate", &DA::DANodeDescriptor::renderTemplate, "渲染模板类型 (RenderTemplate enum)")
+        .def_readwrite("style", &DA::DANodeDescriptor::style, "节点样式配置 (DANodeStyle)")
+        // inputs: 自定义 getter/setter，Python list ↔ QVector<DAPortDescriptor>
+        .def(
+            "setInputs",
+            [](DA::DANodeDescriptor& nd, const pybind11::list& pyList) {
+                nd.inputs.clear();
+                for (auto item : pyList) {
+                    nd.inputs.append(item.cast< DA::DAPortDescriptor >());
+                }
+            },
+            pybind11::arg("inputs"),
+            "设置输入端口描述符列表")
+        .def(
+            "getInputs",
+            [](const DA::DANodeDescriptor& nd) {
+                pybind11::list pyList;
+                for (const DA::DAPortDescriptor& desc : nd.inputs) {
+                    pyList.append(desc);
+                }
+                return pyList;
+            },
+            "获取输入端口描述符列表")
+        // outputs: 自定义 getter/setter，Python list ↔ QVector<DAPortDescriptor>
+        .def(
+            "setOutputs",
+            [](DA::DANodeDescriptor& nd, const pybind11::list& pyList) {
+                nd.outputs.clear();
+                for (auto item : pyList) {
+                    nd.outputs.append(item.cast< DA::DAPortDescriptor >());
+                }
+            },
+            pybind11::arg("outputs"),
+            "设置输出端口描述符列表")
+        .def(
+            "getOutputs",
+            [](const DA::DANodeDescriptor& nd) {
+                pybind11::list pyList;
+                for (const DA::DAPortDescriptor& desc : nd.outputs) {
+                    pyList.append(desc);
+                }
+                return pyList;
+            },
+            "获取输出端口描述符列表")
+        // parameters: 自定义 getter/setter，Python list ↔ QVector<ParameterDescriptor>
+        .def(
+            "setParameters",
+            [](DA::DANodeDescriptor& nd, const pybind11::list& pyList) {
+                nd.parameters.clear();
+                for (auto item : pyList) {
+                    nd.parameters.append(item.cast< DA::ParameterDescriptor >());
+                }
+            },
+            pybind11::arg("parameters"),
+            "设置参数描述符列表")
+        .def(
+            "getParameters",
+            [](const DA::DANodeDescriptor& nd) {
+                pybind11::list pyList;
+                for (const DA::ParameterDescriptor& desc : nd.parameters) {
+                    pyList.append(desc);
+                }
+                return pyList;
+            },
+            "获取参数描述符列表")
+        // 方法
+        .def("isValid", &DA::DANodeDescriptor::isValid, "判断描述符是否有效（qualifiedName 非空）")
+        .def("toMetaData", &DA::DANodeDescriptor::toMetaData, "转换为 DAPyNodeMetaData（提取注册所需字段）")
+        .def(
+            "toJson",
+            [](const DA::DANodeDescriptor& nd) {
+                QJsonObject json = nd.toJson();
+                return DA::PY::qjsonObjectToPyDict(json);
+            },
+            "序列化为 Python dict（snake_case 键名，稀疏策略）")
+        .def_static(
+            "fromJson",
+            [](const pybind11::dict& d) {
+                QJsonObject json = DA::PY::pyDictToQJsonObject(d);
+                return DA::DANodeDescriptor::fromJson(json);
+            },
+            pybind11::arg("dict"),
+            "从 Python dict 反序列化")
+        .def("__repr__", [](const DA::DANodeDescriptor& nd) {
+            return QString(
+                       "DANodeDescriptor(name=%1, qualifiedName=%2, category=%3, inputs=%4, outputs=%5, parameters=%6)")
+                .arg(nd.name)
+                .arg(nd.qualifiedName)
+                .arg(nd.category)
+                .arg(nd.inputs.size())
+                .arg(nd.outputs.size())
+                .arg(nd.parameters.size())
+                .toStdString();
+        });
 
     // 自由函数（Scenario A 模式）
     m.def("getNodeProxy",
