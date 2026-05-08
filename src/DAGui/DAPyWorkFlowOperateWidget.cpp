@@ -14,6 +14,7 @@
 #include "DAGraphicsPixmapItem.h"
 //
 #include "DAPyWorkFlowEditWidget.h"
+#include "DAPyNodeGraphicsItem.h"
 #include "Commands/DACommandsForWorkFlow.h"
 
 namespace DA

@@ -2,6 +2,7 @@
 #define DAENUMSTRINGUTILS_H
 #include <QString>
 #include <QHash>
+#include <initializer_list>
 /**
  * @file 枚举字符串转换类
  *
@@ -103,9 +104,9 @@ struct DAEnumTraits;
 template< typename EnumType >
 QString enumToString(EnumType value)
 {
-	const auto& map = DAEnumTraits< EnumType >::enumToStringMap;
-	auto it         = map.find(value);
-	return (it != map.end()) ? *it : DAEnumTraits< EnumType >::defaultValueStr;
+    const auto& map = DAEnumTraits< EnumType >::enumToStringMap;
+    auto it         = map.find(value);
+    return (it != map.end()) ? *it : DAEnumTraits< EnumType >::defaultValueStr;
 }
 
 /**
@@ -124,10 +125,10 @@ QString enumToString(EnumType value)
 template< typename EnumType >
 EnumType stringToEnum(const QString& s, EnumType defaultValue = DAEnumTraits< EnumType >::defaultValue)
 {
-	const auto& map = DAEnumTraits< EnumType >::stringToEnumMap;
-	QString key     = DAEnumTraits< EnumType >::caseSensitive ? s : s.toLower();
-	auto it         = map.find(key);
-	return (it != map.end()) ? *it : defaultValue;
+    const auto& map = DAEnumTraits< EnumType >::stringToEnumMap;
+    QString key     = DAEnumTraits< EnumType >::caseSensitive ? s : s.toLower();
+    auto it         = map.find(key);
+    return (it != map.end()) ? *it : defaultValue;
 }
 
 // 辅助类型定义
@@ -145,16 +146,16 @@ using DAEnumEntry = std::pair< EnumType, const char* >;
  */
 #ifndef DA_ENUM_STRING_DECLARE
 #define DA_ENUM_STRING_DECLARE(EnumType)                                                                               \
-	template<>                                                                                                         \
-	struct DA::DAEnumTraits< EnumType >                                                                                \
-	{                                                                                                                  \
-	public:                                                                                                            \
-		static const QHash< EnumType, QString > enumToStringMap;                                                       \
-		static const QHash< QString, EnumType > stringToEnumMap;                                                       \
-		static const bool caseSensitive;                                                                               \
-		static const EnumType defaultValue;                                                                            \
-		static const QString defaultValueStr;                                                                          \
-	};
+    template<>                                                                                                         \
+    struct DA::DAEnumTraits< EnumType >                                                                                \
+    {                                                                                                                  \
+    public:                                                                                                            \
+        static const QHash< EnumType, QString > enumToStringMap;                                                       \
+        static const QHash< QString, EnumType > stringToEnumMap;                                                       \
+        static const bool caseSensitive;                                                                               \
+        static const EnumType defaultValue;                                                                            \
+        static const QString defaultValueStr;                                                                          \
+    };
 #endif
 
 /**
@@ -162,21 +163,21 @@ using DAEnumEntry = std::pair< EnumType, const char* >;
  */
 #ifndef DA_ENUM_STRING_DECLARE_EXPORT
 #define DA_ENUM_STRING_DECLARE_EXPORT(EXPORT_API, EnumType)                                                            \
-	template<>                                                                                                         \
-	struct EXPORT_API DA::DAEnumTraits< EnumType >                                                                     \
-	{                                                                                                                  \
-	public:                                                                                                            \
-		static const QHash< EnumType, QString > enumToStringMap;                                                       \
-		static const QHash< QString, EnumType > stringToEnumMap;                                                       \
-		static const bool caseSensitive;                                                                               \
-		static const EnumType defaultValue;                                                                            \
-		static const QString defaultValueStr;                                                                          \
-	};
+    template<>                                                                                                         \
+    struct EXPORT_API DA::DAEnumTraits< EnumType >                                                                     \
+    {                                                                                                                  \
+    public:                                                                                                            \
+        static const QHash< EnumType, QString > enumToStringMap;                                                       \
+        static const QHash< QString, EnumType > stringToEnumMap;                                                       \
+        static const bool caseSensitive;                                                                               \
+        static const EnumType defaultValue;                                                                            \
+        static const QString defaultValueStr;                                                                          \
+    };
 #endif
 /**
  * @def DA_ENUM_SENSITIVE(EnumType, DefaultValue, ...)
  * @brief 定义大小写敏感的枚举字符串映射
- * @param EnumType 枚举类型（需包含命名空间，如 MyNamespace::Color）
+ * @param EnumType 枚举类型（不含 DA:: 前缀，必须在 DA 命名空间下使用）
  * @param DefaultValue 默认枚举值（转换失败时返回此值）
  * @param ... 枚举项列表，格式为 {枚举值, "字符串"}，逗号分隔
  *
@@ -212,26 +213,26 @@ using DAEnumEntry = std::pair< EnumType, const char* >;
  */
 #ifndef DA_ENUM_STRING_SENSITIVE_DEFINE
 #define DA_ENUM_STRING_SENSITIVE_DEFINE(EnumType, DefaultValue, ...)                                                   \
-	const QHash< EnumType, QString > DA::DAEnumTraits< EnumType >::enumToStringMap = { __VA_ARGS__ };                  \
-	const QHash< QString, EnumType > DA::DAEnumTraits< EnumType >::stringToEnumMap = []() {                            \
-		QHash< QString, EnumType > tmp;                                                                                \
-		const std::initializer_list< DAEnumEntry< EnumType > >& entries = { __VA_ARGS__ };                             \
-		for (const auto& pair : entries) {                                                                             \
-			tmp.insert(pair.second, pair.first);                                                                       \
-		}                                                                                                              \
-		return tmp;                                                                                                    \
-	}();                                                                                                               \
-    const bool DA::DAEnumTraits< EnumType >::caseSensitive      = false;                                               \
-    const EnumType DA::DAEnumTraits< EnumType >::defaultValue   = DefaultValue;                                        \
-    const QString DA::DAEnumTraits< EnumType >::defaultValueStr = DA::DAEnumTraits< EnumType >::enumToStringMap.value( \
-        DefaultValue)
+    const QHash< EnumType, QString > DA::DAEnumTraits< EnumType >::enumToStringMap = { __VA_ARGS__ };                  \
+    const QHash< QString, EnumType > DA::DAEnumTraits< EnumType >::stringToEnumMap = []() {                            \
+        QHash< QString, EnumType > tmp;                                                                                \
+        const std::initializer_list< DA::DAEnumEntry< EnumType > >& entries = { __VA_ARGS__ };                         \
+        for (const auto& pair : entries) {                                                                             \
+            tmp.insert(pair.second, pair.first);                                                                       \
+        }                                                                                                              \
+        return tmp;                                                                                                    \
+    }();                                                                                                               \
+    const bool DA::DAEnumTraits< EnumType >::caseSensitive    = false;                                                 \
+    const EnumType DA::DAEnumTraits< EnumType >::defaultValue = DefaultValue;                                          \
+    const QString DA::DAEnumTraits< EnumType >::defaultValueStr =                                                      \
+        DA::DAEnumTraits< EnumType >::enumToStringMap.value(DefaultValue)
 #endif
 
 // ---------------------------------------------------------------------------------
 /**
  * @def DA_ENUM_INSENSITIVE(EnumType, DefaultValue, ...)
  * @brief 定义大小写不敏感的枚举字符串映射（统一转为小写匹配）
- * @param EnumType 枚举类型（需包含命名空间）
+ * @param EnumType 枚举类型（不含 DA:: 前缀，必须在 DA 命名空间下使用）
  * @param DefaultValue 默认枚举值
  * @param ... 枚举项列表，格式为 {枚举值, "字符串"}
  *
@@ -257,7 +258,7 @@ using DAEnumEntry = std::pair< EnumType, const char* >;
  * // 定义枚举映射
  * DA_ENUM_INSENSITIVE(Status, Status::Ok,
  *  { Status::Ok,    "ok" },
- *  { Status::Error, "error" }
+ *  { Status::Status::Error, "error" }
  * );
  * }
  *
@@ -269,19 +270,19 @@ using DAEnumEntry = std::pair< EnumType, const char* >;
  */
 #ifndef DA_ENUM_STRING_INSENSITIVE_DEFINE
 #define DA_ENUM_STRING_INSENSITIVE_DEFINE(EnumType, DefaultValue, ...)                                                 \
-	const QHash< EnumType, QString > DA::DAEnumTraits< EnumType >::enumToStringMap = { __VA_ARGS__ };                  \
-	const QHash< QString, EnumType > DA::DAEnumTraits< EnumType >::stringToEnumMap = []() {                            \
-		QHash< QString, EnumType > tmp;                                                                                \
-		const std::initializer_list< DAEnumEntry< EnumType > >& entries = { __VA_ARGS__ };                             \
-		for (const auto& pair : entries) {                                                                             \
-			tmp.insert(QString(pair.second).toLower(), pair.first);                                                    \
-		}                                                                                                              \
-		return tmp;                                                                                                    \
-	}();                                                                                                               \
-    const bool DA::DAEnumTraits< EnumType >::caseSensitive      = false;                                               \
-    const EnumType DA::DAEnumTraits< EnumType >::defaultValue   = DefaultValue;                                        \
-    const QString DA::DAEnumTraits< EnumType >::defaultValueStr = DA::DAEnumTraits< EnumType >::enumToStringMap.value( \
-        DefaultValue)
+    const QHash< EnumType, QString > DA::DAEnumTraits< EnumType >::enumToStringMap = { __VA_ARGS__ };                  \
+    const QHash< QString, EnumType > DA::DAEnumTraits< EnumType >::stringToEnumMap = []() {                            \
+        QHash< QString, EnumType > tmp;                                                                                \
+        const std::initializer_list< DA::DAEnumEntry< EnumType > >& entries = { __VA_ARGS__ };                         \
+        for (const auto& pair : entries) {                                                                             \
+            tmp.insert(QString(pair.second).toLower(), pair.first);                                                    \
+        }                                                                                                              \
+        return tmp;                                                                                                    \
+    }();                                                                                                               \
+    const bool DA::DAEnumTraits< EnumType >::caseSensitive    = false;                                                 \
+    const EnumType DA::DAEnumTraits< EnumType >::defaultValue = DefaultValue;                                          \
+    const QString DA::DAEnumTraits< EnumType >::defaultValueStr =                                                      \
+        DA::DAEnumTraits< EnumType >::enumToStringMap.value(DefaultValue)
 #endif
 
 #endif  // DAENUMSTRINGUTILS_H

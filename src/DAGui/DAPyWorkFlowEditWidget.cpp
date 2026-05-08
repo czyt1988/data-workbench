@@ -17,6 +17,7 @@
 #include "DAPyWorkFlowGraphicsView.h"
 #include "DAPyWorkFlowGraphicsScene.h"
 #include "DAGraphicsLinkItem.h"
+#include "DAPyNodeGraphicsItem.h"
 #include "DAPyWorkFlowExecuter.h"
 #include "DAGraphicsPixmapItem.h"
 //

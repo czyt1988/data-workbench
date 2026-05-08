@@ -1518,7 +1518,7 @@ QGraphicsItem* DAXmlHelper::loadItemElement(const QDomElement* itemEle, const QV
 QDomElement DAXmlHelper::makeElement(const DAGraphicsItemGroup* itemGroup, const QString& tagName, QDomDocument* doc)
 {
     QDomElement gEle = doc->createElement(tagName);
-    gEle.setAttribute("id", itemGroup->getItemID());
+    gEle.setAttribute("id", static_cast< qulonglong >(itemGroup->getItemID()));
     const QList< QGraphicsItem* > childItems = itemGroup->childItems();
     if (!childItems.empty()) {
         QDomElement ciEle = doc->createElement("childs");
@@ -1554,7 +1554,7 @@ bool DAXmlHelper::loadElement(
 )
 {
     Q_UNUSED(v);
-    uint64_t id;
+    qulonglong id;
     if (!getStringULongLongValue(groupElement->attribute("id"), id)) {
         return false;
     }

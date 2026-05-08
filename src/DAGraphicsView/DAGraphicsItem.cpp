@@ -56,7 +56,7 @@ bool DAGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, co
 	QDomElement infoEle = doc->createElement("info");
 	QPointF scPos       = scenePos();
 	infoEle.setAttribute("flags", static_cast< int >(flags()));
-	infoEle.setAttribute("id", getItemID());
+	infoEle.setAttribute("id", static_cast< qulonglong >(getItemID()));
 	infoEle.setAttribute("x", scPos.x());
 	infoEle.setAttribute("y", scPos.y());
 	infoEle.setAttribute("z", zValue());
@@ -102,7 +102,7 @@ bool DAGraphicsItem::loadFromXml(const QDomElement* parentElement, const QVersio
 	}
 	qreal realValue;
 	qreal realValue2;
-	uint64_t llv;
+	qulonglong llv;
 
 	QString strflags = infoEle.attribute("flags");
 	if (!strflags.isEmpty()) {

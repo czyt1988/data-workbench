@@ -2,6 +2,7 @@
 #define DACHARTSERIALIZE_H
 #include "DAFigureAPI.h"
 #include <string>
+#include <QIODevice>
 #include <QDataStream>
 #include <functional>
 #include "qwt_text.h"

@@ -80,7 +80,7 @@ bool DAGraphicsStandardTextItem::saveToXml(QDomDocument* doc, QDomElement* paren
 	QDomElement textItemEle = doc->createElement("text-info");
 	QPointF p               = pos();
 	textItemEle.setAttribute("flags", static_cast< int >(flags()));
-	textItemEle.setAttribute("id", getItemID());
+	textItemEle.setAttribute("id", static_cast< qulonglong >(getItemID()));
 	textItemEle.setAttribute("x", p.x());
 	textItemEle.setAttribute("y", p.y());
 	textItemEle.setAttribute("z", zValue());
@@ -105,7 +105,7 @@ bool DAGraphicsStandardTextItem::loadFromXml(const QDomElement* itemElement, con
 		return false;
 	}
 	QPointF pos;
-	uint64_t id;
+	qulonglong id;
 	qreal realValue;
 	QString strflags = textItemEle.attribute("flags");
 	if (!strflags.isEmpty()) {

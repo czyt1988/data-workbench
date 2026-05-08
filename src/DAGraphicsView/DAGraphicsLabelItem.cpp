@@ -57,7 +57,7 @@ bool DAGraphicsLabelItem::saveToXml(QDomDocument* doc, QDomElement* parentElemen
 		e.setAttribute("ry", rp.y());
 	}
 	e.setAttribute("flags", static_cast< int >(flags()));
-	e.setAttribute("id", getItemID());
+	e.setAttribute("id", static_cast< qulonglong >(getItemID()));
 	e.setAttribute("x", x());
 	e.setAttribute("y", y());
 	e.setAttribute("z", zValue());
@@ -84,7 +84,7 @@ bool DAGraphicsLabelItem::loadFromXml(const QDomElement* itemElement, const QVer
 	}
 	qreal realValue;
 	qreal realValue2;
-	uint64_t llv;
+	qulonglong llv;
 
 	QString strflags = infoEle.attribute("flags");
 	if (!strflags.isEmpty()) {
