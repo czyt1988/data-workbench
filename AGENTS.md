@@ -83,6 +83,7 @@ DAShared → DAUtils → DAAxOfficeWrapper(win) → DAMessageHandler
 | PIMPL 宏定义 | `src/DAGlobals.h` | DA_DECLARE_PRIVATE, DA_D, DA_DC 等 |
 | Qt5/Qt6 兼容宏 | `src/DAGlobals.h` | Qt5Qt6Compat_* 系列宏 |
 | 通用 Widgets | `src/DACommonWidgets/` | 按钮、列表、树等基础组件 |
+| 枚举/字符串转换 | `src/DAShared/DAEnumStringUtils.hpp` | 通用枚举↔字符串映射宏，详见`docs/zh/dev-guide/da-enum-string-utils.md` |
 | 插件开发参考 | `plugins/DataAnalysis/` | 最完整的插件示例 |
 | 插件模板 | `plugins/plugin-template/` | 新插件脚手架 |
 | 文档源码 | `docs/zh/` | Doxygen Wiki 中文 |
@@ -396,10 +397,6 @@ Qt6 不再通过 `QDataStream` 隐式包含 `<QIODevice>`。如编译报 `QIODev
 
 Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若头文件仅有前向声明，`connect` 会导致不完整类型错误。
 - **解决方案**：在 .cpp 文件中 `#include` 完整头文件，而非仅依赖前向声明
-
-### GCC `-fpermissive` 选项
-
-`DAEnumStringUtils.hpp` 宏在 `DA` namespace 内使用 `DA::DAEnumTraits` 额外限定，MSVC 允许但 GCC 报错。项目 `CMakeLists.txt` 已为 GCC 自动添加 `-fpermissive`，勿删除此选项。
 
 ## ANTI-PATTERNS (THIS PROJECT)
 

@@ -113,12 +113,6 @@ if(MSVC)
     set(CMAKE_CXX_RESPONSE_FILE_EXTENSION ".rsp")
 endif()
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    # GCC 不允许在命名空间内使用额外限定 (如 namespace DA 内使用 DA::DAEnumTraits)
-    # MSVC 允许此行为，-fpermissive 将此错误降级为警告，保持跨平台兼容
-    add_compile_options(-fpermissive)
-endif()
-
 if(CMAKE_GENERATOR STREQUAL "Ninja")
     # 针对Ninja生成器
     set(CMAKE_NINJA_FORCE_RESPONSE_FILE "1")

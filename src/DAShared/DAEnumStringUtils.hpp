@@ -213,21 +213,22 @@ using DAEnumEntry = std::pair< EnumType, const char* >;
  */
 #ifndef DA_ENUM_STRING_SENSITIVE_DEFINE
 #define DA_ENUM_STRING_SENSITIVE_DEFINE(EnumType, DefaultValue, ...)                                                   \
-    const QHash< EnumType, QString > DA::DAEnumTraits< EnumType >::enumToStringMap = { __VA_ARGS__ };                  \
-    const QHash< QString, EnumType > DA::DAEnumTraits< EnumType >::stringToEnumMap = []() {                            \
+    namespace DA {                                                                                                     \
+    const QHash< EnumType, QString > DAEnumTraits< EnumType >::enumToStringMap = { __VA_ARGS__ };                      \
+    const QHash< QString, EnumType > DAEnumTraits< EnumType >::stringToEnumMap = []() {                                \
         QHash< QString, EnumType > tmp;                                                                                \
-        const std::initializer_list< DA::DAEnumEntry< EnumType > >& entries = { __VA_ARGS__ };                         \
+        const std::initializer_list< DAEnumEntry< EnumType > >& entries = { __VA_ARGS__ };                             \
         for (const auto& pair : entries) {                                                                             \
             tmp.insert(pair.second, pair.first);                                                                       \
         }                                                                                                              \
         return tmp;                                                                                                    \
     }();                                                                                                               \
-    const bool DA::DAEnumTraits< EnumType >::caseSensitive    = false;                                                 \
-    const EnumType DA::DAEnumTraits< EnumType >::defaultValue = DefaultValue;                                          \
-    const QString DA::DAEnumTraits< EnumType >::defaultValueStr =                                                      \
-        DA::DAEnumTraits< EnumType >::enumToStringMap.value(DefaultValue)
+    const bool DAEnumTraits< EnumType >::caseSensitive    = false;                                                     \
+    const EnumType DAEnumTraits< EnumType >::defaultValue = DefaultValue;                                              \
+    const QString DAEnumTraits< EnumType >::defaultValueStr =                                                          \
+        DAEnumTraits< EnumType >::enumToStringMap.value(DefaultValue);                                                 \
+    }
 #endif
-
 // ---------------------------------------------------------------------------------
 /**
  * @def DA_ENUM_INSENSITIVE(EnumType, DefaultValue, ...)
@@ -270,19 +271,21 @@ using DAEnumEntry = std::pair< EnumType, const char* >;
  */
 #ifndef DA_ENUM_STRING_INSENSITIVE_DEFINE
 #define DA_ENUM_STRING_INSENSITIVE_DEFINE(EnumType, DefaultValue, ...)                                                 \
-    const QHash< EnumType, QString > DA::DAEnumTraits< EnumType >::enumToStringMap = { __VA_ARGS__ };                  \
-    const QHash< QString, EnumType > DA::DAEnumTraits< EnumType >::stringToEnumMap = []() {                            \
+    namespace DA {                                                                                                     \
+    const QHash< EnumType, QString > DAEnumTraits< EnumType >::enumToStringMap = { __VA_ARGS__ };                      \
+    const QHash< QString, EnumType > DAEnumTraits< EnumType >::stringToEnumMap = []() {                                \
         QHash< QString, EnumType > tmp;                                                                                \
-        const std::initializer_list< DA::DAEnumEntry< EnumType > >& entries = { __VA_ARGS__ };                         \
+        const std::initializer_list< DAEnumEntry< EnumType > >& entries = { __VA_ARGS__ };                             \
         for (const auto& pair : entries) {                                                                             \
             tmp.insert(QString(pair.second).toLower(), pair.first);                                                    \
         }                                                                                                              \
         return tmp;                                                                                                    \
     }();                                                                                                               \
-    const bool DA::DAEnumTraits< EnumType >::caseSensitive    = false;                                                 \
-    const EnumType DA::DAEnumTraits< EnumType >::defaultValue = DefaultValue;                                          \
-    const QString DA::DAEnumTraits< EnumType >::defaultValueStr =                                                      \
-        DA::DAEnumTraits< EnumType >::enumToStringMap.value(DefaultValue)
+    const bool DAEnumTraits< EnumType >::caseSensitive    = false;                                                     \
+    const EnumType DAEnumTraits< EnumType >::defaultValue = DefaultValue;                                              \
+    const QString DAEnumTraits< EnumType >::defaultValueStr =                                                          \
+        DAEnumTraits< EnumType >::enumToStringMap.value(DefaultValue);                                                 \
+    }
 #endif
 
 #endif  // DAENUMSTRINGUTILS_H
