@@ -22,7 +22,7 @@ import logging
 import sys
 from pathlib import Path
 
-from .node_descriptor import DANodeDescriptor
+import da_py_workflow
 
 logger = logging.getLogger("DAWorkFlowPy.node_registry")
 
@@ -77,7 +77,7 @@ class DANodeRegistry:
         # 以 qualified_name 为键，DANodeDescriptor 为值
         self._registry: dict = {}
 
-    def register_node(self, node_class: type) -> DANodeDescriptor:
+    def register_node(self, node_class: type) -> da_py_workflow.DANodeDescriptor:
         """
         注册一个节点类
 
@@ -96,8 +96,8 @@ class DANodeRegistry:
                 "请先使用 NodeDef 装饰器声明节点类型"
             )
 
-        descriptor = DANodeDescriptor(**descriptor_data)
-        qualified_name = descriptor.qualified_name
+        descriptor = descriptor_data
+        qualified_name = descriptor.qualifiedName
 
         if qualified_name in self._registry:
             logger.info(
@@ -151,8 +151,8 @@ class DANodeRegistry:
         unique_discovered = []
         seen = set()
         for desc in discovered:
-            if desc.qualified_name not in seen:
-                seen.add(desc.qualified_name)
+            if desc.qualifiedName not in seen:
+                seen.add(desc.qualifiedName)
                 unique_discovered.append(desc)
 
         return unique_discovered
@@ -275,10 +275,12 @@ class DANodeRegistry:
             return None
         except KeyError:
             # 已注册，register_node 内部已处理去重
-            return self._registry.get(
-                getattr(node_class, "_node_descriptor", {}).get("qualified_name", ""),
-                None
-            )
+            try:
+                d = getattr(node_class, "_node_descriptor", None)
+                qname = d.qualifiedName if d else ""
+            except Exception:
+                qname = ""
+            return self._registry.get(qname, None)
 
     def get_all_descriptors(self) -> list:
         """
@@ -288,7 +290,7 @@ class DANodeRegistry:
         """
         return list(self._registry.values())
 
-    def get_descriptor(self, qualified_name: str) -> DANodeDescriptor:
+    def get_descriptor(self, qualified_name: str) -> da_py_workflow.DANodeDescriptor:
         """
         根据 qualified_name 获取指定节点的描述符
 
@@ -300,7 +302,7 @@ class DANodeRegistry:
             raise KeyError(f"节点 '{qualified_name}' 未注册")
         return self._registry[qualified_name]
 
-    def unregister_node(self, qualified_name: str) -> DANodeDescriptor:
+    def unregister_node(self, qualified_name: str) -> da_py_workflow.DANodeDescriptor:
         """
         从注册表中移除指定节点
 
