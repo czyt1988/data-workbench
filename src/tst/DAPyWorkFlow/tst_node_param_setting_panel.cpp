@@ -1,7 +1,7 @@
 #include "tst_node_param_setting_panel.h"
 #include "DANodeParamSettingPanel.h"
 #include "DAParamTypeRegistry.h"
-#include "ParameterDescriptor.h"
+#include "DAPyWorkFlow/ParameterDescriptor.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include <QtTest/QtTest>
 #include <QVBoxLayout>
@@ -29,25 +29,31 @@ void TestNodeParamSettingPanel::initTestCase()
  * @brief 创建空面板（无参数描述符）
  *
  * 验证面板在无描述符时能正常创建，且内部 mPanel 已初始化。
+ * 空面板默认包含一个占位属性（显示 "无可配置参数"），因此 propertyCount 为 1。
  */
 void TestNodeParamSettingPanel::testCreateEmptyPanel()
 {
     DANodeParamSettingPanel panel;
     QVERIFY(panel.propertyPanel() != nullptr);
-    QCOMPARE(panel.propertyPanel()->propertyCount(), 0);
+    // buildPropertyPanel() 为空参数创建占位 QLabel 作为属性项，propertyCount = 1
+    QCOMPARE(panel.propertyPanel()->propertyCount(), 1);
 }
 
 /**
  * @brief 空参数描述符时显示占位文本
  *
  * 当 getParameters() 返回空数组时，面板应显示 "无可配置参数" 占位标签。
+ * 注意：DAPropertyItemWidget::setEditorWidget 会覆盖编辑器 widget 的 objectName，
+ * 因此不能通过 findChild 查找 "da_placeholder_label"，需要通过 propertyPanel 获取。
  */
 void TestNodeParamSettingPanel::testEmptyParametersShowsPlaceholder()
 {
     DANodeParamSettingPanel panel;
-    // 不设置描述符 → getParameters() 为空 → buildPropertyPanel 已显示占位文本
-    QLabel* placeholder = panel.findChild<QLabel*>(QStringLiteral("da_placeholder_label"));
-    QVERIFY2(placeholder != nullptr, "空参数时应创建占位 QLabel");
+    // 空面板中占位属性为 propertyId=1（auto-generated）
+    DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
+    QVERIFY2(item != nullptr, "空参数时应创建占位属性项");
+    QLabel* placeholder = qobject_cast<QLabel*>(item->editorWidget());
+    QVERIFY2(placeholder != nullptr, "占位属性项的编辑器应为 QLabel");
     QCOMPARE(placeholder->text(), QStringLiteral("无可配置参数"));
 }
 
@@ -70,7 +76,7 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithIntParam()
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(params);
+    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
 
     QCOMPARE(panel.propertyPanel()->propertyCount(), 1);
 
@@ -102,7 +108,7 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithFloatParam()
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(params);
+    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
 
     QCOMPARE(panel.propertyPanel()->propertyCount(), 1);
     DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
@@ -127,7 +133,7 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithBoolParam()
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(params);
+    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
 
     QCOMPARE(panel.propertyPanel()->propertyCount(), 1);
     DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
@@ -153,7 +159,7 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithStrParam()
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(params);
+    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
 
     QCOMPARE(panel.propertyPanel()->propertyCount(), 1);
     DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
@@ -184,7 +190,7 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithEnumParam()
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(params);
+    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
 
     QCOMPARE(panel.propertyPanel()->propertyCount(), 1);
     DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
@@ -210,7 +216,7 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithFileParam()
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(params);
+    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
 
     QCOMPARE(panel.propertyPanel()->propertyCount(), 1);
     DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
@@ -236,7 +242,7 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithMultipleParams()
     params.append(p3);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(params);
+    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
 
     QCOMPARE(panel.propertyPanel()->propertyCount(), 3);
     QVERIFY(panel.propertyPanel()->getPropertyItem(1) != nullptr);
@@ -266,7 +272,7 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithInvalidParamSkipped()
     params.append(p3);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(params);
+    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
 
     // 只有有效参数被创建
     QCOMPARE(panel.propertyPanel()->propertyCount(), 1);
@@ -286,7 +292,7 @@ void TestNodeParamSettingPanel::testSignalChainPropertyValueChanged()
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(params);
+    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
 
     QSignalSpy spy(&panel, &DANodeParamSettingPanel::propertyValueChanged);
 
@@ -319,7 +325,7 @@ void TestNodeParamSettingPanel::testUpdateUIBlocksSignals()
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(params);
+    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
 
     QSignalSpy spy(&panel, &DANodeParamSettingPanel::propertyValueChanged);
 
@@ -356,7 +362,7 @@ void TestNodeParamSettingPanel::testCollectConfigFromIntParam()
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(params);
+    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
 
     // 改变编辑器值
     DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
@@ -384,7 +390,7 @@ void TestNodeParamSettingPanel::testCollectConfigFromMultipleParams()
     params.append(p2);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(params);
+    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
 
     QJsonObject config = panel.testCollectConfig();
     QVERIFY(config.contains("count"));

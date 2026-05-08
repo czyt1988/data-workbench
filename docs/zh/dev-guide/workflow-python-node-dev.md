@@ -669,7 +669,7 @@ class AgentNode:
             import DAWorkbench
             DAWorkbench.da_interface.call_in_main_thread(
                 "node_state_change",
-                self._node_descriptor["qualified_name"],
+                self._node_descriptor.qualifiedName,
                 state,
             )
         except (ImportError, AttributeError):
@@ -711,7 +711,7 @@ descriptors = registry.discover(use_entry_points=True)
 # 获取所有已注册节点的描述符
 all_descriptors = registry.get_all_descriptors()
 
-# 根据 qualified_name 获取指定节点的描述符
+# 根据 qualifiedName 获取指定节点的描述符
 descriptor = registry.get_descriptor("my_module.DataFilter")
 ```
 
@@ -730,7 +730,7 @@ descriptors = registry.discover(scan_paths=[
 !!! note "目录扫描规则"
     - 扫描路径下的所有 `.py` 文件（排除 `__pycache__` 和 `__init__.py`）
     - 动态导入模块并检查类是否带有 `_node_descriptor` 属性
-    - 相同 `qualified_name` 的节点只注册一次（自动去重）
+    - 相同 `qualifiedName` 的节点只注册一次（自动去重）
 
 ### entry_points 注册
 
@@ -767,17 +767,17 @@ setup(
 !!! tip "entry_points 分组"
     必须使用 `data_workbench.plugin` 作为分组名称，DANodeRegistry 通过此分组查找已安装的插件包。
 
-#### qualified_name 生成规则
+#### qualifiedName 生成规则
 
-节点的唯一标识 `qualified_name` 自动生成：
+节点的唯一标识 `qualifiedName` 自动生成：
 
 ```
-qualified_name = f"{cls.__module__}.{cls.__qualname__}"
+qualifiedName = f"{cls.__module__}.{cls.__qualname__}"
 ```
 
 例如：
 - 模块 `DADataAnalysisPy.data_filter_node` 中的类 `DataFilterNode`
-- qualified_name: `DADataAnalysisPy.data_filter_node.DataFilterNode`
+- qualifiedName: `DADataAnalysisPy.data_filter_node.DataFilterNode`
 
 ## 高级特性
 
@@ -834,7 +834,7 @@ def _push_state(self, state):
         import DAWorkbench
         DAWorkbench.da_interface.call_in_main_thread(
             "node_state_change",
-            self._node_descriptor["qualified_name"],
+            self._node_descriptor.qualifiedName,
             state,
         )
     except (ImportError, AttributeError):
@@ -887,7 +887,6 @@ def execute(self, inputs=None, params=None):
 - Python 模块源码：`src/PyScripts/DAWorkbench/DAWorkFlowPy/`
   - `node_def.py` — `@NodeDef` 装饰器实现
   - `types.py` — `Input`、`Output`、`Parameter` 类定义
-  - `node_descriptor.py` — `DANodeDescriptor` 类定义
   - `node_registry.py` — `DANodeRegistry` 类定义
 - 节点示例：`plugins/` 目录下的 Python 插件
   - `plugins/DataAnalysis/PyScripts/DADataAnalysisPy/` — 数据分析节点

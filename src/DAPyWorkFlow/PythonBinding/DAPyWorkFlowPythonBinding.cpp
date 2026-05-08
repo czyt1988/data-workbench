@@ -270,14 +270,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .def(
             "getQualifiedName",
             [](const DA::DAPyNodeProxy& self) { return self.getQualifiedName().toStdString(); },
-            "Get Python node's qualified name (module.class)")
-        .def(
-            "getDescriptor",
-            [](const DA::DAPyNodeProxy& self) {
-                QJsonObject json = self.getDescriptor();
-                return DA::PY::qjsonObjectToPyDict(json);
-            },
-            "Get node descriptor dictionary (inputs/outputs/parameters metadata)");
+            "Get Python node's qualified name (module.class)");
 
     // 绑定 DAPyNodeFactory 类（独立QObject，不再继承DAAbstractNodeFactory）
     pybind11::class_< DA::DAPyNodeFactory >(m, "DAPyNodeFactory")

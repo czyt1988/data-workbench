@@ -79,8 +79,8 @@ public:
 protected:
     // 使用存储的连接点方向生成绘制路径
     virtual QPainterPath generateLinePainterPath(const QPointF& fromPoint,
-                                                  const QPointF& toPoint,
-                                                  LinkLineStyle linestyle = LinkLineStraight) override;
+                                                 const QPointF& toPoint,
+                                                 LinkLineStyle linestyle = LinkLineStraight) override;
 
     // 数据流动画定时器回调
     void onDataFlowTimer();

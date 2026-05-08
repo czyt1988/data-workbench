@@ -31,8 +31,10 @@ enum class LinkPointLayoutStrategy
     Manual = 1   ///< 手动布局（用户指定位置）
 };
 
+}  // namespace DA
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::LinkPointLayoutStrategy)
-
+namespace DA
+{
 // =================================================================================
 //                      DAPyLinkPointStyle — 连接点样式配置
 // =================================================================================

@@ -30,9 +30,9 @@ void TestLinkPoints::testThinDescriptorNoIO()
     DAPyNodeGraphicsItem item(nullptr);
 
     QJsonObject thinDesc;
-    thinDesc["qualified_name"] = "test.mock";
-    thinDesc["name"]           = "MockNode";
-    thinDesc["group"]          = "test";
+    thinDesc[ "qualified_name" ] = "test.mock";
+    thinDesc[ "name" ]           = "MockNode";
+    thinDesc[ "group" ]          = "test";
     item.setDescriptor(thinDesc);
 
     auto inputPoints  = item.getInputLinkPoints();
@@ -57,24 +57,24 @@ void TestLinkPoints::testFullDescriptorWithIO()
     DAPyNodeGraphicsItem item(nullptr);
 
     QJsonObject fullDesc;
-    fullDesc["qualified_name"] = "test.mock";
-    fullDesc["name"]           = "MockNode";
-    fullDesc["group"]          = "test";
+    fullDesc[ "qualified_name" ] = "test.mock";
+    fullDesc[ "name" ]           = "MockNode";
+    fullDesc[ "group" ]          = "test";
 
     QJsonArray inputs;
     QJsonObject in1;
-    in1["name"] = "a";
+    in1[ "name" ] = "a";
     inputs.append(in1);
     QJsonObject in2;
-    in2["name"] = "b";
+    in2[ "name" ] = "b";
     inputs.append(in2);
-    fullDesc["inputs"] = inputs;
+    fullDesc[ "inputs" ] = inputs;
 
     QJsonArray outputs;
     QJsonObject out1;
-    out1["name"] = "result";
+    out1[ "name" ] = "result";
     outputs.append(out1);
-    fullDesc["outputs"] = outputs;
+    fullDesc[ "outputs" ] = outputs;
 
     item.setDescriptor(fullDesc);
 
@@ -167,13 +167,6 @@ class _TestMockNodeForLinkPoints:
         // 前置条件验证：代理有input/output keys
         QCOMPARE(proxy->getInputKeys().size(), 2);
         QCOMPARE(proxy->getOutputKeys().size(), 1);
-
-        // 前置条件验证：描述符是薄描述符（非空，但无inputs/outputs）
-        QJsonObject desc = proxy->getDescriptor();
-        QVERIFY(!desc.isEmpty());
-        QVERIFY(desc.contains("qualified_name"));
-        QVERIFY(!desc.contains("inputs"));
-        QVERIFY(!desc.contains("outputs"));
 
         // 创建节点图形项，构造函数从代理获取薄描述符
         // 构造函数调用：mDescriptor = proxy->getDescriptor() (薄描述符)
@@ -288,16 +281,8 @@ class _TestIntegrationNode:
         QVERIFY(proxy->getInputKeys().contains("y"));
         QVERIFY(proxy->getOutputKeys().contains("result"));
 
-        // 前置验证: 代理的描述符是薄描述符（Bug 2前置验证）
-        QJsonObject desc = proxy->getDescriptor();
-        QVERIFY(!desc.isEmpty());
-        QVERIFY(desc.contains("qualified_name"));
-        QVERIFY(!desc.contains("inputs"));
-        QVERIFY(!desc.contains("outputs"));
-
         // 步骤2: 创建图形项，构造函数自动调用 updateLinkPoints()
         // 构造函数流程:
-        //   mDescriptor = proxy->getDescriptor() (薄描述符)
         //   updateLinkPoints() → generateLinkPoints()
         //     → !mDescriptor.isEmpty() → generateLinkPointsFromDescriptor()
         //     → 薄描述符无inputs/outputs → 返回空
@@ -306,8 +291,8 @@ class _TestIntegrationNode:
         DAPyNodeGraphicsItem item(proxy);
 
         // 步骤3: 验证连接点数量（Bug 3修复验证 + 综合集成验证）
-        QList<DAPyLinkPoint> inputPoints  = item.getInputLinkPoints();
-        QList<DAPyLinkPoint> outputPoints = item.getOutputLinkPoints();
+        QList< DAPyLinkPoint > inputPoints  = item.getInputLinkPoints();
+        QList< DAPyLinkPoint > outputPoints = item.getOutputLinkPoints();
 
         QCOMPARE(inputPoints.size(), 2);
         QCOMPARE(outputPoints.size(), 1);
@@ -388,9 +373,9 @@ void TestLinkPoints::testDirectionUtils()
     DAPyLinkPoint b(QPointF(100, 100), "port", DAPyLinkPoint::Output, AspectDirection::West);
     DAPyLinkPoint c(QPointF(0, 0), "port", DAPyLinkPoint::Input, AspectDirection::East);
     DAPyLinkPoint d(QPointF(0, 0), "other", DAPyLinkPoint::Output, AspectDirection::East);
-    QVERIFY(a.isEqualWayName(b));  // 相同way+name，位置方向不同
-    QVERIFY(!a.isEqualWayName(c)); // way不同
-    QVERIFY(!a.isEqualWayName(d)); // name不同
+    QVERIFY(a.isEqualWayName(b));   // 相同way+name，位置方向不同
+    QVERIFY(!a.isEqualWayName(c));  // way不同
+    QVERIFY(!a.isEqualWayName(d));  // name不同
 
     // ---- 静态方法: isDirectionParallel ----
     QVERIFY(DAPyLinkPoint::isDirectionParallel(AspectDirection::East, AspectDirection::West));

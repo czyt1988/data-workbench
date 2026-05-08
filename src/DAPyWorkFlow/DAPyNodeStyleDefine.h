@@ -1,10 +1,12 @@
 #ifndef DAPYNODESTYLEDEFINE_H
 #define DAPYNODESTYLEDEFINE_H
-
+// std
+#include <type_traits>
 #include "DAPyWorkFlowAPI.h"
 #include "DAEnumStringUtils.hpp"
 #include "DAGraphicsViewGlobal.h"
 #include "DAGraphicsViewEnumStringUtils.h"
+#include "DAQtEnumTypeStringUtils.h"
 #include <QString>
 
 /**
@@ -32,8 +34,6 @@ enum class BodyShape
     Ellipse     = 1   ///< 椭圆形
 };
 
-DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::BodyShape)
-
 // =================================================================================
 //                          PortShape — 端口形状
 // =================================================================================
@@ -47,8 +47,6 @@ enum class PortShape
     Diamond = 2   ///< 菱形端口
 };
 
-DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::PortShape)
-
 // =================================================================================
 //                          NamePosition — 节点名称位置
 // =================================================================================
@@ -61,8 +59,6 @@ enum class NamePosition
     Below  = 1   ///< 名称在节点下方
 };
 
-DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::NamePosition)
-
 // =================================================================================
 //                          IconPosition — 图标位置
 // =================================================================================
@@ -71,11 +67,9 @@ DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::NamePosition)
  */
 enum class IconPosition
 {
-    LeftOfText  = 0,  ///< 图标在文本左侧
-    AboveText   = 1   ///< 图标在文本上方
+    LeftOfText = 0,  ///< 图标在文本左侧
+    AboveText  = 1   ///< 图标在文本上方
 };
-
-DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::IconPosition)
 
 // =================================================================================
 //                          PortSide — 端口方位（别名）
@@ -108,8 +102,6 @@ enum class BodyIconType
     Svg    = 2   ///< SVG矢量图标
 };
 
-DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::BodyIconType)
-
 // =================================================================================
 //                          RenderTemplate — 渲染模板类型（简化版）
 // =================================================================================
@@ -129,30 +121,19 @@ enum class RenderTemplate
     WidgetTemplate    = 1   ///< 嵌入Widget模板
 };
 
-DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::RenderTemplate)
+// uint qHash(const DA::RenderTemplate& key, uint seed) noexcept
+//{
+//     using underlying_type = std::underlying_type_t< DA::RenderTemplate >;
+//     return ::qHash(static_cast< underlying_type >(key), seed);
+// }
 
 }  // namespace DA
-
-// =================================================================================
-//                          枚举字符串转换定义（.cpp 中实现）
-// =================================================================================
-
-/**
- * @brief 将 RenderTemplate 枚举转为字符串（含向后兼容 "rect"/"svg" → "node_style"）
- * @param[in] value RenderTemplate 枚举值
- * @return 对应的字符串表示
- */
-DAPYWORKFLOW_API QString renderTemplateToString(DA::RenderTemplate value);
-
-/**
- * @brief 将字符串转为 RenderTemplate 枚举（含向后兼容）
- * @param[in] s 输入字符串（"node_style"、"rect"、"svg"、"widget"）
- * @param[in] defaultValue 转换失败时的默认值
- * @return 对应的 RenderTemplate 枚举值
- * @note "rect" 和 "svg" 均返回 NodeStyleTemplate（向后兼容）
- */
-DAPYWORKFLOW_API DA::RenderTemplate stringToRenderTemplate(
-    const QString& s,
-    DA::RenderTemplate defaultValue = DA::RenderTemplate::NodeStyleTemplate);
+// 实现位于DAPyWorkFlowEnumStringUtils.cpp
+DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::NamePosition)
+DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::PortShape)
+DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::IconPosition)
+DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::BodyIconType)
+DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::BodyShape)
+DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::RenderTemplate)
 
 #endif  // DAPYNODESTYLEDEFINE_H

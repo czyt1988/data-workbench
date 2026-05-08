@@ -238,7 +238,7 @@ void TestDANodeStyle::testXmlBackwardCompat()
     QVERIFY(loadedItem.loadFromXml(&itemContainer, QVersionNumber(1, 0, 0)));
 
     // renderTemplate应为RectTemplate（rect → NodeStyleTemplate 映射）
-    QCOMPARE(loadedItem.getRenderTemplate(), DAPyNodeGraphicsItem::NodeStyleTemplate);
+    QCOMPARE(loadedItem.getRenderTemplate(), DA::RenderTemplate::NodeStyleTemplate);
 
     // style应保持默认值（无style元素→mStyle未修改）
     DANodeStyle defaults;

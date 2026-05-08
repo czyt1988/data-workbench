@@ -28,7 +28,7 @@ public:
     void syncMetaFromPyNode(const pybind11::object& pyNode);
 
 public:
-    DANodeDescriptor mDescriptor;                       ///< 节点描述符（统一存储所有元数据）
+    DANodeDescriptor mDescriptor;                      ///< 节点描述符（统一存储所有元数据）
     unsigned int mId { 0 };                            ///< 节点ID（独立管理）
     DAPySafePyObjectHolder mPyNodeRef;                 ///< Python节点实例的安全持有者
     DAPyNodeState mNodeState { DAPyNodeState::Idle };  ///< 节点执行状态
@@ -92,16 +92,8 @@ void DAPyNodeProxy::PrivateData::syncMetaFromPyNode(const pybind11::object& pyNo
         // 从 _node_descriptor 一次性同步全部元数据
         if (pybind11::hasattr(pyNode, "_node_descriptor")) {
             pybind11::object descObj = pyNode.attr("_node_descriptor");
-
-            if (pybind11::isinstance< pybind11::dict >(descObj)) {
-                // 旧式dict描述符 → 经JSON中间格式转换为C++结构体
-                pybind11::dict descDict = pybind11::cast< pybind11::dict >(descObj);
-                QJsonObject json         = DA::PY::pyDictToQJsonObject(descDict);
-                mDescriptor              = DANodeDescriptor::fromJson(json);
-            } else {
-                // 新式C++结构体描述符 → 单次cast直接反序列化
-                mDescriptor = descObj.cast< DA::DANodeDescriptor >();
-            }
+            // 新式C++结构体描述符 → 单次cast直接反序列化
+            mDescriptor = descObj.cast< DA::DANodeDescriptor >();
         }
 
         // 以下为字段级回退读取：仅当结构体同步后字段仍为空时，
@@ -124,6 +116,26 @@ void DAPyNodeProxy::PrivateData::syncMetaFromPyNode(const pybind11::object& pyNo
         // category 回退：读取 group
         if (mDescriptor.category.isEmpty() && pybind11::hasattr(pyNode, "group")) {
             mDescriptor.category = pybind11::cast< QString >(pyNode.attr("group"));
+        }
+
+        // inputs 回退：读取 input_keys 列表
+        if (mDescriptor.inputs.isEmpty() && pybind11::hasattr(pyNode, "input_keys")) {
+            pybind11::list inKeys = pybind11::cast< pybind11::list >(pyNode.attr("input_keys"));
+            for (auto item : inKeys) {
+                DAPortDescriptor pd;
+                pd.name = pybind11::cast< QString >(item);
+                mDescriptor.inputs.append(pd);
+            }
+        }
+
+        // outputs 回退：读取 output_keys 列表
+        if (mDescriptor.outputs.isEmpty() && pybind11::hasattr(pyNode, "output_keys")) {
+            pybind11::list outKeys = pybind11::cast< pybind11::list >(pyNode.attr("output_keys"));
+            for (auto item : outKeys) {
+                DAPortDescriptor pd;
+                pd.name = pybind11::cast< QString >(item);
+                mDescriptor.outputs.append(pd);
+            }
         }
 
     } catch (const pybind11::error_already_set& e) {
@@ -409,20 +421,6 @@ QString DAPyNodeProxy::getNodeGroup() const
 {
     DA_DC(d);
     return d->mDescriptor.category;
-}
-
-/**
- * @brief 获取Python节点描述符
- *
- * 返回mDescriptor的JSON序列化结果，包含节点的完整元数据。
- * 若描述符无效（qualifiedName为空），返回空QJsonObject。
- *
- * @return QJsonObject格式的节点描述符，若获取失败返回空QJsonObject
- */
-QJsonObject DAPyNodeProxy::getDescriptor() const
-{
-    DA_DC(d);
-    return d->mDescriptor.toJson();
 }
 
 /**

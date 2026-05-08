@@ -21,8 +21,7 @@ namespace DA
  * - renderTemplate: RenderTemplate::NodeStyleTemplate
  * - style: 默认 DANodeStyle（调用 setDefaults）
  */
-DANodeDescriptor::DANodeDescriptor()
-    : renderTemplate(RenderTemplate::NodeStyleTemplate), style(DANodeStyle())
+DANodeDescriptor::DANodeDescriptor() : renderTemplate(RenderTemplate::NodeStyleTemplate), style(DANodeStyle())
 {
 }
 
@@ -66,10 +65,10 @@ DAPyNodeMetaData DANodeDescriptor::toMetaData() const
 {
     DAPyNodeMetaData metaData;
 
-    metaData.name           = name;
-    metaData.qualifiedName  = qualifiedName;
-    metaData.group          = category;
-    metaData.iconPath       = icon;
+    metaData.name          = name;
+    metaData.qualifiedName = qualifiedName;
+    metaData.group         = category;
+    metaData.iconPath      = icon;
 
     // tooltip: name + " (" + qualifiedName + ")"
     metaData.tooltip = name;
@@ -116,15 +115,15 @@ QJsonObject DANodeDescriptor::toJson() const
 {
     QJsonObject obj;
 
-    obj[QStringLiteral("name")]            = name;
-    obj[QStringLiteral("qualified_name")]  = qualifiedName;
+    obj[ QStringLiteral("name") ]           = name;
+    obj[ QStringLiteral("qualified_name") ] = qualifiedName;
 
     if (!category.isEmpty()) {
-        obj[QStringLiteral("category")] = category;
+        obj[ QStringLiteral("category") ] = category;
     }
 
     if (!icon.isEmpty()) {
-        obj[QStringLiteral("icon")] = icon;
+        obj[ QStringLiteral("icon") ] = icon;
     }
 
     // inputs 数组（非空时才写入）
@@ -133,7 +132,7 @@ QJsonObject DANodeDescriptor::toJson() const
         for (const DAPortDescriptor& port : inputs) {
             inputsArr.append(port.toJson());
         }
-        obj[QStringLiteral("inputs")] = inputsArr;
+        obj[ QStringLiteral("inputs") ] = inputsArr;
     }
 
     // outputs 数组（非空时才写入）
@@ -142,7 +141,7 @@ QJsonObject DANodeDescriptor::toJson() const
         for (const DAPortDescriptor& port : outputs) {
             outputsArr.append(port.toJson());
         }
-        obj[QStringLiteral("outputs")] = outputsArr;
+        obj[ QStringLiteral("outputs") ] = outputsArr;
     }
 
     // parameters 数组（非空时才写入）
@@ -150,28 +149,28 @@ QJsonObject DANodeDescriptor::toJson() const
         QJsonArray paramsArr;
         for (const ParameterDescriptor& param : parameters) {
             QJsonObject paramObj;
-            paramObj[QStringLiteral("name")]        = param.name;
-            paramObj[QStringLiteral("type")]        = param.type;
+            paramObj[ QStringLiteral("name") ] = param.name;
+            paramObj[ QStringLiteral("type") ] = param.type;
             if (!param.description.isEmpty()) {
-                paramObj[QStringLiteral("description")] = param.description;
+                paramObj[ QStringLiteral("description") ] = param.description;
             }
             if (!param.defaultValue.isNull()) {
-                paramObj[QStringLiteral("default")] = QJsonValue::fromVariant(param.defaultValue);
+                paramObj[ QStringLiteral("default") ] = QJsonValue::fromVariant(param.defaultValue);
             }
             paramsArr.append(paramObj);
         }
-        obj[QStringLiteral("parameters")] = paramsArr;
+        obj[ QStringLiteral("parameters") ] = paramsArr;
     }
 
     // render_template（非默认值时才写入）
     if (renderTemplate != RenderTemplate::NodeStyleTemplate) {
-        obj[QStringLiteral("render_template")] = renderTemplateToString(renderTemplate);
+        obj[ QStringLiteral("render_template") ] = DA::enumToString(renderTemplate);
     }
 
     // style（DANodeStyleToJson 稀疏输出，非空时才写入）
     QJsonObject styleJson = DANodeStyleToJson(style);
     if (!styleJson.isEmpty()) {
-        obj[QStringLiteral("style")] = styleJson;
+        obj[ QStringLiteral("style") ] = styleJson;
     }
 
     return obj;
@@ -202,10 +201,10 @@ DANodeDescriptor DANodeDescriptor::fromJson(const QJsonObject& obj)
 {
     DANodeDescriptor desc;
 
-    desc.name           = obj.value(QStringLiteral("name")).toString();
-    desc.qualifiedName  = obj.value(QStringLiteral("qualified_name")).toString();
-    desc.category       = obj.value(QStringLiteral("category")).toString();
-    desc.icon           = obj.value(QStringLiteral("icon")).toString();
+    desc.name          = obj.value(QStringLiteral("name")).toString();
+    desc.qualifiedName = obj.value(QStringLiteral("qualified_name")).toString();
+    desc.category      = obj.value(QStringLiteral("category")).toString();
+    desc.icon          = obj.value(QStringLiteral("icon")).toString();
 
     // inputs 数组
     if (obj.contains(QStringLiteral("inputs"))) {
@@ -226,12 +225,13 @@ DANodeDescriptor DANodeDescriptor::fromJson(const QJsonObject& obj)
     // parameters 数组
     if (obj.contains(QStringLiteral("parameters"))) {
         QJsonArray paramsArr = obj.value(QStringLiteral("parameters")).toArray();
-        desc.parameters = ParameterDescriptor::fromJsonArray(paramsArr);
+        desc.parameters      = ParameterDescriptor::fromJsonArray(paramsArr);
     }
 
     // render_template（缺失时默认 NodeStyleTemplate）
     if (obj.contains(QStringLiteral("render_template"))) {
-        desc.renderTemplate = stringToRenderTemplate(obj.value(QStringLiteral("render_template")).toString());
+        desc.renderTemplate =
+            DA::stringToEnum< DA::RenderTemplate >(obj.value(QStringLiteral("render_template")).toString());
     }
 
     // style（缺失时默认 DANodeStyle）

@@ -172,8 +172,6 @@ protected:
     QList< DAPyLinkPoint > generateLinkPoints() const;
 
 private:
-    // 从DANodeDescriptor结构体更新连接点
-    void updateLinkPointsFromDescriptor();
     // 刷新连接线位置（委托给场景的updateNodeLinkPositions）
     void updateLinkItems();
     // 获取当前状态颜色

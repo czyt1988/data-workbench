@@ -1,5 +1,6 @@
 #include "DANodeParamSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
+#include "DAPropertyPanelWidget.h"
 #include "DAParamTypeRegistry.h"
 #include "QSpinBox"
 #include "QDoubleSpinBox"
@@ -119,6 +120,9 @@ QJsonObject DANodeParamSettingPanel::collectConfig() const
 
 /**
  * @brief 从 JSON 数组直接构建（测试用）
+ *
+ * 创建编辑器后，与便捷属性方法一致：直接连接编辑器 Widget 的信号到
+ * rootPanel 的 propertyValueChanged，实现 3-hop 信号链第一跳。
  */
 void DANodeParamSettingPanel::testBuildPropertyPanelFromJson(const QVector< ParameterDescriptor >& params)
 {
@@ -130,6 +134,7 @@ void DANodeParamSettingPanel::testBuildPropertyPanelFromJson(const QVector< Para
 
     DAParamTypeRegistry registry;
     registry.registerDefaults();
+    DAPropertyPanelWidget* rootPanel = panel->rootPanel();
 
     int currentId = 1;
     for (const auto& val : params) {
@@ -142,6 +147,57 @@ void DANodeParamSettingPanel::testBuildPropertyPanelFromJson(const QVector< Para
         QWidget* editor = registry.createEditor(type, desc.rawDescriptor, panel);
         if (editor) {
             panel->addProperty(currentId, name, desc.description, editor);
+
+            // 与 DAPropertyPanelWidget 便捷属性方法一致：直接连接编辑器信号到 rootPanel
+            if (type == "int") {
+                auto* spinBox = qobject_cast<QSpinBox*>(editor);
+                if (spinBox) {
+                    connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+                            rootPanel, [rootPanel, currentId](int) {
+                                rootPanel->propertyValueChanged(currentId);
+                            });
+                }
+            } else if (type == "float") {
+                auto* dSpinBox = qobject_cast<QDoubleSpinBox*>(editor);
+                if (dSpinBox) {
+                    connect(dSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+                            rootPanel, [rootPanel, currentId](double) {
+                                rootPanel->propertyValueChanged(currentId);
+                            });
+                }
+            } else if (type == "bool") {
+                auto* checkBox = qobject_cast<QCheckBox*>(editor);
+                if (checkBox) {
+                    connect(checkBox, &QCheckBox::stateChanged,
+                            rootPanel, [rootPanel, currentId](int) {
+                                rootPanel->propertyValueChanged(currentId);
+                            });
+                }
+            } else if (type == "str") {
+                auto* lineEdit = qobject_cast<QLineEdit*>(editor);
+                if (lineEdit) {
+                    connect(lineEdit, &QLineEdit::textChanged,
+                            rootPanel, [rootPanel, currentId](const QString&) {
+                                rootPanel->propertyValueChanged(currentId);
+                            });
+                }
+            } else if (type == "enum") {
+                auto* combo = qobject_cast<QComboBox*>(editor);
+                if (combo) {
+                    connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                            rootPanel, [rootPanel, currentId](int) {
+                                rootPanel->propertyValueChanged(currentId);
+                            });
+                }
+            } else if (type == "file" || type == "folder") {
+                auto* fileEdit = qobject_cast<DAFilePathEditWidget*>(editor);
+                if (fileEdit) {
+                    connect(fileEdit, &DAFilePathEditWidget::selectedPath,
+                            rootPanel, [rootPanel, currentId](const QString&) {
+                                rootPanel->propertyValueChanged(currentId);
+                            });
+                }
+            }
             ++currentId;
         }
     }

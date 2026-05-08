@@ -39,9 +39,6 @@ class DAPyNodeGraphicsItem::PrivateData
 public:
     PrivateData(DAPyNodeGraphicsItem* p);
     ~PrivateData();
-
-    // 根据描述符生成连接点
-    QList< DAPyLinkPoint > generateLinkPointsFromDescriptor() const;
     // 更新连接点位置
     void updateLinkPointPositions(const QRectF& bodyRect);
     // 清理widget
@@ -52,23 +49,21 @@ public:
     void updateNodeStyle(const QRectF& bodyRect);
 
 public:
-    std::unique_ptr< DAPyNodeProxy > mProxy;                                     ///< Python节点代理（独占所有权）
+    std::unique_ptr< DAPyNodeProxy > mProxy;                               ///< Python节点代理（独占所有权）
     RenderTemplate mRenderTemplate { RenderTemplate::NodeStyleTemplate };  ///< 当前渲染模板
-    QString mNodeName;                                                           ///< 节点名称
-    QIcon mIcon;                                                                 ///< 节点图标
-    QSvgRenderer* mSvgRenderer { nullptr };                                      ///< SVG渲染器
-    QGraphicsProxyWidget* mProxyWidget { nullptr };                              ///< Widget代理
-    QWidget* mWidget { nullptr };                                                ///< 嵌入的widget
-    DAPyNodeState mNodeState { Idle };                                           ///< 节点状态
-    QJsonObject mDescriptor;                                                     ///< 节点描述符
-    DANodeDescriptor mDescriptorStruct;                                           ///< 节点描述符结构体
-    QList< DAPyLinkPoint > mInputLinkPoints;                                     ///< 输入连接点
-    QList< DAPyLinkPoint > mOutputLinkPoints;                                    ///< 输出连接点
+    QIcon mIcon;                                                           ///< 节点图标
+    QSvgRenderer* mSvgRenderer { nullptr };                                ///< SVG渲染器
+    QGraphicsProxyWidget* mProxyWidget { nullptr };                        ///< Widget代理
+    QWidget* mWidget { nullptr };                                          ///< 嵌入的widget
+    DAPyNodeState mNodeState { Idle };                                     ///< 节点状态
+    QJsonObject mDescriptor;                                               ///< 节点描述符
+    DANodeDescriptor mDescriptorStruct;                                    ///< 节点描述符结构体
+    QList< DAPyLinkPoint > mInputLinkPoints;                               ///< 输入连接点
+    QList< DAPyLinkPoint > mOutputLinkPoints;                              ///< 输出连接点
     qreal linkPointDrawWidth { 14 };        ///< 连接点的绘制宽度（宽度相对于东西方向的宽度）
     qreal linkPointDrawHeight { 10 };       ///< 连接点的绘制高度（高度相对于东西方向的高度）
     DAPySafePyObjectHolder mPaintCallback;  ///< 自定义绘制回调（Python函数对象）
     bool mPaintCallbackError { false };     ///< 绘制回调是否发生过异常
-    DANodeStyle mStyle;                     ///< 节点样式配置
     QRectF mIconRect;                       ///< 绘制Icon的区域，仅仅有icon时才有用
     QRectF mTextRect;                       ///< 绘制text的区域
     QPixmap mIconPixmap;                    ///< 记录图标的pixmap
@@ -94,50 +89,6 @@ DAPyNodeGraphicsItem::PrivateData::~PrivateData()
 }
 
 /**
- * @brief 从描述符生成连接点
- * @return 连接点列表
- *
- * 根据 mStyle.inputPortSide / outputPortSide 设置每个连接点的方向。
- */
-QList< DAPyLinkPoint > DAPyNodeGraphicsItem::PrivateData::generateLinkPointsFromDescriptor() const
-{
-    QList< DAPyLinkPoint > result;
-
-    if (mDescriptor.isEmpty()) {
-        return result;
-    }
-
-    const PortSide inputSide  = mStyle.inputPortSide;
-    const PortSide outputSide = mStyle.outputPortSide;
-
-    // 从描述符解析输入连接点
-    QJsonArray inputs = mDescriptor.value("inputs").toArray();
-    int inputCount    = inputs.size();
-    for (int i = 0; i < inputCount; ++i) {
-        DAPyLinkPoint lp;
-        lp.way               = DAPyLinkPoint::Input;
-        lp.direction         = inputSide;
-        QJsonObject inputObj = inputs.at(i).toObject();
-        lp.name              = inputObj.value("name").toString(QString("input_%1").arg(i));
-        result.append(lp);
-    }
-
-    // 从描述符解析输出连接点
-    QJsonArray outputs = mDescriptor.value("outputs").toArray();
-    int outputCount    = outputs.size();
-    for (int i = 0; i < outputCount; ++i) {
-        DAPyLinkPoint lp;
-        lp.way                = DAPyLinkPoint::Output;
-        lp.direction          = outputSide;
-        QJsonObject outputObj = outputs.at(i).toObject();
-        lp.name               = outputObj.value("name").toString(QString("output_%1").arg(i));
-        result.append(lp);
-    }
-
-    return result;
-}
-
-/**
  * @brief 更新连接点位置
  * @param[in] bodyRect 节点主体矩形区域
  *
@@ -147,9 +98,10 @@ QList< DAPyLinkPoint > DAPyNodeGraphicsItem::PrivateData::generateLinkPointsFrom
 void DAPyNodeGraphicsItem::PrivateData::updateLinkPointPositions(const QRectF& bodyRect)
 {
     // 更新输入连接点位置
-    int inputCount = mInputLinkPoints.size();
+    const DANodeStyle& st = mDescriptorStruct.style;
+    int inputCount        = mInputLinkPoints.size();
     if (inputCount > 0) {
-        const PortSide side = mStyle.inputPortSide;
+        const PortSide side = st.inputPortSide;
         for (int i = 0; i < inputCount; ++i) {
             mInputLinkPoints[ i ].direction = side;
             if (side == PortSide::West || side == PortSide::East) {
@@ -169,7 +121,7 @@ void DAPyNodeGraphicsItem::PrivateData::updateLinkPointPositions(const QRectF& b
     // 更新输出连接点位置
     int outputCount = mOutputLinkPoints.size();
     if (outputCount > 0) {
-        const PortSide side = mStyle.outputPortSide;
+        const PortSide side = st.outputPortSide;
         for (int i = 0; i < outputCount; ++i) {
             mOutputLinkPoints[ i ].direction = side;
             if (side == PortSide::West || side == PortSide::East) {
@@ -213,7 +165,7 @@ void DAPyNodeGraphicsItem::PrivateData::cleanupSvg()
 
 void DAPyNodeGraphicsItem::PrivateData::updateNodeStyle(const QRectF& bodyRect)
 {
-    const DANodeStyle& s = mStyle;
+    const DANodeStyle& s = mDescriptorStruct.style;
     // 根据端口方向计算各方向的连接点预留偏移量
     const qreal halfLpW = linkPointDrawWidth / 2;
     qreal lpLeft = 0, lpRight = 0, lpTop = 0, lpBottom = 0;
@@ -320,7 +272,7 @@ void DAPyNodeGraphicsItem::PrivateData::updateNodeStyle(const QRectF& bodyRect)
                 }
             }
         } else {
-            // 通过QImage加载到QPixmap
+            // TODO 通过QImage加载到QPixmap
         }
     } else {
         mIconPixmap = QPixmap();
@@ -339,22 +291,11 @@ void DAPyNodeGraphicsItem::PrivateData::updateNodeStyle(const QRectF& bodyRect)
 DAPyNodeGraphicsItem::DAPyNodeGraphicsItem(DAPyNodeProxy* proxy, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
-    d_ptr->mProxy.reset(proxy);
-
-    // 设置默认尺寸
-    setBodySize(QSizeF(120, 60));
-
     // 设置可选中和可移动
     setSelectable(true);
     setMovable(true);
-
-    // 如果代理有效，同步信息
-    if (proxy) {
-        d_ptr->mNodeName   = proxy->getNodeName();
-        d_ptr->mDescriptor = proxy->getDescriptor();
-        d_ptr->mNodeState  = proxy->getNodeState();
-        updateLinkPoints();
-    }
+    // 设置默认尺寸
+    setProxy(proxy);
 }
 
 /**
@@ -449,9 +390,7 @@ void DAPyNodeGraphicsItem::setProxy(DAPyNodeProxy* proxy)
 {
     d_ptr->mProxy.reset(proxy);
     if (proxy) {
-        d_ptr->mNodeName   = proxy->getNodeName();
-        d_ptr->mDescriptor = proxy->getDescriptor();
-        d_ptr->mNodeState  = proxy->getNodeState();
+        d_ptr->mNodeState = proxy->getNodeState();
     }
     updateLinkPoints();
     update();
@@ -466,10 +405,11 @@ void DAPyNodeGraphicsItem::setProxy(DAPyNodeProxy* proxy)
  */
 void DAPyNodeGraphicsItem::setNodeName(const QString& name)
 {
-    if (d_ptr->mNodeName == name) {
+    DA_D(d);
+    if (d->mDescriptorStruct.name == name) {
         return;
     }
-    d_ptr->mNodeName = name;
+    d->mDescriptorStruct.name = name;
     updateNodeBody();
 }
 
@@ -479,7 +419,7 @@ void DAPyNodeGraphicsItem::setNodeName(const QString& name)
  */
 QString DAPyNodeGraphicsItem::getNodeName() const
 {
-    return d_ptr->mNodeName;
+    return d_ptr->mDescriptorStruct.name;
 }
 
 /**
@@ -488,7 +428,7 @@ QString DAPyNodeGraphicsItem::getNodeName() const
  */
 void DAPyNodeGraphicsItem::setNodeStyle(const DANodeStyle& style)
 {
-    d_ptr->mStyle = style;
+    d_ptr->mDescriptorStruct.style = style;
     d_ptr->updateNodeStyle(getBodyRect());
     update();
 }
@@ -499,7 +439,7 @@ void DAPyNodeGraphicsItem::setNodeStyle(const DANodeStyle& style)
  */
 DANodeStyle& DAPyNodeGraphicsItem::nodeStyle()
 {
-    return d_ptr->mStyle;
+    return d_ptr->mDescriptorStruct.style;
 }
 
 /**
@@ -508,7 +448,7 @@ DANodeStyle& DAPyNodeGraphicsItem::nodeStyle()
  */
 const DANodeStyle& DAPyNodeGraphicsItem::nodeStyle() const
 {
-    return d_ptr->mStyle;
+    return d_ptr->mDescriptorStruct.style;
 }
 
 /**
@@ -618,16 +558,12 @@ QJsonObject DAPyNodeGraphicsItem::getDescriptor() const
 void DAPyNodeGraphicsItem::setDescriptorStruct(const DANodeDescriptor& desc)
 {
     d_ptr->mDescriptorStruct = desc;
-    // 同步节点名称
-    if (!desc.name.isEmpty()) {
-        d_ptr->mNodeName = desc.name;
-    }
     // 同步渲染模板
     setRenderTemplate(desc.renderTemplate);
     // 同步节点样式
     setNodeStyle(desc.style);
     // 从结构体生成连接点
-    updateLinkPointsFromDescriptor();
+    updateLinkPoints();
     update();
 }
 
@@ -647,23 +583,23 @@ const DANodeDescriptor& DAPyNodeGraphicsItem::getDescriptorStruct() const
  * 根据 mDescriptorStruct.outputs 生成输出连接点，
  * 使用 mStyle.inputPortSide/outputPortSide 设置连接点方向。
  */
-void DAPyNodeGraphicsItem::updateLinkPointsFromDescriptor()
+void DAPyNodeGraphicsItem::updateLinkPoints()
 {
-    const PortSide inputSide  = d_ptr->mStyle.inputPortSide;
-    const PortSide outputSide = d_ptr->mStyle.outputPortSide;
+    DA_D(d);
+    const PortSide inputSide  = d->mDescriptorStruct.style.inputPortSide;
+    const PortSide outputSide = d->mDescriptorStruct.style.outputPortSide;
 
-    d_ptr->mInputLinkPoints.clear();
-    d_ptr->mOutputLinkPoints.clear();
+    d->mInputLinkPoints.clear();
+    d->mOutputLinkPoints.clear();
 
     // 从描述符输入端口生成输入连接点
-    for (int i = 0; i < d_ptr->mDescriptorStruct.inputs.size(); ++i) {
+    for (int i = 0; i < d->mDescriptorStruct.inputs.size(); ++i) {
         DAPyLinkPoint lp;
         lp.way       = DAPyLinkPoint::Input;
         lp.direction = inputSide;
-        lp.name      = d_ptr->mDescriptorStruct.inputs[i].name.isEmpty()
-                           ? QString("input_%1").arg(i)
-                           : d_ptr->mDescriptorStruct.inputs[i].name;
-        d_ptr->mInputLinkPoints.append(lp);
+        lp.name      = d_ptr->mDescriptorStruct.inputs[ i ].name.isEmpty() ? QString("input_%1").arg(i)
+                                                                           : d_ptr->mDescriptorStruct.inputs[ i ].name;
+        d->mInputLinkPoints.append(lp);
     }
 
     // 从描述符输出端口生成输出连接点
@@ -671,13 +607,12 @@ void DAPyNodeGraphicsItem::updateLinkPointsFromDescriptor()
         DAPyLinkPoint lp;
         lp.way       = DAPyLinkPoint::Output;
         lp.direction = outputSide;
-        lp.name      = d_ptr->mDescriptorStruct.outputs[i].name.isEmpty()
-                           ? QString("output_%1").arg(i)
-                           : d_ptr->mDescriptorStruct.outputs[i].name;
-        d_ptr->mOutputLinkPoints.append(lp);
+        lp.name      = d_ptr->mDescriptorStruct.outputs[ i ].name.isEmpty() ? QString("output_%1").arg(i)
+                                                                            : d_ptr->mDescriptorStruct.outputs[ i ].name;
+        d->mOutputLinkPoints.append(lp);
     }
 
-    d_ptr->updateLinkPointPositions(getBodyRect());
+    d->updateLinkPointPositions(getBodyRect());
 }
 
 /**
@@ -699,67 +634,32 @@ QList< DAPyLinkPoint > DAPyNodeGraphicsItem::getOutputLinkPoints() const
 }
 
 /**
- * @brief 更新连接点
- */
-void DAPyNodeGraphicsItem::updateLinkPoints()
-{
-    QList< DAPyLinkPoint > allPoints = generateLinkPoints();
-
-    d_ptr->mInputLinkPoints.clear();
-    d_ptr->mOutputLinkPoints.clear();
-
-    for (const auto& lp : std::as_const(allPoints)) {
-        if (lp.isInput()) {
-            d_ptr->mInputLinkPoints.append(lp);
-        } else {
-            d_ptr->mOutputLinkPoints.append(lp);
-        }
-    }
-
-    d_ptr->updateLinkPointPositions(getBodyRect());
-}
-
-/**
  * @brief 生成连接点
  * @return 连接点列表
  */
 QList< DAPyLinkPoint > DAPyNodeGraphicsItem::generateLinkPoints() const
 {
     // 优先从描述符生成
-    if (!d_ptr->mDescriptor.isEmpty()) {
-        QList< DAPyLinkPoint > descriptorPoints = d_ptr->generateLinkPointsFromDescriptor();
-        if (!descriptorPoints.isEmpty()) {
-            return descriptorPoints;  // 描述符有完整的I/O信息，直接使用
-        }
-        // 描述符为薄描述符（没有inputs/outputs数组），回退到代理路径
-    }
-
-    // 从代理节点生成
+    DA_DC(d);
     QList< DAPyLinkPoint > result;
-    if (d_ptr->mProxy) {
-        QStringList inputs  = d_ptr->mProxy->getInputKeys();
-        QStringList outputs = d_ptr->mProxy->getOutputKeys();
+    const PortSide inputSide  = d->mDescriptorStruct.style.inputPortSide;
+    const PortSide outputSide = d->mDescriptorStruct.style.outputPortSide;
 
-        const PortSide inputSide  = d_ptr->mStyle.inputPortSide;
-        const PortSide outputSide = d_ptr->mStyle.outputPortSide;
-
-        // 生成输入连接点
-        for (const QString& key : inputs) {
-            DAPyLinkPoint lp;
-            lp.way       = DAPyLinkPoint::Input;
-            lp.direction = inputSide;
-            lp.name      = key;
-            result.append(lp);
-        }
-
-        // 生成输出连接点
-        for (const QString& key : outputs) {
-            DAPyLinkPoint lp;
-            lp.way       = DAPyLinkPoint::Output;
-            lp.direction = outputSide;
-            lp.name      = key;
-            result.append(lp);
-        }
+    // 从描述符解析输入连接点
+    for (const DAPortDescriptor& pd : std::as_const(d->mDescriptorStruct.inputs)) {
+        DAPyLinkPoint lp;
+        lp.way       = DAPyLinkPoint::Input;
+        lp.direction = inputSide;
+        lp.name      = pd.name;
+        result.append(lp);
+    }
+    // 从描述符解析输出连接点
+    for (const DAPortDescriptor& pd : std::as_const(d->mDescriptorStruct.outputs)) {
+        DAPyLinkPoint lp;
+        lp.way       = DAPyLinkPoint::Output;
+        lp.direction = outputSide;
+        lp.name      = pd.name;
+        result.append(lp);
     }
 
     return result;
@@ -779,25 +679,7 @@ bool DAPyNodeGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentEleme
     }
 
     QDomElement pyNodeEle = doc->createElement("pyNodeItem");
-
-    // 保存渲染模板（始终保存为 nodestyle，升级旧的 rect/svg）
-    pyNodeEle.setAttribute("renderTemplate", "nodestyle");
-
-    // 保存节点名称
-    pyNodeEle.setAttribute("nodeName", d_ptr->mNodeName);
-
-    // 保存状态
-    pyNodeEle.setAttribute("nodeState", static_cast< int >(d_ptr->mNodeState));
-
-    // 保存样式配置（稀疏JSON）
-    const QJsonObject styleJson = DANodeStyleToJson(d_ptr->mStyle);
-    if (!styleJson.isEmpty()) {
-        const QJsonDocument styleDoc(styleJson);
-        QDomElement styleEle   = doc->createElement("style");
-        QDomCDATASection cdata = doc->createCDATASection(QString::fromUtf8(styleDoc.toJson(QJsonDocument::Compact)));
-        styleEle.appendChild(cdata);
-        pyNodeEle.appendChild(styleEle);
-    }
+    // TODO
 
     parentElement->appendChild(pyNodeEle);
     return true;
@@ -819,49 +701,7 @@ bool DAPyNodeGraphicsItem::loadFromXml(const QDomElement* itemElement, const QVe
     if (pyNodeEle.isNull()) {
         return false;
     }
-
-    // 加载渲染模板（含遗留迁移）
-    QString tmplName = pyNodeEle.attribute("renderTemplate", "rect");
-    if (tmplName == "rect" || tmplName == "svg" || tmplName == "nodestyle") {
-        // 遗留迁移：rect/svg/nodestyle → RectTemplate（NodeStyleTemplate）
-        setRenderTemplate(RenderTemplate::NodeStyleTemplate);
-        if (tmplName == "svg") {
-            // SVG迁移：记录旧的svgPath到style
-            QString svgPath = pyNodeEle.attribute("svgPath");
-            if (!svgPath.isEmpty()) {
-                d_ptr->mStyle.bodyIconType   = BodyIconType::Svg;
-                d_ptr->mStyle.bodyIconSource = svgPath;
-            }
-        }
-    } else if (tmplName == "widget") {
-        setRenderTemplate(RenderTemplate::WidgetTemplate);
-    } else {
-        // 未知类型，回退到NodeStyleTemplate
-        setRenderTemplate(RenderTemplate::NodeStyleTemplate);
-    }
-
-    // 加载节点名称
-    d_ptr->mNodeName = pyNodeEle.attribute("nodeName");
-
-    // 加载样式配置（如果存在）
-    QDomElement styleEle = pyNodeEle.firstChildElement("style");
-    if (!styleEle.isNull()) {
-        QDomCDATASection cdata = styleEle.firstChild().toCDATASection();
-        if (!cdata.isNull()) {
-            QJsonParseError error;
-            QJsonDocument jsonDoc = QJsonDocument::fromJson(cdata.data().toUtf8(), &error);
-            if (error.error == QJsonParseError::NoError && jsonDoc.isObject()) {
-                d_ptr->mStyle = DANodeStyleFromJson(jsonDoc.object());
-            } else {
-                qWarning() << "DAPyNodeGraphicsItem::loadFromXml: style JSON parse error:" << error.errorString();
-            }
-        }
-    }
-
-    // 加载状态
-    int state         = pyNodeEle.attribute("nodeState", "0").toInt();
-    d_ptr->mNodeState = static_cast< DAPyNodeState >(state);
-
+    // TODO
     return true;
 }
 
@@ -1095,20 +935,15 @@ void DAPyNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOption
     QFont smallFont = painter->font();
     smallFont.setPointSize(d->smallFontSize);
     painter->setFont(smallFont);
-
+    const DANodeStyle& st = d->mDescriptorStruct.style;
     // 绘制输入连接点（默认白色填充）
-    drawLinkPointGroup(painter,
-                       d_ptr->mInputLinkPoints,
-                       d_ptr->mStyle.inputPortStyle,
-                       Qt::white,
-                       d->linkPointDrawWidth,
-                       d->linkPointDrawHeight,
-                       d->smallFontSize);
+    drawLinkPointGroup(
+        painter, d->mInputLinkPoints, st.inputPortStyle, Qt::white, d->linkPointDrawWidth, d->linkPointDrawHeight, d->smallFontSize);
 
     // 绘制输出连接点（默认深灰色填充）
     drawLinkPointGroup(painter,
-                       d_ptr->mOutputLinkPoints,
-                       d_ptr->mStyle.outputPortStyle,
+                       d->mOutputLinkPoints,
+                       st.outputPortStyle,
                        Qt::darkGray,
                        d->linkPointDrawWidth,
                        d->linkPointDrawHeight,
@@ -1142,7 +977,7 @@ void DAPyNodeGraphicsItem::paintStateDecoration(QPainter* painter, const QRectF&
         painter->setPen(pen);
         painter->setBrush(Qt::NoBrush);
         // 边框始终跟随 bodyShape
-        if (d_ptr->mStyle.bodyShape == BodyShape::Ellipse) {
+        if (d_ptr->mDescriptorStruct.style.bodyShape == BodyShape::Ellipse) {
             painter->drawEllipse(bodyRect.adjusted(1, 1, -1, -1));
         } else {
             painter->drawRoundedRect(bodyRect.adjusted(1, 1, -1, -1), 4, 4);
@@ -1158,7 +993,7 @@ void DAPyNodeGraphicsItem::paintStateDecoration(QPainter* painter, const QRectF&
         painter->setPen(Qt::NoPen);
 
         // 根据 bodyShape 裁剪填充区域
-        if (d_ptr->mStyle.bodyShape == BodyShape::Ellipse) {
+        if (d_ptr->mDescriptorStruct.style.bodyShape == BodyShape::Ellipse) {
             QPainterPath clipPath;
             clipPath.addEllipse(bodyRect);
             painter->setClipPath(clipPath);
@@ -1189,7 +1024,7 @@ void DAPyNodeGraphicsItem::paintNodeStyleBody(QPainter* painter, const QRectF& b
     DA_D(d);
     painter->save();
 
-    const DANodeStyle& style = d_ptr->mStyle;
+    const DANodeStyle& style = d->mDescriptorStruct.style;
 
     // 确定背景色（无效时使用默认值）
     QColor bgColor  = style.backgroundColor.isValid() ? style.backgroundColor : QColor(240, 240, 240);
@@ -1214,14 +1049,14 @@ void DAPyNodeGraphicsItem::paintNodeStyleBody(QPainter* painter, const QRectF& b
     // 绘制pixmap
     painter->drawPixmap(d->mIconRect.toRect(), d->mIconPixmap);
     // 绘制文字
-    if (!d->mNodeName.isEmpty()) {
+    if (!d->mDescriptorStruct.name.isEmpty()) {
         QFont font = painter->font();
         font.setPointSize(d->normalFontSize);
         painter->setFont(font);
         painter->setPen(Qt::black);
         // 若文字超出mTextRect宽度，自动省略显示，避免裁剪
         QFontMetricsF fm(font);
-        QString displayName = d->mNodeName;
+        QString displayName = d->mDescriptorStruct.name;
         if (fm.horizontalAdvance(displayName) > d->mTextRect.width()) {
             displayName = fm.elidedText(displayName, Qt::ElideRight, d->mTextRect.width());
         }
@@ -1257,22 +1092,22 @@ void DAPyNodeGraphicsItem::paintWidgetTemplate(QPainter* painter, const QRectF& 
 QRectF DAPyNodeGraphicsItem::boundingRect() const
 {
     QRectF rect = DAGraphicsResizeableItem::boundingRect();
-
+    DA_DC(d);
     // 名称位置扩展（Below 模式）
-    if (d_ptr->mStyle.namePosition == NamePosition::Below && !d_ptr->mNodeName.isEmpty()) {
+    if (d->mDescriptorStruct.style.namePosition == NamePosition::Below && !d_ptr->mDescriptorStruct.name.isEmpty()) {
         QFont font;
-        font.setPointSize(d_ptr->normalFontSize);
+        font.setPointSize(d->normalFontSize);
         QFontMetricsF fm(font);
         const qreal textHeight = fm.height() + 4;  // 额外4px间距
-        const qreal textWidth  = fm.horizontalAdvance(d_ptr->mNodeName) + 4;
+        const qreal textWidth  = fm.horizontalAdvance(d->mDescriptorStruct.name) + 4;
         // 如果文字比body宽，水平扩展
         qreal extraWidth = qMax(0.0, textWidth - rect.width());
         rect.adjust(0, 0, extraWidth, textHeight);
     }
 
     // 端口扩展
-    const PortSide inputSide  = d_ptr->mStyle.inputPortSide;
-    const PortSide outputSide = d_ptr->mStyle.outputPortSide;
+    const PortSide inputSide  = d->mDescriptorStruct.style.inputPortSide;
+    const PortSide outputSide = d->mDescriptorStruct.style.outputPortSide;
 
     // 端口突出间距常量
     constexpr qreal kPortOffset = 8.0;
@@ -1297,9 +1132,10 @@ QRectF DAPyNodeGraphicsItem::boundingRect() const
  */
 QPainterPath DAPyNodeGraphicsItem::shape() const
 {
+    DA_DC(d);
     QPainterPath path;
 
-    if (d_ptr->mStyle.bodyShape == BodyShape::Ellipse) {
+    if (d->mDescriptorStruct.style.bodyShape == BodyShape::Ellipse) {
         path.addEllipse(getBodyControlRect());
     } else {
         // RoundedRect 等保持默认矩形路径（复用基类行为）
@@ -1494,11 +1330,11 @@ void DAPyNodeGraphicsItem::updateNodeBody()
     font.setPointSize(d->normalFontSize);
     QFontMetricsF fm(font);
     // 文本信息
-    QRectF textBoundRect = fm.boundingRect(d->mNodeName);
+    QRectF textBoundRect = fm.boundingRect(d->mDescriptorStruct.name);
     // 计算推荐
     qreal bodyWidth      = 0.0;
     qreal bodyHeight     = 0.0;
-    const DANodeStyle& s = d->mStyle;
+    const DANodeStyle& s = d->mDescriptorStruct.style;
     const int space      = qMin(4.0, s.cornerRadius);
     qreal iconSize       = s.iconSize;
     if (s.bodyIconSource.isEmpty()) {

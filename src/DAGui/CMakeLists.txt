@@ -295,9 +295,7 @@ file(GLOB DA_LIB_SOURCE_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.cpp)
 file(GLOB DA_LIB_UI_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.ui)
 
 #NodeSetting
-set(DA_LIB_HEADER_FILES_NodeSetting
-    ${DA_LIB_SUBDIR_NodeSetting}/ParameterDescriptor.h
-)
+set(DA_LIB_HEADER_FILES_NodeSetting)
 if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_HEADER_FILES_NodeSetting
         ${DA_LIB_SUBDIR_NodeSetting}/DAParamTypeRegistry.h

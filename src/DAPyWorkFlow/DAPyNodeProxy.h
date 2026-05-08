@@ -57,18 +57,14 @@ public:
     void setNodeName(const QString& name);
 
     // 输入/输出key列表（从Python描述符获取）
-    QList<QString> getInputKeys() const;
-    QList<QString> getOutputKeys() const;
+    QList< QString > getInputKeys() const;
+    QList< QString > getOutputKeys() const;
 
     // 节点原型（从Python描述符获取）
     QString getNodePrototype() const;
 
     // 节点分组（从Python描述符获取）
     QString getNodeGroup() const;
-
-    // 节点描述符（从Python _node_descriptor获取）
-    // @deprecated 使用 getDescriptorStruct() 代替
-    QJsonObject getDescriptor() const;
 
     // 节点样式（从Python描述符同步）
     DANodeStyle getNodeStyle() const;
