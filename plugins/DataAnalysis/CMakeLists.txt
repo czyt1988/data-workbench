@@ -150,7 +150,6 @@ find_package(DAWorkbench COMPONENTS
 target_link_libraries(${DA_PLUGIN_NAME} PRIVATE
     DAWorkbench::DAUtils 
     DAWorkbench::DAMessageHandler
-    DAWorkbench::DAAxOfficeWrapper
     DAWorkbench::DAPyBindQt
     DAWorkbench::DAPyScripts
     DAWorkbench::DAData
@@ -163,6 +162,11 @@ target_link_libraries(${DA_PLUGIN_NAME} PRIVATE
     DAWorkbench::DAInterface
     DAWorkbench::DAPluginSupport
 )
+if(WIN32)
+    target_link_libraries(${DA_PLUGIN_NAME} PRIVATE
+        DAWorkbench::DAAxOfficeWrapper
+    )
+endif()
 
 ########################################################
 # Qt的moc
