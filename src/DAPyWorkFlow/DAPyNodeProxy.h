@@ -1,6 +1,7 @@
 ﻿#ifndef DAPYNODEPROXY_H
 #define DAPYNODEPROXY_H
 #include "DAPyWorkFlowAPI.h"
+#include "DANodeDescriptor.h"
 #include "DAPyNodeState.h"
 #include "DAPyNodeStyle.h"
 #include "DAGlobals.h"
@@ -66,10 +67,14 @@ public:
     QString getNodeGroup() const;
 
     // 节点描述符（从Python _node_descriptor获取）
+    // @deprecated 使用 getDescriptorStruct() 代替
     QJsonObject getDescriptor() const;
 
     // 节点样式（从Python描述符同步）
     DANodeStyle getNodeStyle() const;
+
+    // 节点描述符结构体（直接访问mDescriptor）
+    const DANodeDescriptor& getDescriptorStruct() const;
 
     // 状态管理
     DAPyNodeState getNodeState() const;

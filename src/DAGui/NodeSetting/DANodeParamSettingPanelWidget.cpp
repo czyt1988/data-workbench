@@ -101,8 +101,8 @@ void DANodeParamSettingPanelWidget::setNodeProxy(DAPyNodeProxy* proxy)
     d->mNodeProxy = proxy;
 
     // 从代理获取描述符，提取 qualifiedName
-    QJsonObject descriptor = proxy->getDescriptor();
-    QString qualifiedName  = descriptor["qualified_name"].toString();
+    const DANodeDescriptor& descriptor = proxy->getDescriptorStruct();
+    QString qualifiedName              = descriptor.qualifiedName;
     if (qualifiedName.isEmpty()) {
         qualifiedName = QStringLiteral("generic");
     }

@@ -59,7 +59,7 @@ void DAAbstractNodeSettingWidget::setNodeProxy(DAPyNodeProxy* proxy)
     DA_D(d);
     d->mNodeProxy = proxy;
     if (proxy) {
-        d->mDescriptor = proxy->getDescriptor();
+        d->mDescriptor = proxy->getDescriptorStruct().toJson();
     } else {
         d->mDescriptor = QJsonObject();
     }

@@ -4,6 +4,8 @@
 #include "DAPyModuleWorkflow.h"
 #include "DAPyNodeProxy.h"
 #include "DAPyInterpreter.h"
+#include "DANodeDescriptor.h"
+#include "DAPyJsonCast.h"
 #include <QDebug>
 #include <QJsonObject>
 #include <QHash>
@@ -180,79 +182,6 @@ uint qHash(const DAPyNodeMetaData& key, uint seed)
 }
 
 //===================================================
-// 辅助函数（文件内部使用）
-//===================================================
-
-/**
- * @brief 将Python描述符字典转换为DAPyNodeMetaData
- *
- * Python侧的DANodeDescriptor.to_dict()返回字典包含：
- * - name: 节点显示名称
- * - category: 节点分类/分组
- * - qualified_name: 节点唯一标识（原型）
- * - icon: 图标标识/路径
- * - inputs: 输入描述列表（每项含name字段）
- * - outputs: 输出描述列表（每项含name字段）
- *
- * @param[in] descDict Python描述符字典
- * @return 对应的DAPyNodeMetaData对象
- */
-static DAPyNodeMetaData convertDescriptorToMetaData(const pybind11::dict& descDict)
-{
-    DAPyNodeMetaData metaData;
-
-    // qualified_name → qualifiedName
-    if (descDict.contains("qualified_name")) {
-        metaData.qualifiedName = QString::fromStdString(pybind11::str(descDict[ "qualified_name" ]));
-    }
-
-    // name → name
-    if (descDict.contains("name")) {
-        metaData.name = QString::fromStdString(pybind11::str(descDict[ "name" ]));
-    }
-
-    // category → group
-    if (descDict.contains("category")) {
-        metaData.group = QString::fromStdString(pybind11::str(descDict[ "category" ]));
-    }
-
-    // icon → iconPath
-    if (descDict.contains("icon")) {
-        metaData.iconPath = QString::fromStdString(pybind11::str(descDict[ "icon" ]));
-    }
-
-    // tooltip: 使用name + qualified_name组合
-    metaData.tooltip = metaData.name;
-    if (!metaData.qualifiedName.isEmpty()) {
-        metaData.tooltip += " (" + metaData.qualifiedName + ")";
-    }
-
-    // inputs → inputKeys（提取每项的name字段）
-    if (descDict.contains("inputs")) {
-        pybind11::list inputs = descDict[ "inputs" ].cast< pybind11::list >();
-        for (pybind11::handle item : inputs) {
-            pybind11::dict inputDict = item.cast< pybind11::dict >();
-            if (inputDict.contains("name")) {
-                metaData.inputKeys.append(QString::fromStdString(pybind11::str(inputDict[ "name" ])));
-            }
-        }
-    }
-
-    // outputs → outputKeys（提取每项的name字段）
-    if (descDict.contains("outputs")) {
-        pybind11::list outputs = descDict[ "outputs" ].cast< pybind11::list >();
-        for (pybind11::handle item : outputs) {
-            pybind11::dict outputDict = item.cast< pybind11::dict >();
-            if (outputDict.contains("name")) {
-                metaData.outputKeys.append(QString::fromStdString(pybind11::str(outputDict[ "name" ])));
-            }
-        }
-    }
-
-    return metaData;
-}
-
-//===================================================
 // DAPyNodeFactory::PrivateData
 //===================================================
 
@@ -375,32 +304,23 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
         // 5. 遍历返回的DANodeDescriptor列表
         QList< DAPyNodeMetaData > discoveredList;
         for (pybind11::handle item : result) {
-            pybind11::object descriptorObj = pybind11::reinterpret_borrow< pybind11::object >(item);
+            pybind11::object descObj = pybind11::reinterpret_borrow< pybind11::object >(item);
 
-            // 获取描述符字典
-            pybind11::dict descDict;
-            if (pybind11::hasattr(descriptorObj, "to_dict")) {
-                pybind11::object toDictMethod = descriptorObj.attr("to_dict");
-                pybind11::object descDictObj  = toDictMethod();
-                descDict                      = descDictObj.cast< pybind11::dict >();
-            } else if (pybind11::isinstance< pybind11::dict >(descriptorObj)) {
-                descDict = descriptorObj.cast< pybind11::dict >();
+            DANodeDescriptor descriptor;
+            if (pybind11::isinstance< pybind11::dict >(descObj)) {
+                // 旧式Python dict描述符
+                pybind11::dict descDict = descObj.cast< pybind11::dict >();
+                QJsonObject json         = DA::PY::pyDictToQJsonObject(descDict);
+                descriptor               = DANodeDescriptor::fromJson(json);
             } else {
-                qWarning() << "发现无法解析的描述符对象，跳过";
-                continue;
+                // 新式C++ struct描述符（通过pybind11直接cast）
+                descriptor = descObj.cast< DA::DANodeDescriptor >();
             }
 
-            // 从字典中提取元数据
-            DAPyNodeMetaData metaData = convertDescriptorToMetaData(descDict);
+            DAPyNodeMetaData metaData = descriptor.toMetaData();
             if (!metaData.isValid()) {
                 qWarning() << "发现无效的节点元数据，跳过";
                 continue;
-            }
-
-            // 提取qualified_name作为创建节点时的映射key
-            QString qualifiedName;
-            if (descDict.contains("qualified_name")) {
-                qualifiedName = QString::fromStdString(pybind11::str(descDict[ "qualified_name" ]));
             }
 
             discoveredList.append(metaData);

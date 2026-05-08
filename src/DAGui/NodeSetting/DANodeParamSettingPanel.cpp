@@ -26,7 +26,7 @@ public:
     }
 
     DAPropertyPanelContainerWidget* mPanel = nullptr;
-    QJsonArray mParameters;
+    QVector< ParameterDescriptor > mParameters;
     bool mBlockSignals = false;
 };
 
@@ -121,7 +121,7 @@ QJsonObject DANodeParamSettingPanel::collectConfig() const
 /**
  * @brief 从 JSON 数组直接构建（测试用）
  */
-void DANodeParamSettingPanel::testBuildPropertyPanelFromJson(const QJsonArray& params)
+void DANodeParamSettingPanel::testBuildPropertyPanelFromJson(const QVector< ParameterDescriptor >& params)
 {
     d_func()->mParameters = params;
     auto* panel = d_func()->mPanel;
@@ -134,15 +134,15 @@ void DANodeParamSettingPanel::testBuildPropertyPanelFromJson(const QJsonArray& p
 
     int currentId = 1;
     for (const auto& val : params) {
-        QJsonObject desc = val.toObject();
-        QString name = desc["name"].toString();
-        QString type = desc["type"].toString();
+        const ParameterDescriptor& desc = val;
+        QString name = desc.name;
+        QString type = desc.type;
 
         if (name.isEmpty() || type.isEmpty()) continue;
 
-        QWidget* editor = registry.createEditor(type, desc, panel);
+        QWidget* editor = registry.createEditor(type, desc.rawDescriptor, panel);
         if (editor) {
-            panel->addProperty(currentId, name, desc["description"].toString(), editor);
+            panel->addProperty(currentId, name, desc.description, editor);
             ++currentId;
         }
     }
@@ -173,9 +173,9 @@ QJsonObject DANodeParamSettingPanel::testCollectConfig() const
     const auto& params = d_func()->mParameters;
     int currentId = 1;
     for (const auto& val : params) {
-        QJsonObject desc = val.toObject();
-        QString name = desc["name"].toString();
-        QString type = desc["type"].toString();
+        const ParameterDescriptor& desc = val;
+        QString name = desc.name;
+        QString type = desc.type;
 
         if (name.isEmpty() || type.isEmpty()) continue;
 

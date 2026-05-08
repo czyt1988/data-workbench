@@ -5,16 +5,15 @@
 #include "DAAbstractNodeSettingWidget.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAGlobals.h"
+#include "DAPyWorkFlow/ParameterDescriptor.h"
+#include "DANodeDescriptor.h"
 #include <QJsonObject>
-#include <QJsonArray>
 #include <QVector>
 
 class QLabel;
 
 namespace DA
 {
-
-struct ParameterDescriptor;
 
 /**
  * @brief 参数面板中间层，基于 SceneB 模式构建
@@ -77,8 +76,8 @@ protected:
 
     // === 测试辅助方法（仅在测试中使用）===
 
-    // 从 QJsonArray 直接构建属性面板（绕过 proxy）
-    void testBuildPropertyPanelFromJson(const QJsonArray& params);
+    // 从参数描述符列表直接构建属性面板（绕过 proxy）
+    void testBuildPropertyPanelFromJson(const QVector< ParameterDescriptor >& params);
 
     // 收集配置（测试暴露）
     QJsonObject testCollectConfig() const;

@@ -6,6 +6,7 @@
 #include "DAPyGILGuard.h"
 #include "DAPyNodeState.h"
 #include "DAPyNodeStyle.h"
+#include "DANodeDescriptor.h"
 #include <QIcon>
 #include <QJsonObject>
 #include <QGraphicsSceneMouseEvent>
@@ -47,14 +48,7 @@ class DAPYWORKFLOW_API DAPyNodeGraphicsItem : public DAGraphicsResizeableItem
     DA_DECLARE_PRIVATE(DAPyNodeGraphicsItem)
 
 public:
-    /**
-     * @brief 渲染模板类型
-     */
-    enum RenderTemplate
-    {
-        NodeStyleTemplate,  ///< 以NodeStyle作为渲染模板
-        WidgetTemplate      ///< 嵌入Widget模板
-    };
+    using RenderTemplate = DA::RenderTemplate;  ///< 向后兼容：引用命名空间级 enum class
 
     /**
      * @brief Item类型标识
@@ -101,8 +95,13 @@ public:
     void setNodeState(DAPyNodeState state);
 
     // 节点描述符（用于获取输入/输出信息）
+    // @deprecated 使用 setDescriptorStruct(const DANodeDescriptor&) 代替
     void setDescriptor(const QJsonObject& desc);
     QJsonObject getDescriptor() const;
+
+    // 节点描述符结构体（C++原生描述符）
+    void setDescriptorStruct(const DANodeDescriptor& desc);
+    const DANodeDescriptor& getDescriptorStruct() const;
 
     // 节点样式
     void setNodeStyle(const DANodeStyle& style);
@@ -173,6 +172,8 @@ protected:
     QList< DAPyLinkPoint > generateLinkPoints() const;
 
 private:
+    // 从DANodeDescriptor结构体更新连接点
+    void updateLinkPointsFromDescriptor();
     // 刷新连接线位置（委托给场景的updateNodeLinkPositions）
     void updateLinkItems();
     // 获取当前状态颜色

@@ -18,6 +18,7 @@ class DAPyLinkGraphicsItem;
 class DAPythonSignalHandler;
 class DAPyNodeFactory;
 struct DAPyNodeMetaData;
+struct DANodeDescriptor;
 
 /**
  * @brief Python工作流场景管理类
@@ -56,12 +57,18 @@ public:
     std::shared_ptr< DAPyNodeFactory > getPyNodeFactory() const;
 
     // 节点管理
+    // @deprecated 使用 createPyNode(const DANodeDescriptor&, const QPointF&) 代替
     DAPyNodeGraphicsItem* createPyNode(const QJsonObject& descriptor, const QPointF& pos);
+    // @deprecated 使用 createPyNode_(const DANodeDescriptor&, const QPointF&) 代替
     DAPyNodeGraphicsItem* createPyNode_(const QJsonObject& descriptor, const QPointF& pos);
     // 通过节点元数据创建Python工作流节点（推荐路径，避免数据丢失）
     DAPyNodeGraphicsItem* createPyNode(const DAPyNodeMetaData& metaData, const QPointF& pos);
     // 通过节点元数据创建Python工作流节点（undo版本）
     DAPyNodeGraphicsItem* createPyNode_(const DAPyNodeMetaData& metaData, const QPointF& pos);
+    // 通过节点描述符创建Python工作流节点（结构体路径，推荐）
+    DAPyNodeGraphicsItem* createPyNode(const DANodeDescriptor& descriptor, const QPointF& pos);
+    // 通过节点描述符创建Python工作流节点（undo版本）
+    DAPyNodeGraphicsItem* createPyNode_(const DANodeDescriptor& descriptor, const QPointF& pos);
     bool removePyNodeItem(DAPyNodeGraphicsItem* item);
     void removePyNodeItem_(DAPyNodeGraphicsItem* item);
 
