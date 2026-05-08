@@ -261,96 +261,145 @@ public:
 
 项目使用 cmake 构建。如果项目目录下存在 `build` 目录，说明已经生成过，直接在此目录下编译即可。
 
-> **⚠️ 构建前请阅读 root `build.md`**：该文件包含当前环境的实际构建命令和常见问题，尤其是 Ninja 在 PowerShell 中的限制说明。
+> **⚠️ 构建前请阅读 root `build.md`**：该文件包含当前环境的实际构建命令和常见问题。
+
+### 构建分两步：先第三方库 → 后主项目
+
+第三方库必须先编译并执行 install，主项目才能配置。详见 `build.md`。
 
 ### 生成器选择（关键）
 
-| 生成器 | 是否可用 | 条件 |
-|--------|:------:|------|
-| **Visual Studio** | ✅ 推荐 | 任何环境均可用，自动检测 MSVC |
-| **Ninja** | ⚠️ 有限制 | **必须**在 Developer Command Prompt (CMD) 中运行；PowerShell 中 MSVC 环境变量无法通过 `vcvars64.bat` 注入 |
+| 平台 | 推荐生成器 | 说明 |
+|------|-----------|------|
+| **Windows** | Visual Studio | 自动检测 MSVC，无需手动初始化环境 |
+| **Windows** | Ninja ⚠️ | **必须**在 Developer Command Prompt 中运行 |
+| **Linux / WSL** | Ninja ✅ 推荐 | 编译速度快，无需特殊环境设置 |
+| **Linux / WSL** | Unix Makefiles ✅ | 备选方案，无需额外安装 |
 
-**PowerShell 中必须使用 Visual Studio 生成器。** 详见 root `build.md` 第59-61行。
+### Linux / WSL 依赖安装（Ubuntu 24.04）
 
-### 配置与构建（Visual Studio 生成器）
+```bash
+sudo apt install qt6-base-dev qt6-base-dev-tools qt6-svg-dev \
+    qt6-5compat-dev qt6-tools-dev qt6-base-private-dev \
+    libgl-dev libglu1-mesa-dev pkg-config libxkbcommon-dev \
+    zlib1g-dev ninja-build python3-dev libpython3-dev
+```
+
+> **⚠️ `qt6-base-private-dev` 不可省略**：ADS (Qt-Advanced-Docking-System) 在 Linux 上使用了 Qt private headers，缺少此包会导致编译失败。
+
+### 配置与构建 — Windows (Visual Studio 生成器)
 
 ```powershell
-# === 首次配置 ===
-cmake -S . -B build -G "Visual Studio 16 2019" -A x64 `
-    -DCMAKE_PREFIX_PATH="C:/Qt/6.7.3/msvc2019_64"
-
-# === 后续编译（增量） ===
+# === 第三方库（先编译安装） ===
+cd src/3rdparty
+cmake -S . -B build -G "Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH="C:/Qt/6.7.3/msvc2019_64"
 cmake --build build --config Release --parallel
+cmake --install build --config Release
 
-# === 仅构建特定目标 ===
-cmake --build build --config Release --target DAPyWorkFlow --parallel
-
-# === 构建 + 测试 ===
-cmake --build build --config Release --target DAPyWorkFlowTests --parallel
+# === 主项目 ===
+cmake -S . -B build -G "Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH="C:/Qt/6.7.3/msvc2019_64"
+cmake --build build --config Release --parallel
 ```
+
+### 配置与构建 — Linux / WSL (Ninja 生成器)
+
+```bash
+# === 第三方库（先编译安装） ===
+cd src/3rdparty
+cmake -S . -B build-linux -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build-linux --parallel
+cmake --install build-linux
+
+# === 主项目 ===
+cmake -S . -B build-linux -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build-linux --parallel
+```
+
+> Linux apt 安装的 Qt6 无需指定 `CMAKE_PREFIX_PATH`。自定义 Qt 路径需添加 `-DCMAKE_PREFIX_PATH=<Qt路径>`。
 
 ### 参数说明
 
-| 参数 | 必需 | 说明 |
-|------|:----:|------|
-| `-G "Visual Studio 16 2019"` | ✅ | VS 2019 生成器；VS 2022 用 `"Visual Studio 17 2022"` |
-| `-A x64` | ✅ | 64 位架构 |
-| `-DCMAKE_PREFIX_PATH` | ✅ | VS 生成器用此参数指定 Qt 路径，而非 `CMAKE_TOOLCHAIN_FILE` |
-| `-DCMAKE_BUILD_TYPE` | Ninja 用 | VS 生成器**不需**此参数（用 `--config Release` 代替） |
+| 参数 | Windows 必需 | Linux 必需 | 说明 |
+|------|:----:|:----:|------|
+| `-G` 生成器 | ✅ | ✅ | Windows: VS 生成器；Linux: Ninja 或 Unix Makefiles |
+| `-A x64` | ✅ VS | — | 仅 VS 生成器需要 |
+| `-DCMAKE_PREFIX_PATH` | ✅ | — | Windows 指定 Qt 路径；Linux apt 安装的 Qt 不需要 |
+| `-DCMAKE_BUILD_TYPE` | Ninja ✅ | ✅ | Release 或 Debug；VS 生成器用 `--config` 代替 |
 
 ### 运行测试
 
+#### Windows
+
 ```powershell
-# 测试 exe 位于 build/src/tst/<模块>/<Config>/ 下（VS 生成器路径）
+# 测试 exe 位于 build/src/tst/<模块>/<Config>/ 下
 # ⚠️ Qt Test 在 Windows 上 stdout 不可见，必须用 -o 标志输出到文件
-
-# 运行全部测试并输出到文件
 .\build\src\tst\DAPyWorkFlow\Release\DAPyWorkFlowTests.exe -o test_result.txt
-
-# 查看测试结果
 Get-Content test_result.txt
 ```
 
-| 注意事项 | 说明 |
-|----------|------|
-| 测试 exe 路径 | VS 生成器：`build\src\tst\<模块>\<Config>\`；Ninja：`build\bin\<Config>\` |
-| 输出捕获 | Windows 上**必须**用 `-o file.txt` 标志，不能使用 `> file.txt` 重定向 |
-| 退出码 | `$LASTEXITCODE` 为 0 表示全部通过；非 0 表示有失败 |
-| XML 输出 | `-xml` 标志可输出 JUnit 兼容的 XML |
+#### Linux / WSL
 
-### 快速脚本
-
-项目提供了 `scripts/build.ps1` 脚本，自动检测 Qt 版本和 Visual Studio 版本，封装了上述所有细节。**Agent 应优先使用此脚本**，避免手动选择生成器和参数。
-
-```powershell
-# === 常用命令 ===
-
-# 编译指定模块（自动检测 Qt + VS，增量编译）
-.\scripts\build.ps1 -Target DAPyWorkFlow
-
-# 编译并运行测试
-.\scripts\build.ps1 -Target DAPyWorkFlow -Test
-
-# 编译指定模块 + Debug 配置
-.\scripts\build.ps1 -Target DAPyWorkFlow -Config Debug
-
-# 完整构建
-.\scripts\build.ps1 -Full
-
-# 清理并重新配置
-.\scripts\build.ps1 -Clean
+```bash
+# 测试 exe 位于 build-linux/src/tst/<模块>/ 下
+./build-linux/src/tst/DAPyWorkFlow/DAPyWorkFlowTests -o test_result.txt
+cat test_result.txt
 ```
 
-| 参数 | 说明 |
-|------|------|
-| `-Config` | 构建类型：`Release`（默认）或 `Debug` |
-| `-Target` | 指定 CMake 目标（如 `DAPyWorkFlow`、`DAGui`） |
-| `-Test` | 编译 `<Target>Tests` 目标并运行测试 exe |
-| `-Full` | 构建所有目标 |
-| `-Clean` | 删除 `build/` 目录后重新配置 |
-| `-Parallel` | 并行编译（默认开启） |
+| 注意事项 | Windows | Linux |
+|----------|---------|-------|
+| 测试 exe 路径 | VS: `build\src\tst\<模块>\<Config>\` | Ninja: `build-linux/src/tst/<模块>/` |
+| 输出捕获 | **必须**用 `-o file.txt` | 可直接 stdout 或 `-o file.txt` |
+| 退出码 | `$LASTEXITCODE` | `$?` 或 `echo $?` |
+
+### Windows 快速脚本
+
+项目提供了 `scripts/build.ps1` 脚本，自动检测 Qt 版本和 Visual Studio 版本。**Agent 在 Windows 上应优先使用此脚本**。
+
+```powershell
+.\scripts\build.ps1 -Target DAPyWorkFlow       # 编译指定模块
+.\scripts\build.ps1 -Target DAPyWorkFlow -Test  # 编译并运行测试
+.\scripts\build.ps1 -Full                        # 完整构建
+.\scripts\build.ps1 -Clean                       # 清理重新配置
+```
 
 > **注意**：如果遇到执行策略限制，使用 `powershell -ExecutionPolicy Bypass -File .\scripts\build.ps1 -Target ...`
+
+### 安装目录命名
+
+第三方库和主项目统一安装到项目根目录下，目录名自动生成：
+- Windows: `bin_Release_qt6.4.2_MSVC_x64`
+- Linux: `bin_Release_qt6.4.2_GNU_x64`
+
+格式为 `bin_<BuildType>_qt<QtVersion>_<Compiler>_<Arch>`。
+
+## 跨平台构建注意 (Linux / WSL)
+
+项目原本在 Windows 下开发，Linux/WSL 构建需注意以下差异：
+
+### Windows-only 代码需 `if(WIN32)` 保护
+
+以下模块/链接选项仅在 Windows 有效，必须在 `if(WIN32)` 内：
+- `Qt6::AxContainer` — MSVC ActiveX 容器，Linux 无此模块
+- `DAWorkbench::DAAxOfficeWrapper` — Office 封装库，仅 Win
+- `/SUBSYSTEM:WINDOWS`、`/SUBSYSTEM:CONSOLE` — MSVC 链接器选项，Linux GCC 不识别
+
+### Linux uint64_t ≠ unsigned long long
+
+Linux GCC 下 `uint64_t` 是 `unsigned long`，MSVC 下是 `unsigned long long`。调用 `QDomElement::setAttribute(ulonglong)` 或 `QVariant` 相关函数时会产生重载歧义。
+- **解决方案**：使用 `qulonglong`（Qt 类型，跨平台统一为 `unsigned long long`）或 `static_cast<qulonglong>()` 显式转换
+
+### Qt6 隐式头文件变化
+
+Qt6 不再通过 `QDataStream` 隐式包含 `<QIODevice>`。如编译报 `QIODevice` 不完整类型，手动添加 `#include <QIODevice>`。
+
+### 信号槽传递自定义类型指针
+
+Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若头文件仅有前向声明，`connect` 会导致不完整类型错误。
+- **解决方案**：在 .cpp 文件中 `#include` 完整头文件，而非仅依赖前向声明
+
+### GCC `-fpermissive` 选项
+
+`DAEnumStringUtils.hpp` 宏在 `DA` namespace 内使用 `DA::DAEnumTraits` 额外限定，MSVC 允许但 GCC 报错。项目 `CMakeLists.txt` 已为 GCC 自动添加 `-fpermissive`，勿删除此选项。
 
 ## ANTI-PATTERNS (THIS PROJECT)
 
