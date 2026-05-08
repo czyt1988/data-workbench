@@ -9,7 +9,6 @@
 #include "DAFilePathEditWidget.h"
 #include <QVBoxLayout>
 #include <QLabel>
-#include <QJsonArray>
 #include <QJsonObject>
 
 namespace DA

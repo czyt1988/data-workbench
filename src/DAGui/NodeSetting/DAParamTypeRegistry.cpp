@@ -12,7 +12,6 @@
 #include <QFont>
 #include <QFontComboBox>
 #include <QJsonArray>
-#include <QDebug>
 #include <QFileDialog>
 #include <QToolButton>
 #include "DAFilePathEditWidget.h"

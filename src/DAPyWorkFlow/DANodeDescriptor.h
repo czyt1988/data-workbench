@@ -8,7 +8,6 @@
 #include "DAPyNodeStyleDefine.h"
 #include "DAPyNodeFactory.h"
 #include <QString>
-#include <QIcon>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QVector>
