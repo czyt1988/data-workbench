@@ -94,11 +94,6 @@ public:
     DAPyNodeState getNodeState() const;
     void setNodeState(DAPyNodeState state);
 
-    // 节点描述符（用于获取输入/输出信息）
-    // @deprecated 使用 setDescriptorStruct(const DANodeDescriptor&) 代替
-    void setDescriptor(const QJsonObject& desc);
-    QJsonObject getDescriptor() const;
-
     // 节点描述符结构体（C++原生描述符）
     void setDescriptorStruct(const DANodeDescriptor& desc);
     const DANodeDescriptor& getDescriptorStruct() const;

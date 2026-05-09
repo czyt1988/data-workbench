@@ -13,9 +13,6 @@
 #include <QWidget>
 #include <QDomDocument>
 #include <QDomElement>
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <QJsonParseError>
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
 #include <QFontMetrics>
@@ -49,26 +46,24 @@ public:
     void updateNodeStyle(const QRectF& bodyRect);
 
 public:
-    std::unique_ptr< DAPyNodeProxy > mProxy;                               ///< Python节点代理（独占所有权）
-    RenderTemplate mRenderTemplate { RenderTemplate::NodeStyleTemplate };  ///< 当前渲染模板
-    QIcon mIcon;                                                           ///< 节点图标
-    QSvgRenderer* mSvgRenderer { nullptr };                                ///< SVG渲染器
-    QGraphicsProxyWidget* mProxyWidget { nullptr };                        ///< Widget代理
-    QWidget* mWidget { nullptr };                                          ///< 嵌入的widget
-    DAPyNodeState mNodeState { Idle };                                     ///< 节点状态
-    QJsonObject mDescriptor;                                               ///< 节点描述符
-    DANodeDescriptor mDescriptorStruct;                                    ///< 节点描述符结构体
-    QList< DAPyLinkPoint > mInputLinkPoints;                               ///< 输入连接点
-    QList< DAPyLinkPoint > mOutputLinkPoints;                              ///< 输出连接点
-    qreal linkPointDrawWidth { 14 };        ///< 连接点的绘制宽度（宽度相对于东西方向的宽度）
-    qreal linkPointDrawHeight { 10 };       ///< 连接点的绘制高度（高度相对于东西方向的高度）
-    DAPySafePyObjectHolder mPaintCallback;  ///< 自定义绘制回调（Python函数对象）
-    bool mPaintCallbackError { false };     ///< 绘制回调是否发生过异常
-    QRectF mIconRect;                       ///< 绘制Icon的区域，仅仅有icon时才有用
-    QRectF mTextRect;                       ///< 绘制text的区域
-    QPixmap mIconPixmap;                    ///< 记录图标的pixmap
-    int smallFontSize { 7 };                ///< 小字体大小（用于渲染节点的名字）
-    int normalFontSize { 9 };               ///< 普通字体大小（用于渲染节点名称）
+    std::unique_ptr< DAPyNodeProxy > mProxy;  ///< Python节点代理（独占所有权）
+    DANodeDescriptor mDescriptorStruct;  ///< 节点描述符item也持有，且和DAPyNodeProxy分离，用户可以设置item的节点描述以实现个性化
+    QIcon mIcon;                         ///< 节点图标
+    QSvgRenderer* mSvgRenderer { nullptr };          ///< SVG渲染器
+    QGraphicsProxyWidget* mProxyWidget { nullptr };  ///< Widget代理
+    QWidget* mWidget { nullptr };                    ///< 嵌入的widget
+    DAPyNodeState mNodeState { Idle };               ///< 节点状态
+    QList< DAPyLinkPoint > mInputLinkPoints;         ///< 输入连接点
+    QList< DAPyLinkPoint > mOutputLinkPoints;        ///< 输出连接点
+    qreal linkPointDrawWidth { 14 };                 ///< 连接点的绘制宽度（宽度相对于东西方向的宽度）
+    qreal linkPointDrawHeight { 10 };                ///< 连接点的绘制高度（高度相对于东西方向的高度）
+    DAPySafePyObjectHolder mPaintCallback;           ///< 自定义绘制回调（Python函数对象）
+    bool mPaintCallbackError { false };              ///< 绘制回调是否发生过异常
+    QRectF mIconRect;                                ///< 绘制Icon的区域，仅仅有icon时才有用
+    QRectF mTextRect;                                ///< 绘制text的区域
+    QPixmap mIconPixmap;                             ///< 记录图标的pixmap
+    int smallFontSize { 7 };                         ///< 小字体大小（用于渲染节点的名字）
+    int normalFontSize { 9 };                        ///< 普通字体大小（用于渲染节点名称）
 };
 
 /**
@@ -311,18 +306,18 @@ DAPyNodeGraphicsItem::~DAPyNodeGraphicsItem()
  */
 void DAPyNodeGraphicsItem::setRenderTemplate(RenderTemplate tmpl)
 {
-    if (d_ptr->mRenderTemplate == tmpl) {
+    if (d_ptr->mDescriptorStruct.renderTemplate == tmpl) {
         return;
     }
 
     // 清理之前的资源
-    if (d_ptr->mRenderTemplate == RenderTemplate::NodeStyleTemplate) {
+    if (d_ptr->mDescriptorStruct.renderTemplate == RenderTemplate::NodeStyleTemplate) {
         d_ptr->cleanupSvg();
-    } else if (d_ptr->mRenderTemplate == RenderTemplate::WidgetTemplate) {
+    } else if (d_ptr->mDescriptorStruct.renderTemplate == RenderTemplate::WidgetTemplate) {
         d_ptr->cleanupWidget();
     }
 
-    d_ptr->mRenderTemplate = tmpl;
+    d_ptr->mDescriptorStruct.renderTemplate = tmpl;
 
     // 初始化新的资源
     if (tmpl == RenderTemplate::WidgetTemplate && !d_ptr->mProxyWidget) {
@@ -353,7 +348,7 @@ void DAPyNodeGraphicsItem::setRenderTemplate(const QString& tmplName)
  */
 DAPyNodeGraphicsItem::RenderTemplate DAPyNodeGraphicsItem::getRenderTemplate() const
 {
-    return d_ptr->mRenderTemplate;
+    return d_ptr->mDescriptorStruct.renderTemplate;
 }
 
 /**
@@ -362,7 +357,7 @@ DAPyNodeGraphicsItem::RenderTemplate DAPyNodeGraphicsItem::getRenderTemplate() c
  */
 QString DAPyNodeGraphicsItem::getRenderTemplateName() const
 {
-    switch (d_ptr->mRenderTemplate) {
+    switch (d_ptr->mDescriptorStruct.renderTemplate) {
     case RenderTemplate::NodeStyleTemplate:
         return QString("nodestyle");
     case RenderTemplate::WidgetTemplate:
@@ -390,7 +385,8 @@ void DAPyNodeGraphicsItem::setProxy(DAPyNodeProxy* proxy)
 {
     d_ptr->mProxy.reset(proxy);
     if (proxy) {
-        d_ptr->mNodeState = proxy->getNodeState();
+        d_ptr->mNodeState        = proxy->getNodeState();
+        d_ptr->mDescriptorStruct = proxy->getDescriptorStruct();
     }
     updateLinkPoints();
     update();
@@ -490,8 +486,8 @@ void DAPyNodeGraphicsItem::setWidget(QWidget* widget)
     d_ptr->mWidget = widget;
 
     // 如果当前不是widget模式，切换到widget模式
-    if (d_ptr->mRenderTemplate != RenderTemplate::WidgetTemplate) {
-        d_ptr->mRenderTemplate = RenderTemplate::WidgetTemplate;
+    if (d_ptr->mDescriptorStruct.renderTemplate != RenderTemplate::WidgetTemplate) {
+        d_ptr->mDescriptorStruct.renderTemplate = RenderTemplate::WidgetTemplate;
     }
 
     // 更新widget几何位置
@@ -526,26 +522,6 @@ void DAPyNodeGraphicsItem::setNodeState(DAPyNodeState state)
         d_ptr->mNodeState = state;
         update();  // 状态变化时重绘
     }
-}
-
-/**
- * @brief 设置节点描述符
- * @param[in] desc 描述符JSON对象
- */
-void DAPyNodeGraphicsItem::setDescriptor(const QJsonObject& desc)
-{
-    d_ptr->mDescriptor = desc;
-    updateLinkPoints();
-    update();
-}
-
-/**
- * @brief 获取节点描述符
- * @return 描述符JSON对象
- */
-QJsonObject DAPyNodeGraphicsItem::getDescriptor() const
-{
-    return d_ptr->mDescriptor;
 }
 
 /**
@@ -757,7 +733,7 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
     paintStateDecoration(painter, bodyRect);
 
     // 根据模板类型绘制
-    switch (d_ptr->mRenderTemplate) {
+    switch (d_ptr->mDescriptorStruct.renderTemplate) {
     case RenderTemplate::NodeStyleTemplate:
         paintNodeStyleBody(painter, bodyRect);
         break;
@@ -1154,7 +1130,7 @@ void DAPyNodeGraphicsItem::setBodySize(const QSizeF& s)
     DA_D(d);
     DAGraphicsResizeableItem::setBodySize(s);
     d->updateLinkPointPositions(getBodyRect());
-    if (d->mRenderTemplate == RenderTemplate::NodeStyleTemplate) {
+    if (d->mDescriptorStruct.renderTemplate == RenderTemplate::NodeStyleTemplate) {
         updateNodeStyleGeometry();
     } else {
         updateWidgetGeometry();

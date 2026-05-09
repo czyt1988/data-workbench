@@ -22,12 +22,12 @@ public:
     PrivateData(DAPyLinkGraphicsItem* p);
 
 public:
-    bool mIsDataFlowing { false };                ///< 数据流状态标志
-    QTimer* mDataFlowTimer { nullptr };           ///< 数据流动画定时器
-    DAPyNodeGraphicsItem* mFromNode { nullptr };  ///< 源节点
-    DAPyNodeGraphicsItem* mToNode { nullptr };    ///< 目标节点
-    QString mFromOutputName;                      ///< 源节点输出名称
-    QString mToInputName;                         ///< 目标节点输入名称
+    bool mIsDataFlowing { false };                             ///< 数据流状态标志
+    QTimer* mDataFlowTimer { nullptr };                        ///< 数据流动画定时器
+    DAPyNodeGraphicsItem* mFromNode { nullptr };               ///< 源节点
+    DAPyNodeGraphicsItem* mToNode { nullptr };                 ///< 目标节点
+    QString mFromOutputName;                                   ///< 源节点输出名称
+    QString mToInputName;                                      ///< 目标节点输入名称
     AspectDirection mFromDirection { AspectDirection::East };  ///< 源连接点引线方向
     AspectDirection mToDirection { AspectDirection::East };    ///< 目标连接点引线方向
 };
@@ -103,11 +103,11 @@ void DAPyLinkGraphicsItem::setFromNode(DAPyNodeGraphicsItem* node, const QString
 
     // 从源节点查找输出连接点，获取方向并验证way属性
     QList< DAPyLinkPoint > outputPoints = node->getOutputLinkPoints();
-    bool found = false;
+    bool found                          = false;
     for (const DAPyLinkPoint& lp : outputPoints) {
         if (lp.name == outputName) {
             d_ptr->mFromDirection = lp.direction;
-            found = true;
+            found                 = true;
             break;
         }
     }
@@ -151,11 +151,11 @@ void DAPyLinkGraphicsItem::setToNode(DAPyNodeGraphicsItem* node, const QString& 
 
     // 从目标节点查找输入连接点，获取方向并验证way属性
     QList< DAPyLinkPoint > inputPoints = node->getInputLinkPoints();
-    bool found = false;
+    bool found                         = false;
     for (const DAPyLinkPoint& lp : inputPoints) {
         if (lp.name == inputName) {
             d_ptr->mToDirection = lp.direction;
-            found = true;
+            found               = true;
             break;
         }
     }
@@ -234,37 +234,24 @@ bool DAPyLinkGraphicsItem::willCompleteLink()
     }
 
     // 获取节点描述符
-    QJsonObject fromDesc = d_ptr->mFromNode->getDescriptor();
-    QJsonObject toDesc   = d_ptr->mToNode->getDescriptor();
+    const DANodeDescriptor& fromDesc = d_ptr->mFromNode->getDescriptorStruct();
+    const DANodeDescriptor& toDesc   = d_ptr->mToNode->getDescriptorStruct();
 
     // 从描述符中获取输出/输入类型信息
     // 这里假设描述符中包含"outputs"和"inputs"数组，每个元素有"name"和"data_type"字段
     QString outputType;
     QString inputType;
 
-    if (fromDesc.contains("outputs") && fromDesc[ "outputs" ].isArray()) {
-        const QJsonArray outputs = fromDesc[ "outputs" ].toArray();
-        for (const QJsonValue& output : outputs) {
-            if (output.isObject()) {
-                QJsonObject obj = output.toObject();
-                if (obj[ "name" ].toString() == d_ptr->mFromOutputName) {
-                    outputType = obj[ "data_type" ].toString();
-                    break;
-                }
-            }
+    for (const DAPortDescriptor& output : fromDesc.outputs) {
+        if (output.name == d_ptr->mFromOutputName) {
+            outputType = output.dataType;
+            break;
         }
     }
-
-    if (toDesc.contains("inputs") && toDesc[ "inputs" ].isArray()) {
-        const QJsonArray inputs = toDesc[ "inputs" ].toArray();
-        for (const QJsonValue& input : inputs) {
-            if (input.isObject()) {
-                QJsonObject obj = input.toObject();
-                if (obj[ "name" ].toString() == d_ptr->mToInputName) {
-                    inputType = obj[ "data_type" ].toString();
-                    break;
-                }
-            }
+    for (const DAPortDescriptor& input : toDesc.inputs) {
+        if (input.name == d_ptr->mToInputName) {
+            inputType = input.dataType;
+            break;
         }
     }
 
@@ -291,9 +278,8 @@ bool DAPyLinkGraphicsItem::willCompleteLink()
  * @return 连接线的QPainterPath
  * @see DAGraphicsLinkItem::generateLinePainterPath
  */
-QPainterPath DAPyLinkGraphicsItem::generateLinePainterPath(const QPointF& fromPoint,
-                                                            const QPointF& toPoint,
-                                                            LinkLineStyle linestyle)
+QPainterPath
+DAPyLinkGraphicsItem::generateLinePainterPath(const QPointF& fromPoint, const QPointF& toPoint, LinkLineStyle linestyle)
 {
     QPainterPath res;
     switch (linestyle) {
@@ -432,9 +418,9 @@ QColor DAPyLinkGraphicsItem::getDataFlowHighlightColor() const
  * @param option 绘图选项
  * @param linkPath 连接线路径
  */
-void DAPyLinkGraphicsItem::paintDataFlowHighlight(
-    QPainter* painter, const QStyleOptionGraphicsItem* option, const QPainterPath& linkPath
-)
+void DAPyLinkGraphicsItem::paintDataFlowHighlight(QPainter* painter,
+                                                  const QStyleOptionGraphicsItem* option,
+                                                  const QPainterPath& linkPath)
 {
     painter->save();
 
@@ -464,6 +450,10 @@ void DAPyLinkGraphicsItem::paintDataFlowHighlight(
  * @param outputType 输出数据类型
  * @param inputType 输入数据类型
  * @return true表示类型兼容，false表示不兼容
+ *
+ * TODO：这里设计不合理，ai给出的方案没有任何扩展性，检查能否连接有两种方案：
+ *  - 方案1. 基于python节点的接收者来判断，只有接收节点清楚能否支持这个连接
+ *  - 方案2. 在定义节点连接点的时候，参考python函数参数的条件声明，定义接受哪些变量
  */
 bool DAPyLinkGraphicsItem::checkDataTypeCompatibility(const QString& outputType, const QString& inputType) const
 {

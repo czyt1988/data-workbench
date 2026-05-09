@@ -17,12 +17,6 @@ class TestLinkPoints : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
-    // 薄描述符（无I/O数组）→ 连接点为空（描述符路径正确返回空）
-    void testThinDescriptorNoIO();
-
-    // 完整描述符（有I/O数组）→ 连接点非空
-    void testFullDescriptorWithIO();
-
     // 薄描述符 + 有keys的代理 → 应回退到代理返回非空连接点
     // Bug 3: 当前返回空（描述符路径返回空后不回退到代理）
     void testThinDescriptorWithProxyFallback();

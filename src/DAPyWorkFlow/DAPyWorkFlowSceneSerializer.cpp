@@ -111,9 +111,7 @@ DAPyWorkFlowSceneSerializer::~DAPyWorkFlowSceneSerializer()
  * @param ver 版本号
  * @return 保存成功返回true，失败返回false
  */
-bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
-                                                  QDomDocument* doc,
-                                                  const QVersionNumber& ver)
+bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene, QDomDocument* doc, const QVersionNumber& ver)
 {
     DA_D(d);
     d->mLastErrorString.clear();
@@ -143,7 +141,9 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
                 DAXMLFileInterface::appendElementWithText(workflowDataEle, "json", QString::fromUtf8(jsonBytes), doc);
             }
         } catch (const pybind11::error_already_set& e) {
-            qWarning() << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::saveSceneToXml: Python error saving workflow data: %1").arg(e.what());
+            qWarning() << DA_SERIALIZER_TR(
+                              "DAPyWorkFlowSceneSerializer::saveSceneToXml: Python error saving workflow data: %1")
+                              .arg(e.what());
             d->mLastErrorString = DA_SERIALIZER_TR("保存workflow数据时Python异常: %1").arg(e.what());
             // 继续保存场景级别的数据，不因workflow数据保存失败而中断
         }
@@ -151,8 +151,8 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
     rootEle.appendChild(workflowDataEle);
 
     // 保存节点数据
-    QDomElement nodesEle = doc->createElement("nodes");
-    QList<DAPyNodeGraphicsItem*> nodeItems = scene->getPyNodeItems();
+    QDomElement nodesEle                     = doc->createElement("nodes");
+    QList< DAPyNodeGraphicsItem* > nodeItems = scene->getPyNodeItems();
     for (DAPyNodeGraphicsItem* nodeItem : nodeItems) {
         QDomElement nodeEle = doc->createElement("node");
 
@@ -189,7 +189,9 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
                     DAXMLFileInterface::appendElementWithText(nodeEle, "config", QString::fromUtf8(configBytes), doc);
                 }
             } catch (const pybind11::error_already_set& e) {
-                qWarning() << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::saveSceneToXml: Python error saving node config: %1").arg(e.what());
+                qWarning() << DA_SERIALIZER_TR(
+                                  "DAPyWorkFlowSceneSerializer::saveSceneToXml: Python error saving node config: %1")
+                                  .arg(e.what());
             }
 
             // 保存Python对象参数的pickle序列化
@@ -197,28 +199,25 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
                 pybind11::object pyNodeRef = proxy->getPyNodeRef();
                 if (pyNodeRef && pybind11::hasattr(pyNodeRef, "get_pickle_data")) {
                     pybind11::object pickleModule = pybind11::module_::import("pickle");
-                    pybind11::bytes pickleBytes    = pickleModule.attr("dumps")(pyNodeRef);
-                    std::string rawBytes           = pickleBytes;
-                    QByteArray qBytes              = QByteArray::fromStdString(rawBytes);
-                    QString base64Str              = QString(qBytes.toBase64());
-                    QDomElement pickleEle          = doc->createElement("pickleData");
-                    QDomText cdataText             = doc->createCDATASection(base64Str);
+                    pybind11::bytes pickleBytes   = pickleModule.attr("dumps")(pyNodeRef);
+                    std::string rawBytes          = pickleBytes;
+                    QByteArray qBytes             = QByteArray::fromStdString(rawBytes);
+                    QString base64Str             = QString(qBytes.toBase64());
+                    QDomElement pickleEle         = doc->createElement("pickleData");
+                    QDomText cdataText            = doc->createCDATASection(base64Str);
                     pickleEle.appendChild(cdataText);
                     nodeEle.appendChild(pickleEle);
                 }
             } catch (const pybind11::error_already_set& e) {
-                qWarning() << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::saveSceneToXml: Python error saving pickle data: %1").arg(e.what());
+                qWarning() << DA_SERIALIZER_TR(
+                                  "DAPyWorkFlowSceneSerializer::saveSceneToXml: Python error saving pickle data: %1")
+                                  .arg(e.what());
                 // pickle保存失败不影响整体流程
             }
         }
 
         // 保存节点描述符
-        QJsonObject descriptor = nodeItem->getDescriptor();
-        if (!descriptor.isEmpty()) {
-            QJsonDocument descDoc(descriptor);
-            QByteArray descBytes = descDoc.toJson(QJsonDocument::Compact);
-            DAXMLFileInterface::appendElementWithText(nodeEle, "descriptor", QString::fromUtf8(descBytes), doc);
-        }
+        // todo
 
         // 让节点item自己保存可视化属性
         QDomElement itemEle = doc->createElement("itemData");
@@ -232,8 +231,8 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
     rootEle.appendChild(nodesEle);
 
     // 保存连接线数据
-    QDomElement linksEle = doc->createElement("links");
-    QList<DAPyLinkGraphicsItem*> linkItems = scene->getPyNodeLinkItems();
+    QDomElement linksEle                     = doc->createElement("links");
+    QList< DAPyLinkGraphicsItem* > linkItems = scene->getPyNodeLinkItems();
     for (DAPyLinkGraphicsItem* linkItem : linkItems) {
         QDomElement linkEle = doc->createElement("link");
 
@@ -286,8 +285,8 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
  * @note 加载后不会自动执行工作流
  */
 bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneElement,
-                                                    DAPyWorkFlowScene* scene,
-                                                    const QVersionNumber& ver)
+                                                   DAPyWorkFlowScene* scene,
+                                                   const QVersionNumber& ver)
 {
     DA_D(d);
     d->mLastErrorString.clear();
@@ -300,21 +299,21 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
     scene->clearPyScene();
 
     // 建立node_id到图形项的映射表
-    QMap<QString, DAPyNodeGraphicsItem*> nodeIdToItemMap;
+    QMap< QString, DAPyNodeGraphicsItem* > nodeIdToItemMap;
 
     // 1. 加载Python DAWorkflow的DAG数据
     QDomElement workflowDataEle = sceneElement->firstChildElement("workflowData");
     if (!workflowDataEle.isNull() && scene->hasPyWorkflow()) {
         QDomElement jsonEle = workflowDataEle.firstChildElement("json");
         if (!jsonEle.isNull()) {
-            QString jsonStr = jsonEle.text();
+            QString jsonStr       = jsonEle.text();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonStr.toUtf8());
             if (!jsonDoc.isNull() && jsonDoc.isObject()) {
                 QJsonObject workflowJson = jsonDoc.object();
                 DAPyGILGuard gil;
                 try {
                     // 将QJsonObject转为py::dict
-                    pybind11::dict workflowDict = DA::PY::qjsonObjectToPyDict(workflowJson);
+                    pybind11::dict workflowDict  = DA::PY::qjsonObjectToPyDict(workflowJson);
                     pybind11::object workflowObj = scene->getPyWorkflow();
                     if (workflowObj && pybind11::hasattr(workflowObj, "from_dict")) {
                         // 加载DAG级别数据到现有workflow实例
@@ -323,7 +322,10 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
                         // 这里仅加载DAG逻辑数据，场景图形项由后面的步骤创建
                     }
                 } catch (const pybind11::error_already_set& e) {
-                    qWarning() << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error loading workflow data: %1").arg(e.what());
+                    qWarning()
+                        << DA_SERIALIZER_TR(
+                               "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error loading workflow data: %1")
+                               .arg(e.what());
                     d->mLastErrorString = DA_SERIALIZER_TR("加载workflow数据时Python异常: %1").arg(e.what());
                 }
             }
@@ -341,7 +343,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
         if (qualifiedName.isEmpty()) {
             qualifiedName = nodeEle.attribute("protoType");  // backward compat: DAXmlHelper旧格式使用protoType属性
         }
-        QString nodeId        = nodeEle.attribute("node_id");
+        QString nodeId = nodeEle.attribute("node_id");
 
         // 获取节点位置
         double posX = 0.0, posY = 0.0;
@@ -359,7 +361,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
         QJsonObject descriptor;
         QDomElement descEle = nodeEle.firstChildElement("descriptor");
         if (!descEle.isNull()) {
-            QString descStr    = descEle.text();
+            QString descStr       = descEle.text();
             QJsonDocument descDoc = QJsonDocument::fromJson(descStr.toUtf8());
             if (!descDoc.isNull() && descDoc.isObject()) {
                 descriptor = descDoc.object();
@@ -368,7 +370,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
 
         // 如果描述符中没有qualified_name，补充进去
         if (!qualifiedName.isEmpty() && !descriptor.contains("qualified_name")) {
-            descriptor["qualified_name"] = qualifiedName;
+            descriptor[ "qualified_name" ] = qualifiedName;
         }
 
         // 通过DANodeRegistry查找描述符（如果本地描述符不完整）
@@ -383,11 +385,15 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
                     // 如果没有注册表实例，使用XML中保存的描述符
                 }
             } catch (const pybind11::error_already_set& e) {
-                qWarning() << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error querying registry: %1").arg(e.what());
+                qWarning() << DA_SERIALIZER_TR(
+                                  "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error querying registry: %1")
+                                  .arg(e.what());
             }
         }
 
         // 创建节点图形项
+#if 0  // TODO 这里要修复,下面代码还是旧代码使用
+
         DAPyNodeGraphicsItem* nodeItem = scene->createPyNode(descriptor, pos);
         if (!nodeItem) {
             d->mLastErrorString = DA_SERIALIZER_TR("创建节点失败: qualified_name=%1").arg(qualifiedName);
@@ -401,11 +407,11 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
 
         // 建立映射
         if (!nodeId.isEmpty()) {
-            nodeIdToItemMap[nodeId] = nodeItem;
+            nodeIdToItemMap[ nodeId ] = nodeItem;
         }
         // 也用qualified_name作为备用映射键
         if (!qualifiedName.isEmpty() && !nodeIdToItemMap.contains(qualifiedName)) {
-            nodeIdToItemMap[qualifiedName] = nodeItem;
+            nodeIdToItemMap[ qualifiedName ] = nodeItem;
         }
 
         // 加载节点item的可视化属性
@@ -444,11 +450,14 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
                     pyNodeRef.attr("_input_data") = unpickledObj.attr("_input_data");
                 }
             } catch (const pybind11::error_already_set& e) {
-                qWarning() << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error restoring pickle data: %1").arg(e.what());
+                qWarning()
+                    << DA_SERIALIZER_TR(
+                           "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error restoring pickle data: %1")
+                           .arg(e.what());
                 // pickle恢复失败不影响整体流程
             }
         }
-
+#endif
         nodeEle = nodeEle.nextSiblingElement("node");
     }
 
@@ -456,10 +465,10 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
     QDomElement linksEle = sceneElement->firstChildElement("links");
     QDomElement linkEle  = linksEle.firstChildElement("link");
     while (!linkEle.isNull()) {
-        QString fromNodeId  = linkEle.attribute("fromNodeId");
-        QString fromOutput  = linkEle.attribute("fromOutput");
-        QString toNodeId    = linkEle.attribute("toNodeId");
-        QString toInput     = linkEle.attribute("toInput");
+        QString fromNodeId = linkEle.attribute("fromNodeId");
+        QString fromOutput = linkEle.attribute("fromOutput");
+        QString toNodeId   = linkEle.attribute("toNodeId");
+        QString toInput    = linkEle.attribute("toInput");
 
         // 通过映射表查找节点
         DAPyNodeGraphicsItem* fromItem = nodeIdToItemMap.value(fromNodeId, nullptr);
@@ -478,8 +487,9 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
                 }
             }
         } else {
-            qWarning() << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::loadSceneFromXml: 连接线引用的节点不存在: fromNodeId=%1, toNodeId=%2")
-                            .arg(fromNodeId, toNodeId);
+            qWarning() << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::loadSceneFromXml: 连接线引用的节点不存在: "
+                                           "fromNodeId=%1, toNodeId=%2")
+                              .arg(fromNodeId, toNodeId);
         }
 
         linkEle = linkEle.nextSiblingElement("link");
@@ -502,8 +512,8 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
  * @return 保存成功返回true，失败返回false
  */
 bool DAPyWorkFlowSceneSerializer::saveSceneToFile(const DAPyWorkFlowScene* scene,
-                                                   const QString& filePath,
-                                                   const QVersionNumber& ver)
+                                                  const QString& filePath,
+                                                  const QVersionNumber& ver)
 {
     DA_D(d);
     QDomDocument doc("DAPyWorkFlowScene");
@@ -539,9 +549,7 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToFile(const DAPyWorkFlowScene* scene
  * @param ver 版本号
  * @return 加载成功返回true，失败返回false
  */
-bool DAPyWorkFlowSceneSerializer::loadSceneFromFile(const QString& filePath,
-                                                     DAPyWorkFlowScene* scene,
-                                                     const QVersionNumber& ver)
+bool DAPyWorkFlowSceneSerializer::loadSceneFromFile(const QString& filePath, DAPyWorkFlowScene* scene, const QVersionNumber& ver)
 {
     DA_D(d);
     QFile file(filePath);
@@ -555,7 +563,8 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromFile(const QString& filePath,
     int errorLine   = 0;
     int errorColumn = 0;
     if (!doc.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
-        d->mLastErrorString = DA_SERIALIZER_TR("XML解析错误: %1 (行:%2 列:%3)").arg(errorMsg).arg(errorLine).arg(errorColumn);
+        d->mLastErrorString =
+            DA_SERIALIZER_TR("XML解析错误: %1 (行:%2 列:%3)").arg(errorMsg).arg(errorLine).arg(errorColumn);
         file.close();
         return false;
     }

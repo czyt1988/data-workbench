@@ -72,9 +72,9 @@ public:
 
     DAPyNodeGraphicsItem* loadNodeAndItem(const QDomElement& nodeEle, DAPyWorkFlowGraphicsScene* workFlowScene);
     // 这种是针对需要redo/undo的加载节点
-    DAPyNodeGraphicsItem* loadNodeAndItemWithUndo(
-        const QDomElement& nodeEle, DAPyWorkFlowGraphicsScene* workFlowScene, QMap< QString, QString >* idMap
-    );
+    DAPyNodeGraphicsItem* loadNodeAndItemWithUndo(const QDomElement& nodeEle,
+                                                  DAPyWorkFlowGraphicsScene* workFlowScene,
+                                                  QMap< QString, QString >* idMap);
     // 保存输入输出
     void saveNodeInputOutput(DAPyNodeProxy* node, QDomDocument& doc, QDomElement& nodeEle);
     bool loadNodeInPutOutputKey(DAPyNodeProxy* node, const QDomElement& eleNode);
@@ -93,9 +93,9 @@ public:
     void saveNodeLinks(DAPyWorkFlowGraphicsScene* scene, QDomDocument& doc, QDomElement& workflowEle);
     QDomElement makeNodeLinkElement(DAPyLinkGraphicsItem* link, const QString& tagName, QDomDocument& doc);
     bool loadNodeLinks(DAPyWorkFlowGraphicsScene* scene, const QDomElement& workflowEle);
-    bool loadNodeLinksClipBoardCopy(
-        DAPyWorkFlowGraphicsScene* scene, const QDomElement& workflowEle, const QMap< QString, QString >* idMap
-    );
+    bool loadNodeLinksClipBoardCopy(DAPyWorkFlowGraphicsScene* scene,
+                                    const QDomElement& workflowEle,
+                                    const QMap< QString, QString >* idMap);
     // 保存特殊的item，主要为文本
     void saveCommonItems(const DAPyWorkFlowGraphicsScene* scene, QDomDocument& doc, QDomElement& workflowEle);
     QDomElement makeCommonItemsElement(const QList< QGraphicsItem* >& items, const QString& tagName, QDomDocument& doc);
@@ -122,9 +122,9 @@ public:
     bool isItemHaveDeal(const QGraphicsItem* i) const;
 
 public:
-    QSet< QGraphicsItem* > mHaveBeenDealNodeItem;    ///< 记录已经被处理过的item
-    QVersionNumber mLoadedVersion;                   ///< 不同版本号有不同解析方式
-    QMap< QString, QString > mPasteNodeIdMap;  ///< 记录粘贴时，旧id和新id的映射
+    QSet< QGraphicsItem* > mHaveBeenDealNodeItem;  ///< 记录已经被处理过的item
+    QVersionNumber mLoadedVersion;                 ///< 不同版本号有不同解析方式
+    QMap< QString, QString > mPasteNodeIdMap;      ///< 记录粘贴时，旧id和新id的映射
 };
 
 DAXmlHelper::PrivateData::PrivateData(DAXmlHelper* p) : q_ptr(p)
@@ -211,7 +211,9 @@ bool DAXmlHelper::PrivateData::loadWorkflow(DAPyWorkFlowEditWidget* wfe, const Q
     return true;
 }
 
-void DAXmlHelper::PrivateData::saveWorkflowFromClipBoard(const QList< DAGraphicsItem* > its, QDomDocument& doc, QDomElement& workflowEle)
+void DAXmlHelper::PrivateData::saveWorkflowFromClipBoard(const QList< DAGraphicsItem* > its,
+                                                         QDomDocument& doc,
+                                                         QDomElement& workflowEle)
 {
     //! 1. 对图元节点进行分类
     QList< DAPyNodeGraphicsItem* > nodeItems;
@@ -269,7 +271,9 @@ void DAXmlHelper::PrivateData::saveWorkflowFromClipBoard(const QList< DAGraphics
  * 需要加载回原来的节点内容
  * @return
  */
-bool DAXmlHelper::PrivateData::loadWorkflowFromClipBoard(DAPyWorkFlowGraphicsScene* scene, const QDomElement& workflowEle, bool isCreateNewId)
+bool DAXmlHelper::PrivateData::loadWorkflowFromClipBoard(DAPyWorkFlowGraphicsScene* scene,
+                                                         const QDomElement& workflowEle,
+                                                         bool isCreateNewId)
 {
     clearDealItemSet();  // 清空保存过的item的记录
     // 加载开始，设置场景没有就绪
@@ -343,9 +347,9 @@ bool DAXmlHelper::PrivateData::loadFactoryInfo(DAPyWorkFlowGraphicsScene* scene,
  */
 void DAXmlHelper::PrivateData::saveNodes(const DAPyWorkFlowEditWidget* wfe, QDomDocument& doc, QDomElement& workflowEle)
 {
-    DAPyWorkFlowGraphicsScene* scene = wfe->getWorkFlowGraphicsScene();
+    DAPyWorkFlowGraphicsScene* scene         = wfe->getWorkFlowGraphicsScene();
     QList< DAPyNodeGraphicsItem* > nodeItems = scene->getPyNodeItems();
-    QDomElement nodesEle = makeNodesElement(nodeItems, QStringLiteral("nodes"), doc);
+    QDomElement nodesEle                     = makeNodesElement(nodeItems, QStringLiteral("nodes"), doc);
     workflowEle.appendChild(nodesEle);
 }
 
@@ -358,9 +362,9 @@ void DAXmlHelper::PrivateData::saveNodes(const DAPyWorkFlowEditWidget* wfe, QDom
  * @param doc
  * @return
  */
-QDomElement DAXmlHelper::PrivateData::makeNodesElement(
-    const QList< DAPyNodeGraphicsItem* >& nodeItems, const QString& tagName, QDomDocument& doc
-)
+QDomElement DAXmlHelper::PrivateData::makeNodesElement(const QList< DAPyNodeGraphicsItem* >& nodeItems,
+                                                       const QString& tagName,
+                                                       QDomDocument& doc)
 {
     QDomElement nodesEle = doc.createElement(tagName);
     for (DAPyNodeGraphicsItem* nodeItem : nodeItems) {
@@ -379,11 +383,9 @@ QDomElement DAXmlHelper::PrivateData::makeNodesElement(
  * @param doc
  * @return
  */
-QDomElement DAXmlHelper::PrivateData::makeNodeElement(
-    DAPyNodeGraphicsItem* nodeItem, const QString& tagName, QDomDocument& doc
-)
+QDomElement DAXmlHelper::PrivateData::makeNodeElement(DAPyNodeGraphicsItem* nodeItem, const QString& tagName, QDomDocument& doc)
 {
-    QDomElement nodeEle = doc.createElement(tagName);
+    QDomElement nodeEle  = doc.createElement(tagName);
     DAPyNodeProxy* proxy = nodeItem->getProxy();
     if (proxy) {
         nodeEle.setAttribute("id", proxy->getID());
@@ -428,9 +430,9 @@ bool DAXmlHelper::PrivateData::loadNodes(DAPyWorkFlowGraphicsScene* workFlowScen
  * @param idMap
  * @return
  */
-bool DAXmlHelper::PrivateData::loadNodesClipBoard(
-    DAPyWorkFlowGraphicsScene* scene, const QDomElement& workflowEle, QMap< QString, QString >* idMap
-)
+bool DAXmlHelper::PrivateData::loadNodesClipBoard(DAPyWorkFlowGraphicsScene* scene,
+                                                  const QDomElement& workflowEle,
+                                                  QMap< QString, QString >* idMap)
 {
     QDomElement nodesEle = workflowEle.firstChildElement("nodes");
     //! 加载原来的scene区域
@@ -463,15 +465,18 @@ bool DAXmlHelper::PrivateData::loadNodesClipBoard(
  * @param workFlowScene 工作流场景
  * @return 创建的DAPyNodeGraphicsItem指针
  */
-DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElement& nodeEle, DAPyWorkFlowGraphicsScene* workFlowScene)
+DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElement& nodeEle,
+                                                                DAPyWorkFlowGraphicsScene* workFlowScene)
 {
-    bool isok = false;
+#if 0  // 涉及pyworkflow部分需要重构，禁止使用json，直接使用DANodeDescriptor
+    bool isok     = false;
     qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
     if (!isok) {
-        qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node").arg(nodeEle.attribute("id"));
+        qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node")
+                          .arg(nodeEle.attribute("id"));
         return nullptr;
     }
-    QString name = nodeEle.attribute("name");
+    QString name          = nodeEle.attribute("name");
     QString qualifiedName = nodeEle.attribute("qualified_name");
     if (qualifiedName.isEmpty()) {
         qualifiedName = nodeEle.attribute("prototype");  // backward compat: 旧版本使用prototype属性
@@ -526,6 +531,9 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
         loadItem(item, itemEle);
     }
     return item;
+#else  // 临时，修复后需要删除
+    return nullptr;
+#endif
 }
 
 /**
@@ -537,17 +545,19 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
  * @param idMap 旧id和新id的映射表
  * @return 创建的DAPyNodeGraphicsItem指针
  */
-DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(
-    const QDomElement& nodeEle, DAPyWorkFlowGraphicsScene* workFlowScene, QMap< QString, QString >* idMap
-)
+DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(const QDomElement& nodeEle,
+                                                                        DAPyWorkFlowGraphicsScene* workFlowScene,
+                                                                        QMap< QString, QString >* idMap)
 {
-    bool isok = false;
+#if 0  // 需要重构，序列化无需支持可以回退的方法
+    bool isok     = false;
     qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
     if (!isok) {
-        qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node").arg(nodeEle.attribute("id"));
+        qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node")
+                          .arg(nodeEle.attribute("id"));
         return nullptr;
     }
-    QString name = nodeEle.attribute("name");
+    QString name          = nodeEle.attribute("name");
     QString qualifiedName = nodeEle.attribute("qualified_name");
     if (qualifiedName.isEmpty()) {
         qualifiedName = nodeEle.attribute("prototype");  // backward compat: 旧版本使用prototype属性
@@ -564,23 +574,21 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(
     // 通过场景创建节点图形项（带undo/redo）
     DAPyNodeGraphicsItem* item = workFlowScene->createPyNode_(descriptor, QPointF(0, 0));
     if (!item) {
-        qWarning() << QObject::tr("Unable to create node by prototype=%1,name=%2")
-                          .arg(qualifiedName, name);
+        qWarning() << QObject::tr("Unable to create node by prototype=%1,name=%2").arg(qualifiedName, name);
         return nullptr;
     }
 
     DAPyNodeProxy* proxy = item->getProxy();
     if (!proxy) {
-        qWarning() << QObject::tr("Node item has no proxy, prototype=%1,name=%2")
-                          .arg(qualifiedName, name);
+        qWarning() << QObject::tr("Node item has no proxy, prototype=%1,name=%2").arg(qualifiedName, name);
         return nullptr;
     }
 
-	if (!idMap) {
-		// idMap为空，使用原来的id
-		// 注意: id为qulonglong类型，转换为unsigned int存在截断风险
-		proxy->setID(static_cast< unsigned int >(id));
-	}
+    if (!idMap) {
+        // idMap为空，使用原来的id
+        // 注意: id为qulonglong类型，转换为unsigned int存在截断风险
+        proxy->setID(static_cast< unsigned int >(id));
+    }
     proxy->setNodeName(name);
 
     // 加载节点的输入输出
@@ -606,6 +614,10 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(
         (*idMap)[ QString::number(id) ] = QString::number(proxy->getID());
     }
     return item;
+#else  // 临时，修复后需要删除
+
+    return nullptr;
+#endif
 }
 /**
  * @brief 保存节点的输入输出信息
@@ -673,7 +685,7 @@ bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v110(DAPyNodeProxy* node, 
             QDomElement nameEle = inputEle.firstChildElement("name");
             if (nameEle.isNull()) {
                 qWarning() << QObject::tr("node(prototype=%1,name=%2) %3 tag loss child tag <name>")
-                             .arg(node->getNodePrototype(), node->getNodeName(), ks.at(i).nodeName());
+                                  .arg(node->getNodePrototype(), node->getNodeName(), ks.at(i).nodeName());
                 continue;
             }
             // 输入key由Python描述符决定，不需要手动addInputKey
@@ -691,7 +703,7 @@ bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v110(DAPyNodeProxy* node, 
             QDomElement nameEle = outputEle.firstChildElement("name");
             if (nameEle.isNull()) {
                 qWarning() << QObject::tr("node(prototype=%1,name=%2) %3 tag loss child tag <name>")
-                             .arg(node->getNodePrototype(), node->getNodeName(), ks.at(i).nodeName());
+                                  .arg(node->getNodePrototype(), node->getNodeName(), ks.at(i).nodeName());
                 continue;
             }
             // 输出key由Python描述符决定，不需要手动addOutputKey
@@ -812,7 +824,7 @@ bool DAXmlHelper::PrivateData::loadNodePropertys_v110(DAPyNodeProxy* node, const
         if (variantEle.isNull()) {
             continue;
         }
-        QVariant v = DAXmlHelper::loadVariantValueElement(variantEle, QVariant());
+        QVariant v               = DAXmlHelper::loadVariantValueElement(variantEle, QVariant());
         config[ nameEle.text() ] = QJsonValue::fromVariant(v);
     }
     node->setConfig(config);
@@ -839,7 +851,7 @@ void DAXmlHelper::PrivateData::saveNodeItem(DAPyNodeGraphicsItem* nodeItem, QDom
 void DAXmlHelper::PrivateData::saveNodeLinks(DAPyWorkFlowGraphicsScene* scene, QDomDocument& doc, QDomElement& workflowEle)
 {
     QList< DAPyLinkGraphicsItem* > linkItems = scene->getPyNodeLinkItems();
-    QDomElement nodeLinkEle = doc.createElement("links");
+    QDomElement nodeLinkEle                  = doc.createElement("links");
 
     for (auto link : std::as_const(linkItems)) {
         QDomElement linkEle = makeNodeLinkElement(link, QStringLiteral("link"), doc);
@@ -858,9 +870,7 @@ void DAXmlHelper::PrivateData::saveNodeLinks(DAPyWorkFlowGraphicsScene* scene, Q
  * @param doc
  * @return
  */
-QDomElement DAXmlHelper::PrivateData::makeNodeLinkElement(
-    DAPyLinkGraphicsItem* link, const QString& tagName, QDomDocument& doc
-)
+QDomElement DAXmlHelper::PrivateData::makeNodeLinkElement(DAPyLinkGraphicsItem* link, const QString& tagName, QDomDocument& doc)
 {
     QDomElement linkEle = doc.createElement(tagName);
     QDomElement fromEle = doc.createElement("from");
@@ -918,8 +928,8 @@ bool DAXmlHelper::PrivateData::loadNodeLinks(DAPyWorkFlowGraphicsScene* scene, c
             continue;
         }
 
-        qulonglong toId  = toEle.attribute("id").toULongLong(&ok);
-        QString toKey    = toEle.attribute("name");
+        qulonglong toId              = toEle.attribute("id").toULongLong(&ok);
+        QString toKey                = toEle.attribute("name");
         DAPyNodeGraphicsItem* toItem = scene->findNodeItemById(QString::number(toId));
         if (!ok || nullptr == toItem) {
             qWarning() << QObject::tr("link info can not find node in scene,id = %1").arg(toEle.attribute("id"));
@@ -929,8 +939,7 @@ bool DAXmlHelper::PrivateData::loadNodeLinks(DAPyWorkFlowGraphicsScene* scene, c
         // 通过场景创建连接线
         DAPyLinkGraphicsItem* linkitem = scene->addPyNodeLink(fromItem, fromKey, toItem, toKey);
         if (nullptr == linkitem) {
-            qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1"
-            )  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
+            qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1")  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
                               .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
             continue;
         }
@@ -958,9 +967,9 @@ bool DAXmlHelper::PrivateData::loadNodeLinks(DAPyWorkFlowGraphicsScene* scene, c
  * @param idMap 旧id到新id的映射表（QMap<QString,QString>）
  * @return
  */
-bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(
-    DAPyWorkFlowGraphicsScene* scene, const QDomElement& workflowEle, const QMap< QString, QString >* idMap
-)
+bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(DAPyWorkFlowGraphicsScene* scene,
+                                                          const QDomElement& workflowEle,
+                                                          const QMap< QString, QString >* idMap)
 {
     QDomElement linksEle = workflowEle.firstChildElement("links");
     QDomNodeList list    = linksEle.childNodes();
@@ -984,7 +993,9 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(
         if (idMap) {
             fromRealIdStr = idMap->value(QString::number(fromOrigId), "");
             if (fromRealIdStr.isEmpty()) {
-                qWarning() << QObject::tr("During the pasting process, the mapping corresponding to ID(%1) cannot be found").arg(fromOrigId);
+                qWarning() << QObject::tr(
+                                  "During the pasting process, the mapping corresponding to ID(%1) cannot be found")
+                                  .arg(fromOrigId);
                 continue;
             }
         } else {
@@ -1002,7 +1013,9 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(
         if (idMap) {
             toRealIdStr = idMap->value(QString::number(toOrigId), "");
             if (toRealIdStr.isEmpty()) {
-                qWarning() << QObject::tr("During the pasting process, the mapping corresponding to ID(%1) cannot be found").arg(toOrigId);
+                qWarning() << QObject::tr(
+                                  "During the pasting process, the mapping corresponding to ID(%1) cannot be found")
+                                  .arg(toOrigId);
                 continue;
             }
         } else {
@@ -1017,8 +1030,7 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(
         // 通过场景创建连接线（带undo/redo）
         DAPyLinkGraphicsItem* linkitem = scene->addPyNodeLink_(fromItem, fromKey, toItem, toKey);
         if (nullptr == linkitem) {
-            qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1"
-            )  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
+            qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1")  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
                               .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
             continue;
         }
@@ -1063,9 +1075,9 @@ void DAXmlHelper::PrivateData::saveCommonItems(const DAPyWorkFlowGraphicsScene* 
  * @param doc
  * @return
  */
-QDomElement DAXmlHelper::PrivateData::makeCommonItemsElement(
-    const QList< QGraphicsItem* >& items, const QString& tagName, QDomDocument& doc
-)
+QDomElement DAXmlHelper::PrivateData::makeCommonItemsElement(const QList< QGraphicsItem* >& items,
+                                                             const QString& tagName,
+                                                             QDomDocument& doc)
 {
     QDomElement itemsElement = doc.createElement(tagName);
     // 背景不作为items保存
@@ -1131,8 +1143,7 @@ bool DAXmlHelper::PrivateData::saveItem(const QGraphicsItem* i, QDomDocument& do
     } else {
         auto itemEle = DAXmlHelper::makeElement(i, QStringLiteral("item"), &doc);
         if (itemEle.isNull()) {
-            qDebug() << QObject::tr("Unable to generate graphics item element during the saveing"
-            );  // cn:保存过程中，无法生成图元元素
+            qDebug() << QObject::tr("Unable to generate graphics item element during the saveing");  // cn:保存过程中，无法生成图元元素
             return false;
         }
         parentElement.appendChild(itemEle);
@@ -1368,8 +1379,8 @@ QDomElement DAXmlHelper::makeElement(DAPyWorkFlowOperateWidget* wfo, const QStri
     int wfcount                  = wfo->count();
     for (int i = 0; i < wfcount; ++i) {
         DAPyWorkFlowEditWidget* wfe = wfo->getWorkFlowWidget(i);
-        QDomElement workflowEle   = makeElement(wfe, "workflow", doc);
-        QString name              = wfo->getWorkFlowWidgetName(i);
+        QDomElement workflowEle     = makeElement(wfe, "workflow", doc);
+        QString name                = wfo->getWorkFlowWidgetName(i);
         workflowEle.setAttribute("name", name);
         workflowsElement.appendChild(workflowEle);
     }
@@ -1424,9 +1435,10 @@ bool DAXmlHelper::loadElement(DAPyWorkFlowOperateWidget* wfo, const QDomElement*
  * @param doc
  * @return
  */
-QDomElement DAXmlHelper::makeClipBoardElement(
-    const QList< DAGraphicsItem* > its, const QString& tagName, QDomDocument* doc, bool isCopyType
-)
+QDomElement DAXmlHelper::makeClipBoardElement(const QList< DAGraphicsItem* > its,
+                                              const QString& tagName,
+                                              QDomDocument* doc,
+                                              bool isCopyType)
 {
     QDomElement rootEle = doc->createElement(tagName);
     if (isCopyType) {
@@ -1454,8 +1466,7 @@ bool DAXmlHelper::loadClipBoardElement(const QDomElement* clipBoardElement, DAPy
     //! 首先找到workflow节点
     if (workflowEle.isNull()) {
         qWarning() << QObject::tr(
-            "An exception occurred during the process of parsing and pasting content,miss workflow tag"
-        );  // cn:解析粘贴内容过程出现异常,缺失workflow标签
+            "An exception occurred during the process of parsing and pasting content,miss workflow tag");  // cn:解析粘贴内容过程出现异常,缺失workflow标签
         return false;
     }
     if (typestr == "copy") {
@@ -1549,9 +1560,10 @@ QDomElement DAXmlHelper::makeElement(const DAGraphicsItemGroup* itemGroup, const
  * @param v
  * @return
  */
-bool DAXmlHelper::loadElement(
-    DAGraphicsScene* scene, DAGraphicsItemGroup* group, const QDomElement* groupElement, const QVersionNumber& v
-)
+bool DAXmlHelper::loadElement(DAGraphicsScene* scene,
+                              DAGraphicsItemGroup* group,
+                              const QDomElement* groupElement,
+                              const QVersionNumber& v)
 {
     Q_UNUSED(v);
     qulonglong id;
@@ -1670,9 +1682,10 @@ bool DAXmlHelper::loadElement(DAColorTheme* ct, const QDomElement* tag, const QV
  * @param doc
  * @return
  */
-QDomElement DAXmlHelper::makeElement(
-    DAChartOperateWidget* chartOpt, const QString& tagName, QDomDocument* doc, DAChartItemsManager* itemsMgr
-)
+QDomElement DAXmlHelper::makeElement(DAChartOperateWidget* chartOpt,
+                                     const QString& tagName,
+                                     QDomDocument* doc,
+                                     DAChartItemsManager* itemsMgr)
 {
     int figCnt                = chartOpt->getFigureCount();
     QDomElement chartsElement = doc->createElement(tagName);
@@ -1689,9 +1702,10 @@ QDomElement DAXmlHelper::makeElement(
     return chartsElement;
 }
 
-bool DAXmlHelper::loadElement(
-    DAChartOperateWidget* chartOpt, const QDomElement* tag, const DAChartItemsManager* itemsMgr, const QVersionNumber& v
-)
+bool DAXmlHelper::loadElement(DAChartOperateWidget* chartOpt,
+                              const QDomElement* tag,
+                              const DAChartItemsManager* itemsMgr,
+                              const QVersionNumber& v)
 {
     auto childs = tag->childNodes();
     for (int i = 0; i < childs.size(); ++i) {
@@ -1719,7 +1733,8 @@ bool DAXmlHelper::loadElement(
  * @param doc
  * @return
  */
-QDomElement DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& tagName, QDomDocument* doc, DAChartItemsManager* itemsMgr)
+QDomElement
+DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& tagName, QDomDocument* doc, DAChartItemsManager* itemsMgr)
 {
     QwtFigure* qwtFig = fig->figure();
     if (!qwtFig) {
@@ -1783,9 +1798,10 @@ QDomElement DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& t
     return eleFig;
 }
 
-bool DAXmlHelper::loadElement(
-    DAFigureWidget* fig, const QDomElement* tag, const DAChartItemsManager* itemsMgr, const QVersionNumber& v
-)
+bool DAXmlHelper::loadElement(DAFigureWidget* fig,
+                              const QDomElement* tag,
+                              const DAChartItemsManager* itemsMgr,
+                              const QVersionNumber& v)
 {
     Q_UNUSED(v);
     QwtFigure* qwtFig = fig->figure();
@@ -1891,9 +1907,10 @@ bool DAXmlHelper::loadElement(
  * @param itemsMgr 这是一个输出变量，会把chart里的item记录到DAChartItemsManager中，xml中只记录key
  * @return
  */
-QDomElement DAXmlHelper::makeElement(
-    const DAChartWidget* chart, const QString& tagName, QDomDocument* doc, DAChartItemsManager* itemsMgr
-)
+QDomElement DAXmlHelper::makeElement(const DAChartWidget* chart,
+                                     const QString& tagName,
+                                     QDomDocument* doc,
+                                     DAChartItemsManager* itemsMgr)
 {
     QDomElement chartEle = doc->createElement(tagName);
     // 记录id
@@ -1964,9 +1981,10 @@ QDomElement DAXmlHelper::makeElement(
     return chartEle;
 }
 
-bool DAXmlHelper::loadElement(
-    DAChartWidget* chart, const QDomElement* tag, const DAChartItemsManager* itemsMgr, const QVersionNumber& v
-)
+bool DAXmlHelper::loadElement(DAChartWidget* chart,
+                              const QDomElement* tag,
+                              const DAChartItemsManager* itemsMgr,
+                              const QVersionNumber& v)
 {
     Q_UNUSED(v);
     QString id = tag->attribute(QStringLiteral("id"), QString());
@@ -2075,7 +2093,8 @@ bool DAXmlHelper::loadChartAxisRangeElement(DAFigureWidget* fig, const QDomEleme
     return fig->bindAxisRange(sourcePlot, sourceAxisId, followerPlot, followerAxisId);
 }
 
-QDomElement DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, const QString& tagName, QDomDocument* doc)
+QDomElement
+DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, const QString& tagName, QDomDocument* doc)
 {
     QDomElement axisEle = doc->createElement(tagName);
     axisEle.setAttribute(QStringLiteral("axisID"), axisID);
@@ -2128,30 +2147,22 @@ QDomElement DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int 
         datescaleDrawEle.setAttribute(QStringLiteral("week0Type"), enumToString(dateScaleDraw->week0Type()));
         // 保存时间坐标轴的其它设置
         QDomElement dateformatEle = doc->createElement(QStringLiteral("dateformat"));
+        dateformatEle.appendChild(DAXMLFileInterface::makeElement(
+            dateScaleDraw->dateFormat(QwtDate::Millisecond), QStringLiteral("msec"), doc));
         dateformatEle.appendChild(
-            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Millisecond), QStringLiteral("msec"), doc)
-        );
+            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Second), QStringLiteral("sec"), doc));
         dateformatEle.appendChild(
-            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Second), QStringLiteral("sec"), doc)
-        );
+            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Minute), QStringLiteral("min"), doc));
         dateformatEle.appendChild(
-            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Minute), QStringLiteral("min"), doc)
-        );
+            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Hour), QStringLiteral("hour"), doc));
         dateformatEle.appendChild(
-            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Hour), QStringLiteral("hour"), doc)
-        );
+            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Day), QStringLiteral("day"), doc));
         dateformatEle.appendChild(
-            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Day), QStringLiteral("day"), doc)
-        );
+            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Week), QStringLiteral("week"), doc));
         dateformatEle.appendChild(
-            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Week), QStringLiteral("week"), doc)
-        );
+            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Month), QStringLiteral("month"), doc));
         dateformatEle.appendChild(
-            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Month), QStringLiteral("month"), doc)
-        );
-        dateformatEle.appendChild(
-            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Year), QStringLiteral("year"), doc)
-        );
+            DAXMLFileInterface::makeElement(dateScaleDraw->dateFormat(QwtDate::Year), QStringLiteral("year"), doc));
         datescaleDrawEle.appendChild(dateformatEle);
         // 把date独有的添加
         scaleDrawEle.appendChild(datescaleDrawEle);
@@ -2160,10 +2171,8 @@ QDomElement DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int 
     }
     // 普通坐标轴的属性
     scaleDrawEle.setAttribute(QStringLiteral("alignment"), enumToString(scaleDraw->alignment()));
-    scaleDrawEle.setAttribute(
-        QStringLiteral("labelAlignment"),
-        static_cast< int >(scaleDraw->labelAlignment())
-    );  // 这里的对其是复合对其，无法转换为字符串
+    scaleDrawEle.setAttribute(QStringLiteral("labelAlignment"),
+                              static_cast< int >(scaleDraw->labelAlignment()));  // 这里的对其是复合对其，无法转换为字符串
     scaleDrawEle.setAttribute(QStringLiteral("labelRotation"), scaleDraw->labelRotation());
     axisEle.appendChild(scaleDrawEle);
     //!====================
@@ -2214,12 +2223,11 @@ bool DAXmlHelper::loadQwtPlotAxisElement(DAChartWidget* chart, const QDomElement
             }
             QDomElement datescaleDrawEle = scaleDrawEle.firstChildElement(QStringLiteral("datescale"));
             if (!datescaleDrawEle.isNull()) {
-                dateScaleDraw->setTimeSpec(stringToEnum(datescaleDrawEle.attribute(QStringLiteral("timeSpec")), Qt::LocalTime)
-                );
+                dateScaleDraw->setTimeSpec(
+                    stringToEnum(datescaleDrawEle.attribute(QStringLiteral("timeSpec")), Qt::LocalTime));
                 dateScaleDraw->setUtcOffset(datescaleDrawEle.attribute(QStringLiteral("utcOffset")).toInt());
                 dateScaleDraw->setWeek0Type(
-                    stringToEnum(datescaleDrawEle.attribute(QStringLiteral("week0Type")), QwtDate::FirstThursday)
-                );
+                    stringToEnum(datescaleDrawEle.attribute(QStringLiteral("week0Type")), QwtDate::FirstThursday));
                 // 设置dateformat
                 QDomElement dateformatEle = datescaleDrawEle.firstChildElement(QStringLiteral("dateformat"));
                 if (!dateformatEle.isNull()) {
@@ -2257,8 +2265,7 @@ bool DAXmlHelper::loadQwtPlotAxisElement(DAChartWidget* chart, const QDomElement
         // QwtScaleDraw的属性设置
         scaleDraw->setAlignment(stringToEnum(scaleDrawEle.attribute(QStringLiteral("alignment")), QwtScaleDraw::BottomScale));
         scaleDraw->setLabelAlignment(
-            static_cast< Qt::Alignment >(scaleDrawEle.attribute(QStringLiteral("labelAlignment")).toInt())
-        );
+            static_cast< Qt::Alignment >(scaleDrawEle.attribute(QStringLiteral("labelAlignment")).toInt()));
         scaleDraw->setLabelRotation(scaleDrawEle.attribute(QStringLiteral("labelRotation")).toDouble());
     }
     //!====================
@@ -2498,7 +2505,8 @@ bool DAXmlHelper::loadElement(QwtText* value, const QDomElement* tag, const QVer
  * @param doc
  * @return
  */
-QDomElement DAXmlHelper::makeElement(unsigned int plotitemID, const QwtPlotItem* value, const QString& tagName, QDomDocument* doc)
+QDomElement
+DAXmlHelper::makeElement(unsigned int plotitemID, const QwtPlotItem* value, const QString& tagName, QDomDocument* doc)
 {
     QDomElement rootEle = doc->createElement(tagName);
     rootEle.setAttribute(QStringLiteral("rtti"), value->rtti());

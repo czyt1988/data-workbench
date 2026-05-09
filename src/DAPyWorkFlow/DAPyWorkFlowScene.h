@@ -57,10 +57,6 @@ public:
     std::shared_ptr< DAPyNodeFactory > getPyNodeFactory() const;
 
     // 节点管理
-    // @deprecated 使用 createPyNode(const DANodeDescriptor&, const QPointF&) 代替
-    DAPyNodeGraphicsItem* createPyNode(const QJsonObject& descriptor, const QPointF& pos);
-    // @deprecated 使用 createPyNode_(const DANodeDescriptor&, const QPointF&) 代替
-    DAPyNodeGraphicsItem* createPyNode_(const QJsonObject& descriptor, const QPointF& pos);
     // 通过节点元数据创建Python工作流节点（推荐路径，避免数据丢失）
     DAPyNodeGraphicsItem* createPyNode(const DAPyNodeMetaData& metaData, const QPointF& pos);
     // 通过节点元数据创建Python工作流节点（undo版本）
@@ -80,13 +76,15 @@ public:
     QList< DAPyNodeGraphicsItem* > getSelectedPyNodeItems() const;
 
     // 连接管理
-    DAPyLinkGraphicsItem* addPyNodeLink(
-        DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
-    );
+    DAPyLinkGraphicsItem* addPyNodeLink(DAPyNodeGraphicsItem* fromItem,
+                                        const QString& fromOutput,
+                                        DAPyNodeGraphicsItem* toItem,
+                                        const QString& toInput);
     void addPyNodeLink(DAPyLinkGraphicsItem* linkItem);
-    DAPyLinkGraphicsItem* addPyNodeLink_(
-        DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
-    );
+    DAPyLinkGraphicsItem* addPyNodeLink_(DAPyNodeGraphicsItem* fromItem,
+                                         const QString& fromOutput,
+                                         DAPyNodeGraphicsItem* toItem,
+                                         const QString& toInput);
     void addPyNodeLink_(DAPyLinkGraphicsItem* linkItem);
     bool removePyNodeLink(DAPyLinkGraphicsItem* linkItem, bool autoDelete = true);
     void removePyNodeLink_(DAPyLinkGraphicsItem* linkItem);
@@ -164,20 +162,17 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
 
     // 对scene中的item进行分类
-    static void classifyItems(
-        const QList< QGraphicsItem* >& sourceItems,
-        QList< DAPyNodeGraphicsItem* >& nodeItems,
-        QList< DAPyLinkGraphicsItem* >& linkItems,
-        QList< QGraphicsItem* >& normalItems
-    );
+    static void classifyItems(const QList< QGraphicsItem* >& sourceItems,
+                              QList< DAPyNodeGraphicsItem* >& nodeItems,
+                              QList< DAPyLinkGraphicsItem* >& linkItems,
+                              QList< QGraphicsItem* >& normalItems);
 
     // 获取节点item的所有连接线（基于映射表高效查询）
     QList< DAPyLinkGraphicsItem* > getNodesAllLinkItems(const QList< DAPyNodeGraphicsItem* >& nodeItems) const;
 
     // 创建连接线的工厂函数，注意hintFromItem和hintFromOutput是一个试探性的输入，传入空值也可以，这两个参数是为了适配不同的连接点伸出不同连接线做准备的
-    virtual DAPyLinkGraphicsItem* createLinkItem(
-        DAPyNodeGraphicsItem* hintFromItem = nullptr, const QString& hintFromOutput = QString()
-    );
+    virtual DAPyLinkGraphicsItem* createLinkItem(DAPyNodeGraphicsItem* hintFromItem = nullptr,
+                                                 const QString& hintFromOutput      = QString());
 
 private:
     void initConnect();
