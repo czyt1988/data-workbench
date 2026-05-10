@@ -8,7 +8,6 @@
 #include "DAPortDescriptor.h"
 #include "DAPyNodeStyle.h"
 #include <QDebug>
-#include <QJsonObject>
 
 namespace DA
 {
@@ -564,85 +563,6 @@ pybind11::object DAPyNodeProxy::getPyOutputData(const QString& key) const
     return pybind11::none();
 }
 
-/**
- * @brief 设置Python节点配置参数
- *
- * 通过QJsonObject设置Python节点的配置参数，
- * 内部转换为pybind11::dict传递给Python节点。
- *
- * @param[in] config QJsonObject格式的配置参数
- * @return true表示设置成功，false表示设置失败
- */
-bool DAPyNodeProxy::setConfig(const QJsonObject& config)
-{
-    DA_D(d);
-    if (!d->mPyNodeRef) {
-        qWarning() << "DAPyNodeProxy::setConfig: No Python node reference";
-        return false;
-    }
-
-    DAPyGILGuard gilGuard;
-    if (!gilGuard.isAcquired()) {
-        return false;
-    }
-
-    try {
-        pybind11::object pyNode = d->mPyNodeRef.object();
-        if (pybind11::hasattr(pyNode, "set_config")) {
-            pybind11::dict pyConfig = DA::PY::qjsonObjectToPyDict(config);
-            pyNode.attr("set_config")(pyConfig);
-            return true;
-        }
-    } catch (const pybind11::error_already_set& e) {
-        d->mLastErrorString = e.what();
-        d->dealException(e);
-    } catch (const std::exception& e) {
-        d->mLastErrorString = e.what();
-        d->dealException(e);
-    }
-
-    return false;
-}
-
-/**
- * @brief 获取Python节点配置参数
- *
- * 从Python节点获取配置参数，
- * 内部从pybind11::dict转换为QJsonObject供C++侧使用。
- *
- * @return QJsonObject格式的配置参数，若获取失败返回空QJsonObject
- */
-QJsonObject DAPyNodeProxy::getConfig() const
-{
-    DA_DC(d);
-    if (!d->mPyNodeRef) {
-        return QJsonObject();
-    }
-
-    DAPyGILGuard gilGuard;
-    if (!gilGuard.isAcquired()) {
-        return QJsonObject();
-    }
-
-    try {
-        pybind11::object pyNode = d->mPyNodeRef.object();
-        if (pybind11::hasattr(pyNode, "get_config")) {
-            pybind11::object configObj = pyNode.attr("get_config")();
-            if (pybind11::isinstance< pybind11::dict >(configObj)) {
-                pybind11::dict configDict = pybind11::cast< pybind11::dict >(configObj);
-                return DA::PY::pyDictToQJsonObject(configDict);
-            }
-        }
-    } catch (const pybind11::error_already_set& e) {
-        d->mLastErrorString = e.what();
-        d->dealException(e);
-    } catch (const std::exception& e) {
-        d->mLastErrorString = e.what();
-        d->dealException(e);
-    }
-
-    return QJsonObject();
-}
 
 /**
  * @brief 获取节点ID

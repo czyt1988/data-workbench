@@ -1,7 +1,7 @@
-#include "tst_danodedescriptor.h"
+﻿#include "tst_danodedescriptor.h"
 #include "DANodeDescriptor.h"
 #include "DAPortDescriptor.h"
-#include "ParameterDescriptor.h"
+#include "DAParameterDescriptor.h"
 #include "DAPyNodeStyle.h"
 #include "DAPyNodeStyleDefine.h"
 #include "DAPyNodeFactory.h"
@@ -58,18 +58,18 @@ void TestDANodeDescriptor::testDefaultConstruction()
 void TestDANodeDescriptor::testFieldAccess()
 {
     DANodeDescriptor desc;
-    desc.name            = QStringLiteral("MyNode");
-    desc.qualifiedName   = QStringLiteral("pkg.module.MyNode");
-    desc.category        = QStringLiteral("数据分析");
-    desc.icon            = QStringLiteral(":/icons/node.svg");
-    desc.renderTemplate  = RenderTemplate::WidgetTemplate;
+    desc.name           = QStringLiteral("MyNode");
+    desc.qualifiedName  = QStringLiteral("pkg.module.MyNode");
+    desc.category       = QStringLiteral("数据分析");
+    desc.icon           = QStringLiteral(":/icons/node.svg");
+    desc.renderTemplate = RenderTemplate::WidgetTemplate;
 
     DAPortDescriptor inputPort(QStringLiteral("data_in"), QStringLiteral("DataFrame"));
     DAPortDescriptor outputPort(QStringLiteral("data_out"), QStringLiteral("Series"));
     desc.inputs.append(inputPort);
     desc.outputs.append(outputPort);
 
-    ParameterDescriptor param;
+    DAParameterDescriptor param;
     param.name = QStringLiteral("threshold");
     param.type = QStringLiteral("float");
     desc.parameters.append(param);
@@ -82,9 +82,9 @@ void TestDANodeDescriptor::testFieldAccess()
     QCOMPARE(desc.inputs.size(), 1);
     QCOMPARE(desc.outputs.size(), 1);
     QCOMPARE(desc.parameters.size(), 1);
-    QCOMPARE(desc.inputs[0].name, QStringLiteral("data_in"));
-    QCOMPARE(desc.outputs[0].name, QStringLiteral("data_out"));
-    QCOMPARE(desc.parameters[0].name, QStringLiteral("threshold"));
+    QCOMPARE(desc.inputs[ 0 ].name, QStringLiteral("data_in"));
+    QCOMPARE(desc.outputs[ 0 ].name, QStringLiteral("data_out"));
+    QCOMPARE(desc.parameters[ 0 ].name, QStringLiteral("threshold"));
 }
 
 // ============================================================
@@ -132,10 +132,10 @@ void TestDANodeDescriptor::testIsValid()
 void TestDANodeDescriptor::testToMetaData()
 {
     DANodeDescriptor desc;
-    desc.name           = QStringLiteral("筛选节点");
-    desc.qualifiedName  = QStringLiteral("data_workbench.filter_node");
-    desc.category       = QStringLiteral("数据清洗");
-    desc.icon           = QStringLiteral(":/icons/filter.svg");
+    desc.name          = QStringLiteral("筛选节点");
+    desc.qualifiedName = QStringLiteral("data_workbench.filter_node");
+    desc.category      = QStringLiteral("数据清洗");
+    desc.icon          = QStringLiteral(":/icons/filter.svg");
 
     DAPortDescriptor in1(QStringLiteral("raw_data"), QStringLiteral("DataFrame"));
     DAPortDescriptor in2(QStringLiteral("config"), QStringLiteral("dict"));
@@ -151,10 +151,10 @@ void TestDANodeDescriptor::testToMetaData()
     QCOMPARE(meta.group, QStringLiteral("数据清洗"));
     QCOMPARE(meta.iconPath, QStringLiteral(":/icons/filter.svg"));
     QCOMPARE(meta.inputKeys.size(), 2);
-    QCOMPARE(meta.inputKeys[0], QStringLiteral("raw_data"));
-    QCOMPARE(meta.inputKeys[1], QStringLiteral("config"));
+    QCOMPARE(meta.inputKeys[ 0 ], QStringLiteral("raw_data"));
+    QCOMPARE(meta.inputKeys[ 1 ], QStringLiteral("config"));
     QCOMPARE(meta.outputKeys.size(), 1);
-    QCOMPARE(meta.outputKeys[0], QStringLiteral("filtered"));
+    QCOMPARE(meta.outputKeys[ 0 ], QStringLiteral("filtered"));
 
     // 验证 tooltip: name + " (" + qualifiedName + ")"
     QCOMPARE(meta.tooltip, QStringLiteral("筛选节点 (data_workbench.filter_node)"));
@@ -183,13 +183,13 @@ void TestDANodeDescriptor::testJsonRoundTrip()
     orig.inputs.append(inputPort);
     orig.outputs.append(outputPort);
 
-    ParameterDescriptor param;
+    DAParameterDescriptor param;
     param.name = QStringLiteral("method");
     param.type = QStringLiteral("str");
     orig.parameters.append(param);
 
     // 不拷贝 style（使用默认值），验证 roundTrip 仍正确
-    QJsonObject json = orig.toJson();
+    QJsonObject json           = orig.toJson();
     DANodeDescriptor roundTrip = DANodeDescriptor::fromJson(json);
 
     QCOMPARE(roundTrip.name, orig.name);
@@ -198,11 +198,11 @@ void TestDANodeDescriptor::testJsonRoundTrip()
     QCOMPARE(roundTrip.icon, orig.icon);
     QCOMPARE(roundTrip.renderTemplate, orig.renderTemplate);
     QCOMPARE(roundTrip.inputs.size(), orig.inputs.size());
-    QCOMPARE(roundTrip.inputs[0].name, orig.inputs[0].name);
+    QCOMPARE(roundTrip.inputs[ 0 ].name, orig.inputs[ 0 ].name);
     QCOMPARE(roundTrip.outputs.size(), orig.outputs.size());
-    QCOMPARE(roundTrip.outputs[0].name, orig.outputs[0].name);
+    QCOMPARE(roundTrip.outputs[ 0 ].name, orig.outputs[ 0 ].name);
     QCOMPARE(roundTrip.parameters.size(), orig.parameters.size());
-    QCOMPARE(roundTrip.parameters[0].name, orig.parameters[0].name);
+    QCOMPARE(roundTrip.parameters[ 0 ].name, orig.parameters[ 0 ].name);
 }
 
 // ============================================================
@@ -231,7 +231,7 @@ void TestDANodeDescriptor::testJsonKeysMatchOldFormat()
     desc.inputs.append(inPort);
     desc.outputs.append(outPort);
 
-    ParameterDescriptor param;
+    DAParameterDescriptor param;
     param.name = QStringLiteral("threshold");
     param.type = QStringLiteral("float");
     desc.parameters.append(param);
@@ -254,21 +254,21 @@ void TestDANodeDescriptor::testJsonKeysMatchOldFormat()
     // 验证 inputs 数组中端口对象的键名
     QJsonArray inputsArr = json.value(QStringLiteral("inputs")).toArray();
     QVERIFY(inputsArr.size() > 0);
-    QJsonObject inputObj = inputsArr[0].toObject();
+    QJsonObject inputObj = inputsArr[ 0 ].toObject();
     QVERIFY(inputObj.contains(QStringLiteral("name")));
     QVERIFY(inputObj.contains(QStringLiteral("data_type")));
 
     // 验证 outputs 数组中端口对象的键名
     QJsonArray outputsArr = json.value(QStringLiteral("outputs")).toArray();
     QVERIFY(outputsArr.size() > 0);
-    QJsonObject outputObj = outputsArr[0].toObject();
+    QJsonObject outputObj = outputsArr[ 0 ].toObject();
     QVERIFY(outputObj.contains(QStringLiteral("name")));
     QVERIFY(outputObj.contains(QStringLiteral("data_type")));
 
     // 验证 parameters 数组中参数对象的键名
     QJsonArray paramsArr = json.value(QStringLiteral("parameters")).toArray();
     QVERIFY(paramsArr.size() > 0);
-    QJsonObject paramObj = paramsArr[0].toObject();
+    QJsonObject paramObj = paramsArr[ 0 ].toObject();
     QVERIFY(paramObj.contains(QStringLiteral("name")));
     QVERIFY(paramObj.contains(QStringLiteral("type")));
 }
@@ -292,20 +292,20 @@ void TestDANodeDescriptor::testToJsonSparseStrategy()
 
     QVERIFY(defaultJson.contains(QStringLiteral("name")));
     QVERIFY(defaultJson.contains(QStringLiteral("qualified_name")));
-    QVERIFY(!defaultJson.contains(QStringLiteral("category")));     // 空 category → 省略
-    QVERIFY(!defaultJson.contains(QStringLiteral("icon")));         // 空 icon → 省略
-    QVERIFY(!defaultJson.contains(QStringLiteral("inputs")));       // 空 inputs → 省略
-    QVERIFY(!defaultJson.contains(QStringLiteral("outputs")));      // 空 outputs → 省略
-    QVERIFY(!defaultJson.contains(QStringLiteral("parameters")));   // 空 parameters → 省略
+    QVERIFY(!defaultJson.contains(QStringLiteral("category")));         // 空 category → 省略
+    QVERIFY(!defaultJson.contains(QStringLiteral("icon")));             // 空 icon → 省略
+    QVERIFY(!defaultJson.contains(QStringLiteral("inputs")));           // 空 inputs → 省略
+    QVERIFY(!defaultJson.contains(QStringLiteral("outputs")));          // 空 outputs → 省略
+    QVERIFY(!defaultJson.contains(QStringLiteral("parameters")));       // 空 parameters → 省略
     QVERIFY(!defaultJson.contains(QStringLiteral("render_template")));  // 默认 NodeStyleTemplate → 省略
-    QVERIFY(!defaultJson.contains(QStringLiteral("style")));        // 默认 style → 省略
+    QVERIFY(!defaultJson.contains(QStringLiteral("style")));            // 默认 style → 省略
 
     // 2) 仅 category 非空：应包含 category
     DANodeDescriptor descWithCategory;
     descWithCategory.name          = QStringLiteral("节点");
     descWithCategory.qualifiedName = QStringLiteral("pkg.node");
     descWithCategory.category      = QStringLiteral("数据");
-    QJsonObject catJson = descWithCategory.toJson();
+    QJsonObject catJson            = descWithCategory.toJson();
     QVERIFY(catJson.contains(QStringLiteral("category")));
     QVERIFY(!catJson.contains(QStringLiteral("icon")));
     QVERIFY(!catJson.contains(QStringLiteral("inputs")));
@@ -315,7 +315,7 @@ void TestDANodeDescriptor::testToJsonSparseStrategy()
     descWithIcon.name          = QStringLiteral("节点");
     descWithIcon.qualifiedName = QStringLiteral("pkg.node");
     descWithIcon.icon          = QStringLiteral(":/icon.svg");
-    QJsonObject iconJson = descWithIcon.toJson();
+    QJsonObject iconJson       = descWithIcon.toJson();
     QVERIFY(iconJson.contains(QStringLiteral("icon")));
     QVERIFY(!iconJson.contains(QStringLiteral("category")));
 
@@ -324,7 +324,7 @@ void TestDANodeDescriptor::testToJsonSparseStrategy()
     descWidget.name           = QStringLiteral("节点");
     descWidget.qualifiedName  = QStringLiteral("pkg.node");
     descWidget.renderTemplate = RenderTemplate::WidgetTemplate;
-    QJsonObject widgetJson = descWidget.toJson();
+    QJsonObject widgetJson    = descWidget.toJson();
     QVERIFY(widgetJson.contains(QStringLiteral("render_template")));
     QCOMPARE(widgetJson.value(QStringLiteral("render_template")).toString(), QStringLiteral("widget"));
 }
@@ -341,45 +341,45 @@ void TestDANodeDescriptor::testToJsonSparseStrategy()
 void TestDANodeDescriptor::testFromJsonFullFields()
 {
     QJsonObject obj;
-    obj[QStringLiteral("name")]            = QStringLiteral("完整节点");
-    obj[QStringLiteral("qualified_name")]  = QStringLiteral("data_workbench.full_node");
-    obj[QStringLiteral("category")]        = QStringLiteral("完整分类");
-    obj[QStringLiteral("icon")]            = QStringLiteral(":/icons/full.svg");
+    obj[ QStringLiteral("name") ]           = QStringLiteral("完整节点");
+    obj[ QStringLiteral("qualified_name") ] = QStringLiteral("data_workbench.full_node");
+    obj[ QStringLiteral("category") ]       = QStringLiteral("完整分类");
+    obj[ QStringLiteral("icon") ]           = QStringLiteral(":/icons/full.svg");
 
     // inputs 数组
     QJsonArray inputsArr;
     QJsonObject inputObj;
-    inputObj[QStringLiteral("name")]      = QStringLiteral("data_in");
-    inputObj[QStringLiteral("data_type")] = QStringLiteral("DataFrame");
-    inputObj[QStringLiteral("required")]  = false;
+    inputObj[ QStringLiteral("name") ]      = QStringLiteral("data_in");
+    inputObj[ QStringLiteral("data_type") ] = QStringLiteral("DataFrame");
+    inputObj[ QStringLiteral("required") ]  = false;
     inputsArr.append(inputObj);
-    obj[QStringLiteral("inputs")] = inputsArr;
+    obj[ QStringLiteral("inputs") ] = inputsArr;
 
     // outputs 数组
     QJsonArray outputsArr;
     QJsonObject outputObj;
-    outputObj[QStringLiteral("name")]      = QStringLiteral("data_out");
-    outputObj[QStringLiteral("data_type")] = QStringLiteral("Series");
+    outputObj[ QStringLiteral("name") ]      = QStringLiteral("data_out");
+    outputObj[ QStringLiteral("data_type") ] = QStringLiteral("Series");
     outputsArr.append(outputObj);
-    obj[QStringLiteral("outputs")] = outputsArr;
+    obj[ QStringLiteral("outputs") ] = outputsArr;
 
     // parameters 数组
     QJsonArray paramsArr;
     QJsonObject paramObj;
-    paramObj[QStringLiteral("name")]        = QStringLiteral("threshold");
-    paramObj[QStringLiteral("type")]        = QStringLiteral("float");
-    paramObj[QStringLiteral("description")] = QStringLiteral("筛选阈值");
-    paramObj[QStringLiteral("default")]     = 0.5;
+    paramObj[ QStringLiteral("name") ]        = QStringLiteral("threshold");
+    paramObj[ QStringLiteral("type") ]        = QStringLiteral("float");
+    paramObj[ QStringLiteral("description") ] = QStringLiteral("筛选阈值");
+    paramObj[ QStringLiteral("default") ]     = 0.5;
     paramsArr.append(paramObj);
-    obj[QStringLiteral("parameters")] = paramsArr;
+    obj[ QStringLiteral("parameters") ] = paramsArr;
 
-    obj[QStringLiteral("render_template")] = QStringLiteral("widget");
+    obj[ QStringLiteral("render_template") ] = QStringLiteral("widget");
 
     // style 子对象
     QJsonObject styleObj;
-    styleObj[QStringLiteral("bodyShape")]    = QStringLiteral("ellipse");
-    styleObj[QStringLiteral("cornerRadius")] = 10.0;
-    obj[QStringLiteral("style")] = styleObj;
+    styleObj[ QStringLiteral("bodyShape") ]    = QStringLiteral("ellipse");
+    styleObj[ QStringLiteral("cornerRadius") ] = 10.0;
+    obj[ QStringLiteral("style") ]             = styleObj;
 
     DANodeDescriptor desc = DANodeDescriptor::fromJson(obj);
 
@@ -388,16 +388,16 @@ void TestDANodeDescriptor::testFromJsonFullFields()
     QCOMPARE(desc.category, QStringLiteral("完整分类"));
     QCOMPARE(desc.icon, QStringLiteral(":/icons/full.svg"));
     QCOMPARE(desc.inputs.size(), 1);
-    QCOMPARE(desc.inputs[0].name, QStringLiteral("data_in"));
-    QCOMPARE(desc.inputs[0].dataType, QStringLiteral("DataFrame"));
-    QCOMPARE(desc.inputs[0].required, false);
+    QCOMPARE(desc.inputs[ 0 ].name, QStringLiteral("data_in"));
+    QCOMPARE(desc.inputs[ 0 ].dataType, QStringLiteral("DataFrame"));
+    QCOMPARE(desc.inputs[ 0 ].required, false);
     QCOMPARE(desc.outputs.size(), 1);
-    QCOMPARE(desc.outputs[0].name, QStringLiteral("data_out"));
-    QCOMPARE(desc.outputs[0].dataType, QStringLiteral("Series"));
+    QCOMPARE(desc.outputs[ 0 ].name, QStringLiteral("data_out"));
+    QCOMPARE(desc.outputs[ 0 ].dataType, QStringLiteral("Series"));
     QCOMPARE(desc.parameters.size(), 1);
-    QCOMPARE(desc.parameters[0].name, QStringLiteral("threshold"));
-    QCOMPARE(desc.parameters[0].type, QStringLiteral("float"));
-    QCOMPARE(desc.parameters[0].description, QStringLiteral("筛选阈值"));
+    QCOMPARE(desc.parameters[ 0 ].name, QStringLiteral("threshold"));
+    QCOMPARE(desc.parameters[ 0 ].type, QStringLiteral("float"));
+    QCOMPARE(desc.parameters[ 0 ].description, QStringLiteral("筛选阈值"));
     QCOMPARE(desc.renderTemplate, RenderTemplate::WidgetTemplate);
     QCOMPARE(desc.style.bodyShape, BodyShape::Ellipse);
     QCOMPARE(desc.style.cornerRadius, 10.0);
@@ -417,8 +417,8 @@ void TestDANodeDescriptor::testFromJsonFullFields()
 void TestDANodeDescriptor::testFromJsonMissingOptionalFields()
 {
     QJsonObject obj;
-    obj[QStringLiteral("name")]           = QStringLiteral("最小节点");
-    obj[QStringLiteral("qualified_name")] = QStringLiteral("pkg.min_node");
+    obj[ QStringLiteral("name") ]           = QStringLiteral("最小节点");
+    obj[ QStringLiteral("qualified_name") ] = QStringLiteral("pkg.min_node");
 
     DANodeDescriptor desc = DANodeDescriptor::fromJson(obj);
 
@@ -437,17 +437,17 @@ void TestDANodeDescriptor::testFromJsonMissingOptionalFields()
 
     // 验证向后兼容："rect" 和 "svg" 映射到 NodeStyleTemplate
     QJsonObject rectObj;
-    rectObj[QStringLiteral("name")]           = QStringLiteral("旧节点");
-    rectObj[QStringLiteral("qualified_name")] = QStringLiteral("pkg.old_rect");
-    rectObj[QStringLiteral("render_template")] = QStringLiteral("rect");
-    DANodeDescriptor rectDesc = DANodeDescriptor::fromJson(rectObj);
+    rectObj[ QStringLiteral("name") ]            = QStringLiteral("旧节点");
+    rectObj[ QStringLiteral("qualified_name") ]  = QStringLiteral("pkg.old_rect");
+    rectObj[ QStringLiteral("render_template") ] = QStringLiteral("rect");
+    DANodeDescriptor rectDesc                    = DANodeDescriptor::fromJson(rectObj);
     QCOMPARE(rectDesc.renderTemplate, RenderTemplate::NodeStyleTemplate);
 
     QJsonObject svgObj;
-    svgObj[QStringLiteral("name")]           = QStringLiteral("旧节点2");
-    svgObj[QStringLiteral("qualified_name")] = QStringLiteral("pkg.old_svg");
-    svgObj[QStringLiteral("render_template")] = QStringLiteral("svg");
-    DANodeDescriptor svgDesc = DANodeDescriptor::fromJson(svgObj);
+    svgObj[ QStringLiteral("name") ]            = QStringLiteral("旧节点2");
+    svgObj[ QStringLiteral("qualified_name") ]  = QStringLiteral("pkg.old_svg");
+    svgObj[ QStringLiteral("render_template") ] = QStringLiteral("svg");
+    DANodeDescriptor svgDesc                    = DANodeDescriptor::fromJson(svgObj);
     QCOMPARE(svgDesc.renderTemplate, RenderTemplate::NodeStyleTemplate);
 }
 

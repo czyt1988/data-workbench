@@ -162,8 +162,9 @@ QString DAPyNodeMetaData::getNodeTooltip() const
  */
 QDebug operator<<(QDebug dbg, const DAPyNodeMetaData& meta)
 {
-    dbg.nospace() << "DAPyNodeMetaData(name=" << meta.name << ", qualifiedName=" << meta.qualifiedName << ", group=" << meta.group
-                  << ", inputs=" << meta.inputKeys.size() << ", outputs=" << meta.outputKeys.size() << ")";
+    dbg.nospace() << "DAPyNodeMetaData(name=" << meta.name << ", qualifiedName=" << meta.qualifiedName
+                  << ", group=" << meta.group << ", inputs=" << meta.inputKeys.size()
+                  << ", outputs=" << meta.outputKeys.size() << ")";
     return dbg.space();
 }
 
@@ -196,8 +197,6 @@ public:
 
     // 已发现的节点元数据列表
     QList< DAPyNodeMetaData > mNodeMetaDataList;
-    // 缓存的Python DANodeRegistry实例
-    DAPySafePyObjectHolder mPyNodeRegistry;
     // 最后的错误信息
     mutable QString mLastErrorString;
 };
@@ -291,7 +290,6 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
         }
 
         pybind11::object registryInstance = registryClass();
-        d->mPyNodeRegistry                = DAPySafePyObjectHolder(registryInstance);
 
         // 4. 构建Python参数并调用discover
         pybind11::list pyScanPaths;
@@ -307,16 +305,8 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
             pybind11::object descObj = pybind11::reinterpret_borrow< pybind11::object >(item);
 
             DANodeDescriptor descriptor;
-            if (pybind11::isinstance< pybind11::dict >(descObj)) {
-                // 旧式Python dict描述符
-                pybind11::dict descDict = descObj.cast< pybind11::dict >();
-                QJsonObject json         = DA::PY::pyDictToQJsonObject(descDict);
-                descriptor               = DANodeDescriptor::fromJson(json);
-            } else {
-                // 新式C++ struct描述符（通过pybind11直接cast）
-                descriptor = descObj.cast< DA::DANodeDescriptor >();
-            }
-
+            // 新式C++ struct描述符（通过pybind11直接cast）
+            descriptor                = descObj.cast< DA::DANodeDescriptor >();
             DAPyNodeMetaData metaData = descriptor.toMetaData();
             if (!metaData.isValid()) {
                 qWarning() << "发现无效的节点元数据，跳过";

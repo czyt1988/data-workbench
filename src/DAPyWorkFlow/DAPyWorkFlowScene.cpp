@@ -109,10 +109,12 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkRemove(DAPyLinkGraphicsItem* 
             try {
                 pybind11::object workflowObj = this->mPyWorkflow.object();
                 if (workflowObj) {
-                    workflowObj.attr("remove_connection")(fromNode->getProxy()->getPyNodeRef(),
-                                                          linkItem->getFromOutputName().toStdString(),
-                                                          toNode->getProxy()->getPyNodeRef(),
-                                                          linkItem->getToInputName().toStdString());
+                    workflowObj.attr("remove_connection")(
+                        fromNode->getProxy()->getPyNodeRef(),
+                        linkItem->getFromOutputName().toStdString(),
+                        toNode->getProxy()->getPyNodeRef(),
+                        linkItem->getToInputName().toStdString()
+                    );
                 }
             } catch (const pybind11::error_already_set& e) {
                 qWarning() << tr("DAPyWorkFlowScene::removePyNodeLink: Python error: %1").arg(e.what());
@@ -279,7 +281,6 @@ std::shared_ptr< DAPyNodeFactory > DAPyWorkFlowScene::getPyNodeFactory() const
  * @return 创建的DAPyNodeGraphicsItem指针，创建失败返回nullptr
  * @note 返回的item未添加到场景，需要调用方自行添加
  * @note 不调用setDescriptor()（Bug 2修复），保留代理中的完整描述符
- * @see createPyNode(const QJsonObject&, const QPointF&)
  */
 DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& metaData, const QPointF& pos)
 {
@@ -293,22 +294,18 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
         qWarning() << tr("DAPyWorkFlowScene::createPyNode: invalid metadata (qualified_name: %1)").arg(metaData.qualifiedName);
         return nullptr;
     }
-
-    // 创建DAPyNodeProxy
-    DAPyNodeProxy* proxy = nullptr;
-    if (d->mPyNodeFactory) {
-        // 通过工厂创建代理，工厂内部处理Python模块导入、实例创建和setPyNodeRef
-        proxy = d->mPyNodeFactory->createNodeProxy(metaData);
-        if (!proxy) {
-            qWarning() << tr("DAPyWorkFlowScene::createPyNode: factory failed to create proxy for %1").arg(metaData.qualifiedName);
-            return nullptr;
-        }
-    } else {
-        // 未设置工厂时回退到直接创建（向后兼容）
-        proxy = new DAPyNodeProxy();
-        proxy->setQualifiedName(metaData.qualifiedName);
+    if (!d->mPyNodeFactory) {
+        // 未设置工程，直接返回
+        qWarning() << tr("DAPyWorkFlowScene::createPyNode: factory is not set");
+        return nullptr;
     }
-
+    // 创建DAPyNodeProxy
+    DAPyNodeProxy* proxy = d->mPyNodeFactory->createNodeProxy(metaData);
+    if (!proxy) {
+        // 节点创建失败
+        qWarning() << tr("DAPyWorkFlowScene::createPyNode: factory failed to create proxy for %1").arg(metaData.qualifiedName);
+        return nullptr;
+    }
     // 在Python侧注册节点到DAWorkflow
     {
         DAPyGILGuard gil;
@@ -319,31 +316,8 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
                 delete proxy;
                 return nullptr;
             }
-            if (d->mPyNodeFactory) {
-                // 工厂已创建实例并设置setPyNodeRef，只需注册到workflow
-                workflowObj.attr("add_node")(proxy->getPyNodeRef());
-            } else {
-                // 无工厂时，手动导入Python模块创建节点实例
-                std::string qn = metaData.qualifiedName.toStdString();
-                size_t dotPos  = qn.rfind('.');
-                if (dotPos == std::string::npos) {
-                    qWarning() << tr("DAPyWorkFlowScene::createPyNode: invalid qualified_name: %1").arg(metaData.qualifiedName);
-                    delete proxy;
-                    return nullptr;
-                }
-                std::string moduleName = qn.substr(0, dotPos);
-                std::string className  = qn.substr(dotPos + 1);
-
-                pybind11::module_ pyMod       = pybind11::module_::import(moduleName.c_str());
-                pybind11::object nodeClassObj = pyMod.attr(className.c_str());
-
-                // 创建Python节点实例
-                pybind11::object pyNodeInstance = nodeClassObj();
-
-                // 调用Python DAWorkflow.add_node()注册节点实例
-                workflowObj.attr("add_node")(pyNodeInstance);
-                proxy->setPyNodeRef(pyNodeInstance);
-            }
+            // 工厂已创建实例并设置setPyNodeRef，只需注册到workflow
+            workflowObj.attr("add_node")(proxy->getPyNodeRef());
         } catch (const pybind11::error_already_set& e) {
             qWarning() << tr("DAPyWorkFlowScene::createPyNode: Python error: %1").arg(e.what());
             delete proxy;
@@ -462,10 +436,12 @@ bool DAPyWorkFlowScene::removePyNodeItem(DAPyNodeGraphicsItem* item)
             try {
                 pybind11::object workflowObj = d->mPyWorkflow.object();
                 if (workflowObj) {
-                    workflowObj.attr("remove_connection")(link->getFromNode()->getProxy()->getPyNodeRef(),
-                                                          link->getFromOutputName().toStdString(),
-                                                          link->getToNode()->getProxy()->getPyNodeRef(),
-                                                          link->getToInputName().toStdString());
+                    workflowObj.attr("remove_connection")(
+                        link->getFromNode()->getProxy()->getPyNodeRef(),
+                        link->getFromOutputName().toStdString(),
+                        link->getToNode()->getProxy()->getPyNodeRef(),
+                        link->getToInputName().toStdString()
+                    );
                 }
             } catch (const pybind11::error_already_set& e) {
                 qWarning() << tr("DAPyWorkFlowScene::removePyNodeItem: Python error removing connection: %1").arg(e.what());
@@ -655,10 +631,9 @@ QList< DAPyNodeGraphicsItem* > DAPyWorkFlowScene::getSelectedPyNodeItems() const
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 返回的link未添加到场景，需要调用方自行添加
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(DAPyNodeGraphicsItem* fromItem,
-                                                       const QString& fromOutput,
-                                                       DAPyNodeGraphicsItem* toItem,
-                                                       const QString& toInput)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(
+    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
+)
 {
     if (!fromItem || !toItem) {
         return nullptr;
@@ -717,10 +692,9 @@ void DAPyWorkFlowScene::addPyNodeLink(DAPyLinkGraphicsItem* linkItem)
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 函数名后缀"_"表示支持undo/redo操作
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(DAPyNodeGraphicsItem* fromItem,
-                                                        const QString& fromOutput,
-                                                        DAPyNodeGraphicsItem* toItem,
-                                                        const QString& toInput)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(
+    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
+)
 {
     DAPyLinkGraphicsItem* link = addPyNodeLink(fromItem, fromOutput, toItem, toInput);
     if (!link) {
@@ -1394,10 +1368,12 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
  * @param linkItems 分离出的连接线item列表
  * @param normalItems 分离出的普通item列表
  */
-void DAPyWorkFlowScene::classifyItems(const QList< QGraphicsItem* >& sourceItems,
-                                      QList< DAPyNodeGraphicsItem* >& nodeItems,
-                                      QList< DAPyLinkGraphicsItem* >& linkItems,
-                                      QList< QGraphicsItem* >& normalItems)
+void DAPyWorkFlowScene::classifyItems(
+    const QList< QGraphicsItem* >& sourceItems,
+    QList< DAPyNodeGraphicsItem* >& nodeItems,
+    QList< DAPyLinkGraphicsItem* >& linkItems,
+    QList< QGraphicsItem* >& normalItems
+)
 {
     if (sourceItems.isEmpty()) {
         return;

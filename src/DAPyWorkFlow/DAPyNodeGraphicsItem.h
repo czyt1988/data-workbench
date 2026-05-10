@@ -8,7 +8,6 @@
 #include "DAPyNodeStyle.h"
 #include "DANodeDescriptor.h"
 #include <QIcon>
-#include <QJsonObject>
 #include <QGraphicsSceneMouseEvent>
 
 class QDomDocument;

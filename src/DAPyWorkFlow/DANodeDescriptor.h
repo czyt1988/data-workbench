@@ -1,9 +1,9 @@
-#ifndef DANODEDESCRIPTOR_H
+﻿#ifndef DANODEDESCRIPTOR_H
 #define DANODEDESCRIPTOR_H
 
 #include "DAPyWorkFlowAPI.h"
 #include "DAPortDescriptor.h"
-#include "ParameterDescriptor.h"
+#include "DAParameterDescriptor.h"
 #include "DAPyNodeStyle.h"
 #include "DAPyNodeStyleDefine.h"
 #include "DAPyNodeFactory.h"
@@ -38,15 +38,15 @@ namespace DA
  */
 struct DAPYWORKFLOW_API DANodeDescriptor
 {
-    QString name;                          ///< 节点显示名称
-    QString qualifiedName;                 ///< 节点唯一标识名（Python qualified_name）
-    QString category;                      ///< 节点分组/分类
-    QString icon;                          ///< 节点图标路径
-    QVector<DAPortDescriptor> inputs;      ///< 输入端口描述符列表
-    QVector<DAPortDescriptor> outputs;     ///< 输出端口描述符列表
-    QVector<ParameterDescriptor> parameters;  ///< 参数描述符列表
-    RenderTemplate renderTemplate;         ///< 渲染模板类型
-    DANodeStyle style;                     ///< 节点样式配置
+    QString name;                                 ///< 节点显示名称
+    QString qualifiedName;                        ///< 节点唯一标识名（Python qualified_name）
+    QString category;                             ///< 节点分组/分类
+    QString icon;                                 ///< 节点图标路径
+    QVector< DAPortDescriptor > inputs;           ///< 输入端口描述符列表
+    QVector< DAPortDescriptor > outputs;          ///< 输出端口描述符列表
+    QVector< DAParameterDescriptor > parameters;  ///< 参数描述符列表
+    RenderTemplate renderTemplate;                ///< 渲染模板类型
+    DANodeStyle style;                            ///< 节点样式配置
 
     // 默认构造函数
     DANodeDescriptor();

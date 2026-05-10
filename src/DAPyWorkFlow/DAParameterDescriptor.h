@@ -1,5 +1,5 @@
-#ifndef PARAMETERDESCRIPTOR_H
-#define PARAMETERDESCRIPTOR_H
+﻿#ifndef DAPARAMETERDESCRIPTOR_H
+#define DAPARAMETERDESCRIPTOR_H
 
 #include <QString>
 #include <QVariant>
@@ -29,22 +29,21 @@ namespace DA
  * @note 此为纯数据头文件结构体，无需 .cpp 实现文件。
  * @see DAPyParamTypeHelper
  */
-struct ParameterDescriptor
+struct DAParameterDescriptor
 {
-    QString name;           ///< 参数名称
-    QString type;           ///< 参数类型 (str/int/float/bool/list/dict)
-    QString description;    ///< 参数描述
-    QVariant defaultValue;  ///< 默认值（可为无效 QVariant 表示无默认值）
+    QString name;               ///< 参数名称
+    QString type;               ///< 参数类型 (str/int/float/bool/list/dict)
+    QString description;        ///< 参数描述
+    QVariant defaultValue;      ///< 默认值（可为无效 QVariant 表示无默认值）
     QJsonObject rawDescriptor;  ///< 原始 JSON 描述符（保留所有字段供扩展访问）
-    int propertyId;         ///< 属性面板中的属性 ID（由面板构建器设置）
+    int propertyId;             ///< 属性面板中的属性 ID（由面板构建器设置）
 
     /**
      * @brief 默认构造函数
      *
      * 初始化 propertyId 为 0，其余字段为空。
      */
-    ParameterDescriptor()
-        : propertyId(0)
+    DAParameterDescriptor() : propertyId(0)
     {
     }
 
@@ -52,13 +51,13 @@ struct ParameterDescriptor
      * @brief 从单个 JSON 对象构造参数描述符
      *
      * @param[in] obj 包含参数描述信息的 JSON 对象
-     * @return 构造完成的 ParameterDescriptor
+     * @return 构造完成的 DAParameterDescriptor
      */
-    static ParameterDescriptor fromJson(const QJsonObject& obj)
+    static DAParameterDescriptor fromJson(const QJsonObject& obj)
     {
-        ParameterDescriptor desc;
-        desc.name = obj.value(QStringLiteral("name")).toString();
-        desc.type = obj.value(QStringLiteral("type")).toString();
+        DAParameterDescriptor desc;
+        desc.name        = obj.value(QStringLiteral("name")).toString();
+        desc.type        = obj.value(QStringLiteral("type")).toString();
         desc.description = obj.value(QStringLiteral("description")).toString();
 
         QJsonValue defaultVal = obj.value(QStringLiteral("default"));
@@ -67,7 +66,7 @@ struct ParameterDescriptor
         }
 
         desc.rawDescriptor = obj;
-        desc.propertyId = 0;
+        desc.propertyId    = 0;
         return desc;
     }
 
@@ -77,11 +76,11 @@ struct ParameterDescriptor
      * 遍历数组中的每个 JSON 对象，若对象缺少 "name" 或 "type" 字段则跳过。
      *
      * @param[in] params JSON 数组，包含多个参数描述对象
-     * @return 解析成功的 ParameterDescriptor 列表
+     * @return 解析成功的 DAParameterDescriptor 列表
      */
-    static QVector<ParameterDescriptor> fromJsonArray(const QJsonArray& params)
+    static QVector< DAParameterDescriptor > fromJsonArray(const QJsonArray& params)
     {
-        QVector<ParameterDescriptor> result;
+        QVector< DAParameterDescriptor > result;
         for (const QJsonValue& val : params) {
             QJsonObject obj = val.toObject();
             // 跳过缺少 "name" 或 "type" 的无效条目

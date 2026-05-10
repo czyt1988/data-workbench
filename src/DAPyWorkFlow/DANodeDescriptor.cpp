@@ -147,7 +147,7 @@ QJsonObject DANodeDescriptor::toJson() const
     // parameters 数组（非空时才写入）
     if (!parameters.isEmpty()) {
         QJsonArray paramsArr;
-        for (const ParameterDescriptor& param : parameters) {
+        for (const DAParameterDescriptor& param : parameters) {
             QJsonObject paramObj;
             paramObj[ QStringLiteral("name") ] = param.name;
             paramObj[ QStringLiteral("type") ] = param.type;
@@ -225,7 +225,7 @@ DANodeDescriptor DANodeDescriptor::fromJson(const QJsonObject& obj)
     // parameters 数组
     if (obj.contains(QStringLiteral("parameters"))) {
         QJsonArray paramsArr = obj.value(QStringLiteral("parameters")).toArray();
-        desc.parameters      = ParameterDescriptor::fromJsonArray(paramsArr);
+        desc.parameters      = DAParameterDescriptor::fromJsonArray(paramsArr);
     }
 
     // render_template（缺失时默认 NodeStyleTemplate）

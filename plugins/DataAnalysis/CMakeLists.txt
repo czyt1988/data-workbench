@@ -130,22 +130,25 @@ damacro_import_Python(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 message(STATUS "DAWorkbench_DIR=${DAWorkbench_DIR}")
 # DAInterface
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
-find_package(DAWorkbench COMPONENTS 
-    DAUtils 
-    DAMessageHandler
-    DAAxOfficeWrapper
-    DAPyScripts
-    DAPyBindQt
-    DAData
-    DAGraphicsView
-    DAPyWorkFlow
-    DAFigure
-    DACommonWidgets
-    DAPyCommonWidgets
-    DAGui 
-    DAInterface 
-    DAPluginSupport
-)
+# 顶层构建时 DAWorkbench::* targets 已由 add_subdirectory(src) 创建，无需 find_package
+if(NOT TARGET DAWorkbench::DAUtils)
+    find_package(DAWorkbench COMPONENTS 
+        DAUtils 
+        DAMessageHandler
+        DAAxOfficeWrapper
+        DAPyScripts
+        DAPyBindQt
+        DAData
+        DAGraphicsView
+        DAPyWorkFlow
+        DAFigure
+        DACommonWidgets
+        DAPyCommonWidgets
+        DAGui 
+        DAInterface 
+        DAPluginSupport
+    )
+endif()
 # 
 target_link_libraries(${DA_PLUGIN_NAME} PRIVATE
     DAWorkbench::DAUtils 

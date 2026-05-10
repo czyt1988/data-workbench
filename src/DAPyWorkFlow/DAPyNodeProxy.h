@@ -7,7 +7,6 @@
 #include "DAGlobals.h"
 #include "DAPybind11InQt.h"
 #include <QString>
-#include <QJsonObject>
 #include <QList>
 
 namespace DA
@@ -82,10 +81,6 @@ public:
     // Python原生数据传递
     void setPyInputData(const QString& key, const pybind11::object& data);
     pybind11::object getPyOutputData(const QString& key) const;
-
-    // 配置参数（QJsonObject <-> Python dict）
-    bool setConfig(const QJsonObject& config);
-    QJsonObject getConfig() const;
 
     // 节点ID（独立管理，不继承DAAbstractNode）
     unsigned int getID() const;

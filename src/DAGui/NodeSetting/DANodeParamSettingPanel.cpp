@@ -26,7 +26,7 @@ public:
     }
 
     DAPropertyPanelContainerWidget* mPanel = nullptr;
-    QVector< ParameterDescriptor > mParameters;
+    QVector< DAParameterDescriptor > mParameters;
     bool mBlockSignals = false;
 };
 
@@ -124,7 +124,7 @@ QJsonObject DANodeParamSettingPanel::collectConfig() const
  * 创建编辑器后，与便捷属性方法一致：直接连接编辑器 Widget 的信号到
  * rootPanel 的 propertyValueChanged，实现 3-hop 信号链第一跳。
  */
-void DANodeParamSettingPanel::testBuildPropertyPanelFromJson(const QVector< ParameterDescriptor >& params)
+void DANodeParamSettingPanel::testBuildPropertyPanelFromJson(const QVector< DAParameterDescriptor >& params)
 {
     d_func()->mParameters = params;
     auto* panel = d_func()->mPanel;
@@ -138,7 +138,7 @@ void DANodeParamSettingPanel::testBuildPropertyPanelFromJson(const QVector< Para
 
     int currentId = 1;
     for (const auto& val : params) {
-        const ParameterDescriptor& desc = val;
+        const DAParameterDescriptor& desc = val;
         QString name = desc.name;
         QString type = desc.type;
 
@@ -228,7 +228,7 @@ QJsonObject DANodeParamSettingPanel::testCollectConfig() const
     const auto& params = d_func()->mParameters;
     int currentId = 1;
     for (const auto& val : params) {
-        const ParameterDescriptor& desc = val;
+        const DAParameterDescriptor& desc = val;
         QString name = desc.name;
         QString type = desc.type;
 

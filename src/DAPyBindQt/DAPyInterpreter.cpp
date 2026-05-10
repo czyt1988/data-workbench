@@ -1,4 +1,4 @@
-#include "DAPyInterpreter.h"
+﻿#include "DAPyInterpreter.h"
 #include <QDebug>
 #include <QProcess>
 #include <QFile>
@@ -46,7 +46,7 @@ QList< QFileInfo > DAPyInterpreter::wherePython()
     qDebug() << res;
     const QList< QString > pys = res.split("\r\n");
     // 遍历所有环境，确认是否的确是ptython路径,where 有时候会返回一些不正确的路径
-    for (QString p : pys) {
+    for (const QString &p : pys) {
         QFileInfo fi(p);
         if (fi.isExecutable()) {
             // 说明是可执行文件，windows下就是pythhon.exe

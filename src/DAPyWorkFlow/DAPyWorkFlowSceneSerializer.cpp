@@ -1,4 +1,4 @@
-#include "DAPyWorkFlowSceneSerializer.h"
+﻿#include "DAPyWorkFlowSceneSerializer.h"
 #include "DAPybind11InQt.h"
 #include "DAPyWorkFlowScene.h"
 #include "DAPyNodeGraphicsItem.h"
@@ -141,9 +141,9 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
                 DAXMLFileInterface::appendElementWithText(workflowDataEle, "json", QString::fromUtf8(jsonBytes), doc);
             }
         } catch (const pybind11::error_already_set& e) {
-            qWarning() << DA_SERIALIZER_TR(
-                              "DAPyWorkFlowSceneSerializer::saveSceneToXml: Python error saving workflow data: %1")
-                              .arg(e.what());
+            qWarning(
+            ) << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::saveSceneToXml: Python error saving workflow data: %1")
+                     .arg(e.what());
             d->mLastErrorString = DA_SERIALIZER_TR("保存workflow数据时Python异常: %1").arg(e.what());
             // 继续保存场景级别的数据，不因workflow数据保存失败而中断
         }
@@ -181,18 +181,7 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
         // 保存节点参数值（从Python侧获取config）
         if (proxy && proxy->hasPyNodeRef()) {
             DAPyGILGuard gil;
-            try {
-                QJsonObject configJson = proxy->getConfig();
-                if (!configJson.isEmpty()) {
-                    QJsonDocument configDoc(configJson);
-                    QByteArray configBytes = configDoc.toJson(QJsonDocument::Compact);
-                    DAXMLFileInterface::appendElementWithText(nodeEle, "config", QString::fromUtf8(configBytes), doc);
-                }
-            } catch (const pybind11::error_already_set& e) {
-                qWarning() << DA_SERIALIZER_TR(
-                                  "DAPyWorkFlowSceneSerializer::saveSceneToXml: Python error saving node config: %1")
-                                  .arg(e.what());
-            }
+
 
             // 保存Python对象参数的pickle序列化
             try {
@@ -209,9 +198,9 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
                     nodeEle.appendChild(pickleEle);
                 }
             } catch (const pybind11::error_already_set& e) {
-                qWarning() << DA_SERIALIZER_TR(
-                                  "DAPyWorkFlowSceneSerializer::saveSceneToXml: Python error saving pickle data: %1")
-                                  .arg(e.what());
+                qWarning(
+                ) << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::saveSceneToXml: Python error saving pickle data: %1")
+                         .arg(e.what());
                 // pickle保存失败不影响整体流程
             }
         }
@@ -284,9 +273,9 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
  * @return 加载成功返回true，失败返回false
  * @note 加载后不会自动执行工作流
  */
-bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneElement,
-                                                   DAPyWorkFlowScene* scene,
-                                                   const QVersionNumber& ver)
+bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(
+    const QDomElement* sceneElement, DAPyWorkFlowScene* scene, const QVersionNumber& ver
+)
 {
     DA_D(d);
     d->mLastErrorString.clear();
@@ -324,7 +313,8 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
                 } catch (const pybind11::error_already_set& e) {
                     qWarning()
                         << DA_SERIALIZER_TR(
-                               "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error loading workflow data: %1")
+                               "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error loading workflow data: %1"
+                           )
                                .arg(e.what());
                     d->mLastErrorString = DA_SERIALIZER_TR("加载workflow数据时Python异常: %1").arg(e.what());
                 }
@@ -386,7 +376,8 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
                 }
             } catch (const pybind11::error_already_set& e) {
                 qWarning() << DA_SERIALIZER_TR(
-                                  "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error querying registry: %1")
+                                  "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error querying registry: %1"
+                )
                                   .arg(e.what());
             }
         }
@@ -511,9 +502,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
  * @param ver 版本号
  * @return 保存成功返回true，失败返回false
  */
-bool DAPyWorkFlowSceneSerializer::saveSceneToFile(const DAPyWorkFlowScene* scene,
-                                                  const QString& filePath,
-                                                  const QVersionNumber& ver)
+bool DAPyWorkFlowSceneSerializer::saveSceneToFile(const DAPyWorkFlowScene* scene, const QString& filePath, const QVersionNumber& ver)
 {
     DA_D(d);
     QDomDocument doc("DAPyWorkFlowScene");

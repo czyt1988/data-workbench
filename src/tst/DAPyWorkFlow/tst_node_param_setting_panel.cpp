@@ -1,7 +1,7 @@
-#include "tst_node_param_setting_panel.h"
+﻿#include "tst_node_param_setting_panel.h"
 #include "DANodeParamSettingPanel.h"
 #include "DAParamTypeRegistry.h"
-#include "DAPyWorkFlow/ParameterDescriptor.h"
+#include "DAPyWorkFlow/DAParameterDescriptor.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include <QtTest/QtTest>
 #include <QVBoxLayout>
@@ -52,7 +52,7 @@ void TestNodeParamSettingPanel::testEmptyParametersShowsPlaceholder()
     // 空面板中占位属性为 propertyId=1（auto-generated）
     DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
     QVERIFY2(item != nullptr, "空参数时应创建占位属性项");
-    QLabel* placeholder = qobject_cast<QLabel*>(item->editorWidget());
+    QLabel* placeholder = qobject_cast< QLabel* >(item->editorWidget());
     QVERIFY2(placeholder != nullptr, "占位属性项的编辑器应为 QLabel");
     QCOMPARE(placeholder->text(), QStringLiteral("无可配置参数"));
 }
@@ -67,23 +67,23 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithIntParam()
 {
     QJsonArray params;
     QJsonObject p1;
-    p1["name"]        = "threshold";
-    p1["type"]        = "int";
-    p1["description"] = "阈值";
-    p1["default"]     = 10;
-    p1["min"]         = 0;
-    p1["max"]         = 100;
+    p1[ "name" ]        = "threshold";
+    p1[ "type" ]        = "int";
+    p1[ "description" ] = "阈值";
+    p1[ "default" ]     = 10;
+    p1[ "min" ]         = 0;
+    p1[ "max" ]         = 100;
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
+    panel.testBuildPropertyPanelFromJson(DAParameterDescriptor::fromJsonArray(params));
 
     QCOMPARE(panel.propertyPanel()->propertyCount(), 1);
 
     // 验证编辑器类型为 QSpinBox
     DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
     QVERIFY(item != nullptr);
-    QSpinBox* spinBox = qobject_cast<QSpinBox*>(item->editorWidget());
+    QSpinBox* spinBox = qobject_cast< QSpinBox* >(item->editorWidget());
     QVERIFY2(spinBox != nullptr, "int 参数编辑器应为 QSpinBox");
     QCOMPARE(spinBox->value(), 10);
     QCOMPARE(spinBox->minimum(), 0);
@@ -99,21 +99,21 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithFloatParam()
 {
     QJsonArray params;
     QJsonObject p1;
-    p1["name"]    = "ratio";
-    p1["type"]    = "float";
-    p1["default"] = 0.5;
-    p1["min"]     = 0.0;
-    p1["max"]     = 1.0;
-    p1["decimals"] = 3;
+    p1[ "name" ]     = "ratio";
+    p1[ "type" ]     = "float";
+    p1[ "default" ]  = 0.5;
+    p1[ "min" ]      = 0.0;
+    p1[ "max" ]      = 1.0;
+    p1[ "decimals" ] = 3;
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
+    panel.testBuildPropertyPanelFromJson(DAParameterDescriptor::fromJsonArray(params));
 
     QCOMPARE(panel.propertyPanel()->propertyCount(), 1);
     DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
     QVERIFY(item != nullptr);
-    QDoubleSpinBox* dSpinBox = qobject_cast<QDoubleSpinBox*>(item->editorWidget());
+    QDoubleSpinBox* dSpinBox = qobject_cast< QDoubleSpinBox* >(item->editorWidget());
     QVERIFY2(dSpinBox != nullptr, "float 参数编辑器应为 QDoubleSpinBox");
     QCOMPARE(dSpinBox->value(), 0.5);
 }
@@ -127,18 +127,18 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithBoolParam()
 {
     QJsonArray params;
     QJsonObject p1;
-    p1["name"]    = "enabled";
-    p1["type"]    = "bool";
-    p1["default"] = true;
+    p1[ "name" ]    = "enabled";
+    p1[ "type" ]    = "bool";
+    p1[ "default" ] = true;
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
+    panel.testBuildPropertyPanelFromJson(DAParameterDescriptor::fromJsonArray(params));
 
     QCOMPARE(panel.propertyPanel()->propertyCount(), 1);
     DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
     QVERIFY(item != nullptr);
-    QCheckBox* checkBox = qobject_cast<QCheckBox*>(item->editorWidget());
+    QCheckBox* checkBox = qobject_cast< QCheckBox* >(item->editorWidget());
     QVERIFY2(checkBox != nullptr, "bool 参数编辑器应为 QCheckBox");
     QCOMPARE(checkBox->isChecked(), true);
 }
@@ -152,19 +152,19 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithStrParam()
 {
     QJsonArray params;
     QJsonObject p1;
-    p1["name"]        = "filename";
-    p1["type"]        = "str";
-    p1["description"] = "文件名";
-    p1["default"]     = "test.txt";
+    p1[ "name" ]        = "filename";
+    p1[ "type" ]        = "str";
+    p1[ "description" ] = "文件名";
+    p1[ "default" ]     = "test.txt";
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
+    panel.testBuildPropertyPanelFromJson(DAParameterDescriptor::fromJsonArray(params));
 
     QCOMPARE(panel.propertyPanel()->propertyCount(), 1);
     DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
     QVERIFY(item != nullptr);
-    QLineEdit* lineEdit = qobject_cast<QLineEdit*>(item->editorWidget());
+    QLineEdit* lineEdit = qobject_cast< QLineEdit* >(item->editorWidget());
     QVERIFY2(lineEdit != nullptr, "str 参数编辑器应为 QLineEdit");
     QCOMPARE(lineEdit->text(), QStringLiteral("test.txt"));
 }
@@ -178,24 +178,24 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithEnumParam()
 {
     QJsonArray params;
     QJsonObject p1;
-    p1["name"]        = "mode";
-    p1["type"]        = "enum";
-    p1["description"] = "运行模式";
+    p1[ "name" ]        = "mode";
+    p1[ "type" ]        = "enum";
+    p1[ "description" ] = "运行模式";
     QJsonArray enumVals;
     enumVals.append("fast");
     enumVals.append("normal");
     enumVals.append("slow");
-    p1["enum_values"] = enumVals;
-    p1["default"]     = "normal";
+    p1[ "enum_values" ] = enumVals;
+    p1[ "default" ]     = "normal";
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
+    panel.testBuildPropertyPanelFromJson(DAParameterDescriptor::fromJsonArray(params));
 
     QCOMPARE(panel.propertyPanel()->propertyCount(), 1);
     DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
     QVERIFY(item != nullptr);
-    QComboBox* combo = qobject_cast<QComboBox*>(item->editorWidget());
+    QComboBox* combo = qobject_cast< QComboBox* >(item->editorWidget());
     QVERIFY2(combo != nullptr, "enum 参数编辑器应为 QComboBox");
     QCOMPARE(combo->count(), 3);
     QCOMPARE(combo->currentText(), QStringLiteral("normal"));
@@ -210,13 +210,13 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithFileParam()
 {
     QJsonArray params;
     QJsonObject p1;
-    p1["name"]    = "filepath";
-    p1["type"]    = "file";
-    p1["default"] = "/tmp/data.csv";
+    p1[ "name" ]    = "filepath";
+    p1[ "type" ]    = "file";
+    p1[ "default" ] = "/tmp/data.csv";
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
+    panel.testBuildPropertyPanelFromJson(DAParameterDescriptor::fromJsonArray(params));
 
     QCOMPARE(panel.propertyPanel()->propertyCount(), 1);
     DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
@@ -234,15 +234,21 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithMultipleParams()
 {
     QJsonArray params;
     QJsonObject p1, p2, p3;
-    p1["name"] = "count"; p1["type"] = "int"; p1["default"] = 5;
-    p2["name"] = "label"; p2["type"] = "str"; p2["default"] = "hello";
-    p3["name"] = "flag";  p3["type"] = "bool"; p3["default"] = false;
+    p1[ "name" ]    = "count";
+    p1[ "type" ]    = "int";
+    p1[ "default" ] = 5;
+    p2[ "name" ]    = "label";
+    p2[ "type" ]    = "str";
+    p2[ "default" ] = "hello";
+    p3[ "name" ]    = "flag";
+    p3[ "type" ]    = "bool";
+    p3[ "default" ] = false;
     params.append(p1);
     params.append(p2);
     params.append(p3);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
+    panel.testBuildPropertyPanelFromJson(DAParameterDescriptor::fromJsonArray(params));
 
     QCOMPARE(panel.propertyPanel()->propertyCount(), 3);
     QVERIFY(panel.propertyPanel()->getPropertyItem(1) != nullptr);
@@ -260,19 +266,21 @@ void TestNodeParamSettingPanel::testBuildPropertyPanelWithInvalidParamSkipped()
     QJsonArray params;
     // 有效参数
     QJsonObject p1;
-    p1["name"] = "valid_param"; p1["type"] = "int"; p1["default"] = 1;
+    p1[ "name" ]    = "valid_param";
+    p1[ "type" ]    = "int";
+    p1[ "default" ] = 1;
     params.append(p1);
     // 无效参数：缺少 name
     QJsonObject p2;
-    p2["type"] = "str";
+    p2[ "type" ] = "str";
     params.append(p2);
     // 无效参数：缺少 type
     QJsonObject p3;
-    p3["name"] = "no_type";
+    p3[ "name" ] = "no_type";
     params.append(p3);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
+    panel.testBuildPropertyPanelFromJson(DAParameterDescriptor::fromJsonArray(params));
 
     // 只有有效参数被创建
     QCOMPARE(panel.propertyPanel()->propertyCount(), 1);
@@ -288,18 +296,20 @@ void TestNodeParamSettingPanel::testSignalChainPropertyValueChanged()
 {
     QJsonArray params;
     QJsonObject p1;
-    p1["name"] = "threshold"; p1["type"] = "int"; p1["default"] = 10;
+    p1[ "name" ]    = "threshold";
+    p1[ "type" ]    = "int";
+    p1[ "default" ] = 10;
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
+    panel.testBuildPropertyPanelFromJson(DAParameterDescriptor::fromJsonArray(params));
 
     QSignalSpy spy(&panel, &DANodeParamSettingPanel::propertyValueChanged);
 
     // 模拟属性面板值变化
     DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
     QVERIFY(item != nullptr);
-    QSpinBox* spinBox = qobject_cast<QSpinBox*>(item->editorWidget());
+    QSpinBox* spinBox = qobject_cast< QSpinBox* >(item->editorWidget());
     QVERIFY(spinBox != nullptr);
 
     // 改变值触发信号链
@@ -307,7 +317,7 @@ void TestNodeParamSettingPanel::testSignalChainPropertyValueChanged()
 
     // 3-hop: mPanel propertyValueChanged → onPanelPropertyValueChanged → emit propertyValueChanged
     QVERIFY(spy.count() >= 1);
-    QList<QVariant> args = spy.takeFirst();
+    QList< QVariant > args = spy.takeFirst();
     QCOMPARE(args.at(0).toInt(), 1);  // propertyId = 1
 }
 
@@ -321,11 +331,13 @@ void TestNodeParamSettingPanel::testUpdateUIBlocksSignals()
 {
     QJsonArray params;
     QJsonObject p1;
-    p1["name"] = "count"; p1["type"] = "int"; p1["default"] = 5;
+    p1[ "name" ]    = "count";
+    p1[ "type" ]    = "int";
+    p1[ "default" ] = 5;
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
+    panel.testBuildPropertyPanelFromJson(DAParameterDescriptor::fromJsonArray(params));
 
     QSignalSpy spy(&panel, &DANodeParamSettingPanel::propertyValueChanged);
 
@@ -346,7 +358,7 @@ void TestNodeParamSettingPanel::testPropertyPanelAccessor()
     DANodeParamSettingPanel panel;
     DAPropertyPanelContainerWidget* pPanel = panel.propertyPanel();
     QVERIFY(pPanel != nullptr);
-    QVERIFY(qobject_cast<DAPropertyPanelContainerWidget*>(pPanel) != nullptr);
+    QVERIFY(qobject_cast< DAPropertyPanelContainerWidget* >(pPanel) != nullptr);
 }
 
 /**
@@ -358,21 +370,23 @@ void TestNodeParamSettingPanel::testCollectConfigFromIntParam()
 {
     QJsonArray params;
     QJsonObject p1;
-    p1["name"] = "threshold"; p1["type"] = "int"; p1["default"] = 10;
+    p1[ "name" ]    = "threshold";
+    p1[ "type" ]    = "int";
+    p1[ "default" ] = 10;
     params.append(p1);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
+    panel.testBuildPropertyPanelFromJson(DAParameterDescriptor::fromJsonArray(params));
 
     // 改变编辑器值
     DAPropertyItemWidget* item = panel.propertyPanel()->getPropertyItem(1);
-    QSpinBox* spinBox = qobject_cast<QSpinBox*>(item->editorWidget());
+    QSpinBox* spinBox          = qobject_cast< QSpinBox* >(item->editorWidget());
     spinBox->setValue(20);
 
     // 收集配置
     QJsonObject config = panel.testCollectConfig();
     QVERIFY(config.contains("threshold"));
-    QCOMPARE(config["threshold"].toInt(), 20);
+    QCOMPARE(config[ "threshold" ].toInt(), 20);
 }
 
 /**
@@ -384,19 +398,23 @@ void TestNodeParamSettingPanel::testCollectConfigFromMultipleParams()
 {
     QJsonArray params;
     QJsonObject p1, p2;
-    p1["name"] = "count"; p1["type"] = "int"; p1["default"] = 5;
-    p2["name"] = "label"; p2["type"] = "str"; p2["default"] = "hello";
+    p1[ "name" ]    = "count";
+    p1[ "type" ]    = "int";
+    p1[ "default" ] = 5;
+    p2[ "name" ]    = "label";
+    p2[ "type" ]    = "str";
+    p2[ "default" ] = "hello";
     params.append(p1);
     params.append(p2);
 
     DANodeParamSettingPanel panel;
-    panel.testBuildPropertyPanelFromJson(ParameterDescriptor::fromJsonArray(params));
+    panel.testBuildPropertyPanelFromJson(DAParameterDescriptor::fromJsonArray(params));
 
     QJsonObject config = panel.testCollectConfig();
     QVERIFY(config.contains("count"));
     QVERIFY(config.contains("label"));
-    QCOMPARE(config["count"].toInt(), 5);
-    QCOMPARE(config["label"].toString(), QStringLiteral("hello"));
+    QCOMPARE(config[ "count" ].toInt(), 5);
+    QCOMPARE(config[ "label" ].toString(), QStringLiteral("hello"));
 }
 
 }  // namespace DA

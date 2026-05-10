@@ -1,11 +1,11 @@
-#ifndef DANODEPARAMSETTINGPANEL_H
+﻿#ifndef DANODEPARAMSETTINGPANEL_H
 #define DANODEPARAMSETTINGPANEL_H
 
 #include "DAGuiAPI.h"
 #include "DAAbstractNodeSettingWidget.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAGlobals.h"
-#include "DAPyWorkFlow/ParameterDescriptor.h"
+#include "DAPyWorkFlow/DAParameterDescriptor.h"
 #include "DANodeDescriptor.h"
 #include <QJsonObject>
 #include <QVector>
@@ -77,7 +77,7 @@ protected:
     // === 测试辅助方法（仅在测试中使用）===
 
     // 从参数描述符列表直接构建属性面板（绕过 proxy）
-    void testBuildPropertyPanelFromJson(const QVector< ParameterDescriptor >& params);
+    void testBuildPropertyPanelFromJson(const QVector< DAParameterDescriptor >& params);
 
     // 收集配置（测试暴露）
     QJsonObject testCollectConfig() const;

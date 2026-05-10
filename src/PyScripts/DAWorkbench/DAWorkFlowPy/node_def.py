@@ -1,4 +1,4 @@
-"""
+﻿"""
 工作流节点定义装饰器模块
 
 本模块定义了 NodeDef 装饰器，用于声明工作流节点类型。
@@ -96,7 +96,7 @@ def _collect_from_nested_class(cls: type, nested_name: str, decl_type: type) -> 
     return items
 
 
-def NodeDef(name: str, category: str = "", render_template: str = "rect", style=None):
+def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", icon:str = "" ,style=None):
     """
     工作流节点定义装饰器
 
@@ -160,6 +160,7 @@ def NodeDef(name: str, category: str = "", render_template: str = "rect", style=
         desc.name = name
         desc.qualifiedName = qualified_name
         desc.category = category
+        desc.icon = icon
         desc.renderTemplate = rt_enum
         desc.setInputs(inputs)
         desc.setOutputs(outputs)
