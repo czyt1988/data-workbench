@@ -528,8 +528,8 @@ void DAPyWorkFlowOperateWidget::runCurrentWorkFlow()
 		qCritical() << tr("Unable to get workflow correctly");  // 无法正确获取工作流
 		return;
 	}
-	// TODO: DAPyWorkFlow no longer has exec(). Execution is now handled by DAPyWorkFlowExecuter.
-	qWarning() << tr("Workflow execution not yet implemented via DAPyWorkFlowExecuter");
+	// TODO: DAPyWorkFlow no longer has exec(). Execution is now handled by DAPyWorkFlowLifecycle.
+	qWarning() << tr("Workflow execution not yet implemented via DAPyWorkFlowLifecycle");
 }
 
 /**
@@ -547,8 +547,8 @@ void DAPyWorkFlowOperateWidget::terminateCurrentWorkFlow()
 		qCritical() << tr("Unable to get workflow correctly");  // 无法正确获取工作流
 		return;
 	}
-	// TODO: DAPyWorkFlow no longer has terminate(). Termination is now handled by DAPyWorkFlowExecuter::terminateRequest().
-	qWarning() << tr("Workflow termination not yet implemented via DAPyWorkFlowExecuter");
+	// TODO: DAPyWorkFlow no longer has terminate(). Termination is now handled by DAPyWorkFlowLifecycle::terminateRequest().
+	qWarning() << tr("Workflow termination not yet implemented via DAPyWorkFlowLifecycle");
 }
 
 /**

@@ -70,7 +70,6 @@
 // Widget
 #include "DADataOperateOfDataFrameWidget.h"
 // Python workflow
-#include "DAPyWorkFlowExecuter.h"
 #include "DAPyWorkFlowScene.h"
 #endif
 //
@@ -1057,13 +1056,7 @@ void DAAppController::initScripts()
  * @brief 初始化Python工作流信号槽连接
  *
  * 此函数在initialize()中调用，用于设置Python工作流相关的
- * 信号槽连接。当前为占位实现，待DAPyWorkFlowScene和
- * DAPyWorkFlowExecuter完整集成后添加具体连接逻辑。
- *
- * 计划的信号槽连接包括：
- * 1. DAPyWorkFlowExecuter::finished → 更新Action启用状态
- * 2. DAPyWorkFlowExecuter::nodeExecuteFinished → 更新节点状态显示
- * 3. DAPyWorkFlowExecuter::progressChanged → 更新进度显示
+ * 信号槽连接。当前为占位实现，待DAPyWorkFlowScene完整集成后添加具体连接逻辑。
  */
 void DAAppController::initPyWorkflowConnections()
 {
@@ -1270,22 +1263,13 @@ void DAAppController::onActionPyWorkflowOpenTriggered()
 /**
  * @brief 执行Python工作流
  *
- * 创建DAPyWorkFlowExecuter实例，设置当前Python工作流对象，
- * 在独立线程中执行，并更新UI状态（禁用执行按钮，启用终止按钮）。
+ * 在独立线程中执行当前Python工作流，并更新UI状态（禁用执行按钮，启用终止按钮）。
  *
  * @note 执行前需确保Python环境已初始化且工作流中有可执行节点
  */
 void DAAppController::onActionPyWorkflowExecuteTriggered()
 {
     qDebug() << "onActionPyWorkflowExecuteTriggered";
-    // TODO: 完整实现需在DAPyWorkFlowScene和DAPyWorkFlowExecuter编辑器集成后完善
-    // 当前为占位实现，仅记录操作意图
-    // 实际实现流程：
-    // 1. 检查Python环境是否就绪
-    // 2. 获取当前DAPyWorkFlowScene的pyWorkflow对象
-    // 3. 创建DAPyWorkFlowExecuter并设置workflow
-    // 4. moveToThread并开始执行
-    // 5. 更新action启用状态
     mActions->actionPyWorkflowExecute->setEnabled(false);
     mActions->actionPyWorkflowTerminate->setEnabled(true);
     qInfo() << tr("Execute Python workflow (placeholder)");
@@ -1294,14 +1278,12 @@ void DAAppController::onActionPyWorkflowExecuteTriggered()
 /**
  * @brief 终止Python工作流执行
  *
- * 向正在执行的DAPyWorkFlowExecuter发送终止请求，
+ * 向正在执行的Python工作流发送终止请求，
  * 并恢复UI状态（启用执行按钮，禁用终止按钮）。
  */
 void DAAppController::onActionPyWorkflowTerminateTriggered()
 {
     qDebug() << "onActionPyWorkflowTerminateTriggered";
-    // TODO: 完整实现需在DAPyWorkFlowExecuter集成后完善
-    // 当前为占位实现，仅恢复UI状态
     mActions->actionPyWorkflowExecute->setEnabled(true);
     mActions->actionPyWorkflowTerminate->setEnabled(false);
     qInfo() << tr("Terminate Python workflow (placeholder)");

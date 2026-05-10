@@ -18,7 +18,7 @@
 #include "DAPyWorkFlowGraphicsScene.h"
 #include "DAGraphicsLinkItem.h"
 #include "DAPyNodeGraphicsItem.h"
-#include "DAPyWorkFlowExecuter.h"
+#include "DAPyWorkFlowLifecycle.h"
 #include "DAGraphicsPixmapItem.h"
 //
 #include "Commands/DACommandsForWorkFlow.h"
@@ -109,38 +109,45 @@ QUndoStack* DAPyWorkFlowEditWidget::getUndoStack()
 
 void DAPyWorkFlowEditWidget::runWorkFlow()
 {
+	// 防止重复执行
+	if (mWorkFlowLifecycle && mWorkFlowLifecycle->isExecuting()) {
+		qWarning() << tr("workflow is already executing, skip re-entry");
+		return;
+	}
+
 	auto scene = getWorkFlowGraphicsScene();
 	if (!scene || !scene->hasPyWorkflow()) {
 		qCritical() << tr("no workflow set");
 		return;
 	}
 
-	// 创建执行器并设置 Python 工作流对象
-	auto executer = new DA::DAPyWorkFlowExecuter(this);
-	executer->setWorkflow(scene->getPyWorkflow());
+	// 创建生命周期管理器并设置 Python 工作流对象
+	auto lifecycle = new DA::DAPyWorkFlowLifecycle(this);
+	lifecycle->setWorkflow(scene->getPyWorkflow());
+	mWorkFlowLifecycle = lifecycle;
 
 	// 创建独立线程
 	mWorkFlowThread = new QThread(this);
-	executer->moveToThread(mWorkFlowThread);
+	lifecycle->moveToThread(mWorkFlowThread);
 
 	// 连接信号：线程启动时开始执行
-	connect(mWorkFlowThread, &QThread::started, executer, &DA::DAPyWorkFlowExecuter::startExecute);
-	// 节点执行完成信号转发（类型适配：shared_ptr -> raw pointer）
-	connect(executer, &DA::DAPyWorkFlowExecuter::nodeExecuteFinished,
-	        this, [this](std::shared_ptr< DA::DAPyNodeProxy > nodeProxy, bool success) {
-		        emit nodeExecuteFinished(nodeProxy.get(), success);
+	connect(mWorkFlowThread, &QThread::started, lifecycle, &DA::DAPyWorkFlowLifecycle::startExecute);
+	// 节点执行完成信号转发
+	connect(lifecycle, &DA::DAPyWorkFlowLifecycle::nodeExecuteFinished,
+	        this, [this](DA::DAPyNodeProxy* proxy, bool success) {
+		        emit nodeExecuteFinished(proxy, success);
 	        });
 	// 执行完成信号转发
-	connect(executer, &DA::DAPyWorkFlowExecuter::finished, this, [this](bool success) {
+	connect(lifecycle, &DA::DAPyWorkFlowLifecycle::finished, this, [this](bool success) {
 		emit finished(success);
 	});
 	// 线程结束后清理资源
 	connect(mWorkFlowThread, &QThread::finished, mWorkFlowThread, &QThread::deleteLater);
-	connect(mWorkFlowThread, &QThread::finished, executer, &QObject::deleteLater);
+	connect(mWorkFlowThread, &QThread::finished, lifecycle, &QObject::deleteLater);
 	// 执行完成时停止线程
-	connect(executer, &DA::DAPyWorkFlowExecuter::finished, mWorkFlowThread, &QThread::quit);
+	connect(lifecycle, &DA::DAPyWorkFlowLifecycle::finished, mWorkFlowThread, &QThread::quit);
 	// 进度信号转发
-	connect(executer, &DA::DAPyWorkFlowExecuter::progressChanged,
+	connect(lifecycle, &DA::DAPyWorkFlowLifecycle::progressChanged,
 	        this, [](int current, int total) {
 			qDebug() << "Workflow progress:" << current << "/" << total;
 		});
