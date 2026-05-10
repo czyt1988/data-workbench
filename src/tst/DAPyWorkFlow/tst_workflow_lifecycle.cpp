@@ -1,4 +1,4 @@
-#include "tst_workflow_lifecycle.h"
+﻿#include "tst_workflow_lifecycle.h"
 #include "DAPyWorkFlowLifecycle.h"
 #include "DAPyWorkFlowTypes.h"
 #include "DAPyGILGuard.h"
@@ -6,8 +6,7 @@
 #include <QSignalSpy>
 #include <QThread>
 #include <QTimer>
-#include <pybind11/embed.h>
-#include <pybind11/pybind11.h>
+#include "DAPybind11InQt.h"
 
 namespace py = pybind11;
 
@@ -88,9 +87,7 @@ class _TestFilterNode:
     workflow.attr("add_node")(filterNode);
 
     // 创建连接：SourceNode.out → FilterNode.in
-    py::object conn = connClass(
-        "test._TestSourceNode_1", "out",
-        "test._TestFilterNode_1", "in");
+    py::object conn = connClass("test._TestSourceNode_1", "out", "test._TestFilterNode_1", "in");
     workflow.attr("add_connection")(conn);
 
     return workflow;
@@ -154,9 +151,7 @@ class _TestDownstreamNode:
     workflow.attr("add_node")(failingNode);
     workflow.attr("add_node")(downstreamNode);
 
-    py::object conn = connClass(
-        "test._TestFailingNode_1", "out",
-        "test._TestDownstreamNode_1", "in");
+    py::object conn = connClass("test._TestFailingNode_1", "out", "test._TestDownstreamNode_1", "in");
     workflow.attr("add_connection")(conn);
 
     return workflow;
@@ -195,42 +190,12 @@ class _TestSlowNode:
 
     py::object workflow = wfClass("test_slow");
 
-    py::object slowNode = slowType();
+    py::object slowNode      = slowType();
     slowNode.attr("node_id") = "test._TestSlowNode_1";
 
     workflow.attr("add_node")(slowNode);
 
     return workflow;
-}
-
-// ============================================================
-// Helper: 检查 Python 可用性并创建 scoped_interpreter
-// ============================================================
-
-/**
- * @brief 尝试初始化 Python 解释器，失败则返回 nullptr
- *
- * 使用 pybind11::scoped_interpreter_guard 在测试作用域内初始化 Python。
- * 如果已经初始化（如由 main() 或其他测试初始化），则不重复初始化。
- *
- * @return std::unique_ptr<py::scoped_interpreter_guard> 成功时返回守卫实例，失败返回 nullptr
- */
-static std::unique_ptr< py::scoped_interpreter_guard > tryInitPython()
-{
-    // 如果 Python 已经初始化（可能由 pybind11::embed 或其他机制初始化）
-    if (Py_IsInitialized()) {
-        // 已初始化，返回空守卫（不需要再初始化）
-        return nullptr;
-    }
-    try {
-        auto guard = std::make_unique< py::scoped_interpreter_guard >();
-        if (Py_IsInitialized()) {
-            return guard;
-        }
-    } catch (...) {
-        // 初始化失败
-    }
-    return nullptr;
 }
 
 // ============================================================
@@ -252,14 +217,7 @@ void TestWorkflowLifecycle::testSimpleWorkflow()
 {
     // 检查 Python 可用性
     if (!Py_IsInitialized()) {
-        try {
-            auto guard = tryInitPython();
-            if (!guard && !Py_IsInitialized()) {
-                QSKIP("Python interpreter not available");
-            }
-        } catch (...) {
-            QSKIP("Python interpreter not available");
-        }
+        QSKIP("Python interpreter not available");
     }
 
     // 在 GIL 保护下创建工作流
@@ -343,14 +301,7 @@ void TestWorkflowLifecycle::testFailingWorkflow()
 {
     // 检查 Python 可用性
     if (!Py_IsInitialized()) {
-        try {
-            auto guard = tryInitPython();
-            if (!guard && !Py_IsInitialized()) {
-                QSKIP("Python interpreter not available");
-            }
-        } catch (...) {
-            QSKIP("Python interpreter not available");
-        }
+        QSKIP("Python interpreter not available");
     }
 
     // 在 GIL 保护下创建失败工作流
@@ -429,14 +380,7 @@ void TestWorkflowLifecycle::testPauseResume()
 {
     // 检查 Python 可用性
     if (!Py_IsInitialized()) {
-        try {
-            auto guard = tryInitPython();
-            if (!guard && !Py_IsInitialized()) {
-                QSKIP("Python interpreter not available");
-            }
-        } catch (...) {
-            QSKIP("Python interpreter not available");
-        }
+        QSKIP("Python interpreter not available");
     }
 
     // 在 GIL 保护下创建慢速工作流
@@ -472,15 +416,13 @@ void TestWorkflowLifecycle::testPauseResume()
 
     // 等待 Running 状态后再暂停
     // 使用定时器在工作流开始执行后 200ms 调用 pause()
-    QTimer::singleShot(200, [&lifecycle]() {
+    QTimer::singleShot(200, [ &lifecycle ]() {
         // pause() 是线程安全的，可以从任何线程调用
         lifecycle.pause();
     });
 
     // 暂停 500ms 后恢复
-    QTimer::singleShot(700, [&lifecycle]() {
-        lifecycle.resume();
-    });
+    QTimer::singleShot(700, [ &lifecycle ]() { lifecycle.resume(); });
 
     workerThread.start();
 
@@ -492,10 +434,10 @@ void TestWorkflowLifecycle::testPauseResume()
 
     // 验证状态转换序列
     // 期望序列: Idle→Running, Running→Paused, Paused→Running, Running→Finished
-    bool hasIdleToRunning    = false;
-    bool hasRunningToPaused  = false;
-    bool hasPausedToRunning  = false;
-    bool hasRunningToFinish  = false;
+    bool hasIdleToRunning   = false;
+    bool hasRunningToPaused = false;
+    bool hasPausedToRunning = false;
+    bool hasRunningToFinish = false;
 
     for (int i = 0; i < stateChangedSpy.count(); ++i) {
         ExecState oldState = static_cast< ExecState >(stateChangedSpy.at(i).at(0).toInt());
