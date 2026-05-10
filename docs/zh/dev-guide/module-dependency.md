@@ -293,7 +293,7 @@ graph BT
 提供内容：
 - 节点核心：`DAPyNodeProxy`（C++↔Python节点桥接）、`DAPyNodeFactory`（Python节点发现）
 - 可视化：`DAPyNodeGraphicsItem`、`DAPyLinkGraphicsItem`、`DAPyLinkPoint`
-- 场景/执行：`DAPyWorkFlowScene`、`DAPyWorkFlowExecuter`（拓扑排序+QThread执行）
+- 场景/执行：`DAPyWorkFlowScene`、`DAPyWorkFlowLifecycle`（生命周期控制+QThread执行）
 - 序列化：`DAPyWorkFlowSceneSerializer`、撤销命令工厂
 - 样式系统：`DAPyNodeStyle`、`DAPyNodeStyleDefine`、`DAPyNodePalette`
 

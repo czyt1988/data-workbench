@@ -19,7 +19,7 @@ DAPyWorkFlow 采用 Python-first 架构设计，节点逻辑完全由 Python 定
 
 - **可视化渲染**：通过 `DAPyNodeGraphicsItem` 将 Python 节点渲染到 Qt 场景
 - **交互编辑**：处理用户拖拽、连接、属性编辑等 GUI 操作
-- **执行调度**：通过 `DAPyWorkFlowExecuter` 协调 Python 执行器，管理执行状态
+- **执行调度**：通过 `DAPyWorkFlowLifecycle` 协调 Python 执行器，管理执行生命周期
 - **数据桥接**：在 Qt 类型（`QJsonObject`）和 Python 类型（`py::dict`）之间转换
 
 C++ 层不实现任何节点业务逻辑，所有节点执行都代理给 Python 层的 `DAWorkflowExecutor`。
@@ -303,19 +303,19 @@ pyNode.attr("set_config")(pyConfig);
 
 ## 执行器桥接
 
-### DAPyWorkFlowExecuter 与 DAWorkflowExecutor 协作
+### DAPyWorkFlowLifecycle 与 DAWorkflowExecutor 协作
 
-C++ 层的 `DAPyWorkFlowExecuter` 与 Python 层的 `DAWorkflowExecutor` 协作执行工作流：
+C++ 层的 `DAPyWorkFlowLifecycle` 与 Python 层的 `DAWorkflowExecutor` 协作执行工作流：
 
 | 组件 | 职责 |
 |------|------|
-| `DAPyWorkFlowExecuter` | C++ 执行调度器，管理执行线程，发射 Qt 信号 |
+| `DAPyWorkFlowLifecycle` | C++ 生命周期控制器，管理执行线程，发射 Qt 信号 |
 | `DAWorkflowExecutor` | Python 执行引擎，拓扑排序，节点执行逻辑 |
 | `DASignalManager` | 数据传播引擎，事件驱动下游节点触发 |
 
 ### 执行状态信号
 
-`DAPyWorkFlowExecuter` 提供以下 Qt 信号：
+`DAPyWorkFlowLifecycle` 提供以下 Qt 信号：
 
 ```cpp
 // 节点执行完成
@@ -325,8 +325,8 @@ void nodeExecuteFinished(std::shared_ptr<DA::DAPyNodeProxy> nodeProxy, bool succ
 void finished(bool success);
 
 // 执行状态变更
-void execStateChanged(DA::DAPyWorkFlowExecuter::ExecState oldState,
-                      DA::DAPyWorkFlowExecuter::ExecState newState);
+void execStateChanged(DA::DAPyWorkFlowLifecycle::ExecState oldState,
+                      DA::DAPyWorkFlowLifecycle::ExecState newState);
 
 // 执行进度
 void progressChanged(int current, int total);
@@ -414,7 +414,7 @@ class CustomNode:
   - `src/DAPyWorkFlow/DAPyNodeFactory.h` — 节点工厂
   - `src/DAPyWorkFlow/DAPyGILGuard.h` — GIL 管理
   - `src/DAPyWorkFlow/DAPyModuleWorkflow.h` — Python 模块封装
-  - `src/DAPyWorkFlow/DAPyWorkFlowExecuter.h` — 执行调度器
+  - `src/DAPyWorkFlow/DAPyWorkFlowLifecycle.h` — 生命周期控制器
   - `src/DAPyWorkFlow/DAPyPainterProxy.h` — 绘制代理
   - `src/DAPyWorkFlow/PythonBinding/DAPyWorkFlowPythonBinding.h` — pybind11 绑定
   - `src/DAPyBindQt/DAPythonSignalHandler.h` — 跨线程回调
