@@ -19,7 +19,7 @@ namespace DA
  * 包括新建、打开、执行和终止Python工作流的Action按钮。
  * 通过DAPyWorkflowActions结构体接收Action指针，避免依赖APP模块。
  * 
- * @see DAPyWorkflowActions DAPyWorkFlowScene DAPyWorkFlowExecuter
+ * @see DAPyWorkflowActions DAPyWorkFlowScene DAPyWorkFlowLifecycle
  */
 class DAGUI_API DAPyWorkFlowRibbonGroup : public QObject
 {

@@ -66,10 +66,10 @@ void DAPyWorkFlowEditWidget::setWorkFlow(DAPyWorkFlow* w)
 {
 	ui->workflowGraphicsView->setWorkFlow(w);
 	// TODO: DAPyWorkFlow no longer has startExecute/nodeExecuteFinished/finished signals.
-	// These signals now belong to DAPyWorkFlowExecuter. Execution signal connections
-	// should be set up when a DAPyWorkFlowExecuter is created for this workflow.
+	// These signals now belong to DAPyWorkFlowLifecycle. Execution signal connections
+	// should be set up when a DAPyWorkFlowLifecycle is created for this workflow.
 	// The DAPyWorkFlowEditWidget's own signals (startExecute, nodeExecuteFinished, finished)
-	// remain defined and can be emitted manually or connected from an executer later.
+	// remain defined and can be emitted manually or connected from a lifecycle later.
 }
 
 DAPyWorkFlowGraphicsView* DAPyWorkFlowEditWidget::getWorkFlowGraphicsView() const
