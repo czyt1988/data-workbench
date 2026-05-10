@@ -43,6 +43,16 @@ from .workflow import DAWorkflow
 from .signal_manager import DASignalManager, DAWorkflowState
 
 
+def _get_desc_attr(descriptor, key, default=None):
+    """安全获取节点描述符属性，兼容 dict 和 DANodeDescriptor C++ 结构体。"""
+    if isinstance(descriptor, dict):
+        return descriptor.get(key, default)
+    # DANodeDescriptor C++ struct — 映射 snake_case 到 camelCase
+    attr_map = {"qualified_name": "qualifiedName"}
+    attr = attr_map.get(key, key)
+    return getattr(descriptor, attr, default)
+
+
 class DAExecutorState(Enum):
     """
     执行器状态枚举
@@ -464,9 +474,12 @@ class DAWorkflowExecutor:
         # 获取输出端口列表
         output_keys = []
         descriptor = getattr(node_instance, "_node_descriptor", {})
-        outputs = descriptor.get("outputs", [])
+        outputs = _get_desc_attr(descriptor, "outputs", [])
         for output_info in outputs:
-            output_keys.append(output_info.get("name", ""))
+            if isinstance(output_info, dict):
+                output_keys.append(output_info.get("name", ""))
+            else:
+                output_keys.append(getattr(output_info, "name", ""))
 
         # 发送每个输出端口的数据
         for output_key in output_keys:

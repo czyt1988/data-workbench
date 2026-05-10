@@ -24,6 +24,16 @@
 """
 
 
+def _get_desc_attr(descriptor, key, default=None):
+    """安全获取节点描述符属性，兼容 dict 和 DANodeDescriptor C++ 结构体。"""
+    if isinstance(descriptor, dict):
+        return descriptor.get(key, default)
+    # DANodeDescriptor C++ struct — 映射 snake_case 到 camelCase
+    attr_map = {"qualified_name": "qualifiedName"}
+    attr = attr_map.get(key, key)
+    return getattr(descriptor, attr, default)
+
+
 class NodeOutputProxy:
     """
     节点输出端口代理
@@ -62,13 +72,13 @@ class NodeOutputProxy:
             # 自动匹配：目标节点只有 1 个输入端口时自动选择
             node = self.workflow.get_node_by_id(other.node_id)
             descriptor = getattr(node, "_node_descriptor", {})
-            inputs = descriptor.get("inputs", [])
+            inputs = _get_desc_attr(descriptor, "inputs", [])
             if len(inputs) != 1:
                 raise ValueError(
                     f"ambiguous ports: target node '{other.node_id}' has "
                     f"{len(inputs)} input ports, cannot auto-match"
                 )
-            target_channel = inputs[0]["name"]
+            target_channel = inputs[0]["name"] if isinstance(inputs[0], dict) else getattr(inputs[0], "name", "")
             return self.workflow.connect_node(
                 self.node_id, self.channel,
                 other.node_id, target_channel,
@@ -158,12 +168,12 @@ class NodeProxy:
         descriptor = getattr(node, "_node_descriptor", {})
         self.outputs = _PortAccessor(
             workflow, node_id,
-            descriptor.get("outputs", []),
+            _get_desc_attr(descriptor, "outputs", []),
             NodeOutputProxy,
         )
         self.inputs = _PortAccessor(
             workflow, node_id,
-            descriptor.get("inputs", []),
+            _get_desc_attr(descriptor, "inputs", []),
             NodeInputProxy,
         )
 
@@ -181,7 +191,7 @@ class NodeProxy:
         if isinstance(other, NodeProxy):
             node = self.workflow.get_node_by_id(self.node_id)
             descriptor = getattr(node, "_node_descriptor", {})
-            outputs = descriptor.get("outputs", [])
+            outputs = _get_desc_attr(descriptor, "outputs", [])
             if len(outputs) != 1:
                 raise ValueError(
                     f"ambiguous ports: source node '{self.node_id}' has "
