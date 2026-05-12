@@ -9,13 +9,12 @@ class DAAbstractNodeSettingWidget::PrivateData
     DA_DECLARE_PUBLIC(DAAbstractNodeSettingWidget)
 
 public:
-    explicit PrivateData(DAAbstractNodeSettingWidget* q)
-        : q_ptr(q)
+    explicit PrivateData(DAAbstractNodeSettingWidget* q) : q_ptr(q)
     {
     }
 
     DAPyNodeProxy* mNodeProxy = nullptr;
-    QJsonObject mDescriptor;
+    DANodeDescriptor mDescriptor;
 };
 
 // ============================================================
@@ -29,9 +28,7 @@ public:
  *
  * @param[in] parent 父窗口指针
  */
-DAAbstractNodeSettingWidget::DAAbstractNodeSettingWidget(QWidget* parent)
-    : QWidget(parent)
-    , DA_PIMPL_CONSTRUCT
+DAAbstractNodeSettingWidget::DAAbstractNodeSettingWidget(QWidget* parent) : QWidget(parent), DA_PIMPL_CONSTRUCT
 {
 }
 
@@ -56,12 +53,11 @@ DAAbstractNodeSettingWidget::~DAAbstractNodeSettingWidget()
  */
 void DAAbstractNodeSettingWidget::setNodeProxy(DAPyNodeProxy* proxy)
 {
+    // TODO 审查： 这里操作非常危险，如果删除节点没有告知DAAbstractNodeSettingWidget将会奔溃，考虑是否DAPyNodeProxy使用智能指针
     DA_D(d);
     d->mNodeProxy = proxy;
     if (proxy) {
-        d->mDescriptor = proxy->getDescriptorStruct().toJson();
-    } else {
-        d->mDescriptor = QJsonObject();
+        d->mDescriptor = proxy->getDescriptorStruct();
     }
 }
 
@@ -85,10 +81,9 @@ DAPyNodeProxy* DAAbstractNodeSettingWidget::getNodeProxy() const
  *
  * @return 缓存的 QJsonObject 描述符，未设置时返回空对象
  */
-QJsonObject DAAbstractNodeSettingWidget::getDescriptor() const
+const DANodeDescriptor& DAAbstractNodeSettingWidget::getDescriptor() const
 {
-    DA_DC(d);
-    return d->mDescriptor;
+    return d_ptr->mDescriptor;
 }
 
 /**
@@ -96,13 +91,9 @@ QJsonObject DAAbstractNodeSettingWidget::getDescriptor() const
  *
  * @return 描述符中的 "parameters" 字段，不存在时返回空 QJsonArray
  */
-QJsonArray DAAbstractNodeSettingWidget::getParameters() const
+const QVector< DAParameterDescriptor >& DAAbstractNodeSettingWidget::getParameters() const
 {
-    DA_DC(d);
-    if (d->mDescriptor.contains(QStringLiteral("parameters"))) {
-        return d->mDescriptor.value(QStringLiteral("parameters")).toArray();
-    }
-    return QJsonArray();
+    return d_ptr->mDescriptor.parameters;
 }
 
 }  // namespace DA

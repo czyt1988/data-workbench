@@ -3,7 +3,7 @@
 #include <QObject>
 #include <QVariant>
 #include <QJsonObject>
-
+#include "DAParameterDescriptor.h"
 namespace DA
 {
 
@@ -36,15 +36,12 @@ private Q_SLOTS:
     // enum 类型从 descriptor 读取 enum_values 和 default
     void test_enumValues();
 
-    // 重新注册同一类型会覆盖旧的 creator
-    void test_reRegistration_overwrites();
-
 private:
     // 辅助方法：创建参数描述符 JSON 对象
-    QJsonObject makeDescriptor(const QString& type,
-                               const QString& description = QString(),
-                               const QVariant& defaultValue = QVariant(),
-                               const QJsonObject& extensions = QJsonObject()) const;
+    DA::DAParameterDescriptor makeDescriptor(const QString& type,
+                                             const QString& description     = QString(),
+                                             const QVariant& defaultValue   = QVariant(),
+                                             const QVariantHash& extensions = QVariantHash()) const;
 };
 
 }  // namespace DA

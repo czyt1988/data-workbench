@@ -1,120 +1,141 @@
 ﻿#ifndef DAPARAMETERDESCRIPTOR_H
 #define DAPARAMETERDESCRIPTOR_H
-
+#include <type_traits>
 #include <QString>
 #include <QVariant>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QVector>
-
+#include <QList>
+#include <QPair>
+#include <QHash>
+#include "DAPyWorkFlowAPI.h"
 namespace DA
 {
 
 /**
  * @brief Python 节点参数描述符
  *
- * 轻量级数据结构，用于解析并存储 Python 节点的参数描述信息（从 JSON 解析）。
- * 包含参数名称、类型、描述、默认值等基础字段，并保留原始 JSON 描述符供扩展访问。
+ * 轻量级数据结构，用于解析并存储 Python 节点的参数描述信息。
+ * 包含参数名称、类型、描述、默认值等基础字段，并有扩展能力。
  *
- * Descriptor JSON 格式示例:
- * @code
- * {
- *   "name": "threshold",
- *   "type": "float",
- *   "description": "筛选阈值",
- *   "default": 0.5
- * }
- * @endcode
- *
- * @note 此为纯数据头文件结构体，无需 .cpp 实现文件。
  * @see DAPyParamTypeHelper
  */
-struct DAParameterDescriptor
+class DAPYWORKFLOW_API DAParameterDescriptor
 {
-    QString name;               ///< 参数名称
-    QString type;               ///< 参数类型 (str/int/float/bool/list/dict)
-    QString description;        ///< 参数描述
-    QVariant defaultValue;      ///< 默认值（可为无效 QVariant 表示无默认值）
-    QJsonObject rawDescriptor;  ///< 原始 JSON 描述符（保留所有字段供扩展访问）
-    int propertyId;             ///< 属性面板中的属性 ID（由面板构建器设置）
-
+public:
+    QString name;           ///< 参数名称
+    QString type;           ///< 参数类型 (str/int/float/bool/list/dict)
+    QString description;    ///< 参数描述
+    QVariant defaultValue;  ///< 默认值（可为无效 QVariant 表示无默认值）
     /**
-     * @brief 默认构造函数
+     * @brief 记录属性，有些参数，例如spinbox，需要min,max属性，则可以通过此属性来设置
+     * 当前支持的属性：
+     * - enums [PropertyName_Enum]
+     *  value 1:QList<QPair<QString,int>>
+     *  value 2:QStringList
+     *  作用，存储枚举，使用QComboBox按顺序显示，QComboBox的data设置为int
      *
-     * 初始化 propertyId 为 0，其余字段为空。
+     * - min [PropertyName_Min]:
+     *  value:int/double
+     *  作用，QSpinBox/QDoubleSpinBox存储最小值
+     *
+     * - max [PropertyName_Max]:
+     *  value:int/double
+     *  作用，QSpinBox/QDoubleSpinBox存储最大值
+     *
+     * - step [PropertyName_Step]:
+     *  value:int/double
+     *  作用，QSpinBox/QDoubleSpinBox存储步长
+     *
+     * - decimals [PropertyName_Decimals]:
+     *  value:int
+     *  作用，QDoubleSpinBox的精度设置
+     *
+     * - filter [PropertyName_Filter]
+     *   value:QString
+     *   作用，DAFilePathEditWidget的文件过滤器设置
      */
-    DAParameterDescriptor() : propertyId(0)
-    {
-    }
+    QVariantHash propertys;
+    int propertyId;  ///< 属性面板中的属性 ID（由面板构建器设置）
 
-    /**
-     * @brief 从单个 JSON 对象构造参数描述符
-     *
-     * @param[in] obj 包含参数描述信息的 JSON 对象
-     * @return 构造完成的 DAParameterDescriptor
-     */
-    static DAParameterDescriptor fromJson(const QJsonObject& obj)
-    {
-        DAParameterDescriptor desc;
-        desc.name        = obj.value(QStringLiteral("name")).toString();
-        desc.type        = obj.value(QStringLiteral("type")).toString();
-        desc.description = obj.value(QStringLiteral("description")).toString();
+    // 属性名常量
+    static const QString PropertyName_Enum;
+    static const QString PropertyName_Min;
+    static const QString PropertyName_Max;
+    static const QString PropertyName_Step;
+    static const QString PropertyName_Decimals;
+    static const QString PropertyName_Filter;
 
-        QJsonValue defaultVal = obj.value(QStringLiteral("default"));
-        if (!defaultVal.isNull()) {
-            desc.defaultValue = defaultVal.toVariant();
-        }
+public:
+    // 默认构造函数
+    DAParameterDescriptor();
 
-        desc.rawDescriptor = obj;
-        desc.propertyId    = 0;
-        return desc;
-    }
+    // 判断是否有属性
+    bool hasProperty(const QString& propName) const;
 
-    /**
-     * @brief 从 JSON 数组批量解析参数描述符
-     *
-     * 遍历数组中的每个 JSON 对象，若对象缺少 "name" 或 "type" 字段则跳过。
-     *
-     * @param[in] params JSON 数组，包含多个参数描述对象
-     * @return 解析成功的 DAParameterDescriptor 列表
-     */
-    static QVector< DAParameterDescriptor > fromJsonArray(const QJsonArray& params)
-    {
-        QVector< DAParameterDescriptor > result;
-        for (const QJsonValue& val : params) {
-            QJsonObject obj = val.toObject();
-            // 跳过缺少 "name" 或 "type" 的无效条目
-            if (!obj.contains(QStringLiteral("name")) || !obj.contains(QStringLiteral("type"))) {
-                continue;
-            }
-            result.append(fromJson(obj));
-        }
-        return result;
-    }
+    // ---- 枚举属性 ----
+    QStringList getEnumStringListProperty() const;
+    QList< QPair< QString, int > > getEnumListProperty() const;
+    void setEnumStringListProperty(const QStringList& enumList);
+    void setEnumStringListProperty(const QList< QPair< QString, int > >& pairList);
+    bool hasEnumProperty() const;
 
-    /**
-     * @brief 检查原始描述符中是否包含指定字段
-     *
-     * @param[in] fieldName 字段名称
-     * @return 包含该字段返回 true
-     */
-    bool hasField(const QString& fieldName) const
-    {
-        return rawDescriptor.contains(fieldName);
-    }
+    // ---- min属性 ----
+    int getMinProperty(bool* isSuccess = nullptr) const;
+    double getMinFProperty(bool* isSuccess = nullptr) const;
+    void setMinProperty(int min);
+    void setMinProperty(double min);
 
-    /**
-     * @brief 获取原始描述符中指定字段的值
-     *
-     * @param[in] fieldName 字段名称
-     * @return 字段对应的 JSON 值，不存在返回无效 QJsonValue
-     */
-    QJsonValue getField(const QString& fieldName) const
-    {
-        return rawDescriptor.value(fieldName);
-    }
+    // ---- max属性 ----
+    int getMaxProperty(bool* isSuccess = nullptr) const;
+    double getMaxFProperty(bool* isSuccess = nullptr) const;
+    void setMaxProperty(int max);
+    void setMaxProperty(double max);
+
+    // ---- step属性 ----
+    int getStepProperty(bool* isSuccess = nullptr) const;
+    double getStepFProperty(bool* isSuccess = nullptr) const;
+    void setStepProperty(int step);
+    void setStepProperty(double step);
+
+    // ---- decimals属性 ----
+    int getDecimalsProperty(bool* isSuccess = nullptr) const;
+    void setDecimalsProperty(int decimals);
+
+    // ---- Filter属性 ----
+    QString getFilterProperty() const;
+    void setFilterProperty(const QString& filters);
+
+    // ---- 默认值快捷方法 ----
+    bool hasDefaultValue() const;
+    QString defaultValueToString() const;
+    int defaultValueToInt(bool* isSuccess = nullptr) const;
+    double defaultValueToDouble(bool* isSuccess = nullptr) const;
+    bool defaultValueToBool() const;
 };
 
+namespace Detail
+{
+
+template< typename T >
+T getNumericProperty(const QVariantHash& propertys, const QString& propName, T fallback, bool* isSuccess)
+{
+    if (isSuccess) {
+        *isSuccess = false;
+    }
+    QVariant val = propertys.value(propName);
+    if (!val.isValid()) {
+        return fallback;
+    }
+    if constexpr (std::is_same_v< T, int >) {
+        return val.toInt(isSuccess);
+    } else if constexpr (std::is_same_v< T, double >) {
+        return val.toDouble(isSuccess);
+    } else if constexpr (std::is_same_v< T, QString >) {
+        return val.toString();
+    }
+    return val.value< T >();
+}
+
+}  // namespace Detail
 }  // namespace DA
 
-#endif  // PARAMETERDESCRIPTOR_H
+#endif  // DAPARAMETERDESCRIPTOR_H

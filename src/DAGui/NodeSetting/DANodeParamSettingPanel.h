@@ -74,11 +74,6 @@ protected:
     // 收集当前所有参数编辑器值 → 生成 QJsonObject 配置
     QJsonObject collectConfig() const;
 
-    // === 测试辅助方法（仅在测试中使用）===
-
-    // 从参数描述符列表直接构建属性面板（绕过 proxy）
-    void testBuildPropertyPanelFromJson(const QVector< DAParameterDescriptor >& params);
-
     // 收集配置（测试暴露）
     QJsonObject testCollectConfig() const;
 };

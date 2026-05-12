@@ -4,7 +4,7 @@
 #include "DAGuiAPI.h"
 #include <QString>
 #include <QStringList>
-#include <QJsonObject>
+#include "DAParameterDescriptor.h"
 #include <functional>
 #include <map>
 
@@ -45,7 +45,7 @@ public:
      * 描述符 JSON 包含 name、type、description、default 等字段，
      * 以及 C++ 端扩展字段如 enum_values、min、max、decimals 等。
      */
-    using ParamEditorCreator = std::function<QWidget*(const QJsonObject& paramDescriptor, QWidget* parent)>;
+    using ParamEditorCreator = std::function< QWidget*(const DAParameterDescriptor& paramDescriptor, QWidget* parent) >;
 
     // 默认构造函数，自动注册所有内置类型
     DAParamTypeRegistry();
@@ -60,7 +60,7 @@ public:
     void registerDefaults();
 
     // 根据类型字符串和参数描述符创建对应的编辑器控件
-    QWidget* createEditor(const QString& typeStr, const QJsonObject& paramDescriptor, QWidget* parent = nullptr) const;
+    QWidget* createEditor(const QString& typeStr, const DAParameterDescriptor& paramDescriptor, QWidget* parent = nullptr) const;
 
     // 获取所有已注册类型的名称列表
     QStringList supportedTypes() const;

@@ -27,21 +27,6 @@ private Q_SLOTS:
 
     // toMetaData 转换：字段映射到 DAPyNodeMetaData 对应字段
     void testToMetaData();
-
-    // JSON 序列化往返：创建→toJson→fromJson→验证值一致
-    void testJsonRoundTrip();
-
-    // JSON 键名与旧 Python dict 格式匹配
-    void testJsonKeysMatchOldFormat();
-
-    // 稀疏序列化策略：验证toJson()省略空/默认字段
-    void testToJsonSparseStrategy();
-
-    // fromJson完整字段：所有字段均存在时正确反序列化
-    void testFromJsonFullFields();
-
-    // fromJson缺失可选字段：缺失字段使用默认值回退
-    void testFromJsonMissingOptionalFields();
 };
 
 }  // namespace DA

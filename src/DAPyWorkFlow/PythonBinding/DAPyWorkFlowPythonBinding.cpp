@@ -112,13 +112,11 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
     // 绑定 DAPyLinkPoint 类
     pybind11::class_< DA::DAPyLinkPoint >(m, "DAPyLinkPoint")
         .def(pybind11::init<>())
-        .def(
-            pybind11::init< const QPointF&, const QString&, DA::DAPyLinkPoint::Way, DA::AspectDirection >(),
-            pybind11::arg("position"),
-            pybind11::arg("name"),
-            pybind11::arg("way")       = DA::DAPyLinkPoint::Way::Output,
-            pybind11::arg("direction") = DA::AspectDirection::East
-        )
+        .def(pybind11::init< const QPointF&, const QString&, DA::DAPyLinkPoint::Way, DA::AspectDirection >(),
+             pybind11::arg("position"),
+             pybind11::arg("name"),
+             pybind11::arg("way")       = DA::DAPyLinkPoint::Way::Output,
+             pybind11::arg("direction") = DA::AspectDirection::East)
         .def_readwrite("position", &DA::DAPyLinkPoint::position, "Connection point position relative to graphics item")
         .def_readwrite("name", &DA::DAPyLinkPoint::name, "Connection point name")
         .def_readwrite("way", &DA::DAPyLinkPoint::way, "Input or Output attribute")
@@ -130,14 +128,12 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             "__eq__",
             [](const DA::DAPyLinkPoint& a, const DA::DAPyLinkPoint& b) { return a == b; },
             pybind11::arg("other"),
-            "Equality comparison with another DAPyLinkPoint"
-        )
+            "Equality comparison with another DAPyLinkPoint")
         .def(
             "__eq__",
             [](const DA::DAPyLinkPoint& a, const std::string& b) { return a == QString::fromStdString(b); },
             pybind11::arg("other"),
-            "Equality comparison with a string (by name)"
-        )
+            "Equality comparison with a string (by name)")
         .def("__repr__", [](const DA::DAPyLinkPoint& a) {
             return QString("DAPyLinkPoint(name=%1, way=%2)")
                 .arg(a.name)
@@ -160,8 +156,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             "__eq__",
             [](const DA::DAPyNodeMetaData& a, const DA::DAPyNodeMetaData& b) { return a == b; },
             pybind11::arg("other"),
-            "Equality comparison by qualifiedName"
-        )
+            "Equality comparison by qualifiedName")
         .def("__repr__", [](const DA::DAPyNodeMetaData& m) {
             return QString("DAPyNodeMetaData(name=%1, qualifiedName=%2, group=%3, inputs=%4, outputs=%5)")
                 .arg(m.name)
@@ -183,13 +178,11 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
      */
     pybind11::class_< DA::DAPortDescriptor >(m, "DAPortDescriptor")
         .def(pybind11::init<>())
-        .def(
-            pybind11::init< const QString&, const QString&, bool, const QString& >(),
-            pybind11::arg("name"),
-            pybind11::arg("data_type"),
-            pybind11::arg("required")    = true,
-            pybind11::arg("description") = QString()
-        )
+        .def(pybind11::init< const QString&, const QString&, bool, const QString& >(),
+             pybind11::arg("name"),
+             pybind11::arg("data_type"),
+             pybind11::arg("required")    = true,
+             pybind11::arg("description") = QString())
         .def_readwrite("name", &DA::DAPortDescriptor::name, "端口名称（唯一标识）")
         .def_readwrite("dataType", &DA::DAPortDescriptor::dataType, "数据类型（如 DataFrame、Series、int 等）")
         .def_readwrite("required", &DA::DAPortDescriptor::required, "是否为必需端口（默认 true）")
@@ -201,8 +194,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 QJsonObject json = desc.toJson();
                 return DA::PY::qjsonObjectToPyDict(json);
             },
-            "序列化为 Python dict（snake_case 键名，稀疏策略）"
-        )
+            "序列化为 Python dict（snake_case 键名，稀疏策略）")
         .def_static(
             "fromJson",
             [](const pybind11::dict& d) {
@@ -210,8 +202,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 return DA::DAPortDescriptor::fromJson(json);
             },
             pybind11::arg("dict"),
-            "从 Python dict 反序列化"
-        )
+            "从 Python dict 反序列化")
         .def("__repr__", [](const DA::DAPortDescriptor& desc) {
             return QString("DAPortDescriptor(name=%1, dataType=%2, required=%3)")
                 .arg(desc.name)
@@ -261,8 +252,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 }
             },
             pybind11::arg("value"),
-            "设置默认值（支持 None/bool/int/float/str/list）"
-        )
+            "设置默认值（支持 None/bool/int/float/str/list）")
         .def(
             "getDefaultValue",
             [](const DA::DAParameterDescriptor& pd) -> pybind11::object {
@@ -301,63 +291,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 }
 #endif
             },
-            "获取默认值（返回 None 或对应的 Python 类型）"
-        )
-        // rawDescriptor: 自定义 getter/setter，Python dict ↔ QJsonObject
-        .def(
-            "setRawDescriptor",
-            [](DA::DAParameterDescriptor& pd, const pybind11::dict& d) {
-                pd.rawDescriptor = DA::PY::pyDictToQJsonObject(d);
-            },
-            pybind11::arg("dict"),
-            "设置原始 JSON 描述符（从 Python dict 转换）"
-        )
-        .def(
-            "getRawDescriptor",
-            [](const DA::DAParameterDescriptor& pd) { return DA::PY::qjsonObjectToPyDict(pd.rawDescriptor); },
-            "获取原始 JSON 描述符（转换为 Python dict）"
-        )
-        // 静态方法
-        .def_static(
-            "fromJson",
-            [](const pybind11::dict& d) {
-                QJsonObject json = DA::PY::pyDictToQJsonObject(d);
-                return DA::DAParameterDescriptor::fromJson(json);
-            },
-            pybind11::arg("dict"),
-            "从 Python dict 构造参数描述符"
-        )
-        .def_static(
-            "fromJsonArray",
-            [](const pybind11::list& l) {
-                QJsonArray arr                              = DA::PY::pyListToQJsonArray(l);
-                QVector< DA::DAParameterDescriptor > result = DA::DAParameterDescriptor::fromJsonArray(arr);
-                pybind11::list pyList;
-                for (const DA::DAParameterDescriptor& desc : result) {
-                    pyList.append(desc);
-                }
-                return pyList;
-            },
-            pybind11::arg("list"),
-            "从 Python list 批量构造参数描述符列表"
-        )
-        .def(
-            "hasField",
-            [](const DA::DAParameterDescriptor& pd, const std::string& fieldName) {
-                return pd.hasField(QString::fromStdString(fieldName));
-            },
-            pybind11::arg("field_name"),
-            "检查原始描述符中是否包含指定字段"
-        )
-        .def(
-            "getField",
-            [](const DA::DAParameterDescriptor& pd, const std::string& fieldName) {
-                QJsonValue val = pd.getField(QString::fromStdString(fieldName));
-                return DA::PY::qjsonValueToPyObject(val);
-            },
-            pybind11::arg("field_name"),
-            "获取原始描述符中指定字段的值（返回对应的 Python 类型）"
-        )
+            "获取默认值（返回 None 或对应的 Python 类型）")
         .def("__repr__", [](const DA::DAParameterDescriptor& pd) {
             return QString("ParameterDescriptor(name=%1, type=%2, description=%3)")
                 .arg(pd.name)
@@ -381,15 +315,13 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             pybind11::arg("g"),
             pybind11::arg("b"),
             pybind11::arg("a") = 255,
-            "Set fill color (RGBA, a defaults to 255)"
-        )
+            "Set fill color (RGBA, a defaults to 255)")
         .def(
             "getFillColor",
             [](const DA::DAPyLinkPointStyle& s) {
                 return pybind11::make_tuple(s.fillColor.red(), s.fillColor.green(), s.fillColor.blue(), s.fillColor.alpha());
             },
-            "Get fill color as (r, g, b, a) tuple"
-        )
+            "Get fill color as (r, g, b, a) tuple")
         .def(
             "setBorderColor",
             [](DA::DAPyLinkPointStyle& s, int r, int g, int b, int a) { s.borderColor = QColor(r, g, b, a); },
@@ -397,17 +329,14 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             pybind11::arg("g"),
             pybind11::arg("b"),
             pybind11::arg("a") = 255,
-            "Set border color (RGBA, a defaults to 255)"
-        )
+            "Set border color (RGBA, a defaults to 255)")
         .def(
             "getBorderColor",
             [](const DA::DAPyLinkPointStyle& s) {
                 return pybind11::make_tuple(
-                    s.borderColor.red(), s.borderColor.green(), s.borderColor.blue(), s.borderColor.alpha()
-                );
+                    s.borderColor.red(), s.borderColor.green(), s.borderColor.blue(), s.borderColor.alpha());
             },
-            "Get border color as (r, g, b, a) tuple"
-        )
+            "Get border color as (r, g, b, a) tuple")
         .def("isFillColorValid", &DA::DAPyLinkPointStyle::isFillColorValid, "Check if fill color is valid (non-default)")
         .def("isBorderColorValid", &DA::DAPyLinkPointStyle::isBorderColorValid, "Check if border color is valid (non-default)");
 
@@ -431,39 +360,38 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             pybind11::arg("r"),
             pybind11::arg("g"),
             pybind11::arg("b"),
-            "Set background color (RGB)"
-        )
+            "Set background color (RGB)")
         .def(
             "getBackgroundColor",
             [](const DA::DANodeStyle& s) {
                 return pybind11::make_tuple(s.backgroundColor.red(), s.backgroundColor.green(), s.backgroundColor.blue());
             },
-            "Get background color as (r, g, b) tuple"
-        )
+            "Get background color as (r, g, b) tuple")
         .def(
             "setBorderColor",
             [](DA::DANodeStyle& s, int r, int g, int b) { s.borderColor = QColor(r, g, b); },
             pybind11::arg("r"),
             pybind11::arg("g"),
             pybind11::arg("b"),
-            "Set border color (RGB)"
-        )
+            "Set border color (RGB)")
         .def(
             "getBorderColor",
             [](const DA::DANodeStyle& s) {
                 return pybind11::make_tuple(s.borderColor.red(), s.borderColor.green(), s.borderColor.blue());
             },
-            "Get border color as (r, g, b) tuple"
-        )
+            "Get border color as (r, g, b) tuple")
         // 端口配置
         .def_readwrite("inputPortSide", &DA::DANodeStyle::inputPortSide, "Input port side (AspectDirection/PortSide enum)")
         .def_readwrite("outputPortSide", &DA::DANodeStyle::outputPortSide, "Output port side (AspectDirection/PortSide enum)")
         .def_readwrite("inputPortStyle", &DA::DANodeStyle::inputPortStyle, "Input port style (DAPyLinkPointStyle)")
         .def_readwrite("outputPortStyle", &DA::DANodeStyle::outputPortStyle, "Output port style (DAPyLinkPointStyle)")
-        .def_readwrite("layoutStrategy", &DA::DANodeStyle::layoutStrategy, "Link point layout strategy (LinkPointLayoutStrategy enum)")
+        .def_readwrite("layoutStrategy",
+                       &DA::DANodeStyle::layoutStrategy,
+                       "Link point layout strategy (LinkPointLayoutStrategy enum)")
         // 节点体图标
         .def_readwrite("bodyIconType", &DA::DANodeStyle::bodyIconType, "Body icon type (BodyIconType enum)")
-        .def_readwrite("bodyIconSource", &DA::DANodeStyle::bodyIconSource, "Body icon source path (SVG file path or resource path)")
+        .def_readwrite(
+            "bodyIconSource", &DA::DANodeStyle::bodyIconSource, "Body icon source path (SVG file path or resource path)")
         .def_readwrite("bodyIconScale", &DA::DANodeStyle::bodyIconScale, "Body icon scale ratio (default 0.8)")
         // 辅助方法
         .def("setDefaults", &DA::DANodeStyle::setDefaults, "Reset all fields to default values")
@@ -473,8 +401,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 QJsonObject json = DA::DANodeStyleToJson(s);
                 return DA::PY::qjsonObjectToPyDict(json);
             },
-            "Serialize style to Python dict (sparse, only non-default fields)"
-        )
+            "Serialize style to Python dict (sparse, only non-default fields)")
         .def_static(
             "fromJson",
             [](const pybind11::dict& d) {
@@ -482,8 +409,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 return DA::DANodeStyleFromJson(json);
             },
             pybind11::arg("dict"),
-            "Deserialize style from Python dict"
-        );
+            "Deserialize style from Python dict");
 
     // =================================================================================
     //                      DANodeDescriptor 绑定
@@ -515,8 +441,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 }
             },
             pybind11::arg("inputs"),
-            "设置输入端口描述符列表"
-        )
+            "设置输入端口描述符列表")
         .def(
             "getInputs",
             [](const DA::DANodeDescriptor& nd) {
@@ -526,8 +451,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 }
                 return pyList;
             },
-            "获取输入端口描述符列表"
-        )
+            "获取输入端口描述符列表")
         // outputs: 自定义 getter/setter，Python list ↔ QVector<DAPortDescriptor>
         .def(
             "setOutputs",
@@ -538,8 +462,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 }
             },
             pybind11::arg("outputs"),
-            "设置输出端口描述符列表"
-        )
+            "设置输出端口描述符列表")
         .def(
             "getOutputs",
             [](const DA::DANodeDescriptor& nd) {
@@ -549,8 +472,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 }
                 return pyList;
             },
-            "获取输出端口描述符列表"
-        )
+            "获取输出端口描述符列表")
         // parameters: 自定义 getter/setter，Python list ↔ QVector<ParameterDescriptor>
         .def(
             "setParameters",
@@ -561,8 +483,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 }
             },
             pybind11::arg("parameters"),
-            "设置参数描述符列表"
-        )
+            "设置参数描述符列表")
         .def(
             "getParameters",
             [](const DA::DANodeDescriptor& nd) {
@@ -572,32 +493,13 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 }
                 return pyList;
             },
-            "获取参数描述符列表"
-        )
+            "获取参数描述符列表")
         // 方法
         .def("isValid", &DA::DANodeDescriptor::isValid, "判断描述符是否有效（qualifiedName 非空）")
         .def("toMetaData", &DA::DANodeDescriptor::toMetaData, "转换为 DAPyNodeMetaData（提取注册所需字段）")
-        .def(
-            "toJson",
-            [](const DA::DANodeDescriptor& nd) {
-                QJsonObject json = nd.toJson();
-                return DA::PY::qjsonObjectToPyDict(json);
-            },
-            "序列化为 Python dict（snake_case 键名，稀疏策略）"
-        )
-        .def_static(
-            "fromJson",
-            [](const pybind11::dict& d) {
-                QJsonObject json = DA::PY::pyDictToQJsonObject(d);
-                return DA::DANodeDescriptor::fromJson(json);
-            },
-            pybind11::arg("dict"),
-            "从 Python dict 反序列化"
-        )
         .def("__repr__", [](const DA::DANodeDescriptor& nd) {
             return QString(
-                       "DANodeDescriptor(name=%1, qualifiedName=%2, category=%3, inputs=%4, outputs=%5, parameters=%6)"
-            )
+                       "DANodeDescriptor(name=%1, qualifiedName=%2, category=%3, inputs=%4, outputs=%5, parameters=%6)")
                 .arg(nd.name)
                 .arg(nd.qualifiedName)
                 .arg(nd.category)
@@ -618,14 +520,12 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             },
             pybind11::arg("descriptor"),
             pybind11::arg("pos"),
-            "Create a Python node at specified position"
-        )
+            "Create a Python node at specified position")
         .def(
             "removePyNodeItem",
             [](DA::DAPyWorkFlowScene& self, DA::DAPyNodeGraphicsItem* item) { return self.removePyNodeItem(item); },
             pybind11::arg("item"),
-            "Remove a node item from scene"
-        )
+            "Remove a node item from scene")
         .def(
             "nodeItemAt",
             [](DA::DAPyWorkFlowScene& self, const std::tuple< double, double >& pos) {
@@ -633,8 +533,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 return self.nodeItemAt(qpos);
             },
             pybind11::arg("pos"),
-            "Get node item at specified position, returns None if no node"
-        )
+            "Get node item at specified position, returns None if no node")
         .def(
             "getPyNodeItems",
             [](DA::DAPyWorkFlowScene& self) {
@@ -645,8 +544,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 }
                 return pyList;
             },
-            "Get all node items in scene as a list"
-        )
+            "Get all node items in scene as a list")
         // 连接管理
         .def(
             "addPyNodeLink",
@@ -655,22 +553,21 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                const std::string& fromOutput,
                DA::DAPyNodeGraphicsItem* toItem,
                const std::string& toInput) {
-                return self.addPyNodeLink(fromItem, QString::fromStdString(fromOutput), toItem, QString::fromStdString(toInput));
+                return self.addPyNodeLink(
+                    fromItem, QString::fromStdString(fromOutput), toItem, QString::fromStdString(toInput));
             },
             pybind11::arg("fromItem"),
             pybind11::arg("fromOutput"),
             pybind11::arg("toItem"),
             pybind11::arg("toInput"),
-            "Add link between node items"
-        )
+            "Add link between node items")
         .def(
             "removePyNodeLink",
             [](DA::DAPyWorkFlowScene& self, DA::DAPyLinkGraphicsItem* linkItem) {
                 return self.removePyNodeLink(linkItem);
             },
             pybind11::arg("linkItem"),
-            "Remove link from scene"
-        )
+            "Remove link from scene")
         .def(
             "getPyNodeLinkItems",
             [](DA::DAPyWorkFlowScene& self) {
@@ -681,8 +578,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 }
                 return pyList;
             },
-            "Get all link items in scene as a list"
-        )
+            "Get all link items in scene as a list")
         // 清空场景
         .def("clearPyScene", &DA::DAPyWorkFlowScene::clearPyScene, "Clear scene, remove all nodes and links");
 
@@ -694,13 +590,11 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             "setNodeState",
             [](DA::DAPyNodeProxy& self, DA::DAPyNodeState state) { self.setNodeState(state); },
             pybind11::arg("state"),
-            "Set node state"
-        )
+            "Set node state")
         .def(
             "getLastErrorString",
             [](const DA::DAPyNodeProxy& self) { return self.getLastErrorString().toStdString(); },
-            "Get error message string (when state is Error)"
-        )
+            "Get error message string (when state is Error)")
         // 执行
         .def("exec", &DA::DAPyNodeProxy::exec, "Execute node logic, returns success flag")
         // 数据传递
@@ -711,26 +605,22 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             },
             pybind11::arg("key"),
             pybind11::arg("data"),
-            "Set input data (Python object reference)"
-        )
+            "Set input data (Python object reference)")
         .def(
             "getPyOutputData",
             [](DA::DAPyNodeProxy& self, const std::string& key) {
                 return self.getPyOutputData(QString::fromStdString(key));
             },
             pybind11::arg("key"),
-            "Get output data (Python object reference)"
-        )
+            "Get output data (Python object reference)")
         // 信息查询（新增方法）
         .def(
-            "getNodeName", [](const DA::DAPyNodeProxy& self) { return self.getNodeName().toStdString(); }, "Get node display name"
-        )
+            "getNodeName", [](const DA::DAPyNodeProxy& self) { return self.getNodeName().toStdString(); }, "Get node display name")
         .def(
             "setNodeName",
             [](DA::DAPyNodeProxy& self, const std::string& name) { self.setNodeName(QString::fromStdString(name)); },
             pybind11::arg("name"),
-            "Set node display name"
-        )
+            "Set node display name")
         .def(
             "getInputKeys",
             [](const DA::DAPyNodeProxy& self) {
@@ -740,8 +630,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 }
                 return pyList;
             },
-            "Get input key list"
-        )
+            "Get input key list")
         .def(
             "getOutputKeys",
             [](const DA::DAPyNodeProxy& self) {
@@ -751,28 +640,24 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 }
                 return pyList;
             },
-            "Get output key list"
-        )
+            "Get output key list")
         .def(
             "getNodePrototype",
             [](const DA::DAPyNodeProxy& self) { return self.getNodePrototype().toStdString(); },
-            "Get node prototype (qualified_name)"
-        )
+            "Get node prototype (qualified_name)")
         .def(
-            "getNodeGroup", [](const DA::DAPyNodeProxy& self) { return self.getNodeGroup().toStdString(); }, "Get node group/category"
-        )
+            "getNodeGroup",
+            [](const DA::DAPyNodeProxy& self) { return self.getNodeGroup().toStdString(); },
+            "Get node group/category")
         .def(
-            "getID", [](const DA::DAPyNodeProxy& self) { return self.getID(); }, "Get node ID"
-        )
+            "getID", [](const DA::DAPyNodeProxy& self) { return self.getID(); }, "Get node ID")
         .def(
-            "setID", [](DA::DAPyNodeProxy& self, unsigned int id) { self.setID(id); }, pybind11::arg("id"), "Set node ID"
-        )
+            "setID", [](DA::DAPyNodeProxy& self, unsigned int id) { self.setID(id); }, pybind11::arg("id"), "Set node ID")
         // 原有信息查询
         .def(
             "getQualifiedName",
             [](const DA::DAPyNodeProxy& self) { return self.getQualifiedName().toStdString(); },
-            "Get Python node's qualified name (module.class)"
-        );
+            "Get Python node's qualified name (module.class)");
 
     // 绑定 DAPyNodeFactory 类（独立QObject，不再继承DAAbstractNodeFactory）
     pybind11::class_< DA::DAPyNodeFactory >(m, "DAPyNodeFactory")
@@ -788,8 +673,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             },
             pybind11::arg("scan_paths")       = std::vector< std::string >(),
             pybind11::arg("use_entry_points") = false,
-            "Discover Python nodes in specified paths"
-        )
+            "Discover Python nodes in specified paths")
         // 节点创建
         .def(
             "createNodeProxy",
@@ -797,8 +681,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 return self.createNodeProxy(QString::fromStdString(qualifiedName));
             },
             pybind11::arg("qualified_name"),
-            "Create DAPyNodeProxy by qualified name"
-        )
+            "Create DAPyNodeProxy by qualified name")
         // 元数据查询
         .def(
             "getNodeMetadataList",
@@ -809,8 +692,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 }
                 return pyList;
             },
-            "Get all discovered node metadata as list"
-        )
+            "Get all discovered node metadata as list")
         .def(
             "getNodePrototypes",
             [](DA::DAPyNodeFactory& self) {
@@ -820,86 +702,83 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 }
                 return pyList;
             },
-            "Get all discovered node prototype identifiers"
-        )
+            "Get all discovered node prototype identifiers")
         // 工厂信息
         .def(
-            "factoryName", [](DA::DAPyNodeFactory& self) { return self.factoryName().toStdString(); }, "Get factory name"
-        )
-        .def("factoryDescribe", [](DA::DAPyNodeFactory& self) { return self.factoryDescribe().toStdString(); }, "Get factory description");
+            "factoryName", [](DA::DAPyNodeFactory& self) { return self.factoryName().toStdString(); }, "Get factory name")
+        .def(
+            "factoryDescribe",
+            [](DA::DAPyNodeFactory& self) { return self.factoryDescribe().toStdString(); },
+            "Get factory description");
 
     // 绑定 DAPyPainterProxy 类（Scenario B 模式：非QObject代理类）
     // 注意：DAPyPainterProxy不是QObject，是QPainter的轻量代理
     pybind11::class_< DA::DAPyPainterProxy >(m, "DAPyPainterProxy")
         // 绘制操作
-        .def(
-            "drawRect",
-            &DA::DAPyPainterProxy::drawRect,
-            pybind11::arg("x"),
-            pybind11::arg("y"),
-            pybind11::arg("w"),
-            pybind11::arg("h"),
-            "Draw rectangle outline"
-        )
-        .def("drawText", &DA::DAPyPainterProxy::drawText, pybind11::arg("x"), pybind11::arg("y"), pybind11::arg("text"), "Draw text at specified position")
-        .def(
-            "drawLine",
-            &DA::DAPyPainterProxy::drawLine,
-            pybind11::arg("x1"),
-            pybind11::arg("y1"),
-            pybind11::arg("x2"),
-            pybind11::arg("y2"),
-            "Draw line from (x1,y1) to (x2,y2)"
-        )
-        .def(
-            "drawEllipse",
-            &DA::DAPyPainterProxy::drawEllipse,
-            pybind11::arg("x"),
-            pybind11::arg("y"),
-            pybind11::arg("w"),
-            pybind11::arg("h"),
-            "Draw ellipse in specified rectangle"
-        )
-        .def(
-            "fillRect",
-            &DA::DAPyPainterProxy::fillRect,
-            pybind11::arg("x"),
-            pybind11::arg("y"),
-            pybind11::arg("w"),
-            pybind11::arg("h"),
-            pybind11::arg("r"),
-            pybind11::arg("g"),
-            pybind11::arg("b"),
-            pybind11::arg("a") = 255,
-            "Fill rectangle with RGBA color"
-        )
+        .def("drawRect",
+             &DA::DAPyPainterProxy::drawRect,
+             pybind11::arg("x"),
+             pybind11::arg("y"),
+             pybind11::arg("w"),
+             pybind11::arg("h"),
+             "Draw rectangle outline")
+        .def("drawText",
+             &DA::DAPyPainterProxy::drawText,
+             pybind11::arg("x"),
+             pybind11::arg("y"),
+             pybind11::arg("text"),
+             "Draw text at specified position")
+        .def("drawLine",
+             &DA::DAPyPainterProxy::drawLine,
+             pybind11::arg("x1"),
+             pybind11::arg("y1"),
+             pybind11::arg("x2"),
+             pybind11::arg("y2"),
+             "Draw line from (x1,y1) to (x2,y2)")
+        .def("drawEllipse",
+             &DA::DAPyPainterProxy::drawEllipse,
+             pybind11::arg("x"),
+             pybind11::arg("y"),
+             pybind11::arg("w"),
+             pybind11::arg("h"),
+             "Draw ellipse in specified rectangle")
+        .def("fillRect",
+             &DA::DAPyPainterProxy::fillRect,
+             pybind11::arg("x"),
+             pybind11::arg("y"),
+             pybind11::arg("w"),
+             pybind11::arg("h"),
+             pybind11::arg("r"),
+             pybind11::arg("g"),
+             pybind11::arg("b"),
+             pybind11::arg("a") = 255,
+             "Fill rectangle with RGBA color")
         // 样式设置
-        .def(
-            "setPenColor",
-            &DA::DAPyPainterProxy::setPenColor,
-            pybind11::arg("r"),
-            pybind11::arg("g"),
-            pybind11::arg("b"),
-            pybind11::arg("a") = 255,
-            "Set pen color (RGBA)"
-        )
+        .def("setPenColor",
+             &DA::DAPyPainterProxy::setPenColor,
+             pybind11::arg("r"),
+             pybind11::arg("g"),
+             pybind11::arg("b"),
+             pybind11::arg("a") = 255,
+             "Set pen color (RGBA)")
         .def("setPenWidth", &DA::DAPyPainterProxy::setPenWidth, pybind11::arg("width"), "Set pen width")
-        .def(
-            "setBrushColor",
-            &DA::DAPyPainterProxy::setBrushColor,
-            pybind11::arg("r"),
-            pybind11::arg("g"),
-            pybind11::arg("b"),
-            pybind11::arg("a") = 255,
-            "Set brush color (RGBA)"
-        )
+        .def("setBrushColor",
+             &DA::DAPyPainterProxy::setBrushColor,
+             pybind11::arg("r"),
+             pybind11::arg("g"),
+             pybind11::arg("b"),
+             pybind11::arg("a") = 255,
+             "Set brush color (RGBA)")
         .def("setFont", &DA::DAPyPainterProxy::setFont, pybind11::arg("family"), pybind11::arg("size"), "Set font family and size")
         .def("setNoPen", &DA::DAPyPainterProxy::setNoPen, "Set no pen (disable outline drawing)")
         .def("setNoBrush", &DA::DAPyPainterProxy::setNoBrush, "Set no brush (disable fill)")
         .def("isValid", &DA::DAPyPainterProxy::isValid, "Check if painter proxy is valid");
 
     // 自由函数（Scenario A 模式）
-    m.def("getNodeProxy", &DA::getNodeProxy, pybind11::arg("qualified_name"), "Get DAPyNodeProxy instance by Python node's qualified name");
+    m.def("getNodeProxy",
+          &DA::getNodeProxy,
+          pybind11::arg("qualified_name"),
+          "Get DAPyNodeProxy instance by Python node's qualified name");
 
     // 节点状态变化通知说明
     m.def(
@@ -908,6 +787,5 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             return "Python→C++ state updates use DAPythonSignalHandler::callInMainThread from da_interface module "
                    "(NOT a custom bridge class). Example: core.getPythonSignalHandler().callInMainThread(callback)";
         },
-        "Note about state update mechanism"
-    );
+        "Note about state update mechanism");
 }

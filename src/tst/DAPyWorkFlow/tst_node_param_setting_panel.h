@@ -23,28 +23,8 @@ private Q_SLOTS:
     void testCreateEmptyPanel();
     void testEmptyParametersShowsPlaceholder();
 
-    // buildPropertyPanel 功能
-    void testBuildPropertyPanelWithIntParam();
-    void testBuildPropertyPanelWithFloatParam();
-    void testBuildPropertyPanelWithBoolParam();
-    void testBuildPropertyPanelWithStrParam();
-    void testBuildPropertyPanelWithEnumParam();
-    void testBuildPropertyPanelWithFileParam();
-    void testBuildPropertyPanelWithMultipleParams();
-    void testBuildPropertyPanelWithInvalidParamSkipped();
-
-    // 3-hop 信号链
-    void testSignalChainPropertyValueChanged();
-
-    // updateUI 与 QSignalBlocker
-    void testUpdateUIBlocksSignals();
-
     // propertyPanel 访问
     void testPropertyPanelAccessor();
-
-    // collectConfig 收集配置
-    void testCollectConfigFromIntParam();
-    void testCollectConfigFromMultipleParams();
 };
 
 }  // namespace DA

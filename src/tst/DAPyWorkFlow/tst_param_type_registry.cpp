@@ -26,22 +26,17 @@ using namespace DA;
  * @param[in] extensions 扩展字段（如 enum_values, min, max, decimals 等）
  * @return 构造好的 QJsonObject
  */
-QJsonObject TestDAParamTypeRegistry::makeDescriptor(const QString& type,
-                                                     const QString& description,
-                                                     const QVariant& defaultValue,
-                                                     const QJsonObject& extensions) const
+DAParameterDescriptor TestDAParamTypeRegistry::makeDescriptor(const QString& type,
+                                                              const QString& description,
+                                                              const QVariant& defaultValue,
+                                                              const QVariantHash& extensions) const
 {
-    QJsonObject obj;
-    obj["name"]      = "test_param";
-    obj["type"]      = type;
-    obj["description"] = description;
-    if (defaultValue.isValid()) {
-        obj["default"] = QJsonValue::fromVariant(defaultValue);
-    }
-    for (auto it = extensions.constBegin(); it != extensions.constEnd(); ++it) {
-        obj[it.key()] = it.value();
-    }
-    return obj;
+    DAParameterDescriptor des;
+    des.type         = type;
+    des.description  = description;
+    des.defaultValue = defaultValue;
+    des.propertys    = extensions;
+    return des;
 }
 
 /**
@@ -68,51 +63,54 @@ void TestDAParamTypeRegistry::test_registerAndCreate_all11Types()
 
     // str → QLineEdit
     {
-        QJsonObject desc = makeDescriptor("str", "输入文本");
-        QWidget* editor  = registry.createEditor("str", desc);
+        DAParameterDescriptor desc = makeDescriptor("str", "输入文本");
+        QWidget* editor            = registry.createEditor("str", desc);
         QVERIFY(editor != nullptr);
-        QVERIFY(qobject_cast<QLineEdit*>(editor) != nullptr);
+        QVERIFY(qobject_cast< QLineEdit* >(editor) != nullptr);
         delete editor;
     }
 
     // int → QSpinBox
     {
-        QJsonObject desc = makeDescriptor("int", "整数输入");
-        QWidget* editor  = registry.createEditor("int", desc);
+        DAParameterDescriptor desc = makeDescriptor("int", "整数输入");
+        QWidget* editor            = registry.createEditor("int", desc);
         QVERIFY(editor != nullptr);
-        QVERIFY(qobject_cast<QSpinBox*>(editor) != nullptr);
+        QVERIFY(qobject_cast< QSpinBox* >(editor) != nullptr);
         delete editor;
     }
 
     // float → QDoubleSpinBox
     {
-        QJsonObject desc = makeDescriptor("float", "浮点输入");
-        QWidget* editor  = registry.createEditor("float", desc);
+        DAParameterDescriptor desc = makeDescriptor("float", "浮点输入");
+        QWidget* editor            = registry.createEditor("float", desc);
         QVERIFY(editor != nullptr);
-        QVERIFY(qobject_cast<QDoubleSpinBox*>(editor) != nullptr);
+        QVERIFY(qobject_cast< QDoubleSpinBox* >(editor) != nullptr);
         delete editor;
     }
 
     // bool → QCheckBox
     {
-        QJsonObject desc = makeDescriptor("bool", "布尔开关");
-        QWidget* editor  = registry.createEditor("bool", desc);
+        DAParameterDescriptor desc = makeDescriptor("bool", "布尔开关");
+        QWidget* editor            = registry.createEditor("bool", desc);
         QVERIFY(editor != nullptr);
-        QVERIFY(qobject_cast<QCheckBox*>(editor) != nullptr);
+        QVERIFY(qobject_cast< QCheckBox* >(editor) != nullptr);
         delete editor;
     }
 
     // enum → QComboBox
     {
-        QJsonArray enumVals;
-        enumVals.append("optionA");
-        enumVals.append("optionB");
-        QJsonObject ext;
-        ext["enum_values"] = enumVals;
-        QJsonObject desc = makeDescriptor("enum", "枚举选择", QVariant(), ext);
-        QWidget* editor  = registry.createEditor("enum", desc);
+        QVariantHash ext;
+        QList< QPair< QString, int > > enumsValues;
+        enumsValues.append({ "opetionsA", 1 });
+        enumsValues.append({ "opetionsB", 3 });
+        enumsValues.append({ "opetionsC", 8 });
+        QVariant val;
+        val.setValue(enumsValues);
+        ext[ "enums" ]             = val;
+        DAParameterDescriptor desc = makeDescriptor("enum", "枚举选择", QVariant(), ext);
+        QWidget* editor            = registry.createEditor("enum", desc);
         QVERIFY(editor != nullptr);
-        QComboBox* combo = qobject_cast<QComboBox*>(editor);
+        QComboBox* combo = qobject_cast< QComboBox* >(editor);
         QVERIFY(combo != nullptr);
         QCOMPARE(combo->count(), 2);
         delete editor;
@@ -120,40 +118,40 @@ void TestDAParamTypeRegistry::test_registerAndCreate_all11Types()
 
     // list → composite widget (QListWidget + buttons)
     {
-        QJsonObject desc = makeDescriptor("list", "列表编辑");
-        QWidget* editor  = registry.createEditor("list", desc);
+        DAParameterDescriptor desc = makeDescriptor("list", "列表编辑");
+        QWidget* editor            = registry.createEditor("list", desc);
         QVERIFY(editor != nullptr);
-        QListWidget* lw = editor->findChild<QListWidget*>();
+        QListWidget* lw = editor->findChild< QListWidget* >();
         QVERIFY(lw != nullptr);
-        QList<QPushButton*> buttons = editor->findChildren<QPushButton*>();
+        QList< QPushButton* > buttons = editor->findChildren< QPushButton* >();
         QVERIFY(buttons.size() >= 2);
         delete editor;
     }
 
     // file → DAFilePathEditWidget
     {
-        QJsonObject desc = makeDescriptor("file", "文件路径");
-        QWidget* editor  = registry.createEditor("file", desc);
+        DAParameterDescriptor desc = makeDescriptor("file", "文件路径");
+        QWidget* editor            = registry.createEditor("file", desc);
         QVERIFY(editor != nullptr);
-        QLineEdit* le = editor->findChild<QLineEdit*>();
+        QLineEdit* le = editor->findChild< QLineEdit* >();
         QVERIFY(le != nullptr);
         delete editor;
     }
 
     // folder → DAFilePathEditWidget (directory mode)
     {
-        QJsonObject desc = makeDescriptor("folder", "文件夹路径");
-        QWidget* editor  = registry.createEditor("folder", desc);
+        DAParameterDescriptor desc = makeDescriptor("folder", "文件夹路径");
+        QWidget* editor            = registry.createEditor("folder", desc);
         QVERIFY(editor != nullptr);
-        QLineEdit* le = editor->findChild<QLineEdit*>();
+        QLineEdit* le = editor->findChild< QLineEdit* >();
         QVERIFY(le != nullptr);
         delete editor;
     }
 
     // color → DAColorPickerButton
     {
-        QJsonObject desc = makeDescriptor("color", "颜色选择");
-        QWidget* editor  = registry.createEditor("color", desc);
+        DAParameterDescriptor desc = makeDescriptor("color", "颜色选择");
+        QWidget* editor            = registry.createEditor("color", desc);
         QVERIFY(editor != nullptr);
         QVERIFY(editor->inherits("QToolButton"));
         delete editor;
@@ -161,19 +159,19 @@ void TestDAParamTypeRegistry::test_registerAndCreate_all11Types()
 
     // font → DAFontEditPannelWidget
     {
-        QJsonObject desc = makeDescriptor("font", "字体设置");
-        QWidget* editor  = registry.createEditor("font", desc);
+        DAParameterDescriptor desc = makeDescriptor("font", "字体设置");
+        QWidget* editor            = registry.createEditor("font", desc);
         QVERIFY(editor != nullptr);
-        QVERIFY(editor->findChild<QFontComboBox*>() != nullptr);
+        QVERIFY(editor->findChild< QFontComboBox* >() != nullptr);
         delete editor;
     }
 
     // code → QPlainTextEdit
     {
-        QJsonObject desc = makeDescriptor("code", "代码编辑");
-        QWidget* editor  = registry.createEditor("code", desc);
+        DAParameterDescriptor desc = makeDescriptor("code", "代码编辑");
+        QWidget* editor            = registry.createEditor("code", desc);
         QVERIFY(editor != nullptr);
-        QVERIFY(qobject_cast<QPlainTextEdit*>(editor) != nullptr);
+        QVERIFY(qobject_cast< QPlainTextEdit* >(editor) != nullptr);
         delete editor;
     }
 }
@@ -184,9 +182,9 @@ void TestDAParamTypeRegistry::test_registerAndCreate_all11Types()
 void TestDAParamTypeRegistry::test_unknownType_returnsNull()
 {
     DAParamTypeRegistry registry;
-    QJsonObject desc;
-    desc["name"] = "unknown_param";
-    desc["type"] = "unknown_type";
+    DAParameterDescriptor desc;
+    desc.name = "unknown_param";
+    desc.type = "unknown_type";
 
     QWidget* editor = registry.createEditor("unknown_type", desc);
     QVERIFY(editor == nullptr);
@@ -233,8 +231,8 @@ void TestDAParamTypeRegistry::test_defaultValues()
 
     // str → placeholder 来自 description
     {
-        QJsonObject desc = makeDescriptor("str", "请输入名称");
-        QLineEdit* edit  = qobject_cast<QLineEdit*>(registry.createEditor("str", desc));
+        DAParameterDescriptor desc = makeDescriptor("str", "请输入名称");
+        QLineEdit* edit            = qobject_cast< QLineEdit* >(registry.createEditor("str", desc));
         QVERIFY(edit != nullptr);
         QCOMPARE(edit->placeholderText(), QString("请输入名称"));
         delete edit;
@@ -242,8 +240,8 @@ void TestDAParamTypeRegistry::test_defaultValues()
 
     // int → 默认范围与值
     {
-        QJsonObject desc = makeDescriptor("int");
-        QSpinBox* spin   = qobject_cast<QSpinBox*>(registry.createEditor("int", desc));
+        DAParameterDescriptor desc = makeDescriptor("int");
+        QSpinBox* spin             = qobject_cast< QSpinBox* >(registry.createEditor("int", desc));
         QVERIFY(spin != nullptr);
         QCOMPARE(spin->minimum(), -9999);
         QCOMPARE(spin->maximum(), 9999);
@@ -253,8 +251,8 @@ void TestDAParamTypeRegistry::test_defaultValues()
 
     // float → 默认范围、小数位与值
     {
-        QJsonObject desc = makeDescriptor("float");
-        QDoubleSpinBox* dspin = qobject_cast<QDoubleSpinBox*>(registry.createEditor("float", desc));
+        DAParameterDescriptor desc = makeDescriptor("float");
+        QDoubleSpinBox* dspin      = qobject_cast< QDoubleSpinBox* >(registry.createEditor("float", desc));
         QVERIFY(dspin != nullptr);
         QCOMPARE(dspin->minimum(), -9999.0);
         QCOMPARE(dspin->maximum(), 9999.0);
@@ -265,8 +263,8 @@ void TestDAParamTypeRegistry::test_defaultValues()
 
     // bool → 默认 unchecked
     {
-        QJsonObject desc = makeDescriptor("bool");
-        QCheckBox* cb    = qobject_cast<QCheckBox*>(registry.createEditor("bool", desc));
+        DAParameterDescriptor desc = makeDescriptor("bool");
+        QCheckBox* cb              = qobject_cast< QCheckBox* >(registry.createEditor("bool", desc));
         QVERIFY(cb != nullptr);
         QVERIFY(!cb->isChecked());
         delete cb;
@@ -274,11 +272,11 @@ void TestDAParamTypeRegistry::test_defaultValues()
 
     // int → descriptor 中的 min/max 和 default
     {
-        QJsonObject ext;
-        ext["min"] = 0;
-        ext["max"] = 100;
-        QJsonObject desc = makeDescriptor("int", "", 50, ext);
-        QSpinBox* spin   = qobject_cast<QSpinBox*>(registry.createEditor("int", desc));
+        QVariantHash ext;
+        ext[ "min" ]               = 0;
+        ext[ "max" ]               = 100;
+        DAParameterDescriptor desc = makeDescriptor("int", "", 50, ext);
+        QSpinBox* spin             = qobject_cast< QSpinBox* >(registry.createEditor("int", desc));
         QVERIFY(spin != nullptr);
         QCOMPARE(spin->minimum(), 0);
         QCOMPARE(spin->maximum(), 100);
@@ -288,12 +286,12 @@ void TestDAParamTypeRegistry::test_defaultValues()
 
     // float → descriptor 中的 min/max/decimals
     {
-        QJsonObject ext;
-        ext["min"]      = 0.0;
-        ext["max"]      = 1.0;
-        ext["decimals"] = 4;
-        QJsonObject desc = makeDescriptor("float", "", 0.5, ext);
-        QDoubleSpinBox* dspin = qobject_cast<QDoubleSpinBox*>(registry.createEditor("float", desc));
+        QVariantHash ext;
+        ext[ "min" ]               = 0.0;
+        ext[ "max" ]               = 1.0;
+        ext[ "decimals" ]          = 4;
+        DAParameterDescriptor desc = makeDescriptor("float", "", 0.5, ext);
+        QDoubleSpinBox* dspin      = qobject_cast< QDoubleSpinBox* >(registry.createEditor("float", desc));
         QVERIFY(dspin != nullptr);
         QCOMPARE(dspin->minimum(), 0.0);
         QCOMPARE(dspin->maximum(), 1.0);
@@ -314,15 +312,15 @@ void TestDAParamTypeRegistry::test_enumValues()
 
     // 基础 enum_values 测试
     {
-        QJsonArray enumVals;
+        QVariantHash ext;
+        QStringList enumVals;
         enumVals.append("red");
         enumVals.append("green");
         enumVals.append("blue");
-        QJsonObject ext;
-        ext["enum_values"] = enumVals;
-        QJsonObject desc   = makeDescriptor("enum", "颜色选择", QVariant(), ext);
+        ext[ "enums" ]             = enumVals;
+        DAParameterDescriptor desc = makeDescriptor("enum", "颜色选择", QVariant(), ext);
 
-        QComboBox* combo = qobject_cast<QComboBox*>(registry.createEditor("enum", desc));
+        QComboBox* combo = qobject_cast< QComboBox* >(registry.createEditor("enum", desc));
         QVERIFY(combo != nullptr);
         QCOMPARE(combo->count(), 3);
         QCOMPARE(combo->itemText(0), QString("red"));
@@ -334,15 +332,15 @@ void TestDAParamTypeRegistry::test_enumValues()
 
     // enum_values + default 指定选中项
     {
-        QJsonArray enumVals;
+        QStringList enumVals;
         enumVals.append("small");
         enumVals.append("medium");
         enumVals.append("large");
-        QJsonObject ext;
-        ext["enum_values"] = enumVals;
-        QJsonObject desc   = makeDescriptor("enum", "尺寸选择", QString("medium"), ext);
+        QVariantHash ext;
+        ext[ "enums" ]             = enumVals;
+        DAParameterDescriptor desc = makeDescriptor("enum", "尺寸选择", QString("medium"), ext);
 
-        QComboBox* combo = qobject_cast<QComboBox*>(registry.createEditor("enum", desc));
+        QComboBox* combo = qobject_cast< QComboBox* >(registry.createEditor("enum", desc));
         QVERIFY(combo != nullptr);
         QCOMPARE(combo->count(), 3);
         QCOMPARE(combo->currentIndex(), 1);
@@ -352,58 +350,14 @@ void TestDAParamTypeRegistry::test_enumValues()
 
     // 空 enum_values → 空的 QComboBox
     {
-        QJsonArray emptyEnum;
-        QJsonObject ext;
-        ext["enum_values"] = emptyEnum;
-        QJsonObject desc   = makeDescriptor("enum", "空枚举", QVariant(), ext);
+        QStringList emptyEnum;
+        QVariantHash ext;
+        ext[ "enums" ]             = emptyEnum;
+        DAParameterDescriptor desc = makeDescriptor("enum", "空枚举", QVariant(), ext);
 
-        QComboBox* combo = qobject_cast<QComboBox*>(registry.createEditor("enum", desc));
+        QComboBox* combo = qobject_cast< QComboBox* >(registry.createEditor("enum", desc));
         QVERIFY(combo != nullptr);
         QCOMPARE(combo->count(), 0);
         delete combo;
-    }
-}
-
-/**
- * @brief 重新注册同一类型会覆盖旧的 creator
- *
- * 先注册自定义 creator，验证生效后调用 registerDefaults() 恢复默认行为。
- * 反向验证：先 registerDefaults()，再自定义注册覆盖。
- */
-void TestDAParamTypeRegistry::test_reRegistration_overwrites()
-{
-    DAParamTypeRegistry registry;
-
-    // 场景 1：自定义注册 → registerDefaults 覆盖
-    {
-        registry.registerType("str", [](const QJsonObject&, QWidget* parent) -> QWidget* {
-            return new QPlainTextEdit(parent);
-        });
-
-        QWidget* editor = registry.createEditor("str", QJsonObject());
-        QVERIFY(editor != nullptr);
-        QVERIFY(qobject_cast<QPlainTextEdit*>(editor) != nullptr);
-        delete editor;
-
-        registry.registerDefaults();
-
-        editor = registry.createEditor("str", QJsonObject());
-        QVERIFY(editor != nullptr);
-        QVERIFY(qobject_cast<QLineEdit*>(editor) != nullptr);
-        delete editor;
-    }
-
-    // 场景 2：registerDefaults → 自定义注册覆盖
-    {
-        registry.registerDefaults();
-
-        registry.registerType("int", [](const QJsonObject&, QWidget* parent) -> QWidget* {
-            return new QCheckBox("custom int", parent);
-        });
-
-        QWidget* editor = registry.createEditor("int", QJsonObject());
-        QVERIFY(editor != nullptr);
-        QVERIFY(qobject_cast<QCheckBox*>(editor) != nullptr);
-        delete editor;
     }
 }

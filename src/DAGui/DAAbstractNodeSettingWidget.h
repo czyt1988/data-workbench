@@ -7,7 +7,8 @@
 #include <QWidget>
 #include <QPointer>
 #include <QJsonObject>
-
+#include "DANodeDescriptor.h"
+#include "DAParameterDescriptor.h"
 namespace DA
 {
 /**
@@ -32,11 +33,11 @@ public:
     void setNodeProxy(DAPyNodeProxy* proxy);
     DAPyNodeProxy* getNodeProxy() const;
 
-    // 获取缓存的描述符（若未设置或为空则返回空 QJsonObject）
-    QJsonObject getDescriptor() const;
+    // 获取描述符
+    const DANodeDescriptor& getDescriptor() const;
 
     // 从描述符中提取 parameters 数组
-    QJsonArray getParameters() const;
+    const QVector< DAParameterDescriptor >& getParameters() const;
 
     // 子类必须实现的界面同步方法
     virtual void updateUI() = 0;
