@@ -7,5 +7,7 @@
 | [总览与环境搭建](./python-binding/index.md) | 架构总览、CMake 配置、目录结构、相关模块与参考资料 |
 | [C++ 调用 Python](./python-binding/cpp-calling-python.md) | Python 解释器初始化、GIL 管理、脚本调用示例 |
 | [Python 绑定开发](./python-binding/python-binding-development.md) | 接口绑定架构与实现、所有权策略、跨线程通信、Qt 类型转换器、绑定开发实操流程、模块绑定路线图 |
+| [pybind11 ↔ Qt 类型转换器](./dapybind11-qt-caster.md) | `DAPybind11QtCaster.hpp` 完整使用指南 — 类型映射表、自动转换机制、`DA::PY` 辅助函数、`safe_pyobject`、numpy/pandas 集成 |
 | [故障排除与最佳实践](./python-binding/troubleshooting-and-best-practices.md) | 问题诊断流程、常见错误与调试技巧、设计原则与检查清单 |
 | [Python 脚本开发实战](./python-binding/python-script-development.md) | 四种交互模式、标准脚本编写流程、getConfigValues 对话框、撤销/重做、跨线程操作、Thread Status Manager |
+| [pybind11/Qt 类型转换器](./dapybind11-qt-caster.md) | DAPybind11QtCaster.hpp 完整参考：QString/QVariant/QDateTime 等自动双向转换、DA::PY 辅助函数、safe_pyobject、最佳实践 |

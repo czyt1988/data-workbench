@@ -540,6 +540,8 @@ void DAPythonSignalHandler::clearPendingFunctions()
 
 ## Qt 类型转换器
 
+> **完整文档**：Qt 与 pybind11 类型转换的详细说明已独立为 [DAPybind11QtCaster.hpp 使用指南](../dapybind11-qt-caster.md)，包含每个类型的转换详解、numpy 支持、`DA::PY` 辅助函数、`safe_pyobject` 安全包装器等完整内容。本节仅列出类型映射摘要。
+
 ### 支持的类型映射
 
 | Qt 类型 | Python 类型 | 说明 |
@@ -548,7 +550,7 @@ void DAPythonSignalHandler::clearPendingFunctions()
 | `QByteArray` | `bytes` / `bytearray` | 支持二进制数据 |
 | `QDate` | `datetime.date` | 日期类型 |
 | `QTime` | `datetime.time` | 时间类型 |
-| `QDateTime` | `datetime.datetime` | 支持 pandas.Timestamp |
+| `QDateTime` | `datetime.datetime` | 支持 pandas.Timestamp、numpy.datetime64 |
 | `QList<T>` | `list` | 泛型支持 |
 | `QSet<T>` | `set` | 集合类型 |
 | `QHash<K,V>` | `dict` | 哈希映射 |

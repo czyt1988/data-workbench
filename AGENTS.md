@@ -172,6 +172,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | 图表创建/编辑 | `src/DAFigure/`, `src/DAGui/ChartSetting/` | QwtFigure 容器 + 属性面板 |
 | 图形视图交互 | `src/DAGraphicsView/` | QGraphicsView 子类, 节点/连线编辑 |
 | Python 绑定 | `src/DAPyBindQt/` | pybind11 胶水代码 |
+| pybind11↔Qt 类型转换 | `src/DAPyBindQt/DAPybind11QtCaster.hpp` | **重要**：QString/QVariant/QDateTime 等自动双向转换，详见`docs/zh/dev-guide/dapybind11-qt-caster.md` |
 | Python 工作流节点 | `src/DAPyWorkFlow/` | Python 脚本节点执行 |
 | 命令行参数 | `src/APP/main.cpp` → `initCommandLine()` | --version, --help, import-data, 工程文件 |
 | UI 状态持久化 | `src/APP/AppMainWindow` | saveUIState/restoreUIState |
