@@ -73,6 +73,21 @@ class DAConnection:
         # 生成唯一 ID，若未指定则自动生成
         self.connection_id = connection_id if connection_id is not None else str(uuid.uuid4())
 
+    def fill_connection_state(self, cs):
+        """
+        填充 DAWorkflowConnectionState C++ 结构体
+
+        将 DAConnection 的字段直接映射到 C++ DAWorkflowConnectionState 结构体，
+        避免通过 JSON dict 作为中介传递数据。
+
+        :param cs: DAWorkflowConnectionState C++ 结构体实例（pybind11 封装）
+        """
+        cs.connectionId = self.connection_id
+        cs.fromNodeId = self.source_node_id
+        cs.fromChannel = int(self.source_output_channel)
+        cs.toNodeId = self.target_node_id
+        cs.toChannel = int(self.target_input_channel)
+
     def to_dict(self) -> dict:
         """
         将连接转换为 JSON 可序列化的字典

@@ -104,6 +104,10 @@ public:
     QString getFilterProperty() const;
     void setFilterProperty(const QString& filters);
 
+    // ---- 原始描述符属性（rawDescriptor） ----
+    void setRawDescriptor(const QVariantHash& props);
+    QVariantHash getRawDescriptor() const;
+
     // ---- 默认值快捷方法 ----
     bool hasDefaultValue() const;
     QString defaultValueToString() const;

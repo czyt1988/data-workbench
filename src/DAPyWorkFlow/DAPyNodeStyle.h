@@ -4,7 +4,6 @@
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyNodeStyleDefine.h"
 #include <QColor>
-#include <QJsonObject>
 #include <QString>
 #include "DAEnumStringUtils.hpp"
 
@@ -198,23 +197,6 @@ struct DAPYWORKFLOW_API DANodeStyle
     }
 };
 
-// =================================================================================
-//                      JSON 序列化函数
-// =================================================================================
-/**
- * @brief 从 JSON 对象解析节点样式
- * @param[in] json JSON 对象
- * @return 解析后的 DANodeStyle
- * @note 缺失字段使用默认值，无效字符串使用默认枚举值
- */
-DAPYWORKFLOW_API DANodeStyle DANodeStyleFromJson(const QJsonObject& json);
-
-/**
- * @brief 将节点样式序列化为 JSON 对象（稀疏策略）
- * @param[in] style 样式对象
- * @return JSON 对象，仅包含与默认值不同的字段
- */
-DAPYWORKFLOW_API QJsonObject DANodeStyleToJson(const DANodeStyle& style);
 
 }  // namespace DA
 

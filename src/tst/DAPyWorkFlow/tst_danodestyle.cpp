@@ -3,8 +3,6 @@
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyNodeStyleDefine.h"
 #include <QtTest/QtTest>
-#include <QJsonObject>
-#include <QJsonDocument>
 #include <QDomDocument>
 #include <QDomElement>
 
@@ -49,87 +47,158 @@ void TestDANodeStyle::testDefaultConstruction()
 }
 
 // ============================================================
-// testJsonRoundTrip — JSON序列化往返
+// testFieldAssignment — 字段赋值读写验证
 // ============================================================
 
 /**
- * @brief 验证 DANodeStyle JSON往返序列化
+ * @brief 验证 DANodeStyle 各字段的赋值与读回
  *
- * 修改bodyShape=Ellipse, namePosition=Below后，
- * 通过DANodeStyleToJson→DANodeStyleFromJson往返，
- * 验证值与修改后一致。
+ * 构造DANodeStyle，逐字段修改并读回验证，确保公共字段可正确赋值和读取。
  */
-void TestDANodeStyle::testJsonRoundTrip()
+void TestDANodeStyle::testFieldAssignment()
 {
     DANodeStyle style;
-    style.bodyShape     = BodyShape::Ellipse;
-    style.namePosition  = NamePosition::Below;
-    style.cornerRadius  = 8.0;
+
+    style.bodyShape = BodyShape::Ellipse;
+    QCOMPARE(style.bodyShape, BodyShape::Ellipse);
+
+    style.namePosition = NamePosition::Below;
+    QCOMPARE(style.namePosition, NamePosition::Below);
+
+    style.iconPosition = IconPosition::AboveText;
+    QCOMPARE(style.iconPosition, IconPosition::AboveText);
+
+    style.borderWidth = 3.5;
+    QCOMPARE(style.borderWidth, 3.5);
+
+    style.cornerRadius = 12.0;
+    QCOMPARE(style.cornerRadius, 12.0);
+
+    style.iconSize = 32.0;
+    QCOMPARE(style.iconSize, 32.0);
+
     style.inputPortSide = PortSide::North;
+    style.outputPortSide = PortSide::South;
+    QCOMPARE(style.inputPortSide, PortSide::North);
+    QCOMPARE(style.outputPortSide, PortSide::South);
 
-    QJsonObject json     = DANodeStyleToJson(style);
-    DANodeStyle restored = DANodeStyleFromJson(json);
+    style.layoutStrategy = LinkPointLayoutStrategy::Manual;
+    QCOMPARE(style.layoutStrategy, LinkPointLayoutStrategy::Manual);
 
-    QCOMPARE(restored.bodyShape, BodyShape::Ellipse);
-    QCOMPARE(restored.namePosition, NamePosition::Below);
-    QCOMPARE(restored.cornerRadius, 8.0);
-    QCOMPARE(restored.inputPortSide, PortSide::North);
-
-    // 未修改的字段应保持默认值
-    QCOMPARE(restored.iconPosition, IconPosition::LeftOfText);
-    QCOMPARE(restored.outputPortSide, PortSide::East);
-    QCOMPARE(restored.borderWidth, 1.0);
+    style.bodyIconType = BodyIconType::Svg;
+    style.bodyIconSource = ":/icons/node.svg";
+    style.bodyIconScale = 1.0;
+    QCOMPARE(style.bodyIconType, BodyIconType::Svg);
+    QCOMPARE(style.bodyIconSource, QString(":/icons/node.svg"));
+    QCOMPARE(style.bodyIconScale, 1.0);
 }
 
 // ============================================================
-// testJsonSparseStrategy — 稀疏策略验证
+// testColorPropertyRoundTrip — 颜色属性往返验证
 // ============================================================
 
 /**
- * @brief 验证稀疏JSON策略：默认样式toJson应产生空JSON
+ * @brief 验证 DANodeStyle 颜色字段的赋值与读回
  *
- * DANodeStyleToJson使用稀疏策略，仅写入与默认值不同的字段。
- * 默认构造的样式与默认实例完全相同，因此toJson应返回空QJsonObject。
+ * 设置 backgroundColor 和 borderColor 为不同颜色值，
+ * 读回验证颜色值一致，包括 RGB 分量、透明度和有效性。
  */
-void TestDANodeStyle::testJsonSparseStrategy()
+void TestDANodeStyle::testColorPropertyRoundTrip()
 {
-    DANodeStyle style;  // 全默认
-    QJsonObject json = DANodeStyleToJson(style);
+    DANodeStyle style;
 
-    QVERIFY(json.isEmpty());
+    style.backgroundColor = QColor(100, 200, 50);
+    QCOMPARE(style.backgroundColor, QColor(100, 200, 50));
+    QCOMPARE(style.backgroundColor.red(), 100);
+    QCOMPARE(style.backgroundColor.green(), 200);
+    QCOMPARE(style.backgroundColor.blue(), 50);
+    QVERIFY(style.backgroundColor.isValid());
+
+    style.borderColor = QColor(Qt::red);
+    QCOMPARE(style.borderColor, QColor(Qt::red));
+    QVERIFY(style.borderColor.isValid());
+
+    style.backgroundColor = QColor(50, 100, 150, 128);
+    QCOMPARE(style.backgroundColor.alpha(), 128);
+    QCOMPARE(style.backgroundColor.red(), 50);
+    QCOMPARE(style.backgroundColor.green(), 100);
+    QCOMPARE(style.backgroundColor.blue(), 150);
+
+    style.borderColor = QColor();
+    QVERIFY(!style.borderColor.isValid());
 }
 
 // ============================================================
-// testJsonSafeDefaults — 安全默认值验证
+// testPortStyleAssignment — 端口样式字段赋值验证
 // ============================================================
 
 /**
- * @brief 验证fromJson空QJsonObject时所有字段为默认值
+ * @brief 验证 DAPyLinkPointStyle 字段赋值与读回
  *
- * DANodeStyleFromJson对缺失字段使用默认值，
- * 空JSON对象应产生与默认构造完全相同的样式。
+ * 修改 inputPortStyle 和 outputPortStyle 的 shape、fillColor、borderColor、borderWidth，
+ * 读回验证值一致，并验证 isFillColorValid/isBorderColorValid 辅助方法。
  */
-void TestDANodeStyle::testJsonSafeDefaults()
+void TestDANodeStyle::testPortStyleAssignment()
 {
-    QJsonObject emptyJson;
-    DANodeStyle style = DANodeStyleFromJson(emptyJson);
+    DANodeStyle style;
 
-    DANodeStyle defaults;
+    style.inputPortStyle.shape      = PortShape::Circle;
+    style.inputPortStyle.fillColor  = QColor(Qt::white);
+    style.inputPortStyle.borderColor = QColor(Qt::black);
+    style.inputPortStyle.borderWidth = 2.0;
 
-    QCOMPARE(style.bodyShape, defaults.bodyShape);
-    QCOMPARE(style.namePosition, defaults.namePosition);
-    QCOMPARE(style.iconPosition, defaults.iconPosition);
-    QCOMPARE(style.backgroundColor, defaults.backgroundColor);
-    QCOMPARE(style.borderColor, defaults.borderColor);
-    QCOMPARE(style.borderWidth, defaults.borderWidth);
-    QCOMPARE(style.cornerRadius, defaults.cornerRadius);
-    QCOMPARE(style.iconSize, defaults.iconSize);
-    QCOMPARE(style.inputPortSide, defaults.inputPortSide);
-    QCOMPARE(style.outputPortSide, defaults.outputPortSide);
-    QCOMPARE(style.layoutStrategy, defaults.layoutStrategy);
-    QCOMPARE(style.bodyIconType, defaults.bodyIconType);
-    QCOMPARE(style.bodyIconSource, defaults.bodyIconSource);
-    QCOMPARE(style.bodyIconScale, defaults.bodyIconScale);
+    QCOMPARE(style.inputPortStyle.shape, PortShape::Circle);
+    QCOMPARE(style.inputPortStyle.fillColor, QColor(Qt::white));
+    QCOMPARE(style.inputPortStyle.borderColor, QColor(Qt::black));
+    QCOMPARE(style.inputPortStyle.borderWidth, 2.0);
+    QVERIFY(style.inputPortStyle.isFillColorValid());
+    QVERIFY(style.inputPortStyle.isBorderColorValid());
+
+    style.outputPortStyle.shape      = PortShape::Diamond;
+    style.outputPortStyle.fillColor  = QColor(Qt::darkGray);
+    style.outputPortStyle.borderColor = QColor(Qt::blue);
+    style.outputPortStyle.borderWidth = 1.5;
+
+    QCOMPARE(style.outputPortStyle.shape, PortShape::Diamond);
+    QCOMPARE(style.outputPortStyle.fillColor, QColor(Qt::darkGray));
+    QCOMPARE(style.outputPortStyle.borderColor, QColor(Qt::blue));
+    QCOMPARE(style.outputPortStyle.borderWidth, 1.5);
+    QVERIFY(style.outputPortStyle.isFillColorValid());
+    QVERIFY(style.outputPortStyle.isBorderColorValid());
+}
+
+// ============================================================
+// testSetDefaultsReset — setDefaults重置验证
+// ============================================================
+
+/**
+ * @brief 验证 setDefaults() 能将已修改的字段重置回默认值
+ *
+ * 先修改多个字段，调用 setDefaults()，验证所有字段恢复默认。
+ */
+void TestDANodeStyle::testSetDefaultsReset()
+{
+    DANodeStyle style;
+
+    style.bodyShape       = BodyShape::Ellipse;
+    style.backgroundColor = QColor(Qt::red);
+    style.borderWidth     = 5.0;
+    style.cornerRadius    = 20.0;
+    style.inputPortSide   = PortSide::North;
+    style.outputPortSide  = PortSide::South;
+    style.layoutStrategy  = LinkPointLayoutStrategy::Manual;
+    style.bodyIconType    = BodyIconType::Svg;
+
+    style.setDefaults();
+
+    QCOMPARE(style.bodyShape, BodyShape::RoundedRect);
+    QCOMPARE(style.backgroundColor, QColor(240, 240, 240));
+    QCOMPARE(style.borderWidth, 1.0);
+    QCOMPARE(style.cornerRadius, 4.0);
+    QCOMPARE(style.inputPortSide, PortSide::West);
+    QCOMPARE(style.outputPortSide, PortSide::East);
+    QCOMPARE(style.layoutStrategy, LinkPointLayoutStrategy::Auto);
+    QCOMPARE(style.bodyIconType, BodyIconType::None);
 }
 
 // ============================================================
@@ -274,63 +343,6 @@ void TestDANodeStyle::testLinkPointStyleDefaults()
     // 验证QColor::isValid()直接返回false
     QVERIFY(!style.fillColor.isValid());
     QVERIFY(!style.borderColor.isValid());
-}
-
-// ============================================================
-// testColorSerialization — QColor hex往返
-// ============================================================
-
-/**
- * @brief 验证QColor通过toJson/fromJson的hex格式往返
- *
- * QColor通过name()方法序列化为"#RRGGBB"格式，
- * 通过QColor(hexString)反序列化。验证颜色往返后RGB值一致。
- */
-void TestDANodeStyle::testColorSerialization()
-{
-    // 构造含非默认颜色的样式
-    DANodeStyle style;
-    style.backgroundColor = QColor("#ff0000");  // 红色
-    style.borderColor     = QColor("#00ff00");  // 绿色
-
-    QJsonObject json = DANodeStyleToJson(style);
-
-    // 验证JSON中颜色字段存在且为hex格式
-    QVERIFY(json.contains("backgroundColor"));
-    QCOMPARE(json.value("backgroundColor").toString(), QString("#ff0000"));
-
-    QVERIFY(json.contains("borderColor"));
-    QCOMPARE(json.value("borderColor").toString(), QString("#00ff00"));
-
-    // 从Json往返
-    DANodeStyle restored = DANodeStyleFromJson(json);
-    QCOMPARE(restored.backgroundColor, QColor("#ff0000"));
-    QCOMPARE(restored.borderColor, QColor("#00ff00"));
-
-    // 验证RGB分量精确一致
-    QCOMPARE(restored.backgroundColor.red(), 255);
-    QCOMPARE(restored.backgroundColor.green(), 0);
-    QCOMPARE(restored.backgroundColor.blue(), 0);
-
-    QCOMPARE(restored.borderColor.red(), 0);
-    QCOMPARE(restored.borderColor.green(), 255);
-    QCOMPARE(restored.borderColor.blue(), 0);
-
-    // 连接点样式颜色往返
-    DAPyLinkPointStyle lpStyle;
-    lpStyle.fillColor   = QColor("#0000ff");  // 蓝色
-    lpStyle.borderColor = QColor("#ffff00");  // 黄色
-
-    // 通过DANodeStyle的inputPortStyle验证
-    DANodeStyle nodeStyle;
-    nodeStyle.inputPortStyle = lpStyle;
-
-    QJsonObject nodeJson = DANodeStyleToJson(nodeStyle);
-    QVERIFY(nodeJson.contains("inputPortStyle"));
-
-    DANodeStyle restoredNode = DANodeStyleFromJson(nodeJson);
-    QCOMPARE(restoredNode.inputPortStyle.fillColor, QColor("#0000ff"));
-    QCOMPARE(restoredNode.inputPortStyle.borderColor, QColor("#ffff00"));
 }
 
 }  // namespace DA

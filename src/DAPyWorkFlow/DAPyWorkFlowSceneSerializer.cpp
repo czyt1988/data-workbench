@@ -5,15 +5,10 @@
 #include "DAPyLinkGraphicsItem.h"
 #include "DAPyNodeProxy.h"
 #include "DAPyGILGuard.h"
-#include "DAPyModuleWorkflow.h"
-#include "DAPyJsonCast.h"
-#include "DAPyLinkPoint.h"
+#include "DAWorkflowState.h"
 #include "DAXMLFileInterface.h"
 #include <QFile>
 #include <QTextStream>
-#include <QJsonObject>
-#include <QJsonDocument>
-#include <QJsonArray>
 #include <QDebug>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QStringConverter>
@@ -92,19 +87,19 @@ DAPyWorkFlowSceneSerializer::~DAPyWorkFlowSceneSerializer()
  * @brief 保存场景到XML文档
  *
  * 将DAPyWorkFlowScene中的所有节点和连接线序列化为XML格式。
- * 每个节点保存以下信息：
+ * workflow级别数据通过DAWorkflowState结构体保存（替代原来的JSON桥接链），
+ * 节点位置从C++图形项获取后写入DAWorkflowState。
+ * 每个节点图形项还保存以下独立信息：
  * - qualified_name：用于加载时通过DANodeRegistry重建节点
  * - node_id：Python侧的节点唯一标识
  * - 位置信息（x, y）
- * - 节点参数值（通过DAPyJsonCast转为QJsonObject再写入XML CDATA）
- * - 渲染模板、节点名称、SVG路径等显示属性
+ * - pickle数据（Python对象序列化）
+ * - 渲染模板、节点名称等可视化属性
  *
  * 连接线保存以下信息：
  * - 源节点ID和输出端口名
  * - 目标节点ID和输入端口名
  * - 连接线的可视化属性
- *
- * 同时保存Python DAWorkflow的to_dict()数据作为DAG级别的序列化。
  *
  * @param scene 要保存的场景指针
  * @param doc XML文档指针
@@ -125,25 +120,114 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
     rootEle.setAttribute("version", ver.toString());
     doc->appendChild(rootEle);
 
-    // 保存Python DAWorkflow的DAG级别数据（to_dict）
+    // 保存Python DAWorkflow的DAG级别数据（使用DAWorkflowState替代JSON桥接链）
     QDomElement workflowDataEle = doc->createElement("workflowData");
     if (scene->hasPyWorkflow()) {
         DAPyGILGuard gil;
         try {
             pybind11::object workflowObj = scene->getPyWorkflow();
-            if (workflowObj && pybind11::hasattr(workflowObj, "to_dict")) {
-                pybind11::dict workflowDict = workflowObj.attr("to_dict").cast< pybind11::dict >();
-                // 将py::dict转为QJsonObject
-                QJsonObject workflowJson = DA::PY::pyDictToQJsonObject(workflowDict);
-                // 将QJsonObject转为字符串写入CDATA
-                QJsonDocument jsonDoc(workflowJson);
-                QByteArray jsonBytes = jsonDoc.toJson(QJsonDocument::Compact);
-                DAXMLFileInterface::appendElementWithText(workflowDataEle, "json", QString::fromUtf8(jsonBytes), doc);
+
+            DAWorkflowState state;
+            if (workflowObj && pybind11::hasattr(workflowObj, "name")) {
+                std::string nameStr = workflowObj.attr("name").cast< std::string >();
+                state.name          = QString::fromStdString(nameStr);
             }
+
+            // 从Python workflow获取节点数据
+            if (workflowObj && pybind11::hasattr(workflowObj, "_nodes")) {
+                pybind11::dict nodesDict = workflowObj.attr("_nodes").cast< pybind11::dict >();
+                for (auto item : nodesDict) {
+                    DAWorkflowNodeState ns;
+                    std::string nodeIdStr   = pybind11::str(item.first);
+                    ns.nodeId               = QString::fromStdString(nodeIdStr);
+                    pybind11::object nodeInst = item.second.cast< pybind11::object >();
+                    if (pybind11::hasattr(nodeInst, "qualified_name")) {
+                        std::string qnameStr = pybind11::str(nodeInst.attr("qualified_name"));
+                        ns.qualifiedName     = QString::fromStdString(qnameStr);
+                    }
+                    pybind11::object descriptor = pybind11::getattr(nodeInst, "_node_descriptor", pybind11::none());
+                    if (!descriptor.is_none() && pybind11::hasattr(descriptor, "toMetaData")) {
+                        pybind11::object metaDataObj = descriptor.attr("toMetaData");
+                        ns.metaData                  = metaDataObj.cast< DAPyNodeMetaData >();
+                    }
+                    state.nodes.append(ns);
+                }
+            }
+
+            // 从Python workflow获取连接数据
+            if (workflowObj && pybind11::hasattr(workflowObj, "_connections")) {
+                pybind11::dict connsDict = workflowObj.attr("_connections").cast< pybind11::dict >();
+                for (auto item : connsDict) {
+                    DAWorkflowConnectionState cs;
+                    pybind11::object conn     = item.second.cast< pybind11::object >();
+                    if (pybind11::hasattr(conn, "connection_id")) {
+                        cs.connectionId = QString::fromStdString(pybind11::str(conn.attr("connection_id")));
+                    }
+                    if (pybind11::hasattr(conn, "source_node_id")) {
+                        cs.fromNodeId = QString::fromStdString(pybind11::str(conn.attr("source_node_id")));
+                    }
+                    if (pybind11::hasattr(conn, "source_output_channel")) {
+                        cs.fromChannel = conn.attr("source_output_channel").cast< int >();
+                    }
+                    if (pybind11::hasattr(conn, "target_node_id")) {
+                        cs.toNodeId = QString::fromStdString(pybind11::str(conn.attr("target_node_id")));
+                    }
+                    if (pybind11::hasattr(conn, "target_input_channel")) {
+                        cs.toChannel = conn.attr("target_input_channel").cast< int >();
+                    }
+                    state.connections.append(cs);
+                }
+            }
+
+            // 从C++图形项获取位置并写入DAWorkflowState的节点
+            QList< DAPyNodeGraphicsItem* > nodeItems = scene->getPyNodeItems();
+            for (DAPyNodeGraphicsItem* nodeItem : nodeItems) {
+                DAPyNodeProxy* proxy = nodeItem->getProxy();
+                if (proxy && proxy->hasPyNodeRef()) {
+                    try {
+                        pybind11::object pyNodeRef = proxy->getPyNodeRef();
+                        if (pyNodeRef && pybind11::hasattr(pyNodeRef, "id")) {
+                            std::string idStr = pybind11::str(pyNodeRef.attr("id"));
+                            QString nodeId    = QString::fromStdString(idStr);
+                            // 在state.nodes中查找对应节点并更新位置
+                            for (DAWorkflowNodeState& ns : state.nodes) {
+                                if (ns.nodeId == nodeId) {
+                                    ns.position = nodeItem->pos();
+                                    break;
+                                }
+                            }
+                        }
+                    } catch (const pybind11::error_already_set&) {
+                        qWarning() << "DAPyWorkFlowSceneSerializer: Python exception ignored while transferring node position";
+                    }
+                }
+            }
+
+            // 序列化DAWorkflowState到XML
+            // toXml()会创建WorkflowState元素并追加到doc（临时成为doc的第二个子元素）
+            state.toXml(*doc);
+
+            // 从doc中找到WorkflowState元素并移到workflowDataEle下
+            QDomElement workflowStateEle;
+            QDomNode child = doc->firstChild();
+            while (!child.isNull()) {
+                if (child.isElement()) {
+                    QDomElement ele = child.toElement();
+                    if (ele.tagName() == "WorkflowState") {
+                        workflowStateEle = ele;
+                        break;
+                    }
+                }
+                child = child.nextSibling();
+            }
+            if (!workflowStateEle.isNull()) {
+                // QDomNode::appendChild会自动从原父节点移除后追加到新父节点
+                workflowDataEle.appendChild(workflowStateEle);
+            }
+
         } catch (const pybind11::error_already_set& e) {
-            qWarning(
-            ) << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::saveSceneToXml: Python error saving workflow data: %1")
-                     .arg(e.what());
+            qWarning() << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::saveSceneToXml: Python error saving workflow data: %1")
+                              .arg(e.what());
             d->mLastErrorString = DA_SERIALIZER_TR("保存workflow数据时Python异常: %1").arg(e.what());
             // 继续保存场景级别的数据，不因workflow数据保存失败而中断
         }
@@ -258,12 +342,11 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
  * 从XML数据恢复DAPyWorkFlowScene中的节点和连接线。
  * 加载过程：
  * 1. 清空当前场景
- * 2. 先恢复Python DAWorkflow的DAG数据（from_dict）
- * 3. 逐个创建节点图形项：通过qualified_name从DANodeRegistry获取描述符，
- *    调用DAPyWorkFlowScene::createPyNode()创建节点
- * 4. 恢复节点位置、参数值、pickle数据
- * 5. 建立节点id到图形项的映射表
- * 6. 逐个恢复连接线：通过映射表查找源/目标节点，调用addPyNodeLink
+ * 2. 从workflowData/WorkflowState解析DAWorkflowState（替代原JSON桥接链）
+ * 3. 从nodes XML节构建位置映射表，遍历DAWorkflowState.nodes创建节点图形项
+ * 4. 恢复节点pickle数据和可视化属性
+ * 5. 遍历DAWorkflowState.connections创建连接线（通道编号→端口名称转换）
+ * 6. 恢复连接线可视化属性
  *
  * 加载完成后不会自动执行工作流。
  *
@@ -290,52 +373,41 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(
     // 建立node_id到图形项的映射表
     QMap< QString, DAPyNodeGraphicsItem* > nodeIdToItemMap;
 
-    // 1. 加载Python DAWorkflow的DAG数据
+    // 1. 从workflowData加载DAWorkflowState（替代原JSON桥接链）
+    DAWorkflowState workflowState;
     QDomElement workflowDataEle = sceneElement->firstChildElement("workflowData");
-    if (!workflowDataEle.isNull() && scene->hasPyWorkflow()) {
-        QDomElement jsonEle = workflowDataEle.firstChildElement("json");
-        if (!jsonEle.isNull()) {
-            QString jsonStr       = jsonEle.text();
-            QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonStr.toUtf8());
-            if (!jsonDoc.isNull() && jsonDoc.isObject()) {
-                QJsonObject workflowJson = jsonDoc.object();
-                DAPyGILGuard gil;
-                try {
-                    // 将QJsonObject转为py::dict
-                    pybind11::dict workflowDict  = DA::PY::qjsonObjectToPyDict(workflowJson);
-                    pybind11::object workflowObj = scene->getPyWorkflow();
-                    if (workflowObj && pybind11::hasattr(workflowObj, "from_dict")) {
-                        // 加载DAG级别数据到现有workflow实例
-                        // 注意：from_dict会清空并重建workflow的节点和连接
-                        // 但场景级别的恢复需要额外的createPyNode操作
-                        // 这里仅加载DAG逻辑数据，场景图形项由后面的步骤创建
-                    }
-                } catch (const pybind11::error_already_set& e) {
-                    qWarning()
-                        << DA_SERIALIZER_TR(
-                               "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error loading workflow data: %1"
-                           )
-                               .arg(e.what());
-                    d->mLastErrorString = DA_SERIALIZER_TR("加载workflow数据时Python异常: %1").arg(e.what());
+    if (!workflowDataEle.isNull()) {
+        QDomElement workflowStateEle = workflowDataEle.firstChildElement("WorkflowState");
+        if (!workflowStateEle.isNull()) {
+            // 创建临时QDomDocument以调用DAWorkflowState::fromXml
+            QDomDocument tempDoc;
+            tempDoc.appendChild(tempDoc.importNode(workflowStateEle, true));
+            workflowState = DAWorkflowState::fromXml(tempDoc);
+        }
+
+        // 设置workflow名称
+        if (scene->hasPyWorkflow() && !workflowState.name.isEmpty()) {
+            DAPyGILGuard gil;
+            try {
+                pybind11::object workflowObj = scene->getPyWorkflow();
+                if (workflowObj && pybind11::hasattr(workflowObj, "name")) {
+                    workflowObj.attr("name") = workflowState.name.toStdString();
                 }
+            } catch (const pybind11::error_already_set& e) {
+                qWarning() << DA_SERIALIZER_TR(
+                                  "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error setting workflow name: %1"
+                )
+                                  .arg(e.what());
             }
         }
     }
 
-    // 2. 加载节点数据
+    // 2. 构建位置映射表（从nodes XML节获取位置，遵循"位置来自node data"原则）
+    QMap< QString, QPointF > nodeIdToPosMap;
     QDomElement nodesEle = sceneElement->firstChildElement("nodes");
     QDomElement nodeEle  = nodesEle.firstChildElement("node");
     while (!nodeEle.isNull()) {
-        QString qualifiedName = nodeEle.attribute("qualified_name");
-        if (qualifiedName.isEmpty()) {
-            qualifiedName = nodeEle.attribute("prototype");  // backward compat: 旧版本使用prototype属性
-        }
-        if (qualifiedName.isEmpty()) {
-            qualifiedName = nodeEle.attribute("protoType");  // backward compat: DAXmlHelper旧格式使用protoType属性
-        }
         QString nodeId = nodeEle.attribute("node_id");
-
-        // 获取节点位置
         double posX = 0.0, posY = 0.0;
         QDomElement xEle = nodeEle.firstChildElement("x");
         QDomElement yEle = nodeEle.firstChildElement("y");
@@ -345,114 +417,122 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(
         if (!yEle.isNull()) {
             DA::getStringRealValue(yEle.text(), posY);
         }
-        QPointF pos(posX, posY);
-
-        // 获取节点描述符
-        QJsonObject descriptor;
-        QDomElement descEle = nodeEle.firstChildElement("descriptor");
-        if (!descEle.isNull()) {
-            QString descStr       = descEle.text();
-            QJsonDocument descDoc = QJsonDocument::fromJson(descStr.toUtf8());
-            if (!descDoc.isNull() && descDoc.isObject()) {
-                descriptor = descDoc.object();
-            }
-        }
-
-        // 如果描述符中没有qualified_name，补充进去
-        if (!qualifiedName.isEmpty() && !descriptor.contains("qualified_name")) {
-            descriptor[ "qualified_name" ] = qualifiedName;
-        }
-
-        // 通过DANodeRegistry查找描述符（如果本地描述符不完整）
-        if (descriptor.isEmpty() && !qualifiedName.isEmpty()) {
-            DAPyGILGuard gil;
-            try {
-                DAPyModuleWorkflow& modWorkflow = DAPyModuleWorkflow::getInstance();
-                if (modWorkflow.import()) {
-                    pybind11::object registryClass = modWorkflow.getNodeRegistryClass();
-                    // 尝试从注册表获取描述符
-                    // 注意：这里需要一个DANodeRegistry实例，通常由应用层提供
-                    // 如果没有注册表实例，使用XML中保存的描述符
-                }
-            } catch (const pybind11::error_already_set& e) {
-                qWarning() << DA_SERIALIZER_TR(
-                                  "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error querying registry: %1"
-                )
-                                  .arg(e.what());
-            }
-        }
-
-        // 创建节点图形项
-#if 0  // TODO 这里要修复,下面代码还是旧代码使用
-
-        DAPyNodeGraphicsItem* nodeItem = scene->createPyNode(descriptor, pos);
-        if (!nodeItem) {
-            d->mLastErrorString = DA_SERIALIZER_TR("创建节点失败: qualified_name=%1").arg(qualifiedName);
-            qWarning() << d->mLastErrorString;
-            nodeEle = nodeEle.nextSiblingElement("node");
-            continue;
-        }
-
-        // 添加到场景
-        scene->addItem_(nodeItem);
-
-        // 建立映射
         if (!nodeId.isEmpty()) {
-            nodeIdToItemMap[ nodeId ] = nodeItem;
+            nodeIdToPosMap[ nodeId ] = QPointF(posX, posY);
         }
-        // 也用qualified_name作为备用映射键
-        if (!qualifiedName.isEmpty() && !nodeIdToItemMap.contains(qualifiedName)) {
-            nodeIdToItemMap[ qualifiedName ] = nodeItem;
-        }
-
-        // 加载节点item的可视化属性
-        QDomElement itemDataEle = nodeEle.firstChildElement("itemData");
-        if (!itemDataEle.isNull()) {
-            nodeItem->loadFromXml(&itemDataEle, ver);
-        }
-
-        // 恢复节点参数值（config）
-        QDomElement configEle = nodeEle.firstChildElement("config");
-        if (!configEle.isNull() && nodeItem->getProxy()) {
-            QString configStr       = configEle.text();
-            QJsonDocument configDoc = QJsonDocument::fromJson(configStr.toUtf8());
-            if (!configDoc.isNull() && configDoc.isObject()) {
-                nodeItem->getProxy()->setConfig(configDoc.object());
-            }
-        }
-
-        // 恢复pickle数据
-        QDomElement pickleEle = nodeEle.firstChildElement("pickleData");
-        if (!pickleEle.isNull() && nodeItem->getProxy() && nodeItem->getProxy()->hasPyNodeRef()) {
-            DAPyGILGuard gil;
-            try {
-                QString base64Str = pickleEle.text();
-                QByteArray qBytes = QByteArray::fromBase64(base64Str.toUtf8());
-                std::string rawBytes(qBytes.constData(), qBytes.size());
-
-                pybind11::object pickleModule = pybind11::module_::import("pickle");
-                pybind11::bytes pickleBytesObj(rawBytes);
-                pybind11::object unpickledObj = pickleModule.attr("loads")(pickleBytesObj);
-
-                // 将pickle恢复的数据合并到节点实例
-                // 注意：不替换整个节点实例，仅合并参数属性
-                pybind11::object pyNodeRef = nodeItem->getProxy()->getPyNodeRef();
-                if (pyNodeRef && pybind11::hasattr(unpickledObj, "_input_data")) {
-                    pyNodeRef.attr("_input_data") = unpickledObj.attr("_input_data");
-                }
-            } catch (const pybind11::error_already_set& e) {
-                qWarning()
-                    << DA_SERIALIZER_TR(
-                           "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error restoring pickle data: %1")
-                           .arg(e.what());
-                // pickle恢复失败不影响整体流程
-            }
-        }
-#endif
         nodeEle = nodeEle.nextSiblingElement("node");
     }
 
-    // 3. 加载连接线数据
+    // 建立node_id到metaData的映射表（用于连接线通道→端口名转换）
+    QMap< QString, DAPyNodeMetaData > nodeIdToMetaDataMap;
+
+    // 3. 创建节点：遍历DAWorkflowState.nodes
+    for (const DAWorkflowNodeState& ns : workflowState.nodes) {
+        DAPyNodeMetaData metaData = ns.metaData;
+        // 如果metaData无效但qualifiedName存在，补全qualifiedName
+        if (!metaData.isValid() && !ns.qualifiedName.isEmpty()) {
+            metaData.qualifiedName = ns.qualifiedName;
+        }
+
+        // 获取位置：优先从nodes XML节获取，其次从state获取
+        QPointF pos = ns.position;
+        if (nodeIdToPosMap.contains(ns.nodeId)) {
+            pos = nodeIdToPosMap[ ns.nodeId ];
+        }
+
+        // 创建节点图形项
+        DAPyNodeGraphicsItem* nodeItem = scene->createPyNode(metaData, pos);
+        if (!nodeItem) {
+            d->mLastErrorString = DA_SERIALIZER_TR("创建节点失败: qualified_name=%1").arg(ns.qualifiedName);
+            qWarning() << d->mLastErrorString;
+            continue;
+        }
+
+        // 添加到场景（createPyNode不自动添加到场景）
+        scene->addItem_(nodeItem);
+
+        // 建立映射
+        nodeIdToItemMap[ ns.nodeId ] = nodeItem;
+        nodeIdToMetaDataMap[ ns.nodeId ] = metaData;
+    }
+
+    // 4. 恢复节点的pickle数据和可视化属性（从nodes XML节）
+    nodeEle = nodesEle.firstChildElement("node");
+    while (!nodeEle.isNull()) {
+        QString nodeId = nodeEle.attribute("node_id");
+        DAPyNodeGraphicsItem* nodeItem = nodeIdToItemMap.value(nodeId, nullptr);
+        if (nodeItem) {
+            // 加载节点item的可视化属性
+            QDomElement itemDataEle = nodeEle.firstChildElement("itemData");
+            if (!itemDataEle.isNull()) {
+                nodeItem->loadFromXml(&itemDataEle, ver);
+            }
+
+            // 恢复pickle数据
+            QDomElement pickleEle = nodeEle.firstChildElement("pickleData");
+            if (!pickleEle.isNull() && nodeItem->getProxy() && nodeItem->getProxy()->hasPyNodeRef()) {
+                DAPyGILGuard gil;
+                try {
+                    QString base64Str = pickleEle.text();
+                    QByteArray qBytes = QByteArray::fromBase64(base64Str.toUtf8());
+                    std::string rawBytes(qBytes.constData(), qBytes.size());
+
+                    pybind11::object pickleModule = pybind11::module_::import("pickle");
+                    pybind11::bytes pickleBytesObj(rawBytes);
+                    pybind11::object unpickledObj = pickleModule.attr("loads")(pickleBytesObj);
+
+                    // 将pickle恢复的数据合并到节点实例
+                    pybind11::object pyNodeRef = nodeItem->getProxy()->getPyNodeRef();
+                    if (pyNodeRef && pybind11::hasattr(unpickledObj, "_input_data")) {
+                        pyNodeRef.attr("_input_data") = unpickledObj.attr("_input_data");
+                    }
+                } catch (const pybind11::error_already_set& e) {
+                    qWarning()
+                        << DA_SERIALIZER_TR(
+                               "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error restoring pickle data: %1")
+                               .arg(e.what());
+                    // pickle恢复失败不影响整体流程
+                }
+            }
+        }
+        nodeEle = nodeEle.nextSiblingElement("node");
+    }
+
+    // 5. 创建连接线：遍历DAWorkflowState.connections
+    for (const DAWorkflowConnectionState& cs : workflowState.connections) {
+        DAPyNodeGraphicsItem* fromItem = nodeIdToItemMap.value(cs.fromNodeId, nullptr);
+        DAPyNodeGraphicsItem* toItem   = nodeIdToItemMap.value(cs.toNodeId, nullptr);
+
+        if (!fromItem || !toItem) {
+            qWarning() << DA_SERIALIZER_TR(
+                "DAPyWorkFlowSceneSerializer::loadSceneFromXml: 连接线引用的节点不存在: "
+                "fromNodeId=%1, toNodeId=%2").arg(cs.fromNodeId, cs.toNodeId);
+            continue;
+        }
+
+        // 将通道编号转换为端口名称
+        DAPyNodeMetaData fromMetaData = nodeIdToMetaDataMap.value(cs.fromNodeId);
+        DAPyNodeMetaData toMetaData   = nodeIdToMetaDataMap.value(cs.toNodeId);
+
+        QString fromOutput;
+        if (cs.fromChannel >= 0 && cs.fromChannel < fromMetaData.outputKeys.size()) {
+            fromOutput = fromMetaData.outputKeys[ cs.fromChannel ];
+        } else {
+            fromOutput = QString::number(cs.fromChannel);
+        }
+
+        QString toInput;
+        if (cs.toChannel >= 0 && cs.toChannel < toMetaData.inputKeys.size()) {
+            toInput = toMetaData.inputKeys[ cs.toChannel ];
+        } else {
+            toInput = QString::number(cs.toChannel);
+        }
+
+        // 创建连接线（addPyNodeLink已自动添加到场景）
+        scene->addPyNodeLink(fromItem, fromOutput, toItem, toInput);
+    }
+
+    // 6. 恢复连接线可视化属性（从links XML节）
     QDomElement linksEle = sceneElement->firstChildElement("links");
     QDomElement linkEle  = linksEle.firstChildElement("link");
     while (!linkEle.isNull()) {
@@ -461,26 +541,25 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(
         QString toNodeId   = linkEle.attribute("toNodeId");
         QString toInput    = linkEle.attribute("toInput");
 
-        // 通过映射表查找节点
+        // 查找源节点和目标节点图形项
         DAPyNodeGraphicsItem* fromItem = nodeIdToItemMap.value(fromNodeId, nullptr);
         DAPyNodeGraphicsItem* toItem   = nodeIdToItemMap.value(toNodeId, nullptr);
-
-        if (fromItem && toItem && !fromOutput.isEmpty() && !toInput.isEmpty()) {
-            // 创建连接线
-            DAPyLinkGraphicsItem* linkItem = scene->addPyNodeLink(fromItem, fromOutput, toItem, toInput);
-            if (linkItem) {
-                scene->addItem_(linkItem);
-
-                // 加载连接线item的可视化属性
-                QDomElement linkItemDataEle = linkEle.firstChildElement("itemData");
-                if (!linkItemDataEle.isNull()) {
-                    linkItem->loadFromXml(&linkItemDataEle, ver);
+        if (fromItem && toItem) {
+            // 在场景中查找匹配的连接线图形项
+            QList< DAPyLinkGraphicsItem* > allLinks = scene->getPyNodeLinkItems();
+            for (DAPyLinkGraphicsItem* existingLink : allLinks) {
+                if (existingLink->getFromNode() == fromItem
+                    && existingLink->getFromOutputName() == fromOutput
+                    && existingLink->getToNode() == toItem
+                    && existingLink->getToInputName() == toInput) {
+                    // 加载连接线item的可视化属性
+                    QDomElement linkItemDataEle = linkEle.firstChildElement("itemData");
+                    if (!linkItemDataEle.isNull()) {
+                        existingLink->loadFromXml(&linkItemDataEle, ver);
+                    }
+                    break;
                 }
             }
-        } else {
-            qWarning() << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::loadSceneFromXml: 连接线引用的节点不存在: "
-                                           "fromNodeId=%1, toNodeId=%2")
-                              .arg(fromNodeId, toNodeId);
         }
 
         linkEle = linkEle.nextSiblingElement("link");

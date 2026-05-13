@@ -6,10 +6,10 @@ namespace DA
 {
 
 /**
- * @brief DAPortDescriptor JSON序列化/验证测试
+ * @brief DAPortDescriptor 字段读写与 pybind11 构造测试
  *
  * 验证端口描述符结构体的默认构造、字段访问、
- * 有效性验证及JSON往返序列化。
+ * 有效性验证、相等性比较及 pybind11 构造。
  */
 class TestDAPortDescriptor : public QObject
 {
@@ -25,8 +25,11 @@ private Q_SLOTS:
     // 有效性验证：仅当name和dataType非空时返回true
     void testIsValid();
 
-    // JSON序列化往返：创建→toJson→fromJson→验证值一致
-    void testJsonRoundTrip();
+    // 相等性比较：两个相同字段值的描述符逐字段相等
+    void testEqualityComparison();
+
+    // pybind11 构造：通过 Python 创建 DAPortDescriptor 并验证字段
+    void testPybind11Construction();
 };
 
 }  // namespace DA

@@ -56,6 +56,12 @@ struct DAPYWORKFLOW_API DANodeDescriptor
 
     // 转换为 DAPyNodeMetaData（提取注册所需字段）
     DAPyNodeMetaData toMetaData() const;
+
+    // 序列化为 QJsonObject（稀疏策略，仅写入必要字段）
+    QJsonObject toJson() const;
+
+    // 从 QJsonObject 反序列化
+    static DANodeDescriptor fromJson(const QJsonObject& obj);
 };
 
 }  // namespace DA

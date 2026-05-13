@@ -2,7 +2,6 @@
 #include "DAPybind11InQt.h"
 #include "DAPyModuleWorkflow.h"
 #include "DAPyGILGuard.h"
-#include "DAPyJsonCast.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DANodeDescriptor.h"
 #include "DAPortDescriptor.h"

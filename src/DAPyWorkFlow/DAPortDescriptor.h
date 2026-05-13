@@ -2,7 +2,6 @@
 #define DAPORTDESCRIPTOR_H
 
 #include <QString>
-#include <QJsonObject>
 
 namespace DA
 {
@@ -11,14 +10,9 @@ namespace DA
  * @brief 端口描述符结构体
  *
  * 用于描述工作流节点输入/输出端口的元数据，包括端口名称、数据类型、
- * 是否必需以及描述信息。支持 JSON 序列化与反序列化。
+ * 是否必需以及描述信息。
  *
- * 使用示例：
- * @code
- * DAPortDescriptor desc("input_data", "DataFrame", true, "输入数据");
- * QJsonObject json = desc.toJson();
- * DAPortDescriptor restored = DAPortDescriptor::fromJson(json);
- * @endcode
+ * 序列化由上层调用方直接操作字段完成（见 DANodeDescriptor::toJson/fromJson）。
  */
 struct DAPortDescriptor
 {
@@ -61,42 +55,6 @@ struct DAPortDescriptor
         return !name.isEmpty() && !dataType.isEmpty();
     }
 
-    /**
-     * @brief 序列化为 QJsonObject
-     * @return JSON 对象
-     *
-     * JSON 键名使用 snake_case 以匹配 Python 侧约定。
-     * required 和 description 仅在非默认值时写入，实现稀疏序列化。
-     */
-    QJsonObject toJson() const
-    {
-        QJsonObject obj;
-        obj[QStringLiteral("name")]     = name;
-        obj[QStringLiteral("data_type")] = dataType;
-        if (!required)
-            obj[QStringLiteral("required")] = required;
-        if (!description.isEmpty())
-            obj[QStringLiteral("description")] = description;
-        return obj;
-    }
-
-    /**
-     * @brief 从 QJsonObject 反序列化
-     * @param obj JSON 对象
-     * @return DAPortDescriptor 实例
-     *
-     * 对于可选字段 required，仅在 JSON 中包含该键时才覆盖默认值。
-     */
-    static DAPortDescriptor fromJson(const QJsonObject& obj)
-    {
-        DAPortDescriptor desc;
-        desc.name     = obj.value(QStringLiteral("name")).toString();
-        desc.dataType = obj.value(QStringLiteral("data_type")).toString();
-        if (obj.contains(QStringLiteral("required")))
-            desc.required = obj.value(QStringLiteral("required")).toBool();
-        desc.description = obj.value(QStringLiteral("description")).toString();
-        return desc;
-    }
 };
 
 }  // namespace DA

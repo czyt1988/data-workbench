@@ -96,6 +96,131 @@ def _collect_from_nested_class(cls: type, nested_name: str, decl_type: type) -> 
     return items
 
 
+def _hex_to_rgb(hex_str):
+    """
+    将十六进制颜色字符串转换为 (r, g, b) 整数元组
+
+    支持 '#RRGGBB' 和 '#RGB' 两种格式。
+
+    :param hex_str: 十六进制颜色字符串（如 '#ff0000'）
+    :return: (r, g, b) 整数元组
+    """
+    hex_str = hex_str.lstrip('#')
+    if len(hex_str) == 3:
+        hex_str = ''.join(c * 2 for c in hex_str)
+    return int(hex_str[0:2], 16), int(hex_str[2:4], 16), int(hex_str[4:6], 16)
+
+
+def _link_point_style_from_dict(style_dict):
+    """
+    将 Python dict 转换为 DAPyLinkPointStyle 实例
+
+    支持的键名（snake_case）：
+    - shape: 端口形状（PortShape 枚举值）
+    - fill_color: 填充颜色十六进制字符串（如 '#ff0000'）
+    - border_color: 边框颜色十六进制字符串
+    - border_width: 边框宽度（float）
+
+    :param style_dict: 端口样式字典
+    :return: DAPyLinkPointStyle 实例
+    """
+    s = da_py_workflow.DAPyLinkPointStyle()
+    for key, value in style_dict.items():
+        if key == 'shape':
+            s.shape = value
+        elif key == 'fill_color':
+            if isinstance(value, str) and value.startswith('#'):
+                r, g, b = _hex_to_rgb(value)
+                s.setFillColor(r, g, b)
+            elif isinstance(value, (tuple, list)):
+                s.setFillColor(*value)
+        elif key == 'border_color':
+            if isinstance(value, str) and value.startswith('#'):
+                r, g, b = _hex_to_rgb(value)
+                s.setBorderColor(r, g, b)
+            elif isinstance(value, (tuple, list)):
+                s.setBorderColor(*value)
+        elif key == 'border_width':
+            s.borderWidth = value
+    return s
+
+
+def _style_from_dict(style_dict):
+    """
+    将 Python dict 转换为 DANodeStyle 实例
+
+    支持的键名（snake_case）：
+    - background_color: 背景色十六进制字符串
+    - border_color: 边框色十六进制字符串
+    - border_width: 边框宽度（float）
+    - body_shape: 主体形状（BodyShape 枚举值）
+    - name_position: 名称位置（NamePosition 枚举值）
+    - icon_position: 图标位置（IconPosition 枚举值）
+    - corner_radius: 圆角半径（float）
+    - icon_size: 图标尺寸（float）
+    - input_port_side: 输入端口方位（PortSide 枚举值）
+    - output_port_side: 输出端口方位（PortSide 枚举值）
+    - input_port_style: 输入端口样式（dict 或 DAPyLinkPointStyle）
+    - output_port_style: 输出端口样式（dict 或 DAPyLinkPointStyle）
+    - layout_strategy: 连接点布局策略（LinkPointLayoutStrategy 枚举值）
+    - body_icon_type: 节点体图标类型（BodyIconType 枚举值）
+    - body_icon_source: 图标源路径（str）
+    - body_icon_scale: 图标缩放比例（float）
+
+    :param style_dict: 样式配置字典
+    :return: DANodeStyle 实例
+    """
+    s = da_py_workflow.DANodeStyle()
+    for key, value in style_dict.items():
+        if key == 'background_color':
+            if isinstance(value, str) and value.startswith('#'):
+                r, g, b = _hex_to_rgb(value)
+                s.setBackgroundColor(r, g, b)
+            elif isinstance(value, (tuple, list)):
+                s.setBackgroundColor(*value)
+        elif key == 'border_color':
+            if isinstance(value, str) and value.startswith('#'):
+                r, g, b = _hex_to_rgb(value)
+                s.setBorderColor(r, g, b)
+            elif isinstance(value, (tuple, list)):
+                s.setBorderColor(*value)
+        elif key == 'border_width':
+            s.borderWidth = value
+        elif key == 'body_shape':
+            s.bodyShape = value
+        elif key == 'name_position':
+            s.namePosition = value
+        elif key == 'icon_position':
+            s.iconPosition = value
+        elif key == 'corner_radius':
+            s.cornerRadius = value
+        elif key == 'icon_size':
+            s.iconSize = value
+        elif key == 'input_port_side':
+            s.inputPortSide = value
+        elif key == 'output_port_side':
+            s.outputPortSide = value
+        elif key == 'input_port_style':
+            if isinstance(value, dict):
+                s.inputPortStyle = _link_point_style_from_dict(value)
+            else:
+                s.inputPortStyle = value
+        elif key == 'output_port_style':
+            if isinstance(value, dict):
+                s.outputPortStyle = _link_point_style_from_dict(value)
+            else:
+                s.outputPortStyle = value
+        elif key == 'layout_strategy':
+            s.layoutStrategy = value
+        elif key == 'body_icon_type':
+            s.bodyIconType = value
+        elif key == 'body_icon_source':
+            s.bodyIconSource = value
+        elif key == 'body_icon_scale':
+            s.bodyIconScale = value
+    return s
+
+
 def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", icon:str = "" ,style=None):
     """
     工作流节点定义装饰器
@@ -169,16 +294,13 @@ def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", i
         # 处理样式参数
         if style is not None:
             if isinstance(style, dict):
-                desc.style = da_py_workflow.DANodeStyle.fromJson(style)
-            elif hasattr(style, "toJson"):
+                desc.style = _style_from_dict(style)
+            elif isinstance(style, da_py_workflow.DANodeStyle):
                 # style 已经是 DANodeStyle 实例，直接赋值
                 desc.style = style
 
         # 在类上设置 _node_descriptor 属性（C++ DANodeDescriptor 结构体）
         cls._node_descriptor = desc
-
-        # 缓存 JSON 以备向后兼容查询
-        cls._node_descriptor_json = desc.toJson()
 
         # 设置 input_keys 和 output_keys 为类属性，供 C++ syncMetaFromPyNode 使用
         cls.input_keys = [inp.name for inp in inputs]

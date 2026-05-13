@@ -27,7 +27,7 @@ class DAPyWorkFlowScene;
  * serializer.loadSceneFromXml(&doc.documentElement(), &scene);
  * @endcode
  *
- * @see DAPyWorkFlowScene DAPyJsonCast DANodeRegistry
+ * @see DAPyWorkFlowScene DAWorkflowState
  */
 class DAPYWORKFLOW_API DAPyWorkFlowSceneSerializer
 {

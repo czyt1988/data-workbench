@@ -212,7 +212,18 @@ class Parameter:
         pd.description = self.description
         if self.default is not None:
             pd.setDefaultValue(self.default)
-        pd.setRawDescriptor(self.to_dict(name))
+        # Build propertys dict from extra kwargs with key name mapping for C++ compatibility.
+        # Python-facing kwarg names (e.g. file_filter, enum_options) are mapped to the C++
+        # property keys that DAParameterDescriptor expects (filter, enum).
+        _key_map = {
+            "file_filter": "filter",
+            "enum_options": "enum",
+        }
+        raw = {}
+        for k, v in self._extra_kwargs.items():
+            raw[_key_map.get(k, k)] = v
+        if raw:
+            pd.setRawDescriptor(raw)
         return pd
 
     def __repr__(self) -> str:

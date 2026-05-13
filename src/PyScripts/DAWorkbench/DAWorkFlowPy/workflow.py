@@ -423,6 +423,44 @@ class DAWorkflow:
             "connections": connections_data,
         }
 
+    def fill_state(self, state):
+        """
+        直接填充 C++ DAWorkflowState 结构体（绕过 JSON 序列化）
+
+        遍历工作流中的节点和连接，将数据直接写入 C++ DAWorkflowState 对象。
+        节点元数据通过 DANodeDescriptor.toMetaData() 传递，而非 JSON 字典。
+
+        :param state: da_py_workflow.DAWorkflowState 实例（C++ 侧 pybind11 绑定对象）
+        """
+        import da_py_workflow
+
+        state.name = self.name
+
+        # 填充节点
+        for node_id, node_instance in self._nodes.items():
+            ns = da_py_workflow.DAWorkflowNodeState()
+            ns.nodeId = node_id
+            ns.qualifiedName = getattr(node_instance, "qualified_name", "")
+            # 获取节点描述符，优先使用 C++ DANodeDescriptor 对象
+            descriptor = getattr(node_instance, "_node_descriptor", None)
+            if descriptor is not None:
+                # DANodeDescriptor 有 toMetaData() 方法，返回 DAPyNodeMetaData
+                to_meta = getattr(descriptor, "toMetaData", None)
+                if to_meta is not None:
+                    ns.metaData = to_meta()
+            ns.position = (0, 0)  # 位置由 C++ Scene 设置
+            state.nodes.append(ns)
+
+        # 填充连接
+        for conn in self._connections.values():
+            cs = da_py_workflow.DAWorkflowConnectionState()
+            cs.connectionId = conn.connection_id
+            cs.fromNodeId = conn.source_node_id
+            cs.fromChannel = conn.source_output_channel
+            cs.toNodeId = conn.target_node_id
+            cs.toChannel = conn.target_input_channel
+            state.connections.append(cs)
+
     @classmethod
     def from_dict(cls, data: dict, node_registry: object = None) -> "DAWorkflow":
         """

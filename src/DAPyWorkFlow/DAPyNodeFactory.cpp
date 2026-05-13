@@ -5,9 +5,7 @@
 #include "DAPyNodeProxy.h"
 #include "DAPyInterpreter.h"
 #include "DANodeDescriptor.h"
-#include "DAPyJsonCast.h"
 #include <QDebug>
-#include <QJsonObject>
 #include <QHash>
 
 namespace DA

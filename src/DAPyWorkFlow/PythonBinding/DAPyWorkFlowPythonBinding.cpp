@@ -9,9 +9,11 @@
 #include "DAPyWorkFlow/DAPyLinkPoint.h"
 #include "DAPyWorkFlow/DAPyNodeFactory.h"
 #include "DAPyWorkFlow/DAPyNodeStyle.h"
+#include "DAPyWorkFlow/DAPyWorkFlowEnumStringUtils.h"
 #include "DAPyWorkFlow/DAPortDescriptor.h"
 #include "DAPyWorkFlow/DANodeDescriptor.h"
 #include "DAPyWorkFlow/DAParameterDescriptor.h"
+#include "DAPyWorkFlow/DAWorkflowState.h"
 #include "DAPyBindQt/DAPybind11QtCaster.hpp"
 #include "DAPyBindQt/DAPyJsonCast.h"
 #include "DAPyBindQt/DAPybind11InQt.h"  // slots workaround，必须第一个pybind11相关头文件
@@ -188,21 +190,6 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .def_readwrite("required", &DA::DAPortDescriptor::required, "是否为必需端口（默认 true）")
         .def_readwrite("description", &DA::DAPortDescriptor::description, "端口描述信息（可选）")
         .def("isValid", &DA::DAPortDescriptor::isValid, "判断端口描述符是否有效（name 和 dataType 均非空）")
-        .def(
-            "toJson",
-            [](const DA::DAPortDescriptor& desc) {
-                QJsonObject json = desc.toJson();
-                return DA::PY::qjsonObjectToPyDict(json);
-            },
-            "序列化为 Python dict（snake_case 键名，稀疏策略）")
-        .def_static(
-            "fromJson",
-            [](const pybind11::dict& d) {
-                QJsonObject json = DA::PY::pyDictToQJsonObject(d);
-                return DA::DAPortDescriptor::fromJson(json);
-            },
-            pybind11::arg("dict"),
-            "从 Python dict 反序列化")
         .def("__repr__", [](const DA::DAPortDescriptor& desc) {
             return QString("DAPortDescriptor(name=%1, dataType=%2, required=%3)")
                 .arg(desc.name)
@@ -292,6 +279,33 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
 #endif
             },
             "获取默认值（返回 None 或对应的 Python 类型）")
+        // rawDescriptor: 自定义 getter/setter，Python dict ↔ QVariantHash 转换
+        .def(
+            "setRawDescriptor",
+            [](DA::DAParameterDescriptor& pd, pybind11::dict pyDict) {
+                QVariantHash props;
+                for (auto item : pyDict) {
+                    QString key          = QString::fromStdString(item.first.cast< std::string >());
+                    pybind11::object val = item.second.cast< pybind11::object >();
+                    props[ key ]         = DA::PY::fromPyVariant(val);
+                }
+                pd.setRawDescriptor(props);
+            },
+            pybind11::arg("descriptor"),
+            "设置原始参数描述符属性（接受 Python dict，转换为 QVariantHash 存储）")
+        .def(
+            "getRawDescriptor",
+            [](const DA::DAParameterDescriptor& pd) -> pybind11::dict {
+                QVariantHash props = pd.getRawDescriptor();
+                pybind11::dict result;
+                for (auto it = props.constBegin(); it != props.constEnd(); ++it) {
+                    QString key                         = it.key();
+                    QVariant val                        = it.value();
+                    result[ key.toStdString().c_str() ] = DA::PY::toPyObject(val);
+                }
+                return result;
+            },
+            "获取原始参数描述符属性（返回 Python dict）")
         .def("__repr__", [](const DA::DAParameterDescriptor& pd) {
             return QString("ParameterDescriptor(name=%1, type=%2, description=%3)")
                 .arg(pd.name)
@@ -394,22 +408,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             "bodyIconSource", &DA::DANodeStyle::bodyIconSource, "Body icon source path (SVG file path or resource path)")
         .def_readwrite("bodyIconScale", &DA::DANodeStyle::bodyIconScale, "Body icon scale ratio (default 0.8)")
         // 辅助方法
-        .def("setDefaults", &DA::DANodeStyle::setDefaults, "Reset all fields to default values")
-        .def(
-            "toJson",
-            [](const DA::DANodeStyle& s) {
-                QJsonObject json = DA::DANodeStyleToJson(s);
-                return DA::PY::qjsonObjectToPyDict(json);
-            },
-            "Serialize style to Python dict (sparse, only non-default fields)")
-        .def_static(
-            "fromJson",
-            [](const pybind11::dict& d) {
-                QJsonObject json = DA::PY::pyDictToQJsonObject(d);
-                return DA::DANodeStyleFromJson(json);
-            },
-            pybind11::arg("dict"),
-            "Deserialize style from Python dict");
+        .def("setDefaults", &DA::DANodeStyle::setDefaults, "Reset all fields to default values");
 
     // =================================================================================
     //                      DANodeDescriptor 绑定
@@ -497,6 +496,21 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         // 方法
         .def("isValid", &DA::DANodeDescriptor::isValid, "判断描述符是否有效（qualifiedName 非空）")
         .def("toMetaData", &DA::DANodeDescriptor::toMetaData, "转换为 DAPyNodeMetaData（提取注册所需字段）")
+        .def(
+            "toJson",
+            [](const DA::DANodeDescriptor& desc) {
+                QJsonObject json = desc.toJson();
+                return DA::PY::qjsonObjectToPyDict(json);
+            },
+            "序列化为 Python dict（camelCase 键名，稀疏策略）")
+        .def_static(
+            "fromJson",
+            [](const pybind11::dict& d) {
+                QJsonObject json = DA::PY::pyDictToQJsonObject(d);
+                return DA::DANodeDescriptor::fromJson(json);
+            },
+            pybind11::arg("dict"),
+            "从 Python dict 反序列化")
         .def("__repr__", [](const DA::DANodeDescriptor& nd) {
             return QString(
                        "DANodeDescriptor(name=%1, qualifiedName=%2, category=%3, inputs=%4, outputs=%5, parameters=%6)")
@@ -508,6 +522,117 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
                 .arg(nd.parameters.size())
                 .toStdString();
         });
+
+    // =================================================================================
+    //                      DAWorkflowNodeState 绑定
+    // =================================================================================
+
+    pybind11::class_< DA::DAWorkflowNodeState >(m, "DAWorkflowNodeState")
+        .def(pybind11::init<>())
+        .def_readwrite("nodeId", &DA::DAWorkflowNodeState::nodeId, "节点唯一标识（Python侧node_id）")
+        .def_readwrite("qualifiedName", &DA::DAWorkflowNodeState::qualifiedName, "节点限定名（Python qualified_name）")
+        .def_readwrite("metaData", &DA::DAWorkflowNodeState::metaData, "节点元数据描述（DAPyNodeMetaData）")
+        // position: QPointF ↔ tuple<double,double> 自定义转换
+        .def(
+            "setPosition",
+            [](DA::DAWorkflowNodeState& ns, const std::tuple< double, double >& pos) {
+                ns.position = QPointF(std::get< 0 >(pos), std::get< 1 >(pos));
+            },
+            pybind11::arg("pos"),
+            "设置节点位置 (x, y) 元组")
+        .def(
+            "getPosition",
+            [](const DA::DAWorkflowNodeState& ns) { return std::make_tuple(ns.position.x(), ns.position.y()); },
+            "获取节点位置 (x, y) 元组");
+
+    // =================================================================================
+    //                      DAWorkflowConnectionState 绑定
+    // =================================================================================
+
+    pybind11::class_< DA::DAWorkflowConnectionState >(m, "DAWorkflowConnectionState")
+        .def(pybind11::init<>())
+        .def_readwrite("connectionId", &DA::DAWorkflowConnectionState::connectionId, "连接唯一标识")
+        .def_readwrite("fromNodeId", &DA::DAWorkflowConnectionState::fromNodeId, "源节点ID")
+        .def_readwrite("fromChannel", &DA::DAWorkflowConnectionState::fromChannel, "源节点输出通道编号")
+        .def_readwrite("toNodeId", &DA::DAWorkflowConnectionState::toNodeId, "目标节点ID")
+        .def_readwrite("toChannel", &DA::DAWorkflowConnectionState::toChannel, "目标节点输入通道编号");
+
+    // =================================================================================
+    //                      DAWorkflowState 绑定
+    // =================================================================================
+
+    pybind11::class_< DA::DAWorkflowState >(m, "DAWorkflowState")
+        .def(pybind11::init<>())
+        .def_readwrite("name", &DA::DAWorkflowState::name, "工作流名称")
+        // nodes: QVector<DAWorkflowNodeState> ↔ Python list
+        .def(
+            "setNodes",
+            [](DA::DAWorkflowState& ws, const pybind11::list& pyList) {
+                ws.nodes.clear();
+                for (auto item : pyList) {
+                    ws.nodes.append(item.cast< DA::DAWorkflowNodeState >());
+                }
+            },
+            pybind11::arg("nodes"),
+            "设置节点状态列表")
+        .def(
+            "getNodes",
+            [](const DA::DAWorkflowState& ws) {
+                pybind11::list pyList;
+                for (const DA::DAWorkflowNodeState& ns : ws.nodes) {
+                    pyList.append(ns);
+                }
+                return pyList;
+            },
+            "获取节点状态列表")
+        // connections: QVector<DAWorkflowConnectionState> ↔ Python list
+        .def(
+            "setConnections",
+            [](DA::DAWorkflowState& ws, const pybind11::list& pyList) {
+                ws.connections.clear();
+                for (auto item : pyList) {
+                    ws.connections.append(item.cast< DA::DAWorkflowConnectionState >());
+                }
+            },
+            pybind11::arg("connections"),
+            "设置连接线状态列表")
+        .def(
+            "getConnections",
+            [](const DA::DAWorkflowState& ws) {
+                pybind11::list pyList;
+                for (const DA::DAWorkflowConnectionState& cs : ws.connections) {
+                    pyList.append(cs);
+                }
+                return pyList;
+            },
+            "获取连接线状态列表")
+        // toXml: 返回XML字符串
+        .def(
+            "toXml",
+            [](const DA::DAWorkflowState& ws) {
+                QDomDocument doc;
+                const_cast< DA::DAWorkflowState& >(ws).toXml(doc);
+                return doc.toString().toStdString();
+            },
+            "序列化为XML字符串")
+        // fromXml: 从XML字符串反序列化
+        .def_static(
+            "fromXml",
+            [](const std::string& xmlStr) {
+                QDomDocument doc;
+                doc.setContent(QString::fromStdString(xmlStr));
+                return DA::DAWorkflowState::fromXml(doc);
+            },
+            pybind11::arg("xml_string"),
+            "从XML字符串反序列化")
+        .def("__repr__", [](const DA::DAWorkflowState& ws) {
+            return QString("DAWorkflowState(name=%1, nodes=%2, connections=%3)")
+                .arg(ws.name)
+                .arg(ws.nodes.size())
+                .arg(ws.connections.size())
+                .toStdString();
+        });
+
     // 绑定 DAPyWorkFlowScene 类（Scenario B 模式：Qt 接口类 + lambda 包装）
     pybind11::class_< DA::DAPyWorkFlowScene >(m, "DAPyWorkFlowScene")
         .def(pybind11::init<>())

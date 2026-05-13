@@ -2,7 +2,6 @@
 #include <QPainter>
 #include <QTimer>
 #include <QDebug>
-#include <QJsonArray>
 #include <QGraphicsScene>
 #include <QStyleOptionGraphicsItem>
 #include "DAPyNodeGraphicsItem.h"

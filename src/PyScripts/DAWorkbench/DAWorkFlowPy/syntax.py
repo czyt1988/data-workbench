@@ -25,10 +25,7 @@
 
 
 def _get_desc_attr(descriptor, key, default=None):
-    """安全获取节点描述符属性，兼容 dict 和 DANodeDescriptor C++ 结构体。"""
-    if isinstance(descriptor, dict):
-        return descriptor.get(key, default)
-    # DANodeDescriptor C++ struct — 映射 snake_case 到 camelCase
+    """安全获取 DANodeDescriptor C++ 结构体属性，自动映射 snake_case 到 camelCase。"""
     attr_map = {"qualified_name": "qualifiedName"}
     attr = attr_map.get(key, key)
     return getattr(descriptor, attr, default)
@@ -78,7 +75,7 @@ class NodeOutputProxy:
                     f"ambiguous ports: target node '{other.node_id}' has "
                     f"{len(inputs)} input ports, cannot auto-match"
                 )
-            target_channel = inputs[0]["name"] if isinstance(inputs[0], dict) else getattr(inputs[0], "name", "")
+            target_channel = getattr(inputs[0], "name", "")
             return self.workflow.connect_node(
                 self.node_id, self.channel,
                 other.node_id, target_channel,
@@ -113,11 +110,11 @@ class _PortAccessor:
     """
     端口访问器基类
 
-    提供字典式访问 port[channel] → 对应代理对象。
+    通过端口名 channel 从 C++ DANodeDescriptor 结构体的 port 列表中查找对应代理对象。
 
     :param workflow: DAWorkflow 实例
     :param node_id: 节点 ID
-    :param port_list: 端口描述列表（inputs 或 outputs）
+    :param port_list: DANodeDescriptor 端口描述列表（inputs 或 outputs），元素为 C++ struct
     :param proxy_class: 代理类（NodeOutputProxy 或 NodeInputProxy）
     """
 
@@ -136,16 +133,16 @@ class _PortAccessor:
         :raises KeyError: 端口不存在
         """
         for port in self._port_list:
-            if port["name"] == channel:
+            if port.name == channel:
                 return self._proxy_class(self._workflow, self._node_id, channel)
-        available = [p["name"] for p in self._port_list]
+        available = [p.name for p in self._port_list]
         raise KeyError(
             f"端口 '{channel}' 不存在于节点 '{self._node_id}'，"
             f"可用端口: {available}"
         )
 
     def __repr__(self) -> str:
-        names = [p["name"] for p in self._port_list]
+        names = [p.name for p in self._port_list]
         cls_name = self._proxy_class.__name__.replace("Proxy", "Accessor")
         return f"{cls_name}(node_id='{self._node_id}', ports={names})"
 
@@ -197,7 +194,7 @@ class NodeProxy:
                     f"ambiguous ports: source node '{self.node_id}' has "
                     f"{len(outputs)} output ports, cannot auto-match"
                 )
-            src_channel = outputs[0]["name"]
+            src_channel = getattr(outputs[0], "name", "")
             # 利用 NodeOutputProxy 的 >> 处理目标端口匹配
             out_proxy = NodeOutputProxy(self.workflow, self.node_id, src_channel)
             return out_proxy >> other

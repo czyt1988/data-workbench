@@ -302,6 +302,33 @@ void DAParameterDescriptor::setFilterProperty(const QString& filters)
 }
 
 //===============================================================
+// rawDescriptor 原始描述符属性
+//===============================================================
+
+/**
+ * @brief 设置原始描述符属性
+ *
+ * 直接替换 propertys 哈希表的内容。
+ * 供 Python 绑定中的 setRawDescriptor 调用，将 Python dict 转换后传入。
+ *
+ * @param[in] props 属性键值对
+ */
+void DAParameterDescriptor::setRawDescriptor(const QVariantHash& props)
+{
+    propertys = props;
+}
+
+/**
+ * @brief 获取原始描述符属性
+ *
+ * @return propertys 哈希表的副本
+ */
+QVariantHash DAParameterDescriptor::getRawDescriptor() const
+{
+    return propertys;
+}
+
+//===============================================================
 // 默认值快捷方法
 //===============================================================
 
