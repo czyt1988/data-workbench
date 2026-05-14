@@ -138,6 +138,6 @@ DA::DAPyDataFrame pyDataFrameToDAPyDataFrame(pybind11::object df);
  * @param df
  * @param name
  */
-void addDataFrameFromPy(DA::DADataManager& mgr, pybind11::object df, const std::string& name);
+void addDataFrameFromPy(DA::DADataManager& mgr, pybind11::object df, const QString& name);
 
 #endif  // DADATAPYTHONBINDING_H

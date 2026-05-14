@@ -7,12 +7,12 @@ DA::DAPyDataFrame pyDataFrameToDAPyDataFrame(pybind11::object df)
     return DA::DAPyDataFrame(df);
 }
 
-void addDataFrameFromPy(DA::DADataManager& mgr, pybind11::object df, const std::string& name)
+void addDataFrameFromPy(DA::DADataManager& mgr, pybind11::object df, const QString& name)
 {
     DA::DAPyDataFrame daDf = pyDataFrameToDAPyDataFrame(df);
     DA::DAData data(daDf);
-    data.setName(QString::fromStdString(name));
-    mgr.addData(data);  // 调用 C++ 的 addData
+    data.setName(name);
+    mgr.addData(data);
 }
 
 PYBIND11_EMBEDDED_MODULE(da_data, m)
@@ -29,10 +29,10 @@ PYBIND11_EMBEDDED_MODULE(da_data, m)
             "toDataFrame", [](const DA::DAData& self) { return self.toDataFrame().object(); }, "Convert to DataFrame")
         .def(
             "toSeries", [](const DA::DAData& self) { return self.toSeries().object(); }, "Convert to Series")
-        .def("getName", [](const DA::DAData& self) { return self.getName().toStdString(); })
-        .def("setName", [](DA::DAData& self, const std::string& n) { self.setName(QString::fromStdString(n)); })
-        .def("getDescribe", [](const DA::DAData& self) { return self.getDescribe().toStdString(); })
-        .def("setDescribe", [](DA::DAData& self, const std::string& n) { self.setDescribe(QString::fromStdString(n)); })
+        .def("getName", &DA::DAData::getName)
+        .def("setName", &DA::DAData::setName)
+        .def("getDescribe", &DA::DAData::getDescribe)
+        .def("setDescribe", &DA::DAData::setDescribe)
         .def("isNull", &DA::DAData::isNull, "Check if the data is null")
         .def("id", &DA::DAData::id, "Return the data id")
         .def("isDataFrame", &DA::DAData::isDataFrame, "Check if the data type is DataFrame")
@@ -55,9 +55,11 @@ PYBIND11_EMBEDDED_MODULE(da_data, m)
      * 导出da_data.DADataManager
      */
     pybind11::class_< DA::DADataManager >(m, "DADataManager")
-        .def("addDataFrame", &addDataFrameFromPy, "Add a pandas DataFrame to DA Data Manager")
+        .def("addDataFrame", [](DA::DADataManager& mgr, pybind11::object df, const QString& name) {
+            addDataFrameFromPy(mgr, df, name);
+        }, pybind11::arg("df"), pybind11::arg("name"), "Add a pandas DataFrame to DA Data Manager")
         .def("getDataCount", &DA::DADataManager::getDataCount)
-        .def("getDataName", [](DA::DADataManager& mgr, int i) { return mgr.getData(i).getName().toStdString(); })
+        .def("getDataName", [](DA::DADataManager& mgr, int i) { return mgr.getData(i).getName(); })
         .def("addData",
              static_cast< void (DA::DADataManager::*)(DA::DAData&) >(&DA::DADataManager::addData),
              "Add a DAData object to manager")
