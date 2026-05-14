@@ -1,5 +1,6 @@
 #include "DAPyWorkFlowLifecycle.h"
-#include "DAPyGILGuard.h"
+#include "DAPyBindQt/DAPyGILGuard.h"
+#include "DAPyBindQt/DAPybind11QtCaster.hpp"
 #include "DAPyNodeProxy.h"
 #include "DAPythonSignalHandler.h"
 #include <QDebug>
@@ -24,8 +25,8 @@ public:
     void setExecState(ExecState newState);
 
 public:
-    DAPySafePyObjectHolder mWorkflowObj;        ///< Python DAWorkflow实例的安全持有者
-    DAPySafePyObjectHolder mPyExecutorObj;      ///< Python DAWorkflowExecutor实例的安全持有者
+    DA::PY::safe_pyobject mWorkflowObj;        ///< Python DAWorkflow实例的安全持有者
+    DA::PY::safe_pyobject mPyExecutorObj;      ///< Python DAWorkflowExecutor实例的安全持有者
     QPointer< DAPythonSignalHandler > mSignalHandler;  ///< C++侧信号处理器（可选）
     ExecState mExecState { StateIdle };         ///< 当前执行状态
     bool mIsTerminateRequest { false };         ///< 终止请求标记
@@ -88,7 +89,7 @@ DAPyWorkFlowLifecycle::~DAPyWorkFlowLifecycle()
 /**
  * @brief 设置Python工作流对象
  *
- * 将Python DAWorkflow实例存储在DAPySafePyObjectHolder中，
+ * 将Python DAWorkflow实例存储在DA::PY::safe_pyobject中，
  * 确保在析构时安全释放Python对象引用。
  *
  * @param[in] workflowObj Python DAWorkflow实例的pybind11::object
@@ -96,7 +97,7 @@ DAPyWorkFlowLifecycle::~DAPyWorkFlowLifecycle()
 void DAPyWorkFlowLifecycle::setWorkflow(const pybind11::object& workflowObj)
 {
     DA_D(d);
-    d->mWorkflowObj = workflowObj;
+    d->mWorkflowObj = DA::PY::safe_pyobject(pybind11::object(workflowObj));
 }
 
 /**
@@ -258,7 +259,7 @@ void DAPyWorkFlowLifecycle::startExecute()
 
             // 创建执行器实例，传入回调
             pybind11::object pyExecutor = executorClass(pyWorkflow, onNodeFinished, onStateChange, onProgress);
-            d->mPyExecutorObj = pyExecutor;
+            d->mPyExecutorObj = DA::PY::safe_pyobject(pybind11::object(pyExecutor));
 
             // 启动异步执行
             pyExecutor.attr("execute_async")();

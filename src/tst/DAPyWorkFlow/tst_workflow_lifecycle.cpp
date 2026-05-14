@@ -1,7 +1,7 @@
 ﻿#include "tst_workflow_lifecycle.h"
 #include "DAPyWorkFlowLifecycle.h"
 #include "DAPyWorkFlowTypes.h"
-#include "DAPyGILGuard.h"
+#include "DAPyBindQt/DAPyGILGuard.h"
 #include <QtTest/QtTest>
 #include <QSignalSpy>
 #include <QThread>

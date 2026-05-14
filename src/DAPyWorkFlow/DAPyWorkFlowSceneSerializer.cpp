@@ -4,7 +4,7 @@
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyLinkGraphicsItem.h"
 #include "DAPyNodeProxy.h"
-#include "DAPyGILGuard.h"
+#include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAWorkflowState.h"
 #include "DAXMLFileInterface.h"
 #include <QFile>

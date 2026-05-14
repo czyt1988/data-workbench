@@ -131,7 +131,7 @@ public:
     void updateNodeBody();
     // 更新widget位置
     void updateWidgetGeometry();
-    // 更新nodestyle位置
+    // 根据NodeStyle更新绘制，在NodeStyle变化后需要调用
     void updateNodeStyleGeometry();
 Q_SIGNALS:
     /**

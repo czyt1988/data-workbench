@@ -3,7 +3,7 @@
 #include <QtTest/QtTest>
 #include "DAPybind11InQt.h"
 #include "DAPyInterpreter.h"
-#include "DAPyGILGuard.h"
+#include "DAPyBindQt/DAPyGILGuard.h"
 
 namespace DA
 {

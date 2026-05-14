@@ -2,7 +2,7 @@
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyNodeProxy.h"
 #include "DAPyLinkPoint.h"
-#include "DAPyGILGuard.h"
+#include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAPyInterpreter.h"
 #include "DAPybind11InQt.h"
 #include <QtTest/QtTest>

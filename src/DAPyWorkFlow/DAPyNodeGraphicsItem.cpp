@@ -59,7 +59,7 @@ public:
     QList< DAPyLinkPoint > mOutputLinkPoints;        ///< 输出连接点
     qreal linkPointDrawWidth { 14 };                 ///< 连接点的绘制宽度（宽度相对于东西方向的宽度）
     qreal linkPointDrawHeight { 10 };                ///< 连接点的绘制高度（高度相对于东西方向的高度）
-    DA::PY::safe_pyobject mPaintCallback;           ///< 自定义绘制回调（Python函数对象）
+    DA::PY::safe_pyobject mPaintCallback;            ///< 自定义绘制回调（Python函数对象）
     bool mPaintCallbackError { false };              ///< 绘制回调是否发生过异常
     QRectF mIconRect;                                ///< 绘制Icon的区域，仅仅有icon时才有用
     QRectF mTextRect;                                ///< 绘制text的区域
@@ -861,8 +861,8 @@ static void drawLinkPointGroup(QPainter* painter,
             // 顺时针旋转90度绘制文字
             painter->save();
             QTransform transform;
-            transform.translate(lp.position.x(), lp.position.y() + halfH + spacing + textRect.width() / 2);
-            transform.rotate(90);
+            transform.translate(lp.position.x(), lp.position.y() - (halfH + spacing + textRect.width() / 2));
+            transform.rotate(-90);
             painter->setTransform(transform, true);
             QRectF rotatedRect(-textRect.height() / 2, -textRect.width() / 2, textRect.height(), textRect.width());
             painter->drawText(rotatedRect, Qt::AlignCenter, lp.name);
@@ -873,7 +873,7 @@ static void drawLinkPointGroup(QPainter* painter,
             painter->save();
             QTransform transform;
             transform.translate(lp.position.x(), lp.position.y() - halfH - spacing - textRect.width() / 2);
-            transform.rotate(90);
+            transform.rotate(-90);
             painter->setTransform(transform, true);
 
             QRectF rotatedRect(-textRect.height() / 2, -textRect.width() / 2, textRect.height(), textRect.width());
@@ -1084,8 +1084,8 @@ QRectF DAPyNodeGraphicsItem::boundingRect() const
     }
 
     // 端口扩展
-    const PortSide inputSide  = d->mDescriptorStruct.style.inputPortSide;
-    const PortSide outputSide = d->mDescriptorStruct.style.outputPortSide;
+    const PortSide& inputSide  = d->mDescriptorStruct.style.inputPortSide;
+    const PortSide& outputSide = d->mDescriptorStruct.style.outputPortSide;
 
     // 端口突出间距常量
     constexpr qreal kPortOffset = 8.0;
@@ -1352,8 +1352,7 @@ void DAPyNodeGraphicsItem::updateNodeBody()
             bodyHeight += d->linkPointDrawWidth / 2;
         }
     }
-    setBodySize(QSizeF(bodyWidth, bodyHeight));
-    d->updateNodeStyle(getBodyRect());
+    setBodySize(QSizeF(bodyWidth, bodyHeight));  // 内部会调用updateNodeStyleGeometry
     update();
 }
 

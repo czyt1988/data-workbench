@@ -1,6 +1,6 @@
 ﻿#include "DAPyNodeFactory.h"
 #include "DAPybind11InQt.h"
-#include "DAPyGILGuard.h"
+#include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAPyModuleWorkflow.h"
 #include "DAPyNodeProxy.h"
 #include "DAPyInterpreter.h"

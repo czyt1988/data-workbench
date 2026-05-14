@@ -110,12 +110,10 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkRemove(DAPyLinkGraphicsItem* 
             try {
                 pybind11::object workflowObj = this->mPyWorkflow.object();
                 if (workflowObj) {
-                    workflowObj.attr("remove_connection")(
-                        fromNode->getProxy()->getPyNodeRef(),
-                        linkItem->getFromOutputName().toStdString(),
-                        toNode->getProxy()->getPyNodeRef(),
-                        linkItem->getToInputName().toStdString()
-                    );
+                    workflowObj.attr("remove_connection")(fromNode->getProxy()->getPyNodeRef(),
+                                                          linkItem->getFromOutputName().toStdString(),
+                                                          toNode->getProxy()->getPyNodeRef(),
+                                                          linkItem->getToInputName().toStdString());
                 }
             } catch (const pybind11::error_already_set& e) {
                 qWarning() << tr("DAPyWorkFlowScene::removePyNodeLink: Python error: %1").arg(e.what());
@@ -330,6 +328,7 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
     // 不再调用setDescriptor()覆盖为薄描述符，保留代理中的完整数据
     DAPyNodeGraphicsItem* item = new DAPyNodeGraphicsItem(proxy);
     // 设置位置（未添加到场景）
+    item->updateNodeBody();
     item->setPos(pos);
 
     return item;
@@ -437,12 +436,10 @@ bool DAPyWorkFlowScene::removePyNodeItem(DAPyNodeGraphicsItem* item)
             try {
                 pybind11::object workflowObj = d->mPyWorkflow.object();
                 if (workflowObj) {
-                    workflowObj.attr("remove_connection")(
-                        link->getFromNode()->getProxy()->getPyNodeRef(),
-                        link->getFromOutputName().toStdString(),
-                        link->getToNode()->getProxy()->getPyNodeRef(),
-                        link->getToInputName().toStdString()
-                    );
+                    workflowObj.attr("remove_connection")(link->getFromNode()->getProxy()->getPyNodeRef(),
+                                                          link->getFromOutputName().toStdString(),
+                                                          link->getToNode()->getProxy()->getPyNodeRef(),
+                                                          link->getToInputName().toStdString());
                 }
             } catch (const pybind11::error_already_set& e) {
                 qWarning() << tr("DAPyWorkFlowScene::removePyNodeItem: Python error removing connection: %1").arg(e.what());
@@ -632,9 +629,10 @@ QList< DAPyNodeGraphicsItem* > DAPyWorkFlowScene::getSelectedPyNodeItems() const
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 返回的link未添加到场景，需要调用方自行添加
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(
-    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
-)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(DAPyNodeGraphicsItem* fromItem,
+                                                       const QString& fromOutput,
+                                                       DAPyNodeGraphicsItem* toItem,
+                                                       const QString& toInput)
 {
     if (!fromItem || !toItem) {
         return nullptr;
@@ -693,9 +691,10 @@ void DAPyWorkFlowScene::addPyNodeLink(DAPyLinkGraphicsItem* linkItem)
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 函数名后缀"_"表示支持undo/redo操作
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(
-    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
-)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(DAPyNodeGraphicsItem* fromItem,
+                                                        const QString& fromOutput,
+                                                        DAPyNodeGraphicsItem* toItem,
+                                                        const QString& toInput)
 {
     DAPyLinkGraphicsItem* link = addPyNodeLink(fromItem, fromOutput, toItem, toInput);
     if (!link) {
@@ -1369,12 +1368,10 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
  * @param linkItems 分离出的连接线item列表
  * @param normalItems 分离出的普通item列表
  */
-void DAPyWorkFlowScene::classifyItems(
-    const QList< QGraphicsItem* >& sourceItems,
-    QList< DAPyNodeGraphicsItem* >& nodeItems,
-    QList< DAPyLinkGraphicsItem* >& linkItems,
-    QList< QGraphicsItem* >& normalItems
-)
+void DAPyWorkFlowScene::classifyItems(const QList< QGraphicsItem* >& sourceItems,
+                                      QList< DAPyNodeGraphicsItem* >& nodeItems,
+                                      QList< DAPyLinkGraphicsItem* >& linkItems,
+                                      QList< QGraphicsItem* >& normalItems)
 {
     if (sourceItems.isEmpty()) {
         return;
