@@ -4,6 +4,7 @@
 #include <QUuid>
 #include <QDebug>
 #include "DADataManager.h"
+#include "DAPybind11QtCaster.hpp"
 
 // 全局临时目录
 static QTemporaryDir g_tempDir;
@@ -159,7 +160,7 @@ void DADataObjectPersistUndoCommand::dumpObj(const pybind11::object& obj, const 
     static auto open  = pybind11::module_::import("builtins").attr("open");
 
     auto bytes = dumps(obj);  // 二进制 bytes
-    auto io    = open(path.toStdString(), "wb");
+    auto io    = open(DA::PY::toPyObject(path), "wb");
     io.attr("write")(bytes);
     io.attr("close")();
 }
@@ -168,7 +169,7 @@ pybind11::object DADataObjectPersistUndoCommand::loadObj(const QString& path)
 {
     static auto pickle = pybind11::module_::import("pickle");
     static auto open   = pybind11::module_::import("builtins").attr("open");
-    auto io            = open(path.toStdString(), "rb");
+    auto io            = open(DA::PY::toPyObject(path), "rb");
     auto bytes         = io.attr("read")();
     io.attr("close")();
     return pickle.attr("loads")(bytes);
