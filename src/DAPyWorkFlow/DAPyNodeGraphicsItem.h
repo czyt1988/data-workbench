@@ -3,10 +3,10 @@
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyLinkPoint.h"
 #include "DAGraphicsResizeableItem.h"
-#include "DAPyGILGuard.h"
 #include "DAPyNodeState.h"
 #include "DAPyNodeStyle.h"
 #include "DANodeDescriptor.h"
+#include "DAPyBindQt/DAPybind11InQt.h"
 #include <QIcon>
 #include <QGraphicsSceneMouseEvent>
 

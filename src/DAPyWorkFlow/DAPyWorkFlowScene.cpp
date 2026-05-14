@@ -8,7 +8,8 @@
 #include "DAPyLinkGraphicsItem.h"
 #include "DAPythonSignalHandler.h"
 #include "DAPyModuleWorkflow.h"
-#include "DAPyGILGuard.h"
+#include "DAPyBindQt/DAPyGILGuard.h"
+#include "DAPyBindQt/DAPybind11QtCaster.hpp"
 #include "DAPyNodeProxy.h"
 #include "DAPyNodeFactory.h"
 #include "DAPyLinkPoint.h"
@@ -28,7 +29,7 @@ public:
     void syncPyNodeLinkAdd(DAPyLinkGraphicsItem* linkItem);
     void syncPyNodeLinkRemove(DAPyLinkGraphicsItem* linkItem);
     // Python DAWorkflow对象引用
-    DAPySafePyObjectHolder mPyWorkflow;
+    DA::PY::safe_pyobject mPyWorkflow;
     // Python信号处理器
     QPointer< DAPythonSignalHandler > mSignalHandler;
     // Python节点工厂（用于创建DAPyNodeProxy实例）
@@ -185,14 +186,14 @@ DAPyWorkFlowScene::~DAPyWorkFlowScene()
  * @brief 设置Python DAWorkflow实例引用
  *
  * 存储Python DAWorkflow对象的引用，用于同步节点和连接操作。
- * 使用DAPySafePyObjectHolder安全持有Python对象。
+ * 使用DA::PY::safe_pyobject安全持有Python对象。
  *
  * @param workflow Python DAWorkflow实例的pybind11::object
  */
 void DAPyWorkFlowScene::setPyWorkflow(const pybind11::object& workflow)
 {
     DA_D(d);
-    d->mPyWorkflow = workflow;
+    d->mPyWorkflow = DA::PY::safe_pyobject(pybind11::object(workflow));
 }
 
 /**
@@ -214,7 +215,7 @@ pybind11::object DAPyWorkFlowScene::getPyWorkflow() const
 bool DAPyWorkFlowScene::hasPyWorkflow() const
 {
     DA_DC(d);
-    return !d->mPyWorkflow.isNone();
+    return !d->mPyWorkflow.is_none();
 }
 
 /**
@@ -1446,7 +1447,7 @@ void DAPyWorkFlowScene::initConnect()
 void DAPyWorkFlowScene::initPyWorkflow()
 {
     DA_D(d);
-    if (!d->mPyWorkflow.isNone()) {
+    if (!d->mPyWorkflow.is_none()) {
         // 已设置，无需重复初始化
         return;
     }
@@ -1465,7 +1466,7 @@ void DAPyWorkFlowScene::initPyWorkflow()
             return;
         }
         pybind11::object workflowInstance = workflowClass();
-        d->mPyWorkflow                    = DAPySafePyObjectHolder(workflowInstance);
+        d->mPyWorkflow                    = DA::PY::safe_pyobject(std::move(workflowInstance));
         qDebug() << "DAPyWorkFlowScene::initPyWorkflow: Python DAWorkflow instance created";
     } catch (const pybind11::error_already_set& e) {
         qWarning() << "DAPyWorkFlowScene::initPyWorkflow: Python error:" << e.what();

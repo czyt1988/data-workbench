@@ -16,6 +16,8 @@
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
 #include <QFontMetrics>
+#include "DAPyBindQt/DAPyGILGuard.h"
+#include "DAPyBindQt/DAPybind11QtCaster.hpp"
 #include "DAGraphicsViewGlobal.h"
 namespace DA
 {
@@ -57,7 +59,7 @@ public:
     QList< DAPyLinkPoint > mOutputLinkPoints;        ///< 输出连接点
     qreal linkPointDrawWidth { 14 };                 ///< 连接点的绘制宽度（宽度相对于东西方向的宽度）
     qreal linkPointDrawHeight { 10 };                ///< 连接点的绘制高度（高度相对于东西方向的高度）
-    DAPySafePyObjectHolder mPaintCallback;           ///< 自定义绘制回调（Python函数对象）
+    DA::PY::safe_pyobject mPaintCallback;           ///< 自定义绘制回调（Python函数对象）
     bool mPaintCallbackError { false };              ///< 绘制回调是否发生过异常
     QRectF mIconRect;                                ///< 绘制Icon的区域，仅仅有icon时才有用
     QRectF mTextRect;                                ///< 绘制text的区域
@@ -704,7 +706,7 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
     Q_UNUSED(widget);
 
     // 如果有自定义绘制回调，尝试调用Python回调
-    if (d_ptr->mPaintCallback && !d_ptr->mPaintCallback.isNone()) {
+    if (d_ptr->mPaintCallback && !d_ptr->mPaintCallback.is_none()) {
         // 获取GIL，创建代理，调用Python回调
         // 注意：paint回调应在50ms内完成，避免阻塞GUI线程
         DAPyGILGuard gil;
@@ -1182,11 +1184,11 @@ void DAPyNodeGraphicsItem::setPaintCallback(const pybind11::object& callback)
     }
     DAPyGILGuard gil;
     try {
-        d_ptr->mPaintCallback      = DAPySafePyObjectHolder(callback);
+        d_ptr->mPaintCallback      = DA::PY::safe_pyobject(pybind11::object(callback));
         d_ptr->mPaintCallbackError = false;
     } catch (const std::exception& e) {
         qWarning() << "DAPyNodeGraphicsItem setPaintCallback exception:" << e.what();
-        d_ptr->mPaintCallback = DAPySafePyObjectHolder();
+        d_ptr->mPaintCallback = DA::PY::safe_pyobject();
     }
     update();
 }
@@ -1198,7 +1200,7 @@ void DAPyNodeGraphicsItem::setPaintCallback(const pybind11::object& callback)
  */
 bool DAPyNodeGraphicsItem::hasPaintCallback() const
 {
-    return d_ptr->mPaintCallback && !d_ptr->mPaintCallback.isNone();
+    return d_ptr->mPaintCallback && !d_ptr->mPaintCallback.is_none();
 }
 
 /**
@@ -1210,7 +1212,7 @@ void DAPyNodeGraphicsItem::clearPaintCallback()
 {
     DAPyGILGuard gil;
     try {
-        d_ptr->mPaintCallback = DAPySafePyObjectHolder();
+        d_ptr->mPaintCallback = DA::PY::safe_pyobject();
     } catch (const std::exception& e) {
         qWarning() << "DAPyNodeGraphicsItem clearPaintCallback exception:" << e.what();
     }

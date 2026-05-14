@@ -1,7 +1,7 @@
 ﻿#include "DAPyNodeProxy.h"
 #include "DAPybind11InQt.h"
 #include "DAPyModuleWorkflow.h"
-#include "DAPyGILGuard.h"
+#include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DANodeDescriptor.h"
 #include "DAPortDescriptor.h"
@@ -28,7 +28,7 @@ public:
 public:
     DANodeDescriptor mDescriptor;                      ///< 节点描述符（统一存储所有元数据）
     unsigned int mId { 0 };                            ///< 节点ID（独立管理）
-    DAPySafePyObjectHolder mPyNodeRef;                 ///< Python节点实例的安全持有者
+    DA::PY::safe_pyobject mPyNodeRef;                 ///< Python节点实例的安全持有者
     DAPyNodeState mNodeState { DAPyNodeState::Idle };  ///< 节点执行状态
     mutable QString mLastErrorString;                  ///< 最后一次错误信息（mutable允许const方法修改）
 };
@@ -60,11 +60,11 @@ void DAPyNodeProxy::PrivateData::dealException(const std::exception& e) const
  * @brief 清理Python节点引用
  *
  * 安全释放Python节点对象引用。
- * DAPySafePyObjectHolder析构时检查Py_IsInitialized()确保安全释放。
+ * DA::PY::safe_pyobject析构时检查Py_IsInitialized()确保安全释放。
  */
 void DAPyNodeProxy::PrivateData::clearPyNodeRef()
 {
-    mPyNodeRef = DAPySafePyObjectHolder();
+    mPyNodeRef = DA::PY::safe_pyobject();
 }
 
 /**
@@ -165,7 +165,7 @@ DAPyNodeProxy::DAPyNodeProxy() : DA_PIMPL_CONSTRUCT
  * @brief 析构Python节点代理
  *
  * 析构时安全释放Python节点引用。
- * DAPySafePyObjectHolder会检查Py_IsInitialized()确保安全释放。
+ * DA::PY::safe_pyobject会检查Py_IsInitialized()确保安全释放。
  */
 DAPyNodeProxy::~DAPyNodeProxy()
 {
@@ -270,7 +270,7 @@ void DAPyNodeProxy::setPyNodeRef(const pybind11::object& pyNode)
         return;
     }
 
-    d->mPyNodeRef = DAPySafePyObjectHolder(pyNode);
+    d->mPyNodeRef = DA::PY::safe_pyobject(pybind11::object(pyNode));
 
     // 获取GIL并同步元信息
     DAPyGILGuard gilGuard;
