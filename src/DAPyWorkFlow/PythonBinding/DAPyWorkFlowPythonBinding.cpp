@@ -280,7 +280,15 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             "setFillColor",
             [](DA::DAPyLinkPointStyle& s, QColor c) { s.fillColor = c; },
             pybind11::arg("color"),
-            "Set fill color")
+            "Set fill color (QColor or tuple)")
+        .def(
+            "setFillColor",
+            [](DA::DAPyLinkPointStyle& s, int r, int g, int b, int a) { s.fillColor = QColor(r, g, b, a); },
+            pybind11::arg("r"),
+            pybind11::arg("g"),
+            pybind11::arg("b"),
+            pybind11::arg("a") = 255,
+            "Set fill color (RGBA, a defaults to 255)")
         .def(
             "getFillColor",
             [](const DA::DAPyLinkPointStyle& s) -> QColor { return s.fillColor; },
@@ -289,7 +297,15 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             "setBorderColor",
             [](DA::DAPyLinkPointStyle& s, QColor c) { s.borderColor = c; },
             pybind11::arg("color"),
-            "Set border color")
+            "Set border color (QColor or tuple)")
+        .def(
+            "setBorderColor",
+            [](DA::DAPyLinkPointStyle& s, int r, int g, int b, int a) { s.borderColor = QColor(r, g, b, a); },
+            pybind11::arg("r"),
+            pybind11::arg("g"),
+            pybind11::arg("b"),
+            pybind11::arg("a") = 255,
+            "Set border color (RGBA, a defaults to 255)")
         .def(
             "getBorderColor",
             [](const DA::DAPyLinkPointStyle& s) -> QColor { return s.borderColor; },
@@ -314,7 +330,15 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             "setBackgroundColor",
             [](DA::DANodeStyle& s, QColor c) { s.backgroundColor = c; },
             pybind11::arg("color"),
-            "Set background color")
+            "Set background color (QColor or tuple)")
+        .def(
+            "setBackgroundColor",
+            [](DA::DANodeStyle& s, int r, int g, int b, int a) { s.backgroundColor = QColor(r, g, b, a); },
+            pybind11::arg("r"),
+            pybind11::arg("g"),
+            pybind11::arg("b"),
+            pybind11::arg("a") = 255,
+            "Set background color (RGBA, a defaults to 255)")
         .def(
             "getBackgroundColor",
             [](const DA::DANodeStyle& s) -> QColor { return s.backgroundColor; },
@@ -323,7 +347,15 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             "setBorderColor",
             [](DA::DANodeStyle& s, QColor c) { s.borderColor = c; },
             pybind11::arg("color"),
-            "Set border color")
+            "Set border color (QColor or tuple)")
+        .def(
+            "setBorderColor",
+            [](DA::DANodeStyle& s, int r, int g, int b, int a) { s.borderColor = QColor(r, g, b, a); },
+            pybind11::arg("r"),
+            pybind11::arg("g"),
+            pybind11::arg("b"),
+            pybind11::arg("a") = 255,
+            "Set border color (RGBA, a defaults to 255)")
         .def(
             "getBorderColor",
             [](const DA::DANodeStyle& s) -> QColor { return s.borderColor; },
@@ -470,7 +502,13 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             "setPosition",
             [](DA::DAWorkflowNodeState& ns, QPointF pos) { ns.position = pos; },
             pybind11::arg("pos"),
-            "设置节点位置")
+            "设置节点位置 (QPointF or tuple)")
+        .def(
+            "setPosition",
+            [](DA::DAWorkflowNodeState& ns, double x, double y) { ns.position = QPointF(x, y); },
+            pybind11::arg("x"),
+            pybind11::arg("y"),
+            "设置节点位置 (x, y)")
         .def(
             "getPosition",
             [](const DA::DAWorkflowNodeState& ns) -> QPointF { return ns.position; },
@@ -575,7 +613,16 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             },
             pybind11::arg("descriptor"),
             pybind11::arg("pos"),
-            "Create a Python node at specified position")
+            "Create a Python node at specified position (QPointF or tuple)")
+        .def(
+            "createPyNode",
+            [](DA::DAPyWorkFlowScene& self, const DA::DANodeDescriptor& descriptor, double x, double y) {
+                return self.createPyNode(descriptor, QPointF(x, y));
+            },
+            pybind11::arg("descriptor"),
+            pybind11::arg("x"),
+            pybind11::arg("y"),
+            "Create a Python node at (x, y) position")
         .def(
             "removePyNodeItem",
             [](DA::DAPyWorkFlowScene& self, DA::DAPyNodeGraphicsItem* item) { return self.removePyNodeItem(item); },
@@ -585,7 +632,13 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             "nodeItemAt",
             [](DA::DAPyWorkFlowScene& self, QPointF pos) { return self.nodeItemAt(pos); },
             pybind11::arg("pos"),
-            "Get node item at specified position, returns None if no node")
+            "Get node item at specified position (QPointF or tuple), returns None if no node")
+        .def(
+            "nodeItemAt",
+            [](DA::DAPyWorkFlowScene& self, double x, double y) { return self.nodeItemAt(QPointF(x, y)); },
+            pybind11::arg("x"),
+            pybind11::arg("y"),
+            "Get node item at (x, y) position")
         .def(
             "getPyNodeItems",
             [](DA::DAPyWorkFlowScene& self) {
