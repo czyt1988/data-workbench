@@ -217,68 +217,22 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .def_readwrite("name", &DA::DAParameterDescriptor::name, "参数名称")
         .def_readwrite("type", &DA::DAParameterDescriptor::type, "参数类型 (str/int/float/bool/list/dict)")
         .def_readwrite("description", &DA::DAParameterDescriptor::description, "参数描述")
-        // defaultValue: 自定义 getter/setter，兼容 Qt5/Qt6 QVariant API
         .def(
             "setDefaultValue",
             [](DA::DAParameterDescriptor& pd, pybind11::object py) {
-                if (py.is_none()) {
-                    pd.defaultValue = QVariant();
-                } else if (pybind11::isinstance< pybind11::bool_ >(py)) {
-                    pd.defaultValue = QVariant(py.cast< bool >());
-                } else if (pybind11::isinstance< pybind11::int_ >(py)) {
-                    pd.defaultValue = QVariant(py.cast< int >());
-                } else if (pybind11::isinstance< pybind11::float_ >(py)) {
-                    pd.defaultValue = QVariant(py.cast< double >());
-                } else if (pybind11::isinstance< pybind11::str >(py)) {
-                    pd.defaultValue = QVariant(QString::fromStdString(py.cast< std::string >()));
-                } else if (pybind11::isinstance< pybind11::list >(py)) {
-                    QJsonArray arr  = DA::PY::pyListToQJsonArray(py.cast< pybind11::list >());
-                    pd.defaultValue = arr.toVariantList();
-                } else {
-                    pd.defaultValue = QVariant();
-                }
+                pd.defaultValue = DA::PY::fromPyVariant(py);
             },
             pybind11::arg("value"),
-            "设置默认值（支持 None/bool/int/float/str/list）")
+            "设置默认值（支持 None/bool/int/float/str/list/dict/datetime 等所有类型）")
         .def(
             "getDefaultValue",
             [](const DA::DAParameterDescriptor& pd) -> pybind11::object {
                 if (!pd.defaultValue.isValid()) {
                     return pybind11::none();
                 }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                switch (pd.defaultValue.type()) {
-                case QVariant::String:
-                    return pybind11::cast(pd.defaultValue.toString().toStdString());
-                case QVariant::Bool:
-                    return pybind11::cast(pd.defaultValue.toBool());
-                case QVariant::Int:
-                    return pybind11::cast(pd.defaultValue.toInt());
-                case QVariant::Double:
-                    return pybind11::cast(pd.defaultValue.toDouble());
-                case QVariant::List:
-                    return DA::PY::qjsonValueToPyObject(QJsonValue::fromVariant(pd.defaultValue));
-                default:
-                    return DA::PY::qjsonValueToPyObject(QJsonValue::fromVariant(pd.defaultValue));
-                }
-#else
-                switch (pd.defaultValue.metaType().id()) {
-                case QMetaType::QString:
-                    return pybind11::cast(pd.defaultValue.toString().toStdString());
-                case QMetaType::Bool:
-                    return pybind11::cast(pd.defaultValue.toBool());
-                case QMetaType::Int:
-                    return pybind11::cast(pd.defaultValue.toInt());
-                case QMetaType::Double:
-                    return pybind11::cast(pd.defaultValue.toDouble());
-                case QMetaType::QVariantList:
-                    return DA::PY::qjsonValueToPyObject(QJsonValue::fromVariant(pd.defaultValue));
-                default:
-                    return DA::PY::qjsonValueToPyObject(QJsonValue::fromVariant(pd.defaultValue));
-                }
-#endif
+                return DA::PY::toPyObject(pd.defaultValue);
             },
-            "获取默认值（返回 None 或对应的 Python 类型）")
+            "获取默认值")
         // rawDescriptor: 自定义 getter/setter，Python dict ↔ QVariantHash 转换
         .def(
             "setRawDescriptor",
@@ -324,33 +278,22 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .def_readwrite("borderWidth", &DA::DAPyLinkPointStyle::borderWidth, "Border width (default 1.0)")
         .def(
             "setFillColor",
-            [](DA::DAPyLinkPointStyle& s, int r, int g, int b, int a) { s.fillColor = QColor(r, g, b, a); },
-            pybind11::arg("r"),
-            pybind11::arg("g"),
-            pybind11::arg("b"),
-            pybind11::arg("a") = 255,
-            "Set fill color (RGBA, a defaults to 255)")
+            [](DA::DAPyLinkPointStyle& s, QColor c) { s.fillColor = c; },
+            pybind11::arg("color"),
+            "Set fill color")
         .def(
             "getFillColor",
-            [](const DA::DAPyLinkPointStyle& s) {
-                return pybind11::make_tuple(s.fillColor.red(), s.fillColor.green(), s.fillColor.blue(), s.fillColor.alpha());
-            },
-            "Get fill color as (r, g, b, a) tuple")
+            [](const DA::DAPyLinkPointStyle& s) -> QColor { return s.fillColor; },
+            "Get fill color")
         .def(
             "setBorderColor",
-            [](DA::DAPyLinkPointStyle& s, int r, int g, int b, int a) { s.borderColor = QColor(r, g, b, a); },
-            pybind11::arg("r"),
-            pybind11::arg("g"),
-            pybind11::arg("b"),
-            pybind11::arg("a") = 255,
-            "Set border color (RGBA, a defaults to 255)")
+            [](DA::DAPyLinkPointStyle& s, QColor c) { s.borderColor = c; },
+            pybind11::arg("color"),
+            "Set border color")
         .def(
             "getBorderColor",
-            [](const DA::DAPyLinkPointStyle& s) {
-                return pybind11::make_tuple(
-                    s.borderColor.red(), s.borderColor.green(), s.borderColor.blue(), s.borderColor.alpha());
-            },
-            "Get border color as (r, g, b, a) tuple")
+            [](const DA::DAPyLinkPointStyle& s) -> QColor { return s.borderColor; },
+            "Get border color")
         .def("isFillColorValid", &DA::DAPyLinkPointStyle::isFillColorValid, "Check if fill color is valid (non-default)")
         .def("isBorderColorValid", &DA::DAPyLinkPointStyle::isBorderColorValid, "Check if border color is valid (non-default)");
 
@@ -367,33 +310,24 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .def_readwrite("borderWidth", &DA::DANodeStyle::borderWidth, "Border width (default 1.0)")
         .def_readwrite("cornerRadius", &DA::DANodeStyle::cornerRadius, "Corner radius (default 4.0)")
         .def_readwrite("iconSize", &DA::DANodeStyle::iconSize, "Icon size (default 24.0)")
-        // 颜色设置（QColor 不能直接 def_readwrite，使用 setter/getter）
         .def(
             "setBackgroundColor",
-            [](DA::DANodeStyle& s, int r, int g, int b) { s.backgroundColor = QColor(r, g, b); },
-            pybind11::arg("r"),
-            pybind11::arg("g"),
-            pybind11::arg("b"),
-            "Set background color (RGB)")
+            [](DA::DANodeStyle& s, QColor c) { s.backgroundColor = c; },
+            pybind11::arg("color"),
+            "Set background color")
         .def(
             "getBackgroundColor",
-            [](const DA::DANodeStyle& s) {
-                return pybind11::make_tuple(s.backgroundColor.red(), s.backgroundColor.green(), s.backgroundColor.blue());
-            },
-            "Get background color as (r, g, b) tuple")
+            [](const DA::DANodeStyle& s) -> QColor { return s.backgroundColor; },
+            "Get background color")
         .def(
             "setBorderColor",
-            [](DA::DANodeStyle& s, int r, int g, int b) { s.borderColor = QColor(r, g, b); },
-            pybind11::arg("r"),
-            pybind11::arg("g"),
-            pybind11::arg("b"),
-            "Set border color (RGB)")
+            [](DA::DANodeStyle& s, QColor c) { s.borderColor = c; },
+            pybind11::arg("color"),
+            "Set border color")
         .def(
             "getBorderColor",
-            [](const DA::DANodeStyle& s) {
-                return pybind11::make_tuple(s.borderColor.red(), s.borderColor.green(), s.borderColor.blue());
-            },
-            "Get border color as (r, g, b) tuple")
+            [](const DA::DANodeStyle& s) -> QColor { return s.borderColor; },
+            "Get border color")
         // 端口配置
         .def_readwrite("inputPortSide", &DA::DANodeStyle::inputPortSide, "Input port side (AspectDirection/PortSide enum)")
         .def_readwrite("outputPortSide", &DA::DANodeStyle::outputPortSide, "Output port side (AspectDirection/PortSide enum)")
@@ -532,18 +466,15 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .def_readwrite("nodeId", &DA::DAWorkflowNodeState::nodeId, "节点唯一标识（Python侧node_id）")
         .def_readwrite("qualifiedName", &DA::DAWorkflowNodeState::qualifiedName, "节点限定名（Python qualified_name）")
         .def_readwrite("metaData", &DA::DAWorkflowNodeState::metaData, "节点元数据描述（DAPyNodeMetaData）")
-        // position: QPointF ↔ tuple<double,double> 自定义转换
         .def(
             "setPosition",
-            [](DA::DAWorkflowNodeState& ns, const std::tuple< double, double >& pos) {
-                ns.position = QPointF(std::get< 0 >(pos), std::get< 1 >(pos));
-            },
+            [](DA::DAWorkflowNodeState& ns, QPointF pos) { ns.position = pos; },
             pybind11::arg("pos"),
-            "设置节点位置 (x, y) 元组")
+            "设置节点位置")
         .def(
             "getPosition",
-            [](const DA::DAWorkflowNodeState& ns) { return std::make_tuple(ns.position.x(), ns.position.y()); },
-            "获取节点位置 (x, y) 元组");
+            [](const DA::DAWorkflowNodeState& ns) -> QPointF { return ns.position; },
+            "获取节点位置");
 
     // =================================================================================
     //                      DAWorkflowConnectionState 绑定
@@ -639,9 +570,8 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         // 节点管理
         .def(
             "createPyNode",
-            [](DA::DAPyWorkFlowScene& self, const DA::DANodeDescriptor& descriptor, const std::tuple< double, double >& pos) {
-                QPointF qpos(std::get< 0 >(pos), std::get< 1 >(pos));
-                return self.createPyNode(descriptor, qpos);
+            [](DA::DAPyWorkFlowScene& self, const DA::DANodeDescriptor& descriptor, QPointF pos) {
+                return self.createPyNode(descriptor, pos);
             },
             pybind11::arg("descriptor"),
             pybind11::arg("pos"),
@@ -653,10 +583,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             "Remove a node item from scene")
         .def(
             "nodeItemAt",
-            [](DA::DAPyWorkFlowScene& self, const std::tuple< double, double >& pos) {
-                QPointF qpos(std::get< 0 >(pos), std::get< 1 >(pos));
-                return self.nodeItemAt(qpos);
-            },
+            [](DA::DAPyWorkFlowScene& self, QPointF pos) { return self.nodeItemAt(pos); },
             pybind11::arg("pos"),
             "Get node item at specified position, returns None if no node")
         .def(
