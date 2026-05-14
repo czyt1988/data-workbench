@@ -1,6 +1,6 @@
 #ifndef DAPYGILGUARD_H
 #define DAPYGILGUARD_H
-#include "DAPyWorkFlowAPI.h"
+#include "DAPyBindQtGlobal.h"
 #include "DAPybind11InQt.h"
 
 namespace DA
@@ -26,7 +26,7 @@ namespace DA
  * } // gil析构时自动释放
  * @endcode
  */
-class DAPYWORKFLOW_API DAPyGILGuard
+class DAPYBINDQT_API DAPyGILGuard
 {
 public:
     // 获取GIL
@@ -69,7 +69,7 @@ private:
  * } // 释放GIL
  * @endcode
  */
-class DAPYWORKFLOW_API DAPyGILRelease
+class DAPYBINDQT_API DAPyGILRelease
 {
 public:
     // 释放GIL
@@ -90,63 +90,6 @@ public:
 private:
     bool mIsReleased { false };                        ///< GIL释放状态
     std::unique_ptr< pybind11::gil_scoped_release > mRelease; ///< pybind11 GIL释放器
-};
-
-/**
- * @brief 安全的PyObject持有者
- *
- * 持有pybind11::object并在析构时安全地释放引用。
- * 析构时检查Py_IsInitialized()，如果Python已终止则使用release()避免崩溃，
- * 否则正常DECREF（赋值为none）。
- * 此模式参考DAPyObjectWrapper的安全析构实现。
- *
- * @code
- * // 安全持有Python对象
- * DA::DAPySafePyObjectHolder holder(pybind11::module_::import("pandas"));
- * if (holder) {
- *     pybind11::object obj = holder.object();
- *     // 使用obj...
- * }
- * @endcode
- */
-class DAPYWORKFLOW_API DAPySafePyObjectHolder
-{
-public:
-    // 默认构造，持有none
-    DAPySafePyObjectHolder();
-    // 从pybind11::object构造
-    DAPySafePyObjectHolder(const pybind11::object& obj);
-    // 从pybind11::object移动构造
-    DAPySafePyObjectHolder(pybind11::object&& obj);
-    // 安全析构
-    ~DAPySafePyObjectHolder();
-
-    // 拷贝构造
-    DAPySafePyObjectHolder(const DAPySafePyObjectHolder& other);
-    // 移动构造
-    DAPySafePyObjectHolder(DAPySafePyObjectHolder&& other);
-
-    // 拷贝赋值
-    DAPySafePyObjectHolder& operator=(const DAPySafePyObjectHolder& other);
-    // 移动赋值
-    DAPySafePyObjectHolder& operator=(DAPySafePyObjectHolder&& other);
-    // 从pybind11::object赋值
-    DAPySafePyObjectHolder& operator=(const pybind11::object& obj);
-    // 从pybind11::object移动赋值
-    DAPySafePyObjectHolder& operator=(pybind11::object&& obj);
-
-    // 判断是否为None
-    bool isNone() const;
-    // bool操作符，判断是否非None
-    explicit operator bool() const;
-
-    // 获取内部pybind11::object的引用
-    pybind11::object& object();
-    // 获取内部pybind11::object的const引用
-    const pybind11::object& object() const;
-
-private:
-    pybind11::object mPyObject;  ///< 持有的Python对象
 };
 
 }  // namespace DA
