@@ -9,6 +9,8 @@
 #include <QSet>
 #include <QHash>
 #include <QMap>
+#include <QColor>
+#include <QPointF>
 
 #include <QVariant>
 
@@ -1306,6 +1308,134 @@ struct type_caster< QVariant >
             // 如果转换失败，返回 None
             Py_RETURN_NONE;
         }
+    }
+};
+
+// QColor 转换器
+template<>
+struct type_caster< QColor >
+{
+    PYBIND11_TYPE_CASTER(QColor, _("tuple"));
+
+    bool load(handle src, bool convert)
+    {
+        if (!src)
+            return false;
+
+        // 接受 Python tuple 或 list，元素数量为 3 (r,g,b) 或 4 (r,g,b,a)
+        if (!PyTuple_Check(src.ptr()) && !PyList_Check(src.ptr()))
+            return false;
+
+        Py_ssize_t size = PySequence_Size(src.ptr());
+        if (size != 3 && size != 4)
+            return false;
+
+        // 提取 r, g, b 分量，支持 int (0-255) 和 float (0.0-1.0) 两种格式
+        int r = 0, g = 0, b = 0, a = 255;
+
+        for (Py_ssize_t i = 0; i < size; ++i) {
+            PyObject* item = PySequence_GetItem(src.ptr(), i);
+            if (!item)
+                return false;
+
+            int val = -1;
+            if (PyLong_Check(item)) {
+                long lval = PyLong_AsLong(item);
+                Py_DECREF(item);
+                if (lval == -1 && PyErr_Occurred())
+                    return false;
+                if (lval >= 0 && lval <= 255) {
+                    val = static_cast< int >(lval);
+                } else {
+                    return false;
+                }
+            } else if (PyFloat_Check(item)) {
+                double dval = PyFloat_AsDouble(item);
+                Py_DECREF(item);
+                if (dval == -1.0 && PyErr_Occurred())
+                    return false;
+                // float 格式：0.0-1.0 映射到 0-255
+                if (dval >= 0.0 && dval <= 1.0) {
+                    val = static_cast< int >(dval * 255.0 + 0.5);
+                } else {
+                    return false;
+                }
+            } else {
+                Py_DECREF(item);
+                return false;
+            }
+
+            switch (i) {
+            case 0: r = val; break;
+            case 1: g = val; break;
+            case 2: b = val; break;
+            case 3: a = val; break;
+            }
+        }
+
+        value = QColor(r, g, b, a);
+        return true;
+    }
+
+    static handle cast(const QColor& src, return_value_policy /* policy */, handle /* parent */)
+    {
+        return pybind11::make_tuple(src.red(), src.green(), src.blue(), src.alpha()).release();
+    }
+};
+
+// QPointF 转换器
+template<>
+struct type_caster< QPointF >
+{
+    PYBIND11_TYPE_CASTER(QPointF, _("tuple"));
+
+    bool load(handle src, bool convert)
+    {
+        if (!src)
+            return false;
+
+        // 接受 Python tuple 或 list，元素数量必须为 2 (x,y)
+        if (!PyTuple_Check(src.ptr()) && !PyList_Check(src.ptr()))
+            return false;
+
+        Py_ssize_t size = PySequence_Size(src.ptr());
+        if (size != 2)
+            return false;
+
+        double coords[ 2 ] = { 0.0, 0.0 };
+
+        for (Py_ssize_t i = 0; i < 2; ++i) {
+            PyObject* item = PySequence_GetItem(src.ptr(), i);
+            if (!item)
+                return false;
+
+            double dval = 0.0;
+            if (PyFloat_Check(item)) {
+                dval = PyFloat_AsDouble(item);
+                Py_DECREF(item);
+                if (dval == -1.0 && PyErr_Occurred())
+                    return false;
+            } else if (PyLong_Check(item)) {
+                long lval = PyLong_AsLong(item);
+                Py_DECREF(item);
+                if (lval == -1 && PyErr_Occurred())
+                    return false;
+                dval = static_cast< double >(lval);
+            } else {
+                Py_DECREF(item);
+                return false;
+            }
+
+            coords[ i ] = dval;
+        }
+
+        value = QPointF(coords[ 0 ], coords[ 1 ]);
+        return true;
+    }
+
+    static handle cast(const QPointF& src, return_value_policy /* policy */, handle /* parent */)
+    {
+        return pybind11::make_tuple(src.x(), src.y()).release();
     }
 };
 
