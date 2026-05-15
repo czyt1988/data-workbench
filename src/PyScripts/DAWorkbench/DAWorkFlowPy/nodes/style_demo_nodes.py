@@ -44,7 +44,7 @@ class EllipseDemoNode:
     class Outputs:
         result = Output("any")
 
-    def execute(self, inputs, params):
+    def execute(self):
         return True
 
 
@@ -62,7 +62,7 @@ class DefaultRectNode:
     class Outputs:
         result = Output("any")
 
-    def execute(self, inputs, params):
+    def execute(self):
         return True
 
 
@@ -87,7 +87,7 @@ class CirclePortsNode:
     class Outputs:
         result = Output("any")
 
-    def execute(self, inputs, params):
+    def execute(self):
         return True
 
 
@@ -112,7 +112,7 @@ class DiamondPortsNode:
     class Outputs:
         result = Output("any")
 
-    def execute(self, inputs, params):
+    def execute(self):
         return True
 
 
@@ -135,7 +135,7 @@ class CustomColorNode:
     class Outputs:
         result = Output("any")
 
-    def execute(self, inputs, params):
+    def execute(self):
         return True
 
 
@@ -160,7 +160,7 @@ class MixedLayoutNode:
     class Outputs:
         result = Output("any")
 
-    def execute(self, inputs, params):
+    def execute(self):
         return True
 
 
@@ -182,5 +182,5 @@ class CornerRadiusNode:
     class Outputs:
         result = Output("any")
 
-    def execute(self, inputs, params):
+    def execute(self):
         return True
