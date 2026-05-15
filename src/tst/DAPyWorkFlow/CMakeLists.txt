@@ -26,6 +26,7 @@ add_executable(DAPyWorkFlowTests
     tst_daportdescriptor.cpp tst_daportdescriptor.h
     tst_danodedescriptor.cpp tst_danodedescriptor.h
     tst_workflow_lifecycle.cpp tst_workflow_lifecycle.h
+    tst_dapyworkflow_wrapper.cpp tst_dapyworkflow_wrapper.h
 )
 
 # 设置目标属性
