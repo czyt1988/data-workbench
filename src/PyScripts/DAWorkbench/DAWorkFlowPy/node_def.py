@@ -221,6 +221,41 @@ def _style_from_dict(style_dict):
     return s
 
 
+class DAWorkflowNode:
+    """
+    工作流节点基类
+
+    所有通过 @NodeDef 装饰器定义的节点类都会自动继承此类，
+    提供数据输入/输出的标准接口。
+
+    _input_data 和 _output_data 用于在节点执行过程中存储和传递数据，
+    由 C++ 侧的 syncMetaFromPyNode / setNodeInputsToPyNode 进行读写。
+    """
+
+    def __init__(self):
+        self._input_data = {}
+        self._output_data = {}
+        self.is_global = False
+
+    def set_input_data(self, key: str, data) -> None:
+        """
+        设置输入数据
+
+        :param key: 数据键名
+        :param data: 数据值
+        """
+        self._input_data[key] = data
+
+    def get_output_data(self, key: str):
+        """
+        获取输出数据
+
+        :param key: 数据键名
+        :return: 对应的输出数据，若键不存在则返回 None
+        """
+        return self._output_data.get(key)
+
+
 def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", icon:str = "" ,style=None):
     """
     工作流节点定义装饰器
@@ -317,6 +352,10 @@ def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", i
 
         cls.get_descriptor = _get_descriptor
 
-        return cls
+        # 创建继承 DAWorkflowNode 的新类，确保所有 @NodeDef 节点都具备基类方法
+        new_cls = type(cls.__name__, (DAWorkflowNode, cls), {})
+        new_cls.__module__ = cls.__module__
+
+        return new_cls
 
     return decorator
