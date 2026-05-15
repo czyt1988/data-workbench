@@ -15,10 +15,6 @@ DAConnection 是纯 Python 实现，不依赖 Qt，支持序列化（to_dict / f
         target_node_id="node_2",
         target_input_channel="data",
     )
-    # 序列化
-    d = conn.to_dict()
-    # 反序列化
-    conn2 = DAConnection.from_dict(d)
 """
 
 import uuid
@@ -73,68 +69,7 @@ class DAConnection:
         # 生成唯一 ID，若未指定则自动生成
         self.connection_id = connection_id if connection_id is not None else str(uuid.uuid4())
 
-    def fill_connection_state(self, cs):
-        """
-        填充 DAWorkflowConnectionState C++ 结构体
 
-        将 DAConnection 的字段直接映射到 C++ DAWorkflowConnectionState 结构体，
-        避免通过 JSON dict 作为中介传递数据。
-
-        :param cs: DAWorkflowConnectionState C++ 结构体实例（pybind11 封装）
-        """
-        cs.connectionId = self.connection_id
-        cs.fromNodeId = self.source_node_id
-        cs.fromChannel = int(self.source_output_channel)
-        cs.toNodeId = self.target_node_id
-        cs.toChannel = int(self.target_input_channel)
-
-    def to_dict(self) -> dict:
-        """
-        将连接转换为 JSON 可序列化的字典
-
-        生成的字典所有值均为 JSON 兼容类型（str、list、dict、None），
-        可直接传递给 C++ 侧通过 DAPyJsonCast (QJsonObject ↔ py::dict) 进行转换。
-
-        :return: JSON 可序列化的字典，包含连接的完整信息
-        """
-        return {
-            "connection_id": self.connection_id,
-            "source_node_id": self.source_node_id,
-            "source_output_channel": self.source_output_channel,
-            "target_node_id": self.target_node_id,
-            "target_input_channel": self.target_input_channel,
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict) -> "DAConnection":
-        """
-        从字典反序列化创建 DAConnection 实例
-
-        字典格式应与 to_dict() 输出一致，必须包含以下键：
-        connection_id, source_node_id, source_output_channel,
-        target_node_id, target_input_channel。
-
-        :param data: JSON 可序列化的字典
-        :return: DAConnection 实例
-        :raises ValueError: 如果字典缺少必要字段
-        """
-        required_keys = [
-            "source_node_id",
-            "source_output_channel",
-            "target_node_id",
-            "target_input_channel",
-        ]
-        for key in required_keys:
-            if key not in data:
-                raise ValueError(f"缺少必要字段 '{key}'")
-
-        return cls(
-            source_node_id=data["source_node_id"],
-            source_output_channel=data["source_output_channel"],
-            target_node_id=data["target_node_id"],
-            target_input_channel=data["target_input_channel"],
-            connection_id=data.get("connection_id", None),
-        )
 
     def __eq__(self, other: object) -> bool:
         """
