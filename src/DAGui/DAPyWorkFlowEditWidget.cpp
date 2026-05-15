@@ -121,9 +121,9 @@ void DAPyWorkFlowEditWidget::runWorkFlow()
 		return;
 	}
 
-	// 创建生命周期管理器并设置 Python 工作流对象
+	// 创建生命周期管理器并设置 DAPyWorkFlow 封装对象
 	auto lifecycle = new DA::DAPyWorkFlowLifecycle(this);
-	lifecycle->setWorkflow(scene->getPyWorkflow());
+	lifecycle->setWorkflow(getWorkflow());
 	mWorkFlowLifecycle = lifecycle;
 
 	// 创建独立线程
