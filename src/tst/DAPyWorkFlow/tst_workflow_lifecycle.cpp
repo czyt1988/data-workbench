@@ -1,5 +1,6 @@
 ﻿#include "tst_workflow_lifecycle.h"
 #include "DAPyWorkFlowLifecycle.h"
+#include "DAPyWorkFlow.h"
 #include "DAPyWorkFlowTypes.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
 #include <QtTest/QtTest>
@@ -234,14 +235,18 @@ void TestWorkflowLifecycle::testSimpleWorkflow()
         QSKIP(QString("Error creating workflow: %1").arg(e.what()).toLocal8Bit().constData());
     }
 
+    // 创建 DAPyWorkFlow 封装对象并设置 Python 工作流实例
+    DAPyWorkFlow wfWrapper;
+    {
+        DA::DAPyGILGuard gil;
+        wfWrapper.setPyWorkflowObject(workflow);
+    }
+
     // 创建生命周期控制器
     DAPyWorkFlowLifecycle lifecycle;
 
-    // 设置工作流（需要 GIL）
-    {
-        DA::DAPyGILGuard gil;
-        lifecycle.setWorkflow(workflow);
-    }
+    // 设置 DAPyWorkFlow 封装对象
+    lifecycle.setWorkflow(&wfWrapper);
 
     // 设置信号监听
     QSignalSpy finishedSpy(&lifecycle, &DAPyWorkFlowLifecycle::finished);
@@ -318,13 +323,14 @@ void TestWorkflowLifecycle::testFailingWorkflow()
         QSKIP(QString("Error creating workflow: %1").arg(e.what()).toLocal8Bit().constData());
     }
 
-    // 创建生命周期控制器
-    DAPyWorkFlowLifecycle lifecycle;
-
+    DAPyWorkFlow wfWrapper;
     {
         DA::DAPyGILGuard gil;
-        lifecycle.setWorkflow(workflow);
+        wfWrapper.setPyWorkflowObject(workflow);
     }
+
+    DAPyWorkFlowLifecycle lifecycle;
+    lifecycle.setWorkflow(&wfWrapper);
 
     QSignalSpy finishedSpy(&lifecycle, &DAPyWorkFlowLifecycle::finished);
     QSignalSpy nodeFinishedSpy(&lifecycle, &DAPyWorkFlowLifecycle::nodeExecuteFinished);
@@ -397,13 +403,14 @@ void TestWorkflowLifecycle::testPauseResume()
         QSKIP(QString("Error creating workflow: %1").arg(e.what()).toLocal8Bit().constData());
     }
 
-    // 创建生命周期控制器
-    DAPyWorkFlowLifecycle lifecycle;
-
+    DAPyWorkFlow wfWrapper;
     {
         DA::DAPyGILGuard gil;
-        lifecycle.setWorkflow(workflow);
+        wfWrapper.setPyWorkflowObject(workflow);
     }
+
+    DAPyWorkFlowLifecycle lifecycle;
+    lifecycle.setWorkflow(&wfWrapper);
 
     QSignalSpy finishedSpy(&lifecycle, &DAPyWorkFlowLifecycle::finished);
     QSignalSpy stateChangedSpy(&lifecycle, &DAPyWorkFlowLifecycle::execStateChanged);
