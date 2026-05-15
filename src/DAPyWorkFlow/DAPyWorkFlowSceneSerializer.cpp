@@ -41,8 +41,8 @@ static QString getNodeItemIdFromItem(DAPyNodeGraphicsItem* item)
         DAPyGILGuard gil;
         try {
             pybind11::object pyNodeRef = proxy->getPyNodeRef();
-            if (pyNodeRef && pybind11::hasattr(pyNodeRef, "id")) {
-                std::string idStr = pybind11::str(pyNodeRef.attr("id"));
+            if (pyNodeRef && pybind11::hasattr(pyNodeRef, "node_id")) {
+                std::string idStr = pybind11::str(pyNodeRef.attr("node_id"));
                 return QString::fromStdString(idStr);
             }
         } catch (const pybind11::error_already_set&) {
@@ -186,8 +186,8 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
                 if (proxy && proxy->hasPyNodeRef()) {
                     try {
                         pybind11::object pyNodeRef = proxy->getPyNodeRef();
-                        if (pyNodeRef && pybind11::hasattr(pyNodeRef, "id")) {
-                            std::string idStr = pybind11::str(pyNodeRef.attr("id"));
+                        if (pyNodeRef && pybind11::hasattr(pyNodeRef, "node_id")) {
+                            std::string idStr = pybind11::str(pyNodeRef.attr("node_id"));
                             QString nodeId    = QString::fromStdString(idStr);
                             // 在state.nodes中查找对应节点并更新位置
                             for (DAWorkflowNodeState& ns : state.nodes) {
@@ -248,8 +248,8 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
             DAPyGILGuard gil;
             try {
                 pybind11::object pyNodeRef = proxy->getPyNodeRef();
-                if (pyNodeRef && pybind11::hasattr(pyNodeRef, "id")) {
-                    std::string idStr = pybind11::str(pyNodeRef.attr("id"));
+                if (pyNodeRef && pybind11::hasattr(pyNodeRef, "node_id")) {
+                    std::string idStr = pybind11::str(pyNodeRef.attr("node_id"));
                     nodeEle.setAttribute("node_id", QString::fromStdString(idStr));
                 }
             } catch (const pybind11::error_already_set&) {
