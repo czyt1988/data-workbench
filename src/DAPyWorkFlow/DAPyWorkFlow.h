@@ -41,20 +41,20 @@ public:
     // 检查 Python 实例是否有效
     bool isValid() const;
 
-    // --- Wave 2: DAG 操作方法 (TODO: 实现于 Wave 2) ---
-    // 添加节点，返回 Python 分配的 node_id
-    QString addNode(DAPyNodeProxy* proxy);  // TODO: Wave 2 Task 8
-    // 移除节点
-    bool removeNode(const QString& nodeId);  // TODO: Wave 2 Task 8
+    // --- Wave 2: DAG 操作方法 ---
+    // 添加节点到workflow，返回Python分配的node_id
+    QString addNode(DAPyNodeProxy* proxy);
+    // 从workflow移除节点
+    bool removeNode(const QString& nodeId);
     // 连接两个节点，返回连接描述符
     DAPyWorkFlowConnection connectNode(const QString& srcNodeId,
                                        const QString& srcChannel,
                                        const QString& dstNodeId,
-                                       const QString& dstChannel);  // TODO: Wave 2 Task 9
+                                       const QString& dstChannel);
     // 断开连接（按 connectionId）
-    bool disconnectNode(const QString& connectionId);  // TODO: Wave 2 Task 9
-    // 移除连接（按 connectionId）
-    bool removeConnection(const QString& connectionId);  // TODO: Wave 2 Task 9
+    bool disconnectNode(const QString& connectionId);
+    // 移除连接（disconnectNode 的别名）
+    bool removeConnection(const QString& connectionId);
     // 清空所有节点和连接
     void clear();  // TODO: Wave 2 Task 10
     // 获取节点数量
@@ -62,27 +62,27 @@ public:
     // 检查节点是否存在
     bool hasNode(const QString& nodeId);  // TODO: Wave 2 Task 10
 
-    // --- Wave 2: 数据查询方法 (TODO: 实现于 Wave 2) ---
-    // 通过 node_id 获取 Python 节点对象
-    pybind11::object getNodeById(const QString& nodeId);  // TODO: Wave 2 Task 11
+    // --- Wave 2: 数据查询方法 ---
+    // 通过 node_id 获取 Python 节点对象，不存在时返回 py::none()
+    pybind11::object getNodeById(const QString& nodeId);
     // 获取所有节点列表
-    pybind11::list getNodes();  // TODO: Wave 2 Task 11
+    pybind11::list getNodes();
     // 获取所有连接列表
-    pybind11::list getConnections();  // TODO: Wave 2 Task 11
+    pybind11::list getConnections();
     // 验证 DAG 是否有效（无环）
-    bool isValidDag();  // TODO: Wave 2 Task 12
+    bool isValidDag();
     // 获取拓扑排序结果
-    QStringList topologicalSort();  // TODO: Wave 2 Task 12
+    QStringList topologicalSort();
 
-    // --- Wave 2: Executor 操作方法 (TODO: 实现于 Wave 2) ---
+    // --- Wave 2: Executor 操作方法 ---
     // 异步执行工作流
-    bool executeAsync();  // TODO: Wave 2 Task 13
+    bool executeAsync();
     // 终止执行
-    void terminate();  // TODO: Wave 2 Task 13
+    void terminate();
     // 暂停执行
-    bool pause();  // TODO: Wave 2 Task 13
+    bool pause();
     // 恢复执行
-    bool resume();  // TODO: Wave 2 Task 13
+    bool resume();
 
     // --- Wave 2: Executor 状态查询方法 (TODO: 实现于 Wave 2) ---
     // 获取执行器状态
@@ -94,7 +94,7 @@ public:
 
     // --- Wave 2: 错误处理 (TODO: 实现于 Wave 2) ---
     // 获取最后一次错误信息
-    QString getLastError() const;  // TODO: Wave 2 Task 15
+    QString getLastError() const;
 };
 
 }  // namespace DA
