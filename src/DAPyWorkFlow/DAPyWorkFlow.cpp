@@ -150,9 +150,9 @@ bool DAPyWorkFlow::isValid() const
     try {
         return !d->mPyWorkflowObj.is_none();
     } catch (const pybind11::error_already_set& e) {
-        d->dealException(e);
+        qWarning().noquote() << "DAPyWorkFlow::isValid: " << e.what();
     } catch (const std::exception& e) {
-        d->dealException(e);
+        qWarning().noquote() << "DAPyWorkFlow::isValid: " << e.what();
     }
     return false;
 }
