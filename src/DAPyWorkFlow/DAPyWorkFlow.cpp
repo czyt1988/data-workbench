@@ -23,9 +23,9 @@ public:
     void dealException(const std::exception& e);
 
 public:
-    DA::PY::safe_pyobject mPyWorkflowObj;      ///< Python DAWorkflow 实例的安全持有者
-    DA::PY::safe_pyobject mPyExecutorObj;      ///< Python DAWorkflowExecutor 实例的安全持有者
-    QString mLastErrorString;                   ///< 最后一次错误信息
+    DA::PY::safe_pyobject mPyWorkflowObj;  ///< Python DAWorkflow 实例的安全持有者
+    DA::PY::safe_pyobject mPyExecutorObj;  ///< Python DAWorkflowExecutor 实例的安全持有者
+    QString mLastErrorString;              ///< 最后一次错误信息
 };
 
 //===================================================
@@ -107,7 +107,7 @@ void DAPyWorkFlow::initPyWorkflow()
             return;
         }
         pybind11::object workflowInstance = workflowClass();
-        d->mPyWorkflowObj               = DA::PY::safe_pyobject(std::move(workflowInstance));
+        d->mPyWorkflowObj                 = DA::PY::safe_pyobject(std::move(workflowInstance));
         qDebug() << "DAPyWorkFlow::initPyWorkflow: Python DAWorkflow instance created";
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
@@ -191,7 +191,7 @@ QString DAPyWorkFlow::addNode(DAPyNodeProxy* proxy)
             return QString();
         }
         pybind11::object result = workflowObj.attr("add_node")(pyNodeRef);
-        std::string nodeIdStr    = result.attr("node_id").cast<std::string>();
+        std::string nodeIdStr   = result.cast< std::string >();
         return QString::fromStdString(nodeIdStr);
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
@@ -251,9 +251,9 @@ bool DAPyWorkFlow::removeNode(const QString& nodeId)
  * @return DAPyWorkFlowConnection 连接描述符，失败时 isValid() 为 false
  */
 DAPyWorkFlowConnection DAPyWorkFlow::connectNode(const QString& srcNodeId,
-                                                   const QString& srcChannel,
-                                                   const QString& dstNodeId,
-                                                   const QString& dstChannel)
+                                                 const QString& srcChannel,
+                                                 const QString& dstNodeId,
+                                                 const QString& dstChannel)
 {
     DA_D(d);
     DAPyWorkFlowConnection result;
@@ -264,10 +264,8 @@ DAPyWorkFlowConnection DAPyWorkFlow::connectNode(const QString& srcNodeId,
     DAPyGILGuard gil;
     try {
         pybind11::object workflowObj = d->mPyWorkflowObj.object();
-        pybind11::object conn = workflowObj.attr("connect_node")(srcNodeId.toStdString(),
-                                                                  srcChannel.toStdString(),
-                                                                  dstNodeId.toStdString(),
-                                                                  dstChannel.toStdString());
+        pybind11::object conn        = workflowObj.attr("connect_node")(
+            srcNodeId.toStdString(), srcChannel.toStdString(), dstNodeId.toStdString(), dstChannel.toStdString());
         result.connectionId  = QString::fromStdString(pybind11::str(conn.attr("connection_id")));
         result.sourceNodeId  = QString::fromStdString(pybind11::str(conn.attr("source_node_id")));
         result.sourceChannel = QString::fromStdString(pybind11::str(conn.attr("source_output_channel")));
@@ -300,7 +298,7 @@ bool DAPyWorkFlow::disconnectNode(const QString& connectionId)
     DAPyGILGuard gil;
     try {
         pybind11::object workflowObj = d->mPyWorkflowObj.object();
-        bool res = workflowObj.attr("remove_connection")(connectionId.toStdString()).cast<bool>();
+        bool res                     = workflowObj.attr("remove_connection")(connectionId.toStdString()).cast< bool >();
         return res;
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
@@ -471,7 +469,7 @@ bool DAPyWorkFlow::isValidDag()
             qWarning() << "DAPyWorkFlow::isValidDag: workflow object is invalid";
             return false;
         }
-        return workflowObj.attr("is_valid_dag")().cast<bool>();
+        return workflowObj.attr("is_valid_dag")().cast< bool >();
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
     } catch (const std::exception& e) {
@@ -502,7 +500,7 @@ QStringList DAPyWorkFlow::topologicalSort()
         pybind11::list pyResult = workflowObj.attr("topological_sort")();
         QStringList result;
         for (auto item : pyResult) {
-            std::string nodeIdStr = pybind11::str(item).cast<std::string>();
+            std::string nodeIdStr = pybind11::str(item).cast< std::string >();
             result.append(QString::fromStdString(nodeIdStr));
         }
         return result;
@@ -569,9 +567,7 @@ bool DAPyWorkFlow::executeAsync()
  * @return true 成功启动异步执行；false workflow 未初始化、模块导入失败或 Python 异常
  * @see terminate pause resume DAPyWorkFlowLifecycle
  */
-bool DAPyWorkFlow::executeAsync(pybind11::object onNodeFinished,
-                                  pybind11::object onStateChange,
-                                  pybind11::object onProgress)
+bool DAPyWorkFlow::executeAsync(pybind11::object onNodeFinished, pybind11::object onStateChange, pybind11::object onProgress)
 {
     DA_D(d);
     if (!isValid()) {
