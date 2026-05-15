@@ -861,23 +861,25 @@ static void drawLinkPointGroup(QPainter* painter,
             // 顺时针旋转90度绘制文字
             painter->save();
             QTransform transform;
-            transform.translate(lp.position.x(), lp.position.y() - (halfH + spacing + textRect.width() / 2));
-            transform.rotate(-90);
+            transform.translate(lp.position.x(),  // + textRect.height() / 2
+                                lp.position.y() - (halfH + spacing + textRect.width()));
+            transform.rotate(90);
             painter->setTransform(transform, true);
-            QRectF rotatedRect(-textRect.height() / 2, -textRect.width() / 2, textRect.height(), textRect.width());
-            painter->drawText(rotatedRect, Qt::AlignCenter, lp.name);
+            // QRectF rotatedRect(-textRect.height() / 2, -textRect.width() / 2, textRect.height(), textRect.width());
+            // painter->drawText(rotatedRect, Qt::AlignCenter, lp.name);
+            painter->drawText(textRect, Qt::AlignCenter, lp.name);
             painter->restore();
         } break;
         case AspectDirection::South: {
             // 顺时针旋转90度绘制文字
             painter->save();
             QTransform transform;
-            transform.translate(lp.position.x(), lp.position.y() - halfH - spacing - textRect.width() / 2);
-            transform.rotate(-90);
+            transform.translate(lp.position.x(), lp.position.y() + (halfH + spacing));
+            transform.rotate(90);
             painter->setTransform(transform, true);
 
-            QRectF rotatedRect(-textRect.height() / 2, -textRect.width() / 2, textRect.height(), textRect.width());
-            painter->drawText(rotatedRect, Qt::AlignCenter, lp.name);
+            // QRectF rotatedRect(-textRect.height() / 2, -textRect.width() / 2, textRect.height(), textRect.width());
+            painter->drawText(textRect, Qt::AlignCenter, lp.name);
             painter->restore();
         } break;
         default:
