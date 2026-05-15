@@ -309,6 +309,37 @@ bool DAPyNodeProxy::hasPyNodeRef() const
 }
 
 /**
+ * @brief 获取Python节点的node_id
+ *
+ * 从Python节点对象的node_id属性提取唯一标识符。
+ * Python DAWorkflow.add_node() 会为节点自动分配node_id并设置到实例上。
+ *
+ * @return Python节点的node_id字符串，获取失败返回空字符串
+ * @note 需在GIL保护下调用此函数
+ */
+QString DAPyNodeProxy::getNodeId() const
+{
+    DA_DC(d);
+    if (!d->mPyNodeRef) {
+        return QString();
+    }
+    DAPyGILGuard gilGuard;
+    try {
+        pybind11::object pyNode = d->mPyNodeRef.object();
+        if (pybind11::hasattr(pyNode, "node_id")) {
+            return QString::fromStdString(pybind11::str(pyNode.attr("node_id")).cast< std::string >());
+        }
+    } catch (const pybind11::error_already_set& e) {
+        d->mLastErrorString = e.what();
+        d->dealException(e);
+    } catch (const std::exception& e) {
+        d->mLastErrorString = e.what();
+        d->dealException(e);
+    }
+    return QString();
+}
+
+/**
  * @brief 设置Python节点的限定名
  *
  * 写入mDescriptor.qualifiedName，统一通过描述符管理限定名。

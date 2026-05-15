@@ -46,6 +46,8 @@ public:
     void setPyNodeRef(const pybind11::object& pyNode);
     pybind11::object getPyNodeRef() const;
     bool hasPyNodeRef() const;
+    // 获取Python节点的node_id（从Python节点对象提取node_id属性）
+    QString getNodeId() const;
 
     // Python限定名
     void setQualifiedName(const QString& name);
