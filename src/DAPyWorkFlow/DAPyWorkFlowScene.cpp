@@ -7,9 +7,7 @@
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyLinkGraphicsItem.h"
 #include "DAPythonSignalHandler.h"
-#include "DAPyModuleWorkflow.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
-#include "DAPyBindQt/DAPybind11QtCaster.hpp"
 #include "DAPyNodeProxy.h"
 #include "DAPyNodeFactory.h"
 #include "DAPyLinkPoint.h"
@@ -28,14 +26,18 @@ public:
     //
     void syncPyNodeLinkAdd(DAPyLinkGraphicsItem* linkItem);
     void syncPyNodeLinkRemove(DAPyLinkGraphicsItem* linkItem);
-    // Python DAWorkflow对象引用
-    DA::PY::safe_pyobject mPyWorkflow;
+    // Python DAWorkflow封装对象
+    DAPyWorkFlow mWorkflow;
     // Python信号处理器
     QPointer< DAPythonSignalHandler > mSignalHandler;
     // Python节点工厂（用于创建DAPyNodeProxy实例）
     std::shared_ptr< DAPyNodeFactory > mPyNodeFactory;
     // 节点到连接线的映射表，维护DAPyNodeGraphicsItem→QList<DAPyLinkGraphicsItem*>的关联关系
     QMap< DAPyNodeGraphicsItem*, QList< DAPyLinkGraphicsItem* > > mNodeToLinksMap;
+    // 节点到Python node_id的映射表，维护DAPyNodeGraphicsItem→QString的关联关系
+    QMap< DAPyNodeGraphicsItem*, QString > mNodeIdMap;
+    // 连接线到Python connection_id的映射表，维护DAPyLinkGraphicsItem→QString的关联关系
+    QMap< DAPyLinkGraphicsItem*, QString > mLinkConnectionIdMap;
 };
 
 DAPyWorkFlowScene::PrivateData::PrivateData(DAPyWorkFlowScene* p) : q_ptr(p)
@@ -56,21 +58,18 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkAdd(DAPyLinkGraphicsItem* lin
     QString fromOutput             = linkItem->getFromOutputName();
     QString toInput                = linkItem->getToInputName();
     // 同步Python侧连接
-    if (this->mPyWorkflow) {
-        DAPyGILGuard gil;
-        try {
-            pybind11::object workflowObj = this->mPyWorkflow.object();
-            if (workflowObj && fromItem->getProxy() && toItem->getProxy()) {
-                pybind11::object fromPyNode = fromItem->getProxy()->getPyNodeRef();
-                pybind11::object toPyNode   = toItem->getProxy()->getPyNodeRef();
-                if (fromPyNode && toPyNode) {
-                    std::string srcId = fromPyNode.attr("node_id").cast< std::string >();
-                    std::string dstId = toPyNode.attr("node_id").cast< std::string >();
-                    workflowObj.attr("connect_node")(srcId, fromOutput.toStdString(), dstId, toInput.toStdString());
+    if (this->mWorkflow.isValid()) {
+        if (fromItem->getProxy() && toItem->getProxy()) {
+            QString srcNodeId = this->mNodeIdMap.value(fromItem);
+            QString dstNodeId = this->mNodeIdMap.value(toItem);
+            if (!srcNodeId.isEmpty() && !dstNodeId.isEmpty()) {
+                DAPyWorkFlowConnection conn = this->mWorkflow.connectNode(srcNodeId, fromOutput, dstNodeId, toInput);
+                if (conn.isValid()) {
+                    this->mLinkConnectionIdMap[ linkItem ] = conn.connectionId;
+                } else {
+                    qWarning() << tr("DAPyWorkFlowScene::addPyNodeLink: connectNode failed, no valid connectionId");
                 }
             }
-        } catch (const pybind11::error_already_set& e) {
-            qWarning() << tr("DAPyWorkFlowScene::addPyNodeLink: Python error: %1").arg(e.what());
         }
     }
     // 维护节点到连接线的映射表
@@ -104,21 +103,15 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkRemove(DAPyLinkGraphicsItem* 
     }
 
     // 同步Python侧连接移除
-    if (this->mPyWorkflow) {
-        if (fromNode && toNode && fromNode->getProxy() && toNode->getProxy()) {
-            DAPyGILGuard gil;
-            try {
-                pybind11::object workflowObj = this->mPyWorkflow.object();
-                if (workflowObj) {
-                    workflowObj.attr("remove_connection")(fromNode->getProxy()->getPyNodeRef(),
-                                                          linkItem->getFromOutputName().toStdString(),
-                                                          toNode->getProxy()->getPyNodeRef(),
-                                                          linkItem->getToInputName().toStdString());
-                }
-            } catch (const pybind11::error_already_set& e) {
-                qWarning() << tr("DAPyWorkFlowScene::removePyNodeLink: Python error: %1").arg(e.what());
+    if (this->mWorkflow.isValid()) {
+        QString connectionId = this->mLinkConnectionIdMap.value(linkItem);
+        if (!connectionId.isEmpty()) {
+            bool removed = this->mWorkflow.disconnectNode(connectionId);
+            if (!removed) {
+                qWarning() << tr("DAPyWorkFlowScene::removePyNodeLink: disconnectNode failed for connectionId: %1").arg(connectionId);
             }
         }
+        this->mLinkConnectionIdMap.remove(linkItem);
     }
 }
 
@@ -183,15 +176,15 @@ DAPyWorkFlowScene::~DAPyWorkFlowScene()
 /**
  * @brief 设置Python DAWorkflow实例引用
  *
- * 存储Python DAWorkflow对象的引用，用于同步节点和连接操作。
- * 使用DA::PY::safe_pyobject安全持有Python对象。
+ * 存储Python DAWorkflow对象的引用，通过DAPyWorkFlow封装层安全持有，
+ * 用于同步节点和连接操作。
  *
  * @param workflow Python DAWorkflow实例的pybind11::object
  */
 void DAPyWorkFlowScene::setPyWorkflow(const pybind11::object& workflow)
 {
     DA_D(d);
-    d->mPyWorkflow = DA::PY::safe_pyobject(pybind11::object(workflow));
+    d->mWorkflow.setPyWorkflowObject(workflow);
 }
 
 /**
@@ -202,7 +195,7 @@ void DAPyWorkFlowScene::setPyWorkflow(const pybind11::object& workflow)
 pybind11::object DAPyWorkFlowScene::getPyWorkflow() const
 {
     DA_DC(d);
-    return d->mPyWorkflow.object();
+    return d->mWorkflow.getPyWorkflowObject();
 }
 
 /**
@@ -213,7 +206,7 @@ pybind11::object DAPyWorkFlowScene::getPyWorkflow() const
 bool DAPyWorkFlowScene::hasPyWorkflow() const
 {
     DA_DC(d);
-    return !d->mPyWorkflow.is_none();
+    return d->mWorkflow.isValid();
 }
 
 /**
@@ -284,7 +277,7 @@ std::shared_ptr< DAPyNodeFactory > DAPyWorkFlowScene::getPyNodeFactory() const
 DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& metaData, const QPointF& pos)
 {
     DA_D(d);
-    if (!d->mPyWorkflow) {
+    if (!d->mWorkflow.isValid()) {
         qWarning() << tr("DAPyWorkFlowScene::createPyNode: Python workflow is not set");
         return nullptr;
     }
@@ -306,22 +299,11 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
         return nullptr;
     }
     // 在Python侧注册节点到DAWorkflow
-    {
-        DAPyGILGuard gil;
-        try {
-            pybind11::object workflowObj = d->mPyWorkflow.object();
-            if (!workflowObj) {
-                qWarning() << tr("DAPyWorkFlowScene::createPyNode: workflow object is invalid");
-                delete proxy;
-                return nullptr;
-            }
-            // 工厂已创建实例并设置setPyNodeRef，只需注册到workflow
-            workflowObj.attr("add_node")(proxy->getPyNodeRef());
-        } catch (const pybind11::error_already_set& e) {
-            qWarning() << tr("DAPyWorkFlowScene::createPyNode: Python error: %1").arg(e.what());
-            delete proxy;
-            return nullptr;
-        }
+    QString nodeId = d->mWorkflow.addNode(proxy);
+    if (nodeId.isEmpty()) {
+        qWarning() << tr("DAPyWorkFlowScene::createPyNode: addNode failed for %1").arg(metaData.qualifiedName);
+        delete proxy;
+        return nullptr;
     }
 
     // Bug 2修复：构造函数已从proxy获取完整descriptor（含inputs/outputs），
@@ -330,6 +312,9 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
     // 设置位置（未添加到场景）
     item->updateNodeBody();
     item->setPos(pos);
+
+    // 记录nodeId映射
+    d->mNodeIdMap[ item ] = nodeId;
 
     return item;
 }
@@ -431,20 +416,13 @@ bool DAPyWorkFlowScene::removePyNodeItem(DAPyNodeGraphicsItem* item)
         }
         removeItem(link);
         // 同步Python侧连接移除
-        if (d->mPyWorkflow) {
-            DAPyGILGuard gil;
-            try {
-                pybind11::object workflowObj = d->mPyWorkflow.object();
-                if (workflowObj) {
-                    workflowObj.attr("remove_connection")(link->getFromNode()->getProxy()->getPyNodeRef(),
-                                                          link->getFromOutputName().toStdString(),
-                                                          link->getToNode()->getProxy()->getPyNodeRef(),
-                                                          link->getToInputName().toStdString());
-                }
-            } catch (const pybind11::error_already_set& e) {
-                qWarning() << tr("DAPyWorkFlowScene::removePyNodeItem: Python error removing connection: %1").arg(e.what());
+        if (d->mWorkflow.isValid()) {
+            QString connectionId = d->mLinkConnectionIdMap.value(link);
+            if (!connectionId.isEmpty()) {
+                d->mWorkflow.disconnectNode(connectionId);
             }
         }
+        d->mLinkConnectionIdMap.remove(link);
         delete link;
     }
 
@@ -455,17 +433,13 @@ bool DAPyWorkFlowScene::removePyNodeItem(DAPyNodeGraphicsItem* item)
     DAPyNodeProxy* proxy = item->getProxy();
 
     // 同步Python侧节点移除
-    if (d->mPyWorkflow && proxy && proxy->hasPyNodeRef()) {
-        DAPyGILGuard gil;
-        try {
-            pybind11::object workflowObj = d->mPyWorkflow.object();
-            if (workflowObj) {
-                workflowObj.attr("remove_node")(proxy->getPyNodeRef());
-            }
-        } catch (const pybind11::error_already_set& e) {
-            qWarning() << tr("DAPyWorkFlowScene::removePyNodeItem: Python error removing node: %1").arg(e.what());
+    if (d->mWorkflow.isValid() && proxy) {
+        QString nodeId = d->mNodeIdMap.value(item);
+        if (!nodeId.isEmpty()) {
+            d->mWorkflow.removeNode(nodeId);
         }
     }
+    d->mNodeIdMap.remove(item);
 
     // 从场景移除图形项
     removeItem(item);
@@ -534,24 +508,11 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::findNodeItemByProxy(DAPyNodeProxy* prox
  */
 DAPyNodeGraphicsItem* DAPyWorkFlowScene::findNodeItemById(const QString& nodeId) const
 {
-    QList< QGraphicsItem* > its = items();
-    for (QGraphicsItem* i : std::as_const(its)) {
-        if (DAPyNodeGraphicsItem* ni = dynamic_cast< DAPyNodeGraphicsItem* >(i)) {
-            DAPyNodeProxy* proxy = ni->getProxy();
-            if (proxy && proxy->hasPyNodeRef()) {
-                DAPyGILGuard gil;
-                try {
-                    pybind11::object pyNode = proxy->getPyNodeRef();
-                    if (pyNode && pybind11::hasattr(pyNode, "id")) {
-                        std::string idStr = pybind11::str(pyNode.attr("id"));
-                        if (QString::fromStdString(idStr) == nodeId) {
-                            return ni;
-                        }
-                    }
-                } catch (const pybind11::error_already_set&) {
-                    qWarning() << "DAPyWorkFlowScene: Python exception ignored during search";
-                }
-            }
+    DA_DC(dc);
+    // 通过nodeId映射表直接查找，O(1)查找而非遍历全场景
+    for (auto it = dc->mNodeIdMap.constBegin(); it != dc->mNodeIdMap.constEnd(); ++it) {
+        if (it.value() == nodeId) {
+            return it.key();
         }
     }
     return nullptr;
@@ -1039,8 +1000,10 @@ void DAPyWorkFlowScene::clearPyScene()
     const QList< DAPyNodeGraphicsItem* > nodeItems = getPyNodeItems();
     const QList< DAPyLinkGraphicsItem* > linkItems = getPyNodeLinkItems();
 
-    // 清空节点到连接线的映射表
+    // 清空所有映射表
     d->mNodeToLinksMap.clear();
+    d->mNodeIdMap.clear();
+    d->mLinkConnectionIdMap.clear();
 
     // 先移除所有连接线
     for (DAPyLinkGraphicsItem* link : linkItems) {
@@ -1049,17 +1012,7 @@ void DAPyWorkFlowScene::clearPyScene()
     }
 
     // 同步Python侧清空
-    if (d->mPyWorkflow) {
-        DAPyGILGuard gil;
-        try {
-            pybind11::object workflowObj = d->mPyWorkflow.object();
-            if (workflowObj) {
-                workflowObj.attr("clear")();
-            }
-        } catch (const pybind11::error_already_set& e) {
-            qWarning() << tr("DAPyWorkFlowScene::clearPyScene: Python error: %1").arg(e.what());
-        }
-    }
+    d->mWorkflow.clear();
 
     // 移除所有节点（unique_ptr自动释放proxy，需GIL保护Python引用释放）
     {
@@ -1444,32 +1397,11 @@ void DAPyWorkFlowScene::initConnect()
 void DAPyWorkFlowScene::initPyWorkflow()
 {
     DA_D(d);
-    if (!d->mPyWorkflow.is_none()) {
+    if (d->mWorkflow.isValid()) {
         // 已设置，无需重复初始化
         return;
     }
-    DAPyGILGuard gil;
-    try {
-        DAPyModuleWorkflow& pyModule = DAPyModuleWorkflow::getInstance();
-        if (!pyModule.isImport()) {
-            if (!pyModule.import()) {
-                qWarning() << "DAPyWorkFlowScene::initPyWorkflow: cannot import DAWorkbench.DAWorkFlowPy";
-                return;
-            }
-        }
-        pybind11::object workflowClass = pyModule.getWorkflowClass();
-        if (workflowClass.is_none()) {
-            qWarning() << "DAPyWorkFlowScene::initPyWorkflow: DAWorkflow class is not available";
-            return;
-        }
-        pybind11::object workflowInstance = workflowClass();
-        d->mPyWorkflow                    = DA::PY::safe_pyobject(std::move(workflowInstance));
-        qDebug() << "DAPyWorkFlowScene::initPyWorkflow: Python DAWorkflow instance created";
-    } catch (const pybind11::error_already_set& e) {
-        qWarning() << "DAPyWorkFlowScene::initPyWorkflow: Python error:" << e.what();
-    } catch (const std::exception& e) {
-        qWarning() << "DAPyWorkFlowScene::initPyWorkflow: error:" << e.what();
-    }
+    d->mWorkflow.initPyWorkflow();
 }
 
 /**
@@ -1483,8 +1415,21 @@ void DAPyWorkFlowScene::rebuildNodeLinksMap()
 {
     DA_D(d);
     d->mNodeToLinksMap.clear();
+    d->mNodeIdMap.clear();
+    d->mLinkConnectionIdMap.clear();
     QList< DAPyNodeGraphicsItem* > nodeItems = getPyNodeItems();
     QList< DAPyLinkGraphicsItem* > linkItems = getPyNodeLinkItems();
+    // 重建节点nodeId映射（从Python节点对象提取node_id）
+    for (DAPyNodeGraphicsItem* node : nodeItems) {
+        DAPyNodeProxy* proxy = node->getProxy();
+        if (proxy && proxy->hasPyNodeRef()) {
+            QString nodeId = proxy->getNodeId();
+            if (!nodeId.isEmpty()) {
+                d->mNodeIdMap[ node ] = nodeId;
+            }
+        }
+    }
+    // 重建连接线映射
     for (DAPyLinkGraphicsItem* link : linkItems) {
         DAPyNodeGraphicsItem* fromNode = link->getFromNode();
         DAPyNodeGraphicsItem* toNode   = link->getToNode();

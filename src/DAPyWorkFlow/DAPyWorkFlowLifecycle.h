@@ -6,31 +6,35 @@
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyWorkFlowTypes.h"
 
-namespace pybind11 { class object; }
-
 namespace DA
 {
 class DAPyNodeProxy;
 class DAPythonSignalHandler;
+class DAPyWorkFlow;
 
 /**
  * @brief 工作流生命周期控制器
  *
- * 薄封装层，将所有执行逻辑委托给 Python DAWorkflowExecutor。
+ * 薄封装层，将所有执行逻辑委托给 DAPyWorkFlow 封装类，
+ * 通过 DAPyWorkFlow* 指针调用 Python DAWorkflow/DAWorkflowExecutor 操作，
+ * 消除原始 pybind11 .attr() 调用。
  * C++ 侧仅负责 GIL 管理、状态转换和 Qt 信号发射，
  * 不实现拓扑排序或入度计数等执行细节。
  *
  * 执行流程：
- * 1. startExecute() — 获取 GIL，创建 Python DAWorkflowExecutor，
- *    注册回调，调用 execute_async()
+ * 1. startExecute() — 获取 GIL，创建回调 pybind11::cpp_function，
+ *    通过 mWorkflow->executeAsync(callbacks) 启动异步执行
  * 2. Python 侧通过回调通知 C++ 节点完成、状态变更和进度
  * 3. C++ 侧通过 DAPyGILRelease 在发射 Qt 信号前临时释放 GIL
- * 4. pause()/resume() — Qt 层协同暂停（QMutex + QWaitCondition）
- * 5. terminate() — 获取 GIL 调用 Python executor.terminate()
+ * 4. pause()/resume() — Qt 层协同暂停（QMutex + QWaitCondition）+
+ *    mWorkflow->pause()/resume() 通知 Python 侧
+ * 5. terminate() — mWorkflow->terminate() 通知 Python 侧
  *
  * @code
+ * auto workflow = new DA::DAPyWorkFlow();
+ * workflow->initPyWorkflow();
  * auto lifecycle = new DA::DAPyWorkFlowLifecycle(this);
- * lifecycle->setWorkflow(pyWorkflowObj);
+ * lifecycle->setWorkflow(workflow);
  * QThread* thread = new QThread(this);
  * lifecycle->moveToThread(thread);
  * connect(thread, &QThread::started, lifecycle, &DAPyWorkFlowLifecycle::startExecute);
@@ -38,7 +42,7 @@ class DAPythonSignalHandler;
  * thread->start();
  * @endcode
  *
- * @see DAPyGILGuard DAPyGILRelease DAPythonSignalHandler DAPyNodeProxy
+ * @see DAPyWorkFlow DAPyGILGuard DAPyGILRelease DAPythonSignalHandler DAPyNodeProxy
  */
 class DAPYWORKFLOW_API DAPyWorkFlowLifecycle : public QObject
 {
@@ -52,8 +56,8 @@ public:
     // 禁止拷贝
     DAPyWorkFlowLifecycle(const DAPyWorkFlowLifecycle&) = delete;
 
-    // 设置Python工作流对象（DAWorkflow实例）
-    void setWorkflow(const pybind11::object& workflowObj);
+    // 设置DAPyWorkFlow封装对象（替代原 setWorkflow(pybind11::object)）
+    void setWorkflow(DAPyWorkFlow* workflow);
     // 判断是否正在执行（Running或Paused状态）
     bool isExecuting() const;
     // 获取当前执行状态
@@ -68,7 +72,7 @@ public Q_SLOTS:
     void pause();
     // 恢复执行（清除暂停标记，唤醒等待线程）
     void resume();
-    // 终止执行（调用Python executor.terminate()）
+    // 终止执行（调用 mWorkflow->terminate()）
     void terminate();
 
 Q_SIGNALS:

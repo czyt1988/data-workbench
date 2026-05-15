@@ -1,4 +1,5 @@
 #include "DAPyWorkFlowLifecycle.h"
+#include "DAPyWorkFlow.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAPyBindQt/DAPybind11QtCaster.hpp"
 #include "DAPyNodeProxy.h"
@@ -25,8 +26,7 @@ public:
     void setExecState(ExecState newState);
 
 public:
-    DA::PY::safe_pyobject mWorkflowObj;        ///< Python DAWorkflow实例的安全持有者
-    DA::PY::safe_pyobject mPyExecutorObj;      ///< Python DAWorkflowExecutor实例的安全持有者
+    DAPyWorkFlow* mWorkflow { nullptr };             ///< DAPyWorkFlow封装对象指针（调用者保证生命周期）
     QPointer< DAPythonSignalHandler > mSignalHandler;  ///< C++侧信号处理器（可选）
     ExecState mExecState { StateIdle };         ///< 当前执行状态
     bool mIsTerminateRequest { false };         ///< 终止请求标记
@@ -87,17 +87,19 @@ DAPyWorkFlowLifecycle::~DAPyWorkFlowLifecycle()
 }
 
 /**
- * @brief 设置Python工作流对象
+ * @brief 设置DAPyWorkFlow封装对象
  *
- * 将Python DAWorkflow实例存储在DA::PY::safe_pyobject中，
- * 确保在析构时安全释放Python对象引用。
+ * 替代原 setWorkflow(pybind11::object) 方法，
+ * 通过 DAPyWorkFlow* 指针访问所有工作流操作，
+ * 消除原始 pybind11 .attr() 调用。
+ * 调用者须保证 DAPyWorkFlow 对象在 Lifecycle 执行期间有效。
  *
- * @param[in] workflowObj Python DAWorkflow实例的pybind11::object
+ * @param[in] workflow DAPyWorkFlow封装对象指针
  */
-void DAPyWorkFlowLifecycle::setWorkflow(const pybind11::object& workflowObj)
+void DAPyWorkFlowLifecycle::setWorkflow(DAPyWorkFlow* workflow)
 {
     DA_D(d);
-    d->mWorkflowObj = DA::PY::safe_pyobject(pybind11::object(workflowObj));
+    d->mWorkflow = workflow;
 }
 
 /**
@@ -138,14 +140,15 @@ QString DAPyWorkFlowLifecycle::getLastErrorString() const
 /**
  * @brief 开始执行工作流
  *
- * 在工作线程中调用。创建Python DAWorkflowExecutor，
- * 注册回调函数，调用execute_async()启动异步执行。
- * 所有Python操作在单个DAPyGILGuard作用域内完成，
- * 发射Qt信号前通过DAPyGILRelease临时释放GIL。
+ * 在工作线程中调用。通过 mWorkflow->executeAsync(callbacks) 创建
+ * Python DAWorkflowExecutor 并启动异步执行，
+ * 回调通过 pybind11::cpp_function 注册以通知节点完成、状态变更和进度。
+ * Python操作委托给 DAPyWorkFlow 封装类处理。
  *
  * 回调注册：
- * - on_node_finished: 节点完成时通过DAPythonSignalHandler通知主线程
- * - on_state_change: 状态变更时通过DAPythonSignalHandler通知主线程
+ * - on_node_finished: 节点完成时通过 mWorkflow->getNodeById() 获取节点，
+ *   通过DAPythonSignalHandler通知主线程
+ * - on_state_change: 状态变更时映射Python状态字符串到C++ ExecState
  * - on_progress: 进度更新时通过DAPythonSignalHandler通知主线程
  *
  * @note 此方法应在工作线程中调用（通过QThread::started信号触发）
@@ -168,22 +171,19 @@ void DAPyWorkFlowLifecycle::startExecute()
         d->mLastErrorString.clear();
     }
 
-    // 检查工作流对象是否已设置
-    if (!d->mWorkflowObj) {
+    // 检查工作流封装对象是否已设置且有效
+    if (!d->mWorkflow) {
         d->mLastErrorString = "Workflow object is not set";
         qCritical() << d->mLastErrorString;
         d->setExecState(StateError);
-        {
-            DAPyGILRelease release;  // 释放GIL后发射信号
-            emit finished(false);
-        }
+        emit finished(false);
         return;
     }
 
     // 设置状态为Running
     d->setExecState(StateRunning);
 
-    // 在GIL保护下创建Python执行器并启动异步执行
+    // 在GIL保护下创建回调并启动异步执行
     {
         DA::DAPyGILGuard gil;
         if (!gil.isAcquired()) {
@@ -198,32 +198,19 @@ void DAPyWorkFlowLifecycle::startExecute()
         }
 
         try {
-            pybind11::object pyWorkflow = d->mWorkflowObj.object();
-
-            // 创建DAWorkflowExecutor实例
-            pybind11::object executorModule = pybind11::module_::import("DAWorkbench.DAWorkFlowPy.executor");
-            pybind11::object executorClass  = executorModule.attr("DAWorkflowExecutor");
-
             // 注册回调函数——通过DAPythonSignalHandler在主线程执行Qt信号发射
 
             pybind11::object onNodeFinished = pybind11::cpp_function(
                 [this, d](const std::string& nodeId, bool success) {
-                    // 获取节点代理指针
-                    DA::DAPyGILGuard innerGil;
-                    try {
-                        pybind11::object workflow = d->mWorkflowObj.object();
-                        pybind11::object pyNode   = workflow.attr("get_node_by_id")(nodeId);
-                        // 创建临时DAPyNodeProxy获取指针——不持有所有权
-                        DA::DAPyNodeProxy* proxy = nullptr;
-                        // 通过node_id查找已有代理或创建临时代理
-                        // 由于Lifecycle不持有节点列表，这里传递nullptr作为占位
-                        // 上层消费者（如DAPyWorkFlowEditWidget）通过其他途径获取节点指针
-                        {
-                            DA::DAPyGILRelease innerRelease;
-                            emit nodeExecuteFinished(proxy, success);
-                        }
-                    } catch (const std::exception& e) {
-                        d->dealException(e);
+                    if (!d->mWorkflow) {
+                        return;
+                    }
+                    // 通过封装类获取Python节点对象（替代 workflow.attr("get_node_by_id")）
+                    pybind11::object pyNode = d->mWorkflow->getNodeById(QString::fromStdString(nodeId));
+                    DA::DAPyNodeProxy* proxy = nullptr;
+                    {
+                        DA::DAPyGILRelease innerRelease;
+                        emit nodeExecuteFinished(proxy, success);
                     }
                 });
 
@@ -257,12 +244,18 @@ void DAPyWorkFlowLifecycle::startExecute()
                     }
                 });
 
-            // 创建执行器实例，传入回调
-            pybind11::object pyExecutor = executorClass(pyWorkflow, onNodeFinished, onStateChange, onProgress);
-            d->mPyExecutorObj = DA::PY::safe_pyobject(pybind11::object(pyExecutor));
-
-            // 启动异步执行
-            pyExecutor.attr("execute_async")();
+            // 通过封装类启动异步执行（替代 executorModule.attr + executorClass + execute_async）
+            bool ok = d->mWorkflow->executeAsync(onNodeFinished, onStateChange, onProgress);
+            if (!ok) {
+                d->mLastErrorString = d->mWorkflow->getLastError();
+                qCritical() << "DAPyWorkFlowLifecycle: executeAsync failed:" << d->mLastErrorString;
+                d->setExecState(StateError);
+                {
+                    DAPyGILRelease release;
+                    emit finished(false);
+                }
+                return;
+            }
 
         } catch (const pybind11::error_already_set& e) {
             // error_already_set必须在GIL作用域内消费
@@ -285,23 +278,14 @@ void DAPyWorkFlowLifecycle::startExecute()
     }  // DAPyGILGuard析构，释放GIL
 
     // 等待执行完成——在GIL释放后等待
-    // 轮询Python执行器状态，同时检查C++侧的暂停/终止请求
+    // 轮询DAPyWorkFlow封装类的执行器状态，同时检查C++侧的暂停/终止请求
     while (true) {
         // 检查C++侧暂停请求
         {
             QMutexLocker locker(&d->mMutex);
             if (d->mIsTerminateRequest) {
-                // 终止请求——获取GIL调用Python terminate()
-                {
-                    DA::DAPyGILGuard gil;
-                    try {
-                        if (d->mPyExecutorObj) {
-                            d->mPyExecutorObj.object().attr("terminate")();
-                        }
-                    } catch (const std::exception& e) {
-                        d->dealException(e);
-                    }
-                }
+                // 终止请求——通过封装类调用 Python terminate()
+                d->mWorkflow->terminate();
                 d->setExecState(StateFinished);
                 emit finished(false);
                 return;
@@ -317,45 +301,18 @@ void DAPyWorkFlowLifecycle::startExecute()
             }
         }
 
-        // 检查Python侧执行是否完成
-        {
-            DA::DAPyGILGuard gil;
-            try {
-                if (d->mPyExecutorObj) {
-                    pybind11::object stateObj = d->mPyExecutorObj.object().attr("state");
-                    std::string stateStr      = pybind11::cast< std::string >(stateObj.attr("value"));
-                    if (stateStr == "finished" || stateStr == "error") {
-                        bool success = (stateStr == "finished");
-                        // 获取Python侧结果
-                        if (success && d->mPyExecutorObj) {
-                            success = pybind11::cast< bool >(d->mPyExecutorObj.object().attr("result"));
-                        }
-                        {
-                            DAPyGILRelease release;
-                            d->setExecState(success ? StateFinished : StateError);
-                            emit finished(success);
-                        }
-                        return;
-                    }
-                }
-            } catch (const pybind11::error_already_set& e) {
-                d->dealException(e);
-                {
-                    DAPyGILRelease release;
-                    d->setExecState(StateError);
-                    emit finished(false);
-                }
-                return;
-            } catch (const std::exception& e) {
-                d->dealException(e);
-                {
-                    DAPyGILRelease release;
-                    d->setExecState(StateError);
-                    emit finished(false);
-                }
-                return;
+        // 通过封装类检查Python执行器状态（替代 .attr("state") + .attr("value")）
+        ExecState execState = d->mWorkflow->getExecutorState();
+        if (execState == StateFinished || execState == StateError) {
+            bool success = (execState == StateFinished);
+            if (success) {
+                // 通过封装类获取执行结果（替代 .attr("result")）
+                success = d->mWorkflow->getResult();
             }
-        }  // GIL释放
+            d->setExecState(success ? StateFinished : StateError);
+            emit finished(success);
+            return;
+        }
 
         // 短暂休眠避免密集轮询
         QThread::msleep(50);
@@ -368,6 +325,7 @@ void DAPyWorkFlowLifecycle::startExecute()
  * 设置暂停标记，在下次轮询检查时将工作流暂停。
  * 使用QMutex和QWaitCondition实现协同暂停，
  * 工作线程在暂停期间等待resume()唤醒。
+ * 同时通过封装类通知Python侧暂停。
  */
 void DAPyWorkFlowLifecycle::pause()
 {
@@ -378,17 +336,11 @@ void DAPyWorkFlowLifecycle::pause()
     }
     d->mIsPauseRequest = true;
 
-    // 同时通知Python侧暂停
+    // 通过封装类通知Python侧暂停（替代 .attr("pause")）
     {
-        // 释放mutex以允许Python操作
         locker.unlock();
-        DA::DAPyGILGuard gil;
-        try {
-            if (d->mPyExecutorObj) {
-                d->mPyExecutorObj.object().attr("pause")();
-            }
-        } catch (const std::exception& e) {
-            d->dealException(e);
+        if (d->mWorkflow) {
+            d->mWorkflow->pause();
         }
         locker.relock();
     }
@@ -398,7 +350,7 @@ void DAPyWorkFlowLifecycle::pause()
  * @brief 恢复执行
  *
  * 清除暂停标记并唤醒等待的工作线程。
- * 同时通知Python侧恢复执行。
+ * 同时通过封装类通知Python侧恢复执行。
  */
 void DAPyWorkFlowLifecycle::resume()
 {
@@ -410,16 +362,11 @@ void DAPyWorkFlowLifecycle::resume()
     d->mIsPauseRequest = false;
     d->mPauseCondition.wakeAll();
 
-    // 同时通知Python侧恢复
+    // 通过封装类通知Python侧恢复（替代 .attr("resume")）
     {
         locker.unlock();
-        DA::DAPyGILGuard gil;
-        try {
-            if (d->mPyExecutorObj) {
-                d->mPyExecutorObj.object().attr("resume")();
-            }
-        } catch (const std::exception& e) {
-            d->dealException(e);
+        if (d->mWorkflow) {
+            d->mWorkflow->resume();
         }
         locker.relock();
     }
@@ -428,10 +375,10 @@ void DAPyWorkFlowLifecycle::resume()
 /**
  * @brief 终止执行
  *
- * 设置终止标记并调用Python executor.terminate()。
+ * 设置终止标记并通过封装类调用 mWorkflow->terminate()。
  * 当前正在执行的节点完成后将停止后续执行。
  *
- * @note 获取GIL调用Python terminate()方法
+ * @note 封装类内部获取GIL调用Python terminate()方法
  */
 void DAPyWorkFlowLifecycle::terminate()
 {
@@ -444,19 +391,9 @@ void DAPyWorkFlowLifecycle::terminate()
         d->mPauseCondition.wakeAll();
     }
 
-    // 获取GIL调用Python terminate
-    {
-        DA::DAPyGILGuard gil;
-        try {
-            if (d->mPyExecutorObj) {
-                d->mPyExecutorObj.object().attr("terminate")();
-            }
-        } catch (const pybind11::error_already_set& e) {
-            // error_already_set必须在GIL作用域内消费
-            d->dealException(e);
-        } catch (const std::exception& e) {
-            d->dealException(e);
-        }
+    // 通过封装类调用Python terminate（替代 .attr("terminate")）
+    if (d->mWorkflow) {
+        d->mWorkflow->terminate();
     }
 }
 

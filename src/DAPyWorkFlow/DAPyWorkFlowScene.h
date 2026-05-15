@@ -2,6 +2,7 @@
 #define DAPYWORKFLOWSCENE_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAGraphicsScene.h"
+#include "DAPyWorkFlow.h"
 #include "DAPyNodeProxy.h"
 #include "DAPyNodeState.h"
 #include <QPointF>

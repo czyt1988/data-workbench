@@ -117,10 +117,32 @@ void DAPyWorkFlow::initPyWorkflow()
 }
 
 /**
- * @brief 检查 Python DAWorkflow 实例是否有效
+ * @brief 设置外部 Python DAWorkflow 实例
  *
- * @return true 如果 Python 实例已创建且不为 None
+ * 接收外部传入的 Python workflow 对象，替代内部 initPyWorkflow() 创建的实例。
+ * 用于 DAPyWorkFlowScene::setPyWorkflow() 透传场景级 workflow 设置。
+ *
+ * @param[in] obj Python DAWorkflow 实例的 pybind11::object
  */
+void DAPyWorkFlow::setPyWorkflowObject(const pybind11::object& obj)
+{
+    DA_D(d);
+    d->mPyWorkflowObj = DA::PY::safe_pyobject(pybind11::object(obj));
+}
+
+/**
+ * @brief 获取内部 Python DAWorkflow 实例对象
+ *
+ * 返回内部持有的 Python workflow 对象引用，用于 DAPyWorkFlowScene::getPyWorkflow() 透传。
+ *
+ * @return Python DAWorkflow 实例的 pybind11::object，未初始化时返回空对象
+ */
+pybind11::object DAPyWorkFlow::getPyWorkflowObject() const
+{
+    DA_DC(d);
+    return d->mPyWorkflowObj.object();
+}
+
 bool DAPyWorkFlow::isValid() const
 {
     DA_DC(d);
@@ -494,11 +516,11 @@ QStringList DAPyWorkFlow::topologicalSort()
 }
 
 /**
- * @brief 异步执行工作流
+ * @brief 异步执行工作流（无回调版本）
  *
  * 导入 DAWorkflowExecutor 类，创建执行器实例并调用 execute_async() 启动异步执行。
  * 执行器实例存储在 mPyExecutorObj 中，供后续 terminate/pause/resume 调用使用。
- * 不设置 Python 回调（由 DAPyWorkFlowLifecycle 负责）。
+ * 不设置 Python 回调（由 DAPyWorkFlowLifecycle 通过带回调版本注册）。
  *
  * @return true 成功启动异步执行；false workflow 未初始化、模块导入失败或 Python 异常
  * @see terminate pause resume DAPyWorkFlowLifecycle
@@ -512,7 +534,6 @@ bool DAPyWorkFlow::executeAsync()
     }
     DAPyGILGuard gil;
     try {
-        // 确保基础模块已导入
         DAPyModuleWorkflow& pyModule = DAPyModuleWorkflow::getInstance();
         if (!pyModule.isImport()) {
             if (!pyModule.import()) {
@@ -520,11 +541,56 @@ bool DAPyWorkFlow::executeAsync()
                 return false;
             }
         }
-        // 导入 executor 子模块并创建 DAWorkflowExecutor 实例
         pybind11::object executorModule = pybind11::module_::import("DAWorkbench.DAWorkFlowPy.executor");
         pybind11::object executorClass  = executorModule.attr("DAWorkflowExecutor");
         pybind11::object workflowObj    = d->mPyWorkflowObj.object();
         pybind11::object executorObj    = executorClass(workflowObj);
+        executorObj.attr("execute_async")();
+        d->mPyExecutorObj = DA::PY::safe_pyobject(std::move(executorObj));
+        return true;
+    } catch (const pybind11::error_already_set& e) {
+        d->dealException(e);
+    } catch (const std::exception& e) {
+        d->dealException(e);
+    }
+    return false;
+}
+
+/**
+ * @brief 异步执行工作流（带回调版本）
+ *
+ * 导入 DAWorkflowExecutor 类，创建执行器实例时传入三个回调函数，
+ * 调用 execute_async() 启动异步执行。
+ * 执行器实例存储在 mPyExecutorObj 中，供后续 terminate/pause/resume 调用使用。
+ *
+ * @param[in] onNodeFinished 节点完成回调（pybind11::cpp_function）
+ * @param[in] onStateChange 状态变更回调（pybind11::cpp_function）
+ * @param[in] onProgress 进度回调（pybind11::cpp_function）
+ * @return true 成功启动异步执行；false workflow 未初始化、模块导入失败或 Python 异常
+ * @see terminate pause resume DAPyWorkFlowLifecycle
+ */
+bool DAPyWorkFlow::executeAsync(pybind11::object onNodeFinished,
+                                  pybind11::object onStateChange,
+                                  pybind11::object onProgress)
+{
+    DA_D(d);
+    if (!isValid()) {
+        qWarning() << "DAPyWorkFlow::executeAsync: workflow is not valid";
+        return false;
+    }
+    DAPyGILGuard gil;
+    try {
+        DAPyModuleWorkflow& pyModule = DAPyModuleWorkflow::getInstance();
+        if (!pyModule.isImport()) {
+            if (!pyModule.import()) {
+                qWarning() << "DAPyWorkFlow::executeAsync: cannot import DAWorkbench.DAWorkFlowPy";
+                return false;
+            }
+        }
+        pybind11::object executorModule = pybind11::module_::import("DAWorkbench.DAWorkFlowPy.executor");
+        pybind11::object executorClass  = executorModule.attr("DAWorkflowExecutor");
+        pybind11::object workflowObj    = d->mPyWorkflowObj.object();
+        pybind11::object executorObj    = executorClass(workflowObj, onNodeFinished, onStateChange, onProgress);
         executorObj.attr("execute_async")();
         d->mPyExecutorObj = DA::PY::safe_pyobject(std::move(executorObj));
         return true;

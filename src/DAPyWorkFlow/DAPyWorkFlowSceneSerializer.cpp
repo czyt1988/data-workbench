@@ -1,6 +1,7 @@
 ﻿#include "DAPyWorkFlowSceneSerializer.h"
 #include "DAPybind11InQt.h"
 #include "DAPyWorkFlowScene.h"
+#include "DAPyWorkFlow.h"
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyLinkGraphicsItem.h"
 #include "DAPyNodeProxy.h"
@@ -133,14 +134,18 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
                 state.name          = QString::fromStdString(nameStr);
             }
 
-            // 从Python workflow获取节点数据
-            if (workflowObj && pybind11::hasattr(workflowObj, "_nodes")) {
-                pybind11::dict nodesDict = workflowObj.attr("_nodes").cast< pybind11::dict >();
-                for (auto item : nodesDict) {
+            // 从Python workflow获取节点数据（通过DAPyWorkFlow封装层）
+            {
+                DAPyWorkFlow wfWrapper;
+                wfWrapper.setPyWorkflowObject(workflowObj);
+                pybind11::list nodesList = wfWrapper.getNodes();
+                for (auto item : nodesList) {
                     DAWorkflowNodeState ns;
-                    std::string nodeIdStr   = pybind11::str(item.first);
-                    ns.nodeId               = QString::fromStdString(nodeIdStr);
-                    pybind11::object nodeInst = item.second.cast< pybind11::object >();
+                    pybind11::object nodeInst = item.cast< pybind11::object >();
+                    if (pybind11::hasattr(nodeInst, "node_id")) {
+                        std::string nodeIdStr = pybind11::str(nodeInst.attr("node_id"));
+                        ns.nodeId             = QString::fromStdString(nodeIdStr);
+                    }
                     if (pybind11::hasattr(nodeInst, "qualified_name")) {
                         std::string qnameStr = pybind11::str(nodeInst.attr("qualified_name"));
                         ns.qualifiedName     = QString::fromStdString(qnameStr);
@@ -154,12 +159,14 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
                 }
             }
 
-            // 从Python workflow获取连接数据
-            if (workflowObj && pybind11::hasattr(workflowObj, "_connections")) {
-                pybind11::dict connsDict = workflowObj.attr("_connections").cast< pybind11::dict >();
-                for (auto item : connsDict) {
+            // 从Python workflow获取连接数据（通过DAPyWorkFlow封装层）
+            {
+                DAPyWorkFlow wfWrapper;
+                wfWrapper.setPyWorkflowObject(workflowObj);
+                pybind11::list connsList = wfWrapper.getConnections();
+                for (auto item : connsList) {
                     DAWorkflowConnectionState cs;
-                    pybind11::object conn     = item.second.cast< pybind11::object >();
+                    pybind11::object conn     = item.cast< pybind11::object >();
                     if (pybind11::hasattr(conn, "connection_id")) {
                         cs.connectionId = QString::fromStdString(pybind11::str(conn.attr("connection_id")));
                     }

@@ -38,6 +38,10 @@ public:
 
     // 初始化 Python DAWorkflow 实例
     void initPyWorkflow();
+    // 设置外部 Python DAWorkflow 实例（用于 setPyWorkflow 透传）
+    void setPyWorkflowObject(const pybind11::object& obj);
+    // 获取内部 Python DAWorkflow 实例对象（用于 getPyWorkflow 透传）
+    pybind11::object getPyWorkflowObject() const;
     // 检查 Python 实例是否有效
     bool isValid() const;
 
@@ -75,8 +79,12 @@ public:
     QStringList topologicalSort();
 
     // --- Wave 2: Executor 操作方法 ---
-    // 异步执行工作流
+    // 异步执行工作流（无回调）
     bool executeAsync();
+    // 异步执行工作流（带回调）— 回调由 DAPyWorkFlowLifecycle 注册
+    bool executeAsync(pybind11::object onNodeFinished,
+                       pybind11::object onStateChange,
+                       pybind11::object onProgress);
     // 终止执行
     void terminate();
     // 暂停执行
