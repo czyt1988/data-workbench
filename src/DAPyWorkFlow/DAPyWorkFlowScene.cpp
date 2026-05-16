@@ -118,15 +118,11 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkAdd(DAPyLinkGraphicsItem* lin
     // 同步Python侧连接
     if (this->mWorkflow.isValid()) {
         if (fromItem->getProxy() && toItem->getProxy()) {
-            QString srcNodeId = this->mNodeIdMap.value(fromItem);
-            QString dstNodeId = this->mNodeIdMap.value(toItem);
-            if (!srcNodeId.isEmpty() && !dstNodeId.isEmpty()) {
-                DAPyWorkFlowConnection conn = this->mWorkflow.connectNode(srcNodeId, fromOutput, dstNodeId, toInput);
-                if (conn.isValid()) {
-                    this->mLinkConnectionIdMap[ linkItem ] = conn.connectionId;
-                } else {
-                    qWarning() << tr("DAPyWorkFlowScene::addPyNodeLink: connectNode failed, no valid connectionId");
-                }
+            DAPyWorkFlowConnection conn = this->mWorkflow.connectNode(fromItem->getProxy(), fromOutput, toItem->getProxy(), toInput);
+            if (conn.isValid()) {
+                this->mLinkConnectionIdMap[ linkItem ] = conn.connectionId;
+            } else {
+                qWarning() << tr("DAPyWorkFlowScene::addPyNodeLink: connectNode failed, no valid connectionId");
             }
         }
     }
@@ -492,10 +488,7 @@ bool DAPyWorkFlowScene::removePyNodeItem(DAPyNodeGraphicsItem* item)
 
     // 同步Python侧节点移除
     if (d->mWorkflow.isValid() && proxy) {
-        QString nodeId = d->mNodeIdMap.value(item);
-        if (!nodeId.isEmpty()) {
-            d->mWorkflow.removeNode(nodeId);
-        }
+        d->mWorkflow.removeNode(proxy);
     }
     d->unregisterNode(item);
 
