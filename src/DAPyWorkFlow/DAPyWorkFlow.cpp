@@ -4,6 +4,7 @@
 #include "DAPybind11InQt.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DAPyNodeProxy.h"
+#include "DAPyLinkGraphicsItem.h"
 #include <QDebug>
 
 namespace DA
@@ -360,6 +361,135 @@ bool DAPyWorkFlow::hasNode(const QString& nodeId)
         d->dealException(e);
     }
     return false;
+}
+
+/**
+ * @brief 添加节点到 Python DAWorkflow（指针重载版本）
+ *
+ * 便捷方法：内部先调用 QString addNode(proxy) 获取 nodeId，
+ * 验证 nodeId 非空后返回原 proxy 指针。
+ *
+ * @param[in] proxy 节点代理指针（必须持有有效 Python 节点引用）
+ * @return 传入的 proxy 本身；nullptr 表示失败（proxy 为空、workflow 未初始化或 addNode 失败）
+ * @see QString addNode(DAPyNodeProxy*) removeNode(DAPyNodeProxy*)
+ */
+DAPyNodeProxy* DAPyWorkFlow::addNodeProxy(DAPyNodeProxy* proxy)
+{
+    if (!proxy) {
+        qWarning() << "DAPyWorkFlow::addNodeProxy(DAPyNodeProxy*): proxy is nullptr";
+        return nullptr;
+    }
+    QString nodeId = addNode(proxy);
+    if (nodeId.isEmpty()) {
+        qWarning() << "DAPyWorkFlow::addNodeProxy(DAPyNodeProxy*): nodeId not assigned, addNode failed";
+        return nullptr;
+    }
+    return proxy;
+}
+
+/**
+ * @brief 通过代理指针移除节点
+ *
+ * 从 proxy 提取 nodeId 后，调用 bool removeNode(nodeId) 执行移除。
+ * 使用 DAPyGILGuard 保护 proxy->getNodeId() 的 Python 调用。
+ *
+ * @param[in] proxy 节点代理指针
+ * @return true 成功移除；false proxy 为空、nodeId 无效或底层 removeNode 失败
+ * @see bool removeNode(const QString&) addNode(DAPyNodeProxy*)
+ */
+bool DAPyWorkFlow::removeNode(DAPyNodeProxy* proxy)
+{
+    if (!proxy) {
+        qWarning() << "DAPyWorkFlow::removeNode(DAPyNodeProxy*): proxy is nullptr";
+        return false;
+    }
+    DAPyGILGuard gil;
+    QString nodeId = proxy->getNodeId();
+    if (nodeId.isEmpty()) {
+        qWarning() << "DAPyWorkFlow::removeNode(DAPyNodeProxy*): proxy has empty nodeId";
+        return false;
+    }
+    return removeNode(nodeId);
+}
+
+/**
+ * @brief 通过代理指针连接两个节点
+ *
+ * 从 src/dst 代理提取 nodeId 后，调用 DAPyWorkFlowConnection connectNode(...) 创建连接。
+ * 使用 DAPyGILGuard 保护 proxy->getNodeId() 的 Python 调用。
+ *
+ * @param[in] src 源节点代理指针
+ * @param[in] srcChannel 源节点输出端口名称
+ * @param[in] dst 目标节点代理指针
+ * @param[in] dstChannel 目标节点输入端口名称
+ * @return DAPyWorkFlowConnection 连接描述符；无效参数或底层调用失败时 isValid() 为 false
+ * @see DAPyWorkFlowConnection connectNode(QString, QString, QString, QString)
+ */
+DAPyWorkFlowConnection DAPyWorkFlow::connectNode(DAPyNodeProxy* src, const QString& srcChannel,
+                                                 DAPyNodeProxy* dst, const QString& dstChannel)
+{
+    if (!src) {
+        qWarning() << "DAPyWorkFlow::connectNode(DAPyNodeProxy*, ...): src is nullptr";
+        return DAPyWorkFlowConnection();
+    }
+    if (!dst) {
+        qWarning() << "DAPyWorkFlow::connectNode(..., DAPyNodeProxy*, ...): dst is nullptr";
+        return DAPyWorkFlowConnection();
+    }
+    DAPyGILGuard gil;
+    QString srcNodeId = src->getNodeId();
+    QString dstNodeId = dst->getNodeId();
+    if (srcNodeId.isEmpty() || dstNodeId.isEmpty()) {
+        qWarning() << "DAPyWorkFlow::connectNode(DAPyNodeProxy*, ...): src/dst has empty nodeId";
+        return DAPyWorkFlowConnection();
+    }
+    return connectNode(srcNodeId, srcChannel, dstNodeId, dstChannel);
+}
+
+/**
+ * @brief 通过连接图形项断开连接
+ *
+ * @param[in] link 连接线图形项指针
+ * @return true 成功断开；false link 为空或底层 disconnectNode 失败
+ * @note ⚠️ DAPyLinkGraphicsItem 当前缺少 getConnectionId() 方法，无法直接提取 connectionId。
+ *       此重载需要在 DAPyLinkGraphicsItem 增加 connectionId 存储后才能完整实现。
+ *       目前作为空壳保留，仅做 null 检查。
+ */
+bool DAPyWorkFlow::disconnectNode(DAPyLinkGraphicsItem* link)
+{
+    if (!link) {
+        qWarning() << "DAPyWorkFlow::disconnectNode(DAPyLinkGraphicsItem*): link is nullptr";
+        return false;
+    }
+    // TODO: DAPyLinkGraphicsItem 缺少 getConnectionId() 方法。
+    // 增加 connectionId 存储/获取后，此处改为: return disconnectNode(link->getConnectionId());
+    qWarning() << "DAPyWorkFlow::disconnectNode(DAPyLinkGraphicsItem*): DAPyLinkGraphicsItem lacks getConnectionId(), unimplemented";
+    return false;
+}
+
+/**
+ * @brief 通过代理指针检查节点是否存在
+ *
+ * 从 proxy 提取 nodeId 后，调用 bool hasNode(nodeId) 检查。
+ * 使用 DAPyGILGuard 保护 proxy->getNodeId() 的 Python 调用。
+ *
+ * @param[in] proxy 节点代理指针
+ * @return true 节点存在；false proxy 为空、nodeId 无效或底层 hasNode 返回 false
+ * @see bool hasNode(const QString&)
+ */
+bool DAPyWorkFlow::hasNode(DAPyNodeProxy* proxy)
+{
+    if (!proxy) {
+        qWarning() << "DAPyWorkFlow::hasNode(DAPyNodeProxy*): proxy is nullptr";
+        return false;
+    }
+    DAPyGILGuard gil;
+    QString nodeId = proxy->getNodeId();
+    if (nodeId.isEmpty()) {
+        qWarning() << "DAPyWorkFlow::hasNode(DAPyNodeProxy*): proxy has empty nodeId";
+        return false;
+    }
+    return hasNode(nodeId);
 }
 
 /**

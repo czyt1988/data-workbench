@@ -1250,7 +1250,8 @@ void DAPyWorkFlowScene::onSelectLinkChanged(DAGraphicsLinkItem* item)
  */
 void DAPyWorkFlowScene::onPyNodeStateNotification(const QString& nodeId, DAPyNodeState state)
 {
-    DAPyNodeGraphicsItem* item = findNodeItemById(nodeId);
+    DA_D(d);
+    DAPyNodeGraphicsItem* item = d->mNodeIdToItemMap.value(nodeId);
     if (item) {
         item->setNodeState(state);
         emit pyNodeStateChanged(item, state);

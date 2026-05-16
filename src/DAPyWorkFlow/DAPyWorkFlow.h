@@ -9,6 +9,8 @@
 
 namespace DA
 {
+class DAPyNodeProxy;
+class DAPyLinkGraphicsItem;
 
 /**
  * @brief Python DAWorkflow 类的 C++ 封装
@@ -65,6 +67,20 @@ public:
     int nodeCount();  // TODO: Wave 2 Task 10
     // 检查节点是否存在
     bool hasNode(const QString& nodeId);  // TODO: Wave 2 Task 10
+
+    // --- 指针便捷重载（内部委托至字符串ID方法） ---
+    // 添加节点，返回传入的代理指针（失败时返回nullptr）；内部调用 QString addNode(proxy)
+    DAPyNodeProxy* addNodeProxy(DAPyNodeProxy* proxy);
+    // 通过代理指针移除节点；内部调用 bool removeNode(nodeId)
+    bool removeNode(DAPyNodeProxy* proxy);
+    // 通过代理指针连接两个节点；内部调用 DAPyWorkFlowConnection connectNode(srcId, srcChannel, dstId, dstChannel)
+    DAPyWorkFlowConnection connectNode(DAPyNodeProxy* src, const QString& srcChannel,
+                                       DAPyNodeProxy* dst, const QString& dstChannel);
+    // 通过连接图形项断开连接；内部调用 bool disconnectNode(connectionId)
+    // ⚠️ 注意：DAPyLinkGraphicsItem 当前缺少 getConnectionId() 方法，此重载暂返回 false
+    bool disconnectNode(DAPyLinkGraphicsItem* link);
+    // 通过代理指针检查节点是否存在；内部调用 bool hasNode(nodeId)
+    bool hasNode(DAPyNodeProxy* proxy);
 
     // --- Wave 2: 数据查询方法 ---
     // 通过 node_id 获取 Python 节点对象，不存在时返回 py::none()
