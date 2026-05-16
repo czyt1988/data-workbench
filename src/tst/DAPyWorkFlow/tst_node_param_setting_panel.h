@@ -25,6 +25,11 @@ private Q_SLOTS:
 
     // propertyPanel 访问
     void testPropertyPanelAccessor();
+
+    // 面板端到端集成测试
+    void test_buildPropertyPanelCreatesEditors();
+    void test_collectConfigGathersAllValues();
+    void test_updateUISetsWidgetValues();
 };
 
 }  // namespace DA
