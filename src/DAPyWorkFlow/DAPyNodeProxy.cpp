@@ -2,6 +2,7 @@
 #include "DAPybind11InQt.h"
 #include "DAPyModuleWorkflow.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
+#include "DAPyBindQt/DAPyJsonCast.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DANodeDescriptor.h"
 #include "DAPortDescriptor.h"
@@ -31,6 +32,7 @@ public:
     DA::PY::safe_pyobject mPyNodeRef;                 ///< Python节点实例的安全持有者
     DAPyNodeState mNodeState { DAPyNodeState::Idle };  ///< 节点执行状态
     mutable QString mLastErrorString;                  ///< 最后一次错误信息（mutable允许const方法修改）
+    QJsonObject mConfig;                              ///< 配置数据缓存
 };
 
 //===================================================
@@ -390,6 +392,7 @@ void DAPyNodeProxy::setNodeName(const QString& name)
 {
     DA_D(d);
     d->mDescriptor.name = name;
+    emit nodeNameChanged(name);
 }
 
 /**
@@ -501,6 +504,7 @@ void DAPyNodeProxy::setNodeState(DAPyNodeState state)
 {
     DA_D(d);
     d->mNodeState = state;
+    emit nodeStateChanged(state);
 }
 
 /**
@@ -592,6 +596,66 @@ pybind11::object DAPyNodeProxy::getPyOutputData(const QString& key) const
     }
 
     return pybind11::none();
+}
+
+/**
+ * @brief 设置节点配置数据
+ *
+ * 将QJsonObject配置写入Python节点侧（转换为dict）并本地缓存。
+ * 使用DAPyJsonCast的qjsonObjectToPyDict进行JSON→Python转换，
+ * 支持嵌套对象和数组。
+ *
+ * 执行流程：
+ * 1. 缓存config到mConfig
+ * 2. 若Python节点引用有效，获取GIL
+ * 3. 转换QJsonObject为pybind11::dict
+ * 4. 调用Python节点的set_input_data("config", pyConfig)
+ * 5. 为每个key-value对发射parameterValueChanged信号
+ *
+ * @param[in] config 节点配置数据（QJsonObject格式）
+ * @note GIL保护下调用Python方法，error_already_set必须在GIL作用域内消费
+ * @see setPyInputData DAPyGILGuard DA::PY::qjsonObjectToPyDict
+ */
+void DAPyNodeProxy::setConfig(const QJsonObject& config)
+{
+    DA_D(d);
+    // 1. 缓存配置数据
+    d->mConfig = config;
+
+    // 5. 为每个参数发射信号（无论Python节点是否有效，本地缓存已更新）
+    for (auto it = config.constBegin(); it != config.constEnd(); ++it) {
+        emit parameterValueChanged(qHash(it.key()), it.value().toVariant());
+    }
+
+    // 2. 检查Python节点引用是否有效
+    if (!d->mPyNodeRef) {
+        return;
+    }
+
+    // 3. 获取GIL
+    DAPyGILGuard gilGuard;
+    if (!gilGuard.isAcquired()) {
+        qWarning() << "DAPyNodeProxy::setConfig: Failed to acquire GIL";
+        return;
+    }
+
+    try {
+        // 4. 转换QJsonObject为pybind11::dict
+        pybind11::dict pyConfig = DA::PY::qjsonObjectToPyDict(config);
+        pybind11::object pyNode = d->mPyNodeRef.object();
+        // 5. 调用Python节点的set_input_data方法
+        if (pybind11::hasattr(pyNode, "set_input_data")) {
+            pybind11::str pyKey = pybind11::cast(std::string("config"));
+            pyNode.attr("set_input_data")(pyKey, pyConfig);
+        }
+    } catch (const pybind11::error_already_set& e) {
+        // error_already_set必须在GIL作用域内消费
+        d->mLastErrorString = e.what();
+        d->dealException(e);
+    } catch (const std::exception& e) {
+        d->mLastErrorString = e.what();
+        d->dealException(e);
+    }
 }
 
 

@@ -193,6 +193,7 @@ QString DAPyWorkFlow::addNode(DAPyNodeProxy* proxy)
         }
         pybind11::object result = workflowObj.attr("add_node")(pyNodeRef);
         std::string nodeIdStr   = result.cast< std::string >();
+        emit nodeAdded(proxy);
         return QString::fromStdString(nodeIdStr);
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
@@ -299,8 +300,12 @@ bool DAPyWorkFlow::disconnectNode(const QString& connectionId)
     DAPyGILGuard gil;
     try {
         pybind11::object workflowObj = d->mPyWorkflowObj.object();
-        bool res                     = workflowObj.attr("remove_connection")(connectionId.toStdString()).cast< bool >();
-        return res;
+        pybind11::object connObj     = workflowObj.attr("remove_connection")(connectionId.toStdString());
+        // Extract connection info for signal emission
+        QString fromPort = QString::fromStdString(pybind11::str(connObj.attr("source_output_channel")));
+        QString toPort   = QString::fromStdString(pybind11::str(connObj.attr("target_input_channel")));
+        emit nodeDisconnected(nullptr, fromPort, nullptr, toPort);
+        return true;
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
     } catch (const std::exception& e) {
@@ -409,6 +414,7 @@ bool DAPyWorkFlow::removeNode(DAPyNodeProxy* proxy)
         qWarning() << "DAPyWorkFlow::removeNode(DAPyNodeProxy*): proxy has empty nodeId";
         return false;
     }
+    emit nodeRemoved(proxy);
     return removeNode(nodeId);
 }
 
@@ -443,7 +449,11 @@ DAPyWorkFlowConnection DAPyWorkFlow::connectNode(DAPyNodeProxy* src, const QStri
         qWarning() << "DAPyWorkFlow::connectNode(DAPyNodeProxy*, ...): src/dst has empty nodeId";
         return DAPyWorkFlowConnection();
     }
-    return connectNode(srcNodeId, srcChannel, dstNodeId, dstChannel);
+    DAPyWorkFlowConnection connResult = connectNode(srcNodeId, srcChannel, dstNodeId, dstChannel);
+    if (connResult.isValid()) {
+        emit nodeConnected(src, srcChannel, dst, dstChannel);
+    }
+    return connResult;
 }
 
 /**
@@ -660,6 +670,7 @@ bool DAPyWorkFlow::executeAsync()
         qWarning() << "DAPyWorkFlow::executeAsync: workflow is not valid";
         return false;
     }
+    emit executionStarted();
     DAPyGILGuard gil;
     try {
         DAPyModuleWorkflow& pyModule = DAPyModuleWorkflow::getInstance();
@@ -672,15 +683,17 @@ bool DAPyWorkFlow::executeAsync()
         pybind11::object executorModule = pybind11::module_::import("DAWorkbench.DAWorkFlowPy.executor");
         pybind11::object executorClass  = executorModule.attr("DAWorkflowExecutor");
         pybind11::object workflowObj    = d->mPyWorkflowObj.object();
-        pybind11::object executorObj    = executorClass(workflowObj);
+pybind11::object executorObj    = executorClass(workflowObj);
         executorObj.attr("execute_async")();
         d->mPyExecutorObj = DA::PY::safe_pyobject(std::move(executorObj));
+        emit executionFinished(true);
         return true;
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
     } catch (const std::exception& e) {
         d->dealException(e);
     }
+emit executionFinished(false);
     return false;
 }
 
@@ -704,6 +717,7 @@ bool DAPyWorkFlow::executeAsync(pybind11::object onNodeFinished, pybind11::objec
         qWarning() << "DAPyWorkFlow::executeAsync: workflow is not valid";
         return false;
     }
+    emit executionStarted();
     DAPyGILGuard gil;
     try {
         DAPyModuleWorkflow& pyModule = DAPyModuleWorkflow::getInstance();
@@ -719,12 +733,14 @@ bool DAPyWorkFlow::executeAsync(pybind11::object onNodeFinished, pybind11::objec
         pybind11::object executorObj    = executorClass(workflowObj, onNodeFinished, onStateChange, onProgress);
         executorObj.attr("execute_async")();
         d->mPyExecutorObj = DA::PY::safe_pyobject(std::move(executorObj));
+        emit executionFinished(true);
         return true;
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
     } catch (const std::exception& e) {
         d->dealException(e);
     }
+emit executionFinished(false);
     return false;
 }
 

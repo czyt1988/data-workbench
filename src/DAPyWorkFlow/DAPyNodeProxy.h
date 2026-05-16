@@ -9,6 +9,7 @@
 #include <QObject>
 #include <QString>
 #include <QList>
+#include <QJsonObject>
 
 namespace DA
 {
@@ -85,6 +86,9 @@ public:
     // Python原生数据传递
     void setPyInputData(const QString& key, const pybind11::object& data);
     pybind11::object getPyOutputData(const QString& key) const;
+
+    // 配置数据传递（QJsonObject→Python dict，本地缓存）
+    void setConfig(const QJsonObject& config);
 
     // 节点ID（独立管理，不继承DAAbstractNode）
     unsigned int getID() const;
