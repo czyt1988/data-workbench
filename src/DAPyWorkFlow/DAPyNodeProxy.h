@@ -6,6 +6,7 @@
 #include "DAPyNodeStyle.h"
 #include "DAGlobals.h"
 #include "DAPybind11InQt.h"
+#include <QObject>
 #include <QString>
 #include <QList>
 
@@ -31,12 +32,13 @@ namespace DA
  *
  * @see DAPyGILGuard DAPyModuleWorkflow DAPyNodeState DAPyDataFrame
  */
-class DAPYWORKFLOW_API DAPyNodeProxy
+class DAPYWORKFLOW_API DAPyNodeProxy : public QObject
 {
+    Q_OBJECT
     DA_DECLARE_PRIVATE(DAPyNodeProxy)
 public:
     // 构造/析构
-    DAPyNodeProxy();
+    explicit DAPyNodeProxy(QObject* parent = nullptr);
     ~DAPyNodeProxy();
 
     // 执行节点（GIL+Python execute）
@@ -90,6 +92,14 @@ public:
 
     // 有效性检查
     bool isValid() const;
+
+Q_SIGNALS:
+    // 节点名称变化信号
+    void nodeNameChanged(const QString& name);
+    // 节点状态变化信号
+    void nodeStateChanged(const DAPyNodeState& state);
+    // 参数值变化信号
+    void parameterValueChanged(int propertyId, QVariant value);
 };
 
 }  // namespace DA

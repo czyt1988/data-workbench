@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QString>
 #include "DAPyWorkFlowAPI.h"
+#include "DAPyNodeState.h"
 #include <memory>
 
 namespace DA

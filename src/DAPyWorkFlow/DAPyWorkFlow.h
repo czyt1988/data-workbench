@@ -4,6 +4,7 @@
 #include "DAGlobals.h"
 #include "DAPyWorkFlowTypes.h"
 #include "DAPybind11InQt.h"
+#include <QObject>
 #include <QString>
 #include <QStringList>
 
@@ -17,7 +18,7 @@ class DAPyLinkGraphicsItem;
  *
  * 通过 PIMPL + safe_pyobject 模式封装 Python DAWorkflow 实例，
  * 提供类型安全的 C++ API 操作 Python workflow，消除原始 pybind11::object 和 .attr() 调用。
- * 遵循非 QObject + PIMPL + safe_pyobject 模式（参考 DAPyNodeProxy）。
+ * 继承 QObject 以支持信号槽机制，提供节点增删、连接/断开、执行状态等事件通知。
  *
  * @code
  * DAPyWorkFlow workflow;
@@ -30,14 +31,31 @@ class DAPyLinkGraphicsItem;
  *
  * @see DAPyNodeProxy DAPyModuleWorkflow DAPyGILGuard
  */
-class DAPYWORKFLOW_API DAPyWorkFlow
+class DAPYWORKFLOW_API DAPyWorkFlow : public QObject
 {
+    Q_OBJECT
     DA_DECLARE_PRIVATE(DAPyWorkFlow)
 public:
     // 构造/析构
     DAPyWorkFlow();
     ~DAPyWorkFlow();
 
+    // --- 信号 ---
+Q_SIGNALS:
+    // 节点添加信号
+    void nodeAdded(DAPyNodeProxy* node);
+    // 节点移除信号
+    void nodeRemoved(DAPyNodeProxy* node);
+    // 节点连接信号
+    void nodeConnected(DAPyNodeProxy* fromNode, const QString& fromPort, DAPyNodeProxy* toNode, const QString& toPort);
+    // 节点断开信号
+    void nodeDisconnected(DAPyNodeProxy* fromNode, const QString& fromPort, DAPyNodeProxy* toNode, const QString& toPort);
+    // 执行开始信号
+    void executionStarted();
+    // 执行完成信号
+    void executionFinished(bool success);
+
+public:
     // 初始化 Python DAWorkflow 实例
     void initPyWorkflow();
     // 设置外部 Python DAWorkflow 实例（用于 setPyWorkflow 透传）

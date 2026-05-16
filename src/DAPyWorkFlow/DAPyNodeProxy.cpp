@@ -157,8 +157,9 @@ void DAPyNodeProxy::PrivateData::syncMetaFromPyNode(const pybind11::object& pyNo
  *
  * @note 需后续调用setPyNodeRef()关联Python节点实例才能执行
  */
-DAPyNodeProxy::DAPyNodeProxy() : DA_PIMPL_CONSTRUCT
+DAPyNodeProxy::DAPyNodeProxy(QObject* parent) : QObject(parent), DA_PIMPL_CONSTRUCT
 {
+    qRegisterMetaType<DA::DAPyNodeState>("DAPyNodeState");
 }
 
 /**
