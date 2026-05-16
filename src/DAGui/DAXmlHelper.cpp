@@ -511,6 +511,9 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
         loadNodePropertys(proxy, nodeEle);
     }
 
+    // 添加到场景
+    workFlowScene->addItem(item);
+
     // 更新连接点
     item->updateLinkPoints();
 
