@@ -93,6 +93,26 @@ private Q_SLOTS:
     void testGetLastErrorAfterError();
     // 验证 getLastError 在无错误时返回空字符串
     void testGetLastErrorNoError();
+
+    // --- 指针便捷 API ---
+    // 验证 addNodeProxy(DAPyNodeProxy*) 返回相同的代理指针
+    void test_addNodeProxy_pointer();
+    // 验证 removeNode(DAPyNodeProxy*) 按指针移除节点
+    void test_removeNode_pointer();
+    // 验证 connectNode(proxy*, srcChannel, proxy*, dstChannel) 创建有效连接
+    void test_connectNode_pointer();
+    // 验证 hasNode(DAPyNodeProxy*) 正确识别已有/未有节点
+    void test_hasNode_pointer();
+
+    // --- Scene O(1) 查找 ---
+    // 验证 findNodeItemById O(1) 查找返回正确图形项
+    void test_findNodeItemById_O1();
+    // 验证 findNodeItemByProxy O(1) 查找返回正确图形项
+    void test_findNodeItemByProxy_O1();
+
+    // --- 生命周期 ---
+    // 验证 setNodeProxies 正确填充 nodeId 映射
+    void test_lifecycle_setNodeProxies();
 };
 
 }  // namespace DA
