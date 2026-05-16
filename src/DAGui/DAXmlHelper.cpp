@@ -21,6 +21,7 @@
 #include "DAGraphicsPixmapItem.h"
 #include "DAGraphicsItemFactory.h"
 #include "DAPyNodeFactory.h"
+#include "DANodeDescriptor.h"
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyLinkGraphicsItem.h"
 #include "DAPyNodeProxy.h"
@@ -450,8 +451,8 @@ bool DAXmlHelper::PrivateData::loadNodesClipBoard(
 /**
  * @brief 加载节点并创建图形项
  *
- * 通过DAPyNodeFactory创建DAPyNodeProxy，再创建DAPyNodeGraphicsItem，
- * 添加到场景并加载节点信息。
+ * 通过DANodeDescriptor构建节点描述符，调用场景的createPyNode创建节点图形项，
+ * 然后加载节点属性和输入输出信息。
  *
  * @param nodeEle XML节点元素
  * @param workFlowScene 工作流场景
@@ -459,7 +460,6 @@ bool DAXmlHelper::PrivateData::loadNodesClipBoard(
  */
 DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElement& nodeEle, DAPyWorkFlowGraphicsScene* workFlowScene)
 {
-#if 0  // 涉及pyworkflow部分需要重构，禁止使用json，直接使用DANodeDescriptor
     bool isok     = false;
     qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
     if (!isok) {
@@ -477,9 +477,9 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
     }
 
     // 构建节点描述符，用于createPyNode
-    QJsonObject descriptor;
-    descriptor[ "qualified_name" ] = qualifiedName;
-    descriptor[ "name" ]           = name;
+    DANodeDescriptor descriptor;
+    descriptor.name          = name;
+    descriptor.qualifiedName = qualifiedName;
 
     // 通过场景创建节点图形项
     DAPyNodeGraphicsItem* item = workFlowScene->createPyNode(descriptor, QPointF(0, 0));
@@ -511,8 +511,6 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
         loadNodePropertys(proxy, nodeEle);
     }
 
-    // 添加item到场景
-    workFlowScene->addItem(item);
     // 更新连接点
     item->updateLinkPoints();
 
@@ -522,13 +520,13 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
         loadItem(item, itemEle);
     }
     return item;
-#else  // 临时，修复后需要删除
-    return nullptr;
-#endif
 }
 
 /**
  * @brief 加载节点，此过程是可以回退的
+ *
+ * 通过DANodeDescriptor构建节点描述符，调用场景的createPyNode_创建节点图形项（undo版本），
+ * 然后加载节点属性和输入输出信息。
  *
  * @note 此过程加载的节点将赋予新的id，并且把旧id和新id的关系保存入idMap中
  * @param nodeEle XML节点元素
@@ -540,7 +538,6 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(
     const QDomElement& nodeEle, DAPyWorkFlowGraphicsScene* workFlowScene, QMap< QString, QString >* idMap
 )
 {
-#if 0  // 需要重构，序列化无需支持可以回退的方法
     bool isok     = false;
     qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
     if (!isok) {
@@ -558,9 +555,9 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(
     }
 
     // 构建节点描述符
-    QJsonObject descriptor;
-    descriptor[ "qualified_name" ] = qualifiedName;
-    descriptor[ "name" ]           = name;
+    DANodeDescriptor descriptor;
+    descriptor.name          = name;
+    descriptor.qualifiedName = qualifiedName;
 
     // 通过场景创建节点图形项（带undo/redo）
     DAPyNodeGraphicsItem* item = workFlowScene->createPyNode_(descriptor, QPointF(0, 0));
@@ -605,10 +602,6 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(
         (*idMap)[ QString::number(id) ] = QString::number(proxy->getID());
     }
     return item;
-#else  // 临时，修复后需要删除
-
-    return nullptr;
-#endif
 }
 /**
  * @brief 保存节点的输入输出信息

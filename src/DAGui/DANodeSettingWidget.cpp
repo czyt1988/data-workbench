@@ -51,6 +51,12 @@ DANodeSettingWidget::~DANodeSettingWidget()
  */
 void DANodeSettingWidget::setNode(DAPyNodeProxy* p)
 {
+    // ⚠️ 生命周期风险：此原始指针归 DAPyNodeGraphicsItem 所有（通过 unique_ptr 管理）。
+    // 如果节点被删除（Delete 键/Undo/clearScene），_nodePtr 将悬空，后续访问会导致崩溃。
+    // 改进方案（后续）：
+    //   1. 使用 scene->findNodeItemByProxy(proxy) 在使用前验证指针有效性
+    //   2. 在 scene 销毁节点时通过信号通知此面板清空指针
+    //   3. 考虑使用观察者模式或 weak_ptr 替代原始指针
     _nodePtr = p;
     updateData();
 }

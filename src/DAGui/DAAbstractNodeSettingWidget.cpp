@@ -53,7 +53,12 @@ DAAbstractNodeSettingWidget::~DAAbstractNodeSettingWidget()
  */
 void DAAbstractNodeSettingWidget::setNodeProxy(DAPyNodeProxy* proxy)
 {
-    // TODO 审查： 这里操作非常危险，如果删除节点没有告知DAAbstractNodeSettingWidget将会奔溃，考虑是否DAPyNodeProxy使用智能指针
+    // ⚠️ 生命周期风险：此原始指针归 DAPyNodeGraphicsItem 所有（通过 unique_ptr 管理）。
+    // 如果节点被删除（Delete 键/Undo/clearScene），此指针将悬空，后续访问会导致崩溃。
+    // 改进方案（后续）：
+    //   1. 使用 scene->findNodeItemByProxy(proxy) 在使用前验证指针有效性
+    //   2. 在 scene 销毁节点时通过信号通知此面板清空指针
+    //   3. 考虑使用观察者模式或 weak_ptr 替代原始指针
     DA_D(d);
     d->mNodeProxy = proxy;
     if (proxy) {
