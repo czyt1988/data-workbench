@@ -463,8 +463,8 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
     bool isok     = false;
     qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
     if (!isok) {
-        qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node")
-                          .arg(nodeEle.attribute("id"));
+        qWarning(
+        ) << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node").arg(nodeEle.attribute("id"));
         return nullptr;
     }
     QString name          = nodeEle.attribute("name");
@@ -484,15 +484,13 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
     // 通过场景创建节点图形项
     DAPyNodeGraphicsItem* item = workFlowScene->createPyNode(descriptor, QPointF(0, 0));
     if (!item) {
-        qWarning() << QObject::tr("Unable to create node by prototype=%1,name=%2")
-                          .arg(qualifiedName, name);
+        qWarning() << QObject::tr("Unable to create node by prototype=%1,name=%2").arg(qualifiedName, name);
         return nullptr;
     }
 
     DAPyNodeProxy* proxy = item->getProxy();
     if (!proxy) {
-        qWarning() << QObject::tr("Node item has no proxy, prototype=%1,name=%2")
-                          .arg(qualifiedName, name);
+        qWarning() << QObject::tr("Node item has no proxy, prototype=%1,name=%2").arg(qualifiedName, name);
         workFlowScene->removePyNodeItem(item);
         return nullptr;
     }
@@ -504,12 +502,6 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
 
     // 加载节点的输入输出
     loadNodeInPutOutputKey(proxy, nodeEle);
-    // 加载节点的属性
-    if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() < 4) {
-        loadNodePropertys_v110(proxy, nodeEle);
-    } else {
-        loadNodePropertys(proxy, nodeEle);
-    }
 
     // 添加到场景
     workFlowScene->addItem(item);
@@ -544,8 +536,8 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(
     bool isok     = false;
     qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
     if (!isok) {
-        qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node")
-                          .arg(nodeEle.attribute("id"));
+        qWarning(
+        ) << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node").arg(nodeEle.attribute("id"));
         return nullptr;
     }
     QString name          = nodeEle.attribute("name");
@@ -584,12 +576,6 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(
 
     // 加载节点的输入输出
     loadNodeInPutOutputKey(proxy, nodeEle);
-    // 加载节点的属性
-    if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() < 4) {
-        loadNodePropertys_v110(proxy, nodeEle);
-    } else {
-        loadNodePropertys(proxy, nodeEle);
-    }
 
     // 更新连接点
     item->updateLinkPoints();
