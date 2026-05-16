@@ -1,6 +1,7 @@
 #ifndef DAPYWORKFLOWLIFECYCLE_H
 #define DAPYWORKFLOWLIFECYCLE_H
 #include <QObject>
+#include <QHash>
 #include <QMutex>
 #include <QWaitCondition>
 #include "DAPyWorkFlowAPI.h"
@@ -56,6 +57,8 @@ public:
     // 禁止拷贝
     DAPyWorkFlowLifecycle(const DAPyWorkFlowLifecycle&) = delete;
 
+    // 设置执行期间需要跟踪的节点代理（按 Python 侧 node_id 索引）
+    void setNodeProxies(const QList< DAPyNodeProxy* >& proxies);
     // 设置DAPyWorkFlow封装对象（替代原 setWorkflow(pybind11::object)）
     void setWorkflow(DAPyWorkFlow* workflow);
     // 判断是否正在执行（Running或Paused状态）

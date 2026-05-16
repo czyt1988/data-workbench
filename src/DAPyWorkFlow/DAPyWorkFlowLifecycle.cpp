@@ -34,6 +34,7 @@ public:
     QMutex mMutex;                              ///< 互斥锁保护状态变更
     QWaitCondition mPauseCondition;             ///< 暂停等待条件变量
     QString mLastErrorString;                   ///< 最后错误信息
+    QHash< QString, DAPyNodeProxy* > mExecutingProxies;  ///< 执行中节点的 nodeId → proxy 映射
 };
 
 //===================================================
@@ -100,6 +101,28 @@ void DAPyWorkFlowLifecycle::setWorkflow(DAPyWorkFlow* workflow)
 {
     DA_D(d);
     d->mWorkflow = workflow;
+}
+
+/**
+ * @brief 设置执行期间需要追踪的节点代理列表
+ *
+ * 建立 nodeId → proxy 映射，供 Python 侧回调中获取对应 DAPyNodeProxy。
+ * 在 startExecute() 前调用。
+ *
+ * @param[in] proxies 节点代理列表
+ */
+void DAPyWorkFlowLifecycle::setNodeProxies(const QList< DAPyNodeProxy* >& proxies)
+{
+    DA_D(d);
+    d->mExecutingProxies.clear();
+    for (DAPyNodeProxy* proxy : proxies) {
+        if (proxy) {
+            QString nodeId = proxy->getNodeId();
+            if (!nodeId.isEmpty()) {
+                d->mExecutingProxies[nodeId] = proxy;
+            }
+        }
+    }
 }
 
 /**
@@ -205,9 +228,11 @@ void DAPyWorkFlowLifecycle::startExecute()
                     if (!d->mWorkflow) {
                         return;
                     }
-                    // 通过封装类获取Python节点对象（替代 workflow.attr("get_node_by_id")）
-                    pybind11::object pyNode = d->mWorkflow->getNodeById(QString::fromStdString(nodeId));
-                    DA::DAPyNodeProxy* proxy = nullptr;
+                    DA::DAPyNodeProxy* proxy = d->mExecutingProxies.take(QString::fromStdString(nodeId));
+                    if (!proxy) {
+                        qWarning() << "DAPyWorkFlowLifecycle: node finished but proxy not found for nodeId:" << QString::fromStdString(nodeId);
+                        return;
+                    }
                     {
                         DA::DAPyGILRelease innerRelease;
                         emit nodeExecuteFinished(proxy, success);
