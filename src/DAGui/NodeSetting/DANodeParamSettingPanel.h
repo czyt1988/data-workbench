@@ -52,6 +52,9 @@ public:
     // 实现 DAAbstractNodeSettingWidget 的 updateUI
     void updateUI() override;
 
+    // 收集当前所有参数编辑器值 → 生成 QJsonObject 配置
+    QJsonObject collectConfig() const;
+
 Q_SIGNALS:
     /**
      * @brief 参数值变化信号（转发自 DAPropertyPanelContainerWidget）
@@ -71,9 +74,6 @@ protected Q_SLOTS:
     void onPropertyValueChanged(int propertyId);
 
 protected:
-    // 收集当前所有参数编辑器值 → 生成 QJsonObject 配置
-    QJsonObject collectConfig() const;
-
     // 收集配置（测试暴露）
     QJsonObject testCollectConfig() const;
 };

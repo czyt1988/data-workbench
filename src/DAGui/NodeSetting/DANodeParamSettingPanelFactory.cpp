@@ -60,14 +60,13 @@ QStringList DANodeParamSettingPanelFactory::registeredNames() const
 }
 
 /**
- * @brief 注册默认面板（占位方法）
+ * @brief 注册默认面板
  *
- * 当前为空实现，将在后续任务中注册通用面板。
+ * 注册通用参数面板，适用于未提供专用面板的节点类型。
  */
 void DANodeParamSettingPanelFactory::registerDefaultPanels()
 {
-    // TODO(Task 8): 注册通用面板
-    // registerPanel("generic", [](QWidget* parent) { return new DANodeParamSettingPanel(parent); });
+    registerPanel("generic", [](QWidget* parent) { return new DANodeParamSettingPanel(parent); });
 }
 
 }  // end namespace DA
