@@ -160,162 +160,30 @@ void DAPyNodeProxy::PrivateData::syncMetaFromPyNode(const pybind11::object& pyNo
  *
  * @note 需后续调用setPyNodeRef()关联Python节点实例才能执行
  */
-DAPyNodeProxy::DAPyNodeProxy() : DA_PIMPL_CONSTRUCT
+DAPyNodeProxy::DAPyNodeProxy() : DAPyObjectWrapper()
 {
 }
 
-DAPyNodeProxy::DAPyNodeProxy(const pybind11::object& pyNode) : DA_PIMPL_CONSTRUCT
+DAPyNodeProxy::DAPyNodeProxy(const pybind11::object& pyNode) : DAPyObjectWrapper(pyNode)
 {
-    qRegisterMetaType< DA::DAPyNodeState >("DAPyNodeState");
-    setPyNodeRef(pyNode);
 }
 
-/**
- * @brief 析构Python节点代理
- *
- * 析构时安全释放Python节点引用。
- * DA::PY::safe_pyobject会检查Py_IsInitialized()确保安全释放。
- */
+DAPyNodeProxy::DAPyNodeProxy(pybind11::object&& pyNode) : DAPyObjectWrapper(pyNode)
+{
+}
+
+DAPyNodeProxy::DAPyNodeProxy(const DAPyObjectWrapper& pyNode) : DAPyObjectWrapper(pyNode)
+{
+}
+
+DAPyNodeProxy::DAPyNodeProxy(const DAPyNodeProxy& pyNode) : DAPyObjectWrapper(pyNode)
+{
+}
+
 DAPyNodeProxy::~DAPyNodeProxy()
 {
-    d_ptr->clearPyNodeRef();
 }
 
-/**
- * @brief 执行节点
- *
- * 核心执行流程：
- * 1. 检查Python节点引用是否有效
- * 2. 设置节点状态为Running
- * 3. 获取Python GIL（DAPyGILGuard RAII守卫）
- * 4. 调用Python节点的execute()方法
- * 5. 在GIL作用域内捕获error_already_set异常 → 提取错误信息 → 设置节点状态为Error
- * 6. 释放GIL
- *
- * error_already_set异常必须在gil_scoped_acquire作用域内消费，
- * 否则异常析构时尝试获取GIL会导致死锁。
- *
- * @return true表示执行成功，false表示执行失败或节点无效
- * @see DAPyGILGuard DAPyNodeState
- */
-bool DAPyNodeProxy::exec()
-{
-    DA_D(d);
-    // 检查Python节点引用是否有效
-    if (!d->mPyNodeRef) {
-        d->mLastErrorString = QString("Python node reference is not set, cannot execute");
-        d->mNodeState       = DAPyNodeState::Error;
-        qCritical() << d->mLastErrorString;
-        return false;
-    }
-
-    // 设置状态为Running
-    d->mNodeState = DAPyNodeState::Running;
-
-    // 获取GIL — 所有Python交互必须在GIL保护下进行
-    DAPyGILGuard gilGuard;
-    if (!gilGuard.isAcquired()) {
-        d->mLastErrorString = QString("Failed to acquire GIL for node execution");
-        d->mNodeState       = DAPyNodeState::Error;
-        qCritical() << d->mLastErrorString;
-        return false;
-    }
-
-    try {
-        // 获取Python节点实例
-        pybind11::object pyNode = d->mPyNodeRef.object();
-
-        // 调用Python节点的execute()方法
-        pybind11::object result = pyNode.attr("execute")();
-
-        // 检查返回值是否为bool类型
-        if (pybind11::isinstance< pybind11::bool_ >(result)) {
-            bool success = result.cast< bool >();
-            if (success) {
-                d->mNodeState = DAPyNodeState::Success;
-            } else {
-                d->mNodeState       = DAPyNodeState::Error;
-                d->mLastErrorString = QString("Python node execute() returned False");
-            }
-            return success;
-        }
-
-        // 返回值非bool类型，视为成功
-        d->mNodeState = DAPyNodeState::Success;
-        return true;
-
-    } catch (const pybind11::error_already_set& e) {
-        // error_already_set必须在GIL作用域内消费
-        d->mLastErrorString = e.what();
-        d->mNodeState       = DAPyNodeState::Error;
-        d->dealException(e);
-        return false;
-
-    } catch (const std::exception& e) {
-        d->mLastErrorString = e.what();
-        d->mNodeState       = DAPyNodeState::Error;
-        d->dealException(e);
-        return false;
-    }
-
-    // GIL在gilGuard析构时自动释放
-}
-
-/**
- * @brief 设置Python节点实例引用
- *
- * 关联一个Python节点对象到此C++代理节点。
- * 设置后会从Python节点提取元信息（名称、输入/输出key、原型、分组等），
- * 缓存到C++本地变量，避免后续查询频繁获取GIL。
- *
- * @param[in] pyNode Python节点实例对象（必须具有execute()方法）
- * @note 需在GIL保护下调用此函数
- */
-void DAPyNodeProxy::setPyNodeRef(const pybind11::object& pyNode)
-{
-    DA_D(d);
-    if (!Py_IsInitialized()) {
-        qWarning() << "DAPyNodeProxy::setPyNodeRef: Python interpreter is not initialized";
-        return;
-    }
-
-    d->mPyNodeRef = DAPyObjectWrapper(pyNode);
-
-    // 获取GIL并同步元信息
-    DAPyGILGuard gilGuard;
-    if (!gilGuard.isAcquired()) {
-        qWarning() << "DAPyNodeProxy::setPyNodeRef: Failed to acquire GIL";
-        return;
-    }
-
-    d->syncMetaFromPyNode(pyNode);
-}
-
-/**
- * @brief 获取Python节点实例引用
- *
- * 返回关联的Python节点对象。
- * 调用者需确保在GIL保护下使用返回的对象。
- *
- * @return Python节点实例的pybind11::object引用
- * @note 调用者需确持有GIL后再使用返回值进行Python操作
- */
-pybind11::object DAPyNodeProxy::getPyNodeRef() const
-{
-    DA_DC(d);
-    return d->mPyNodeRef.object();
-}
-
-/**
- * @brief 判断是否关联了有效的Python节点实例
- *
- * @return true表示已关联有效的Python节点，false表示未关联或引用为None
- */
-bool DAPyNodeProxy::hasPyNodeRef() const
-{
-    DA_DC(d);
-    return static_cast< bool >(d->mPyNodeRef);
-}
 
 /**
  * @brief 获取Python节点的node_id
@@ -329,14 +197,12 @@ bool DAPyNodeProxy::hasPyNodeRef() const
 QString DAPyNodeProxy::getNodeId() const
 {
     DA_DC(d);
-    if (!d->mPyNodeRef) {
+    if (isNone()) {
         return QString();
     }
-    DAPyGILGuard gilGuard;
     try {
-        pybind11::object pyNode = d->mPyNodeRef.object();
-        if (pybind11::hasattr(pyNode, "node_id")) {
-            return QString::fromStdString(pybind11::str(pyNode.attr("node_id")).cast< std::string >());
+        if (d->mPyNodeRef.hasattr("node_id")) {
+            return d->mPyNodeRef.attr("node_id").cast< QString >();
         }
     } catch (const pybind11::error_already_set& e) {
         d->mLastErrorString = e.what();
@@ -346,19 +212,6 @@ QString DAPyNodeProxy::getNodeId() const
         d->dealException(e);
     }
     return QString();
-}
-
-/**
- * @brief 设置Python节点的限定名
- *
- * 写入mDescriptor.qualifiedName，统一通过描述符管理限定名。
- *
- * @param[in] name Python节点的限定名（如"package.module.ClassName"）
- */
-void DAPyNodeProxy::setQualifiedName(const QString& name)
-{
-    DA_D(d);
-    d->mDescriptor.qualifiedName = name;
 }
 
 /**

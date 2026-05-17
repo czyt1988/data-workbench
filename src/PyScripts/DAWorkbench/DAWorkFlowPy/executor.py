@@ -115,6 +115,7 @@ class DAWorkflowExecutor:
         self._pause_event.set()  # 初始为非暂停状态
         self._execution_thread = None
         self._lock = threading.Lock()
+        self._current_node_id = None
         self._result = None
 
         # 回调函数
@@ -135,6 +136,15 @@ class DAWorkflowExecutor:
         :return: 当前状态
         """
         return self._state
+
+    @property
+    def current_node_id(self) -> str | None:
+        """
+        获取当前正在执行的节点 ID
+
+        :return: 节点 ID 字符串，若没有节点正在执行则返回 None
+        """
+        return self._current_node_id
 
     @property
     def signal_manager(self) -> DASignalManager:
@@ -431,12 +441,16 @@ class DAWorkflowExecutor:
             return False
 
         # 执行节点
+        previous = self._current_node_id
+        self._current_node_id = node_id
         try:
             result = node_instance.execute()
             success = bool(result) if result is not None else True
         except Exception as e:
             self._error_messages.append(f"节点 '{node_id}' 执行异常: {e}")
             success = False
+        finally:
+            self._current_node_id = previous
 
         self._executed_count += 1
 

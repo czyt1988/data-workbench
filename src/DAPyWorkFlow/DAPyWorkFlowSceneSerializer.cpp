@@ -38,10 +38,10 @@ static QString getNodeItemIdFromItem(DAPyNodeGraphicsItem* item)
         return QString();
     }
     DAPyNodeProxy* proxy = item->getProxy();
-    if (proxy && proxy->hasPyNodeRef()) {
+    if (proxy && !proxy->isNone()) {
         DAPyGILGuard gil;
         try {
-            pybind11::object pyNodeRef = proxy->getPyNodeRef();
+            pybind11::object pyNodeRef = proxy->object();
             if (pyNodeRef && pybind11::hasattr(pyNodeRef, "node_id")) {
                 std::string idStr = pybind11::str(pyNodeRef.attr("node_id"));
                 return QString::fromStdString(idStr);
@@ -166,7 +166,7 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
                 pybind11::list connsList = wfWrapper.getConnections();
                 for (auto item : connsList) {
                     DAWorkflowConnectionState cs;
-                    pybind11::object conn     = item.cast< pybind11::object >();
+                    pybind11::object conn = item.cast< pybind11::object >();
                     if (pybind11::hasattr(conn, "connection_id")) {
                         cs.connectionId = QString::fromStdString(pybind11::str(conn.attr("connection_id")));
                     }
@@ -190,9 +190,9 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
             QList< DAPyNodeGraphicsItem* > nodeItems = scene->getPyNodeItems();
             for (DAPyNodeGraphicsItem* nodeItem : nodeItems) {
                 DAPyNodeProxy* proxy = nodeItem->getProxy();
-                if (proxy && proxy->hasPyNodeRef()) {
+                if (proxy && !proxy->isNone()) {
                     try {
-                        pybind11::object pyNodeRef = proxy->getPyNodeRef();
+                        pybind11::object pyNodeRef = proxy->object();
                         if (pyNodeRef && pybind11::hasattr(pyNodeRef, "node_id")) {
                             std::string idStr = pybind11::str(pyNodeRef.attr("node_id"));
                             QString nodeId    = QString::fromStdString(idStr);
@@ -205,7 +205,8 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
                             }
                         }
                     } catch (const pybind11::error_already_set&) {
-                        qWarning() << "DAPyWorkFlowSceneSerializer: Python exception ignored while transferring node position";
+                        qWarning(
+                        ) << "DAPyWorkFlowSceneSerializer: Python exception ignored while transferring node position";
                     }
                 }
             }
@@ -233,8 +234,9 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
             }
 
         } catch (const pybind11::error_already_set& e) {
-            qWarning() << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::saveSceneToXml: Python error saving workflow data: %1")
-                              .arg(e.what());
+            qWarning(
+            ) << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::saveSceneToXml: Python error saving workflow data: %1")
+                     .arg(e.what());
             d->mLastErrorString = DA_SERIALIZER_TR("保存workflow数据时Python异常: %1").arg(e.what());
             // 继续保存场景级别的数据，不因workflow数据保存失败而中断
         }
@@ -254,7 +256,7 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
             // 保存Python侧的node_id
             DAPyGILGuard gil;
             try {
-                pybind11::object pyNodeRef = proxy->getPyNodeRef();
+                pybind11::object pyNodeRef = proxy->object();
                 if (pyNodeRef && pybind11::hasattr(pyNodeRef, "node_id")) {
                     std::string idStr = pybind11::str(pyNodeRef.attr("node_id"));
                     nodeEle.setAttribute("node_id", QString::fromStdString(idStr));
@@ -270,13 +272,13 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
         DAXMLFileInterface::appendElementWithText(nodeEle, "y", DA::doubleToString(pos.y()), doc);
 
         // 保存节点参数值（从Python侧获取config）
-        if (proxy && proxy->hasPyNodeRef()) {
+        if (proxy && !proxy->isNone()) {
             DAPyGILGuard gil;
 
 
             // 保存Python对象参数的pickle序列化
             try {
-                pybind11::object pyNodeRef = proxy->getPyNodeRef();
+                pybind11::object pyNodeRef = proxy->object();
                 if (pyNodeRef && pybind11::hasattr(pyNodeRef, "get_pickle_data")) {
                     pybind11::object pickleModule = pybind11::module_::import("pickle");
                     pybind11::bytes pickleBytes   = pickleModule.attr("dumps")(pyNodeRef);
@@ -401,10 +403,11 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(
                     workflowObj.attr("name") = workflowState.name.toStdString();
                 }
             } catch (const pybind11::error_already_set& e) {
-                qWarning() << DA_SERIALIZER_TR(
-                                  "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error setting workflow name: %1"
-                )
-                                  .arg(e.what());
+                qWarning()
+                    << DA_SERIALIZER_TR(
+                           "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error setting workflow name: %1"
+                       )
+                           .arg(e.what());
             }
         }
     }
@@ -459,14 +462,14 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(
         scene->addItem_(nodeItem);
 
         // 建立映射
-        nodeIdToItemMap[ ns.nodeId ] = nodeItem;
+        nodeIdToItemMap[ ns.nodeId ]     = nodeItem;
         nodeIdToMetaDataMap[ ns.nodeId ] = metaData;
     }
 
     // 4. 恢复节点的pickle数据和可视化属性（从nodes XML节）
     nodeEle = nodesEle.firstChildElement("node");
     while (!nodeEle.isNull()) {
-        QString nodeId = nodeEle.attribute("node_id");
+        QString nodeId                 = nodeEle.attribute("node_id");
         DAPyNodeGraphicsItem* nodeItem = nodeIdToItemMap.value(nodeId, nullptr);
         if (nodeItem) {
             // 加载节点item的可视化属性
@@ -477,7 +480,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(
 
             // 恢复pickle数据
             QDomElement pickleEle = nodeEle.firstChildElement("pickleData");
-            if (!pickleEle.isNull() && nodeItem->getProxy() && nodeItem->getProxy()->hasPyNodeRef()) {
+            if (!pickleEle.isNull() && nodeItem->getProxy() && !(nodeItem->getProxy()->isNone())) {
                 DAPyGILGuard gil;
                 try {
                     QString base64Str = pickleEle.text();
@@ -489,14 +492,15 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(
                     pybind11::object unpickledObj = pickleModule.attr("loads")(pickleBytesObj);
 
                     // 将pickle恢复的数据合并到节点实例
-                    pybind11::object pyNodeRef = nodeItem->getProxy()->getPyNodeRef();
+                    pybind11::object pyNodeRef = nodeItem->getProxy()->object();
                     if (pyNodeRef && pybind11::hasattr(unpickledObj, "_input_data")) {
                         pyNodeRef.attr("_input_data") = unpickledObj.attr("_input_data");
                     }
                 } catch (const pybind11::error_already_set& e) {
                     qWarning()
                         << DA_SERIALIZER_TR(
-                               "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error restoring pickle data: %1")
+                               "DAPyWorkFlowSceneSerializer::loadSceneFromXml: Python error restoring pickle data: %1"
+                           )
                                .arg(e.what());
                     // pickle恢复失败不影响整体流程
                 }
@@ -511,9 +515,9 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(
         DAPyNodeGraphicsItem* toItem   = nodeIdToItemMap.value(cs.toNodeId, nullptr);
 
         if (!fromItem || !toItem) {
-            qWarning() << DA_SERIALIZER_TR(
-                "DAPyWorkFlowSceneSerializer::loadSceneFromXml: 连接线引用的节点不存在: "
-                "fromNodeId=%1, toNodeId=%2").arg(cs.fromNodeId, cs.toNodeId);
+            qWarning() << DA_SERIALIZER_TR("DAPyWorkFlowSceneSerializer::loadSceneFromXml: 连接线引用的节点不存在: "
+                                           "fromNodeId=%1, toNodeId=%2")
+                              .arg(cs.fromNodeId, cs.toNodeId);
             continue;
         }
 
@@ -555,10 +559,8 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(
             // 在场景中查找匹配的连接线图形项
             QList< DAPyLinkGraphicsItem* > allLinks = scene->getPyNodeLinkItems();
             for (DAPyLinkGraphicsItem* existingLink : allLinks) {
-                if (existingLink->getFromNode() == fromItem
-                    && existingLink->getFromOutputName() == fromOutput
-                    && existingLink->getToNode() == toItem
-                    && existingLink->getToInputName() == toInput) {
+                if (existingLink->getFromNode() == fromItem && existingLink->getFromOutputName() == fromOutput
+                    && existingLink->getToNode() == toItem && existingLink->getToInputName() == toInput) {
                     // 加载连接线item的可视化属性
                     QDomElement linkItemDataEle = linkEle.firstChildElement("itemData");
                     if (!linkItemDataEle.isNull()) {

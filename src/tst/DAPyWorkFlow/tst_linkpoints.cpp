@@ -1,4 +1,4 @@
-#include "tst_linkpoints.h"
+﻿#include "tst_linkpoints.h"
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyNodeProxy.h"
 #include "DAPyLinkPoint.h"
@@ -89,8 +89,7 @@ class _TestMockNodeForLinkPoints:
 
         // 创建代理并设置Python节点引用
         // setPyNodeRef() 会调用 syncMetaFromPyNode() 缓存 input/output keys
-        DAPyNodeProxy* proxy = new DAPyNodeProxy();
-        proxy->setPyNodeRef(mockNode);
+        DAPyNodeProxy* proxy = new DAPyNodeProxy(mockNode);
 
         // 前置条件验证：代理有input/output keys
         QCOMPARE(proxy->getInputKeys().size(), 2);
@@ -199,8 +198,7 @@ class _TestIntegrationNode:
 
         // 步骤1: 创建代理并设置Python节点引用
         // setPyNodeRef() 调用 syncMetaFromPyNode()，缓存 input/output keys
-        DAPyNodeProxy* proxy = new DAPyNodeProxy();
-        proxy->setPyNodeRef(mockNode);
+        DAPyNodeProxy* proxy = new DAPyNodeProxy(mockNode);
 
         // 前置验证: 代理正确缓存了keys（Bug 1修复验证）
         QCOMPARE(proxy->getInputKeys().size(), 2);

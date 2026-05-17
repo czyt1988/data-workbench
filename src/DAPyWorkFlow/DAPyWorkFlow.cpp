@@ -190,7 +190,7 @@ QString DAPyWorkFlow::addNode(DAPyNodeProxy* proxy)
             qWarning() << "DAPyWorkFlow::addNode: workflow object is invalid";
             return QString();
         }
-        pybind11::object pyNodeRef = proxy->getPyNodeRef();
+        pybind11::object pyNodeRef = proxy->object();
         if (!pyNodeRef) {
             qWarning() << "DAPyWorkFlow::addNode: proxy has no valid Python node reference";
             return QString();
@@ -277,7 +277,7 @@ bool DAPyWorkFlow::removeNode(DAPyNodeProxy* proxy)
         return false;
     }
     try {
-        d->mPyWorkflowObj.attr("remove_node")(proxy->getPyNodeRef());  // 返回node对象，这里不需要捕获返回
+        d->mPyWorkflowObj.attr("remove_node")(proxy->object());  // 返回node对象，这里不需要捕获返回
     } catch (const std::exception& e) {
         d->dealException(e);
         return false;

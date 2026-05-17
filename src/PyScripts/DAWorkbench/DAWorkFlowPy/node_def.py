@@ -232,10 +232,24 @@ class DAWorkflowNode:
     由 C++ 侧的 syncMetaFromPyNode / setNodeInputsToPyNode 进行读写。
     """
 
+    _node_descriptor = None
+    input_keys = []
+    output_keys = []
+
     def __init__(self):
+        self.node_id = None
         self._input_data = {}
         self._output_data = {}
         self.is_global = False
+
+    @classmethod
+    def get_descriptor(cls):
+        """
+        获取节点描述符 C++ 结构体
+
+        :return: da_py_workflow.DANodeDescriptor 实例，若未设置则返回 None
+        """
+        return cls._node_descriptor
 
     def set_input_data(self, key: str, data) -> None:
         """
@@ -340,17 +354,6 @@ def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", i
         # 设置 input_keys 和 output_keys 为类属性，供 C++ syncMetaFromPyNode 使用
         cls.input_keys = [inp.name for inp in inputs]
         cls.output_keys = [outp.name for outp in outputs]
-
-        @classmethod
-        def _get_descriptor(cls_):
-            """
-            获取节点描述符 C++ 结构体
-
-            :return: da_py_workflow.DANodeDescriptor 实例，若未设置则返回 None
-            """
-            return getattr(cls_, "_node_descriptor", None)
-
-        cls.get_descriptor = _get_descriptor
 
         # 创建继承 DAWorkflowNode 的新类，确保所有 @NodeDef 节点都具备基类方法
         new_cls = type(cls.__name__, (DAWorkflowNode, cls), {})

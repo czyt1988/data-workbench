@@ -1,6 +1,7 @@
 ﻿#ifndef DAPYNODEPROXY_H
 #define DAPYNODEPROXY_H
 #include "DAPyWorkFlowAPI.h"
+#include "DAPyObjectWrapper.h"
 #include "DANodeDescriptor.h"
 #include "DAPyNodeState.h"
 #include "DAPyNodeStyle.h"
@@ -19,6 +20,7 @@ namespace DA
  *
  * 代理Python Node_def定义的节点
  *
+ * 这个类实际和DAPyDataFrame这种类相似，只是针对python object的c++封装
  * @code
  * DAPyNodeProxy proxy(pyNodeObj);
  * if (proxy.exec()) {
@@ -28,29 +30,24 @@ namespace DA
  * }
  * @endcode
  *
- * @see DAPyGILGuard DAPyModuleWorkflow DAPyNodeState DAPyDataFrame
+ * @see DAPyWorkFlow DAPyNodeState DAPyDataFrame
  */
-class DAPYWORKFLOW_API DAPyNodeProxy
+class DAPYWORKFLOW_API DAPyNodeProxy : public DAPyObjectWrapper
 {
     DA_DECLARE_PRIVATE(DAPyNodeProxy)
 public:
     // 构造/析构
     explicit DAPyNodeProxy();
     explicit DAPyNodeProxy(const pybind11::object& pyNode);
+    explicit DAPyNodeProxy(pybind11::object&& pyNode);
+    explicit DAPyNodeProxy(const DAPyObjectWrapper& pyNode);
+    explicit DAPyNodeProxy(const DAPyNodeProxy& pyNode);
     ~DAPyNodeProxy();
 
-    // 执行节点（GIL+Python execute）
-    bool exec();
-
-    // Python节点引用操作
-    void setPyNodeRef(const pybind11::object& pyNode);
-    pybind11::object getPyNodeRef() const;
-    bool hasPyNodeRef() const;
     // 获取Python节点的node_id（从Python节点对象提取node_id属性）
     QString getNodeId() const;
 
     // Python限定名
-    void setQualifiedName(const QString& name);
     QString getQualifiedName() const;
 
     // 节点名称（从Python描述符或本地存储）

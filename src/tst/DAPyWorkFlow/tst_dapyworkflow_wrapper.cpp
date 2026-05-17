@@ -160,10 +160,9 @@ class )" + className + R"(
  */
 static DAPyNodeProxy* createProxyFromPyClass(py::object pyClass, const QString& nodeId)
 {
-    DAPyNodeProxy* proxy         = new DAPyNodeProxy();
     py::object nodeInstance      = pyClass();
+    DAPyNodeProxy* proxy         = new DAPyNodeProxy(nodeInstance);
     nodeInstance.attr("node_id") = nodeId.toStdString();
-    proxy->setPyNodeRef(nodeInstance);
     return proxy;
 }
 

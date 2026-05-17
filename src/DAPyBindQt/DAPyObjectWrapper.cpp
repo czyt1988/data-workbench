@@ -249,6 +249,16 @@ pybind11::object DAPyObjectWrapper::attr(const char* c_att) const
 }
 
 /**
+ * @brief 判断是否有方法
+ * @param c_att
+ * @return
+ */
+bool DAPyObjectWrapper::hasattr(const char* c_att) const
+{
+    return pybind11::hasattr(_object, c_att);
+}
+
+/**
  * @brief 对应__name__
  * @return
  */

@@ -1449,7 +1449,7 @@ void DAPyWorkFlowScene::rebuildNodeLinksMap()
     // 重建节点nodeId映射（从Python节点对象提取node_id）
     for (DAPyNodeGraphicsItem* node : nodeItems) {
         DAPyNodeProxy* proxy = node->getProxy();
-        if (proxy && proxy->hasPyNodeRef()) {
+        if (proxy && !proxy->isNone()) {
             QString nodeId = proxy->getNodeId();
             if (!nodeId.isEmpty()) {
                 d->registerNode(node, nodeId);

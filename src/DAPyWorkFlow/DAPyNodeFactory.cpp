@@ -371,9 +371,7 @@ DAPyNodeProxy* DAPyNodeFactory::createNodeProxy(const QString& qualifiedName)
         pybind11::object pyNodeInstance = nodeClassObj();
 
         // 创建DAPyNodeProxy并设置Python节点引用
-        DAPyNodeProxy* proxy = new DAPyNodeProxy();
-        proxy->setQualifiedName(qualifiedName);
-        proxy->setPyNodeRef(pyNodeInstance);
+        DAPyNodeProxy* proxy = new DAPyNodeProxy(pyNodeInstance);
 
         return proxy;
 

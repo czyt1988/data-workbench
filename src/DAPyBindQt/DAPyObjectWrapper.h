@@ -101,6 +101,8 @@ public:
     // 方法调用
     template< typename... Args >
     pybind11::object call(Args&&... args);
+    // hasattr
+    bool hasattr(const char* c_att) const;
 
 public:
     // 通用的python函数封装
