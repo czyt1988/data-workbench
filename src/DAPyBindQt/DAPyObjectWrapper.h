@@ -1,4 +1,4 @@
-#ifndef DAPYOBJECTWRAPPER_H
+﻿#ifndef DAPYOBJECTWRAPPER_H
 #define DAPYOBJECTWRAPPER_H
 #include "DAPyBindQtGlobal.h"
 #include "DAPybind11InQt.h"
@@ -62,6 +62,14 @@ public:
         return _object;
     }
     const pybind11::object& object() const
+    {
+        return _object;
+    }
+    pybind11::handle& handle()
+    {
+        return _object;
+    }
+    const pybind11::handle& handle() const
     {
         return _object;
     }

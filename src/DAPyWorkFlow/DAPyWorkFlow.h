@@ -22,7 +22,6 @@ class DAPyLinkGraphicsItem;
  *
  * @code
  * DAPyWorkFlow workflow;
- * workflow.initPyWorkflow();
  * if (workflow.isValid()) {
  *     QString nodeId = workflow.addNode(proxy);
  *     qDebug() << "Node added:" << nodeId;
@@ -37,7 +36,8 @@ class DAPYWORKFLOW_API DAPyWorkFlow : public QObject
     DA_DECLARE_PRIVATE(DAPyWorkFlow)
 public:
     // 构造/析构
-    DAPyWorkFlow();
+    DAPyWorkFlow(QObject* parent = nullptr);
+    DAPyWorkFlow(const pybind11::object& obj,QObject* parent = nullptr);
     ~DAPyWorkFlow();
 
     // --- 信号 ---
@@ -56,10 +56,6 @@ Q_SIGNALS:
     void executionFinished(bool success);
 
 public:
-    // 初始化 Python DAWorkflow 实例
-    void initPyWorkflow();
-    // 设置外部 Python DAWorkflow 实例（用于 setPyWorkflow 透传）
-    void setPyWorkflowObject(const pybind11::object& obj);
     // 获取内部 Python DAWorkflow 实例对象（用于 getPyWorkflow 透传）
     pybind11::object getPyWorkflowObject() const;
     // 检查 Python 实例是否有效
@@ -85,10 +81,6 @@ public:
     int nodeCount();  // TODO: Wave 2 Task 10
     // 检查节点是否存在
     bool hasNode(const QString& nodeId);  // TODO: Wave 2 Task 10
-
-    // --- 指针便捷重载（内部委托至字符串ID方法） ---
-    // 添加节点，返回传入的代理指针（失败时返回nullptr）；内部调用 QString addNode(proxy)
-    DAPyNodeProxy* addNodeProxy(DAPyNodeProxy* proxy);
     // 通过代理指针移除节点；内部调用 bool removeNode(nodeId)
     bool removeNode(DAPyNodeProxy* proxy);
     // 通过代理指针连接两个节点；内部调用 DAPyWorkFlowConnection connectNode(srcId, srcChannel, dstId, dstChannel)
@@ -137,6 +129,11 @@ public:
     // --- Wave 2: 错误处理 (TODO: 实现于 Wave 2) ---
     // 获取最后一次错误信息
     QString getLastError() const;
+    // 设置外部 Python DAWorkflow 实例（用于 setPyWorkflow 透传）
+    void setPyWorkflowObject(const pybind11::object& obj);
+private:
+    // 初始化 Python DAWorkflow 实例
+    void initPyWorkflow();
 };
 
 }  // namespace DA

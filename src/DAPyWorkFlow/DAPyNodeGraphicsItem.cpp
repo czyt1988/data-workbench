@@ -16,9 +16,10 @@
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
 #include <QFontMetrics>
-#include "DAPyBindQt/DAPyGILGuard.h"
-#include "DAPyBindQt/DAPybind11QtCaster.hpp"
+#include "DAPyGILGuard.h"
+#include "DAPybind11QtCaster.hpp"
 #include "DAGraphicsViewGlobal.h"
+#include "DAPyObjectWrapper.h"
 namespace DA
 {
 
@@ -50,22 +51,22 @@ public:
 public:
     std::unique_ptr< DAPyNodeProxy > mProxy;  ///< Python节点代理（独占所有权）
     DANodeDescriptor mDescriptorStruct;  ///< 节点描述符item也持有，且和DAPyNodeProxy分离，用户可以设置item的节点描述以实现个性化
-    QIcon mIcon;                         ///< 节点图标
+    QIcon mIcon;                                     ///< 节点图标
     QSvgRenderer* mSvgRenderer { nullptr };          ///< SVG渲染器
     QGraphicsProxyWidget* mProxyWidget { nullptr };  ///< Widget代理
     QWidget* mWidget { nullptr };                    ///< 嵌入的widget
     DAPyNodeState mNodeState { Idle };               ///< 节点状态
     QList< DAPyLinkPoint > mInputLinkPoints;         ///< 输入连接点
     QList< DAPyLinkPoint > mOutputLinkPoints;        ///< 输出连接点
-    qreal linkPointDrawWidth { 14 };                 ///< 连接点的绘制宽度（宽度相对于东西方向的宽度）
-    qreal linkPointDrawHeight { 10 };                ///< 连接点的绘制高度（高度相对于东西方向的高度）
-    DA::PY::safe_pyobject mPaintCallback;            ///< 自定义绘制回调（Python函数对象）
-    bool mPaintCallbackError { false };              ///< 绘制回调是否发生过异常
-    QRectF mIconRect;                                ///< 绘制Icon的区域，仅仅有icon时才有用
-    QRectF mTextRect;                                ///< 绘制text的区域
-    QPixmap mIconPixmap;                             ///< 记录图标的pixmap
-    int smallFontSize { 7 };                         ///< 小字体大小（用于渲染节点的名字）
-    int normalFontSize { 9 };                        ///< 普通字体大小（用于渲染节点名称）
+    qreal linkPointDrawWidth { 14 };     ///< 连接点的绘制宽度（宽度相对于东西方向的宽度）
+    qreal linkPointDrawHeight { 10 };    ///< 连接点的绘制高度（高度相对于东西方向的高度）
+    DAPyObjectWrapper mPaintCallback;    ///< 自定义绘制回调（Python函数对象）
+    bool mPaintCallbackError { false };  ///< 绘制回调是否发生过异常
+    QRectF mIconRect;                    ///< 绘制Icon的区域，仅仅有icon时才有用
+    QRectF mTextRect;                    ///< 绘制text的区域
+    QPixmap mIconPixmap;                 ///< 记录图标的pixmap
+    int smallFontSize { 7 };             ///< 小字体大小（用于渲染节点的名字）
+    int normalFontSize { 9 };            ///< 普通字体大小（用于渲染节点名称）
 };
 
 /**
@@ -697,16 +698,13 @@ bool DAPyNodeGraphicsItem::loadFromXml(const QDomElement* itemElement, const QVe
  * @param[in] widget 窗口
  * @param[in] bodyRect 主体矩形区域
  */
-void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
-                                     const QStyleOptionGraphicsItem* option,
-                                     QWidget* widget,
-                                     const QRectF& bodyRect)
+void DAPyNodeGraphicsItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
     // 如果有自定义绘制回调，尝试调用Python回调
-    if (d_ptr->mPaintCallback && !d_ptr->mPaintCallback.is_none()) {
+    if (d_ptr->mPaintCallback && !d_ptr->mPaintCallback.isNone()) {
         // 获取GIL，创建代理，调用Python回调
         // 注意：paint回调应在50ms内完成，避免阻塞GUI线程
         DAPyGILGuard gil;
@@ -784,13 +782,15 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
  * @param[in] linkPointDrawHeight 连接点绘制高度
  * @param[in] smallFontSize 连接点标签字体大小
  */
-static void drawLinkPointGroup(QPainter* painter,
-                               const QList< DAPyLinkPoint >& points,
-                               const DAPyLinkPointStyle& portStyle,
-                               const QColor& defaultFillColor,
-                               qreal linkPointDrawWidth,
-                               qreal linkPointDrawHeight,
-                               int smallFontSize)
+static void drawLinkPointGroup(
+    QPainter* painter,
+    const QList< DAPyLinkPoint >& points,
+    const DAPyLinkPointStyle& portStyle,
+    const QColor& defaultFillColor,
+    qreal linkPointDrawWidth,
+    qreal linkPointDrawHeight,
+    int smallFontSize
+)
 {
     const qreal spacing = 2;  // 文字与连接点间距
 
@@ -861,8 +861,10 @@ static void drawLinkPointGroup(QPainter* painter,
             // 顺时针旋转90度绘制文字
             painter->save();
             QTransform transform;
-            transform.translate(lp.position.x(),  // + textRect.height() / 2
-                                lp.position.y() - (halfH + spacing + textRect.width()));
+            transform.translate(
+                lp.position.x(),  // + textRect.height() / 2
+                lp.position.y() - (halfH + spacing + textRect.width())
+            );
             transform.rotate(90);
             painter->setTransform(transform, true);
             // QRectF rotatedRect(-textRect.height() / 2, -textRect.width() / 2, textRect.height(), textRect.width());
@@ -918,16 +920,13 @@ void DAPyNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOption
     const DANodeStyle& st = d->mDescriptorStruct.style;
     // 绘制输入连接点（默认白色填充）
     drawLinkPointGroup(
-        painter, d->mInputLinkPoints, st.inputPortStyle, Qt::white, d->linkPointDrawWidth, d->linkPointDrawHeight, d->smallFontSize);
+        painter, d->mInputLinkPoints, st.inputPortStyle, Qt::white, d->linkPointDrawWidth, d->linkPointDrawHeight, d->smallFontSize
+    );
 
     // 绘制输出连接点（默认深灰色填充）
-    drawLinkPointGroup(painter,
-                       d->mOutputLinkPoints,
-                       st.outputPortStyle,
-                       Qt::darkGray,
-                       d->linkPointDrawWidth,
-                       d->linkPointDrawHeight,
-                       d->smallFontSize);
+    drawLinkPointGroup(
+        painter, d->mOutputLinkPoints, st.outputPortStyle, Qt::darkGray, d->linkPointDrawWidth, d->linkPointDrawHeight, d->smallFontSize
+    );
 
     painter->restore();
 }
@@ -1186,11 +1185,11 @@ void DAPyNodeGraphicsItem::setPaintCallback(const pybind11::object& callback)
     }
     DAPyGILGuard gil;
     try {
-        d_ptr->mPaintCallback      = DA::PY::safe_pyobject(pybind11::object(callback));
+        d_ptr->mPaintCallback      = DAPyObjectWrapper(callback);
         d_ptr->mPaintCallbackError = false;
     } catch (const std::exception& e) {
         qWarning() << "DAPyNodeGraphicsItem setPaintCallback exception:" << e.what();
-        d_ptr->mPaintCallback = DA::PY::safe_pyobject();
+        d_ptr->mPaintCallback = DAPyObjectWrapper();
     }
     update();
 }
@@ -1202,7 +1201,7 @@ void DAPyNodeGraphicsItem::setPaintCallback(const pybind11::object& callback)
  */
 bool DAPyNodeGraphicsItem::hasPaintCallback() const
 {
-    return d_ptr->mPaintCallback && !d_ptr->mPaintCallback.is_none();
+    return d_ptr->mPaintCallback && !d_ptr->mPaintCallback.isNone();
 }
 
 /**
@@ -1214,7 +1213,7 @@ void DAPyNodeGraphicsItem::clearPaintCallback()
 {
     DAPyGILGuard gil;
     try {
-        d_ptr->mPaintCallback = DA::PY::safe_pyobject();
+        d_ptr->mPaintCallback = DAPyObjectWrapper();
     } catch (const std::exception& e) {
         qWarning() << "DAPyNodeGraphicsItem clearPaintCallback exception:" << e.what();
     }

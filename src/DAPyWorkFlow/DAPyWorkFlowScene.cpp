@@ -118,7 +118,8 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkAdd(DAPyLinkGraphicsItem* lin
     // 同步Python侧连接
     if (this->mWorkflow.isValid()) {
         if (fromItem->getProxy() && toItem->getProxy()) {
-            DAPyWorkFlowConnection conn = this->mWorkflow.connectNode(fromItem->getProxy(), fromOutput, toItem->getProxy(), toInput);
+            DAPyWorkFlowConnection conn =
+                this->mWorkflow.connectNode(fromItem->getProxy(), fromOutput, toItem->getProxy(), toInput);
             if (conn.isValid()) {
                 this->mLinkConnectionIdMap[ linkItem ] = conn.connectionId;
             } else {
@@ -162,7 +163,8 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkRemove(DAPyLinkGraphicsItem* 
         if (!connectionId.isEmpty()) {
             bool removed = this->mWorkflow.disconnectNode(connectionId);
             if (!removed) {
-                qWarning() << tr("DAPyWorkFlowScene::removePyNodeLink: disconnectNode failed for connectionId: %1").arg(connectionId);
+                qWarning(
+                ) << tr("DAPyWorkFlowScene::removePyNodeLink: disconnectNode failed for connectionId: %1").arg(connectionId);
             }
         }
         this->mLinkConnectionIdMap.remove(linkItem);
@@ -184,7 +186,6 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkRemove(DAPyLinkGraphicsItem* 
 DAPyWorkFlowScene::DAPyWorkFlowScene(QObject* parent) : DAGraphicsScene(parent), DA_PIMPL_CONSTRUCT
 {
     initConnect();
-    initPyWorkflow();
     registCommandsFactory(new DAPyWorkFlowCommandsFactory());
 }
 
@@ -198,7 +199,6 @@ DAPyWorkFlowScene::DAPyWorkFlowScene(const QRectF& sceneRect, QObject* parent)
     : DAGraphicsScene(sceneRect, parent), DA_PIMPL_CONSTRUCT
 {
     initConnect();
-    initPyWorkflow();
 }
 
 /**
@@ -214,7 +214,6 @@ DAPyWorkFlowScene::DAPyWorkFlowScene(qreal x, qreal y, qreal width, qreal height
     : DAGraphicsScene(x, y, width, height, parent), DA_PIMPL_CONSTRUCT
 {
     initConnect();
-    initPyWorkflow();
 }
 
 /**
@@ -631,10 +630,9 @@ QList< DAPyNodeGraphicsItem* > DAPyWorkFlowScene::getSelectedPyNodeItems() const
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 返回的link未添加到场景，需要调用方自行添加
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(DAPyNodeGraphicsItem* fromItem,
-                                                       const QString& fromOutput,
-                                                       DAPyNodeGraphicsItem* toItem,
-                                                       const QString& toInput)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(
+    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
+)
 {
     if (!fromItem || !toItem) {
         return nullptr;
@@ -693,10 +691,9 @@ void DAPyWorkFlowScene::addPyNodeLink(DAPyLinkGraphicsItem* linkItem)
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 函数名后缀"_"表示支持undo/redo操作
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(DAPyNodeGraphicsItem* fromItem,
-                                                        const QString& fromOutput,
-                                                        DAPyNodeGraphicsItem* toItem,
-                                                        const QString& toInput)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(
+    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
+)
 {
     DAPyLinkGraphicsItem* link = addPyNodeLink(fromItem, fromOutput, toItem, toInput);
     if (!link) {
@@ -1365,10 +1362,12 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
  * @param linkItems 分离出的连接线item列表
  * @param normalItems 分离出的普通item列表
  */
-void DAPyWorkFlowScene::classifyItems(const QList< QGraphicsItem* >& sourceItems,
-                                      QList< DAPyNodeGraphicsItem* >& nodeItems,
-                                      QList< DAPyLinkGraphicsItem* >& linkItems,
-                                      QList< QGraphicsItem* >& normalItems)
+void DAPyWorkFlowScene::classifyItems(
+    const QList< QGraphicsItem* >& sourceItems,
+    QList< DAPyNodeGraphicsItem* >& nodeItems,
+    QList< DAPyLinkGraphicsItem* >& linkItems,
+    QList< QGraphicsItem* >& normalItems
+)
 {
     if (sourceItems.isEmpty()) {
         return;
@@ -1429,24 +1428,6 @@ void DAPyWorkFlowScene::initConnect()
     connect(this, &DAGraphicsScene::selectLinkChanged, this, &DAPyWorkFlowScene::onSelectLinkChanged);
 }
 
-/**
- * @brief 初始化Python DAWorkflow实例
- *
- * 通过DAPyModuleWorkflow获取DAWorkflow类引用，创建实例并设置到场景中，
- * 使得createPyNode()等方法可以正常工作。
- *
- * @note 如果Python未初始化或创建失败，不会影响场景的其他功能，
- * 后续仍可通过setPyWorkflow()手动设置。
- */
-void DAPyWorkFlowScene::initPyWorkflow()
-{
-    DA_D(d);
-    if (d->mWorkflow.isValid()) {
-        // 已设置，无需重复初始化
-        return;
-    }
-    d->mWorkflow.initPyWorkflow();
-}
 
 /**
  * @brief 重建节点到连接线的映射表

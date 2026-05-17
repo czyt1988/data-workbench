@@ -1,4 +1,4 @@
-#include "tst_dapyworkflow_wrapper.h"
+﻿#include "tst_dapyworkflow_wrapper.h"
 #include "DAPyWorkFlow.h"
 #include "DAPyWorkFlowTypes.h"
 #include "DAPyWorkFlowScene.h"
@@ -31,15 +31,17 @@ namespace DA
  * @param qualifiedName 节点限定名
  * @return pybind11::object Python 类对象
  */
-static py::object createTestSourceNodeClass(const std::string& className,
-                                             const std::string& qualifiedName)
+static py::object createTestSourceNodeClass(const std::string& className, const std::string& qualifiedName)
 {
     std::string code = R"(
 class )" + className + R"(
-    qualified_name = ")" + qualifiedName + R"("
+    qualified_name = ")"
+                       + qualifiedName + R"("
     _node_descriptor = {
-        "name": ")" + className + R"(",
-        "qualified_name": ")" + qualifiedName + R"(",
+        "name": ")" + className
+                       + R"(",
+        "qualified_name": ")"
+                       + qualifiedName + R"(",
         "inputs": [],
         "outputs": [{"name": "out", "data_type": "DataFrame"}],
     }
@@ -60,15 +62,17 @@ class )" + className + R"(
  * @param qualifiedName 节点限定名
  * @return pybind11::object Python 类对象
  */
-static py::object createTestFilterNodeClass(const std::string& className,
-                                             const std::string& qualifiedName)
+static py::object createTestFilterNodeClass(const std::string& className, const std::string& qualifiedName)
 {
     std::string code = R"(
 class )" + className + R"(
-    qualified_name = ")" + qualifiedName + R"("
+    qualified_name = ")"
+                       + qualifiedName + R"("
     _node_descriptor = {
-        "name": ")" + className + R"(",
-        "qualified_name": ")" + qualifiedName + R"(",
+        "name": ")" + className
+                       + R"(",
+        "qualified_name": ")"
+                       + qualifiedName + R"(",
         "inputs": [{"name": "in", "data_type": "DataFrame"}],
         "outputs": [{"name": "filtered", "data_type": "DataFrame"}],
     }
@@ -89,15 +93,17 @@ class )" + className + R"(
  * @param qualifiedName 节点限定名
  * @return pybind11::object Python 类对象
  */
-static py::object createFailingNodeClass(const std::string& className,
-                                          const std::string& qualifiedName)
+static py::object createFailingNodeClass(const std::string& className, const std::string& qualifiedName)
 {
     std::string code = R"(
 class )" + className + R"(
-    qualified_name = ")" + qualifiedName + R"("
+    qualified_name = ")"
+                       + qualifiedName + R"("
     _node_descriptor = {
-        "name": ")" + className + R"(",
-        "qualified_name": ")" + qualifiedName + R"(",
+        "name": ")" + className
+                       + R"(",
+        "qualified_name": ")"
+                       + qualifiedName + R"(",
         "inputs": [],
         "outputs": [{"name": "out", "data_type": "DataFrame"}],
     }
@@ -118,16 +124,18 @@ class )" + className + R"(
  * @param qualifiedName 节点限定名
  * @return pybind11::object Python 类对象
  */
-static py::object createSlowNodeClass(const std::string& className,
-                                       const std::string& qualifiedName)
+static py::object createSlowNodeClass(const std::string& className, const std::string& qualifiedName)
 {
     std::string code = R"(
 import time
 class )" + className + R"(
-    qualified_name = ")" + qualifiedName + R"("
+    qualified_name = ")"
+                       + qualifiedName + R"("
     _node_descriptor = {
-        "name": ")" + className + R"(",
-        "qualified_name": ")" + qualifiedName + R"(",
+        "name": ")" + className
+                       + R"(",
+        "qualified_name": ")"
+                       + qualifiedName + R"(",
         "inputs": [],
         "outputs": [{"name": "out", "data_type": "DataFrame"}],
     }
@@ -152,8 +160,8 @@ class )" + className + R"(
  */
 static DAPyNodeProxy* createProxyFromPyClass(py::object pyClass, const QString& nodeId)
 {
-    DAPyNodeProxy* proxy = new DAPyNodeProxy();
-    py::object nodeInstance = pyClass();
+    DAPyNodeProxy* proxy         = new DAPyNodeProxy();
+    py::object nodeInstance      = pyClass();
     nodeInstance.attr("node_id") = nodeId.toStdString();
     proxy->setPyNodeRef(nodeInstance);
     return proxy;
@@ -172,7 +180,7 @@ void TestDAPyWorkFlowWrapper::initTestCase()
 {
     if (!Py_IsInitialized()) {
         try {
-            py::scoped_interpreter interp{};
+            py::scoped_interpreter interp {};
         } catch (const std::exception& e) {
             QSKIP(QString("Failed to initialize Python: %1").arg(e.what()).toLocal8Bit().constData());
         }
@@ -194,29 +202,11 @@ void TestDAPyWorkFlowWrapper::cleanupTestCase()
 // 初始化与有效性测试
 // ============================================================
 
-/**
- * @brief 验证 initPyWorkflow 后 isValid 返回 true
- *
- * 创建 DAPyWorkFlow 实例，调用 initPyWorkflow()，
- * 验证内部 Python DAWorkflow 实例已创建且 isValid() 返回 true。
- */
-void TestDAPyWorkFlowWrapper::testInitPyWorkflow()
-{
-    DAPyWorkFlow workflow;
-    {
-        DA::DAPyGILGuard gil;
-        if (!gil.isAcquired()) {
-            QSKIP("Failed to acquire GIL");
-        }
-        workflow.initPyWorkflow();
-    }
-    QVERIFY(workflow.isValid());
-}
 
 /**
  * @brief 验证未初始化时 isValid 返回 false
  *
- * 创建 DAPyWorkFlow 实例但不调用 initPyWorkflow()，
+ * 创建 DAPyWorkFlo
  * 验证 isValid() 返回 false。
  */
 void TestDAPyWorkFlowWrapper::testIsValidBeforeInit()
@@ -246,10 +236,9 @@ void TestDAPyWorkFlowWrapper::testAddNode()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
         py::object sourceClass = createTestSourceNodeClass("_WTestSourceA", "test._WTestSourceA");
-        proxy = createProxyFromPyClass(sourceClass, "test._WTestSourceA_1");
-        nodeId = workflow.addNode(proxy);
+        proxy                  = createProxyFromPyClass(sourceClass, "test._WTestSourceA_1");
+        nodeId                 = workflow.addNode(proxy);
     }
 
     QVERIFY(!nodeId.isEmpty());
@@ -275,7 +264,6 @@ void TestDAPyWorkFlowWrapper::testAddNodeNullProxy()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
         nodeId = workflow.addNode(nullptr);
     }
 
@@ -299,10 +287,9 @@ void TestDAPyWorkFlowWrapper::testRemoveNode()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
         py::object sourceClass = createTestSourceNodeClass("_WTestSourceB", "test._WTestSourceB");
-        proxy = createProxyFromPyClass(sourceClass, "test._WTestSourceB_1");
-        nodeId = workflow.addNode(proxy);
+        proxy                  = createProxyFromPyClass(sourceClass, "test._WTestSourceB_1");
+        nodeId                 = workflow.addNode(proxy);
         QCOMPARE(workflow.nodeCount(), 1);
     }
 
@@ -335,7 +322,6 @@ void TestDAPyWorkFlowWrapper::testRemoveNodeNonexistent()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
         removed = workflow.removeNode("nonexistent_id");
     }
 
@@ -358,11 +344,11 @@ void TestDAPyWorkFlowWrapper::testNodeCount()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object sourceClass = createTestSourceNodeClass("_WTestSourceC", "test._WTestSourceC");
         py::object filterClass = createTestFilterNodeClass("_WTestFilterC", "test._WTestFilterC");
-        proxy1 = createProxyFromPyClass(sourceClass, "test._WTestSourceC_1");
-        proxy2 = createProxyFromPyClass(filterClass, "test._WTestFilterC_1");
+        proxy1                 = createProxyFromPyClass(sourceClass, "test._WTestSourceC_1");
+        proxy2                 = createProxyFromPyClass(filterClass, "test._WTestFilterC_1");
         workflow.addNode(proxy1);
         workflow.addNode(proxy2);
         QCOMPARE(workflow.nodeCount(), 2);
@@ -389,10 +375,10 @@ void TestDAPyWorkFlowWrapper::testHasNode()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object sourceClass = createTestSourceNodeClass("_WTestSourceD", "test._WTestSourceD");
-        proxy = createProxyFromPyClass(sourceClass, "test._WTestSourceD_1");
-        nodeId = workflow.addNode(proxy);
+        proxy                  = createProxyFromPyClass(sourceClass, "test._WTestSourceD_1");
+        nodeId                 = workflow.addNode(proxy);
         QVERIFY(workflow.hasNode(nodeId));
         QVERIFY(!workflow.hasNode("nonexistent_id"));
     }
@@ -420,14 +406,14 @@ void TestDAPyWorkFlowWrapper::testConnectNode()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object sourceClass = createTestSourceNodeClass("_WTestSourceE", "test._WTestSourceE");
         py::object filterClass = createTestFilterNodeClass("_WTestFilterE", "test._WTestFilterE");
-        proxy1 = createProxyFromPyClass(sourceClass, "test._WTestSourceE_1");
-        proxy2 = createProxyFromPyClass(filterClass, "test._WTestFilterE_1");
-        srcNodeId = workflow.addNode(proxy1);
-        dstNodeId = workflow.addNode(proxy2);
-        conn = workflow.connectNode(srcNodeId, "out", dstNodeId, "in");
+        proxy1                 = createProxyFromPyClass(sourceClass, "test._WTestSourceE_1");
+        proxy2                 = createProxyFromPyClass(filterClass, "test._WTestFilterE_1");
+        srcNodeId              = workflow.addNode(proxy1);
+        dstNodeId              = workflow.addNode(proxy2);
+        conn                   = workflow.connectNode(srcNodeId, "out", dstNodeId, "in");
     }
 
     QVERIFY(conn.isValid());
@@ -452,7 +438,7 @@ void TestDAPyWorkFlowWrapper::testConnectNodeInvalidIds()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         conn = workflow.connectNode("invalid_src", "out", "invalid_dst", "in");
     }
 
@@ -480,15 +466,15 @@ void TestDAPyWorkFlowWrapper::testDisconnectNode()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object sourceClass = createTestSourceNodeClass("_WTestSourceF", "test._WTestSourceF");
         py::object filterClass = createTestFilterNodeClass("_WTestFilterF", "test._WTestFilterF");
-        proxy1 = createProxyFromPyClass(sourceClass, "test._WTestSourceF_1");
-        proxy2 = createProxyFromPyClass(filterClass, "test._WTestFilterF_1");
-        srcNodeId = workflow.addNode(proxy1);
-        dstNodeId = workflow.addNode(proxy2);
-        conn = workflow.connectNode(srcNodeId, "out", dstNodeId, "in");
-        disconnected = workflow.disconnectNode(conn.connectionId);
+        proxy1                 = createProxyFromPyClass(sourceClass, "test._WTestSourceF_1");
+        proxy2                 = createProxyFromPyClass(filterClass, "test._WTestFilterF_1");
+        srcNodeId              = workflow.addNode(proxy1);
+        dstNodeId              = workflow.addNode(proxy2);
+        conn                   = workflow.connectNode(srcNodeId, "out", dstNodeId, "in");
+        disconnected           = workflow.disconnectNode(conn.connectionId);
     }
 
     QVERIFY(disconnected);
@@ -511,7 +497,7 @@ void TestDAPyWorkFlowWrapper::testDisconnectNodeNonexistent()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         disconnected = workflow.disconnectNode("nonexistent_connection_id");
     }
 
@@ -535,11 +521,11 @@ void TestDAPyWorkFlowWrapper::testClear()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object sourceClass = createTestSourceNodeClass("_WTestSourceG", "test._WTestSourceG");
         py::object filterClass = createTestFilterNodeClass("_WTestFilterG", "test._WTestFilterG");
-        proxy1 = createProxyFromPyClass(sourceClass, "test._WTestSourceG_1");
-        proxy2 = createProxyFromPyClass(filterClass, "test._WTestFilterG_1");
+        proxy1                 = createProxyFromPyClass(sourceClass, "test._WTestSourceG_1");
+        proxy2                 = createProxyFromPyClass(filterClass, "test._WTestFilterG_1");
         workflow.addNode(proxy1);
         workflow.addNode(proxy2);
         QCOMPARE(workflow.nodeCount(), 2);
@@ -575,11 +561,11 @@ void TestDAPyWorkFlowWrapper::testGetNodeById()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object sourceClass = createTestSourceNodeClass("_WTestSourceH", "test._WTestSourceH");
-        proxy = createProxyFromPyClass(sourceClass, "test._WTestSourceH_1");
-        nodeId = workflow.addNode(proxy);
-        nodeObj = workflow.getNodeById(nodeId);
+        proxy                  = createProxyFromPyClass(sourceClass, "test._WTestSourceH_1");
+        nodeId                 = workflow.addNode(proxy);
+        nodeObj                = workflow.getNodeById(nodeId);
     }
 
     QVERIFY(!nodeObj.is(py::none()));
@@ -601,7 +587,7 @@ void TestDAPyWorkFlowWrapper::testGetNodeByIdNonexistent()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         nodeObj = workflow.getNodeById("nonexistent_id");
     }
 
@@ -625,15 +611,15 @@ void TestDAPyWorkFlowWrapper::testGetNodes()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object sourceClass = createTestSourceNodeClass("_WTestSourceI", "test._WTestSourceI");
         py::object filterClass = createTestFilterNodeClass("_WTestFilterI", "test._WTestFilterI");
-        proxy1 = createProxyFromPyClass(sourceClass, "test._WTestSourceI_1");
-        proxy2 = createProxyFromPyClass(filterClass, "test._WTestFilterI_1");
+        proxy1                 = createProxyFromPyClass(sourceClass, "test._WTestSourceI_1");
+        proxy2                 = createProxyFromPyClass(filterClass, "test._WTestFilterI_1");
         workflow.addNode(proxy1);
         workflow.addNode(proxy2);
         nodes = workflow.getNodes();
-        QCOMPARE(static_cast<int>(nodes.size()), 2);
+        QCOMPARE(static_cast< int >(nodes.size()), 2);
     }
 
     delete proxy1;
@@ -658,16 +644,16 @@ void TestDAPyWorkFlowWrapper::testGetConnections()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object sourceClass = createTestSourceNodeClass("_WTestSourceJ", "test._WTestSourceJ");
         py::object filterClass = createTestFilterNodeClass("_WTestFilterJ", "test._WTestFilterJ");
-        proxy1 = createProxyFromPyClass(sourceClass, "test._WTestSourceJ_1");
-        proxy2 = createProxyFromPyClass(filterClass, "test._WTestFilterJ_1");
-        QString srcNodeId = workflow.addNode(proxy1);
-        QString dstNodeId = workflow.addNode(proxy2);
+        proxy1                 = createProxyFromPyClass(sourceClass, "test._WTestSourceJ_1");
+        proxy2                 = createProxyFromPyClass(filterClass, "test._WTestFilterJ_1");
+        QString srcNodeId      = workflow.addNode(proxy1);
+        QString dstNodeId      = workflow.addNode(proxy2);
         workflow.connectNode(srcNodeId, "out", dstNodeId, "in");
         connections = workflow.getConnections();
-        QCOMPARE(static_cast<int>(connections.size()), 1);
+        QCOMPARE(static_cast< int >(connections.size()), 1);
     }
 
     delete proxy1;
@@ -685,20 +671,20 @@ void TestDAPyWorkFlowWrapper::testIsValidDag()
     DAPyWorkFlow workflow;
     DAPyNodeProxy* proxy1 = nullptr;
     DAPyNodeProxy* proxy2 = nullptr;
-    bool validDag = false;
+    bool validDag         = false;
 
     {
         DA::DAPyGILGuard gil;
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object sourceClass = createTestSourceNodeClass("_WTestSourceK", "test._WTestSourceK");
         py::object filterClass = createTestFilterNodeClass("_WTestFilterK", "test._WTestFilterK");
-        proxy1 = createProxyFromPyClass(sourceClass, "test._WTestSourceK_1");
-        proxy2 = createProxyFromPyClass(filterClass, "test._WTestFilterK_1");
-        QString srcNodeId = workflow.addNode(proxy1);
-        QString dstNodeId = workflow.addNode(proxy2);
+        proxy1                 = createProxyFromPyClass(sourceClass, "test._WTestSourceK_1");
+        proxy2                 = createProxyFromPyClass(filterClass, "test._WTestFilterK_1");
+        QString srcNodeId      = workflow.addNode(proxy1);
+        QString dstNodeId      = workflow.addNode(proxy2);
         workflow.connectNode(srcNodeId, "out", dstNodeId, "in");
         validDag = workflow.isValidDag();
     }
@@ -719,14 +705,14 @@ void TestDAPyWorkFlowWrapper::testIsValidDagWithCycle()
     DAPyWorkFlow workflow;
     DAPyNodeProxy* proxy1 = nullptr;
     DAPyNodeProxy* proxy2 = nullptr;
-    bool validDag = true;
+    bool validDag         = true;
 
     {
         DA::DAPyGILGuard gil;
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
 
         // 创建有两个输入端口的节点类，使其可以接收反馈连接
         py::object cyclicNodeClass = py::eval(R"(
@@ -759,8 +745,8 @@ class _WTestCyclicNodeB:
         return True
 )");
 
-        proxy1 = createProxyFromPyClass(cyclicNodeClass, "test._WTestCyclicNodeA_1");
-        proxy2 = createProxyFromPyClass(cyclicNodeClassB, "test._WTestCyclicNodeB_1");
+        proxy1          = createProxyFromPyClass(cyclicNodeClass, "test._WTestCyclicNodeA_1");
+        proxy2          = createProxyFromPyClass(cyclicNodeClassB, "test._WTestCyclicNodeB_1");
         QString nodeIdA = workflow.addNode(proxy1);
         QString nodeIdB = workflow.addNode(proxy2);
 
@@ -796,13 +782,13 @@ void TestDAPyWorkFlowWrapper::testTopologicalSort()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object sourceClass = createTestSourceNodeClass("_WTestSourceL", "test._WTestSourceL");
         py::object filterClass = createTestFilterNodeClass("_WTestFilterL", "test._WTestFilterL");
-        proxy1 = createProxyFromPyClass(sourceClass, "test._WTestSourceL_1");
-        proxy2 = createProxyFromPyClass(filterClass, "test._WTestFilterL_1");
-        srcNodeId = workflow.addNode(proxy1);
-        dstNodeId = workflow.addNode(proxy2);
+        proxy1                 = createProxyFromPyClass(sourceClass, "test._WTestSourceL_1");
+        proxy2                 = createProxyFromPyClass(filterClass, "test._WTestFilterL_1");
+        srcNodeId              = workflow.addNode(proxy1);
+        dstNodeId              = workflow.addNode(proxy2);
         workflow.connectNode(srcNodeId, "out", dstNodeId, "in");
         sortedIds = workflow.topologicalSort();
     }
@@ -839,9 +825,9 @@ void TestDAPyWorkFlowWrapper::testExecuteAsync()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object sourceClass = createTestSourceNodeClass("_WTestSourceM", "test._WTestSourceM");
-        proxy = createProxyFromPyClass(sourceClass, "test._WTestSourceM_1");
+        proxy                  = createProxyFromPyClass(sourceClass, "test._WTestSourceM_1");
         workflow.addNode(proxy);
         bool started = workflow.executeAsync();
         QVERIFY(started);
@@ -880,9 +866,9 @@ void TestDAPyWorkFlowWrapper::testTerminate()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object slowClass = createSlowNodeClass("_WTestSlowN", "test._WTestSlowN");
-        proxy = createProxyFromPyClass(slowClass, "test._WTestSlowN_1");
+        proxy                = createProxyFromPyClass(slowClass, "test._WTestSlowN_1");
         workflow.addNode(proxy);
         workflow.executeAsync();
     }
@@ -929,9 +915,9 @@ void TestDAPyWorkFlowWrapper::testPauseResume()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object slowClass = createSlowNodeClass("_WTestSlowO", "test._WTestSlowO");
-        proxy = createProxyFromPyClass(slowClass, "test._WTestSlowO_1");
+        proxy                = createProxyFromPyClass(slowClass, "test._WTestSlowO_1");
         workflow.addNode(proxy);
         workflow.executeAsync();
     }
@@ -986,7 +972,7 @@ void TestDAPyWorkFlowWrapper::testGetExecutorState()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         ExecState initialState = workflow.getExecutorState();
         QCOMPARE(initialState, StateIdle);
     }
@@ -1007,9 +993,9 @@ void TestDAPyWorkFlowWrapper::testGetResult()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object sourceClass = createTestSourceNodeClass("_WTestSourceP", "test._WTestSourceP");
-        proxy = createProxyFromPyClass(sourceClass, "test._WTestSourceP_1");
+        proxy                  = createProxyFromPyClass(sourceClass, "test._WTestSourceP_1");
         workflow.addNode(proxy);
         workflow.executeAsync();
     }
@@ -1047,9 +1033,9 @@ void TestDAPyWorkFlowWrapper::testIsRunning()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object slowClass = createSlowNodeClass("_WTestSlowQ", "test._WTestSlowQ");
-        proxy = createProxyFromPyClass(slowClass, "test._WTestSlowQ_1");
+        proxy                = createProxyFromPyClass(slowClass, "test._WTestSlowQ_1");
         workflow.addNode(proxy);
         workflow.executeAsync();
     }
@@ -1093,7 +1079,7 @@ void TestDAPyWorkFlowWrapper::testGetLastErrorAfterError()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         // 尝试移除不存在的节点，可能产生错误记录
         workflow.removeNode("nonexistent_error_test");
         QString lastError = workflow.getLastError();
@@ -1118,7 +1104,7 @@ void TestDAPyWorkFlowWrapper::testGetLastErrorNoError()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         QString lastError = workflow.getLastError();
         QVERIFY(lastError.isEmpty());
     }
@@ -1128,33 +1114,6 @@ void TestDAPyWorkFlowWrapper::testGetLastErrorNoError()
 // 指针便捷 API 测试
 // ============================================================
 
-/**
- * @brief 验证 addNodeProxy(DAPyNodeProxy*) 返回相同的代理指针
- *
- * 创建 workflow，通过 addNodeProxy 添加节点，
- * 验证返回指针与传入指针相同，且 proxy->getNodeId() 非空。
- */
-void TestDAPyWorkFlowWrapper::test_addNodeProxy_pointer()
-{
-    DAPyWorkFlow workflow;
-    DAPyNodeProxy* proxy = nullptr;
-    DAPyNodeProxy* result = nullptr;
-
-    {
-        DA::DAPyGILGuard gil;
-        if (!gil.isAcquired()) {
-            QSKIP("Failed to acquire GIL");
-        }
-        workflow.initPyWorkflow();
-        py::object sourceClass = createTestSourceNodeClass("_WTestPtrA", "test._WTestPtrA");
-        proxy = createProxyFromPyClass(sourceClass, "test._WTestPtrA_1");
-        result = workflow.addNodeProxy(proxy);
-    }
-
-    QCOMPARE(result, proxy);
-    QVERIFY(!proxy->getNodeId().isEmpty());
-    delete proxy;
-}
 
 /**
  * @brief 验证 removeNode(DAPyNodeProxy*) 按指针移除节点
@@ -1172,10 +1131,10 @@ void TestDAPyWorkFlowWrapper::test_removeNode_pointer()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object sourceClass = createTestSourceNodeClass("_WTestPtrB", "test._WTestPtrB");
-        proxy = createProxyFromPyClass(sourceClass, "test._WTestPtrB_1");
-        nodeId = workflow.addNode(proxy);
+        proxy                  = createProxyFromPyClass(sourceClass, "test._WTestPtrB_1");
+        nodeId                 = workflow.addNode(proxy);
         QVERIFY(!nodeId.isEmpty());
     }
 
@@ -1206,11 +1165,11 @@ void TestDAPyWorkFlowWrapper::test_connectNode_pointer()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object sourceClass = createTestSourceNodeClass("_WTestPtrC", "test._WTestPtrC");
         py::object filterClass = createTestFilterNodeClass("_WTestPtrFilterC", "test._WTestPtrFilterC");
-        srcProxy = createProxyFromPyClass(sourceClass, "test._WTestPtrC_1");
-        dstProxy = createProxyFromPyClass(filterClass, "test._WTestPtrFilterC_1");
+        srcProxy               = createProxyFromPyClass(sourceClass, "test._WTestPtrC_1");
+        dstProxy               = createProxyFromPyClass(filterClass, "test._WTestPtrFilterC_1");
         workflow.addNode(srcProxy);
         workflow.addNode(dstProxy);
         conn = workflow.connectNode(srcProxy, "out", dstProxy, "in");
@@ -1230,7 +1189,7 @@ void TestDAPyWorkFlowWrapper::test_connectNode_pointer()
 void TestDAPyWorkFlowWrapper::test_hasNode_pointer()
 {
     DAPyWorkFlow workflow;
-    DAPyNodeProxy* addedProxy = nullptr;
+    DAPyNodeProxy* addedProxy   = nullptr;
     DAPyNodeProxy* unaddedProxy = nullptr;
 
     {
@@ -1238,10 +1197,10 @@ void TestDAPyWorkFlowWrapper::test_hasNode_pointer()
         if (!gil.isAcquired()) {
             QSKIP("Failed to acquire GIL");
         }
-        workflow.initPyWorkflow();
+
         py::object sourceClass = createTestSourceNodeClass("_WTestPtrD", "test._WTestPtrD");
-        addedProxy = createProxyFromPyClass(sourceClass, "test._WTestPtrD_1");
-        unaddedProxy = createProxyFromPyClass(sourceClass, "test._WTestPtrD_2");
+        addedProxy             = createProxyFromPyClass(sourceClass, "test._WTestPtrD_1");
+        unaddedProxy           = createProxyFromPyClass(sourceClass, "test._WTestPtrD_2");
         workflow.addNode(addedProxy);
         QVERIFY(workflow.hasNode(addedProxy));
         QVERIFY(!workflow.hasNode(unaddedProxy));
@@ -1321,11 +1280,11 @@ void TestDAPyWorkFlowWrapper::test_lifecycle_setNodeProxies()
         }
         py::object sourceClass = createTestSourceNodeClass("_WTestLifeA", "test._WTestLifeA");
         py::object filterClass = createTestFilterNodeClass("_WTestLifeFilterA", "test._WTestLifeFilterA");
-        proxy1 = createProxyFromPyClass(sourceClass, "test._WTestLifeA_1");
-        proxy2 = createProxyFromPyClass(filterClass, "test._WTestLifeFilterA_1");
+        proxy1                 = createProxyFromPyClass(sourceClass, "test._WTestLifeA_1");
+        proxy2                 = createProxyFromPyClass(filterClass, "test._WTestLifeFilterA_1");
     }
 
-    QList<DAPyNodeProxy*> proxies;
+    QList< DAPyNodeProxy* > proxies;
     proxies << proxy1 << proxy2;
     lifecycle.setNodeProxies(proxies);
 

@@ -8,6 +8,7 @@
 #include "DAPortDescriptor.h"
 #include "DAPyNodeStyle.h"
 #include <QDebug>
+#include "DAPyObjectWrapper.h"
 
 namespace DA
 {
@@ -29,10 +30,10 @@ public:
 public:
     DANodeDescriptor mDescriptor;                      ///< 节点描述符（统一存储所有元数据）
     unsigned int mId { 0 };                            ///< 节点ID（独立管理）
-    DA::PY::safe_pyobject mPyNodeRef;                 ///< Python节点实例的安全持有者
+    DAPyObjectWrapper mPyNodeRef;                      ///< Python节点实例的安全持有者
     DAPyNodeState mNodeState { DAPyNodeState::Idle };  ///< 节点执行状态
     mutable QString mLastErrorString;                  ///< 最后一次错误信息（mutable允许const方法修改）
-    QJsonObject mConfig;                              ///< 配置数据缓存
+    QJsonObject mConfig;                               ///< 配置数据缓存
 };
 
 //===================================================
@@ -66,7 +67,7 @@ void DAPyNodeProxy::PrivateData::dealException(const std::exception& e) const
  */
 void DAPyNodeProxy::PrivateData::clearPyNodeRef()
 {
-    mPyNodeRef = DA::PY::safe_pyobject();
+    mPyNodeRef = DAPyObjectWrapper();
 }
 
 /**
@@ -159,9 +160,14 @@ void DAPyNodeProxy::PrivateData::syncMetaFromPyNode(const pybind11::object& pyNo
  *
  * @note 需后续调用setPyNodeRef()关联Python节点实例才能执行
  */
-DAPyNodeProxy::DAPyNodeProxy(QObject* parent) : QObject(parent), DA_PIMPL_CONSTRUCT
+DAPyNodeProxy::DAPyNodeProxy() : DA_PIMPL_CONSTRUCT
 {
-    qRegisterMetaType<DA::DAPyNodeState>("DAPyNodeState");
+}
+
+DAPyNodeProxy::DAPyNodeProxy(const pybind11::object& pyNode) : DA_PIMPL_CONSTRUCT
+{
+    qRegisterMetaType< DA::DAPyNodeState >("DAPyNodeState");
+    setPyNodeRef(pyNode);
 }
 
 /**
@@ -273,7 +279,7 @@ void DAPyNodeProxy::setPyNodeRef(const pybind11::object& pyNode)
         return;
     }
 
-    d->mPyNodeRef = DA::PY::safe_pyobject(pybind11::object(pyNode));
+    d->mPyNodeRef = DAPyObjectWrapper(pyNode);
 
     // 获取GIL并同步元信息
     DAPyGILGuard gilGuard;
@@ -392,7 +398,6 @@ void DAPyNodeProxy::setNodeName(const QString& name)
 {
     DA_D(d);
     d->mDescriptor.name = name;
-    emit nodeNameChanged(name);
 }
 
 /**
@@ -504,7 +509,6 @@ void DAPyNodeProxy::setNodeState(DAPyNodeState state)
 {
     DA_D(d);
     d->mNodeState = state;
-    emit nodeStateChanged(state);
 }
 
 /**
@@ -621,11 +625,6 @@ void DAPyNodeProxy::setConfig(const QJsonObject& config)
     DA_D(d);
     // 1. 缓存配置数据
     d->mConfig = config;
-
-    // 5. 为每个参数发射信号（无论Python节点是否有效，本地缓存已更新）
-    for (auto it = config.constBegin(); it != config.constEnd(); ++it) {
-        emit parameterValueChanged(qHash(it.key()), it.value().toVariant());
-    }
 
     // 2. 检查Python节点引用是否有效
     if (!d->mPyNodeRef) {

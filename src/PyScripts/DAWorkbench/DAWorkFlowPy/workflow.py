@@ -113,16 +113,27 @@ class DAWorkflow:
         self._nodes[node_id] = node_instance
         return node_id
 
-    def remove_node(self, node_id: str) -> object:
+    def remove_node(self, node_id: str = None, node_instance: object = None) -> object:
         """
         从工作流中移除节点
 
         移除节点时，同时移除与该节点相关的所有连接。
+        支持三种调用方式：仅传入 node_id、仅传入 node_instance、同时传入两者（以 node_instance 为准）。
 
-        :param node_id: 要移除的节点 ID
+        :param node_id: 要移除的节点 ID，可选
+        :param node_instance: 要移除的节点实例，可选
         :return: 被移除的节点实例
-        :raises KeyError: 如果 node_id 不存在
+        :raises KeyError: 如果节点不存在
+        :raises ValueError: 如果 node_id 和 node_instance 都未提供
         """
+        if node_instance is not None:
+            resolved_id = getattr(node_instance, "node_id", None)
+            if resolved_id is None:
+                raise ValueError("节点实例没有 node_id 属性")
+            node_id = resolved_id
+        elif node_id is None:
+            raise ValueError("必须提供 node_id 或 node_instance")
+
         if node_id not in self._nodes:
             raise KeyError(f"节点 ID '{node_id}' 不存在")
 

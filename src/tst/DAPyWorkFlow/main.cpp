@@ -1,4 +1,4 @@
-#include <QApplication>
+﻿#include <QApplication>
 #include <QtTest/QtTest>
 #include "tst_dapynodemetadata.h"
 #include "tst_linkpoints.h"
@@ -23,10 +23,10 @@ int main(int argc, char* argv[])
     // 运行所有 QTest 测试类
     int status = 0;
 
-#define RUN_TEST(TestClass)                                       \
-    {                                                             \
-        TestClass test;                                           \
-        status |= QTest::qExec(&test, argc, argv);                \
+#define RUN_TEST(TestClass)                                                                                            \
+    {                                                                                                                  \
+        TestClass test;                                                                                                \
+        status |= QTest::qExec(&test, argc, argv);                                                                     \
     }
 
     RUN_TEST(DA::TestDAPyNodeMetaData);
@@ -41,7 +41,6 @@ int main(int argc, char* argv[])
     RUN_TEST(DA::TestDANodeDescriptor);
     RUN_TEST(DA::TestWorkflowLifecycle);
     RUN_TEST(DA::TestDAPyWorkFlowWrapper);
-    RUN_TEST(DA::TestDAPyNodeProxySignals);
 
     return status;
 }

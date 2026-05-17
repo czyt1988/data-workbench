@@ -1,4 +1,4 @@
-#include "DAPyObjectWrapper.h"
+﻿#include "DAPyObjectWrapper.h"
 #include "DAPybind11QtCaster.hpp"
 #include <QDebug>
 //===================================================
@@ -37,12 +37,8 @@ DAPyObjectWrapper::DAPyObjectWrapper(pybind11::object&& obj)
 
 DAPyObjectWrapper::~DAPyObjectWrapper()
 {
-    if (!_object.is_none()) {
-        if (Py_IsInitialized()) {
-            _object = pybind11::none();
-        } else {
-            _object.release();
-        }
+    if (!Py_IsInitialized()) {
+        _object.release();
     }
 }
 

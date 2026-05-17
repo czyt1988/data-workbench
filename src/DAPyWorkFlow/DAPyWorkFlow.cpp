@@ -2,6 +2,7 @@
 #include "DAPyModuleWorkflow.h"
 #include "DAPyGILGuard.h"
 #include "DAPybind11InQt.h"
+#include "DAPyObjectWrapper.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DAPyNodeProxy.h"
 #include "DAPyLinkGraphicsItem.h"
@@ -24,9 +25,9 @@ public:
     void dealException(const std::exception& e);
 
 public:
-    DA::PY::safe_pyobject mPyWorkflowObj;  ///< Python DAWorkflow 实例的安全持有者
-    DA::PY::safe_pyobject mPyExecutorObj;  ///< Python DAWorkflowExecutor 实例的安全持有者
-    QString mLastErrorString;              ///< 最后一次错误信息
+    DAPyObjectWrapper mPyWorkflowObj;  ///< Python DAWorkflow 实例的安全持有者
+    DAPyObjectWrapper mPyExecutorObj;  ///< Python DAWorkflowExecutor 实例的安全持有者
+    QString mLastErrorString;          ///< 最后一次错误信息
 };
 
 //===================================================
@@ -50,7 +51,7 @@ DAPyWorkFlow::PrivateData::PrivateData(DAPyWorkFlow* p) : q_ptr(p)
 void DAPyWorkFlow::PrivateData::dealException(const pybind11::error_already_set& e)
 {
     mLastErrorString = QString::fromUtf8(e.what());
-    qWarning().noquote() << mLastErrorString;
+    qCritical().noquote() << mLastErrorString;
 }
 
 /**
@@ -63,15 +64,21 @@ void DAPyWorkFlow::PrivateData::dealException(const pybind11::error_already_set&
 void DAPyWorkFlow::PrivateData::dealException(const std::exception& e)
 {
     mLastErrorString = QString::fromUtf8(e.what());
-    qWarning().noquote() << mLastErrorString;
+    qCritical().noquote() << mLastErrorString;
 }
 
 //===================================================
 // DAPyWorkFlow
 //===================================================
 
-DAPyWorkFlow::DAPyWorkFlow() : DA_PIMPL_CONSTRUCT
+DAPyWorkFlow::DAPyWorkFlow(QObject* parent) : QObject(parent), DA_PIMPL_CONSTRUCT
 {
+    initPyWorkflow();
+}
+
+DAPyWorkFlow::DAPyWorkFlow(const pybind11::object& obj, QObject* parent) : QObject(parent), DA_PIMPL_CONSTRUCT
+{
+    setPyWorkflowObject(obj);
 }
 
 DAPyWorkFlow::~DAPyWorkFlow()
@@ -90,11 +97,13 @@ DAPyWorkFlow::~DAPyWorkFlow()
 void DAPyWorkFlow::initPyWorkflow()
 {
     DA_D(d);
-    if (!d->mPyWorkflowObj.is_none()) {
+    if (!d->mPyWorkflowObj.isNone()) {
         return;
     }
     DAPyGILGuard gil;
     try {
+        // [review建议]并不建议使用单例模式，直接申明DAPyModuleWorkflow时import 对应模块即可，python自身有缓存，并不会产生很大消耗，用单例还涉及析构顺序问题
+        // TODO: 调整单例模式
         DAPyModuleWorkflow& pyModule = DAPyModuleWorkflow::getInstance();
         if (!pyModule.isImport()) {
             if (!pyModule.import()) {
@@ -108,7 +117,7 @@ void DAPyWorkFlow::initPyWorkflow()
             return;
         }
         pybind11::object workflowInstance = workflowClass();
-        d->mPyWorkflowObj                 = DA::PY::safe_pyobject(std::move(workflowInstance));
+        d->mPyWorkflowObj                 = DAPyObjectWrapper(workflowInstance);
         qDebug() << "DAPyWorkFlow::initPyWorkflow: Python DAWorkflow instance created";
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
@@ -128,7 +137,7 @@ void DAPyWorkFlow::initPyWorkflow()
 void DAPyWorkFlow::setPyWorkflowObject(const pybind11::object& obj)
 {
     DA_D(d);
-    d->mPyWorkflowObj = DA::PY::safe_pyobject(pybind11::object(obj));
+    d->mPyWorkflowObj = DAPyObjectWrapper(obj);
 }
 
 /**
@@ -149,7 +158,7 @@ bool DAPyWorkFlow::isValid() const
     DA_DC(d);
     DAPyGILGuard gil;
     try {
-        return !d->mPyWorkflowObj.is_none();
+        return !d->mPyWorkflowObj.isNone();
     } catch (const pybind11::error_already_set& e) {
         qWarning().noquote() << "DAPyWorkFlow::isValid: " << e.what();
     } catch (const std::exception& e) {
@@ -157,10 +166,6 @@ bool DAPyWorkFlow::isValid() const
     }
     return false;
 }
-
-//===================================================
-// Wave 2 方法 stub — 后续 Wave 2 实现
-//===================================================
 
 /**
  * @brief 添加节点到 Python DAWorkflow
@@ -181,8 +186,7 @@ QString DAPyWorkFlow::addNode(DAPyNodeProxy* proxy)
     DA_D(d);
     DAPyGILGuard gil;
     try {
-        pybind11::object workflowObj = d->mPyWorkflowObj.object();
-        if (!workflowObj) {
+        if (d->mPyWorkflowObj.isNone()) {
             qWarning() << "DAPyWorkFlow::addNode: workflow object is invalid";
             return QString();
         }
@@ -191,17 +195,16 @@ QString DAPyWorkFlow::addNode(DAPyNodeProxy* proxy)
             qWarning() << "DAPyWorkFlow::addNode: proxy has no valid Python node reference";
             return QString();
         }
-        pybind11::object result = workflowObj.attr("add_node")(pyNodeRef);
-        std::string nodeIdStr   = result.cast< std::string >();
-        emit nodeAdded(proxy);
-        return QString::fromStdString(nodeIdStr);
+        pybind11::object result = d->mPyWorkflowObj.attr("add_node")(pyNodeRef);
+        QString nodeIdStr       = result.cast< QString >();
+        Q_EMIT nodeAdded(proxy);
+        return nodeIdStr;
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
-        return QString();
     } catch (const std::exception& e) {
         d->dealException(e);
-        return QString();
     }
+    return QString();
 }
 
 /**
@@ -218,17 +221,28 @@ bool DAPyWorkFlow::removeNode(const QString& nodeId)
     DA_D(d);
     DAPyGILGuard gil;
     try {
-        pybind11::object workflowObj = d->mPyWorkflowObj.object();
-        if (!workflowObj) {
+        // [review建议] 一个函数的功能实现只有一处，removeNode(const QString& nodeId)和removeNode(DAPyNodeProxy* proxy)分别实现是一个非常错误的做法
+        // 应该面向node而不是面向str，程序很多地方依赖str而不是node，str只是辅助，node对象才是核心
+        // 原来py脚本只有
+        // ```python
+        // def remove_node(self, node_id: str) -> object:
+        // ```
+        // 这是不合理的，应该有
+        // ```python
+        // def remove_node(self, node_id: str = None, node_instance: object = None) -> object:
+        // ```
+        // 即可接收id也可以接受node对象
+        if (d->mPyWorkflowObj.isNone()) {
             qWarning() << "DAPyWorkFlow::removeNode: workflow object is invalid";
             return false;
         }
-        pybind11::object pyNodeRef = getNodeById(nodeId);
+        pybind11::object pyNodeRef = d->mPyWorkflowObj.attr("removeNode")(pybind11::arg("node_id") = nodeId);
         if (pyNodeRef.is_none()) {
             qWarning() << "DAPyWorkFlow::removeNode: node not found for id:" << nodeId;
             return false;
         }
-        workflowObj.attr("remove_node")(pyNodeRef);
+        // DAPyNodeProxy* nodeProxy = getNodeById(nodeId);
+        // Q_EMIT nodeRemoved();
         return true;
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
@@ -238,6 +252,40 @@ bool DAPyWorkFlow::removeNode(const QString& nodeId)
         return false;
     }
 }
+
+
+/**
+ * @brief 通过代理指针移除节点
+ *
+ * 从 proxy 提取 nodeId 后，调用 bool removeNode(nodeId) 执行移除。
+ * 使用 DAPyGILGuard 保护 proxy->getNodeId() 的 Python 调用。
+ *
+ * @param[in] proxy 节点代理指针
+ * @return true 成功移除；false proxy 为空、nodeId 无效或底层 removeNode 失败
+ * @see bool removeNode(const QString&) addNode(DAPyNodeProxy*)
+ */
+bool DAPyWorkFlow::removeNode(DAPyNodeProxy* proxy)
+{
+    if (!proxy) {
+        qWarning() << "DAPyWorkFlow::removeNode(DAPyNodeProxy*): proxy is nullptr";
+        return false;
+    }
+    DA_D(d);
+    DAPyGILGuard gil;
+    if (d->mPyWorkflowObj.isNone()) {  // mPyWorkflowObj实际就是pybind11::object的安全封装
+        qWarning() << "DAPyWorkFlow::removeNode: workflow object is invalid";
+        return false;
+    }
+    try {
+        d->mPyWorkflowObj.attr("remove_node")(proxy->getPyNodeRef());  // 返回node对象，这里不需要捕获返回
+    } catch (const std::exception& e) {
+        d->dealException(e);
+        return false;
+    }
+    Q_EMIT nodeRemoved(proxy);
+    return true;
+}
+
 
 /**
  * @brief 连接两个节点的端口，返回连接描述符
@@ -252,10 +300,9 @@ bool DAPyWorkFlow::removeNode(const QString& nodeId)
  * @param[in] dstChannel 目标节点输入端口名称
  * @return DAPyWorkFlowConnection 连接描述符，失败时 isValid() 为 false
  */
-DAPyWorkFlowConnection DAPyWorkFlow::connectNode(const QString& srcNodeId,
-                                                 const QString& srcChannel,
-                                                 const QString& dstNodeId,
-                                                 const QString& dstChannel)
+DAPyWorkFlowConnection DAPyWorkFlow::connectNode(
+    const QString& srcNodeId, const QString& srcChannel, const QString& dstNodeId, const QString& dstChannel
+)
 {
     DA_D(d);
     DAPyWorkFlowConnection result;
@@ -267,7 +314,8 @@ DAPyWorkFlowConnection DAPyWorkFlow::connectNode(const QString& srcNodeId,
     try {
         pybind11::object workflowObj = d->mPyWorkflowObj.object();
         pybind11::object conn        = workflowObj.attr("connect_node")(
-            srcNodeId.toStdString(), srcChannel.toStdString(), dstNodeId.toStdString(), dstChannel.toStdString());
+            srcNodeId.toStdString(), srcChannel.toStdString(), dstNodeId.toStdString(), dstChannel.toStdString()
+        );
         result.connectionId  = QString::fromStdString(pybind11::str(conn.attr("connection_id")));
         result.sourceNodeId  = QString::fromStdString(pybind11::str(conn.attr("source_node_id")));
         result.sourceChannel = QString::fromStdString(pybind11::str(conn.attr("source_output_channel")));
@@ -304,7 +352,7 @@ bool DAPyWorkFlow::disconnectNode(const QString& connectionId)
         // Extract connection info for signal emission
         QString fromPort = QString::fromStdString(pybind11::str(connObj.attr("source_output_channel")));
         QString toPort   = QString::fromStdString(pybind11::str(connObj.attr("target_input_channel")));
-        emit nodeDisconnected(nullptr, fromPort, nullptr, toPort);
+        Q_EMIT nodeDisconnected(nullptr, fromPort, nullptr, toPort);
         return true;
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
@@ -331,7 +379,11 @@ void DAPyWorkFlow::clear()
     DA_D(d);
     DAPyGILGuard gil;
     try {
-        d->mPyWorkflowObj.object().attr("clear")();
+        if (d->mPyWorkflowObj.isNone()) {
+            qWarning() << "DAPyWorkFlow::clear: workflow object is invalid";
+            return;
+        }
+        d->mPyWorkflowObj.attr("clear")();
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
     } catch (const std::exception& e) {
@@ -358,7 +410,11 @@ bool DAPyWorkFlow::hasNode(const QString& nodeId)
     DA_D(d);
     DAPyGILGuard gil;
     try {
-        pybind11::object result = d->mPyWorkflowObj.object().attr("__contains__")(nodeId);
+        if (d->mPyWorkflowObj.isNone()) {
+            qWarning() << "DAPyWorkFlow::hasNode: workflow object is invalid";
+            return false;
+        }
+        pybind11::object result = d->mPyWorkflowObj.attr("__contains__")(nodeId);
         return result.cast< bool >();
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
@@ -368,55 +424,6 @@ bool DAPyWorkFlow::hasNode(const QString& nodeId)
     return false;
 }
 
-/**
- * @brief 添加节点到 Python DAWorkflow（指针重载版本）
- *
- * 便捷方法：内部先调用 QString addNode(proxy) 获取 nodeId，
- * 验证 nodeId 非空后返回原 proxy 指针。
- *
- * @param[in] proxy 节点代理指针（必须持有有效 Python 节点引用）
- * @return 传入的 proxy 本身；nullptr 表示失败（proxy 为空、workflow 未初始化或 addNode 失败）
- * @see QString addNode(DAPyNodeProxy*) removeNode(DAPyNodeProxy*)
- */
-DAPyNodeProxy* DAPyWorkFlow::addNodeProxy(DAPyNodeProxy* proxy)
-{
-    if (!proxy) {
-        qWarning() << "DAPyWorkFlow::addNodeProxy(DAPyNodeProxy*): proxy is nullptr";
-        return nullptr;
-    }
-    QString nodeId = addNode(proxy);
-    if (nodeId.isEmpty()) {
-        qWarning() << "DAPyWorkFlow::addNodeProxy(DAPyNodeProxy*): nodeId not assigned, addNode failed";
-        return nullptr;
-    }
-    return proxy;
-}
-
-/**
- * @brief 通过代理指针移除节点
- *
- * 从 proxy 提取 nodeId 后，调用 bool removeNode(nodeId) 执行移除。
- * 使用 DAPyGILGuard 保护 proxy->getNodeId() 的 Python 调用。
- *
- * @param[in] proxy 节点代理指针
- * @return true 成功移除；false proxy 为空、nodeId 无效或底层 removeNode 失败
- * @see bool removeNode(const QString&) addNode(DAPyNodeProxy*)
- */
-bool DAPyWorkFlow::removeNode(DAPyNodeProxy* proxy)
-{
-    if (!proxy) {
-        qWarning() << "DAPyWorkFlow::removeNode(DAPyNodeProxy*): proxy is nullptr";
-        return false;
-    }
-    DAPyGILGuard gil;
-    QString nodeId = proxy->getNodeId();
-    if (nodeId.isEmpty()) {
-        qWarning() << "DAPyWorkFlow::removeNode(DAPyNodeProxy*): proxy has empty nodeId";
-        return false;
-    }
-    emit nodeRemoved(proxy);
-    return removeNode(nodeId);
-}
 
 /**
  * @brief 通过代理指针连接两个节点
@@ -431,8 +438,9 @@ bool DAPyWorkFlow::removeNode(DAPyNodeProxy* proxy)
  * @return DAPyWorkFlowConnection 连接描述符；无效参数或底层调用失败时 isValid() 为 false
  * @see DAPyWorkFlowConnection connectNode(QString, QString, QString, QString)
  */
-DAPyWorkFlowConnection DAPyWorkFlow::connectNode(DAPyNodeProxy* src, const QString& srcChannel,
-                                                 DAPyNodeProxy* dst, const QString& dstChannel)
+DAPyWorkFlowConnection DAPyWorkFlow::connectNode(
+    DAPyNodeProxy* src, const QString& srcChannel, DAPyNodeProxy* dst, const QString& dstChannel
+)
 {
     if (!src) {
         qWarning() << "DAPyWorkFlow::connectNode(DAPyNodeProxy*, ...): src is nullptr";
@@ -451,7 +459,7 @@ DAPyWorkFlowConnection DAPyWorkFlow::connectNode(DAPyNodeProxy* src, const QStri
     }
     DAPyWorkFlowConnection connResult = connectNode(srcNodeId, srcChannel, dstNodeId, dstChannel);
     if (connResult.isValid()) {
-        emit nodeConnected(src, srcChannel, dst, dstChannel);
+        Q_EMIT nodeConnected(src, srcChannel, dst, dstChannel);
     }
     return connResult;
 }
@@ -473,7 +481,8 @@ bool DAPyWorkFlow::disconnectNode(DAPyLinkGraphicsItem* link)
     }
     // TODO: DAPyLinkGraphicsItem 缺少 getConnectionId() 方法。
     // 增加 connectionId 存储/获取后，此处改为: return disconnectNode(link->getConnectionId());
-    qWarning() << "DAPyWorkFlow::disconnectNode(DAPyLinkGraphicsItem*): DAPyLinkGraphicsItem lacks getConnectionId(), unimplemented";
+    qWarning() << "DAPyWorkFlow::disconnectNode(DAPyLinkGraphicsItem*): DAPyLinkGraphicsItem lacks getConnectionId(), "
+                  "unimplemented";
     return false;
 }
 
@@ -670,7 +679,7 @@ bool DAPyWorkFlow::executeAsync()
         qWarning() << "DAPyWorkFlow::executeAsync: workflow is not valid";
         return false;
     }
-    emit executionStarted();
+    Q_EMIT executionStarted();
     DAPyGILGuard gil;
     try {
         DAPyModuleWorkflow& pyModule = DAPyModuleWorkflow::getInstance();
@@ -683,17 +692,17 @@ bool DAPyWorkFlow::executeAsync()
         pybind11::object executorModule = pybind11::module_::import("DAWorkbench.DAWorkFlowPy.executor");
         pybind11::object executorClass  = executorModule.attr("DAWorkflowExecutor");
         pybind11::object workflowObj    = d->mPyWorkflowObj.object();
-pybind11::object executorObj    = executorClass(workflowObj);
+        pybind11::object executorObj    = executorClass(workflowObj);
         executorObj.attr("execute_async")();
-        d->mPyExecutorObj = DA::PY::safe_pyobject(std::move(executorObj));
-        emit executionFinished(true);
+        d->mPyExecutorObj = DAPyObjectWrapper(executorObj);
+        Q_EMIT executionFinished(true);
         return true;
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
     } catch (const std::exception& e) {
         d->dealException(e);
     }
-emit executionFinished(false);
+    Q_EMIT executionFinished(false);
     return false;
 }
 
@@ -717,7 +726,7 @@ bool DAPyWorkFlow::executeAsync(pybind11::object onNodeFinished, pybind11::objec
         qWarning() << "DAPyWorkFlow::executeAsync: workflow is not valid";
         return false;
     }
-    emit executionStarted();
+    Q_EMIT executionStarted();
     DAPyGILGuard gil;
     try {
         DAPyModuleWorkflow& pyModule = DAPyModuleWorkflow::getInstance();
@@ -732,15 +741,15 @@ bool DAPyWorkFlow::executeAsync(pybind11::object onNodeFinished, pybind11::objec
         pybind11::object workflowObj    = d->mPyWorkflowObj.object();
         pybind11::object executorObj    = executorClass(workflowObj, onNodeFinished, onStateChange, onProgress);
         executorObj.attr("execute_async")();
-        d->mPyExecutorObj = DA::PY::safe_pyobject(std::move(executorObj));
-        emit executionFinished(true);
+        d->mPyExecutorObj = DAPyObjectWrapper(executorObj);
+        Q_EMIT executionFinished(true);
         return true;
     } catch (const pybind11::error_already_set& e) {
         d->dealException(e);
     } catch (const std::exception& e) {
         d->dealException(e);
     }
-emit executionFinished(false);
+    Q_EMIT executionFinished(false);
     return false;
 }
 
@@ -755,7 +764,7 @@ emit executionFinished(false);
 void DAPyWorkFlow::terminate()
 {
     DA_D(d);
-    if (d->mPyExecutorObj.is_none()) {
+    if (d->mPyExecutorObj.isNone()) {
         qWarning() << "DAPyWorkFlow::terminate: executor is not created";
         return;
     }
@@ -781,7 +790,7 @@ void DAPyWorkFlow::terminate()
 bool DAPyWorkFlow::pause()
 {
     DA_D(d);
-    if (d->mPyExecutorObj.is_none()) {
+    if (d->mPyExecutorObj.isNone()) {
         qWarning() << "DAPyWorkFlow::pause: executor is not created";
         return false;
     }
@@ -809,7 +818,7 @@ bool DAPyWorkFlow::pause()
 bool DAPyWorkFlow::resume()
 {
     DA_D(d);
-    if (d->mPyExecutorObj.is_none()) {
+    if (d->mPyExecutorObj.isNone()) {
         qWarning() << "DAPyWorkFlow::resume: executor is not created";
         return false;
     }
@@ -828,7 +837,7 @@ bool DAPyWorkFlow::resume()
 ExecState DAPyWorkFlow::getExecutorState()
 {
     DA_D(d);
-    if (d->mPyExecutorObj.is_none()) {
+    if (d->mPyExecutorObj.isNone()) {
         return StateIdle;
     }
     DAPyGILGuard gil;
@@ -860,7 +869,7 @@ ExecState DAPyWorkFlow::getExecutorState()
 bool DAPyWorkFlow::getResult()
 {
     DA_D(d);
-    if (d->mPyExecutorObj.is_none()) {
+    if (d->mPyExecutorObj.isNone()) {
         return false;
     }
     DAPyGILGuard gil;

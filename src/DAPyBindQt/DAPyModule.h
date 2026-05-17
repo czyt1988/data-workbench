@@ -1,4 +1,4 @@
-#ifndef DAPYMODULE_H
+﻿#ifndef DAPYMODULE_H
 #define DAPYMODULE_H
 #include "DAPyBindQtGlobal.h"
 #include "DAPybind11InQt.h"

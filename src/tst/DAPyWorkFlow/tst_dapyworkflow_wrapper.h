@@ -1,4 +1,4 @@
-#ifndef TST_DAPYWORKFLOW_WRAPPER_H
+﻿#ifndef TST_DAPYWORKFLOW_WRAPPER_H
 #define TST_DAPYWORKFLOW_WRAPPER_H
 
 #include <QObject>
@@ -29,8 +29,6 @@ private Q_SLOTS:
     void cleanupTestCase();
 
     // --- 初始化与有效性 ---
-    // 验证 initPyWorkflow 后 isValid 返回 true
-    void testInitPyWorkflow();
     // 验证未初始化时 isValid 返回 false
     void testIsValidBeforeInit();
 
@@ -95,8 +93,6 @@ private Q_SLOTS:
     void testGetLastErrorNoError();
 
     // --- 指针便捷 API ---
-    // 验证 addNodeProxy(DAPyNodeProxy*) 返回相同的代理指针
-    void test_addNodeProxy_pointer();
     // 验证 removeNode(DAPyNodeProxy*) 按指针移除节点
     void test_removeNode_pointer();
     // 验证 connectNode(proxy*, srcChannel, proxy*, dstChannel) 创建有效连接

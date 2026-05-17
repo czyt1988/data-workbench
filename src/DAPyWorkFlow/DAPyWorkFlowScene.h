@@ -177,8 +177,6 @@ protected:
 
 private:
     void initConnect();
-    // 初始化Python DAWorkflow实例
-    void initPyWorkflow();
     // 重建节点到连接线的映射表（undo/redo恢复后或从文件加载后调用）
     void rebuildNodeLinksMap();
 };

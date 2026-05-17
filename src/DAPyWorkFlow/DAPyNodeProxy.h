@@ -15,15 +15,12 @@ namespace DA
 {
 
 /**
- * @brief Python节点的C++独立代理类
+ * @brief Python节点的C++代理类
  *
- * 代理Python定义的节点，不继承DAAbstractNode或任何QObject基类，
- * 遵循非QObject+PIMPL+pybind11::object模式（参考DAPyDataFrame）。
- * 通过pybind11桥接C++节点操作到Python节点执行。
+ * 代理Python Node_def定义的节点
  *
  * @code
- * DAPyNodeProxy proxy;
- * proxy.setPyNodeRef(pyNodeObj);
+ * DAPyNodeProxy proxy(pyNodeObj);
  * if (proxy.exec()) {
  *     qDebug() << "Node executed successfully";
  * } else {
@@ -33,13 +30,13 @@ namespace DA
  *
  * @see DAPyGILGuard DAPyModuleWorkflow DAPyNodeState DAPyDataFrame
  */
-class DAPYWORKFLOW_API DAPyNodeProxy : public QObject
+class DAPYWORKFLOW_API DAPyNodeProxy
 {
-    Q_OBJECT
     DA_DECLARE_PRIVATE(DAPyNodeProxy)
 public:
     // 构造/析构
-    explicit DAPyNodeProxy(QObject* parent = nullptr);
+    explicit DAPyNodeProxy();
+    explicit DAPyNodeProxy(const pybind11::object& pyNode);
     ~DAPyNodeProxy();
 
     // 执行节点（GIL+Python execute）
@@ -96,14 +93,6 @@ public:
 
     // 有效性检查
     bool isValid() const;
-
-Q_SIGNALS:
-    // 节点名称变化信号
-    void nodeNameChanged(const QString& name);
-    // 节点状态变化信号
-    void nodeStateChanged(const DAPyNodeState& state);
-    // 参数值变化信号
-    void parameterValueChanged(int propertyId, QVariant value);
 };
 
 }  // namespace DA
