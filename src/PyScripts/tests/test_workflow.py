@@ -27,23 +27,11 @@ workflow_mod = _load_module("DAWorkbench.DAWorkFlowPy.workflow", "PyScripts/DAWo
 DAWorkflow = workflow_mod.DAWorkflow
 
 
-MINIMAL_DESCRIPTOR = type("MockDescriptor", (), {
-    "qualifiedName": "test.MockNode",
-    "inputs": [],
-    "outputs": [],
-})()
-
-
 def make_node(qualified_name, node_id=None):
     """Create a minimal test node with required attributes."""
     node = type("TestNode", (), {
         "qualified_name": qualified_name,
-        "_node_descriptor": type("MockDescriptor", (), {
-            "qualifiedName": qualified_name,
-            "name": qualified_name.split(".")[-1],
-            "inputs": [],
-            "outputs": [],
-        })(),
+        "name": qualified_name.split(".")[-1],
     })()
     if node_id is not None:
         node.node_id = node_id
@@ -51,15 +39,11 @@ def make_node(qualified_name, node_id=None):
 
 
 def make_node_with_ports(qualified_name, node_id=None, inputs=None, outputs=None):
-    descriptor = type("MockDescriptor", (), {
-        "qualifiedName": qualified_name,
-        "name": qualified_name.split(".")[-1],
-        "inputs": [type("MockPort", (), {"name": p})() for p in (inputs or [])],
-        "outputs": [type("MockPort", (), {"name": p})() for p in (outputs or [])],
-    })()
     node = type("TestNode", (), {
         "qualified_name": qualified_name,
-        "_node_descriptor": descriptor,
+        "name": qualified_name.split(".")[-1],
+        "input_keys": list(inputs or []),
+        "output_keys": list(outputs or []),
     })()
     if node_id is not None:
         node.node_id = node_id

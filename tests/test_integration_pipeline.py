@@ -193,8 +193,8 @@ class TestNodeDiscovery:
                 mod = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(mod)
                 for name, obj in mod.__dict__.items():
-                    if hasattr(obj, '_node_descriptor'):
-                        node_names.add(obj._node_descriptor['name'])
+                    if hasattr(obj, 'qualified_name') and hasattr(obj, 'name'):
+                        node_names.add(obj.name)
                         break
             except Exception:
                 pass

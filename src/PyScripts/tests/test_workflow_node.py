@@ -15,7 +15,6 @@ from unittest.mock import MagicMock
 
 def _mock_da_py_workflow():
     mod = types.ModuleType("da_py_workflow")
-    mod.DANodeDescriptor = MagicMock
     mod.DAPortDescriptor = MagicMock
     mod.DAParameterDescriptor = MagicMock
     mod.DANodeStyle = MagicMock

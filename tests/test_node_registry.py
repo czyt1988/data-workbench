@@ -1,8 +1,8 @@
 """
 test_node_registry — DANodeRegistry 节点注册和发现测试
 
-覆盖：注册节点、目录扫描发现、入口点发现、去重、
-查询描述符、无效节点文件处理。
+覆盖：注册节点类、目录扫描发现、入口点发现、去重、
+查询节点类、无效节点文件处理。
 """
 
 import os
@@ -10,7 +10,6 @@ import sys
 import tempfile
 import pytest
 from DAWorkbench.DAWorkFlowPy import DANodeRegistry, NodeDef, Input, Output, Parameter
-from DAWorkbench.DAWorkFlowPy.node_descriptor import DANodeDescriptor
 
 
 # ==================== 辅助节点 ====================
@@ -45,31 +44,30 @@ class TestDANodeRegistryRegister:
     def test_register_node(self):
         """注册节点类"""
         registry = DANodeRegistry()
-        desc = registry.register_node(RegistryTestNode)
-        assert isinstance(desc, DANodeDescriptor)
-        assert desc.name == "RegistryTestNode"
+        node_cls = registry.register_node(RegistryTestNode)
+        assert node_cls.name == "RegistryTestNode"
 
     def test_register_node_in_registry(self):
         """注册节点后可通过 qualified_name 查找"""
         registry = DANodeRegistry()
-        desc = registry.register_node(RegistryTestNode)
-        assert desc.qualified_name in registry
+        node_cls = registry.register_node(RegistryTestNode)
+        assert node_cls.qualified_name in registry
 
     def test_register_duplicate_skips(self):
         """重复注册同名节点跳过"""
         registry = DANodeRegistry()
-        desc1 = registry.register_node(RegistryTestNode)
-        desc2 = registry.register_node(RegistryTestNode)
-        assert desc1 is desc2  # 返回已有描述符
+        node_cls1 = registry.register_node(RegistryTestNode)
+        node_cls2 = registry.register_node(RegistryTestNode)
+        assert node_cls1 is node_cls2  # 返回已有节点类
         assert len(registry) == 1
 
-    def test_register_node_without_descriptor_raises(self):
-        """注册无 _node_descriptor 的类抛 ValueError"""
+    def test_register_node_without_qualified_name_raises(self):
+        """注册无 qualified_name 的类抛 ValueError"""
         registry = DANodeRegistry()
 
         class PlainClass:
             pass
-        with pytest.raises(ValueError, match="没有 _node_descriptor"):
+        with pytest.raises(ValueError, match="没有 qualified_name"):
             registry.register_node(PlainClass)
 
 
@@ -79,32 +77,31 @@ class TestDANodeRegistryQuery:
     """DANodeRegistry 查询测试"""
 
     def test_get_descriptor(self):
-        """获取指定节点的描述符"""
+        """获取指定节点的节点类"""
         registry = DANodeRegistry()
         registry.register_node(RegistryTestNode)
-        desc = registry.get_descriptor(
-            RegistryTestNode._node_descriptor["qualified_name"])
-        assert desc.name == "RegistryTestNode"
+        node_cls = registry.get_descriptor(RegistryTestNode.qualified_name)
+        assert node_cls.name == "RegistryTestNode"
 
     def test_get_descriptor_not_registered_raises(self):
-        """获取未注册节点描述符抛 KeyError"""
+        """获取未注册节点类抛 KeyError"""
         registry = DANodeRegistry()
         with pytest.raises(KeyError, match="未注册"):
             registry.get_descriptor("ghost.node")
 
     def test_get_all_descriptors(self):
-        """获取所有已注册描述符"""
+        """获取所有已注册节点类"""
         registry = DANodeRegistry()
         registry.register_node(RegistryTestNode)
         registry.register_node(SecondTestNode)
-        all_descs = registry.get_all_descriptors()
-        assert len(all_descs) == 2
+        all_nodes = registry.get_all_descriptors()
+        assert len(all_nodes) == 2
 
     def test_unregister_node(self):
         """移除已注册节点"""
         registry = DANodeRegistry()
         registry.register_node(RegistryTestNode)
-        qn = RegistryTestNode._node_descriptor["qualified_name"]
+        qn = RegistryTestNode.qualified_name
         removed = registry.unregister_node(qn)
         assert removed.name == "RegistryTestNode"
         assert qn not in registry
@@ -148,7 +145,7 @@ class TestDANodeRegistryScanDirectory:
         # 创建临时目录和有效节点文件
         with tempfile.TemporaryDirectory() as tmpdir:
             node_content = '''
-from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
+from DAworkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 @NodeDef(name="TmpNode", category="Tmp")
 class TmpNode:

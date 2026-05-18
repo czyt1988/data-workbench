@@ -156,8 +156,7 @@ class TestDAWorkflow:
         node_id = wf.add_node(node)
         assert "_" in node_id
         # qualified_name 包含类名，node_id 应包含其
-        desc = node._node_descriptor
-        assert desc["qualified_name"] in node_id
+        assert node.qualified_name in node_id
 
     def test_workflow_add_multiple_nodes(self):
         """添加多个节点自动递增后缀"""

@@ -31,14 +31,6 @@ from .connection import DAConnection
 from .syntax import NodeProxy
 
 
-def _get_desc_attr(descriptor, key, default=None):
-    """安全获取节点描述符属性，兼容 dict 和 DANodeDescriptor C++ 结构体。"""
-    if isinstance(descriptor, dict):
-        return descriptor.get(key, default)
-    # DANodeDescriptor C++ struct — 映射 snake_case 到 camelCase
-    attr_map = {"qualified_name": "qualifiedName"}
-    attr = attr_map.get(key, key)
-    return getattr(descriptor, attr, default)
 
 
 class DAWorkflow:
@@ -51,7 +43,6 @@ class DAWorkflow:
     节点实例需具有以下属性：
     - node_id: 字符串，节点的唯一标识（通常为 qualified_name + 实例后缀）
     - qualified_name: 字符串，节点类型的唯一标识（模块名.类名）
-    - _node_descriptor: 字典，NodeDef 装饰器生成的描述信息
 
     使用示例::
 
@@ -87,13 +78,10 @@ class DAWorkflow:
         :raises KeyError: 如果 node_id 已存在
         :raises ValueError: 如果节点实例没有 qualified_name 属性
         """
-        # 获取 qualified_name
+        # 获取 qualified_name（直接从类属性读取）
         qualified_name = getattr(node_instance, "qualified_name", None)
-        descriptor = getattr(node_instance, "_node_descriptor", None)
-        if qualified_name is None and descriptor is not None:
-            qualified_name = _get_desc_attr(descriptor, "qualified_name", "")
         if not qualified_name:
-            raise ValueError("节点实例必须有 qualified_name 属性或 _node_descriptor.qualified_name 字段")
+            raise ValueError("节点实例必须有 qualified_name 属性")
 
         # 获取或生成 node_id
         existing_node_id = getattr(node_instance, "node_id", None)

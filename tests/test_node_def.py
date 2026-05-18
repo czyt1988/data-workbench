@@ -1,13 +1,13 @@
 """
-test_node_def — NodeDef 装饰器、Input/Output/Parameter 类型、DANodeDescriptor 测试
+test_node_def — NodeDef 装饰器、Input/Output/Parameter 类型、DAWorkflowNode 测试
 
-覆盖：装饰器创建 descriptor、Input/Output/Parameter to_dict、序列化、
-缺失字段、无效装饰器用法、边界条件。
+覆盖：装饰器创建类属性、Input/Output/Parameter to_parameter_descriptor/to_port_descriptor、
+NodeDisplay 渲染属性聚合、缺失字段、边界条件。
 """
 
 import pytest
-from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
-from DAWorkbench.DAWorkFlowPy.node_descriptor import DANodeDescriptor
+import da_py_workflow
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter, NodeDisplay, DAWorkflowNode
 
 
 # ==================== Input 测试 ====================
@@ -32,16 +32,12 @@ class TestInput:
         inp = Input("dict", required=False, description="可选配置")
         assert inp.required is False
 
-    def test_input_to_dict(self):
-        """Input.to_dict 包含所有字段"""
+    def test_input_to_port_descriptor(self):
+        """Input.to_port_descriptor 返回 DAPortDescriptor"""
         inp = Input("DataFrame", required=True, description="数据输入")
-        d = inp.to_dict("data")
-        assert d == {
-            "name": "data",
-            "data_type": "DataFrame",
-            "required": True,
-            "description": "数据输入",
-        }
+        pd = inp.to_port_descriptor("data")
+        assert isinstance(pd, da_py_workflow.DAPortDescriptor)
+        assert pd.name == "data"
 
     def test_input_repr(self):
         """Input repr 格式"""
@@ -67,15 +63,12 @@ class TestOutput:
         out = Output("int")
         assert out.description == ""
 
-    def test_output_to_dict(self):
-        """Output.to_dict 包含所有字段"""
+    def test_output_to_port_descriptor(self):
+        """Output.to_port_descriptor 返回 DAPortDescriptor"""
         out = Output("DataFrame", description="筛选结果")
-        d = out.to_dict("filtered")
-        assert d == {
-            "name": "filtered",
-            "data_type": "DataFrame",
-            "description": "筛选结果",
-        }
+        pd = out.to_port_descriptor("filtered")
+        assert isinstance(pd, da_py_workflow.DAPortDescriptor)
+        assert pd.name == "filtered"
 
     def test_output_repr(self):
         """Output repr 格式"""
@@ -118,20 +111,19 @@ class TestParameter:
         p = Parameter(CustomType)
         assert p.get_type_label() == "CustomType"
 
-    def test_parameter_to_dict_with_default(self):
-        """Parameter.to_dict 包含 default 字段"""
+    def test_parameter_to_parameter_descriptor_with_default(self):
+        """Parameter.to_parameter_descriptor 包含 default 字段"""
         p = Parameter(float, default=0.5, description="阈值")
-        d = p.to_dict("threshold")
-        assert d["name"] == "threshold"
-        assert d["type"] == "float"
-        assert d["default"] == 0.5
-        assert d["description"] == "阈值"
+        pd = p.to_parameter_descriptor("threshold")
+        assert isinstance(pd, da_py_workflow.DAParameterDescriptor)
+        assert pd.name == "threshold"
 
-    def test_parameter_to_dict_no_default(self):
-        """Parameter.to_dict 不包含 default 字段当 default=None"""
+    def test_parameter_to_parameter_descriptor_no_default(self):
+        """Parameter.to_parameter_descriptor 无 default 时 default 为空"""
         p = Parameter(int, description="计数")
-        d = p.to_dict("count")
-        assert "default" not in d
+        pd = p.to_parameter_descriptor("count")
+        assert isinstance(pd, da_py_workflow.DAParameterDescriptor)
+        assert pd.name == "count"
 
     def test_parameter_repr(self):
         """Parameter repr 格式"""
@@ -146,24 +138,21 @@ class TestParameter:
 class TestNodeDef:
     """NodeDef 装饰器测试"""
 
-    def test_node_def_creates_descriptor(self):
-        """NodeDef 装饰器在类上创建 _node_descriptor"""
+    def test_node_def_sets_class_attributes(self):
+        """NodeDef 装饰器在类上设置 name/category 等类属性"""
         @NodeDef(name="Test Node", category="Test")
         class TestNode:
             def execute(self, inputs, params):
                 pass
-        assert hasattr(TestNode, "_node_descriptor")
-        desc = TestNode._node_descriptor
-        assert desc["name"] == "Test Node"
-        assert desc["category"] == "Test"
+        assert TestNode.name == "Test Node"
+        assert TestNode.category == "Test"
 
-    def test_node_def_qualified_name(self):
+    def test_node_def_sets_qualified_name(self):
         """NodeDef 生成 qualified_name (模块名.类名)"""
         @NodeDef(name="QN Test")
         class QNTestNode:
             pass
-        desc = QNTestNode._node_descriptor
-        assert "QNTestNode" in desc["qualified_name"]
+        assert "QNTestNode" in QNTestNode.qualified_name
 
     def test_node_def_collects_inputs(self):
         """NodeDef 收集 Inputs 嵌套类中的 Input 声明"""
@@ -175,9 +164,9 @@ class TestNodeDef:
 
             def execute(self, inputs, params):
                 pass
-        inputs = InputTestNode._node_descriptor["inputs"]
+        inputs = InputTestNode.inputs
         assert len(inputs) == 2
-        names = [i["name"] for i in inputs]
+        names = [inp.name for inp in inputs]
         assert "data" in names
         assert "config" in names
 
@@ -190,9 +179,9 @@ class TestNodeDef:
 
             def execute(self, inputs, params):
                 pass
-        outputs = OutputTestNode._node_descriptor["outputs"]
+        outputs = OutputTestNode.outputs
         assert len(outputs) == 1
-        assert outputs[0]["name"] == "result"
+        assert outputs[0].name == "result"
 
     def test_node_def_collects_parameters(self):
         """NodeDef 收集类属性中的 Parameter 声明"""
@@ -203,39 +192,32 @@ class TestNodeDef:
 
             def execute(self, inputs, params):
                 pass
-        params = ParamTestNode._node_descriptor["parameters"]
+        params = ParamTestNode.parameters
         assert len(params) == 2
-        names = [p["name"] for p in params]
+        names = [p.name for p in params]
         assert "threshold" in names
         assert "column" in names
 
     def test_node_def_render_template_default(self):
-        """NodeDef 默认 render_template='rect'"""
+        """NodeDef 默认 render_template 为 NodeStyleTemplate"""
         @NodeDef(name="RT Default")
         class RTDefaultNode:
             pass
-        assert RTDefaultNode._node_descriptor["render_template"] == "rect"
+        assert RTDefaultNode._node_display.render_template == da_py_workflow.RenderTemplate.NodeStyleTemplate
 
     def test_node_def_render_template_svg(self):
-        """NodeDef 支持 render_template='svg'"""
+        """NodeDef 支持 render_template='svg'（映射到 NodeStyleTemplate）"""
         @NodeDef(name="RT SVG", render_template="svg")
         class RTSVGNode:
             pass
-        assert RTSVGNode._node_descriptor["render_template"] == "svg"
+        assert RTSVGNode._node_display.render_template == da_py_workflow.RenderTemplate.NodeStyleTemplate
 
     def test_node_def_render_template_widget(self):
         """NodeDef 支持 render_template='widget'"""
         @NodeDef(name="RT Widget", render_template="widget")
         class RTWidgetNode:
             pass
-        assert RTWidgetNode._node_descriptor["render_template"] == "widget"
-
-    def test_node_def_invalid_render_template(self):
-        """NodeDef 无效 render_template 抛 ValueError"""
-        with pytest.raises(ValueError, match="无效的渲染模板"):
-            @NodeDef(name="Bad RT", render_template="invalid")
-            class BadRTNode:
-                pass
+        assert RTWidgetNode._node_display.render_template == da_py_workflow.RenderTemplate.WidgetTemplate
 
     def test_node_def_no_inputs_outputs(self):
         """NodeDef 类无 Inputs/Outputs 时列表为空"""
@@ -243,89 +225,134 @@ class TestNodeDef:
         class EmptyIONode:
             def execute(self, inputs, params):
                 pass
-        desc = EmptyIONode._node_descriptor
-        assert desc["inputs"] == []
-        assert desc["outputs"] == []
+        assert EmptyIONode.inputs == []
+        assert EmptyIONode.outputs == []
 
+    def test_node_def_inherits_DAWorkflowNode(self):
+        """NodeDef 装饰的类继承 DAWorkflowNode"""
+        @NodeDef(name="Base Test")
+        class BaseTestNode:
+            pass
+        assert isinstance(BaseTestNode(), DAWorkflowNode)
 
-# ==================== DANodeDescriptor 测试 ====================
+    def test_node_def_creates_node_display(self):
+        """NodeDef 装饰器在类上创建 _node_display"""
+        @NodeDef(name="Display Test", icon=":icons/test.png")
+        class DisplayTestNode:
+            pass
+        assert hasattr(DisplayTestNode, "_node_display")
+        display = DisplayTestNode._node_display
+        assert isinstance(display, NodeDisplay)
+        assert display.icon == ":icons/test.png"
 
-class TestDANodeDescriptor:
-    """DANodeDescriptor 描述符类测试"""
+    def test_node_def_node_display_with_style_dict(self):
+        """NodeDef(style=dict) 在 _node_display 中设置 DANodeStyle"""
+        @NodeDef(name="Style Dict Test", style={"background_color": "#ffffff"})
+        class StyleDictTestNode:
+            pass
+        assert StyleDictTestNode._node_display.style is not None
+        assert isinstance(StyleDictTestNode._node_display.style, da_py_workflow.DANodeStyle)
 
-    def test_descriptor_creation(self):
-        """DANodeDescriptor 正常创建"""
-        desc = DANodeDescriptor(
-            name="Test", category="Cat", icon="ico",
-            qualified_name="mod.Test", render_template="rect",
-        )
-        assert desc.name == "Test"
-        assert desc.category == "Cat"
-        assert desc.qualified_name == "mod.Test"
+    def test_node_def_node_display_with_style_object(self):
+        """NodeDef(style=DANodeStyle) 在 _node_display 中设置 DANodeStyle"""
+        node_style = da_py_workflow.DANodeStyle()
+        @NodeDef(name="Style Obj Test", style=node_style)
+        class StyleObjTestNode:
+            pass
+        assert StyleObjTestNode._node_display.style is not None
+        assert isinstance(StyleObjTestNode._node_display.style, da_py_workflow.DANodeStyle)
 
-    def test_descriptor_to_dict(self):
-        """DANodeDescriptor.to_dict 序列化"""
-        desc = DANodeDescriptor(
-            name="Filter", category="Data", icon="filter",
-            qualified_name="my.Filter",
-            inputs=[{"name": "data", "data_type": "DataFrame",
-                     "required": True, "description": ""}],
-            outputs=[{"name": "filtered",
-                      "data_type": "DataFrame", "description": ""}],
-            parameters=[{"name": "col", "type": "str",
-                         "default": "val", "description": "列名"}],
-        )
-        d = desc.to_dict()
-        assert d["name"] == "Filter"
-        assert len(d["inputs"]) == 1
-        assert len(d["outputs"]) == 1
-        assert len(d["parameters"]) == 1
-        assert d["render_template"] == "rect"
+    def test_node_def_node_display_no_style(self):
+        """NodeDef 无 style 参数时 _node_display.style 为 None"""
+        @NodeDef(name="No Style Test")
+        class NoStyleTestNode:
+            pass
+        assert NoStyleTestNode._node_display.style is None
 
-    def test_descriptor_from_class(self):
-        """DANodeDescriptor.from_class 从 @NodeDef 装饰类创建"""
-        @NodeDef(name="FromClass", category="Test")
-        class FromClassNode:
-            threshold = Parameter(float, default=0.5)
-
+    def test_node_def_sets_input_keys(self):
+        """NodeDef 设置 input_keys 列表"""
+        @NodeDef(name="Input Keys Test")
+        class InputKeysTestNode:
             class Inputs:
                 data = Input("DataFrame", required=True)
 
+            def execute(self, inputs, params):
+                pass
+        assert InputKeysTestNode.input_keys == ["data"]
+
+    def test_node_def_sets_output_keys(self):
+        """NodeDef 设置 output_keys 列表"""
+        @NodeDef(name="Output Keys Test")
+        class OutputKeysTestNode:
             class Outputs:
                 result = Output("DataFrame")
 
             def execute(self, inputs, params):
                 pass
-        desc = DANodeDescriptor.from_class(FromClassNode)
-        assert desc.name == "FromClass"
-        assert len(desc.inputs) == 1
-        assert len(desc.outputs) == 1
-        assert len(desc.parameters) == 1
+        assert OutputKeysTestNode.output_keys == ["result"]
 
-    def test_descriptor_from_class_override(self):
-        """DANodeDescriptor.from_class 可覆盖参数"""
-        @NodeDef(name="Override Test", category="Old")
-        class OverrideNode:
+    def test_node_def_sets_group(self):
+        """NodeDef 设置 group（category 别名）"""
+        @NodeDef(name="Group Test", category="Data")
+        class GroupTestNode:
             pass
-        desc = DANodeDescriptor.from_class(OverrideNode, category="New")
-        assert desc.category == "New"
+        assert GroupTestNode.group == "Data"
 
-    def test_descriptor_from_class_no_descriptor_raises(self):
-        """DANodeDescriptor.from_class 无 _node_descriptor 抛 ValueError"""
-        class PlainClass:
-            pass
-        with pytest.raises(ValueError, match="没有 _node_descriptor"):
-            DANodeDescriptor.from_class(PlainClass)
 
-    def test_descriptor_invalid_render_template(self):
-        """DANodeDescriptor 无效 render_template 抛 ValueError"""
-        with pytest.raises(ValueError, match="无效的渲染模板"):
-            DANodeDescriptor(name="Bad", render_template="unknown")
+# ==================== NodeDisplay 测试 ====================
 
-    def test_descriptor_repr(self):
-        """DANodeDescriptor repr 格式"""
-        desc = DANodeDescriptor(
-            name="Filter", category="Data", qualified_name="mod.Filter")
-        r = repr(desc)
-        assert "DANodeDescriptor" in r
-        assert "Filter" in r
+class TestNodeDisplay:
+    """NodeDisplay 渲染属性聚合测试"""
+
+    def test_node_display_creation(self):
+        """NodeDisplay 正常创建"""
+        display = NodeDisplay(icon=":icons/test.png")
+        assert display.icon == ":icons/test.png"
+        assert display.render_template is None
+        assert display.style is None
+
+    def test_node_display_with_render_template(self):
+        """NodeDisplay 设置 render_template"""
+        rt = da_py_workflow.RenderTemplate.NodeStyleTemplate
+        display = NodeDisplay(render_template=rt)
+        assert display.render_template == da_py_workflow.RenderTemplate.NodeStyleTemplate
+
+    def test_node_display_with_style(self):
+        """NodeDisplay 设置 style"""
+        style = da_py_workflow.DANodeStyle()
+        display = NodeDisplay(style=style)
+        assert display.style is not None
+        assert isinstance(display.style, da_py_workflow.DANodeStyle)
+
+    def test_node_display_repr(self):
+        """NodeDisplay dataclass repr"""
+        display = NodeDisplay(icon="test.png")
+        r = repr(display)
+        assert "NodeDisplay" in r
+
+
+# ==================== DAWorkflowNode 测试 ====================
+
+class TestDAWorkflowNode:
+    """DAWorkflowNode 基类测试"""
+
+    def test_workflow_node_init(self):
+        """DAWorkflowNode 初始化"""
+        node = DAWorkflowNode()
+        assert node.node_id is None
+        assert node._input_data == {}
+        assert node._output_data == {}
+        assert node.is_global is False
+
+    def test_workflow_node_set_input_data(self):
+        """DAWorkflowNode.set_input_data 设置输入数据"""
+        node = DAWorkflowNode()
+        node.set_input_data("data", [1, 2, 3])
+        assert node._input_data["data"] == [1, 2, 3]
+
+    def test_workflow_node_get_output_data(self):
+        """DAWorkflowNode.get_output_data 获取输出数据"""
+        node = DAWorkflowNode()
+        node._output_data["result"] = [4, 5, 6]
+        assert node.get_output_data("result") == [4, 5, 6]
+        assert node.get_output_data("nonexistent") is None

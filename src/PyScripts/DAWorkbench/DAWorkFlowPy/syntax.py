@@ -24,11 +24,6 @@
 """
 
 
-def _get_desc_attr(descriptor, key, default=None):
-    """安全获取 DANodeDescriptor C++ 结构体属性，自动映射 snake_case 到 camelCase。"""
-    attr_map = {"qualified_name": "qualifiedName"}
-    attr = attr_map.get(key, key)
-    return getattr(descriptor, attr, default)
 
 
 class NodeOutputProxy:
@@ -68,8 +63,7 @@ class NodeOutputProxy:
         if isinstance(other, NodeProxy):
             # 自动匹配：目标节点只有 1 个输入端口时自动选择
             node = self.workflow.get_node_by_id(other.node_id)
-            descriptor = getattr(node, "_node_descriptor", {})
-            inputs = _get_desc_attr(descriptor, "inputs", [])
+            inputs = getattr(node, "inputs", [])
             if len(inputs) != 1:
                 raise ValueError(
                     f"ambiguous ports: target node '{other.node_id}' has "
@@ -106,15 +100,15 @@ class NodeInputProxy:
         return f"NodeInputProxy(node_id='{self.node_id}', channel='{self.channel}')"
 
 
-class _PortAccessor:
+    class _PortAccessor:
     """
     端口访问器基类
 
-    通过端口名 channel 从 C++ DANodeDescriptor 结构体的 port 列表中查找对应代理对象。
+    通过端口名 channel 从节点类的端口列表中查找对应代理对象。
 
     :param workflow: DAWorkflow 实例
     :param node_id: 节点 ID
-    :param port_list: DANodeDescriptor 端口描述列表（inputs 或 outputs），元素为 C++ struct
+    :param port_list: 端口描述列表（inputs 或 outputs），元素为 DAPortDescriptor
     :param proxy_class: 代理类（NodeOutputProxy 或 NodeInputProxy）
     """
 
@@ -162,15 +156,14 @@ class NodeProxy:
         self.workflow = workflow
         self.node_id = node_id
         node = workflow.get_node_by_id(node_id)
-        descriptor = getattr(node, "_node_descriptor", {})
         self.outputs = _PortAccessor(
             workflow, node_id,
-            _get_desc_attr(descriptor, "outputs", []),
+            getattr(node, "outputs", []),
             NodeOutputProxy,
         )
         self.inputs = _PortAccessor(
             workflow, node_id,
-            _get_desc_attr(descriptor, "inputs", []),
+            getattr(node, "inputs", []),
             NodeInputProxy,
         )
 
@@ -187,8 +180,7 @@ class NodeProxy:
         """
         if isinstance(other, NodeProxy):
             node = self.workflow.get_node_by_id(self.node_id)
-            descriptor = getattr(node, "_node_descriptor", {})
-            outputs = _get_desc_attr(descriptor, "outputs", [])
+            outputs = getattr(node, "outputs", [])
             if len(outputs) != 1:
                 raise ValueError(
                     f"ambiguous ports: source node '{self.node_id}' has "

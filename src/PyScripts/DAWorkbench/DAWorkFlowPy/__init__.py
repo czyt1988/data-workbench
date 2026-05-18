@@ -13,7 +13,7 @@ DAWorkflowExecutor 提供工作流执行编排引擎。
 - Input: 输出端口声明
 - Output: 输出端口声明
 - Parameter: 参数声明
-- DANodeDescriptor: 节点描述符
+- NodeDisplay: 节点渲染属性聚合
 - DAPortDescriptor: 端口描述符
 - DAParameterDescriptor: 参数描述符
 - DANodeRegistry: 节点注册表
@@ -29,8 +29,7 @@ __version__ = "1.0.0"
 __author__ = "DA WorkBench Team"
 
 from .types import Input, Output, Parameter
-from .node_def import NodeDef
-from da_py_workflow import DANodeDescriptor
+from .node_def import NodeDef, NodeDisplay, DAWorkflowNode
 from da_py_workflow import DAPortDescriptor, DAParameterDescriptor
 from .node_registry import DANodeRegistry
 from .connection import DAConnection
@@ -47,7 +46,8 @@ __all__ = [
     "Input",
     "Output",
     "Parameter",
-    "DANodeDescriptor",
+    "NodeDisplay",
+    "DAWorkflowNode",
     "DAPortDescriptor",
     "DAParameterDescriptor",
     "DANodeRegistry",

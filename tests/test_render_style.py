@@ -4,7 +4,7 @@ test_render_style — 节点渲染样式配置测试
 覆盖 DANodeStyle 通过 @NodeDef(style=...) 装饰器的序列化和传递正确性。
 
 测试分为两个层级：
-1. NodeDef 装饰器层 — 验证 style 参数正确序列化到 _node_descriptor["style"] 中
+1. NodeDef 装饰器层 — 验证 style 参数正确传递到 _node_display.style 中
 2. 节点发现层 — 验证 render_style_nodes 模块中的所有节点可被 DANodeRegistry 发现
 
 注意：涉及 da_py_workflow（pybind11 嵌入模块）的测试需要 C++ 运行时，
@@ -14,8 +14,7 @@ test_render_style — 节点渲染样式配置测试
 import os
 import pytest
 
-from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output
-from DAWorkbench.DAWorkFlowPy.node_descriptor import DANodeDescriptor
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, NodeDisplay
 from DAWorkbench.DAWorkFlowPy.node_registry import DANodeRegistry
 
 
@@ -42,8 +41,8 @@ class TestNodeDefStyleParameter:
     """NodeDef 装饰器 style 参数处理测试"""
 
     @requires_da_py_workflow
-    def test_style_creates_descriptor_style_key(self):
-        """NodeDef(style=...) 在 _node_descriptor 中创建 'style' 键"""
+    def test_style_creates_node_display_style(self):
+        """NodeDef(style=DANodeStyle) 在 _node_display.style 中设置 DANodeStyle"""
         import da_py_workflow
 
         style = da_py_workflow.DANodeStyle()
@@ -58,9 +57,10 @@ class TestNodeDefStyleParameter:
             def execute(self, inputs, params):
                 return True
 
-        desc = StyleTestNode._node_descriptor
-        assert "style" in desc
-        assert isinstance(desc["style"], dict)
+        display = StyleTestNode._node_display
+        assert isinstance(display, NodeDisplay)
+        assert display.style is not None
+        assert isinstance(display.style, da_py_workflow.DANodeStyle)
 
     @requires_da_py_workflow
     def test_style_tojson_sparse_strategy(self):
@@ -80,7 +80,7 @@ class TestNodeDefStyleParameter:
             def execute(self, inputs, params):
                 return True
 
-        style_dict = SparseTestNode._node_descriptor["style"]
+        style_dict = SparseTestNode._node_display.style.toJson()
         # 稀疏策略：仅 bodyShape 应出现在序列化结果中
         assert "bodyShape" in style_dict
         # 默认值字段不应出现
@@ -89,7 +89,7 @@ class TestNodeDefStyleParameter:
 
     @requires_da_py_workflow
     def test_style_default_values_not_serialized(self):
-        """默认值的字段不出现在 style 序列化结果中"""
+        """默认值的字段不出现在 style.toJson() 序列化结果中"""
         import da_py_workflow
 
         # 全默认的 DANodeStyle
@@ -105,12 +105,12 @@ class TestNodeDefStyleParameter:
                 return True
 
         # 稀疏策略：全默认样式序列化应为空或接近空
-        style_dict = DefaultStyleNode._node_descriptor["style"]
+        style_dict = DefaultStyleNode._node_display.style.toJson()
         assert isinstance(style_dict, dict)
 
     @requires_da_py_workflow
     def test_style_dict_parameter(self):
-        """NodeDef(style=dict) 直接使用字典作为样式配置"""
+        """NodeDef(style=dict) 将字典转换为 DANodeStyle"""
         style_dict = {"bodyShape": "Ellipse", "cornerRadius": 10.0}
 
         @NodeDef(name="Dict Style Test", category="Test", style=style_dict)
@@ -122,14 +122,16 @@ class TestNodeDefStyleParameter:
             def execute(self, inputs, params):
                 return True
 
-        desc = DictStyleNode._node_descriptor
-        assert "style" in desc
-        assert desc["style"]["bodyShape"] == "Ellipse"
-        assert desc["style"]["cornerRadius"] == 10.0
+        display = DictStyleNode._node_display
+        assert display.style is not None
+        # dict 转换为 DANodeStyle 后，可通过 toJson() 查看内容
+        serialized = display.style.toJson()
+        assert "bodyShape" in serialized
+        assert serialized["cornerRadius"] == 10.0
 
     @requires_da_py_workflow
     def test_style_no_style_parameter(self):
-        """NodeDef 无 style 参数时不包含 'style' 键"""
+        """NodeDef 无 style 参数时 _node_display.style 为 None"""
         @NodeDef(name="No Style Test", category="Test")
         class NoStyleNode:
             class Inputs:
@@ -139,8 +141,7 @@ class TestNodeDefStyleParameter:
             def execute(self, inputs, params):
                 return True
 
-        desc = NoStyleNode._node_descriptor
-        assert "style" not in desc
+        assert NoStyleNode._node_display.style is None
 
     @requires_da_py_workflow
     def test_style_all_body_shape_values(self):
@@ -163,7 +164,7 @@ class TestNodeDefStyleParameter:
                 def execute(self, inputs, params):
                     return True
 
-            style_dict = BodyShapeNode._node_descriptor["style"]
+            style_dict = BodyShapeNode._node_display.style.toJson()
             assert "bodyShape" in style_dict
 
     @requires_da_py_workflow
@@ -188,7 +189,7 @@ class TestNodeDefStyleParameter:
                 def execute(self, inputs, params):
                     return True
 
-            style_dict = PortShapeNode._node_descriptor["style"]
+            style_dict = PortShapeNode._node_display.style.toJson()
             # inputPortStyle 应包含 shape 字段
             assert "inputPortStyle" in style_dict
 
@@ -210,7 +211,7 @@ class TestNodeDefStyleParameter:
             def execute(self, inputs, params):
                 return True
 
-        style_dict = ColorSetterNode._node_descriptor["style"]
+        style_dict = ColorSetterNode._node_display.style.toJson()
         assert "backgroundColor" in style_dict
         assert "borderColor" in style_dict
 
@@ -232,7 +233,7 @@ class TestNodeDefStyleParameter:
             def execute(self, inputs, params):
                 return True
 
-        style_dict = PortColorNode._node_descriptor["style"]
+        style_dict = PortColorNode._node_display.style.toJson()
         assert "inputPortStyle" in style_dict
         assert "outputPortStyle" in style_dict
 
@@ -255,7 +256,7 @@ class TestNodeDefStyleParameter:
             def execute(self, inputs, params):
                 return True
 
-        style_dict = DimensionNode._node_descriptor["style"]
+        style_dict = DimensionNode._node_display.style.toJson()
         assert style_dict["borderWidth"] == 3.0
         assert style_dict["cornerRadius"] == 12.0
         assert style_dict["iconSize"] == 48.0
@@ -279,7 +280,7 @@ class TestNodeDefStyleParameter:
             def execute(self, inputs, params):
                 return True
 
-        style_dict = BodyIconNode._node_descriptor["style"]
+        style_dict = BodyIconNode._node_display.style.toJson()
         assert "bodyIconType" in style_dict
         assert "bodyIconSource" in style_dict
         assert "bodyIconScale" in style_dict
@@ -305,7 +306,7 @@ class TestNodeDefStyleParameter:
                 def execute(self, inputs, params):
                     return True
 
-            style_dict = LayoutNode._node_descriptor["style"]
+            style_dict = LayoutNode._node_display.style.toJson()
             assert "layoutStrategy" in style_dict
 
     @requires_da_py_workflow
@@ -331,7 +332,7 @@ class TestNodeDefStyleParameter:
                 def execute(self, inputs, params):
                     return True
 
-            style_dict = PortSideNode._node_descriptor["style"]
+            style_dict = PortSideNode._node_display.style.toJson()
             assert "inputPortSide" in style_dict
 
     @requires_da_py_workflow
@@ -368,7 +369,7 @@ class TestNodeDefStyleParameter:
             def execute(self, inputs, params):
                 return True
 
-        style_dict = FullStyleNode._node_descriptor["style"]
+        style_dict = FullStyleNode._node_display.style.toJson()
         # 所有非默认字段都应出现在序列化结果中
         expected_keys = [
             "bodyShape", "namePosition", "iconPosition",
@@ -411,8 +412,8 @@ class TestRenderStyleNodesDiscovery:
         assert "Test Full Style" in names, "TestFullStyleNode should be discovered"
 
     @requires_da_py_workflow
-    def test_render_style_nodes_descriptor_has_style(self):
-        """render_style_nodes 中所有带 style 的节点描述符包含 style 键"""
+    def test_render_style_nodes_have_style(self):
+        """render_style_nodes 中所有带 style 的节点类 _node_display.style 不为 None"""
         test_nodes_dir = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "test_nodes",
@@ -425,10 +426,10 @@ class TestRenderStyleNodesDiscovery:
         render_nodes = [d for d in discovered if "Render" in d.category]
         assert len(render_nodes) >= 10, "Should discover at least 10 render style nodes"
 
-        for desc in render_nodes:
-            d = desc.to_dict()
-            # 所有 Render/ 分类节点应有 style 键
-            assert "style" in d, f"Node '{desc.name}' should have 'style' in descriptor"
+        for node_cls in render_nodes:
+            display = node_cls._node_display
+            # 所有 Render/ 分类节点应有 style
+            assert display.style is not None, f"Node '{node_cls.name}' should have style in _node_display"
 
 
 # ==================== pytest.ini marker 注册 ====================

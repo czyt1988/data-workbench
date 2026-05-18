@@ -2,7 +2,7 @@
 工作流节点注册表模块
 
 本模块定义了 DANodeRegistry 类，用于管理工作流节点类型的注册和发现。
-节点注册表维护所有已注册节点类型的描述符，并提供查询接口。
+节点注册表维护所有已注册节点类型的索引，以 qualified_name 为键。
 
 支持两种节点发现模式：
 - 目录扫描：扫描指定路径下的 .py 文件，导入模块，查找 @NodeDef 装饰的类
@@ -11,8 +11,8 @@
 主要功能：
 - register_node(): 注册一个节点类
 - discover(): 从指定路径和入口点发现节点类（双模式）
-- get_all_descriptors(): 获取所有已注册节点的描述符
-- get_descriptor(): 根据 qualified_name 获取指定节点的描述符
+- get_all_descriptors(): 获取所有已注册节点类
+- get_descriptor(): 根据 qualified_name 获取指定节点类
 """
 
 import importlib
@@ -21,8 +21,6 @@ import importlib.metadata
 import logging
 import sys
 from pathlib import Path
-
-import da_py_workflow
 
 logger = logging.getLogger("DAWorkFlowPy.node_registry")
 
@@ -34,31 +32,31 @@ class DANodeRegistry:
     """
     工作流节点注册表
 
-    管理所有已注册的节点类型，维护节点描述符的索引。
+    管理所有已注册的节点类型，维护节点类（继承 DAWorkflowNode）的索引。
     节点通过 qualified_name（模块名.类名）作为唯一标识进行索引。
 
     支持两种发现模式：
 
     1. 目录扫描模式：遍历指定目录中的 .py 文件，动态导入模块，
-       检查类是否带有 _node_descriptor 属性（由 @NodeDef 装饰器设置），
+       检查类是否带有 qualified_name 属性（由 @NodeDef 装饰器设置），
        自动注册发现的节点类。
 
     2. 入口点模式：通过 importlib.metadata.entry_points 查找
        group='data_workbench.plugin' 的入口点，导入入口点指定的模块，
-       检查模块中的类是否带有 _node_descriptor 属性。
+       检查模块中的类是否带有 qualified_name 属性。
 
     使用示例::
 
         registry = DANodeRegistry()
 
         # 双模式发现：目录扫描 + 入口点
-        descriptors = registry.discover(scan_paths=["/path/to/plugins"], use_entry_points=True)
+        node_classes = registry.discover(scan_paths=["/path/to/plugins"], use_entry_points=True)
 
         # 仅目录扫描
-        descriptors = registry.discover(scan_paths=["/path/to/plugins"])
+        node_classes = registry.discover(scan_paths=["/path/to/plugins"])
 
         # 仅入口点发现
-        descriptors = registry.discover(use_entry_points=True)
+        node_classes = registry.discover(use_entry_points=True)
 
         # 注册节点类
         @NodeDef(name="Data Filter", category="Data Processing")
@@ -66,38 +64,35 @@ class DANodeRegistry:
             ...
         registry.register_node(DataFilter)
 
-        # 获取所有描述符
-        descriptors = registry.get_all_descriptors()
+        # 获取所有已注册节点类
+        node_classes = registry.get_all_descriptors()
 
-        # 获取特定节点的描述符
-        desc = registry.get_descriptor("my_module.DataFilter")
+        # 获取特定节点类
+        node_cls = registry.get_descriptor("my_module.DataFilter")
     """
 
     def __init__(self):
-        # 以 qualified_name 为键，DANodeDescriptor 为值
+        # 以 qualified_name 为键，节点类（type）为值
         self._registry: dict = {}
 
-    def register_node(self, node_class: type) -> da_py_workflow.DANodeDescriptor:
+    def register_node(self, node_class: type) -> type:
         """
         注册一个节点类
 
-        从被 NodeDef 装饰的节点类中提取描述符信息并注册到注册表中。
-        如果节点类没有 _node_descriptor 属性，将抛出异常。
+        从被 NodeDef 装饰的节点类中提取 qualified_name 并注册到注册表中。
+        如果节点类没有 qualified_name 属性，将抛出异常。
         如果 qualified_name 已被注册，将跳过（用于去重）。
 
         :param node_class: 被 NodeDef 装饰的节点类
-        :return: 注册的节点描述符
-        :raises ValueError: 如果节点类没有 _node_descriptor 属性
+        :return: 注册的节点类
+        :raises ValueError: 如果节点类没有 qualified_name 属性
         """
-        descriptor_data = getattr(node_class, "_node_descriptor", None)
-        if descriptor_data is None:
+        qualified_name = getattr(node_class, "qualified_name", None)
+        if not qualified_name:
             raise ValueError(
-                f"类 {node_class.__name__} 没有 _node_descriptor 属性，"
+                f"类 {node_class.__name__} 没有 qualified_name 属性，"
                 "请先使用 NodeDef 装饰器声明节点类型"
             )
-
-        descriptor = descriptor_data
-        qualified_name = descriptor.qualifiedName
 
         if qualified_name in self._registry:
             logger.info(
@@ -105,9 +100,9 @@ class DANodeRegistry:
             )
             return self._registry[qualified_name]
 
-        self._registry[qualified_name] = descriptor
+        self._registry[qualified_name] = node_class
         logger.debug(f"注册节点 '{qualified_name}'")
-        return descriptor
+        return node_class
 
     def discover(self, scan_paths: list = None, use_entry_points: bool = False) -> list:
         """
@@ -119,41 +114,42 @@ class DANodeRegistry:
            - 遍历 scan_paths 中的目录
            - 查找 .py 文件（排除 __pycache__ 目录和 __init__.py）
            - 动态导入每个模块
-           - 检查模块中的类是否带有 _node_descriptor 属性
+           - 检查模块中的类是否带有 qualified_name 属性
            - 调用 register_node() 注册发现的节点
 
         2. 入口点发现模式（use_entry_points）：
            - 使用 importlib.metadata.entry_points(group='data_workbench.plugin')
            - 加载入口点指定的模块
-           - 检查模块中的类是否带有 _node_descriptor 属性
+           - 检查模块中的类是否带有 qualified_name 属性
            - 调用 register_node() 注册发现的节点
 
         两种模式的结果会进行去重：相同 qualified_name 的节点只注册一次。
 
         :param scan_paths: 要扫描的目录路径列表，默认为 None（不扫描目录）
         :param use_entry_points: 是否使用 entry_points 发现节点，默认为 False
-        :return: 发现并注册的节点描述符列表
+        :return: 发现并注册的节点类列表
         """
         discovered = []
 
         # 目录扫描模式
         if scan_paths:
             for path in scan_paths:
-                scan_descs = self._scan_directory(path)
-                discovered.extend(scan_descs)
+                scan_classes = self._scan_directory(path)
+                discovered.extend(scan_classes)
 
         # 入口点发现模式
         if use_entry_points:
-            ep_descs = self._discover_from_entry_points()
-            discovered.extend(ep_descs)
+            ep_classes = self._discover_from_entry_points()
+            discovered.extend(ep_classes)
 
         # 去重：已注册过的节点不会重复添加
         unique_discovered = []
         seen = set()
-        for desc in discovered:
-            if desc.qualifiedName not in seen:
-                seen.add(desc.qualifiedName)
-                unique_discovered.append(desc)
+        for node_cls in discovered:
+            qn = getattr(node_cls, "qualified_name", None)
+            if qn and qn not in seen:
+                seen.add(qn)
+                unique_discovered.append(node_cls)
 
         return unique_discovered
 
@@ -162,7 +158,7 @@ class DANodeRegistry:
         扫描目录中的 Python 模块，查找 @NodeDef 装饰的节点类
 
         :param directory: 要扫描的目录路径
-        :return: 发现的节点描述符列表
+        :return: 发现的节点类列表
         """
         discovered = []
         dir_path = Path(directory)
@@ -201,7 +197,7 @@ class DANodeRegistry:
         使用 entry_points(group='data_workbench.plugin') 查找已安装的插件包，
         加载入口点指定的模块，查找 @NodeDef 装饰的节点类。
 
-        :return: 发现的节点描述符列表
+        :return: 发现的节点类列表
         """
         discovered = []
 
@@ -239,13 +235,13 @@ class DANodeRegistry:
 
     def _find_node_classes_in_module(self, module) -> list:
         """
-        在模块中查找带有 _node_descriptor 属性的类
+        在模块中查找带有 qualified_name 属性的类
 
-        遍历模块的所有属性，找出带有 _node_descriptor 属性的类对象，
+        遍历模块的所有属性，找出带有 qualified_name 属性的类对象，
         并尝试注册到注册表中。
 
         :param module: Python 模块对象
-        :return: 发现并注册的节点描述符列表
+        :return: 发现并注册的节点类列表
         """
         discovered = []
         for attr_name in dir(module):
@@ -254,8 +250,8 @@ class DANodeRegistry:
             attr_value = getattr(module, attr_name, None)
             if not isinstance(attr_value, type):
                 continue
-            # 检查是否带有 _node_descriptor 属性
-            if hasattr(attr_value, "_node_descriptor"):
+            # 检查是否带有 qualified_name 属性
+            if hasattr(attr_value, "qualified_name") and attr_value.qualified_name:
                 desc = self._try_register_class(attr_value)
                 if desc:
                     discovered.append(desc)
@@ -265,49 +261,45 @@ class DANodeRegistry:
         """
         尝试注册一个节点类，如果失败则返回 None
 
-        :param node_class: 带有 _node_descriptor 属性的类
-        :return: 注册成功返回 DANodeDescriptor，失败返回 None
+        :param node_class: 带有 qualified_name 属性的节点类
+        :return: 注册成功返回节点类，失败返回 None
         """
         try:
             return self.register_node(node_class)
         except ValueError:
-            # 没有 _node_descriptor 属性，跳过
+            # 没有 qualified_name 属性，跳过
             return None
         except KeyError:
             # 已注册，register_node 内部已处理去重
-            try:
-                d = getattr(node_class, "_node_descriptor", None)
-                qname = d.qualifiedName if d else ""
-            except Exception:
-                qname = ""
+            qname = getattr(node_class, "qualified_name", "")
             return self._registry.get(qname, None)
 
     def get_all_descriptors(self) -> list:
         """
-        获取所有已注册节点的描述符
+        获取所有已注册节点类
 
-        :return: 所有节点描述符的列表
+        :return: 所有节点类的列表
         """
         return list(self._registry.values())
 
-    def get_descriptor(self, qualified_name: str) -> da_py_workflow.DANodeDescriptor:
+    def get_descriptor(self, qualified_name: str) -> type:
         """
-        根据 qualified_name 获取指定节点的描述符
+        根据 qualified_name 获取指定节点类
 
         :param qualified_name: 节点的唯一标识（模块名.类名）
-        :return: 对应的节点描述符
+        :return: 对应的节点类
         :raises KeyError: 如果 qualified_name 未注册
         """
         if qualified_name not in self._registry:
             raise KeyError(f"节点 '{qualified_name}' 未注册")
         return self._registry[qualified_name]
 
-    def unregister_node(self, qualified_name: str) -> da_py_workflow.DANodeDescriptor:
+    def unregister_node(self, qualified_name: str) -> type:
         """
         从注册表中移除指定节点
 
         :param qualified_name: 节点的唯一标识
-        :return: 移除的节点描述符
+        :return: 移除的节点类
         :raises KeyError: 如果 qualified_name 未注册
         """
         if qualified_name not in self._registry:

@@ -1,10 +1,10 @@
-﻿"""
+"""
 工作流节点定义装饰器模块
 
-本模块定义了 NodeDef 装饰器，用于声明工作流节点类型。
+本模块定义了 NodeDef 装饰器和 DAWorkflowNode 基类，用于声明工作流节点类型。
 NodeDef 装饰器会收集类中的 Input、Output、Parameter 声明，
-并自动生成 _node_descriptor C++ DANodeDescriptor 结构体，
-供 C++ 侧直接使用，无需再通过 JSON 中转。
+并将描述信息直接设置为类属性（节点元数据 + 端口/参数描述），
+渲染相关属性聚合到 NodeDisplay 中供 C++ 侧使用。
 
 使用示例::
 
@@ -26,11 +26,47 @@ NodeDef 装饰器会收集类中的 Input、Output、Parameter 声明，
 1. 扫描类属性中的 Parameter 实例
 2. 扫描嵌套类 Inputs 中的 Input 实例
 3. 扫描嵌套类 Outputs 中的 Output 实例
-4. 将所有声明信息汇总生成 _node_descriptor C++ DANodeDescriptor 结构体
+4. 将所有描述信息直接设置为类属性
+5. 构建渲染属性聚合 NodeDisplay（icon、render_template、style）
 """
+
+from dataclasses import dataclass, field
 
 import da_py_workflow
 from .types import Input, Output, Parameter
+
+
+@dataclass
+class NodeDisplay:
+    """
+    节点渲染/显示属性聚合
+
+    将节点渲染相关的属性集中管理，实现单一职责原则：
+    - DAWorkflowNode 负责节点逻辑（元数据、端口、参数）
+    - NodeDisplay 负责节点渲染显示（图标、渲染模板、样式）
+
+    NodeDisplay 中的 render_template 和 style 保持 C++ pybind11 导出类型，
+    因为渲染由 C++ Qt 端负责，使用 C++ 原生类型可避免类型转换开销。
+
+    使用示例::
+
+        @NodeDef(name="My Node", icon=":icons/node.png", render_template="nodestyle")
+        class MyNode:
+            ...
+
+        # 访问渲染属性
+        display = MyNode._node_display
+        print(display.icon)                  # ":icons/node.png"
+        print(display.render_template)       # RenderTemplate.NodeStyleTemplate
+
+    :param icon: 图标路径字符串
+    :param render_template: da_py_workflow.RenderTemplate 枚举值
+    :param style: da_py_workflow.DANodeStyle 实例或 None
+    """
+
+    icon: str = ""
+    render_template: object = None   # da_py_workflow.RenderTemplate
+    style: object = None             # Optional[da_py_workflow.DANodeStyle]
 
 
 def _normalize_render_template(render_template: str) -> int:
@@ -228,28 +264,46 @@ class DAWorkflowNode:
     所有通过 @NodeDef 装饰器定义的节点类都会自动继承此类，
     提供数据输入/输出的标准接口。
 
+    类属性由 @NodeDef 装饰器自动设置：
+    - qualified_name: 节点唯一标识（模块名.类名）
+    - name: 节点显示名称
+    - category: 节点所属分类
+    - icon: 图标路径
+    - inputs: 输入端口描述列表（DAPortDescriptor）
+    - outputs: 输出端口描述列表（DAPortDescriptor）
+    - parameters: 参数描述列表（DAParameterDescriptor）
+    - _node_display: 渲染属性聚合（NodeDisplay）
+    - input_keys: 输入端口名称列表
+    - output_keys: 输出端口名称列表
+
     _input_data 和 _output_data 用于在节点执行过程中存储和传递数据，
     由 C++ 侧的 syncMetaFromPyNode / setNodeInputsToPyNode 进行读写。
     """
 
-    _node_descriptor = None
-    input_keys = []
-    output_keys = []
+    # 节点元数据（由 @NodeDef 装饰器设置）
+    qualified_name: str = ""
+    name: str = ""
+    category: str = ""
+    group: str = ""           # category 别名，C++ fallback 兼容
+    icon: str = ""
+
+    # 端口与参数描述（由 @NodeDef 装饰器设置，保持 C++ 结构体类型）
+    inputs: list = []         # list[DAPortDescriptor]
+    outputs: list = []        # list[DAPortDescriptor]
+    parameters: list = []     # list[DAParameterDescriptor]
+
+    # 渲染属性聚合（由 @NodeDef 装饰器设置）
+    _node_display: NodeDisplay = None
+
+    # 端口名称列表（由 @NodeDef 装饰器设置，供 C++ syncMetaFromPyNode 使用）
+    input_keys: list = []
+    output_keys: list = []
 
     def __init__(self):
         self.node_id = None
         self._input_data = {}
         self._output_data = {}
         self.is_global = False
-
-    @classmethod
-    def get_descriptor(cls):
-        """
-        获取节点描述符 C++ 结构体
-
-        :return: da_py_workflow.DANodeDescriptor 实例，若未设置则返回 None
-        """
-        return cls._node_descriptor
 
     def set_input_data(self, key: str, data) -> None:
         """
@@ -270,22 +324,22 @@ class DAWorkflowNode:
         return self._output_data.get(key)
 
 
-def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", icon:str = "" ,style=None):
+def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", icon: str = "", style=None):
     """
     工作流节点定义装饰器
 
     此装饰器用于声明工作流节点类型。它会收集被装饰类中的 Input、Output、Parameter
-    声明，并自动在类上设置 _node_descriptor C++ DANodeDescriptor 结构体属性。
+    声明，并将描述信息直接设置为类属性，渲染属性聚合到 NodeDisplay。
 
-    _node_descriptor 是一个 da_py_workflow.DANodeDescriptor 结构体，包含以下字段：
+    类属性包含：
     - name: 节点显示名称
-    - qualifiedName: 节点的唯一标识（模块名.类名）
+    - qualified_name: 节点的唯一标识（模块名.类名）
     - category: 节点所属分类
+    - icon: 图标路径
     - inputs: 输入端口列表（DAPortDescriptor 结构体）
     - outputs: 输出端口列表（DAPortDescriptor 结构体）
     - parameters: 参数列表（DAParameterDescriptor 结构体）
-    - renderTemplate: 渲染模板类型（RenderTemplate 枚举）
-    - style: 节点样式配置（DANodeStyle 结构体）
+    - _node_display: 渲染属性聚合（NodeDisplay，包含 render_template 和 style）
 
     使用示例::
 
@@ -301,7 +355,8 @@ def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", i
 
     :param name: 节点显示名称
     :param category: 节点所属分类，默认为空字符串
-    :param render_template: 渲染模板类型，默认为 'rect'（映射到 NodeStyleTemplate），支持 'nodestyle'、'widget'
+    :param render_template: 渲染模板类型，默认为 'nodestyle'（映射到 NodeStyleTemplate），支持 'nodestyle'、'rect'、'svg'、'widget'
+    :param icon: 节点图标路径
     :param style: 节点样式配置，可为样式参数字典或 DANodeStyle 实例，默认为 None（使用默认 DANodeStyle）
     :return: 装饰器函数
     """
@@ -312,10 +367,10 @@ def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", i
         节点定义装饰器的内部函数
 
         收集类中的 Input、Output、Parameter 声明，
-        生成 _node_descriptor C++ DANodeDescriptor 结构体并设置到类上。
+        将描述信息直接设置为类属性，渲染属性聚合到 NodeDisplay。
 
         :param cls: 被装饰的节点类
-        :return: 被装饰后的类（原地修改，添加 _node_descriptor 属性）
+        :return: 继承 DAWorkflowNode 的新类
         """
         # 收集参数声明（DAParameterDescriptor 结构体列表）
         parameters = _collect_parameters(cls)
@@ -329,29 +384,34 @@ def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", i
         # 生成唯一标识：模块名.类名
         qualified_name = cls.__module__ + "." + cls.__name__
 
-        # 构建节点描述符 C++ 结构体
-        desc = da_py_workflow.DANodeDescriptor()
-        desc.name = name
-        desc.qualifiedName = qualified_name
-        desc.category = category
-        desc.icon = icon
-        desc.renderTemplate = rt_enum
-        desc.setInputs(inputs)
-        desc.setOutputs(outputs)
-        desc.setParameters(parameters)
-
         # 处理样式参数
+        node_style = None
         if style is not None:
             if isinstance(style, dict):
-                desc.style = _style_from_dict(style)
+                node_style = _style_from_dict(style)
             elif isinstance(style, da_py_workflow.DANodeStyle):
-                # style 已经是 DANodeStyle 实例，直接赋值
-                desc.style = style
+                node_style = style
 
-        # 在类上设置 _node_descriptor 属性（C++ DANodeDescriptor 结构体）
-        cls._node_descriptor = desc
+        # 直接设置类属性（节点元数据）
+        cls.qualified_name = qualified_name
+        cls.name = name
+        cls.category = category
+        cls.group = category       # C++ fallback 兼容别名
+        cls.icon = icon
 
-        # 设置 input_keys 和 output_keys 为类属性，供 C++ syncMetaFromPyNode 使用
+        # 直接设置类属性（端口与参数描述）
+        cls.inputs = inputs
+        cls.outputs = outputs
+        cls.parameters = parameters
+
+        # 构建渲染属性聚合（NodeDisplay）
+        cls._node_display = NodeDisplay(
+            icon=icon,
+            render_template=rt_enum,
+            style=node_style,
+        )
+
+        # 设置端口名称列表，供 C++ syncMetaFromPyNode 使用
         cls.input_keys = [inp.name for inp in inputs]
         cls.output_keys = [outp.name for outp in outputs]
 
