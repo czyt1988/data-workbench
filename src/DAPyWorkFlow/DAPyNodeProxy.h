@@ -1,40 +1,42 @@
-﻿#ifndef DAPYNODEPROXY_H
+#ifndef DAPYNODEPROXY_H
 #define DAPYNODEPROXY_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyObjectWrapper.h"
-#include "DANodeDescriptor.h"
 #include "DAPyNodeState.h"
+#include "DAPyNodeStyleDefine.h"
+#include "DAPortDescriptor.h"
+#include "DAParameterDescriptor.h"
 #include "DAPyNodeStyle.h"
-#include "DAGlobals.h"
 #include "DAPybind11InQt.h"
-#include <QObject>
 #include <QString>
 #include <QList>
-#include <QJsonObject>
+#include <QVector>
 
 namespace DA
 {
 
 /**
- * @brief Python节点的C++代理类
+ * @brief Python节点的C++纯代理类
  *
- * 代理Python Node_def定义的节点
+ * 代理Python NodeDef定义的节点，继承DAPyObjectWrapper，
+ * 像DAPyDataFrame一样通过attr()与Python对象交互，
+ * 不缓存任何Python数据到C++成员变量。
  *
- * 这个类实际和DAPyDataFrame这种类相似，只是针对python object的c++封装
+ * 所有方法实时从Python对象读取属性，不做本地缓存。
+ * 复合类型（端口、参数、样式）通过DictConverter从Python dict临时转换为C++ struct。
+ *
  * @code
  * DAPyNodeProxy proxy(pyNodeObj);
- * if (proxy.exec()) {
- *     qDebug() << "Node executed successfully";
- * } else {
- *     qDebug() << "Error:" << proxy.getLastErrorString();
+ * if (!proxy.isNone()) {
+ *     QString name = proxy.getNodeName();
+ *     DANodeStyle style = proxy.getNodeStyle();
  * }
  * @endcode
  *
- * @see DAPyWorkFlow DAPyNodeState DAPyDataFrame
+ * @see DAPyObjectWrapper DAPyDataFrame DAPyDictConverter
  */
 class DAPYWORKFLOW_API DAPyNodeProxy : public DAPyObjectWrapper
 {
-    DA_DECLARE_PRIVATE(DAPyNodeProxy)
 public:
     // 构造/析构
     explicit DAPyNodeProxy();
@@ -44,49 +46,47 @@ public:
     explicit DAPyNodeProxy(const DAPyNodeProxy& pyNode);
     ~DAPyNodeProxy();
 
-    // 获取Python节点的node_id（从Python节点对象提取node_id属性）
+    // 获取Python节点的node_id（从Python对象属性node_id读取）
     QString getNodeId() const;
 
-    // Python限定名
+    // Python限定名（从Python对象属性qualified_name读取）
     QString getQualifiedName() const;
 
-    // 节点名称（从Python描述符或本地存储）
+    // 节点名称（从Python对象属性name读取）
     QString getNodeName() const;
-    void setNodeName(const QString& name);
 
-    // 输入/输出key列表（从Python描述符获取）
-    QList< QString > getInputKeys() const;
-    QList< QString > getOutputKeys() const;
-
-    // 节点原型（从Python描述符获取）
-    QString getNodePrototype() const;
-
-    // 节点分组（从Python描述符获取）
+    // 节点分组（从Python对象属性category/group读取）
     QString getNodeGroup() const;
 
-    // 节点样式（从Python描述符同步）
+    // 节点图标（从Python对象属性icon读取）
+    QString getIcon() const;
+
+    // 输入/输出端口key列表（从Python对象属性input_keys/output_keys读取）
+    QList<QString> getInputKeys() const;
+    QList<QString> getOutputKeys() const;
+
+    // 输入/输出端口描述符列表（从Python对象属性inputs/outputs list[dict]读取，临时转换为C++ struct）
+    QVector<DAPortDescriptor> getInputPorts() const;
+    QVector<DAPortDescriptor> getOutputPorts() const;
+
+    // 参数描述符列表（从Python对象属性parameters list[dict]读取，临时转换为C++ struct）
+    QVector<DAParameterDescriptor> getParameters() const;
+
+    // 节点样式（从Python对象属性_node_display.style dict读取，临时转换为C++ struct）
     DANodeStyle getNodeStyle() const;
 
-    // 节点描述符结构体（直接访问mDescriptor）
-    const DANodeDescriptor& getDescriptorStruct() const;
+    // 渲染模板（从Python对象属性_node_display.render_template str读取）
+    RenderTemplate getRenderTemplate() const;
 
-    // 状态管理
+    // 节点执行状态（从Python对象属性_node_state读取）
     DAPyNodeState getNodeState() const;
-    void setNodeState(DAPyNodeState state);
-
-    // 错误信息
-    QString getLastErrorString() const;
 
     // Python原生数据传递
     void setPyInputData(const QString& key, const pybind11::object& data);
     pybind11::object getPyOutputData(const QString& key) const;
 
-    // 配置数据传递（QJsonObject→Python dict，本地缓存）
+    // 配置数据传递（QJsonObject→Python dict→调用set_input_data）
     void setConfig(const QJsonObject& config);
-
-    // 节点ID（独立管理，不继承DAAbstractNode）
-    unsigned int getID() const;
-    void setID(unsigned int id);
 
     // 有效性检查
     bool isValid() const;

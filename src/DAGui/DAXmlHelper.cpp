@@ -25,6 +25,7 @@
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyLinkGraphicsItem.h"
 #include "DAPyNodeProxy.h"
+#include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAGraphicsItem.h"
 #include "DAXMLFileInterface.h"
 #include "DAStringUtil.h"
@@ -383,9 +384,9 @@ QDomElement DAXmlHelper::PrivateData::makeNodeElement(DAPyNodeGraphicsItem* node
     QDomElement nodeEle  = doc.createElement(tagName);
     DAPyNodeProxy* proxy = nodeItem->getProxy();
     if (proxy) {
-        nodeEle.setAttribute("id", proxy->getID());
+        nodeEle.setAttribute("id", proxy->getNodeId());
         nodeEle.setAttribute("name", proxy->getNodeName());
-        nodeEle.setAttribute("qualified_name", proxy->getNodePrototype());
+        nodeEle.setAttribute("qualified_name", proxy->getQualifiedName());
         // 保存节点input和output的key和propertys
         saveNodeInputOutput(proxy, doc, nodeEle);
     }
@@ -495,10 +496,14 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
         return nullptr;
     }
 
-    // 设置节点id
-    // 注意: id为qulonglong类型，转换为unsigned int存在截断风险
-    proxy->setID(static_cast< unsigned int >(id));
-    proxy->setNodeName(name);
+    // 设置节点id和名称（通过 Python 对象属性直接设置）
+    DAPyGILGuard gilGuard;
+    try {
+        proxy->object().attr("node_id") = QString::number(id).toStdString();
+        proxy->object().attr("name")     = name.toStdString();
+    } catch (const std::exception& e) {
+        qWarning() << "DAXmlHelper: failed to set node id/name via Python object:" << e.what();
+    }
 
     // 加载节点的输入输出
     loadNodeInPutOutputKey(proxy, nodeEle);
@@ -568,11 +573,23 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(
     }
 
     if (!idMap) {
-        // idMap为空，使用原来的id
-        // 注意: id为qulonglong类型，转换为unsigned int存在截断风险
-        proxy->setID(static_cast< unsigned int >(id));
+        // idMap为空，使用原来的id（通过 Python 对象属性直接设置）
+        DAPyGILGuard gilGuard;
+        try {
+            proxy->object().attr("node_id") = QString::number(id).toStdString();
+        } catch (const std::exception& e) {
+            qWarning() << "DAXmlHelper: failed to set node_id via Python object:" << e.what();
+        }
     }
-    proxy->setNodeName(name);
+    // 设置名称（通过 Python 对象属性直接设置）
+    {
+        DAPyGILGuard gilGuard;
+        try {
+            proxy->object().attr("name") = name.toStdString();
+        } catch (const std::exception& e) {
+            qWarning() << "DAXmlHelper: failed to set name via Python object:" << e.what();
+        }
+    }
 
     // 加载节点的输入输出
     loadNodeInPutOutputKey(proxy, nodeEle);
@@ -588,7 +605,7 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(
 
     if (idMap) {
         // 记录旧id到新id的映射
-        (*idMap)[ QString::number(id) ] = QString::number(proxy->getID());
+        (*idMap)[ QString::number(id) ] = proxy->getNodeId();
     }
     return item;
 }
@@ -658,7 +675,7 @@ bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v110(DAPyNodeProxy* node, 
             QDomElement nameEle = inputEle.firstChildElement("name");
             if (nameEle.isNull()) {
                 qWarning() << QObject::tr("node(prototype=%1,name=%2) %3 tag loss child tag <name>")
-                                  .arg(node->getNodePrototype(), node->getNodeName(), ks.at(i).nodeName());
+                                  .arg(node->getQualifiedName(), node->getNodeName(), ks.at(i).nodeName());
                 continue;
             }
             // 输入key由Python描述符决定，不需要手动addInputKey
@@ -676,7 +693,7 @@ bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v110(DAPyNodeProxy* node, 
             QDomElement nameEle = outputEle.firstChildElement("name");
             if (nameEle.isNull()) {
                 qWarning() << QObject::tr("node(prototype=%1,name=%2) %3 tag loss child tag <name>")
-                                  .arg(node->getNodePrototype(), node->getNodeName(), ks.at(i).nodeName());
+                                  .arg(node->getQualifiedName(), node->getNodeName(), ks.at(i).nodeName());
                 continue;
             }
             // 输出key由Python描述符决定，不需要手动addOutputKey
@@ -771,11 +788,11 @@ QDomElement DAXmlHelper::PrivateData::makeNodeLinkElement(DAPyLinkGraphicsItem* 
     DAPyNodeGraphicsItem* toNode   = link->getToNode();
 
     if (fromNode && fromNode->getProxy()) {
-        fromEle.setAttribute("id", fromNode->getProxy()->getID());
+        fromEle.setAttribute("id", fromNode->getProxy()->getNodeId());
     }
     fromEle.setAttribute("name", link->getFromOutputName());
     if (toNode && toNode->getProxy()) {
-        toEle.setAttribute("id", toNode->getProxy()->getID());
+        toEle.setAttribute("id", toNode->getProxy()->getNodeId());
     }
     toEle.setAttribute("name", link->getToInputName());
 

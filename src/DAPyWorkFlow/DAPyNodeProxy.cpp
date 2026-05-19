@@ -1,165 +1,19 @@
-﻿#include "DAPyNodeProxy.h"
+#include "DAPyNodeProxy.h"
 #include "DAPybind11InQt.h"
 #include "DAPyModuleWorkflow.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAPyBindQt/DAPyJsonCast.h"
+#include "DAPyDictConverter.h"
 #include "DAPybind11QtCaster.hpp"
-#include "DANodeDescriptor.h"
-#include "DAPortDescriptor.h"
-#include "DAPyNodeStyle.h"
 #include <QDebug>
-#include "DAPyObjectWrapper.h"
 
 namespace DA
 {
-class DAPyNodeProxy::PrivateData
-{
-    DA_DECLARE_PUBLIC(DAPyNodeProxy)
-public:
-    PrivateData(DAPyNodeProxy* p);
-
-    // 统一异常处理（参考DAPyModulePandas模式）
-    void dealException(const std::exception& e) const;
-
-    // 清理Python节点引用
-    void clearPyNodeRef();
-
-    // 从Python节点同步元信息到本地缓存
-    void syncMetaFromPyNode(const pybind11::object& pyNode);
-
-public:
-    DANodeDescriptor mDescriptor;                      ///< 节点描述符（统一存储所有元数据）
-    unsigned int mId { 0 };                            ///< 节点ID（独立管理）
-    DAPyObjectWrapper mPyNodeRef;                      ///< Python节点实例的安全持有者
-    DAPyNodeState mNodeState { DAPyNodeState::Idle };  ///< 节点执行状态
-    mutable QString mLastErrorString;                  ///< 最后一次错误信息（mutable允许const方法修改）
-    QJsonObject mConfig;                               ///< 配置数据缓存
-};
-
-//===================================================
-// DAPyNodeProxy::PrivateData
-//===================================================
-
-DAPyNodeProxy::PrivateData::PrivateData(DAPyNodeProxy* p) : q_ptr(p)
-{
-}
-
-/**
- * @brief 统一异常处理
- *
- * 参考DAPyModulePandas的dealException模式，将异常信息存储到mLastErrorString中。
- * 对于pybind11::error_already_set异常，在GIL作用域内消费，
- * 避免异常析构时尝试获取GIL导致死锁。
- *
- * @param[in] e 捕获的异常对象
- */
-void DAPyNodeProxy::PrivateData::dealException(const std::exception& e) const
-{
-    mLastErrorString = e.what();
-    qCritical() << "DAPyNodeProxy error:" << mLastErrorString;
-}
-
-/**
- * @brief 清理Python节点引用
- *
- * 安全释放Python节点对象引用。
- * DA::PY::safe_pyobject析构时检查Py_IsInitialized()确保安全释放。
- */
-void DAPyNodeProxy::PrivateData::clearPyNodeRef()
-{
-    mPyNodeRef = DAPyObjectWrapper();
-}
-
-/**
- * @brief 从Python节点同步元信息到mDescriptor
- *
- * 在setPyNodeRef时调用，从Python节点提取元信息缓存到mDescriptor，
- * 避免每次查询都需要获取GIL访问Python属性。
- *
- * 优先通过pybind11::cast将Python端 _node_descriptor 直接反序列化为
- * C++ DANodeDescriptor 结构体（一次cast替代7+次逐属性读取），
- * 若 _node_descriptor 为旧式Python dict则经JSON中间格式转换。
- * 转换后对空字段执行属性级回退读取，兼容新旧两种插件格式。
- *
- * @param[in] pyNode Python节点实例对象
- * @note 需在GIL保护下调用此函数
- */
-void DAPyNodeProxy::PrivateData::syncMetaFromPyNode(const pybind11::object& pyNode)
-{
-    try {
-        // 重置描述符为默认值
-        mDescriptor = DANodeDescriptor();
-
-        // 从 _node_descriptor 一次性同步全部元数据
-        if (pybind11::hasattr(pyNode, "_node_descriptor")) {
-            pybind11::object descObj = pyNode.attr("_node_descriptor");
-            // 新式C++结构体描述符 → 单次cast直接反序列化
-            mDescriptor = descObj.cast< DA::DANodeDescriptor >();
-        }
-
-        // 以下为字段级回退读取：仅当结构体同步后字段仍为空时，
-        // 从Python节点属性逐项补充，兼容无 _node_descriptor 的旧插件
-
-        // name 回退：读取 node_name
-        if (mDescriptor.name.isEmpty() && pybind11::hasattr(pyNode, "node_name")) {
-            mDescriptor.name = pybind11::cast< QString >(pyNode.attr("node_name"));
-        }
-
-        // qualifiedName 回退：依次尝试 qualified_name 和 node_prototype
-        if (mDescriptor.qualifiedName.isEmpty()) {
-            if (pybind11::hasattr(pyNode, "qualified_name")) {
-                mDescriptor.qualifiedName = pybind11::cast< QString >(pyNode.attr("qualified_name"));
-            } else if (pybind11::hasattr(pyNode, "node_prototype")) {
-                mDescriptor.qualifiedName = pybind11::cast< QString >(pyNode.attr("node_prototype"));
-            }
-        }
-
-        // category 回退：读取 group
-        if (mDescriptor.category.isEmpty() && pybind11::hasattr(pyNode, "group")) {
-            mDescriptor.category = pybind11::cast< QString >(pyNode.attr("group"));
-        }
-
-        // inputs 回退：读取 input_keys 列表
-        if (mDescriptor.inputs.isEmpty() && pybind11::hasattr(pyNode, "input_keys")) {
-            pybind11::list inKeys = pybind11::cast< pybind11::list >(pyNode.attr("input_keys"));
-            for (auto item : inKeys) {
-                DAPortDescriptor pd;
-                pd.name = pybind11::cast< QString >(item);
-                mDescriptor.inputs.append(pd);
-            }
-        }
-
-        // outputs 回退：读取 output_keys 列表
-        if (mDescriptor.outputs.isEmpty() && pybind11::hasattr(pyNode, "output_keys")) {
-            pybind11::list outKeys = pybind11::cast< pybind11::list >(pyNode.attr("output_keys"));
-            for (auto item : outKeys) {
-                DAPortDescriptor pd;
-                pd.name = pybind11::cast< QString >(item);
-                mDescriptor.outputs.append(pd);
-            }
-        }
-
-    } catch (const pybind11::error_already_set& e) {
-        mLastErrorString = e.what();
-        dealException(e);
-    } catch (const std::exception& e) {
-        mLastErrorString = e.what();
-        dealException(e);
-    }
-}
 
 //===================================================
 // DAPyNodeProxy
 //===================================================
 
-/**
- * @brief 构造Python节点代理
- *
- * 构造独立代理节点，初始状态为DAPyNodeState::Idle，未关联任何Python节点实例。
- * 不继承任何QObject或DAAbstractNode基类，使用PIMPL模式管理私有数据。
- *
- * @note 需后续调用setPyNodeRef()关联Python节点实例才能执行
- */
 DAPyNodeProxy::DAPyNodeProxy() : DAPyObjectWrapper()
 {
 }
@@ -168,7 +22,7 @@ DAPyNodeProxy::DAPyNodeProxy(const pybind11::object& pyNode) : DAPyObjectWrapper
 {
 }
 
-DAPyNodeProxy::DAPyNodeProxy(pybind11::object&& pyNode) : DAPyObjectWrapper(pyNode)
+DAPyNodeProxy::DAPyNodeProxy(pybind11::object&& pyNode) : DAPyObjectWrapper(std::move(pyNode))
 {
 }
 
@@ -184,373 +38,316 @@ DAPyNodeProxy::~DAPyNodeProxy()
 {
 }
 
-
-/**
- * @brief 获取Python节点的node_id
- *
- * 从Python节点对象的node_id属性提取唯一标识符。
- * Python DAWorkflow.add_node() 会为节点自动分配node_id并设置到实例上。
- *
- * @return Python节点的node_id字符串，获取失败返回空字符串
- * @note 需在GIL保护下调用此函数
- */
 QString DAPyNodeProxy::getNodeId() const
 {
-    DA_DC(d);
     if (isNone()) {
         return QString();
     }
     try {
-        if (d->mPyNodeRef.hasattr("node_id")) {
-            return d->mPyNodeRef.attr("node_id").cast< QString >();
+        if (hasattr("node_id")) {
+            return attr("node_id").cast< QString >();
         }
-    } catch (const pybind11::error_already_set& e) {
-        d->mLastErrorString = e.what();
-        d->dealException(e);
     } catch (const std::exception& e) {
-        d->mLastErrorString = e.what();
-        d->dealException(e);
+        dealException(e);
     }
     return QString();
 }
 
-/**
- * @brief 获取Python节点的限定名
- *
- * 从mDescriptor.qualifiedName读取，统一通过描述符获取限定名。
- *
- * @return Python节点的限定名
- */
 QString DAPyNodeProxy::getQualifiedName() const
 {
-    DA_DC(d);
-    return d->mDescriptor.qualifiedName;
+    if (isNone()) {
+        return QString();
+    }
+    try {
+        if (hasattr("qualified_name")) {
+            return attr("qualified_name").cast< QString >();
+        }
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return QString();
 }
 
-/**
- * @brief 获取节点名称
- *
- * 从mDescriptor.name读取节点名称。
- *
- * @return 节点名称字符串
- */
 QString DAPyNodeProxy::getNodeName() const
 {
-    DA_DC(d);
-    return d->mDescriptor.name;
-}
-
-/**
- * @brief 设置节点名称
- *
- * 写入mDescriptor.name，仅修改C++侧的描述符缓存，不回写到Python节点。
- *
- * @param[in] name 要设置的节点名称
- */
-void DAPyNodeProxy::setNodeName(const QString& name)
-{
-    DA_D(d);
-    d->mDescriptor.name = name;
-}
-
-/**
- * @brief 获取输入key列表
- *
- * 从mDescriptor.inputs中提取各端口的name字段，返回输入key列表。
- *
- * @return 输入key的QList<QString>列表
- */
-QList< QString > DAPyNodeProxy::getInputKeys() const
-{
-    DA_DC(d);
-    QList< QString > keys;
-    for (const DAPortDescriptor& port : d->mDescriptor.inputs) {
-        keys.append(port.name);
+    if (isNone()) {
+        return QString();
     }
-    return keys;
-}
-
-/**
- * @brief 获取输出key列表
- *
- * 从mDescriptor.outputs中提取各端口的name字段，返回输出key列表。
- *
- * @return 输出key的QList<QString>列表
- */
-QList< QString > DAPyNodeProxy::getOutputKeys() const
-{
-    DA_DC(d);
-    QList< QString > keys;
-    for (const DAPortDescriptor& port : d->mDescriptor.outputs) {
-        keys.append(port.name);
+    try {
+        if (hasattr("name")) {
+            return attr("name").cast< QString >();
+        }
+    } catch (const std::exception& e) {
+        dealException(e);
     }
-    return keys;
+    return QString();
 }
 
-/**
- * @brief 获取节点原型
- *
- * 返回mDescriptor.qualifiedName作为节点原型字符串。
- * 节点原型与限定名相同，均为Python节点的唯一标识。
- *
- * @return 节点原型字符串，如"package.module.ClassName"
- */
-QString DAPyNodeProxy::getNodePrototype() const
-{
-    DA_DC(d);
-    return d->mDescriptor.qualifiedName;
-}
-
-/**
- * @brief 获取节点分组
- *
- * 返回mDescriptor.category，对应Python节点的group属性。
- *
- * @return 节点分组字符串
- */
 QString DAPyNodeProxy::getNodeGroup() const
 {
-    DA_DC(d);
-    return d->mDescriptor.category;
+    if (isNone()) {
+        return QString();
+    }
+    try {
+        if (hasattr("category")) {
+            return attr("category").cast< QString >();
+        }
+        if (hasattr("group")) {
+            return attr("group").cast< QString >();
+        }
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return QString();
 }
 
-/**
- * @brief 获取节点样式配置
- *
- * 返回mDescriptor.style，从Python侧 _node_descriptor 中同步的 DANodeStyle。
- *
- * @return 节点样式配置
- */
+QString DAPyNodeProxy::getIcon() const
+{
+    if (isNone()) {
+        return QString();
+    }
+    try {
+        if (hasattr("icon")) {
+            return attr("icon").cast< QString >();
+        }
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return QString();
+}
+
+QList< QString > DAPyNodeProxy::getInputKeys() const
+{
+    if (isNone()) {
+        return QList< QString >();
+    }
+    try {
+        if (hasattr("input_keys")) {
+            pybind11::list pyKeys = attr("input_keys").cast< pybind11::list >();
+            QList< QString > keys;
+            for (auto item : pyKeys) {
+                keys.append(pybind11::cast< QString >(item));
+            }
+            return keys;
+        }
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return QList< QString >();
+}
+
+QList< QString > DAPyNodeProxy::getOutputKeys() const
+{
+    if (isNone()) {
+        return QList< QString >();
+    }
+    try {
+        if (hasattr("output_keys")) {
+            pybind11::list pyKeys = attr("output_keys").cast< pybind11::list >();
+            QList< QString > keys;
+            for (auto item : pyKeys) {
+                keys.append(pybind11::cast< QString >(item));
+            }
+            return keys;
+        }
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return QList< QString >();
+}
+
+QVector< DAPortDescriptor > DAPyNodeProxy::getInputPorts() const
+{
+    if (isNone()) {
+        return QVector< DAPortDescriptor >();
+    }
+    try {
+        if (hasattr("inputs")) {
+            pybind11::list pyInputs = attr("inputs").cast< pybind11::list >();
+            return DictConverter::portListFromPyList(pyInputs);
+        }
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return QVector< DAPortDescriptor >();
+}
+
+QVector< DAPortDescriptor > DAPyNodeProxy::getOutputPorts() const
+{
+    if (isNone()) {
+        return QVector< DAPortDescriptor >();
+    }
+    try {
+        if (hasattr("outputs")) {
+            pybind11::list pyOutputs = attr("outputs").cast< pybind11::list >();
+            return DictConverter::portListFromPyList(pyOutputs);
+        }
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return QVector< DAPortDescriptor >();
+}
+
+QVector< DAParameterDescriptor > DAPyNodeProxy::getParameters() const
+{
+    if (isNone()) {
+        return QVector< DAParameterDescriptor >();
+    }
+    try {
+        if (hasattr("parameters")) {
+            pybind11::list pyParams = attr("parameters").cast< pybind11::list >();
+            return DictConverter::paramListFromPyList(pyParams);
+        }
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return QVector< DAParameterDescriptor >();
+}
+
 DANodeStyle DAPyNodeProxy::getNodeStyle() const
 {
-    DA_DC(d);
-    return d->mDescriptor.style;
+    DANodeStyle defaultStyle;  // 默认构造已调用 setDefaults()
+    if (isNone()) {
+        return defaultStyle;
+    }
+    try {
+        // 读取 _node_display.style 属性
+        if (hasattr("_node_display")) {
+            pybind11::object displayObj = attr("_node_display");
+            if (pybind11::hasattr(displayObj, "style")
+                && !pybind11::cast< pybind11::object >(displayObj.attr("style")).is_none()) {
+                pybind11::object styleObj = displayObj.attr("style");
+                if (pybind11::isinstance< pybind11::dict >(styleObj)) {
+                    pybind11::dict styleDict = pybind11::cast< pybind11::dict >(styleObj);
+                    return DictConverter::nodeStyleFromDict(styleDict);
+                }
+            }
+        }
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return defaultStyle;
 }
 
-/**
- * @brief 获取节点描述符结构体
- *
- * 返回mDescriptor的常量引用，直接访问完整的节点描述符数据。
- *
- * @return DANodeDescriptor的常量引用
- */
-const DANodeDescriptor& DAPyNodeProxy::getDescriptorStruct() const
+RenderTemplate DAPyNodeProxy::getRenderTemplate() const
 {
-    DA_DC(d);
-    return d->mDescriptor;
+    if (isNone()) {
+        return RenderTemplate::NodeStyleTemplate;
+    }
+    try {
+        if (hasattr("_node_display")) {
+            pybind11::object displayObj = attr("_node_display");
+            if (pybind11::hasattr(displayObj, "render_template")) {
+                QString rtStr = pybind11::cast< QString >(displayObj.attr("render_template"));
+                return DictConverter::renderTemplateFromString(rtStr);
+            }
+        }
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return RenderTemplate::NodeStyleTemplate;
 }
 
-/**
- * @brief 获取节点执行状态
- *
- * @return 当前节点的DAPyNodeState状态
- * @see DAPyNodeState
- */
 DAPyNodeState DAPyNodeProxy::getNodeState() const
 {
-    DA_DC(d);
-    return d->mNodeState;
+    if (isNone()) {
+        return DAPyNodeState::Idle;
+    }
+    try {
+        // 尝试从 Python 对象读取 _node_state 属性
+        if (hasattr("_node_state")) {
+            pybind11::object stateObj = attr("_node_state");
+            // Python 端 _node_state 可能是字符串或 da_py_workflow.DAPyNodeState
+            if (pybind11::isinstance< pybind11::str >(stateObj)) {
+                QString stateStr = pybind11::cast< QString >(stateObj);
+                return stringToEnum(stateStr, DAPyNodeState::Idle);
+            }
+            // 如果是整数枚举值
+            if (pybind11::isinstance< pybind11::int_ >(stateObj)) {
+                int val = pybind11::cast< int >(stateObj);
+                return static_cast< DAPyNodeState >(val);
+            }
+        }
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return DAPyNodeState::Idle;
 }
 
-/**
- * @brief 设置节点执行状态
- *
- * @param[in] state 要设置的状态
- * @see DAPyNodeState
- */
-void DAPyNodeProxy::setNodeState(DAPyNodeState state)
-{
-    DA_D(d);
-    d->mNodeState = state;
-}
-
-/**
- * @brief 获取最后一次错误信息
- *
- * 在exec()执行失败或Python交互出错后，错误信息存储在mLastErrorString中。
- *
- * @return 最后一次错误的描述字符串，若无错误返回空字符串
- */
-QString DAPyNodeProxy::getLastErrorString() const
-{
-    DA_DC(d);
-    return d->mLastErrorString;
-}
-
-/**
- * @brief 通过pybind11::object设置Python原生输入数据
- *
- * 直接将Python对象作为输入数据传递给Python节点，
- * 避免QVariant中间转换的性能损耗。
- *
- * @param[in] key 输入参数的key名称
- * @param[in] data Python数据对象
- * @note 需在GIL保护下调用此函数
- */
 void DAPyNodeProxy::setPyInputData(const QString& key, const pybind11::object& data)
 {
-    DA_D(d);
-    if (!d->mPyNodeRef) {
-        qWarning() << "DAPyNodeProxy::setPyInputData: No Python node reference";
+    if (isNone()) {
+        qWarning() << "DAPyNodeProxy::setPyInputData: proxy is None";
         return;
     }
-
     DAPyGILGuard gilGuard;
     if (!gilGuard.isAcquired()) {
         qWarning() << "DAPyNodeProxy::setPyInputData: Failed to acquire GIL";
         return;
     }
-
     try {
-        pybind11::object pyNode = d->mPyNodeRef.object();
-        if (pybind11::hasattr(pyNode, "set_input_data")) {
+        if (hasattr("set_input_data")) {
             pybind11::str pyKey = pybind11::cast(key);
-            pyNode.attr("set_input_data")(pyKey, data);
+            attr("set_input_data")(pyKey, data);
         }
     } catch (const pybind11::error_already_set& e) {
-        d->mLastErrorString = e.what();
-        d->dealException(e);
+        dealException(e);
     } catch (const std::exception& e) {
-        d->mLastErrorString = e.what();
-        d->dealException(e);
+        dealException(e);
     }
 }
 
-/**
- * @brief 通过pybind11::object获取Python原生输出数据
- *
- * 直接从Python节点获取输出数据对象，
- * 避免QVariant中间转换的性能损耗。
- *
- * @param[in] key 输出参数的key名称
- * @return Python输出数据对象，若获取失败返回pybind11::none()
- * @note 需在GIL保护下调用此函数
- */
 pybind11::object DAPyNodeProxy::getPyOutputData(const QString& key) const
 {
-    DA_DC(d);
-    if (!d->mPyNodeRef) {
+    if (isNone()) {
         return pybind11::none();
     }
-
     DAPyGILGuard gilGuard;
     if (!gilGuard.isAcquired()) {
         return pybind11::none();
     }
-
     try {
-        pybind11::object pyNode = d->mPyNodeRef.object();
-        if (pybind11::hasattr(pyNode, "get_output_data")) {
+        if (hasattr("get_output_data")) {
             pybind11::str pyKey = pybind11::cast(key);
-            return pyNode.attr("get_output_data")(pyKey);
+            return attr("get_output_data")(pyKey);
         }
     } catch (const pybind11::error_already_set& e) {
-        d->mLastErrorString = e.what();
-        d->dealException(e);
+        dealException(e);
     } catch (const std::exception& e) {
-        d->mLastErrorString = e.what();
-        d->dealException(e);
+        dealException(e);
     }
-
     return pybind11::none();
 }
 
-/**
- * @brief 设置节点配置数据
- *
- * 将QJsonObject配置写入Python节点侧（转换为dict）并本地缓存。
- * 使用DAPyJsonCast的qjsonObjectToPyDict进行JSON→Python转换，
- * 支持嵌套对象和数组。
- *
- * 执行流程：
- * 1. 缓存config到mConfig
- * 2. 若Python节点引用有效，获取GIL
- * 3. 转换QJsonObject为pybind11::dict
- * 4. 调用Python节点的set_input_data("config", pyConfig)
- * 5. 为每个key-value对发射parameterValueChanged信号
- *
- * @param[in] config 节点配置数据（QJsonObject格式）
- * @note GIL保护下调用Python方法，error_already_set必须在GIL作用域内消费
- * @see setPyInputData DAPyGILGuard DA::PY::qjsonObjectToPyDict
- */
 void DAPyNodeProxy::setConfig(const QJsonObject& config)
 {
-    DA_D(d);
-    // 1. 缓存配置数据
-    d->mConfig = config;
-
-    // 2. 检查Python节点引用是否有效
-    if (!d->mPyNodeRef) {
+    if (isNone()) {
         return;
     }
-
-    // 3. 获取GIL
     DAPyGILGuard gilGuard;
     if (!gilGuard.isAcquired()) {
         qWarning() << "DAPyNodeProxy::setConfig: Failed to acquire GIL";
         return;
     }
-
     try {
-        // 4. 转换QJsonObject为pybind11::dict
         pybind11::dict pyConfig = DA::PY::qjsonObjectToPyDict(config);
-        pybind11::object pyNode = d->mPyNodeRef.object();
-        // 5. 调用Python节点的set_input_data方法
-        if (pybind11::hasattr(pyNode, "set_input_data")) {
+        if (hasattr("set_input_data")) {
             pybind11::str pyKey = pybind11::cast(std::string("config"));
-            pyNode.attr("set_input_data")(pyKey, pyConfig);
+            attr("set_input_data")(pyKey, pyConfig);
         }
     } catch (const pybind11::error_already_set& e) {
-        // error_already_set必须在GIL作用域内消费
-        d->mLastErrorString = e.what();
-        d->dealException(e);
+        dealException(e);
     } catch (const std::exception& e) {
-        d->mLastErrorString = e.what();
-        d->dealException(e);
+        dealException(e);
     }
 }
 
-
-/**
- * @brief 获取节点ID
- *
- * 返回独立管理的节点ID，不继承DAAbstractNode的ID系统。
- *
- * @return 节点ID（unsigned int）
- */
-unsigned int DAPyNodeProxy::getID() const
-{
-    DA_DC(d);
-    return d->mId;
-}
-
-/**
- * @brief 设置节点ID
- *
- * 设置独立管理的节点ID。
- *
- * @param[in] id 要设置的节点ID
- */
-void DAPyNodeProxy::setID(unsigned int id)
-{
-    DA_D(d);
-    d->mId = id;
-}
-
-/**
- * @brief 检查代理节点是否有效
- *
- * 有效条件：Python解释器已初始化且已关联有效的Python节点实例。
- *
- * @return true表示代理节点有效可执行，false表示无效
- */
 bool DAPyNodeProxy::isValid() const
 {
-    DA_DC(d);
     if (!Py_IsInitialized()) {
         return false;
     }
-    return static_cast< bool >(d->mPyNodeRef);
+    return !isNone();
 }
 
 }  // namespace DA

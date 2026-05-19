@@ -4,7 +4,6 @@
 #include "DAPyModuleWorkflow.h"
 #include "DAPyNodeProxy.h"
 #include "DAPyInterpreter.h"
-#include "DANodeDescriptor.h"
 #include <QDebug>
 #include <QHash>
 
@@ -297,15 +296,43 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
 
         pybind11::object result = registryInstance.attr("discover")(pyScanPaths, useEntryPoints);
 
-        // 5. 遍历返回的DANodeDescriptor列表
+        // 5. 遍历返回的节点类列表，直接从类属性读取元数据
         QList< DAPyNodeMetaData > discoveredList;
         for (pybind11::handle item : result) {
-            pybind11::object descObj = pybind11::reinterpret_borrow< pybind11::object >(item);
+            pybind11::object nodeClassObj = pybind11::reinterpret_borrow< pybind11::object >(item);
 
-            DANodeDescriptor descriptor;
-            // 新式C++ struct描述符（通过pybind11直接cast）
-            descriptor                = descObj.cast< DA::DANodeDescriptor >();
-            DAPyNodeMetaData metaData = descriptor.toMetaData();
+            DAPyNodeMetaData metaData;
+
+            // 从 Python 类属性直接读取
+            if (pybind11::hasattr(nodeClassObj, "qualified_name")) {
+                metaData.qualifiedName = nodeClassObj.attr("qualified_name").cast<QString>();
+            }
+            if (pybind11::hasattr(nodeClassObj, "name")) {
+                metaData.name = nodeClassObj.attr("name").cast<QString>();
+            }
+            if (pybind11::hasattr(nodeClassObj, "category")) {
+                metaData.group = nodeClassObj.attr("category").cast<QString>();
+            } else if (pybind11::hasattr(nodeClassObj, "group")) {
+                metaData.group = nodeClassObj.attr("group").cast<QString>();
+            }
+            if (pybind11::hasattr(nodeClassObj, "icon")) {
+                metaData.iconPath = nodeClassObj.attr("icon").cast<QString>();
+            }
+
+            // input_keys/output_keys
+            if (pybind11::hasattr(nodeClassObj, "input_keys")) {
+                pybind11::list inKeys = nodeClassObj.attr("input_keys").cast<pybind11::list>();
+                for (auto k : inKeys) {
+                    metaData.inputKeys.append(pybind11::cast<QString>(k));
+                }
+            }
+            if (pybind11::hasattr(nodeClassObj, "output_keys")) {
+                pybind11::list outKeys = nodeClassObj.attr("output_keys").cast<pybind11::list>();
+                for (auto k : outKeys) {
+                    metaData.outputKeys.append(pybind11::cast<QString>(k));
+                }
+            }
+
             if (!metaData.isValid()) {
                 qWarning() << "发现无效的节点元数据，跳过";
                 continue;

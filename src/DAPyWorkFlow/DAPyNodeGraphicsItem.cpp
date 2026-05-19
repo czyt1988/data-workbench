@@ -388,8 +388,16 @@ void DAPyNodeGraphicsItem::setProxy(DAPyNodeProxy* proxy)
 {
     d_ptr->mProxy.reset(proxy);
     if (proxy) {
-        d_ptr->mNodeState        = proxy->getNodeState();
-        d_ptr->mDescriptorStruct = proxy->getDescriptorStruct();
+        d_ptr->mNodeState                    = proxy->getNodeState();
+        d_ptr->mDescriptorStruct.name        = proxy->getNodeName();
+        d_ptr->mDescriptorStruct.qualifiedName = proxy->getQualifiedName();
+        d_ptr->mDescriptorStruct.category    = proxy->getNodeGroup();
+        d_ptr->mDescriptorStruct.icon        = proxy->getIcon();
+        d_ptr->mDescriptorStruct.inputs      = proxy->getInputPorts();
+        d_ptr->mDescriptorStruct.outputs     = proxy->getOutputPorts();
+        d_ptr->mDescriptorStruct.parameters  = proxy->getParameters();
+        d_ptr->mDescriptorStruct.renderTemplate = proxy->getRenderTemplate();
+        d_ptr->mDescriptorStruct.style       = proxy->getNodeStyle();
     }
     updateLinkPoints();
     update();

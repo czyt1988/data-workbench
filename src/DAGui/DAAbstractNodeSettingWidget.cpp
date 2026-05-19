@@ -62,7 +62,15 @@ void DAAbstractNodeSettingWidget::setNodeProxy(DAPyNodeProxy* proxy)
     DA_D(d);
     d->mNodeProxy = proxy;
     if (proxy) {
-        d->mDescriptor = proxy->getDescriptorStruct();
+        d->mDescriptor.name           = proxy->getNodeName();
+        d->mDescriptor.qualifiedName  = proxy->getQualifiedName();
+        d->mDescriptor.category       = proxy->getNodeGroup();
+        d->mDescriptor.icon           = proxy->getIcon();
+        d->mDescriptor.inputs         = proxy->getInputPorts();
+        d->mDescriptor.outputs        = proxy->getOutputPorts();
+        d->mDescriptor.parameters     = proxy->getParameters();
+        d->mDescriptor.renderTemplate = proxy->getRenderTemplate();
+        d->mDescriptor.style          = proxy->getNodeStyle();
     }
 }
 

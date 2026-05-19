@@ -1,8 +1,8 @@
 """
 DAWorkflowNode 单元测试
 
-注意: node_def.py 顶层 import da_py_workflow (C++ 绑定),
-测试需预先注入 mock 模块.
+NodeDef 装饰器和 DAWorkflowNode 基类已改为纯 Python（无 da_py_workflow 依赖），
+测试不再需要 C++ 绑定 mock。
 """
 
 import os
@@ -10,25 +10,6 @@ import sys
 import types
 import unittest
 import importlib.util
-from unittest.mock import MagicMock
-
-
-def _mock_da_py_workflow():
-    mod = types.ModuleType("da_py_workflow")
-    mod.DAPortDescriptor = MagicMock
-    mod.DAParameterDescriptor = MagicMock
-    mod.DANodeStyle = MagicMock
-    mod.DAPyLinkPointStyle = MagicMock
-
-    class RenderTemplate:
-        NodeStyleTemplate = 0
-        WidgetTemplate = 1
-
-    mod.RenderTemplate = RenderTemplate
-    return mod
-
-
-sys.modules["da_py_workflow"] = _mock_da_py_workflow()
 
 
 def _load_types_module():
@@ -58,10 +39,19 @@ _spec.loader.exec_module(_node_def_mod)
 
 DAWorkflowNode = _node_def_mod.DAWorkflowNode
 NodeDef = _node_def_mod.NodeDef
+NodeDisplay = _node_def_mod.NodeDisplay
+Input = sys.modules["DAWorkbench.DAWorkFlowPy.types"].Input
+Output = sys.modules["DAWorkbench.DAWorkFlowPy.types"].Output
 
 
 @NodeDef(name="SampleNode", category="Test", render_template="nodestyle")
 class SampleNode:
+
+    class Inputs:
+        data = Input("DataFrame", required=True)
+
+    class Outputs:
+        result = Output("DataFrame")
 
     def execute(self, inputs, params):
         pass
@@ -137,6 +127,56 @@ class TestNodeDefInheritance(unittest.TestCase):
     def test_decorated_class_get_output_data_missing(self):
         node = SampleNode()
         self.assertIsNone(node.get_output_data("missing"))
+
+
+class TestNodeDefPurePython(unittest.TestCase):
+    """验证 NodeDef 装饰器产出的类属性均为纯 Python 类型（无 C++ 依赖）"""
+
+    def test_inputs_are_dicts(self):
+        self.assertIsInstance(SampleNode.inputs, list)
+        for inp in SampleNode.inputs:
+            self.assertIsInstance(inp, dict)
+
+    def test_outputs_are_dicts(self):
+        self.assertIsInstance(SampleNode.outputs, list)
+        for outp in SampleNode.outputs:
+            self.assertIsInstance(outp, dict)
+
+    def test_parameters_are_dicts(self):
+        self.assertIsInstance(SampleNode.parameters, list)
+        # SampleNode has no Parameter declarations, so it's an empty list
+        self.assertEqual(SampleNode.parameters, [])
+
+    def test_node_display_render_template_is_string(self):
+        self.assertIsInstance(SampleNode._node_display, NodeDisplay)
+        self.assertIsInstance(SampleNode._node_display.render_template, str)
+        self.assertEqual(SampleNode._node_display.render_template, "nodestyle")
+
+    def test_node_display_style_is_dict_or_none(self):
+        self.assertIsInstance(SampleNode._node_display, NodeDisplay)
+        # No style provided → should be None
+        self.assertIsNone(SampleNode._node_display.style)
+
+    def test_input_keys_are_strings(self):
+        self.assertIsInstance(SampleNode.input_keys, list)
+        for key in SampleNode.input_keys:
+            self.assertIsInstance(key, str)
+
+    def test_output_keys_are_strings(self):
+        self.assertIsInstance(SampleNode.output_keys, list)
+        for key in SampleNode.output_keys:
+            self.assertIsInstance(key, str)
+
+    def test_input_dict_has_required_keys(self):
+        for inp in SampleNode.inputs:
+            self.assertIn("name", inp)
+            self.assertIn("data_type", inp)
+            self.assertIn("required", inp)
+
+    def test_output_dict_has_required_keys(self):
+        for outp in SampleNode.outputs:
+            self.assertIn("name", outp)
+            self.assertIn("data_type", outp)
 
 
 if __name__ == "__main__":

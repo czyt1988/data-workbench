@@ -105,9 +105,8 @@ void DANodeParamSettingPanelWidget::setNodeProxy(DAPyNodeProxy* proxy)
                             //   2. 在 scene 销毁节点时通过信号通知此面板清空指针
                             //   3. 考虑使用观察者模式或 weak_ptr 替代原始指针
 
-    // 从代理获取描述符，提取 qualifiedName
-    const DANodeDescriptor& descriptor = proxy->getDescriptorStruct();
-    QString qualifiedName              = descriptor.qualifiedName;
+    // 从代理获取 qualifiedName
+    QString qualifiedName = proxy->getQualifiedName();
     if (qualifiedName.isEmpty()) {
         qualifiedName = QStringLiteral("generic");
     }

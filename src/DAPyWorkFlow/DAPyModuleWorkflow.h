@@ -1,4 +1,4 @@
-﻿#ifndef DAPYMODULEWORKFLOW_H
+#ifndef DAPYMODULEWORKFLOW_H
 #define DAPYMODULEWORKFLOW_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyModule.h"
@@ -7,12 +7,12 @@ namespace DA
 /**
  * @brief Python工作流引擎模块导入包装
  *
- * 遵循 Scenario D 模式（Python 模块导入），继承 DAPyModule（不是 QObject，不是自定义桥接类）。
- * 负责导入 DAWorkbench.DAWorkFlowPy Python 包并缓存关键类引用，供 C++ 侧调用。
+ * 继承 DAPyModule（→ DAPyObjectWrapper），负责导入 DAWorkbench.DAWorkFlowPy Python 包。
+ * 关键类引用（DAWorkflow、DANodeRegistry、NodeDef）作为直接成员变量缓存，
+ * 供 C++ 侧调用。错误处理使用基类 DAPyObjectWrapper 的 dealException() 机制。
  */
 class DAPYWORKFLOW_API DAPyModuleWorkflow : public DAPyModule
 {
-    DA_DECLARE_PRIVATE(DAPyModuleWorkflow)
     DAPyModuleWorkflow();
 
 public:
@@ -21,8 +21,6 @@ public:
     static DAPyModuleWorkflow& getInstance();
     // 析构模块
     void finalize();
-    // 获取最后的错误信息
-    QString getLastErrorString() const;
     // 导入模块
     bool import();
 
@@ -41,8 +39,12 @@ public:
     pybind11::object getNodeDefDecorator() const;
 
 private:
-    // 处理异常（参考 DAPyModulePandas 模式）
-    void dealException(const std::exception& e);
+    // 缓存 Python 类引用，避免每次 attr() 查找
+    pybind11::object mObjWorkflowClass;
+    pybind11::object mObjNodeRegistryClass;
+    pybind11::object mObjNodeDefDecorator;
+    // 最后的错误信息（补充基类 dealException 仅输出日志的不足）
+    mutable QString mLastErrorString;
 };
 }  // namespace DA
 #endif  // DAPYMODULEWORKFLOW_H

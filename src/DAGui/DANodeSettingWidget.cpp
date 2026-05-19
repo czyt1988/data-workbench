@@ -1,6 +1,8 @@
 #include "DANodeSettingWidget.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAPyNodeProxy.h"
+#include "DAPyBindQt/DAPyGILGuard.h"
+#include <QDebug>
 #include <QSignalBlocker>
 #include <QVBoxLayout>
 #include <QLineEdit>
@@ -160,7 +162,13 @@ void DANodeSettingWidget::onPropertyValueChanged(int propertyId)
 
     switch (propertyId) {
     case PID_Name: {
-        p->setNodeName(mPanel->getStringValue(PID_Name));
+        // 通过 Python 对象属性设置名称
+        DAPyGILGuard gilGuard;
+        try {
+            p->object().attr("name") = mPanel->getStringValue(PID_Name).toStdString();
+        } catch (const std::exception& e) {
+            qWarning() << "DANodeSettingWidget: failed to set name:" << e.what();
+        }
         // 设置完成后重新读取节点名称，确保同步
         QSignalBlocker blocker(mPanel);
         mPanel->setStringValue(PID_Name, p->getNodeName());

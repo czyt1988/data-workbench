@@ -1,8 +1,8 @@
-﻿#ifndef DAPYWORKFLOW_H
+#ifndef DAPYWORKFLOW_H
 #define DAPYWORKFLOW_H
 #include "DAPyWorkFlowAPI.h"
-#include "DAGlobals.h"
 #include "DAPyWorkFlowTypes.h"
+#include "DAPyObjectWrapper.h"
 #include "DAPybind11InQt.h"
 #include <QObject>
 #include <QString>
@@ -14,30 +14,31 @@ class DAPyNodeProxy;
 class DAPyLinkGraphicsItem;
 
 /**
- * @brief Python DAWorkflow 类的 C++ 封装
+ * @brief Python DAWorkflow 对象的 C++ 纯代理
  *
- * 通过 PIMPL + safe_pyobject 模式封装 Python DAWorkflow 实例，
- * 提供类型安全的 C++ API 操作 Python workflow，消除原始 pybind11::object 和 .attr() 调用。
- * 继承 QObject 以支持信号槽机制，提供节点增删、连接/断开、执行状态等事件通知。
+ * 继承 DAPyObjectWrapper + QObject，像 DAPyDataFrame 一样通过 attr() 与 Python 对象交互。
+ * DAWorkflow Python 实例存储在基类 DAPyObjectWrapper 的 _object 中，
+ * 所有方法直接通过 attr()/object() 与 Python DAWorkflow 对象交互，不做本地缓存。
+ *
+ * mPyExecutorObj 作为独立成员变量持有 DAWorkflowExecutor 实例，
+ * executor 是独立对象，不属于 workflow 对象的一部分。
  *
  * @code
  * DAPyWorkFlow workflow;
- * if (workflow.isValid()) {
+ * if (!workflow.isNone()) {
  *     QString nodeId = workflow.addNode(proxy);
- *     qDebug() << "Node added:" << nodeId;
  * }
  * @endcode
  *
- * @see DAPyNodeProxy DAPyModuleWorkflow DAPyGILGuard
+ * @see DAPyNodeProxy DAPyObjectWrapper DAPyModuleWorkflow
  */
-class DAPYWORKFLOW_API DAPyWorkFlow : public QObject
+class DAPYWORKFLOW_API DAPyWorkFlow : public DAPyObjectWrapper, public QObject
 {
     Q_OBJECT
-    DA_DECLARE_PRIVATE(DAPyWorkFlow)
 public:
     // 构造/析构
     DAPyWorkFlow(QObject* parent = nullptr);
-    DAPyWorkFlow(const pybind11::object& obj,QObject* parent = nullptr);
+    DAPyWorkFlow(const pybind11::object& obj, QObject* parent = nullptr);
     ~DAPyWorkFlow();
 
     // --- 信号 ---
@@ -56,12 +57,10 @@ Q_SIGNALS:
     void executionFinished(bool success);
 
 public:
-    // 获取内部 Python DAWorkflow 实例对象（用于 getPyWorkflow 透传）
-    pybind11::object getPyWorkflowObject() const;
-    // 检查 Python 实例是否有效
+    // 检查 Python DAWorkflow 实例是否有效
     bool isValid() const;
 
-    // --- Wave 2: DAG 操作方法 ---
+    // --- DAG 操作方法 ---
     // 添加节点到workflow，返回Python分配的node_id
     QString addNode(DAPyNodeProxy* proxy);
     // 从workflow移除节点
@@ -76,24 +75,23 @@ public:
     // 移除连接（disconnectNode 的别名）
     bool removeConnection(const QString& connectionId);
     // 清空所有节点和连接
-    void clear();  // TODO: Wave 2 Task 10
+    void clear();
     // 获取节点数量
-    int nodeCount();  // TODO: Wave 2 Task 10
+    int nodeCount();
     // 检查节点是否存在
-    bool hasNode(const QString& nodeId);  // TODO: Wave 2 Task 10
+    bool hasNode(const QString& nodeId);
     // 通过代理指针移除节点；内部调用 bool removeNode(nodeId)
     bool removeNode(DAPyNodeProxy* proxy);
-    // 通过代理指针连接两个节点；内部调用 DAPyWorkFlowConnection connectNode(srcId, srcChannel, dstId, dstChannel)
+    // 通过代理指针连接两个节点
     DAPyWorkFlowConnection connectNode(DAPyNodeProxy* src, const QString& srcChannel,
                                        DAPyNodeProxy* dst, const QString& dstChannel);
-    // 通过连接图形项断开连接；内部调用 bool disconnectNode(connectionId)
-    // ⚠️ 注意：DAPyLinkGraphicsItem 当前缺少 getConnectionId() 方法，此重载暂返回 false
+    // 通过连接图形项断开连接
     bool disconnectNode(DAPyLinkGraphicsItem* link);
-    // 通过代理指针检查节点是否存在；内部调用 bool hasNode(nodeId)
+    // 通过代理指针检查节点是否存在
     bool hasNode(DAPyNodeProxy* proxy);
 
-    // --- Wave 2: 数据查询方法 ---
-    // 通过 node_id 获取 Python 节点对象，不存在时返回 py::none()
+    // --- 数据查询方法 ---
+    // 通过 node_id 获取 Python 节点对象
     pybind11::object getNodeById(const QString& nodeId);
     // 获取所有节点列表
     pybind11::list getNodes();
@@ -104,10 +102,10 @@ public:
     // 获取拓扑排序结果
     QStringList topologicalSort();
 
-    // --- Wave 2: Executor 操作方法 ---
+    // --- Executor 操作方法 ---
     // 异步执行工作流（无回调）
     bool executeAsync();
-    // 异步执行工作流（带回调）— 回调由 DAPyWorkFlowLifecycle 注册
+    // 异步执行工作流（带回调）
     bool executeAsync(pybind11::object onNodeFinished,
                        pybind11::object onStateChange,
                        pybind11::object onProgress);
@@ -118,22 +116,27 @@ public:
     // 恢复执行
     bool resume();
 
-    // --- Wave 2: Executor 状态查询方法 (TODO: 实现于 Wave 2) ---
+    // --- Executor 状态查询方法 ---
     // 获取执行器状态
-    ExecState getExecutorState();  // TODO: Wave 2 Task 14
+    ExecState getExecutorState();
     // 获取执行结果
-    bool getResult();  // TODO: Wave 2 Task 14
+    bool getResult();
     // 检查是否正在运行
-    bool isRunning();  // TODO: Wave 2 Task 14
+    bool isRunning();
 
-    // --- Wave 2: 错误处理 (TODO: 实现于 Wave 2) ---
+    // --- 错误处理 ---
     // 获取最后一次错误信息
     QString getLastError() const;
-    // 设置外部 Python DAWorkflow 实例（用于 setPyWorkflow 透传）
+    // 设置外部 Python DAWorkflow 实例（替代 initPyWorkflow 创建的实例）
     void setPyWorkflowObject(const pybind11::object& obj);
+
 private:
     // 初始化 Python DAWorkflow 实例
     void initPyWorkflow();
+    // Python DAWorkflowExecutor 实例（独立对象）
+    DAPyObjectWrapper mPyExecutorObj;
+    // 最后一次错误信息
+    mutable QString mLastErrorString;
 };
 
 }  // namespace DA

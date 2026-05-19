@@ -248,7 +248,7 @@ void DAPyWorkFlowScene::setPyWorkflow(const pybind11::object& workflow)
 pybind11::object DAPyWorkFlowScene::getPyWorkflow() const
 {
     DA_DC(d);
-    return d->mWorkflow.getPyWorkflowObject();
+    return d->mWorkflow.object();
 }
 
 /**

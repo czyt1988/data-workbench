@@ -47,22 +47,6 @@ class Input:
             "description": self.description,
         }
 
-    def to_port_descriptor(self, name: str):
-        """
-        将输入端口声明转换为 C++ DAPortDescriptor 结构
-
-        :param name: 输入端口的名称（从类属性名获取）
-        :return: da_py_workflow.DAPortDescriptor 实例
-        """
-        import da_py_workflow
-
-        pd = da_py_workflow.DAPortDescriptor()
-        pd.name = name
-        pd.dataType = self.data_type
-        pd.required = self.required
-        pd.description = self.description
-        return pd
-
     def __repr__(self) -> str:
         return f"Input(data_type='{self.data_type}', required={self.required}, description='{self.description}')"
 
@@ -100,22 +84,6 @@ class Output:
             "data_type": self.data_type,
             "description": self.description,
         }
-
-    def to_port_descriptor(self, name: str):
-        """
-        将输出端口声明转换为 C++ DAPortDescriptor 结构
-
-        :param name: 输出端口的名称（从类属性名获取）
-        :return: da_py_workflow.DAPortDescriptor 实例
-        """
-        import da_py_workflow
-
-        pd = da_py_workflow.DAPortDescriptor()
-        pd.name = name
-        pd.dataType = self.data_type
-        pd.required = False  # 输出端口不需要 required
-        pd.description = self.description
-        return pd
 
     def __repr__(self) -> str:
         return f"Output(data_type='{self.data_type}', description='{self.description}')"
@@ -196,35 +164,6 @@ class Parameter:
         # Merge extended kwargs for extended parameter types
         result.update(self._extra_kwargs)
         return result
-
-    def to_parameter_descriptor(self, name: str):
-        """
-        将参数声明转换为 C++ DAParameterDescriptor 结构
-
-        :param name: 参数的名称（从类属性名获取）
-        :return: da_py_workflow.DAParameterDescriptor 实例
-        """
-        import da_py_workflow
-
-        pd = da_py_workflow.DAParameterDescriptor()
-        pd.name = name
-        pd.type = self.get_type_label()
-        pd.description = self.description
-        if self.default is not None:
-            pd.setDefaultValue(self.default)
-        # Build propertys dict from extra kwargs with key name mapping for C++ compatibility.
-        # Python-facing kwarg names (e.g. file_filter, enum_options) are mapped to the C++
-        # property keys that DAParameterDescriptor expects (filter, enum).
-        _key_map = {
-            "file_filter": "filter",
-            "enum_options": "enum",
-        }
-        raw = {}
-        for k, v in self._extra_kwargs.items():
-            raw[_key_map.get(k, k)] = v
-        if raw:
-            pd.setRawDescriptor(raw)
-        return pd
 
     def __repr__(self) -> str:
         default_str = f", default={self.default!r}" if self.default is not None else ""

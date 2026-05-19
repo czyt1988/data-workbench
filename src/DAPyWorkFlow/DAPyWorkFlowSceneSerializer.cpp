@@ -5,6 +5,7 @@
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyLinkGraphicsItem.h"
 #include "DAPyNodeProxy.h"
+#include "DAPyNodeMetaData.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAWorkflowState.h"
 #include "DAXMLFileInterface.h"
@@ -150,11 +151,20 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
                         std::string qnameStr = pybind11::str(nodeInst.attr("qualified_name"));
                         ns.qualifiedName     = QString::fromStdString(qnameStr);
                     }
-                    pybind11::object descriptor = pybind11::getattr(nodeInst, "_node_descriptor", pybind11::none());
-                    if (!descriptor.is_none() && pybind11::hasattr(descriptor, "toMetaData")) {
-                        pybind11::object metaDataObj = descriptor.attr("toMetaData");
-                        ns.metaData                  = metaDataObj.cast< DAPyNodeMetaData >();
+                    // 从 Python 类属性直接构建 DAPyNodeMetaData
+                    DAPyNodeMetaData metaData;
+                    if (pybind11::hasattr(nodeInst, "qualified_name")) {
+                        metaData.qualifiedName = QString::fromStdString(pybind11::str(nodeInst.attr("qualified_name")));
                     }
+                    if (pybind11::hasattr(nodeInst, "name")) {
+                        metaData.name = QString::fromStdString(pybind11::str(nodeInst.attr("name")));
+                    }
+                    if (pybind11::hasattr(nodeInst, "category")) {
+                        metaData.group = QString::fromStdString(pybind11::str(nodeInst.attr("category")));
+                    } else if (pybind11::hasattr(nodeInst, "group")) {
+                        metaData.group = QString::fromStdString(pybind11::str(nodeInst.attr("group")));
+                    }
+                    ns.metaData = metaData;
                     state.nodes.append(ns);
                 }
             }

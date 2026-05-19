@@ -3,7 +3,7 @@
 
 本模块定义了 NodeDef 装饰器和 DAWorkflowNode 基类，用于声明工作流节点类型。
 NodeDef 装饰器会收集类中的 Input、Output、Parameter 声明，
-并将描述信息直接设置为类属性（节点元数据 + 端口/参数描述），
+并将描述信息直接设置为类属性（节点元数据 + 端口/参数描述 dict），
 渲染相关属性聚合到 NodeDisplay 中供 C++ 侧使用。
 
 使用示例::
@@ -26,13 +26,13 @@ NodeDef 装饰器会收集类中的 Input、Output、Parameter 声明，
 1. 扫描类属性中的 Parameter 实例
 2. 扫描嵌套类 Inputs 中的 Input 实例
 3. 扫描嵌套类 Outputs 中的 Output 实例
-4. 将所有描述信息直接设置为类属性
+4. 将所有描述信息直接设置为类属性（纯 Python dict）
 5. 构建渲染属性聚合 NodeDisplay（icon、render_template、style）
 """
 
 from dataclasses import dataclass, field
+from typing import Optional
 
-import da_py_workflow
 from .types import Input, Output, Parameter
 
 
@@ -45,8 +45,8 @@ class NodeDisplay:
     - DAWorkflowNode 负责节点逻辑（元数据、端口、参数）
     - NodeDisplay 负责节点渲染显示（图标、渲染模板、样式）
 
-    NodeDisplay 中的 render_template 和 style 保持 C++ pybind11 导出类型，
-    因为渲染由 C++ Qt 端负责，使用 C++ 原生类型可避免类型转换开销。
+    NodeDisplay 使用纯 Python 类型（字符串、dict），不依赖 C++ pybind11 导出。
+    C++ 侧通过 attr() 读取这些属性并内部转换为 C++ struct。
 
     使用示例::
 
@@ -57,33 +57,33 @@ class NodeDisplay:
         # 访问渲染属性
         display = MyNode._node_display
         print(display.icon)                  # ":icons/node.png"
-        print(display.render_template)       # RenderTemplate.NodeStyleTemplate
+        print(display.render_template)       # "nodestyle"
 
     :param icon: 图标路径字符串
-    :param render_template: da_py_workflow.RenderTemplate 枚举值
-    :param style: da_py_workflow.DANodeStyle 实例或 None
+    :param render_template: 渲染模板字符串（"nodestyle" 或 "widget"）
+    :param style: 节点样式配置 dict 或 None
     """
 
     icon: str = ""
-    render_template: object = None   # da_py_workflow.RenderTemplate
-    style: object = None             # Optional[da_py_workflow.DANodeStyle]
+    render_template: str = "nodestyle"
+    style: Optional[dict] = None
 
 
-def _normalize_render_template(render_template: str) -> int:
+def _normalize_render_template(render_template: str) -> str:
     """
-    规范化渲染模板值，将字符串映射到 da_py_workflow.RenderTemplate 枚举
+    规范化渲染模板值
 
-    旧的 rect/svg 字符串统一映射到 NodeStyleTemplate，
-    widget 映射到 WidgetTemplate，其他值默认为 NodeStyleTemplate。
+    旧的 rect/svg 字符串统一映射到 "nodestyle"，
+    widget 映射到 "widget"，其他值默认为 "nodestyle"。
 
     :param render_template: 原始渲染模板字符串
-    :return: da_py_workflow.RenderTemplate 枚举值
+    :return: 规范化的渲染模板字符串
     """
     if render_template in ("rect", "svg", "nodestyle"):
-        return da_py_workflow.RenderTemplate.NodeStyleTemplate
+        return "nodestyle"
     if render_template == "widget":
-        return da_py_workflow.RenderTemplate.WidgetTemplate
-    return da_py_workflow.RenderTemplate.NodeStyleTemplate
+        return "widget"
+    return "nodestyle"
 
 
 def _collect_parameters(cls: type) -> list:
@@ -91,10 +91,10 @@ def _collect_parameters(cls: type) -> list:
     从类属性中收集 Parameter 声明
 
     遍历类的所有属性，找出 Parameter 实例，
-    并使用 to_parameter_descriptor() 将其转换为 C++ DAParameterDescriptor 结构体。
+    并使用 to_dict() 将其转换为纯 Python dict。
 
     :param cls: 被装饰的节点类
-    :return: DAParameterDescriptor 结构体列表
+    :return: 参数声明 dict 列表
     """
     params = []
     for attr_name in dir(cls):
@@ -102,7 +102,7 @@ def _collect_parameters(cls: type) -> list:
             continue
         attr_value = getattr(cls, attr_name, None)
         if isinstance(attr_value, Parameter):
-            params.append(attr_value.to_parameter_descriptor(attr_name))
+            params.append(attr_value.to_dict(attr_name))
     return params
 
 
@@ -112,12 +112,12 @@ def _collect_from_nested_class(cls: type, nested_name: str, decl_type: type) -> 
 
     NodeDef 约定在节点类中定义 Inputs 和 Outputs 嵌套类来声明端口。
     此函数遍历嵌套类的属性，找出指定类型的声明实例，
-    并使用 to_port_descriptor() 将其转换为 C++ DAPortDescriptor 结构体。
+    并使用 to_dict() 将其转换为纯 Python dict。
 
     :param cls: 被装饰的节点类
     :param nested_name: 嵌套类名（"Inputs" 或 "Outputs"）
     :param decl_type: 声明类型（Input 或 Output）
-    :return: DAPortDescriptor 结构体列表
+    :return: 端口声明 dict 列表
     """
     items = []
     nested_cls = getattr(cls, nested_name, None)
@@ -128,133 +128,8 @@ def _collect_from_nested_class(cls: type, nested_name: str, decl_type: type) -> 
             continue
         attr_value = getattr(nested_cls, attr_name, None)
         if isinstance(attr_value, decl_type):
-            items.append(attr_value.to_port_descriptor(attr_name))
+            items.append(attr_value.to_dict(attr_name))
     return items
-
-
-def _hex_to_rgb(hex_str):
-    """
-    将十六进制颜色字符串转换为 (r, g, b) 整数元组
-
-    支持 '#RRGGBB' 和 '#RGB' 两种格式。
-
-    :param hex_str: 十六进制颜色字符串（如 '#ff0000'）
-    :return: (r, g, b) 整数元组
-    """
-    hex_str = hex_str.lstrip('#')
-    if len(hex_str) == 3:
-        hex_str = ''.join(c * 2 for c in hex_str)
-    return int(hex_str[0:2], 16), int(hex_str[2:4], 16), int(hex_str[4:6], 16)
-
-
-def _link_point_style_from_dict(style_dict):
-    """
-    将 Python dict 转换为 DAPyLinkPointStyle 实例
-
-    支持的键名（snake_case）：
-    - shape: 端口形状（PortShape 枚举值）
-    - fill_color: 填充颜色十六进制字符串（如 '#ff0000'）
-    - border_color: 边框颜色十六进制字符串
-    - border_width: 边框宽度（float）
-
-    :param style_dict: 端口样式字典
-    :return: DAPyLinkPointStyle 实例
-    """
-    s = da_py_workflow.DAPyLinkPointStyle()
-    for key, value in style_dict.items():
-        if key == 'shape':
-            s.shape = value
-        elif key == 'fill_color':
-            if isinstance(value, str) and value.startswith('#'):
-                r, g, b = _hex_to_rgb(value)
-                s.setFillColor(r, g, b)
-            elif isinstance(value, (tuple, list)):
-                s.setFillColor(*value)
-        elif key == 'border_color':
-            if isinstance(value, str) and value.startswith('#'):
-                r, g, b = _hex_to_rgb(value)
-                s.setBorderColor(r, g, b)
-            elif isinstance(value, (tuple, list)):
-                s.setBorderColor(*value)
-        elif key == 'border_width':
-            s.borderWidth = value
-    return s
-
-
-def _style_from_dict(style_dict):
-    """
-    将 Python dict 转换为 DANodeStyle 实例
-
-    支持的键名（snake_case）：
-    - background_color: 背景色十六进制字符串
-    - border_color: 边框色十六进制字符串
-    - border_width: 边框宽度（float）
-    - body_shape: 主体形状（BodyShape 枚举值）
-    - name_position: 名称位置（NamePosition 枚举值）
-    - icon_position: 图标位置（IconPosition 枚举值）
-    - corner_radius: 圆角半径（float）
-    - icon_size: 图标尺寸（float）
-    - input_port_side: 输入端口方位（PortSide 枚举值）
-    - output_port_side: 输出端口方位（PortSide 枚举值）
-    - input_port_style: 输入端口样式（dict 或 DAPyLinkPointStyle）
-    - output_port_style: 输出端口样式（dict 或 DAPyLinkPointStyle）
-    - layout_strategy: 连接点布局策略（LinkPointLayoutStrategy 枚举值）
-    - body_icon_type: 节点体图标类型（BodyIconType 枚举值）
-    - body_icon_source: 图标源路径（str）
-    - body_icon_scale: 图标缩放比例（float）
-
-    :param style_dict: 样式配置字典
-    :return: DANodeStyle 实例
-    """
-    s = da_py_workflow.DANodeStyle()
-    for key, value in style_dict.items():
-        if key == 'background_color':
-            if isinstance(value, str) and value.startswith('#'):
-                r, g, b = _hex_to_rgb(value)
-                s.setBackgroundColor(r, g, b)
-            elif isinstance(value, (tuple, list)):
-                s.setBackgroundColor(*value)
-        elif key == 'border_color':
-            if isinstance(value, str) and value.startswith('#'):
-                r, g, b = _hex_to_rgb(value)
-                s.setBorderColor(r, g, b)
-            elif isinstance(value, (tuple, list)):
-                s.setBorderColor(*value)
-        elif key == 'border_width':
-            s.borderWidth = value
-        elif key == 'body_shape':
-            s.bodyShape = value
-        elif key == 'name_position':
-            s.namePosition = value
-        elif key == 'icon_position':
-            s.iconPosition = value
-        elif key == 'corner_radius':
-            s.cornerRadius = value
-        elif key == 'icon_size':
-            s.iconSize = value
-        elif key == 'input_port_side':
-            s.inputPortSide = value
-        elif key == 'output_port_side':
-            s.outputPortSide = value
-        elif key == 'input_port_style':
-            if isinstance(value, dict):
-                s.inputPortStyle = _link_point_style_from_dict(value)
-            else:
-                s.inputPortStyle = value
-        elif key == 'output_port_style':
-            if isinstance(value, dict):
-                s.outputPortStyle = _link_point_style_from_dict(value)
-            else:
-                s.outputPortStyle = value
-        elif key == 'layout_strategy':
-            s.layoutStrategy = value
-        elif key == 'body_icon_type':
-            s.bodyIconType = value
-        elif key == 'body_icon_source':
-            s.bodyIconSource = value
-        elif key == 'body_icon_scale':
-            s.bodyIconScale = value
-    return s
 
 
 class DAWorkflowNode:
@@ -269,15 +144,15 @@ class DAWorkflowNode:
     - name: 节点显示名称
     - category: 节点所属分类
     - icon: 图标路径
-    - inputs: 输入端口描述列表（DAPortDescriptor）
-    - outputs: 输出端口描述列表（DAPortDescriptor）
-    - parameters: 参数描述列表（DAParameterDescriptor）
+    - inputs: 输入端口描述列表（list[dict]）
+    - outputs: 输出端口描述列表（list[dict]）
+    - parameters: 参数描述列表（list[dict]）
     - _node_display: 渲染属性聚合（NodeDisplay）
     - input_keys: 输入端口名称列表
     - output_keys: 输出端口名称列表
 
     _input_data 和 _output_data 用于在节点执行过程中存储和传递数据，
-    由 C++ 侧的 syncMetaFromPyNode / setNodeInputsToPyNode 进行读写。
+    由 C++ 侧通过 attr() 直接读写 Python 对象属性。
     """
 
     # 节点元数据（由 @NodeDef 装饰器设置）
@@ -287,15 +162,15 @@ class DAWorkflowNode:
     group: str = ""           # category 别名，C++ fallback 兼容
     icon: str = ""
 
-    # 端口与参数描述（由 @NodeDef 装饰器设置，保持 C++ 结构体类型）
-    inputs: list = []         # list[DAPortDescriptor]
-    outputs: list = []        # list[DAPortDescriptor]
-    parameters: list = []     # list[DAParameterDescriptor]
+    # 端口与参数描述（由 @NodeDef 装饰器设置，纯 Python dict）
+    inputs: list = []         # list[dict]
+    outputs: list = []        # list[dict]
+    parameters: list = []     # list[dict]
 
     # 渲染属性聚合（由 @NodeDef 装饰器设置）
     _node_display: NodeDisplay = None
 
-    # 端口名称列表（由 @NodeDef 装饰器设置，供 C++ syncMetaFromPyNode 使用）
+    # 端口名称列表（由 @NodeDef 装饰器设置，供 C++ fallback 使用）
     input_keys: list = []
     output_keys: list = []
 
@@ -326,19 +201,19 @@ class DAWorkflowNode:
 
 def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", icon: str = "", style=None):
     """
-    工作流节点定义装饰器
+    工作节点定义装饰器
 
     此装饰器用于声明工作流节点类型。它会收集被装饰类中的 Input、Output、Parameter
-    声明，并将描述信息直接设置为类属性，渲染属性聚合到 NodeDisplay。
+    声明，并将描述信息直接设置为类属性（纯 Python dict），渲染属性聚合到 NodeDisplay。
 
     类属性包含：
     - name: 节点显示名称
     - qualified_name: 节点的唯一标识（模块名.类名）
     - category: 节点所属分类
     - icon: 图标路径
-    - inputs: 输入端口列表（DAPortDescriptor 结构体）
-    - outputs: 输出端口列表（DAPortDescriptor 结构体）
-    - parameters: 参数列表（DAParameterDescriptor 结构体）
+    - inputs: 输入端口列表（list[dict]）
+    - outputs: 输出端口列表（list[dict]）
+    - parameters: 参数列表（list[dict]）
     - _node_display: 渲染属性聚合（NodeDisplay，包含 render_template 和 style）
 
     使用示例::
@@ -355,69 +230,62 @@ def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", i
 
     :param name: 节点显示名称
     :param category: 节点所属分类，默认为空字符串
-    :param render_template: 渲染模板类型，默认为 'nodestyle'（映射到 NodeStyleTemplate），支持 'nodestyle'、'rect'、'svg'、'widget'
+    :param render_template: 渲染模板类型，默认为 'nodestyle'，支持 'nodestyle'、'rect'、'svg'、'widget'
     :param icon: 节点图标路径
-    :param style: 节点样式配置，可为样式参数字典或 DANodeStyle 实例，默认为 None（使用默认 DANodeStyle）
+    :param style: 节点样式配置 dict，默认为 None（使用默认样式）
     :return: 装饰器函数
     """
-    rt_enum = _normalize_render_template(render_template)
+    rt_str = _normalize_render_template(render_template)
 
     def decorator(cls: type) -> type:
         """
         节点定义装饰器的内部函数
 
         收集类中的 Input、Output、Parameter 声明，
-        将描述信息直接设置为类属性，渲染属性聚合到 NodeDisplay。
+        将描述信息直接设置为类属性（纯 Python dict），渲染属性聚合到 NodeDisplay。
 
         :param cls: 被装饰的节点类
         :return: 继承 DAWorkflowNode 的新类
         """
-        # 收集参数声明（DAParameterDescriptor 结构体列表）
+        # 收集参数声明（dict 列表）
         parameters = _collect_parameters(cls)
 
-        # 收集输入端口声明（DAPortDescriptor 结构体列表）
+        # 收集输入端口声明（dict 列表）
         inputs = _collect_from_nested_class(cls, "Inputs", Input)
 
-        # 收集输出端口声明（DAPortDescriptor 结构体列表）
+        # 收集输出端口声明（dict 列表）
         outputs = _collect_from_nested_class(cls, "Outputs", Output)
 
         # 生成唯一标识：模块名.类名
         qualified_name = cls.__module__ + "." + cls.__name__
 
-        # 处理样式参数
-        node_style = None
-        if style is not None:
-            if isinstance(style, dict):
-                node_style = _style_from_dict(style)
-            elif isinstance(style, da_py_workflow.DANodeStyle):
-                node_style = style
-
-        # 直接设置类属性（节点元数据）
-        cls.qualified_name = qualified_name
-        cls.name = name
-        cls.category = category
-        cls.group = category       # C++ fallback 兼容别名
-        cls.icon = icon
-
-        # 直接设置类属性（端口与参数描述）
-        cls.inputs = inputs
-        cls.outputs = outputs
-        cls.parameters = parameters
-
-        # 构建渲染属性聚合（NodeDisplay）
-        cls._node_display = NodeDisplay(
-            icon=icon,
-            render_template=rt_enum,
-            style=node_style,
-        )
-
-        # 设置端口名称列表，供 C++ syncMetaFromPyNode 使用
-        cls.input_keys = [inp.name for inp in inputs]
-        cls.output_keys = [outp.name for outp in outputs]
-
         # 创建继承 DAWorkflowNode 的新类，确保所有 @NodeDef 节点都具备基类方法
         new_cls = type(cls.__name__, (DAWorkflowNode, cls), {})
         new_cls.__module__ = cls.__module__
+
+        # 直接在 new_cls 上设置类属性（节点元数据）
+        # 必须设置在 new_cls 上而非 cls 上，否则 DAWorkflowNode 基类的默认值会遮盖
+        new_cls.qualified_name = qualified_name
+        new_cls.name = name
+        new_cls.category = category
+        new_cls.group = category       # C++ fallback 兼容别名
+        new_cls.icon = icon
+
+        # 直接在 new_cls 上设置类属性（端口与参数描述，纯 Python dict）
+        new_cls.inputs = inputs
+        new_cls.outputs = outputs
+        new_cls.parameters = parameters
+
+        # 构建渲染属性聚合（NodeDisplay）
+        new_cls._node_display = NodeDisplay(
+            icon=icon,
+            render_template=rt_str,
+            style=style if isinstance(style, dict) else None,
+        )
+
+        # 设置端口名称列表，供 C++ fallback 使用
+        new_cls.input_keys = [inp["name"] for inp in inputs]
+        new_cls.output_keys = [outp["name"] for outp in outputs]
 
         return new_cls
 
