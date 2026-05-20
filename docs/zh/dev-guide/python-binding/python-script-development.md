@@ -9,6 +9,7 @@
 - [Python 绑定开发](./python-binding-development.md)
 - [故障排除与最佳实践](./troubleshooting-and-best-practices.md)
 - [Python 脚本开发实战](./python-script-development.md) ← 当前页
+- [Python 多线程与异步任务](./python-multi-threading.md)
 
 本节详细说明如何在 DAWorkBench 中编写 Python 脚本，通过已绑定的 C++ 接口实现数据分析、界面交互和跨线程操作。
 

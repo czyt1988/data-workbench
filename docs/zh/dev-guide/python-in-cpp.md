@@ -9,3 +9,4 @@
 | [Python 绑定开发](./python-binding/python-binding-development.md) | 接口绑定架构与实现、所有权策略、跨线程通信、Qt 类型转换器、绑定开发实操流程、模块绑定路线图 |
 | [故障排除与最佳实践](./python-binding/troubleshooting-and-best-practices.md) | 问题诊断流程、常见错误与调试技巧、设计原则与检查清单 |
 | [Python 脚本开发实战](./python-binding/python-script-development.md) | 四种交互模式、标准脚本编写流程、getConfigValues 对话框、撤销/重做、跨线程操作、Thread Status Manager |
+| [Python 多线程与异步任务](./python-binding/python-multi-threading.md) | 5层异步模式、后台Python不阻塞Qt UI、跨线程回调桥 |

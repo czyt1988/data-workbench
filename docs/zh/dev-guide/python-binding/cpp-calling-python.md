@@ -11,6 +11,7 @@
 - [Python 绑定开发](./python-binding-development.md)
 - [故障排除与最佳实践](./troubleshooting-and-best-practices.md)
 - [Python 脚本开发实战](./python-script-development.md)
+- [Python 多线程与异步任务](./python-multi-threading.md)
 
 ## Python 解释器初始化
 
