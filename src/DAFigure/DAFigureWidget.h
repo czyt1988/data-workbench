@@ -236,6 +236,13 @@ Q_SIGNALS:
      */
     void chartEditorStatusChanged(DA::DAFigureWidget::ChartEditorStatus status);
 
+    /**
+     * @brief picker点击信号
+     * @param clickPicker
+     * @param clickCanvasScreenPos
+     * @param linkPicks
+     */
+    void pickerClicked(QwtPlotSeriesDataPicker* clickPicker, const QPoint& clickCanvasScreenPos, QList<QwtPlotSeriesDataPicker*> linkPicks);
 protected:
     void keyPressEvent(QKeyEvent* e);
     void showEvent(QShowEvent* e);
@@ -249,7 +256,7 @@ private slots:
     void onCurrentAxesChanged(QwtPlot* plot);
     void onChartPropertyChanged(DA::DAChartWidget* chart, DAChartWidget::ChartPropertyChangeFlags flag);
     void onFigureChartEditorFinished(bool isCancel);
-
+    void onPickerGroupClicked(QwtPlotSeriesDataPicker* picker, const QPoint& pos);
 private:
     void init();
     // 建立DataPickerGroup

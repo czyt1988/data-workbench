@@ -304,6 +304,7 @@ void DAFigureWidget::setupDataPickerGroup()
     DA_D(d);
     if (!d->m_pickerGroup) {
         d->m_pickerGroup = new QwtPlotSeriesDataPickerGroup(this);
+        connect(d->m_pickerGroup,&QwtPlotSeriesDataPickerGroup::clicked,this,&DAFigureWidget::onPickerGroupClicked);
     }
     // 把所有绘图的picker添加到分组中
     //  QwtPlotSeriesDataPickerGroup会自动过滤重复添加的picker
@@ -1171,6 +1172,21 @@ void DAFigureWidget::onFigureChartEditorFinished(bool isCancel)
 {
     qDebug() << "DAFigureWidget::onFigureChartEditorFinished(" << isCancel << ")";
     endChartEditor();
+}
+
+/**
+ * @brief 捕获picker group的点击
+ * @param picker
+ * @param pos
+ */
+void DAFigureWidget::onPickerGroupClicked(QwtPlotSeriesDataPicker* picker, const QPoint& pos)
+{
+    //获取所有的pick一起发射
+    DA_D(d);
+    QList<QwtPlotSeriesDataPicker*> otherPickers = d->m_pickerGroup->pickers();
+    otherPickers.removeAll(picker);
+    //再发射
+    Q_EMIT pickerClicked(picker,pos,otherPickers);
 }
 
 QDataStream& operator<<(QDataStream& out, const DAFigureWidget* p)
