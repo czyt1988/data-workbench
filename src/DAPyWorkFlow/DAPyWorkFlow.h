@@ -32,7 +32,7 @@ class DAPyLinkGraphicsItem;
  *
  * @see DAPyNodeProxy DAPyObjectWrapper DAPyModuleWorkflow
  */
-class DAPYWORKFLOW_API DAPyWorkFlow : public DAPyObjectWrapper, public QObject
+class DAPYWORKFLOW_API DAPyWorkFlow : public QObject, public DAPyObjectWrapper
 {
     Q_OBJECT
 public:
@@ -66,10 +66,8 @@ public:
     // 从workflow移除节点
     bool removeNode(const QString& nodeId);
     // 连接两个节点，返回连接描述符
-    DAPyWorkFlowConnection connectNode(const QString& srcNodeId,
-                                       const QString& srcChannel,
-                                       const QString& dstNodeId,
-                                       const QString& dstChannel);
+    DAPyWorkFlowConnection
+    connectNode(const QString& srcNodeId, const QString& srcChannel, const QString& dstNodeId, const QString& dstChannel);
     // 断开连接（按 connectionId）
     bool disconnectNode(const QString& connectionId);
     // 移除连接（disconnectNode 的别名）
@@ -83,8 +81,8 @@ public:
     // 通过代理指针移除节点；内部调用 bool removeNode(nodeId)
     bool removeNode(DAPyNodeProxy* proxy);
     // 通过代理指针连接两个节点
-    DAPyWorkFlowConnection connectNode(DAPyNodeProxy* src, const QString& srcChannel,
-                                       DAPyNodeProxy* dst, const QString& dstChannel);
+    DAPyWorkFlowConnection
+    connectNode(DAPyNodeProxy* src, const QString& srcChannel, DAPyNodeProxy* dst, const QString& dstChannel);
     // 通过连接图形项断开连接
     bool disconnectNode(DAPyLinkGraphicsItem* link);
     // 通过代理指针检查节点是否存在
@@ -106,9 +104,7 @@ public:
     // 异步执行工作流（无回调）
     bool executeAsync();
     // 异步执行工作流（带回调）
-    bool executeAsync(pybind11::object onNodeFinished,
-                       pybind11::object onStateChange,
-                       pybind11::object onProgress);
+    bool executeAsync(pybind11::object onNodeFinished, pybind11::object onStateChange, pybind11::object onProgress);
     // 终止执行
     void terminate();
     // 暂停执行

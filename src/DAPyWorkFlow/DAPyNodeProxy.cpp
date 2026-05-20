@@ -6,6 +6,7 @@
 #include "DAPyDictConverter.h"
 #include "DAPybind11QtCaster.hpp"
 #include <QDebug>
+#include "DAPyWorkFlowEnumStringUtils.h"  // stringToEnum<DAPyNodeState>需要
 
 namespace DA
 {
@@ -341,13 +342,4 @@ void DAPyNodeProxy::setConfig(const QJsonObject& config)
         dealException(e);
     }
 }
-
-bool DAPyNodeProxy::isValid() const
-{
-    if (!Py_IsInitialized()) {
-        return false;
-    }
-    return !isNone();
-}
-
 }  // namespace DA

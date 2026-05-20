@@ -62,15 +62,15 @@ public:
     QString getIcon() const;
 
     // 输入/输出端口key列表（从Python对象属性input_keys/output_keys读取）
-    QList<QString> getInputKeys() const;
-    QList<QString> getOutputKeys() const;
+    QList< QString > getInputKeys() const;
+    QList< QString > getOutputKeys() const;
 
     // 输入/输出端口描述符列表（从Python对象属性inputs/outputs list[dict]读取，临时转换为C++ struct）
-    QVector<DAPortDescriptor> getInputPorts() const;
-    QVector<DAPortDescriptor> getOutputPorts() const;
+    QVector< DAPortDescriptor > getInputPorts() const;
+    QVector< DAPortDescriptor > getOutputPorts() const;
 
     // 参数描述符列表（从Python对象属性parameters list[dict]读取，临时转换为C++ struct）
-    QVector<DAParameterDescriptor> getParameters() const;
+    QVector< DAParameterDescriptor > getParameters() const;
 
     // 节点样式（从Python对象属性_node_display.style dict读取，临时转换为C++ struct）
     DANodeStyle getNodeStyle() const;
@@ -87,9 +87,6 @@ public:
 
     // 配置数据传递（QJsonObject→Python dict→调用set_input_data）
     void setConfig(const QJsonObject& config);
-
-    // 有效性检查
-    bool isValid() const;
 };
 
 }  // namespace DA
