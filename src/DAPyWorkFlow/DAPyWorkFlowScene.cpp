@@ -163,8 +163,7 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkRemove(DAPyLinkGraphicsItem* 
         if (!connectionId.isEmpty()) {
             bool removed = this->mWorkflow.disconnectNode(connectionId);
             if (!removed) {
-                qWarning(
-                ) << tr("DAPyWorkFlowScene::removePyNodeLink: disconnectNode failed for connectionId: %1").arg(connectionId);
+                qWarning() << tr("DAPyWorkFlowScene::removePyNodeLink: disconnectNode failed for connectionId: %1").arg(connectionId);
             }
         }
         this->mLinkConnectionIdMap.remove(linkItem);
@@ -237,7 +236,7 @@ DAPyWorkFlowScene::~DAPyWorkFlowScene()
 void DAPyWorkFlowScene::setPyWorkflow(const pybind11::object& workflow)
 {
     DA_D(d);
-    d->mWorkflow.setPyWorkflowObject(workflow);
+    d->mWorkflow.object() = workflow;
 }
 
 /**
@@ -630,9 +629,10 @@ QList< DAPyNodeGraphicsItem* > DAPyWorkFlowScene::getSelectedPyNodeItems() const
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 返回的link未添加到场景，需要调用方自行添加
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(
-    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
-)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(DAPyNodeGraphicsItem* fromItem,
+                                                       const QString& fromOutput,
+                                                       DAPyNodeGraphicsItem* toItem,
+                                                       const QString& toInput)
 {
     if (!fromItem || !toItem) {
         return nullptr;
@@ -691,9 +691,10 @@ void DAPyWorkFlowScene::addPyNodeLink(DAPyLinkGraphicsItem* linkItem)
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 函数名后缀"_"表示支持undo/redo操作
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(
-    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
-)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(DAPyNodeGraphicsItem* fromItem,
+                                                        const QString& fromOutput,
+                                                        DAPyNodeGraphicsItem* toItem,
+                                                        const QString& toInput)
 {
     DAPyLinkGraphicsItem* link = addPyNodeLink(fromItem, fromOutput, toItem, toInput);
     if (!link) {
@@ -1362,12 +1363,10 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
  * @param linkItems 分离出的连接线item列表
  * @param normalItems 分离出的普通item列表
  */
-void DAPyWorkFlowScene::classifyItems(
-    const QList< QGraphicsItem* >& sourceItems,
-    QList< DAPyNodeGraphicsItem* >& nodeItems,
-    QList< DAPyLinkGraphicsItem* >& linkItems,
-    QList< QGraphicsItem* >& normalItems
-)
+void DAPyWorkFlowScene::classifyItems(const QList< QGraphicsItem* >& sourceItems,
+                                      QList< DAPyNodeGraphicsItem* >& nodeItems,
+                                      QList< DAPyLinkGraphicsItem* >& linkItems,
+                                      QList< QGraphicsItem* >& normalItems)
 {
     if (sourceItems.isEmpty()) {
         return;
@@ -1427,7 +1426,6 @@ void DAPyWorkFlowScene::initConnect()
     connect(this, &DAGraphicsScene::selectItemChanged, this, &DAPyWorkFlowScene::onSelectItemChanged);
     connect(this, &DAGraphicsScene::selectLinkChanged, this, &DAPyWorkFlowScene::onSelectLinkChanged);
 }
-
 
 /**
  * @brief 重建节点到连接线的映射表

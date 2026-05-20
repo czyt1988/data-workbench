@@ -201,7 +201,6 @@ void TestDAPyWorkFlowWrapper::cleanupTestCase()
 // 初始化与有效性测试
 // ============================================================
 
-
 /**
  * @brief 验证未初始化时 isValid 返回 false
  *
@@ -712,7 +711,6 @@ void TestDAPyWorkFlowWrapper::testIsValidDagWithCycle()
             QSKIP("Failed to acquire GIL");
         }
 
-
         // 创建有两个输入端口的节点类，使其可以接收反馈连接
         py::object cyclicNodeClass = py::eval(R"(
 class _WTestCyclicNodeA:
@@ -807,155 +805,7 @@ void TestDAPyWorkFlowWrapper::testTopologicalSort()
 // ============================================================
 // Executor 操作方法测试
 // ============================================================
-
-/**
- * @brief 验证 executeAsync 启动执行并完成
- *
- * 创建包含单个成功节点的 workflow，调用 executeAsync()，
- * 等待执行完成，验证 isRunning 最终返回 false。
- */
-void TestDAPyWorkFlowWrapper::testExecuteAsync()
-{
-    DAPyWorkFlow workflow;
-    DAPyNodeProxy* proxy = nullptr;
-
-    {
-        DA::DAPyGILGuard gil;
-        if (!gil.isAcquired()) {
-            QSKIP("Failed to acquire GIL");
-        }
-
-        py::object sourceClass = createTestSourceNodeClass("_WTestSourceM", "test._WTestSourceM");
-        proxy                  = createProxyFromPyClass(sourceClass, "test._WTestSourceM_1");
-        workflow.addNode(proxy);
-        bool started = workflow.executeAsync();
-        QVERIFY(started);
-    }
-
-    // 等待执行完成（最多 5 秒）
-    for (int i = 0; i < 50; ++i) {
-        QThread::msleep(100);
-        DA::DAPyGILGuard gil;
-        if (!workflow.isRunning()) {
-            break;
-        }
-    }
-
-    {
-        DA::DAPyGILGuard gil;
-        QVERIFY(!workflow.isRunning());
-    }
-
-    delete proxy;
-}
-
-/**
- * @brief 验证 terminate 终止执行
- *
- * 创建包含慢速节点的 workflow，启动执行后调用 terminate()，
- * 验证执行被终止。
- */
-void TestDAPyWorkFlowWrapper::testTerminate()
-{
-    DAPyWorkFlow workflow;
-    DAPyNodeProxy* proxy = nullptr;
-
-    {
-        DA::DAPyGILGuard gil;
-        if (!gil.isAcquired()) {
-            QSKIP("Failed to acquire GIL");
-        }
-
-        py::object slowClass = createSlowNodeClass("_WTestSlowN", "test._WTestSlowN");
-        proxy                = createProxyFromPyClass(slowClass, "test._WTestSlowN_1");
-        workflow.addNode(proxy);
-        workflow.executeAsync();
-    }
-
-    // 等待一小段时间后终止
-    QThread::msleep(100);
-
-    {
-        DA::DAPyGILGuard gil;
-        workflow.terminate();
-    }
-
-    // 等待终止完成
-    for (int i = 0; i < 50; ++i) {
-        QThread::msleep(100);
-        DA::DAPyGILGuard gil;
-        if (!workflow.isRunning()) {
-            break;
-        }
-    }
-
-    {
-        DA::DAPyGILGuard gil;
-        QVERIFY(!workflow.isRunning());
-    }
-
-    delete proxy;
-}
-
-/**
- * @brief 验证 pause/resume 状态转换
- *
- * 创建包含慢速节点的 workflow，启动执行后暂停，
- * 验证 getExecutorState 为 StatePaused，
- * 恢复后验证执行完成。
- */
-void TestDAPyWorkFlowWrapper::testPauseResume()
-{
-    DAPyWorkFlow workflow;
-    DAPyNodeProxy* proxy = nullptr;
-
-    {
-        DA::DAPyGILGuard gil;
-        if (!gil.isAcquired()) {
-            QSKIP("Failed to acquire GIL");
-        }
-
-        py::object slowClass = createSlowNodeClass("_WTestSlowO", "test._WTestSlowO");
-        proxy                = createProxyFromPyClass(slowClass, "test._WTestSlowO_1");
-        workflow.addNode(proxy);
-        workflow.executeAsync();
-    }
-
-    // 等待一小段时间后暂停
-    QThread::msleep(100);
-    {
-        DA::DAPyGILGuard gil;
-        workflow.pause();
-    }
-
-    // 验证暂停状态
-    {
-        DA::DAPyGILGuard gil;
-        ExecState state = workflow.getExecutorState();
-        // 暂停状态可能是 Paused 或已经完成（若节点太快）
-        QVERIFY(state == StatePaused || state == StateFinished || state == StateIdle);
-    }
-
-    // 恢复执行
-    {
-        DA::DAPyGILGuard gil;
-        if (workflow.getExecutorState() == StatePaused) {
-            workflow.resume();
-        }
-    }
-
-    // 等待执行完成
-    for (int i = 0; i < 50; ++i) {
-        QThread::msleep(100);
-        DA::DAPyGILGuard gil;
-        if (!workflow.isRunning()) {
-            break;
-        }
-    }
-
-    delete proxy;
-}
-
+#if 0  // 工作流的操作暂时屏蔽，后续工作流的操作应该有个独立的执行器，传入工作量对象，执行器进行执行，而不是在DAPyWorkFlow中，DAPyWorkFlow仅仅只是一个图数据结构的描述
 /**
  * @brief 验证 getExecutorState 返回正确状态
  *
@@ -1058,61 +908,11 @@ void TestDAPyWorkFlowWrapper::testIsRunning()
 
     delete proxy;
 }
-
-// ============================================================
-// 错误处理测试
-// ============================================================
-
-/**
- * @brief 验证 getLastError 在错误后返回非空字符串
- *
- * 创建 workflow，使用无效 ID 调用 removeNode 产生错误，
- * 验证 getLastError 返回非空字符串。
- */
-void TestDAPyWorkFlowWrapper::testGetLastErrorAfterError()
-{
-    DAPyWorkFlow workflow;
-
-    {
-        DA::DAPyGILGuard gil;
-        if (!gil.isAcquired()) {
-            QSKIP("Failed to acquire GIL");
-        }
-
-        // 尝试移除不存在的节点，可能产生错误记录
-        workflow.removeNode("nonexistent_error_test");
-        QString lastError = workflow.getLastError();
-        // getLastError 可能返回空（若 Python 侧不记录此错误）
-        // 验证方法可正常调用即可
-        QVERIFY(lastError.isEmpty() || !lastError.isEmpty());
-    }
-}
-
-/**
- * @brief 验证 getLastError 在无错误时返回空字符串
- *
- * 创建 workflow，初始化后未执行任何错误操作，
- * 验证 getLastError 返回空字符串。
- */
-void TestDAPyWorkFlowWrapper::testGetLastErrorNoError()
-{
-    DAPyWorkFlow workflow;
-
-    {
-        DA::DAPyGILGuard gil;
-        if (!gil.isAcquired()) {
-            QSKIP("Failed to acquire GIL");
-        }
-
-        QString lastError = workflow.getLastError();
-        QVERIFY(lastError.isEmpty());
-    }
-}
+#endif
 
 // ============================================================
 // 指针便捷 API 测试
 // ============================================================
-
 
 /**
  * @brief 验证 removeNode(DAPyNodeProxy*) 按指针移除节点

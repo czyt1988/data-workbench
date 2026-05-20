@@ -16,15 +16,7 @@ build*
 # 顶层的临时文件夹不追踪
 tmp
 ~
-.qtcreator
-.qoder
-.trae
-.kilo
-.sisyphus
-.superpowers
-opencode.md
-docs/superpowers
-nul
+
 #翻译文件暂时不追踪
 *.qm
 
@@ -143,3 +135,13 @@ __pycache__
 .kittify/missions/__pycache__/
 .kittify/runtime/
 .kittify/workspaces/
+.qtcreator
+.qoder
+.trae
+.kilo
+.sisyphus
+.superpowers
+.omc
+opencode.md
+docs/superpowers
+nul

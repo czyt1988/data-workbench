@@ -26,14 +26,14 @@ public:
     void setExecState(ExecState newState);
 
 public:
-    DAPyWorkFlow* mWorkflow { nullptr };             ///< DAPyWorkFlow封装对象指针（调用者保证生命周期）
-    QPointer< DAPythonSignalHandler > mSignalHandler;  ///< C++侧信号处理器（可选）
-    ExecState mExecState { StateIdle };         ///< 当前执行状态
-    bool mIsTerminateRequest { false };         ///< 终止请求标记
-    bool mIsPauseRequest { false };             ///< 暂停请求标记
-    QMutex mMutex;                              ///< 互斥锁保护状态变更
-    QWaitCondition mPauseCondition;             ///< 暂停等待条件变量
-    QString mLastErrorString;                   ///< 最后错误信息
+    DAPyWorkFlow* mWorkflow { nullptr };                 ///< DAPyWorkFlow封装对象指针（调用者保证生命周期）
+    QPointer< DAPythonSignalHandler > mSignalHandler;    ///< C++侧信号处理器（可选）
+    ExecState mExecState { StateIdle };                  ///< 当前执行状态
+    bool mIsTerminateRequest { false };                  ///< 终止请求标记
+    bool mIsPauseRequest { false };                      ///< 暂停请求标记
+    QMutex mMutex;                                       ///< 互斥锁保护状态变更
+    QWaitCondition mPauseCondition;                      ///< 暂停等待条件变量
+    QString mLastErrorString;                            ///< 最后错误信息
     QHash< QString, DAPyNodeProxy* > mExecutingProxies;  ///< 执行中节点的 nodeId → proxy 映射
 };
 
@@ -119,7 +119,7 @@ void DAPyWorkFlowLifecycle::setNodeProxies(const QList< DAPyNodeProxy* >& proxie
         if (proxy) {
             QString nodeId = proxy->getNodeId();
             if (!nodeId.isEmpty()) {
-                d->mExecutingProxies[nodeId] = proxy;
+                d->mExecutingProxies[ nodeId ] = proxy;
             }
         }
     }
@@ -223,36 +223,44 @@ void DAPyWorkFlowLifecycle::startExecute()
         try {
             // 注册回调函数——通过DAPythonSignalHandler在主线程执行Qt信号发射
 
-            pybind11::object onNodeFinished = pybind11::cpp_function(
-                [this, d](const std::string& nodeId, bool success) {
-                    if (!d->mWorkflow) {
-                        return;
-                    }
-                    DA::DAPyNodeProxy* proxy = d->mExecutingProxies.take(QString::fromStdString(nodeId));
-                    if (!proxy) {
-                        qWarning() << "DAPyWorkFlowLifecycle: node finished but proxy not found for nodeId:" << QString::fromStdString(nodeId);
-                        return;
-                    }
-                    {
-                        DA::DAPyGILRelease innerRelease;
-                        emit nodeExecuteFinished(proxy, success);
-                    }
-                });
+            pybind11::object onNodeFinished = pybind11::cpp_function([ this, d ](const std::string& nodeId, bool success) {
+                if (!d->mWorkflow) {
+                    return;
+                }
+                DA::DAPyNodeProxy* proxy = d->mExecutingProxies.take(QString::fromStdString(nodeId));
+                if (!proxy) {
+                    qWarning() << "DAPyWorkFlowLifecycle: node finished but proxy not found for nodeId:"
+                               << QString::fromStdString(nodeId);
+                    return;
+                }
+                {
+                    DA::DAPyGILRelease innerRelease;
+                    emit nodeExecuteFinished(proxy, success);
+                }
+            });
 
-            pybind11::object onStateChange = pybind11::cpp_function(
-                [this, d](const std::string& oldStateStr, const std::string& newStateStr) {
+            pybind11::object onStateChange =
+                pybind11::cpp_function([ this, d ](const std::string& oldStateStr, const std::string& newStateStr) {
                     // 将Python状态字符串映射到C++ ExecState
                     ExecState cppOldState = StateIdle;
                     ExecState cppNewState = StateIdle;
-                    if (oldStateStr == "running")  cppOldState = StateRunning;
-                    else if (oldStateStr == "paused")   cppOldState = StatePaused;
-                    else if (oldStateStr == "error")    cppOldState = StateError;
-                    else if (oldStateStr == "finished") cppOldState = StateFinished;
+                    if (oldStateStr == "running")
+                        cppOldState = StateRunning;
+                    else if (oldStateStr == "paused")
+                        cppOldState = StatePaused;
+                    else if (oldStateStr == "error")
+                        cppOldState = StateError;
+                    else if (oldStateStr == "finished")
+                        cppOldState = StateFinished;
 
-                    if (newStateStr == "running")  cppNewState = StateRunning;
-                    else if (newStateStr == "paused")   cppNewState = StatePaused;
-                    else if (newStateStr == "error")    cppNewState = StateError;
-                    else if (newStateStr == "finished") cppNewState = StateFinished;
+                    if (newStateStr == "running")
+                        cppNewState = StateRunning;
+                    else if (newStateStr == "paused")
+                        cppNewState = StatePaused;
+                    else if (newStateStr == "error")
+                        cppNewState = StateError;
+                    else if (newStateStr == "finished")
+                        cppNewState = StateFinished;
 
                     d->mExecState = cppNewState;
                     {
@@ -261,15 +269,14 @@ void DAPyWorkFlowLifecycle::startExecute()
                     }
                 });
 
-            pybind11::object onProgress = pybind11::cpp_function(
-                [this](int current, int total) {
-                    {
-                        DA::DAPyGILRelease innerRelease;
-                        emit progressChanged(current, total);
-                    }
-                });
-
-            // 通过封装类启动异步执行（替代 executorModule.attr + executorClass + execute_async）
+            pybind11::object onProgress = pybind11::cpp_function([ this ](int current, int total) {
+                {
+                    DA::DAPyGILRelease innerRelease;
+                    emit progressChanged(current, total);
+                }
+            });
+#if 0  // 工作流的操作暂时屏蔽，后续工作流的操作应该有个独立的执行器，传入工作量对象，执行器进行执行，而不是在DAPyWorkFlow中，DAPyWorkFlow仅仅只是一个图数据结构的描述
+       // 通过封装类启动异步执行（替代 executorModule.attr + executorClass + execute_async）
             bool ok = d->mWorkflow->executeAsync(onNodeFinished, onStateChange, onProgress);
             if (!ok) {
                 d->mLastErrorString = d->mWorkflow->getLastError();
@@ -281,7 +288,7 @@ void DAPyWorkFlowLifecycle::startExecute()
                 }
                 return;
             }
-
+#endif
         } catch (const pybind11::error_already_set& e) {
             // error_already_set必须在GIL作用域内消费
             d->dealException(e);
@@ -301,7 +308,7 @@ void DAPyWorkFlowLifecycle::startExecute()
             return;
         }
     }  // DAPyGILGuard析构，释放GIL
-
+#if 0  // 工作流的操作暂时屏蔽，后续工作流的操作应该有个独立的执行器，传入工作量对象，执行器进行执行，而不是在DAPyWorkFlow中，DAPyWorkFlow仅仅只是一个图数据结构的描述
     // 等待执行完成——在GIL释放后等待
     // 轮询DAPyWorkFlow封装类的执行器状态，同时检查C++侧的暂停/终止请求
     while (true) {
@@ -342,6 +349,7 @@ void DAPyWorkFlowLifecycle::startExecute()
         // 短暂休眠避免密集轮询
         QThread::msleep(50);
     }
+#endif
 }
 
 /**
@@ -355,6 +363,7 @@ void DAPyWorkFlowLifecycle::startExecute()
 void DAPyWorkFlowLifecycle::pause()
 {
     DA_D(d);
+#if 0  // 工作流的操作暂时屏蔽，后续工作流的操作应该有个独立的执行器，传入工作量对象，执行器进行执行，而不是在DAPyWorkFlow中，DAPyWorkFlow仅仅只是一个图数据结构的描述
     QMutexLocker locker(&d->mMutex);
     if (d->mExecState != StateRunning) {
         return;  // 只在Running状态下才能暂停
@@ -369,6 +378,7 @@ void DAPyWorkFlowLifecycle::pause()
         }
         locker.relock();
     }
+#endif
 }
 
 /**
@@ -379,6 +389,7 @@ void DAPyWorkFlowLifecycle::pause()
  */
 void DAPyWorkFlowLifecycle::resume()
 {
+#if 0  // 工作流的操作暂时屏蔽，后续工作流的操作应该有个独立的执行器，传入工作量对象，执行器进行执行，而不是在DAPyWorkFlow中，DAPyWorkFlow仅仅只是一个图数据结构的描述
     DA_D(d);
     QMutexLocker locker(&d->mMutex);
     if (d->mExecState != StatePaused) {
@@ -395,6 +406,7 @@ void DAPyWorkFlowLifecycle::resume()
         }
         locker.relock();
     }
+#endif
 }
 
 /**
@@ -407,6 +419,7 @@ void DAPyWorkFlowLifecycle::resume()
  */
 void DAPyWorkFlowLifecycle::terminate()
 {
+#if 0  // 工作流的操作暂时屏蔽，后续工作流的操作应该有个独立的执行器，传入工作量对象，执行器进行执行，而不是在DAPyWorkFlow中，DAPyWorkFlow仅仅只是一个图数据结构的描述
     DA_D(d);
     {
         QMutexLocker locker(&d->mMutex);
@@ -420,6 +433,7 @@ void DAPyWorkFlowLifecycle::terminate()
     if (d->mWorkflow) {
         d->mWorkflow->terminate();
     }
+#endif
 }
 
 }  // namespace DA

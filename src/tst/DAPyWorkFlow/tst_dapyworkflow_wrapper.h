@@ -71,27 +71,15 @@ private Q_SLOTS:
     void testIsValidDagWithCycle();
     // 验证 topologicalSort 返回正确排序
     void testTopologicalSort();
-
+#if 0  // 工作流的操作暂时屏蔽，后续工作流的操作应该有个独立的执行器，传入工作量对象，执行器进行执行，而不是在DAPyWorkFlow中，DAPyWorkFlow仅仅只是一个图数据结构的描述
     // --- Executor 操作方法 ---
-    // 验证 executeAsync 启动执行并完成
-    void testExecuteAsync();
-    // 验证 terminate 终止执行
-    void testTerminate();
-    // 验证 pause/resume 状态转换
-    void testPauseResume();
     // 验证 getExecutorState 返回正确状态
     void testGetExecutorState();
     // 验证 getResult 返回执行结果
     void testGetResult();
     // 验证 isRunning 在执行期间返回 true
     void testIsRunning();
-
-    // --- 错误处理 ---
-    // 验证 getLastError 在错误后返回非空字符串
-    void testGetLastErrorAfterError();
-    // 验证 getLastError 在无错误时返回空字符串
-    void testGetLastErrorNoError();
-
+#endif
     // --- 指针便捷 API ---
     // 验证 removeNode(DAPyNodeProxy*) 按指针移除节点
     void test_removeNode_pointer();

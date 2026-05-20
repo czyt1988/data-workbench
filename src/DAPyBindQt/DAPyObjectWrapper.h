@@ -49,6 +49,7 @@ public:
     {
         return !(*this == obj);
     }
+
     // bool操作符可直接进行isNone判断
     explicit operator bool() const;
     // 统一异常处理函数

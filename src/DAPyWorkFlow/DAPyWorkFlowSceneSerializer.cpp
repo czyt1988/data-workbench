@@ -137,8 +137,8 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
 
             // 从Python workflow获取节点数据（通过DAPyWorkFlow封装层）
             {
-                DAPyWorkFlow wfWrapper;
-                wfWrapper.setPyWorkflowObject(workflowObj);
+                // TODO:审查异常点，这里栈上创建一个DAPyWorkFlow，有问题，需要修改
+                DAPyWorkFlow wfWrapper(workflowObj);
                 pybind11::list nodesList = wfWrapper.getNodes();
                 for (auto item : nodesList) {
                     DAWorkflowNodeState ns;
@@ -171,8 +171,8 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
 
             // 从Python workflow获取连接数据（通过DAPyWorkFlow封装层）
             {
-                DAPyWorkFlow wfWrapper;
-                wfWrapper.setPyWorkflowObject(workflowObj);
+                // TODO:审查异常点，这里栈上创建一个DAPyWorkFlow，有问题，需要修改
+                DAPyWorkFlow wfWrapper(workflowObj);
                 pybind11::list connsList = wfWrapper.getConnections();
                 for (auto item : connsList) {
                     DAWorkflowConnectionState cs;

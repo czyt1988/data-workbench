@@ -236,11 +236,7 @@ void TestWorkflowLifecycle::testSimpleWorkflow()
     }
 
     // 创建 DAPyWorkFlow 封装对象并设置 Python 工作流实例
-    DAPyWorkFlow wfWrapper;
-    {
-        DA::DAPyGILGuard gil;
-        wfWrapper.setPyWorkflowObject(workflow);
-    }
+    DAPyWorkFlow wfWrapper(workflow);
 
     // 创建生命周期控制器
     DAPyWorkFlowLifecycle lifecycle;
@@ -323,11 +319,7 @@ void TestWorkflowLifecycle::testFailingWorkflow()
         QSKIP(QString("Error creating workflow: %1").arg(e.what()).toLocal8Bit().constData());
     }
 
-    DAPyWorkFlow wfWrapper;
-    {
-        DA::DAPyGILGuard gil;
-        wfWrapper.setPyWorkflowObject(workflow);
-    }
+    DAPyWorkFlow wfWrapper(workflow);
 
     DAPyWorkFlowLifecycle lifecycle;
     lifecycle.setWorkflow(&wfWrapper);
@@ -403,11 +395,7 @@ void TestWorkflowLifecycle::testPauseResume()
         QSKIP(QString("Error creating workflow: %1").arg(e.what()).toLocal8Bit().constData());
     }
 
-    DAPyWorkFlow wfWrapper;
-    {
-        DA::DAPyGILGuard gil;
-        wfWrapper.setPyWorkflowObject(workflow);
-    }
+    DAPyWorkFlow wfWrapper(workflow);
 
     DAPyWorkFlowLifecycle lifecycle;
     lifecycle.setWorkflow(&wfWrapper);

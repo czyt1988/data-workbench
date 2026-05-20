@@ -40,7 +40,7 @@ public:
     DAPyWorkFlow(QObject* parent = nullptr);
     DAPyWorkFlow(const pybind11::object& obj, QObject* parent = nullptr);
     ~DAPyWorkFlow();
-
+#if 0  // 暂时屏蔽信号，这里信号槽的方案还不明确，由于目前其它程序还未依赖此信号，因此全部屏蔽
     // --- 信号 ---
 Q_SIGNALS:
     // 节点添加信号
@@ -55,7 +55,7 @@ Q_SIGNALS:
     void executionStarted();
     // 执行完成信号
     void executionFinished(bool success);
-
+#endif
 public:
     // 检查 Python DAWorkflow 实例是否有效
     bool isValid() const;
@@ -100,6 +100,7 @@ public:
     // 获取拓扑排序结果
     QStringList topologicalSort();
 
+#if 0  // 工作流的操作暂时屏蔽，后续工作流的操作应该有个独立的执行器，传入工作量对象，执行器进行执行，而不是在DAPyWorkFlow中，DAPyWorkFlow仅仅只是一个图数据结构的描述
     // --- Executor 操作方法 ---
     // 异步执行工作流（无回调）
     bool executeAsync();
@@ -119,20 +120,10 @@ public:
     bool getResult();
     // 检查是否正在运行
     bool isRunning();
-
-    // --- 错误处理 ---
-    // 获取最后一次错误信息
-    QString getLastError() const;
-    // 设置外部 Python DAWorkflow 实例（替代 initPyWorkflow 创建的实例）
-    void setPyWorkflowObject(const pybind11::object& obj);
-
+#endif
 private:
     // 初始化 Python DAWorkflow 实例
     void initPyWorkflow();
-    // Python DAWorkflowExecutor 实例（独立对象）
-    DAPyObjectWrapper mPyExecutorObj;
-    // 最后一次错误信息
-    mutable QString mLastErrorString;
 };
 
 }  // namespace DA
