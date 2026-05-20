@@ -17,6 +17,7 @@ DAPyModuleWorkflow::DAPyModuleWorkflow() : DAPyModule()
         mObjWorkflowClass     = attr("DAWorkflow");
         mObjNodeRegistryClass = attr("DANodeRegistry");
         mObjNodeDefDecorator  = attr("NodeDef");
+        mObjNodeFactoryClass = attr("DANodeFactory");
     } catch (const std::exception& e) {
         mLastErrorString = e.what();
         dealException(e);
@@ -48,6 +49,7 @@ void DAPyModuleWorkflow::finalize()
     mObjWorkflowClass       = pybind11::none();
     mObjNodeRegistryClass   = pybind11::none();
     mObjNodeDefDecorator    = pybind11::none();
+    mObjNodeFactoryClass   = pybind11::none();
 }
 
 /**
@@ -104,6 +106,14 @@ pybind11::object DAPyModuleWorkflow::getNodeRegistryClass() const
 pybind11::object DAPyModuleWorkflow::getNodeDefDecorator() const
 {
     return mObjNodeDefDecorator;
+}
+
+/**
+ * @brief 获取缓存的 DANodeFactory 类引用
+ */
+pybind11::object DAPyModuleWorkflow::getNodeFactoryClass() const
+{
+    return mObjNodeFactoryClass;
 }
 
 }  // namespace DA

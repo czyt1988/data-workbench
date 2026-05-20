@@ -31,6 +31,7 @@ __author__ = "DA WorkBench Team"
 from .types import Input, Output, Parameter
 from .node_def import NodeDef, NodeDisplay, DAWorkflowNode
 from .node_registry import DANodeRegistry
+from .node_factory import DANodeFactory
 from .connection import DAConnection
 from .workflow import DAWorkflow
 from .signal_manager import DASignalManager, DAWorkflowState
@@ -54,6 +55,7 @@ __all__ = [
     "DAConnection",
     "DAWorkflowExecutor",
     "DAExecutorState",
+    "DANodeFactory",
     "NodeProxy",
     "NodeOutputProxy",
     "NodeInputProxy",
