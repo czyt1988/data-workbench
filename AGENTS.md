@@ -251,6 +251,39 @@ Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibilityChanged
 
 Qt5/Qt6 兼容宏定义在 `src/DAGlobals.h`（`Qt5Qt6Compat_*` 系列）
 
+### Qt 容器范围迭代（避免写时复制深拷贝）
+
+Qt 容器（QVector、QList、QMap 等）使用**写时复制（Copy-on-Write / COW）**机制。对非 const 容器使用 C++11 范围迭代（`for(T& v : container)`），编译器会认为迭代器可能修改容器内容，从而触发 COW **深拷贝**，造成不必要的性能损失。
+
+**✅ 正确写法 — 两种方式：**
+
+1. **容器本身是只读的** → 直接声明为 `const`：
+```cpp
+const QVector<SomeClass> vals = getXXX();
+for (const SomeClass& v : vals) {
+    // 安全：const 容器不会触发 COW
+}
+```
+
+2. **容器非 const，但遍历不会修改其内容** → 使用 `std::as_const`：
+```cpp
+QVector<SomeClass> vals = getXXX();
+for (const SomeClass& v : std::as_const(vals)) {
+    // 安全：std::as_const 返回 const 引用，避免 COW
+}
+```
+
+**❌ 错误写法（会触发深拷贝）：**
+```cpp
+QVector<SomeClass> vals = getXXX();
+for (SomeClass& v : vals) {        // ⚠️ 非const引用迭代非const容器 → COW 深拷贝
+}
+for (const SomeClass& v : vals) {   // ⚠️ 即使元素是const引用，容器本身非const → COW 深拷贝
+}
+```
+
+> **要点**：关键在于**容器本身是否为 const**，而非迭代变量。只要容器是非 const 的，无论迭代变量声明为 `T&` 还是 `const T&`，都会触发 COW。
+
 ## 注释与文档规范
 
 ### 注释规范（强制）
@@ -504,6 +537,7 @@ Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若�
 - 禁止在 QwtPlotItem 子类中使用信号槽
 - 禁止使用已废弃的 DAPyNodeConfigDialog / DAPyNodeWidget — 统一使用 `src/DAGui/NodeSetting/` 中的通用参数面板
 - **禁止在错误的模块创建类** — 创建新类前必须对照 § MODULE DEPENDENCY 确定它属于哪个模块（典型反面：通用工具放进 DAPyWorkFlow）
+- **禁止对非 const Qt 容器直接使用范围迭代** — `for(T& v : container)` 和 `for(const T& v : container)` 对非 const 容器都会触发 COW 深拷贝。必须用 `const` 声明容器或 `std::as_const()` 包裹（详见 § Qt 容器范围迭代）
 
 ## UNIQUE STYLES
 
