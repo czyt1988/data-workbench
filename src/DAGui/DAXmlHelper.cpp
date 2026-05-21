@@ -21,7 +21,7 @@
 #include "DAGraphicsPixmapItem.h"
 #include "DAGraphicsItemFactory.h"
 #include "DAPyNodeFactory.h"
-#include "DANodeDescriptor.h"
+#include "DAPyNodeFactory.h"
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyLinkGraphicsItem.h"
 #include "DAPyNodeProxy.h"
@@ -452,7 +452,7 @@ bool DAXmlHelper::PrivateData::loadNodesClipBoard(
 /**
  * @brief 加载节点并创建图形项
  *
- * 通过DANodeDescriptor构建节点描述符，调用场景的createPyNode创建节点图形项，
+ * 通过DAPyNodeMetaData构建节点元数据，调用场景的createPyNode创建节点图形项，
  * 然后加载节点属性和输入输出信息。
  *
  * @param nodeEle XML节点元素
@@ -477,13 +477,13 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
         qualifiedName = nodeEle.attribute("protoType");  // backward compat: DAXmlHelper旧格式使用protoType属性
     }
 
-    // 构建节点描述符，用于createPyNode
-    DANodeDescriptor descriptor;
-    descriptor.name          = name;
-    descriptor.qualifiedName = qualifiedName;
+    // 构建节点元数据，用于createPyNode
+    DAPyNodeMetaData metaData;
+    metaData.name          = name;
+    metaData.qualifiedName = qualifiedName;
 
     // 通过场景创建节点图形项
-    DAPyNodeGraphicsItem* item = workFlowScene->createPyNode(descriptor, QPointF(0, 0));
+    DAPyNodeGraphicsItem* item = workFlowScene->createPyNode(metaData, QPointF(0, 0));
     if (!item) {
         qWarning() << QObject::tr("Unable to create node by prototype=%1,name=%2").arg(qualifiedName, name);
         return nullptr;
@@ -525,7 +525,7 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
 /**
  * @brief 加载节点，此过程是可以回退的
  *
- * 通过DANodeDescriptor构建节点描述符，调用场景的createPyNode_创建节点图形项（undo版本），
+ * 通过DAPyNodeMetaData构建节点元数据，调用场景的createPyNode_创建节点图形项（undo版本），
  * 然后加载节点属性和输入输出信息。
  *
  * @note 此过程加载的节点将赋予新的id，并且把旧id和新id的关系保存入idMap中
@@ -554,13 +554,13 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(
         qualifiedName = nodeEle.attribute("protoType");  // backward compat: DAXmlHelper旧格式使用protoType属性
     }
 
-    // 构建节点描述符
-    DANodeDescriptor descriptor;
-    descriptor.name          = name;
-    descriptor.qualifiedName = qualifiedName;
+    // 构建节点元数据
+    DAPyNodeMetaData metaData;
+    metaData.name          = name;
+    metaData.qualifiedName = qualifiedName;
 
     // 通过场景创建节点图形项（带undo/redo）
-    DAPyNodeGraphicsItem* item = workFlowScene->createPyNode_(descriptor, QPointF(0, 0));
+    DAPyNodeGraphicsItem* item = workFlowScene->createPyNode_(metaData, QPointF(0, 0));
     if (!item) {
         qWarning() << QObject::tr("Unable to create node by prototype=%1,name=%2").arg(qualifiedName, name);
         return nullptr;

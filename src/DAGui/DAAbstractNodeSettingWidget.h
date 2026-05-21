@@ -4,11 +4,11 @@
 #include "DAGuiAPI.h"
 #include "DAPyNodeProxy.h"
 #include "DAGlobals.h"
+#include "NodeSetting/DAParamDef.h"
+#include "DAPyWorkFlow/DAPyNodeFactory.h"
 #include <QWidget>
 #include <QPointer>
 #include <QJsonObject>
-#include "DANodeDescriptor.h"
-#include "DAParameterDescriptor.h"
 namespace DA
 {
 /**
@@ -33,11 +33,11 @@ public:
     void setNodeProxy(DAPyNodeProxy* proxy);
     DAPyNodeProxy* getNodeProxy() const;
 
-    // 获取描述符
-    const DANodeDescriptor& getDescriptor() const;
+    // 获取节点元数据
+    const DAPyNodeMetaData& getMetaData() const;
 
-    // 从描述符中提取 parameters 数组
-    const QVector< DAParameterDescriptor >& getParameters() const;
+    // 从元数据中提取参数定义列表
+    const QVector< DAParamDef >& getParamDefs() const;
 
     // 子类必须实现的界面同步方法
     virtual void updateUI() = 0;

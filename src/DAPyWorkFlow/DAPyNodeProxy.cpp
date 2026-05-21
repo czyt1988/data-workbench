@@ -157,54 +157,6 @@ QList< QString > DAPyNodeProxy::getOutputKeys() const
     return QList< QString >();
 }
 
-QVector< DAPortDescriptor > DAPyNodeProxy::getInputPorts() const
-{
-    if (isNone()) {
-        return QVector< DAPortDescriptor >();
-    }
-    try {
-        if (hasattr("inputs")) {
-            pybind11::list pyInputs = attr("inputs").cast< pybind11::list >();
-            return DictConverter::portListFromPyList(pyInputs);
-        }
-    } catch (const std::exception& e) {
-        dealException(e);
-    }
-    return QVector< DAPortDescriptor >();
-}
-
-QVector< DAPortDescriptor > DAPyNodeProxy::getOutputPorts() const
-{
-    if (isNone()) {
-        return QVector< DAPortDescriptor >();
-    }
-    try {
-        if (hasattr("outputs")) {
-            pybind11::list pyOutputs = attr("outputs").cast< pybind11::list >();
-            return DictConverter::portListFromPyList(pyOutputs);
-        }
-    } catch (const std::exception& e) {
-        dealException(e);
-    }
-    return QVector< DAPortDescriptor >();
-}
-
-QVector< DAParameterDescriptor > DAPyNodeProxy::getParameters() const
-{
-    if (isNone()) {
-        return QVector< DAParameterDescriptor >();
-    }
-    try {
-        if (hasattr("parameters")) {
-            pybind11::list pyParams = attr("parameters").cast< pybind11::list >();
-            return DictConverter::paramListFromPyList(pyParams);
-        }
-    } catch (const std::exception& e) {
-        dealException(e);
-    }
-    return QVector< DAParameterDescriptor >();
-}
-
 DANodeStyle DAPyNodeProxy::getNodeStyle() const
 {
     DANodeStyle defaultStyle;  // 默认构造已调用 setDefaults()

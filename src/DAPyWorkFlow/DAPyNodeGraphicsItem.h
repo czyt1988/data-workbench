@@ -5,7 +5,7 @@
 #include "DAGraphicsResizeableItem.h"
 #include "DAPyNodeState.h"
 #include "DAPyNodeStyle.h"
-#include "DANodeDescriptor.h"
+#include "DAPyNodeProxy.h"
 #include "DAPyBindQt/DAPybind11InQt.h"
 #include <QIcon>
 #include <QGraphicsSceneMouseEvent>
@@ -18,7 +18,6 @@ class QGraphicsProxyWidget;
 namespace DA
 {
 
-class DAPyNodeProxy;
 class DAPyNodePalette;
 
 /**
@@ -93,9 +92,8 @@ public:
     DAPyNodeState getNodeState() const;
     void setNodeState(DAPyNodeState state);
 
-    // 节点描述符结构体（C++原生描述符）
-    void setDescriptorStruct(const DANodeDescriptor& desc);
-    const DANodeDescriptor& getDescriptorStruct() const;
+    // 从代理更新缓存字段（一次性读取所有attr()，避免paint时GIL开销）
+    void updateFromProxy(DAPyNodeProxy* proxy);
 
     // 节点样式
     void setNodeStyle(const DANodeStyle& style);

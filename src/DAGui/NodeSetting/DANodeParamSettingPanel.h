@@ -5,8 +5,7 @@
 #include "DAAbstractNodeSettingWidget.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAGlobals.h"
-#include "DAPyWorkFlow/DAParameterDescriptor.h"
-#include "DANodeDescriptor.h"
+#include "DAParamDef.h"
 #include <QJsonObject>
 #include <QVector>
 

@@ -3,7 +3,7 @@
 #include <QObject>
 #include <QVariant>
 #include <QJsonObject>
-#include "DAParameterDescriptor.h"
+#include "DAParamDef.h"
 namespace DA
 {
 
@@ -38,7 +38,7 @@ private Q_SLOTS:
 
 private:
     // 辅助方法：创建参数描述符 JSON 对象
-    DA::DAParameterDescriptor makeDescriptor(const QString& type,
+    DA::DAParamDef makeDescriptor(const QString& type,
                                              const QString& description     = QString(),
                                              const QVariant& defaultValue   = QVariant(),
                                              const QVariantHash& extensions = QVariantHash()) const;

@@ -5,8 +5,7 @@
 DASignalManager 维护信号队列，负责将节点输出数据传递到下游节点的输入端口。
 
 DASignalManager 是纯 Python 实现，不依赖 Qt。状态变更通知通过
-DAPythonSignalHandler::callInMainThread（来自 da_interface 模块）传递到 C++ 侧，
-而非自定义桥接类。
+on_state_change 回调机制实现，C++ 侧通过绑定层桥接该回调。
 
 状态模型：
 - Stopped: 工作流未运行
@@ -79,14 +78,8 @@ class DASignalManager:
     通过连接传递到下游节点的输入端口。
 
     状态变更回调：
-    当工作流状态发生变更时，通过 DAPythonSignalHandler::callInMainThread
-    （来自 da_interface 模块）将状态变更通知传递到 C++ 侧。
-    本类不创建自定义桥接类，而是依赖已有的 da_interface 机制。
-
-    .. note::
-        状态变更通知将使用 DAPythonSignalHandler::callInMainThread，
-        此方法来自 da_interface 模块，负责将 Python 侧的回调安全地
-        在 Qt 主线程中执行。无需自定义桥接类。
+    当工作流状态发生变更时，通过 on_state_change 回调机制传递状态变更通知，
+    C++ 侧通过绑定层桥接该回调。
 
     使用示例::
 
@@ -108,8 +101,6 @@ class DASignalManager:
         # 参考 C++ DAWorkFlowExecuter 的 mNodeIndegreeSetCount 模式
         self._indegree_received: dict = {}
         # 状态变更回调
-        # 注意：实际的状态变更通知将使用 DAPythonSignalHandler::callInMainThread
-        # 此回调为可选的 Python 侧回调
         self._on_state_change = on_state_change
 
     @property
@@ -127,10 +118,6 @@ class DASignalManager:
 
         将状态切换为 Running，初始化入度计数器。
         如果当前状态为 Stopped，会触发状态变更回调。
-
-        .. note::
-            状态变更通知通过 DAPythonSignalHandler::callInMainThread
-            （da_interface 模块）传递到 C++ 侧。
         """
         old_state = self._state
         self._state = DAWorkflowState.Running
@@ -146,10 +133,6 @@ class DASignalManager:
 
         将状态切换为 Stopped，清空信号队列和入度计数器。
         如果当前状态为 Running 或 Paused，会触发状态变更回调。
-
-        .. note::
-            状态变更通知通过 DAPythonSignalHandler::callInMainThread
-            （da_interface 模块）传递到 C++ 侧。
         """
         old_state = self._state
         self._state = DAWorkflowState.Stopped
@@ -163,10 +146,6 @@ class DASignalManager:
 
         将状态切换为 Paused，信号队列暂停处理但不清空。
         只有在 Running 状态下才能暂停。
-
-        .. note::
-            状态变更通知通过 DAPythonSignalHandler::callInMainThread
-            （da_interface 模块）传递到 C++ 侧。
         """
         if self._state != DAWorkflowState.Running:
             return
@@ -180,10 +159,6 @@ class DASignalManager:
 
         将状态从 Paused 切换为 Running，恢复信号队列处理。
         只有在 Paused 状态下才能恢复。
-
-        .. note::
-            状态变更通知通过 DAPythonSignalHandler::callInMainThread
-            （da_interface 模块）传递到 C++ 侧。
         """
         if self._state != DAWorkflowState.Paused:
             return
@@ -310,27 +285,15 @@ class DASignalManager:
         """
         通知状态变更
 
-        触发 Python 侧回调，并通过 DAPythonSignalHandler::callInMainThread
-        将状态变更通知传递到 C++ 侧。
-
-        .. note::
-            状态变更到 C++ 侧的通知使用 DAPythonSignalHandler::callInMainThread，
-            此方法来自 da_interface 模块。无需创建自定义桥接类。
-            Python 侧通过 self._on_state_change 回调接收通知。
+        触发 on_state_change 回调，将状态变更通知传递给监听者。
+        C++ 侧通过绑定层桥接此回调机制。
 
         :param old_state: 原状态
         :param new_state: 新状态
         """
-        # Python 侧回调
+        # 回调通知
         if self._on_state_change is not None:
             self._on_state_change(old_state.value, new_state.value)
-
-        # C++ 侧通知通过 da_interface 的 DAPythonSignalHandler::callInMainThread
-        # 此处不直接调用，而是在 Python binding 层面由 C++ 调用 Python 时
-        # 通过 da_interface 模块提供的 callInMainThread 机制实现
-        # 实际实现方式：在 DAPyModuleWorkflow 或绑定层中，
-        # 将 DASignalManager 的状态变更回调与 da_interface 的
-        # DAPythonSignalHandler::callInMainThread 连接
 
     def __repr__(self) -> str:
         return (

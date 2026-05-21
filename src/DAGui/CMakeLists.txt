@@ -302,12 +302,14 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanel.h
         ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelFactory.h
         ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelWidget.h
+        ${DA_LIB_SUBDIR_NodeSetting}/DAParamDef.h
     )
     list(APPEND DA_LIB_SOURCE_FILES_NodeSetting
         ${DA_LIB_SUBDIR_NodeSetting}/DAParamTypeRegistry.cpp
         ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanel.cpp
         ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelFactory.cpp
         ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelWidget.cpp
+        ${DA_LIB_SUBDIR_NodeSetting}/DAParamDef.cpp
     )
 endif()
 

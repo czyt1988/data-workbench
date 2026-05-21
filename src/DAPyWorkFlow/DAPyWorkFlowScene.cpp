@@ -1,6 +1,5 @@
 ﻿#include "DAPyWorkFlowScene.h"
 #include "DAPybind11InQt.h"
-#include "DANodeDescriptor.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QPointer>
 #include <QQueue>
@@ -316,15 +315,14 @@ std::shared_ptr< DAPyNodeFactory > DAPyWorkFlowScene::getPyNodeFactory() const
 /**
  * @brief 创建Python节点图形项（通过元数据，不添加到场景）
  *
- * 工厂创建代理时已获取Python侧完整descriptor（含inputs/outputs），
- * DAPyNodeGraphicsItem构造函数自动从代理同步描述符和连接点，
- * 此方法不再调用setDescriptor()覆盖，仅设置元数据中的显示属性。
+ * 工厂创建代理时已获取Python侧完整属性，
+ * DAPyNodeGraphicsItem构造函数自动从代理同步缓存字段和连接点，
+ * 此方法仅设置元数据中的显示属性。
  *
  * @param[in] metaData 节点元数据，包含qualified_name、name、icon等
  * @param[in] pos 节点在场景中的初始位置
  * @return 创建的DAPyNodeGraphicsItem指针，创建失败返回nullptr
  * @note 返回的item未添加到场景，需要调用方自行添加
- * @note 不调用setDescriptor()（Bug 2修复），保留代理中的完整描述符
  */
 DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& metaData, const QPointF& pos)
 {
@@ -358,8 +356,7 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
         return nullptr;
     }
 
-    // Bug 2修复：构造函数已从proxy获取完整descriptor（含inputs/outputs），
-    // 不再调用setDescriptor()覆盖为薄描述符，保留代理中的完整数据
+    // 构造函数已从proxy获取完整缓存字段（含inputKeys/outputKeys），
     DAPyNodeGraphicsItem* item = new DAPyNodeGraphicsItem(proxy);
     // 设置位置（未添加到场景）
     item->updateNodeBody();
@@ -387,48 +384,6 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
 DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode_(const DAPyNodeMetaData& metaData, const QPointF& pos)
 {
     DAPyNodeGraphicsItem* item = createPyNode(metaData, pos);
-    if (!item) {
-        return nullptr;
-    }
-    // 通过addItem_()添加到场景并推入undo栈
-    addItem_(item);
-    emit pyNodeItemCreated(item);
-    return item;
-}
-
-/**
- * @brief 创建Python节点图形项（通过描述符，不添加到场景）
- *
- * 结构体路径的节点创建方法，将DANodeDescriptor转换为DAPyNodeMetaData后，
- * 委托给createPyNode(DAPyNodeMetaData)完成创建。
- *
- * @param[in] descriptor 节点描述符，包含完整的节点元数据
- * @param[in] pos 节点在场景中的初始位置
- * @return 创建的DAPyNodeGraphicsItem指针，创建失败返回nullptr
- * @see createPyNode(const DAPyNodeMetaData&, const QPointF&)
- */
-DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DANodeDescriptor& descriptor, const QPointF& pos)
-{
-    DAPyNodeMetaData metaData = descriptor.toMetaData();
-    return createPyNode(metaData, pos);
-}
-
-/**
- * @brief 创建Python节点（通过描述符，带undo/redo）
- *
- * 通过QUndoStack记录创建操作，支持撤销和重做。
- * 先调用createPyNode(DANodeDescriptor)创建节点图形项（不添加到场景），
- * 然后通过addItem_()将item添加到场景并推入undo栈。
- *
- * @param[in] descriptor 节点描述符
- * @param[in] pos 节点在场景中的初始位置
- * @return 创建的DAPyNodeGraphicsItem指针，创建失败返回nullptr
- * @note 函数名后缀"_"表示支持undo/redo操作
- * @see createPyNode(const DANodeDescriptor&, const QPointF&)
- */
-DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode_(const DANodeDescriptor& descriptor, const QPointF& pos)
-{
-    DAPyNodeGraphicsItem* item = createPyNode(descriptor, pos);
     if (!item) {
         return nullptr;
     }

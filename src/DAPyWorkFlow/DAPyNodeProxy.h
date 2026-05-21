@@ -4,13 +4,10 @@
 #include "DAPyObjectWrapper.h"
 #include "DAPyNodeState.h"
 #include "DAPyNodeStyleDefine.h"
-#include "DAPortDescriptor.h"
-#include "DAParameterDescriptor.h"
 #include "DAPyNodeStyle.h"
 #include "DAPybind11InQt.h"
 #include <QString>
 #include <QList>
-#include <QVector>
 
 namespace DA
 {
@@ -64,13 +61,6 @@ public:
     // 输入/输出端口key列表（从Python对象属性input_keys/output_keys读取）
     QList< QString > getInputKeys() const;
     QList< QString > getOutputKeys() const;
-
-    // 输入/输出端口描述符列表（从Python对象属性inputs/outputs list[dict]读取，临时转换为C++ struct）
-    QVector< DAPortDescriptor > getInputPorts() const;
-    QVector< DAPortDescriptor > getOutputPorts() const;
-
-    // 参数描述符列表（从Python对象属性parameters list[dict]读取，临时转换为C++ struct）
-    QVector< DAParameterDescriptor > getParameters() const;
 
     // 节点样式（从Python对象属性_node_display.style dict读取，临时转换为C++ struct）
     DANodeStyle getNodeStyle() const;

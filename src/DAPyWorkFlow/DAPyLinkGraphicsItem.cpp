@@ -232,34 +232,28 @@ bool DAPyLinkGraphicsItem::willCompleteLink()
         return DAGraphicsLinkItem::willCompleteLink();
     }
 
-    // 获取节点描述符
-    const DANodeDescriptor& fromDesc = d_ptr->mFromNode->getDescriptorStruct();
-    const DANodeDescriptor& toDesc   = d_ptr->mToNode->getDescriptorStruct();
-
-    // 从描述符中获取输出/输入类型信息
-    // 这里假设描述符中包含"outputs"和"inputs"数组，每个元素有"name"和"data_type"字段
-    QString outputType;
-    QString inputType;
-
-    for (const DAPortDescriptor& output : fromDesc.outputs) {
-        if (output.name == d_ptr->mFromOutputName) {
-            outputType = output.dataType;
+    // 端口key名称匹配验证：确认输出端口和输入端口在节点中存在
+    bool outputFound = false;
+    for (const DAPyLinkPoint& lp : d_ptr->mFromNode->getOutputLinkPoints()) {
+        if (lp.name == d_ptr->mFromOutputName) {
+            outputFound = true;
             break;
         }
     }
-    for (const DAPortDescriptor& input : toDesc.inputs) {
-        if (input.name == d_ptr->mToInputName) {
-            inputType = input.dataType;
+    bool inputFound = false;
+    for (const DAPyLinkPoint& lp : d_ptr->mToNode->getInputLinkPoints()) {
+        if (lp.name == d_ptr->mToInputName) {
+            inputFound = true;
             break;
         }
     }
 
-    // 检查类型兼容性
-    if (!outputType.isEmpty() && !inputType.isEmpty()) {
-        return checkDataTypeCompatibility(outputType, inputType);
+    // 如果端口名称不匹配，拒绝连接
+    if (!outputFound || !inputFound) {
+        return false;
     }
 
-    // 如果无法获取类型信息，默认允许连接
+    // 默认允许连接（类型兼容性检查可由Python侧节点自行判定）
     return true;
 }
 

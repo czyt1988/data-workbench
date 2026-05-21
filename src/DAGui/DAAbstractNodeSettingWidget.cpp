@@ -1,4 +1,6 @@
 #include "DAAbstractNodeSettingWidget.h"
+#include "DAPyDictConverter.h"
+#include "DAPyBindQt/DAPyGILGuard.h"
 #include <QJsonArray>
 
 namespace DA
@@ -14,27 +16,18 @@ public:
     }
 
     DAPyNodeProxy* mNodeProxy = nullptr;
-    DANodeDescriptor mDescriptor;
+    DAPyNodeMetaData mMetaData;
+    QVector< DAParamDef > mParamDefs;
 };
 
 // ============================================================
 // 构造与析构
 // ============================================================
 
-/**
- * @brief 构造函数
- *
- * 初始化 PIMPL 私有数据。
- *
- * @param[in] parent 父窗口指针
- */
 DAAbstractNodeSettingWidget::DAAbstractNodeSettingWidget(QWidget* parent) : QWidget(parent), DA_PIMPL_CONSTRUCT
 {
 }
 
-/**
- * @brief 析构函数
- */
 DAAbstractNodeSettingWidget::~DAAbstractNodeSettingWidget()
 {
 }
@@ -46,39 +39,90 @@ DAAbstractNodeSettingWidget::~DAAbstractNodeSettingWidget()
 /**
  * @brief 设置节点代理
  *
- * 使用 QPointer 安全持有 DAPyNodeProxy，并在设置时缓存描述符。
+ * 使用 QPointer 安全持有 DAPyNodeProxy，并在设置时缓存元数据和参数定义。
  * 传入 nullptr 时清除缓存。
  *
  * @param[in] proxy 节点代理指针，可为 nullptr
  */
 void DAAbstractNodeSettingWidget::setNodeProxy(DAPyNodeProxy* proxy)
 {
-    // ⚠️ 生命周期风险：此原始指针归 DAPyNodeGraphicsItem 所有（通过 unique_ptr 管理）。
-    // 如果节点被删除（Delete 键/Undo/clearScene），此指针将悬空，后续访问会导致崩溃。
-    // 改进方案（后续）：
-    //   1. 使用 scene->findNodeItemByProxy(proxy) 在使用前验证指针有效性
-    //   2. 在 scene 销毁节点时通过信号通知此面板清空指针
-    //   3. 考虑使用观察者模式或 weak_ptr 替代原始指针
     DA_D(d);
     d->mNodeProxy = proxy;
+    d->mParamDefs.clear();
     if (proxy) {
-        d->mDescriptor.name           = proxy->getNodeName();
-        d->mDescriptor.qualifiedName  = proxy->getQualifiedName();
-        d->mDescriptor.category       = proxy->getNodeGroup();
-        d->mDescriptor.icon           = proxy->getIcon();
-        d->mDescriptor.inputs         = proxy->getInputPorts();
-        d->mDescriptor.outputs        = proxy->getOutputPorts();
-        d->mDescriptor.parameters     = proxy->getParameters();
-        d->mDescriptor.renderTemplate = proxy->getRenderTemplate();
-        d->mDescriptor.style          = proxy->getNodeStyle();
+        // 缓存元数据
+        d->mMetaData.name          = proxy->getNodeName();
+        d->mMetaData.qualifiedName = proxy->getQualifiedName();
+        d->mMetaData.group         = proxy->getNodeGroup();
+        d->mMetaData.iconPath      = proxy->getIcon();
+        d->mMetaData.inputKeys     = proxy->getInputKeys();
+        d->mMetaData.outputKeys    = proxy->getOutputKeys();
+
+        // 从Python对象读取parameters，转换为DAParamDef列表
+        if (!proxy->isNone()) {
+            try {
+                if (proxy->hasattr("parameters")) {
+                    pybind11::list pyParams = proxy->attr("parameters").cast< pybind11::list >();
+                    for (auto item : pyParams) {
+                        pybind11::dict dict = pybind11::cast< pybind11::dict >(item);
+                        DAParamDef pd;
+                        if (dict.contains("name"))
+                            pd.name = pybind11::cast< QString >(dict[ "name" ]);
+                        if (dict.contains("type"))
+                            pd.type = pybind11::cast< QString >(dict[ "type" ]);
+                        if (dict.contains("description"))
+                            pd.description = pybind11::cast< QString >(dict[ "description" ]);
+                        if (dict.contains("default")) {
+                            pybind11::object defaultObj = dict[ "default" ];
+                            if (!defaultObj.is_none()) {
+                                if (pybind11::isinstance< pybind11::str >(defaultObj))
+                                    pd.defaultValue = pybind11::cast< QString >(defaultObj);
+                                else if (pybind11::isinstance< pybind11::int_ >(defaultObj))
+                                    pd.defaultValue = pybind11::cast< int >(defaultObj);
+                                else if (pybind11::isinstance< pybind11::float_ >(defaultObj))
+                                    pd.defaultValue = pybind11::cast< double >(defaultObj);
+                                else if (pybind11::isinstance< pybind11::bool_ >(defaultObj))
+                                    pd.defaultValue = pybind11::cast< bool >(defaultObj);
+                            }
+                        }
+                        if (dict.contains("properties")) {
+                            pybind11::object propObj = dict[ "properties" ];
+                            if (pybind11::isinstance< pybind11::dict >(propObj)) {
+                                pybind11::dict propDict = pybind11::cast< pybind11::dict >(propObj);
+                                QVariantHash props;
+                                for (auto propItem : propDict) {
+                                    std::string key = pybind11::cast< std::string >(propItem.first);
+                                    pybind11::object val = pybind11::reinterpret_borrow< pybind11::object >(propItem.second);
+                                    QString qKey = QString::fromStdString(key);
+                                    if (pybind11::isinstance< pybind11::str >(val))
+                                        props[ qKey ] = pybind11::cast< QString >(val);
+                                    else if (pybind11::isinstance< pybind11::int_ >(val))
+                                        props[ qKey ] = pybind11::cast< int >(val);
+                                    else if (pybind11::isinstance< pybind11::float_ >(val))
+                                        props[ qKey ] = pybind11::cast< double >(val);
+                                    else if (pybind11::isinstance< pybind11::bool_ >(val))
+                                        props[ qKey ] = pybind11::cast< bool >(val);
+                                    else if (pybind11::isinstance< pybind11::list >(val)) {
+                                        QStringList strList;
+                                        pybind11::list pyList = pybind11::cast< pybind11::list >(val);
+                                        for (auto listItem : pyList)
+                                            strList.append(pybind11::cast< QString >(listItem));
+                                        props[ qKey ] = strList;
+                                    }
+                                }
+                                pd.propertys = props;
+                            }
+                        }
+                        d->mParamDefs.append(pd);
+                    }
+                }
+            } catch (const std::exception& e) {
+                qWarning() << "DAAbstractNodeSettingWidget::setNodeProxy: failed to read parameters:" << e.what();
+            }
+        }
     }
 }
 
-/**
- * @brief 获取节点代理
- *
- * @return 当前持有的节点代理指针（可能为 nullptr）
- */
 DAPyNodeProxy* DAAbstractNodeSettingWidget::getNodeProxy() const
 {
     DA_DC(d);
@@ -86,27 +130,17 @@ DAPyNodeProxy* DAAbstractNodeSettingWidget::getNodeProxy() const
 }
 
 // ============================================================
-// 描述符访问
+// 元数据访问
 // ============================================================
 
-/**
- * @brief 获取缓存的节点描述符
- *
- * @return 缓存的 QJsonObject 描述符，未设置时返回空对象
- */
-const DANodeDescriptor& DAAbstractNodeSettingWidget::getDescriptor() const
+const DAPyNodeMetaData& DAAbstractNodeSettingWidget::getMetaData() const
 {
-    return d_ptr->mDescriptor;
+    return d_ptr->mMetaData;
 }
 
-/**
- * @brief 从描述符中提取 parameters 数组
- *
- * @return 描述符中的 "parameters" 字段，不存在时返回空 QJsonArray
- */
-const QVector< DAParameterDescriptor >& DAAbstractNodeSettingWidget::getParameters() const
+const QVector< DAParamDef >& DAAbstractNodeSettingWidget::getParamDefs() const
 {
-    return d_ptr->mDescriptor.parameters;
+    return d_ptr->mParamDefs;
 }
 
 }  // namespace DA

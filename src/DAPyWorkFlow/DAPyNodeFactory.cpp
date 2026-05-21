@@ -180,57 +180,16 @@ uint qHash(const DAPyNodeMetaData& key, uint seed)
 }
 
 //===================================================
-// DAPyNodeFactory::PrivateData
-//===================================================
-
-class DAPyNodeFactory::PrivateData
-{
-    DA_DECLARE_PUBLIC(DAPyNodeFactory)
-public:
-    PrivateData(DAPyNodeFactory* p);
-
-    // 统一异常处理
-    void dealException(const std::exception& e) const;
-
-    // Python DANodeFactory 实例（C++ 侧代理对象，生命周期由 Python 管理）
-    pybind11::object mPyFactory;
-    // 已发现的节点元数据列表
-    QList< DAPyNodeMetaData > mNodeMetaDataList;
-    // 最后的错误信息
-    mutable QString mLastErrorString;
-};
-
-DAPyNodeFactory::PrivateData::PrivateData(DAPyNodeFactory* p) : q_ptr(p)
-{
-}
-
-/**
- * @brief 统一异常处理
- *
- * 参考DAPyModulePandas的dealException模式，将异常信息存储到mLastErrorString中。
- * 对于pybind11::error_already_set异常，在GIL作用域内消费。
- *
- * @param[in] e 捕获的异常对象
- */
-void DAPyNodeFactory::PrivateData::dealException(const std::exception& e) const
-{
-    mLastErrorString = e.what();
-    qCritical() << "DAPyNodeFactory error:" << mLastErrorString;
-}
-
-//===================================================
 // DAPyNodeFactory
 //===================================================
 
 /**
  * @brief DAPyNodeFactory构造函数
  *
- * 构造独立的Python节点工厂，非单例模式。
- * 可通过parent参数挂载到QObject对象树。
- *
- * @param[in] parent 父QObject对象，默认nullptr
+ * 构造Python节点工厂代理，继承DAPyObjectWrapper。
+ * Python DANodeFactory实例在discoverNodes()中创建并缓存到DAPyObjectWrapper的_object中。
  */
-DAPyNodeFactory::DAPyNodeFactory(QObject* parent) : QObject(parent), DA_PIMPL_CONSTRUCT
+DAPyNodeFactory::DAPyNodeFactory() : DAPyObjectWrapper()
 {
 }
 
@@ -246,15 +205,14 @@ DAPyNodeFactory::~DAPyNodeFactory()
  *
  * 通过DAPyModuleWorkflow获取Python侧的DANodeFactory类，创建实例并调用discover()方法，
  * 将返回的节点类列表转换为C++的DAPyNodeMetaData并缓存到工厂中。
- * 同时缓存Python DANodeFactory实例，供后续createNodeProxy()使用。
+ * Python DANodeFactory实例缓存到DAPyObjectWrapper的_object中，供后续createNodeProxy()使用。
  *
  * 发现流程：
  * 1. 将scanPaths添加到Python sys.path（通过DAPyInterpreter::appendSysPath）
  * 2. 获取DAPyModuleWorkflow单例并导入DAWorkbench.DAWorkFlowPy模块
- * 3. 获取DANodeFactory类并创建Python实例，缓存到mPyFactory
+ * 3. 获取DANodeFactory类并创建Python实例，缓存到DAPyObjectWrapper的_object中
  * 4. 调用DANodeFactory.discover(scan_paths, use_entry_points)
  * 5. 遍历返回的节点类列表，从类属性读取元数据并转换为DAPyNodeMetaData
- * 6. 发射nodeDiscovered信号通知UI更新
  *
  * @param[in] scanPaths 要扫描的目录路径列表，这些路径会被添加到Python sys.path
  * @param[in] useEntryPoints 是否使用entry_points发现节点
@@ -262,7 +220,6 @@ DAPyNodeFactory::~DAPyNodeFactory()
  */
 bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryPoints)
 {
-    DA_D(d);
     DAPyGILGuard gil;
 
     try {
@@ -275,21 +232,21 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
         DAPyModuleWorkflow& pyModule = DAPyModuleWorkflow::getInstance();
         if (!pyModule.isImport()) {
             if (!pyModule.import()) {
-                d->mLastErrorString = "无法导入DAWorkbench.DAWorkFlowPy模块";
-                qCritical() << d->mLastErrorString;
+                mLastErrorString = "无法导入DAWorkbench.DAWorkFlowPy模块";
+                qCritical() << mLastErrorString;
                 return false;
             }
         }
 
-        // 3. 获取DANodeFactory类并创建实例，缓存到mPyFactory
+        // 3. 获取DANodeFactory类并创建实例，缓存到DAPyObjectWrapper的_object中
         pybind11::object factoryClass = pyModule.getNodeFactoryClass();
         if (factoryClass.is_none()) {
-            d->mLastErrorString = "无法获取DANodeFactory类引用";
-            qCritical() << d->mLastErrorString;
+            mLastErrorString = "无法获取DANodeFactory类引用";
+            qCritical() << mLastErrorString;
             return false;
         }
 
-        d->mPyFactory = factoryClass();
+        _object = factoryClass();
 
         // 4. 构建Python参数并调用discover
         pybind11::list pyScanPaths;
@@ -297,7 +254,7 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
             pyScanPaths.append(path.toStdString());
         }
 
-        pybind11::object result = d->mPyFactory.attr("discover")(pyScanPaths, useEntryPoints);
+        pybind11::object result = _object.attr("discover")(pyScanPaths, useEntryPoints);
 
         // 5. 遍历返回的节点类列表，直接从类属性读取元数据
         QList< DAPyNodeMetaData > discoveredList;
@@ -345,21 +302,18 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
         }
 
         // 更新缓存列表
-        d->mNodeMetaDataList = discoveredList;
+        mNodeMetaDataList = discoveredList;
 
-        qDebug() << "DAPyNodeFactory discovered" << d->mNodeMetaDataList.size() << "Python nodes";
-
-        // 6. 发射信号通知UI
-        Q_EMIT nodeDiscovered(d->mNodeMetaDataList);
+        qDebug() << "DAPyNodeFactory discovered" << mNodeMetaDataList.size() << "Python nodes";
         return true;
 
     } catch (const pybind11::error_already_set& e) {
-        d->mLastErrorString = QString("Python异常: %1").arg(e.what());
-        d->dealException(e);
+        mLastErrorString = QString("Python异常: %1").arg(e.what());
+        dealException(e);
         return false;
     } catch (const std::exception& e) {
-        d->mLastErrorString = QString("异常: %1").arg(e.what());
-        d->dealException(e);
+        mLastErrorString = QString("异常: %1").arg(e.what());
+        dealException(e);
         return false;
     }
 }
@@ -369,8 +323,8 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
  *
  * 核心创建流程：
  * 1. 获取GIL保护（DAPyGILGuard RAII）
- * 2. 检查mPyFactory（Python DANodeFactory实例）是否有效
- * 3. 调用mPyFactory.create_node(qualified_name)获取Python节点实例
+ * 2. 检查Python DANodeFactory实例（DAPyObjectWrapper的_object）是否有效
+ * 3. 调用DANodeFactory.create_node(qualified_name)获取Python节点实例
  * 4. 创建DAPyNodeProxy并设置Python节点引用
  *
  * 节点实例化由Python侧DANodeFactory完成（通过DANodeRegistry.get_descriptor获取类并实例化），
@@ -383,23 +337,22 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
  */
 DAPyNodeProxy* DAPyNodeFactory::createNodeProxy(const QString& qualifiedName)
 {
-    DA_D(d);
     DAPyGILGuard gil;
 
     try {
-        // 检查Python factory实例是否有效
-        if (d->mPyFactory.is_none() || !d->mPyFactory) {
-            d->mLastErrorString = "Python DANodeFactory实例未初始化，请先调用discoverNodes()";
-            qWarning() << d->mLastErrorString;
+        // 检查Python factory实例是否有效（DAPyObjectWrapper的_object即为Python DANodeFactory实例）
+        if (isNone() || !(*this)) {
+            mLastErrorString = "Python DANodeFactory实例未初始化，请先调用discoverNodes()";
+            qWarning() << mLastErrorString;
             return nullptr;
         }
 
         // 调用Python DANodeFactory.create_node()获取节点实例
-        pybind11::object pyNodeInstance = d->mPyFactory.attr("create_node")(qualifiedName.toStdString());
+        pybind11::object pyNodeInstance = _object.attr("create_node")(qualifiedName.toStdString());
 
         if (pyNodeInstance.is_none()) {
-            d->mLastErrorString = QString("Python DANodeFactory.create_node(%1)返回None").arg(qualifiedName);
-            qWarning() << d->mLastErrorString;
+            mLastErrorString = QString("Python DANodeFactory.create_node(%1)返回None").arg(qualifiedName);
+            qWarning() << mLastErrorString;
             return nullptr;
         }
 
@@ -409,12 +362,12 @@ DAPyNodeProxy* DAPyNodeFactory::createNodeProxy(const QString& qualifiedName)
         return proxy;
 
     } catch (const pybind11::error_already_set& e) {
-        d->mLastErrorString = QString("创建Python节点实例失败: %1").arg(e.what());
-        d->dealException(e);
+        mLastErrorString = QString("创建Python节点实例失败: %1").arg(e.what());
+        dealException(e);
         return nullptr;
     } catch (const std::exception& e) {
-        d->mLastErrorString = QString("创建Python节点实例失败: %1").arg(e.what());
-        d->dealException(e);
+        mLastErrorString = QString("创建Python节点实例失败: %1").arg(e.what());
+        dealException(e);
         return nullptr;
     }
 }
@@ -446,8 +399,7 @@ DAPyNodeProxy* DAPyNodeFactory::createNodeProxy(const DAPyNodeMetaData& metaData
  */
 QList< DAPyNodeMetaData > DAPyNodeFactory::getNodeMetadataList() const
 {
-    DA_DC(d);
-    return d->mNodeMetaDataList;
+    return mNodeMetaDataList;
 }
 
 /**
@@ -457,10 +409,9 @@ QList< DAPyNodeMetaData > DAPyNodeFactory::getNodeMetadataList() const
  */
 QStringList DAPyNodeFactory::getNodePrototypes() const
 {
-    DA_DC(d);
     QStringList res;
-    res.reserve(d->mNodeMetaDataList.size());
-    for (const DAPyNodeMetaData& meta : d->mNodeMetaDataList) {
+    res.reserve(mNodeMetaDataList.size());
+    for (const DAPyNodeMetaData& meta : mNodeMetaDataList) {
         res.append(meta.qualifiedName);
     }
     return res;
@@ -490,14 +441,13 @@ QString DAPyNodeFactory::factoryDescribe() const
  * @brief 获取最后的错误信息
  *
  * 在discoverNodes()或createNodeProxy()执行失败后，
- * 错误信息存储在PrivateData::mLastErrorString中。
+ * 错误信息存储在mLastErrorString中。
  *
  * @return 最后一次错误的描述字符串，若无错误返回空字符串
  */
 QString DAPyNodeFactory::getLastErrorString() const
 {
-    DA_DC(d);
-    return d->mLastErrorString;
+    return mLastErrorString;
 }
 
 }  // namespace DA

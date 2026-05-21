@@ -1,5 +1,4 @@
 #include "DataAnalysisPlugin.h"
-#include "DataAnalysisNodeFactory.h"
 #include <QDebug>
 #include "DataAnalysisUI.h"
 #include "DACoreInterface.h"
@@ -60,17 +59,11 @@ QString DataAnalysisPlugin::getDescription() const
 
 DA::DAPyNodeFactory* DataAnalysisPlugin::createNodeFactory()
 {
-    auto fac = new DataAnalysisNodeFactory();
-    fac->setCore(core());
-    connect(fac, &DataAnalysisNodeFactory::destroyed, this, &DataAnalysisPlugin::onFactoryDestroyed);
-    return fac;
+    return nullptr;
 }
 
 void DataAnalysisPlugin::destroyNodeFactory(DA::DAPyNodeFactory* p)
 {
-    if (p) {
-        p->deleteLater();
-    }
 }
 
 DA::DAAbstractSettingPage* DataAnalysisPlugin::createSettingPage()

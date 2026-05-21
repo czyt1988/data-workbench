@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QJsonObject>
-
+#include <QJsonArray>
 namespace DA
 {
 
@@ -30,7 +30,7 @@ public:
     }
 
     DAPropertyPanelContainerWidget* mPanel = nullptr;
-    QVector< DAParameterDescriptor > mParameters;
+    QVector< DAParamDef > mParameters;
     bool mBlockSignals = false;
     QJsonObject mConfigCache;
 };
@@ -85,7 +85,7 @@ void DANodeParamSettingPanel::updateUI()
 
     const auto& config = d_func()->mConfigCache;
     const auto& params = d_func()->mParameters;
-    int id = 1;
+    int id             = 1;
     for (const auto& desc : params) {
         QString key = desc.name;
         if (!config.contains(key)) {
@@ -106,56 +106,56 @@ void DANodeParamSettingPanel::updateUI()
         }
 
         QJsonValue val = config.value(key);
-        QString type = desc.type;
+        QString type   = desc.type;
 
         if (type == "int") {
-            auto* spin = qobject_cast<QSpinBox*>(editor);
+            auto* spin = qobject_cast< QSpinBox* >(editor);
             if (spin && val.isDouble())
                 spin->setValue(val.toInt());
         } else if (type == "float") {
-            auto* dsp = qobject_cast<QDoubleSpinBox*>(editor);
+            auto* dsp = qobject_cast< QDoubleSpinBox* >(editor);
             if (dsp && val.isDouble())
                 dsp->setValue(val.toDouble());
         } else if (type == "bool") {
-            auto* cb = qobject_cast<QCheckBox*>(editor);
+            auto* cb = qobject_cast< QCheckBox* >(editor);
             if (cb && val.isBool())
                 cb->setChecked(val.toBool());
         } else if (type == "str") {
-            auto* le = qobject_cast<QLineEdit*>(editor);
+            auto* le = qobject_cast< QLineEdit* >(editor);
             if (le && val.isString())
                 le->setText(val.toString());
         } else if (type == "enum") {
-            auto* combo = qobject_cast<QComboBox*>(editor);
+            auto* combo = qobject_cast< QComboBox* >(editor);
             if (combo && val.isString()) {
                 int idx = combo->findText(val.toString());
                 if (idx >= 0)
                     combo->setCurrentIndex(idx);
             }
         } else if (type == "file") {
-            auto* fileEdit = qobject_cast<DA::DAFilePathEditWidget*>(editor);
+            auto* fileEdit = qobject_cast< DA::DAFilePathEditWidget* >(editor);
             if (fileEdit && val.isString())
                 fileEdit->setFilePath(val.toString());
         } else if (type == "folder") {
-            auto* foldEdit = qobject_cast<DA::DAFilePathEditWidget*>(editor);
+            auto* foldEdit = qobject_cast< DA::DAFilePathEditWidget* >(editor);
             if (foldEdit && val.isString())
                 foldEdit->setFilePath(val.toString());
         } else if (type == "color") {
-            auto* btn = qobject_cast<DAColorPickerButton*>(editor);
+            auto* btn = qobject_cast< DAColorPickerButton* >(editor);
             if (btn && val.isString())
                 btn->setColor(QColor(val.toString()));
         } else if (type == "font") {
-            auto* fe = qobject_cast<DAFontEditPannelWidget*>(editor);
+            auto* fe = qobject_cast< DAFontEditPannelWidget* >(editor);
             if (fe && val.isString()) {
                 QFont f;
                 f.fromString(val.toString());
                 fe->setCurrentFont(f);
             }
         } else if (type == "code") {
-            auto* codeEdit = qobject_cast<QPlainTextEdit*>(editor);
+            auto* codeEdit = qobject_cast< QPlainTextEdit* >(editor);
             if (codeEdit && val.isString())
                 codeEdit->setPlainText(val.toString());
         } else if (type == "list") {
-            QListWidget* listWidget = editor->findChild<QListWidget*>();
+            QListWidget* listWidget = editor->findChild< QListWidget* >();
             if (listWidget && val.isArray()) {
                 listWidget->clear();
                 QJsonArray arr = val.toArray();
@@ -191,7 +191,7 @@ void DANodeParamSettingPanel::buildPropertyPanel()
 
     panel->clearProperties();
 
-    const auto& params = getParameters();
+    const auto& params = getParamDefs();
 
     // 无参数时显示占位标签
     if (params.isEmpty()) {
@@ -220,7 +220,10 @@ void DANodeParamSettingPanel::buildPropertyPanel()
     }
 
     // 断开旧连接，防止 rebuild 时重复触发
-    disconnect(panel, &DAPropertyPanelContainerWidget::propertyValueChanged, this, &DANodeParamSettingPanel::onPanelPropertyValueChanged);
+    disconnect(panel,
+               &DAPropertyPanelContainerWidget::propertyValueChanged,
+               this,
+               &DANodeParamSettingPanel::onPanelPropertyValueChanged);
     disconnect(this, &DANodeParamSettingPanel::propertyValueChanged, this, &DANodeParamSettingPanel::onPropertyValueChanged);
 
     // Hop-1: mPanel → onPanelPropertyValueChanged（转发信号）
@@ -230,10 +233,7 @@ void DANodeParamSettingPanel::buildPropertyPanel()
             &DANodeParamSettingPanel::onPanelPropertyValueChanged);
 
     // Hop-3: propertyValueChanged → onPropertyValueChanged（收集变更写入代理）
-    connect(this,
-            &DANodeParamSettingPanel::propertyValueChanged,
-            this,
-            &DANodeParamSettingPanel::onPropertyValueChanged);
+    connect(this, &DANodeParamSettingPanel::propertyValueChanged, this, &DANodeParamSettingPanel::onPropertyValueChanged);
 }
 
 /**
@@ -254,7 +254,7 @@ void DANodeParamSettingPanel::onPanelPropertyValueChanged(int propertyId)
  */
 void DANodeParamSettingPanel::onPropertyValueChanged(int propertyId)
 {
-    QJsonObject config = collectConfig();
+    QJsonObject config     = collectConfig();
     d_func()->mConfigCache = config;
 
     DAPyNodeProxy* proxy = getNodeProxy();
@@ -279,7 +279,7 @@ QJsonObject DANodeParamSettingPanel::collectConfig() const
         return config;
 
     const auto& params = d_func()->mParameters;
-    int id = 1;
+    int id             = 1;
     for (const auto& desc : params) {
         QString name = desc.name;
         QString type = desc.type;
@@ -302,58 +302,58 @@ QJsonObject DANodeParamSettingPanel::collectConfig() const
         }
 
         if (type == "int") {
-            auto* spin = qobject_cast<QSpinBox*>(editor);
+            auto* spin = qobject_cast< QSpinBox* >(editor);
             if (spin)
-                config[name] = spin->value();
+                config[ name ] = spin->value();
         } else if (type == "float") {
-            auto* dsp = qobject_cast<QDoubleSpinBox*>(editor);
+            auto* dsp = qobject_cast< QDoubleSpinBox* >(editor);
             if (dsp)
-                config[name] = dsp->value();
+                config[ name ] = dsp->value();
         } else if (type == "bool") {
-            auto* cb = qobject_cast<QCheckBox*>(editor);
+            auto* cb = qobject_cast< QCheckBox* >(editor);
             if (cb)
-                config[name] = cb->isChecked();
+                config[ name ] = cb->isChecked();
         } else if (type == "str") {
-            auto* le = qobject_cast<QLineEdit*>(editor);
+            auto* le = qobject_cast< QLineEdit* >(editor);
             if (le)
-                config[name] = le->text();
+                config[ name ] = le->text();
         } else if (type == "enum") {
-            auto* combo = qobject_cast<QComboBox*>(editor);
+            auto* combo = qobject_cast< QComboBox* >(editor);
             if (combo)
-                config[name] = combo->currentText();
+                config[ name ] = combo->currentText();
         } else if (type == "file") {
-            auto* fileEdit = qobject_cast<DA::DAFilePathEditWidget*>(editor);
+            auto* fileEdit = qobject_cast< DA::DAFilePathEditWidget* >(editor);
             if (fileEdit)
-                config[name] = fileEdit->getFilePath();
+                config[ name ] = fileEdit->getFilePath();
         } else if (type == "folder") {
-            auto* foldEdit = qobject_cast<DA::DAFilePathEditWidget*>(editor);
+            auto* foldEdit = qobject_cast< DA::DAFilePathEditWidget* >(editor);
             if (foldEdit)
-                config[name] = foldEdit->getFilePath();
+                config[ name ] = foldEdit->getFilePath();
         } else if (type == "list") {
             // list 编辑器是复合控件（QWidget 容器），内部包含 QListWidget
-            QListWidget* listWidget = editor->findChild<QListWidget*>();
+            QListWidget* listWidget = editor->findChild< QListWidget* >();
             if (listWidget) {
                 QJsonArray arr;
                 for (int i = 0; i < listWidget->count(); ++i) {
                     arr.append(listWidget->item(i)->text());
                 }
-                config[name] = arr;
+                config[ name ] = arr;
             }
         } else if (type == "color") {
-            auto* btn = qobject_cast<DAColorPickerButton*>(editor);
+            auto* btn = qobject_cast< DAColorPickerButton* >(editor);
             if (btn)
-                config[name] = btn->color().name();
+                config[ name ] = btn->color().name();
         } else if (type == "font") {
-            auto* fe = qobject_cast<DAFontEditPannelWidget*>(editor);
+            auto* fe = qobject_cast< DAFontEditPannelWidget* >(editor);
             if (fe)
-                config[name] = fe->getCurrentFont().toString();
+                config[ name ] = fe->getCurrentFont().toString();
         } else if (type == "code") {
-            auto* codeEdit = qobject_cast<QPlainTextEdit*>(editor);
+            auto* codeEdit = qobject_cast< QPlainTextEdit* >(editor);
             if (codeEdit)
-                config[name] = codeEdit->toPlainText();
+                config[ name ] = codeEdit->toPlainText();
         } else {
             // 未知类型：跳过，返回 QJsonValue()（即 null）
-            config[name] = QJsonValue();
+            config[ name ] = QJsonValue();
         }
 
         ++id;

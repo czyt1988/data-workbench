@@ -8,11 +8,11 @@ DAWorkflowExecutor 基于拓扑排序和入度计数模式，按序执行工作�
 DAWorkflowExecutor 支持：
 - 拓扑排序执行：按入度计数确定节点执行顺序
 - 异步执行模式：通过 threading 在后台线程中执行工作流
-- 状态变更通知：通过 DAPythonSignalHandler::callInMainThread 传递到 C++ 侧
+- 状态变更通知：通过 on_state_change 回调传递状态变更
 - 终止/暂停支持：可中断工作流执行
 
-状态变更通知使用 DAPythonSignalHandler::callInMainThread（来自 da_interface 模块），
-不创建自定义桥接类。
+状态变更通知通过纯 Python 回调机制（on_state_change）实现，
+C++ 侧通过绑定层桥接该回调。
 
 使用示例::
 
@@ -75,8 +75,8 @@ class DAWorkflowExecutor:
     3. 按序执行孤立节点和开始节点（执行并传递数据）
     4. 下游节点入度满足时触发执行
 
-    状态变更通知通过 DAPythonSignalHandler::callInMainThread
-    （da_interface 模块）传递到 C++ 侧，不创建自定义桥接类。
+    状态变更通知通过 on_state_change 回调机制实现，
+    C++ 侧通过绑定层桥接该回调。
 
     使用示例::
 
@@ -214,8 +214,8 @@ class DAWorkflowExecutor:
         或通过 state 属性检查执行状态。
 
         .. note::
-            状态变更通知通过 DAPythonSignalHandler::callInMainThread
-            （da_interface 模块）传递到 C++ 侧。
+            状态变更通知通过 on_state_change 回调传递，
+            C++ 侧通过绑定层桥接该回调。
         """
         if self._execution_thread is not None and self._execution_thread.is_alive():
             return  # 已有执行线程在运行
@@ -303,7 +303,6 @@ class DAWorkflowExecutor:
 
         状态变更回调流程：
         1. Python 侧回调 on_state_change
-        2. C++ 侧通知通过 DAPythonSignalHandler::callInMainThread
 
         :param new_state: 新状态
         """
@@ -315,10 +314,6 @@ class DAWorkflowExecutor:
         # Python 侧回调
         if self._on_state_change is not None:
             self._on_state_change(old_state.value, new_state.value)
-
-        # C++ 侧通知：通过 da_interface 的 DAPythonSignalHandler::callInMainThread
-        # 在 Python binding 层面由 C++ 调用 Python 时实现连接
-        # 此处仅触发 Python 侧回调，C++ 侧连接在绑定层实现
 
     def _run_workflow(self) -> bool:
         """

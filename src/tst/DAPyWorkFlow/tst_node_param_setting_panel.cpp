@@ -1,7 +1,7 @@
 #include "tst_node_param_setting_panel.h"
 #include "DANodeParamSettingPanel.h"
 #include "DAParamTypeRegistry.h"
-#include "DAPyWorkFlow/DAParameterDescriptor.h"
+#include "DAParamDef.h"
 #include "DAPyWorkFlow/DAPyNodeProxy.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include <QtTest/QtTest>

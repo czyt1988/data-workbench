@@ -17,7 +17,7 @@ namespace DA
  *
  * 轻量级数据结构，用于序列化保存工作流图中单个节点的信息。
  * 包含节点ID、限定名、元数据引用及场景位置。
- * 与 DAParameterDescriptor 同模式：公开字段、无 Q_OBJECT、无 PIMPL。
+ * 公开字段、无 Q_OBJECT、无 PIMPL。
  *
  * @see DAWorkflowConnectionState DAWorkflowState
  */
@@ -51,7 +51,7 @@ struct DAPYWORKFLOW_API DAWorkflowConnectionState
  *
  * 轻量级数据类，代表工作流图的完整状态，包含名称、节点列表和连接线列表。
  * 支持 QDomDocument 格式的 XML 序列化/反序列化，用于工作流的持久化存储。
- * 与 DAParameterDescriptor 同模式：公开字段、无 Q_OBJECT、无 PIMPL。
+ * 公开字段、无 Q_OBJECT、无 PIMPL。
  *
  * 使用示例：
  * @code

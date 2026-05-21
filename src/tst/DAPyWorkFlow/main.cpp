@@ -8,8 +8,6 @@
 #include "tst_node_param_setting_widget.h"
 #include "tst_danodestyle.h"
 #include "tst_body_rendering.h"
-#include "tst_daportdescriptor.h"
-#include "tst_danodedescriptor.h"
 #include "tst_workflow_lifecycle.h"
 #include "tst_dapyworkflow_wrapper.h"
 #include "tst_dapynodeproxy_signals.h"
@@ -37,8 +35,6 @@ int main(int argc, char* argv[])
     RUN_TEST(DA::TestDANodeParamSettingPanelWidget);
     RUN_TEST(DA::TestDANodeStyle);
     RUN_TEST(DA::TestBodyRendering);
-    RUN_TEST(DA::TestDAPortDescriptor);
-    RUN_TEST(DA::TestDANodeDescriptor);
     RUN_TEST(DA::TestWorkflowLifecycle);
     RUN_TEST(DA::TestDAPyWorkFlowWrapper);
 

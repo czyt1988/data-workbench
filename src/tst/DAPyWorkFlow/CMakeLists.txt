@@ -13,21 +13,11 @@ include_directories(
 )
 
 # 创建测试可执行文件
+file(GLOB DA_TEST_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+file(GLOB DA_TEST_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 add_executable(DAPyWorkFlowTests
-    main.cpp
-    tst_dapynodemetadata.cpp tst_dapynodemetadata.h
-    tst_linkpoints.cpp tst_linkpoints.h
-    tst_param_type_registry.cpp tst_param_type_registry.h
-    tst_node_param_setting_panel.cpp tst_node_param_setting_panel.h
-    tst_node_param_setting_factory.cpp tst_node_param_setting_factory.h
-    tst_node_param_setting_widget.cpp tst_node_param_setting_widget.h
-    tst_danodestyle.cpp tst_danodestyle.h
-    tst_body_rendering.cpp tst_body_rendering.h
-    tst_daportdescriptor.cpp tst_daportdescriptor.h
-    tst_danodedescriptor.cpp tst_danodedescriptor.h
-    tst_workflow_lifecycle.cpp tst_workflow_lifecycle.h
-    tst_dapyworkflow_wrapper.cpp tst_dapyworkflow_wrapper.h
-    tst_dapynodeproxy_signals.cpp tst_dapynodeproxy_signals.h
+    ${DA_TEST_HEADER_FILES}
+    ${DA_TEST_SOURCE_FILES}
 )
 
 # 设置目标属性

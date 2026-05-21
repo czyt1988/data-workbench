@@ -1,8 +1,6 @@
 #ifndef DAPYDICTCONVERTER_H
 #define DAPYDICTCONVERTER_H
 #include "DAPyWorkFlowAPI.h"
-#include "DAPortDescriptor.h"
-#include "DAParameterDescriptor.h"
 #include "DAPyNodeStyle.h"
 #include "DAPyNodeStyleDefine.h"
 #include "DAPybind11InQt.h"
@@ -14,7 +12,7 @@ namespace DA
  * @brief Python dict 到 C++ struct 的临时转换工具
  *
  * DAPyNodeProxy 作为纯代理，每次通过 attr() 从 Python 对象读取属性，
- * 端口/参数/样式等复合类型在 Python 端为 dict，
+ * 样式等复合类型在 Python 端为 dict，
  * 本模块提供 dict→C++ struct 的临时转换函数（不做缓存）。
  *
  * Python dict 键使用 snake_case（data_type, body_shape, fill_color 等），
@@ -24,12 +22,6 @@ namespace DA
 namespace DictConverter
 {
 
-/// 从 Python dict 转换为 DAPortDescriptor
-DAPYWORKFLOW_API DAPortDescriptor portFromDict(const pybind11::dict& d);
-
-/// 从 Python dict 转换为 DAParameterDescriptor
-DAPYWORKFLOW_API DAParameterDescriptor paramFromDict(const pybind11::dict& d);
-
 /// 从 Python dict 转换为 DAPyLinkPointStyle
 DAPYWORKFLOW_API DAPyLinkPointStyle linkPointStyleFromDict(const pybind11::dict& d);
 
@@ -38,12 +30,6 @@ DAPYWORKFLOW_API DANodeStyle nodeStyleFromDict(const pybind11::dict& d);
 
 /// 从字符串转换为 RenderTemplate 枚举
 DAPYWORKFLOW_API RenderTemplate renderTemplateFromString(const QString& s);
-
-/// 从 Python list[dict] 转换为 QVector<DAPortDescriptor>
-DAPYWORKFLOW_API QVector<DAPortDescriptor> portListFromPyList(const pybind11::list& lst);
-
-/// 从 Python list[dict] 转换为 QVector<DAParameterDescriptor>
-DAPYWORKFLOW_API QVector<DAParameterDescriptor> paramListFromPyList(const pybind11::list& lst);
 
 /// 从 Python 对象读取颜色（支持 hex string 和 RGB tuple）
 DAPYWORKFLOW_API QColor colorFromPyObj(const pybind11::object& obj);

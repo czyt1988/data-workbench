@@ -1,8 +1,7 @@
 ﻿#ifndef DAPYNODEFACTORY_H
 #define DAPYNODEFACTORY_H
 #include "DAPyWorkFlowAPI.h"
-#include "DAGlobals.h"
-#include <QObject>
+#include "DAPyBindQt/DAPyObjectWrapper.h"
 #include <QList>
 #include <QString>
 #include <QStringList>
@@ -52,7 +51,7 @@ DAPYWORKFLOW_API QDebug operator<<(QDebug dbg, const DAPyNodeMetaData& meta);
 DAPYWORKFLOW_API uint qHash(const DAPyNodeMetaData& key, uint seed = 0);
 
 /**
- * @brief Python节点工厂，独立QObject，不继承DAAbstractNodeFactory
+ * @brief Python节点工厂，继承DAPyObjectWrapper，代理Python侧DANodeFactory
  *
  * 通过DAPyModuleWorkflow调用Python侧的DANodeRegistry发现节点，
  * 将Python的DANodeDescriptor转换为C++的DAPyNodeMetaData，
@@ -66,13 +65,10 @@ DAPYWORKFLOW_API uint qHash(const DAPyNodeMetaData& key, uint seed = 0);
  * @endcode
  * @see DAPyModuleWorkflow DAPyNodeProxy DAPyNodeMetaData
  */
-class DAPYWORKFLOW_API DAPyNodeFactory : public QObject
+class DAPYWORKFLOW_API DAPyNodeFactory : public DAPyObjectWrapper
 {
-    Q_OBJECT
-    DA_DECLARE_PRIVATE(DAPyNodeFactory)
 public:
-    // 构造工厂（可选parent，非单例）
-    explicit DAPyNodeFactory(QObject* parent = nullptr);
+    DAPyNodeFactory();
     ~DAPyNodeFactory();
 
     // 发现Python节点（调用DANodeRegistry.discover）
@@ -98,9 +94,11 @@ public:
     // 获取最后的错误信息
     QString getLastErrorString() const;
 
-Q_SIGNALS:
-    // 节点发现完成信号，通知UI更新
-    void nodeDiscovered(const QList< DA::DAPyNodeMetaData >& metadataList);
+private:
+    // 已发现的节点元数据列表
+    QList< DAPyNodeMetaData > mNodeMetaDataList;
+    // 最后的错误信息
+    mutable QString mLastErrorString;
 };
 
 }  // namespace DA

@@ -34,97 +34,6 @@ QColor colorFromPyObj(const pybind11::object& obj)
     return QColor();
 }
 
-DAPortDescriptor portFromDict(const pybind11::dict& d)
-{
-    DAPortDescriptor pd;
-    if (d.contains("name")) {
-        pd.name = pybind11::cast< QString >(d[ "name" ]);
-    }
-    if (d.contains("data_type")) {
-        pd.dataType = pybind11::cast< QString >(d[ "data_type" ]);
-    }
-    if (d.contains("required")) {
-        pd.required = pybind11::cast< bool >(d[ "required" ]);
-    }
-    if (d.contains("description")) {
-        pd.description = pybind11::cast< QString >(d[ "description" ]);
-    }
-    return pd;
-}
-
-DAParameterDescriptor paramFromDict(const pybind11::dict& d)
-{
-    DAParameterDescriptor pd;
-    if (d.contains("name")) {
-        pd.name = pybind11::cast< QString >(d[ "name" ]);
-    }
-    if (d.contains("type")) {
-        pd.type = pybind11::cast< QString >(d[ "type" ]);
-    }
-    if (d.contains("description")) {
-        pd.description = pybind11::cast< QString >(d[ "description" ]);
-    }
-    if (d.contains("default")) {
-        try {
-            pybind11::object defaultObj = d[ "default" ];
-            if (!defaultObj.is_none()) {
-                // 尝试转换为 QVariant（通过 JSON 中间格式）
-                QJsonObject tmpJson = DA::PY::pyDictToQJsonObject(pybind11::dict());
-                // 直接通过 pybind11 cast 常见类型
-                if (pybind11::isinstance< pybind11::str >(defaultObj)) {
-                    pd.defaultValue = pybind11::cast< QString >(defaultObj);
-                } else if (pybind11::isinstance< pybind11::int_ >(defaultObj)) {
-                    pd.defaultValue = pybind11::cast< int >(defaultObj);
-                } else if (pybind11::isinstance< pybind11::float_ >(defaultObj)) {
-                    pd.defaultValue = pybind11::cast< double >(defaultObj);
-                } else if (pybind11::isinstance< pybind11::bool_ >(defaultObj)) {
-                    pd.defaultValue = pybind11::cast< bool >(defaultObj);
-                }
-            }
-        } catch (const std::exception& e) {
-            qWarning() << "DAPyDictConverter::paramFromDict default value cast failed:" << e.what();
-        }
-    }
-    // 处理 propertys：Python 的 extra kwargs
-    if (d.contains("properties")) {
-        try {
-            pybind11::object propObj = d[ "properties" ];
-            if (pybind11::isinstance< pybind11::dict >(propObj)) {
-                pybind11::dict propDict = pybind11::cast< pybind11::dict >(propObj);
-                // 逐键转换
-                QVariantHash props;
-                for (auto item : propDict) {
-                    std::string key      = pybind11::cast< std::string >(item.first);
-                    pybind11::object val = pybind11::reinterpret_borrow< pybind11::object >(item.second);
-                    QString qKey         = QString::fromStdString(key);
-                    // 基本类型转换
-                    if (pybind11::isinstance< pybind11::str >(val)) {
-                        props[ qKey ] = pybind11::cast< QString >(val);
-                    } else if (pybind11::isinstance< pybind11::int_ >(val)) {
-                        props[ qKey ] = pybind11::cast< int >(val);
-                    } else if (pybind11::isinstance< pybind11::float_ >(val)) {
-                        props[ qKey ] = pybind11::cast< double >(val);
-                    } else if (pybind11::isinstance< pybind11::bool_ >(val)) {
-                        props[ qKey ] = pybind11::cast< bool >(val);
-                    } else if (pybind11::isinstance< pybind11::list >(val)) {
-                        // list → QStringList（用于 enum_options 等）
-                        QStringList strList;
-                        pybind11::list pyList = pybind11::cast< pybind11::list >(val);
-                        for (auto listItem : pyList) {
-                            strList.append(pybind11::cast< QString >(listItem));
-                        }
-                        props[ qKey ] = strList;
-                    }
-                }
-                pd.propertys = props;
-            }
-        } catch (const std::exception& e) {
-            qWarning() << "DAPyDictConverter::paramFromDict properties cast failed:" << e.what();
-        }
-    }
-    return pd;
-}
-
 DAPyLinkPointStyle linkPointStyleFromDict(const pybind11::dict& d)
 {
     DAPyLinkPointStyle s;
@@ -275,26 +184,6 @@ RenderTemplate renderTemplateFromString(const QString& s)
     }
     // 尝试使用 stringToEnum
     return stringToEnum(s, RenderTemplate::NodeStyleTemplate);
-}
-
-QVector< DAPortDescriptor > portListFromPyList(const pybind11::list& lst)
-{
-    QVector< DAPortDescriptor > result;
-    for (auto item : lst) {
-        pybind11::dict d = pybind11::cast< pybind11::dict >(item);
-        result.append(portFromDict(d));
-    }
-    return result;
-}
-
-QVector< DAParameterDescriptor > paramListFromPyList(const pybind11::list& lst)
-{
-    QVector< DAParameterDescriptor > result;
-    for (auto item : lst) {
-        pybind11::dict d = pybind11::cast< pybind11::dict >(item);
-        result.append(paramFromDict(d));
-    }
-    return result;
 }
 
 }  // namespace DictConverter

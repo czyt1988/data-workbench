@@ -1,60 +1,43 @@
-﻿#ifndef DAPARAMETERDESCRIPTOR_H
-#define DAPARAMETERDESCRIPTOR_H
-#include <type_traits>
+#ifndef DAPARAMDEF_H
+#define DAPARAMDEF_H
+#include "DAGuiAPI.h"
 #include <QString>
 #include <QVariant>
+#include <QVariantHash>
 #include <QList>
 #include <QPair>
-#include <QHash>
-#include "DAPyWorkFlowAPI.h"
+#include <QStringList>
+
 namespace DA
 {
 
 /**
- * @brief Python 节点参数描述符
+ * @brief Python节点参数定义
  *
- * 轻量级数据结构，用于解析并存储 Python 节点的参数描述信息。
- * 包含参数名称、类型、描述、默认值等基础字段，并有扩展能力。
- *
- * @see DAPyParamTypeHelper
+ * 轻量级数据结构，用于描述Python节点的参数信息。
+ * 替代原DAParameterDescriptor，保留DAGui参数编辑器所需的属性系统。
+ * 包含参数名称、类型、描述、默认值及扩展属性（enum/min/max/step/decimals/filter）。
  */
-class DAPYWORKFLOW_API DAParameterDescriptor
+struct DAGUI_API DAParamDef
 {
-public:
     QString name;           ///< 参数名称
     QString type;           ///< 参数类型 (str/int/float/bool/list/dict)
     QString description;    ///< 参数描述
-    QVariant defaultValue;  ///< 默认值（可为无效 QVariant 表示无默认值）
+    QVariant defaultValue;  ///< 默认值（可为无效QVariant表示无默认值）
+    int propertyId;         ///< 属性面板中的属性ID（由面板构建器设置）
+
     /**
-     * @brief 记录属性，有些参数，例如spinbox，需要min,max属性，则可以通过此属性来设置
-     * 当前支持的属性：
-     * - enums [PropertyName_Enum]
-     *  value 1:QList<QPair<QString,int>>
-     *  value 2:QStringList
-     *  作用，存储枚举，使用QComboBox按顺序显示，QComboBox的data设置为int
+     * @brief 记录扩展属性，用于编辑器配置
      *
-     * - min [PropertyName_Min]:
-     *  value:int/double
-     *  作用，QSpinBox/QDoubleSpinBox存储最小值
-     *
-     * - max [PropertyName_Max]:
-     *  value:int/double
-     *  作用，QSpinBox/QDoubleSpinBox存储最大值
-     *
-     * - step [PropertyName_Step]:
-     *  value:int/double
-     *  作用，QSpinBox/QDoubleSpinBox存储步长
-     *
-     * - decimals [PropertyName_Decimals]:
-     *  value:int
-     *  作用，QDoubleSpinBox的精度设置
-     *
-     * - filter [PropertyName_Filter]
-     *   value:QString
-     *   作用，DAFilePathEditWidget的文件过滤器设置
+     * 支持的属性键：
+     * - enum (PropertyName_Enum): QList<QPair<QString,int>> 或 QStringList
+     * - min (PropertyName_Min): int/double
+     * - max (PropertyName_Max): int/double
+     * - step (PropertyName_Step): int/double
+     * - decimals (PropertyName_Decimals): int
+     * - filter (PropertyName_Filter): QString
      */
     QVariantHash propertys;
-    int propertyId;  ///< 属性面板中的属性 ID（由面板构建器设置）
 
     // 属性名常量
     static const QString PropertyName_Enum;
@@ -64,9 +47,8 @@ public:
     static const QString PropertyName_Decimals;
     static const QString PropertyName_Filter;
 
-public:
-    // 默认构造函数
-    DAParameterDescriptor();
+    // 默认构造
+    DAParamDef();
 
     // 判断是否有属性
     bool hasProperty(const QString& propName) const;
@@ -74,39 +56,25 @@ public:
     // ---- 枚举属性 ----
     QStringList getEnumStringListProperty() const;
     QList< QPair< QString, int > > getEnumListProperty() const;
-    void setEnumStringListProperty(const QStringList& enumList);
-    void setEnumStringListProperty(const QList< QPair< QString, int > >& pairList);
     bool hasEnumProperty() const;
 
     // ---- min属性 ----
     int getMinProperty(bool* isSuccess = nullptr) const;
     double getMinFProperty(bool* isSuccess = nullptr) const;
-    void setMinProperty(int min);
-    void setMinProperty(double min);
 
     // ---- max属性 ----
     int getMaxProperty(bool* isSuccess = nullptr) const;
     double getMaxFProperty(bool* isSuccess = nullptr) const;
-    void setMaxProperty(int max);
-    void setMaxProperty(double max);
 
     // ---- step属性 ----
     int getStepProperty(bool* isSuccess = nullptr) const;
     double getStepFProperty(bool* isSuccess = nullptr) const;
-    void setStepProperty(int step);
-    void setStepProperty(double step);
 
     // ---- decimals属性 ----
     int getDecimalsProperty(bool* isSuccess = nullptr) const;
-    void setDecimalsProperty(int decimals);
 
     // ---- Filter属性 ----
     QString getFilterProperty() const;
-    void setFilterProperty(const QString& filters);
-
-    // ---- 原始描述符属性（rawDescriptor） ----
-    void setRawDescriptor(const QVariantHash& props);
-    QVariantHash getRawDescriptor() const;
 
     // ---- 默认值快捷方法 ----
     bool hasDefaultValue() const;
@@ -142,4 +110,4 @@ T getNumericProperty(const QVariantHash& propertys, const QString& propName, T f
 }  // namespace Detail
 }  // namespace DA
 
-#endif  // DAPARAMETERDESCRIPTOR_H
+#endif  // DAPARAMDEF_H
