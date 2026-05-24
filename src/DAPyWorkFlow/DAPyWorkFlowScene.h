@@ -17,7 +17,7 @@ class DAPyNodeGraphicsItem;
 class DAPyLinkGraphicsItem;
 class DAPythonSignalHandler;
 class DAPyNodeFactory;
-struct DAPyNodeMetaData;
+class DAPyNodeMetaData;
 
 /**
  * @brief Python工作流场景管理类

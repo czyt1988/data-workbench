@@ -19,6 +19,7 @@
 #include "DAPybind11QtCaster.hpp"
 #include "DAGraphicsViewGlobal.h"
 #include "DAPyObjectWrapper.h"
+#include "DAPybind11InQt.h"
 namespace DA
 {
 
@@ -50,20 +51,20 @@ public:
 public:
     std::unique_ptr< DAPyNodeProxy > mProxy;  ///< Python节点代理（独占所有权）
     // 缓存字段：从DAPyNodeProxy一次性读取，避免paint时GIL开销
-    QString mName;                                    ///< 缓存的节点名称
-    QString mQualifiedName;                           ///< 缓存的限定名
-    QString mIconPath;                                ///< 缓存的图标路径
+    QString mName;                                                         ///< 缓存的节点名称
+    QString mQualifiedName;                                                ///< 缓存的限定名
+    QString mIconPath;                                                     ///< 缓存的图标路径
     RenderTemplate mRenderTemplate { RenderTemplate::NodeStyleTemplate };  ///< 缓存的渲染模板
-    QList< QString > mInputKeys;                      ///< 缓存的输入端口key列表
-    QList< QString > mOutputKeys;                     ///< 缓存的输出端口key列表
-    DANodeStyle mStyle;                               ///< 缓存的节点样式
-    QIcon mIcon;                                     ///< 节点图标
-    QSvgRenderer* mSvgRenderer { nullptr };          ///< SVG渲染器
-    QGraphicsProxyWidget* mProxyWidget { nullptr };  ///< Widget代理
-    QWidget* mWidget { nullptr };                    ///< 嵌入的widget
-    DAPyNodeState mNodeState { Idle };               ///< 节点状态
-    QList< DAPyLinkPoint > mInputLinkPoints;         ///< 输入连接点
-    QList< DAPyLinkPoint > mOutputLinkPoints;        ///< 输出连接点
+    QList< QString > mInputKeys;                                           ///< 缓存的输入端口key列表
+    QList< QString > mOutputKeys;                                          ///< 缓存的输出端口key列表
+    DANodeStyle mStyle;                                                    ///< 缓存的节点样式
+    QIcon mIcon;                                                           ///< 节点图标
+    QSvgRenderer* mSvgRenderer { nullptr };                                ///< SVG渲染器
+    QGraphicsProxyWidget* mProxyWidget { nullptr };                        ///< Widget代理
+    QWidget* mWidget { nullptr };                                          ///< 嵌入的widget
+    DAPyNodeState mNodeState { Idle };                                     ///< 节点状态
+    QList< DAPyLinkPoint > mInputLinkPoints;                               ///< 输入连接点
+    QList< DAPyLinkPoint > mOutputLinkPoints;                              ///< 输出连接点
     qreal linkPointDrawWidth { 14 };     ///< 连接点的绘制宽度（宽度相对于东西方向的宽度）
     qreal linkPointDrawHeight { 10 };    ///< 连接点的绘制高度（高度相对于东西方向的高度）
     DAPyObjectWrapper mPaintCallback;    ///< 自定义绘制回调（Python函数对象）
@@ -394,14 +395,14 @@ void DAPyNodeGraphicsItem::setProxy(DAPyNodeProxy* proxy)
 {
     d_ptr->mProxy.reset(proxy);
     if (proxy) {
-        d_ptr->mNodeState     = proxy->getNodeState();
-        d_ptr->mName          = proxy->getNodeName();
-        d_ptr->mQualifiedName = proxy->getQualifiedName();
-        d_ptr->mIconPath      = proxy->getIcon();
-        d_ptr->mInputKeys     = proxy->getInputKeys();
-        d_ptr->mOutputKeys    = proxy->getOutputKeys();
+        d_ptr->mNodeState      = proxy->getNodeState();
+        d_ptr->mName           = proxy->getNodeName();
+        d_ptr->mQualifiedName  = proxy->getQualifiedName();
+        d_ptr->mIconPath       = proxy->getIcon();
+        d_ptr->mInputKeys      = proxy->getInputKeys();
+        d_ptr->mOutputKeys     = proxy->getOutputKeys();
         d_ptr->mRenderTemplate = proxy->getRenderTemplate();
-        d_ptr->mStyle         = proxy->getNodeStyle();
+        d_ptr->mStyle          = proxy->getNodeStyle();
     }
     updateLinkPoints();
     update();
@@ -551,14 +552,14 @@ void DAPyNodeGraphicsItem::updateFromProxy(DAPyNodeProxy* proxy)
     if (!proxy) {
         return;
     }
-    d_ptr->mNodeState     = proxy->getNodeState();
-    d_ptr->mName          = proxy->getNodeName();
-    d_ptr->mQualifiedName = proxy->getQualifiedName();
-    d_ptr->mIconPath      = proxy->getIcon();
-    d_ptr->mInputKeys     = proxy->getInputKeys();
-    d_ptr->mOutputKeys    = proxy->getOutputKeys();
+    d_ptr->mNodeState      = proxy->getNodeState();
+    d_ptr->mName           = proxy->getNodeName();
+    d_ptr->mQualifiedName  = proxy->getQualifiedName();
+    d_ptr->mIconPath       = proxy->getIcon();
+    d_ptr->mInputKeys      = proxy->getInputKeys();
+    d_ptr->mOutputKeys     = proxy->getOutputKeys();
     d_ptr->mRenderTemplate = proxy->getRenderTemplate();
-    d_ptr->mStyle         = proxy->getNodeStyle();
+    d_ptr->mStyle          = proxy->getNodeStyle();
     updateLinkPoints();
     update();
 }

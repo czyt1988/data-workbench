@@ -6,7 +6,7 @@
 #include "DAPyNodeState.h"
 #include "DAPyNodeStyle.h"
 #include "DAPyNodeProxy.h"
-#include "DAPyBindQt/DAPybind11InQt.h"
+#include "DAPyNodeMetaData.h"
 #include <QIcon>
 #include <QGraphicsSceneMouseEvent>
 
