@@ -53,11 +53,11 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .export_values();
 
     // 导出 AspectDirection 枚举（PortSide 是 AspectDirection 的类型别名）
-    pybind11::enum_< DA::AspectDirection >(m, "AspectDirection")
-        .value("East", DA::AspectDirection::East)
-        .value("South", DA::AspectDirection::South)
-        .value("West", DA::AspectDirection::West)
-        .value("North", DA::AspectDirection::North)
+    pybind11::enum_< DA::DAAspectDirection >(m, "AspectDirection")
+        .value("East", DA::DAAspectDirection::East)
+        .value("South", DA::DAAspectDirection::South)
+        .value("West", DA::DAAspectDirection::West)
+        .value("North", DA::DAAspectDirection::North)
         .export_values();
     m.attr("PortSide") = m.attr("AspectDirection");
 
@@ -108,11 +108,11 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
     // 绑定 DAPyLinkPoint 类
     pybind11::class_< DA::DAPyLinkPoint >(m, "DAPyLinkPoint")
         .def(pybind11::init<>())
-        .def(pybind11::init< const QPointF&, const QString&, DA::DAPyLinkPoint::Way, DA::AspectDirection >(),
+        .def(pybind11::init< const QPointF&, const QString&, DA::DAPyLinkPoint::Way, DA::DAAspectDirection >(),
              pybind11::arg("position"),
              pybind11::arg("name"),
              pybind11::arg("way")       = DA::DAPyLinkPoint::Way::Output,
-             pybind11::arg("direction") = DA::AspectDirection::East)
+             pybind11::arg("direction") = DA::DAAspectDirection::East)
         .def_readwrite("position", &DA::DAPyLinkPoint::position, "Connection point position relative to graphics item")
         .def_readwrite("name", &DA::DAPyLinkPoint::name, "Connection point name")
         .def_readwrite("way", &DA::DAPyLinkPoint::way, "Input or Output attribute")

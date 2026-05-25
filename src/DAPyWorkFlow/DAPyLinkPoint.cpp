@@ -10,7 +10,7 @@ namespace DA
 /**
  * @brief 构造函数，创建一个无效的连接点
  */
-DAPyLinkPoint::DAPyLinkPoint() : position(QPointF()), name(QString()), way(Output), direction(AspectDirection::East)
+DAPyLinkPoint::DAPyLinkPoint() : position(QPointF()), name(QString()), way(Output), direction(DAAspectDirection::East)
 {
 }
 
@@ -23,7 +23,7 @@ DAPyLinkPoint::DAPyLinkPoint() : position(QPointF()), name(QString()), way(Outpu
  * @param[in] w 连接点的输入输出属性，默认为 Output
  * @param[in] d 连接点引线的伸出方向，默认为 East
  */
-DAPyLinkPoint::DAPyLinkPoint(const QPointF& p, const QString& n, Way w, AspectDirection d)
+DAPyLinkPoint::DAPyLinkPoint(const QPointF& p, const QString& n, Way w, DAAspectDirection d)
     : position(p), name(n), way(w), direction(d)
 {
 }
@@ -68,7 +68,7 @@ QPointF DAPyLinkPoint::elongation(int externLen) const
  * @brief 判断此连接点的方向是否与给定方向相对
  * @note 委托给 DAGraphicsLinkItem::isDirectionOpposite()
  */
-bool DAPyLinkPoint::isDirectionOpposite(AspectDirection other) const
+bool DAPyLinkPoint::isDirectionOpposite(DAAspectDirection other) const
 {
     return DAGraphicsLinkItem::isDirectionOpposite(direction, other);
 }
@@ -87,7 +87,7 @@ bool DAPyLinkPoint::isEqualWayName(const DAPyLinkPoint& other) const
  * @brief 判断两个方向是否平行
  * @note 委托给 DAGraphicsLinkItem::isDirectionParallel()
  */
-bool DAPyLinkPoint::isDirectionParallel(AspectDirection d1, AspectDirection d2)
+bool DAPyLinkPoint::isDirectionParallel(DAAspectDirection d1, DAAspectDirection d2)
 {
     return DAGraphicsLinkItem::isDirectionParallel(d1, d2);
 }
@@ -96,7 +96,7 @@ bool DAPyLinkPoint::isDirectionParallel(AspectDirection d1, AspectDirection d2)
  * @brief 顺着点1的方向看，点2是否在前面
  * @note 委托给 DAGraphicsLinkItem::isPointInFront()
  */
-bool DAPyLinkPoint::isPointInFront(const QPointF& p1, AspectDirection d1, const QPointF& p2)
+bool DAPyLinkPoint::isPointInFront(const QPointF& p1, DAAspectDirection d1, const QPointF& p2)
 {
     return DAGraphicsLinkItem::isPointInFront(p1, d1, p2);
 }
@@ -105,7 +105,7 @@ bool DAPyLinkPoint::isPointInFront(const QPointF& p1, AspectDirection d1, const 
  * @brief 判断两个点是否会相遇（不平行且方向垂直）
  * @note 委托给 DAGraphicsLinkItem::isPointCanMeet()
  */
-bool DAPyLinkPoint::isPointCanMeet(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2)
+bool DAPyLinkPoint::isPointCanMeet(const QPointF& p1, DAAspectDirection d1, const QPointF& p2, DAAspectDirection d2)
 {
     return DAGraphicsLinkItem::isPointCanMeet(p1, d1, p2, d2);
 }
@@ -114,7 +114,7 @@ bool DAPyLinkPoint::isPointCanMeet(const QPointF& p1, AspectDirection d1, const 
  * @brief 翻转方向
  * @note 委托给 DAGraphicsLinkItem::oppositeDirection()
  */
-AspectDirection DAPyLinkPoint::oppositeDirection(AspectDirection d)
+DAAspectDirection DAPyLinkPoint::oppositeDirection(DAAspectDirection d)
 {
     return DAGraphicsLinkItem::oppositeDirection(d);
 }
@@ -123,7 +123,7 @@ AspectDirection DAPyLinkPoint::oppositeDirection(AspectDirection d)
  * @brief 返回点1相对点2的方位
  * @note 委托给 DAGraphicsLinkItem::relativeDirectionOfPoint()
  */
-AspectDirection DAPyLinkPoint::relativeDirectionOfPoint(const QPointF& p1, const QPointF& p2)
+DAAspectDirection DAPyLinkPoint::relativeDirectionOfPoint(const QPointF& p1, const QPointF& p2)
 {
     return DAGraphicsLinkItem::relativeDirectionOfPoint(p1, p2);
 }

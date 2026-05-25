@@ -437,19 +437,19 @@ qreal DAGraphicsLinkItem::pointLength(const QPointF& a, const QPointF& b)
  * @param externLen 伸出长度
  * @return 得到控制点
  */
-QPointF DAGraphicsLinkItem::elongation(const QPointF& orgPoint, AspectDirection d, qreal externLen)
+QPointF DAGraphicsLinkItem::elongation(const QPointF& orgPoint, DAAspectDirection d, qreal externLen)
 {
 	switch (d) {
-	case AspectDirection::East:
+	case DAAspectDirection::East:
 		return (QPointF(orgPoint.x() + externLen, orgPoint.y()));
 
-	case AspectDirection::South:
+	case DAAspectDirection::South:
 		return (QPointF(orgPoint.x(), orgPoint.y() + externLen));
 
-	case AspectDirection::West:
+	case DAAspectDirection::West:
 		return (QPointF(orgPoint.x() - externLen, orgPoint.y()));
 
-	case AspectDirection::North:
+	case DAAspectDirection::North:
 		return (QPointF(orgPoint.x(), orgPoint.y() - externLen));
 	}
 	return (orgPoint);
@@ -461,17 +461,17 @@ QPointF DAGraphicsLinkItem::elongation(const QPointF& orgPoint, AspectDirection 
  * @param d2
  * @return
  */
-bool DAGraphicsLinkItem::isDirectionOpposite(AspectDirection d1, AspectDirection d2)
+bool DAGraphicsLinkItem::isDirectionOpposite(DAAspectDirection d1, DAAspectDirection d2)
 {
 	switch (d1) {
-	case AspectDirection::East:
-		return d2 == AspectDirection::West;
-	case AspectDirection::South:
-		return d2 == AspectDirection::North;
-	case AspectDirection::West:
-		return d2 == AspectDirection::East;
-	case AspectDirection::North:
-		return d2 == AspectDirection::South;
+	case DAAspectDirection::East:
+		return d2 == DAAspectDirection::West;
+	case DAAspectDirection::South:
+		return d2 == DAAspectDirection::North;
+	case DAAspectDirection::West:
+		return d2 == DAAspectDirection::East;
+	case DAAspectDirection::North:
+		return d2 == DAAspectDirection::South;
 	}
 	return false;
 }
@@ -482,7 +482,7 @@ bool DAGraphicsLinkItem::isDirectionOpposite(AspectDirection d1, AspectDirection
  * @param d2
  * @return
  */
-bool DAGraphicsLinkItem::isDirectionParallel(AspectDirection d1, AspectDirection d2)
+bool DAGraphicsLinkItem::isDirectionParallel(DAAspectDirection d1, DAAspectDirection d2)
 {
 	if (d1 == d2) {
 		return true;
@@ -498,16 +498,16 @@ bool DAGraphicsLinkItem::isDirectionParallel(AspectDirection d1, AspectDirection
  * @param p2
  * @return
  */
-bool DAGraphicsLinkItem::isPointInFront(const QPointF& p1, AspectDirection d1, const QPointF& p2)
+bool DAGraphicsLinkItem::isPointInFront(const QPointF& p1, DAAspectDirection d1, const QPointF& p2)
 {
 	switch (d1) {
-	case AspectDirection::East:
+	case DAAspectDirection::East:
 		return p2.x() > p1.x();
-	case AspectDirection::South:
+	case DAAspectDirection::South:
 		return p2.y() > p1.y();
-	case AspectDirection::West:
+	case DAAspectDirection::West:
 		return p2.x() < p1.x();
-	case AspectDirection::North:
+	case DAAspectDirection::North:
 		return p2.y() < p1.y();
 	}
 	return false;
@@ -521,14 +521,14 @@ bool DAGraphicsLinkItem::isPointInFront(const QPointF& p1, AspectDirection d1, c
  * @param d2
  * @return
  */
-bool DAGraphicsLinkItem::isPointCanMeet(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2)
+bool DAGraphicsLinkItem::isPointCanMeet(const QPointF& p1, DAAspectDirection d1, const QPointF& p2, DAAspectDirection d2)
 {
 	if (isDirectionParallel(d1, d2)) {
 		return false;
 	}
 	switch (d1) {
-	case AspectDirection::East: {
-		if (d2 == AspectDirection::South) {
+	case DAAspectDirection::East: {
+		if (d2 == DAAspectDirection::South) {
 			// 南
 			return (p1.x() < p2.x()) && (p1.y() > p2.y());
 		} else {
@@ -536,8 +536,8 @@ bool DAGraphicsLinkItem::isPointCanMeet(const QPointF& p1, AspectDirection d1, c
 			return (p1.x() < p2.x()) && (p1.y() < p2.y());
 		}
 	} break;
-	case AspectDirection::South: {
-		if (d2 == AspectDirection::East) {
+	case DAAspectDirection::South: {
+		if (d2 == DAAspectDirection::East) {
 			// 东
 			return (p1.x() > p2.x()) && (p1.y() < p2.y());
 		} else {
@@ -545,8 +545,8 @@ bool DAGraphicsLinkItem::isPointCanMeet(const QPointF& p1, AspectDirection d1, c
 			return (p1.x() < p2.x()) && (p1.y() < p2.y());
 		}
 	} break;
-	case AspectDirection::West: {
-		if (d2 == AspectDirection::South) {
+	case DAAspectDirection::West: {
+		if (d2 == DAAspectDirection::South) {
 			// 南
 			return (p1.x() > p2.x()) && (p1.y() > p2.y());
 		} else {
@@ -554,8 +554,8 @@ bool DAGraphicsLinkItem::isPointCanMeet(const QPointF& p1, AspectDirection d1, c
 			return (p1.x() > p2.x()) && (p1.y() < p2.y());
 		}
 	} break;
-	case AspectDirection::North: {
-		if (d2 == AspectDirection::East) {
+	case DAAspectDirection::North: {
+		if (d2 == DAAspectDirection::East) {
 			// 东
 			return (p1.x() > p2.x()) && (p1.y() > p2.y());
 		} else {
@@ -576,9 +576,9 @@ bool DAGraphicsLinkItem::isPointCanMeet(const QPointF& p1, AspectDirection d1, c
  * @return
  */
 bool DAGraphicsLinkItem::isParallelPointApproachInDirection(const QPointF& p1,
-                                                            AspectDirection d1,
+                                                            DAAspectDirection d1,
                                                             const QPointF& p2,
-                                                            AspectDirection d2)
+                                                            DAAspectDirection d2)
 {
 	if (!isDirectionOpposite(d1, d2)) {
 		// 平行同向永远接近不了
@@ -586,13 +586,13 @@ bool DAGraphicsLinkItem::isParallelPointApproachInDirection(const QPointF& p1,
 	}
 	// 这里说明必定反向
 	switch (d1) {
-	case AspectDirection::East:
+	case DAAspectDirection::East:
 		return p1.x() < p2.x();
-	case AspectDirection::South:
+	case DAAspectDirection::South:
 		return p1.y() < p2.y();
-	case AspectDirection::West:
+	case DAAspectDirection::West:
 		return p1.x() > p2.x();
-	case AspectDirection::North:
+	case DAAspectDirection::North:
 		return p1.y() > p2.y();
 	}
 	return false;
@@ -603,21 +603,21 @@ bool DAGraphicsLinkItem::isParallelPointApproachInDirection(const QPointF& p1,
  * @param d
  * @return
  */
-AspectDirection DAGraphicsLinkItem::oppositeDirection(AspectDirection d)
+DAAspectDirection DAGraphicsLinkItem::oppositeDirection(DAAspectDirection d)
 {
 	switch (d) {
-	case AspectDirection::East:
-		return AspectDirection::West;
-	case AspectDirection::South:
-		return AspectDirection::North;
-	case AspectDirection::West:
-		return AspectDirection::East;
-	case AspectDirection::North:
-		return AspectDirection::South;
+	case DAAspectDirection::East:
+		return DAAspectDirection::West;
+	case DAAspectDirection::South:
+		return DAAspectDirection::North;
+	case DAAspectDirection::West:
+		return DAAspectDirection::East;
+	case DAAspectDirection::North:
+		return DAAspectDirection::South;
 	default:
 		break;
 	}
-	return AspectDirection::East;
+	return DAAspectDirection::East;
 }
 
 /**
@@ -633,25 +633,25 @@ AspectDirection DAGraphicsLinkItem::oppositeDirection(AspectDirection d)
  * @param p2
  * @return 如果点重合，降返回一个不可预测的方向
  */
-AspectDirection DAGraphicsLinkItem::relativeDirectionOfPoint(const QPointF& p1, const QPointF& p2)
+DAAspectDirection DAGraphicsLinkItem::relativeDirectionOfPoint(const QPointF& p1, const QPointF& p2)
 {
 	qreal dx = p1.x() - p2.x();
 	qreal dy = p1.y() - p2.y();
 	if (qAbs(dx) > qAbs(dy)) {
 		// x方向大于y方向
 		if (dx > 0) {
-			return AspectDirection::East;
+			return DAAspectDirection::East;
 		}
-		return AspectDirection::West;
+		return DAAspectDirection::West;
 	} else {
 		// x方向小于y方向
 		if (dy > 0) {
-			return AspectDirection::South;
+			return DAAspectDirection::South;
 		}
-		return AspectDirection::North;
+		return DAAspectDirection::North;
 	}
 	// 不可能达到
-	return AspectDirection::East;
+	return DAAspectDirection::East;
 }
 
 /**
@@ -881,9 +881,9 @@ void DAGraphicsLinkItem::setScenePos(qreal x, qreal y)
  * @return
  */
 QPainterPath DAGraphicsLinkItem::generateLinkLineBezierPainterPath(const QPointF& fromPos,
-                                                                   AspectDirection fromDirect,
+                                                                   DAAspectDirection fromDirect,
                                                                    const QPointF& toPos,
-                                                                   AspectDirection toDirect)
+                                                                   DAAspectDirection toDirect)
 {
 	// 贝塞尔的引导线根据伸出点的方向偏移两个点距离的1/5
 	//! 1 先求出两个点距离
@@ -922,9 +922,9 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineStraightPainterPath(const QPoin
  * @return
  */
 QPainterPath DAGraphicsLinkItem::generateLinkLineKnucklePainterPath(const QPointF& fromPos,
-                                                                    AspectDirection fromDirect,
+                                                                    DAAspectDirection fromDirect,
                                                                     const QPointF& toPos,
-                                                                    AspectDirection toDirect)
+                                                                    DAAspectDirection toDirect)
 {
 	const int extendLength = 20;  // 延长线的长度
 	QPointF extendFrom     = elongation(fromPos, fromDirect, extendLength);
@@ -934,7 +934,7 @@ QPainterPath DAGraphicsLinkItem::generateLinkLineKnucklePainterPath(const QPoint
 	path.lineTo(extendFrom);
 	qreal dx = extendTo.x() - extendFrom.x();
 	qreal dy = extendTo.y() - extendFrom.y();
-	if ((fromDirect == AspectDirection::East) || (fromDirect == AspectDirection::West)) {
+	if ((fromDirect == DAAspectDirection::East) || (fromDirect == DAAspectDirection::West)) {
 		// from沿着x方向
 		if (isDirectionParallel(fromDirect, toDirect)) {
 			// 平行

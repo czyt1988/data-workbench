@@ -3,9 +3,9 @@
 #include <type_traits>
 namespace DA
 {
-uint qHash(const DA::AspectDirection& key, uint seed) noexcept
+uint qHash(const DA::DAAspectDirection& key, uint seed) noexcept
 {
-    using underlying_type = std::underlying_type_t< DA::AspectDirection >;
+    using underlying_type = std::underlying_type_t< DA::DAAspectDirection >;
     return ::qHash(static_cast< underlying_type >(key), seed);
 }
 }
@@ -39,9 +39,9 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAShapeKeyPoint::KeyPoint,
 
 // ================================== DA::AspectDirection ==================================
 
-DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::AspectDirection,
-                                  DA::AspectDirection::East,
-                                  { DA::AspectDirection::East, "east" },
-                                  { DA::AspectDirection::South, "south" },
-                                  { DA::AspectDirection::West, "west" },
-                                  { DA::AspectDirection::North, "north" });
+DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAAspectDirection,
+                                  DA::DAAspectDirection::East,
+                                  { DA::DAAspectDirection::East, "east" },
+                                  { DA::DAAspectDirection::South, "south" },
+                                  { DA::DAAspectDirection::West, "west" },
+                                  { DA::DAAspectDirection::North, "north" });

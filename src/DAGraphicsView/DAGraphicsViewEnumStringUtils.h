@@ -56,6 +56,6 @@ DA_ENUM_STRING_DECLARE_EXPORT(DAGRAPHICSVIEW_API, DA::DAGraphicsLinkItem::LinkLi
 // ------------------------------------------
 // DA::AspectDirection
 // ------------------------------------------
-DA_ENUM_STRING_DECLARE_EXPORT(DAGRAPHICSVIEW_API, DA::AspectDirection)
+DA_ENUM_STRING_DECLARE_EXPORT(DAGRAPHICSVIEW_API, DA::DAAspectDirection)
 
 #endif  // DAGRAPHICSVIEWENUMSTRINGUTILS_H

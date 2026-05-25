@@ -82,7 +82,7 @@ enum class IconPosition
  *
  * @see AspectDirection
  */
-using PortSide = AspectDirection;
+using PortSide = DAAspectDirection;
 
 // PortSide 是 AspectDirection 的类型别名，其 DAEnumTraits 已在
 // DAGraphicsViewEnumStringUtils.h 中声明（DA_ENUM_STRING_DECLARE_EXPORT(DAGRAPHICSVIEW_API, DA::AspectDirection)）

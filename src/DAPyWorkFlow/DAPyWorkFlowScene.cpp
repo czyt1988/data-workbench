@@ -1242,7 +1242,7 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                         QPointF lpScenePos = nodeItem->mapToScene(lp.position);
                         // 根据连接点方向计算方向感知的命中区域
                         qreal halfW, halfH;
-                        if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
+                        if (lp.direction == DAAspectDirection::East || lp.direction == DAAspectDirection::West) {
                             halfW = 8;
                             halfH = 6;  // 水平方向: 16x12
                         } else {
@@ -1282,7 +1282,7 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                     QPointF lpScenePos = nodeItem->mapToScene(lp.position);
                     // 根据连接点方向计算方向感知的命中区域
                     qreal halfW, halfH;
-                    if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
+                    if (lp.direction == DAAspectDirection::East || lp.direction == DAAspectDirection::West) {
                         halfW = 8;
                         halfH = 6;  // 水平方向: 16x12
                     } else {

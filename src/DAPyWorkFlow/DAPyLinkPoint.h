@@ -22,12 +22,12 @@ public:
      */
     enum Way
     {
-        Input,   ///< 输入节点
-        Output   ///< 输出节点
+        Input,  ///< 输入节点
+        Output  ///< 输出节点
     };
 
     DAPyLinkPoint();
-    DAPyLinkPoint(const QPointF& p, const QString& n, Way w = Output, AspectDirection d = AspectDirection::East);
+    DAPyLinkPoint(const QPointF& p, const QString& n, Way w = Output, DAAspectDirection d = DAAspectDirection::East);
 
     // 判断是否是有效的连接点
     bool isValid() const;
@@ -39,28 +39,28 @@ public:
     // 按方向延伸连接点位置
     QPointF elongation(int externLen) const;
     // 判断此连接点的方向是否与给定方向相反
-    bool isDirectionOpposite(AspectDirection other) const;
+    bool isDirectionOpposite(DAAspectDirection other) const;
     // 比较 way+name 是否相同（忽略位置和方向）
     bool isEqualWayName(const DAPyLinkPoint& other) const;
 
     // ==== 静态方向工具方法（委托给 DAGraphicsLinkItem） ====
 
     // 判断两个方向是否平行
-    static bool isDirectionParallel(AspectDirection d1, AspectDirection d2);
+    static bool isDirectionParallel(DAAspectDirection d1, DAAspectDirection d2);
     // 顺着点1的方向看，点2是否在前面
-    static bool isPointInFront(const QPointF& p1, AspectDirection d1, const QPointF& p2);
+    static bool isPointInFront(const QPointF& p1, DAAspectDirection d1, const QPointF& p2);
     // 两个点是否会相遇
-    static bool isPointCanMeet(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
+    static bool isPointCanMeet(const QPointF& p1, DAAspectDirection d1, const QPointF& p2, DAAspectDirection d2);
     // 翻转方向
-    static AspectDirection oppositeDirection(AspectDirection d);
+    static DAAspectDirection oppositeDirection(DAAspectDirection d);
     // 返回点1相对点2的方位
-    static AspectDirection relativeDirectionOfPoint(const QPointF& p1, const QPointF& p2);
+    static DAAspectDirection relativeDirectionOfPoint(const QPointF& p1, const QPointF& p2);
 
 public:
-    QPointF position;           ///< 连接点相对图形项的位置
-    QString name;               ///< 连接点名字
-    Way way;                    ///< 连接点的属性，是输入还是输出
-    AspectDirection direction;  ///< 连接点引线的伸出方向
+    QPointF position;             ///< 连接点相对图形项的位置
+    QString name;                 ///< 连接点名字
+    Way way;                      ///< 连接点的属性，是输入还是输出
+    DAAspectDirection direction;  ///< 连接点引线的伸出方向
 };
 
 DAPYWORKFLOW_API uint qHash(const DAPyLinkPoint& key, uint seed);

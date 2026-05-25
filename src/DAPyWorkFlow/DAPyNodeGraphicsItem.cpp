@@ -176,32 +176,32 @@ void DAPyNodeGraphicsItem::PrivateData::updateNodeStyle(const QRectF& bodyRect)
     qreal lpLeft = 0, lpRight = 0, lpTop = 0, lpBottom = 0;
     if (!mInputLinkPoints.isEmpty()) {
         switch (s.inputPortSide) {
-        case AspectDirection::West:
+        case DAAspectDirection::West:
             lpLeft = halfLpW;
             break;
-        case AspectDirection::East:
+        case DAAspectDirection::East:
             lpRight = halfLpW;
             break;
-        case AspectDirection::North:
+        case DAAspectDirection::North:
             lpTop = halfLpW;
             break;
-        case AspectDirection::South:
+        case DAAspectDirection::South:
             lpBottom = halfLpW;
             break;
         }
     }
     if (!mOutputLinkPoints.isEmpty()) {
         switch (s.outputPortSide) {
-        case AspectDirection::West:
+        case DAAspectDirection::West:
             lpLeft = halfLpW;
             break;
-        case AspectDirection::East:
+        case DAAspectDirection::East:
             lpRight = halfLpW;
             break;
-        case AspectDirection::North:
+        case DAAspectDirection::North:
             lpTop = halfLpW;
             break;
-        case AspectDirection::South:
+        case DAAspectDirection::South:
             lpBottom = halfLpW;
             break;
         }
@@ -813,7 +813,7 @@ static void drawLinkPointGroup(
     for (const auto& lp : std::as_const(points)) {
         // 根据方向确定矩形尺寸（East/West为水平矩形，North/South为垂直矩形）
         qreal halfW, halfH;
-        if (lp.direction == AspectDirection::East || lp.direction == AspectDirection::West) {
+        if (lp.direction == DAAspectDirection::East || lp.direction == DAAspectDirection::West) {
             halfW = linkPointDrawWidth / 2;
             halfH = linkPointDrawHeight / 2;
         } else {
@@ -853,17 +853,17 @@ static void drawLinkPointGroup(
         textRect.adjust(0, 0, spacing, spacing);
 
         switch (lp.direction) {
-        case AspectDirection::East: {
+        case DAAspectDirection::East: {
             QPointF textPos(lp.position.x() + halfW + spacing, lp.position.y() - textRect.height() / 2);
             textRect.moveTopLeft(textPos);
             painter->drawText(textRect, Qt::AlignCenter, lp.name);
         } break;
-        case AspectDirection::West: {
+        case DAAspectDirection::West: {
             QPointF textPos(lp.position.x() - halfW - spacing - textRect.width(), lp.position.y() - textRect.height() / 2);
             textRect.moveTopLeft(textPos);
             painter->drawText(textRect, Qt::AlignCenter, lp.name);
         } break;
-        case AspectDirection::North: {
+        case DAAspectDirection::North: {
             // 顺时针旋转90度绘制文字
             painter->save();
             QTransform transform;
@@ -878,7 +878,7 @@ static void drawLinkPointGroup(
             painter->drawText(textRect, Qt::AlignCenter, lp.name);
             painter->restore();
         } break;
-        case AspectDirection::South: {
+        case DAAspectDirection::South: {
             // 顺时针旋转90度绘制文字
             painter->save();
             QTransform transform;
@@ -1344,7 +1344,7 @@ void DAPyNodeGraphicsItem::updateNodeBody()
     }
     // 还需要预留连接点的位置
     if (d->mInputLinkPoints.size() > 0) {
-        if (s.inputPortSide == AspectDirection::East || s.inputPortSide == AspectDirection::West) {
+        if (s.inputPortSide == DAAspectDirection::East || s.inputPortSide == DAAspectDirection::West) {
             // 输入在水平方向
             bodyWidth += d->linkPointDrawWidth / 2;
         } else {
@@ -1352,7 +1352,7 @@ void DAPyNodeGraphicsItem::updateNodeBody()
         }
     }
     if (d->mOutputLinkPoints.size() > 0) {
-        if (s.outputPortSide == AspectDirection::East || s.outputPortSide == AspectDirection::West) {
+        if (s.outputPortSide == DAAspectDirection::East || s.outputPortSide == DAAspectDirection::West) {
             // 输入在水平方向
             bodyWidth += d->linkPointDrawWidth / 2;
         } else {

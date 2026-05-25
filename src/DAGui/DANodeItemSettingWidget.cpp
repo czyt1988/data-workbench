@@ -400,36 +400,36 @@ void DANodeItemSettingWidget::updateLinkPointLocation()
 	// TODO: DAPyNodeGraphicsItem needs getLinkPointDirection/getLinkPointLocation API
 	// For now, check the direction of the first input/output link point
 	QList< DAPyLinkPoint > inputPoints = nodeItem->getInputLinkPoints();
-	AspectDirection inputDir = (inputPoints.isEmpty()) ? AspectDirection::West : inputPoints.first().direction;
+	DAAspectDirection inputDir = (inputPoints.isEmpty()) ? DAAspectDirection::West : inputPoints.first().direction;
 	switch (inputDir) {
-	case AspectDirection::West:
+	case DAAspectDirection::West:
 		d_ptr->toolButtonInLeft->setChecked(true);
 		break;
-	case AspectDirection::North:
+	case DAAspectDirection::North:
 		d_ptr->toolButtonInTop->setChecked(true);
 		break;
-	case AspectDirection::East:
+	case DAAspectDirection::East:
 		d_ptr->toolButtonInRight->setChecked(true);
 		break;
-	case AspectDirection::South:
+	case DAAspectDirection::South:
 		d_ptr->toolButtonInBottom->setChecked(true);
 		break;
 	default:
 		break;
 	}
 	QList< DAPyLinkPoint > outputPoints = nodeItem->getOutputLinkPoints();
-	AspectDirection outputDir = (outputPoints.isEmpty()) ? AspectDirection::East : outputPoints.first().direction;
+	DAAspectDirection outputDir = (outputPoints.isEmpty()) ? DAAspectDirection::East : outputPoints.first().direction;
 	switch (outputDir) {
-	case AspectDirection::West:
+	case DAAspectDirection::West:
 		d_ptr->toolButtonOutLeft->setChecked(true);
 		break;
-	case AspectDirection::North:
+	case DAAspectDirection::North:
 		d_ptr->toolButtonOutTop->setChecked(true);
 		break;
-	case AspectDirection::East:
+	case DAAspectDirection::East:
 		d_ptr->toolButtonOutRight->setChecked(true);
 		break;
-	case AspectDirection::South:
+	case DAAspectDirection::South:
 		d_ptr->toolButtonOutBottom->setChecked(true);
 		break;
 	default:

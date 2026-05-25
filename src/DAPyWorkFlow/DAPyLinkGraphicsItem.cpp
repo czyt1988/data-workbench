@@ -27,8 +27,8 @@ public:
     DAPyNodeGraphicsItem* mToNode { nullptr };                 ///< 目标节点
     QString mFromOutputName;                                   ///< 源节点输出名称
     QString mToInputName;                                      ///< 目标节点输入名称
-    AspectDirection mFromDirection { AspectDirection::East };  ///< 源连接点引线方向
-    AspectDirection mToDirection { AspectDirection::East };    ///< 目标连接点引线方向
+    DAAspectDirection mFromDirection { DAAspectDirection::East };  ///< 源连接点引线方向
+    DAAspectDirection mToDirection { DAAspectDirection::East };    ///< 目标连接点引线方向
 };
 
 DAPyLinkGraphicsItem::PrivateData::PrivateData(DAPyLinkGraphicsItem* p) : q_ptr(p)
