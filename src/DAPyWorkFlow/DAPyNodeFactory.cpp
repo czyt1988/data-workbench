@@ -110,20 +110,6 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
                 metaData.iconPath = nodeClassObj.attr("icon").cast< QString >();
             }
 
-            // input_keys/output_keys
-            if (pybind11::hasattr(nodeClassObj, "input_keys")) {
-                pybind11::list inKeys = nodeClassObj.attr("input_keys").cast< pybind11::list >();
-                for (auto k : inKeys) {
-                    metaData.inputKeys.append(pybind11::cast< QString >(k));
-                }
-            }
-            if (pybind11::hasattr(nodeClassObj, "output_keys")) {
-                pybind11::list outKeys = nodeClassObj.attr("output_keys").cast< pybind11::list >();
-                for (auto k : outKeys) {
-                    metaData.outputKeys.append(pybind11::cast< QString >(k));
-                }
-            }
-
             if (!metaData.isValid()) {
                 qWarning() << "发现无效的节点元数据，跳过";
                 continue;

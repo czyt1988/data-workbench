@@ -10,7 +10,6 @@ DAPyNodeMetaData::~DAPyNodeMetaData()
 {
 }
 
-
 /**
  * @brief 判断元数据是否有效
  *
@@ -157,8 +156,7 @@ QString DAPyNodeMetaData::getNodeTooltip() const
 QDebug operator<<(QDebug dbg, const DAPyNodeMetaData& meta)
 {
     dbg.nospace() << "DAPyNodeMetaData(name=" << meta.name << ", qualifiedName=" << meta.qualifiedName
-                  << ", group=" << meta.group << ", inputs=" << meta.inputKeys.size()
-                  << ", outputs=" << meta.outputKeys.size() << ")";
+                  << ", group=" << meta.group << ")";
     return dbg.space();
 }
 

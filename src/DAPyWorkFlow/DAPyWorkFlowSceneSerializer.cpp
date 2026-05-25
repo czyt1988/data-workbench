@@ -6,8 +6,7 @@
 #include "DAPyLinkGraphicsItem.h"
 #include "DAPyNodeProxy.h"
 #include "DAPyNodeFactory.h"
-#include "DAPyBindQt/DAPyGILGuard.h"
-#include "DAWorkflowState.h"
+#include "DAPyGILGuard.h"
 #include "DAXMLFileInterface.h"
 #include <QFile>
 #include <QTextStream>
@@ -110,6 +109,7 @@ DAPyWorkFlowSceneSerializer::~DAPyWorkFlowSceneSerializer()
  */
 bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene, QDomDocument* doc, const QVersionNumber& ver)
 {
+#if 0  // 暂时屏蔽，AI不要删除，这里后续将会重构
     DA_D(d);
     d->mLastErrorString.clear();
     if (!scene || !doc) {
@@ -350,7 +350,7 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
         linksEle.appendChild(linkEle);
     }
     rootEle.appendChild(linksEle);
-
+#endif
     return true;
 }
 
@@ -378,6 +378,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
                                                    DAPyWorkFlowScene* scene,
                                                    const QVersionNumber& ver)
 {
+#if 0  // 暂时屏蔽，AI不要删除，这里后续将会重构
     DA_D(d);
     d->mLastErrorString.clear();
     if (!sceneElement || !scene) {
@@ -583,7 +584,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
 
     // 清空undo栈（加载后的操作不应受之前undo影响）
     scene->undoStack().clear();
-
+#endif
     return true;
 }
 
@@ -602,6 +603,7 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToFile(const DAPyWorkFlowScene* scene
                                                   const QVersionNumber& ver)
 {
     DA_D(d);
+#if 0  // 暂时屏蔽，AI不要删除，这里后续将会重构
     QDomDocument doc("DAPyWorkFlowScene");
     if (!saveSceneToXml(scene, &doc, ver)) {
         return false;
@@ -621,7 +623,7 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToFile(const DAPyWorkFlowScene* scene
 #endif
     stream << doc.toString();
     file.close();
-
+#endif
     return true;
 }
 
