@@ -148,7 +148,7 @@ QList< DAPyNodeMetaData > DAAppPluginManager::getAllNodeMetaDatas() const
  * @brief 获取Python节点工厂
  *
  * 返回Python节点工厂的共享指针，如果Python未启用或初始化失败则返回nullptr。
- * 此工厂可用于创建DAPyNodeProxy实例并注入到DAPyWorkFlowScene中。
+ * 此工厂可用于创建DAPyNode实例并注入到DAPyWorkFlowScene中。
  *
  * @return Python节点工厂共享指针，未初始化时返回nullptr
  */
@@ -187,7 +187,7 @@ static QStringList scanPyPluginsDir(const QString& pyPluginsDir)
         QString pyScriptsPath = QDir::toNativeSeparators(pyPluginsDir + "/" + subDirName);
         QDir pyScriptsDir(pyScriptsPath);
         QString initFilePath = pyScriptsDir.filePath("__init__.py");
-        bool hasPyPackage = QFile::exists(initFilePath);
+        bool hasPyPackage    = QFile::exists(initFilePath);
         // 检查 PyScripts 下是否有包含 __init__.py 的 Python 包
         const QStringList packageDirList = pyScriptsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
 

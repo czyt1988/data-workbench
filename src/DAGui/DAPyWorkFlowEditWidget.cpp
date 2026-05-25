@@ -134,7 +134,7 @@ void DAPyWorkFlowEditWidget::runWorkFlow()
 	connect(mWorkFlowThread, &QThread::started, lifecycle, &DA::DAPyWorkFlowLifecycle::startExecute);
 	// 节点执行完成信号转发
 	connect(lifecycle, &DA::DAPyWorkFlowLifecycle::nodeExecuteFinished,
-	        this, [this](DA::DAPyNodeProxy* proxy, bool success) {
+	        this, [this](DA::DAPyNode* proxy, bool success) {
 		        emit nodeExecuteFinished(proxy, success);
 	        });
 	// 执行完成信号转发

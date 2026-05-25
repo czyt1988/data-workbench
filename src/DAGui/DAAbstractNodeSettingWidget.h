@@ -2,7 +2,7 @@
 #define DAABSTRACTNODESETTINGWIDGET_H
 
 #include "DAGuiAPI.h"
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 #include "DAGlobals.h"
 #include "NodeSetting/DAParamDef.h"
 #include "DAPyWorkFlow/DAPyNodeFactory.h"
@@ -14,10 +14,10 @@ namespace DA
 /**
  * @brief 节点设置窗口的抽象基类
  *
- * 封装了 DAPyNodeProxy 指针管理、描述符缓存等通用功能，
+ * 封装了 DAPyNode 指针管理、描述符缓存等通用功能，
  * 子类只需实现 updateUI() 完成模型到界面的同步。
  *
- * @see DAPyNodeProxy DANodeSettingWidget
+ * @see DAPyNode DANodeSettingWidget
  */
 class DAGUI_API DAAbstractNodeSettingWidget : public QWidget
 {
@@ -30,8 +30,8 @@ public:
     ~DAAbstractNodeSettingWidget();
 
     // 设置/获取节点代理
-    void setNodeProxy(DAPyNodeProxy* proxy);
-    DAPyNodeProxy* getNodeProxy() const;
+    void setNodeProxy(DAPyNode* proxy);
+    DAPyNode* getNodeProxy() const;
 
     // 获取节点元数据
     const DAPyNodeMetaData& getMetaData() const;

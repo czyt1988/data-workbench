@@ -224,7 +224,7 @@ Q_SIGNALS:
 	 * @brief 执行到某个节点发射的信号
 	 * @param n
 	 */
-	void nodeExecuteFinished(DA::DAPyWorkFlowEditWidget* wfw, DA::DAPyNodeProxy* n, bool state);
+	void nodeExecuteFinished(DA::DAPyWorkFlowEditWidget* wfw, DA::DAPyNode* n, bool state);
 
 	/**
 	 * @brief 工作流执行完毕信号

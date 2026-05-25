@@ -1,6 +1,6 @@
 #include "DANodeSettingWidget.h"
 #include "DAPropertyPanelContainerWidget.h"
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
 #include <QDebug>
 #include <QSignalBlocker>
@@ -48,10 +48,10 @@ DANodeSettingWidget::~DANodeSettingWidget()
 /**
  * @brief 设置节点代理
  *
- * 设置当前关联的DAPyNodeProxy，并刷新面板数据。
+ * 设置当前关联的DAPyNode，并刷新面板数据。
  * @param[in] p 节点代理指针
  */
-void DANodeSettingWidget::setNode(DAPyNodeProxy* p)
+void DANodeSettingWidget::setNode(DAPyNode* p)
 {
     // ⚠️ 生命周期风险：此原始指针归 DAPyNodeGraphicsItem 所有（通过 unique_ptr 管理）。
     // 如果节点被删除（Delete 键/Undo/clearScene），_nodePtr 将悬空，后续访问会导致崩溃。
@@ -65,9 +65,9 @@ void DANodeSettingWidget::setNode(DAPyNodeProxy* p)
 
 /**
  * @brief 获取当前节点代理
- * @return 当前关联的DAPyNodeProxy指针
+ * @return 当前关联的DAPyNode指针
  */
-DAPyNodeProxy* DANodeSettingWidget::getNode() const
+DAPyNode* DANodeSettingWidget::getNode() const
 {
     return _nodePtr;
 }
@@ -84,13 +84,13 @@ DAPropertyPanelContainerWidget* DANodeSettingWidget::propertyPanel() const
 /**
  * @brief 刷新面板数据
  *
- * 从DAPyNodeProxy读取节点元数据写入面板属性。
+ * 从DAPyNode读取节点元数据写入面板属性。
  * 使用QSignalBlocker防止刷新时触发属性变更信号。
  */
 void DANodeSettingWidget::updateData()
 {
     QSignalBlocker blocker(mPanel);
-    DAPyNodeProxy* n = getNode();
+    DAPyNode* n = getNode();
     if (n) {
         mPanel->setStringValue(PID_Prototype, n->getQualifiedName());
         mPanel->setStringValue(PID_Group, n->getNodeGroup());
@@ -149,13 +149,13 @@ void DANodeSettingWidget::onPanelPropertyValueChanged(int propertyId)
 /**
  * @brief 属性值变化处理
  *
- * 第2-hop：根据属性ID将面板值写回到DAPyNodeProxy。
+ * 第2-hop：根据属性ID将面板值写回到DAPyNode。
  * 仅PID_Name为可编辑属性，写回后重新读取节点名称确保同步。
  * @param propertyId 属性ID
  */
 void DANodeSettingWidget::onPropertyValueChanged(int propertyId)
 {
-    DAPyNodeProxy* p = getNode();
+    DAPyNode* p = getNode();
     if (!p) {
         return;
     }

@@ -9,7 +9,7 @@
 
 namespace DA
 {
-class DAPyNodeProxy;
+class DAPyNode;
 class DAPyLinkGraphicsItem;
 
 /**
@@ -26,7 +26,7 @@ class DAPyLinkGraphicsItem;
  * }
  * @endcode
  *
- * @see DAPyNodeProxy DAPyObjectWrapper DAPyModuleWorkflow
+ * @see DAPyNode DAPyObjectWrapper DAPyModuleWorkflow
  */
 class DAPYWORKFLOW_API DAPyWorkFlow : public DAPyObjectWrapper
 {
@@ -40,7 +40,7 @@ public:
 
     // --- DAG 操作方法 ---
     // 添加节点到workflow，返回Python分配的node_id
-    QString addNode(DAPyNodeProxy* proxy);
+    QString addNode(DAPyNode* proxy);
     // 从workflow移除节点
     bool removeNode(const QString& nodeId);
     // 连接两个节点，返回连接描述符
@@ -57,14 +57,13 @@ public:
     // 检查节点是否存在
     bool hasNode(const QString& nodeId);
     // 通过代理指针移除节点；内部调用 bool removeNode(nodeId)
-    bool removeNode(DAPyNodeProxy* proxy);
+    bool removeNode(DAPyNode* proxy);
     // 通过代理指针连接两个节点
-    DAPyWorkFlowConnection
-    connectNode(DAPyNodeProxy* src, const QString& srcChannel, DAPyNodeProxy* dst, const QString& dstChannel);
+    DAPyWorkFlowConnection connectNode(DAPyNode* src, const QString& srcChannel, DAPyNode* dst, const QString& dstChannel);
     // 通过连接图形项断开连接
     bool disconnectNode(DAPyLinkGraphicsItem* link);
     // 通过代理指针检查节点是否存在
-    bool hasNode(DAPyNodeProxy* proxy);
+    bool hasNode(DAPyNode* proxy);
 
     // --- 数据查询方法 ---
     // 通过 node_id 获取 Python 节点对象

@@ -1,4 +1,4 @@
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 #include "DAPybind11InQt.h"
 #include "DAPyModuleWorkflow.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
@@ -12,34 +12,34 @@ namespace DA
 {
 
 //===================================================
-// DAPyNodeProxy
+// DAPyNode
 //===================================================
 
-DAPyNodeProxy::DAPyNodeProxy() : DAPyObjectWrapper()
+DAPyNode::DAPyNode() : DAPyObjectWrapper()
 {
 }
 
-DAPyNodeProxy::DAPyNodeProxy(const pybind11::object& pyNode) : DAPyObjectWrapper(pyNode)
+DAPyNode::DAPyNode(const pybind11::object& pyNode) : DAPyObjectWrapper(pyNode)
 {
 }
 
-DAPyNodeProxy::DAPyNodeProxy(pybind11::object&& pyNode) : DAPyObjectWrapper(std::move(pyNode))
+DAPyNode::DAPyNode(pybind11::object&& pyNode) : DAPyObjectWrapper(std::move(pyNode))
 {
 }
 
-DAPyNodeProxy::DAPyNodeProxy(const DAPyObjectWrapper& pyNode) : DAPyObjectWrapper(pyNode)
+DAPyNode::DAPyNode(const DAPyObjectWrapper& pyNode) : DAPyObjectWrapper(pyNode)
 {
 }
 
-DAPyNodeProxy::DAPyNodeProxy(const DAPyNodeProxy& pyNode) : DAPyObjectWrapper(pyNode)
+DAPyNode::DAPyNode(const DAPyNode& pyNode) : DAPyObjectWrapper(pyNode)
 {
 }
 
-DAPyNodeProxy::~DAPyNodeProxy()
+DAPyNode::~DAPyNode()
 {
 }
 
-QString DAPyNodeProxy::getNodeId() const
+QString DAPyNode::getNodeId() const
 {
     if (isNone()) {
         return QString();
@@ -54,7 +54,7 @@ QString DAPyNodeProxy::getNodeId() const
     return QString();
 }
 
-QString DAPyNodeProxy::getQualifiedName() const
+QString DAPyNode::getQualifiedName() const
 {
     if (isNone()) {
         return QString();
@@ -69,7 +69,7 @@ QString DAPyNodeProxy::getQualifiedName() const
     return QString();
 }
 
-QString DAPyNodeProxy::getNodeName() const
+QString DAPyNode::getNodeName() const
 {
     if (isNone()) {
         return QString();
@@ -84,7 +84,7 @@ QString DAPyNodeProxy::getNodeName() const
     return QString();
 }
 
-QString DAPyNodeProxy::getNodeGroup() const
+QString DAPyNode::getNodeGroup() const
 {
     if (isNone()) {
         return QString();
@@ -102,7 +102,7 @@ QString DAPyNodeProxy::getNodeGroup() const
     return QString();
 }
 
-QString DAPyNodeProxy::getIcon() const
+QString DAPyNode::getIcon() const
 {
     if (isNone()) {
         return QString();
@@ -117,7 +117,7 @@ QString DAPyNodeProxy::getIcon() const
     return QString();
 }
 
-QList< QString > DAPyNodeProxy::getInputKeys() const
+QList< QString > DAPyNode::getInputKeys() const
 {
     if (isNone()) {
         return QList< QString >();
@@ -137,7 +137,7 @@ QList< QString > DAPyNodeProxy::getInputKeys() const
     return QList< QString >();
 }
 
-QList< QString > DAPyNodeProxy::getOutputKeys() const
+QList< QString > DAPyNode::getOutputKeys() const
 {
     if (isNone()) {
         return QList< QString >();
@@ -157,7 +157,7 @@ QList< QString > DAPyNodeProxy::getOutputKeys() const
     return QList< QString >();
 }
 
-DANodeStyle DAPyNodeProxy::getNodeStyle() const
+DANodeStyle DAPyNode::getNodeStyle() const
 {
     DANodeStyle defaultStyle;  // 默认构造已调用 setDefaults()
     if (isNone()) {
@@ -182,7 +182,7 @@ DANodeStyle DAPyNodeProxy::getNodeStyle() const
     return defaultStyle;
 }
 
-RenderTemplate DAPyNodeProxy::getRenderTemplate() const
+RenderTemplate DAPyNode::getRenderTemplate() const
 {
     if (isNone()) {
         return RenderTemplate::NodeStyleTemplate;
@@ -201,7 +201,7 @@ RenderTemplate DAPyNodeProxy::getRenderTemplate() const
     return RenderTemplate::NodeStyleTemplate;
 }
 
-DAPyNodeState DAPyNodeProxy::getNodeState() const
+DAPyNodeState DAPyNode::getNodeState() const
 {
     if (isNone()) {
         return DAPyNodeState::Idle;
@@ -227,15 +227,15 @@ DAPyNodeState DAPyNodeProxy::getNodeState() const
     return DAPyNodeState::Idle;
 }
 
-void DAPyNodeProxy::setPyInputData(const QString& key, const pybind11::object& data)
+void DAPyNode::setPyInputData(const QString& key, const pybind11::object& data)
 {
     if (isNone()) {
-        qWarning() << "DAPyNodeProxy::setPyInputData: proxy is None";
+        qWarning() << "DAPyNode::setPyInputData: proxy is None";
         return;
     }
     DAPyGILGuard gilGuard;
     if (!gilGuard.isAcquired()) {
-        qWarning() << "DAPyNodeProxy::setPyInputData: Failed to acquire GIL";
+        qWarning() << "DAPyNode::setPyInputData: Failed to acquire GIL";
         return;
     }
     try {
@@ -250,7 +250,7 @@ void DAPyNodeProxy::setPyInputData(const QString& key, const pybind11::object& d
     }
 }
 
-pybind11::object DAPyNodeProxy::getPyOutputData(const QString& key) const
+pybind11::object DAPyNode::getPyOutputData(const QString& key) const
 {
     if (isNone()) {
         return pybind11::none();
@@ -272,14 +272,14 @@ pybind11::object DAPyNodeProxy::getPyOutputData(const QString& key) const
     return pybind11::none();
 }
 
-void DAPyNodeProxy::setConfig(const QJsonObject& config)
+void DAPyNode::setConfig(const QJsonObject& config)
 {
     if (isNone()) {
         return;
     }
     DAPyGILGuard gilGuard;
     if (!gilGuard.isAcquired()) {
-        qWarning() << "DAPyNodeProxy::setConfig: Failed to acquire GIL";
+        qWarning() << "DAPyNode::setConfig: Failed to acquire GIL";
         return;
     }
     try {

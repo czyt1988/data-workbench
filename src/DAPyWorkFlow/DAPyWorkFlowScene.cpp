@@ -7,7 +7,7 @@
 #include "DAPyLinkGraphicsItem.h"
 #include "DAPythonSignalHandler.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 #include "DAPyNodeFactory.h"
 #include "DAPyLinkPoint.h"
 #include "DAGraphicsScene.h"
@@ -31,7 +31,7 @@ public:
     DAPyWorkFlow mWorkflow;
     // Python信号处理器
     QPointer< DAPythonSignalHandler > mSignalHandler;
-    // Python节点工厂（用于创建DAPyNodeProxy实例）
+    // Python节点工厂（用于创建DAPyNode实例）
     std::shared_ptr< DAPyNodeFactory > mPyNodeFactory;
     // 节点到连接线的映射表，维护DAPyNodeGraphicsItem→QList<DAPyLinkGraphicsItem*>的关联关系
     QMap< DAPyNodeGraphicsItem*, QList< DAPyLinkGraphicsItem* > > mNodeToLinksMap;
@@ -39,8 +39,8 @@ public:
     QMap< DAPyNodeGraphicsItem*, QString > mNodeIdMap;
     // 连接线到Python connection_id的映射表，维护DAPyLinkGraphicsItem→QString的关联关系
     QMap< DAPyLinkGraphicsItem*, QString > mLinkConnectionIdMap;
-    // Python代理到图形项的反向索引，支持O(1)从DAPyNodeProxy*查找DAPyNodeGraphicsItem*
-    QHash< DAPyNodeProxy*, DAPyNodeGraphicsItem* > mProxyToItemMap;
+    // Python代理到图形项的反向索引，支持O(1)从DAPyNode*查找DAPyNodeGraphicsItem*
+    QHash< DAPyNode*, DAPyNodeGraphicsItem* > mProxyToItemMap;
     // Python节点ID到图形项的反向索引，支持O(1)从nodeId查找DAPyNodeGraphicsItem*
     QHash< QString, DAPyNodeGraphicsItem* > mNodeIdToItemMap;
 
@@ -63,7 +63,7 @@ public:
         // 反向映射: nodeId → item
         this->mNodeIdToItemMap[ nodeId ] = item;
         // 反向映射: proxy → item
-        DAPyNodeProxy* proxy = item->getProxy();
+        DAPyNode* proxy = item->getProxy();
         if (proxy) {
             this->mProxyToItemMap[ proxy ] = item;
         }
@@ -90,7 +90,7 @@ public:
         QString nodeId = this->mNodeIdMap.value(item);
         this->mNodeIdToItemMap.remove(nodeId);
         // 清理代理反向索引
-        DAPyNodeProxy* proxy = item->getProxy();
+        DAPyNode* proxy = item->getProxy();
         if (proxy) {
             this->mProxyToItemMap.remove(proxy);
         }
@@ -164,8 +164,7 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkRemove(DAPyLinkGraphicsItem* 
         if (!connectionId.isEmpty()) {
             bool removed = this->mWorkflow.disconnectNode(connectionId);
             if (!removed) {
-                qWarning(
-                ) << tr("DAPyWorkFlowScene::removePyNodeLink: disconnectNode failed for connectionId: %1").arg(connectionId);
+                qWarning() << tr("DAPyWorkFlowScene::removePyNodeLink: disconnectNode failed for connectionId: %1").arg(connectionId);
             }
         }
         this->mLinkConnectionIdMap.remove(linkItem);
@@ -292,9 +291,9 @@ DAPythonSignalHandler* DAPyWorkFlowScene::getSignalHandler() const
 /**
  * @brief 设置Python节点工厂
  *
- * 设置DAPyNodeFactory用于创建DAPyNodeProxy实例，
+ * 设置DAPyNodeFactory用于创建DAPyNode实例，
  * 工厂负责Python模块导入、节点实例创建和代理设置。
- * 如果未设置工厂，createPyNode()会回退到直接创建DAPyNodeProxy。
+ * 如果未设置工厂，createPyNode()会回退到直接创建DAPyNode。
  *
  * @param[in] factory Python节点工厂的共享指针
  */
@@ -344,8 +343,8 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
         qWarning() << tr("DAPyWorkFlowScene::createPyNode: factory is not set");
         return nullptr;
     }
-    // 创建DAPyNodeProxy
-    DAPyNodeProxy* proxy = d->mPyNodeFactory->createNodeProxy(metaData);
+    // 创建DAPyNode
+    DAPyNode* proxy = d->mPyNodeFactory->createNodeProxy(metaData);
     if (!proxy) {
         // 节点创建失败
         qWarning() << tr("DAPyWorkFlowScene::createPyNode: factory failed to create proxy for %1").arg(metaData.qualifiedName);
@@ -440,7 +439,7 @@ bool DAPyWorkFlowScene::removePyNodeItem(DAPyNodeGraphicsItem* item)
     d->mNodeToLinksMap.remove(item);
 
     // 获取节点代理
-    DAPyNodeProxy* proxy = item->getProxy();
+    DAPyNode* proxy = item->getProxy();
 
     // 同步Python侧节点移除
     if (d->mWorkflow.isValid() && proxy) {
@@ -486,14 +485,14 @@ void DAPyWorkFlowScene::removePyNodeItem_(DAPyNodeGraphicsItem* item)
 }
 
 /**
- * @brief 通过DAPyNodeProxy查找节点图形项
+ * @brief 通过DAPyNode查找节点图形项
  *
  * 使用 mProxyToItemMap 反向索引实现 O(1) 查找。
  *
- * @param proxy DAPyNodeProxy指针
+ * @param proxy DAPyNode指针
  * @return 对应的DAPyNodeGraphicsItem指针，未找到返回nullptr
  */
-DAPyNodeGraphicsItem* DAPyWorkFlowScene::findNodeItemByProxy(DAPyNodeProxy* proxy) const
+DAPyNodeGraphicsItem* DAPyWorkFlowScene::findNodeItemByProxy(DAPyNode* proxy) const
 {
     if (!proxy) {
         return nullptr;
@@ -587,9 +586,10 @@ QList< DAPyNodeGraphicsItem* > DAPyWorkFlowScene::getSelectedPyNodeItems() const
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 返回的link未添加到场景，需要调用方自行添加
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(
-    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
-)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(DAPyNodeGraphicsItem* fromItem,
+                                                       const QString& fromOutput,
+                                                       DAPyNodeGraphicsItem* toItem,
+                                                       const QString& toInput)
 {
     if (!fromItem || !toItem) {
         return nullptr;
@@ -648,9 +648,10 @@ void DAPyWorkFlowScene::addPyNodeLink(DAPyLinkGraphicsItem* linkItem)
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 函数名后缀"_"表示支持undo/redo操作
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(
-    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
-)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(DAPyNodeGraphicsItem* fromItem,
+                                                        const QString& fromOutput,
+                                                        DAPyNodeGraphicsItem* toItem,
+                                                        const QString& toInput)
 {
     DAPyLinkGraphicsItem* link = addPyNodeLink(fromItem, fromOutput, toItem, toInput);
     if (!link) {
@@ -1319,12 +1320,10 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
  * @param linkItems 分离出的连接线item列表
  * @param normalItems 分离出的普通item列表
  */
-void DAPyWorkFlowScene::classifyItems(
-    const QList< QGraphicsItem* >& sourceItems,
-    QList< DAPyNodeGraphicsItem* >& nodeItems,
-    QList< DAPyLinkGraphicsItem* >& linkItems,
-    QList< QGraphicsItem* >& normalItems
-)
+void DAPyWorkFlowScene::classifyItems(const QList< QGraphicsItem* >& sourceItems,
+                                      QList< DAPyNodeGraphicsItem* >& nodeItems,
+                                      QList< DAPyLinkGraphicsItem* >& linkItems,
+                                      QList< QGraphicsItem* >& normalItems)
 {
     if (sourceItems.isEmpty()) {
         return;
@@ -1404,7 +1403,7 @@ void DAPyWorkFlowScene::rebuildNodeLinksMap()
     QList< DAPyLinkGraphicsItem* > linkItems = getPyNodeLinkItems();
     // 重建节点nodeId映射（从Python节点对象提取node_id）
     for (DAPyNodeGraphicsItem* node : nodeItems) {
-        DAPyNodeProxy* proxy = node->getProxy();
+        DAPyNode* proxy = node->getProxy();
         if (proxy && !proxy->isNone()) {
             QString nodeId = proxy->getNodeId();
             if (!nodeId.isEmpty()) {

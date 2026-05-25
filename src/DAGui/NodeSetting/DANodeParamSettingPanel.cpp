@@ -257,7 +257,7 @@ void DANodeParamSettingPanel::onPropertyValueChanged(int propertyId)
     QJsonObject config     = collectConfig();
     d_func()->mConfigCache = config;
 
-    DAPyNodeProxy* proxy = getNodeProxy();
+    DAPyNode* proxy = getNodeProxy();
     if (proxy) {
         proxy->setConfig(config);
     }

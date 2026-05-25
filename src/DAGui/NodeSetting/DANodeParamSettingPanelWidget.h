@@ -14,7 +14,7 @@ class QLabel;
 namespace DA
 {
 
-class DAPyNodeProxy;
+class DAPyNode;
 class DANodeParamSettingPanel;
 
 /**
@@ -37,7 +37,7 @@ class DANodeParamSettingPanel;
  * dispatcher->clearCache();           // 清除所有缓存面板
  * @endcode
  *
- * @see DANodeParamSettingPanel DANodeParamSettingPanelFactory DAPyNodeProxy
+ * @see DANodeParamSettingPanel DANodeParamSettingPanelFactory DAPyNode
  */
 class DAGUI_API DANodeParamSettingPanelWidget : public QWidget
 {
@@ -51,7 +51,7 @@ public:
     ~DANodeParamSettingPanelWidget();
 
     // 设置节点代理（主入口 — 获取描述符 → qualifiedName → 缓存 → 创建 → 切换）
-    void setNodeProxy(DAPyNodeProxy* proxy);
+    void setNodeProxy(DAPyNode* proxy);
 
     // 清除所有缓存的面板
     void clearCache();
@@ -72,7 +72,7 @@ protected:
 
     // === 测试辅助方法（仅在测试中使用）===
 
-    // 使用模拟描述符测试调度逻辑（绕过 DAPyNodeProxy，直接指定 qualifiedName）
+    // 使用模拟描述符测试调度逻辑（绕过 DAPyNode，直接指定 qualifiedName）
     void testSetNodeProxyWithDescriptor(const QJsonObject& descriptor);
 };
 

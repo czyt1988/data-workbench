@@ -1,7 +1,7 @@
 #include "DANodeParamSettingPanelWidget.h"
 #include "DANodeParamSettingPanel.h"
 #include "DANodeParamSettingPanelFactory.h"
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 #include <QStackedWidget>
 #include <QLabel>
 #include <QVBoxLayout>
@@ -15,16 +15,15 @@ class DANodeParamSettingPanelWidget::PrivateData
     DA_DECLARE_PUBLIC(DANodeParamSettingPanelWidget)
 
 public:
-    explicit PrivateData(DANodeParamSettingPanelWidget* q)
-        : q_ptr(q)
+    explicit PrivateData(DANodeParamSettingPanelWidget* q) : q_ptr(q)
     {
     }
 
-    QStackedWidget* mStackedWidget                = nullptr;
-    QHash<QString, DANodeParamSettingPanel*> mPanelCache;
-    DANodeParamSettingPanel* mCurrentPanel        = nullptr;
-    QLabel* mPlaceholderLabel                     = nullptr;
-    DAPyNodeProxy* mNodeProxy                     = nullptr;
+    QStackedWidget* mStackedWidget = nullptr;
+    QHash< QString, DANodeParamSettingPanel* > mPanelCache;
+    DANodeParamSettingPanel* mCurrentPanel = nullptr;
+    QLabel* mPlaceholderLabel              = nullptr;
+    DAPyNode* mNodeProxy                   = nullptr;
 };
 
 /**
@@ -33,9 +32,7 @@ public:
  * 创建 QStackedWidget 布局，添加占位标签 "未选中节点" 作为默认页面。
  * @param parent 父控件
  */
-DANodeParamSettingPanelWidget::DANodeParamSettingPanelWidget(QWidget* parent)
-    : QWidget(parent)
-    , DA_PIMPL_CONSTRUCT
+DANodeParamSettingPanelWidget::DANodeParamSettingPanelWidget(QWidget* parent) : QWidget(parent), DA_PIMPL_CONSTRUCT
 {
     DA_D(d);
 
@@ -80,14 +77,16 @@ DANodeParamSettingPanelWidget::~DANodeParamSettingPanelWidget()
  *
  * @param proxy 节点代理指针，nullptr 表示取消选中
  */
-void DANodeParamSettingPanelWidget::setNodeProxy(DAPyNodeProxy* proxy)
+void DANodeParamSettingPanelWidget::setNodeProxy(DAPyNode* proxy)
 {
     DA_D(d);
 
     // 断开当前面板的信号连接
     if (d->mCurrentPanel) {
-        disconnect(d->mCurrentPanel, &DANodeParamSettingPanel::propertyValueChanged,
-                   this, &DANodeParamSettingPanelWidget::propertyValueChanged);
+        disconnect(d->mCurrentPanel,
+                   &DANodeParamSettingPanel::propertyValueChanged,
+                   this,
+                   &DANodeParamSettingPanelWidget::propertyValueChanged);
     }
 
     // 代理为空 → 显示占位标签
@@ -98,7 +97,7 @@ void DANodeParamSettingPanelWidget::setNodeProxy(DAPyNodeProxy* proxy)
         return;
     }
 
-    d->mNodeProxy = proxy;  // ⚠️ 生命周期风险：此原始指针归 DAPyNodeGraphicsItem 所有（通过 unique_ptr 管理）。
+    d->mNodeProxy = proxy;  // 生命周期风险：此原始指针归 DAPyNodeGraphicsItem 所有（通过 unique_ptr 管理）。
                             // 如果节点被删除（Delete 键/Undo/clearScene），mNodeProxy 将悬空，后续访问会导致崩溃。
                             // 改进方案（后续）：
                             //   1. 使用 scene->findNodeItemByProxy(proxy) 在使用前验证指针有效性
@@ -114,7 +113,7 @@ void DANodeParamSettingPanelWidget::setNodeProxy(DAPyNodeProxy* proxy)
     // 在缓存中查找
     DANodeParamSettingPanel* panel = nullptr;
     if (d->mPanelCache.contains(qualifiedName)) {
-        panel = d->mPanelCache[qualifiedName];
+        panel = d->mPanelCache[ qualifiedName ];
     }
 
     // 缓存未命中 → 惰性创建
@@ -125,7 +124,7 @@ void DANodeParamSettingPanelWidget::setNodeProxy(DAPyNodeProxy* proxy)
             panel = buildDefaultPanel();
         }
         if (panel) {
-            d->mPanelCache[qualifiedName] = panel;
+            d->mPanelCache[ qualifiedName ] = panel;
             d->mStackedWidget->addWidget(panel);
         }
     }
@@ -138,8 +137,7 @@ void DANodeParamSettingPanelWidget::setNodeProxy(DAPyNodeProxy* proxy)
     }
 
     // 连接面板信号 → 转发至外部
-    connect(panel, &DANodeParamSettingPanel::propertyValueChanged,
-            this, &DANodeParamSettingPanelWidget::propertyValueChanged);
+    connect(panel, &DANodeParamSettingPanel::propertyValueChanged, this, &DANodeParamSettingPanelWidget::propertyValueChanged);
 
     // 切换到对应面板
     d->mCurrentPanel = panel;
@@ -162,8 +160,10 @@ void DANodeParamSettingPanelWidget::clearCache()
 
     // 断开当前面板的信号
     if (d->mCurrentPanel) {
-        disconnect(d->mCurrentPanel, &DANodeParamSettingPanel::propertyValueChanged,
-                   this, &DANodeParamSettingPanelWidget::propertyValueChanged);
+        disconnect(d->mCurrentPanel,
+                   &DANodeParamSettingPanel::propertyValueChanged,
+                   this,
+                   &DANodeParamSettingPanelWidget::propertyValueChanged);
     }
 
     // 从 QStackedWidget 中移除并删除缓存的面板
@@ -205,7 +205,7 @@ DANodeParamSettingPanel* DANodeParamSettingPanelWidget::buildDefaultPanel()
 /**
  * @brief 使用模拟描述符测试调度逻辑（测试辅助方法）
  *
- * 绕过 DAPyNodeProxy，直接使用模拟的 QJsonObject 描述符测试
+ * 绕过 DAPyNode，直接使用模拟的 QJsonObject 描述符测试
  * 面板创建、缓存和切换逻辑。从描述符中提取 qualifiedName，
  * 调用工厂创建面板（或使用默认面板），添加到 QStackedWidget 并缓存。
  * 不调用面板的 setNodeProxy 和 updateUI（因无真实代理）。
@@ -218,12 +218,14 @@ void DANodeParamSettingPanelWidget::testSetNodeProxyWithDescriptor(const QJsonOb
 
     // 断开当前面板的信号连接
     if (d->mCurrentPanel) {
-        disconnect(d->mCurrentPanel, &DANodeParamSettingPanel::propertyValueChanged,
-                   this, &DANodeParamSettingPanelWidget::propertyValueChanged);
+        disconnect(d->mCurrentPanel,
+                   &DANodeParamSettingPanel::propertyValueChanged,
+                   this,
+                   &DANodeParamSettingPanelWidget::propertyValueChanged);
     }
 
     // 从描述符提取 qualifiedName
-    QString qualifiedName = descriptor["qualified_name"].toString();
+    QString qualifiedName = descriptor[ "qualified_name" ].toString();
     if (qualifiedName.isEmpty()) {
         qualifiedName = QStringLiteral("generic");
     }
@@ -231,7 +233,7 @@ void DANodeParamSettingPanelWidget::testSetNodeProxyWithDescriptor(const QJsonOb
     // 在缓存中查找
     DANodeParamSettingPanel* panel = nullptr;
     if (d->mPanelCache.contains(qualifiedName)) {
-        panel = d->mPanelCache[qualifiedName];
+        panel = d->mPanelCache[ qualifiedName ];
     }
 
     // 缓存未命中 → 惰性创建
@@ -242,7 +244,7 @@ void DANodeParamSettingPanelWidget::testSetNodeProxyWithDescriptor(const QJsonOb
             panel = buildDefaultPanel();
         }
         if (panel) {
-            d->mPanelCache[qualifiedName] = panel;
+            d->mPanelCache[ qualifiedName ] = panel;
             d->mStackedWidget->addWidget(panel);
         }
     }
@@ -254,8 +256,7 @@ void DANodeParamSettingPanelWidget::testSetNodeProxyWithDescriptor(const QJsonOb
     }
 
     // 连接面板信号 → 转发至外部
-    connect(panel, &DANodeParamSettingPanel::propertyValueChanged,
-            this, &DANodeParamSettingPanelWidget::propertyValueChanged);
+    connect(panel, &DANodeParamSettingPanel::propertyValueChanged, this, &DANodeParamSettingPanelWidget::propertyValueChanged);
 
     // 切换到对应面板（不调用 setNodeProxy/updateUI，因无真实代理）
     d->mCurrentPanel = panel;

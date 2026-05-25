@@ -130,7 +130,7 @@ signals:
      * @brief 执行到某个节点发射的信号
      * @param n
      */
-    void nodeExecuteFinished(DA::DAPyNodeProxy* n, bool state);
+    void nodeExecuteFinished(DA::DAPyNode* n, bool state);
 
     /**
      * @brief 工作流执行完毕信号

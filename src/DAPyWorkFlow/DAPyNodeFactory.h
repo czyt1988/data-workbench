@@ -5,14 +5,14 @@
 #include "DAPyNodeMetaData.h"
 namespace DA
 {
-class DAPyNodeProxy;
+class DAPyNode;
 
 /**
  * @brief Python节点工厂，继承DAPyObjectWrapper，代理Python侧DANodeFactory
  *
  * 通过DAPyModuleWorkflow调用Python侧的DANodeRegistry发现节点，
  * 将Python的DANodeDescriptor转换为C++的DAPyNodeMetaData，
- * 并通过DAPyNodeProxy创建节点实例。
+ * 并通过DAPyNode创建节点实例。
  *
  * @code
  * DA::DAPyNodeFactory factory;
@@ -20,7 +20,7 @@ class DAPyNodeProxy;
  * auto metaList = factory.getNodeMetadataList();
  * auto proxy = factory.createNodeProxy("pkg.module.MyNode");
  * @endcode
- * @see DAPyModuleWorkflow DAPyNodeProxy DAPyNodeMetaData
+ * @see DAPyModuleWorkflow DAPyNode DAPyNodeMetaData
  */
 class DAPYWORKFLOW_API DAPyNodeFactory : public DAPyObjectWrapper
 {
@@ -29,16 +29,16 @@ public:
     explicit DAPyNodeFactory(const pybind11::object& obj);
     explicit DAPyNodeFactory(pybind11::object&& obj);
     explicit DAPyNodeFactory(const DAPyObjectWrapper& obj);
-    explicit DAPyNodeFactory(const DAPyNodeProxy& obj);
+    explicit DAPyNodeFactory(const DAPyNode& obj);
     ~DAPyNodeFactory();
 
     // 发现Python节点（调用DANodeRegistry.discover）
     bool discoverNodes(const QStringList& scanPaths = QStringList(), bool useEntryPoints = false);
 
-    // 通过限定名创建DAPyNodeProxy实例
-    DAPyNodeProxy* createNodeProxy(const QString& qualifiedName);
-    // 通过节点元数据创建DAPyNodeProxy实例
-    DAPyNodeProxy* createNodeProxy(const DAPyNodeMetaData& metaData);
+    // 通过限定名创建DAPyNode实例
+    DAPyNode* createNodeProxy(const QString& qualifiedName);
+    // 通过节点元数据创建DAPyNode实例
+    DAPyNode* createNodeProxy(const DAPyNodeMetaData& metaData);
 
     // 获取所有已发现节点的元数据列表
     QList< DAPyNodeMetaData > getNodeMetadataList() const;

@@ -1,6 +1,6 @@
 ﻿#include "DAPyNodeGraphicsItem.h"
 #include "DAPyPainterProxy.h"
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 #include "DAPyNodePalette.h"
 #include "DAPyLinkPoint.h"
 #include "DAPyWorkFlowScene.h"
@@ -49,8 +49,8 @@ public:
     void updateNodeStyle(const QRectF& bodyRect);
 
 public:
-    std::unique_ptr< DAPyNodeProxy > mProxy;  ///< Python节点代理（独占所有权）
-    // 缓存字段：从DAPyNodeProxy一次性读取，避免paint时GIL开销
+    std::unique_ptr< DAPyNode > mProxy;  ///< Python节点代理（独占所有权）
+    // 缓存字段：从DAPyNode一次性读取，避免paint时GIL开销
     QString mName;                                                         ///< 缓存的节点名称
     QString mQualifiedName;                                                ///< 缓存的限定名
     QString mIconPath;                                                     ///< 缓存的图标路径
@@ -293,7 +293,7 @@ void DAPyNodeGraphicsItem::PrivateData::updateNodeStyle(const QRectF& bodyRect)
  * @param[in] proxy Python节点代理
  * @param[in] parent 父图形项
  */
-DAPyNodeGraphicsItem::DAPyNodeGraphicsItem(DAPyNodeProxy* proxy, QGraphicsItem* parent)
+DAPyNodeGraphicsItem::DAPyNodeGraphicsItem(DAPyNode* proxy, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
     // 设置可选中和可移动
@@ -382,7 +382,7 @@ QString DAPyNodeGraphicsItem::getRenderTemplateName() const
  * @brief 获取Python节点代理
  * @return 代理指针
  */
-DAPyNodeProxy* DAPyNodeGraphicsItem::getProxy() const
+DAPyNode* DAPyNodeGraphicsItem::getProxy() const
 {
     return d_ptr->mProxy.get();
 }
@@ -391,7 +391,7 @@ DAPyNodeProxy* DAPyNodeGraphicsItem::getProxy() const
  * @brief 设置Python节点代理
  * @param[in] proxy 代理指针
  */
-void DAPyNodeGraphicsItem::setProxy(DAPyNodeProxy* proxy)
+void DAPyNodeGraphicsItem::setProxy(DAPyNode* proxy)
 {
     d_ptr->mProxy.reset(proxy);
     if (proxy) {
@@ -547,7 +547,7 @@ void DAPyNodeGraphicsItem::setNodeState(DAPyNodeState state)
  * 一次性从代理读取所有属性并缓存到PrivateData字段，
  * 避免每次paint时都需要获取GIL调用attr()。
  */
-void DAPyNodeGraphicsItem::updateFromProxy(DAPyNodeProxy* proxy)
+void DAPyNodeGraphicsItem::updateFromProxy(DAPyNode* proxy)
 {
     if (!proxy) {
         return;
@@ -704,7 +704,10 @@ bool DAPyNodeGraphicsItem::loadFromXml(const QDomElement* itemElement, const QVe
  * @param[in] widget 窗口
  * @param[in] bodyRect 主体矩形区域
  */
-void DAPyNodeGraphicsItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
+void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
+                                     const QStyleOptionGraphicsItem* option,
+                                     QWidget* widget,
+                                     const QRectF& bodyRect)
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
@@ -788,15 +791,13 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter, const QStyleOptionGraphi
  * @param[in] linkPointDrawHeight 连接点绘制高度
  * @param[in] smallFontSize 连接点标签字体大小
  */
-static void drawLinkPointGroup(
-    QPainter* painter,
-    const QList< DAPyLinkPoint >& points,
-    const DAPyLinkPointStyle& portStyle,
-    const QColor& defaultFillColor,
-    qreal linkPointDrawWidth,
-    qreal linkPointDrawHeight,
-    int smallFontSize
-)
+static void drawLinkPointGroup(QPainter* painter,
+                               const QList< DAPyLinkPoint >& points,
+                               const DAPyLinkPointStyle& portStyle,
+                               const QColor& defaultFillColor,
+                               qreal linkPointDrawWidth,
+                               qreal linkPointDrawHeight,
+                               int smallFontSize)
 {
     const qreal spacing = 2;  // 文字与连接点间距
 
@@ -867,10 +868,8 @@ static void drawLinkPointGroup(
             // 顺时针旋转90度绘制文字
             painter->save();
             QTransform transform;
-            transform.translate(
-                lp.position.x(),  // + textRect.height() / 2
-                lp.position.y() - (halfH + spacing + textRect.width())
-            );
+            transform.translate(lp.position.x(),  // + textRect.height() / 2
+                                lp.position.y() - (halfH + spacing + textRect.width()));
             transform.rotate(90);
             painter->setTransform(transform, true);
             // QRectF rotatedRect(-textRect.height() / 2, -textRect.width() / 2, textRect.height(), textRect.width());
@@ -926,13 +925,16 @@ void DAPyNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOption
     const DANodeStyle& st = d->mStyle;
     // 绘制输入连接点（默认白色填充）
     drawLinkPointGroup(
-        painter, d->mInputLinkPoints, st.inputPortStyle, Qt::white, d->linkPointDrawWidth, d->linkPointDrawHeight, d->smallFontSize
-    );
+        painter, d->mInputLinkPoints, st.inputPortStyle, Qt::white, d->linkPointDrawWidth, d->linkPointDrawHeight, d->smallFontSize);
 
     // 绘制输出连接点（默认深灰色填充）
-    drawLinkPointGroup(
-        painter, d->mOutputLinkPoints, st.outputPortStyle, Qt::darkGray, d->linkPointDrawWidth, d->linkPointDrawHeight, d->smallFontSize
-    );
+    drawLinkPointGroup(painter,
+                       d->mOutputLinkPoints,
+                       st.outputPortStyle,
+                       Qt::darkGray,
+                       d->linkPointDrawWidth,
+                       d->linkPointDrawHeight,
+                       d->smallFontSize);
 
     painter->restore();
 }

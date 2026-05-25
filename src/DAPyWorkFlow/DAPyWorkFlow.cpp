@@ -2,7 +2,7 @@
 #include "DAPyModuleWorkflow.h"
 #include "DAPyGILGuard.h"
 #include "DAPybind11InQt.h"
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 #include "DAPyLinkGraphicsItem.h"
 #include "DAPybind11QtCaster.hpp"
 #include <QDebug>
@@ -77,9 +77,9 @@ bool DAPyWorkFlow::isValid() const
  *
  * 返回节点id
  */
-QString DAPyWorkFlow::addNode(DAPyNodeProxy* proxy)
+QString DAPyWorkFlow::addNode(DAPyNode* proxy)
 {
-    // TODO:DAPyNodeProxy是pybind11的代理，不需要用指针，直接对象传递
+    // TODO:DAPyNode是pybind11的代理，不需要用指针，直接对象传递
     if (!proxy) {
         qWarning() << "DAPyWorkFlow::addNode: proxy is nullptr";
         return QString();
@@ -134,10 +134,10 @@ bool DAPyWorkFlow::removeNode(const QString& nodeId)
 /**
  * @brief 通过代理指针移除节点
  */
-bool DAPyWorkFlow::removeNode(DAPyNodeProxy* proxy)
+bool DAPyWorkFlow::removeNode(DAPyNode* proxy)
 {
     if (!proxy) {
-        qWarning() << "DAPyWorkFlow::removeNode(DAPyNodeProxy*): proxy is nullptr";
+        qWarning() << "DAPyWorkFlow::removeNode(DAPyNode*): proxy is nullptr";
         return false;
     }
     DAPyGILGuard gil;
@@ -262,22 +262,21 @@ bool DAPyWorkFlow::hasNode(const QString& nodeId)
 /**
  * @brief 通过代理指针连接两个节点
  */
-DAPyWorkFlowConnection
-DAPyWorkFlow::connectNode(DAPyNodeProxy* src, const QString& srcChannel, DAPyNodeProxy* dst, const QString& dstChannel)
+DAPyWorkFlowConnection DAPyWorkFlow::connectNode(DAPyNode* src, const QString& srcChannel, DAPyNode* dst, const QString& dstChannel)
 {
     if (!src) {
-        qWarning() << "DAPyWorkFlow::connectNode(DAPyNodeProxy*, ...): src is nullptr";
+        qWarning() << "DAPyWorkFlow::connectNode(DAPyNode*, ...): src is nullptr";
         return DAPyWorkFlowConnection();
     }
     if (!dst) {
-        qWarning() << "DAPyWorkFlow::connectNode(..., DAPyNodeProxy*, ...): dst is nullptr";
+        qWarning() << "DAPyWorkFlow::connectNode(..., DAPyNode*, ...): dst is nullptr";
         return DAPyWorkFlowConnection();
     }
     DAPyGILGuard gil;
     QString srcNodeId = src->getNodeId();
     QString dstNodeId = dst->getNodeId();
     if (srcNodeId.isEmpty() || dstNodeId.isEmpty()) {
-        qWarning() << "DAPyWorkFlow::connectNode(DAPyNodeProxy*, ...): src/dst has empty nodeId";
+        qWarning() << "DAPyWorkFlow::connectNode(DAPyNode*, ...): src/dst has empty nodeId";
         return DAPyWorkFlowConnection();
     }
     DAPyWorkFlowConnection connResult = connectNode(srcNodeId, srcChannel, dstNodeId, dstChannel);
@@ -295,16 +294,16 @@ bool DAPyWorkFlow::disconnectNode(DAPyLinkGraphicsItem* link)
     return false;
 }
 
-bool DAPyWorkFlow::hasNode(DAPyNodeProxy* proxy)
+bool DAPyWorkFlow::hasNode(DAPyNode* proxy)
 {
     if (!proxy) {
-        qWarning() << "DAPyWorkFlow::hasNode(DAPyNodeProxy*): proxy is nullptr";
+        qWarning() << "DAPyWorkFlow::hasNode(DAPyNode*): proxy is nullptr";
         return false;
     }
     DAPyGILGuard gil;
     QString nodeId = proxy->getNodeId();
     if (nodeId.isEmpty()) {
-        qWarning() << "DAPyWorkFlow::hasNode(DAPyNodeProxy*): proxy has empty nodeId";
+        qWarning() << "DAPyWorkFlow::hasNode(DAPyNode*): proxy has empty nodeId";
         return false;
     }
     return hasNode(nodeId);

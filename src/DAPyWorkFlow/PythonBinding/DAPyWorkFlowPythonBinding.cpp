@@ -1,7 +1,7 @@
 #include "DAPyWorkFlowPythonBinding.h"
 #include <QPointF>
 #include "DAPyWorkFlow/DAPyWorkFlowScene.h"
-#include "DAPyWorkFlow/DAPyNodeProxy.h"
+#include "DAPyWorkFlow/DAPyNode.h"
 #include "DAPyWorkFlow/DAPyNodeState.h"
 #include "DAPyWorkFlow/DAPyNodeGraphicsItem.h"
 #include "DAPyWorkFlow/DAPyLinkGraphicsItem.h"
@@ -18,14 +18,14 @@ namespace DA
 {
 
 /**
- * @brief 通过 qualified_name 获取 DAPyNodeProxy 实例
+ * @brief 通过 qualified_name 获取 DAPyNode 实例
  * @param[in] qualified_name Python 节点的完整限定名（模块.类名）
  * @return 代理节点智能指针，如果节点未注册返回空指针
  */
-std::shared_ptr< DA::DAPyNodeProxy > getNodeProxy(const std::string& qualified_name)
+std::shared_ptr< DA::DAPyNode > getNodeProxy(const std::string& qualified_name)
 {
     // TODO: 实现通过 DAPyModuleWorkflow 获取 Python 节点类并创建代理
-    return std::shared_ptr< DA::DAPyNodeProxy >();
+    return std::shared_ptr< DA::DAPyNode >();
 }
 
 }  // namespace DA
@@ -201,7 +201,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
     m.def("getNodeProxy",
           &DA::getNodeProxy,
           pybind11::arg("qualified_name"),
-          "Get DAPyNodeProxy instance by Python node's qualified name");
+          "Get DAPyNode instance by Python node's qualified name");
 
     m.def(
         "_note_signal_handler",

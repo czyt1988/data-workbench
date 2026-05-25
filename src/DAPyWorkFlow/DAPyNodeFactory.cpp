@@ -2,7 +2,7 @@
 #include "DAPybind11InQt.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DAPyModuleWorkflow.h"
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 #include "DAPyInterpreter.h"
 #include <QDebug>
 #include <QHash>
@@ -39,7 +39,7 @@ DAPyNodeFactory::DAPyNodeFactory(const DAPyObjectWrapper& obj) : DAPyObjectWrapp
 {
 }
 
-DAPyNodeFactory::DAPyNodeFactory(const DAPyNodeProxy& obj) : DAPyObjectWrapper(obj)
+DAPyNodeFactory::DAPyNodeFactory(const DAPyNode& obj) : DAPyObjectWrapper(obj)
 {
 }
 
@@ -124,23 +124,23 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
 }
 
 /**
- * @brief 通过限定名创建DAPyNodeProxy实例
+ * @brief 通过限定名创建DAPyNode实例
  *
  * 核心创建流程：
  * 1. 获取GIL保护（DAPyGILGuard RAII）
  * 2. 检查Python DANodeFactory实例（DAPyObjectWrapper的_object）是否有效
  * 3. 调用DANodeFactory.create_node(qualified_name)获取Python节点实例
- * 4. 创建DAPyNodeProxy并设置Python节点引用
+ * 4. 创建DAPyNode并设置Python节点引用
  *
  * 节点实例化由Python侧DANodeFactory完成（通过DANodeRegistry.get_descriptor获取类并实例化），
  * C++ 侧不再自行解析qualified_name进行module_::import和类名查找。
  *
  * @param[in] qualifiedName Python节点的限定名（如"pkg.module.ClassName"）
- * @return 成功返回DAPyNodeProxy指针，失败返回nullptr
- * @note 返回的DAPyNodeProxy由调用方负责生命周期管理
+ * @return 成功返回DAPyNode指针，失败返回nullptr
+ * @note 返回的DAPyNode由调用方负责生命周期管理
  * @note 必须先调用discoverNodes()创建Python factory实例，否则返回nullptr
  */
-DAPyNodeProxy* DAPyNodeFactory::createNodeProxy(const QString& qualifiedName)
+DAPyNode* DAPyNodeFactory::createNodeProxy(const QString& qualifiedName)
 {
     try {
         // 调用Python DANodeFactory.create_node()获取节点实例
@@ -148,8 +148,8 @@ DAPyNodeProxy* DAPyNodeFactory::createNodeProxy(const QString& qualifiedName)
         if (pyNodeInstance.is_none()) {
             return nullptr;
         }
-        // 创建DAPyNodeProxy并设置Python节点引用
-        DAPyNodeProxy* proxy = new DAPyNodeProxy(pyNodeInstance);
+        // 创建DAPyNode并设置Python节点引用
+        DAPyNode* proxy = new DAPyNode(pyNodeInstance);
         return proxy;
     } catch (const pybind11::error_already_set& e) {
         dealException(e);
@@ -161,18 +161,18 @@ DAPyNodeProxy* DAPyNodeFactory::createNodeProxy(const QString& qualifiedName)
 }
 
 /**
- * @brief 通过节点元数据创建DAPyNodeProxy实例
+ * @brief 通过节点元数据创建DAPyNode实例
  *
  * 此方法为便捷接口，从DAPyNodeMetaData中提取qualifiedName，
  * 然委托给createNodeProxy(const QString&)方法完成实际的代理创建。
  * 如果元数据无效（qualifiedName为空），直接返回nullptr。
  *
  * @param[in] metaData 节点元数据对象
- * @return 创建的DAPyNodeProxy实例指针，元数据无效时返回nullptr
+ * @return 创建的DAPyNode实例指针，元数据无效时返回nullptr
  * @note 此方法不存储元数据到代理对象，代理对象仍通过qualifiedName标识
  * @see createNodeProxy(const QString&)
  */
-DAPyNodeProxy* DAPyNodeFactory::createNodeProxy(const DAPyNodeMetaData& metaData)
+DAPyNode* DAPyNodeFactory::createNodeProxy(const DAPyNodeMetaData& metaData)
 {
     if (!metaData.isValid()) {
         return nullptr;

@@ -13,7 +13,7 @@
 #include <QDragMoveEvent>
 #include <QDragLeaveEvent>
 #include <QDropEvent>
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 #include "DANodeMimeData.h"
 #include "DAPyNodeFactory.h"
 #include "DAPyWorkFlowGraphicsScene.h"

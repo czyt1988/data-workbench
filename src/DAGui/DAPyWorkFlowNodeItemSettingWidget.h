@@ -69,7 +69,7 @@ private slots:
     // 选择改变
     void onSceneSelectionChanged();
     // 节点双击处理：切换到参数tab
-    void onSceneNodeDoubleClicked(DA::DAPyNodeProxy* proxy);
+    void onSceneNodeDoubleClicked(DA::DAPyNode* proxy);
     // 条目的位置改变触发的槽
     void onSceneItemsPositionChanged(const QList< QGraphicsItem* >& items,
                                      const QList< QPointF >& oldPos,

@@ -4,7 +4,7 @@
 #include "DAPyWorkFlow.h"
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyLinkGraphicsItem.h"
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 #include "DAPyNodeFactory.h"
 #include "DAPyGILGuard.h"
 #include "DAXMLFileInterface.h"
@@ -37,7 +37,7 @@ static QString getNodeItemIdFromItem(DAPyNodeGraphicsItem* item)
     if (!item) {
         return QString();
     }
-    DAPyNodeProxy* proxy = item->getProxy();
+    DAPyNode* proxy = item->getProxy();
     if (proxy && !proxy->isNone()) {
         DAPyGILGuard gil;
         try {
@@ -199,7 +199,7 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
             // 从C++图形项获取位置并写入DAWorkflowState的节点
             QList< DAPyNodeGraphicsItem* > nodeItems = scene->getPyNodeItems();
             for (DAPyNodeGraphicsItem* nodeItem : nodeItems) {
-                DAPyNodeProxy* proxy = nodeItem->getProxy();
+                DAPyNode* proxy = nodeItem->getProxy();
                 if (proxy && !proxy->isNone()) {
                     try {
                         pybind11::object pyNodeRef = proxy->object();
@@ -260,7 +260,7 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
         QDomElement nodeEle = doc->createElement("node");
 
         // 保存节点基本信息
-        DAPyNodeProxy* proxy = nodeItem->getProxy();
+        DAPyNode* proxy = nodeItem->getProxy();
         if (proxy) {
             nodeEle.setAttribute("qualified_name", proxy->getQualifiedName());
             // 保存Python侧的node_id

@@ -22,7 +22,7 @@ Q_SIGNALS:
 		 * @brief 节点被双击时发射的信号
 		 * @param[in] proxy 双击的节点代理
 		 */
-		void nodeDoubleClicked(DA::DAPyNodeProxy* proxy);
+		void nodeDoubleClicked(DA::DAPyNode* proxy);
 
 	public:
 	/**
@@ -88,7 +88,7 @@ private slots:
 	 * @brief 节点双击处理槽，弹出参数配置对话框
 	 * @param[in] proxy 双击的节点代理
 	 */
-	void onNodeDoubleClicked(DA::DAPyNodeProxy* proxy);
+	void onNodeDoubleClicked(DA::DAPyNode* proxy);
 	/**
 	 * @brief 节点创建时连接其双击信号
 	 * @param[in] item 新创建的节点图形项

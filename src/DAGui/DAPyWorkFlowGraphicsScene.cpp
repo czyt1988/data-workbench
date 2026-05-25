@@ -15,7 +15,7 @@
 #include <QJsonArray>
 #include "DAGraphicsStandardTextItem.h"
 // workflow
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyLinkGraphicsItem.h"
 #include "DAGraphicsCommandsFactory.h"
@@ -38,11 +38,11 @@ using namespace DA;
 // DAPyWorkFlowGraphicsScene
 //===================================================
 DAPyWorkFlowGraphicsScene::DAPyWorkFlowGraphicsScene(QObject* parent)
-	: DAPyWorkFlowScene(parent), mBackgroundPixmapItem(nullptr), mEnableItemMoveWithBackground(false)
+    : DAPyWorkFlowScene(parent), mBackgroundPixmapItem(nullptr), mEnableItemMoveWithBackground(false)
 {
-	mTextFont = QApplication::font();
-	connect(this, &DAGraphicsScene::itemsPositionChanged, this, &DAPyWorkFlowGraphicsScene::onItemsPositionChanged);
-	connect(this, &DAPyWorkFlowScene::pyNodeItemCreated, this, &DAPyWorkFlowGraphicsScene::onPyNodeItemCreated);
+    mTextFont = QApplication::font();
+    connect(this, &DAGraphicsScene::itemsPositionChanged, this, &DAPyWorkFlowGraphicsScene::onItemsPositionChanged);
+    connect(this, &DAPyWorkFlowScene::pyNodeItemCreated, this, &DAPyWorkFlowGraphicsScene::onPyNodeItemCreated);
 }
 
 DAPyWorkFlowGraphicsScene::~DAPyWorkFlowGraphicsScene()
@@ -57,9 +57,9 @@ DAPyWorkFlowGraphicsScene::~DAPyWorkFlowGraphicsScene()
  */
 DAGraphicsPixmapItem* DAPyWorkFlowGraphicsScene::setBackgroundPixmap(const QPixmap& pixmap)
 {
-	DACommandWorkFlowSceneAddBackgroundPixmap* cmd = new DACommandWorkFlowSceneAddBackgroundPixmap(this, pixmap);
-	undoStack().push(cmd);
-	return mBackgroundPixmapItem;
+    DACommandWorkFlowSceneAddBackgroundPixmap* cmd = new DACommandWorkFlowSceneAddBackgroundPixmap(this, pixmap);
+    undoStack().push(cmd);
+    return mBackgroundPixmapItem;
 }
 /**
  * @brief 获取背景图item
@@ -67,18 +67,18 @@ DAGraphicsPixmapItem* DAPyWorkFlowGraphicsScene::setBackgroundPixmap(const QPixm
  */
 DAGraphicsPixmapItem* DAPyWorkFlowGraphicsScene::getBackgroundPixmapItem() const
 {
-	return mBackgroundPixmapItem;
-	//    if (nullptr == _backgroundPixmapItem) {
-	//        return nullptr;
-	//    }
-	//    QList< QGraphicsItem* > its = items();
-	//    for (const QGraphicsItem* i : std::as_const(its)) {
-	//        if (i == _backgroundPixmapItem) {
-	//            return _backgroundPixmapItem;
-	//        }
-	//    }
-	//    //在所有item中没有找到，说明_backgroundPixmapItem已经被删除
-	//    return nullptr;
+    return mBackgroundPixmapItem;
+    //    if (nullptr == _backgroundPixmapItem) {
+    //        return nullptr;
+    //    }
+    //    QList< QGraphicsItem* > its = items();
+    //    for (const QGraphicsItem* i : std::as_const(its)) {
+    //        if (i == _backgroundPixmapItem) {
+    //            return _backgroundPixmapItem;
+    //        }
+    //    }
+    //    //在所有item中没有找到，说明_backgroundPixmapItem已经被删除
+    //    return nullptr;
 }
 
 /**
@@ -89,9 +89,9 @@ DAGraphicsPixmapItem* DAPyWorkFlowGraphicsScene::getBackgroundPixmapItem() const
  */
 DAGraphicsPixmapItem* DAPyWorkFlowGraphicsScene::createBackgroundPixmapItem()
 {
-	DAGraphicsPixmapItem* item = new DAGraphicsPixmapItem();
-	setBackgroundPixmapItem(item);
-	return item;
+    DAGraphicsPixmapItem* item = new DAGraphicsPixmapItem();
+    setBackgroundPixmapItem(item);
+    return item;
 }
 
 /**
@@ -103,16 +103,16 @@ DAGraphicsPixmapItem* DAPyWorkFlowGraphicsScene::createBackgroundPixmapItem()
  */
 void DAPyWorkFlowGraphicsScene::setPreDefineSceneAction(DAPyWorkFlowGraphicsScene::SceneActionFlag mf)
 {
-	switch (mf) {
-	case AddRectItemAction:
-		setupSceneAction(new DAGraphicsDrawRectSceneAction(this));
-		break;
-	case AddTextItemAction:
-		setupSceneAction(new DAGraphicsDrawTextItemSceneAction(this));
-		break;
-	default:
-		break;
-	}
+    switch (mf) {
+    case AddRectItemAction:
+        setupSceneAction(new DAGraphicsDrawRectSceneAction(this));
+        break;
+    case AddTextItemAction:
+        setupSceneAction(new DAGraphicsDrawTextItemSceneAction(this));
+        break;
+    default:
+        break;
+    }
 }
 
 /**
@@ -122,19 +122,25 @@ void DAPyWorkFlowGraphicsScene::setPreDefineSceneAction(DAPyWorkFlowGraphicsScen
  */
 void DAPyWorkFlowGraphicsScene::setBackgroundPixmapItem(DAGraphicsPixmapItem* item)
 {
-	removeBackgroundPixmapItem();
-	mBackgroundPixmapItem = item;
-	if (item) {
+    removeBackgroundPixmapItem();
+    mBackgroundPixmapItem = item;
+    if (item) {
 #if DA_USE_QGRAPHICSOBJECT
-		connect(mBackgroundPixmapItem, &DAGraphicsPixmapItem::xChanged, this, &DAPyWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
-		connect(mBackgroundPixmapItem, &DAGraphicsPixmapItem::yChanged, this, &DAPyWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
+        connect(mBackgroundPixmapItem,
+                &DAGraphicsPixmapItem::xChanged,
+                this,
+                &DAPyWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
+        connect(mBackgroundPixmapItem,
+                &DAGraphicsPixmapItem::yChanged,
+                this,
+                &DAPyWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
 #endif
-		item->setZValue(-9999);
-		addItem(mBackgroundPixmapItem);
+        item->setZValue(-9999);
+        addItem(mBackgroundPixmapItem);
 #if DA_USE_QGRAPHICSOBJECT
-		mBackgroundPixmapItemLastPos = mBackgroundPixmapItem->pos();
+        mBackgroundPixmapItemLastPos = mBackgroundPixmapItem->pos();
 #endif
-	}
+    }
 }
 
 /**
@@ -145,16 +151,22 @@ void DAPyWorkFlowGraphicsScene::setBackgroundPixmapItem(DAGraphicsPixmapItem* it
  */
 DAGraphicsPixmapItem* DAPyWorkFlowGraphicsScene::removeBackgroundPixmapItem()
 {
-	if (mBackgroundPixmapItem) {
+    if (mBackgroundPixmapItem) {
 #if DA_USE_QGRAPHICSOBJECT
-		disconnect(mBackgroundPixmapItem, &DAGraphicsPixmapItem::xChanged, this, &DAPyWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
-		disconnect(mBackgroundPixmapItem, &DAGraphicsPixmapItem::yChanged, this, &DAPyWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
+        disconnect(mBackgroundPixmapItem,
+                   &DAGraphicsPixmapItem::xChanged,
+                   this,
+                   &DAPyWorkFlowGraphicsScene::backgroundPixmapItemXChanged);
+        disconnect(mBackgroundPixmapItem,
+                   &DAGraphicsPixmapItem::yChanged,
+                   this,
+                   &DAPyWorkFlowGraphicsScene::backgroundPixmapItemYChanged);
 #endif
-		removeItem(mBackgroundPixmapItem);
-	}
-	DAGraphicsPixmapItem* oldItem = mBackgroundPixmapItem;
-	mBackgroundPixmapItem         = nullptr;
-	return oldItem;
+        removeItem(mBackgroundPixmapItem);
+    }
+    DAGraphicsPixmapItem* oldItem = mBackgroundPixmapItem;
+    mBackgroundPixmapItem         = nullptr;
+    return oldItem;
 }
 
 /**
@@ -191,10 +203,10 @@ bool DAPyWorkFlowGraphicsScene::isEnableItemMoveWithBackground() const
 
 DAGraphicsPixmapItem* DAPyWorkFlowGraphicsScene::ensureGetBackgroundPixmapItem()
 {
-	if (nullptr == mBackgroundPixmapItem) {
-		createBackgroundPixmapItem();
-	}
-	return mBackgroundPixmapItem;
+    if (nullptr == mBackgroundPixmapItem) {
+        createBackgroundPixmapItem();
+    }
+    return mBackgroundPixmapItem;
 }
 #if 0
 void DAPyWorkFlowGraphicsScene::dragEnterEvent(QGraphicsSceneDragDropEvent* event)
@@ -235,76 +247,76 @@ void DAPyWorkFlowGraphicsScene::dropEvent(QGraphicsSceneDragDropEvent* event)
 #if DA_USE_QGRAPHICSOBJECT
 void DAPyWorkFlowGraphicsScene::backgroundPixmapItemXChanged()
 {
-	if (!isEnableItemMoveWithBackground()) {
-		mBackgroundPixmapItemLastPos = mBackgroundPixmapItem->pos();
-		return;
-	}
-	QPointF newPos = mBackgroundPixmapItem->pos();
-	QPointF sub(newPos - mBackgroundPixmapItemLastPos);
-	// 获取所有非连接线的图元（排除DAGraphicsLinkItem）
-	QList< QGraphicsItem* > allItems = items();
-	QList< QGraphicsItem* > itemsWithoutLink;
-	for (QGraphicsItem* item : std::as_const(allItems)) {
-		if (dynamic_cast< DAGraphicsLinkItem* >(item) == nullptr) {
-			itemsWithoutLink.append(item);
-		}
-	}
+    if (!isEnableItemMoveWithBackground()) {
+        mBackgroundPixmapItemLastPos = mBackgroundPixmapItem->pos();
+        return;
+    }
+    QPointF newPos = mBackgroundPixmapItem->pos();
+    QPointF sub(newPos - mBackgroundPixmapItemLastPos);
+    // 获取所有非连接线的图元（排除DAGraphicsLinkItem）
+    QList< QGraphicsItem* > allItems = items();
+    QList< QGraphicsItem* > itemsWithoutLink;
+    for (QGraphicsItem* item : std::as_const(allItems)) {
+        if (dynamic_cast< DAGraphicsLinkItem* >(item) == nullptr) {
+            itemsWithoutLink.append(item);
+        }
+    }
 
-	for (QGraphicsItem* item : std::as_const(itemsWithoutLink)) {
-		if (item == getBackgroundPixmapItem()) {
-			continue;
-		}
-		if (nullptr != item->parentItem()) {
-			continue;
-		}
-		QPointF tempPos = sub + item->pos();
-		item->setPos(tempPos);
-	}
+    for (QGraphicsItem* item : std::as_const(itemsWithoutLink)) {
+        if (item == getBackgroundPixmapItem()) {
+            continue;
+        }
+        if (nullptr != item->parentItem()) {
+            continue;
+        }
+        QPointF tempPos = sub + item->pos();
+        item->setPos(tempPos);
+    }
 
-	// 背景移动后，更新所有节点对应的连接线端点
-	QList< DAPyNodeGraphicsItem* > nodeItems = getPyNodeItems();
-	for (DAPyNodeGraphicsItem* node : std::as_const(nodeItems)) {
-		updateNodeLinkPositions(node);
-	}
+    // 背景移动后，更新所有节点对应的连接线端点
+    QList< DAPyNodeGraphicsItem* > nodeItems = getPyNodeItems();
+    for (DAPyNodeGraphicsItem* node : std::as_const(nodeItems)) {
+        updateNodeLinkPositions(node);
+    }
 
-	mBackgroundPixmapItemLastPos = newPos;
+    mBackgroundPixmapItemLastPos = newPos;
 }
 
 void DAPyWorkFlowGraphicsScene::backgroundPixmapItemYChanged()
 {
-	if (!isEnableItemMoveWithBackground()) {
-		mBackgroundPixmapItemLastPos = mBackgroundPixmapItem->pos();
-		return;
-	}
-	QPointF newPos = mBackgroundPixmapItem->pos();
-	QPointF sub(newPos - mBackgroundPixmapItemLastPos);
-	// 获取所有非连接线的图元（排除DAGraphicsLinkItem）
-	QList< QGraphicsItem* > allItems = items();
-	QList< QGraphicsItem* > itemsWithoutLink;
-	for (QGraphicsItem* item : std::as_const(allItems)) {
-		if (dynamic_cast< DAGraphicsLinkItem* >(item) == nullptr) {
-			itemsWithoutLink.append(item);
-		}
-	}
+    if (!isEnableItemMoveWithBackground()) {
+        mBackgroundPixmapItemLastPos = mBackgroundPixmapItem->pos();
+        return;
+    }
+    QPointF newPos = mBackgroundPixmapItem->pos();
+    QPointF sub(newPos - mBackgroundPixmapItemLastPos);
+    // 获取所有非连接线的图元（排除DAGraphicsLinkItem）
+    QList< QGraphicsItem* > allItems = items();
+    QList< QGraphicsItem* > itemsWithoutLink;
+    for (QGraphicsItem* item : std::as_const(allItems)) {
+        if (dynamic_cast< DAGraphicsLinkItem* >(item) == nullptr) {
+            itemsWithoutLink.append(item);
+        }
+    }
 
-	for (QGraphicsItem* item : std::as_const(itemsWithoutLink)) {
-		if (item == getBackgroundPixmapItem()) {
-			continue;
-		}
-		if (nullptr != item->parentItem()) {
-			continue;
-		}
-		QPointF tempPos = sub + item->pos();
-		item->setPos(tempPos);
-	}
+    for (QGraphicsItem* item : std::as_const(itemsWithoutLink)) {
+        if (item == getBackgroundPixmapItem()) {
+            continue;
+        }
+        if (nullptr != item->parentItem()) {
+            continue;
+        }
+        QPointF tempPos = sub + item->pos();
+        item->setPos(tempPos);
+    }
 
-	// 背景移动后，更新所有节点对应的连接线端点
-	QList< DAPyNodeGraphicsItem* > nodeItems = getPyNodeItems();
-	for (DAPyNodeGraphicsItem* node : std::as_const(nodeItems)) {
-		updateNodeLinkPositions(node);
-	}
+    // 背景移动后，更新所有节点对应的连接线端点
+    QList< DAPyNodeGraphicsItem* > nodeItems = getPyNodeItems();
+    for (DAPyNodeGraphicsItem* node : std::as_const(nodeItems)) {
+        updateNodeLinkPositions(node);
+    }
 
-	mBackgroundPixmapItemLastPos = newPos;
+    mBackgroundPixmapItemLastPos = newPos;
 }
 
 /**
@@ -315,80 +327,80 @@ void DAPyWorkFlowGraphicsScene::backgroundPixmapItemYChanged()
   @param newPos
   @return $RETURN
 */
-void DAPyWorkFlowGraphicsScene::onItemsPositionChanged(
-	const QList< QGraphicsItem* >& items, const QList< QPointF >& oldPos, const QList< QPointF >& newPos
-)
+void DAPyWorkFlowGraphicsScene::onItemsPositionChanged(const QList< QGraphicsItem* >& items,
+                                                       const QList< QPointF >& oldPos,
+                                                       const QList< QPointF >& newPos)
 {
-	if (items.empty() || oldPos.empty() || newPos.empty()) {
-		return;
-	}
-	// 更新移动节点的连接线端点位置
-	for (QGraphicsItem* i : std::as_const(items)) {
-		DAPyNodeGraphicsItem* nitem = dynamic_cast< DAPyNodeGraphicsItem* >(i);
-		if (nitem) {
-			updateNodeLinkPositions(nitem);
-		}
-	}
-	// 如果未启用关联移动，仅更新连接线后返回
-	if (!isEnableItemLinkageMove()) {
-		return;
-	}
-	// 关联移动：沿输出链路将下游节点跟随移动
-	QPointF offset = newPos.first() - oldPos.first();
-	QSet< DAPyNodeGraphicsItem* > linkedItems;
-	QSet< DAPyNodeGraphicsItem* > movedNodes;
-	for (QGraphicsItem* i : std::as_const(items)) {
-		DAPyNodeGraphicsItem* nitem = dynamic_cast< DAPyNodeGraphicsItem* >(i);
-		if (!nitem) {
-			continue;
-		}
-		movedNodes.insert(nitem);
-		QList< DAPyNodeGraphicsItem* > chain = getOutputLinkChain(nitem);
-		for (DAPyNodeGraphicsItem* downstream : chain) {
-			linkedItems.insert(downstream);
-		}
-	}
-	// 移除已手动移动过的节点
-	linkedItems -= movedNodes;
-	if (linkedItems.isEmpty()) {
-		return;
-	}
-	// 计算关联节点的新位置
-	QList< QPointF > startPos;
-	QList< QPointF > endPos;
-	QList< QGraphicsItem* > willMoveItems;
-	for (DAPyNodeGraphicsItem* i : std::as_const(linkedItems)) {
-		willMoveItems.append(i);
-		startPos.push_back(i->pos());
-		endPos.push_back(i->pos() + offset);
-	}
-	// 执行关联移动（undo/redo支持）
-	DACommandsForGraphicsItemsMoved* cmd = commandsFactory()->createItemsMoved(willMoveItems, startPos, endPos, false);
-	getUndoStack()->push(cmd);
-	// 关联移动后同样更新连接线端点
-	for (DAPyNodeGraphicsItem* i : std::as_const(linkedItems)) {
-		updateNodeLinkPositions(i);
-	}
+    if (items.empty() || oldPos.empty() || newPos.empty()) {
+        return;
+    }
+    // 更新移动节点的连接线端点位置
+    for (QGraphicsItem* i : std::as_const(items)) {
+        DAPyNodeGraphicsItem* nitem = dynamic_cast< DAPyNodeGraphicsItem* >(i);
+        if (nitem) {
+            updateNodeLinkPositions(nitem);
+        }
+    }
+    // 如果未启用关联移动，仅更新连接线后返回
+    if (!isEnableItemLinkageMove()) {
+        return;
+    }
+    // 关联移动：沿输出链路将下游节点跟随移动
+    QPointF offset = newPos.first() - oldPos.first();
+    QSet< DAPyNodeGraphicsItem* > linkedItems;
+    QSet< DAPyNodeGraphicsItem* > movedNodes;
+    for (QGraphicsItem* i : std::as_const(items)) {
+        DAPyNodeGraphicsItem* nitem = dynamic_cast< DAPyNodeGraphicsItem* >(i);
+        if (!nitem) {
+            continue;
+        }
+        movedNodes.insert(nitem);
+        QList< DAPyNodeGraphicsItem* > chain = getOutputLinkChain(nitem);
+        for (DAPyNodeGraphicsItem* downstream : chain) {
+            linkedItems.insert(downstream);
+        }
+    }
+    // 移除已手动移动过的节点
+    linkedItems -= movedNodes;
+    if (linkedItems.isEmpty()) {
+        return;
+    }
+    // 计算关联节点的新位置
+    QList< QPointF > startPos;
+    QList< QPointF > endPos;
+    QList< QGraphicsItem* > willMoveItems;
+    for (DAPyNodeGraphicsItem* i : std::as_const(linkedItems)) {
+        willMoveItems.append(i);
+        startPos.push_back(i->pos());
+        endPos.push_back(i->pos() + offset);
+    }
+    // 执行关联移动（undo/redo支持）
+    DACommandsForGraphicsItemsMoved* cmd = commandsFactory()->createItemsMoved(willMoveItems, startPos, endPos, false);
+    getUndoStack()->push(cmd);
+    // 关联移动后同样更新连接线端点
+    for (DAPyNodeGraphicsItem* i : std::as_const(linkedItems)) {
+        updateNodeLinkPositions(i);
+    }
 }
 
 QColor DAPyWorkFlowGraphicsScene::getDefaultTextColor() const
 {
-	return mTextColor;
+    return mTextColor;
 }
 
 void DAPyWorkFlowGraphicsScene::setDefaultTextColor(const QColor& c)
 {
-	mTextColor = c;
+    mTextColor = c;
 }
 
 QFont DAPyWorkFlowGraphicsScene::getDefaultTextFont() const
 {
-	return mTextFont;
+    return mTextFont;
 }
 
 void DAPyWorkFlowGraphicsScene::setDefaultTextFont(const QFont& f)
 {
-	mTextFont = f;
+    mTextFont = f;
 }
 #endif
 
@@ -401,12 +413,12 @@ void DAPyWorkFlowGraphicsScene::setDefaultTextFont(const QFont& f)
  *
  * @param[in] proxy 双击的节点代理
  */
-void DAPyWorkFlowGraphicsScene::onNodeDoubleClicked(DAPyNodeProxy* proxy)
+void DAPyWorkFlowGraphicsScene::onNodeDoubleClicked(DAPyNode* proxy)
 {
-	if (!proxy) {
-		return;
-	}
-	Q_EMIT nodeDoubleClicked(proxy);
+    if (!proxy) {
+        return;
+    }
+    Q_EMIT nodeDoubleClicked(proxy);
 }
 
 /**
@@ -420,8 +432,8 @@ void DAPyWorkFlowGraphicsScene::onNodeDoubleClicked(DAPyNodeProxy* proxy)
  */
 void DAPyWorkFlowGraphicsScene::onPyNodeItemCreated(DAPyNodeGraphicsItem* item)
 {
-	if (!item) {
-		return;
-	}
-	connect(item, &DAPyNodeGraphicsItem::nodeDoubleClicked, this, &DAPyWorkFlowGraphicsScene::onNodeDoubleClicked);
+    if (!item) {
+        return;
+    }
+    connect(item, &DAPyNodeGraphicsItem::nodeDoubleClicked, this, &DAPyWorkFlowGraphicsScene::onNodeDoubleClicked);
 }

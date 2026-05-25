@@ -9,7 +9,7 @@
 
 namespace DA
 {
-class DAPyNodeProxy;
+class DAPyNode;
 class DAPythonSignalHandler;
 class DAPyWorkFlow;
 
@@ -43,7 +43,7 @@ class DAPyWorkFlow;
  * thread->start();
  * @endcode
  *
- * @see DAPyWorkFlow DAPyGILGuard DAPyGILRelease DAPythonSignalHandler DAPyNodeProxy
+ * @see DAPyWorkFlow DAPyGILGuard DAPyGILRelease DAPythonSignalHandler DAPyNode
  */
 class DAPYWORKFLOW_API DAPyWorkFlowLifecycle : public QObject
 {
@@ -58,7 +58,7 @@ public:
     DAPyWorkFlowLifecycle(const DAPyWorkFlowLifecycle&) = delete;
 
     // 设置执行期间需要跟踪的节点代理（按 Python 侧 node_id 索引）
-    void setNodeProxies(const QList< DAPyNodeProxy* >& proxies);
+    void setNodeProxies(const QList< DAPyNode* >& proxies);
     // 设置DAPyWorkFlow封装对象（替代原 setWorkflow(pybind11::object)）
     void setWorkflow(DAPyWorkFlow* workflow);
     // 判断是否正在执行（Running或Paused状态）
@@ -84,7 +84,7 @@ Q_SIGNALS:
      * @param proxy 执行完成的节点代理（原始指针）
      * @param success 执行是否成功
      */
-    void nodeExecuteFinished(DA::DAPyNodeProxy* proxy, bool success);
+    void nodeExecuteFinished(DA::DAPyNode* proxy, bool success);
 
     /**
      * @brief 工作流执行完成信号

@@ -15,7 +15,7 @@ public:
     {
     }
 
-    DAPyNodeProxy* mNodeProxy = nullptr;
+    DAPyNode* mNodeProxy = nullptr;
     DAPyNodeMetaData mMetaData;
     QVector< DAParamDef > mParamDefs;
 };
@@ -39,12 +39,12 @@ DAAbstractNodeSettingWidget::~DAAbstractNodeSettingWidget()
 /**
  * @brief 设置节点代理
  *
- * 使用 QPointer 安全持有 DAPyNodeProxy，并在设置时缓存元数据和参数定义。
+ * 使用 QPointer 安全持有 DAPyNode，并在设置时缓存元数据和参数定义。
  * 传入 nullptr 时清除缓存。
  *
  * @param[in] proxy 节点代理指针，可为 nullptr
  */
-void DAAbstractNodeSettingWidget::setNodeProxy(DAPyNodeProxy* proxy)
+void DAAbstractNodeSettingWidget::setNodeProxy(DAPyNode* proxy)
 {
     DA_D(d);
     d->mNodeProxy = proxy;
@@ -123,7 +123,7 @@ void DAAbstractNodeSettingWidget::setNodeProxy(DAPyNodeProxy* proxy)
     }
 }
 
-DAPyNodeProxy* DAAbstractNodeSettingWidget::getNodeProxy() const
+DAPyNode* DAAbstractNodeSettingWidget::getNodeProxy() const
 {
     DA_DC(d);
     return d->mNodeProxy;

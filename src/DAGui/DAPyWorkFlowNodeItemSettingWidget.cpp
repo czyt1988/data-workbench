@@ -1,6 +1,6 @@
 #include "DAPyWorkFlowNodeItemSettingWidget.h"
 #include "ui_DAPyWorkFlowNodeItemSettingWidget.h"
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyWorkFlowOperateWidget.h"
 #include "DAGraphicsPixmapItemSettingWidget.h"
@@ -47,19 +47,24 @@ void DAPyWorkFlowNodeItemSettingWidget::init()
     // 注意: DANodeParamSettingPanel::collectConfig() 为 protected，无法从外部调用
     // 实际配置持久化将由 3-hop 信号链第三跳 (onPropertyValueChanged) 完成
     // 此连接作为外部通知接口，后续 collectConfig 可访问时补充 setConfig 调用
-    connect(mParamSettingWidget, &DANodeParamSettingPanelWidget::propertyValueChanged,
-            this, [this](int propertyId) {
-                Q_UNUSED(propertyId);
-                // TODO: 当 collectConfig() 可外部访问时，补充 proxy->setConfig(panel->collectConfig())
-            });
+    connect(mParamSettingWidget, &DANodeParamSettingPanelWidget::propertyValueChanged, this, [ this ](int propertyId) {
+        Q_UNUSED(propertyId);
+        // TODO: 当 collectConfig() 可外部访问时，补充 proxy->setConfig(panel->collectConfig())
+    });
 }
 
 void DAPyWorkFlowNodeItemSettingWidget::bindWorkFlowEditWidget(DAPyWorkFlowEditWidget* w)
 {
     if (_workflowEditWidget) {
         DAPyWorkFlowGraphicsScene* s = _workflowEditWidget->getWorkFlowGraphicsScene();
-        disconnect(s, &DAPyWorkFlowGraphicsScene::selectionChanged, this, &DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged);
-        disconnect(s, &DAPyWorkFlowGraphicsScene::nodeDoubleClicked, this, &DAPyWorkFlowNodeItemSettingWidget::onSceneNodeDoubleClicked);
+        disconnect(s,
+                   &DAPyWorkFlowGraphicsScene::selectionChanged,
+                   this,
+                   &DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged);
+        disconnect(s,
+                   &DAPyWorkFlowGraphicsScene::nodeDoubleClicked,
+                   this,
+                   &DAPyWorkFlowNodeItemSettingWidget::onSceneNodeDoubleClicked);
         disconnect(s,
                    &DAPyWorkFlowGraphicsScene::itemsPositionChanged,
                    this,
@@ -77,7 +82,10 @@ void DAPyWorkFlowNodeItemSettingWidget::bindWorkFlowEditWidget(DAPyWorkFlowEditW
     if (_workflowEditWidget) {
         DAPyWorkFlowGraphicsScene* s = _workflowEditWidget->getWorkFlowGraphicsScene();
         connect(s, &DAPyWorkFlowGraphicsScene::selectionChanged, this, &DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged);
-        connect(s, &DAPyWorkFlowGraphicsScene::nodeDoubleClicked, this, &DAPyWorkFlowNodeItemSettingWidget::onSceneNodeDoubleClicked);
+        connect(s,
+                &DAPyWorkFlowGraphicsScene::nodeDoubleClicked,
+                this,
+                &DAPyWorkFlowNodeItemSettingWidget::onSceneNodeDoubleClicked);
         connect(s,
                 &DAPyWorkFlowGraphicsScene::itemsPositionChanged,
                 this,
@@ -253,7 +261,7 @@ bool DAPyWorkFlowNodeItemSettingWidget::isTabContainWidget(QWidget* w)
  * @brief 节点双击处理：切换到参数tab并设置节点代理
  * @param proxy 双击的节点代理
  */
-void DAPyWorkFlowNodeItemSettingWidget::onSceneNodeDoubleClicked(DAPyNodeProxy* proxy)
+void DAPyWorkFlowNodeItemSettingWidget::onSceneNodeDoubleClicked(DAPyNode* proxy)
 {
     if (!proxy) {
         return;
@@ -310,7 +318,7 @@ void DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         setNodeSettingEnable(true);
 
         setPixmapItemSettingEnable(false);
-        DAPyNodeProxy* proxy = nodeItem->getProxy();
+        DAPyNode* proxy = nodeItem->getProxy();
         if (isTabContainWidget(ui->tabNodeSetting)) {
             ui->tabNodeSetting->setNode(proxy);
         }
@@ -365,8 +373,8 @@ void DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
  * @param newPos
  */
 void DAPyWorkFlowNodeItemSettingWidget::onSceneItemsPositionChanged(const QList< QGraphicsItem* >& items,
-                                                                  const QList< QPointF >& oldPos,
-                                                                  const QList< QPointF >& newPos)
+                                                                    const QList< QPointF >& oldPos,
+                                                                    const QList< QPointF >& newPos)
 {
     Q_UNUSED(oldPos);
     Q_UNUSED(newPos);
@@ -385,8 +393,8 @@ void DAPyWorkFlowNodeItemSettingWidget::onSceneItemsPositionChanged(const QList<
  * @param newSize
  */
 void DAPyWorkFlowNodeItemSettingWidget::onSceneItemBodySizeChanged(DAGraphicsResizeableItem* item,
-                                                                 const QSizeF& oldSize,
-                                                                 const QSizeF& newSize)
+                                                                   const QSizeF& oldSize,
+                                                                   const QSizeF& newSize)
 {
     Q_UNUSED(item);
     Q_UNUSED(oldSize);

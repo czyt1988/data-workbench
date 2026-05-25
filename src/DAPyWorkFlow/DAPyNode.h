@@ -1,5 +1,5 @@
-#ifndef DAPYNODEPROXY_H
-#define DAPYNODEPROXY_H
+#ifndef DAPYNODE_H
+#define DAPYNODE_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyObjectWrapper.h"
 #include "DAPyNodeState.h"
@@ -23,7 +23,7 @@ namespace DA
  * 复合类型（端口、参数、样式）通过DictConverter从Python dict临时转换为C++ struct。
  *
  * @code
- * DAPyNodeProxy proxy(pyNodeObj);
+ * DAPyNode proxy(pyNodeObj);
  * if (!proxy.isNone()) {
  *     QString name = proxy.getNodeName();
  *     DANodeStyle style = proxy.getNodeStyle();
@@ -32,16 +32,16 @@ namespace DA
  *
  * @see DAPyObjectWrapper DAPyDataFrame DAPyDictConverter
  */
-class DAPYWORKFLOW_API DAPyNodeProxy : public DAPyObjectWrapper
+class DAPYWORKFLOW_API DAPyNode : public DAPyObjectWrapper
 {
 public:
     // 构造/析构
-    explicit DAPyNodeProxy();
-    explicit DAPyNodeProxy(const pybind11::object& pyNode);
-    explicit DAPyNodeProxy(pybind11::object&& pyNode);
-    explicit DAPyNodeProxy(const DAPyObjectWrapper& pyNode);
-    explicit DAPyNodeProxy(const DAPyNodeProxy& pyNode);
-    ~DAPyNodeProxy();
+    explicit DAPyNode();
+    explicit DAPyNode(const pybind11::object& pyNode);
+    explicit DAPyNode(pybind11::object&& pyNode);
+    explicit DAPyNode(const DAPyObjectWrapper& pyNode);
+    explicit DAPyNode(const DAPyNode& pyNode);
+    ~DAPyNode();
 
     // 获取Python节点的node_id（从Python对象属性node_id读取）
     QString getNodeId() const;
@@ -81,4 +81,4 @@ public:
 
 }  // namespace DA
 
-#endif  // DAPYNODEPROXY_H
+#endif  // DAPYNODE_H

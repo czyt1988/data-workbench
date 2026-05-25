@@ -11,7 +11,7 @@ namespace DA
  * @file DAPyDictConverter.h
  * @brief Python dict 到 C++ struct 的临时转换工具
  *
- * DAPyNodeProxy 作为纯代理，每次通过 attr() 从 Python 对象读取属性，
+ * DAPyNode 作为纯代理，每次通过 attr() 从 Python 对象读取属性，
  * 样式等复合类型在 Python 端为 dict，
  * 本模块提供 dict→C++ struct 的临时转换函数（不做缓存）。
  *

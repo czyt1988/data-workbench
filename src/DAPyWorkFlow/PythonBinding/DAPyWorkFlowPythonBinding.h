@@ -10,7 +10,7 @@
 @section py_overview  一、模块功能
 da_py_workflow 模块把 C++ 的 Python 工作流引擎桥接层暴露给 Python，使脚本能够：
 - 创建和管理 DAPyWorkFlowScene 场景（基于 DAGraphicsView 的 Python 节点渲染）；
-- 获取 DAPyNodeProxy 代理节点实例，执行 Python 定义的节点；
+- 获取 DAPyNode 代理节点实例，执行 Python 定义的节点；
 - 查询和设置节点状态（DAPyNodeState 枚举）；
 - 通过 DAPythonSignalHandler 实现 Python→C++ 的状态更新通知（复用 da_interface 模块已有机制）。
 
@@ -20,7 +20,7 @@ da_py_workflow 模块把 C++ 的 Python 工作流引擎桥接层暴露给 Python
 |-------------------------|--------------------------------|------|
 | DAPyWorkFlowScene       | DA::DAPyWorkFlowScene          | Python 工作流场景管理，继承 DAGraphicsScene |
 | DAPyNodeState           | DA::DAPyNodeState              | 节点状态枚举（Idle/Waiting/Running/Success/Error/Skipped） |
-| DAPyNodeProxy           | DA::DAPyNodeProxy              | Python 节点的 C++ 代理（通过 DAPyModuleWorkflow 获取） |
+| DAPyNode           | DA::DAPyNode              | Python 节点的 C++ 代理（通过 DAPyModuleWorkflow 获取） |
 | DAPyPainterProxy        | DA::DAPyPainterProxy           | QPainter 代理，暴露基本绘制操作给 Python 回调 |
 
 @section py_ctor  三、构造与获取
@@ -29,28 +29,28 @@ da_py_workflow 模块把 C++ 的 Python 工作流引擎桥接层暴露给 Python
 - DAPyWorkFlowScene(parent:QObject = None)
 创建新的 Python 工作流场景。场景持有 DAGraphicsScene 的渲染能力，用于显示 Python 定义的节点。
 
-@subsection py_get_proxy  2. DAPyNodeProxy 获取
+@subsection py_get_proxy  2. DAPyNode 获取
 @code
-proxy = da_py_workflow.getNodeProxy(qualified_name:str) -> DAPyNodeProxy
+proxy = da_py_workflow.getNodeProxy(qualified_name:str) -> DAPyNode
 @endcode
 通过 Python 节点的 qualified_name（模块.类名）获取对应的 C++ 代理节点。代理节点用于执行 Python 节点逻辑并管理状态。
 
 @section py_member_scene  四、DAPyWorkFlowScene 成员
 
 @subsection py_scene_node  1. 节点管理
-- addNode(qualified_name:str, pos:tuple) -> DAPyNodeProxy
+- addNode(qualified_name:str, pos:tuple) -> DAPyNode
 在指定位置 (x, y) 添加 Python 节点，返回代理节点引用。
-- removeNode(proxy:DAPyNodeProxy) -> bool
+- removeNode(proxy:DAPyNode) -> bool
 移除节点，成功返回 True。
-- getNodeAt(pos:tuple) -> DAPyNodeProxy
+- getNodeAt(pos:tuple) -> DAPyNode
 获取指定位置的节点，无节点返回 None。
-- getAllNodes() -> list[DAPyNodeProxy]
+- getAllNodes() -> list[DAPyNode]
 获取场景中所有 Python 节点代理。
 
 @subsection py_scene_connection  2. 连接管理
-- addConnection(src_proxy:DAPyNodeProxy, src_output:str, dst_proxy:DAPyNodeProxy, dst_input:str) -> bool
+- addConnection(src_proxy:DAPyNode, src_output:str, dst_proxy:DAPyNode, dst_input:str) -> bool
 添加节点连接（源节点输出 → 目标节点输入）。
-- removeConnection(src_proxy:DAPyNodeProxy, src_output:str, dst_proxy:DAPyNodeProxy, dst_input:str) -> bool
+- removeConnection(src_proxy:DAPyNode, src_output:str, dst_proxy:DAPyNode, dst_input:str) -> bool
 移除指定连接。
 - getConnections() -> list[tuple]
 获取所有连接的列表，每个元素为 (src_proxy, src_output, dst_proxy, dst_input)。
@@ -61,7 +61,7 @@ proxy = da_py_workflow.getNodeProxy(qualified_name:str) -> DAPyNodeProxy
 - clearScene() -> None
 清空场景，移除所有节点和连接。
 
-@section py_member_proxy  五、DAPyNodeProxy 成员
+@section py_member_proxy  五、DAPyNode 成员
 
 @subsection py_proxy_state  1. 状态管理
 - getState() -> DAPyNodeState
@@ -179,9 +179,9 @@ handler.callInMainThread(update_node_state)  # 安全回到 Qt 主线程更新�
 
 @section py_thread  九、线程与生命周期
 - 所有函数默认持有 GIL，Qt GUI 线程直接调用安全。
-- DAPyNodeProxy::execute() 内部使用 DAPyGILGuard 管理 GIL，支持后台线程调用。
+- DAPyNode::execute() 内部使用 DAPyGILGuard 管理 GIL，支持后台线程调用。
 - Python→C++ 状态更新必须通过 DAPythonSignalHandler::callInMainThread 回到 Qt 主线程（复用 da_interface 模块已有绑定）。
-- DAPyNodeProxy 持有 Python 节点实例的引用，Python 对象被 Python 垃圾回收时 C++ 侧引用自动失效（通过 safe_pyobject 机制）。
+- DAPyNode 持有 Python 节点实例的引用，Python 对象被 Python 垃圾回收时 C++ 侧引用自动失效（通过 safe_pyobject 机制）。
 
 @section py_limit  十、当前限制
 - DAPyWorkFlowScene 目前仅支持矩形节点渲染模板（'rect'），SVG 和 Widget 模板待实现。
@@ -194,20 +194,21 @@ handler.callInMainThread(update_node_state)  # 安全回到 Qt 主线程更新�
 
 // DA
 #include "DAPyWorkFlow/DAPyWorkFlowScene.h"
-#include "DAPyWorkFlow/DAPyNodeProxy.h"
+#include "DAPyWorkFlow/DAPyNode.h"
 #include "DAPyWorkFlow/DAPyNodeState.h"
 #include "DAPyWorkFlow/DAPyPainterProxy.h"
 #include "DAPyWorkFlow/DAPyLinkPoint.h"
 #include "DAPyWorkFlow/DAPyNodeFactory.h"
 
-namespace DA {
+namespace DA
+{
 
 /**
- * @brief 通过 qualified_name 获取 DAPyNodeProxy 实例
+ * @brief 通过 qualified_name 获取 DAPyNode 实例
  * @param qualified_name Python 节点的完整限定名（模块.类名）
  * @return 代理节点智能指针，如果节点未注册返回空指针
  */
-std::shared_ptr< DAPyNodeProxy > getNodeProxy(const std::string& qualified_name);
+std::shared_ptr< DAPyNode > getNodeProxy(const std::string& qualified_name);
 
 }  // namespace DA
 

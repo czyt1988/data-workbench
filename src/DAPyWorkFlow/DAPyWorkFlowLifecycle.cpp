@@ -2,7 +2,7 @@
 #include "DAPyWorkFlow.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAPyBindQt/DAPybind11QtCaster.hpp"
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 #include "DAPythonSignalHandler.h"
 #include <QDebug>
 #include <QMutexLocker>
@@ -26,15 +26,15 @@ public:
     void setExecState(ExecState newState);
 
 public:
-    DAPyWorkFlow* mWorkflow { nullptr };                 ///< DAPyWorkFlow封装对象指针（调用者保证生命周期）
-    QPointer< DAPythonSignalHandler > mSignalHandler;    ///< C++侧信号处理器（可选）
-    ExecState mExecState { StateIdle };                  ///< 当前执行状态
-    bool mIsTerminateRequest { false };                  ///< 终止请求标记
-    bool mIsPauseRequest { false };                      ///< 暂停请求标记
-    QMutex mMutex;                                       ///< 互斥锁保护状态变更
-    QWaitCondition mPauseCondition;                      ///< 暂停等待条件变量
-    QString mLastErrorString;                            ///< 最后错误信息
-    QHash< QString, DAPyNodeProxy* > mExecutingProxies;  ///< 执行中节点的 nodeId → proxy 映射
+    DAPyWorkFlow* mWorkflow { nullptr };               ///< DAPyWorkFlow封装对象指针（调用者保证生命周期）
+    QPointer< DAPythonSignalHandler > mSignalHandler;  ///< C++侧信号处理器（可选）
+    ExecState mExecState { StateIdle };                ///< 当前执行状态
+    bool mIsTerminateRequest { false };                ///< 终止请求标记
+    bool mIsPauseRequest { false };                    ///< 暂停请求标记
+    QMutex mMutex;                                     ///< 互斥锁保护状态变更
+    QWaitCondition mPauseCondition;                    ///< 暂停等待条件变量
+    QString mLastErrorString;                          ///< 最后错误信息
+    QHash< QString, DAPyNode* > mExecutingProxies;     ///< 执行中节点的 nodeId → proxy 映射
 };
 
 //===================================================
@@ -106,16 +106,16 @@ void DAPyWorkFlowLifecycle::setWorkflow(DAPyWorkFlow* workflow)
 /**
  * @brief 设置执行期间需要追踪的节点代理列表
  *
- * 建立 nodeId → proxy 映射，供 Python 侧回调中获取对应 DAPyNodeProxy。
+ * 建立 nodeId → proxy 映射，供 Python 侧回调中获取对应 DAPyNode。
  * 在 startExecute() 前调用。
  *
  * @param[in] proxies 节点代理列表
  */
-void DAPyWorkFlowLifecycle::setNodeProxies(const QList< DAPyNodeProxy* >& proxies)
+void DAPyWorkFlowLifecycle::setNodeProxies(const QList< DAPyNode* >& proxies)
 {
     DA_D(d);
     d->mExecutingProxies.clear();
-    for (DAPyNodeProxy* proxy : proxies) {
+    for (DAPyNode* proxy : proxies) {
         if (proxy) {
             QString nodeId = proxy->getNodeId();
             if (!nodeId.isEmpty()) {
@@ -227,7 +227,7 @@ void DAPyWorkFlowLifecycle::startExecute()
                 if (!d->mWorkflow) {
                     return;
                 }
-                DA::DAPyNodeProxy* proxy = d->mExecutingProxies.take(QString::fromStdString(nodeId));
+                DA::DAPyNode* proxy = d->mExecutingProxies.take(QString::fromStdString(nodeId));
                 if (!proxy) {
                     qWarning() << "DAPyWorkFlowLifecycle: node finished but proxy not found for nodeId:"
                                << QString::fromStdString(nodeId);

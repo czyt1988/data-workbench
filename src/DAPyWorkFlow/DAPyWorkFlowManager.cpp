@@ -1,7 +1,7 @@
 #include "DAPyWorkFlowManager.h"
 #include "DAPyWorkFlow.h"
 #include "DAPyNodeFactory.h"
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAPybind11InQt.h"
 #include <QDebug>
@@ -17,7 +17,9 @@ class DAPyWorkFlowManager::PrivateData
 {
     DA_DECLARE_PUBLIC(DAPyWorkFlowManager)
 public:
-    PrivateData(DAPyWorkFlowManager* p) : q_ptr(p) {}
+    PrivateData(DAPyWorkFlowManager* p) : q_ptr(p)
+    {
+    }
 
     // 工作流代理实例
     DAPyWorkFlow* mWorkflow { nullptr };
@@ -34,8 +36,7 @@ public:
  *
  * 创建DAPyWorkFlow和DAPyNodeFactory代理实例作为成员。
  */
-DAPyWorkFlowManager::DAPyWorkFlowManager(QObject* parent)
-    : QObject(parent), DA_PIMPL_CONSTRUCT
+DAPyWorkFlowManager::DAPyWorkFlowManager(QObject* parent) : QObject(parent), DA_PIMPL_CONSTRUCT
 {
     DA_D(d);
     d->mWorkflow = new DAPyWorkFlow();
@@ -79,12 +80,12 @@ DAPyNodeFactory* DAPyWorkFlowManager::getFactory() const
  * 成功后发射nodeAdded信号。
  *
  * @param[in] qualifiedName Python节点的限定名
- * @return 成功返回DAPyNodeProxy指针，失败返回nullptr
+ * @return 成功返回DAPyNode指针，失败返回nullptr
  */
-DAPyNodeProxy* DAPyWorkFlowManager::addNode(const QString& qualifiedName)
+DAPyNode* DAPyWorkFlowManager::addNode(const QString& qualifiedName)
 {
     DA_D(d);
-    DAPyNodeProxy* proxy = nullptr;
+    DAPyNode* proxy = nullptr;
     try {
         proxy = d->mFactory->createNodeProxy(qualifiedName);
         if (!proxy) {

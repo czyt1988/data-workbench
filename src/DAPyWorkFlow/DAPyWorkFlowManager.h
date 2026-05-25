@@ -10,7 +10,7 @@ namespace DA
 {
 class DAPyWorkFlow;
 class DAPyNodeFactory;
-class DAPyNodeProxy;
+class DAPyNode;
 
 /**
  * @brief 工作流管理器，桥接Python代理层与Qt UI层
@@ -19,7 +19,7 @@ class DAPyNodeProxy;
  * 封装所有工作流操作方法，在成功执行后发射Qt信号通知UI层。
  * 错误处理不向Qt层传播Python异常，返回安全默认值并通过qCritical()记录。
  *
- * @see DAPyWorkFlow DAPyNodeFactory DAPyNodeProxy
+ * @see DAPyWorkFlow DAPyNodeFactory DAPyNode
  */
 class DAPYWORKFLOW_API DAPyWorkFlowManager : public QObject
 {
@@ -36,16 +36,14 @@ public:
 
     // --- 节点操作 ---
     // 通过工厂创建节点并添加到workflow，成功后发射nodeAdded信号
-    DAPyNodeProxy* addNode(const QString& qualifiedName);
+    DAPyNode* addNode(const QString& qualifiedName);
     // 从workflow移除节点，成功后发射nodeRemoved信号
     bool removeNode(const QString& nodeId);
 
     // --- 连接操作 ---
     // 连接两个节点端口，成功后发射connectionAdded信号
-    DAPyWorkFlowConnection connectNode(const QString& srcNodeId,
-                                       const QString& srcChannel,
-                                       const QString& dstNodeId,
-                                       const QString& dstChannel);
+    DAPyWorkFlowConnection
+    connectNode(const QString& srcNodeId, const QString& srcChannel, const QString& dstNodeId, const QString& dstChannel);
     // 断开连接，成功后发射connectionRemoved信号
     bool disconnectNode(const QString& connectionId);
 
@@ -57,15 +55,11 @@ public:
 
 Q_SIGNALS:
     // 节点添加信号
-    void nodeAdded(QString nodeId, DA::DAPyNodeProxy* proxy);
+    void nodeAdded(QString nodeId, DA::DAPyNode* proxy);
     // 节点移除信号
     void nodeRemoved(QString nodeId);
     // 连接添加信号
-    void connectionAdded(QString connId,
-                         QString srcNodeId,
-                         QString srcChannel,
-                         QString dstNodeId,
-                         QString dstChannel);
+    void connectionAdded(QString connId, QString srcNodeId, QString srcChannel, QString dstNodeId, QString dstChannel);
     // 连接移除信号
     void connectionRemoved(QString connId);
     // 执行开始信号

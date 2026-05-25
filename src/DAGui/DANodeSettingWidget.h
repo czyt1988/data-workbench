@@ -2,7 +2,7 @@
 #define DANODESETTINGWIDGET_H
 #include "DAGuiAPI.h"
 #include <QWidget>
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 
 namespace DA
 {
@@ -20,7 +20,7 @@ class DAPropertyPanelContainerWidget;
  * - PID_Name: 节点名称（可编辑）
  *
  * @see DAPropertyPanelContainerWidget
- * @see DAPyNodeProxy
+ * @see DAPyNode
  */
 class DAGUI_API DANodeSettingWidget : public QWidget
 {
@@ -30,7 +30,8 @@ public:
     /**
      * @brief 属性ID枚举
      */
-    enum PropertyId {
+    enum PropertyId
+    {
         PID_Prototype = 1,  ///< 限定名
         PID_Group,          ///< 节点组
         PID_Name            ///< 节点名称
@@ -40,10 +41,10 @@ public:
     ~DANodeSettingWidget();
 
     // 设置节点
-    void setNode(DAPyNodeProxy* p);
+    void setNode(DAPyNode* p);
 
     // 获取当前节点
-    DAPyNodeProxy* getNode() const;
+    DAPyNode* getNode() const;
 
     // 获取属性面板指针
     DAPropertyPanelContainerWidget* propertyPanel() const;
@@ -70,7 +71,7 @@ protected Q_SLOTS:
 
 private:
     DAPropertyPanelContainerWidget* mPanel;
-    DAPyNodeProxy* _nodePtr;
+    DAPyNode* _nodePtr;
 };
 }  // end of namespace DA
 #endif  // DANODESETTINGWIDGET_H

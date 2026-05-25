@@ -7,7 +7,7 @@
 #include <QHash>
 #include "DAData.h"
 #include "DADataManager.h"
-#include "DAPyNodeProxy.h"
+#include "DAPyNode.h"
 #include "DAGraphicsItemGroup.h"
 /**
  *@file xml文件的帮助类

@@ -126,7 +126,7 @@ DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::appendWorkflow(const QString&
 	connect(wfe,
 	        &DAPyWorkFlowEditWidget::nodeExecuteFinished,
 	        this,
-	        [ this, wfe ](DA::DAPyNodeProxy* n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
+	        [ this, wfe ](DA::DAPyNode* n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
 	connect(wfe, &DAPyWorkFlowEditWidget::finished, this, [ this, wfe ](bool s) { emit workflowFinished(wfe, s); });
 	ui->tabWidget->addTab(wfe, name);
 	// 把名字保存到DAPyWorkFlowEditWidget中，在DAProject保存的时候会用到
