@@ -13,41 +13,34 @@ namespace DA
  */
 class DAPYWORKFLOW_API DAPyModuleWorkflow : public DAPyModule
 {
-    DAPyModuleWorkflow();
-
 public:
+    DAPyModuleWorkflow();
     ~DAPyModuleWorkflow();
-    // 获取实例（单例模式）
-    static DAPyModuleWorkflow& getInstance();
-    // 析构模块
-    void finalize();
     // 导入模块
     bool import();
 
 public:
     // 判断是否为 DAWorkflow 实例
- bool isInstanceWorkflow(const pybind11::object& obj) const;
+    bool isInstanceWorkflow(const pybind11::object& obj) const;
     // 判断是否为 DANodeRegistry 实例
     bool isInstanceNodeRegistry(const pybind11::object& obj) const;
     // 判断是否为 NodeDef 装饰器类
     bool isInstanceNodeDef(const pybind11::object& obj) const;
     // 获取缓存的 DAWorkflow 类引用
- pybind11::object getWorkflowClass() const;
+    pybind11::object getWorkflowObject() const;
     // 获取缓存的 DANodeRegistry 类引用
- pybind11::object getNodeRegistryClass() const;
+    pybind11::object getNodeRegistryObject() const;
     // 获取缓存的 NodeDef 装饰器引用
- pybind11::object getNodeDefDecorator() const;
+    pybind11::object getNodeDefDecoratorObject() const;
     // 获取缓存的 DANodeFactory 类引用
- pybind11::object getNodeFactoryClass() const;
+    pybind11::object getNodeFactoryObject() const;
 
 private:
     // 缓存 Python 类引用，避免每次 attr() 查找
- pybind11::object mObjWorkflowClass;
+    pybind11::object mObjWorkflowClass;
     pybind11::object mObjNodeRegistryClass;
     pybind11::object mObjNodeDefDecorator;
     pybind11::object mObjNodeFactoryClass;
-    // 最后的错误信息（补充基类 dealException 仅输出日志的不足)
-    mutable QString mLastErrorString;
- };
+};
 }  // namespace DA
 #endif  // DAPYMODULEWORKFLOW_H

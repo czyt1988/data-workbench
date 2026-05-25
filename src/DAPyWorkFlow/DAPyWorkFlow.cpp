@@ -40,14 +40,14 @@ void DAPyWorkFlow::initPyWorkflow()
     }
     DAPyGILGuard gil;
     try {
-        DAPyModuleWorkflow& pyModule = DAPyModuleWorkflow::getInstance();
+        DAPyModuleWorkflow pyModule = DAPyModuleWorkflow();
         if (!pyModule.isImport()) {
             if (!pyModule.import()) {
                 qWarning() << "DAPyWorkFlow::initPyWorkflow: cannot import DAWorkbench.DAWorkFlowPy";
                 return;
             }
         }
-        pybind11::object workflowClass = pyModule.getWorkflowClass();
+        pybind11::object workflowClass = pyModule.getWorkflowObject();
         if (workflowClass.is_none()) {
             qWarning() << "DAPyWorkFlow::initPyWorkflow: DAWorkflow class is not available";
             return;

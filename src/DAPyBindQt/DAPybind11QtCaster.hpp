@@ -44,7 +44,6 @@ inline pybind11::object toPyObject(const QDate& qt_date);
 inline pybind11::object toPyObject(const QTime& qt_time);
 inline pybind11::object toPyObject(const QDateTime& qt_datetime);
 
-
 inline DAPyObjectWrapper importPyType(const char* module_name, const char* type_name)
 {
     if (!Py_IsInitialized()) {
@@ -58,7 +57,6 @@ inline DAPyObjectWrapper importPyType(const char* module_name, const char* type_
         return DAPyObjectWrapper();
     }
 }
-
 
 }
 }
@@ -404,7 +402,8 @@ struct type_caster< QDateTime >
         return false;
     }
 
-    static pybind11::handle cast(const QDateTime& src, pybind11::return_value_policy /* policy */, pybind11::handle /* parent */)
+    static pybind11::handle
+    cast(const QDateTime& src, pybind11::return_value_policy /* policy */, pybind11::handle /* parent */)
     {
         if (!src.isValid()) {
             Py_RETURN_NONE;

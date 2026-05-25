@@ -7,7 +7,6 @@ namespace DA
 {
 class DAPyNodeProxy;
 
-
 /**
  * @brief Python节点工厂，继承DAPyObjectWrapper，代理Python侧DANodeFactory
  *
@@ -26,7 +25,11 @@ class DAPyNodeProxy;
 class DAPYWORKFLOW_API DAPyNodeFactory : public DAPyObjectWrapper
 {
 public:
-    DAPyNodeFactory();
+    explicit DAPyNodeFactory();
+    explicit DAPyNodeFactory(const pybind11::object& obj);
+    explicit DAPyNodeFactory(pybind11::object&& obj);
+    explicit DAPyNodeFactory(const DAPyObjectWrapper& obj);
+    explicit DAPyNodeFactory(const DAPyNodeProxy& obj);
     ~DAPyNodeFactory();
 
     // 发现Python节点（调用DANodeRegistry.discover）
@@ -49,17 +52,11 @@ public:
     // 工厂描述
     QString factoryDescribe() const;
 
-    // 获取最后的错误信息
-    QString getLastErrorString() const;
-
 private:
     // 已发现的节点元数据列表
     QList< DAPyNodeMetaData > mNodeMetaDataList;
-    // 最后的错误信息
-    mutable QString mLastErrorString;
 };
 
 }  // namespace DA
-
 
 #endif  // DAPYNODEFACTORY_H

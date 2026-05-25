@@ -12,44 +12,10 @@ namespace DA
 DAPyModuleWorkflow::DAPyModuleWorkflow() : DAPyModule()
 {
     import();  // 1. 先导入模块
-    try {
-        // 2. 缓存关键 Python 对象
-        mObjWorkflowClass     = attr("DAWorkflow");
-        mObjNodeRegistryClass = attr("DANodeRegistry");
-        mObjNodeDefDecorator  = attr("NodeDef");
-        mObjNodeFactoryClass = attr("DANodeFactory");
-    } catch (const std::exception& e) {
-        mLastErrorString = e.what();
-        dealException(e);
-    }
 }
 
 DAPyModuleWorkflow::~DAPyModuleWorkflow()
 {
-}
-
-/**
- * @brief 获取实例（单例模式）
- */
-DAPyModuleWorkflow& DAPyModuleWorkflow::getInstance()
-{
-    static DAPyModuleWorkflow s_instance;
-    return s_instance;
-}
-
-/**
- * @brief 析构模块
- */
-void DAPyModuleWorkflow::finalize()
-{
-    if (!isImport()) {
-        return;
-    }
-    object()                = pybind11::none();
-    mObjWorkflowClass       = pybind11::none();
-    mObjNodeRegistryClass   = pybind11::none();
-    mObjNodeDefDecorator    = pybind11::none();
-    mObjNodeFactoryClass   = pybind11::none();
 }
 
 /**
@@ -65,7 +31,7 @@ bool DAPyModuleWorkflow::import()
  */
 bool DAPyModuleWorkflow::isInstanceWorkflow(const pybind11::object& obj) const
 {
-    return pybind11::isinstance(obj, mObjWorkflowClass);
+    return pybind11::isinstance(obj, getWorkflowObject());
 }
 
 /**
@@ -73,7 +39,7 @@ bool DAPyModuleWorkflow::isInstanceWorkflow(const pybind11::object& obj) const
  */
 bool DAPyModuleWorkflow::isInstanceNodeRegistry(const pybind11::object& obj) const
 {
-    return pybind11::isinstance(obj, mObjNodeRegistryClass);
+    return pybind11::isinstance(obj, getNodeRegistryObject());
 }
 
 /**
@@ -81,39 +47,39 @@ bool DAPyModuleWorkflow::isInstanceNodeRegistry(const pybind11::object& obj) con
  */
 bool DAPyModuleWorkflow::isInstanceNodeDef(const pybind11::object& obj) const
 {
-    return pybind11::isinstance(obj, mObjNodeDefDecorator);
+    return pybind11::isinstance(obj, getNodeDefDecoratorObject());
 }
 
 /**
  * @brief 获取缓存的 DAWorkflow 类引用
  */
-pybind11::object DAPyModuleWorkflow::getWorkflowClass() const
+pybind11::object DAPyModuleWorkflow::getWorkflowObject() const
 {
-    return mObjWorkflowClass;
+    return attr("DAWorkflow");
 }
 
 /**
  * @brief 获取缓存的 DANodeRegistry 类引用
  */
-pybind11::object DAPyModuleWorkflow::getNodeRegistryClass() const
+pybind11::object DAPyModuleWorkflow::getNodeRegistryObject() const
 {
-    return mObjNodeRegistryClass;
+    return attr("DANodeRegistry");
 }
 
 /**
  * @brief 获取缓存的 NodeDef 装饰器引用
  */
-pybind11::object DAPyModuleWorkflow::getNodeDefDecorator() const
+pybind11::object DAPyModuleWorkflow::getNodeDefDecoratorObject() const
 {
-    return mObjNodeDefDecorator;
+    return attr("NodeDef");
 }
 
 /**
  * @brief 获取缓存的 DANodeFactory 类引用
  */
-pybind11::object DAPyModuleWorkflow::getNodeFactoryClass() const
+pybind11::object DAPyModuleWorkflow::getNodeFactoryObject() const
 {
-    return mObjNodeFactoryClass;
+    return attr("DANodeFactory");
 }
 
 }  // namespace DA
