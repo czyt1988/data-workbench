@@ -11,7 +11,7 @@ namespace DA
 
 /**
  * @brief Python节点调色板
- * 
+ *
  * 定义了Python工作流节点在不同状态下的颜色配置
  * 通过Q_PROPERTY暴露颜色属性，支持主题切换和样式定制
  */
@@ -19,13 +19,6 @@ class DAPYWORKFLOW_API DAPyNodePalette : public QObject
 {
     Q_OBJECT
     DA_DECLARE_PRIVATE(DAPyNodePalette)
-public:
-    explicit DAPyNodePalette(QObject* parent = nullptr);
-    ~DAPyNodePalette();
-
-    // 获取全局调色板实例
-    static DAPyNodePalette& getGlobalPalette();
-
     // 颜色属性
     Q_PROPERTY(QColor idleColor READ getIdleColor WRITE setIdleColor NOTIFY idleColorChanged)
     Q_PROPERTY(QColor waitingColor READ getWaitingColor WRITE setWaitingColor NOTIFY waitingColorChanged)
@@ -33,6 +26,12 @@ public:
     Q_PROPERTY(QColor successColor READ getSuccessColor WRITE setSuccessColor NOTIFY successColorChanged)
     Q_PROPERTY(QColor errorColor READ getErrorColor WRITE setErrorColor NOTIFY errorColorChanged)
     Q_PROPERTY(QColor skippedColor READ getSkippedColor WRITE setSkippedColor NOTIFY skippedColorChanged)
+public:
+    explicit DAPyNodePalette(QObject* parent = nullptr);
+    ~DAPyNodePalette();
+
+    // 获取全局调色板实例
+    static DAPyNodePalette& getGlobalPalette();
 
     // 获取颜色
     QColor getIdleColor() const;

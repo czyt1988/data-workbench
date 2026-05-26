@@ -191,6 +191,7 @@ class DAWorkflowNode:
         self._input_data = {}  # dict[str, Any]，输入端口数据缓存，键为端口名称
         self._output_data = {}  # dict[str, Any]，输出端口数据缓存，键为端口名称
         self.is_global = False  # 是否为全局节点（全局节点执行但不传递数据到下游）
+        self._node_state = "idle"  # 节点执行状态，与 C++ DAPyNodeState 枚举对应
 
     def set_input_data(self, key: str, data) -> None:
         """
@@ -209,6 +210,26 @@ class DAWorkflowNode:
         :return: 对应的输出数据，若键不存在则返回 None
         """
         return self._output_data.get(key)
+
+    def set_node_state(self, state: str) -> None:
+        """
+        设置节点执行状态
+
+        状态字符串与 C++ DAPyNodeState 枚举一一对应，
+        PY::getNodeState() 通过 stringToEnum() 自动映射：
+        - "idle" → Idle，节点未开始执行
+        - "waiting" → Waiting，节点等待依赖项完成
+        - "running" → Running，节点正在执行
+        - "success" → Success，节点执行成功
+        - "error" → Error，节点执行失败
+        - "skipped" → Skipped，节点被跳过执行
+
+        此方法由 DAWorkflowExecutor 在执行过程中调用，
+        C++ 侧通过 DAPyNode::getNodeState() 读取 _node_state 属性获取节点状态。
+
+        :param state: 状态字符串，支持 "idle"、"waiting"、"running"、"success"、"error"、"skipped"
+        """
+        self._node_state = state
 
 
 def NodeDef(

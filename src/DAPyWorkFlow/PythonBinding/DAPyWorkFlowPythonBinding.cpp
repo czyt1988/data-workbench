@@ -27,6 +27,9 @@ DAPyNodeMetaData toNodeMetaData(const pybind11::object& obj)
     // 从 Python 类属性直接读取
     if (pybind11::hasattr(obj, "qualified_name")) {
         metaData.qualifiedName = obj.attr("qualified_name").cast< QString >();
+    } else {
+        // 必须要有qualified_name
+        return metaData;
     }
     if (pybind11::hasattr(obj, "name")) {
         metaData.name = obj.attr("name").cast< QString >();
@@ -38,6 +41,32 @@ DAPyNodeMetaData toNodeMetaData(const pybind11::object& obj)
         metaData.iconPath = obj.attr("icon").cast< QString >();
     }
     return metaData;
+}
+
+DAPyNodeState getNodeState(const pybind11::object& obj)
+{
+    if (obj.is_none()) {
+        return DAPyNodeState::Idle;
+    }
+    try {
+        // 尝试从 Python 对象读取 _node_state 属性
+        if (pybind11::hasattr(obj, "_node_state")) {
+            pybind11::object stateObj = obj.attr("_node_state");
+            // Python 端 _node_state 可能是字符串或 da_py_workflow.DAPyNodeState
+            if (pybind11::isinstance< pybind11::str >(stateObj)) {
+                QString stateStr = pybind11::cast< QString >(stateObj);
+                return stringToEnum(stateStr, DAPyNodeState::Idle);
+            }
+            // 如果是整数枚举值
+            if (pybind11::isinstance< pybind11::int_ >(stateObj)) {
+                int val = pybind11::cast< int >(stateObj);
+                return static_cast< DAPyNodeState >(val);
+            }
+        }
+    } catch (const std::exception& e) {
+        return DAPyNodeState::Idle;
+    }
+    return DAPyNodeState::Idle;
 }
 
 }  // namespace PY

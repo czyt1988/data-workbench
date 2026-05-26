@@ -2,6 +2,7 @@
 #define DAPYNODE_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyObjectWrapper.h"
+#include "DAPyNodeMetaData.h"
 #include "DAPyNodeState.h"
 #include "DAPyNodeStyleDefine.h"
 #include "DAPyNodeStyle.h"
@@ -77,6 +78,8 @@ public:
 
     // 配置数据传递（QJsonObject→Python dict→调用set_input_data）
     void setConfig(const QJsonObject& config);
+    // 获取DAPyNodeMetaData
+    DAPyNodeMetaData getMetaData() const;
 };
 
 }  // namespace DA

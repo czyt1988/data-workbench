@@ -196,6 +196,10 @@ class DAWorkflowExecutor:
 
         self._set_state(DAExecutorState.Running)
 
+        # 将所有节点初始化为 waiting 状态，执行过程中会逐步更新为 running/success/error
+        for node_instance in self._workflow._nodes.values():
+            node_instance.set_node_state("waiting")
+
         # 启动信号管理器
         self._signal_manager.start()
 
@@ -436,6 +440,12 @@ class DAWorkflowExecutor:
         """
         执行单个节点
 
+        执行过程中会更新节点实例的 _node_state 属性：
+        - 执行前设为 "running"
+        - 执行成功设为 "success"
+        - 执行异常设为 "error"
+        C++ 侧通过 DAPyNode::getNodeState() 读取 _node_state 获取节点状态。
+
         :param node_id: 节点 ID
         :param transmit: 是否在执行后传递数据到下游
         :return: True 表示执行成功
@@ -448,11 +458,19 @@ class DAWorkflowExecutor:
         # 执行节点
         previous = self._current_node_id
         self._current_node_id = node_id
+
+        # 设置节点状态为 running
+        node_instance.set_node_state("running")
+
         try:
             result = node_instance.execute()
             success = bool(result) if result is not None else True
+            # 根据执行结果设置节点状态
+            node_instance.set_node_state("success" if success else "error")
         except Exception as e:
             self._error_messages.append(f"节点 '{node_id}' 执行异常: {e}")
+            # 异常时设置节点状态为 error
+            node_instance.set_node_state("error")
             success = False
         finally:
             self._current_node_id = previous

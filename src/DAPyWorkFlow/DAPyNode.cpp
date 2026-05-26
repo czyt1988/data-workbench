@@ -1,13 +1,13 @@
 #include "DAPyNode.h"
+#include <QDebug>
 #include "DAPybind11InQt.h"
 #include "DAPyModuleWorkflow.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAPyBindQt/DAPyJsonCast.h"
 #include "DAPyDictConverter.h"
 #include "DAPybind11QtCaster.hpp"
-#include <QDebug>
 #include "DAPyWorkFlowEnumStringUtils.h"  // stringToEnum<DAPyNodeState>需要
-
+#include "PythonBinding/DAPyWorkFlowPythonBinding.h"
 namespace DA
 {
 
@@ -200,28 +200,7 @@ RenderTemplate DAPyNode::getRenderTemplate() const
 
 DAPyNodeState DAPyNode::getNodeState() const
 {
-    if (isNone()) {
-        return DAPyNodeState::Idle;
-    }
-    try {
-        // 尝试从 Python 对象读取 _node_state 属性
-        if (hasattr("_node_state")) {
-            pybind11::object stateObj = attr("_node_state");
-            // Python 端 _node_state 可能是字符串或 da_py_workflow.DAPyNodeState
-            if (pybind11::isinstance< pybind11::str >(stateObj)) {
-                QString stateStr = pybind11::cast< QString >(stateObj);
-                return stringToEnum(stateStr, DAPyNodeState::Idle);
-            }
-            // 如果是整数枚举值
-            if (pybind11::isinstance< pybind11::int_ >(stateObj)) {
-                int val = pybind11::cast< int >(stateObj);
-                return static_cast< DAPyNodeState >(val);
-            }
-        }
-    } catch (const std::exception& e) {
-        dealException(e);
-    }
-    return DAPyNodeState::Idle;
+    return PY::getNodeState(object());
 }
 
 void DAPyNode::setPyInputData(const QString& key, const pybind11::object& data)
@@ -290,5 +269,10 @@ void DAPyNode::setConfig(const QJsonObject& config)
     } catch (const std::exception& e) {
         dealException(e);
     }
+}
+
+DAPyNodeMetaData DAPyNode::getMetaData() const
+{
+    return PY::toNodeMetaData(object());
 }
 }  // namespace DA
