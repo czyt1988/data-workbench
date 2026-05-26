@@ -113,6 +113,10 @@ class DAWorkflowExecutor:
         self._result = None
 
         # 回调函数
+        # on_node_finished: 节点完成回调，签名为 (node_id: str, success: bool) -> None
+        # on_state_change: 状态变更回调，签名为 (old_state_value: str, new_state_value: str) -> None
+        #   参数为 DAExecutorState 枚举的 .value 值（如 "idle"、"running" 等）
+        # on_progress: 进度回调，签名为 (executed_count: int, total_count: int) -> None
         self._on_node_finished = on_node_finished
         self._on_state_change = on_state_change
         self._on_progress = on_progress
@@ -150,20 +154,25 @@ class DAWorkflowExecutor:
         return self._signal_manager
 
     @property
-    def result(self) -> bool:
+    def result(self) -> bool | None:
         """
         获取执行结果
 
-        :return: True 表示成功，False 表示失败，None 表示未执行
+        :return: True 表示执行成功（所有节点无错误完成），
+            False 表示执行失败（有节点出错或被终止），
+            None 表示尚未执行
+        :rtype: bool | None
         """
         return self._result
 
     @property
-    def error_messages(self) -> list:
+    def error_messages(self) -> list[str]:
         """
         获取执行过程中的错误信息列表
 
-        :return: 错误信息字符串列表
+        :return: 错误信息字符串列表，每个元素为 str 类型的错误描述，
+            包含节点 ID 和具体错误原因（如 "节点 'xxx' 执行异常: ..."）
+        :rtype: list[str]
         """
         return self._error_messages
 
@@ -279,11 +288,13 @@ class DAWorkflowExecutor:
             self._pause_event.set()
         self._set_state(DAExecutorState.Running)
 
-    def get_progress(self) -> tuple:
+    def get_progress(self) -> tuple[int, int]:
         """
         获取执行进度
 
-        :return: (已执行节点数, 总节点数) 的元组
+        :return: (已执行节点数, 总节点数) 的元组，两个元素均为 int 类型。
+            已执行节点数包含成功和失败的节点，总节点数为工作流中的节点总数
+        :rtype: tuple[int, int]
         """
         return (self._executed_count, self._total_count)
 
@@ -367,7 +378,7 @@ class DAWorkflowExecutor:
 
         return len(self._error_messages) == 0
 
-    def _classify_nodes(self) -> tuple:
+    def _classify_nodes(self) -> tuple[list[str], list[str], list[str]]:
         """
         分类节点为全局节点、孤立节点、开始节点
 
@@ -376,7 +387,12 @@ class DAWorkflowExecutor:
         - 入度=0 且 出度>0 的节点为开始节点
         - 有 is_global 属性的节点为全局节点
 
-        :return: (全局节点ID列表, 孤立节点ID列表, 开始节点ID列表) 的元组
+        :return: (全局节点ID列表, 孤立节点ID列表, 开始节点ID列表) 的三元组，
+            每个元素为 list[str]，其中字符串为节点的 node_id。
+            全局节点：is_global=True 的节点，执行但不传递数据；
+            孤立节点：入度=0且出度=0的非全局节点，执行并传递数据；
+            开始节点：入度=0且出度>0的节点，执行并传递数据到下游
+        :rtype: tuple[list[str], list[str], list[str]]
         """
         global_nodes = []
         isolated_nodes = []

@@ -189,7 +189,10 @@ class DAWorkflow:
         """
         获取所有节点实例
 
-        :return: 节点实例列表
+        :return: 节点实例列表，每个元素为 @NodeDef 装饰的类实例（object），
+            拥有 node_id（str）、qualified_name（str）、execute() 方法，
+            以及 inputs/outputs/parameters 等由 @NodeDef 注入的端口与参数声明属性
+        :rtype: list[object]
         """
         return list(self._nodes.values())
 
@@ -197,7 +200,13 @@ class DAWorkflow:
         """
         获取所有连接
 
-        :return: DAConnection 实例列表
+        :return: DAConnection 实例列表，每个 DAConnection 包含以下字段：
+            - source_node_id: str，源节点 ID
+            - source_output_channel: str，源节点输出端口名称
+            - target_node_id: str，目标节点 ID
+            - target_input_channel: str，目标节点输入端口名称
+            - connection_id: str，连接的唯一标识
+        :rtype: list[DAConnection]
         """
         return list(self._connections.values())
 
@@ -205,8 +214,8 @@ class DAWorkflow:
         """
         通过 node_id 获取节点实例
 
-        :param node_id: 节点的唯一 ID
-        :return: 节点实例
+        :param node_id: 节点的唯一 ID 字符串（格式通常为 "qualified_name_数字后缀"，如 "my_module.DataFilter_1")
+        :return: @NodeDef 装饰的节点类实例，拥有 node_id、qualified_name、execute() 等属性和方法
         :raises KeyError: 如果 node_id 不存在
         """
         if node_id not in self._nodes:
@@ -217,8 +226,11 @@ class DAWorkflow:
         """
         获取与指定节点相关的所有连接
 
-        :param node_id: 节点 ID
-        :return: 包含该节点作为源或目标的连接列表
+        包括该节点作为源节点（输出端）和作为目标节点（输入端）的所有连接。
+
+        :param node_id: 节点 ID 字符串
+        :return: DAConnection 实例列表，包含该节点作为 source_node_id 或 target_node_id 的所有连接
+        :rtype: list[DAConnection]
         """
         return [
             conn
@@ -230,9 +242,14 @@ class DAWorkflow:
         """
         获取指定节点的下游连接
 
-        :param node_id: 源节点 ID
-        :param output_channel: 可选，筛选指定输出端口
-        :return: 下游连接列表
+        返回所有以该节点为源节点（source_node_id）的 DAConnection，
+        可选按输出端口名称进一步筛选。
+
+        :param node_id: 源节点 ID 字符串
+        :param output_channel: 可选的输出端口名称，用于筛选特定输出端口的下游连接。
+            若为 None，返回该节点所有下游连接
+        :return: DAConnection 实例列表，每条连接的 source_node_id 等于传入的 node_id
+        :rtype: list[DAConnection]
         """
         result = []
         for conn in self._connections.values():
@@ -245,9 +262,14 @@ class DAWorkflow:
         """
         获取指定节点的上游连接
 
-        :param node_id: 目标节点 ID
-        :param input_channel: 可选，筛选指定输入端口
-        :return: 上游连接列表
+        返回所有以该节点为目标节点（target_node_id）的 DAConnection，
+        可选按输入端口名称进一步筛选。
+
+        :param node_id: 目标节点 ID 字符串
+        :param input_channel: 可选的输入端口名称，用于筛选特定输入端口的上游连接。
+            若为 None，返回该节点所有上游连接
+        :return: DAConnection 实例列表，每条连接的 target_node_id 等于传入的 node_id
+        :rtype: list[DAConnection]
         """
         result = []
         for conn in self._connections.values():
@@ -294,14 +316,16 @@ class DAWorkflow:
         # 如果处理了所有节点，说明无环
         return visited_count == len(self._nodes)
 
-    def topological_sort(self) -> list:
+    def topological_sort(self) -> list[str]:
         """
         对工作流节点进行拓扑排序
 
-        返回从源节点到终端节点的有序列表。
+        返回从源节点（入度为0）到终端节点的有序 node_id 字符串列表。
         如果工作流存在环，将抛出 ValueError。
 
-        :return: 拓扑排序后的 node_id 列表
+        :return: 拓扑排序后的 node_id 字符串列表，顺序为从源节点到终端节点。
+            列表中每个元素为 str 类型的节点唯一标识（如 "my_module.DataFilter_1"）
+        :rtype: list[str]
         :raises ValueError: 如果工作流存在环（不是有效的 DAG）
         """
         if not self.is_valid_dag():
@@ -335,11 +359,13 @@ class DAWorkflow:
 
         return result
 
-    def get_start_nodes(self) -> list:
+    def get_start_nodes(self) -> list[str]:
         """
         获取工作流的起始节点（入度为0且有出度的节点）
 
-        :return: 起始节点 ID 列表
+        :return: 起始节点 ID 字符串列表，每个元素为 str 类型的 node_id。
+            仅包含入度为0且至少有一条下游连接的节点，不含孤立节点
+        :rtype: list[str]
         """
         in_degree = defaultdict(int)
         for conn in self._connections.values():
@@ -354,11 +380,14 @@ class DAWorkflow:
                     start_nodes.append(node_id)
         return start_nodes
 
-    def get_isolated_nodes(self) -> list:
+    def get_isolated_nodes(self) -> list[str]:
         """
         获取孤立节点（既没有入度也没有出度的节点）
 
-        :return: 孤立节点 ID 列表
+        孤立节点不参与任何连接，既不接收上游数据也不向下游传递数据。
+
+        :return: 孤立节点 ID 字符串列表，每个元素为 str 类型的 node_id
+        :rtype: list[str]
         """
         connected_nodes = set()
         for conn in self._connections.values():

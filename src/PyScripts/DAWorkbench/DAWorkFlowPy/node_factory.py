@@ -51,34 +51,47 @@ class DANodeFactory:
     def __init__(self):
         self._registry = DANodeRegistry()
 
-    def discover(self, scan_paths=None, use_entry_points=False):
+    def discover(self, scan_paths: list[str] = None, use_entry_points: bool = False) -> list[type]:
         """
         发现并注册节点类
 
         委托给内部 DANodeRegistry 的 discover() 方法，
         从指定路径和入口点发现节点类并注册。
 
-        :param scan_paths: 要扫描的目录路径列表，默认为 None
-        :param use_entry_points: 是否使用 entry_points 发现节点，默认为 False
-        :return: 发现并注册的节点类列表
+        :param scan_paths: 要扫描的目录绝对路径列表，每个元素为 str 类型的目录路径。
+            默认为 None（不执行目录扫描）
+        :param use_entry_points: 是否通过 importlib.metadata.entry_points 发现已安装的插件节点，默认为 False
+        :return: 去重后的节点类列表，每个元素为被 @NodeDef 装饰的 type 对象，
+            拥有 qualified_name、name、category、inputs、outputs、parameters 等属性。
+            列表中的节点类同时已被注册到内部注册表中
+        :rtype: list[type]
         """
         return self._registry.discover(scan_paths=scan_paths, use_entry_points=use_entry_points)
 
-    def create_node(self, qualified_name):
+    def create_node(self, qualified_name: str) -> object:
         """
         通过 qualified_name 创建节点实例
 
         从内部注册表中获取节点类，实例化并返回。
         节点类的 qualified_name 必须已通过 discover() 注册。
 
-        :param qualified_name: 节点的唯一标识（模块名.类名）
-        :return: 节点实例对象
+        返回的节点实例是由 @NodeDef 装饰的类实例，具有以下关键属性：
+        - node_id: str，节点的唯一运行时标识（实例化时自动生成）
+        - qualified_name: str，节点类型标识（与传入参数相同）
+        - name: str，节点的显示名称
+        - inputs: list[dict]，输入端口声明列表
+        - outputs: list[dict]，输出端口声明列表
+        - parameters: list[dict]，参数声明列表
+        - execute(): 方法，执行节点的业务逻辑
+
+        :param qualified_name: 节点的唯一类型标识（格式为 "模块名.类名"，如 "my_module.DataFilter")
+        :return: @NodeDef 装饰的节点类实例，拥有 node_id、qualified_name、execute() 等属性和方法
         :raises KeyError: 如果 qualified_name 未注册
         """
         node_cls = self._registry.get_descriptor(qualified_name)
         return node_cls()
 
-    def get_node_metadata(self, qualified_name):
+    def get_node_metadata(self, qualified_name: str) -> dict:
         """
         从节点类读取元数据，返回 dict
 
@@ -86,14 +99,23 @@ class DANodeFactory:
         返回包含 name、qualified_name、category、icon、input_keys、output_keys 的 dict。
         C++ 侧通过 pybind11 调用此方法获取 Python 节点元数据。
 
-        :param qualified_name: 节点的唯一标识
-        :return: 元数据 dict，包含 name、qualified_name、category、icon、input_keys、output_keys
+        返回的 dict 包含以下键值（所有值均为 str 或 list[str] 类型）：
+        - qualified_name: str，节点类型唯一标识
+        - name: str，节点显示名称
+        - category: str，节点分类路径（优先读取 category，兼容 group）
+        - icon: str，节点图标路径
+        - input_keys: list[str]，输入端口名称列表
+        - output_keys: list[str]，输出端口名称列表
+
+        :param qualified_name: 节点的唯一类型标识（格式为 "模块名.类名"）
+        :return: 元数据字典，键为 str，值为 str 或 list[str]
+        :rtype: dict[str, str | list[str]]
         :raises KeyError: 如果 qualified_name 未注册
         """
         node_cls = self._registry.get_descriptor(qualified_name)
         return _extract_metadata_from_class(node_cls)
 
-    def get_all_metadata(self):
+    def get_all_metadata(self) -> list[dict]:
         """
         获取所有已注册节点的元数据列表
 
@@ -101,7 +123,14 @@ class DANodeFactory:
         返回元数据 dict 列表。C++ 侧通过 pybind11 调用此方法
         获取所有 Python 节点的元数据信息。
 
-        :return: 元数据 dict 列表，每个 dict 包含 name、qualified_name、category、icon、input_keys、output_keys
+        :return: 元数据字典列表，每个元素为 dict，包含以下键值：
+            - qualified_name: str，节点类型唯一标识
+            - name: str，节点显示名称
+            - category: str，节点分类路径
+            - icon: str，节点图标路径
+            - input_keys: list[str]，输入端口名称列表
+            - output_keys: list[str]，输出端口名称列表
+        :rtype: list[dict[str, str | list[str]]
         """
         result = []
         for node_cls in self._registry.get_all_descriptors():
@@ -122,7 +151,7 @@ class DANodeFactory:
         return f"DANodeFactory(nodes={len(self._registry)})"
 
 
-def _extract_metadata_from_class(node_cls):
+def _extract_metadata_from_class(node_cls: type) -> dict:
     """
     从节点类属性中提取元数据 dict
 
@@ -135,8 +164,10 @@ def _extract_metadata_from_class(node_cls):
     - input_keys → DAPyNodeMetaData::inputKeys
     - output_keys → DAPyNodeMetaData::outputKeys
 
-    :param node_cls: 被 @NodeDef 装饰的节点类
-    :return: 元数据 dict
+    :param node_cls: 被 @NodeDef 装饰的节点类（type 对象）
+    :return: 元数据字典，键为 str，值为 str 或 list[str]。
+        包含 qualified_name、name、category、icon、input_keys、output_keys
+    :rtype: dict[str, str | list[str]]
     """
     metadata = {}
     # qualified_name 是节点唯一标识，必须存在

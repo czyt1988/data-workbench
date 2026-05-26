@@ -83,8 +83,20 @@ class DANodeRegistry:
         如果节点类没有 qualified_name 属性，将抛出异常。
         如果 qualified_name 已被注册，将跳过（用于去重）。
 
-        :param node_class: 被 NodeDef 装饰的节点类
-        :return: 注册的节点类
+        节点类是由 @NodeDef 装饰器修饰的 Python 类（type 对象），
+        注册后可通过 qualified_name 查询。节点类具有以下由 @NodeDef 注入的属性：
+        - qualified_name: str，节点的唯一类型标识（模块名.类名）
+        - name: str，节点的显示名称
+        - category: str，节点的分类路径
+        - description: str，节点的功能描述
+        - inputs: list[dict]，输入端口声明列表
+        - outputs: list[dict]，输出端口声明列表
+        - parameters: list[dict]，参数声明列表
+        - is_global: bool，是否为全局节点
+
+        :param node_class: 被 NodeDef 装饰的节点类（type 对象，需具有 qualified_name 属性）
+        :return: 注册成功的节点类（type 对象）。若 qualified_name 已存在，返回先前注册的同类对象
+        :rtype: type
         :raises ValueError: 如果节点类没有 qualified_name 属性
         """
         qualified_name = getattr(node_class, "qualified_name", None)
@@ -104,7 +116,7 @@ class DANodeRegistry:
         logger.debug(f"注册节点 '{qualified_name}'")
         return node_class
 
-    def discover(self, scan_paths: list = None, use_entry_points: bool = False) -> list:
+    def discover(self, scan_paths: list[str] = None, use_entry_points: bool = False) -> list[type]:
         """
         从指定路径和入口点发现并注册节点类
 
@@ -125,9 +137,13 @@ class DANodeRegistry:
 
         两种模式的结果会进行去重：相同 qualified_name 的节点只注册一次。
 
-        :param scan_paths: 要扫描的目录路径列表，默认为 None（不扫描目录）
-        :param use_entry_points: 是否使用 entry_points 发现节点，默认为 False
-        :return: 发现并注册的节点类列表
+        :param scan_paths: 要扫描的目录绝对路径列表，每个元素为 str 类型的目录路径。
+            默认为 None（不执行目录扫描）
+        :param use_entry_points: 是否通过 importlib.metadata.entry_points 发现已安装的插件节点，默认为 False
+        :return: 去重后的节点类列表，每个元素为被 @NodeDef 装饰的 type 对象，
+            拥有 qualified_name、name、category、inputs、outputs、parameters 等属性。
+            列表中的节点类同时已被注册到注册表中（已调用 register_node）
+        :rtype: list[type]
         """
         discovered = []
 
@@ -153,12 +169,16 @@ class DANodeRegistry:
 
         return unique_discovered
 
-    def _scan_directory(self, directory: str) -> list:
+    def _scan_directory(self, directory: str) -> list[type]:
         """
         扫描目录中的 Python 模块，查找 @NodeDef 装饰的节点类
 
-        :param directory: 要扫描的目录路径
-        :return: 发现的节点类列表
+        遍历目录下所有 .py 文件（排除 __pycache__ 和 __init__.py 等），
+        动态导入模块并查找带有 qualified_name 属性的类。
+
+        :param directory: 要扫描的目录绝对路径
+        :return: 发现的节点类列表，每个元素为被 @NodeDef 装饰的 type 对象
+        :rtype: list[type]
         """
         discovered = []
         dir_path = Path(directory)
@@ -190,14 +210,17 @@ class DANodeRegistry:
 
         return discovered
 
-    def _discover_from_entry_points(self) -> list:
+    def _discover_from_entry_points(self) -> list[type]:
         """
         通过 importlib.metadata.entry_points 发现节点类
 
         使用 entry_points(group='data_workbench.plugin') 查找已安装的插件包，
         加载入口点指定的模块，查找 @NodeDef 装饰的节点类。
 
-        :return: 发现的节点类列表
+        入口点可以指向模块（则扫描模块中所有类）或直接指向类（则直接注册该类）。
+
+        :return: 发现的节点类列表，每个元素为被 @NodeDef 装饰的 type 对象
+        :rtype: list[type]
         """
         discovered = []
 
@@ -233,15 +256,16 @@ class DANodeRegistry:
 
         return discovered
 
-    def _find_node_classes_in_module(self, module) -> list:
+    def _find_node_classes_in_module(self, module) -> list[type]:
         """
         在模块中查找带有 qualified_name 属性的类
 
-        遍历模块的所有属性，找出带有 qualified_name 属性的类对象，
+        遍历模块的所有属性，找出带有 qualified_name 属性的类对象（即被 @NodeDef 装饰的节点类），
         并尝试注册到注册表中。
 
-        :param module: Python 模块对象
-        :return: 发现并注册的节点类列表
+        :param module: Python 模块对象（由 importlib 导入的模块实例）
+        :return: 发现并注册的节点类列表，每个元素为被 @NodeDef 装饰的 type 对象
+        :rtype: list[type]
         """
         discovered = []
         for attr_name in dir(module):
@@ -257,12 +281,13 @@ class DANodeRegistry:
                     discovered.append(desc)
         return discovered
 
-    def _try_register_class(self, node_class: type):
+    def _try_register_class(self, node_class: type) -> type | None:
         """
         尝试注册一个节点类，如果失败则返回 None
 
-        :param node_class: 带有 qualified_name 属性的节点类
-        :return: 注册成功返回节点类，失败返回 None
+        :param node_class: 带有 qualified_name 属性的节点类（type 对象）
+        :return: 注册成功返回节点类（type 对象），失败或无 qualified_name 时返回 None
+        :rtype: type | None
         """
         try:
             return self.register_node(node_class)
@@ -274,11 +299,13 @@ class DANodeRegistry:
             qname = getattr(node_class, "qualified_name", "")
             return self._registry.get(qname, None)
 
-    def get_all_descriptors(self) -> list:
+    def get_all_descriptors(self) -> list[type]:
         """
         获取所有已注册节点类
 
-        :return: 所有节点类的列表
+        :return: 所有已注册节点类的列表，每个元素为被 @NodeDef 装饰的 type 对象，
+            拥有 qualified_name、name、category、inputs、outputs、parameters 等属性
+        :rtype: list[type]
         """
         return list(self._registry.values())
 
@@ -286,8 +313,9 @@ class DANodeRegistry:
         """
         根据 qualified_name 获取指定节点类
 
-        :param qualified_name: 节点的唯一标识（模块名.类名）
-        :return: 对应的节点类
+        :param qualified_name: 节点的唯一类型标识（格式为 "模块名.类名"，如 "my_module.DataFilter")
+        :return: 对应的节点类（type 对象），拥有 qualified_name、name、category、inputs、outputs、parameters 等属性
+        :rtype: type
         :raises KeyError: 如果 qualified_name 未注册
         """
         if qualified_name not in self._registry:
@@ -298,8 +326,9 @@ class DANodeRegistry:
         """
         从注册表中移除指定节点
 
-        :param qualified_name: 节点的唯一标识
-        :return: 移除的节点类
+        :param qualified_name: 节点的唯一类型标识（格式为 "模块名.类名"）
+        :return: 移除的节点类（type 对象）
+        :rtype: type
         :raises KeyError: 如果 qualified_name 未注册
         """
         if qualified_name not in self._registry:

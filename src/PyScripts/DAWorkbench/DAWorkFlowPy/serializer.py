@@ -79,14 +79,34 @@ class DAWorkflowSerializer:
         """
         将 DAWorkflow 序列化为 JSON dict
 
-        序列化内容包括：
-        - name: 工作流名称
-        - version: 序列化格式版本号
-        - nodes: 节点列表，每个节点包含 node_id、qualified_name 和 parameters
-        - connections: 连接列表，每条连接包含端口信息
+        序列化内容结构如下::
+
+            {
+              "name": str,            # 工作流名称
+              "version": str,         # 序列化格式版本号（当前为 "1.0"）
+              "nodes": [              # 节点列表
+                {
+                  "node_id": str,           # 节点唯一运行时 ID（如 "pkg.DataFilter_1"）
+                  "qualified_name": str,    # 节点类型标识（如 "pkg.DataFilter"）
+                  "parameters": dict        # 参数当前值，键为参数名，值为参数值
+                },
+                ...
+              ],
+              "connections": [        # 连接列表
+                {
+                  "source_node_id": str,           # 源节点 ID
+                  "source_output_channel": str,    # 源节点输出端口名称
+                  "target_node_id": str,           # 目标节点 ID
+                  "target_input_channel": str,     # 目标节点输入端口名称
+                  "connection_id": str             # 连接唯一标识（UUID4）
+                },
+                ...
+              ]
+            }
 
         :param workflow: DAWorkflow 实例
-        :return: JSON 可序列化的字典
+        :return: JSON 可序列化的字典，包含 name、version、nodes、connections 四个顶层键
+        :rtype: dict[str, str | list[dict]]
         """
         nodes_data = []
         for node_id, node_instance in workflow._nodes.items():
@@ -134,10 +154,13 @@ class DAWorkflowSerializer:
         根据 dict 中的节点列表，通过 node_factory 创建节点实例，
         添加到新的 DAWorkflow 中，然后建立连接关系。
 
-        :param data: 序列化字典
-        :param node_factory: 节点工厂，若未指定则使用构造时设置的默认工厂
-        :return: 重建的 DAWorkflow 实例
-        :raises ValueError: 如果数据格式无效或缺少必要字段
+        :param data: 序列化字典，需包含 "nodes" 键（list[dict]），
+            每个节点 dict 需包含 "qualified_name"（str）和可选的 "node_id"（str）、
+            "parameters"（dict[str, Any]）。可选包含 "connections" 键（list[dict]）
+        :param node_factory: DANodeFactory 实例，用于根据 qualified_name 创建节点实例。
+            若未指定则使用构造时设置的默认工厂
+        :return: 重建的 DAWorkflow 实例，包含所有原始节点和连接
+        :raises ValueError: 如果数据格式无效或缺少 "nodes" 字段
         :raises KeyError: 如果节点工厂无法创建指定 qualified_name 的节点
         """
         factory = node_factory or self._node_factory

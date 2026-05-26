@@ -7,6 +7,18 @@
 DAConnection 是纯 Python 实现，不依赖 Qt，支持序列化（to_dict / from_dict），
 序列化字典兼容 DAPyJsonCast（QJsonObject ↔ py::dict）转换。
 
+DAConnection 核心字段速查：
+
++---------------------+------+------------------------------------------+
+| 字段名              | 类型 | 说明                                     |
++=====================+======+==========================================+
+| source_node_id      | str  | 源节点 ID（如 "my_module.DataFilter_1")  |
+| source_output_channel| str | 源节点输出端口名称（如 "filtered"）       |
+| target_node_id      | str  | 目标节点 ID（如 "my_module.DataPlot_1")  |
+| target_input_channel| str  | 目标节点输入端口名称（如 "data"）         |
+| connection_id       | str  | 连接唯一标识，默认为 UUID4 自动生成       |
++---------------------+------+------------------------------------------+
+
 使用示例::
 
     conn = DAConnection(
@@ -36,11 +48,12 @@ class DAConnection:
             target_input_channel="data",
         )
 
-    :param source_node_id: 源节点 ID（字符串）
-    :param source_output_channel: 源节点输出端口名称
-    :param target_node_id: 目标节点 ID（字符串）
-    :param target_input_channel: 目标节点输入端口名称
-    :param connection_id: 连接的唯一 ID，默认自动生成
+    :param source_node_id: 源节点 ID 字符串（格式通常为 "qualified_name_数字后缀"，如 "my_module.DataFilter_1"）
+    :param source_output_channel: 源节点输出端口名称字符串（对应 @NodeDef outputs 列表中的端口名）
+    :param target_node_id: 目标节点 ID 字符串（格式同 source_node_id）
+    :param target_input_channel: 目标节点输入端口名称字符串（对应 @NodeDef inputs 列表中的端口名）
+    :param connection_id: 连接的唯一标识字符串，默认自动生成 UUID4。
+        反序列化时传入此参数可保持 ID 一致性
     """
 
     def __init__(

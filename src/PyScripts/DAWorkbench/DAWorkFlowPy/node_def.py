@@ -86,7 +86,7 @@ def _normalize_render_template(render_template: str) -> str:
     return "nodestyle"
 
 
-def _collect_parameters(cls: type) -> list:
+def _collect_parameters(cls: type) -> list[dict]:
     """
     从类属性中收集 Parameter 声明
 
@@ -94,7 +94,12 @@ def _collect_parameters(cls: type) -> list:
     并使用 to_dict() 将其转换为纯 Python dict。
 
     :param cls: 被装饰的节点类
-    :return: 参数声明 dict 列表
+    :return: 参数声明字典列表，每个 dict 包含以下键：
+        - name: str，参数名称（如 "column"）
+        - dtype: str，参数类型名称（如 "str"、"int"）
+        - default: Any，参数默认值
+        - description: str，参数描述
+    :rtype: list[dict[str, Any]]
     """
     params = []
     for attr_name in dir(cls):
@@ -106,7 +111,7 @@ def _collect_parameters(cls: type) -> list:
     return params
 
 
-def _collect_from_nested_class(cls: type, nested_name: str, decl_type: type) -> list:
+def _collect_from_nested_class(cls: type, nested_name: str, decl_type: type) -> list[dict]:
     """
     从嵌套类中收集 Input 或 Output 声明
 
@@ -117,7 +122,11 @@ def _collect_from_nested_class(cls: type, nested_name: str, decl_type: type) -> 
     :param cls: 被装饰的节点类
     :param nested_name: 嵌套类名（"Inputs" 或 "Outputs"）
     :param decl_type: 声明类型（Input 或 Output）
-    :return: 端口声明 dict 列表
+    :return: 端口声明字典列表，每个 dict 包含以下键：
+        - name: str，端口名称（如 "data"、"filtered"）
+        - dtype: str，端口数据类型名称（如 "DataFrame"）
+        - required: bool，是否为必需端口（仅 Input 有此键）
+    :rtype: list[dict[str, Any]]
     """
     items = []
     nested_cls = getattr(cls, nested_name, None)
@@ -175,10 +184,10 @@ class DAWorkflowNode:
     output_keys: list = []
 
     def __init__(self):
-        self.node_id = None
-        self._input_data = {}
-        self._output_data = {}
-        self.is_global = False
+        self.node_id = None          # 运行时节点 ID，由 _make_node_id() 自动生成或在序列化恢复时设置
+        self._input_data = {}        # dict[str, Any]，输入端口数据缓存，键为端口名称
+        self._output_data = {}       # dict[str, Any]，输出端口数据缓存，键为端口名称
+        self.is_global = False       # 是否为全局节点（全局节点执行但不传递数据到下游）
 
     def set_input_data(self, key: str, data) -> None:
         """
@@ -232,8 +241,10 @@ def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", i
     :param category: 节点所属分类，默认为空字符串
     :param render_template: 渲染模板类型，默认为 'nodestyle'，支持 'nodestyle'、'rect'、'svg'、'widget'
     :param icon: 节点图标路径
-    :param style: 节点样式配置 dict，默认为 None（使用默认样式）
-    :return: 装饰器函数
+    :param style: 节点样式配置 dict，默认为 None（使用默认样式）。
+        支持的键包括边框颜色、填充色等渲染属性（具体键值由 C++ NodeStyle 定义）
+    :return: 装饰器函数，接收 type 并返回继承 DAWorkflowNode 的新 type
+    :rtype: Callable[[type], type]
     """
     rt_str = _normalize_render_template(render_template)
 
