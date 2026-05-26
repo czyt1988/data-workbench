@@ -7,7 +7,10 @@ NodeDisplay 渲染属性聚合、缺失字段、边界条件。
 
 import pytest
 import da_py_workflow
-from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter, NodeDisplay, DAWorkflowNode
+from DAWorkbench.DAWorkFlowPy import (
+    NodeDef, Input, Output, Parameter, NodeDisplay, DAWorkflowNode,
+    NodeDisplayStyle, LinkPointStyle,
+)
 
 
 # ==================== Input 测试 ====================
@@ -246,12 +249,12 @@ class TestNodeDef:
         assert display.icon == ":icons/test.png"
 
     def test_node_def_node_display_with_style_dict(self):
-        """NodeDef(style=dict) 在 _node_display 中设置 DANodeStyle"""
+        """NodeDef(style=dict) 在 _node_display 中保持 dict 格式"""
         @NodeDef(name="Style Dict Test", style={"background_color": "#ffffff"})
         class StyleDictTestNode:
             pass
         assert StyleDictTestNode._node_display.style is not None
-        assert isinstance(StyleDictTestNode._node_display.style, da_py_workflow.DANodeStyle)
+        assert isinstance(StyleDictTestNode._node_display.style, dict)
 
     def test_node_def_node_display_with_style_object(self):
         """NodeDef(style=DANodeStyle) 在 _node_display 中设置 DANodeStyle"""
@@ -300,7 +303,7 @@ class TestNodeDisplay:
         """NodeDisplay 正常创建"""
         display = NodeDisplay(icon=":icons/test.png")
         assert display.icon == ":icons/test.png"
-        assert display.render_template is None
+        assert display.render_template == "nodestyle"
         assert display.style is None
 
     def test_node_display_with_render_template(self):
@@ -348,3 +351,248 @@ class TestDAWorkflowNode:
         node._output_data["result"] = [4, 5, 6]
         assert node.get_output_data("result") == [4, 5, 6]
         assert node.get_output_data("nonexistent") is None
+
+
+# ==================== LinkPointStyle 测试 ====================
+
+class TestLinkPointStyle:
+    """LinkPointStyle 连接点样式 dataclass 测试"""
+
+    def test_link_point_style_default_all_none(self):
+        """LinkPointStyle 默认所有字段为 None"""
+        lps = LinkPointStyle()
+        assert lps.shape is None
+        assert lps.fill_color is None
+        assert lps.border_color is None
+        assert lps.border_width is None
+
+    def test_link_point_style_creation(self):
+        """LinkPointStyle 正常创建"""
+        lps = LinkPointStyle(shape="Circle", fill_color="#ff0000", border_width=2.0)
+        assert lps.shape == "Circle"
+        assert lps.fill_color == "#ff0000"
+        assert lps.border_width == 2.0
+
+    def test_link_point_style_to_dict_skips_none(self):
+        """LinkPointStyle.to_dict() 仅包含非 None 字段"""
+        lps = LinkPointStyle(shape="Circle")
+        d = lps.to_dict()
+        assert d == {"shape": "Circle"}
+
+    def test_link_point_style_to_dict_all_fields(self):
+        """LinkPointStyle.to_dict() 包含所有非 None 字段"""
+        lps = LinkPointStyle(shape="Diamond", fill_color="#ffffff", border_color="#000000", border_width=3.0)
+        d = lps.to_dict()
+        assert d == {
+            "shape": "Diamond",
+            "fill_color": "#ffffff",
+            "border_color": "#000000",
+            "border_width": 3.0,
+        }
+
+    def test_link_point_style_to_dict_empty(self):
+        """全默认 LinkPointStyle.to_dict() 返回空 dict"""
+        lps = LinkPointStyle()
+        assert lps.to_dict() == {}
+
+    def test_link_point_style_rgb_tuple_color(self):
+        """LinkPointStyle 支持 RGB 元组颜色"""
+        lps = LinkPointStyle(fill_color=(255, 200, 200))
+        d = lps.to_dict()
+        assert d["fill_color"] == (255, 200, 200)
+
+
+# ==================== NodeDisplayStyle 测试 ====================
+
+class TestNodeDisplayStyle:
+    """NodeDisplayStyle 节点样式 dataclass 测试"""
+
+    def test_node_display_style_default_all_none(self):
+        """NodeDisplayStyle 默认所有字段为 None"""
+        nds = NodeDisplayStyle()
+        assert nds.body_shape is None
+        assert nds.background_color is None
+        assert nds.corner_radius is None
+        assert nds.input_port_style is None
+
+    def test_node_display_style_creation(self):
+        """NodeDisplayStyle 正常创建"""
+        nds = NodeDisplayStyle(
+            body_shape="Ellipse",
+            background_color="#4A90D9",
+            corner_radius=8.0,
+        )
+        assert nds.body_shape == "Ellipse"
+        assert nds.background_color == "#4A90D9"
+        assert nds.corner_radius == 8.0
+
+    def test_node_display_style_to_dict_sparse(self):
+        """NodeDisplayStyle.to_dict() 仅包含非 None 字段"""
+        nds = NodeDisplayStyle(body_shape="Ellipse", corner_radius=10.0)
+        d = nds.to_dict()
+        assert d == {"body_shape": "Ellipse", "corner_radius": 10.0}
+
+    def test_node_display_style_to_dict_with_port_style(self):
+        """NodeDisplayStyle.to_dict() 递归转换 LinkPointStyle"""
+        nds = NodeDisplayStyle(
+            body_shape="Ellipse",
+            input_port_style=LinkPointStyle(shape="Circle", fill_color="#ffffff"),
+        )
+        d = nds.to_dict()
+        assert d["body_shape"] == "Ellipse"
+        assert d["input_port_style"] == {"shape": "Circle", "fill_color": "#ffffff"}
+
+    def test_node_display_style_to_dict_all_body_fields(self):
+        """NodeDisplayStyle.to_dict() 包含所有主体样式字段"""
+        nds = NodeDisplayStyle(
+            body_shape="Ellipse",
+            name_position="Below",
+            icon_position="AboveText",
+            background_color="#f0f0f0",
+            border_color="#b4b4b4",
+            border_width=2.0,
+            corner_radius=8.0,
+            icon_size=32.0,
+        )
+        d = nds.to_dict()
+        assert len(d) == 8
+        assert d["body_shape"] == "Ellipse"
+        assert d["name_position"] == "Below"
+        assert d["border_width"] == 2.0
+
+    def test_node_display_style_to_dict_port_fields(self):
+        """NodeDisplayStyle.to_dict() 包含端口配置字段"""
+        nds = NodeDisplayStyle(
+            input_port_side="North",
+            output_port_side="South",
+            layout_strategy="Manual",
+        )
+        d = nds.to_dict()
+        assert d["input_port_side"] == "North"
+        assert d["output_port_side"] == "South"
+        assert d["layout_strategy"] == "Manual"
+
+    def test_node_display_style_to_dict_body_icon_fields(self):
+        """NodeDisplayStyle.to_dict() 包含节点体图标字段"""
+        nds = NodeDisplayStyle(
+            body_icon_type="Svg",
+            body_icon_source=":/icons/node.svg",
+            body_icon_scale=0.6,
+        )
+        d = nds.to_dict()
+        assert d["body_icon_type"] == "Svg"
+        assert d["body_icon_source"] == ":/icons/node.svg"
+        assert d["body_icon_scale"] == 0.6
+
+    def test_node_display_style_to_dict_empty(self):
+        """全默认 NodeDisplayStyle.to_dict() 返回空 dict"""
+        nds = NodeDisplayStyle()
+        assert nds.to_dict() == {}
+
+    def test_node_display_style_rgb_tuple_color(self):
+        """NodeDisplayStyle 支持 RGB 元组颜色"""
+        nds = NodeDisplayStyle(background_color=(240, 240, 240))
+        d = nds.to_dict()
+        assert d["background_color"] == (240, 240, 240)
+
+    def test_node_display_style_repr(self):
+        """NodeDisplayStyle dataclass repr"""
+        nds = NodeDisplayStyle(body_shape="Ellipse")
+        r = repr(nds)
+        assert "NodeDisplayStyle" in r
+        assert "Ellipse" in r
+
+
+# ==================== NodeDef + NodeDisplayStyle 集成测试 ====================
+
+class TestNodeDefWithNodeDisplayStyle:
+    """NodeDef(style=NodeDisplayStyle) 集成测试"""
+
+    def test_node_def_with_node_display_style(self):
+        """NodeDef(style=NodeDisplayStyle) 将样式转为 dict 存入 _node_display"""
+        nds = NodeDisplayStyle(
+            body_shape="Ellipse",
+            background_color="#4A90D9",
+            corner_radius=8.0,
+        )
+        @NodeDef(name="Style Dataclass Test", style=nds)
+        class StyleDataclassNode:
+            pass
+        display = StyleDataclassNode._node_display
+        assert isinstance(display, NodeDisplay)
+        assert display.style is not None
+        # NodeDisplayStyle 被转为 dict
+        assert isinstance(display.style, dict)
+        assert display.style["body_shape"] == "Ellipse"
+        assert display.style["background_color"] == "#4A90D9"
+        assert display.style["corner_radius"] == 8.0
+
+    def test_node_def_with_node_display_style_port_styles(self):
+        """NodeDef(style=NodeDisplayStyle) 包含端口样式"""
+        nds = NodeDisplayStyle(
+            input_port_style=LinkPointStyle(shape="Circle", fill_color="#ffffff"),
+            output_port_style=LinkPointStyle(shape="Diamond"),
+        )
+        @NodeDef(name="Port Style Test", style=nds)
+        class PortStyleNode:
+            pass
+        style_dict = PortStyleNode._node_display.style
+        assert style_dict["input_port_style"] == {"shape": "Circle", "fill_color": "#ffffff"}
+        assert style_dict["output_port_style"] == {"shape": "Diamond"}
+
+    def test_node_def_with_dict_style_backward_compat(self):
+        """NodeDef(style=dict) 向后兼容"""
+        @NodeDef(name="Dict Compat Test", style={"body_shape": "Ellipse", "corner_radius": 10.0})
+        class DictCompatNode:
+            pass
+        display = DictCompatNode._node_display
+        assert isinstance(display.style, dict)
+        assert display.style["body_shape"] == "Ellipse"
+
+    def test_node_def_with_da_py_workflow_style_backward_compat(self):
+        """NodeDef(style=da_py_workflow.DANodeStyle) 向后兼容"""
+        node_style = da_py_workflow.DANodeStyle()
+        @NodeDef(name="DANodeStyle Compat Test", style=node_style)
+        class DANodeStyleCompatNode:
+            pass
+        display = DANodeStyleCompatNode._node_display
+        assert display.style is not None
+        assert isinstance(display.style, da_py_workflow.DANodeStyle)
+
+    def test_node_def_no_style(self):
+        """NodeDef 无 style 参数时 _node_display.style 为 None"""
+        @NodeDef(name="No Style Compat Test")
+        class NoStyleCompatNode:
+            pass
+        assert NoStyleCompatNode._node_display.style is None
+
+    def test_node_display_style_full_composite(self):
+        """NodeDisplayStyle 所有字段组合"""
+        nds = NodeDisplayStyle(
+            body_shape="Ellipse",
+            name_position="Below",
+            icon_position="AboveText",
+            background_color="#4A90D9",
+            border_color="#3A3A5C",
+            border_width=2.0,
+            corner_radius=8.0,
+            icon_size=32.0,
+            input_port_side="North",
+            output_port_side="South",
+            input_port_style=LinkPointStyle(shape="Circle", fill_color="#ffffff"),
+            output_port_style=LinkPointStyle(shape="Diamond", border_color="#000000"),
+            layout_strategy="Manual",
+            body_icon_type="Svg",
+            body_icon_source=":/icons/node.svg",
+            body_icon_scale=0.6,
+        )
+        d = nds.to_dict()
+        expected_keys = [
+            "body_shape", "name_position", "icon_position",
+            "background_color", "border_color", "border_width",
+            "corner_radius", "icon_size", "input_port_side", "output_port_side",
+            "input_port_style", "output_port_style", "layout_strategy",
+            "body_icon_type", "body_icon_source", "body_icon_scale",
+        ]
+        for key in expected_keys:
+            assert key in d, f"Composite style dict should contain '{key}'"

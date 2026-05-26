@@ -31,9 +31,167 @@ NodeDef 装饰器会收集类中的 Input、Output、Parameter 声明，
 """
 
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, Union
 
 from .types import Input, Output, Parameter
+
+# 颜色类型：支持 hex 字符串 "#rrggbb" 或 RGB 元组 (r, g, b) / (r, g, b, a)
+ColorType = Union[str, tuple]
+
+
+@dataclass
+class LinkPointStyle:
+    """
+    连接点（端口）样式配置
+
+    对应 C++ DAPyLinkPointStyle 结构体。所有字段为 Optional，
+    None 表示使用 C++ 默认值（Rect 形状、默认填充/边框色、borderWidth=1.0）。
+
+    使用示例::
+
+        port_style = LinkPointStyle(
+            shape="Circle",
+            fill_color="#ff0000",
+            border_width=2.0,
+        )
+
+    :param shape: 端口形状，支持 "Rect"、"Circle"、"Diamond"；None → C++ 默认 Rect
+    :param fill_color: 填充颜色，hex 字符串 "#rrggbb" 或 RGB 元组 (r,g,b)；None → C++ 默认色
+    :param border_color: 边框颜色，hex 字符串或 RGB 元组；None → C++ 默认色
+    :param border_width: 边框宽度；None → C++ 默认 1.0
+    """
+
+    shape: Optional[str] = None
+    fill_color: Optional[ColorType] = None
+    border_color: Optional[ColorType] = None
+    border_width: Optional[float] = None
+
+    def to_dict(self) -> dict:
+        """
+        转换为 C++ nodeStyleFromDict 所需的 dict 格式
+
+        仅包含非 None 字段，C++ 侧对缺失键使用默认值。
+
+        :return: snake_case key 的 dict，如 {"shape": "Circle", "fill_color": "#ff0000"}
+        """
+        d = {}
+        if self.shape is not None:
+            d["shape"] = self.shape
+        if self.fill_color is not None:
+            d["fill_color"] = self.fill_color
+        if self.border_color is not None:
+            d["border_color"] = self.border_color
+        if self.border_width is not None:
+            d["border_width"] = self.border_width
+        return d
+
+
+@dataclass
+class NodeDisplayStyle:
+    """
+    节点显示样式配置
+
+    对应 C++ DANodeStyle 结构体，提供类型化的 Python API 替代裸 dict。
+    所有字段为 Optional，None 表示使用 C++ 默认值。
+
+    替代旧写法 ``@NodeDef(style={"background_color": "#fff", ...})``，
+    新写法有 IDE 自动补全和类型检查::
+
+        @NodeDef(name="My Node", style=NodeDisplayStyle(
+            body_shape="Ellipse",
+            background_color="#4A90D9",
+            border_color="#3A3A5C",
+            corner_radius=8.0,
+            input_port_style=LinkPointStyle(shape="Circle", fill_color="#ffffff"),
+        ))
+        class MyNode: ...
+
+    C++ 侧通过 DictConverter::nodeStyleFromDict() 将 to_dict() 输出的 dict
+    转换为 DANodeStyle 结构体。
+
+    :param body_shape: 节点体形状，"RoundedRect" 或 "Ellipse"；None → C++ 默认 RoundedRect
+    :param name_position: 名称位置，"Inside" 或 "Below"；None → C++ 默认 Inside
+    :param icon_position: 图标位置，"LeftOfText" 或 "AboveText"；None → C++ 默认 LeftOfText
+    :param background_color: 背景颜色，hex "#rrggbb" 或 RGB 元组；None → C++ 默认 (240,240,240)
+    :param border_color: 边框颜色，hex "#rrggbb" 或 RGB 元组；None → C++ 默认 (180,180,180)
+    :param border_width: 边框宽度；None → C++ 默认 1.0
+    :param corner_radius: 圆角半径；None → C++ 默认 4.0
+    :param icon_size: 图标尺寸；None → C++ 默认 24.0
+    :param input_port_side: 输入端口方位，"West"/"East"/"North"/"South"；None → C++ 默认 West
+    :param output_port_side: 输出端口方位；None → C++ 默认 East
+    :param input_port_style: 输入端口样式配置；None → C++ 默认构造
+    :param output_port_style: 输出端口样式配置；None → C++ 默认构造
+    :param layout_strategy: 连接点布局策略，"Auto" 或 "Manual"；None → C++ 默认 Auto
+    :param body_icon_type: 节点体图标类型，"None"/"Pixmap"/"Svg"；None → C++ 默认 None
+    :param body_icon_source: 图标源路径（SVG 文件路径或资源路径）；None → C++ 默认空
+    :param body_icon_scale: 图标缩放比例；None → C++ 默认 0.8
+    """
+
+    # 主体样式
+    body_shape: Optional[str] = None
+    name_position: Optional[str] = None
+    icon_position: Optional[str] = None
+    background_color: Optional[ColorType] = None
+    border_color: Optional[ColorType] = None
+    border_width: Optional[float] = None
+    corner_radius: Optional[float] = None
+    icon_size: Optional[float] = None
+
+    # 端口配置
+    input_port_side: Optional[str] = None
+    output_port_side: Optional[str] = None
+    input_port_style: Optional[LinkPointStyle] = None
+    output_port_style: Optional[LinkPointStyle] = None
+    layout_strategy: Optional[str] = None
+
+    # 节点体图标（SVG 支持）
+    body_icon_type: Optional[str] = None
+    body_icon_source: Optional[str] = None
+    body_icon_scale: Optional[float] = None
+
+    def to_dict(self) -> dict:
+        """
+        转换为 C++ nodeStyleFromDict 所需的 dict 格式
+
+        仅包含非 None 字段，C++ 侧对缺失键使用默认值。
+        端口样式子对象通过 LinkPointStyle.to_dict() 递归转换。
+
+        :return: snake_case key 的 dict，如 {"body_shape": "Ellipse", "corner_radius": 8.0}
+        """
+        d = {}
+        if self.body_shape is not None:
+            d["body_shape"] = self.body_shape
+        if self.name_position is not None:
+            d["name_position"] = self.name_position
+        if self.icon_position is not None:
+            d["icon_position"] = self.icon_position
+        if self.background_color is not None:
+            d["background_color"] = self.background_color
+        if self.border_color is not None:
+            d["border_color"] = self.border_color
+        if self.border_width is not None:
+            d["border_width"] = self.border_width
+        if self.corner_radius is not None:
+            d["corner_radius"] = self.corner_radius
+        if self.icon_size is not None:
+            d["icon_size"] = self.icon_size
+        if self.input_port_side is not None:
+            d["input_port_side"] = self.input_port_side
+        if self.output_port_side is not None:
+            d["output_port_side"] = self.output_port_side
+        if self.input_port_style is not None:
+            d["input_port_style"] = self.input_port_style.to_dict()
+        if self.output_port_style is not None:
+            d["output_port_style"] = self.output_port_style.to_dict()
+        if self.layout_strategy is not None:
+            d["layout_strategy"] = self.layout_strategy
+        if self.body_icon_type is not None:
+            d["body_icon_type"] = self.body_icon_type
+        if self.body_icon_source is not None:
+            d["body_icon_source"] = self.body_icon_source
+        if self.body_icon_scale is not None:
+            d["body_icon_scale"] = self.body_icon_scale
+        return d
 
 
 @dataclass
@@ -61,12 +219,12 @@ class NodeDisplay:
 
     :param icon: 图标路径字符串
     :param render_template: 渲染模板字符串（"nodestyle" 或 "widget"）
-    :param style: 节点样式配置 dict 或 None
+    :param style: 节点样式配置，支持 dict、da_py_workflow.DANodeStyle 或 NodeDisplayStyle（自动转 dict）
     """
 
     icon: str = ""
     render_template: str = "nodestyle"
-    style: Optional[dict] = None
+    style: Optional[object] = None
 
 
 def _normalize_render_template(render_template: str) -> str:
@@ -232,6 +390,29 @@ class DAWorkflowNode:
         self._node_state = state
 
 
+def _normalize_style(style):
+    """
+    规范化 style 参数为可存储的格式
+
+    支持三种输入类型：
+    - NodeDisplayStyle → 调用 to_dict() 转为 dict
+    - dict → 保持原样
+    - da_py_workflow.DANodeStyle → 保持原样（pybind11 对象）
+    - None → 返回 None
+
+    :param style: 原始 style 参数
+    :return: dict、DANodeStyle pybind11 对象或 None
+    """
+    if style is None:
+        return None
+    if isinstance(style, NodeDisplayStyle):
+        return style.to_dict()
+    if isinstance(style, dict):
+        return style
+    # da_py_workflow.DANodeStyle 等 pybind11 对象 — 直接返回
+    return style
+
+
 def NodeDef(
     name: str,
     category: str = "",
@@ -267,12 +448,24 @@ def NodeDef(
             def execute(self, inputs, params):
                 ...
 
+    使用 NodeDisplayStyle 替代裸 dict::
+
+        @NodeDef(name="My Node", style=NodeDisplayStyle(
+            body_shape="Ellipse",
+            background_color="#4A90D9",
+            corner_radius=8.0,
+        ))
+        class MyNode: ...
+
     :param name: 节点显示名称
     :param category: 节点所属分类，默认为空字符串
     :param render_template: 渲染模板类型，默认为 'nodestyle'，支持 'nodestyle'、'rect'、'svg'、'widget'
     :param icon: 节点图标路径
-    :param style: 节点样式配置 dict，默认为 None（使用默认样式）。
-        支持的键包括边框颜色、填充色等渲染属性（具体键值由 C++ NodeStyle 定义）
+    :param style: 节点样式配置，默认为 None（使用默认样式）。
+        支持三种类型：
+        - NodeDisplayStyle — 类型化的样式配置（推荐，有 IDE 自动补全）
+        - dict — 裸字典（snake_case 键，如 {"body_shape": "Ellipse", "corner_radius": 8.0}）
+        - da_py_workflow.DANodeStyle — C++ pybind11 导出对象
     :return: 装饰器函数，接收 type 并返回继承 DAWorkflowNode 的新 type
     :rtype: Callable[[type], type]
     """
@@ -317,10 +510,12 @@ def NodeDef(
         new_cls.parameters = parameters
 
         # 构建渲染属性聚合（NodeDisplay）
+        # _normalize_style 将 NodeDisplayStyle→dict，dict→dict，DANodeStyle→保持原样
+        normalized_style = _normalize_style(style)
         new_cls._node_display = NodeDisplay(
             icon=icon,
             render_template=rt_str,
-            style=style if isinstance(style, dict) else None,
+            style=normalized_style,
         )
 
         # 设置端口名称列表，供 C++ fallback 使用

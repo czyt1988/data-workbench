@@ -32,6 +32,8 @@ DAWorkflowSerializer 提供工作流序列化/反序列化功能。
 - Output: 输出端口声明，描述节点输出数据的端口
 - Parameter: 参数声明，描述节点的可配置参数
 - NodeDisplay: 节点渲染属性聚合（icon、render_template、style）
+- NodeDisplayStyle: 节点显示样式配置 dataclass（类型化替代裸 dict）
+- LinkPointStyle: 连接点（端口）样式配置 dataclass
 - DAWorkflowNode: 工作流节点基类，提供 set_input_data/get_output_data 等方法
 - DANodeRegistry: 节点注册表，管理节点类的发现、注册和查询
 - DANodeFactory: 节点工厂，封装 DANodeRegistry 的发现和实例化功能（C++ 调用入口）
@@ -51,7 +53,7 @@ __version__ = "1.0.0"
 __author__ = "DA WorkBench Team"
 
 from .types import Input, Output, Parameter
-from .node_def import NodeDef, NodeDisplay, DAWorkflowNode
+from .node_def import NodeDef, NodeDisplay, DAWorkflowNode, NodeDisplayStyle, LinkPointStyle
 from .node_registry import DANodeRegistry
 from .node_factory import DANodeFactory
 from .connection import DAConnection
@@ -70,6 +72,8 @@ __all__ = [
     "Output",
     "Parameter",
     "NodeDisplay",
+    "NodeDisplayStyle",
+    "LinkPointStyle",
     "DAWorkflowNode",
     "DANodeRegistry",
     "DAWorkflow",
