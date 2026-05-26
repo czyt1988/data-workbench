@@ -111,7 +111,9 @@ def _collect_parameters(cls: type) -> list[dict]:
     return params
 
 
-def _collect_from_nested_class(cls: type, nested_name: str, decl_type: type) -> list[dict]:
+def _collect_from_nested_class(
+    cls: type, nested_name: str, decl_type: type
+) -> list[dict]:
     """
     从嵌套类中收集 Input 或 Output 声明
 
@@ -168,13 +170,12 @@ class DAWorkflowNode:
     qualified_name: str = ""
     name: str = ""
     category: str = ""
-    group: str = ""           # category 别名，C++ fallback 兼容
     icon: str = ""
 
     # 端口与参数描述（由 @NodeDef 装饰器设置，纯 Python dict）
-    inputs: list = []         # list[dict]
-    outputs: list = []        # list[dict]
-    parameters: list = []     # list[dict]
+    inputs: list = []  # list[dict]
+    outputs: list = []  # list[dict]
+    parameters: list = []  # list[dict]
 
     # 渲染属性聚合（由 @NodeDef 装饰器设置）
     _node_display: NodeDisplay = None
@@ -184,10 +185,12 @@ class DAWorkflowNode:
     output_keys: list = []
 
     def __init__(self):
-        self.node_id = None          # 运行时节点 ID，由 _make_node_id() 自动生成或在序列化恢复时设置
-        self._input_data = {}        # dict[str, Any]，输入端口数据缓存，键为端口名称
-        self._output_data = {}       # dict[str, Any]，输出端口数据缓存，键为端口名称
-        self.is_global = False       # 是否为全局节点（全局节点执行但不传递数据到下游）
+        self.node_id = (
+            None  # 运行时节点 ID，由 _make_node_id() 自动生成或在序列化恢复时设置
+        )
+        self._input_data = {}  # dict[str, Any]，输入端口数据缓存，键为端口名称
+        self._output_data = {}  # dict[str, Any]，输出端口数据缓存，键为端口名称
+        self.is_global = False  # 是否为全局节点（全局节点执行但不传递数据到下游）
 
     def set_input_data(self, key: str, data) -> None:
         """
@@ -208,7 +211,13 @@ class DAWorkflowNode:
         return self._output_data.get(key)
 
 
-def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", icon: str = "", style=None):
+def NodeDef(
+    name: str,
+    category: str = "",
+    render_template: str = "nodestyle",
+    icon: str = "",
+    style=None,
+):
     """
     工作节点定义装饰器
 
@@ -279,7 +288,6 @@ def NodeDef(name: str, category: str = "", render_template: str = "nodestyle", i
         new_cls.qualified_name = qualified_name
         new_cls.name = name
         new_cls.category = category
-        new_cls.group = category       # C++ fallback 兼容别名
         new_cls.icon = icon
 
         # 直接在 new_cls 上设置类属性（端口与参数描述，纯 Python dict）

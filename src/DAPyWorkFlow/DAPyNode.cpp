@@ -84,7 +84,7 @@ QString DAPyNode::getNodeName() const
     return QString();
 }
 
-QString DAPyNode::getNodeGroup() const
+QString DAPyNode::getNodeCategory() const
 {
     if (isNone()) {
         return QString();
@@ -92,9 +92,6 @@ QString DAPyNode::getNodeGroup() const
     try {
         if (hasattr("category")) {
             return attr("category").cast< QString >();
-        }
-        if (hasattr("group")) {
-            return attr("group").cast< QString >();
         }
     } catch (const std::exception& e) {
         dealException(e);

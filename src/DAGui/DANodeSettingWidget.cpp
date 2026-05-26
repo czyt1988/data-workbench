@@ -93,7 +93,7 @@ void DANodeSettingWidget::updateData()
     DAPyNode* n = getNode();
     if (n) {
         mPanel->setStringValue(PID_Prototype, n->getQualifiedName());
-        mPanel->setStringValue(PID_Group, n->getNodeGroup());
+        mPanel->setStringValue(PID_Group, n->getNodeCategory());
         mPanel->setStringValue(PID_Name, n->getNodeName());
         // 设置限定名和组为只读
         DAPropertyItemWidget* prototypeItem = mPanel->getPropertyItem(PID_Prototype);

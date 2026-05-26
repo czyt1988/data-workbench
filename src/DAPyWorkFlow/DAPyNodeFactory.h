@@ -36,9 +36,9 @@ public:
     bool discoverNodes(const QStringList& scanPaths = QStringList(), bool useEntryPoints = false);
 
     // 通过限定名创建DAPyNode实例
-    DAPyNode* createNodeProxy(const QString& qualifiedName);
+    DAPyNode* createNode(const QString& qualifiedName);
     // 通过节点元数据创建DAPyNode实例
-    DAPyNode* createNodeProxy(const DAPyNodeMetaData& metaData);
+    DAPyNode* createNode(const DAPyNodeMetaData& metaData);
 
     // 获取所有已发现节点的元数据列表
     QList< DAPyNodeMetaData > getNodeMetadataList() const;

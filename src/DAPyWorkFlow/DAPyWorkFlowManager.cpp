@@ -87,7 +87,7 @@ DAPyNode* DAPyWorkFlowManager::addNode(const QString& qualifiedName)
     DA_D(d);
     DAPyNode* proxy = nullptr;
     try {
-        proxy = d->mFactory->createNodeProxy(qualifiedName);
+        proxy = d->mFactory->createNode(qualifiedName);
         if (!proxy) {
             qCritical() << "DAPyWorkFlowManager::addNode: createNodeProxy failed for" << qualifiedName;
             return nullptr;

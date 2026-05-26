@@ -52,8 +52,8 @@ public:
     // 节点名称（从Python对象属性name读取）
     QString getNodeName() const;
 
-    // 节点分组（从Python对象属性category/group读取）
-    QString getNodeGroup() const;
+    // 节点分组（从Python对象属性category读取）
+    QString getNodeCategory() const;
 
     // 节点图标（从Python对象属性icon读取）
     QString getIcon() const;

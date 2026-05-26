@@ -1,6 +1,11 @@
 #ifndef DAPYWORKFLOWPYTHONBINDING_H
 #define DAPYWORKFLOWPYTHONBINDING_H
 #include <memory>
+// pybind11
+#include "DAPybind11InQt.h"
+// DAPyWorkflow
+#include "DAPyNodeMetaData.h"
+
 /**
 @file DAPyWorkFlowPythonBinding
 @brief Python 绑定模块 da_py_workflow 的完整 API 清单与调用示例
@@ -189,27 +194,13 @@ handler.callInMainThread(update_node_state)  # 安全回到 Qt 主线程更新�
 - 自定义 paint() 回调目前仅支持基本绘制操作（drawRect, drawText, drawLine, fillRect）。
 */
 
-// pybind11
-#include "DAPybind11InQt.h"
-
-// DA
-#include "DAPyWorkFlow/DAPyWorkFlowScene.h"
-#include "DAPyWorkFlow/DAPyNode.h"
-#include "DAPyWorkFlow/DAPyNodeState.h"
-#include "DAPyWorkFlow/DAPyPainterProxy.h"
-#include "DAPyWorkFlow/DAPyLinkPoint.h"
-#include "DAPyWorkFlow/DAPyNodeFactory.h"
-
 namespace DA
 {
-
-/**
- * @brief 通过 qualified_name 获取 DAPyNode 实例
- * @param qualified_name Python 节点的完整限定名（模块.类名）
- * @return 代理节点智能指针，如果节点未注册返回空指针
- */
-std::shared_ptr< DAPyNode > getNodeProxy(const std::string& qualified_name);
-
+namespace PY
+{
+// 从pybind11::object转换为DAPyNodeMetaData,要求obj必须拥有qualified_name、name、category 属性
+DAPyNodeMetaData toNodeMetaData(const pybind11::object& obj);
+}
 }  // namespace DA
 
 #endif  // DAPYWORKFLOWPYTHONBINDING_H

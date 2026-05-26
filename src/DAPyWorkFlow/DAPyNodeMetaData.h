@@ -11,8 +11,7 @@ namespace DA
 /**
  * @brief Python节点的元数据结构体
  *
- * 替代原DANodeMetaData，用于描述Python节点的注册信息。
- * 由discoverNodes()从Python侧DANodeDescriptor.to_dict()提取填充。
+ * 这个数据类型和python无关，主要是用于携带节点的必要属性信息，用于在c++中传递节点的原始信息
  */
 class DAPYWORKFLOW_API DAPyNodeMetaData
 {
@@ -21,7 +20,7 @@ public:
     ~DAPyNodeMetaData();
     // 有效性判断
     bool isValid() const;
-    // bool转换运算符（兼容原DANodeMetaData用法）
+    // bool转换运算符，封装isValid，可用直接if判断
     explicit operator bool() const;
     // 比较运算符
     bool operator==(const DAPyNodeMetaData& other) const;
@@ -31,18 +30,16 @@ public:
     // 兼容原DANodeMetaData的getter方法
     QString getNodeName() const;
     QString getNodeQualifiedName() const;
-    QString getGroup() const;
+    QString getCategory() const;
     QIcon getIcon() const;
     QString getNodeTooltip() const;
 
 public:
     QString name;           // 节点显示名称
     QString qualifiedName;  // 节点唯一标识名（Python qualified_name）
-    QString group;          // 节点分组/分类
+    QString category;       // 节点分组/分类
     QString iconPath;  // 节点图标路径,注意这个图标仅仅用于进行节点树的图标展示，不作为场景显示的图标，场景显示的图标可以通过DANodeStyle定义
-    QString tooltip;   // 节点提示文本
-    QList< QString > inputKeys;   // 输入key列表
-    QList< QString > outputKeys;  // 输出key列表
+    QString tooltip;  // 节点提示文本
 };
 
 // QDebug输出

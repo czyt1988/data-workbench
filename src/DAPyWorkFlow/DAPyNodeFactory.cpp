@@ -92,9 +92,7 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
                 metaData.name = nodeClassObj.attr("name").cast< QString >();
             }
             if (pybind11::hasattr(nodeClassObj, "category")) {
-                metaData.group = nodeClassObj.attr("category").cast< QString >();
-            } else if (pybind11::hasattr(nodeClassObj, "group")) {
-                metaData.group = nodeClassObj.attr("group").cast< QString >();
+                metaData.category = nodeClassObj.attr("category").cast< QString >();
             }
             if (pybind11::hasattr(nodeClassObj, "icon")) {
                 metaData.iconPath = nodeClassObj.attr("icon").cast< QString >();
@@ -140,7 +138,7 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
  * @note 返回的DAPyNode由调用方负责生命周期管理
  * @note 必须先调用discoverNodes()创建Python factory实例，否则返回nullptr
  */
-DAPyNode* DAPyNodeFactory::createNodeProxy(const QString& qualifiedName)
+DAPyNode* DAPyNodeFactory::createNode(const QString& qualifiedName)
 {
     try {
         // 调用Python DANodeFactory.create_node()获取节点实例
@@ -172,12 +170,12 @@ DAPyNode* DAPyNodeFactory::createNodeProxy(const QString& qualifiedName)
  * @note 此方法不存储元数据到代理对象，代理对象仍通过qualifiedName标识
  * @see createNodeProxy(const QString&)
  */
-DAPyNode* DAPyNodeFactory::createNodeProxy(const DAPyNodeMetaData& metaData)
+DAPyNode* DAPyNodeFactory::createNode(const DAPyNodeMetaData& metaData)
 {
     if (!metaData.isValid()) {
         return nullptr;
     }
-    return createNodeProxy(metaData.qualifiedName);
+    return createNode(metaData.qualifiedName);
 }
 
 /**

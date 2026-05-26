@@ -109,9 +109,9 @@ QString DAPyNodeMetaData::getNodeQualifiedName() const
  *
  * @return 节点分组字符串
  */
-QString DAPyNodeMetaData::getGroup() const
+QString DAPyNodeMetaData::getCategory() const
 {
-    return group;
+    return category;
 }
 
 /**
@@ -156,7 +156,7 @@ QString DAPyNodeMetaData::getNodeTooltip() const
 QDebug operator<<(QDebug dbg, const DAPyNodeMetaData& meta)
 {
     dbg.nospace() << "DAPyNodeMetaData(name=" << meta.name << ", qualifiedName=" << meta.qualifiedName
-                  << ", group=" << meta.group << ")";
+                  << ", group=" << meta.category << ")";
     return dbg.space();
 }
 

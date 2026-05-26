@@ -17,16 +17,30 @@
 namespace DA
 {
 
-/**
- * @brief 通过 qualified_name 获取 DAPyNode 实例
- * @param[in] qualified_name Python 节点的完整限定名（模块.类名）
- * @return 代理节点智能指针，如果节点未注册返回空指针
- */
-std::shared_ptr< DA::DAPyNode > getNodeProxy(const std::string& qualified_name)
+namespace PY
 {
-    // TODO: 实现通过 DAPyModuleWorkflow 获取 Python 节点类并创建代理
-    return std::shared_ptr< DA::DAPyNode >();
+
+DAPyNodeMetaData toNodeMetaData(const pybind11::object& obj)
+{
+    DAPyNodeMetaData metaData;
+
+    // 从 Python 类属性直接读取
+    if (pybind11::hasattr(obj, "qualified_name")) {
+        metaData.qualifiedName = obj.attr("qualified_name").cast< QString >();
+    }
+    if (pybind11::hasattr(obj, "name")) {
+        metaData.name = obj.attr("name").cast< QString >();
+    }
+    if (pybind11::hasattr(obj, "category")) {
+        metaData.category = obj.attr("category").cast< QString >();
+    }
+    if (pybind11::hasattr(obj, "icon")) {
+        metaData.iconPath = obj.attr("icon").cast< QString >();
+    }
+    return metaData;
 }
+
+}  // namespace PY
 
 }  // namespace DA
 
@@ -196,12 +210,6 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .def("setNoPen", &DA::DAPyPainterProxy::setNoPen, "Set no pen (disable outline drawing)")
         .def("setNoBrush", &DA::DAPyPainterProxy::setNoBrush, "Set no brush (disable fill)")
         .def("isValid", &DA::DAPyPainterProxy::isValid, "Check if painter proxy is valid");
-
-    // 自由函数
-    m.def("getNodeProxy",
-          &DA::getNodeProxy,
-          pybind11::arg("qualified_name"),
-          "Get DAPyNode instance by Python node's qualified name");
 
     m.def(
         "_note_signal_handler",

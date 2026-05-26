@@ -53,10 +53,8 @@ void DAAbstractNodeSettingWidget::setNodeProxy(DAPyNode* proxy)
         // 缓存元数据
         d->mMetaData.name          = proxy->getNodeName();
         d->mMetaData.qualifiedName = proxy->getQualifiedName();
-        d->mMetaData.group         = proxy->getNodeGroup();
+        d->mMetaData.category      = proxy->getNodeCategory();
         d->mMetaData.iconPath      = proxy->getIcon();
-        d->mMetaData.inputKeys     = proxy->getInputKeys();
-        d->mMetaData.outputKeys    = proxy->getOutputKeys();
 
         // 从Python对象读取parameters，转换为DAParamDef列表
         if (!proxy->isNone()) {

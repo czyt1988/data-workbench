@@ -291,14 +291,6 @@ class TestNodeDef:
                 pass
         assert OutputKeysTestNode.output_keys == ["result"]
 
-    def test_node_def_sets_group(self):
-        """NodeDef 设置 group（category 别名）"""
-        @NodeDef(name="Group Test", category="Data")
-        class GroupTestNode:
-            pass
-        assert GroupTestNode.group == "Data"
-
-
 # ==================== NodeDisplay 测试 ====================
 
 class TestNodeDisplay:

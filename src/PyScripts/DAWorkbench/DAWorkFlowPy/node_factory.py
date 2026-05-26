@@ -102,7 +102,7 @@ class DANodeFactory:
         返回的 dict 包含以下键值（所有值均为 str 或 list[str] 类型）：
         - qualified_name: str，节点类型唯一标识
         - name: str，节点显示名称
-        - category: str，节点分类路径（优先读取 category，兼容 group）
+        - category: str，节点分类路径
         - icon: str，节点图标路径
         - input_keys: list[str]，输入端口名称列表
         - output_keys: list[str]，输出端口名称列表
@@ -173,12 +173,7 @@ def _extract_metadata_from_class(node_cls: type) -> dict:
     # qualified_name 是节点唯一标识，必须存在
     metadata["qualified_name"] = getattr(node_cls, "qualified_name", "")
     metadata["name"] = getattr(node_cls, "name", "")
-    # category 优先，group 作为兼容别名
-    category = getattr(node_cls, "category", "")
-    if category:
-        metadata["category"] = category
-    else:
-        metadata["category"] = getattr(node_cls, "group", "")
+    metadata["category"] = getattr(node_cls, "category", "")
     metadata["icon"] = getattr(node_cls, "icon", "")
     metadata["input_keys"] = list(getattr(node_cls, "input_keys", []))
     metadata["output_keys"] = list(getattr(node_cls, "output_keys", []))

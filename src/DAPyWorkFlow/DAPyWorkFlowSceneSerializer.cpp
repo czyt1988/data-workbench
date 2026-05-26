@@ -161,8 +161,6 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
                     }
                     if (pybind11::hasattr(nodeInst, "category")) {
                         metaData.group = QString::fromStdString(pybind11::str(nodeInst.attr("category")));
-                    } else if (pybind11::hasattr(nodeInst, "group")) {
-                        metaData.group = QString::fromStdString(pybind11::str(nodeInst.attr("group")));
                     }
                     ns.metaData = metaData;
                     state.nodes.append(ns);

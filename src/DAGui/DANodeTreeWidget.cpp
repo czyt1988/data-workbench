@@ -59,8 +59,8 @@ void DANodeTreeWidget::addItems(const QList< DAPyNodeMetaData >& nodeMetaDatas)
 		// 1.每个md都生成一个item
 		nodeItems[ md ] = new DANodeTreeWidgetItem(md);
 		// 2.每个md的分组按顺序去重归集
-		if (!orderGroup.contains(md.getGroup())) {
-			orderGroup.append(md.getGroup());
+		if (!orderGroup.contains(md.getCategory())) {
+			orderGroup.append(md.getCategory());
 		}
 	}
 	// 创建分组的topitem
@@ -72,7 +72,7 @@ void DANodeTreeWidget::addItems(const QList< DAPyNodeMetaData >& nodeMetaDatas)
 	}
 	// 把节点item挂载到分组中
 	for (const DAPyNodeMetaData& md : std::as_const(nodeMetaDatas)) {
-		QTreeWidgetItem* gitem      = groupItems.value(md.getGroup(), nullptr);
+		QTreeWidgetItem* gitem      = groupItems.value(md.getCategory(), nullptr);
 		DANodeTreeWidgetItem* nitem = nodeItems.value(md, nullptr);
 		if (gitem && nitem) {
 			gitem->addChild(nitem);
@@ -94,14 +94,14 @@ void DANodeTreeWidget::addItem(const DAPyNodeMetaData& md)
 	int rootcnt = topLevelItemCount();
 	for (int i = 0; i < rootcnt; ++i) {
 		QTreeWidgetItem* topit = topLevelItem(i);
-		if (md.getGroup() == topit->text(0)) {
+		if (md.getCategory() == topit->text(0)) {
 			root = topit;
 			break;
 		}
 	}
 
 	if (nullptr == root) {
-		root = new QTreeWidgetItem({ md.getGroup() });
+		root = new QTreeWidgetItem({ md.getCategory() });
 		insertTopLevelItem(topLevelItemCount(), root);
 	}
 	DANodeTreeWidgetItem* i = new DANodeTreeWidgetItem(root, md);

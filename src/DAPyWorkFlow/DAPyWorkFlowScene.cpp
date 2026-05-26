@@ -344,7 +344,7 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
         return nullptr;
     }
     // 创建DAPyNode
-    DAPyNode* proxy = d->mPyNodeFactory->createNodeProxy(metaData);
+    DAPyNode* proxy = d->mPyNodeFactory->createNode(metaData);
     if (!proxy) {
         // 节点创建失败
         qWarning() << tr("DAPyWorkFlowScene::createPyNode: factory failed to create proxy for %1").arg(metaData.qualifiedName);

@@ -46,10 +46,10 @@ void DAToolBox::addItems(const QList< DAPyNodeMetaData >& datas)
     QHash< QString, QList< DAPyNodeMetaData > > groupOrderNodes;
     for (const DAPyNodeMetaData& md : std::as_const(datas)) {
         // 每个md的分组按顺序去重归集
-        if (!orderGroup.contains(md.getGroup())) {
-            orderGroup.append(md.getGroup());
+        if (!orderGroup.contains(md.getCategory())) {
+            orderGroup.append(md.getCategory());
         }
-        groupOrderNodes[ md.getGroup() ].append(md);
+        groupOrderNodes[ md.getCategory() ].append(md);
     }
     // 创建分组的topitem
     for (const QString& g : std::as_const(orderGroup)) {
