@@ -51,20 +51,20 @@ public:
 public:
     std::unique_ptr< DAPyNode > mProxy;  ///< Python节点代理（独占所有权）
     // 缓存字段：从DAPyNode一次性读取，避免paint时GIL开销
-    QString mName;                                                         ///< 缓存的节点名称
-    QString mQualifiedName;                                                ///< 缓存的限定名
-    QString mIconPath;                                                     ///< 缓存的图标路径
-    RenderTemplate mRenderTemplate { RenderTemplate::NodeStyleTemplate };  ///< 缓存的渲染模板
-    QList< QString > mInputKeys;                                           ///< 缓存的输入端口key列表
-    QList< QString > mOutputKeys;                                          ///< 缓存的输出端口key列表
-    DANodeStyle mStyle;                                                    ///< 缓存的节点样式
-    QIcon mIcon;                                                           ///< 节点图标
-    QSvgRenderer* mSvgRenderer { nullptr };                                ///< SVG渲染器
-    QGraphicsProxyWidget* mProxyWidget { nullptr };                        ///< Widget代理
-    QWidget* mWidget { nullptr };                                          ///< 嵌入的widget
-    DAPyNodeState mNodeState { Idle };                                     ///< 节点状态
-    QList< DAPyLinkPoint > mInputLinkPoints;                               ///< 输入连接点
-    QList< DAPyLinkPoint > mOutputLinkPoints;                              ///< 输出连接点
+    QString mName;                                                                         ///< 缓存的节点名称
+    QString mQualifiedName;                                                                ///< 缓存的限定名
+    QString mIconPath;                                                                     ///< 缓存的图标路径
+    DAPyNodeRenderTemplate mRenderTemplate { DAPyNodeRenderTemplate::NodeStyleTemplate };  ///< 缓存的渲染模板
+    QList< QString > mInputKeys;                                                           ///< 缓存的输入端口key列表
+    QList< QString > mOutputKeys;                                                          ///< 缓存的输出端口key列表
+    DAPyNodeDisplayStyle mStyle;                                                           ///< 缓存的节点样式
+    QIcon mIcon;                                                                           ///< 节点图标
+    QSvgRenderer* mSvgRenderer { nullptr };                                                ///< SVG渲染器
+    QGraphicsProxyWidget* mProxyWidget { nullptr };                                        ///< Widget代理
+    QWidget* mWidget { nullptr };                                                          ///< 嵌入的widget
+    DAPyNodeState mNodeState { Idle };                                                     ///< 节点状态
+    QList< DAPyLinkPoint > mInputLinkPoints;                                               ///< 输入连接点
+    QList< DAPyLinkPoint > mOutputLinkPoints;                                              ///< 输出连接点
     qreal linkPointDrawWidth { 14 };     ///< 连接点的绘制宽度（宽度相对于东西方向的宽度）
     qreal linkPointDrawHeight { 10 };    ///< 连接点的绘制高度（高度相对于东西方向的高度）
     DAPyObjectWrapper mPaintCallback;    ///< 自定义绘制回调（Python函数对象）
@@ -103,8 +103,8 @@ DAPyNodeGraphicsItem::PrivateData::~PrivateData()
 void DAPyNodeGraphicsItem::PrivateData::updateLinkPointPositions(const QRectF& bodyRect)
 {
     // 更新输入连接点位置
-    const DANodeStyle& st = mStyle;
-    int inputCount        = mInputLinkPoints.size();
+    const DAPyNodeDisplayStyle& st = mStyle;
+    int inputCount                 = mInputLinkPoints.size();
     if (inputCount > 0) {
         const PortSide side = st.inputPortSide;
         for (int i = 0; i < inputCount; ++i) {
@@ -170,7 +170,7 @@ void DAPyNodeGraphicsItem::PrivateData::cleanupSvg()
 
 void DAPyNodeGraphicsItem::PrivateData::updateNodeStyle(const QRectF& bodyRect)
 {
-    const DANodeStyle& s = mStyle;
+    const DAPyNodeDisplayStyle& s = mStyle;
     // 根据端口方向计算各方向的连接点预留偏移量
     const qreal halfLpW = linkPointDrawWidth / 2;
     qreal lpLeft = 0, lpRight = 0, lpTop = 0, lpBottom = 0;
@@ -438,7 +438,7 @@ QString DAPyNodeGraphicsItem::getNodeName() const
  * @brief 设置节点样式
  * @param[in] style 节点样式配置
  */
-void DAPyNodeGraphicsItem::setNodeStyle(const DANodeStyle& style)
+void DAPyNodeGraphicsItem::setNodeStyle(const DAPyNodeDisplayStyle& style)
 {
     d_ptr->mStyle = style;
     d_ptr->updateNodeStyle(getBodyRect());
@@ -449,7 +449,7 @@ void DAPyNodeGraphicsItem::setNodeStyle(const DANodeStyle& style)
  * @brief 获取节点样式（非常量引用，允许修改）
  * @return 节点样式引用
  */
-DANodeStyle& DAPyNodeGraphicsItem::nodeStyle()
+DAPyNodeDisplayStyle& DAPyNodeGraphicsItem::nodeStyle()
 {
     return d_ptr->mStyle;
 }
@@ -458,7 +458,7 @@ DANodeStyle& DAPyNodeGraphicsItem::nodeStyle()
  * @brief 获取节点样式（常量引用）
  * @return 节点样式常量引用
  */
-const DANodeStyle& DAPyNodeGraphicsItem::nodeStyle() const
+const DAPyNodeDisplayStyle& DAPyNodeGraphicsItem::nodeStyle() const
 {
     return d_ptr->mStyle;
 }
@@ -922,7 +922,7 @@ void DAPyNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOption
     QFont smallFont = painter->font();
     smallFont.setPointSize(d->smallFontSize);
     painter->setFont(smallFont);
-    const DANodeStyle& st = d->mStyle;
+    const DAPyNodeDisplayStyle& st = d->mStyle;
     // 绘制输入连接点（默认白色填充）
     drawLinkPointGroup(
         painter, d->mInputLinkPoints, st.inputPortStyle, Qt::white, d->linkPointDrawWidth, d->linkPointDrawHeight, d->smallFontSize);
@@ -1011,7 +1011,7 @@ void DAPyNodeGraphicsItem::paintNodeStyleBody(QPainter* painter, const QRectF& b
     DA_D(d);
     painter->save();
 
-    const DANodeStyle& style = d->mStyle;
+    const DAPyNodeDisplayStyle& style = d->mStyle;
 
     // 确定背景色（无效时使用默认值）
     QColor bgColor  = style.backgroundColor.isValid() ? style.backgroundColor : QColor(240, 240, 240);
@@ -1319,11 +1319,11 @@ void DAPyNodeGraphicsItem::updateNodeBody()
     // 文本信息
     QRectF textBoundRect = fm.boundingRect(d->mName);
     // 计算推荐
-    qreal bodyWidth      = 0.0;
-    qreal bodyHeight     = 0.0;
-    const DANodeStyle& s = d->mStyle;
-    const int space      = qMin(4.0, s.cornerRadius);
-    qreal iconSize       = s.iconSize;
+    qreal bodyWidth               = 0.0;
+    qreal bodyHeight              = 0.0;
+    const DAPyNodeDisplayStyle& s = d->mStyle;
+    const int space               = qMin(4.0, s.cornerRadius);
+    qreal iconSize                = s.iconSize;
     if (s.bodyIconSource.isEmpty()) {
         iconSize = 0.0;
     }

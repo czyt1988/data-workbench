@@ -97,7 +97,7 @@ struct DAPYWORKFLOW_API DAPyLinkPointStyle
 };
 
 // =================================================================================
-//                      DANodeStyle — 节点整体样式配置
+//                      DAPyNodeDisplayStyle — 节点整体样式配置
 // =================================================================================
 /**
  * @brief 节点整体样式配置结构体
@@ -117,15 +117,16 @@ struct DAPYWORKFLOW_API DAPyLinkPointStyle
  * @see DAPyNodeStyleDefine.h 中的 BodyShape、NamePosition、IconPosition 等枚举
  * @see DAPyLinkPointStyle 端口样式配置
  */
-struct DAPYWORKFLOW_API DANodeStyle
+class DAPYWORKFLOW_API DAPyNodeDisplayStyle
 {
+public:
     // 构造函数
     /**
      * @brief 默认构造函数
      *
      * 调用 setDefaults() 将所有字段初始化为默认值。
      */
-    DANodeStyle()
+    DAPyNodeDisplayStyle()
     {
         setDefaults();
     }
@@ -196,7 +197,6 @@ struct DAPYWORKFLOW_API DANodeStyle
         return iconPosition == IconPosition::LeftOfText;
     }
 };
-
 
 }  // namespace DA
 

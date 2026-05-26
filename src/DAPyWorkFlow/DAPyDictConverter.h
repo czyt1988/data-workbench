@@ -26,10 +26,10 @@ namespace DictConverter
 DAPYWORKFLOW_API DAPyLinkPointStyle linkPointStyleFromDict(const pybind11::dict& d);
 
 /// 从 Python dict 转换为 DANodeStyle
-DAPYWORKFLOW_API DANodeStyle nodeStyleFromDict(const pybind11::dict& d);
+DAPYWORKFLOW_API DAPyNodeDisplayStyle nodeStyleFromDict(const pybind11::dict& d);
 
 /// 从字符串转换为 RenderTemplate 枚举
-DAPYWORKFLOW_API RenderTemplate renderTemplateFromString(const QString& s);
+DAPYWORKFLOW_API DAPyNodeRenderTemplate renderTemplateFromString(const QString& s);
 
 /// 从 Python 对象读取颜色（支持 hex string 和 RGB tuple）
 DAPYWORKFLOW_API QColor colorFromPyObj(const pybind11::object& obj);

@@ -154,9 +154,9 @@ QList< QString > DAPyNode::getOutputKeys() const
     return QList< QString >();
 }
 
-DANodeStyle DAPyNode::getNodeStyle() const
+DAPyNodeDisplayStyle DAPyNode::getNodeStyle() const
 {
-    DANodeStyle defaultStyle;  // 默认构造已调用 setDefaults()
+    DAPyNodeDisplayStyle defaultStyle;  // 默认构造已调用 setDefaults()
     if (isNone()) {
         return defaultStyle;
     }
@@ -179,10 +179,10 @@ DANodeStyle DAPyNode::getNodeStyle() const
     return defaultStyle;
 }
 
-RenderTemplate DAPyNode::getRenderTemplate() const
+DAPyNodeRenderTemplate DAPyNode::getRenderTemplate() const
 {
     if (isNone()) {
-        return RenderTemplate::NodeStyleTemplate;
+        return DAPyNodeRenderTemplate::NodeStyleTemplate;
     }
     try {
         if (hasattr("_node_display")) {
@@ -195,7 +195,7 @@ RenderTemplate DAPyNode::getRenderTemplate() const
     } catch (const std::exception& e) {
         dealException(e);
     }
-    return RenderTemplate::NodeStyleTemplate;
+    return DAPyNodeRenderTemplate::NodeStyleTemplate;
 }
 
 DAPyNodeState DAPyNode::getNodeState() const

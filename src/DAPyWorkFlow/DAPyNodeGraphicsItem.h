@@ -46,7 +46,7 @@ class DAPYWORKFLOW_API DAPyNodeGraphicsItem : public DAGraphicsResizeableItem
     DA_DECLARE_PRIVATE(DAPyNodeGraphicsItem)
 
 public:
-    using RenderTemplate = DA::RenderTemplate;  ///< 向后兼容：引用命名空间级 enum class
+    using RenderTemplate = DA::DAPyNodeRenderTemplate;  ///< 向后兼容：引用命名空间级 enum class
 
     /**
      * @brief Item类型标识
@@ -96,9 +96,9 @@ public:
     void updateFromProxy(DAPyNode* proxy);
 
     // 节点样式
-    void setNodeStyle(const DANodeStyle& style);
-    DANodeStyle& nodeStyle();
-    const DANodeStyle& nodeStyle() const;
+    void setNodeStyle(const DAPyNodeDisplayStyle& style);
+    DAPyNodeDisplayStyle& nodeStyle();
+    const DAPyNodeDisplayStyle& nodeStyle() const;
 
     // 自定义绘制回调接口
     void setPaintCallback(const pybind11::object& callback);

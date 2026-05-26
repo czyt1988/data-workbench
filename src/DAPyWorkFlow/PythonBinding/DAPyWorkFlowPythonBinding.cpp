@@ -143,9 +143,9 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .export_values();
 
     // 导出 RenderTemplate 枚举
-    pybind11::enum_< DA::RenderTemplate >(m, "RenderTemplate")
-        .value("NodeStyleTemplate", DA::RenderTemplate::NodeStyleTemplate)
-        .value("WidgetTemplate", DA::RenderTemplate::WidgetTemplate)
+    pybind11::enum_< DA::DAPyNodeRenderTemplate >(m, "RenderTemplate")
+        .value("NodeStyleTemplate", DA::DAPyNodeRenderTemplate::NodeStyleTemplate)
+        .value("WidgetTemplate", DA::DAPyNodeRenderTemplate::WidgetTemplate)
         .export_values();
 
     // 绑定 DAPyLinkPoint 类

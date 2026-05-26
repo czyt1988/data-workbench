@@ -57,9 +57,9 @@ DAPyLinkPointStyle linkPointStyleFromDict(const pybind11::dict& d)
     return s;
 }
 
-DANodeStyle nodeStyleFromDict(const pybind11::dict& d)
+DAPyNodeDisplayStyle nodeStyleFromDict(const pybind11::dict& d)
 {
-    DANodeStyle s;  // setDefaults() already called by constructor
+    DAPyNodeDisplayStyle s;  // setDefaults() already called by constructor
 
     // 主体样式
     if (d.contains("body_shape")) {
@@ -173,17 +173,17 @@ DANodeStyle nodeStyleFromDict(const pybind11::dict& d)
     return s;
 }
 
-RenderTemplate renderTemplateFromString(const QString& s)
+DAPyNodeRenderTemplate renderTemplateFromString(const QString& s)
 {
     // 支持新旧格式：nodestyle/node_style/rect/svg → NodeStyleTemplate
     if (s == "nodestyle" || s == "node_style" || s == "rect" || s == "svg") {
-        return RenderTemplate::NodeStyleTemplate;
+        return DAPyNodeRenderTemplate::NodeStyleTemplate;
     }
     if (s == "widget") {
-        return RenderTemplate::WidgetTemplate;
+        return DAPyNodeRenderTemplate::WidgetTemplate;
     }
     // 尝试使用 stringToEnum
-    return stringToEnum(s, RenderTemplate::NodeStyleTemplate);
+    return stringToEnum(s, DAPyNodeRenderTemplate::NodeStyleTemplate);
 }
 
 }  // namespace DictConverter

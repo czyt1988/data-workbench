@@ -115,7 +115,7 @@ enum class BodyIconType
  * 向后兼容：stringToRenderTemplate("rect") 和 stringToRenderTemplate("svg")
  * 均返回 NodeStyleTemplate。
  */
-enum class RenderTemplate
+enum class DAPyNodeRenderTemplate
 {
     NodeStyleTemplate = 0,  ///< 节点样式模板（使用 BodyShape/PortShape 等配置绘制）
     WidgetTemplate    = 1   ///< 嵌入Widget模板
@@ -134,6 +134,6 @@ DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::PortShape)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::IconPosition)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::BodyIconType)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::BodyShape)
-DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::RenderTemplate)
+DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::DAPyNodeRenderTemplate)
 
 #endif  // DAPYNODESTYLEDEFINE_H
