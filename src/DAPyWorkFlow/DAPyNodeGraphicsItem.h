@@ -96,9 +96,9 @@ public:
     void updateFromProxy(DAPyNode* proxy);
 
     // 节点样式
-    void setNodeStyle(const DAPyNodeDisplayStyle& style);
-    DAPyNodeDisplayStyle& nodeStyle();
-    const DAPyNodeDisplayStyle& nodeStyle() const;
+    void setNodeStyle(const DAPyNodeStyle& style);
+    DAPyNodeStyle& nodeStyle();
+    const DAPyNodeStyle& nodeStyle() const;
 
     // 自定义绘制回调接口
     void setPaintCallback(const pybind11::object& callback);

@@ -1450,6 +1450,36 @@ inline QVector< T > fromPyVector(pybind11::handle py_list)
     return pybind11::cast< QVector< T > >(py_list);
 }
 
+/**
+ * @brief python的obj转换为qcolor
+ * @param obj 支持字符串，如#ff0000，和数组（元组）如：(255, 200, 200)，(255, 200, 200, 0)
+ * @return
+ */
+inline QColor qcolorFromPyObject(pybind11::handle obj)
+{
+    if (obj.is_none()) {
+        return QColor();  // invalid color → use default
+    }
+    // hex string: "#ff0000"
+    if (pybind11::isinstance< pybind11::str >(obj)) {
+        QString hexStr = pybind11::cast< QString >(obj);
+        return QColor(hexStr);
+    }
+    // RGB tuple: (255, 200, 200) or (r, g, b, a)
+    if (pybind11::isinstance< pybind11::tuple >(obj) || pybind11::isinstance< pybind11::list >(obj)) {
+        auto seq = pybind11::cast< pybind11::sequence >(obj);
+        int r    = pybind11::cast< int >(seq[ 0 ]);
+        int g    = pybind11::cast< int >(seq[ 1 ]);
+        int b    = pybind11::cast< int >(seq[ 2 ]);
+        if (pybind11::len(obj) >= 4) {
+            int a = pybind11::cast< int >(seq[ 3 ]);
+            return QColor(r, g, b, a);
+        }
+        return QColor(r, g, b);
+    }
+    return QColor();
+}
+
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 template< typename T >
 inline pybind11::object toPyObject(const QVector< T >& qt_vector)

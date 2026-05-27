@@ -57,7 +57,7 @@ public:
     DAPyNodeRenderTemplate mRenderTemplate { DAPyNodeRenderTemplate::NodeStyleTemplate };  ///< 缓存的渲染模板
     QList< QString > mInputKeys;                                                           ///< 缓存的输入端口key列表
     QList< QString > mOutputKeys;                                                          ///< 缓存的输出端口key列表
-    DAPyNodeDisplayStyle mStyle;                                                           ///< 缓存的节点样式
+    DAPyNodeStyle mStyle;                                                                  ///< 缓存的节点样式
     QIcon mIcon;                                                                           ///< 节点图标
     QSvgRenderer* mSvgRenderer { nullptr };                                                ///< SVG渲染器
     QGraphicsProxyWidget* mProxyWidget { nullptr };                                        ///< Widget代理
@@ -103,8 +103,8 @@ DAPyNodeGraphicsItem::PrivateData::~PrivateData()
 void DAPyNodeGraphicsItem::PrivateData::updateLinkPointPositions(const QRectF& bodyRect)
 {
     // 更新输入连接点位置
-    const DAPyNodeDisplayStyle& st = mStyle;
-    int inputCount                 = mInputLinkPoints.size();
+    const DAPyNodeStyle& st = mStyle;
+    int inputCount          = mInputLinkPoints.size();
     if (inputCount > 0) {
         const PortSide side = st.inputPortSide;
         for (int i = 0; i < inputCount; ++i) {
@@ -170,7 +170,7 @@ void DAPyNodeGraphicsItem::PrivateData::cleanupSvg()
 
 void DAPyNodeGraphicsItem::PrivateData::updateNodeStyle(const QRectF& bodyRect)
 {
-    const DAPyNodeDisplayStyle& s = mStyle;
+    const DAPyNodeStyle& s = mStyle;
     // 根据端口方向计算各方向的连接点预留偏移量
     const qreal halfLpW = linkPointDrawWidth / 2;
     qreal lpLeft = 0, lpRight = 0, lpTop = 0, lpBottom = 0;
@@ -438,7 +438,7 @@ QString DAPyNodeGraphicsItem::getNodeName() const
  * @brief 设置节点样式
  * @param[in] style 节点样式配置
  */
-void DAPyNodeGraphicsItem::setNodeStyle(const DAPyNodeDisplayStyle& style)
+void DAPyNodeGraphicsItem::setNodeStyle(const DAPyNodeStyle& style)
 {
     d_ptr->mStyle = style;
     d_ptr->updateNodeStyle(getBodyRect());
@@ -449,7 +449,7 @@ void DAPyNodeGraphicsItem::setNodeStyle(const DAPyNodeDisplayStyle& style)
  * @brief 获取节点样式（非常量引用，允许修改）
  * @return 节点样式引用
  */
-DAPyNodeDisplayStyle& DAPyNodeGraphicsItem::nodeStyle()
+DAPyNodeStyle& DAPyNodeGraphicsItem::nodeStyle()
 {
     return d_ptr->mStyle;
 }
@@ -458,7 +458,7 @@ DAPyNodeDisplayStyle& DAPyNodeGraphicsItem::nodeStyle()
  * @brief 获取节点样式（常量引用）
  * @return 节点样式常量引用
  */
-const DAPyNodeDisplayStyle& DAPyNodeGraphicsItem::nodeStyle() const
+const DAPyNodeStyle& DAPyNodeGraphicsItem::nodeStyle() const
 {
     return d_ptr->mStyle;
 }
@@ -922,7 +922,7 @@ void DAPyNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOption
     QFont smallFont = painter->font();
     smallFont.setPointSize(d->smallFontSize);
     painter->setFont(smallFont);
-    const DAPyNodeDisplayStyle& st = d->mStyle;
+    const DAPyNodeStyle& st = d->mStyle;
     // 绘制输入连接点（默认白色填充）
     drawLinkPointGroup(
         painter, d->mInputLinkPoints, st.inputPortStyle, Qt::white, d->linkPointDrawWidth, d->linkPointDrawHeight, d->smallFontSize);
@@ -1011,7 +1011,7 @@ void DAPyNodeGraphicsItem::paintNodeStyleBody(QPainter* painter, const QRectF& b
     DA_D(d);
     painter->save();
 
-    const DAPyNodeDisplayStyle& style = d->mStyle;
+    const DAPyNodeStyle& style = d->mStyle;
 
     // 确定背景色（无效时使用默认值）
     QColor bgColor  = style.backgroundColor.isValid() ? style.backgroundColor : QColor(240, 240, 240);
@@ -1319,11 +1319,11 @@ void DAPyNodeGraphicsItem::updateNodeBody()
     // 文本信息
     QRectF textBoundRect = fm.boundingRect(d->mName);
     // 计算推荐
-    qreal bodyWidth               = 0.0;
-    qreal bodyHeight              = 0.0;
-    const DAPyNodeDisplayStyle& s = d->mStyle;
-    const int space               = qMin(4.0, s.cornerRadius);
-    qreal iconSize                = s.iconSize;
+    qreal bodyWidth        = 0.0;
+    qreal bodyHeight       = 0.0;
+    const DAPyNodeStyle& s = d->mStyle;
+    const int space        = qMin(4.0, s.cornerRadius);
+    qreal iconSize         = s.iconSize;
     if (s.bodyIconSource.isEmpty()) {
         iconSize = 0.0;
     }

@@ -117,7 +117,7 @@ struct DAPYWORKFLOW_API DAPyLinkPointStyle
  * @see DAPyNodeStyleDefine.h 中的 BodyShape、NamePosition、IconPosition 等枚举
  * @see DAPyLinkPointStyle 端口样式配置
  */
-class DAPYWORKFLOW_API DAPyNodeDisplayStyle
+class DAPYWORKFLOW_API DAPyNodeStyle
 {
 public:
     // 构造函数
@@ -126,7 +126,7 @@ public:
      *
      * 调用 setDefaults() 将所有字段初始化为默认值。
      */
-    DAPyNodeDisplayStyle()
+    DAPyNodeStyle()
     {
         setDefaults();
     }

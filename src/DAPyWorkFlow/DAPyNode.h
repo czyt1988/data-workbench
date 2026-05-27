@@ -64,7 +64,7 @@ public:
     QList< QString > getOutputKeys() const;
 
     // 节点样式（从Python对象属性_node_display.style dict读取，临时转换为C++ struct）
-    DAPyNodeDisplayStyle getNodeStyle() const;
+    DAPyNodeStyle getNodeStyle() const;
 
     // 渲染模板（从Python对象属性_node_display.render_template str读取）
     DAPyNodeRenderTemplate getRenderTemplate() const;

@@ -154,29 +154,19 @@ QList< QString > DAPyNode::getOutputKeys() const
     return QList< QString >();
 }
 
-DAPyNodeDisplayStyle DAPyNode::getNodeStyle() const
+DAPyNodeStyle DAPyNode::getNodeStyle() const
 {
-    DAPyNodeDisplayStyle defaultStyle;  // 默认构造已调用 setDefaults()
     if (isNone()) {
-        return defaultStyle;
+        return DAPyNodeStyle();  // 默认构造已调用 setDefaults()
     }
     try {
-        // 读取 _node_display.style 属性
         if (hasattr("_node_display")) {
-            pybind11::object displayObj = attr("_node_display");
-            if (pybind11::hasattr(displayObj, "style")
-                && !pybind11::cast< pybind11::object >(displayObj.attr("style")).is_none()) {
-                pybind11::object styleObj = displayObj.attr("style");
-                if (pybind11::isinstance< pybind11::dict >(styleObj)) {
-                    pybind11::dict styleDict = pybind11::cast< pybind11::dict >(styleObj);
-                    return DictConverter::nodeStyleFromDict(styleDict);
-                }
-            }
+            return PY::toNodeStyle(attr("_node_display"));
         }
     } catch (const std::exception& e) {
         dealException(e);
     }
-    return defaultStyle;
+    return DAPyNodeStyle();
 }
 
 DAPyNodeRenderTemplate DAPyNode::getRenderTemplate() const

@@ -22,12 +22,21 @@ NodeDef 装饰器会收集类中的 Input、Output、Parameter 声明，
             # 节点执行逻辑
             ...
 
+使用 NodeDisplay 设置样式::
+
+    @NodeDef(name="My Node", style=NodeDisplay(
+        body_shape="Ellipse",
+        background_color="#4A90D9",
+        corner_radius=8.0,
+    ))
+    class MyNode: ...
+
 装饰器处理流程：
 1. 扫描类属性中的 Parameter 实例
 2. 扫描嵌套类 Inputs 中的 Input 实例
 3. 扫描嵌套类 Outputs 中的 Output 实例
 4. 将所有描述信息直接设置为类属性（纯 Python dict）
-5. 构建渲染属性聚合 NodeDisplay（icon、render_template、style）
+5. 构建渲染属性聚合 NodeDisplay（icon、render_template、样式字段）
 """
 
 from dataclasses import dataclass, field
@@ -68,9 +77,7 @@ class LinkPointStyle:
 
     def to_dict(self) -> dict:
         """
-        转换为 C++ nodeStyleFromDict 所需的 dict 格式
-
-        仅包含非 None 字段，C++ 侧对缺失键使用默认值。
+        转换为 C++ 所需的 dict 格式（仅包含非 None 字段）
 
         :return: snake_case key 的 dict，如 {"shape": "Circle", "fill_color": "#ff0000"}
         """
@@ -87,45 +94,48 @@ class LinkPointStyle:
 
 
 @dataclass
-class NodeDisplayStyle:
+class NodeDisplay:
     """
-    节点显示样式配置
+    节点渲染/显示属性
 
-    对应 C++ DANodeStyle 结构体，提供类型化的 Python API 替代裸 dict。
-    所有字段为 Optional，None 表示使用 C++ 默认值。
+    将节点渲染相关的属性集中管理，所有字段均为 Optional，
+    None 表示使用 C++ 默认值。C++ 侧通过 `PY::toNodeStyle()` 直接从
+    Python 对象属性读取并转换为 `DAPyNodeStyle` 结构体。
 
-    替代旧写法 ``@NodeDef(style={"background_color": "#fff", ...})``，
-    新写法有 IDE 自动补全和类型检查::
+    使用示例::
 
-        @NodeDef(name="My Node", style=NodeDisplayStyle(
-            body_shape="Ellipse",
-            background_color="#4A90D9",
-            border_color="#3A3A5C",
-            corner_radius=8.0,
-            input_port_style=LinkPointStyle(shape="Circle", fill_color="#ffffff"),
-        ))
+        @NodeDef(name="My Node", icon=":icons/node.png",
+                 style=NodeDisplay(
+                     body_shape="Ellipse",
+                     background_color="#4A90D9",
+                     corner_radius=8.0,
+                     input_port_style=LinkPointStyle(shape="Circle"),
+                 ))
         class MyNode: ...
 
-    C++ 侧通过 DictConverter::nodeStyleFromDict() 将 to_dict() 输出的 dict
-    转换为 DANodeStyle 结构体。
-
+    :param icon: 图标路径字符串
+    :param render_template: 渲染模板字符串（"nodestyle" 或 "widget"）
     :param body_shape: 节点体形状，"RoundedRect" 或 "Ellipse"；None → C++ 默认 RoundedRect
     :param name_position: 名称位置，"Inside" 或 "Below"；None → C++ 默认 Inside
     :param icon_position: 图标位置，"LeftOfText" 或 "AboveText"；None → C++ 默认 LeftOfText
-    :param background_color: 背景颜色，hex "#rrggbb" 或 RGB 元组；None → C++ 默认 (240,240,240)
-    :param border_color: 边框颜色，hex "#rrggbb" 或 RGB 元组；None → C++ 默认 (180,180,180)
+    :param background_color: 背景颜色，hex "#rrggbb" 或 RGB 元组；None → C++ 默认色
+    :param border_color: 边框颜色，hex "#rrggbb" 或 RGB 元组；None → C++ 默认色
     :param border_width: 边框宽度；None → C++ 默认 1.0
     :param corner_radius: 圆角半径；None → C++ 默认 4.0
     :param icon_size: 图标尺寸；None → C++ 默认 24.0
     :param input_port_side: 输入端口方位，"West"/"East"/"North"/"South"；None → C++ 默认 West
     :param output_port_side: 输出端口方位；None → C++ 默认 East
-    :param input_port_style: 输入端口样式配置；None → C++ 默认构造
-    :param output_port_style: 输出端口样式配置；None → C++ 默认构造
+    :param input_port_style: 输入端口样式配置（LinkPointStyle）；None → C++ 默认构造
+    :param output_port_style: 输出端口样式配置（LinkPointStyle）；None → C++ 默认构造
     :param layout_strategy: 连接点布局策略，"Auto" 或 "Manual"；None → C++ 默认 Auto
     :param body_icon_type: 节点体图标类型，"None"/"Pixmap"/"Svg"；None → C++ 默认 None
-    :param body_icon_source: 图标源路径（SVG 文件路径或资源路径）；None → C++ 默认空
+    :param body_icon_source: 图标源路径；None → C++ 默认空
     :param body_icon_scale: 图标缩放比例；None → C++ 默认 0.8
     """
+
+    # 渲染属性
+    icon: str = ""
+    render_template: str = "nodestyle"
 
     # 主体样式
     body_shape: Optional[str] = None
@@ -148,83 +158,6 @@ class NodeDisplayStyle:
     body_icon_type: Optional[str] = None
     body_icon_source: Optional[str] = None
     body_icon_scale: Optional[float] = None
-
-    def to_dict(self) -> dict:
-        """
-        转换为 C++ nodeStyleFromDict 所需的 dict 格式
-
-        仅包含非 None 字段，C++ 侧对缺失键使用默认值。
-        端口样式子对象通过 LinkPointStyle.to_dict() 递归转换。
-
-        :return: snake_case key 的 dict，如 {"body_shape": "Ellipse", "corner_radius": 8.0}
-        """
-        d = {}
-        if self.body_shape is not None:
-            d["body_shape"] = self.body_shape
-        if self.name_position is not None:
-            d["name_position"] = self.name_position
-        if self.icon_position is not None:
-            d["icon_position"] = self.icon_position
-        if self.background_color is not None:
-            d["background_color"] = self.background_color
-        if self.border_color is not None:
-            d["border_color"] = self.border_color
-        if self.border_width is not None:
-            d["border_width"] = self.border_width
-        if self.corner_radius is not None:
-            d["corner_radius"] = self.corner_radius
-        if self.icon_size is not None:
-            d["icon_size"] = self.icon_size
-        if self.input_port_side is not None:
-            d["input_port_side"] = self.input_port_side
-        if self.output_port_side is not None:
-            d["output_port_side"] = self.output_port_side
-        if self.input_port_style is not None:
-            d["input_port_style"] = self.input_port_style.to_dict()
-        if self.output_port_style is not None:
-            d["output_port_style"] = self.output_port_style.to_dict()
-        if self.layout_strategy is not None:
-            d["layout_strategy"] = self.layout_strategy
-        if self.body_icon_type is not None:
-            d["body_icon_type"] = self.body_icon_type
-        if self.body_icon_source is not None:
-            d["body_icon_source"] = self.body_icon_source
-        if self.body_icon_scale is not None:
-            d["body_icon_scale"] = self.body_icon_scale
-        return d
-
-
-@dataclass
-class NodeDisplay:
-    """
-    节点渲染/显示属性聚合
-
-    将节点渲染相关的属性集中管理，实现单一职责原则：
-    - DAWorkflowNode 负责节点逻辑（元数据、端口、参数）
-    - NodeDisplay 负责节点渲染显示（图标、渲染模板、样式）
-
-    NodeDisplay 使用纯 Python 类型（字符串、dict），不依赖 C++ pybind11 导出。
-    C++ 侧通过 attr() 读取这些属性并内部转换为 C++ struct。
-
-    使用示例::
-
-        @NodeDef(name="My Node", icon=":icons/node.png", render_template="nodestyle")
-        class MyNode:
-            ...
-
-        # 访问渲染属性
-        display = MyNode._node_display
-        print(display.icon)                  # ":icons/node.png"
-        print(display.render_template)       # "nodestyle"
-
-    :param icon: 图标路径字符串
-    :param render_template: 渲染模板字符串（"nodestyle" 或 "widget"）
-    :param style: 节点样式配置，支持 dict、da_py_workflow.DANodeStyle 或 NodeDisplayStyle（自动转 dict）
-    """
-
-    icon: str = ""
-    render_template: str = "nodestyle"
-    style: Optional[object] = None
 
 
 def _normalize_render_template(render_template: str) -> str:
@@ -252,11 +185,7 @@ def _collect_parameters(cls: type) -> list[dict]:
     并使用 to_dict() 将其转换为纯 Python dict。
 
     :param cls: 被装饰的节点类
-    :return: 参数声明字典列表，每个 dict 包含以下键：
-        - name: str，参数名称（如 "column"）
-        - dtype: str，参数类型名称（如 "str"、"int"）
-        - default: Any，参数默认值
-        - description: str，参数描述
+    :return: 参数声明字典列表
     :rtype: list[dict[str, Any]]
     """
     params = []
@@ -282,10 +211,7 @@ def _collect_from_nested_class(
     :param cls: 被装饰的节点类
     :param nested_name: 嵌套类名（"Inputs" 或 "Outputs"）
     :param decl_type: 声明类型（Input 或 Output）
-    :return: 端口声明字典列表，每个 dict 包含以下键：
-        - name: str，端口名称（如 "data"、"filtered"）
-        - dtype: str，端口数据类型名称（如 "DataFrame"）
-        - required: bool，是否为必需端口（仅 Input 有此键）
+    :return: 端口声明字典列表
     :rtype: list[dict[str, Any]]
     """
     items = []
@@ -316,7 +242,7 @@ class DAWorkflowNode:
     - inputs: 输入端口描述列表（list[dict]）
     - outputs: 输出端口描述列表（list[dict]）
     - parameters: 参数描述列表（list[dict]）
-    - _node_display: 渲染属性聚合（NodeDisplay）
+    - _node_display: 渲染属性（NodeDisplay）
     - input_keys: 输入端口名称列表
     - output_keys: 输出端口名称列表
 
@@ -390,27 +316,45 @@ class DAWorkflowNode:
         self._node_state = state
 
 
-def _normalize_style(style):
+def _build_node_display(icon: str, render_template: str, style) -> NodeDisplay:
     """
-    规范化 style 参数为可存储的格式
+    从 NodeDef 参数构建 NodeDisplay 实例
 
-    支持三种输入类型：
-    - NodeDisplayStyle → 调用 to_dict() 转为 dict
-    - dict → 保持原样
-    - da_py_workflow.DANodeStyle → 保持原样（pybind11 对象）
-    - None → 返回 None
+    支持三种 style 输入类型：
+    - NodeDisplay → 直接使用，覆盖 icon 和 render_template
+    - dict → 转换为 NodeDisplay（dict 的 key 映射为 NodeDisplay 字段）
+    - None → 创建默认 NodeDisplay（仅设置 icon 和 render_template）
 
-    :param style: 原始 style 参数
-    :return: dict、DANodeStyle pybind11 对象或 None
+    :param icon: 图标路径
+    :param render_template: 渲染模板字符串
+    :param style: 样式配置，可为 NodeDisplay、dict 或 None
+    :return: NodeDisplay 实例
     """
+    rt_str = _normalize_render_template(render_template)
+
     if style is None:
-        return None
-    if isinstance(style, NodeDisplayStyle):
-        return style.to_dict()
-    if isinstance(style, dict):
+        return NodeDisplay(icon=icon, render_template=rt_str)
+
+    if isinstance(style, NodeDisplay):
+        # 如果传入 NodeDisplay，覆盖 icon 和 render_template
+        style.icon = icon
+        style.render_template = rt_str
         return style
-    # da_py_workflow.DANodeStyle 等 pybind11 对象 — 直接返回
-    return style
+
+    if isinstance(style, dict):
+        # dict → NodeDisplay，将 dict 的 key 映射为 NodeDisplay 字段
+        # 处理嵌套的端口样式 dict → LinkPointStyle
+        kwargs = dict(style)
+        if "input_port_style" in kwargs and isinstance(kwargs["input_port_style"], dict):
+            kwargs["input_port_style"] = LinkPointStyle(**kwargs["input_port_style"])
+        if "output_port_style" in kwargs and isinstance(kwargs["output_port_style"], dict):
+            kwargs["output_port_style"] = LinkPointStyle(**kwargs["output_port_style"])
+        kwargs["icon"] = icon
+        kwargs["render_template"] = rt_str
+        return NodeDisplay(**kwargs)
+
+    # 其他类型（不应出现），直接创建默认 NodeDisplay
+    return NodeDisplay(icon=icon, render_template=rt_str)
 
 
 def NodeDef(
@@ -434,7 +378,7 @@ def NodeDef(
     - inputs: 输入端口列表（list[dict]）
     - outputs: 输出端口列表（list[dict]）
     - parameters: 参数列表（list[dict]）
-    - _node_display: 渲染属性聚合（NodeDisplay，包含 render_template 和 style）
+    - _node_display: 渲染属性（NodeDisplay，包含 icon、render_template 及所有样式字段）
 
     使用示例::
 
@@ -448,9 +392,9 @@ def NodeDef(
             def execute(self, inputs, params):
                 ...
 
-    使用 NodeDisplayStyle 替代裸 dict::
+    使用 NodeDisplay 设置样式::
 
-        @NodeDef(name="My Node", style=NodeDisplayStyle(
+        @NodeDef(name="My Node", style=NodeDisplay(
             body_shape="Ellipse",
             background_color="#4A90D9",
             corner_radius=8.0,
@@ -462,15 +406,12 @@ def NodeDef(
     :param render_template: 渲染模板类型，默认为 'nodestyle'，支持 'nodestyle'、'rect'、'svg'、'widget'
     :param icon: 节点图标路径
     :param style: 节点样式配置，默认为 None（使用默认样式）。
-        支持三种类型：
-        - NodeDisplayStyle — 类型化的样式配置（推荐，有 IDE 自动补全）
-        - dict — 裸字典（snake_case 键，如 {"body_shape": "Ellipse", "corner_radius": 8.0}）
-        - da_py_workflow.DANodeStyle — C++ pybind11 导出对象
+        支持两种类型：
+        - NodeDisplay — 类型化的样式配置（推荐，有 IDE 自动补全）
+        - dict — 裸字典（snake_case 键，自动转换为 NodeDisplay）
     :return: 装饰器函数，接收 type 并返回继承 DAWorkflowNode 的新 type
     :rtype: Callable[[type], type]
     """
-    rt_str = _normalize_render_template(render_template)
-
     def decorator(cls: type) -> type:
         """
         节点定义装饰器的内部函数
@@ -510,13 +451,7 @@ def NodeDef(
         new_cls.parameters = parameters
 
         # 构建渲染属性聚合（NodeDisplay）
-        # _normalize_style 将 NodeDisplayStyle→dict，dict→dict，DANodeStyle→保持原样
-        normalized_style = _normalize_style(style)
-        new_cls._node_display = NodeDisplay(
-            icon=icon,
-            render_template=rt_str,
-            style=normalized_style,
-        )
+        new_cls._node_display = _build_node_display(icon, render_template, style)
 
         # 设置端口名称列表，供 C++ fallback 使用
         new_cls.input_keys = [inp["name"] for inp in inputs]
