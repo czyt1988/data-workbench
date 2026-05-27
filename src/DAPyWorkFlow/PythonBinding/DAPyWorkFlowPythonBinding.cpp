@@ -21,26 +21,56 @@ namespace DA
 namespace PY
 {
 
+namespace
+{
+/// 安全读取 Python 属性并转为枚举，属性不存在或为 None 时返回 defaultValue
+template< typename EnumType >
+EnumType readEnumAttr(const pybind11::object& obj, const char* name, EnumType defaultValue)
+{
+    if (!pybind11::hasattr(obj, name))
+        return defaultValue;
+    auto a = obj.attr(name);
+    if (a.is_none())
+        return defaultValue;
+    return stringToEnum(a.cast< QString >(), defaultValue);
+}
+
+/// 安全读取 Python 属性并转为 QColor，属性不存在或为 None 时返回 defaultValue
+QColor readColorAttr(const pybind11::object& obj, const char* name, QColor defaultValue = QColor())
+{
+    if (!pybind11::hasattr(obj, name))
+        return defaultValue;
+    auto a = obj.attr(name);
+    if (a.is_none())
+        return defaultValue;
+    return qcolorFromPyObject(a);
+}
+
+/// 安全读取 Python 属性并直接 cast，属性不存在或为 None 时返回 defaultValue
+template< typename T >
+T readCastAttr(const pybind11::object& obj, const char* name, T defaultValue)
+{
+    if (!pybind11::hasattr(obj, name))
+        return defaultValue;
+    auto a = obj.attr(name);
+    if (a.is_none())
+        return defaultValue;
+    return a.cast< T >();
+}
+}  // namespace
+
 DAPyNodeMetaData toNodeMetaData(const pybind11::object& obj)
 {
     DAPyNodeMetaData metaData;
 
-    // 从 Python 类属性直接读取
-    if (pybind11::hasattr(obj, "qualified_name")) {
-        metaData.qualifiedName = obj.attr("qualified_name").cast< QString >();
-    } else {
-        // 必须要有qualified_name
+    // qualified_name 为必填字段
+    metaData.qualifiedName = readCastAttr< QString >(obj, "qualified_name", metaData.qualifiedName);
+    if (metaData.qualifiedName.isEmpty()) {
         return metaData;
     }
-    if (pybind11::hasattr(obj, "name")) {
-        metaData.name = obj.attr("name").cast< QString >();
-    }
-    if (pybind11::hasattr(obj, "category")) {
-        metaData.category = obj.attr("category").cast< QString >();
-    }
-    if (pybind11::hasattr(obj, "icon")) {
-        metaData.iconPath = obj.attr("icon").cast< QString >();
-    }
+    metaData.name     = readCastAttr< QString >(obj, "name", metaData.name);
+    metaData.category = readCastAttr< QString >(obj, "category", metaData.category);
+    metaData.iconPath = readCastAttr< QString >(obj, "icon", metaData.iconPath);
     return metaData;
 }
 
@@ -50,19 +80,18 @@ DAPyNodeState getNodeState(const pybind11::object& obj)
         return DAPyNodeState::Idle;
     }
     try {
-        // 尝试从 Python 对象读取 _node_state 属性
-        if (pybind11::hasattr(obj, "_node_state")) {
-            pybind11::object stateObj = obj.attr("_node_state");
-            // Python 端 _node_state 可能是字符串或 da_py_workflow.DAPyNodeState
-            if (pybind11::isinstance< pybind11::str >(stateObj)) {
-                QString stateStr = pybind11::cast< QString >(stateObj);
-                return stringToEnum(stateStr, DAPyNodeState::Idle);
-            }
-            // 如果是整数枚举值
-            if (pybind11::isinstance< pybind11::int_ >(stateObj)) {
-                int val = pybind11::cast< int >(stateObj);
-                return static_cast< DAPyNodeState >(val);
-            }
+        if (!pybind11::hasattr(obj, "_node_state"))
+            return DAPyNodeState::Idle;
+        auto stateObj = obj.attr("_node_state");
+        if (stateObj.is_none())
+            return DAPyNodeState::Idle;
+        // Python 端 _node_state 可能是字符串或 da_py_workflow.DAPyNodeState
+        if (pybind11::isinstance< pybind11::str >(stateObj)) {
+            return stringToEnum(stateObj.cast< QString >(), DAPyNodeState::Idle);
+        }
+        // 如果是整数枚举值
+        if (pybind11::isinstance< pybind11::int_ >(stateObj)) {
+            return static_cast< DAPyNodeState >(stateObj.cast< int >());
         }
     } catch (const std::exception& e) {
         return DAPyNodeState::Idle;
@@ -90,91 +119,40 @@ DAPyNodeStyle toNodeStyle(const pybind11::object& obj)
 
     try {
         // === 主体样式 ===
-        if (pybind11::hasattr(obj, "body_shape") && !obj.attr("body_shape").is_none()) {
-            QString val     = obj.attr("body_shape").cast< QString >();
-            style.bodyShape = stringToEnum(val, BodyShape::RoundedRect);
-        }
-        if (pybind11::hasattr(obj, "name_position") && !obj.attr("name_position").is_none()) {
-            QString val        = obj.attr("name_position").cast< QString >();
-            style.namePosition = stringToEnum(val, NamePosition::Inside);
-        }
-        if (pybind11::hasattr(obj, "icon_position") && !obj.attr("icon_position").is_none()) {
-            QString val        = obj.attr("icon_position").cast< QString >();
-            style.iconPosition = stringToEnum(val, IconPosition::LeftOfText);
-        }
-        if (pybind11::hasattr(obj, "background_color") && !obj.attr("background_color").is_none()) {
-            style.backgroundColor = qcolorFromPyObject(obj.attr("background_color"));
-        }
-        if (pybind11::hasattr(obj, "border_color") && !obj.attr("border_color").is_none()) {
-            style.borderColor = qcolorFromPyObject(obj.attr("border_color"));
-        }
-        if (pybind11::hasattr(obj, "border_width") && !obj.attr("border_width").is_none()) {
-            style.borderWidth = obj.attr("border_width").cast< double >();
-        }
-        if (pybind11::hasattr(obj, "corner_radius") && !obj.attr("corner_radius").is_none()) {
-            style.cornerRadius = obj.attr("corner_radius").cast< double >();
-        }
-        if (pybind11::hasattr(obj, "icon_size") && !obj.attr("icon_size").is_none()) {
-            style.iconSize = obj.attr("icon_size").cast< double >();
-        }
+        style.bodyShape       = readEnumAttr(obj, "body_shape",       style.bodyShape);
+        style.namePosition    = readEnumAttr(obj, "name_position",    style.namePosition);
+        style.iconPosition    = readEnumAttr(obj, "icon_position",    style.iconPosition);
+        style.backgroundColor = readColorAttr(obj, "background_color", style.backgroundColor);
+        style.borderColor     = readColorAttr(obj, "border_color",    style.borderColor);
+        style.borderWidth     = readCastAttr< double >(obj, "border_width", style.borderWidth);
+        style.cornerRadius    = readCastAttr< double >(obj, "corner_radius", style.cornerRadius);
+        style.iconSize        = readCastAttr< double >(obj, "icon_size", style.iconSize);
 
         // === 端口配置 ===
-        if (pybind11::hasattr(obj, "input_port_side") && !obj.attr("input_port_side").is_none()) {
-            QString val         = obj.attr("input_port_side").cast< QString >();
-            style.inputPortSide = stringToEnum(val, DAAspectDirection::West);
-        }
-        if (pybind11::hasattr(obj, "output_port_side") && !obj.attr("output_port_side").is_none()) {
-            QString val          = obj.attr("output_port_side").cast< QString >();
-            style.outputPortSide = stringToEnum(val, DAAspectDirection::East);
-        }
-        if (pybind11::hasattr(obj, "layout_strategy") && !obj.attr("layout_strategy").is_none()) {
-            QString val          = obj.attr("layout_strategy").cast< QString >();
-            style.layoutStrategy = stringToEnum(val, LinkPointLayoutStrategy::Auto);
-        }
+        style.inputPortSide   = readEnumAttr(obj, "input_port_side",  style.inputPortSide);
+        style.outputPortSide  = readEnumAttr(obj, "output_port_side", style.outputPortSide);
+        style.layoutStrategy  = readEnumAttr(obj, "layout_strategy",  style.layoutStrategy);
 
         // === 端口样式（LinkPointStyle 子对象） ===
         if (pybind11::hasattr(obj, "input_port_style") && !obj.attr("input_port_style").is_none()) {
-            pybind11::object ipsObj = obj.attr("input_port_style");
-            if (pybind11::hasattr(ipsObj, "shape") && !ipsObj.attr("shape").is_none()) {
-                style.inputPortStyle.shape = stringToEnum(ipsObj.attr("shape").cast< QString >(), PortShape::Rect);
-            }
-            if (pybind11::hasattr(ipsObj, "fill_color") && !ipsObj.attr("fill_color").is_none()) {
-                style.inputPortStyle.fillColor = qcolorFromPyObject(ipsObj.attr("fill_color"));
-            }
-            if (pybind11::hasattr(ipsObj, "border_color") && !ipsObj.attr("border_color").is_none()) {
-                style.inputPortStyle.borderColor = qcolorFromPyObject(ipsObj.attr("border_color"));
-            }
-            if (pybind11::hasattr(ipsObj, "border_width") && !ipsObj.attr("border_width").is_none()) {
-                style.inputPortStyle.borderWidth = ipsObj.attr("border_width").cast< double >();
-            }
+            auto ipsObj = obj.attr("input_port_style");
+            style.inputPortStyle.shape      = readEnumAttr(ipsObj, "shape", style.inputPortStyle.shape);
+            style.inputPortStyle.fillColor  = readColorAttr(ipsObj, "fill_color", style.inputPortStyle.fillColor);
+            style.inputPortStyle.borderColor = readColorAttr(ipsObj, "border_color", style.inputPortStyle.borderColor);
+            style.inputPortStyle.borderWidth = readCastAttr< double >(ipsObj, "border_width", style.inputPortStyle.borderWidth);
         }
         if (pybind11::hasattr(obj, "output_port_style") && !obj.attr("output_port_style").is_none()) {
-            pybind11::object opsObj = obj.attr("output_port_style");
-            if (pybind11::hasattr(opsObj, "shape") && !opsObj.attr("shape").is_none()) {
-                style.outputPortStyle.shape = stringToEnum(opsObj.attr("shape").cast< QString >(), PortShape::Rect);
-            }
-            if (pybind11::hasattr(opsObj, "fill_color") && !opsObj.attr("fill_color").is_none()) {
-                style.outputPortStyle.fillColor = qcolorFromPyObject(opsObj.attr("fill_color"));
-            }
-            if (pybind11::hasattr(opsObj, "border_color") && !opsObj.attr("border_color").is_none()) {
-                style.outputPortStyle.borderColor = qcolorFromPyObject(opsObj.attr("border_color"));
-            }
-            if (pybind11::hasattr(opsObj, "border_width") && !opsObj.attr("border_width").is_none()) {
-                style.outputPortStyle.borderWidth = opsObj.attr("border_width").cast< double >();
-            }
+            auto opsObj = obj.attr("output_port_style");
+            style.outputPortStyle.shape      = readEnumAttr(opsObj, "shape", style.outputPortStyle.shape);
+            style.outputPortStyle.fillColor  = readColorAttr(opsObj, "fill_color", style.outputPortStyle.fillColor);
+            style.outputPortStyle.borderColor = readColorAttr(opsObj, "border_color", style.outputPortStyle.borderColor);
+            style.outputPortStyle.borderWidth = readCastAttr< double >(opsObj, "border_width", style.outputPortStyle.borderWidth);
         }
 
         // === 节点体图标 ===
-        if (pybind11::hasattr(obj, "body_icon_type") && !obj.attr("body_icon_type").is_none()) {
-            QString val        = obj.attr("body_icon_type").cast< QString >();
-            style.bodyIconType = stringToEnum(val, BodyIconType::None);
-        }
-        if (pybind11::hasattr(obj, "body_icon_source") && !obj.attr("body_icon_source").is_none()) {
-            style.bodyIconSource = obj.attr("body_icon_source").cast< QString >();
-        }
-        if (pybind11::hasattr(obj, "body_icon_scale") && !obj.attr("body_icon_scale").is_none()) {
-            style.bodyIconScale = obj.attr("body_icon_scale").cast< double >();
-        }
+        style.bodyIconType   = readEnumAttr(obj, "body_icon_type",   style.bodyIconType);
+        style.bodyIconSource = readCastAttr< QString >(obj, "body_icon_source", style.bodyIconSource);
+        style.bodyIconScale  = readCastAttr< double >(obj, "body_icon_scale", style.bodyIconScale);
     } catch (const std::exception& e) {
         // 读取失败时返回默认样式
     }

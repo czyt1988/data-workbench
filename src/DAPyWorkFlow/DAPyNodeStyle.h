@@ -120,6 +120,13 @@ struct DAPYWORKFLOW_API DAPyLinkPointStyle
 class DAPYWORKFLOW_API DAPyNodeStyle
 {
 public:
+    enum NodeRenderTemplate
+    {
+        NodeStyleTemplate = 0,  ///< 节点样式模板（使用 BodyShape/PortShape 等配置绘制）
+        WidgetTemplate    = 1   ///< 嵌入Widget模板
+    };
+
+public:
     // 构造函数
     /**
      * @brief 默认构造函数
@@ -153,6 +160,8 @@ public:
     QString bodyIconSource;     ///< 图标源路径（SVG文件路径或资源路径，默认空）
     qreal bodyIconScale;        ///< 图标缩放比例（默认 0.8，相对于bodyRect）
 
+    // 渲染模板
+    NodeRenderTemplate renderTemplate;  ///< 渲染模板
     // 辅助方法
     /**
      * @brief 重置所有字段为默认值
@@ -186,6 +195,9 @@ public:
         bodyIconType = BodyIconType::None;
         bodyIconSource.clear();
         bodyIconScale = 0.8;
+
+        // 渲染模板
+        renderTemplate = NodeStyleTemplate;
     }
     // 辅助函数
     inline bool isNameInside() const
