@@ -50,12 +50,6 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::BodyIconType,
                                   { DA::BodyIconType::Pixmap, "pixmap" },
                                   { DA::BodyIconType::Svg, "svg" });
 
-// ================================== DA::RenderTemplate ==================================
-DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAPyNodeRenderTemplate,
-                                  DA::DAPyNodeRenderTemplate::NodeStyleTemplate,
-                                  { DA::DAPyNodeRenderTemplate::NodeStyleTemplate, "node_style" },
-                                  { DA::DAPyNodeRenderTemplate::WidgetTemplate, "widget" });
-
 // ================================== DA::LinkPointLayoutStrategy ==================================
 DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::LinkPointLayoutStrategy,
                                   DA::LinkPointLayoutStrategy::Auto,

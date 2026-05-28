@@ -209,7 +209,7 @@ public:
         return iconPosition == IconPosition::LeftOfText;
     }
 };
-
+DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::NodeRenderTemplate)
 }  // namespace DA
 
 #endif  // DAPYNODESTYLE_H

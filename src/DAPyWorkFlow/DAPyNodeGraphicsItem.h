@@ -46,8 +46,6 @@ class DAPYWORKFLOW_API DAPyNodeGraphicsItem : public DAGraphicsResizeableItem
     DA_DECLARE_PRIVATE(DAPyNodeGraphicsItem)
 
 public:
-    using RenderTemplate = DA::DAPyNodeRenderTemplate;  ///< 向后兼容：引用命名空间级 enum class
-
     /**
      * @brief Item类型标识
      */
@@ -67,10 +65,7 @@ public:
     ~DAPyNodeGraphicsItem();
 
     // 渲染模板设置
-    void setRenderTemplate(RenderTemplate tmpl);
-    void setRenderTemplate(const QString& tmplName);
-    RenderTemplate getRenderTemplate() const;
-    QString getRenderTemplateName() const;
+    void setRenderTemplate(DAPyNodeStyle::NodeRenderTemplate tmpl);
 
     // 节点数据
     DAPyNode* getProxy() const;

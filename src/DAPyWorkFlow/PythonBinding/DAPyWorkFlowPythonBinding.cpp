@@ -10,7 +10,6 @@
 #include "DAPyWorkFlow/DAPyNodeFactory.h"
 #include "DAPyWorkFlow/DAPyNodeStyle.h"
 #include "DAPyWorkFlow/DAPyWorkFlowEnumStringUtils.h"
-#include "DAPyWorkFlow/DAPyDictConverter.h"
 #include "DAPyBindQt/DAPybind11QtCaster.hpp"
 #include "DAPyBindQt/DAPyJsonCast.h"
 #include "DAPyBindQt/DAPybind11InQt.h"  // slots workaround，必须第一个pybind11相关头文件
@@ -118,39 +117,43 @@ DAPyNodeStyle toNodeStyle(const pybind11::object& obj)
     }
 
     try {
+        // 渲染模板
+        style.renderTemplate = readEnumAttr(obj, "render_template", style.renderTemplate);
         // === 主体样式 ===
-        style.bodyShape       = readEnumAttr(obj, "body_shape",       style.bodyShape);
-        style.namePosition    = readEnumAttr(obj, "name_position",    style.namePosition);
-        style.iconPosition    = readEnumAttr(obj, "icon_position",    style.iconPosition);
+        style.bodyShape       = readEnumAttr(obj, "body_shape", style.bodyShape);
+        style.namePosition    = readEnumAttr(obj, "name_position", style.namePosition);
+        style.iconPosition    = readEnumAttr(obj, "icon_position", style.iconPosition);
         style.backgroundColor = readColorAttr(obj, "background_color", style.backgroundColor);
-        style.borderColor     = readColorAttr(obj, "border_color",    style.borderColor);
+        style.borderColor     = readColorAttr(obj, "border_color", style.borderColor);
         style.borderWidth     = readCastAttr< double >(obj, "border_width", style.borderWidth);
         style.cornerRadius    = readCastAttr< double >(obj, "corner_radius", style.cornerRadius);
         style.iconSize        = readCastAttr< double >(obj, "icon_size", style.iconSize);
 
         // === 端口配置 ===
-        style.inputPortSide   = readEnumAttr(obj, "input_port_side",  style.inputPortSide);
-        style.outputPortSide  = readEnumAttr(obj, "output_port_side", style.outputPortSide);
-        style.layoutStrategy  = readEnumAttr(obj, "layout_strategy",  style.layoutStrategy);
+        style.inputPortSide  = readEnumAttr(obj, "input_port_side", style.inputPortSide);
+        style.outputPortSide = readEnumAttr(obj, "output_port_side", style.outputPortSide);
+        style.layoutStrategy = readEnumAttr(obj, "layout_strategy", style.layoutStrategy);
 
         // === 端口样式（LinkPointStyle 子对象） ===
         if (pybind11::hasattr(obj, "input_port_style") && !obj.attr("input_port_style").is_none()) {
-            auto ipsObj = obj.attr("input_port_style");
-            style.inputPortStyle.shape      = readEnumAttr(ipsObj, "shape", style.inputPortStyle.shape);
-            style.inputPortStyle.fillColor  = readColorAttr(ipsObj, "fill_color", style.inputPortStyle.fillColor);
+            auto ipsObj                      = obj.attr("input_port_style");
+            style.inputPortStyle.shape       = readEnumAttr(ipsObj, "shape", style.inputPortStyle.shape);
+            style.inputPortStyle.fillColor   = readColorAttr(ipsObj, "fill_color", style.inputPortStyle.fillColor);
             style.inputPortStyle.borderColor = readColorAttr(ipsObj, "border_color", style.inputPortStyle.borderColor);
-            style.inputPortStyle.borderWidth = readCastAttr< double >(ipsObj, "border_width", style.inputPortStyle.borderWidth);
+            style.inputPortStyle.borderWidth =
+                readCastAttr< double >(ipsObj, "border_width", style.inputPortStyle.borderWidth);
         }
         if (pybind11::hasattr(obj, "output_port_style") && !obj.attr("output_port_style").is_none()) {
-            auto opsObj = obj.attr("output_port_style");
-            style.outputPortStyle.shape      = readEnumAttr(opsObj, "shape", style.outputPortStyle.shape);
-            style.outputPortStyle.fillColor  = readColorAttr(opsObj, "fill_color", style.outputPortStyle.fillColor);
+            auto opsObj                     = obj.attr("output_port_style");
+            style.outputPortStyle.shape     = readEnumAttr(opsObj, "shape", style.outputPortStyle.shape);
+            style.outputPortStyle.fillColor = readColorAttr(opsObj, "fill_color", style.outputPortStyle.fillColor);
             style.outputPortStyle.borderColor = readColorAttr(opsObj, "border_color", style.outputPortStyle.borderColor);
-            style.outputPortStyle.borderWidth = readCastAttr< double >(opsObj, "border_width", style.outputPortStyle.borderWidth);
+            style.outputPortStyle.borderWidth =
+                readCastAttr< double >(opsObj, "border_width", style.outputPortStyle.borderWidth);
         }
 
         // === 节点体图标 ===
-        style.bodyIconType   = readEnumAttr(obj, "body_icon_type",   style.bodyIconType);
+        style.bodyIconType   = readEnumAttr(obj, "body_icon_type", style.bodyIconType);
         style.bodyIconSource = readCastAttr< QString >(obj, "body_icon_source", style.bodyIconSource);
         style.bodyIconScale  = readCastAttr< double >(obj, "body_icon_scale", style.bodyIconScale);
     } catch (const std::exception& e) {
@@ -231,12 +234,6 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
     pybind11::enum_< DA::LinkPointLayoutStrategy >(m, "LinkPointLayoutStrategy")
         .value("Auto", DA::LinkPointLayoutStrategy::Auto)
         .value("Manual", DA::LinkPointLayoutStrategy::Manual)
-        .export_values();
-
-    // 导出 RenderTemplate 枚举
-    pybind11::enum_< DA::DAPyNodeRenderTemplate >(m, "RenderTemplate")
-        .value("NodeStyleTemplate", DA::DAPyNodeRenderTemplate::NodeStyleTemplate)
-        .value("WidgetTemplate", DA::DAPyNodeRenderTemplate::WidgetTemplate)
         .export_values();
 
     // 绑定 DAPyLinkPoint 类

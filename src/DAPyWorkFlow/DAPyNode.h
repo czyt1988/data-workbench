@@ -66,9 +66,6 @@ public:
     // 节点样式（从Python对象属性_node_display.style dict读取，临时转换为C++ struct）
     DAPyNodeStyle getNodeStyle() const;
 
-    // 渲染模板（从Python对象属性_node_display.render_template str读取）
-    DAPyNodeRenderTemplate getRenderTemplate() const;
-
     // 节点执行状态（从Python对象属性_node_state读取）
     DAPyNodeState getNodeState() const;
 

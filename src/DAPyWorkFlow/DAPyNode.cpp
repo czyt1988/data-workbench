@@ -4,7 +4,6 @@
 #include "DAPyModuleWorkflow.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAPyBindQt/DAPyJsonCast.h"
-#include "DAPyDictConverter.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DAPyWorkFlowEnumStringUtils.h"  // stringToEnum<DAPyNodeState>需要
 #include "PythonBinding/DAPyWorkFlowPythonBinding.h"
@@ -167,25 +166,6 @@ DAPyNodeStyle DAPyNode::getNodeStyle() const
         dealException(e);
     }
     return DAPyNodeStyle();
-}
-
-DAPyNodeRenderTemplate DAPyNode::getRenderTemplate() const
-{
-    if (isNone()) {
-        return DAPyNodeRenderTemplate::NodeStyleTemplate;
-    }
-    try {
-        if (hasattr("_node_display")) {
-            pybind11::object displayObj = attr("_node_display");
-            if (pybind11::hasattr(displayObj, "render_template")) {
-                QString rtStr = pybind11::cast< QString >(displayObj.attr("render_template"));
-                return DictConverter::renderTemplateFromString(rtStr);
-            }
-        }
-    } catch (const std::exception& e) {
-        dealException(e);
-    }
-    return DAPyNodeRenderTemplate::NodeStyleTemplate;
 }
 
 DAPyNodeState DAPyNode::getNodeState() const

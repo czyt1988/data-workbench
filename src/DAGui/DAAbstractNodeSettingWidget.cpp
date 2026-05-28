@@ -1,5 +1,4 @@
 #include "DAAbstractNodeSettingWidget.h"
-#include "DAPyDictConverter.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
 #include <QJsonArray>
 

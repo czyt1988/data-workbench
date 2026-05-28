@@ -213,7 +213,8 @@ using DAEnumEntry = std::pair< EnumType, const char* >;
  */
 #ifndef DA_ENUM_STRING_SENSITIVE_DEFINE
 #define DA_ENUM_STRING_SENSITIVE_DEFINE(EnumType, DefaultValue, ...)                                                   \
-    namespace DA {                                                                                                     \
+    namespace DA                                                                                                       \
+    {                                                                                                                  \
     const QHash< EnumType, QString > DAEnumTraits< EnumType >::enumToStringMap = { __VA_ARGS__ };                      \
     const QHash< QString, EnumType > DAEnumTraits< EnumType >::stringToEnumMap = []() {                                \
         QHash< QString, EnumType > tmp;                                                                                \
@@ -271,7 +272,8 @@ using DAEnumEntry = std::pair< EnumType, const char* >;
  */
 #ifndef DA_ENUM_STRING_INSENSITIVE_DEFINE
 #define DA_ENUM_STRING_INSENSITIVE_DEFINE(EnumType, DefaultValue, ...)                                                 \
-    namespace DA {                                                                                                     \
+    namespace DA                                                                                                       \
+    {                                                                                                                  \
     const QHash< EnumType, QString > DAEnumTraits< EnumType >::enumToStringMap = { __VA_ARGS__ };                      \
     const QHash< QString, EnumType > DAEnumTraits< EnumType >::stringToEnumMap = []() {                                \
         QHash< QString, EnumType > tmp;                                                                                \
