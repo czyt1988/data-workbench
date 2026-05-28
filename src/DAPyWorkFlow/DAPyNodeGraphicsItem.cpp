@@ -922,7 +922,7 @@ void DAPyNodeGraphicsItem::paintStateDecoration(QPainter* painter, const QRectF&
         painter->setPen(pen);
         painter->setBrush(Qt::NoBrush);
         // 边框始终跟随 bodyShape
-        if (d_ptr->mStyle.bodyShape == BodyShape::Ellipse) {
+        if (d_ptr->mStyle.bodyShape == DAPyNodeStyle::Ellipse) {
             painter->drawEllipse(bodyRect.adjusted(1, 1, -1, -1));
         } else {
             painter->drawRoundedRect(bodyRect.adjusted(1, 1, -1, -1), 4, 4);
@@ -938,7 +938,7 @@ void DAPyNodeGraphicsItem::paintStateDecoration(QPainter* painter, const QRectF&
         painter->setPen(Qt::NoPen);
 
         // 根据 bodyShape 裁剪填充区域
-        if (d_ptr->mStyle.bodyShape == BodyShape::Ellipse) {
+        if (d_ptr->mStyle.bodyShape == DAPyNodeStyle::Ellipse) {
             QPainterPath clipPath;
             clipPath.addEllipse(bodyRect);
             painter->setClipPath(clipPath);
@@ -982,10 +982,10 @@ void DAPyNodeGraphicsItem::paintNodeStyleBody(QPainter* painter, const QRectF& b
     painter->setPen(pen);
 
     switch (style.bodyShape) {
-    case BodyShape::Ellipse:
+    case DAPyNodeStyle::Ellipse:
         painter->drawEllipse(bodyRect);
         break;
-    case BodyShape::RoundedRect:
+    case DAPyNodeStyle::RoundedRect:
     default:
         painter->drawRoundedRect(bodyRect, style.cornerRadius, style.cornerRadius);
         break;
@@ -1080,7 +1080,7 @@ QPainterPath DAPyNodeGraphicsItem::shape() const
     DA_DC(d);
     QPainterPath path;
 
-    if (d->mStyle.bodyShape == BodyShape::Ellipse) {
+    if (d->mStyle.bodyShape == DAPyNodeStyle::Ellipse) {
         path.addEllipse(getBodyControlRect());
     } else {
         // RoundedRect 等保持默认矩形路径（复用基类行为）

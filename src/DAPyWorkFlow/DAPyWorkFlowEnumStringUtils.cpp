@@ -12,12 +12,6 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAPyNodeState,
                                   { DA::Error, "error" },
                                   { DA::Skipped, "skipped" });
 
-// ================================== DA::BodyShape ==================================
-DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::BodyShape,
-                                  DA::BodyShape::RoundedRect,
-                                  { DA::BodyShape::RoundedRect, "rounded_rect" },
-                                  { DA::BodyShape::Ellipse, "ellipse" });
-
 // ================================== DA::PortShape ==================================
 DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::PortShape,
                                   DA::PortShape::Rect,

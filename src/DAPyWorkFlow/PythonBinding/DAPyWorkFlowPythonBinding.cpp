@@ -198,12 +198,6 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .export_values();
     m.attr("PortSide") = m.attr("AspectDirection");
 
-    // 导出 BodyShape 枚举
-    pybind11::enum_< DA::BodyShape >(m, "BodyShape")
-        .value("RoundedRect", DA::BodyShape::RoundedRect)
-        .value("Ellipse", DA::BodyShape::Ellipse)
-        .export_values();
-
     // 导出 PortShape 枚举
     pybind11::enum_< DA::PortShape >(m, "PortShape")
         .value("Rect", DA::PortShape::Rect)

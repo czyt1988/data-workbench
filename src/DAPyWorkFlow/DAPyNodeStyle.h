@@ -54,8 +54,9 @@ namespace DA
  *
  * @see DAPyNodeStyleDefine.h 中的 PortShape 枚举
  */
-struct DAPYWORKFLOW_API DAPyLinkPointStyle
+class DAPYWORKFLOW_API DAPyLinkPointStyle
 {
+public:
     // 构造函数
     /**
      * @brief 默认构造函数
@@ -124,6 +125,12 @@ public:
     {
         NodeStyleTemplate = 0,  ///< 节点样式模板（使用 BodyShape/PortShape 等配置绘制）
         WidgetTemplate    = 1   ///< 嵌入Widget模板
+    };
+
+    enum BodyShape
+    {
+        RoundedRect = 0,  ///< 圆角矩形
+        Ellipse     = 1   ///< 椭圆形
     };
 
 public:
@@ -210,6 +217,7 @@ public:
     }
 };
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::NodeRenderTemplate)
+DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::BodyShape)
 }  // namespace DA
 
 #endif  // DAPYNODESTYLE_H

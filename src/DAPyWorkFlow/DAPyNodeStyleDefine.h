@@ -23,18 +23,6 @@ namespace DA
 {
 
 // =================================================================================
-//                          BodyShape — 节点体形状
-// =================================================================================
-/**
- * @brief 节点体形状枚举
- */
-enum class BodyShape
-{
-    RoundedRect = 0,  ///< 圆角矩形
-    Ellipse     = 1   ///< 椭圆形
-};
-
-// =================================================================================
 //                          PortShape — 端口形状
 // =================================================================================
 /**
@@ -133,6 +121,5 @@ DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::NamePosition)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::PortShape)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::IconPosition)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::BodyIconType)
-DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::BodyShape)
 
 #endif  // DAPYNODESTYLEDEFINE_H
