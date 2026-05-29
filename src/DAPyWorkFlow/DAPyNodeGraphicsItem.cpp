@@ -105,18 +105,18 @@ void DAPyNodeGraphicsItem::PrivateData::updateLinkPointPositions(const QRectF& b
     const DAPyNodeStyle& st = mStyle;
     int inputCount          = mInputLinkPoints.size();
     if (inputCount > 0) {
-        const PortSide side = st.inputPortSide;
+        const DAPyNodeStyle::PortSide side = st.inputPortSide;
         for (int i = 0; i < inputCount; ++i) {
             mInputLinkPoints[ i ].direction = side;
-            if (side == PortSide::West || side == PortSide::East) {
+            if (side == DAPyNodeStyle::PortSide::West || side == DAPyNodeStyle::PortSide::East) {
                 // 垂直均匀分布
-                const qreal spacing            = bodyRect.height() / (inputCount + 1);
-                const qreal x                  = (side == PortSide::West) ? bodyRect.left() : bodyRect.right();
+                const qreal spacing = bodyRect.height() / (inputCount + 1);
+                const qreal x       = (side == DAPyNodeStyle::PortSide::West) ? bodyRect.left() : bodyRect.right();
                 mInputLinkPoints[ i ].position = QPointF(x, bodyRect.top() + spacing * (i + 1));
             } else {
                 // North/South：水平均匀分布
-                const qreal spacing            = bodyRect.width() / (inputCount + 1);
-                const qreal y                  = (side == PortSide::North) ? bodyRect.top() : bodyRect.bottom();
+                const qreal spacing = bodyRect.width() / (inputCount + 1);
+                const qreal y       = (side == DAPyNodeStyle::PortSide::North) ? bodyRect.top() : bodyRect.bottom();
                 mInputLinkPoints[ i ].position = QPointF(bodyRect.left() + spacing * (i + 1), y);
             }
         }
@@ -125,18 +125,18 @@ void DAPyNodeGraphicsItem::PrivateData::updateLinkPointPositions(const QRectF& b
     // 更新输出连接点位置
     int outputCount = mOutputLinkPoints.size();
     if (outputCount > 0) {
-        const PortSide side = st.outputPortSide;
+        const DAPyNodeStyle::PortSide side = st.outputPortSide;
         for (int i = 0; i < outputCount; ++i) {
             mOutputLinkPoints[ i ].direction = side;
-            if (side == PortSide::West || side == PortSide::East) {
+            if (side == DAPyNodeStyle::PortSide::West || side == DAPyNodeStyle::PortSide::East) {
                 // 垂直均匀分布
-                const qreal spacing             = bodyRect.height() / (outputCount + 1);
-                const qreal x                   = (side == PortSide::West) ? bodyRect.left() : bodyRect.right();
+                const qreal spacing = bodyRect.height() / (outputCount + 1);
+                const qreal x       = (side == DAPyNodeStyle::PortSide::West) ? bodyRect.left() : bodyRect.right();
                 mOutputLinkPoints[ i ].position = QPointF(x, bodyRect.top() + spacing * (i + 1));
             } else {
                 // North/South：水平均匀分布
-                const qreal spacing             = bodyRect.width() / (outputCount + 1);
-                const qreal y                   = (side == PortSide::North) ? bodyRect.top() : bodyRect.bottom();
+                const qreal spacing = bodyRect.width() / (outputCount + 1);
+                const qreal y       = (side == DAPyNodeStyle::PortSide::North) ? bodyRect.top() : bodyRect.bottom();
                 mOutputLinkPoints[ i ].position = QPointF(bodyRect.left() + spacing * (i + 1), y);
             }
         }
@@ -256,7 +256,7 @@ void DAPyNodeGraphicsItem::PrivateData::updateNodeStyle(const QRectF& bodyRect)
     }
     // 获取图标，转换为pixmap，存入mIconPixmap中（仅在尺寸变化时重渲染）
     if (!s.bodyIconSource.isEmpty()) {
-        if (s.bodyIconType == BodyIconType::Svg) {
+        if (s.bodyIconType == DAPyNodeStyle::Svg) {
             if (!mSvgRenderer) {
                 mSvgRenderer = new QSvgRenderer(q_ptr);
                 mSvgRenderer->load(s.bodyIconSource);
@@ -532,8 +532,8 @@ void DAPyNodeGraphicsItem::updateFromProxy(DAPyNode* proxy)
 void DAPyNodeGraphicsItem::updateLinkPoints()
 {
     DA_D(d);
-    const PortSide inputSide  = d->mStyle.inputPortSide;
-    const PortSide outputSide = d->mStyle.outputPortSide;
+    const DAPyNodeStyle::PortSide inputSide  = d->mStyle.inputPortSide;
+    const DAPyNodeStyle::PortSide outputSide = d->mStyle.outputPortSide;
 
     d->mInputLinkPoints.clear();
     d->mOutputLinkPoints.clear();
@@ -585,8 +585,8 @@ QList< DAPyLinkPoint > DAPyNodeGraphicsItem::generateLinkPoints() const
 {
     DA_DC(d);
     QList< DAPyLinkPoint > result;
-    const PortSide inputSide  = d->mStyle.inputPortSide;
-    const PortSide outputSide = d->mStyle.outputPortSide;
+    const DAPyNodeStyle::PortSide inputSide  = d->mStyle.inputPortSide;
+    const DAPyNodeStyle::PortSide outputSide = d->mStyle.outputPortSide;
 
     // 从缓存输入key列表生成连接点
     for (const QString& key : std::as_const(d->mInputKeys)) {
@@ -1051,17 +1051,21 @@ QRectF DAPyNodeGraphicsItem::boundingRect() const
     }
 
     // 端口扩展
-    const PortSide& inputSide  = d->mStyle.inputPortSide;
-    const PortSide& outputSide = d->mStyle.outputPortSide;
+    const DAPyNodeStyle::PortSide& inputSide  = d->mStyle.inputPortSide;
+    const DAPyNodeStyle::PortSide& outputSide = d->mStyle.outputPortSide;
 
     // 端口突出间距常量
     constexpr qreal kPortOffset = 8.0;
 
     // 计算各方向扩展量（独立计算左右上下）
-    qreal leftOff   = (inputSide == PortSide::West || outputSide == PortSide::West) ? kPortOffset : 0;
-    qreal rightOff  = (inputSide == PortSide::East || outputSide == PortSide::East) ? kPortOffset : 0;
-    qreal topOff    = (inputSide == PortSide::North || outputSide == PortSide::North) ? kPortOffset : 0;
-    qreal bottomOff = (inputSide == PortSide::South || outputSide == PortSide::South) ? kPortOffset : 0;
+    qreal leftOff =
+        (inputSide == DAPyNodeStyle::PortSide::West || outputSide == DAPyNodeStyle::PortSide::West) ? kPortOffset : 0;
+    qreal rightOff =
+        (inputSide == DAPyNodeStyle::PortSide::East || outputSide == DAPyNodeStyle::PortSide::East) ? kPortOffset : 0;
+    qreal topOff =
+        (inputSide == DAPyNodeStyle::PortSide::North || outputSide == DAPyNodeStyle::PortSide::North) ? kPortOffset : 0;
+    qreal bottomOff =
+        (inputSide == DAPyNodeStyle::PortSide::South || outputSide == DAPyNodeStyle::PortSide::South) ? kPortOffset : 0;
 
     rect.adjust(-leftOff, -topOff, rightOff, bottomOff);
 

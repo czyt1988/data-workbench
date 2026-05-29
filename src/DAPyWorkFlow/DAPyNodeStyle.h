@@ -6,7 +6,7 @@
 #include <QColor>
 #include <QString>
 #include "DAEnumStringUtils.hpp"
-
+#include "DAGraphicsViewGlobal.h"
 /**
  * @file DAPyNodeStyle.h
  * @brief Python工作流节点样式配置结构体
@@ -70,6 +70,17 @@ public:
         RoundedRect = 0,  ///< 圆角矩形
         Ellipse     = 1   ///< 椭圆形
     };
+
+    /**
+     * @brief 节点体图标类型枚举
+     */
+    enum BodyIconType
+    {
+        None   = 0,  ///< 无图标
+        Pixmap = 1,  ///< 位图图标（QIcon/QPixmap）
+        Svg    = 2   ///< SVG矢量图标
+    };
+
     /**
      * @brief 节点名称位置枚举
      */
@@ -86,6 +97,8 @@ public:
         LeftOfText = 0,  ///< 图标在文本左侧
         AboveText  = 1   ///< 图标在文本上方
     };
+
+    using PortSide = DAAspectDirection;
 
 public:
     // 构造函数
@@ -174,6 +187,7 @@ DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::NodeRenderTemplat
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::BodyShape)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::NamePosition)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::IconPosition)
+DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::BodyIconType)
 }  // namespace DA
 
 #endif  // DAPYNODESTYLE_H

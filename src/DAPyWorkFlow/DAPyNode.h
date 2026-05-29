@@ -4,7 +4,6 @@
 #include "DAPyObjectWrapper.h"
 #include "DAPyNodeMetaData.h"
 #include "DAPyNodeState.h"
-#include "DAPyNodeStyleDefine.h"
 #include "DAPyNodeStyle.h"
 #include "DAPybind11InQt.h"
 #include <QString>

@@ -1,8 +1,8 @@
 #ifndef DAPYLINKPOINTSTYLE_H
 #define DAPYLINKPOINTSTYLE_H
 #include "DAPyWorkFlowAPI.h"
-#include "DAPyNodeStyleDefine.h"
 #include <QColor>
+#include "DAEnumStringUtils.hpp"
 namespace DA
 {
 

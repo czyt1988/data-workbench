@@ -1,5 +1,4 @@
 ﻿#include "DAPyWorkFlowEnumStringUtils.h"
-#include "DAPyNodeStyleDefine.h"
 #include "DAPyNodeStyle.h"
 
 // ================================== DA::DAPyNodeState ==================================
@@ -17,13 +16,6 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAPyNodeState,
 // DAGraphicsViewEnumStringUtils.cpp 中完成（DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::AspectDirection, ...)）
 // 不重复定义，避免 ODR 违反和链接时多重定义错误
 // enumToString(PortSide::West) 和 stringToEnum<PortSide>() 自动复用 AspectDirection 的转换
-
-// ================================== DA::BodyIconType ==================================
-DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::BodyIconType,
-                                  DA::BodyIconType::None,
-                                  { DA::BodyIconType::None, "none" },
-                                  { DA::BodyIconType::Pixmap, "pixmap" },
-                                  { DA::BodyIconType::Svg, "svg" });
 
 // ================================== DA::LinkPointLayoutStrategy ==================================
 DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::LinkPointLayoutStrategy,

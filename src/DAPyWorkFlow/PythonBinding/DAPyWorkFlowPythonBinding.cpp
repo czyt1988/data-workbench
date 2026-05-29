@@ -1,18 +1,19 @@
 #include "DAPyWorkFlowPythonBinding.h"
 #include <QPointF>
-#include "DAPyWorkFlow/DAPyWorkFlowScene.h"
-#include "DAPyWorkFlow/DAPyNode.h"
-#include "DAPyWorkFlow/DAPyNodeState.h"
-#include "DAPyWorkFlow/DAPyNodeGraphicsItem.h"
-#include "DAPyWorkFlow/DAPyLinkGraphicsItem.h"
-#include "DAPyWorkFlow/DAPyPainterProxy.h"
-#include "DAPyWorkFlow/DAPyLinkPoint.h"
-#include "DAPyWorkFlow/DAPyNodeFactory.h"
-#include "DAPyWorkFlow/DAPyNodeStyle.h"
-#include "DAPyWorkFlow/DAPyWorkFlowEnumStringUtils.h"
-#include "DAPyBindQt/DAPybind11QtCaster.hpp"
-#include "DAPyBindQt/DAPyJsonCast.h"
-#include "DAPyBindQt/DAPybind11InQt.h"  // slots workaround，必须第一个pybind11相关头文件
+#include "DAGraphicsViewEnumStringUtils.h"  //PoetSide的序列化
+#include "DAPyWorkFlowScene.h"
+#include "DAPyNode.h"
+#include "DAPyNodeState.h"
+#include "DAPyNodeGraphicsItem.h"
+#include "DAPyLinkGraphicsItem.h"
+#include "DAPyPainterProxy.h"
+#include "DAPyLinkPoint.h"
+#include "DAPyNodeFactory.h"
+#include "DAPyNodeStyle.h"
+#include "DAPyWorkFlowEnumStringUtils.h"
+#include "DAPybind11QtCaster.hpp"
+#include "DAPyJsonCast.h"
+#include "DAPybind11InQt.h"  // slots workaround，必须第一个pybind11相关头文件
 
 namespace DA
 {
@@ -197,13 +198,6 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .value("North", DA::DAAspectDirection::North)
         .export_values();
     m.attr("PortSide") = m.attr("AspectDirection");
-
-    // 导出 BodyIconType 枚举
-    pybind11::enum_< DA::BodyIconType >(m, "BodyIconType")
-        .value("None", DA::BodyIconType::None)
-        .value("Pixmap", DA::BodyIconType::Pixmap)
-        .value("Svg", DA::BodyIconType::Svg)
-        .export_values();
 
     // 导出 LinkPointLayoutStrategy 枚举
     pybind11::enum_< DA::LinkPointLayoutStrategy >(m, "LinkPointLayoutStrategy")

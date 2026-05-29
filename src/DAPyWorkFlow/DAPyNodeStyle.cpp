@@ -22,3 +22,9 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAPyNodeStyle::IconPosition,
                                   DA::DAPyNodeStyle::LeftOfText,
                                   { DA::DAPyNodeStyle::LeftOfText, "left_of_text" },
                                   { DA::DAPyNodeStyle::AboveText, "above_text" });
+// ================================== DA::BodyIconType ==================================
+DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAPyNodeStyle::BodyIconType,
+                                  DA::DAPyNodeStyle::None,
+                                  { DA::DAPyNodeStyle::None, "none" },
+                                  { DA::DAPyNodeStyle::Pixmap, "pixmap" },
+                                  { DA::DAPyNodeStyle::Svg, "svg" });
