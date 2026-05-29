@@ -205,12 +205,6 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .value("Diamond", DA::PortShape::Diamond)
         .export_values();
 
-    // 导出 NamePosition 枚举
-    pybind11::enum_< DA::NamePosition >(m, "NamePosition")
-        .value("Inside", DA::NamePosition::Inside)
-        .value("Below", DA::NamePosition::Below)
-        .export_values();
-
     // 导出 IconPosition 枚举
     pybind11::enum_< DA::IconPosition >(m, "IconPosition")
         .value("LeftOfText", DA::IconPosition::LeftOfText)

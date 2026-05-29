@@ -1039,7 +1039,7 @@ QRectF DAPyNodeGraphicsItem::boundingRect() const
     QRectF rect = DAGraphicsResizeableItem::boundingRect();
     DA_DC(d);
     // 名称位置扩展（Below 模式）
-    if (d->mStyle.namePosition == NamePosition::Below && !d_ptr->mName.isEmpty()) {
+    if (d->mStyle.namePosition == DAPyNodeStyle::Below && !d_ptr->mName.isEmpty()) {
         QFont font;
         font.setPointSize(d->normalFontSize);
         QFontMetricsF fm(font);

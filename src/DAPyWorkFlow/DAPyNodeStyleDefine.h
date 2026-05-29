@@ -36,18 +36,6 @@ enum class PortShape
 };
 
 // =================================================================================
-//                          NamePosition — 节点名称位置
-// =================================================================================
-/**
- * @brief 节点名称位置枚举
- */
-enum class NamePosition
-{
-    Inside = 0,  ///< 名称在节点内部
-    Below  = 1   ///< 名称在节点下方
-};
-
-// =================================================================================
 //                          IconPosition — 图标位置
 // =================================================================================
 /**
@@ -117,7 +105,6 @@ enum class DAPyNodeRenderTemplate
 
 }  // namespace DA
 // 实现位于DAPyWorkFlowEnumStringUtils.cpp
-DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::NamePosition)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::PortShape)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::IconPosition)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::BodyIconType)

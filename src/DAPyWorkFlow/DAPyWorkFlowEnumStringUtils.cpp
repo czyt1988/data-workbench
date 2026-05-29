@@ -19,12 +19,6 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::PortShape,
                                   { DA::PortShape::Circle, "circle" },
                                   { DA::PortShape::Diamond, "diamond" });
 
-// ================================== DA::NamePosition ==================================
-DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::NamePosition,
-                                  DA::NamePosition::Inside,
-                                  { DA::NamePosition::Inside, "inside" },
-                                  { DA::NamePosition::Below, "below" });
-
 // ================================== DA::IconPosition ==================================
 DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::IconPosition,
                                   DA::IconPosition::LeftOfText,

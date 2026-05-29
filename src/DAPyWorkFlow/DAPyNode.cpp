@@ -179,11 +179,6 @@ void DAPyNode::setPyInputData(const QString& key, const pybind11::object& data)
         qWarning() << "DAPyNode::setPyInputData: proxy is None";
         return;
     }
-    DAPyGILGuard gilGuard;
-    if (!gilGuard.isAcquired()) {
-        qWarning() << "DAPyNode::setPyInputData: Failed to acquire GIL";
-        return;
-    }
     try {
         if (hasattr("set_input_data")) {
             pybind11::str pyKey = pybind11::cast(key);
@@ -199,10 +194,6 @@ void DAPyNode::setPyInputData(const QString& key, const pybind11::object& data)
 pybind11::object DAPyNode::getPyOutputData(const QString& key) const
 {
     if (isNone()) {
-        return pybind11::none();
-    }
-    DAPyGILGuard gilGuard;
-    if (!gilGuard.isAcquired()) {
         return pybind11::none();
     }
     try {
@@ -221,11 +212,6 @@ pybind11::object DAPyNode::getPyOutputData(const QString& key) const
 void DAPyNode::setConfig(const QJsonObject& config)
 {
     if (isNone()) {
-        return;
-    }
-    DAPyGILGuard gilGuard;
-    if (!gilGuard.isAcquired()) {
-        qWarning() << "DAPyNode::setConfig: Failed to acquire GIL";
         return;
     }
     try {
