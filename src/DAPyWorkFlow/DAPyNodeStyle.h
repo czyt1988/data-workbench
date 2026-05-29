@@ -78,6 +78,14 @@ public:
         Inside = 0,  ///< 名称在节点内部
         Below  = 1   ///< 名称在节点下方
     };
+    /**
+     * @brief 图标位置枚举
+     */
+    enum IconPosition
+    {
+        LeftOfText = 0,  ///< 图标在文本左侧
+        AboveText  = 1   ///< 图标在文本上方
+    };
 
 public:
     // 构造函数
@@ -165,6 +173,7 @@ public:
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::NodeRenderTemplate)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::BodyShape)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::NamePosition)
+DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::IconPosition)
 }  // namespace DA
 
 #endif  // DAPYNODESTYLE_H

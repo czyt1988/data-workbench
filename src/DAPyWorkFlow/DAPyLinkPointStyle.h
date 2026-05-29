@@ -29,6 +29,17 @@ namespace DA
 class DAPYWORKFLOW_API DAPyLinkPointStyle
 {
 public:
+    /**
+     * @brief 端口形状枚举
+     */
+    enum PortShape
+    {
+        Rect    = 0,  ///< 矩形端口
+        Circle  = 1,  ///< 圆形端口
+        Diamond = 2   ///< 菱形端口
+    };
+
+public:
     // 构造函数
     /**
      * @brief 默认构造函数
@@ -68,6 +79,8 @@ public:
         return borderColor.isValid();
     }
 };
+
+DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyLinkPointStyle::PortShape)
 }
 
-#endif // DAPYLINKPOINTSTYLE_H
+#endif  // DAPYLINKPOINTSTYLE_H

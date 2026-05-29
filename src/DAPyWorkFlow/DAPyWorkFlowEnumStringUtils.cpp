@@ -12,19 +12,6 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAPyNodeState,
                                   { DA::Error, "error" },
                                   { DA::Skipped, "skipped" });
 
-// ================================== DA::PortShape ==================================
-DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::PortShape,
-                                  DA::PortShape::Rect,
-                                  { DA::PortShape::Rect, "rect" },
-                                  { DA::PortShape::Circle, "circle" },
-                                  { DA::PortShape::Diamond, "diamond" });
-
-// ================================== DA::IconPosition ==================================
-DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::IconPosition,
-                                  DA::IconPosition::LeftOfText,
-                                  { DA::IconPosition::LeftOfText, "left_of_text" },
-                                  { DA::IconPosition::AboveText, "above_text" });
-
 // ================================== DA::PortSide (AspectDirection) ==================================
 // PortSide 是 AspectDirection 的类型别名，其 DAEnumTraits 定义已在
 // DAGraphicsViewEnumStringUtils.cpp 中完成（DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::AspectDirection, ...)）

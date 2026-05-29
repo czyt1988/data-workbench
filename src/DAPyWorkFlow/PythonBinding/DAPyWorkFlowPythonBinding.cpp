@@ -198,19 +198,6 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .export_values();
     m.attr("PortSide") = m.attr("AspectDirection");
 
-    // 导出 PortShape 枚举
-    pybind11::enum_< DA::PortShape >(m, "PortShape")
-        .value("Rect", DA::PortShape::Rect)
-        .value("Circle", DA::PortShape::Circle)
-        .value("Diamond", DA::PortShape::Diamond)
-        .export_values();
-
-    // 导出 IconPosition 枚举
-    pybind11::enum_< DA::IconPosition >(m, "IconPosition")
-        .value("LeftOfText", DA::IconPosition::LeftOfText)
-        .value("AboveText", DA::IconPosition::AboveText)
-        .export_values();
-
     // 导出 BodyIconType 枚举
     pybind11::enum_< DA::BodyIconType >(m, "BodyIconType")
         .value("None", DA::BodyIconType::None)

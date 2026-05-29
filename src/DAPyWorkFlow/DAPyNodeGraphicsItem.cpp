@@ -784,10 +784,10 @@ static void drawLinkPointGroup(QPainter* painter,
 
         // 绘制连接点形状
         switch (portStyle.shape) {
-        case PortShape::Circle:
+        case DAPyLinkPointStyle::Circle:
             painter->drawEllipse(linkRect);
             break;
-        case PortShape::Diamond: {
+        case DAPyLinkPointStyle::Diamond: {
             QPainterPath diamond;
             const qreal cx = linkRect.center().x();
             const qreal cy = linkRect.center().y();
@@ -801,7 +801,7 @@ static void drawLinkPointGroup(QPainter* painter,
             painter->drawPath(diamond);
             break;
         }
-        case PortShape::Rect:
+        case DAPyLinkPointStyle::Rect:
         default:
             painter->drawRect(linkRect);
             break;

@@ -23,31 +23,6 @@ namespace DA
 {
 
 // =================================================================================
-//                          PortShape — 端口形状
-// =================================================================================
-/**
- * @brief 端口形状枚举
- */
-enum class PortShape
-{
-    Rect    = 0,  ///< 矩形端口
-    Circle  = 1,  ///< 圆形端口
-    Diamond = 2   ///< 菱形端口
-};
-
-// =================================================================================
-//                          IconPosition — 图标位置
-// =================================================================================
-/**
- * @brief 图标位置枚举
- */
-enum class IconPosition
-{
-    LeftOfText = 0,  ///< 图标在文本左侧
-    AboveText  = 1   ///< 图标在文本上方
-};
-
-// =================================================================================
 //                          PortSide — 端口方位（别名）
 // =================================================================================
 /**
@@ -105,8 +80,7 @@ enum class DAPyNodeRenderTemplate
 
 }  // namespace DA
 // 实现位于DAPyWorkFlowEnumStringUtils.cpp
-DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::PortShape)
-DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::IconPosition)
+
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::BodyIconType)
 
 #endif  // DAPYNODESTYLEDEFINE_H
