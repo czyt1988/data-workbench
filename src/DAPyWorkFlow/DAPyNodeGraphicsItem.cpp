@@ -256,7 +256,7 @@ void DAPyNodeGraphicsItem::PrivateData::updateNodeStyle(const QRectF& bodyRect)
     }
     // 获取图标，转换为pixmap，存入mIconPixmap中（仅在尺寸变化时重渲染）
     if (!s.bodyIconSource.isEmpty()) {
-        if (s.bodyIconType == DAPyNodeStyle::Svg) {
+        if (s.bodyIconType == DAPyNodeStyle::SvgBodyIcon) {
             if (!mSvgRenderer) {
                 mSvgRenderer = new QSvgRenderer(q_ptr);
                 mSvgRenderer->load(s.bodyIconSource);
@@ -321,16 +321,16 @@ void DAPyNodeGraphicsItem::setRenderTemplate(DAPyNodeStyle::NodeRenderTemplate t
     }
 
     // 清理之前的资源
-    if (d->mStyle.renderTemplate == DAPyNodeStyle::NodeStyleTemplate) {
+    if (d->mStyle.renderTemplate == DAPyNodeStyle::RenderDefaultTemplate) {
         d->cleanupSvg();
-    } else if (d_ptr->mStyle.renderTemplate == DAPyNodeStyle::WidgetTemplate) {
+    } else if (d_ptr->mStyle.renderTemplate == DAPyNodeStyle::RenderWidgetTemplate) {
         d->cleanupWidget();
     }
 
     d->mStyle.renderTemplate = tmpl;
 
     // 初始化新的资源
-    if (tmpl == DAPyNodeStyle::WidgetTemplate && !d->mProxyWidget) {
+    if (tmpl == DAPyNodeStyle::RenderWidgetTemplate && !d->mProxyWidget) {
         d->mProxyWidget = new QGraphicsProxyWidget(this);
     } else {
         d->updateNodeStyle(getBodyRect());
@@ -461,8 +461,8 @@ void DAPyNodeGraphicsItem::setWidget(QWidget* widget)
     d->mWidget = widget;
 
     // 如果当前不是widget模式，切换到widget模式
-    if (d->mStyle.renderTemplate != DAPyNodeStyle::WidgetTemplate) {
-        d->mStyle.renderTemplate = DAPyNodeStyle::WidgetTemplate;
+    if (d->mStyle.renderTemplate != DAPyNodeStyle::RenderWidgetTemplate) {
+        d->mStyle.renderTemplate = DAPyNodeStyle::RenderWidgetTemplate;
     }
 
     // 更新widget几何位置
@@ -701,10 +701,10 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
 
     // 根据模板类型绘制
     switch (d_ptr->mStyle.renderTemplate) {
-    case DAPyNodeStyle::NodeStyleTemplate:
+    case DAPyNodeStyle::RenderDefaultTemplate:
         paintNodeStyleBody(painter, bodyRect);
         break;
-    case DAPyNodeStyle::WidgetTemplate:
+    case DAPyNodeStyle::RenderWidgetTemplate:
         paintWidgetTemplate(painter, bodyRect);
         break;
     default:
@@ -922,7 +922,7 @@ void DAPyNodeGraphicsItem::paintStateDecoration(QPainter* painter, const QRectF&
         painter->setPen(pen);
         painter->setBrush(Qt::NoBrush);
         // 边框始终跟随 bodyShape
-        if (d_ptr->mStyle.bodyShape == DAPyNodeStyle::Ellipse) {
+        if (d_ptr->mStyle.bodyShape == DAPyNodeStyle::EllipseShape) {
             painter->drawEllipse(bodyRect.adjusted(1, 1, -1, -1));
         } else {
             painter->drawRoundedRect(bodyRect.adjusted(1, 1, -1, -1), 4, 4);
@@ -938,7 +938,7 @@ void DAPyNodeGraphicsItem::paintStateDecoration(QPainter* painter, const QRectF&
         painter->setPen(Qt::NoPen);
 
         // 根据 bodyShape 裁剪填充区域
-        if (d_ptr->mStyle.bodyShape == DAPyNodeStyle::Ellipse) {
+        if (d_ptr->mStyle.bodyShape == DAPyNodeStyle::EllipseShape) {
             QPainterPath clipPath;
             clipPath.addEllipse(bodyRect);
             painter->setClipPath(clipPath);
@@ -982,10 +982,10 @@ void DAPyNodeGraphicsItem::paintNodeStyleBody(QPainter* painter, const QRectF& b
     painter->setPen(pen);
 
     switch (style.bodyShape) {
-    case DAPyNodeStyle::Ellipse:
+    case DAPyNodeStyle::EllipseShape:
         painter->drawEllipse(bodyRect);
         break;
-    case DAPyNodeStyle::RoundedRect:
+    case DAPyNodeStyle::RoundedRectShape:
     default:
         painter->drawRoundedRect(bodyRect, style.cornerRadius, style.cornerRadius);
         break;
@@ -1039,7 +1039,7 @@ QRectF DAPyNodeGraphicsItem::boundingRect() const
     QRectF rect = DAGraphicsResizeableItem::boundingRect();
     DA_DC(d);
     // 名称位置扩展（Below 模式）
-    if (d->mStyle.namePosition == DAPyNodeStyle::Below && !d_ptr->mName.isEmpty()) {
+    if (d->mStyle.namePosition == DAPyNodeStyle::NameBelowBody && !d_ptr->mName.isEmpty()) {
         QFont font;
         font.setPointSize(d->normalFontSize);
         QFontMetricsF fm(font);
@@ -1084,7 +1084,7 @@ QPainterPath DAPyNodeGraphicsItem::shape() const
     DA_DC(d);
     QPainterPath path;
 
-    if (d->mStyle.bodyShape == DAPyNodeStyle::Ellipse) {
+    if (d->mStyle.bodyShape == DAPyNodeStyle::EllipseShape) {
         path.addEllipse(getBodyControlRect());
     } else {
         // RoundedRect 等保持默认矩形路径（复用基类行为）
@@ -1103,7 +1103,7 @@ void DAPyNodeGraphicsItem::setBodySize(const QSizeF& s)
     DA_D(d);
     DAGraphicsResizeableItem::setBodySize(s);
     d->updateLinkPointPositions(getBodyRect());
-    if (d->mStyle.renderTemplate == DAPyNodeStyle::NodeStyleTemplate) {
+    if (d->mStyle.renderTemplate == DAPyNodeStyle::RenderDefaultTemplate) {
         updateNodeStyleGeometry();
     } else {
         updateWidgetGeometry();

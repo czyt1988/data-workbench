@@ -47,20 +47,20 @@ public:
      */
     enum LinkPointLayoutStrategy
     {
-        Auto   = 0,  ///< 自动布局（系统计算位置）
-        Manual = 1   ///< 手动布局（用户指定位置）
+        AutoLayoutLinkPoint   = 0,  ///< 自动布局（系统计算位置）
+        ManualLayoutLinkPoint = 1   ///< 手动布局（用户指定位置）
     };
 
     enum NodeRenderTemplate
     {
-        NodeStyleTemplate = 0,  ///< 节点样式模板（使用 BodyShape/PortShape 等配置绘制）
-        WidgetTemplate    = 1   ///< 嵌入Widget模板
+        RenderDefaultTemplate = 0,  ///< 节点样式模板（使用 BodyShape/PortShape 等配置绘制）
+        RenderWidgetTemplate  = 1   ///< 嵌入Widget模板
     };
 
     enum BodyShape
     {
-        RoundedRect = 0,  ///< 圆角矩形
-        Ellipse     = 1   ///< 椭圆形
+        RoundedRectShape = 0,  ///< 圆角矩形
+        EllipseShape     = 1   ///< 椭圆形
     };
 
     /**
@@ -68,9 +68,9 @@ public:
      */
     enum BodyIconType
     {
-        None   = 0,  ///< 无图标
-        Pixmap = 1,  ///< 位图图标（QIcon/QPixmap）
-        Svg    = 2   ///< SVG矢量图标
+        NoneBodyIcon   = 0,  ///< 无图标
+        PixmapBodyIcon = 1,  ///< 位图图标（QIcon/QPixmap）
+        SvgBodyIcon    = 2   ///< SVG矢量图标
     };
 
     /**
@@ -78,16 +78,16 @@ public:
      */
     enum NamePosition
     {
-        Inside = 0,  ///< 名称在节点内部
-        Below  = 1   ///< 名称在节点下方
+        NameInsideBody = 0,  ///< 名称在节点内部
+        NameBelowBody  = 1   ///< 名称在节点下方
     };
     /**
      * @brief 图标位置枚举
      */
     enum IconPosition
     {
-        LeftOfText = 0,  ///< 图标在文本左侧
-        AboveText  = 1   ///< 图标在文本上方
+        IconLeftOfText = 0,  ///< 图标在文本左侧
+        IconAboveText  = 1   ///< 图标在文本上方
     };
 
     using PortSide = DAAspectDirection;
@@ -141,9 +141,9 @@ public:
     void setDefaults()
     {
         // 主体样式
-        bodyShape       = BodyShape::RoundedRect;
-        namePosition    = NamePosition::Inside;
-        iconPosition    = IconPosition::LeftOfText;
+        bodyShape       = BodyShape::RoundedRectShape;
+        namePosition    = NamePosition::NameInsideBody;
+        iconPosition    = IconPosition::IconLeftOfText;
         backgroundColor = QColor(240, 240, 240);
         borderColor     = QColor(180, 180, 180);
         borderWidth     = 1.0;
@@ -155,24 +155,24 @@ public:
         outputPortSide  = PortSide::East;
         inputPortStyle  = DAPyLinkPointStyle();
         outputPortStyle = DAPyLinkPointStyle();
-        layoutStrategy  = LinkPointLayoutStrategy::Auto;
+        layoutStrategy  = LinkPointLayoutStrategy::AutoLayoutLinkPoint;
 
         // 节点体图标
-        bodyIconType = BodyIconType::None;
+        bodyIconType = BodyIconType::NoneBodyIcon;
         bodyIconSource.clear();
         bodyIconScale = 0.8;
 
         // 渲染模板
-        renderTemplate = NodeStyleTemplate;
+        renderTemplate = RenderDefaultTemplate;
     }
     // 辅助函数
     inline bool isNameInside() const
     {
-        return namePosition == NamePosition::Inside;
+        return namePosition == NamePosition::NameInsideBody;
     }
     inline bool isIconLeftOfText() const
     {
-        return iconPosition == IconPosition::LeftOfText;
+        return iconPosition == IconPosition::IconLeftOfText;
     }
 };
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::LinkPointLayoutStrategy)
