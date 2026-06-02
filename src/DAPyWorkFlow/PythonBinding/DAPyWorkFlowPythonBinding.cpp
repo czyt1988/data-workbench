@@ -199,12 +199,6 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .export_values();
     m.attr("PortSide") = m.attr("AspectDirection");
 
-    // 导出 LinkPointLayoutStrategy 枚举
-    pybind11::enum_< DA::LinkPointLayoutStrategy >(m, "LinkPointLayoutStrategy")
-        .value("Auto", DA::LinkPointLayoutStrategy::Auto)
-        .value("Manual", DA::LinkPointLayoutStrategy::Manual)
-        .export_values();
-
     // 绑定 DAPyLinkPoint 类
     pybind11::class_< DA::DAPyLinkPoint >(m, "DAPyLinkPoint")
         .def(pybind11::init<>())

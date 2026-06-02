@@ -1,4 +1,9 @@
 #include "DAPyNodeStyle.h"
+// ================================== DA::LinkPointLayoutStrategy ==================================
+DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAPyNodeStyle::LinkPointLayoutStrategy,
+                                  DA::DAPyNodeStyle::Auto,
+                                  { DA::DAPyNodeStyle::Auto, "auto" },
+                                  { DA::DAPyNodeStyle::Manual, "manual" });
 
 DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAPyNodeStyle::NodeRenderTemplate,
                                   DA::DAPyNodeStyle::NodeStyleTemplate,

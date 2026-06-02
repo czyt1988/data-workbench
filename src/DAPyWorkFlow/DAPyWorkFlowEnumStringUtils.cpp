@@ -16,9 +16,3 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAPyNodeState,
 // DAGraphicsViewEnumStringUtils.cpp 中完成（DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::AspectDirection, ...)）
 // 不重复定义，避免 ODR 违反和链接时多重定义错误
 // enumToString(PortSide::West) 和 stringToEnum<PortSide>() 自动复用 AspectDirection 的转换
-
-// ================================== DA::LinkPointLayoutStrategy ==================================
-DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::LinkPointLayoutStrategy,
-                                  DA::LinkPointLayoutStrategy::Auto,
-                                  { DA::LinkPointLayoutStrategy::Auto, "auto" },
-                                  { DA::LinkPointLayoutStrategy::Manual, "manual" });

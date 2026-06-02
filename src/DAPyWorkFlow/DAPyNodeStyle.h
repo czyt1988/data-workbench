@@ -19,23 +19,6 @@ namespace DA
 {
 
 // =================================================================================
-//                      LinkPointLayoutStrategy — 连接点布局策略
-// =================================================================================
-/**
- * @brief 连接点布局策略枚举
- */
-enum class LinkPointLayoutStrategy
-{
-    Auto   = 0,  ///< 自动布局（系统计算位置）
-    Manual = 1   ///< 手动布局（用户指定位置）
-};
-
-}  // namespace DA
-DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::LinkPointLayoutStrategy)
-namespace DA
-{
-
-// =================================================================================
 //                      DAPyNodeDisplayStyle — 节点整体样式配置
 // =================================================================================
 /**
@@ -59,6 +42,15 @@ namespace DA
 class DAPYWORKFLOW_API DAPyNodeStyle
 {
 public:
+    /**
+     * @brief 连接点布局策略枚举
+     */
+    enum LinkPointLayoutStrategy
+    {
+        Auto   = 0,  ///< 自动布局（系统计算位置）
+        Manual = 1   ///< 手动布局（用户指定位置）
+    };
+
     enum NodeRenderTemplate
     {
         NodeStyleTemplate = 0,  ///< 节点样式模板（使用 BodyShape/PortShape 等配置绘制）
@@ -183,6 +175,7 @@ public:
         return iconPosition == IconPosition::LeftOfText;
     }
 };
+DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::LinkPointLayoutStrategy)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::NodeRenderTemplate)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::BodyShape)
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DAPyNodeStyle::NamePosition)
