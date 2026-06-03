@@ -314,7 +314,6 @@ bool DAPyWorkFlow::hasNode(DAPyNode* proxy)
  */
 pybind11::object DAPyWorkFlow::getNodeById(const QString& nodeId)
 {
-    DAPyGILGuard gil;
     try {
         if (isNone()) {
             qWarning() << "DAPyWorkFlow::getNodeById: workflow object is invalid";

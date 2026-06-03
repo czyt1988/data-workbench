@@ -18,7 +18,6 @@
 #include "DAPyWorkFlowGraphicsScene.h"
 #include "DAGraphicsLinkItem.h"
 #include "DAPyNodeGraphicsItem.h"
-#include "DAPyWorkFlowLifecycle.h"
 #include "DAGraphicsPixmapItem.h"
 //
 #include "Commands/DACommandsForWorkFlow.h"
@@ -29,24 +28,13 @@ namespace DA
 DAPyWorkFlowEditWidget::DAPyWorkFlowEditWidget(QWidget* parent)
     : QWidget(parent), ui(new Ui::DAPyWorkFlowEditWidget), mScene(nullptr)
 {
-	ui->setupUi(this);
-	createScene();
+    ui->setupUi(this);
+    createScene();
 }
 
 DAPyWorkFlowEditWidget::~DAPyWorkFlowEditWidget()
 {
-	qDebug() << "destroy DAPyWorkFlowEditWidget";
-	// 断开子对象到 this 的信号连接，防止析构期间信号发给已析构对象
-	const auto allChildren = findChildren<QObject*>();
-	for (auto* obj : allChildren) {
-		obj->disconnect(this);
-	}
-	// 停止工作流执行线程
-	if (mWorkFlowThread && mWorkFlowThread->isRunning()) {
-		mWorkFlowThread->quit();
-		mWorkFlowThread->wait();
-	}
-	delete ui;
+    delete ui;
 }
 
 /**
@@ -64,12 +52,12 @@ DAPyWorkFlow* DAPyWorkFlowEditWidget::getWorkflow() const
  */
 void DAPyWorkFlowEditWidget::setWorkFlow(DAPyWorkFlow* w)
 {
-	ui->workflowGraphicsView->setWorkFlow(w);
-	// TODO: DAPyWorkFlow no longer has startExecute/nodeExecuteFinished/finished signals.
-	// These signals now belong to DAPyWorkFlowLifecycle. Execution signal connections
-	// should be set up when a DAPyWorkFlowLifecycle is created for this workflow.
-	// The DAPyWorkFlowEditWidget's own signals (startExecute, nodeExecuteFinished, finished)
-	// remain defined and can be emitted manually or connected from a lifecycle later.
+    ui->workflowGraphicsView->setWorkFlow(w);
+    // TODO: DAPyWorkFlow no longer has startExecute/nodeExecuteFinished/finished signals.
+    // These signals now belong to DAPyWorkFlowLifecycle. Execution signal connections
+    // should be set up when a DAPyWorkFlowLifecycle is created for this workflow.
+    // The DAPyWorkFlowEditWidget's own signals (startExecute, nodeExecuteFinished, finished)
+    // remain defined and can be emitted manually or connected from a lifecycle later.
 }
 
 DAPyWorkFlowGraphicsView* DAPyWorkFlowEditWidget::getWorkFlowGraphicsView() const
@@ -85,197 +73,158 @@ DAPyWorkFlowGraphicsView* DAPyWorkFlowEditWidget::getWorkFlowGraphicsView() cons
  */
 DAPyWorkFlowGraphicsScene* DAPyWorkFlowEditWidget::getWorkFlowGraphicsScene() const
 {
-	return mScene;
+    return mScene;
 }
 
 void DAPyWorkFlowEditWidget::setUndoStackActive()
 {
-	getWorkFlowGraphicsView()->setUndoStackActive();
+    getWorkFlowGraphicsView()->setUndoStackActive();
 }
 
 void DAPyWorkFlowEditWidget::setEnableShowGrid(bool on)
 {
-	DAPyWorkFlowGraphicsScene* scene = getWorkFlowGraphicsScene();
-	if (scene) {
-		scene->showGridLine(on);
-		scene->update();
-	}
+    DAPyWorkFlowGraphicsScene* scene = getWorkFlowGraphicsScene();
+    if (scene) {
+        scene->showGridLine(on);
+        scene->update();
+    }
 }
 
 QUndoStack* DAPyWorkFlowEditWidget::getUndoStack()
 {
-	return getWorkFlowGraphicsView()->getUndoStack();
+    return getWorkFlowGraphicsView()->getUndoStack();
 }
 
 void DAPyWorkFlowEditWidget::runWorkFlow()
 {
-	// 防止重复执行
-	if (mWorkFlowLifecycle && mWorkFlowLifecycle->isExecuting()) {
-		qWarning() << tr("workflow is already executing, skip re-entry");
-		return;
-	}
-
-	auto scene = getWorkFlowGraphicsScene();
-	if (!scene || !scene->hasPyWorkflow()) {
-		qCritical() << tr("no workflow set");
-		return;
-	}
-
-	// 创建生命周期管理器并设置 DAPyWorkFlow 封装对象
-	auto lifecycle = new DA::DAPyWorkFlowLifecycle(this);
-	lifecycle->setWorkflow(getWorkflow());
-	mWorkFlowLifecycle = lifecycle;
-
-	// 创建独立线程
-	mWorkFlowThread = new QThread(this);
-	lifecycle->moveToThread(mWorkFlowThread);
-
-	// 连接信号：线程启动时开始执行
-	connect(mWorkFlowThread, &QThread::started, lifecycle, &DA::DAPyWorkFlowLifecycle::startExecute);
-	// 节点执行完成信号转发
-	connect(lifecycle, &DA::DAPyWorkFlowLifecycle::nodeExecuteFinished,
-	        this, [this](DA::DAPyNode* proxy, bool success) {
-		        emit nodeExecuteFinished(proxy, success);
-	        });
-	// 执行完成信号转发
-	connect(lifecycle, &DA::DAPyWorkFlowLifecycle::finished, this, [this](bool success) {
-		emit finished(success);
-	});
-	// 线程结束后清理资源
-	connect(mWorkFlowThread, &QThread::finished, mWorkFlowThread, &QThread::deleteLater);
-	connect(mWorkFlowThread, &QThread::finished, lifecycle, &QObject::deleteLater);
-	// 执行完成时停止线程
-	connect(lifecycle, &DA::DAPyWorkFlowLifecycle::finished, mWorkFlowThread, &QThread::quit);
-	// 进度信号转发
-	connect(lifecycle, &DA::DAPyWorkFlowLifecycle::progressChanged,
-	        this, [](int current, int total) {
-			qDebug() << "Workflow progress:" << current << "/" << total;
-		});
-
-	// 启动线程
-	mWorkFlowThread->start();
+    auto scene = getWorkFlowGraphicsScene();
+    if (!scene || !scene->hasPyWorkflow()) {
+        qCritical() << tr("no workflow set");
+        return;
+    }
+    // TODO: 还未实现
 }
 
 void DAPyWorkFlowEditWidget::setPreDefineSceneAction(DAPyWorkFlowGraphicsScene::SceneActionFlag mf)
 {
-	auto sc = getWorkFlowGraphicsScene();
-	if (sc) {
-		sc->setPreDefineSceneAction(mf);
-	}
+    auto sc = getWorkFlowGraphicsScene();
+    if (sc) {
+        sc->setPreDefineSceneAction(mf);
+    }
 }
 
 void DAPyWorkFlowEditWidget::addBackgroundPixmap(const QString& pixmapPath)
 {
-	auto sc = getWorkFlowGraphicsScene();
-	if (!sc) {
-		return;
-	}
+    auto sc = getWorkFlowGraphicsScene();
+    if (!sc) {
+        return;
+    }
 
-	QImage img(pixmapPath);
-	QPixmap px;
-	px.convertFromImage(img);
-	DAGraphicsPixmapItem* item = sc->setBackgroundPixmap(px);
-	item->setSelectable(true);
-	item->setMoveable(true);
-	// connect(item, &DAGraphicsPixmapItem::itemPosChange, this, &DAPyWorkFlowOperateWidget::onItemPosChange);
+    QImage img(pixmapPath);
+    QPixmap px;
+    px.convertFromImage(img);
+    DAGraphicsPixmapItem* item = sc->setBackgroundPixmap(px);
+    item->setSelectable(true);
+    item->setMoveable(true);
+    // connect(item, &DAGraphicsPixmapItem::itemPosChange, this, &DAPyWorkFlowOperateWidget::onItemPosChange);
 }
 
 void DAPyWorkFlowEditWidget::setBackgroundPixmapLock(bool on)
 {
-	auto sc = getWorkFlowGraphicsScene();
-	if (!sc) {
-		return;
-	}
-	DAGraphicsPixmapItem* item = sc->getBackgroundPixmapItem();
-	if (nullptr == item) {
-		return;
-	}
-	item->setSelectable(!on);
-	item->setMoveable(!on);
+    auto sc = getWorkFlowGraphicsScene();
+    if (!sc) {
+        return;
+    }
+    DAGraphicsPixmapItem* item = sc->getBackgroundPixmapItem();
+    if (nullptr == item) {
+        return;
+    }
+    item->setSelectable(!on);
+    item->setMoveable(!on);
 }
 
 void DAPyWorkFlowEditWidget::setSelectTextToBold(bool on)
 {
-	auto secen = getWorkFlowGraphicsScene();
-	if (!secen) {
-		return;
-	}
-	const auto standarditems = getSelectStandardTextItems();
-	for (auto item : standarditems) {
-		item->setSelectTextBold(on);
-	}
+    auto secen = getWorkFlowGraphicsScene();
+    if (!secen) {
+        return;
+    }
+    const auto standarditems = getSelectStandardTextItems();
+    for (auto item : standarditems) {
+        item->setSelectTextBold(on);
+    }
 
-	const auto items = getSelectTextItems();
-	for (auto item : items) {
-		item->setSelectTextBold(on);
-	}
+    const auto items = getSelectTextItems();
+    for (auto item : items) {
+        item->setSelectTextBold(on);
+    }
 }
 
 void DAPyWorkFlowEditWidget::setSelectTextToItalic(bool on)
 {
-	auto secen = getWorkFlowGraphicsScene();
-	if (!secen) {
-		return;
-	}
-	const auto standarditems = getSelectStandardTextItems();
-	for (auto item : standarditems) {
-		item->setSelectTextItalic(on);
-	}
+    auto secen = getWorkFlowGraphicsScene();
+    if (!secen) {
+        return;
+    }
+    const auto standarditems = getSelectStandardTextItems();
+    for (auto item : standarditems) {
+        item->setSelectTextItalic(on);
+    }
 
-	const auto items = getSelectTextItems();
-	for (auto item : items) {
-		item->setSelectTextItalic(on);
-	}
+    const auto items = getSelectTextItems();
+    for (auto item : items) {
+        item->setSelectTextItalic(on);
+    }
 }
 
 void DAPyWorkFlowEditWidget::setSelectTextColor(const QColor& color)
 {
-	auto secen = getWorkFlowGraphicsScene();
-	if (!secen) {
-		return;
-	}
-	const auto standarditems = getSelectStandardTextItems();
-	for (auto item : standarditems) {
-		item->setSelectTextColor(color);
-	}
+    auto secen = getWorkFlowGraphicsScene();
+    if (!secen) {
+        return;
+    }
+    const auto standarditems = getSelectStandardTextItems();
+    for (auto item : standarditems) {
+        item->setSelectTextColor(color);
+    }
 
-	const auto items = getSelectTextItems();
-	for (auto item : items) {
-		item->setSelectTextColor(color);
-	}
+    const auto items = getSelectTextItems();
+    for (auto item : items) {
+        item->setSelectTextColor(color);
+    }
 }
 
 void DAPyWorkFlowEditWidget::setSelectTextFamily(const QString& family)
 {
-	auto secen = getWorkFlowGraphicsScene();
-	if (!secen) {
-		return;
-	}
-	const auto standarditems = getSelectStandardTextItems();
-	for (auto item : standarditems) {
-		item->setSelectTextFamily(family);
-	}
+    auto secen = getWorkFlowGraphicsScene();
+    if (!secen) {
+        return;
+    }
+    const auto standarditems = getSelectStandardTextItems();
+    for (auto item : standarditems) {
+        item->setSelectTextFamily(family);
+    }
 
-	const auto items = getSelectTextItems();
-	for (auto item : items) {
-		item->setSelectTextFamily(family);
-	}
+    const auto items = getSelectTextItems();
+    for (auto item : items) {
+        item->setSelectTextFamily(family);
+    }
 }
 
 void DAPyWorkFlowEditWidget::setSelectTextPointSize(const int size)
 {
-	auto secen = getWorkFlowGraphicsScene();
-	if (!secen) {
-		return;
-	}
-	const auto standarditems = getSelectStandardTextItems();
-	for (auto item : standarditems) {
-		item->setSelectTextPointSize(size);
-	}
-	const auto items = getSelectTextItems();
-	for (auto item : items) {
-		item->setSelectTextPointSize(size);
-	}
+    auto secen = getWorkFlowGraphicsScene();
+    if (!secen) {
+        return;
+    }
+    const auto standarditems = getSelectStandardTextItems();
+    for (auto item : standarditems) {
+        item->setSelectTextPointSize(size);
+    }
+    const auto items = getSelectTextItems();
+    for (auto item : items) {
+        item->setSelectTextPointSize(size);
+    }
 }
 
 /**
@@ -286,18 +235,18 @@ void DAPyWorkFlowEditWidget::setSelectTextPointSize(const int size)
  */
 void DAPyWorkFlowEditWidget::setSelectTextItemFont(const QFont& f)
 {
-	auto secen = getWorkFlowGraphicsScene();
-	if (!secen) {
-		return;
-	}
-	auto standarditems = getSelectStandardTextItems();
-	for (auto item : standarditems) {
-		item->setSelectTextFont(f);
-	}
-	auto items = getSelectTextItems();
-	for (auto item : items) {
-		item->setSelectTextFont(f);
-	}
+    auto secen = getWorkFlowGraphicsScene();
+    if (!secen) {
+        return;
+    }
+    auto standarditems = getSelectStandardTextItems();
+    for (auto item : standarditems) {
+        item->setSelectTextFont(f);
+    }
+    auto items = getSelectTextItems();
+    for (auto item : items) {
+        item->setSelectTextFont(f);
+    }
 }
 
 /**
@@ -308,16 +257,16 @@ void DAPyWorkFlowEditWidget::setSelectTextItemFont(const QFont& f)
  */
 void DAPyWorkFlowEditWidget::setSelectShapeBackgroundBrush(const QBrush& b)
 {
-	auto secen = getWorkFlowGraphicsScene();
-	if (!secen) {
-		return;
-	}
-	QList< DAGraphicsItem* > items = getSelectDAItems();
-	if (items.isEmpty()) {
-		return;
-	}
-	auto cmd = new DA::DACommandGraphicsShapeBackgroundBrushChange(items, b);
-	secen->push(cmd);
+    auto secen = getWorkFlowGraphicsScene();
+    if (!secen) {
+        return;
+    }
+    QList< DAGraphicsItem* > items = getSelectDAItems();
+    if (items.isEmpty()) {
+        return;
+    }
+    auto cmd = new DA::DACommandGraphicsShapeBackgroundBrushChange(items, b);
+    secen->push(cmd);
 }
 /**
  * @brief 设置当前选中图元的边框
@@ -325,16 +274,16 @@ void DAPyWorkFlowEditWidget::setSelectShapeBackgroundBrush(const QBrush& b)
  */
 void DAPyWorkFlowEditWidget::setSelectShapeBorderPen(const QPen& v)
 {
-	auto secen = getWorkFlowGraphicsScene();
-	if (!secen) {
-		return;
-	}
-	QList< DAGraphicsItem* > items = getSelectDAItems();
-	if (items.isEmpty()) {
-		return;
-	}
-	DA::DACommandGraphicsShapeBorderPenChange* cmd = new DA::DACommandGraphicsShapeBorderPenChange(items, v);
-	secen->push(cmd);
+    auto secen = getWorkFlowGraphicsScene();
+    if (!secen) {
+        return;
+    }
+    QList< DAGraphicsItem* > items = getSelectDAItems();
+    if (items.isEmpty()) {
+        return;
+    }
+    DA::DACommandGraphicsShapeBorderPenChange* cmd = new DA::DACommandGraphicsShapeBorderPenChange(items, v);
+    secen->push(cmd);
 }
 
 /**
@@ -390,30 +339,30 @@ void DAPyWorkFlowEditWidget::removeSelectItems()
  */
 void DAPyWorkFlowEditWidget::cancel()
 {
-	DAPyWorkFlowGraphicsScene* sc = getWorkFlowGraphicsScene();
-	if (sc) {
-		if (sc->isStartLink()) {
-			sc->cancelLink();
-		} else {
-			// 不在连线状态按下esc，就取消选择
-			sc->clearSelection();
-		}
-	}
+    DAPyWorkFlowGraphicsScene* sc = getWorkFlowGraphicsScene();
+    if (sc) {
+        if (sc->isStartLink()) {
+            sc->cancelLink();
+        } else {
+            // 不在连线状态按下esc，就取消选择
+            sc->clearSelection();
+        }
+    }
 }
 
 QFont DAPyWorkFlowEditWidget::getDefaultTextFont() const
 {
-	return getWorkFlowGraphicsScene()->getDefaultTextFont();
+    return getWorkFlowGraphicsScene()->getDefaultTextFont();
 }
 
 void DAPyWorkFlowEditWidget::setDefaultTextFont(const QFont& f)
 {
-	getWorkFlowGraphicsScene()->setDefaultTextFont(f);
+    getWorkFlowGraphicsScene()->setDefaultTextFont(f);
 }
 
 QColor DAPyWorkFlowEditWidget::getDefaultTextColor() const
 {
-	return getWorkFlowGraphicsScene()->getDefaultTextColor();
+    return getWorkFlowGraphicsScene()->getDefaultTextColor();
 }
 
 void DAPyWorkFlowEditWidget::setDefaultTextColor(const QColor& c)
@@ -427,16 +376,16 @@ void DAPyWorkFlowEditWidget::setDefaultTextColor(const QColor& c)
  */
 DAGraphicsPixmapItem* DAPyWorkFlowEditWidget::addPixmapItem_(const QImage& img)
 {
-	if (img.isNull()) {
-		return nullptr;
-	}
-	QPixmap pixmap = QPixmap::fromImage(img);
-	if (pixmap.isNull()) {
-		return nullptr;
-	}
-	DAGraphicsPixmapItem* pixmapItem = new DAGraphicsPixmapItem(pixmap);
-	getWorkFlowGraphicsScene()->addItem_(pixmapItem);
-	return pixmapItem;
+    if (img.isNull()) {
+        return nullptr;
+    }
+    QPixmap pixmap = QPixmap::fromImage(img);
+    if (pixmap.isNull()) {
+        return nullptr;
+    }
+    DAGraphicsPixmapItem* pixmapItem = new DAGraphicsPixmapItem(pixmap);
+    getWorkFlowGraphicsScene()->addItem_(pixmapItem);
+    return pixmapItem;
 }
 
 /**
@@ -445,8 +394,8 @@ DAGraphicsPixmapItem* DAPyWorkFlowEditWidget::addPixmapItem_(const QImage& img)
  */
 QPointF DAPyWorkFlowEditWidget::getViewCenterMapToScene() const
 {
-	auto r = ui->workflowGraphicsView->viewport()->rect().center();
-	return ui->workflowGraphicsView->mapToScene(r);
+    auto r = ui->workflowGraphicsView->viewport()->rect().center();
+    return ui->workflowGraphicsView->mapToScene(r);
 }
 
 /**
@@ -455,11 +404,11 @@ QPointF DAPyWorkFlowEditWidget::getViewCenterMapToScene() const
  */
 void DAPyWorkFlowEditWidget::moveItemToViewSceneCenter(QGraphicsItem* item)
 {
-	QPointF c = getViewCenterMapToScene();
-	auto br   = item->boundingRect();
-	c.rx() -= (br.width() / 2);
-	c.ry() -= (br.height() / 2);
-	item->setPos(c);
+    QPointF c = getViewCenterMapToScene();
+    auto br   = item->boundingRect();
+    c.rx() -= (br.width() / 2);
+    c.ry() -= (br.height() / 2);
+    item->setPos(c);
 }
 
 /**
@@ -469,24 +418,24 @@ void DAPyWorkFlowEditWidget::moveItemToViewSceneCenter(QGraphicsItem* item)
  */
 QRectF DAPyWorkFlowEditWidget::calcAllItemsSceneRange(const QList< QGraphicsItem* >& its)
 {
-	if (its.empty()) {
-		return QRectF();
-	}
-	QRectF range = its.first()->sceneBoundingRect();
-	for (int i = 1; i < its.size(); ++i) {
+    if (its.empty()) {
+        return QRectF();
+    }
+    QRectF range = its.first()->sceneBoundingRect();
+    for (int i = 1; i < its.size(); ++i) {
         range = range.united(its[ i ]->sceneBoundingRect());
-	}
-	return range;
+    }
+    return range;
 }
 
 QList< QGraphicsItem* > DAPyWorkFlowEditWidget::cast(const QList< DAGraphicsItem* >& its)
 {
-	QList< QGraphicsItem* > res;
-	res.reserve(its.size());
-	for (DAGraphicsItem* i : its) {
-		res.append(static_cast< QGraphicsItem* >(i));
-	}
-	return res;
+    QList< QGraphicsItem* > res;
+    res.reserve(its.size());
+    for (DAGraphicsItem* i : its) {
+        res.append(static_cast< QGraphicsItem* >(i));
+    }
+    return res;
 }
 
 /**
@@ -495,21 +444,21 @@ QList< QGraphicsItem* > DAPyWorkFlowEditWidget::cast(const QList< DAGraphicsItem
  */
 QList< DAGraphicsStandardTextItem* > DAPyWorkFlowEditWidget::getSelectStandardTextItems()
 {
-	QList< DAGraphicsStandardTextItem* > res;
-	auto secen = getWorkFlowGraphicsScene();
-	if (!secen) {
-		return res;
-	}
-	QList< QGraphicsItem* > its = secen->selectedItems();
-	if (its.size() == 0) {
-		return res;
-	}
-	for (QGraphicsItem* item : std::as_const(its)) {
-		if (DAGraphicsStandardTextItem* textItem = dynamic_cast< DAGraphicsStandardTextItem* >(item)) {
-			res.append(textItem);
-		}
-	}
-	return res;
+    QList< DAGraphicsStandardTextItem* > res;
+    auto secen = getWorkFlowGraphicsScene();
+    if (!secen) {
+        return res;
+    }
+    QList< QGraphicsItem* > its = secen->selectedItems();
+    if (its.size() == 0) {
+        return res;
+    }
+    for (QGraphicsItem* item : std::as_const(its)) {
+        if (DAGraphicsStandardTextItem* textItem = dynamic_cast< DAGraphicsStandardTextItem* >(item)) {
+            res.append(textItem);
+        }
+    }
+    return res;
 }
 
 /**
@@ -518,21 +467,21 @@ QList< DAGraphicsStandardTextItem* > DAPyWorkFlowEditWidget::getSelectStandardTe
  */
 QList< DAGraphicsTextItem* > DAPyWorkFlowEditWidget::getSelectTextItems()
 {
-	QList< DAGraphicsTextItem* > res;
-	auto secen = getWorkFlowGraphicsScene();
-	if (!secen) {
-		return res;
-	}
-	const QList< QGraphicsItem* > its = secen->selectedItems();
-	if (its.size() == 0) {
-		return res;
-	}
-	for (QGraphicsItem* item : its) {
-		if (DAGraphicsTextItem* textItem = dynamic_cast< DAGraphicsTextItem* >(item)) {
-			res.append(textItem);
-		}
-	}
-	return res;
+    QList< DAGraphicsTextItem* > res;
+    auto secen = getWorkFlowGraphicsScene();
+    if (!secen) {
+        return res;
+    }
+    const QList< QGraphicsItem* > its = secen->selectedItems();
+    if (its.size() == 0) {
+        return res;
+    }
+    for (QGraphicsItem* item : its) {
+        if (DAGraphicsTextItem* textItem = dynamic_cast< DAGraphicsTextItem* >(item)) {
+            res.append(textItem);
+        }
+    }
+    return res;
 }
 
 /**
@@ -541,28 +490,28 @@ QList< DAGraphicsTextItem* > DAPyWorkFlowEditWidget::getSelectTextItems()
  */
 QList< DAGraphicsItem* > DAPyWorkFlowEditWidget::getSelectDAItems()
 {
-	auto secen = getWorkFlowGraphicsScene();
-	if (!secen) {
-		return QList< DAGraphicsItem* >();
-	}
-	return secen->selectedDAItems();
+    auto secen = getWorkFlowGraphicsScene();
+    if (!secen) {
+        return QList< DAGraphicsItem* >();
+    }
+    return secen->selectedDAItems();
 }
 
 void DAPyWorkFlowEditWidget::createScene()
 {
-	DAPyWorkFlowGraphicsScene* sc = new DAPyWorkFlowGraphicsScene(this);
+    DAPyWorkFlowGraphicsScene* sc = new DAPyWorkFlowGraphicsScene(this);
 
-	mScene = sc;
-	ui->workflowGraphicsView->setScene(sc);
-	//    connect(_scene, &DAPyWorkFlowGraphicsScene::selectNodeItemChanged, this, [ this ](DAGraphicsItem* i) {
-	//        if (DAPyNodeGraphicsItem* ni = dynamic_cast< DAPyNodeGraphicsItem* >(i)) {
-	//            emit selectNodeItemChanged(ni);
-	//        }
-	//    });
+    mScene = sc;
+    ui->workflowGraphicsView->setScene(sc);
+    //    connect(_scene, &DAPyWorkFlowGraphicsScene::selectNodeItemChanged, this, [ this ](DAGraphicsItem* i) {
+    //        if (DAPyNodeGraphicsItem* ni = dynamic_cast< DAPyNodeGraphicsItem* >(i)) {
+    //            emit selectNodeItemChanged(ni);
+    //        }
+    //    });
 
-	connect(sc, &DAPyWorkFlowScene::selectPyNodeItemChanged, this, &DAPyWorkFlowEditWidget::selectNodeItemChanged);
-	connect(sc, &DAPyWorkFlowGraphicsScene::sceneActionActived, this, &DAPyWorkFlowEditWidget::sceneActionActived);
-	connect(sc, &DAPyWorkFlowGraphicsScene::sceneActionDeactived, this, &DAPyWorkFlowEditWidget::sceneActionDeactived);
+    connect(sc, &DAPyWorkFlowScene::selectPyNodeItemChanged, this, &DAPyWorkFlowEditWidget::selectNodeItemChanged);
+    connect(sc, &DAPyWorkFlowGraphicsScene::sceneActionActived, this, &DAPyWorkFlowEditWidget::sceneActionActived);
+    connect(sc, &DAPyWorkFlowGraphicsScene::sceneActionDeactived, this, &DAPyWorkFlowEditWidget::sceneActionDeactived);
 }
 
 }  // end of DA

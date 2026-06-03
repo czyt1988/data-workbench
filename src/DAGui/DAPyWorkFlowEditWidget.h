@@ -8,7 +8,6 @@
 #include "DAPyWorkFlowGraphicsView.h"
 #include "DAPyWorkFlowGraphicsScene.h"
 #include "DAPyWorkFlow.h"
-#include "DAPyWorkFlowLifecycle.h"
 #include "DAAbstractGraphicsSceneAction.h"
 namespace Ui
 {
@@ -151,8 +150,6 @@ private:
 private:
     Ui::DAPyWorkFlowEditWidget* ui;
     DAPyWorkFlowGraphicsScene* mScene { nullptr };
-    QPointer<DAPyWorkFlowLifecycle> mWorkFlowLifecycle;
-    QThread* mWorkFlowThread { nullptr };
 };
 }  // end of DA
 #endif  // DAPyWorkFlowEditWidget_H
