@@ -16,6 +16,7 @@
 // workflow
 #include "DAPyWorkFlowGraphicsView.h"
 #include "DAPyWorkFlowGraphicsScene.h"
+#include "DAPyWorkFlowManager.h"
 #include "DAGraphicsLinkItem.h"
 #include "DAPyNodeGraphicsItem.h"
 #include "DAGraphicsPixmapItem.h"
@@ -38,26 +39,27 @@ DAPyWorkFlowEditWidget::~DAPyWorkFlowEditWidget()
 }
 
 /**
- * @brief 获取工作流
- * @return
+ * @brief 获取工作流管理器
+ *
+ * 委托给View的getManager()。
+ *
+ * @return 当前Manager指针
  */
-DAPyWorkFlow* DAPyWorkFlowEditWidget::getWorkflow() const
+DAPyWorkFlowManager* DAPyWorkFlowEditWidget::getManager() const
 {
-    return ui->workflowGraphicsView->getWorkflow();
+    return ui->workflowGraphicsView->getManager();
 }
 
 /**
- * @brief DAPyWorkFlowEditWidget::setWorkFlow
- * @param w
+ * @brief 设置工作流管理器
+ *
+ * 委托给View的setManager()。
+ *
+ * @param[in] manager 工作流管理器指针
  */
-void DAPyWorkFlowEditWidget::setWorkFlow(DAPyWorkFlow* w)
+void DAPyWorkFlowEditWidget::setManager(DAPyWorkFlowManager* manager)
 {
-    ui->workflowGraphicsView->setWorkFlow(w);
-    // TODO: DAPyWorkFlow no longer has startExecute/nodeExecuteFinished/finished signals.
-    // These signals now belong to DAPyWorkFlowLifecycle. Execution signal connections
-    // should be set up when a DAPyWorkFlowLifecycle is created for this workflow.
-    // The DAPyWorkFlowEditWidget's own signals (startExecute, nodeExecuteFinished, finished)
-    // remain defined and can be emitted manually or connected from a lifecycle later.
+    ui->workflowGraphicsView->setManager(manager);
 }
 
 DAPyWorkFlowGraphicsView* DAPyWorkFlowEditWidget::getWorkFlowGraphicsView() const
@@ -98,7 +100,7 @@ QUndoStack* DAPyWorkFlowEditWidget::getUndoStack()
 void DAPyWorkFlowEditWidget::runWorkFlow()
 {
     auto scene = getWorkFlowGraphicsScene();
-    if (!scene || !scene->hasPyWorkflow()) {
+    if (!scene || !scene->hasManager()) {
         qCritical() << tr("no workflow set");
         return;
     }

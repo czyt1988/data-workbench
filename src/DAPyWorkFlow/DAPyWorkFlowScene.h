@@ -2,7 +2,6 @@
 #define DAPYWORKFLOWSCENE_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAGraphicsScene.h"
-#include "DAPyWorkFlow.h"
 #include "DAPyNode.h"
 #include "DAPyNodeState.h"
 #include <QPointF>
@@ -16,7 +15,7 @@ namespace DA
 class DAPyNodeGraphicsItem;
 class DAPyLinkGraphicsItem;
 class DAPythonSignalHandler;
-class DAPyNodeFactory;
+class DAPyWorkFlowManager;
 class DAPyNodeMetaData;
 
 /**
@@ -42,18 +41,14 @@ public:
     DAPyWorkFlowScene(qreal x, qreal y, qreal width, qreal height, QObject* parent = nullptr);
     ~DAPyWorkFlowScene();
 
-    // 设置Python DAWorkflow实例引用
-    void setPyWorkflow(const pybind11::object& workflow);
-    pybind11::object getPyWorkflow() const;
-    bool hasPyWorkflow() const;
+    // 设置工作流管理器（统一管理 workflow 和 factory）
+    void setManager(DAPyWorkFlowManager* manager);
+    DAPyWorkFlowManager* getManager() const;
+    bool hasManager() const;
 
     // 设置Python信号处理器（用于接收Python侧的状态变更通知）
     void setSignalHandler(DAPythonSignalHandler* handler);
     DAPythonSignalHandler* getSignalHandler() const;
-
-    // 设置Python节点工厂（用于创建DAPyNode实例）
-    void setPyNodeFactory(std::shared_ptr< DAPyNodeFactory > factory);
-    std::shared_ptr< DAPyNodeFactory > getPyNodeFactory() const;
 
     // 节点管理
     // 通过节点元数据创建Python工作流节点（推荐路径，避免数据丢失）

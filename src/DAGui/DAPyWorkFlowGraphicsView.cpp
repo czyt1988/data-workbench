@@ -17,6 +17,7 @@
 #include "DANodeMimeData.h"
 #include "DAPyNodeFactory.h"
 #include "DAPyWorkFlowGraphicsScene.h"
+#include "DAPyWorkFlowManager.h"
 #include "DAPyWorkFlow.h"
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyLinkGraphicsItem.h"
@@ -106,24 +107,31 @@ DAPyWorkFlowGraphicsView::~DAPyWorkFlowGraphicsView()
 }
 
 /**
- * @brief DAPyWorkFlowGraphicsView不负责workflow的所有权
- * @param wf
+ * @brief 设置工作流管理器，委托到Scene
+ *
+ * DAPyWorkFlowGraphicsView不负责Manager的所有权。
+ *
+ * @param[in] manager 工作流管理器指针
  */
-void DAPyWorkFlowGraphicsView::setWorkFlow(DAPyWorkFlow* wf)
+void DAPyWorkFlowGraphicsView::setManager(DAPyWorkFlowManager* manager)
 {
-    // TODO: DAPyWorkFlowScene uses setPyWorkflow(const pybind11::object&)
-    // Once DAPyWorkFlow provides a pybind11::object accessor, delegate to scene
-    Q_UNUSED(wf);
+    DAPyWorkFlowGraphicsScene* sc = getWorkFlowGraphicsScene();
+    if (sc) {
+        sc->setManager(manager);
+    }
 }
 
 /**
- * @brief DAPyWorkFlowGraphicsView::workflow
- * @return
+ * @brief 获取工作流管理器
+ *
+ * @return 当前Scene中的Manager指针，无Scene时返回nullptr
  */
-DAPyWorkFlow* DAPyWorkFlowGraphicsView::getWorkflow()
+DAPyWorkFlowManager* DAPyWorkFlowGraphicsView::getManager() const
 {
-    // TODO: DAPyWorkFlowScene uses getPyWorkflow() returning pybind11::object
-    // Once DAPyWorkFlow provides conversion, delegate to scene
+    DAPyWorkFlowGraphicsScene* sc = const_cast< DAPyWorkFlowGraphicsView* >(this)->getWorkFlowGraphicsScene();
+    if (sc) {
+        return sc->getManager();
+    }
     return nullptr;
 }
 

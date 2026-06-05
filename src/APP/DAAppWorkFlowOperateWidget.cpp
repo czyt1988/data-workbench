@@ -1,5 +1,6 @@
 #include "DAAppWorkFlowOperateWidget.h"
 #include "DADataWorkFlow.h"
+#include "DAPyWorkFlowManager.h"
 #include "DAPyWorkFlowEditWidget.h"
 #include "DAAppCore.h"
 #include "DAAppCommand.h"
@@ -23,15 +24,12 @@ DAAppWorkFlowOperateWidget::~DAAppWorkFlowOperateWidget()
 {
 }
 
-DAPyWorkFlow* DAAppWorkFlowOperateWidget::createWorkflow()
+DAPyWorkFlowManager* DAAppWorkFlowOperateWidget::createManager()
 {
-    DADataWorkFlow* wf = new DADataWorkFlow();
-    if (!mPluginMgr) {
-        return wf;
-    }
-    // TODO: DAPyWorkFlow不再使用registFactory模式，工厂注册需要通过DAPyNodeFactory管理
-    // 旧的registFactory接口已移除，后续需要适配新的插件加载方式
-    return wf;
+    auto mgr = new DAPyWorkFlowManager();
+    // 注入 DADataWorkFlow 替代默认的 DAPyWorkFlow
+    mgr->setWorkflow(new DADataWorkFlow());
+    return mgr;
 }
 
 void DAAppWorkFlowOperateWidget::setPluginManager(DAAppPluginManager* pluginMgr)
@@ -42,11 +40,11 @@ void DAAppWorkFlowOperateWidget::setPluginManager(DAAppPluginManager* pluginMgr)
 void DAAppWorkFlowOperateWidget::onWorkflowCreated(DAPyWorkFlowEditWidget* wfw)
 {
     cmd()->addStack(wfw->getUndoStack());
-    // 注入Python节点工厂到场景
+    // 注入Python节点工厂到Manager
     if (mPluginMgr) {
-        DAPyWorkFlowGraphicsScene* scene = wfw->getWorkFlowGraphicsScene();
-        if (scene) {
-            scene->setPyNodeFactory(mPluginMgr->getPyNodeFactory());
+        DAPyWorkFlowManager* mgr = wfw->getManager();
+        if (mgr) {
+            mgr->setFactory(mPluginMgr->getPyNodeFactory());
         }
     }
 }

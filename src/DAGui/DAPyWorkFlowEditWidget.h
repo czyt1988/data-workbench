@@ -7,7 +7,6 @@
 #include "DAGraphicsStandardTextItem.h"
 #include "DAPyWorkFlowGraphicsView.h"
 #include "DAPyWorkFlowGraphicsScene.h"
-#include "DAPyWorkFlow.h"
 #include "DAAbstractGraphicsSceneAction.h"
 namespace Ui
 {
@@ -19,6 +18,7 @@ namespace DA
 {
 class DAGraphicsItem;
 class DADataWorkFlow;
+class DAPyWorkFlowManager;
 class DAPyWorkFlowGraphicsView;
 class DAPyNodeGraphicsItem;
 /**
@@ -33,10 +33,10 @@ class DAGUI_API DAPyWorkFlowEditWidget : public QWidget
 public:
     explicit DAPyWorkFlowEditWidget(QWidget* parent = nullptr);
     ~DAPyWorkFlowEditWidget();
-    // 获取工厂
-    DAPyWorkFlow* getWorkflow() const;
-    // 设置工作流
-    void setWorkFlow(DAPyWorkFlow* w);
+    // 获取工作流管理器
+    DAPyWorkFlowManager* getManager() const;
+    // 设置工作流管理器
+    void setManager(DAPyWorkFlowManager* manager);
     // 获取工作流操作视图
     DAPyWorkFlowGraphicsView* getWorkFlowGraphicsView() const;
     // 获取GraphicsScene

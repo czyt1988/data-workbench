@@ -23,8 +23,10 @@ public:
 
     // 工作流代理实例
     DAPyWorkFlow* mWorkflow { nullptr };
-    // 节点工厂代理实例
+    // 节点工厂代理实例（裸指针，可能由sharedFactory管理）
     DAPyNodeFactory* mFactory { nullptr };
+    // shared_ptr工厂（与外部共享所有权时持有）
+    std::shared_ptr< DAPyNodeFactory > mSharedFactory;
 };
 
 //===================================================
@@ -32,14 +34,27 @@ public:
 //===================================================
 
 /**
+ * @brief 虚工厂方法，创建默认的工作流实例
+ *
+ * 子类可覆写此方法以创建自定义的工作流类型（如DADataWorkFlow）。
+ *
+ * @return 新创建的DAPyWorkFlow实例指针
+ */
+DAPyWorkFlow* DAPyWorkFlowManager::createWorkflowInstance()
+{
+    return new DAPyWorkFlow();
+}
+
+/**
  * @brief 构造函数
  *
- * 创建DAPyWorkFlow和DAPyNodeFactory代理实例作为成员。
+ * 通过虚工厂方法createWorkflowInstance()创建DAPyWorkFlow代理实例，
+ * 同时创建DAPyNodeFactory代理实例作为成员。
  */
 DAPyWorkFlowManager::DAPyWorkFlowManager(QObject* parent) : QObject(parent), DA_PIMPL_CONSTRUCT
 {
     DA_D(d);
-    d->mWorkflow = new DAPyWorkFlow();
+    d->mWorkflow = createWorkflowInstance();
     d->mFactory  = new DAPyNodeFactory();
 }
 
@@ -47,7 +62,10 @@ DAPyWorkFlowManager::~DAPyWorkFlowManager()
 {
     DA_D(d);
     delete d->mWorkflow;
-    delete d->mFactory;
+    // 如果factory由shared_ptr管理，由shared_ptr析构释放
+    if (!d->mSharedFactory) {
+        delete d->mFactory;
+    }
 }
 
 /**
@@ -70,6 +88,268 @@ DAPyNodeFactory* DAPyWorkFlowManager::getFactory() const
 {
     DA_DC(d);
     return d->mFactory;
+}
+
+/**
+ * @brief 替换内部workflow实例
+ *
+ * Manager取得传入workflow的所有权，旧实例会被delete。
+ * 如果传入的指针与当前持有的相同，则不做任何操作。
+ *
+ * @param[in] wf 新的DAPyWorkFlow实例指针（Manager取得所有权）
+ */
+void DAPyWorkFlowManager::setWorkflow(DAPyWorkFlow* wf)
+{
+    DA_D(d);
+    if (d->mWorkflow != wf) {
+        delete d->mWorkflow;
+        d->mWorkflow = wf;
+    }
+}
+
+/**
+ * @brief 替换内部factory实例
+ *
+ * Manager取得传入factory的所有权，旧实例会被delete。
+ * 如果传入的指针与当前持有的相同，则不做任何操作。
+ *
+ * @param[in] factory 新的DAPyNodeFactory实例指针（Manager取得所有权）
+ */
+void DAPyWorkFlowManager::setFactory(DAPyNodeFactory* factory)
+{
+    DA_D(d);
+    if (d->mFactory != factory) {
+        // 如果之前是 shared_ptr 管理的，释放 shared 持有
+        d->mSharedFactory.reset();
+        delete d->mFactory;
+        d->mFactory = factory;
+    }
+}
+
+/**
+ * @brief 替换内部factory实例（shared_ptr版本）
+ *
+ * Manager与外部共享factory的所有权，避免重复创建。
+ * 传入shared_ptr后Manager不再用delete管理factory生命周期。
+ *
+ * @param[in] factory Python节点工厂的共享指针
+ */
+void DAPyWorkFlowManager::setFactory(std::shared_ptr< DAPyNodeFactory > factory)
+{
+    DA_D(d);
+    if (d->mSharedFactory != factory) {
+        // 释放旧的裸指针管理的factory（如果不是shared管理的）
+        if (!d->mSharedFactory) {
+            delete d->mFactory;
+        }
+        d->mSharedFactory = factory;
+        d->mFactory       = factory.get();
+    }
+}
+
+/**
+ * @brief 检查工作流代理是否有效
+ *
+ * @return 如果workflow指针非空且Python对象有效返回true
+ */
+bool DAPyWorkFlowManager::isWorkflowValid() const
+{
+    DA_DC(d);
+    return d->mWorkflow && !d->mWorkflow->isNone();
+}
+
+/**
+ * @brief 注册节点到工作流（不发射信号）
+ *
+ * 将节点代理添加到Python workflow，返回Python分配的nodeId。
+ * 捕获所有Python异常并返回空字符串表示失败。
+ *
+ * @param[in] proxy 节点代理
+ * @return Python分配的nodeId，失败返回空字符串
+ */
+QString DAPyWorkFlowManager::registerNode(const DAPyNode& proxy)
+{
+    DA_D(d);
+    try {
+        return d->mWorkflow->addNode(proxy);
+    } catch (const pybind11::error_already_set& e) {
+        qCritical() << "DAPyWorkFlowManager::registerNode:" << e.what();
+    } catch (const std::exception& e) {
+        qCritical() << "DAPyWorkFlowManager::registerNode:" << e.what();
+    }
+    return QString();
+}
+
+/**
+ * @brief 从工作流移除节点（不发射信号）
+ *
+ * @param[in] proxy 要移除的节点代理
+ * @return 成功返回true，失败返回false
+ */
+bool DAPyWorkFlowManager::unregisterNode(const DAPyNode& proxy)
+{
+    DA_D(d);
+    try {
+        return d->mWorkflow->removeNode(proxy);
+    } catch (const pybind11::error_already_set& e) {
+        qCritical() << "DAPyWorkFlowManager::unregisterNode:" << e.what();
+    } catch (const std::exception& e) {
+        qCritical() << "DAPyWorkFlowManager::unregisterNode:" << e.what();
+    }
+    return false;
+}
+
+/**
+ * @brief 连接两个节点端口（不发射信号）
+ *
+ * @param[in] srcProxy 源节点代理
+ * @param[in] srcOutput 源节点输出端口名
+ * @param[in] dstProxy 目标节点代理
+ * @param[in] dstInput 目标节点输入端口名
+ * @return 连接描述符，失败返回无效描述符
+ */
+DAPyWorkFlowConnection DAPyWorkFlowManager::linkNodes(const DAPyNode& srcProxy,
+                                                       const QString& srcOutput,
+                                                       const DAPyNode& dstProxy,
+                                                       const QString& dstInput)
+{
+    DA_D(d);
+    try {
+        return d->mWorkflow->connectNode(srcProxy, srcOutput, dstProxy, dstInput);
+    } catch (const pybind11::error_already_set& e) {
+        qCritical() << "DAPyWorkFlowManager::linkNodes:" << e.what();
+    } catch (const std::exception& e) {
+        qCritical() << "DAPyWorkFlowManager::linkNodes:" << e.what();
+    }
+    return DAPyWorkFlowConnection();
+}
+
+/**
+ * @brief 断开连接（不发射信号）
+ *
+ * @param[in] connectionId 要断开的连接ID
+ * @return 成功返回true，失败返回false
+ */
+bool DAPyWorkFlowManager::unlinkNode(const QString& connectionId)
+{
+    DA_D(d);
+    try {
+        return d->mWorkflow->disconnectNode(connectionId);
+    } catch (const pybind11::error_already_set& e) {
+        qCritical() << "DAPyWorkFlowManager::unlinkNode:" << e.what();
+    } catch (const std::exception& e) {
+        qCritical() << "DAPyWorkFlowManager::unlinkNode:" << e.what();
+    }
+    return false;
+}
+
+/**
+ * @brief 清空工作流所有节点和连接（不发射信号）
+ */
+void DAPyWorkFlowManager::clearWorkflow()
+{
+    DA_D(d);
+    try {
+        d->mWorkflow->clear();
+    } catch (const pybind11::error_already_set& e) {
+        qCritical() << "DAPyWorkFlowManager::clearWorkflow:" << e.what();
+    } catch (const std::exception& e) {
+        qCritical() << "DAPyWorkFlowManager::clearWorkflow:" << e.what();
+    }
+}
+
+/**
+ * @brief 通过元数据创建节点代理（委托给factory）
+ *
+ * @param[in] metaData 节点元数据
+ * @return 创建的节点代理，失败返回isNone()为true的默认代理
+ */
+DAPyNode DAPyWorkFlowManager::createNodeProxy(const DAPyNodeMetaData& metaData)
+{
+    DA_D(d);
+    try {
+        return d->mFactory->createNode(metaData);
+    } catch (const pybind11::error_already_set& e) {
+        qCritical() << "DAPyWorkFlowManager::createNodeProxy:" << e.what();
+    } catch (const std::exception& e) {
+        qCritical() << "DAPyWorkFlowManager::createNodeProxy:" << e.what();
+    }
+    return DAPyNode();
+}
+
+/**
+ * @brief 获取工作流名称
+ *
+ * @return 工作流名称，获取失败返回空字符串
+ */
+QString DAPyWorkFlowManager::workflowName() const
+{
+    DA_DC(d);
+    try {
+        if (d->mWorkflow && d->mWorkflow->hasattr("name")) {
+            return d->mWorkflow->attr("name").cast<QString>();
+        }
+    } catch (const pybind11::error_already_set& e) {
+        qCritical() << "DAPyWorkFlowManager::workflowName:" << e.what();
+    } catch (const std::exception& e) {
+        qCritical() << "DAPyWorkFlowManager::workflowName:" << e.what();
+    }
+    return QString();
+}
+
+/**
+ * @brief 设置工作流名称
+ *
+ * @param[in] name 新的工作流名称
+ */
+void DAPyWorkFlowManager::setWorkflowName(const QString& name)
+{
+    DA_D(d);
+    try {
+        if (d->mWorkflow && d->mWorkflow->hasattr("name")) {
+            d->mWorkflow->object().attr("name") = name.toStdString();
+        }
+    } catch (const pybind11::error_already_set& e) {
+        qCritical() << "DAPyWorkFlowManager::setWorkflowName:" << e.what();
+    } catch (const std::exception& e) {
+        qCritical() << "DAPyWorkFlowManager::setWorkflowName:" << e.what();
+    }
+}
+
+/**
+ * @brief 获取工作流中所有节点
+ *
+ * @return Python节点列表，失败返回空列表
+ */
+pybind11::list DAPyWorkFlowManager::workflowNodes()
+{
+    DA_D(d);
+    try {
+        return d->mWorkflow->getNodes();
+    } catch (const pybind11::error_already_set& e) {
+        qCritical() << "DAPyWorkFlowManager::workflowNodes:" << e.what();
+    } catch (const std::exception& e) {
+        qCritical() << "DAPyWorkFlowManager::workflowNodes:" << e.what();
+    }
+    return pybind11::list();
+}
+
+/**
+ * @brief 获取工作流中所有连接
+ *
+ * @return Python连接列表，失败返回空列表
+ */
+pybind11::list DAPyWorkFlowManager::workflowConnections()
+{
+    DA_D(d);
+    try {
+        return d->mWorkflow->getConnections();
+    } catch (const pybind11::error_already_set& e) {
+        qCritical() << "DAPyWorkFlowManager::workflowConnections:" << e.what();
+    } catch (const std::exception& e) {
+        qCritical() << "DAPyWorkFlowManager::workflowConnections:" << e.what();
+    }
+    return pybind11::list();
 }
 
 /**

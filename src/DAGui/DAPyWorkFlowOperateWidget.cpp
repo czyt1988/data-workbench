@@ -11,6 +11,8 @@
 // workflow
 #include "DAPyWorkFlowGraphicsView.h"
 #include "DAPyWorkFlowGraphicsScene.h"
+#include "DAPyWorkFlowManager.h"
+#include "DAPyWorkFlow.h"
 #include "DAGraphicsPixmapItem.h"
 //
 #include "DAPyWorkFlowEditWidget.h"
@@ -78,16 +80,16 @@ DAPyWorkFlowOperateWidget::~DAPyWorkFlowOperateWidget()
 }
 
 /**
- * @brief 创建工作流，创建完后通过getWorkflow获取
+ * @brief 创建工作流管理器
  *
- * 如果对DAPyWorkFlow如果有继承，那么重载此函数创建自己的workflow就行
+ * 子类可覆写此方法以注入自定义workflow类型（如DADataWorkFlow）。
+ * 此函数会在@ref appendWorkflow 中调用。
  *
- * 此函数会在@ref appendWorkflow 中调用
- * @return
+ * @return 新创建的DAPyWorkFlowManager实例指针
  */
-DAPyWorkFlow* DAPyWorkFlowOperateWidget::createWorkflow()
+DAPyWorkFlowManager* DAPyWorkFlowOperateWidget::createManager()
 {
-	return (new DAPyWorkFlow());
+	return new DAPyWorkFlowManager();
 }
 
 /**
@@ -105,9 +107,9 @@ DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::appendWorkflow(const QString&
 	}
 	DA_D(d);
 	DAPyWorkFlowEditWidget* wfe = new DAPyWorkFlowEditWidget(ui->tabWidget);
-	DAPyWorkFlow* wf            = createWorkflow();
-	// DAPyWorkFlow is not QObject, ownership is managed via DAPyWorkFlowEditWidget
-	wfe->setWorkFlow(wf);
+	DAPyWorkFlowManager* mgr    = createManager();
+	mgr->setParent(wfe);  // Manager 生命周期绑定到 EditWidget
+	wfe->setManager(mgr);
 	// 把undo添加进去
 	wfe->setEnableShowGrid(d->mIsShowGrid);
 	wfe->setDefaultTextColor(d->mDefaultTextColor);
@@ -171,13 +173,30 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflow(int index)
 }
 
 /**
- * @brief 获取当前的工作流
- * @return
+ * @brief 获取当前工作流管理器
+ *
+ * @return 当前工作流编辑器中的Manager指针，无活动工作流时返回nullptr
+ */
+DAPyWorkFlowManager* DAPyWorkFlowOperateWidget::getCurrentManager() const
+{
+	if (auto w = getCurrentWorkFlowWidget()) {
+		return w->getManager();
+	}
+	return nullptr;
+}
+
+/**
+ * @brief 获取当前的工作流（兼容方法）
+ *
+ * 内部通过getCurrentManager()获取Manager后返回其workflow。
+ * 供DAAbstractNodePlugin等外部调用。
+ *
+ * @return 当前DAPyWorkFlow指针，无活动时返回nullptr
  */
 DAPyWorkFlow* DAPyWorkFlowOperateWidget::getCurrentWorkflow() const
 {
-	if (auto w = getCurrentWorkFlowWidget()) {
-		return w->getWorkflow();
+	if (auto mgr = getCurrentManager()) {
+		return mgr->getWorkflow();
 	}
 	return nullptr;
 }
@@ -518,18 +537,14 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowSelectAll()
  */
 void DAPyWorkFlowOperateWidget::runCurrentWorkFlow()
 {
-	DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-	if (nullptr == w) {
+	DAPyWorkFlowManager* mgr = getCurrentManager();
+	if (nullptr == mgr) {
 		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
 		return;
 	}
-	DAPyWorkFlow* wf = w->getWorkflow();
-	if (nullptr == wf) {
-		qCritical() << tr("Unable to get workflow correctly");  // 无法正确获取工作流
-		return;
+	if (!mgr->executeWorkflow()) {
+		qCritical() << tr("Workflow execution failed");  // 工作流执行失败
 	}
-	// TODO: DAPyWorkFlow no longer has exec(). Execution is now handled by DAPyWorkFlowLifecycle.
-	qWarning() << tr("Workflow execution not yet implemented via DAPyWorkFlowLifecycle");
 }
 
 /**
@@ -537,18 +552,13 @@ void DAPyWorkFlowOperateWidget::runCurrentWorkFlow()
  */
 void DAPyWorkFlowOperateWidget::terminateCurrentWorkFlow()
 {
-	DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-	if (nullptr == w) {
+	DAPyWorkFlowManager* mgr = getCurrentManager();
+	if (nullptr == mgr) {
 		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
 		return;
 	}
-	DAPyWorkFlow* wf = w->getWorkflow();
-	if (nullptr == wf) {
-		qCritical() << tr("Unable to get workflow correctly");  // 无法正确获取工作流
-		return;
-	}
-	// TODO: DAPyWorkFlow no longer has terminate(). Termination is now handled by DAPyWorkFlowLifecycle::terminateRequest().
-	qWarning() << tr("Workflow termination not yet implemented via DAPyWorkFlowLifecycle");
+	// TODO: 工作流终止功能还未实现
+	qWarning() << tr("Workflow termination not yet implemented");
 }
 
 /**

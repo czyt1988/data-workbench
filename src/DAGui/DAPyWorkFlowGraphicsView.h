@@ -17,6 +17,7 @@ namespace DA
 {
 class DAPyWorkFlowGraphicsScene;
 class DAPyWorkFlow;
+class DAPyWorkFlowManager;
 class DAPyNodeGraphicsItem;
 /**
  * @brief 用于节点显示的GraphicsView
@@ -29,8 +30,8 @@ public:
     DAPyWorkFlowGraphicsView(QWidget* parent = 0);
     DAPyWorkFlowGraphicsView(QGraphicsScene* scene, QWidget* parent = 0);
     ~DAPyWorkFlowGraphicsView();
-    void setWorkFlow(DAPyWorkFlow* wf);
-    DAPyWorkFlow* getWorkflow();
+    void setManager(DAPyWorkFlowManager* manager);
+    DAPyWorkFlowManager* getManager() const;
     // 激活UndoStack
     void setUndoStackActive();
     QUndoStack* getUndoStack();

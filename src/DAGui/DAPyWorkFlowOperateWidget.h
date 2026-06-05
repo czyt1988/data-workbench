@@ -17,6 +17,7 @@ class QActionGroup;
 namespace DA
 {
 class DADataWorkFlow;
+class DAPyWorkFlowManager;
 class DAPyWorkFlowGraphicsView;
 class DAPyNodeGraphicsItem;
 /**
@@ -61,9 +62,8 @@ public:
 public:
 	DAPyWorkFlowOperateWidget(QWidget* parent = nullptr);
 	~DAPyWorkFlowOperateWidget();
-	// 创建工作流，创建完后通过getWorkflow获取
-	// 如果对DAPyWorkFlow如果有继承，那么重载此函数创建自己的workflow就行
-	virtual DAPyWorkFlow* createWorkflow();
+	// 创建工作流管理器，子类可覆写以注入自定义 workflow 类型
+	virtual DAPyWorkFlowManager* createManager();
 	// 创建工作流页面，会触发workflowCreated信号
 	DAPyWorkFlowEditWidget* appendWorkflow(const QString& name);
 	// 创建一个新的工作流窗口，此函数带有交互
@@ -71,6 +71,9 @@ public:
 	// 获取当前工作流的索引
 	int getCurrentWorkflowIndex() const;
 	void setCurrentWorkflow(int index);
+	// 获取当前工作流管理器
+	DAPyWorkFlowManager* getCurrentManager() const;
+	// 兼容方法：返回当前 Manager 的 workflow
 	DAPyWorkFlow* getCurrentWorkflow() const;
 	// 设置当前的工作流
 	void setCurrentWorkflowWidget(DAPyWorkFlowEditWidget* wf);

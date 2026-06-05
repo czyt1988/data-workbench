@@ -8,7 +8,7 @@
 #include "DAPythonSignalHandler.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAPyNode.h"
-#include "DAPyNodeFactory.h"
+#include "DAPyWorkFlowManager.h"
 #include "DAPyLinkPoint.h"
 #include "DAGraphicsScene.h"
 #include "DAPyWorkFlowSceneSerializer.h"
@@ -27,12 +27,10 @@ public:
     //
     void syncPyNodeLinkAdd(DAPyLinkGraphicsItem* linkItem);
     void syncPyNodeLinkRemove(DAPyLinkGraphicsItem* linkItem);
-    // Python DAWorkflow封装对象
-    DAPyWorkFlow mWorkflow;
+    // 工作流管理器（非拥有引用，通过setManager设置）
+    QPointer< DAPyWorkFlowManager > mManager;
     // Python信号处理器
     QPointer< DAPythonSignalHandler > mSignalHandler;
-    // Python节点工厂（用于创建DAPyNode实例）
-    std::shared_ptr< DAPyNodeFactory > mPyNodeFactory;
     // 节点到连接线的映射表，维护DAPyNodeGraphicsItem→QList<DAPyLinkGraphicsItem*>的关联关系
     QMap< DAPyNodeGraphicsItem*, QList< DAPyLinkGraphicsItem* > > mNodeToLinksMap;
     // 节点到Python node_id的映射表，维护DAPyNodeGraphicsItem→QString的关联关系
@@ -105,10 +103,10 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkAdd(DAPyLinkGraphicsItem* lin
     QString fromOutput             = linkItem->getFromOutputName();
     QString toInput                = linkItem->getToInputName();
     // 同步Python侧连接
-    if (this->mWorkflow.isValid()) {
+    if (this->mManager && this->mManager->isWorkflowValid()) {
         if (!fromItem->getProxy().isNone() && !toItem->getProxy().isNone()) {
             DAPyWorkFlowConnection conn =
-                this->mWorkflow.connectNode(fromItem->getProxy(), fromOutput, toItem->getProxy(), toInput);
+                this->mManager->linkNodes(fromItem->getProxy(), fromOutput, toItem->getProxy(), toInput);
             if (conn.isValid()) {
                 this->mLinkConnectionIdMap[ linkItem ] = conn.connectionId;
             } else {
@@ -147,10 +145,10 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkRemove(DAPyLinkGraphicsItem* 
     }
 
     // 同步Python侧连接移除
-    if (this->mWorkflow.isValid()) {
+    if (this->mManager && this->mManager->isWorkflowValid()) {
         QString connectionId = this->mLinkConnectionIdMap.value(linkItem);
         if (!connectionId.isEmpty()) {
-            bool removed = this->mWorkflow.disconnectNode(connectionId);
+            bool removed = this->mManager->unlinkNode(connectionId);
             if (!removed) {
                 qWarning() << tr("DAPyWorkFlowScene::removePyNodeLink: disconnectNode failed for connectionId: %1").arg(connectionId);
             }
@@ -215,39 +213,38 @@ DAPyWorkFlowScene::~DAPyWorkFlowScene()
 }
 
 /**
- * @brief 设置Python DAWorkflow实例引用
+ * @brief 设置工作流管理器
  *
- * 存储Python DAWorkflow对象的引用，通过DAPyWorkFlow封装层安全持有，
- * 用于同步节点和连接操作。
+ * Scene以非拥有引用方式持有Manager，所有Python操作通过Manager的方法完成。
  *
- * @param workflow Python DAWorkflow实例的pybind11::object
+ * @param[in] manager 工作流管理器指针（Scene不管理其所有权）
  */
-void DAPyWorkFlowScene::setPyWorkflow(const pybind11::object& workflow)
+void DAPyWorkFlowScene::setManager(DAPyWorkFlowManager* manager)
 {
     DA_D(d);
-    d->mWorkflow.object() = workflow;
+    d->mManager = manager;
 }
 
 /**
- * @brief 获取Python DAWorkflow实例引用
+ * @brief 获取工作流管理器
  *
- * @return Python DAWorkflow对象的pybind11::object引用
+ * @return 当前设置的DAPyWorkFlowManager指针
  */
-pybind11::object DAPyWorkFlowScene::getPyWorkflow() const
+DAPyWorkFlowManager* DAPyWorkFlowScene::getManager() const
 {
     DA_DC(d);
-    return d->mWorkflow.object();
+    return d->mManager;
 }
 
 /**
- * @brief 判断是否已设置Python DAWorkflow实例
+ * @brief 判断是否已设置有效的工作流管理器
  *
- * @return 如果已设置返回true，否则返回false
+ * @return 如果Manager已设置且其内部workflow有效返回true
  */
-bool DAPyWorkFlowScene::hasPyWorkflow() const
+bool DAPyWorkFlowScene::hasManager() const
 {
     DA_DC(d);
-    return d->mWorkflow.isValid();
+    return d->mManager && d->mManager->isWorkflowValid();
 }
 
 /**
@@ -277,32 +274,6 @@ DAPythonSignalHandler* DAPyWorkFlowScene::getSignalHandler() const
 }
 
 /**
- * @brief 设置Python节点工厂
- *
- * 设置DAPyNodeFactory用于创建DAPyNode实例，
- * 工厂负责Python模块导入、节点实例创建和代理设置。
- * 如果未设置工厂，createPyNode()会回退到直接创建DAPyNode。
- *
- * @param[in] factory Python节点工厂的共享指针
- */
-void DAPyWorkFlowScene::setPyNodeFactory(std::shared_ptr< DAPyNodeFactory > factory)
-{
-    DA_D(d);
-    d->mPyNodeFactory = factory;
-}
-
-/**
- * @brief 获取Python节点工厂
- *
- * @return 当前设置的Python节点工厂共享指针，未设置时返回nullptr
- */
-std::shared_ptr< DAPyNodeFactory > DAPyWorkFlowScene::getPyNodeFactory() const
-{
-    DA_DC(d);
-    return d->mPyNodeFactory;
-}
-
-/**
  * @brief 创建Python节点图形项（通过元数据，不添加到场景）
  *
  * 工厂创建代理时已获取Python侧完整属性，
@@ -317,8 +288,8 @@ std::shared_ptr< DAPyNodeFactory > DAPyWorkFlowScene::getPyNodeFactory() const
 DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& metaData, const QPointF& pos)
 {
     DA_D(d);
-    if (!d->mWorkflow.isValid()) {
-        qWarning() << tr("DAPyWorkFlowScene::createPyNode: Python workflow is not set");
+    if (!d->mManager || !d->mManager->isWorkflowValid()) {
+        qWarning() << tr("DAPyWorkFlowScene::createPyNode: Manager or workflow is not set");
         return nullptr;
     }
 
@@ -326,20 +297,15 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
         qWarning() << tr("DAPyWorkFlowScene::createPyNode: invalid metadata (qualified_name: %1)").arg(metaData.qualifiedName);
         return nullptr;
     }
-    if (!d->mPyNodeFactory) {
-        // 未设置工程，直接返回
-        qWarning() << tr("DAPyWorkFlowScene::createPyNode: factory is not set");
-        return nullptr;
-    }
-    // 创建DAPyNode
-    DAPyNode proxy = d->mPyNodeFactory->createNode(metaData);
+    // 通过Manager创建DAPyNode
+    DAPyNode proxy = d->mManager->createNodeProxy(metaData);
     if (proxy.isNone()) {
         // 节点创建失败
         qWarning() << tr("DAPyWorkFlowScene::createPyNode: factory failed to create proxy for %1").arg(metaData.qualifiedName);
         return nullptr;
     }
     // 在Python侧注册节点到DAWorkflow
-    QString nodeId = d->mWorkflow.addNode(proxy);
+    QString nodeId = d->mManager->registerNode(proxy);
     if (nodeId.isEmpty()) {
         qWarning() << tr("DAPyWorkFlowScene::createPyNode: addNode failed for %1").arg(metaData.qualifiedName);
         return nullptr;
@@ -412,10 +378,10 @@ bool DAPyWorkFlowScene::removePyNodeItem(DAPyNodeGraphicsItem* item)
         }
         removeItem(link);
         // 同步Python侧连接移除
-        if (d->mWorkflow.isValid()) {
+        if (d->mManager && d->mManager->isWorkflowValid()) {
             QString connectionId = d->mLinkConnectionIdMap.value(link);
             if (!connectionId.isEmpty()) {
-                d->mWorkflow.disconnectNode(connectionId);
+                d->mManager->unlinkNode(connectionId);
             }
         }
         d->mLinkConnectionIdMap.remove(link);
@@ -429,8 +395,8 @@ bool DAPyWorkFlowScene::removePyNodeItem(DAPyNodeGraphicsItem* item)
     const DAPyNode& proxy = item->getProxy();
 
     // 同步Python侧节点移除
-    if (d->mWorkflow.isValid() && !proxy.isNone()) {
-        d->mWorkflow.removeNode(proxy);
+    if (d->mManager && d->mManager->isWorkflowValid() && !proxy.isNone()) {
+        d->mManager->unregisterNode(proxy);
     }
     d->unregisterNode(item);
 
@@ -979,7 +945,9 @@ void DAPyWorkFlowScene::clearPyScene()
     }
 
     // 同步Python侧清空
-    d->mWorkflow.clear();
+    if (d->mManager) {
+        d->mManager->clearWorkflow();
+    }
 
     // 移除所有节点（unique_ptr自动释放proxy，需GIL保护Python引用释放）
     {

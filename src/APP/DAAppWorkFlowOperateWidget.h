@@ -15,7 +15,7 @@ class DAAppWorkFlowOperateWidget : public DAPyWorkFlowOperateWidget
 public:
     DAAppWorkFlowOperateWidget(QWidget* parent = nullptr);
     ~DAAppWorkFlowOperateWidget();
-    virtual DAPyWorkFlow* createWorkflow() override;
+    virtual DAPyWorkFlowManager* createManager() override;
     // 设置插件管理器，工作流工厂通过插件管理器生成
     void setPluginManager(DAAppPluginManager* pluginMgr);
 private slots:
