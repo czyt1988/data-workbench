@@ -24,14 +24,6 @@ DAAppWorkFlowOperateWidget::~DAAppWorkFlowOperateWidget()
 {
 }
 
-DAPyWorkFlowManager* DAAppWorkFlowOperateWidget::createManager()
-{
-    auto mgr = new DAPyWorkFlowManager();
-    // 注入 DADataWorkFlow 替代默认的 DAPyWorkFlow
-    mgr->setWorkflow(new DADataWorkFlow());
-    return mgr;
-}
-
 void DAAppWorkFlowOperateWidget::setPluginManager(DAAppPluginManager* pluginMgr)
 {
     mPluginMgr = pluginMgr;
