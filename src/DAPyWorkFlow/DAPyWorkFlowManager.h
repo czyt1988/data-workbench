@@ -38,8 +38,6 @@ public:
     // --- 工作流注入（支持子类如DADataWorkFlow）---
     // 替换内部 workflow（Manager 取得所有权）
     void setWorkflow(DAPyWorkFlow* wf);
-    // 替换内部 factory（Manager 取得所有权）
-    void setFactory(DAPyNodeFactory* factory);
     // 替换内部 factory（shared_ptr 版本，与外部共享所有权）
     void setFactory(std::shared_ptr< DAPyNodeFactory > factory);
 
@@ -51,8 +49,8 @@ public:
     // 从工作流移除节点（按代理引用）
     bool unregisterNode(const DAPyNode& proxy);
     // 连接两个节点端口（按代理引用），返回连接描述符
-    DAPyWorkFlowConnection linkNodes(const DAPyNode& srcProxy, const QString& srcOutput,
-                                      const DAPyNode& dstProxy, const QString& dstInput);
+    DAPyWorkFlowConnection
+    linkNodes(const DAPyNode& srcProxy, const QString& srcOutput, const DAPyNode& dstProxy, const QString& dstInput);
     // 断开连接（按 connectionId）
     bool unlinkNode(const QString& connectionId);
     // 清空工作流所有节点和连接

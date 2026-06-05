@@ -23,10 +23,8 @@ public:
 
     // 工作流代理实例
     DAPyWorkFlow* mWorkflow { nullptr };
-    // 节点工厂代理实例（裸指针，可能由sharedFactory管理）
-    DAPyNodeFactory* mFactory { nullptr };
-    // shared_ptr工厂（与外部共享所有权时持有）
-    std::shared_ptr< DAPyNodeFactory > mSharedFactory;
+    // 节点工厂代理实例（shared_ptr统一管理生命周期）
+    std::shared_ptr< DAPyNodeFactory > mFactory;
 };
 
 //===================================================
@@ -48,24 +46,19 @@ DAPyWorkFlow* DAPyWorkFlowManager::createWorkflowInstance()
 /**
  * @brief 构造函数
  *
- * 通过虚工厂方法createWorkflowInstance()创建DAPyWorkFlow代理实例，
- * 同时创建DAPyNodeFactory代理实例作为成员。
+ * 通过虚工厂方法createWorkflowInstance()创建DAPyWorkFlow代理实例。
+ * 工厂由外部通过setFactory()注入，构造时不创建默认实例。
  */
 DAPyWorkFlowManager::DAPyWorkFlowManager(QObject* parent) : QObject(parent), DA_PIMPL_CONSTRUCT
 {
     DA_D(d);
     d->mWorkflow = createWorkflowInstance();
-    d->mFactory  = new DAPyNodeFactory();
 }
 
 DAPyWorkFlowManager::~DAPyWorkFlowManager()
 {
     DA_D(d);
     delete d->mWorkflow;
-    // 如果factory由shared_ptr管理，由shared_ptr析构释放
-    if (!d->mSharedFactory) {
-        delete d->mFactory;
-    }
 }
 
 /**
@@ -87,7 +80,7 @@ DAPyWorkFlow* DAPyWorkFlowManager::getWorkflow() const
 DAPyNodeFactory* DAPyWorkFlowManager::getFactory() const
 {
     DA_DC(d);
-    return d->mFactory;
+    return d->mFactory.get();
 }
 
 /**
@@ -108,25 +101,6 @@ void DAPyWorkFlowManager::setWorkflow(DAPyWorkFlow* wf)
 }
 
 /**
- * @brief 替换内部factory实例
- *
- * Manager取得传入factory的所有权，旧实例会被delete。
- * 如果传入的指针与当前持有的相同，则不做任何操作。
- *
- * @param[in] factory 新的DAPyNodeFactory实例指针（Manager取得所有权）
- */
-void DAPyWorkFlowManager::setFactory(DAPyNodeFactory* factory)
-{
-    DA_D(d);
-    if (d->mFactory != factory) {
-        // 如果之前是 shared_ptr 管理的，释放 shared 持有
-        d->mSharedFactory.reset();
-        delete d->mFactory;
-        d->mFactory = factory;
-    }
-}
-
-/**
  * @brief 替换内部factory实例（shared_ptr版本）
  *
  * Manager与外部共享factory的所有权，避免重复创建。
@@ -137,13 +111,8 @@ void DAPyWorkFlowManager::setFactory(DAPyNodeFactory* factory)
 void DAPyWorkFlowManager::setFactory(std::shared_ptr< DAPyNodeFactory > factory)
 {
     DA_D(d);
-    if (d->mSharedFactory != factory) {
-        // 释放旧的裸指针管理的factory（如果不是shared管理的）
-        if (!d->mSharedFactory) {
-            delete d->mFactory;
-        }
-        d->mSharedFactory = factory;
-        d->mFactory       = factory.get();
+    if (d->mFactory != factory) {
+        d->mFactory = std::move(factory);
     }
 }
 
@@ -209,9 +178,9 @@ bool DAPyWorkFlowManager::unregisterNode(const DAPyNode& proxy)
  * @return 连接描述符，失败返回无效描述符
  */
 DAPyWorkFlowConnection DAPyWorkFlowManager::linkNodes(const DAPyNode& srcProxy,
-                                                       const QString& srcOutput,
-                                                       const DAPyNode& dstProxy,
-                                                       const QString& dstInput)
+                                                      const QString& srcOutput,
+                                                      const DAPyNode& dstProxy,
+                                                      const QString& dstInput)
 {
     DA_D(d);
     try {
@@ -267,6 +236,10 @@ void DAPyWorkFlowManager::clearWorkflow()
 DAPyNode DAPyWorkFlowManager::createNodeProxy(const DAPyNodeMetaData& metaData)
 {
     DA_D(d);
+    if (!d->mFactory) {
+        qCritical() << "DAPyWorkFlowManager::createNodeProxy: factory not set";
+        return DAPyNode();
+    }
     try {
         return d->mFactory->createNode(metaData);
     } catch (const pybind11::error_already_set& e) {
@@ -287,7 +260,7 @@ QString DAPyWorkFlowManager::workflowName() const
     DA_DC(d);
     try {
         if (d->mWorkflow && d->mWorkflow->hasattr("name")) {
-            return d->mWorkflow->attr("name").cast<QString>();
+            return d->mWorkflow->attr("name").cast< QString >();
         }
     } catch (const pybind11::error_already_set& e) {
         qCritical() << "DAPyWorkFlowManager::workflowName:" << e.what();
@@ -365,6 +338,10 @@ pybind11::list DAPyWorkFlowManager::workflowConnections()
 DAPyNode DAPyWorkFlowManager::addNode(const QString& qualifiedName)
 {
     DA_D(d);
+    if (!d->mFactory) {
+        qCritical() << "DAPyWorkFlowManager::addNode: factory not set";
+        return DAPyNode();
+    }
     try {
         DAPyNode proxy = d->mFactory->createNode(qualifiedName);
         if (proxy.isNone()) {
