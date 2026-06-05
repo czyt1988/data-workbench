@@ -7,14 +7,13 @@
 #include "NodeSetting/DAParamDef.h"
 #include "DAPyWorkFlow/DAPyNodeFactory.h"
 #include <QWidget>
-#include <QPointer>
 #include <QJsonObject>
 namespace DA
 {
 /**
  * @brief 节点设置窗口的抽象基类
  *
- * 封装了 DAPyNode 指针管理、描述符缓存等通用功能，
+ * 封装了 DAPyNode 值持有、描述符缓存等通用功能，
  * 子类只需实现 updateUI() 完成模型到界面的同步。
  *
  * @see DAPyNode DANodeSettingWidget
@@ -30,9 +29,9 @@ public:
     ~DAAbstractNodeSettingWidget();
 
     // 设置/获取节点代理
-    void setNodeProxy(DAPyNode* proxy);
-    DAPyNode* getNodeProxy() const;
-
+    void setNode(const DAPyNode& proxy);
+    const DAPyNode& getNode() const;
+    DAPyNode& node();
     // 获取节点元数据
     const DAPyNodeMetaData& getMetaData() const;
 

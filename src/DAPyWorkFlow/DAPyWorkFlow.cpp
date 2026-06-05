@@ -77,11 +77,10 @@ bool DAPyWorkFlow::isValid() const
  *
  * 返回节点id
  */
-QString DAPyWorkFlow::addNode(DAPyNode* proxy)
+QString DAPyWorkFlow::addNode(const DAPyNode& proxy)
 {
-    // TODO:DAPyNode是pybind11的代理，不需要用指针，直接对象传递
-    if (!proxy) {
-        qWarning() << "DAPyWorkFlow::addNode: proxy is nullptr";
+    if (proxy.isNone()) {
+        qWarning() << "DAPyWorkFlow::addNode: proxy is none";
         return QString();
     }
     DAPyGILGuard gil;
@@ -90,7 +89,7 @@ QString DAPyWorkFlow::addNode(DAPyNode* proxy)
             qWarning() << "DAPyWorkFlow::addNode: workflow object is invalid";
             return QString();
         }
-        pybind11::object pyNodeRef = proxy->object();
+        pybind11::object pyNodeRef = proxy.object();
         if (!pyNodeRef) {
             qWarning() << "DAPyWorkFlow::addNode: proxy has no valid Python node reference";
             return QString();
@@ -132,12 +131,12 @@ bool DAPyWorkFlow::removeNode(const QString& nodeId)
 }
 
 /**
- * @brief 通过代理指针移除节点
+ * @brief 通过代理引用移除节点
  */
-bool DAPyWorkFlow::removeNode(DAPyNode* proxy)
+bool DAPyWorkFlow::removeNode(const DAPyNode& proxy)
 {
-    if (!proxy) {
-        qWarning() << "DAPyWorkFlow::removeNode(DAPyNode*): proxy is nullptr";
+    if (proxy.isNone()) {
+        qWarning() << "DAPyWorkFlow::removeNode(const DAPyNode&): proxy is none";
         return false;
     }
     DAPyGILGuard gil;
@@ -146,7 +145,7 @@ bool DAPyWorkFlow::removeNode(DAPyNode* proxy)
         return false;
     }
     try {
-        pybind11::object pyNodeRef = proxy->object();
+        pybind11::object pyNodeRef = proxy.object();
         attr("remove_node")(pybind11::arg("node_instance") = pyNodeRef);
     } catch (const std::exception& e) {
         dealException(e);
@@ -260,23 +259,23 @@ bool DAPyWorkFlow::hasNode(const QString& nodeId)
 }
 
 /**
- * @brief 通过代理指针连接两个节点
+ * @brief 通过代理引用连接两个节点
  */
-DAPyWorkFlowConnection DAPyWorkFlow::connectNode(DAPyNode* src, const QString& srcChannel, DAPyNode* dst, const QString& dstChannel)
+DAPyWorkFlowConnection DAPyWorkFlow::connectNode(const DAPyNode& src, const QString& srcChannel, const DAPyNode& dst, const QString& dstChannel)
 {
-    if (!src) {
-        qWarning() << "DAPyWorkFlow::connectNode(DAPyNode*, ...): src is nullptr";
+    if (src.isNone()) {
+        qWarning() << "DAPyWorkFlow::connectNode(const DAPyNode&, ...): src is none";
         return DAPyWorkFlowConnection();
     }
-    if (!dst) {
-        qWarning() << "DAPyWorkFlow::connectNode(..., DAPyNode*, ...): dst is nullptr";
+    if (dst.isNone()) {
+        qWarning() << "DAPyWorkFlow::connectNode(..., const DAPyNode&, ...): dst is none";
         return DAPyWorkFlowConnection();
     }
     DAPyGILGuard gil;
-    QString srcNodeId = src->getNodeId();
-    QString dstNodeId = dst->getNodeId();
+    QString srcNodeId = src.getNodeId();
+    QString dstNodeId = dst.getNodeId();
     if (srcNodeId.isEmpty() || dstNodeId.isEmpty()) {
-        qWarning() << "DAPyWorkFlow::connectNode(DAPyNode*, ...): src/dst has empty nodeId";
+        qWarning() << "DAPyWorkFlow::connectNode(const DAPyNode&, ...): src/dst has empty nodeId";
         return DAPyWorkFlowConnection();
     }
     DAPyWorkFlowConnection connResult = connectNode(srcNodeId, srcChannel, dstNodeId, dstChannel);
@@ -294,16 +293,16 @@ bool DAPyWorkFlow::disconnectNode(DAPyLinkGraphicsItem* link)
     return false;
 }
 
-bool DAPyWorkFlow::hasNode(DAPyNode* proxy)
+bool DAPyWorkFlow::hasNode(const DAPyNode& proxy)
 {
-    if (!proxy) {
-        qWarning() << "DAPyWorkFlow::hasNode(DAPyNode*): proxy is nullptr";
+    if (proxy.isNone()) {
+        qWarning() << "DAPyWorkFlow::hasNode(const DAPyNode&): proxy is none";
         return false;
     }
     DAPyGILGuard gil;
-    QString nodeId = proxy->getNodeId();
+    QString nodeId = proxy.getNodeId();
     if (nodeId.isEmpty()) {
-        qWarning() << "DAPyWorkFlow::hasNode(DAPyNode*): proxy has empty nodeId";
+        qWarning() << "DAPyWorkFlow::hasNode(const DAPyNode&): proxy has empty nodeId";
         return false;
     }
     return hasNode(nodeId);

@@ -2,6 +2,7 @@
 #define DAPYWORKFLOWMANAGER_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyWorkFlowTypes.h"
+#include "DAPyNode.h"
 #include <QObject>
 #include <QString>
 #include <memory>
@@ -10,7 +11,6 @@ namespace DA
 {
 class DAPyWorkFlow;
 class DAPyNodeFactory;
-class DAPyNode;
 
 /**
  * @brief 工作流管理器，桥接Python代理层与Qt UI层
@@ -36,7 +36,7 @@ public:
 
     // --- 节点操作 ---
     // 通过工厂创建节点并添加到workflow，成功后发射nodeAdded信号
-    DAPyNode* addNode(const QString& qualifiedName);
+    DAPyNode addNode(const QString& qualifiedName);
     // 从workflow移除节点，成功后发射nodeRemoved信号
     bool removeNode(const QString& nodeId);
 
@@ -55,7 +55,7 @@ public:
 
 Q_SIGNALS:
     // 节点添加信号
-    void nodeAdded(QString nodeId, DA::DAPyNode* proxy);
+    void nodeAdded(QString nodeId, const DA::DAPyNode& proxy);
     // 节点移除信号
     void nodeRemoved(QString nodeId);
     // 连接添加信号

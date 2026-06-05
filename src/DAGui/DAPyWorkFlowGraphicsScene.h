@@ -1,4 +1,4 @@
-﻿#ifndef DAPYWORKFLOWGRAPHICSSCENE_H
+#ifndef DAPYWORKFLOWGRAPHICSSCENE_H
 #define DAPYWORKFLOWGRAPHICSSCENE_H
 #include <QGraphicsScene>
 #include "DAGuiAPI.h"
@@ -20,9 +20,9 @@ class DAGraphicsPixmapItem;
 Q_SIGNALS:
 		/**
 		 * @brief 节点被双击时发射的信号
-		 * @param[in] proxy 双击的节点代理
+		 * @param[in] proxy 双击的节点代理（const引用）
 		 */
-		void nodeDoubleClicked(DA::DAPyNode* proxy);
+		void nodeDoubleClicked(const DA::DAPyNode& proxy);
 
 	public:
 	/**
@@ -86,9 +86,9 @@ private slots:
 	);
 	/**
 	 * @brief 节点双击处理槽，弹出参数配置对话框
-	 * @param[in] proxy 双击的节点代理
+	 * @param[in] proxy 双击的节点代理（const引用）
 	 */
-	void onNodeDoubleClicked(DA::DAPyNode* proxy);
+	void onNodeDoubleClicked(const DA::DAPyNode& proxy);
 	/**
 	 * @brief 节点创建时连接其双击信号
 	 * @param[in] item 新创建的节点图形项

@@ -28,12 +28,12 @@ class DANodeParamSettingPanel;
  * 1. 创建调度器实例，设置节点代理
  * 2. setNodeProxy(proxy) 自动获取描述符 → qualifiedName → 缓存查找 → 工厂创建 → 切换面板
  * 3. 面板值变化信号自动转发至外部
- * 4. null 代理显示占位标签 "未选中节点"
+ * 4. isNone() 代理显示占位标签 "未选中节点"
  *
  * @code
  * DANodeParamSettingPanelWidget* dispatcher = new DANodeParamSettingPanelWidget(parent);
- * dispatcher->setNodeProxy(myProxy);  // 自动创建并切换面板
- * dispatcher->setNodeProxy(nullptr);  // 显示占位标签
+ * dispatcher->setNodeProxy(myProxy);    // 自动创建并切换面板
+ * dispatcher->setNodeProxy(DAPyNode()); // 显示占位标签（isNone()代理）
  * dispatcher->clearCache();           // 清除所有缓存面板
  * @endcode
  *
@@ -51,7 +51,7 @@ public:
     ~DANodeParamSettingPanelWidget();
 
     // 设置节点代理（主入口 — 获取描述符 → qualifiedName → 缓存 → 创建 → 切换）
-    void setNodeProxy(DAPyNode* proxy);
+    void setNodeProxy(const DAPyNode& proxy);
 
     // 清除所有缓存的面板
     void clearCache();

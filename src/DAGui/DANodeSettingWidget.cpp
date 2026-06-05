@@ -22,7 +22,7 @@ using namespace DA;
  * 创建DAPropertyPanelContainerWidget作为主布局，构建属性面板并连接3-hop信号链。
  * @param parent 父控件
  */
-DANodeSettingWidget::DANodeSettingWidget(QWidget* parent) : QWidget(parent), mPanel(nullptr), _nodePtr(nullptr)
+DANodeSettingWidget::DANodeSettingWidget(QWidget* parent) : QWidget(parent), mPanel(nullptr)
 {
     // 创建DAPropertyPanelContainerWidget并设为自身主布局
     mPanel              = new DAPropertyPanelContainerWidget(this);
@@ -48,28 +48,22 @@ DANodeSettingWidget::~DANodeSettingWidget()
 /**
  * @brief 设置节点代理
  *
- * 设置当前关联的DAPyNode，并刷新面板数据。
- * @param[in] p 节点代理指针
+ * 按值持有DAPyNode副本，并刷新面板数据。
+ * @param[in] p 节点代理常量引用
  */
-void DANodeSettingWidget::setNode(DAPyNode* p)
+void DANodeSettingWidget::setNode(const DAPyNode& p)
 {
-    // ⚠️ 生命周期风险：此原始指针归 DAPyNodeGraphicsItem 所有（通过 unique_ptr 管理）。
-    // 如果节点被删除（Delete 键/Undo/clearScene），_nodePtr 将悬空，后续访问会导致崩溃。
-    // 改进方案（后续）：
-    //   1. 使用 scene->findNodeItemByProxy(proxy) 在使用前验证指针有效性
-    //   2. 在 scene 销毁节点时通过信号通知此面板清空指针
-    //   3. 考虑使用观察者模式或 weak_ptr 替代原始指针
-    _nodePtr = p;
+    mNode = p;
     updateData();
 }
 
 /**
  * @brief 获取当前节点代理
- * @return 当前关联的DAPyNode指针
+ * @return 当前关联的DAPyNode常量引用
  */
-DAPyNode* DANodeSettingWidget::getNode() const
+const DAPyNode& DANodeSettingWidget::getNode() const
 {
-    return _nodePtr;
+    return mNode;
 }
 
 /**
@@ -90,11 +84,11 @@ DAPropertyPanelContainerWidget* DANodeSettingWidget::propertyPanel() const
 void DANodeSettingWidget::updateData()
 {
     QSignalBlocker blocker(mPanel);
-    DAPyNode* n = getNode();
-    if (n) {
-        mPanel->setStringValue(PID_Prototype, n->getQualifiedName());
-        mPanel->setStringValue(PID_Group, n->getNodeCategory());
-        mPanel->setStringValue(PID_Name, n->getNodeName());
+    const DAPyNode& n = getNode();
+    if (!n.isNone()) {
+        mPanel->setStringValue(PID_Prototype, n.getQualifiedName());
+        mPanel->setStringValue(PID_Group, n.getNodeCategory());
+        mPanel->setStringValue(PID_Name, n.getNodeName());
         // 设置限定名和组为只读
         DAPropertyItemWidget* prototypeItem = mPanel->getPropertyItem(PID_Prototype);
         if (prototypeItem) {
@@ -155,8 +149,8 @@ void DANodeSettingWidget::onPanelPropertyValueChanged(int propertyId)
  */
 void DANodeSettingWidget::onPropertyValueChanged(int propertyId)
 {
-    DAPyNode* p = getNode();
-    if (!p) {
+    const DAPyNode& p = getNode();
+    if (p.isNone()) {
         return;
     }
 
@@ -165,13 +159,13 @@ void DANodeSettingWidget::onPropertyValueChanged(int propertyId)
         // 通过 Python 对象属性设置名称
         DAPyGILGuard gilGuard;
         try {
-            p->object().attr("name") = mPanel->getStringValue(PID_Name).toStdString();
+            p.object().attr("name") = mPanel->getStringValue(PID_Name).toStdString();
         } catch (const std::exception& e) {
             qWarning() << "DANodeSettingWidget: failed to set name:" << e.what();
         }
         // 设置完成后重新读取节点名称，确保同步
         QSignalBlocker blocker(mPanel);
-        mPanel->setStringValue(PID_Name, p->getNodeName());
+        mPanel->setStringValue(PID_Name, p.getNodeName());
         break;
     }
     default:

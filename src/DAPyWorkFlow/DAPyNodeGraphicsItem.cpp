@@ -1,4 +1,4 @@
-﻿#include "DAPyNodeGraphicsItem.h"
+#include "DAPyNodeGraphicsItem.h"
 #include "DAPyPainterProxy.h"
 #include "DAPyNode.h"
 #include "DAPyNodePalette.h"
@@ -49,7 +49,7 @@ public:
     void updateNodeStyle(const QRectF& bodyRect);
 
 public:
-    std::unique_ptr< DAPyNode > mProxy;  ///< Python节点代理（独占所有权）
+    DAPyNode mProxy;  ///< Python节点代理（值持有）
     // 缓存字段：从DAPyNode一次性读取，避免paint时GIL开销
     QString mName;                                   ///< 缓存的节点名称
     QString mQualifiedName;                          ///< 缓存的限定名
@@ -289,10 +289,10 @@ void DAPyNodeGraphicsItem::PrivateData::updateNodeStyle(const QRectF& bodyRect)
 
 /**
  * @brief 构造函数
- * @param[in] proxy Python节点代理
+ * @param[in] proxy Python节点代理（const引用，值拷贝持有）
  * @param[in] parent 父图形项
  */
-DAPyNodeGraphicsItem::DAPyNodeGraphicsItem(DAPyNode* proxy, QGraphicsItem* parent)
+DAPyNodeGraphicsItem::DAPyNodeGraphicsItem(const DAPyNode& proxy, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
     // 设置可选中和可移动
@@ -340,28 +340,28 @@ void DAPyNodeGraphicsItem::setRenderTemplate(DAPyNodeStyle::NodeRenderTemplate t
 
 /**
  * @brief 获取Python节点代理
- * @return 代理指针
+ * @return 代理const引用
  */
-DAPyNode* DAPyNodeGraphicsItem::getProxy() const
+const DAPyNode& DAPyNodeGraphicsItem::getProxy() const
 {
-    return d_ptr->mProxy.get();
+    return d_ptr->mProxy;
 }
 
 /**
  * @brief 设置Python节点代理
- * @param[in] proxy 代理指针
+ * @param[in] proxy 代理const引用（值拷贝持有）
  */
-void DAPyNodeGraphicsItem::setProxy(DAPyNode* proxy)
+void DAPyNodeGraphicsItem::setProxy(const DAPyNode& proxy)
 {
-    d_ptr->mProxy.reset(proxy);
-    if (proxy) {
-        d_ptr->mNodeState     = proxy->getNodeState();
-        d_ptr->mName          = proxy->getNodeName();
-        d_ptr->mQualifiedName = proxy->getQualifiedName();
-        d_ptr->mIconPath      = proxy->getIcon();
-        d_ptr->mInputKeys     = proxy->getInputKeys();
-        d_ptr->mOutputKeys    = proxy->getOutputKeys();
-        d_ptr->mStyle         = proxy->getNodeStyle();
+    d_ptr->mProxy = proxy;
+    if (!proxy.isNone()) {
+        d_ptr->mNodeState     = proxy.getNodeState();
+        d_ptr->mName          = proxy.getNodeName();
+        d_ptr->mQualifiedName = proxy.getQualifiedName();
+        d_ptr->mIconPath      = proxy.getIcon();
+        d_ptr->mInputKeys     = proxy.getInputKeys();
+        d_ptr->mOutputKeys    = proxy.getOutputKeys();
+        d_ptr->mStyle         = proxy.getNodeStyle();
     }
     updateLinkPoints();
     update();
@@ -501,25 +501,13 @@ void DAPyNodeGraphicsItem::setNodeState(DAPyNodeState state)
 
 /**
  * @brief 从代理更新缓存字段
- * @param[in] proxy Python节点代理
  *
- * 一次性从代理读取所有属性并缓存到PrivateData字段，
+ * 一次性从已持有的代理读取所有属性并缓存到PrivateData字段，
  * 避免每次paint时都需要获取GIL调用attr()。
  */
-void DAPyNodeGraphicsItem::updateFromProxy(DAPyNode* proxy)
+void DAPyNodeGraphicsItem::updateFromProxy()
 {
-    if (!proxy) {
-        return;
-    }
-    d_ptr->mNodeState     = proxy->getNodeState();
-    d_ptr->mName          = proxy->getNodeName();
-    d_ptr->mQualifiedName = proxy->getQualifiedName();
-    d_ptr->mIconPath      = proxy->getIcon();
-    d_ptr->mInputKeys     = proxy->getInputKeys();
-    d_ptr->mOutputKeys    = proxy->getOutputKeys();
-    d_ptr->mStyle         = proxy->getNodeStyle();
-    updateLinkPoints();
-    update();
+    setProxy(d_ptr->mProxy);
 }
 
 /**
@@ -1261,12 +1249,12 @@ void DAPyNodeGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event
     DAGraphicsResizeableItem::mouseDoubleClickEvent(event);
 
     // 检查是否有有效的代理节点
-    if (!d_ptr->mProxy) {
+    if (d_ptr->mProxy.isNone()) {
         return;
     }
 
     // 发射信号，由DAGui层（DAPyWorkFlowGraphicsScene）处理配置对话框
-    Q_EMIT nodeDoubleClicked(d_ptr->mProxy.get());
+    Q_EMIT nodeDoubleClicked(d_ptr->mProxy);
 }
 
 /**

@@ -23,7 +23,7 @@ public:
     QHash< QString, DANodeParamSettingPanel* > mPanelCache;
     DANodeParamSettingPanel* mCurrentPanel = nullptr;
     QLabel* mPlaceholderLabel              = nullptr;
-    DAPyNode* mNodeProxy                   = nullptr;
+    DAPyNode mNodeProxy;
 };
 
 /**
@@ -68,16 +68,16 @@ DANodeParamSettingPanelWidget::~DANodeParamSettingPanelWidget()
  * @brief 设置节点代理 — 主入口
  *
  * 核心调度逻辑：
- * 1. 如果代理为空 → 切换到占位标签，mCurrentPanel = nullptr
+ * 1. 如果代理为 isNone() → 切换到占位标签，mCurrentPanel = nullptr
  * 2. 如果代理有效 → 从代理获取描述符 → 提取 qualifiedName
  * 3. 在缓存中查找面板 → 未命中则通过工厂惰性创建
  * 4. 工厂创建失败 → 使用 buildDefaultPanel() 创建默认面板
  * 5. 添加面板到 QStackedWidget → 缓存 → 连接信号 → 切换
  * 6. 调用面板的 setNodeProxy(proxy) 和 updateUI()
  *
- * @param proxy 节点代理指针，nullptr 表示取消选中
+ * @param proxy 节点代理常量引用，isNone() 表示取消选中
  */
-void DANodeParamSettingPanelWidget::setNodeProxy(DAPyNode* proxy)
+void DANodeParamSettingPanelWidget::setNodeProxy(const DAPyNode& proxy)
 {
     DA_D(d);
 
@@ -89,23 +89,18 @@ void DANodeParamSettingPanelWidget::setNodeProxy(DAPyNode* proxy)
                    &DANodeParamSettingPanelWidget::propertyValueChanged);
     }
 
-    // 代理为空 → 显示占位标签
-    if (nullptr == proxy) {
+    // 代理为 isNone() → 显示占位标签
+    if (proxy.isNone()) {
         d->mCurrentPanel = nullptr;
-        d->mNodeProxy    = nullptr;
+        d->mNodeProxy    = DAPyNode();
         d->mStackedWidget->setCurrentWidget(d->mPlaceholderLabel);
         return;
     }
 
-    d->mNodeProxy = proxy;  // 生命周期风险：此原始指针归 DAPyNodeGraphicsItem 所有（通过 unique_ptr 管理）。
-                            // 如果节点被删除（Delete 键/Undo/clearScene），mNodeProxy 将悬空，后续访问会导致崩溃。
-                            // 改进方案（后续）：
-                            //   1. 使用 scene->findNodeItemByProxy(proxy) 在使用前验证指针有效性
-                            //   2. 在 scene 销毁节点时通过信号通知此面板清空指针
-                            //   3. 考虑使用观察者模式或 weak_ptr 替代原始指针
+    d->mNodeProxy = proxy;
 
     // 从代理获取 qualifiedName
-    QString qualifiedName = proxy->getQualifiedName();
+    QString qualifiedName = proxy.getQualifiedName();
     if (qualifiedName.isEmpty()) {
         qualifiedName = QStringLiteral("generic");
     }
@@ -144,7 +139,7 @@ void DANodeParamSettingPanelWidget::setNodeProxy(DAPyNode* proxy)
     d->mStackedWidget->setCurrentWidget(panel);
 
     // 设置代理并更新 UI
-    panel->setNodeProxy(proxy);
+    panel->setNode(proxy);
     panel->updateUI();
 }
 

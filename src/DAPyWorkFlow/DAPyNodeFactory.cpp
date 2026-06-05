@@ -1,4 +1,4 @@
-﻿#include "DAPyNodeFactory.h"
+#include "DAPyNodeFactory.h"
 #include "DAPybind11InQt.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DAPyModuleWorkflow.h"
@@ -134,27 +134,25 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
  * C++ 侧不再自行解析qualified_name进行module_::import和类名查找。
  *
  * @param[in] qualifiedName Python节点的限定名（如"pkg.module.ClassName"）
- * @return 成功返回DAPyNode指针，失败返回nullptr
- * @note 返回的DAPyNode由调用方负责生命周期管理
- * @note 必须先调用discoverNodes()创建Python factory实例，否则返回nullptr
+ * @return 成功返回DAPyNode值类型实例，失败返回默认构造的DAPyNode（isNone()为true）
+ * @note 必须先调用discoverNodes()创建Python factory实例，否则返回无效的DAPyNode
  */
-DAPyNode* DAPyNodeFactory::createNode(const QString& qualifiedName)
+DAPyNode DAPyNodeFactory::createNode(const QString& qualifiedName)
 {
     try {
         // 调用Python DANodeFactory.create_node()获取节点实例
         pybind11::object pyNodeInstance = attr("create_node")(qualifiedName.toStdString());
         if (pyNodeInstance.is_none()) {
-            return nullptr;
+            return DAPyNode();
         }
         // 创建DAPyNode并设置Python节点引用
-        DAPyNode* proxy = new DAPyNode(pyNodeInstance);
-        return proxy;
+        return DAPyNode(pyNodeInstance);
     } catch (const pybind11::error_already_set& e) {
         dealException(e);
-        return nullptr;
+        return DAPyNode();
     } catch (const std::exception& e) {
         dealException(e);
-        return nullptr;
+        return DAPyNode();
     }
 }
 
@@ -162,18 +160,17 @@ DAPyNode* DAPyNodeFactory::createNode(const QString& qualifiedName)
  * @brief 通过节点元数据创建DAPyNode实例
  *
  * 此方法为便捷接口，从DAPyNodeMetaData中提取qualifiedName，
- * 然委托给createNodeProxy(const QString&)方法完成实际的代理创建。
- * 如果元数据无效（qualifiedName为空），直接返回nullptr。
+ * 然后委托给createNode(const QString&)方法完成实际的代理创建。
+ * 如果元数据无效（qualifiedName为空），直接返回默认构造的DAPyNode。
  *
  * @param[in] metaData 节点元数据对象
- * @return 创建的DAPyNode实例指针，元数据无效时返回nullptr
- * @note 此方法不存储元数据到代理对象，代理对象仍通过qualifiedName标识
- * @see createNodeProxy(const QString&)
+ * @return 创建的DAPyNode值类型实例，元数据无效时返回默认构造的DAPyNode（isNone()为true）
+ * @see createNode(const QString&)
  */
-DAPyNode* DAPyNodeFactory::createNode(const DAPyNodeMetaData& metaData)
+DAPyNode DAPyNodeFactory::createNode(const DAPyNodeMetaData& metaData)
 {
     if (!metaData.isValid()) {
-        return nullptr;
+        return DAPyNode();
     }
     return createNode(metaData.qualifiedName);
 }

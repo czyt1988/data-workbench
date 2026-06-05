@@ -1,4 +1,4 @@
-﻿#ifndef DAPYNODEGRAPHICSITEM_H
+#ifndef DAPYNODEGRAPHICSITEM_H
 #define DAPYNODEGRAPHICSITEM_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyLinkPoint.h"
@@ -61,15 +61,15 @@ public:
 
 public:
     // 构造/析构
-    explicit DAPyNodeGraphicsItem(DAPyNode* proxy, QGraphicsItem* parent = nullptr);
+    explicit DAPyNodeGraphicsItem(const DAPyNode& proxy, QGraphicsItem* parent = nullptr);
     ~DAPyNodeGraphicsItem();
 
     // 渲染模板设置
     void setRenderTemplate(DAPyNodeStyle::NodeRenderTemplate tmpl);
 
     // 节点数据
-    DAPyNode* getProxy() const;
-    void setProxy(DAPyNode* proxy);
+    const DAPyNode& getProxy() const;
+    void setProxy(const DAPyNode& proxy);
 
     // 节点名称
     void setNodeName(const QString& name);
@@ -88,7 +88,7 @@ public:
     void setNodeState(DAPyNodeState state);
 
     // 从代理更新缓存字段（一次性读取所有attr()，避免paint时GIL开销）
-    void updateFromProxy(DAPyNode* proxy);
+    void updateFromProxy();
 
     // 节点样式
     void setNodeStyle(const DAPyNodeStyle& style);
@@ -129,9 +129,9 @@ public:
 Q_SIGNALS:
     /**
      * @brief 节点双击信号，通知上层（DAGui）弹出配置对话框
-     * @param[in] proxy 双击的节点代理
+     * @param[in] proxy 双击的节点代理（const引用）
      */
-    void nodeDoubleClicked(DA::DAPyNode* proxy);
+    void nodeDoubleClicked(const DA::DAPyNode& proxy);
 
 protected:
     // 绘制body（根据模板类型选择绘制方式）

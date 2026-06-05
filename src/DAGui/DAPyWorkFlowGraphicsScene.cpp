@@ -1,4 +1,4 @@
-﻿/*****************************************************************/ /**
+/*****************************************************************/ /**
   @file   DAPyWorkFlowGraphicsScene.cpp
   @brief
 
@@ -411,11 +411,11 @@ void DAPyWorkFlowGraphicsScene::setDefaultTextFont(const QFont& f)
  * 此槽被触发，并发射scene级别的nodeDoubleClicked信号，
  * 由外部连接的槽（如设置面板）处理双击行为。
  *
- * @param[in] proxy 双击的节点代理
+ * @param[in] proxy 双击的节点代理（const引用）
  */
-void DAPyWorkFlowGraphicsScene::onNodeDoubleClicked(DAPyNode* proxy)
+void DAPyWorkFlowGraphicsScene::onNodeDoubleClicked(const DAPyNode& proxy)
 {
-    if (!proxy) {
+    if (proxy.isNone()) {
         return;
     }
     Q_EMIT nodeDoubleClicked(proxy);

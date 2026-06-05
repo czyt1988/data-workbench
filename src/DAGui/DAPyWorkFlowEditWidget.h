@@ -127,9 +127,10 @@ signals:
     void startExecute();
     /**
      * @brief 执行到某个节点发射的信号
-     * @param n
+     * @param n 节点代理（const引用）
+     * @param state 执行状态
      */
-    void nodeExecuteFinished(DA::DAPyNode* n, bool state);
+    void nodeExecuteFinished(const DA::DAPyNode& n, bool state);
 
     /**
      * @brief 工作流执行完毕信号

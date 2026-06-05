@@ -75,40 +75,35 @@ DAPyNodeFactory* DAPyWorkFlowManager::getFactory() const
 /**
  * @brief 通过工厂创建节点并添加到workflow
  *
- * 调用DAPyNodeFactory::createNodeProxy创建节点代理，
+ * 调用DAPyNodeFactory::createNode创建节点代理，
  * 然后调用DAPyWorkFlow::addNode将节点添加到Python workflow。
  * 成功后发射nodeAdded信号。
  *
  * @param[in] qualifiedName Python节点的限定名
- * @return 成功返回DAPyNode指针，失败返回nullptr
+ * @return 成功返回DAPyNode值，失败返回isNone()为true的默认DAPyNode
  */
-DAPyNode* DAPyWorkFlowManager::addNode(const QString& qualifiedName)
+DAPyNode DAPyWorkFlowManager::addNode(const QString& qualifiedName)
 {
     DA_D(d);
-    DAPyNode* proxy = nullptr;
     try {
-        proxy = d->mFactory->createNode(qualifiedName);
-        if (!proxy) {
+        DAPyNode proxy = d->mFactory->createNode(qualifiedName);
+        if (proxy.isNone()) {
             qCritical() << "DAPyWorkFlowManager::addNode: createNodeProxy failed for" << qualifiedName;
-            return nullptr;
+            return DAPyNode();
         }
         QString nodeId = d->mWorkflow->addNode(proxy);
         if (nodeId.isEmpty()) {
             qCritical() << "DAPyWorkFlowManager::addNode: workflow addNode returned empty nodeId";
-            delete proxy;
-            return nullptr;
+            return DAPyNode();
         }
         Q_EMIT nodeAdded(nodeId, proxy);
+        return proxy;
     } catch (const pybind11::error_already_set& e) {
         qCritical() << "DAPyWorkFlowManager::addNode:" << e.what();
-        delete proxy;
-        return nullptr;
     } catch (const std::exception& e) {
         qCritical() << "DAPyWorkFlowManager::addNode:" << e.what();
-        delete proxy;
-        return nullptr;
     }
-    return proxy;
+    return DAPyNode();
 }
 
 /**

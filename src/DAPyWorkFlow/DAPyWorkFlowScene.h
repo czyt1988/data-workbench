@@ -1,4 +1,4 @@
-﻿#ifndef DAPYWORKFLOWSCENE_H
+#ifndef DAPYWORKFLOWSCENE_H
 #define DAPYWORKFLOWSCENE_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAGraphicsScene.h"
@@ -64,7 +64,6 @@ public:
     void removePyNodeItem_(DAPyNodeGraphicsItem* item);
 
     // 查找节点
-    DAPyNodeGraphicsItem* findNodeItemByProxy(DAPyNode* proxy) const;
     DAPyNodeGraphicsItem* findNodeItemById(const QString& nodeId) const;
     DAPyNodeGraphicsItem* nodeItemAt(const QPointF& scenePos) const;
     QList< DAPyNodeGraphicsItem* > getPyNodeItems() const;

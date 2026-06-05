@@ -222,9 +222,11 @@ Q_SIGNALS:
 	void workflowStartExecute(DA::DAPyWorkFlowEditWidget* wfw);
 	/**
 	 * @brief 执行到某个节点发射的信号
-	 * @param n
+	 * @param wfw 工作流编辑窗口
+	 * @param n 节点代理（const引用）
+	 * @param state 执行状态
 	 */
-	void nodeExecuteFinished(DA::DAPyWorkFlowEditWidget* wfw, DA::DAPyNode* n, bool state);
+	void nodeExecuteFinished(DA::DAPyWorkFlowEditWidget* wfw, const DA::DAPyNode& n, bool state);
 
 	/**
 	 * @brief 工作流执行完毕信号

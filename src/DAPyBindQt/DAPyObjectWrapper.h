@@ -1,4 +1,4 @@
-﻿#ifndef DAPYOBJECTWRAPPER_H
+#ifndef DAPYOBJECTWRAPPER_H
 #define DAPYOBJECTWRAPPER_H
 #include "DAPyBindQtGlobal.h"
 #include "DAPybind11InQt.h"
@@ -49,6 +49,8 @@ public:
     {
         return !(*this == obj);
     }
+    // 比较操作符（用于QMap等有序容器的key）
+    bool operator<(const DAPyObjectWrapper& obj) const;
 
     // bool操作符可直接进行isNone判断
     explicit operator bool() const;
@@ -165,6 +167,21 @@ pybind11::object DAPyObjectWrapper::call(Args&&... args)
     return _object(std::forward< Args >(args)...);
 }
 
+// qHash自由函数（用于QHash容器的key）
+DAPYBINDQT_API uint qHash(const DAPyObjectWrapper& obj, uint seed = 0);
+
 }  // namespace DA
+
 Q_DECLARE_METATYPE(DA::DAPyObjectWrapper)
+
+// std::hash特化（用于std::unordered_map的key）
+namespace std
+{
+template<>
+struct hash<DA::DAPyObjectWrapper>
+{
+    size_t operator()(const DA::DAPyObjectWrapper& obj) const noexcept;
+};
+}  // namespace std
+
 #endif  // DAPYOBJECTWRAPPER_H

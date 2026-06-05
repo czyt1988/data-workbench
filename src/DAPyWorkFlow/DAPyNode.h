@@ -40,7 +40,7 @@ public:
     explicit DAPyNode(const pybind11::object& pyNode);
     explicit DAPyNode(pybind11::object&& pyNode);
     explicit DAPyNode(const DAPyObjectWrapper& pyNode);
-    explicit DAPyNode(const DAPyNode& pyNode);
+    DAPyNode(const DAPyNode& pyNode);
     ~DAPyNode();
 
     // 获取Python节点的node_id（从Python对象属性node_id读取）
@@ -79,5 +79,7 @@ public:
 };
 
 }  // namespace DA
+
+Q_DECLARE_METATYPE(DA::DAPyNode)
 
 #endif  // DAPYNODE_H

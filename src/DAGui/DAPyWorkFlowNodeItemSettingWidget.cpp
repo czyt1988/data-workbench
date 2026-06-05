@@ -259,11 +259,11 @@ bool DAPyWorkFlowNodeItemSettingWidget::isTabContainWidget(QWidget* w)
 
 /**
  * @brief 节点双击处理：切换到参数tab并设置节点代理
- * @param proxy 双击的节点代理
+ * @param proxy 双击的节点代理（const引用）
  */
-void DAPyWorkFlowNodeItemSettingWidget::onSceneNodeDoubleClicked(DAPyNode* proxy)
+void DAPyWorkFlowNodeItemSettingWidget::onSceneNodeDoubleClicked(const DAPyNode& proxy)
 {
-    if (!proxy) {
+    if (proxy.isNone()) {
         return;
     }
     // 设置参数面板的节点代理
@@ -279,10 +279,10 @@ void DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
 {
     DAPyWorkFlowGraphicsScene* scene = getCurrentScene();
     if (nullptr == scene) {
-        ui->tabNodeSetting->setNode(nullptr);
+        ui->tabNodeSetting->setNode(DAPyNode());
         ui->tabItemSetting->setItem(nullptr);
         ui->tabLinkSetting->setLinkItem(nullptr);
-        mParamSettingWidget->setNodeProxy(nullptr);
+        mParamSettingWidget->setNodeProxy(DAPyNode());
         return;
     }
     QList< QGraphicsItem* > its = scene->selectedItems();
@@ -291,7 +291,7 @@ void DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         setNodeSettingEnable(false);
         setItemSettingEnable(false);
         setPixmapItemSettingEnable(false);
-        mParamSettingWidget->setNodeProxy(nullptr);
+        mParamSettingWidget->setNodeProxy(DAPyNode());
         return;
     }
     QGraphicsItem* item = its.last();
@@ -318,7 +318,7 @@ void DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         setNodeSettingEnable(true);
 
         setPixmapItemSettingEnable(false);
-        DAPyNode* proxy = nodeItem->getProxy();
+        const DAPyNode& proxy = nodeItem->getProxy();
         if (isTabContainWidget(ui->tabNodeSetting)) {
             ui->tabNodeSetting->setNode(proxy);
         }
@@ -335,9 +335,9 @@ void DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         setItemSettingEnable(false);
         setPixmapItemSettingEnable(false);
         // 选中连线时，移除节点参数配置tab并清理widget
-        mParamSettingWidget->setNodeProxy(nullptr);
+        mParamSettingWidget->setNodeProxy(DAPyNode());
         if (isTabContainWidget(ui->tabNodeSetting)) {
-            ui->tabNodeSetting->setNode(nullptr);
+            ui->tabNodeSetting->setNode(DAPyNode());
         }
         if (isTabContainWidget(ui->tabItemSetting)) {
             ui->tabItemSetting->setItem(nullptr);
@@ -350,9 +350,9 @@ void DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         setLinkSettingEnable(false);
         setNodeSettingEnable(false);
         // 选中其他item时，移除节点参数配置tab并清理widget
-        mParamSettingWidget->setNodeProxy(nullptr);
+        mParamSettingWidget->setNodeProxy(DAPyNode());
         if (isTabContainWidget(ui->tabNodeSetting)) {
-            ui->tabNodeSetting->setNode(nullptr);
+            ui->tabNodeSetting->setNode(DAPyNode());
         }
         if (isTabContainWidget(ui->tabLinkSetting)) {
             ui->tabLinkSetting->setLinkItem(nullptr);

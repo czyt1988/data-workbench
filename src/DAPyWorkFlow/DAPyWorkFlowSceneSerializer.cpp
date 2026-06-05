@@ -1,4 +1,4 @@
-﻿#include "DAPyWorkFlowSceneSerializer.h"
+#include "DAPyWorkFlowSceneSerializer.h"
 #include "DAPybind11InQt.h"
 #include "DAPyWorkFlowScene.h"
 #include "DAPyWorkFlow.h"
@@ -37,11 +37,11 @@ static QString getNodeItemIdFromItem(DAPyNodeGraphicsItem* item)
     if (!item) {
         return QString();
     }
-    DAPyNode* proxy = item->getProxy();
-    if (proxy && !proxy->isNone()) {
+    const DAPyNode& proxy = item->getProxy();
+    if (!proxy.isNone()) {
         DAPyGILGuard gil;
         try {
-            pybind11::object pyNodeRef = proxy->object();
+            pybind11::object pyNodeRef = proxy.object();
             if (pyNodeRef && pybind11::hasattr(pyNodeRef, "node_id")) {
                 std::string idStr = pybind11::str(pyNodeRef.attr("node_id"));
                 return QString::fromStdString(idStr);
@@ -197,10 +197,10 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
             // 从C++图形项获取位置并写入DAWorkflowState的节点
             QList< DAPyNodeGraphicsItem* > nodeItems = scene->getPyNodeItems();
             for (DAPyNodeGraphicsItem* nodeItem : nodeItems) {
-                DAPyNode* proxy = nodeItem->getProxy();
-                if (proxy && !proxy->isNone()) {
+                const DAPyNode& proxy = nodeItem->getProxy();
+                if (!proxy.isNone()) {
                     try {
-                        pybind11::object pyNodeRef = proxy->object();
+                        pybind11::object pyNodeRef = proxy.object();
                         if (pyNodeRef && pybind11::hasattr(pyNodeRef, "node_id")) {
                             std::string idStr = pybind11::str(pyNodeRef.attr("node_id"));
                             QString nodeId    = QString::fromStdString(idStr);
@@ -258,13 +258,13 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
         QDomElement nodeEle = doc->createElement("node");
 
         // 保存节点基本信息
-        DAPyNode* proxy = nodeItem->getProxy();
-        if (proxy) {
-            nodeEle.setAttribute("qualified_name", proxy->getQualifiedName());
+        const DAPyNode& proxy = nodeItem->getProxy();
+        if (!proxy.isNone()) {
+            nodeEle.setAttribute("qualified_name", proxy.getQualifiedName());
             // 保存Python侧的node_id
             DAPyGILGuard gil;
             try {
-                pybind11::object pyNodeRef = proxy->object();
+                pybind11::object pyNodeRef = proxy.object();
                 if (pyNodeRef && pybind11::hasattr(pyNodeRef, "node_id")) {
                     std::string idStr = pybind11::str(pyNodeRef.attr("node_id"));
                     nodeEle.setAttribute("node_id", QString::fromStdString(idStr));
@@ -280,12 +280,12 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
         DAXMLFileInterface::appendElementWithText(nodeEle, "y", DA::doubleToString(pos.y()), doc);
 
         // 保存节点参数值（从Python侧获取config）
-        if (proxy && !proxy->isNone()) {
+        if (!proxy.isNone()) {
             DAPyGILGuard gil;
 
             // 保存Python对象参数的pickle序列化
             try {
-                pybind11::object pyNodeRef = proxy->object();
+                pybind11::object pyNodeRef = proxy.object();
                 if (pyNodeRef && pybind11::hasattr(pyNodeRef, "get_pickle_data")) {
                     pybind11::object pickleModule = pybind11::module_::import("pickle");
                     pybind11::bytes pickleBytes   = pickleModule.attr("dumps")(pyNodeRef);
@@ -487,7 +487,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
 
             // 恢复pickle数据
             QDomElement pickleEle = nodeEle.firstChildElement("pickleData");
-            if (!pickleEle.isNull() && nodeItem->getProxy() && !(nodeItem->getProxy()->isNone())) {
+            if (!pickleEle.isNull() && !nodeItem->getProxy().isNone()) {
                 DAPyGILGuard gil;
                 try {
                     QString base64Str = pickleEle.text();
@@ -499,7 +499,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
                     pybind11::object unpickledObj = pickleModule.attr("loads")(pickleBytesObj);
 
                     // 将pickle恢复的数据合并到节点实例
-                    pybind11::object pyNodeRef = nodeItem->getProxy()->object();
+                    pybind11::object pyNodeRef = nodeItem->getProxy().object();
                     if (pyNodeRef && pybind11::hasattr(unpickledObj, "_input_data")) {
                         pyNodeRef.attr("_input_data") = unpickledObj.attr("_input_data");
                     }

@@ -41,10 +41,10 @@ public:
     ~DANodeSettingWidget();
 
     // 设置节点
-    void setNode(DAPyNode* p);
+    void setNode(const DAPyNode& p);
 
     // 获取当前节点
-    DAPyNode* getNode() const;
+    const DAPyNode& getNode() const;
 
     // 获取属性面板指针
     DAPropertyPanelContainerWidget* propertyPanel() const;
@@ -71,7 +71,7 @@ protected Q_SLOTS:
 
 private:
     DAPropertyPanelContainerWidget* mPanel;
-    DAPyNode* _nodePtr;
+    DAPyNode mNode;
 };
 }  // end of namespace DA
 #endif  // DANODESETTINGWIDGET_H

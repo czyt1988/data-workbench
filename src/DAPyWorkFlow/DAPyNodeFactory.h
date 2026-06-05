@@ -1,11 +1,11 @@
-﻿#ifndef DAPYNODEFACTORY_H
+#ifndef DAPYNODEFACTORY_H
 #define DAPYNODEFACTORY_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyObjectWrapper.h"
 #include "DAPyNodeMetaData.h"
+#include "DAPyNode.h"
 namespace DA
 {
-class DAPyNode;
 
 /**
  * @brief Python节点工厂，继承DAPyObjectWrapper，代理Python侧DANodeFactory
@@ -36,9 +36,9 @@ public:
     bool discoverNodes(const QStringList& scanPaths = QStringList(), bool useEntryPoints = false);
 
     // 通过限定名创建DAPyNode实例
-    DAPyNode* createNode(const QString& qualifiedName);
+    DAPyNode createNode(const QString& qualifiedName);
     // 通过节点元数据创建DAPyNode实例
-    DAPyNode* createNode(const DAPyNodeMetaData& metaData);
+    DAPyNode createNode(const DAPyNodeMetaData& metaData);
 
     // 获取所有已发现节点的元数据列表
     QList< DAPyNodeMetaData > getNodeMetadataList() const;

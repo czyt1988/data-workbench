@@ -1,4 +1,4 @@
-﻿#include "DAXmlHelper.h"
+#include "DAXmlHelper.h"
 #include <QElapsedTimer>
 #include <QObject>
 #include <QDebug>
@@ -78,10 +78,10 @@ public:
                                                   DAPyWorkFlowGraphicsScene* workFlowScene,
                                                   QMap< QString, QString >* idMap);
     // 保存输入输出
-    void saveNodeInputOutput(DAPyNode* node, QDomDocument& doc, QDomElement& nodeEle);
-    bool loadNodeInPutOutputKey(DAPyNode* node, const QDomElement& eleNode);
-    bool loadNodeInPutOutputKey_v110(DAPyNode* node, const QDomElement& eleNode);
-    bool loadNodeInPutOutputKey_v130(DAPyNode* node, const QDomElement& eleNode);
+    void saveNodeInputOutput(const DAPyNode& node, QDomDocument& doc, QDomElement& nodeEle);
+    bool loadNodeInPutOutputKey(const DAPyNode& node, const QDomElement& eleNode);
+    bool loadNodeInPutOutputKey_v110(const DAPyNode& node, const QDomElement& eleNode);
+    bool loadNodeInPutOutputKey_v130(const DAPyNode& node, const QDomElement& eleNode);
     // 保存item
     void saveNodeItem(DAPyNodeGraphicsItem* nodeItem, QDomDocument& doc, QDomElement& nodeEle);
     // 保存工厂相关信息（兼容旧版本）
@@ -383,12 +383,12 @@ QDomElement DAXmlHelper::PrivateData::makeNodesElement(const QList< DAPyNodeGrap
  */
 QDomElement DAXmlHelper::PrivateData::makeNodeElement(DAPyNodeGraphicsItem* nodeItem, const QString& tagName, QDomDocument& doc)
 {
-    QDomElement nodeEle = doc.createElement(tagName);
-    DAPyNode* proxy     = nodeItem->getProxy();
-    if (proxy) {
-        nodeEle.setAttribute("id", proxy->getNodeId());
-        nodeEle.setAttribute("name", proxy->getNodeName());
-        nodeEle.setAttribute("qualified_name", proxy->getQualifiedName());
+    QDomElement nodeEle   = doc.createElement(tagName);
+    const DAPyNode& proxy = nodeItem->getProxy();
+    if (!proxy.isNone()) {
+        nodeEle.setAttribute("id", proxy.getNodeId());
+        nodeEle.setAttribute("name", proxy.getNodeName());
+        nodeEle.setAttribute("qualified_name", proxy.getQualifiedName());
         // 保存节点input和output的key和propertys
         saveNodeInputOutput(proxy, doc, nodeEle);
     }
@@ -492,8 +492,8 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
         return nullptr;
     }
 
-    DAPyNode* proxy = item->getProxy();
-    if (!proxy) {
+    const DAPyNode& proxy = item->getProxy();
+    if (proxy.isNone()) {
         qWarning() << QObject::tr("Node item has no proxy, prototype=%1,name=%2").arg(qualifiedName, name);
         workFlowScene->removePyNodeItem(item);
         return nullptr;
@@ -502,8 +502,8 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
     // 设置节点id和名称（通过 Python 对象属性直接设置）
     DAPyGILGuard gilGuard;
     try {
-        proxy->object().attr("node_id") = QString::number(id).toStdString();
-        proxy->object().attr("name")    = name.toStdString();
+        proxy.object().attr("node_id") = QString::number(id).toStdString();
+        proxy.object().attr("name")    = name.toStdString();
     } catch (const std::exception& e) {
         qWarning() << "DAXmlHelper: failed to set node id/name via Python object:" << e.what();
     }
@@ -569,8 +569,8 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(const QD
         return nullptr;
     }
 
-    DAPyNode* proxy = item->getProxy();
-    if (!proxy) {
+    const DAPyNode& proxy = item->getProxy();
+    if (proxy.isNone()) {
         qWarning() << QObject::tr("Node item has no proxy, prototype=%1,name=%2").arg(qualifiedName, name);
         return nullptr;
     }
@@ -579,7 +579,7 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(const QD
         // idMap为空，使用原来的id（通过 Python 对象属性直接设置）
         DAPyGILGuard gilGuard;
         try {
-            proxy->object().attr("node_id") = QString::number(id).toStdString();
+            proxy.object().attr("node_id") = QString::number(id).toStdString();
         } catch (const std::exception& e) {
             qWarning() << "DAXmlHelper: failed to set node_id via Python object:" << e.what();
         }
@@ -588,7 +588,7 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(const QD
     {
         DAPyGILGuard gilGuard;
         try {
-            proxy->object().attr("name") = name.toStdString();
+            proxy.object().attr("name") = name.toStdString();
         } catch (const std::exception& e) {
             qWarning() << "DAXmlHelper: failed to set name via Python object:" << e.what();
         }
@@ -608,20 +608,20 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(const QD
 
     if (idMap) {
         // 记录旧id到新id的映射
-        (*idMap)[ QString::number(id) ] = proxy->getNodeId();
+        (*idMap)[ QString::number(id) ] = proxy.getNodeId();
     }
     return item;
 }
 /**
  * @brief 保存节点的输入输出信息
- * @param node DAPyNode指针
+ * @param node DAPyNode引用
  * @param doc
  * @param nodeEle
  */
-void DAXmlHelper::PrivateData::saveNodeInputOutput(DAPyNode* node, QDomDocument& doc, QDomElement& nodeEle)
+void DAXmlHelper::PrivateData::saveNodeInputOutput(const DAPyNode& node, QDomDocument& doc, QDomElement& nodeEle)
 {
     QDomElement inputsEle      = doc.createElement("inputs");
-    QList< QString > inputKeys = node->getInputKeys();
+    QList< QString > inputKeys = node.getInputKeys();
     for (const auto& key : std::as_const(inputKeys)) {
         // 添加input
         QDomElement inputEle = doc.createElement("li");
@@ -630,7 +630,7 @@ void DAXmlHelper::PrivateData::saveNodeInputOutput(DAPyNode* node, QDomDocument&
     }
 
     QDomElement outputsEle      = doc.createElement("outputs");
-    QList< QString > outputKeys = node->getOutputKeys();
+    QList< QString > outputKeys = node.getOutputKeys();
     for (const auto& key : std::as_const(outputKeys)) {
         // 添加output
         QDomElement outputEle = doc.createElement("li");
@@ -643,11 +643,11 @@ void DAXmlHelper::PrivateData::saveNodeInputOutput(DAPyNode* node, QDomDocument&
 
 /**
  * @brief 加载节点的输入输出key
- * @param node DAPyNode指针
+ * @param node DAPyNode引用
  * @param eleNode
  * @return
  */
-bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey(DAPyNode* node, const QDomElement& eleNode)
+bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey(const DAPyNode& node, const QDomElement& eleNode)
 {
     if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() < 3) {
         return loadNodeInPutOutputKey_v110(node, eleNode);
@@ -659,11 +659,11 @@ bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey(DAPyNode* node, const QDom
 
 /**
  * @brief v1.1.0版本输入输出key加载
- * @param node DAPyNode指针
+ * @param node DAPyNode引用
  * @param eleNode
  * @return
  */
-bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v110(DAPyNode* node, const QDomElement& eleNode)
+bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v110(const DAPyNode& node, const QDomElement& eleNode)
 {
     // v1.1.0以下解析方法 - 旧格式使用<input>/<output>标签
     // 在新系统中，节点的输入输出key由Python描述符决定，加载过程仅记录信息用于调试
@@ -678,7 +678,7 @@ bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v110(DAPyNode* node, const
             QDomElement nameEle = inputEle.firstChildElement("name");
             if (nameEle.isNull()) {
                 qWarning() << QObject::tr("node(prototype=%1,name=%2) %3 tag loss child tag <name>")
-                                  .arg(node->getQualifiedName(), node->getNodeName(), ks.at(i).nodeName());
+                                  .arg(node.getQualifiedName(), node.getNodeName(), ks.at(i).nodeName());
                 continue;
             }
             // 输入key由Python描述符决定，不需要手动addInputKey
@@ -696,7 +696,7 @@ bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v110(DAPyNode* node, const
             QDomElement nameEle = outputEle.firstChildElement("name");
             if (nameEle.isNull()) {
                 qWarning() << QObject::tr("node(prototype=%1,name=%2) %3 tag loss child tag <name>")
-                                  .arg(node->getQualifiedName(), node->getNodeName(), ks.at(i).nodeName());
+                                  .arg(node.getQualifiedName(), node.getNodeName(), ks.at(i).nodeName());
                 continue;
             }
             // 输出key由Python描述符决定，不需要手动addOutputKey
@@ -707,11 +707,11 @@ bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v110(DAPyNode* node, const
 
 /**
  * @brief v1.3.0版本输入输出key加载
- * @param node DAPyNode指针
+ * @param node DAPyNode引用
  * @param eleNode
  * @return
  */
-bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v130(DAPyNode* node, const QDomElement& eleNode)
+bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v130(const DAPyNode& node, const QDomElement& eleNode)
 {
     // v1.3.0解析方法 - 新格式使用<li name="key">标签
     // 在新系统中，节点的输入输出key由Python描述符决定，加载过程仅记录信息用于调试
@@ -790,11 +790,11 @@ QDomElement DAXmlHelper::PrivateData::makeNodeLinkElement(DAPyLinkGraphicsItem* 
     DAPyNodeGraphicsItem* toNode   = link->getToNode();
 
     if (fromNode && fromNode->getProxy()) {
-        fromEle.setAttribute("id", fromNode->getProxy()->getNodeId());
+        fromEle.setAttribute("id", fromNode->getProxy().getNodeId());
     }
     fromEle.setAttribute("name", link->getFromOutputName());
     if (toNode && toNode->getProxy()) {
-        toEle.setAttribute("id", toNode->getProxy()->getNodeId());
+        toEle.setAttribute("id", toNode->getProxy().getNodeId());
     }
     toEle.setAttribute("name", link->getToInputName());
 
