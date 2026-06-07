@@ -47,6 +47,9 @@ public:
     // 连接两个节点，返回连接描述符
     DAPyWorkFlowConnection
     connectNode(const QString& srcNodeId, const QString& srcChannel, const QString& dstNodeId, const QString& dstChannel);
+    // 通过代理引用连接两个节点
+    DAPyWorkFlowConnection
+    connectNode(const DAPyNode& src, const QString& srcChannel, const DAPyNode& dst, const QString& dstChannel);
     // 断开连接（按 connectionId）
     bool disconnectNode(const QString& connectionId);
     // 移除连接（disconnectNode 的别名）
@@ -59,8 +62,7 @@ public:
     bool hasNode(const QString& nodeId);
     // 通过代理引用移除节点；内部调用 bool removeNode(nodeId)
     bool removeNode(const DAPyNode& proxy);
-    // 通过代理引用连接两个节点
-    DAPyWorkFlowConnection connectNode(const DAPyNode& src, const QString& srcChannel, const DAPyNode& dst, const QString& dstChannel);
+
     // 通过连接图形项断开连接
     bool disconnectNode(DAPyLinkGraphicsItem* link);
     // 通过代理引用检查节点是否存在

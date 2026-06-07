@@ -6,6 +6,12 @@
 
 ---
 
+DAWorkFlowPy模块类似于`Apache Hamilton`，是一个工作流节点的制定和运行模块，它目标是基于Qt的高性能QGraphicsView进行渲染，渲染由C++执行，逻辑由Python制定(Apache Hamilton UI是web端，DAWorkbench的目标一直是大规模数据场景的渲染，例如1000万条数据的大dataframe快速显示)
+
+DAWorkFlowPy是多端口模型，Hamilton 的"函数=节点"模型只有 1 个输出（返回值），而DAWorkFlowPy做的是类似 Unreal/Blender 节点编辑器的多输入多输出端口模型
+
+Python 生态中的多端口节点编辑器库有一个开源项目是[NodeGraphQt](https://github.com/jchanvfx/NodeGraphQt)，NodeGraphQt 是 UI + 数据模型一体化的，而 DAWorkFlowPy 是纯数据模型层 （UI 由 C++ QGraphicsView 渲染），这是更干净的分离。
+
 ## 原始问题背景
 
 这个模块是把python端映射到c++端，python脚本中相关的内容会对应一个c++类，c++类继承`DAPyObjectWrapper`

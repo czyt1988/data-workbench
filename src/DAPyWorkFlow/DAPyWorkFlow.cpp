@@ -184,6 +184,31 @@ DAPyWorkFlowConnection DAPyWorkFlow::connectNode(const QString& srcNodeId,
 }
 
 /**
+ * @brief 通过代理引用连接两个节点
+ */
+DAPyWorkFlowConnection
+DAPyWorkFlow::connectNode(const DAPyNode& src, const QString& srcChannel, const DAPyNode& dst, const QString& dstChannel)
+{
+    if (src.isNone()) {
+        qWarning() << "DAPyWorkFlow::connectNode(const DAPyNode&, ...): src is none";
+        return DAPyWorkFlowConnection();
+    }
+    if (dst.isNone()) {
+        qWarning() << "DAPyWorkFlow::connectNode(..., const DAPyNode&, ...): dst is none";
+        return DAPyWorkFlowConnection();
+    }
+    DAPyGILGuard gil;
+    QString srcNodeId = src.getNodeId();
+    QString dstNodeId = dst.getNodeId();
+    if (srcNodeId.isEmpty() || dstNodeId.isEmpty()) {
+        qWarning() << "DAPyWorkFlow::connectNode(const DAPyNode&, ...): src/dst has empty nodeId";
+        return DAPyWorkFlowConnection();
+    }
+    DAPyWorkFlowConnection connResult = connectNode(srcNodeId, srcChannel, dstNodeId, dstChannel);
+    return connResult;
+}
+
+/**
  * @brief 断开指定连接
  */
 bool DAPyWorkFlow::disconnectNode(const QString& connectionId)
@@ -256,30 +281,6 @@ bool DAPyWorkFlow::hasNode(const QString& nodeId)
         dealException(e);
     }
     return false;
-}
-
-/**
- * @brief 通过代理引用连接两个节点
- */
-DAPyWorkFlowConnection DAPyWorkFlow::connectNode(const DAPyNode& src, const QString& srcChannel, const DAPyNode& dst, const QString& dstChannel)
-{
-    if (src.isNone()) {
-        qWarning() << "DAPyWorkFlow::connectNode(const DAPyNode&, ...): src is none";
-        return DAPyWorkFlowConnection();
-    }
-    if (dst.isNone()) {
-        qWarning() << "DAPyWorkFlow::connectNode(..., const DAPyNode&, ...): dst is none";
-        return DAPyWorkFlowConnection();
-    }
-    DAPyGILGuard gil;
-    QString srcNodeId = src.getNodeId();
-    QString dstNodeId = dst.getNodeId();
-    if (srcNodeId.isEmpty() || dstNodeId.isEmpty()) {
-        qWarning() << "DAPyWorkFlow::connectNode(const DAPyNode&, ...): src/dst has empty nodeId";
-        return DAPyWorkFlowConnection();
-    }
-    DAPyWorkFlowConnection connResult = connectNode(srcNodeId, srcChannel, dstNodeId, dstChannel);
-    return connResult;
 }
 
 bool DAPyWorkFlow::disconnectNode(DAPyLinkGraphicsItem* link)
