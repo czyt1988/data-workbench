@@ -6,6 +6,7 @@
 #include "DAPyNodeState.h"
 #include "DAPyNodeStyle.h"
 #include "DAPybind11InQt.h"
+#include <QDebug>
 #include <QString>
 #include <QList>
 
@@ -76,7 +77,18 @@ public:
     void setConfig(const QJsonObject& config);
     // 获取DAPyNodeMetaData
     DAPyNodeMetaData getMetaData() const;
+
+    // 比较运算符（以node_id为判据）
+    bool operator==(const DAPyNode& other) const;
+    bool operator!=(const DAPyNode& other) const;
+    bool operator<(const DAPyNode& other) const;
 };
+
+// QDebug输出
+DAPYWORKFLOW_API QDebug operator<<(QDebug dbg, const DAPyNode& node);
+
+// qHash函数（用于QHash/QSet容器）
+DAPYWORKFLOW_API uint qHash(const DAPyNode& key, uint seed = 0);
 
 }  // namespace DA
 

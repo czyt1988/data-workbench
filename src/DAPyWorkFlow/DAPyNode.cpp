@@ -14,6 +14,9 @@ namespace DA
 // DAPyNode
 //===================================================
 
+/**
+ * @brief 构造一个none node
+ */
 DAPyNode::DAPyNode() : DAPyObjectWrapper()
 {
 }
@@ -231,4 +234,34 @@ DAPyNodeMetaData DAPyNode::getMetaData() const
 {
     return PY::toNodeMetaData(object());
 }
+
+bool DAPyNode::operator==(const DAPyNode& other) const
+{
+    return getNodeId() == other.getNodeId();
+}
+
+bool DAPyNode::operator!=(const DAPyNode& other) const
+{
+    return !(*this == other);
+}
+
+bool DAPyNode::operator<(const DAPyNode& other) const
+{
+    return getNodeId() < other.getNodeId();
+}
+
+uint qHash(const DAPyNode& key, uint seed)
+{
+    return ::qHash(key.getNodeId(), seed);
+}
+
+QDebug operator<<(QDebug dbg, const DAPyNode& node)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "DAPyNode(id=" << node.getNodeId()
+                  << ", name=" << node.getNodeName()
+                  << ", category=" << node.getNodeCategory() << ")";
+    return dbg;
+}
+
 }  // namespace DA

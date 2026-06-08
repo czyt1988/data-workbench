@@ -62,7 +62,7 @@ public:
     // 设置工作流名称
     void setWorkflowName(const QString& name);
     // 获取所有节点（pybind11::list，仅供同模块内序列化使用）
-    pybind11::list workflowNodes();
+    QList< DAPyNode > workflowNodes();
     // 获取所有连接（pybind11::list，仅供同模块内序列化使用）
     pybind11::list workflowConnections();
 

@@ -294,7 +294,7 @@ void DAPyWorkFlowManager::setWorkflowName(const QString& name)
  *
  * @return Python节点列表，失败返回空列表
  */
-pybind11::list DAPyWorkFlowManager::workflowNodes()
+QList< DAPyNode > DAPyWorkFlowManager::workflowNodes()
 {
     DA_D(d);
     try {
@@ -304,7 +304,7 @@ pybind11::list DAPyWorkFlowManager::workflowNodes()
     } catch (const std::exception& e) {
         qCritical() << "DAPyWorkFlowManager::workflowNodes:" << e.what();
     }
-    return pybind11::list();
+    return QList< DAPyNode >();
 }
 
 /**

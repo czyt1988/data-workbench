@@ -312,42 +312,49 @@ bool DAPyWorkFlow::hasNode(const DAPyNode& proxy)
 /**
  * @brief 通过 node_id 获取 Python 节点对象
  */
-pybind11::object DAPyWorkFlow::getNodeById(const QString& nodeId)
+DAPyNode DAPyWorkFlow::getNodeById(const QString& nodeId)
 {
     try {
         if (isNone()) {
             qWarning() << "DAPyWorkFlow::getNodeById: workflow object is invalid";
-            return pybind11::none();
+            return DAPyNode();
         }
         pybind11::object result = attr("get_node_by_id")(nodeId);
-        return result;
+        DAPyNode node(result);
+        return node;
     } catch (const pybind11::error_already_set& e) {
         dealException(e);
     } catch (const std::exception& e) {
         dealException(e);
     }
-    return pybind11::none();
+    return DAPyNode();
 }
 
 /**
  * @brief 获取所有节点列表
  */
-pybind11::list DAPyWorkFlow::getNodes()
+QList< DAPyNode > DAPyWorkFlow::getNodes()
 {
-    DAPyGILGuard gil;
     try {
         if (isNone()) {
             qWarning() << "DAPyWorkFlow::getNodes: workflow object is invalid";
-            return pybind11::list();
+            return QList< DAPyNode >();
         }
-        pybind11::object result = attr("get_nodes")();
-        return pybind11::list(result);
+        pybind11::list result = attr("get_nodes")();
+        QList< DAPyNode > ns;
+        for (std::size_t i = 0; i < result.size(); ++i) {
+            DAPyNode n(result[ i ]);
+            if (!n.isNone()) {
+                ns.append(n);
+            }
+        }
+        return ns;
     } catch (const pybind11::error_already_set& e) {
         dealException(e);
     } catch (const std::exception& e) {
         dealException(e);
     }
-    return pybind11::list();
+    return QList< DAPyNode >();
 }
 
 /**

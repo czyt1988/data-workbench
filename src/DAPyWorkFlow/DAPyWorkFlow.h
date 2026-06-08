@@ -70,9 +70,9 @@ public:
 
     // --- 数据查询方法 ---
     // 通过 node_id 获取 Python 节点对象
-    pybind11::object getNodeById(const QString& nodeId);
+    DAPyNode getNodeById(const QString& nodeId);
     // 获取所有节点列表
-    pybind11::list getNodes();
+    QList< DAPyNode > getNodes();
     // 获取所有连接列表
     pybind11::list getConnections();
     // 验证 DAG 是否有效（无环）
