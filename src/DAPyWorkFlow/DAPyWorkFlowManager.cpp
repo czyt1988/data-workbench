@@ -22,7 +22,7 @@ public:
     }
 
     // 工作流代理实例
-    DAPyWorkFlow* mWorkflow { nullptr };
+    DAPyWorkFlow mWorkflow;
     // 节点工厂代理实例（shared_ptr统一管理生命周期）
     std::shared_ptr< DAPyNodeFactory > mFactory;
 };
@@ -30,18 +30,6 @@ public:
 //===================================================
 // DAPyWorkFlowManager
 //===================================================
-
-/**
- * @brief 虚工厂方法，创建默认的工作流实例
- *
- * 子类可覆写此方法以创建自定义的工作流类型（如DADataWorkFlow）。
- *
- * @return 新创建的DAPyWorkFlow实例指针
- */
-DAPyWorkFlow* DAPyWorkFlowManager::createWorkflowInstance()
-{
-    return new DAPyWorkFlow();
-}
 
 /**
  * @brief 构造函数
@@ -52,13 +40,11 @@ DAPyWorkFlow* DAPyWorkFlowManager::createWorkflowInstance()
 DAPyWorkFlowManager::DAPyWorkFlowManager(QObject* parent) : QObject(parent), DA_PIMPL_CONSTRUCT
 {
     DA_D(d);
-    d->mWorkflow = createWorkflowInstance();
+    d->mWorkflow = DAPyWorkFlow();
 }
 
 DAPyWorkFlowManager::~DAPyWorkFlowManager()
 {
-    DA_D(d);
-    delete d->mWorkflow;
 }
 
 /**
@@ -66,7 +52,7 @@ DAPyWorkFlowManager::~DAPyWorkFlowManager()
  *
  * @return DAPyWorkFlow指针，始终非nullptr
  */
-DAPyWorkFlow* DAPyWorkFlowManager::getWorkflow() const
+DAPyWorkFlow DAPyWorkFlowManager::getWorkflow() const
 {
     DA_DC(d);
     return d->mWorkflow;
@@ -90,12 +76,13 @@ DAPyNodeFactory* DAPyWorkFlowManager::getFactory() const
  * 如果传入的指针与当前持有的相同，则不做任何操作。
  *
  * @param[in] wf 新的DAPyWorkFlow实例指针（Manager取得所有权）
+ *
+ * @note DAPyWorkFlowManager会取得DAPyWorkFlow的所有权，在DAPyWorkFlowManager析构时会删除
  */
-void DAPyWorkFlowManager::setWorkflow(DAPyWorkFlow* wf)
+void DAPyWorkFlowManager::setWorkflow(const DAPyWorkFlow& wf)
 {
     DA_D(d);
     if (d->mWorkflow != wf) {
-        delete d->mWorkflow;
         d->mWorkflow = wf;
     }
 }
@@ -124,7 +111,7 @@ void DAPyWorkFlowManager::setFactory(std::shared_ptr< DAPyNodeFactory > factory)
 bool DAPyWorkFlowManager::isWorkflowValid() const
 {
     DA_DC(d);
-    return d->mWorkflow && !d->mWorkflow->isNone();
+    return d->mWorkflow && !d->mWorkflow.isNone();
 }
 
 /**
@@ -140,7 +127,7 @@ QString DAPyWorkFlowManager::registerNode(const DAPyNode& proxy)
 {
     DA_D(d);
     try {
-        return d->mWorkflow->addNode(proxy);
+        return d->mWorkflow.addNode(proxy);
     } catch (const pybind11::error_already_set& e) {
         qCritical() << "DAPyWorkFlowManager::registerNode:" << e.what();
     } catch (const std::exception& e) {
@@ -159,7 +146,7 @@ bool DAPyWorkFlowManager::unregisterNode(const DAPyNode& proxy)
 {
     DA_D(d);
     try {
-        return d->mWorkflow->removeNode(proxy);
+        return d->mWorkflow.removeNode(proxy);
     } catch (const pybind11::error_already_set& e) {
         qCritical() << "DAPyWorkFlowManager::unregisterNode:" << e.what();
     } catch (const std::exception& e) {
@@ -177,39 +164,20 @@ bool DAPyWorkFlowManager::unregisterNode(const DAPyNode& proxy)
  * @param[in] dstInput 目标节点输入端口名
  * @return 连接描述符，失败返回无效描述符
  */
-DAPyWorkFlowConnection DAPyWorkFlowManager::linkNodes(const DAPyNode& srcProxy,
-                                                      const QString& srcOutput,
-                                                      const DAPyNode& dstProxy,
-                                                      const QString& dstInput)
+DAPyNodeConnection DAPyWorkFlowManager::connectNode(const DAPyNode& srcProxy,
+                                                    const QString& srcOutput,
+                                                    const DAPyNode& dstProxy,
+                                                    const QString& dstInput)
 {
     DA_D(d);
     try {
-        return d->mWorkflow->connectNode(srcProxy, srcOutput, dstProxy, dstInput);
+        return d->mWorkflow.connectNode(srcProxy, srcOutput, dstProxy, dstInput);
     } catch (const pybind11::error_already_set& e) {
         qCritical() << "DAPyWorkFlowManager::linkNodes:" << e.what();
     } catch (const std::exception& e) {
         qCritical() << "DAPyWorkFlowManager::linkNodes:" << e.what();
     }
-    return DAPyWorkFlowConnection();
-}
-
-/**
- * @brief 断开连接（不发射信号）
- *
- * @param[in] connectionId 要断开的连接ID
- * @return 成功返回true，失败返回false
- */
-bool DAPyWorkFlowManager::unlinkNode(const QString& connectionId)
-{
-    DA_D(d);
-    try {
-        return d->mWorkflow->disconnectNode(connectionId);
-    } catch (const pybind11::error_already_set& e) {
-        qCritical() << "DAPyWorkFlowManager::unlinkNode:" << e.what();
-    } catch (const std::exception& e) {
-        qCritical() << "DAPyWorkFlowManager::unlinkNode:" << e.what();
-    }
-    return false;
+    return DAPyNodeConnection();
 }
 
 /**
@@ -219,7 +187,7 @@ void DAPyWorkFlowManager::clearWorkflow()
 {
     DA_D(d);
     try {
-        d->mWorkflow->clear();
+        d->mWorkflow.clear();
     } catch (const pybind11::error_already_set& e) {
         qCritical() << "DAPyWorkFlowManager::clearWorkflow:" << e.what();
     } catch (const std::exception& e) {
@@ -259,8 +227,8 @@ QString DAPyWorkFlowManager::workflowName() const
 {
     DA_DC(d);
     try {
-        if (d->mWorkflow && d->mWorkflow->hasattr("name")) {
-            return d->mWorkflow->attr("name").cast< QString >();
+        if (d->mWorkflow && d->mWorkflow.hasattr("name")) {
+            return d->mWorkflow.attr("name").cast< QString >();
         }
     } catch (const pybind11::error_already_set& e) {
         qCritical() << "DAPyWorkFlowManager::workflowName:" << e.what();
@@ -279,8 +247,8 @@ void DAPyWorkFlowManager::setWorkflowName(const QString& name)
 {
     DA_D(d);
     try {
-        if (d->mWorkflow && d->mWorkflow->hasattr("name")) {
-            d->mWorkflow->object().attr("name") = name.toStdString();
+        if (d->mWorkflow && d->mWorkflow.hasattr("name")) {
+            d->mWorkflow.object().attr("name") = name.toStdString();
         }
     } catch (const pybind11::error_already_set& e) {
         qCritical() << "DAPyWorkFlowManager::setWorkflowName:" << e.what();
@@ -297,14 +265,7 @@ void DAPyWorkFlowManager::setWorkflowName(const QString& name)
 QList< DAPyNode > DAPyWorkFlowManager::workflowNodes()
 {
     DA_D(d);
-    try {
-        return d->mWorkflow->getNodes();
-    } catch (const pybind11::error_already_set& e) {
-        qCritical() << "DAPyWorkFlowManager::workflowNodes:" << e.what();
-    } catch (const std::exception& e) {
-        qCritical() << "DAPyWorkFlowManager::workflowNodes:" << e.what();
-    }
-    return QList< DAPyNode >();
+    return d->mWorkflow.getNodes();
 }
 
 /**
@@ -312,17 +273,10 @@ QList< DAPyNode > DAPyWorkFlowManager::workflowNodes()
  *
  * @return Python连接列表，失败返回空列表
  */
-pybind11::list DAPyWorkFlowManager::workflowConnections()
+QList< DAPyNodeConnection > DAPyWorkFlowManager::workflowConnections()
 {
     DA_D(d);
-    try {
-        return d->mWorkflow->getConnections();
-    } catch (const pybind11::error_already_set& e) {
-        qCritical() << "DAPyWorkFlowManager::workflowConnections:" << e.what();
-    } catch (const std::exception& e) {
-        qCritical() << "DAPyWorkFlowManager::workflowConnections:" << e.what();
-    }
-    return pybind11::list();
+    return d->mWorkflow.getConnections();
 }
 
 /**
@@ -348,7 +302,7 @@ DAPyNode DAPyWorkFlowManager::addNode(const QString& qualifiedName)
             qCritical() << "DAPyWorkFlowManager::addNode: createNodeProxy failed for" << qualifiedName;
             return DAPyNode();
         }
-        QString nodeId = d->mWorkflow->addNode(proxy);
+        QString nodeId = d->mWorkflow.addNode(proxy);
         if (nodeId.isEmpty()) {
             qCritical() << "DAPyWorkFlowManager::addNode: workflow addNode returned empty nodeId";
             return DAPyNode();
@@ -376,7 +330,7 @@ bool DAPyWorkFlowManager::removeNode(const QString& nodeId)
 {
     DA_D(d);
     try {
-        bool result = d->mWorkflow->removeNode(nodeId);
+        bool result = d->mWorkflow.removeNode(nodeId);
         if (result) {
             Q_EMIT nodeRemoved(nodeId);
         } else {
@@ -403,26 +357,13 @@ bool DAPyWorkFlowManager::removeNode(const QString& nodeId)
  * @param[in] dstChannel 目标节点输入端口名
  * @return 连接描述符，失败时connectionId为空
  */
-DAPyWorkFlowConnection DAPyWorkFlowManager::connectNode(const QString& srcNodeId,
-                                                        const QString& srcChannel,
-                                                        const QString& dstNodeId,
-                                                        const QString& dstChannel)
+DAPyNodeConnection DAPyWorkFlowManager::connectNode(const QString& srcNodeId,
+                                                    const QString& srcChannel,
+                                                    const QString& dstNodeId,
+                                                    const QString& dstChannel)
 {
     DA_D(d);
-    DAPyWorkFlowConnection result;
-    try {
-        result = d->mWorkflow->connectNode(srcNodeId, srcChannel, dstNodeId, dstChannel);
-        if (result.isValid()) {
-            Q_EMIT connectionAdded(result.connectionId, srcNodeId, srcChannel, dstNodeId, dstChannel);
-        } else {
-            qCritical() << "DAPyWorkFlowManager::connectNode: connectNode failed";
-        }
-    } catch (const pybind11::error_already_set& e) {
-        qCritical() << "DAPyWorkFlowManager::connectNode:" << e.what();
-    } catch (const std::exception& e) {
-        qCritical() << "DAPyWorkFlowManager::connectNode:" << e.what();
-    }
-    return result;
+    return d->mWorkflow.connectNode(srcNodeId, srcChannel, dstNodeId, dstChannel);
 }
 
 /**
@@ -438,7 +379,7 @@ bool DAPyWorkFlowManager::disconnectNode(const QString& connectionId)
 {
     DA_D(d);
     try {
-        bool result = d->mWorkflow->disconnectNode(connectionId);
+        bool result = d->mWorkflow.disconnectNode(connectionId);
         if (result) {
             Q_EMIT connectionRemoved(connectionId);
         } else {
@@ -466,11 +407,11 @@ bool DAPyWorkFlowManager::executeWorkflow()
     DA_D(d);
     DAPyGILGuard gil;
     try {
-        if (d->mWorkflow->isNone()) {
+        if (d->mWorkflow.isNone()) {
             qCritical() << "DAPyWorkFlowManager::executeWorkflow: workflow is invalid";
             return false;
         }
-        d->mWorkflow->attr("execute")();
+        d->mWorkflow.attr("execute")();
         Q_EMIT executionStarted();
         return true;
     } catch (const pybind11::error_already_set& e) {

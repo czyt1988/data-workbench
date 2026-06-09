@@ -13,7 +13,9 @@ namespace DA
 //===================================================
 // DAPyWorkFlow
 //===================================================
-
+/**
+ * @brief 注意，这里构造不会构造一个None，而是会实例化一个DAWorkflow的python对象
+ */
 DAPyWorkFlow::DAPyWorkFlow() : DAPyObjectWrapper()
 {
     initPyWorkflow();
@@ -38,7 +40,6 @@ void DAPyWorkFlow::initPyWorkflow()
     if (!isNone()) {
         return;
     }
-    DAPyGILGuard gil;
     try {
         DAPyModuleWorkflow pyModule = DAPyModuleWorkflow();
         if (!pyModule.isImport()) {
@@ -157,12 +158,12 @@ bool DAPyWorkFlow::removeNode(const DAPyNode& proxy)
 /**
  * @brief 连接两个节点的端口，返回连接描述符
  */
-DAPyWorkFlowConnection DAPyWorkFlow::connectNode(const QString& srcNodeId,
-                                                 const QString& srcChannel,
-                                                 const QString& dstNodeId,
-                                                 const QString& dstChannel)
+DAPyNodeConnection DAPyWorkFlow::connectNode(const QString& srcNodeId,
+                                             const QString& srcChannel,
+                                             const QString& dstNodeId,
+                                             const QString& dstChannel)
 {
-    DAPyWorkFlowConnection result;
+    DAPyNodeConnection result;
     if (!isValid()) {
         qWarning() << "DAPyWorkFlow::connectNode: workflow is not valid";
         return result;
@@ -170,11 +171,7 @@ DAPyWorkFlowConnection DAPyWorkFlow::connectNode(const QString& srcNodeId,
     DAPyGILGuard gil;
     try {
         pybind11::object conn = attr("connect_node")(srcNodeId, srcChannel, dstNodeId, dstChannel);
-        result.connectionId   = conn.attr("connection_id").cast< QString >();
-        result.sourceNodeId   = conn.attr("source_node_id").cast< QString >();
-        result.sourceChannel  = conn.attr("source_output_channel").cast< QString >();
-        result.targetNodeId   = conn.attr("target_node_id").cast< QString >();
-        result.targetChannel  = conn.attr("target_input_channel").cast< QString >();
+        result                = conn;
     } catch (const pybind11::error_already_set& e) {
         dealException(e);
     } catch (const std::exception& e) {
@@ -186,25 +183,24 @@ DAPyWorkFlowConnection DAPyWorkFlow::connectNode(const QString& srcNodeId,
 /**
  * @brief 通过代理引用连接两个节点
  */
-DAPyWorkFlowConnection
+DAPyNodeConnection
 DAPyWorkFlow::connectNode(const DAPyNode& src, const QString& srcChannel, const DAPyNode& dst, const QString& dstChannel)
 {
     if (src.isNone()) {
         qWarning() << "DAPyWorkFlow::connectNode(const DAPyNode&, ...): src is none";
-        return DAPyWorkFlowConnection();
+        return DAPyNodeConnection();
     }
     if (dst.isNone()) {
         qWarning() << "DAPyWorkFlow::connectNode(..., const DAPyNode&, ...): dst is none";
-        return DAPyWorkFlowConnection();
+        return DAPyNodeConnection();
     }
-    DAPyGILGuard gil;
     QString srcNodeId = src.getNodeId();
     QString dstNodeId = dst.getNodeId();
     if (srcNodeId.isEmpty() || dstNodeId.isEmpty()) {
         qWarning() << "DAPyWorkFlow::connectNode(const DAPyNode&, ...): src/dst has empty nodeId";
-        return DAPyWorkFlowConnection();
+        return DAPyNodeConnection();
     }
-    DAPyWorkFlowConnection connResult = connectNode(srcNodeId, srcChannel, dstNodeId, dstChannel);
+    DAPyNodeConnection connResult = connectNode(srcNodeId, srcChannel, dstNodeId, dstChannel);
     return connResult;
 }
 
@@ -360,22 +356,28 @@ QList< DAPyNode > DAPyWorkFlow::getNodes()
 /**
  * @brief 获取所有连接列表
  */
-pybind11::list DAPyWorkFlow::getConnections()
+QList< DAPyNodeConnection > DAPyWorkFlow::getConnections()
 {
-    DAPyGILGuard gil;
     try {
         if (isNone()) {
             qWarning() << "DAPyWorkFlow::getConnections: workflow object is invalid";
-            return pybind11::list();
+            return QList< DAPyNodeConnection >();
         }
-        pybind11::object result = attr("get_connections")();
-        return pybind11::list(result);
+        pybind11::list result = attr("get_connections")();
+        QList< DAPyNodeConnection > connections;
+        for (std::size_t i = 0; i < result.size(); ++i) {
+            DAPyNodeConnection conn(result[ i ]);
+            if (!conn.isNone()) {
+                connections.append(conn);
+            }
+        }
+        return connections;
     } catch (const pybind11::error_already_set& e) {
         dealException(e);
     } catch (const std::exception& e) {
         dealException(e);
     }
-    return pybind11::list();
+    return QList< DAPyNodeConnection >();
 }
 
 /**

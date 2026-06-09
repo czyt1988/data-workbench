@@ -105,10 +105,10 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkAdd(DAPyLinkGraphicsItem* lin
     // 同步Python侧连接
     if (this->mManager && this->mManager->isWorkflowValid()) {
         if (!fromItem->getProxy().isNone() && !toItem->getProxy().isNone()) {
-            DAPyWorkFlowConnection conn =
-                this->mManager->linkNodes(fromItem->getProxy(), fromOutput, toItem->getProxy(), toInput);
-            if (conn.isValid()) {
-                this->mLinkConnectionIdMap[ linkItem ] = conn.connectionId;
+            DAPyNodeConnection conn =
+                this->mManager->connectNode(fromItem->getProxy(), fromOutput, toItem->getProxy(), toInput);
+            if (conn) {
+                this->mLinkConnectionIdMap[ linkItem ] = conn.getConnectionId();
             } else {
                 qWarning() << tr("DAPyWorkFlowScene::addPyNodeLink: connectNode failed, no valid connectionId");
             }
@@ -148,7 +148,7 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkRemove(DAPyLinkGraphicsItem* 
     if (this->mManager && this->mManager->isWorkflowValid()) {
         QString connectionId = this->mLinkConnectionIdMap.value(linkItem);
         if (!connectionId.isEmpty()) {
-            bool removed = this->mManager->unlinkNode(connectionId);
+            bool removed = this->mManager->disconnectNode(connectionId);
             if (!removed) {
                 qWarning() << tr("DAPyWorkFlowScene::removePyNodeLink: disconnectNode failed for connectionId: %1").arg(connectionId);
             }
@@ -381,7 +381,7 @@ bool DAPyWorkFlowScene::removePyNodeItem(DAPyNodeGraphicsItem* item)
         if (d->mManager && d->mManager->isWorkflowValid()) {
             QString connectionId = d->mLinkConnectionIdMap.value(link);
             if (!connectionId.isEmpty()) {
-                d->mManager->unlinkNode(connectionId);
+                d->mManager->disconnectNode(connectionId);
             }
         }
         d->mLinkConnectionIdMap.remove(link);

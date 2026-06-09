@@ -3,6 +3,7 @@
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyWorkFlowTypes.h"
 #include "DAPyNode.h"
+#include "DAPyNodeConnection.h"
 #include "DAPyNodeMetaData.h"
 #include <QObject>
 #include <QString>
@@ -31,13 +32,13 @@ public:
     ~DAPyWorkFlowManager();
 
     // 获取工作流代理
-    DAPyWorkFlow* getWorkflow() const;
+    DAPyWorkFlow getWorkflow() const;
     // 获取节点工厂代理
     DAPyNodeFactory* getFactory() const;
 
     // --- 工作流注入（支持子类如DADataWorkFlow）---
     // 替换内部 workflow（Manager 取得所有权）
-    void setWorkflow(DAPyWorkFlow* wf);
+    void setWorkflow(const DAPyWorkFlow& wf);
     // 替换内部 factory（shared_ptr 版本，与外部共享所有权）
     void setFactory(std::shared_ptr< DAPyNodeFactory > factory);
 
@@ -48,11 +49,6 @@ public:
     QString registerNode(const DAPyNode& proxy);
     // 从工作流移除节点（按代理引用）
     bool unregisterNode(const DAPyNode& proxy);
-    // 连接两个节点端口（按代理引用），返回连接描述符
-    DAPyWorkFlowConnection
-    linkNodes(const DAPyNode& srcProxy, const QString& srcOutput, const DAPyNode& dstProxy, const QString& dstInput);
-    // 断开连接（按 connectionId）
-    bool unlinkNode(const QString& connectionId);
     // 清空工作流所有节点和连接
     void clearWorkflow();
     // 通过元数据创建节点代理（委托给 factory）
@@ -64,7 +60,7 @@ public:
     // 获取所有节点（pybind11::list，仅供同模块内序列化使用）
     QList< DAPyNode > workflowNodes();
     // 获取所有连接（pybind11::list，仅供同模块内序列化使用）
-    pybind11::list workflowConnections();
+    QList< DAPyNodeConnection > workflowConnections();
 
     // --- 节点操作 ---
     // 通过工厂创建节点并添加到workflow，成功后发射nodeAdded信号
@@ -73,8 +69,11 @@ public:
     bool removeNode(const QString& nodeId);
 
     // --- 连接操作 ---
+    // 连接两个节点端口（按代理引用），返回连接描述符
+    DAPyNodeConnection
+    connectNode(const DAPyNode& srcProxy, const QString& srcOutput, const DAPyNode& dstProxy, const QString& dstInput);
     // 连接两个节点端口，成功后发射connectionAdded信号
-    DAPyWorkFlowConnection
+    DAPyNodeConnection
     connectNode(const QString& srcNodeId, const QString& srcChannel, const QString& dstNodeId, const QString& dstChannel);
     // 断开连接，成功后发射connectionRemoved信号
     bool disconnectNode(const QString& connectionId);
@@ -102,10 +101,6 @@ Q_SIGNALS:
     void nodeExecuted(QString nodeId, bool success);
     // 执行器状态变更信号
     void executorStateChanged(QString oldState, QString newState);
-
-protected:
-    // 虚工厂方法，子类可覆写以创建自定义 workflow 类型（如 DADataWorkFlow）
-    virtual DAPyWorkFlow* createWorkflowInstance();
 };
 
 }  // namespace DA

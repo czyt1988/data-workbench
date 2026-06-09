@@ -34,13 +34,4 @@ DAPyWorkFlowOperateWidget* DAAbstractNodePlugin::getCurrentActiveWorkflowOperate
     return d->getWorkFlowOperateWidget();
 }
 
-DAPyWorkFlow* DAAbstractNodePlugin::getCurrentActiveWorkFlow() const
-{
-    auto optWF = getCurrentActiveWorkflowOperateWidget();
-	if (!optWF) {
-		return nullptr;
-	}
-	return optWF->getCurrentWorkflow();
-}
-
 }  // end DA

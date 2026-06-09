@@ -24,30 +24,30 @@ namespace DA
 
 class DAPyWorkFlowOperateWidget::PrivateData
 {
-	DA_DECLARE_PUBLIC(DAPyWorkFlowOperateWidget)
+    DA_DECLARE_PUBLIC(DAPyWorkFlowOperateWidget)
 public:
-	PrivateData(DAPyWorkFlowOperateWidget* p);
+    PrivateData(DAPyWorkFlowOperateWidget* p);
 
-	bool mIsShowGrid { true };
-	QColor mDefaultTextColor { Qt::black };
-	QFont mDefaultFont;
-	bool mIsDestroying { false };
-	bool mOnlyOneWorkflow { false };    ///< 设置只允许一个工作流
-	bool mEnableWorkflowLink { true };  ///< 是否允许工作流连接
-	QAction* mActionCopy { nullptr };
-	QAction* mActionCut { nullptr };
-	QAction* mActionPaste { nullptr };
-	QAction* mActionDelete { nullptr };              ///< 删除选中
-	QAction* mActionCancel { nullptr };              ///< 取消动作
-	QAction* mActionSelectAll { nullptr };           ///< 全选
-	QAction* mActionZoomIn { nullptr };              ///< 放大
-	QAction* mActionZoomOut { nullptr };             ///< 缩小
-	QAction* mActionZoomFit { nullptr };             ///< 全部显示
-	QAction* actionViewCrossLineMarker { nullptr };  ///< 视图的十字标记线
-	QAction* actionViewHLineMarker { nullptr };      ///< 视图的水平标记线
-	QAction* actionViewVLineMarker { nullptr };      ///< 视图的垂直标记线
-	QAction* actionViewNoneMarker { nullptr };       ///< 无标记线
-	QActionGroup* actionGroupViewLineMarkers { nullptr };
+    bool mIsShowGrid { true };
+    QColor mDefaultTextColor { Qt::black };
+    QFont mDefaultFont;
+    bool mIsDestroying { false };
+    bool mOnlyOneWorkflow { false };    ///< 设置只允许一个工作流
+    bool mEnableWorkflowLink { true };  ///< 是否允许工作流连接
+    QAction* mActionCopy { nullptr };
+    QAction* mActionCut { nullptr };
+    QAction* mActionPaste { nullptr };
+    QAction* mActionDelete { nullptr };              ///< 删除选中
+    QAction* mActionCancel { nullptr };              ///< 取消动作
+    QAction* mActionSelectAll { nullptr };           ///< 全选
+    QAction* mActionZoomIn { nullptr };              ///< 放大
+    QAction* mActionZoomOut { nullptr };             ///< 缩小
+    QAction* mActionZoomFit { nullptr };             ///< 全部显示
+    QAction* actionViewCrossLineMarker { nullptr };  ///< 视图的十字标记线
+    QAction* actionViewHLineMarker { nullptr };      ///< 视图的水平标记线
+    QAction* actionViewVLineMarker { nullptr };      ///< 视图的垂直标记线
+    QAction* actionViewNoneMarker { nullptr };       ///< 无标记线
+    QActionGroup* actionGroupViewLineMarkers { nullptr };
 };
 
 DAPyWorkFlowOperateWidget::PrivateData::PrivateData(DAPyWorkFlowOperateWidget* p) : q_ptr(p)
@@ -58,25 +58,25 @@ DAPyWorkFlowOperateWidget::PrivateData::PrivateData(DAPyWorkFlowOperateWidget* p
 // DAPyWorkFlowOperateWidget
 //===================================================
 DAPyWorkFlowOperateWidget::DAPyWorkFlowOperateWidget(QWidget* parent)
-	: DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAPyWorkFlowOperateWidget)
+    : DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAPyWorkFlowOperateWidget)
 {
-	ui->setupUi(this);
-	initActions();
-	connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DAPyWorkFlowOperateWidget::onTabWidgetCurrentChanged);
-	connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &DAPyWorkFlowOperateWidget::onTabWidgetTabCloseRequested);
+    ui->setupUi(this);
+    initActions();
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DAPyWorkFlowOperateWidget::onTabWidgetCurrentChanged);
+    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &DAPyWorkFlowOperateWidget::onTabWidgetTabCloseRequested);
 }
 
 DAPyWorkFlowOperateWidget::~DAPyWorkFlowOperateWidget()
 {
-	qDebug() << "DAPyWorkFlowOperateWidget begin delete ui";
-	d_ptr->mIsDestroying = true;
-	// 断开所有子对象到 this 的信号连接，防止析构期间信号发给已析构对象
-	const auto allChildren = findChildren<QObject*>();
-	for (auto* obj : allChildren) {
-		obj->disconnect(this);
-	}
-	delete ui;
-	qDebug() << "DAPyWorkFlowOperateWidget end delete ui";
+    qDebug() << "DAPyWorkFlowOperateWidget begin delete ui";
+    d_ptr->mIsDestroying = true;
+    // 断开所有子对象到 this 的信号连接，防止析构期间信号发给已析构对象
+    const auto allChildren = findChildren< QObject* >();
+    for (auto* obj : allChildren) {
+        obj->disconnect(this);
+    }
+    delete ui;
+    qDebug() << "DAPyWorkFlowOperateWidget end delete ui";
 }
 
 /**
@@ -89,7 +89,7 @@ DAPyWorkFlowOperateWidget::~DAPyWorkFlowOperateWidget()
  */
 DAPyWorkFlowManager* DAPyWorkFlowOperateWidget::createManager()
 {
-	return new DAPyWorkFlowManager();
+    return new DAPyWorkFlowManager();
 }
 
 /**
@@ -100,43 +100,42 @@ DAPyWorkFlowManager* DAPyWorkFlowOperateWidget::createManager()
  */
 DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::appendWorkflow(const QString& name)
 {
-	if (isOnlyOneWorkflow()) {
-		if (ui->tabWidget->count() >= 1) {
-			return nullptr;
-		}
-	}
-	DA_D(d);
-	DAPyWorkFlowEditWidget* wfe = new DAPyWorkFlowEditWidget(ui->tabWidget);
-	DAPyWorkFlowManager* mgr    = createManager();
-	mgr->setParent(wfe);  // Manager 生命周期绑定到 EditWidget
-	wfe->setManager(mgr);
-	// 把undo添加进去
-	wfe->setEnableShowGrid(d->mIsShowGrid);
-	wfe->setDefaultTextColor(d->mDefaultTextColor);
-	wfe->setDefaultTextFont(d->mDefaultFont);
-	DAPyWorkFlowGraphicsScene* scene = wfe->getWorkFlowGraphicsScene();
-	// 同步状态
-	scene->setIgnoreLinkEvent(!isEnableWorkflowLink());
+    if (isOnlyOneWorkflow()) {
+        if (ui->tabWidget->count() >= 1) {
+            return nullptr;
+        }
+    }
+    DA_D(d);
+    DAPyWorkFlowEditWidget* wfe = new DAPyWorkFlowEditWidget(ui->tabWidget);
+    DAPyWorkFlowManager* mgr    = createManager();
+    mgr->setParent(wfe);  // Manager 生命周期绑定到 EditWidget
+    wfe->setManager(mgr);
+    // 把undo添加进去
+    wfe->setEnableShowGrid(d->mIsShowGrid);
+    wfe->setDefaultTextColor(d->mDefaultTextColor);
+    wfe->setDefaultTextFont(d->mDefaultFont);
+    DAPyWorkFlowGraphicsScene* scene = wfe->getWorkFlowGraphicsScene();
+    // 同步状态
+    scene->setIgnoreLinkEvent(!isEnableWorkflowLink());
 
-	connect(wfe, &DAPyWorkFlowEditWidget::selectNodeItemChanged, this, &DAPyWorkFlowOperateWidget::selectNodeItemChanged);
-	connect(wfe, &DAPyWorkFlowEditWidget::sceneActionActived, this, &DAPyWorkFlowOperateWidget::sceneActionActived);
-	connect(wfe, &DAPyWorkFlowEditWidget::sceneActionDeactived, this, &DAPyWorkFlowOperateWidget::sceneActionDeactived);
-	connect(scene, &DAPyWorkFlowGraphicsScene::selectionChanged, this, &DAPyWorkFlowOperateWidget::onSelectionChanged);
-	connect(scene, &DAPyWorkFlowGraphicsScene::itemsAdded, this, &DAPyWorkFlowOperateWidget::onSceneItemsAdded);
-	connect(scene, &DAPyWorkFlowGraphicsScene::itemsRemoved, this, &DAPyWorkFlowOperateWidget::onSceneItemsRemoved);
-	connect(wfe, &DAPyWorkFlowEditWidget::startExecute, this, [ this, wfe ]() { emit workflowStartExecute(wfe); });
-	connect(wfe,
-	        &DAPyWorkFlowEditWidget::nodeExecuteFinished,
-	        this,
-	        [ this, wfe ](const DA::DAPyNode& n, bool state) { emit nodeExecuteFinished(wfe, n, state); });
-	connect(wfe, &DAPyWorkFlowEditWidget::finished, this, [ this, wfe ](bool s) { emit workflowFinished(wfe, s); });
-	ui->tabWidget->addTab(wfe, name);
-	// 把名字保存到DAPyWorkFlowEditWidget中，在DAProject保存的时候会用到
-	wfe->setWindowTitle(name);
-	emit workflowCreated(wfe);
-	ui->tabWidget->setCurrentIndex(ui->tabWidget->indexOf(wfe));
+    connect(wfe, &DAPyWorkFlowEditWidget::selectNodeItemChanged, this, &DAPyWorkFlowOperateWidget::selectNodeItemChanged);
+    connect(wfe, &DAPyWorkFlowEditWidget::sceneActionActived, this, &DAPyWorkFlowOperateWidget::sceneActionActived);
+    connect(wfe, &DAPyWorkFlowEditWidget::sceneActionDeactived, this, &DAPyWorkFlowOperateWidget::sceneActionDeactived);
+    connect(scene, &DAPyWorkFlowGraphicsScene::selectionChanged, this, &DAPyWorkFlowOperateWidget::onSelectionChanged);
+    connect(scene, &DAPyWorkFlowGraphicsScene::itemsAdded, this, &DAPyWorkFlowOperateWidget::onSceneItemsAdded);
+    connect(scene, &DAPyWorkFlowGraphicsScene::itemsRemoved, this, &DAPyWorkFlowOperateWidget::onSceneItemsRemoved);
+    connect(wfe, &DAPyWorkFlowEditWidget::startExecute, this, [ this, wfe ]() { emit workflowStartExecute(wfe); });
+    connect(wfe, &DAPyWorkFlowEditWidget::nodeExecuteFinished, this, [ this, wfe ](const DA::DAPyNode& n, bool state) {
+        emit nodeExecuteFinished(wfe, n, state);
+    });
+    connect(wfe, &DAPyWorkFlowEditWidget::finished, this, [ this, wfe ](bool s) { emit workflowFinished(wfe, s); });
+    ui->tabWidget->addTab(wfe, name);
+    // 把名字保存到DAPyWorkFlowEditWidget中，在DAProject保存的时候会用到
+    wfe->setWindowTitle(name);
+    emit workflowCreated(wfe);
+    ui->tabWidget->setCurrentIndex(ui->tabWidget->indexOf(wfe));
 
-	return wfe;
+    return wfe;
 }
 
 /**
@@ -146,12 +145,12 @@ DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::appendWorkflow(const QString&
  */
 DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::appendWorkflowWithDialog()
 {
-	bool ok = false;
-	QString text = QInputDialog::getText(this, tr("Title of new workflow"), tr("Title:"), QLineEdit::Normal, QString(), &ok);
-	if (!ok || text.isEmpty()) {
-		return nullptr;
-	}
-	return appendWorkflow(text);
+    bool ok = false;
+    QString text = QInputDialog::getText(this, tr("Title of new workflow"), tr("Title:"), QLineEdit::Normal, QString(), &ok);
+    if (!ok || text.isEmpty()) {
+        return nullptr;
+    }
+    return appendWorkflow(text);
 }
 
 /**
@@ -160,7 +159,7 @@ DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::appendWorkflowWithDialog()
  */
 int DAPyWorkFlowOperateWidget::getCurrentWorkflowIndex() const
 {
-	return ui->tabWidget->currentIndex();
+    return ui->tabWidget->currentIndex();
 }
 
 /**
@@ -169,7 +168,7 @@ int DAPyWorkFlowOperateWidget::getCurrentWorkflowIndex() const
  */
 void DAPyWorkFlowOperateWidget::setCurrentWorkflow(int index)
 {
-	ui->tabWidget->setCurrentIndex(index);
+    ui->tabWidget->setCurrentIndex(index);
 }
 
 /**
@@ -179,10 +178,10 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflow(int index)
  */
 DAPyWorkFlowManager* DAPyWorkFlowOperateWidget::getCurrentManager() const
 {
-	if (auto w = getCurrentWorkFlowWidget()) {
-		return w->getManager();
-	}
-	return nullptr;
+    if (auto w = getCurrentWorkFlowWidget()) {
+        return w->getManager();
+    }
+    return nullptr;
 }
 
 /**
@@ -191,14 +190,14 @@ DAPyWorkFlowManager* DAPyWorkFlowOperateWidget::getCurrentManager() const
  * 内部通过getCurrentManager()获取Manager后返回其workflow。
  * 供DAAbstractNodePlugin等外部调用。
  *
- * @return 当前DAPyWorkFlow指针，无活动时返回nullptr
+ * @return 当前DAPyWorkFlow
  */
-DAPyWorkFlow* DAPyWorkFlowOperateWidget::getCurrentWorkflow() const
+DAPyWorkFlow DAPyWorkFlowOperateWidget::getCurrentWorkflow() const
 {
-	if (auto mgr = getCurrentManager()) {
-		return mgr->getWorkflow();
-	}
-	return nullptr;
+    if (auto mgr = getCurrentManager()) {
+        return mgr->getWorkflow();
+    }
+    return DAPyWorkFlow();
 }
 
 /**
@@ -207,7 +206,7 @@ DAPyWorkFlow* DAPyWorkFlowOperateWidget::getCurrentWorkflow() const
  */
 void DAPyWorkFlowOperateWidget::setCurrentWorkflowWidget(DAPyWorkFlowEditWidget* wf)
 {
-	ui->tabWidget->setCurrentWidget(wf);
+    ui->tabWidget->setCurrentWidget(wf);
 }
 
 /**
@@ -216,17 +215,17 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowWidget(DAPyWorkFlowEditWidget*
  */
 DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::getCurrentWorkFlowWidget() const
 {
-	QWidget* w = ui->tabWidget->currentWidget();
-	if (nullptr == w) {
-		return nullptr;
-	}
-	return qobject_cast< DAPyWorkFlowEditWidget* >(w);
+    QWidget* w = ui->tabWidget->currentWidget();
+    if (nullptr == w) {
+        return nullptr;
+    }
+    return qobject_cast< DAPyWorkFlowEditWidget* >(w);
 }
 
 void DAPyWorkFlowOperateWidget::setCurrentWorkflowName(const QString& name)
 {
-	int i = getCurrentWorkflowIndex();
-	renameWorkFlowWidget(i, name);
+    int i = getCurrentWorkflowIndex();
+    renameWorkFlowWidget(i, name);
 }
 
 /**
@@ -235,12 +234,12 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowName(const QString& name)
  */
 QList< DAPyWorkFlowEditWidget* > DAPyWorkFlowOperateWidget::getAllWorkFlowWidgets() const
 {
-	QList< DAPyWorkFlowEditWidget* > res;
-	for (int i = 0; i < ui->tabWidget->count(); ++i) {
-		auto w = qobject_cast< DAPyWorkFlowEditWidget* >(ui->tabWidget->widget(i));
-		res.append(w);
-	}
-	return res;
+    QList< DAPyWorkFlowEditWidget* > res;
+    for (int i = 0; i < ui->tabWidget->count(); ++i) {
+        auto w = qobject_cast< DAPyWorkFlowEditWidget* >(ui->tabWidget->widget(i));
+        res.append(w);
+    }
+    return res;
 }
 
 /**
@@ -249,11 +248,11 @@ QList< DAPyWorkFlowEditWidget* > DAPyWorkFlowOperateWidget::getAllWorkFlowWidget
  */
 DAPyWorkFlowGraphicsScene* DAPyWorkFlowOperateWidget::getCurrentWorkFlowScene() const
 {
-	DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-	if (nullptr == w) {
-		return nullptr;
-	}
-	return w->getWorkFlowGraphicsScene();
+    DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (nullptr == w) {
+        return nullptr;
+    }
+    return w->getWorkFlowGraphicsScene();
 }
 
 /**
@@ -262,18 +261,18 @@ DAPyWorkFlowGraphicsScene* DAPyWorkFlowOperateWidget::getCurrentWorkFlowScene() 
  */
 QList< DAPyWorkFlowGraphicsScene* > DAPyWorkFlowOperateWidget::getAllWorkFlowScene() const
 {
-	QList< DAPyWorkFlowGraphicsScene* > res;
-	int c = ui->tabWidget->count();
-	for (int i = 0; i < c; ++i) {
-		DAPyWorkFlowEditWidget* we = qobject_cast< DAPyWorkFlowEditWidget* >(ui->tabWidget->widget(i));
-		if (we) {
-			DAPyWorkFlowGraphicsScene* sc = we->getWorkFlowGraphicsScene();
-			if (sc) {
-				res.append(sc);
-			}
-		}
-	}
-	return res;
+    QList< DAPyWorkFlowGraphicsScene* > res;
+    int c = ui->tabWidget->count();
+    for (int i = 0; i < c; ++i) {
+        DAPyWorkFlowEditWidget* we = qobject_cast< DAPyWorkFlowEditWidget* >(ui->tabWidget->widget(i));
+        if (we) {
+            DAPyWorkFlowGraphicsScene* sc = we->getWorkFlowGraphicsScene();
+            if (sc) {
+                res.append(sc);
+            }
+        }
+    }
+    return res;
 }
 
 /**
@@ -282,11 +281,11 @@ QList< DAPyWorkFlowGraphicsScene* > DAPyWorkFlowOperateWidget::getAllWorkFlowSce
  */
 DAPyWorkFlowGraphicsView* DAPyWorkFlowOperateWidget::getCurrentWorkFlowView() const
 {
-	DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-	if (nullptr == w) {
-		return nullptr;
-	}
-	return w->getWorkFlowGraphicsView();
+    DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (nullptr == w) {
+        return nullptr;
+    }
+    return w->getWorkFlowGraphicsView();
 }
 
 /**
@@ -296,7 +295,7 @@ DAPyWorkFlowGraphicsView* DAPyWorkFlowOperateWidget::getCurrentWorkFlowView() co
  */
 DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::getWorkFlowWidget(int index) const
 {
-	return qobject_cast< DAPyWorkFlowEditWidget* >(ui->tabWidget->widget(index));
+    return qobject_cast< DAPyWorkFlowEditWidget* >(ui->tabWidget->widget(index));
 }
 
 /**
@@ -306,7 +305,7 @@ DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::getWorkFlowWidget(int index) 
  */
 QString DAPyWorkFlowOperateWidget::getWorkFlowWidgetName(int index) const
 {
-	return ui->tabWidget->tabText(index);
+    return ui->tabWidget->tabText(index);
 }
 
 /**
@@ -316,7 +315,7 @@ QString DAPyWorkFlowOperateWidget::getWorkFlowWidgetName(int index) const
  */
 void DAPyWorkFlowOperateWidget::renameWorkFlowWidget(int index, const QString& name)
 {
-	ui->tabWidget->setTabText(index, name);
+    ui->tabWidget->setTabText(index, name);
 }
 
 /**
@@ -325,7 +324,7 @@ void DAPyWorkFlowOperateWidget::renameWorkFlowWidget(int index, const QString& n
  */
 int DAPyWorkFlowOperateWidget::count() const
 {
-	return ui->tabWidget->count();
+    return ui->tabWidget->count();
 }
 
 /**
@@ -334,23 +333,23 @@ int DAPyWorkFlowOperateWidget::count() const
  */
 void DAPyWorkFlowOperateWidget::removeWorkflow(int index)
 {
-	QWidget* w = ui->tabWidget->widget(index);
-	if (nullptr == w) {
-		return;
-	}
-	QMessageBox::StandardButton btn = QMessageBox::question(
-		this,
-		tr("question"),                                                        // 疑问
-		tr("Confirm to delete workflow:%1").arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
-	);
-	if (btn != QMessageBox::Yes) {
-		return;
-	}
-	// 发射移除信号
-	emit workflowRemoving(qobject_cast< DA::DAPyWorkFlowEditWidget* >(w));
-	ui->tabWidget->removeTab(index);
-	w->hide();
-	w->deleteLater();
+    QWidget* w = ui->tabWidget->widget(index);
+    if (nullptr == w) {
+        return;
+    }
+    QMessageBox::StandardButton btn = QMessageBox::question(
+        this,
+        tr("question"),                                                        // 疑问
+        tr("Confirm to delete workflow:%1").arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
+    );
+    if (btn != QMessageBox::Yes) {
+        return;
+    }
+    // 发射移除信号
+    emit workflowRemoving(qobject_cast< DA::DAPyWorkFlowEditWidget* >(w));
+    ui->tabWidget->removeTab(index);
+    w->hide();
+    w->deleteLater();
 }
 
 /**
@@ -358,10 +357,10 @@ void DAPyWorkFlowOperateWidget::removeWorkflow(int index)
  */
 void DAPyWorkFlowOperateWidget::setUndoStackActive()
 {
-	DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-	if (w) {
-		w->setUndoStackActive();
-	}
+    DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (w) {
+        w->setUndoStackActive();
+    }
 }
 
 /**
@@ -370,11 +369,11 @@ void DAPyWorkFlowOperateWidget::setUndoStackActive()
  */
 bool DAPyWorkFlowOperateWidget::isCurrentWorkflowShowGrid() const
 {
-	DAPyWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
-	if (!sc) {
-		return false;
-	}
-	return sc->isShowGridLine();
+    DAPyWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
+    if (!sc) {
+        return false;
+    }
+    return sc->isShowGridLine();
 }
 
 /**
@@ -383,71 +382,71 @@ bool DAPyWorkFlowOperateWidget::isCurrentWorkflowShowGrid() const
  */
 QUndoStack* DAPyWorkFlowOperateWidget::getUndoStack()
 {
-	DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-	if (w) {
-		return w->getUndoStack();
-	}
-	return nullptr;
+    DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (w) {
+        return w->getUndoStack();
+    }
+    return nullptr;
 }
 
 void DAPyWorkFlowOperateWidget::addBackgroundPixmap(const QString& pixmapPath)
 {
-	DAPyWorkFlowGraphicsScene* s = getCurrentWorkFlowScene();
-	if (nullptr == s) {
-		return;
-	}
-	QImage img(pixmapPath);
-	QPixmap px;
-	px.convertFromImage(img);
-	DAGraphicsPixmapItem* item = s->setBackgroundPixmap(px);
-	item->setSelectable(true);
-	item->setMoveable(true);
+    DAPyWorkFlowGraphicsScene* s = getCurrentWorkFlowScene();
+    if (nullptr == s) {
+        return;
+    }
+    QImage img(pixmapPath);
+    QPixmap px;
+    px.convertFromImage(img);
+    DAGraphicsPixmapItem* item = s->setBackgroundPixmap(px);
+    item->setSelectable(true);
+    item->setMoveable(true);
 }
 
 void DAPyWorkFlowOperateWidget::setBackgroundPixmapLock(bool on)
 {
-	DAPyWorkFlowGraphicsScene* s = getCurrentWorkFlowScene();
-	if (nullptr == s) {
-		return;
-	}
-	DAGraphicsPixmapItem* item = s->getBackgroundPixmapItem();
-	if (nullptr == item) {
-		return;
-	}
-	item->setSelectable(!on);
-	item->setMoveable(!on);
+    DAPyWorkFlowGraphicsScene* s = getCurrentWorkFlowScene();
+    if (nullptr == s) {
+        return;
+    }
+    DAGraphicsPixmapItem* item = s->getBackgroundPixmapItem();
+    if (nullptr == item) {
+        return;
+    }
+    item->setSelectable(!on);
+    item->setMoveable(!on);
 }
 
 void DAPyWorkFlowOperateWidget::setSelectTextColor(const QColor& color)
 {
-	DAPyWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
-	if (ww) {
-		ww->setSelectTextColor(color);
-	}
+    DAPyWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
+    if (ww) {
+        ww->setSelectTextColor(color);
+    }
 }
 
 void DAPyWorkFlowOperateWidget::setSelectShapeBackgroundBrush(const QBrush& b)
 {
-	DAPyWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
-	if (ww) {
-		ww->setSelectShapeBackgroundBrush(b);
-	}
+    DAPyWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
+    if (ww) {
+        ww->setSelectShapeBackgroundBrush(b);
+    }
 }
 
 void DAPyWorkFlowOperateWidget::setSelectShapeBorderPen(const QPen& v)
 {
-	DAPyWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
-	if (ww) {
-		ww->setSelectShapeBorderPen(v);
-	}
+    DAPyWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
+    if (ww) {
+        ww->setSelectShapeBorderPen(v);
+    }
 }
 
 void DAPyWorkFlowOperateWidget::setSelectTextFont(const QFont& f)
 {
-	DAPyWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
-	if (ww) {
-		ww->setSelectTextItemFont(f);
-	}
+    DAPyWorkFlowEditWidget* ww = getCurrentWorkFlowWidget();
+    if (ww) {
+        ww->setSelectTextItemFont(f);
+    }
 }
 
 /**
@@ -456,13 +455,13 @@ void DAPyWorkFlowOperateWidget::setSelectTextFont(const QFont& f)
  */
 void DAPyWorkFlowOperateWidget::setCurrentWorkflowShowGrid(bool on)
 {
-	DAPyWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
-	if (!sc) {
-		return;
-	}
-	sc->showGridLine(on);
-	sc->update();
-	d_ptr->mIsShowGrid = on;  // 记录最后的状态
+    DAPyWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
+    if (!sc) {
+        return;
+    }
+    sc->showGridLine(on);
+    sc->update();
+    d_ptr->mIsShowGrid = on;  // 记录最后的状态
 }
 
 /**
@@ -471,11 +470,11 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowShowGrid(bool on)
  */
 void DAPyWorkFlowOperateWidget::setCurrentWorkflowReadOnly(bool on)
 {
-	DAPyWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
-	if (!sc) {
-		return;
-	}
-	sc->setReadOnly(on);
+    DAPyWorkFlowGraphicsScene* sc = getCurrentWorkFlowScene();
+    if (!sc) {
+        return;
+    }
+    sc->setReadOnly(on);
 }
 
 /**
@@ -483,12 +482,12 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowReadOnly(bool on)
  */
 void DAPyWorkFlowOperateWidget::setCurrentWorkflowWholeView()
 {
-	DAPyWorkFlowGraphicsView* view = getCurrentWorkFlowView();
-	if (!view) {
-		qWarning() << tr("Loss View");  // cn:缺少视图
-		return;
-	}
-	view->zoomFit();
+    DAPyWorkFlowGraphicsView* view = getCurrentWorkFlowView();
+    if (!view) {
+        qWarning() << tr("Loss View");  // cn:缺少视图
+        return;
+    }
+    view->zoomFit();
 }
 
 /**
@@ -496,13 +495,13 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowWholeView()
  */
 void DAPyWorkFlowOperateWidget::setCurrentWorkflowZoomIn()
 {
-	DAPyWorkFlowGraphicsView* view = getCurrentWorkFlowView();
-	if (!view) {
-		qWarning() << tr("Loss View");  // cn:缺少视图
-		return;
-	}
-	qDebug() << "zoomIn";
-	view->zoomIn();
+    DAPyWorkFlowGraphicsView* view = getCurrentWorkFlowView();
+    if (!view) {
+        qWarning() << tr("Loss View");  // cn:缺少视图
+        return;
+    }
+    qDebug() << "zoomIn";
+    view->zoomIn();
 }
 
 /**
@@ -510,13 +509,13 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowZoomIn()
  */
 void DAPyWorkFlowOperateWidget::setCurrentWorkflowZoomOut()
 {
-	DAPyWorkFlowGraphicsView* view = getCurrentWorkFlowView();
-	if (!view) {
-		qWarning() << tr("Loss View");  // cn:缺少视图
-		return;
-	}
-	qDebug() << "zoomOut";
-	view->zoomOut();
+    DAPyWorkFlowGraphicsView* view = getCurrentWorkFlowView();
+    if (!view) {
+        qWarning() << tr("Loss View");  // cn:缺少视图
+        return;
+    }
+    qDebug() << "zoomOut";
+    view->zoomOut();
 }
 
 /**
@@ -524,12 +523,12 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowZoomOut()
  */
 void DAPyWorkFlowOperateWidget::setCurrentWorkflowSelectAll()
 {
-	DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-	if (nullptr == w) {
-		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
-		return;
-	}
-	w->selectAll();
+    DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (nullptr == w) {
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        return;
+    }
+    w->selectAll();
 }
 
 /**
@@ -537,14 +536,14 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowSelectAll()
  */
 void DAPyWorkFlowOperateWidget::runCurrentWorkFlow()
 {
-	DAPyWorkFlowManager* mgr = getCurrentManager();
-	if (nullptr == mgr) {
-		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
-		return;
-	}
-	if (!mgr->executeWorkflow()) {
-		qCritical() << tr("Workflow execution failed");  // 工作流执行失败
-	}
+    DAPyWorkFlowManager* mgr = getCurrentManager();
+    if (nullptr == mgr) {
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        return;
+    }
+    if (!mgr->executeWorkflow()) {
+        qCritical() << tr("Workflow execution failed");  // 工作流执行失败
+    }
 }
 
 /**
@@ -552,13 +551,13 @@ void DAPyWorkFlowOperateWidget::runCurrentWorkFlow()
  */
 void DAPyWorkFlowOperateWidget::terminateCurrentWorkFlow()
 {
-	DAPyWorkFlowManager* mgr = getCurrentManager();
-	if (nullptr == mgr) {
-		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
-		return;
-	}
-	// TODO: 工作流终止功能还未实现
-	qWarning() << tr("Workflow termination not yet implemented");
+    DAPyWorkFlowManager* mgr = getCurrentManager();
+    if (nullptr == mgr) {
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        return;
+    }
+    // TODO: 工作流终止功能还未实现
+    qWarning() << tr("Workflow termination not yet implemented");
 }
 
 /**
@@ -566,12 +565,12 @@ void DAPyWorkFlowOperateWidget::terminateCurrentWorkFlow()
  */
 void DAPyWorkFlowOperateWidget::copyCurrentSelectItems()
 {
-	DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-	if (nullptr == w) {
-		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
-		return;
-	}
-	w->copySelectItems();
+    DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (nullptr == w) {
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        return;
+    }
+    w->copySelectItems();
 }
 
 /**
@@ -579,12 +578,12 @@ void DAPyWorkFlowOperateWidget::copyCurrentSelectItems()
  */
 void DAPyWorkFlowOperateWidget::cutCurrentSelectItems()
 {
-	DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-	if (nullptr == w) {
-		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
-		return;
-	}
-	w->cutSelectItems();
+    DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (nullptr == w) {
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        return;
+    }
+    w->cutSelectItems();
 }
 
 /**
@@ -592,12 +591,12 @@ void DAPyWorkFlowOperateWidget::cutCurrentSelectItems()
  */
 void DAPyWorkFlowOperateWidget::pasteFromClipBoard()
 {
-	DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-	if (nullptr == w) {
-		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
-		return;
-	}
-	w->pasteToViewCenter();
+    DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (nullptr == w) {
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        return;
+    }
+    w->pasteToViewCenter();
 }
 
 /**
@@ -605,12 +604,12 @@ void DAPyWorkFlowOperateWidget::pasteFromClipBoard()
  */
 void DAPyWorkFlowOperateWidget::removeCurrentSelectItems()
 {
-	DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-	if (nullptr == w) {
-		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
-		return;
-	}
-	w->removeSelectItems();
+    DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (nullptr == w) {
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        return;
+    }
+    w->removeSelectItems();
 }
 
 /**
@@ -618,12 +617,12 @@ void DAPyWorkFlowOperateWidget::removeCurrentSelectItems()
  */
 void DAPyWorkFlowOperateWidget::cancelCurrent()
 {
-	DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-	if (nullptr == w) {
-		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
-		return;
-	}
-	w->cancel();
+    DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (nullptr == w) {
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        return;
+    }
+    w->cancel();
 }
 
 /**
@@ -632,11 +631,11 @@ void DAPyWorkFlowOperateWidget::cancelCurrent()
  */
 void DAPyWorkFlowOperateWidget::setEnableWorkflowLink(bool on)
 {
-	d_ptr->mEnableWorkflowLink = on;
-	iteratorScene([ on ](DAPyWorkFlowGraphicsScene* sc) -> bool {
-		sc->setIgnoreLinkEvent(!on);
-		return true;
-	});
+    d_ptr->mEnableWorkflowLink = on;
+    iteratorScene([ on ](DAPyWorkFlowGraphicsScene* sc) -> bool {
+        sc->setIgnoreLinkEvent(!on);
+        return true;
+    });
 }
 
 /**
@@ -645,7 +644,7 @@ void DAPyWorkFlowOperateWidget::setEnableWorkflowLink(bool on)
  */
 bool DAPyWorkFlowOperateWidget::isEnableWorkflowLink() const
 {
-	return d_ptr->mEnableWorkflowLink;
+    return d_ptr->mEnableWorkflowLink;
 }
 
 /**
@@ -654,7 +653,7 @@ bool DAPyWorkFlowOperateWidget::isEnableWorkflowLink() const
  */
 QFont DAPyWorkFlowOperateWidget::getDefaultTextFont() const
 {
-	return d_ptr->mDefaultFont;
+    return d_ptr->mDefaultFont;
 }
 /**
  * @brief 设置文本字体
@@ -662,11 +661,11 @@ QFont DAPyWorkFlowOperateWidget::getDefaultTextFont() const
  */
 void DAPyWorkFlowOperateWidget::setDefaultTextFont(const QFont& f)
 {
-	d_ptr->mDefaultFont = f;
-	iteratorScene([ f ](DAPyWorkFlowGraphicsScene* sc) -> bool {
-		sc->setDefaultTextFont(f);
-		return true;
-	});
+    d_ptr->mDefaultFont = f;
+    iteratorScene([ f ](DAPyWorkFlowGraphicsScene* sc) -> bool {
+        sc->setDefaultTextFont(f);
+        return true;
+    });
 }
 /**
  * @brief 文本颜色
@@ -674,7 +673,7 @@ void DAPyWorkFlowOperateWidget::setDefaultTextFont(const QFont& f)
  */
 QColor DAPyWorkFlowOperateWidget::getDefaultTextColor() const
 {
-	return d_ptr->mDefaultTextColor;
+    return d_ptr->mDefaultTextColor;
 }
 /**
  * @brief 设置默认的文本颜色
@@ -682,11 +681,11 @@ QColor DAPyWorkFlowOperateWidget::getDefaultTextColor() const
  */
 void DAPyWorkFlowOperateWidget::setDefaultTextColor(const QColor& c)
 {
-	d_ptr->mDefaultTextColor = c;
-	iteratorScene([ c ](DAPyWorkFlowGraphicsScene* sc) -> bool {
-		sc->setDefaultTextColor(c);
-		return true;
-	});
+    d_ptr->mDefaultTextColor = c;
+    iteratorScene([ c ](DAPyWorkFlowGraphicsScene* sc) -> bool {
+        sc->setDefaultTextColor(c);
+        return true;
+    });
 }
 
 /**
@@ -695,38 +694,38 @@ void DAPyWorkFlowOperateWidget::setDefaultTextColor(const QColor& c)
  */
 void DAPyWorkFlowOperateWidget::onTabWidgetCurrentChanged(int index)
 {
-	DAPyWorkFlowEditWidget* w = getWorkFlowWidget(index);
-	if (nullptr == w) {
-		return;
-	}
-	// 激活undostack
-	auto un = w->getUndoStack();
-	if (un) {
-		if (!un->isActive()) {
-			un->setActive(true);
-		}
-	}
-	// 更新action的状态
-	if (DAPyWorkFlowGraphicsView* view = w->getWorkFlowGraphicsView()) {
-		auto markerStyle = view->getCurrentMarkerStyle();
-		switch (markerStyle) {
-		case DAGraphicsViewOverlayMouseMarker::CrossLine:
-			d_ptr->actionViewCrossLineMarker->setChecked(true);
-			break;
-		case DAGraphicsViewOverlayMouseMarker::VLine:
-			d_ptr->actionViewVLineMarker->setChecked(true);
-			break;
-		case DAGraphicsViewOverlayMouseMarker::HLine:
-			d_ptr->actionViewHLineMarker->setChecked(true);
-			break;
-		case DAGraphicsViewOverlayMouseMarker::NoMarkerStyle:
-			d_ptr->actionViewNoneMarker->setChecked(true);
-			break;
-		default:
-			break;
-		}
-	}
-	emit currentWorkFlowWidgetChanged(w);
+    DAPyWorkFlowEditWidget* w = getWorkFlowWidget(index);
+    if (nullptr == w) {
+        return;
+    }
+    // 激活undostack
+    auto un = w->getUndoStack();
+    if (un) {
+        if (!un->isActive()) {
+            un->setActive(true);
+        }
+    }
+    // 更新action的状态
+    if (DAPyWorkFlowGraphicsView* view = w->getWorkFlowGraphicsView()) {
+        auto markerStyle = view->getCurrentMarkerStyle();
+        switch (markerStyle) {
+        case DAGraphicsViewOverlayMouseMarker::CrossLine:
+            d_ptr->actionViewCrossLineMarker->setChecked(true);
+            break;
+        case DAGraphicsViewOverlayMouseMarker::VLine:
+            d_ptr->actionViewVLineMarker->setChecked(true);
+            break;
+        case DAGraphicsViewOverlayMouseMarker::HLine:
+            d_ptr->actionViewHLineMarker->setChecked(true);
+            break;
+        case DAGraphicsViewOverlayMouseMarker::NoMarkerStyle:
+            d_ptr->actionViewNoneMarker->setChecked(true);
+            break;
+        default:
+            break;
+        }
+    }
+    emit currentWorkFlowWidgetChanged(w);
 }
 
 /**
@@ -735,7 +734,7 @@ void DAPyWorkFlowOperateWidget::onTabWidgetCurrentChanged(int index)
  */
 void DAPyWorkFlowOperateWidget::onTabWidgetTabCloseRequested(int index)
 {
-	removeWorkflow(index);
+    removeWorkflow(index);
 }
 
 /**
@@ -743,231 +742,231 @@ void DAPyWorkFlowOperateWidget::onTabWidgetTabCloseRequested(int index)
  */
 void DAPyWorkFlowOperateWidget::onSelectionChanged()
 {
-	if (d_ptr->mIsDestroying) {
-		//! 很奇怪，DAPyWorkFlowGraphicsScene已经析构了，但此槽函数还是能调用，在DAPyWorkFlowOperateWidget
-		//! 开始delete ui的时候，先析构DAPyWorkFlowGraphicsView，再析构DAPyWorkFlowGraphicsScene
-		//! 然后就会调用此槽函数，这时导致错误，从qt原理上，在析构时应该会把槽函数都断开连接才合理
-		return;
-	}
-	DAPyWorkFlowGraphicsScene* scene = getCurrentWorkFlowScene();
-	if (nullptr == scene) {
-		return;
-	}
-	QList< QGraphicsItem* > sits = scene->selectedItems();
-	if (sits.isEmpty()) {
-		return;
-	}
-	emit selectionItemChanged(sits.last());
+    if (d_ptr->mIsDestroying) {
+        //! 很奇怪，DAPyWorkFlowGraphicsScene已经析构了，但此槽函数还是能调用，在DAPyWorkFlowOperateWidget
+        //! 开始delete ui的时候，先析构DAPyWorkFlowGraphicsView，再析构DAPyWorkFlowGraphicsScene
+        //! 然后就会调用此槽函数，这时导致错误，从qt原理上，在析构时应该会把槽函数都断开连接才合理
+        return;
+    }
+    DAPyWorkFlowGraphicsScene* scene = getCurrentWorkFlowScene();
+    if (nullptr == scene) {
+        return;
+    }
+    QList< QGraphicsItem* > sits = scene->selectedItems();
+    if (sits.isEmpty()) {
+        return;
+    }
+    emit selectionItemChanged(sits.last());
 }
 
 void DAPyWorkFlowOperateWidget::onSceneItemsAdded(const QList< QGraphicsItem* >& its)
 {
-	DAGraphicsScene* sc = qobject_cast< DAGraphicsScene* >(sender());
-	if (sc) {
-		emit itemsAdded(sc, its);
-	}
+    DAGraphicsScene* sc = qobject_cast< DAGraphicsScene* >(sender());
+    if (sc) {
+        emit itemsAdded(sc, its);
+    }
 }
 
 void DAPyWorkFlowOperateWidget::onSceneItemsRemoved(const QList< QGraphicsItem* >& its)
 {
-	DAGraphicsScene* sc = qobject_cast< DAGraphicsScene* >(sender());
-	if (sc) {
-		emit itemsRemoved(sc, its);
-	}
+    DAGraphicsScene* sc = qobject_cast< DAGraphicsScene* >(sender());
+    if (sc) {
+        emit itemsRemoved(sc, its);
+    }
 }
 
 void DAPyWorkFlowOperateWidget::onActionGroupViewLineMarkersTriggered(QAction* act)
 {
-	if (act == d_ptr->actionViewCrossLineMarker) {
-		setCurrentViewLineMarker(act->isChecked() ? DAGraphicsViewOverlayMouseMarker::CrossLine
-												  : DAGraphicsViewOverlayMouseMarker::NoMarkerStyle);
-	} else if (act == d_ptr->actionViewHLineMarker) {
-		setCurrentViewLineMarker(act->isChecked() ? DAGraphicsViewOverlayMouseMarker::HLine
-												  : DAGraphicsViewOverlayMouseMarker::NoMarkerStyle);
-	} else if (act == d_ptr->actionViewVLineMarker) {
-		setCurrentViewLineMarker(act->isChecked() ? DAGraphicsViewOverlayMouseMarker::VLine
-												  : DAGraphicsViewOverlayMouseMarker::NoMarkerStyle);
-	} else if (act == d_ptr->actionViewNoneMarker) {
-		setCurrentViewLineMarker(DAGraphicsViewOverlayMouseMarker::NoMarkerStyle);
-	}
+    if (act == d_ptr->actionViewCrossLineMarker) {
+        setCurrentViewLineMarker(act->isChecked() ? DAGraphicsViewOverlayMouseMarker::CrossLine
+                                                  : DAGraphicsViewOverlayMouseMarker::NoMarkerStyle);
+    } else if (act == d_ptr->actionViewHLineMarker) {
+        setCurrentViewLineMarker(act->isChecked() ? DAGraphicsViewOverlayMouseMarker::HLine
+                                                  : DAGraphicsViewOverlayMouseMarker::NoMarkerStyle);
+    } else if (act == d_ptr->actionViewVLineMarker) {
+        setCurrentViewLineMarker(act->isChecked() ? DAGraphicsViewOverlayMouseMarker::VLine
+                                                  : DAGraphicsViewOverlayMouseMarker::NoMarkerStyle);
+    } else if (act == d_ptr->actionViewNoneMarker) {
+        setCurrentViewLineMarker(DAGraphicsViewOverlayMouseMarker::NoMarkerStyle);
+    }
 }
 
 QList< DAGraphicsStandardTextItem* > DAPyWorkFlowOperateWidget::getSelectTextItems()
 {
-	QList< DAGraphicsStandardTextItem* > res;
-	DAPyWorkFlowGraphicsScene* secen = getCurrentWorkFlowScene();
-	if (nullptr == secen) {
-		return res;
-	}
-	QList< QGraphicsItem* > its = secen->selectedItems();
-	if (its.size() == 0) {
-		return res;
-	}
-	for (QGraphicsItem* item : std::as_const(its)) {
-		if (DAGraphicsStandardTextItem* textItem = dynamic_cast< DAGraphicsStandardTextItem* >(item)) {
-			res.append(textItem);
-		}
-	}
-	return res;
+    QList< DAGraphicsStandardTextItem* > res;
+    DAPyWorkFlowGraphicsScene* secen = getCurrentWorkFlowScene();
+    if (nullptr == secen) {
+        return res;
+    }
+    QList< QGraphicsItem* > its = secen->selectedItems();
+    if (its.size() == 0) {
+        return res;
+    }
+    for (QGraphicsItem* item : std::as_const(its)) {
+        if (DAGraphicsStandardTextItem* textItem = dynamic_cast< DAGraphicsStandardTextItem* >(item)) {
+            res.append(textItem);
+        }
+    }
+    return res;
 }
 
 void DAPyWorkFlowOperateWidget::initActions()
 {
-	DA_D(d);
+    DA_D(d);
 
-	d->mActionCopy = new QAction(this);
-	d->mActionCopy->setObjectName(QStringLiteral("actionCopyToDAPyWorkFlowOperateWidget"));
-	d->mActionCopy->setIcon(QIcon(QStringLiteral(":/DAGui/icon/copy.svg")));
-	d->mActionCopy->setShortcuts(QKeySequence::Copy);
-	connect(d->mActionCopy, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::copyCurrentSelectItems);
+    d->mActionCopy = new QAction(this);
+    d->mActionCopy->setObjectName(QStringLiteral("actionCopyToDAPyWorkFlowOperateWidget"));
+    d->mActionCopy->setIcon(QIcon(QStringLiteral(":/DAGui/icon/copy.svg")));
+    d->mActionCopy->setShortcuts(QKeySequence::Copy);
+    connect(d->mActionCopy, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::copyCurrentSelectItems);
 
-	d->mActionCut = new QAction(this);
-	d->mActionCut->setObjectName(QStringLiteral("actionCutToDAPyWorkFlowOperateWidget"));
-	d->mActionCut->setIcon(QIcon(QStringLiteral(":/DAGui/icon/cut.svg")));
-	d->mActionCut->setShortcuts(QKeySequence::Cut);
-	connect(d->mActionCut, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::cutCurrentSelectItems);
+    d->mActionCut = new QAction(this);
+    d->mActionCut->setObjectName(QStringLiteral("actionCutToDAPyWorkFlowOperateWidget"));
+    d->mActionCut->setIcon(QIcon(QStringLiteral(":/DAGui/icon/cut.svg")));
+    d->mActionCut->setShortcuts(QKeySequence::Cut);
+    connect(d->mActionCut, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::cutCurrentSelectItems);
 
-	d->mActionPaste = new QAction(this);
-	d->mActionPaste->setObjectName(QStringLiteral("actionPasteToDAPyWorkFlowOperateWidget"));
-	d->mActionPaste->setIcon(QIcon(QStringLiteral(":/DAGui/icon/paste.svg")));
-	d->mActionPaste->setShortcuts(QKeySequence::Paste);
-	connect(d->mActionPaste, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::pasteFromClipBoard);
+    d->mActionPaste = new QAction(this);
+    d->mActionPaste->setObjectName(QStringLiteral("actionPasteToDAPyWorkFlowOperateWidget"));
+    d->mActionPaste->setIcon(QIcon(QStringLiteral(":/DAGui/icon/paste.svg")));
+    d->mActionPaste->setShortcuts(QKeySequence::Paste);
+    connect(d->mActionPaste, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::pasteFromClipBoard);
 
-	d->mActionDelete = new QAction(this);
-	d->mActionDelete->setObjectName(QStringLiteral("actionDeleteToDAPyWorkFlowOperateWidget"));
-	d->mActionDelete->setIcon(QIcon(QStringLiteral(":/DAGui/icon/delete.svg")));
-	d->mActionDelete->setShortcuts(QKeySequence::Delete);
-	connect(d->mActionDelete, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::removeCurrentSelectItems);
+    d->mActionDelete = new QAction(this);
+    d->mActionDelete->setObjectName(QStringLiteral("actionDeleteToDAPyWorkFlowOperateWidget"));
+    d->mActionDelete->setIcon(QIcon(QStringLiteral(":/DAGui/icon/delete.svg")));
+    d->mActionDelete->setShortcuts(QKeySequence::Delete);
+    connect(d->mActionDelete, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::removeCurrentSelectItems);
 
-	d->mActionCancel = new QAction(this);
-	d->mActionCancel->setObjectName(QStringLiteral("actionCancelToDAPyWorkFlowOperateWidget"));
-	d->mActionCancel->setIcon(QIcon(QStringLiteral(":/DAGui/icon/cancel.svg")));
-	d->mActionCancel->setShortcuts(QKeySequence::Cancel);
-	connect(d->mActionCancel, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::cancelCurrent);
+    d->mActionCancel = new QAction(this);
+    d->mActionCancel->setObjectName(QStringLiteral("actionCancelToDAPyWorkFlowOperateWidget"));
+    d->mActionCancel->setIcon(QIcon(QStringLiteral(":/DAGui/icon/cancel.svg")));
+    d->mActionCancel->setShortcuts(QKeySequence::Cancel);
+    connect(d->mActionCancel, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::cancelCurrent);
 
-	d->mActionSelectAll = new QAction(this);
-	d->mActionSelectAll->setObjectName(QStringLiteral("actionSelectAllToDAPyWorkFlowOperateWidget"));
-	d->mActionSelectAll->setIcon(QIcon(QStringLiteral(":/DAGui/icon/select-all.svg")));
-	d->mActionSelectAll->setShortcuts(QKeySequence::SelectAll);
-	connect(d->mActionSelectAll, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::setCurrentWorkflowSelectAll);
+    d->mActionSelectAll = new QAction(this);
+    d->mActionSelectAll->setObjectName(QStringLiteral("actionSelectAllToDAPyWorkFlowOperateWidget"));
+    d->mActionSelectAll->setIcon(QIcon(QStringLiteral(":/DAGui/icon/select-all.svg")));
+    d->mActionSelectAll->setShortcuts(QKeySequence::SelectAll);
+    connect(d->mActionSelectAll, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::setCurrentWorkflowSelectAll);
 
-	d->mActionZoomIn = new QAction(this);
-	d->mActionZoomIn->setObjectName(QStringLiteral("actionZoomInToDAPyWorkFlowOperateWidget"));
-	d->mActionZoomIn->setIcon(QIcon(QStringLiteral(":/DAGui/icon/zoomIn.svg")));
-	d->mActionZoomIn->setShortcuts({ QKeySequence(QKeySequence::ZoomIn), QKeySequence(QStringLiteral("CTRL+=")) });
-	connect(d->mActionZoomIn, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::setCurrentWorkflowZoomIn);
+    d->mActionZoomIn = new QAction(this);
+    d->mActionZoomIn->setObjectName(QStringLiteral("actionZoomInToDAPyWorkFlowOperateWidget"));
+    d->mActionZoomIn->setIcon(QIcon(QStringLiteral(":/DAGui/icon/zoomIn.svg")));
+    d->mActionZoomIn->setShortcuts({ QKeySequence(QKeySequence::ZoomIn), QKeySequence(QStringLiteral("CTRL+=")) });
+    connect(d->mActionZoomIn, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::setCurrentWorkflowZoomIn);
 
-	d->mActionZoomOut = new QAction(this);
-	d->mActionZoomOut->setObjectName(QStringLiteral("actionZoomOutToDAPyWorkFlowOperateWidget"));
-	d->mActionZoomOut->setIcon(QIcon(QStringLiteral(":/DAGui/icon/zoomOut.svg")));
-	d->mActionZoomOut->setShortcuts(QKeySequence::ZoomOut);
-	connect(d->mActionZoomOut, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::setCurrentWorkflowZoomOut);
+    d->mActionZoomOut = new QAction(this);
+    d->mActionZoomOut->setObjectName(QStringLiteral("actionZoomOutToDAPyWorkFlowOperateWidget"));
+    d->mActionZoomOut->setIcon(QIcon(QStringLiteral(":/DAGui/icon/zoomOut.svg")));
+    d->mActionZoomOut->setShortcuts(QKeySequence::ZoomOut);
+    connect(d->mActionZoomOut, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::setCurrentWorkflowZoomOut);
 
-	// 缩放到适合屏幕
-	d->mActionZoomFit = new QAction(this);
-	d->mActionZoomFit->setObjectName(QStringLiteral("actionZoomFullToDAPyWorkFlowOperateWidget"));
-	d->mActionZoomFit->setIcon(QIcon(QStringLiteral(":/DAGui/icon/viewAll.svg")));
-	d->mActionZoomFit->setShortcut(QKeySequence(QStringLiteral("CTRL+0")));
-	connect(d->mActionZoomFit, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::setCurrentWorkflowWholeView);
+    // 缩放到适合屏幕
+    d->mActionZoomFit = new QAction(this);
+    d->mActionZoomFit->setObjectName(QStringLiteral("actionZoomFullToDAPyWorkFlowOperateWidget"));
+    d->mActionZoomFit->setIcon(QIcon(QStringLiteral(":/DAGui/icon/viewAll.svg")));
+    d->mActionZoomFit->setShortcut(QKeySequence(QStringLiteral("CTRL+0")));
+    connect(d->mActionZoomFit, &QAction::triggered, this, &DAPyWorkFlowOperateWidget::setCurrentWorkflowWholeView);
 
-	// 十字标记线
-	d->actionViewCrossLineMarker = new QAction(this);
-	d->actionViewCrossLineMarker->setCheckable(true);
-	d->actionViewCrossLineMarker->setChecked(false);
-	d->actionViewCrossLineMarker->setObjectName(QStringLiteral("actionViewCrossLineMarker"));
-	d->actionViewCrossLineMarker->setIcon(QIcon(QStringLiteral(":/DAGui/icon/view-corss-marker.svg")));
+    // 十字标记线
+    d->actionViewCrossLineMarker = new QAction(this);
+    d->actionViewCrossLineMarker->setCheckable(true);
+    d->actionViewCrossLineMarker->setChecked(false);
+    d->actionViewCrossLineMarker->setObjectName(QStringLiteral("actionViewCrossLineMarker"));
+    d->actionViewCrossLineMarker->setIcon(QIcon(QStringLiteral(":/DAGui/icon/view-corss-marker.svg")));
 
-	// 水平标记线
-	d->actionViewHLineMarker = new QAction(this);
-	d->actionViewHLineMarker->setCheckable(true);
-	d->actionViewHLineMarker->setChecked(false);
-	d->actionViewHLineMarker->setObjectName(QStringLiteral("actionViewHLineMarker"));
-	d->actionViewHLineMarker->setIcon(QIcon(QStringLiteral(":/DAGui/icon/view-hline-marker.svg")));
+    // 水平标记线
+    d->actionViewHLineMarker = new QAction(this);
+    d->actionViewHLineMarker->setCheckable(true);
+    d->actionViewHLineMarker->setChecked(false);
+    d->actionViewHLineMarker->setObjectName(QStringLiteral("actionViewHLineMarker"));
+    d->actionViewHLineMarker->setIcon(QIcon(QStringLiteral(":/DAGui/icon/view-hline-marker.svg")));
 
-	// 竖直标记线
-	d->actionViewVLineMarker = new QAction(this);
-	d->actionViewVLineMarker->setCheckable(true);
-	d->actionViewVLineMarker->setChecked(false);
-	d->actionViewVLineMarker->setObjectName(QStringLiteral("actionViewVLineMarker"));
-	d->actionViewVLineMarker->setIcon(QIcon(QStringLiteral(":/DAGui/icon/view-vline-marker.svg")));
+    // 竖直标记线
+    d->actionViewVLineMarker = new QAction(this);
+    d->actionViewVLineMarker->setCheckable(true);
+    d->actionViewVLineMarker->setChecked(false);
+    d->actionViewVLineMarker->setObjectName(QStringLiteral("actionViewVLineMarker"));
+    d->actionViewVLineMarker->setIcon(QIcon(QStringLiteral(":/DAGui/icon/view-vline-marker.svg")));
 
-	// 无标记线
-	d->actionViewNoneMarker = new QAction(this);
-	d->actionViewNoneMarker->setCheckable(true);
-	d->actionViewNoneMarker->setChecked(false);
-	d->actionViewNoneMarker->setObjectName(QStringLiteral("actionViewNoneMarker"));
-	d->actionViewNoneMarker->setIcon(QIcon(QStringLiteral(":/DAGui/icon/view-none-marker.svg")));
+    // 无标记线
+    d->actionViewNoneMarker = new QAction(this);
+    d->actionViewNoneMarker->setCheckable(true);
+    d->actionViewNoneMarker->setChecked(false);
+    d->actionViewNoneMarker->setObjectName(QStringLiteral("actionViewNoneMarker"));
+    d->actionViewNoneMarker->setIcon(QIcon(QStringLiteral(":/DAGui/icon/view-none-marker.svg")));
 
-	d->actionGroupViewLineMarkers = new QActionGroup(this);
+    d->actionGroupViewLineMarkers = new QActionGroup(this);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-	d->actionGroupViewLineMarkers->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);
+    d->actionGroupViewLineMarkers->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);
 #endif
-	d->actionGroupViewLineMarkers->setExclusive(true);
-	d->actionGroupViewLineMarkers->addAction(d->actionViewCrossLineMarker);
-	d->actionGroupViewLineMarkers->addAction(d->actionViewHLineMarker);
-	d->actionGroupViewLineMarkers->addAction(d->actionViewVLineMarker);
-	d->actionGroupViewLineMarkers->addAction(d->actionViewNoneMarker);
+    d->actionGroupViewLineMarkers->setExclusive(true);
+    d->actionGroupViewLineMarkers->addAction(d->actionViewCrossLineMarker);
+    d->actionGroupViewLineMarkers->addAction(d->actionViewHLineMarker);
+    d->actionGroupViewLineMarkers->addAction(d->actionViewVLineMarker);
+    d->actionGroupViewLineMarkers->addAction(d->actionViewNoneMarker);
 
-	connect(d->actionGroupViewLineMarkers,
-	        &QActionGroup::triggered,
-	        this,
-	        &DAPyWorkFlowOperateWidget::onActionGroupViewLineMarkersTriggered);
+    connect(d->actionGroupViewLineMarkers,
+            &QActionGroup::triggered,
+            this,
+            &DAPyWorkFlowOperateWidget::onActionGroupViewLineMarkersTriggered);
 
-	addAction(d->mActionCopy);
-	addAction(d->mActionCut);
-	addAction(d->mActionPaste);
-	addAction(d->mActionDelete);
-	addAction(d->mActionCancel);
-	addAction(d->mActionSelectAll);
-	addAction(d->mActionZoomIn);
-	addAction(d->mActionZoomOut);
-	addAction(d->mActionZoomFit);
-	addAction(d->actionViewCrossLineMarker);
-	addAction(d->actionViewHLineMarker);
-	addAction(d->actionViewVLineMarker);
-	addAction(d->actionViewNoneMarker);
-	retranslateUi();
+    addAction(d->mActionCopy);
+    addAction(d->mActionCut);
+    addAction(d->mActionPaste);
+    addAction(d->mActionDelete);
+    addAction(d->mActionCancel);
+    addAction(d->mActionSelectAll);
+    addAction(d->mActionZoomIn);
+    addAction(d->mActionZoomOut);
+    addAction(d->mActionZoomFit);
+    addAction(d->actionViewCrossLineMarker);
+    addAction(d->actionViewHLineMarker);
+    addAction(d->actionViewVLineMarker);
+    addAction(d->actionViewNoneMarker);
+    retranslateUi();
 }
 
 void DAPyWorkFlowOperateWidget::retranslateUi()
 {
-	DA_D(d);
-	d->mActionCopy->setText(tr("Copy"));                                   // cn:复制
-	d->mActionCopy->setStatusTip(tr("Copy"));                              // cn:复制
-	d->mActionCut->setText(tr("Cut"));                                     // cn:剪切
-	d->mActionCut->setStatusTip(tr("Cut"));                                // cn:剪切
-	d->mActionPaste->setText(tr("Paste"));                                 // cn:粘贴
-	d->mActionPaste->setStatusTip(tr("Paste"));                            // cn:粘贴
-	d->mActionDelete->setText(tr("Delete"));                               // cn:删除
-	d->mActionDelete->setStatusTip(tr("Delete"));                          // cn:删除
-	d->mActionCancel->setText(tr("Cancel"));                               // cn:取消
-	d->mActionCancel->setStatusTip(tr("Cancel"));                          // cn:取消
-	d->mActionSelectAll->setText(tr("Select All"));                        // cn:全选
-	d->mActionSelectAll->setStatusTip(tr("Select all items"));             // cn:全选所有图元
-	d->mActionZoomIn->setText(tr("Zoom In"));                              // cn:放大
-	d->mActionZoomIn->setStatusTip(tr("Zoom in graphics view"));           // cn:放大画布
-	d->mActionZoomOut->setText(tr("Zoom Out"));                            // cn:缩小
-	d->mActionZoomOut->setStatusTip(tr("Zoom Out graphics view"));         // cn:缩小画布
-	d->mActionZoomFit->setText(tr("Zoom to Fit"));                         // cn:适合屏幕
-	d->mActionZoomFit->setStatusTip(tr("Zoom to fit screen size"));        // cn:缩放到适合屏幕大小
-	d->actionViewCrossLineMarker->setText(tr("Cross Line Marker"));        // cn:十字标记线
-	d->actionViewCrossLineMarker->setStatusTip(tr("Cross Line Marker"));   // cn:十字标记线
-	d->actionViewHLineMarker->setText(tr("Horizontal Line Marker"));       // cn:水平标记线
-	d->actionViewHLineMarker->setStatusTip(tr("Horizontal Line Marker"));  // cn:水平标记线
-	d->actionViewVLineMarker->setText(tr("Vertical Line Marker"));         // cn:垂直标记线
-	d->actionViewVLineMarker->setStatusTip(tr("Vertical Line Marker"));    // cn:垂直标记线
-	d->actionViewNoneMarker->setText(tr("None Marker"));                   // cn:无标记线
-	d->actionViewNoneMarker->setStatusTip(tr("None Marker"));              // cn:无标记线
+    DA_D(d);
+    d->mActionCopy->setText(tr("Copy"));                                   // cn:复制
+    d->mActionCopy->setStatusTip(tr("Copy"));                              // cn:复制
+    d->mActionCut->setText(tr("Cut"));                                     // cn:剪切
+    d->mActionCut->setStatusTip(tr("Cut"));                                // cn:剪切
+    d->mActionPaste->setText(tr("Paste"));                                 // cn:粘贴
+    d->mActionPaste->setStatusTip(tr("Paste"));                            // cn:粘贴
+    d->mActionDelete->setText(tr("Delete"));                               // cn:删除
+    d->mActionDelete->setStatusTip(tr("Delete"));                          // cn:删除
+    d->mActionCancel->setText(tr("Cancel"));                               // cn:取消
+    d->mActionCancel->setStatusTip(tr("Cancel"));                          // cn:取消
+    d->mActionSelectAll->setText(tr("Select All"));                        // cn:全选
+    d->mActionSelectAll->setStatusTip(tr("Select all items"));             // cn:全选所有图元
+    d->mActionZoomIn->setText(tr("Zoom In"));                              // cn:放大
+    d->mActionZoomIn->setStatusTip(tr("Zoom in graphics view"));           // cn:放大画布
+    d->mActionZoomOut->setText(tr("Zoom Out"));                            // cn:缩小
+    d->mActionZoomOut->setStatusTip(tr("Zoom Out graphics view"));         // cn:缩小画布
+    d->mActionZoomFit->setText(tr("Zoom to Fit"));                         // cn:适合屏幕
+    d->mActionZoomFit->setStatusTip(tr("Zoom to fit screen size"));        // cn:缩放到适合屏幕大小
+    d->actionViewCrossLineMarker->setText(tr("Cross Line Marker"));        // cn:十字标记线
+    d->actionViewCrossLineMarker->setStatusTip(tr("Cross Line Marker"));   // cn:十字标记线
+    d->actionViewHLineMarker->setText(tr("Horizontal Line Marker"));       // cn:水平标记线
+    d->actionViewHLineMarker->setStatusTip(tr("Horizontal Line Marker"));  // cn:水平标记线
+    d->actionViewVLineMarker->setText(tr("Vertical Line Marker"));         // cn:垂直标记线
+    d->actionViewVLineMarker->setStatusTip(tr("Vertical Line Marker"));    // cn:垂直标记线
+    d->actionViewNoneMarker->setText(tr("None Marker"));                   // cn:无标记线
+    d->actionViewNoneMarker->setStatusTip(tr("None Marker"));              // cn:无标记线
 }
 
 bool DAPyWorkFlowOperateWidget::isOnlyOneWorkflow() const
 {
-	return d_ptr->mOnlyOneWorkflow;
+    return d_ptr->mOnlyOneWorkflow;
 }
 
 void DAPyWorkFlowOperateWidget::setOnlyOneWorkflow(bool v)
 {
-	d_ptr->mOnlyOneWorkflow = v;
+    d_ptr->mOnlyOneWorkflow = v;
 }
 
 /**
@@ -977,37 +976,37 @@ void DAPyWorkFlowOperateWidget::setOnlyOneWorkflow(bool v)
  */
 QAction* DAPyWorkFlowOperateWidget::getInnerAction(DAPyWorkFlowOperateWidget::InnerActions act)
 {
-	switch (act) {
-	case ActionCopy:
-		return d_ptr->mActionCopy;
-	case ActionCut:
-		return d_ptr->mActionCut;
-	case ActionPaste:
-		return d_ptr->mActionPaste;
-	case ActionDelete:
-		return d_ptr->mActionDelete;
-	case ActionCancel:
-		return d_ptr->mActionCancel;
-	case ActionSelectAll:
-		return d_ptr->mActionSelectAll;
-	case ActionZoomIn:
-		return d_ptr->mActionZoomIn;
-	case ActionZoomOut:
-		return d_ptr->mActionZoomOut;
-	case ActionZoomFit:
-		return d_ptr->mActionZoomFit;
-	case ActionCrossLineMarker:
-		return d_ptr->actionViewCrossLineMarker;
-	case ActionHLineMarker:
-		return d_ptr->actionViewHLineMarker;
-	case ActionVLineMarker:
-		return d_ptr->actionViewVLineMarker;
-	case ActionNoneMarker:
-		return d_ptr->actionViewNoneMarker;
-	default:
-		break;
-	}
-	return nullptr;
+    switch (act) {
+    case ActionCopy:
+        return d_ptr->mActionCopy;
+    case ActionCut:
+        return d_ptr->mActionCut;
+    case ActionPaste:
+        return d_ptr->mActionPaste;
+    case ActionDelete:
+        return d_ptr->mActionDelete;
+    case ActionCancel:
+        return d_ptr->mActionCancel;
+    case ActionSelectAll:
+        return d_ptr->mActionSelectAll;
+    case ActionZoomIn:
+        return d_ptr->mActionZoomIn;
+    case ActionZoomOut:
+        return d_ptr->mActionZoomOut;
+    case ActionZoomFit:
+        return d_ptr->mActionZoomFit;
+    case ActionCrossLineMarker:
+        return d_ptr->actionViewCrossLineMarker;
+    case ActionHLineMarker:
+        return d_ptr->actionViewHLineMarker;
+    case ActionVLineMarker:
+        return d_ptr->actionViewVLineMarker;
+    case ActionNoneMarker:
+        return d_ptr->actionViewNoneMarker;
+    default:
+        break;
+    }
+    return nullptr;
 }
 
 /**
@@ -1017,12 +1016,12 @@ QAction* DAPyWorkFlowOperateWidget::getInnerAction(DAPyWorkFlowOperateWidget::In
  */
 void DAPyWorkFlowOperateWidget::iteratorScene(FpScenesOpt fp)
 {
-	const QList< DAPyWorkFlowGraphicsScene* > secens = getAllWorkFlowScene();
-	for (DAPyWorkFlowGraphicsScene* sc : secens) {
-		if (!fp(sc)) {
-			return;
-		}
-	}
+    const QList< DAPyWorkFlowGraphicsScene* > secens = getAllWorkFlowScene();
+    for (DAPyWorkFlowGraphicsScene* sc : secens) {
+        if (!fp(sc)) {
+            return;
+        }
+    }
 }
 
 /**
@@ -1031,11 +1030,11 @@ void DAPyWorkFlowOperateWidget::iteratorScene(FpScenesOpt fp)
  */
 void DAPyWorkFlowOperateWidget::setCurrentViewLineMarker(DAGraphicsViewOverlayMouseMarker::MarkerStyle s)
 {
-	DAPyWorkFlowGraphicsView* v = getCurrentWorkFlowView();
-	if (!v) {
-		return;
-	}
-	v->setViewMarkerStyle(s);
+    DAPyWorkFlowGraphicsView* v = getCurrentWorkFlowView();
+    if (!v) {
+        return;
+    }
+    v->setViewMarkerStyle(s);
 }
 
 QActionGroup* DAPyWorkFlowOperateWidget::getLineMarkerActionGroup() const
@@ -1052,13 +1051,13 @@ QActionGroup* DAPyWorkFlowOperateWidget::getLineMarkerActionGroup() const
  */
 bool DAPyWorkFlowOperateWidget::setPreDefineSceneAction(DAPyWorkFlowGraphicsScene::SceneActionFlag mf)
 {
-	DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
-	if (nullptr == w) {
-		qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
-		return false;
-	}
-	w->setPreDefineSceneAction(mf);
-	return true;
+    DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (nullptr == w) {
+        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        return false;
+    }
+    w->setPreDefineSceneAction(mf);
+    return true;
 }
 
 /**
@@ -1067,22 +1066,22 @@ bool DAPyWorkFlowOperateWidget::setPreDefineSceneAction(DAPyWorkFlowGraphicsScen
  */
 void DAPyWorkFlowOperateWidget::clear()
 {
-	emit workflowClearing();
-	int count = ui->tabWidget->count();
-	QList< DAPyWorkFlowEditWidget* > wfes;
-	for (int i = 0; i < count; ++i) {
-		DAPyWorkFlowEditWidget* wfe = getWorkFlowWidget(i);
-		wfes.append(wfe);
-	}
-	// 清空tab
-	while (ui->tabWidget->count() > 0) {
-		ui->tabWidget->removeTab(0);
-	}
-	// 清空
-	for (DAPyWorkFlowEditWidget* w : wfes) {
-		w->hide();
-		w->deleteLater();
-	}
+    emit workflowClearing();
+    int count = ui->tabWidget->count();
+    QList< DAPyWorkFlowEditWidget* > wfes;
+    for (int i = 0; i < count; ++i) {
+        DAPyWorkFlowEditWidget* wfe = getWorkFlowWidget(i);
+        wfes.append(wfe);
+    }
+    // 清空tab
+    while (ui->tabWidget->count() > 0) {
+        ui->tabWidget->removeTab(0);
+    }
+    // 清空
+    for (DAPyWorkFlowEditWidget* w : wfes) {
+        w->hide();
+        w->deleteLater();
+    }
 }
 
 /**
@@ -1091,12 +1090,12 @@ void DAPyWorkFlowOperateWidget::clear()
  */
 QList< QString > DAPyWorkFlowOperateWidget::getAllWorkflowNames() const
 {
-	QList< QString > names;
-	int c = ui->tabWidget->count();
-	for (int i = 0; i < c; ++i) {
-		names.append(ui->tabWidget->tabText(i));
-	}
-	return names;
+    QList< QString > names;
+    int c = ui->tabWidget->count();
+    for (int i = 0; i < c; ++i) {
+        names.append(ui->tabWidget->tabText(i));
+    }
+    return names;
 }
 
 }

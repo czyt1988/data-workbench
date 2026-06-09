@@ -2,7 +2,6 @@
 #define DAPYNODECONNECTION_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyObjectWrapper.h"
-#include "DAPybind11InQt.h"
 #include <QDebug>
 #include <QString>
 

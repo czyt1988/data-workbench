@@ -6,7 +6,7 @@
 #include "DAPybind11InQt.h"
 #include <QString>
 #include <QStringList>
-
+#include "DAPyNodeConnection.h"
 #include "DAPyNode.h"
 
 namespace DA
@@ -45,10 +45,10 @@ public:
     // 从workflow移除节点
     bool removeNode(const QString& nodeId);
     // 连接两个节点，返回连接描述符
-    DAPyWorkFlowConnection
+    DAPyNodeConnection
     connectNode(const QString& srcNodeId, const QString& srcChannel, const QString& dstNodeId, const QString& dstChannel);
     // 通过代理引用连接两个节点
-    DAPyWorkFlowConnection
+    DAPyNodeConnection
     connectNode(const DAPyNode& src, const QString& srcChannel, const DAPyNode& dst, const QString& dstChannel);
     // 断开连接（按 connectionId）
     bool disconnectNode(const QString& connectionId);
@@ -74,7 +74,7 @@ public:
     // 获取所有节点列表
     QList< DAPyNode > getNodes();
     // 获取所有连接列表
-    pybind11::list getConnections();
+    QList< DAPyNodeConnection > getConnections();
     // 验证 DAG 是否有效（无环）
     bool isValidDag();
     // 获取拓扑排序结果

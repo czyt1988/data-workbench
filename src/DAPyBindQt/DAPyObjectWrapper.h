@@ -52,7 +52,7 @@ public:
     // 比较操作符（用于QMap等有序容器的key）
     bool operator<(const DAPyObjectWrapper& obj) const;
 
-    // bool操作符可直接进行isNone判断
+    // bool操作符可直接进行isNone判断,isNone返回false
     explicit operator bool() const;
     // 统一异常处理函数
     void dealException(const std::exception& e) const;
@@ -178,7 +178,7 @@ Q_DECLARE_METATYPE(DA::DAPyObjectWrapper)
 namespace std
 {
 template<>
-struct hash<DA::DAPyObjectWrapper>
+struct hash< DA::DAPyObjectWrapper >
 {
     size_t operator()(const DA::DAPyObjectWrapper& obj) const noexcept;
 };
