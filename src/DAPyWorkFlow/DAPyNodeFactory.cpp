@@ -22,9 +22,15 @@ namespace DA
  */
 DAPyNodeFactory::DAPyNodeFactory() : DAPyObjectWrapper()
 {
-    DAPyModuleWorkflow pyModule   = DAPyModuleWorkflow();
+    DAPyModuleWorkflow pyModule = DAPyModuleWorkflow();
+    if (!pyModule.isImport()) {
+        if (!pyModule.import()) {
+            qWarning() << "DAPyNodeFactory: cannot import DAWorkbench.DAWorkFlowPy";
+            return;
+        }
+    }
     pybind11::object factoryClass = pyModule.getNodeFactoryObject();
-    _object                       = factoryClass();
+    object()                      = factoryClass();
 }
 
 DAPyNodeFactory::DAPyNodeFactory(const pybind11::object& obj) : DAPyObjectWrapper(obj)
@@ -96,6 +102,18 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
             }
             if (pybind11::hasattr(nodeClassObj, "icon")) {
                 metaData.iconPath = nodeClassObj.attr("icon").cast< QString >();
+            }
+            if (pybind11::hasattr(nodeClassObj, "input_keys")) {
+                pybind11::list pyKeys = nodeClassObj.attr("input_keys").cast< pybind11::list >();
+                for (auto item : pyKeys) {
+                    metaData.inputKeys.append(pybind11::cast< QString >(item));
+                }
+            }
+            if (pybind11::hasattr(nodeClassObj, "output_keys")) {
+                pybind11::list pyKeys = nodeClassObj.attr("output_keys").cast< pybind11::list >();
+                for (auto item : pyKeys) {
+                    metaData.outputKeys.append(pybind11::cast< QString >(item));
+                }
             }
 
             if (!metaData.isValid()) {

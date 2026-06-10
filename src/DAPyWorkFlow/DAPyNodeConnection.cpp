@@ -46,8 +46,14 @@ DAPyNodeConnection::DAPyNodeConnection(const QString& source_node_id,
 {
     try {
         DAPyModuleWorkflow pyModule = DAPyModuleWorkflow();
-        pybind11::object connClass  = pyModule.attr("DAConnection");
-        object()                    = connClass(pybind11::cast(source_node_id),
+        if (!pyModule.isImport()) {
+            if (!pyModule.import()) {
+                qWarning() << "DAPyNodeConnection: cannot import DAWorkbench.DAWorkFlowPy";
+                return;
+            }
+        }
+        pybind11::object connClass = pyModule.attr("DAConnection");
+        object()                   = connClass(pybind11::cast(source_node_id),
                              pybind11::cast(source_output_channel),
                              pybind11::cast(target_node_id),
                              pybind11::cast(target_input_channel));

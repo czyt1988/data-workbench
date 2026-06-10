@@ -2,6 +2,7 @@
 #include "DAPyWorkFlow.h"
 #include "DAPyNodeFactory.h"
 #include "DAPyNode.h"
+#include "DAPyWorkFlowExecutor.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAPybind11InQt.h"
 #include <QDebug>
@@ -171,7 +172,11 @@ DAPyNodeConnection DAPyWorkFlowManager::connectNode(const DAPyNode& srcProxy,
 {
     DA_D(d);
     try {
-        return d->mWorkflow.connectNode(srcProxy, srcOutput, dstProxy, dstInput);
+        DAPyNodeConnection conn = d->mWorkflow.connectNode(srcProxy, srcOutput, dstProxy, dstInput);
+        if (conn) {
+            Q_EMIT connectionAdded(conn.getConnectionId(), srcProxy.getNodeId(), srcOutput, dstProxy.getNodeId(), dstInput);
+        }
+        return conn;
     } catch (const pybind11::error_already_set& e) {
         qCritical() << "DAPyWorkFlowManager::linkNodes:" << e.what();
     } catch (const std::exception& e) {
@@ -363,7 +368,11 @@ DAPyNodeConnection DAPyWorkFlowManager::connectNode(const QString& srcNodeId,
                                                     const QString& dstChannel)
 {
     DA_D(d);
-    return d->mWorkflow.connectNode(srcNodeId, srcChannel, dstNodeId, dstChannel);
+    DAPyNodeConnection conn = d->mWorkflow.connectNode(srcNodeId, srcChannel, dstNodeId, dstChannel);
+    if (conn) {
+        Q_EMIT connectionAdded(conn.getConnectionId(), srcNodeId, srcChannel, dstNodeId, dstChannel);
+    }
+    return conn;
 }
 
 /**
@@ -397,29 +406,39 @@ bool DAPyWorkFlowManager::disconnectNode(const QString& connectionId)
 /**
  * @brief 开始执行工作流
  *
- * 调用Python workflow的execute方法，
- * 发射executionStarted信号。
+ * 通过 DAPyWorkFlowExecutor 创建 Python DAWorkflowExecutor 实例，
+ * 将 Python 回调桥接到 Manager 的 Qt 信号，然后同步执行工作流。
+ * 发射 executionStarted 和 executionFinished 信号。
  *
  * @return 成功返回true，失败返回false
  */
 bool DAPyWorkFlowManager::executeWorkflow()
 {
     DA_D(d);
-    DAPyGILGuard gil;
-    try {
-        if (d->mWorkflow.isNone()) {
-            qCritical() << "DAPyWorkFlowManager::executeWorkflow: workflow is invalid";
-            return false;
-        }
-        d->mWorkflow.attr("execute")();
-        Q_EMIT executionStarted();
-        return true;
-    } catch (const pybind11::error_already_set& e) {
-        qCritical() << "DAPyWorkFlowManager::executeWorkflow:" << e.what();
-    } catch (const std::exception& e) {
-        qCritical() << "DAPyWorkFlowManager::executeWorkflow:" << e.what();
+    if (d->mWorkflow.isNone()) {
+        qCritical() << "DAPyWorkFlowManager::executeWorkflow: workflow is invalid";
+        return false;
     }
-    return false;
+
+    // 创建执行器代理（纯 DAPyObjectWrapper 子类）
+    DAPyWorkFlowExecutor executor(d->mWorkflow);
+    if (executor.isNone()) {
+        qCritical() << "DAPyWorkFlowManager::executeWorkflow: failed to create executor";
+        return false;
+    }
+
+    // 将 Python 回调桥接到 Manager 的 Qt 信号
+    executor.setOnStateChange([ this ](const QString& oldState, const QString& newState) {
+        Q_EMIT executorStateChanged(oldState, newState);
+    });
+    executor.setOnNodeFinished([ this ](const QString& nodeId, bool success) {
+        Q_EMIT nodeExecuted(nodeId, success);
+    });
+
+    Q_EMIT executionStarted();
+    bool success = executor.execute();
+    Q_EMIT executionFinished(success);
+    return success;
 }
 
 }  // namespace DA

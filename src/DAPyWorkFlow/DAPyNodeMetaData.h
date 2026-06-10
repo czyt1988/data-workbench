@@ -39,7 +39,9 @@ public:
     QString qualifiedName;  // 节点唯一标识名（Python qualified_name）
     QString category;       // 节点分组/分类
     QString iconPath;  // 节点图标路径,注意这个图标仅仅用于进行节点树的图标展示，不作为场景显示的图标，场景显示的图标可以通过DANodeStyle定义
-    QString tooltip;  // 节点提示文本
+    QString tooltip;        // 节点提示文本
+    QStringList inputKeys;  // 输入端口名称列表
+    QStringList outputKeys; // 输出端口名称列表
 };
 
 // QDebug输出

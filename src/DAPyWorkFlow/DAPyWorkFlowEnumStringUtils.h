@@ -3,6 +3,8 @@
 #include "DAEnumStringUtils.hpp"
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyNodeState.h"
+#include "DAPyExecutorState.h"
+#include "DAPyWorkFlowState.h"
 /**
  * @file Python工作流枚举字符串转换类
  *
@@ -28,6 +30,16 @@
 // DA::DAPyNodeState
 // ------------------------------------------
 DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::DAPyNodeState)
+
+// ------------------------------------------
+// DA::DAPyExecutorState
+// ------------------------------------------
+DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::DAPyExecutorState)
+
+// ------------------------------------------
+// DA::DAPyWorkFlowState
+// ------------------------------------------
+DA_ENUM_STRING_DECLARE_EXPORT(DAPYWORKFLOW_API, DA::DAPyWorkFlowState)
 
 // 节点样式定义枚举在 DAPyNodeStyleDefine.h 中声明
 // LinkPointLayoutStrategy 在 DAPyNodeStyle.h 中声明

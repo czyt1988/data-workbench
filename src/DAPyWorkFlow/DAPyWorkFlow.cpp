@@ -117,7 +117,7 @@ bool DAPyWorkFlow::removeNode(const QString& nodeId)
             qWarning() << "DAPyWorkFlow::removeNode: workflow object is invalid";
             return false;
         }
-        pybind11::object pyNodeRef = attr("removeNode")(pybind11::arg("node_id") = nodeId);
+        pybind11::object pyNodeRef = attr("remove_node")(pybind11::arg("node_id") = nodeId);
         if (pyNodeRef.is_none()) {
             qWarning() << "DAPyWorkFlow::removeNode: node not found for id:" << nodeId;
             return false;

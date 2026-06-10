@@ -34,6 +34,12 @@ public:
     pybind11::object getNodeDefDecoratorObject() const;
     // 获取缓存的 DANodeFactory 类引用
     pybind11::object getNodeFactoryObject() const;
+    // 获取缓存的 DAWorkflowExecutor 类引用
+    pybind11::object getWorkflowExecutorObject() const;
+    // 获取缓存的 DASignalManager 类引用
+    pybind11::object getSignalManagerObject() const;
+    // 获取缓存的 DAWorkflowSerializer 类引用
+    pybind11::object getWorkflowSerializerObject() const;
 
 private:
     // 缓存 Python 类引用，避免每次 attr() 查找
@@ -41,6 +47,9 @@ private:
     pybind11::object mObjNodeRegistryClass;
     pybind11::object mObjNodeDefDecorator;
     pybind11::object mObjNodeFactoryClass;
+    pybind11::object mObjWorkflowExecutorClass;
+    pybind11::object mObjSignalManagerClass;
+    pybind11::object mObjWorkflowSerializerClass;
 };
 }  // namespace DA
 #endif  // DAPYMODULEWORKFLOW_H

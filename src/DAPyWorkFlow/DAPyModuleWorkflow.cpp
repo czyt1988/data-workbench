@@ -82,4 +82,28 @@ pybind11::object DAPyModuleWorkflow::getNodeFactoryObject() const
     return attr("DANodeFactory");
 }
 
+/**
+ * @brief 获取缓存的 DAWorkflowExecutor 类引用
+ */
+pybind11::object DAPyModuleWorkflow::getWorkflowExecutorObject() const
+{
+    return attr("DAWorkflowExecutor");
+}
+
+/**
+ * @brief 获取缓存的 DASignalManager 类引用
+ */
+pybind11::object DAPyModuleWorkflow::getSignalManagerObject() const
+{
+    return attr("DASignalManager");
+}
+
+/**
+ * @brief 获取缓存的 DAWorkflowSerializer 类引用
+ */
+pybind11::object DAPyModuleWorkflow::getWorkflowSerializerObject() const
+{
+    return attr("DAWorkflowSerializer");
+}
+
 }  // namespace DA
