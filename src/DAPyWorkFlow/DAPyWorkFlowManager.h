@@ -1,7 +1,6 @@
 #ifndef DAPYWORKFLOWMANAGER_H
 #define DAPYWORKFLOWMANAGER_H
 #include "DAPyWorkFlowAPI.h"
-#include "DAPyWorkFlowTypes.h"
 #include "DAPyNode.h"
 #include "DAPyNodeConnection.h"
 #include "DAPyNodeMetaData.h"

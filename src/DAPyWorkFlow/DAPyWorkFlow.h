@@ -1,7 +1,6 @@
 #ifndef DAPYWORKFLOW_H
 #define DAPYWORKFLOW_H
 #include "DAPyWorkFlowAPI.h"
-#include "DAPyWorkFlowTypes.h"
 #include "DAPyObjectWrapper.h"
 #include "DAPybind11InQt.h"
 #include <QString>
