@@ -2,7 +2,6 @@
 #include "DAPyWorkFlow.h"
 #include "DAPyNodeFactory.h"
 #include "DAPyModuleWorkflow.h"
-#include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAPyBindQt/DAPyJsonCast.h"
 #include "DAPybind11InQt.h"
 #include "DAPybind11QtCaster.hpp"
@@ -79,7 +78,7 @@ QJsonObject DAPyWorkFlowSerializer::toDict(const DAPyWorkFlow& workflow)
     if (isNone() || workflow.isNone()) {
         return QJsonObject();
     }
-    DAPyGILGuard gil;
+
     try {
         pybind11::dict pyDict = attr("to_dict")(workflow.object());
         return PY::pyDictToQJsonObject(pyDict);
@@ -102,7 +101,7 @@ DAPyWorkFlow DAPyWorkFlowSerializer::fromDict(const QJsonObject& data, const DAP
     if (isNone()) {
         return DAPyWorkFlow();
     }
-    DAPyGILGuard gil;
+
     try {
         pybind11::dict pyDict = PY::qjsonObjectToPyDict(data);
         pybind11::object result;
@@ -127,7 +126,7 @@ QString DAPyWorkFlowSerializer::toJson(const DAPyWorkFlow& workflow)
     if (isNone() || workflow.isNone()) {
         return QString();
     }
-    DAPyGILGuard gil;
+
     try {
         return attr("to_json")(workflow.object()).cast< QString >();
     } catch (const std::exception& e) {
@@ -145,7 +144,7 @@ DAPyWorkFlow DAPyWorkFlowSerializer::fromJson(const QString& jsonStr, const DAPy
     if (isNone()) {
         return DAPyWorkFlow();
     }
-    DAPyGILGuard gil;
+
     try {
         pybind11::object result;
         if (!factory.isNone()) {
@@ -169,7 +168,7 @@ bool DAPyWorkFlowSerializer::saveToFile(const DAPyWorkFlow& workflow, const QStr
     if (isNone() || workflow.isNone()) {
         return false;
     }
-    DAPyGILGuard gil;
+
     try {
         attr("save_to_file")(workflow.object(), filePath);
         return true;
@@ -188,7 +187,7 @@ DAPyWorkFlow DAPyWorkFlowSerializer::loadFromFile(const QString& filePath, const
     if (isNone()) {
         return DAPyWorkFlow();
     }
-    DAPyGILGuard gil;
+
     try {
         pybind11::object result;
         if (!factory.isNone()) {

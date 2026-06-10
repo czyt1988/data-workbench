@@ -1,6 +1,5 @@
 #include "DAPyWorkFlow.h"
 #include "DAPyModuleWorkflow.h"
-#include "DAPyGILGuard.h"
 #include "DAPybind11InQt.h"
 #include "DAPyNode.h"
 #include "DAPyLinkGraphicsItem.h"
@@ -84,7 +83,7 @@ QString DAPyWorkFlow::addNode(const DAPyNode& proxy)
         qWarning() << "DAPyWorkFlow::addNode: proxy is none";
         return QString();
     }
-    DAPyGILGuard gil;
+
     try {
         if (isNone()) {
             qWarning() << "DAPyWorkFlow::addNode: workflow object is invalid";
@@ -111,7 +110,7 @@ QString DAPyWorkFlow::addNode(const DAPyNode& proxy)
  */
 bool DAPyWorkFlow::removeNode(const QString& nodeId)
 {
-    DAPyGILGuard gil;
+
     try {
         if (isNone()) {
             qWarning() << "DAPyWorkFlow::removeNode: workflow object is invalid";
@@ -140,7 +139,7 @@ bool DAPyWorkFlow::removeNode(const DAPyNode& proxy)
         qWarning() << "DAPyWorkFlow::removeNode(const DAPyNode&): proxy is none";
         return false;
     }
-    DAPyGILGuard gil;
+
     if (isNone()) {
         qWarning() << "DAPyWorkFlow::removeNode: workflow object is invalid";
         return false;
@@ -168,7 +167,7 @@ DAPyNodeConnection DAPyWorkFlow::connectNode(const QString& srcNodeId,
         qWarning() << "DAPyWorkFlow::connectNode: workflow is not valid";
         return result;
     }
-    DAPyGILGuard gil;
+
     try {
         pybind11::object conn = attr("connect_node")(srcNodeId, srcChannel, dstNodeId, dstChannel);
         result                = conn;
@@ -213,7 +212,7 @@ bool DAPyWorkFlow::disconnectNode(const QString& connectionId)
         qWarning() << "DAPyWorkFlow::disconnectNode: workflow is not valid";
         return false;
     }
-    DAPyGILGuard gil;
+
     try {
         pybind11::object connObj = attr("remove_connection")(connectionId);
         QString fromPort         = connObj.attr("source_output_channel").cast< QString >();
@@ -234,7 +233,7 @@ bool DAPyWorkFlow::removeConnection(const QString& connectionId)
 
 void DAPyWorkFlow::clear()
 {
-    DAPyGILGuard gil;
+
     try {
         if (isNone()) {
             qWarning() << "DAPyWorkFlow::clear: workflow object is invalid";
@@ -250,7 +249,7 @@ void DAPyWorkFlow::clear()
 
 int DAPyWorkFlow::nodeCount()
 {
-    DAPyGILGuard gil;
+
     try {
         return static_cast< int >(pybind11::len(object()));
     } catch (const pybind11::error_already_set& e) {
@@ -263,7 +262,7 @@ int DAPyWorkFlow::nodeCount()
 
 bool DAPyWorkFlow::hasNode(const QString& nodeId)
 {
-    DAPyGILGuard gil;
+
     try {
         if (isNone()) {
             qWarning() << "DAPyWorkFlow::hasNode: workflow object is invalid";
@@ -296,7 +295,7 @@ bool DAPyWorkFlow::hasNode(const DAPyNode& proxy)
         qWarning() << "DAPyWorkFlow::hasNode(const DAPyNode&): proxy is none";
         return false;
     }
-    DAPyGILGuard gil;
+
     QString nodeId = proxy.getNodeId();
     if (nodeId.isEmpty()) {
         qWarning() << "DAPyWorkFlow::hasNode(const DAPyNode&): proxy has empty nodeId";
@@ -385,7 +384,7 @@ QList< DAPyNodeConnection > DAPyWorkFlow::getConnections()
  */
 bool DAPyWorkFlow::isValidDag()
 {
-    DAPyGILGuard gil;
+
     try {
         if (isNone()) {
             qWarning() << "DAPyWorkFlow::isValidDag: workflow object is invalid";
@@ -405,7 +404,7 @@ bool DAPyWorkFlow::isValidDag()
  */
 QStringList DAPyWorkFlow::topologicalSort()
 {
-    DAPyGILGuard gil;
+
     try {
         if (isNone()) {
             qWarning() << "DAPyWorkFlow::topologicalSort: workflow object is invalid";

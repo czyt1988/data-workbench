@@ -353,6 +353,7 @@ const DAPyNode& DAPyNodeGraphicsItem::getProxy() const
  */
 void DAPyNodeGraphicsItem::setProxy(const DAPyNode& proxy)
 {
+    DAPyGILGuard gil;
     d_ptr->mProxy = proxy;
     if (!proxy.isNone()) {
         d_ptr->mNodeState     = proxy.getNodeState();

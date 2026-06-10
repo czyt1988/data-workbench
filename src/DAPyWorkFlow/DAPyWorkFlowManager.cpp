@@ -127,6 +127,7 @@ bool DAPyWorkFlowManager::isWorkflowValid() const
 QString DAPyWorkFlowManager::registerNode(const DAPyNode& proxy)
 {
     DA_D(d);
+    DAPyGILGuard gil;
     try {
         return d->mWorkflow.addNode(proxy);
     } catch (const pybind11::error_already_set& e) {
@@ -146,6 +147,7 @@ QString DAPyWorkFlowManager::registerNode(const DAPyNode& proxy)
 bool DAPyWorkFlowManager::unregisterNode(const DAPyNode& proxy)
 {
     DA_D(d);
+    DAPyGILGuard gil;
     try {
         return d->mWorkflow.removeNode(proxy);
     } catch (const pybind11::error_already_set& e) {
@@ -171,6 +173,7 @@ DAPyNodeConnection DAPyWorkFlowManager::connectNode(const DAPyNode& srcProxy,
                                                     const QString& dstInput)
 {
     DA_D(d);
+    DAPyGILGuard gil;
     try {
         DAPyNodeConnection conn = d->mWorkflow.connectNode(srcProxy, srcOutput, dstProxy, dstInput);
         if (conn) {
@@ -191,6 +194,7 @@ DAPyNodeConnection DAPyWorkFlowManager::connectNode(const DAPyNode& srcProxy,
 void DAPyWorkFlowManager::clearWorkflow()
 {
     DA_D(d);
+    DAPyGILGuard gil;
     try {
         d->mWorkflow.clear();
     } catch (const pybind11::error_already_set& e) {
@@ -209,6 +213,7 @@ void DAPyWorkFlowManager::clearWorkflow()
 DAPyNode DAPyWorkFlowManager::createNodeProxy(const DAPyNodeMetaData& metaData)
 {
     DA_D(d);
+    DAPyGILGuard gil;
     if (!d->mFactory) {
         qCritical() << "DAPyWorkFlowManager::createNodeProxy: factory not set";
         return DAPyNode();
@@ -231,6 +236,7 @@ DAPyNode DAPyWorkFlowManager::createNodeProxy(const DAPyNodeMetaData& metaData)
 QString DAPyWorkFlowManager::workflowName() const
 {
     DA_DC(d);
+    DAPyGILGuard gil;
     try {
         if (d->mWorkflow && d->mWorkflow.hasattr("name")) {
             return d->mWorkflow.attr("name").cast< QString >();
@@ -251,6 +257,7 @@ QString DAPyWorkFlowManager::workflowName() const
 void DAPyWorkFlowManager::setWorkflowName(const QString& name)
 {
     DA_D(d);
+    DAPyGILGuard gil;
     try {
         if (d->mWorkflow && d->mWorkflow.hasattr("name")) {
             d->mWorkflow.object().attr("name") = name.toStdString();
@@ -270,6 +277,7 @@ void DAPyWorkFlowManager::setWorkflowName(const QString& name)
 QList< DAPyNode > DAPyWorkFlowManager::workflowNodes()
 {
     DA_D(d);
+    DAPyGILGuard gil;
     return d->mWorkflow.getNodes();
 }
 
@@ -281,6 +289,7 @@ QList< DAPyNode > DAPyWorkFlowManager::workflowNodes()
 QList< DAPyNodeConnection > DAPyWorkFlowManager::workflowConnections()
 {
     DA_D(d);
+    DAPyGILGuard gil;
     return d->mWorkflow.getConnections();
 }
 
@@ -297,6 +306,7 @@ QList< DAPyNodeConnection > DAPyWorkFlowManager::workflowConnections()
 DAPyNode DAPyWorkFlowManager::addNode(const QString& qualifiedName)
 {
     DA_D(d);
+    DAPyGILGuard gil;
     if (!d->mFactory) {
         qCritical() << "DAPyWorkFlowManager::addNode: factory not set";
         return DAPyNode();
@@ -334,6 +344,7 @@ DAPyNode DAPyWorkFlowManager::addNode(const QString& qualifiedName)
 bool DAPyWorkFlowManager::removeNode(const QString& nodeId)
 {
     DA_D(d);
+    DAPyGILGuard gil;
     try {
         bool result = d->mWorkflow.removeNode(nodeId);
         if (result) {
@@ -368,6 +379,7 @@ DAPyNodeConnection DAPyWorkFlowManager::connectNode(const QString& srcNodeId,
                                                     const QString& dstChannel)
 {
     DA_D(d);
+    DAPyGILGuard gil;
     DAPyNodeConnection conn = d->mWorkflow.connectNode(srcNodeId, srcChannel, dstNodeId, dstChannel);
     if (conn) {
         Q_EMIT connectionAdded(conn.getConnectionId(), srcNodeId, srcChannel, dstNodeId, dstChannel);
@@ -387,6 +399,7 @@ DAPyNodeConnection DAPyWorkFlowManager::connectNode(const QString& srcNodeId,
 bool DAPyWorkFlowManager::disconnectNode(const QString& connectionId)
 {
     DA_D(d);
+    DAPyGILGuard gil;
     try {
         bool result = d->mWorkflow.disconnectNode(connectionId);
         if (result) {
@@ -415,6 +428,7 @@ bool DAPyWorkFlowManager::disconnectNode(const QString& connectionId)
 bool DAPyWorkFlowManager::executeWorkflow()
 {
     DA_D(d);
+    DAPyGILGuard gil;
     if (d->mWorkflow.isNone()) {
         qCritical() << "DAPyWorkFlowManager::executeWorkflow: workflow is invalid";
         return false;

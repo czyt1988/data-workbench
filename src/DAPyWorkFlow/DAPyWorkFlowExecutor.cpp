@@ -1,7 +1,6 @@
 #include "DAPyWorkFlowExecutor.h"
 #include "DAPyWorkFlow.h"
 #include "DAPyModuleWorkflow.h"
-#include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAPybind11InQt.h"
 #include "DAPyWorkFlowEnumStringUtils.h"
 #include <QDebug>
@@ -124,7 +123,7 @@ bool DAPyWorkFlowExecutor::execute()
         qWarning() << "DAPyWorkFlowExecutor::execute: executor is not initialized";
         return false;
     }
-    DAPyGILGuard gil;
+
     try {
         return attr("execute")().cast< bool >();
     } catch (const std::exception& e) {
@@ -142,7 +141,7 @@ void DAPyWorkFlowExecutor::executeAsync()
         qWarning() << "DAPyWorkFlowExecutor::executeAsync: executor is not initialized";
         return;
     }
-    DAPyGILGuard gil;
+
     try {
         attr("execute_async")();
     } catch (const std::exception& e) {
@@ -161,7 +160,7 @@ bool DAPyWorkFlowExecutor::waitCompletion(double timeoutSec)
     if (isNone()) {
         return true;
     }
-    DAPyGILGuard gil;
+
     try {
         if (timeoutSec < 0) {
             return attr("wait_completion")().cast< bool >();
@@ -178,7 +177,7 @@ void DAPyWorkFlowExecutor::terminate()
     if (isNone()) {
         return;
     }
-    DAPyGILGuard gil;
+
     try {
         attr("terminate")();
     } catch (const std::exception& e) {
@@ -191,7 +190,7 @@ void DAPyWorkFlowExecutor::pause()
     if (isNone()) {
         return;
     }
-    DAPyGILGuard gil;
+
     try {
         attr("pause")();
     } catch (const std::exception& e) {
@@ -204,7 +203,7 @@ void DAPyWorkFlowExecutor::resume()
     if (isNone()) {
         return;
     }
-    DAPyGILGuard gil;
+
     try {
         attr("resume")();
     } catch (const std::exception& e) {
