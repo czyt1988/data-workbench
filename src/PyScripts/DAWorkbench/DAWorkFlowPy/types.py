@@ -106,7 +106,13 @@ class Parameter:
     :param param_type: 参数的 Python 类型（如 str、int、float、bool 等）或字符串类型标签（如 "file"、"enum" 等）
     :param default: 参数的默认值，默认为 None 表示无默认值
     :param description: 参数的描述信息
-    :param kwargs: 扩展字段，用于支持额外属性（如 file_filter、enum_options 等）
+    :param min: 最小值（int/float 类型参数适用）
+    :param max: 最大值（int/float 类型参数适用）
+    :param step: 步长（int/float 类型参数适用）
+    :param decimals: 小数位数（float 类型参数适用）
+    :param enum: 枚举选项列表（"enum" 类型参数适用，如 ["csv", "json", "excel"]）
+    :param filter: 文件过滤器（"file" 类型参数适用，如 "CSV Files (*.csv);;All Files (*.*)"）
+    :param kwargs: 扩展字段，用于支持额外属性（键名需与 C++ DAParamDef::PropertyName_* 一致）
     """
 
     # 支持的参数类型到字符串标签的映射
@@ -126,12 +132,30 @@ class Parameter:
         "code": "code",
     }
 
-    def __init__(self, param_type, default=None, description: str = "", **kwargs):
+    def __init__(self, param_type, default=None, description: str = "",
+                 min=None, max=None, step=None, decimals=None,
+                 enum=None, filter=None, **kwargs):
         self.name = ""  # 由 NodeDef 装饰器通过类属性名设置
         self.param_type = param_type
         self.default = default
         self.description = description
-        self._extra_kwargs = kwargs
+
+        # 构建扩展属性 dict，键名与 C++ DAParamDef::PropertyName_* 一致
+        self._extra_kwargs = {}
+        if min is not None:
+            self._extra_kwargs["min"] = min
+        if max is not None:
+            self._extra_kwargs["max"] = max
+        if step is not None:
+            self._extra_kwargs["step"] = step
+        if decimals is not None:
+            self._extra_kwargs["decimals"] = decimals
+        if enum is not None:
+            self._extra_kwargs["enum"] = enum
+        if filter is not None:
+            self._extra_kwargs["filter"] = filter
+        # 保留 **kwargs 用于未来扩展
+        self._extra_kwargs.update(kwargs)
 
     def get_type_label(self) -> str:
         """
