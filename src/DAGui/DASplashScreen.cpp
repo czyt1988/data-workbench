@@ -49,7 +49,7 @@ DASplashScreen::DASplashScreen() : QSplashScreen(generateDefaultPixmap()), DA_PI
 {
     // 调试时不置顶，避免遮挡IDE
     if (!isDebuggerPresent()) {
-        setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+        // setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
     }
 }
 
@@ -207,7 +207,7 @@ bool DASplashScreen::isDebuggerPresent()
 #else
     // 非 Windows 平台通过环境变量检测，用户可设置 DA_DEBUG=1 来模拟
     const char* debugEnv = std::getenv("DA_DEBUG");
-    return (debugEnv != nullptr && debugEnv[0] != '0');
+    return (debugEnv != nullptr && debugEnv[ 0 ] != '0');
 #endif
 }
 
