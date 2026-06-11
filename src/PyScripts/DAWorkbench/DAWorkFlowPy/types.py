@@ -161,8 +161,9 @@ class Parameter:
         # 仅在 default 不为 None 时写入，避免将 None 与"无默认值"混淆
         if self.default is not None:
             result["default"] = self.default
-        # Merge extended kwargs for extended parameter types
-        result.update(self._extra_kwargs)
+        # 扩展属性嵌套到 properties 子字典，匹配 C++ DAParamDef 的 propertys 字段
+        if self._extra_kwargs:
+            result["properties"] = dict(self._extra_kwargs)
         return result
 
     def __repr__(self) -> str:

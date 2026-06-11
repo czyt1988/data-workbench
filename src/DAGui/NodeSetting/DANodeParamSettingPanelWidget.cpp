@@ -138,9 +138,8 @@ void DANodeParamSettingPanelWidget::setNodeProxy(const DAPyNode& proxy)
     d->mCurrentPanel = panel;
     d->mStackedWidget->setCurrentWidget(panel);
 
-    // 设置代理并更新 UI
+    // 设置代理（DANodeParamSettingPanel::setNode override 已包含 buildPropertyPanel + 缓存初始化）
     panel->setNode(proxy);
-    panel->updateUI();
 }
 
 /**

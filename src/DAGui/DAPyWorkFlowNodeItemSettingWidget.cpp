@@ -37,19 +37,15 @@ void DAPyWorkFlowNodeItemSettingWidget::init()
     // 创建参数设置面板调度器，插入为第一个tab页（index 0）
     mParamSettingWidget = new DANodeParamSettingPanelWidget(this);
     ui->tabWidget->insertTab(0, mParamSettingWidget, tr("参数"));
-    // 默认显示Node设置tab（参数tab为占位stub，待后续任务完善后再设为默认）
-    ui->tabWidget->setCurrentIndex(1);
+    // 默认显示参数tab
+    ui->tabWidget->setCurrentIndex(0);
 
-    // 注册默认面板（当前为空实现，后续任务将注册具体面板）
+    // 注册默认面板
     DANodeParamSettingPanelFactory::instance().registerDefaultPanels();
 
-    // 参数值变化信号 → 实时写入代理配置
-    // 注意: DANodeParamSettingPanel::collectConfig() 为 protected，无法从外部调用
-    // 实际配置持久化将由 3-hop 信号链第三跳 (onPropertyValueChanged) 完成
-    // 此连接作为外部通知接口，后续 collectConfig 可访问时补充 setConfig 调用
+    // 参数值变化通知（实际配置持久化由 3-hop 信号链第三跳 onPropertyValueChanged 完成）
     connect(mParamSettingWidget, &DANodeParamSettingPanelWidget::propertyValueChanged, this, [ this ](int propertyId) {
         Q_UNUSED(propertyId);
-        // TODO: 当 collectConfig() 可外部访问时，补充 proxy->setConfig(panel->collectConfig())
     });
 }
 

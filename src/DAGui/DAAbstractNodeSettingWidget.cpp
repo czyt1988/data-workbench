@@ -1,5 +1,6 @@
 #include "DAAbstractNodeSettingWidget.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
+#include "DAPyBindQt/DAPybind11QtCaster.hpp"
 #include <QJsonArray>
 
 namespace DA
@@ -71,14 +72,15 @@ void DAAbstractNodeSettingWidget::setNode(const DAPyNode& proxy)
                     if (dict.contains("default")) {
                         pybind11::object defaultObj = dict[ "default" ];
                         if (!defaultObj.is_none()) {
-                            if (pybind11::isinstance< pybind11::str >(defaultObj))
-                                pd.defaultValue = pybind11::cast< QString >(defaultObj);
+                            // bool 必须在 int 之前检查，因为 Python 的 bool 是 int 的子类
+                            if (pybind11::isinstance< pybind11::bool_ >(defaultObj))
+                                pd.defaultValue = pybind11::cast< bool >(defaultObj);
                             else if (pybind11::isinstance< pybind11::int_ >(defaultObj))
                                 pd.defaultValue = pybind11::cast< int >(defaultObj);
                             else if (pybind11::isinstance< pybind11::float_ >(defaultObj))
                                 pd.defaultValue = pybind11::cast< double >(defaultObj);
-                            else if (pybind11::isinstance< pybind11::bool_ >(defaultObj))
-                                pd.defaultValue = pybind11::cast< bool >(defaultObj);
+                            else if (pybind11::isinstance< pybind11::str >(defaultObj))
+                                pd.defaultValue = pybind11::cast< QString >(defaultObj);
                         }
                     }
                     if (dict.contains("properties")) {
@@ -86,18 +88,18 @@ void DAAbstractNodeSettingWidget::setNode(const DAPyNode& proxy)
                         if (pybind11::isinstance< pybind11::dict >(propObj)) {
                             pybind11::dict propDict = pybind11::cast< pybind11::dict >(propObj);
                             QVariantHash props;
-                            for (auto propItem : propDict) {
-                                std::string key = pybind11::cast< std::string >(propItem.first);
-                                pybind11::object val = pybind11::reinterpret_borrow< pybind11::object >(propItem.second);
-                                QString qKey = QString::fromStdString(key);
-                                if (pybind11::isinstance< pybind11::str >(val))
-                                    props[ qKey ] = pybind11::cast< QString >(val);
+                            for (auto it = propDict.begin(); it != propDict.end(); ++it) {
+                                QString qKey = pybind11::cast< QString >(it->first);
+                                pybind11::handle val = it->second;
+                                // bool 必须在 int 之前检查，因为 Python 的 bool 是 int 的子类
+                                if (pybind11::isinstance< pybind11::bool_ >(val))
+                                    props[ qKey ] = pybind11::cast< bool >(val);
                                 else if (pybind11::isinstance< pybind11::int_ >(val))
                                     props[ qKey ] = pybind11::cast< int >(val);
                                 else if (pybind11::isinstance< pybind11::float_ >(val))
                                     props[ qKey ] = pybind11::cast< double >(val);
-                                else if (pybind11::isinstance< pybind11::bool_ >(val))
-                                    props[ qKey ] = pybind11::cast< bool >(val);
+                                else if (pybind11::isinstance< pybind11::str >(val))
+                                    props[ qKey ] = pybind11::cast< QString >(val);
                                 else if (pybind11::isinstance< pybind11::list >(val)) {
                                     QStringList strList;
                                     pybind11::list pyList = pybind11::cast< pybind11::list >(val);

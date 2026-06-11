@@ -38,7 +38,8 @@ public:
 /**
  * @brief 构造函数
  * @param parent 父控件
- * @note stub - Task 5 完整实现时将替换此处
+ * @note 不在构造时调用 buildPropertyPanel()，因为此时 getParamDefs() 为空。
+ *       面板构建延迟到 setNode() 中参数列表填充后进行。
  */
 DANodeParamSettingPanel::DANodeParamSettingPanel(QWidget* parent)
     : DAAbstractNodeSettingWidget(parent), DA_PIMPL_CONSTRUCT
@@ -49,8 +50,6 @@ DANodeParamSettingPanel::DANodeParamSettingPanel(QWidget* parent)
 
     d_func()->mPanel = new DAPropertyPanelContainerWidget(this);
     layout->addWidget(d_func()->mPanel);
-
-    buildPropertyPanel();
 }
 
 /**
@@ -58,6 +57,44 @@ DANodeParamSettingPanel::DANodeParamSettingPanel(QWidget* parent)
  */
 DANodeParamSettingPanel::~DANodeParamSettingPanel()
 {
+}
+
+/**
+ * @brief 设置节点代理并重建属性面板
+ *
+ * 覆盖基类 setNode()，在基类更新参数列表后重建属性面板。
+ * 流程：
+ * 1. 收集旧节点当前编辑器中的配置值并暂存
+ * 2. 调用基类 setNode() 更新 mParamDefs
+ * 3. 调用 buildPropertyPanel() 重建编辑器（此时 getParamDefs() 已填充）
+ * 4. 从编辑器默认值初始化 mConfigCache
+ * 5. 若旧节点有暂存配置，合并覆盖默认值
+ *
+ * @param[in] proxy 节点代理常量引用
+ */
+void DANodeParamSettingPanel::setNode(const DAPyNode& proxy)
+{
+    // 1. 保存旧节点的当前配置
+    QJsonObject savedConfig;
+    if (!getNode().isNone() && !d_func()->mParameters.isEmpty()) {
+        savedConfig = collectConfig();
+    }
+
+    // 2. 基类 setNode() 更新 mParamDefs
+    DAAbstractNodeSettingWidget::setNode(proxy);
+
+    // 3. 重建面板（此时 getParamDefs() 已填充）
+    buildPropertyPanel();
+
+    // 4. 从编辑器默认值初始化 mConfigCache
+    d_func()->mConfigCache = collectConfig();
+
+    // 5. 若旧节点有暂存配置，合并覆盖默认值
+    if (!savedConfig.isEmpty()) {
+        for (auto it = savedConfig.begin(); it != savedConfig.end(); ++it) {
+            d_func()->mConfigCache[ it.key() ] = it.value();
+        }
+    }
 }
 
 /**

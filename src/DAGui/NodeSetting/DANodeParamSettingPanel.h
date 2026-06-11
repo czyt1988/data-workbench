@@ -22,14 +22,14 @@ namespace DA
  * 实现 3-hop 信号链和 updateUI 信号阻断。
  *
  * 使用方式：
- * 1. 创建面板实例，设置 nodeProxy 或直接使用描述符
- * 2. buildPropertyPanel() 在构造时自动调用，遍历参数描述符创建编辑器
+ * 1. 创建面板实例
+ * 2. 调用 setNode(proxy) 设置节点代理，自动重建属性面板并初始化缓存
  * 3. 编辑器值变化触发 3-hop 信号链 → 代理更新
- * 4. updateUI() 从代理读取配置，使用 QSignalBlocker 阻断回写信号
+ * 4. updateUI() 从缓存读取配置，使用 QSignalBlocker 阻断回写信号
  *
  * @code
  * DANodeParamSettingPanel* panel = new DANodeParamSettingPanel(parent);
- * panel->setNodeProxy(myProxy);  // 自动 rebuild
+ * panel->setNode(myProxy);  // 自动 rebuild + 初始化缓存
  * @endcode
  *
  * @see DAAbstractNodeSettingWidget DAPropertyPanelContainerWidget DAParamTypeRegistry
@@ -44,6 +44,9 @@ class DAGUI_API DANodeParamSettingPanel : public DAAbstractNodeSettingWidget
 public:
     explicit DANodeParamSettingPanel(QWidget* parent = nullptr);
     ~DANodeParamSettingPanel();
+
+    // 覆盖 setNode：基类更新参数列表后重建属性面板并初始化缓存
+    void setNode(const DAPyNode& proxy) override;
 
     // 获取属性面板容器（子类可通过此指针调用便捷方法）
     DAPropertyPanelContainerWidget* propertyPanel() const;
@@ -63,7 +66,7 @@ Q_SIGNALS:
     void propertyValueChanged(int propertyId);
 
 protected Q_SLOTS:
-    // 构建属性面板（遍历参数描述符 → 注册编辑器），构造时自动调用
+    // 构建属性面板（遍历参数描述符 → 注册编辑器），setNode() 中调用
     void buildPropertyPanel();
 
     // 3-hop 信号链第一跳：转发 mPanel 的 propertyValueChanged

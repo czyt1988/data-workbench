@@ -29,7 +29,7 @@ public:
     ~DAAbstractNodeSettingWidget();
 
     // 设置/获取节点代理
-    void setNode(const DAPyNode& proxy);
+    virtual void setNode(const DAPyNode& proxy);
     const DAPyNode& getNode() const;
     DAPyNode& node();
     // 获取节点元数据
