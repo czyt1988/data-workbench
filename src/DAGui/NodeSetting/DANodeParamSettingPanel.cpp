@@ -28,9 +28,8 @@ public:
     }
 
     DAPropertyPanelContainerWidget* mPanel = nullptr;
-    QVector< DAParamDef > mParameters;
+    QList< DAPyNodeParameter > mParameters;
     bool mBlockSignals = false;
-    QVariantHash mConfigCache;
 };
 
 /**
@@ -60,34 +59,23 @@ DANodeParamSettingPanel::~DANodeParamSettingPanel()
 /**
  * @brief 设置节点代理并重建属性面板
  *
- * 覆盖基类 setNode()，在基类更新参数列表后重建属性面板并从代理加载配置。
+ * 覆盖基类 setNode()，在基类更新参数列表后重建属性面板并从代理加载参数值。
  * 流程：
- * 1. 调用基类 setNode() 更新 mParamDefs
- * 2. 调用 buildPropertyPanel() 重建编辑器（此时 getParamDefs() 已填充）
- * 3. 从 Python 代理加载已保存配置（proxy.getConfig()）
- * 4. 若有已保存配置则用作 mConfigCache，否则使用编辑器默认值
- * 5. 调用 updateUI() 将 mConfigCache 回写到编辑器
+ * 1. 调用基类 setNode() 更新参数代理列表
+ * 2. 调用 buildPropertyPanel() 重建编辑器
+ * 3. 调用 updateUI() 从 DAPyNodeParameter.value() 回写编辑器
  *
  * @param[in] proxy 节点代理常量引用
  */
 void DANodeParamSettingPanel::setNode(const DAPyNode& proxy)
 {
-    // 1. 基类 setNode() 更新 mParamDefs
+    // 1. 基类 setNode() 更新参数代理列表
     DAAbstractNodeSettingWidget::setNode(proxy);
 
-    // 2. 重建面板（此时 getParamDefs() 已填充）
+    // 2. 重建面板
     buildPropertyPanel();
 
-    // 3. 从 Python 代理加载已保存配置
-    QVariantHash proxyConfig = proxy.getConfig();
-    if (!proxyConfig.isEmpty()) {
-        d_func()->mConfigCache = proxyConfig;
-    } else {
-        // 无已保存配置，使用编辑器默认值
-        d_func()->mConfigCache = collectConfig();
-    }
-
-    // 4. 将缓存回写到编辑器
+    // 3. 从DAPyNodeParameter读取参数值回写编辑器
     updateUI();
 }
 
@@ -100,11 +88,11 @@ DAPropertyPanelContainerWidget* DANodeParamSettingPanel::propertyPanel() const
 }
 
 /**
- * @brief 从代理缓存读取配置，回写所有编辑器值
+ * @brief 从DAPyNode读取参数值，回写所有编辑器
  *
  * 使用 QSignalBlocker 阻断信号，防止回写触发递归的 onPropertyValueChanged。
- * 遍历所有参数描述符，按类型从 mConfigCache 读取值设置到对应编辑器。
- * 缺失的 key 直接跳过，不修改编辑器状态。
+ * 遍历所有参数描述符，通过 DAPyNode::getParameterValue() 读取值并设置到对应编辑器。
+ * 无效值直接跳过，不修改编辑器状态。
  */
 void DANodeParamSettingPanel::updateUI()
 {
@@ -114,16 +102,10 @@ void DANodeParamSettingPanel::updateUI()
 
     QSignalBlocker blocker(panel);
 
-    const auto& config = d_func()->mConfigCache;
     const auto& params = d_func()->mParameters;
+    DAPyNode& proxy = node();
     int id             = 1;
-    for (const auto& desc : params) {
-        QString key = desc.name;
-        if (!config.contains(key)) {
-            ++id;
-            continue;
-        }
-
+    for (const auto& param : params) {
         DAPropertyItemWidget* item = panel->getPropertyItem(id);
         if (!item) {
             ++id;
@@ -136,13 +118,13 @@ void DANodeParamSettingPanel::updateUI()
             continue;
         }
 
-        QVariant val = config.value(key);
+        QVariant val = proxy.getParameterValue(param.name());
         if (!val.isValid()) {
             ++id;
             continue;
         }
 
-        QString type = desc.type;
+        QString type = param.typeLabel();
 
         if (type == "int") {
             auto* spin = qobject_cast< QSpinBox* >(editor);
@@ -237,20 +219,18 @@ void DANodeParamSettingPanel::buildPropertyPanel()
         placeholder->setEnabled(false);
         panel->addProperty(0, placeholder);
     } else {
-        // 复制参数描述符到私有数据，填充 propertyId 供 collectConfig 使用
+        // 复制参数描述符到私有数据，供 collectConfig/updateUI 使用
         d_func()->mParameters = params;
 
         // 创建类型注册表（构造时自动注册 11 种内置类型）
         DAParamTypeRegistry registry;
 
         int id = 1;
-        for (auto& desc : d_func()->mParameters) {
-            desc.propertyId = id;
-            QWidget* editor = registry.createEditor(desc.type, desc, panel);
+        for (const auto& param : d_func()->mParameters) {
+            QWidget* editor = registry.createEditor(param.typeLabel(), param, panel);
             if (editor) {
-                panel->addProperty(id, desc.name, desc.description, editor);
+                panel->addProperty(id, param.name(), param.description(), editor);
             }
-            // 未知类型：editor == nullptr，跳过，不崩溃
             ++id;
         }
     }
@@ -281,31 +261,33 @@ void DANodeParamSettingPanel::onPanelPropertyValueChanged(int propertyId)
 }
 
 /**
- * @brief 3-hop 信号链第三跳：收集变更值写入代理配置
+ * @brief 3-hop 信号链第三跳：收集变更值写入代理参数
  *
- * 从编辑器收集当前配置 → 缓存到 mConfigCache → 调用 proxy->setConfig() 写入代理。
- * 若代理为空则仅更新本地缓存，不执行 Python 写入。
+ * 从编辑器收集当前参数值，通过 DAPyNode::setParameterValue() 逐个写入节点实例。
  *
  * @param propertyId 触发变更的属性ID（暂未用于定向更新，全量收集）
  */
 void DANodeParamSettingPanel::onPropertyValueChanged(int propertyId)
 {
-    QVariantHash config  = collectConfig();
-    d_func()->mConfigCache = config;
+    QVariantHash config = collectConfig();
 
+    // 通过DAPyNode::setParameterValue()逐个写入Python节点实例
     DAPyNode& proxy = node();
-    if (!proxy.isNone()) {
-        proxy.setConfig(config);
+    if (proxy.isNone()) {
+        return;
+    }
+    for (auto it = config.constBegin(); it != config.constEnd(); ++it) {
+        proxy.setParameterValue(it.key(), it.value());
     }
 }
 
 /**
- * @brief 收集当前所有参数编辑器值，生成 QVariantHash 配置
+ * @brief 收集当前所有参数编辑器值，生成 QVariantHash
  *
- * 遍历所有参数描述符，按类型从对应编辑器中读取值，
+ * 遍历所有参数代理，按类型从对应编辑器中读取值，
  * 组装为 QVariantHash 返回。未知类型跳过（不写入）。
  *
- * @return QVariantHash 配置对象，key 为参数名，value 为当前编辑器值
+ * @return QVariantHash 对象，key 为参数名，value 为当前编辑器值
  */
 QVariantHash DANodeParamSettingPanel::collectConfig() const
 {
@@ -316,9 +298,9 @@ QVariantHash DANodeParamSettingPanel::collectConfig() const
 
     const auto& params = d_func()->mParameters;
     int id             = 1;
-    for (const auto& desc : params) {
-        QString name = desc.name;
-        QString type = desc.type;
+    for (const auto& param : params) {
+        QString name = param.name();
+        QString type = param.typeLabel();
 
         if (name.isEmpty() || type.isEmpty()) {
             ++id;

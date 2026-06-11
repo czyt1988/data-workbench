@@ -142,10 +142,10 @@ class TestNodeDefPurePython(unittest.TestCase):
         for outp in SampleNode.outputs:
             self.assertIsInstance(outp, dict)
 
-    def test_parameters_are_dicts(self):
-        self.assertIsInstance(SampleNode.parameters, list)
-        # SampleNode has no Parameter declarations, so it's an empty list
-        self.assertEqual(SampleNode.parameters, [])
+    def test_parameters_is_dict(self):
+        self.assertIsInstance(SampleNode.parameters, dict)
+        # SampleNode has no Parameter declarations, so it's an empty dict
+        self.assertEqual(SampleNode.parameters, {})
 
     def test_node_display_render_template_is_string(self):
         self.assertIsInstance(SampleNode._node_display, NodeDisplay)

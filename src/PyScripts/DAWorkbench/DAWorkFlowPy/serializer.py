@@ -116,13 +116,10 @@ class DAWorkflowSerializer:
             }
             # 收集参数当前值
             params = {}
-            for param_decl in getattr(node_instance, "parameters", []):
-                param_name = param_decl.get("name", "")
+            for param_name in getattr(node_instance, "parameters", {}):
                 if param_name:
-                    # 优先从实例属性读取当前值，其次从 default 读取
+                    # 从实例属性读取当前值（__init__ 已用 default 初始化）
                     value = getattr(node_instance, param_name, None)
-                    if value is None:
-                        value = param_decl.get("default", None)
                     if value is not None:
                         params[param_name] = value
             node_dict["parameters"] = params

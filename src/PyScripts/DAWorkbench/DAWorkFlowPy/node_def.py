@@ -177,25 +177,27 @@ def _normalize_render_template(render_template: str) -> str:
     return "nodestyle"
 
 
-def _collect_parameters(cls: type) -> list[dict]:
+def _collect_parameters(cls: type) -> dict:
     """
-    从类属性中收集 Parameter 声明
+    从类属性中收集 Parameter 声明，返回 dict[str, Parameter]
 
     遍历类的所有属性，找出 Parameter 实例，
-    并使用 to_dict() 将其转换为纯 Python dict。
+    为每个 Parameter 设置 name 属性，返回 name→Parameter 映射。
+    dict 保持插入顺序（Python 3.7+），key 即参数名。
 
     :param cls: 被装饰的节点类
-    :return: 参数声明字典列表
-    :rtype: list[dict[str, Any]]
+    :return: 参数名到Parameter实例的映射
+    :rtype: dict[str, Parameter]
     """
-    params = []
+    result = {}
     for attr_name in dir(cls):
         if attr_name.startswith("_"):
             continue
         attr_value = getattr(cls, attr_name, None)
         if isinstance(attr_value, Parameter):
-            params.append(attr_value.to_dict(attr_name))
-    return params
+            attr_value.name = attr_name
+            result[attr_name] = attr_value
+    return result
 
 
 def _collect_from_nested_class(
@@ -241,7 +243,7 @@ class DAWorkflowNode:
     - icon: 图标路径
     - inputs: 输入端口描述列表（list[dict]）
     - outputs: 输出端口描述列表（list[dict]）
-    - parameters: 参数描述列表（list[dict]）
+    - parameters: 参数描述映射（dict[str, Parameter]，有序）
     - _node_display: 渲染属性（NodeDisplay）
     - input_keys: 输入端口名称列表
     - output_keys: 输出端口名称列表
@@ -256,10 +258,12 @@ class DAWorkflowNode:
     category: str = ""
     icon: str = ""
 
-    # 端口与参数描述（由 @NodeDef 装饰器设置，纯 Python dict）
+    # 端口描述（由 @NodeDef 装饰器设置，纯 Python dict）
     inputs: list = []  # list[dict]
     outputs: list = []  # list[dict]
-    parameters: list = []  # list[dict]
+
+    # 参数描述映射（由 @NodeDef 装饰器设置，dict[str, Parameter]，有序）
+    parameters: dict = {}
 
     # 渲染属性聚合（由 @NodeDef 装饰器设置）
     _node_display: NodeDisplay = None
@@ -276,6 +280,11 @@ class DAWorkflowNode:
         self._output_data = {}  # dict[str, Any]，输出端口数据缓存，键为端口名称
         self.is_global = False  # 是否为全局节点（全局节点执行但不传递数据到下游）
         self._node_state = "idle"  # 节点执行状态，与 C++ DAPyNodeState 枚举对应
+
+        # 将参数默认值初始化为实例属性，确保 getattr(node, param_name) 始终可读
+        for name, param in self.parameters.items():
+            if param.default is not None:
+                setattr(self, name, param.default)
 
     def set_input_data(self, key: str, data) -> None:
         """
@@ -314,6 +323,18 @@ class DAWorkflowNode:
         :param state: 状态字符串，支持 "idle"、"waiting"、"running"、"success"、"error"、"skipped"
         """
         self._node_state = state
+
+    @classmethod
+    def get_parameter_descriptors(cls) -> dict:
+        """
+        获取所有 Parameter 描述符
+
+        C++ 侧通过此方法获取参数的完整描述信息（name/type/default/properties）。
+
+        :return: 参数名到Parameter实例的映射
+        :rtype: dict[str, Parameter]
+        """
+        return cls.parameters
 
 
 def _build_node_display(icon: str, render_template: str, style) -> NodeDisplay:
@@ -368,7 +389,7 @@ def NodeDef(
     工作节点定义装饰器
 
     此装饰器用于声明工作流节点类型。它会收集被装饰类中的 Input、Output、Parameter
-    声明，并将描述信息直接设置为类属性（纯 Python dict），渲染属性聚合到 NodeDisplay。
+    声明，将端口描述转换为 dict，Parameter 实例保留在 parameters dict 中，渲染属性聚合到 NodeDisplay。
 
     类属性包含：
     - name: 节点显示名称
@@ -377,7 +398,7 @@ def NodeDef(
     - icon: 图标路径
     - inputs: 输入端口列表（list[dict]）
     - outputs: 输出端口列表（list[dict]）
-    - parameters: 参数列表（list[dict]）
+    - parameters: 参数描述映射（dict[str, Parameter]，有序）
     - _node_display: 渲染属性（NodeDisplay，包含 icon、render_template 及所有样式字段）
 
     使用示例::
@@ -422,8 +443,8 @@ def NodeDef(
         :param cls: 被装饰的节点类
         :return: 继承 DAWorkflowNode 的新类
         """
-        # 收集参数声明（dict 列表）
-        parameters = _collect_parameters(cls)
+        # 收集参数描述映射（dict[str, Parameter]，同时为 Parameter 实例设置 name 属性）
+        parameters_dict = _collect_parameters(cls)
 
         # 收集输入端口声明（dict 列表）
         inputs = _collect_from_nested_class(cls, "Inputs", Input)
@@ -445,10 +466,10 @@ def NodeDef(
         new_cls.category = category
         new_cls.icon = icon
 
-        # 直接在 new_cls 上设置类属性（端口与参数描述，纯 Python dict）
+        # 直接在 new_cls 上设置类属性（端口描述 + 参数描述映射）
         new_cls.inputs = inputs
         new_cls.outputs = outputs
-        new_cls.parameters = parameters
+        new_cls.parameters = parameters_dict
 
         # 构建渲染属性聚合（NodeDisplay）
         new_cls._node_display = _build_node_display(icon, render_template, style)

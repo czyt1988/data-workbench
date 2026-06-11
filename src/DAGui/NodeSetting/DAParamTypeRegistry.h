@@ -5,6 +5,7 @@
 #include <QString>
 #include <QStringList>
 #include "DAParamDef.h"
+#include "DAPyWorkFlow/DAPyNodeParameter.h"
 #include <functional>
 #include <map>
 
@@ -41,11 +42,10 @@ public:
     /**
      * @brief 编辑器创建函数类型
      *
-     * 接收参数描述符 JSON 对象和父控件指针，返回创建并配置好的编辑器 QWidget。
-     * 描述符 JSON 包含 name、type、description、default 等字段，
-     * 以及 C++ 端扩展字段如 enum_values、min、max、decimals 等。
+     * 接收参数代理和父控件指针，返回创建并配置好的编辑器 QWidget。
+     * 参数代理包含元数据（name/type/description/default/properties）和节点实例引用。
      */
-    using ParamEditorCreator = std::function< QWidget*(const DAParamDef& paramDescriptor, QWidget* parent) >;
+    using ParamEditorCreator = std::function< QWidget*(const DAPyNodeParameter& param, QWidget* parent) >;
 
     // 默认构造函数，自动注册所有内置类型
     DAParamTypeRegistry();
@@ -59,8 +59,8 @@ public:
     // 重新注册所有内置默认类型（覆盖任何自定义注册）
     void registerDefaults();
 
-    // 根据类型字符串和参数描述符创建对应的编辑器控件
-    QWidget* createEditor(const QString& typeStr, const DAParamDef& paramDescriptor, QWidget* parent = nullptr) const;
+    // 根据类型字符串和参数代理创建对应的编辑器控件
+    QWidget* createEditor(const QString& typeStr, const DAPyNodeParameter& param, QWidget* parent = nullptr) const;
 
     // 获取所有已注册类型的名称列表
     QStringList supportedTypes() const;

@@ -127,7 +127,7 @@ class Parameter:
     }
 
     def __init__(self, param_type, default=None, description: str = "", **kwargs):
-        # 注意：name 属性在 NodeDef 装饰器处理时通过类属性名自动设置
+        self.name = ""  # 由 NodeDef 装饰器通过类属性名设置
         self.param_type = param_type
         self.default = default
         self.description = description
@@ -146,15 +146,15 @@ class Parameter:
             return self._TYPE_LABELS.get(self.param_type, self.param_type)
         return self._TYPE_LABELS.get(self.param_type, self.param_type.__name__)
 
-    def to_dict(self, name: str) -> dict:
+    def to_dict(self, name: str = "") -> dict:
         """
         将参数声明转换为字典
 
-        :param name: 参数的名称（从类属性名获取）
+        :param name: 参数的名称，为空时使用 self.name
         :return: JSON 可序列化的字典
         """
         result = {
-            "name": name,
+            "name": name or self.name,
             "type": self.get_type_label(),
             "description": self.description,
         }

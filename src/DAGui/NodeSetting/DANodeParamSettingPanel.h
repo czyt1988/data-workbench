@@ -5,9 +5,9 @@
 #include "DAAbstractNodeSettingWidget.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAGlobals.h"
-#include "DAParamDef.h"
+#include "DAPyWorkFlow/DAPyNodeParameter.h"
 #include <QVariantHash>
-#include <QVector>
+#include <QList>
 
 class QLabel;
 

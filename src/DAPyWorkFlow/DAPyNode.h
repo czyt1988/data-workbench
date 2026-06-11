@@ -5,6 +5,7 @@
 #include "DAPyNodeMetaData.h"
 #include "DAPyNodeState.h"
 #include "DAPyNodeStyle.h"
+#include "DAPyNodeParameter.h"
 #include "DAPybind11InQt.h"
 #include <QDebug>
 #include <QString>
@@ -79,10 +80,18 @@ public:
     QVariantHash getInputDatas() const;
     QVariantHash getOutputDatas() const;
 
-    // 配置数据传递（QVariantHash→Python dict→调用set_input_data）
-    void setConfig(const QVariantHash& config);
-    // 从Python节点读取已保存的配置（_input_data["config"]→QVariantHash）
-    QVariantHash getConfig() const;
+    // 参数描述符列表（遍历parameters dict，构建DAPyNodeParameter列表）
+    QList< DAPyNodeParameter > getParameters() const;
+    // 设置单个参数值（setattr）
+    void setParameterValue(const QString& name, const QVariant& value);
+    // 读取单个参数值（getattr）
+    QVariant getParameterValue(const QString& name) const;
+
+    // 已废弃的参数API
+    [[deprecated("Use setParameterValue() instead")]] void setParameters(const QVariantHash& params);
+    [[deprecated("Use getParameters() instead")]] QVariantHash getParameterValues() const;
+    [[deprecated("Use setParameterValue() instead")]] void setConfig(const QVariantHash& config);
+    [[deprecated("Use getParameterValue() instead")]] QVariantHash getConfig() const;
     // 获取DAPyNodeMetaData
     DAPyNodeMetaData getMetaData() const;
 

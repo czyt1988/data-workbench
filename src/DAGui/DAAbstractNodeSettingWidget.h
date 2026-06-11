@@ -4,7 +4,7 @@
 #include "DAGuiAPI.h"
 #include "DAPyNode.h"
 #include "DAGlobals.h"
-#include "NodeSetting/DAParamDef.h"
+#include "DAPyWorkFlow/DAPyNodeParameter.h"
 #include "DAPyWorkFlow/DAPyNodeFactory.h"
 #include <QWidget>
 #include <QJsonObject>
@@ -35,8 +35,8 @@ public:
     // 获取节点元数据
     const DAPyNodeMetaData& getMetaData() const;
 
-    // 从元数据中提取参数定义列表
-    const QVector< DAParamDef >& getParamDefs() const;
+    // 获取参数代理列表（由setNode()从Python节点构建）
+    const QList< DAPyNodeParameter >& getParamDefs() const;
 
     // 子类必须实现的界面同步方法
     virtual void updateUI() = 0;
