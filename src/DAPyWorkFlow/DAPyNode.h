@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <QString>
 #include <QList>
+#include <QVariantHash>
 
 namespace DA
 {
@@ -71,10 +72,17 @@ public:
 
     // Python原生数据传递
     void setPyInputData(const QString& key, const pybind11::object& data);
+    pybind11::object getPyInputData(const QString& key) const;
     pybind11::object getPyOutputData(const QString& key) const;
 
-    // 配置数据传递（QJsonObject→Python dict→调用set_input_data）
-    void setConfig(const QJsonObject& config);
+    // 批量读取所有输入/输出数据（_input_data/_output_data→QVariantHash）
+    QVariantHash getInputDatas() const;
+    QVariantHash getOutputDatas() const;
+
+    // 配置数据传递（QVariantHash→Python dict→调用set_input_data）
+    void setConfig(const QVariantHash& config);
+    // 从Python节点读取已保存的配置（_input_data["config"]→QVariantHash）
+    QVariantHash getConfig() const;
     // 获取DAPyNodeMetaData
     DAPyNodeMetaData getMetaData() const;
 

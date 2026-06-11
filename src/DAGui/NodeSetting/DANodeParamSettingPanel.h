@@ -6,7 +6,7 @@
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAGlobals.h"
 #include "DAParamDef.h"
-#include <QJsonObject>
+#include <QVariantHash>
 #include <QVector>
 
 class QLabel;
@@ -54,8 +54,8 @@ public:
     // 实现 DAAbstractNodeSettingWidget 的 updateUI
     void updateUI() override;
 
-    // 收集当前所有参数编辑器值 → 生成 QJsonObject 配置
-    QJsonObject collectConfig() const;
+    // 收集当前所有参数编辑器值 → 生成 QVariantHash 配置
+    QVariantHash collectConfig() const;
 
 Q_SIGNALS:
     /**
@@ -77,7 +77,7 @@ protected Q_SLOTS:
 
 protected:
     // 收集配置（测试暴露）
-    QJsonObject testCollectConfig() const;
+    QVariantHash testCollectConfig() const;
 };
 
 }  // namespace DA

@@ -15,8 +15,6 @@
 #include "DAFontEditPannelWidget.h"
 #include <QVBoxLayout>
 #include <QLabel>
-#include <QJsonObject>
-#include <QJsonArray>
 namespace DA
 {
 
@@ -32,7 +30,7 @@ public:
     DAPropertyPanelContainerWidget* mPanel = nullptr;
     QVector< DAParamDef > mParameters;
     bool mBlockSignals = false;
-    QJsonObject mConfigCache;
+    QVariantHash mConfigCache;
 };
 
 /**
@@ -62,39 +60,35 @@ DANodeParamSettingPanel::~DANodeParamSettingPanel()
 /**
  * @brief 设置节点代理并重建属性面板
  *
- * 覆盖基类 setNode()，在基类更新参数列表后重建属性面板。
+ * 覆盖基类 setNode()，在基类更新参数列表后重建属性面板并从代理加载配置。
  * 流程：
- * 1. 收集旧节点当前编辑器中的配置值并暂存
- * 2. 调用基类 setNode() 更新 mParamDefs
- * 3. 调用 buildPropertyPanel() 重建编辑器（此时 getParamDefs() 已填充）
- * 4. 从编辑器默认值初始化 mConfigCache
- * 5. 若旧节点有暂存配置，合并覆盖默认值
+ * 1. 调用基类 setNode() 更新 mParamDefs
+ * 2. 调用 buildPropertyPanel() 重建编辑器（此时 getParamDefs() 已填充）
+ * 3. 从 Python 代理加载已保存配置（proxy.getConfig()）
+ * 4. 若有已保存配置则用作 mConfigCache，否则使用编辑器默认值
+ * 5. 调用 updateUI() 将 mConfigCache 回写到编辑器
  *
  * @param[in] proxy 节点代理常量引用
  */
 void DANodeParamSettingPanel::setNode(const DAPyNode& proxy)
 {
-    // 1. 保存旧节点的当前配置
-    QJsonObject savedConfig;
-    if (!getNode().isNone() && !d_func()->mParameters.isEmpty()) {
-        savedConfig = collectConfig();
-    }
-
-    // 2. 基类 setNode() 更新 mParamDefs
+    // 1. 基类 setNode() 更新 mParamDefs
     DAAbstractNodeSettingWidget::setNode(proxy);
 
-    // 3. 重建面板（此时 getParamDefs() 已填充）
+    // 2. 重建面板（此时 getParamDefs() 已填充）
     buildPropertyPanel();
 
-    // 4. 从编辑器默认值初始化 mConfigCache
-    d_func()->mConfigCache = collectConfig();
-
-    // 5. 若旧节点有暂存配置，合并覆盖默认值
-    if (!savedConfig.isEmpty()) {
-        for (auto it = savedConfig.begin(); it != savedConfig.end(); ++it) {
-            d_func()->mConfigCache[ it.key() ] = it.value();
-        }
+    // 3. 从 Python 代理加载已保存配置
+    QVariantHash proxyConfig = proxy.getConfig();
+    if (!proxyConfig.isEmpty()) {
+        d_func()->mConfigCache = proxyConfig;
+    } else {
+        // 无已保存配置，使用编辑器默认值
+        d_func()->mConfigCache = collectConfig();
     }
+
+    // 4. 将缓存回写到编辑器
+    updateUI();
 }
 
 /**
@@ -142,62 +136,67 @@ void DANodeParamSettingPanel::updateUI()
             continue;
         }
 
-        QJsonValue val = config.value(key);
-        QString type   = desc.type;
+        QVariant val = config.value(key);
+        if (!val.isValid()) {
+            ++id;
+            continue;
+        }
+
+        QString type = desc.type;
 
         if (type == "int") {
             auto* spin = qobject_cast< QSpinBox* >(editor);
-            if (spin && val.isDouble())
+            if (spin)
                 spin->setValue(val.toInt());
         } else if (type == "float") {
             auto* dsp = qobject_cast< QDoubleSpinBox* >(editor);
-            if (dsp && val.isDouble())
+            if (dsp)
                 dsp->setValue(val.toDouble());
         } else if (type == "bool") {
             auto* cb = qobject_cast< QCheckBox* >(editor);
-            if (cb && val.isBool())
+            if (cb)
                 cb->setChecked(val.toBool());
         } else if (type == "str") {
             auto* le = qobject_cast< QLineEdit* >(editor);
-            if (le && val.isString())
+            if (le)
                 le->setText(val.toString());
         } else if (type == "enum") {
             auto* combo = qobject_cast< QComboBox* >(editor);
-            if (combo && val.isString()) {
+            if (combo) {
                 int idx = combo->findText(val.toString());
                 if (idx >= 0)
                     combo->setCurrentIndex(idx);
             }
         } else if (type == "file") {
             auto* fileEdit = qobject_cast< DA::DAFilePathEditWidget* >(editor);
-            if (fileEdit && val.isString())
+            if (fileEdit)
                 fileEdit->setFilePath(val.toString());
         } else if (type == "folder") {
             auto* foldEdit = qobject_cast< DA::DAFilePathEditWidget* >(editor);
-            if (foldEdit && val.isString())
+            if (foldEdit)
                 foldEdit->setFilePath(val.toString());
         } else if (type == "color") {
             auto* btn = qobject_cast< DAColorPickerButton* >(editor);
-            if (btn && val.isString())
+            if (btn)
                 btn->setColor(QColor(val.toString()));
         } else if (type == "font") {
             auto* fe = qobject_cast< DAFontEditPannelWidget* >(editor);
-            if (fe && val.isString()) {
+            if (fe) {
                 QFont f;
                 f.fromString(val.toString());
                 fe->setCurrentFont(f);
             }
         } else if (type == "code") {
             auto* codeEdit = qobject_cast< QPlainTextEdit* >(editor);
-            if (codeEdit && val.isString())
+            if (codeEdit)
                 codeEdit->setPlainText(val.toString());
         } else if (type == "list") {
             QListWidget* listWidget = editor->findChild< QListWidget* >();
-            if (listWidget && val.isArray()) {
+            if (listWidget) {
                 listWidget->clear();
-                QJsonArray arr = val.toArray();
-                for (const auto& elem : arr) {
-                    listWidget->addItem(elem.toString());
+                const QStringList strList = val.toStringList();
+                for (const QString& s : strList) {
+                    listWidget->addItem(s);
                 }
             }
         }
@@ -291,7 +290,7 @@ void DANodeParamSettingPanel::onPanelPropertyValueChanged(int propertyId)
  */
 void DANodeParamSettingPanel::onPropertyValueChanged(int propertyId)
 {
-    QJsonObject config     = collectConfig();
+    QVariantHash config  = collectConfig();
     d_func()->mConfigCache = config;
 
     DAPyNode& proxy = node();
@@ -301,16 +300,16 @@ void DANodeParamSettingPanel::onPropertyValueChanged(int propertyId)
 }
 
 /**
- * @brief 收集当前所有参数编辑器值，生成 QJsonObject 配置
+ * @brief 收集当前所有参数编辑器值，生成 QVariantHash 配置
  *
  * 遍历所有参数描述符，按类型从对应编辑器中读取值，
- * 组装为 QJsonObject 返回。未知类型跳过（返回 QJsonValue()）。
+ * 组装为 QVariantHash 返回。未知类型跳过（不写入）。
  *
- * @return QJsonObject 配置对象，key 为参数名，value 为当前编辑器值
+ * @return QVariantHash 配置对象，key 为参数名，value 为当前编辑器值
  */
-QJsonObject DANodeParamSettingPanel::collectConfig() const
+QVariantHash DANodeParamSettingPanel::collectConfig() const
 {
-    QJsonObject config;
+    QVariantHash config;
     auto* panel = d_func()->mPanel;
     if (!panel)
         return config;
@@ -370,11 +369,11 @@ QJsonObject DANodeParamSettingPanel::collectConfig() const
             // list 编辑器是复合控件（QWidget 容器），内部包含 QListWidget
             QListWidget* listWidget = editor->findChild< QListWidget* >();
             if (listWidget) {
-                QJsonArray arr;
+                QStringList strList;
                 for (int i = 0; i < listWidget->count(); ++i) {
-                    arr.append(listWidget->item(i)->text());
+                    strList.append(listWidget->item(i)->text());
                 }
-                config[ name ] = arr;
+                config[ name ] = strList;
             }
         } else if (type == "color") {
             auto* btn = qobject_cast< DAColorPickerButton* >(editor);
@@ -388,9 +387,6 @@ QJsonObject DANodeParamSettingPanel::collectConfig() const
             auto* codeEdit = qobject_cast< QPlainTextEdit* >(editor);
             if (codeEdit)
                 config[ name ] = codeEdit->toPlainText();
-        } else {
-            // 未知类型：跳过，返回 QJsonValue()（即 null）
-            config[ name ] = QJsonValue();
         }
 
         ++id;
@@ -403,7 +399,7 @@ QJsonObject DANodeParamSettingPanel::collectConfig() const
  *
  * 委托给 collectConfig() 实现，保持测试接口不变。
  */
-QJsonObject DANodeParamSettingPanel::testCollectConfig() const
+QVariantHash DANodeParamSettingPanel::testCollectConfig() const
 {
     return collectConfig();
 }
