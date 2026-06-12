@@ -66,6 +66,7 @@ public:
     QList< DAPyLinkPoint > mOutputLinkPoints;        ///< 输出连接点
     qreal linkPointDrawWidth { 14 };                 ///< 连接点的绘制宽度（宽度相对于东西方向的宽度）
     qreal linkPointDrawHeight { 10 };                ///< 连接点的绘制高度（高度相对于东西方向的高度）
+    static constexpr qreal kPortMinGap { 4.0 };      ///< 连接点之间的最小间隔
     DAPyObjectWrapper mPaintCallback;                ///< 自定义绘制回调（Python函数对象）
     bool mPaintCallbackError { false };              ///< 绘制回调是否发生过异常
     QRectF mIconRect;                                ///< 绘制Icon的区域，仅仅有icon时才有用
@@ -171,37 +172,38 @@ void DAPyNodeGraphicsItem::PrivateData::updateNodeStyle(const QRectF& bodyRect)
 {
     const DAPyNodeStyle& s = mStyle;
     // 根据端口方向计算各方向的连接点预留偏移量
-    const qreal halfLpW = linkPointDrawWidth / 2;
+    // 使用完整 linkPointDrawWidth 而非 halfLpW，确保文字区域不与端口矩形重叠
+    const qreal lpW = linkPointDrawWidth;
     qreal lpLeft = 0, lpRight = 0, lpTop = 0, lpBottom = 0;
     if (!mInputLinkPoints.isEmpty()) {
         switch (s.inputPortSide) {
         case DAAspectDirection::West:
-            lpLeft = halfLpW;
+            lpLeft += lpW;
             break;
         case DAAspectDirection::East:
-            lpRight = halfLpW;
+            lpRight += lpW;
             break;
         case DAAspectDirection::North:
-            lpTop = halfLpW;
+            lpTop += lpW;
             break;
         case DAAspectDirection::South:
-            lpBottom = halfLpW;
+            lpBottom += lpW;
             break;
         }
     }
     if (!mOutputLinkPoints.isEmpty()) {
         switch (s.outputPortSide) {
         case DAAspectDirection::West:
-            lpLeft = halfLpW;
+            lpLeft += lpW;
             break;
         case DAAspectDirection::East:
-            lpRight = halfLpW;
+            lpRight += lpW;
             break;
         case DAAspectDirection::North:
-            lpTop = halfLpW;
+            lpTop += lpW;
             break;
         case DAAspectDirection::South:
-            lpBottom = halfLpW;
+            lpBottom += lpW;
             break;
         }
     }
@@ -1039,22 +1041,49 @@ QRectF DAPyNodeGraphicsItem::boundingRect() const
         rect.adjust(0, 0, extraWidth, textHeight);
     }
 
-    // 端口扩展
+    // 端口扩展：需要覆盖端口矩形 + 标签文字
     const DAPyNodeStyle::PortSide& inputSide  = d->mStyle.inputPortSide;
     const DAPyNodeStyle::PortSide& outputSide = d->mStyle.outputPortSide;
 
-    // 端口突出间距常量
-    constexpr qreal kPortOffset = 8.0;
+    // 计算端口标签最大宽度
+    QFont smallFont;
+    smallFont.setPointSize(d->smallFontSize);
+    QFontMetricsF smallFm(smallFont);
+    qreal maxLabelW = 0;
+    for (const QString& key : std::as_const(d->mInputKeys)) {
+        maxLabelW = qMax(maxLabelW, smallFm.horizontalAdvance(key));
+    }
+    for (const QString& key : std::as_const(d->mOutputKeys)) {
+        maxLabelW = qMax(maxLabelW, smallFm.horizontalAdvance(key));
+    }
+    const qreal labelSpacing = 2.0;
+    // East/West 端口偏移 = 端口半宽 + 标签间距 + 标签宽度 + 安全余量
+    const qreal ewOffset = d->linkPointDrawWidth / 2 + labelSpacing + maxLabelW + 4;
+    // North/South 端口偏移 = 端口半高 + 标签间距 + 标签高度 + 安全余量
+    const qreal nsOffset = d->linkPointDrawWidth / 2 + labelSpacing + smallFm.height() + 4;
 
-    // 计算各方向扩展量（独立计算左右上下）
-    qreal leftOff =
-        (inputSide == DAPyNodeStyle::PortSide::West || outputSide == DAPyNodeStyle::PortSide::West) ? kPortOffset : 0;
-    qreal rightOff =
-        (inputSide == DAPyNodeStyle::PortSide::East || outputSide == DAPyNodeStyle::PortSide::East) ? kPortOffset : 0;
-    qreal topOff =
-        (inputSide == DAPyNodeStyle::PortSide::North || outputSide == DAPyNodeStyle::PortSide::North) ? kPortOffset : 0;
-    qreal bottomOff =
-        (inputSide == DAPyNodeStyle::PortSide::South || outputSide == DAPyNodeStyle::PortSide::South) ? kPortOffset : 0;
+    // 计算各方向扩展量（同一方向有 input+output 时累加）
+    qreal leftOff = 0, rightOff = 0, topOff = 0, bottomOff = 0;
+    if (!d->mInputLinkPoints.isEmpty()) {
+        if (inputSide == DAPyNodeStyle::PortSide::West)
+            leftOff += ewOffset;
+        else if (inputSide == DAPyNodeStyle::PortSide::East)
+            rightOff += ewOffset;
+        else if (inputSide == DAPyNodeStyle::PortSide::North)
+            topOff += nsOffset;
+        else if (inputSide == DAPyNodeStyle::PortSide::South)
+            bottomOff += nsOffset;
+    }
+    if (!d->mOutputLinkPoints.isEmpty()) {
+        if (outputSide == DAPyNodeStyle::PortSide::West)
+            leftOff += ewOffset;
+        else if (outputSide == DAPyNodeStyle::PortSide::East)
+            rightOff += ewOffset;
+        else if (outputSide == DAPyNodeStyle::PortSide::North)
+            topOff += nsOffset;
+        else if (outputSide == DAPyNodeStyle::PortSide::South)
+            bottomOff += nsOffset;
+    }
 
     rect.adjust(-leftOff, -topOff, rightOff, bottomOff);
 
@@ -1295,23 +1324,69 @@ void DAPyNodeGraphicsItem::updateNodeBody()
         bodyWidth              = qMax(textContentWidth, iconContentWidth);
         bodyHeight             = qMax(iconSize + 2 * space, 2.0 * space);  // 最小高度保障
     }
-    // 还需要预留连接点的位置
-    if (d->mInputLinkPoints.size() > 0) {
+
+    // 计算端口标签最大宽度（用于body宽度和boundingRect扩展）
+    QFont smallFont;
+    smallFont.setPointSize(d->smallFontSize);
+    QFontMetricsF smallFm(smallFont);
+    qreal maxLabelW = 0;
+    for (const QString& key : std::as_const(d->mInputKeys)) {
+        maxLabelW = qMax(maxLabelW, smallFm.horizontalAdvance(key));
+    }
+    for (const QString& key : std::as_const(d->mOutputKeys)) {
+        maxLabelW = qMax(maxLabelW, smallFm.horizontalAdvance(key));
+    }
+    // 连接点标签与连接点矩形的间距（与 drawLinkPointGroup 中的 spacing 一致）
+    const qreal labelSpacing = 2.0;
+
+    // 预留连接点的位置（端口矩形 + 标签文字）
+    const int inputCount  = d->mInputLinkPoints.size();
+    const int outputCount = d->mOutputLinkPoints.size();
+    if (inputCount > 0) {
         if (s.inputPortSide == DAAspectDirection::East || s.inputPortSide == DAAspectDirection::West) {
-            // 输入在水平方向
-            bodyWidth += d->linkPointDrawWidth / 2;
+            bodyWidth += d->linkPointDrawWidth + maxLabelW + labelSpacing;
         } else {
-            bodyHeight += d->linkPointDrawWidth / 2;
+            bodyHeight += d->linkPointDrawWidth + smallFm.height() + labelSpacing;
         }
     }
-    if (d->mOutputLinkPoints.size() > 0) {
+    if (outputCount > 0) {
         if (s.outputPortSide == DAAspectDirection::East || s.outputPortSide == DAAspectDirection::West) {
-            // 输入在水平方向
-            bodyWidth += d->linkPointDrawWidth / 2;
+            bodyWidth += d->linkPointDrawWidth + maxLabelW + labelSpacing;
         } else {
-            bodyHeight += d->linkPointDrawWidth / 2;
+            bodyHeight += d->linkPointDrawWidth + smallFm.height() + labelSpacing;
         }
     }
+
+    // 确保body高度足够容纳East/West方向的连接点（避免端口过多时拥挤叠加）
+    auto calcMinPortSpan = [&](int count) -> qreal {
+        if (count <= 0)
+            return 0.0;
+        const qreal slotH = d->linkPointDrawHeight + d->kPortMinGap;
+        return count * slotH + d->kPortMinGap;
+    };
+    if (inputCount > 0 && (s.inputPortSide == DAAspectDirection::East || s.inputPortSide == DAAspectDirection::West)) {
+        bodyHeight = qMax(bodyHeight, calcMinPortSpan(inputCount));
+    }
+    if (outputCount > 0
+        && (s.outputPortSide == DAAspectDirection::East || s.outputPortSide == DAAspectDirection::West)) {
+        bodyHeight = qMax(bodyHeight, calcMinPortSpan(outputCount));
+    }
+
+    // 确保body宽度足够容纳North/South方向的连接点
+    auto calcMinPortSpanW = [&](int count) -> qreal {
+        if (count <= 0)
+            return 0.0;
+        const qreal slotW = d->linkPointDrawWidth + d->kPortMinGap;
+        return count * slotW + d->kPortMinGap;
+    };
+    if (inputCount > 0 && (s.inputPortSide == DAAspectDirection::North || s.inputPortSide == DAAspectDirection::South)) {
+        bodyWidth = qMax(bodyWidth, calcMinPortSpanW(inputCount));
+    }
+    if (outputCount > 0
+        && (s.outputPortSide == DAAspectDirection::North || s.outputPortSide == DAAspectDirection::South)) {
+        bodyWidth = qMax(bodyWidth, calcMinPortSpanW(outputCount));
+    }
+
     setBodySize(QSizeF(bodyWidth, bodyHeight));  // 内部会调用updateNodeStyleGeometry
     update();
 }
