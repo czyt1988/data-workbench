@@ -63,12 +63,14 @@ void DAAbstractNodeSettingWidget::setNode(const DAPyNode& proxy)
 
 const DAPyNode& DAAbstractNodeSettingWidget::getNode() const
 {
-    return d_ptr->mNodeProxy;
+    DA_DC(d);
+    return d->mNodeProxy;
 }
 
 DAPyNode& DAAbstractNodeSettingWidget::node()
 {
-    return d_ptr->mNodeProxy;
+    DA_D(d);
+    return d->mNodeProxy;
 }
 
 // ============================================================
@@ -77,12 +79,14 @@ DAPyNode& DAAbstractNodeSettingWidget::node()
 
 const DAPyNodeMetaData& DAAbstractNodeSettingWidget::getMetaData() const
 {
-    return d_ptr->mMetaData;
+    DA_DC(d);
+    return d->mMetaData;
 }
 
 const QList< DAPyNodeParameter >& DAAbstractNodeSettingWidget::getParamDefs() const
 {
-    return d_ptr->mParamDefs;
+    DA_DC(d);
+    return d->mParamDefs;
 }
 
 }  // namespace DA

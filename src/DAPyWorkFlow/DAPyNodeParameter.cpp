@@ -133,14 +133,25 @@ QVariantHash DAPyNodeParameter::properties() const
  */
 bool DAPyNodeParameter::hasProperty(const QString& propName) const
 {
-    return properties().contains(propName);
+    if (isNone()) {
+        return false;
+    }
+    try {
+        pybind11::dict extraKwargs = attr("_extra_kwargs");
+        if (extraKwargs.is_none()) {
+            return false;
+        }
+        return extraKwargs.contains(pybind11::cast(propName));
+    } catch (const std::exception&) {
+        return false;
+    }
+    return false;
 }
 
 QDebug operator<<(QDebug dbg, const DAPyNodeParameter& param)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "DAPyNodeParameter(name=" << param.name()
-                  << ", type=" << param.typeLabel() << ")";
+    dbg.nospace() << "DAPyNodeParameter(name=" << param.name() << ", type=" << param.typeLabel() << ")";
     return dbg;
 }
 

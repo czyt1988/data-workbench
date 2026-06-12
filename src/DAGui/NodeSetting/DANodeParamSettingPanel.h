@@ -25,7 +25,7 @@ namespace DA
  * 1. 创建面板实例
  * 2. 调用 setNode(proxy) 设置节点代理，自动重建属性面板并初始化缓存
  * 3. 编辑器值变化触发 3-hop 信号链 → 代理更新
- * 4. updateUI() 从缓存读取配置，使用 QSignalBlocker 阻断回写信号
+ * 4. updateUI() 从节点读取配置，使用 QSignalBlocker 阻断回写信号
  *
  * @code
  * DANodeParamSettingPanel* panel = new DANodeParamSettingPanel(parent);
@@ -76,6 +76,12 @@ protected Q_SLOTS:
     void onPropertyValueChanged(int propertyId);
 
 protected:
+    // 从编辑器控件读取值（类型分发）
+    static QVariant readEditorValue(QWidget* editor, const QString& type);
+
+    // 连接编辑器原生信号到 propertyValueChanged
+    void connectEditorSignals(int id, const QString& type, QWidget* editor);
+
     // 收集配置（测试暴露）
     QVariantHash testCollectConfig() const;
 };

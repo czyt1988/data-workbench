@@ -42,11 +42,6 @@ void DAPyWorkFlowNodeItemSettingWidget::init()
 
     // 注册默认面板
     DANodeParamSettingPanelFactory::instance().registerDefaultPanels();
-
-    // 参数值变化通知（实际配置持久化由 3-hop 信号链第三跳 onPropertyValueChanged 完成）
-    connect(mParamSettingWidget, &DANodeParamSettingPanelWidget::propertyValueChanged, this, [ this ](int propertyId) {
-        Q_UNUSED(propertyId);
-    });
 }
 
 void DAPyWorkFlowNodeItemSettingWidget::bindWorkFlowEditWidget(DAPyWorkFlowEditWidget* w)
