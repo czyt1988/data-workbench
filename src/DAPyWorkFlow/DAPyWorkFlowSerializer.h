@@ -41,6 +41,10 @@ public:
     QString toJson(const DAPyWorkFlow& workflow);
     // 从 JSON 字符串反序列化重建 DAWorkflow
     DAPyWorkFlow fromJson(const QString& jsonStr, const DAPyNodeFactory& factory = DAPyNodeFactory());
+    // 将 DAWorkflow 序列化为 XML 字符串（调用 Python to_xml）
+    QString toXml(const DAPyWorkFlow& workflow);
+    // 从 XML 字符串反序列化重建 DAWorkflow（调用 Python from_xml）
+    DAPyWorkFlow fromXml(const QString& xmlStr, const DAPyNodeFactory& factory = DAPyNodeFactory());
     // 保存到文件
     bool saveToFile(const DAPyWorkFlow& workflow, const QString& filePath);
     // 从文件加载

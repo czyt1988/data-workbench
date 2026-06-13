@@ -478,7 +478,149 @@ DAPyWorkFlowManager 信号列表：
 
 ---
 
-## 十三、参考项目
+## 十三、⚠️ 持久化架构（模型-视图分离）
+
+### 核心原则
+
+工作流持久化严格遵循**模型-视图分离**原则，与架构分层一致：
+
+- **Python 是模型层**：完整处理节点拓扑、参数值、连接关系
+- **C++ 是视图层**：只管图形项创建、位置布局、渲染属性，**不处理参数值**
+- **视图层绝不碰 Python 数据**：不写入参数值，只负责将已有 Python 节点包装为图形项
+
+### ZIP 归档结构
+
+工程文件（.dapro）是 ZIP 压缩包，包含两个独立的工作流文件：
+
+```
+project.dapro (ZIP)
+├── workflow-data.xml   ← Python 工作流逻辑（节点拓扑 + 参数值 + 连接关系）
+├── workflow.xml        ← C++ 场景布局（位置、尺寸、渲染属性，通过 node_id 关联）
+├── charts.xml
+├── data-manager.xml
+└── ...
+```
+
+`workflow-data.xml` 中的 Python XML 通过 CDATA 嵌入外层 XML：
+
+```xml
+<workflow name="untitle"><![CDATA[
+  <workflow name="untitle" version="1.0">
+    <nodes>
+      <node node_id="pkg.Filter_1" qualified_name="pkg.Filter">
+        <param name="threshold" type="float">0.8</param>
+      </node>
+    </nodes>
+    <connections>
+      <connection source_node_id="pkg.Filter_1" source_output_channel="out"
+                  target_node_id="pkg.Sort_1" target_input_channel="data"
+                  connection_id="uuid4"/>
+    </connections>
+  </workflow>
+]]></workflow>
+```
+
+### 严格加载顺序
+
+**Python 数据必须先于视图数据加载**，这是不可违反的铁律：
+
+```
+load() 注册两个任务（FIFO 顺序）:
+  Task 1: workflow-data.xml → loadedWorkflowData()  [先执行]
+  Task 2: workflow.xml      → loadedWorkflowInfo()  [后执行]
+
+loadedWorkflowData() [主线程]:
+  对每个 <workflow>:
+    1. wfo->appendWorkflow(name) — 创建空 tab + Manager
+    2. serializer.fromXml(cdataXml, factory) — 反序列化完整 DAWorkflow
+    3. wfe->getManager()->setWorkflow(wf) — 替换空 workflow
+
+loadedWorkflowInfo() [主线程]:
+  对每个 <workflow>:
+    1. 查找已有 tab（由 loadedWorkflowData 创建）
+    2. mXml.loadWorkflowView(wfe, &workflowEle) — 仅加载视图
+    3. 若 tab 不存在（旧文件），回退到 appendWorkflowInProject()（向后兼容）
+```
+
+### 视图加载中的关键 API 区分
+
+#### wrapPyNode vs createPyNode
+
+| 方法 | 用途 | 是否经过工厂 | 是否注册到 Python |
+|------|------|:----------:|:---------------:|
+| `createPyNode(metaData, pos)` | 用户交互创建新节点 | ✅ | ✅ `Manager::registerNode()` |
+| `wrapPyNode(proxy, pos)` | 加载时包装已有 Python 节点 | ❌ | ❌ |
+
+加载时**必须**使用 `wrapPyNode`，因为 Python 节点已由 `fromXml()` 创建完毕。使用 `createPyNode` 会导致 Python 侧重复创建节点。
+
+#### wrapPyNodeLink vs addPyNodeLink
+
+| 方法 | 用途 | 是否触发 Python 同步 | 是否填充 mLinkConnectionIdMap |
+|------|------|:-----------------:|:------------------------:|
+| `addPyNodeLink(from, out, to, in)` | 用户交互创建新连线 | ✅ `syncPyNodeLinkAdd()` | ✅ |
+| `wrapPyNodeLink(from, out, to, in)` | 加载时包装已有连接 | ❌ | ❌（由 `rebuildLinkConnectionIdMap` 统一处理） |
+
+加载时**必须**使用 `wrapPyNodeLink`，因为 Python 连接已由 `fromXml()` 创建完毕。使用 `addPyNodeLink` 会触发 `syncPyNodeLinkAdd` → `Manager::connectNode()` → Python `add_connection()`，而 Python 端**检查重复端口对**会抛出 `ValueError`。
+
+#### rebuildLinkConnectionIdMap
+
+加载完成后**必须**调用 `scene->rebuildLinkConnectionIdMap()`，它遍历 Python workflow 的所有连接，按 `(source_node_id, output_channel, target_node_id, input_channel)` 四元组匹配 C++ 连线图形项，填充 `mLinkConnectionIdMap`。
+
+没有这个映射，后续用户通过 UI 删除连线时，`syncPyNodeLinkRemove()` 无法找到对应的 `connectionId`，Python 侧连接不会被删除。
+
+### 节点 ID 格式
+
+节点 ID 是**字符串**格式（如 `"pkg.DataFilter_1"`），不是数字。加载连线时通过 `findNodeItemById()` 查找节点，传入的是字符串 id。
+
+```cpp
+// ✅ 正确：直接使用字符串 id
+QString fromId = fromEle.attribute("id");
+DAPyNodeGraphicsItem* fromItem = scene->findNodeItemById(fromId);
+
+// ❌ 错误：尝试转换为数字（id 不是数字，toULongLong 会失败返回 0）
+qulonglong fromId = fromEle.attribute("id").toULongLong(&ok);
+DAPyNodeGraphicsItem* fromItem = scene->findNodeItemById(QString::number(fromId));
+```
+
+### 保存流程
+
+```
+save():
+  1. makeSaveWorkflowDataTask()  [Python 逻辑数据]
+     → serializer.toXml(wf) 得到 Python XML 字符串
+     → CDATA 嵌入外层 XML（纯字符串拼接，不经 QDomDocument 解析 Python XML）
+     → appendByteSaveTask(path, utf8)
+
+  2. makeSaveWorkFlowTask()  [C++ 视图布局，现有流程不变]
+     → DAXmlHelper → workflow.xml
+```
+
+保存时使用 `appendByteSaveTask` 而非 `appendXmlSaveTask`，避免 Python XML 被 QDomDocument 二次解析。CDATA 注入防护：`pyXml.replace("]]>", "]]]]><![CDATA[>")`。
+
+### pybind11 函数调用陷阱
+
+将 Qt 类型（如 `QString`）直接传递给 pybind11 函数调用模板 `attr("method")(qtArg)` 时，可能出现转换失败（`Unable to convert call argument`），即使 `pybind11::cast(qtArg)` 单独使用是正常的。
+
+**解决方案**：先用 `pybind11::cast()` 显式转换为 `pybind11::object`，再传递：
+
+```cpp
+// ✅ 正确：先 cast 再传递
+pybind11::object pyNodeId = pybind11::cast(nodeId);
+pybind11::object result = attr("get_node_by_id")(pyNodeId);
+
+// ❌ 可能失败：直接传递 QString
+pybind11::object result = attr("get_node_by_id")(nodeId);
+```
+
+### 向后兼容
+
+加载时通过检查 `wfo->count() > 0` 判断走新路径还是旧路径：
+- 旧文件无 `workflow-data.xml` → `loadedWorkflowData` 跳过 → `loadedWorkflowInfo` 走 `appendWorkflowInProject()` 旧路径
+- 新文件有 `workflow-data.xml` → `loadedWorkflowData` 创建 tab → `loadedWorkflowInfo` 走 `appendWorkflowView()` 新路径
+
+---
+
+## 十四、参考项目
 
 | 项目 | 核心借鉴点 |
 |------|-----------|

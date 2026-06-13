@@ -20,6 +20,7 @@
 #include "DAGraphicsViewGlobal.h"
 #include "DAPyObjectWrapper.h"
 #include "DAPybind11InQt.h"
+#include "DAPyWorkFlowEnumStringUtils.h"
 namespace DA
 {
 
@@ -613,7 +614,14 @@ bool DAPyNodeGraphicsItem::saveToXml(QDomDocument* doc, QDomElement* parentEleme
     }
 
     QDomElement pyNodeEle = doc->createElement("pyNodeItem");
-    // TODO
+    // 保存节点ID（用于与Python工作流逻辑数据关联）
+    if (!d_ptr->mProxy.isNone()) {
+        pyNodeEle.setAttribute("node_id", d_ptr->mProxy.getNodeId());
+    }
+    // 保存渲染模板
+    pyNodeEle.setAttribute("renderTemplate", enumToString(d_ptr->mStyle.renderTemplate));
+    // 保存节点状态
+    pyNodeEle.setAttribute("nodeState", enumToString(d_ptr->mNodeState));
 
     parentElement->appendChild(pyNodeEle);
     return true;
@@ -635,7 +643,16 @@ bool DAPyNodeGraphicsItem::loadFromXml(const QDomElement* itemElement, const QVe
     if (pyNodeEle.isNull()) {
         return false;
     }
-    // TODO
+    // 加载渲染模板
+    QString tmplStr = pyNodeEle.attribute("renderTemplate");
+    if (!tmplStr.isEmpty()) {
+        d_ptr->mStyle.renderTemplate = stringToEnum(tmplStr, DAPyNodeStyle::RenderDefaultTemplate);
+    }
+    // 加载节点状态
+    QString stateStr = pyNodeEle.attribute("nodeState");
+    if (!stateStr.isEmpty()) {
+        d_ptr->mNodeState = stringToEnum(stateStr, DA::Idle);
+    }
     return true;
 }
 

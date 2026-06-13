@@ -87,11 +87,6 @@ public:
     // 读取单个参数值（getattr）
     QVariant getParameterValue(const QString& name) const;
 
-    // 已废弃的参数API
-    [[deprecated("Use setParameterValue() instead")]] void setParameters(const QVariantHash& params);
-    [[deprecated("Use getParameters() instead")]] QVariantHash getParameterValues() const;
-    [[deprecated("Use setParameterValue() instead")]] void setConfig(const QVariantHash& config);
-    [[deprecated("Use getParameterValue() instead")]] QVariantHash getConfig() const;
     // 获取DAPyNodeMetaData
     DAPyNodeMetaData getMetaData() const;
 

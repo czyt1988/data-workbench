@@ -314,7 +314,9 @@ DAPyNode DAPyWorkFlow::getNodeById(const QString& nodeId)
             qWarning() << "DAPyWorkFlow::getNodeById: workflow object is invalid";
             return DAPyNode();
         }
-        pybind11::object result = attr("get_node_by_id")(nodeId);
+        // 将 QString 先转换为 pybind11::object，避免函数调用模板的参数转换问题
+        pybind11::object pyNodeId = pybind11::cast(nodeId);
+        pybind11::object result = attr("get_node_by_id")(pyNodeId);
         DAPyNode node(result);
         return node;
     } catch (const pybind11::error_already_set& e) {

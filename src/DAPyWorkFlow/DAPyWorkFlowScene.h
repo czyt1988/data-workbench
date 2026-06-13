@@ -98,8 +98,25 @@ public:
     // 删除选中项（支持undo/redo）
     int removeSelectedItems_();
 
-    // 清空场景
+    // 清空场景（含Python workflow数据）
     void clearPyScene();
+
+    // --- 加载专用方法（Python数据已就绪，仅创建/恢复视图） ---
+
+    // 包装已有的Python节点为图形项（加载用，不创建新Python节点，不添加到场景）
+    DAPyNodeGraphicsItem* wrapPyNode(const DAPyNode& proxy, const QPointF& pos = QPointF());
+
+    // 包装已有的Python连接为连线图形项（加载用，不触发Python同步，自动添加到场景）
+    DAPyLinkGraphicsItem* wrapPyNodeLink(DAPyNodeGraphicsItem* fromItem,
+                                         const QString& fromOutput,
+                                         DAPyNodeGraphicsItem* toItem,
+                                         const QString& toInput);
+
+    // 清空场景C++图元和映射表，但不清除Python workflow数据（加载前调用）
+    void clearSceneItems();
+
+    // 从Python连接列表重建mLinkConnectionIdMap（加载后调用，确保后续UI删除能同步Python）
+    void rebuildLinkConnectionIdMap();
 
     // 场景序列化（通过DAPyWorkFlowSceneSerializer实现）
     bool saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const;

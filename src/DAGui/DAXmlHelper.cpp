@@ -14,6 +14,7 @@
 #include "DAQtEnumTypeStringUtils.h"
 #include "DAGraphicsViewEnumStringUtils.h"
 #include "DAPyWorkFlowEnumStringUtils.h"
+#include "DAPyBindQt/DAPybind11QtCaster.hpp"
 #include "DAGuiEnumStringUtils.h"
 #include "Commands/DACommandsForWorkFlow.h"
 #include "DAPyWorkFlowSceneSerializer.h"
@@ -25,6 +26,8 @@
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyLinkGraphicsItem.h"
 #include "DAPyNode.h"
+#include "DAPyWorkFlow.h"
+#include "DAPyWorkFlowManager.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAGraphicsItem.h"
 #include "DAXMLFileInterface.h"
@@ -62,6 +65,10 @@ public:
     // 保存工作流
     void saveWorkflow(DAPyWorkFlowEditWidget* wfe, QDomDocument& doc, QDomElement& workflowEle);
     bool loadWorkflow(DAPyWorkFlowEditWidget* wfe, const QDomElement& workflowEle);
+    // 加载工作流视图（Python节点已就绪，仅创建图形项）
+    bool loadWorkflowView(DAPyWorkFlowEditWidget* wfe, const QDomElement& workflowEle);
+    bool loadNodesView(DAPyWorkFlowGraphicsScene* workFlowScene, const QDomElement& workflowEle);
+    bool loadNodeLinksView(DAPyWorkFlowGraphicsScene* workFlowScene, const QDomElement& workflowEle);
     // copy type类型
     void saveWorkflowFromClipBoard(const QList< DAGraphicsItem* > its, QDomDocument& doc, QDomElement& workflowEle);
     bool loadWorkflowFromClipBoard(DAPyWorkFlowGraphicsScene* scene, const QDomElement& workflowEle, bool isCreateNewId = true);
@@ -206,6 +213,189 @@ bool DAXmlHelper::PrivateData::loadWorkflow(DAPyWorkFlowEditWidget* wfe, const Q
 
     // 加载完成，设置场景就绪
     workFlowScene->setReady(true);
+    return true;
+}
+
+/**
+ * @brief 加载工作流视图数据（Python节点已就绪，仅创建图形项）
+ *
+ * 此方法用于新的持久化流程：Python工作流数据（节点拓扑、参数值、连接关系）
+ * 已由loadedWorkflowData阶段通过serializer.fromXml()反序列化并通过
+ * manager->setWorkflow()注入。此方法仅负责：
+ * 1. 清空现有C++图元（保留Python数据）
+ * 2. 遍历XML中的<node>元素，通过node_id在已有Python workflow中查找节点代理，
+ *    调用scene->wrapPyNode()创建图形项并恢复位置/大小等视觉属性
+ * 3. 遍历XML中的<link>元素，通过findNodeItemById查找图形项，
+ *    调用scene->wrapPyNodeLink()创建连线（不触发Python同步）
+ * 4. 重建mLinkConnectionIdMap（确保后续UI删除能同步Python）
+ * 5. 加载通用图元和场景信息
+ *
+ * @param wfe 工作流编辑窗口
+ * @param workflowEle workflow XML元素
+ * @return 加载成功返回true
+ */
+bool DAXmlHelper::PrivateData::loadWorkflowView(DAPyWorkFlowEditWidget* wfe, const QDomElement& workflowEle)
+{
+    DAPyWorkFlowGraphicsScene* workFlowScene = wfe->getWorkFlowGraphicsScene();
+    workFlowScene->setReady(false);
+    clearDealItemSet();
+
+    // 清空现有C++图元（保留Python workflow数据）
+    DAPyGILGuard gilGuard;  // GIL保护：后续所有操作都会间接调用Python
+    workFlowScene->clearSceneItems();
+
+    // 加载节点：通过node_id在已有Python workflow中查找 → wrapPyNode → addItem → loadItem
+    if (!loadNodesView(workFlowScene, workflowEle)) {
+        qCritical() << QObject::tr("loadNodesView occurred error");
+    }
+
+    // 加载连线：通过findNodeItemById查找 → wrapPyNodeLink → loadItem
+    if (!loadNodeLinksView(workFlowScene, workflowEle)) {
+        qCritical() << QObject::tr("loadNodeLinksView occurred error");
+    }
+
+    // 重建mLinkConnectionIdMap
+    workFlowScene->rebuildLinkConnectionIdMap();
+
+    // 加载通用图元（文本、矩形等）
+    if (!loadCommonItems(workFlowScene, workflowEle, false)) {
+        qCritical() << QObject::tr("loadCommonItems occurred error");
+    }
+
+    // 加载场景信息
+    if (!loadSecenInfo(workFlowScene, workflowEle)) {
+        qCritical() << QObject::tr("loadSecenInfo occurred error");
+    }
+
+    workFlowScene->setReady(true);
+    return true;
+}
+
+/**
+ * @brief 加载节点视图（Python节点已就绪）
+ *
+ * 遍历XML中的<node>元素，通过node_id调用workflow.getNodeById()获取已有Python代理，
+ * 然后调用scene->wrapPyNode()创建图形项。
+ *
+ * @param workFlowScene 工作流场景
+ * @param workflowEle workflow XML元素
+ * @return 加载成功返回true
+ */
+bool DAXmlHelper::PrivateData::loadNodesView(DAPyWorkFlowGraphicsScene* workFlowScene, const QDomElement& workflowEle)
+{
+    DAPyWorkFlowManager* mgr = workFlowScene->getManager();
+    if (!mgr || !mgr->isWorkflowValid()) {
+        qWarning() << QObject::tr("loadNodesView: manager or workflow is not valid");
+        return false;
+    }
+    DAPyWorkFlow wf = mgr->getWorkflow();
+
+    QDomElement nodesEle = workflowEle.firstChildElement("nodes");
+    QDomNodeList nodesList = nodesEle.childNodes();
+
+    for (int i = 0; i < nodesList.size(); ++i) {
+        QDomElement nodeEle = nodesList.at(i).toElement();
+        if (nodeEle.tagName() != "node") {
+            continue;
+        }
+
+        QString nodeId = nodeEle.attribute("id");
+        if (nodeId.isEmpty()) {
+            qWarning() << QObject::tr("loadNodesView: node element missing id attribute");
+            continue;
+        }
+
+        // 在已有Python workflow中查找节点
+        DAPyNode proxy = wf.getNodeById(nodeId);
+        if (proxy.isNone()) {
+            qWarning() << QObject::tr("loadNodesView: node_id=%1 not found in Python workflow").arg(nodeId);
+            continue;
+        }
+
+        // 包装为图形项（不经过工厂，不注册到Python）
+        DAPyNodeGraphicsItem* item = workFlowScene->wrapPyNode(proxy, QPointF(0, 0));
+        if (!item) {
+            qWarning() << QObject::tr("loadNodesView: wrapPyNode failed for node_id=%1").arg(nodeId);
+            continue;
+        }
+
+        // 添加到场景
+        workFlowScene->addItem(item);
+        item->updateLinkPoints();
+
+        // 加载图元可视化属性（位置、大小等）
+        QDomElement itemEle = nodeEle.firstChildElement("item");
+        if (!itemEle.isNull()) {
+            loadItem(item, itemEle);
+        }
+    }
+    return true;
+}
+
+/**
+ * @brief 加载连线视图（Python连接已就绪）
+ *
+ * 遍历XML中的<link>元素，通过findNodeItemById查找源/目标图形项，
+ * 调用scene->wrapPyNodeLink()创建连线（不触发Python同步）。
+ *
+ * @param workFlowScene 工作流场景
+ * @param workflowEle workflow XML元素
+ * @return 加载成功返回true
+ */
+bool DAXmlHelper::PrivateData::loadNodeLinksView(DAPyWorkFlowGraphicsScene* workFlowScene, const QDomElement& workflowEle)
+{
+    QDomElement linksEle = workflowEle.firstChildElement("links");
+    QDomNodeList list = linksEle.childNodes();
+
+    for (int i = 0; i < list.size(); ++i) {
+        QDomElement linkEle = list.at(i).toElement();
+        if (linkEle.tagName() != "link") {
+            continue;
+        }
+
+        QDomElement fromEle = linkEle.firstChildElement("from");
+        QDomElement toEle = linkEle.firstChildElement("to");
+        if (fromEle.isNull() || toEle.isNull()) {
+            continue;
+        }
+
+        // 直接使用字符串 id，不转换为数字
+        QString fromId = fromEle.attribute("id");
+        QString fromKey = fromEle.attribute("name");
+        DAPyNodeGraphicsItem* fromItem = workFlowScene->findNodeItemById(fromId);
+
+        QString toId = toEle.attribute("id");
+        QString toKey = toEle.attribute("name");
+        DAPyNodeGraphicsItem* toItem = workFlowScene->findNodeItemById(toId);
+
+        if (!fromItem || !toItem) {
+            qWarning() << QObject::tr("loadNodeLinksView: cannot find nodes for link (from=%1, to=%2)")
+                              .arg(fromId, toId);
+            continue;
+        }
+
+        // wrap连线（不触发Python同步）
+        DAPyLinkGraphicsItem* linkItem = workFlowScene->wrapPyNodeLink(fromItem, fromKey, toItem, toKey);
+        if (!linkItem) {
+            qWarning() << QObject::tr("loadNodeLinksView: wrapPyNodeLink failed");
+            continue;
+        }
+
+        // 加载连线可视化属性
+        if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() <= 3) {
+            // v1.3及以下：link元素直接包含链接信息
+            if (!loadItem(linkItem, linkEle)) {
+                qWarning() << QObject::tr("linkItem loadFromXml return false");
+            }
+        } else {
+            // v1.4+：link元素包含item子元素
+            QDomElement itemEle = findItemElement(linkEle);
+            if (!loadItem(linkItem, itemEle)) {
+                qWarning() << QObject::tr("linkItem loadFromXml return false");
+            }
+        }
+        linkItem->updateBoundingRect();
+    }
     return true;
 }
 
@@ -1281,6 +1471,22 @@ QDomElement DAXmlHelper::makeElement(DAPyWorkFlowEditWidget* wfe, const QString&
 bool DAXmlHelper::loadElement(DAPyWorkFlowEditWidget* wfe, const QDomElement* ele)
 {
     return d_ptr->loadWorkflow(wfe, *ele);
+}
+
+/**
+ * @brief 加载工作流视图数据（Python节点已就绪，仅创建图形项）
+ *
+ * 用于新的持久化流程。调用时Python工作流数据已通过
+ * serializer.fromXml() + manager->setWorkflow()注入，
+ * 此方法仅创建C++图形项和恢复布局。
+ *
+ * @param wfe 工作流编辑窗口
+ * @param ele workflow XML元素指针
+ * @return 加载成功返回true
+ */
+bool DAXmlHelper::loadWorkflowView(DAPyWorkFlowEditWidget* wfe, const QDomElement* ele)
+{
+    return d_ptr->loadWorkflowView(wfe, *ele);
 }
 
 QDomElement DAXmlHelper::makeElement(DAPyWorkFlowOperateWidget* wfo, const QString& tagName, QDomDocument* doc)

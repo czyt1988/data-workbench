@@ -60,6 +60,8 @@ public:
     // 标准保存—— DAPyWorkFlowEditWidget
     QDomElement makeElement(DAPyWorkFlowEditWidget* wfe, const QString& tagName, QDomDocument* doc);
     bool loadElement(DAPyWorkFlowEditWidget* wfe, const QDomElement* ele);
+    // 加载工作流视图数据（Python节点已就绪，仅创建图形项和恢复布局）
+    bool loadWorkflowView(DAPyWorkFlowEditWidget* wfe, const QDomElement* ele);
     // 标准保存—— DAPyWorkFlowEditWidget
     QDomElement makeElement(DAPyWorkFlowOperateWidget* wfo, const QString& tagName, QDomDocument* doc);
     bool loadElement(DAPyWorkFlowOperateWidget* wfo, const QDomElement* workflowsEle);

@@ -11,23 +11,16 @@ namespace DA
 class DAPyWorkFlowScene;
 
 /**
- * @brief Python工作流场景序列化器
+ * @brief Python工作流场景布局序列化器
  *
- * 专门负责DAPyWorkFlowScene的XML序列化和反序列化操作。
- * 保存场景中的节点位置、连接信息、节点参数等，加载时通过
- * DANodeRegistry重建节点图形项并恢复连接关系。
+ * 专门负责DAPyWorkFlowScene的布局数据XML序列化和反序列化操作。
+ * 仅保存/加载节点位置、图元可视化属性、连接线布局等场景级别数据，
+ * 不处理Python工作流逻辑数据（节点拓扑、参数值、连接关系）。
+ * Python工作流数据由DAPyWorkFlowSerializer序列化到独立的workflow-data.xml中。
+ * 节点通过node_id与Python工作流数据关联。
  * 使用PIMPL模式隔离实现细节。
  *
- * @code
- * DA::DAPyWorkFlowSceneSerializer serializer;
- * // 保存场景到XML文件
- * QDomDocument doc;
- * serializer.saveSceneToXml(&scene, &doc);
- * // 从XML文件加载场景
- * serializer.loadSceneFromXml(&doc.documentElement(), &scene);
- * @endcode
- *
- * @see DAPyWorkFlowScene DAWorkflowState
+ * @see DAPyWorkFlowScene DAPyWorkFlowSerializer
  */
 class DAPYWORKFLOW_API DAPyWorkFlowSceneSerializer
 {

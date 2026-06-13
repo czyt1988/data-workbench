@@ -43,6 +43,7 @@ DAWorkflowSerializer 是纯 Python 实现，不依赖 C++。
 """
 
 import json
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from .workflow import DAWorkflow
@@ -249,6 +250,195 @@ class DAWorkflowSerializer:
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         return self.from_dict(data, node_factory)
+
+    # ==================== XML 序列化 ====================
+
+    @staticmethod
+    def _serialize_param_value(value):
+        """
+        将 Python 参数值序列化为 (type_label, text) 元组，用于 XML 存储
+
+        :param value: Python 参数值
+        :return: (type_label, text) 元组
+        """
+        if value is None:
+            return ("none", "")
+        # bool 必须在 int 之前检查（bool 是 int 的子类）
+        if isinstance(value, bool):
+            return ("bool", "true" if value else "false")
+        if isinstance(value, int):
+            return ("int", str(value))
+        if isinstance(value, float):
+            return ("float", repr(value))
+        if isinstance(value, str):
+            return ("str", value)
+        # list / dict / 其他复杂类型：JSON 编码
+        return ("json", json.dumps(value, ensure_ascii=False))
+
+    @staticmethod
+    def _deserialize_param_value(type_label, text):
+        """
+        从 XML 的 (type_label, text) 反序列化为 Python 值
+
+        :param type_label: 类型标签字符串
+        :param text: 文本内容
+        :return: Python 值
+        """
+        if type_label == "none":
+            return None
+        if type_label == "bool":
+            return text.lower() == "true"
+        if type_label == "int":
+            return int(text)
+        if type_label == "float":
+            return float(text)
+        if type_label == "str":
+            return text
+        if type_label == "json":
+            return json.loads(text)
+        # 未知类型，返回原始字符串
+        return text
+
+    def to_xml_element(self, workflow: DAWorkflow) -> ET.Element:
+        """
+        将 DAWorkflow 序列化为 xml.etree.ElementTree.Element
+
+        返回的 Element 可直接嵌入 QDomDocument（C++ 侧），
+        也可用于生成 XML 字符串。
+
+        XML 结构::
+
+            <workflow name="..." version="1.0">
+              <nodes>
+                <node node_id="..." qualified_name="...">
+                  <param name="column" type="str">value</param>
+                </node>
+              </nodes>
+              <connections>
+                <connection source_node_id="..." source_output_channel="..."
+                            target_node_id="..." target_input_channel="..."
+                            connection_id="..."/>
+              </connections>
+            </workflow>
+
+        :param workflow: DAWorkflow 实例
+        :return: Element 对象
+        """
+        root = ET.Element("workflow")
+        root.set("name", workflow.name)
+        root.set("version", SERIALIZER_VERSION)
+
+        # 节点
+        nodes_ele = ET.SubElement(root, "nodes")
+        for node_id, node_instance in workflow._nodes.items():
+            node_ele = ET.SubElement(nodes_ele, "node")
+            node_ele.set("node_id", node_id)
+            node_ele.set("qualified_name", getattr(node_instance, "qualified_name", ""))
+
+            # 参数
+            for param_name in getattr(node_instance, "parameters", {}):
+                if not param_name:
+                    continue
+                value = getattr(node_instance, param_name, None)
+                if value is None:
+                    continue
+                type_label, text = self._serialize_param_value(value)
+                param_ele = ET.SubElement(node_ele, "param")
+                param_ele.set("name", param_name)
+                param_ele.set("type", type_label)
+                param_ele.text = text
+
+        # 连接
+        conns_ele = ET.SubElement(root, "connections")
+        for conn in workflow.get_connections():
+            conn_ele = ET.SubElement(conns_ele, "connection")
+            conn_ele.set("source_node_id", conn.source_node_id)
+            conn_ele.set("source_output_channel", conn.source_output_channel)
+            conn_ele.set("target_node_id", conn.target_node_id)
+            conn_ele.set("target_input_channel", conn.target_input_channel)
+            conn_ele.set("connection_id", conn.connection_id)
+
+        return root
+
+    def from_xml_element(self, element: ET.Element, node_factory: DANodeFactory = None) -> DAWorkflow:
+        """
+        从 xml.etree.ElementTree.Element 反序列化重建 DAWorkflow
+
+        :param element: workflow 根 Element
+        :param node_factory: DANodeFactory 实例
+        :return: 重建的 DAWorkflow 实例
+        :raises ValueError: 如果数据格式无效
+        """
+        factory = node_factory or self._node_factory
+        if factory is None:
+            raise ValueError("反序列化需要提供 node_factory")
+
+        workflow_name = element.get("name", "")
+        workflow = DAWorkflow(name=workflow_name)
+
+        # 节点
+        nodes_ele = element.find("nodes")
+        if nodes_ele is None:
+            raise ValueError("序列化数据缺少 'nodes' 元素")
+
+        for node_ele in nodes_ele.findall("node"):
+            qualified_name = node_ele.get("qualified_name", "")
+            node_id = node_ele.get("node_id", "")
+
+            node_instance = factory.create_node(qualified_name)
+
+            # 恢复参数值
+            for param_ele in node_ele.findall("param"):
+                param_name = param_ele.get("name", "")
+                if not param_name:
+                    continue
+                type_label = param_ele.get("type", "str")
+                text = param_ele.text or ""
+                value = self._deserialize_param_value(type_label, text)
+                setattr(node_instance, param_name, value)
+
+            # 恢复 node_id
+            if node_id:
+                node_instance.node_id = node_id
+
+            workflow.add_node(node_instance)
+
+        # 连接
+        conns_ele = element.find("connections")
+        if conns_ele is not None:
+            for conn_ele in conns_ele.findall("connection"):
+                conn = DAConnection(
+                    source_node_id=conn_ele.get("source_node_id", ""),
+                    source_output_channel=conn_ele.get("source_output_channel", ""),
+                    target_node_id=conn_ele.get("target_node_id", ""),
+                    target_input_channel=conn_ele.get("target_input_channel", ""),
+                    connection_id=conn_ele.get("connection_id", None),
+                )
+                workflow.add_connection(conn)
+
+        return workflow
+
+    def to_xml(self, workflow: DAWorkflow) -> str:
+        """
+        将 DAWorkflow 序列化为 XML 字符串
+
+        :param workflow: DAWorkflow 实例
+        :return: XML 字符串
+        """
+        root = self.to_xml_element(workflow)
+        ET.indent(root, space="  ")
+        return ET.tostring(root, encoding="unicode", xml_declaration=False)
+
+    def from_xml(self, xml_str: str, node_factory: DANodeFactory = None) -> DAWorkflow:
+        """
+        从 XML 字符串反序列化重建 DAWorkflow
+
+        :param xml_str: XML 字符串
+        :param node_factory: 节点工厂
+        :return: 重建的 DAWorkflow 实例
+        """
+        root = ET.fromstring(xml_str)
+        return self.from_xml_element(root, node_factory)
 
     def __repr__(self) -> str:
         return f"DAWorkflowSerializer(factory={self._node_factory})"

@@ -160,6 +160,61 @@ DAPyWorkFlow DAPyWorkFlowSerializer::fromJson(const QString& jsonStr, const DAPy
 }
 
 /**
+ * @brief 将 DAWorkflow 序列化为 XML 字符串
+ *
+ * 调用 Python DAWorkflowSerializer.to_xml() 方法，
+ * 将工作流的节点拓扑、参数值和连接关系序列化为 XML 格式。
+ *
+ * @param[in] workflow 工作流代理
+ * @return XML 字符串，失败返回空字符串
+ */
+QString DAPyWorkFlowSerializer::toXml(const DAPyWorkFlow& workflow)
+{
+    ensureInitialized();
+    if (isNone() || workflow.isNone()) {
+        return QString();
+    }
+
+    try {
+        return attr("to_xml")(workflow.object()).cast< QString >();
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return QString();
+}
+
+/**
+ * @brief 从 XML 字符串反序列化重建 DAWorkflow
+ *
+ * 调用 Python DAWorkflowSerializer.from_xml() 方法，
+ * 从 XML 字符串重建包含节点、参数值和连接的 DAWorkflow 实例。
+ *
+ * @param[in] xmlStr XML 字符串
+ * @param[in] factory 节点工厂（可选）
+ * @return 重建的 DAWorkflow 实例
+ */
+DAPyWorkFlow DAPyWorkFlowSerializer::fromXml(const QString& xmlStr, const DAPyNodeFactory& factory)
+{
+    ensureInitialized();
+    if (isNone()) {
+        return DAPyWorkFlow();
+    }
+
+    try {
+        pybind11::object result;
+        if (!factory.isNone()) {
+            result = attr("from_xml")(xmlStr, pybind11::arg("node_factory") = factory.object());
+        } else {
+            result = attr("from_xml")(xmlStr);
+        }
+        return DAPyWorkFlow(result);
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return DAPyWorkFlow();
+}
+
+/**
  * @brief 保存工作流到文件
  */
 bool DAPyWorkFlowSerializer::saveToFile(const DAPyWorkFlow& workflow, const QString& filePath)

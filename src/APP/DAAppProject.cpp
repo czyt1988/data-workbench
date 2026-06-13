@@ -41,10 +41,21 @@
 #include "DAPyInterpreter.h"
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
+#include "DAPyWorkFlowSerializer.h"
+#include "DAPyWorkFlowManager.h"
+#include "DAPyWorkFlow.h"
+#include "DAPyWorkFlowEditWidget.h"
+#include "DAPyNodeFactory.h"
+#include "DAPyNodeGraphicsItem.h"
+#include "DAPybind11InQt.h"
+#include "DAPyGILGuard.h"
+#include "DAPybind11QtCaster.hpp"
+#include "DAZipArchiveTask_ByteArray.h"
 #endif
-const QString c_workflowxml_save_filename = QStringLiteral("workflow.xml");
-const QString c_chartsxml_save_filename   = QStringLiteral("charts.xml");
-const QString c_chartitem_save_folder     = QStringLiteral("chart-data");
+const QString c_workflowxml_save_filename      = QStringLiteral("workflow.xml");
+const QString c_workflowdata_save_filename     = QStringLiteral("workflow-data.xml");
+const QString c_chartsxml_save_filename        = QStringLiteral("charts.xml");
+const QString c_chartitem_save_folder          = QStringLiteral("chart-data");
 
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_BEGIN
 #define DAAPPPROJECT_TASK_LOAD_ID_BEGIN 0x234
@@ -75,6 +86,13 @@ const QString c_chartitem_save_folder     = QStringLiteral("chart-data");
  */
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_CHARTS_INFO
 #define DAAPPPROJECT_TASK_LOAD_ID_CHARTS_INFO (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 4)
+#endif
+
+/**
+ *@def 加载任务id - 工作流Python逻辑数据
+ */
+#ifndef DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW_DATA
+#define DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW_DATA (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 5)
 #endif
 namespace DA
 {
@@ -262,6 +280,7 @@ bool DAAppProject::appendWorkflowInProject(const QDomDocument& doc, bool skipInd
         QString name = workflowEle.attribute("name");
         // 生成一个唯一名字
         name = DA::makeUniqueString(names, name);
+        names.insert(name);
         // 建立工作流窗口
         DAPyWorkFlowEditWidget* wfe = wfo->appendWorkflow(name);
         isok &= mXml.loadElement(wfe, &workflowEle);
@@ -398,6 +417,9 @@ bool DAAppProject::save(const QString& path)
     //! 保存系统信息，仅仅保存不读取
     makeSaveSystemInfoTask(mArchive);
 
+    //! 保存Python工作流逻辑数据（节点拓扑+参数值+连接关系）
+    makeSaveWorkflowDataTask(mArchive);
+
     //! 先把涉及ui的内容保存下来,ui是无法在其它线程操作，因此需要先保存下来
     makeSaveWorkFlowTask(mArchive);
 
@@ -456,7 +478,10 @@ bool DAAppProject::load(const QString& path)
     clear();
 
     setProjectPath(path);
-    // 创建archive任务队列
+    // 创建archive任务队列 - Python工作流逻辑数据（先注册，FIFO保证先执行）
+    auto taskData = mArchive->appendByteLoadTask(c_workflowdata_save_filename, DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW_DATA);
+    taskData->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedWorkflowData(t); });
+    // 创建archive任务队列 - 工作流UI（后注册，FIFO保证后执行）
     auto task = mArchive->appendXmlLoadTask(c_workflowxml_save_filename, DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW);
     task->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedWorkflowInfo(t); });
     // 创建datamanager任务
@@ -539,6 +564,60 @@ void DAAppProject::makeSaveSystemInfoTask(DAZipArchiveThreadWrapper* archive)
     auto t = archive->appendXmlSaveTask(QStringLiteral("system.xml"), doc);
     t->setName(tr("Save System Info"));             // cn:保存系统信息
     t->setDescribe(tr("Save system information"));  // cn:保存系统信息
+}
+
+/**
+ * @brief 创建保存Python工作流逻辑数据的任务
+ *
+ * 遍历所有工作流标签页，通过DAPyWorkFlowSerializer调用Python端
+ * 的to_xml()方法，将节点拓扑、参数值和连接关系序列化为XML。
+ * Python XML通过CDATA嵌入到外层XML中，避免QDomDocument解析开销。
+ * 使用appendByteSaveTask直接保存字节数据。
+ *
+ * @param archive ZIP归档线程包装器
+ */
+void DAAppProject::makeSaveWorkflowDataTask(DAZipArchiveThreadWrapper* archive)
+{
+#if DA_ENABLE_PYTHON
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    Q_CHECK_PTR(wfo);
+    DAPyWorkFlowSerializer serializer;
+
+    // 纯字符串拼接，不经过QDomDocument解析Python XML
+    QString xml;
+    xml += QStringLiteral("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    xml += QStringLiteral("<root type=\"workflow-data\">\n<workflows>\n");
+
+    DAPyGILGuard gilGuard;  // GIL保护：serializer.toXml() 调用 Python
+    const int cnt = wfo->count();
+    for (int i = 0; i < cnt; ++i) {
+        DAPyWorkFlowEditWidget* wfe = wfo->getWorkFlowWidget(i);
+        QString tabName             = wfo->getWorkFlowWidgetName(i);
+        DAPyWorkFlowManager* mgr    = wfe->getManager();
+        if (!mgr || !mgr->isWorkflowValid()) {
+            continue;
+        }
+        DAPyWorkFlow wf = mgr->getWorkflow();
+        QString pyXml   = serializer.toXml(wf);
+        if (pyXml.isEmpty()) {
+            qWarning() << tr("Failed to serialize workflow '%1' to XML").arg(tabName);
+            continue;
+        }
+        // CDATA注入防护：转义 ]]>
+        pyXml.replace("]]>", "]]]]><![CDATA[>");
+        xml += "<workflow name=\"" + tabName.toHtmlEscaped() + "\"><![CDATA[";
+        xml += pyXml;
+        xml += "]]></workflow>\n";
+    }
+
+    xml += QStringLiteral("</workflows>\n</root>");
+
+    auto t = archive->appendByteSaveTask(c_workflowdata_save_filename, xml.toUtf8());
+    t->setName(tr("Save workflow data"));
+    t->setDescribe(tr("Save Python workflow logic data (nodes, parameters, connections)"));
+#else
+    Q_UNUSED(archive);
+#endif
 }
 
 /**
@@ -770,12 +849,144 @@ void DAAppProject::onLoadFinish(bool success)
 void DAAppProject::loadedWorkflowInfo(const std::shared_ptr< DAAbstractArchiveTask >& t)
 {
     const std::shared_ptr< DAZipArchiveTask_Xml > xmlArchive = std::static_pointer_cast< DAZipArchiveTask_Xml >(t);
-    // 读取xml
     QDomDocument xmlDoc = xmlArchive->getDomDocument();
     if (xmlDoc.isNull()) {
         return;
     }
-    this->appendWorkflowInProject(xmlDoc);
+
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    if (wfo && wfo->count() > 0) {
+        // 新路径：tab已由loadedWorkflowData创建，仅加载视图布局
+        appendWorkflowView(xmlDoc);
+    } else {
+        // 旧路径：向后兼容旧文件（无workflow-data.xml）
+        appendWorkflowInProject(xmlDoc);
+    }
+}
+
+/**
+ * @brief Python工作流逻辑数据加载回调
+ *
+ * 解析workflow-data.xml中的CDATA，通过DAPyWorkFlowSerializer反序列化
+ * 得到完整的DAWorkflow（含节点拓扑、参数值、连接关系），
+ * 为每个工作流创建空tab并通过manager->setWorkflow()注入Python数据。
+ * 此回调先于loadedWorkflowInfo执行（FIFO顺序保证）。
+ */
+void DAAppProject::loadedWorkflowData(const std::shared_ptr< DAAbstractArchiveTask >& t)
+{
+    const std::shared_ptr< DAZipArchiveTask_ByteArray > byteTask =
+        std::static_pointer_cast< DAZipArchiveTask_ByteArray >(t);
+    QByteArray data = byteTask->getData();
+    if (data.isEmpty()) {
+        // 旧文件可能没有workflow-data.xml，跳过
+        return;
+    }
+
+#if DA_ENABLE_PYTHON
+    // 解析外层XML获取<workflows>列表
+    QDomDocument doc;
+    if (!doc.setContent(data)) {
+        qWarning() << tr("Failed to parse workflow-data.xml");
+        return;
+    }
+
+    QDomElement rootEle      = doc.documentElement();
+    QDomElement workflowsEle = rootEle.firstChildElement("workflows");
+    if (workflowsEle.isNull()) {
+        return;
+    }
+
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    Q_CHECK_PTR(wfo);
+    DAPyWorkFlowSerializer serializer;
+
+    DAPyGILGuard gilGuard;  // GIL保护：serializer.fromXml() 和 setWorkflow() 调用 Python
+    QDomNodeList wfList = workflowsEle.childNodes();
+    for (int i = 0; i < wfList.size(); ++i) {
+        QDomElement wfEle = wfList.at(i).toElement();
+        if (wfEle.tagName() != "workflow") {
+            continue;
+        }
+
+        QString tabName = wfEle.attribute("name");
+        // 创建空tab（Manager自动创建空的Python workflow）
+        DAPyWorkFlowEditWidget* wfe = wfo->appendWorkflow(tabName);
+        if (!wfe) {
+            qWarning() << tr("Failed to create workflow tab: %1").arg(tabName);
+            continue;
+        }
+
+        // 提取CDATA中的Python XML字符串
+        QString pyXml = wfEle.text();  // QDomCDATASection的text()返回CDATA内容
+        if (pyXml.isEmpty()) {
+            qWarning() << tr("Empty Python workflow data for tab: %1").arg(tabName);
+            continue;
+        }
+
+        // 反序列化Python workflow
+        DAPyNodeFactory* factory = wfe->getManager()->getFactory();
+        DAPyWorkFlow wf          = serializer.fromXml(pyXml, DAPyNodeFactory(*factory));
+        if (!wf.isValid()) {
+            qWarning() << tr("Failed to deserialize Python workflow: %1").arg(tabName);
+            continue;
+        }
+
+        // 替换空的Python workflow
+        wfe->getManager()->setWorkflow(wf);
+    }
+#else
+    Q_UNUSED(t);
+#endif
+}
+
+/**
+ * @brief 加载工作流视图数据（Python数据已就绪）
+ *
+ * 遍历workflow.xml中的<workflow>元素，按name匹配已有tab，
+ * 调用DAXmlHelper::loadWorkflowView()加载视图布局。
+ */
+void DAAppProject::appendWorkflowView(const QDomDocument& doc)
+{
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    Q_CHECK_PTR(wfo);
+
+    QDomElement docElem      = doc.documentElement();
+    QDomElement proEle       = docElem.firstChildElement("project");
+    QDomElement workflowsEle = proEle.firstChildElement("workflows");
+
+    // 设置版本号
+    QString verStr = workflowsEle.attribute("ver");
+    if (!verStr.isEmpty()) {
+        QVersionNumber version = QVersionNumber::fromString(verStr);
+        if (!version.isNull()) {
+            mXml.setLoadedVersionNumber(version);
+        }
+    } else {
+        mXml.setLoadedVersionNumber(QVersionNumber(1, 1, 0));
+    }
+
+    QDomNodeList wfList = workflowsEle.childNodes();
+    for (int i = 0; i < wfList.size(); ++i) {
+        QDomElement workflowEle = wfList.at(i).toElement();
+        if (workflowEle.tagName() != "workflow") {
+            continue;
+        }
+
+        QString tabName = workflowEle.attribute("name");
+        // 查找已有tab（由loadedWorkflowData创建）
+        DAPyWorkFlowEditWidget* wfe = nullptr;
+        for (int j = 0; j < wfo->count(); ++j) {
+            if (wfo->getWorkFlowWidgetName(j) == tabName) {
+                wfe = wfo->getWorkFlowWidget(j);
+                break;
+            }
+        }
+        if (wfe) {
+            mXml.loadWorkflowView(wfe, &workflowEle);
+        } else {
+            qWarning() << tr("appendWorkflowView: tab '%1' not found, skipping view load").arg(tabName);
+        }
+    }
 }
 
 void DAAppProject::loadedDataManager(const std::shared_ptr< DAAbstractArchiveTask >& t)
