@@ -195,17 +195,25 @@ include(GNUInstallDirs)
 damacro_plugin_install()
 
 
-# 把PyScripts文件夹复制过去
+# DADataAnalysisCore — 纯 pandas 核心算法包（Gui 和 Nodes 共享依赖）
 install(DIRECTORY
-    ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysis
+    ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisCore
     DESTINATION ${CMAKE_INSTALL_BINDIR}/PyScripts
 )
 
-# 把DADataAnalysisPy文件夹复制到pyplugins作为python插件
+# DADataAnalysisGui — GUI 交互逻辑
 install(DIRECTORY
-    ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisPy
+    ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisGui
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/PyScripts
+)
+
+# DADataAnalysisNodes — 工作流节点插件
+install(DIRECTORY
+    ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisNodes
     DESTINATION ${CMAKE_INSTALL_BINDIR}/pyplugins
 )
-# 为了能调试的时候运行，需要把DADataAnalysis文件夹复制到${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScrips下
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysis" DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts)
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisPy" DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/pyplugins)
+
+# 构建期复制（用于调试运行）
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisCore" DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts)
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisGui" DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts)
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisNodes" DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/pyplugins)

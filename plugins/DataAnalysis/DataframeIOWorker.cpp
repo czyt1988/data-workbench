@@ -27,9 +27,9 @@ DataframeIOWorker::~DataframeIOWorker()
 bool DataframeIOWorker::initializePythonEnv()
 {
     try {
-        DA::DAPyModule DADataAnalysis("DADataAnalysis");
+        DA::DAPyModule DADataAnalysisGui("DADataAnalysisGui");
         m_dataAnalysisModule  = std::make_unique< DA::DAPyModule >();
-        *m_dataAnalysisModule = DADataAnalysis.attr("dataframe_io");
+        *m_dataAnalysisModule = DADataAnalysisGui.attr("dataframe_io");
 
         DA::DAPyModule DAWorkbench("DAWorkbench");
         m_threadStatusMgrModule  = std::make_unique< DA::DAPyModule >();

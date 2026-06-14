@@ -22,9 +22,9 @@ DataframeCleanerWorker::~DataframeCleanerWorker()
 bool DataframeCleanerWorker::initializePythonEnv()
 {
     try {
-        DA::DAPyModule DADataAnalysis("DADataAnalysis");
+        DA::DAPyModule DADataAnalysisGui("DADataAnalysisGui");
         m_dataCleanerModule  = std::make_unique< DA::DAPyModule >();
-        *m_dataCleanerModule = DADataAnalysis.attr("dataframe_cleaner");
+        *m_dataCleanerModule = DADataAnalysisGui.attr("dataframe_cleaner");
         return true;
     } catch (const std::exception& e) {
         m_dataCleanerModule.reset();
