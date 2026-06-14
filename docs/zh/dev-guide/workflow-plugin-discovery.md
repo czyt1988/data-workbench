@@ -204,13 +204,16 @@ Python 节点可从以下三个来源被发现：
 └── DAWorkbench/
     ├── __init__.py
     ├── DAWorkFlowPy/
-    │   ├── __init__.py
+    │   ├── __init__.py          # 模块导出（DAWorkflowNode, NodeDisplay, LinkPointStyle 等）
     │   ├── node_def.py          # @NodeDef 装饰器
     │   ├── node_registry.py     # DANodeRegistry 发现引擎
-    │   ├── node_descriptor.py   # DANodeDescriptor 描述符
+    │   ├── node_factory.py      # DANodeFactory 节点工厂（C++ 调用入口）
     │   ├── types.py             # Input/Output/Parameter
+    │   ├── syntax.py            # NodeProxy/NodeOutputProxy/NodeInputProxy 连接语法糖
     │   ├── workflow.py          # DAWorkflow 有向图模型
-    │   └── executor.py          # DAWorkflowExecutor 执行引擎
+    │   ├── executor.py          # DAWorkflowExecutor 执行引擎
+    │   ├── serializer.py        # DAWorkflowSerializer 序列化/反序列化
+    │   └── signal_manager.py    # DASignalManager 数据传播
     └── ...
 ```
 
@@ -309,7 +312,7 @@ def discover(self, scan_paths=None, use_entry_points=False):
 
     :param scan_paths: 扫描路径列表
     :param use_entry_points: 是否启用 entry_points 发现
-    :return: DANodeDescriptor 列表
+    :return: 节点描述符字典列表（每个字典由 @NodeDef 的 _node_descriptor 属性提供）
     """
 ```
 
@@ -334,37 +337,41 @@ bool DAPyNodeFactory::discoverNodes(
 | 2 | 导入 Python 模块 `DAWorkbench.DAWorkFlowPy` | `DAPyNodeFactory.cpp:349-356` |
 | 3 | 获取 `DANodeRegistry` 类并创建实例 | `DAPyNodeFactory.cpp:359-366` |
 | 4 | 调用 `registry.discover(pyScanPaths, useEntryPoints)` | `DAPyNodeFactory.cpp:375` |
-| 5 | 将返回的 `DANodeDescriptor` 转换为 `DAPyNodeMetaData` | `DAPyNodeFactory.cpp:379-411` |
-| 6 | 构建 `prototype → qualified_name` 映射表 | `DAPyNodeFactory.cpp:409` |
-| 7 | 发射 `nodeDiscovered` 信号通知 UI | `DAPyNodeFactory.cpp:419` |
+| 5 | 将返回的节点描述符字典（`_node_descriptor`）转换为 `DAPyNodeMetaData` | `DAPyNodeFactory.cpp:379-411` |
+| 6 | 构建 `qualifiedName` 映射表 | `DAPyNodeFactory.cpp:409` |
 
 ### DAPyNodeMetaData 结构
 
 ```cpp
-struct DAPyNodeMetaData {
+class DAPyNodeMetaData {
+public:
     QString name;                    // 节点显示名称
-    QString prototype;               // 唯一标识（qualified_name）
-    QString group;                   // 节点分类
-    QString iconPath;                // 图标路径
+    QString qualifiedName;           // 节点唯一标识名（Python qualified_name）
+    QString category;                // 节点分组/分类
+    QString iconPath;                // 节点图标路径
     QString tooltip;                 // 提示文本
-    QList<QString> inputKeys;        // 输入端口键名列表
-    QList<QString> outputKeys;       // 输出端口键名列表
 
-    bool isValid() const;            // prototype 非空则有效
+    bool isValid() const;            // qualifiedName 非空则有效
+    QString getNodeName() const;
+    QString getNodeQualifiedName() const;
+    QString getCategory() const;
+    QIcon getIcon() const;
+    QString getNodeTooltip() const;
 };
 ```
 
 ### 节点创建
 
-当用户在编辑器中拖入一个 Python 节点时，`DAPyNodeFactory::createNodeProxy()` 根据 `qualified_name` 创建节点实例：
+当用户在编辑器中拖入一个 Python 节点时，`DAPyNodeFactory::createNode()` 根据 `qualifiedName` 创建节点实例：
 
-1. 将 `qualified_name` 拆分为 `module.ClassName`
+1. 将 `qualifiedName` 拆分为 `module.ClassName`
 2. 导入对应 Python 模块
 3. 获取类引用，创建实例
-4. 将 Python 实例包装为 `DAPyNodeProxy`（C++ 代理对象）
+4. 将 Python 实例包装为 `DAPyNode`（C++ 代理对象，继承 `DAPyObjectWrapper`，按值返回）
 
 ```cpp
-DAPyNodeProxy* DAPyNodeFactory::createNodeProxy(const QString& qualifiedName);
+DAPyNode DAPyNodeFactory::createNode(const QString& qualifiedName);
+DAPyNode DAPyNodeFactory::createNode(const DAPyNodeMetaData& metaData);
 ```
 
 ## 应用层整合
@@ -394,7 +401,7 @@ void DAAppPluginManager::loadAllPlugins(DACoreInterface* c)
     initPyNodeFactory();
 
     // 阶段四：去重
-    // 使用 QMap<DAPyNodeMetaData, int> 按 prototype 去重
+    // 使用 QMap<DAPyNodeMetaData, int> 按 qualifiedName 去重
 }
 ```
 
@@ -430,7 +437,7 @@ static QStringList scanPyPluginsDir(const QString& pyPluginsDir)
 
 ### 元数据去重
 
-来自 C++ 插件和 Python 发现的元数据可能包含相同 `prototype` 的节点。`DAAppPluginManager` 使用 `QMap<DAPyNodeMetaData, int>` 进行去重，保留首次出现的顺序。
+来自 C++ 插件和 Python 发现的元数据可能包含相同 `qualifiedName` 的节点。`DAAppPluginManager` 使用 `QMap<DAPyNodeMetaData, int>` 进行去重，保留首次出现的顺序。
 
 ### 初始化时序
 
@@ -518,8 +525,7 @@ DAAppCore 构造函数
 │          ├── DANodeRegistry.discover()                        │
 │          │   ├── _scan_directory() ← 扫描 .py 文件            │
 │          │   └── _discover_from_entry_points() ← pip 包       │
-│          ├── 转换 → DAPyNodeMetaData                          │
-│          └── emit nodeDiscovered()                           │
+│          └── 转换 → DAPyNodeMetaData                          │
 │                                                              │
 │  结果: mNodeMetaDatas (Python 部分)                           │
 └────────────────────┬────────────────────────────────────────┘
@@ -529,7 +535,7 @@ DAAppCore 构造函数
 │  元数据合并与去重                                             │
 │                                                              │
 │  mNodeMetaDatas = C++元数据 + Python元数据                     │
-│  按 prototype (qualified_name) 去重，保留首次出现顺序           │
+│  按 qualifiedName 去重，保留首次出现顺序                        │
 │                                                              │
 │  最终结果: 统一节点元数据列表 → 工作流编辑器节点面板              │
 └─────────────────────────────────────────────────────────────┘
@@ -546,18 +552,29 @@ DAAppCore 构造函数
 | `DAPluginOption` | `DAPluginSupport/DAPluginOption.h` | 单个 DLL 插件加载包装 |
 | `DAAbstractPlugin` | `DAPluginSupport/DAAbstractPlugin.h` | 插件基类接口 |
 | `DAAbstractNodePlugin` | `DAPluginSupport/DAAbstractNodePlugin.h` | 节点插件接口 |
-| `DAPyNodeFactory` | `DAPyWorkFlow/DAPyNodeFactory.h` | Python 节点工厂，驱动发现与创建 |
-| `DAPyNodeMetaData` | `DAPyWorkFlow/DAPyNodeFactory.h` | 节点元数据结构 |
-| `DAPyNodeProxy` | `DAPyWorkFlow/DAPyNodeProxy.h` | Python 节点 C++ 代理 |
+| `DAPyNodeFactory` | `DAPyWorkFlow/DAPyNodeFactory.h` | Python 节点工厂（继承 `DAPyObjectWrapper`），驱动发现与创建 |
+| `DAPyNodeMetaData` | `DAPyWorkFlow/DAPyNodeMetaData.h` | 节点元数据结构 |
+| `DAPyNode` | `DAPyWorkFlow/DAPyNode.h` | Python 节点 C++ 代理（继承 `DAPyObjectWrapper`） |
+| `DAPyWorkFlowManager` | `DAPyWorkFlow/DAPyWorkFlowManager.h` | 工作流管理器（QObject），桥接 Python 代理层与 Qt UI 层 |
 | `DAPyModuleWorkflow` | `DAPyWorkFlow/DAPyModuleWorkflow.h` | Python 模块导入单例 |
 
 ### Python 核心类
 
 | 类名/装饰器 | 模块路径 | 作用 |
 |-------------|----------|------|
-| `@NodeDef` | `DAWorkbench.DAWorkFlowPy.node_def` | 节点声明装饰器，设置发现标记 |
+| `@NodeDef` | `DAWorkbench.DAWorkFlowPy.node_def` | 节点声明装饰器，在类上设置 `_node_descriptor` 属性字典 |
+| `DAWorkflowNode` | `DAWorkbench.DAWorkFlowPy.node_def` | 工作流节点基类，提供 `set_input_data`/`get_output_data` 等方法 |
+| `NodeDisplay` | `DAWorkbench.DAWorkFlowPy.node_def` | 节点渲染/显示属性 dataclass（icon、render_template、body_shape 等样式字段） |
+| `LinkPointStyle` | `DAWorkbench.DAWorkFlowPy.node_def` | 连接点（端口）样式配置 dataclass |
 | `DANodeRegistry` | `DAWorkbench.DAWorkFlowPy.node_registry` | 节点发现引擎（目录扫描 + entry_points） |
-| `DANodeDescriptor` | `DAWorkbench.DAWorkFlowPy.node_descriptor` | 节点描述符，包含 `to_dict()` 序列化方法 |
+| `DANodeFactory` | `DAWorkbench.DAWorkFlowPy.node_factory` | 节点工厂，封装发现和实例化功能（C++ 调用入口） |
+| `DAWorkflow` | `DAWorkbench.DAWorkFlowPy.workflow` | 工作流 DAG 模型，管理节点和连接的拓扑关系 |
+| `DAWorkflowExecutor` | `DAWorkbench.DAWorkFlowPy.executor` | 工作流执行编排引擎，基于拓扑排序执行节点 |
+| `DAWorkflowSerializer` | `DAWorkbench.DAWorkFlowPy.serializer` | 工作流序列化器，提供 JSON 序列化/反序列化 |
+| `DASignalManager` | `DAWorkbench.DAWorkFlowPy.signal_manager` | 信号管理器，基于事件驱动实现节点间数据传播 |
+| `NodeProxy` | `DAWorkbench.DAWorkFlowPy.syntax` | 节点代理（语法糖），支持 `A >> B` 链式连接语法 |
+| `NodeOutputProxy` | `DAWorkbench.DAWorkFlowPy.syntax` | 输出端口代理，支持 `A.out >> B.in` 端口级连接 |
+| `NodeInputProxy` | `DAWorkbench.DAWorkFlowPy.syntax` | 输入端口代理，配合 NodeOutputProxy 使用 |
 | `Input` | `DAWorkbench.DAWorkFlowPy.types` | 输入端口声明 |
 | `Output` | `DAWorkbench.DAWorkFlowPy.types` | 输出端口声明 |
 | `Parameter` | `DAWorkbench.DAWorkFlowPy.types` | 节点参数声明 |
@@ -571,7 +588,8 @@ DAAppCore 构造函数
 | `initPyNodeFactory` | `DAAppPluginManager.cpp` | `void initPyNodeFactory()` (private) |
 | `scanPyPluginsDir` | `DAAppPluginManager.cpp` | `static QStringList scanPyPluginsDir(const QString& pyPluginsDir)` |
 | `discoverNodes` | `DAPyNodeFactory.cpp` | `bool discoverNodes(const QStringList& scanPaths, bool useEntryPoints)` |
-| `createNodeProxy` | `DAPyNodeFactory.cpp` | `DAPyNodeProxy* createNodeProxy(const QString& qualifiedName)` |
+| `createNode` | `DAPyNodeFactory.cpp` | `DAPyNode createNode(const QString& qualifiedName)` |
+| `createNode` | `DAPyNodeFactory.cpp` | `DAPyNode createNode(const DAPyNodeMetaData& metaData)` |
 
 ## 调试与排错
 
@@ -606,6 +624,12 @@ DAAppCore 构造函数
 - `src/DAPyWorkFlow/DAPyNodeFactory.cpp` — Python 节点发现编排
 - `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_registry.py` — Python 侧发现引擎
 - `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_def.py` — `@NodeDef` 装饰器
+- `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_factory.py` — `DANodeFactory` 节点工厂（C++ 调用入口）
+- `src/PyScripts/DAWorkbench/DAWorkFlowPy/serializer.py` — `DAWorkflowSerializer` 序列化/反序列化
+- `src/PyScripts/DAWorkbench/DAWorkFlowPy/syntax.py` — `NodeProxy`/`NodeOutputProxy`/`NodeInputProxy` 连接语法糖
+- `src/DAPyWorkFlow/DAPyNode.h` — Python 节点 C++ 代理类
+- `src/DAPyWorkFlow/DAPyNodeMetaData.h` — 节点元数据结构
+- `src/DAPyWorkFlow/DAPyWorkFlowManager.h` — 工作流管理器
 - `src/DAPyWorkFlow/DAPyModuleWorkflow.cpp` — Python 模块导入
 
 ### 插件示例

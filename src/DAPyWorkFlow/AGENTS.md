@@ -54,7 +54,7 @@ DAWorkFlowPy 类似于 `Apache Hamilton`，是一个工作流节点的制定和�
 |------|------|
 | **代理 Python 对象** | `DAPyNode`、`DAPyWorkFlow`、`DAPyNodeFactory` 等持有 `pybind11::object`，通过 `attr()` 访问 Python 属性和方法 |
 | **渲染工作流场景** | `DAPyNodeGraphicsItem`、`DAPyLinkGraphicsItem`、`DAPyWorkFlowScene` 在 QGraphicsView 中渲染 |
-| **信号桥接** | `DAPySignalManager` 将 Python 回调转为 Qt 信号 |
+| **信号管理** | `DAPySignalManager` 代理 Python DASignalManager（信号队列与数据传播）；Qt 信号由 `DAPyWorkFlowManager`（QObject）发射 |
 
 ## 三、依赖关系
 
@@ -242,7 +242,7 @@ class DAPYWORKFLOW_API DAPyNode : public DAPyObjectWrapper { ... };
 class DAPYWORKFLOW_API DAPyNode : public QObject, public DAPyObjectWrapper { ... };
 ```
 
-Qt 信号仅在 `DAPySignalManager`、`DAPyWorkFlowScene` 等纯 C++ Qt 类中使用。
+Qt 信号仅在 `DAPyWorkFlowManager`、`DAPyWorkFlowScene`、`DAPyNodeGraphicsItem` 等纯 C++ Qt 类中使用。
 
 ### 2. attr() 代理 + try/catch 安全默认值
 
@@ -390,11 +390,13 @@ Python 插件包需要提供：
 | DAPyWorkFlow | DAWorkflow 的纯代理，attr() 转发 DAG 操作 | DAPyObjectWrapper | 无 |
 | DAPyNode | 单个节点的纯代理，读取元数据和 NodeDisplay | DAPyObjectWrapper | 无 |
 | DAPyNodeFactory | DANodeFactory 的纯代理，转发 discover/create | DAPyObjectWrapper | 无 |
+| DAPyWorkFlowExecutor | DAWorkflowExecutor 的纯代理，支持同步/异步执行 | DAPyObjectWrapper | 无 |
+| DAPySignalManager | DASignalManager 的纯代理，信号队列管理与数据传播 | DAPyObjectWrapper | 无 |
 | DAPyNodeMetaData | 从 Python dict 转换的节点元数据 C++ 结构体 | 纯数据 | 无 |
 | DAPyWorkFlowManager | 信号管理类，持有 DAPyWorkFlow，封装操作并发射 Qt 信号 | QObject | 有 |
-| DAPyNodeGraphicsItem | 节点渲染 QGraphicsItem | QGraphicsItem | 无 |
-| DAPyLinkGraphicsItem | 连线渲染 QGraphicsItem | QGraphicsItem | 无 |
-| DAPyWorkFlowScene | QGraphicsScene，从 Manager 监听信号更新图形项 | QGraphicsScene | 无 |
+| DAPyNodeGraphicsItem | 节点渲染 | DAGraphicsResizeableItem | 有 |
+| DAPyLinkGraphicsItem | 连线渲染 | DAGraphicsLinkItem | 无 |
+| DAPyWorkFlowScene | QGraphicsScene，从 Manager 监听信号更新图形项 | DAGraphicsScene | 有 |
 | DAPyWorkFlowSceneSerializer | 场景布局序列化 | 纯序列化 | 无 |
 
 ### 信号流转模式
@@ -409,9 +411,9 @@ Python 插件包需要提供：
 
 DAPyWorkFlowManager 信号列表：
 
-- `nodeAdded(QString nodeId, DAPyNodeProxy* proxy)` — 节点添加
+- `nodeAdded(QString nodeId, const DAPyNode& proxy)` — 节点添加
 - `nodeRemoved(QString nodeId)` — 节点移除
-- `connectionAdded(...)` — 连接添加
+- `connectionAdded(QString connId, QString srcNodeId, QString srcChannel, QString dstNodeId, QString dstChannel)` — 连接添加
 - `connectionRemoved(QString connId)` — 连接移除
 - `executionStarted()` — 执行开始
 - `executionFinished(bool success)` — 执行完成
@@ -435,7 +437,7 @@ DAPyWorkFlowManager 信号列表：
 | `DAPyNodeParameter.h/.cpp` | 节点参数 |
 | `DAPyWorkFlowScene.h/.cpp` | 场景管理 — QGraphicsScene 编排 |
 | `DAPyWorkFlowManager.h/.cpp` | 信号管理 — Qt 信号发射（QObject） |
-| `DAPySignalManager.h/.cpp` | 信号桥接 — Python 回调 → Qt 信号 |
+| `DAPySignalManager.h/.cpp` | Python DASignalManager 代理 — 信号队列管理与数据传播 |
 | `DAPyWorkFlowExecutor.h/.cpp` | 执行器代理 |
 | `DAPyWorkFlowSceneSerializer.h/.cpp` | 场景布局序列化 |
 | `DAPyWorkFlowSerializer.h/.cpp` | 工作流序列化 |
@@ -470,7 +472,7 @@ DAPyWorkFlowManager 信号列表：
 | 在代理类中手写 `pyObjectToVariant()` 等转换函数 | 使用 `pybind11::cast<QVariant>()` / `pybind11::cast<QVariantHash>()` |
 | 用 `QJsonObject` 做 C++↔Python 运行时数据传递 | 用 `QVariantHash`，仅在文件序列化时用 JSON |
 | 遗漏 `#include "DAPybind11QtCaster.hpp"` | 凡是 `.cpp` 中用到 `cast<QString>` 等必须包含 |
-| 代理类继承 `QObject` 或添加 `Q_SIGNALS` | 信号放在 `DAPyWorkFlowManager` / `DAPySignalManager` 中 |
+| 代理类继承 `QObject` 或添加 `Q_SIGNALS` | 信号放在 `DAPyWorkFlowManager` / `DAPyWorkFlowScene` 中 |
 | 缓存 Python 属性到 C++ 成员变量 | 每次通过 `attr()` 实时读取 |
 | 在本模块 `.h` 中定义类型转换函数 | 通用转换加到 `DAPybind11QtCaster.hpp`，私用转换放 `.cpp` 匿名命名空间 |
 | Python 端引用 C++ 导出的 `da_xxx` 模块 | Python 逻辑层仅依赖标准库和第三方库 |

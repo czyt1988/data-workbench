@@ -23,7 +23,7 @@ DAPyWorkFlow 采用 Python/C++ 双层架构设计：
 | 层级 | 职责 | 主要组件 |
 |------|------|----------|
 | **Python 层** | 节点定义、DAG 模型、执行逻辑 | `DAWorkflow`, `NodeDef`, `DANodeRegistry`, `DAWorkflowExecutor` |
-| **C++ 层** | 可视化渲染、交互编辑、执行调度 | `DAPyWorkFlowScene`, `DAPyNodeProxy`, `DAPyNodeFactory` |
+| **C++ 层** | 可视化渲染、交互编辑、执行调度 | `DAPyWorkFlowScene`, `DAPyNode`, `DAPyNodeFactory`, `DAPyWorkFlowManager` |
 | **桥接层** | 数据序列化、GIL 管理、状态同步 | `pybind11`, `DAPyJsonCast`, `DAPythonSignalHandler` |
 
 ### DAG 工作流
@@ -75,7 +75,7 @@ class DataFilter:
 
 `DANodeRegistry` 是节点类型的注册中心：
 
-- 维护所有已注册节点的描述符（`DANodeDescriptor`）
+- 维护所有已注册节点的元数据（`@NodeDef` 装饰器将描述信息直接设置为类属性 dict）
 - 支持目录扫描发现 `.py` 文件中的节点类
 - 支持通过 `entry_points(group='data_workbench.plugin')` 发现插件节点
 
@@ -105,9 +105,11 @@ flowchart TB
         DAPyWorkFlowScene["DAPyWorkFlowScene<br/>场景管理"]
         DAPyNodeGraphicsItem["DAPyNodeGraphicsItem<br/>节点图元"]
         DAPyLinkGraphicsItem["DAPyLinkGraphicsItem<br/>连接线"]
-        DAPyNodeProxy["DAPyNodeProxy<br/>节点代理"]
+        DAPyNode["DAPyNode<br/>节点代理"]
         DAPyNodeFactory["DAPyNodeFactory<br/>节点工厂"]
-        DAPyWorkFlowLifecycle["DAPyWorkFlowLifecycle<br/>生命周期控制"]
+        DAPyWorkFlowManager["DAPyWorkFlowManager<br/>工作流管理器"]
+        DAPyWorkFlowExecutor["DAPyWorkFlowExecutor<br/>执行器代理"]
+        DAPySignalManager["DAPySignalManager<br/>信号管理器代理"]
     end
 
     NodeDef --> DAWorkflow
@@ -119,18 +121,20 @@ flowchart TB
     DASignalManager --> PySignalHandler
 
     PyJsonCast --> DAPyWorkFlowScene
-    PySignalHandler --> DAPyWorkFlowLifecycle
-    DAPyNodeFactory --> DAPyNodeProxy
+    PySignalHandler --> DAPyWorkFlowManager
+    DAPyNodeFactory --> DAPyNode
     DAPyWorkFlowScene --> DAPyNodeGraphicsItem
     DAPyWorkFlowScene --> DAPyLinkGraphicsItem
-    DAPyWorkFlowLifecycle --> DAPyNodeProxy
+    DAPyWorkFlowManager --> DAPyNode
+    DAPyWorkFlowManager --> DAPyWorkFlowExecutor
+    DAPyWorkFlowManager --> DAPySignalManager
 ```
 
 上图展示了 DAPyWorkFlow 的双层架构：
 
 - **Python 层**：`@NodeDef` 定义节点类型，`DAWorkflow` 管理 DAG 模型，`DANodeRegistry` 负责节点发现，`DAWorkflowExecutor` 和 `DASignalManager` 处理执行逻辑
 - **桥接层**：`pybind11` 实现 Python/C++ 数据转换，`DAPyJsonCast` 处理 JSON 序列化，`DAPyGILGuard` 管理 GIL，`DAPythonSignalHandler` 处理跨线程通信
-- **C++ 层**：`DAPyWorkFlowScene` 管理可视化场景，`DAPyNodeGraphicsItem` 和 `DAPyLinkGraphicsItem` 提供交互编辑，`DAPyNodeProxy` 代理 Python 节点，`DAPyNodeFactory` 创建节点实例，`DAPyWorkFlowLifecycle` 控制执行生命周期
+- **C++ 层**：`DAPyWorkFlowScene` 管理可视化场景，`DAPyNodeGraphicsItem` 和 `DAPyLinkGraphicsItem` 提供交互编辑，`DAPyNode` 代理 Python 节点，`DAPyNodeFactory` 创建节点实例，`DAPyWorkFlowManager` 协调工作流操作并发射 Qt 信号，`DAPyWorkFlowExecutor` 代理执行引擎，`DAPySignalManager` 代理信号传播
 
 ## 与旧模块的区别
 
@@ -155,18 +159,25 @@ DAPyWorkFlow 是原 `DAWorkFlow` 模块的完全重构版本，主要区别如�
 
 | 类名 | 职责 | 所在文件 |
 |------|------|----------|
-| `NodeDef` | 节点定义装饰器，收集 Input/Output/Parameter 声明 | `node_def.py` |
+| `NodeDef` | 节点定义装饰器，收集 Input/Output/Parameter 声明并设置 `_node_descriptor` 属性 dict | `node_def.py` |
+| `NodeDisplay` | 节点渲染/显示属性 dataclass（icon、render_template、body_shape 等样式字段） | `node_def.py` |
+| `DAWorkflowNode` | 工作流节点基类，提供 `set_input_data`/`get_output_data` 等方法 | `node_def.py` |
+| `LinkPointStyle` | 连接点（端口）样式配置 dataclass | `node_def.py` |
 | `Input` | 输入端口声明类 | `types.py` |
 | `Output` | 输出端口声明类 | `types.py` |
 | `Parameter` | 参数声明类 | `types.py` |
-| `DANodeDescriptor` | 节点描述符，存储节点元数据 | `node_descriptor.py` |
 | `DANodeRegistry` | 节点注册表，管理节点发现和查询 | `node_registry.py` |
+| `DANodeFactory` | 节点工厂，封装 DANodeRegistry 的发现和实例化功能（C++ 调用入口） | `node_factory.py` |
 | `DAWorkflow` | DAG 工作流模型，管理节点和连接 | `workflow.py` |
 | `DAConnection` | 连接关系描述 | `connection.py` |
 | `DASignalManager` | 信号管理器，事件驱动数据传播 | `signal_manager.py` |
 | `DAWorkflowState` | 工作流状态枚举 | `signal_manager.py` |
 | `DAWorkflowExecutor` | 工作流执行引擎 | `executor.py` |
 | `DAExecutorState` | 执行器状态枚举 | `executor.py` |
+| `DAWorkflowSerializer` | 工作流 JSON 序列化/反序列化 | `serializer.py` |
+| `NodeProxy` | 节点代理（语法糖），支持 `A >> B` 链式连接语法 | `syntax.py` |
+| `NodeOutputProxy` | 输出端口代理，支持 `A.out >> B.in` 端口级连接 | `syntax.py` |
+| `NodeInputProxy` | 输入端口代理，配合 NodeOutputProxy 使用 | `syntax.py` |
 
 ### C++ 层类（DAPyWorkFlow）
 
@@ -175,19 +186,30 @@ DAPyWorkFlow 是原 `DAWorkFlow` 模块的完全重构版本，主要区别如�
 | `DAPyWorkFlowScene` | Python 工作流场景管理，继承 `DAGraphicsScene` | `DAPyWorkFlowScene.h/cpp` |
 | `DAPyNodeGraphicsItem` | Python 节点可视化图元 | `DAPyNodeGraphicsItem.h/cpp` |
 | `DAPyLinkGraphicsItem` | Python 节点连接线图元 | `DAPyLinkGraphicsItem.h/cpp` |
-| `DAPyNodeProxy` | Python 节点的 C++ 代理，非 QObject | `DAPyNodeProxy.h/cpp` |
-| `DAPyNodeFactory` | Python 节点工厂，独立 QObject | `DAPyNodeFactory.h/cpp` |
-| `DAPyNodeMetaData` | Python 节点元数据结构体 | `DAPyNodeFactory.h` |
-| `DAPyWorkFlowLifecycle` | 工作流生命周期控制器 | `DAPyWorkFlowLifecycle.h/cpp` |
-| `DAPyModuleWorkflow` | Python 模块封装 | `DAPyModuleWorkflow.h/cpp` |
-| `DAPyGILGuard` | Python GIL 管理 | `DAPyGILGuard.h` |
+| `DAPyNode` | Python 节点的 C++ 代理，继承 `DAPyObjectWrapper`（非 QObject） | `DAPyNode.h/cpp` |
+| `DAPyNodeFactory` | Python 节点工厂，继承 `DAPyObjectWrapper`（非 QObject，无信号） | `DAPyNodeFactory.h/cpp` |
+| `DAPyNodeMetaData` | Python 节点元数据结构体（字段：`name`, `qualifiedName`, `category`, `iconPath`, `tooltip`） | `DAPyNodeMetaData.h/cpp` |
+| `DAPyWorkFlowManager` | 工作流管理器（QObject），持有工作流代理和工厂代理，发射 Qt 信号通知 UI 层 | `DAPyWorkFlowManager.h/cpp` |
+| `DAPyWorkFlowExecutor` | 工作流执行器代理，继承 `DAPyObjectWrapper` | `DAPyWorkFlowExecutor.h/cpp` |
+| `DAPySignalManager` | 信号管理器代理，继承 `DAPyObjectWrapper` | `DAPySignalManager.h/cpp` |
+| `DAPyExecutorState` | 执行器状态枚举（`ExecutorIdle`/`ExecutorRunning`/`ExecutorPaused`/`ExecutorError`/`ExecutorFinished`） | `DAPyExecutorState.h` |
+| `DAPyNodeStyle` | 节点样式类（含嵌套枚举 `NodeRenderTemplate`） | `DAPyNodeStyle.h/cpp` |
+| `DAPyModuleWorkflow` | Python 模块封装（方法：`getWorkflowObject()`、`getNodeRegistryObject()`、`getNodeDefDecoratorObject()`、`getNodeFactoryObject()`、`getWorkflowExecutorObject()`、`getSignalManagerObject()`、`getWorkflowSerializerObject()`） | `DAPyModuleWorkflow.h/cpp` |
 | `DAPyWorkFlowSceneSerializer` | 场景序列化 | `DAPyWorkFlowSceneSerializer.h/cpp` |
-| `DAPythonSignalHandler` | Python 信号处理器 | `DAPythonSignalHandler.h/cpp` |
-| `DAAbstractNodeSettingWidget` | 节点设置抽象基类，持有 DAPyNodeProxy* | `DAGui/DAAbstractNodeSettingWidget.h` |
+| `DAAbstractNodeSettingWidget` | 节点设置抽象基类，持有 `DAPyNode*` | `DAGui/DAAbstractNodeSettingWidget.h` |
 | `DANodeParamSettingPanel` | 通用参数设置面板，SceneB 3-hop信号链 | `DAGui/NodeSetting/DANodeParamSettingPanel.h` |
 | `DANodeParamSettingPanelFactory` | 参数面板单例工厂 | `DAGui/NodeSetting/DANodeParamSettingPanelFactory.h` |
 | `DANodeParamSettingPanelWidget` | QStackedWidget 调度器 | `DAGui/NodeSetting/DANodeParamSettingPanelWidget.h` |
 | `DAParamTypeRegistry` | 11种参数类型编辑器注册系统 | `DAGui/NodeSetting/DAParamTypeRegistry.h` |
+
+!!! note "桥接层基础设施（位于 DAPyBindQt 模块）"
+    以下类虽然在工作流模块中广泛使用，但实际定义在 `src/DAPyBindQt/` 模块中：
+
+    | 类名 | 职责 | 所在文件 |
+    |------|------|----------|
+    | `DAPyGILGuard` | Python GIL RAII 管理（获取/释放） | `src/DAPyBindQt/DAPyGILGuard.h` |
+    | `DAPyJsonCast` | Python 对象 ↔ JSON 双向转换 | `src/DAPyBindQt/` |
+    | `DAPythonSignalHandler` | Python 信号 ↔ Qt 跨线程桥接 | `src/DAPyBindQt/` |
 
 ## 快速上手
 
@@ -248,8 +270,8 @@ from DAWorkFlowPy import DANodeRegistry, DAWorkflow, DAConnection
 registry = DANodeRegistry()
 registry.discover(scan_paths=["/path/to/plugins"], use_entry_points=True)
 
-# 获取节点描述符
-descriptor = registry.get_descriptor("my_module.DataFilter")
+# 获取节点类（含 _node_descriptor 属性 dict）
+node_cls = registry.get_descriptor("my_module.DataFilter")
 
 # 创建工作流
 workflow = DAWorkflow(name="数据处理流程")

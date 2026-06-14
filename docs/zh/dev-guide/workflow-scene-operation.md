@@ -15,7 +15,7 @@
 
 ## 概述
 
-DAPyWorkFlowScene 是 Python 工作流可视化的核心场景管理类，继承自 DAGraphicsScene，负责在 Qt Graphics View 框架中渲染 Python 工作流节点及其连接关系。与旧版 DAWorkFlowGraphicsScene 不同，新场景专为 Python-first 架构设计，通过 DAPyNodeProxy 代理对象与 Python 层的节点实例进行双向通信。
+DAPyWorkFlowScene 是 Python 工作流可视化的核心场景管理类，继承自 DAGraphicsScene，负责在 Qt Graphics View 框架中渲染 Python 工作流节点及其连接关系。与旧版 DAWorkFlowGraphicsScene 不同，新场景专为 Python-first 架构设计，通过 DAPyNode 代理对象与 Python 层的节点实例进行双向通信。
 
 场景系统采用分层设计：
 
@@ -81,7 +81,7 @@ classDiagram
 
 | 方法 | 参数 | 返回值 | 说明 |
 |------|------|--------|------|
-| `createPyNode` | `QJsonObject descriptor, QPointF pos` | `DAPyNodeGraphicsItem*` | 在指定位置创建 Python 节点图元 |
+| `createPyNode` | `const DAPyNodeMetaData& metaData, const QPointF& pos` | `DAPyNodeGraphicsItem*` | 在指定位置创建 Python 节点图元 |
 | `addPyNodeLink` | `fromItem, fromOutput, toItem, toInput` | `DAPyLinkGraphicsItem*` | 添加节点间的连接线 |
 | `removePyNodeLink` | `DAPyLinkGraphicsItem* linkItem` | `bool` | 移除指定的连接线 |
 | `removePyNodeItem` | `DAPyNodeGraphicsItem* item` | `bool` | 移除节点图元 |
@@ -122,7 +122,7 @@ QList<DAPyLinkGraphicsItem*> links = scene->getPyNodeLinkItems();
 
 ### DAPyNodeGraphicsItem 渲染系统
 
-DAPyNodeGraphicsItem 继承自 DAGraphicsResizeableItem，提供 Python 工作流节点的可视化渲染。支持三种渲染模板模式，可根据节点类型和用途选择最合适的展示方式。
+DAPyNodeGraphicsItem 继承自 DAGraphicsResizeableItem，提供 Python 工作流节点的可视化渲染。支持两种渲染模板模式，可根据节点类型和用途选择最合适的展示方式。
 
 #### 继承关系
 
@@ -158,24 +158,27 @@ classDiagram
 
 #### 渲染模板
 
-DAPyNodeGraphicsItem 支持三种渲染模板：
+DAPyNodeGraphicsItem 支持两种渲染模板（枚举类型为 `DAPyNodeStyle::NodeRenderTemplate`）：
 
 | 模板类型 | 枚举值 | 说明 | 适用场景 |
 |----------|--------|------|----------|
-| **矩形模板** | `RectTemplate` | 绘制圆角矩形和节点名称 | 通用数据处理节点 |
-| **SVG 模板** | `SvgTemplate` | 从指定路径加载 SVG 图标 | 具有特定图标的节点 |
-| **Widget 模板** | `WidgetTemplate` | 嵌入 Qt Widget | 需要复杂交互的节点 |
+| **默认模板** | `RenderDefaultTemplate` | 通过 `DAPyNodeStyle` 配置绘制（支持圆角矩形/椭圆形状、位图/SVG图标） | 通用数据处理节点 |
+| **Widget 模板** | `RenderWidgetTemplate` | 嵌入 Qt Widget | 需要复杂交互的节点 |
 
 设置渲染模板的方法：
 
 ```cpp
 // 使用枚举值设置
-item->setRenderTemplate(DA::DAPyNodeGraphicsItem::RectTemplate);
+item->setRenderTemplate(DA::DAPyNodeStyle::RenderDefaultTemplate);
+item->setRenderTemplate(DA::DAPyNodeStyle::RenderWidgetTemplate);
 
-// 使用字符串名称设置
-item->setRenderTemplate("rect");   // 矩形模板
-item->setRenderTemplate("svg");    // SVG 模板
-item->setRenderTemplate("widget"); // Widget 模板
+// 通过 DAPyNodeStyle 进一步自定义默认模板的视觉表现
+DA::DAPyNodeStyle style;
+style.bodyShape = DA::DAPyNodeStyle::EllipseShape;         // 椭圆形节点体
+style.bodyIconType = DA::DAPyNodeStyle::SvgBodyIcon;       // SVG图标
+style.bodyIconSource = ":/icons/my_node.svg";              // SVG路径
+style.backgroundColor = QColor(220, 230, 241);
+item->setNodeStyle(style);
 ```
 
 #### 自定义绘制
@@ -191,8 +194,7 @@ void paintBody(QPainter* painter,
 
 绘制流程根据当前设置的模板类型自动选择：
 
-- `paintRectTemplate()`：绘制圆角矩形背景、节点图标和名称
-- `paintSvgTemplate()`：渲染 SVG 图标
+- `paintNodeStyleBody()`：根据 `DAPyNodeStyle` 配置绘制节点主体（支持圆角矩形/椭圆形状、位图/SVG图标、名称位置等）
 - `paintWidgetTemplate()`：更新嵌入 Widget 的几何位置
 
 #### 节点状态与颜色映射
@@ -222,7 +224,7 @@ palette.setErrorColor(QColor(200, 0, 0));
 
 #### 连接点管理
 
-节点自动根据描述符生成输入/输出连接点：
+节点自动根据代理对象的输入/输出键生成连接点：
 
 ```cpp
 // 获取输入连接点
@@ -242,7 +244,7 @@ item->updateLinkPoints();
 ```cpp
 // 连接节点双击信号
 connect(item, &DA::DAPyNodeGraphicsItem::nodeDoubleClicked,
-        this, [](DA::DAPyNodeProxy* proxy) {
+        this, [](const DA::DAPyNode& proxy) {
     // 弹出节点配置对话框
     openNodeConfigDialog(proxy);
 });
@@ -468,19 +470,18 @@ DA::DAPyWorkFlowScene* scene = widget->getWorkFlowScene();
 在场景中创建 Python 节点：
 
 ```cpp
-// 准备节点描述符
-QJsonObject descriptor;
-descriptor["node_id"] = "node_001";
-descriptor["node_type"] = "DataFilter";
-descriptor["category"] = "数据处理";
+// 准备节点元数据
+DA::DAPyNodeMetaData metaData;
+metaData.name = "数据过滤节点";
+metaData.qualifiedName = "DataFilter";
+metaData.category = "数据处理";
 
 // 在场景指定位置创建节点
 QPointF pos(100, 100);
-DA::DAPyNodeGraphicsItem* item = scene->createPyNode(descriptor, pos);
+DA::DAPyNodeGraphicsItem* item = scene->createPyNode(metaData, pos);
 
-// 设置节点显示属性
-item->setNodeName("数据过滤节点");
-item->setRenderTemplate(DA::DAPyNodeGraphicsItem::RectTemplate);
+// 设置节点渲染模板（可选，默认为 RenderDefaultTemplate）
+item->setRenderTemplate(DA::DAPyNodeStyle::RenderDefaultTemplate);
 ```
 
 ### 建立连接
@@ -566,9 +567,8 @@ item->clearPaintCallback();
 
 !!! note "渲染模板选择"
     选择渲染模板时需考虑节点用途：
-    - 通用数据处理节点推荐使用 `RectTemplate`
-    - 具有特定视觉标识的节点可使用 `SvgTemplate`
-    - 需要复杂 UI 交互的节点使用 `WidgetTemplate`
+    - 通用数据处理节点推荐使用 `RenderDefaultTemplate`（通过 `DAPyNodeStyle` 自定义形状、图标和颜色）
+    - 需要复杂 UI 交互的节点使用 `RenderWidgetTemplate`
 
 !!! info "undo/redo 支持"
     场景的添加/删除操作自动支持 undo/redo。使用带下划线后缀的方法（如 `createPyNode_`）可在 QUndoStack 中记录操作。
@@ -586,8 +586,11 @@ item->clearPaintCallback();
 | 组件 | 头文件 | 实现文件 |
 |------|--------|----------|
 | DAPyWorkFlowScene | `src/DAPyWorkFlow/DAPyWorkFlowScene.h` | `src/DAPyWorkFlow/DAPyWorkFlowScene.cpp` |
+| DAPyNode | `src/DAPyWorkFlow/DAPyNode.h` | `src/DAPyWorkFlow/DAPyNode.cpp` |
 | DAPyNodeGraphicsItem | `src/DAPyWorkFlow/DAPyNodeGraphicsItem.h` | `src/DAPyWorkFlow/DAPyNodeGraphicsItem.cpp` |
 | DAPyLinkGraphicsItem | `src/DAPyWorkFlow/DAPyLinkGraphicsItem.h` | `src/DAPyWorkFlow/DAPyLinkGraphicsItem.cpp` |
 | DAPyLinkPoint | `src/DAPyWorkFlow/DAPyLinkPoint.h` | `src/DAPyWorkFlow/DAPyLinkPoint.cpp` |
 | DAPyNodePalette | `src/DAPyWorkFlow/DAPyNodePalette.h` | `src/DAPyWorkFlow/DAPyNodePalette.cpp` |
+| DAPyNodeStyle | `src/DAPyWorkFlow/DAPyNodeStyle.h` | — (纯头文件) |
+| DAPyNodeMetaData | `src/DAPyWorkFlow/DAPyNodeMetaData.h` | `src/DAPyWorkFlow/DAPyNodeMetaData.cpp` |
 | DAPyWorkFlowSceneSerializer | `src/DAPyWorkFlow/DAPyWorkFlowSceneSerializer.h` | `src/DAPyWorkFlow/DAPyWorkFlowSceneSerializer.cpp` |

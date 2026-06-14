@@ -19,10 +19,10 @@ DAPyWorkFlow 采用 Python-first 架构设计，节点逻辑完全由 Python 定
 
 - **可视化渲染**：通过 `DAPyNodeGraphicsItem` 将 Python 节点渲染到 Qt 场景
 - **交互编辑**：处理用户拖拽、连接、属性编辑等 GUI 操作
-- **执行调度**：通过 `DAPyWorkFlowLifecycle` 协调 Python 执行器，管理执行生命周期
+- **执行调度**：通过 `DAPyWorkFlowManager` 协调 Python 执行器（`DAPyWorkFlowExecutor`）和信号管理器（`DAPySignalManager`），管理执行生命周期
 - **数据桥接**：在 Qt 类型（`QJsonObject`）和 Python 类型（`py::dict`）之间转换
 
-C++ 层不实现任何节点业务逻辑，所有节点执行都代理给 Python 层的 `DAWorkflowExecutor`。
+C++ 层不实现任何节点业务逻辑，所有节点执行都代理给 Python 层的 `DAWorkflowExecutor`（C++ 代理类 `DAPyWorkFlowExecutor`）。
 
 ## pybind11 桥接机制
 
@@ -33,12 +33,11 @@ C++ 层通过 pybind11 导出 `da_py_workflow` Python 模块，暴露以下类�
 | Python 类/函数 | C++ 对应类型 | 说明 |
 |---------------|-------------|------|
 | `DAPyWorkFlowScene` | `DA::DAPyWorkFlowScene` | 工作流场景管理类 |
-| `DAPyNodeProxy` | `DA::DAPyNodeProxy` | Python 节点的 C++ 代理 |
+| `DAPyNode` | `DA::DAPyNode` | Python 节点的 C++ 代理（继承 `DAPyObjectWrapper`） |
 | `DAPyNodeState` | `DA::DAPyNodeState` | 节点状态枚举 |
 | `DAPyLinkPoint` | `DA::DAPyLinkPoint` | 连接点描述结构 |
 | `DAPyNodeMetaData` | `DA::DAPyNodeMetaData` | 节点元数据结构 |
 | `DAPyPainterProxy` | `DA::DAPyPainterProxy` | QPainter 绘制代理 |
-| `getNodeProxy()` | `DA::getNodeProxy()` | 获取节点代理的全局函数 |
 
 ### DAPyModuleWorkflow 单例
 
@@ -51,16 +50,21 @@ DA::DAPyModuleWorkflow& workflowMod = DA::DAPyModuleWorkflow::getInstance();
 // 导入 Python 模块
 if (workflowMod.import()) {
     // 获取缓存的 Python 类引用
-    pybind11::object workflowClass = workflowMod.getWorkflowClass();
-    pybind11::object registryClass = workflowMod.getNodeRegistryClass();
+    pybind11::object workflowObj   = workflowMod.getWorkflowObject();
+    pybind11::object registryObj   = workflowMod.getNodeRegistryObject();
+    pybind11::object nodeDefDeco   = workflowMod.getNodeDefDecoratorObject();
+    pybind11::object factoryObj    = workflowMod.getNodeFactoryObject();
+    pybind11::object executorObj   = workflowMod.getWorkflowExecutorObject();
+    pybind11::object signalMgrObj  = workflowMod.getSignalManagerObject();
+    pybind11::object serializerObj = workflowMod.getWorkflowSerializerObject();
 }
 ```
 
-该类缓存了常用的 Python 类引用（`DAWorkflow`、`DANodeRegistry`、`NodeDef`），避免重复导入带来的性能开销。
+该类缓存了常用的 Python 类引用（`DAWorkflow`、`DANodeRegistry`、`NodeDef`、`DANodeFactory`、`DAWorkflowExecutor`、`DASignalManager`、`DAWorkflowSerializer`），避免重复导入带来的性能开销。
 
 ### DAPythonSignalHandler 回调机制
 
-`DAPythonSignalHandler` 实现 Python 线程到 Qt 主线程的安全回调：
+`DAPythonSignalHandler`（位于 `src/DAPyBindQt/DAPythonSignalHandler.h`）实现 Python 线程到 Qt 主线程的安全回调：
 
 ```cpp
 // Python 代码调用此函数，请求在主线程执行
@@ -71,7 +75,7 @@ void callInMainThread(std::function<void()> func);
 
 ### DAPyJsonCast JSON 序列化
 
-`DAPyJsonCast` 提供 `QJsonObject` 与 `py::dict` 的双向转换：
+`DAPyJsonCast`（位于 `src/DAPyBindQt/DAPyJsonCast.h`）提供 `QJsonObject` 与 `py::dict` 的双向转换：
 
 | 函数 | 功能 |
 |------|------|
@@ -84,48 +88,53 @@ void callInMainThread(std::function<void()> func);
 
 ## 核心桥接类
 
-### DAPyNodeProxy
+### DAPyNode
 
-`DAPyNodeProxy` 是 Python 节点在 C++ 层的代理，持有 `pybind11::object` 引用：
+`DAPyNode` 是 Python 节点在 C++ 层的代理，继承 `DAPyObjectWrapper`（非 QObject），通过 `attr()` 实时从 Python 对象读取属性，不做本地缓存：
 
 ```cpp
-class DAPyNodeProxy
+class DAPyNode : public DAPyObjectWrapper
 {
 public:
-    // 执行节点（自动管理 GIL）
-    bool exec();
-
-    // Python 对象引用管理
-    void setPyNodeRef(const pybind11::object& pyNode);
-    pybind11::object getPyNodeRef() const;
-
-    // 数据传递
-    void setPyInputData(const QString& key, const pybind11::object& data);
-    pybind11::object getPyOutputData(const QString& key) const;
-
-    // 配置参数
-    bool setConfig(const QJsonObject& config);
-    QJsonObject getConfig() const;
-
-    // 状态管理
-    DAPyNodeState getNodeState() const;
-    void setNodeState(DAPyNodeState state);
-
-    // 节点元数据（从 Python 描述符获取）
+    // 节点标识
+    QString getNodeId() const;
+    QString getQualifiedName() const;
     QString getNodeName() const;
-    QString getNodePrototype() const;
+    QString getNodeCategory() const;
+    QString getIcon() const;
+
+    // 端口 key 列表
     QList<QString> getInputKeys() const;
     QList<QString> getOutputKeys() const;
-    QJsonObject getDescriptor() const;
+
+    // 节点样式与状态
+    DAPyNodeStyle getNodeStyle() const;
+    DAPyNodeState getNodeState() const;
+
+    // Python 原生数据传递
+    void setPyInputData(const QString& key, const pybind11::object& data);
+    pybind11::object getPyInputData(const QString& key) const;
+    pybind11::object getPyOutputData(const QString& key) const;
+
+    // 批量读取所有输入/输出数据
+    QVariantHash getInputDatas() const;
+    QVariantHash getOutputDatas() const;
+
+    // 参数访问
+    QList<DAPyNodeParameter> getParameters() const;
+    void setParameterValue(const QString& name, const QVariant& value);
+    QVariant getParameterValue(const QString& name) const;
+
+    // 元数据（构建 DAPyNodeMetaData）
+    DAPyNodeMetaData getMetaData() const;
 };
 ```
 
-**执行流程**：
+**数据访问流程**：
 
-1. `exec()` 被调用时，首先通过 `DAPyGILGuard` 获取 GIL
-2. 调用 Python 节点的 `execute()` 方法
-3. 捕获 `error_already_set` 异常并转换为错误信息
-4. 释放 GIL，返回执行结果
+1. 所有 getter 方法通过 `DAPyObjectWrapper::attr()` 实时读取 Python 对象属性
+2. 复合类型（端口、参数、样式）通过 `DAPyDictConverter` 从 Python dict 临时转换为 C++ struct
+3. 需要 GIL 保护时，由调用方使用 `DAPyGILGuard` RAII 守卫管理
 
 **状态管理**：
 
@@ -134,26 +143,29 @@ public:
 
 ### DAPyNodeFactory
 
-`DAPyNodeFactory` 负责发现和创建 Python 节点：
+`DAPyNodeFactory` 负责发现和创建 Python 节点，继承 `DAPyObjectWrapper`（非 QObject，无信号）：
 
 ```cpp
-class DAPyNodeFactory : public QObject
+class DAPyNodeFactory : public DAPyObjectWrapper
 {
-    Q_OBJECT
-
 public:
     // 发现 Python 节点（调用 DANodeRegistry.discover）
-    bool discoverNodes(const QStringList& scanPaths, bool useEntryPoints);
+    bool discoverNodes(const QStringList& scanPaths = QStringList(),
+                       bool useEntryPoints = false);
 
-    // 创建节点代理实例
-    DAPyNodeProxy* createNodeProxy(const QString& qualifiedName);
+    // 创建节点实例（返回值类型，非指针）
+    DAPyNode createNode(const QString& qualifiedName);
+    DAPyNode createNode(const DAPyNodeMetaData& metaData);
 
     // 获取已发现节点的元数据
     QList<DAPyNodeMetaData> getNodeMetadataList() const;
 
-Q_SIGNALS:
-    // 节点发现完成信号
-    void nodeDiscovered(const QList<DA::DAPyNodeMetaData>& metadataList);
+    // 获取所有已发现节点的原型标识列表
+    QStringList getNodePrototypes() const;
+
+    // 工厂名称/描述
+    QString factoryName() const;
+    QString factoryDescribe() const;
 };
 ```
 
@@ -161,14 +173,14 @@ Q_SIGNALS:
 
 1. `discoverNodes()` 调用 Python 层的 `DANodeRegistry.discover()`
 2. 扫描指定目录和 entry_points 中的节点类
-3. 将 `DANodeDescriptor` 转换为 C++ 的 `DAPyNodeMetaData`
-4. 发射 `nodeDiscovered` 信号通知 UI 更新节点面板
+3. `@NodeDef` 装饰器将节点元信息写入类的 `_node_descriptor` 属性 dict，C++ 侧读取并转换为 `DAPyNodeMetaData`
+4. 调用方通过 `getNodeMetadataList()` 获取结果，通知 UI 更新节点面板
 
 ## GIL 线程安全（重点）
 
 ### DAPyGILGuard RAII 守卫
 
-`DAPyGILGuard` 是 GIL 获取的 RAII 封装：
+`DAPyGILGuard`（位于 `src/DAPyBindQt/DAPyGILGuard.h`）是 GIL 获取的 RAII 封装：
 
 ```cpp
 {
@@ -272,15 +284,15 @@ void pythonCallback() {
 当 Python 节点执行完成后，输出数据通过以下路径传递到 C++ 层：
 
 1. Python `execute()` 返回 `dict` 包含输出数据
-2. C++ `DAPyNodeProxy::exec()` 获取返回值
-3. `getPyOutputData()` 提取特定 key 的数据
-4. 数据通过 `DASignalManager` 传播到下游节点
+2. C++ `DAPyWorkFlowExecutor` 代理获取执行结果
+3. `DAPyNode::getPyOutputData()` 提取特定 key 的数据
+4. 数据通过 `DAPySignalManager` 传播到下游节点
 
 ### C++→Python 数据路径
 
 当 C++ 层设置节点输入数据时：
 
-1. C++ 调用 `DAPyNodeProxy::setPyInputData(key, data)`
+1. C++ 调用 `DAPyNode::setPyInputData(key, data)`
 2. `DAPyGILGuard` 获取 GIL
 3. 数据通过 `pybind11::object` 传递给 Python 节点
 4. Python 节点在 `execute()` 中通过 `inputs[key]` 访问
@@ -290,57 +302,64 @@ void pythonCallback() {
 节点配置参数（如参数面板设置）通过 JSON 转换传递：
 
 ```cpp
-// C++ 层设置配置
-QJsonObject config;
-config["column"] = "temperature";
-config["threshold"] = 25.0;
-proxy->setConfig(config);
+// C++ 层设置参数值
+proxy.setParameterValue("column", QVariant("temperature"));
+proxy.setParameterValue("threshold", QVariant(25.0));
 
-// 内部转换为 Python dict
+// 读取参数值
+QVariant col = proxy.getParameterValue("column");
+
+// 如需 JSON 转换（例如序列化场景）
 pybind11::dict pyConfig = DA::PY::qjsonObjectToPyDict(config);
-pyNode.attr("set_config")(pyConfig);
 ```
 
 ## 执行器桥接
 
-### DAPyWorkFlowLifecycle 与 DAWorkflowExecutor 协作
+### DAPyWorkFlowManager 与 Python 执行器协作
 
-C++ 层的 `DAPyWorkFlowLifecycle` 与 Python 层的 `DAWorkflowExecutor` 协作执行工作流：
+C++ 层的 `DAPyWorkFlowManager`（QObject 编排器）协调 Python 层的执行代理，三者协作执行工作流：
 
-| 组件 | 职责 |
-|------|------|
-| `DAPyWorkFlowLifecycle` | C++ 生命周期控制器，管理执行线程，发射 Qt 信号 |
-| `DAWorkflowExecutor` | Python 执行引擎，拓扑排序，节点执行逻辑 |
-| `DASignalManager` | 数据传播引擎，事件驱动下游节点触发 |
+| 组件 | 类型 | 职责 |
+|------|------|------|
+| `DAPyWorkFlowManager` | QObject 编排器 | 管理节点/连接操作，发射 Qt 信号通知 UI |
+| `DAPyWorkFlowExecutor` | `DAPyObjectWrapper` 代理 | 代理 Python `DAWorkflowExecutor`，拓扑排序，节点执行 |
+| `DAPySignalManager` | `DAPyObjectWrapper` 代理 | 代理 Python `DASignalManager`，事件驱动下游节点触发 |
 
 ### 执行状态信号
 
-`DAPyWorkFlowLifecycle` 提供以下 Qt 信号：
+`DAPyWorkFlowManager` 提供以下 Qt 信号：
 
 ```cpp
+// 节点添加/移除
+void nodeAdded(QString nodeId, const DA::DAPyNode& proxy);
+void nodeRemoved(QString nodeId);
+
+// 连接添加/移除
+void connectionAdded(QString connId, QString srcNodeId, QString srcChannel,
+                     QString dstNodeId, QString dstChannel);
+void connectionRemoved(QString connId);
+
+// 执行开始/完成
+void executionStarted();
+void executionFinished(bool success);
+
 // 节点执行完成
-void nodeExecuteFinished(std::shared_ptr<DA::DAPyNodeProxy> nodeProxy, bool success);
+void nodeExecuted(QString nodeId, bool success);
 
-// 工作流执行完成
-void finished(bool success);
-
-// 执行状态变更
-void execStateChanged(DA::DAPyWorkFlowLifecycle::ExecState oldState,
-                      DA::DAPyWorkFlowLifecycle::ExecState newState);
-
-// 执行进度
-void progressChanged(int current, int total);
+// 执行器状态变更
+void executorStateChanged(QString oldState, QString newState);
 ```
 
-### ExecState 状态机
+### DAPyExecutorState 状态机
 
 ```cpp
-enum ExecState {
-    StateIdle = 0,      // 空闲，未开始执行
-    StateRunning = 1,   // 运行中
-    StatePaused = 2,    // 已暂停
-    StateError = 3,     // 执行出错
-    StateFinished = 4   // 执行完成
+// 定义于 src/DAPyWorkFlow/DAPyExecutorState.h
+enum DAPyExecutorState {
+    ExecutorIdle = 0,    // 空闲，未开始执行
+    ExecutorRunning,     // 运行中
+    ExecutorPaused,      // 已暂停
+    ExecutorError,       // 执行出错
+    ExecutorFinished     // 执行完成
 };
 ```
 
@@ -373,7 +392,7 @@ public:
 
 ### Python 节点自定义绘制
 
-Python 节点可通过 `DANodeDescriptor` 的 `paint_callback` 字段提供绘制函数：
+Python 节点可通过 `@NodeDef` 装饰器标记的类上的 `paint` 方法提供绘制函数（`_node_descriptor` dict 中记录 `paint_callback` 字段）：
 
 ```python
 @NodeDef(name="自定义节点")
@@ -402,21 +421,34 @@ class CustomNode:
 
 4. **跨线程 GUI 操作必须通过 SignalHandler**：Python 线程直接操作 Qt GUI 会导致崩溃
 
-5. **DAPyNodeProxy 不是 QObject**：不能使用信号槽机制，状态变更通过显式函数调用
+5. **DAPyNode 和 DAPyNodeFactory 均不是 QObject**：继承 `DAPyObjectWrapper`，不能使用信号槽机制，状态变更通过显式函数调用；Qt 信号由 `DAPyWorkFlowManager`（QObject）统一发射
 
 6. **DAPyPainterProxy 仅在绘制期间有效**：不要在 `paint_callback` 外保存引用
 
 ## 参考资料
 
 - Python 模块源码：`src/PyScripts/DAWorkbench/DAWorkFlowPy/`
+  - `workflow.py` — `DAWorkflow` 图数据管理
+  - `node_def.py` — `@NodeDef` 装饰器
+  - `node_registry.py` — `DANodeRegistry` 节点发现
+  - `node_factory.py` — `DANodeFactory` 节点工厂
+  - `executor.py` — `DAWorkflowExecutor` 执行引擎
+  - `signal_manager.py` — `DASignalManager` 数据传播
+  - `serializer.py` — `DAWorkflowSerializer` 序列化
+  - `syntax.py` — `NodeProxy`、`NodeOutputProxy`、`NodeInputProxy` 语法糖
+  - `__init__.py` — `DAWorkflowNode`、`NodeDisplay`、`LinkPointStyle` 等导出
 - C++ 桥接源码：
-  - `src/DAPyWorkFlow/DAPyNodeProxy.h` — 节点代理
-  - `src/DAPyWorkFlow/DAPyNodeFactory.h` — 节点工厂
-  - `src/DAPyWorkFlow/DAPyGILGuard.h` — GIL 管理
+  - `src/DAPyWorkFlow/DAPyNode.h` — 节点代理（继承 `DAPyObjectWrapper`）
+  - `src/DAPyWorkFlow/DAPyNodeFactory.h` — 节点工厂（继承 `DAPyObjectWrapper`）
+  - `src/DAPyWorkFlow/DAPyWorkFlowManager.h` — 工作流管理器（QObject 编排器）
+  - `src/DAPyWorkFlow/DAPyWorkFlowExecutor.h` — 执行器代理
+  - `src/DAPyWorkFlow/DAPySignalManager.h` — 信号管理器代理
+  - `src/DAPyWorkFlow/DAPyExecutorState.h` — `DAPyExecutorState` 枚举
+  - `src/DAPyWorkFlow/DAPyNodeStyle.h` — 节点样式配置
   - `src/DAPyWorkFlow/DAPyModuleWorkflow.h` — Python 模块封装
-  - `src/DAPyWorkFlow/DAPyWorkFlowLifecycle.h` — 生命周期控制器
   - `src/DAPyWorkFlow/DAPyPainterProxy.h` — 绘制代理
   - `src/DAPyWorkFlow/PythonBinding/DAPyWorkFlowPythonBinding.h` — pybind11 绑定
+  - `src/DAPyBindQt/DAPyGILGuard.h` — GIL RAII 守卫
   - `src/DAPyBindQt/DAPythonSignalHandler.h` — 跨线程回调
   - `src/DAPyBindQt/DAPyJsonCast.h` — JSON 转换
 - 相关文档：

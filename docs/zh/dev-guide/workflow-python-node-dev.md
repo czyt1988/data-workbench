@@ -47,13 +47,13 @@ class MyNode:
 | `name` | str | 是 | 节点显示名称，用于界面展示 |
 | `category` | str | 否 | 节点所属分类，默认为空字符串 |
 | `icon` | str | 否 | 节点图标标识，默认为空字符串 |
-| `render_template` | str | 否 | 渲染模板类型，默认为 `"rect"`，支持 `"rect"`、`"svg"`、`"widget"` |
+| `render_template` | str | 否 | 渲染模板类型，默认为 `"nodestyle"`，支持 `"nodestyle"`、`"widget"` |
+| `style` | NodeDisplay/dict | 否 | 节点样式配置，支持 `NodeDisplay` 实例或 dict（自动转换为 `NodeDisplay`），默认为 `None` |
 
 !!! tip "render_template 参数"
     `render_template` 控制节点在工作流场景中的视觉呈现方式：
     
-    - `"rect"`（默认）：标准矩形节点
-    - `"svg"`：SVG 矢量图形节点
+    - `"nodestyle"`（默认）：使用 `NodeDisplay`/`DAPyNodeStyle` 配置绘制节点样式（支持 `body_shape`、`background_color` 等字段）
     - `"widget"`：自定义 QWidget 节点
 
 ### 完整节点类结构
@@ -669,7 +669,7 @@ class AgentNode:
             import DAWorkbench
             DAWorkbench.da_interface.call_in_main_thread(
                 "node_state_change",
-                self._node_descriptor.qualifiedName,
+                self.qualified_name,
                 state,
             )
         except (ImportError, AttributeError):
@@ -729,8 +729,8 @@ descriptors = registry.discover(scan_paths=[
 
 !!! note "目录扫描规则"
     - 扫描路径下的所有 `.py` 文件（排除 `__pycache__` 和 `__init__.py`）
-    - 动态导入模块并检查类是否带有 `_node_descriptor` 属性
-    - 相同 `qualifiedName` 的节点只注册一次（自动去重）
+    - 动态导入模块并检查类是否带有 `qualified_name` 属性（由 `@NodeDef` 装饰器设置）
+    - 相同 `qualified_name` 的节点只注册一次（自动去重）
 
 ### entry_points 注册
 
@@ -767,12 +767,12 @@ setup(
 !!! tip "entry_points 分组"
     必须使用 `data_workbench.plugin` 作为分组名称，DANodeRegistry 通过此分组查找已安装的插件包。
 
-#### qualifiedName 生成规则
+#### qualified_name 生成规则
 
-节点的唯一标识 `qualifiedName` 自动生成：
+节点的唯一标识 `qualified_name` 自动生成：
 
 ```
-qualifiedName = f"{cls.__module__}.{cls.__qualname__}"
+qualified_name = f"{cls.__module__}.{cls.__name__}"
 ```
 
 例如：
@@ -802,19 +802,26 @@ class GlobalConfigNode:
         return True
 ```
 
-### render_template 参数
+### render_template 和 style 参数
 
-`render_template` 控制节点的视觉呈现方式：
+`render_template` 和 `style` 控制节点的视觉呈现方式：
 
 ```python
-# 标准矩形节点（默认）
-@NodeDef(name="标准节点", category="基础", render_template="rect")
+from DAWorkbench.DAWorkFlowPy import NodeDef, NodeDisplay, LinkPointStyle
+
+# 标准样式节点（默认，使用 NodeDisplay 配置样式）
+@NodeDef(name="标准节点", category="基础", render_template="nodestyle")
 class StandardNode:
     pass
 
-# SVG 矢量图形节点
-@NodeDef(name="SVG 节点", category="基础", render_template="svg")
-class SvgNode:
+# 使用 NodeDisplay 自定义样式
+@NodeDef(name="椭圆节点", category="基础", style=NodeDisplay(
+    body_shape="Ellipse",
+    background_color="#4A90D9",
+    corner_radius=8.0,
+    input_port_style=LinkPointStyle(shape="Circle", fill_color="#ff0000"),
+))
+class EllipseNode:
     pass
 
 # 自定义 QWidget 节点
@@ -825,7 +832,7 @@ class WidgetNode:
 
 ### DAPythonSignalHandler.callInMainThread
 
-在后台线程中需要操作 UI 时，使用 `callInMainThread` 将操作投递到主线程执行。
+在后台线程中需要操作 UI 时，使用 `callInMainThread` 将操作投递到主线程执行。`DAPythonSignalHandler` 位于 `src/DAPyBindQt/DAPythonSignalHandler.h`。
 
 ```python
 def _push_state(self, state):
@@ -834,7 +841,7 @@ def _push_state(self, state):
         import DAWorkbench
         DAWorkbench.da_interface.call_in_main_thread(
             "node_state_change",
-            self._node_descriptor.qualifiedName,
+            self.qualified_name,
             state,
         )
     except (ImportError, AttributeError):
@@ -885,9 +892,13 @@ def execute(self, inputs=None, params=None):
 ## 参考资料
 
 - Python 模块源码：`src/PyScripts/DAWorkbench/DAWorkFlowPy/`
-  - `node_def.py` — `@NodeDef` 装饰器实现
+  - `__init__.py` — 模块导出：`DAWorkflowNode`、`NodeDisplay`、`LinkPointStyle` 等
+  - `node_def.py` — `@NodeDef` 装饰器实现、`DAWorkflowNode` 基类、`NodeDisplay`、`LinkPointStyle`
   - `types.py` — `Input`、`Output`、`Parameter` 类定义
   - `node_registry.py` — `DANodeRegistry` 类定义
+  - `node_factory.py` — `DANodeFactory` 节点工厂（C++ 调用入口）
+  - `serializer.py` — `DAWorkflowSerializer` 工作流序列化/反序列化
+  - `syntax.py` — `NodeProxy`、`NodeOutputProxy`、`NodeInputProxy`（链式连接语法糖）
 - 节点示例：`plugins/` 目录下的 Python 插件
   - `plugins/DataAnalysis/PyScripts/DADataAnalysisPy/` — 数据分析节点
   - `plugins/CrewAIAdapter/PyScripts/DACrewAIAdapterPy/` — AI Agent 节点

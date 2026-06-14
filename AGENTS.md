@@ -1,7 +1,7 @@
 # data-workbench 项目指南
 
 **Generated:** 2026-04-28
-**Updated:** 2026-05-10
+**Updated:** 2026-06-14
 **Commit:** `9676dc3`
 **Branch:** `workflow-rebuild`
 
@@ -26,7 +26,7 @@ data-workbench/
 │   ├── DAPyBindQt/     # Python↔Qt 绑定层 (28 files)
 │   ├── DAPyScripts/    # Python 脚本加载 (12 files)
 │   ├── DAPyCommonWidgets/ # Python 通用 Widgets (13 files)
-│   ├── DAPyWorkFlow/   # Python 工作流节点 (43 files)
+│   ├── DAPyWorkFlow/   # Python 工作流节点 (50 files)
 │   ├── DAData/         # 数据管理/结构 (22 files)
 │   ├── DACommonWidgets/ # 通用 UI 组件 (82 files)
 │   ├── DAGraphicsView/ # 图形视图框架 (54 files)
@@ -106,7 +106,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | **DAPyBindQt** | L1 | Python↔Qt 胶水层。pybind11类型转换器、Python解释器生命周期、GIL RAII守卫、基础 py::object 包装器、JSON↔Python双向转换、numpy/pandas 绑定 | 工作流逻辑；业务Widget | 28 |
 | **DAPyScripts** | L2 | Python 脚本包装。将 `DAWorkbench` Python 模块的 io/dataframe/data_processing 函数暴露为 C++ API | GUI 组件；数据管理 | 12 |
 | **DAPyCommonWidgets** | L2 | Python 相关基础 Widget。DataFrame列选择器、dtype选择器 | 工作流节点Widget；图表Widget | 13 |
-| **DAPyWorkFlow** | L2 | Python工作流核心。节点代理(DAPyNodeProxy)、节点工厂、场景/执行引擎、节点图形项、节点样式系统、连接点/连线图形项、序列化 | 通用 Python 工具（应放在 DAPyBindQt）；通用数据描述符（应放在 DAPyBindQt 或 DAShared） | 43 ⚠️ |
+| **DAPyWorkFlow** | L2 | Python工作流核心。节点代理(DAPyNode)、节点工厂(DAPyNodeFactory)、工作流容器(DAPyWorkFlow)、执行引擎(DAPyWorkFlowExecutor)、信号管理(DAPySignalManager)、工作流管理器(DAPyWorkFlowManager)、场景(DAPyWorkFlowScene)、节点图形项(DAPyNodeGraphicsItem)、连线图形项(DAPyLinkGraphicsItem)、节点元数据(DAPyNodeMetaData)、节点样式(DAPyNodeStyle)、连接点(DAPyLinkPoint)、节点调色板(DAPyNodePalette)、序列化(DAPyWorkFlowSerializer/DAPyWorkFlowSceneSerializer)、撤销命令工厂(DAPyWorkFlowCommandsFactory) | 通用 Python 工具（应放在 DAPyBindQt）；通用数据描述符（应放在 DAPyBindQt 或 DAShared） | 50 |
 | **DAData** | L2 | 数据管理。抽象数据基类(DAAbstractData)、DAData包装器、DADataManager注册表、Python数据对象封装、撤销/重做命令 | GUI 组件（属于 DAGui） | 22 |
 | **DACommonWidgets** | L3 | 通用 UI 组件。属性面板、颜色选择器、画笔/笔编辑、对齐编辑、文件路径编辑、设置对话框、等待光标 | 图表专属Widget（属于 DAFigure 或 DAGui）；数据管理Widget（属于 DAGui） | 82 |
 | **DAGraphicsView** | L2 | 图形视图框架。DAGraphicsView/Scene、基础图元（矩形/文本/图片/连线）、可缩放图元、连接线图元、场景/视图动作、撤销命令、图元工厂、覆盖层 | 业务图元（属于 DAPyWorkFlow 或其它上层模块） | 54 |
@@ -202,11 +202,14 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | `DA_D` / `DA_DC` | macro | `src/DAGlobals.h` | PIMPL d-pointer 访问 |
 | `DA_PIMPL_CONSTRUCT` | macro | `src/DAGlobals.h` | PIMPL 构造函数初始化 |
 | `DA::DAParamTypeRegistry` | class | `src/DAGui/NodeSetting/DAParamTypeRegistry.h` | 11种参数类型注册+编辑器创建 |
-| `DA::DAAbstractNodeSettingWidget` | class | `src/DAGui/DAAbstractNodeSettingWidget.h` | 节点设置基类, 持有 DAPyNodeProxy* |
+| `DA::DAAbstractNodeSettingWidget` | class | `src/DAGui/DAAbstractNodeSettingWidget.h` | 节点设置基类, 持有 DAPyNode* |
 | `DA::DANodeParamSettingPanel` | class | `src/DAGui/NodeSetting/DANodeParamSettingPanel.h` | 通用参数面板, SceneB 3-hop信号链 |
 | `DA::DANodeParamSettingPanelFactory` | class | `src/DAGui/NodeSetting/DANodeParamSettingPanelFactory.h` | 面板单例工厂, qualifiedName 路由 |
 | `DA::DANodeParamSettingPanelWidget` | class | `src/DAGui/NodeSetting/DANodeParamSettingPanelWidget.h` | QStackedWidget 调度器, 惰性加载缓存 |
 | `DA::ParameterDescriptor` | struct | `src/DAGui/NodeSetting/ParameterDescriptor.h` | Python 参数描述符, fromJson/fromJsonArray |
+| `DA::DAPyNode` | class | `src/DAPyWorkFlow/DAPyNode.h` | 工作流节点代理, 继承 DAPyObjectWrapper |
+| `DA::DAPyWorkFlowManager` | class | `src/DAPyWorkFlow/DAPyWorkFlowManager.h` | 工作流中央调度器 (QObject), 管理节点/场景/执行 |
+| `DA::DAPyNodeStyle` | class | `src/DAPyWorkFlow/DAPyNodeStyle.h` | 节点视觉样式配置 (颜色/尺寸/字体) |
 
 ## CONVENTIONS
 

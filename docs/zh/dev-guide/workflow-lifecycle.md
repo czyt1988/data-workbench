@@ -1,4 +1,4 @@
-﻿# 工作流生命周期
+# 工作流生命周期
 
 本文档详细描述 DAPyWorkFlow 工作流的完整生命周期，从节点发现、创建、连接到执行的各个阶段，帮助开发者理解工作流引擎的内部机制。
 
@@ -45,7 +45,7 @@ DAPyWorkFlow 的生命周期设计与旧的 DAWorkFlow 模块有本质区别。�
 | **创建** | 实例化节点并添加到工作流 | `DAPyNodeFactory`, `DAWorkflow` |
 | **连接** | 建立节点间的数据流向关系 | `DAConnection` |
 | **执行** | 按拓扑排序执行节点 | `DAWorkflowExecutor`, `DASignalManager` |
-| **完成** | 清理资源，通知状态变更 | `DAPyWorkFlowLifecycle` |
+| **完成** | 清理资源，通知状态变更 | `DAPyWorkFlowManager` |
 
 ### 核心类关系
 
@@ -110,9 +110,9 @@ descriptors = registry.discover(
 1. **目录扫描模式**：遍历指定路径的 `.py` 文件，动态导入模块，检查类是否带有 `_node_descriptor` 属性
 2. **入口点模式**：通过 `importlib.metadata.entry_points(group='data_workbench.plugin')` 查找已安装的插件包
 
-### DANodeDescriptor 元数据
+### `@NodeDef` 装饰器元数据
 
-发现的节点以 `DANodeDescriptor` 描述符形式存储：
+`@NodeDef` 装饰器将节点元数据作为 `_node_descriptor` 属性 dict 直接设置在类上：
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -135,7 +135,7 @@ factory.discoverNodes(scanPaths, useEntryPoints);
 QList<DA::DAPyNodeMetaData> metaList = factory.getNodeMetadataList();
 ```
 
-`DAPyNodeMetaData` 是 C++ 侧对 `DANodeDescriptor` 的映射，包含节点名称、原型标识、分组、图标路径等信息。
+`DAPyNodeMetaData` 是 C++ 侧对 Python `_node_descriptor` dict 的映射，包含节点名称（`name`）、限定名（`qualifiedName`）、分组（`category`）、图标路径等信息。
 
 ## 节点创建生命周期
 
@@ -144,7 +144,7 @@ QList<DA::DAPyNodeMetaData> metaList = factory.getNodeMetadataList();
 ### 创建流程
 
 ```
-DANodeDescriptor → Python 类实例化 → DAPyNodeProxy → DAPyNodeGraphicsItem
+@NodeDef 装饰器 → Python 类实例化 → DAPyNode → DAPyNodeGraphicsItem
 ```
 
 ### Python 侧实例化
@@ -154,8 +154,9 @@ from DAWorkbench.DAWorkFlowPy import DAWorkflow
 
 workflow = DAWorkflow()
 
-# 通过描述符创建节点实例（假设 descriptor 包含 _node_class 引用）
-node_instance = descriptor._node_class()
+# 通过 _node_descriptor dict 获取类并创建节点实例
+node_class = node_registry.get_node_class(qualified_name)
+node_instance = node_class()
 node_id = workflow.add_node(node_instance)
 ```
 
@@ -168,30 +169,33 @@ node_id = workflow.add_node(node_instance)
 
 ### C++ 侧代理创建
 
-C++ 层通过 `DAPyNodeFactory.createNodeProxy()` 创建节点代理：
+C++ 层通过 `DAPyNodeFactory.createNode()` 创建节点代理：
 
 ```cpp
-// 通过限定名创建节点代理
-DA::DAPyNodeProxy* proxy = factory.createNodeProxy("module.DataFilter");
+// 通过限定名创建节点代理（按值返回 DAPyNode）
+DA::DAPyNode proxy = factory.createNode("module.DataFilter");
 
-// 设置节点状态
-proxy->setNodeState(DA::DAPyNodeState::Idle);
+// 读取节点状态
+DA::DAPyNodeState state = proxy.getNodeState();
 ```
 
-`DAPyNodeProxy` 是 Python 节点的 C++ 代理，不继承 QObject，通过 `pybind11::object` 持有 Python 节点引用。
+`DAPyNode` 是 Python 节点的 C++ 代理，继承 `DAPyObjectWrapper`，通过 `pybind11::object` 持有 Python 节点引用。所有方法实时从 Python 对象读取属性，不做本地缓存。
 
 ### 场景图元创建
 
 `DAPyWorkFlowScene` 负责创建可视化图元：
 
 ```cpp
-// 创建 Python 节点图元
-DAPyNodeGraphicsItem* item = scene->createPyNode(descriptorJson, position);
+// 创建 Python 节点图元（通过元数据和位置）
+DA::DAPyNodeMetaData metaData;
+metaData.qualifiedName = "module.DataFilter";
+metaData.name = "数据过滤";
+DAPyNodeGraphicsItem* item = scene->createPyNode(metaData, position);
 ```
 
 `createPyNode()` 方法：
 
-1. 调用 `DAPyNodeFactory` 创建 `DAPyNodeProxy`
+1. 调用 `DAPyNodeFactory` 创建 `DAPyNode`
 2. 创建 `DAPyNodeGraphicsItem` 图元
 3. 将代理与图元关联
 4. 发射 `pyNodeItemCreated` 信号
@@ -259,7 +263,7 @@ DAPyLinkGraphicsItem* link = scene->addPyNodeLink(
 
 ### 执行器状态枚举
 
-`DAExecutorState`（Python）和 `ExecState`（C++）定义执行器状态：
+`DAExecutorState`（Python）和 `DAPyExecutorState`（C++）定义执行器状态：
 
 ```python
 class DAExecutorState(Enum):
@@ -271,12 +275,12 @@ class DAExecutorState(Enum):
 ```
 
 ```cpp
-enum ExecState {
-    StateIdle = 0,      // 空闲
-    StateRunning = 1,   // 运行中
-    StatePaused = 2,    // 已暂停
-    StateError = 3,     // 执行出错
-    StateFinished = 4   // 执行完成
+enum DAPyExecutorState {
+    ExecutorIdle = 0,     // 空闲
+    ExecutorRunning,      // 运行中
+    ExecutorPaused,       // 已暂停
+    ExecutorError,        // 执行出错
+    ExecutorFinished      // 执行完成
 };
 ```
 
@@ -394,29 +398,49 @@ sequenceDiagram
 
 ### C++ 执行调度
 
-`DAPyWorkFlowLifecycle` 在独立 QThread 中运行：
+`DAPyWorkFlowManager` 是 QObject，负责协调 Python 代理层与 Qt UI 层。执行由内部的 `DAPyWorkFlowExecutor`（代理）驱动：
 
 ```cpp
-auto lifecycle = new DA::DAPyWorkFlowLifecycle();
-lifecycle->setWorkflow(pyWorkflowObj);
+// 获取管理器（通常由 DAPyWorkFlowScene 持有）
+DA::DAPyWorkFlowManager* manager = scene->getManager();
 
-QThread* thread = new QThread();
-lifecycle->moveToThread(thread);
-
-connect(thread, &QThread::started, lifecycle, &DAPyWorkFlowLifecycle::startExecute);
-connect(lifecycle, &DAPyWorkFlowLifecycle::finished, this, &MyClass::onWorkflowFinished);
-
-thread->start();
+// 执行工作流
+bool started = manager->executeWorkflow();
 ```
 
-Qt 信号通知：
+`DAPyWorkFlowExecutor` 作为 Python 执行器的 C++ 纯代理，支持同步和异步执行：
+
+```cpp
+DA::DAPyWorkFlowExecutor executor(workflow);
+
+// 设置回调
+executor.setOnStateChange([](const QString& oldState, const QString& newState) {
+    qDebug() << "state:" << oldState << "->" << newState;
+});
+executor.setOnNodeFinished([](const QString& nodeId, bool success) {
+    qDebug() << "node:" << nodeId << "success:" << success;
+});
+
+// 同步执行
+bool success = executor.execute();
+
+// 或异步执行
+executor.executeAsync();
+executor.waitCompletion();
+```
+
+Qt 信号通知（由 `DAPyWorkFlowManager` 发射）：
 
 | 信号 | 参数 | 说明 |
 |------|------|------|
-| `nodeExecuteFinished` | `shared_ptr<DAPyNodeProxy>, bool` | 节点执行完成 |
-| `finished` | `bool` | 工作流执行完成 |
-| `execStateChanged` | `ExecState, ExecState` | 执行状态变更 |
-| `progressChanged` | `int, int` | 进度变更（当前/总数） |
+| `nodeAdded` | `QString nodeId, const DAPyNode& proxy` | 节点添加 |
+| `nodeRemoved` | `QString nodeId` | 节点移除 |
+| `connectionAdded` | `QString connId, QString srcNodeId, ...` | 连接添加 |
+| `connectionRemoved` | `QString connId` | 连接移除 |
+| `executionStarted` | — | 工作流开始执行 |
+| `executionFinished` | `bool success` | 工作流执行完成 |
+| `nodeExecuted` | `QString nodeId, bool success` | 节点执行完成 |
+| `executorStateChanged` | `QString oldState, QString newState` | 执行器状态变更 |
 
 ## 节点状态生命周期
 
@@ -497,6 +521,8 @@ DAPyWorkFlow 涉及 Python GIL（全局解释器锁）的精细管理。
 
 ### DAPyGILGuard RAII 模式
 
+> **位置**：`src/DAPyBindQt/DAPyGILGuard.h`（属于 DAPyBindQt 基础模块，非 DAPyWorkFlow）
+
 ```cpp
 // 获取 GIL
 {
@@ -537,6 +563,8 @@ DAPyWorkFlow 涉及 Python GIL（全局解释器锁）的精细管理。
 
 ### 主线程回调
 
+> **位置**：`src/DAPyBindQt/DAPythonSignalHandler.h`（属于 DAPyBindQt 基础模块，非 DAPyWorkFlow）
+
 Python 侧通过 `DAPythonSignalHandler::callInMainThread` 将回调投递到 Qt 主线程：
 
 ```cpp
@@ -569,14 +597,14 @@ void DAPythonSignalHandler::callInMainThread(
 
 ### 内存管理
 
-1. **DAPyNodeProxy 生命周期**：由 `shared_ptr` 管理，确保 Python 对象引用安全
+1. **DAPyNode 生命周期**：继承 `DAPyObjectWrapper`，通过 `pybind11::object` 引用计数管理 Python 对象引用安全
 2. **信号队列清理**：`DASignalManager.stop()` 清空待处理信号队列
 3. **GIL 异常安全**：使用 RAII 守卫确保 GIL 正确释放，避免死锁
 
 ### 调试建议
 
 1. **启用日志**：Python 侧使用 `logging.getLogger("DAWorkFlowPy")` 记录执行日志
-2. **状态监控**：连接 `DAPyWorkFlowLifecycle::progressChanged` 信号跟踪执行进度
+2. **状态监控**：连接 `DAPyWorkFlowManager::executorStateChanged` 信号跟踪执行进度
 3. **错误处理**：检查 `DAWorkflowExecutor.error_messages` 获取详细错误信息
 
 ## 参考资料
@@ -590,11 +618,20 @@ void DAPythonSignalHandler::callInMainThread(
 | Python | `src/PyScripts/DAWorkbench/DAWorkFlowPy/signal_manager.py` | `DASignalManager` 信号管理 |
 | Python | `src/PyScripts/DAWorkbench/DAWorkFlowPy/connection.py` | `DAConnection` 连接模型 |
 | Python | `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_registry.py` | `DANodeRegistry` 节点发现 |
-| C++ | `src/DAPyWorkFlow/DAPyWorkFlowLifecycle.h` | C++ 生命周期控制器 |
+| Python | `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_factory.py` | `DANodeFactory` 节点工厂 |
+| Python | `src/PyScripts/DAWorkbench/DAWorkFlowPy/serializer.py` | `DAWorkflowSerializer` 序列化 |
+| Python | `src/PyScripts/DAWorkbench/DAWorkFlowPy/syntax.py` | `NodeProxy`/`NodeOutputProxy`/`NodeInputProxy` 语法辅助 |
+| Python | `src/PyScripts/DAWorkbench/DAWorkFlowPy/__init__.py` | `DAWorkflowNode`/`NodeDisplay`/`LinkPointStyle` 等公开类 |
+| C++ | `src/DAPyWorkFlow/DAPyWorkFlowManager.h` | 工作流管理器（QObject） |
+| C++ | `src/DAPyWorkFlow/DAPyWorkFlowExecutor.h` | 执行器代理（DAPyObjectWrapper） |
+| C++ | `src/DAPyWorkFlow/DAPySignalManager.h` | 信号管理器代理（DAPyObjectWrapper） |
+| C++ | `src/DAPyWorkFlow/DAPyExecutorState.h` | 执行器状态枚举 |
 | C++ | `src/DAPyWorkFlow/DAPyNodeState.h` | 节点状态枚举 |
-| C++ | `src/DAPyWorkFlow/DAPyNodeProxy.h` | 节点代理类 |
-| C++ | `src/DAPyWorkFlow/DAPyGILGuard.h` | GIL 管理工具 |
+| C++ | `src/DAPyWorkFlow/DAPyNode.h` | 节点代理类（DAPyObjectWrapper） |
+| C++ | `src/DAPyWorkFlow/DAPyNodeFactory.h` | 节点工厂（DAPyObjectWrapper） |
 | C++ | `src/DAPyWorkFlow/DAPyWorkFlowScene.h` | 场景管理类 |
+| C++ | `src/DAPyBindQt/DAPyGILGuard.h` | GIL 管理工具（DAPyBindQt 模块） |
+| C++ | `src/DAPyBindQt/DAPythonSignalHandler.h` | 主线程回调（DAPyBindQt 模块） |
 
 ### 相关文档
 
