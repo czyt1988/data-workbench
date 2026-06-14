@@ -41,6 +41,12 @@ public:
     // Python节点ID到图形项的反向索引，支持O(1)从nodeId查找DAPyNodeGraphicsItem*
     QHash< QString, DAPyNodeGraphicsItem* > mNodeIdToItemMap;
 
+    // 多选拖拽状态
+    bool mMultiMoveActive { false };                                    ///< 是否正在进行多选拖拽
+    QList< QGraphicsItem* > mMultiMoveItems;                            ///< 多选拖拽涉及的图元
+    QList< QPointF > mMultiMoveStartPositions;                          ///< 各图元的起始位置
+    QPointF mMultiMoveLastScenePos;                                     ///< 上一帧鼠标场景坐标
+
     /**
      * @brief 注册节点到所有映射表（正向+反向索引统一维护）
      *
@@ -1452,23 +1458,17 @@ void DAPyWorkFlowScene::onPyNodeStateNotification(const QString& nodeId, DAPyNod
  */
 void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
+    DA_D(d);
+    bool linkHandled = false;
+
     if (mouseEvent->isAccepted()) {
         // 如果被上游接受了鼠标事件，则需要取消链接
         if (isStartLink()) {
             cancelLink();
         }
-        DAGraphicsScene::mousePressEvent(mouseEvent);
-        return;
-    }
-
-    if (!isIgnoreLinkEvent()) {
-        if (mouseEvent->buttons().testFlag(Qt::LeftButton)) {
-            DAPyNodeGraphicsItem* nodeItem = nodeItemAt(mouseEvent->scenePos());
-            if (nullptr == nodeItem) {
-                DAGraphicsScene::mousePressEvent(mouseEvent);
-                return;
-            }
-
+    } else if (!isIgnoreLinkEvent() && mouseEvent->buttons().testFlag(Qt::LeftButton)) {
+        DAPyNodeGraphicsItem* nodeItem = nodeItemAt(mouseEvent->scenePos());
+        if (nodeItem) {
             if (isStartLink()) {
                 // 正在连线状态，点击目标输入端口完成连线
                 DAPyLinkGraphicsItem* linkItem = dynamic_cast< DAPyLinkGraphicsItem* >(getCurrentLinkItem());
@@ -1498,19 +1498,17 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                         setIgnoreLinkEvent(true);
                         DAGraphicsScene::mousePressEvent(mouseEvent);
                         setIgnoreLinkEvent(false);
-                        return;
+                        linkHandled = true;
+                    } else {
+                        // 连接到目标节点
+                        linkItem->setToNode(nodeItem, matchedPoint.name);
+                        linkItem->setEndScenePosition(nodeItem->mapToScene(matchedPoint.position));
+                        linkItem->updateBoundingRect();
+
+                        // 带undo的添加连接线
+                        addPyNodeLink_(linkItem);
+                        endLink();
                     }
-
-                    // 连接到目标节点
-                    linkItem->setToNode(nodeItem, matchedPoint.name);
-                    linkItem->setEndScenePosition(nodeItem->mapToScene(matchedPoint.position));
-                    linkItem->updateBoundingRect();
-
-                    // 带undo的添加连接线
-
-                    addPyNodeLink_(linkItem);
-                    endLink();
-                    // 添加link需要把当前演示的linkitem删除
                 }
             } else {
                 // 非连线状态，点击输出端口开始连线
@@ -1544,7 +1542,98 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
             }
         }
     }
-    DAGraphicsScene::mousePressEvent(mouseEvent);
+
+    // 调用基类处理选择状态和默认事件分发
+    if (!linkHandled) {
+        DAGraphicsScene::mousePressEvent(mouseEvent);
+    }
+
+    // 多选拖拽设置：左键按下、非连线模式、有2个以上可选图元时激活
+    if (mouseEvent->button() == Qt::LeftButton && !isStartLink() && !isReadOnly()) {
+        QList< QGraphicsItem* > movableItems = getSelectedMovableItems();
+        if (movableItems.size() > 1) {
+            d->mMultiMoveActive         = true;
+            d->mMultiMoveItems          = movableItems;
+            d->mMultiMoveStartPositions.clear();
+            for (QGraphicsItem* item : std::as_const(movableItems)) {
+                d->mMultiMoveStartPositions.append(item->pos());
+            }
+            d->mMultiMoveLastScenePos = mouseEvent->scenePos();
+            mouseEvent->accept();
+        }
+    }
+}
+
+/**
+ * @brief 多选拖拽时的鼠标移动处理
+ *
+ * 当mMultiMoveActive为true时，手动移动所有选中图元（增量式），
+ * 阻止QGraphicsScene的默认单项拖拽行为。
+ */
+void DAPyWorkFlowScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
+{
+    DA_D(d);
+    if (d->mMultiMoveActive) {
+        QPointF currentPos = mouseEvent->scenePos();
+        QPointF delta      = currentPos - d->mMultiMoveLastScenePos;
+
+        if (!delta.isNull()) {
+            for (QGraphicsItem* item : std::as_const(d->mMultiMoveItems)) {
+                item->setPos(item->pos() + delta);
+            }
+            d->mMultiMoveLastScenePos = currentPos;
+        }
+        mouseEvent->accept();
+        return;
+    }
+    DAGraphicsScene::mouseMoveEvent(mouseEvent);
+}
+
+/**
+ * @brief 多选拖拽结束时的鼠标释放处理
+ *
+ * 当mMultiMoveActive为true时，创建DACommandsForGraphicsItemsMoved命令推入undo栈，
+ * 确保多选拖拽支持撤销/重做。同时重置工厂的移动周期状态以避免重复命令。
+ */
+void DAPyWorkFlowScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
+{
+    DA_D(d);
+    if (d->mMultiMoveActive) {
+        d->mMultiMoveActive = false;
+
+        // 收集结束位置
+        QList< QPointF > endPositions;
+        bool hasMovement = false;
+        for (int i = 0; i < d->mMultiMoveItems.size(); ++i) {
+            QPointF endPos = d->mMultiMoveItems[ i ]->pos();
+            endPositions.append(endPos);
+            if (d->mMultiMoveItems[ i ]->pos() != d->mMultiMoveStartPositions[ i ]) {
+                hasMovement = true;
+            }
+        }
+
+        if (hasMovement && !d->mMultiMoveItems.isEmpty()) {
+            // 创建多选移动命令（skipfirst=true，因为图元已经移动到结束位置）
+            auto cmd = commandsFactory()->createItemsMoved(d->mMultiMoveItems,
+                                                           d->mMultiMoveStartPositions,
+                                                           endPositions,
+                                                           true);
+            if (cmd) {
+                // 提取信号数据（push后cmd可能被mergeWith合并导致悬空）
+                QList< QGraphicsItem* > moveItems = cmd->getItems();
+                QList< QPointF > startsPos        = cmd->getStartsPos();
+                QList< QPointF > endsPos          = cmd->getEndsPos();
+                push(cmd);
+                Q_EMIT itemsPositionChanged(moveItems, startsPos, endsPos);
+            }
+        }
+
+        d->mMultiMoveItems.clear();
+        d->mMultiMoveStartPositions.clear();
+        mouseEvent->accept();
+        return;
+    }
+    DAGraphicsScene::mouseReleaseEvent(mouseEvent);
 }
 
 /**

@@ -168,8 +168,10 @@ protected Q_SLOTS:
     void onPyNodeStateNotification(const QString& nodeId, DA::DAPyNodeState state);
 
 protected:
-    // 鼠标事件（处理节点连接点交互）
+    // 鼠标事件（处理节点连接点交互和多选拖拽）
     void mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
 
     // 对scene中的item进行分类
     static void classifyItems(const QList< QGraphicsItem* >& sourceItems,
