@@ -3,6 +3,7 @@
 #include "DAGuiAPI.h"
 #include <QTableView>
 #include <QTableWidget>
+#include <QElapsedTimer>
 namespace DA
 {
 class DAAbstractCacheWindowTableModel;
@@ -31,6 +32,9 @@ public:
 	QString actualColumnName(int actualCol) const;
 private Q_SLOTS:
 	virtual void verticalScrollBarValueChanged(int v);
+
+private:
+	QElapsedTimer mLastScrollElapsed;  // 滚动节流计时器
 };
 }
 
