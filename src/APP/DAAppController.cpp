@@ -320,8 +320,6 @@ void DAAppController::initConnection()
     // Python workflow 操作
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionPyWorkflowNew, onActionPyWorkflowNewTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionPyWorkflowOpen, onActionPyWorkflowOpenTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionPyWorkflowExecute, onActionPyWorkflowExecuteTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionPyWorkflowTerminate, onActionPyWorkflowTerminateTriggered);
 #endif
     // workflow edit 工作流编辑/data edit 绘图编辑
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawRect, onActionStartDrawRectTriggered);
@@ -1260,34 +1258,6 @@ void DAAppController::onActionPyWorkflowOpenTriggered()
     qInfo() << tr("Open Python workflow (placeholder)");
 }
 
-/**
- * @brief 执行Python工作流
- *
- * 在独立线程中执行当前Python工作流，并更新UI状态（禁用执行按钮，启用终止按钮）。
- *
- * @note 执行前需确保Python环境已初始化且工作流中有可执行节点
- */
-void DAAppController::onActionPyWorkflowExecuteTriggered()
-{
-    qDebug() << "onActionPyWorkflowExecuteTriggered";
-    mActions->actionPyWorkflowExecute->setEnabled(false);
-    mActions->actionPyWorkflowTerminate->setEnabled(true);
-    qInfo() << tr("Execute Python workflow (placeholder)");
-}
-
-/**
- * @brief 终止Python工作流执行
- *
- * 向正在执行的Python工作流发送终止请求，
- * 并恢复UI状态（启用执行按钮，禁用终止按钮）。
- */
-void DAAppController::onActionPyWorkflowTerminateTriggered()
-{
-    qDebug() << "onActionPyWorkflowTerminateTriggered";
-    mActions->actionPyWorkflowExecute->setEnabled(true);
-    mActions->actionPyWorkflowTerminate->setEnabled(false);
-    qInfo() << tr("Terminate Python workflow (placeholder)");
-}
 #endif
 
 void DAAppController::onEditFontChanged(const QFont& f)

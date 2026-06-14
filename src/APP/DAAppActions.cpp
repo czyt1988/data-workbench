@@ -253,9 +253,7 @@ void DAAppActions::buildWorkflowAction()
     // Python workflow 操作
     actionPyWorkflowNew       = createAction("actionPyWorkflowNew", ":/app/bright/Icon/newWorkflow.svg");
     actionPyWorkflowOpen      = createAction("actionPyWorkflowOpen", ":/app/bright/Icon/open.svg");
-    actionPyWorkflowExecute   = createAction("actionPyWorkflowExecute", ":/app/bright/Icon/run.svg");
-    actionPyWorkflowTerminate = createAction("actionPyWorkflowTerminate", ":/app/bright/Icon/stop.svg");
-    actionPyWorkflowTerminate->setEnabled(false);
+
 #endif
 }
 
@@ -561,10 +559,7 @@ void DAAppActions::retranslateUi()
     actionPyWorkflowNew->setToolTip(tr("Create a new Python workflow"));             // cn:创建新的Python工作流
     actionPyWorkflowOpen->setText(tr("Open \nPy Workflow"));                         // cn:打开\nPy工作流
     actionPyWorkflowOpen->setToolTip(tr("Open a saved Python workflow"));            // cn:打开已保存的Python工作流
-    actionPyWorkflowExecute->setText(tr("Execute \nPy Workflow"));                   // cn:执行\nPy工作流
-    actionPyWorkflowExecute->setToolTip(tr("Execute the Python workflow"));          // cn:执行Python工作流
-    actionPyWorkflowTerminate->setText(tr("Terminate \nPy Workflow"));               // cn:终止\nPy工作流
-    actionPyWorkflowTerminate->setToolTip(tr("Terminate the Python workflow"));      // cn:终止Python工作流执行
+
 #endif
     //-----------------------------------------------------
     // View Category

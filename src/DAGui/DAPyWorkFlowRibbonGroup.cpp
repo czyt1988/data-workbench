@@ -1,4 +1,4 @@
-﻿#include "DAPyWorkFlowRibbonGroup.h"
+#include "DAPyWorkFlowRibbonGroup.h"
 #include "DAGlobals.h"
 // SARibbon
 #include "SARibbonCategory.h"
@@ -42,8 +42,6 @@ DAPyWorkFlowRibbonGroup::~DAPyWorkFlowRibbonGroup()
  * 将Python工作流相关的Action按钮添加到指定的Ribbon面板中：
  * - New Python Workflow (新建Python工作流)
  * - Open Python Workflow (打开Python工作流)
- * - Execute Python Workflow (执行Python工作流)
- * - Terminate Python Workflow (终止Python工作流)
  *
  * @param[in] panel 目标Ribbon面板
  * @param[in] actions Python工作流Action集合
@@ -57,13 +55,6 @@ void DAPyWorkFlowRibbonGroup::buildPyWorkflowPanel(SARibbonPanel* panel, const D
     if (actions.actionPyWorkflowOpen) {
         panel->addLargeAction(actions.actionPyWorkflowOpen);
     }
-    panel->addSeparator();
-    if (actions.actionPyWorkflowExecute) {
-        panel->addLargeAction(actions.actionPyWorkflowExecute);
-    }
-    if (actions.actionPyWorkflowTerminate) {
-        panel->addLargeAction(actions.actionPyWorkflowTerminate);
-    }
     initConnections(actions);
 #endif
 }
@@ -72,7 +63,7 @@ void DAPyWorkFlowRibbonGroup::buildPyWorkflowPanel(SARibbonPanel* panel, const D
  * @brief 构建Python工作流Ribbon category页
  *
  * 在指定的category中创建"Python Workflow"面板，
- * 添加新建、打开、执行和终止操作按钮。
+ * 添加新建和打开操作按钮。
  *
  * @param[in] category 目标Ribbon category
  * @param[in] actions Python工作流Action集合
@@ -91,8 +82,7 @@ SARibbonCategory* DAPyWorkFlowRibbonGroup::buildPyWorkflowCategory(SARibbonCateg
 /**
  * @brief 更新Action的启用状态
  *
- * 执行Python工作流时，禁用新建、打开和执行按钮，启用终止按钮；
- * 非执行状态下，启用新建、打开和执行按钮，禁用终止按钮。
+ * 记录Python工作流的执行状态。
  *
  * @param[in] isExecuting 是否正在执行Python工作流
  */

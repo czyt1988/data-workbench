@@ -3,6 +3,7 @@
 #include "DAPybind11InQt.h"
 #include "DAPyNode.h"
 #include "DAPyLinkGraphicsItem.h"
+#include "DAPyWorkFlowAPI.h"
 #include "DAPybind11QtCaster.hpp"
 #include <QDebug>
 
@@ -96,6 +97,7 @@ QString DAPyWorkFlow::addNode(const DAPyNode& proxy)
         }
         pybind11::object result = attr("add_node")(pyNodeRef);
         QString nodeIdStr       = result.cast< QString >();
+        DA_WF_DBG("[C++] WorkFlow::addNode: 节点已添加, nodeId=%s", nodeIdStr.toUtf8().constData());
         return nodeIdStr;
     } catch (const pybind11::error_already_set& e) {
         dealException(e);
@@ -168,12 +170,19 @@ DAPyNodeConnection DAPyWorkFlow::connectNode(const QString& srcNodeId,
         return result;
     }
 
+    DA_WF_DBG("[C++] WorkFlow::connectNode: %s.%s -> %s.%s",
+              srcNodeId.toUtf8().constData(), srcChannel.toUtf8().constData(),
+              dstNodeId.toUtf8().constData(), dstChannel.toUtf8().constData());
     try {
         // 将 QString 先转换为 pybind11::object，避免函数调用模板的参数转换问题
         pybind11::object conn = attr("connect_node")(
             pybind11::cast(srcNodeId), pybind11::cast(srcChannel),
             pybind11::cast(dstNodeId), pybind11::cast(dstChannel));
         result = conn;
+        if (result) {
+            DA_WF_DBG("[C++] WorkFlow::connectNode: 连接成功, connId=%s",
+                      result.getConnectionId().toUtf8().constData());
+        }
     } catch (const pybind11::error_already_set& e) {
         dealException(e);
     } catch (const std::exception& e) {

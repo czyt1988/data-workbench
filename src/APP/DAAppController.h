@@ -341,8 +341,6 @@ private Q_SLOTS:
     // Python workflow操作
     void onActionPyWorkflowNewTriggered();
     void onActionPyWorkflowOpenTriggered();
-    void onActionPyWorkflowExecuteTriggered();
-    void onActionPyWorkflowTerminateTriggered();
 #endif
     //===================================================
     // 其他

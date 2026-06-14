@@ -44,9 +44,14 @@ from dataclasses import dataclass, field
 from typing import Optional, Union
 
 from .types import Input, Output, Parameter
+from ._debug import wf_dbg as _wf_dbg_
 
 # 颜色类型：支持 hex 字符串 "#rrggbb" 或 RGB 元组 (r, g, b) / (r, g, b, a)
 ColorType = Union[str, tuple]
+
+
+def _wf_dbg(*args):
+    _wf_dbg_("Node", *args)
 
 
 @dataclass
@@ -362,13 +367,23 @@ class DAWorkflowNode:
                 value = value.default
             params[name] = value
 
+        _wf_dbg(f"  [run] {self.qualified_name} 调用 execute()")
+        _wf_dbg(f"    inputs keys: {list(inputs.keys())}")
+        _wf_dbg(f"    params: {params}")
+
         # 根据 execute() 签名自动适配调用方式
         sig = inspect.signature(self.execute)
-        if len(sig.parameters) >= 2:
-            result = self.execute(inputs, params)
-        else:
-            result = self.execute()
-        return bool(result) if result is not None else True
+        try:
+            if len(sig.parameters) >= 2:
+                result = self.execute(inputs, params)
+            else:
+                result = self.execute()
+            success = bool(result) if result is not None else True
+            _wf_dbg(f"  [run] {self.qualified_name} execute() 返回: {result} -> success={success}")
+            return success
+        except Exception as e:
+            _wf_dbg(f"  [run] {self.qualified_name} execute() 抛出异常: {type(e).__name__}: {e}")
+            raise
 
 
 def _build_node_display(icon: str, render_template: str, style) -> NodeDisplay:
@@ -511,6 +526,11 @@ def NodeDef(
         # 设置端口名称列表，供 C++ fallback 使用
         new_cls.input_keys = [inp["name"] for inp in inputs]
         new_cls.output_keys = [outp["name"] for outp in outputs]
+
+        _wf_dbg(f"注册节点: {qualified_name} (name='{name}', category='{category}', "
+                f"inputs={[i['name'] for i in inputs]}, "
+                f"outputs={[o['name'] for o in outputs]}, "
+                f"params={list(parameters_dict.keys())})")
 
         return new_cls
 

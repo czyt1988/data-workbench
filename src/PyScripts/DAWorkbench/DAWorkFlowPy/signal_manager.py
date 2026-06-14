@@ -33,6 +33,10 @@ on_state_change 回调机制实现，C++ 侧通过绑定层桥接该回调。
 
 from collections import deque
 from enum import Enum
+from ._debug import wf_dbg as _wf_dbg_
+
+def _wf_dbg(*args):
+    _wf_dbg_("Signal", *args)
 
 
 class DAWorkflowState(Enum):
@@ -125,6 +129,7 @@ class DASignalManager:
         self._indegree_received.clear()
         for node_id in self._workflow._nodes:
             self._indegree_received[node_id] = 0
+        _wf_dbg(f"信号管理器启动，入度计数器初始化完成（{len(self._indegree_received)} 个节点）")
         self._notify_state_change(old_state, self._state)
 
     def stop(self):
@@ -136,6 +141,7 @@ class DASignalManager:
         """
         old_state = self._state
         self._state = DAWorkflowState.Stopped
+        _wf_dbg(f"信号管理器停止，清空信号队列（{len(self._pending_signals)} 条待处理）")
         self._pending_signals.clear()
         self._indegree_received.clear()
         self._notify_state_change(old_state, self._state)
@@ -151,6 +157,7 @@ class DASignalManager:
             return
         old_state = self._state
         self._state = DAWorkflowState.Paused
+        _wf_dbg("信号管理器暂停")
         self._notify_state_change(old_state, self._state)
 
     def resume(self):
@@ -164,6 +171,7 @@ class DASignalManager:
             return
         old_state = self._state
         self._state = DAWorkflowState.Running
+        _wf_dbg("信号管理器恢复")
         self._notify_state_change(old_state, self._state)
 
     def send_output(self, node_id: str, output_channel: str, data: object):
@@ -188,6 +196,7 @@ class DASignalManager:
         downstream_connections = self._workflow.get_downstream_connections(node_id, output_channel)
         if not downstream_connections:
             # 无下游连接，数据无需传递
+            _wf_dbg(f"端口 {node_id[:8]}.{output_channel} 无下游连接，跳过")
             return
 
         # 创建信号对象加入队列
@@ -198,6 +207,10 @@ class DASignalManager:
             target_connections=downstream_connections,
         )
         self._pending_signals.append(signal)
+        _wf_dbg(f"信号入队: {node_id[:8]}.{output_channel} -> "
+                f"{len(downstream_connections)} 个目标, "
+                f"数据类型={type(data).__name__}" +
+                (f", shape={data.shape}" if hasattr(data, 'shape') else ""))
 
     def process_pending(self) -> int:
         """
@@ -222,6 +235,9 @@ class DASignalManager:
             signal = self._pending_signals.popleft()
             self._deliver_signal(signal)
             processed_count += 1
+
+        if processed_count > 0:
+            _wf_dbg(f"处理信号队列: {processed_count} 条信号已传递")
 
         return processed_count
 
@@ -256,6 +272,9 @@ class DASignalManager:
             self._indegree_received[conn.target_node_id] = (
                 self._indegree_received.get(conn.target_node_id, 0) + 1
             )
+            _wf_dbg(f"  传递: {signal.source_node_id[:8]}.{signal.output_channel} -> "
+                    f"{conn.target_node_id[:8]}.{conn.target_input_channel}, "
+                    f"入度计数={self._indegree_received[conn.target_node_id]}")
 
     def is_node_ready(self, node_id: str) -> bool:
         """
@@ -271,6 +290,7 @@ class DASignalManager:
         """
         total_indegree = len(self._workflow.get_upstream_connections(node_id))
         received = self._indegree_received.get(node_id, 0)
+        _wf_dbg(f"  就绪检查 {node_id[:8]}: 已收={received}/{total_indegree}")
         return received == total_indegree
 
     def get_pending_count(self) -> int:

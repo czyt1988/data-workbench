@@ -27,6 +27,7 @@ DADataAnalysisPy - 数据分析示例节点包
 - DataSortNode: 排序
 - DataThresholdFilterNode: 阈值筛选
 - DataTransformSkewedNode: 偏态变换
+- DataToManagerNode: 输出到数据管理区
 """
 
 from .data_source_node import DataSourceNode
@@ -49,6 +50,7 @@ from .data_search_node import DataSearchNode
 from .data_sort_node import DataSortNode
 from .data_threshold_filter_node import DataThresholdFilterNode
 from .data_transform_skewed_node import DataTransformSkewedNode
+from .data_to_manager_node import DataToManagerNode
 
 try:
     from .data_plot_node import DataPlotNode
@@ -77,4 +79,5 @@ __all__ = [
     "DataSortNode",
     "DataThresholdFilterNode",
     "DataTransformSkewedNode",
+    "DataToManagerNode",
 ]

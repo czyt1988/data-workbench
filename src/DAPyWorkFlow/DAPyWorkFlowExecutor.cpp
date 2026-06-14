@@ -3,6 +3,7 @@
 #include "DAPyModuleWorkflow.h"
 #include "DAPybind11InQt.h"
 #include "DAPyWorkFlowEnumStringUtils.h"
+#include "DAPyWorkFlowAPI.h"
 #include <QDebug>
 #include <pybind11/functional.h>
 
@@ -73,6 +74,7 @@ void DAPyWorkFlowExecutor::setOnProgress(ProgressCallback callback)
  */
 void DAPyWorkFlowExecutor::initExecutor(const DAPyWorkFlow& workflow)
 {
+    DA_WF_DBG("[C++] Executor::initExecutor: 开始初始化");
     if (workflow.isNone()) {
         qWarning() << "DAPyWorkFlowExecutor::initExecutor: workflow is none";
         return;
@@ -85,6 +87,7 @@ void DAPyWorkFlowExecutor::initExecutor(const DAPyWorkFlow& workflow)
                 return;
             }
         }
+        DA_WF_DBG("[C++] Executor::initExecutor: 模块导入成功");
         pybind11::object executorClass = pyModule.getWorkflowExecutorObject();
         if (executorClass.is_none()) {
             qWarning() << "DAPyWorkFlowExecutor::initExecutor: DAWorkflowExecutor class not available";
@@ -107,6 +110,7 @@ void DAPyWorkFlowExecutor::initExecutor(const DAPyWorkFlow& workflow)
                                  pybind11::arg("on_state_change")  = stateCallback,
                                  pybind11::arg("on_node_finished") = nodeFinishedCallback,
                                  pybind11::arg("on_progress")      = progressCallback);
+        DA_WF_DBG("[C++] Executor::initExecutor: Python DAWorkflowExecutor 实例创建成功");
     } catch (const pybind11::error_already_set& e) {
         dealException(e);
     } catch (const std::exception& e) {
@@ -119,13 +123,16 @@ void DAPyWorkFlowExecutor::initExecutor(const DAPyWorkFlow& workflow)
  */
 bool DAPyWorkFlowExecutor::execute()
 {
+    DA_WF_DBG("[C++] Executor::execute: 开始同步执行");
     if (isNone()) {
         qWarning() << "DAPyWorkFlowExecutor::execute: executor is not initialized";
         return false;
     }
 
     try {
-        return attr("execute")().cast< bool >();
+        bool result = attr("execute")().cast< bool >();
+        DA_WF_DBG("[C++] Executor::execute: 执行完成, result=%s", result ? "true" : "false");
+        return result;
     } catch (const pybind11::error_already_set& e) {
         qCritical() << "DAPyWorkFlowExecutor::execute: Python exception -" << e.what();
         dealException(e);
@@ -344,6 +351,7 @@ DAPySignalManager DAPyWorkFlowExecutor::getSignalManager() const
 
 void DAPyWorkFlowExecutor::onPyStateChange(const std::string& oldState, const std::string& newState)
 {
+    DA_WF_DBG("[C++] Executor::onPyStateChange: %s -> %s", oldState.c_str(), newState.c_str());
     if (mOnStateChange) {
         mOnStateChange(QString::fromStdString(oldState), QString::fromStdString(newState));
     }
@@ -351,6 +359,8 @@ void DAPyWorkFlowExecutor::onPyStateChange(const std::string& oldState, const st
 
 void DAPyWorkFlowExecutor::onPyNodeFinished(const std::string& nodeId, bool success)
 {
+    DA_WF_DBG("[C++] Executor::onPyNodeFinished: nodeId=%s, success=%s",
+              nodeId.c_str(), success ? "true" : "false");
     if (mOnNodeFinished) {
         mOnNodeFinished(QString::fromStdString(nodeId), success);
     }
@@ -358,6 +368,7 @@ void DAPyWorkFlowExecutor::onPyNodeFinished(const std::string& nodeId, bool succ
 
 void DAPyWorkFlowExecutor::onPyProgress(int executedCount, int totalCount)
 {
+    DA_WF_DBG("[C++] Executor::onPyProgress: %d/%d", executedCount, totalCount);
     if (mOnProgress) {
         mOnProgress(executedCount, totalCount);
     }

@@ -989,10 +989,8 @@ void DAAppRibbonArea::buildPyWorkflowRibbonGroup()
     m_pannelPyWorkflow      = m_categoryWorkflowRun->addPanel(tr("Python Workflow"));  // cn:Python工作流
     m_pannelPyWorkflow->setObjectName(QStringLiteral("da-pannel-context.workflow.pyworkflow"));
     DA::DAPyWorkflowActions pyActions;
-    pyActions.actionPyWorkflowNew       = m_actions->actionPyWorkflowNew;
-    pyActions.actionPyWorkflowOpen      = m_actions->actionPyWorkflowOpen;
-    pyActions.actionPyWorkflowExecute   = m_actions->actionPyWorkflowExecute;
-    pyActions.actionPyWorkflowTerminate = m_actions->actionPyWorkflowTerminate;
+    pyActions.actionPyWorkflowNew  = m_actions->actionPyWorkflowNew;
+    pyActions.actionPyWorkflowOpen = m_actions->actionPyWorkflowOpen;
     m_pyWorkflowRibbonGroup->buildPyWorkflowPanel(m_pannelPyWorkflow, pyActions);
 }
 #endif
