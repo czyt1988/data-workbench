@@ -463,7 +463,7 @@ class DAWorkflowExecutor:
         node_instance.set_node_state("running")
 
         try:
-            result = node_instance.execute()
+            result = node_instance.run()
             success = bool(result) if result is not None else True
             # 根据执行结果设置节点状态
             node_instance.set_node_state("success" if success else "error")

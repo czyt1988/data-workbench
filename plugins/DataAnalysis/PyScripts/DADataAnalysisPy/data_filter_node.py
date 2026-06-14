@@ -50,8 +50,8 @@ class DataFilterNode:
         """
         if params is None:
             params = {}
-        condition = params.get("condition", self.condition.default)
-        column = params.get("column", self.column.default)
+        condition = params.get("condition", "")
+        column = params.get("column", "")
 
         df = self._input_data.get("data")
         if df is None:

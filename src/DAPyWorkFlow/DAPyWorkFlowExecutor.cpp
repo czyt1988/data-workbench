@@ -126,7 +126,11 @@ bool DAPyWorkFlowExecutor::execute()
 
     try {
         return attr("execute")().cast< bool >();
+    } catch (const pybind11::error_already_set& e) {
+        qCritical() << "DAPyWorkFlowExecutor::execute: Python exception -" << e.what();
+        dealException(e);
     } catch (const std::exception& e) {
+        qCritical() << "DAPyWorkFlowExecutor::execute: Standard exception -" << e.what();
         dealException(e);
     }
     return false;

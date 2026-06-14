@@ -451,6 +451,12 @@ bool DAPyWorkFlowManager::executeWorkflow()
 
     Q_EMIT executionStarted();
     bool success = executor.execute();
+    if (!success) {
+        QStringList errors = executor.getErrorMessages();
+        for (const QString& err : std::as_const(errors)) {
+            qCritical() << "Workflow error:" << err;
+        }
+    }
     Q_EMIT executionFinished(success);
     return success;
 }

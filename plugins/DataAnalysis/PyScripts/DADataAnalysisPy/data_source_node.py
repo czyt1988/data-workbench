@@ -27,7 +27,7 @@ class DataSourceNode:
         file_type_out = Output("str", description="实际读取的文件格式")
 
     def __init__(self):
-        self._output_data = {}
+        super().__init__()
 
     def execute(self, inputs=None, params=None):
         """
@@ -43,11 +43,11 @@ class DataSourceNode:
         if params is None:
             params = {}
 
-        file_path = params.get("file_path", self.file_path.default)
-        file_type = params.get("file_type", self.file_type.default).strip().lower()
-        encoding = params.get("encoding", self.encoding.default)
-        sep = params.get("separator", self.separator.default)
-        sheet_name = params.get("sheet_name", self.sheet_name.default)
+        file_path = params.get("file_path", "")
+        file_type = (params.get("file_type", "csv") or "csv").strip().lower()
+        encoding = params.get("encoding", "utf-8")
+        sep = params.get("separator", ",")
+        sheet_name = params.get("sheet_name", "0")
 
         if not file_path:
             self._output_data = {"data": None, "row_count": 0, "file_type_out": file_type, "error": "file_path 为空"}

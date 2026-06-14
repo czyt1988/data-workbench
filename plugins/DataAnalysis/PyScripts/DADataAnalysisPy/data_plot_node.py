@@ -66,8 +66,8 @@ class DataPlotNode:
 
         if params is None:
             params = {}
-        column = params.get("column", self.column.default)
-        chart_type = params.get("chart_type", self.chart_type.default)
+        column = params.get("column", "")
+        chart_type = params.get("chart_type", "line")
 
         df = self._input_data.get("data")
         if df is None:

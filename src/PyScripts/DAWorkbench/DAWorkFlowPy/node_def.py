@@ -18,7 +18,7 @@ NodeDef 装饰器会收集类中的 Input、Output、Parameter 声明，
         class Outputs:
             filtered = Output("DataFrame")
 
-        def execute(self, inputs, params):
+        def execute(self, inputs=None, params=None):
             # 节点执行逻辑
             ...
 
@@ -39,6 +39,7 @@ NodeDef 装饰器会收集类中的 Input、Output、Parameter 声明，
 5. 构建渲染属性聚合 NodeDisplay（icon、render_template、样式字段）
 """
 
+import inspect
 from dataclasses import dataclass, field
 from typing import Optional, Union
 
@@ -336,6 +337,39 @@ class DAWorkflowNode:
         """
         return cls.parameters
 
+    def run(self) -> bool:
+        """
+        无参执行入口，由 DAWorkflowExecutor 调用。
+
+        从 ``_input_data`` 构建 ``inputs`` dict，从实例属性构建 ``params`` dict，
+        然后根据子类 ``execute()`` 的签名自动适配调用方式：
+
+        - ``execute(self, inputs, params)`` → 传递 inputs 和 params
+        - ``execute(self)`` → 无参调用（兼容简单节点）
+
+        :return: ``True`` 表示执行成功
+        """
+        # 构建 inputs dict（兼容子类未调用 super().__init__() 的情况）
+        inputs = dict(getattr(self, '_input_data', {}))
+
+        # 构建 params dict
+        params = {}
+        for name in self.parameters:
+            value = getattr(self, name, None)
+            # 若实例属性仍是 Parameter 描述符（子类未调 super().__init__()
+            # 且未被反序列化覆盖），提取其默认值
+            if isinstance(value, Parameter):
+                value = value.default
+            params[name] = value
+
+        # 根据 execute() 签名自动适配调用方式
+        sig = inspect.signature(self.execute)
+        if len(sig.parameters) >= 2:
+            result = self.execute(inputs, params)
+        else:
+            result = self.execute()
+        return bool(result) if result is not None else True
+
 
 def _build_node_display(icon: str, render_template: str, style) -> NodeDisplay:
     """
@@ -410,7 +444,7 @@ def NodeDef(
                 data = Input("DataFrame", required=True)
             class Outputs:
                 filtered = Output("DataFrame")
-            def execute(self, inputs, params):
+            def execute(self, inputs=None, params=None):
                 ...
 
     使用 NodeDisplay 设置样式::

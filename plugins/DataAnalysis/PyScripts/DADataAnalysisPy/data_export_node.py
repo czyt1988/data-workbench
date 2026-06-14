@@ -49,8 +49,8 @@ class DataExportNode:
         """
         if params is None:
             params = {}
-        file_path = params.get("file_path", self.file_path.default)
-        fmt = params.get("export_format", self.export_format.default).strip().lower()
+        file_path = params.get("file_path", "")
+        fmt = (params.get("export_format", "csv") or "csv").strip().lower()
 
         df = self._input_data.get("data")
         if df is None or not file_path:

@@ -54,10 +54,10 @@ class DataTransformNode:
         """
         if params is None:
             params = {}
-        column = params.get("column", self.column.default)
-        operation = params.get("operation", self.operation.default)
-        new_name = params.get("new_name", self.new_name.default)
-        fill_value = params.get("fill_value", self.fill_value.default)
+        column = params.get("column", "")
+        operation = params.get("operation", "rename")
+        new_name = params.get("new_name", "")
+        fill_value = params.get("fill_value", None)
 
         df = self._input_data.get("data")
         if df is None:
