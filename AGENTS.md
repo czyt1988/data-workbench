@@ -391,7 +391,10 @@ public:
 
 ## COMMANDS
 
-> **⚠️ 构建前请阅读 root `build.md`**：该文件包含完整的构建命令、常见问题和 Agent 快速参考。
+> **🔴 强制规则：构建前必须先阅读 root `build.md`**
+>
+> 不要凭记忆或假设执行构建命令。`build.md` 包含完整的构建流程、常见问题排查和 Agent 快速参考。
+> 如果构建失败，**首先检查 `build.md` 中的"常见构建问题"章节**，不要自行猜测原因。
 
 ### 日常构建（Agent 直接执行）
 
@@ -405,10 +408,12 @@ public:
 .\scripts\build.ps1 -Target DAPyWorkFlow       # 编译指定模块
 .\scripts\build.ps1 -Target DAPyWorkFlow -Test  # 编译并运行测试
 .\scripts\build.ps1 -Full                        # 完整构建
-.\scripts\build.ps1 -Clean                       # 清理重新配置
+.\scripts\build.ps1 -Clean                       # 清理重新配置+编译
 ```
 
-> **务必使用 Visual Studio 生成器**，不要用 Ninja。PowerShell 中 MSVC 环境无法正确注入。
+> **🔴 Windows 禁止使用 Ninja 生成器**：必须使用 Visual Studio 生成器。PowerShell 中 MSVC 环境无法正确注入，Ninja 会导致 `fatal error C1083: 无法打开包括文件: "type_traits"` 等错误。
+>
+> 如果 `build/` 目录已存在且是用 Ninja 配置的，必须使用 `.\scripts\build.ps1 -Clean` 清理后重新配置。
 
 #### Linux / WSL
 

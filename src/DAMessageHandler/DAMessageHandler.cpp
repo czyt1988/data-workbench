@@ -6,7 +6,6 @@
 #include <QList>
 #include <QDateTime>
 #include "DAMessageQueueProxy.h"
-#include "da_concurrent_queue.hpp"
 #include <atomic>
 // #ifndef SPDLOG_WCHAR_FILENAMES
 // #define SPDLOG_WCHAR_FILENAMES
@@ -132,7 +131,7 @@ spdlog::logger* DAMessageHandlerGlobalValues_Private::logger()
 
 void DAMessageHandlerGlobalValues_Private::setEnableMessageCaptureToQueue(bool on)
 {
-	return this->_enableCaptureToQueue.store(on);
+	this->_enableCaptureToQueue.store(on);
 }
 
 bool DAMessageHandlerGlobalValues_Private::isEnableMessageCaptureToQueue() const

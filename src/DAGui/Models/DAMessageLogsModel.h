@@ -45,7 +45,7 @@ public:
     void setTypeBackgroundColor(QtMsgType type, const QColor& clr);
     //清空所有，此操作会把所有消息队列里的消息清空
     void clearAll();
-private slots:
+private Q_SLOTS:
     //有消息插入触发的槽
     void onMessageAppended();
     void onMessageQueueSizeChanged(int newSize);

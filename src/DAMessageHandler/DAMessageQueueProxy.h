@@ -51,9 +51,9 @@ public:
 
     //获取全局队列的尺寸
     static int getGlobalQueueCapacity();
-private slots:
+private Q_SLOTS:
     void onTimeout();
-signals:
+Q_SIGNALS:
     /**
      * @brief 有消息插入
      * @note 此信号触发@sa messageQueueSizeChanged 信号就不会触发，这两个是互斥

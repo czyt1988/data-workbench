@@ -203,61 +203,41 @@ void DAMessageLogsModel::setTypeBackgroundColor(QtMsgType type, const QColor& cl
 void DAMessageLogsModel::clearAll()
 {
     d_ptr->_messageQueueProxy.clear();
+    if (d_ptr->_rowCount > 0) {
+        beginRemoveRows(QModelIndex(), 0, d_ptr->_rowCount - 1);
+        d_ptr->_rowCount = 0;
+        endRemoveRows();
+    }
 }
 
 void DAMessageLogsModel::onMessageAppended()
 {
-	// 全表刷新
-	// 触发此信号说明队列已经满了
-	int r = rowCount() - 1;
-	int c = columnCount() - 1;
-	int qs = d_ptr->_messageQueueProxy.size() - 1;  // 全局队列的容积，如果r == s 说明已经充满，不需要新增行
-
-	// 防止清空队列后出现负索引
-	r = (r > 0) ? r : 0;  // 禁止这种操作，会让r在索引和数量上处于一种模糊，在r有值时是索引，无值时也应该是索引只是是-1而已，如果是0，就认为有一个数据，会出现异常
-	c  = (c > 0) ? c : 0;
-	qs = (qs > 0) ? qs : 0;
-
-	if (r < qs) {
-		// 说明刚刚过容积线，此时需要插入到qs的长度，理论上之后都是r == qs
-		// 此时r已经是减去1的索引，因此插入位置要r+1
-		if (r != 0) {
-			// r为空不需要处理,一般是刚启动的时候的情况
-			// qDebug() << "beginInsertRows(QModelIndex()," << r + 1 << "," << qs << ")";
-			beginInsertRows(QModelIndex(), r + 1, qs);
-			d_ptr->_rowCount = qs + 1;
-			endInsertRows();
-		}
-	} else {
-		// 这里说明总体容积已经充满，全局队列此时会一直维护一个固定容积，只需要更新数据
-		// 全局队列是进行一个移动，这里全部更新
-		//  r和c已经在数量上减去1，就是索引
-		if (r >= 0 && c >= 0) {
-			// qDebug() << "emit dataChanged(index(0, 0), index(" << r << "," << c << ")";
-			emit dataChanged(index(0, 0), index(r, c));
-		}
+	// 触发此信号说明队列已满（惰性信号合并了多次插入）
+	int qs = d_ptr->_messageQueueProxy.size();
+	if (d_ptr->_rowCount < qs) {
+		// 模型行数少于队列尺寸，需要插入新行
+		beginInsertRows(QModelIndex(), d_ptr->_rowCount, qs - 1);
+		d_ptr->_rowCount = qs;
+		endInsertRows();
+	} else if (d_ptr->_rowCount > 0) {
+		// 行数已对齐，队列在循环覆写，只需刷新数据
+		int lastRow = d_ptr->_rowCount - 1;
+		int lastCol = columnCount() - 1;
+		emit dataChanged(index(0, 0), index(lastRow, lastCol));
 	}
 }
 
 void DAMessageLogsModel::onMessageQueueSizeChanged(int newSize)
 {
-	// 全表刷新
-	Q_UNUSED(newSize);
-	int r = rowCount() - 1;
-	int s = d_ptr->_messageQueueProxy.size() - 1;
-    // qDebug() << "onMessageQueueSizeChanged:" << newSize;
-	// 防止清空队列后出现负索引
-	s = (s > 0) ? s : 0;
-	r = (r > 0) ? r : 0;
-
-	if (r < s) {
-		beginInsertRows(QModelIndex(), r, s);
-		d_ptr->_rowCount = s + 1;
+	if (newSize > d_ptr->_rowCount) {
+		// 队列增长，插入新行
+		beginInsertRows(QModelIndex(), d_ptr->_rowCount, newSize - 1);
+		d_ptr->_rowCount = newSize;
 		endInsertRows();
-	} else if (s < r) {
-		// 一般是进行了clear操作导致队列的尺寸变小
-		beginRemoveRows(QModelIndex(), s, r);
-		d_ptr->_rowCount = s + 1;
+	} else if (newSize < d_ptr->_rowCount) {
+		// 队列缩小（一般是 clear 操作），移除多余行
+		beginRemoveRows(QModelIndex(), newSize, d_ptr->_rowCount - 1);
+		d_ptr->_rowCount = newSize;
 		endRemoveRows();
 	}
 }
