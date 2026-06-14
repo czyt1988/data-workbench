@@ -654,11 +654,9 @@ bool DAXmlHelper::PrivateData::loadNodesClipBoard(DAPyWorkFlowGraphicsScene* sce
 DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElement& nodeEle,
                                                                 DAPyWorkFlowGraphicsScene* workFlowScene)
 {
-    bool isok     = false;
-    qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
-    if (!isok) {
-        qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node")
-                          .arg(nodeEle.attribute("id"));
+    QString id = nodeEle.attribute("id");
+    if (id.isEmpty()) {
+        qWarning() << QObject::tr("node missing id attribute, will skip this node");
         return nullptr;
     }
     QString name          = nodeEle.attribute("name");
@@ -692,7 +690,7 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
     // 设置节点id和名称（通过 Python 对象属性直接设置）
     DAPyGILGuard gilGuard;
     try {
-        proxy.object().attr("node_id") = QString::number(id).toStdString();
+        proxy.object().attr("node_id") = id.toStdString();
         proxy.object().attr("name")    = name.toStdString();
     } catch (const std::exception& e) {
         qWarning() << "DAXmlHelper: failed to set node id/name via Python object:" << e.what();
@@ -731,11 +729,9 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(const QD
                                                                         DAPyWorkFlowGraphicsScene* workFlowScene,
                                                                         QMap< QString, QString >* idMap)
 {
-    bool isok     = false;
-    qulonglong id = nodeEle.attribute("id").toULongLong(&isok);
-    if (!isok) {
-        qWarning() << QObject::tr("node's id=%1 can not conver to qulonglong type ,will skip this node")
-                          .arg(nodeEle.attribute("id"));
+    QString id = nodeEle.attribute("id");
+    if (id.isEmpty()) {
+        qWarning() << QObject::tr("node missing id attribute, will skip this node");
         return nullptr;
     }
     QString name          = nodeEle.attribute("name");
@@ -769,7 +765,7 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(const QD
         // idMap为空，使用原来的id（通过 Python 对象属性直接设置）
         DAPyGILGuard gilGuard;
         try {
-            proxy.object().attr("node_id") = QString::number(id).toStdString();
+            proxy.object().attr("node_id") = id.toStdString();
         } catch (const std::exception& e) {
             qWarning() << "DAXmlHelper: failed to set node_id via Python object:" << e.what();
         }
@@ -798,7 +794,7 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(const QD
 
     if (idMap) {
         // 记录旧id到新id的映射
-        (*idMap)[ QString::number(id) ] = proxy.getNodeId();
+        (*idMap)[ id ] = proxy.getNodeId();
     }
     return item;
 }
@@ -1016,23 +1012,21 @@ bool DAXmlHelper::PrivateData::loadNodeLinks(DAPyWorkFlowGraphicsScene* scene, c
         if (fromEle.isNull() || toEle.isNull()) {
             continue;
         }
-        bool ok = false;
-
-        qulonglong fromId = fromEle.attribute("id").toULongLong(&ok);
-        QString fromKey   = fromEle.attribute("name");
+        QString fromId = fromEle.attribute("id");
+        QString fromKey = fromEle.attribute("name");
 
         // 通过id在场景中查找节点图形项
-        DAPyNodeGraphicsItem* fromItem = scene->findNodeItemById(QString::number(fromId));
-        if (!ok || nullptr == fromItem) {
-            qWarning() << QObject::tr("link info can not find node in scene,id = %1").arg(fromEle.attribute("id"));
+        DAPyNodeGraphicsItem* fromItem = scene->findNodeItemById(fromId);
+        if (fromId.isEmpty() || nullptr == fromItem) {
+            qWarning() << QObject::tr("link info can not find node in scene,id = %1").arg(fromId);
             continue;
         }
 
-        qulonglong toId              = toEle.attribute("id").toULongLong(&ok);
+        QString toId                 = toEle.attribute("id");
         QString toKey                = toEle.attribute("name");
-        DAPyNodeGraphicsItem* toItem = scene->findNodeItemById(QString::number(toId));
-        if (!ok || nullptr == toItem) {
-            qWarning() << QObject::tr("link info can not find node in scene,id = %1").arg(toEle.attribute("id"));
+        DAPyNodeGraphicsItem* toItem = scene->findNodeItemById(toId);
+        if (toId.isEmpty() || nullptr == toItem) {
+            qWarning() << QObject::tr("link info can not find node in scene,id = %1").arg(toId);
             continue;
         }
 
@@ -1083,15 +1077,13 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(DAPyWorkFlowGraphicsSc
         if (fromEle.isNull() || toEle.isNull()) {
             continue;
         }
-        bool ok = false;
-
-        qulonglong fromOrigId = fromEle.attribute("id").toULongLong(&ok);
-        QString fromKey       = fromEle.attribute("name");
+        QString fromOrigId = fromEle.attribute("id");
+        QString fromKey    = fromEle.attribute("name");
 
         // 通过id映射查找实际的节点图形项
         QString fromRealIdStr;
         if (idMap) {
-            fromRealIdStr = idMap->value(QString::number(fromOrigId), "");
+            fromRealIdStr = idMap->value(fromOrigId, "");
             if (fromRealIdStr.isEmpty()) {
                 qWarning() << QObject::tr(
                                   "During the pasting process, the mapping corresponding to ID(%1) cannot be found")
@@ -1099,19 +1091,19 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(DAPyWorkFlowGraphicsSc
                 continue;
             }
         } else {
-            fromRealIdStr = QString::number(fromOrigId);
+            fromRealIdStr = fromOrigId;
         }
         DAPyNodeGraphicsItem* fromItem = scene->findNodeItemById(fromRealIdStr);
         if (nullptr == fromItem) {
-            qWarning() << QObject::tr("link info can not find node in scene,id = %1").arg(fromEle.attribute("id"));
+            qWarning() << QObject::tr("link info can not find node in scene,id = %1").arg(fromOrigId);
             continue;
         }
 
-        qulonglong toOrigId = toEle.attribute("id").toULongLong(&ok);
-        QString toKey       = toEle.attribute("name");
+        QString toOrigId = toEle.attribute("id");
+        QString toKey    = toEle.attribute("name");
         QString toRealIdStr;
         if (idMap) {
-            toRealIdStr = idMap->value(QString::number(toOrigId), "");
+            toRealIdStr = idMap->value(toOrigId, "");
             if (toRealIdStr.isEmpty()) {
                 qWarning() << QObject::tr(
                                   "During the pasting process, the mapping corresponding to ID(%1) cannot be found")
@@ -1119,11 +1111,11 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(DAPyWorkFlowGraphicsSc
                 continue;
             }
         } else {
-            toRealIdStr = QString::number(toOrigId);
+            toRealIdStr = toOrigId;
         }
         DAPyNodeGraphicsItem* toItem = scene->findNodeItemById(toRealIdStr);
         if (nullptr == toItem) {
-            qWarning() << QObject::tr("link info can not find node in scene,id = %1").arg(toEle.attribute("id"));
+            qWarning() << QObject::tr("link info can not find node in scene,id = %1").arg(toOrigId);
             continue;
         }
 
