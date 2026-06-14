@@ -28,21 +28,21 @@ description: 当需要为data-workbench创建新的Python工作流节点插件�
 │  DAAppPluginManager                                │  │  DAWorkbench.DAWorkFlowPy                  │
 │    ├ loadAllPlugins()                              │  │    ├ NodeDef          (@装饰器)             │
 │    ├ scanPyPluginsDir()  ← pyplugins/ 扫描         │  │    ├ DANodeRegistry   (注册表)              │
-│    └ initPyNodeFactory()                           │  │    ├ DANodeDescriptor (描述符)              │
+│    └ initPyNodeFactory()                           │  │    ├ DANodeFactory    (工厂类)              │
 │        ↓                                           │  │    ├ DAWorkflow       (DAG模型)             │
 │  DAPyNodeFactory                                   │  │    └ DAWorkflowExecutor (执行器)            │
 │    ├ discoverNodes() ────────── GIL ──────────────→│─→│──→ DANodeRegistry().discover()             │
-│    └ createNodeProxy() ──────── GIL ──────────────→│─→│──→ module.import() → Class()              │
+│    └ createNode() ───────────── GIL ──────────────→│─→│──→ module.import() → Class()              │
 │        ↓                                           │  │                                            │
 │  DAPyModuleWorkflow (单例)                          │  │                                            │
 │    └ import("DAWorkbench.DAWorkFlowPy")             │  │                                            │
-│    └ 缓存: DAWorkflow, DANodeRegistry, NodeDef 类   │  │                                            │
+│    └ 缓存: DAWorkflow, DANodeRegistry, NodeDef, DANodeFactory, DAWorkflowExecutor, DASignalManager, DAWorkflowSerializer 类引用 │  │                                            │
 │        ↓                                           │  │                                            │
 │  DAPyWorkFlowScene                                 │  │                                            │
 │    └ createPyNode() ─────────── GIL ──────────────→│─→│──→ module::import(mod).attr(cls)()         │
 │        ↓                                           │  │    → workflow.add_node(instance)            │
-│  DAPyNodeProxy                                     │  │                                            │
-│    └ exec() ─────────────────── GIL ──────────────→│─→│──→ pyNode.execute()                       │
+│  DAPyNode (C++ 纯代理)                              │  │                                            │
+│    └ attr("run")() ──────────── GIL ──────────────→│─→│──→ pyNode.run() → execute()               │
 │        ↓                                           │  │                                            │
 │  DAPyNodeGraphicsItem (渲染)                        │  │                                            │
 │  DAPyWorkFlowGraphicsView (拖拽)                    │  │                                            │
@@ -61,28 +61,31 @@ description: 当需要为data-workbench创建新的Python工作流节点插件�
 | 类 | 文件路径 | 职责 | 关键方法 |
 |---|---|---|---|
 | DAAppPluginManager | `src/APP/DAAppPluginManager.h/.cpp` | 启动时扫描 pyplugins 目录，初始化 DAPyNodeFactory | `loadAllPlugins()`, `initPyNodeFactory()`, `scanPyPluginsDir()` |
-| DAPyNodeFactory | `src/DAPyWorkFlow/DAPyNodeFactory.h/.cpp` | 调用 Python DANodeRegistry.discover() 发现节点，维护元数据列表 | `discoverNodes(scanPaths, useEntryPoints)`, `createNodeProxy(qualifiedName)`, `getNodeMetadataList()` |
-| DAPyModuleWorkflow | `src/DAPyWorkFlow/DAPyModuleWorkflow.h/.cpp` | 单例，导入 DAWorkbench.DAWorkFlowPy，缓存 Python 类引用 | `getInstance()`, `import()`, `getWorkflowClass()`, `getNodeRegistryClass()`, `getNodeDefDecorator()` |
-| DAPyNodeProxy | `src/DAPyWorkFlow/DAPyNodeProxy.h/.cpp` | 持有 Python 节点实例引用，执行桥接，元信息同步缓存 | `exec()`, `setPyNodeRef()`, `getPyNodeRef()`, `getQualifiedName()` |
+| DAPyNodeFactory | `src/DAPyWorkFlow/DAPyNodeFactory.h/.cpp` | 调用 Python DANodeRegistry.discover() 发现节点，维护元数据列表，继承 DAPyObjectWrapper（非 QObject） | `discoverNodes(scanPaths, useEntryPoints)`, `createNode(qualifiedName)`, `getNodeMetadataList()` |
+| DAPyModuleWorkflow | `src/DAPyWorkFlow/DAPyModuleWorkflow.h/.cpp` | 单例，导入 DAWorkbench.DAWorkFlowPy，缓存 Python 类引用 | `getInstance()`, `import()`, `getWorkflowObject()`, `getNodeRegistryObject()`, `getNodeDefDecoratorObject()`, `getNodeFactoryObject()`, `getWorkflowExecutorObject()`, `getSignalManagerObject()`, `getWorkflowSerializerObject()` |
+| DAPyNode | `src/DAPyWorkFlow/DAPyNode.h/.cpp` | Python 节点的 C++ 纯代理，继承 DAPyObjectWrapper，通过 attr() 实时读取 Python 对象属性 | `getNodeId()`, `getQualifiedName()`, `getNodeName()`, `getNodeStyle()`, `getNodeState()`, `setPyInputData()`, `getPyOutputData()`, `getParameters()`, `setParameterValue()` |
 | DAPyWorkFlowScene | `src/DAPyWorkFlow/DAPyWorkFlowScene.h/.cpp` | 场景管理，创建/移除节点并同步 Python DAWorkflow | `createPyNode()`, `createPyNode_()`, `initPyWorkflow()`, `setPyWorkflow()` |
-| DAPyNodeGraphicsItem | `src/DAPyWorkFlow/DAPyNodeGraphicsItem.h/.cpp` | 节点图形项，根据描述符渲染节点外观和连接点 | `setDescriptor()`, `updateLinkPoints()`, `setRenderTemplate()` |
+| DAPyNodeGraphicsItem | `src/DAPyWorkFlow/DAPyNodeGraphicsItem.h/.cpp` | 节点图形项，根据描述符渲染节点外观和连接点 | `setNodeStyle()`, `nodeStyle()`, `setRenderTemplate(DAPyNodeStyle::NodeRenderTemplate)` |
 | DAPyWorkFlowGraphicsView | `src/DAGui/DAPyWorkFlowGraphicsView.h/.cpp` | 视图层，处理拖拽 dropEvent 触发节点创建 | `dropEvent()`, `createNode_()`, `createNode()` |
-| DAPyNodeMetaData | `src/DAPyWorkFlow/DAPyNodeFactory.h` (结构体) | 节点元数据，C++ 侧存储发现的节点描述信息 | `prototype`, `name`, `group`, `inputKeys`, `outputKeys` |
+| DAPyNodeMetaData | `src/DAPyWorkFlow/DAPyNodeMetaData.h/.cpp` | 节点元数据类 | `name`, `qualifiedName`, `category`, `iconPath`, `tooltip`, `isValid()` |
 | DAPyInterpreter | `src/DAPyBindQt/DAPyInterpreter.h/.cpp` | Python 解释器管理，sys.path 操作 | `appendSysPath()`, `isPythonInitialized()` |
 
 ## 核心模块速查（Python 侧）
 
 | 模块/类 | 文件路径 | 职责 | C++ 交互接口 |
 |---|---|---|---|
-| NodeDef | `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_def.py` | @NodeDef 装饰器，收集声明，生成 `_node_descriptor` | `cls._node_descriptor` DANodeDescriptor C++ struct |
-| Input/Output/Parameter | `src/PyScripts/DAWorkbench/DAWorkFlowPy/types.py` | 节点端口和参数的声明类型 | `to_port_descriptor(name)` / `to_parameter_descriptor(name)` |
-| DANodeDescriptor | （已删除）pybind11 绑定暴露的 C++ struct | 节点描述符，由 `da_py_workflow.DANodeDescriptor()` 直接创建 | — |
+| NodeDef | `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_def.py` | @NodeDef 装饰器，收集声明，设置类属性（qualified_name/name/category/inputs/outputs/parameters/_node_display） | 类属性直接读取 |
+| Input/Output/Parameter | `src/PyScripts/DAWorkbench/DAWorkFlowPy/types.py` | 节点端口和参数的声明类型 | `to_dict(name)` |
+| NodeDisplay | `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_def.py` | 节点渲染属性 dataclass（icon, render_template, body_shape, colors 等） | `to_dict()` 风格属性读取 |
 | DANodeRegistry | `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_registry.py` | 注册表，双模式发现（目录扫描 + entry_points） | `discover(scan_paths, use_entry_points)` |
 | DAWorkflow | `src/PyScripts/DAWorkbench/DAWorkFlowPy/workflow.py` | DAG 模型，管理节点实例和连接 | `add_node(instance)`, `remove_node(node_id)` |
 | DAWorkflowExecutor | `src/PyScripts/DAWorkbench/DAWorkFlowPy/executor.py` | 工作流执行器，拓扑排序执行 | `execute()` |
 | DASignalManager | `src/PyScripts/DAWorkbench/DAWorkFlowPy/signal_manager.py` | 事件驱动数据传播 | `send_output()` |
 | DAConnection | `src/PyScripts/DAWorkbench/DAWorkFlowPy/connection.py` | 节点间连接关系 | `to_dict()`, `from_dict()` |
 | __init__.py | `src/PyScripts/DAWorkbench/DAWorkFlowPy/__init__.py` | 包入口，统一导出所有公共类 | — |
+| DANodeFactory | `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_factory.py` | 节点工厂，封装发现和实例化（C++ 调用入口） | `discover()`, `create_node()`, `get_metadata()` |
+| DAWorkflowSerializer | `src/PyScripts/DAWorkbench/DAWorkFlowPy/serializer.py` | 工作流序列化器 | `to_dict()`, `from_dict()` |
+| NodeProxy | `src/PyScripts/DAWorkbench/DAWorkFlowPy/syntax.py` | 节点代理语法糖，支持 A >> B 链式连接 | — |
 
 ## 插件目录结构约定
 
@@ -150,7 +153,7 @@ pyplugins/
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
-@NodeDef(name="Data Filter", category="Data Processing", icon="filter", render_template="rect")
+@NodeDef(name="Data Filter", category="Data Processing", icon="filter", render_template="nodestyle")
 class DataFilterNode:
     """条件筛选节点 - 根据条件过滤 DataFrame 行"""
 
@@ -178,7 +181,7 @@ class DataFilterNode:
 
     def execute(self, inputs=None, params=None):
         """
-        节点执行入口 - C++ 侧通过 DAPyNodeProxy::exec() 调用
+        节点执行入口 - DAWorkflowExecutor 通过 node.run() 调用
 
         :param inputs: 输入数据字典（可选，默认使用 _input_data）
         :param params: 参数字典（可选）
@@ -247,24 +250,24 @@ setup(
 | `name` | str | 是 | 节点显示名称 |
 | `category` | str | 否 | 节点分组/分类 |
 | `icon` | str | 否 | 图标标识或路径 |
-| `style` | `DANodeStyle` | 否 | 节点渲染样式，DANodeStyle 实例 |
+| `style` | `NodeDisplay`/`dict` | 否 | 节点渲染样式，NodeDisplay 实例或 dict |
 | `render_template` | str | 否 | 渲染模板：`"nodestyle"`(默认), `"widget"` |
 
-### 装饰器自动生成的属性
+### 装饰器自动生成的类属性
 
-@NodeDef 在被装饰的类上设置 `_node_descriptor` 为 `da_py_workflow.DANodeDescriptor` C++ struct 实例：
+@NodeDef 在被装饰的类上直接设置以下类属性（纯 Python，非 C++ struct）：
 
 ```python
-# _node_descriptor 是 DANodeDescriptor 对象，字段通过属性访问
-_node_descriptor.qualifiedName   # str:  "module.ClassName" (自动生成)
-_node_descriptor.name            # str:  节点显示名称
-_node_descriptor.group           # str:  节点分组/分类
-_node_descriptor.icon            # str:  图标标识
-_node_descriptor.inputs          # list: 从 Inputs 嵌套类收集的 InputDescriptor
-_node_descriptor.outputs         # list: 从 Outputs 嵌套类收集的 OutputDescriptor
-_node_descriptor.parameters      # list: 从类属性中的 Parameter 实例收集的 ParameterDescriptor
-_node_descriptor.renderTemplate  # str:  渲染模板 "nodestyle" / "widget"
-_node_descriptor.style           # dict: DANodeStyle.toJson() 返回的样式字典
+cls.qualified_name       # str:  "module.ClassName" (自动生成: cls.__module__ + "." + cls.__name__)
+cls.name                 # str:  节点显示名称
+cls.category             # str:  节点分类
+cls.icon                 # str:  图标路径
+cls.inputs               # list[dict]: 从 Inputs 嵌套类收集的端口描述
+cls.outputs              # list[dict]: 从 Outputs 嵌套类收集的端口描述
+cls.parameters           # dict[str, Parameter]: 从类属性收集的参数描述映射
+cls._node_display        # NodeDisplay: 渲染属性聚合（icon、render_template、样式字段）
+cls.input_keys           # list[str]: 输入端口名称列表
+cls.output_keys          # list[str]: 输出端口名称列表
 ```
 
 ### 声明类型 API
@@ -285,7 +288,7 @@ Parameter(param_type: type, default=None, description: str = "")
 # param_type 支持: str, int, float, bool, list, dict
 ```
 
-> 参数声明后，节点的参数描述符（`_node_descriptor.parameters`）会自动传递给 C++ 通用参数面板进行界面渲染。详见下方「Python 节点属性设置」章节。
+> 参数声明后，节点的参数描述符（`parameters` 类属性）会自动传递给 C++ 通用参数面板进行界面渲染。详见下方「Python 节点属性设置」章节。
 
 ## Python 节点属性设置
 
@@ -296,8 +299,8 @@ Parameter(param_type: type, default=None, description: str = "")
 ```
 Python 节点 (Parameter 声明)
     │
-    ▼ _node_descriptor.parameters
-DAPyNodeProxy::getDescriptor()           ← C++ 侧读取描述符
+    ▼ cls.parameters (类属性)
+DAPyNode::getParameters()               ← C++ 侧读取参数
     │
     ▼ QJsonArray parameters
 ParameterDescriptor::fromJsonArray()     ← 解析为 ParameterDescriptor 列表
@@ -312,17 +315,17 @@ DAPropertyPanelContainerWidget           ← 将编辑器注册到属性面板
 DANodeParamSettingPanel                  ← SceneB 3-hop 信号链
     │
     ▼ collectConfig() → QJsonObject
-DAPyNodeProxy::setConfig()               ← 实时写入代理
+DAPyNode::setParameterValue()            ← 实时写入代理
     │
     ▼ 反射到 Python 节点实例
-Python 节点 params 参数                  ← execute() 中读取
+Python 节点实例属性                      ← execute() 中读取
 ```
 
 ### C++ 核心类
 
 | 类 | 路径 | 职责 |
 |---|---|---|
-| `DAAbstractNodeSettingWidget` | `src/DAGui/DAAbstractNodeSettingWidget.h` | 节点设置基类，持有 `DAPyNodeProxy*`，提供 `getDescriptor()` / `getParameters()` |
+| `DAAbstractNodeSettingWidget` | `src/DAGui/DAAbstractNodeSettingWidget.h` | 节点设置基类，持有 `DAPyNode*`，提供 `getDescriptor()` / `getParameters()` |
 | `DANodeParamSettingPanel` | `src/DAGui/NodeSetting/DANodeParamSettingPanel.h` | 通用参数面板，继承基类，持有 `DAPropertyPanelContainerWidget`，实现 SceneB 3-hop 信号链 |
 | `DAParamTypeRegistry` | `src/DAGui/NodeSetting/DAParamTypeRegistry.h` | 11 种参数类型注册系统，根据 type 字符串创建对应编辑器控件 |
 | `ParameterDescriptor` | `src/DAGui/NodeSetting/ParameterDescriptor.h` | 轻量级描述符结构体，`fromJson()` / `fromJsonArray()` 解析 JSON |
@@ -350,7 +353,7 @@ Python 节点 params 参数                  ← execute() 中读取
 
 ### 参数描述符格式
 
-Python 节点的 `_node_descriptor.parameters` 是一个 `ParameterDescriptor` 列表，每个元素描述一个参数：
+Python 节点的 `parameters` 类属性是一个参数描述映射，每个元素描述一个参数：
 
 ```json
 {
@@ -395,10 +398,10 @@ onPanelPropertyValueChanged(propertyId)              ← 第一跳：内部转�
 onPropertyValueChanged(propertyId)                   ← 第二跳：外部可监听
     │
     ▼ ③ collectConfig() → proxy->setConfig()
-DAPyNodeProxy 配置更新                                ← 第三跳：写入代理
+DAPyNode 配置更新                                     ← 第三跳：写入代理
 ```
 
-每次编辑器值变化立即触发 3-hop 信号链，**实时写入** `DAPyNodeProxy::setConfig()`，无需"应用"按钮。`updateUI()` 使用 `QSignalBlocker` 阻断回写信号，避免从代理读取配置时触发不必要的写入。
+每次编辑器值变化立即触发 3-hop 信号链，**实时写入** `DAPyNode::setParameterValue()`，无需"应用"按钮。`updateUI()` 使用 `QSignalBlocker` 阻断回写信号，避免从代理读取配置时触发不必要的写入。
 
 ### 自定义特定节点的设置面板
 
@@ -418,7 +421,7 @@ DANodeParamSettingPanelFactory::instance().registerPanel(
 
 ### 双击行为
 
-双击 Python 工作流节点 → `DAPyWorkFlowGraphicsScene` 发射 `nodeDoubleClicked(DAPyNodeProxy*)` 信号 → `DAPyWorkFlowNodeItemSettingWidget` 自动切换到"参数"标签页。
+双击 Python 工作流节点 → `DAPyWorkFlowGraphicsScene` 发射 `nodeDoubleClicked(const DAPyNode&)` 信号 → `DAPyWorkFlowNodeItemSettingWidget` 自动切换到"参数"标签页。
 
 ### 参考文件
 
@@ -451,7 +454,7 @@ DANodeParamSettingPanelFactory::instance().registerPanel(
 4. **更新 execute()**：确保 `execute()` 方法使用了新的输入 key 和参数
 5. **更新 __init__()**：确保 `_output_data` 字典包含新输出的初始值
 
-变更后 `_node_descriptor` 由装饰器自动更新，C++ 侧下次 `discoverNodes()` 时自动刷新元数据。无需修改 C++ 代码。
+变更后类属性由装饰器自动更新，C++ 侧下次 `discoverNodes()` 时自动刷新元数据。无需修改 C++ 代码。
 
 ## 完整调用链
 
@@ -482,15 +485,15 @@ DANodeParamSettingPanelFactory::instance().registerPanel(
  7.   → DAPyModuleWorkflow::getInstance().import()
       导入 "DAWorkbench.DAWorkFlowPy" 模块
 
- 8.   → pyModule.getNodeRegistryClass() → registryClass()
+ 8.   → pyModule.getNodeRegistryObject() → registryClass()
       创建 DANodeRegistry Python 实例
 
  9.   → registryInstance.discover(pyScanPaths, useEntryPoints)
       Python 侧双模式: _scan_directory() + _discover_from_entry_points()
-      返回 DANodeDescriptor 列表
+      返回节点类列表（带 _node_display 属性）
 
 10.   → 遍历描述符列表 → convertDescriptorToMetaData()
-      转换为 DAPyNodeMetaData → emit nodeDiscovered() 通知 UI
+      转换为 DAPyNodeMetaData 存入列表
 ```
 
 ### 链路二：拖拽创建链
@@ -503,21 +506,20 @@ DANodeParamSettingPanelFactory::instance().registerPanel(
  2. → DANodeMimeData 解包获取 DAPyNodeMetaData
 
  3. → createNode_(nodemeta, evpos)
-     转换: DAPyNodeMetaData → DANodeDescriptor 字段
-       mDescriptor.qualifiedName = md.prototype
-       mDescriptor.name = md.name
-       mDescriptor.group = md.group
+     转换: DAPyNodeMetaData → Python 模块路径
+       qualifiedName = md.qualifiedName
+       moduleName + className = qualifiedName.rsplit('.', 1)
 
- 4. → DAPyWorkFlowScene::createPyNode_(descriptor, pos) [支持 undo/redo]
+ 4. → DAPyWorkFlowScene::createPyNode_(metaData, pos) [支持 undo/redo]
      文件: src/DAPyWorkFlow/DAPyWorkFlowScene.cpp
 
- 5.   → createPyNode(descriptor, pos)
+ 5.   → createPyNode(metaData, pos)
 
  6.     → 检查 mPyWorkflow 是否已初始化（initPyWorkflow 在构造时调用）
          未初始化: "Python workflow is not set" 错误
 
- 7.     → 从 descriptor 提取 qualifiedName
-         为空: "descriptor missing qualifiedName" 错误
+ 7.     → 从 metaData.qualifiedName 提取
+         为空: "metaData 无效" 错误
 
  8.     → 分割 qualifiedName: rfind('.') → moduleName + className
          无 '.': "invalid qualifiedName" 错误
@@ -530,45 +532,41 @@ DANodeParamSettingPanelFactory::instance().registerPanel(
 11.     → workflowObj.attr("add_node")(pyNodeInstance)
         Python 侧注册节点到 DAWorkflow，自动分配 node_id
 
-12.     → proxy->setPyNodeRef(pyNodeInstance)
-        C++ 侧同步元信息: qualifiedName, inputKeys, outputKeys 等
+12.     → DAPyNode(pyNodeInstance) 构造 C++ 代理
+        通过 attr() 实时读取: qualified_name, input_keys, output_keys 等
 
-13.     → 创建 DAPyNodeGraphicsItem(proxy)
-        配置 descriptor, renderTemplate, icon, linkPoints, pos
+13.     → 创建 DAPyNodeGraphicsItem(node)
+        配置 nodeStyle, renderTemplate, icon, linkPoints, pos
 ```
 
 ### 链路三：节点执行链
 
 ```
- 1. DAPyNodeProxy::exec()
-    文件: src/DAPyWorkFlow/DAPyNodeProxy.cpp
+ 1. DAWorkflowExecutor 调用 node.run()
+    文件: src/PyScripts/DAWorkbench/DAWorkFlowPy/executor.py
 
- 2. → 检查 mPyNodeRef 是否有效
-    无效: "Python node reference is not set" 错误
+ 2. → DAWorkflowNode.run() 构建 inputs/params
+    从 _input_data 构建 inputs dict
+    从实例属性构建 params dict
 
- 3. → mNodeState = Running
+ 3. → 根据 execute() 签名自动适配
+    execute(self, inputs, params) 或 execute(self)
 
- 4. → DAPyGILGuard gilGuard（RAII 获取 GIL）
-    获取失败: "Failed to acquire GIL" 错误
+ 4. → C++ 侧 DAPyNode 通过 attr() 读取结果
+    getNodeState() → _node_state
+    getPyOutputData() → _output_data
 
- 5. → pyNode.attr("execute")()
-    调用 Python 节点的 execute() 方法
-
- 6. → 检查返回值
-    bool(True): mNodeState = Success
-    bool(False): mNodeState = Error
-    非 bool 或 None: 视为成功
-
- 7. → 异常处理
-    pybind11::error_already_set: 必须在 GIL 作用域内消费
-    std::exception: 存储到 mLastErrorString
+ 5. → 节点状态更新
+    True: _node_state = "success"
+    False: _node_state = "error"
+    异常: _node_state = "error", 异常信息记录
 ```
 
 ## 关键约定
 
 ### qualifiedName 格式
 
-- 由 @NodeDef 自动生成：`f"{cls.__module__}.{cls.__qualname__}"`
+- 由 @NodeDef 自动生成：`cls.__module__ + "." + cls.__name__`
 - C++ 侧通过 `rfind('.')` 分割为 `moduleName` + `className`
 - 示例：`DACrewAIAdapterPy.agent_node.AgentNode`
 
@@ -576,8 +574,8 @@ DANodeParamSettingPanelFactory::instance().registerPanel(
 
 | 返回值 | C++ 侧处理 |
 |---|---|
-| `True` | `DAPyNodeState::Success`，`exec()` 返回 `true` |
-| `False` | `DAPyNodeState::Error`，`exec()` 返回 `false` |
+| `True` | `DAPyNodeState::Success`，`run()` 返回 `True` |
+| `False` | `DAPyNodeState::Error`，`run()` 返回 `False` |
 | `None` 或无返回 | 视为成功 |
 | 抛异常 | `DAPyNodeState::Error`，异常信息存入 `mLastErrorString` |
 
@@ -587,64 +585,73 @@ DANodeParamSettingPanelFactory::instance().registerPanel(
 2. `pybind11::error_already_set` 异常必须在 GIL 作用域内 catch 并消费，否则其析构时尝试获取 GIL 会死锁
 3. C++ 侧持有 Python 对象使用 `DAPySafePyObjectHolder`，它在析构时检查 `Py_IsInitialized()`
 
-### _node_descriptor 结构（DANodeDescriptor C++ struct）
+### _node_display 结构（NodeDisplay dataclass）
 
 ```python
-# _node_descriptor 是 da_py_workflow.DANodeDescriptor 实例
-# 通过 pybind11 属性访问，字段均为 camelCase
-_node_descriptor.name              # str:  节点显示名称
-_node_descriptor.group             # str:  节点分类
-_node_descriptor.icon              # str:  图标标识
-_node_descriptor.qualifiedName     # str:  模块名.类名（唯一标识）
-_node_descriptor.inputs            # list: 输入端口列表 (InputPortDescriptor)
-_node_descriptor.outputs           # list: 输出端口列表 (OutputPortDescriptor)
-_node_descriptor.parameters        # list: 参数列表 → C++ 侧渲染为通用属性设置面板（见「Python 节点属性设置」）
-_node_descriptor.style             # dict: DANodeStyle.toJson() 返回的样式字典，可选
-_node_descriptor.renderTemplate    # str:  "nodestyle" | "widget"
+# _node_display 是 NodeDisplay dataclass 实例
+# C++ 侧通过 DAPyNode::getNodeStyle() → attr("_node_display") 读取
+_node_display.icon              # str:  图标路径
+_node_display.render_template   # str:  "nodestyle" | "widget"
+_node_display.body_shape        # Optional[str]: "RoundedRect" | "Ellipse"
+_node_display.name_position     # Optional[str]: "Inside" | "Below"
+_node_display.icon_position     # Optional[str]: "LeftOfText" | "AboveText"
+_node_display.background_color  # Optional[ColorType]: hex "#rrggbb" 或 RGB 元组
+_node_display.border_color      # Optional[ColorType]
+_node_display.border_width      # Optional[float]
+_node_display.corner_radius     # Optional[float]
+_node_display.icon_size         # Optional[float]
+_node_display.input_port_side   # Optional[str]: "West"/"East"/"North"/"South"
+_node_display.output_port_side  # Optional[str]
+_node_display.input_port_style  # Optional[LinkPointStyle]
+_node_display.output_port_style # Optional[LinkPointStyle]
+_node_display.layout_strategy   # Optional[str]: "Auto" | "Manual"
+_node_display.body_icon_type    # Optional[str]: "None"/"Pixmap"/"Svg"
+_node_display.body_icon_source  # Optional[str]
+_node_display.body_icon_scale   # Optional[float]
 ```
 
-> **注意:** 旧版 Python 侧 `node_descriptor.py` 中定义的 `DANodeDescriptor` Python 类已被删除。`@NodeDef` 装饰器直接创建 `da_py_workflow.DANodeDescriptor()`（C++ struct 的 pybind11 绑定）。
+> **注意:** 旧版 `_node_descriptor`（DANodeDescriptor C++ struct）已被移除。`@NodeDef` 装饰器现在将元数据设为类属性（`qualified_name`、`name` 等），渲染属性聚合到 `_node_display`（NodeDisplay dataclass）。
 
 ### 节点渲染样式
 
-从 T7 版本开始，节点渲染由 `DANodeStyle` 统一控制。`@NodeDef` 的 `style` 参数接收 `DANodeStyle` 实例，其 `toJson()` 方法生成的字典会存入 `_node_descriptor.style`，C++ 侧据此渲染节点外观（形状、颜色、端口样式等）。
+从 T7 版本开始，节点渲染由 `NodeDisplay` 统一控制。`@NodeDef` 的 `style` 参数接收 `NodeDisplay` 实例，C++ 侧通过 PY::toNodeStyle() 读取 NodeDisplay 属性转换为 DAPyNodeStyle，据此渲染节点外观（形状、颜色、端口样式等）。
 
 `render_template` 参数控制模板类型：
-- `"nodestyle"`（默认）：使用 `DANodeStyle` 中的样式配置进行绘制
+- `"nodestyle"`（默认）：使用 `NodeDisplay` 中的样式配置进行绘制
 - `"widget"`：嵌入自定义 Qt Widget
 
 旧版参数 `"rect"` 和 `"svg"` 自动映射到 `"nodestyle"`，无需修改现有代码。
 
 详细说明请参阅 [节点渲染设置文档](../../docs/zh/dev-guide/node-rendering-settings.md)。
 
-### C++ DAPyNodeProxy 同步读取的 Python 属性
+### C++ DAPyNode 通过 attr() 读取的 Python 属性
 
-`setPyNodeRef()` 调用时，`syncMetaFromPyNode()` 读取以下 Python 实例属性：
-
-| Python 属性 | C++ 缓存字段 | 来源 |
+| Python 属性 | C++ 获取方式 | 说明 |
 |---|---|---|
-| `qualifiedName` | `mDescriptor.qualifiedName` | `_node_descriptor.qualifiedName` (C++ struct) |
-| `nodeName` | `mDescriptor.name` | 由 NodeDef 设置 → `_node_descriptor.name` |
-| `inputKeys` | `mInputKeys` | 从 `_node_descriptor.inputs` 提取 |
-| `outputKeys` | `mOutputKeys` | 从 `_node_descriptor.outputs` 提取 |
-| `nodePrototype` | `mNodePrototype` | 同 `qualifiedName` |
-| `group` | `mNodeGroup` | `_node_descriptor.group` |
+| `qualified_name` | `attr("qualified_name")` → `getQualifiedName()` | 节点唯一标识 |
+| `name` | `attr("name")` → `getNodeName()` | 节点显示名称 |
+| `category` | `attr("category")` → `getNodeCategory()` | 节点分类 |
+| `icon` | `attr("icon")` → `getIcon()` | 图标路径 |
+| `input_keys` | `attr("input_keys")` → `getInputKeys()` | 输入端口名称列表 |
+| `output_keys` | `attr("output_keys")` → `getOutputKeys()` | 输出端口名称列表 |
+| `_node_display` | `attr("_node_display")` → `getNodeStyle()` | 渲染属性 → DAPyNodeStyle |
+| `_node_state` | `attr("_node_state")` → `getNodeState()` | 执行状态字符串 |
 
-> **注意:** 旧版基于 `QJsonObject`/dict 的 `_node_descriptor["qualified_name"]` 等键名已废弃，统一使用 `DANodeDescriptor.CxxField` 属性名（camelCase）。
+> **注意:** `DAPyNode` 通过 `attr()` 实时读取 Python 对象属性，不缓存。每次调用 C++ 方法都会跨语言访问 Python 属性。
 
 ## 常见问题排查清单
 
 | # | 现象/错误信息 | 可能原因 | 排查位置 |
 |---|---|---|---|
 | §1 | 节点不出现在面板上 | pyplugins 目录结构不正确，缺少 `PyScripts/PackageName/__init__.py` | `src/APP/DAAppPluginManager.cpp` `scanPyPluginsDir()` |
-| §2 | 节点不出现（结构正确） | 节点类没有 @NodeDef 装饰器，无 `_node_descriptor` 属性 | `node_registry.py` `_find_node_classes_in_module()` |
+| §2 | 节点不出现（结构正确） | 节点类没有 @NodeDef 装饰器，无 `qualified_name` 类属性 | `node_registry.py` `_find_node_classes_in_module()` |
 | §3 | "无法导入 DAWorkbench.DAWorkFlowPy" | PyScripts 路径未加入 sys.path | `src/APP/DAAppPluginManager.cpp` `initPyNodeFactory()` |
 | §4 | "Python workflow is not set" | `DAPyWorkFlowScene` 未初始化 Python DAWorkflow 实例 | `src/DAPyWorkFlow/DAPyWorkFlowScene.cpp` `initPyWorkflow()` |
-| §5 | "descriptor missing qualifiedName" | `DAPyNodeMetaData.prototype` 为空，DANodeDescriptor 转换失败 | `src/DAGui/DAPyWorkFlowGraphicsView.cpp` `createNode_()` |
+| §5 | "descriptor missing qualifiedName" | `DAPyNodeMetaData.qualifiedName` 为空，元数据转换失败 | `src/DAGui/DAPyWorkFlowGraphicsView.cpp` `createNode_()` |
 | §6 | "invalid qualifiedName: xxx" | qualifiedName 格式不含 '.'，无法分割模块和类名 | `src/DAPyWorkFlow/DAPyWorkFlowScene.cpp` `createPyNode()` |
 | §7 | "节点实例必须有 qualifiedName" | `add_node()` 收到的不是节点实例（而是 dict 等） | `workflow.py` `add_node()` 和 `DAPyWorkFlowScene.cpp` `createPyNode()` |
 | §8 | Python ImportError | 节点模块路径不在 sys.path 中 | `src/DAPyWorkFlow/DAPyNodeFactory.cpp` `discoverNodes()` |
-| §9 | "Python node reference is not set" | `DAPyNodeProxy` 未调用 `setPyNodeRef()` | `src/DAPyWorkFlow/DAPyNodeProxy.cpp` `exec()` |
+| §9 | "Python node reference is not set" | `DAPyNode` 构造时 Python 对象引用无效 | `src/DAPyWorkFlow/DAPyNode.cpp` |
 | §10 | execute() 返回 False 或抛异常 | Python 节点 execute() 逻辑错误 | 节点的 .py 文件 `execute()` 方法 |
 | §11 | GIL 死锁或程序冻结 | `pybind11::error_already_set` 在 GIL 作用域外析构 | 检查所有 catch 块是否在 `DAPyGILGuard` 作用域内 |
 | §12 | 模块导入时第三方库报错 | 节点依赖的 Python 包未安装 | `requirements.txt` 和 Python 环境 |
@@ -656,9 +663,9 @@ _node_descriptor.renderTemplate    # str:  "nodestyle" | "widget"
 | 文件 | 路径 | 用途 |
 |---|---|---|
 | DAAppPluginManager | `src/APP/DAAppPluginManager.h/.cpp` | 插件加载入口、pyplugins 扫描、DAPyNodeFactory 初始化 |
-| DAPyNodeFactory | `src/DAPyWorkFlow/DAPyNodeFactory.h/.cpp` | 节点发现、元数据管理、DAPyNodeProxy 创建 |
+| DAPyNodeFactory | `src/DAPyWorkFlow/DAPyNodeFactory.h/.cpp` | 节点发现、元数据管理、DAPyNode 创建 |
 | DAPyModuleWorkflow | `src/DAPyWorkFlow/DAPyModuleWorkflow.h/.cpp` | 单例 Python 模块导入器，缓存类引用 |
-| DAPyNodeProxy | `src/DAPyWorkFlow/DAPyNodeProxy.h/.cpp` | Python 节点代理，执行桥接，元信息同步 |
+| DAPyNode | `src/DAPyWorkFlow/DAPyNode.h/.cpp` | Python 节点 C++ 纯代理，继承 DAPyObjectWrapper，通过 attr() 实时读取 |
 | DAPyWorkFlowScene | `src/DAPyWorkFlow/DAPyWorkFlowScene.h/.cpp` | 场景管理，节点创建/移除入口 |
 | DAPyNodeGraphicsItem | `src/DAPyWorkFlow/DAPyNodeGraphicsItem.h/.cpp` | 节点图形项渲染，连接点管理 |
 | DAPyLinkPoint | `src/DAPyWorkFlow/DAPyLinkPoint.h` | 连接点结构定义 |
@@ -666,14 +673,16 @@ _node_descriptor.renderTemplate    # str:  "nodestyle" | "widget"
 | DAPyWorkFlowNodeListWidget | `src/DAGui/DAPyWorkFlowNodeListWidget.h/.cpp` | 节点列表面板，显示发现的节点 |
 | DANodeMimeData | `src/DAGui/DANodeMimeData.h/.cpp` | 拖拽数据格式 |
 | DAPyInterpreter | `src/DAPyBindQt/DAPyInterpreter.h/.cpp` | Python 解释器管理 |
-| DAPyGILGuard | `src/DAPyWorkFlow/DAPyGILGuard.h` | GIL RAII 守卫 |
+| DAPyGILGuard | `src/DAPyBindQt/DAPyGILGuard.h` | GIL RAII 守卫 |
 | DAPybind11InQt | `src/DAPyBindQt/DAPybind11InQt.h` | slots 宏冲突处理 |
 | DAParamTypeRegistry | `src/DAGui/NodeSetting/DAParamTypeRegistry.h/.cpp` | 11 种参数类型注册 + 编辑器创建 |
-| DAAbstractNodeSettingWidget | `src/DAGui/DAAbstractNodeSettingWidget.h/.cpp` | 节点设置基类，持有 DAPyNodeProxy* |
+| DAAbstractNodeSettingWidget | `src/DAGui/DAAbstractNodeSettingWidget.h/.cpp` | 节点设置基类，持有 DAPyNode* |
 | DANodeParamSettingPanel | `src/DAGui/NodeSetting/DANodeParamSettingPanel.h/.cpp` | 通用参数面板，SceneB 3-hop 信号链 |
 | DANodeParamSettingPanelFactory | `src/DAGui/NodeSetting/DANodeParamSettingPanelFactory.h/.cpp` | 面板单例工厂，qualifiedName 路由 |
 | DANodeParamSettingPanelWidget | `src/DAGui/NodeSetting/DANodeParamSettingPanelWidget.h/.cpp` | QStackedWidget 调度器，惰性缓存 |
 | ParameterDescriptor | `src/DAGui/NodeSetting/ParameterDescriptor.h` | Python 参数描述符解析 |
+| DAPyWorkFlowManager | `src/DAPyWorkFlow/DAPyWorkFlowManager.h/.cpp` | 工作流管理 QObject，编排节点操作，发射 Qt 信号 |
+| DAPyNodeStyle | `src/DAPyWorkFlow/DAPyNodeStyle.h/.cpp` | 节点视觉样式配置结构体 |
 
 ### Python 侧
 
@@ -687,6 +696,9 @@ _node_descriptor.renderTemplate    # str:  "nodestyle" | "widget"
 | executor.py | `src/PyScripts/DAWorkbench/DAWorkFlowPy/executor.py` | DAWorkflowExecutor 执行器 |
 | signal_manager.py | `src/PyScripts/DAWorkbench/DAWorkFlowPy/signal_manager.py` | DASignalManager 信号管理 |
 | connection.py | `src/PyScripts/DAWorkbench/DAWorkFlowPy/connection.py` | DAConnection 连接模型 |
+| node_factory.py | `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_factory.py` | DANodeFactory 节点工厂 |
+| serializer.py | `src/PyScripts/DAWorkbench/DAWorkFlowPy/serializer.py` | DAWorkflowSerializer 序列化器 |
+| syntax.py | `src/PyScripts/DAWorkbench/DAWorkFlowPy/syntax.py` | NodeProxy/NodeOutputProxy/NodeInputProxy 语法糖 |
 
 ### 示例插件
 
