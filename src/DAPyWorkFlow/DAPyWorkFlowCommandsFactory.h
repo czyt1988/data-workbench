@@ -4,15 +4,18 @@
 namespace DA
 {
 class DAPyWorkFlowScene;
+class DAPyWorkFlowCommand_addNodeGraphics;
+class DAPyWorkFlowCommand_removeNodeGraphics;
 class DAPyWorkFlowCommand_addLinkGraphics;
 class DAPyWorkFlowCommand_removeLinkGraphics;
-class DAPyWorkFlowScene;
+class DAPyNodeGraphicsItem;
 class DAPyLinkGraphicsItem;
+
 /**
- * @brief 命令工厂
+ * @brief Python工作流命令工厂
  *
- * - 第一，可以根据字符串查找生成命令（这个暂时还未实现）
- * - 第二，可以用户自定义命令，例如移动命令，用户实现的移动命令需要记录其它的特殊功能，需要继承原来的移动命令则用户可以定义一个自己的命令工厂，针对移动命令生成一个用户自己的移动命令
+ * 继承DAGraphicsCommandsFactory，新增Python工作流专用的节点和连接线命令创建方法。
+ * 所有命令在redo/undo时同时同步C++场景和Python workflow状态。
  */
 class DAPyWorkFlowCommandsFactory : public DAGraphicsCommandsFactory
 {
@@ -21,8 +24,16 @@ class DAPyWorkFlowCommandsFactory : public DAGraphicsCommandsFactory
 public:
     DAPyWorkFlowCommandsFactory();
     virtual ~DAPyWorkFlowCommandsFactory();
+
+    // 创建Python节点添加命令（带Python同步）
+    virtual DAPyWorkFlowCommand_addNodeGraphics* createPyNodeItemAdd(DAPyNodeGraphicsItem* nodeItem);
+    // 创建Python节点移除命令（带Python同步）
+    virtual DAPyWorkFlowCommand_removeNodeGraphics* createPyNodeItemRemove(DAPyNodeGraphicsItem* nodeItem);
+    // 创建Python连接线添加命令（带Python同步）
     virtual DAPyWorkFlowCommand_addLinkGraphics* createPyLinkItemAdd(DAPyLinkGraphicsItem* linkItem);
+    // 创建Python连接线移除命令（带Python同步）
     virtual DAPyWorkFlowCommand_removeLinkGraphics* createPyLinkItemRemove(DAPyLinkGraphicsItem* linkItem);
+
     DAPyWorkFlowScene* pyWorkflowScene() const;
 };
 }

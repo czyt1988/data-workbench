@@ -43,10 +43,15 @@ DAPyWorkFlowGraphicsScene::DAPyWorkFlowGraphicsScene(QObject* parent)
     mTextFont = QApplication::font();
     connect(this, &DAGraphicsScene::itemsPositionChanged, this, &DAPyWorkFlowGraphicsScene::onItemsPositionChanged);
     connect(this, &DAPyWorkFlowScene::pyNodeItemCreated, this, &DAPyWorkFlowGraphicsScene::onPyNodeItemCreated);
+    // undo/redo时itemsPositionChanged不会触发，需要通过indexChanged手动更新连接线端点
+    connect(&undoStack(), &QUndoStack::indexChanged, this, &DAPyWorkFlowGraphicsScene::onUndoStackIndexChanged);
 }
 
 DAPyWorkFlowGraphicsScene::~DAPyWorkFlowGraphicsScene()
 {
+    // 必须在基类析构前断开连接，否则基类~DAPyWorkFlowScene中clearPyScene()
+    // 清空undo栈会触发indexChanged信号，此时DAPyWorkFlowGraphicsScene已析构，导致崩溃
+    disconnect(&undoStack(), &QUndoStack::indexChanged, this, &DAPyWorkFlowGraphicsScene::onUndoStackIndexChanged);
     qDebug() << "destroy DAPyWorkFlowGraphicsScene";
 }
 
@@ -436,4 +441,20 @@ void DAPyWorkFlowGraphicsScene::onPyNodeItemCreated(DAPyNodeGraphicsItem* item)
         return;
     }
     connect(item, &DAPyNodeGraphicsItem::nodeDoubleClicked, this, &DAPyWorkFlowGraphicsScene::onNodeDoubleClicked);
+}
+
+/**
+ * @brief undo栈索引变化时更新所有节点的连接线端点位置
+ *
+ * 当用户执行undo/redo恢复节点位置时，DAGraphicsScene::itemsPositionChanged
+ * 信号不会被触发（该信号仅在鼠标拖拽释放时发射）。
+ * 此槽通过QUndoStack::indexChanged信号捕获所有undo/redo操作，
+ * 更新场景中所有节点的连接线端点位置，确保连线跟随节点位置变化。
+ */
+void DAPyWorkFlowGraphicsScene::onUndoStackIndexChanged()
+{
+    const QList< DAPyNodeGraphicsItem* > nodeItems = getPyNodeItems();
+    for (DAPyNodeGraphicsItem* node : nodeItems) {
+        updateNodeLinkPositions(node);
+    }
 }

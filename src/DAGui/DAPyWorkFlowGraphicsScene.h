@@ -94,6 +94,13 @@ private slots:
 	 * @param[in] item 新创建的节点图形项
 	 */
 	void onPyNodeItemCreated(DA::DAPyNodeGraphicsItem* item);
+	/**
+	 * @brief undo栈索引变化时更新连接线端点位置
+	 *
+	 * undo/redo恢复节点位置时，itemsPositionChanged信号不会被触发，
+	 * 因此需要通过此槽手动更新所有节点的连接线端点。
+	 */
+	void onUndoStackIndexChanged();
 
 private:
 	DAGraphicsPixmapItem* mBackgroundPixmapItem;

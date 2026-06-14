@@ -134,6 +134,10 @@ public:
     void syncPyNodeLinkAdd(DAPyLinkGraphicsItem* linkItem);
     // 同步python端的链接移除
     void syncPyNodeLinkRemove(DAPyLinkGraphicsItem* linkItem);
+    // 同步Python端的节点注册（调用Manager::registerNode + 更新映射表），返回nodeId
+    QString syncPyNodeRegister(DAPyNodeGraphicsItem* nodeItem);
+    // 同步Python端的节点注销（调用Manager::unregisterNode + 清理映射表）
+    void syncPyNodeUnregister(DAPyNodeGraphicsItem* nodeItem);
 Q_SIGNALS:
     // Python节点item被创建
     void pyNodeItemCreated(DA::DAPyNodeGraphicsItem* item);

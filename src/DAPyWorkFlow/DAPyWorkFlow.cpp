@@ -169,8 +169,11 @@ DAPyNodeConnection DAPyWorkFlow::connectNode(const QString& srcNodeId,
     }
 
     try {
-        pybind11::object conn = attr("connect_node")(srcNodeId, srcChannel, dstNodeId, dstChannel);
-        result                = conn;
+        // 将 QString 先转换为 pybind11::object，避免函数调用模板的参数转换问题
+        pybind11::object conn = attr("connect_node")(
+            pybind11::cast(srcNodeId), pybind11::cast(srcChannel),
+            pybind11::cast(dstNodeId), pybind11::cast(dstChannel));
+        result = conn;
     } catch (const pybind11::error_already_set& e) {
         dealException(e);
     } catch (const std::exception& e) {
@@ -214,9 +217,11 @@ bool DAPyWorkFlow::disconnectNode(const QString& connectionId)
     }
 
     try {
-        pybind11::object connObj = attr("remove_connection")(connectionId);
-        QString fromPort         = connObj.attr("source_output_channel").cast< QString >();
-        QString toPort           = connObj.attr("target_input_channel").cast< QString >();
+        // 将 QString 先转换为 pybind11::object，避免函数调用模板的参数转换问题
+        pybind11::object pyConnId = pybind11::cast(connectionId);
+        pybind11::object connObj  = attr("remove_connection")(pyConnId);
+        QString fromPort          = connObj.attr("source_output_channel").cast< QString >();
+        QString toPort            = connObj.attr("target_input_channel").cast< QString >();
         return true;
     } catch (const pybind11::error_already_set& e) {
         dealException(e);
@@ -268,7 +273,9 @@ bool DAPyWorkFlow::hasNode(const QString& nodeId)
             qWarning() << "DAPyWorkFlow::hasNode: workflow object is invalid";
             return false;
         }
-        pybind11::object result = attr("__contains__")(nodeId);
+        // 将 QString 先转换为 pybind11::object，避免函数调用模板的参数转换问题
+        pybind11::object pyNodeId = pybind11::cast(nodeId);
+        pybind11::object result   = attr("__contains__")(pyNodeId);
         return result.cast< bool >();
     } catch (const pybind11::error_already_set& e) {
         dealException(e);

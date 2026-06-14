@@ -391,80 +391,59 @@ public:
 
 ## COMMANDS
 
-项目使用 cmake 构建。如果项目目录下存在 `build` 目录，说明已经生成过，直接在此目录下编译即可。
+> **⚠️ 构建前请阅读 root `build.md`**：该文件包含完整的构建命令、常见问题和 Agent 快速参考。
 
-> **⚠️ 构建前请阅读 root `build.md`**：该文件包含当前环境的实际构建命令和常见问题。
+### 日常构建（Agent 直接执行）
 
-### 构建分两步：先第三方库 → 后主项目
+> **前提**：第三方库已编译安装（项目根目录下 `bin_*` 安装目录已存在）。第三方库仅需首次构建或 submodule 更新时编译，日常开发无需重复。
 
-第三方库必须先编译并执行 install，主项目才能配置。详见 `build.md`。
+#### Windows（使用脚本，推荐）
 
-### 生成器选择（关键）
-
-| 平台 | 推荐生成器 | 说明 |
-|------|-----------|------|
-| **Windows** | Visual Studio | 自动检测 MSVC，无需手动初始化环境 |
-| **Windows** | Ninja ⚠️ | **必须**在 Developer Command Prompt 中运行 |
-| **Linux / WSL** | Ninja ✅ 推荐 | 编译速度快，无需特殊环境设置 |
-| **Linux / WSL** | Unix Makefiles ✅ | 备选方案，无需额外安装 |
-
-### Linux / WSL 依赖安装（Ubuntu 24.04）
-
-```bash
-sudo apt install qt6-base-dev qt6-base-dev-tools qt6-svg-dev \
-    qt6-5compat-dev qt6-tools-dev qt6-base-private-dev \
-    libgl-dev libglu1-mesa-dev pkg-config libxkbcommon-dev \
-    zlib1g-dev ninja-build python3-dev libpython3-dev
-```
-
-> **⚠️ `qt6-base-private-dev` 不可省略**：ADS (Qt-Advanced-Docking-System) 在 Linux 上使用了 Qt private headers，缺少此包会导致编译失败。
-
-### 配置与构建 — Windows (Visual Studio 生成器)
+`scripts/build.ps1` 自动探测 Qt/VS 路径，**Agent 在 Windows 上应优先使用此脚本**。
 
 ```powershell
-# === 第三方库（先编译安装） ===
-cd src/3rdparty
-cmake -S . -B build -G "Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH="C:/Qt/6.7.3/msvc2019_64"
-cmake --build build --config Release --parallel
-cmake --install build --config Release
-
-# === 主项目 ===
-cmake -S . -B build -G "Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH="C:/Qt/6.7.3/msvc2019_64"
-cmake --build build --config Release --parallel
+.\scripts\build.ps1 -Target DAPyWorkFlow       # 编译指定模块
+.\scripts\build.ps1 -Target DAPyWorkFlow -Test  # 编译并运行测试
+.\scripts\build.ps1 -Full                        # 完整构建
+.\scripts\build.ps1 -Clean                       # 清理重新配置
 ```
 
-### 配置与构建 — Linux / WSL (Ninja 生成器)
+> **务必使用 Visual Studio 生成器**，不要用 Ninja。PowerShell 中 MSVC 环境无法正确注入。
+
+#### Linux / WSL
 
 ```bash
-# === 第三方库（先编译安装） ===
-cd src/3rdparty
-cmake -S . -B build-linux -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build-linux --parallel
-cmake --install build-linux
-
-# === 主项目 ===
 cmake -S . -B build-linux -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build-linux --parallel
 ```
 
-> Linux apt 安装的 Qt6 无需指定 `CMAKE_PREFIX_PATH`。自定义 Qt 路径需添加 `-DCMAKE_PREFIX_PATH=<Qt路径>`。
+### 首次构建：编译第三方库
 
-### 参数说明
+仅首次构建或第三方库 submodule 有更新时需要执行。产物安装到 `bin_<BuildType>_qt<QtVersion>_<Compiler>_<Arch>/`。
 
-| 参数 | Windows 必需 | Linux 必需 | 说明 |
-|------|:----:|:----:|------|
-| `-G` 生成器 | ✅ | ✅ | Windows: VS 生成器；Linux: Ninja 或 Unix Makefiles |
-| `-A x64` | ✅ VS | — | 仅 VS 生成器需要 |
-| `-DCMAKE_PREFIX_PATH` | ✅ | — | Windows 指定 Qt 路径；Linux apt 安装的 Qt 不需要 |
-| `-DCMAKE_BUILD_TYPE` | Ninja ✅ | ✅ | Release 或 Debug；VS 生成器用 `--config` 代替 |
+```powershell
+# Windows
+cmake -S src/3rdparty -B build-3rdparty -G "Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH="C:/Qt/6.7.3/msvc2019_64"
+cmake --build build-3rdparty --config Release --parallel
+cmake --install build-3rdparty --config Release
+```
+
+```bash
+# Linux / WSL
+cmake -S src/3rdparty -B build-linux-3rdparty -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build-linux-3rdparty --parallel
+cmake --install build-linux-3rdparty
+```
 
 ### 运行测试
 
 #### Windows
 
 ```powershell
-# 测试 exe 位于 build/src/tst/<模块>/<Config>/ 下
-# ⚠️ Qt Test 在 Windows 上 stdout 不可见，必须用 -o 标志输出到文件
+# 使用脚本（推荐）
+.\scripts\build.ps1 -Target DAPyWorkFlow -Test
+
+# 手动（Qt Test 在 Windows 上 stdout 不可见，必须用 -o）
 .\build\src\tst\DAPyWorkFlow\Release\DAPyWorkFlowTests.exe -o test_result.txt
 Get-Content test_result.txt
 ```
@@ -472,7 +451,6 @@ Get-Content test_result.txt
 #### Linux / WSL
 
 ```bash
-# 测试 exe 位于 build-linux/src/tst/<模块>/ 下
 ./build-linux/src/tst/DAPyWorkFlow/DAPyWorkFlowTests -o test_result.txt
 cat test_result.txt
 ```
@@ -483,26 +461,13 @@ cat test_result.txt
 | 输出捕获 | **必须**用 `-o file.txt` | 可直接 stdout 或 `-o file.txt` |
 | 退出码 | `$LASTEXITCODE` | `$?` 或 `echo $?` |
 
-### Windows 快速脚本
+### 生成器选择
 
-项目提供了 `scripts/build.ps1` 脚本，自动检测 Qt 版本和 Visual Studio 版本。**Agent 在 Windows 上应优先使用此脚本**。
-
-```powershell
-.\scripts\build.ps1 -Target DAPyWorkFlow       # 编译指定模块
-.\scripts\build.ps1 -Target DAPyWorkFlow -Test  # 编译并运行测试
-.\scripts\build.ps1 -Full                        # 完整构建
-.\scripts\build.ps1 -Clean                       # 清理重新配置
-```
-
-> **注意**：如果遇到执行策略限制，使用 `powershell -ExecutionPolicy Bypass -File .\scripts\build.ps1 -Target ...`
-
-### 安装目录命名
-
-第三方库和主项目统一安装到项目根目录下，目录名自动生成：
-- Windows: `bin_Release_qt6.4.2_MSVC_x64`
-- Linux: `bin_Release_qt6.4.2_GNU_x64`
-
-格式为 `bin_<BuildType>_qt<QtVersion>_<Compiler>_<Arch>`。
+| 平台 | 推荐生成器 | 说明 |
+|------|-----------|------|
+| **Windows** | Visual Studio | 自动检测 MSVC，无需手动初始化环境 |
+| **Windows** | Ninja ⚠️ | **必须**在 Developer Command Prompt 中运行 |
+| **Linux / WSL** | Ninja ✅ 推荐 | 编译速度快，无需特殊环境设置 |
 
 ## 跨平台构建注意 (Linux / WSL)
 

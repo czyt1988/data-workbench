@@ -62,9 +62,9 @@ public:
     }
 
     /**
-     * @brief 从所有映射表中注销节点（正向+反向索引统一清理）
+     * @brief 从所有映射表中注销节点（正向+反向索引+连接线映射统一清理）
      *
-     * 同步清理mNodeIdMap、mNodeIdToItemMap两个映射表，
+     * 同步清理mNodeIdMap、mNodeIdToItemMap、mNodeToLinksMap三个映射表，
      * 确保节点移除时所有索引保持一致。
      *
      * @param[in] item 要注销的节点图形项指针
@@ -76,6 +76,8 @@ public:
         }
         // 从未注册的item中静默返回
         if (!this->mNodeIdMap.contains(item)) {
+            // 即使不在nodeIdMap，也尝试清理连接线映射
+            this->mNodeToLinksMap.remove(item);
             return;
         }
         // 获取nodeId并清理反向索引
@@ -83,6 +85,65 @@ public:
         this->mNodeIdToItemMap.remove(nodeId);
         // 清理正向索引
         this->mNodeIdMap.remove(item);
+        // 清理节点到连接线的映射
+        this->mNodeToLinksMap.remove(item);
+    }
+
+    /**
+     * @brief 同步Python端节点注册（调用Manager::registerNode + 更新映射表）
+     *
+     * 将节点代理注册到Python workflow，获取nodeId，更新所有映射表。
+     * 用于undo/redo恢复节点时重新注册到Python。
+     *
+     * @param[in] item 节点图形项指针
+     * @return Python分配的nodeId，注册失败返回空字符串
+     */
+    QString syncPyNodeRegister(DAPyNodeGraphicsItem* item)
+    {
+        if (!item) {
+            return {};
+        }
+        const DAPyNode& proxy = item->getProxy();
+        if (proxy.isNone()) {
+            return {};
+        }
+        // 调用Manager注册到Python workflow
+        QString nodeId;
+        if (this->mManager && this->mManager->isWorkflowValid()) {
+            nodeId = this->mManager->registerNode(proxy);
+            if (nodeId.isEmpty()) {
+                qWarning() << tr("DAPyWorkFlowScene::syncPyNodeRegister: registerNode failed");
+                return {};
+            }
+        } else {
+            // 无Manager时，从proxy读取nodeId（加载场景时已注册）
+            nodeId = proxy.getNodeId();
+        }
+        // 更新映射表
+        this->registerNode(item, nodeId);
+        return nodeId;
+    }
+
+    /**
+     * @brief 同步Python端节点注销（调用Manager::unregisterNode + 清理映射表）
+     *
+     * 从Python workflow移除节点，清理所有映射表。
+     * 用于undo/redo移除节点时同步Python状态。
+     *
+     * @param[in] item 节点图形项指针
+     */
+    void syncPyNodeUnregister(DAPyNodeGraphicsItem* item)
+    {
+        if (!item) {
+            return;
+        }
+        const DAPyNode& proxy = item->getProxy();
+        // 调用Manager从Python workflow注销
+        if (this->mManager && this->mManager->isWorkflowValid() && !proxy.isNone()) {
+            this->mManager->unregisterNode(proxy);
+        }
+        // 清理映射表
+        this->unregisterNode(item);
     }
 };
 
@@ -329,8 +390,10 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
  * @brief 创建Python节点（通过元数据，带undo/redo）
  *
  * 通过QUndoStack记录创建操作，支持撤销和重做。
- * 先调用createPyNode(DAPyNodeMetaData)创建节点图形项（不添加到场景），
- * 然后通过addItem_()将item添加到场景并推入undo栈。
+ * 先调用createPyNode()创建节点（含Python注册），
+ * 然后通过专用命令将item添加到场景并推入undo栈。
+ * 命令首次redo跳过Python同步（createPyNode已完成注册），
+ * 后续redo会重新注册到Python。
  *
  * @param[in] metaData 节点元数据
  * @param[in] pos 节点在场景中的初始位置
@@ -344,8 +407,14 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode_(const DAPyNodeMetaData& m
     if (!item) {
         return nullptr;
     }
-    // 通过addItem_()添加到场景并推入undo栈
-    addItem_(item);
+    // 使用专用节点添加命令（带Python同步），首次redo跳过同步
+    DAPyWorkFlowCommandsFactory* fac = dynamic_cast< DAPyWorkFlowCommandsFactory* >(commandsFactory());
+    if (fac) {
+        auto cmd = fac->createPyNodeItemAdd(item);
+        push(cmd);
+    } else {
+        addItem_(item);
+    }
     emit pyNodeItemCreated(item);
     return item;
 }
@@ -418,8 +487,8 @@ bool DAPyWorkFlowScene::removePyNodeItem(DAPyNodeGraphicsItem* item)
  * @brief 移除Python节点（带undo/redo）
  *
  * 通过QUndoStack记录移除操作，支持撤销和重做。
- * 先移除节点关联的所有连接线，再移除节点图形项，
- * 所有移除操作通过removeItem_()推入undo栈。
+ * 使用beginMacro/endMacro将节点及其关联连接线的移除合并为单个原子操作。
+ * 所有命令在redo/undo时同时同步C++场景和Python workflow状态。
  *
  * @param item 要移除的DAPyNodeGraphicsItem指针
  * @note 函数名后缀"_"表示支持undo/redo操作
@@ -429,13 +498,27 @@ void DAPyWorkFlowScene::removePyNodeItem_(DAPyNodeGraphicsItem* item)
     if (!item) {
         return;
     }
-    // 先移除所有关联的连接线（带undo，通过映射表获取）
-    QList< DAPyLinkGraphicsItem* > relatedLinks = getNodeLinkItems(item);
-    for (DAPyLinkGraphicsItem* link : relatedLinks) {
-        removeItem_(link);
+    DAPyWorkFlowCommandsFactory* fac = dynamic_cast< DAPyWorkFlowCommandsFactory* >(commandsFactory());
+    if (!fac) {
+        return;
     }
-    // 移除节点item（带undo）
-    removeItem_(item);
+
+    // 使用宏命令将多个操作合并为单个undo步骤
+    undoStack().beginMacro(tr("Remove Node"));
+
+    // 先移除所有关联的连接线（带undo，通过映射表获取）
+    const QList< DAPyLinkGraphicsItem* > relatedLinks = getNodeLinkItems(item);
+    for (DAPyLinkGraphicsItem* link : relatedLinks) {
+        auto cmd = fac->createPyLinkItemRemove(link);
+        push(cmd);
+    }
+
+    // 移除节点item（带Python同步的专用命令）
+    auto nodeCmd = fac->createPyNodeItemRemove(item);
+    push(nodeCmd);
+
+    undoStack().endMacro();
+
     emit pyNodeItemsRemoved({ item });
 }
 
@@ -575,8 +658,7 @@ void DAPyWorkFlowScene::addPyNodeLink(DAPyLinkGraphicsItem* linkItem)
  * @brief 添加Python节点连接线（带undo/redo）
  *
  * 通过QUndoStack记录连接操作，支持撤销和重做。
- * 先调用addPyNodeLink()创建连接线（不添加到场景），
- * 然后通过addItem_()将link添加到场景并推入undo栈。
+ * 仅创建连接线图形项并设置端点，不执行Python同步（由命令的redo统一处理）。
  *
  * @param fromItem 源节点图形项
  * @param fromOutput 源节点的输出端口名称
@@ -589,10 +671,32 @@ DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(
     DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
 )
 {
-    DAPyLinkGraphicsItem* link = addPyNodeLink(fromItem, fromOutput, toItem, toInput);
-    if (!link) {
+    if (!fromItem || !toItem) {
         return nullptr;
     }
+
+    // 创建连接线（仅创建item，不添加场景，不同步Python）
+    DAPyLinkGraphicsItem* link = createLinkItem(fromItem, fromOutput);
+    link->setFromNode(fromItem, fromOutput);
+    link->setToNode(toItem, toInput);
+
+    // 设置连接线的起止场景位置
+    const QList< DAPyLinkPoint > outputPoints = fromItem->getOutputLinkPoints();
+    for (const DAPyLinkPoint& lp : outputPoints) {
+        if (lp.name == fromOutput) {
+            link->setStartScenePosition(fromItem->mapToScene(lp.position));
+            break;
+        }
+    }
+    const QList< DAPyLinkPoint > inputPoints = toItem->getInputLinkPoints();
+    for (const DAPyLinkPoint& lp : inputPoints) {
+        if (lp.name == toInput) {
+            link->setEndScenePosition(toItem->mapToScene(lp.position));
+            break;
+        }
+    }
+
+    // 推入命令，redo()统一处理Python同步和场景添加
     addPyNodeLink_(link);
     return link;
 }
@@ -861,6 +965,8 @@ void DAPyWorkFlowScene::updateNodeLinkPositions(DAPyNodeGraphicsItem* nodeItem)
  *
  * 删除当前场景中选中的Python节点和连接线。
  * 删除节点时会连带删除其所有连接线。
+ * 使用beginMacro/endMacro将所有删除操作合并为单个原子undo步骤。
+ * 所有命令在redo/undo时同时同步C++场景和Python workflow状态。
  *
  * @return 删除的节点数量
  */
@@ -890,23 +996,34 @@ int DAPyWorkFlowScene::removeSelectedItems_()
 
     int removeCount = 0;
 
-    // 先移除连接线（带undo）
-    for (DAPyLinkGraphicsItem* link : std::as_const(nodeLinks)) {
-        removeItem_(link);
-        ++removeCount;
+    DAPyWorkFlowCommandsFactory* fac = dynamic_cast< DAPyWorkFlowCommandsFactory* >(commandsFactory());
+
+    // 使用宏命令将多个操作合并为单个undo步骤
+    undoStack().beginMacro(tr("Remove Selected Items"));
+
+    if (fac) {
+        // 先移除连接线（带Python同步的专用命令）
+        for (DAPyLinkGraphicsItem* link : std::as_const(nodeLinks)) {
+            auto cmd = fac->createPyLinkItemRemove(link);
+            push(cmd);
+            ++removeCount;
+        }
+
+        // 再移除节点（带Python同步的专用命令）
+        for (DAPyNodeGraphicsItem* node : std::as_const(nodeItems)) {
+            auto cmd = fac->createPyNodeItemRemove(node);
+            push(cmd);
+            ++removeCount;
+        }
     }
 
-    // 再移除节点（带undo）
-    for (DAPyNodeGraphicsItem* node : std::as_const(nodeItems)) {
-        removeItem_(node);
-        ++removeCount;
-    }
-
-    // 移除普通图形项（带undo）
+    // 移除普通图形项（使用基类命令，不涉及Python同步）
     for (QGraphicsItem* item : std::as_const(normalItems)) {
         removeItem_(item);
         ++removeCount;
     }
+
+    undoStack().endMacro();
 
     // 发射移除信号
     if (!nodeItems.isEmpty()) {
@@ -1271,6 +1388,16 @@ void DAPyWorkFlowScene::syncPyNodeLinkAdd(DAPyLinkGraphicsItem* linkItem)
 void DAPyWorkFlowScene::syncPyNodeLinkRemove(DAPyLinkGraphicsItem* linkItem)
 {
     d_ptr->syncPyNodeLinkRemove(linkItem);
+}
+
+QString DAPyWorkFlowScene::syncPyNodeRegister(DAPyNodeGraphicsItem* nodeItem)
+{
+    return d_ptr->syncPyNodeRegister(nodeItem);
+}
+
+void DAPyWorkFlowScene::syncPyNodeUnregister(DAPyNodeGraphicsItem* nodeItem)
+{
+    d_ptr->syncPyNodeUnregister(nodeItem);
 }
 
 /**
