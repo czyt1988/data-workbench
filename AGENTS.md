@@ -9,6 +9,12 @@
 
 AI Agent 驱动的数据分析工作平台 — C++17/Qt 有向图工作流引擎 + 内嵌 Python (pandas/numpy) + 交互式图表。核心栈: Qt 5.14+/6, pybind11, SARibbon, qwt, Qt-Advanced-Docking-System。
 
+**核心价值**：
+- 工作流驱动自动化处理重复性数据
+- GUI 封装 pandas 核心功能，无需编程即可操作
+- 交互式图表编辑，生成论文级别矢量图
+- 插件化架构，易于扩展自定义功能
+
 ## STRUCTURE
 
 ```
@@ -185,6 +191,61 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | 插件开发参考 | `plugins/DataAnalysis/` | 最完整的插件示例 |
 | 插件模板 | `plugins/plugin-template/` | 新插件脚手架 |
 | 文档源码 | `docs/zh/` | Doxygen Wiki 中文 |
+
+## 文档导航
+
+### 开发指南（dev-guide）
+
+| 文档 | 说明 |
+|------|------|
+| [workflow.md](docs/zh/dev-guide/workflow.md) | 工作流系统核心概念和架构 |
+| [workflow-lifecycle.md](docs/zh/dev-guide/workflow-lifecycle.md) | 工作流节点生命周期管理 |
+| [plugin-project-create.md](docs/zh/dev-guide/plugin-project-create.md) | 创建插件项目完整指南 |
+| [plugin-architecture.md](docs/zh/dev-guide/plugin-architecture.md) | 插件架构设计详解 |
+| [plugin-module.md](docs/zh/dev-guide/plugin-module.md) | DAPluginSupport 模块说明 |
+| [plugins-interfaces.md](docs/zh/dev-guide/plugins-interfaces.md) | 插件接口体系 |
+| [coding-standard.md](docs/zh/dev-guide/coding-standard.md) | 编码规范和命名约定 |
+| [module-dependency.md](docs/zh/dev-guide/module-dependency.md) | 模块依赖关系和架构层次 |
+| [data-module.md](docs/zh/dev-guide/data-module.md) | DAData 数据模块详解 |
+| [python-in-cpp.md](docs/zh/dev-guide/python-in-cpp.md) | Python/C++ 集成和 pybind11 使用 |
+| [figure-abstract.md](docs/zh/dev-guide/figure-abstract.md) | DAFigure 图表抽象层 |
+| [interface-module.md](docs/zh/dev-guide/interface-module.md) | DAInterface 接口模块 |
+| [scalable-graphic-module.md](docs/zh/dev-guide/scalable-graphic-module.md) | 可缩放图形模块 |
+| [project-serialization-architecture.md](docs/zh/dev-guide/project-serialization-architecture.md) | 项目序列化架构 |
+| [settingwidget-standard.md](docs/zh/dev-guide/settingwidget-standard.md) | 设置控件规范 |
+| [third-party-manage.md](docs/zh/dev-guide/third-party-manage.md) | 第三方库管理 |
+| [creating-setting-panel.md](docs/zh/dev-guide/creating-setting-panel.md)| 创建设置面板 |
+
+### 构建文档（build）
+
+| 文档 | 说明 |
+|------|------|
+| [build-instructions.md](docs/zh/build/build-instructions.md) | 完整构建指南 |
+| [third-party-build.md](docs/zh/build/third-party-build.md) | 第三方库编译 |
+| [python-environment.md](docs/zh/build/python-environment.md) | Python 环境配置 |
+| [common-build-errors.md](docs/zh/build/common-build-errors.md) | 常见构建错误解决 |
+| [plugin-build.md](docs/zh/build/plugin-build.md) | 插件构建说明 |
+| [main-program-build.md](docs/zh/build/main-program-build.md) | 主程序构建详解 |
+
+### 用户指南（use-guide）
+
+| 文档 | 说明 |
+|------|------|
+| [index.md](docs/zh/use-guide/index.md) | 用户指南入口 |
+| [command-line-arguments.md](docs/zh/use-guide/command-line-arguments.md) | 命令行参数说明 |
+
+### 顶层文档
+
+| 文档 | 说明 |
+|------|------|
+| [overview.md](docs/zh/overview.md) | 项目概览和核心特性 |
+| [quick-start.md](docs/zh/quick-start.md) | 快速上手指南 |
+| [project-structure.md](docs/zh/project-structure.md) | 项目结构详解 |
+| [plugin-development.md](docs/zh/plugin-development.md) | 插件开发总览 |
+| [plugin-system.md](docs/zh/plugin-system.md) | 插件系统概述 |
+| [api-reference.md](docs/zh/api-reference.md) | API 参考手册 |
+| [configuration.md](docs/zh/configuration.md) | 配置系统说明 |
+| [best-practices.md](docs/zh/best-practices.md) | 开发最佳实践 |
 
 ## CODE MAP
 
@@ -523,6 +584,14 @@ Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若�
 - 所有类、文件名统一 `DA` 前缀，放入 `DA` 命名空间
 - Doxygen 注释使用中文
 - 头文件保持简洁：仅单行中文注释，详细文档在 .cpp 中
+
+## 相关文件
+
+| 文件 | 说明 |
+|------|------|
+| [README.md](README.md) | 项目简介和第三方库说明 |
+| [docs/doc-writing-guide.md](docs/doc-writing-guide.md) | 文档撰写规范手册 |
+| [docs/zh/index.md](docs/zh/index.md) | 中文文档入口 |
 
 ## NOTES
 
