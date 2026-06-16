@@ -10,9 +10,28 @@ import inspect
 此文件封装日志相关的操作
 '''
 _initialized = False
+# 保存原始的 stdout/stderr，以便在关闭时恢复
+_original_stdout = None
+_original_stderr = None
+
+
+class LoguruWriter:
+    """将 stdout/stderr 的输出重定向到 loguru，使 print() 也写入日志文件"""
+    def __init__(self, level):
+        self._level = level
+
+    def write(self, buf):
+        for line in buf.rstrip().splitlines():
+            stripped = line.strip()
+            if stripped:
+                logger.opt(depth=1).log(self._level, stripped)
+
+    def flush(self):
+        pass
+
 
 def setup_logging():
-    global _initialized
+    global _initialized, _original_stdout, _original_stderr
     if _initialized:
         return logger
 
@@ -22,17 +41,32 @@ def setup_logging():
     log_file = os.path.join(da_log_path, "da_pyscript.log")
 
     logger.add(log_file, rotation="10 MB", level="DEBUG", enqueue=True)
+
+    # 保存原始 stdout/stderr，然后重定向到 loguru
+    _original_stdout = sys.stdout
+    _original_stderr = sys.stderr
+    sys.stdout = LoguruWriter("INFO")
+    sys.stderr = LoguruWriter("WARNING")
+
     _initialized = True
     return logger
 
+
 def shutdown_logging():
-    global _initialized
+    global _initialized, _original_stdout, _original_stderr
     if not _initialized:
         return
-    
+
+    # 恢复原始 stdout/stderr
+    if _original_stdout is not None:
+        sys.stdout = _original_stdout
+    if _original_stderr is not None:
+        sys.stderr = _original_stderr
+
     logger.remove()
-    # ... 其他清理逻辑
     _initialized = False
+    _original_stdout = None
+    _original_stderr = None
     
 
 def log_function_call(func):

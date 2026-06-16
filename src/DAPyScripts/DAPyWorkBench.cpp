@@ -1,4 +1,4 @@
-﻿#include "DAPyWorkBench.h"
+#include "DAPyWorkBench.h"
 
 namespace DA
 {
@@ -34,6 +34,17 @@ bool DAPyWorkBench::import()
     bool res = DAPyModule::import("DAWorkbench");
     if (!res) {
         qCritical() << QObject::tr("can not import DAWorkbench module");
+    }
+    // 调用 Python 端的 initialize()，初始化日志等子系统
+    try {
+        if (hasattr("initialize")) {
+            attr("initialize")();
+            qDebug() << "DAWorkbench.initialize() called successfully";
+        } else {
+            qWarning() << "DAWorkbench module has no initialize() function";
+        }
+    } catch (const std::exception& e) {
+        qWarning() << "DAWorkbench.initialize() failed:" << e.what();
     }
     try {
         d_ptr->mIO.object()          = attr("io");
