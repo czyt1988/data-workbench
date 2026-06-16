@@ -1314,7 +1314,10 @@ void DAPyNodeGraphicsItem::updateNodeBody()
     font.setPointSize(d->normalFontSize);
     QFontMetricsF fm(font);
     // 文本信息
-    QRectF textBoundRect = fm.boundingRect(d->mName);
+    // 使用 horizontalAdvance 计算文字宽度（boundingRect 返回紧密包围盒，
+    // 略小于 drawText 实际占用的前进宽度，会导致文字截断显示 "..."）
+    const qreal textAdvanceWidth = fm.horizontalAdvance(d->mName);
+    QRectF textBoundRect         = fm.boundingRect(d->mName);
     // 计算推荐
     qreal bodyWidth        = 0.0;
     qreal bodyHeight       = 0.0;
@@ -1327,50 +1330,36 @@ void DAPyNodeGraphicsItem::updateNodeBody()
     if (s.isNameInside()) {
         if (s.isIconLeftOfText()) {
             // icon在左文字在右
-            bodyWidth  = iconSize + 3 * space + textBoundRect.width();
+            bodyWidth  = iconSize + 3 * space + textAdvanceWidth;
             bodyHeight = qMax(iconSize + 2 * space, textBoundRect.height() + 2 * space);
         } else {
             // icon在上文字在下
-            bodyWidth  = qMax(textBoundRect.width() + 2 * space, iconSize + 2 * space);
+            bodyWidth  = qMax(textAdvanceWidth + 2 * space, iconSize + 2 * space);
             bodyHeight = iconSize + textBoundRect.height() + 3 * space;
         }
     } else {
         // name在外面(Below)，body宽度需容纳文字宽度（取icon和文字宽度的最大值）
-        qreal textContentWidth = textBoundRect.width() + 2 * space;
+        qreal textContentWidth = textAdvanceWidth + 2 * space;
         qreal iconContentWidth = (s.bodyIconSource.isEmpty()) ? 2 * space : iconSize + 2 * space;
         bodyWidth              = qMax(textContentWidth, iconContentWidth);
         bodyHeight             = qMax(iconSize + 2 * space, 2.0 * space);  // 最小高度保障
     }
 
-    // 计算端口标签最大宽度（用于body宽度和boundingRect扩展）
-    QFont smallFont;
-    smallFont.setPointSize(d->smallFontSize);
-    QFontMetricsF smallFm(smallFont);
-    qreal maxLabelW = 0;
-    for (const QString& key : std::as_const(d->mInputKeys)) {
-        maxLabelW = qMax(maxLabelW, smallFm.horizontalAdvance(key));
-    }
-    for (const QString& key : std::as_const(d->mOutputKeys)) {
-        maxLabelW = qMax(maxLabelW, smallFm.horizontalAdvance(key));
-    }
-    // 连接点标签与连接点矩形的间距（与 drawLinkPointGroup 中的 spacing 一致）
-    const qreal labelSpacing = 2.0;
-
-    // 预留连接点的位置（端口矩形 + 标签文字）
+    // 预留连接点矩形的位置（仅端口矩形宽度，标签文字朝外绘制，不影响 body 尺寸）
     const int inputCount  = d->mInputLinkPoints.size();
     const int outputCount = d->mOutputLinkPoints.size();
     if (inputCount > 0) {
         if (s.inputPortSide == DAAspectDirection::East || s.inputPortSide == DAAspectDirection::West) {
-            bodyWidth += d->linkPointDrawWidth + maxLabelW + labelSpacing;
+            bodyWidth += d->linkPointDrawWidth;
         } else {
-            bodyHeight += d->linkPointDrawWidth + smallFm.height() + labelSpacing;
+            bodyHeight += d->linkPointDrawWidth;
         }
     }
     if (outputCount > 0) {
         if (s.outputPortSide == DAAspectDirection::East || s.outputPortSide == DAAspectDirection::West) {
-            bodyWidth += d->linkPointDrawWidth + maxLabelW + labelSpacing;
+            bodyWidth += d->linkPointDrawWidth;
         } else {
-            bodyHeight += d->linkPointDrawWidth + smallFm.height() + labelSpacing;
+            bodyHeight += d->linkPointDrawWidth;
         }
     }
 
