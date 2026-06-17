@@ -3,7 +3,7 @@
 Python 脚本国际化模块提供基于 GNU gettext 标准的多语言支持方案，实现脚本文本的翻译和本地化。
 
 !!! example "示例"
-    脚本的国际化可参考插件`plugins/DataAnalysis/PyScripts/DADataAnalysis`
+    脚本的国际化可参考插件`plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/`
 
 ## 概述
 
@@ -34,17 +34,20 @@ DAWorkBench 的 Python 脚本使用 GNU gettext 标准实现国际化（i18n）�
 ├── i18n/                    # 国际化专用子模块（内部逻辑）
 │   ├── __init__.py
 │   ├── core.py              # 封装setup_i18n的核心实现
-│   └── locale/              # 翻译文件目录（和之前的locale结构一致）
+│   └── locale/              # 翻译文件目录
 │       ├── en/
 │       │   └── LC_MESSAGES/
-│       │       ├── message.po
-│       │       └── message.mo
+│       │       ├── {DOMAIN}.po
+│       │       └── {DOMAIN}.mo
 │       └── zh_CN/
 │           └── LC_MESSAGES/
-│               ├── message.po
-│               └── message.mo
+│               ├── {DOMAIN}.po
+│               └── {DOMAIN}.mo
 └── xxx.py                 # 库的其他业务逻辑（使用_()翻译文本）
 ```
+
+!!! note "文件名约定"
+    `.po` 和 `.mo` 文件名应与 `DOMAIN` 保持一致。例如 `DADataAnalysisGui` 插件使用 `DADataAnalysisGui.po` / `DADataAnalysisGui.mo`。
 
 1. 在你的插件脚本目录下创建一个`i18n`文件夹，并创建一个`__init__.py`文件，代表这个目录为国际化目录，`__init__.py`文件可为空
 
@@ -63,7 +66,7 @@ from typing import Optional
 # 翻译文件根目录（定位到i18n/locale）
 LOCALES_DIR = os.path.join(os.path.dirname(__file__), "locale")
 # 库的翻译域（建议用库名，避免和其他库冲突）
-DOMAIN = "DADataAnalysis"
+DOMAIN = "DADataAnalysisGui"
 
 def get_system_language() -> str:
     """
@@ -238,10 +241,10 @@ print(_("数据不是DataFrame类型"))
 以下命令从 Python 脚本中提取所有 `_()` 包裹的文本，生成翻译模板文件：
 
 ```bash
-"C:\Program Files\Git\usr\bin\xgettext.exe" -d DADataAnalysis -o i18n/locale/DADataAnalysis.pot dataframe_cleaner.py
+"C:\Program Files\Git\usr\bin\xgettext.exe" -d DADataAnalysisGui -o i18n/locale/DADataAnalysisGui.pot dataframe_cleaner.py
 ```
 
-执行上述命令后，`dataframe_cleaner.py` 中所有 `_()` 标记的文本被提取到 `DADataAnalysis.pot` 文件中。
+执行上述命令后，`dataframe_cleaner.py` 中所有 `_()` 标记的文本被提取到 `DADataAnalysisGui.pot` 文件中。
 
 xgettext的参数说明：
 
@@ -431,16 +434,16 @@ echo "所有 .po 文件已编译为 .mo 文件！"
 ├── i18n/                    # 国际化专用子模块（内部逻辑）
 │   ├── __init__.py
 │   ├── core.py              # 封装setup_i18n的核心实现
-│   └── locale/              # 翻译文件目录（和之前的locale结构一致）
-│       ├── 域名.pot          # 翻译模板文件
+│   └── locale/              # 翻译文件目录
+│       ├── {DOMAIN}.pot     # 翻译模板文件
 │       ├── en/
 │       │   └── LC_MESSAGES/
-│       │       ├── message.po
-│       │       └── message.mo
+│       │       ├── {DOMAIN}.po
+│       │       └── {DOMAIN}.mo
 │       └── zh_CN/
 │           └── LC_MESSAGES/
-│               ├── message.po
-│               └── message.mo
+│               ├── {DOMAIN}.po
+│               └── {DOMAIN}.mo
 └── xxx.py                 # 库的其他业务逻辑（使用_()翻译文本）
 ```
 
@@ -453,7 +456,7 @@ echo "所有 .po 文件已编译为 .mo 文件！"
 set -e
 
 # ===================== 核心配置 =====================
-DOMAIN="DADataAnalysis"
+DOMAIN="DADataAnalysisGui"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 POT_FILE="${PROJECT_ROOT}/i18n/locale/${DOMAIN}.pot"
 LOCALE_DIR="${PROJECT_ROOT}/i18n/locale"
@@ -666,7 +669,7 @@ echo -e "\n按任意键退出..."
 read -n 1 -s -r
 ```
 
-把这个脚本保存为 `update_i18n.sh`，放到你的插件目录下
+把这个脚本保存为 `update-i18n.sh`，放到你的插件目录下
 
 修改前面配置项目，即可一键自动生成国际化文件
 
