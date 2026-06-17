@@ -199,7 +199,7 @@ class DAAbstractNode{
     void setID(const IdType& d);
 };
 
-class DAWorkFlow{
+class DAPyWorkFlowManager{
     /////////////示例的说明////////////////
     //! 信号没有cpp的实现，可以把doxygen注释写在头文件中
     //////////////////////////////////////
@@ -208,12 +208,12 @@ signals:
      * @brief 节点创建产生的信号
      * @param node
      */
-    void nodeCreated(DAAbstractNode::SharedPointer node);
+    void nodeCreated(DAPyNode* node);
     /**
      * @brief 节点添加的信号
      * @param node
      */
-    void nodeAdded(DAAbstractNode::SharedPointer node);
+    void nodeAdded(DAPyNode* node);
 };
 ```
 

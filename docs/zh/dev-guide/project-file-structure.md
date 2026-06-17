@@ -78,12 +78,12 @@ flowchart TD
 
 | 步骤 | 方法 | 说明 |
 |------|------|------|
-| 1 | `DAWorkFlow::saveExternInfoToXml` | workflow 信息 |
+| 1 | `DAPyWorkFlowSerializer::saveToXml` | workflow 信息 |
 | 2 | `DAAbstractNode::saveExternInfoToXml` | 节点信息 |
 | 3 | `DAAbstractNodeGraphicsItem::saveToXml` | 节点图元信息 |
 | 4 | `DAAbstractNodeLinkGraphicsItem::saveToXml` | 连接信息 |
 | 5 | `DAGraphicsItem::saveToXml` | 通用图元信息 |
-| 6 | `DAAbstractNodeFactory::saveExternInfoToXml` | 工厂信息 |
+| 6 | `DAPyNodeFactory::saveExternInfoToXml` | 工厂信息 |
 | 7 | 场景信息 | 视图场景配置 |
 
 ### 加载流程
@@ -108,16 +108,16 @@ flowchart TD
 
 | 步骤 | 方法 | 说明 |
 |------|------|------|
-| 1 | `DAWorkFlow::loadExternInfoFromXml` | workflow 信息 |
+| 1 | `DAPyWorkFlowSerializer::loadFromXml` | workflow 信息 |
 | 2 | `DAAbstractNode::loadExternInfoFromXml` | 节点信息 |
 | 3 | `DAAbstractNodeGraphicsItem::loadFromXml` | 节点图元信息 |
 | 4 | `DAAbstractNodeLinkGraphicsItem::loadFromXml` | 连接信息 |
 | 5 | `DAGraphicsItem::loadFromXml` | 通用图元信息 |
-| 6 | `DAAbstractNodeFactory::loadExternInfoFromXml` | 工厂信息 |
+| 6 | `DAPyNodeFactory::loadExternInfoFromXml` | 工厂信息 |
 | 7 | 场景信息 | 视图场景配置 |
 
 !!! tip "工厂信息加载时机"
-    工厂的额外信息加载是在节点之后，可以把节点的全局性信息存入工厂的额外信息中。加载时已加载完所有节点，可以对节点进一步操作。加载完成后会调用 `DAAbstractNodeFactory::workflowReady` 回调函数。
+    工厂的额外信息加载是在节点之后，可以把节点的全局性信息存入工厂的额外信息中。加载时已加载完所有节点，可以对节点进一步操作。加载完成后会调用 `DAPyNodeFactory::workflowReady` 回调函数。
 
 ## Workflow XML 结构示例
 
@@ -303,7 +303,7 @@ flowchart LR
     
     AP --> ZA["DAZipArchive<br/>ZIP 压缩包处理"]
     AP --> XH["DAXmlHelper<br/>XML 序列化"]
-    AP --> WF["DAWorkFlowOperateWidget<br/>工作流操作"]
+    AP --> WF["DAPyWorkFlowOperateWidget<br/>工作流操作"]
     AP --> DO["DADataOperateWidget<br/>数据操作"]
     AP --> CO["DAChartOperateWidget<br/>绘图操作"]
     

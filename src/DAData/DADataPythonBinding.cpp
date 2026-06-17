@@ -1,6 +1,7 @@
 ﻿#include "DADataPythonBinding.h"
 #include "DAData.h"
 #include "DAPybind11InQt.h"
+#include "DAPybind11QtCaster.hpp"
 
 DA::DAPyDataFrame pyDataFrameToDAPyDataFrame(pybind11::object df)
 {
@@ -55,9 +56,12 @@ PYBIND11_EMBEDDED_MODULE(da_data, m)
      * 导出da_data.DADataManager
      */
     pybind11::class_< DA::DADataManager >(m, "DADataManager")
-        .def("addDataFrame", [](DA::DADataManager& mgr, pybind11::object df, const QString& name) {
-            addDataFrameFromPy(mgr, df, name);
-        }, pybind11::arg("df"), pybind11::arg("name"), "Add a pandas DataFrame to DA Data Manager")
+        .def(
+            "addDataFrame",
+            [](DA::DADataManager& mgr, pybind11::object df, const QString& name) { addDataFrameFromPy(mgr, df, name); },
+            pybind11::arg("df"),
+            pybind11::arg("name"),
+            "Add a pandas DataFrame to DA Data Manager")
         .def("getDataCount", &DA::DADataManager::getDataCount)
         .def("getDataName", [](DA::DADataManager& mgr, int i) { return mgr.getData(i).getName(); })
         .def("addData",

@@ -174,7 +174,7 @@ if (!plugin->initialize()) {
 bool MyPlugin::initialize()
 {
     DA::DACoreInterface* core = this->core();
-    DA::DAAppUIInterface* ui = core->getUiInterface();
+    DA::DAUIInterface* ui = core->getUiInterface();
     
     // 监听项目打开事件
     DA::DAProjectInterface* project = core->getProjectInterface();
@@ -223,10 +223,10 @@ private:
 
 ```mermaid
 sequenceDiagram
-    participant WF as DAWorkFlow
-    participant Exec as DAWorkFlowExecuter
+    participant WF as DAPyWorkFlowManager
+    participant Exec as DAPyWorkFlowExecutor
     participant Node as DAAbstractNode
-    participant Factory as DAAbstractNodeFactory
+    participant Factory as DAPyNodeFactory
     
     WF->>Exec: 创建执行器
     Exec->>Exec: moveToThread()
@@ -359,7 +359,7 @@ public:
 | `nodeStartRemove()` | 节点移除前 | 检查依赖关系、清理节点数据 |
 
 ```cpp
-class MyNodeFactory : public DA::DAAbstractNodeFactory
+class MyNodeFactory : public DA::DAPyNodeFactory
 {
 public:
     // 节点即将加入工作流
@@ -401,9 +401,9 @@ public:
 
 ```mermaid
 sequenceDiagram
-    participant Scene as DANodeGraphicsScene
-    participant WF as DAWorkFlow
-    participant Factory as DAAbstractNodeFactory
+    participant Scene as DAPyWorkFlowScene
+    participant WF as DAPyWorkFlowManager
+    participant Factory as DAPyNodeFactory
     participant Node as DAAbstractNode
     
     Scene->>WF: createNode(metaData)

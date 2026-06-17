@@ -137,7 +137,7 @@
 
 **层次**：
 - **DACoreInterface**：顶层接口
-- **DAAppUIInterface**：UI 接口
+- **DAUIInterface**：UI 接口
 - **DADataManagerInterface**：数据接口
 
 ### 核心接口 (Core Interface)
@@ -179,8 +179,8 @@
 **定义**：Model-View-Controller 架构模式。
 
 **对应**：
-- **Model**：DAWorkFlow（工作流逻辑）
-- **View**：DANodeGraphicsScene（图形显示）
+- **Model**：DAPyWorkFlow（工作流逻辑）
+- **View**：DAPyWorkFlowScene（图形显示）
 - **Controller**：用户交互处理
 
 ### 松耦合 (Loose Coupling)

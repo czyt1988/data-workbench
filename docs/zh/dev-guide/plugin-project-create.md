@@ -284,7 +284,6 @@ find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
     Xml
     Svg
     PrintSupport
-    AxContainer
     REQUIRED
 )
 if(Qt5_POSITION_INDEPENDENT_CODE)
@@ -316,8 +315,13 @@ target_link_libraries(${DA_PLUGIN_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Xml
     Qt${QT_VERSION_MAJOR}::Svg
     Qt${QT_VERSION_MAJOR}::PrintSupport
-    Qt${QT_VERSION_MAJOR}::AxContainer
 )
+
+# Windows 平台专用：AxContainer 仅在 Windows 上可用
+if(WIN32)
+    find_package(Qt${QT_VERSION_MAJOR} COMPONENTS AxContainer REQUIRED)
+    target_link_libraries(${DA_PLUGIN_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::AxContainer)
+endif()
 
 # 以下这些宏由daworkbench_plugin_utils.cmake提供，此文件会在DAWorkBench安装的时候一同安装到lib/cmake目录下
 # 只需要把DAWorkbench的cmake文件安装目录(lib/cmake)append到CMAKE_MODULE_PATH即可调用
@@ -329,33 +333,37 @@ damacro_import_QtPropertyBrowser(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 damacro_import_qwt(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 damacro_import_orderedmap(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 # -------------link DAWorkBench--------------------------
-find_package(DAWorkbench COMPONENTS 
-    DAUtils 
+find_package(DAWorkbench COMPONENTS
+    DAUtils
     DAMessageHandler
-    DAAxOfficeWrapper
     DAData
     DAGraphicsView
-    DAWorkFlow
+    DAPyWorkFlow
     DAFigure
-    DACommonWidgets 
-    DAGui 
-    DAInterface 
+    DACommonWidgets
+    DAGui
+    DAInterface
     DAPluginSupport
 )
 
 target_link_libraries(${DA_PLUGIN_NAME} PUBLIC
-    DAWorkbench::DAUtils 
+    DAWorkbench::DAUtils
     DAWorkbench::DAMessageHandler
-    DAWorkbench::DAAxOfficeWrapper
     DAWorkbench::DAData
     DAWorkbench::DAGraphicsView
-    DAWorkbench::DAWorkFlow
+    DAWorkbench::DAPyWorkFlow
     DAWorkbench::DAFigure
-    DAWorkbench::DACommonWidgets 
-    DAWorkbench::DAGui 
-    DAWorkbench::DAInterface 
+    DAWorkbench::DACommonWidgets
+    DAWorkbench::DAGui
+    DAWorkbench::DAInterface
     DAWorkbench::DAPluginSupport
 )
+
+# Windows 平台专用：Office 自动化封装仅在 Windows 上可用
+if(WIN32)
+    find_package(DAWorkbench COMPONENTS DAAxOfficeWrapper)
+    target_link_libraries(${DA_PLUGIN_NAME} PUBLIC DAWorkbench::DAAxOfficeWrapper)
+endif()
 ########################################################
 # Qt的moc
 ########################################################

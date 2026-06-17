@@ -110,7 +110,8 @@ classDiagram
 
 ```cpp
 // 从主窗口获取工作流场景
-DAWorkFlowWidget* workflowWidget = daApp->getWorkFlowWidget();
+DAPyWorkFlowOperateWidget* operateWidget = ui->getDockingArea()->getWorkFlowOperateWidget();
+DAPyWorkFlowEditWidget* workflowWidget = operateWidget->getCurrentWorkFlowWidget();
 DAPyWorkFlowScene* scene = workflowWidget->getWorkFlowScene();
 
 // 场景提供完整的节点和连接线管理接口
@@ -392,7 +393,7 @@ if (point.isOutput()) {
 
 ### DAPyWorkFlowSceneSerializer
 
-DAPyWorkFlowSceneSerializer 负责 Python 工作流场景的 XML 序列化和反序列化，保存节点位置、连接关系、参数状态等信息。
+DAPyWorkFlowSceneSerializer 负责 Python 工作流场景的 XML 序列化和反序列化，**仅处理场景级别数据**（节点位置、图元可视化属性、连接线布局等），不处理 Python 工作流逻辑数据（节点拓扑、参数值、连接关系）。工作流逻辑数据由独立的 `DAPyWorkFlowSerializer` 类序列化到 workflow-data.xml 中。
 
 #### 核心方法
 
@@ -406,12 +407,14 @@ DAPyWorkFlowSceneSerializer 负责 Python 工作流场景的 XML 序列化和反
 
 #### 序列化内容
 
-场景序列化保存以下信息：
+场景序列化（DAPyWorkFlowSceneSerializer）仅保存以下**场景布局信息**：
 
-- **节点信息**：节点 ID、类型、位置坐标、尺寸、渲染模板
-- **连接信息**：源节点 ID、目标节点 ID、输出端口名、输入端口名
-- **参数状态**：节点的参数值配置
-- **视图状态**：场景的缩放比例和滚动位置
+- **节点位置**：节点 ID、位置坐标、尺寸、渲染模板
+- **图元属性**：节点的可视化样式配置（`DAPyNodeStyle` 字段）
+- **连接线布局**：连接线的可视化路径和样式
+
+!!! note "工作流逻辑数据"
+    节点拓扑关系、参数值配置、连接关系等**工作流逻辑数据**由 `DAPyWorkFlowSerializer` 序列化到独立的 workflow-data.xml 中，与场景布局数据分开存储。
 
 #### 使用示例
 
@@ -461,7 +464,8 @@ DA::DAAppInterface* iface = DA::DAAppInterface::getInstance();
 DA::DAPyWorkFlowScene* scene = iface->getWorkFlowScene();
 
 // 方式二：通过工作流部件获取
-DA::DAWorkFlowWidget* widget = iface->getWorkFlowWidget();
+DA::DAPyWorkFlowOperateWidget* opWidget = ui->getDockingArea()->getWorkFlowOperateWidget();
+DA::DAPyWorkFlowEditWidget* widget = opWidget->getCurrentWorkFlowWidget();
 DA::DAPyWorkFlowScene* scene = widget->getWorkFlowScene();
 ```
 
@@ -591,6 +595,8 @@ item->clearPaintCallback();
 | DAPyLinkGraphicsItem | `src/DAPyWorkFlow/DAPyLinkGraphicsItem.h` | `src/DAPyWorkFlow/DAPyLinkGraphicsItem.cpp` |
 | DAPyLinkPoint | `src/DAPyWorkFlow/DAPyLinkPoint.h` | `src/DAPyWorkFlow/DAPyLinkPoint.cpp` |
 | DAPyNodePalette | `src/DAPyWorkFlow/DAPyNodePalette.h` | `src/DAPyWorkFlow/DAPyNodePalette.cpp` |
-| DAPyNodeStyle | `src/DAPyWorkFlow/DAPyNodeStyle.h` | — (纯头文件) |
+| DAPyNodeStyle | `src/DAPyWorkFlow/DAPyNodeStyle.h` | `src/DAPyWorkFlow/DAPyNodeStyle.cpp` |
 | DAPyNodeMetaData | `src/DAPyWorkFlow/DAPyNodeMetaData.h` | `src/DAPyWorkFlow/DAPyNodeMetaData.cpp` |
 | DAPyWorkFlowSceneSerializer | `src/DAPyWorkFlow/DAPyWorkFlowSceneSerializer.h` | `src/DAPyWorkFlow/DAPyWorkFlowSceneSerializer.cpp` |
+| DAPyWorkFlowSerializer | `src/DAPyWorkFlow/DAPyWorkFlowSerializer.h` | `src/DAPyWorkFlow/DAPyWorkFlowSerializer.cpp` |
+| DAPyLinkPointStyle | `src/DAPyWorkFlow/DAPyLinkPointStyle.h` | `src/DAPyWorkFlow/DAPyLinkPointStyle.cpp` |

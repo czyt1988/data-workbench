@@ -1272,7 +1272,7 @@ QString DAFigureWidget::generateProbeName()
  */
 bool DAFigureWidget::isProbeNameExists(const QString& name) const
 {
-    QList< DADataProbeMarker* > probes = getProbes();
+    const QList< DADataProbeMarker* > probes = getProbes();
     for (const DADataProbeMarker* probe : probes) {
         if (probe->probeName() == name) {
             return true;
@@ -1356,7 +1356,7 @@ DADataProbeMarker* DAFigureWidget::createHorizontalProbe(double yValue, const QS
  */
 void DAFigureWidget::removeAllProbes()
 {
-    QList< DAChartWidget* > charts = getCharts();
+    const QList< DAChartWidget* > charts = getCharts();
     for (DAChartWidget* chart : charts) {
         const QwtPlotItemList& items = chart->itemList();
         QList< QwtPlotItem* > probesToRemove;
@@ -1390,7 +1390,7 @@ void DAFigureWidget::removeAllProbes()
 QList< DADataProbeMarker* > DAFigureWidget::getProbes() const
 {
     QList< DADataProbeMarker* > probes;
-    QList< DAChartWidget* > charts = getCharts();
+    const QList< DAChartWidget* > charts = getCharts();
     for (DAChartWidget* chart : charts) {
         const QwtPlotItemList& items = chart->itemList();
         for (QwtPlotItem* item : items) {

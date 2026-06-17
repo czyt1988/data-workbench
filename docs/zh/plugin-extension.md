@@ -71,9 +71,9 @@ graph TB
 bool MyPlugin::initialize()
 {
     DA::DACoreInterface* core = this->core();
-    DA::DAAppUIInterface* ui = core->getUiInterface();
+    DA::DAUIInterface* ui = core->getUiInterface();
     DA::DARibbonAreaInterface* ribbon = ui->getRibbonArea();
-    
+
     return true;
 }
 ```
@@ -459,21 +459,10 @@ bool MyPlugin::initialize()
 
 ### 监听工作流事件
 
-```cpp
-bool MyPlugin::initialize()
-{
-    DA::DAWorkFlowInterface* wfInterface = core->getWorkFlowInterface();
-    
-    // 监听工作流执行
-    connect(wfInterface, &DA::DAWorkFlowInterface::workflowStarted,
-            this, &MyPlugin::onWorkflowStarted);
-    
-    connect(wfInterface, &DA::DAWorkFlowInterface::workflowFinished,
-            this, &MyPlugin::onWorkflowFinished);
-    
-    return true;
-}
-```
+!!! note "工作流事件"
+    新的 Python-first 工作流架构中，工作流事件由 `DAPyWorkFlowManager` 通过信号驱动。
+    插件可通过 `DAPyWorkFlowManager` 的 `executionStarted()`、`executionFinished(bool)`、`nodeExecuted(QString, bool)` 等信号监听工作流执行状态。
+    具体用法参见 [工作流生命周期](./dev-guide/workflow-lifecycle.md)。
 
 ---
 
@@ -503,11 +492,11 @@ private:
 // 注册到设置系统
 bool MyPlugin::initialize()
 {
-    DA::DAAppUIInterface* ui = core->getUiInterface();
-    
+    DA::DAUIInterface* ui = core->getUiInterface();
+
     // 创建配置面板
     m_configWidget = new MyConfigWidget();
-    
+
     // 注册到设置对话框
     ui->addSettingsPage(tr("My Plugin"), m_configWidget);
     
@@ -526,10 +515,10 @@ bool MyPlugin::initialize()
 {
     // 1. 获取接口
     DA::DACoreInterface* core = this->core();
-    DA::DAAppUIInterface* ui = core->getUiInterface();
+    DA::DAUIInterface* ui = core->getUiInterface();
     DA::DARibbonAreaInterface* ribbon = ui->getRibbonArea();
     DA::DADockingAreaInterface* dock = ui->getDockingArea();
-    
+
     // 2. 创建 Ribbon Category
     SARibbonCategory* category = ribbon->addCategory(tr("My Tools"));
     SARibbonPanel* panel = category->addPanel(tr("Main"));

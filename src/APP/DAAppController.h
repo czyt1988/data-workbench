@@ -97,9 +97,8 @@ public:
 
 public:
     // 获取当前dataframeOperateWidget,如果没有返回nullptr,此函数不返回nullptr的前提是
-    DADataOperateOfDataFrameWidget* getCurrentDataFrameOperateWidget(
-        bool checkDataOperateAreaFocused = true, bool isShowMessage = true
-    );
+    DADataOperateOfDataFrameWidget* getCurrentDataFrameOperateWidget(bool checkDataOperateAreaFocused = true,
+                                                                     bool isShowMessage               = true);
     // 获取工作流操作窗口
     DAPyWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
     // 获取数据操作窗口
@@ -337,11 +336,6 @@ private Q_SLOTS:
     void onActionRunCurrentWorkflowTriggered();
     // 终止
     void onActionTerminateCurrentWorkflowTriggered();
-#if DA_ENABLE_PYTHON
-    // Python workflow操作
-    void onActionPyWorkflowNewTriggered();
-    void onActionPyWorkflowOpenTriggered();
-#endif
     //===================================================
     // 其他
     //===================================================
