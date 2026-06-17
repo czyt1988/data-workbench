@@ -185,13 +185,17 @@ damacro_import_qwt(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 
 # 导入 DA 模块 - 使用 find_package 查找主程序模块
 find_package(DAWorkbench COMPONENTS
-    DAUtils DAMessageHandler DAData DAWorkFlow
+    DAUtils DAMessageHandler DAData DAPyWorkFlow DAPyBindQt
+    DAPyScripts DAPyCommonWidgets DAGraphicsView
     DAFigure DACommonWidgets DAGui DAInterface DAPluginSupport
 )
 
 target_link_libraries(${DA_PLUGIN_NAME} PUBLIC
     DAWorkbench::DAUtils
-    DAWorkbench::DAWorkFlow
+    DAWorkbench::DAPyWorkFlow
+    DAWorkbench::DAPyBindQt
+    DAWorkbench::DAPyScripts
+    DAWorkbench::DAPyCommonWidgets
     DAWorkbench::DAInterface
     DAWorkbench::DAPluginSupport
 )
@@ -545,6 +549,62 @@ bool MyWorker::exec()
     
     return true;
 }
+```
+
+---
+
+## Python 脚本组织
+
+对于涉及 Python 数据处理的插件，推荐使用**三层架构**组织 PyScripts 目录。以 DataAnalysis 插件为例：
+
+```text
+PyScripts/
+├── DADataAnalysisCore/      # 纯 pandas 核心算法（无 Qt 依赖）
+│   ├── __init__.py
+│   ├── cleaning.py          # 数据清洗算法
+│   ├── io.py                # 文件读写算法
+│   └── operations.py        # DataFrame 操作算法
+├── DADataAnalysisGui/       # GUI 交互逻辑（可引用 da_app/da_interface）
+│   ├── __init__.py
+│   ├── dataframe_cleaner.py # 数据清洗 UI 交互
+│   ├── dataframe_io.py      # 数据导入导出 UI 交互
+│   ├── utils.py             # 工具函数
+│   └── i18n/                # 国际化翻译
+├── DADataAnalysisNodes/     # 工作流节点插件（@NodeDef 装饰器定义）
+│   ├── __init__.py
+│   ├── *_node.py            # 各节点定义（20+ 节点）
+│   └── setup.py             # entry_points 注册
+└── DADataAnalysis/          # 兼容旧包（可选，保持向后兼容）
+```
+
+**三层架构原则：**
+
+| 层 | 职责 | 依赖限制 |
+|----|------|----------|
+| **Core** | 纯算法（pandas/numpy），不含任何 Qt 或 UI 代码 | 仅 pandas, numpy 等科学计算库 |
+| **Gui** | UI 交互逻辑，调用 Core 层算法并与主程序接口交互 | Core 层 + da_app, da_interface, da_data |
+| **Nodes** | 工作流节点定义（使用 `@NodeDef` 装饰器），自动被主程序发现 | Core 层 + DAWorkbench.DAWorkFlowPy |
+
+### CMake 安装 Python 脚本
+
+Python 脚本需要在 CMakeLists.txt 中配置安装规则，将不同层安装到不同目标目录：
+
+```cmake
+# Core 和 Gui 层安装到 PyScripts 目录（供普通脚本导入）
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PyScripts/DADataAnalysisCore
+    DESTINATION bin/PyScripts
+    FILES_MATCHING PATTERN "*.py"
+)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PyScripts/DADataAnalysisGui
+    DESTINATION bin/PyScripts
+    FILES_MATCHING PATTERN "*.py"
+)
+
+# Nodes 层安装到 pyplugins 目录（供工作流引擎自动发现）
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PyScripts/DADataAnalysisNodes
+    DESTINATION bin/pyplugins
+    FILES_MATCHING PATTERN "*.py"
+)
 ```
 
 ---
