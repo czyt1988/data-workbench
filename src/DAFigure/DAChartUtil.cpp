@@ -1,4 +1,4 @@
-﻿#include "DAChartUtil.h"
+#include "DAChartUtil.h"
 #include <numeric>
 #include <QSet>
 #include <QtGlobal>
@@ -796,7 +796,7 @@ void DAChartUtil::getXYDatas(QVector< double >* xs, QVector< double >* ys, const
 {
     auto size = cur->dataSize();
     for (auto i = 0; i < size; ++i) {
-        QPointF p = cur->sample(i);
+        const QPointF p = cur->sample(i);
         if (ys)
             (*ys).push_back(p.y());
         if (xs)
@@ -842,7 +842,7 @@ size_t DAChartUtil::getXYDatas(QVector< double >* xs,
     auto realSize = 0;
     if (!rang.isNull() && rang.isValid()) {
         for (auto i = 0; i < size; ++i) {
-            QPointF p = cur->sample(i);
+            const QPointF p = cur->sample(i);
             if (rang.contains(p)) {
                 if (ys) {
                     (*ys).push_back(p.y());
@@ -875,10 +875,10 @@ size_t DAChartUtil::getXYDatas(QVector< QPointF >& xys,
                                const QPainterPath& rang)
 {
     auto length = series->data()->size();
-    QPointF point;
+
     size_t resCount = 0;
     for (auto i = 0; i < length; ++i) {
-        point = series->data()->sample(i);
+        const QPointF point = series->data()->sample(i);
         if (rang.contains(point)) {
             ++resCount;
             xys.append(point);
@@ -906,10 +906,10 @@ size_t DAChartUtil::getXYDatas(QVector< double >* xs,
                                const QPainterPath& rang)
 {
     size_t length = series->data()->size();
-    QPointF point;
+
     size_t resCount = 0;
     for (size_t i = 0; i < length; ++i) {
-        point = series->data()->sample(i);
+        const QPointF point = series->data()->sample(i);
         if (rang.contains(point)) {
             ++resCount;
             if (xs) {
@@ -1195,9 +1195,9 @@ int DAChartUtil::removeDataInRang(const QRectF& removeRang, QwtSeriesStore< QPoi
     auto length = curve->data()->size();
     QVector< QPointF > newLine;
     newLine.reserve(static_cast< int >(length));
-    QPointF point;
+
     for (auto i = 0; i < length; ++i) {
-        point = curve->data()->sample(i);
+        const QPointF point = curve->data()->sample(i);
         if (removeRang.contains(point))
             continue;
         newLine.push_back(point);
@@ -1211,9 +1211,9 @@ int DAChartUtil::removeDataInRang(const QPainterPath& removeRang, QwtSeriesStore
     auto length = curve->data()->size();
     QVector< QPointF > newLine;
     newLine.reserve(static_cast< int >(length));
-    QPointF point;
+
     for (auto i = 0; i < length; ++i) {
-        point = curve->data()->sample(i);
+        const QPointF point = curve->data()->sample(i);
         if (removeRang.contains(point))
             continue;
         newLine.push_back(point);
@@ -1368,8 +1368,9 @@ bool DAChartUtil::dynamicCheckIsPlotChartItem(const QwtPlotItem* item)
 ///
 QwtPlotItemList DAChartUtil::dynamicGetXYSeriesItemList(const QwtPlot* chart)
 {
-    QwtPlotItemList itemList = chart->itemList();
+    const QwtPlotItemList itemList = chart->itemList();
     QwtPlotItemList res;
+    res.reserve(itemList.size());
     for (int i = 0; i < itemList.size(); ++i) {
         if (dynamic_cast< QwtSeriesStore< QPointF >* >(itemList[ i ])) {
             res.append(itemList[ i ]);
@@ -1471,6 +1472,7 @@ bool DAChartUtil::setPlotItemColor(QwtPlotItem* item, const QColor& color)
             p->setSymbolBrush(QwtPlotTradingCurve::Decreasing, QBrush(color));
             return true;
         }
+        break;
     case QwtPlotItem::Rtti_PlotGrid:
         if (QwtPlotGrid* grid = static_cast< QwtPlotGrid* >(item)) {
             QPen pen = grid->majorPen();
@@ -1695,8 +1697,9 @@ QBrush DAChartUtil::getPlotItemBrush(const QwtPlotItem* item)
 ///
 QwtPlotItemList DAChartUtil::getPlotChartItemList(const QwtPlot* chart)
 {
-    QwtPlotItemList itemList = chart->itemList();
+    const QwtPlotItemList itemList = chart->itemList();
     QwtPlotItemList res;
+    res.reserve(itemList.size());
     for (int i = 0; i < itemList.size(); ++i) {
         if (checkIsPlotChartItem(itemList[ i ])) {
             res.append(itemList[ i ]);
@@ -1734,8 +1737,9 @@ bool DAChartUtil::checkIsPlotChartItem(const QwtPlotItem* item)
 ///
 QwtPlotItemList DAChartUtil::getXYSeriesItemList(const QwtPlot* chart)
 {
-    QwtPlotItemList itemList = chart->itemList();
+    const QwtPlotItemList itemList = chart->itemList();
     QwtPlotItemList res;
+    res.reserve(itemList.size());
     for (int i = 0; i < itemList.size(); ++i) {
         if (checkIsXYSeriesItem(itemList[ i ])) {
             res.append(itemList[ i ]);
@@ -1838,8 +1842,9 @@ void DAChartUtil::dataRange(const QwtPlot* chart, QwtInterval* yLeft, QwtInterva
 ///
 QwtPlotItemList DAChartUtil::dynamicGetPlotChartItemList(const QwtPlot* chart)
 {
-    QwtPlotItemList itemList = chart->itemList();
+    const QwtPlotItemList itemList = chart->itemList();
     QwtPlotItemList res;
+    res.reserve(itemList.size());
     for (int i = 0; i < itemList.size(); ++i) {
         if (dynamicCheckIsPlotChartItem(itemList[ i ])) {
             res.append(itemList[ i ]);

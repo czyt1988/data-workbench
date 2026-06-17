@@ -239,7 +239,7 @@ Q_SIGNALS:
 protected:
     void keyPressEvent(QKeyEvent* e);
     void showEvent(QShowEvent* e);
-private slots:
+private Q_SLOTS:
     // 窗口的位置发生改变槽
     void onWidgetGeometryChanged(QWidget* w, const QRectF& oldNormGeo, const QRectF& newNormGeo);
     // DAFigureOverlayChartEditor的激活窗口变化

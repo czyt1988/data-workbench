@@ -1,4 +1,4 @@
-﻿#ifndef DACHARTRECTREGIONSELECTEDITOR_H
+#ifndef DACHARTRECTREGIONSELECTEDITOR_H
 #define DACHARTRECTREGIONSELECTEDITOR_H
 #include "DAFigureAPI.h"
 #include "DAAbstractRegionSelectEditor.h"
@@ -31,7 +31,7 @@ public:
     virtual bool cancel() override;
     // 获取选框绘制的item
     virtual QwtPlotItem* takeItem() override;
-private slots:
+private Q_SLOTS:
     void onItemAttached(QwtPlotItem* item, bool on);
 
 protected:
