@@ -14,12 +14,12 @@ data-workbench采用分层模块化架构，各模块之间有明确的依赖关
 | **DAPyBindQt** | L1 基础层 | 共享库 | pybind11类型转换器、Python解释器生命周期、numpy/pandas绑定 | 28 |
 | **DAPyScripts** | L2 功能层 | 共享库 | Python脚本I/O、DataFrame操作、信号处理函数C++包装 | 12 |
 | **DAPyCommonWidgets** | L2 功能层 | 共享库 | DataFrame列选择器、dtype下拉框 | 13 |
-| **DAPyWorkFlow** | L2 功能层 | 共享库 | Python工作流节点代理、工厂、场景、执行引擎、图形项 | 43 |
+| **DAPyWorkFlow** | L2 功能层 | 共享库 | Python工作流节点代理、工厂、场景、执行引擎、图形项 | 51 |
 | **DAData** | L2 功能层 | 共享库 | 抽象数据基类、DAData包装器、数据管理器、Python数据封装、撤销命令 | 22 |
 | **DACommonWidgets** | L3 界面层 | 共享库 | 属性面板、颜色选择器、样式编辑器、设置对话框、对齐/文件编辑 | 82 |
 | **DAGraphicsView** | L2 功能层 | 共享库 | QGraphicsView框架（场景、视图、图元、连线、动作、撤销命令） | 54 |
 | **DAFigure** | L2 功能层 | 共享库 | Qwt图表容器、图表编辑器、数据探针、序列化 | 103 |
-| **DAGui** | L3 界面层 | 共享库 | 工作流UI、图表设置面板、数据管理UI、Model/View、对话框 | 334 |
+| **DAGui** | L3 界面层 | 共享库 | 工作流UI、图表设置面板、数据管理UI、Model/View、对话框 | ~220 |
 | **DAInterface** | L4 接口层 | 共享库 | 抽象接口定义（Core/UI/Docking/Ribbon/Actions/Command/DataManager/Project） | 28 |
 | **DAPluginSupport** | L4 接口层 | 共享库 | 插件框架（DAAbstractPlugin/DAPluginManager/DAAbstractNodePlugin） | 10 |
 | **APP** | L5 应用层 | 可执行程序 | 主程序、接口具体实现、项目文件管理、插件管理 | 190 |
@@ -126,7 +126,7 @@ graph BT
 
     subgraph "Layer 3 - 界面层"
         DACW["DA<b>Common</b><br/>Widgets<br/>通用UI组件"]
-        DAGui["DA<b>Gui</b><br/>GUI整合层<br/>334文件"]
+        DAGui["DA<b>Gui</b><br/>GUI整合层<br/>~220文件"]
     end
 
     subgraph "Layer 4 - 接口层"
@@ -291,11 +291,13 @@ graph BT
 **⚠️ 注意：此模块由 AI 编写，存在类放置错误（见下方§反模式警告）。**
 
 提供内容：
-- 节点核心：`DAPyNodeProxy`（C++↔Python节点桥接）、`DAPyNodeFactory`（Python节点发现）
+- 节点核心：`DAPyNode`（C++↔Python节点代理）、`DAPyNodeFactory`（Python节点发现）、`DAPyNodeParameter`（参数代理）、`DAPyNodeConnection`（连接代理）
+- 工作流容器：`DAPyWorkFlow`（DAG 操作代理）
 - 可视化：`DAPyNodeGraphicsItem`、`DAPyLinkGraphicsItem`、`DAPyLinkPoint`
-- 场景/执行：`DAPyWorkFlowScene`、`DAPyWorkFlowLifecycle`（生命周期控制+QThread执行）
-- 序列化：`DAPyWorkFlowSceneSerializer`、撤销命令工厂
-- 样式系统：`DAPyNodeStyle`、`DAPyNodeStyleDefine`、`DAPyNodePalette`
+- 场景/执行：`DAPyWorkFlowScene`、`DAPyWorkFlowExecutor`（拓扑排序执行）、`DAPyWorkFlowManager`（中央调度器）
+- 序列化：`DAPyWorkFlowSceneSerializer`（场景布局）、`DAPyWorkFlowSerializer`（工作流逻辑）、撤销命令工厂
+- 样式系统：`DAPyNodeStyle`、`DAPyLinkPointStyle`、`DAPyNodePalette`
+- 信号管理：`DAPySignalManager`（信号驱动执行）
 
 外部依赖：DAUtils, DAGraphicsView, DAPyBindQt (all PUBLIC), Python3, pybind11
 
@@ -368,7 +370,7 @@ graph BT
 
 消费者：DAGui (PUBLIC link)，APP + DAPluginSupport (传递依赖)
 
-#### DAGui — GUI 整合层（最大模块，334 文件）
+#### DAGui — GUI 整合层（最大模块，~220 文件）
 
 职责：整合所有模块的 GUI 组件，提供完整用户界面。
 
@@ -452,21 +454,21 @@ graph BT
 
 ---
 
-## ⚠️ 反模式警告：DAPyWorkFlow 的类放置错误
+## ⚠️ 历史重构记录：DAPyWorkFlow 的类迁移
 
-`src/DAPyWorkFlow` 模块（43文件）由 AI 编写，**多个类放错了位置**。这导致了不合理依赖和代码复用障碍。
+`src/DAPyWorkFlow` 模块最初由 AI 编写，曾有多个类放错了位置。以下类已在之前的重构中被迁移到正确位置：
 
-| 错放类 | 当前位置 | 应该放在 | 原因 |
-|-------|---------|---------|------|
-| `DAPyGILGuard` / `DAPyGILRelease` / `DAPySafePyObjectHolder` | `DAPyWorkFlow/DAPyGILGuard.*` | **`DAPyBindQt/`** | 通用 pybind11 GIL RAII 工具，零工作流逻辑。DAPyBindQt 已有类似 `DAPyObjectWrapper`。当前导致：其他需要 GIL 的模块无法使用。 |
-| `DAParameterDescriptor` | `DAPyWorkFlow/DAParameterDescriptor.h` | **`DAPyBindQt/`** 或 **`DAShared/`** | 纯 JSON 数据描述符。当前导致 **DAGui → DAPyWorkFlow** 反向依赖（DAGui/NodeSetting 引入 `DAPyWorkFlow/DAParameterDescriptor.h`）。（注：DAGui/NodeSetting/ 下有同名 `ParameterDescriptor.h`） |
-| `DAPortDescriptor` | `DAPyWorkFlow/DAPortDescriptor.h` | **`DAPyBindQt/`** 或 **`DAShared/`** | 同上。纯数据描述符，无工作流逻辑。 |
-| `DAPyPainterProxy` | `DAPyWorkFlow/DAPyPainterProxy.*` | 可考虑 **`DAPyBindQt/`** | QPainter↔Python 桥接，无工作流逻辑。但仅用于节点绘制回调，可保留。 |
+| 已迁移类 | 原位置 | 现位置 | 说明 |
+|---------|--------|--------|------|
+| `DAPyGILGuard` / `DAPyGILRelease` / `DAPySafePyObjectHolder` | `DAPyWorkFlow/DAPyGILGuard.*` | `DAPyBindQt/DAPyGILGuard.h` | 通用 pybind11 GIL RAII 工具，已迁移至基础层 |
+| `DAParameterDescriptor` | `DAPyWorkFlow/DAParameterDescriptor.h` | `DAGui/NodeSetting/ParameterDescriptor.h` | 参数描述符已重构至 DAGui/NodeSetting/ 下 |
+| `DAPortDescriptor` | `DAPyWorkFlow/DAPortDescriptor.h` | 已移除 | 端口描述符已不再需要，端口信息通过 `DAPyLinkPoint` 管理 |
 
-**将来重构时**：应将上述类移至正确模块，并清理相关 #include 和 CMake 依赖。这将：
-1. 让 `DAPyGILGuard` 可被所有 Python 模块使用
-2. 消除 `DAGui → DAPyWorkFlow` 的不合理反向依赖
-3. 降低 DAPyWorkFlow 模块的耦合度
+仍待评估的类：
+
+| 待评估类 | 当前位置 | 可考虑迁移至 | 原因 |
+|---------|---------|------------|------|
+| `DAPyPainterProxy` | `DAPyWorkFlow/DAPyPainterProxy.*` | **`DAPyBindQt/`** | QPainter↔Python 桥接，无工作流逻辑。但仅用于节点绘制回调，暂保留。 |
 
 ---
 
@@ -502,8 +504,8 @@ graph BT
 !!! warning "模块隔离"
     功能层模块之间尽量减少直接依赖，通过接口层（DAInterface）进行通信。
 
-!!! warning "DAPyWorkFlow 警告"
-    DAPyWorkFlow 模块存在类放置错误（见上方§反模式警告）。创建新类前先判断是否属于 DAPyBindQt 或 DAShared。
+!!! note "DAPyWorkFlow 重构记录"
+    DAPyWorkFlow 模块历史上存在类放置错误，大部分已在之前的重构中迁移（见上方§历史重构记录）。创建新类前仍需判断是否属于 DAPyBindQt 或 DAShared。
 
 !!! note "Python模块"
     Python相关模块需要Python环境和pybind11支持。未启用 Python (DA_ENABLE_PYTHON=OFF) 时，DAPyBindQt/DAPyScripts/DAPyCommonWidgets/DAPyWorkFlow 不会构建，DAData/DAGui/DAInterface/DAPluginSupport/APP 中的 Python 相关代码也会跳过编译。

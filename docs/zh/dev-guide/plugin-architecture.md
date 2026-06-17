@@ -557,7 +557,7 @@ classDiagram
     }
     
     DAAbstractPlugin <|-- DAAbstractNodePlugin
-    DAAbstractPlugin <|-- DataAnalysisPlugin
+    DAAbstractNodePlugin <|-- DataAnalysisPlugin
 DAPluginManager --> DAAbstractPlugin : manages
     ```
 
@@ -656,18 +656,29 @@ Retranslating --> Active: retranslate() 完成
     ├── DataAnalysisPlugin.cpp      # 插件主类实现
     ├── DataAnalysisBaseWorker.h    # 工作类基类头文件
     ├── DataAnalysisBaseWorker.cpp  # 工作类基类实现
-    ├── DataAnalysisNodeFactory.h   # 节点工厂头文件（如需）
-    ├── DataAnalysisNodeFactory.cpp # 节点工厂实现（如需）
+    ├── DataframeCleanerWorker.h    # 数据清洗工作类
+    ├── DataframeIOWorker.h         # 数据导入导出工作类
+    ├── DataframeOperateWorker.h    # 数据操作工作类
     ├── Dialogs/                    # 对话框目录
     │   ├── SomeDialog.h
     │   ├── SomeDialog.cpp
     │   └── SomeDialog.ui
-    ├── PyScripts/                  # Python 脚本目录
-    │   └── DADataAnalysis/
-    │       ├── __init__.py         # 模块初始化
-    │       ├── dataframe_cleaner.py # 数据清洗脚本
-    │       ├── dataframe_io.py     # 数据导入导出脚本
-    │       └── utils.py            # 工具函数
+    ├── PyScripts/                  # Python 脚本目录（三层架构）
+    │   ├── DADataAnalysisCore/     # 纯算法层
+    │   │   ├── __init__.py
+    │   │   ├── cleaning.py         # 数据清洗算法
+    │   │   ├── io.py               # 文件读写算法
+    │   │   └── operations.py       # DataFrame 操作算法
+    │   ├── DADataAnalysisGui/      # GUI 交互层
+    │   │   ├── __init__.py
+    │   │   ├── dataframe_cleaner.py # 数据清洗 UI 交互
+    │   │   ├── dataframe_io.py     # 数据导入导出 UI 交互
+    │   │   ├── utils.py            # 工具函数
+    │   │   └── i18n/               # 国际化翻译
+    │   └── DADataAnalysisNodes/    # 工作流节点层
+    │       ├── __init__.py
+    │       ├── *_node.py           # 各节点定义（20+ 节点）
+    │       └── setup.py            # entry_points 注册
     └── icon/                       # 图标资源目录
         ├── icon1.svg
         └── icon2.png
@@ -676,11 +687,11 @@ Retranslating --> Active: retranslate() 完成
 **目录结构说明：**
 
 - **CMakeLists.txt**：定义插件的构建配置，包括源文件列表、依赖库、输出目录等。
-- **插件主类**：实现 `DAAbstractPlugin` 接口，是插件的入口点。
-- **工作类**：封装具体的业务逻辑，与插件主类分离，便于测试和复用。
-- **节点工厂**：如果插件提供工作流节点，需要实现节点工厂。
+- **插件主类**：实现 `DAAbstractNodePlugin` 接口，是插件的入口点。
+- **工作类**：封装具体的业务逻辑，与插件主类分离，便于测试和复用。包括 `DataframeCleanerWorker`（数据清洗）、`DataframeIOWorker`（导入导出）、`DataframeOperateWorker`（数据操作）等。
+- **节点工厂**：旧架构中需要实现 C++ 节点工厂。新的 Python-first 架构使用 `@NodeDef` 装饰器自动发现节点，无需手动编写 NodeFactory。
 - **对话框**：用户交互界面，使用 Qt Designer 设计。
-- **Python 脚本**：业务逻辑的 Python 实现，可以被 C++ 代码调用。
+- **Python 脚本**：采用三层架构 — `DADataAnalysisCore`（纯算法层，无 UI 依赖）、`DADataAnalysisGui`（GUI 交互逻辑）、`DADataAnalysisNodes`（工作流节点定义，通过 `@NodeDef` 自动发现）。
 - **图标资源**：插件使用的图标文件。
 
 === "插件头文件"
@@ -691,24 +702,24 @@ Retranslating --> Active: retranslate() 完成
     #ifndef DATAANALYSISPLUGIN_H
     #define DATAANALYSISPLUGIN_H
     
-    #include "DAAbstractPlugin.h"
+    #include "DAAbstractNodePlugin.h"
     #include "DataAnalysisGlobal.h"
-    
+
     class DataAnalysisBaseWorker;
-    
+
     /**
      * @brief 数据分析插件主类
-     * 
+     *
      * 此插件提供数据清洗、转换和分析功能。
-     * 继承自 DAAbstractPlugin，实现插件的基本接口。
+     * 继承自 DAAbstractNodePlugin，提供工作流节点和数据处理功能。
      */
-    class DATAANALYSIS_API DataAnalysisPlugin : public DA::DAAbstractPlugin
+    class DATAANALYSIS_API DataAnalysisPlugin : public DA::DAAbstractNodePlugin
     {
         Q_OBJECT
         // Qt 插件元数据，定义插件 ID 和配置文件
-        Q_PLUGIN_METADATA(IID DAABSTRACTPLUGIN_IID FILE "DataAnalysis.json")
+        Q_PLUGIN_METADATA(IID DAABSTRACTNODEPLUGIN_IID FILE "DataAnalysis.json")
         // 声明实现的接口
-        Q_INTERFACES(DA::DAAbstractPlugin)
+        Q_INTERFACES(DA::DAAbstractNodePlugin)
         
     public:
         DataAnalysisPlugin();

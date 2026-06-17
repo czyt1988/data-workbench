@@ -28,7 +28,7 @@ data-workbench/
 │   ├── DAInterface/          # 接口模块 - 插件和主程序通信桥梁
 │   ├── DAPluginSupport/      # 插件支持模块 - 插件加载和管理
 │   ├── DAGui/                # GUI 界面模块 - Ribbon、Dock 等
-│   ├── DAWorkFlow/           # 工作流核心模块 - 有向图管理
+│   ├── DAPyWorkFlow/         # Python 工作流核心模块 - 节点代理/场景/执行引擎
 │   ├── DAData/               # 数据管理模块 - DataFrame 操作
 │   ├── DAFigure/             # 图表模块 - 基于 qwt 的科学图表
 │   ├── DAGraphicsView/       # 图形视图模块 - 可缩放视图
@@ -95,7 +95,7 @@ graph TB
     end
     
     subgraph "业务层"
-        WF[DAWorkFlow]       # 工作流逻辑
+        WF[DAPyWorkFlow]     # Python 工作流
         DATA[DAData]         # 数据管理
         FIG[DAFigure]        # 图表绘制
         GV[DAGraphicsView]   # 图形视图
@@ -151,7 +151,7 @@ graph TB
 | **DAData** | 数据对象管理、DataFrame 操作 | DAUtils, DAPyBindQt |
 | **DACommonWidgets** | 通用 Qt 控件库 | DAUtils, SARibbonBar |
 | **DAGraphicsView** | 可缩放图形视图、redo/undo | DAUtils |
-| **DAWorkFlow** | 工作流核心逻辑、有向图管理 | DAUtils, DAGraphicsView |
+| **DAPyWorkFlow** | Python 工作流核心 — 节点代理、工厂、场景、执行引擎、图形项、序列化 | DAUtils, DAGraphicsView, DAPyBindQt |
 | **DAFigure** | 科学图表绘制（基于 qwt） | DAUtils, qwt |
 | **DAGui** | 界面整合、Ribbon、Dock 管理（含 `ChartSetting/` 图表属性面板和 `NodeSetting/` 工作流节点通用设置面板） | 所有业务模块 |
 | **DAInterface** | 插件接口定义 | DAGui |
@@ -216,7 +216,7 @@ graph TB
 
 | 类型 | 前缀 | 示例 |
 |------|------|------|
-| 模块 | DA | DAWorkFlow |
+| 模块 | DA | DAPyWorkFlow |
 | 类 | DA | DAAbstractNode |
 | 接口 | DA...Interface | DACoreInterface |
 | 宏 | DA_ | DA_PLUGIN_NAME |
@@ -228,10 +228,10 @@ graph TB
 
 ```cpp
 // 工作流执行完成信号
-void DAWorkFlow::finished(bool success);
+void DAPyWorkFlowManager::executionFinished(bool success);
 
 // 节点执行完成信号
-void DAWorkFlow::nodeExecuteFinished(DAAbstractNode::SharedPointer n, bool state);
+void DAPyWorkFlowManager::nodeExecuted(QString nodeId, bool success);
 ```
 
 ---
@@ -243,19 +243,19 @@ void DAWorkFlow::nodeExecuteFinished(DAAbstractNode::SharedPointer n, bool state
 ```text
 MyPlugin/
 ├── CMakeLists.txt           # 插件构建配置
-├── src/
-│   ├── MyPlugin.h           # 插件主类头文件
-│   ├── MyPlugin.cpp         # 插件主类实现
-│   ├── MyNodeFactory.h      # 节点工厂（工作流插件）
-│   ├── MyNodeFactory.cpp    # 节点工厂实现
-│   ├── MyWorker.h           # 工作节点实现类
-│   ├── MyWorker.cpp         # 工作节点实现
-│   ├── Dialogs/             # 对话框控件
-│   ├── icon/                # 图标资源
-│   └── PyScripts/           # Python 脚本（可选）
+├── MyPlugin.h               # 插件主类头文件
+├── MyPlugin.cpp             # 插件主类实现
+├── MyWorker.h               # 工作节点实现类
+├── MyWorker.cpp             # 工作节点实现
+├── Dialogs/                 # 对话框控件
+├── icon/                    # 图标资源
+├── PyScripts/               # Python 脚本（可选）
 ├── data-workbench/          # 主项目子模块引用
 └── template.json            # 插件模板配置
 ```
+
+!!! note "节点工厂"
+    新的 Python-first 工作流架构使用 `@NodeDef` 装饰器自动发现节点，无需手动编写 C++ NodeFactory。
 
 ### 插件模板生成
 
