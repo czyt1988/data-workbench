@@ -151,8 +151,6 @@ if(DA_ENABLE_PYTHON)
         DAChartAddIntervalCurveWidget.h
         DAChartAddTradingCurveWidget.h
         DAChartAddSpectrogramWidget.h
-        DAPyWorkFlowRibbonGroup.h
-        DAPyWorkflowActions.h
     )
     list(APPEND DA_LIB_SOURCE_FILES
         DADataframeToVectorPointWidget.cpp
@@ -169,7 +167,6 @@ if(DA_ENABLE_PYTHON)
         DAChartAddIntervalCurveWidget.cpp
         DAChartAddSpectrogramWidget.cpp
         DAChartAddTradingCurveWidget.cpp
-        DAPyWorkFlowRibbonGroup.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES
         DADataframeToVectorPointWidget.ui

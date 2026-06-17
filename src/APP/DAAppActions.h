@@ -99,11 +99,7 @@ public:
     // workflow的运行操作
     QAction* actionWorkflowRun;        ///< 运行工作流
     QAction* actionWorkflowTerminate;  ///< 停止工作流
-#if DA_ENABLE_PYTHON
-    // Python workflow的操作
-    QAction* actionPyWorkflowNew;  ///< 新建Python工作流
-    QAction* actionPyWorkflowOpen; ///< 打开Python工作流
-#endif
+
     //===================================================
     // 绘图标签 Chart Category
     //===================================================

@@ -121,36 +121,34 @@ void DAAppActions::buildChartAction()
     actionGroupChartPickers = new QActionGroup(this);
     actionGroupChartPickers->setObjectName(QStringLiteral("actionGroupChartPickers"));
     actionGroupChartPickers->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许都不选中
-    actionChartEnablePickerCross =
-        createAction("actionChartEnablePickerCross", ":/app/bright/Icon/chart-picker.svg", true, false, actionGroupChartPickers);
-    actionChartEnablePickerXY =
-        createAction("actionChartEnablePickerXY", ":/app/bright/Icon/chart-picker-xy.svg", true, false, actionGroupChartPickers);
-    actionChartEnablePickerY =
-        createAction("actionChartEnablePickerY", ":/app/bright/Icon/chart-picker-y.svg", true, false, actionGroupChartPickers);
+    actionChartEnablePickerCross = createAction(
+        "actionChartEnablePickerCross", ":/app/bright/Icon/chart-picker.svg", true, false, actionGroupChartPickers);
+    actionChartEnablePickerXY = createAction(
+        "actionChartEnablePickerXY", ":/app/bright/Icon/chart-picker-xy.svg", true, false, actionGroupChartPickers);
+    actionChartEnablePickerY = createAction(
+        "actionChartEnablePickerY", ":/app/bright/Icon/chart-picker-y.svg", true, false, actionGroupChartPickers);
     actionChartLinkAllPickerEnabled = createAction("actionLinkAllPicker", ":/app/bright/Icon/link-pick.svg", true, false);
 
     actionGroupChartPickerTextRegion = new QActionGroup(this);
     actionGroupChartPickerTextRegion->setObjectName(QStringLiteral("actionGroupChartPickerTextRegion"));
     actionGroupChartPickerTextRegion->setExclusive(true);
     actionChartPickerTextAtLeftTop = createAction(
-        "actionChartPickerTextAtLeftTop", ":/app/bright/Icon/left-top.svg", true, false, actionGroupChartPickerTextRegion
-    );
+        "actionChartPickerTextAtLeftTop", ":/app/bright/Icon/left-top.svg", true, false, actionGroupChartPickerTextRegion);
     actionChartPickerTextAtLeftTop->setData(QwtPlotSeriesDataPicker::TextOnCanvasTopLeft);
     actionChartPickerTextAtLeftBottom = createAction(
-        "actionChartPickerTextAtLeftBottom", ":/app/bright/Icon/left-bottom.svg", true, false, actionGroupChartPickerTextRegion
-    );
+        "actionChartPickerTextAtLeftBottom", ":/app/bright/Icon/left-bottom.svg", true, false, actionGroupChartPickerTextRegion);
     actionChartPickerTextAtLeftBottom->setData(QwtPlotSeriesDataPicker::TextOnCanvasBottomLeft);
     actionChartPickerTextAtRightTop = createAction(
-        "actionChartPickerTextAtRightTop", ":/app/bright/Icon/right-top.svg", true, false, actionGroupChartPickerTextRegion
-    );
+        "actionChartPickerTextAtRightTop", ":/app/bright/Icon/right-top.svg", true, false, actionGroupChartPickerTextRegion);
     actionChartPickerTextAtRightTop->setData(QwtPlotSeriesDataPicker::TextOnCanvasTopRight);
-    actionChartPickerTextAtRightBottom = createAction(
-        "actionChartPickerTextAtRightBottom", ":/app/bright/Icon/right-bottom.svg", true, false, actionGroupChartPickerTextRegion
-    );
+    actionChartPickerTextAtRightBottom = createAction("actionChartPickerTextAtRightBottom",
+                                                      ":/app/bright/Icon/right-bottom.svg",
+                                                      true,
+                                                      false,
+                                                      actionGroupChartPickerTextRegion);
     actionChartPickerTextAtRightBottom->setData(QwtPlotSeriesDataPicker::TextOnCanvasBottomRight);
     actionChartPickerTextFollowMouse = createAction(
-        "actionChartPickerTextFollowMouse", ":/app/bright/Icon/follow-mouse.svg", true, true, actionGroupChartPickerTextRegion
-    );
+        "actionChartPickerTextFollowMouse", ":/app/bright/Icon/follow-mouse.svg", true, true, actionGroupChartPickerTextRegion);
     actionChartPickerTextFollowMouse->setData(QwtPlotSeriesDataPicker::TextFollowMouse);
     actionChartYPickerShowXValueEnabled = createAction("actionChartYPickerShowXValueEnabled", true, true);
 
@@ -160,32 +158,25 @@ void DAAppActions::buildChartAction()
     actionGroupChartEditor = new QActionGroup(this);
     actionGroupChartEditor->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许所有都不选择
     actionChartEditorResizeSubChart = createAction(
-        "actionChartEditorResizeSubChart", ":/app/bright/Icon/figureResizeChart.svg", true, false, actionGroupChartEditor
-    );
+        "actionChartEditorResizeSubChart", ":/app/bright/Icon/figureResizeChart.svg", true, false, actionGroupChartEditor);
     actionChartEditorRectSelector = createAction(
-        "actionChartEditorRectSelector", ":/app/bright/Icon/chart-selector-rect.svg", true, false, actionGroupChartEditor
-    );
+        "actionChartEditorRectSelector", ":/app/bright/Icon/chart-selector-rect.svg", true, false, actionGroupChartEditor);
     actionChartEditorEllipseSelector = createAction(
-        "actionChartEditorEllipseSelector", ":/app/bright/Icon/chart-selector-ellipse.svg", true, false, actionGroupChartEditor
-    );
+        "actionChartEditorEllipseSelector", ":/app/bright/Icon/chart-selector-ellipse.svg", true, false, actionGroupChartEditor);
     actionChartEditorPolygonSelector = createAction(
-        "actionChartEditorPolygonSelector", ":/app/bright/Icon/chart-selector-polygon.svg", true, false, actionGroupChartEditor
-    );
+        "actionChartEditorPolygonSelector", ":/app/bright/Icon/chart-selector-polygon.svg", true, false, actionGroupChartEditor);
     actionChartEditorAddCrossMarker = createAction(
-        "actionChartEditorAddCrossMarker", ":/app/bright/Icon/chart-corss-marker.svg", true, false, actionGroupChartEditor
-    );
+        "actionChartEditorAddCrossMarker", ":/app/bright/Icon/chart-corss-marker.svg", true, false, actionGroupChartEditor);
     actionChartEditorAddHLineMarker = createAction(
-        "actionChartEditorAddHLineMarker", ":/app/bright/Icon/chart-hline-marker.svg", true, false, actionGroupChartEditor
-    );
+        "actionChartEditorAddHLineMarker", ":/app/bright/Icon/chart-hline-marker.svg", true, false, actionGroupChartEditor);
     actionChartEditorAddVLineMarker = createAction(
-        "actionChartEditorAddVLineMarker", ":/app/bright/Icon/chart-vline-marker.svg", true, false, actionGroupChartEditor
-    );
-    actionChartEditorAddArrowMarker =
-        createAction("actionChartEditorAddArrowMarker", ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
-    actionAddHorizontalPlotProbeMarker =
-        createAction("actionAddHorizontalPlotProbeMarker", ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
-    actionAddVerticalPlotProbeMarker =
-        createAction("actionAddVerticalPlotProbeMarker", ":/app/bright/Icon/plot-probe.svg", true, false, actionGroupChartEditor);
+        "actionChartEditorAddVLineMarker", ":/app/bright/Icon/chart-vline-marker.svg", true, false, actionGroupChartEditor);
+    actionChartEditorAddArrowMarker = createAction(
+        "actionChartEditorAddArrowMarker", ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
+    actionAddHorizontalPlotProbeMarker = createAction(
+        "actionAddHorizontalPlotProbeMarker", ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
+    actionAddVerticalPlotProbeMarker = createAction(
+        "actionAddVerticalPlotProbeMarker", ":/app/bright/Icon/plot-probe.svg", true, false, actionGroupChartEditor);
     actionChartEditorResizeSubChart->setData(static_cast< int >(DAFigureWidget::SubChartEditor));
     actionChartEditorRectSelector->setData(static_cast< int >(DAFigureWidget::RectSelectEditor));
     actionChartEditorEllipseSelector->setData(static_cast< int >(DAFigureWidget::EllipseSelectEditor));
@@ -246,15 +237,8 @@ void DAAppActions::buildWorkflowAction()
     actionWorkflowTerminate = createAction("actionWorkflowTerminate", ":/app/bright/Icon/stop.svg");
     actionWorkflowTerminate->setEnabled(false);
     // 导出
-    actionExportWorkflowSceneToImage =
-        createAction("actionExportWorkflowSceneToImage", ":/app/bright/Icon/exportToPic.svg");
+    actionExportWorkflowSceneToImage = createAction("actionExportWorkflowSceneToImage", ":/app/bright/Icon/exportToPic.svg");
     actionExportWorkflowSceneToPNG = createAction("actionExportWorkflowSceneToPNG", ":/app/bright/Icon/exportToPng.svg");
-#if DA_ENABLE_PYTHON
-    // Python workflow 操作
-    actionPyWorkflowNew       = createAction("actionPyWorkflowNew", ":/app/bright/Icon/newWorkflow.svg");
-    actionPyWorkflowOpen      = createAction("actionPyWorkflowOpen", ":/app/bright/Icon/open.svg");
-
-#endif
 }
 
 void DAAppActions::buildOtherActions()
@@ -417,10 +401,9 @@ void DAAppActions::retranslateUi()
     actionChartAddVectorfield->setToolTip(tr("Add a vector field to the chart"));  // cn:添加向量场图
 
     actionFigureSettingApplyAllChart->setText(tr("Apply All Charts"));  // cn:应用到\n所有绘图
-    actionFigureSettingApplyAllChart->setToolTip(
-        tr("When this feature is selected, operations on the figure will "
-           "apply to all plots, not just the currently selected one")
-    );  // cn:此功能选中后，figure上的操作将应用到所有绘图，而不仅仅是当前选中的绘图
+    actionFigureSettingApplyAllChart->setToolTip(tr(
+        "When this feature is selected, operations on the figure will "
+        "apply to all plots, not just the currently selected one"));  // cn:此功能选中后，figure上的操作将应用到所有绘图，而不仅仅是当前选中的绘图
     actionChartEnableGrid->setText(tr("Enable Grid"));                                // cn:网格
     actionChartEnableGrid->setToolTip(tr("Enable or disable grid in the chart"));     // cn:启用或禁用图表中的网格
     actionChartEnableGridX->setText(tr("X Grid"));                                    // cn:横向网格
@@ -516,9 +499,8 @@ void DAAppActions::retranslateUi()
     actionWorkflowNew->setToolTip(tr("Create a new workflow"));          // cn:创建新工作流
     actionWorkflowEnableItemLinkageMove->setText(tr("Linkage \nMove"));  // cn:联动
     actionWorkflowEnableItemLinkageMove->setToolTip(
-        tr("When moving elements, other elements linked to this element follow the movement")
-    );                                            // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
-    actionItemGrouping->setText(tr("grouping"));  // cn:分组
+        tr("When moving elements, other elements linked to this element follow the movement"));  // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
+    actionItemGrouping->setText(tr("grouping"));                                                 // cn:分组
     actionItemGrouping->setToolTip(tr("Group selected elements"));   // cn:对选中的元素进行分组
     actionItemUngroup->setText(tr("ungroup"));                       // cn:取消分组
     actionItemUngroup->setToolTip(tr("Ungroup selected elements"));  // cn:对选中的元素进行取消分组
@@ -539,9 +521,11 @@ void DAAppActions::retranslateUi()
     actionWorkflowAddBackgroundPixmap->setText(tr("Add \nBackground"));                     // cn:添加\n背景
     actionWorkflowAddBackgroundPixmap->setToolTip(tr("Add a background pixmap to the workflow scene"));  // cn:在工作流场景中添加背景图片
     actionWorkflowLockBackgroundPixmap->setText(tr("Lock Background"));                                  // cn:锁定背景
-    actionWorkflowLockBackgroundPixmap->setToolTip(tr("Lock the background pixmap in the workflow scene"));  // cn:锁定工作流场景中的背景图片
+    actionWorkflowLockBackgroundPixmap->setToolTip(
+        tr("Lock the background pixmap in the workflow scene"));                      // cn:锁定工作流场景中的背景图片
     actionWorkflowEnableItemMoveWithBackground->setText(tr("Move With Background"));  // cn:元件随背景移动
-    actionWorkflowEnableItemMoveWithBackground->setToolTip(tr("Enable or disable item move with background pixmap"));  // cn:启用或禁用元件随背景移动
+    actionWorkflowEnableItemMoveWithBackground->setToolTip(
+        tr("Enable or disable item move with background pixmap"));  // cn:启用或禁用元件随背景移动
     //-----------------------------------------------------
     // workflow 视图
     //-----------------------------------------------------
@@ -551,16 +535,6 @@ void DAAppActions::retranslateUi()
     actionExportWorkflowSceneToPNG->setToolTip(tr("Export the workflow scene to a PNG image"));  // cn:导出工作流场景为PNG图片
     actionWorkflowViewMarker->setText(tr("Show Marker"));                                        // cn:显示标记
     actionWorkflowViewMarker->setToolTip(tr("Show marker on the workflow scene"));  // cn:在工作流场景中显示标记
-#if DA_ENABLE_PYTHON
-    //-----------------------------------------------------
-    // Python workflow 操作
-    //-----------------------------------------------------
-    actionPyWorkflowNew->setText(tr("New \nPy Workflow"));                          // cn:新建\nPy工作流
-    actionPyWorkflowNew->setToolTip(tr("Create a new Python workflow"));             // cn:创建新的Python工作流
-    actionPyWorkflowOpen->setText(tr("Open \nPy Workflow"));                         // cn:打开\nPy工作流
-    actionPyWorkflowOpen->setToolTip(tr("Open a saved Python workflow"));            // cn:打开已保存的Python工作流
-
-#endif
     //-----------------------------------------------------
     // View Category
     //-----------------------------------------------------
