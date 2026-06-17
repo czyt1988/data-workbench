@@ -299,7 +299,7 @@ scene->setGridLinePen(QPen(QColor(200, 200, 200), 1, Qt::DotLine));
 flowchart TD
     A[DAGraphicsResizeableItem] --> B[DAAbstractNodeGraphicsItem]
     B --> C[工作流节点可视化]
-    C --> D[DANodeGraphicsScene]
+    C --> D[DAPyWorkFlowScene]
     D --> E[工作流编辑界面]
     
     F[缩放控制点] --> G[节点尺寸调整]

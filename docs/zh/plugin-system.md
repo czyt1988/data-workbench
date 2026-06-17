@@ -10,7 +10,7 @@ DAWorkBench 采用**插件化架构**作为核心设计理念，这一设计将�
 - ✅ **架构设计思想**：松耦合、可扩展、热插拔、标准化四大设计原则
 - ✅ **模块依赖关系**：主程序层、接口层、插件层的清晰分层架构
 - ✅ **插件目录规范**：标准插件结构详解、命名规则与约定
-- ✅ **插件基类定义**：DAAbstractPlugin、DAAbstractNodePlugin、DAAbstractNodeFactory
+- ✅ **插件基类定义**：DAAbstractPlugin、DAAbstractNodePlugin、DAPyNodeFactory
 - ✅ **类继承关系**：插件类型分类和选择指南
 - ✅ **接口契约**：DACoreInterface 核心接口、UI 接口层次
 - ✅ **插件注册机制**：Qt 插件声明、自动发现流程、DAPluginManager 单例
@@ -219,10 +219,10 @@ class DAAbstractNodePlugin : public DAAbstractPlugin
     Q_OBJECT
 public:
     // 获取节点工厂列表
-    virtual QList<DAAbstractNodeFactory*> getFactories() const = 0;
+    virtual DAPyNodeFactory* createNodeFactory() = 0;
     
     // 节点元数据注册
-    virtual void registerNodeMetaData(DAAbstractNodeFactory* factory) = 0;
+    virtual void destroyNodeFactory(DAPyNodeFactory* p) = 0;
 };
 ```
 
@@ -232,12 +232,12 @@ public:
 
 2. **`registerNodeMetaData()`**：注册节点元数据。节点元数据描述了节点的基本信息（名称、图标、描述等）和连接点定义。主程序使用这些元数据在工作流编辑器中显示可用节点列表。
 
-### DAAbstractNodeFactory - 节点工厂基类
+### DAPyNodeFactory - 节点工厂代理
 
-虽然 `DAAbstractNodeFactory` 不是插件基类，但它是工作流插件体系的核心组成部分：
+虽然 `DAPyNodeFactory` 不是插件基类，但它是工作流插件体系的核心组成部分：
 
 ```cpp
-class DAAbstractNodeFactory : public QObject
+class DAPyNodeFactory : public DAPyObjectWrapper
 {
     Q_OBJECT
 public:
@@ -289,8 +289,8 @@ classDiagram
     
     class DAAbstractNodePlugin {
         <<节点插件基类>>
-        +getFactories() QList~DAAbstractNodeFactory*~
-        +registerNodeMetaData(DAAbstractNodeFactory*)
+        +createNodeFactory() DAPyNodeFactory*
+        +destroyNodeFactory(DAPyNodeFactory*)
     }
     
     class 通用功能插件 {

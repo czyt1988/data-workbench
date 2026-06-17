@@ -249,7 +249,7 @@ public:
     void retranslate() override;
 
     // 获取节点工厂
-    QList<DA::DAAbstractNodeFactory*> getFactories() const override;
+    DA::DAPyNodeFactory* createNodeFactory() override;
 
 private:
     MyNodeFactory* m_nodeFactory;
@@ -301,9 +301,9 @@ void MyPlugin::retranslate()
     // 多语言支持：重新加载翻译
 }
 
-QList<DA::DAAbstractNodeFactory*> MyPlugin::getFactories() const
+DA::DAPyNodeFactory* MyPlugin::createNodeFactory()
 {
-    QList<DA::DAAbstractNodeFactory*> factories;
+    // Create and return node factory
     if (m_nodeFactory) {
         factories.append(m_nodeFactory);
     }
@@ -319,7 +319,7 @@ QList<DA::DAAbstractNodeFactory*> MyPlugin::getFactories() const
 
 ```cpp
 #pragma once
-#include "DAAbstractNodeFactory.h"
+#include "DAPyNodeFactory.h"
 #include <QMap>
 
 class MyWorker;
@@ -327,7 +327,7 @@ class MyWorker;
 /**
  * @brief My 插件的节点工厂
  */
-class MyNodeFactory : public DA::DAAbstractNodeFactory
+class MyNodeFactory : public DA::DAPyNodeFactory
 {
     Q_OBJECT
 public:
@@ -360,7 +360,7 @@ private:
 #include "MyWorker.h"
 
 MyNodeFactory::MyNodeFactory(DA::DACoreInterface* core)
-    : DA::DAAbstractNodeFactory(core)
+    : DA::DAPyNodeFactory(core)
 {
 }
 

@@ -110,7 +110,8 @@ classDiagram
 
 ```cpp
 // 从主窗口获取工作流场景
-DAWorkFlowWidget* workflowWidget = daApp->getWorkFlowWidget();
+DAPyWorkFlowOperateWidget* operateWidget = ui->getDockingArea()->getWorkFlowOperateWidget();
+DAPyWorkFlowEditWidget* workflowWidget = operateWidget->getCurrentWorkFlowWidget();
 DAPyWorkFlowScene* scene = workflowWidget->getWorkFlowScene();
 
 // 场景提供完整的节点和连接线管理接口
@@ -463,7 +464,8 @@ DA::DAAppInterface* iface = DA::DAAppInterface::getInstance();
 DA::DAPyWorkFlowScene* scene = iface->getWorkFlowScene();
 
 // 方式二：通过工作流部件获取
-DA::DAWorkFlowWidget* widget = iface->getWorkFlowWidget();
+DA::DAPyWorkFlowOperateWidget* opWidget = ui->getDockingArea()->getWorkFlowOperateWidget();
+DA::DAPyWorkFlowEditWidget* widget = opWidget->getCurrentWorkFlowWidget();
 DA::DAPyWorkFlowScene* scene = widget->getWorkFlowScene();
 ```
 

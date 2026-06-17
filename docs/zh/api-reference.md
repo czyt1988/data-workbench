@@ -33,7 +33,7 @@ class DACoreInterface
 {
 public:
     // 获取 UI 接口 - 用于访问 Ribbon、Dock 等界面组件
-    virtual DAAppUIInterface* getUiInterface() = 0;
+    virtual DAUIInterface* getUiInterface() = 0;
     
     // 获取项目管理接口 - 用于项目创建、打开、保存等操作
     virtual DAProjectInterface* getProjectInterface() = 0;
@@ -41,21 +41,19 @@ public:
     // 获取数据管理接口 - 用于数据对象的增删改查
     virtual DADataManagerInterface* getDataManagerInterface() = 0;
     
-    // 获取工作流接口 - 用于工作流执行和管理
-    virtual DAWorkFlowInterface* getWorkFlowInterface() = 0;
 };
 ```
 
 上述接口是插件开发的基石，通过 `core()` 方法获取 DACoreInterface 实例后，即可访问主程序的所有功能模块。
 
-### DAAppUIInterface
+### DAUIInterface
 
 UI 相关接口，提供对主程序界面组件的访问能力。通过此接口，插件可以扩展 Ribbon 工具栏、添加 Dock 窗口、注册 Action 等。
 
-下面的代码展示了 DAAppUIInterface 的核心方法定义：
+下面的代码展示了 DAUIInterface 的核心方法定义：
 
 ```cpp
-class DAAppUIInterface
+class DAUIInterface
 {
 public:
     // 获取 Ribbon 区域接口 - 用于添加自定义工具栏按钮
@@ -119,141 +117,132 @@ class DAAbstractNodePlugin : public DAAbstractPlugin
 {
     Q_OBJECT
 public:
-    // 获取节点工厂列表 - 返回插件提供的所有节点工厂
-    virtual QList<DAAbstractNodeFactory*> getFactories() const = 0;
+    // 创建节点工厂 - 插件提供 DAPyNodeFactory 实例
+    virtual DAPyNodeFactory* createNodeFactory() = 0;
     
-    // 注册节点元数据 - 将节点信息注册到主程序
-    virtual void registerNodeMetaData(DAAbstractNodeFactory* factory) = 0;
+    // 销毁节点工厂 - 释放工厂资源
+    virtual void destroyNodeFactory(DAPyNodeFactory* p) = 0;
+    
+    // 节点加载完成回调 - 所有节点加载后调用
+    virtual void afterLoadedNodes();
 };
 ```
 
-工作流节点插件需要实现上述方法，将自定义节点注册到系统中，使其出现在节点列表中供用户使用。
+工作流节点插件需要实现上述方法，创建 DAPyNodeFactory 实例以注册节点到系统中。
 
-### DAAbstractNodeFactory
+### DAPyNodeFactory
 
-节点工厂基类，负责创建特定类型的节点实例。每个节点工厂管理一类相关的节点，如数据导入节点、数据处理节点等。
+节点工厂代理类，封装 Python 层的 `DANodeFactory` 对象。每个工厂管理一组通过 `@NodeDef` 装饰器定义的节点类型，负责节点元数据的注册和节点实例的创建。
 
 下面的代码展示了节点工厂的核心方法：
 
 ```cpp
-class DAAbstractNodeFactory : public QObject
+class DAPyNodeFactory : public DAPyObjectWrapper
 {
-    Q_OBJECT
 public:
-    // 创建节点 - 根据元数据创建具体的节点实例
-    virtual DAAbstractNode* create(const DANodeMetaData& meta) = 0;
-    
-    // 获取节点元数据列表 - 返回此工厂支持的所有节点类型信息
-    virtual QList<DANodeMetaData> getNodeMetaDataList() const = 0;
-    
-    // 工厂信息 - 显示在节点列表分组中
-    virtual QString getFactoryName() const = 0;        // 工厂名称
-    virtual QString getFactoryDescription() const = 0; // 工厂描述
-    
-    // 生命周期钩子 - 节点加入/移除工作流时的回调
-    virtual void nodeAddedToWorkflow(DAAbstractNode* node);  // 节点加入前
-    virtual void nodeStartRemove(DAAbstractNode* node);      // 节点移除前
+    // 获取工厂信息
+    QString getFactoryName() const;        // 工厂名称
+    QString getFactoryDescription() const; // 工厂描述
+
+    // 节点元数据 - 返回此工厂管理的所有节点类型
+    QList<DAPyNodeMetaData> getNodeMetaDataList() const;
+
+    // 创建节点 - 根据 qualifiedName 创建 Python 节点代理
+    DAPyNode* createNode(const QString& qualifiedName);
 };
 ```
 
-节点工厂是插件功能的载体，通过工厂可以创建和管理多个不同类型的节点。
+新的 Python-first 架构使用 `@NodeDef` 装饰器自动发现节点，无需手动编写 C++ 节点工厂。DAPyNodeFactory 作为 Python 层 `DANodeFactory` 的 C++ 代理。
 
-### DAAbstractNode
+### DAPyNode
 
-节点基类，工作流中的处理单元。每个节点代表一个数据处理步骤，负责执行具体的业务逻辑。
+Python 节点在 C++ 层的代理，继承 `DAPyObjectWrapper`（非 QObject），通过 `attr()` 实时从 Python 对象读取属性，不做本地缓存。
 
-下面的代码展示了节点基类的核心方法：
+下面的代码展示了节点代理的核心方法：
 
 ```cpp
-class DAAbstractNode : public QObject
+class DAPyNode : public DAPyObjectWrapper
 {
-    Q_OBJECT
 public:
-    // 执行节点（核心方法）- 实现具体的数据处理逻辑
-    virtual bool exec() = 0;
-    
-    // 创建图元 - 返回节点的可视化显示对象
-    virtual DAAbstractNodeGraphicsItem* createGraphicsItem() = 0;
-    
-    // 数据访问 - 获取输入数据和设置输出数据
-    QVariant getInputData(const QString& key) const;   // 获取输入端口数据
-    void setOutputData(const QString& key, const QVariant& data); // 设置输出端口数据
-    
-    // 连接点 - 获取节点的输入输出端口列表
-    QStringList getInputKeys() const;   // 输入端口名称列表
-    QStringList getOutputKeys() const;  // 输出端口名称列表
-    
-    // 序列化 - 支持节点状态的保存和恢复
-    virtual QVariant saveToVariant() const;      // 保存节点状态
-    virtual void loadFromVariant(const QVariant& var); // 加载节点状态
+    // 节点标识
+    QString getNodeId() const;          // 节点实例唯一 ID
+    QString getQualifiedName() const;   // 类型标识 "pkg.module.ClassName"
+    QString getNodeName() const;        // 显示名称
+    QString getNodeCategory() const;    // 分类名称
+
+    // 端口信息
+    QList<QString> getInputKeys() const;   // 输入端口 key 列表
+    QList<QString> getOutputKeys() const;  // 输出端口 key 列表
+
+    // 样式与状态
+    DAPyNodeStyle getNodeStyle() const;
+    DAPyNodeState getNodeState() const;
+
+    // 执行
+    py::dict execute(py::dict inputs, py::dict params);
 };
 ```
 
-节点开发者需要在 `exec()` 方法中实现数据处理逻辑，并通过输入输出端口传递数据。
+DAPyNode 是工作流执行的核心单元，所有节点业务逻辑均在 Python 层实现。
 
 ## 工作流 API
 
-### DAWorkFlow
+### DAPyWorkFlowManager
 
-工作流管理类，负责工作流的创建、执行和节点管理。工作流以有向图形式组织数据处理流程。
+工作流管理器（QObject），负责工作流的创建、节点执行调度和信号协调。是 Python-first 架构中工作流执行的中央调度器。
 
-下面的代码展示了工作流的核心方法：
+下面的代码展示了工作流管理器的核心方法：
 
 ```cpp
-class DAWorkFlow : public QObject
+class DAPyWorkFlowManager : public QObject
 {
     Q_OBJECT
 public:
-    // 创建节点 - 根据元数据在工作流中创建节点实例
-    DAAbstractNode* createNode(const DANodeMetaData& meta);
-    
-    // 节点管理 - 获取和删除工作流中的节点
-    QList<DAAbstractNode*> getNodes() const;  // 获取所有节点
-    void removeNode(DAAbstractNode* node);    // 删除指定节点
-    
-    // 连接管理 - 在节点之间建立数据传递连接
-    bool linkNodes(DAAbstractNode* from, const QString& fromKey,
-                   DAAbstractNode* to, const QString& toKey);
-    
-    // 执行控制 - 启动和停止工作流执行
-    void exec();  // 执行工作流
-    void stop();  // 停止执行
-    
-signals:
-    void startExecute();  // 开始执行信号
-    void nodeExecuteFinished(DAAbstractNode::SharedPointer n, bool state); // 节点执行完成
-    void finished(bool success);  // 工作流执行完成
+    // 场景管理
+    DAPyWorkFlowScene* getWorkFlowScene() const;
+
+    // 执行控制
+    void execute();                    // 按拓扑顺序执行工作流
+    void cancelExecution();            // 取消执行
+
+    // 节点管理
+    DAPyNode* getNode(const QString& nodeId) const;
+
+Q_SIGNALS:
+    void executionFinished(bool success);               // 工作流执行完成
+    void nodeExecuted(const QString& nodeId, bool ok);  // 节点执行完成
 };
 ```
 
 工作流按照节点拓扑顺序自动执行，支持进度回调和错误处理。
 
-### DANodeMetaData
+### DAPyNodeMetaData
 
-节点元数据，描述节点的固定属性，包括名称、图标、连接点等。用于节点列表显示和节点创建。
+节点元数据，描述节点的固定属性（名称、图标、连接点等）。由 Python `@NodeDef` 装饰器定义，C++ 侧通过 `DAPyNodeMetaData` 结构体承载。
 
-下面的代码展示了节点元数据的属性和方法：
+下面的代码展示了节点元数据的核心属性和方法：
 
 ```cpp
-class DANodeMetaData
+class DAPyNodeMetaData
 {
 public:
-    // 基本属性 - 节点显示信息
-    QString prototype() const;    // 唯一标识符，如 "Plugin.Factory.NodeName"
-    QString name() const;         // 显示名称
-    QString group() const;        // 分组名称
-    QIcon icon() const;           // 显示图标
-    QString description() const;  // 描述信息
-    
-    // 连接点定义 - 节点的输入输出端口
-    void addInputKey(const QString& key, const QString& displayName);   // 添加输入端口
-    void addOutputKey(const QString& key, const QString& displayName);  // 添加输出端口
-    QStringList getInputKeys() const;   // 获取输入端口列表
-    QStringList getOutputKeys() const;  // 获取输出端口列表
+    // 基本属性
+    QString prototype() const;         // 唯一标识符
+    QString name() const;              // 显示名称
+    QString qualifiedName() const;     // 完全限定名 "pkg.module.ClassName"
+    QString category() const;          // 分类
+    QString icon() const;              // 图标路径
+
+    // 连接点配置
+    QList<DAPyLinkPoint> getInputPoints() const;   // 输入端口列表
+    QList<DAPyLinkPoint> getOutputPoints() const;  // 输出端口列表
+
+    // 节点样式
+    DAPyNodeStyle nodeStyle() const;   // 样式配置
 };
 ```
 
-节点元数据在节点工厂初始化时创建，用于向系统注册节点类型信息。
+节点元数据用于节点列表显示、节点创建和序列化。
 
 ## 数据 API
 
@@ -311,37 +300,44 @@ public:
 
 ## 图形视图 API
 
-### DANodeGraphicsScene
+### DAPyWorkFlowScene
 
-工作流场景，管理工作流的可视化显示。负责节点图元的创建、连接线的绘制和用户交互处理。
+Python 工作流场景管理类，继承自 DAGraphicsScene，负责在 Qt Graphics View 框架中渲染 Python 工作流节点及其连接关系。
 
 下面的代码展示了工作流场景的核心方法：
 
 ```cpp
-class DANodeGraphicsScene : public DAGraphicsScene
+class DAPyWorkFlowScene : public DAGraphicsScene
 {
     Q_OBJECT
 public:
-    // 工作流设置 - 关联工作流数据模型
-    void setWorkFlow(DAWorkFlow* workflow);  // 设置工作流
-    DAWorkFlow* getWorkFlow() const;         // 获取当前工作流
-    
-    // 节点创建 - 在场景中创建节点图元
-    DAAbstractNodeGraphicsItem* createNode(const DANodeMetaData& meta,
-                                            const QPointF& pos);
-    
-    // 连接操作 - 在节点间添加连接线
-    DAAbstractNodeLinkGraphicsItem* addNodeLink_(
-        DAAbstractNodeGraphicsItem* from, const DANodeLinkPoint& fromPoint,
-        DAAbstractNodeGraphicsItem* to, const DANodeLinkPoint& toPoint);
-    
-signals:
-    void nodeItemLinkPointSelected(DAAbstractNodeGraphicsItem* item,
-                                   const DANodeLinkPoint& lp); // 连接点选中信号
+    // 节点管理
+    DAPyNodeGraphicsItem* createPyNode(const DAPyNodeMetaData& metaData,
+                                        const QPointF& pos);
+    bool removePyNodeItem(DAPyNodeGraphicsItem* item);
+    DAPyNodeGraphicsItem* findNodeItemById(const QString& nodeId) const;
+    QList<DAPyNodeGraphicsItem*> getPyNodeItems() const;
+
+    // 连接线管理
+    DAPyLinkGraphicsItem* addPyNodeLink(DAPyNodeGraphicsItem* fromItem,
+                                         const QString& fromOutputKey,
+                                         DAPyNodeGraphicsItem* toItem,
+                                         const QString& toInputKey);
+    bool removePyNodeLink(DAPyLinkGraphicsItem* linkItem);
+    QList<DAPyLinkGraphicsItem*> getPyNodeLinkItems() const;
+
+    // 序列化
+    bool saveToFile(const QString& filePath);
+    bool loadFromFile(const QString& filePath);
+
+Q_SIGNALS:
+    void pyNodeItemCreated(DAPyNodeGraphicsItem* item);
+    void pyNodeLinkCreated(DAPyLinkGraphicsItem* link);
+    void pyNodeStateChanged(DAPyNodeGraphicsItem* item, DAPyNodeState state);
 };
 ```
 
-场景是图形视图的核心，协调图元显示和工作流逻辑的交互。
+场景是图形视图的核心，协调节点图元显示和工作流逻辑的交互。
 
 ## 日志 API
 
@@ -368,12 +364,12 @@ DA_LOG_CRITICAL("critical message {}", arg); // 严重级别 - 致命错误
 | 模块 | 说明 | 主要类 |
 |------|------|--------|
 | DAUtils | 工具模块 | 配置、日志、文件处理 |
-| DAWorkFlow | 工作流模块 | DAWorkFlow, DAAbstractNode, DANodeMetaData |
+| DAPyWorkFlow | 工作流模块 | DAPyWorkFlowManager, DAPyNode, DAPyNodeMetaData |
 | DAGraphicsView | 图形视图模块 | DAGraphicsScene, DAGraphicsView |
 | DAFigure | 图表模块 | DAFigureWidget, DAChart |
 | DAData | 数据模块 | DADataPackage, DADataManagerInterface |
 | DAGui | 界面模块 | DARibbonArea, DADockingArea |
-| DAInterface | 接口模块 | DACoreInterface, DAAppUIInterface |
+| DAInterface | 接口模块 | DACoreInterface, DAUIInterface |
 | DAPluginSupport | 插件模块 | DAAbstractPlugin, DAPluginManager |
 
 ## 下一步

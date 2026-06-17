@@ -103,7 +103,7 @@ mindmap
     ```cpp
     // 插件依赖接口，而非主程序实现
     // 这样插件可以在不同版本的主程序中运行
-    class DataAnalysisPlugin : public DAAbstractPlugin {
+    class DataAnalysisPlugin : public DAAbstractNodePlugin {
         DACoreInterface* m_core;  // 依赖接口，而非具体实现
     };
     ```
