@@ -607,8 +607,10 @@ SVG 渲染使用 `QSvgRenderer`，支持标准 SVG 1.2 子集。
 | 模块 | 文件 | 说明 |
 |------|------|------|
 | C++ 样式结构体 | `src/DAPyWorkFlow/DAPyNodeStyle.h` | DAPyNodeStyle 结构体及嵌套枚举（BodyShape、NamePosition 等） |
-| C++ 端口样式 | `src/DAPyWorkFlow/DAPyLinkPointStyle.h` | DAPyLinkPointStyle 结构体及 PortShape 枚举 |
-| C++ 枚举字符串转换 | `src/DAPyWorkFlow/DAPyNodeStyle.cpp` | 枚举↔字符串映射定义（用于 Python 属性名转换） |
+| C++ 样式实现 | `src/DAPyWorkFlow/DAPyNodeStyle.cpp` | 枚举↔字符串映射定义（`DA_ENUM_STRING_INSENSITIVE_DEFINE`） |
+| C++ 端口样式 | `src/DAPyWorkFlow/DAPyLinkPointStyle.h` | DAPyLinkPointStyle 结构体及 PortShape 枚举（独立头文件） |
+| C++ 端口样式实现 | `src/DAPyWorkFlow/DAPyLinkPointStyle.cpp` | PortShape 枚举↔字符串映射 |
+| C++ 枚举字符串转换 | `src/DAPyWorkFlow/DAPyWorkFlowEnumStringUtils.h` | 枚举↔字符串映射宏定义 |
 | C++ 图元类 | `src/DAPyWorkFlow/DAPyNodeGraphicsItem.h` | 绘制入口 paintNodeStyleBody()，nodeStyle()/setNodeStyle() |
 | C++ 节点代理 | `src/DAPyWorkFlow/DAPyNode.h` | getNodeStyle() 从 Python 对象读取样式 |
 | Python 绑定 | `src/DAPyWorkFlow/PythonBinding/DAPyWorkFlowPythonBinding.cpp` | PY::toNodeStyle() 从 NodeDisplay 属性读取样式 |

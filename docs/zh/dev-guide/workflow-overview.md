@@ -195,7 +195,17 @@ DAPyWorkFlow 是原 `DAWorkFlow` 模块的完全重构版本，主要区别如�
 | `DAPyExecutorState` | 执行器状态枚举（`ExecutorIdle`/`ExecutorRunning`/`ExecutorPaused`/`ExecutorError`/`ExecutorFinished`） | `DAPyExecutorState.h` |
 | `DAPyNodeStyle` | 节点样式类（含嵌套枚举 `NodeRenderTemplate`） | `DAPyNodeStyle.h/cpp` |
 | `DAPyModuleWorkflow` | Python 模块封装（方法：`getWorkflowObject()`、`getNodeRegistryObject()`、`getNodeDefDecoratorObject()`、`getNodeFactoryObject()`、`getWorkflowExecutorObject()`、`getSignalManagerObject()`、`getWorkflowSerializerObject()`） | `DAPyModuleWorkflow.h/cpp` |
-| `DAPyWorkFlowSceneSerializer` | 场景序列化 | `DAPyWorkFlowSceneSerializer.h/cpp` |
+| `DAPyWorkFlowSceneSerializer` | 场景布局序列化（仅节点位置、图元属性、连接线布局，不含工作流逻辑数据） | `DAPyWorkFlowSceneSerializer.h/cpp` |
+| `DAPyWorkFlowSerializer` | 工作流逻辑序列化（节点拓扑、参数值、连接关系），保存到独立的 workflow-data.xml | `DAPyWorkFlowSerializer.h/cpp` |
+| `DAPyWorkFlow` | Python `DAWorkflow` 的 C++ 代理（DAG 操作方法：addNode/removeNode/connectNode 等） | `DAPyWorkFlow.h/cpp` |
+| `DAPyNodeConnection` | Python `DAConnection` 的 C++ 代理（连接描述符） | `DAPyNodeConnection.h/cpp` |
+| `DAPyNodeParameter` | Python Parameter 描述符的 C++ 代理（参数名称/类型/默认值/扩展属性） | `DAPyNodeParameter.h/cpp` |
+| `DAPyWorkFlowCommandsFactory` | 继承 `DAGraphicsCommandsFactory`，创建 Python 工作流 undo/redo 命令 | `DAPyWorkFlowCommandsFactory.h/cpp` |
+| `DAPyWorkFlowUndoCommands` | 4 个 undo/redo 命令实现类（添加/移除节点和连接线，带 Python 状态同步） | `DAPyWorkFlowUndoCommands.h` |
+| `DAPyWorkFlowState` | 工作流运行状态枚举（`WorkflowStopped`/`WorkflowPaused`/`WorkflowRunning`） | `DAPyWorkFlowState.h` |
+| `DAPyLinkPointStyle` | 连接点样式配置（独立头文件，包含 `PortShape` 枚举） | `DAPyLinkPointStyle.h/cpp` |
+| `DAPyWorkFlowEnumStringUtils` | 枚举↔字符串映射实现（`DA_ENUM_STRING_INSENSITIVE_DEFINE`） | `DAPyWorkFlowEnumStringUtils.h/cpp` |
+| `DAPyWorkFlowAPI` | DLL 导出/导入宏定义（`DAPYWORKFLOW_API`） | `DAPyWorkFlowAPI.h` |
 | `DAAbstractNodeSettingWidget` | 节点设置抽象基类，持有 `DAPyNode*` | `DAGui/DAAbstractNodeSettingWidget.h` |
 | `DANodeParamSettingPanel` | 通用参数设置面板，SceneB 3-hop信号链 | `DAGui/NodeSetting/DANodeParamSettingPanel.h` |
 | `DANodeParamSettingPanelFactory` | 参数面板单例工厂 | `DAGui/NodeSetting/DANodeParamSettingPanelFactory.h` |

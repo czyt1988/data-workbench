@@ -39,15 +39,14 @@ C++ 层通过 pybind11 导出 `da_py_workflow` Python 模块，暴露以下类�
 | `DAPyNodeMetaData` | `DA::DAPyNodeMetaData` | 节点元数据结构 |
 | `DAPyPainterProxy` | `DA::DAPyPainterProxy` | QPainter 绘制代理 |
 
-### DAPyModuleWorkflow 单例
+### DAPyModuleWorkflow 模块封装
 
-`DAPyModuleWorkflow` 是 `DAWorkFlowPy` Python 包的 C++ 封装，采用单例模式管理：
+`DAPyModuleWorkflow` 是 `DAWorkFlowPy` Python 包的 C++ 封装，继承 `DAPyModule`（→ `DAPyObjectWrapper`），通过构造时导入 Python 模块来使用，**不是单例模式**：
 
 ```cpp
-// 获取单例实例
-DA::DAPyModuleWorkflow& workflowMod = DA::DAPyModuleWorkflow::getInstance();
+// 构造并导入 Python 模块
+DA::DAPyModuleWorkflow workflowMod;
 
-// 导入 Python 模块
 if (workflowMod.import()) {
     // 获取缓存的 Python 类引用
     pybind11::object workflowObj   = workflowMod.getWorkflowObject();
@@ -447,6 +446,15 @@ class CustomNode:
   - `src/DAPyWorkFlow/DAPyNodeStyle.h` — 节点样式配置
   - `src/DAPyWorkFlow/DAPyModuleWorkflow.h` — Python 模块封装
   - `src/DAPyWorkFlow/DAPyPainterProxy.h` — 绘制代理
+  - `src/DAPyWorkFlow/DAPyWorkFlowSerializer.h` — 工作流逻辑序列化
+  - `src/DAPyWorkFlow/DAPyNodeParameter.h` — 参数描述符代理
+  - `src/DAPyWorkFlow/DAPyNodeConnection.h` — 连接描述符代理
+  - `src/DAPyWorkFlow/DAPyWorkFlowCommandsFactory.h` — undo/redo 命令工厂
+  - `src/DAPyWorkFlow/DAPyWorkFlowUndoCommands.h` — undo/redo 命令实现
+  - `src/DAPyWorkFlow/DAPyWorkFlowEnumStringUtils.h` — 枚举↔字符串映射
+  - `src/DAPyWorkFlow/DAPyWorkFlowState.h` — 工作流运行状态枚举
+  - `src/DAPyWorkFlow/DAPyWorkFlowAPI.h` — DLL 导出/导入宏
+  - `src/DAPyWorkFlow/DAPyLinkPointStyle.h` — 连接点样式配置
   - `src/DAPyWorkFlow/PythonBinding/DAPyWorkFlowPythonBinding.h` — pybind11 绑定
   - `src/DAPyBindQt/DAPyGILGuard.h` — GIL RAII 守卫
   - `src/DAPyBindQt/DAPythonSignalHandler.h` — 跨线程回调
