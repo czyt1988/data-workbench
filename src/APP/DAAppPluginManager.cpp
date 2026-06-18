@@ -46,6 +46,7 @@ void DAAppPluginManager::loadAllPlugins(DACoreInterface* c)
     }
     // 获取插件
     QList< DAPluginOption > plugins = getPluginOptions();
+    mPlugins.clear();
     mNodeMetaDatas.clear();
     for (int i = 0; i < plugins.size(); ++i) {
         const DAPluginOption& opt = plugins[ i ];

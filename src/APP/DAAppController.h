@@ -140,7 +140,7 @@ public:
     bool isApplyToAllCharts() const;
 public Q_SLOTS:
     // 保存
-    void save();
+    bool save();
     // 另存为
     void saveAs();
     //   打开 文件前的检查，  返回true说明可以打开

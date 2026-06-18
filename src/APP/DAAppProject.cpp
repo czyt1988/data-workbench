@@ -11,7 +11,10 @@
 #include <QSet>
 #include <QSysInfo>
 #include <QFileDialog>
+#include <QEventLoop>
 #include <QStandardPaths>
+#include <QTemporaryFile>
+#include <QDir>
 // DA
 #include "DACoreInterface.h"
 #include "DAUIInterface.h"
@@ -96,6 +99,52 @@ const QString c_chartitem_save_folder          = QStringLiteral("chart-data");
 #endif
 namespace DA
 {
+
+struct DAArchiveRunResult
+{
+    bool started { false };
+    bool success { false };
+};
+
+static DAArchiveRunResult waitArchiveSave(DAZipArchiveThreadWrapper* archive, const QString& filePath)
+{
+    DAArchiveRunResult res;
+    if (nullptr == archive) {
+        return res;
+    }
+
+    QEventLoop loop;
+    QMetaObject::Connection c = QObject::connect(archive, &DAZipArchiveThreadWrapper::saved, &loop, [&](bool success) {
+        res.success = success;
+        loop.quit();
+    });
+    res.started = archive->save(filePath);
+    if (res.started) {
+        loop.exec(QEventLoop::ExcludeUserInputEvents);
+    }
+    QObject::disconnect(c);
+    return res;
+}
+
+static DAArchiveRunResult waitArchiveLoad(DAZipArchiveThreadWrapper* archive, const QString& filePath)
+{
+    DAArchiveRunResult res;
+    if (nullptr == archive) {
+        return res;
+    }
+
+    QEventLoop loop;
+    QMetaObject::Connection c = QObject::connect(archive, &DAZipArchiveThreadWrapper::loaded, &loop, [&](bool success) {
+        res.success = success;
+        loop.quit();
+    });
+    res.started = archive->load(filePath);
+    if (res.started) {
+        loop.exec(QEventLoop::ExcludeUserInputEvents);
+    }
+    QObject::disconnect(c);
+    return res;
+}
 
 class DAZipArchiveTask_LoadDataManager : public DAAbstractArchiveTask
 {
@@ -411,40 +460,18 @@ bool DAAppProject::save(const QString& path)
         qInfo() << tr("current project is busy");  // cn:当前工程正繁忙
         return false;
     }
+    const QString oldProjectFilePath = getProjectFilePath();
     setStatusBarInBusy(tr("Saving project"));
     setProjectPath(path);
     DA_WAIT_CURSOR_SCOPED();
-    //! 保存系统信息，仅仅保存不读取
-    makeSaveSystemInfoTask(mArchive);
-
-    //! 保存Python工作流逻辑数据（节点拓扑+参数值+连接关系）
-    makeSaveWorkflowDataTask(mArchive);
-
-    //! 先把涉及ui的内容保存下来,ui是无法在其它线程操作，因此需要先保存下来
-    makeSaveWorkFlowTask(mArchive);
-
-    //! datamanager
-    makeSaveDataManagerTask(mArchive);
-
-    //! 绘图
-    makeSaveChartTask(mArchive);
-
-    //! 插件
-    if (m_pluginMgr) {
-        const QList< DAAbstractPlugin* > plugins = m_pluginMgr->getAllPlugins();
-        for (DAAbstractPlugin* plugin : plugins) {
-            auto task = plugin->createArchiveTask(true);
-            if (task) {
-                mArchive->appendTask(task);
-            }
+    bool started = false;
+    if (!executeSave(mArchive, path, &started)) {
+        if (!started) {
+            setStatusBarNotBusy(tr("Failed to save project"));  // cn:无法保存工程
         }
-    }
-    //! 组件任务队列
-    if (!mArchive->save(path)) {
-        qCritical() << tr("failed to save archive to %1").arg(path);
+        setProjectPath(oldProjectFilePath);
         return false;
     }
-
     return true;
 }
 
@@ -472,56 +499,54 @@ bool DAAppProject::load(const QString& path)
         qCritical() << tr("The file %1 is not a valid project file").arg(path);  // cn:文件%1不是正确的工程文件
         return false;
     }
+    const QString oldProjectFilePath = getProjectFilePath();
+    const bool oldDirty              = isDirty();
+    const bool needSnapshot          = oldDirty || !isEmpty();
+    QString snapshotPath;
+
+    if (needSnapshot) {
+        setStatusBarInBusy(tr("Creating project snapshot"));  // cn:正在创建工程快照
+        if (!createProjectSnapshot(&snapshotPath)) {
+            setStatusBarNotBusy(tr("Failed to backup current project"));  // cn:无法备份当前工程
+            qCritical() << tr("Failed to backup current project before loading %1").arg(path);
+            return false;
+        }
+    }
     setStatusBarInBusy(tr("Loading project"));  // cn:正在加载工程
 
     // 加载之前先清空
     clear();
 
     setProjectPath(path);
-    // 创建archive任务队列 - Python工作流逻辑数据（先注册，FIFO保证先执行）
-    auto taskData = mArchive->appendByteLoadTask(c_workflowdata_save_filename, DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW_DATA);
-    taskData->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedWorkflowData(t); });
-    // 创建archive任务队列 - 工作流UI（后注册，FIFO保证后执行）
-    auto task = mArchive->appendXmlLoadTask(c_workflowxml_save_filename, DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW);
-    task->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedWorkflowInfo(t); });
-    // 创建datamanager任务
-    std::shared_ptr< DAZipArchiveTask_LoadDataManager > loadDataTask =
-        std::make_shared< DAZipArchiveTask_LoadDataManager >();
-    loadDataTask->setCode(DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER);
-    loadDataTask->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedDataManager(t); });
-    mArchive->appendTask(loadDataTask);
-
-    // 加载chartItemManager
-
-    //! ChartItemLoadTask必须在chart info 的XmlLoadTask之前
-    auto taskChartItem =
-        mArchive->appendChartItemLoadTask(c_chartitem_save_folder, DAAPPPROJECT_TASK_LOAD_ID_CHARTITEMMANAGER);
-    taskChartItem->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) {
-        const std::shared_ptr< DAZipArchiveTask_ChartItem > chartMgrArchive =
-            std::static_pointer_cast< DAZipArchiveTask_ChartItem >(t);
-        // 获取chartmanager
-        mChartItemManager = chartMgrArchive->getChartItemsManager();
-    });
-    auto taskCharts = mArchive->appendXmlLoadTask(c_chartsxml_save_filename, DAAPPPROJECT_TASK_LOAD_ID_CHARTS_INFO);
-    taskCharts->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedChartsInfo(t); });
-    //! 插件
-    if (m_pluginMgr) {
-        const QList< DAAbstractPlugin* > plugins = m_pluginMgr->getAllPlugins();
-        for (DAAbstractPlugin* plugin : plugins) {
-            auto task = plugin->createArchiveTask(false);
-            if (task) {
-                mArchive->appendTask(task);
-            }
+    bool started = false;
+    if (!executeLoad(mArchive, path, &started)) {
+        if (!started) {
+            setStatusBarNotBusy(tr("Failed to load project"));  // cn:无法加载工程
         }
-    }
-    //! 组件任务队列
-    if (!mArchive->load(path)) {
-        qCritical() << tr("failed to laod archive from %1").arg(path);  // cn:文件%1加载失败
+        if (!snapshotPath.isEmpty()) {
+            setStatusBarInBusy(tr("Restoring previous project"));  // cn:正在恢复之前的工程
+            if (restoreProjectSnapshot(snapshotPath, oldProjectFilePath, oldDirty)) {
+                setStatusBarNotBusy(tr("Failed to load project, restored previous project")
+                );  // cn:工程加载失败，已恢复之前的工程
+            } else {
+                setStatusBarNotBusy(tr("Failed to load project and failed to restore previous project")
+                );  // cn:工程加载失败，且恢复之前的工程失败
+                qCritical() << tr("Failed to restore previous project from snapshot");
+                setProjectPath(QString());
+                setModified(false);
+            }
+            QFile::remove(snapshotPath);
+        } else if (!started) {
+            setProjectPath(QString());
+            setModified(false);
+        }
         return false;
+    }
+    if (!snapshotPath.isEmpty()) {
+        QFile::remove(snapshotPath);
     }
     return true;
 }
-
 bool DAAppProject::requestSave()
 {
     QString projectFilePath = getProjectFilePath();
@@ -543,6 +568,160 @@ bool DAAppProject::requestSave()
         qCritical() << tr("Project saved failed!,path is %1").arg(projectFilePath);  // 工程保存失败！路径位于:%1
     }
     return saveRet;
+}
+
+bool DAAppProject::executeSave(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started)
+{
+    if (started) {
+        *started = false;
+    }
+    if (nullptr == archive) {
+        return false;
+    }
+
+    // 保存系统信息，仅仅保存不读取
+    makeSaveSystemInfoTask(archive);
+
+    // 保存Python工作流逻辑数据（节点拓扑+参数值+连接关系）
+    makeSaveWorkflowDataTask(archive);
+
+    // 先把涉及ui的内容保存下来,ui是无法在其它线程操作，因此需要先保存下来
+    makeSaveWorkFlowTask(archive);
+
+    // datamanager
+    makeSaveDataManagerTask(archive);
+
+    // 绘图
+    makeSaveChartTask(archive);
+
+    // 插件
+    if (m_pluginMgr) {
+        const QList< DAAbstractPlugin* > plugins = m_pluginMgr->getAllPlugins();
+        for (DAAbstractPlugin* plugin : plugins) {
+            auto task = plugin->createArchiveTask(true);
+            if (task) {
+                archive->appendTask(task);
+            }
+        }
+    }
+
+    const DAArchiveRunResult result = waitArchiveSave(archive, path);
+    if (started) {
+        *started = result.started;
+    }
+    return result.success;
+}
+
+bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started)
+{
+    if (started) {
+        *started = false;
+    }
+    if (nullptr == archive) {
+        return false;
+    }
+
+    // 创建archive任务队列 - Python工作流逻辑数据（先注册，FIFO保证先执行）
+    auto taskData = archive->appendByteLoadTask(c_workflowdata_save_filename, DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW_DATA);
+    if (!taskData) {
+        return false;
+    }
+    taskData->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedWorkflowData(t); });
+
+    // 创建archive任务队列 - 工作流UI（后注册，FIFO保证后执行）
+    auto task = archive->appendXmlLoadTask(c_workflowxml_save_filename, DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW);
+    if (!task) {
+        return false;
+    }
+    task->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedWorkflowInfo(t); });
+
+    // 创建datamanager任务
+    std::shared_ptr< DAZipArchiveTask_LoadDataManager > loadDataTask =
+        std::make_shared< DAZipArchiveTask_LoadDataManager >();
+    loadDataTask->setCode(DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER);
+    loadDataTask->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedDataManager(t); });
+    if (!archive->appendTask(loadDataTask)) {
+        return false;
+    }
+
+    // ChartItemLoadTask必须在chart info 的XmlLoadTask之前
+    auto taskChartItem = archive->appendChartItemLoadTask(c_chartitem_save_folder, DAAPPPROJECT_TASK_LOAD_ID_CHARTITEMMANAGER);
+    if (!taskChartItem) {
+        return false;
+    }
+    taskChartItem->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) {
+        const std::shared_ptr< DAZipArchiveTask_ChartItem > chartMgrArchive =
+            std::static_pointer_cast< DAZipArchiveTask_ChartItem >(t);
+        // 获取chartmanager
+        mChartItemManager = chartMgrArchive->getChartItemsManager();
+    });
+
+    auto taskCharts = archive->appendXmlLoadTask(c_chartsxml_save_filename, DAAPPPROJECT_TASK_LOAD_ID_CHARTS_INFO);
+    if (!taskCharts) {
+        return false;
+    }
+    taskCharts->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedChartsInfo(t); });
+
+    // 插件
+    if (m_pluginMgr) {
+        const QList< DAAbstractPlugin* > plugins = m_pluginMgr->getAllPlugins();
+        for (DAAbstractPlugin* plugin : std::as_const(plugins)) {
+            auto taskPlugin = plugin->createArchiveTask(false);
+            if (taskPlugin) {
+                archive->appendTask(taskPlugin);
+            }
+        }
+    }
+
+    const DAArchiveRunResult result = waitArchiveLoad(archive, path);
+    if (started) {
+        *started = result.started;
+    }
+    return result.success;
+}
+
+bool DAAppProject::createProjectSnapshot(QString* snapshotPath)
+{
+    if (nullptr == snapshotPath) {
+        return false;
+    }
+
+    QTemporaryFile tempFile(QDir::tempPath() + QDir::separator()
+                            + QStringLiteral("daworkbench-project-XXXXXX.%1").arg(getProjectFileSuffix()));
+    tempFile.setAutoRemove(false);
+    if (!tempFile.open()) {
+        return false;
+    }
+    *snapshotPath = tempFile.fileName();
+    tempFile.close();
+    QFile::remove(*snapshotPath);
+
+    DAZipArchiveThreadWrapper archive;
+    bool started = false;
+    if (!executeSave(&archive, *snapshotPath, &started) || !started) {
+        QFile::remove(*snapshotPath);
+        snapshotPath->clear();
+        return false;
+    }
+    return true;
+}
+
+bool DAAppProject::restoreProjectSnapshot(const QString& snapshotPath, const QString& projectFilePath, bool isDirty)
+{
+    if (snapshotPath.isEmpty() || !QFileInfo::exists(snapshotPath)) {
+        return false;
+    }
+
+    clear();
+    DAZipArchiveThreadWrapper archive;
+    bool started = false;
+    if (!executeLoad(&archive, snapshotPath, &started) || !started) {
+        return false;
+    }
+
+    setProjectPath(projectFilePath);
+    setModified(isDirty);
+    return true;
 }
 
 /**
@@ -670,7 +849,7 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
                 continue;
             }
             // 创建archive任务队列
-            mArchive->appendFileSaveTask(dataZipPath, tempFilePath);
+            archive->appendFileSaveTask(dataZipPath, tempFilePath);
         } break;
         default:
             break;

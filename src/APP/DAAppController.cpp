@@ -60,6 +60,7 @@
 #include "DAGraphicsDrawTextItemSceneAction.h"
 // project
 #include "DAAppProject.h"
+#include "DAAppProjectActionPolicy.h"
 // Py
 #if DA_ENABLE_PYTHON
 #include "Dialog/DATxtFileImportDialog.h"
@@ -96,6 +97,22 @@
 // 快速链接信号槽
 #define DAAPPCONTROLLER_ACTION_BIND(actionname, functionname)                                                          \
     connect(actionname, &QAction::triggered, this, &DAAppController::functionname)
+
+namespace
+{
+DA::DAAppSavePromptChoice toAppSavePromptChoice(QMessageBox::StandardButton btn)
+{
+    switch (btn) {
+    case QMessageBox::Yes:
+        return DA::DAAppSavePromptChoice::Save;
+    case QMessageBox::No:
+        return DA::DAAppSavePromptChoice::Discard;
+    case QMessageBox::Cancel:
+    default:
+        return DA::DAAppSavePromptChoice::Cancel;
+    }
+}
+}  // namespace
 
 namespace DA
 {
@@ -497,10 +514,10 @@ bool DAAppController::isApplyToAllCharts() const
     return mActions->actionFigureSettingApplyAllChart->isChecked();
 }
 
-void DAAppController::save()
+bool DAAppController::save()
 {
     DAAppProject* project = DA_APP_CORE.getAppProject();
-    project->requestSave();
+    return project->requestSave();
 }
 
 /**
@@ -891,19 +908,36 @@ void DAAppController::onFocusedDockWidgetChanged(ads::CDockWidget* old, ads::CDo
 bool DAAppController::openCheck()
 {
     DAAppProject* project = DA_APP_CORE.getAppProject();
-    if (!project->getProjectDir().isEmpty()) {
-        if (project->isDirty()) {
-            // TODO 没有保存。先询问是否保存
-            QMessageBox::StandardButton btn = QMessageBox::question(
-                nullptr,
-                tr("Question"),                                                   // 提示
-                tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
-            );
-            if (btn != QMessageBox::Yes) {
-                return false;
-            }
+    const bool hasProjectContent = !project->isEmpty();
+    if (project->isDirty()) {
+        QMessageBox::StandardButton btn = QMessageBox::question(
+            nullptr,
+            tr("Question"),  // 提示
+            tr("The current project has unsaved changes. Do you want to save before opening another project?"),
+            QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel,
+            QMessageBox::StandardButton::Yes
+        );
+        switch (resolveAppOpenPreparation(hasProjectContent, true, toAppSavePromptChoice(btn))) {
+        case DAAppOpenPreparation::SaveThenOpen:
+            return save();
+        case DAAppOpenPreparation::OpenDirectly:
+            return true;
+        case DAAppOpenPreparation::CancelOpening:
+        default:
+            return false;
         }
     }
+
+    if (resolveAppOpenPreparation(hasProjectContent, false, DAAppSavePromptChoice::Discard)
+        == DAAppOpenPreparation::ConfirmReplaceThenOpen) {
+        QMessageBox::StandardButton btn = QMessageBox::question(
+            nullptr,
+            tr("Question"),                                                   // 提示
+            tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
+        );
+        return btn == QMessageBox::Yes;
+    }
+
     return true;
 }
 
@@ -941,7 +975,6 @@ void DAAppController::open()
 bool DAAppController::openProjectFile(const QString& projectFilePath)
 {
     DAAppProject* project = DA_APP_CORE.getAppProject();
-    project->clear();
     if (!project->load(projectFilePath)) {
         qCritical() << tr("failed to load project file:%1").arg(projectFilePath);
         return false;

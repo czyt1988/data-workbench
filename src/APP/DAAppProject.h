@@ -94,6 +94,10 @@ private Q_SLOTS:
 	void onLoadFinish(bool success);
 
 private:
+    bool executeSave(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started = nullptr);
+    bool executeLoad(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started = nullptr);
+    bool createProjectSnapshot(QString* snapshotPath);
+    bool restoreProjectSnapshot(const QString& snapshotPath, const QString& projectFilePath, bool isDirty);
 	void loadedWorkflowInfo(const std::shared_ptr< DAAbstractArchiveTask >& t);
 	// Python工作流逻辑数据加载回调
 	void loadedWorkflowData(const std::shared_ptr< DAAbstractArchiveTask >& t);
