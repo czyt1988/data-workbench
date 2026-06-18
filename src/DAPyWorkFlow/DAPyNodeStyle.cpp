@@ -20,7 +20,8 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAPyNodeStyle::NodeRenderTemplate,
 DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAPyNodeStyle::BodyShape,
                                   DA::DAPyNodeStyle::RoundedRectShape,
                                   { DA::DAPyNodeStyle::RoundedRectShape, "rounded_rect" },
-                                  { DA::DAPyNodeStyle::EllipseShape, "ellipse" })
+                                  { DA::DAPyNodeStyle::EllipseShape, "ellipse" },
+                                  { DA::DAPyNodeStyle::DiamondShape, "diamond" })
 
 // ================================== DA::BodyShape ==================================
 DA_ENUM_STRING_INSENSITIVE_DEFINE(DA::DAPyNodeStyle::NamePosition,

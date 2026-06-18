@@ -271,6 +271,31 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
              pybind11::arg("b"),
              pybind11::arg("a") = 255,
              "Fill rectangle with RGBA color")
+        .def("drawPolygon",
+             &DA::DAPyPainterProxy::drawPolygon,
+             pybind11::arg("points"),
+             "Draw arbitrary polygon from list of (x,y) tuples")
+        .def("drawDiamond",
+             &DA::DAPyPainterProxy::drawDiamond,
+             pybind11::arg("x"),
+             pybind11::arg("y"),
+             pybind11::arg("w"),
+             pybind11::arg("h"),
+             "Draw diamond shape inside the specified rectangle")
+        .def("boundingRect",
+             &DA::DAPyPainterProxy::boundingRect,
+             pybind11::arg("text"),
+             pybind11::arg("family"),
+             pybind11::arg("size"),
+             "Compute text bounding rect (width, height) with given font")
+        .def("setClipRect",
+             &DA::DAPyPainterProxy::setClipRect,
+             pybind11::arg("x"),
+             pybind11::arg("y"),
+             pybind11::arg("w"),
+             pybind11::arg("h"),
+             "Set clip rectangle for subsequent drawing operations")
+        .def("clearClip", &DA::DAPyPainterProxy::clearClip, "Disable clipping region")
         .def("setPenColor",
              &DA::DAPyPainterProxy::setPenColor,
              pybind11::arg("r"),

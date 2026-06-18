@@ -85,6 +85,7 @@ endif()
 ########################################################
 if(DA_ENABLE_PYTHON)
     add_subdirectory(DataAnalysis)
+    add_subdirectory(DASystemNodes)
 endif()
 
 

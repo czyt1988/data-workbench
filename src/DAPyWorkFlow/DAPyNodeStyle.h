@@ -60,7 +60,8 @@ public:
     enum BodyShape
     {
         RoundedRectShape = 0,  ///< 圆角矩形
-        EllipseShape     = 1   ///< 椭圆形
+        EllipseShape     = 1,  ///< 椭圆形
+        DiamondShape     = 2   ///< 菱形
     };
 
     /**

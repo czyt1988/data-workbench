@@ -15,6 +15,7 @@
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
 #include <QFontMetrics>
+#include <QPolygonF>
 #include "DAPyGILGuard.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DAGraphicsViewGlobal.h"
@@ -366,6 +367,32 @@ void DAPyNodeGraphicsItem::setProxy(const DAPyNode& proxy)
         d_ptr->mInputKeys     = proxy.getInputKeys();
         d_ptr->mOutputKeys    = proxy.getOutputKeys();
         d_ptr->mStyle         = proxy.getNodeStyle();
+
+        // 如果 Python 节点实例定义了 paint 方法，自动注册为自定义绘制回调
+        try {
+            pybind11::object pyObj = proxy.object();
+            if (pybind11::hasattr(pyObj, "paint")) {
+                pybind11::object paintAttr = pyObj.attr("paint");
+                // 检查是否可调用（pybind11 没有 callable 自由函数，使用 __call__ 属性判断）
+                if (pybind11::hasattr(paintAttr, "__call__")) {
+                    d_ptr->mPaintCallback      = DAPyObjectWrapper(paintAttr);
+                    d_ptr->mPaintCallbackError = false;
+                } else {
+                    d_ptr->mPaintCallback = DAPyObjectWrapper();
+                    d_ptr->mPaintCallbackError = false;
+                }
+            } else {
+                d_ptr->mPaintCallback = DAPyObjectWrapper();
+                d_ptr->mPaintCallbackError = false;
+            }
+        } catch (const std::exception& e) {
+            qWarning() << "DAPyNodeGraphicsItem setProxy paint callback exception:" << e.what();
+            d_ptr->mPaintCallback = DAPyObjectWrapper();
+            d_ptr->mPaintCallbackError = false;
+        }
+    } else {
+        d_ptr->mPaintCallback = DAPyObjectWrapper();
+        d_ptr->mPaintCallbackError = false;
     }
     updateLinkPoints();
     update();
@@ -684,6 +711,8 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
         // 注意：paint回调应在50ms内完成，避免阻塞GUI线程
         DAPyGILGuard gil;
         try {
+            // 确保 da_py_workflow 模块已加载，使 DAPyPainterProxy 类型转换器可用
+            pybind11::module_::import("da_py_workflow");
             DAPyPainterProxy proxy(painter);
             pybind11::tuple bodyTuple =
                 pybind11::make_tuple(bodyRect.x(), bodyRect.y(), bodyRect.width(), bodyRect.height());
@@ -930,10 +959,24 @@ void DAPyNodeGraphicsItem::paintStateDecoration(QPainter* painter, const QRectF&
         painter->setPen(pen);
         painter->setBrush(Qt::NoBrush);
         // 边框始终跟随 bodyShape
-        if (d_ptr->mStyle.bodyShape == DAPyNodeStyle::EllipseShape) {
+        switch (d_ptr->mStyle.bodyShape) {
+        case DAPyNodeStyle::EllipseShape:
             painter->drawEllipse(bodyRect.adjusted(1, 1, -1, -1));
-        } else {
+            break;
+        case DAPyNodeStyle::DiamondShape: {
+            QPolygonF diamond;
+            QRectF r = bodyRect.adjusted(1, 1, -1, -1);
+            diamond << QPointF(r.center().x(), r.top())
+                    << QPointF(r.right(), r.center().y())
+                    << QPointF(r.center().x(), r.bottom())
+                    << QPointF(r.left(), r.center().y());
+            painter->drawPolygon(diamond);
+            break;
+        }
+        case DAPyNodeStyle::RoundedRectShape:
+        default:
             painter->drawRoundedRect(bodyRect.adjusted(1, 1, -1, -1), 4, 4);
+            break;
         }
         break;
     }
@@ -949,6 +992,15 @@ void DAPyNodeGraphicsItem::paintStateDecoration(QPainter* painter, const QRectF&
         if (d_ptr->mStyle.bodyShape == DAPyNodeStyle::EllipseShape) {
             QPainterPath clipPath;
             clipPath.addEllipse(bodyRect);
+            painter->setClipPath(clipPath);
+        } else if (d_ptr->mStyle.bodyShape == DAPyNodeStyle::DiamondShape) {
+            QPainterPath clipPath;
+            QPolygonF diamond;
+            diamond << QPointF(bodyRect.center().x(), bodyRect.top())
+                    << QPointF(bodyRect.right(), bodyRect.center().y())
+                    << QPointF(bodyRect.center().x(), bodyRect.bottom())
+                    << QPointF(bodyRect.left(), bodyRect.center().y());
+            clipPath.addPolygon(diamond);
             painter->setClipPath(clipPath);
         }
 
@@ -993,6 +1045,16 @@ void DAPyNodeGraphicsItem::paintNodeStyleBody(QPainter* painter, const QRectF& b
     case DAPyNodeStyle::EllipseShape:
         painter->drawEllipse(bodyRect);
         break;
+    case DAPyNodeStyle::DiamondShape: {
+        // 菱形：四边中点连线
+        QPolygonF diamond;
+        diamond << QPointF(bodyRect.center().x(), bodyRect.top())
+                << QPointF(bodyRect.right(), bodyRect.center().y())
+                << QPointF(bodyRect.center().x(), bodyRect.bottom())
+                << QPointF(bodyRect.left(), bodyRect.center().y());
+        painter->drawPolygon(diamond);
+        break;
+    }
     case DAPyNodeStyle::RoundedRectShape:
     default:
         painter->drawRoundedRect(bodyRect, style.cornerRadius, style.cornerRadius);
@@ -1121,6 +1183,14 @@ QPainterPath DAPyNodeGraphicsItem::shape() const
 
     if (d->mStyle.bodyShape == DAPyNodeStyle::EllipseShape) {
         path.addEllipse(getBodyControlRect());
+    } else if (d->mStyle.bodyShape == DAPyNodeStyle::DiamondShape) {
+        QRectF r = getBodyControlRect();
+        QPolygonF diamond;
+        diamond << QPointF(r.center().x(), r.top())
+                << QPointF(r.right(), r.center().y())
+                << QPointF(r.center().x(), r.bottom())
+                << QPointF(r.left(), r.center().y());
+        path.addPolygon(diamond);
     } else {
         // RoundedRect 等保持默认矩形路径（复用基类行为）
         path = DAGraphicsResizeableItem::shape();
