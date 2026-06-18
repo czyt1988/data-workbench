@@ -1,4 +1,4 @@
-﻿
+
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # DAPyCommonWidgets 库
@@ -18,6 +18,7 @@ damacro_lib_setting(
 set(DA_LIB_HEADER_FILES
     DAGuiAPI.h
     DAAbstractChartAddItemWidget.h
+    DAAbstractNodeSettingWidget.h
     DAAbstractOperateWidget.h
     DACacheWindowTableView.h
     DAChartItemsManager.h
@@ -45,12 +46,12 @@ set(DA_LIB_HEADER_FILES
     DANodeTreeWidget.h
     DARecentFilesManager.h
     DAToolBox.h
-    DAWorkFlowEditWidget.h
-    DAWorkFlowGraphicsScene.h
-    DAWorkFlowGraphicsView.h
-    DAWorkFlowNodeListWidget.h
-    DAWorkFlowNodeItemSettingWidget.h
-    DAWorkFlowOperateWidget.h
+    DAPyWorkFlowEditWidget.h
+    DAPyWorkFlowGraphicsScene.h
+    DAPyWorkFlowGraphicsView.h
+    DAPyWorkFlowNodeListWidget.h
+    DAPyWorkFlowNodeItemSettingWidget.h
+    DAPyWorkFlowOperateWidget.h
     DASettingContainerWidget.h
     DAStatusBarWidget.h
     DAAbstractArchive.h
@@ -66,6 +67,7 @@ set(DA_LIB_HEADER_FILES
 )
 set(DA_LIB_SOURCE_FILES
     DAAbstractChartAddItemWidget.cpp
+    DAAbstractNodeSettingWidget.cpp
     DAAbstractOperateWidget.cpp
     DACacheWindowTableView.cpp
     DAChartListView.cpp
@@ -93,12 +95,12 @@ set(DA_LIB_SOURCE_FILES
     DANodeTreeWidget.cpp
     DARecentFilesManager.cpp
     DAToolBox.cpp
-    DAWorkFlowEditWidget.cpp
-    DAWorkFlowGraphicsScene.cpp
-    DAWorkFlowGraphicsView.cpp
-    DAWorkFlowNodeListWidget.cpp
-    DAWorkFlowNodeItemSettingWidget.cpp
-    DAWorkFlowOperateWidget.cpp
+    DAPyWorkFlowEditWidget.cpp
+    DAPyWorkFlowGraphicsScene.cpp
+    DAPyWorkFlowGraphicsView.cpp
+    DAPyWorkFlowNodeListWidget.cpp
+    DAPyWorkFlowNodeItemSettingWidget.cpp
+    DAPyWorkFlowOperateWidget.cpp
     DASettingContainerWidget.cpp
     DAStatusBarWidget.cpp
     DAAbstractArchive.cpp
@@ -124,10 +126,10 @@ set(DA_LIB_QT_UI_FILES
     DANodeItemSettingWidget.ui
     DANodeLinkItemSettingWidget.ui
     DANodeSettingWidget.ui
-    DAWorkFlowOperateWidget.ui
-    DAWorkFlowEditWidget.ui
-    DAWorkFlowNodeListWidget.ui
-    DAWorkFlowNodeItemSettingWidget.ui
+    DAPyWorkFlowOperateWidget.ui
+    DAPyWorkFlowEditWidget.ui
+    DAPyWorkFlowNodeListWidget.ui
+    DAPyWorkFlowNodeItemSettingWidget.ui
 )
 set(DA_LIB_QT_RC_FILES
     icon.qrc
@@ -150,7 +152,7 @@ if(DA_ENABLE_PYTHON)
         DAChartAddTradingCurveWidget.h
         DAChartAddSpectrogramWidget.h
     )
-    list(APPEND DA_LIB_HEADER_FILES
+    list(APPEND DA_LIB_SOURCE_FILES
         DADataframeToVectorPointWidget.cpp
         DADataOperateOfDataFrameWidget.cpp
         DAPyDataFrameTableView.cpp
@@ -181,6 +183,7 @@ set(DA_LIB_SUBDIR_Dialog ${CMAKE_CURRENT_SOURCE_DIR}/Dialog)
 set(DA_LIB_SUBDIR_MimeData ${CMAKE_CURRENT_SOURCE_DIR}/MimeData)
 set(DA_LIB_SUBDIR_Commands ${CMAKE_CURRENT_SOURCE_DIR}/Commands)
 set(DA_LIB_SUBDIR_ChartSetting ${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting)
+set(DA_LIB_SUBDIR_NodeSetting ${CMAKE_CURRENT_SOURCE_DIR}/NodeSetting)
 
 # Models
 set(DA_LIB_HEADER_FILES_Models
@@ -288,6 +291,25 @@ file(GLOB DA_LIB_HEADER_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.h)
 file(GLOB DA_LIB_SOURCE_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.cpp)
 file(GLOB DA_LIB_UI_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.ui)
 
+#NodeSetting
+set(DA_LIB_HEADER_FILES_NodeSetting)
+if(DA_ENABLE_PYTHON)
+    list(APPEND DA_LIB_HEADER_FILES_NodeSetting
+        ${DA_LIB_SUBDIR_NodeSetting}/DAParamTypeRegistry.h
+        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanel.h
+        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelFactory.h
+        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelWidget.h
+        ${DA_LIB_SUBDIR_NodeSetting}/DAParamDef.h
+    )
+    list(APPEND DA_LIB_SOURCE_FILES_NodeSetting
+        ${DA_LIB_SUBDIR_NodeSetting}/DAParamTypeRegistry.cpp
+        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanel.cpp
+        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelFactory.cpp
+        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelWidget.cpp
+        ${DA_LIB_SUBDIR_NodeSetting}/DAParamDef.cpp
+    )
+endif()
+
 add_library(${DA_LIB_NAME} SHARED
             #Root
             ${DA_LIB_HEADER_FILES}
@@ -311,7 +333,10 @@ add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES_ChartSetting}
             ${DA_LIB_SOURCE_FILES_ChartSetting}
             ${DA_LIB_UI_FILES_ChartSetting}
-)   
+            #NodeSetting
+            ${DA_LIB_HEADER_FILES_NodeSetting}
+            ${DA_LIB_SOURCE_FILES_NodeSetting}
+)
 
 # 构建库定义的宏
 target_compile_definitions(${DA_LIB_NAME} PRIVATE DAGUI_BUILDLIB)#!!!!** 注意变更 **!!!!
@@ -335,7 +360,7 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAMessageHandler
     ${DA_PROJECT_NAME}::DAData
     ${DA_PROJECT_NAME}::DACommonWidgets
-    ${DA_PROJECT_NAME}::DAWorkFlow
+    ${DA_PROJECT_NAME}::DAPyWorkFlow
     ${DA_PROJECT_NAME}::DAFigure
 )
 
@@ -380,6 +405,10 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
     $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/ChartSetting>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting>
 )
+target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/NodeSetting>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/NodeSetting>
+)
 
 ########################################################
 # 安装
@@ -419,6 +448,12 @@ install(FILES
 install(FILES
     ${DA_LIB_HEADER_FILES_ChartSetting}
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/ChartSetting
+    COMPONENT headers
+)
+#NodeSetting
+install(FILES
+    ${DA_LIB_HEADER_FILES_NodeSetting}
+    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/NodeSetting
     COMPONENT headers
 )
 

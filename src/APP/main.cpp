@@ -1,7 +1,6 @@
 #include "AppMainWindow.h"
 // stl
 #include <iostream>
-#include <memory>
 // windows system only
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -40,9 +39,8 @@ QString appPreposeDump();
 void enableHDPIScaling();
 void initializePythonInterpreter();
 
-
 const static QString CS_CMD_IMPORTDATA = QStringLiteral("import-data");
-const static QString CS_CMD_NO_SPLASH = QStringLiteral("no-splash");// 禁止启动动画
+const static QString CS_CMD_NOSPLASH   = QStringLiteral("no-splash");
 // 初始化所有命令
 void initCommandLine(QCommandLineParser* cmd);
 /**
@@ -86,8 +84,6 @@ int main(int argc, char* argv[])
     initCommandLine(&cmdParser);
     // 解析命令行参数
     cmdParser.process(app);
-    QStringList positionalArgs = cmdParser.positionalArguments();
-    qDebug() << "positionalArgs:" << positionalArgs;
     // 字体设置
     setAppFont();
 
@@ -95,12 +91,12 @@ int main(int argc, char* argv[])
     DA::DATranslatorManeger datr;
     datr.installAllTranslator();
 
-
     // 创建并显示启动画面(启动画面必须在QApplication之后创建)
-    // 如果设置了no-splash参数，则不创建启动画面
-    std::unique_ptr< DA::DASplashScreen > splash;
-    if (!cmdParser.isSet(CS_CMD_NO_SPLASH)) {
-        splash = std::make_unique< DA::DASplashScreen >();
+    // --no-splash 参数可跳过启动画面，适用于调试场景
+    bool showSplash            = !cmdParser.isSet(CS_CMD_NOSPLASH);
+    DA::DASplashScreen* splash = nullptr;
+    if (showSplash) {
+        splash = new DA::DASplashScreen();
         // 支持从外部文件加载自定义背景图片
         QString customSplashPath = QApplication::applicationDirPath() + QStringLiteral("/splash.png");
         splash->loadBackgroundPixmap(customSplashPath);  // 若文件不存在则保持默认背景
@@ -115,6 +111,9 @@ int main(int argc, char* argv[])
     DA::DAAppCore& core = DA::DAAppCore::getInstance();
     if (!core.initialized()) {
         qCritical() << QObject::tr("Kernel initialization failed");  // cn:内核初始化失败
+        if (splash) {
+            delete splash;
+        }
         return -1;
     }
 
@@ -123,6 +122,8 @@ int main(int argc, char* argv[])
         splash->showMessage(QObject::tr("Loading user interface..."));  // cn:正在加载用户界面...
     }
     DA::AppMainWindow w;
+    QStringList positionalArgs = cmdParser.positionalArguments();
+    qDebug() << "positionalArgs:" << positionalArgs;
     if (positionalArgs.size() == 1) {
         // 说明有可能是双击文件打开，这时候要看参数是否为一个工程文件
         QFileInfo openfi(positionalArgs[ 0 ]);
@@ -150,6 +151,7 @@ int main(int argc, char* argv[])
     w.show();
     if (splash) {
         splash->finish(&w);
+        delete splash;
     }
     int r = app.exec();
     DA::daUnregisterMessageHandler();
@@ -162,18 +164,15 @@ int main(int argc, char* argv[])
  */
 void initCommandLine(QCommandLineParser* cmd)
 {
-    cmd->setApplicationDescription(
-        QCoreApplication::translate("main", "version:%1,compile datetime:%2,enable python:%3")
-            .arg(DA_VERSION)
-            .arg(DA_COMPILE_DATETIME)
-            .arg(DA_ENABLE_PYTHON)
-    );
+    cmd->setApplicationDescription(QCoreApplication::translate("main", "version:%1,compile datetime:%2,enable python:%3")
+                                       .arg(DA_VERSION)
+                                       .arg(DA_COMPILE_DATETIME)
+                                       .arg(DA_ENABLE_PYTHON));
     cmd->addHelpOption();
     cmd->addVersionOption();
-    cmd->addPositionalArgument(
-        "file",
-        QCoreApplication::translate("main", "The project file to open"),  // cn:要打开的工程文件
-        "[project]"                                                       // 语法表示（可选）
+    cmd->addPositionalArgument("file",
+                               QCoreApplication::translate("main", "The project file to open"),  // cn:要打开的工程文件
+                               "[project]"                                                       // 语法表示（可选）
     );
     QCommandLineOption importDataOption(
         CS_CMD_IMPORTDATA,
@@ -181,19 +180,15 @@ void initCommandLine(QCommandLineParser* cmd)
             "main",
             "Import data into the application, supporting formats such as CSV, XLSX, TXT, "
             "PKL, etc.If you want to import multiple datasets, you can use the command "
-            "multiple times; the program will execute them one by one"
-        ),  // cn：导入数据到应用程序中，支持csv/xlsx/txt/pkl等格式，如果要导入多个数据，你可以使用多次命令，程序会逐一执行
-        "path"
-    );
+            "multiple times; the program will execute them one by one"),  // cn：导入数据到应用程序中，支持csv/xlsx/txt/pkl等格式，如果要导入多个数据，你可以使用多次命令，程序会逐一执行
+        "path");
     cmd->addOption(importDataOption);
-
     QCommandLineOption noSplashOption(
-        CS_CMD_NO_SPLASH,
-        QCoreApplication::translate(
-            "main",
-            "no splash screen"
-            )  // cn：禁止启动动画
-        );
+        CS_CMD_NOSPLASH,
+        QCoreApplication::translate("main",
+                                    "Disable the splash screen during startup, useful for debugging to avoid "
+                                    "the splash window blocking the IDE")  // cn:禁用启动画面，适用于调试时避免启动窗口遮挡IDE
+    );
     cmd->addOption(noSplashOption);
 }
 

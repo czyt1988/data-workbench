@@ -49,7 +49,10 @@ public:
     {
         return !(*this == obj);
     }
-    // bool操作符可直接进行isNone判断
+    // 比较操作符（用于QMap等有序容器的key）
+    bool operator<(const DAPyObjectWrapper& obj) const;
+
+    // bool操作符可直接进行isNone判断,isNone返回false
     explicit operator bool() const;
     // 统一异常处理函数
     void dealException(const std::exception& e) const;
@@ -62,6 +65,14 @@ public:
         return _object;
     }
     const pybind11::object& object() const
+    {
+        return _object;
+    }
+    pybind11::handle& handle()
+    {
+        return _object;
+    }
+    const pybind11::handle& handle() const
     {
         return _object;
     }
@@ -93,6 +104,8 @@ public:
     // 方法调用
     template< typename... Args >
     pybind11::object call(Args&&... args);
+    // hasattr
+    bool hasattr(const char* c_att) const;
 
 public:
     // 通用的python函数封装
@@ -154,6 +167,21 @@ pybind11::object DAPyObjectWrapper::call(Args&&... args)
     return _object(std::forward< Args >(args)...);
 }
 
+// qHash自由函数（用于QHash容器的key）
+DAPYBINDQT_API uint qHash(const DAPyObjectWrapper& obj, uint seed = 0);
+
 }  // namespace DA
+
 Q_DECLARE_METATYPE(DA::DAPyObjectWrapper)
+
+// std::hash特化（用于std::unordered_map的key）
+namespace std
+{
+template<>
+struct hash< DA::DAPyObjectWrapper >
+{
+    size_t operator()(const DA::DAPyObjectWrapper& obj) const noexcept;
+};
+}  // namespace std
+
 #endif  // DAPYOBJECTWRAPPER_H

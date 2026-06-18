@@ -34,7 +34,7 @@ public:
     bool isEnableShowInfoMsg() const;
     //自动滚动到最底部
     bool isAutoScrollToButtom() const;
-public slots:
+public Q_SLOTS:
     //对debug的显示设置
     void setEnableShowDebugMsg(bool on);
     //对Warning的显示设置
@@ -81,7 +81,7 @@ public:
 
 protected:
     QAction* createAction(const char* objname, const char* iconpath, bool checkable = false, bool checked = false);
-private slots:
+private Q_SLOTS:
     //自定义菜单
     void onCustomContextMenuRequested(const QPoint& pos);
     //有消息插入

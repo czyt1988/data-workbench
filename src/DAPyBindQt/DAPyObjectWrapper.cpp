@@ -37,12 +37,8 @@ DAPyObjectWrapper::DAPyObjectWrapper(pybind11::object&& obj)
 
 DAPyObjectWrapper::~DAPyObjectWrapper()
 {
-    if (!_object.is_none()) {
-        if (Py_IsInitialized()) {
-            _object = pybind11::none();
-        } else {
-            _object.release();
-        }
+    if (!Py_IsInitialized()) {
+        _object.release();
     }
 }
 
@@ -253,6 +249,16 @@ pybind11::object DAPyObjectWrapper::attr(const char* c_att) const
 }
 
 /**
+ * @brief 判断是否有方法
+ * @param c_att
+ * @return
+ */
+bool DAPyObjectWrapper::hasattr(const char* c_att) const
+{
+    return pybind11::hasattr(_object, c_att);
+}
+
+/**
  * @brief 对应__name__
  * @return
  */
@@ -316,3 +322,39 @@ size_t DAPyObjectWrapper::refCount() const
     }
     return _object.ref_count();
 }
+
+/**
+ * @brief 小于比较操作符，基于Python对象指针地址排序
+ *
+ * 提供严格弱序关系，使DAPyObjectWrapper及其派生类可用作QMap的key。
+ * 比较基于PyObject*指针地址，语义与operator==（身份比较）一致。
+ *
+ * @param obj 比较目标
+ * @return 如果当前对象指针地址小于目标返回true
+ */
+bool DAPyObjectWrapper::operator<(const DAPyObjectWrapper& obj) const
+{
+    return std::less<PyObject*>()(_object.ptr(), obj._object.ptr());
+}
+
+/**
+ * @brief Qt哈希函数，基于Python对象指针地址生成哈希值
+ *
+ * 使DAPyObjectWrapper及其派生类可用作QHash的key。
+ *
+ * @param obj 要哈希的对象
+ * @param seed 哈希种子
+ * @return 哈希值
+ */
+uint qHash(const DAPyObjectWrapper& obj, uint seed)
+{
+    return ::qHash(reinterpret_cast<quintptr>(obj.object().ptr()), seed);
+}
+
+namespace std
+{
+size_t hash<DA::DAPyObjectWrapper>::operator()(const DA::DAPyObjectWrapper& obj) const noexcept
+{
+    return std::hash<PyObject*>()(obj.object().ptr());
+}
+}  // namespace std

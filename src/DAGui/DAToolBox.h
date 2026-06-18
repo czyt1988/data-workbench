@@ -1,9 +1,9 @@
-﻿#ifndef DATOOLBOX_H
+#ifndef DATOOLBOX_H
 #define DATOOLBOX_H
 
 #include <QScrollArea>
 #include <QMap>
-#include "DANodeMetaData.h"
+#include "DAPyNodeFactory.h"
 #include "DAGuiAPI.h"
 class QToolBox;
 namespace DA
@@ -18,17 +18,17 @@ class DAGUI_API DAToolBox : public QScrollArea
     Q_OBJECT
 public:
     DAToolBox(QWidget* parent = nullptr);
-    void addItems(const QMap< QString, QList< DANodeMetaData > >& datas);
-    void addItems(const QList< DANodeMetaData >& datas);
+    void addItems(const QMap< QString, QList< DAPyNodeMetaData > >& datas);
+    void addItems(const QList< DAPyNodeMetaData >& datas);
     //获取收藏list，如果没有就返回nullptr
     DANodeListWidget* getFavoriteList();
     //创建收藏列
     DANodeListWidget* createFavoriteList();
     //添加到收藏
-    void addToFavorite(const DANodeMetaData& md);
-    void removeFavorite(const DANodeMetaData& md);
+    void addToFavorite(const DAPyNodeMetaData& md);
+    void removeFavorite(const DAPyNodeMetaData& md);
     //
-    DANodeMetaData getNodeMetaData(const QPoint& p) const;
+    DAPyNodeMetaData getNodeMetaData(const QPoint& p) const;
     //自适应item的最小高度，如果发现item的高度小于传入设置的最小值，
     //则会根据最小值自动计算QToolBox的最小高度，保证item能达到最小值
     void adjustMinItemHight(int minHeight);

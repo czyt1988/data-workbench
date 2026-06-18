@@ -11,7 +11,6 @@
 - [Python 绑定开发](./python-binding-development.md)
 - [故障排除与最佳实践](./troubleshooting-and-best-practices.md) ← 当前页
 - [Python 脚本开发实战](./python-script-development.md)
-- [Python 多线程与异步任务](./python-multi-threading.md)
 
 ## 问题诊断流程
 
@@ -41,6 +40,7 @@ F1 --> F2[检查模块是否正确编译]
 ```
 
 上图展示了问题诊断的流程：
+
 - 段错误 → 检查 [GIL 管理](./cpp-calling-python.md#gil安全全局解释器锁管理)，确保在调用 Python 前获取锁
 - 类型错误 → 检查 [Qt 类型转换器](./python-binding-development.md#qt-类型转换器)，查看支持的类型映射
 - 引用错误 → 检查所有权策略，设置正确的 `return_value_policy`

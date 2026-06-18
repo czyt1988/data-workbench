@@ -1,4 +1,4 @@
-﻿#include "DAFigureTreeModel.h"
+#include "DAFigureTreeModel.h"
 #include <QDebug>
 #include <QPainter>
 #include <QPixmap>
@@ -99,7 +99,7 @@ void DAFigureTreeModel::setupModel()
 
     QStandardItem* rootItem = invisibleRootItem();
 
-    QList< QwtPlot* > plots = m_figure->allAxes();
+    const QList< QwtPlot* > plots = m_figure->allAxes();
     for (QwtPlot* plot : plots) {
         addPlotToModel(plot, rootItem);
     }
@@ -131,7 +131,7 @@ void DAFigureTreeModel::addPlotToModel(QwtPlot* plot, QStandardItem* parentItem)
     addLayerToModel(plot, plotItem);
 
     // 添加寄生图层
-    QList< QwtPlot* > parasites = plot->parasitePlots();
+    const QList< QwtPlot* > parasites = plot->parasitePlots();
     for (QwtPlot* parasite : parasites) {
         addLayerToModel(parasite, plotItem);
     }
@@ -325,7 +325,7 @@ void DAFigureTreeModel::removePlotFromModel(QwtPlot* plot)
 
         // 移除寄生绘图的记录和连接
         if (plot->isHostPlot()) {
-            QList< QwtPlot* > parasites = plot->parasitePlots();
+            const QList< QwtPlot* > parasites = plot->parasitePlots();
             for (QwtPlot* parasite : parasites) {
                 m_plotItems.remove(parasite);
                 const QwtPlotItemList& parasiteItems = parasite->itemList();

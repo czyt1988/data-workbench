@@ -1,4 +1,4 @@
-﻿#include "DAAppDockingArea.h"
+#include "DAAppDockingArea.h"
 #include <QApplication>
 #include <QScreen>
 #include <QLabel>
@@ -25,11 +25,11 @@
 // message相关
 #include "DAMessageLogViewWidget.h"
 // workflow相关
-#include "DAAbstractNodeGraphicsItem.h"
-#include "DAWorkFlowNodeListWidget.h"
-#include "DAWorkFlowEditWidget.h"
+#include "DAPyNodeGraphicsItem.h"
+#include "DAPyWorkFlowNodeListWidget.h"
+#include "DAPyWorkFlowEditWidget.h"
 #include "DASettingContainerWidget.h"
-#include "DAWorkFlowNodeItemSettingWidget.h"
+#include "DAPyWorkFlowNodeItemSettingWidget.h"
 #include "DAAppWorkFlowOperateWidget.h"
 
 //===================================================
@@ -74,7 +74,7 @@ void DAAppDockingArea::resetText()
  * @brief 获取工作流操作窗口
  * @return
  */
-DAWorkFlowNodeListWidget* DAAppDockingArea::getWorkflowNodeListWidget() const
+DAPyWorkFlowNodeListWidget* DAAppDockingArea::getWorkflowNodeListWidget() const
 {
     return mWorkflowNodeListWidget;
 }
@@ -83,7 +83,7 @@ DAWorkFlowNodeListWidget* DAAppDockingArea::getWorkflowNodeListWidget() const
  * @brief 获取工作流操作窗口
  * @return
  */
-DAWorkFlowOperateWidget* DAAppDockingArea::getWorkFlowOperateWidget() const
+DAPyWorkFlowOperateWidget* DAAppDockingArea::getWorkFlowOperateWidget() const
 {
     return mWorkFlowOperateWidget;
 }
@@ -244,7 +244,7 @@ void DAAppDockingArea::buildWorkflowAboutWidgets()
 {
     mWorkFlowOperateWidget = new DAAppWorkFlowOperateWidget(mApp);
     mWorkFlowOperateWidget->setObjectName(QStringLiteral("da_workFlowOperateWidget"));
-    mWorkflowNodeListWidget = new DAWorkFlowNodeListWidget(mApp);
+    mWorkflowNodeListWidget = new DAPyWorkFlowNodeListWidget(mApp);
     mWorkflowNodeListWidget->setObjectName(QStringLiteral("da_workflowNodeListWidget"));
     // 把工作流操作窗口设置到工程中
     DAAppProject* project = DA_APP_CORE.getAppProject();

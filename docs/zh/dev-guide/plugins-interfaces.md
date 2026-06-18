@@ -108,19 +108,19 @@ class DAPLUGINSUPPORT_API DAAbstractNodePlugin : public DAAbstractPlugin
 {
 public:
     // 创建节点工厂（纯虚函数，必须实现）
-    virtual DAAbstractNodeFactory* createNodeFactory() = 0;
+    virtual DAPyNodeFactory* createNodeFactory() = 0;
     
     // 销毁节点工厂
-    virtual void destoryNodeFactory(DAAbstractNodeFactory* p) = 0;
+    virtual void destroyNodeFactory(DAPyNodeFactory* p) = 0;
     
     // 节点加载完成回调
     virtual void afterLoadedNodes();
     
     // 获取当前激活的工作流编辑窗口
-    DAWorkFlowOperateWidget* getCurrentActiveWorkflowOperateWidget() const;
+    DAPyWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
     
     // 获取当前激活的工作流
-    DAWorkFlow* getCurrentActiveWorkFlow() const;
+    DAPyWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
 };
 ```
 
@@ -128,10 +128,10 @@ public:
 
 | 方法 | 说明 | 返回值 |
 |------|------|--------|
-| `createNodeFactory()` | 创建节点工厂实例 | `DAAbstractNodeFactory*` |
-| `destoryNodeFactory()` | 销毁节点工厂（遵循谁创建谁删除原则） | `void` |
+| `createNodeFactory()` | 创建节点工厂实例 | `DAPyNodeFactory*` |
+| `destroyNodeFactory()` | 销毁节点工厂（遵循谁创建谁删除原则） | `void` |
 | `afterLoadedNodes()` | 节点加载完成后的回调，可用于节点排序等操作 | `void` |
-| `getCurrentActiveWorkFlow()` | 获取当前激活的工作流对象 | `DAWorkFlow*` |
+| `getWorkFlowOperateWidget()` | 获取工作流操作窗口 | `DAPyWorkFlowOperateWidget*` |
 
 ### 类继承关系
 
@@ -159,10 +159,10 @@ classDiagram
     
     class DAAbstractNodePlugin {
         <<节点插件基类>>
-        +createNodeFactory() DAAbstractNodeFactory*
-        +destoryNodeFactory(DAAbstractNodeFactory*)
+        +createNodeFactory() DAPyNodeFactory*
+        +destroyNodeFactory(DAPyNodeFactory*)
         +afterLoadedNodes() void
-        +getCurrentActiveWorkFlow() DAWorkFlow*
+        +getWorkFlowOperateWidget() DAPyWorkFlowOperateWidget*
     }
     
     class DataAnalysisPlugin {
@@ -327,7 +327,7 @@ bool MyPlugin::initialize()
 |------|------|------|
 | `DAAbstractPlugin` | 插件基类 | 所有插件的抽象基类 |
 | `DAAbstractNodePlugin` | 节点插件基类 | 工作流节点插件的基类 |
-| `DAAbstractNodeFactory` | 节点工厂基类 | 负责创建节点实例 |
+| `DAPyNodeFactory` | 节点工厂代理 | 负责创建节点实例 |
 | `DAPluginManager` | 插件管理器 | 单例，负责插件扫描、加载、生命周期管理 |
 | `DAPluginOption` | 插件选项 | 封装插件元数据和加载状态 |
 
@@ -395,8 +395,8 @@ public:
     virtual QString getVersion() const override;
     virtual QString getDescription() const override;
     virtual bool initialize() override;
-    virtual DA::DAAbstractNodeFactory* createNodeFactory() override;
-    virtual void destoryNodeFactory(DA::DAAbstractNodeFactory* p) override;
+    virtual DA::DAPyNodeFactory* createNodeFactory() override;
+    virtual void destroyNodeFactory(DA::DAPyNodeFactory* p) override;
 };
 ```
 
@@ -453,7 +453,7 @@ target_link_libraries(MyPlugin
     ```
 
 !!! tip "谁创建谁删除"
-    `createNodeFactory()` 创建的工厂对象由插件管理，需要在 `destoryNodeFactory()` 中正确释放，遵循"谁创建谁删除"原则。
+    `createNodeFactory()` 创建的工厂对象由插件管理，需要在 `destroyNodeFactory()` 中正确释放，遵循"谁创建谁删除"原则。
 
 !!! note "Qt版本兼容性"
     插件系统在 Qt5 和 Qt6 中使用方式相同，但编译后的插件不兼容，需要针对不同 Qt 版本分别编译。

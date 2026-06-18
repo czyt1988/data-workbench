@@ -11,32 +11,21 @@ DAAbstractCacheWindowTableModel::~DAAbstractCacheWindowTableModel()
 
 void DAAbstractCacheWindowTableModel::setCacheWindowStartRow(int startRow)
 {
-    const int oldStart  = mWindowStartRow;
-    const int cacheSize = getCacheWindowSize();
-    mWindowStartRow     = startRow;
-    if (startRow != oldStart) {
-        DAAbstractCacheWindowTableModel::setCacheWindowStartRow(startRow);
+    const int oldStart = mWindowStartRow;
+    if (startRow == oldStart) {
+        return;
+    }
+    mWindowStartRow = startRow;
 
-        // 计算需要刷新的区域
-        const int overlapStart = qMax(oldStart, startRow);
-        const int overlapEnd   = qMin(oldStart + cacheSize, startRow + cacheSize);
-
-        if (overlapStart >= overlapEnd) {
-            // 完全无重叠，全量刷新
-            Q_EMIT dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1));
-            Q_EMIT headerDataChanged(Qt::Vertical, 0, rowCount() - 1);
-        } else {
-            // 部分刷新
-            if (oldStart < startRow) {
-                Q_EMIT dataChanged(index(0, 0), index(startRow - oldStart - 1, columnCount() - 1));
-                Q_EMIT headerDataChanged(Qt::Vertical, startRow - oldStart - 1, rowCount() - 1);
-            }
-            if (oldStart + cacheSize > startRow + cacheSize) {
-                const int diff = oldStart + cacheSize - (startRow + cacheSize);
-                Q_EMIT dataChanged(index(rowCount() - diff, 0), index(rowCount() - 1, columnCount() - 1));
-                Q_EMIT headerDataChanged(Qt::Vertical, rowCount() - diff, rowCount() - 1);
-            }
-        }
+    // 窗口滑动后，所有可视行的数据映射都发生了变化
+    // （visual row i 从 oldStart+i 变为 startRow+i），
+    // 需要对整个可视窗口发射 dataChanged 和 headerDataChanged。
+    // Qt 只会重绘 viewport 中实际可见的区域，所以发射大范围信号不会造成额外开销。
+    const int rows = rowCount();
+    const int cols = columnCount();
+    if (rows > 0 && cols > 0) {
+        Q_EMIT dataChanged(index(0, 0), index(rows - 1, cols - 1));
+        Q_EMIT headerDataChanged(Qt::Vertical, 0, rows - 1);
     }
 }
 

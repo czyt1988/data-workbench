@@ -6,7 +6,6 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <QTimer>
-#include <QTimer>
 #include <QApplication>
 namespace DA
 {

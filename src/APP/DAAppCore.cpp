@@ -1,4 +1,4 @@
-﻿#include "DAAppCore.h"
+#include "DAAppCore.h"
 #include <QFileInfo>
 #include <QApplication>
 #include <QDebug>
@@ -11,13 +11,6 @@
 #include "DACommandInterface.h"
 #include "DAAppProject.h"
 #include "DAAppCommand.h"
-#if DA_ENABLE_PYTHON
-// DA Python
-#else
-#include <QProcess>
-#include <QList>
-#include <QFileInfo>
-#endif
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================

@@ -3,8 +3,14 @@
 # find_package(x_packagename)
 # target_link_libraries(__target_name x_namespace::x_libname)
 #
+# 查找顺序：
+# 1. find_package(x_packagename CONFIG QUIET) —— 依赖 CMAKE_PREFIX_PATH 指向第三方库安装目录
+# 2. 在 DA_INSTALL_LIB_CMAKE_PATH 下 glob 匹配 ${x_packagename}* 目录,找到后
+#    find_package(CONFIG PATHS ... NO_DEFAULT_PATH REQUIRED) 限定在该目录内查找
+# 3. 任一步骤失败则 FATAL_ERROR,输出尝试过的路径
+#
 macro(damacro_import_xxx x_packagename x_namespace x_libname __target_name)
-    find_package(${x_packagename})
+    find_package(${x_packagename} CONFIG QUIET)
     if(${x_packagename}_FOUND)
         message(STATUS "  |-finded ${x_packagename}")
     else()
@@ -21,20 +27,18 @@ macro(damacro_import_xxx x_packagename x_namespace x_libname __target_name)
             #若存在多个版本，可以通过排序选择最新路径：
             list(SORT _lib_candidate_dirs)
             list(REVERSE _lib_candidate_dirs)  # 按字母逆序排列（假设版本号递增）
-            list(GET _lib_candidate_dirs 0 _lib_candidate_dirs)  # 取第一个（最新）
-            message(STATUS "  |-try to find in ${_lib_candidate_dirs}")
-            find_package(${x_packagename} PATHS ${_lib_candidate_dirs})
+            list(GET _lib_candidate_dirs 0 _lib_candidate_dir)  # 取第一个（最新）
+            message(STATUS "  |-try to find in ${_lib_candidate_dir}")
+            find_package(${x_packagename} CONFIG PATHS ${_lib_candidate_dir} NO_DEFAULT_PATH REQUIRED)
+        else()
+            message(FATAL_ERROR "  can not find ${x_packagename}, and DA_INSTALL_LIB_CMAKE_PATH is not defined")
         endif()
     endif()
     # 链接的第三方库
-    if(${x_packagename}_FOUND)
-        target_link_libraries(${__target_name} PRIVATE
-            ${x_namespace}::${x_libname}
-        )
-        message(STATUS "  |-link ${x_namespace}::${x_libname}")
-    else()
-        message(FATAL_ERROR "  can not find ${x_libname}")
-    endif()
+    target_link_libraries(${__target_name} PRIVATE
+        ${x_namespace}::${x_libname}
+    )
+    message(STATUS "  |-link ${x_namespace}::${x_libname}")
 endmacro(damacro_import_xxx)
 
 #
@@ -114,9 +118,20 @@ macro(damacro_import_DALiteCtk __target_name)
     damacro_import_x(DALiteCtk ${__target_name})
 endmacro(damacro_import_DALiteCtk)
 
+# ADS 4.x 起,上游将包名从 qt6advanceddocking 重命名为 qtadvanceddocking-qt6
+# 此宏先尝试新名,失败再回退到旧名(通过 damacro_import_xx 的 glob fallback)
 macro(damacro_import_QtAdvancedDocking __target_name)
-    set(_lib_name qt${QT_VERSION_MAJOR}advanceddocking)
-    damacro_import_xx(ads ${_lib_name} ${__target_name})
+    set(_ads_new_name qtadvanceddocking-qt${QT_VERSION_MAJOR})
+    set(_ads_old_name qt${QT_VERSION_MAJOR}advanceddocking)
+    find_package(${_ads_new_name} CONFIG QUIET)
+    if(${_ads_new_name}_FOUND)
+        message(STATUS "  |-finded ${_ads_new_name}")
+        target_link_libraries(${__target_name} PRIVATE ads::${_ads_new_name})
+        message(STATUS "  |-link ads::${_ads_new_name}")
+    else()
+        message(STATUS "  |-can not find ${_ads_new_name}, fallback to ${_ads_old_name}")
+        damacro_import_xx(ads ${_ads_old_name} ${__target_name})
+    endif()
 endmacro(damacro_import_QtAdvancedDocking)
 
 macro(damacro_import_qwt __target_name)

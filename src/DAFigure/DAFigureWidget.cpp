@@ -45,7 +45,6 @@
 #include "qwt_plot_series_data_picker.h"
 #include "qwt_plot_series_data_picker_group.h"
 
-
 #ifndef DAFigureWidget_DEBUG_PRINT
 #define DAFigureWidget_DEBUG_PRINT 1
 #endif
@@ -81,9 +80,8 @@ public:
         q_ptr->setWindowTitle(QApplication::translate("DAFigureWidget", "Figure", 0));
     }
 
-    std::shared_ptr< DAChartAxisRangeBinder > findAxisRangeBinder(
-        QwtPlot* source, QwtAxisId sourceAxisid, QwtPlot* follower, QwtAxisId followerAxisid
-    )
+    std::shared_ptr< DAChartAxisRangeBinder >
+    findAxisRangeBinder(QwtPlot* source, QwtAxisId sourceAxisid, QwtPlot* follower, QwtAxisId followerAxisid)
     {
         for (const auto& b : std::as_const(m_axisRangeBinders)) {
             if (b->isSame(source, sourceAxisid, follower, followerAxisid)) {
@@ -106,7 +104,7 @@ public:
 
         DAAbstractChartEditor* create(QwtPlot* plot)
         {
-            return createImpl(plot, std::index_sequence_for< Args... > {});
+            return createImpl(plot, std::index_sequence_for< Args... > { });
         }
 
     private:
@@ -116,9 +114,8 @@ public:
             EditorType* editor = new EditorType(plot, std::get< I >(std::move(args))...);
 
             // 信号连接 - 使用 fig 而不是 this
-            DAFigureWidget::connect(editor, &EditorType::beginEdit, fig, [ fig = this->fig ]() {
-                fig->emitChartEditorBeginEdit();
-            });
+            DAFigureWidget::connect(
+                editor, &EditorType::beginEdit, fig, [ fig = this->fig ]() { fig->emitChartEditorBeginEdit(); });
 
             DAFigureWidget::connect(editor, &EditorType::finishedEdit, fig, [ fig = this->fig, editor, plot ](bool isCancel) {
                 if (isCancel)
@@ -130,8 +127,7 @@ public:
                 } else {
                     qCritical() << QObject::tr(
                         "Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
-                        "type was added to the figure"
-                    );
+                        "type was added to the figure");
                     item->detach();
                     delete item;
                 }
@@ -141,7 +137,6 @@ public:
             return editor;
         }
     };
-
 
     /**
      * @brief 开始选择编辑器
@@ -165,14 +160,11 @@ public:
         figEditor->show();
 
         DAFigureWidget::connect(
-            figEditor, &DAFigureChartEditorWidgetOverlay::finished, q_ptr, &DAFigureWidget::onFigureChartEditorFinished
-        );
+            figEditor, &DAFigureChartEditorWidgetOverlay::finished, q_ptr, &DAFigureWidget::onFigureChartEditorFinished);
         DAFigureWidget::connect(
-            figEditor, &DAFigureWidgetOverlay::activeWidgetChanged, q_ptr, &DAFigureWidget::onOverlayActiveWidgetChanged
-        );
+            figEditor, &DAFigureWidgetOverlay::activeWidgetChanged, q_ptr, &DAFigureWidget::onOverlayActiveWidgetChanged);
         return figEditor;
     }
-
 
     void beginSubChartEditor();
     void beginRectSelectEditor();
@@ -194,11 +186,9 @@ void DAFigureWidget::PrivateData::beginSubChartEditor()
     m_chartEditor->raise();
     fig->emitChartEditorBeginEdit();
     DAFigureWidget::connect(
-        m_chartEditor, &DAFigureWidgetOverlay::widgetNormGeometryChanged, fig, &DAFigureWidget::onWidgetGeometryChanged
-    );
+        m_chartEditor, &DAFigureWidgetOverlay::widgetNormGeometryChanged, fig, &DAFigureWidget::onWidgetGeometryChanged);
     DAFigureWidget::connect(
-        m_chartEditor, &DAFigureWidgetOverlay::activeWidgetChanged, fig, &DAFigureWidget::onOverlayActiveWidgetChanged
-    );
+        m_chartEditor, &DAFigureWidgetOverlay::activeWidgetChanged, fig, &DAFigureWidget::onOverlayActiveWidgetChanged);
 }
 
 void DAFigureWidget::PrivateData::beginRectSelectEditor()
@@ -304,7 +294,6 @@ void DAFigureWidget::setupDataPickerGroup()
     DA_D(d);
     if (!d->m_pickerGroup) {
         d->m_pickerGroup = new QwtPlotSeriesDataPickerGroup(this);
-        connect(d->m_pickerGroup,&QwtPlotSeriesDataPickerGroup::clicked,this,&DAFigureWidget::onPickerGroupClicked);
     }
     // 把所有绘图的picker添加到分组中
     //  QwtPlotSeriesDataPickerGroup会自动过滤重复添加的picker
@@ -870,7 +859,6 @@ void DAFigureWidget::endChartEditor()
     }
 }
 
-
 QRectF DAFigureWidget::axesNormRect(QwtPlot* plot) const
 {
     return figure()->axesNormRect(plot);
@@ -886,9 +874,7 @@ void DAFigureWidget::addWidget(QWidget* widget, qreal left, qreal top, qreal wid
     figure()->addWidget(widget, left, top, width, height);
 }
 
-void DAFigureWidget::addWidget(
-    QWidget* widget, int rowCnt, int colCnt, int row, int col, int rowSpan, int colSpan, qreal wspace, qreal hspace
-)
+void DAFigureWidget::addWidget(QWidget* widget, int rowCnt, int colCnt, int row, int col, int rowSpan, int colSpan, qreal wspace, qreal hspace)
 {
     figure()->addWidget(widget, rowCnt, colCnt, row, col, rowSpan, colSpan, wspace, hspace);
 }
@@ -1006,9 +992,9 @@ QwtPlotBarChart* DAFigureWidget::addBar_(const QVector< QPointF >& xyDatas)
  * @param xyDatas
  * @return 如果添加失败，返回一个nullptr
  */
-QwtPlotIntervalCurve* DAFigureWidget::addErrorBar_(
-    const QVector< double >& values, const QVector< double >& mins, const QVector< double >& maxs
-)
+QwtPlotIntervalCurve* DAFigureWidget::addErrorBar_(const QVector< double >& values,
+                                                   const QVector< double >& mins,
+                                                   const QVector< double >& maxs)
 {
     if (DAChartWidget* chart = gca()) {
         QwtPlotIntervalCurve* item = chart->addIntervalCurve(values, mins, maxs);
@@ -1174,21 +1160,6 @@ void DAFigureWidget::onFigureChartEditorFinished(bool isCancel)
     endChartEditor();
 }
 
-/**
- * @brief 捕获picker group的点击
- * @param picker
- * @param pos
- */
-void DAFigureWidget::onPickerGroupClicked(QwtPlotSeriesDataPicker* picker, const QPoint& pos)
-{
-    //获取所有的pick一起发射
-    DA_D(d);
-    QList<QwtPlotSeriesDataPicker*> otherPickers = d->m_pickerGroup->pickers();
-    otherPickers.removeAll(picker);
-    //再发射
-    Q_EMIT pickerClicked(picker,pos,otherPickers);
-}
-
 QDataStream& operator<<(QDataStream& out, const DAFigureWidget* p)
 {
     const uint32_t magicStart = 0x1314abc;
@@ -1288,7 +1259,7 @@ QString DAFigureWidget::generateProbeName()
  */
 bool DAFigureWidget::isProbeNameExists(const QString& name) const
 {
-    QList< DADataProbeMarker* > probes = getProbes();
+    const QList< DADataProbeMarker* > probes = getProbes();
     for (const DADataProbeMarker* probe : probes) {
         if (probe->probeName() == name) {
             return true;
@@ -1319,7 +1290,7 @@ DADataProbeMarker* DAFigureWidget::createVerticalProbe(double xValue, const QStr
         return nullptr;
     }
 
-    QString probeName = name.isEmpty() ? generateProbeName() : name;
+    QString probeName        = name.isEmpty() ? generateProbeName() : name;
     DADataProbeMarker* probe = new DADataProbeMarker(DADataProbeMarker::VerticalProbe, probeName);
     probe->setXValue(xValue);
     probe->attach(chart);
@@ -1351,7 +1322,7 @@ DADataProbeMarker* DAFigureWidget::createHorizontalProbe(double yValue, const QS
         return nullptr;
     }
 
-    QString probeName = name.isEmpty() ? generateProbeName() : name;
+    QString probeName        = name.isEmpty() ? generateProbeName() : name;
     DADataProbeMarker* probe = new DADataProbeMarker(DADataProbeMarker::HorizontalProbe, probeName);
     probe->setYValue(yValue);
     probe->attach(chart);
@@ -1372,7 +1343,7 @@ DADataProbeMarker* DAFigureWidget::createHorizontalProbe(double yValue, const QS
  */
 void DAFigureWidget::removeAllProbes()
 {
-    QList< DAChartWidget* > charts = getCharts();
+    const QList< DAChartWidget* > charts = getCharts();
     for (DAChartWidget* chart : charts) {
         const QwtPlotItemList& items = chart->itemList();
         QList< QwtPlotItem* > probesToRemove;
@@ -1406,7 +1377,7 @@ void DAFigureWidget::removeAllProbes()
 QList< DADataProbeMarker* > DAFigureWidget::getProbes() const
 {
     QList< DADataProbeMarker* > probes;
-    QList< DAChartWidget* > charts = getCharts();
+    const QList< DAChartWidget* > charts = getCharts();
     for (DAChartWidget* chart : charts) {
         const QwtPlotItemList& items = chart->itemList();
         for (QwtPlotItem* item : items) {

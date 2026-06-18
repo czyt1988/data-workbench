@@ -1,8 +1,7 @@
 # Webkit style was loosely based on the Qt style
 BasedOnStyle: WebKit
 
-Standard: Cpp11
-
+Standard: Cpp11       
 
 IndentWidth : 4
 TabWidth : 4
@@ -55,24 +54,23 @@ NamespaceIndentation: None
 # Horizontally align arguments after an open bracket.
 # The coding style does not specify the following, but this is what gives
 # results closest to the existing code.
+AlignAfterOpenBracket: true
 AlwaysBreakTemplateDeclarations: true
 
 # Ideally we should also allow less short function in a single line, but
 # clang-format does not handle that.
 AllowShortFunctionsOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: false
-AllowShortLoopsOnASingleLine: false
-AllowShortBlocksOnASingleLine: false
 #
-AlignAfterOpenBracket: BlockIndent
 BinPackParameters: false
 BinPackArguments: false
-AllowAllParametersOfDeclarationOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: false
 AlwaysBreakAfterReturnType: None
+
 #
-PenaltyReturnTypeOnItsOwnLine: 200
-PenaltyBreakAssignment: 1
-PenaltyBreakBeforeFirstCallParameter: 100
+PenaltyReturnTypeOnItsOwnLine: 60
+PenaltyBreakAssignment: 20
+PenaltyBreakBeforeFirstCallParameter: 19
 PenaltyBreakString: 1000
 
 # The coding style specifies some include order categories, but also tells to
@@ -98,4 +96,3 @@ SpacesInSquareBrackets: true
 SpacesInAngles: true
 
 KeepEmptyLinesAtTheStartOfBlocks: true
-MaxEmptyLinesToKeep: 2

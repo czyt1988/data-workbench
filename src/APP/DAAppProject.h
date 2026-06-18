@@ -1,12 +1,13 @@
-﻿#ifndef DAAPPPROJECT_H
+#ifndef DAAPPPROJECT_H
 #define DAAPPPROJECT_H
 #include <QObject>
 #include <QDomElement>
 #include <QDomDocument>
+#include <QMap>
 #include <QTemporaryDir>
 #include "DAProjectInterface.h"
 #include "DAGlobals.h"
-#include "DAAbstractNodeLinkGraphicsItem.h"
+#include "DAPyLinkGraphicsItem.h"
 #include <QThread>
 #include "DAXmlHelper.h"
 #include "DAZipArchiveThreadWrapper.h"
@@ -16,8 +17,9 @@ namespace DA
 {
 class DAAbstractArchiveTask;
 class DAZipArchiveThreadWrapper;
-class DAWorkFlowOperateWidget;
-class DAWorkFlowGraphicsScene;
+class DAPyWorkFlowOperateWidget;
+class DAPyWorkFlowEditWidget;
+class DAPyWorkFlowGraphicsScene;
 class DADataOperateWidget;
 class DAChartOperateWidget;
 class DAAppPluginManager;
@@ -34,7 +36,7 @@ public:
 	DAAppProject(DACoreInterface* c, QObject* p = nullptr);
 	~DAAppProject();
 	// 工作流操作窗口
-	DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
+	DAPyWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
 	// 数据操作窗口
 	DADataOperateWidget* getDataOperateWidget() const;
 	// 绘图窗口
@@ -42,6 +44,8 @@ public:
 	// 追加一个工厂的工作流进入本工程中，注意这个操作不会清空当前的工作流
 	bool appendWorkflowInProject(const QDomDocument& doc, bool skipIndex = false);
 	bool appendWorkflowInProject(const QByteArray& data, bool skipIndex = false);
+	// 加载工作流视图数据（Python数据已就绪，仅创建图形项）
+	void appendWorkflowView(const QDomDocument& doc);
 	// 把绘图信息添加到工程
 	bool appendChartsInProject(const QDomDocument& doc, DAChartItemsManager* chartmanager);
 	// 繁忙状态判断
@@ -65,6 +69,8 @@ public Q_SLOTS:
 protected:
 	// 保存系统信息
 	void makeSaveSystemInfoTask(DAZipArchiveThreadWrapper* archive);
+	// 保存Python工作流逻辑数据的任务（节点拓扑+参数值+连接关系）
+	void makeSaveWorkflowDataTask(DAZipArchiveThreadWrapper* archive);
 	// 保存工作流的任务
 	void makeSaveWorkFlowTask(DAZipArchiveThreadWrapper* archive);
 	// 保存数据的任务
@@ -88,7 +94,13 @@ private Q_SLOTS:
 	void onLoadFinish(bool success);
 
 private:
+    bool executeSave(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started = nullptr);
+    bool executeLoad(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started = nullptr);
+    bool createProjectSnapshot(QString* snapshotPath);
+    bool restoreProjectSnapshot(const QString& snapshotPath, const QString& projectFilePath, bool isDirty);
 	void loadedWorkflowInfo(const std::shared_ptr< DAAbstractArchiveTask >& t);
+	// Python工作流逻辑数据加载回调
+	void loadedWorkflowData(const std::shared_ptr< DAAbstractArchiveTask >& t);
 	void loadedDataManager(const std::shared_ptr< DAAbstractArchiveTask >& t);
 	void loadedChartsInfo(const std::shared_ptr< DAAbstractArchiveTask >& t);
 	void setStatusBarInBusy(const QString& info = QString());

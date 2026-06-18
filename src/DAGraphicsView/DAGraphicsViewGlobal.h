@@ -1,4 +1,4 @@
-﻿#ifndef DAGRAPHICSVIEWGLOBAL_H
+#ifndef DAGRAPHICSVIEWGLOBAL_H
 #define DAGRAPHICSVIEWGLOBAL_H
 #include <QtCore/QtGlobal>
 #include "DAGlobals.h"
@@ -29,38 +29,38 @@ namespace DA
 /**
  * @brief 方向
  */
-enum class AspectDirection
+enum class DAAspectDirection
 {
-	East,
-	South,
-	West,
-	North
+    East,
+    South,
+    West,
+    North
 };
-DAGRAPHICSVIEW_API uint qHash(const DA::AspectDirection& key, uint seed = 0) noexcept;
+DAGRAPHICSVIEW_API uint qHash(const DA::DAAspectDirection& key, uint seed = 0) noexcept;
 
 /**
  * @brief 定义了Graphics相关的command id，用于标记相同的redo/undo
  */
 enum DAGraphicsCommandIDType
 {
-	CmdID_GraphicsBegin    = 0x100,                     ///< Graphics相关的command id的起始
-	CmdID_ItemAdd          = CmdID_GraphicsBegin + 1,   ///< item移动
-	CmdID_ItemRemove       = CmdID_GraphicsBegin + 2,   ///< item移动
-	CmdID_ItemMove         = CmdID_GraphicsBegin + 3,   ///< item移动
-	CmdID_ItemsMove        = CmdID_GraphicsBegin + 5,   ///< 多个item移动
-	CmdID_ItemResize       = CmdID_GraphicsBegin + 7,   ///< item resize
-	CmdID_ItemResizeWidth  = CmdID_GraphicsBegin + 8,   ///< item resize width
-	CmdID_ItemResizeHeight = CmdID_GraphicsBegin + 9,   ///< item resize height
-	CmdID_ItemRotation     = CmdID_GraphicsBegin + 10,  ///< item rotation
-	CmdID_ItemsAdd         = CmdID_GraphicsBegin + 11,  ///< items添加
-	CmdID_ItemsRemove      = CmdID_GraphicsBegin + 12,  ///< items删除
-	// group
-	CmdID_ItemGrouping   = CmdID_GraphicsBegin + 50,  ///< item Grouping
-	CmdID_ItemUnGrouping = CmdID_GraphicsBegin + 51,  ///< item Grouping
-	// text item
-	CmdID_ItemTextDocumentWrapper    = CmdID_GraphicsBegin + 100,  ///< Text Document Wrapper
-	CmdID_ItemTextHtmlContentChanged = CmdID_GraphicsBegin + 101,  ///< Text Document Wrapper
-	CmdID_GraphicsEnd                = 0x200                       ///< Graphics相关的command id的结束
+    CmdID_GraphicsBegin    = 0x100,                     ///< Graphics相关的command id的起始
+    CmdID_ItemAdd          = CmdID_GraphicsBegin + 1,   ///< item移动
+    CmdID_ItemRemove       = CmdID_GraphicsBegin + 2,   ///< item移动
+    CmdID_ItemMove         = CmdID_GraphicsBegin + 3,   ///< item移动
+    CmdID_ItemsMove        = CmdID_GraphicsBegin + 5,   ///< 多个item移动
+    CmdID_ItemResize       = CmdID_GraphicsBegin + 7,   ///< item resize
+    CmdID_ItemResizeWidth  = CmdID_GraphicsBegin + 8,   ///< item resize width
+    CmdID_ItemResizeHeight = CmdID_GraphicsBegin + 9,   ///< item resize height
+    CmdID_ItemRotation     = CmdID_GraphicsBegin + 10,  ///< item rotation
+    CmdID_ItemsAdd         = CmdID_GraphicsBegin + 11,  ///< items添加
+    CmdID_ItemsRemove      = CmdID_GraphicsBegin + 12,  ///< items删除
+    // group
+    CmdID_ItemGrouping   = CmdID_GraphicsBegin + 50,  ///< item Grouping
+    CmdID_ItemUnGrouping = CmdID_GraphicsBegin + 51,  ///< item Grouping
+    // text item
+    CmdID_ItemTextDocumentWrapper    = CmdID_GraphicsBegin + 100,  ///< Text Document Wrapper
+    CmdID_ItemTextHtmlContentChanged = CmdID_GraphicsBegin + 101,  ///< Text Document Wrapper
+    CmdID_GraphicsEnd                = 0x200                       ///< Graphics相关的command id的结束
 };
 
 /**
@@ -70,27 +70,30 @@ enum DAGraphicsCommandIDType
  */
 enum DAGraphicsItemType
 {
-	ItemType_GraphicsItem_Begin   = QGraphicsItem::UserType + 10,     ///< 针对DAGraphicsResizeableItem的类型开始
-	ItemType_DAGraphicsItem_Begin = ItemType_GraphicsItem_Begin + 1,  ///< DAGraphicsItem Type的开始范围
-	ItemType_DAGraphicsItem       = ItemType_DAGraphicsItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
-	ItemType_DAGraphicsStandardTextItem = ItemType_DAGraphicsItem_Begin + 1,  ///< 标准文本
-	ItemType_DAGraphicsLabelItem        = ItemType_DAGraphicsItem_Begin + 2,  ///< 标准label
-	ItemType_DAGraphicsItemGroup        = ItemType_DAGraphicsItem_Begin + 3,  ///< 针对DAGraphicsItemGroup的类型
-	ItemType_DAGraphicsMarkItem         = ItemType_DAGraphicsItem_Begin + 4,  ///< 针对DAGraphicsMarkItem的类型
-	//====ResizeableItem======
-	ItemType_DAGraphicsResizeableItem_Begin = ItemType_DAGraphicsItem_Begin + 900,
-	ItemType_DAGraphicsResizeableItem = ItemType_DAGraphicsResizeableItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
-	ItemType_DAGraphicsRectItem = ItemType_DAGraphicsResizeableItem_Begin + 10,  ///< 针对DAGraphicsRectItem的类型
-	ItemType_DAGraphicsTextItem = ItemType_DAGraphicsResizeableItem_Begin + 12,  ///< 针对DAGraphicsTextItem的类型
-	ItemType_DAGraphicsPixmapItem = ItemType_DAGraphicsResizeableItem_Begin + 14,  ///< 针对DAGraphicsPixmapItem的类型
-	ItemType_DAGraphicsResizeableItem_End = ItemType_DAGraphicsResizeableItem_Begin + 1000,
+    ItemType_GraphicsItem_Begin         = QGraphicsItem::UserType + 10,     ///< 针对DAGraphicsResizeableItem的类型开始
+    ItemType_DAGraphicsItem_Begin       = ItemType_GraphicsItem_Begin + 1,  ///< DAGraphicsItem Type的开始范围
+    ItemType_DAGraphicsItem             = ItemType_DAGraphicsItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
+    ItemType_DAGraphicsStandardTextItem = ItemType_DAGraphicsItem_Begin + 1,  ///< 标准文本
+    ItemType_DAGraphicsLabelItem        = ItemType_DAGraphicsItem_Begin + 2,  ///< 标准label
+    ItemType_DAGraphicsItemGroup        = ItemType_DAGraphicsItem_Begin + 3,  ///< 针对DAGraphicsItemGroup的类型
+    ItemType_DAGraphicsMarkItem         = ItemType_DAGraphicsItem_Begin + 4,  ///< 针对DAGraphicsMarkItem的类型
+    //====ResizeableItem======
+    ItemType_DAGraphicsResizeableItem_Begin = ItemType_DAGraphicsItem_Begin + 900,
+    ItemType_DAGraphicsResizeableItem = ItemType_DAGraphicsResizeableItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
+    ItemType_DAGraphicsRectItem   = ItemType_DAGraphicsResizeableItem_Begin + 10,  ///< 针对DAGraphicsRectItem的类型
+    ItemType_DAGraphicsTextItem   = ItemType_DAGraphicsResizeableItem_Begin + 12,  ///< 针对DAGraphicsTextItem的类型
+    ItemType_DAGraphicsPixmapItem = ItemType_DAGraphicsResizeableItem_Begin + 14,  ///< 针对DAGraphicsPixmapItem的类型
+    ItemType_DAGraphicsResizeableItem_End = ItemType_DAGraphicsResizeableItem_Begin + 1000,
 
-	//====LinkItem======
-	ItemType_DAGraphicsLinkItem_Begin = ItemType_DAGraphicsResizeableItem_End + 1,  ///<  针对DAGraphicsLinkItem的开始
-	ItemType_DAGraphicsLinkItem     = ItemType_DAGraphicsLinkItem_Begin + 1,    ///< 针对DAGraphicsLinkItem的类型
-	ItemType_DAGraphicsLinkItem_End = ItemType_DAGraphicsLinkItem_Begin + 500,  ///< DAGraphicsLinkItem的结束范围
+    //====LinkItem======
+    ItemType_DAGraphicsLinkItem_Begin = ItemType_DAGraphicsResizeableItem_End + 1,  ///<  针对DAGraphicsLinkItem的开始
+    ItemType_DAGraphicsLinkItem       = ItemType_DAGraphicsLinkItem_Begin + 1,      ///< 针对DAGraphicsLinkItem的类型
+    ItemType_DAGraphicsLinkItem_End   = ItemType_DAGraphicsLinkItem_Begin + 500,    ///< DAGraphicsLinkItem的结束范围
 
-	ItemType_DAGraphicsItem_End = ItemType_DAGraphicsLinkItem_End + 1
+    //====NodeItem====== (原 DAWorkFlow 模块迁移，用于 DAPyWorkFlow 的节点图形项类型)
+    ItemType_GraphicsNodeUserType = ItemType_DAGraphicsLinkItem_End + 1,  ///< Python工作流节点图形项的类型起始值
+
+    ItemType_DAGraphicsItem_End = ItemType_DAGraphicsLinkItem_End + 100
 };
 
 }

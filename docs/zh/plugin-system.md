@@ -10,7 +10,7 @@ DAWorkBench 采用**插件化架构**作为核心设计理念，这一设计将�
 - ✅ **架构设计思想**：松耦合、可扩展、热插拔、标准化四大设计原则
 - ✅ **模块依赖关系**：主程序层、接口层、插件层的清晰分层架构
 - ✅ **插件目录规范**：标准插件结构详解、命名规则与约定
-- ✅ **插件基类定义**：DAAbstractPlugin、DAAbstractNodePlugin、DAAbstractNodeFactory
+- ✅ **插件基类定义**：DAAbstractPlugin、DAAbstractNodePlugin、DAPyNodeFactory
 - ✅ **类继承关系**：插件类型分类和选择指南
 - ✅ **接口契约**：DACoreInterface 核心接口、UI 接口层次
 - ✅ **插件注册机制**：Qt 插件声明、自动发现流程、DAPluginManager 单例
@@ -84,7 +84,7 @@ graph TB
 - **DAGui**：用户界面模块，包含Ribbon工具栏、Dock窗口、图表视图等UI组件。
 
 #### 2. 接口层
-- **DAInterface**：接口定义模块，包含 `DACoreInterface`、`DAAppUIInterface`、`DADataManagerInterface` 等抽象接口。这些接口定义了插件与主程序交互的契约，是实现松耦合的关键。
+- **DAInterface**：接口定义模块，包含 `DACoreInterface`、`DAUIInterface`、`DADataManagerInterface` 等抽象接口。这些接口定义了插件与主程序交互的契约，是实现松耦合的关键。
 - **DAPluginSupport**：插件支持模块，提供插件基类 `DAAbstractPlugin` 和节点相关基类。
 - **DAPluginManager**：插件管理器单例，负责扫描插件目录、加载插件、管理插件生命周期。
 
@@ -113,8 +113,8 @@ graph TB
 ├── [插件名称]Plugin.h          # 必须 - 插件主类的头文件，声明插件接口和核心类
 ├── [插件名称]Plugin.cpp        # 必须 - 插件主类的实现文件，包含初始化和资源管理
 ├── [插件名称]Global.h          # 推荐 - 插件全局定义，如版本号、配置常量、枚举类型
-├── [插件名称]NodeFactory.h     # 工作流插件必需 - 节点工厂的头文件，负责节点创建和管理
-├── [插件名称]NodeFactory.cpp   # 工作流插件必需 - 节点工厂的实现文件
+├── [插件名称]NodeFactory.h     # 旧架构遗留 - C++ 节点工厂（新插件使用 Python @NodeDef 自动发现）
+├── [插件名称]NodeFactory.cpp   # 旧架构遗留 - C++ 节点工厂实现
 ├── [插件名称]Worker.h/cpp      # 推荐 - 工作节点的实现类，封装具体的业务逻辑
 ├── [插件名称]UI.h/cpp          # 可选 - 插件自定义界面的实现，如Dock窗口、对话框等
 ├── [插件名称]Resource.qrc      # 推荐 - Qt资源文件，管理图标、翻译文件、UI模板等
@@ -131,7 +131,7 @@ graph TB
 
 1. **CMakeLists.txt**：插件构建的核心配置文件，需要引用主项目的 `daworkbench_plugin_utils.cmake` 辅助宏，简化构建过程。
 2. **插件主类文件**：每个插件必须有一个继承自 `DAAbstractPlugin` 或 `DAAbstractNodePlugin` 的主类，负责插件初始化、资源管理和生命周期控制。
-3. **节点工厂**：对于工作流插件，必须实现节点工厂来创建和管理工作流节点。节点工厂是插件功能的载体。
+3. **节点工厂**：旧架构中工作流插件需要实现 C++ 节点工厂。新的 Python-first 架构使用 `@NodeDef` 装饰器自动发现节点，无需手动编写 C++ NodeFactory。
 4. **工作节点**：具体的数据处理单元，每个节点对应工作流中的一个处理步骤。复杂的插件可能包含多个工作节点类。
 5. **UI组件**：如果插件需要提供用户界面（如配置面板、数据查看器等），应在此目录组织相关代码。
 6. **资源文件**：图标、翻译文件等资源统一通过Qt资源系统管理，确保跨平台兼容性。
@@ -145,7 +145,7 @@ graph TB
 |------|----------|------|------|
 | **插件目录** | 描述性名称，PascalCase | `DataAnalysis` | 使用有意义的英文名称，避免使用通用词汇如"plugin"、"tools"等 |
 | **插件主类** | `[Name]Plugin` | `DataAnalysisPlugin` | 类名与目录名一致，方便识别对应关系 |
-| **节点工厂** | `[Name]NodeFactory` | `DataAnalysisNodeFactory` | 明确表示这是节点工厂类，便于理解职责 |
+| **节点工厂** | `[Name]NodeFactory` | `DataAnalysisNodeFactory` | 旧架构遗留，新插件使用 Python `@NodeDef` 自动发现节点，无需 NodeFactory |
 | **工作节点** | `[Name]Worker` | `DataframeCleanerWorker` | 使用"Worker"后缀，表示这是具体的工作单元 |
 | **插件IID** | `Plugin.[Name]` | `Plugin.DataAnalysis` | IID（Interface Identifier）必须唯一，用于插件识别 |
 | **节点原型** | `[Plugin].[Factory].[Node]` | `DataAnalysis.IO.CSVReader` | 节点原型的命名采用三级结构，确保全局唯一 |
@@ -219,10 +219,10 @@ class DAAbstractNodePlugin : public DAAbstractPlugin
     Q_OBJECT
 public:
     // 获取节点工厂列表
-    virtual QList<DAAbstractNodeFactory*> getFactories() const = 0;
+    virtual DAPyNodeFactory* createNodeFactory() = 0;
     
     // 节点元数据注册
-    virtual void registerNodeMetaData(DAAbstractNodeFactory* factory) = 0;
+    virtual void destroyNodeFactory(DAPyNodeFactory* p) = 0;
 };
 ```
 
@@ -232,12 +232,12 @@ public:
 
 2. **`registerNodeMetaData()`**：注册节点元数据。节点元数据描述了节点的基本信息（名称、图标、描述等）和连接点定义。主程序使用这些元数据在工作流编辑器中显示可用节点列表。
 
-### DAAbstractNodeFactory - 节点工厂基类
+### DAPyNodeFactory - 节点工厂代理
 
-虽然 `DAAbstractNodeFactory` 不是插件基类，但它是工作流插件体系的核心组成部分：
+虽然 `DAPyNodeFactory` 不是插件基类，但它是工作流插件体系的核心组成部分：
 
 ```cpp
-class DAAbstractNodeFactory : public QObject
+class DAPyNodeFactory : public DAPyObjectWrapper
 {
     Q_OBJECT
 public:
@@ -289,8 +289,8 @@ classDiagram
     
     class DAAbstractNodePlugin {
         <<节点插件基类>>
-        +getFactories() QList~DAAbstractNodeFactory*~
-        +registerNodeMetaData(DAAbstractNodeFactory*)
+        +createNodeFactory() DAPyNodeFactory*
+        +destroyNodeFactory(DAPyNodeFactory*)
     }
     
     class 通用功能插件 {
@@ -337,16 +337,13 @@ class DACoreInterface
 {
 public:
     // 获取 UI 接口
-    virtual DAAppUIInterface* getUiInterface() = 0;
-    
+    virtual DAUIInterface* getUiInterface() = 0;
+
     // 获取项目管理接口
     virtual DAProjectInterface* getProjectInterface() = 0;
-    
+
     // 获取数据管理接口
     virtual DADataManagerInterface* getDataManagerInterface() = 0;
-    
-    // 获取工作流接口
-    virtual DAWorkFlowInterface* getWorkFlowInterface() = 0;
 };
 ```
 
@@ -357,7 +354,7 @@ graph TB
     CI[DACoreInterface]
     
     subgraph "UI 接口层"
-        UI[DAAppUIInterface]
+        UI[DAUIInterface]
         RA[DARibbonAreaInterface]
         DA[DADockingAreaInterface]
         AI[DAActionsInterface]
@@ -383,7 +380,7 @@ bool MyPlugin::initialize()
     DACoreInterface* core = this->core();
     
     // 获取 UI 接口
-    DAAppUIInterface* ui = core->getUiInterface();
+    DAUIInterface* ui = core->getUiInterface();
     
     // 获取 Ribbon 区域
     DARibbonAreaInterface* ribbon = ui->getRibbonArea();
@@ -480,7 +477,7 @@ signals:
 4. 实例化 `DAProjectInterface`
 5. 主界面构造
 6. 调用 `DACoreInterface::createUi()` 构造界面
-7. 实例化 `DAAppUIInterface`
+7. 实例化 `DAUIInterface`
 8. 实例化各子接口（Ribbon、Dock、Actions、Command）
 9. **加载插件** - 此时所有接口已就绪
 

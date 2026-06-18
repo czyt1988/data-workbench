@@ -1,5 +1,8 @@
-﻿bin_*
+bin_*
 build*
+# 保留 scripts 目录下的构建脚本
+!scripts/
+!scripts/*.ps1
 # 但是，不要忽略 docs 目录下任何以 build 开头的内容
 !docs/**/build*/
 !docs/**/build*
@@ -16,15 +19,7 @@ build*
 # 顶层的临时文件夹不追踪
 tmp
 ~
-.qtcreator
-.qoder
-.trae
-.kilo
-.sisyphus
-.superpowers
-opencode.md
-docs/superpowers
-nul
+
 #翻译文件暂时不追踪
 *.qm
 
@@ -108,9 +103,50 @@ out
 *.pyc
 .idea
 __pycache__
+.pytest_cache
 
 # Binaries
 # --------
 *.dll
 *.exe
 
+# Added by Spec Kitty CLI (auto-managed)
+.claude/
+.codex/
+.vibe/
+.opencode/
+.windsurf/
+.gemini/
+.cursor/
+.qwen/
+.kilocode/
+.augment/
+.roo/
+.amazonq/
+.kiro/
+.agent/
+.github/copilot/
+.kittify/.dashboard
+.kittify/charter/context-state.json
+.kittify/charter/directives.yaml
+.kittify/charter/governance.yaml
+.kittify/charter/metadata.yaml
+.kittify/charter/references.yaml
+.kittify/dossiers/
+.kittify/events/
+.kittify/merge-state.json
+.kittify/missions/__pycache__/
+.kittify/runtime/
+.kittify/workspaces/
+.qtcreator
+.qoder
+.trae
+.kilo
+.sisyphus
+.superpowers
+.omc
+.omo
+.plan
+opencode.md
+docs/superpowers
+nul

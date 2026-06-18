@@ -11,7 +11,6 @@
 - [Python 绑定开发](./python-binding-development.md) ← 当前页
 - [故障排除与最佳实践](./troubleshooting-and-best-practices.md)
 - [Python 脚本开发实战](./python-script-development.md)
-- [Python 多线程与异步任务](./python-multi-threading.md)
 
 ## 接口绑定架构
 
@@ -65,6 +64,7 @@ classDiagram
 ```
 
 上图展示了接口绑定的层次结构：
+
 - `DACoreInterface` 是核心入口，提供获取其他接口的方法
 - `DAUIInterface` 提供界面操作功能，包含状态栏和命令接口
 - `DADataManagerInterface` 提供数据管理功能
@@ -370,6 +370,7 @@ UI-->>SH: 完成
 ```
 
 上图展示了线程安全 UI 操作的完整流程：
+
 1. Python 线程调用 `callInMainThread(func)` 请求执行
 2. 信号处理器检查当前是否在主线程
 3. 若已在主线程，直接执行函数
@@ -541,6 +542,8 @@ void DAPythonSignalHandler::clearPendingFunctions()
 
 ## Qt 类型转换器
 
+> **完整文档**：Qt 与 pybind11 类型转换的详细说明已独立为 [DAPybind11QtCaster.hpp 使用指南](../dapybind11-qt-caster.md)，包含每个类型的转换详解、numpy 支持、`DA::PY` 辅助函数、`safe_pyobject` 安全包装器等完整内容。本节仅列出类型映射摘要。
+
 ### 支持的类型映射
 
 | Qt 类型 | Python 类型 | 说明 |
@@ -549,7 +552,7 @@ void DAPythonSignalHandler::clearPendingFunctions()
 | `QByteArray` | `bytes` / `bytearray` | 支持二进制数据 |
 | `QDate` | `datetime.date` | 日期类型 |
 | `QTime` | `datetime.time` | 时间类型 |
-| `QDateTime` | `datetime.datetime` | 支持 pandas.Timestamp |
+| `QDateTime` | `datetime.datetime` | 支持 pandas.Timestamp、numpy.datetime64 |
 | `QList<T>` | `list` | 泛型支持 |
 | `QSet<T>` | `set` | 集合类型 |
 | `QHash<K,V>` | `dict` | 哈希映射 |
@@ -815,7 +818,7 @@ PYBIND11_EMBEDDED_MODULE(da_xxx, m)
 
 !!! danger "slots 宏冲突 —— 必须使用 DAPybind11InQt.h"
     Qt 的 `slots` 关键字与 Python 头文件中的 `slots` 宏存在**严重冲突**。如果直接在绑定文件中 `#include <pybind11/pybind11.h>`，编译时会因为 `slots` 被 Qt 预定义为空而导致 Python 头文件解析错误。
-    
+
     **必须**使用 `DAPybind11InQt.h` 替代直接引入 pybind11 头文件。此头文件的处理方式如下：
     
     ```cpp title="DAPybind11InQt.h - slots 冲突解决方案（源码）"
@@ -905,7 +908,7 @@ C++ 方法通常接受 `QString` 参数，但 pybind11 的 `DAPybind11QtCaster` 
 
 !!! tip "QList<int> 也建议手动转换"
     虽然 `QList<int>` 有自动 caster，但在 `DAInterfacePythonBinding.cpp` 中 `getOperateDataSeries()` 仍使用了手动转换，以保持风格统一并避免隐式依赖：
-    
+
     ```cpp
     .def("getOperateDataSeries",
         [](DA::DADataManagerInterface& self) {
@@ -1046,7 +1049,7 @@ Qt 类型与 Python 类型之间的转换是绑定的核心难点。`DAPybind11Q
 
 !!! info "DAPyJsonCast 辅助工具"
     对于 `QJsonObject` ↔ Python `dict` 的转换，项目提供了 `DAPyJsonCast.h` 中的辅助函数：
-    
+
     ```cpp
     // QJsonObject → Python dict
     return DA::PY::qjsonObjectToPyDict(jsonObj);

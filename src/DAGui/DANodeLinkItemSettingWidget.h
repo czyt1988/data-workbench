@@ -1,16 +1,15 @@
-﻿#ifndef DANODELINKITEMSETTINGWIDGET_H
+#ifndef DANODELINKITEMSETTINGWIDGET_H
 #define DANODELINKITEMSETTINGWIDGET_H
 #include "DAGuiAPI.h"
 #include <QWidget>
 #include <QPen>
-#include "DAAbstractNodeLinkGraphicsItem.h"
-namespace Ui
-{
-class DANodeLinkItemSettingWidget;
-}
+#include "DAPyLinkGraphicsItem.h"
+class QComboBox;
+
 namespace DA
 {
-class DANodeGraphicsScene;
+class DAPyWorkFlowGraphicsScene;
+class DAPropertyPanelContainerWidget;
 /**
  * @brief 链接设置
  */
@@ -22,28 +21,28 @@ public:
     explicit DANodeLinkItemSettingWidget(QWidget* parent = nullptr);
     ~DANodeLinkItemSettingWidget();
     //设置连线样式，此函数不发射信号
-    void setCurrentLinkLineStyle(DAAbstractNodeLinkGraphicsItem::LinkLineStyle s, bool updateLinkItem = false);
+    void setCurrentLinkLineStyle(DAGraphicsLinkItem::LinkLineStyle s, bool updateLinkItem = false);
     //设置画笔
     void setLinkLinePen(const QPen& p, bool updateLinkItem = false);
     //设置item
-    void setLinkItem(DAAbstractNodeLinkGraphicsItem* link);
-    DAAbstractNodeLinkGraphicsItem* getLinkItem() const;
+    void setLinkItem(DAPyLinkGraphicsItem* link);
+    DAPyLinkGraphicsItem* getLinkItem() const;
     //设置端点的信息
-    void updateLinkEndpointInfo(DAAbstractNodeLinkGraphicsItem* link);
+    void updateLinkEndpointInfo(DAPyLinkGraphicsItem* link);
     //刷新数据,此函数不触发信号
     void updateData();
     //设置了DAGraphicsSceneWithUndoStack 能实现redo/undo
-    void setScene(DANodeGraphicsScene* sc);
+    void setScene(DAPyWorkFlowGraphicsScene* sc);
 
 protected:
     void initEndpointComboxBox();
-    QPixmap generateEndPointPixmap(DAAbstractNodeLinkGraphicsItem* link, DAAbstractNodeLinkGraphicsItem::EndPointType epType);
+    QPixmap generateEndPointPixmap(DAPyLinkGraphicsItem* link, DAGraphicsLinkItem::EndPointType epType);
 signals:
     /**
      * @brief 连线样式改变发射的信号
      * @param s
      */
-    void currentLinkLineStyleChanged(DAAbstractNodeLinkGraphicsItem::LinkLineStyle s);
+    void currentLinkLineStyleChanged(DAGraphicsLinkItem::LinkLineStyle s);
 
     /**
      * @brief 请求连线的画笔改变
@@ -51,17 +50,25 @@ signals:
      */
     void linkLinePenChanged(const QPen& p);
 private slots:
-    void onComboBoxLinkStyleCurrentIndexChanged(int index);
-    void onLinkLinePenChanged(const QPen& p);
-    void onNodeLinksRemoved(const QList< DAAbstractNodeLinkGraphicsItem* >& items);
-    void onSpinBoxEndpointSizeValueChanged(int arg1);
+    void onPropertyValueChanged(int propertyId);
     void onComboBoxFrontStyleCurrentIndexChanged(int index);
     void onComboBoxEndStyleCurrentIndexChanged(int index);
+    void onNodeLinksRemoved(const QList< DAPyLinkGraphicsItem* >& items);
 
 private:
-    Ui::DANodeLinkItemSettingWidget* ui;
-    DAAbstractNodeLinkGraphicsItem* _linkItem;
-    DANodeGraphicsScene* _scene;
+    // 属性ID定义
+    enum PropertyId {
+        PropertyPen = 1,
+        PropertyLinkStyle = 2,
+        PropertyEndpointSize = 3,
+        PropertyFrontStyle = 4,
+        PropertyEndStyle = 5
+    };
+    DAPropertyPanelContainerWidget* mPanel;
+    QComboBox* _comboBoxFrontStyle;
+    QComboBox* _comboBoxEndStyle;
+    DAPyLinkGraphicsItem* _linkItem;
+    DAPyWorkFlowGraphicsScene* _scene;
     QSize _endpointIconSize;
 };
 }

@@ -1,0 +1,6 @@
+vcs:
+  type: git
+agents:
+  available:
+  - opencode
+  auto_commit: true

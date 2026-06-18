@@ -1,4 +1,4 @@
-﻿
+
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # DAPyCommonWidgets 库
@@ -86,7 +86,6 @@ target_link_libraries(${DA_APP_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
     Qt${QT_VERSION_MAJOR}::Svg
-    Qt${QT_VERSION_MAJOR}::AxContainer
 )
 if(WIN32)
     target_link_libraries(${DA_APP_NAME} PUBLIC
@@ -97,6 +96,12 @@ endif()
 target_link_libraries(${DA_APP_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAPluginSupport
 )
+if(DA_ENABLE_PYTHON)
+    # -------------link DAPyWorkFlow--------------------------
+    target_link_libraries(${DA_APP_NAME} PUBLIC
+        ${DA_PROJECT_NAME}::DAPyWorkFlow
+    )
+endif()
 
 # -------------link 3rdparty DALiteCtk--------------------------
 damacro_import_DALiteCtk(${DA_APP_NAME})
@@ -154,10 +159,12 @@ endif()
 damacro_set_app_properties(${DA_APP_NAME} ${DA_APP_VERSION})
 
 
-# Debug 模式使用控制台子系统
-target_link_options(${DA_APP_NAME} PRIVATE "$<$<CONFIG:Debug>:/SUBSYSTEM:CONSOLE>")
-# Release 模式使用 Windows 子系统（无控制台窗口）
-target_link_options(${DA_APP_NAME} PRIVATE "$<$<CONFIG:Release>:/SUBSYSTEM:WINDOWS>")
+if(WIN32)
+    # Debug 模式使用控制台子系统
+    target_link_options(${DA_APP_NAME} PRIVATE "$<$<CONFIG:Debug>:/SUBSYSTEM:CONSOLE>")
+    # Release 模式使用 Windows 子系统（无控制台窗口）
+    target_link_options(${DA_APP_NAME} PRIVATE "$<$<CONFIG:Release>:/SUBSYSTEM:WINDOWS>")
+endif()
 ########################################################
 # 写入rc信息
 ########################################################

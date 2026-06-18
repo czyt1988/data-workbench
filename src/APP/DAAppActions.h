@@ -1,4 +1,4 @@
-﻿#ifndef DAAPPACTIONS_H
+#ifndef DAAPPACTIONS_H
 #define DAAPPACTIONS_H
 #include "DAActionsInterface.h"
 #include <QPixmap>
@@ -99,6 +99,7 @@ public:
     // workflow的运行操作
     QAction* actionWorkflowRun;        ///< 运行工作流
     QAction* actionWorkflowTerminate;  ///< 停止工作流
+
     //===================================================
     // 绘图标签 Chart Category
     //===================================================

@@ -209,7 +209,7 @@ damacro_plugin_install()
 | 模块 | 可用组件 |
 |------|----------|
 | **DAUtils** | 日志、配置、文件工具、字符串处理 |
-| **DAWorkFlow** | 工作流管理、节点工厂、执行器 |
+| **DAPyWorkFlow** | 工作流管理、节点代理、执行引擎 |
 | **DAGraphicsView** | 可缩放视图、redo/undo、图元管理 |
 | **DAFigure** | 图表绘制、坐标轴、图例 |
 | **DAData** | DataFrame 管理、数据对象 |

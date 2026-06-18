@@ -1,6 +1,6 @@
 ﻿#include "DANodeListWidget.h"
 #include "DANodeMimeData.h"
-#include "DAWorkFlowNodeListWidget.h"
+#include "DAPyWorkFlowNodeListWidget.h"
 #include <QMouseEvent>
 #include <QDragEnterEvent>
 #include <QDragLeaveEvent>
@@ -18,20 +18,26 @@ using namespace DA;
 // DANodeListWidgetItem
 //===================================================
 
-DANodeListWidgetItem::DANodeListWidgetItem(const DANodeMetaData& node, QListWidget* listview)
+DANodeListWidgetItem::DANodeListWidgetItem(const DAPyNodeMetaData& node, QListWidget* listview)
     : QListWidgetItem(listview, ThisItemType)
 {
     setNodeMetaData(node);
 }
 
-DANodeMetaData DANodeListWidgetItem::getNodeMetaData() const
+DAPyNodeMetaData DANodeListWidgetItem::getNodeMetaData() const
 {
-    return (data(ROLE_META_DATA).value< DANodeMetaData >());
+    return (data(ROLE_META_DATA).value< DAPyNodeMetaData >());
 }
 
-void DANodeListWidgetItem::setNodeMetaData(const DANodeMetaData& md)
+void DANodeListWidgetItem::setNodeMetaData(const DAPyNodeMetaData& md)
 {
-	setIcon(md.getIcon());
+	static QIcon defaultIcon = QIcon(":/DAGui/icon/node.svg");
+	QIcon nodeIcon           = md.getIcon();
+	if (nodeIcon.isNull()) {
+		setIcon(defaultIcon);
+	} else {
+		setIcon(nodeIcon);
+	}
 	setText(md.getNodeName());
 	QString tt = QString("<b>%1</b><br/>%2").arg(md.getNodeName(), md.getNodeTooltip());
 	setToolTip(tt);
@@ -53,24 +59,24 @@ DANodeListWidget::DANodeListWidget(QWidget* p) : QListWidget(p)
 	setDragDropMode(DragOnly);
 }
 
-void DANodeListWidget::addItems(const QList< DANodeMetaData >& nodeMetaDatas)
+void DANodeListWidget::addItems(const QList< DAPyNodeMetaData >& nodeMetaDatas)
 {
-	for (const DANodeMetaData& d : nodeMetaDatas) {
+	for (const DAPyNodeMetaData& d : nodeMetaDatas) {
 		addItem(d);
 	}
 }
 
-void DANodeListWidget::addItem(const DANodeMetaData& nodeMetaData)
+void DANodeListWidget::addItem(const DAPyNodeMetaData& nodeMetaData)
 {
 	DANodeListWidgetItem* item = new DANodeListWidgetItem(nodeMetaData);
 	QListWidget::addItem(item);
 }
 
-DANodeMetaData DANodeListWidget::getNodeMetaData(const QPoint& p) const
+DAPyNodeMetaData DANodeListWidget::getNodeMetaData(const QPoint& p) const
 {
 	QListWidgetItem* i = itemAt(p);
 	if (!i) {
-		return DANodeMetaData();
+		return DAPyNodeMetaData();
 	}
 	DANodeListWidgetItem* ni = static_cast< DANodeListWidgetItem* >(i);
 	return ni->getNodeMetaData();
@@ -90,8 +96,8 @@ void DANodeListWidget::mouseMoveEvent(QMouseEvent* event)
 		if ((event->pos() - _startPressPos).manhattanLength() > QApplication::startDragDistance()) {
 			DANodeListWidgetItem* item = static_cast< DANodeListWidgetItem* >(itemAt(_startPressPos));
 			if (item) {
-				DANodeMetaData nodemd = item->getNodeMetaData();
-				QDrag* drag           = DAWorkFlowNodeListWidget::createDrag(this, nodemd);
+				DAPyNodeMetaData nodemd = item->getNodeMetaData();
+				QDrag* drag             = DAPyWorkFlowNodeListWidget::createDrag(this, nodemd);
 				drag->exec(Qt::MoveAction | Qt::CopyAction);
 				return;
 			}

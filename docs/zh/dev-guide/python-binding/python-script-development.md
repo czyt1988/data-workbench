@@ -9,7 +9,6 @@
 - [Python 绑定开发](./python-binding-development.md)
 - [故障排除与最佳实践](./troubleshooting-and-best-practices.md)
 - [Python 脚本开发实战](./python-script-development.md) ← 当前页
-- [Python 多线程与异步任务](./python-multi-threading.md)
 
 本节详细说明如何在 DAWorkBench 中编写 Python 脚本，通过已绑定的 C++ 接口实现数据分析、界面交互和跨线程操作。
 
@@ -113,23 +112,27 @@ df = dadata.toDataFrame()
 ```
 
 !!! tip "数据获取辅助函数"
-    项目提供了 `DAWorkbench.utils` 模块中的辅助函数，可一步完成"获取选中 DataFrame + 子集索引"：
-    
+    项目提供了 `DADataAnalysisGui.utils` 模块中的辅助函数，可一步完成"获取选中 DataFrame + 子集索引"：
+
     ```python
-    from DAWorkbench import utils
-    df, subset_index = utils.get_select_dataframe_and_subset_index()
+    from DADataAnalysisGui import utils
+    result = utils.get_select_dataframe_and_subset_index()
+    # 返回三元组 (dadata, df, subset) 或 None（用户取消时）
+    if result is None:
+        return None
+    dadata, df, subset = result
     ```
-    
-    此函数封装了上述获取数据 + 类型检查 + 提取子集索引的完整流程。
+
+    此函数接受可选参数 `data: da_data.DAData = None`（指定数据对象），封装了获取数据 + 类型检查 + 提取子集索引的完整流程。返回值包含 `DAData` 对象、pandas DataFrame 和列子集索引列表。
 
 ### Step 3：构建参数设置对话框
 
 使用 `PropertyConfigBuilder` 构建参数配置界面，然后通过 `ui.getConfigValues()` 在 C++ 端弹出对话框：
 
 ```python title="Step 3: 构建配置对话框（源自 dataframe_cleaner.py）"
-import DAWorkbench.property_config_builder as cfgBuilder
+import DAWorkbench.DAPyBase.property_config_builder as porpCfgBuilder
 
-builder = cfgBuilder.PropertyConfigBuilder("删除缺失值设置")
+builder = porpCfgBuilder.PropertyConfigBuilder("删除缺失值设置")
 
 # 添加枚举选项
 builder.add_enum(
@@ -158,8 +161,8 @@ if not config:
 
 !!! info "PropertyConfigBuilder 详细文档"
     `PropertyConfigBuilder` 支持的属性类型包括：`string`, `int`, `double`, `bool`, `enum`, `color`, `font`, `file`, `folder`, `stringlist`，还支持 `begin_group()`/`end_group()` 分组以及 `from_function_signature()` 自动生成配置。
-    
-    完整源码参见：`src/PyScripts/DAWorkbench/property_config_builder.py`
+
+    完整源码参见：`src/PyScripts/DAWorkbench/DAPyBase/property_config_builder.py`
 
 ### Step 4：执行操作并封装撤销/重做
 
@@ -193,7 +196,7 @@ command.endDataOperateCommand(dadata)
     - `text`：撤销/重做列表中显示的操作描述（`std::string`）
     - `isObjectPersist`：是否保留对象引用（默认 `True`）
     - `isSkipFirstRedo`：是否跳过首次重做（默认 `True`，因为操作已执行）
-    
+
     **务必**在操作完成后调用 `endDataOperateCommand`，否则撤销栈会处于不一致状态。
 
 ### Step 5：通知界面刷新与日志
@@ -214,7 +217,7 @@ core.setProjectDirty(True)
 
 !!! tip "notifyDataChangedSignal 的枚举参数"
     `notifyDataChangedSignal` 的第二个参数为 `DataChangeType` 枚举，决定界面刷新的范围：
-    
+
     | 枚举值 | 说明 | 刷新范围 |
     |--------|------|----------|
     | `da_data.DataChangeType.Name` | 数据名称变更 | 刷新数据列表标题 |
@@ -234,13 +237,13 @@ core.setProjectDirty(True)
 
 ```python title="getConfigValues 完整使用示例"
 import da_app
-import DAWorkbench.property_config_builder as cfgBuilder
+import DAWorkbench.DAPyBase.property_config_builder as porpCfgBuilder
 
 core = da_app.getCore()
 ui = core.getUiInterface()
 
 # 1. 构建配置
-builder = cfgBuilder.PropertyConfigBuilder("数据处理参数")
+builder = porpCfgBuilder.PropertyConfigBuilder("数据处理参数")
 
 builder.add_int(name="threshold", display_name="阈值",
                 default_value=100, min_value=0, max_value=1000)
@@ -275,7 +278,7 @@ print(f"阈值: {threshold}, 比例: {ratio}, 方法: {method}")
 
 !!! warning "getConfigValues 的 cacheKey 参数"
     `cacheKey` 参数用于记住用户上次设置的参数，下次打开对话框时自动恢复。建议使用 `"模块名.函数名"` 格式作为 cacheKey，如 `"dataframecleaner.dropna"`。
-    
+
     如果 cacheKey 为空字符串，对话框每次都使用默认值。
 
 ## 撤销/重做操作模式
@@ -354,7 +357,7 @@ background_task()
 
 !!! warning "callInMainThread 的 GIL 管理"
     `callInMainThread` 在 C++ 绑定中已正确处理了 GIL 管理：
-    
+
     ```cpp title="DAInterfacePythonBinding.cpp - callInMainThread 绑定实现"
     .def("callInMainThread",
         [](DA::DAPythonSignalHandler& self, pybind11::function pyFunc) {
@@ -401,9 +404,9 @@ status_bar.hideProgressBar()
 ```
 
 !!! info "Thread Status Manager"
-    更复杂的后台任务进度报告可通过 `DAWorkbench.thread_status_manager` 模块实现，支持线程状态查询、进度回调等功能。
-    
-    完整源码参见：`src/PyScripts/DAWorkbench/` 目录下的线程状态管理相关文件。
+    更复杂的后台任务进度报告可通过 `DAWorkbench.DAPyBase.thread_status_manager` 模块实现，支持线程状态查询、进度回调等功能。
+
+    完整源码参见：`src/PyScripts/DAWorkbench/DAPyBase/` 目录下的线程状态管理相关文件。
 
 ## 实战建议
 

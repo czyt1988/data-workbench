@@ -34,9 +34,9 @@ DataframeOperateWorker::~DataframeOperateWorker()
 bool DataframeOperateWorker::initializePythonEnv()
 {
     try {
-        DA::DAPyModule DADataAnalysis("DADataAnalysis");
+        DA::DAPyModule DADataAnalysisCore("DADataAnalysisCore");
         m_dataOperateModule  = std::make_unique< DA::DAPyModule >();
-        *m_dataOperateModule = DADataAnalysis.attr("dataframe_operate");
+        *m_dataOperateModule = DADataAnalysisCore.attr("operations");
         return true;
     } catch (const std::exception& e) {
         m_dataOperateModule.reset();

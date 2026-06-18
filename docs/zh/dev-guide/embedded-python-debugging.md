@@ -90,12 +90,18 @@ data_mgr_iface.addData(data)             # 通过接口管理数据
 ```
 stubs/
 ├── da_interface/        # da_interface 模块的 stub
-│   ├── __init__.pyi     # 接口类的类型定义
-│   └ __init__.pyi
+│   ├── __init__.py      # 空文件（Python 包标识）
+│   └── __init__.pyi     # 接口类的类型定义
 ├── da_data/             # da_data 模块的 stub
-│   └ __init__.pyi       # 数据类的类型定义
-└── da_app/              # da_app 模块的 stub
-    └ __init__.pyi       # 入口函数的类型定义
+│   ├── __init__.py      # 空文件（Python 包标识）
+│   └── __init__.pyi     # 数据类的类型定义
+├── da_app/              # da_app 模块的 stub
+│   ├── __init__.py      # 空文件（Python 包标识）
+│   └── __init__.pyi     # 入口函数的类型定义
+└── mock/                # Mock 实现（用于标准 Python 环境验证）
+    ├── da_app.py        # Mock 应用接口
+    ├── da_data.py       # Mock 数据接口
+    └── da_interface.py  # Mock 接口定义
 ```
 
 每个 `.pyi` 文件对应一个 pybind11 导出模块，只包含该模块导出的类型定义，跨模块引用通过 `import` 解决。例如 `da_interface/__init__.pyi` 中引用 `DAData` 类型时，使用 `from da_data import DAData`。

@@ -1,4 +1,4 @@
-﻿#ifndef DADATAOPERATEOFDATAFRAMEWIDGET_H
+#ifndef DADATAOPERATEOFDATAFRAMEWIDGET_H
 #define DADATAOPERATEOFDATAFRAMEWIDGET_H
 #include <QtWidgets/QWidget>
 #include <QUndoStack>
@@ -17,7 +17,6 @@ namespace DA
 {
 class DADataTableModel;
 class DADataTableView;
-class DAAppRibbonArea;
 class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
 

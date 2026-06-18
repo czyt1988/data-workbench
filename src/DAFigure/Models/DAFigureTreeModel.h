@@ -1,4 +1,4 @@
-﻿#ifndef DAFIGURETREEMODEL_H
+#ifndef DAFIGURETREEMODEL_H
 #define DAFIGURETREEMODEL_H
 #include "DAFigureAPI.h"
 #include <QAbstractItemModel>
@@ -91,7 +91,7 @@ public:
     virtual QIcon generateBrushIcon(const QBrush& b) const;
 Q_SIGNALS:
     void chartItemAttached(QwtPlotItem* item, bool on);
-private slots:
+private Q_SLOTS:
     void onAxesAdded(QwtPlot* plot);
     void onAxesRemoved(QwtPlot* plot);
     void onFigureCleared();

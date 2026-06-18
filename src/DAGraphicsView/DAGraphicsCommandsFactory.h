@@ -14,7 +14,7 @@ class DAGraphicsResizeableItem;
  *
  * 命令工厂有两个作用
  *
- * - 第一，可以根据字符串查找生成命令（这个暂时不实现）
+ * - 第一，可以根据字符串查找生成命令（这个暂时还未实现）
  * - 第二，可以用户自定义命令，例如移动命令，用户实现的移动命令需要记录其它的特殊功能，需要继承原来的移动命令则用户可以定义一个自己的命令工厂，针对移动命令生成一个用户自己的移动命令
  */
 class DAGRAPHICSVIEW_API DAGraphicsCommandsFactory
@@ -28,34 +28,34 @@ public:
 	virtual DACommandsForGraphicsItemsAdd* createItemsAdd(const QList< QGraphicsItem* > its);
 	virtual DACommandsForGraphicsItemRemove* createItemRemove(QGraphicsItem* item, QUndoCommand* parent = nullptr);
 	virtual DACommandsForGraphicsItemsRemove* createItemsRemove(const QList< QGraphicsItem* > its);
-    virtual DACommandsForGraphicsItemMoved* createItemMoved(QGraphicsItem* item,
-                                                            const QPointF& start,
-                                                            const QPointF& end,
-                                                            bool skipfirst);
-	virtual DACommandsForGraphicsItemsMoved* createItemsMoved(const QList< QGraphicsItem* >& items,
-                                                              const QList< QPointF >& starts,
-                                                              const QList< QPointF >& ends,
-                                                              bool skipfirst);
+	virtual DACommandsForGraphicsItemMoved* createItemMoved(
+		QGraphicsItem* item, const QPointF& start, const QPointF& end, bool skipfirst
+	);
+	virtual DACommandsForGraphicsItemsMoved* createItemsMoved(
+		const QList< QGraphicsItem* >& items, const QList< QPointF >& starts, const QList< QPointF >& ends, bool skipfirst
+	);
 	// 这个命令主要针对场景鼠标移动item进行设置
 	virtual DACommandsForGraphicsItemsMoved* createItemsMoved();
-	virtual DACommandsForGraphicsItemResized* createItemResized(DAGraphicsResizeableItem* item,
-                                                                const QPointF& oldpos,
-                                                                const QSizeF& oldSize,
-                                                                const QPointF& newpos,
-                                                                const QSizeF& newSize,
-                                                                bool skipfirst = true);
-    virtual DACommandsForGraphicsItemResized* createItemResized(DAGraphicsResizeableItem* item,
-                                                                const QSizeF& oldSize,
-                                                                const QSizeF& newSize);
-    virtual DACommandsForGraphicsItemResizeWidth* createItemResizeWidth(DAGraphicsResizeableItem* item,
-                                                                        const qreal& oldWidth,
-                                                                        const qreal& newWidth);
-    virtual DACommandsForGraphicsItemResizeHeight* createItemResizeHeight(DAGraphicsResizeableItem* item,
-                                                                          const qreal& oldHeight,
-                                                                          const qreal& newHeight);
-    virtual DACommandsForGraphicsItemRotation* createItemRotation(DAGraphicsResizeableItem* item,
-                                                                  const qreal& oldRotation,
-                                                                  const qreal& newRotation);
+	virtual DACommandsForGraphicsItemResized* createItemResized(
+		DAGraphicsResizeableItem* item,
+		const QPointF& oldpos,
+		const QSizeF& oldSize,
+		const QPointF& newpos,
+		const QSizeF& newSize,
+		bool skipfirst = true
+	);
+	virtual DACommandsForGraphicsItemResized* createItemResized(
+		DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize
+	);
+	virtual DACommandsForGraphicsItemResizeWidth* createItemResizeWidth(
+		DAGraphicsResizeableItem* item, const qreal& oldWidth, const qreal& newWidth
+	);
+	virtual DACommandsForGraphicsItemResizeHeight* createItemResizeHeight(
+		DAGraphicsResizeableItem* item, const qreal& oldHeight, const qreal& newHeight
+	);
+	virtual DACommandsForGraphicsItemRotation* createItemRotation(
+		DAGraphicsResizeableItem* item, const qreal& oldRotation, const qreal& newRotation
+	);
 	virtual DACommandsForGraphicsItemGrouping* createItemGrouping(const QList< QGraphicsItem* >& groupingitems);
 	virtual DACommandsForGraphicsItemUngrouping* createItemUngrouping(QGraphicsItemGroup* group);
 	DAGraphicsScene* scene() const;

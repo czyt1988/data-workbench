@@ -1,4 +1,4 @@
-﻿#include "AppMainWindow.h"
+#include "AppMainWindow.h"
 // Qt 相关
 #include <QMessageBox>
 #include <QDir>
@@ -29,19 +29,36 @@
 // 对话框
 
 // 节点相关
-#include "DANodeMetaData.h"
+#include "DAPyNodeFactory.h"
 
 //
 #include "DAGraphicsItemFactory.h"
-#include "DAWorkFlowNodeListWidget.h"
-#include "DAWorkFlowOperateWidget.h"
-#include "DAWorkFlowOperateWidget.h"
-#include "DAWorkFlowOperateWidget.h"
+#include "DAPyWorkFlowNodeListWidget.h"
+#include "DAPyWorkFlowOperateWidget.h"
 //
 #include "DAAppSettingDialog.h"
 #include "SettingPages/DAAppConfig.h"
+#include "DAAppProjectActionPolicy.h"
+#include "DAAppWindowStateSerializer.h"
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
+
+namespace
+{
+DA::DAAppSavePromptChoice toAppSavePromptChoice(QMessageBox::StandardButton btn)
+{
+    switch (btn) {
+    case QMessageBox::Yes:
+        return DA::DAAppSavePromptChoice::Save;
+    case QMessageBox::No:
+        return DA::DAAppSavePromptChoice::Discard;
+    case QMessageBox::Cancel:
+    default:
+        return DA::DAAppSavePromptChoice::Cancel;
+    }
+}
+}  // namespace
+
 namespace DA
 {
 
@@ -141,7 +158,7 @@ void AppMainWindow::changeEvent(QEvent* e)
  */
 void AppMainWindow::closeEvent(QCloseEvent* e)
 {
-    // 判断是否需要保存
+    DAAppCloseAction closeAction = DAAppCloseAction::CloseDirectly;
     if (mController->isDirty()) {
         // 是否保存
         auto btn = QMessageBox::question(
@@ -151,9 +168,14 @@ void AppMainWindow::closeEvent(QCloseEvent* e)
             QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel,
             QMessageBox::StandardButton::Yes
         );
-        if (QMessageBox::StandardButton::Yes == btn) {
-            mController->save();
-        } else if (QMessageBox::StandardButton::Cancel == btn) {
+        closeAction = resolveAppCloseAction(true, toAppSavePromptChoice(btn));
+    }
+    if (DAAppCloseAction::CancelClosing == closeAction) {
+        e->ignore();
+        return;
+    }
+    if (DAAppCloseAction::SaveThenClose == closeAction) {
+        if (!mController->save()) {
             e->ignore();
             return;
         }
@@ -215,7 +237,7 @@ void AppMainWindow::initPlugins()
 void AppMainWindow::initWorkflowNodes()
 {
     // 提取所有的元数据
-    QList< DANodeMetaData > nodeMetaDatas = mPluginMgr->getAllNodeMetaDatas();
+    QList< DAPyNodeMetaData > nodeMetaDatas = mPluginMgr->getAllNodeMetaDatas();
     // 把数据写入toolbox
     mDockArea->getWorkflowNodeListWidget()->addItems(nodeMetaDatas);
     // 此时才创建第一个workflow，这个workflow创建时，插件已经加载好
@@ -352,17 +374,13 @@ void AppMainWindow::showSettingDialog()
  */
 QByteArray AppMainWindow::saveUIState() const
 {
-    QVector< QByteArray > uiStateArr;
-    uiStateArr << saveGeometry() << saveGeometry();
+    DAAppWindowStateSnapshot snapshot;
+    snapshot.geometry        = saveGeometry();
+    snapshot.mainWindowState = saveState();
     if (mDockArea) {
-        uiStateArr << mDockArea->dockManager()->saveState();
+        snapshot.dockingState = mDockArea->dockManager()->saveState();
     }
-    QByteArray res;
-    QBuffer buffer(&res);
-    buffer.open(QIODevice::WriteOnly);
-    QDataStream st(&buffer);
-    st << uiStateArr;
-    return res;
+    return serializeAppWindowState(snapshot);
 }
 
 /**
@@ -372,24 +390,19 @@ QByteArray AppMainWindow::saveUIState() const
  */
 bool AppMainWindow::restoreUIState(const QByteArray& v)
 {
-    QVector< QByteArray > uiStateArr;
-
-    try {
-        QDataStream st(v);
-        st >> uiStateArr;
-        if (1 <= uiStateArr.size()) {
-            restoreGeometry(uiStateArr.at(0));
-        }
-        if (2 <= uiStateArr.size()) {
-            restoreState(uiStateArr.at(1));
-        }
-        if (3 <= uiStateArr.size()) {
-            if (mDockArea) {
-                mDockArea->dockManager()->restoreState(uiStateArr.at(2));
-            }
-        }
-    } catch (const std::exception& e) {
-        qCritical() << tr("restore UI state error:%1").arg(e.what());  // 恢复状态过程中出错:%1
+    DAAppWindowStateSnapshot snapshot;
+    if (!deserializeAppWindowState(v, &snapshot)) {
+        qCritical() << tr("restore UI state error");  // 恢复状态过程中出错
+        return false;
+    }
+    if (!snapshot.geometry.isEmpty()) {
+        restoreGeometry(snapshot.geometry);
+    }
+    if (!snapshot.mainWindowState.isEmpty()) {
+        restoreState(snapshot.mainWindowState);
+    }
+    if (!snapshot.dockingState.isEmpty() && mDockArea) {
+        mDockArea->dockManager()->restoreState(snapshot.dockingState);
     }
     return true;
 }

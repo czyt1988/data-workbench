@@ -1,4 +1,4 @@
-﻿
+
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # DA WorkBench 源码目录Cmake文件
@@ -40,6 +40,9 @@ if(DA_ENABLE_PYTHON)
     add_subdirectory(DAPyCommonWidgets)
     add_dependencies(DAPyCommonWidgets DAPyBindQt)
 
+    add_subdirectory(DAPyWorkFlow)
+    add_dependencies(DAPyWorkFlow DAUtils DAGraphicsView DAPyBindQt)
+
     add_subdirectory(DAData)
     add_dependencies(DAData DAUtils DAPyBindQt DAPyScripts)
 else()
@@ -55,9 +58,6 @@ add_dependencies(DACommonWidgets DAUtils)
 add_subdirectory(DAGraphicsView)
 add_dependencies(DAGraphicsView DAUtils)
 
-add_subdirectory(DAWorkFlow)
-add_dependencies(DAWorkFlow DAGraphicsView)
-
 add_subdirectory(DAFigure)
 add_subdirectory(DAGui)
 
@@ -65,7 +65,7 @@ add_subdirectory(DAInterface)
 add_dependencies(DAInterface DAGui)
 
 add_subdirectory(DAPluginSupport)
-add_dependencies(DAPluginSupport DAInterface)
+add_dependencies(DAPluginSupport DAInterface DAPyWorkFlow)
 
 add_subdirectory(APP)
 

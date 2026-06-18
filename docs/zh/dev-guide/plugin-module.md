@@ -36,10 +36,10 @@ classDiagram
     
     class DAAbstractNodePlugin {
         <<abstract>>
-        +createNodeFactory() DAAbstractNodeFactory*
-        +destoryNodeFactory()
+        +createNodeFactory() DAPyNodeFactory*
+        +destroyNodeFactory()
         +afterLoadedNodes()
-        +getCurrentActiveWorkFlow() DAWorkFlow*
+        +getWorkFlowOperateWidget() DAPyWorkFlowOperateWidget*
     }
     
     class DAPluginManager {
@@ -162,8 +162,8 @@ public:
     void retranslate() override;
     
     // 节点工厂
-    DA::DAAbstractNodeFactory* createNodeFactory() override;
-    void destoryNodeFactory(DA::DAAbstractNodeFactory* p) override;
+    DA::DAPyNodeFactory* createNodeFactory() override;
+    void destroyNodeFactory(DA::DAPyNodeFactory* p) override;
 };
 ```
 
@@ -211,12 +211,12 @@ void MyNodePlugin::retranslate()
     // 处理多语言翻译
 }
 
-DA::DAAbstractNodeFactory* MyNodePlugin::createNodeFactory()
+DA::DAPyNodeFactory* MyNodePlugin::createNodeFactory()
 {
     return new MyNodeFactory();
 }
 
-void MyNodePlugin::destoryNodeFactory(DA::DAAbstractNodeFactory* p)
+void MyNodePlugin::destroyNodeFactory(DA::DAPyNodeFactory* p)
 {
     delete p;
 }
@@ -226,7 +226,7 @@ void MyNodePlugin::destoryNodeFactory(DA::DAAbstractNodeFactory* p)
 - `initialize()` 中获取核心接口并检查有效性
 - 通过 UI 接口可以添加 Ribbon 按钮、Dock 窗口等界面元素
 - `createNodeFactory()` 创建节点工厂实例，遵循"谁创建谁删除"原则
-- `destoryNodeFactory()` 在插件卸载时销毁工厂实例
+- `destroyNodeFactory()` 在插件卸载时销毁工厂实例
 
 ### CMake 配置
 
@@ -269,7 +269,7 @@ set_target_properties(MyNodePlugin PROPERTIES
 
 `DAAbstractNodePlugin`负责生成工作流的节点，可以通过编写此插件提供不同功能的节点。
 
-节点插件需要实现节点工厂`DAAbstractNodeFactory`，具体详见[工作流](./workflow.md)。
+节点插件需要实现节点工厂`DAPyNodeFactory`，具体详见[工作流](./workflow.md)。
 
 ### 其他插件类型
 
@@ -298,10 +298,10 @@ data-workbench支持多种插件扩展点：
 
 | 方法 | 参数 | 返回值 | 说明 |
 |------|------|--------|------|
-| `createNodeFactory()` | 无 | DAAbstractNodeFactory* | 创建节点工厂 |
-| `destoryNodeFactory()` | DAAbstractNodeFactory* | void | 销毁节点工厂 |
+| `createNodeFactory()` | 无 | DAPyNodeFactory* | 创建节点工厂 |
+| `destroyNodeFactory()` | DAPyNodeFactory* | void | 销毁节点工厂 |
 | `afterLoadedNodes()` | 无 | void | 节点加载完成回调 |
-| `getCurrentActiveWorkFlow()` | 无 | DAWorkFlow* | 获取当前激活的工作流 |
+| `getWorkFlowOperateWidget()` | 无 | DAPyWorkFlowOperateWidget* | 获取工作流操作窗口 |
 
 ## 注意事项
 

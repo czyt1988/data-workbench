@@ -1,9 +1,9 @@
-﻿#ifndef DANODELISTWIDGET_H
+#ifndef DANODELISTWIDGET_H
 #define DANODELISTWIDGET_H
 #include <QListWidget>
 #include <QListWidgetItem>
 #include "DAGuiAPI.h"
-#include "DANodeMetaData.h"
+#include "DAPyNodeFactory.h"
 namespace DA
 {
 class DAGUI_API DANodeListWidgetItem : public QListWidgetItem
@@ -15,9 +15,9 @@ public:
     };
 
 public:
-    DANodeListWidgetItem(const DANodeMetaData& node, QListWidget* listview = nullptr);
-    DANodeMetaData getNodeMetaData() const;
-    void setNodeMetaData(const DANodeMetaData& md);
+    DANodeListWidgetItem(const DAPyNodeMetaData& node, QListWidget* listview = nullptr);
+    DAPyNodeMetaData getNodeMetaData() const;
+    void setNodeMetaData(const DAPyNodeMetaData& md);
 };
 
 /**
@@ -28,10 +28,10 @@ class DAGUI_API DANodeListWidget : public QListWidget
     Q_OBJECT
 public:
     DANodeListWidget(QWidget* p = nullptr);
-    void addItems(const QList< DANodeMetaData >& nodeMetaDatas);
-    void addItem(const DANodeMetaData& nodeMetaData);
+    void addItems(const QList< DAPyNodeMetaData >& nodeMetaDatas);
+    void addItem(const DAPyNodeMetaData& nodeMetaData);
     //通过位置获取对应的md
-    DANodeMetaData getNodeMetaData(const QPoint& p) const;
+    DAPyNodeMetaData getNodeMetaData(const QPoint& p) const;
 
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;

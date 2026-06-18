@@ -1,4 +1,4 @@
-﻿#include "{{plugin-base-name}}NodeFactory.h"
+#include "{{plugin-base-name}}NodeFactory.h"
 //
 #include <QMainWindow>
 #include "DACoreInterface.h"
@@ -40,7 +40,7 @@ void {{plugin-base-name}}NodeFactory::setCore(DA::DACoreInterface* c)
 }
 
 
-void {{plugin-base-name}}NodeFactory::registWorkflow(DA::DAWorkFlow* wf)
+void {{plugin-base-name}}NodeFactory::registWorkflow(DA::DAPyWorkFlow* wf)
 {
     DA::DAAbstractNodeFactory::registWorkflow(wf);
 }

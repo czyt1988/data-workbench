@@ -11,7 +11,6 @@
 - [Python 绑定开发](./python-binding-development.md)
 - [故障排除与最佳实践](./troubleshooting-and-best-practices.md)
 - [Python 脚本开发实战](./python-script-development.md)
-- [Python 多线程与异步任务](./python-multi-threading.md)
 
 ## Python 解释器初始化
 
@@ -91,6 +90,7 @@ Cpp->>Py: 如需调用其他 Python 代码<br/>GIL 已被持有，无需再次�
 ```
 
 上图展示了 GIL 管理的两种场景：
+
 - **场景1**：C++ 调用 Python 时，使用 `gil_scoped_acquire` 获取锁
 - **场景2**：Python 回调 C++ 时，GIL 已被持有，无需再次获取
 

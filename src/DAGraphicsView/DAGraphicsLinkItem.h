@@ -133,24 +133,24 @@ public:
 	static qreal pointLength(const QPointF& a, const QPointF& b);
 
 	// 延长线，以一个方向和距离延伸
-	static QPointF elongation(const QPointF& orgPoint, AspectDirection d, qreal externLen);
+	static QPointF elongation(const QPointF& orgPoint, DAAspectDirection d, qreal externLen);
 
 	// 判断两个方向是否相对，也就是东对西，南对北就是相对，相对必定平行
-	static bool isDirectionOpposite(AspectDirection d1, AspectDirection d2);
+	static bool isDirectionOpposite(DAAspectDirection d1, DAAspectDirection d2);
 
 	// 判断两个方向是否平行
-	static bool isDirectionParallel(AspectDirection d1, AspectDirection d2);
+	static bool isDirectionParallel(DAAspectDirection d1, DAAspectDirection d2);
 
 	// 顺着点1的方向看，点2是否在前面
-	static bool isPointInFront(const QPointF& p1, AspectDirection d1, const QPointF& p2);
+	static bool isPointInFront(const QPointF& p1, DAAspectDirection d1, const QPointF& p2);
 	// 点是否会相遇
-	static bool isPointCanMeet(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
+	static bool isPointCanMeet(const QPointF& p1, DAAspectDirection d1, const QPointF& p2, DAAspectDirection d2);
 	// 针对平行点线，沿着方向移动可以接近，此函数只对平行点线有用
-    static bool isParallelPointApproachInDirection(const QPointF& p1, AspectDirection d1, const QPointF& p2, AspectDirection d2);
+    static bool isParallelPointApproachInDirection(const QPointF& p1, DAAspectDirection d1, const QPointF& p2, DAAspectDirection d2);
 	// 翻转方向
-	static AspectDirection oppositeDirection(AspectDirection d);
+	static DAAspectDirection oppositeDirection(DAAspectDirection d);
 	// 返回点1相对点2的方位
-	static AspectDirection relativeDirectionOfPoint(const QPointF& p1, const QPointF& p2);
+	static DAAspectDirection relativeDirectionOfPoint(const QPointF& p1, const QPointF& p2);
 	// 获取线段的末端，这个函数可以返回末端但有不是终端的点，这个点离终端的距离不会超过distanceMaxPx
 	static QPointF calcPainterPathEndPoint(const QPainterPath& path,
                                            bool fromStart      = true,
@@ -171,16 +171,16 @@ protected:
 	virtual QPen getPainterPen(const QStyleOptionGraphicsItem* option) const;
 	// 生成painterpath
 	virtual QPainterPath generateLinkLineBezierPainterPath(const QPointF& fromPos,
-                                                           AspectDirection fromDirect,
+                                                           DAAspectDirection fromDirect,
                                                            const QPointF& toPos,
-                                                           AspectDirection toDirect);
+                                                           DAAspectDirection toDirect);
 	// 生成直线
 	virtual QPainterPath generateLinkLineStraightPainterPath(const QPointF& fromPos, const QPointF& toPos);
 	// 生成直角线
 	virtual QPainterPath generateLinkLineKnucklePainterPath(const QPointF& fromPos,
-                                                            AspectDirection fromDirect,
+                                                            DAAspectDirection fromDirect,
                                                             const QPointF& toPos,
-                                                            AspectDirection toDirect);
+                                                            DAAspectDirection toDirect);
 };
 
 }  // end DA

@@ -119,7 +119,18 @@ git submodule update --init --recursive
 
 ## 命令行构建步骤（Windows）
 
-### 完整构建流程
+### 生成器选择
+
+Windows 平台支持两种 CMake 生成器。**推荐使用 Visual Studio 生成器**，因为 Ninja 在 PowerShell 环境中有已知限制。
+
+| 生成器 | 是否可用 | 条件 |
+|--------|:------:|------|
+| **Visual Studio** | ✅ 推荐 | 任何环境均可用，自动检测 MSVC 编译器 |
+| **Ninja** | ⚠️ 有限制 | **必须**在 Developer Command Prompt (CMD) 中运行；PowerShell 中 MSVC 环境变量无法通过 `vcvars64.bat` 注入 |
+
+详细说明见项目根目录 `build.md`。
+
+### Visual Studio 生成器（推荐）
 
 以下代码展示了 Windows 平台下使用 PowerShell 从配置到安装的完整构建流程。每个步骤都有详细的中文注释说明其作用。
 
@@ -128,14 +139,11 @@ git submodule update --init --recursive
 # 这是所有构建操作的起始点，确保在正确的目录下执行命令
 cd C:\path\to\data-workbench
 
-# 步骤2：配置项目（必须指定 Qt 工具链文件）
+# 步骤2：配置项目
 # -S 指定源码目录，-B 指定构建目录
-# CMAKE_TOOLCHAIN_FILE 是必需参数，用于正确识别 Windows SDK
-cmake -S . -B build -G Ninja `
-    -DCMAKE_BUILD_TYPE:STRING=Release `
-    -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE `
-    -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake" `
-    -DQT_QML_GENERATE_QMLLS_INI:STRING=ON
+# CMAKE_PREFIX_PATH 指定 Qt 安装路径（VS 生成器不需 CMAKE_TOOLCHAIN_FILE）
+cmake -S . -B build -G "Visual Studio 16 2019" -A x64 `
+    -DCMAKE_PREFIX_PATH="C:/Qt/6.7.3/msvc2019_64"
 
 # 步骤3：构建项目（使用所有 CPU 核心）
 # --parallel 参数启用并行编译，充分利用多核 CPU 加速构建
@@ -152,40 +160,57 @@ copy build\src\3rdparty\zlib\Release\zlib.dll bin_Release_qt6.7.3_MSVC_x64\
 
 执行上述命令后，构建产物将输出到 `bin_Release_qt6.7.3_MSVC_x64` 目录，包含可执行文件和所有依赖库。
 
+!!! tip "VS 版本选择"
+    - VS 2019 使用 `-G "Visual Studio 16 2019"`
+    - VS 2022 使用 `-G "Visual Studio 17 2022"`
+    - Qt 版本必须与 Visual Studio 编译器版本匹配（如 Qt 6.7.3 msvc2019_64 配 VS 2019）
+
+### Ninja 生成器（需 Developer Command Prompt）
+
+如果已安装 Ninja 且**在 Developer Command Prompt (CMD) 中**运行，可以使用 Ninja 获得更快的构建速度：
+
+```powershell
+# ⚠️ 必须先在 Developer Command Prompt 中运行 vcvars64.bat
+cmake -S . -B build -G Ninja `
+    -DCMAKE_BUILD_TYPE:STRING=Release `
+    -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
+cmake --build build --config Release --parallel
+```
+
+!!! warning "PowerShell 中 Ninja 的限制"
+    在 PowerShell 中通过 `& vcvars64.bat` 调用后，环境变量不会传递给 PowerShell 后续命令，这是 PowerShell 与 bat 脚本交互的已知限制。如果遇到 `fatal error C1083: 无法打开包括文件`，请改用 Visual Studio 生成器。
+
 ### CMake 参数说明
 
 | 参数 | 必需 | 说明 |
 |------|:----:|------|
-| `-DCMAKE_TOOLCHAIN_FILE` | ✅ | Qt 工具链文件路径，**必须指定** |
-| `-DCMAKE_BUILD_TYPE` | ✅ | 构建类型：`Debug` 或 `Release` |
-| `-G Ninja` | 推荐 | 使用 Ninja 生成器，构建更快 |
+| `-G "Visual Studio 16 2019"` | ✅ | VS 2019 生成器（VS 方案）；或 `-G Ninja`（Ninja 方案） |
+| `-A x64` | ✅ (VS) | 64 位架构，仅 VS 生成器需要 |
+| `-DCMAKE_PREFIX_PATH` | ✅ (VS) | Qt 安装路径，VS 生成器用此参数（如 `C:/Qt/6.7.3/msvc2019_64`） |
+| `-DCMAKE_TOOLCHAIN_FILE` | ✅ (Ninja) | Qt 工具链文件路径，Ninja 生成器用此参数 |
+| `-DCMAKE_BUILD_TYPE` | ✅ (Ninja) | 构建类型：`Debug` 或 `Release`（VS 生成器用 `--config` 代替） |
 | `-DCMAKE_EXPORT_COMPILE_COMMANDS` | 可选 | 生成 LSP 配置文件 |
-| `-DQT_QML_GENERATE_QMLLS_INI` | 可选 | QML 语言服务器配置 |
 
 ### 分步构建
 
 如果需要分步构建（例如调试特定库的问题），可按以下顺序执行。分步构建有助于排查编译问题，每个步骤独立执行便于定位错误。
 
 ```powershell
+# VS 生成器分步构建
+
 # 第一步：编译 zlib（首次构建需要）
-# zlib 是纯 C 库，需要独立构建以便 quazip 能通过 find_package 找到
-cmake -S src/3rdparty/zlib -B build/zlib -G Ninja `
-    -DCMAKE_BUILD_TYPE:STRING=Release `
-    -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
+cmake -S src/3rdparty/zlib -B build/zlib -G "Visual Studio 16 2019" -A x64 `
+    -DCMAKE_PREFIX_PATH="C:/Qt/6.7.3/msvc2019_64"
 cmake --build build/zlib --config Release --target install
 
 # 第二步：编译第三方库
-# 统一构建除 zlib 外的所有第三方库（qwt、SARibbon、ADS 等）
-cmake -S src/3rdparty -B build/3rdparty -G Ninja `
-    -DCMAKE_BUILD_TYPE:STRING=Release `
-    -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
+cmake -S src/3rdparty -B build/3rdparty -G "Visual Studio 16 2019" -A x64 `
+    -DCMAKE_PREFIX_PATH="C:/Qt/6.7.3/msvc2019_64"
 cmake --build build/3rdparty --config Release --target install
 
 # 第三步：编译主项目
-# 构建核心模块（DAFigure、DAData、DAGui 等）和主程序
-cmake -S . -B build -G Ninja `
-    -DCMAKE_BUILD_TYPE:STRING=Release `
-    -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
+cmake -S . -B build -G "Visual Studio 16 2019" -A x64 `
+    -DCMAKE_PREFIX_PATH="C:/Qt/6.7.3/msvc2019_64"
 cmake --build build --config Release --target install
 ```
 
@@ -318,7 +343,8 @@ ls bin_Release_qt6.7.3_GCC_x64/
 
 | 问题 | 原因 | 解决方案 |
 |------|------|----------|
-| 找不到 Windows SDK 头文件 | 未使用 Qt 工具链文件 | 添加 `-DCMAKE_TOOLCHAIN_FILE` 参数 |
+| 找不到 Windows SDK 头文件 | 未使用 Qt 工具链文件（Ninja 模式）或未指定 CMAKE_PREFIX_PATH（VS 模式） | 根据生成器类型添加对应参数 |
+| `fatal error C1083: 无法打开包括文件` | 使用 Ninja 生成器但未在 Developer Command Prompt 中运行 | 改用 Visual Studio 生成器（推荐） |
 | zlib 相关链接错误 | zlib 未编译 | 先执行 zlib 编译步骤 |
 | 第三方库找不到 | 第三方库未编译 | 执行第三方库编译步骤 |
 | Python.h 找不到 | Python 开发包未安装 | 安装 Python 开发库 |
@@ -341,8 +367,8 @@ ls bin_Release_qt6.7.3_GCC_x64/
 
 ## 注意事项
 
-!!! warning "工具链文件必须使用"
-    构建此项目**必须**使用 Qt 工具链文件（`qt.toolchain.cmake`），否则会出现 Windows SDK 头文件找不到的问题。
+!!! warning "生成器选择"
+    Windows 平台**推荐使用 Visual Studio 生成器**。Ninja 生成器虽然在 CI 环境中可用，但在本地 PowerShell 中存在 MSVC 编译器环境变量无法传递的问题，会导致 `fatal error C1083`。如需使用 Ninja，必须在 Developer Command Prompt (CMD) 中运行。详见项目根目录 `build.md`。
 
 !!! warning "第三方库编译顺序"
     第三方库中的 `quazip` 依赖 `zlib`，必须按顺序编译：
@@ -353,8 +379,13 @@ ls bin_Release_qt6.7.3_GCC_x64/
 !!! tip "已有 zlib 环境"
     如果开发环境已安装 zlib，可跳过 zlib 编译，但需确保 CMake 能找到 zlib 的头文件和库文件。
 
-!!! tip "Ninja 构建器"
-    推荐使用 Ninja 构建器（`-G Ninja`），相比 MSBuild 或 Make，Ninja 具有更快的构建速度和更好的增量构建支持。
+!!! tip "快速构建脚本"
+    项目提供了 `scripts/build.ps1` 脚本，自动检测环境并执行正确构建命令：
+    ```powershell
+    .\scripts\build.ps1 -Target DAPyWorkFlow
+    .\scripts\build.ps1 -Target DAPyWorkFlow -Test
+    .\scripts\build.ps1 -Full
+    ```
 
 ## 参考资料
 

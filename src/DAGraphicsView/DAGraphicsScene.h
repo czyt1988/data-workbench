@@ -144,7 +144,7 @@ public:
 	static int dpiToPx(int dpi, int r);
 	// 把item添加到分组
 	static void addItemToGroup(QGraphicsItemGroup* group, const QList< QGraphicsItem* >& willGroupItems);
-public slots:
+public Q_SLOTS:
 	// 设置对齐网格
 	void setEnableSnapToGrid(bool on = true);
 	// 显示网格
@@ -163,7 +163,7 @@ public slots:
 	void setupSceneAction(DA::DAAbstractGraphicsSceneAction* act);
 	// 清除场景动作，发射sceneActionDeactived信号
 	void clearSceneAction();
-signals:
+Q_SIGNALS:
 	/**
 	 * @brief item移动发射的信号
 	 *
@@ -174,23 +174,21 @@ signals:
 	 * @param oldPos
 	 * @param newPos
 	 */
-	void itemsPositionChanged(const QList< QGraphicsItem* >& items,
-							  const QList< QPointF >& oldPos,
-							  const QList< QPointF >& newPos);
+	void itemsPositionChanged(const QList< QGraphicsItem* >& items, const QList< QPointF >& oldPos, const QList< QPointF >& newPos);
 
 	/**
 	 * @brief 条目bodysize改变触发的信号
 	 * @param item
 	 * @param rotation
 	 */
-	void itemBodySizeChanged(DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize);
+	void itemBodySizeChanged(DA::DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize);
 
 	/**
 	 * @brief item旋转发出的信号
 	 * @param item
 	 * @param rotation
 	 */
-	void itemRotationChanged(DAGraphicsResizeableItem* item, const qreal& rotation);
+	void itemRotationChanged(DA::DAGraphicsResizeableItem* item, const qreal& rotation);
 
 	/**
 	 * @brief 完成了一次链接
@@ -199,19 +197,19 @@ signals:
 
 	 * @param linkItem 通过此指针可以获取两个连接点
 	 */
-	void linkCompleted(DAGraphicsLinkItem* linkItem);
+	void linkCompleted(DA::DAGraphicsLinkItem* linkItem);
 
 	/**
 	   @brief 选中的item发生了变化，注意，选中的如果是分组，会检查分组内部的item的点击，最终也是发送被点击的item
 	   @param item
 	 */
-	void selectItemChanged(DAGraphicsItem* item);
+	void selectItemChanged(DA::DAGraphicsItem* item);
 
 	/**
 	   @brief 选中的链接线发生了改变
 	   @param item
 	 */
-	void selectLinkChanged(DAGraphicsLinkItem* item);
+	void selectLinkChanged(DA::DAGraphicsLinkItem* item);
 
 	/**
 	 * @brief item添加的信号
@@ -247,9 +245,9 @@ signals:
 
 protected:
 	// 调用此函数 主动触发itemsPositionChanged信号，这个函数用于 继承此类例如实现了键盘移动item，主动触发此信号
-	void emitItemsPositionChanged(const QList< QGraphicsItem* >& items,
-								  const QList< QPointF >& oldPos,
-								  const QList< QPointF >& newPos);
+	void emitItemsPositionChanged(
+		const QList< QGraphicsItem* >& items, const QList< QPointF >& oldPos, const QList< QPointF >& newPos
+	);
 	// 调用此函数 主动触发itemBodySizeChanged信号
 	void emitItemBodySizeChanged(DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize);
 	// 调用此函数 主动触发itemRotationed信号

@@ -8,8 +8,6 @@
 #include <QPair>
 #include "ads_globals.h"
 
-#include "DAWorkFlowOperateWidget.h"
-
 class SARibbonMainWindow;
 namespace ads
 {
@@ -27,8 +25,9 @@ class DAChartOperateWidget;
 class DADataManageWidget;
 class DADataOperateWidget;
 class DAMessageLogViewWidget;
-class DAWorkFlowNodeListWidget;
-class DAWorkFlowOperateWidget;
+class DAPyWorkFlowNodeListWidget;
+class DAPyWorkFlowOperateWidget;
+class DAPyWorkFlowGraphicsScene;
 class DASettingContainerWidget;
 
 /**
@@ -182,10 +181,10 @@ public:
 	 */
 
 	// 获取工作节点管理窗口
-	virtual DAWorkFlowNodeListWidget* getWorkflowNodeListWidget() const = 0;
+	virtual DAPyWorkFlowNodeListWidget* getWorkflowNodeListWidget() const = 0;
 
 	// 获取workflow操作窗口
-	virtual DAWorkFlowOperateWidget* getWorkFlowOperateWidget() const = 0;
+	virtual DAPyWorkFlowOperateWidget* getWorkFlowOperateWidget() const = 0;
 
 	// 绘图管理窗口
 	virtual DAChartManageWidget* getChartManageWidget() const = 0;
@@ -273,20 +272,20 @@ public:
 	 * @brief 判断DataOperateWidget是否是在焦点
 	 * @return
 	 */
-	bool isDataOperateWidgetDockOnFource() const;
+	bool isDataOperateWidgetDockOnFocus() const;
 
 	/**
 	 * @brief 判断DataManageWidget是否是在焦点
 	 * @return
 	 */
-	bool isDataManageWidgetDockOnFource() const;
+	bool isDataManageWidgetDockOnFocus() const;
 
 public:
 	/**
 	 * @brief 获取当前的场景
 	 * @return
 	 */
-	DAWorkFlowGraphicsScene* getCurrentScene() const;
+	DAPyWorkFlowGraphicsScene* getCurrentScene() const;
 
 protected:
 	/**

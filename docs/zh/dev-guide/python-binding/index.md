@@ -11,7 +11,6 @@
 - [Python 绑定开发](./python-binding-development.md)
 - [故障排除与最佳实践](./troubleshooting-and-best-practices.md)
 - [Python 脚本开发实战](./python-script-development.md)
-- [Python 多线程与异步任务](./python-multi-threading.md)
 
 ## 概述
 
@@ -78,6 +77,7 @@ Scripts -->|操作| IF
 ```
 
 上图展示了 C++/Python 集成的三层架构：
+
 - **C++ 主框架**：包含核心控制器、界面接口、数据管理器和跨线程信号处理器
 - **pybind11 绑定层**：包含 Qt 类型转换器、解释器管理和接口绑定
 - **Python 插件层**：包含 da_app、da_interface、da_data 模块和业务脚本
@@ -102,6 +102,7 @@ Scripts -->|操作| IF
     ```
 
 上述基础配置的关键点：
+
 - 使用 `find_package` 查找 Python 3.8+ 开发库
 - 使用 `find_package` 查找 pybind11 绑定库
 - 设置 Python 模块输出目录用于存放编译后的绑定模块
@@ -131,6 +132,7 @@ Scripts -->|操作| IF
     ```
 
 上述嵌入式配置的关键点：
+
 - 链接 `Python3::Python` 和 `Python3::Module` 获取 Python 库支持
 - 包含 `Python3_INCLUDE_DIRS` 获取 Python 头文件
 - 定义 `DA_ENABLE_PYTHON=1` 宏标记 Python 功能启用
@@ -160,6 +162,7 @@ Scripts -->|操作| IF
     ```
 
 上述模块绑定配置的关键点：
+
 - 使用 `pybind11_add_module` 创建 Python 绑定模块
 - 链接 `DAInterface` 和 `DAPyBindQt` 获取接口和类型转换支持
 - 设置输出目录确保 Python 能正确导入模块

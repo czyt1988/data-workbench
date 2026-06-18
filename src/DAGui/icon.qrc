@@ -49,6 +49,7 @@
         <file>icon/setting.svg</file>
         <file>icon/workflow.svg</file>
         <file>icon/data.svg</file>
+        <file>icon/node.svg</file>
     </qresource>
     <qresource prefix="/DAGui/MessageType">
         <file>icon/messageType/messageTypeDebug.svg</file>

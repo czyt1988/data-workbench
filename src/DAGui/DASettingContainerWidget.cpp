@@ -1,5 +1,5 @@
-﻿#include "DASettingContainerWidget.h"
-#include "DAWorkFlowNodeItemSettingWidget.h"
+#include "DASettingContainerWidget.h"
+#include "DAPyWorkFlowNodeItemSettingWidget.h"
 #include "DAChartSettingWidget.h"
 #include "ChartSetting/DAFigureWidgetSettingPanel.h"
 //===================================================
@@ -38,7 +38,7 @@ bool DASettingContainerWidget::isContainWidget(QWidget* w) const
 
 void DASettingContainerWidget::initWorkFlowSettingWidgets()
 {
-	mWorkFlowNodeItemSettingWidget = new DAWorkFlowNodeItemSettingWidget();
+	mWorkFlowNodeItemSettingWidget = new DAPyWorkFlowNodeItemSettingWidget();
 	addWidget(mWorkFlowNodeItemSettingWidget);
 	mChartSettingWidget = new DAChartSettingWidget();
 	addWidget(mChartSettingWidget);
@@ -50,7 +50,7 @@ void DASettingContainerWidget::initWorkFlowSettingWidgets()
  * @brief 获取工作量节点设置窗口
  * @return
  */
-DAWorkFlowNodeItemSettingWidget* DASettingContainerWidget::getWorkFlowNodeItemSettingWidget()
+DAPyWorkFlowNodeItemSettingWidget* DASettingContainerWidget::getWorkFlowNodeItemSettingWidget()
 {
     return mWorkFlowNodeItemSettingWidget;
 }

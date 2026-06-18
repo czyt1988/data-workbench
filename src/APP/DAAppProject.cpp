@@ -1,4 +1,4 @@
-﻿#include "DAAppProject.h"
+#include "DAAppProject.h"
 #include <memory>
 // Qt
 #include <QBuffer>
@@ -11,13 +11,16 @@
 #include <QSet>
 #include <QSysInfo>
 #include <QFileDialog>
+#include <QEventLoop>
 #include <QStandardPaths>
+#include <QTemporaryFile>
+#include <QDir>
 // DA
 #include "DACoreInterface.h"
 #include "DAUIInterface.h"
 #include "DAStatusBarInterface.h"
 
-#include "DAWorkFlowOperateWidget.h"
+#include "DAPyWorkFlowOperateWidget.h"
 #include "DAXmlHelper.h"
 #include "DAQtContainerUtil.hpp"
 #include "DAStringUtil.h"
@@ -41,10 +44,21 @@
 #include "DAPyInterpreter.h"
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
+#include "DAPyWorkFlowSerializer.h"
+#include "DAPyWorkFlowManager.h"
+#include "DAPyWorkFlow.h"
+#include "DAPyWorkFlowEditWidget.h"
+#include "DAPyNodeFactory.h"
+#include "DAPyNodeGraphicsItem.h"
+#include "DAPybind11InQt.h"
+#include "DAPyGILGuard.h"
+#include "DAPybind11QtCaster.hpp"
+#include "DAZipArchiveTask_ByteArray.h"
 #endif
-const QString c_workflowxml_save_filename = QStringLiteral("workflow.xml");
-const QString c_chartsxml_save_filename   = QStringLiteral("charts.xml");
-const QString c_chartitem_save_folder     = QStringLiteral("chart-data");
+const QString c_workflowxml_save_filename      = QStringLiteral("workflow.xml");
+const QString c_workflowdata_save_filename     = QStringLiteral("workflow-data.xml");
+const QString c_chartsxml_save_filename        = QStringLiteral("charts.xml");
+const QString c_chartitem_save_folder          = QStringLiteral("chart-data");
 
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_BEGIN
 #define DAAPPPROJECT_TASK_LOAD_ID_BEGIN 0x234
@@ -76,8 +90,61 @@ const QString c_chartitem_save_folder     = QStringLiteral("chart-data");
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_CHARTS_INFO
 #define DAAPPPROJECT_TASK_LOAD_ID_CHARTS_INFO (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 4)
 #endif
+
+/**
+ *@def 加载任务id - 工作流Python逻辑数据
+ */
+#ifndef DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW_DATA
+#define DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW_DATA (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 5)
+#endif
 namespace DA
 {
+
+struct DAArchiveRunResult
+{
+    bool started { false };
+    bool success { false };
+};
+
+static DAArchiveRunResult waitArchiveSave(DAZipArchiveThreadWrapper* archive, const QString& filePath)
+{
+    DAArchiveRunResult res;
+    if (nullptr == archive) {
+        return res;
+    }
+
+    QEventLoop loop;
+    QMetaObject::Connection c = QObject::connect(archive, &DAZipArchiveThreadWrapper::saved, &loop, [&](bool success) {
+        res.success = success;
+        loop.quit();
+    });
+    res.started = archive->save(filePath);
+    if (res.started) {
+        loop.exec(QEventLoop::ExcludeUserInputEvents);
+    }
+    QObject::disconnect(c);
+    return res;
+}
+
+static DAArchiveRunResult waitArchiveLoad(DAZipArchiveThreadWrapper* archive, const QString& filePath)
+{
+    DAArchiveRunResult res;
+    if (nullptr == archive) {
+        return res;
+    }
+
+    QEventLoop loop;
+    QMetaObject::Connection c = QObject::connect(archive, &DAZipArchiveThreadWrapper::loaded, &loop, [&](bool success) {
+        res.success = success;
+        loop.quit();
+    });
+    res.started = archive->load(filePath);
+    if (res.started) {
+        loop.exec(QEventLoop::ExcludeUserInputEvents);
+    }
+    QObject::disconnect(c);
+    return res;
+}
 
 class DAZipArchiveTask_LoadDataManager : public DAAbstractArchiveTask
 {
@@ -201,7 +268,7 @@ DAAppProject::~DAAppProject()
 {
 }
 
-DAWorkFlowOperateWidget* DAAppProject::getWorkFlowOperateWidget() const
+DAPyWorkFlowOperateWidget* DAAppProject::getWorkFlowOperateWidget() const
 {
     return getDockingAreaInterface()->getWorkFlowOperateWidget();
 }
@@ -227,7 +294,7 @@ DAChartOperateWidget* DAAppProject::getChartOperateWidget() const
 bool DAAppProject::appendWorkflowInProject(const QDomDocument& doc, bool skipIndex)
 {
     // 加载之前先清空
-    DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
     Q_CHECK_PTR(wfo);
     int oldProjectHaveWorkflow = wfo->count();  // 已有的工作流数量
     bool isok                  = true;
@@ -262,8 +329,9 @@ bool DAAppProject::appendWorkflowInProject(const QDomDocument& doc, bool skipInd
         QString name = workflowEle.attribute("name");
         // 生成一个唯一名字
         name = DA::makeUniqueString(names, name);
+        names.insert(name);
         // 建立工作流窗口
-        DAWorkFlowEditWidget* wfe = wfo->appendWorkflow(name);
+        DAPyWorkFlowEditWidget* wfe = wfo->appendWorkflow(name);
         isok &= mXml.loadElement(wfe, &workflowEle);
     }
     if (skipIndex) {
@@ -357,7 +425,7 @@ void DAAppProject::setPluginMgr(DAAppPluginManager* plugin)
 void DAAppProject::clear()
 {
     // 清除工作流
-    DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
     Q_CHECK_PTR(wfo);
     wfo->clear();
     //! 清除数据
@@ -392,37 +460,18 @@ bool DAAppProject::save(const QString& path)
         qInfo() << tr("current project is busy");  // cn:当前工程正繁忙
         return false;
     }
+    const QString oldProjectFilePath = getProjectFilePath();
     setStatusBarInBusy(tr("Saving project"));
     setProjectPath(path);
     DA_WAIT_CURSOR_SCOPED();
-    //! 保存系统信息，仅仅保存不读取
-    makeSaveSystemInfoTask(mArchive);
-
-    //! 先把涉及ui的内容保存下来,ui是无法在其它线程操作，因此需要先保存下来
-    makeSaveWorkFlowTask(mArchive);
-
-    //! datamanager
-    makeSaveDataManagerTask(mArchive);
-
-    //! 绘图
-    makeSaveChartTask(mArchive);
-
-    //! 插件
-    if (m_pluginMgr) {
-        const QList< DAAbstractPlugin* > plugins = m_pluginMgr->getAllPlugins();
-        for (DAAbstractPlugin* plugin : plugins) {
-            auto task = plugin->createArchiveTask(true);
-            if (task) {
-                mArchive->appendTask(task);
-            }
+    bool started = false;
+    if (!executeSave(mArchive, path, &started)) {
+        if (!started) {
+            setStatusBarNotBusy(tr("Failed to save project"));  // cn:无法保存工程
         }
-    }
-    //! 组件任务队列
-    if (!mArchive->save(path)) {
-        qCritical() << tr("failed to save archive to %1").arg(path);
+        setProjectPath(oldProjectFilePath);
         return false;
     }
-
     return true;
 }
 
@@ -450,53 +499,54 @@ bool DAAppProject::load(const QString& path)
         qCritical() << tr("The file %1 is not a valid project file").arg(path);  // cn:文件%1不是正确的工程文件
         return false;
     }
+    const QString oldProjectFilePath = getProjectFilePath();
+    const bool oldDirty              = isDirty();
+    const bool needSnapshot          = oldDirty || !isEmpty();
+    QString snapshotPath;
+
+    if (needSnapshot) {
+        setStatusBarInBusy(tr("Creating project snapshot"));  // cn:正在创建工程快照
+        if (!createProjectSnapshot(&snapshotPath)) {
+            setStatusBarNotBusy(tr("Failed to backup current project"));  // cn:无法备份当前工程
+            qCritical() << tr("Failed to backup current project before loading %1").arg(path);
+            return false;
+        }
+    }
     setStatusBarInBusy(tr("Loading project"));  // cn:正在加载工程
 
     // 加载之前先清空
     clear();
 
     setProjectPath(path);
-    // 创建archive任务队列
-    auto task = mArchive->appendXmlLoadTask(c_workflowxml_save_filename, DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW);
-    task->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedWorkflowInfo(t); });
-    // 创建datamanager任务
-    std::shared_ptr< DAZipArchiveTask_LoadDataManager > loadDataTask =
-        std::make_shared< DAZipArchiveTask_LoadDataManager >();
-    loadDataTask->setCode(DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER);
-    loadDataTask->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedDataManager(t); });
-    mArchive->appendTask(loadDataTask);
-
-    // 加载chartItemManager
-
-    //! ChartItemLoadTask必须在chart info 的XmlLoadTask之前
-    auto taskChartItem =
-        mArchive->appendChartItemLoadTask(c_chartitem_save_folder, DAAPPPROJECT_TASK_LOAD_ID_CHARTITEMMANAGER);
-    taskChartItem->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) {
-        const std::shared_ptr< DAZipArchiveTask_ChartItem > chartMgrArchive =
-            std::static_pointer_cast< DAZipArchiveTask_ChartItem >(t);
-        // 获取chartmanager
-        mChartItemManager = chartMgrArchive->getChartItemsManager();
-    });
-    auto taskCharts = mArchive->appendXmlLoadTask(c_chartsxml_save_filename, DAAPPPROJECT_TASK_LOAD_ID_CHARTS_INFO);
-    taskCharts->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedChartsInfo(t); });
-    //! 插件
-    if (m_pluginMgr) {
-        const QList< DAAbstractPlugin* > plugins = m_pluginMgr->getAllPlugins();
-        for (DAAbstractPlugin* plugin : plugins) {
-            auto task = plugin->createArchiveTask(false);
-            if (task) {
-                mArchive->appendTask(task);
-            }
+    bool started = false;
+    if (!executeLoad(mArchive, path, &started)) {
+        if (!started) {
+            setStatusBarNotBusy(tr("Failed to load project"));  // cn:无法加载工程
         }
-    }
-    //! 组件任务队列
-    if (!mArchive->load(path)) {
-        qCritical() << tr("failed to laod archive from %1").arg(path);  // cn:文件%1加载失败
+        if (!snapshotPath.isEmpty()) {
+            setStatusBarInBusy(tr("Restoring previous project"));  // cn:正在恢复之前的工程
+            if (restoreProjectSnapshot(snapshotPath, oldProjectFilePath, oldDirty)) {
+                setStatusBarNotBusy(tr("Failed to load project, restored previous project")
+                );  // cn:工程加载失败，已恢复之前的工程
+            } else {
+                setStatusBarNotBusy(tr("Failed to load project and failed to restore previous project")
+                );  // cn:工程加载失败，且恢复之前的工程失败
+                qCritical() << tr("Failed to restore previous project from snapshot");
+                setProjectPath(QString());
+                setModified(false);
+            }
+            QFile::remove(snapshotPath);
+        } else if (!started) {
+            setProjectPath(QString());
+            setModified(false);
+        }
         return false;
+    }
+    if (!snapshotPath.isEmpty()) {
+        QFile::remove(snapshotPath);
     }
     return true;
 }
-
 bool DAAppProject::requestSave()
 {
     QString projectFilePath = getProjectFilePath();
@@ -520,6 +570,160 @@ bool DAAppProject::requestSave()
     return saveRet;
 }
 
+bool DAAppProject::executeSave(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started)
+{
+    if (started) {
+        *started = false;
+    }
+    if (nullptr == archive) {
+        return false;
+    }
+
+    // 保存系统信息，仅仅保存不读取
+    makeSaveSystemInfoTask(archive);
+
+    // 保存Python工作流逻辑数据（节点拓扑+参数值+连接关系）
+    makeSaveWorkflowDataTask(archive);
+
+    // 先把涉及ui的内容保存下来,ui是无法在其它线程操作，因此需要先保存下来
+    makeSaveWorkFlowTask(archive);
+
+    // datamanager
+    makeSaveDataManagerTask(archive);
+
+    // 绘图
+    makeSaveChartTask(archive);
+
+    // 插件
+    if (m_pluginMgr) {
+        const QList< DAAbstractPlugin* > plugins = m_pluginMgr->getAllPlugins();
+        for (DAAbstractPlugin* plugin : plugins) {
+            auto task = plugin->createArchiveTask(true);
+            if (task) {
+                archive->appendTask(task);
+            }
+        }
+    }
+
+    const DAArchiveRunResult result = waitArchiveSave(archive, path);
+    if (started) {
+        *started = result.started;
+    }
+    return result.success;
+}
+
+bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started)
+{
+    if (started) {
+        *started = false;
+    }
+    if (nullptr == archive) {
+        return false;
+    }
+
+    // 创建archive任务队列 - Python工作流逻辑数据（先注册，FIFO保证先执行）
+    auto taskData = archive->appendByteLoadTask(c_workflowdata_save_filename, DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW_DATA);
+    if (!taskData) {
+        return false;
+    }
+    taskData->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedWorkflowData(t); });
+
+    // 创建archive任务队列 - 工作流UI（后注册，FIFO保证后执行）
+    auto task = archive->appendXmlLoadTask(c_workflowxml_save_filename, DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW);
+    if (!task) {
+        return false;
+    }
+    task->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedWorkflowInfo(t); });
+
+    // 创建datamanager任务
+    std::shared_ptr< DAZipArchiveTask_LoadDataManager > loadDataTask =
+        std::make_shared< DAZipArchiveTask_LoadDataManager >();
+    loadDataTask->setCode(DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER);
+    loadDataTask->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedDataManager(t); });
+    if (!archive->appendTask(loadDataTask)) {
+        return false;
+    }
+
+    // ChartItemLoadTask必须在chart info 的XmlLoadTask之前
+    auto taskChartItem = archive->appendChartItemLoadTask(c_chartitem_save_folder, DAAPPPROJECT_TASK_LOAD_ID_CHARTITEMMANAGER);
+    if (!taskChartItem) {
+        return false;
+    }
+    taskChartItem->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) {
+        const std::shared_ptr< DAZipArchiveTask_ChartItem > chartMgrArchive =
+            std::static_pointer_cast< DAZipArchiveTask_ChartItem >(t);
+        // 获取chartmanager
+        mChartItemManager = chartMgrArchive->getChartItemsManager();
+    });
+
+    auto taskCharts = archive->appendXmlLoadTask(c_chartsxml_save_filename, DAAPPPROJECT_TASK_LOAD_ID_CHARTS_INFO);
+    if (!taskCharts) {
+        return false;
+    }
+    taskCharts->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedChartsInfo(t); });
+
+    // 插件
+    if (m_pluginMgr) {
+        const QList< DAAbstractPlugin* > plugins = m_pluginMgr->getAllPlugins();
+        for (DAAbstractPlugin* plugin : std::as_const(plugins)) {
+            auto taskPlugin = plugin->createArchiveTask(false);
+            if (taskPlugin) {
+                archive->appendTask(taskPlugin);
+            }
+        }
+    }
+
+    const DAArchiveRunResult result = waitArchiveLoad(archive, path);
+    if (started) {
+        *started = result.started;
+    }
+    return result.success;
+}
+
+bool DAAppProject::createProjectSnapshot(QString* snapshotPath)
+{
+    if (nullptr == snapshotPath) {
+        return false;
+    }
+
+    QTemporaryFile tempFile(QDir::tempPath() + QDir::separator()
+                            + QStringLiteral("daworkbench-project-XXXXXX.%1").arg(getProjectFileSuffix()));
+    tempFile.setAutoRemove(false);
+    if (!tempFile.open()) {
+        return false;
+    }
+    *snapshotPath = tempFile.fileName();
+    tempFile.close();
+    QFile::remove(*snapshotPath);
+
+    DAZipArchiveThreadWrapper archive;
+    bool started = false;
+    if (!executeSave(&archive, *snapshotPath, &started) || !started) {
+        QFile::remove(*snapshotPath);
+        snapshotPath->clear();
+        return false;
+    }
+    return true;
+}
+
+bool DAAppProject::restoreProjectSnapshot(const QString& snapshotPath, const QString& projectFilePath, bool isDirty)
+{
+    if (snapshotPath.isEmpty() || !QFileInfo::exists(snapshotPath)) {
+        return false;
+    }
+
+    clear();
+    DAZipArchiveThreadWrapper archive;
+    bool started = false;
+    if (!executeLoad(&archive, snapshotPath, &started) || !started) {
+        return false;
+    }
+
+    setProjectPath(projectFilePath);
+    setModified(isDirty);
+    return true;
+}
+
 /**
  * @brief 保存系统信息
  * @param archive
@@ -539,6 +743,60 @@ void DAAppProject::makeSaveSystemInfoTask(DAZipArchiveThreadWrapper* archive)
     auto t = archive->appendXmlSaveTask(QStringLiteral("system.xml"), doc);
     t->setName(tr("Save System Info"));             // cn:保存系统信息
     t->setDescribe(tr("Save system information"));  // cn:保存系统信息
+}
+
+/**
+ * @brief 创建保存Python工作流逻辑数据的任务
+ *
+ * 遍历所有工作流标签页，通过DAPyWorkFlowSerializer调用Python端
+ * 的to_xml()方法，将节点拓扑、参数值和连接关系序列化为XML。
+ * Python XML通过CDATA嵌入到外层XML中，避免QDomDocument解析开销。
+ * 使用appendByteSaveTask直接保存字节数据。
+ *
+ * @param archive ZIP归档线程包装器
+ */
+void DAAppProject::makeSaveWorkflowDataTask(DAZipArchiveThreadWrapper* archive)
+{
+#if DA_ENABLE_PYTHON
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    Q_CHECK_PTR(wfo);
+    DAPyWorkFlowSerializer serializer;
+
+    // 纯字符串拼接，不经过QDomDocument解析Python XML
+    QString xml;
+    xml += QStringLiteral("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    xml += QStringLiteral("<root type=\"workflow-data\">\n<workflows>\n");
+
+    DAPyGILGuard gilGuard;  // GIL保护：serializer.toXml() 调用 Python
+    const int cnt = wfo->count();
+    for (int i = 0; i < cnt; ++i) {
+        DAPyWorkFlowEditWidget* wfe = wfo->getWorkFlowWidget(i);
+        QString tabName             = wfo->getWorkFlowWidgetName(i);
+        DAPyWorkFlowManager* mgr    = wfe->getManager();
+        if (!mgr || !mgr->isWorkflowValid()) {
+            continue;
+        }
+        DAPyWorkFlow wf = mgr->getWorkflow();
+        QString pyXml   = serializer.toXml(wf);
+        if (pyXml.isEmpty()) {
+            qWarning() << tr("Failed to serialize workflow '%1' to XML").arg(tabName);
+            continue;
+        }
+        // CDATA注入防护：转义 ]]>
+        pyXml.replace("]]>", "]]]]><![CDATA[>");
+        xml += "<workflow name=\"" + tabName.toHtmlEscaped() + "\"><![CDATA[";
+        xml += pyXml;
+        xml += "]]></workflow>\n";
+    }
+
+    xml += QStringLiteral("</workflows>\n</root>");
+
+    auto t = archive->appendByteSaveTask(c_workflowdata_save_filename, xml.toUtf8());
+    t->setName(tr("Save workflow data"));
+    t->setDescribe(tr("Save Python workflow logic data (nodes, parameters, connections)"));
+#else
+    Q_UNUSED(archive);
+#endif
 }
 
 /**
@@ -591,7 +849,7 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
                 continue;
             }
             // 创建archive任务队列
-            mArchive->appendFileSaveTask(dataZipPath, tempFilePath);
+            archive->appendFileSaveTask(dataZipPath, tempFilePath);
         } break;
         default:
             break;
@@ -645,7 +903,7 @@ void DAAppProject::makeSaveChartTask(DAZipArchiveThreadWrapper* archive)
 
 QDomDocument DAAppProject::createWorkflowUIDomDocument()
 {
-    DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
     Q_CHECK_PTR(wfo);
     QDomDocument doc;
     QDomProcessingInstruction processInstruction =
@@ -691,7 +949,7 @@ QDomDocument DAAppProject::createChartsUIDomDocument(DAChartItemsManager& chartI
 bool DAAppProject::loadWorkflowUI(const QByteArray& data)
 {
     // 加载之前先清空
-    DAWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
     Q_CHECK_PTR(wfo);
     bool isok = appendWorkflowInProject(data, true);
     return isok;
@@ -770,12 +1028,144 @@ void DAAppProject::onLoadFinish(bool success)
 void DAAppProject::loadedWorkflowInfo(const std::shared_ptr< DAAbstractArchiveTask >& t)
 {
     const std::shared_ptr< DAZipArchiveTask_Xml > xmlArchive = std::static_pointer_cast< DAZipArchiveTask_Xml >(t);
-    // 读取xml
     QDomDocument xmlDoc = xmlArchive->getDomDocument();
     if (xmlDoc.isNull()) {
         return;
     }
-    this->appendWorkflowInProject(xmlDoc);
+
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    if (wfo && wfo->count() > 0) {
+        // 新路径：tab已由loadedWorkflowData创建，仅加载视图布局
+        appendWorkflowView(xmlDoc);
+    } else {
+        // 旧路径：向后兼容旧文件（无workflow-data.xml）
+        appendWorkflowInProject(xmlDoc);
+    }
+}
+
+/**
+ * @brief Python工作流逻辑数据加载回调
+ *
+ * 解析workflow-data.xml中的CDATA，通过DAPyWorkFlowSerializer反序列化
+ * 得到完整的DAWorkflow（含节点拓扑、参数值、连接关系），
+ * 为每个工作流创建空tab并通过manager->setWorkflow()注入Python数据。
+ * 此回调先于loadedWorkflowInfo执行（FIFO顺序保证）。
+ */
+void DAAppProject::loadedWorkflowData(const std::shared_ptr< DAAbstractArchiveTask >& t)
+{
+    const std::shared_ptr< DAZipArchiveTask_ByteArray > byteTask =
+        std::static_pointer_cast< DAZipArchiveTask_ByteArray >(t);
+    QByteArray data = byteTask->getData();
+    if (data.isEmpty()) {
+        // 旧文件可能没有workflow-data.xml，跳过
+        return;
+    }
+
+#if DA_ENABLE_PYTHON
+    // 解析外层XML获取<workflows>列表
+    QDomDocument doc;
+    if (!doc.setContent(data)) {
+        qWarning() << tr("Failed to parse workflow-data.xml");
+        return;
+    }
+
+    QDomElement rootEle      = doc.documentElement();
+    QDomElement workflowsEle = rootEle.firstChildElement("workflows");
+    if (workflowsEle.isNull()) {
+        return;
+    }
+
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    Q_CHECK_PTR(wfo);
+    DAPyWorkFlowSerializer serializer;
+
+    DAPyGILGuard gilGuard;  // GIL保护：serializer.fromXml() 和 setWorkflow() 调用 Python
+    QDomNodeList wfList = workflowsEle.childNodes();
+    for (int i = 0; i < wfList.size(); ++i) {
+        QDomElement wfEle = wfList.at(i).toElement();
+        if (wfEle.tagName() != "workflow") {
+            continue;
+        }
+
+        QString tabName = wfEle.attribute("name");
+        // 创建空tab（Manager自动创建空的Python workflow）
+        DAPyWorkFlowEditWidget* wfe = wfo->appendWorkflow(tabName);
+        if (!wfe) {
+            qWarning() << tr("Failed to create workflow tab: %1").arg(tabName);
+            continue;
+        }
+
+        // 提取CDATA中的Python XML字符串
+        QString pyXml = wfEle.text();  // QDomCDATASection的text()返回CDATA内容
+        if (pyXml.isEmpty()) {
+            qWarning() << tr("Empty Python workflow data for tab: %1").arg(tabName);
+            continue;
+        }
+
+        // 反序列化Python workflow
+        DAPyNodeFactory* factory = wfe->getManager()->getFactory();
+        DAPyWorkFlow wf          = serializer.fromXml(pyXml, DAPyNodeFactory(*factory));
+        if (!wf.isValid()) {
+            qWarning() << tr("Failed to deserialize Python workflow: %1").arg(tabName);
+            continue;
+        }
+
+        // 替换空的Python workflow
+        wfe->getManager()->setWorkflow(wf);
+    }
+#else
+    Q_UNUSED(t);
+#endif
+}
+
+/**
+ * @brief 加载工作流视图数据（Python数据已就绪）
+ *
+ * 遍历workflow.xml中的<workflow>元素，按name匹配已有tab，
+ * 调用DAXmlHelper::loadWorkflowView()加载视图布局。
+ */
+void DAAppProject::appendWorkflowView(const QDomDocument& doc)
+{
+    DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
+    Q_CHECK_PTR(wfo);
+
+    QDomElement docElem      = doc.documentElement();
+    QDomElement proEle       = docElem.firstChildElement("project");
+    QDomElement workflowsEle = proEle.firstChildElement("workflows");
+
+    // 设置版本号
+    QString verStr = workflowsEle.attribute("ver");
+    if (!verStr.isEmpty()) {
+        QVersionNumber version = QVersionNumber::fromString(verStr);
+        if (!version.isNull()) {
+            mXml.setLoadedVersionNumber(version);
+        }
+    } else {
+        mXml.setLoadedVersionNumber(QVersionNumber(1, 1, 0));
+    }
+
+    QDomNodeList wfList = workflowsEle.childNodes();
+    for (int i = 0; i < wfList.size(); ++i) {
+        QDomElement workflowEle = wfList.at(i).toElement();
+        if (workflowEle.tagName() != "workflow") {
+            continue;
+        }
+
+        QString tabName = workflowEle.attribute("name");
+        // 查找已有tab（由loadedWorkflowData创建）
+        DAPyWorkFlowEditWidget* wfe = nullptr;
+        for (int j = 0; j < wfo->count(); ++j) {
+            if (wfo->getWorkFlowWidgetName(j) == tabName) {
+                wfe = wfo->getWorkFlowWidget(j);
+                break;
+            }
+        }
+        if (wfe) {
+            mXml.loadWorkflowView(wfe, &workflowEle);
+        } else {
+            qWarning() << tr("appendWorkflowView: tab '%1' not found, skipping view load").arg(tabName);
+        }
+    }
 }
 
 void DAAppProject::loadedDataManager(const std::shared_ptr< DAAbstractArchiveTask >& t)

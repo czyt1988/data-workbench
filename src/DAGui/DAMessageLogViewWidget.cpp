@@ -64,6 +64,7 @@ DAMessageLogViewWidget::DAMessageLogViewWidget(QWidget* parent)
     connect(this, &DAMessageLogViewWidget::customContextMenuRequested, this, &DAMessageLogViewWidget::onCustomContextMenuRequested);
     ui->tableView->setWordWrap(true);
     connect(ui->tableView, &QTableView::clicked, this, &DAMessageLogViewWidget::onTableViewItemClicked);
+    setContextMenuPolicy(Qt::CustomContextMenu);
     DAMessageQueueProxy* messageQueue = &(_model->messageQueueProxy());
     connect(messageQueue, &DAMessageQueueProxy::messageQueueAppended, this, &DAMessageLogViewWidget::onMessageAppended);
 
@@ -115,7 +116,6 @@ void DAMessageLogViewWidget::buildMenu()
     _menu->addAction(_actionMessageLogShowCritical);
     _menu->addSeparator();
     _menu->addAction(_actionMessageLogClear);
-    setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
 bool DAMessageLogViewWidget::isAutoScrollToButtom() const
@@ -257,14 +257,12 @@ void DAMessageLogViewWidget::copySelectionMessageToClipBoard()
         }
     }
     if (text.isEmpty()) {
-        qDebug() << "copy nothing to clipboard";
         return;
     }
     QClipboard* appclip = QApplication::clipboard();
     if (appclip) {
         appclip->setText(text);
     }
-    qDebug() << "copy to clipboard:" << text;
 }
 
 /**

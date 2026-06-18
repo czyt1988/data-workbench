@@ -1,4 +1,4 @@
-﻿#ifndef DAAPPCORE_H
+#ifndef DAAPPCORE_H
 #define DAAPPCORE_H
 #include "DACoreInterface.h"
 

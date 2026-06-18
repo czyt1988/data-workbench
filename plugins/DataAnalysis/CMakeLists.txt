@@ -1,4 +1,4 @@
-﻿
+
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # DataAnalysisPlugin 库
@@ -130,32 +130,34 @@ damacro_import_Python(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 message(STATUS "DAWorkbench_DIR=${DAWorkbench_DIR}")
 # DAInterface
 # 指定DAWorkbench_DIR为工程的顶层BINARY_DIR，否则找不到${DA_PROJECT_NAME}
-find_package(DAWorkbench COMPONENTS 
-    DAUtils 
-    DAMessageHandler
-    DAAxOfficeWrapper
-    DAPyScripts
-    DAPyBindQt
-    DAData
-    DAGraphicsView
-    DAWorkFlow
-    DAFigure
-    DACommonWidgets
-    DAPyCommonWidgets
-    DAGui 
-    DAInterface 
-    DAPluginSupport
-)
+# 顶层构建时 DAWorkbench::* targets 已由 add_subdirectory(src) 创建，无需 find_package
+if(NOT TARGET DAWorkbench::DAUtils)
+    find_package(DAWorkbench COMPONENTS 
+        DAUtils 
+        DAMessageHandler
+        DAAxOfficeWrapper
+        DAPyScripts
+        DAPyBindQt
+        DAData
+        DAGraphicsView
+        DAPyWorkFlow
+        DAFigure
+        DACommonWidgets
+        DAPyCommonWidgets
+        DAGui 
+        DAInterface 
+        DAPluginSupport
+    )
+endif()
 # 
 target_link_libraries(${DA_PLUGIN_NAME} PRIVATE
     DAWorkbench::DAUtils 
     DAWorkbench::DAMessageHandler
-    DAWorkbench::DAAxOfficeWrapper
     DAWorkbench::DAPyBindQt
     DAWorkbench::DAPyScripts
     DAWorkbench::DAData
     DAWorkbench::DAGraphicsView
-    DAWorkbench::DAWorkFlow
+    DAWorkbench::DAPyWorkFlow
     DAWorkbench::DAFigure
     DAWorkbench::DACommonWidgets
     DAWorkbench::DAPyCommonWidgets
@@ -163,6 +165,11 @@ target_link_libraries(${DA_PLUGIN_NAME} PRIVATE
     DAWorkbench::DAInterface
     DAWorkbench::DAPluginSupport
 )
+if(WIN32)
+    target_link_libraries(${DA_PLUGIN_NAME} PRIVATE
+        DAWorkbench::DAAxOfficeWrapper
+    )
+endif()
 
 ########################################################
 # Qt的moc
@@ -188,11 +195,25 @@ include(GNUInstallDirs)
 damacro_plugin_install()
 
 
-# 把PyScripts文件夹复制过去
+# DADataAnalysisCore — 纯 pandas 核心算法包（Gui 和 Nodes 共享依赖）
 install(DIRECTORY
-    ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysis
+    ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisCore
     DESTINATION ${CMAKE_INSTALL_BINDIR}/PyScripts
 )
-# 为了能调试的时候运行，需要把DADataAnalysis文件夹复制到${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScrips下
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysis" DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts)
 
+# DADataAnalysisGui — GUI 交互逻辑
+install(DIRECTORY
+    ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisGui
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/PyScripts
+)
+
+# DADataAnalysisNodes — 工作流节点插件
+install(DIRECTORY
+    ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisNodes
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/pyplugins
+)
+
+# 构建期复制（用于调试运行）
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisCore" DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts)
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisGui" DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts)
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisNodes" DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/pyplugins)

@@ -1,4 +1,4 @@
-﻿#include "DANodeMimeData.h"
+#include "DANodeMimeData.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -10,7 +10,7 @@ namespace DA
 //===================================================
 // DANodeMimeData
 //===================================================
-DANodeMimeData::DANodeMimeData(const DANodeMetaData& md) : DAMimeData()
+DANodeMimeData::DANodeMimeData(const DAPyNodeMetaData& md) : DAMimeData()
 {
     setNodeMetaData(md);
 }
@@ -25,12 +25,12 @@ bool DANodeMimeData::hasFormat(const QString& mimeType) const
     return (mimeType == formatString());
 }
 
-DANodeMetaData DANodeMimeData::getNodeMetaData() const
+DAPyNodeMetaData DANodeMimeData::getNodeMetaData() const
 {
     return (m_nodeMetaData);
 }
 
-void DANodeMimeData::setNodeMetaData(const DANodeMetaData& md)
+void DANodeMimeData::setNodeMetaData(const DAPyNodeMetaData& md)
 {
     m_nodeMetaData = md;
 }

@@ -20,7 +20,7 @@ if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
 else()
     set(DA_PLATFORM_NAME "x64")
 endif()
-set(DA_BIN_DIR_NAME bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${DA_PLATFORM_NAME})
+set(DA_BIN_DIR_NAME bin_${CMAKE_BUILD_TYPE}_qt${QT_VERSION}_${CMAKE_CXX_COMPILER_ID}_${DA_PLATFORM_NAME})
 
 ########################################################
 # 第三方库 - 简化版 ctk

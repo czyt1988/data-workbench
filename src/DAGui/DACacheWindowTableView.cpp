@@ -1,7 +1,6 @@
 ﻿#include "DACacheWindowTableView.h"
 #include <QHeaderView>
 #include <QScrollBar>
-#include <QElapsedTimer>
 #include "Models/DAAbstractCacheWindowTableModel.h"
 namespace DA
 {
@@ -145,21 +144,23 @@ QString DACacheWindowTableView::actualColumnName(int actualCol) const
 
 void DACacheWindowTableView::verticalScrollBarValueChanged(int v)
 {
-	static QElapsedTimer s_elasped;
-	if (s_elasped.elapsed() < 50) {
-		return;  // 50ms内的重复变化只处理一次,防止抖动
+	if (mLastScrollElapsed.isValid() && mLastScrollElapsed.elapsed() < 16) {
+		return;  // 16ms内的重复变化只处理一次(约60fps)，防止抖动
 	}
-	s_elasped.start();
+	mLastScrollElapsed.start();
 	DAAbstractCacheWindowTableModel* cacheModel = getCacheModel();
 	if (!cacheModel) {
 		return;
 	}
 	// 计算滚动比例
-	QScrollBar* vsc       = verticalScrollBar();
+	QScrollBar* vsc     = verticalScrollBar();
+	const int scrollRange = vsc->maximum() - vsc->minimum();
+	if (scrollRange <= 0) {
+		return;
+	}
 	const int totalRows   = cacheModel->actualRowCount();
-	const int maxScroll   = qMax(0, totalRows);
-	const double ratio    = static_cast< double >(v) / (vsc->maximum() - vsc->minimum());
-	const int targetStart = qMin(static_cast< int >(ratio * maxScroll), maxScroll);
+	const double ratio    = static_cast< double >(v - vsc->minimum()) / scrollRange;
+	const int targetStart = qBound(0, static_cast< int >(ratio * totalRows), totalRows);
 	cacheModel->setCacheWindowStartRow(targetStart);
 }
 }

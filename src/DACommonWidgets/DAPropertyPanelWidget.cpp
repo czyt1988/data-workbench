@@ -1051,10 +1051,16 @@ int DAPropertyPanelWidget::addEnumProperty(int id, const QString& name, const QS
 		combo->setCurrentIndex(currentIndex);
 	}
 	// 路由到目标面板
-	int propId = addProperty(id, name, combo);
+        int propId = addProperty(id, name, combo);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this, propId](int) {
+            Q_EMIT propertyValueChanged(propId);
+        });
+#else
 	connect(combo, &QComboBox::currentIndexChanged, this, [this, propId](int) {
-		emit propertyValueChanged(propId);
+                Q_EMIT propertyValueChanged(propId);
 	});
+#endif
 	return propId;
 }
 
