@@ -175,31 +175,17 @@ set(DA_CMAKE_DIR ${CMAKE_CURRENT_LIST_DIR}/cmake)
 set(DA_INSTALL_LIB_CMAKE_PATH ${CMAKE_INSTALL_PREFIX}/lib/cmake)
 set(DA_INSTALL_LIB_SHARE_PATH ${CMAKE_INSTALL_PREFIX}/share/cmake)
 list(APPEND CMAKE_MODULE_PATH ${DA_CMAKE_DIR} ${DA_INSTALL_LIB_CMAKE_PATH})
+# 把安装目录加入 CMAKE_PREFIX_PATH,这样 find_package(xxx CONFIG) 会自动在
+# ${CMAKE_INSTALL_PREFIX}/lib/cmake/<package> 查找,无需为每个第三方库硬编码 xxx_DIR
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
 
 ########################################################
 # 定义第三方库路径
 ########################################################
-set(SARibbonBar_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/SARibbonBar)
-message(STATUS "SARibbonBar_DIR=${SARibbonBar_DIR}")
-
-set(DALiteCtk_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/DALiteCtk)
-message(STATUS "DALiteCtk_DIR=${DALiteCtk_DIR}")
-
-set(qwt_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/qwt)
-message(STATUS "qwt_DIR=${qwt_DIR}")
-
-set(QtPropertyBrowser_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/QtPropertyBrowser)
-message(STATUS "QtPropertyBrowser_DIR=${QtPropertyBrowser_DIR}")
-
-set(spdlog_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/spdlog)
-message(STATUS "spdlog_DIR=${spdlog_DIR}")
-
-# 注意tsl-ordered-map的安装位置在share/cmake,而不是lib/cmake
+# 注意: tsl-ordered-map 的安装位置在 share/cmake, CMAKE_PREFIX_PATH 的 Config 模式
+# 搜索路径不覆盖该位置,因此需要显式设置 tsl-ordered-map_DIR
 set(tsl-ordered-map_DIR ${DA_INSTALL_LIB_SHARE_PATH}/tsl-ordered-map)
 message(STATUS "tsl-ordered-map_DIR=${tsl-ordered-map_DIR}")
-
-set(qt${QT_VERSION_MAJOR}advanceddocking_DIR  ${DA_INSTALL_LIB_CMAKE_PATH}/qt${QT_VERSION_MAJOR}advanceddocking)
-message(STATUS "qt${QT_VERSION_MAJOR}advanceddocking_DIR=${qt${QT_VERSION_MAJOR}advanceddocking_DIR}")
 
 
 ########################################################

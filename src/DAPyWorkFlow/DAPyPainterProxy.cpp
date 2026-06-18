@@ -2,6 +2,8 @@
 #include <QPainter>
 #include <QColor>
 #include <QFont>
+#include <QFontMetricsF>
+#include <QPolygonF>
 #include <QDebug>
 
 namespace DA
@@ -203,6 +205,99 @@ void DAPyPainterProxy::setFont(const std::string& family, qreal size)
     }
     QFont font(QString::fromStdString(family), size);
     mPainter->setFont(font);
+}
+
+/**
+ * @brief 绘制任意多边形
+ *
+ * 根据传入的顶点坐标列表绘制多边形轮廓，使用当前画笔样式。
+ *
+ * @param[in] points 顶点坐标列表，每个元素为 (x, y) 对
+ */
+void DAPyPainterProxy::drawPolygon(const std::vector< std::pair< qreal, qreal > >& points)
+{
+    if (!mPainter || points.empty()) {
+        return;
+    }
+    QPolygonF polygon;
+    for (const auto& p : points) {
+        polygon << QPointF(p.first, p.second);
+    }
+    mPainter->drawPolygon(polygon);
+}
+
+/**
+ * @brief 绘制菱形
+ *
+ * 在指定矩形区域内绘制菱形，顶点为矩形四边中点。
+ *
+ * @param[in] x 矩形左上角 x 坐标
+ * @param[in] y 矩形左上角 y 坐标
+ * @param[in] w 矩形宽度
+ * @param[in] h 矩形高度
+ */
+void DAPyPainterProxy::drawDiamond(qreal x, qreal y, qreal w, qreal h)
+{
+    if (!mPainter) {
+        return;
+    }
+    const qreal cx = x + w / 2.0;
+    const qreal cy = y + h / 2.0;
+    QPolygonF diamond;
+    diamond << QPointF(cx, y) << QPointF(x + w, cy) << QPointF(cx, y + h) << QPointF(x, cy);
+    mPainter->drawPolygon(diamond);
+}
+
+/**
+ * @brief 测量文本尺寸
+ *
+ * 使用指定字体族和字号计算文本的宽度和高度。
+ *
+ * @param[in] text 要测量的文本
+ * @param[in] family 字体族名称
+ * @param[in] size 字体大小（磅值）
+ * @return (width, height) 文本尺寸
+ */
+std::pair< qreal, qreal > DAPyPainterProxy::boundingRect(const std::string& text, const std::string& family, qreal size)
+{
+    if (!mPainter) {
+        return { 0.0, 0.0 };
+    }
+    QFont font(QString::fromStdString(family), size);
+    QFontMetricsF fm(font);
+    const QString qtext = QString::fromStdString(text);
+    return { fm.horizontalAdvance(qtext), fm.height() };
+}
+
+/**
+ * @brief 设置裁剪矩形区域
+ *
+ * 限制后续绘制操作仅在指定矩形区域内生效。
+ *
+ * @param[in] x 裁剪区域左上角 x 坐标
+ * @param[in] y 裁剪区域左上角 y 坐标
+ * @param[in] w 裁剪区域宽度
+ * @param[in] h 裁剪区域高度
+ */
+void DAPyPainterProxy::setClipRect(qreal x, qreal y, qreal w, qreal h)
+{
+    if (!mPainter) {
+        return;
+    }
+    mPainter->setClipRect(QRectF(x, y, w, h));
+}
+
+/**
+ * @brief 清除裁剪区域
+ *
+ * 禁用裁剪，恢复完整绘制区域。
+ */
+void DAPyPainterProxy::clearClip()
+{
+    if (!mPainter) {
+        return;
+    }
+    mPainter->setClipping(false);
 }
 
 /**

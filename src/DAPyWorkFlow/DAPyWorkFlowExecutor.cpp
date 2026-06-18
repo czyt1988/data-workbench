@@ -2,6 +2,7 @@
 #include "DAPyWorkFlow.h"
 #include "DAPyModuleWorkflow.h"
 #include "DAPybind11InQt.h"
+#include "DAPybind11QtCaster.hpp"
 #include "DAPyWorkFlowEnumStringUtils.h"
 #include "DAPyWorkFlowAPI.h"
 #include <QDebug>

@@ -190,15 +190,27 @@ macro(damacro_import_DALiteCtk __target_name __install_dir)
 endmacro(damacro_import_DALiteCtk)
 
 
+# ADS 4.x 起,上游将包名从 qt6advanceddocking 重命名为 qtadvanceddocking-qt6
+# 此宏先尝试新名,失败再回退到旧名
 macro(damacro_import_QtAdvancedDocking __target_name __install_dir)
-    find_package(qt${QT_VERSION_MAJOR}advanceddocking PATHS ${__install_dir})
-    if(qt${QT_VERSION_MAJOR}advanceddocking_FOUND)
-        message(STATUS "  |-link qt${QT_VERSION_MAJOR}advanceddocking")
-        message(STATUS "  | |-include dir:${qt${QT_VERSION_MAJOR}advanceddocking_INCLUDE_DIR}")
+    set(_ads_new_name qtadvanceddocking-qt${QT_VERSION_MAJOR})
+    set(_ads_old_name qt${QT_VERSION_MAJOR}advanceddocking)
+    find_package(${_ads_new_name} CONFIG PATHS ${__install_dir} QUIET)
+    if(${_ads_new_name}_FOUND)
+        message(STATUS "  |-finded ${_ads_new_name}")
+        target_link_libraries(${__target_name} PUBLIC ads::${_ads_new_name})
+        message(STATUS "  |-link ads::${_ads_new_name}")
+    else()
+        message(STATUS "  |-can not find ${_ads_new_name}, fallback to ${_ads_old_name}")
+        find_package(${_ads_old_name} PATHS ${__install_dir} QUIET)
+        if(${_ads_old_name}_FOUND)
+            message(STATUS "  |-finded ${_ads_old_name}")
+            target_link_libraries(${__target_name} PUBLIC ads::${_ads_old_name})
+            message(STATUS "  |-link ads::${_ads_old_name}")
+        else()
+            message(FATAL_ERROR "  can not find ${_ads_new_name} or ${_ads_old_name} in ${__install_dir}")
+        endif()
     endif()
-    target_link_libraries(${__target_name} PUBLIC
-        ads::qt${QT_VERSION_MAJOR}advanceddocking
-    )
 endmacro(damacro_import_QtAdvancedDocking)
 
 

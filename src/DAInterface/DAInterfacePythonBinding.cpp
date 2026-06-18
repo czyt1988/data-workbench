@@ -118,6 +118,15 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             "Get selected data objects as a dict {dataname,dataframe}"
         )
         .def(
+            "findData",
+            [](DA::DADataManagerInterface& self, const QString& name, bool caseSensitive) {
+                return self.findData(name, caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
+            },
+            pybind11::arg("name"),
+            pybind11::arg("case_sensitive") = true,
+            "Find data by exact name"
+        )
+        .def(
             "findDatas",
             [](DA::DADataManagerInterface& self, const QString& pattern, int cs) {
                 QList< DA::DAData > datas =

@@ -6,6 +6,7 @@
 #include "DAPyWorkFlowAPI.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAPybind11InQt.h"
+#include "DAPybind11QtCaster.hpp"
 #include <QDebug>
 
 namespace DA

@@ -1,8 +1,10 @@
-﻿#ifndef DAPAINTERPROXY_H
+#ifndef DAPAINTERPROXY_H
 #define DAPAINTERPROXY_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAPybind11InQt.h"
 #include <QRectF>
+#include <vector>
+#include <utility>
 
 class QPainter;
 
@@ -41,6 +43,16 @@ public:
     void drawEllipse(qreal x, qreal y, qreal w, qreal h);
     // 填充矩形
     void fillRect(qreal x, qreal y, qreal w, qreal h, int r, int g, int b, int a = 255);
+    // 绘制任意多边形
+    void drawPolygon(const std::vector< std::pair< qreal, qreal > >& points);
+    // 绘制菱形（便捷函数）
+    void drawDiamond(qreal x, qreal y, qreal w, qreal h);
+    // 测量文本尺寸
+    std::pair< qreal, qreal > boundingRect(const std::string& text, const std::string& family, qreal size);
+    // 设置裁剪区域
+    void setClipRect(qreal x, qreal y, qreal w, qreal h);
+    // 清除裁剪
+    void clearClip();
 
     // 设置画笔颜色（RGBA）
     void setPenColor(int r, int g, int b, int a = 255);
