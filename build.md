@@ -144,14 +144,14 @@ cmake --build build-linux --parallel
 .\scripts\build.ps1 -Target DAPyWorkFlow -Test
 
 # 手动运行（Qt Test 在 Windows 上 stdout 不可见，必须用 -o 输出到文件）
-.\build\src\tst\DAPyWorkFlow\Release\DAPyWorkFlowTests.exe -o test_result.txt
+.\build\src\tst\<测试模块>\Release\<测试模块>.exe -o test_result.txt
 Get-Content test_result.txt
 ```
 
 ### Linux / WSL
 
 ```bash
-./build-linux/src/tst/DAPyWorkFlow/DAPyWorkFlowTests -o test_result.txt
+./build-linux/src/tst/<测试模块>/<测试模块> -o test_result.txt
 cat test_result.txt
 ```
 
