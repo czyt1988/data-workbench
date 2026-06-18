@@ -10,7 +10,7 @@
 #include "qwt_symbol.h"
 #include "qwt_plot_canvas.h"
 #include "qwt_scale_widget.h"
-#include "qwt_color_map.h"
+#include "qwt_colormap.h"
 #include "qwt_column_symbol.h"
 #include "qwt_plot_intervalcurve.h"
 #include "qwt_interval_symbol.h"
@@ -37,7 +37,8 @@
 
 #ifndef INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR
 #define INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(RttiValue, ClassName)                                                  \
-    std::make_pair(&DAChartItemSerialize::serializeIn_T< ClassName, RttiValue >, &DAChartItemSerialize::serializeOut_T< ClassName >)
+    std::make_pair(&DAChartItemSerialize::serializeIn_T< ClassName, RttiValue >,                                       \
+                   &DAChartItemSerialize::serializeOut_T< ClassName >)
 #endif
 
 #ifndef DECLARE_INITCHARTITEMSERIALIZE_FUN
@@ -235,9 +236,9 @@ DAChartItemSerialize::~DAChartItemSerialize()
 {
 }
 
-void DAChartItemSerialize::registSerializeFun(
-    int rtti, DAChartItemSerialize::FpSerializeIn fpIn, DAChartItemSerialize::FpSerializeOut fpOut
-)
+void DAChartItemSerialize::registSerializeFun(int rtti,
+                                              DAChartItemSerialize::FpSerializeIn fpIn,
+                                              DAChartItemSerialize::FpSerializeOut fpOut)
 {
     serializeFun()[ rtti ] = std::make_pair(fpIn, fpOut);
 }
@@ -352,7 +353,8 @@ QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize
     return res;
 }
 
-QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > >& DAChartItemSerialize::serializeFun()
+QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > >&
+DAChartItemSerialize::serializeFun()
 {
     static QHash< int, std::pair< FpSerializeIn, FpSerializeOut > > s_serializeMap = initChartItemSerialize();
     return s_serializeMap;

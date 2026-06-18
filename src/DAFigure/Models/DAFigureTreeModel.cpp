@@ -11,7 +11,7 @@
 #include "qwt_plot_marker.h"
 #include "qwt_plot_grid.h"
 #include "qwt_text.h"
-#include "qwt_color_map.h"
+#include "qwt_colormap.h"
 #include "qwt_column_symbol.h"
 #include "qwt_plot_textlabel.h"
 #include "qwt_plot_zoneitem.h"
@@ -59,7 +59,8 @@ void DAFigureTreeModel::setFigure(QwtFigure* figure)
         m_figureConnections << connect(m_figure, &QwtFigure::axesAdded, this, &DAFigureTreeModel::onAxesAdded);
         m_figureConnections << connect(m_figure, &QwtFigure::axesRemoved, this, &DAFigureTreeModel::onAxesRemoved);
         m_figureConnections << connect(m_figure, &QwtFigure::figureCleared, this, &DAFigureTreeModel::onFigureCleared);
-        m_figureConnections << connect(m_figure, &QwtFigure::currentAxesChanged, this, &DAFigureTreeModel::onCurrentAxesChanged);
+        m_figureConnections << connect(
+            m_figure, &QwtFigure::currentAxesChanged, this, &DAFigureTreeModel::onCurrentAxesChanged);
     }
 
     setupModel();
@@ -86,10 +87,9 @@ void DAFigureTreeModel::setupModel()
 {
     clear();
     // 设置三列表头
-    setHorizontalHeaderLabels(
-        QStringList() << tr("element")   // cn:绘图元素
-                      << tr("visible")   // cn:可见性
-                      << tr("property")  // cn:属性
+    setHorizontalHeaderLabels(QStringList() << tr("element")   // cn:绘图元素
+                                            << tr("visible")   // cn:可见性
+                                            << tr("property")  // cn:属性
     );
     m_plotItems.clear();
     m_plotItemItems.clear();

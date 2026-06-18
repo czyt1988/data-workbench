@@ -1,6 +1,6 @@
 ﻿#include "DAChartSpectrogramSettingPanel.h"
 #include "DAPropertyPanelWidget.h"
-#include "qwt_color_map.h"
+#include "qwt_colormap.h"
 #include "qwt_text.h"
 #include <QSignalBlocker>
 
@@ -57,13 +57,11 @@ void DAChartSpectrogramSettingPanel::buildPropertyPanel()
     // 显示属性组
     panel->addCollapsibleGroup(tr("Display"));
     // QwtPlotSpectrogram::DisplayMode: ImageMode=1, ContourMode=2
-    panel->addEnumProperty(
-        PropDisplayMode,
-        tr("Display Mode"),
-        QStringList() << tr("Image Mode") << tr("Contour Mode"),
-        QList< int >() << static_cast< int >(QwtPlotSpectrogram::ImageMode)
-                       << static_cast< int >(QwtPlotSpectrogram::ContourMode)
-    );
+    panel->addEnumProperty(PropDisplayMode,
+                           tr("Display Mode"),
+                           QStringList() << tr("Image Mode") << tr("Contour Mode"),
+                           QList< int >() << static_cast< int >(QwtPlotSpectrogram::ImageMode)
+                                          << static_cast< int >(QwtPlotSpectrogram::ContourMode));
     panel->endGroup();
     // 颜色属性组
     panel->addCollapsibleGroup(tr("Color"));
