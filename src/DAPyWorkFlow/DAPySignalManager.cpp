@@ -1,5 +1,6 @@
 #include "DAPySignalManager.h"
 #include "DAPybind11InQt.h"
+#include "DAPybind11QtCaster.hpp"
 #include "DAPyBindQt/DAPyGILGuard.h"
 #include "DAPyWorkFlowEnumStringUtils.h"
 
