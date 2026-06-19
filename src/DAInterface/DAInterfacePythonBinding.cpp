@@ -1,4 +1,4 @@
-﻿#include "DAInterfacePythonBinding.h"
+#include "DAInterfacePythonBinding.h"
 #include <QMainWindow>
 #include "DACoreInterface.h"
 #include "DADataManagerInterface.h"
@@ -6,6 +6,9 @@
 #include "DACommandInterface.h"
 #include "DAStatusBarInterface.h"
 #include "DAUIInterface.h"
+#include "DADockingAreaInterface.h"
+#include "DAPyWorkFlowScene.h"
+#include "DAPyWorkFlowGraphicsScene.h"
 #include "DAData.h"
 #include "DADataManager.h"
 #include "DAPythonSignalHandler.h"
@@ -291,7 +294,25 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             pybind11::arg("dir")   = ""
         )
         .def("setDirty", &DA::DAUIInterface::setDirty, pybind11::arg("on") = true)  //
+        .def(
+            "getDockingArea",
+            &DA::DAUIInterface::getDockingArea,
+            pybind11::return_value_policy::reference,
+            "Get the docking area interface"
+        )
         ;
+
+    /* DADockingAreaInterface — 提供 scene 访问入口 */
+    // 注意：返回的 DAPyWorkFlowScene 实例需要 Python 端先 import da_py_workflow 才能识别类型。
+    // 线程安全：所有方法必须在 Qt 主线程调用。
+    pybind11::class_< DA::DADockingAreaInterface >(m, "DADockingAreaInterface")
+        .def(
+            "getCurrentScene",
+            [](DA::DADockingAreaInterface& self) -> DA::DAPyWorkFlowScene* {
+                return self.getCurrentScene();
+            },
+            pybind11::return_value_policy::reference,
+            "Get the current active workflow scene as DAPyWorkFlowScene; returns None if no active scene");
 
     /* 4. DACoreInterface 补充 */
     pybind11::class_< DA::DACoreInterface >(m, "DACoreInterface")

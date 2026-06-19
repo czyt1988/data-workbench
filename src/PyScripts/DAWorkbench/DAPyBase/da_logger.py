@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+import threading
 from loguru import logger
 import inspect
 
@@ -18,14 +19,26 @@ _original_stderr = None
 class LoguruWriter:
     """将 stdout/stderr 的输出重定向到 loguru，使 print() 也写入日志文件"""
 
+    # 跨实例共享的重入守卫：loguru handler emit 失败时会通过
+    # _error_interceptor.print 回调本 writer，若不加守卫会形成无限递归。
+    # 用 threading.local 保证线程安全。
+    _reentry_guard = threading.local()
+
     def __init__(self, level):
         self._level = level
 
     def write(self, buf):
-        for line in buf.rstrip().splitlines():
-            stripped = line.strip()
-            if stripped:
-                logger.opt(depth=1).log(self._level, stripped)
+        # 已经在 loguru 调用链内时直接丢弃，避免 print→log→print 递归
+        if getattr(self._reentry_guard, "active", False):
+            return
+        self._reentry_guard.active = True
+        try:
+            for line in buf.rstrip().splitlines():
+                stripped = line.strip()
+                if stripped:
+                    logger.opt(depth=1).log(self._level, stripped)
+        finally:
+            self._reentry_guard.active = False
 
     def flush(self):
         pass
@@ -41,6 +54,10 @@ def setup_logging():
     os.makedirs(da_log_path, exist_ok=True)
     log_file = os.path.join(da_log_path, "da_pyscript.log")
 
+    # 移除 loguru 默认的 stderr handler（id=0），否则它会输出到已被替换的
+    # sys.stderr（LoguruWriter），形成 print→log→print 无限递归。
+    # 仅保留下面的文件 handler，日志统一写入文件。
+    logger.remove()
     logger.add(log_file, rotation="10 MB", level="DEBUG", enqueue=True)
 
     # 保存原始 stdout/stderr，然后重定向到 loguru

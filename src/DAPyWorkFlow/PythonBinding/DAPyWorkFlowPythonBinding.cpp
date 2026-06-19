@@ -170,6 +170,15 @@ DAPyNodeStyle toNodeStyle(const pybind11::object& obj)
 
 PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
 {
+    m.doc() = "DAPyWorkFlow C++ binding module — exposes DAPyPainterProxy, DAPyNodeGraphicsItem, "
+              "DAPyWorkFlowScene and related enums to Python.\n"
+              "\n"
+              "Thread safety: All scene/item operations MUST be called on the Qt main thread. "
+              "In async execute() paths, use core.getPythonSignalHandler().callInMainThread(func) "
+              "to dispatch to the main thread.\n"
+              "\n"
+              "Ownership: DAPyNodeGraphicsItem and DAPyWorkFlowScene instances are owned by the C++ "
+              "scene/parent. Python holds references only — never delete them.";
 
     // =================================================================================
     //                      样式枚举绑定
@@ -315,6 +324,90 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
         .def("setNoPen", &DA::DAPyPainterProxy::setNoPen, "Set no pen (disable outline drawing)")
         .def("setNoBrush", &DA::DAPyPainterProxy::setNoBrush, "Set no brush (disable fill)")
         .def("isValid", &DA::DAPyPainterProxy::isValid, "Check if painter proxy is valid");
+
+    // =================================================================================
+    //                      DAPyNodeGraphicsItem 绑定
+    // =================================================================================
+    // 节点图形项 — 由 DAPyWorkFlowScene 管理生命周期，Python 仅持有引用，不可拥有所有权。
+    // 线程安全：所有方法必须在 Qt 主线程调用（异步执行时需用 callInMainThread 投递）。
+    pybind11::class_< DA::DAPyNodeGraphicsItem >(m, "DAPyNodeGraphicsItem")
+        .def(
+            "update",
+            [](DA::DAPyNodeGraphicsItem& self) { self.update(); },
+            "Trigger a repaint of this node item")
+        .def(
+            "getNodeName",
+            &DA::DAPyNodeGraphicsItem::getNodeName,
+            "Get the cached node display name")
+        .def(
+            "setNodeName",
+            &DA::DAPyNodeGraphicsItem::setNodeName,
+            pybind11::arg("name"),
+            "Set the node display name (triggers body size re-estimation)")
+        .def(
+            "getNodeState",
+            &DA::DAPyNodeGraphicsItem::getNodeState,
+            "Get the current node execution state")
+        .def(
+            "setNodeState",
+            &DA::DAPyNodeGraphicsItem::setNodeState,
+            pybind11::arg("state"),
+            "Set the node execution state (triggers repaint)")
+        .def(
+            "getNodeId",
+            [](DA::DAPyNodeGraphicsItem& self) { return self.getProxy().getNodeId(); },
+            "Get the Python node_id string associated with this graphics item")
+        .def(
+            "updateFromProxy",
+            &DA::DAPyNodeGraphicsItem::updateFromProxy,
+            "Re-read all attributes from the Python node proxy (call after modifying Python-side style/name/etc.)")
+        .def(
+            "updateNodeBody",
+            &DA::DAPyNodeGraphicsItem::updateNodeBody,
+            "Re-estimate the optimal body size based on current name/icon/style")
+        .def(
+            "setBodySize",
+            [](DA::DAPyNodeGraphicsItem& self, qreal w, qreal h) { self.setBodySize(QSizeF(w, h)); },
+            pybind11::arg("width"),
+            pybind11::arg("height"),
+            "Set the body size in local coordinates");
+
+    // =================================================================================
+    //                      DAPyWorkFlowScene 绑定
+    // =================================================================================
+    // 工作流场景 — QObject，由 DAPyWorkFlowOperateWidget 管理生命周期，Python 仅持有引用。
+    // 线程安全：所有方法必须在 Qt 主线程调用（异步执行时需用 callInMainThread 投递）。
+    pybind11::class_< DA::DAPyWorkFlowScene >(m, "DAPyWorkFlowScene")
+        .def(
+            "findNodeItemById",
+            [](DA::DAPyWorkFlowScene& self, const QString& nodeId) -> DA::DAPyNodeGraphicsItem* {
+                return self.findNodeItemById(nodeId);
+            },
+            pybind11::arg("node_id"),
+            pybind11::return_value_policy::reference,
+            "Find a node graphics item by its Python node_id; returns None if not found")
+        .def(
+            "getPyNodeItems",
+            [](DA::DAPyWorkFlowScene& self) {
+                QList< DA::DAPyNodeGraphicsItem* > items = self.getPyNodeItems();
+                pybind11::list pyList;
+                for (DA::DAPyNodeGraphicsItem* item : items) {
+                    pyList.append(pybind11::cast(item, pybind11::return_value_policy::reference));
+                }
+                return pyList;
+            },
+            "Get all Python node items in the scene")
+        .def(
+            "getSelectedPyNodeItems",
+            [](DA::DAPyWorkFlowScene& self) {
+                QList< DA::DAPyNodeGraphicsItem* > items = self.getSelectedPyNodeItems();
+                pybind11::list pyList;
+                for (DA::DAPyNodeGraphicsItem* item : items) {
+                    pyList.append(pybind11::cast(item, pybind11::return_value_policy::reference));
+                }
+                return pyList;
+            },
+            "Get currently selected Python node items in the scene");
 
     m.def(
         "_note_signal_handler",

@@ -17,9 +17,24 @@ function(dafun_set_bin_name _var)
         set(_CXX_COMPILER_ID ${CMAKE_CXX_COMPILER_ID})
     endif()
     ########################################################
+    # 构建类型：
+    # 单配置生成器 (Ninja/Makefiles) → CMAKE_BUILD_TYPE（如 Release/Debug）
+    # 多配置生成器 (Visual Studio)   → CMAKE_BUILD_TYPE 为空，用缓存变量 DA_INSTALL_CONFIG_TYPE
+    if(CMAKE_CONFIGURATION_TYPES)
+        set(_config_type "${DA_INSTALL_CONFIG_TYPE}" CACHE STRING
+            "安装目录使用的构建类型（仅多配置生成器生效，如 Visual Studio）")
+        if(NOT _config_type)
+            set(_config_type "Release")
+            set(DA_INSTALL_CONFIG_TYPE "Release" CACHE STRING
+                "安装目录使用的构建类型（仅多配置生成器生效，如 Visual Studio）" FORCE)
+        endif()
+    else()
+        set(_config_type "${CMAKE_BUILD_TYPE}")
+    endif()
+    ########################################################
     # 安装路径设置 设置变量值，并传递到父作用域
     ########################################################
-    set(${_var} "bin_${CMAKE_BUILD_TYPE}_qt${QT_VERSION}_${_CXX_COMPILER_ID}_${_platform_name}" PARENT_SCOPE)
+    set(${_var} "bin_${_config_type}_qt${QT_VERSION}_${_CXX_COMPILER_ID}_${_platform_name}" PARENT_SCOPE)
 endfunction()
 
 
