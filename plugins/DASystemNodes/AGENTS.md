@@ -342,7 +342,7 @@ def paint(self, painter, body_rect):
 | `drawRect(x, y, w, h)` | 绘制矩形 |
 | `drawLine(x1, y1, x2, y2)` | 绘制直线 |
 | `fillRect(x, y, w, h, r, g, b, a)` | 填充矩形 |
-| `boundingRect(text, family, size)` | 返回 (width, height) 文本尺寸 |
+| `textBoundingRect(text, family, size, bold, italic)` | 返回 (width, height) 文本尺寸 |
 | `setClipRect(x, y, w, h)` / `clearClip()` | 裁剪区域 |
 
 `paint()` 执行后，节点状态变更（`execute()` 完成）会自动触发 `item->update()` 重绘，无需手动通知。

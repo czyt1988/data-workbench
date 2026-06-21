@@ -193,17 +193,21 @@ void DAPyPainterProxy::setBrushColor(int r, int g, int b, int a)
 /**
  * @brief 设置字体
  *
- * 设置QPainter的字体族和字号。
+ * 设置QPainter的字体族、字号以及粗体/斜体样式。
  *
  * @param[in] family 字体族名称（如"Arial"、"Microsoft YaHei"）
  * @param[in] size 字体大小（磅值）
+ * @param[in] bold 是否粗体
+ * @param[in] italic 是否斜体
  */
-void DAPyPainterProxy::setFont(const std::string& family, qreal size)
+void DAPyPainterProxy::setFont(const std::string& family, qreal size, bool bold, bool italic)
 {
     if (!mPainter) {
         return;
     }
     QFont font(QString::fromStdString(family), size);
+    font.setBold(bold);
+    font.setItalic(italic);
     mPainter->setFont(font);
 }
 
@@ -251,19 +255,23 @@ void DAPyPainterProxy::drawDiamond(qreal x, qreal y, qreal w, qreal h)
 /**
  * @brief 测量文本尺寸
  *
- * 使用指定字体族和字号计算文本的宽度和高度。
+ * 使用指定字体族、字号及粗体/斜体样式计算文本的宽度和高度。
  *
  * @param[in] text 要测量的文本
  * @param[in] family 字体族名称
  * @param[in] size 字体大小（磅值）
+ * @param[in] bold 是否粗体
+ * @param[in] italic 是否斜体
  * @return (width, height) 文本尺寸
  */
-std::pair< qreal, qreal > DAPyPainterProxy::boundingRect(const std::string& text, const std::string& family, qreal size)
+std::pair< qreal, qreal > DAPyPainterProxy::textBoundingRect(const std::string& text, const std::string& family, qreal size, bool bold, bool italic)
 {
     if (!mPainter) {
         return { 0.0, 0.0 };
     }
     QFont font(QString::fromStdString(family), size);
+    font.setBold(bold);
+    font.setItalic(italic);
     QFontMetricsF fm(font);
     const QString qtext = QString::fromStdString(text);
     return { fm.horizontalAdvance(qtext), fm.height() };

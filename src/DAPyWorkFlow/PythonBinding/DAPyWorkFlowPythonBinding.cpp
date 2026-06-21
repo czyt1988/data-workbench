@@ -292,10 +292,12 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
              pybind11::arg("h"),
              "Draw diamond shape inside the specified rectangle")
         .def("boundingRect",
-             &DA::DAPyPainterProxy::boundingRect,
+             &DA::DAPyPainterProxy::textBoundingRect,
              pybind11::arg("text"),
              pybind11::arg("family"),
              pybind11::arg("size"),
+             pybind11::arg("bold")   = false,
+             pybind11::arg("italic") = false,
              "Compute text bounding rect (width, height) with given font")
         .def("setClipRect",
              &DA::DAPyPainterProxy::setClipRect,
@@ -320,7 +322,13 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
              pybind11::arg("b"),
              pybind11::arg("a") = 255,
              "Set brush color (RGBA)")
-        .def("setFont", &DA::DAPyPainterProxy::setFont, pybind11::arg("family"), pybind11::arg("size"), "Set font family and size")
+        .def("setFont",
+             &DA::DAPyPainterProxy::setFont,
+             pybind11::arg("family"),
+             pybind11::arg("size"),
+             pybind11::arg("bold")   = false,
+             pybind11::arg("italic") = false,
+             "Set font family, size, and style (bold/italic)")
         .def("setNoPen", &DA::DAPyPainterProxy::setNoPen, "Set no pen (disable outline drawing)")
         .def("setNoBrush", &DA::DAPyPainterProxy::setNoBrush, "Set no brush (disable fill)")
         .def("isValid", &DA::DAPyPainterProxy::isValid, "Check if painter proxy is valid");

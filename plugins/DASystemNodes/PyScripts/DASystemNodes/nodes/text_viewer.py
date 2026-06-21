@@ -4,43 +4,68 @@
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Parameter, NodeDisplay
 
 
-def data_to_text(value, max_lines: int = 8, max_width: int = 40) -> list[str]:
-    """
-    将任意数据对象转换为用于节点显示的文本行列表。
+_FONT_FAMILY = "Microsoft YaHei"
 
-    :param value: 任意输入数据
-    :param max_lines: 最大行数
-    :param max_width: 每行最大字符数（按字符数截断）
-    :return: 文本行列表
-    """
-    if value is None:
-        return ["None"]
 
+def _hex_to_rgb(color):
+    """
+    将颜色值转换为 (r, g, b) 元组。
+
+    支持格式：
+      - "#RRGGBB" / "RRGGBB" / "#RGB" / "RGB" 十六进制字符串
+      - (r, g, b) 元组或列表
+
+    :param color: 颜色值
+    :return: (r, g, b) 元组，解析失败返回 (40, 40, 40)
+    """
+    if isinstance(color, (tuple, list)) and len(color) >= 3:
+        try:
+            return (int(color[0]), int(color[1]), int(color[2]))
+        except (TypeError, ValueError):
+            return (40, 40, 40)
+    if not isinstance(color, str):
+        return (40, 40, 40)
+    s = color.strip().lstrip("#")
+    if len(s) == 3:
+        s = s[0] * 2 + s[1] * 2 + s[2] * 2
+    if len(s) != 6:
+        return (40, 40, 40)
     try:
-        text = str(value)
-    except Exception:
-        text = "<unprintable>"
+        return (int(s[0:2], 16), int(s[2:4], 16), int(s[4:6], 16))
+    except ValueError:
+        return (40, 40, 40)
 
-    lines = text.splitlines()
-    result = []
-    for line in lines:
-        # 按字符数截断，避免单行过长
-        while len(line) > max_width:
-            result.append(line[:max_width])
-            line = line[max_width:]
-            if len(result) >= max_lines:
-                break
-        if result:
-            if len(result) >= max_lines:
-                break
-        result.append(line)
-        if len(result) >= max_lines:
-            break
 
-    if len(result) > max_lines:
-        result = result[:max_lines]
+def _wrap_text_by_width(painter, text, max_width, font_size, bold, italic):
+    """
+    按像素宽度逐字符测量切分文本为多行，遇到换行符 \\n 也强制换行。
 
-    return result if result else [""]
+    :param painter: DAPyPainterProxy 实例
+    :param text: 原始文本
+    :param max_width: 单行最大像素宽度
+    :param font_size: 字号
+    :param bold: 是否粗体
+    :param italic: 是否斜体
+    :return: 切分后的行列表
+    """
+    if not text:
+        return [""]
+    lines = []
+    current = ""
+    for ch in text:
+        if ch == "\n":
+            lines.append(current)
+            current = ""
+            continue
+        candidate = current + ch
+        w, _ = painter.textBoundingRect(candidate, _FONT_FAMILY, font_size, bold, italic)
+        if w > max_width and current:
+            lines.append(current)
+            current = ch
+        else:
+            current = candidate
+    lines.append(current)
+    return lines
 
 
 @NodeDef(
@@ -56,20 +81,38 @@ def data_to_text(value, max_lines: int = 8, max_width: int = 40) -> list[str]:
 class TextViewerNode:
     """接收任意数据，将其字符串化后在节点体上绘制显示。"""
 
-    max_lines = Parameter(
-        int,
-        default=8,
-        description="节点体上最多显示的行数",
+    font_color = Parameter(
+        "color",
+        default="#282828",
+        description="文字颜色（#RRGGBB 格式）",
     )
     font_size = Parameter(
         int,
         default=9,
+        min=6,
+        max=72,
         description="显示文本的字号",
     )
-    line_length = Parameter(
+    bold = Parameter(
+        bool,
+        default=False,
+        description="是否粗体显示",
+    )
+    italic = Parameter(
+        bool,
+        default=False,
+        description="是否斜体显示",
+    )
+    max_text_length = Parameter(
         int,
-        default=40,
-        description="每行最大字符数，超出自动截断",
+        default=200,
+        min=1,
+        description="文字最大字符数，超出部分以 … 截断",
+    )
+    wrap_text = Parameter(
+        bool,
+        default=True,
+        description="是否按节点体宽度自动换行；关闭则单行显示，超出部分被裁剪",
     )
 
     class Inputs:
@@ -77,47 +120,67 @@ class TextViewerNode:
 
     def __init__(self):
         super().__init__()
-        self._display_lines = []
+        self._display_text = ""
 
     def execute(self, inputs=None, params=None):
+        """缓存输入数据的字符串形式，实际绘制在 paint() 中完成。"""
         if inputs is None:
             inputs = {}
-        if params is None:
-            params = {}
-
         value = inputs.get("value")
-        max_lines = params.get("max_lines", 8)
-        line_length = params.get("line_length", 40)
-
-        self._display_lines = data_to_text(value, max_lines=max_lines, max_width=line_length)
+        try:
+            self._display_text = str(value) if value is not None else ""
+        except Exception:
+            self._display_text = "<unprintable>"
         return True
 
     def paint(self, painter, body_rect):
-        """自定义绘制回调：在节点体上绘制缓存的文本行。"""
+        """
+        自定义绘制回调：在节点体上按参数渲染缓存的文本。
+
+        由 DAPyNodeGraphicsItem::setProxy() 自动注册，节点状态变更后触发重绘。
+        """
         x, y, w, h = body_rect
+        font_color = getattr(self, "font_color", "#282828")
         font_size = getattr(self, "font_size", 9)
+        bold = getattr(self, "bold", False)
+        italic = getattr(self, "italic", False)
+        max_text_length = getattr(self, "max_text_length", 200)
+        wrap_text = getattr(self, "wrap_text", True)
 
-        # 边距
+        r, g, b = _hex_to_rgb(font_color)
         margin = 6
-        painter.setPenColor(40, 40, 40)
-        painter.setFont("Microsoft YaHei", font_size)
-
-        # 测量行高
-        _, line_height = painter.boundingRect("A", "Microsoft YaHei", font_size)
-        line_height = max(line_height, font_size + 2)
 
         # 限制绘制区域，避免超出节点体
         painter.setClipRect(x + margin, y + margin, w - 2 * margin, h - 2 * margin)
 
-        lines = getattr(self, "_display_lines", [])
-        if not lines:
-            lines = ["<no data>"]
+        # 设置字体（含粗体/斜体）和颜色
+        painter.setFont(_FONT_FAMILY, font_size, bold, italic)
+        painter.setPenColor(r, g, b)
 
+        # 取缓存文本
+        text = getattr(self, "_display_text", "") or "(no data)"
+
+        # 按字符数截断
+        if len(text) > max_text_length:
+            text = text[:max_text_length] + "…"
+
+        # 测量行高
+        _, line_height = painter.textBoundingRect("A", _FONT_FAMILY, font_size, bold, italic)
+        line_height = max(line_height, font_size + 2)
+
+        # 行切分
+        if wrap_text:
+            max_width = max(1, w - 2 * margin)
+            lines = _wrap_text_by_width(painter, text, max_width, font_size, bold, italic)
+        else:
+            lines = text.split("\n")
+
+        # 逐行绘制
         draw_y = y + margin + line_height
         for line in lines:
             if draw_y > y + h - margin:
                 break
-            painter.drawText(x + margin, draw_y, str(line))
+            painter.drawText(x + margin, draw_y, line)
             draw_y += line_height
 
         painter.clearClip()

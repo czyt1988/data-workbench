@@ -92,7 +92,7 @@ class PrintNode:
         if prefix:
             display = f"{prefix}{display}"
 
-        bw, bh = painter.boundingRect(display, "Arial", 8)
+        bw, bh = painter.textBoundingRect(display, "Arial", 8)
         max_w = w - 8
         if bw > max_w and bw > 0:
             # 按比例截断并加省略号

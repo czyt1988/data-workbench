@@ -1,4 +1,4 @@
-#ifndef DAPAINTERPROXY_H
+﻿#ifndef DAPAINTERPROXY_H
 #define DAPAINTERPROXY_H
 #include "DAPyWorkFlowAPI.h"
 #include "DAPybind11InQt.h"
@@ -48,7 +48,7 @@ public:
     // 绘制菱形（便捷函数）
     void drawDiamond(qreal x, qreal y, qreal w, qreal h);
     // 测量文本尺寸
-    std::pair< qreal, qreal > boundingRect(const std::string& text, const std::string& family, qreal size);
+    std::pair< qreal, qreal > textBoundingRect(const std::string& text, const std::string& family, qreal size, bool bold = false, bool italic = false);
     // 设置裁剪区域
     void setClipRect(qreal x, qreal y, qreal w, qreal h);
     // 清除裁剪
@@ -61,7 +61,7 @@ public:
     // 设置画刷颜色（RGBA）
     void setBrushColor(int r, int g, int b, int a = 255);
     // 设置字体
-    void setFont(const std::string& family, qreal size);
+    void setFont(const std::string& family, qreal size, bool bold = false, bool italic = false);
     // 设置无画笔（Qt::NoPen）
     void setNoPen();
     // 设置无画刷（Qt::NoBrush）
