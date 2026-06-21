@@ -167,6 +167,9 @@ protected Q_SLOTS:
     // 处理Python侧节点状态变更通知
     void onPyNodeStateNotification(const QString& nodeId, DA::DAPyNodeState state);
 
+    // 处理节点执行完成通知（由 DAPyWorkFlowManager::nodeExecuted 触发）
+    void onNodeExecuted(const QString& nodeId, bool success);
+
 protected:
     // 鼠标事件（处理节点连接点交互和多选拖拽）
     void mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent) override;

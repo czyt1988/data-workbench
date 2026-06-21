@@ -291,7 +291,15 @@ DAPyWorkFlowScene::~DAPyWorkFlowScene()
 void DAPyWorkFlowScene::setManager(DAPyWorkFlowManager* manager)
 {
     DA_D(d);
+    if (d->mManager) {
+        disconnect(d->mManager, &DAPyWorkFlowManager::nodeExecuted,
+                   this, &DAPyWorkFlowScene::onNodeExecuted);
+    }
     d->mManager = manager;
+    if (d->mManager) {
+        connect(d->mManager, &DAPyWorkFlowManager::nodeExecuted,
+                this, &DAPyWorkFlowScene::onNodeExecuted);
+    }
 }
 
 /**
@@ -1446,6 +1454,26 @@ void DAPyWorkFlowScene::onPyNodeStateNotification(const QString& nodeId, DAPyNod
     if (item) {
         item->setNodeState(state);
         emit pyNodeStateChanged(item, state);
+    }
+}
+
+/**
+ * @brief 处理节点执行完成通知
+ *
+ * 由 DAPyWorkFlowManager::nodeExecuted 信号触发，
+ * 根据执行结果设置节点状态（Success/Error），
+ * DAPyNodeGraphicsItem::setNodeState 内部会调用 update() 触发重绘，
+ * 进而调用 paintBody() → Python paint() 回调刷新节点显示内容。
+ *
+ * @param[in] nodeId 节点唯一标识
+ * @param[in] success 执行是否成功
+ */
+void DAPyWorkFlowScene::onNodeExecuted(const QString& nodeId, bool success)
+{
+    DA_D(d);
+    DAPyNodeGraphicsItem* item = d->mNodeIdToItemMap.value(nodeId);
+    if (item) {
+        item->setNodeState(success ? DAPyNodeState::Success : DAPyNodeState::Error);
     }
 }
 

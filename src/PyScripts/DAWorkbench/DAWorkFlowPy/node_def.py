@@ -292,6 +292,13 @@ class DAWorkflowNode:
             if param.default is not None:
                 setattr(self, name, param.default)
 
+        # 调用用户自定义 __init__（通过 MRO 链）。
+        # @NodeDef 装饰器创建 new_cls = type(name, (DAWorkflowNode, cls), {})，
+        # MRO 为 new_cls → DAWorkflowNode → 用户类 → object。
+        # 若不调用 super().__init__()，用户类的 __init__ 永远不会执行，
+        # 导致用户在 __init__ 中设置的实例属性（如缓存变量）缺失，引发 AttributeError。
+        super().__init__()
+
     def set_input_data(self, key: str, data) -> None:
         """
         设置输入数据

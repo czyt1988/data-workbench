@@ -25,7 +25,7 @@ class PrintNode:
         value = Input("any", required=True, description="要打印的数据")
 
     def __init__(self):
-        # DAWorkflowNode 基类可能没有显式 __init__，不强制 super().__init__()
+        super().__init__()
         self._last_text = "(no input)"
         self._last_prefix = ""
 
@@ -87,9 +87,10 @@ class PrintNode:
         painter.drawText(x + 4, y + 12, "Print")
 
         # 显示输入文字（截断超长）
-        display = self._last_text
-        if self._last_prefix:
-            display = f"{self._last_prefix}{display}"
+        display = getattr(self, "_last_text", "(no input)")
+        prefix = getattr(self, "_last_prefix", "")
+        if prefix:
+            display = f"{prefix}{display}"
 
         bw, bh = painter.boundingRect(display, "Arial", 8)
         max_w = w - 8

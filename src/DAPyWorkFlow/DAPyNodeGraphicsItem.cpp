@@ -520,14 +520,18 @@ DAPyNodeState DAPyNodeGraphicsItem::getNodeState() const
 
 /**
  * @brief 设置节点状态
+ *
+ * 无条件设置节点状态并触发重绘。
+ * 即使新状态与当前状态相同也会调用 update()，
+ * 因为节点执行完成后 Python 端的缓存数据（如 paint 回调依赖的 _last_text）
+ * 可能已更新，需要重绘以反映最新数据。
+ *
  * @param[in] state 节点状态
  */
 void DAPyNodeGraphicsItem::setNodeState(DAPyNodeState state)
 {
-    if (d_ptr->mNodeState != state) {
-        d_ptr->mNodeState = state;
-        update();  // 状态变化时重绘
-    }
+    d_ptr->mNodeState = state;
+    update();
 }
 
 /**
