@@ -43,7 +43,7 @@ DANodeParamSettingPanel::DANodeParamSettingPanel(QWidget* parent)
     : DAAbstractNodeSettingWidget(parent), DA_PIMPL_CONSTRUCT
 {
     DA_D(d);
-    auto* layout  = new QVBoxLayout(this);
+    auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
@@ -169,9 +169,26 @@ void DANodeParamSettingPanel::updateUI()
         } else if (type == "font") {
             auto* fe = qobject_cast< DAFontEditPannelWidget* >(editor);
             if (fe) {
-                QFont f;
-                f.fromString(val.toString());
-                fe->setCurrentFont(f);
+                // 优先使用字典格式：{"family", "size", "bold", "italic", "color"}
+                if (val.canConvert< QVariantMap >()) {
+                    QVariantMap fontMap = val.toMap();
+                    QFont f;
+                    f.setFamily(fontMap.value("family").toString());
+                    f.setPointSize(fontMap.value("size", 9).toInt());
+                    f.setBold(fontMap.value("bold").toBool());
+                    f.setItalic(fontMap.value("italic").toBool());
+                    fe->setCurrentFont(f);
+                    QColor c(fontMap.value("color").toString());
+                    if (c.isValid()) {
+                        fe->setCurrentFontColor(c);
+                    }
+                } else {
+                    // 向后兼容：QFont::toString() 字符串格式
+                    QFont f;
+                    if (f.fromString(val.toString())) {
+                        fe->setCurrentFont(f);
+                    }
+                }
             }
         } else if (type == "code") {
             auto* codeEdit = qobject_cast< QPlainTextEdit* >(editor);
@@ -279,7 +296,7 @@ void DANodeParamSettingPanel::onPropertyValueChanged(int propertyId)
     if (proxy.isNone())
         return;
 
-    int idx = propertyId - 1;
+    int idx            = propertyId - 1;
     const auto& params = getParamDefs();
     if (idx < 0 || idx >= params.size())
         return;
@@ -308,7 +325,7 @@ void DANodeParamSettingPanel::onPropertyValueChanged(int propertyId)
 QVariant DANodeParamSettingPanel::readEditorValue(QWidget* editor, const QString& type)
 {
     if (!editor || type.isEmpty())
-        return {};
+        return { };
 
     if (type == "int") {
         auto* spin = qobject_cast< QSpinBox* >(editor);
@@ -349,15 +366,24 @@ QVariant DANodeParamSettingPanel::readEditorValue(QWidget* editor, const QString
             return btn->color().name();
     } else if (type == "font") {
         auto* fe = qobject_cast< DAFontEditPannelWidget* >(editor);
-        if (fe)
-            return fe->getCurrentFont().toString();
+        if (fe) {
+            // 返回字典格式：{"family", "size", "bold", "italic", "color"}
+            QFont f = fe->getCurrentFont();
+            QVariantMap fontMap;
+            fontMap[ "family" ] = f.family();
+            fontMap[ "size" ]   = f.pointSize() > 0 ? f.pointSize() : 9;
+            fontMap[ "bold" ]   = f.bold();
+            fontMap[ "italic" ] = f.italic();
+            fontMap[ "color" ]  = fe->getCurrentFontColor().name();
+            return fontMap;
+        }
     } else if (type == "code") {
         auto* codeEdit = qobject_cast< QPlainTextEdit* >(editor);
         if (codeEdit)
             return codeEdit->toPlainText();
     }
 
-    return {};
+    return { };
 }
 
 /**
@@ -397,9 +423,7 @@ void DANodeParamSettingPanel::connectEditorSignals(int id, const QString& type, 
     } else if (type == "str") {
         auto* le = qobject_cast< QLineEdit* >(editor);
         if (le) {
-            connect(le, &QLineEdit::textEdited, this, [ this, id ](const QString&) {
-                emit propertyValueChanged(id);
-            });
+            connect(le, &QLineEdit::textEdited, this, [ this, id ](const QString&) { emit propertyValueChanged(id); });
         }
     } else if (type == "enum") {
         auto* combo = qobject_cast< QComboBox* >(editor);
@@ -409,9 +433,7 @@ void DANodeParamSettingPanel::connectEditorSignals(int id, const QString& type, 
                 emit propertyValueChanged(id);
             });
 #else
-            connect(combo, &QComboBox::currentIndexChanged, this, [ this, id ](int) {
-                emit propertyValueChanged(id);
-            });
+            connect(combo, &QComboBox::currentIndexChanged, this, [ this, id ](int) { emit propertyValueChanged(id); });
 #endif
         }
     } else if (type == "file" || type == "folder") {
@@ -441,9 +463,7 @@ void DANodeParamSettingPanel::connectEditorSignals(int id, const QString& type, 
     } else if (type == "code") {
         auto* codeEdit = qobject_cast< QPlainTextEdit* >(editor);
         if (codeEdit) {
-            connect(codeEdit, &QPlainTextEdit::textChanged, this, [ this, id ]() {
-                emit propertyValueChanged(id);
-            });
+            connect(codeEdit, &QPlainTextEdit::textChanged, this, [ this, id ]() { emit propertyValueChanged(id); });
         }
     } else if (type == "list") {
         // list 编辑器是复合控件，连接内部的添加/删除按钮

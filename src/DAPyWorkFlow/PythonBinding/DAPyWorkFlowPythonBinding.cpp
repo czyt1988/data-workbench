@@ -13,6 +13,7 @@
 #include "DAPyWorkFlowEnumStringUtils.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DAPyJsonCast.h"
+#include "DAPyQtTypeDictCast.h"
 #include "DAPybind11InQt.h"  // slots workaround，必须第一个pybind11相关头文件
 
 namespace DA
@@ -329,6 +330,23 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
              pybind11::arg("bold")   = false,
              pybind11::arg("italic") = false,
              "Set font family, size, and style (bold/italic)")
+        .def(
+            "setFontFromDict",
+            [](DA::DAPyPainterProxy& self, const pybind11::dict& font_dict) {
+                QFont f = DA::DAPyQtTypeDictCast::pyDictToQFont(font_dict);
+                self.setFont(f.family().toStdString(), f.pointSize(), f.bold(), f.italic());
+            },
+            pybind11::arg("font_dict"),
+            "Set font from a dict with keys: family, size, bold, italic (color ignored)")
+        .def(
+            "textBoundingRectWithFont",
+            [](DA::DAPyPainterProxy& self, const std::string& text, const pybind11::dict& font_dict) {
+                QFont f = DA::DAPyQtTypeDictCast::pyDictToQFont(font_dict);
+                return self.textBoundingRect(text, f.family().toStdString(), f.pointSize(), f.bold(), f.italic());
+            },
+            pybind11::arg("text"),
+            pybind11::arg("font_dict"),
+            "Compute text bounding rect (width, height) using font dict")
         .def("setNoPen", &DA::DAPyPainterProxy::setNoPen, "Set no pen (disable outline drawing)")
         .def("setNoBrush", &DA::DAPyPainterProxy::setNoBrush, "Set no brush (disable fill)")
         .def("isValid", &DA::DAPyPainterProxy::isValid, "Check if painter proxy is valid");

@@ -3,8 +3,13 @@
 
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Parameter, NodeDisplay
 
-
-_FONT_FAMILY = "Microsoft YaHei"
+_DEFAULT_FONT = {
+    "family": "Microsoft YaHei",
+    "size": 9,
+    "bold": False,
+    "italic": False,
+    "color": "#282828",
+}
 
 
 def _hex_to_rgb(color):
@@ -36,16 +41,14 @@ def _hex_to_rgb(color):
         return (40, 40, 40)
 
 
-def _wrap_text_by_width(painter, text, max_width, font_size, bold, italic):
+def _wrap_text_by_width(painter, text, max_width, font):
     """
     按像素宽度逐字符测量切分文本为多行，遇到换行符 \\n 也强制换行。
 
     :param painter: DAPyPainterProxy 实例
     :param text: 原始文本
     :param max_width: 单行最大像素宽度
-    :param font_size: 字号
-    :param bold: 是否粗体
-    :param italic: 是否斜体
+    :param font: 字体字典（含 family/size/bold/italic/color 键）
     :return: 切分后的行列表
     """
     if not text:
@@ -58,7 +61,7 @@ def _wrap_text_by_width(painter, text, max_width, font_size, bold, italic):
             current = ""
             continue
         candidate = current + ch
-        w, _ = painter.textBoundingRect(candidate, _FONT_FAMILY, font_size, bold, italic)
+        w, _ = painter.textBoundingRectWithFont(candidate, font)
         if w > max_width and current:
             lines.append(current)
             current = ch
@@ -81,27 +84,10 @@ def _wrap_text_by_width(painter, text, max_width, font_size, bold, italic):
 class TextViewerNode:
     """接收任意数据，将其字符串化后在节点体上绘制显示。"""
 
-    font_color = Parameter(
-        "color",
-        default="#282828",
-        description="文字颜色（#RRGGBB 格式）",
-    )
-    font_size = Parameter(
-        int,
-        default=9,
-        min=6,
-        max=72,
-        description="显示文本的字号",
-    )
-    bold = Parameter(
-        bool,
-        default=False,
-        description="是否粗体显示",
-    )
-    italic = Parameter(
-        bool,
-        default=False,
-        description="是否斜体显示",
+    font = Parameter(
+        "font",
+        default=_DEFAULT_FONT,
+        description="文本字体（族/字号/粗体/斜体/颜色）",
     )
     max_text_length = Parameter(
         int,
@@ -148,21 +134,19 @@ class TextViewerNode:
         由 DAPyNodeGraphicsItem::setProxy() 自动注册，节点状态变更后触发重绘。
         """
         x, y, w, h = body_rect
-        font_color = getattr(self, "font_color", "#282828")
-        font_size = getattr(self, "font_size", 9)
-        bold = getattr(self, "bold", False)
-        italic = getattr(self, "italic", False)
+        font = getattr(self, "font", _DEFAULT_FONT)
         max_text_length = getattr(self, "max_text_length", 200)
         wrap_text = getattr(self, "wrap_text", True)
 
-        r, g, b = _hex_to_rgb(font_color)
+        color = font.get("color", "#282828") if isinstance(font, dict) else "#282828"
+        r, g, b = _hex_to_rgb(color)
         margin = 6
 
         # 限制绘制区域，避免超出节点体
         painter.setClipRect(x + margin, y + margin, w - 2 * margin, h - 2 * margin)
 
-        # 设置字体（含粗体/斜体）和颜色
-        painter.setFont(_FONT_FAMILY, font_size, bold, italic)
+        # 设置字体和颜色
+        painter.setFontFromDict(font)
         painter.setPenColor(r, g, b)
 
         # 取缓存文本
@@ -173,13 +157,14 @@ class TextViewerNode:
             text = text[:max_text_length] + "…"
 
         # 测量行高
-        _, line_height = painter.textBoundingRect("A", _FONT_FAMILY, font_size, bold, italic)
-        line_height = max(line_height, font_size + 2)
+        _, line_height = painter.textBoundingRectWithFont("A", font)
+        size = font.get("size", 9) if isinstance(font, dict) else 9
+        line_height = max(line_height, size + 2)
 
         # 行切分
         if wrap_text:
             max_width = max(1, w - 2 * margin)
-            lines = _wrap_text_by_width(painter, text, max_width, font_size, bold, italic)
+            lines = _wrap_text_by_width(painter, text, max_width, font)
         else:
             lines = text.split("\n")
 
