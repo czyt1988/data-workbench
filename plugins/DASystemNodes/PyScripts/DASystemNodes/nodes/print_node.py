@@ -15,10 +15,10 @@ logger = logging.getLogger("DASystemNodes.PrintNode")
 class PrintNode:
     """将输入数据打印到日志（Python logging 和 Qt 输出），并在节点画面上显示文字。"""
 
-    prefix = Parameter(
+    title = Parameter(
         str,
         default="",
-        description="输出前缀字符串",
+        description="节点标题（显示在节点顶部）；为空时默认显示 'Print'",
     )
 
     class Inputs:
@@ -27,7 +27,7 @@ class PrintNode:
     def __init__(self):
         super().__init__()
         self._last_text = "(no input)"
-        self._last_prefix = ""
+        self._last_title = ""
 
     def execute(self, inputs=None, params=None):
         if inputs is None:
@@ -36,7 +36,7 @@ class PrintNode:
             params = {}
 
         value = inputs.get("value")
-        prefix = params.get("prefix", "")
+        title = params.get("title", "")
 
         try:
             text = str(value)
@@ -45,27 +45,27 @@ class PrintNode:
 
         # 缓存用于 paint() 显示
         self._last_text = text
-        self._last_prefix = prefix
+        self._last_title = title
 
-        if prefix:
-            logger.info("%s%s", prefix, text)
+        if title:
+            logger.info("[%s] %s", title, text)
         else:
             logger.info("%s", text)
 
-        print(f"[PrintNode] {prefix}{text}")
+        print(f"[PrintNode][{title}] {text}" if title else f"[PrintNode] {text}")
         return True
 
     def serialize_runtime_state(self) -> dict:
         """持久化 execute() 缓存的显示文本，使得工程重新加载后无需运行即可显示。"""
         return {
             "last_text": getattr(self, "_last_text", "(no input)"),
-            "last_prefix": getattr(self, "_last_prefix", ""),
+            "last_title": getattr(self, "_last_title", ""),
         }
 
     def deserialize_runtime_state(self, state: dict) -> None:
         """从工程文件恢复显示文本缓存。"""
         self._last_text = state.get("last_text", "(no input)")
-        self._last_prefix = state.get("last_prefix", "")
+        self._last_title = state.get("last_title", "")
 
     def paint(self, painter, body_rect):
         """自定义节点绘制：显示节点名 + 缓存的输入文字。
@@ -92,16 +92,14 @@ class PrintNode:
         painter.setPenColor(200, 200, 200, 255)
         painter.drawLine(x, y + 16, x + w, y + 16)
 
-        # 标题 "Print"
+        # 顶部标题：优先显示 title 参数，为空时回退到 "Print"
+        title = getattr(self, "_last_title", "") or "Print"
         painter.setPenColor(80, 80, 80, 255)
         painter.setFont("Arial", 8)
-        painter.drawText(x + 4, y + 12, "Print")
+        painter.drawText(x + 4, y + 12, title)
 
         # 显示输入文字（按宽度换行，超出高度截断）
         display = getattr(self, "_last_text", "(no input)")
-        prefix = getattr(self, "_last_prefix", "")
-        if prefix:
-            display = f"{prefix}{display}"
 
         font_family = "Arial"
         font_size = 8
