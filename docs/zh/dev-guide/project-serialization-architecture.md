@@ -873,15 +873,112 @@ graph LR
 </items>
 ```
 
-## 8. 最佳实践与注意事项
+**workflow-data.xml（含运行时状态）**:
 
-### 8.1 添加新的序列化内容
+```xml title="workflow-data.xml 节点示例（含 <state> 元素）"
+<node node_id="DASystemNodes.TextViewer_1"
+      qualified_name="DASystemNodes.TextViewer">
+  <param name="font_color" type="str">#282828</param>
+  <param name="font_size" type="int">9</param>
+  <param name="bold" type="bool">false</param>
+  <state>
+    <item name="display_text" type="str">Hello World</item>
+  </state>
+</node>
+```
+
+`<param>` 存储用户通过参数面板配置的 `Parameter` 声明参数值；`<state>` 存储节点 `execute()` 运行后产生的衍生状态（如缓存文本、中间结果）。二者由 `DAWorkflowSerializer` 分别调用节点的参数访问接口与 `serialize_runtime_state()` 钩子收集。详见 [§ 8 运行时状态持久化](#8-运行时状态持久化)。
+
+## 8. 运行时状态持久化
+
+### 8.1 动机
+
+部分节点在 `execute()` 阶段会派生需要在 UI 上呈现的状态，例如：
+
+- `TextViewer` / `Print` 节点把输入数据字符串化后缓存在实例属性中，供 `paint()` 直接绘制
+- 表格预览节点缓存最近一次的 DataFrame 摘要
+- 调试类节点缓存最近一次的执行日志
+
+若仅持久化 `Parameter` 声明的参数值，重新打开工程后这些衍生状态丢失，节点画面会变回空白，必须再次执行才能看到内容。为此，`DAWorkflowNode` 基类提供 `serialize_runtime_state()` / `deserialize_runtime_state()` 钩子，让节点把任意 JSON 可序列化的运行时状态写入工程文件并在加载时恢复。
+
+### 8.2 钩子签名
+
+```python
+class DAWorkflowNode:
+    def serialize_runtime_state(self) -> dict:
+        """返回需要跨保存/加载周期持久化的运行时状态。
+
+        返回值应为 JSON 可序列化的 dict（str/int/float/bool/list/dict/None）。
+        默认返回空 dict（不持久化任何运行时状态）。
+        """
+        return {}
+
+    def deserialize_runtime_state(self, state: dict) -> None:
+        """从 serialize_runtime_state() 产生的字典恢复运行时状态。
+
+        :param state: serialize_runtime_state() 返回的字典，可能为空 dict
+        """
+        pass
+```
+
+### 8.3 序列化器集成
+
+`DAWorkflowSerializer` 在 `to_dict` / `from_dict` 与 `to_xml_element` / `from_xml_element` 四个方法中统一调用钩子：
+
+| 方向 | 方法 | 行为 |
+|------|------|------|
+| 保存 | `to_dict` / `to_xml_element` | 调用 `serialize_runtime_state()`；空 dict 不写入 |
+| 加载 | `from_dict` / `from_xml_element` | 调用 `deserialize_runtime_state()`；缺失字段时跳过 |
+
+**XML 存储格式**：状态项作为 `<node>` 下的 `<state>` 子元素，每个键值对为一个 `<item>`，类型标签复用 `_serialize_param_value` 的 type 标签（`str/int/float/bool/json/none`），`None` 值会被跳过不写入。
+
+**dict 存储格式**：节点 dict 增加 `runtime_state` 键，值为 `{key: value, ...}`；空 dict 不写入。
+
+### 8.4 节点实现示例
+
+```python
+@NodeDef(name="Text Viewer", category="System / Display")
+class TextViewerNode:
+    def __init__(self):
+        super().__init__()
+        self._display_text = ""
+
+    def execute(self, inputs=None, params=None):
+        value = (inputs or {}).get("value")
+        self._display_text = str(value) if value is not None else ""
+        return True
+
+    def serialize_runtime_state(self) -> dict:
+        # 把缓存的显示文本写入工程文件
+        return {"display_text": getattr(self, "_display_text", "")}
+
+    def deserialize_runtime_state(self, state: dict) -> None:
+        # 工程重新加载后恢复缓存，无需 execute() 即可在 paint() 中渲染
+        self._display_text = state.get("display_text", "")
+```
+
+### 8.5 设计约束
+
+!!! warning "运行时状态使用约束"
+
+    1. **仅存 JSON 可序列化类型**：`str/int/float/bool/list/dict/None`。DataFrame、numpy 数组、Python 对象引用等**不可**直接放入 `serialize_runtime_state()` 返回值。
+    2. **不替代 Parameter**：用户可配置的参数必须通过 `Parameter` 声明，运行时状态仅用于 `execute()` 的衍生缓存。
+    3. **防御性读取**：`deserialize_runtime_state()` 收到的 dict 可能为空（旧工程文件无此字段），必须用 `state.get(key, default)` 安全访问。
+    4. **异常隔离**：`DAWorkflowSerializer` 在调用钩子时用 `try/except` 包裹，单个节点的序列化失败不会中断整体保存/加载流程，但会丢失该节点的运行时状态。
+
+### 8.6 向后兼容
+
+旧工程文件没有 `<state>` 元素或 `runtime_state` 字段，`DAWorkflowSerializer` 会跳过 `deserialize_runtime_state()` 调用，节点保持 `__init__` 中设置的默认状态，行为与升级前一致。
+
+## 9. 最佳实践与注意事项
+
+### 9.1 添加新的序列化内容
 
 1. **创建任务类**：继承 `DAAbstractArchiveTask`
 2. **注册任务**：在 `DAAppProject::save()` 和 `load()` 中添加
 3. **注意顺序**：确保依赖关系正确
 
-### 8.2 错误处理
+### 9.2 错误处理
 
 ```cpp title="错误处理示例"
 // 保存失败会自动清理临时文件
@@ -896,13 +993,13 @@ void DAZipArchive::saveAll(const QString& filePath)
 }
 ```
 
-### 8.3 性能优化建议
+### 9.3 性能优化建议
 
 1. **大文件分块处理**：使用 `writeFileToZip` 和 `readToFile` 的分块参数
 2. **减少临时文件**：尽量使用 `QByteArray` 直接传输
 3. **并行处理**：考虑将独立任务并行执行（当前为串行）
 
-## 9. 相关文件索引
+## 10. 相关文件索引
 
 | 文件 | 说明 |
 |------|------|
@@ -919,3 +1016,5 @@ void DAZipArchive::saveAll(const QString& filePath)
 | [DAZipArchiveTask_ArchiveFile.h](./../../../src/DAGui/DAZipArchiveTask_ArchiveFile.h) | 文件任务 |
 | [DAZipArchiveTask_ChartItem.h](./../../../src/DAGui/DAZipArchiveTask_ChartItem.h) | 图表项任务 |
 | [DAChartItemsManager.h](./../../../src/DAGui/DAChartItemsManager.h) | 图表项管理器 |
+| [DAWorkflowSerializer](./../../../src/PyScripts/DAWorkbench/DAWorkFlowPy/serializer.py) | Python 工作流序列化器（含运行时状态钩子调用） |
+| [DAWorkflowNode](./../../../src/PyScripts/DAWorkbench/DAWorkFlowPy/node_def.py) | 节点基类（`serialize_runtime_state` / `deserialize_runtime_state` 钩子定义） |

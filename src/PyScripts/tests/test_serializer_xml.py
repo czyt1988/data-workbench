@@ -334,3 +334,165 @@ class TestXmlEdgeCases:
         serializer = DAWorkflowSerializer()  # no factory
         with pytest.raises(ValueError, match="node_factory"):
             serializer.from_xml_element(element)
+
+
+# =========================================================
+# Tests: runtime_state serialization
+# =========================================================
+
+
+class _StatefulMockNode:
+    """Mock node that persists runtime state via serialize/deserialize hooks."""
+
+    def __init__(self, qualified_name):
+        self.qualified_name = qualified_name
+        self.name = qualified_name.split(".")[-1]
+        self.node_id = None
+        self.parameters = {}
+        self._display_text = ""
+
+    def serialize_runtime_state(self):
+        return {"display_text": self._display_text}
+
+    def deserialize_runtime_state(self, state):
+        self._display_text = state.get("display_text", "")
+
+
+class _StatefulMockFactory:
+    """Factory that creates _StatefulMockNode instances."""
+
+    def create_node(self, qualified_name):
+        return _StatefulMockNode(qualified_name)
+
+
+class TestRuntimeStateSerialization:
+    """Test runtime_state persistence in both dict and XML formats."""
+
+    def test_dict_runtime_state_round_trip(self):
+        wf = DAWorkflow(name="stateful_wf")
+        n1 = _StatefulMockNode("test.TextViewer")
+        n1.node_id = "test.TextViewer_1"
+        n1._display_text = "hello world"
+        wf.add_node(n1)
+
+        serializer = DAWorkflowSerializer()
+        data = serializer.to_dict(wf)
+
+        # runtime_state should be present in the serialized dict
+        assert "runtime_state" in data["nodes"][0]
+        assert data["nodes"][0]["runtime_state"]["display_text"] == "hello world"
+
+        # Round-trip
+        factory = _StatefulMockFactory()
+        wf2 = serializer.from_dict(data, factory)
+        n1_restored = wf2._nodes["test.TextViewer_1"]
+        assert n1_restored._display_text == "hello world"
+
+    def test_xml_runtime_state_round_trip(self):
+        wf = DAWorkflow(name="stateful_wf")
+        n1 = _StatefulMockNode("test.TextViewer")
+        n1.node_id = "test.TextViewer_1"
+        n1._display_text = "hello world"
+        wf.add_node(n1)
+
+        serializer = DAWorkflowSerializer()
+        element = serializer.to_xml_element(wf)
+
+        # <state> element should exist under <node>
+        node_ele = element.find(".//node[@node_id='test.TextViewer_1']")
+        state_ele = node_ele.find("state")
+        assert state_ele is not None
+        item_eles = state_ele.findall("item")
+        assert len(item_eles) == 1
+        assert item_eles[0].get("name") == "display_text"
+        assert item_eles[0].text == "hello world"
+
+        # Round-trip
+        factory = _StatefulMockFactory()
+        wf2 = serializer.from_xml_element(element, factory)
+        n1_restored = wf2._nodes["test.TextViewer_1"]
+        assert n1_restored._display_text == "hello world"
+
+    def test_xml_string_runtime_state_round_trip(self):
+        wf = DAWorkflow(name="stateful_wf")
+        n1 = _StatefulMockNode("test.TextViewer")
+        n1.node_id = "test.TextViewer_1"
+        n1._display_text = "some\nmulti-line\ntext"
+        wf.add_node(n1)
+
+        serializer = DAWorkflowSerializer()
+        xml_str = serializer.to_xml(wf)
+
+        factory = _StatefulMockFactory()
+        wf2 = serializer.from_xml(xml_str, factory)
+        n1_restored = wf2._nodes["test.TextViewer_1"]
+        assert n1_restored._display_text == "some\nmulti-line\ntext"
+
+    def test_empty_runtime_state_not_serialized(self):
+        """Nodes with empty runtime_state should not include the key."""
+        wf = DAWorkflow(name="test")
+        n1 = _StatefulMockNode("test.TextViewer")
+        n1.node_id = "test.TextViewer_1"
+        n1._display_text = ""  # empty state
+        wf.add_node(n1)
+
+        serializer = DAWorkflowSerializer()
+        data = serializer.to_dict(wf)
+        # serialize_runtime_state returns {"display_text": ""} which is non-empty dict,
+        # so runtime_state key IS present but with empty string value
+        assert "runtime_state" in data["nodes"][0]
+        assert data["nodes"][0]["runtime_state"] == {"display_text": ""}
+
+    def test_none_runtime_state_value_skipped_in_xml(self):
+        """None values in runtime_state should be skipped in XML serialization."""
+        wf = DAWorkflow(name="test")
+        n1 = _StatefulMockNode("test.TextViewer")
+        n1.node_id = "test.TextViewer_1"
+
+        # Override to return a dict with None value
+        def custom_serialize():
+            return {"keep": "data", "drop": None}
+        n1.serialize_runtime_state = custom_serialize
+        wf.add_node(n1)
+
+        serializer = DAWorkflowSerializer()
+        element = serializer.to_xml_element(wf)
+        state_ele = element.find(".//node[@node_id='test.TextViewer_1']/state")
+        item_names = [i.get("name") for i in state_ele.findall("item")]
+        assert "keep" in item_names
+        assert "drop" not in item_names
+
+    def test_backward_compat_no_runtime_state(self):
+        """Old saved files without runtime_state should load without error."""
+        old_data = {
+            "name": "old_wf",
+            "version": "1.0",
+            "nodes": [
+                {
+                    "node_id": "test.TextViewer_1",
+                    "qualified_name": "test.TextViewer",
+                    "parameters": {},
+                }
+            ],
+            "connections": [],
+        }
+        serializer = DAWorkflowSerializer()
+        factory = _StatefulMockFactory()
+        wf = serializer.from_dict(old_data, factory)
+        n1 = wf._nodes["test.TextViewer_1"]
+        # _display_text stays as default empty string
+        assert n1._display_text == ""
+
+    def test_backward_compat_no_state_element_in_xml(self):
+        """Old XML files without <state> element should load without error."""
+        old_xml = '''<workflow name="old_wf" version="1.0">
+  <nodes>
+    <node node_id="test.TextViewer_1" qualified_name="test.TextViewer"/>
+  </nodes>
+  <connections/>
+</workflow>'''
+        serializer = DAWorkflowSerializer()
+        factory = _StatefulMockFactory()
+        wf = serializer.from_xml(old_xml, factory)
+        n1 = wf._nodes["test.TextViewer_1"]
+        assert n1._display_text == ""

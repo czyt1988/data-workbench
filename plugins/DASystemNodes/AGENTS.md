@@ -451,7 +451,100 @@ xcopy /E /Y /I "plugins\DASystemNodes\PyScripts\DASystemNodes" `
 | **IfElseNode** | `nodes/condition_if.py` | NodeDisplay 菱形样式 + LinkPointStyle 端口形状 + 多输出分支 |
 | **DelayNode** | `nodes/delay.py` | Parameter float 类型（min/max/step/decimals）+ time.sleep 阻塞执行 |
 | **DataToManagerNode** | `nodes/data_to_manager.py` | 调用 C++ API（da_app/da_data）+ 主线程切换 |
-| **PrintNode** | `nodes/print_node.py` | paint() 自定义绘制 + 缓存实例属性 + 防御性 getattr |
-| **TextViewerNode** | `nodes/text_viewer.py` | paint() 多行文本绘制 + clipRect 裁剪 + 工具函数复用 |
+| **PrintNode** | `nodes/print_node.py` | paint() 自定义绘制 + 缓存实例属性 + 防御性 getattr + **运行时状态持久化** |
+| **TextViewerNode** | `nodes/text_viewer.py` | paint() 多行文本绘制 + clipRect 裁剪 + 工具函数复用 + **运行时状态持久化** |
 
 新增节点时，**先找到最相似的参考节点**复制结构，再修改业务逻辑。
+
+---
+
+## 九、运行时状态持久化
+
+### 问题背景
+
+`execute()` 阶段缓存的实例属性（如 `_display_text`、`_last_text`）默认在工程保存/加载时丢失。重新打开工程后，节点画面会变回空白，必须再次执行才能看到内容——这与用户直觉不符。
+
+### 解决方案：serialize_runtime_state / deserialize_runtime_state
+
+`DAWorkflowNode` 基类提供一对钩子，让节点把任意 JSON 可序列化的运行时状态写入工程文件并在加载时恢复：
+
+```python
+def __init__(self):
+    super().__init__()
+    self._display_text = ""
+
+def execute(self, inputs=None, params=None):
+    value = (inputs or {}).get("value")
+    self._display_text = str(value) if value is not None else ""
+    return True
+
+def serialize_runtime_state(self) -> dict:
+    """保存时调用，返回需要持久化的运行时状态。"""
+    return {"display_text": getattr(self, "_display_text", "")}
+
+def deserialize_runtime_state(self, state: dict) -> None:
+    """加载时调用，从 state 恢复运行时状态。"""
+    self._display_text = state.get("display_text", "")
+```
+
+`DAWorkflowSerializer` 会在 `to_dict` / `to_xml_element` 中调用 `serialize_runtime_state()`，把返回的 dict 写入工程文件；在 `from_dict` / `from_xml_element` 中调用 `deserialize_runtime_state()` 恢复状态。
+
+### DASystemNodes 中的实现
+
+| 节点 | 持久化的状态 | 说明 |
+|------|-------------|------|
+| `TextViewerNode` | `display_text` | `execute()` 字符串化的输入数据，`paint()` 直接读取绘制 |
+| `PrintNode` | `last_text`, `last_prefix` | `execute()` 打印的文本与前缀，`paint()` 拼接后绘制 |
+
+### XML 存储格式
+
+运行时状态存储在 `<node>` 元素下的 `<state>` 子元素中：
+
+```xml
+<node node_id="DASystemNodes.TextViewer_1" qualified_name="DASystemNodes.TextViewer">
+  <param name="font_color" type="str">#282828</param>
+  <param name="font_size" type="int">9</param>
+  <state>
+    <item name="display_text" type="str">Hello World</item>
+  </state>
+</node>
+```
+
+### 使用约束
+
+1. **仅存 JSON 可序列化类型**：`str/int/float/bool/list/dict/None`。DataFrame、numpy 数组、Python 对象引用等**不可**直接放入返回值。
+2. **不替代 Parameter**：用户可配置的参数必须通过 `Parameter` 声明，运行时状态仅用于 `execute()` 的衍生缓存。
+3. **防御性读取**：`deserialize_runtime_state()` 收到的 dict 可能为空（旧工程文件无此字段），必须用 `state.get(key, default)` 安全访问。
+4. **异常隔离**：序列化器在调用钩子时用 `try/except` 包裹，单个节点的钩子失败不会中断整体保存/加载流程，但会丢失该节点的运行时状态。
+
+### 何时需要实现
+
+| 场景 | 是否实现 |
+|------|----------|
+| 节点 `execute()` 缓存了供 `paint()` 使用的衍生数据 | ✅ 必须 |
+| 节点仅输出数据到下游（`_output_data`），无自定义绘制 | ❌ 不需要 |
+| 节点缓存的派生状态可从参数 + 输入完全重建 | ❌ 不需要（重新执行即可） |
+| 节点缓存的状态无法轻易重建（如历史日志、交互历史） | ✅ 推荐 |
+
+详见 [项目序列化架构 - 运行时状态持久化](../../docs/zh/dev-guide/project-serialization-architecture.md#8-运行时状态持久化)。
+
+### ⚠️ @NodeDef 的 MRO 遮盖陷阱
+
+`@NodeDef` 装饰器通过 `type(cls.__name__, (DAWorkflowNode, cls), {})` 创建新类，MRO 为：
+
+```
+new_cls → DAWorkflowNode → 用户类 cls → object
+```
+
+**`DAWorkflowNode` 基类的方法会遮盖用户类的同名方法**。这意味着如果基类定义了 `def foo()`，用户类也定义了 `def foo()`，调用时基类的方法会被优先调用，用户类的覆写被忽略。
+
+`serialize_runtime_state` / `deserialize_runtime_state` 钩子已在基类中通过 `super()` 转发到用户类实现，**用户类正常覆写即可，无需调用 `super()`**：
+
+```python
+# TextViewerNode 中的覆写 — 直接返回，不需要 super()
+def serialize_runtime_state(self) -> dict:
+    return {"display_text": self._display_text}
+```
+
+!!! warning "新增 DAWorkflowNode 基类方法"
+    如果在 `DAWorkflowNode` 基类中新增需要被子类覆写的方法，**必须**使用 `super()` 转发模式。详见 [Python 节点开发指南 - MRO 遮盖陷阱](../../docs/zh/dev-guide/workflow-python-node-dev.md#nodef-的-mro-遮盖陷阱)。

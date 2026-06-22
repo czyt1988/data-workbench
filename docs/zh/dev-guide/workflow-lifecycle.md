@@ -200,6 +200,19 @@ DAPyNodeGraphicsItem* item = scene->createPyNode(metaData, position);
 3. 将代理与图元关联
 4. 发射 `pyNodeItemCreated` 信号
 
+### 工程加载时的状态恢复
+
+从工程文件加载节点时，`DAWorkflowSerializer.from_xml_element()` / `from_dict()` 按以下顺序恢复节点状态：
+
+1. 通过 `DANodeFactory.create_node(qualified_name)` 创建节点实例（触发 `__init__` 默认值）
+2. 通过 `setattr(node, name, value)` 恢复 `Parameter` 声明的参数值
+3. 调用 `node.deserialize_runtime_state(state)` 恢复 `execute()` 产生的衍生状态（如缓存文本）
+
+`deserialize_runtime_state()` 钩子由 `DAWorkflowNode` 基类定义，默认空实现。节点覆写后可在工程加载后立即恢复 `paint()` 所需的缓存数据，无需重新执行工作流。详见 [Python 节点开发指南 - 运行时状态持久化](./workflow-python-node-dev.md#运行时状态持久化serialize_runtime_state--deserialize_runtime_state)。
+
+!!! note "加载顺序与 Python 优先"
+    Python 逻辑数据（含 `runtime_state`）必须先于 C++ 视图数据加载，这是不可违反的铁律。详见 `src/DAPyWorkFlow/AGENTS.md` § 持久化架构。
+
 ## 节点连接生命周期
 
 节点连接定义数据流向，构成工作流的 DAG 结构。

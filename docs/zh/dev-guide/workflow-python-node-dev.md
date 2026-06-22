@@ -852,6 +852,114 @@ def _push_state(self, state):
 !!! warning "线程安全"
     `callInMainThread` 在 C++ 绑定层已正确处理 GIL 管理，Python 脚本无需额外处理 GIL。但需注意回调函数不要在后台线程直接操作 UI。
 
+### 运行时状态持久化（serialize_runtime_state / deserialize_runtime_state）
+
+`execute()` 阶段产生的衍生状态（如缓存文本、中间摘要），默认在工程保存/加载时丢失——重新打开工程后节点画面会变回空白，必须再次执行才能看到内容。
+
+`DAWorkflowNode` 基类提供一对钩子解决这个问题：
+
+| 钩子 | 调用时机 | 默认行为 |
+|------|----------|----------|
+| `serialize_runtime_state(self) -> dict` | 工程保存时 | 返回 `{}`（不持久化） |
+| `deserialize_runtime_state(self, state: dict) -> None` | 工程加载后 | 空实现 |
+
+`DAWorkflowSerializer` 在 `to_dict` / `to_xml_element` 中调用 `serialize_runtime_state()`，把返回的 dict 写入工程文件；在 `from_dict` / `from_xml_element` 中调用 `deserialize_runtime_state()` 恢复状态。
+
+#### 使用场景
+
+| 场景 | 是否需要钩子 |
+|------|--------------|
+| 用户可配置的参数 | ❌ 用 `Parameter` 声明 |
+| 节点执行后缓存的显示文本、摘要 | ✅ 用 `serialize_runtime_state` |
+| 最近一次执行的日志/错误信息 | ✅ 用 `serialize_runtime_state` |
+| DataFrame 本身 | ❌ 应存入 `_output_data` 或 DataManager |
+| Python 对象引用、文件句柄 | ❌ 不可序列化 |
+
+#### 实现示例
+
+```python
+@NodeDef(name="Text Viewer", category="System / Display")
+class TextViewerNode:
+    def __init__(self):
+        super().__init__()
+        self._display_text = ""
+
+    def execute(self, inputs=None, params=None):
+        value = (inputs or {}).get("value")
+        self._display_text = str(value) if value is not None else ""
+        return True
+
+    def serialize_runtime_state(self) -> dict:
+        # 把缓存的显示文本写入工程文件
+        return {"display_text": getattr(self, "_display_text", "")}
+
+    def deserialize_runtime_state(self, state: dict) -> None:
+        # 工程重新加载后恢复缓存，无需 execute() 即可在 paint() 中渲染
+        self._display_text = state.get("display_text", "")
+```
+
+#### XML 存储格式
+
+运行时状态存储在 `<node>` 元素下的 `<state>` 子元素中，每个键值对一个 `<item>`：
+
+```xml
+<node node_id="DASystemNodes.TextViewer_1" qualified_name="DASystemNodes.TextViewer">
+  <param name="font_color" type="str">#282828</param>
+  <param name="font_size" type="int">9</param>
+  <state>
+    <item name="display_text" type="str">Hello World</item>
+  </state>
+</node>
+```
+
+类型标签复用 `Parameter` 序列化的 type 标签（`str/int/float/bool/json/none`），`None` 值会被跳过不写入。
+
+!!! warning "使用约束"
+
+    1. **仅存 JSON 可序列化类型**：`str/int/float/bool/list/dict/None`。DataFrame、numpy 数组、Python 对象引用等**不可**直接放入返回值。
+    2. **不替代 Parameter**：用户可配置的参数必须通过 `Parameter` 声明。
+    3. **防御性读取**：`deserialize_runtime_state()` 收到的 dict 可能为空（旧工程文件无此字段），必须用 `state.get(key, default)` 安全访问。
+    4. **异常隔离**：序列化器在调用钩子时用 `try/except` 包裹，单个节点的钩子失败不会中断整体保存/加载流程，但会丢失该节点的运行时状态。
+
+#### 向后兼容
+
+旧工程文件没有 `<state>` 元素，序列化器会跳过 `deserialize_runtime_state()` 调用，节点保持 `__init__` 中设置的默认状态，行为与升级前一致。
+
+详见 [项目序列化架构 - 运行时状态持久化](./project-serialization-architecture.md#8-运行时状态持久化)。
+
+#### ⚠️ @NodeDef 的 MRO 遮盖陷阱
+
+`@NodeDef` 装饰器通过 `type(cls.__name__, (DAWorkflowNode, cls), {})` 创建新类，MRO 为：
+
+```
+new_cls → DAWorkflowNode → 用户类 cls → object
+```
+
+这意味着 **`DAWorkflowNode` 基类的方法会遮盖用户类的同名方法**。例如，如果 `DAWorkflowNode` 定义了 `def foo(self): return "base"`，而用户类也定义了 `def foo(self): return "user"`，调用 `node.foo()` 会返回 `"base"` 而不是 `"user"`。
+
+`DAWorkflowNode` 中需要被子类覆写的方法（如 `serialize_runtime_state` / `deserialize_runtime_state`）通过 `super()` 转发到用户类的实现：
+
+```python
+# DAWorkflowNode 基类中的实现
+def serialize_runtime_state(self) -> dict:
+    try:
+        return super().serialize_runtime_state() or {}
+    except AttributeError:
+        return {}  # 用户类未覆写，返回默认空 dict
+```
+
+**用户类正常覆写即可，无需调用 `super()`**：
+
+```python
+# TextViewerNode 中的覆写 — 直接返回，不需要 super()
+def serialize_runtime_state(self) -> dict:
+    return {"display_text": self._display_text}
+```
+
+!!! warning "新增 DAWorkflowNode 基类方法的注意事项"
+
+    如果在 `DAWorkflowNode` 基类中新增需要被子类覆写的方法，**必须**使用 `super()` 转发模式，否则用户类的覆写会被基类遮盖。`__init__` 方法不受此影响，因为它通过 `super().__init__()` 链式调用。
+
 ## 注意事项
 
 ### _input_data 和 _output_data 使用规范

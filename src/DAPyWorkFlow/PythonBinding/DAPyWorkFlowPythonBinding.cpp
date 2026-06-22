@@ -291,7 +291,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
              pybind11::arg("w"),
              pybind11::arg("h"),
              "Draw diamond shape inside the specified rectangle")
-        .def("boundingRect",
+        .def("textBoundingRect",
              &DA::DAPyPainterProxy::textBoundingRect,
              pybind11::arg("text"),
              pybind11::arg("family"),
@@ -340,39 +340,27 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
     // 线程安全：所有方法必须在 Qt 主线程调用（异步执行时需用 callInMainThread 投递）。
     pybind11::class_< DA::DAPyNodeGraphicsItem >(m, "DAPyNodeGraphicsItem")
         .def(
-            "update",
-            [](DA::DAPyNodeGraphicsItem& self) { self.update(); },
-            "Trigger a repaint of this node item")
-        .def(
-            "getNodeName",
-            &DA::DAPyNodeGraphicsItem::getNodeName,
-            "Get the cached node display name")
-        .def(
-            "setNodeName",
-            &DA::DAPyNodeGraphicsItem::setNodeName,
-            pybind11::arg("name"),
-            "Set the node display name (triggers body size re-estimation)")
-        .def(
-            "getNodeState",
-            &DA::DAPyNodeGraphicsItem::getNodeState,
-            "Get the current node execution state")
-        .def(
-            "setNodeState",
-            &DA::DAPyNodeGraphicsItem::setNodeState,
-            pybind11::arg("state"),
-            "Set the node execution state (triggers repaint)")
+            "update", [](DA::DAPyNodeGraphicsItem& self) { self.update(); }, "Trigger a repaint of this node item")
+        .def("getNodeName", &DA::DAPyNodeGraphicsItem::getNodeName, "Get the cached node display name")
+        .def("setNodeName",
+             &DA::DAPyNodeGraphicsItem::setNodeName,
+             pybind11::arg("name"),
+             "Set the node display name (triggers body size re-estimation)")
+        .def("getNodeState", &DA::DAPyNodeGraphicsItem::getNodeState, "Get the current node execution state")
+        .def("setNodeState",
+             &DA::DAPyNodeGraphicsItem::setNodeState,
+             pybind11::arg("state"),
+             "Set the node execution state (triggers repaint)")
         .def(
             "getNodeId",
             [](DA::DAPyNodeGraphicsItem& self) { return self.getProxy().getNodeId(); },
             "Get the Python node_id string associated with this graphics item")
-        .def(
-            "updateFromProxy",
-            &DA::DAPyNodeGraphicsItem::updateFromProxy,
-            "Re-read all attributes from the Python node proxy (call after modifying Python-side style/name/etc.)")
-        .def(
-            "updateNodeBody",
-            &DA::DAPyNodeGraphicsItem::updateNodeBody,
-            "Re-estimate the optimal body size based on current name/icon/style")
+        .def("updateFromProxy",
+             &DA::DAPyNodeGraphicsItem::updateFromProxy,
+             "Re-read all attributes from the Python node proxy (call after modifying Python-side style/name/etc.)")
+        .def("updateNodeBody",
+             &DA::DAPyNodeGraphicsItem::updateNodeBody,
+             "Re-estimate the optimal body size based on current name/icon/style")
         .def(
             "setBodySize",
             [](DA::DAPyNodeGraphicsItem& self, qreal w, qreal h) { self.setBodySize(QSizeF(w, h)); },

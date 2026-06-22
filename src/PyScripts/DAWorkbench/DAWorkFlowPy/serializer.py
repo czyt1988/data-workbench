@@ -124,6 +124,17 @@ class DAWorkflowSerializer:
                     if value is not None:
                         params[param_name] = value
             node_dict["parameters"] = params
+
+            # 收集运行时状态（如 execute() 缓存的显示文本等）
+            runtime_state = {}
+            if hasattr(node_instance, "serialize_runtime_state"):
+                try:
+                    runtime_state = node_instance.serialize_runtime_state() or {}
+                except Exception:
+                    runtime_state = {}
+            if runtime_state:
+                node_dict["runtime_state"] = runtime_state
+
             nodes_data.append(node_dict)
 
         connections_data = []
@@ -184,6 +195,14 @@ class DAWorkflowSerializer:
             # 设置参数值
             for param_name, param_value in parameters.items():
                 setattr(node_instance, param_name, param_value)
+
+            # 恢复运行时状态（如 execute() 缓存的显示文本等）
+            runtime_state = node_data.get("runtime_state", {})
+            if runtime_state and hasattr(node_instance, "deserialize_runtime_state"):
+                try:
+                    node_instance.deserialize_runtime_state(runtime_state)
+                except Exception:
+                    pass
 
             # 设置 node_id（保持原始 ID 一致性）
             if node_id:
@@ -348,6 +367,24 @@ class DAWorkflowSerializer:
                 param_ele.set("type", type_label)
                 param_ele.text = text
 
+            # 运行时状态（如 execute() 缓存的显示文本等）
+            runtime_state = {}
+            if hasattr(node_instance, "serialize_runtime_state"):
+                try:
+                    runtime_state = node_instance.serialize_runtime_state() or {}
+                except Exception:
+                    runtime_state = {}
+            if runtime_state:
+                state_ele = ET.SubElement(node_ele, "state")
+                for state_name, state_value in runtime_state.items():
+                    if state_value is None:
+                        continue
+                    s_type, s_text = self._serialize_param_value(state_value)
+                    item_ele = ET.SubElement(state_ele, "item")
+                    item_ele.set("name", state_name)
+                    item_ele.set("type", s_type)
+                    item_ele.text = s_text
+
         # 连接
         conns_ele = ET.SubElement(root, "connections")
         for conn in workflow.get_connections():
@@ -396,6 +433,23 @@ class DAWorkflowSerializer:
                 text = param_ele.text or ""
                 value = self._deserialize_param_value(type_label, text)
                 setattr(node_instance, param_name, value)
+
+            # 恢复运行时状态
+            state_ele = node_ele.find("state")
+            if state_ele is not None and hasattr(node_instance, "deserialize_runtime_state"):
+                runtime_state = {}
+                for item_ele in state_ele.findall("item"):
+                    state_name = item_ele.get("name", "")
+                    if not state_name:
+                        continue
+                    s_type = item_ele.get("type", "str")
+                    s_text = item_ele.text or ""
+                    runtime_state[state_name] = self._deserialize_param_value(s_type, s_text)
+                if runtime_state:
+                    try:
+                        node_instance.deserialize_runtime_state(runtime_state)
+                    except Exception:
+                        pass
 
             # 恢复 node_id
             if node_id:

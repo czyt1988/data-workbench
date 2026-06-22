@@ -349,6 +349,49 @@ class DAWorkflowNode:
         """
         return cls.parameters
 
+    def serialize_runtime_state(self) -> dict:
+        """
+        返回需要跨保存/加载周期持久化的运行时状态。
+
+        节点可覆写此方法，将运行时衍生状态（如 execute() 缓存的显示文本、
+        中间计算结果等）返回为 dict。DAWorkflowSerializer 会在保存时调用此方法，
+        把返回值写入工程文件；加载时通过 deserialize_runtime_state() 恢复。
+
+        返回的 dict 值应为 JSON 可序列化类型（str/int/float/bool/list/dict/None）。
+        默认返回空 dict（不持久化任何运行时状态）。
+
+        .. note::
+            @NodeDef 装饰器创建的类 MRO 为 ``new_cls → DAWorkflowNode → 用户类 → object``，
+            因此基类方法会遮盖用户类的同名覆写。这里通过 ``super()`` 转发到用户类的实现；
+            若用户类未覆写此方法，``super()`` 会抛 ``AttributeError``，捕获后返回空 dict。
+
+        :return: 运行时状态字典，空 dict 表示无需持久化
+        :rtype: dict[str, Any]
+        """
+        try:
+            return super().serialize_runtime_state() or {}
+        except AttributeError:
+            return {}
+
+    def deserialize_runtime_state(self, state: dict) -> None:
+        """
+        从 serialize_runtime_state() 产生的字典恢复运行时状态。
+
+        节点可覆写此方法，在工程加载后重建运行时衍生状态（如恢复缓存的显示文本），
+        使得无需重新 execute() 即可在 paint() 中正确渲染。
+
+        .. note::
+            @NodeDef 装饰器创建的类 MRO 为 ``new_cls → DAWorkflowNode → 用户类 → object``，
+            因此基类方法会遮盖用户类的同名覆写。这里通过 ``super()`` 转发到用户类的实现；
+            若用户类未覆写此方法，``super()`` 会抛 ``AttributeError``，捕获后忽略。
+
+        :param state: serialize_runtime_state() 返回的字典，可能为空 dict
+        """
+        try:
+            super().deserialize_runtime_state(state)
+        except AttributeError:
+            pass
+
     def run(self) -> bool:
         """
         无参执行入口，由 DAWorkflowExecutor 调用。

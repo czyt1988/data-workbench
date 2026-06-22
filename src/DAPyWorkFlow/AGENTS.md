@@ -511,6 +511,9 @@ project.dapro (ZIP)
     <nodes>
       <node node_id="pkg.Filter_1" qualified_name="pkg.Filter">
         <param name="threshold" type="float">0.8</param>
+        <state>
+          <item name="display_text" type="str">Hello World</item>
+        </state>
       </node>
     </nodes>
     <connections>
@@ -521,6 +524,8 @@ project.dapro (ZIP)
   </workflow>
 ]]></workflow>
 ```
+
+`<node>` 元素下可包含 `<state>` 子元素，存储节点 `execute()` 产生的衍生状态（如 `TextViewer` 缓存的显示文本）。`<state>` 由 `DAWorkflowSerializer` 调用 `DAWorkflowNode.serialize_runtime_state()` 钩子收集，加载时通过 `deserialize_runtime_state()` 恢复。详见 `docs/zh/dev-guide/project-serialization-architecture.md` § 8。
 
 ### 严格加载顺序
 
@@ -590,6 +595,8 @@ DAPyNodeGraphicsItem* fromItem = scene->findNodeItemById(QString::number(fromId)
 save():
   1. makeSaveWorkflowDataTask()  [Python 逻辑数据]
      → serializer.toXml(wf) 得到 Python XML 字符串
+       - 调用每个节点的 serialize_runtime_state() 钩子收集衍生状态
+       - <param> 存储 Parameter 声明的参数值，<state> 存储运行时衍生状态
      → CDATA 嵌入外层 XML（纯字符串拼接，不经 QDomDocument 解析 Python XML）
      → appendByteSaveTask(path, utf8)
 
@@ -598,6 +605,37 @@ save():
 ```
 
 保存时使用 `appendByteSaveTask` 而非 `appendXmlSaveTask`，避免 Python XML 被 QDomDocument 二次解析。CDATA 注入防护：`pyXml.replace("]]>", "]]]]><![CDATA[>")`。
+
+### 加载流程与 runtime_state 恢复
+
+```
+loadedWorkflowData() [主线程]:
+  对每个 <workflow>:
+    1. wfo->appendWorkflow(name) — 创建空 tab + Manager
+    2. serializer.fromXml(cdataXml, factory) — 反序列化完整 DAWorkflow
+       - 对每个 <node>：factory.create_node() → setattr 恢复 <param> →
+         deserialize_runtime_state() 恢复 <state>
+    3. wfe->getManager()->setWorkflow(wf) — 替换空 workflow
+```
+
+节点状态恢复顺序：`__init__` 默认值 → `Parameter` 参数值 → `runtime_state` 运行时衍生状态。这三层依次覆盖，保证节点在工程加载后即处于与保存时一致的视觉状态，无需重新执行。
+
+### ⚠️ @NodeDef MRO 遮盖与 super() 转发
+
+`@NodeDef` 装饰器通过 `type(cls.__name__, (DAWorkflowNode, cls), {})` 创建新类，MRO 为 `new_cls → DAWorkflowNode → 用户类 → object`。**`DAWorkflowNode` 的方法会遮盖用户类的同名方法**。
+
+`serialize_runtime_state` / `deserialize_runtime_state` 钩子在基类中通过 `super()` 转发到用户类实现：
+
+```python
+# DAWorkflowNode 基类
+def serialize_runtime_state(self) -> dict:
+    try:
+        return super().serialize_runtime_state() or {}
+    except AttributeError:
+        return {}  # 用户类未覆写
+```
+
+**新增 `DAWorkflowNode` 基类方法时必须使用此模式**，否则用户类的覆写会被静默遮盖。详见 `docs/zh/dev-guide/workflow-python-node-dev.md` § @NodeDef 的 MRO 遮盖陷阱。
 
 ### pybind11 函数调用陷阱
 

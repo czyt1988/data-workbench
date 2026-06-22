@@ -133,6 +133,14 @@ class TextViewerNode:
             self._display_text = "<unprintable>"
         return True
 
+    def serialize_runtime_state(self) -> dict:
+        """持久化 execute() 缓存的显示文本，使得工程重新加载后无需运行即可显示。"""
+        return {"display_text": getattr(self, "_display_text", "")}
+
+    def deserialize_runtime_state(self, state: dict) -> None:
+        """从工程文件恢复显示文本缓存。"""
+        self._display_text = state.get("display_text", "")
+
     def paint(self, painter, body_rect):
         """
         自定义绘制回调：在节点体上按参数渲染缓存的文本。
