@@ -144,9 +144,12 @@ void DANodeParamSettingPanel::updateUI()
             if (cb)
                 cb->setChecked(val.toBool());
         } else if (type == "str") {
-            auto* le = qobject_cast< QLineEdit* >(editor);
-            if (le)
+            // str 类型在 below 布局下为 QPlainTextEdit，inline 布局下为 QLineEdit
+            if (auto* le = qobject_cast< QLineEdit* >(editor)) {
                 le->setText(val.toString());
+            } else if (auto* pe = qobject_cast< QPlainTextEdit* >(editor)) {
+                pe->setPlainText(val.toString());
+            }
         } else if (type == "enum") {
             auto* combo = qobject_cast< QComboBox* >(editor);
             if (combo) {
@@ -249,7 +252,13 @@ void DANodeParamSettingPanel::buildPropertyPanel()
             QString type    = param.typeLabel();
             QWidget* editor = registry.createEditor(type, param, d->mPanel);
             if (editor) {
-                d->mPanel->addProperty(id, param.name(), param.description(), editor);
+                // 读取 layout 扩展属性决定布局模式：below → BelowLayout，其他 → InlineLayout
+                DAPropertyItemWidget::LayoutMode mode = DAPropertyItemWidget::InlineLayout;
+                QVariantHash props                    = param.properties();
+                if (props.contains("layout") && props.value("layout").toString().toLower() == "below") {
+                    mode = DAPropertyItemWidget::BelowLayout;
+                }
+                d->mPanel->addProperty(id, param.name(), param.description(), editor, mode);
                 connectEditorSignals(id, type, editor);
             }
             ++id;
@@ -340,9 +349,12 @@ QVariant DANodeParamSettingPanel::readEditorValue(QWidget* editor, const QString
         if (cb)
             return cb->isChecked();
     } else if (type == "str") {
-        auto* le = qobject_cast< QLineEdit* >(editor);
-        if (le)
+        // str 类型在 below 布局下为 QPlainTextEdit，inline 布局下为 QLineEdit
+        if (auto* le = qobject_cast< QLineEdit* >(editor)) {
             return le->text();
+        } else if (auto* pe = qobject_cast< QPlainTextEdit* >(editor)) {
+            return pe->toPlainText();
+        }
     } else if (type == "enum") {
         auto* combo = qobject_cast< QComboBox* >(editor);
         if (combo)
@@ -421,9 +433,11 @@ void DANodeParamSettingPanel::connectEditorSignals(int id, const QString& type, 
             connect(cb, &QCheckBox::toggled, this, [ this, id ](bool) { emit propertyValueChanged(id); });
         }
     } else if (type == "str") {
-        auto* le = qobject_cast< QLineEdit* >(editor);
-        if (le) {
+        // str 类型在 below 布局下为 QPlainTextEdit，inline 布局下为 QLineEdit
+        if (auto* le = qobject_cast< QLineEdit* >(editor)) {
             connect(le, &QLineEdit::textEdited, this, [ this, id ](const QString&) { emit propertyValueChanged(id); });
+        } else if (auto* pe = qobject_cast< QPlainTextEdit* >(editor)) {
+            connect(pe, &QPlainTextEdit::textChanged, this, [ this, id ]() { emit propertyValueChanged(id); });
         }
     } else if (type == "enum") {
         auto* combo = qobject_cast< QComboBox* >(editor);

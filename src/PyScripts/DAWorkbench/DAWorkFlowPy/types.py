@@ -112,6 +112,8 @@ class Parameter:
     :param decimals: 小数位数（float 类型参数适用）
     :param enum: 枚举选项列表（"enum" 类型参数适用，如 ["csv", "json", "excel"]）
     :param filter: 文件过滤器（"file" 类型参数适用，如 "CSV Files (*.csv);;All Files (*.*)"）
+    :param layout: 编辑器布局模式，"inline"（默认，属性名在左、编辑器在右）或 "below"（属性名在上、编辑器占满整行下方）。str 类型在 below 模式下自动切换为多行 QPlainTextEdit
+    :param height: 编辑器高度（像素），仅 below 模式生效。str 类型默认 80，code 类型默认 100，未设置时使用类型默认值
     :param kwargs: 扩展字段，用于支持额外属性（键名需与 C++ DAParamDef::PropertyName_* 一致）
     """
 
@@ -132,13 +134,35 @@ class Parameter:
         "code": "code",
     }
 
-    def __init__(self, param_type, default=None, description: str = "",
-                 min=None, max=None, step=None, decimals=None,
-                 enum=None, filter=None, **kwargs):
+    # 支持的 layout 取值（小写归一化后校验）
+    _LAYOUT_VALUES = {"inline", "below"}
+
+    def __init__(
+        self,
+        param_type,
+        default=None,
+        description: str = "",
+        min=None,
+        max=None,
+        step=None,
+        decimals=None,
+        enum=None,
+        filter=None,
+        layout: str = "inline",
+        height=None,
+        **kwargs,
+    ):
         self.name = ""  # 由 NodeDef 装饰器通过类属性名设置
         self.param_type = param_type
         self.default = default
         self.description = description
+
+        # 校验 layout 取值，归一化为小写
+        layout_norm = str(layout).lower()
+        if layout_norm not in self._LAYOUT_VALUES:
+            raise ValueError(
+                f"layout must be one of {sorted(self._LAYOUT_VALUES)}, got {layout!r}"
+            )
 
         # 构建扩展属性 dict，键名与 C++ DAParamDef::PropertyName_* 一致
         self._extra_kwargs = {}
@@ -154,6 +178,9 @@ class Parameter:
             self._extra_kwargs["enum"] = enum
         if filter is not None:
             self._extra_kwargs["filter"] = filter
+        self._extra_kwargs["layout"] = layout_norm
+        if height is not None:
+            self._extra_kwargs["height"] = int(height)
         # 保留 **kwargs 用于未来扩展
         self._extra_kwargs.update(kwargs)
 
@@ -192,5 +219,9 @@ class Parameter:
 
     def __repr__(self) -> str:
         default_str = f", default={self.default!r}" if self.default is not None else ""
-        type_str = self.param_type if isinstance(self.param_type, str) else self.param_type.__name__
+        type_str = (
+            self.param_type
+            if isinstance(self.param_type, str)
+            else self.param_type.__name__
+        )
         return f"Parameter({type_str}{default_str}, description='{self.description}')"

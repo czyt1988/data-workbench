@@ -111,6 +111,7 @@ class MyNode:
 ```
 
 这意味着：
+
 - 用户类**自动继承** `DAWorkflowNode` 的 `run()`、`qualified_name`、`_input_data`、`_output_data` 等
 - 用户类的 `__init__` 通过 `super().__init__()` 链式调用 `DAWorkflowNode.__init__`（详见 § 四.1）
 - 用户类**不需要**显式继承 `DAWorkflowNode`，装饰器会处理
@@ -129,7 +130,20 @@ value = Parameter("code", default="1", description="支持 1、'hello'、[1,2,3]
 
 # 枚举类型（choices 生成下拉框）
 mode = Parameter(str, default="fast", choices=["fast", "slow"], description="模式")
+
+# 布局控制：layout="below" 让编辑器占据属性名下方整行宽度
+# - str 类型在 below 模式下自动切换为多行 QPlainTextEdit
+# - height 可选，控制编辑器高度（像素）；str 默认 80，code 默认 100
+expression = Parameter(str, default="", description="pandas eval 表达式", layout="below")
+long_code = Parameter("code", default="", layout="below", height=150)
 ```
+
+**layout 取值**：
+
+- `"inline"`（默认）：属性名在左，编辑器在右同一行
+- `"below"`：属性名在顶部，编辑器占满下方整行；适合长文本/表达式输入
+
+**height 属性**：仅在 below 模式生效，未设置时使用类型默认值（str 80px / code 100px）。
 
 **Parameter 实例是类级别的描述符**，不要在 `execute()` 中通过 `self.X.default` 访问——反序列化后 `self.X` 会被替换为实际值（普通 str/int 等），`.default` 会抛 `AttributeError`。用 `params.get("X", default_value)` 替代（详见 § 四.2）。
 
@@ -246,7 +260,7 @@ def __init__(self):
     self._cache = None
 ```
 
-> 历史背景：曾存在"DAWorkflowNode 基类可能没有显式 __init__，不强制 super().__init__()"的误导性注释，导致 `PrintNode` 报 `_last_text` 不存在的错误。已修复，所有节点**必须**调用 `super().__init__()`。
+> 历史背景：曾存在"DAWorkflowNode 基类可能没有显式 **init**，不强制 super().**init**()"的误导性注释，导致 `PrintNode` 报 `_last_text` 不存在的错误。已修复，所有节点**必须**调用 `super().__init__()`。
 
 ### 陷阱 2：不要通过 `self.X.default` 访问 Parameter 默认值
 
@@ -420,6 +434,7 @@ xcopy /E /Y /I "plugins\DASystemNodes\PyScripts\DASystemNodes" `
 - Python 异常会被 C++ 代理层吞掉（返回安全默认值），**看日志面板**才能看到完整错误
 - `paint()` 异常会疯狂刷屏（每帧重绘都报错），出现时立即检查 `__init__` 是否调用了 `super().__init__()`
 - 怀疑节点未注册？在 Python 控制台执行：
+
   ```python
   from DAWorkbench.DAWorkFlowPy import DANodeRegistry
   print(DANodeRegistry.list_nodes())

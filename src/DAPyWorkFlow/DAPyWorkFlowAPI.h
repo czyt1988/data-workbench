@@ -21,7 +21,7 @@
  *
  * 取消注释下一行以启用调试输出：
  */
-// #define DA_WORKFLOW_DEBUG 1
+#define DA_WORKFLOW_DEBUG 1
 
 #ifdef DA_WORKFLOW_DEBUG
 #define DA_WF_DBG(fmt, ...) qDebug("[WF-DBG] " fmt, ##__VA_ARGS__)

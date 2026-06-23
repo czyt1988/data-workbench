@@ -180,8 +180,10 @@ DAPyNodeConnection DAPyWorkFlowManager::connectNode(const DAPyNode& srcProxy,
     DA_D(d);
     DAPyGILGuard gil;
     DA_WF_DBG("[C++] Manager::connectNode: %s.%s -> %s.%s",
-              srcProxy.getNodeId().toUtf8().constData(), srcOutput.toUtf8().constData(),
-              dstProxy.getNodeId().toUtf8().constData(), dstInput.toUtf8().constData());
+              srcProxy.getNodeId().toUtf8().constData(),
+              srcOutput.toUtf8().constData(),
+              dstProxy.getNodeId().toUtf8().constData(),
+              dstInput.toUtf8().constData());
     try {
         DAPyNodeConnection conn = d->mWorkflow.connectNode(srcProxy, srcOutput, dstProxy, dstInput);
         if (conn) {
@@ -439,39 +441,29 @@ bool DAPyWorkFlowManager::executeWorkflow()
 {
     DA_D(d);
     DAPyGILGuard gil;
-    DA_WF_DBG("[C++] Manager::executeWorkflow: 开始执行工作流");
     if (d->mWorkflow.isNone()) {
         qCritical() << "DAPyWorkFlowManager::executeWorkflow: workflow is invalid";
         return false;
     }
-
-    // 获取工作流节点数
-    int nodeCount = d->mWorkflow.nodeCount();
-    DA_WF_DBG("[C++] Manager::executeWorkflow: 工作流节点数=%d", nodeCount);
-
     // 创建执行器代理（纯 DAPyObjectWrapper 子类）
     DAPyWorkFlowExecutor executor(d->mWorkflow);
     if (executor.isNone()) {
         qCritical() << "DAPyWorkFlowManager::executeWorkflow: failed to create executor";
         return false;
     }
-    DA_WF_DBG("[C++] Manager::executeWorkflow: 执行器创建成功");
-
-    // 将 Python 回调桥接到 Manager 的 Qt 信号
+    // 将 Python 会调桥接到 Manager 的 Qt 信号
     executor.setOnStateChange([ this ](const QString& oldState, const QString& newState) {
-        DA_WF_DBG("[C++] Manager: 状态变更 %s -> %s",
-                  oldState.toUtf8().constData(), newState.toUtf8().constData());
+        DA_WF_DBG("[C++] Manager: State Change %s -> %s", oldState.toUtf8().constData(), newState.toUtf8().constData());
         Q_EMIT executorStateChanged(oldState, newState);
     });
     executor.setOnNodeFinished([ this ](const QString& nodeId, bool success) {
-        DA_WF_DBG("[C++] Manager: 节点完成 nodeId=%s, success=%s",
-                  nodeId.toUtf8().constData(), success ? "true" : "false");
+        DA_WF_DBG("[C++] Manager: Node Finished nodeId=%s, success=%s", nodeId.toUtf8().constData(), success ? "true" : "false");
         Q_EMIT nodeExecuted(nodeId, success);
     });
 
     Q_EMIT executionStarted();
     bool success = executor.execute();
-    DA_WF_DBG("[C++] Manager::executeWorkflow: 执行完成, success=%s", success ? "true" : "false");
+    DA_WF_DBG("[C++] Manager::executeWorkflow: execute finished, success=%s", success ? "true" : "false");
     if (!success) {
         QStringList errors = executor.getErrorMessages();
         DA_WF_DBG("[C++] Manager::executeWorkflow: 错误数=%d", errors.size());

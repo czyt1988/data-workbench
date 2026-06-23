@@ -181,18 +181,45 @@ DAParamDef DAParamTypeRegistry::PrivateData::toParamDef(const DAPyNodeParameter&
 //===============================================================
 
 /**
- * @brief 创建字符串类型编辑器（QLineEdit）
+ * @brief 创建字符串类型编辑器
  *
+ * 根据 layout 扩展属性选择编辑器控件：
+ * - "inline"（默认）: QLineEdit 单行输入
+ * - "below": QPlainTextEdit 多行输入，占满整行宽度，默认最小高度 80px
+ *
+ * below 模式下可通过 height 扩展属性覆盖默认高度。
  * 从参数代理的 description 设置 placeholder。
  * 若有默认值，设置为初始文本。
  *
  * @param[in] param 参数代理
  * @param[in] parent 父控件
- * @return QLineEdit 指针
+ * @return QLineEdit 或 QPlainTextEdit 指针
  */
 QWidget* DAParamTypeRegistry::PrivateData::createStrEditor(const DAPyNodeParameter& param, QWidget* parent)
 {
     DAParamDef desc = toParamDef(param);
+    if (desc.isLayoutBelow()) {
+        // below 模式：多行编辑器
+        QPlainTextEdit* edit = new QPlainTextEdit(parent);
+        // 从 description 设置 placeholder
+        if (!desc.description.isEmpty()) {
+            edit->setPlaceholderText(desc.description);
+        }
+        // 高度：默认 80，可被 height 属性覆盖
+        bool heightOk = false;
+        int h         = desc.getHeightProperty(&heightOk);
+        if (!heightOk || h <= 0) {
+            h = 80;
+        }
+        edit->setMinimumHeight(h);
+        // 设置默认值
+        QString str = desc.defaultValue.toString();
+        if (!str.isEmpty()) {
+            edit->setPlainText(str);
+        }
+        return edit;
+    }
+    // inline 模式：保持原有 QLineEdit 行为
     QLineEdit* edit = new QLineEdit(parent);
     // 从 description 设置 placeholder
     if (!desc.description.isEmpty()) {
@@ -496,6 +523,9 @@ QWidget* DAParamTypeRegistry::PrivateData::createFontEditor(const DAPyNodeParame
 /**
  * @brief 创建代码类型编辑器（QPlainTextEdit）
  *
+ * 固定等宽字体，默认高度 100px。
+ * 若设置 height 扩展属性且为正值，覆盖默认高度。
+ *
  * @param[in] param 参数代理
  * @param[in] parent 父控件
  * @return QPlainTextEdit 指针
@@ -507,8 +537,13 @@ QWidget* DAParamTypeRegistry::PrivateData::createCodeEditor(const DAPyNodeParame
     // 设置等宽字体
     QFont monoFont("Monospace", 10);
     codeEdit->setFont(monoFont);
-    // 设置固定高度约 100px
-    codeEdit->setFixedHeight(100);
+    // 高度：默认 100，可被 height 属性覆盖
+    bool heightOk = false;
+    int h         = desc.getHeightProperty(&heightOk);
+    if (!heightOk || h <= 0) {
+        h = 100;
+    }
+    codeEdit->setFixedHeight(h);
     // 设置默认值
     QString defaultVal = desc.defaultValueToString();
     if (!defaultVal.isEmpty()) {

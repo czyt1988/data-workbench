@@ -8,12 +8,17 @@ NodeDisplay 显式属性字段、缺失字段、边界条件。
 import pytest
 import da_py_workflow
 from DAWorkbench.DAWorkFlowPy import (
-    NodeDef, Input, Output, Parameter, NodeDisplay, DAWorkflowNode,
+    NodeDef,
+    Input,
+    Output,
+    Parameter,
+    NodeDisplay,
+    DAWorkflowNode,
     LinkPointStyle,
 )
 
-
 # ==================== Input 测试 ====================
+
 
 class TestInput:
     """Input 端口声明类型测试"""
@@ -47,6 +52,7 @@ class TestInput:
 
 # ==================== Output 测试 ====================
 
+
 class TestOutput:
     """Output 端口声明类型测试"""
 
@@ -74,6 +80,7 @@ class TestOutput:
 
 # ==================== Parameter 测试 ====================
 
+
 class TestParameter:
     """Parameter 参数声明类型测试"""
 
@@ -98,6 +105,7 @@ class TestParameter:
     def test_parameter_unknown_type_label(self):
         class CustomType:
             pass
+
         p = Parameter(CustomType)
         assert p.get_type_label() == "CustomType"
 
@@ -122,6 +130,7 @@ class TestParameter:
 
 # ==================== NodeDef 装饰器测试 ====================
 
+
 class TestNodeDef:
     """NodeDef 装饰器测试"""
 
@@ -130,6 +139,7 @@ class TestNodeDef:
         class TestNode:
             def execute(self, inputs, params):
                 pass
+
         assert TestNode.name == "Test Node"
         assert TestNode.category == "Test"
 
@@ -137,6 +147,7 @@ class TestNodeDef:
         @NodeDef(name="QN Test")
         class QNTestNode:
             pass
+
         assert "QNTestNode" in QNTestNode.qualified_name
 
     def test_node_def_collects_inputs(self):
@@ -148,6 +159,7 @@ class TestNodeDef:
 
             def execute(self, inputs, params):
                 pass
+
         inputs = InputTestNode.inputs
         assert len(inputs) == 2
         names = [inp.name for inp in inputs]
@@ -162,6 +174,7 @@ class TestNodeDef:
 
             def execute(self, inputs, params):
                 pass
+
         outputs = OutputTestNode.outputs
         assert len(outputs) == 1
         assert outputs[0].name == "result"
@@ -174,6 +187,7 @@ class TestNodeDef:
 
             def execute(self, inputs, params):
                 pass
+
         params = ParamTestNode.parameters
         assert len(params) == 2
         names = [p.name for p in params]
@@ -184,25 +198,38 @@ class TestNodeDef:
         @NodeDef(name="RT Default")
         class RTDefaultNode:
             pass
-        assert RTDefaultNode._node_display.render_template == da_py_workflow.RenderTemplate.NodeStyleTemplate
+
+        assert (
+            RTDefaultNode._node_display.render_template
+            == da_py_workflow.RenderTemplate.NodeStyleTemplate
+        )
 
     def test_node_def_render_template_svg(self):
         @NodeDef(name="RT SVG", render_template="svg")
         class RTSVGNode:
             pass
-        assert RTSVGNode._node_display.render_template == da_py_workflow.RenderTemplate.NodeStyleTemplate
+
+        assert (
+            RTSVGNode._node_display.render_template
+            == da_py_workflow.RenderTemplate.NodeStyleTemplate
+        )
 
     def test_node_def_render_template_widget(self):
         @NodeDef(name="RT Widget", render_template="widget")
         class RTWidgetNode:
             pass
-        assert RTWidgetNode._node_display.render_template == da_py_workflow.RenderTemplate.WidgetTemplate
+
+        assert (
+            RTWidgetNode._node_display.render_template
+            == da_py_workflow.RenderTemplate.WidgetTemplate
+        )
 
     def test_node_def_no_inputs_outputs(self):
         @NodeDef(name="Empty IO")
         class EmptyIONode:
             def execute(self, inputs, params):
                 pass
+
         assert EmptyIONode.inputs == []
         assert EmptyIONode.outputs == []
 
@@ -210,12 +237,14 @@ class TestNodeDef:
         @NodeDef(name="Base Test")
         class BaseTestNode:
             pass
+
         assert isinstance(BaseTestNode(), DAWorkflowNode)
 
     def test_node_def_creates_node_display(self):
         @NodeDef(name="Display Test", icon=":icons/test.png")
         class DisplayTestNode:
             pass
+
         assert hasattr(DisplayTestNode, "_node_display")
         display = DisplayTestNode._node_display
         assert isinstance(display, NodeDisplay)
@@ -227,9 +256,11 @@ class TestNodeDef:
             background_color="#4A90D9",
             corner_radius=8.0,
         )
+
         @NodeDef(name="Style Display Test", style=display_style)
         class StyleDisplayNode:
             pass
+
         d = StyleDisplayNode._node_display
         assert isinstance(d, NodeDisplay)
         assert d.body_shape == "Ellipse"
@@ -237,9 +268,13 @@ class TestNodeDef:
         assert d.corner_radius == 8.0
 
     def test_node_def_with_dict_style_backward_compat(self):
-        @NodeDef(name="Dict Compat Test", style={"body_shape": "Ellipse", "corner_radius": 10.0})
+        @NodeDef(
+            name="Dict Compat Test",
+            style={"body_shape": "Ellipse", "corner_radius": 10.0},
+        )
         class DictCompatNode:
             pass
+
         display = DictCompatNode._node_display
         assert isinstance(display, NodeDisplay)
         assert display.body_shape == "Ellipse"
@@ -249,6 +284,7 @@ class TestNodeDef:
         @NodeDef(name="No Style Test")
         class NoStyleTestNode:
             pass
+
         d = NoStyleTestNode._node_display
         assert d.body_shape is None
         assert d.background_color is None
@@ -261,6 +297,7 @@ class TestNodeDef:
 
             def execute(self, inputs, params):
                 pass
+
         assert InputKeysTestNode.input_keys == ["data"]
 
     def test_node_def_sets_output_keys(self):
@@ -271,10 +308,12 @@ class TestNodeDef:
 
             def execute(self, inputs, params):
                 pass
+
         assert OutputKeysTestNode.output_keys == ["result"]
 
 
 # ==================== NodeDisplay 测试 ====================
+
 
 class TestNodeDisplay:
     """NodeDisplay 渲染属性聚合测试 — 所有样式字段为显式属性"""
@@ -290,7 +329,9 @@ class TestNodeDisplay:
     def test_node_display_with_render_template(self):
         rt = da_py_workflow.RenderTemplate.NodeStyleTemplate
         display = NodeDisplay(render_template=rt)
-        assert display.render_template == da_py_workflow.RenderTemplate.NodeStyleTemplate
+        assert (
+            display.render_template == da_py_workflow.RenderTemplate.NodeStyleTemplate
+        )
 
     def test_node_display_with_style_fields(self):
         display = NodeDisplay(
@@ -324,6 +365,7 @@ class TestNodeDisplay:
 
 # ==================== DAWorkflowNode 测试 ====================
 
+
 class TestDAWorkflowNode:
     """DAWorkflowNode 基类测试"""
 
@@ -348,6 +390,7 @@ class TestDAWorkflowNode:
 
 # ==================== LinkPointStyle 测试 ====================
 
+
 class TestLinkPointStyle:
     """LinkPointStyle 连接点样式 dataclass 测试"""
 
@@ -371,6 +414,7 @@ class TestLinkPointStyle:
 
 # ==================== NodeDef + NodeDisplay 集成测试 ====================
 
+
 class TestNodeDefWithNodeDisplay:
     """NodeDef(style=NodeDisplay) 集成测试"""
 
@@ -380,9 +424,11 @@ class TestNodeDefWithNodeDisplay:
             background_color="#4A90D9",
             corner_radius=8.0,
         )
+
         @NodeDef(name="Style Dataclass Test", style=display_style)
         class StyleDataclassNode:
             pass
+
         d = StyleDataclassNode._node_display
         assert isinstance(d, NodeDisplay)
         assert d.body_shape == "Ellipse"
@@ -394,18 +440,24 @@ class TestNodeDefWithNodeDisplay:
             input_port_style=LinkPointStyle(shape="Circle", fill_color="#ffffff"),
             output_port_style=LinkPointStyle(shape="Diamond"),
         )
+
         @NodeDef(name="Port Style Test", style=display_style)
         class PortStyleNode:
             pass
+
         d = PortStyleNode._node_display
         assert d.input_port_style.shape == "Circle"
         assert d.input_port_style.fill_color == "#ffffff"
         assert d.output_port_style.shape == "Diamond"
 
     def test_node_def_with_dict_style_backward_compat(self):
-        @NodeDef(name="Dict Compat Test", style={"body_shape": "Ellipse", "corner_radius": 10.0})
+        @NodeDef(
+            name="Dict Compat Test",
+            style={"body_shape": "Ellipse", "corner_radius": 10.0},
+        )
         class DictCompatNode:
             pass
+
         d = DictCompatNode._node_display
         assert isinstance(d, NodeDisplay)
         assert d.body_shape == "Ellipse"
@@ -415,6 +467,7 @@ class TestNodeDefWithNodeDisplay:
         @NodeDef(name="No Style Compat Test")
         class NoStyleCompatNode:
             pass
+
         d = NoStyleCompatNode._node_display
         assert d.body_shape is None
         assert d.background_color is None

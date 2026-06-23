@@ -378,20 +378,20 @@ void DAPyNodeGraphicsItem::setProxy(const DAPyNode& proxy)
                     d_ptr->mPaintCallback      = DAPyObjectWrapper(paintAttr);
                     d_ptr->mPaintCallbackError = false;
                 } else {
-                    d_ptr->mPaintCallback = DAPyObjectWrapper();
+                    d_ptr->mPaintCallback      = DAPyObjectWrapper();
                     d_ptr->mPaintCallbackError = false;
                 }
             } else {
-                d_ptr->mPaintCallback = DAPyObjectWrapper();
+                d_ptr->mPaintCallback      = DAPyObjectWrapper();
                 d_ptr->mPaintCallbackError = false;
             }
         } catch (const std::exception& e) {
             qWarning() << "DAPyNodeGraphicsItem setProxy paint callback exception:" << e.what();
-            d_ptr->mPaintCallback = DAPyObjectWrapper();
+            d_ptr->mPaintCallback      = DAPyObjectWrapper();
             d_ptr->mPaintCallbackError = false;
         }
     } else {
-        d_ptr->mPaintCallback = DAPyObjectWrapper();
+        d_ptr->mPaintCallback      = DAPyObjectWrapper();
         d_ptr->mPaintCallbackError = false;
     }
     updateLinkPoints();
@@ -956,10 +956,13 @@ void DAPyNodeGraphicsItem::paintStateDecoration(QPainter* painter, const QRectF&
     // 根据状态绘制不同的装饰效果
     switch (d_ptr->mNodeState) {
     case Running:
-    case Waiting: {
+    case Waiting:
+    case Success:
+    case Error:
+    case Skipped: {
         // 运行/等待状态：绘制半透明边框
         QPen pen(stateColor);
-        pen.setWidth(3);
+        pen.setWidth(1);
         painter->setPen(pen);
         painter->setBrush(Qt::NoBrush);
         // 边框始终跟随 bodyShape
@@ -970,10 +973,8 @@ void DAPyNodeGraphicsItem::paintStateDecoration(QPainter* painter, const QRectF&
         case DAPyNodeStyle::DiamondShape: {
             QPolygonF diamond;
             QRectF r = bodyRect.adjusted(1, 1, -1, -1);
-            diamond << QPointF(r.center().x(), r.top())
-                    << QPointF(r.right(), r.center().y())
-                    << QPointF(r.center().x(), r.bottom())
-                    << QPointF(r.left(), r.center().y());
+            diamond << QPointF(r.center().x(), r.top()) << QPointF(r.right(), r.center().y())
+                    << QPointF(r.center().x(), r.bottom()) << QPointF(r.left(), r.center().y());
             painter->drawPolygon(diamond);
             break;
         }
@@ -982,33 +983,6 @@ void DAPyNodeGraphicsItem::paintStateDecoration(QPainter* painter, const QRectF&
             painter->drawRoundedRect(bodyRect.adjusted(1, 1, -1, -1), 4, 4);
             break;
         }
-        break;
-    }
-    case Success:
-    case Error:
-    case Skipped: {
-        // 完成状态：填充背景色
-        QBrush brush(stateColor);
-        painter->setBrush(brush);
-        painter->setPen(Qt::NoPen);
-
-        // 根据 bodyShape 裁剪填充区域
-        if (d_ptr->mStyle.bodyShape == DAPyNodeStyle::EllipseShape) {
-            QPainterPath clipPath;
-            clipPath.addEllipse(bodyRect);
-            painter->setClipPath(clipPath);
-        } else if (d_ptr->mStyle.bodyShape == DAPyNodeStyle::DiamondShape) {
-            QPainterPath clipPath;
-            QPolygonF diamond;
-            diamond << QPointF(bodyRect.center().x(), bodyRect.top())
-                    << QPointF(bodyRect.right(), bodyRect.center().y())
-                    << QPointF(bodyRect.center().x(), bodyRect.bottom())
-                    << QPointF(bodyRect.left(), bodyRect.center().y());
-            clipPath.addPolygon(diamond);
-            painter->setClipPath(clipPath);
-        }
-
-        painter->drawRect(bodyRect);
         break;
     }
     case Idle:
@@ -1052,10 +1026,8 @@ void DAPyNodeGraphicsItem::paintNodeStyleBody(QPainter* painter, const QRectF& b
     case DAPyNodeStyle::DiamondShape: {
         // 菱形：四边中点连线
         QPolygonF diamond;
-        diamond << QPointF(bodyRect.center().x(), bodyRect.top())
-                << QPointF(bodyRect.right(), bodyRect.center().y())
-                << QPointF(bodyRect.center().x(), bodyRect.bottom())
-                << QPointF(bodyRect.left(), bodyRect.center().y());
+        diamond << QPointF(bodyRect.center().x(), bodyRect.top()) << QPointF(bodyRect.right(), bodyRect.center().y())
+                << QPointF(bodyRect.center().x(), bodyRect.bottom()) << QPointF(bodyRect.left(), bodyRect.center().y());
         painter->drawPolygon(diamond);
         break;
     }
@@ -1190,10 +1162,8 @@ QPainterPath DAPyNodeGraphicsItem::shape() const
     } else if (d->mStyle.bodyShape == DAPyNodeStyle::DiamondShape) {
         QRectF r = getBodyControlRect();
         QPolygonF diamond;
-        diamond << QPointF(r.center().x(), r.top())
-                << QPointF(r.right(), r.center().y())
-                << QPointF(r.center().x(), r.bottom())
-                << QPointF(r.left(), r.center().y());
+        diamond << QPointF(r.center().x(), r.top()) << QPointF(r.right(), r.center().y())
+                << QPointF(r.center().x(), r.bottom()) << QPointF(r.left(), r.center().y());
         path.addPolygon(diamond);
     } else {
         // RoundedRect 等保持默认矩形路径（复用基类行为）
@@ -1438,7 +1408,7 @@ void DAPyNodeGraphicsItem::updateNodeBody()
     }
 
     // 确保body高度足够容纳East/West方向的连接点（避免端口过多时拥挤叠加）
-    auto calcMinPortSpan = [&](int count) -> qreal {
+    auto calcMinPortSpan = [ & ](int count) -> qreal {
         if (count <= 0)
             return 0.0;
         const qreal slotH = d->linkPointDrawHeight + d->kPortMinGap;
@@ -1447,13 +1417,12 @@ void DAPyNodeGraphicsItem::updateNodeBody()
     if (inputCount > 0 && (s.inputPortSide == DAAspectDirection::East || s.inputPortSide == DAAspectDirection::West)) {
         bodyHeight = qMax(bodyHeight, calcMinPortSpan(inputCount));
     }
-    if (outputCount > 0
-        && (s.outputPortSide == DAAspectDirection::East || s.outputPortSide == DAAspectDirection::West)) {
+    if (outputCount > 0 && (s.outputPortSide == DAAspectDirection::East || s.outputPortSide == DAAspectDirection::West)) {
         bodyHeight = qMax(bodyHeight, calcMinPortSpan(outputCount));
     }
 
     // 确保body宽度足够容纳North/South方向的连接点
-    auto calcMinPortSpanW = [&](int count) -> qreal {
+    auto calcMinPortSpanW = [ & ](int count) -> qreal {
         if (count <= 0)
             return 0.0;
         const qreal slotW = d->linkPointDrawWidth + d->kPortMinGap;
@@ -1462,8 +1431,7 @@ void DAPyNodeGraphicsItem::updateNodeBody()
     if (inputCount > 0 && (s.inputPortSide == DAAspectDirection::North || s.inputPortSide == DAAspectDirection::South)) {
         bodyWidth = qMax(bodyWidth, calcMinPortSpanW(inputCount));
     }
-    if (outputCount > 0
-        && (s.outputPortSide == DAAspectDirection::North || s.outputPortSide == DAAspectDirection::South)) {
+    if (outputCount > 0 && (s.outputPortSide == DAAspectDirection::North || s.outputPortSide == DAAspectDirection::South)) {
         bodyWidth = qMax(bodyWidth, calcMinPortSpanW(outputCount));
     }
 

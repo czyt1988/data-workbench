@@ -9,6 +9,8 @@ const QString DAParamDef::PropertyName_Max      = QStringLiteral("max");
 const QString DAParamDef::PropertyName_Step     = QStringLiteral("step");
 const QString DAParamDef::PropertyName_Decimals = QStringLiteral("decimals");
 const QString DAParamDef::PropertyName_Filter   = QStringLiteral("filter");
+const QString DAParamDef::PropertyName_Layout   = QStringLiteral("layout");
+const QString DAParamDef::PropertyName_Height   = QStringLiteral("height");
 
 DAParamDef::DAParamDef() : propertyId(0)
 {
@@ -96,6 +98,35 @@ int DAParamDef::getDecimalsProperty(bool* isSuccess) const
 QString DAParamDef::getFilterProperty() const
 {
     return Detail::getNumericProperty< QString >(propertys, PropertyName_Filter, QString(), nullptr);
+}
+
+bool DAParamDef::hasLayoutProperty() const
+{
+    return hasProperty(PropertyName_Layout);
+}
+
+QString DAParamDef::getLayoutProperty() const
+{
+    if (!hasLayoutProperty()) {
+        return QStringLiteral("inline");
+    }
+    QString val = propertys.value(PropertyName_Layout).toString().toLower();
+    return val.isEmpty() ? QStringLiteral("inline") : val;
+}
+
+bool DAParamDef::isLayoutBelow() const
+{
+    return getLayoutProperty() == QStringLiteral("below");
+}
+
+bool DAParamDef::hasHeightProperty() const
+{
+    return hasProperty(PropertyName_Height);
+}
+
+int DAParamDef::getHeightProperty(bool* isSuccess) const
+{
+    return Detail::getNumericProperty< int >(propertys, PropertyName_Height, -1, isSuccess);
 }
 
 bool DAParamDef::hasDefaultValue() const

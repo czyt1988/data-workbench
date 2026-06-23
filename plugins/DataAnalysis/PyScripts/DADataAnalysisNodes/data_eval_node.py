@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """DataEval — 表达式计算节点"""
+
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.operations import eval_expression
 
@@ -8,7 +9,12 @@ from DADataAnalysisCore.operations import eval_expression
 class DataEvalNode:
     """在 DataFrame 上执行表达式计算"""
 
-    expression = Parameter(str, default="", description="pandas eval 表达式，如 'C = A + B'")
+    expression = Parameter(
+        str,
+        default="",
+        description="pandas eval 表达式，如 'C = A + B'",
+        layout="below",
+    )
 
     class Inputs:
         data = Input("DataFrame", required=True, description="输入数据")

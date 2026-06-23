@@ -36,6 +36,8 @@ struct DAGUI_API DAParamDef
      * - step (PropertyName_Step): int/double
      * - decimals (PropertyName_Decimals): int
      * - filter (PropertyName_Filter): QString
+     * - layout (PropertyName_Layout): QString，"inline"（默认）或 "below"
+     * - height (PropertyName_Height): int，编辑器高度（像素），仅 below 模式生效
      */
     QVariantHash propertys;
 
@@ -46,6 +48,8 @@ struct DAGUI_API DAParamDef
     static const QString PropertyName_Step;
     static const QString PropertyName_Decimals;
     static const QString PropertyName_Filter;
+    static const QString PropertyName_Layout;
+    static const QString PropertyName_Height;
 
     // 默认构造
     DAParamDef();
@@ -75,6 +79,17 @@ struct DAGUI_API DAParamDef
 
     // ---- Filter属性 ----
     QString getFilterProperty() const;
+
+    // ---- Layout属性 ----
+    // 返回 "inline"（默认）或 "below"，不区分大小写归一化为小写
+    QString getLayoutProperty() const;
+    bool isLayoutBelow() const;
+    bool hasLayoutProperty() const;
+
+    // ---- Height属性 ----
+    // 返回编辑器高度（像素），未设置时 isSuccess=false 并返回 -1
+    int getHeightProperty(bool* isSuccess = nullptr) const;
+    bool hasHeightProperty() const;
 
     // ---- 默认值快捷方法 ----
     bool hasDefaultValue() const;
