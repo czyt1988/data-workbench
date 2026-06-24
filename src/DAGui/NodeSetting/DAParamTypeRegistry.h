@@ -5,9 +5,9 @@
 #include <QString>
 #include <QStringList>
 #include "DAParamDef.h"
-#include "DAPyWorkFlow/DAPyNodeParameter.h"
+#include "NodeSetting/DAParamDef.h"
 #include <functional>
-#include <map>
+#include <QHash>
 
 class QWidget;
 
@@ -45,7 +45,7 @@ public:
      * 接收参数代理和父控件指针，返回创建并配置好的编辑器 QWidget。
      * 参数代理包含元数据（name/type/description/default/properties）和节点实例引用。
      */
-    using ParamEditorCreator = std::function< QWidget*(const DAPyNodeParameter& param, QWidget* parent) >;
+    using ParamEditorCreator = std::function< QWidget*(const DAParamDef& param, QWidget* parent) >;
 
     // 默认构造函数，自动注册所有内置类型
     DAParamTypeRegistry();
@@ -60,10 +60,10 @@ public:
     void registerDefaults();
 
     // 根据类型字符串和参数代理创建对应的编辑器控件
-    QWidget* createEditor(const QString& typeStr, const DAPyNodeParameter& param, QWidget* parent = nullptr) const;
+    QWidget* createEditor(const QString& typeStr, const DAParamDef& param, QWidget* parent = nullptr) const;
 
     // 获取所有已注册类型的名称列表
-    QStringList supportedTypes() const;
+    QList< QString > supportedTypes() const;
 
     // 检查指定类型是否已注册
     bool isRegistered(const QString& typeStr) const;

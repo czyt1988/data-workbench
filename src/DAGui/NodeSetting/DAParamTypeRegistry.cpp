@@ -26,23 +26,20 @@ class DAParamTypeRegistry::PrivateData
 public:
     PrivateData(DAParamTypeRegistry* p);
 
-    std::map< QString, ParamEditorCreator > creators;
-
-    // DAPyNodeParameter → DAParamDef 转换（供编辑器创建函数内部使用）
-    static DAParamDef toParamDef(const DAPyNodeParameter& param);
+    QHash< QString, ParamEditorCreator > creators;
 
     // 内置类型编辑器创建函数
-    static QWidget* createStrEditor(const DAPyNodeParameter& param, QWidget* parent);
-    static QWidget* createIntEditor(const DAPyNodeParameter& param, QWidget* parent);
-    static QWidget* createFloatEditor(const DAPyNodeParameter& param, QWidget* parent);
-    static QWidget* createBoolEditor(const DAPyNodeParameter& param, QWidget* parent);
-    static QWidget* createEnumEditor(const DAPyNodeParameter& param, QWidget* parent);
-    static QWidget* createListEditor(const DAPyNodeParameter& param, QWidget* parent);
-    static QWidget* createFileEditor(const DAPyNodeParameter& param, QWidget* parent);
-    static QWidget* createFolderEditor(const DAPyNodeParameter& param, QWidget* parent);
-    static QWidget* createColorEditor(const DAPyNodeParameter& param, QWidget* parent);
-    static QWidget* createFontEditor(const DAPyNodeParameter& param, QWidget* parent);
-    static QWidget* createCodeEditor(const DAPyNodeParameter& param, QWidget* parent);
+    static QWidget* createStrEditor(const DAParamDef& param, QWidget* parent);
+    static QWidget* createIntEditor(const DAParamDef& param, QWidget* parent);
+    static QWidget* createFloatEditor(const DAParamDef& param, QWidget* parent);
+    static QWidget* createBoolEditor(const DAParamDef& param, QWidget* parent);
+    static QWidget* createEnumEditor(const DAParamDef& param, QWidget* parent);
+    static QWidget* createListEditor(const DAParamDef& param, QWidget* parent);
+    static QWidget* createFileEditor(const DAParamDef& param, QWidget* parent);
+    static QWidget* createFolderEditor(const DAParamDef& param, QWidget* parent);
+    static QWidget* createColorEditor(const DAParamDef& param, QWidget* parent);
+    static QWidget* createFontEditor(const DAParamDef& param, QWidget* parent);
+    static QWidget* createCodeEditor(const DAParamDef& param, QWidget* parent);
 };
 
 DAParamTypeRegistry::PrivateData::PrivateData(DAParamTypeRegistry* p) : q_ptr(p)
@@ -91,17 +88,17 @@ void DAParamTypeRegistry::registerType(const QString& typeStr, ParamEditorCreato
 void DAParamTypeRegistry::registerDefaults()
 {
     DA_D(d);
-    d->creators[ "str" ]    = &PrivateData::createStrEditor;
-    d->creators[ "int" ]    = &PrivateData::createIntEditor;
-    d->creators[ "float" ]  = &PrivateData::createFloatEditor;
-    d->creators[ "bool" ]   = &PrivateData::createBoolEditor;
-    d->creators[ "enum" ]   = &PrivateData::createEnumEditor;
-    d->creators[ "list" ]   = &PrivateData::createListEditor;
-    d->creators[ "file" ]   = &PrivateData::createFileEditor;
-    d->creators[ "folder" ] = &PrivateData::createFolderEditor;
-    d->creators[ "color" ]  = &PrivateData::createColorEditor;
-    d->creators[ "font" ]   = &PrivateData::createFontEditor;
-    d->creators[ "code" ]   = &PrivateData::createCodeEditor;
+    d->creators[ DAParamDef::TypeName_Str ]    = &PrivateData::createStrEditor;
+    d->creators[ DAParamDef::TypeName_Int ]    = &PrivateData::createIntEditor;
+    d->creators[ DAParamDef::TypeName_Float ]  = &PrivateData::createFloatEditor;
+    d->creators[ DAParamDef::TypeName_Bool ]   = &PrivateData::createBoolEditor;
+    d->creators[ DAParamDef::TypeName_Enum ]   = &PrivateData::createEnumEditor;
+    d->creators[ DAParamDef::TypeName_List ]   = &PrivateData::createListEditor;
+    d->creators[ DAParamDef::TypeName_File ]   = &PrivateData::createFileEditor;
+    d->creators[ DAParamDef::TypeName_Folder ] = &PrivateData::createFolderEditor;
+    d->creators[ DAParamDef::TypeName_Color ]  = &PrivateData::createColorEditor;
+    d->creators[ DAParamDef::TypeName_Font ]   = &PrivateData::createFontEditor;
+    d->creators[ DAParamDef::TypeName_Code ]   = &PrivateData::createCodeEditor;
 }
 
 /**
@@ -115,14 +112,18 @@ void DAParamTypeRegistry::registerDefaults()
  * @param[in] parent 父控件指针
  * @return 创建的编辑器 QWidget 指针，未注册类型返回 nullptr
  */
-QWidget* DAParamTypeRegistry::createEditor(const QString& typeStr, const DAPyNodeParameter& param, QWidget* parent) const
+QWidget* DAParamTypeRegistry::createEditor(const QString& typeStr, const DAParamDef& param, QWidget* parent) const
 {
     DA_DC(d);
     auto it = d->creators.find(typeStr);
     if (it == d->creators.end()) {
         return nullptr;
     }
-    return it->second(param, parent);
+    auto fp = it.value();
+    if (fp) {
+        return fp(param, parent);
+    }
+    return nullptr;
 }
 
 /**
@@ -130,14 +131,10 @@ QWidget* DAParamTypeRegistry::createEditor(const QString& typeStr, const DAPyNod
  *
  * @return 已注册类型名称的 QStringList
  */
-QStringList DAParamTypeRegistry::supportedTypes() const
+QList< QString > DAParamTypeRegistry::supportedTypes() const
 {
     DA_DC(d);
-    QStringList result;
-    for (const auto& pair : d->creators) {
-        result.append(pair.first);
-    }
-    return result;
+    return d->creators.keys();
 }
 
 /**
@@ -149,31 +146,7 @@ QStringList DAParamTypeRegistry::supportedTypes() const
 bool DAParamTypeRegistry::isRegistered(const QString& typeStr) const
 {
     DA_DC(d);
-    return d->creators.find(typeStr) != d->creators.end();
-}
-
-//===============================================================
-// 转换辅助
-//===============================================================
-
-/**
- * @brief 将DAPyNodeParameter转换为DAParamDef
- *
- * 从参数代理读取元数据，构建等价的DAParamDef结构体，
- * 供编辑器创建函数复用DAParamDef的helper方法。
- *
- * @param[in] param 参数代理
- * @return 等价的DAParamDef
- */
-DAParamDef DAParamTypeRegistry::PrivateData::toParamDef(const DAPyNodeParameter& param)
-{
-    DAParamDef def;
-    def.name         = param.name();
-    def.type         = param.typeLabel();
-    def.description  = param.description();
-    def.defaultValue = param.defaultValue();
-    def.propertys    = param.properties();
-    return def;
+    return d->creators.contains(typeStr);
 }
 
 //===============================================================
@@ -195,9 +168,8 @@ DAParamDef DAParamTypeRegistry::PrivateData::toParamDef(const DAPyNodeParameter&
  * @param[in] parent 父控件
  * @return QLineEdit 或 QPlainTextEdit 指针
  */
-QWidget* DAParamTypeRegistry::PrivateData::createStrEditor(const DAPyNodeParameter& param, QWidget* parent)
+QWidget* DAParamTypeRegistry::PrivateData::createStrEditor(const DAParamDef& desc, QWidget* parent)
 {
-    DAParamDef desc = toParamDef(param);
     if (desc.isLayoutBelow()) {
         // below 模式：多行编辑器
         QPlainTextEdit* edit = new QPlainTextEdit(parent);
@@ -243,9 +215,8 @@ QWidget* DAParamTypeRegistry::PrivateData::createStrEditor(const DAPyNodeParamet
  * @param[in] parent 父控件
  * @return QSpinBox 指针
  */
-QWidget* DAParamTypeRegistry::PrivateData::createIntEditor(const DAPyNodeParameter& param, QWidget* parent)
+QWidget* DAParamTypeRegistry::PrivateData::createIntEditor(const DAParamDef& desc, QWidget* parent)
 {
-    DAParamDef desc   = toParamDef(param);
     QSpinBox* spinBox = new QSpinBox(parent);
     spinBox->setRange(-9999, 9999);
     // 读取 min/max
@@ -276,9 +247,8 @@ QWidget* DAParamTypeRegistry::PrivateData::createIntEditor(const DAPyNodeParamet
  * @param[in] parent 父控件
  * @return QDoubleSpinBox 指针
  */
-QWidget* DAParamTypeRegistry::PrivateData::createFloatEditor(const DAPyNodeParameter& param, QWidget* parent)
+QWidget* DAParamTypeRegistry::PrivateData::createFloatEditor(const DAParamDef& desc, QWidget* parent)
 {
-    DAParamDef desc         = toParamDef(param);
     QDoubleSpinBox* spinBox = new QDoubleSpinBox(parent);
     spinBox->setRange(-9999.0, 9999.0);
     spinBox->setDecimals(2);
@@ -312,9 +282,8 @@ QWidget* DAParamTypeRegistry::PrivateData::createFloatEditor(const DAPyNodeParam
  * @param[in] parent 父控件
  * @return QCheckBox 指针
  */
-QWidget* DAParamTypeRegistry::PrivateData::createBoolEditor(const DAPyNodeParameter& param, QWidget* parent)
+QWidget* DAParamTypeRegistry::PrivateData::createBoolEditor(const DAParamDef& desc, QWidget* parent)
 {
-    DAParamDef desc     = toParamDef(param);
     QCheckBox* checkBox = new QCheckBox(parent);
     // 设置默认值
     bool defaultVal = desc.defaultValueToBool();
@@ -329,9 +298,8 @@ QWidget* DAParamTypeRegistry::PrivateData::createBoolEditor(const DAPyNodeParame
  * @param[in] parent 父控件
  * @return QComboBox 指针
  */
-QWidget* DAParamTypeRegistry::PrivateData::createEnumEditor(const DAPyNodeParameter& param, QWidget* parent)
+QWidget* DAParamTypeRegistry::PrivateData::createEnumEditor(const DAParamDef& desc, QWidget* parent)
 {
-    DAParamDef desc     = toParamDef(param);
     QComboBox* comboBox = new QComboBox(parent);
     comboBox->setEditable(false);
     // 获取enum属性
@@ -351,9 +319,8 @@ QWidget* DAParamTypeRegistry::PrivateData::createEnumEditor(const DAPyNodeParame
  * @param[in] parent 父控件
  * @return 复合 QWidget 指针
  */
-QWidget* DAParamTypeRegistry::PrivateData::createListEditor(const DAPyNodeParameter& param, QWidget* parent)
+QWidget* DAParamTypeRegistry::PrivateData::createListEditor(const DAParamDef& desc, QWidget* parent)
 {
-    DAParamDef desc      = toParamDef(param);
     QWidget* container   = new QWidget(parent);
     QHBoxLayout* hLayout = new QHBoxLayout(container);
     hLayout->setContentsMargins(0, 0, 0, 0);
@@ -400,9 +367,8 @@ QWidget* DAParamTypeRegistry::PrivateData::createListEditor(const DAPyNodeParame
  * @param[in] parent 父控件
  * @return DAFilePathEditWidget 指针
  */
-QWidget* DAParamTypeRegistry::PrivateData::createFileEditor(const DAPyNodeParameter& param, QWidget* parent)
+QWidget* DAParamTypeRegistry::PrivateData::createFileEditor(const DAParamDef& desc, QWidget* parent)
 {
-    DAParamDef desc                = toParamDef(param);
     DAFilePathEditWidget* fileEdit = new DAFilePathEditWidget(parent);
     // 设置默认值
     QString defaultVal = desc.defaultValueToString();
@@ -424,9 +390,8 @@ QWidget* DAParamTypeRegistry::PrivateData::createFileEditor(const DAPyNodeParame
  * @param[in] parent 父控件
  * @return DAFilePathEditWidget 指针（已切换为目录模式）
  */
-QWidget* DAParamTypeRegistry::PrivateData::createFolderEditor(const DAPyNodeParameter& param, QWidget* parent)
+QWidget* DAParamTypeRegistry::PrivateData::createFolderEditor(const DAParamDef& desc, QWidget* parent)
 {
-    DAParamDef desc                  = toParamDef(param);
     DAFilePathEditWidget* folderEdit = new DAFilePathEditWidget(parent);
 
     // 找到内部工具按钮，断开原始连接，重连目录选择逻辑
@@ -464,9 +429,8 @@ QWidget* DAParamTypeRegistry::PrivateData::createFolderEditor(const DAPyNodePara
  * @param[in] parent 父控件
  * @return DAColorPickerButton 指针
  */
-QWidget* DAParamTypeRegistry::PrivateData::createColorEditor(const DAPyNodeParameter& param, QWidget* parent)
+QWidget* DAParamTypeRegistry::PrivateData::createColorEditor(const DAParamDef& desc, QWidget* parent)
 {
-    DAParamDef desc               = toParamDef(param);
     DAColorPickerButton* colorBtn = new DAColorPickerButton(parent);
     // 设置默认颜色
     QString defaultVal = desc.defaultValueToString();
@@ -490,9 +454,8 @@ QWidget* DAParamTypeRegistry::PrivateData::createColorEditor(const DAPyNodeParam
  * @param[in] parent 父控件
  * @return DAFontEditPannelWidget 指针
  */
-QWidget* DAParamTypeRegistry::PrivateData::createFontEditor(const DAPyNodeParameter& param, QWidget* parent)
+QWidget* DAParamTypeRegistry::PrivateData::createFontEditor(const DAParamDef& desc, QWidget* parent)
 {
-    DAParamDef desc                  = toParamDef(param);
     DAFontEditPannelWidget* fontEdit = new DAFontEditPannelWidget(parent);
     // 字典格式默认值：{"family", "size", "bold", "italic", "color"}
     if (desc.defaultValue.canConvert< QVariantMap >()) {
@@ -530,9 +493,8 @@ QWidget* DAParamTypeRegistry::PrivateData::createFontEditor(const DAPyNodeParame
  * @param[in] parent 父控件
  * @return QPlainTextEdit 指针
  */
-QWidget* DAParamTypeRegistry::PrivateData::createCodeEditor(const DAPyNodeParameter& param, QWidget* parent)
+QWidget* DAParamTypeRegistry::PrivateData::createCodeEditor(const DAParamDef& desc, QWidget* parent)
 {
-    DAParamDef desc          = toParamDef(param);
     QPlainTextEdit* codeEdit = new QPlainTextEdit(parent);
     // 设置等宽字体
     QFont monoFont("Monospace", 10);

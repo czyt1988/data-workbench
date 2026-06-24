@@ -76,11 +76,11 @@ protected Q_SLOTS:
     void onPropertyValueChanged(int propertyId);
 
 protected:
-    // 从编辑器控件读取值（类型分发）
-    static QVariant readEditorValue(QWidget* editor, const QString& type);
+    // 从编辑器控件读取值（类型分发，基于 ParamType 枚举穷尽 switch）
+    static QVariant readEditorValue(QWidget* editor, DAParamDef::ParamType t);
 
     // 连接编辑器原生信号到 propertyValueChanged
-    void connectEditorSignals(int id, const QString& type, QWidget* editor);
+    void connectEditorSignals(int id, DAParamDef::ParamType t, QWidget* editor);
 
     // 收集配置（测试暴露）
     QVariantHash testCollectConfig() const;

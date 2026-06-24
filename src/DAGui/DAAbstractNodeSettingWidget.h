@@ -8,6 +8,7 @@
 #include "DAPyWorkFlow/DAPyNodeFactory.h"
 #include <QWidget>
 #include <QJsonObject>
+#include "NodeSetting/DAParamDef.h"
 namespace DA
 {
 /**
@@ -36,7 +37,7 @@ public:
     const DAPyNodeMetaData& getMetaData() const;
 
     // 获取参数代理列表（由setNode()从Python节点构建）
-    const QList< DAPyNodeParameter >& getParamDefs() const;
+    const QList< DAParamDef >& getParamDefs() const;
 
     // 子类必须实现的界面同步方法
     virtual void updateUI() = 0;

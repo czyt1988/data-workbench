@@ -123,53 +123,56 @@ void DANodeParamSettingPanel::updateUI()
             continue;
         }
 
-        QVariant val = proxy.getParameterValue(param.name());
+        QVariant val = proxy.getParameterValue(param.name);
         if (!val.isValid()) {
             ++id;
             continue;
         }
 
-        QString type = param.typeLabel();
-
-        if (type == "int") {
+        switch (param.typeEnum()) {
+        case DAParamDef::TypeInt: {
             auto* spin = qobject_cast< QSpinBox* >(editor);
             if (spin)
                 spin->setValue(val.toInt());
-        } else if (type == "float") {
+        } break;
+        case DAParamDef::TypeFloat: {
             auto* dsp = qobject_cast< QDoubleSpinBox* >(editor);
             if (dsp)
                 dsp->setValue(val.toDouble());
-        } else if (type == "bool") {
+        } break;
+        case DAParamDef::TypeBool: {
             auto* cb = qobject_cast< QCheckBox* >(editor);
             if (cb)
                 cb->setChecked(val.toBool());
-        } else if (type == "str") {
+        } break;
+        case DAParamDef::TypeStr: {
             // str 类型在 below 布局下为 QPlainTextEdit，inline 布局下为 QLineEdit
             if (auto* le = qobject_cast< QLineEdit* >(editor)) {
                 le->setText(val.toString());
             } else if (auto* pe = qobject_cast< QPlainTextEdit* >(editor)) {
                 pe->setPlainText(val.toString());
             }
-        } else if (type == "enum") {
+        } break;
+        case DAParamDef::TypeEnum: {
             auto* combo = qobject_cast< QComboBox* >(editor);
             if (combo) {
                 int idx = combo->findText(val.toString());
                 if (idx >= 0)
                     combo->setCurrentIndex(idx);
             }
-        } else if (type == "file") {
+        } break;
+        case DAParamDef::TypeFile:
+        case DAParamDef::TypeFolder: {
             auto* fileEdit = qobject_cast< DA::DAFilePathEditWidget* >(editor);
             if (fileEdit)
                 fileEdit->setFilePath(val.toString());
-        } else if (type == "folder") {
-            auto* foldEdit = qobject_cast< DA::DAFilePathEditWidget* >(editor);
-            if (foldEdit)
-                foldEdit->setFilePath(val.toString());
-        } else if (type == "color") {
+        } break;
+        case DAParamDef::TypeColor: {
             auto* btn = qobject_cast< DAColorPickerButton* >(editor);
             if (btn)
                 btn->setColor(QColor(val.toString()));
-        } else if (type == "font") {
+        } break;
+        case DAParamDef::TypeFont: {
             auto* fe = qobject_cast< DAFontEditPannelWidget* >(editor);
             if (fe) {
                 // 优先使用字典格式：{"family", "size", "bold", "italic", "color"}
@@ -193,11 +196,13 @@ void DANodeParamSettingPanel::updateUI()
                     }
                 }
             }
-        } else if (type == "code") {
+        } break;
+        case DAParamDef::TypeCode: {
             auto* codeEdit = qobject_cast< QPlainTextEdit* >(editor);
             if (codeEdit)
                 codeEdit->setPlainText(val.toString());
-        } else if (type == "list") {
+        } break;
+        case DAParamDef::TypeList: {
             QListWidget* listWidget = editor->findChild< QListWidget* >();
             if (listWidget) {
                 listWidget->clear();
@@ -206,6 +211,11 @@ void DANodeParamSettingPanel::updateUI()
                     listWidget->addItem(s);
                 }
             }
+        } break;
+        case DAParamDef::TypeDict:
+        case DAParamDef::TypeUnknown:
+        default:
+            break;
         }
 
         ++id;
@@ -249,17 +259,15 @@ void DANodeParamSettingPanel::buildPropertyPanel()
 
         int id = 1;
         for (const auto& param : params) {
-            QString type    = param.typeLabel();
-            QWidget* editor = registry.createEditor(type, param, d->mPanel);
+            QWidget* editor = registry.createEditor(param.type, param, d->mPanel);
             if (editor) {
                 // 读取 layout 扩展属性决定布局模式：below → BelowLayout，其他 → InlineLayout
                 DAPropertyItemWidget::LayoutMode mode = DAPropertyItemWidget::InlineLayout;
-                QVariantHash props                    = param.properties();
-                if (props.contains("layout") && props.value("layout").toString().toLower() == "below") {
+                if (param.isLayoutBelow()) {
                     mode = DAPropertyItemWidget::BelowLayout;
                 }
-                d->mPanel->addProperty(id, param.name(), param.description(), editor, mode);
-                connectEditorSignals(id, type, editor);
+                d->mPanel->addProperty(id, param.name, param.description, editor, mode);
+                connectEditorSignals(id, param.typeEnum(), editor);
             }
             ++id;
         }
@@ -315,55 +323,63 @@ void DANodeParamSettingPanel::onPropertyValueChanged(int propertyId)
         return;
 
     const auto& param = params[ idx ];
-    QVariant val      = readEditorValue(item->editorWidget(), param.typeLabel());
+    QVariant val      = readEditorValue(item->editorWidget(), param.typeEnum());
     if (val.isValid()) {
-        proxy.setParameterValue(param.name(), val);
+        proxy.setParameterValue(param.name, val);
     }
 }
 
 /**
  * @brief 从编辑器控件读取值（类型分发）
  *
- * 根据类型字符串对编辑器进行 qobject_cast，读取当前值并返回 QVariant。
+ * 基于 ParamType 枚举进行穷尽性 switch 分发，对编辑器进行 qobject_cast 读取当前值。
  * 未知类型或 cast 失败时返回无效 QVariant。
  *
  * @param[in] editor 编辑器控件指针
- * @param[in] type 参数类型标签（int/float/bool/str/enum/file/folder/list/color/font/code）
+ * @param[in] t 参数类型枚举
  * @return 编辑器当前值，失败时返回无效 QVariant
  */
-QVariant DANodeParamSettingPanel::readEditorValue(QWidget* editor, const QString& type)
+QVariant DANodeParamSettingPanel::readEditorValue(QWidget* editor, DAParamDef::ParamType t)
 {
-    if (!editor || type.isEmpty())
+    if (!editor || t == DAParamDef::TypeUnknown)
         return { };
 
-    if (type == "int") {
+    switch (t) {
+    case DAParamDef::TypeInt: {
         auto* spin = qobject_cast< QSpinBox* >(editor);
         if (spin)
             return spin->value();
-    } else if (type == "float") {
+    } break;
+    case DAParamDef::TypeFloat: {
         auto* dsp = qobject_cast< QDoubleSpinBox* >(editor);
         if (dsp)
             return dsp->value();
-    } else if (type == "bool") {
+    } break;
+    case DAParamDef::TypeBool: {
         auto* cb = qobject_cast< QCheckBox* >(editor);
         if (cb)
             return cb->isChecked();
-    } else if (type == "str") {
+    } break;
+    case DAParamDef::TypeStr: {
         // str 类型在 below 布局下为 QPlainTextEdit，inline 布局下为 QLineEdit
         if (auto* le = qobject_cast< QLineEdit* >(editor)) {
             return le->text();
         } else if (auto* pe = qobject_cast< QPlainTextEdit* >(editor)) {
             return pe->toPlainText();
         }
-    } else if (type == "enum") {
+    } break;
+    case DAParamDef::TypeEnum: {
         auto* combo = qobject_cast< QComboBox* >(editor);
         if (combo)
             return combo->currentText();
-    } else if (type == "file" || type == "folder") {
+    } break;
+    case DAParamDef::TypeFile:
+    case DAParamDef::TypeFolder: {
         auto* fileEdit = qobject_cast< DA::DAFilePathEditWidget* >(editor);
         if (fileEdit)
             return fileEdit->getFilePath();
-    } else if (type == "list") {
+    } break;
+    case DAParamDef::TypeList: {
         QListWidget* listWidget = editor->findChild< QListWidget* >();
         if (listWidget) {
             QStringList strList;
@@ -372,11 +388,13 @@ QVariant DANodeParamSettingPanel::readEditorValue(QWidget* editor, const QString
             }
             return strList;
         }
-    } else if (type == "color") {
+    } break;
+    case DAParamDef::TypeColor: {
         auto* btn = qobject_cast< DAColorPickerButton* >(editor);
         if (btn)
             return btn->color().name();
-    } else if (type == "font") {
+    } break;
+    case DAParamDef::TypeFont: {
         auto* fe = qobject_cast< DAFontEditPannelWidget* >(editor);
         if (fe) {
             // 返回字典格式：{"family", "size", "bold", "italic", "color"}
@@ -389,10 +407,16 @@ QVariant DANodeParamSettingPanel::readEditorValue(QWidget* editor, const QString
             fontMap[ "color" ]  = fe->getCurrentFontColor().name();
             return fontMap;
         }
-    } else if (type == "code") {
+    } break;
+    case DAParamDef::TypeCode: {
         auto* codeEdit = qobject_cast< QPlainTextEdit* >(editor);
         if (codeEdit)
             return codeEdit->toPlainText();
+    } break;
+    case DAParamDef::TypeDict:
+    case DAParamDef::TypeUnknown:
+    default:
+        break;
     }
 
     return { };
@@ -401,45 +425,51 @@ QVariant DANodeParamSettingPanel::readEditorValue(QWidget* editor, const QString
 /**
  * @brief 连接编辑器原生信号到 propertyValueChanged
  *
- * 根据参数类型，将编辑器控件的原生值变化信号连接到 emit propertyValueChanged(id)，
- * 使得用户修改编辑器后能触发 3-hop 信号链，最终将值写入节点代理。
+ * 基于 ParamType 枚举进行穷尽性 switch 分发，将编辑器控件的原生值变化信号
+ * 连接到 emit propertyValueChanged(id)，使得用户修改编辑器后能触发 3-hop 信号链，
+ * 最终将值写入节点代理。
  *
  * @param[in] id 属性ID
- * @param[in] type 参数类型标签
+ * @param[in] t 参数类型枚举
  * @param[in] editor 编辑器控件指针
  */
-void DANodeParamSettingPanel::connectEditorSignals(int id, const QString& type, QWidget* editor)
+void DANodeParamSettingPanel::connectEditorSignals(int id, DAParamDef::ParamType t, QWidget* editor)
 {
     if (!editor)
         return;
 
-    if (type == "int") {
+    switch (t) {
+    case DAParamDef::TypeInt: {
         auto* spin = qobject_cast< QSpinBox* >(editor);
         if (spin) {
             connect(spin, QOverload< int >::of(&QSpinBox::valueChanged), this, [ this, id ](int) {
                 emit propertyValueChanged(id);
             });
         }
-    } else if (type == "float") {
+    } break;
+    case DAParamDef::TypeFloat: {
         auto* dsp = qobject_cast< QDoubleSpinBox* >(editor);
         if (dsp) {
             connect(dsp, QOverload< double >::of(&QDoubleSpinBox::valueChanged), this, [ this, id ](double) {
                 emit propertyValueChanged(id);
             });
         }
-    } else if (type == "bool") {
+    } break;
+    case DAParamDef::TypeBool: {
         auto* cb = qobject_cast< QCheckBox* >(editor);
         if (cb) {
             connect(cb, &QCheckBox::toggled, this, [ this, id ](bool) { emit propertyValueChanged(id); });
         }
-    } else if (type == "str") {
+    } break;
+    case DAParamDef::TypeStr: {
         // str 类型在 below 布局下为 QPlainTextEdit，inline 布局下为 QLineEdit
         if (auto* le = qobject_cast< QLineEdit* >(editor)) {
             connect(le, &QLineEdit::textEdited, this, [ this, id ](const QString&) { emit propertyValueChanged(id); });
         } else if (auto* pe = qobject_cast< QPlainTextEdit* >(editor)) {
             connect(pe, &QPlainTextEdit::textChanged, this, [ this, id ]() { emit propertyValueChanged(id); });
         }
-    } else if (type == "enum") {
+    } break;
+    case DAParamDef::TypeEnum: {
         auto* combo = qobject_cast< QComboBox* >(editor);
         if (combo) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -450,21 +480,25 @@ void DANodeParamSettingPanel::connectEditorSignals(int id, const QString& type, 
             connect(combo, &QComboBox::currentIndexChanged, this, [ this, id ](int) { emit propertyValueChanged(id); });
 #endif
         }
-    } else if (type == "file" || type == "folder") {
+    } break;
+    case DAParamDef::TypeFile:
+    case DAParamDef::TypeFolder: {
         auto* fileEdit = qobject_cast< DA::DAFilePathEditWidget* >(editor);
         if (fileEdit) {
             connect(fileEdit, &DA::DAFilePathEditWidget::selectedPath, this, [ this, id ](const QString&) {
                 emit propertyValueChanged(id);
             });
         }
-    } else if (type == "color") {
+    } break;
+    case DAParamDef::TypeColor: {
         auto* btn = qobject_cast< DAColorPickerButton* >(editor);
         if (btn) {
             connect(btn, &SAColorToolButton::colorChanged, this, [ this, id ](const QColor&) {
                 emit propertyValueChanged(id);
             });
         }
-    } else if (type == "font") {
+    } break;
+    case DAParamDef::TypeFont: {
         auto* fe = qobject_cast< DAFontEditPannelWidget* >(editor);
         if (fe) {
             connect(fe, &DAFontEditPannelWidget::currentFontChanged, this, [ this, id ](const QFont&) {
@@ -474,17 +508,24 @@ void DANodeParamSettingPanel::connectEditorSignals(int id, const QString& type, 
                 emit propertyValueChanged(id);
             });
         }
-    } else if (type == "code") {
+    } break;
+    case DAParamDef::TypeCode: {
         auto* codeEdit = qobject_cast< QPlainTextEdit* >(editor);
         if (codeEdit) {
             connect(codeEdit, &QPlainTextEdit::textChanged, this, [ this, id ]() { emit propertyValueChanged(id); });
         }
-    } else if (type == "list") {
+    } break;
+    case DAParamDef::TypeList: {
         // list 编辑器是复合控件，连接内部的添加/删除按钮
         QList< QPushButton* > buttons = editor->findChildren< QPushButton* >();
         for (QPushButton* btn : buttons) {
             connect(btn, &QPushButton::clicked, this, [ this, id ]() { emit propertyValueChanged(id); });
         }
+    } break;
+    case DAParamDef::TypeDict:
+    case DAParamDef::TypeUnknown:
+    default:
+        break;
     }
 }
 
@@ -506,10 +547,7 @@ QVariantHash DANodeParamSettingPanel::collectConfig() const
     const auto& params = getParamDefs();
     int id             = 1;
     for (const auto& param : params) {
-        QString name = param.name();
-        QString type = param.typeLabel();
-
-        if (name.isEmpty() || type.isEmpty()) {
+        if (param.name.isEmpty() || param.typeEnum() == DAParamDef::TypeUnknown) {
             ++id;
             continue;
         }
@@ -520,9 +558,9 @@ QVariantHash DANodeParamSettingPanel::collectConfig() const
             continue;
         }
 
-        QVariant val = readEditorValue(item->editorWidget(), type);
+        QVariant val = readEditorValue(item->editorWidget(), param.typeEnum());
         if (val.isValid()) {
-            config[ name ] = val;
+            config[ param.name ] = val;
         }
 
         ++id;
