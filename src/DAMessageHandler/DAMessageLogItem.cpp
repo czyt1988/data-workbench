@@ -24,21 +24,22 @@ DAMessageLogItem::DAMessageLogItem(QtMsgType type, const QMessageLogContext& con
     mLine         = context.line;
 }
 
-DAMessageLogItem::DAMessageLogItem(const DAMessageLogItem& i)
+/**
+ * @brief 从基本类型构造
+ *
+ * 供 DAMessageLogSink 从 spdlog::details::log_msg 重建 DAMessageLogItem 使用
+ * @param type 消息类型
+ * @param fileName 文件名
+ * @param functionName 函数名
+ * @param line 行号
+ * @param msg 消息内容
+ * @param dt 时间戳
+ */
+DAMessageLogItem::DAMessageLogItem(QtMsgType type, const QString& fileName, const QString& functionName,
+                                   int line, const QString& msg, const QDateTime& dt)
+    : mValidFlag(true), mMsgType(type), mMsg(msg), mDatetime(dt), mFileName(fileName),
+      mFunctionName(functionName), mLine(line)
 {
-    operator=(i);
-}
-
-DAMessageLogItem& DAMessageLogItem::operator=(const DAMessageLogItem& i)
-{
-    mValidFlag    = i.mValidFlag;
-    mMsgType      = i.mMsgType;
-    mMsg          = i.mMsg;
-    mDatetime     = i.mDatetime;
-    mFileName     = i.mFileName;
-    mFunctionName = i.mFunctionName;
-    mLine         = i.mLine;
-    return *this;
 }
 
 bool DAMessageLogItem::isValid() const

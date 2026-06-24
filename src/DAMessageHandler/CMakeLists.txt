@@ -34,9 +34,6 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
 )
 target_link_libraries(${DA_LIB_NAME} PRIVATE
-    Qt${QT_VERSION_MAJOR}::Widgets
-)
-target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
 )
 # -------------link 3rdparty spdlog--------------------------

@@ -12,7 +12,6 @@ public:
 	DAMessageLogsModelPrivate(DAMessageLogsModel* p);
 
 public:
-	DAMessageQueueProxy _messageQueueProxy;
 	bool _showDateTime;
 	int _rowCount;
 	QColor _bgClrDebug;
@@ -45,12 +44,11 @@ DAMessageLogsModelPrivate::DAMessageLogsModelPrivate(DAMessageLogsModel* p)
 //===================================================
 DAMessageLogsModel::DAMessageLogsModel(QObject* p) : QAbstractTableModel(p), d_ptr(new DAMessageLogsModelPrivate(this))
 {
-	connect(&(d_ptr->_messageQueueProxy),
-            &DAMessageQueueProxy::messageQueueSizeChanged,
-            this,
-            &DAMessageLogsModel::onMessageQueueSizeChanged);
-	connect(&(d_ptr->_messageQueueProxy), &DAMessageQueueProxy::messageQueueAppended, this, &DAMessageLogsModel::onMessageAppended);
-	d_ptr->_rowCount = d_ptr->_messageQueueProxy.size();
+	auto& queue = DAMessageLogQueue::instance();
+	connect(&queue, &DAMessageLogQueue::messageQueueSizeChanged,
+            this, &DAMessageLogsModel::onMessageQueueSizeChanged);
+	connect(&queue, &DAMessageLogQueue::messageQueueAppended, this, &DAMessageLogsModel::onMessageAppended);
+	d_ptr->_rowCount = queue.size();
 }
 
 DAMessageLogsModel::~DAMessageLogsModel()
@@ -99,7 +97,7 @@ QVariant DAMessageLogsModel::data(const QModelIndex& index, int role) const
 	if (index.row() >= d_ptr->_rowCount) {
 		return QVariant();
 	}
-	DAMessageLogItem item = d_ptr->_messageQueueProxy.at(index.row());
+	DAMessageLogItem item = DAMessageLogQueue::instance().at(index.row());
 	switch (role) {
 	case Qt::TextAlignmentRole:
 		return int(Qt::AlignLeft | Qt::AlignVCenter);
@@ -133,24 +131,6 @@ bool DAMessageLogsModel::setData(const QModelIndex& index, const QVariant& value
 	Q_UNUSED(value);
 	Q_UNUSED(role);
 	return false;
-}
-
-/**
- * @brief 获取内部维护的DAMessageQueueProxy
- * @return
- */
-const DAMessageQueueProxy& DAMessageLogsModel::messageQueueProxy() const
-{
-    return d_ptr->_messageQueueProxy;
-}
-
-/**
- * @brief 获取内部维护的DAMessageQueueProxy
- * @return
- */
-DAMessageQueueProxy& DAMessageLogsModel::messageQueueProxy()
-{
-    return d_ptr->_messageQueueProxy;
 }
 
 /**
@@ -202,7 +182,7 @@ void DAMessageLogsModel::setTypeBackgroundColor(QtMsgType type, const QColor& cl
  */
 void DAMessageLogsModel::clearAll()
 {
-    d_ptr->_messageQueueProxy.clear();
+    DAMessageLogQueue::instance().clear();
     if (d_ptr->_rowCount > 0) {
         beginRemoveRows(QModelIndex(), 0, d_ptr->_rowCount - 1);
         d_ptr->_rowCount = 0;
@@ -213,7 +193,7 @@ void DAMessageLogsModel::clearAll()
 void DAMessageLogsModel::onMessageAppended()
 {
 	// 触发此信号说明队列已满（惰性信号合并了多次插入）
-	int qs = d_ptr->_messageQueueProxy.size();
+	int qs = DAMessageLogQueue::instance().size();
 	if (d_ptr->_rowCount < qs) {
 		// 模型行数少于队列尺寸，需要插入新行
 		beginInsertRows(QModelIndex(), d_ptr->_rowCount, qs - 1);

@@ -20,7 +20,7 @@
 #include "DAAppUtils.h"
 #include "DAConfigs.h"
 #include "DAAppCore.h"
-#include "DAMessageHandler.h"
+#include "DALogger.h"
 #include "DATranslatorManeger.h"
 #include "DADumpCapture.h"
 #include "DADir.h"
@@ -64,8 +64,7 @@ int main(int argc, char* argv[])
     // 进行dump捕获
     DA::DADumpCapture::initDump([]() -> QString { return appPreposeDump(); });
     // 注册旋转文件消息捕获
-    DA::daRegisterRotatingMessageHandler(DA::DADir::getLogFilePath());
-    // DA::daRegisterConsolMessageHandler();
+    DA::DALogger::instance().setupRotatingFile(DA::DADir::getLogFilePath());
     for (int i = 0; i < argc; ++i) {
         qDebug() << "argv[" << i << "]" << argv[ i ];
     }
@@ -154,7 +153,7 @@ int main(int argc, char* argv[])
         delete splash;
     }
     int r = app.exec();
-    DA::daUnregisterMessageHandler();
+    // DALogger 单例析构时自动注销 message handler 和 spdlog
     return r;
 }
 

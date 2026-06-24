@@ -8,7 +8,7 @@
 #include "AppMainWindow.h"
 #include "DAAppCore.h"
 #include "DAAppUI.h"
-#include "DAMessageQueueProxy.h"
+#include "DAMessageLogQueue.h"
 #include "DAAbstractSettingPage.h"
 namespace DA
 {
@@ -186,7 +186,7 @@ bool DAAppConfig::apply()
     bool isOK  = false;
     int logNum = value(DA_CONFIG_KEY_SHOW_LOG_NUM).toInt(&isOK);
     if (isOK && logNum > 10 && logNum < 999999) {
-        DAMessageQueueProxy::setGlobalQueueCapacity(logNum);
+        DA::DAMessageLogQueue::instance().setCapacity(logNum);
     }
     bool isSaveUIState = value(DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE).toBool();
     if (mMainWindow) {
