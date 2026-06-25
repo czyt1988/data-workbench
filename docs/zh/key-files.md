@@ -80,6 +80,7 @@ check_required_components(DAWorkbench)
 **用途**：项目说明文件
 
 **内容**：
+
 - 项目简介
 - 软件设计目标
 - 第三方库列表
@@ -144,9 +145,8 @@ markdown_extensions:
 // 版本信息
 #define DA_VERSION_STRING "0.0.3"
 
-// 日志宏
-#define DA_LOG_INFO(...) 
-#define DA_LOG_ERROR(...) 
+// 日志便捷宏已移至 DALogCategory.h（daInfo/daDebug/daWarning/daCritical 流式宏）
+// DAGlobals.h 不再定义 DA_LOG_* 旧宏
 
 // 常用宏
 #define DA_SAFE_DELETE(ptr) delete ptr; ptr = nullptr
@@ -280,6 +280,7 @@ python make-plugin.py
 **用途**：文档资源文件
 
 **内容**：
+
 - `PIC/` - 图片资源（UML 图、流程图）
 - `screenshot/` - 界面截图
 - `icon.png` - 文档图标

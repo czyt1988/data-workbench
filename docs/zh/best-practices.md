@@ -236,12 +236,12 @@ void MyDockWidget::updateDataView()
 // 统一错误处理流程 - 包含验证、执行、异常捕获
 bool MyWorker::exec()
 {
-    DA_LOG_INFO("Node {} starting execution", getID());  // 记录开始
+    daInfo << "Node" << getID() << "starting execution";  // 记录开始
     
     try {
         // 输入验证 - 检查输入数据有效性
         if (!validateInput()) {
-            DA_LOG_ERROR("Node {}: Invalid input", getID());  // 记录错误
+            daCritical << "Node" << getID() << "Invalid input";  // 记录错误
             setStatus(DA::DAAbstractNode::StatusError);       // 设置错误状态
             return false;
         }
@@ -251,17 +251,17 @@ bool MyWorker::exec()
         
         // 输出验证 - 检查输出数据有效性
         if (!validateOutput()) {
-            DA_LOG_ERROR("Node {}: Invalid output", getID());
+            daCritical << "Node" << getID() << "Invalid output";
             setStatus(DA::DAAbstractNode::StatusError);
             return false;
         }
         
-        DA_LOG_INFO("Node {} completed successfully", getID());  // 记录成功
+        daInfo << "Node" << getID() << "completed successfully";  // 记录成功
         setStatus(DA::DAAbstractNode::StatusFinished);           // 设置完成状态
         return true;
         
     } catch (const std::exception& e) {
-        DA_LOG_ERROR("Node {}: Exception - {}", getID(), e.what());  // 捕获异常
+        daCritical << "Node" << getID() << "Exception -" << e.what();  // 捕获异常
         setStatus(DA::DAAbstractNode::StatusError);
         return false;
     }
@@ -285,32 +285,32 @@ void MyPlugin::handleOperation()
         
     } catch (const std::runtime_error& e) {
         // 可恢复错误 - 显示警告，继续运行
-        DA_LOG_WARNING("Runtime error: {}", e.what());
+        daWarning << "Runtime error:" << e.what();
         showWarningToUser(tr("Operation warning: %1").arg(e.what()));
         
     } catch (const std::logic_error& e) {
         // 逻辑错误 - 需要修复，显示错误信息
-        DA_LOG_ERROR("Logic error: {}", e.what());
+        daCritical << "Logic error:" << e.what();
         showErrorToUser(tr("Internal error: %1").arg(e.what()));
         
     } catch (const std::exception& e) {
         // 未预期的错误 - 记录严重错误
-        DA_LOG_CRITICAL("Unexpected error: {}", e.what());
+        daCritical << "Unexpected error:" << e.what();
         showErrorToUser(tr("Unexpected error occurred"));
     }
 }
         // 可恢复错误
-        DA_LOG_WARNING("Runtime error: {}", e.what());
+        daWarning << "Runtime error:" << e.what();
         showWarningToUser(tr("Operation warning: %1").arg(e.what()));
         
     } catch (const std::logic_error& e) {
         // 逻辑错误，需要修复
-        DA_LOG_ERROR("Logic error: {}", e.what());
+        daCritical << "Logic error:" << e.what();
         showErrorToUser(tr("Internal error: %1").arg(e.what()));
         
     } catch (const std::exception& e) {
         // 未预期的错误
-        DA_LOG_CRITICAL("Unexpected error: {}", e.what());
+        daCritical << "Unexpected error:" << e.what();
         showErrorToUser(tr("Unexpected error occurred"));
     }
 }
@@ -355,12 +355,14 @@ message(STATUS "Using Qt version: ${QT_VERSION}")
 **排查步骤**：
 
 1. 检查插件是否正确导出接口
+
 ```cpp
 Q_PLUGIN_METADATA(IID "Plugin.YourPlugin")
 Q_INTERFACES(DA::DAAbstractNodePlugin)
 ```
 
-2. 检查 initialize() 是否返回 true
+1. 检查 initialize() 是否返回 true
+
 ```cpp
 bool MyPlugin::initialize()
 {
@@ -369,7 +371,7 @@ bool MyPlugin::initialize()
 }
 ```
 
-3. 检查依赖库是否在 bin 目录
+1. 检查依赖库是否在 bin 目录
 
 #### Q4: 接口访问返回 nullptr
 
@@ -403,6 +405,7 @@ bool MyPlugin::initialize()
 **解决**：
 
 1. 检查 `getNodeMetaDataList()` 返回值
+
 ```cpp
 QList<DA::DANodeMetaData> MyNodeFactory::getNodeMetaDataList() const
 {
@@ -410,7 +413,8 @@ QList<DA::DANodeMetaData> MyNodeFactory::getNodeMetaDataList() const
 }
 ```
 
-2. 检查节点元数据是否正确注册
+1. 检查节点元数据是否正确注册
+
 ```cpp
 void MyNodeFactory::registerNodePrototypes()
 {
@@ -460,7 +464,7 @@ bool MyWorker::exec()
 // 检查资源加载
 QIcon icon(":/icon/myicon.png");
 if (icon.isNull()) {
-    DA_LOG_WARNING("Icon not found: :/icon/myicon.png");
+    daWarning << "Icon not found: :/icon/myicon.png";
 }
 ```
 

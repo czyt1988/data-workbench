@@ -312,7 +312,7 @@ bool MyNodeFactory::nodeAddedToWorkflow(DA::DAAbstractNode* node)
 {
     // 验证节点拓扑约束
     if (hasCircularDependency(node)) {
-        DA_LOG_WARNING("Circular dependency detected");  // 检测循环依赖
+        daWarning << "Circular dependency detected";  // 检测循环依赖
     }
 }
 ```
@@ -379,12 +379,16 @@ struct CachePolicy {
 下面的代码展示了日志级别设置：
 
 ```cpp
+#include "DALogger.h"
+
 // 生产环境使用较低日志级别 - 减少 IO 开销
-DA_LOG_SET_LEVEL(spdlog::level::info);
+DA::DALogger::instance().setLevel(DA::DALogLevel::Info);
 
 // 调试时使用详细日志 - 方便排查问题
-DA_LOG_SET_LEVEL(spdlog::level::debug);
+DA::DALogger::instance().setLevel(DA::DALogLevel::Debug);
 ```
+
+> 详见 [日志系统文档](./dev-guide/logging.md)。
 
 ## 性能监控
 
@@ -397,7 +401,7 @@ DA_LOG_SET_LEVEL(spdlog::level::debug);
 ```cpp
 bool MyWorker::exec()
 {
-    DA_LOG_INFO("Node {} starting", getID());       // 记录开始
+    daInfo << "Node" << getID() << "starting";       // 记录开始
     
     QElapsedTimer timer;
     timer.start();                                  // 开始计时
@@ -405,11 +409,11 @@ bool MyWorker::exec()
     processData();                                   // 执行处理
     
     qint64 elapsed = timer.elapsed();               // 获取耗时（毫秒）
-    DA_LOG_INFO("Node {} completed in {} ms", getID(), elapsed);
+    daInfo << "Node" << getID() << "completed in" << elapsed << "ms";
     
     // 超时警告 - 发现性能问题
     if (elapsed > 5000) {
-        DA_LOG_WARNING("Node {} took too long", getID());
+        daWarning << "Node" << getID() << "took too long";
     }
     
     return true;
@@ -426,10 +430,10 @@ bool MyWorker::exec()
 void MyPlugin::checkMemoryUsage()
 {
     qint64 usedMemory = calculateUsedMemory();                  // 计算已使用内存
-    DA_LOG_DEBUG("Memory usage: {} MB", usedMemory / 1024 / 1024);
+    daDebug << "Memory usage:" << (usedMemory / 1024 / 1024) << "MB";
     
     if (usedMemory > 500 * 1024 * 1024) {  // 500 MB 阈值
-        DA_LOG_WARNING("High memory usage detected");
+        daWarning << "High memory usage detected";
         clearCaches();                   // 清理缓存释放内存
     }
 }
