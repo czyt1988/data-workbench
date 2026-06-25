@@ -1,5 +1,7 @@
 bin_*
 build*
+Testing/
+log/
 # 保留 scripts 目录下的构建脚本
 !scripts/
 !scripts/*.ps1
