@@ -1,6 +1,7 @@
 ﻿#include "DADataOperateWidget.h"
 #include "ui_DADataOperateWidget.h"
 #include <QDebug>
+#include "DALogCategory.h"
 #include <QPointer>
 // api
 #include "DADataManager.h"
@@ -197,7 +198,7 @@ bool DADataOperateWidget::removeTabWidget(QWidget* w)
 {
     int ti = ui->tabWidget->indexOf(w);
     if (ti < 0) {
-        qCritical() << tr("removing a widget that does not exist in tab");  // cn:正在移除一个不存在的窗口
+        daCritical << tr("removing a widget that does not exist in the tab");  // cn:正在移除一个不存在的窗口
         return false;
     }
     if (ti >= 0) {

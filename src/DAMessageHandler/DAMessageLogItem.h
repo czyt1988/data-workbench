@@ -16,10 +16,13 @@ public:
     DAMessageLogItem();
     //构造一个有效的
     DAMessageLogItem(QtMsgType type, const QMessageLogContext& context, const QString& m);
+    //从基本类型构造（供 DAMessageLogSink 从 spdlog log_msg 重建使用）
+    DAMessageLogItem(QtMsgType type, const QString& fileName, const QString& functionName,
+                     int line, const QString& msg, const QDateTime& dt);
     //拷贝构造
-    DAMessageLogItem(const DAMessageLogItem& i);
+    DAMessageLogItem(const DAMessageLogItem& i) = default;
     //赋值操作
-    DAMessageLogItem& operator=(const DAMessageLogItem& i);
+    DAMessageLogItem& operator=(const DAMessageLogItem& i) = default;
 
 public:
     bool isValid() const;

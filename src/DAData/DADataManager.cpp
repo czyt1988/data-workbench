@@ -6,6 +6,8 @@
 #include <QRegularExpressionMatch>
 // DAUtils
 #include "DAStringUtil.h"
+// DAMessageHandler
+#include "DALogCategory.h"
 //
 #include "DACommandsDataManager.h"
 namespace DA
@@ -51,7 +53,7 @@ void DADataManager::addData(DAData& d)
 {
     if (d_ptr->_dataMap.contains(d.id())) {
         // 说明已经添加过
-        qWarning() << tr("data:%1 have been added").arg(d.getName());
+        daWarning << tr("data '%1' has been added").arg(d.getName());  // cn:数据 '%1' 已被添加过
         if (d.getDataManager() != this) {
             // 说明这个data引用没有获取到datamanager
             d.setDataManager(this);

@@ -95,6 +95,9 @@ endif()
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAGui
 )
+target_link_libraries(${DA_LIB_NAME} PRIVATE
+    ${DA_PROJECT_NAME}::DAMessageHandler
+)
 
 ########################################################
 # 设置通用库属性

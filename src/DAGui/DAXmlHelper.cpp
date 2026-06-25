@@ -2,6 +2,7 @@
 #include <QElapsedTimer>
 #include <QObject>
 #include <QDebug>
+#include "DALogCategory.h"
 // Qt
 #include <QBuffer>
 #include <QDomDocument>
@@ -192,22 +193,22 @@ bool DAXmlHelper::PrivateData::loadWorkflow(DAPyWorkFlowEditWidget* wfe, const Q
     qDebug() << QObject::tr("load workflow extern info cost: %1 ms").arg(tes.restart());
     // 从文件加载
     if (!loadNodes(workFlowScene, workflowEle)) {
-        qCritical() << QObject::tr("load nodes occurce error");
+        daCritical << QObject::tr("error occurred while loading nodes");  // cn:加载节点时发生错误
     }
     qDebug() << QObject::tr("load workflow nodes cost: %1 ms").arg(tes.restart());
 
     if (!loadNodeLinks(workFlowScene, workflowEle)) {
-        qCritical() << QObject::tr("load nodes link occurce error");
+        daCritical << QObject::tr("error occurred while loading node links");  // cn:加载节点连线时发生错误
     }
     qDebug() << QObject::tr("load workflow links cost: %1 ms").arg(tes.restart());
     // false代表不进行回退操作
     if (!loadCommonItems(workFlowScene, workflowEle, false)) {
-        qCritical() << QObject::tr("load special item occurce error");
+        daCritical << QObject::tr("error occurred while loading special items");  // cn:加载特殊图元时发生错误
     }
     qDebug() << QObject::tr("load special item cost: %1 ms").arg(tes.restart());
 
     if (!loadSecenInfo(workFlowScene, workflowEle)) {
-        qCritical() << QObject::tr("load scene info occurce error");
+        daCritical << QObject::tr("error occurred while loading scene info");  // cn:加载场景信息时发生错误
     }
     qDebug() << QObject::tr("load secen info cost: %1 ms").arg(tes.restart());
 
@@ -246,12 +247,12 @@ bool DAXmlHelper::PrivateData::loadWorkflowView(DAPyWorkFlowEditWidget* wfe, con
 
     // 加载节点：通过node_id在已有Python workflow中查找 → wrapPyNode → addItem → loadItem
     if (!loadNodesView(workFlowScene, workflowEle)) {
-        qCritical() << QObject::tr("loadNodesView occurred error");
+        daCritical << QObject::tr("loadNodesView: error occurred");  // cn:加载节点视图时发生错误
     }
 
     // 加载连线：通过findNodeItemById查找 → wrapPyNodeLink → loadItem
     if (!loadNodeLinksView(workFlowScene, workflowEle)) {
-        qCritical() << QObject::tr("loadNodeLinksView occurred error");
+        daCritical << QObject::tr("loadNodeLinksView: error occurred");  // cn:加载连线视图时发生错误
     }
 
     // 重建mLinkConnectionIdMap
@@ -259,12 +260,12 @@ bool DAXmlHelper::PrivateData::loadWorkflowView(DAPyWorkFlowEditWidget* wfe, con
 
     // 加载通用图元（文本、矩形等）
     if (!loadCommonItems(workFlowScene, workflowEle, false)) {
-        qCritical() << QObject::tr("loadCommonItems occurred error");
+        daCritical << QObject::tr("loadCommonItems: error occurred");  // cn:加载通用图元时发生错误
     }
 
     // 加载场景信息
     if (!loadSecenInfo(workFlowScene, workflowEle)) {
-        qCritical() << QObject::tr("loadSecenInfo occurred error");
+        daCritical << QObject::tr("loadSceneInfo: error occurred");  // cn:加载场景信息时发生错误
     }
 
     workFlowScene->setReady(true);
@@ -285,12 +286,12 @@ bool DAXmlHelper::PrivateData::loadNodesView(DAPyWorkFlowGraphicsScene* workFlow
 {
     DAPyWorkFlowManager* mgr = workFlowScene->getManager();
     if (!mgr || !mgr->isWorkflowValid()) {
-        qWarning() << QObject::tr("loadNodesView: manager or workflow is not valid");
+        daWarning << QObject::tr("loadNodesView: manager or workflow is not valid");  // cn:加载节点视图：管理器或工作流无效
         return false;
     }
     DAPyWorkFlow wf = mgr->getWorkflow();
 
-    QDomElement nodesEle = workflowEle.firstChildElement("nodes");
+    QDomElement nodesEle   = workflowEle.firstChildElement("nodes");
     QDomNodeList nodesList = nodesEle.childNodes();
 
     for (int i = 0; i < nodesList.size(); ++i) {
@@ -301,21 +302,21 @@ bool DAXmlHelper::PrivateData::loadNodesView(DAPyWorkFlowGraphicsScene* workFlow
 
         QString nodeId = nodeEle.attribute("id");
         if (nodeId.isEmpty()) {
-            qWarning() << QObject::tr("loadNodesView: node element missing id attribute");
+            daWarning << QObject::tr("loadNodesView: node element missing id attribute");  // cn:加载节点视图：节点元素缺少id属性
             continue;
         }
 
         // 在已有Python workflow中查找节点
         DAPyNode proxy = wf.getNodeById(nodeId);
         if (proxy.isNone()) {
-            qWarning() << QObject::tr("loadNodesView: node_id=%1 not found in Python workflow").arg(nodeId);
+            daWarning << QObject::tr("loadNodesView: node_id=%1 not found in Python workflow").arg(nodeId);  // cn:加载节点视图：在Python工作流中未找到node_id=%1
             continue;
         }
 
         // 包装为图形项（不经过工厂，不注册到Python）
         DAPyNodeGraphicsItem* item = workFlowScene->wrapPyNode(proxy, QPointF(0, 0));
         if (!item) {
-            qWarning() << QObject::tr("loadNodesView: wrapPyNode failed for node_id=%1").arg(nodeId);
+            daWarning << QObject::tr("loadNodesView: wrapPyNode failed for node_id=%1").arg(nodeId);  // cn:加载节点视图：为node_id=%1包装节点失败
             continue;
         }
 
@@ -345,7 +346,7 @@ bool DAXmlHelper::PrivateData::loadNodesView(DAPyWorkFlowGraphicsScene* workFlow
 bool DAXmlHelper::PrivateData::loadNodeLinksView(DAPyWorkFlowGraphicsScene* workFlowScene, const QDomElement& workflowEle)
 {
     QDomElement linksEle = workflowEle.firstChildElement("links");
-    QDomNodeList list = linksEle.childNodes();
+    QDomNodeList list    = linksEle.childNodes();
 
     for (int i = 0; i < list.size(); ++i) {
         QDomElement linkEle = list.at(i).toElement();
@@ -354,30 +355,30 @@ bool DAXmlHelper::PrivateData::loadNodeLinksView(DAPyWorkFlowGraphicsScene* work
         }
 
         QDomElement fromEle = linkEle.firstChildElement("from");
-        QDomElement toEle = linkEle.firstChildElement("to");
+        QDomElement toEle   = linkEle.firstChildElement("to");
         if (fromEle.isNull() || toEle.isNull()) {
             continue;
         }
 
         // 直接使用字符串 id，不转换为数字
-        QString fromId = fromEle.attribute("id");
-        QString fromKey = fromEle.attribute("name");
+        QString fromId                 = fromEle.attribute("id");
+        QString fromKey                = fromEle.attribute("name");
         DAPyNodeGraphicsItem* fromItem = workFlowScene->findNodeItemById(fromId);
 
-        QString toId = toEle.attribute("id");
-        QString toKey = toEle.attribute("name");
+        QString toId                 = toEle.attribute("id");
+        QString toKey                = toEle.attribute("name");
         DAPyNodeGraphicsItem* toItem = workFlowScene->findNodeItemById(toId);
 
         if (!fromItem || !toItem) {
-            qWarning() << QObject::tr("loadNodeLinksView: cannot find nodes for link (from=%1, to=%2)")
-                              .arg(fromId, toId);
+            daWarning << QObject::tr("loadNodeLinksView: cannot find nodes for link (from=%1, to=%2)")
+                             .arg(fromId, toId);  // cn:加载连线视图：无法找到连线对应的节点(from=%1, to=%2)
             continue;
         }
 
         // wrap连线（不触发Python同步）
         DAPyLinkGraphicsItem* linkItem = workFlowScene->wrapPyNodeLink(fromItem, fromKey, toItem, toKey);
         if (!linkItem) {
-            qWarning() << QObject::tr("loadNodeLinksView: wrapPyNodeLink failed");
+            daWarning << QObject::tr("loadNodeLinksView: wrapPyNodeLink failed");  // cn:加载连线视图：包装连线失败
             continue;
         }
 
@@ -385,13 +386,13 @@ bool DAXmlHelper::PrivateData::loadNodeLinksView(DAPyWorkFlowGraphicsScene* work
         if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() <= 3) {
             // v1.3及以下：link元素直接包含链接信息
             if (!loadItem(linkItem, linkEle)) {
-                qWarning() << QObject::tr("linkItem loadFromXml return false");
+                daWarning << QObject::tr("link item failed to load from xml");  // cn:连线图元从xml加载失败
             }
         } else {
             // v1.4+：link元素包含item子元素
             QDomElement itemEle = findItemElement(linkEle);
             if (!loadItem(linkItem, itemEle)) {
-                qWarning() << QObject::tr("linkItem loadFromXml return false");
+                daWarning << QObject::tr("link item failed to load from xml");  // cn:连线图元从xml加载失败
             }
         }
         linkItem->updateBoundingRect();
@@ -469,15 +470,15 @@ bool DAXmlHelper::PrivateData::loadWorkflowFromClipBoard(DAPyWorkFlowGraphicsSce
     scene->getUndoStack()->beginMacro(QObject::tr("Load Nodes"));  // cn:加载节点
     QMap< QString, QString > idMap;
     if (!loadNodesClipBoard(scene, workflowEle, &idMap)) {
-        qCritical() << QObject::tr("load nodes occurce error");
+        daCritical << QObject::tr("error occurred while loading nodes");  // cn:加载节点时发生错误
     }
     if (!loadNodeLinksClipBoardCopy(scene, workflowEle, &idMap)) {
-        qCritical() << QObject::tr("load nodes link occurce error");
+        daCritical << QObject::tr("error occurred while loading node links");  // cn:加载节点连线时发生错误
     }
     // 加载其它
     // 第三个参数为true代表可以回退
     if (!loadCommonItems(scene, workflowEle, true)) {
-        qCritical() << QObject::tr("load items occurce error");
+        daCritical << QObject::tr("error occurred while loading items");  // cn:加载图元时发生错误
     }
     scene->getUndoStack()->endMacro();
     scene->setReady(true);
@@ -656,7 +657,7 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
 {
     QString id = nodeEle.attribute("id");
     if (id.isEmpty()) {
-        qWarning() << QObject::tr("node missing id attribute, will skip this node");
+        daWarning << QObject::tr("node missing id attribute, will skip this node");  // cn:节点缺少id属性，将跳过此节点
         return nullptr;
     }
     QString name          = nodeEle.attribute("name");
@@ -676,13 +677,13 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItem(const QDomElemen
     // 通过场景创建节点图形项
     DAPyNodeGraphicsItem* item = workFlowScene->createPyNode(metaData, QPointF(0, 0));
     if (!item) {
-        qWarning() << QObject::tr("Unable to create node by prototype=%1,name=%2").arg(qualifiedName, name);
+        daWarning << QObject::tr("Unable to create node by prototype=%1,name=%2").arg(qualifiedName, name);  // cn:无法通过原型=%1创建节点，名称=%2
         return nullptr;
     }
 
     const DAPyNode& proxy = item->getProxy();
     if (proxy.isNone()) {
-        qWarning() << QObject::tr("Node item has no proxy, prototype=%1,name=%2").arg(qualifiedName, name);
+        daWarning << QObject::tr("Node item has no proxy, prototype=%1,name=%2").arg(qualifiedName, name);  // cn:节点图元没有代理，原型=%1，名称=%2
         workFlowScene->removePyNodeItem(item);
         return nullptr;
     }
@@ -731,7 +732,7 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(const QD
 {
     QString id = nodeEle.attribute("id");
     if (id.isEmpty()) {
-        qWarning() << QObject::tr("node missing id attribute, will skip this node");
+        daWarning << QObject::tr("node missing id attribute, will skip this node");  // cn:节点缺少id属性，将跳过此节点
         return nullptr;
     }
     QString name          = nodeEle.attribute("name");
@@ -751,13 +752,13 @@ DAPyNodeGraphicsItem* DAXmlHelper::PrivateData::loadNodeAndItemWithUndo(const QD
     // 通过场景创建节点图形项（带undo/redo）
     DAPyNodeGraphicsItem* item = workFlowScene->createPyNode_(metaData, QPointF(0, 0));
     if (!item) {
-        qWarning() << QObject::tr("Unable to create node by prototype=%1,name=%2").arg(qualifiedName, name);
+        daWarning << QObject::tr("Unable to create node by prototype=%1,name=%2").arg(qualifiedName, name);  // cn:无法通过原型=%1创建节点，名称=%2
         return nullptr;
     }
 
     const DAPyNode& proxy = item->getProxy();
     if (proxy.isNone()) {
-        qWarning() << QObject::tr("Node item has no proxy, prototype=%1,name=%2").arg(qualifiedName, name);
+        daWarning << QObject::tr("Node item has no proxy, prototype=%1,name=%2").arg(qualifiedName, name);  // cn:节点图元没有代理，原型=%1，名称=%2
         return nullptr;
     }
 
@@ -863,8 +864,10 @@ bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v110(const DAPyNode& node,
             }
             QDomElement nameEle = inputEle.firstChildElement("name");
             if (nameEle.isNull()) {
-                qWarning() << QObject::tr("node(prototype=%1,name=%2) %3 tag loss child tag <name>")
-                                  .arg(node.getQualifiedName(), node.getNodeName(), ks.at(i).nodeName());
+                daWarning << QObject::tr("node(prototype=%1,name=%2) %3 tag is missing child tag <name>")
+                                 .arg(node.getQualifiedName(),
+                                      node.getNodeName(),
+                                      ks.at(i).nodeName());  // cn:节点(原型=%1,名称=%2)的%3标签缺少子标签<name>
                 continue;
             }
             // 输入key由Python描述符决定，不需要手动addInputKey
@@ -881,8 +884,10 @@ bool DAXmlHelper::PrivateData::loadNodeInPutOutputKey_v110(const DAPyNode& node,
             }
             QDomElement nameEle = outputEle.firstChildElement("name");
             if (nameEle.isNull()) {
-                qWarning() << QObject::tr("node(prototype=%1,name=%2) %3 tag loss child tag <name>")
-                                  .arg(node.getQualifiedName(), node.getNodeName(), ks.at(i).nodeName());
+                daWarning << QObject::tr("node(prototype=%1,name=%2) %3 tag is missing child tag <name>")
+                                 .arg(node.getQualifiedName(),
+                                      node.getNodeName(),
+                                      ks.at(i).nodeName());  // cn:节点(原型=%1,名称=%2)的%3标签缺少子标签<name>
                 continue;
             }
             // 输出key由Python描述符决定，不需要手动addOutputKey
@@ -987,7 +992,7 @@ QDomElement DAXmlHelper::PrivateData::makeNodeLinkElement(DAPyLinkGraphicsItem* 
     linkEle.appendChild(fromEle);
     linkEle.appendChild(toEle);
     if (!saveItem(link, doc, linkEle)) {
-        qWarning() << QObject::tr("linkitem save to xml return false");  // cn:链接线从xml加载信息返回了false
+        daWarning << QObject::tr("link item failed to save to xml");  // cn:链接线保存到xml失败
     }
     return linkEle;
 }
@@ -1012,13 +1017,14 @@ bool DAXmlHelper::PrivateData::loadNodeLinks(DAPyWorkFlowGraphicsScene* scene, c
         if (fromEle.isNull() || toEle.isNull()) {
             continue;
         }
-        QString fromId = fromEle.attribute("id");
+        QString fromId  = fromEle.attribute("id");
         QString fromKey = fromEle.attribute("name");
 
         // 通过id在场景中查找节点图形项
         DAPyNodeGraphicsItem* fromItem = scene->findNodeItemById(fromId);
         if (fromId.isEmpty() || nullptr == fromItem) {
-            qWarning() << QObject::tr("link info can not find node in scene,id = %1").arg(fromId);
+            daWarning << QObject::tr("link info: cannot find node in scene, id = %1")
+                             .arg(fromId);  // cn:连线信息：无法在场景中找到节点，id = %1
             continue;
         }
 
@@ -1026,27 +1032,27 @@ bool DAXmlHelper::PrivateData::loadNodeLinks(DAPyWorkFlowGraphicsScene* scene, c
         QString toKey                = toEle.attribute("name");
         DAPyNodeGraphicsItem* toItem = scene->findNodeItemById(toId);
         if (toId.isEmpty() || nullptr == toItem) {
-            qWarning() << QObject::tr("link info can not find node in scene,id = %1").arg(toId);
+            daWarning << QObject::tr("link info: cannot find node in scene, id = %1").arg(toId);  // cn:连线信息：无法在场景中找到节点，id = %1
             continue;
         }
 
         // 通过场景创建连接线
         DAPyLinkGraphicsItem* linkitem = scene->addPyNodeLink(fromItem, fromKey, toItem, toKey);
         if (nullptr == linkitem) {
-            qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1")  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
-                              .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
+            daWarning << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1")  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
+                             .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
             continue;
         }
         if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() <= 3) {
             // v1.3.0版本 - link元素直接包含链接信息
             if (!loadItem(linkitem, linkEle)) {
-                qWarning() << QObject::tr("linkitem load from xml return false");
+                daWarning << QObject::tr("link item failed to load from xml");  // cn:连线图元从xml加载失败
             }
         } else {
             // v1.4.0版本 - link元素包含item子元素
             QDomElement itemEle = findItemElement(linkEle);
             if (!loadItem(linkitem, itemEle)) {
-                qWarning() << QObject::tr("linkitem load from xml return false");
+                daWarning << QObject::tr("link item failed to load from xml");  // cn:连线图元从xml加载失败
             }
         }
         linkitem->updateBoundingRect();
@@ -1085,9 +1091,9 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(DAPyWorkFlowGraphicsSc
         if (idMap) {
             fromRealIdStr = idMap->value(fromOrigId, "");
             if (fromRealIdStr.isEmpty()) {
-                qWarning() << QObject::tr(
-                                  "During the pasting process, the mapping corresponding to ID(%1) cannot be found")
-                                  .arg(fromOrigId);
+                daWarning << QObject::tr(
+                                 "During the pasting process, the mapping corresponding to ID(%1) cannot be found")
+                                 .arg(fromOrigId);  // cn:粘贴过程中，找不到ID(%1)对应的映射
                 continue;
             }
         } else {
@@ -1095,7 +1101,8 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(DAPyWorkFlowGraphicsSc
         }
         DAPyNodeGraphicsItem* fromItem = scene->findNodeItemById(fromRealIdStr);
         if (nullptr == fromItem) {
-            qWarning() << QObject::tr("link info can not find node in scene,id = %1").arg(fromOrigId);
+            daWarning << QObject::tr("link info: cannot find node in scene, id = %1")
+                             .arg(fromOrigId);  // cn:连线信息：无法在场景中找到节点，id = %1
             continue;
         }
 
@@ -1105,9 +1112,9 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(DAPyWorkFlowGraphicsSc
         if (idMap) {
             toRealIdStr = idMap->value(toOrigId, "");
             if (toRealIdStr.isEmpty()) {
-                qWarning() << QObject::tr(
-                                  "During the pasting process, the mapping corresponding to ID(%1) cannot be found")
-                                  .arg(toOrigId);
+                daWarning << QObject::tr(
+                                 "During the pasting process, the mapping corresponding to ID(%1) cannot be found")
+                                 .arg(toOrigId);  // cn:粘贴过程中，找不到ID(%1)对应的映射
                 continue;
             }
         } else {
@@ -1115,27 +1122,28 @@ bool DAXmlHelper::PrivateData::loadNodeLinksClipBoardCopy(DAPyWorkFlowGraphicsSc
         }
         DAPyNodeGraphicsItem* toItem = scene->findNodeItemById(toRealIdStr);
         if (nullptr == toItem) {
-            qWarning() << QObject::tr("link info can not find node in scene,id = %1").arg(toOrigId);
+            daWarning << QObject::tr("link info: cannot find node in scene, id = %1")
+                             .arg(toOrigId);  // cn:连线信息：无法在场景中找到节点，id = %1
             continue;
         }
 
         // 通过场景创建连接线（带undo/redo）
         DAPyLinkGraphicsItem* linkitem = scene->addPyNodeLink_(fromItem, fromKey, toItem, toKey);
         if (nullptr == linkitem) {
-            qWarning() << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1")  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
-                              .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
+            daWarning << QObject::tr("Unable to link to node %3's link point %4 through link point %2 of node %1")  // cn:节点%1无法通过连接点%2链接到节点%3的连接点%4
+                             .arg(fromItem->getNodeName(), fromKey, toItem->getNodeName(), toKey);
             continue;
         }
         if (mLoadedVersion.majorVersion() == 1 && mLoadedVersion.minorVersion() <= 3) {
             // v1.3.0版本
             if (!loadItem(linkitem, linkEle)) {
-                qWarning() << QObject::tr("linkitem load from xml return false");
+                daWarning << QObject::tr("link item failed to load from xml");  // cn:连线图元从xml加载失败
             }
         } else {
             // v1.4.0版本
             QDomElement itemEle = findItemElement(linkEle);
             if (!loadItem(linkitem, itemEle)) {
-                qWarning() << QObject::tr("linkitem load from xml return false");
+                daWarning << QObject::tr("link item failed to load from xml");  // cn:连线图元从xml加载失败
             }
         }
         linkitem->updateBoundingRect();
@@ -1261,7 +1269,7 @@ QGraphicsItem* DAXmlHelper::PrivateData::loadItem(const QDomElement& itemElement
 bool DAXmlHelper::PrivateData::loadItem(QGraphicsItem* item, const QDomElement& itemElement)
 {
     if (!DAXmlHelper::loadElement(item, &itemElement, mLoadedVersion)) {
-        qWarning() << QObject::tr("Unable to load item information from <%1>").arg(itemElement.tagName());  // 无法通过<%1>加载元件信息
+        daWarning << QObject::tr("Unable to load item information from <%1>").arg(itemElement.tagName());  // cn:无法通过<%1>加载元件信息
         return false;
     }
     recordDealItem(item);
@@ -1521,7 +1529,7 @@ bool DAXmlHelper::loadElement(DAPyWorkFlowOperateWidget* wfo, const QDomElement*
         // 说明是较低版本，设置为v1.1
         setLoadedVersionNumber(QVersionNumber(1, 1, 0));
     }
-    qInfo() << QObject::tr("current workflow file version:").arg(getLoaderVersionNumber().toString());
+    daInfo << QObject::tr("current workflow file version:").arg(getLoaderVersionNumber().toString());  // cn:当前工作流文件版本:
     for (int i = 0; i < wfListNodes.size(); ++i) {
         QDomElement workflowEle = wfListNodes.at(i).toElement();
         if (workflowEle.tagName() != "workflow") {
@@ -1573,8 +1581,8 @@ bool DAXmlHelper::loadClipBoardElement(const QDomElement* clipBoardElement, DAPy
     QDomElement workflowEle = clipBoardElement->firstChildElement("workflow");
     //! 首先找到workflow节点
     if (workflowEle.isNull()) {
-        qWarning() << QObject::tr(
-            "An exception occurred during the process of parsing and pasting content,miss workflow tag");  // cn:解析粘贴内容过程出现异常,缺失workflow标签
+        daWarning << QObject::tr(
+            "An exception occurred during the process of parsing and pasting content, missing workflow tag");  // cn:解析粘贴内容过程出现异常,缺失workflow标签
         return false;
     }
     if (typestr == "copy") {
@@ -1615,8 +1623,8 @@ QGraphicsItem* DAXmlHelper::loadItemElement(const QDomElement* itemEle, const QV
     }
     std::unique_ptr< QGraphicsItem > item(DAGraphicsItemFactory::createItem(className));
     if (nullptr == item) {
-        qWarning() << QObject::tr("Cannot create item by class name:%1,maybe unregist to DAGraphicsItemFactory")
-                          .arg(className);  // 无法通过类名:%1创建元件,类名没有注册到DAGraphicsItemFactory
+        daWarning << QObject::tr("Cannot create item by class name:%1, maybe unregistered to DAGraphicsItemFactory")
+                         .arg(className);  // cn:无法通过类名:%1创建元件,类名没有注册到DAGraphicsItemFactory
         return nullptr;
     }
     if (!loadElement(item.get(), itemEle, v)) {
@@ -1800,7 +1808,7 @@ QDomElement DAXmlHelper::makeElement(DAChartOperateWidget* chartOpt,
     for (int i = 0; i < figCnt; ++i) {
         DAFigureWidget* fig = chartOpt->getFigure(i);
         if (!fig) {
-            qCritical() << QObject::tr("unknow except:get null figure widget at %1").arg(i);
+            daCritical << QObject::tr("unknown exception: get null figure widget at %1").arg(i);  // cn:未知异常：在第%1个位置获取到空的figure窗口
             continue;
         }
         QDomElement figEle = makeElement(fig, QStringLiteral("figure"), doc, itemsMgr);
@@ -2675,8 +2683,8 @@ qreal DAXmlHelper::attributeToDouble(const QDomElement& item, const QString& att
     bool isok = false;
     qreal r   = item.attribute(att).toDouble(&isok);
     if (!isok) {
-        qWarning() << QObject::tr("The attribute %1=%2 under the tag %3 cannot be converted to double ")
-                          .arg(att, item.attribute(att), item.tagName());
+        daWarning << QObject::tr("The attribute %1=%2 under the tag %3 cannot be converted to double")
+                         .arg(att, item.attribute(att), item.tagName());  // cn:标签%3下的属性%1=%2无法转换为double
     }
     return r;
 }

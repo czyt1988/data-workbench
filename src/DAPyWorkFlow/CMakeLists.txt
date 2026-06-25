@@ -51,6 +51,7 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAUtils
     ${DA_PROJECT_NAME}::DAGraphicsView
     ${DA_PROJECT_NAME}::DAPyBindQt
+    ${DA_PROJECT_NAME}::DAMessageHandler
 )
 if(MSVC)
     target_compile_options(${DA_LIB_NAME} PRIVATE /bigobj)

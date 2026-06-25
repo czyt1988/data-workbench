@@ -1,6 +1,7 @@
 ﻿#include "DADataManageTableView.h"
 #include <QHeaderView>
 #include <QDebug>
+#include "DALogCategory.h"
 #include <QDrag>
 #include <QDragEnterEvent>
 #include <QDragLeaveEvent>
@@ -85,8 +86,8 @@ DAData DADataManageTableView::getOneSelectData() const
     QVariant v = sels.last().data(DA_ROLE_DADATAMANAGERTABLEMODEL_DATA);
     if (!v.isValid()) {
         // 说明没有任何选中
-        qWarning() << tr("The item is selected in the data management table, "
-                         "but the corresponding data cannot be obtained");  // 在数据管理表中选中了条目，但无法获取对应数据
+        daWarning << tr("An item is selected in the data management table, "
+                        "but the corresponding data cannot be obtained");  // cn:在数据管理表中选中了条目，但无法获取对应数据
         return DAData();
     }
     DAData d = v.value< DA::DAData >();
@@ -158,7 +159,7 @@ void DADataManageTableView::dropEvent(QDropEvent* e)
 void DADataManageTableView::startDrag(Qt::DropActions supportedActions)
 {
     qDebug() << "startDrag:" << supportedActions;
-    DAData d                              = getOneSelectData();
+    DAData d                    = getOneSelectData();
     DAMimeDataForData* mimedata = new DAMimeDataForData();
     mimedata->appendDataframe(d);
     QDrag* drag = new QDrag(this);

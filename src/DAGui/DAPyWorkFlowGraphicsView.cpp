@@ -1,6 +1,7 @@
 #include "DAPyWorkFlowGraphicsView.h"
 #include <QDragEnterEvent>
 #include <QDebug>
+#include "DALogCategory.h"
 #include <QKeyEvent>
 #include <QMimeData>
 #include <QApplication>
@@ -253,17 +254,17 @@ QList< QGraphicsItem* > DAPyWorkFlowGraphicsView::paste()
     if (daxmlData.size() > 0) {
         //		qDebug() << "clipboard paste text/da-xml";
         if (!doc.setContent(daxmlData)) {
-            qInfo() << tr("Unrecognized mime formats:%1,paste failed").arg(mimeData->formats().join(","));  // cn:无法识别的mime类型:%1,粘贴失败
+            daInfo << tr("Unrecognized mime formats: %1, paste failed").arg(mimeData->formats().join(","));  // cn:无法识别的mime类型:%1,粘贴失败
             return res;
         }
         QDomElement rootEle = doc.firstChildElement(QStringLiteral("da-clip"));
         if (rootEle.isNull()) {
-            qInfo() << tr("Unsupported pasted content");  // cn:不支持的粘贴内容
+            daInfo << tr("Unsupported pasted content");  // cn:不支持的粘贴内容
             return res;
         }
         DAXmlHelper xml;
         if (!xml.loadClipBoardElement(&rootEle, sc)) {
-            qInfo() << tr("An exception occurred during the process of parsing and pasting content");  // cn:解析粘贴内容过程出现异常
+            daInfo << tr("An exception occurred while parsing and pasting content");  // cn:解析粘贴内容过程出现异常
             return res;
         }
         //!把原来选中的取消选中，把粘贴的选中

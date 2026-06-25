@@ -3,6 +3,7 @@
 #include <QHash>
 #include <QDebug>
 #include <QActionGroup>
+#include "DALogCategory.h"
 namespace DA
 {
 class DAActionsInterface::PrivateData
@@ -97,7 +98,8 @@ QAction* DAActionsInterface::createAction(const char* objname, const char* iconp
  * @param checked
  * @return
  */
-QAction* DAActionsInterface::createAction(const char* objname, const char* iconpath, bool checkable, bool checked, QActionGroup* actGroup)
+QAction*
+DAActionsInterface::createAction(const char* objname, const char* iconpath, bool checkable, bool checked, QActionGroup* actGroup)
 {
     QAction* act = createAction(objname, iconpath);
     act->setCheckable(checkable);
@@ -114,14 +116,15 @@ QAction* DAActionsInterface::createAction(const char* objname, const char* iconp
 void DAActionsInterface::recordAction(QAction* act)
 {
     if (nullptr == act) {
-        qWarning() << tr("DAAppActionsInterface::recordAction get null action");
+        daWarning << tr(
+            "DAActionsInterface::recordAction received a null action");  // cn:DAActionsInterface::recordAction 收到空 action
         return;
     }
 #ifdef QT_DEBUG
     if (d_ptr->mObjectToAction.contains(act->objectName())) {
-        qWarning() << tr("DAAppActionsInterface::recordAction(QAction objname=%1) receive same object name, and the "
-                         "previous record will be overwritten")
-                          .arg(act->objectName());
+        daWarning << tr("DAActionsInterface::recordAction(QAction objname=%1) received a duplicate object name, the "
+                        "previous record will be overwritten")
+                         .arg(act->objectName());  // cn:DAActionsInterface::recordAction(QAction objname=%1) 收到重复的对象名，之前的记录将被覆盖
     }
 #endif
     d_ptr->mObjectToAction[ act->objectName() ] = act;

@@ -50,6 +50,7 @@ damacro_import_pybind11(${DA_LIB_NAME})
 # DAPyBindQt
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAPyBindQt
+    ${DA_PROJECT_NAME}::DAMessageHandler
 )
 
 ########################################################

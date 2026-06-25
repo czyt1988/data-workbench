@@ -4,6 +4,7 @@
 #include "numpy/DAPyDType.h"
 #include <QDateTime>
 #include <iterator>
+#include "DALogCategory.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -259,9 +260,12 @@ bool DAPySeries::isString() const
     }
     std::string dtype_str = pybind11::str(dtype()).cast< std::string >();
     // 支持 object, str, string, string[pyarrow] 等类型
-    if (dtype_str == "object") return true;
-    if (dtype_str == "str") return true;
-    if (dtype_str.find("string") == 0) return true;
+    if (dtype_str == "object")
+        return true;
+    if (dtype_str == "str")
+        return true;
+    if (dtype_str.find("string") == 0)
+        return true;
     return false;
 }
 
@@ -370,7 +374,8 @@ void DAPySeries::checkObjectValid()
 {
     if (!isSeries(object())) {
         object() = pybind11::none();
-        qCritical() << QObject::tr("DAPySeries  get python object type is not pandas.Series");
+        daCritical << QObject::tr(
+            "DAPySeries: the Python object type is not pandas.Series");  // cn:DAPySeries：Python 对象类型不是 pandas.Series
     }
 }
 

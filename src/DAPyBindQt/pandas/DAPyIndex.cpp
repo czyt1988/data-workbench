@@ -1,6 +1,7 @@
 ﻿#include "DAPyIndex.h"
 #include "DAPyModulePandas.h"
 #include "DAPybind11QtCaster.hpp"
+#include "DALogCategory.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -201,6 +202,7 @@ void DAPyIndex::checkObjectValid()
 {
     if (!isIndexObj(object())) {
         object() = pybind11::none();
-        qCritical() << QObject::tr("DAPyIndex get python object type is not pandas.Index");
+        daCritical << QObject::tr(
+            "DAPyIndex: the Python object type is not pandas.Index");  // cn:DAPyIndex：Python 对象类型不是 pandas.Index
     }
 }

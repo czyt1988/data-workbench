@@ -79,6 +79,7 @@ endif()
 # -------------link DAWorkBench--------------------------
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
+    ${DA_PROJECT_NAME}::DAMessageHandler
 )
 
 if(DA_ENABLE_PYTHON)

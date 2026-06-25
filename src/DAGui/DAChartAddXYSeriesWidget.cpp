@@ -3,6 +3,7 @@
 #include "ui_DAChartAddXYSeriesWidget.h"
 #include "DADataManager.h"
 #include "Models/DADataManagerTreeModel.h"
+#include "DALogCategory.h"
 #include <QHeaderView>
 #if DA_ENABLE_PYTHON
 #include "Models/DAPySeriesTableModel.h"
@@ -278,9 +279,9 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
                 res[ i ].setY(vy[ i ]);
             }
         } catch (const std::exception& e) {
-            qCritical() << tr("Exception occurred during extracting from "
-                              "pandas.Series to double vector:%1")
-                               .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
+            daCritical << tr("Exception occurred during extracting from "
+                             "pandas.Series to double vector:%1")
+                              .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
             QMessageBox::warning(this,
                                  tr("Warning"),  // cn:警告
                                  tr("Exception occurred during extracting from "
@@ -311,9 +312,9 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
                 res[ i ].setY(yinc[ i ]);
             }
         } catch (const std::exception& e) {
-            qCritical() << tr("Exception occurred during extracting from "
-                              "pandas.Series to double vector:%1")
-                               .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
+            daCritical << tr("Exception occurred during extracting from "
+                             "pandas.Series to double vector:%1")
+                              .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
             QMessageBox::warning(this,
                                  tr("Warning"),  // cn:警告
                                  tr("Exception occurred during extracting from "
@@ -346,8 +347,8 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
                 res[ i ].setY(vy[ i ]);
             }
         } catch (const std::exception& e) {
-            qCritical() << tr("Exception occurred during extracting from pandas.Series to double vector:%1")
-                               .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
+            daCritical << tr("Exception occurred during extracting from pandas.Series to double vector:%1")
+                              .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
             return false;
         }
     }

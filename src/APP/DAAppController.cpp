@@ -75,6 +75,7 @@
 #endif
 //
 #include "SettingPages/DAAppConfig.h"
+#include "DALogCategory.h"
 
 #ifndef DAAPPRIBBONAREA_WINDOW_NAME
 #define DAAPPRIBBONAREA_WINDOW_NAME QCoreApplication::translate("DAAppController", "DA", nullptr)
@@ -548,10 +549,10 @@ void DAAppController::saveAs()
     DA_WAIT_CURSOR_SCOPED();
     DAAppProject* project = DA_APP_CORE.getAppProject();
     if (!project->save(projectPath)) {
-        qCritical() << tr("Project saved failed!,path is %1").arg(projectPath);  // 工程保存失败！路径位于:%1
+        daCritical << tr("Failed to save project! Path: %1").arg(projectPath);  // cn:工程保存失败！路径为:%1
         return;
     }
-    qInfo() << tr("Project saved successfully,path is %1").arg(projectPath);  // 工程保存成功，路径位于:%1
+    daInfo << tr("Project saved successfully, path: %1").arg(projectPath);  // cn:工程保存成功，路径为:%1
 }
 /**
  * @brief 获取当前dataframeOperateWidget,如果没有返回nullptr
@@ -570,7 +571,7 @@ DADataOperateOfDataFrameWidget* DAAppController::getCurrentDataFrameOperateWidge
         if (!(mDock->isDockingAreaFocused(DAAppDockingArea::DockingAreaDataOperate))) {
             // 窗口未选中就退出
             if (isShowMessage) {
-                qWarning() << tr("Please select the data operation window");  // cn:请选中数据操作窗口
+                daWarning << tr("Please select the data operation window");  // cn:请选中数据操作窗口
             }
             return nullptr;
         }
@@ -907,7 +908,7 @@ void DAAppController::onFocusedDockWidgetChanged(ads::CDockWidget* old, ads::CDo
 
 bool DAAppController::openCheck()
 {
-    DAAppProject* project = DA_APP_CORE.getAppProject();
+    DAAppProject* project        = DA_APP_CORE.getAppProject();
     const bool hasProjectContent = !project->isEmpty();
     if (project->isDirty()) {
         QMessageBox::StandardButton btn = QMessageBox::question(
@@ -915,8 +916,7 @@ bool DAAppController::openCheck()
             tr("Question"),  // 提示
             tr("The current project has unsaved changes. Do you want to save before opening another project?"),
             QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel,
-            QMessageBox::StandardButton::Yes
-        );
+            QMessageBox::StandardButton::Yes);
         switch (resolveAppOpenPreparation(hasProjectContent, true, toAppSavePromptChoice(btn))) {
         case DAAppOpenPreparation::SaveThenOpen:
             return save();
@@ -976,7 +976,7 @@ bool DAAppController::openProjectFile(const QString& projectFilePath)
 {
     DAAppProject* project = DA_APP_CORE.getAppProject();
     if (!project->load(projectFilePath)) {
-        qCritical() << tr("failed to load project file:%1").arg(projectFilePath);
+        daCritical << tr("failed to load project file: %1").arg(projectFilePath);  // cn:加载工程文件失败:%1
         return false;
     }
     // 加入最近打开的文件中
@@ -1018,7 +1018,7 @@ void DAAppController::onActionAppendProjectTriggered()
         return;
     }
     if (!project->appendWorkflowInProject(file.readAll(), true)) {
-        qCritical() << tr("failed to load project file:%1").arg(fileNames.first());
+        daCritical << tr("failed to load project file: %1").arg(fileNames.first());  // cn:加载工程文件失败:%1
         return;
     }
     updateWindowTitle();
@@ -1038,7 +1038,7 @@ void DAAppController::onProjectSaved(const QString& path)
             wf->setCurrentWorkflowName(project->getProjectBaseName());
         }
     }
-    qInfo() << tr("Project saved successfully,path is %1").arg(path);  // 工程保存成功，路径位于:%1
+    daInfo << tr("Project saved successfully, path: %1").arg(path);  // cn:工程保存成功，路径为:%1
 }
 
 /**
@@ -1055,7 +1055,7 @@ void DAAppController::onProjectLoaded(const QString& path)
             wf->setCurrentWorkflowName(project->getProjectBaseName());
         }
     }
-    qInfo() << tr("Project load successfully,path is %1").arg(path);  // 工程保存成功，路径位于:%1
+    daInfo << tr("Project loaded successfully, path: %1").arg(path);  // cn:工程加载成功，路径为:%1
 }
 
 /**
@@ -1214,9 +1214,9 @@ void DAAppController::onActionExportWorkflowScenePNGTriggered()
         auto image = s->toImage(dlg.getDPI());
         QString p  = dlg.getSelectSaveFilePath();
         if (image.save(p)) {
-            qInfo() << tr("The image was successfully saved in path %1").arg(p);  // cn:图片成功：%1
+            daInfo << tr("Image saved successfully to %1").arg(p);  // cn:图片保存成功：%1
         } else {
-            qCritical() << tr("Image save failed at path %1").arg(p);  // cn:图片保存失败：%1
+            daCritical << tr("Failed to save image to %1").arg(p);  // cn:图片保存失败：%1
         }
     }
 }
@@ -1255,7 +1255,7 @@ void DAAppController::onActionRunCurrentWorkflowTriggered()
     // 先检查是否有工程
     DAAppProject* p = DA_APP_CORE.getAppProject();
     if (nullptr == p) {
-        qCritical() << tr("get null project");  // cn:空工程，接口异常
+        daCritical << tr("received null project interface");  // cn:获取到空工程接口
         return;
     }
     QString bn = p->getProjectBaseName();
@@ -1562,7 +1562,7 @@ void DAAppController::onActionFigureNewXYAxisTriggered()
 {
     DAFigureWidget* fig = getCurrentFigure();
     if (!fig) {
-        qWarning() << tr("Before creating a new coordinate,you need to create a figure");  // cn:在创建一个坐标系之前，需要先创建一个绘图窗口
+        daWarning << tr("Before creating a new coordinate, you need to create a figure");  // cn:在创建一个坐标系之前，需要先创建一个绘图窗口
         return;
     }
     DAChartWidget* w = fig->createChart_(QRectF(0.1, 0.1, 0.4, 0.4));

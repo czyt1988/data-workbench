@@ -11,6 +11,7 @@
 #include <QObject>
 #include <QApplication>
 #include <QDebug>
+#include "DALogCategory.h"
 #include <QLocale>
 #include <QFileInfo>
 #include <QFile>
@@ -20,7 +21,7 @@
 #include "DAAppUtils.h"
 #include "DAConfigs.h"
 #include "DAAppCore.h"
-#include "DAMessageHandler.h"
+#include "DALogger.h"
 #include "DATranslatorManeger.h"
 #include "DADumpCapture.h"
 #include "DADir.h"
@@ -58,19 +59,18 @@ int main(int argc, char* argv[])
 #ifdef Q_OS_WIN
     // 设置控制台输出代码页为 UTF-8 (65001)
     if (!SetConsoleOutputCP(CP_UTF8)) {
-        qWarning() << "Failed to set console output codepage to UTF-8";
+        daWarning << "Failed to set console output codepage to UTF-8";
     }
 #endif
     // 进行dump捕获
     DA::DADumpCapture::initDump([]() -> QString { return appPreposeDump(); });
     // 注册旋转文件消息捕获
-    DA::daRegisterRotatingMessageHandler(DA::DADir::getLogFilePath());
-    // DA::daRegisterConsolMessageHandler();
+    DA::DALogger::instance().setupRotatingFile(DA::DADir::getLogFilePath());
     for (int i = 0; i < argc; ++i) {
-        qDebug() << "argv[" << i << "]" << argv[ i ];
+        daDebug << "argv[" << i << "]" << argv[ i ];
     }
     // 打印程序默认路径
-    qDebug() << DA::DADir();
+    daDebug << DA::DADir();
     // 初始化python环境,不启用python直接返回
     initializePythonInterpreter();
     // 高清屏的适配
@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
     }
     DA::DAAppCore& core = DA::DAAppCore::getInstance();
     if (!core.initialized()) {
-        qCritical() << QObject::tr("Kernel initialization failed");  // cn:内核初始化失败
+        daCritical << QObject::tr("Kernel initialization failed");  // cn:内核初始化失败
         if (splash) {
             delete splash;
         }
@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
     }
     DA::AppMainWindow w;
     QStringList positionalArgs = cmdParser.positionalArguments();
-    qDebug() << "positionalArgs:" << positionalArgs;
+    daDebug << "positionalArgs:" << positionalArgs;
     if (positionalArgs.size() == 1) {
         // 说明有可能是双击文件打开，这时候要看参数是否为一个工程文件
         QFileInfo openfi(positionalArgs[ 0 ]);
@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
         delete splash;
     }
     int r = app.exec();
-    DA::daUnregisterMessageHandler();
+    // DALogger 单例析构时自动注销 message handler 和 spdlog
     return r;
 }
 
@@ -237,10 +237,10 @@ void initializePythonInterpreter()
     QString pythonHomePath;
     QString pypath = DA::DAPyInterpreter::getPythonInterpreterPath();
     if (!pypath.isEmpty()) {
-        qInfo() << QObject::tr("Python interpreter path is %1").arg(pypath);
+        daInfo << QObject::tr("Python interpreter path is %1").arg(pypath);
         QFileInfo fi(pypath);
         pythonHomePath = fi.absolutePath();
-        qInfo() << QObject::tr("Python home path is %1").arg(pythonHomePath);
+        daInfo << QObject::tr("Python home path is %1").arg(pythonHomePath);
     }
     DA::DAPyInterpreter::initializePythonInterpreter(pythonHomePath);
 #endif

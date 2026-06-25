@@ -1,5 +1,6 @@
 ﻿#include "DAPyScriptsDataProcess.h"
 #include "DAPybind11QtCaster.hpp"
+#include "DALogCategory.h"
 namespace DA
 {
 
@@ -7,7 +8,7 @@ DAPyScriptsDataProcess::DAPyScriptsDataProcess(bool autoImport) : DAPyModule()
 {
     if (autoImport) {
         if (!import()) {
-            qCritical() << QObject::tr("can not import da_data_processing module");
+            daCritical << QObject::tr("cannot import da_data_processing module");  // cn:无法导入 da_data_processing 模块
         }
     }
 }
@@ -15,7 +16,8 @@ DAPyScriptsDataProcess::DAPyScriptsDataProcess(bool autoImport) : DAPyModule()
 DAPyScriptsDataProcess::DAPyScriptsDataProcess(const pybind11::object& obj) : DAPyModule(obj)
 {
     if (isModule()) {
-        qCritical() << QObject::tr("can not import DAWorkBench.data_processing");
+        daCritical << QObject::tr(
+            "cannot import DAWorkbench.data_processing");  // cn:无法导入 DAWorkbench.data_processing 模块
     }
 }
 

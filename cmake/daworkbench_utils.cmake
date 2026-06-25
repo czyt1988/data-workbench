@@ -298,3 +298,79 @@ macro(damacro_app_install)
     message(STATUS "${DA_APP_NAME} install dir is : ${CMAKE_INSTALL_PREFIX}")
 endmacro(damacro_app_install)
 
+
+# 为测试目标设置通用属性并部署 Windows 运行时依赖
+#
+# 解决 Windows 下测试 exe 找不到 DA / Qt / 第三方 DLL 的问题：
+# 1. 将测试 exe 输出到 ${CMAKE_BINARY_DIR}/bin（与 DA DLLs 同目录）
+# 2. 可选：通过 windeployqt 部署 Qt DLLs（同时扫描 DEPLOY_TARGETS 指定的 DA DLL，
+#    以捕获 exe → DA DLL → Qt DLL 的传递依赖，如 Qt6Xml / Qt6Core5Compat）
+# 3. 可选：复制指定的第三方 DLL 目标（通过 TARGET_FILE 生成器表达式自动选择 Debug/Release 版本）
+#
+# 用法:
+#   damacro_setup_test(TargetName
+#       DEPLOY_QT                                      # 部署 Qt DLLs
+#       DEPLOY_TARGETS DAWorkbench::DAMessageHandler   # 额外传给 windeployqt 扫描的 target
+#       COPY_DLL_TARGETS spdlog::spdlog                # 复制额外第三方 DLL
+#   )
+macro(damacro_setup_test _target_name)
+    set(options DEPLOY_QT)
+    set(oneValueArgs "")
+    set(multiValueArgs COPY_DLL_TARGETS DEPLOY_TARGETS)
+    cmake_parse_arguments(_arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    set_target_properties(${_target_name} PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+        # 输出到 build/bin，与 DA DLLs 同目录
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    )
+
+    if(WIN32)
+        # 部署 Qt DLLs
+        if(_arg_DEPLOY_QT)
+            get_target_property(_qmake_exe Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
+            get_filename_component(_qt_bin_dir "${_qmake_exe}" DIRECTORY)
+            find_program(WINDEPLOYQT_EXE windeployqt HINTS "${_qt_bin_dir}")
+            if(WINDEPLOYQT_EXE)
+                # windeployqt 只扫描传入文件的直接依赖，不会自动扫描同目录的 DLL
+                # 因此需要同时传入 exe 和 DA DLL，让 windeployqt 发现 DA DLL 的 Qt 传递依赖
+                # （如 DAUtilsd.dll → Qt6Xmld.dll / Qt6Core5Compatd.dll）
+                set(_deploy_files "$<TARGET_FILE:${_target_name}>")
+                foreach(_deploy_target ${_arg_DEPLOY_TARGETS})
+                    if(TARGET ${_deploy_target})
+                        list(APPEND _deploy_files "$<TARGET_FILE:${_deploy_target}>")
+                    endif()
+                endforeach()
+
+                add_custom_command(TARGET ${_target_name} POST_BUILD
+                    COMMAND "${WINDEPLOYQT_EXE}"
+                            $<IF:$<CONFIG:Debug>,--debug,--release>
+                            --no-translations
+                            --no-system-d3d-compiler
+                            --no-opengl-sw
+                            ${_deploy_files}
+                    COMMENT "Deploying Qt runtime DLLs for ${_target_name}"
+                )
+            else()
+                message(WARNING "windeployqt not found in ${_qt_bin_dir}, Qt DLLs will not be deployed for ${_target_name}")
+            endif()
+        endif()
+
+        # 复制第三方 DLLs（仅 SHARED_LIBRARY 类型的 imported target）
+        foreach(_dll_target ${_arg_COPY_DLL_TARGETS})
+            if(TARGET ${_dll_target})
+                get_target_property(_dll_type ${_dll_target} TYPE)
+                if(_dll_type STREQUAL "SHARED_LIBRARY")
+                    add_custom_command(TARGET ${_target_name} POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                                "$<TARGET_FILE:${_dll_target}>"
+                                "$<TARGET_FILE_DIR:${_target_name}>"
+                        COMMENT "Copying ${_dll_target} for ${_target_name}"
+                    )
+                endif()
+            endif()
+        endforeach()
+    endif()
+endmacro(damacro_setup_test)
+

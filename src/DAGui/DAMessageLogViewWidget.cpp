@@ -65,8 +65,8 @@ DAMessageLogViewWidget::DAMessageLogViewWidget(QWidget* parent)
     ui->tableView->setWordWrap(true);
     connect(ui->tableView, &QTableView::clicked, this, &DAMessageLogViewWidget::onTableViewItemClicked);
     setContextMenuPolicy(Qt::CustomContextMenu);
-    DAMessageQueueProxy* messageQueue = &(_model->messageQueueProxy());
-    connect(messageQueue, &DAMessageQueueProxy::messageQueueAppended, this, &DAMessageLogViewWidget::onMessageAppended);
+    DAMessageLogQueue* messageQueue = &DAMessageLogQueue::instance();
+    connect(messageQueue, &DAMessageLogQueue::messageQueueAppended, this, &DAMessageLogViewWidget::onMessageAppended);
 
     retranslateUi();
 }

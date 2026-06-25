@@ -17,6 +17,7 @@
 #include "DAPyNodeMetaData.h"
 #include "DAPyWorkFlow.h"
 #include "DAPyBindQt/DAPybind11QtCaster.hpp"
+#include "DALogCategory.h"
 namespace DA
 {
 
@@ -42,10 +43,10 @@ public:
     QHash< QString, DAPyNodeGraphicsItem* > mNodeIdToItemMap;
 
     // 多选拖拽状态
-    bool mMultiMoveActive { false };                                    ///< 是否正在进行多选拖拽
-    QList< QGraphicsItem* > mMultiMoveItems;                            ///< 多选拖拽涉及的图元
-    QList< QPointF > mMultiMoveStartPositions;                          ///< 各图元的起始位置
-    QPointF mMultiMoveLastScenePos;                                     ///< 上一帧鼠标场景坐标
+    bool mMultiMoveActive { false };            ///< 是否正在进行多选拖拽
+    QList< QGraphicsItem* > mMultiMoveItems;    ///< 多选拖拽涉及的图元
+    QList< QPointF > mMultiMoveStartPositions;  ///< 各图元的起始位置
+    QPointF mMultiMoveLastScenePos;             ///< 上一帧鼠标场景坐标
 
     /**
      * @brief 注册节点到所有映射表（正向+反向索引统一维护）
@@ -107,19 +108,20 @@ public:
     QString syncPyNodeRegister(DAPyNodeGraphicsItem* item)
     {
         if (!item) {
-            return {};
+            return { };
         }
         const DAPyNode& proxy = item->getProxy();
         if (proxy.isNone()) {
-            return {};
+            return { };
         }
         // 调用Manager注册到Python workflow
         QString nodeId;
         if (this->mManager && this->mManager->isWorkflowValid()) {
             nodeId = this->mManager->registerNode(proxy);
             if (nodeId.isEmpty()) {
-                qWarning() << tr("DAPyWorkFlowScene::syncPyNodeRegister: registerNode failed");
-                return {};
+                daWarning << tr(
+                    "DAPyWorkFlowScene::syncPyNodeRegister: registerNode failed");  // cn:同步Python节点注册失败：registerNode 返回空
+                return { };
             }
         } else {
             // 无Manager时，从proxy读取nodeId（加载场景时已注册）
@@ -178,7 +180,8 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkAdd(DAPyLinkGraphicsItem* lin
             if (conn) {
                 this->mLinkConnectionIdMap[ linkItem ] = conn.getConnectionId();
             } else {
-                qWarning() << tr("DAPyWorkFlowScene::addPyNodeLink: connectNode failed, no valid connectionId");
+                daWarning << tr(
+                    "DAPyWorkFlowScene::addPyNodeLink: connectNode failed, no valid connectionId");  // cn:添加节点连接线失败：connectNode 未返回有效连接 ID
             }
         }
     }
@@ -218,8 +221,8 @@ void DAPyWorkFlowScene::PrivateData::syncPyNodeLinkRemove(DAPyLinkGraphicsItem* 
         if (!connectionId.isEmpty()) {
             bool removed = this->mManager->disconnectNode(connectionId);
             if (!removed) {
-                qWarning(
-                ) << tr("DAPyWorkFlowScene::removePyNodeLink: disconnectNode failed for connectionId: %1").arg(connectionId);
+                daWarning << tr("DAPyWorkFlowScene::removePyNodeLink: disconnectNode failed for connectionId: %1")
+                                 .arg(connectionId);  // cn:移除节点连接线失败：断开连接 ID %1 失败
             }
         }
         this->mLinkConnectionIdMap.remove(linkItem);
@@ -292,13 +295,11 @@ void DAPyWorkFlowScene::setManager(DAPyWorkFlowManager* manager)
 {
     DA_D(d);
     if (d->mManager) {
-        disconnect(d->mManager, &DAPyWorkFlowManager::nodeExecuted,
-                   this, &DAPyWorkFlowScene::onNodeExecuted);
+        disconnect(d->mManager, &DAPyWorkFlowManager::nodeExecuted, this, &DAPyWorkFlowScene::onNodeExecuted);
     }
     d->mManager = manager;
     if (d->mManager) {
-        connect(d->mManager, &DAPyWorkFlowManager::nodeExecuted,
-                this, &DAPyWorkFlowScene::onNodeExecuted);
+        connect(d->mManager, &DAPyWorkFlowManager::nodeExecuted, this, &DAPyWorkFlowScene::onNodeExecuted);
     }
 }
 
@@ -366,25 +367,29 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::createPyNode(const DAPyNodeMetaData& me
 {
     DA_D(d);
     if (!d->mManager || !d->mManager->isWorkflowValid()) {
-        qWarning() << tr("DAPyWorkFlowScene::createPyNode: Manager or workflow is not set");
+        daWarning << tr(
+            "DAPyWorkFlowScene::createPyNode: Manager or workflow is not set");  // cn:创建 Python 节点失败：管理器或工作流未设置
         return nullptr;
     }
 
     if (!metaData.isValid()) {
-        qWarning() << tr("DAPyWorkFlowScene::createPyNode: invalid metadata (qualified_name: %1)").arg(metaData.qualifiedName);
+        daWarning << tr("DAPyWorkFlowScene::createPyNode: invalid metadata (qualified_name: %1)")
+                         .arg(metaData.qualifiedName);  // cn:创建 Python 节点失败：元数据无效（qualified_name: %1）
         return nullptr;
     }
     // 通过Manager创建DAPyNode
     DAPyNode proxy = d->mManager->createNodeProxy(metaData);
     if (proxy.isNone()) {
         // 节点创建失败
-        qWarning() << tr("DAPyWorkFlowScene::createPyNode: factory failed to create proxy for %1").arg(metaData.qualifiedName);
+        daWarning << tr("DAPyWorkFlowScene::createPyNode: factory failed to create proxy for %1")
+                         .arg(metaData.qualifiedName);  // cn:创建 Python 节点失败：工厂无法为 %1 创建代理
         return nullptr;
     }
     // 在Python侧注册节点到DAWorkflow
     QString nodeId = d->mManager->registerNode(proxy);
     if (nodeId.isEmpty()) {
-        qWarning() << tr("DAPyWorkFlowScene::createPyNode: addNode failed for %1").arg(metaData.qualifiedName);
+        daWarning << tr("DAPyWorkFlowScene::createPyNode: addNode failed for %1")
+                         .arg(metaData.qualifiedName);  // cn:创建 Python 节点失败：注册节点 %1 失败
         return nullptr;
     }
 
@@ -621,9 +626,10 @@ QList< DAPyNodeGraphicsItem* > DAPyWorkFlowScene::getSelectedPyNodeItems() const
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 返回的link未添加到场景，需要调用方自行添加
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(
-    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
-)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(DAPyNodeGraphicsItem* fromItem,
+                                                       const QString& fromOutput,
+                                                       DAPyNodeGraphicsItem* toItem,
+                                                       const QString& toInput)
 {
     if (!fromItem || !toItem) {
         return nullptr;
@@ -681,9 +687,10 @@ void DAPyWorkFlowScene::addPyNodeLink(DAPyLinkGraphicsItem* linkItem)
  * @return 创建的DAPyLinkGraphicsItem指针，创建失败返回nullptr
  * @note 函数名后缀"_"表示支持undo/redo操作
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(
-    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
-)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink_(DAPyNodeGraphicsItem* fromItem,
+                                                        const QString& fromOutput,
+                                                        DAPyNodeGraphicsItem* toItem,
+                                                        const QString& toInput)
 {
     if (!fromItem || !toItem) {
         return nullptr;
@@ -874,7 +881,7 @@ QList< DAPyLinkGraphicsItem* > DAPyWorkFlowScene::getNodeOutputLinkItems(DAPyNod
 QList< DAPyNodeGraphicsItem* > DAPyWorkFlowScene::getOutputLinkChain(DAPyNodeGraphicsItem* startNode) const
 {
     if (!startNode) {
-        return {};
+        return { };
     }
     QSet< DAPyNodeGraphicsItem* > visited;
     QQueue< DAPyNodeGraphicsItem* > queue;
@@ -907,7 +914,7 @@ QList< DAPyNodeGraphicsItem* > DAPyWorkFlowScene::getOutputLinkChain(DAPyNodeGra
 QList< DAPyNodeGraphicsItem* > DAPyWorkFlowScene::getInputLinkChain(DAPyNodeGraphicsItem* startNode) const
 {
     if (!startNode) {
-        return {};
+        return { };
     }
     QSet< DAPyNodeGraphicsItem* > visited;
     QQueue< DAPyNodeGraphicsItem* > queue;
@@ -1140,9 +1147,10 @@ DAPyNodeGraphicsItem* DAPyWorkFlowScene::wrapPyNode(const DAPyNode& proxy, const
  * @param[in] toInput 目标节点输入端口名称
  * @return 创建的连线图形项指针，参数无效时返回nullptr
  */
-DAPyLinkGraphicsItem* DAPyWorkFlowScene::wrapPyNodeLink(
-    DAPyNodeGraphicsItem* fromItem, const QString& fromOutput, DAPyNodeGraphicsItem* toItem, const QString& toInput
-)
+DAPyLinkGraphicsItem* DAPyWorkFlowScene::wrapPyNodeLink(DAPyNodeGraphicsItem* fromItem,
+                                                        const QString& fromOutput,
+                                                        DAPyNodeGraphicsItem* toItem,
+                                                        const QString& toInput)
 {
     if (!fromItem || !toItem) {
         return nullptr;
@@ -1283,7 +1291,7 @@ bool DAPyWorkFlowScene::saveToXml(QDomDocument* doc, QDomElement* parentElement,
     DAPyWorkFlowSceneSerializer serializer;
     // 先保存到临时doc
     if (!serializer.saveSceneToXml(this, doc, ver)) {
-        qWarning() << tr("DAPyWorkFlowScene::saveToXml 失败: %1").arg(serializer.getLastErrorString());
+        daWarning << tr("DAPyWorkFlowScene::saveToXml 失败: %1").arg(serializer.getLastErrorString());  // cn:保存场景到 XML 失败：%1
         return false;
     }
     // 将serializer创建的文档内容合并到parentElement
@@ -1319,11 +1327,11 @@ bool DAPyWorkFlowScene::loadFromXml(const QDomElement* parentElement, const QVer
         }
     }
     if (sceneEle.isNull()) {
-        qWarning() << tr("DAPyWorkFlowScene::loadFromXml: 未找到DAPyWorkFlowScene元素");
+        daWarning << tr("DAPyWorkFlowScene::loadFromXml: 未找到DAPyWorkFlowScene元素");  // cn:从 XML 加载场景失败：未找到 DAPyWorkFlowScene 元素
         return false;
     }
     if (!serializer.loadSceneFromXml(&sceneEle, this, ver)) {
-        qWarning() << tr("DAPyWorkFlowScene::loadFromXml 失败: %1").arg(serializer.getLastErrorString());
+        daWarning << tr("DAPyWorkFlowScene::loadFromXml 失败: %1").arg(serializer.getLastErrorString());  // cn:从 XML 加载场景失败：%1
         return false;
     }
     // 加载后重建节点到连接线的映射表
@@ -1344,7 +1352,7 @@ bool DAPyWorkFlowScene::saveToFile(const QString& filePath, const QVersionNumber
 {
     DAPyWorkFlowSceneSerializer serializer;
     if (!serializer.saveSceneToFile(this, filePath, ver)) {
-        qWarning() << tr("DAPyWorkFlowScene::saveToFile 失败: %1").arg(serializer.getLastErrorString());
+        daWarning << tr("DAPyWorkFlowScene::saveToFile 失败: %1").arg(serializer.getLastErrorString());  // cn:保存场景到文件失败：%1
         return false;
     }
     return true;
@@ -1365,7 +1373,7 @@ bool DAPyWorkFlowScene::loadFromFile(const QString& filePath, const QVersionNumb
 {
     DAPyWorkFlowSceneSerializer serializer;
     if (!serializer.loadSceneFromFile(filePath, this, ver)) {
-        qWarning() << tr("DAPyWorkFlowScene::loadFromFile 失败: %1").arg(serializer.getLastErrorString());
+        daWarning << tr("DAPyWorkFlowScene::loadFromFile 失败: %1").arg(serializer.getLastErrorString());  // cn:从文件加载场景失败：%1
         return false;
     }
     return true;
@@ -1580,8 +1588,8 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
     if (mouseEvent->button() == Qt::LeftButton && !isStartLink() && !isReadOnly()) {
         QList< QGraphicsItem* > movableItems = getSelectedMovableItems();
         if (movableItems.size() > 1) {
-            d->mMultiMoveActive         = true;
-            d->mMultiMoveItems          = movableItems;
+            d->mMultiMoveActive = true;
+            d->mMultiMoveItems  = movableItems;
             d->mMultiMoveStartPositions.clear();
             for (QGraphicsItem* item : std::as_const(movableItems)) {
                 d->mMultiMoveStartPositions.append(item->pos());
@@ -1642,10 +1650,8 @@ void DAPyWorkFlowScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 
         if (hasMovement && !d->mMultiMoveItems.isEmpty()) {
             // 创建多选移动命令（skipfirst=true，因为图元已经移动到结束位置）
-            auto cmd = commandsFactory()->createItemsMoved(d->mMultiMoveItems,
-                                                           d->mMultiMoveStartPositions,
-                                                           endPositions,
-                                                           true);
+            auto cmd =
+                commandsFactory()->createItemsMoved(d->mMultiMoveItems, d->mMultiMoveStartPositions, endPositions, true);
             if (cmd) {
                 // 提取信号数据（push后cmd可能被mergeWith合并导致悬空）
                 QList< QGraphicsItem* > moveItems = cmd->getItems();
@@ -1674,12 +1680,10 @@ void DAPyWorkFlowScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
  * @param linkItems 分离出的连接线item列表
  * @param normalItems 分离出的普通item列表
  */
-void DAPyWorkFlowScene::classifyItems(
-    const QList< QGraphicsItem* >& sourceItems,
-    QList< DAPyNodeGraphicsItem* >& nodeItems,
-    QList< DAPyLinkGraphicsItem* >& linkItems,
-    QList< QGraphicsItem* >& normalItems
-)
+void DAPyWorkFlowScene::classifyItems(const QList< QGraphicsItem* >& sourceItems,
+                                      QList< DAPyNodeGraphicsItem* >& nodeItems,
+                                      QList< DAPyLinkGraphicsItem* >& linkItems,
+                                      QList< QGraphicsItem* >& normalItems)
 {
     if (sourceItems.isEmpty()) {
         return;

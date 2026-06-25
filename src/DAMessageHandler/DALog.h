@@ -1,7 +1,7 @@
 #ifndef DALOG_H
 #define DALOG_H
-#include <QDebug>
 #include "DAMessageHandlerGlobal.h"
-#include "DAMessageHandler.h"
-#include "DAMessageQueueProxy.h"
+#include "DALogger.h"
+#include "DAMessageLogQueue.h"
+#include "DAMessageLogItem.h"
 #endif  // DALOG_H

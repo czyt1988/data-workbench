@@ -51,6 +51,7 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
 )
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
+    ${DA_PROJECT_NAME}::DAMessageHandler
 )
 # -------------link 3rdparty qwt--------------------------
 damacro_import_qwt(${DA_LIB_NAME})

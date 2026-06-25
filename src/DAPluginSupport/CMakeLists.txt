@@ -42,6 +42,9 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAInterface
     ${DA_PROJECT_NAME}::DAPyWorkFlow
 )
+target_link_libraries(${DA_LIB_NAME} PRIVATE
+    ${DA_PROJECT_NAME}::DAMessageHandler
+)
 
 # -------------link QtAdvancedDockingSystem--------------------------
 damacro_import_QtAdvancedDocking(${DA_LIB_NAME})

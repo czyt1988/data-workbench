@@ -2,6 +2,7 @@
 #include "DAPybind11QtCaster.hpp"
 #include <QDebug>
 #include <QObject>
+#include "DALogCategory.h"
 namespace DA
 {
 class DAPyModulePandas::PrivateData
@@ -160,7 +161,8 @@ DAPyDataFrame DAPyModulePandas::read_csv(const QString& path, const QVariantHash
             } catch (const std::exception& e) {
                 // 不行就用ansi编码打开
                 Q_UNUSED(e);
-                qWarning() << QObject::tr("use utf-8 open file %1 error,try to use ansi encoding").arg(path);
+                daWarning << QObject::tr("failed to open file %1 with UTF-8, trying ANSI encoding")
+                                 .arg(path);  // cn:使用 UTF-8 打开文件 %1 失败，尝试使用 ANSI 编码
                 QVariantHash t    = args;
                 t[ "encoding" ]   = QString("ANSI");
                 pybind11::dict a1 = pybind11::cast(t);

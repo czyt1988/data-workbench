@@ -11,6 +11,8 @@
 #include "DACommandInterface.h"
 #include "DAAppProject.h"
 #include "DAAppCommand.h"
+#include "DALogCategory.h"
+
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -36,7 +38,7 @@ bool DAAppCore::initialized()
 {
     // 初始化数据
     mDataManager = new DAAppDataManager(this, this);
-    qDebug() << "core have been initialized App Data Manager";
+    daDebug << "core have been initialized App Data Manager";
     mProject = new DAAppProject(this, this);
     mProject->setDataManagerInterface(mDataManager);
     return true;
@@ -65,12 +67,10 @@ void DAAppCore::createUi(SARibbonMainWindow* mainwindow)
     }
 }
 
-
 DADataManagerInterface* DAAppCore::getDataManagerInterface() const
 {
     return mDataManager;
 }
-
 
 /**
  * @brief 获取DAAppUI，省去qobject_cast

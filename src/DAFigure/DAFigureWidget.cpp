@@ -38,6 +38,7 @@
 #include "DAChartItemCreatInteractor.h"
 #include "DAChartArrowEditor.h"
 #include "DADataProbeMarker.h"
+#include "DALogCategory.h"
 // qwt
 #include "qwt_figure.h"
 #include "qwt_figure_layout.h"
@@ -125,9 +126,9 @@ public:
                 if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(plot)) {
                     fig->addItem_(chart, item, true);
                 } else {
-                    qCritical() << QObject::tr(
+                    daCritical << QObject::tr(
                         "Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
-                        "type was added to the figure");
+                        "type was added to the figure");  // cn:意外的绘图操作：不属于 DAChartWidget 类型的图表被添加到了 figure 中
                     item->detach();
                     delete item;
                 }
@@ -841,7 +842,7 @@ void DAFigureWidget::beginChartEditor(ChartEditorType type)
         d->beginHorizontalProbeEditor();
         break;
     default:
-        qWarning() << tr("Unsupported chart editor type: %1").arg(type);
+        daWarning << tr("Unsupported chart editor type: %1").arg(type);  // cn:不支持的图表编辑器类型：%1
         break;
     }
 }

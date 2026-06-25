@@ -1,4 +1,5 @@
 #include "DADataTableView.h"
+#include "DALogCategory.h"
 namespace DA
 {
 DADataTableView::DADataTableView(QWidget* parent) : DACacheWindowTableView(parent)
@@ -18,7 +19,7 @@ void DADataTableView::setData(const DAData& d)
 {
     DADataTableModel* m = getDataModel();
     if (!m) {
-        qWarning() << tr("DADataTableView must set model first");  // cn:你需要先设置模型
+        daWarning << tr("DADataTableView requires a model to be set first");  // cn:你需要先设置模型
         return;
     }
     m->setData(d);

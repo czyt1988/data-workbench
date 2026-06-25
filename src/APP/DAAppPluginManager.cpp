@@ -3,6 +3,7 @@
 #include "DAAbstractPlugin.h"
 #include "DAPluginManager.h"
 #include "DAPyNodeFactory.h"
+#include "DALogCategory.h"
 #include <QApplication>
 #include <QDir>
 #include <QFileInfo>
@@ -219,7 +220,7 @@ static QStringList scanPyPluginsDir(const QString& pyPluginsDir)
 void DAAppPluginManager::initPyNodeFactory()
 {
     if (!DAPyInterpreter::isPythonInitialized()) {
-        qWarning() << tr("Python interpreter not initialized, skip Python node discovery");
+        daWarning << tr("Python interpreter not initialized, skip Python node discovery");  // cn:Python解释器未初始化，跳过Python节点发现
         return;
     }
     try {
@@ -235,7 +236,7 @@ void DAAppPluginManager::initPyNodeFactory()
         // 创建Python节点工厂，传入扫描路径并启用entry_points模式
         mPyNodeFactory = std::make_shared< DAPyNodeFactory >();
         if (!mPyNodeFactory->discoverNodes(scanPaths, true)) {
-            qWarning() << tr("Python node discovery failed");
+            daWarning << tr("Python node discovery failed");  // cn:Python节点发现失败
             mPyNodeFactory.reset();
             return;
         }
@@ -243,7 +244,7 @@ void DAAppPluginManager::initPyNodeFactory()
         mNodeMetaDatas += mPyNodeFactory->getNodeMetadataList();
         qDebug() << tr("Python node factory initialized, discovered %1 nodes").arg(mPyNodeFactory->getNodeMetadataList().size());
     } catch (const std::exception& e) {
-        qCritical() << tr("Python node factory initialization failed: %1").arg(e.what());
+        daCritical << tr("Python node factory initialization failed: %1").arg(e.what());  // cn:Python节点工厂初始化失败:%1
         mPyNodeFactory.reset();
     }
 }

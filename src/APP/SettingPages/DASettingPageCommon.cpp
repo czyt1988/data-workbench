@@ -5,6 +5,7 @@
 #include "AppMainWindow.h"
 #include "SARibbonBar.h"
 #include "DAAppConfig.h"
+#include "DALogCategory.h"
 namespace DA
 {
 
@@ -82,8 +83,8 @@ bool DASettingPageCommon::setAppConfig(DAAppConfig* p)
     mAppConfig       = p;
     DAAppConfig& cfg = *p;
     // ribbon style
-    SARibbonBar::RibbonStyles ribbonStyle = static_cast< SARibbonBar::RibbonStyles >(
-        cfg[ DA_CONFIG_KEY_RIBBON_STYLE ].toInt());
+    SARibbonBar::RibbonStyles ribbonStyle =
+        static_cast< SARibbonBar::RibbonStyles >(cfg[ DA_CONFIG_KEY_RIBBON_STYLE ].toInt());
     mOldRibbonStyle = ribbonStyle;
     switch (ribbonStyle) {
     case SARibbonBar::RibbonStyleCompactThreeRow:
@@ -160,18 +161,18 @@ void DASettingPageCommon::onCheckBoxSaveUIStateStateChanged(int state)
  */
 void DASettingPageCommon::onToolButtonClearSaveStateClicked()
 {
-    auto btn = QMessageBox::
-        question(this,
-                 tr("question"),
-                 tr("This operation will delete the file that records the window state information. After "
-                    "deleting the file, if the window state information recording is not enabled, the "
-                    "window will open in the default layout"));
+    auto btn =
+        QMessageBox::question(this,
+                              tr("question"),
+                              tr("This operation will delete the file that records the window state information. After "
+                                 "deleting the file, if the window state information recording is not enabled, the "
+                                 "window will open in the default layout"));
     // cn:此操作将删除记录窗口位置信息的文件，删除文件后，如果不开启窗口位置信息记录，窗口将以默认布局打开
     if (btn != QMessageBox::Yes) {
         return;
     }
     if (AppMainWindow::removeStateSettingFile()) {
-        qInfo() << tr("sucess remove window state record file");  // cn:删除窗口状态记录文件
+        daInfo << tr("successfully removed window state record file");  // cn:成功删除窗口状态记录文件
     }
 }
 

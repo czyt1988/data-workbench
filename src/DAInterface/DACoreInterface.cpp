@@ -3,6 +3,7 @@
 #include <QPointer>
 #include <QApplication>
 #include "DAProjectInterface.h"
+#include "DALogCategory.h"
 #if DA_ENABLE_PYTHON
 #include <memory>
 // DA Python
@@ -30,7 +31,6 @@ public:
     std::unique_ptr< DAPythonSignalHandler > pythonHandler;
 #endif
 };
-
 
 DACoreInterface::PrivateData::PrivateData(DACoreInterface* p) : q_ptr(p)
 {
@@ -65,14 +65,14 @@ bool DACoreInterface::initializePythonScripts()
 {
     DA_D(d);
     if (!DAPyInterpreter::isPythonInitialized()) {
-        qCritical() << tr("Python interpreter is not initialized");  // cn:python解释器未初始化
+        daCritical << tr("Python interpreter is not initialized");  // cn:Python 解释器未初始化
         return false;
     }
     d->interpreter = DAPyInterpreter::interpreter;
     try {
         // 把脚本路径加载到系统路径下，这样才能引入库
         QString scriptPath = getPythonScriptsPath();
-        qInfo() << tr("Python scripts path is %1").arg(scriptPath);
+        daInfo << tr("Python scripts path is %1").arg(scriptPath);  // cn:Python 脚本路径为 %1
         DAPyInterpreter::appendSysPath(scriptPath);
 
         // python环境初始化完成，初始化da脚本
@@ -80,13 +80,13 @@ bool DACoreInterface::initializePythonScripts()
 
         // DA::DAPyScripts::appendSysPath必须在getInstance前执行
         if (!(DAPyScripts::isInitScripts())) {
-            qCritical() << tr("Scripts initialize error");
+            daCritical << tr("Failed to initialize scripts");  // cn:脚本初始化失败
             return false;
         }
         // 初始化python信号投递器
         d->pythonHandler = std::make_unique< DAPythonSignalHandler >();
     } catch (const std::exception& e) {
-        qCritical() << tr("Initialize python environment error:%1").arg(e.what());
+        daCritical << tr("Failed to initialize Python environment: %1").arg(e.what());  // cn:初始化 Python 环境失败：%1
         return false;
     }
     return true;
@@ -115,7 +115,6 @@ bool DACoreInterface::isPythonInterpreterInitialized()
 }
 
 #endif  // end DA_ENABLE_PYTHON
-
 
 bool DACoreInterface::isProjectDirty() const
 {
