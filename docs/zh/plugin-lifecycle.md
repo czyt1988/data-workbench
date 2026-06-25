@@ -91,7 +91,7 @@ void DAPluginManager::loadPlugins(const QString& pluginPath)
 ```cpp
 QPluginLoader loader(pluginPath);
 if (!loader.load()) {
-    DA_LOG_ERROR("Failed to load plugin: {}", loader.errorString());
+    daCritical << "Failed to load plugin:" << loader.errorString();
     return;
 }
 ```
@@ -103,7 +103,7 @@ QObject* pluginObj = loader.instance();
 DAAbstractPlugin* plugin = qobject_cast<DAAbstractPlugin*>(pluginObj);
 
 if (!plugin) {
-    DA_LOG_ERROR("Plugin does not implement DAAbstractPlugin interface");
+    daCritical << "Plugin does not implement DAAbstractPlugin interface";
     loader.unload();
     return;
 }
@@ -156,7 +156,7 @@ bool MyPlugin::initialize()
 
 ```cpp
 if (!plugin->initialize()) {
-    DA_LOG_WARNING("Plugin {} initialization failed", plugin->pluginName());
+    daWarning << "Plugin" << plugin->pluginName() << "initialization failed";
     emit pluginInitializeFailed(plugin, "Initialize returned false");
     loader.unload();  // 卸载动态库
 }
@@ -377,7 +377,7 @@ public:
     {
         // 检查是否有其他节点依赖此节点
         if (hasDependentNodes(node)) {
-            DA_LOG_WARNING("Node has dependents, removal may break workflow");
+            daWarning << "Node has dependents, removal may break workflow";
         }
     }
 };
@@ -436,15 +436,15 @@ bool MyWorker::exec()
     // 1. 验证输入
     QVariant input = getInputData("input_data");
     if (!input.isValid()) {
-        DA_LOG_ERROR("No input data provided");
+        daCritical << "No input data provided";
         return false;
     }
-    
+
     // 2. 执行处理
     try {
         processData(input);
     } catch (const std::exception& e) {
-        DA_LOG_ERROR("Processing error: {}", e.what());
+        daCritical << "Processing error:" << e.what();
         return false;
     }
     
@@ -507,16 +507,16 @@ bool MyWorker::exec()
 ```cpp
 bool MyWorker::exec()
 {
-    DA_LOG_INFO("Starting node {} execution", getID());
-    
+    daInfo << "Starting node" << getID() << "execution";
+
     if (errorCondition) {
-        DA_LOG_ERROR("Node {} error: {}", getID(), errorMessage);
+        daCritical << "Node" << getID() << "error:" << errorMessage;
         setStatus(StatusError);
         emit execFailed(this, errorMessage);
         return false;
     }
-    
-    DA_LOG_DEBUG("Node {} completed successfully", getID());
+
+    daDebug << "Node" << getID() << "completed successfully";
     return true;
 }
 ```
@@ -545,3 +545,5 @@ void MyPlugin::aboutToUnload()
 - [:material-database: 数据持久化](./plugin-persistence.md) - 详细数据存储方案
 - [:material-puzzle: 功能扩展](./plugin-extension.md) - 界面和功能扩展
 - [:material-book: 最佳实践](./best-practices.md) - 更多开发建议
+
+> 详见 [日志系统文档](./dev-guide/logging.md)。

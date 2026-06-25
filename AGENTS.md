@@ -185,12 +185,13 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | UI 状态持久化 | `src/APP/AppMainWindow` | saveUIState/restoreUIState |
 | 翻译/国际化 | `src/i18n/`, `src/APP/App_zh_CN.ts` | DATranslatorManeger |
 | 崩溃转储 | `src/APP/DADumpCapture.h` | Windows dump 文件生成 |
+| 日志系统 | `src/DAMessageHandler/` | DALogger + daInfo/daWarning/daCritical 便捷宏，详见 `docs/zh/dev-guide/logging.md` |
 | PIMPL 宏定义 | `src/DAGlobals.h` | DA_DECLARE_PRIVATE, DA_D, DA_DC 等 |
 | Qt5/Qt6 兼容宏 | `src/DAGlobals.h` | Qt5Qt6Compat_* 系列宏 |
 | 通用 Widgets | `src/DACommonWidgets/` | 按钮、列表、树等基础组件 |
 | 枚举/字符串转换 | `src/DAShared/DAEnumStringUtils.hpp` | 通用枚举↔字符串映射宏，详见`docs/zh/dev-guide/da-enum-string-utils.md` |
 | 插件开发参考 | `plugins/DataAnalysis/` | 最完整的插件示例 |
-| Python 工作流节点开发 | `plugins/DASystemNodes/AGENTS.md` | @NodeDef 节点开发规范、__init__/paint() 等核心陷阱 |
+| Python 工作流节点开发 | `plugins/DASystemNodes/AGENTS.md` | @NodeDef 节点开发规范、**init**/paint() 等核心陷阱 |
 | 插件模板 | `plugins/plugin-template/` | 新插件脚手架 |
 | 文档源码 | `docs/zh/` | Doxygen Wiki 中文 |
 
@@ -202,6 +203,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 |------|------|
 | [workflow.md](docs/zh/dev-guide/workflow.md) | 工作流系统核心概念和架构 |
 | [workflow-lifecycle.md](docs/zh/dev-guide/workflow-lifecycle.md) | 工作流节点生命周期管理 |
+| [logging.md](docs/zh/dev-guide/logging.md) | 日志系统架构、DALogger/DALogCategory 使用指南、daInfo/daWarning/daCritical 便捷宏 |
 | [plugin-project-create.md](docs/zh/dev-guide/plugin-project-create.md) | 创建插件项目完整指南 |
 | [plugin-architecture.md](docs/zh/dev-guide/plugin-architecture.md) | 插件架构设计详解 |
 | [plugin-module.md](docs/zh/dev-guide/plugin-module.md) | DAPluginSupport 模块说明 |

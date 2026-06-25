@@ -341,23 +341,23 @@ Q_SIGNALS:
 
 ## 日志 API
 
-### 日志函数
+### 日志宏
 
-DAWorkBench 使用 spdlog 提供高性能日志系统，支持多级别日志输出。
-
-下面的代码展示了可用的日志宏：
+DAWorkBench 使用基于 spdlog 的日志系统，通过便捷宏输出日志。业务日志（`da.*` category）会自动进入 UI 日志窗口。
 
 ```cpp
-// 日志级别 - 从低到高的日志输出宏
-DA_LOG_TRACE("trace message {}", arg);    // 跟踪级别 - 最详细的调试信息
-DA_LOG_DEBUG("debug message {}", arg);    // 调试级别 - 开发调试信息
-DA_LOG_INFO("info message {}", arg);      // 信息级别 - 正常运行信息
-DA_LOG_WARNING("warning message {}", arg); // 警告级别 - 需要注意的问题
-DA_LOG_ERROR("error message {}", arg);    // 错误级别 - 错误但可恢复
-DA_LOG_CRITICAL("critical message {}", arg); // 严重级别 - 致命错误
+#include "DALogCategory.h"
+
+// 日志宏 - 从低到高
+daDebug    << "debug message" << arg;     // 调试级别 - 写文件，不进 UI 窗口
+daInfo     << "info message" << arg;      // 信息级别 - 正常运行信息，进 UI 窗口
+daWarning  << "warning message" << arg;   // 警告级别 - 需要注意的问题，进 UI 窗口
+daCritical << "critical message" << arg;  // 严重级别 - 致命错误，进 UI 窗口
 ```
 
-日志系统支持格式化输出，使用 `{}` 作为占位符，与 spdlog 格式一致。建议在节点执行的关键位置添加日志，便于问题排查。
+日志宏支持 `<<` 链式输出，用法与 `qDebug()` / `qInfo()` 一致。建议在节点执行的关键位置添加日志，便于问题排查。
+
+> 详见 [日志系统文档](./dev-guide/logging.md)。
 
 ## 模块列表
 

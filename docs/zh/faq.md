@@ -57,12 +57,14 @@ cmake -DDA_ENABLE_AUTO_INSTALL_PYTHON_ENV=ON ..
 **A:** 检查以下几点：
 
 1. **接口导出**：确保正确的 Q_PLUGIN_METADATA 声明
+
 ```cpp
 Q_PLUGIN_METADATA(IID "Plugin.YourPlugin")
 Q_INTERFACES(DA::DAAbstractNodePlugin)
 ```
 
-2. **initialize 返回值**：必须返回 true
+1. **initialize 返回值**：必须返回 true
+
 ```cpp
 bool MyPlugin::initialize() {
     // 所有初始化成功
@@ -70,7 +72,7 @@ bool MyPlugin::initialize() {
 }
 ```
 
-3. **依赖库位置**：确保所有依赖 dll/so 在 bin 目录
+1. **依赖库位置**：确保所有依赖 dll/so 在 bin 目录
 
 ### Q: 节点不显示在列表中？
 
@@ -116,13 +118,15 @@ bool MyWorker::exec()
 
 ### Q: 如何调试插件？
 
-**A:** 使用日志系统：
+**A:** 使用日志系统（详见 [日志系统文档](./dev-guide/logging.md)）：
 
 ```cpp
+#include "DALogCategory.h"
+
 // 在关键位置添加日志
-DA_LOG_DEBUG("Plugin initializing...");
-DA_LOG_INFO("Node {} created", node->getID());
-DA_LOG_ERROR("Failed to process: {}", errorMessage);
+daDebug << "Plugin initializing...";
+daInfo << "Node created:" << node->getID();
+daCritical << "Failed to process:" << errorMessage;
 ```
 
 ## 数据处理问题
@@ -296,7 +300,7 @@ endif()
 
 **A:**
 
-- 查看文档：https://czyt1988.github.io/data-workbench
+- 查看文档：<https://czyt1988.github.io/data-workbench>
 - GitHub Issues：提交 bug 报告
 - GitHub Discussions：功能讨论
 

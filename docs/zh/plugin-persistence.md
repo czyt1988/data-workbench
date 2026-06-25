@@ -248,37 +248,37 @@ bool MyPlugin::safeWriteFile(const QString& filePath, const QByteArray& data)
     
     QFile tempFile(tempPath);
     if (!tempFile.open(QIODevice::WriteOnly)) {
-        DA_LOG_ERROR("Failed to create temp file: {}", tempPath);
+        daCritical << "Failed to create temp file:" << tempPath;
         return false;
     }
-    
+
     // 2. 写入数据
     qint64 written = tempFile.write(data);
     tempFile.flush();
     tempFile.close();
-    
+
     if (written != data.size()) {
-        DA_LOG_ERROR("Write incomplete: {} / {}", written, data.size());
+        daCritical << "Write incomplete:" << written << "/" << data.size();
         QFile::remove(tempPath);
         return false;
     }
-    
+
     // 3. 替换原文件（原子操作）
     if (QFile::exists(filePath)) {
         if (!QFile::remove(filePath)) {
-            DA_LOG_ERROR("Failed to remove old file: {}", filePath);
+            daCritical << "Failed to remove old file:" << filePath;
             QFile::remove(tempPath);
             return false;
         }
     }
-    
+
     if (!QFile::rename(tempPath, filePath)) {
-        DA_LOG_ERROR("Failed to rename temp file to {}", filePath);
+        daCritical << "Failed to rename temp file to" << filePath;
         QFile::remove(tempPath);
         return false;
     }
-    
-    DA_LOG_INFO("Successfully saved: {}", filePath);
+
+    daInfo << "Successfully saved:" << filePath;
     return true;
 }
 ```
@@ -295,15 +295,15 @@ void MyPlugin::loadJsonConfig()
     int version = root["version"].toInt(1);
     
     if (version > CURRENT_CONFIG_VERSION) {
-        DA_LOG_WARNING("Config version {} is newer than supported {}", 
-                       version, CURRENT_CONFIG_VERSION);
+        daWarning << "Config version" << version << "is newer than supported"
+                  << CURRENT_CONFIG_VERSION;
         // 尝试兼容加载
         return loadConfigWithCompatibility(root);
     }
-    
+
     if (version < CURRENT_CONFIG_VERSION) {
-        DA_LOG_INFO("Upgrading config from version {} to {}", 
-                    version, CURRENT_CONFIG_VERSION);
+        daInfo << "Upgrading config from version" << version << "to"
+               << CURRENT_CONFIG_VERSION;
         // 升级配置
         root = upgradeConfig(root, version);
     }
@@ -438,7 +438,7 @@ void MyPlugin::cleanupOldCache()
         QFileInfo info(dir.absoluteFilePath(file));
         if (info.lastModified() < threshold) {
             QFile::remove(info.absoluteFilePath());
-            DA_LOG_DEBUG("Removed old cache: {}", file);
+            daDebug << "Removed old cache:" << file;
         }
     }
 }
@@ -551,15 +551,15 @@ MyPluginDataManager::MyPluginDataManager(const QString& pluginName)
 bool MyPlugin::saveData(const QString& path, const QByteArray& data)
 {
     if (!safeWriteFile(path, data)) {
-        DA_LOG_ERROR("Failed to save data to {}", path);
-        
+        daCritical << "Failed to save data to" << path;
+
         // 尝试备用路径
         QString backupPath = generateBackupPath(path);
         if (safeWriteFile(backupPath, data)) {
-            DA_LOG_INFO("Saved to backup: {}", backupPath);
+            daInfo << "Saved to backup:" << backupPath;
             return true;
         }
-        
+
         return false;
     }
     return true;
@@ -573,3 +573,5 @@ bool MyPlugin::saveData(const QString& path, const QByteArray& data)
 - [:material-puzzle: 功能扩展](./plugin-extension.md) - 界面和功能扩展
 - [:material-book: 最佳实践](./best-practices.md) - 更多开发建议
 - [:material-help-circle: 常见问题](./faq.md) - 常见问题解答
+
+> 详见 [日志系统文档](./dev-guide/logging.md)。

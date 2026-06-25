@@ -41,7 +41,7 @@
 
 上述配置定义了插件的基本信息，脚本将根据此配置生成完整的插件项目。
 
-2. 运行生成脚本：
+1. 运行生成脚本：
 
 下面的命令展示了如何运行模板生成脚本：
 
@@ -494,24 +494,26 @@ DA::DAAbstractNodeGraphicsItem* MyWorker::createGraphicsItem()
 ### 日志服务
 
 ```cpp
-#include "DALog.h"
+#include "DALogCategory.h"
 
 bool MyWorker::exec()
 {
-    DA_LOG_INFO("Starting data processing...");
-    DA_LOG_DEBUG("Input data type: {}", inputData.typeName());
-    
+    daInfo << "Starting data processing...";
+    daDebug << "Input data type:" << inputData.typeName();
+
     // 处理逻辑
-    
+
     if (error) {
-        DA_LOG_ERROR("Processing failed: {}", errorMessage);
+        daCritical << "Processing failed:" << errorMessage;
         return false;
     }
-    
-    DA_LOG_INFO("Processing completed successfully");
+
+    daInfo << "Processing completed successfully";
     return true;
 }
 ```
+
+> 详见 [日志系统文档](./dev-guide/logging.md)。
 
 ### 配置服务
 
@@ -627,6 +629,7 @@ cmake --install build --config Release
 ### 验证插件
 
 插件将安装到：
+
 ```
 data-workbench/bin_Release_qtX.X_MSCV_x64/bin/plugins/MyPlugin.dll
 ```
