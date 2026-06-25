@@ -16,6 +16,7 @@
 // stl
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 namespace DA
@@ -27,8 +28,10 @@ public:
     PrivateData(DALogger* p);
     ~PrivateData();
 
-    std::shared_ptr< spdlog::logger > mLogger;
-    std::shared_ptr< DAMessageLogSink > mUiSink;   ///< 持有 UI sink 引用，用于 setQueueLevel
+    std::shared_ptr< spdlog::logger > mLogger;        ///< 业务日志 logger（带 UI sink，收 da.* category）
+    std::shared_ptr< spdlog::logger > mSystemLogger;  ///< 系统日志 logger（无 UI sink，收非 da.* category）
+    std::shared_ptr< DAMessageLogSink > mUiSink;      ///< 持有 UI sink 引用，用于 setQueueLevel
+    spdlog::level::level_enum mQueueLevel { spdlog::level::info };  ///< UI sink 当前级别（用于 setQueueCaptureEnabled 恢复）
     std::atomic_bool mQueueCaptureEnabled { true };
     std::atomic_bool mInstalled { false };
 };
@@ -98,17 +101,17 @@ inline spdlog::async_overflow_policy mapOverflowPolicy(DAOverflowPolicy p)
 
 /**
  * @brief 构建 async_logger
+ *
+ * 多次调用时 thread_pool 只初始化一次（std::call_once），使业务 logger 和系统 logger
+ * 共享同一个 spdlog 后台线程池。
  */
-static std::shared_ptr< spdlog::logger > buildAsyncLogger(
-    const std::vector< spdlog::sink_ptr >& sinks,
-    DAOverflowPolicy policy)
+static std::shared_ptr< spdlog::logger >
+buildAsyncLogger(const std::string& name, const std::vector< spdlog::sink_ptr >& sinks, DAOverflowPolicy policy)
 {
-    spdlog::init_thread_pool(8192, 1);
-    return std::make_shared< spdlog::async_logger >("da_global",
-                                                     sinks.begin(),
-                                                     sinks.end(),
-                                                     spdlog::thread_pool(),
-                                                     mapOverflowPolicy(policy));
+    static std::once_flag s_initFlag;
+    std::call_once(s_initFlag, []() { spdlog::init_thread_pool(8192, 1); });
+    return std::make_shared< spdlog::async_logger >(
+        name, sinks.begin(), sinks.end(), spdlog::thread_pool(), mapOverflowPolicy(policy));
 }
 
 //===================================================
@@ -132,6 +135,9 @@ DALogger::~DALogger()
     if (d->mLogger) {
         d->mLogger->flush();
     }
+    if (d->mSystemLogger) {
+        d->mSystemLogger->flush();
+    }
     spdlog::drop_all();
     spdlog::shutdown();
 }
@@ -150,11 +156,7 @@ DALogger& DALogger::instance()
  * @param outputStdout
  * @param policy
  */
-void DALogger::setupRotatingFile(const QString& filename,
-                                 int maxSize,
-                                 int maxFiles,
-                                 bool outputStdout,
-                                 DAOverflowPolicy policy)
+void DALogger::setupRotatingFile(const QString& filename, int maxSize, int maxFiles, bool outputStdout, DAOverflowPolicy policy)
 {
     DA_D(d);
     // 转换文件路径（处理 Windows 宽字符路径）
@@ -164,21 +166,32 @@ void DALogger::setupRotatingFile(const QString& filename,
     std::string path(filename.toLocal8Bit().constData());
 #endif
 
-    std::vector< spdlog::sink_ptr > sinks;
+    // 基础 sinks：控制台 + 文件（业务 logger 和系统 logger 共享）
+    std::vector< spdlog::sink_ptr > baseSinks;
     if (outputStdout) {
-        sinks.emplace_back(std::make_shared< spdlog::sinks::stdout_color_sink_mt >());
+        baseSinks.emplace_back(std::make_shared< spdlog::sinks::stdout_color_sink_mt >());
     }
-    sinks.emplace_back(std::make_shared< spdlog::sinks::rotating_file_sink_mt >(path, maxSize, maxFiles));
+    baseSinks.emplace_back(std::make_shared< spdlog::sinks::rotating_file_sink_mt >(path, maxSize, maxFiles));
 
-    // UI sink
+    // UI sink（仅业务 logger 使用）——默认 info，让 qInfo 进入 UI 队列
     d->mUiSink = std::make_shared< DAMessageLogSink >();
-    d->mUiSink->set_level(spdlog::level::warn);  // 默认 UI 只显示 warn 及以上
-    sinks.emplace_back(d->mUiSink);
+    d->mUiSink->set_level(d->mQueueLevel);
 
-    d->mLogger = buildAsyncLogger(sinks, policy);
+    // 业务 logger：base sinks + UI sink
+    std::vector< spdlog::sink_ptr > businessSinks = baseSinks;
+    businessSinks.emplace_back(d->mUiSink);
+    d->mLogger = buildAsyncLogger("da_business", businessSinks, policy);
+
+    // 系统 logger：只有 base sinks（不进 UI 队列）
+    d->mSystemLogger = buildAsyncLogger("da_system", baseSinks, policy);
+
+    // 两个 logger 共享 pattern 和 level
     d->mLogger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%s:%#] %v");
+    d->mSystemLogger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%s:%#] %v");
     d->mLogger->set_level(spdlog::level::trace);
+    d->mSystemLogger->set_level(spdlog::level::trace);
     d->mLogger->flush_on(spdlog::level::warn);
+    d->mSystemLogger->flush_on(spdlog::level::warn);
     spdlog::set_default_logger(d->mLogger);
     spdlog::flush_every(std::chrono::seconds(15));
 
@@ -192,10 +205,7 @@ void DALogger::setupRotatingFile(const QString& filename,
  * @param outputStdout
  * @param policy
  */
-void DALogger::setupDailyFile(const QString& filename,
-                              int maxFiles,
-                              bool outputStdout,
-                              DAOverflowPolicy policy)
+void DALogger::setupDailyFile(const QString& filename, int maxFiles, bool outputStdout, DAOverflowPolicy policy)
 {
     DA_D(d);
 #ifdef SPDLOG_WCHAR_FILENAMES
@@ -204,22 +214,32 @@ void DALogger::setupDailyFile(const QString& filename,
     std::string path(filename.toLocal8Bit().constData());
 #endif
 
-    std::vector< spdlog::sink_ptr > sinks;
+    // 基础 sinks：控制台 + 文件（业务 logger 和系统 logger 共享）
+    std::vector< spdlog::sink_ptr > baseSinks;
     if (outputStdout) {
-        sinks.emplace_back(std::make_shared< spdlog::sinks::stdout_color_sink_mt >());
+        baseSinks.emplace_back(std::make_shared< spdlog::sinks::stdout_color_sink_mt >());
     }
     // daily_file_sink_mt: rotation_hour=0, rotation_minute=0（每天午夜轮转）
-    sinks.emplace_back(std::make_shared< spdlog::sinks::daily_file_sink_mt >(path, 0, 0, false, maxFiles));
+    baseSinks.emplace_back(std::make_shared< spdlog::sinks::daily_file_sink_mt >(path, 0, 0, false, maxFiles));
 
-    // UI sink
+    // UI sink（仅业务 logger 使用）
     d->mUiSink = std::make_shared< DAMessageLogSink >();
-    d->mUiSink->set_level(spdlog::level::warn);
-    sinks.emplace_back(d->mUiSink);
+    d->mUiSink->set_level(d->mQueueLevel);
 
-    d->mLogger = buildAsyncLogger(sinks, policy);
+    // 业务 logger：base sinks + UI sink
+    std::vector< spdlog::sink_ptr > businessSinks = baseSinks;
+    businessSinks.emplace_back(d->mUiSink);
+    d->mLogger = buildAsyncLogger("da_business", businessSinks, policy);
+
+    // 系统 logger：只有 base sinks（不进 UI 队列）
+    d->mSystemLogger = buildAsyncLogger("da_system", baseSinks, policy);
+
     d->mLogger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%s:%#] %v");
+    d->mSystemLogger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%s:%#] %v");
     d->mLogger->set_level(spdlog::level::trace);
+    d->mSystemLogger->set_level(spdlog::level::trace);
     d->mLogger->flush_on(spdlog::level::warn);
+    d->mSystemLogger->flush_on(spdlog::level::warn);
     spdlog::set_default_logger(d->mLogger);
     spdlog::flush_every(std::chrono::seconds(15));
 
@@ -233,18 +253,28 @@ void DALogger::setupDailyFile(const QString& filename,
 void DALogger::setupConsole(DAOverflowPolicy policy)
 {
     DA_D(d);
-    std::vector< spdlog::sink_ptr > sinks;
-    sinks.emplace_back(std::make_shared< spdlog::sinks::stdout_color_sink_mt >());
+    // 基础 sink：控制台（业务 logger 和系统 logger 共享）
+    std::vector< spdlog::sink_ptr > baseSinks;
+    baseSinks.emplace_back(std::make_shared< spdlog::sinks::stdout_color_sink_mt >());
 
-    // UI sink
+    // UI sink（仅业务 logger 使用）
     d->mUiSink = std::make_shared< DAMessageLogSink >();
-    d->mUiSink->set_level(spdlog::level::warn);
-    sinks.emplace_back(d->mUiSink);
+    d->mUiSink->set_level(d->mQueueLevel);
 
-    d->mLogger = buildAsyncLogger(sinks, policy);
+    // 业务 logger：base sink + UI sink
+    std::vector< spdlog::sink_ptr > businessSinks = baseSinks;
+    businessSinks.emplace_back(d->mUiSink);
+    d->mLogger = buildAsyncLogger("da_business", businessSinks, policy);
+
+    // 系统 logger：只有 base sink（不进 UI 队列）
+    d->mSystemLogger = buildAsyncLogger("da_system", baseSinks, policy);
+
     d->mLogger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] %v");
+    d->mSystemLogger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] %v");
     d->mLogger->set_level(spdlog::level::trace);
+    d->mSystemLogger->set_level(spdlog::level::trace);
     d->mLogger->flush_on(spdlog::level::info);
+    d->mSystemLogger->flush_on(spdlog::level::info);
     spdlog::set_default_logger(d->mLogger);
     spdlog::flush_every(std::chrono::seconds(1));
 
@@ -262,6 +292,9 @@ void DALogger::setLevel(DALogLevel level)
     if (d->mLogger) {
         d->mLogger->set_level(spdLevel);
     }
+    if (d->mSystemLogger) {
+        d->mSystemLogger->set_level(spdLevel);
+    }
 }
 
 /**
@@ -274,6 +307,9 @@ void DALogger::setPattern(const QString& pattern)
     if (d->mLogger) {
         d->mLogger->set_pattern(pattern.toStdString());
     }
+    if (d->mSystemLogger) {
+        d->mSystemLogger->set_pattern(pattern.toStdString());
+    }
 }
 
 /**
@@ -283,8 +319,10 @@ void DALogger::setPattern(const QString& pattern)
 void DALogger::setQueueLevel(DALogLevel level)
 {
     DA_D(d);
-    if (d->mUiSink) {
-        d->mUiSink->set_level(mapDALogLevelToSpdlog(level));
+    auto spdLevel  = mapDALogLevelToSpdlog(level);
+    d->mQueueLevel = spdLevel;
+    if (d->mUiSink && d->mQueueCaptureEnabled.load()) {
+        d->mUiSink->set_level(spdLevel);
     }
 }
 
@@ -306,8 +344,8 @@ void DALogger::setQueueCaptureEnabled(bool on)
     DA_D(d);
     d->mQueueCaptureEnabled.store(on);
     if (d->mUiSink) {
-        // 通过设置 sink level 为 off 来禁用
-        d->mUiSink->set_level(on ? spdlog::level::warn : spdlog::level::off);
+        // 通过设置 sink level 来禁用/恢复（恢复时用上次 setQueueLevel 设置的级别）
+        d->mUiSink->set_level(on ? d->mQueueLevel : spdlog::level::off);
     }
 }
 
@@ -334,22 +372,45 @@ void DALogger::installMessageHandler()
 /**
  * @brief Qt 消息回调
  *
- * 将 Qt 消息转发到 spdlog，spdlog 通过多 sink 分发到文件、控制台、UI 队列。
+ * 转发到 dispatchMessage 按 category 分流。
  * @param type
  * @param context
  * @param msg
  */
 void DALogger::daMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
+    instance().dispatchMessage(type, context, msg);
+}
+
+/**
+ * @brief 按 category 分流日志
+ *
+ * - context.category 以 "da." 开头 → 业务日志，走 mLogger（带 UI sink，进 DAMessageLogQueue → UI）
+ * - 其他（Qt 自身、第三方库、未声明 category 的 qDebug 等）→ 系统日志，走 mSystemLogger（仅文件+控制台）
+ *
+ * 这样 UI 日志窗口只显示业务日志，避免第三方库噪音污染。
+ * @param type Qt 消息类型
+ * @param context Qt 消息上下文（含 category）
+ * @param msg 消息内容
+ */
+void DALogger::dispatchMessage(QtMsgType type, const QMessageLogContext& context, const QString& msg)
+{
+    DA_D(d);
     auto level = mapQtMsgTypeToSpdlog(type);
     // 通过 source_loc 传递 file/line/function，null-safe
-    spdlog::source_loc loc{ context.file, context.line, context.function };
-    // 使用 toUtf8 确保跨平台 UTF-8 编码（Windows 下 toStdString 使用系统 locale 编码会导致乱码）
-    spdlog::default_logger()->log(loc, level, "{}", msg.toUtf8().toStdString());
-
+    spdlog::source_loc loc { context.file, context.line, context.function };
+    // 按 category 分流：da.* 开头的业务日志走带 UI sink 的 logger
+    bool isBusinessLog = context.category && QByteArray(context.category).startsWith("da.");
+    auto& logger       = isBusinessLog ? d->mLogger : d->mSystemLogger;
+    if (logger) {
+        // 使用 toUtf8 确保跨平台 UTF-8 编码（Windows 下 toStdString 使用系统 locale 编码会导致乱码）
+        logger->log(loc, level, "{}", msg.toUtf8().toStdString());
+    }
     if (type == QtFatalMsg) {
         // Fatal 消息需要同步 flush 确保落盘，Qt 会在 handler 返回后自动 abort
-        spdlog::default_logger()->flush();
+        if (logger) {
+            logger->flush();
+        }
     }
 }
 

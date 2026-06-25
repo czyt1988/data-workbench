@@ -17,16 +17,16 @@ public:
     ~PrivateData();
 
 public:
-    mutable QMutex mMutex;                 ///< 保护 mMessages 和 mCapacity
-    QList< DAMessageLogItem > mMessages;   ///< 消息缓冲
-    int mCapacity { 1000 };                ///< 容量
+    mutable QMutex mMutex;                ///< 保护 mMessages 和 mCapacity
+    QList< DAMessageLogItem > mMessages;  ///< 消息缓冲
+    int mCapacity { 1000 };               ///< 容量
 
-    std::unique_ptr< QTimer > mTimer;      ///< 惰性发射定时器
-    int mEmitIntervalMs { 1000 };          ///< 发射间隔
-    bool mIsLazyEmit { true };             ///< 是否惰性发射
+    std::unique_ptr< QTimer > mTimer;                 ///< 惰性发射定时器
+    int mEmitIntervalMs { 1000 };                     ///< 发射间隔
+    bool mIsLazyEmit { true };                        ///< 是否惰性发射
     std::atomic_bool mNeedEmitAppended { false };     ///< 标记需要发射 messageQueueAppended
     std::atomic_bool mNeedEmitSizeChanged { false };  ///< 标记需要发射 messageQueueSizeChanged
-    bool mDelayCreateTimer { false };      ///< QApp 未启动时延迟创建 timer
+    std::atomic_bool mDelayCreateTimer { false };  ///< QApp 未启动时延迟创建 timer，push 检测到后通过 QueuedConnection 在主线程创建
 };
 
 DAMessageLogQueue::PrivateData::PrivateData(DAMessageLogQueue* p) : q_ptr(p)
@@ -75,6 +75,13 @@ void DAMessageLogQueue::push(const DAMessageLogItem& item)
         d->mNeedEmitSizeChanged.store(true, std::memory_order_release);
     }
     d->mNeedEmitAppended.store(true, std::memory_order_release);
+    // 若 timer 延迟创建标记为 true 且 QApp 已启动，通过主线程事件循环创建 timer。
+    // push 在 spdlog 后台线程调用，不能直接创建 QTimer（QTimer 必须在主线程创建）。
+    if (d->mDelayCreateTimer.load(std::memory_order_acquire)) {
+        if (!QCoreApplication::startingUp() && !QCoreApplication::closingDown()) {
+            QMetaObject::invokeMethod(this, [ this ]() { ensureTimer(); }, Qt::QueuedConnection);
+        }
+    }
     if (!d->mIsLazyEmit) {
         if (QCoreApplication::startingUp() || QCoreApplication::closingDown()) {
             return;
@@ -147,7 +154,7 @@ int DAMessageLogQueue::capacity() const
 void DAMessageLogQueue::setLazyEmit(bool on, int intervalMs)
 {
     DA_D(d);
-    d->mIsLazyEmit = on;
+    d->mIsLazyEmit     = on;
     d->mEmitIntervalMs = intervalMs;
     if (on) {
         ensureTimer();
@@ -171,7 +178,7 @@ void DAMessageLogQueue::ensureTimer()
         return;
     }
     if (QCoreApplication::startingUp() || QCoreApplication::closingDown()) {
-        d->mDelayCreateTimer = true;
+        d->mDelayCreateTimer.store(true, std::memory_order_release);
         return;
     }
     if (!d->mTimer) {
@@ -180,7 +187,7 @@ void DAMessageLogQueue::ensureTimer()
         connect(d->mTimer.get(), &QTimer::timeout, this, &DAMessageLogQueue::onTimeout);
         d->mTimer->start();
     }
-    d->mDelayCreateTimer = false;
+    d->mDelayCreateTimer.store(false, std::memory_order_release);
 }
 
 /**
@@ -189,10 +196,10 @@ void DAMessageLogQueue::ensureTimer()
 void DAMessageLogQueue::onTimeout()
 {
     DA_D(d);
-    if (d->mDelayCreateTimer) {
+    if (d->mDelayCreateTimer.load(std::memory_order_acquire)) {
         ensureTimer();
     }
-    bool needAppended   = d->mNeedEmitAppended.exchange(false, std::memory_order_acq_rel);
+    bool needAppended    = d->mNeedEmitAppended.exchange(false, std::memory_order_acq_rel);
     bool needSizeChanged = d->mNeedEmitSizeChanged.exchange(false, std::memory_order_acq_rel);
     if (needAppended) {
         emit messageQueueAppended();

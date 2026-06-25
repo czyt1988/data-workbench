@@ -26,8 +26,8 @@ enum class DALogLevel
  */
 enum class DAOverflowPolicy
 {
-    Block,          ///< 队列满时阻塞调用线程
-    OverrunOldest   ///< 丢弃最旧的消息（推荐）
+    Block,         ///< 队列满时阻塞调用线程
+    OverrunOldest  ///< 丢弃最旧的消息（推荐）
 };
 
 /**
@@ -35,10 +35,16 @@ enum class DAOverflowPolicy
  *
  * 整合 Qt qInstallMessageHandler 与 spdlog，提供统一的日志分发：
  *
- * - qDebug/qInfo/qWarning/qCritical → daMessageHandler → spdlog::async_logger
+ * - qDebug/qInfo/qWarning/qCritical → daMessageHandler → 按 category 分流
+ * - 业务日志（context.category 以 "da." 开头）→ mLogger（带 UI sink）→ DAMessageLogQueue → UI
+ * - 系统日志（Qt 自身、第三方库）→ mSystemLogger（仅文件+控制台，不进 UI 队列）
  * - spdlog 通过多 sink 分发到文件、控制台、UI 队列
  * - DAMessageLogSink 从 log_msg 重建 DAMessageLogItem，推送到 DAMessageLogQueue
  * - DAMessageLogsModel 订阅 DAMessageLogQueue 信号，更新 UI
+ *
+ * 业务代码通过 daInfo/daWarning/daCritical/daDebug 便捷宏（见 DALogCategory.h）
+ * 打印日志，category 为 "da.user"，会自动进入 UI 队列；
+ * 未声明 category 的 qDebug/qInfo 等（含 Qt 自身、第三方库）只写文件和控制台，不会污染 UI。
  *
  * @note RAII：析构时自动 qInstallMessageHandler(nullptr) → spdlog::shutdown()，
  *       无需手动调用注销函数。
@@ -50,8 +56,15 @@ enum class DAOverflowPolicy
  * // 无需手动注销，程序退出时 DALogger 单例析构自动清理
  * @endcode
  *
+ * @code
+ * // 业务模块打印日志（引入 DALogCategory.h 即可）
+ * daInfo << "kernel initialized, version =" << DA_VERSION;
+ * daWarning << "config file not found:" << path;
+ * @endcode
+ *
  * @see DAMessageLogQueue
  * @see DAMessageLogSink
+ * @see DALogCategory.h  (daInfo/daWarning/daCritical/daDebug 便捷宏)
  */
 class DAMESSAGEHANDLER_API DALogger
 {
@@ -79,9 +92,9 @@ public:
      * @param policy 异步队列溢出策略（默认 OverrunOldest）
      */
     void setupRotatingFile(const QString& filename,
-                           int maxSize           = 10 * 1048576,
-                           int maxFiles          = 5,
-                           bool outputStdout     = true,
+                           int maxSize             = 10 * 1048576,
+                           int maxFiles            = 5,
+                           bool outputStdout       = true,
                            DAOverflowPolicy policy = DAOverflowPolicy::OverrunOldest);
 
     /**
@@ -94,8 +107,8 @@ public:
      * @param policy 异步队列溢出策略（默认 OverrunOldest）
      */
     void setupDailyFile(const QString& filename,
-                        int maxFiles          = 5,
-                        bool outputStdout     = true,
+                        int maxFiles            = 5,
+                        bool outputStdout       = true,
                         DAOverflowPolicy policy = DAOverflowPolicy::OverrunOldest);
 
     /**
@@ -130,6 +143,8 @@ public:
      *
      * 例如设为 Warn，则只有 Warning 及以上消息会推送到 UI 队列，
      * 文件和控制台仍记录所有级别。
+     *
+     * 仅影响业务日志（context.category 以 "da." 开头），系统日志永不进入 UI 队列。
      * @param level
      */
     void setQueueLevel(DALogLevel level);
@@ -156,6 +171,8 @@ private:
     DALogger();
     Q_DISABLE_COPY(DALogger)
     void installMessageHandler();
+    // 按 category 分流：da.* 开头走业务 logger（带 UI sink），其他走系统 logger
+    void dispatchMessage(QtMsgType type, const QMessageLogContext& context, const QString& msg);
     static void daMessageHandler(QtMsgType type, const QMessageLogContext& ctx, const QString& msg);
 };
 
