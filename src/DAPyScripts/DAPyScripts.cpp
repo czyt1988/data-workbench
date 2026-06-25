@@ -4,6 +4,7 @@
 #include "DAPyScriptsIO.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DAPyInterpreter.h"
+#include "DALogCategory.h"
 
 namespace DA
 {
@@ -16,7 +17,7 @@ public:
         // 初始化时，把python环境的interpreter赋值给interpreter，让它持有python环境的引用计数，避免此类晚于python环境析构，导致python环境析构了，此类还存在
         interpreter = DAPyInterpreter::interpreter;
         if (!interpreter) {
-            qCritical() << QObject::tr("DAPyInterpreter is not initialized");  // cn:python环境未初始化
+            daCritical << QObject::tr("DAPyInterpreter is not initialized");  // cn:Python 环境未初始化
         }
     }
 
@@ -63,7 +64,7 @@ bool DAPyScripts::initScripts()
             return true;
         }
     } catch (const std::exception& e) {
-        qCritical() << QObject::tr("Initialized import scripts error:%1").arg(e.what());  // cn:初始化脚本失败
+        daCritical << QObject::tr("Failed to initialize import scripts: %1").arg(e.what());  // cn:初始化导入脚本失败：%1
     }
     return false;
 }

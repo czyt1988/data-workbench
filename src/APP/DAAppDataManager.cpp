@@ -11,6 +11,7 @@
 #include "DADataOperateOfDataFrameWidget.h"
 // DAUtils
 #include "DAStringUtil.h"
+#include "DALogCategory.h"
 #if DA_ENABLE_PYTHON
 #include "DAPyScripts.h"
 #endif
@@ -33,7 +34,7 @@ DAAppDataManager::~DAAppDataManager()
 bool DAAppDataManager::importFromFile(const QString& f, const QVariantMap& args, QString* err)
 {
 #if DA_ENABLE_PYTHON
-    qInfo() << tr("begin import file:%1").arg(f);
+    daInfo << tr("begin importing file: %1").arg(f);  // cn:开始导入文件:%1
     try {
         if (DAPyScripts::isInitScripts()) {
             DAPyScripts::getIO().read_and_add_to_datamanager(f, args, err);

@@ -1,6 +1,7 @@
 #include "DAZipArchiveTask_Xml.h"
 #include "DAZipArchive.h"
 #include <QDebug>
+#include "DALogCategory.h"
 namespace DA
 {
 
@@ -53,9 +54,9 @@ bool DAZipArchiveTask_Xml::exec(DAAbstractArchive* archive, DAAbstractArchiveTas
         // 写模式
         if (!zip->isOpened()) {
             if (!zip->create()) {
-                qCritical() << QObject::tr("can not create archive at \"%1\",because %2")
-                                   .arg(zip->getBaseFilePath())
-                                   .arg(zip->getLastErrorString());
+                daCritical << QObject::tr("cannot create archive at \"%1\", because %2")
+                                  .arg(zip->getBaseFilePath())
+                                  .arg(zip->getLastErrorString());  // cn:无法在"%1"创建归档，因为%2
                 return false;
             }
         }

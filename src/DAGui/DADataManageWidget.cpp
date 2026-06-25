@@ -6,6 +6,7 @@
 #include <QIcon>
 #include <QHeaderView>
 #include <QDebug>
+#include "DALogCategory.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
@@ -73,7 +74,7 @@ void DADataManageWidget::removeSelectData()
 {
     QList< DAData > d = getAllSelectDatas();
     if (d.size() <= 0) {
-        qWarning() << tr("Please select the data item to remove");  // cn:请选择需要删除的数据条目
+        daWarning << tr("Please select the data item to remove");  // cn:请选择需要删除的数据条目
         return;
     }
     mDataManager->removeDatas_(d);

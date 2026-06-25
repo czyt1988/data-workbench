@@ -1,11 +1,12 @@
 #include "DAPyDataframeColumnsListWidget.h"
 #include "DAPyDTypeComboBox.h"
 #include <QDebug>
+#include "DALogCategory.h"
 namespace DA
 {
 DAPyDataframeColumnsListWidget::DAPyDataframeColumnsListWidget(QWidget* parent) : QListWidget(parent)
 {
-	setSelectionMode(QAbstractItemView::SingleSelection);
+    setSelectionMode(QAbstractItemView::SingleSelection);
 }
 
 DAPyDataframeColumnsListWidget::~DAPyDataframeColumnsListWidget()
@@ -14,13 +15,13 @@ DAPyDataframeColumnsListWidget::~DAPyDataframeColumnsListWidget()
 
 void DAPyDataframeColumnsListWidget::setDataframe(const DAPyDataFrame& df)
 {
-	mDataframe = df;
-	updateColumnsInfo(df);
+    mDataframe = df;
+    updateColumnsInfo(df);
 }
 
 DAPyDataFrame DAPyDataframeColumnsListWidget::getDataFrame() const
 {
-	return mDataframe;
+    return mDataframe;
 }
 
 /**
@@ -29,14 +30,14 @@ DAPyDataFrame DAPyDataframeColumnsListWidget::getDataFrame() const
  */
 QString DAPyDataframeColumnsListWidget::getSelectedColumn() const noexcept
 {
-	try {
-		int c                 = currentRow();
-		QList< QString > cols = mDataframe.columns();
-		return cols[ c ];
-	} catch (const std::exception& e) {
-		qCritical() << tr("Exception in get selected column:%1").arg(e.what());  // cn:获取选中的列发生异常：%1
-	}
-	return QString();
+    try {
+        int c                 = currentRow();
+        QList< QString > cols = mDataframe.columns();
+        return cols[ c ];
+    } catch (const std::exception& e) {
+        daCritical << tr("Exception in get selected column:%1").arg(e.what());  // cn:获取选中的列发生异常：%1
+    }
+    return QString();
 }
 
 /**
@@ -45,14 +46,14 @@ QString DAPyDataframeColumnsListWidget::getSelectedColumn() const noexcept
  */
 DAPySeries DAPyDataframeColumnsListWidget::getCurrentSeries() const noexcept
 {
-	try {
-		QString c    = getSelectedColumn();
-		DAPySeries s = mDataframe[ c ];
-		return s;
-	} catch (const std::exception& e) {
-		qCritical() << tr("Exception in get selected series:%1").arg(e.what());  // cn:获取选中的序列发生异常：%1
-	}
-	return DAPySeries();
+    try {
+        QString c    = getSelectedColumn();
+        DAPySeries s = mDataframe[ c ];
+        return s;
+    } catch (const std::exception& e) {
+        daCritical << tr("Exception in get selected series:%1").arg(e.what());  // cn:获取选中的序列发生异常：%1
+    }
+    return DAPySeries();
 }
 
 /**
@@ -61,18 +62,18 @@ DAPySeries DAPyDataframeColumnsListWidget::getCurrentSeries() const noexcept
  */
 QList< DAPySeries > DAPyDataframeColumnsListWidget::getAllSelectedSeries() const
 {
-	QList< DAPySeries > res;
-	auto indexs = selectedIndexes();
-	try {
-		for (int i = 0; i < indexs.size(); ++i) {
-			int dfIndex  = indexs[ i ].row();
-			DAPySeries s = mDataframe[ dfIndex ];
-			res.append(s);
-		}
-	} catch (const std::exception& e) {
-		qCritical() << tr("Exception in get selected series:%1").arg(e.what());  // cn:获取选中的序列发生异常：%1
-	}
-	return res;
+    QList< DAPySeries > res;
+    auto indexs = selectedIndexes();
+    try {
+        for (int i = 0; i < indexs.size(); ++i) {
+            int dfIndex  = indexs[ i ].row();
+            DAPySeries s = mDataframe[ dfIndex ];
+            res.append(s);
+        }
+    } catch (const std::exception& e) {
+        daCritical << tr("Exception in get selected series:%1").arg(e.what());  // cn:获取选中的序列发生异常：%1
+    }
+    return res;
 }
 
 /**
@@ -82,13 +83,13 @@ QList< DAPySeries > DAPyDataframeColumnsListWidget::getAllSelectedSeries() const
  */
 QList< int > DAPyDataframeColumnsListWidget::getAllSelectedSeriesIndexs() const
 {
-	QList< int > res;
-	auto indexs = selectedIndexes();
-	for (int i = 0; i < indexs.size(); ++i) {
-		int dfIndex = indexs[ i ].row();
-		res.append(dfIndex);
-	}
-	return res;
+    QList< int > res;
+    auto indexs = selectedIndexes();
+    for (int i = 0; i < indexs.size(); ++i) {
+        int dfIndex = indexs[ i ].row();
+        res.append(dfIndex);
+    }
+    return res;
 }
 
 /**
@@ -98,13 +99,13 @@ QList< int > DAPyDataframeColumnsListWidget::getAllSelectedSeriesIndexs() const
  */
 QList< QString > DAPyDataframeColumnsListWidget::getAllSelectedSeriesNames() const
 {
-	QList< QString > res;
-	auto selItems = selectedItems();
-	for (int i = 0; i < selItems.size(); ++i) {
-        auto t = selItems[i]->text();
-		res.append(t);
-	}
-	return res;
+    QList< QString > res;
+    auto selItems = selectedItems();
+    for (int i = 0; i < selItems.size(); ++i) {
+        auto t = selItems[ i ]->text();
+        res.append(t);
+    }
+    return res;
 }
 
 /**
@@ -112,7 +113,7 @@ QList< QString > DAPyDataframeColumnsListWidget::getAllSelectedSeriesNames() con
  */
 void DAPyDataframeColumnsListWidget::updateColumnsInfo()
 {
-	updateColumnsInfo(mDataframe);
+    updateColumnsInfo(mDataframe);
 }
 
 /**
@@ -121,17 +122,17 @@ void DAPyDataframeColumnsListWidget::updateColumnsInfo()
  */
 void DAPyDataframeColumnsListWidget::updateColumnsInfo(const DAPyDataFrame& df)
 {
-	clear();
-	if (!df) {
-		clear();
-		return;
-	}
-	QList< QString > cols = df.columns();
-	for (int i = 0; i < cols.size(); ++i) {
-		QListWidgetItem* item = new QListWidgetItem(cols[ i ], this);
-		DAPyDType dt = df[ cols[ i ] ].dtypeObject();
-		item->setIcon(DAPyDTypeComboBox::getIconByDType(dt));
-	}
+    clear();
+    if (!df) {
+        clear();
+        return;
+    }
+    QList< QString > cols = df.columns();
+    for (int i = 0; i < cols.size(); ++i) {
+        QListWidgetItem* item = new QListWidgetItem(cols[ i ], this);
+        DAPyDType dt          = df[ cols[ i ] ].dtypeObject();
+        item->setIcon(DAPyDTypeComboBox::getIconByDType(dt));
+    }
 }
 
 }  // end DA

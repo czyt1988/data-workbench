@@ -9,13 +9,14 @@
 #include "DAAppCore.h"
 #include "DAAppUI.h"
 #include "DAMessageLogQueue.h"
+#include "DALogCategory.h"
 #include "DAAbstractSettingPage.h"
 namespace DA
 {
 
 DAAppConfig::DAAppConfig()
 {
-    mVersion = QVersionNumber(0,0,2);
+    mVersion        = QVersionNumber(0, 0, 2);
     mConfigFilePath = getAbsoluteConfigFilePath();
     // 先设置默认参数，这些默认参数后续如果配置文件中有会被替换掉
     insert(DA_CONFIG_KEY_RIBBON_STYLE, static_cast< int >(SARibbonBar::RibbonStyleCompactTwoRow));
@@ -46,8 +47,8 @@ bool DAAppConfig::loadConfig(bool noFileCreateNewOne)
     }
     if (!xmlConfigFile.open(QIODevice::ReadWrite)) {
         // 有配置文件，但打开失败
-        qWarning().noquote() << QObject::tr("can not open config file \"%1\",because %2")  // cn:无法打开配置文件\"%1\",原因是%2
-                                    .arg(mConfigFilePath, xmlConfigFile.errorString());
+        daWarning.noquote() << QObject::tr("cannot open config file \"%1\": %2")  // cn:无法打开配置文件\"%1\"，原因是%2
+                                   .arg(mConfigFilePath, xmlConfigFile.errorString());
         return false;
     }
 
@@ -55,22 +56,22 @@ bool DAAppConfig::loadConfig(bool noFileCreateNewOne)
     QString err;
     QDomDocument doc;
     if (!doc.setContent(&xmlConfigFile, &err)) {
-        qCritical().noquote() << QObject::tr("can not load config file \"%1\",because %2")  // cn:无法加载配置文件\"%1\",原因是%2
-                                     .arg(mConfigFilePath, err);
+        daCritical.noquote() << QObject::tr("cannot load config file \"%1\": %2")  // cn:无法加载配置文件\"%1\"，原因是%2
+                                    .arg(mConfigFilePath, err);
         return false;
     }
     QDomElement configsEle = doc.firstChildElement("configs");
     if (configsEle.isNull()) {
-        qWarning().noquote() << QObject::tr("config file(%1) loss <configs> tag").arg(mConfigFilePath);  // cn:配置文件(%1)缺失<configs>标签
+        daWarning.noquote() << QObject::tr("config file (%1) is missing the <configs> tag").arg(mConfigFilePath);  // cn:配置文件(%1)缺失<configs>标签
         return false;
     }
-    QVersionNumber version=mVersion;
-    QString ver = configsEle.attribute("ver");
-    if(ver.isEmpty()){
+    QVersionNumber version = mVersion;
+    QString ver            = configsEle.attribute("ver");
+    if (ver.isEmpty()) {
         version = QVersionNumber();
     }
     // 加载所有管理的配置
-    if (!loadFromXml(&configsEle,version)) {
+    if (!loadFromXml(&configsEle, version)) {
         return false;
     }
 
@@ -83,16 +84,16 @@ bool DAAppConfig::saveConfig()
     // 一定要带上QIODevice::Truncate
     if (!xmlConfigFile.open(QIODevice::ReadWrite | QIODevice::Truncate)) {
         // 有配置文件，但打开失败
-        qCritical() << QObject::tr("can not open config file \"%1\",because %2")  // cn:无法打开配置文件\"%1\",原因是%2
-                           .arg(mConfigFilePath, xmlConfigFile.errorString());
+        daCritical << QObject::tr("cannot open config file \"%1\": %2")  // cn:无法打开配置文件\"%1\"，原因是%2
+                          .arg(mConfigFilePath, xmlConfigFile.errorString());
         return false;
     }
     QDomDocument doc;
     QDomElement configsEle = doc.createElement("configs");
-    configsEle.setAttribute("ver",mVersion.toString());
+    configsEle.setAttribute("ver", mVersion.toString());
     doc.appendChild(configsEle);
     // 加载所有管理的配置
-    if (!saveToXml(&doc, &configsEle,mVersion)) {
+    if (!saveToXml(&doc, &configsEle, mVersion)) {
         return false;
     }
     QTextStream s(&xmlConfigFile);
@@ -107,7 +108,7 @@ bool DAAppConfig::saveConfig()
  * @param parentElement
  * @return
  */
-bool DAAppConfig::saveToXml(QDomDocument* doc, QDomElement* parentElement,const QVersionNumber& ver) const
+bool DAAppConfig::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
     auto i = begin();
     for (; i != end(); ++i) {
@@ -126,7 +127,7 @@ bool DAAppConfig::saveToXml(QDomDocument* doc, QDomElement* parentElement,const 
  * @param parentElement
  * @return
  */
-bool DAAppConfig::loadFromXml(const QDomElement* parentElement,const QVersionNumber& ver)
+bool DAAppConfig::loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)
 {
     QDomNodeList ns = parentElement->childNodes();
     for (int i = 0; i < ns.size(); ++i) {
@@ -179,8 +180,8 @@ bool DAAppConfig::apply()
     qDebug() << "apply setting";
     SARibbonBar* bar = mMainWindow->ribbonBar();
     if (bar) {
-        SARibbonBar::RibbonStyles ribbonStyle = static_cast< SARibbonBar::RibbonStyles >(
-            value(DA_CONFIG_KEY_RIBBON_STYLE).toInt());
+        SARibbonBar::RibbonStyles ribbonStyle =
+            static_cast< SARibbonBar::RibbonStyles >(value(DA_CONFIG_KEY_RIBBON_STYLE).toInt());
         bar->setRibbonStyle(ribbonStyle);
     }
     bool isOK  = false;

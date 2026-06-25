@@ -6,6 +6,7 @@
 #include <iostream>
 #include <memory>
 #include <QDebug>
+#include "DALogCategory.h"
 namespace DA
 {
 
@@ -76,22 +77,22 @@ QModelIndex DATreeModel::index(int row, int column, const QModelIndex& parent) c
     if (!hasIndex(row, column, parent)) {
         return QModelIndex();
     }
-    if (!parent.isValid())  //说明是顶层
+    if (!parent.isValid())  // 说明是顶层
     {
         if ((row >= d_ptr->_treePtr->getItemCount()) || (column >= d_ptr->_columnCount)) {
             return QModelIndex();
         }
         DATreeItem* rootItem            = d_ptr->_treePtr->getItem(row);
-        QModelIndex rootIndex           = createIndex(row, column, rootItem);  //顶层节点
+        QModelIndex rootIndex           = createIndex(row, column, rootItem);  // 顶层节点
         d_ptr->_itemToIndex[ rootItem ] = rootIndex;
         return rootIndex;
     }
     DATreeItem* parItem = indexToItem(parent);
     if ((nullptr == parItem) || (row >= parItem->childItemCount()) || (column >= d_ptr->_columnCount)) {
-        return QModelIndex();  //不正常情况
+        return QModelIndex();  // 不正常情况
     }
     DATreeItem* leafItem            = parItem->childItem(row);
-    QModelIndex leafIndex           = createIndex(row, column, leafItem);  //叶子节点
+    QModelIndex leafIndex           = createIndex(row, column, leafItem);  // 叶子节点
     d_ptr->_itemToIndex[ leafItem ] = leafIndex;
     return leafIndex;
 }
@@ -110,16 +111,16 @@ QModelIndex DATreeModel::parent(const QModelIndex& index) const
     DATreeItem* parItem = item->parent();
     if (nullptr == parItem) {
         // parItem 这种属于异常
-        qCritical() << tr("DATreeModel get invalid item");
+        daCritical << tr("DATreeModel encountered invalid item");  // cn:DATreeModel遇到无效的item
         return QModelIndex();
     }
-    return createIndex(parItem->index(), 0, parItem);  //挂载parent的都是只有一列的
+    return createIndex(parItem->index(), 0, parItem);  // 挂载parent的都是只有一列的
 }
 
 int DATreeModel::rowCount(const QModelIndex& p) const
 {
     if (!p.isValid()) {
-        //顶层
+        // 顶层
         return d_ptr->_treePtr->getItemCount();
     }
     DATreeItem* parItem = indexToItem(p);

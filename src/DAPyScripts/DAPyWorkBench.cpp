@@ -1,4 +1,5 @@
 #include "DAPyWorkBench.h"
+#include "DALogCategory.h"
 
 namespace DA
 {
@@ -33,7 +34,7 @@ bool DAPyWorkBench::import()
 {
     bool res = DAPyModule::import("DAWorkbench");
     if (!res) {
-        qCritical() << QObject::tr("can not import DAWorkbench module");
+        daCritical << QObject::tr("cannot import DAWorkbench module");  // cn:无法导入 DAWorkbench 模块
     }
     // 调用 Python 端的 initialize()，初始化日志等子系统
     try {

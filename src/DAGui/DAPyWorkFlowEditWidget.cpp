@@ -4,6 +4,7 @@
 #include <QUrl>
 #include <QImage>
 #include <QDebug>
+#include "DALogCategory.h"
 #include <QUndoStack>
 #include <QColor>
 #include <QList>
@@ -101,7 +102,7 @@ void DAPyWorkFlowEditWidget::runWorkFlow()
 {
     auto scene = getWorkFlowGraphicsScene();
     if (!scene || !scene->hasManager()) {
-        qCritical() << tr("no workflow set");
+        daCritical << tr("no workflow has been set");  // cn:未设置工作流
         return;
     }
     // TODO: 还未实现

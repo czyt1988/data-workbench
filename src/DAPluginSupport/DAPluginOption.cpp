@@ -4,6 +4,7 @@
 #include <memory>
 #include <QPluginLoader>
 #include <QTextStream>
+#include "DALogCategory.h"
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
@@ -94,14 +95,15 @@ bool DAPluginOption::load(const QString& pluginPath, DACoreInterface* c)
         qDebug() << "System Error:" << QString::fromWCharArray(messageBuffer);
         LocalFree(messageBuffer);
 #endif
-        qWarning() << QObject::tr("Failed to load %1 (Reason: %2)").arg(getFileName(), getErrorString());
+        daWarning << QObject::tr("Failed to load %1 (Reason: %2)").arg(getFileName(), getErrorString());  // cn:加载 %1 失败（原因：%2）
         return (false);
     }
 
     // 最后创建一个插件
     QObject* obj = d_ptr->mLib->instance();
     if (nullptr == obj) {
-        qWarning() << QObject::tr("Failed to create plugin instance from %1. Error: %2").arg(getFileName(), getErrorString());
+        daWarning << QObject::tr("Failed to create plugin instance from %1. Error: %2")
+                         .arg(getFileName(), getErrorString());  // cn:无法从 %1 创建插件实例。错误：%2
         return (false);
     }
 
@@ -111,7 +113,7 @@ bool DAPluginOption::load(const QString& pluginPath, DACoreInterface* c)
 #if 1
     d_ptr->mPlugin = dynamic_cast< DAAbstractPlugin* >(obj);
     if (nullptr == d_ptr->mPlugin) {
-        qWarning() << QObject::tr("Failed to cast plugin to DA plugin %1").arg(getFileName());
+        daWarning << QObject::tr("Failed to cast to DA plugin interface: %1").arg(getFileName());  // cn:无法转换到 DA 插件接口：%1
         return (false);
     }
 #else
@@ -124,14 +126,14 @@ bool DAPluginOption::load(const QString& pluginPath, DACoreInterface* c)
         // 检查对象是否实现了任何我们关心的接口
         if (obj->qt_metacast("DA::DAAbstractPlugin") || obj->qt_metacast("DA::DAAbstractNodePlugin")) {
             // 对象有接口元数据，但转换失败，可能是二进制兼容性问题
-            qWarning() << QObject::tr("Plugin from %1 implements a DA interface but qobject_cast failed. "
-                                      "This may indicate a binary compatibility issue (compiler/mismatch).")
-                              .arg(getFileName());
+            daWarning << QObject::tr("Plugin from %1 implements a DA interface but qobject_cast failed. "
+                                     "This may indicate a binary compatibility issue (compiler/mismatch).")
+                             .arg(getFileName());  // cn:来自 %1 的插件实现了 DA 接口，但 qobject_cast 失败，可能是二进制兼容性问题（编译器不匹配）
         } else {
             // 对象根本不是一个有效的DA插件
-            qWarning() << QObject::tr("The library %1 does not appear to be a valid DA plugin. "
-                                      "It does not implement the required interface.")
-                              .arg(getFileName());
+            daWarning << QObject::tr("The library %1 does not appear to be a valid DA plugin. "
+                                     "It does not implement the required interface.")
+                             .arg(getFileName());  // cn:库 %1 似乎不是有效的 DA 插件，未实现所需的接口
         }
         // 作为最后手段，尝试 dynamic_cast
         d_ptr->mPlugin = dynamic_cast< DAAbstractPlugin* >(obj);
@@ -146,7 +148,8 @@ bool DAPluginOption::load(const QString& pluginPath, DACoreInterface* c)
     // 设置core后调用初始化
     if (!d_ptr->mPlugin->initialize()) {
         // 初始化失败，停止加载
-        qWarning() << QObject::tr("success load plugin %1,but failed to initialize").arg(getFileName());  // cn:成功加载插件%1,但插件的初始化失败
+        daWarning << QObject::tr("successfully loaded plugin %1, but failed to initialize")
+                         .arg(getFileName());  // cn:成功加载插件 %1，但插件初始化失败
         d_ptr->mPlugin = nullptr;
         d_ptr->mLib.reset();
         return (false);

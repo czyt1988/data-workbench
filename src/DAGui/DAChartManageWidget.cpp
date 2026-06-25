@@ -3,6 +3,7 @@
 #include <QTreeView>
 #include <QPointer>
 #include <QDebug>
+#include "DALogCategory.h"
 #include <QHash>
 #include <QSet>
 #include "DAChartOperateWidget.h"
@@ -58,9 +59,10 @@ DAChartManageWidget::DAChartManageWidget(QWidget* parent)
     connect(ui->toolButtonExpandAll, &QToolButton::clicked, this, &DAChartManageWidget::expandCurrentTree);
     connect(ui->toolButtonCollapseAll, &QToolButton::clicked, this, &DAChartManageWidget::collapseCurrentTree);
     connect(ui->toolButtonFigureSetting, &QToolButton::clicked, this, &DAChartManageWidget::onToolButtonFigureSettingClicked);
-    connect(
-        ui->comboBoxFigure, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DAChartManageWidget::onComboboxCurrentIndexChanged
-    );
+    connect(ui->comboBoxFigure,
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DAChartManageWidget::onComboboxCurrentIndexChanged);
 }
 
 DAChartManageWidget::~DAChartManageWidget()
@@ -201,8 +203,7 @@ void DAChartManageWidget::onFigureCreated(DAFigureWidget* fig)
 {
     int index = d_ptr->mChartOptWidget->getFigureIndex(fig);
     if (index < 0) {
-        qCritical() << tr("get figure create signal,but can not find figure index"
-        );  // cn: 获取了绘图创建的信号，但无法找到绘图的索引
+        daCritical << tr("received figure create signal, but cannot find figure index");  // cn:获取了绘图创建的信号，但无法找到绘图的索引
         return;
     }
 
@@ -221,8 +222,7 @@ void DAChartManageWidget::onFigureCloseing(DAFigureWidget* fig)
 {
     DAFigureTreeView* tree = d_ptr->mFigureWidgetToTree.value(fig, nullptr);
     if (!tree) {
-        qCritical() << tr("get figure close signal,but can not find figure index"
-        );  // cn: 获取了绘图关闭的信号，但无法找到绘图的索引
+        daCritical << tr("received figure close signal, but cannot find figure index");  // cn:获取了绘图关闭的信号，但无法找到绘图的索引
         return;
     }
     ui->stackedWidget->removeWidget(tree);

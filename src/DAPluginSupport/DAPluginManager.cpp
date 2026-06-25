@@ -6,6 +6,7 @@
 #include <QLibrary>
 #include <QFile>
 #include <QTextStream>
+#include "DALogCategory.h"
 namespace DA
 {
 class DAPluginManager::PrivateData
@@ -51,9 +52,9 @@ void DAPluginManager::PrivateData::updateIgnoreSet()
     ensureIgnoreFileExist();
     QFile ignoreFile(getIgnoreFilePath());
     if (!ignoreFile.open(QIODevice::ReadOnly)) {
-        qWarning() << DAPluginManager::tr(
-                          "The file .pluginignore exists, but it failed to read due to the following reason:%1")
-                          .arg(ignoreFile.errorString());
+        daWarning << DAPluginManager::tr(
+                         "The file .pluginignore exists, but failed to read due to the following reason: %1")
+                         .arg(ignoreFile.errorString());  // cn:.pluginignore 文件存在，但由于以下原因读取失败：%1
         return;
     }
     QTextStream ss(&ignoreFile);
@@ -124,7 +125,6 @@ DAPluginManager::~DAPluginManager()
 {
 }
 
-
 /**
  * @brief FCPluginManager::setIgnoreList
  * @param ignorePluginsName
@@ -141,7 +141,7 @@ void DAPluginManager::loadAllPlugins(DACoreInterface* c)
 {
     const QFileInfoList fileInfos = d_ptr->mPluginDir.entryInfoList(QDir::Files);
 
-    qInfo().noquote() << tr("plugin dir is:%1").arg(d_ptr->mPluginDir.absolutePath());
+    daInfo.noquote() << tr("plugin directory is: %1").arg(d_ptr->mPluginDir.absolutePath());  // cn:插件目录为：%1
     for (const QFileInfo& fi : fileInfos) {
         if (fi.baseName().isEmpty()) {
             //".开头的文件，如.pluginignore"
@@ -162,12 +162,12 @@ void DAPluginManager::loadAllPlugins(DACoreInterface* c)
             continue;
         }
         if (d_ptr->mIgnorePluginBaseName.contains(fi.baseName().toLower())) {
-            qInfo().noquote() << tr("ignore plugin %1").arg(fi.baseName());
+            daInfo.noquote() << tr("ignoring plugin %1").arg(fi.baseName());  // cn:忽略插件 %1
             continue;
         }
         const QString filepath = fi.absoluteFilePath();
         if (!QLibrary::isLibrary(filepath)) {
-            qWarning().noquote() << tr(" ignore invalid file:%1").arg(fi.absoluteFilePath());
+            daWarning.noquote() << tr("ignoring invalid file: %1").arg(fi.absoluteFilePath());  // cn:忽略无效文件：%1
             continue;
         }
         DAPluginOption pluginopt;
@@ -233,7 +233,7 @@ bool DAPluginManager::unloadPlugin(const QString& pluginName)
             // 1. 调用插件的 finalize() 进行清理
             DAAbstractPlugin* plugin = it->plugin();
             if (plugin && !plugin->finalize()) {
-                qWarning() << tr("Plugin %1 refused to finalize, unload cancelled.").arg(pluginName);  // cn:插件:%1 拒绝完成，卸载已取消
+                daWarning << tr("Plugin %1 refused to finalize, unload cancelled.").arg(pluginName);  // cn:插件 %1 拒绝完成清理，卸载已取消
                 return false;
             }
             // 2. 卸载插件库
@@ -242,12 +242,12 @@ bool DAPluginManager::unloadPlugin(const QString& pluginName)
                 d_ptr->mPluginOptions.erase(it);
                 return true;
             } else {
-                qWarning() << tr("Failed to unload plugin library for %1.").arg(pluginName);  // cn:无法卸载插件%1
+                daWarning << tr("Failed to unload plugin library for %1.").arg(pluginName);  // cn:无法卸载插件 %1 的库
                 return false;
             }
         }
     }
-    qWarning() << tr("Plugin %1 not found for unloading.").arg(pluginName);  // cn:未能找到插件%1
+    daWarning << tr("Plugin %1 not found for unloading.").arg(pluginName);  // cn:未找到要卸载的插件 %1
     return false;
 }
 
@@ -262,7 +262,6 @@ bool DAPluginManager::unloadAllPlugins()
     }
     return allSuccess;
 }
-
 
 /**
  * @brief 获取插件目录的绝对路径

@@ -5,6 +5,7 @@
 #include <QActionGroup>
 #include <QImage>
 #include <QDebug>
+#include "DALogCategory.h"
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QUndoStack>
@@ -484,7 +485,7 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowWholeView()
 {
     DAPyWorkFlowGraphicsView* view = getCurrentWorkFlowView();
     if (!view) {
-        qWarning() << tr("Loss View");  // cn:缺少视图
+        daWarning << tr("Missing view");  // cn:缺少视图
         return;
     }
     view->zoomFit();
@@ -497,7 +498,7 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowZoomIn()
 {
     DAPyWorkFlowGraphicsView* view = getCurrentWorkFlowView();
     if (!view) {
-        qWarning() << tr("Loss View");  // cn:缺少视图
+        daWarning << tr("Missing view");  // cn:缺少视图
         return;
     }
     qDebug() << "zoomIn";
@@ -511,7 +512,7 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowZoomOut()
 {
     DAPyWorkFlowGraphicsView* view = getCurrentWorkFlowView();
     if (!view) {
-        qWarning() << tr("Loss View");  // cn:缺少视图
+        daWarning << tr("Missing view");  // cn:缺少视图
         return;
     }
     qDebug() << "zoomOut";
@@ -525,7 +526,7 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowSelectAll()
 {
     DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
     if (nullptr == w) {
-        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        daWarning << tr("No active workflow detected");  // cn:未检测到激活的工作流
         return;
     }
     w->selectAll();
@@ -538,11 +539,11 @@ void DAPyWorkFlowOperateWidget::runCurrentWorkFlow()
 {
     DAPyWorkFlowManager* mgr = getCurrentManager();
     if (nullptr == mgr) {
-        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        daWarning << tr("No active workflow detected");  // cn:未检测到激活的工作流
         return;
     }
     if (!mgr->executeWorkflow()) {
-        qCritical() << tr("Workflow execution failed");  // 工作流执行失败
+        daCritical << tr("Workflow execution failed");  // cn:工作流执行失败
     }
 }
 
@@ -553,11 +554,11 @@ void DAPyWorkFlowOperateWidget::terminateCurrentWorkFlow()
 {
     DAPyWorkFlowManager* mgr = getCurrentManager();
     if (nullptr == mgr) {
-        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        daWarning << tr("No active workflow detected");  // cn:未检测到激活的工作流
         return;
     }
     // TODO: 工作流终止功能还未实现
-    qWarning() << tr("Workflow termination not yet implemented");
+    daWarning << tr("Workflow termination has not been implemented yet");  // cn:工作流终止功能尚未实现
 }
 
 /**
@@ -567,7 +568,7 @@ void DAPyWorkFlowOperateWidget::copyCurrentSelectItems()
 {
     DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
     if (nullptr == w) {
-        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        daWarning << tr("No active workflow detected");  // cn:未检测到激活的工作流
         return;
     }
     w->copySelectItems();
@@ -580,7 +581,7 @@ void DAPyWorkFlowOperateWidget::cutCurrentSelectItems()
 {
     DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
     if (nullptr == w) {
-        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        daWarning << tr("No active workflow detected");  // cn:未检测到激活的工作流
         return;
     }
     w->cutSelectItems();
@@ -593,7 +594,7 @@ void DAPyWorkFlowOperateWidget::pasteFromClipBoard()
 {
     DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
     if (nullptr == w) {
-        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        daWarning << tr("No active workflow detected");  // cn:未检测到激活的工作流
         return;
     }
     w->pasteToViewCenter();
@@ -606,7 +607,7 @@ void DAPyWorkFlowOperateWidget::removeCurrentSelectItems()
 {
     DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
     if (nullptr == w) {
-        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        daWarning << tr("No active workflow detected");  // cn:未检测到激活的工作流
         return;
     }
     w->removeSelectItems();
@@ -619,7 +620,7 @@ void DAPyWorkFlowOperateWidget::cancelCurrent()
 {
     DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
     if (nullptr == w) {
-        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        daWarning << tr("No active workflow detected");  // cn:未检测到激活的工作流
         return;
     }
     w->cancel();
@@ -1053,7 +1054,7 @@ bool DAPyWorkFlowOperateWidget::setPreDefineSceneAction(DAPyWorkFlowGraphicsScen
 {
     DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
     if (nullptr == w) {
-        qWarning() << tr("No active workflow detected");  // 未检测到激活的工作流
+        daWarning << tr("No active workflow detected");  // cn:未检测到激活的工作流
         return false;
     }
     w->setPreDefineSceneAction(mf);

@@ -2,7 +2,7 @@
 #include "ui_DataFrameDataSelectDialog.h"
 #include <QDebug>
 #include <QMessageBox>
-
+#include "DALogCategory.h"
 
 DataFrameDataSelectDialog::DataFrameDataSelectDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::DataFrameDataSelectDialog)
@@ -45,7 +45,7 @@ double DataFrameDataSelectDialog::getLowerValue() const
     bool isok = false;
     double v  = ui->LowerValue->text().toDouble(&isok);
     if (!isok) {
-        qCritical() << tr("The current input cannot be converted to a floating-point number.");  // cn:当前输入内容无法转换为浮点数
+        daCritical << tr("The current input cannot be converted to a floating-point number.");  // cn:当前输入内容无法转换为浮点数
         return 0.0;
     }
     return v;
@@ -61,7 +61,7 @@ double DataFrameDataSelectDialog::getUpperValue() const
     bool isok = false;
     double v  = ui->UpperValue->text().toDouble(&isok);
     if (!isok) {
-        qCritical() << tr("The current input cannot be converted to a floating-point number.");  // cn:当前输入内容无法转换为浮点数
+        daCritical << tr("The current input cannot be converted to a floating-point number.");  // cn:当前输入内容无法转换为浮点数
         return 0.0;
     }
     return v;

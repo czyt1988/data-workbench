@@ -13,6 +13,7 @@
 #include "DAStatusBarInterface.h"
 #include "DAPyModule.h"
 #include "DAPybind11QtCaster.hpp"
+#include "DALogCategory.h"
 #include "Dialogs/DataframeExportSettingsDialog.h"
 #include "Dialogs/DataFrameExportRangeSelectDialog.h"
 DataframeIOWorker::DataframeIOWorker(QObject* par) : DataAnalysisBaseWorker(par)
@@ -52,8 +53,8 @@ void DataframeIOWorker::exportIndividualData()
     // 获取当前Data
     QList< DA::DAData > selDatas = dataManagerInterface()->getSelectDatas();
     if (selDatas.empty()) {
-        uiInterface()->addWarningLogMessage(tr("No data is selected. Please select the data to export first.")
-        );  // cn:没有选中任何数据，请先选中要导出的数据
+        uiInterface()->addWarningLogMessage(
+            tr("No data is selected. Please select the data to export first."));  // cn:没有选中任何数据，请先选中要导出的数据
         return;
     }
     QString fileFilter;
@@ -65,12 +66,10 @@ void DataframeIOWorker::exportIndividualData()
         qCritical() << e.what();
         return;
     }
-    QString dataPath = QFileDialog::getSaveFileName(
-        mainWindow(),
-        tr("Export Data"),  // 导出数据
-        QString(),
-        fileFilter
-    );
+    QString dataPath = QFileDialog::getSaveFileName(mainWindow(),
+                                                    tr("Export Data"),  // 导出数据
+                                                    QString(),
+                                                    fileFilter);
     if (dataPath.isEmpty()) {
         // 取消退出
         return;
@@ -86,7 +85,7 @@ void DataframeIOWorker::exportIndividualData()
     try {
         auto export_data = m_dataAnalysisModule->attr("export_data");
         export_data(data.toPyObject(), DA::PY::toPyObject(dataFilePath), DA::PY::toPyObject(dataSuffix));
-        qInfo() << tr("Successfully exported %1 to %2").arg(data.getName(), dataFilePath);  // cn:成功把%1导出到%2
+        daInfo << tr("Successfully exported %1 to %2").arg(data.getName(), dataFilePath);  // cn:成功把%1导出到%2
     } catch (const std::exception& e) {
         qCritical() << e.what();
         return;
@@ -127,11 +126,10 @@ void DataframeIOWorker::exportToOneExcelFile()
         return;
     }
 
-    QString savePath = QFileDialog::getSaveFileName(
-        mainWindow(),                    // 父窗口
-        QString(u8"保存为 excel 文件"),  // 标题
-        QString(),                       // 默认打开目录（空=上次路径）
-        QString(u8"excel (*.xlsx)")      // 过滤器
+    QString savePath = QFileDialog::getSaveFileName(mainWindow(),                    // 父窗口
+                                                    QString(u8"保存为 excel 文件"),  // 标题
+                                                    QString(),                       // 默认打开目录（空=上次路径）
+                                                    QString(u8"excel (*.xlsx)")      // 过滤器
     );
     if (savePath.isEmpty()) {
         return;
@@ -210,9 +208,8 @@ void DataframeIOWorker::updatePythonThreadStatus(const std::string& taskid, int 
             statusBar->setProgressText(progress_text);
             // 关键，在evenTime后继续查询
             // QTimer::singleShot(20, this, &DataframeIOWorker::onExportMultipleDataTask);
-            QTimer::singleShot(evenTime, [ this, taskid, msleep, evenTime ]() {
-                updatePythonThreadStatus(taskid, msleep, evenTime);
-            });
+            QTimer::singleShot(
+                evenTime, [ this, taskid, msleep, evenTime ]() { updatePythonThreadStatus(taskid, msleep, evenTime); });
         } else {
             // 说明线程已经运行完成
             bool is_success     = status[ "is_success" ].cast< bool >();

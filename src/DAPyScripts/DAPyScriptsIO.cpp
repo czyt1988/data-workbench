@@ -1,6 +1,7 @@
 ﻿#include "DAPyScriptsIO.h"
 #include "DAPybind11QtCaster.hpp"
 #include <QDebug>
+#include "DALogCategory.h"
 
 /**
  * @def FUNCTION_STR_DICT
@@ -62,7 +63,7 @@ DAPyScriptsIO::DAPyScriptsIO(bool autoImport) : DAPyModule()
 {
     if (autoImport) {
         if (!import()) {
-            qCritical() << QObject::tr("can not import da_io module");
+            daCritical << QObject::tr("cannot import da_io module");  // cn:无法导入 da_io 模块
             throw std::runtime_error("Failed to import module: DAWorkbench.io");
         }
     }
@@ -71,7 +72,7 @@ DAPyScriptsIO::DAPyScriptsIO(bool autoImport) : DAPyModule()
 DAPyScriptsIO::DAPyScriptsIO(const pybind11::object& obj) : DAPyModule(obj)
 {
     if (isModule()) {
-        qCritical() << QObject::tr("can not import DAWorkBench.io");
+        daCritical << QObject::tr("cannot import DAWorkbench.io");  // cn:无法导入 DAWorkbench.io 模块
     }
 }
 

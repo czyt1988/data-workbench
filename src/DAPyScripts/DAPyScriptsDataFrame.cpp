@@ -1,6 +1,7 @@
 ﻿#include "DAPyScriptsDataFrame.h"
 #include "DAPybind11QtCaster.hpp"
 #include <QDebug>
+#include "DALogCategory.h"
 namespace DA
 {
 
@@ -11,7 +12,7 @@ DAPyScriptsDataFrame::DAPyScriptsDataFrame(bool autoImport) : DAPyModule()
 {
     if (autoImport) {
         if (!import()) {
-            qCritical() << QObject::tr("can not import da_dataframe module");
+            daCritical << QObject::tr("cannot import da_dataframe module");  // cn:无法导入 da_dataframe 模块
         }
     }
 }
@@ -19,7 +20,7 @@ DAPyScriptsDataFrame::DAPyScriptsDataFrame(bool autoImport) : DAPyModule()
 DAPyScriptsDataFrame::DAPyScriptsDataFrame(const pybind11::object& obj) : DAPyModule(obj)
 {
     if (isModule()) {
-        qCritical() << QObject::tr("can not import DAWorkBench.io");
+        daCritical << QObject::tr("cannot import DAWorkbench.dataframe");  // cn:无法导入 DAWorkbench.dataframe 模块
     }
 }
 
@@ -117,9 +118,11 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df, int c, const QString
  * @param stop
  * @return
  */
-bool DAPyScriptsDataFrame::insert_column(
-    DAPyDataFrame& df, int c, const QString& name, const QVariant& start, const QVariant& stop
-) noexcept
+bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
+                                         int c,
+                                         const QString& name,
+                                         const QVariant& start,
+                                         const QVariant& stop) noexcept
 {
     try {
         pybind11::object da_insert_column = attr("da_insert_column");
@@ -421,9 +424,11 @@ bool DAPyScriptsDataFrame::insert_at(DAPyDataFrame& df, int col, const DAPySerie
  * @param thresh
  * @return
  */
-bool DAPyScriptsDataFrame::dropna(
-    DAPyDataFrame& df, int axis, const QString& how, const QList< int >& indexs, std::optional< int > thresh
-) noexcept
+bool DAPyScriptsDataFrame::dropna(DAPyDataFrame& df,
+                                  int axis,
+                                  const QString& how,
+                                  const QList< int >& indexs,
+                                  std::optional< int > thresh) noexcept
 {
     try {
         pybind11::object da_drop_na = attr("da_drop_na");
@@ -674,10 +679,9 @@ QList< QPair< int, int > > DAPyScriptsDataFrame::searchData(const DAPyDataFrame&
 
         for (auto item : result) {
             pybind11::tuple pos = item.cast< pybind11::tuple >();
-            matches.append(qMakePair(
-                pos[ 0 ].cast< int >(),  // 行
-                pos[ 1 ].cast< int >()   // 列
-            ));
+            matches.append(qMakePair(pos[ 0 ].cast< int >(),  // 行
+                                     pos[ 1 ].cast< int >()   // 列
+                                     ));
         }
         return matches;
     } catch (const std::exception& e) {
@@ -774,16 +778,14 @@ bool DAPyScriptsDataFrame::dataselect(DAPyDataFrame& df, double lowervalue, doub
  * @param sort 聚合后的结果排序
  * @return DAPyDataFrame
  */
-DAPyDataFrame DAPyScriptsDataFrame::pivotTable(
-    const DAPyDataFrame& df,
-    const QStringList& values,
-    const QStringList& index,
-    const QStringList& columns,
-    const QString& aggfunc,
-    bool margins,
-    const QString& marginsName,
-    bool sort
-) noexcept
+DAPyDataFrame DAPyScriptsDataFrame::pivotTable(const DAPyDataFrame& df,
+                                               const QStringList& values,
+                                               const QStringList& index,
+                                               const QStringList& columns,
+                                               const QString& aggfunc,
+                                               bool margins,
+                                               const QString& marginsName,
+                                               bool sort) noexcept
 {
     try {
         pybind11::object da_pivot_table = attr("da_create_pivot_table");

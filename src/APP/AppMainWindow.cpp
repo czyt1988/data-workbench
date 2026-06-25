@@ -40,6 +40,7 @@
 #include "SettingPages/DAAppConfig.h"
 #include "DAAppProjectActionPolicy.h"
 #include "DAAppWindowStateSerializer.h"
+#include "DALogCategory.h"
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
 
@@ -112,7 +113,7 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
     bool hasUIStateFile = isHaveStateSettingFile();
     if (hasUIStateFile) {
         restoreUIState();
-        qInfo().noquote() << tr("Restore UI State");  // cn:加载界面状态信息
+        daInfo.noquote() << tr("Restore UI state");  // cn:加载界面状态信息
     }
     // 首次调用此函数会加载插件，可放置在main函数中调用
     updateSplash(tr("Loading plugins..."));  // cn:正在加载插件...
@@ -161,13 +162,12 @@ void AppMainWindow::closeEvent(QCloseEvent* e)
     DAAppCloseAction closeAction = DAAppCloseAction::CloseDirectly;
     if (mController->isDirty()) {
         // 是否保存
-        auto btn = QMessageBox::question(
-            this,
-            tr("Question"),                          // cn:疑问
-            tr("Do you need to save the project?"),  // cn:是否需要保存工程？
-            QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel,
-            QMessageBox::StandardButton::Yes
-        );
+        auto btn    = QMessageBox::question(this,
+                                            tr("Question"),                          // cn:疑问
+                                            tr("Do you need to save the project?"),  // cn:是否需要保存工程？
+                                            QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No
+                                                | QMessageBox::StandardButton::Cancel,
+                                            QMessageBox::StandardButton::Yes);
         closeAction = resolveAppCloseAction(true, toAppSavePromptChoice(btn));
     }
     if (DAAppCloseAction::CancelClosing == closeAction) {
@@ -227,8 +227,7 @@ void AppMainWindow::initPlugins()
     DAAppCore& core = DAAppCore::getInstance();
     mPluginMgr->loadAllPlugins(&core);
     // 加载完成后，把DAAppPluginManager赋值给DAAppWorkFlowOperateWidget
-    DAAppWorkFlowOperateWidget* appWFO =
-        qobject_cast< DAAppWorkFlowOperateWidget* >(mDockArea->getWorkFlowOperateWidget());
+    DAAppWorkFlowOperateWidget* appWFO = qobject_cast< DAAppWorkFlowOperateWidget* >(mDockArea->getWorkFlowOperateWidget());
     if (appWFO) {
         appWFO->setPluginManager(mPluginMgr);
     }
@@ -392,7 +391,7 @@ bool AppMainWindow::restoreUIState(const QByteArray& v)
 {
     DAAppWindowStateSnapshot snapshot;
     if (!deserializeAppWindowState(v, &snapshot)) {
-        qCritical() << tr("restore UI state error");  // 恢复状态过程中出错
+        daCritical << tr("failed to restore UI state");  // cn:恢复界面状态过程中出错
         return false;
     }
     if (!snapshot.geometry.isEmpty()) {
@@ -412,7 +411,7 @@ bool AppMainWindow::restoreUIState()
     QString uistateFile = getUIStateSettingFilePath();
     QFile file(uistateFile);
     if (!file.open(QIODevice::ReadOnly)) {
-        qCritical() << tr("can not read ui state file %1,because %2").arg(uistateFile, file.errorString());
+        daCritical << tr("cannot read UI state file %1: %2").arg(uistateFile, file.errorString());  // cn:无法读取界面状态文件%1，原因：%2
         return false;
     }
     QByteArray res;
