@@ -15,18 +15,20 @@ namespace DA
  * @param parent 父控件
  */
 DAChartItemSettingPanel::DAChartItemSettingPanel(QWidget* parent)
-    : DAAbstractChartItemSettingWidget(parent)
-    , mPanel(nullptr)
+    : DAAbstractChartItemSettingWidget(parent), mPanel(nullptr)
 {
     // 创建DAPropertyPanelContainerWidget并设为自身主布局
-    mPanel = new DAPropertyPanelContainerWidget(this);
+    mPanel              = new DAPropertyPanelContainerWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(mPanel);
     setLayout(layout);
 
     // 连接propertyValueChanged信号
-    connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged, this, &DAChartItemSettingPanel::onPanelPropertyValueChanged);
+    connect(mPanel,
+            &DAPropertyPanelContainerWidget::propertyValueChanged,
+            this,
+            &DAChartItemSettingPanel::onPanelPropertyValueChanged);
 
     // 注意：不在此调用buildPropertyPanel()，由子类构造函数末尾自行调用
 }
@@ -75,8 +77,11 @@ void DAChartItemSettingPanel::addCurveStyleProperty(int id, const QString& name)
     combo->addItem(tr("Dots"), static_cast< int >(QwtPlotCurve::Dots));
     combo->addItem(tr("No Curve"), static_cast< int >(QwtPlotCurve::NoCurve));
 
-    connect(combo, QOverload< int >::of(&QComboBox::currentIndexChanged),
-            mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged);
+    // currentIndexChanged 传的是 combo index，不是 propertyId，
+    // 不能 signal-to-signal 直连，必须用 lambda 把正确的 id 传出去
+    connect(combo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [ this, id ](int) {
+        onPanelPropertyValueChanged(id);
+    });
 
     mPanel->addProperty(id, name, combo);
 }
@@ -92,7 +97,7 @@ void DAChartItemSettingPanel::addCurveStyleProperty(int id, const QString& name)
  */
 void DAChartItemSettingPanel::addOrientationProperty(int id, const QString& name)
 {
-    QWidget* container = new QWidget(this);
+    QWidget* container   = new QWidget(this);
     QHBoxLayout* hLayout = new QHBoxLayout(container);
     hLayout->setContentsMargins(0, 0, 0, 0);
     hLayout->setSpacing(8);
@@ -116,16 +121,14 @@ void DAChartItemSettingPanel::addOrientationProperty(int id, const QString& name
     hLayout->addWidget(rbV);
     hLayout->addStretch();
 
-    mButtonGroupMap[id] = group;
+    mButtonGroupMap[ id ] = group;
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    connect(group, QOverload<int>::of(&QButtonGroup::buttonClicked), this, [this, id](int) {
+    connect(group, QOverload< int >::of(&QButtonGroup::buttonClicked), this, [ this, id ](int) {
         onPanelPropertyValueChanged(id);
     });
 #else
-    connect(group, &QButtonGroup::idClicked, this, [this, id](int) {
-        onPanelPropertyValueChanged(id);
-    });
+    connect(group, &QButtonGroup::idClicked, this, [ this, id ](int) { onPanelPropertyValueChanged(id); });
 #endif
 
     mPanel->addProperty(id, name, container);
@@ -153,8 +156,11 @@ void DAChartItemSettingPanel::addAxisProperty(int id, const QString& name, bool 
         combo->addItem(tr("X Top"), static_cast< int >(QwtAxis::XTop));
     }
 
-    connect(combo, QOverload< int >::of(&QComboBox::currentIndexChanged),
-            mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged);
+    // currentIndexChanged 传的是 combo index，不是 propertyId，
+    // 不能 signal-to-signal 直连，必须用 lambda 把正确的 id 传出去
+    connect(combo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [ this, id ](int) {
+        onPanelPropertyValueChanged(id);
+    });
 
     mPanel->addProperty(id, name, combo);
 }
@@ -172,14 +178,18 @@ void DAChartItemSettingPanel::addSymbolProperty(int id, const QString& name)
 {
     DAChartSymbolEditWidget* symbolEdit = new DAChartSymbolEditWidget(this);
 
-    connect(symbolEdit, &DAChartSymbolEditWidget::symbolStyleChanged,
-            this, [this, id](QwtSymbol::Style) { emit propertyValueChanged(id); });
-    connect(symbolEdit, &DAChartSymbolEditWidget::symbolSizeChanged,
-            this, [this, id](int) { emit propertyValueChanged(id); });
-    connect(symbolEdit, &DAChartSymbolEditWidget::symbolColorChanged,
-            this, [this, id](const QColor&) { emit propertyValueChanged(id); });
-    connect(symbolEdit, &DAChartSymbolEditWidget::symbolOutlinePenChanged,
-            this, [this, id](const QPen&) { emit propertyValueChanged(id); });
+    connect(symbolEdit, &DAChartSymbolEditWidget::symbolStyleChanged, this, [ this, id ](QwtSymbol::Style) {
+        emit propertyValueChanged(id);
+    });
+    connect(symbolEdit, &DAChartSymbolEditWidget::symbolSizeChanged, this, [ this, id ](int) {
+        emit propertyValueChanged(id);
+    });
+    connect(symbolEdit, &DAChartSymbolEditWidget::symbolColorChanged, this, [ this, id ](const QColor&) {
+        emit propertyValueChanged(id);
+    });
+    connect(symbolEdit, &DAChartSymbolEditWidget::symbolOutlinePenChanged, this, [ this, id ](const QPen&) {
+        emit propertyValueChanged(id);
+    });
 
     mPanel->addProperty(id, name, symbolEdit, DAPropertyItemWidget::BelowLayout);
 }
@@ -195,12 +205,12 @@ void DAChartItemSettingPanel::addSymbolProperty(int id, const QString& name)
  */
 void DAChartItemSettingPanel::addScaleStyleProperty(int id, const QString& name)
 {
-    QWidget* container = new QWidget(this);
+    QWidget* container   = new QWidget(this);
     QHBoxLayout* hLayout = new QHBoxLayout(container);
     hLayout->setContentsMargins(0, 0, 0, 0);
     hLayout->setSpacing(8);
 
-    QRadioButton* rbNormal = new QRadioButton(tr("Normal"), container);
+    QRadioButton* rbNormal   = new QRadioButton(tr("Normal"), container);
     QRadioButton* rbDateTime = new QRadioButton(tr("DateTime"), container);
 
     QButtonGroup* group = new QButtonGroup(container);
@@ -219,16 +229,14 @@ void DAChartItemSettingPanel::addScaleStyleProperty(int id, const QString& name)
     hLayout->addWidget(rbDateTime);
     hLayout->addStretch();
 
-    mScaleStyleGroupMap[id] = group;
+    mScaleStyleGroupMap[ id ] = group;
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    connect(group, QOverload<int>::of(&QButtonGroup::buttonClicked), this, [this, id](int) {
+    connect(group, QOverload< int >::of(&QButtonGroup::buttonClicked), this, [ this, id ](int) {
         onPanelPropertyValueChanged(id);
     });
 #else
-    connect(group, &QButtonGroup::idClicked, this, [this, id](int) {
-        onPanelPropertyValueChanged(id);
-    });
+    connect(group, &QButtonGroup::idClicked, this, [ this, id ](int) { onPanelPropertyValueChanged(id); });
 #endif
 
     mPanel->addProperty(id, name, container);
@@ -294,7 +302,7 @@ Qt::Orientation DAChartItemSettingPanel::getOrientationValue(int id) const
         return Qt::Horizontal;
     }
     QButtonGroup* group = it.value();
-    int checkedId = group->checkedId();
+    int checkedId       = group->checkedId();
     return static_cast< Qt::Orientation >(checkedId);
 }
 
@@ -433,8 +441,8 @@ void DAChartItemSettingPanel::setScaleStyleValue(int id, int scaleStyle)
         return;
     }
     QButtonGroup* group = it.value();
-    bool wasBlocked = group->blockSignals(true);
-    auto buttons = group->buttons();
+    bool wasBlocked     = group->blockSignals(true);
+    auto buttons        = group->buttons();
     for (auto btn : buttons) {
         if (group->id(btn) == scaleStyle) {
             btn->setChecked(true);
