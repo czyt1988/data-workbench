@@ -30,13 +30,13 @@ public:
 
 public:
     QPointer< QwtPlot > mPlot;
-    DAChartPlotSettingPanel* mPlotSettingWidget { nullptr };             /// 对应图表设置
-    DAChartCanvasSettingPanel* mPlotCanvasSettingWidget { nullptr };     /// 对应绘图区域设置
-    DAChartAxisSettingPanel* mPlotScaleYLeftSettingWidget { nullptr };   /// 对应yleft设置
-    DAChartAxisSettingPanel* mPlotScaleXBottomSettingWidget { nullptr }; /// 对应xbottom设置
-    DAChartAxisSettingPanel* mPlotScaleYRightSettingWidget { nullptr };  /// 对应yright设置
-    DAChartAxisSettingPanel* mPlotScaleXTopSettingWidget { nullptr };    /// 对应xtop设置
-    DAChartCommonItemsSettingWidget* mPlotItemSettingWidget { nullptr }; ///< 对应plotItem设置
+    DAChartPlotSettingPanel* mPlotSettingWidget { nullptr };              /// 对应图表设置
+    DAChartCanvasSettingPanel* mPlotCanvasSettingWidget { nullptr };      /// 对应绘图区域设置
+    DAChartAxisSettingPanel* mPlotScaleYLeftSettingWidget { nullptr };    /// 对应yleft设置
+    DAChartAxisSettingPanel* mPlotScaleXBottomSettingWidget { nullptr };  /// 对应xbottom设置
+    DAChartAxisSettingPanel* mPlotScaleYRightSettingWidget { nullptr };   /// 对应yright设置
+    DAChartAxisSettingPanel* mPlotScaleXTopSettingWidget { nullptr };     /// 对应xtop设置
+    DAChartCommonItemsSettingWidget* mPlotItemSettingWidget { nullptr };  ///< 对应plotItem设置
 };
 
 DAChartSettingWidget::PrivateData::PrivateData(DAChartSettingWidget* p) : q_ptr(p)
@@ -75,7 +75,8 @@ void DAChartSettingWidget::PrivateData::setupUi(QStackedWidget* stackWidget)
     stackWidget->addWidget(mPlotItemSettingWidget);
 }
 
-void DAChartSettingWidget::PrivateData::setComboboxFixSelectionArea(QComboBox* com, DAChartSettingWidget::SettingWidgetType widType)
+void DAChartSettingWidget::PrivateData::setComboboxFixSelectionArea(QComboBox* com,
+                                                                    DAChartSettingWidget::SettingWidgetType widType)
 {
     const int comboboxCount = com->count();
     for (int i = 0; i < comboboxCount; ++i) {
@@ -106,9 +107,10 @@ DAChartSettingWidget::DAChartSettingWidget(QWidget* parent)
 
     d_ptr->setupUi(ui->stackedWidget);
 
-    connect(
-        ui->comboBoxSelectItem, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DAChartSettingWidget::onComboBoxItemIndexChanged
-    );
+    connect(ui->comboBoxSelectItem,
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DAChartSettingWidget::onComboBoxItemIndexChanged);
 }
 
 DAChartSettingWidget::~DAChartSettingWidget()
@@ -496,6 +498,8 @@ void DAChartSettingWidget::onItemAttached(QwtPlotItem* plotItem, bool on)
     if (on) {
         // 新增
         appendPlotItemToComboBox(plotItem);
+        // 自动选中新添加的 plotItem 并显示其设置面板
+        setCurrentPlotItem(plotItem);
     } else {
         removePlotItemFromComboBox(plotItem);
     }

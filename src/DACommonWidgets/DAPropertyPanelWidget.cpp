@@ -665,11 +665,27 @@ void DAPropertyPanelWidget::clearProperties()
 
 /**
  * @brief 获取属性项Widget（通过ID）
+ *
+ * 先在根面板查找，找不到则递归在所有分组面板中查找。
+ * 这是因为 addCollapsibleGroup 创建的分组面板会接管属性项的存储，
+ * 值读写方法需要能跨分组面板查找到属性项。
  */
 DAPropertyItemWidget* DAPropertyPanelWidget::getPropertyItem(int id) const
 {
     DA_DC(d);
-    return d->mPropertyItems.value(id, nullptr);
+    // 先在本面板的 mPropertyItems 中查找（不递归，避免无限递归）
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (item) {
+        return item;
+    }
+    // 递归在分组面板中查找
+    for (auto it = d->mGroupPanels.constBegin(); it != d->mGroupPanels.constEnd(); ++it) {
+        item = it.value()->getPropertyItem(id);
+        if (item) {
+            return item;
+        }
+    }
+    return nullptr;
 }
 
 /**
@@ -701,7 +717,7 @@ DAPropertyItemWidget* DAPropertyPanelWidget::getPropertyItemAt(int index) const
 int DAPropertyPanelWidget::indexOf(int id) const
 {
     DA_DC(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item) {
         return -1;
     }
@@ -1178,7 +1194,7 @@ void DAPropertyPanelWidget::insertGroupLabel(int index, const QString& text)
 QColor DAPropertyPanelWidget::getColorValue(int id) const
 {
     DA_DC(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return QColor();
     QWidget* editor = item->editorWidget();
@@ -1196,7 +1212,7 @@ QColor DAPropertyPanelWidget::getColorValue(int id) const
 void DAPropertyPanelWidget::setColorValue(int id, const QColor& color)
 {
     DA_D(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return;
     QWidget* editor = item->editorWidget();
@@ -1215,7 +1231,7 @@ void DAPropertyPanelWidget::setColorValue(int id, const QColor& color)
 QFont DAPropertyPanelWidget::getFontValue(int id) const
 {
     DA_DC(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return QFont();
     QWidget* editor = item->editorWidget();
@@ -1233,7 +1249,7 @@ QFont DAPropertyPanelWidget::getFontValue(int id) const
 void DAPropertyPanelWidget::setFontValue(int id, const QFont& font)
 {
     DA_D(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return;
     QWidget* editor = item->editorWidget();
@@ -1252,7 +1268,7 @@ void DAPropertyPanelWidget::setFontValue(int id, const QFont& font)
 QBrush DAPropertyPanelWidget::getBrushValue(int id) const
 {
     DA_DC(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return QBrush();
     QWidget* editor = item->editorWidget();
@@ -1270,7 +1286,7 @@ QBrush DAPropertyPanelWidget::getBrushValue(int id) const
 void DAPropertyPanelWidget::setBrushValue(int id, const QBrush& brush)
 {
     DA_D(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return;
     QWidget* editor = item->editorWidget();
@@ -1289,7 +1305,7 @@ void DAPropertyPanelWidget::setBrushValue(int id, const QBrush& brush)
 QPen DAPropertyPanelWidget::getPenValue(int id) const
 {
     DA_DC(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return QPen();
     QWidget* editor = item->editorWidget();
@@ -1307,7 +1323,7 @@ QPen DAPropertyPanelWidget::getPenValue(int id) const
 void DAPropertyPanelWidget::setPenValue(int id, const QPen& pen)
 {
     DA_D(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return;
     QWidget* editor = item->editorWidget();
@@ -1326,7 +1342,7 @@ void DAPropertyPanelWidget::setPenValue(int id, const QPen& pen)
 int DAPropertyPanelWidget::getIntValue(int id) const
 {
     DA_DC(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return 0;
     QWidget* editor = item->editorWidget();
@@ -1344,7 +1360,7 @@ int DAPropertyPanelWidget::getIntValue(int id) const
 void DAPropertyPanelWidget::setIntValue(int id, int value)
 {
     DA_D(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return;
     QWidget* editor = item->editorWidget();
@@ -1363,7 +1379,7 @@ void DAPropertyPanelWidget::setIntValue(int id, int value)
 double DAPropertyPanelWidget::getDoubleValue(int id) const
 {
     DA_DC(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return 0.0;
     QWidget* editor = item->editorWidget();
@@ -1381,7 +1397,7 @@ double DAPropertyPanelWidget::getDoubleValue(int id) const
 void DAPropertyPanelWidget::setDoubleValue(int id, double value)
 {
     DA_D(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return;
     QWidget* editor = item->editorWidget();
@@ -1400,7 +1416,7 @@ void DAPropertyPanelWidget::setDoubleValue(int id, double value)
 bool DAPropertyPanelWidget::getBoolValue(int id) const
 {
     DA_DC(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return false;
     QWidget* editor = item->editorWidget();
@@ -1418,7 +1434,7 @@ bool DAPropertyPanelWidget::getBoolValue(int id) const
 void DAPropertyPanelWidget::setBoolValue(int id, bool checked)
 {
     DA_D(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return;
     QWidget* editor = item->editorWidget();
@@ -1437,7 +1453,7 @@ void DAPropertyPanelWidget::setBoolValue(int id, bool checked)
 QString DAPropertyPanelWidget::getStringValue(int id) const
 {
     DA_DC(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return QString();
     QWidget* editor = item->editorWidget();
@@ -1455,7 +1471,7 @@ QString DAPropertyPanelWidget::getStringValue(int id) const
 void DAPropertyPanelWidget::setStringValue(int id, const QString& text)
 {
     DA_D(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return;
     QWidget* editor = item->editorWidget();
@@ -1474,7 +1490,7 @@ void DAPropertyPanelWidget::setStringValue(int id, const QString& text)
 int DAPropertyPanelWidget::getEnumValue(int id) const
 {
     DA_DC(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return -1;
     QWidget* editor = item->editorWidget();
@@ -1497,7 +1513,7 @@ int DAPropertyPanelWidget::getEnumValue(int id) const
 void DAPropertyPanelWidget::setEnumValue(int id, int value)
 {
     DA_D(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return;
     QWidget* editor = item->editorWidget();
@@ -1524,7 +1540,7 @@ void DAPropertyPanelWidget::setEnumValue(int id, int value)
 Qt::Alignment DAPropertyPanelWidget::getAlignmentValue(int id) const
 {
     DA_DC(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return Qt::Alignment();
     QWidget* editor = item->editorWidget();
@@ -1542,7 +1558,7 @@ Qt::Alignment DAPropertyPanelWidget::getAlignmentValue(int id) const
 void DAPropertyPanelWidget::setAlignmentValue(int id, Qt::Alignment alignment)
 {
     DA_D(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return;
     QWidget* editor = item->editorWidget();
@@ -1561,7 +1577,7 @@ void DAPropertyPanelWidget::setAlignmentValue(int id, Qt::Alignment alignment)
 Qt::Alignment DAPropertyPanelWidget::getAlignmentPositionValue(int id) const
 {
     DA_DC(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return Qt::Alignment();
     QWidget* editor = item->editorWidget();
@@ -1579,7 +1595,7 @@ Qt::Alignment DAPropertyPanelWidget::getAlignmentPositionValue(int id) const
 void DAPropertyPanelWidget::setAlignmentPositionValue(int id, Qt::Alignment alignment)
 {
     DA_D(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return;
     QWidget* editor = item->editorWidget();
@@ -1598,7 +1614,7 @@ void DAPropertyPanelWidget::setAlignmentPositionValue(int id, Qt::Alignment alig
 QString DAPropertyPanelWidget::getFilePathValue(int id) const
 {
     DA_DC(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return QString();
     QWidget* editor = item->editorWidget();
@@ -1616,7 +1632,7 @@ QString DAPropertyPanelWidget::getFilePathValue(int id) const
 void DAPropertyPanelWidget::setFilePathValue(int id, const QString& path)
 {
     DA_D(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (!item)
         return;
     QWidget* editor = item->editorWidget();
@@ -1637,7 +1653,7 @@ void DAPropertyPanelWidget::setFilePathValue(int id, const QString& path)
 void DAPropertyPanelWidget::setPropertyVisible(int id, bool visible)
 {
     DA_D(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (item) {
         if (visible)
             item->show();
@@ -1652,7 +1668,7 @@ void DAPropertyPanelWidget::setPropertyVisible(int id, bool visible)
 void DAPropertyPanelWidget::setPropertyEnabled(int id, bool enabled)
 {
     DA_D(d);
-    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    DAPropertyItemWidget* item = getPropertyItem(id);
     if (item) {
         item->setEnabled(enabled);
     }
