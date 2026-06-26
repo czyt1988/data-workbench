@@ -26,42 +26,42 @@ namespace DA
 {
 class DAPropertyPanelWidget::PrivateData
 {
-	DA_DECLARE_PUBLIC(DAPropertyPanelWidget)
+    DA_DECLARE_PUBLIC(DAPropertyPanelWidget)
 public:
-	PrivateData(DAPropertyPanelWidget* p);
+    PrivateData(DAPropertyPanelWidget* p);
 
-	QMap<int, DAPropertyItemWidget*> mPropertyItems;  // ID -> Widget映射
-	QList<QWidget*> mWidgetList;                      // 保持添加顺序（包括分隔项）
-	int mNextAutoId = 1;                               // 自动分配ID计数器
-	int mPropertyNameWidth = -1;                       // -1表示自动计算
-	int mSpacing = 4;                                  // 属性项间距
+    QMap< int, DAPropertyItemWidget* > mPropertyItems;  // ID -> Widget映射
+    QList< QWidget* > mWidgetList;                      // 保持添加顺序（包括分隔项）
+    int mNextAutoId        = 1;                         // 自动分配ID计数器
+    int mPropertyNameWidth = -1;                        // -1表示自动计算
+    int mSpacing           = 4;                         // 属性项间距
 
-	QWidget* mContentWidget = nullptr;
-	QVBoxLayout* mContentLayout = nullptr;
+    QWidget* mContentWidget     = nullptr;
+    QVBoxLayout* mContentLayout = nullptr;
 
-	// 分组管理
-	int mNextGroupId = 1;
-	QMap<int, DACollapsiblePanel*> mGroups;            // groupId -> collapsible panel wrapper
-	QMap<int, DAPropertyPanelWidget*> mGroupPanels;    // groupId -> inner property panel
-	DAPropertyPanelWidget* mCurrentGroupPanel = nullptr; // 当前活动分组面板（null=根面板）
+    // 分组管理
+    int mNextGroupId = 1;
+    QMap< int, DACollapsiblePanel* > mGroups;             // groupId -> collapsible panel wrapper
+    QMap< int, DAPropertyPanelWidget* > mGroupPanels;     // groupId -> inner property panel
+    DAPropertyPanelWidget* mCurrentGroupPanel = nullptr;  // 当前活动分组面板（null=根面板）
 
-	// 子面板管理
-	QMap<int, DAPropertyPanelWidget*> mSubPanels;       // subPanelId -> sub-panel
-	QMap<int, QMetaObject::Connection> mSubPanelConnections; // subPanelId -> signal connection
+    // 子面板管理
+    QMap< int, DAPropertyPanelWidget* > mSubPanels;             // subPanelId -> sub-panel
+    QMap< int, QMetaObject::Connection > mSubPanelConnections;  // subPanelId -> signal connection
 
-	QWidget* getTargetContentWidget() const;
+    QWidget* getTargetContentWidget() const;
 
-	int generateAutoId();
-	void addItemToContent(QWidget* widget, int index);
-	void addItemToRoot(QWidget* widget, int index);
-	void removeItemFromContent(QWidget* widget);
-	int calculateAutoPropertyNameWidth() const;
-	void updateAllItemsNameLabelWidth();
-	DAPropertyItemWidget* createPropertyItem(int id,
-	                                         const QString& name,
-	                                         const QString& description,
-	                                         QWidget* editor,
-	                                         DAPropertyItemWidget::LayoutMode mode);
+    int generateAutoId();
+    void addItemToContent(QWidget* widget, int index);
+    void addItemToRoot(QWidget* widget, int index);
+    void removeItemFromContent(QWidget* widget);
+    int calculateAutoPropertyNameWidth() const;
+    void updateAllItemsNameLabelWidth();
+    DAPropertyItemWidget* createPropertyItem(int id,
+                                             const QString& name,
+                                             const QString& description,
+                                             QWidget* editor,
+                                             DAPropertyItemWidget::LayoutMode mode);
 };
 
 //===================================================
@@ -70,113 +70,113 @@ public:
 
 DAPropertyPanelWidget::PrivateData::PrivateData(DAPropertyPanelWidget* p) : q_ptr(p)
 {
-	if (p->objectName().isEmpty()) {
-		p->setObjectName(QStringLiteral("DAPropertyPanelWidget"));
-	}
+    if (p->objectName().isEmpty()) {
+        p->setObjectName(QStringLiteral("DAPropertyPanelWidget"));
+    }
 
-	// 创建主布局
-	QVBoxLayout* mainLayout = new QVBoxLayout(p);
-	mainLayout->setObjectName(QStringLiteral("mainLayout"));
-	mainLayout->setContentsMargins(0, 0, 0, 0);
-	mainLayout->setSpacing(0);
+    // 创建主布局
+    QVBoxLayout* mainLayout = new QVBoxLayout(p);
+    mainLayout->setObjectName(QStringLiteral("mainLayout"));
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
 
-	// 创建内容Widget（直接子控件，不再嵌入ScrollArea）
-	mContentWidget = new QWidget();
-	mContentWidget->setObjectName(QStringLiteral("contentWidget"));
-	mContentLayout = new QVBoxLayout(mContentWidget);
-	mContentLayout->setObjectName(QStringLiteral("contentLayout"));
-	mContentLayout->setSpacing(mSpacing);
-	mContentLayout->setContentsMargins(4, 4, 4, 4);
+    // 创建内容Widget（直接子控件，不再嵌入ScrollArea）
+    mContentWidget = new QWidget();
+    mContentWidget->setObjectName(QStringLiteral("contentWidget"));
+    mContentLayout = new QVBoxLayout(mContentWidget);
+    mContentLayout->setObjectName(QStringLiteral("contentLayout"));
+    mContentLayout->setSpacing(mSpacing);
+    mContentLayout->setContentsMargins(4, 4, 4, 4);
 
-	// 底部弹性空间
-	mContentLayout->addStretch(1);
+    // 底部弹性空间
+    mContentLayout->addStretch(1);
 
-	mainLayout->addWidget(mContentWidget);
+    mainLayout->addWidget(mContentWidget);
 }
 
 QWidget* DAPropertyPanelWidget::PrivateData::getTargetContentWidget() const
 {
-	if (mCurrentGroupPanel) {
-		// Access PrivateData of another DAPropertyPanelWidget instance (same class, class-level access)
-		return mCurrentGroupPanel->d_func()->mContentWidget;
-	}
-	return mContentWidget;
+    if (mCurrentGroupPanel) {
+        // Access PrivateData of another DAPropertyPanelWidget instance (same class, class-level access)
+        return mCurrentGroupPanel->d_func()->mContentWidget;
+    }
+    return mContentWidget;
 }
 
 int DAPropertyPanelWidget::PrivateData::generateAutoId()
 {
-	while (mPropertyItems.contains(mNextAutoId)) {
-		++mNextAutoId;
-	}
-	return mNextAutoId++;
+    while (mPropertyItems.contains(mNextAutoId)) {
+        ++mNextAutoId;
+    }
+    return mNextAutoId++;
 }
 
 void DAPropertyPanelWidget::PrivateData::addItemToRoot(QWidget* widget, int index)
 {
-	int stretchIndex = mContentLayout->count() - 1;
-	if (index < 0 || index >= stretchIndex) {
-		mContentLayout->insertWidget(stretchIndex, widget);
-	} else {
-		mContentLayout->insertWidget(index, widget);
-	}
+    int stretchIndex = mContentLayout->count() - 1;
+    if (index < 0 || index >= stretchIndex) {
+        mContentLayout->insertWidget(stretchIndex, widget);
+    } else {
+        mContentLayout->insertWidget(index, widget);
+    }
 }
 
 void DAPropertyPanelWidget::PrivateData::removeItemFromContent(QWidget* widget)
 {
-	if (mCurrentGroupPanel) {
-		mCurrentGroupPanel->d_func()->mContentLayout->removeWidget(widget);
-	} else {
-		mContentLayout->removeWidget(widget);
-	}
+    if (mCurrentGroupPanel) {
+        mCurrentGroupPanel->d_func()->mContentLayout->removeWidget(widget);
+    } else {
+        mContentLayout->removeWidget(widget);
+    }
 }
 
 void DAPropertyPanelWidget::PrivateData::addItemToContent(QWidget* widget, int index)
 {
-	int stretchIndex;
-	QVBoxLayout* targetLayout;
+    int stretchIndex;
+    QVBoxLayout* targetLayout;
 
-	if (mCurrentGroupPanel) {
-		targetLayout = mCurrentGroupPanel->d_func()->mContentLayout;
-	} else {
-		targetLayout = mContentLayout;
-	}
+    if (mCurrentGroupPanel) {
+        targetLayout = mCurrentGroupPanel->d_func()->mContentLayout;
+    } else {
+        targetLayout = mContentLayout;
+    }
 
-	// stretch项始终在最后
-	stretchIndex = targetLayout->count() - 1;
-	if (index < 0 || index >= stretchIndex) {
-		targetLayout->insertWidget(stretchIndex, widget);
-	} else {
-		targetLayout->insertWidget(index, widget);
-	}
+    // stretch项始终在最后
+    stretchIndex = targetLayout->count() - 1;
+    if (index < 0 || index >= stretchIndex) {
+        targetLayout->insertWidget(stretchIndex, widget);
+    } else {
+        targetLayout->insertWidget(index, widget);
+    }
 }
 
 int DAPropertyPanelWidget::PrivateData::calculateAutoPropertyNameWidth() const
 {
-	int maxWidth = 60;
-	QFontMetrics fm(mContentWidget->font());
+    int maxWidth = 60;
+    QFontMetrics fm(mContentWidget->font());
 
-	for (auto it = mPropertyItems.begin(); it != mPropertyItems.end(); ++it) {
-		DAPropertyItemWidget* item = it.value();
-		if (item->layoutMode() == DAPropertyItemWidget::InlineLayout) {
-			QString name = item->propertyName();
-			int w = Qt5Qt6Compat_fontMetrics_width(fm, name);
-			maxWidth = qMax(maxWidth, w + 10);
-		}
-	}
+    for (auto it = mPropertyItems.begin(); it != mPropertyItems.end(); ++it) {
+        DAPropertyItemWidget* item = it.value();
+        if (item->layoutMode() == DAPropertyItemWidget::InlineLayout) {
+            QString name = item->propertyName();
+            int w        = Qt5Qt6Compat_fontMetrics_width(fm, name);
+            maxWidth     = qMax(maxWidth, w + 10);
+        }
+    }
 
-	return qMin(maxWidth, 200);
+    return qMin(maxWidth, 200);
 }
 
 void DAPropertyPanelWidget::PrivateData::updateAllItemsNameLabelWidth()
 {
-	int width = mPropertyNameWidth;
-	if (width < 0) {
-		width = calculateAutoPropertyNameWidth();
-	}
+    int width = mPropertyNameWidth;
+    if (width < 0) {
+        width = calculateAutoPropertyNameWidth();
+    }
 
-	for (auto it = mPropertyItems.begin(); it != mPropertyItems.end(); ++it) {
-		it.value()->setNameLabelWidth(width);
-	}
+    for (auto it = mPropertyItems.begin(); it != mPropertyItems.end(); ++it) {
+        it.value()->setNameLabelWidth(width);
+    }
 }
 
 DAPropertyItemWidget* DAPropertyPanelWidget::PrivateData::createPropertyItem(int id,
@@ -185,23 +185,23 @@ DAPropertyItemWidget* DAPropertyPanelWidget::PrivateData::createPropertyItem(int
                                                                              QWidget* editor,
                                                                              DAPropertyItemWidget::LayoutMode mode)
 {
-	DAPropertyItemWidget* item = new DAPropertyItemWidget(q_ptr);
-	item->setPropertyId(id);
-	item->setPropertyName(name);
-	item->setPropertyDescription(description);
-	if (editor) {
-		item->setEditorWidget(editor);
-	}
-	item->setLayoutMode(mode);
-	item->setFrameVisible(false);
+    DAPropertyItemWidget* item = new DAPropertyItemWidget(q_ptr);
+    item->setPropertyId(id);
+    item->setPropertyName(name);
+    item->setPropertyDescription(description);
+    if (editor) {
+        item->setEditorWidget(editor);
+    }
+    item->setLayoutMode(mode);
+    item->setFrameVisible(false);
 
-	int width = mPropertyNameWidth;
-	if (width < 0) {
-		width = calculateAutoPropertyNameWidth();
-	}
-	item->setNameLabelWidth(width);
+    int width = mPropertyNameWidth;
+    if (width < 0) {
+        width = calculateAutoPropertyNameWidth();
+    }
+    item->setNameLabelWidth(width);
 
-	return item;
+    return item;
 }
 
 //===================================================
@@ -225,35 +225,35 @@ DAPropertyPanelWidget::~DAPropertyPanelWidget()
  */
 int DAPropertyPanelWidget::addCollapsibleGroup(const QString& title)
 {
-	DA_D(d);
-	// 创建折叠面板包装
-	DACollapsiblePanel* groupPanel = new DACollapsiblePanel(title, d->mContentWidget);
-	groupPanel->setObjectName(QStringLiteral("groupPanel_") + QString::number(d->mNextGroupId));
+    DA_D(d);
+    // 创建折叠面板包装
+    DACollapsiblePanel* groupPanel = new DACollapsiblePanel(title, d->mContentWidget);
+    groupPanel->setObjectName(QStringLiteral("groupPanel_") + QString::number(d->mNextGroupId));
 
-	// 创建分组内部属性面板作为内容控件
-	DAPropertyPanelWidget* innerPanel = new DAPropertyPanelWidget(groupPanel);
-	innerPanel->setObjectName(QStringLiteral("groupInnerPanel_") + QString::number(d->mNextGroupId));
-	groupPanel->setContentWidget(innerPanel);
+    // 创建分组内部属性面板作为内容控件
+    DAPropertyPanelWidget* innerPanel = new DAPropertyPanelWidget(groupPanel);
+    innerPanel->setObjectName(QStringLiteral("groupInnerPanel_") + QString::number(d->mNextGroupId));
+    groupPanel->setContentWidget(innerPanel);
 
-	int groupId = d->mNextGroupId++;
+    int groupId = d->mNextGroupId++;
 
-	// 连接折叠信号
-	connect(groupPanel, &DACollapsiblePanel::expandedChanged, this, [this, groupId](bool expanded) {
-		Q_UNUSED(expanded);
-		// 可通过emit groupExpandedChanged(groupId, expanded)扩展
-	});
+    // 连接折叠信号
+    connect(groupPanel, &DACollapsiblePanel::expandedChanged, this, [ this, groupId ](bool expanded) {
+        Q_UNUSED(expanded);
+        // 可通过emit groupExpandedChanged(groupId, expanded)扩展
+    });
 
-	// 存储到分组映射
-	d->mGroups[groupId] = groupPanel;
-	d->mGroupPanels[groupId] = innerPanel;
+    // 存储到分组映射
+    d->mGroups[ groupId ]      = groupPanel;
+    d->mGroupPanels[ groupId ] = innerPanel;
 
-	// 将折叠面板添加到根布局
-	d->addItemToContent(groupPanel, -1);
+    // 将折叠面板添加到根布局
+    d->addItemToContent(groupPanel, -1);
 
-	// 设置为当前活动分组
-	d->mCurrentGroupPanel = innerPanel;
+    // 设置为当前活动分组
+    d->mCurrentGroupPanel = innerPanel;
 
-	return groupId;
+    return groupId;
 }
 
 /**
@@ -261,8 +261,8 @@ int DAPropertyPanelWidget::addCollapsibleGroup(const QString& title)
  */
 void DAPropertyPanelWidget::endGroup()
 {
-	DA_D(d);
-	d->mCurrentGroupPanel = nullptr;
+    DA_D(d);
+    d->mCurrentGroupPanel = nullptr;
 }
 
 /**
@@ -273,28 +273,28 @@ void DAPropertyPanelWidget::endGroup()
  */
 DAPropertyPanelWidget* DAPropertyPanelWidget::addSubPanel(int id, const QString& groupName)
 {
-	DA_D(d);
-	// 创建折叠面板包装
-	DACollapsiblePanel* subPanelWrapper = new DACollapsiblePanel(groupName, d->mContentWidget);
-	subPanelWrapper->setObjectName(QStringLiteral("subPanelWrapper_") + QString::number(id));
+    DA_D(d);
+    // 创建折叠面板包装
+    DACollapsiblePanel* subPanelWrapper = new DACollapsiblePanel(groupName, d->mContentWidget);
+    subPanelWrapper->setObjectName(QStringLiteral("subPanelWrapper_") + QString::number(id));
 
-	// 创建子面板作为内容控件
-	DAPropertyPanelWidget* subPanel = new DAPropertyPanelWidget(subPanelWrapper);
-	subPanel->setObjectName(QStringLiteral("subPanel_") + QString::number(id));
-	subPanelWrapper->setContentWidget(subPanel);
+    // 创建子面板作为内容控件
+    DAPropertyPanelWidget* subPanel = new DAPropertyPanelWidget(subPanelWrapper);
+    subPanel->setObjectName(QStringLiteral("subPanel_") + QString::number(id));
+    subPanelWrapper->setContentWidget(subPanel);
 
-	// 存储到子面板映射
-	d->mSubPanels[id] = subPanel;
+    // 存储到子面板映射
+    d->mSubPanels[ id ] = subPanel;
 
-	// 将折叠面板添加到目标布局（有活动分组时进入分组，否则到根布局）
-	d->addItemToContent(subPanelWrapper, -1);
+    // 将折叠面板添加到目标布局（有活动分组时进入分组，否则到根布局）
+    d->addItemToContent(subPanelWrapper, -1);
 
-	// 信号转发（子面板的属性变化自动冒泡到父面板）
-	QMetaObject::Connection conn = connect(subPanel, &DAPropertyPanelWidget::propertyValueChanged,
-	                                       this, &DAPropertyPanelWidget::propertyValueChanged);
-	d->mSubPanelConnections[id] = conn;
+    // 信号转发（子面板的属性变化自动冒泡到父面板）
+    QMetaObject::Connection conn = connect(
+        subPanel, &DAPropertyPanelWidget::propertyValueChanged, this, &DAPropertyPanelWidget::propertyValueChanged);
+    d->mSubPanelConnections[ id ] = conn;
 
-	return subPanel;
+    return subPanel;
 }
 
 /**
@@ -304,8 +304,8 @@ DAPropertyPanelWidget* DAPropertyPanelWidget::addSubPanel(int id, const QString&
  */
 DAPropertyPanelWidget* DAPropertyPanelWidget::getSubPanel(int id) const
 {
-	DA_DC(d);
-	return d->mSubPanels.value(id, nullptr);
+    DA_DC(d);
+    return d->mSubPanels.value(id, nullptr);
 }
 
 /**
@@ -315,8 +315,8 @@ DAPropertyPanelWidget* DAPropertyPanelWidget::getSubPanel(int id) const
  */
 int DAPropertyPanelWidget::getSubPanelId(DAPropertyPanelWidget* subPanel) const
 {
-	DA_DC(d);
-	return d->mSubPanels.key(subPanel, -1);
+    DA_DC(d);
+    return d->mSubPanels.key(subPanel, -1);
 }
 
 /**
@@ -326,8 +326,8 @@ int DAPropertyPanelWidget::getSubPanelId(DAPropertyPanelWidget* subPanel) const
  */
 DAPropertyPanelWidget* DAPropertyPanelWidget::getGroupPanel(int groupId) const
 {
-	DA_DC(d);
-	return d->mGroupPanels.value(groupId, nullptr);
+    DA_DC(d);
+    return d->mGroupPanels.value(groupId, nullptr);
 }
 
 /**
@@ -337,12 +337,12 @@ DAPropertyPanelWidget* DAPropertyPanelWidget::getGroupPanel(int groupId) const
  */
 bool DAPropertyPanelWidget::isGroupExpanded(int groupId) const
 {
-	DA_DC(d);
-	DACollapsiblePanel* group = d->mGroups.value(groupId, nullptr);
-	if (group) {
-		return group->isExpanded();
-	}
-	return false;
+    DA_DC(d);
+    DACollapsiblePanel* group = d->mGroups.value(groupId, nullptr);
+    if (group) {
+        return group->isExpanded();
+    }
+    return false;
 }
 
 /**
@@ -352,11 +352,11 @@ bool DAPropertyPanelWidget::isGroupExpanded(int groupId) const
  */
 void DAPropertyPanelWidget::setGroupExpanded(int groupId, bool expanded)
 {
-	DA_D(d);
-	DACollapsiblePanel* group = d->mGroups.value(groupId, nullptr);
-	if (group) {
-		group->setExpanded(expanded);
-	}
+    DA_D(d);
+    DACollapsiblePanel* group = d->mGroups.value(groupId, nullptr);
+    if (group) {
+        group->setExpanded(expanded);
+    }
 }
 
 // === 添加属性项（末尾添加）===
@@ -366,11 +366,11 @@ void DAPropertyPanelWidget::setGroupExpanded(int groupId, bool expanded)
  */
 DAPropertyPanelWidget* DAPropertyPanelWidget::getTargetPanel() const
 {
-	DA_DC(d);
-	if (d->mCurrentGroupPanel) {
-		return d->mCurrentGroupPanel;
-	}
-	return const_cast<DAPropertyPanelWidget*>(this);
+    DA_DC(d);
+    if (d->mCurrentGroupPanel) {
+        return d->mCurrentGroupPanel;
+    }
+    return const_cast< DAPropertyPanelWidget* >(this);
 }
 
 /**
@@ -381,11 +381,9 @@ DAPropertyPanelWidget* DAPropertyPanelWidget::getTargetPanel() const
  * @param[in] mode 布局模式，默认Inline
  * @return 属性ID（自动分配）
  */
-int DAPropertyPanelWidget::addProperty(const QString& name,
-                                       QWidget* editor,
-                                       DAPropertyItemWidget::LayoutMode mode)
+int DAPropertyPanelWidget::addProperty(const QString& name, QWidget* editor, DAPropertyItemWidget::LayoutMode mode)
 {
-	return addProperty(-1, name, QString(), editor, mode);
+    return addProperty(-1, name, QString(), editor, mode);
 }
 
 /**
@@ -397,12 +395,9 @@ int DAPropertyPanelWidget::addProperty(const QString& name,
  * @param[in] mode 布局模式，默认Inline
  * @return 属性ID（返回传入的id）
  */
-int DAPropertyPanelWidget::addProperty(int id,
-                                       const QString& name,
-                                       QWidget* editor,
-                                       DAPropertyItemWidget::LayoutMode mode)
+int DAPropertyPanelWidget::addProperty(int id, const QString& name, QWidget* editor, DAPropertyItemWidget::LayoutMode mode)
 {
-	return addProperty(id, name, QString(), editor, mode);
+    return addProperty(id, name, QString(), editor, mode);
 }
 
 /**
@@ -419,7 +414,7 @@ int DAPropertyPanelWidget::addProperty(const QString& name,
                                        QWidget* editor,
                                        DAPropertyItemWidget::LayoutMode mode)
 {
-	return addProperty(-1, name, description, editor, mode);
+    return addProperty(-1, name, description, editor, mode);
 }
 
 /**
@@ -438,31 +433,31 @@ int DAPropertyPanelWidget::addProperty(int id,
                                        QWidget* editor,
                                        DAPropertyItemWidget::LayoutMode mode)
 {
-	DA_D(d);
-	// 如果有活动分组，路由到分组面板
-	if (d->mCurrentGroupPanel) {
-		return d->mCurrentGroupPanel->addProperty(id, name, description, editor, mode);
-	}
+    DA_D(d);
+    // 如果有活动分组，路由到分组面板
+    if (d->mCurrentGroupPanel) {
+        return d->mCurrentGroupPanel->addProperty(id, name, description, editor, mode);
+    }
 
-	// 根面板逻辑（保持原有行为）
-	if (id < 0) {
-		id = d->generateAutoId();
-	}
-	if (d->mPropertyItems.contains(id)) {
-		return -1;
-	}
+    // 根面板逻辑（保持原有行为）
+    if (id < 0) {
+        id = d->generateAutoId();
+    }
+    if (d->mPropertyItems.contains(id)) {
+        return -1;
+    }
 
-	DAPropertyItemWidget* item = d->createPropertyItem(id, name, description, editor, mode);
-	d->mPropertyItems[id] = item;
-	d->mWidgetList.append(item);
-	d->addItemToContent(item, -1);
-	connectItemSignals(item);
+    DAPropertyItemWidget* item = d->createPropertyItem(id, name, description, editor, mode);
+    d->mPropertyItems[ id ]    = item;
+    d->mWidgetList.append(item);
+    d->addItemToContent(item, -1);
+    connectItemSignals(item);
 
-	if (d->mPropertyNameWidth < 0 && mode == DAPropertyItemWidget::InlineLayout) {
-		d->updateAllItemsNameLabelWidth();
-	}
+    if (d->mPropertyNameWidth < 0 && mode == DAPropertyItemWidget::InlineLayout) {
+        d->updateAllItemsNameLabelWidth();
+    }
 
-	return id;
+    return id;
 }
 
 // === 插入属性项（指定位置）===
@@ -476,12 +471,9 @@ int DAPropertyPanelWidget::addProperty(int id,
  * @param[in] mode 布局模式
  * @return 属性ID
  */
-int DAPropertyPanelWidget::insertProperty(int index,
-                                          const QString& name,
-                                          QWidget* editor,
-                                          DAPropertyItemWidget::LayoutMode mode)
+int DAPropertyPanelWidget::insertProperty(int index, const QString& name, QWidget* editor, DAPropertyItemWidget::LayoutMode mode)
 {
-	return insertProperty(index, -1, name, QString(), editor, mode);
+    return insertProperty(index, -1, name, QString(), editor, mode);
 }
 
 /**
@@ -493,7 +485,7 @@ int DAPropertyPanelWidget::insertProperty(int index,
                                           QWidget* editor,
                                           DAPropertyItemWidget::LayoutMode mode)
 {
-	return insertProperty(index, id, name, QString(), editor, mode);
+    return insertProperty(index, id, name, QString(), editor, mode);
 }
 
 /**
@@ -505,7 +497,7 @@ int DAPropertyPanelWidget::insertProperty(int index,
                                           QWidget* editor,
                                           DAPropertyItemWidget::LayoutMode mode)
 {
-	return insertProperty(index, -1, name, description, editor, mode);
+    return insertProperty(index, -1, name, description, editor, mode);
 }
 
 /**
@@ -526,36 +518,36 @@ int DAPropertyPanelWidget::insertProperty(int index,
                                           QWidget* editor,
                                           DAPropertyItemWidget::LayoutMode mode)
 {
-	DA_D(d);
-	// 如果有活动分组，路由到分组面板
-	if (d->mCurrentGroupPanel) {
-		return d->mCurrentGroupPanel->insertProperty(index, id, name, description, editor, mode);
-	}
+    DA_D(d);
+    // 如果有活动分组，路由到分组面板
+    if (d->mCurrentGroupPanel) {
+        return d->mCurrentGroupPanel->insertProperty(index, id, name, description, editor, mode);
+    }
 
-	// 根面板逻辑（保持原有行为）
-	if (id < 0) {
-		id = d->generateAutoId();
-	}
-	if (d->mPropertyItems.contains(id)) {
-		return -1;
-	}
+    // 根面板逻辑（保持原有行为）
+    if (id < 0) {
+        id = d->generateAutoId();
+    }
+    if (d->mPropertyItems.contains(id)) {
+        return -1;
+    }
 
-	DAPropertyItemWidget* item = d->createPropertyItem(id, name, description, editor, mode);
-	d->mPropertyItems[id] = item;
+    DAPropertyItemWidget* item = d->createPropertyItem(id, name, description, editor, mode);
+    d->mPropertyItems[ id ]    = item;
 
-	if (index < 0 || index >= d->mWidgetList.size()) {
-		d->mWidgetList.append(item);
-	} else {
-		d->mWidgetList.insert(index, item);
-	}
-	d->addItemToContent(item, index);
-	connectItemSignals(item);
+    if (index < 0 || index >= d->mWidgetList.size()) {
+        d->mWidgetList.append(item);
+    } else {
+        d->mWidgetList.insert(index, item);
+    }
+    d->addItemToContent(item, index);
+    connectItemSignals(item);
 
-	if (d->mPropertyNameWidth < 0 && mode == DAPropertyItemWidget::InlineLayout) {
-		d->updateAllItemsNameLabelWidth();
-	}
+    if (d->mPropertyNameWidth < 0 && mode == DAPropertyItemWidget::InlineLayout) {
+        d->updateAllItemsNameLabelWidth();
+    }
 
-	return id;
+    return id;
 }
 
 // === 分隔项 ===
@@ -567,13 +559,13 @@ int DAPropertyPanelWidget::insertProperty(int index,
  */
 void DAPropertyPanelWidget::addSpacer(int height)
 {
-	DA_D(d);
-	QWidget* spacerWidget = new QWidget(d->mContentWidget);
-	spacerWidget->setObjectName(QStringLiteral("spacerWidget"));
-	spacerWidget->setFixedHeight(height);
-	// 始终添加到根布局
-	d->addItemToRoot(spacerWidget, -1);
-	d->mWidgetList.append(spacerWidget);
+    DA_D(d);
+    QWidget* spacerWidget = new QWidget(d->mContentWidget);
+    spacerWidget->setObjectName(QStringLiteral("spacerWidget"));
+    spacerWidget->setFixedHeight(height);
+    // 始终添加到根布局
+    d->addItemToRoot(spacerWidget, -1);
+    d->mWidgetList.append(spacerWidget);
 }
 
 /**
@@ -581,17 +573,17 @@ void DAPropertyPanelWidget::addSpacer(int height)
  */
 void DAPropertyPanelWidget::insertSpacer(int index, int height)
 {
-	DA_D(d);
-	QWidget* spacerWidget = new QWidget(d->mContentWidget);
-	spacerWidget->setFixedHeight(height);
-	spacerWidget->setObjectName(QStringLiteral("spacerWidget"));
-	if (index < 0 || index >= d->mWidgetList.size()) {
-		d->mWidgetList.append(spacerWidget);
-	} else {
-		d->mWidgetList.insert(index, spacerWidget);
-	}
-	// 始终添加到根布局
-	d->addItemToRoot(spacerWidget, index);
+    DA_D(d);
+    QWidget* spacerWidget = new QWidget(d->mContentWidget);
+    spacerWidget->setFixedHeight(height);
+    spacerWidget->setObjectName(QStringLiteral("spacerWidget"));
+    if (index < 0 || index >= d->mWidgetList.size()) {
+        d->mWidgetList.append(spacerWidget);
+    } else {
+        d->mWidgetList.insert(index, spacerWidget);
+    }
+    // 始终添加到根布局
+    d->addItemToRoot(spacerWidget, index);
 }
 
 /**
@@ -599,7 +591,7 @@ void DAPropertyPanelWidget::insertSpacer(int index, int height)
  */
 void DAPropertyPanelWidget::addSeparator()
 {
-	insertSeparator(-1);
+    insertSeparator(-1);
 }
 
 /**
@@ -607,19 +599,19 @@ void DAPropertyPanelWidget::addSeparator()
  */
 void DAPropertyPanelWidget::insertSeparator(int index)
 {
-	DA_D(d);
-	QFrame* line = new QFrame(d->mContentWidget);
-	line->setObjectName(QStringLiteral("separatorLine"));
-	line->setFrameShape(QFrame::HLine);
-	line->setFrameShadow(QFrame::Sunken);
-	line->setFixedHeight(2);
-	if (index < 0 || index >= d->mWidgetList.size()) {
-		d->mWidgetList.append(line);
-	} else {
-		d->mWidgetList.insert(index, line);
-	}
-	// 始终添加到根布局
-	d->addItemToRoot(line, index);
+    DA_D(d);
+    QFrame* line = new QFrame(d->mContentWidget);
+    line->setObjectName(QStringLiteral("separatorLine"));
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Sunken);
+    line->setFixedHeight(2);
+    if (index < 0 || index >= d->mWidgetList.size()) {
+        d->mWidgetList.append(line);
+    } else {
+        d->mWidgetList.insert(index, line);
+    }
+    // 始终添加到根布局
+    d->addItemToRoot(line, index);
 }
 
 // === 属性项管理 ===
@@ -631,17 +623,17 @@ void DAPropertyPanelWidget::insertSeparator(int index)
  */
 void DAPropertyPanelWidget::removeProperty(int id)
 {
-	DA_D(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.take(id);
-	if (item) {
-		d->mWidgetList.removeOne(item);
-		d->removeItemFromContent(item);
-		item->deleteLater();
+    DA_D(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.take(id);
+    if (item) {
+        d->mWidgetList.removeOne(item);
+        d->removeItemFromContent(item);
+        item->deleteLater();
 
-		if (d->mPropertyNameWidth < 0) {
-			d->updateAllItemsNameLabelWidth();
-		}
-	}
+        if (d->mPropertyNameWidth < 0) {
+            d->updateAllItemsNameLabelWidth();
+        }
+    }
 }
 
 /**
@@ -649,26 +641,26 @@ void DAPropertyPanelWidget::removeProperty(int id)
  */
 void DAPropertyPanelWidget::clearProperties()
 {
-	DA_D(d);
-	// 清除所有widget
-	for (QWidget* w : d->mWidgetList) {
-		d->mContentLayout->removeWidget(w);
-		w->deleteLater();
-	}
-	d->mWidgetList.clear();
-	d->mPropertyItems.clear();
+    DA_D(d);
+    // 清除所有widget
+    for (QWidget* w : d->mWidgetList) {
+        d->mContentLayout->removeWidget(w);
+        w->deleteLater();
+    }
+    d->mWidgetList.clear();
+    d->mPropertyItems.clear();
 
-	// 清除分组映射
-	d->mGroups.clear();
-	d->mGroupPanels.clear();
-	d->mCurrentGroupPanel = nullptr;
+    // 清除分组映射
+    d->mGroups.clear();
+    d->mGroupPanels.clear();
+    d->mCurrentGroupPanel = nullptr;
 
-	// 清除子面板及信号连接
-	for (auto it = d->mSubPanelConnections.begin(); it != d->mSubPanelConnections.end(); ++it) {
-		disconnect(it.value());
-	}
-	d->mSubPanelConnections.clear();
-	d->mSubPanels.clear();
+    // 清除子面板及信号连接
+    for (auto it = d->mSubPanelConnections.begin(); it != d->mSubPanelConnections.end(); ++it) {
+        disconnect(it.value());
+    }
+    d->mSubPanelConnections.clear();
+    d->mSubPanels.clear();
 }
 
 /**
@@ -676,8 +668,8 @@ void DAPropertyPanelWidget::clearProperties()
  */
 DAPropertyItemWidget* DAPropertyPanelWidget::getPropertyItem(int id) const
 {
-	DA_DC(d);
-	return d->mPropertyItems.value(id, nullptr);
+    DA_DC(d);
+    return d->mPropertyItems.value(id, nullptr);
 }
 
 /**
@@ -685,22 +677,22 @@ DAPropertyItemWidget* DAPropertyPanelWidget::getPropertyItem(int id) const
  */
 DAPropertyItemWidget* DAPropertyPanelWidget::getPropertyItemAt(int index) const
 {
-	DA_DC(d);
-	if (index < 0 || index >= d->mWidgetList.size()) {
-		return nullptr;
-	}
-	// 需要从mWidgetList中筛选出DAPropertyItemWidget
-	int propIndex = 0;
-	for (QWidget* w : d->mWidgetList) {
-		DAPropertyItemWidget* item = qobject_cast<DAPropertyItemWidget*>(w);
-		if (item) {
-			if (propIndex == index) {
-				return item;
-			}
-			++propIndex;
-		}
-	}
-	return nullptr;
+    DA_DC(d);
+    if (index < 0 || index >= d->mWidgetList.size()) {
+        return nullptr;
+    }
+    // 需要从mWidgetList中筛选出DAPropertyItemWidget
+    int propIndex = 0;
+    for (QWidget* w : d->mWidgetList) {
+        DAPropertyItemWidget* item = qobject_cast< DAPropertyItemWidget* >(w);
+        if (item) {
+            if (propIndex == index) {
+                return item;
+            }
+            ++propIndex;
+        }
+    }
+    return nullptr;
 }
 
 /**
@@ -708,22 +700,22 @@ DAPropertyItemWidget* DAPropertyPanelWidget::getPropertyItemAt(int index) const
  */
 int DAPropertyPanelWidget::indexOf(int id) const
 {
-	DA_DC(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id);
-	if (!item) {
-		return -1;
-	}
-	int index = d->mWidgetList.indexOf(item);
-	return index;
+    DA_DC(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id);
+    if (!item) {
+        return -1;
+    }
+    int index = d->mWidgetList.indexOf(item);
+    return index;
 }
 
 /**
  * @brief 获取所有属性项ID列表
  */
-QList<int> DAPropertyPanelWidget::propertyIds() const
+QList< int > DAPropertyPanelWidget::propertyIds() const
 {
-	DA_DC(d);
-	return d->mPropertyItems.keys();
+    DA_DC(d);
+    return d->mPropertyItems.keys();
 }
 
 /**
@@ -731,8 +723,8 @@ QList<int> DAPropertyPanelWidget::propertyIds() const
  */
 int DAPropertyPanelWidget::propertyCount() const
 {
-	DA_DC(d);
-	return d->mPropertyItems.size();
+    DA_DC(d);
+    return d->mPropertyItems.size();
 }
 
 // === 遍历接口 ===
@@ -744,15 +736,15 @@ int DAPropertyPanelWidget::propertyCount() const
  */
 void DAPropertyPanelWidget::traverseItems(TraverseCallback callback)
 {
-	DA_D(d);
-	for (QWidget* w : d->mWidgetList) {
-		DAPropertyItemWidget* item = qobject_cast<DAPropertyItemWidget*>(w);
-		if (item) {
-			if (!callback(item)) {
-				break;
-			}
-		}
-	}
+    DA_D(d);
+    for (QWidget* w : d->mWidgetList) {
+        DAPropertyItemWidget* item = qobject_cast< DAPropertyItemWidget* >(w);
+        if (item) {
+            if (!callback(item)) {
+                break;
+            }
+        }
+    }
 }
 
 /**
@@ -760,15 +752,15 @@ void DAPropertyPanelWidget::traverseItems(TraverseCallback callback)
  */
 void DAPropertyPanelWidget::traverseItems(TraverseCallback callback) const
 {
-	DA_DC(d);
-	for (QWidget* w : d->mWidgetList) {
-		DAPropertyItemWidget* item = qobject_cast<DAPropertyItemWidget*>(w);
-		if (item) {
-			if (!callback(item)) {
-				break;
-			}
-		}
-	}
+    DA_DC(d);
+    for (QWidget* w : d->mWidgetList) {
+        DAPropertyItemWidget* item = qobject_cast< DAPropertyItemWidget* >(w);
+        if (item) {
+            if (!callback(item)) {
+                break;
+            }
+        }
+    }
 }
 
 /**
@@ -776,15 +768,15 @@ void DAPropertyPanelWidget::traverseItems(TraverseCallback callback) const
  */
 DAPropertyPanelWidget::PropertyItemList DAPropertyPanelWidget::allPropertyItems() const
 {
-	DA_DC(d);
-	PropertyItemList result;
-	for (QWidget* w : d->mWidgetList) {
-		DAPropertyItemWidget* item = qobject_cast<DAPropertyItemWidget*>(w);
-		if (item) {
-			result.append(item);
-		}
-	}
-	return result;
+    DA_DC(d);
+    PropertyItemList result;
+    for (QWidget* w : d->mWidgetList) {
+        DAPropertyItemWidget* item = qobject_cast< DAPropertyItemWidget* >(w);
+        if (item) {
+            result.append(item);
+        }
+    }
+    return result;
 }
 
 // === 面板配置 ===
@@ -796,9 +788,9 @@ DAPropertyPanelWidget::PropertyItemList DAPropertyPanelWidget::allPropertyItems(
  */
 void DAPropertyPanelWidget::setPropertyNameWidth(int width)
 {
-	DA_D(d);
-	d->mPropertyNameWidth = width;
-	d->updateAllItemsNameLabelWidth();
+    DA_D(d);
+    d->mPropertyNameWidth = width;
+    d->updateAllItemsNameLabelWidth();
 }
 
 /**
@@ -806,11 +798,11 @@ void DAPropertyPanelWidget::setPropertyNameWidth(int width)
  */
 int DAPropertyPanelWidget::propertyNameWidth() const
 {
-	DA_DC(d);
-	if (d->mPropertyNameWidth < 0) {
-		return d->calculateAutoPropertyNameWidth();
-	}
-	return d->mPropertyNameWidth;
+    DA_DC(d);
+    if (d->mPropertyNameWidth < 0) {
+        return d->calculateAutoPropertyNameWidth();
+    }
+    return d->mPropertyNameWidth;
 }
 
 /**
@@ -818,11 +810,11 @@ int DAPropertyPanelWidget::propertyNameWidth() const
  */
 void DAPropertyPanelWidget::setSpacing(int spacing)
 {
-	DA_D(d);
-	d->mSpacing = spacing;
-	if (d->mContentLayout) {
-		d->mContentLayout->setSpacing(spacing);
-	}
+    DA_D(d);
+    d->mSpacing = spacing;
+    if (d->mContentLayout) {
+        d->mContentLayout->setSpacing(spacing);
+    }
 }
 
 /**
@@ -830,8 +822,8 @@ void DAPropertyPanelWidget::setSpacing(int spacing)
  */
 int DAPropertyPanelWidget::spacing() const
 {
-	DA_DC(d);
-	return d->mSpacing;
+    DA_DC(d);
+    return d->mSpacing;
 }
 
 /**
@@ -839,22 +831,22 @@ int DAPropertyPanelWidget::spacing() const
  */
 void DAPropertyPanelWidget::recalculatePropertyNameWidth()
 {
-	DA_D(d);
-	d->updateAllItemsNameLabelWidth();
+    DA_D(d);
+    d->updateAllItemsNameLabelWidth();
 }
 
 void DAPropertyPanelWidget::onItemValueChanged(int propertyId)
 {
-	emit propertyValueChanged(propertyId);
+    emit propertyValueChanged(propertyId);
 }
 
 void DAPropertyPanelWidget::connectItemSignals(DAPropertyItemWidget* item)
 {
-	// 注意：DAPropertyItemWidget::valueChanged 信号当前未被触发。
-	// 便捷属性方法（addColorProperty等）通过 lambda 直接连接编辑器 Widget 的信号到 propertyValueChanged，
-	// 这是当前唯一的信号转发路径。如果未来 DAPropertyItemWidget 自身开始触发 valueChanged，
-	// 需要同时移除便捷方法中的 lambda 连接以避免双重发射。
-	connect(item, &DAPropertyItemWidget::valueChanged, this, &DAPropertyPanelWidget::onItemValueChanged);
+    // 注意：DAPropertyItemWidget::valueChanged 信号当前未被触发。
+    // 便捷属性方法（addColorProperty等）通过 lambda 直接连接编辑器 Widget 的信号到 propertyValueChanged，
+    // 这是当前唯一的信号转发路径。如果未来 DAPropertyItemWidget 自身开始触发 valueChanged，
+    // 需要同时移除便捷方法中的 lambda 连接以避免双重发射。
+    connect(item, &DAPropertyItemWidget::valueChanged, this, &DAPropertyPanelWidget::onItemValueChanged);
 }
 
 // === 便捷属性添加方法 ===
@@ -864,21 +856,21 @@ void DAPropertyPanelWidget::connectItemSignals(DAPropertyItemWidget* item)
  */
 int DAPropertyPanelWidget::addColorProperty(int id, const QString& name, const QColor& color)
 {
-	DA_D(d);
-	DAColorPickerButton* btn = new DAColorPickerButton(d->getTargetContentWidget());
-	btn->setColor(color);
-	// 路由到目标面板（有分组时添加到分组，无分组时添加到根）
-	int propId = addProperty(id, name, btn);
-	// DAColorPickerButton 继承自 SAColorToolButton，colorChanged 信号来自基类
-	connect(btn, &SAColorToolButton::colorChanged, this, [this, propId](const QColor&) {
-		emit propertyValueChanged(propId);
-	});
-	return propId;
+    DA_D(d);
+    DAColorPickerButton* btn = new DAColorPickerButton(d->getTargetContentWidget());
+    btn->setColor(color);
+    // 路由到目标面板（有分组时添加到分组，无分组时添加到根）
+    int propId = addProperty(id, name, btn);
+    // DAColorPickerButton 继承自 SAColorToolButton，colorChanged 信号来自基类
+    connect(btn, &SAColorToolButton::colorChanged, this, [ this, propId ](const QColor&) {
+        emit propertyValueChanged(propId);
+    });
+    return propId;
 }
 
 int DAPropertyPanelWidget::addColorProperty(const QString& name, const QColor& color)
 {
-	return addColorProperty(-1, name, color);
+    return addColorProperty(-1, name, color);
 }
 
 /**
@@ -886,23 +878,23 @@ int DAPropertyPanelWidget::addColorProperty(const QString& name, const QColor& c
  */
 int DAPropertyPanelWidget::addFontProperty(int id, const QString& name, const QFont& font)
 {
-	DA_D(d);
-	DAFontEditPannelWidget* editor = new DAFontEditPannelWidget(d->getTargetContentWidget());
-	editor->setCurrentFont(font);
-	// 路由到目标面板
-	int propId = addProperty(id, name, editor, DAPropertyItemWidget::BelowLayout);
-	connect(editor, &DAFontEditPannelWidget::currentFontChanged, this, [this, propId](const QFont&) {
-		emit propertyValueChanged(propId);
-	});
-	connect(editor, &DAFontEditPannelWidget::currentFontColorChanged, this, [this, propId](const QColor&) {
-		emit propertyValueChanged(propId);
-	});
-	return propId;
+    DA_D(d);
+    DAFontEditPannelWidget* editor = new DAFontEditPannelWidget(d->getTargetContentWidget());
+    editor->setCurrentFont(font);
+    // 路由到目标面板
+    int propId = addProperty(id, name, editor, DAPropertyItemWidget::BelowLayout);
+    connect(editor, &DAFontEditPannelWidget::currentFontChanged, this, [ this, propId ](const QFont&) {
+        emit propertyValueChanged(propId);
+    });
+    connect(editor, &DAFontEditPannelWidget::currentFontColorChanged, this, [ this, propId ](const QColor&) {
+        emit propertyValueChanged(propId);
+    });
+    return propId;
 }
 
 int DAPropertyPanelWidget::addFontProperty(const QString& name, const QFont& font)
 {
-	return addFontProperty(-1, name, font);
+    return addFontProperty(-1, name, font);
 }
 
 /**
@@ -910,20 +902,20 @@ int DAPropertyPanelWidget::addFontProperty(const QString& name, const QFont& fon
  */
 int DAPropertyPanelWidget::addBrushProperty(int id, const QString& name, const QBrush& brush)
 {
-	DA_D(d);
-	DABrushEditWidget* editor = new DABrushEditWidget(d->getTargetContentWidget());
-	editor->setCurrentBrush(brush);
-	// 路由到目标面板
-	int propId = addProperty(id, name, editor, DAPropertyItemWidget::BelowLayout);
-	connect(editor, &DABrushEditWidget::brushChanged, this, [this, propId](const QBrush&) {
-		emit propertyValueChanged(propId);
-	});
-	return propId;
+    DA_D(d);
+    DABrushEditWidget* editor = new DABrushEditWidget(d->getTargetContentWidget());
+    editor->setCurrentBrush(brush);
+    // 路由到目标面板
+    int propId = addProperty(id, name, editor, DAPropertyItemWidget::BelowLayout);
+    connect(editor, &DABrushEditWidget::brushChanged, this, [ this, propId ](const QBrush&) {
+        emit propertyValueChanged(propId);
+    });
+    return propId;
 }
 
 int DAPropertyPanelWidget::addBrushProperty(const QString& name, const QBrush& brush)
 {
-	return addBrushProperty(-1, name, brush);
+    return addBrushProperty(-1, name, brush);
 }
 
 /**
@@ -931,20 +923,20 @@ int DAPropertyPanelWidget::addBrushProperty(const QString& name, const QBrush& b
  */
 int DAPropertyPanelWidget::addPenProperty(int id, const QString& name, const QPen& pen)
 {
-	DA_D(d);
-	DAPenEditWidget* editor = new DAPenEditWidget(d->getTargetContentWidget());
-	editor->setCurrentPen(pen);
-	// 路由到目标面板
-	int propId = addProperty(id, name, editor, DAPropertyItemWidget::BelowLayout);
-	connect(editor, &DAPenEditWidget::penChanged, this, [this, propId](const QPen&) {
-		emit propertyValueChanged(propId);
-	});
-	return propId;
+    DA_D(d);
+    DAPenEditWidget* editor = new DAPenEditWidget(d->getTargetContentWidget());
+    editor->setCurrentPen(pen);
+    // 路由到目标面板
+    int propId = addProperty(id, name, editor, DAPropertyItemWidget::BelowLayout);
+    connect(editor, &DAPenEditWidget::penChanged, this, [ this, propId ](const QPen&) {
+        emit propertyValueChanged(propId);
+    });
+    return propId;
 }
 
 int DAPropertyPanelWidget::addPenProperty(const QString& name, const QPen& pen)
 {
-	return addPenProperty(-1, name, pen);
+    return addPenProperty(-1, name, pen);
 }
 
 /**
@@ -952,21 +944,21 @@ int DAPropertyPanelWidget::addPenProperty(const QString& name, const QPen& pen)
  */
 int DAPropertyPanelWidget::addIntProperty(int id, const QString& name, int value, int min, int max)
 {
-	DA_D(d);
-	QSpinBox* spin = new QSpinBox(d->getTargetContentWidget());
-	spin->setRange(min, max);
-	spin->setValue(value);
-	// 路由到目标面板
-	int propId = addProperty(id, name, spin);
-	connect(spin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this, propId](int) {
-		emit propertyValueChanged(propId);
-	});
-	return propId;
+    DA_D(d);
+    QSpinBox* spin = new QSpinBox(d->getTargetContentWidget());
+    spin->setRange(min, max);
+    spin->setValue(value);
+    // 路由到目标面板
+    int propId = addProperty(id, name, spin);
+    connect(spin, QOverload< int >::of(&QSpinBox::valueChanged), this, [ this, propId ](int) {
+        emit propertyValueChanged(propId);
+    });
+    return propId;
 }
 
 int DAPropertyPanelWidget::addIntProperty(const QString& name, int value, int min, int max)
 {
-	return addIntProperty(-1, name, value, min, max);
+    return addIntProperty(-1, name, value, min, max);
 }
 
 /**
@@ -974,22 +966,22 @@ int DAPropertyPanelWidget::addIntProperty(const QString& name, int value, int mi
  */
 int DAPropertyPanelWidget::addDoubleProperty(int id, const QString& name, double value, double min, double max, int decimals)
 {
-	DA_D(d);
-	QDoubleSpinBox* spin = new QDoubleSpinBox(d->getTargetContentWidget());
-	spin->setRange(min, max);
-	spin->setValue(value);
-	spin->setDecimals(decimals);
-	// 路由到目标面板
-	int propId = addProperty(id, name, spin);
-	connect(spin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, [this, propId](double) {
-		emit propertyValueChanged(propId);
-	});
-	return propId;
+    DA_D(d);
+    QDoubleSpinBox* spin = new QDoubleSpinBox(d->getTargetContentWidget());
+    spin->setRange(min, max);
+    spin->setValue(value);
+    spin->setDecimals(decimals);
+    // 路由到目标面板
+    int propId = addProperty(id, name, spin);
+    connect(spin, QOverload< double >::of(&QDoubleSpinBox::valueChanged), this, [ this, propId ](double) {
+        emit propertyValueChanged(propId);
+    });
+    return propId;
 }
 
 int DAPropertyPanelWidget::addDoubleProperty(const QString& name, double value, double min, double max, int decimals)
 {
-	return addDoubleProperty(-1, name, value, min, max, decimals);
+    return addDoubleProperty(-1, name, value, min, max, decimals);
 }
 
 /**
@@ -997,20 +989,18 @@ int DAPropertyPanelWidget::addDoubleProperty(const QString& name, double value, 
  */
 int DAPropertyPanelWidget::addBoolProperty(int id, const QString& name, bool checked)
 {
-	DA_D(d);
-	QCheckBox* checkBox = new QCheckBox(d->getTargetContentWidget());
-	checkBox->setChecked(checked);
-	// 路由到目标面板
-	int propId = addProperty(id, name, checkBox);
-	connect(checkBox, &QCheckBox::toggled, this, [this, propId](bool) {
-		emit propertyValueChanged(propId);
-	});
-	return propId;
+    DA_D(d);
+    QCheckBox* checkBox = new QCheckBox(d->getTargetContentWidget());
+    checkBox->setChecked(checked);
+    // 路由到目标面板
+    int propId = addProperty(id, name, checkBox);
+    connect(checkBox, &QCheckBox::toggled, this, [ this, propId ](bool) { emit propertyValueChanged(propId); });
+    return propId;
 }
 
 int DAPropertyPanelWidget::addBoolProperty(const QString& name, bool checked)
 {
-	return addBoolProperty(-1, name, checked);
+    return addBoolProperty(-1, name, checked);
 }
 
 /**
@@ -1018,55 +1008,58 @@ int DAPropertyPanelWidget::addBoolProperty(const QString& name, bool checked)
  */
 int DAPropertyPanelWidget::addStringProperty(int id, const QString& name, const QString& text)
 {
-	DA_D(d);
-	QLineEdit* editor = new QLineEdit(d->getTargetContentWidget());
-	editor->setText(text);
-	// 路由到目标面板
-	int propId = addProperty(id, name, editor);
-	connect(editor, &QLineEdit::textEdited, this, [this, propId](const QString&) {
-		emit propertyValueChanged(propId);
-	});
-	return propId;
+    DA_D(d);
+    QLineEdit* editor = new QLineEdit(d->getTargetContentWidget());
+    editor->setText(text);
+    // 路由到目标面板
+    int propId = addProperty(id, name, editor);
+    connect(editor, &QLineEdit::textEdited, this, [ this, propId ](const QString&) { emit propertyValueChanged(propId); });
+    return propId;
 }
 
 int DAPropertyPanelWidget::addStringProperty(const QString& name, const QString& text)
 {
-	return addStringProperty(-1, name, text);
+    return addStringProperty(-1, name, text);
 }
 
 /**
  * @brief 添加枚举属性（下拉框）
  */
-int DAPropertyPanelWidget::addEnumProperty(int id, const QString& name, const QStringList& items, const QList<int>& dataValues, int currentIndex)
+int DAPropertyPanelWidget::addEnumProperty(int id,
+                                           const QString& name,
+                                           const QStringList& items,
+                                           const QList< int >& dataValues,
+                                           int currentIndex)
 {
-	DA_D(d);
-	QComboBox* combo = new QComboBox(d->getTargetContentWidget());
-	combo->addItems(items);
-	// 设置 item data
-	for (int i = 0; i < items.size(); ++i) {
-		int dataVal = (i < dataValues.size()) ? dataValues[i] : i;
-		combo->setItemData(i, dataVal);
-	}
-	if (currentIndex >= 0 && currentIndex < items.size()) {
-		combo->setCurrentIndex(currentIndex);
-	}
-	// 路由到目标面板
-        int propId = addProperty(id, name, combo);
+    DA_D(d);
+    QComboBox* combo = new QComboBox(d->getTargetContentWidget());
+    combo->addItems(items);
+    // 设置 item data
+    for (int i = 0; i < items.size(); ++i) {
+        int dataVal = (i < dataValues.size()) ? dataValues[ i ] : i;
+        combo->setItemData(i, dataVal);
+    }
+    if (currentIndex >= 0 && currentIndex < items.size()) {
+        combo->setCurrentIndex(currentIndex);
+    }
+    // 路由到目标面板
+    int propId = addProperty(id, name, combo);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this, propId](int) {
-            Q_EMIT propertyValueChanged(propId);
-        });
+    connect(combo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [ this, propId ](int) {
+        Q_EMIT propertyValueChanged(propId);
+    });
 #else
-	connect(combo, &QComboBox::currentIndexChanged, this, [this, propId](int) {
-                Q_EMIT propertyValueChanged(propId);
-	});
+    connect(combo, &QComboBox::currentIndexChanged, this, [ this, propId ](int) { Q_EMIT propertyValueChanged(propId); });
 #endif
-	return propId;
+    return propId;
 }
 
-int DAPropertyPanelWidget::addEnumProperty(const QString& name, const QStringList& items, const QList<int>& dataValues, int currentIndex)
+int DAPropertyPanelWidget::addEnumProperty(const QString& name,
+                                           const QStringList& items,
+                                           const QList< int >& dataValues,
+                                           int currentIndex)
 {
-	return addEnumProperty(-1, name, items, dataValues, currentIndex);
+    return addEnumProperty(-1, name, items, dataValues, currentIndex);
 }
 
 /**
@@ -1074,20 +1067,20 @@ int DAPropertyPanelWidget::addEnumProperty(const QString& name, const QStringLis
  */
 int DAPropertyPanelWidget::addAlignmentProperty(int id, const QString& name, Qt::Alignment alignment)
 {
-	DA_D(d);
-	DAAligmentEditWidget* editor = new DAAligmentEditWidget(d->getTargetContentWidget());
-	editor->setCurrentAlignment(alignment);
-	// 路由到目标面板
-	int propId = addProperty(id, name, editor);
-	connect(editor, &DAAligmentEditWidget::alignmentChanged, this, [this, propId](Qt::Alignment) {
-		emit propertyValueChanged(propId);
-	});
-	return propId;
+    DA_D(d);
+    DAAligmentEditWidget* editor = new DAAligmentEditWidget(d->getTargetContentWidget());
+    editor->setCurrentAlignment(alignment);
+    // 路由到目标面板
+    int propId = addProperty(id, name, editor);
+    connect(editor, &DAAligmentEditWidget::alignmentChanged, this, [ this, propId ](Qt::Alignment) {
+        emit propertyValueChanged(propId);
+    });
+    return propId;
 }
 
 int DAPropertyPanelWidget::addAlignmentProperty(const QString& name, Qt::Alignment alignment)
 {
-	return addAlignmentProperty(-1, name, alignment);
+    return addAlignmentProperty(-1, name, alignment);
 }
 
 /**
@@ -1095,20 +1088,20 @@ int DAPropertyPanelWidget::addAlignmentProperty(const QString& name, Qt::Alignme
  */
 int DAPropertyPanelWidget::addAlignmentPositionProperty(int id, const QString& name, Qt::Alignment alignment)
 {
-	DA_D(d);
-	DAAligmentPositionEditWidget* editor = new DAAligmentPositionEditWidget(d->getTargetContentWidget());
-	editor->setAligmentPosition(alignment);
-	// 路由到目标面板
-	int propId = addProperty(id, name, editor);
-	connect(editor, &DAAligmentPositionEditWidget::aligmentPositionChanged, this, [this, propId](Qt::Alignment) {
-		emit propertyValueChanged(propId);
-	});
-	return propId;
+    DA_D(d);
+    DAAligmentPositionEditWidget* editor = new DAAligmentPositionEditWidget(d->getTargetContentWidget());
+    editor->setAligmentPosition(alignment);
+    // 路由到目标面板
+    int propId = addProperty(id, name, editor);
+    connect(editor, &DAAligmentPositionEditWidget::aligmentPositionChanged, this, [ this, propId ](Qt::Alignment) {
+        emit propertyValueChanged(propId);
+    });
+    return propId;
 }
 
 int DAPropertyPanelWidget::addAlignmentPositionProperty(const QString& name, Qt::Alignment alignment)
 {
-	return addAlignmentPositionProperty(-1, name, alignment);
+    return addAlignmentPositionProperty(-1, name, alignment);
 }
 
 /**
@@ -1116,22 +1109,22 @@ int DAPropertyPanelWidget::addAlignmentPositionProperty(const QString& name, Qt:
  */
 int DAPropertyPanelWidget::addFilePathProperty(int id, const QString& name, const QString& filter)
 {
-	DA_D(d);
-	DAFilePathEditWidget* editor = new DAFilePathEditWidget(d->getTargetContentWidget());
-	if (!filter.isEmpty()) {
-		editor->setNameFilter(filter);
-	}
-	// 路由到目标面板
-	int propId = addProperty(id, name, editor);
-	connect(editor, &DAFilePathEditWidget::selectedPath, this, [this, propId](const QString&) {
-		emit propertyValueChanged(propId);
-	});
-	return propId;
+    DA_D(d);
+    DAFilePathEditWidget* editor = new DAFilePathEditWidget(d->getTargetContentWidget());
+    if (!filter.isEmpty()) {
+        editor->setNameFilter(filter);
+    }
+    // 路由到目标面板
+    int propId = addProperty(id, name, editor);
+    connect(editor, &DAFilePathEditWidget::selectedPath, this, [ this, propId ](const QString&) {
+        emit propertyValueChanged(propId);
+    });
+    return propId;
 }
 
 int DAPropertyPanelWidget::addFilePathProperty(const QString& name, const QString& filter)
 {
-	return addFilePathProperty(-1, name, filter);
+    return addFilePathProperty(-1, name, filter);
 }
 
 // === 分组标签 ===
@@ -1142,17 +1135,17 @@ int DAPropertyPanelWidget::addFilePathProperty(const QString& name, const QStrin
  */
 void DAPropertyPanelWidget::addGroupLabel(const QString& text)
 {
-	DA_D(d);
-	QLabel* label = new QLabel(text, d->mContentWidget);
-	label->setObjectName(QStringLiteral("groupLabel"));
-	QFont font = label->font();
-	font.setBold(true);
-	label->setFont(font);
-	label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-	label->setContentsMargins(0, 8, 0, 4);
-	// 始终添加到根布局
-	d->addItemToRoot(label, -1);
-	d->mWidgetList.append(label);
+    DA_D(d);
+    QLabel* label = new QLabel(text, d->mContentWidget);
+    label->setObjectName(QStringLiteral("groupLabel"));
+    QFont font = label->font();
+    font.setBold(true);
+    label->setFont(font);
+    label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    label->setContentsMargins(0, 8, 0, 4);
+    // 始终添加到根布局
+    d->addItemToRoot(label, -1);
+    d->mWidgetList.append(label);
 }
 
 /**
@@ -1160,21 +1153,21 @@ void DAPropertyPanelWidget::addGroupLabel(const QString& text)
  */
 void DAPropertyPanelWidget::insertGroupLabel(int index, const QString& text)
 {
-	DA_D(d);
-	QLabel* label = new QLabel(text, d->mContentWidget);
-	label->setObjectName(QStringLiteral("groupLabel"));
-	QFont font = label->font();
-	font.setBold(true);
-	label->setFont(font);
-	label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-	label->setContentsMargins(0, 8, 0, 4);
-	if (index < 0 || index >= d->mWidgetList.size()) {
-		d->mWidgetList.append(label);
-	} else {
-		d->mWidgetList.insert(index, label);
-	}
-	// 始终添加到根布局
-	d->addItemToRoot(label, index);
+    DA_D(d);
+    QLabel* label = new QLabel(text, d->mContentWidget);
+    label->setObjectName(QStringLiteral("groupLabel"));
+    QFont font = label->font();
+    font.setBold(true);
+    label->setFont(font);
+    label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    label->setContentsMargins(0, 8, 0, 4);
+    if (index < 0 || index >= d->mWidgetList.size()) {
+        d->mWidgetList.append(label);
+    } else {
+        d->mWidgetList.insert(index, label);
+    }
+    // 始终添加到根布局
+    d->addItemToRoot(label, index);
 }
 
 // === 值读写方法 ===
@@ -1184,14 +1177,17 @@ void DAPropertyPanelWidget::insertGroupLabel(int index, const QString& text)
  */
 QColor DAPropertyPanelWidget::getColorValue(int id) const
 {
-	DA_DC(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return QColor();
-	QWidget* editor = item->editorWidget();
-	if (!editor) return QColor();
-	DAColorPickerButton* btn = qobject_cast<DAColorPickerButton*>(editor);
-	if (btn) return btn->color();
-	return QColor();
+    DA_DC(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return QColor();
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return QColor();
+    DAColorPickerButton* btn = qobject_cast< DAColorPickerButton* >(editor);
+    if (btn)
+        return btn->color();
+    return QColor();
 }
 
 /**
@@ -1199,16 +1195,18 @@ QColor DAPropertyPanelWidget::getColorValue(int id) const
  */
 void DAPropertyPanelWidget::setColorValue(int id, const QColor& color)
 {
-	DA_D(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return;
-	DAColorPickerButton* btn = qobject_cast<DAColorPickerButton*>(editor);
-	if (btn) {
-		QSignalBlocker blocker(btn);
-		btn->setColor(color);
-	}
+    DA_D(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return;
+    DAColorPickerButton* btn = qobject_cast< DAColorPickerButton* >(editor);
+    if (btn) {
+        QSignalBlocker blocker(btn);
+        btn->setColor(color);
+    }
 }
 
 /**
@@ -1216,14 +1214,17 @@ void DAPropertyPanelWidget::setColorValue(int id, const QColor& color)
  */
 QFont DAPropertyPanelWidget::getFontValue(int id) const
 {
-	DA_DC(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return QFont();
-	QWidget* editor = item->editorWidget();
-	if (!editor) return QFont();
-	DAFontEditPannelWidget* w = qobject_cast<DAFontEditPannelWidget*>(editor);
-	if (w) return w->getCurrentFont();
-	return QFont();
+    DA_DC(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return QFont();
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return QFont();
+    DAFontEditPannelWidget* w = qobject_cast< DAFontEditPannelWidget* >(editor);
+    if (w)
+        return w->getCurrentFont();
+    return QFont();
 }
 
 /**
@@ -1231,16 +1232,18 @@ QFont DAPropertyPanelWidget::getFontValue(int id) const
  */
 void DAPropertyPanelWidget::setFontValue(int id, const QFont& font)
 {
-	DA_D(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return;
-	DAFontEditPannelWidget* w = qobject_cast<DAFontEditPannelWidget*>(editor);
-	if (w) {
-		QSignalBlocker blocker(w);
-		w->setCurrentFont(font);
-	}
+    DA_D(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return;
+    DAFontEditPannelWidget* w = qobject_cast< DAFontEditPannelWidget* >(editor);
+    if (w) {
+        QSignalBlocker blocker(w);
+        w->setCurrentFont(font);
+    }
 }
 
 /**
@@ -1248,14 +1251,17 @@ void DAPropertyPanelWidget::setFontValue(int id, const QFont& font)
  */
 QBrush DAPropertyPanelWidget::getBrushValue(int id) const
 {
-	DA_DC(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return QBrush();
-	QWidget* editor = item->editorWidget();
-	if (!editor) return QBrush();
-	DABrushEditWidget* w = qobject_cast<DABrushEditWidget*>(editor);
-	if (w) return w->getCurrentBrush();
-	return QBrush();
+    DA_DC(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return QBrush();
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return QBrush();
+    DABrushEditWidget* w = qobject_cast< DABrushEditWidget* >(editor);
+    if (w)
+        return w->getCurrentBrush();
+    return QBrush();
 }
 
 /**
@@ -1263,16 +1269,18 @@ QBrush DAPropertyPanelWidget::getBrushValue(int id) const
  */
 void DAPropertyPanelWidget::setBrushValue(int id, const QBrush& brush)
 {
-	DA_D(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return;
-	DABrushEditWidget* w = qobject_cast<DABrushEditWidget*>(editor);
-	if (w) {
-		QSignalBlocker blocker(w);
-		w->setCurrentBrush(brush);
-	}
+    DA_D(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return;
+    DABrushEditWidget* w = qobject_cast< DABrushEditWidget* >(editor);
+    if (w) {
+        QSignalBlocker blocker(w);
+        w->setCurrentBrush(brush);
+    }
 }
 
 /**
@@ -1280,14 +1288,17 @@ void DAPropertyPanelWidget::setBrushValue(int id, const QBrush& brush)
  */
 QPen DAPropertyPanelWidget::getPenValue(int id) const
 {
-	DA_DC(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return QPen();
-	QWidget* editor = item->editorWidget();
-	if (!editor) return QPen();
-	DAPenEditWidget* w = qobject_cast<DAPenEditWidget*>(editor);
-	if (w) return w->getCurrentPen();
-	return QPen();
+    DA_DC(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return QPen();
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return QPen();
+    DAPenEditWidget* w = qobject_cast< DAPenEditWidget* >(editor);
+    if (w)
+        return w->getCurrentPen();
+    return QPen();
 }
 
 /**
@@ -1295,16 +1306,18 @@ QPen DAPropertyPanelWidget::getPenValue(int id) const
  */
 void DAPropertyPanelWidget::setPenValue(int id, const QPen& pen)
 {
-	DA_D(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return;
-	DAPenEditWidget* w = qobject_cast<DAPenEditWidget*>(editor);
-	if (w) {
-		QSignalBlocker blocker(w);
-		w->setCurrentPen(pen);
-	}
+    DA_D(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return;
+    DAPenEditWidget* w = qobject_cast< DAPenEditWidget* >(editor);
+    if (w) {
+        QSignalBlocker blocker(w);
+        w->setCurrentPen(pen);
+    }
 }
 
 /**
@@ -1312,14 +1325,17 @@ void DAPropertyPanelWidget::setPenValue(int id, const QPen& pen)
  */
 int DAPropertyPanelWidget::getIntValue(int id) const
 {
-	DA_DC(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return 0;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return 0;
-	QSpinBox* spin = qobject_cast<QSpinBox*>(editor);
-	if (spin) return spin->value();
-	return 0;
+    DA_DC(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return 0;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return 0;
+    QSpinBox* spin = qobject_cast< QSpinBox* >(editor);
+    if (spin)
+        return spin->value();
+    return 0;
 }
 
 /**
@@ -1327,16 +1343,18 @@ int DAPropertyPanelWidget::getIntValue(int id) const
  */
 void DAPropertyPanelWidget::setIntValue(int id, int value)
 {
-	DA_D(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return;
-	QSpinBox* spin = qobject_cast<QSpinBox*>(editor);
-	if (spin) {
-		QSignalBlocker blocker(spin);
-		spin->setValue(value);
-	}
+    DA_D(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return;
+    QSpinBox* spin = qobject_cast< QSpinBox* >(editor);
+    if (spin) {
+        QSignalBlocker blocker(spin);
+        spin->setValue(value);
+    }
 }
 
 /**
@@ -1344,14 +1362,17 @@ void DAPropertyPanelWidget::setIntValue(int id, int value)
  */
 double DAPropertyPanelWidget::getDoubleValue(int id) const
 {
-	DA_DC(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return 0.0;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return 0.0;
-	QDoubleSpinBox* spin = qobject_cast<QDoubleSpinBox*>(editor);
-	if (spin) return spin->value();
-	return 0.0;
+    DA_DC(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return 0.0;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return 0.0;
+    QDoubleSpinBox* spin = qobject_cast< QDoubleSpinBox* >(editor);
+    if (spin)
+        return spin->value();
+    return 0.0;
 }
 
 /**
@@ -1359,16 +1380,18 @@ double DAPropertyPanelWidget::getDoubleValue(int id) const
  */
 void DAPropertyPanelWidget::setDoubleValue(int id, double value)
 {
-	DA_D(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return;
-	QDoubleSpinBox* spin = qobject_cast<QDoubleSpinBox*>(editor);
-	if (spin) {
-		QSignalBlocker blocker(spin);
-		spin->setValue(value);
-	}
+    DA_D(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return;
+    QDoubleSpinBox* spin = qobject_cast< QDoubleSpinBox* >(editor);
+    if (spin) {
+        QSignalBlocker blocker(spin);
+        spin->setValue(value);
+    }
 }
 
 /**
@@ -1376,14 +1399,17 @@ void DAPropertyPanelWidget::setDoubleValue(int id, double value)
  */
 bool DAPropertyPanelWidget::getBoolValue(int id) const
 {
-	DA_DC(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return false;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return false;
-	QCheckBox* cb = qobject_cast<QCheckBox*>(editor);
-	if (cb) return cb->isChecked();
-	return false;
+    DA_DC(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return false;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return false;
+    QCheckBox* cb = qobject_cast< QCheckBox* >(editor);
+    if (cb)
+        return cb->isChecked();
+    return false;
 }
 
 /**
@@ -1391,16 +1417,18 @@ bool DAPropertyPanelWidget::getBoolValue(int id) const
  */
 void DAPropertyPanelWidget::setBoolValue(int id, bool checked)
 {
-	DA_D(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return;
-	QCheckBox* cb = qobject_cast<QCheckBox*>(editor);
-	if (cb) {
-		QSignalBlocker blocker(cb);
-		cb->setChecked(checked);
-	}
+    DA_D(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return;
+    QCheckBox* cb = qobject_cast< QCheckBox* >(editor);
+    if (cb) {
+        QSignalBlocker blocker(cb);
+        cb->setChecked(checked);
+    }
 }
 
 /**
@@ -1408,14 +1436,17 @@ void DAPropertyPanelWidget::setBoolValue(int id, bool checked)
  */
 QString DAPropertyPanelWidget::getStringValue(int id) const
 {
-	DA_DC(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return QString();
-	QWidget* editor = item->editorWidget();
-	if (!editor) return QString();
-	QLineEdit* edit = qobject_cast<QLineEdit*>(editor);
-	if (edit) return edit->text();
-	return QString();
+    DA_DC(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return QString();
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return QString();
+    QLineEdit* edit = qobject_cast< QLineEdit* >(editor);
+    if (edit)
+        return edit->text();
+    return QString();
 }
 
 /**
@@ -1423,16 +1454,18 @@ QString DAPropertyPanelWidget::getStringValue(int id) const
  */
 void DAPropertyPanelWidget::setStringValue(int id, const QString& text)
 {
-	DA_D(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return;
-	QLineEdit* edit = qobject_cast<QLineEdit*>(editor);
-	if (edit) {
-		QSignalBlocker blocker(edit);
-		edit->setText(text);
-	}
+    DA_D(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return;
+    QLineEdit* edit = qobject_cast< QLineEdit* >(editor);
+    if (edit) {
+        QSignalBlocker blocker(edit);
+        edit->setText(text);
+    }
 }
 
 /**
@@ -1440,20 +1473,22 @@ void DAPropertyPanelWidget::setStringValue(int id, const QString& text)
  */
 int DAPropertyPanelWidget::getEnumValue(int id) const
 {
-	DA_DC(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return -1;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return -1;
-	QComboBox* combo = qobject_cast<QComboBox*>(editor);
-	if (combo) {
-		QVariant data = combo->currentData();
-		if (data.isValid()) {
-			return data.toInt();
-		}
-		return combo->currentIndex();
-	}
-	return -1;
+    DA_DC(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return -1;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return -1;
+    QComboBox* combo = qobject_cast< QComboBox* >(editor);
+    if (combo) {
+        QVariant data = combo->currentData();
+        if (data.isValid()) {
+            return data.toInt();
+        }
+        return combo->currentIndex();
+    }
+    return -1;
 }
 
 /**
@@ -1461,24 +1496,26 @@ int DAPropertyPanelWidget::getEnumValue(int id) const
  */
 void DAPropertyPanelWidget::setEnumValue(int id, int value)
 {
-	DA_D(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return;
-	QComboBox* combo = qobject_cast<QComboBox*>(editor);
-	if (combo) {
-		QSignalBlocker blocker(combo);
-		QVariant data = combo->itemData(0);
-		if (data.isValid()) {
-			int idx = combo->findData(value);
-			if (idx >= 0) {
-				combo->setCurrentIndex(idx);
-			}
-		} else {
-			combo->setCurrentIndex(value);
-		}
-	}
+    DA_D(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return;
+    QComboBox* combo = qobject_cast< QComboBox* >(editor);
+    if (combo) {
+        QSignalBlocker blocker(combo);
+        QVariant data = combo->itemData(0);
+        if (data.isValid()) {
+            int idx = combo->findData(value);
+            if (idx >= 0) {
+                combo->setCurrentIndex(idx);
+            }
+        } else {
+            combo->setCurrentIndex(value);
+        }
+    }
 }
 
 /**
@@ -1486,14 +1523,17 @@ void DAPropertyPanelWidget::setEnumValue(int id, int value)
  */
 Qt::Alignment DAPropertyPanelWidget::getAlignmentValue(int id) const
 {
-	DA_DC(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return Qt::Alignment();
-	QWidget* editor = item->editorWidget();
-	if (!editor) return Qt::Alignment();
-	DAAligmentEditWidget* w = qobject_cast<DAAligmentEditWidget*>(editor);
-	if (w) return w->getCurrentAlignment();
-	return Qt::Alignment();
+    DA_DC(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return Qt::Alignment();
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return Qt::Alignment();
+    DAAligmentEditWidget* w = qobject_cast< DAAligmentEditWidget* >(editor);
+    if (w)
+        return w->getCurrentAlignment();
+    return Qt::Alignment();
 }
 
 /**
@@ -1501,16 +1541,18 @@ Qt::Alignment DAPropertyPanelWidget::getAlignmentValue(int id) const
  */
 void DAPropertyPanelWidget::setAlignmentValue(int id, Qt::Alignment alignment)
 {
-	DA_D(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return;
-	DAAligmentEditWidget* w = qobject_cast<DAAligmentEditWidget*>(editor);
-	if (w) {
-		QSignalBlocker blocker(w);
-		w->setCurrentAlignment(alignment);
-	}
+    DA_D(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return;
+    DAAligmentEditWidget* w = qobject_cast< DAAligmentEditWidget* >(editor);
+    if (w) {
+        QSignalBlocker blocker(w);
+        w->setCurrentAlignment(alignment);
+    }
 }
 
 /**
@@ -1518,14 +1560,17 @@ void DAPropertyPanelWidget::setAlignmentValue(int id, Qt::Alignment alignment)
  */
 Qt::Alignment DAPropertyPanelWidget::getAlignmentPositionValue(int id) const
 {
-	DA_DC(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return Qt::Alignment();
-	QWidget* editor = item->editorWidget();
-	if (!editor) return Qt::Alignment();
-	DAAligmentPositionEditWidget* w = qobject_cast<DAAligmentPositionEditWidget*>(editor);
-	if (w) return w->getAligmentPosition();
-	return Qt::Alignment();
+    DA_DC(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return Qt::Alignment();
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return Qt::Alignment();
+    DAAligmentPositionEditWidget* w = qobject_cast< DAAligmentPositionEditWidget* >(editor);
+    if (w)
+        return w->getAligmentPosition();
+    return Qt::Alignment();
 }
 
 /**
@@ -1533,16 +1578,18 @@ Qt::Alignment DAPropertyPanelWidget::getAlignmentPositionValue(int id) const
  */
 void DAPropertyPanelWidget::setAlignmentPositionValue(int id, Qt::Alignment alignment)
 {
-	DA_D(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return;
-	DAAligmentPositionEditWidget* w = qobject_cast<DAAligmentPositionEditWidget*>(editor);
-	if (w) {
-		QSignalBlocker blocker(w);
-		w->setAligmentPosition(alignment);
-	}
+    DA_D(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return;
+    DAAligmentPositionEditWidget* w = qobject_cast< DAAligmentPositionEditWidget* >(editor);
+    if (w) {
+        QSignalBlocker blocker(w);
+        w->setAligmentPosition(alignment);
+    }
 }
 
 /**
@@ -1550,14 +1597,17 @@ void DAPropertyPanelWidget::setAlignmentPositionValue(int id, Qt::Alignment alig
  */
 QString DAPropertyPanelWidget::getFilePathValue(int id) const
 {
-	DA_DC(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return QString();
-	QWidget* editor = item->editorWidget();
-	if (!editor) return QString();
-	DAFilePathEditWidget* w = qobject_cast<DAFilePathEditWidget*>(editor);
-	if (w) return w->getFilePath();
-	return QString();
+    DA_DC(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return QString();
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return QString();
+    DAFilePathEditWidget* w = qobject_cast< DAFilePathEditWidget* >(editor);
+    if (w)
+        return w->getFilePath();
+    return QString();
 }
 
 /**
@@ -1565,16 +1615,18 @@ QString DAPropertyPanelWidget::getFilePathValue(int id) const
  */
 void DAPropertyPanelWidget::setFilePathValue(int id, const QString& path)
 {
-	DA_D(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (!item) return;
-	QWidget* editor = item->editorWidget();
-	if (!editor) return;
-	DAFilePathEditWidget* w = qobject_cast<DAFilePathEditWidget*>(editor);
-	if (w) {
-		QSignalBlocker blocker(w);
-		w->setFilePath(path);
-	}
+    DA_D(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (!item)
+        return;
+    QWidget* editor = item->editorWidget();
+    if (!editor)
+        return;
+    DAFilePathEditWidget* w = qobject_cast< DAFilePathEditWidget* >(editor);
+    if (w) {
+        QSignalBlocker blocker(w);
+        w->setFilePath(path);
+    }
 }
 
 // === 可见性与状态控制 ===
@@ -1584,14 +1636,14 @@ void DAPropertyPanelWidget::setFilePathValue(int id, const QString& path)
  */
 void DAPropertyPanelWidget::setPropertyVisible(int id, bool visible)
 {
-	DA_D(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (item) {
-		if (visible)
-			item->show();
-		else
-			item->hide();
-	}
+    DA_D(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (item) {
+        if (visible)
+            item->show();
+        else
+            item->hide();
+    }
 }
 
 /**
@@ -1599,11 +1651,11 @@ void DAPropertyPanelWidget::setPropertyVisible(int id, bool visible)
  */
 void DAPropertyPanelWidget::setPropertyEnabled(int id, bool enabled)
 {
-	DA_D(d);
-	DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
-	if (item) {
-		item->setEnabled(enabled);
-	}
+    DA_D(d);
+    DAPropertyItemWidget* item = d->mPropertyItems.value(id, nullptr);
+    if (item) {
+        item->setEnabled(enabled);
+    }
 }
 
 /**
@@ -1611,8 +1663,8 @@ void DAPropertyPanelWidget::setPropertyEnabled(int id, bool enabled)
  */
 bool DAPropertyPanelWidget::propertyExists(int id) const
 {
-	DA_DC(d);
-	return d->mPropertyItems.contains(id);
+    DA_DC(d);
+    return d->mPropertyItems.contains(id);
 }
 
 }  // namespace DA
