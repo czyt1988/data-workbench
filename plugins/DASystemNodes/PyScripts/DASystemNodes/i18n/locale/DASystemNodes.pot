@@ -1,0 +1,96 @@
+# DASystemNodes translations
+# Copyright (C) 2026 DAWorkbench
+# This file is distributed under the same license as the DASystemNodes package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: DASystemNodes 1.0\n"
+"Report-Msgid-Bugs-To: i18n@example.com\n"
+"POT-Creation-Date: 2026-06-27 00:00+0000\n"
+"PO-Revision-Date: 2026-06-27 00:00+0000\n"
+"Last-Translator: AI Agent\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "(no data)"
+msgstr ""
+
+msgid "(no input)"
+msgstr ""
+
+msgid "<unprintable>"
+msgstr ""
+
+msgid "Auto-wrap text by node body width; off for single line, excess is clipped"
+msgstr ""
+
+msgid "Condition expression result"
+msgstr ""
+
+msgid "Constant value output"
+msgstr ""
+
+msgid "Constant value, supports Python literal expressions (e.g. 1, 'hello', [1,2,3])"
+msgstr ""
+
+msgid "Data to display"
+msgstr ""
+
+msgid "Data to forward (optional)"
+msgstr ""
+
+msgid "Data to print"
+msgstr ""
+
+msgid "Data to publish to DataManager"
+msgstr ""
+
+msgid "Delay in seconds"
+msgstr ""
+
+msgid "Display name of the data in the DataManager panel"
+msgstr ""
+
+msgid "Maximum text character count, excess is truncated with …"
+msgstr ""
+
+msgid "Node title (displayed at node top); empty defaults to 'Print'"
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+msgid "Output after delay, forwards trigger as-is"
+msgstr ""
+
+msgid "Outputs data when condition is False"
+msgstr ""
+
+msgid "Outputs data when condition is True"
+msgstr ""
+
+msgid "Print"
+msgstr ""
+
+msgid "System / Data"
+msgstr ""
+
+msgid "System / Display"
+msgstr ""
+
+msgid "System / Flow Control"
+msgstr ""
+
+msgid "Text font (family/size/bold/italic/color)"
+msgstr ""
+
+msgid "Trigger signal"
+msgstr ""
+
+msgid "Upstream completion signal"
+msgstr ""
+
+msgid "Workflow start trigger signal"
+msgstr ""

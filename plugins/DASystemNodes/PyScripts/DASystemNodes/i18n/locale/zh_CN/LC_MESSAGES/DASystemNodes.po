@@ -1,0 +1,97 @@
+# DASystemNodes translations
+# Copyright (C) 2026 DAWorkbench
+# This file is distributed under the same license as the DASystemNodes package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: DASystemNodes 1.0\n"
+"Report-Msgid-Bugs-To: i18n@example.com\n"
+"POT-Creation-Date: 2026-06-27 00:00+0000\n"
+"PO-Revision-Date: 2026-06-27 00:00+0000\n"
+"Last-Translator: AI Agent\n"
+"Language-Team: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+
+msgid "(no data)"
+msgstr "(无数据)"
+
+msgid "(no input)"
+msgstr "(无输入)"
+
+msgid "<unprintable>"
+msgstr "<不可打印>"
+
+msgid "Auto-wrap text by node body width; off for single line, excess is clipped"
+msgstr "是否按节点体宽度自动换行；关闭则单行显示，超出部分被裁剪"
+
+msgid "Condition expression result"
+msgstr "条件表达式结果"
+
+msgid "Constant value output"
+msgstr "常量值输出"
+
+msgid "Constant value, supports Python literal expressions (e.g. 1, 'hello', [1,2,3])"
+msgstr "常量值，支持 Python 字面量表达式（如 1、'hello'、[1,2,3]）"
+
+msgid "Data to display"
+msgstr "要显示的数据"
+
+msgid "Data to forward (optional)"
+msgstr "要转发的数据（可选）"
+
+msgid "Data to print"
+msgstr "要打印的数据"
+
+msgid "Data to publish to DataManager"
+msgstr "要发布到 DataManager 的数据"
+
+msgid "Delay in seconds"
+msgstr "延迟秒数"
+
+msgid "Display name of the data in the DataManager panel"
+msgstr "数据在 DataManager 面板中的显示名称"
+
+msgid "Maximum text character count, excess is truncated with …"
+msgstr "文字最大字符数，超出部分以 … 截断"
+
+msgid "Node title (displayed at node top); empty defaults to 'Print'"
+msgstr "节点标题（显示在节点顶部）；为空时默认显示 'Print'"
+
+msgid "None"
+msgstr "无"
+
+msgid "Output after delay, forwards trigger as-is"
+msgstr "延迟完成后的输出，原样转发 trigger"
+
+msgid "Outputs data when condition is False"
+msgstr "condition 为 False 时输出 data"
+
+msgid "Outputs data when condition is True"
+msgstr "condition 为 True 时输出 data"
+
+msgid "Print"
+msgstr "Print"
+
+msgid "System / Data"
+msgstr "系统 / 数据"
+
+msgid "System / Display"
+msgstr "系统 / 显示"
+
+msgid "System / Flow Control"
+msgstr "系统 / 流程控制"
+
+msgid "Text font (family/size/bold/italic/color)"
+msgstr "文本字体（族/字号/粗体/斜体/颜色）"
+
+msgid "Trigger signal"
+msgstr "触发信号"
+
+msgid "Upstream completion signal"
+msgstr "上游完成信号"
+
+msgid "Workflow start trigger signal"
+msgstr "工作流启动触发信号"

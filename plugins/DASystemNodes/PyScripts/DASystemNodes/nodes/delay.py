@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""延迟节点：在执行流程中等待指定秒数"""
+"""Delay node: wait a specified number of seconds before passing data downstream"""
 
 import time
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
@@ -7,11 +7,11 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 @NodeDef(
     name="Delay",
-    category="System / Flow Control",
+    category=_("System / Flow Control"),  # cn:系统 / 流程控制
     icon="",
 )
 class DelayNode:
-    """延迟指定秒数后再向下游输出。"""
+    """Delay for a specified number of seconds before passing data downstream."""
 
     seconds = Parameter(
         float,
@@ -19,14 +19,14 @@ class DelayNode:
         min=0.0,
         step=0.1,
         decimals=2,
-        description="延迟秒数",
+        description=_("Delay in seconds"),  # cn:延迟秒数
     )
 
     class Inputs:
-        trigger = Input("any", required=True, description="触发信号")
+        trigger = Input("any", required=True, description=_("Trigger signal"))  # cn:触发信号
 
     class Outputs:
-        done = Output("any", description="延迟完成后的输出，原样转发 trigger")
+        done = Output("any", description=_("Output after delay, forwards trigger as-is"))  # cn:延迟完成后的输出，原样转发 trigger
 
     def execute(self, inputs=None, params=None):
         if inputs is None:

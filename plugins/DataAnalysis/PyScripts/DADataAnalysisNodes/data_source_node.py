@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-数据源节点 — 从文件读取数据
+Data source node - read data from files
 
-支持 CSV、Excel、JSON、Parquet 四种格式。
-节点使用 pandas 对应函数读取文件，将 DataFrame 通过输出端口传递给下游节点。
+Supports CSV, Excel, JSON, and Parquet formats.
+The node uses the corresponding pandas function to read the file and passes
+the DataFrame to downstream nodes via the output port.
 """
 
 import os
@@ -12,20 +13,24 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.io import read_data
 
 
-@NodeDef(name="Data Source", category="Data Analysis", icon="data_source")
+@NodeDef(
+    name="Data Source",
+    category=_("Data Analysis"),  # cn:数据分析
+    icon="data_source",
+)
 class DataSourceNode:
-    """多格式数据源节点"""
+    """Multi-format data source node."""
 
-    file_path = Parameter("file", default="", description="数据文件路径", filter="All Supported (*.csv *.xlsx *.xls *.json *.parquet);;CSV Files (*.csv);;Excel Files (*.xlsx *.xls);;JSON Files (*.json);;Parquet Files (*.parquet);;All Files (*.*)")
-    file_type = Parameter("enum", default="csv", description="文件格式", enum=["csv", "excel", "json", "parquet"])
-    encoding = Parameter(str, default="utf-8", description="文件编码（仅 CSV 有效）")
-    separator = Parameter(str, default=",", description="字段分隔符（仅 CSV 有效）")
-    sheet_name = Parameter(str, default="0", description="Excel 工作表名称或索引（仅 Excel 有效）")
+    file_path = Parameter("file", default="", description=_("Data file path"), filter="All Supported (*.csv *.xlsx *.xls *.json *.parquet);;CSV Files (*.csv);;Excel Files (*.xlsx *.xls);;JSON Files (*.json);;Parquet Files (*.parquet);;All Files (*.*)")  # cn:数据文件路径
+    file_type = Parameter("enum", default="csv", description=_("File format"), enum=["csv", "excel", "json", "parquet"])  # cn:文件格式
+    encoding = Parameter(str, default="utf-8", description=_("File encoding (CSV only)"))  # cn:文件编码（仅 CSV 有效）
+    separator = Parameter(str, default=",", description=_("Field separator (CSV only)"))  # cn:字段分隔符（仅 CSV 有效）
+    sheet_name = Parameter(str, default="0", description=_("Excel sheet name or index (Excel only)"))  # cn:Excel 工作表名称或索引（仅 Excel 有效）
 
     class Outputs:
-        data = Output("DataFrame", description="读取的 DataFrame 数据")
-        row_count = Output("int", description="数据行数")
-        file_type_out = Output("str", description="实际读取的文件格式")
+        data = Output("DataFrame", description=_("Loaded DataFrame data"))  # cn:读取的 DataFrame 数据
+        row_count = Output("int", description=_("Row count"))  # cn:数据行数
+        file_type_out = Output("str", description=_("Actual file format loaded"))  # cn:实际读取的文件格式
 
     def __init__(self):
         super().__init__()
@@ -51,11 +56,11 @@ class DataSourceNode:
         sheet_name = params.get("sheet_name", "0")
 
         if not file_path:
-            self._output_data = {"data": None, "row_count": 0, "file_type_out": file_type, "error": "file_path 为空"}
+            self._output_data = {"data": None, "row_count": 0, "file_type_out": file_type, "error": _("file_path is empty")}  # cn:file_path 为空
             return False
 
         if not os.path.exists(file_path):
-            self._output_data = {"data": None, "row_count": 0, "file_type_out": file_type, "error": f"文件不存在: {file_path}"}
+            self._output_data = {"data": None, "row_count": 0, "file_type_out": file_type, "error": _("File not found: {}").format(file_path)}  # cn:文件不存在: {}
             return False
 
         try:

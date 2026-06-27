@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
-"""DataThresholdFilter — 阈值筛选节点"""
+"""DataThresholdFilter — threshold filter node."""
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import threshold_filter_impl
 
 
-@NodeDef(name="Threshold Filter", category="数据清洗", icon="threshold")
+@NodeDef(name="Threshold Filter", category=_("Data Cleaning"), icon="threshold")  # cn:数据清洗
 class DataThresholdFilterNode:
-    """根据列值阈值条件筛选数据"""
+    """Filter data by a column-value threshold condition."""
 
-    column = Parameter(str, default="", description="要筛选的列名")
-    operator = Parameter(str, default=">", description=">, >=, <, <=, ==, !=")
-    threshold_value = Parameter(float, default=0.0, description="阈值")
+    column = Parameter(str, default="", description=_("Column to filter"))  # cn:要筛选的列名
+    operator = Parameter(str, default=">", description=_(">, >=, <, <=, ==, !="))  # cn:>, >=, <, <=, ==, !=
+    threshold_value = Parameter(float, default=0.0, description=_("Threshold"))  # cn:阈值
 
     class Inputs:
-        data = Input("DataFrame", required=True, description="输入数据")
+        data = Input("DataFrame", required=True, description=_("Input data"))  # cn:输入数据
 
     class Outputs:
-        filtered = Output("DataFrame", description="筛选后的数据")
-        removed_count = Output("int", description="移除的行数")
+        filtered = Output("DataFrame", description=_("Filtered data"))  # cn:筛选后的数据
+        removed_count = Output("int", description=_("Number of removed rows"))  # cn:移除的行数
 
     def __init__(self):
         self._output_data = {}

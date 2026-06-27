@@ -1,0 +1,300 @@
+# DADataAnalysisNodes translations
+# Copyright (C) 2026 DAWorkbench
+# This file is distributed under the same license as the DADataAnalysisNodes package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: DADataAnalysisNodes 1.0\n"
+"Report-Msgid-Bugs-To: i18n@example.com\n"
+"POT-Creation-Date: 2026-06-27 00:00+0000\n"
+"PO-Revision-Date: 2026-06-27 00:00+0000\n"
+"Last-Translator: AI Agent\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "0: drop rows; 1: drop columns"
+msgstr ""
+
+msgid ">, >=, <, <=, ==, !="
+msgstr ""
+
+msgid "Actual export file path"
+msgstr ""
+
+msgid "Actual file format loaded"
+msgstr ""
+
+msgid "Aggregation function: mean/sum/count/min/max"
+msgstr ""
+
+msgid "Ascending order"
+msgstr ""
+
+msgid "Bar Chart"
+msgstr ""
+
+msgid "Bar Chart (default)"
+msgstr ""
+
+msgid "Bar Chart - {}"
+msgstr ""
+
+msgid "Case sensitive"
+msgstr ""
+
+msgid "Chart file save path"
+msgstr ""
+
+msgid "Chart type: bar/line/scatter"
+msgstr ""
+
+msgid "Cleaned data"
+msgstr ""
+
+msgid "Column index column name(s), comma-separated"
+msgstr ""
+
+msgid "Column name to check"
+msgstr ""
+
+msgid "Column name to filter by"
+msgstr ""
+
+msgid "Column names for identifying duplicates, comma-separated, empty means all columns"
+msgstr ""
+
+msgid "Column names to check for missing values, comma-separated, empty means all columns"
+msgstr ""
+
+msgid "Column to check"
+msgstr ""
+
+msgid "Column to filter"
+msgstr ""
+
+msgid "Column to replace"
+msgstr ""
+
+msgid "Column to search"
+msgstr ""
+
+msgid "Column to transform"
+msgstr ""
+
+msgid "Computation result"
+msgstr ""
+
+msgid "Data Analysis"
+msgstr ""
+
+msgid "Data Cleaning"
+msgstr ""
+
+msgid "Data Operations"
+msgstr ""
+
+msgid "Data file path"
+msgstr ""
+
+msgid "Deduplicated data"
+msgstr ""
+
+msgid "Descriptive statistics result"
+msgstr ""
+
+msgid "Excel sheet name or index (Excel only)"
+msgstr ""
+
+msgid "Export file path"
+msgstr ""
+
+msgid "Export format"
+msgstr ""
+
+msgid "Field separator (CSV only)"
+msgstr ""
+
+msgid "File encoding (CSV only)"
+msgstr ""
+
+msgid "File format"
+msgstr ""
+
+msgid "File not found: {}"
+msgstr ""
+
+msgid "Fill value for fillna operation"
+msgstr ""
+
+msgid "Fill value when method=constant"
+msgstr ""
+
+msgid "Filled data"
+msgstr ""
+
+msgid "Filter condition expression (df.query syntax)"
+msgstr ""
+
+msgid "Filter result"
+msgstr ""
+
+msgid "Filter target column name"
+msgstr ""
+
+msgid "Filtered DataFrame"
+msgstr ""
+
+msgid "Filtered data"
+msgstr ""
+
+msgid "IQR multiplier, default 1.5"
+msgstr ""
+
+msgid "Index"
+msgstr ""
+
+msgid "Input DataFrame"
+msgstr ""
+
+msgid "Input data"
+msgstr ""
+
+msgid "Interpolated data"
+msgstr ""
+
+msgid "Line Chart"
+msgstr ""
+
+msgid "Line Chart - {}"
+msgstr ""
+
+msgid "Loaded DataFrame data"
+msgstr ""
+
+msgid "Maximum value (inclusive), 0 means no limit"
+msgstr ""
+
+msgid "Minimum number of non-missing values, 0 means not used"
+msgstr ""
+
+msgid "Minimum value (inclusive), 0 means no limit"
+msgstr ""
+
+msgid "Need at least 2 numeric columns"
+msgstr ""
+
+msgid "New column name for rename operation"
+msgstr ""
+
+msgid "New value"
+msgstr ""
+
+msgid "Number of matched rows"
+msgstr ""
+
+msgid "Number of removed rows"
+msgstr ""
+
+msgid "Number of removed rows/columns"
+msgstr ""
+
+msgid "Number of replacements"
+msgstr ""
+
+msgid "Number of result rows"
+msgstr ""
+
+msgid "Old value"
+msgstr ""
+
+msgid "Operation type: rename/drop/fillna"
+msgstr ""
+
+msgid "Order of polynomial or spline"
+msgstr ""
+
+msgid "Percentiles, comma-separated"
+msgstr ""
+
+msgid "Pivot table result"
+msgstr ""
+
+msgid "Plot target column"
+msgstr ""
+
+msgid "Query result"
+msgstr ""
+
+msgid "Replaced data"
+msgstr ""
+
+msgid "Row count"
+msgstr ""
+
+msgid "Row index column name(s), comma-separated"
+msgstr ""
+
+msgid "Scatter - {} vs {}"
+msgstr ""
+
+msgid "Scatter: insufficient numeric columns"
+msgstr ""
+
+msgid "Search pattern, supports regex"
+msgstr ""
+
+msgid "Search results"
+msgstr ""
+
+msgid "Sort column names, comma separated"
+msgstr ""
+
+msgid "Sorted data"
+msgstr ""
+
+msgid "Target column name"
+msgstr ""
+
+msgid "Threshold"
+msgstr ""
+
+msgid "Transformed DataFrame"
+msgstr ""
+
+msgid "Transformed data"
+msgstr ""
+
+msgid "Value column name(s), comma-separated"
+msgstr ""
+
+msgid "Whether export succeeded"
+msgstr ""
+
+msgid "Z-score threshold, default 3.0"
+msgstr ""
+
+msgid "any: drop if any missing; all: drop only if all missing"
+msgstr ""
+
+msgid "constant: fixed value; ffill/bfill: forward/backward fill; mean/median/mode: statistical value"
+msgstr ""
+
+msgid "file_path is empty"
+msgstr ""
+
+msgid "first/last/False: keep first/last/none"
+msgstr ""
+
+msgid "linear/polynomial/spline/time"
+msgstr ""
+
+msgid "log/sqrt/boxcox"
+msgstr ""
+
+msgid "pandas eval expression, e.g. 'C = A + B'"
+msgstr ""
+
+msgid "query expression, e.g. 'age > 25 and name == "John"'"
+msgstr ""

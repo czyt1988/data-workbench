@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
-"""DataFilterByColumn — 按列范围筛选节点"""
+"""DataFilterByColumn — filter by column range node"""
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.operations import filter_by_column_range
 
 
-@NodeDef(name="Filter By Column", category="数据操作", icon="filter_col")
+@NodeDef(name="Filter By Column", category=_("Data Operations"), icon="filter_col")  # cn:数据操作
 class DataFilterByColumnNode:
-    """按列值范围筛选数据"""
+    """Filter data by a column value range"""
 
-    column = Parameter(str, default="", description="筛选列名")
-    min_value = Parameter(float, default=0.0, description="最小值（包含），0 表示不限制")
-    max_value = Parameter(float, default=0.0, description="最大值（包含），0 表示不限制")
+    column = Parameter(str, default="", description=_("Column name to filter by"))  # cn:筛选列名
+    min_value = Parameter(float, default=0.0, description=_("Minimum value (inclusive), 0 means no limit"))  # cn:最小值（包含），0 表示不限制
+    max_value = Parameter(float, default=0.0, description=_("Maximum value (inclusive), 0 means no limit"))  # cn:最大值（包含），0 表示不限制
 
     class Inputs:
-        data = Input("DataFrame", required=True, description="输入数据")
+        data = Input("DataFrame", required=True, description=_("Input data"))  # cn:输入数据
 
     class Outputs:
-        filtered = Output("DataFrame", description="筛选结果")
-        removed_count = Output("int", description="移除的行数")
+        filtered = Output("DataFrame", description=_("Filter result"))  # cn:筛选结果
+        removed_count = Output("int", description=_("Number of removed rows"))  # cn:移除的行数
 
     def __init__(self):
         self._output_data = {}

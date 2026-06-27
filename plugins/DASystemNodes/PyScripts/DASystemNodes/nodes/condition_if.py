@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-"""If / Else 菱形条件节点"""
+"""If / Else diamond conditional node"""
 
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, NodeDisplay, LinkPointStyle
 
 
 @NodeDef(
     name="If / Else",
-    category="System / Flow Control",
+    category=_("System / Flow Control"),  # cn:系统 / 流程控制
     icon="",
     style=NodeDisplay(
         body_shape="Diamond",
@@ -18,19 +18,21 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, NodeDisplay, LinkPo
 )
 class IfElseNode:
     """
-    条件分支节点。
+    Conditional branch node.
 
-    根据 condition 输入的布尔值，将 data 输入转发到 true 或 false 输出。
-    未命中分支的输出为 None，执行器不会向下游传播数据，从而实现分支选择。
+    Forwards the data input to the true or false output based on the
+    boolean value of the condition input. The unmatched branch outputs
+    None, so the executor does not propagate data downstream, achieving
+    branch selection.
     """
 
     class Inputs:
-        condition = Input("bool", required=True, description="条件表达式结果")
-        data = Input("any", required=False, description="要转发的数据（可选）")
+        condition = Input("bool", required=True, description=_("Condition expression result"))  # cn:条件表达式结果
+        data = Input("any", required=False, description=_("Data to forward (optional)"))  # cn:要转发的数据（可选）
 
     class Outputs:
-        true = Output("any", description="condition 为 True 时输出 data")
-        false = Output("any", description="condition 为 False 时输出 data")
+        true = Output("any", description=_("Outputs data when condition is True"))  # cn:condition 为 True 时输出 data
+        false = Output("any", description=_("Outputs data when condition is False"))  # cn:condition 为 False 时输出 data
 
     def execute(self, inputs=None, params=None):
         if inputs is None:

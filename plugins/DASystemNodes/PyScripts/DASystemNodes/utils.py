@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""DASystemNodes 节点通用工具函数"""
+"""DASystemNodes common utility functions"""
 
 
 def data_to_text(value, max_lines: int = 8, max_width: int = 40) -> list[str]:
@@ -12,12 +12,12 @@ def data_to_text(value, max_lines: int = 8, max_width: int = 40) -> list[str]:
     :return: 文本行列表
     """
     if value is None:
-        return ["None"]
+        return [_("None")]  # cn:无
 
     try:
         text = str(value)
     except Exception:
-        text = "<unprintable>"
+        return [_("<unprintable>")]  # cn:<不可打印>
 
     lines = text.splitlines()
     result = []

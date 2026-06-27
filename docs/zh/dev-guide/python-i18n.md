@@ -211,7 +211,7 @@ def setup_i18n(
 
 ## 在代码中使用国际化
 
-在需要翻译的 Python 脚本中，使用 `_()` 函数包裹文本。以下示例展示国际化的使用方式：
+在需要翻译的 Python 脚本中，使用 `_()` 函数包裹文本。项目统一采用**英文源文本 + `# cn:中文` 行内注释**的模式：
 
 ```python
 # xxx.py
@@ -220,13 +220,132 @@ from .i18n.core import setup_i18n
 # 初始化国际化，自动检测系统语言
 setup_i18n()
 
-# 使用 _() 标记需要翻译的文本
-# 程序运行时会根据当前语言加载对应的翻译
-print(_("没有选中数据"))
-print(_("数据不是DataFrame类型"))
+# 使用 _() 标记需要翻译的文本，源文本必须是英文，附 # cn: 中文注释
+print(_("No data selected"))  # cn:没有选中数据
+print(_("Data is not DataFrame type"))  # cn:数据不是DataFrame类型
 ```
 
-执行上述代码后，文本会根据系统语言自动翻译，如果翻译不存在则显示原文本。
+执行上述代码后，文本会根据系统语言自动翻译，如果翻译不存在则显示原文本（英文）。
+
+!!! warning "源文本方向"
+    **禁止**在 `_()` 中直接写中文：`_("没有选中数据")` 是错误写法。源文本必须是英文，中文翻译通过 `.po` 文件提供，`# cn:` 注释仅用于辅助 `update_po.py` 工具自动填充 `.po` 翻译。
+
+## 节点包（@NodeDef）i18n
+
+工作流节点包（如 `DASystemNodes`、`DADataAnalysisNodes`）的 i18n 有特殊约束，与普通 GUI 包不同。
+
+### 特殊约束
+
+| 字段 | 是否翻译 | 原因 |
+|------|---------|------|
+| `@NodeDef(name=...)` | ❌ **不翻译** | `name` 参与 `qualified_name`（如 `DASystemNodes.Delay`）构成，翻译会破坏已存工程的节点匹配和序列化 |
+| `@NodeDef(category=...)` | ✅ 翻译 | `category` 仅用于节点工具箱分类显示，不参与序列化 |
+| `Parameter(description=...)` | ✅ 翻译 | 显示在属性面板 |
+| `Input/Output(description=...)` | ✅ 翻译 | 显示在端口悬停提示 |
+| 类 docstring | 改为英文 | docstring 作为 tooltip 显示，改为英文源文本（框架层翻译为后续改进） |
+| `paint()` 中的硬编码文本 | ✅ 翻译 | 直接绘制到节点画面，用户可见 |
+| `execute()` 中的日志 | ❌ 不翻译 | 日志保持英文便于检索 |
+
+### setup_i18n() 调用时机
+
+`@NodeDef` 装饰器在模块导入时执行，若 `category` 参数使用 `_()`，则 `setup_i18n()` **必须在节点模块导入之前**调用：
+
+```python
+# DASystemNodes/__init__.py
+# -*- coding: utf-8 -*-
+"""DASystemNodes - System-level workflow node package."""
+
+# ⚠️ 必须在节点模块导入之前调用 setup_i18n()
+from .i18n.core import setup_i18n
+setup_i18n()
+
+# 之后才能导入节点模块（节点模块中使用了 _()）
+from .nodes.data_to_manager import DataToManagerNode
+from .nodes.text_viewer import TextViewerNode
+# ...
+```
+
+### 完整节点文件示例
+
+```python
+# -*- coding: utf-8 -*-
+"""Delay for a specified number of seconds before passing data downstream."""  # docstring 改英文
+
+import time
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
+
+
+@NodeDef(
+    name="Delay",                            # ❌ name 保持英文，不翻译
+    category=_("System / Flow Control"),     # cn:系统 / 流程控制  ✅ category 翻译
+    icon="",
+)
+class DelayNode:
+    """Delay for a specified number of seconds before passing data downstream."""
+
+    seconds = Parameter(
+        float,
+        default=1.0,
+        min=0.0,
+        step=0.1,
+        decimals=2,
+        description=_("Delay in seconds"),   # cn:延迟秒数  ✅ description 翻译
+    )
+
+    class Inputs:
+        trigger = Input("any", required=True, description=_("Trigger signal"))  # cn:触发信号
+
+    class Outputs:
+        done = Output("any", description=_("Output after delay, forwards trigger as-is"))  # cn:延迟完成后的输出，原样转发 trigger
+
+    def execute(self, inputs=None, params=None):
+        if inputs is None:
+            inputs = {}
+        if params is None:
+            params = {}
+
+        seconds = params.get("seconds", 1.0)
+        seconds = max(0.0, float(seconds))
+
+        if seconds > 0:
+            time.sleep(seconds)
+
+        self._output_data["done"] = inputs.get("trigger")
+        return True
+```
+
+### paint() 中的文本翻译
+
+`paint()` 方法中直接绘制到节点画面的文本必须用 `_()` 包裹：
+
+```python
+def paint(self, painter, body_rect):
+    x, y, w, h = body_rect
+    # ✅ 用 _() 包裹显示文本
+    lines = getattr(self, "_display_lines", [])
+    if not lines:
+        lines = [_("(no data)")]  # cn:(无数据)
+
+    for i, line in enumerate(lines):
+        painter.drawText(x + 4, y + 14 + i * 14, line)
+```
+
+### xgettext 扫描注意事项
+
+节点包的 `update-i18n.sh` 扫描范围应包含 `nodes/` 子目录：
+
+```bash
+PYTHON_FILES=$(find "${PROJECT_ROOT}" -name "*.py" \
+    -not -path "*/venv/*" \
+    -not -path "*/__pycache__/*" \
+    -not -path "*/i18n/locale/*")
+```
+
+### 参考实现
+
+- `plugins/DASystemNodes/PyScripts/DASystemNodes/i18n/` — 节点包 i18n 标杆实现（8 节点）
+- `plugins/DataAnalysis/PyScripts/DADataAnalysisNodes/i18n/` — 数据分析节点包 i18n（22 节点）
+- `plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/` — GUI 包 i18n 标杆实现
 
 ## 生成语言模板文件
 
@@ -303,25 +422,25 @@ msgstr ""
 "Generated-By: xgettext 0.21\n"
 "Language: Python\n"
 
-msgid "没有选中数据"
+msgid "No data selected"
 msgstr ""
 
-msgid "数据不是DataFrame类型"
+msgid "Data is not DataFrame type"
 msgstr ""
 
-msgid "删除缺失值参数设置"
+msgid "Drop NA parameters"
 msgstr ""
 
-msgid "任意一个存在即删除"
+msgid "Drop if any NA exists"
 msgstr ""
 
-msgid "是否重建索引"
+msgid "Whether to rebuild index"
 msgstr ""
 ```
 
 `.pot` 文件内容说明：
 
-- `msgid`：待翻译的原文本（从代码中提取的 `_("xxx")` 里的内容）；
+- `msgid`：待翻译的原文本（从代码中提取的 `_("xxx")` 里的内容，**英文源文本**）；
 - `msgstr`：空值，供后续生成 `.po` 文件时填写翻译；
 - 头部的编码、生成工具等信息自动填充，无需手动修改。
 
@@ -359,14 +478,17 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: zh_CN\n"  # 绑定具体语言
 
-msgid "没有选中数据"
-msgstr "No data selected"  # 手动填写的英文翻译
+msgid "No data selected"
+msgstr "没有选中数据"  # 中文翻译（英文源文本 -> 中文翻译）
 
-msgid "删除缺失值后，是否重建索引"
-msgstr "Whether to rebuild the index after removing missing values"
+msgid "Whether to rebuild index"
+msgstr "是否重建索引"
 ```
 
-`po`文件记录"原文本->目标语言文本"的映射关系，是人工维护翻译的核心文件，最终会被 `msgfmt` 编译为 `.mo` 二进制文件供程序加载。
+`po`文件记录"英文源文本 -> 目标语言文本"的映射关系，是人工维护翻译的核心文件，最终会被 `msgfmt` 编译为 `.mo` 二进制文件供程序加载。
+
+!!! tip "update_po.py 自动填充工具"
+    项目提供 `update_po.py` 脚本，可从代码中的 `_("English")  # cn:中文` 注释自动填充 `.po` 文件中空 `msgstr`。详见 `plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/update_po.py`。
 
 生成po文件后，你需要进行手动翻译并保存
 

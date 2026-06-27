@@ -355,6 +355,134 @@ for (const SomeClass& v : vals) {   // ⚠️ 即使元素是const引用，容�
 
 > **要点**：关键在于**容器本身是否为 const**，而非迭代变量。只要容器是非 const 的，无论迭代变量声明为 `T&` 还是 `const T&`，都会触发 COW。
 
+## 国际化（i18n）规范
+
+> **强制规则**：所有显示到用户界面的字符串必须使用英文源文本，翻译通过 `.ts`（C++/Qt）或 `.po`（Python/gettext）文件提供。源码中**禁止**直接写中文作为 UI 显示文本。
+
+### 源文本方向
+
+项目统一采用**英文源文本 + 行内中文注释**的模式：
+
+| 语言 | 代码写法 | 翻译文件 |
+|------|---------|---------|
+| C++ (Qt) | `tr("English text")  //cn:中文文本` | `.ts` → `.qm` |
+| Python | `_("English text")  # cn:中文文本` | `.po` → `.mo` |
+
+**❌ 错误写法**（源码直接写中文）：
+
+```cpp
+// C++ — 禁止
+label->setText("数据分析");
+label->setText(tr("数据分析"));  // 即使加 tr 也禁止，源文本必须是英文
+```
+
+```python
+# Python — 禁止
+label.setText("数据分析")
+print(_("数据分析"))
+```
+
+**✅ 正确写法**：
+
+```cpp
+// C++
+label->setText(tr("Data Analysis"));  //cn:数据分析
+```
+
+```python
+# Python
+label.setText(_("Data Analysis"))  # cn:数据分析
+```
+
+### C++ / Qt i18n 规则
+
+1. **UI 文本必须用 `tr()` 包裹**：按钮文本、菜单项、工具提示、对话框标题、撤销命令名、状态栏消息等
+2. **非 QObject 子类用显式上下文**：`QCoreApplication::translate("ClassName", "English")  //cn:中文`
+3. **日志消息不翻译**：`daInfo` / `daWarning` / `daCritical` / `qWarning` 等日志输出保持纯英文，便于跨语言环境检索
+4. **序列化键名不翻译**：XML/JSON 键名、配置键名保持英文
+5. **`retranslate()` / `retranslateUi()`**：插件和 UI 类应实现此方法，集中更新所有 UI 文本
+
+### Python i18n 规则
+
+1. **使用 GNU gettext**：`_("English")  # cn:中文` 模式，详见 [docs/zh/dev-guide/python-i18n.md](docs/zh/dev-guide/python-i18n.md)
+2. **`setup_i18n()` 在包 `__init__.py` 顶部调用**：在导入业务模块之前调用，确保 `_()` 可用
+3. **i18n 目录结构**：每个 Python 包维护自己的 `i18n/` 子模块（`core.py` + `locale/{lang}/LC_MESSAGES/{DOMAIN}.{po,mo}`）
+4. **DOMAIN 用包名**：如 `DADataAnalysisGui`、`DASystemNodes`、`DADataAnalysisNodes`
+
+### Python 工作流节点（@NodeDef）i18n 规则
+
+> ⚠️ **节点包 i18n 有特殊约束**，详见 [docs/zh/dev-guide/python-i18n.md](docs/zh/dev-guide/python-i18n.md#节点包-nodedef-i18n) 的"节点包 i18n"章节
+
+| 字段 | 是否翻译 | 原因 |
+|------|---------|------|
+| `@NodeDef(name=...)` | ❌ **不翻译** | `name` 参与 `qualified_name`（如 `DASystemNodes.Delay`）构成，翻译会破坏已存工程的节点匹配和序列化 |
+| `@NodeDef(category=...)` | ✅ 翻译 | `category` 仅用于节点工具箱分类显示，不参与序列化 |
+| `Parameter(description=...)` | ✅ 翻译 | 显示在属性面板 |
+| `Input/Output(description=...)` | ✅ 翻译 | 显示在端口悬停提示 |
+| 类 docstring | 改为英文 | docstring 作为 tooltip 显示，改为英文源文本（框架层翻译为后续改进） |
+| `paint()` 中的硬编码文本 | ✅ 翻译 | 直接绘制到节点画面，用户可见 |
+| `execute()` 中的错误消息 | ✅ 翻译 | 若显示给用户（如通过日志面板） |
+| `execute()` 中的日志 | ❌ 不翻译 | 日志保持英文便于检索 |
+
+**节点文件改写示例**：
+
+```python
+# -*- coding: utf-8 -*-
+"""Delay for a specified number of seconds before passing data downstream."""  # docstring 改英文
+
+import time
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
+
+
+@NodeDef(
+    name="Delay",                            # name 保持英文，不翻译
+    category=_("System / Flow Control"),     # cn:系统 / 流程控制
+    icon="",
+)
+class DelayNode:
+    """Delay for a specified number of seconds before passing data downstream."""
+
+    seconds = Parameter(
+        float,
+        default=1.0,
+        min=0.0,
+        step=0.1,
+        decimals=2,
+        description=_("Delay in seconds"),   # cn:延迟秒数
+    )
+
+    class Inputs:
+        trigger = Input("any", required=True, description=_("Trigger signal"))  # cn:触发信号
+
+    class Outputs:
+        done = Output("any", description=_("Output after delay, forwards trigger as-is"))  # cn:延迟完成后的输出，原样转发 trigger
+```
+
+### 不应翻译的内容
+
+- **日志消息**（`daInfo`/`daWarning`/`daCritical`/`qWarning`/`logger.info`/`print` 调试输出）
+- **序列化键名**（XML 标签名、JSON 键名、配置键名）
+- **内部标识符**（枚举字符串值、注册键名、qualified_name）
+- **`@NodeDef(name=...)`**（参与序列化，见上表）
+- **代码注释**（Doxygen 注释保持中文，见"注释与文档规范"）
+
+### i18n 基础设施
+
+| 组件 | C++ / Qt | Python |
+|------|---------|--------|
+| 翻译工具 | Qt Linguist (`lupdate` / `lrelease`) | GNU gettext (`xgettext` / `msgmerge` / `msgfmt`) |
+| 源文件 | `.ts` (XML) | `.po` (文本) |
+| 编译文件 | `.qm` (二进制) | `.mo` (二进制) |
+| CMake 集成 | `DA_ENABLE_AUTO_TRANSLATE` (主程序)、`qt_create_translation` (插件) | 无 CMake 集成，`.mo` 作为普通文件随包安装 |
+| 运行时加载 | `QTranslator` + `DATranslatorManeger` | `gettext.translation()` + `trans.install()` |
+| 参考实现 | `src/APP/` (主程序)、`plugins/DataAnalysis/` C++ 部分 | `plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/` |
+
+### 参考文档与实现
+
+- [docs/zh/dev-guide/python-i18n.md](docs/zh/dev-guide/python-i18n.md) — Python i18n 完整规范（含节点包章节）
+- `plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/` — Python i18n 标杆实现
+- `plugins/DataAnalysis/DataAnalysisUI.cpp::retranslateUi()` — C++ retranslate 标杆实现
+
 ## 注释与文档规范
 
 ### 注释规范（强制）
@@ -589,6 +717,10 @@ Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若�
   - 涉及的 Qt 类型包括：`QString`、`QByteArray`、`QDate`、`QTime`、`QDateTime`、`QList<T>`、`QVector<T>`(Qt5)、`QSet<T>`、`QHash<K,V>`、`QMap<K,V>`、`QVariant`
 
   遗漏 include **不会编译报错**（头文件间接可见时能编译通过），但运行时会抛 `Unable to convert call argument 'N' of type 'QString' to Python object`，且异常被 `dealException` 吞掉后表现为后续业务逻辑静默失败（如节点查找 KeyError、数据丢失等），极难排查。详见 `docs/zh/dev-guide/dapybind11-qt-caster.md` 与 `src/DAPyWorkFlow/AGENTS.md` § 类型转换铁律
+- **禁止在源码中直接写中文作为 UI 显示文本** — 必须用 `tr("English") //cn:中文`（C++）或 `_("English") # cn:中文`（Python）模式。源文本统一英文，翻译放 `.ts`/`.po` 文件。详见 § 国际化（i18n）规范
+- **禁止翻译 `@NodeDef(name=...)`** — `name` 参与 `qualified_name` 序列化（如 `DASystemNodes.Delay`），翻译会破坏已存工程的节点匹配。`category`/`description` 可翻译
+- **禁止翻译日志消息** — `daInfo`/`daWarning`/`daCritical`/`qWarning`/`logger.*`/`print` 调试输出保持纯英文，便于跨语言环境检索
+- **禁止在 Python 节点包中遗漏 `setup_i18n()` 调用** — 必须在包 `__init__.py` 顶部、节点模块导入之前调用 `setup_i18n()`，否则 `_()` 未定义会导致节点注册失败
 
 ## UNIQUE STYLES
 

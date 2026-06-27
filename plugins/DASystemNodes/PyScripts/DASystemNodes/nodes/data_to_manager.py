@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""将数据发布到 DataManager 面板的系统节点"""
+"""System node: publish data to the DataManager panel"""
 
 import threading
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Parameter
@@ -7,20 +7,20 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Parameter
 
 @NodeDef(
     name="Output to DataManager",
-    category="System / Data",
+    category=_("System / Data"),  # cn:系统 / 数据
     icon="",
 )
 class DataToManagerNode:
-    """将输入数据（推荐 DataFrame）发布到 DAWorkbench 的 DataManager 面板。"""
+    """Publish input data (DataFrame recommended) to the DAWorkbench DataManager panel."""
 
     data_name = Parameter(
         str,
         default="workflow_output",
-        description="数据在 DataManager 面板中的显示名称",
+        description=_("Display name of the data in the DataManager panel"),  # cn:数据在 DataManager 面板中的显示名称
     )
 
     class Inputs:
-        data = Input("any", required=True, description="要发布到 DataManager 的数据")
+        data = Input("any", required=True, description=_("Data to publish to DataManager"))  # cn:要发布到 DataManager 的数据
 
     # 无输出：成功状态通过框架自动渲染在节点上
 

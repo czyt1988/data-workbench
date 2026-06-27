@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
-"""DataReplaceValues — 替换值节点"""
+"""DataReplaceValues — value replacement node."""
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import replace_values_impl
 
 
-@NodeDef(name="Replace Values", category="数据清洗", icon="replace")
+@NodeDef(name="Replace Values", category=_("Data Cleaning"), icon="replace")  # cn:数据清洗
 class DataReplaceValuesNode:
-    """替换指定列中的特定值"""
+    """Replace specific values in a given column."""
 
-    column = Parameter(str, default="", description="要替换的列名")
-    old_value = Parameter(str, default="", description="旧值")
-    new_value = Parameter(str, default="", description="新值")
+    column = Parameter(str, default="", description=_("Column to replace"))  # cn:要替换的列名
+    old_value = Parameter(str, default="", description=_("Old value"))  # cn:旧值
+    new_value = Parameter(str, default="", description=_("New value"))  # cn:新值
 
     class Inputs:
-        data = Input("DataFrame", required=True, description="输入数据")
+        data = Input("DataFrame", required=True, description=_("Input data"))  # cn:输入数据
 
     class Outputs:
-        replaced = Output("DataFrame", description="替换后的数据")
-        replaced_count = Output("int", description="替换次数")
+        replaced = Output("DataFrame", description=_("Replaced data"))  # cn:替换后的数据
+        replaced_count = Output("int", description=_("Number of replacements"))  # cn:替换次数
 
     def __init__(self):
         self._output_data = {}

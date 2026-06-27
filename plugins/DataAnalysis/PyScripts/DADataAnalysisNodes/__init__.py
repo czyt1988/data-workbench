@@ -1,33 +1,39 @@
 # -*- coding: utf-8 -*-
 """
-DADataAnalysisNodes - 数据分析示例节点包
+DADataAnalysisNodes - Data analysis workflow node package
 
-本包提供基于 pandas 的数据分析工作流节点，
-使用 @NodeDef 装饰器定义，可通过 DAWorkbench.DAWorkFlowPy 节点注册表自动发现。
+This package provides pandas-based data analysis workflow nodes,
+defined using the @NodeDef decorator and auto-discovered via the
+DAWorkbench.DAWorkFlowPy node registry.
 
-节点列表：
-- DataSourceNode: CSV 数据读取
-- DataFilterNode: 条件筛选
-- DataTransformNode: 列变换
-- DataExportNode: 数据导出
-- DataPlotNode: 数据绘图（可选，依赖 matplotlib）
-- DataDescribeNode: 数据描述统计
-- DataDropDuplicatesNode: 去重
-- DataDropnaNode: 删除缺失值
-- DataEvalNode: 表达式求值
-- DataFillInterpolateNode: 插值填充
-- DataFillnaNode: 缺失值填充
-- DataFilterByColumnNode: 按列筛选
-- DataPivotTableNode: 透视表
-- DataQueryNode: 查询
-- DataRemoveOutliersIqrNode: IQR 异常值移除
-- DataRemoveOutliersZscoreNode: Z-score 异常值移除
-- DataReplaceValuesNode: 值替换
-- DataSearchNode: 搜索
-- DataSortNode: 排序
-- DataThresholdFilterNode: 阈值筛选
-- DataTransformSkewedNode: 偏态变换
+Node list:
+- DataSourceNode: CSV data reading
+- DataFilterNode: Conditional filtering
+- DataTransformNode: Column transformation
+- DataExportNode: Data export
+- DataPlotNode: Data plotting (optional, requires matplotlib)
+- DataDescribeNode: Data description statistics
+- DataDropDuplicatesNode: Deduplication
+- DataDropnaNode: Drop missing values
+- DataEvalNode: Expression evaluation
+- DataFillInterpolateNode: Interpolation filling
+- DataFillnaNode: Missing value filling
+- DataFilterByColumnNode: Filter by column
+- DataPivotTableNode: Pivot table
+- DataQueryNode: Query
+- DataRemoveOutliersIqrNode: IQR outlier removal
+- DataRemoveOutliersZscoreNode: Z-score outlier removal
+- DataReplaceValuesNode: Value replacement
+- DataSearchNode: Search
+- DataSortNode: Sorting
+- DataThresholdFilterNode: Threshold filtering
+- DataTransformSkewedNode: Skewed transformation
 """
+
+# ⚠️ Must call setup_i18n() before importing node modules.
+# Node modules use _() in @NodeDef(category=_(...)) which executes at import time.
+from .i18n.core import setup_i18n
+setup_i18n()
 
 from .data_source_node import DataSourceNode
 from .data_filter_node import DataFilterNode

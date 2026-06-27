@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
-"""DataPivotTable — 透视表节点"""
+"""DataPivotTable — pivot table node"""
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.operations import create_pivot_table
 
 
-@NodeDef(name="Pivot Table", category="数据操作", icon="pivot")
+@NodeDef(name="Pivot Table", category=_("Data Operations"), icon="pivot")  # cn:数据操作
 class DataPivotTableNode:
-    """创建数据透视表"""
+    """Create a pivot table"""
 
-    index = Parameter(str, default="", description="行索引列名，逗号分隔")
-    columns = Parameter(str, default="", description="列索引列名，逗号分隔")
-    values = Parameter(str, default="", description="值列名，逗号分隔")
-    aggfunc = Parameter(str, default="mean", description="聚合函数: mean/sum/count/min/max")
+    index = Parameter(str, default="", description=_("Row index column name(s), comma-separated"))  # cn:行索引列名，逗号分隔
+    columns = Parameter(str, default="", description=_("Column index column name(s), comma-separated"))  # cn:列索引列名，逗号分隔
+    values = Parameter(str, default="", description=_("Value column name(s), comma-separated"))  # cn:值列名，逗号分隔
+    aggfunc = Parameter(str, default="mean", description=_("Aggregation function: mean/sum/count/min/max"))  # cn:聚合函数: mean/sum/count/min/max
 
     class Inputs:
-        data = Input("DataFrame", required=True, description="输入数据")
+        data = Input("DataFrame", required=True, description=_("Input data"))  # cn:输入数据
 
     class Outputs:
-        pivot = Output("DataFrame", description="透视表结果")
+        pivot = Output("DataFrame", description=_("Pivot table result"))  # cn:透视表结果
 
     def __init__(self):
         self._output_data = {}

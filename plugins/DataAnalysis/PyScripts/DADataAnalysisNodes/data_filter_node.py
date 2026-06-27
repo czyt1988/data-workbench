@@ -1,28 +1,33 @@
 # -*- coding: utf-8 -*-
 """
-数据筛选节点 — 按条件筛选 DataFrame 行
+Data filter node - filter DataFrame rows by condition
 
-本节点接收上游 DataFrame，使用 pandas df.query() 按条件筛选数据行，
-将筛选结果通过输出端口传递给下游节点。
+This node receives an upstream DataFrame, uses pandas df.query() to filter
+rows by condition, and passes the filtered result to downstream nodes via
+the output port.
 """
 
 import pandas as pd
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
-@NodeDef(name="Data Filter", category="Data Analysis", icon="data_filter")
+@NodeDef(
+    name="Data Filter",
+    category=_("Data Analysis"),  # cn:数据分析
+    icon="data_filter",
+)
 class DataFilterNode:
-    """条件筛选节点"""
+    """Conditional filtering node."""
 
-    column = Parameter(str, default="", description="筛选目标列名")
-    condition = Parameter(str, default="", description="筛选条件表达式（df.query 语法）")
+    column = Parameter(str, default="", description=_("Filter target column name"))  # cn:筛选目标列名
+    condition = Parameter(str, default="", description=_("Filter condition expression (df.query syntax)"))  # cn:筛选条件表达式（df.query 语法）
 
     class Inputs:
-        data = Input("DataFrame", required=True, description="输入 DataFrame")
+        data = Input("DataFrame", required=True, description=_("Input DataFrame"))  # cn:输入 DataFrame
 
     class Outputs:
-        filtered = Output("DataFrame", description="筛选后的 DataFrame")
-        removed_count = Output("int", description="移除的行数")
+        filtered = Output("DataFrame", description=_("Filtered DataFrame"))  # cn:筛选后的 DataFrame
+        removed_count = Output("int", description=_("Number of removed rows"))  # cn:移除的行数
 
     def __init__(self):
         self._input_data = {}

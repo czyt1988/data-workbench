@@ -1,22 +1,26 @@
 # -*- coding: utf-8 -*-
-"""DataDropDuplicates — 删除重复行节点"""
+"""DataDropDuplicates - drop duplicate rows node"""
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import drop_duplicates_impl
 
 
-@NodeDef(name="Drop Duplicates", category="数据清洗", icon="drop_dup")
+@NodeDef(
+    name="Drop Duplicates",
+    category=_("Data Cleaning"),  # cn:数据清洗
+    icon="drop_dup",
+)
 class DataDropDuplicatesNode:
-    """删除 DataFrame 中的重复行"""
+    """Drop duplicate rows from a DataFrame."""
 
-    subset = Parameter(str, default="", description="用于识别重复的列名，逗号分隔，空表示全部列")
-    keep = Parameter(str, default="first", description="first/last/False: 保留第一个/最后一个/不保留")
+    subset = Parameter(str, default="", description=_("Column names for identifying duplicates, comma-separated, empty means all columns"))  # cn:用于识别重复的列名，逗号分隔，空表示全部列
+    keep = Parameter(str, default="first", description=_("first/last/False: keep first/last/none"))  # cn:first/last/False: 保留第一个/最后一个/不保留
 
     class Inputs:
-        data = Input("DataFrame", required=True, description="输入数据")
+        data = Input("DataFrame", required=True, description=_("Input data"))  # cn:输入数据
 
     class Outputs:
-        cleaned = Output("DataFrame", description="去重后的数据")
-        removed_count = Output("int", description="删除的行数")
+        cleaned = Output("DataFrame", description=_("Deduplicated data"))  # cn:去重后的数据
+        removed_count = Output("int", description=_("Number of removed rows"))  # cn:删除的行数
 
     def __init__(self):
         self._output_data = {}

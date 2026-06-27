@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-"""DataTransformSkewed — 偏态变换节点"""
+"""DataTransformSkewed — skewed data transformation node."""
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import transform_skewed_impl
 
 
-@NodeDef(name="Transform Skewed", category="数据清洗", icon="skew")
+@NodeDef(name="Transform Skewed", category=_("Data Cleaning"), icon="skew")  # cn:数据清洗
 class DataTransformSkewedNode:
-    """对偏态数据进行变换使其接近正态分布"""
+    """Transform skewed data to approximate a normal distribution."""
 
-    column = Parameter(str, default="", description="要变换的列名")
-    method = Parameter(str, default="log", description="log/sqrt/boxcox")
+    column = Parameter(str, default="", description=_("Column to transform"))  # cn:要变换的列名
+    method = Parameter(str, default="log", description=_("log/sqrt/boxcox"))  # cn:log/sqrt/boxcox
 
     class Inputs:
-        data = Input("DataFrame", required=True, description="输入数据")
+        data = Input("DataFrame", required=True, description=_("Input data"))  # cn:输入数据
 
     class Outputs:
-        transformed = Output("DataFrame", description="变换后的数据")
+        transformed = Output("DataFrame", description=_("Transformed data"))  # cn:变换后的数据
 
     def __init__(self):
         self._output_data = {}
