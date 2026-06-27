@@ -70,6 +70,7 @@ QJsonObject DAAppUI::getConfigValues(const QString& jsonConfig, QWidget* parent,
 			dialog = new DAPropertyFormDialog(parent);
 			if (!dialog->loadFromJson(jsonConfig)) {
 				qWarning() << tr("Failed to load form config for settings dialog");
+				delete dialog;
 				return QJsonObject();
 			}
 			m_cachePropertyDialog[ cacheKey ] = dialog;
