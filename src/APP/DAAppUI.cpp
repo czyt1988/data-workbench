@@ -8,7 +8,7 @@
 #include "DAAppDataManager.h"
 #include "AppMainWindow.h"
 #include "DAAppStatusBar.h"
-#include "DACommonPropertySettingDialog.h"
+#include "DAPropertyFormDialog.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -53,35 +53,35 @@ DAStatusBarInterface* DAAppUI::getStatusBar()
 }
 
 /**
- * @brief 执行一个通用的设置窗口，来获取设置信息，传入内容为构建窗口的设置信息
+ * @brief 执行统一的表单配置窗口，来获取设置信息
  *
- * 具体json的设置见@ref DACommonPropertySettingDialog
- * @param jsonConfig json设置文件内容
+ * 输入为 v2 表单 schema（JSON 字符串），由 @ref DAPropertyFormDialog 渲染。
+ * 当传入 cacheKey 时，首次构建的对话框会被缓存，后续相同 cacheKey 的调用直接 exec 已缓存的对话框。
+ * @param jsonConfig v2 表单 schema 的 JSON 字符串
  * @param parent 父窗口
- * @param cacheKey 缓存关键字，如果缓存关键字有值，优先匹配缓存的窗口，如果匹配中
- * @param defaultTitle
- * @return
+ * @param cacheKey 缓存关键字，非空时启用对话框缓存
+ * @return 用户确认时返回字段值组成的 QJsonObject，取消或加载失败时返回空对象
  */
 QJsonObject DAAppUI::getConfigValues(const QString& jsonConfig, QWidget* parent, const QString& cacheKey)
 {
 	if (!cacheKey.isEmpty()) {
-		DACommonPropertySettingDialog* dialog = m_cachePropertyDialog.value(cacheKey, nullptr);
+		DAPropertyFormDialog* dialog = m_cachePropertyDialog.value(cacheKey, nullptr);
 		if (!dialog) {
-			dialog = new DACommonPropertySettingDialog(parent);
+			dialog = new DAPropertyFormDialog(parent);
 			if (!dialog->loadFromJson(jsonConfig)) {
-				qDebug() << tr("Failed to load JSON config for settings dialog");
+				qWarning() << tr("Failed to load form config for settings dialog");
 				return QJsonObject();
 			}
 			m_cachePropertyDialog[ cacheKey ] = dialog;
 		}
 
 		if (QDialog::Accepted == dialog->exec()) {
-			return dialog->getCurrentValues();
+			return QJsonObject::fromVariantMap(dialog->values());
 		}
 		return QJsonObject();
 	}
 	// 创建一个配置对话框
-	return DACommonPropertySettingDialog::showSettingsDialog(jsonConfig, parent);
+	return DAPropertyFormDialog::showSettingsDialog(jsonConfig, parent);
 }
 
 void DAAppUI::createUi()

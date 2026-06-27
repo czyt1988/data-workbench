@@ -86,7 +86,8 @@ public:
     // 获取界面的StatusBar区域
     virtual DAStatusBarInterface* getStatusBar() = 0;
 
-    // 执行一个通用的设置窗口，来获取设置信息，传入内容为构建窗口的设置信息，具体json的设置见DACommonPropertySettingDialog
+    // 执行统一的表单配置窗口，输入为 v2 表单 schema（JSON 字符串）
+    // Python 端可通过 ui.getConfigValues(FormSpec | dict | json_str) 调用，绑定层自动归一化
     virtual QJsonObject getConfigValues(const QString& jsonConfig,
                                         QWidget* parent = nullptr,
                                         const QString& cacheKey = QString()  // 缓存关键字，如果存在缓存关键字，这个设置窗口会缓存起来，下次调用会直接exec，不会创建

@@ -9,7 +9,7 @@ class DAAppActions;
 class DAAppDockingArea;
 class DAAppRibbonArea;
 class DAAppStatusBar;
-class DACommonPropertySettingDialog;
+class DAPropertyFormDialog;
 /**
  * @brief 总体界面接口，负责生成DAAppDockingArea和DAAppRibbonArea
  */
@@ -31,7 +31,7 @@ public:
     // 获取界面的StatusBar区域
     virtual DAStatusBarInterface* getStatusBar() override;
 
-    // 执行一个通用的设置窗口，来获取设置信息，传入内容为构建窗口的设置信息，具体json的设置见DACommonPropertySettingDialog
+    // 执行统一的表单配置窗口，输入为 v2 表单 schema（JSON 字符串），由 DAPropertyFormDialog 渲染
     virtual QJsonObject getConfigValues(const QString& jsonConfig,
                                         QWidget* parent = nullptr,
                                         const QString& cacheKey = QString()  // 缓存关键字，如果存在缓存关键字，这个设置窗口会缓存起来，下次调用会直接exec，不会创建
@@ -78,7 +78,7 @@ public:
     DAAppDockingArea* m_dockingArea;
     DAAppRibbonArea* m_ribbonArea;
     DAAppStatusBar* m_statusBar;
-    QHash< QString, DACommonPropertySettingDialog* > m_cachePropertyDialog;
+    QHash< QString, DAPropertyFormDialog* > m_cachePropertyDialog;
 };
 }  // namespace DA
 

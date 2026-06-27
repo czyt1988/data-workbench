@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional, Union, Tuple
 
 class PropertyConfigBuilder:
     """通用属性配置构建器
-    
-    用于方便地构建符合DACommonPropertySettingDialog要求的JSON配置。
+
+    用于方便地构建符合统一属性表单（DAPropertyFormDialog）要求的JSON配置。
     支持链式调用，可以轻松构建复杂的属性配置。
     """
     
