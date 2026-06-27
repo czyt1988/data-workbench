@@ -1,6 +1,8 @@
 #include "DAFormSchemaIO.h"
+#include <QDebug>
 #include <QJsonArray>
 #include <QJsonValue>
+#include <QObject>
 #include <QStringList>
 #include <QVariant>
 
@@ -25,7 +27,7 @@ bool parseField(const QJsonObject& obj, DAFormFieldDef& field, QString* errorMes
     QJsonValue nameVal = obj.value("name");
     if (!nameVal.isString()) {
         if (errorMessage) {
-            *errorMessage = QStringLiteral("field missing required 'name'");
+            *errorMessage = QObject::tr("field missing required 'name'");
         }
         return false;
     }
@@ -134,7 +136,7 @@ bool parseGroup(const QJsonObject& obj, std::shared_ptr< DAFormGroupDef >& group
 /**
  * @brief 解析条目对象，按 kind 分发到字段或分组
  *
- * kind 缺省时按 "field" 处理。
+ * kind 缺省或无法识别时按 "field" 处理。
  * @param obj 条目对应的 JSON 对象
  * @param item 输出的条目定义
  * @param errorMessage 错误信息输出（可为 nullptr）
@@ -165,7 +167,7 @@ bool parseItemsArray(const QJsonValue& val, QList< DAFormItemDef >& items, QStri
 {
     if (!val.isArray()) {
         if (errorMessage) {
-            *errorMessage = QStringLiteral("'items' must be an array");
+            *errorMessage = QObject::tr("'items' must be an array");
         }
         return false;
     }
@@ -324,10 +326,14 @@ bool DAFormSchemaIO::fromJsonObject(const QJsonObject& obj, DAFormSpec& spec, QS
     spec = DAFormSpec();  // 重置为默认状态
 
     QJsonValue versionVal = obj.value("version");
-    if (versionVal.isDouble()) {
+    bool versionPresent   = versionVal.isDouble();
+    if (versionPresent) {
         spec.version = versionVal.toInt();
     } else {
         spec.version = 2;
+    }
+    if (versionPresent && spec.version != 2) {
+        qWarning() << "DAFormSchemaIO: schema version" << spec.version << "is not 2; parsing with v2 semantics";
     }
 
     QJsonValue titleVal = obj.value("title");
