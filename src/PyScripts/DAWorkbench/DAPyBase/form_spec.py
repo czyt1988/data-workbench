@@ -175,16 +175,19 @@ class GroupSpec:
     def to_dict(self) -> dict:
         """转换为 v2 schema 字典
 
-        始终输出 ``kind:"group"``、``name``、``label``、``description``、``items``，
-        其中 ``items`` 通过各子条目的 ``to_dict()`` 递归转换。
+        始终输出 ``kind:"group"``、``name``、``label``、``items``，
+        其中 ``items`` 通过各子条目的 ``to_dict()`` 递归转换；
+        ``description`` 仅在非空时输出，与 :meth:`FieldSpec.to_dict` 保持一致。
         """
-        return {
+        d: dict = {
             "kind": "group",
             "name": self.name,
             "label": self.label,
-            "description": self.description,
-            "items": [item.to_dict() for item in self.items],
         }
+        if self.description:
+            d["description"] = self.description
+        d["items"] = [item.to_dict() for item in self.items]
+        return d
 
 
 @dataclass

@@ -113,88 +113,103 @@ class FormBuilder:
     def int(self, name: str, *, label: str = "", description: str = "",
             default: Optional[int] = None, min: Optional[int] = None,
             max: Optional[int] = None, step: Optional[int] = None,
-            layout: str = "inline", visible_when: str = "",
-            enabled_when: str = "", required_when: str = "") -> "FormBuilder":
+            layout: str = "inline", read_only: bool = False,
+            visible_when: str = "", enabled_when: str = "",
+            required_when: str = "") -> "FormBuilder":
         """添加整数字段（type="int"）"""
         return self._add_field(FieldSpec(
             name=name, type="int", label=label, description=description,
             default=default, min=min, max=max, step=step, layout=layout,
-            visible_when=visible_when, enabled_when=enabled_when, required_when=required_when,
+            read_only=read_only, visible_when=visible_when, enabled_when=enabled_when,
+            required_when=required_when,
         ))
 
     def float(self, name: str, *, label: str = "", description: str = "",
               default: Optional[float] = None, min: Optional[float] = None,
               max: Optional[float] = None, step: Optional[float] = None,
               decimals: Optional[int] = None, layout: str = "inline",
-              visible_when: str = "", enabled_when: str = "",
-              required_when: str = "") -> "FormBuilder":
+              read_only: bool = False, visible_when: str = "",
+              enabled_when: str = "", required_when: str = "") -> "FormBuilder":
         """添加浮点数字段（type="float"）"""
         return self._add_field(FieldSpec(
             name=name, type="float", label=label, description=description,
             default=default, min=min, max=max, step=step, decimals=decimals,
-            layout=layout, visible_when=visible_when, enabled_when=enabled_when,
-            required_when=required_when,
+            layout=layout, read_only=read_only, visible_when=visible_when,
+            enabled_when=enabled_when, required_when=required_when,
         ))
 
     def bool(self, name: str, *, label: str = "", description: str = "",
-             default: Optional[bool] = None, visible_when: str = "",
+             default: Optional[bool] = None, layout: str = "inline",
+             read_only: bool = False, visible_when: str = "",
              enabled_when: str = "", required_when: str = "") -> "FormBuilder":
         """添加布尔字段（type="bool"）"""
         return self._add_field(FieldSpec(
             name=name, type="bool", label=label, description=description,
-            default=default, visible_when=visible_when, enabled_when=enabled_when,
+            default=default, layout=layout, read_only=read_only,
+            visible_when=visible_when, enabled_when=enabled_when,
             required_when=required_when,
         ))
 
     def enum(self, name: str, *, label: str = "", description: str = "",
              default: Any = None, options: Optional[List[OptionSpec]] = None,
-             layout: str = "inline", visible_when: str = "",
-             enabled_when: str = "", required_when: str = "") -> "FormBuilder":
+             layout: str = "inline", read_only: bool = False,
+             visible_when: str = "", enabled_when: str = "",
+             required_when: str = "") -> "FormBuilder":
         """添加枚举字段（type="enum"）
 
-        :param options: 枚举选项列表，通过 :func:`option` 构造；为 None 时使用空列表
+        :param options: 枚举选项列表，通过 :func:`option` 构造；必填且不能为空，
+                        否则抛出 :class:`ValueError`
+        :raises ValueError: ``options`` 为 ``None`` 或空列表
         """
+        if not options:
+            raise ValueError("enum field requires non-empty options; use option() to build them")
         return self._add_field(FieldSpec(
             name=name, type="enum", label=label, description=description,
-            default=default, options=options or [], layout=layout,
+            default=default, options=options, layout=layout, read_only=read_only,
             visible_when=visible_when, enabled_when=enabled_when,
             required_when=required_when,
         ))
 
     def file(self, name: str, *, label: str = "", description: str = "",
              default: Optional[str] = None, filter: str = "",
+             layout: str = "inline", read_only: bool = False,
              visible_when: str = "", enabled_when: str = "",
              required_when: str = "") -> "FormBuilder":
         """添加文件选择字段（type="file"）"""
         return self._add_field(FieldSpec(
             name=name, type="file", label=label, description=description,
-            default=default, filter=filter,
+            default=default, filter=filter, layout=layout, read_only=read_only,
             visible_when=visible_when, enabled_when=enabled_when,
             required_when=required_when,
         ))
 
     def folder(self, name: str, *, label: str = "", description: str = "",
-               default: Optional[str] = None, visible_when: str = "",
+               default: Optional[str] = None, layout: str = "inline",
+               read_only: bool = False, visible_when: str = "",
                enabled_when: str = "", required_when: str = "") -> "FormBuilder":
         """添加文件夹选择字段（type="folder"）"""
         return self._add_field(FieldSpec(
             name=name, type="folder", label=label, description=description,
-            default=default, visible_when=visible_when, enabled_when=enabled_when,
+            default=default, layout=layout, read_only=read_only,
+            visible_when=visible_when, enabled_when=enabled_when,
             required_when=required_when,
         ))
 
     def color(self, name: str, *, label: str = "", description: str = "",
-              default: Optional[str] = None, visible_when: str = "",
+              default: Optional[str] = None, layout: str = "inline",
+              read_only: bool = False, visible_when: str = "",
               enabled_when: str = "", required_when: str = "") -> "FormBuilder":
         """添加颜色字段（type="color"）"""
         return self._add_field(FieldSpec(
             name=name, type="color", label=label, description=description,
-            default=default, visible_when=visible_when, enabled_when=enabled_when,
+            default=default, layout=layout, read_only=read_only,
+            visible_when=visible_when, enabled_when=enabled_when,
             required_when=required_when,
         ))
 
     def font(self, name: str, *, label: str = "", description: str = "",
-             default: Any = None, visible_when: str = "",
+             default: Any = None, layout: str = "inline",
+             read_only: bool = False, visible_when: str = "",
              enabled_when: str = "", required_when: str = "") -> "FormBuilder":
         """添加字体字段（type="font"）
 
@@ -203,32 +218,35 @@ class FormBuilder:
         """
         return self._add_field(FieldSpec(
             name=name, type="font", label=label, description=description,
-            default=default, visible_when=visible_when, enabled_when=enabled_when,
+            default=default, layout=layout, read_only=read_only,
+            visible_when=visible_when, enabled_when=enabled_when,
             required_when=required_when,
         ))
 
     def code(self, name: str, *, label: str = "", description: str = "",
              default: Optional[str] = None, height: Optional[int] = None,
-             visible_when: str = "", enabled_when: str = "",
-             required_when: str = "") -> "FormBuilder":
+             read_only: bool = False, visible_when: str = "",
+             enabled_when: str = "", required_when: str = "") -> "FormBuilder":
         """添加代码字段（type="code"）
 
         强制 ``layout="below"``，因为代码为多行内容。
         """
         return self._add_field(FieldSpec(
             name=name, type="code", label=label, description=description,
-            default=default, height=height, layout="below",
+            default=default, height=height, layout="below", read_only=read_only,
             visible_when=visible_when, enabled_when=enabled_when,
             required_when=required_when,
         ))
 
     def list(self, name: str, *, label: str = "", description: str = "",
-             default: Optional[List[str]] = None, visible_when: str = "",
+             default: Optional[List[str]] = None, layout: str = "inline",
+             read_only: bool = False, visible_when: str = "",
              enabled_when: str = "", required_when: str = "") -> "FormBuilder":
         """添加字符串列表字段（type="list"）"""
         return self._add_field(FieldSpec(
             name=name, type="list", label=label, description=description,
-            default=default, visible_when=visible_when, enabled_when=enabled_when,
+            default=default, layout=layout, read_only=read_only,
+            visible_when=visible_when, enabled_when=enabled_when,
             required_when=required_when,
         ))
 
