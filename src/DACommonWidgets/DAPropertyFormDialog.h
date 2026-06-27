@@ -45,22 +45,10 @@ public:
     // 收集字段值（转发给内部表单）
     QVariantMap values() const;
 
-    /**
-     * @brief 静态便捷方法：加载 JSON 对象配置并弹出模态表单
-     *
-     * @param[in] jsonConfig 表单规格 JSON 对象
-     * @param[in] parent 父窗口
-     * @return 用户确认时返回字段值的 JSON 对象，取消时返回空对象
-     */
+    // 静态便捷方法：加载 JSON 对象配置并弹出模态表单，确认返回字段值 JSON，取消返回空对象
     static QJsonObject showSettingsDialog(const QJsonObject& jsonConfig, QWidget* parent = nullptr);
 
-    /**
-     * @brief 静态便捷方法：加载 JSON 字符串配置并弹出模态表单
-     *
-     * @param[in] jsonConfig 表单规格 JSON 字符串
-     * @param[in] parent 父窗口
-     * @return 用户确认时返回字段值的 JSON 对象，取消时返回空对象
-     */
+    // 静态便捷方法：加载 JSON 字符串配置并弹出模态表单，确认返回字段值 JSON，取消返回空对象
     static QJsonObject showSettingsDialog(const QString& jsonConfig, QWidget* parent = nullptr);
 };
 }  // namespace DA

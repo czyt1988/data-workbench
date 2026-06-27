@@ -100,8 +100,10 @@ void writeStr(QWidget* editor, const QVariant& value)
 {
     QString s = value.toString();
     if (auto* le = qobject_cast< QLineEdit* >(editor)) {
+        QSignalBlocker blocker(le);
         le->setText(s);
     } else if (auto* pe = qobject_cast< QPlainTextEdit* >(editor)) {
+        QSignalBlocker blocker(pe);
         pe->setPlainText(s);
     }
 }
@@ -280,12 +282,12 @@ void populateEnumCombo(QComboBox* combo, const DAFormFieldDef& field)
     QVariant enumAttr = field.attributes.value("enum");
     if (enumAttr.canConvert< QStringList >()) {
         QStringList sl = enumAttr.value< QStringList >();
-        for (const QString& s : sl) {
+        for (const QString& s : std::as_const(sl)) {
             combo->addItem(s, s);
         }
     } else if (enumAttr.canConvert< QList< QPair< QString, int > > >()) {
         QList< QPair< QString, int > > pl = enumAttr.value< QList< QPair< QString, int > > >();
-        for (const QPair< QString, int >& p : pl) {
+        for (const QPair< QString, int >& p : std::as_const(pl)) {
             combo->addItem(p.first, p.second);
         }
     }
@@ -387,7 +389,7 @@ QWidget* createListEditor(const DAFormFieldDef& field, QWidget* parent)
         }
     } else if (field.defaultValue.canConvert< QStringList >()) {
         QStringList sl = field.defaultValue.value< QStringList >();
-        for (const QString& s : sl) {
+        for (const QString& s : std::as_const(sl)) {
             listWidget->addItem(s);
         }
     }
@@ -397,7 +399,7 @@ QWidget* createListEditor(const DAFormFieldDef& field, QWidget* parent)
     });
     QObject::connect(btnRemove, &QPushButton::clicked, listWidget, [ listWidget ]() {
         QList< QListWidgetItem* > selected = listWidget->selectedItems();
-        for (QListWidgetItem* item : selected) {
+        for (QListWidgetItem* item : std::as_const(selected)) {
             listWidget->takeItem(listWidget->row(item));
             delete item;
         }
@@ -430,7 +432,7 @@ void writeList(QWidget* editor, const QVariant& value)
     QSignalBlocker b(listWidget);
     listWidget->clear();
     QStringList sl = value.toStringList();
-    for (const QString& s : sl) {
+    for (const QString& s : std::as_const(sl)) {
         listWidget->addItem(s);
     }
 }
@@ -441,7 +443,7 @@ void connectList(QWidget* editor, QObject* context, const std::function< void() 
         return;
     }
     QList< QPushButton* > buttons = editor->findChildren< QPushButton* >();
-    for (QPushButton* btn : buttons) {
+    for (QPushButton* btn : std::as_const(buttons)) {
         QObject::connect(btn, &QPushButton::clicked, context, [ slot ]() { slot(); });
     }
 }
@@ -502,9 +504,11 @@ QWidget* createFolderEditor(const DAFormFieldDef& field, QWidget* parent)
             fileDialog.setFileMode(QFileDialog::Directory);
             fileDialog.setOption(QFileDialog::ShowDirsOnly, true);
             if (fileDialog.exec()) {
-                QStringList files = fileDialog.selectedFiles();
+                auto files = fileDialog.selectedFiles();
                 if (!files.isEmpty()) {
-                    edit->setFilePath(files.back());
+                    QString p = files.back();
+                    edit->setFilePath(p);
+                    emit edit->selectedPath(p);   // 显式发射，触发 onFieldChanged
                 }
             }
         });
