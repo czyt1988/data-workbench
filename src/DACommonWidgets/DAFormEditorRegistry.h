@@ -9,8 +9,6 @@
 #include <functional>
 #include <QWidget>
 
-class QObject;
-
 namespace DA
 {
 /**

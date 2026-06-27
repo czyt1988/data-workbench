@@ -48,7 +48,9 @@ void DAPropertyFormWidget::PrivateData::addField(const DAFormFieldDef& field, in
     DAPropertyItemWidget::LayoutMode mode = (field.layout.compare("below", Qt::CaseInsensitive) == 0)
                                                 ? DAPropertyItemWidget::BelowLayout
                                                 : DAPropertyItemWidget::InlineLayout;
-    panel->addProperty(id, field.name, field.description, editor, mode);
+    // 显示名优先使用 label（人类可读），为空时回退到 name；内部索引仍以 name 为键
+    const QString displayName = field.label.isEmpty() ? field.name : field.label;
+    panel->addProperty(id, displayName, field.description, editor, mode);
 
     fieldDefs[ field.name ]  = field;
     editors[ field.name ]    = editor;
