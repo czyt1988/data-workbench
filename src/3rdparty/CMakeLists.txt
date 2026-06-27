@@ -42,8 +42,6 @@ set(BUILD_EXAMPLES OFF CACHE BOOL "force set BUILD_EXAMPLES OFF" FORCE)
 #QWT
 set(QWT_CONFIG_BUILD_EXAMPLE OFF CACHE BOOL "force set QWT_CONFIG_BUILD_EXAMPLE OFF" FORCE)
 set(QWT_CONFIG_BUILD_PLAYGROUND OFF CACHE BOOL "force set QWT_CONFIG_BUILD_PLAYGROUND OFF" FORCE)
-#QtPropertyBrowser
-set(QtPropertyBrowser_BUILD_EXAMPLES OFF CACHE BOOL "force set QtPropertyBrowser_BUILD_EXAMPLES OFF" FORCE)
 #SARibbon
 set(SARIBBON_BUILD_EXAMPLES OFF CACHE BOOL "force set SARIBBON_BUILD_EXAMPLES off" FORCE)
 set(SARIBBON_INSTALL_IN_CURRENT_DIR OFF CACHE BOOL "force set SARIBBON_INSTALL_IN_CURRENT_DIR off" FORCE)
@@ -98,9 +96,6 @@ add_subdirectory(pybind11)
 
 # 这精简化的ctk库，只用到了一些组件
 add_subdirectory(ctk)
-
-# 这是qt的属性表控件，从qt的源码中提取，进行了qt5和6的兼容，并且支持cmake
-add_subdirectory(QtPropertyBrowser)
 
 # 这是一个有序map，和python的有序字典很像
 add_subdirectory(ordered-map)
