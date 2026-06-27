@@ -6,6 +6,7 @@
 #include <QWidget>
 #include <QHash>
 #include <QString>
+#include <QVariant>
 #include <QJsonObject>
 
 class QStackedWidget;
@@ -61,10 +62,11 @@ public:
 
 Q_SIGNALS:
     /**
-     * @brief 参数值变化信号（转发自当前面板的 propertyValueChanged）
-     * @param propertyId 属性ID
+     * @brief 字段值变化信号（转发自当前面板的 fieldValueChanged）
+     * @param fieldName 字段名（对应参数名）
+     * @param value 字段当前值
      */
-    void propertyValueChanged(int propertyId);
+    void fieldValueChanged(const QString& fieldName, const QVariant& value);
 
 protected:
     // 工厂无法创建面板时的默认面板创建方法

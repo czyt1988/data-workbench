@@ -17,7 +17,7 @@ public:
 
     DAPyNode mNodeProxy;
     DAPyNodeMetaData mMetaData;
-    QList< DAParamDef > mParamDefs;
+    QList< DAPyNodeParameter > mParameters;
 };
 
 // ============================================================
@@ -48,7 +48,7 @@ void DAAbstractNodeSettingWidget::setNode(const DAPyNode& proxy)
 {
     DA_D(d);
     d->mNodeProxy = proxy;
-    d->mParamDefs.clear();
+    d->mParameters.clear();
     if (!proxy.isNone()) {
         // 缓存元数据
         d->mMetaData.name          = proxy.getNodeName();
@@ -56,11 +56,8 @@ void DAAbstractNodeSettingWidget::setNode(const DAPyNode& proxy)
         d->mMetaData.category      = proxy.getNodeCategory();
         d->mMetaData.iconPath      = proxy.getIcon();
 
-        // 通过DAPyNode::getParameters()获取参数代理列表
-        const QList< DAPyNodeParameter > pyParams = proxy.getParameters();
-        for (const DAPyNodeParameter& pyParam : pyParams) {
-            d->mParamDefs.append(toParamDef(pyParam));
-        }
+        // 通过DAPyNode::getParameters()获取参数代理列表，直接缓存原始 DAPyNodeParameter
+        d->mParameters = proxy.getParameters();
     }
 }
 
@@ -86,10 +83,10 @@ const DAPyNodeMetaData& DAAbstractNodeSettingWidget::getMetaData() const
     return d->mMetaData;
 }
 
-const QList< DAParamDef >& DAAbstractNodeSettingWidget::getParamDefs() const
+const QList< DAPyNodeParameter >& DAAbstractNodeSettingWidget::getParameters() const
 {
     DA_DC(d);
-    return d->mParamDefs;
+    return d->mParameters;
 }
 
 }  // namespace DA
