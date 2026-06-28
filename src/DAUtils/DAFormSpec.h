@@ -1,4 +1,4 @@
-#ifndef DAFORMSPEC_H
+﻿#ifndef DAFORMSPEC_H
 #define DAFORMSPEC_H
 #include "DAUtilsAPI.h"
 #include <QList>
@@ -39,20 +39,20 @@ struct DAUTILS_API DAFormOption
  */
 struct DAUTILS_API DAFormFieldDef
 {
-    QString name;                       // 字段名（唯一标识）
-    QString type;                       // 字段类型
-    QString label;                      // 显示标签
-    QString description;                // 可选描述
-    QVariant defaultValue;              // 默认值
-    QString placeholder;                // 占位提示文本
-    bool readOnly { false };            // 是否只读
-    QString layout { "inline" };        // 布局方式
-    int height { -1 };                  // 固定高度，-1 表示不指定
-    QVariantMap attributes;             // 额外属性（min/max/step/decimals/filter 等）
-    QString visibleWhen;                // 可见性联动规则表达式
-    QString enabledWhen;                // 启用性联动规则表达式
-    QString requiredWhen;               // 必填性联动规则表达式
-    QList< DAFormOption > options;      // 枚举选项列表
+    QString name;                   ///< 字段名（唯一标识）
+    QString type;                   ///< 字段类型
+    QString label;                  ///< 显示标签
+    QString description;            ///< 可选描述
+    QVariant defaultValue;          ///< 默认值
+    QString placeholder;            ///< 占位提示文本
+    bool readOnly { false };        ///< 是否只读
+    QString layout { "inline" };    ///< 布局方式
+    int height { -1 };              ///< 固定高度，-1 表示不指定
+    QVariantMap attributes;         ///< 额外属性（min/max/step/decimals/filter 等）
+    QString visibleWhen;            ///< 可见性联动规则表达式
+    QString enabledWhen;            ///< 启用性联动规则表达式
+    QString requiredWhen;           ///< 必填性联动规则表达式
+    QList< DAFormOption > options;  ///< 枚举选项列表
 };
 
 /**
@@ -72,9 +72,9 @@ struct DAUTILS_API DAFormItemDef
         Group,  ///< 分组
         Field   ///< 字段
     };
-    Kind kind { Field };                          // 条目类型
-    DAFormFieldDef field;                         // 字段定义（kind == Field 时有效）
-    std::shared_ptr< DAFormGroupDef > group;      // 分组定义（kind == Group 时有效）
+    Kind kind { Field };                      ///< 条目类型
+    DAFormFieldDef field;                     ///< 字段定义（kind == Field 时有效）
+    std::shared_ptr< DAFormGroupDef > group;  ///< 分组定义（kind == Group 时有效）
 };
 
 /**
@@ -84,10 +84,10 @@ struct DAUTILS_API DAFormItemDef
  */
 struct DAUTILS_API DAFormGroupDef
 {
-    QString name;                       // 分组名
-    QString label;                      // 显示标签
-    QString description;                // 可选描述
-    QList< DAFormItemDef > items;       // 子条目列表
+    QString name;                  ///< 分组名
+    QString label;                 ///< 显示标签
+    QString description;           ///< 可选描述
+    QList< DAFormItemDef > items;  ///< 子条目列表
 };
 
 /**
@@ -98,9 +98,9 @@ struct DAUTILS_API DAFormGroupDef
  */
 struct DAUTILS_API DAFormSpec
 {
-    int version { 2 };                  // schema 版本号
-    QString title;                      // 表单标题
-    QList< DAFormItemDef > items;       // 顶层条目列表
+    int version { 2 };             ///< schema 版本号
+    QString title;                 ///< 表单标题
+    QList< DAFormItemDef > items;  ///< 顶层条目列表
 };
 
 }  // namespace DA
