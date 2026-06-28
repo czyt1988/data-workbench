@@ -24,7 +24,8 @@ src/PyScripts/DAWorkbench/
 ├── __init__.py              # 模块入口，sys.modules 别名保持旧路径可用
 ├── DAPyBase/                # 基础工具子包
 │   ├── __init__.py
-│   ├── property_config_builder.py  # 属性配置构建器
+│   ├── form_spec.py                # FormSpec 数据结构定义
+│   ├── form_builder.py             # FormBuilder 链式构建器
 │   ├── thread_status_manager.py    # 线程状态管理
 │   ├── utils.py                    # 通用工具函数
 │   ├── da_logger.py                # 日志工具
@@ -43,7 +44,7 @@ src/PyScripts/DAWorkbench/
 ```
 
 !!! tip "旧路径兼容"
-    `__init__.py` 通过 `sys.modules` 别名机制保持 `DAWorkbench.property_config_builder` 等旧导入路径可用，但推荐使用新路径 `DAWorkbench.DAPyBase.property_config_builder`。
+    `__init__.py` 通过 `sys.modules` 别名机制保持 `DAWorkbench.form_builder` 等旧导入路径可用，但推荐使用新路径 `DAWorkbench.DAPyBase.form_builder`。
 
 ---
 

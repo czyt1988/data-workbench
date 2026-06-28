@@ -1059,19 +1059,19 @@ Worker-->>Cpp: 返回结果
         
         # 3. 获取用户配置
         # 使用配置构建器创建配置对话框
-        import DAWorkbench.property_config_builder as cfgBuilder
-        
-        builder = cfgBuilder.PropertyConfigBuilder("删除缺失值")
-        builder.add_enum(
-            name="how",
-            display_name="删除条件",
-            default_value="any",
-            enum_items=["any", "all"],
-            enum_descriptions=["任意值为空", "所有值为空"]
+        from DAWorkbench.DAPyBase.form_builder import FormBuilder, option
+
+        # 链式调用构建 FormSpec
+        cfg = (
+            FormBuilder("删除缺失值")
+            .enum("how", label="删除条件", default="any",
+                  options=[option("any", "任意值为空"),
+                           option("all", "所有值为空")])
+            .build()
         )
-        
+
         # 显示对话框并获取用户输入
-        config = ui.getConfigValues(builder.to_json(), "dropna")
+        config = ui.getConfigValues(cfg, "dropna")
         if not config:
             return None  # 用户取消
         
@@ -1216,53 +1216,36 @@ UI-->>BG: 操作完成
         注意：此函数必须在主线程调用，
         因为对话框是 UI 组件。
         """
-        import DAWorkbench.property_config_builder as pcb
-        
+        from DAWorkbench.DAPyBase.form_builder import FormBuilder, option
+
         core = da_app.getCore()
         ui = core.getUiInterface()
-        
+
         # 构建配置
-        # PropertyConfigBuilder 提供了声明式的配置构建方式
-        builder = pcb.PropertyConfigBuilder("参数设置")
-        
-        # 添加分组
-        builder.begin_group("基本设置")
-        
-        # 添加字符串输入
-        builder.add_string(
-            name="name",
-            display_name="名称",
-            default_value="",
-            description="输入名称"
+        # FormBuilder 提供了链式声明式的配置构建方式
+        cfg = (
+            FormBuilder("参数设置")
+
+            # 添加分组（group 第一个参数是唯一 key）
+            .group("basic", "基本设置")
+            # 添加字符串输入
+            .string("name", label="名称", default="", description="输入名称")
+            # 添加整数输入
+            .int("count", label="数量", default=10, min=1, max=100)
+            .end_group()
+
+            # 添加另一个分组
+            .group("advanced", "高级设置")
+            # 添加布尔值
+            .bool("advanced", label="启用高级模式", default=False)
+            .end_group()
+            .build()
         )
-        
-        # 添加整数输入
-        builder.add_int(
-            name="count",
-            display_name="数量",
-            default_value=10,
-            min_value=1,
-            max_value=100
-        )
-        
-        builder.end_group()
-        
-        # 添加另一个分组
-        builder.begin_group("高级设置")
-        
-        # 添加布尔值
-        builder.add_bool(
-            name="advanced",
-            display_name="启用高级模式",
-            default_value=False
-        )
-        
-        builder.end_group()
-        
+
         # 显示对话框
         # 第二个参数是缓存键，用于记住上次设置
         config = ui.getConfigValues(
-            builder.to_json(),
+            cfg,
             "my_plugin.config"  # 缓存键
         )
         
@@ -1731,29 +1714,20 @@ UI->>User: 显示结果
         core, ui, data_mgr = _get_interfaces()
         
         # 构建配置对话框
-        import DAWorkbench.property_config_builder as pcb
-        
-        builder = pcb.PropertyConfigBuilder("删除缺失值设置")
-        
-        builder.add_enum(
-            name="how",
-            display_name="删除条件",
-            default_value="any",
-            enum_items=["any", "all"],
-            enum_descriptions=[
-                "行中任意值为空时删除",
-                "行中所有值为空时删除"
-            ]
+        from DAWorkbench.DAPyBase.form_builder import FormBuilder, option
+
+        # 链式调用构建 FormSpec
+        cfg = (
+            FormBuilder("删除缺失值设置")
+            .enum("how", label="删除条件", default="any",
+                  options=[option("any", "行中任意值为空时删除"),
+                           option("all", "行中所有值为空时删除")])
+            .bool("reindex", label="重置行号", default=True)
+            .build()
         )
-        
-        builder.add_bool(
-            name="reindex",
-            display_name="重置行号",
-            default_value=True
-        )
-        
+
         # 获取用户配置
-        config = ui.getConfigValues(builder.to_json(), "cleaner.dropna")
+        config = ui.getConfigValues(cfg, "cleaner.dropna")
         if not config:
             return None
         
@@ -1793,23 +1767,19 @@ UI->>User: 显示结果
         core, ui, data_mgr = _get_interfaces()
         
         # 构建配置对话框
-        import DAWorkbench.property_config_builder as pcb
-        
-        builder = pcb.PropertyConfigBuilder("删除重复行设置")
-        
-        builder.add_enum(
-            name="keep",
-            display_name="保留策略",
-            default_value="first",
-            enum_items=["first", "last", "none"],
-            enum_descriptions=[
-                "保留首次出现",
-                "保留最后出现",
-                "删除所有重复项"
-            ]
+        from DAWorkbench.DAPyBase.form_builder import FormBuilder, option
+
+        # 链式调用构建 FormSpec
+        cfg = (
+            FormBuilder("删除重复行设置")
+            .enum("keep", label="保留策略", default="first",
+                  options=[option("first", "保留首次出现"),
+                           option("last", "保留最后出现"),
+                           option("none", "删除所有重复项")])
+            .build()
         )
-        
-        config = ui.getConfigValues(builder.to_json(), "cleaner.drop_duplicates")
+
+        config = ui.getConfigValues(cfg, "cleaner.drop_duplicates")
         if not config:
             return None
         
