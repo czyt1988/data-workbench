@@ -25,7 +25,7 @@ git submodule update src/3rdparty/spdlog
 git submodule update src/3rdparty/SARibbon
 git submodule update src/3rdparty/ADS
 git submodule update src/3rdparty/pybind11
-git submodule update src/3rdparty/QtPropertyBrowser
+git submodule update src/3rdparty/QtPropertyBrowser  # 已停用，源码保留但不参与构建
 git submodule update src/3rdparty/ordered-map
 ```
 

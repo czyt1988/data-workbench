@@ -187,7 +187,6 @@ damacro_plugin_setting(
 damacro_import_SARibbonBar(${DA_PLUGIN_NAME} ${INSTALL_DIR})    # Ribbon 界面框架
 damacro_import_DALiteCtk(${DA_PLUGIN_NAME} ${INSTALL_DIR})      # CTK 精简版
 damacro_import_QtAdvancedDocking(${DA_PLUGIN_NAME} ${INSTALL_DIR})  # Dock 窗口系统
-damacro_import_QtPropertyBrowser(${DA_PLUGIN_NAME} ${INSTALL_DIR})  # 属性浏览器
 damacro_import_qwt(${DA_PLUGIN_NAME} ${INSTALL_DIR})            # 科学图表库
 damacro_import_orderedmap(${DA_PLUGIN_NAME} ${INSTALL_DIR})     # 有序 map 实现
 ```

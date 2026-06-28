@@ -23,7 +23,7 @@
 | `src/3rdparty/ADS` | https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System | Qt 高级停靠/浮动窗口框架 | IDE 式灵活布局、工具窗口拖拽停靠 | BSD-3-Clause |
 | `src/3rdparty/SARibbon` | https://github.com/czyt1988/SARibbon | Qt Ribbon 风格菜单栏（Office 样式） | 提升大型桌面软件的外观与操作效率 | MIT |
 | `src/3rdparty/pybind11` | https://github.com/pybind/pybind11 | 把 C++ 代码无痛暴露给 Python 的轻量级绑定库 | 脚本化扩展、自动化测试、算法快速验证 | BSD-3-Clause |
-| `src/3rdparty/QtPropertyBrowser` | https://github.com/czyt1988/QtPropertyBrowser | Qt 属性表/属性编辑器控件 | 可视化修改对象属性、配置面板、序列化前端 | MIT |
+| `src/3rdparty/QtPropertyBrowser` | https://github.com/czyt1988/QtPropertyBrowser | Qt 属性表/属性编辑器控件 | ⚠️ 已停用，源码保留但不参与构建（统一表单系统已替代） | MIT |
 | `src/3rdparty/qwt` | https://github.com/czyt1988/QWT | 基于 Qt 的科学/工程图表与仪表盘库 | 实时曲线、频谱图、示波器、工业监控界面 | Qwt License (LGPL-like) |
 | `src/3rdparty/ordered-map` | https://github.com/Tessil/ordered-map | 保留插入顺序的哈希表 & 树形映射 | 需要"键值+顺序"双重语义的数据结构，如 JSON 编辑器、配置树 | MIT |
 

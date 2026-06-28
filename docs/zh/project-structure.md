@@ -289,7 +289,7 @@ src/3rdparty/
 ├── SARibbon/                # Ribbon 界面框架
 ├── ADS/                     # Qt-Advanced-Docking-System
 ├── pybind11/                # Python/C++ 绑定
-├── QtPropertyBrowser/       # Qt 属性浏览器
+├── QtPropertyBrowser/       # Qt 属性浏览器（已停用，源码保留但不构建）
 ├── ordered-map/             # 有序 map 实现
 ├── qwt/                     # 科学图表库
 ├── ctk/                     # 医疗影像工具包（精简版）

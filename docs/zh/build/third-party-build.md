@@ -26,7 +26,6 @@
 | spdlog | 高效日志库 | 无依赖 | 统一构建 |
 | pybind11 | Python 绑定库 | 无依赖 | 统一构建 |
 | ctk | 精简 CTK 组件库 | 无依赖 | 统一构建 |
-| QtPropertyBrowser | Qt 属性表控件 | 无依赖 | 统一构建 |
 | ordered-map | 有序 map 容器 | 无依赖 | 统一构建 |
 
 ## 依赖关系图
@@ -45,7 +44,6 @@ flowchart TD
         F[spdlog<br/>日志库]
         G[pybind11<br/>Python 绑定]
         H[ctk<br/>CTK 组件]
-        I[QtPropertyBrowser<br/>属性表控件]
         J[ordered-map<br/>有序容器]
     end
     

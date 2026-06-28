@@ -207,10 +207,10 @@ DAPyWorkFlow 是原 `DAWorkFlow` 模块的完全重构版本，主要区别如�
 | `DAPyWorkFlowEnumStringUtils` | 枚举↔字符串映射实现（`DA_ENUM_STRING_INSENSITIVE_DEFINE`） | `DAPyWorkFlowEnumStringUtils.h/cpp` |
 | `DAPyWorkFlowAPI` | DLL 导出/导入宏定义（`DAPYWORKFLOW_API`） | `DAPyWorkFlowAPI.h` |
 | `DAAbstractNodeSettingWidget` | 节点设置抽象基类，持有 `DAPyNode*` | `DAGui/DAAbstractNodeSettingWidget.h` |
-| `DANodeParamSettingPanel` | 通用参数设置面板，SceneB 3-hop信号链 | `DAGui/NodeSetting/DANodeParamSettingPanel.h` |
+| `DANodeParamSettingPanel` | 通用参数设置面板，基于 DAPropertyFormWidget | `DAGui/NodeSetting/DANodeParamSettingPanel.h` |
 | `DANodeParamSettingPanelFactory` | 参数面板单例工厂 | `DAGui/NodeSetting/DANodeParamSettingPanelFactory.h` |
 | `DANodeParamSettingPanelWidget` | QStackedWidget 调度器 | `DAGui/NodeSetting/DANodeParamSettingPanelWidget.h` |
-| `DAParamTypeRegistry` | 11种参数类型编辑器注册系统 | `DAGui/NodeSetting/DAParamTypeRegistry.h` |
+| `DAFormEditorRegistry` | 11种字段类型编辑器注册表 | `DACommonWidgets/DAFormEditorRegistry.h` |
 
 !!! note "桥接层基础设施（位于 DAPyBindQt 模块）"
     以下类虽然在工作流模块中广泛使用，但实际定义在 `src/DAPyBindQt/` 模块中：

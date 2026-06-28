@@ -161,7 +161,7 @@ Error while building/deploying project DAWorkbench
 
 ```txt
 [1/219 2.0/sec] Automatic MOC and UIC for target qwt
-[6/218 2.8/sec] Automatic MOC and UIC for target QtPropertyBrowser
+[6/218 2.8/sec] Automatic MOC and UIC for target SARibbon
 
 runtime error R6016
 - not enough space for thread data
@@ -197,7 +197,6 @@ MinGW编译器线程数据空间不足，属于编译器自身问题。
 | `DALiteCtk.dll` | DALiteCtk库 | CTK扩展库 |
 | `qt6advanceddocking.dll` | QtAdvancedDocking | Dock窗口库（Qt6） |
 | `qt5advanceddocking.dll` | QtAdvancedDocking | Dock窗口库（Qt5） |
-| `QtPropertyBrowser.dll` | QtPropertyBrowser | 属性浏览器 |
 | `quazip1-qt6.dll` | QuaZip | ZIP压缩库（Qt6） |
 | `quazip1-qt5.dll` | QuaZip | ZIP压缩库（Qt5） |
 | `qwt.dll` | Qwt | 绑图库 |

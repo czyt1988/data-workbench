@@ -50,7 +50,7 @@ description: 当需要为data-workbench创建新的Python工作流节点插件�
 │  DAPyWorkFlowNodeItemSettingWidget (属性设置容器)     │  │                                            │
 │    └── DANodeParamSettingPanelWidget (面板调度器)     │  │                                            │
 │         └── DANodeParamSettingPanel (参数面板)        │  │                                            │
-│              └── DAParamTypeRegistry (11类型编辑器)   │  │                                            │
+│              └── DAFormEditorRegistry (11类型编辑器) │  │                                            │
 └────────────────────────────────────────────────────┘  └────────────────────────────────────────────┘
 ```
 
@@ -302,20 +302,17 @@ Python 节点 (Parameter 声明)
     ▼ cls.parameters (类属性)
 DAPyNode::getParameters()               ← C++ 侧读取参数
     │
-    ▼ QJsonArray parameters
-ParameterDescriptor::fromJsonArray()     ← 解析为 ParameterDescriptor 列表
+    ▼ QList<DAPyNodeParameter>
+DANodeParameterFormAdapter::toFormSpec() ← 转换为 DAFormSpec
     │
-    ▼ QVector<ParameterDescriptor>
-DAParamTypeRegistry::createEditor()      ← 根据 type 字段创建 Qt 编辑器控件
+    ▼ DAFormSpec
+DAPropertyFormWidget::setFormSpec()     ← 由 DAFormEditorRegistry 创建编辑器
     │
-    ▼ QWidget* editor (11 种类型)
-DAPropertyPanelContainerWidget           ← 将编辑器注册到属性面板
+    ▼ 用户编辑 → fieldValueChanged
+DANodeParamSettingPanel                 ← 写回代理
     │
-    ▼ 用户编辑 → propertyValueChanged
-DANodeParamSettingPanel                  ← SceneB 3-hop 信号链
-    │
-    ▼ collectConfig() → QJsonObject
-DAPyNode::setParameterValue()            ← 实时写入代理
+    ▼ collectConfig() → QVariantMap
+DAPyNode::setParameterValue()           ← 实时写入代理
     │
     ▼ 反射到 Python 节点实例
 Python 节点实例属性                      ← execute() 中读取
@@ -325,10 +322,11 @@ Python 节点实例属性                      ← execute() 中读取
 
 | 类 | 路径 | 职责 |
 |---|---|---|
-| `DAAbstractNodeSettingWidget` | `src/DAGui/DAAbstractNodeSettingWidget.h` | 节点设置基类，持有 `DAPyNode*`，提供 `getDescriptor()` / `getParameters()` |
-| `DANodeParamSettingPanel` | `src/DAGui/NodeSetting/DANodeParamSettingPanel.h` | 通用参数面板，继承基类，持有 `DAPropertyPanelContainerWidget`，实现 SceneB 3-hop 信号链 |
-| `DAParamTypeRegistry` | `src/DAGui/NodeSetting/DAParamTypeRegistry.h` | 11 种参数类型注册系统，根据 type 字符串创建对应编辑器控件 |
-| `ParameterDescriptor` | `src/DAGui/NodeSetting/ParameterDescriptor.h` | 轻量级描述符结构体，`fromJson()` / `fromJsonArray()` 解析 JSON |
+| `DAAbstractNodeSettingWidget` | `src/DAGui/DAAbstractNodeSettingWidget.h` | 节点设置基类，持有 `DAPyNode*`，提供 `getParameters()` |
+| `DANodeParamSettingPanel` | `src/DAGui/NodeSetting/DANodeParamSettingPanel.h` | 通用参数面板，继承基类，持有 `DAPropertyFormWidget`，字段变化即时写回代理 |
+| `DANodeParameterFormAdapter` | `src/DAGui/NodeSetting/DANodeParameterFormAdapter.h` | `DAPyNodeParameter` → `DAFormSpec` 适配器，含类型归一化 |
+| `DAFormEditorRegistry` | `src/DACommonWidgets/DAFormEditorRegistry.h` | 11 种字段类型编辑器注册表（create/read/write/connect 适配器） |
+| `DAPropertyFormWidget` | `src/DACommonWidgets/DAPropertyFormWidget.h` | 统一表单渲染容器，驱动 `DAFormSpec` + `DAFormRuleEvaluator` 联动 |
 | `DANodeParamSettingPanelFactory` | `src/DAGui/NodeSetting/DANodeParamSettingPanelFactory.h` | 单例工厂，`qualifiedName → createPanel` 映射，支持插件扩展 |
 | `DANodeParamSettingPanelWidget` | `src/DAGui/NodeSetting/DANodeParamSettingPanelWidget.h` | `QStackedWidget` 调度器，惰性加载缓存，根据 `qualifiedName` 切换面板 |
 | `DAPyWorkFlowNodeItemSettingWidget` | `src/DAGui/DAPyWorkFlowNodeItemSettingWidget.h` | 工作流节点设置容器，参数面板作为主标签页（index 0，"参数"） |
@@ -427,14 +425,14 @@ DANodeParamSettingPanelFactory::instance().registerPanel(
 
 | 文件 | 说明 |
 |---|---|
-| `src/DAGui/NodeSetting/DAParamTypeRegistry.h/.cpp` | 11 种类型注册 + 编辑器创建 |
-| `src/DAGui/NodeSetting/DANodeParamSettingPanel.h/.cpp` | SceneB 3-hop 信号链面板 |
+| `src/DACommonWidgets/DAFormEditorRegistry.h/.cpp` | 11 种类型编辑器注册 + 适配器（create/read/write/connect） |
+| `src/DAGui/NodeSetting/DANodeParamSettingPanel.h/.cpp` | 基于 DAPropertyFormWidget 的参数面板 |
+| `src/DAGui/NodeSetting/DANodeParameterFormAdapter.h/.cpp` | DAPyNodeParameter → DAFormSpec 适配器 |
 | `src/DAGui/NodeSetting/DANodeParamSettingPanelFactory.h/.cpp` | 单例工厂 + qualifiedName 路由 |
 | `src/DAGui/NodeSetting/DANodeParamSettingPanelWidget.h/.cpp` | QStackedWidget 调度器 |
-| `src/DAGui/NodeSetting/ParameterDescriptor.h` | 描述符解析结构体 |
 | `src/DAGui/DAAbstractNodeSettingWidget.h/.cpp` | 设置基类 |
 | `src/DAGui/DAPyWorkFlowNodeItemSettingWidget.h/.cpp` | 节点设置容器（含参数标签页） |
-| `skills/create-setting-panel/SKILL_cn.md` | 属性面板创建指南（SceneB 模式详解） |
+| `skills/create-setting-panel/SKILL_cn.md` | DAPropertyPanelWidget 面板创建指南 |
 
 ## 场景 B：在内置 DAWorkFlowPy 包中添加节点
 
@@ -675,12 +673,12 @@ _node_display.body_icon_scale   # Optional[float]
 | DAPyInterpreter | `src/DAPyBindQt/DAPyInterpreter.h/.cpp` | Python 解释器管理 |
 | DAPyGILGuard | `src/DAPyBindQt/DAPyGILGuard.h` | GIL RAII 守卫 |
 | DAPybind11InQt | `src/DAPyBindQt/DAPybind11InQt.h` | slots 宏冲突处理 |
-| DAParamTypeRegistry | `src/DAGui/NodeSetting/DAParamTypeRegistry.h/.cpp` | 11 种参数类型注册 + 编辑器创建 |
+| DAFormEditorRegistry | `src/DACommonWidgets/DAFormEditorRegistry.h/.cpp` | 11 种字段类型编辑器注册 + 适配器 |
 | DAAbstractNodeSettingWidget | `src/DAGui/DAAbstractNodeSettingWidget.h/.cpp` | 节点设置基类，持有 DAPyNode* |
-| DANodeParamSettingPanel | `src/DAGui/NodeSetting/DANodeParamSettingPanel.h/.cpp` | 通用参数面板，SceneB 3-hop 信号链 |
+| DANodeParameterFormAdapter | `src/DAGui/NodeSetting/DANodeParameterFormAdapter.h/.cpp` | DAPyNodeParameter → DAFormSpec 适配器 |
+| DANodeParamSettingPanel | `src/DAGui/NodeSetting/DANodeParamSettingPanel.h/.cpp` | 通用参数面板，基于 DAPropertyFormWidget |
 | DANodeParamSettingPanelFactory | `src/DAGui/NodeSetting/DANodeParamSettingPanelFactory.h/.cpp` | 面板单例工厂，qualifiedName 路由 |
 | DANodeParamSettingPanelWidget | `src/DAGui/NodeSetting/DANodeParamSettingPanelWidget.h/.cpp` | QStackedWidget 调度器，惰性缓存 |
-| ParameterDescriptor | `src/DAGui/NodeSetting/ParameterDescriptor.h` | Python 参数描述符解析 |
 | DAPyWorkFlowManager | `src/DAPyWorkFlow/DAPyWorkFlowManager.h/.cpp` | 工作流管理 QObject，编排节点操作，发射 Qt 信号 |
 | DAPyNodeStyle | `src/DAPyWorkFlow/DAPyNodeStyle.h/.cpp` | 节点视觉样式配置结构体 |
 

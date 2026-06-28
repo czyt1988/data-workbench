@@ -15,7 +15,7 @@
 本文聚焦**如何创建面板子类**，不涉及 [设置类窗口规范](settingwidget-standard.md) 中的 6 函数生命周期（setTarget/getTarget/bindTarget/unbindTarget/updateUI/applySetting），那套规范适用于按需应用模式。属性面板采用的是**即时应用模式**，每次属性变化立即写回并刷新目标对象。
 
 !!! info "超出范围"
-    `DACommonPropertySettingDialog` 是另一套基于 JSON 驱动和 QtPropertyBrowser 的属性编辑机制，不在本文讨论范围内。
+    `DAPropertyFormDialog` / `DAPropertyFormWidget` 是基于 JSON schema（v2 `DAFormSpec`）驱动的统一属性表单机制，用于通用配置对话框和工作流节点参数面板，不在本文讨论范围内。该系统由 `DAFormEditorRegistry`（11 种编辑器适配器）+ `DAPropertyFormWidget`（渲染容器）+ `DAFormRuleEvaluator`（声明式联动）组成。
 
 ## 类体系
 
@@ -81,7 +81,7 @@ classDiagram
 上图中，`DAChartItemSettingPanel` 持有一个 `DAPropertyPanelContainerWidget`（它内部封装了 `DAPropertyPanelWidget` 和 `QScrollArea`），在此基础上叠加了 Qwt 类型专有的 add/get/set 方法。独立属性面板（如 `DAChartAxisSettingPanel`，以及建议新增的 `DANodePropertyPanel`）直接继承 QWidget，自行持有 `DAPropertyPanelWidget` 或 `DAPropertyPanelContainerWidget` 并管理信号链。`DACollapsiblePanel` 是轻量级折叠容器，由 `DAPropertyPanelWidget` 的 `addCollapsibleGroup()` 内部创建。应用级设置页面继承 `DAAbstractSettingPage`，用于全局偏好配置。
 
 !!! note "DANodeParamSettingPanel 是工作流节点参数面板的实际实现"
-    `DANodeParamSettingPanel` 位于 `src/DAGui/NodeSetting/`，继承自 `DAAbstractNodeSettingWidget`（持有 `DAPyNodeProxy*`），内部使用 `DAPropertyPanelContainerWidget` 构建通用参数编辑界面。通过 `DAParamTypeRegistry` 注册 11 种参数类型（str/int/float/bool/enum/list/file/folder/color/font/code），采用 SceneB 模式的 3-hop 信号链实时写入代理配置。配合 `DANodeParamSettingPanelFactory`（单例工厂）和 `DANodeParamSettingPanelWidget`（QStackedWidget 调度器 + 惰性缓存），构成完整的三层架构。
+    `DANodeParamSettingPanel` 位于 `src/DAGui/NodeSetting/`，继承自 `DAAbstractNodeSettingWidget`（持有 `DAPyNode*`），内部使用 `DAPropertyFormWidget` 构建通用参数编辑界面。通过 `DANodeParameterFormAdapter` 将 `DAPyNodeParameter` 转换为 `DAFormSpec`，由 `DAFormEditorRegistry` 注册的 11 种编辑器适配器自动渲染（str/int/float/bool/enum/list/file/folder/color/font/code），字段变化通过 `fieldValueChanged` 信号实时写入代理配置。配合 `DANodeParamSettingPanelFactory`（单例工厂）和 `DANodeParamSettingPanelWidget`（QStackedWidget 调度器 + 惰性缓存），构成完整的三层架构。
 
 ## 三类面板创建指南
 
@@ -215,7 +215,7 @@ classDiagram
     // DANodeParamSettingPanel.h
     #pragma once
     #include "DAAbstractNodeSettingWidget.h"
-    #include "DAPropertyPanelContainerWidget.h"
+    #include "DAPropertyFormWidget.h"
     #include "DAGlobals.h"
 
     namespace DA {
@@ -227,16 +227,10 @@ classDiagram
         explicit DANodeParamSettingPanel(QWidget* parent = nullptr);
         ~DANodeParamSettingPanel() override;
 
-        DAPropertyPanelContainerWidget* propertyPanel() const;
         void updateUI() override;
 
     Q_SIGNALS:
-        void propertyValueChanged(int propertyId);
-
-    protected Q_SLOTS:
-        void buildPropertyPanel();
-        void onPanelPropertyValueChanged(int propertyId);
-        void onPropertyValueChanged(int propertyId);
+        void fieldValueChanged(const QString& fieldName, const QVariant& value);
 
     protected:
         QJsonObject collectConfig() const;
@@ -247,37 +241,43 @@ classDiagram
     ```cpp
     // DANodeParamSettingPanel.cpp（简化示意，完整实现见 src/DAGui/NodeSetting/）
     #include "DANodeParamSettingPanel.h"
-    #include "DAParamTypeRegistry.h"
-    #include "ParameterDescriptor.h"
-    #include "DAPyNodeProxy.h"
-    #include <QSignalBlocker>
+    #include "DANodeParameterFormAdapter.h"
+    #include "DAPyNode.h"
     #include <QVBoxLayout>
 
     namespace DA {
     DANodeParamSettingPanel::DANodeParamSettingPanel(QWidget* parent)
         : DAAbstractNodeSettingWidget(parent), DA_PIMPL_CONSTRUCT
     {
-        // 3-hop信号链
-        connect(propertyPanel(), &DAPropertyPanelContainerWidget::propertyValueChanged,
-                this, &DANodeParamSettingPanel::onPanelPropertyValueChanged);
-        connect(this, &DANodeParamSettingPanel::propertyValueChanged,
-                this, &DANodeParamSettingPanel::onPropertyValueChanged);
-        buildPropertyPanel();
+        auto* formWidget = new DAPropertyFormWidget(this);
+        auto* layout = new QVBoxLayout(this);
+        layout->setContentsMargins(0, 0, 0, 0);
+        layout->addWidget(formWidget);
+
+        // 字段变化 → 转发信号 + 写回代理
+        connect(formWidget, &DAPropertyFormWidget::fieldValueChanged,
+                this, &DANodeParamSettingPanel::fieldValueChanged);
+        connect(formWidget, &DAPropertyFormWidget::fieldValueChanged,
+                this, [this](const QString& name, const QVariant& value) {
+                    if (!getNode().isNone()) {
+                        getNode().setParameterValue(name, value);
+                    }
+                });
     }
 
-    void DANodeParamSettingPanel::buildPropertyPanel()
+    void DANodeParamSettingPanel::setNode(const DAPyNode& proxy)
     {
-        // 遍历 ParameterDescriptor 列表，通过 DAParamTypeRegistry 创建编辑器
-        auto params = getParameters();
-        for (auto& desc : ParameterDescriptor::fromJsonArray(params)) {
-            QWidget* editor = DAParamTypeRegistry().createEditor(desc.type, desc.rawDescriptor, this);
-            propertyPanel()->addProperty(desc.propertyId, desc.name, editor, desc.description);
-        }
+        DAAbstractNodeSettingWidget::setNode(proxy);
+        // 将 DAPyNodeParameter 列表转换为 DAFormSpec，交由 DAPropertyFormWidget 渲染
+        DAFormSpec spec = DANodeParameterFormAdapter::toFormSpec(getParameters(), proxy.getNodeName());
+        auto* formWidget = findChild< DAPropertyFormWidget* >();
+        formWidget->setFormSpec(spec);
+        updateUI();
     }
     } // namespace DA
     ```
 
-    完整实现包含：PIMPL 模式、`DAPyNodeProxy::setConfig()` 实时写入、`QSignalBlocker` 阻断回写、`testBuildPropertyPanelFromJson()` 测试辅助方法。参见 `src/DAGui/NodeSetting/DANodeParamSettingPanel.h/.cpp`。
+    完整实现包含：PIMPL 模式、`DAPyNode::setParameterValue()` 实时写入、`QSignalBlocker` 阻断回写（`DAPropertyFormWidget::setValues` 内部已封装）、`testCollectConfig()` 测试辅助方法。参见 `src/DAGui/NodeSetting/DANodeParamSettingPanel.h/.cpp`。
 
 !!! info "信号冒泡转发机制"
     当使用 `addSubPanel()` 创建嵌套子面板时，子面板的 `propertyValueChanged` 信号会自动转发（冒泡）到父面板。这意味着无论属性项位于根面板还是嵌套子面板中，`propertyValueChanged` 信号始终从根面板发出，外部监听者无需关心属性的嵌套层级。这条规则同样适用于 `addCollapsibleGroup()` 创建的分组面板：分组内的属性变化通过分组面板冒泡到根面板，再从根面板发出。
@@ -728,9 +728,11 @@ void DAChartCurveSettingPanel::buildPropertyPanel()
 | `src/DAGui/ChartSetting/DAChartCurveSettingPanel.h/.cpp` | 曲线面板完整示例 |
 | `src/DAGui/ChartSetting/DAChartAxisSettingPanel.h/.cpp` | 独立属性面板完整示例（3-hop 信号链） |
 | `src/DAGui/ChartSetting/DAChartItemSettingPanelFactory.h/.cpp` | 工厂类，RTTI 注册与创建 |
-| `src/DAGui/NodeSetting/DANodeParamSettingPanel.h` | 工作流节点参数面板完整示例（SceneB 模式、3-hop 信号链、PIMPL） |
+| `src/DAGui/NodeSetting/DANodeParamSettingPanel.h` | 工作流节点参数面板完整示例（基于 DAPropertyFormWidget、PIMPL） |
 | `src/DAGui/NodeSetting/DANodeParamSettingPanelFactory.h` | 工厂类，qualifiedName 路由与创建 |
-| `src/DAGui/NodeSetting/DAParamTypeRegistry.h` | 11 种参数类型注册系统 |
-| `src/DAGui/DAAbstractNodeSettingWidget.h` | 节点设置基类，持有 DAPyNodeProxy* |
+| `src/DAGui/NodeSetting/DANodeParameterFormAdapter.h` | DAPyNodeParameter → DAFormSpec 适配器 |
+| `src/DACommonWidgets/DAFormEditorRegistry.h` | 11 种字段类型编辑器注册表 |
+| `src/DACommonWidgets/DAPropertyFormWidget.h` | 统一表单渲染容器 |
+| `src/DAGui/DAAbstractNodeSettingWidget.h` | 节点设置基类，持有 DAPyNode* |
 | `src/DAGui/DAPyWorkFlowNodeItemSettingWidget.h` | 工作流节点设置容器，嵌入参数面板作为主标签页 |
 | `docs/zh/dev-guide/settingwidget-standard.md` | 设置类窗口规范（6 函数生命周期） |
