@@ -50,6 +50,10 @@ public:
 
     // 静态便捷方法：加载 JSON 字符串配置并弹出模态表单，确认返回字段值 JSON，取消返回空对象
     static QJsonObject showSettingsDialog(const QString& jsonConfig, QWidget* parent = nullptr);
+
+private:
+    // 根据表单内容和所在屏幕可用几何调整对话框初始尺寸（多屏幕感知，超屏时由内部 QScrollArea 滚动）
+    void adjustSizeToForm();
 };
 }  // namespace DA
 

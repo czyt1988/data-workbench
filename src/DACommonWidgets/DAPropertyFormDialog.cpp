@@ -4,9 +4,13 @@
 #include "DAFormSpec.h"
 #include "DAPropertyFormWidget.h"
 #include <QDialogButtonBox>
+#include <QGuiApplication>
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QLoggingCategory>
+#include <QPoint>
+#include <QRect>
+#include <QScreen>
 #include <QVBoxLayout>
 #include <QtGlobal>
 
@@ -91,6 +95,8 @@ bool DAPropertyFormDialog::loadFromJsonObject(const QJsonObject& jsonObj)
     if (!defaults.isEmpty()) {
         d->formWidget->setValues(defaults);
     }
+    // 根据表单内容和屏幕几何调整初始尺寸，避免弹出窗口过小或超出屏幕
+    adjustSizeToForm();
     return true;
 }
 
@@ -131,6 +137,57 @@ QVariantMap DAPropertyFormDialog::values() const
 {
     DA_DC(d);
     return d->formWidget->values();
+}
+
+/**
+ * @brief 根据表单内容和所在屏幕可用几何调整对话框初始尺寸
+ *
+ * 依据内部表单控件的 sizeHint 估算理想尺寸，并以所在屏幕的可用几何
+ * （排除任务栏、多屏边界）作为上下限进行 clamp，保证：
+ *   - 弹出即可见全部关键控件，无需手动拉大；
+ *   - 永不超出屏幕边界；
+ *   - 字段过多时由内部 QScrollArea 自动出现垂直滚动条。
+ *
+ * 多屏幕处理：优先取父窗口所在屏幕；无父窗口或父窗口几何异常时回退到主屏幕。
+ */
+void DAPropertyFormDialog::adjustSizeToForm()
+{
+    DA_D(d);
+    // 强制布局重新计算，确保 sizeHint 反映当前已构建的表单内容
+    if (auto* lay = layout()) {
+        lay->activate();
+    }
+    // 表单内容理想尺寸。DAPropertyPanelContainerWidget 内部的 QScrollArea 在
+    // widgetResizable=true 下，sizeHint 会反映所有字段的累积高度，字段越多高度越大。
+    QSize formHint = d->formWidget->sizeHint().expandedTo(QSize(0, 0));
+
+    // 解析对话框应所在的屏幕（多屏幕感知）
+    QScreen* screen = nullptr;
+    if (QWidget* p = parentWidget()) {
+        screen = QGuiApplication::screenAt(p->mapToGlobal(QPoint(0, 0)));
+    }
+    if (!screen) {
+        screen = QGuiApplication::primaryScreen();
+    }
+    const QRect avail = screen ? screen->availableGeometry() : QRect(0, 0, 1920, 1080);
+
+    // 上限：屏幕可用区的 90%（宽）/ 85%（高），为任务栏与多屏边界留出余量
+    const int maxW = int(avail.width() * 0.9);
+    const int maxH = int(avail.height() * 0.85);
+    // 下限：保证基本可用，且不超过上限（小屏设备兜底）
+    const int minW = qMin(400, maxW);
+    const int minH = qMin(320, maxH);
+
+    // 理想窗口尺寸 = 表单 sizeHint + 对话框 chrome 预留
+    // 宽度：+40（左右内容边距 + 可能的垂直滚动条宽度）
+    // 高度：+100（OK/Cancel 按钮盒 ~32px + 上下边距 + spacing + 分组标题余量）
+    const int idealW = formHint.width() + 40;
+    const int idealH = formHint.height() + 100;
+
+    const int w = qBound(minW, idealW, maxW);
+    const int h = qBound(minH, idealH, maxH);
+
+    resize(w, h);
 }
 
 /**
