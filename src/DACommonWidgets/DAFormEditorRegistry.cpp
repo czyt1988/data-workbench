@@ -124,6 +124,8 @@ QWidget* createIntEditor(const DAFormFieldDef& field, QWidget* parent)
 {
     QSpinBox* spin = new QSpinBox(parent);
     spin->setRange(-9999, 9999);
+    // 第三方 QSS 可能将上下箭头渲染为左右按钮，挤占数字显示区；设最小宽度保证内容可见
+    spin->setMinimumWidth(120);
     bool ok = false;
     int minV = field.attributes.value("min").toInt(&ok);
     if (ok) {
@@ -179,6 +181,8 @@ QWidget* createFloatEditor(const DAFormFieldDef& field, QWidget* parent)
     QDoubleSpinBox* spin = new QDoubleSpinBox(parent);
     spin->setRange(-9999.0, 9999.0);
     spin->setDecimals(2);
+    // 第三方 QSS 可能将上下箭头渲染为左右按钮，挤占数字显示区；设最小宽度保证内容可见
+    spin->setMinimumWidth(140);
     bool ok = false;
     double minV = field.attributes.value("min").toDouble(&ok);
     if (ok) {
