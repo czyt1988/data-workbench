@@ -422,6 +422,8 @@ function(dafun_deploy_3rdparty_dlls _target_name)
     # 如果指定了插件目录，也复制一份（插件 DLL 需要第三方依赖）
     if(_arg_PLUGIN_DIR)
         list(APPEND _copy_commands
+            # copy_if_different 不会自动创建目录,需先确保插件目录存在
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${_arg_PLUGIN_DIR}
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     ${_3rdparty_dlls}
                     ${_arg_PLUGIN_DIR}

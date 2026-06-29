@@ -22,7 +22,7 @@
      <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="DA::DACollapsibleGroupBox" name="groupBoxX">
+        <widget class="QGroupBox" name="groupBoxX">
          <property name="title">
           <string>X</string>
          </property>
@@ -94,7 +94,7 @@
         </widget>
        </item>
        <item>
-        <widget class="DA::DACollapsibleGroupBox" name="groupBoxY">
+        <widget class="QGroupBox" name="groupBoxY">
          <property name="title">
           <string>Y</string>
          </property>
@@ -196,12 +196,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>DA::DACollapsibleGroupBox</class>
-   <extends>QGroupBox</extends>
-   <header location="global">DACollapsibleGroupBox.h</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>DA::DAPySeriesTableView</class>
    <extends>QTableView</extends>

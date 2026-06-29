@@ -1,5 +1,6 @@
 #include "DAPropertyPanelWidget.h"
-#include "DACollapsiblePanel.h"
+#include "DACollapseItem.h"
+#include "DACollapseWidget.h"
 #include <QVBoxLayout>
 #include <QFrame>
 #include <QFontMetrics>
@@ -36,13 +37,13 @@ public:
     int mPropertyNameWidth = -1;                        // -1表示自动计算
     int mSpacing           = 4;                         // 属性项间距
 
-    QWidget* mContentWidget     = nullptr;
-    QVBoxLayout* mContentLayout = nullptr;
+    DACollapseWidget* mContentWidget = nullptr;  // 折叠容器,支持普通 widget 与 DACollapseItem 混排
+    QVBoxLayout* mMainLayout        = nullptr;   // 外层主布局,容纳 mContentWidget
 
     // 分组管理
     int mNextGroupId = 1;
-    QMap< int, DACollapsiblePanel* > mGroups;             // groupId -> collapsible panel wrapper
-    QMap< int, DAPropertyPanelWidget* > mGroupPanels;     // groupId -> inner property panel
+    QMap< int, DACollapseItem* > mGroups;                // groupId -> collapse item wrapper
+    QMap< int, DAPropertyPanelWidget* > mGroupPanels;    // groupId -> inner property panel
     DAPropertyPanelWidget* mCurrentGroupPanel = nullptr;  // 当前活动分组面板（null=根面板）
 
     // 子面板管理
@@ -52,6 +53,7 @@ public:
     QWidget* getTargetContentWidget() const;
 
     int generateAutoId();
+    void applyCompactStyle(DACollapseItem* item);
     void addItemToContent(QWidget* widget, int index);
     void addItemToRoot(QWidget* widget, int index);
     void removeItemFromContent(QWidget* widget);
@@ -75,23 +77,47 @@ DAPropertyPanelWidget::PrivateData::PrivateData(DAPropertyPanelWidget* p) : q_pt
     }
 
     // 创建主布局
-    QVBoxLayout* mainLayout = new QVBoxLayout(p);
-    mainLayout->setObjectName(QStringLiteral("mainLayout"));
-    mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setSpacing(0);
+    mMainLayout = new QVBoxLayout(p);
+    mMainLayout->setObjectName(QStringLiteral("mainLayout"));
+    mMainLayout->setContentsMargins(0, 0, 0, 0);
+    mMainLayout->setSpacing(0);
 
-    // 创建内容Widget（直接子控件，不再嵌入ScrollArea）
-    mContentWidget = new QWidget();
+    // 创建内容Widget（DACollapseWidget,支持折叠分组与普通控件混排）
+    // 内部已有 DACollapseLayout + 末尾弹簧,无需手动创建 QVBoxLayout 或 addStretch
+    mContentWidget = new DACollapseWidget();
     mContentWidget->setObjectName(QStringLiteral("contentWidget"));
-    mContentLayout = new QVBoxLayout(mContentWidget);
-    mContentLayout->setObjectName(QStringLiteral("contentLayout"));
-    mContentLayout->setSpacing(mSpacing);
-    mContentLayout->setContentsMargins(4, 4, 4, 4);
+    mContentWidget->layout()->setSpacing(mSpacing);
+    mContentWidget->layout()->setContentsMargins(4, 4, 4, 4);
 
-    // 底部弹性空间
-    mContentLayout->addStretch(1);
+    mMainLayout->addWidget(mContentWidget);
 
-    mainLayout->addWidget(mContentWidget);
+    // 属性面板内 DACollapseItem 的局部样式表(仅作用于 mContentWidget 子树,不污染全局)
+    // 设计目标:紧凑、层次分明、与 DAPropertyItemWidget 表格化布局协调
+    // 注意:qss padding 对 QFrame 内 QHBoxLayout 的覆盖效果在 Qt5/6 间行为不一致,
+    //      header 的紧凑 margins 通过代码 applyCompactStyle() 可靠设置,qss 仅负责颜色/边框
+    mContentWidget->setStyleSheet(QStringLiteral(R"(
+        DACollapseItem {
+            background: #ffffff;
+        }
+        QFrame#header {
+            background: #dfe3ea;
+            border: none;
+            border-bottom: 1px solid #c0c6d2;
+        }
+        QFrame#header:hover {
+            background: #d0d6e0;
+        }
+        QLabel#DACollapseItemTitle {
+            color: #1f2329;
+            font-weight: 600;
+        }
+        QLabel#DACollapseItemArrow {
+            color: #4a5568;
+        }
+        QFrame#DACollapseItemContent {
+            background: #ffffff;
+        }
+    )"));
 }
 
 QWidget* DAPropertyPanelWidget::PrivateData::getTargetContentWidget() const
@@ -111,42 +137,53 @@ int DAPropertyPanelWidget::PrivateData::generateAutoId()
     return mNextAutoId++;
 }
 
+void DAPropertyPanelWidget::PrivateData::applyCompactStyle(DACollapseItem* item)
+{
+    // 通过代码可靠设置紧凑 margins(qss padding 对 QHBoxLayout 的覆盖在 Qt5/6 间行为不一致)
+    // header: 上下 2px,左右 8px;content: 上下 4px,左右 8px
+    if (QFrame* header = item->findChild< QFrame* >(QStringLiteral("header"))) {
+        if (QLayout* lay = header->layout()) {
+            lay->setContentsMargins(8, 2, 8, 2);
+        }
+    }
+    if (QFrame* content = item->findChild< QFrame* >(QStringLiteral("DACollapseItemContent"))) {
+        if (QLayout* lay = content->layout()) {
+            lay->setContentsMargins(8, 4, 8, 4);
+            lay->setSpacing(4);
+        }
+    }
+}
+
 void DAPropertyPanelWidget::PrivateData::addItemToRoot(QWidget* widget, int index)
 {
-    int stretchIndex = mContentLayout->count() - 1;
-    if (index < 0 || index >= stretchIndex) {
-        mContentLayout->insertWidget(stretchIndex, widget);
+    // 始终添加到根 mContentWidget(DACollapseWidget),insertWidget 自动处理弹簧前插入
+    if (index < 0) {
+        mContentWidget->addWidget(widget);
     } else {
-        mContentLayout->insertWidget(index, widget);
+        mContentWidget->insertWidget(index, widget);
     }
 }
 
 void DAPropertyPanelWidget::PrivateData::removeItemFromContent(QWidget* widget)
 {
     if (mCurrentGroupPanel) {
-        mCurrentGroupPanel->d_func()->mContentLayout->removeWidget(widget);
+        mCurrentGroupPanel->d_func()->mContentWidget->removeWidget(widget);
     } else {
-        mContentLayout->removeWidget(widget);
+        mContentWidget->removeWidget(widget);
     }
 }
 
 void DAPropertyPanelWidget::PrivateData::addItemToContent(QWidget* widget, int index)
 {
-    int stretchIndex;
-    QVBoxLayout* targetLayout;
-
+    // 路由到目标面板的 DACollapseWidget:有活动分组时进入分组,否则到根布局
+    DACollapseWidget* target = mContentWidget;
     if (mCurrentGroupPanel) {
-        targetLayout = mCurrentGroupPanel->d_func()->mContentLayout;
-    } else {
-        targetLayout = mContentLayout;
+        target = mCurrentGroupPanel->d_func()->mContentWidget;
     }
-
-    // stretch项始终在最后
-    stretchIndex = targetLayout->count() - 1;
-    if (index < 0 || index >= stretchIndex) {
-        targetLayout->insertWidget(stretchIndex, widget);
+    if (index < 0) {
+        target->addWidget(widget);
     } else {
-        targetLayout->insertWidget(index, widget);
+        target->insertWidget(index, widget);
     }
 }
 
@@ -226,29 +263,31 @@ DAPropertyPanelWidget::~DAPropertyPanelWidget()
 int DAPropertyPanelWidget::addCollapsibleGroup(const QString& title)
 {
     DA_D(d);
-    // 创建折叠面板包装
-    DACollapsiblePanel* groupPanel = new DACollapsiblePanel(title, d->mContentWidget);
-    groupPanel->setObjectName(QStringLiteral("groupPanel_") + QString::number(d->mNextGroupId));
+    // 创建折叠条目作为分组包装
+    DACollapseItem* groupItem = new DACollapseItem(title, d->mContentWidget);
+    groupItem->setObjectName(QStringLiteral("groupItem_") + QString::number(d->mNextGroupId));
+    groupItem->setExpanded(true);  // DACollapseItem 默认折叠,显式设为展开以保持原行为
+    d->applyCompactStyle(groupItem);  // 紧凑 header/content margins
 
     // 创建分组内部属性面板作为内容控件
-    DAPropertyPanelWidget* innerPanel = new DAPropertyPanelWidget(groupPanel);
+    DAPropertyPanelWidget* innerPanel = new DAPropertyPanelWidget(groupItem);
     innerPanel->setObjectName(QStringLiteral("groupInnerPanel_") + QString::number(d->mNextGroupId));
-    groupPanel->setContentWidget(innerPanel);
+    groupItem->setContentWidget(innerPanel);
 
     int groupId = d->mNextGroupId++;
 
     // 连接折叠信号
-    connect(groupPanel, &DACollapsiblePanel::expandedChanged, this, [ this, groupId ](bool expanded) {
+    connect(groupItem, &DACollapseItem::expandChanged, this, [ this, groupId ](bool expanded) {
         Q_UNUSED(expanded);
         // 可通过emit groupExpandedChanged(groupId, expanded)扩展
     });
 
     // 存储到分组映射
-    d->mGroups[ groupId ]      = groupPanel;
+    d->mGroups[ groupId ]      = groupItem;
     d->mGroupPanels[ groupId ] = innerPanel;
 
-    // 将折叠面板添加到根布局
-    d->addItemToContent(groupPanel, -1);
+    // 将折叠条目添加到根 DACollapseWidget
+    d->mContentWidget->addItem(groupItem);
 
     // 设置为当前活动分组
     d->mCurrentGroupPanel = innerPanel;
@@ -274,20 +313,26 @@ void DAPropertyPanelWidget::endGroup()
 DAPropertyPanelWidget* DAPropertyPanelWidget::addSubPanel(int id, const QString& groupName)
 {
     DA_D(d);
-    // 创建折叠面板包装
-    DACollapsiblePanel* subPanelWrapper = new DACollapsiblePanel(groupName, d->mContentWidget);
-    subPanelWrapper->setObjectName(QStringLiteral("subPanelWrapper_") + QString::number(id));
+    // 创建折叠条目作为子面板包装
+    DACollapseItem* subPanelItem = new DACollapseItem(groupName, d->mContentWidget);
+    subPanelItem->setObjectName(QStringLiteral("subPanelItem_") + QString::number(id));
+    subPanelItem->setExpanded(true);  // DACollapseItem 默认折叠,显式设为展开
+    d->applyCompactStyle(subPanelItem);  // 紧凑 header/content margins
 
     // 创建子面板作为内容控件
-    DAPropertyPanelWidget* subPanel = new DAPropertyPanelWidget(subPanelWrapper);
+    DAPropertyPanelWidget* subPanel = new DAPropertyPanelWidget(subPanelItem);
     subPanel->setObjectName(QStringLiteral("subPanel_") + QString::number(id));
-    subPanelWrapper->setContentWidget(subPanel);
+    subPanelItem->setContentWidget(subPanel);
 
     // 存储到子面板映射
     d->mSubPanels[ id ] = subPanel;
 
-    // 将折叠面板添加到目标布局（有活动分组时进入分组，否则到根布局）
-    d->addItemToContent(subPanelWrapper, -1);
+    // 添加到目标 DACollapseWidget（有活动分组时进入分组，否则到根布局）
+    DACollapseWidget* target = d->mContentWidget;
+    if (d->mCurrentGroupPanel) {
+        target = d->mCurrentGroupPanel->d_func()->mContentWidget;
+    }
+    target->addItem(subPanelItem);
 
     // 信号转发（子面板的属性变化自动冒泡到父面板）
     QMetaObject::Connection conn = connect(
@@ -338,9 +383,9 @@ DAPropertyPanelWidget* DAPropertyPanelWidget::getGroupPanel(int groupId) const
 bool DAPropertyPanelWidget::isGroupExpanded(int groupId) const
 {
     DA_DC(d);
-    DACollapsiblePanel* group = d->mGroups.value(groupId, nullptr);
+    DACollapseItem* group = d->mGroups.value(groupId, nullptr);
     if (group) {
-        return group->isExpanded();
+        return group->expanded();
     }
     return false;
 }
@@ -353,7 +398,7 @@ bool DAPropertyPanelWidget::isGroupExpanded(int groupId) const
 void DAPropertyPanelWidget::setGroupExpanded(int groupId, bool expanded)
 {
     DA_D(d);
-    DACollapsiblePanel* group = d->mGroups.value(groupId, nullptr);
+    DACollapseItem* group = d->mGroups.value(groupId, nullptr);
     if (group) {
         group->setExpanded(expanded);
     }
@@ -642,13 +687,19 @@ void DAPropertyPanelWidget::removeProperty(int id)
 void DAPropertyPanelWidget::clearProperties()
 {
     DA_D(d);
-    // 清除所有widget
-    for (QWidget* w : d->mWidgetList) {
-        d->mContentLayout->removeWidget(w);
-        w->deleteLater();
+    // 先移除并销毁普通 widget（非 DACollapseItem）
+    // DACollapseItem 通过 mContentWidget->clear() 统一销毁,避免悬空指针
+    for (QWidget* w : std::as_const(d->mWidgetList)) {
+        if (!qobject_cast< DACollapseItem* >(w)) {
+            d->mContentWidget->removeWidget(w);
+            w->deleteLater();
+        }
     }
     d->mWidgetList.clear();
     d->mPropertyItems.clear();
+
+    // 清除所有 DACollapseItem（分组和子面板）,DACollapseWidget::clear 会 delete 每个 item
+    d->mContentWidget->clear();
 
     // 清除分组映射
     d->mGroups.clear();
@@ -828,8 +879,9 @@ void DAPropertyPanelWidget::setSpacing(int spacing)
 {
     DA_D(d);
     d->mSpacing = spacing;
-    if (d->mContentLayout) {
-        d->mContentLayout->setSpacing(spacing);
+    // DACollapseWidget 内部使用 DACollapseLayout,通过 layout() 设置间距
+    if (d->mContentWidget && d->mContentWidget->layout()) {
+        d->mContentWidget->layout()->setSpacing(spacing);
     }
 }
 

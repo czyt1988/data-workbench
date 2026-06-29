@@ -11,7 +11,7 @@
 namespace DA
 {
 // Forward declaration
-class DACollapsiblePanel;
+class DACollapseItem;
 
 /**
  * @brief 属性面板控件，用于组织和管理多个属性项
@@ -39,7 +39,7 @@ class DACollapsiblePanel;
  * });
  * @endcode
  * 
- * @see DAPropertyItemWidget, DACollapsiblePanel
+ * @see DAPropertyItemWidget, DACollapseItem
  */
 class DACOMMONWIDGETS_API DAPropertyPanelWidget : public QWidget
 {

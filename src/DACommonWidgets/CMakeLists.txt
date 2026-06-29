@@ -38,9 +38,6 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
 )
-# -------------link 3rdparty DALiteCtk--------------------------
-damacro_import_DALiteCtk(${DA_LIB_NAME})
-
 # -------------link 3rdparty SARibbon--------------------------
 damacro_import_SARibbonBar(${DA_LIB_NAME})
 

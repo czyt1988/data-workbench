@@ -25,7 +25,7 @@
         <layout class="QHBoxLayout" name="horizontalLayout"/>
        </item>
        <item>
-        <widget class="DA::DACollapsibleGroupBox" name="groupBoxX">
+        <widget class="QGroupBox" name="groupBoxX">
          <property name="title">
           <string>X</string>
          </property>
@@ -86,7 +86,7 @@
         </widget>
        </item>
        <item>
-        <widget class="DA::DACollapsibleGroupBox" name="groupBoxO">
+        <widget class="QGroupBox" name="groupBoxO">
          <property name="title">
           <string>Open</string>
          </property>
@@ -101,7 +101,7 @@
         </widget>
        </item>
        <item>
-        <widget class="DA::DACollapsibleGroupBox" name="groupBoxH">
+        <widget class="QGroupBox" name="groupBoxH">
          <property name="title">
           <string>Hight</string>
          </property>
@@ -116,7 +116,7 @@
         </widget>
        </item>
        <item>
-        <widget class="DA::DACollapsibleGroupBox" name="groupBoxL">
+        <widget class="QGroupBox" name="groupBoxL">
          <property name="title">
           <string>Low</string>
          </property>
@@ -131,7 +131,7 @@
         </widget>
        </item>
        <item>
-        <widget class="DA::DACollapsibleGroupBox" name="groupBoxC">
+        <widget class="QGroupBox" name="groupBoxC">
          <property name="title">
           <string>Close</string>
          </property>
@@ -170,12 +170,6 @@
    <class>DA::DADataManagerComboBox</class>
    <extends>QComboBox</extends>
    <header>DADataManagerComboBox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>DA::DACollapsibleGroupBox</class>
-   <extends>QGroupBox</extends>
-   <header location="global">DACollapsibleGroupBox.h</header>
-   <container>1</container>
   </customwidget>
   <customwidget>
    <class>DA::DAPySeriesTableView</class>
