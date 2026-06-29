@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-"""DataQuery — 查询表达式节点"""
+"""DataQuery — query expression node"""
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.operations import query_dataframe
 
 
-@NodeDef(name="Query", category="数据操作", icon="query")
+@NodeDef(name="Query", category=_("Data Operations"), icon="query")  # cn:数据操作
 class DataQueryNode:
-    """使用 pandas query 表达式筛选数据"""
+    """Filter data using a pandas query expression"""
 
-    query_string = Parameter(str, default="", description="query 表达式，如 'age > 25 and name == \"John\"'")
+    query_string = Parameter(str, default="", description=_("query expression, e.g. 'age > 25 and name == \"John\"'"))  # cn:query 表达式，如 'age > 25 and name == "John"'
 
     class Inputs:
-        data = Input("DataFrame", required=True, description="输入数据")
+        data = Input("DataFrame", required=True, description=_("Input data"))  # cn:输入数据
 
     class Outputs:
-        result = Output("DataFrame", description="查询结果")
-        row_count = Output("int", description="结果行数")
+        result = Output("DataFrame", description=_("Query result"))  # cn:查询结果
+        row_count = Output("int", description=_("Number of result rows"))  # cn:结果行数
 
     def __init__(self):
         self._output_data = {}

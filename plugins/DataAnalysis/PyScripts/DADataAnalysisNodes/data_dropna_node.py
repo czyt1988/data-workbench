@@ -1,25 +1,29 @@
 # -*- coding: utf-8 -*-
-"""DataDropNa — 删除缺失值节点"""
+"""DataDropNa - drop missing values node"""
 import pandas as pd
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import dropna_impl
 
 
-@NodeDef(name="Drop NA", category="数据清洗", icon="drop_na")
+@NodeDef(
+    name="Drop NA",
+    category=_("Data Cleaning"),  # cn:数据清洗
+    icon="drop_na",
+)
 class DataDropNaNode:
-    """删除包含缺失值的行或列"""
+    """Drop rows or columns containing missing values."""
 
-    how = Parameter(str, default="any", description="any: 任一缺失即删除; all: 全部缺失才删除")
-    axis = Parameter(int, default=0, description="0: 删除行; 1: 删除列")
-    subset = Parameter(str, default="", description="指定检查缺失值的列名，逗号分隔，空表示全部列")
-    thresh = Parameter(int, default=0, description="非缺失值最少数量，0 表示不使用")
+    how = Parameter(str, default="any", description=_("any: drop if any missing; all: drop only if all missing"))  # cn:any: 任一缺失即删除; all: 全部缺失才删除
+    axis = Parameter(int, default=0, description=_("0: drop rows; 1: drop columns"))  # cn:0: 删除行; 1: 删除列
+    subset = Parameter(str, default="", description=_("Column names to check for missing values, comma-separated, empty means all columns"))  # cn:指定检查缺失值的列名，逗号分隔，空表示全部列
+    thresh = Parameter(int, default=0, description=_("Minimum number of non-missing values, 0 means not used"))  # cn:非缺失值最少数量，0 表示不使用
 
     class Inputs:
-        data = Input("DataFrame", required=True, description="输入数据")
+        data = Input("DataFrame", required=True, description=_("Input data"))  # cn:输入数据
 
     class Outputs:
-        cleaned = Output("DataFrame", description="清理后的数据")
-        removed_count = Output("int", description="删除的行/列数")
+        cleaned = Output("DataFrame", description=_("Cleaned data"))  # cn:清理后的数据
+        removed_count = Output("int", description=_("Number of removed rows/columns"))  # cn:删除的行/列数
 
     def __init__(self):
         self._output_data = {}

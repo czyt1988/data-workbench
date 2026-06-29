@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""打印节点：将输入数据打印到日志/控制台，并在节点上显示文字内容"""
+"""Print node: print input data to log/console and display text on the node body"""
 
 import logging
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Parameter
@@ -9,24 +9,24 @@ logger = logging.getLogger("DASystemNodes.PrintNode")
 
 @NodeDef(
     name="Print",
-    category="System / Display",
+    category=_("System / Display"),  # cn:系统 / 显示
     icon="",
 )
 class PrintNode:
-    """将输入数据打印到日志（Python logging 和 Qt 输出），并在节点画面上显示文字。"""
+    """Print input data to log (Python logging and Qt output) and display text on the node body."""
 
     title = Parameter(
         str,
         default="",
-        description="节点标题（显示在节点顶部）；为空时默认显示 'Print'",
+        description=_("Node title (displayed at node top); empty defaults to 'Print'"),  # cn:节点标题（显示在节点顶部）；为空时默认显示 'Print'
     )
 
     class Inputs:
-        value = Input("any", required=True, description="要打印的数据")
+        value = Input("any", required=True, description=_("Data to print"))  # cn:要打印的数据
 
     def __init__(self):
         super().__init__()
-        self._last_text = "(no input)"
+        self._last_text = _("(no input)")  # cn:(无输入)
         self._last_title = ""
 
     def execute(self, inputs=None, params=None):
@@ -41,7 +41,7 @@ class PrintNode:
         try:
             text = str(value)
         except Exception:
-            text = "<unprintable>"
+            text = _("<unprintable>")  # cn:<不可打印>
 
         # 缓存用于 paint() 显示
         self._last_text = text
@@ -58,13 +58,13 @@ class PrintNode:
     def serialize_runtime_state(self) -> dict:
         """持久化 execute() 缓存的显示文本，使得工程重新加载后无需运行即可显示。"""
         return {
-            "last_text": getattr(self, "_last_text", "(no input)"),
+            "last_text": getattr(self, "_last_text", _("(no input)")),  # cn:(无输入)
             "last_title": getattr(self, "_last_title", ""),
         }
 
     def deserialize_runtime_state(self, state: dict) -> None:
         """从工程文件恢复显示文本缓存。"""
-        self._last_text = state.get("last_text", "(no input)")
+        self._last_text = state.get("last_text", _("(no input)"))  # cn:(无输入)
         self._last_title = state.get("last_title", "")
 
     def paint(self, painter, body_rect):
@@ -93,13 +93,13 @@ class PrintNode:
         painter.drawLine(x, y + 16, x + w, y + 16)
 
         # 顶部标题：优先显示 title 参数，为空时回退到 "Print"
-        title = getattr(self, "_last_title", "") or "Print"
+        title = getattr(self, "_last_title", "") or _("Print")  # cn:Print
         painter.setPenColor(80, 80, 80, 255)
         painter.setFont("Arial", 8)
         painter.drawText(x + 4, y + 12, title)
 
         # 显示输入文字（按宽度换行，超出高度截断）
-        display = getattr(self, "_last_text", "(no input)")
+        display = getattr(self, "_last_text", _("(no input)"))  # cn:(无输入)
 
         font_family = "Arial"
         font_size = 8

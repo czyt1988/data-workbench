@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
-"""DataRemoveOutliersZScore — Z-Score 离群值移除节点"""
+"""DataRemoveOutliersZScore — Z-score outlier removal node."""
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import remove_outliers_zscore_impl
 
 
-@NodeDef(name="Remove Outliers Z-Score", category="数据清洗", icon="outlier_zscore")
+@NodeDef(name="Remove Outliers Z-Score", category=_("Data Cleaning"), icon="outlier_zscore")  # cn:数据清洗
 class DataRemoveOutliersZScoreNode:
-    """基于 Z-Score 移除离群值"""
+    """Remove outliers based on Z-score."""
 
-    column = Parameter(str, default="", description="要检查的列名")
-    threshold = Parameter(float, default=3.0, description="Z-Score 阈值，默认 3.0")
+    column = Parameter(str, default="", description=_("Column to check"))  # cn:要检查的列名
+    threshold = Parameter(float, default=3.0, description=_("Z-score threshold, default 3.0"))  # cn:Z-Score 阈值，默认 3.0
 
     class Inputs:
-        data = Input("DataFrame", required=True, description="输入数据")
+        data = Input("DataFrame", required=True, description=_("Input data"))  # cn:输入数据
 
     class Outputs:
-        cleaned = Output("DataFrame", description="清理后的数据")
-        removed_count = Output("int", description="移除的行数")
+        cleaned = Output("DataFrame", description=_("Cleaned data"))  # cn:清理后的数据
+        removed_count = Output("int", description=_("Number of removed rows"))  # cn:移除的行数
 
     def __init__(self):
         self._output_data = {}

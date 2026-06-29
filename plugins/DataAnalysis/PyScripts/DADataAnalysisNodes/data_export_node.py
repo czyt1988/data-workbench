@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-数据导出节点 — 将 DataFrame 导出到文件
+Data export node - export a DataFrame to a file
 
-本节点接收上游 DataFrame，支持导出为 CSV、JSON、Excel、Parquet、Feather 格式文件。
+This node receives an upstream DataFrame and supports exporting it to CSV,
+JSON, Excel, Parquet, and Feather format files.
 """
 
 import os
@@ -11,19 +12,23 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.io import export_data
 
 
-@NodeDef(name="Data Export", category="Data Analysis", icon="data_export")
+@NodeDef(
+    name="Data Export",
+    category=_("Data Analysis"),  # cn:数据分析
+    icon="data_export",
+)
 class DataExportNode:
-    """数据导出节点"""
+    """Data export node."""
 
-    file_path = Parameter("file", default="", description="导出文件路径", filter="All Files (*.*);;CSV Files (*.csv);;JSON Files (*.json);;Excel Files (*.xlsx);;Parquet Files (*.parquet);;Feather Files (*.feather)")
-    export_format = Parameter("enum", default="csv", description="导出格式", enum=["csv", "json", "excel", "parquet", "feather"])
+    file_path = Parameter("file", default="", description=_("Export file path"), filter="All Files (*.*);;CSV Files (*.csv);;JSON Files (*.json);;Excel Files (*.xlsx);;Parquet Files (*.parquet);;Feather Files (*.feather)")  # cn:导出文件路径
+    export_format = Parameter("enum", default="csv", description=_("Export format"), enum=["csv", "json", "excel", "parquet", "feather"])  # cn:导出格式
 
     class Inputs:
-        data = Input("DataFrame", required=True, description="输入 DataFrame")
+        data = Input("DataFrame", required=True, description=_("Input DataFrame"))  # cn:输入 DataFrame
 
     class Outputs:
-        success = Output("bool", description="导出是否成功")
-        file_path_out = Output("str", description="实际导出文件路径")
+        success = Output("bool", description=_("Whether export succeeded"))  # cn:导出是否成功
+        file_path_out = Output("str", description=_("Actual export file path"))  # cn:实际导出文件路径
 
     def __init__(self):
         self._input_data = {}

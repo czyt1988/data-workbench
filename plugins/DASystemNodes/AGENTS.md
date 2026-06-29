@@ -49,22 +49,38 @@ copy /Y "plugins\DASystemNodes\PyScripts\DASystemNodes\nodes\print_node.py" `
 
 ## 二、节点定义规范
 
+### 国际化（i18n）要求
+
+> ⚠️ 节点包必须实现 i18n，详见 [docs/zh/dev-guide/python-i18n.md](../../docs/zh/dev-guide/python-i18n.md#节点包-nodedef-i18n) 的"节点包 i18n"章节
+
+| 字段 | 是否翻译 | 写法 |
+|------|---------|------|
+| `@NodeDef(name=...)` | ❌ **不翻译** | 保持英文，`name` 参与 `qualified_name` 序列化 |
+| `@NodeDef(category=...)` | ✅ 翻译 | `category=_("English Category"))  # cn:中文分类` |
+| `Parameter(description=...)` | ✅ 翻译 | `description=_("English desc"))  # cn:中文描述` |
+| `Input/Output(description=...)` | ✅ 翻译 | 同上 |
+| 类 docstring | 改为英文 | docstring 作为 tooltip 显示 |
+| `paint()` 中硬编码文本 | ✅ 翻译 | `painter.drawText(..., _("English"))  # cn:中文` |
+| `execute()` 中日志 | ❌ 不翻译 | 保持英文 |
+
+**setup_i18n() 调用时机**：必须在 `__init__.py` 顶部、节点模块导入之前调用，否则 `_()` 未定义会导致节点注册失败。
+
 ### 最小节点模板
 
 ```python
 # -*- coding: utf-8 -*-
-"""节点简述"""
+"""My Node brief description."""  # docstring 改英文（作为 tooltip）
 
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
 @NodeDef(
-    name="My Node",            # 显示名称（必填）
-    category="System / Xxx",   # 分类路径，用 " / " 分层
+    name="My Node",            # 显示名称（必填，保持英文不翻译）
+    category=_("System / Xxx"),  # cn:系统 / Xxx  分类路径，用 " / " 分层，翻译
     icon="",                   # 图标路径（可空）
 )
 class MyNode:
-    """节点的 docstring（会显示在节点工具提示中）。"""
+    """My Node brief description."""
 
     # 参数声明（类属性，@NodeDef 会收集为 parameters dict）
     threshold = Parameter(
@@ -72,14 +88,14 @@ class MyNode:
         default=0.5,
         min=0.0,
         max=1.0,
-        description="阈值",
+        description=_("Threshold"),  # cn:阈值
     )
 
     class Inputs:
-        data = Input("DataFrame", required=True, description="输入数据")
+        data = Input("DataFrame", required=True, description=_("Input data"))  # cn:输入数据
 
     class Outputs:
-        result = Output("DataFrame", description="处理后的数据")
+        result = Output("DataFrame", description=_("Processed data"))  # cn:处理后的数据
 
     def __init__(self):
         super().__init__()  # ⚠️ 必须调用，详见 § 四.1
@@ -120,21 +136,21 @@ class MyNode:
 
 ```python
 # 基本类型
-column = Parameter(str, default="value", description="列名")
+column = Parameter(str, default="value", description=_("Column name"))  # cn:列名
 count = Parameter(int, default=10, min=0, max=100)
 ratio = Parameter(float, default=0.5, min=0.0, max=1.0, step=0.1, decimals=2)
 enabled = Parameter(bool, default=True)
 
 # "code" 类型（Python 字面量表达式，用 ast.literal_eval 求值）
-value = Parameter("code", default="1", description="支持 1、'hello'、[1,2,3]")
+value = Parameter("code", default="1", description=_("Constant value, supports Python literal: 1, 'hello', [1,2,3]"))  # cn:常量值，支持 Python 字面量表达式
 
 # 枚举类型（choices 生成下拉框）
-mode = Parameter(str, default="fast", choices=["fast", "slow"], description="模式")
+mode = Parameter(str, default="fast", choices=["fast", "slow"], description=_("Mode"))  # cn:模式
 
 # 布局控制：layout="below" 让编辑器占据属性名下方整行宽度
 # - str 类型在 below 模式下自动切换为多行 QPlainTextEdit
 # - height 可选，控制编辑器高度（像素）；str 默认 80，code 默认 100
-expression = Parameter(str, default="", description="pandas eval 表达式", layout="below")
+expression = Parameter(str, default="", description=_("Pandas eval expression"), layout="below")  # cn:pandas eval 表达式
 long_code = Parameter("code", default="", layout="below", height=150)
 ```
 
@@ -152,11 +168,11 @@ long_code = Parameter("code", default="", layout="below", height=150)
 ```python
 class Inputs:
     # type_name 是字符串约定，非强制类型检查："DataFrame" / "any" / "int" / "bool" / "str"
-    data = Input("DataFrame", required=True, description="输入数据")
-    optional_flag = Input("bool", required=False, description="可选标志")
+    data = Input("DataFrame", required=True, description=_("Input data"))  # cn:输入数据
+    optional_flag = Input("bool", required=False, description=_("Optional flag"))  # cn:可选标志
 
 class Outputs:
-    result = Output("DataFrame", description="输出数据")
+    result = Output("DataFrame", description=_("Output data"))  # cn:输出数据
     # 无输出的节点可以不定义 Outputs（如 PrintNode）
 ```
 
@@ -454,6 +470,10 @@ xcopy /E /Y /I "plugins\DASystemNodes\PyScripts\DASystemNodes" `
 | 显式继承 `DAWorkflowNode` | 不需要，`@NodeDef` 会处理 | § 二 |
 | 在 `execute()` 中读取 `_node_display` | `_node_display` 仅 C++ 渲染层使用 | `src/DAPyWorkFlow/AGENTS.md` P4 |
 | 节点类中 `import da_app`（顶层） | 在 `execute()` 内 try/except ImportError | § 三 |
+| `description="中文"` 直接写中文 | `description=_("English"))  # cn:中文` | § 二 i18n |
+| `@NodeDef(name=_("..."))` 翻译 name | name 保持英文不翻译（参与序列化） | § 二 i18n |
+| `__init__.py` 中节点导入前未调 `setup_i18n()` | 顶部先调 `setup_i18n()` 再导入节点 | § 二 i18n |
+| `paint()` 中硬编码显示文本 | 用 `_()` 包裹显示文本 | § 二 i18n |
 
 ---
 

@@ -78,11 +78,11 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 
 ---
 
-## MODULE DEPENDENCY（模块依赖关系详解）
+## MODULE DEPENDENCY（模块依赖关系）
 
-> ⚠️ **AI 开发必读**：本节定义了每个模块的职责边界。在创建任何新类之前，**必须先判断它属于哪个模块**。
-> 将类放在错误的模块会导致：模块间产生不必要的依赖、代码复用困难、项目架构混乱。
-> 反面典型：`src/DAPyWorkFlow`（由 AI 编写，多个类放错了位置，见下方 § 反模式警告）。
+> ⚠️ **AI 开发必读**：在创建任何新类之前，**必须先判断它属于哪个模块**。将类放在错误的模块会导致模块间产生不必要的依赖、代码复用困难、项目架构混乱。
+>
+> 📖 **模块职责边界、依赖矩阵、典型放置指南详见** [docs/zh/dev-guide/module-dependency.md](docs/zh/dev-guide/module-dependency.md)
 
 ### 五层架构总览
 
@@ -148,22 +148,20 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 
 ### 依赖方向规则（铁律）
 
-1. **上层可以依赖下层，下层绝不能依赖上层。**
-   - ✅ DAGui → DAUtils（界面层依赖基础层）
-   - ❌ DAUtils → DAGui（基础层绝不能依赖界面层）
+1. **上层可以依赖下层，下层绝不能依赖上层。**（✅ DAGui → DAUtils；❌ DAUtils → DAGui）
 2. **同层模块尽量减少直接依赖**，通过上层整合模块（DAGui）协调。
-3. **Python 相关模块**（DAPyBindQt/DAPyScripts/DAPyCommonWidgets/DAPyWorkFlow）仅在 `DA_ENABLE_PYTHON=ON` 时编译。
-4. **DAShared 是纯头文件库**，所有模块可通过 include path 直接使用其头文件，无需显式 CMake 链接。
+3. **Python 相关模块**仅在 `DA_ENABLE_PYTHON=ON` 时编译。
+4. **DAShared 是纯头文件库**，无需显式 CMake 链接。
 
 ### AI 开发检查清单
 
-在创建新类/文件时，**必须**回答以下问题：
+创建新类/文件时**必须**回答：
 
-1. **这个类的功能是否在这个模块的职责范围内？**（对照上表）
-2. **如果放在这个模块，是否会引入违反依赖方向的依赖？**（下层不能依赖上层）
-3. **这个类是否可以被其他不依赖当前模块的模块复用？** 如果是 → 应该下沉到更低层模块
-4. **这个类是否是通用工具/基础类型？** → 考虑 DAShared（纯头文件）或 DAUtils
-5. **这个类是否涉及 Python 绑定，且通用？** → 考虑 DAPyBindQt（基础绑定）而非 DAPyWorkFlow（工作流特定）
+1. 这个类的功能是否在这个模块的职责范围内？（对照 [module-dependency.md](docs/zh/dev-guide/module-dependency.md) 的职责边界表）
+2. 是否会引入违反依赖方向的依赖？（下层不能依赖上层）
+3. 是否可以被其他不依赖当前模块的模块复用？→ 考虑下沉到更低层
+4. 是否是通用工具/基础类型？→ DAShared（纯头文件）或 DAUtils
+5. 是否涉及 Python 绑定且通用？→ DAPyBindQt（而非 DAPyWorkFlow）
 
 ## WHERE TO LOOK
 
@@ -208,8 +206,10 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | [plugin-architecture.md](docs/zh/dev-guide/plugin-architecture.md) | 插件架构设计详解 |
 | [plugin-module.md](docs/zh/dev-guide/plugin-module.md) | DAPluginSupport 模块说明 |
 | [plugins-interfaces.md](docs/zh/dev-guide/plugins-interfaces.md) | 插件接口体系 |
-| [coding-standard.md](docs/zh/dev-guide/coding-standard.md) | 编码规范和命名约定 |
-| [module-dependency.md](docs/zh/dev-guide/module-dependency.md) | 模块依赖关系和架构层次 |
+| [coding-standard.md](docs/zh/dev-guide/coding-standard.md) | 编码规范、命名约定、注释规范、调试开关 |
+| [i18n.md](docs/zh/dev-guide/i18n.md) | 国际化规范（C++/Qt + Python，含 @NodeDef 节点规则） |
+| [python-i18n.md](docs/zh/dev-guide/python-i18n.md) | Python gettext 完整实现（含节点包 i18n 章节） |
+| [module-dependency.md](docs/zh/dev-guide/module-dependency.md) | 模块依赖关系、职责边界、依赖矩阵、典型放置指南 |
 | [data-module.md](docs/zh/dev-guide/data-module.md) | DAData 数据模块详解 |
 | [python-in-cpp.md](docs/zh/dev-guide/python-in-cpp.md) | Python/C++ 集成和 pybind11 使用 |
 | [figure-abstract.md](docs/zh/dev-guide/figure-abstract.md) | DAFigure 图表抽象层 |
@@ -360,82 +360,34 @@ for (const SomeClass& v : vals) {   // ⚠️ 即使元素是const引用，容�
 
 > **要点**：关键在于**容器本身是否为 const**，而非迭代变量。只要容器是非 const 的，无论迭代变量声明为 `T&` 还是 `const T&`，都会触发 COW。
 
+## 国际化（i18n）规范
+
+> 📖 **详细规范见** [docs/zh/dev-guide/i18n.md](docs/zh/dev-guide/i18n.md) | Python 详见 [docs/zh/dev-guide/python-i18n.md](docs/zh/dev-guide/python-i18n.md)
+
+**核心原则**：所有显示到用户界面的字符串必须使用**英文源文本 + 行内中文注释**模式，翻译通过 `.ts`（C++）或 `.po`（Python）文件提供。源码中**禁止**直接写中文作为 UI 显示文本。
+
+| 语言 | 代码写法 | 翻译文件 |
+|------|---------|---------|
+| C++ (Qt) | `tr("English text")  //cn:中文文本` | `.ts` → `.qm` |
+| Python | `_("English text")  # cn:中文文本` | `.po` → `.mo` |
+
+**关键约束**：
+
+- **日志消息不翻译**：`daInfo`/`daWarning`/`daCritical`/`qWarning`/`logger.*`/`print` 保持纯英文
+- **`@NodeDef(name=...)` 不翻译**：`name` 参与 `qualified_name` 序列化，翻译会破坏已存工程
+- **`@NodeDef(category=...)` 翻译**：`category` 仅用于节点工具箱分类显示
+- **Python 包 `setup_i18n()` 必须在 `__init__.py` 顶部、节点模块导入之前调用**
+- **参考实现**：`plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/`（Python）、`plugins/DataAnalysis/DataAnalysisUI.cpp::retranslateUi()`（C++）
+
 ## 注释与文档规范
 
-### 注释规范（强制）
+> 📖 **详细规范见** [docs/zh/dev-guide/coding-standard.md](docs/zh/dev-guide/coding-standard.md) 的"注释规范"章节
 
-#### 2.1 源文件（.cpp）注释规范
+**核心原则**：函数的 Doxygen 注释写在 `.cpp` 文件中，头文件只保留单行中文简要注释（`//`），以保持头文件简洁。
 
-函数的doxygen注释写在cpp文件中，不要把函数的doxygen注释写在头文件中，以保证头文件的简洁。
+**头文件中可写的 Doxygen 注释**：类的注释、信号的注释（因信号无 cpp 实现）、枚举的注释、枚举值的注释。
 
-cpp文件的doxygen注释示例
-
-```cpp
-/**
- * @brief [中文简要说明]
- * 
- * [空一行后，写中文详细说明]
- * 如果有代码示例，可添加代码示例在 `@code` 和 `@endcode` 之间。
- * @code
- * @endcode
- * 
- * @param[in] param_name [中文参数描述]
- * @return [中文返回值描述]
- * @note [中文备注][如有可添加]
- * @see [相关函数][如有可添加]
- */
-void MyClass::myFunction(int param_name)
-{
-    // 函数体
-}
-```
-
-**注意:**原则上详细函数注释应该写在对应的 `.cpp` 文件中，而不是头文件中。
-
-#### 2.2 头文件（.h）注释规范
-
-- 头文件中的 `public` 函数声明旁，添加**单行中文简要注释**（使用 `//`）。
-- **不要**在头文件中写入**类成员函数**的 Doxygen 块
-
-头文件中可写的doxygen注释包括：
-
-- 类的 doxygen 注释
-- 信号的 doxygen 注释(因为信号没有在cpp的实现内容，需要在头文件中添加)
-- 枚举的 doxygen 注释
-- 枚举值的 doxygen 注释
-
-类成员函数的doxygen注释在对应的 `.cpp` 文件中，以保持头文件整洁。
-
-头文件注释示例：
-
-```cpp
-/**
- * @brief [中文说明]
- * 
- * [空一行后，写中文详细说明]
- * 如果有代码示例，可添加代码示例在 `@code` 和 `@endcode` 之间。对于功能性较强的类，类的注释中应该加入使用示例，以便使用者了解如何使用
- * @code
- * @endcode
- * @see [相关类][如有可添加]
- */
-class MyClass {
-public:
-    /**
-     * @brief 枚举说明
-     */
-    enum EnumType{
-        Type1 ///< 枚举的注释方式
-    }
-public:
-    // （默认构造函数、析构函数可不用写注释）
-    MyClass();
-
-    // 中文简要说明（详细说明位于.cpp文件中）
-    void myFunction(int param_name);
-};
-```
-
-**注：** Qt 的信号（头文件中 Q_SIGNALS 关键字下面的函数），它没有在 cpp 中的定义，这些函数的 doxygen 注释需要在头文件中添加
+**禁止**在头文件中写入类成员函数的 Doxygen 块注释。
 
 ## 插件系统
 
@@ -594,6 +546,10 @@ Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若�
   - 涉及的 Qt 类型包括：`QString`、`QByteArray`、`QDate`、`QTime`、`QDateTime`、`QList<T>`、`QVector<T>`(Qt5)、`QSet<T>`、`QHash<K,V>`、`QMap<K,V>`、`QVariant`
 
   遗漏 include **不会编译报错**（头文件间接可见时能编译通过），但运行时会抛 `Unable to convert call argument 'N' of type 'QString' to Python object`，且异常被 `dealException` 吞掉后表现为后续业务逻辑静默失败（如节点查找 KeyError、数据丢失等），极难排查。详见 `docs/zh/dev-guide/dapybind11-qt-caster.md` 与 `src/DAPyWorkFlow/AGENTS.md` § 类型转换铁律
+- **禁止在源码中直接写中文作为 UI 显示文本** — 必须用 `tr("English") //cn:中文`（C++）或 `_("English") # cn:中文`（Python）模式。源文本统一英文，翻译放 `.ts`/`.po` 文件。详见 § 国际化（i18n）规范
+- **禁止翻译 `@NodeDef(name=...)`** — `name` 参与 `qualified_name` 序列化（如 `DASystemNodes.Delay`），翻译会破坏已存工程的节点匹配。`category`/`description` 可翻译
+- **禁止翻译日志消息** — `daInfo`/`daWarning`/`daCritical`/`qWarning`/`logger.*`/`print` 调试输出保持纯英文，便于跨语言环境检索
+- **禁止在 Python 节点包中遗漏 `setup_i18n()` 调用** — 必须在包 `__init__.py` 顶部、节点模块导入之前调用 `setup_i18n()`，否则 `_()` 未定义会导致节点注册失败
 
 ## UNIQUE STYLES
 

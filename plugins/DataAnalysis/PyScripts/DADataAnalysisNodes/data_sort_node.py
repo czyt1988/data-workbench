@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-"""DataSort — 排序节点"""
+"""DataSort — sort node."""
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.operations import sort_dataframe
 
 
-@NodeDef(name="Sort", category="数据操作", icon="sort")
+@NodeDef(name="Sort", category=_("Data Operations"), icon="sort")  # cn:数据操作
 class DataSortNode:
-    """对 DataFrame 进行排序"""
+    """Sort a DataFrame."""
 
-    columns = Parameter(str, default="", description="排序列名，逗号分隔")
-    ascending = Parameter(bool, default=True, description="是否升序")
+    columns = Parameter(str, default="", description=_("Sort column names, comma separated"))  # cn:排序列名，逗号分隔
+    ascending = Parameter(bool, default=True, description=_("Ascending order"))  # cn:是否升序
 
     class Inputs:
-        data = Input("DataFrame", required=True, description="输入数据")
+        data = Input("DataFrame", required=True, description=_("Input data"))  # cn:输入数据
 
     class Outputs:
-        sorted = Output("DataFrame", description="排序后的数据")
+        sorted = Output("DataFrame", description=_("Sorted data"))  # cn:排序后的数据
 
     def __init__(self):
         self._output_data = {}

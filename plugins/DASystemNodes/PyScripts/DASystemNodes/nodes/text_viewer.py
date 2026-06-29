@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""文本显示节点：将输入数据以文本形式绘制在节点体上"""
+"""Text viewer node: display input data as text on the node body"""
 
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Parameter, NodeDisplay
 
@@ -73,7 +73,7 @@ def _wrap_text_by_width(painter, text, max_width, font):
 
 @NodeDef(
     name="Text Viewer",
-    category="System / Display",
+    category=_("System / Display"),  # cn:系统 / 显示
     icon="",
     style=NodeDisplay(
         background_color="#FDFDFD",
@@ -82,27 +82,27 @@ def _wrap_text_by_width(painter, text, max_width, font):
     ),
 )
 class TextViewerNode:
-    """接收任意数据，将其字符串化后在节点体上绘制显示。"""
+    """Receive any data, stringify it, and display the text on the node body."""
 
     font = Parameter(
         "font",
         default=_DEFAULT_FONT,
-        description="文本字体（族/字号/粗体/斜体/颜色）",
+        description=_("Text font (family/size/bold/italic/color)"),  # cn:文本字体（族/字号/粗体/斜体/颜色）
     )
     max_text_length = Parameter(
         int,
         default=200,
         min=1,
-        description="文字最大字符数，超出部分以 … 截断",
+        description=_("Maximum text character count, excess is truncated with …"),  # cn:文字最大字符数，超出部分以 … 截断
     )
     wrap_text = Parameter(
         bool,
         default=True,
-        description="是否按节点体宽度自动换行；关闭则单行显示，超出部分被裁剪",
+        description=_("Auto-wrap text by node body width; off for single line, excess is clipped"),  # cn:是否按节点体宽度自动换行；关闭则单行显示，超出部分被裁剪
     )
 
     class Inputs:
-        value = Input("any", required=True, description="要显示的数据")
+        value = Input("any", required=True, description=_("Data to display"))  # cn:要显示的数据
 
     def __init__(self):
         super().__init__()
@@ -116,7 +116,7 @@ class TextViewerNode:
         try:
             self._display_text = str(value) if value is not None else ""
         except Exception:
-            self._display_text = "<unprintable>"
+            self._display_text = _("<unprintable>")  # cn:<不可打印>
         return True
 
     def serialize_runtime_state(self) -> dict:
@@ -150,7 +150,7 @@ class TextViewerNode:
         painter.setPenColor(r, g, b)
 
         # 取缓存文本
-        text = getattr(self, "_display_text", "") or "(no data)"
+        text = getattr(self, "_display_text", "") or _("(no data)")  # cn:(无数据)
 
         # 按字符数截断
         if len(text) > max_text_length:

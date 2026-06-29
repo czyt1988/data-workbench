@@ -1,30 +1,35 @@
 # -*- coding: utf-8 -*-
 """
-数据变换节点 — 对 DataFrame 列进行变换操作
+Data transform node - transform DataFrame columns
 
-本节点接收上游 DataFrame，支持列重命名、列删除、缺失值填充等操作，
-将变换结果通过输出端口传递给下游节点。
+This node receives an upstream DataFrame, supports column renaming, column
+dropping, and missing value filling, and passes the transformed result to
+downstream nodes via the output port.
 """
 
 import pandas as pd
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
-@NodeDef(name="Data Transform", category="Data Analysis", icon="data_transform")
+@NodeDef(
+    name="Data Transform",
+    category=_("Data Analysis"),  # cn:数据分析
+    icon="data_transform",
+)
 class DataTransformNode:
-    """列变换节点"""
+    """Column transformation node."""
 
-    column = Parameter(str, default="", description="操作目标列名")
+    column = Parameter(str, default="", description=_("Target column name"))  # cn:操作目标列名
     operation = Parameter(str, default="rename",
-                          description="操作类型：rename/drop/fillna")
-    new_name = Parameter(str, default="", description="rename 操作的新列名")
-    fill_value = Parameter(str, default="0", description="fillna 操作的填充值")
+                          description=_("Operation type: rename/drop/fillna"))  # cn:操作类型：rename/drop/fillna
+    new_name = Parameter(str, default="", description=_("New column name for rename operation"))  # cn:rename 操作的新列名
+    fill_value = Parameter(str, default="0", description=_("Fill value for fillna operation"))  # cn:fillna 操作的填充值
 
     class Inputs:
-        data = Input("DataFrame", required=True, description="输入 DataFrame")
+        data = Input("DataFrame", required=True, description=_("Input DataFrame"))  # cn:输入 DataFrame
 
     class Outputs:
-        transformed = Output("DataFrame", description="变换后的 DataFrame")
+        transformed = Output("DataFrame", description=_("Transformed DataFrame"))  # cn:变换后的 DataFrame
 
     def __init__(self):
         self._input_data = {}
