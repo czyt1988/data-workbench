@@ -565,20 +565,23 @@ class DAUIInterface:
         print("[Mock DAUIInterface] 获取命令接口")
         return self._command_interface
     
-    def getConfigValues(self, jsonConfig: str, cacheKey: str = "") -> Dict[str, Any]:
+    def getConfigValues(self, formConfig: Union[Dict[str, Any], str], cacheKey: str = "") -> Dict[str, Any]:
         """
         获取配置值
-        
-        通过 JSON 配置对话框获取用户配置值。
-        
+
+        通过表单配置对话框获取用户配置值。
+
+        formConfig 可以是 FormSpec 对象、dict 或 JSON 字符串。
+        绑定层会将其归一化为 v2 表单 schema 后再渲染对话框。
+
         Args:
-            jsonConfig: JSON 格式的配置定义
+            formConfig: 表单配置，可以是 FormSpec 对象（含 to_dict()）、dict 或 JSON 字符串
             cacheKey: 缓存键，用于记住上次的选择
-            
+
         Returns:
             字典，包含用户选择的配置值
         """
-        print(f"[Mock DAUIInterface] 获取配置值: jsonConfig长度={len(jsonConfig)}, cacheKey='{cacheKey}'")
+        print(f"[Mock DAUIInterface] 获取配置值: formConfig长度={len(formConfig)}, cacheKey='{cacheKey}'")
         # 返回空字典作为 Mock
         return {}
     

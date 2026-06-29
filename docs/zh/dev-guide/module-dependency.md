@@ -82,7 +82,7 @@ Python层: DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPyWorkFlow
 | **DAPyCommonWidgets** | Qt::Core/Gui/Widgets, DAPyBindQt, pybind11 | — | Python3 |
 | **DAPyWorkFlow** | DAUtils, DAGraphicsView, DAPyBindQt | Qt::Core/Gui/Widgets | Python3, pybind11 |
 | **DAData** | Qt::Core/Gui/Widgets, DAPyBindQt, DAPyScripts | DAUtils | Python3, pybind11 |
-| **DACommonWidgets** | Qt::Core/Gui/Widgets/Xml, DALiteCtk, SARibbon, QtPropertyBrowser | DAUtils | — |
+| **DACommonWidgets** | Qt::Core/Gui/Widgets/Xml, DALiteCtk, SARibbon | DAUtils | — |
 | **DAGraphicsView** | Qt::Core/Gui/Widgets/Xml/Svg | DAUtils | — |
 | **DAFigure** | Qt::Core/Gui/Widgets/PrintSupport/Concurrent/OpenGL, Qwt | DAUtils | — |
 | **DAGui** | DAUtils, DAMessageHandler, DAData, DACommonWidgets, DAPyWorkFlow, DAFigure, DAPyBindQt, DAPyScripts, DAPyCommonWidgets, Qt, SARibbon, QtAdvancedDocking, qwt, DALiteCtk, quazip | Qt6::Core5Compat (if Qt6) | Python3, pybind11 |
@@ -363,10 +363,10 @@ graph BT
 - 样式编辑器：`DAColorPickerButton`、`DABrushEditWidget/StyleComboBox`、`DAPenEditWidget/StyleComboBox`、`DAFontEditPannelWidget`、`DAShapeEditPannelWidget`
 - 对齐/位置：`DAAligmentEditWidget`、`DAAligmentPositionEditWidget`（9宫格定位）
 - 文件/路径：`DAFilePathEditWidget`、`DAPathLineEdit`
-- 设置对话框：`DASettingDialog/Widget`、`DAAbstractSettingPage`、`DACommonPropertySettingDialog`
+- 设置对话框：`DASettingDialog/Widget`、`DAAbstractSettingPage`、`DAPropertyFormDialog`/`DAPropertyFormWidget`（统一表单）
 - 工具：`DAWaitCursorScoped`、`DACursorScoped`、`DAScrollArea`
 
-外部依赖：DAUtils (PRIVATE), DALiteCtk, SARibbon, QtPropertyBrowser (PUBLIC)
+外部依赖：DAUtils (PRIVATE), DALiteCtk, SARibbon
 
 消费者：DAGui (PUBLIC link)，APP + DAPluginSupport (传递依赖)
 

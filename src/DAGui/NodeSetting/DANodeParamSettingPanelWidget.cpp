@@ -84,9 +84,9 @@ void DANodeParamSettingPanelWidget::setNodeProxy(const DAPyNode& proxy)
     // 断开当前面板的信号连接
     if (d->mCurrentPanel) {
         disconnect(d->mCurrentPanel,
-                   &DANodeParamSettingPanel::propertyValueChanged,
+                   &DANodeParamSettingPanel::fieldValueChanged,
                    this,
-                   &DANodeParamSettingPanelWidget::propertyValueChanged);
+                   &DANodeParamSettingPanelWidget::fieldValueChanged);
     }
 
     // 代理为 isNone() → 显示占位标签
@@ -132,13 +132,13 @@ void DANodeParamSettingPanelWidget::setNodeProxy(const DAPyNode& proxy)
     }
 
     // 连接面板信号 → 转发至外部
-    connect(panel, &DANodeParamSettingPanel::propertyValueChanged, this, &DANodeParamSettingPanelWidget::propertyValueChanged);
+    connect(panel, &DANodeParamSettingPanel::fieldValueChanged, this, &DANodeParamSettingPanelWidget::fieldValueChanged);
 
     // 切换到对应面板
     d->mCurrentPanel = panel;
     d->mStackedWidget->setCurrentWidget(panel);
 
-    // 设置代理（DANodeParamSettingPanel::setNode override 已包含 buildPropertyPanel + 缓存初始化）
+    // 设置代理（DANodeParamSettingPanel::setNode 内部会重建表单并加载节点实例值）
     panel->setNode(proxy);
 }
 
@@ -155,9 +155,9 @@ void DANodeParamSettingPanelWidget::clearCache()
     // 断开当前面板的信号
     if (d->mCurrentPanel) {
         disconnect(d->mCurrentPanel,
-                   &DANodeParamSettingPanel::propertyValueChanged,
+                   &DANodeParamSettingPanel::fieldValueChanged,
                    this,
-                   &DANodeParamSettingPanelWidget::propertyValueChanged);
+                   &DANodeParamSettingPanelWidget::fieldValueChanged);
     }
 
     // 从 QStackedWidget 中移除并删除缓存的面板
@@ -213,9 +213,9 @@ void DANodeParamSettingPanelWidget::testSetNodeProxyWithDescriptor(const QJsonOb
     // 断开当前面板的信号连接
     if (d->mCurrentPanel) {
         disconnect(d->mCurrentPanel,
-                   &DANodeParamSettingPanel::propertyValueChanged,
+                   &DANodeParamSettingPanel::fieldValueChanged,
                    this,
-                   &DANodeParamSettingPanelWidget::propertyValueChanged);
+                   &DANodeParamSettingPanelWidget::fieldValueChanged);
     }
 
     // 从描述符提取 qualifiedName
@@ -250,7 +250,7 @@ void DANodeParamSettingPanelWidget::testSetNodeProxyWithDescriptor(const QJsonOb
     }
 
     // 连接面板信号 → 转发至外部
-    connect(panel, &DANodeParamSettingPanel::propertyValueChanged, this, &DANodeParamSettingPanelWidget::propertyValueChanged);
+    connect(panel, &DANodeParamSettingPanel::fieldValueChanged, this, &DANodeParamSettingPanelWidget::fieldValueChanged);
 
     // 切换到对应面板（不调用 setNodeProxy/updateUI，因无真实代理）
     d->mCurrentPanel = panel;

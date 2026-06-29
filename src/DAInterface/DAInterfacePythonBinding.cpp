@@ -1,5 +1,6 @@
 #include "DAInterfacePythonBinding.h"
 #include <QMainWindow>
+#include <stdexcept>
 #include "DACoreInterface.h"
 #include "DADataManagerInterface.h"
 #include "DAProjectInterface.h"
@@ -14,6 +15,38 @@
 #include "DAPythonSignalHandler.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DAPyJsonCast.h"
+
+namespace {
+/**
+ * @brief 将 Python 端传入的表单配置归一化为 JSON 字符串
+ *
+ * 支持三种输入：
+ * - str: 直接作为 JSON 字符串返回
+ * - dict: 通过 DA::PY::pyDictToJsonString 转换为 JSON 字符串
+ * - 带 to_dict() 方法的对象（如 FormSpec）: 先调用 to_dict()，再按 dict 递归处理
+ * @param formConfig Python 端传入的表单配置
+ * @return 归一化后的 JSON 字符串
+ * @throw std::runtime_error 当输入无法识别时抛出
+ */
+QString normalizeFormConfigToJsonString(const pybind11::object& formConfig)
+{
+    // 1. 字符串：直接作为 JSON 字符串返回
+    if (pybind11::isinstance< pybind11::str >(formConfig)) {
+        return QString::fromStdString(formConfig.cast< std::string >());
+    }
+    // 2. dict：通过 DA::PY::pyDictToJsonString 转换为 JSON 字符串
+    if (pybind11::isinstance< pybind11::dict >(formConfig)) {
+        return DA::PY::pyDictToJsonString(formConfig.cast< pybind11::dict >());
+    }
+    // 3. FormSpec-like 对象：先调用 to_dict()，再按 dict 递归处理
+    if (pybind11::hasattr(formConfig, "to_dict")) {
+        pybind11::object d = formConfig.attr("to_dict")();
+        return normalizeFormConfigToJsonString(d);
+    }
+    // 4. 兜底：无法识别的类型，抛出异常
+    throw std::runtime_error("formConfig must be a FormSpec, dict, or JSON string");
+}
+}  // 匿名命名空间
 
 PYBIND11_EMBEDDED_MODULE(da_interface, m)
 {
@@ -275,15 +308,16 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
         .def("getCommandInterface", &DA::DAUIInterface::getCommandInterface, pybind11::return_value_policy::reference, "Get the command interface")
         .def(
             "getConfigValues",
-            [](DA::DAUIInterface& self, const QString& jsonConfig, const QString& cacheKey = QString()) {
-                QJsonObject jsonObj = self.getConfigValues(jsonConfig, self.getMainWindow(), cacheKey);
+            [](DA::DAUIInterface& self, pybind11::object formConfig, const QString& cacheKey = QString()) {
+                QString jsonStr      = normalizeFormConfigToJsonString(formConfig);
+                QJsonObject jsonObj  = self.getConfigValues(jsonStr, self.getMainWindow(), cacheKey);
                 return DA::PY::qjsonObjectToPyDict(jsonObj);
             },
-            pybind11::arg("jsonConfig"),
+            pybind11::arg("formConfig"),
             pybind11::arg("cacheKey") = "",
-            "Execute a generic settings dialog to retrieve configuration information. The input parameter is the JSON "
-            "data used to construct the dialog. A cache key can be specified to avoid repeated dialog construction. "
-            "This function will launch a modal dialog for users to input parameters."
+            "Execute a unified property form dialog to retrieve configuration. formConfig can be a FormSpec "
+            "object, a dict, or a JSON string. A cache key can be specified to avoid repeated dialog "
+            "construction. This function will launch a modal dialog for users to input parameters."
         )
         .def(
             "getExistingDirectory",

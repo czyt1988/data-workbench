@@ -228,19 +228,6 @@ macro(damacro_import_qwt __target_name __install_dir)
     )
 endmacro(damacro_import_qwt)
 
-macro(damacro_import_QtPropertyBrowser __target_name __install_dir)
-    # 3rdparty - QtPropertyBrowser
-    find_package(QtPropertyBrowser PATHS ${__install_dir})
-    if(QtPropertyBrowser_FOUND)
-        message(STATUS "  |-link QtPropertyBrowser")
-        message(STATUS "  | |-include dir:${QtPropertyBrowser_INCLUDE_DIR}")
-    endif()
-    # 链接的第三方库
-    target_link_libraries(${__target_name} PUBLIC
-        QtPropertyBrowser::QtPropertyBrowser
-    )
-endmacro(damacro_import_QtPropertyBrowser)
-
 macro(damacro_import_spdlog __target_name __install_dir)
     # 3rdparty - spdlog
     find_package(spdlog PATHS ${__install_dir})

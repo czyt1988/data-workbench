@@ -295,18 +295,16 @@ file(GLOB DA_LIB_UI_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.ui)
 set(DA_LIB_HEADER_FILES_NodeSetting)
 if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_HEADER_FILES_NodeSetting
-        ${DA_LIB_SUBDIR_NodeSetting}/DAParamTypeRegistry.h
         ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanel.h
         ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelFactory.h
         ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelWidget.h
-        ${DA_LIB_SUBDIR_NodeSetting}/DAParamDef.h
+        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParameterFormAdapter.h
     )
     list(APPEND DA_LIB_SOURCE_FILES_NodeSetting
-        ${DA_LIB_SUBDIR_NodeSetting}/DAParamTypeRegistry.cpp
         ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanel.cpp
         ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelFactory.cpp
         ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelWidget.cpp
-        ${DA_LIB_SUBDIR_NodeSetting}/DAParamDef.cpp
+        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParameterFormAdapter.cpp
     )
 endif()
 

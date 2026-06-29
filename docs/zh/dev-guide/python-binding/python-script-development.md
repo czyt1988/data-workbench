@@ -60,7 +60,7 @@ DAWorkBench 中 Python 脚本的标准开发流程遵循五步模式，以 `data
 ```mermaid
 flowchart TD
     S1["Step 1: 获取核心接口<br/>core = da_app.getCore()"] --> S2["Step 2: 获取数据<br/>utils.get_select_dataframe<br/>_and_subset_index()"]
-    S2 --> S3["Step 3: 构建配置对话框<br/>PropertyConfigBuilder<br/>+ ui.getConfigValues()"]
+    S2 --> S3["Step 3: 构建配置对话框<br/>FormBuilder<br/>+ ui.getConfigValues()"]
     S3 --> S4["Step 4: 执行操作<br/>beginDataOperateCommand<br/>/endDataOperateCommand"]
     S4 --> S5["Step 5: 通知刷新<br/>notifyDataChangedSignal<br/>+ addMessage"]
     
@@ -127,42 +127,31 @@ df = dadata.toDataFrame()
 
 ### Step 3：构建参数设置对话框
 
-使用 `PropertyConfigBuilder` 构建参数配置界面，然后通过 `ui.getConfigValues()` 在 C++ 端弹出对话框：
+使用 `FormBuilder` 构建参数配置界面，然后通过 `ui.getConfigValues()` 在 C++ 端弹出对话框：
 
 ```python title="Step 3: 构建配置对话框（源自 dataframe_cleaner.py）"
-import DAWorkbench.DAPyBase.property_config_builder as porpCfgBuilder
+from DAWorkbench.DAPyBase.form_builder import FormBuilder, option
 
-builder = porpCfgBuilder.PropertyConfigBuilder("删除缺失值设置")
-
-# 添加枚举选项
-builder.add_enum(
-    name="how",
-    display_name="删除条件",
-    default_value="any",
-    enum_items=["any", "all"],
-    enum_descriptions=[
-        "行中任意值为空时删除",
-        "行中所有值为空时删除"
-    ]
-)
-
-# 添加布尔选项
-builder.add_bool(
-    name="reindex",
-    display_name="重置行号",
-    default_value=True
+# 链式调用构建 FormSpec
+cfg = (
+    FormBuilder("删除缺失值设置")
+    .enum("how", label="删除条件", default="any",
+          options=[option("any", "行中任意值为空时删除"),
+                   option("all", "行中所有值为空时删除")])
+    .bool("reindex", label="重置行号", default=True)
+    .build()
 )
 
 # 显示对话框并获取用户输入
-config = ui.getConfigValues(builder.to_json(), "dataframecleaner.dropna")
+config = ui.getConfigValues(cfg, "dataframecleaner.dropna")
 if not config:
     return None  # 用户取消了对话框
 ```
 
-!!! info "PropertyConfigBuilder 详细文档"
-    `PropertyConfigBuilder` 支持的属性类型包括：`string`, `int`, `double`, `bool`, `enum`, `color`, `font`, `file`, `folder`, `stringlist`，还支持 `begin_group()`/`end_group()` 分组以及 `from_function_signature()` 自动生成配置。
+!!! info "FormBuilder 详细文档"
+    `FormBuilder` 支持的属性类型包括：`str`, `int`, `float`, `bool`, `enum`, `color`, `font`, `file`, `folder`, `code`, `list`，还支持 `.group()`/`.end_group()` 分组以及链式调用风格构建 FormSpec。
 
-    完整源码参见：`src/PyScripts/DAWorkbench/DAPyBase/property_config_builder.py`
+    完整源码参见：`src/PyScripts/DAWorkbench/DAPyBase/form_builder.py`（`FormSpec` 类型定义于 `form_spec.py`）
 
 ### Step 4：执行操作并封装撤销/重做
 
@@ -229,38 +218,34 @@ core.setProjectDirty(True)
 
 `getConfigValues` 是 Python 脚本与 C++ 界面交互的核心桥梁。它的工作原理是：
 
-1. Python 端通过 `PropertyConfigBuilder` 生成 JSON 配置描述
-2. 将 JSON 字符串传给 C++ 的 `getConfigValues()` 方法
-3. C++ 端解析 JSON，弹出 `DACommonPropertySettingDialog` 对话框
+1. Python 端通过 `FormBuilder` 生成 v2 FormSpec
+2. 将 FormSpec 传给 C++ 的 `getConfigValues()` 方法，绑定层自动将其归一化为 JSON
+3. C++ 端 `DAFormSchemaIO` 解析 JSON，由 `DAPropertyFormDialog` 渲染对话框
 4. 用户在对话框中设置参数后点击确认
 5. C++ 将用户设置转为 `QJsonObject` 并通过 `DAPyJsonCast` 转为 Python `dict` 返回
 
 ```python title="getConfigValues 完整使用示例"
 import da_app
-import DAWorkbench.DAPyBase.property_config_builder as porpCfgBuilder
+from DAWorkbench.DAPyBase.form_builder import FormBuilder, option
 
 core = da_app.getCore()
 ui = core.getUiInterface()
 
-# 1. 构建配置
-builder = porpCfgBuilder.PropertyConfigBuilder("数据处理参数")
+# 1. 构建配置（链式调用，直接生成 FormSpec）
+cfg = (
+    FormBuilder("数据处理参数")
+    .int("threshold", label="阈值", default=100, min=0, max=1000)
+    .float("ratio", label="比例", default=0.5, min=0.0, max=1.0, step=0.01)
+    .enum("method", label="方法", default="linear",
+          options=[option("linear", "线性插值"),
+                   option("polynomial", "多项式插值"),
+                   option("spline", "样条插值")])
+    .bool("preview", label="预览结果", default=False)
+    .build()
+)
 
-builder.add_int(name="threshold", display_name="阈值",
-                default_value=100, min_value=0, max_value=1000)
-
-builder.add_double(name="ratio", display_name="比例",
-                   default_value=0.5, min_value=0.0, max_value=1.0, step=0.01)
-
-builder.add_enum(name="method", display_name="方法",
-                 default_value="linear",
-                 enum_items=["linear", "polynomial", "spline"],
-                 enum_descriptions=["线性插值", "多项式插值", "样条插值"])
-
-builder.add_bool(name="preview", display_name="预览结果", default_value=False)
-
-# 2. 生成 JSON 并弹出对话框
-json_config = builder.to_json()
-config = ui.getConfigValues(json_config, "my_module.my_function")
+# 2. 传入 FormSpec 并弹出对话框（绑定层自动归一化为 JSON）
+config = ui.getConfigValues(cfg, "my_module.my_function")
 
 # 3. 用户取消则返回空 dict
 if not config:
@@ -459,7 +444,7 @@ status_bar.hideProgressBar()
     3. **始终检查用户取消**
     
         ```python
-        config = ui.getConfigValues(builder.to_json(), cache_key)
+        config = ui.getConfigValues(builder.build(), cache_key)
         if not config:
             return None  # 用户取消是正常流程，不是异常
         ```

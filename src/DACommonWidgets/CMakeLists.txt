@@ -44,8 +44,6 @@ damacro_import_DALiteCtk(${DA_LIB_NAME})
 # -------------link 3rdparty SARibbon--------------------------
 damacro_import_SARibbonBar(${DA_LIB_NAME})
 
-damacro_import_QtPropertyBrowser(${DA_LIB_NAME})
-
 # -------------link DAWorkBench--------------------------
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils

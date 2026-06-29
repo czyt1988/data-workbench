@@ -139,10 +139,6 @@ macro(damacro_import_qwt __target_name)
     damacro_import_xxx(qwt qwt plot3d ${__target_name})
 endmacro(damacro_import_qwt)
 
-macro(damacro_import_QtPropertyBrowser __target_name)
-    damacro_import_x(QtPropertyBrowser ${__target_name})
-endmacro(damacro_import_QtPropertyBrowser)
-
 macro(damacro_import_spdlog __target_name)
     damacro_import_x(spdlog ${__target_name})
 endmacro(damacro_import_spdlog)

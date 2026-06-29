@@ -271,29 +271,20 @@ def dropna() -> Optional[int]:
     dadata = select_datas[0]
     
     # 3. 构建配置对话框（调用 C++ 的配置对话框组件）
-    import DAWorkbench.property_config_builder as cfgBuilder
-    
-    builder = cfgBuilder.PropertyConfigBuilder("删除缺失值设置")
-    
-    builder.add_enum(
-        name="how",
-        display_name="删除条件",
-        default_value="any",
-        enum_items=["any", "all"],
-        enum_descriptions=[
-            "行中任意值为空时删除",
-            "行中所有值为空时删除"
-        ]
+    from DAWorkbench.DAPyBase.form_builder import FormBuilder, option
+
+    # 链式调用构建 FormSpec
+    cfg = (
+        FormBuilder("删除缺失值设置")
+        .enum("how", label="删除条件", default="any",
+              options=[option("any", "行中任意值为空时删除"),
+                       option("all", "行中所有值为空时删除")])
+        .bool("reindex", label="重置行号", default=True)
+        .build()
     )
-    
-    builder.add_bool(
-        name="reindex",
-        display_name="重置行号",
-        default_value=True
-    )
-    
-    # 4. 显示对话框并获取用户输入
-    config = ui.getConfigValues(builder.to_json(), "dataframecleaner.dropna")
+
+    # 4. 显示对话框并获取用户输入（绑定层自动归一化为 JSON）
+    config = ui.getConfigValues(cfg, "dataframecleaner.dropna")
     if not config:
         return None  # 用户取消
     

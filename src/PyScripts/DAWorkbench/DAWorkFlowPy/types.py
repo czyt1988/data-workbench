@@ -114,7 +114,7 @@ class Parameter:
     :param filter: 文件过滤器（"file" 类型参数适用，如 "CSV Files (*.csv);;All Files (*.*)"）
     :param layout: 编辑器布局模式，"inline"（默认，属性名在左、编辑器在右）或 "below"（属性名在上、编辑器占满整行下方）。str 类型在 below 模式下自动切换为多行 QPlainTextEdit
     :param height: 编辑器高度（像素），仅 below 模式生效。str 类型默认 80，code 类型默认 100，未设置时使用类型默认值
-    :param kwargs: 扩展字段，用于支持额外属性（键名需与 C++ DAParamDef::PropertyName_* 一致）
+    :param kwargs: 扩展字段，用于支持额外属性（键名需与 C++ DANodeParameterFormAdapter 读取的 attributes 键一致：min/max/step/decimals/filter/layout/height/enum）
     """
 
     # 支持的参数类型到字符串标签的映射
@@ -125,7 +125,7 @@ class Parameter:
         bool: "bool",
         list: "list",
         dict: "dict",
-        # Extended types from DAParamTypeRegistry
+        # Extended types handled by DAFormEditorRegistry
         "file": "file",
         "folder": "folder",
         "enum": "enum",
@@ -164,7 +164,7 @@ class Parameter:
                 f"layout must be one of {sorted(self._LAYOUT_VALUES)}, got {layout!r}"
             )
 
-        # 构建扩展属性 dict，键名与 C++ DAParamDef::PropertyName_* 一致
+        # 构建扩展属性 dict，键名与 C++ DANodeParameterFormAdapter 读取的 attributes 键一致
         self._extra_kwargs = {}
         if min is not None:
             self._extra_kwargs["min"] = min
@@ -212,7 +212,7 @@ class Parameter:
         # 仅在 default 不为 None 时写入，避免将 None 与"无默认值"混淆
         if self.default is not None:
             result["default"] = self.default
-        # 扩展属性嵌套到 properties 子字典，匹配 C++ DAParamDef 的 propertys 字段
+        # 扩展属性嵌套到 properties 子字典，由 C++ DANodeParameterFormAdapter 读取
         if self._extra_kwargs:
             result["properties"] = dict(self._extra_kwargs)
         return result

@@ -82,7 +82,6 @@ git submodule update --init --recursive
 - Qt-Advanced-Docking-System
 - ctk(只依赖部分，这里作者对 ctk 进行了精简，形成一个 liteCtk)
 - qwt
-- QtPropertyBrowser
 - spdlog
 - pybind11
 - ordered-map

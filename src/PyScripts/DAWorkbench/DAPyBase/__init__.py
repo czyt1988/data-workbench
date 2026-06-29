@@ -5,6 +5,6 @@ from . import utils
 # 在纯 Python 环境（如 pytest）下可能不可用
 try:
     from . import io, dataframe, data_processing
-    from . import app_wrapper, thread_status_manager, property_config_builder
+    from . import app_wrapper, thread_status_manager, form_spec, form_builder
 except ImportError:
     pass

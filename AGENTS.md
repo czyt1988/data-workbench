@@ -40,7 +40,7 @@ data-workbench/
 │   ├── DAFigure/       # 图表/Figure 容器 (103 files)
 │   ├── DAGui/          # GUI Widgets/面板/对话框 (334 files, 最大模块)
 │   │   ├── ChartSetting/  # 图表属性设置面板
-│   │   ├── NodeSetting/   # 工作流节点通用设置面板 (参数类型注册+SceneB模式)
+│   │   ├── NodeSetting/   # 工作流节点通用设置面板 (DAFormSpec 统一表单)
 │   │   ├── Commands/      # QUndoCommand 子类
 │   │   ├── Dialog/        # 各种对话框
 │   │   ├── MimeData/      # 拖放 MIME 数据
@@ -103,6 +103,49 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 └─────────────────────────────────────────────────┘
 ```
 
+### 各模块职责边界
+
+| 模块 | 层 | 职责范围 | 不应该包含 | 文件数 |
+|------|---|---------|-----------|--------|
+| **DAShared** | L1 | 纯头文件模板库。基础数据结构(Table/Vector)、枚举↔字符串映射宏、Qt5/Qt6兼容宏、并发容器、算法模板 | 任何有 `.cpp` 的类；任何依赖 Qt::Widgets 的类 | 19 |
+| **DAUtils** | L1 | 通用工具类。XML序列化接口、字符串转换、CSV读写、目录管理、颜色主题、翻译管理、进程管理、树数据结构 | GUI Widget 类；业务逻辑 | 40 |
+| **DAMessageHandler** | L1 | 日志基础设施。spdlog初始化、Qt消息路由、线程安全消息队列 | 日志UI组件（属于 DAGui） | 9 |
+| **DAPyBindQt** | L1 | Python↔Qt 胶水层。pybind11类型转换器、Python解释器生命周期、GIL RAII守卫、基础 py::object 包装器、JSON↔Python双向转换、numpy/pandas 绑定 | 工作流逻辑；业务Widget | 28 |
+| **DAPyScripts** | L2 | Python 脚本包装。将 `DAWorkbench` Python 模块的 io/dataframe/data_processing 函数暴露为 C++ API | GUI 组件；数据管理 | 12 |
+| **DAPyCommonWidgets** | L2 | Python 相关基础 Widget。DataFrame列选择器、dtype选择器 | 工作流节点Widget；图表Widget | 13 |
+| **DAPyWorkFlow** | L2 | Python工作流核心。节点代理(DAPyNode)、节点工厂(DAPyNodeFactory)、工作流容器(DAPyWorkFlow)、执行引擎(DAPyWorkFlowExecutor)、信号管理(DAPySignalManager)、工作流管理器(DAPyWorkFlowManager)、场景(DAPyWorkFlowScene)、节点图形项(DAPyNodeGraphicsItem)、连线图形项(DAPyLinkGraphicsItem)、节点元数据(DAPyNodeMetaData)、节点样式(DAPyNodeStyle)、连接点(DAPyLinkPoint)、节点调色板(DAPyNodePalette)、序列化(DAPyWorkFlowSerializer/DAPyWorkFlowSceneSerializer)、撤销命令工厂(DAPyWorkFlowCommandsFactory) | 通用 Python 工具（应放在 DAPyBindQt）；通用数据描述符（应放在 DAPyBindQt 或 DAShared） | 50 |
+| **DAData** | L2 | 数据管理。抽象数据基类(DAAbstractData)、DAData包装器、DADataManager注册表、Python数据对象封装、撤销/重做命令 | GUI 组件（属于 DAGui） | 22 |
+| **DACommonWidgets** | L3 | 通用 UI 组件。属性面板、颜色选择器、画笔/笔编辑、对齐编辑、文件路径编辑、设置对话框、等待光标 | 图表专属Widget（属于 DAFigure 或 DAGui）；数据管理Widget（属于 DAGui） | 82 |
+| **DAGraphicsView** | L2 | 图形视图框架。DAGraphicsView/Scene、基础图元（矩形/文本/图片/连线）、可缩放图元、连接线图元、场景/视图动作、撤销命令、图元工厂、覆盖层 | 业务图元（属于 DAPyWorkFlow 或其它上层模块） | 54 |
+| **DAFigure** | L2 | 图表容器（纯 C++/Qwt）。QwtFigure容器、DAChartWidget、图表编辑器、数据探针、序列化、图表树模型、撤销命令 | Python 相关代码；GUI 设置面板（属于 DAGui/ChartSetting） | 103 |
+| **DAGui** | L3 | GUI 整合层（最大模块）。工作流UI、图表设置面板、数据管理UI、Model/View模型、对话框、撤销命令、压缩归档、启动画面 | 纯数据逻辑（属于 DAData）；通用工具（属于 DAUtils） | 334 |
+| **DAInterface** | L4 | 抽象接口定义。DACoreInterface、DAUIInterface、各子接口（Docking/Ribbon/StatusBar/Actions/Command/DataManager/Project） | 具体实现（属于 APP） | 28 |
+| **DAPluginSupport** | L4 | 插件框架。DAAbstractPlugin、DAPluginManager、DAAbstractNodePlugin | 具体插件实现（属于 plugins/） | 10 |
+| **APP** | L5 | 可执行程序。DAAppCore、AppMainWindow、DAAppUI、各Interface的具体实现、项目文件管理 | 可复用的库代码（应下沉到对应模块） | 190 |
+
+### 模块依赖矩阵
+
+下表列出了每个模块的**直接**依赖（通过 CMake `target_link_libraries`）：
+
+| 模块 | 直接依赖（PUBLIC） | 直接依赖（PRIVATE） | 外部关键依赖 |
+|------|-------------------|--------------------|-------------|
+| **DAShared** | — | — | Qt::Core |
+| **DAUtils** | Qt::Core/Gui/Widgets/Xml | — | — |
+| **DAAxOfficeWrapper** | DAUtils, Qt::Core/Gui/Widgets/AxContainer | — | Windows only |
+| **DAMessageHandler** | Qt::Core/Gui/Widgets/Xml | DAUtils | spdlog |
+| **DAPyBindQt** | Qt::Core, pybind11::headers | DAUtils, Python3 | numpy, pandas |
+| **DAPyScripts** | Qt::Core, DAPyBindQt, pybind11 | — | Python3 |
+| **DAPyCommonWidgets** | Qt::Core/Gui/Widgets, DAPyBindQt, pybind11 | — | Python3 |
+| **DAPyWorkFlow** | DAUtils, DAGraphicsView, DAPyBindQt | Qt::Core/Gui/Widgets | Python3, pybind11 |
+| **DAData** | Qt::Core/Gui/Widgets, DAPyBindQt, DAPyScripts | DAUtils | Python3, pybind11 |
+| **DACommonWidgets** | Qt::Core/Gui/Widgets/Xml, DALiteCtk, SARibbon | DAUtils | — |
+| **DAGraphicsView** | Qt::Core/Gui/Widgets/Xml/Svg | DAUtils | — |
+| **DAFigure** | Qt::Core/Gui/Widgets/PrintSupport/Concurrent/OpenGL, Qwt | DAUtils | — |
+| **DAGui** | DAUtils, DAMessageHandler, DAData, DACommonWidgets, DAPyWorkFlow, DAFigure, DAPyBindQt, DAPyScripts, DAPyCommonWidgets, Qt::Core/Gui/Widgets/Xml/Svg, SARibbon, QtAdvancedDocking, qwt, DALiteCtk, quazip | Qt6::Core5Compat (if Qt6) | Python3, pybind11 |
+| **DAInterface** | **DAGui** (PUBLIC — 传递所有 DAGui 依赖给消费者) | Qt, SARibbon, QtAdvancedDocking, qwt, DALiteCtk | Python3, pybind11 |
+| **DAPluginSupport** | **DAInterface** (PUBLIC), **DAPyWorkFlow** (PUBLIC), Qt | QtAdvancedDocking | Python3, pybind11 |
+| **APP** | **DAPluginSupport** (PUBLIC), DAPyWorkFlow, Qt, DALiteCtk, SARibbon, QtAdvancedDocking, qwt, Dbghelp(Win) | — | Python3, pybind11 |
+
 ### 依赖方向规则（铁律）
 
 1. **上层可以依赖下层，下层绝不能依赖上层。**（✅ DAGui → DAUtils；❌ DAUtils → DAGui）
@@ -130,7 +173,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | 插件管理 | `src/APP/DAAppPluginManager.h/.cpp` | 加载/卸载插件 |
 | 项目管理 | `src/APP/DAAppProject.h/.cpp` | 工程文件读写 |
 | 数据处理接口 | `src/DAData/` | 数据容器, DataFrame 封装 |
-| 工作流节点通用设置 | `src/DAGui/NodeSetting/` | 11种参数类型自动渲染, SceneB模式属性面板, PIMPL |
+| 工作流节点通用设置 | `src/DAGui/NodeSetting/` | 基于 DAFormSpec/DAPropertyFormWidget 的统一表单参数面板, PIMPL |
 | 图表创建/编辑 | `src/DAFigure/`, `src/DAGui/ChartSetting/` | QwtFigure 容器 + 属性面板 |
 | 图形视图交互 | `src/DAGraphicsView/` | QGraphicsView 子类, 节点/连线编辑 |
 | Python 绑定 | `src/DAPyBindQt/` | pybind11 胶水代码 |
@@ -223,12 +266,17 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | `DA_DECLARE_PRIVATE` | macro | `src/DAGlobals.h` | PIMPL 私有数据声明 |
 | `DA_D` / `DA_DC` | macro | `src/DAGlobals.h` | PIMPL d-pointer 访问 |
 | `DA_PIMPL_CONSTRUCT` | macro | `src/DAGlobals.h` | PIMPL 构造函数初始化 |
-| `DA::DAParamTypeRegistry` | class | `src/DAGui/NodeSetting/DAParamTypeRegistry.h` | 11种参数类型注册+编辑器创建 |
+| `DA::DAFormSpec` | struct | `src/DAUtils/DAFormSpec.h` | 统一表单 schema（v2），描述字段/分组/联动规则 |
+| `DA::DAFormSchemaIO` | class | `src/DAUtils/DAFormSchemaIO.h` | v2 表单 schema 的 JSON 序列化/反序列化 |
+| `DA::DAFormRuleEvaluator` | class | `src/DAUtils/DAFormRuleEvaluator.h` | 声明式联动规则求值（visible/enabled/required） |
+| `DA::DAFormEditorRegistry` | class | `src/DACommonWidgets/DAFormEditorRegistry.h` | 11 种字段类型编辑器注册表（create/read/write/connect） |
+| `DA::DAPropertyFormWidget` | class | `src/DACommonWidgets/DAPropertyFormWidget.h` | 统一表单渲染容器，驱动 DAFormSpec + 规则联动 |
+| `DA::DAPropertyFormDialog` | class | `src/DACommonWidgets/DAPropertyFormDialog.h` | 模态配置对话框，封装 DAPropertyFormWidget |
 | `DA::DAAbstractNodeSettingWidget` | class | `src/DAGui/DAAbstractNodeSettingWidget.h` | 节点设置基类, 持有 DAPyNode* |
-| `DA::DANodeParamSettingPanel` | class | `src/DAGui/NodeSetting/DANodeParamSettingPanel.h` | 通用参数面板, SceneB 3-hop信号链 |
+| `DA::DANodeParameterFormAdapter` | class | `src/DAGui/NodeSetting/DANodeParameterFormAdapter.h` | DAPyNodeParameter → DAFormSpec 适配器 |
+| `DA::DANodeParamSettingPanel` | class | `src/DAGui/NodeSetting/DANodeParamSettingPanel.h` | 通用参数面板, 基于 DAPropertyFormWidget 渲染 |
 | `DA::DANodeParamSettingPanelFactory` | class | `src/DAGui/NodeSetting/DANodeParamSettingPanelFactory.h` | 面板单例工厂, qualifiedName 路由 |
 | `DA::DANodeParamSettingPanelWidget` | class | `src/DAGui/NodeSetting/DANodeParamSettingPanelWidget.h` | QStackedWidget 调度器, 惰性加载缓存 |
-| `DA::ParameterDescriptor` | struct | `src/DAGui/NodeSetting/ParameterDescriptor.h` | Python 参数描述符, fromJson/fromJsonArray |
 | `DA::DAPyNode` | class | `src/DAPyWorkFlow/DAPyNode.h` | 工作流节点代理, 继承 DAPyObjectWrapper |
 | `DA::DAPyWorkFlowManager` | class | `src/DAPyWorkFlow/DAPyWorkFlowManager.h` | 工作流中央调度器 (QObject), 管理节点/场景/执行 |
 | `DA::DAPyNodeStyle` | class | `src/DAPyWorkFlow/DAPyNodeStyle.h` | 节点视觉样式配置 (颜色/尺寸/字体) |
@@ -488,7 +536,7 @@ Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若�
 - 禁止使用 `slot`、`signal` 小写命名的宏，统一使用 `Q_SLOTS`、`Q_SIGNALS`
 - 禁止在头文件中写入类成员函数的 Doxygen 块注释（仅限类的注释、信号注释、枚举注释）
 - 禁止在 QwtPlotItem 子类中使用信号槽
-- 禁止使用已废弃的 DAPyNodeConfigDialog / DAPyNodeWidget — 统一使用 `src/DAGui/NodeSetting/` 中的通用参数面板
+- 禁止使用已废弃的 DAPyNodeConfigDialog / DAPyNodeWidget — 统一使用 `src/DAGui/NodeSetting/` 中基于 `DAPropertyFormWidget` 的通用参数面板
 - **禁止在错误的模块创建类** — 创建新类前必须对照 § MODULE DEPENDENCY 确定它属于哪个模块（典型反面：通用工具放进 DAPyWorkFlow）
 - **禁止对非 const Qt 容器直接使用范围迭代** — `for(T& v : container)` 和 `for(const T& v : container)` 对非 const 容器都会触发 COW 深拷贝。必须用 `const` 声明容器或 `std::as_const()` 包裹（详见 § Qt 容器范围迭代）
 - **禁止在 `.cpp` 中使用 Qt↔Python 类型转换而未 `#include "DAPybind11QtCaster.hpp"`** — pybind11 的 `type_caster` 是 **per-translation-unit** 生效的，仅 include `DAPybind11InQt.h` 不够。每个 `.cpp` 文件只要出现以下任意调用形式，就必须在该文件顶部 include `src/DAPyBindQt/DAPybind11QtCaster.hpp`：

@@ -12,7 +12,7 @@ from .DAPyBase import utils
 # 以下模块依赖 C++ pybind11 绑定，在纯 Python 环境下可能不可用
 try:
     from .DAPyBase import io, dataframe, data_processing
-    from .DAPyBase import app_wrapper, thread_status_manager, property_config_builder
+    from .DAPyBase import app_wrapper, thread_status_manager, form_spec, form_builder
 except ImportError:
     pass
 
@@ -22,7 +22,7 @@ _module_name = __name__  # "DAWorkbench"
 sys.modules[f"{_module_name}.da_logger"] = da_logger
 sys.modules[f"{_module_name}.utils"] = utils
 for _submod_name in ("io", "dataframe", "data_processing",
-                     "app_wrapper", "thread_status_manager", "property_config_builder"):
+                     "app_wrapper", "thread_status_manager", "form_spec", "form_builder"):
     _submod = globals().get(_submod_name)
     if _submod is not None:
         sys.modules[f"{_module_name}.{_submod_name}"] = _submod
