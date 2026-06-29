@@ -158,6 +158,17 @@ endif()
 ########################################################
 damacro_set_app_properties(${DA_APP_NAME} ${DA_APP_VERSION})
 
+########################################################
+# 部署第三方库 DLL 到构建输出目录
+# APP 是最终可执行文件，依赖所有 DA 模块和第三方库。
+# 在 POST_BUILD 阶段把 ${CMAKE_INSTALL_PREFIX}/bin/*.dll 复制到 APP 输出目录，
+# 确保开发调试时 DAWidgets/SARibbonBar/qwt/ads/DALiteCtk/quazip/zlib/spdlog 等都能正确加载。
+# 同时复制到插件输出目录，确保插件 DLL 也能找到第三方依赖。
+########################################################
+dafun_deploy_3rdparty_dlls(${DA_APP_NAME}
+    PLUGIN_DIR "${CMAKE_BINARY_DIR}/bin/plugins/$<CONFIG>"
+)
+
 
 if(WIN32)
     # Debug 模式使用控制台子系统

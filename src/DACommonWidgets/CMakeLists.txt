@@ -44,6 +44,13 @@ damacro_import_DALiteCtk(${DA_LIB_NAME})
 # -------------link 3rdparty SARibbon--------------------------
 damacro_import_SARibbonBar(${DA_LIB_NAME})
 
+# -------------link 3rdparty DAWidgets--------------------------
+# DAWidgets 提供基础 UI 控件（DAColorPickerButton/DAPenEditWidget/DAPropertyItemWidget 等），
+# 这些类已从 DACommonWidgets 迁移到 DAWidgets。PUBLIC 链接确保依赖 DACommonWidgets 的模块
+# 也能访问 DAWidgets 的头文件和符号。
+damacro_import_DAWidgets(${DA_LIB_NAME})
+target_link_libraries(${DA_LIB_NAME} PUBLIC DA::DAWidgets)
+
 # -------------link DAWorkBench--------------------------
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils

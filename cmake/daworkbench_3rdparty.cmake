@@ -118,6 +118,12 @@ macro(damacro_import_DALiteCtk __target_name)
     damacro_import_x(DALiteCtk ${__target_name})
 endmacro(damacro_import_DALiteCtk)
 
+# DAWidgets — 通用 QWidget 补充库（从 DACommonWidgets 提取）
+# 安装为 DA::DAWidgets，包含 DAColorPickerButton/DAPenEditWidget/DAPropertyItemWidget 等基础控件
+macro(damacro_import_DAWidgets __target_name)
+    damacro_import_xx(DA DAWidgets ${__target_name})
+endmacro(damacro_import_DAWidgets)
+
 # ADS 4.x 起,上游将包名从 qt6advanceddocking 重命名为 qtadvanceddocking-qt6
 # 此宏先尝试新名,失败再回退到旧名(通过 damacro_import_xx 的 glob fallback)
 macro(damacro_import_QtAdvancedDocking __target_name)

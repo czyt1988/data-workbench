@@ -20,8 +20,6 @@
 #include "DAColorPickerButton.h"
 #include "DAFilePathEditWidget.h"
 #include "DAFontEditPannelWidget.h"
-// SARibbon 颜色按钮基类（DAColorPickerButton 继承自此）
-#include "colorWidgets/SAColorToolButton.h"
 
 namespace DA
 {
@@ -564,7 +562,7 @@ void writeColor(QWidget* editor, const QVariant& value)
 void connectColor(QWidget* editor, QObject* context, const std::function< void() >& slot)
 {
     if (auto* btn = qobject_cast< DAColorPickerButton* >(editor)) {
-        QObject::connect(btn, &SAColorToolButton::colorChanged, context, [ slot ](const QColor&) { slot(); });
+        QObject::connect(btn, &DAColorPickerButton::colorChanged, context, [ slot ](const QColor&) { slot(); });
     }
 }
 //@}

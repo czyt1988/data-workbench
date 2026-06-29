@@ -19,6 +19,7 @@ git submodule update --init --recursive
 当然也可以逐个拉取：
 
 ```shell
+git submodule update src/3rdparty/DAWidgets
 git submodule update src/3rdparty/zlib
 git submodule update src/3rdparty/quazip
 git submodule update src/3rdparty/spdlog
@@ -49,6 +50,7 @@ git submodule add https://github.com/stachenov/quazip ./src/3rdparty/quazip
 git submodule add https://github.com/gabime/spdlog ./src/3rdparty/spdlog
 git submodule add https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System ./src/3rdparty/ADS
 git submodule add https://github.com/czyt1988/SARibbon ./src/3rdparty/SARibbon
+git submodule add https://github.com/czyt1988/DAWidgets ./src/3rdparty/DAWidgets
 git submodule add https://github.com/pybind/pybind11 ./src/3rdparty/pybind11
 git submodule add https://github.com/czyt1988/QtPropertyBrowser ./src/3rdparty/QtPropertyBrowser
 git submodule add https://github.com/czyt1988/QWT ./src/3rdparty/qwt
@@ -62,6 +64,7 @@ git submodule add https://gitee.com/czyt1988/quazip ./src/3rdparty/quazip
 git submodule add https://gitee.com/czyt1988/spdlog ./src/3rdparty/spdlog
 git submodule add https://gitee.com/czyt1988/Qt-Advanced-Docking-System ./src/3rdparty/ADS
 git submodule add https://gitee.com/czyt1988/SARibbon ./src/3rdparty/SARibbon
+git submodule add https://gitee.com/czyt1988/DAWidgets ./src/3rdparty/DAWidgets
 git submodule add https://gitee.com/czyt1988/pybind11 ./src/3rdparty/pybind11
 git submodule add https://gitee.com/czyt1988/QtPropertyBrowser ./src/3rdparty/QtPropertyBrowser
 git submodule add https://gitee.com/czyt1988/QWT ./src/3rdparty/qwt

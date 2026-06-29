@@ -30,6 +30,10 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../../${DA_BIN_DIR_NAME}" CA
 ########################################################
 # 第三方库参数设置
 ########################################################
+# DAWidgets
+set(DAWIDGETS_BUILD_SHARED ON CACHE BOOL "force set DAWIDGETS_BUILD_SHARED on" FORCE)
+set(DAWIDGETS_BUILD_DEMO OFF CACHE BOOL "force set DAWIDGETS_BUILD_DEMO off" FORCE)
+set(DAWIDGETS_BUILD_TESTS OFF CACHE BOOL "force set DAWIDGETS_BUILD_TESTS off" FORCE)
 #spdlog
 set(SPDLOG_BUILD_EXAMPLE OFF CACHE BOOL "force set SPDLOG_BUILD_EXAMPLE off" FORCE)
 set(SPDLOG_BUILD_TESTS OFF CACHE BOOL "force set SPDLOG_BUILD_TESTS off" FORCE)
@@ -77,6 +81,9 @@ endif()
 # 安装第三方库
 ########################################################
 include(GNUInstallDirs)
+
+# 这是DA的通用窗口模块，里面提供了所有通用窗口
+add_subdirectory(DAWidgets)
 
 # 这是用于高效绘图的库，原版 不支持cmake，这里进行了cmake化
 add_subdirectory(qwt)

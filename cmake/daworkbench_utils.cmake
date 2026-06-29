@@ -374,3 +374,66 @@ macro(damacro_setup_test _target_name)
     endif()
 endmacro(damacro_setup_test)
 
+
+# 将第三方库 DLL 部署到构建输出目录，确保开发调试时能正确加载。
+#
+# 第三方库（DAWidgets/SARibbonBar/qwt/ads/DALiteCtk/quazip/zlib/spdlog 等）通过
+# src/3rdparty/CMakeLists.txt 编译安装到 ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/。
+# 本函数在指定 target 的 POST_BUILD 阶段，把该目录下所有 *.dll 复制到 target 的输出目录，
+# 避免开发时手动复制。
+#
+# 函数在配置期通过 file(GLOB) 收集 DLL 列表（第三方库相对稳定，无需每次构建重新扫描）；
+# 复制使用 copy_if_different，未变更的 DLL 不会触发实际 IO。
+#
+# 用法:
+#   dafun_deploy_3rdparty_dlls(${DA_APP_NAME})
+#   dafun_deploy_3rdparty_dlls(${DA_APP_NAME} PLUGIN_DIR ${CMAKE_BINARY_DIR}/bin/plugins)
+function(dafun_deploy_3rdparty_dlls _target_name)
+    cmake_parse_arguments(_arg "" "PLUGIN_DIR" "" ${ARGN})
+
+    if(NOT WIN32)
+        return()
+    endif()
+
+    # 第三方库安装目录的 bin 文件夹
+    set(_3rdparty_bin_dir "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
+    if(NOT EXISTS "${_3rdparty_bin_dir}")
+        message(WARNING "dafun_deploy_3rdparty_dlls: 3rdparty bin dir not found: ${_3rdparty_bin_dir}")
+        return()
+    endif()
+
+    # 配置期收集所有 DLL（第三方库相对稳定，无需每次构建重新扫描）
+    file(GLOB _3rdparty_dlls "${_3rdparty_bin_dir}/*.dll")
+    if(NOT _3rdparty_dlls)
+        message(STATUS "dafun_deploy_3rdparty_dlls: no DLLs found in ${_3rdparty_bin_dir}")
+        return()
+    endif()
+
+    # 主输出目录：target 的输出目录
+    set(_main_out_dir "$<TARGET_FILE_DIR:${_target_name}>")
+
+    # 构建复制命令列表
+    set(_copy_commands
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${_3rdparty_dlls}
+                ${_main_out_dir}
+    )
+
+    # 如果指定了插件目录，也复制一份（插件 DLL 需要第三方依赖）
+    if(_arg_PLUGIN_DIR)
+        list(APPEND _copy_commands
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${_3rdparty_dlls}
+                    ${_arg_PLUGIN_DIR}
+        )
+    endif()
+
+    add_custom_command(TARGET ${_target_name} POST_BUILD
+        ${_copy_commands}
+        COMMENT "Deploying 3rdparty DLLs to build output (target: ${_target_name})"
+    )
+
+    list(LENGTH _3rdparty_dlls _dll_count)
+    message(STATUS "dafun_deploy_3rdparty_dlls: ${_target_name} will deploy ${_dll_count} DLLs from ${_3rdparty_bin_dir}")
+endfunction()
+

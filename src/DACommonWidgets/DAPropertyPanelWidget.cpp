@@ -877,8 +877,7 @@ int DAPropertyPanelWidget::addColorProperty(int id, const QString& name, const Q
     btn->setColor(color);
     // 路由到目标面板（有分组时添加到分组，无分组时添加到根）
     int propId = addProperty(id, name, btn);
-    // DAColorPickerButton 继承自 SAColorToolButton，colorChanged 信号来自基类
-    connect(btn, &SAColorToolButton::colorChanged, this, [ this, propId ](const QColor&) {
+    connect(btn, &DAColorPickerButton::colorChanged, this, [ this, propId ](const QColor&) {
         emit propertyValueChanged(propId);
     });
     return propId;
