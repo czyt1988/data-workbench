@@ -1,7 +1,7 @@
 #ifndef DAPROPERTYFORMWIDGET_H
 #define DAPROPERTYFORMWIDGET_H
 
-#include "DACommonWidgetsAPI.h"
+#include "DAGuiAPI.h"
 #include "DAFormRuleEvaluator.h"
 #include "DAFormSpec.h"
 #include <QHash>
@@ -34,7 +34,7 @@ class DAPropertyPanelContainerWidget;
  *
  * @see DAFormSpec, DAFormEditorRegistry, DAPropertyPanelContainerWidget
  */
-class DACOMMONWIDGETS_API DAPropertyFormWidget : public QWidget
+class DAGUI_API DAPropertyFormWidget : public QWidget
 {
     Q_OBJECT
     DA_DECLARE_PRIVATE(DAPropertyFormWidget)

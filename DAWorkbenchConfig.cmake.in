@@ -5,7 +5,7 @@ include(CMakeFindDependencyMacro)
 # 这里PROJECT_NAME就作为包名
 set(_package_name @PROJECT_NAME@)
 
-set(_${_package_name}_supported_components DAUtils DAAxOfficeWrapper DAMessageHandler DAPyBindQt DAPyScripts DAData DACommonWidgets DAPyCommonWidgets DAGraphicsView DAWorkFlow DAFigure DAGui DAInterface DAPluginSupport)
+set(_${_package_name}_supported_components DAUtils DAAxOfficeWrapper DAMessageHandler DAPyBindQt DAPyScripts DAData DAPyCommonWidgets DAGraphicsView DAWorkFlow DAFigure DAGui DAInterface DAPluginSupport)
 set(_${_package_name}_available_components "")
 
 # 把DA_ENABLE_PYTHON变量传递到此处

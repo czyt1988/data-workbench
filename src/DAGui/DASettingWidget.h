@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QSet>
-#include "DACommonWidgetsAPI.h"
+#include "DAGuiAPI.h"
 namespace Ui
 {
 class DASettingWidget;
@@ -16,7 +16,7 @@ class DAAbstractSettingPage;
 /**
  * @brief 一个基于列表索引的设置页面
  */
-class DACOMMONWIDGETS_API DASettingWidget : public QWidget
+class DAGUI_API DASettingWidget : public QWidget
 {
     Q_OBJECT
 

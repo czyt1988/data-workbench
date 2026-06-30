@@ -319,7 +319,6 @@ if(DA_ENABLE_AUTO_TRANSLATE)
     set(DA_LUPDATE_SOURCE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/src/APP
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAAxOfficeWrapper
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/DACommonWidgets
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAData
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAFigure
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAGraphicsView

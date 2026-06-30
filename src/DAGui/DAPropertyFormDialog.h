@@ -1,7 +1,7 @@
 #ifndef DAPROPERTYFORMDIALOG_H
 #define DAPROPERTYFORMDIALOG_H
 
-#include "DACommonWidgetsAPI.h"
+#include "DAGuiAPI.h"
 #include <QDialog>
 #include <QJsonObject>
 #include <QString>
@@ -27,7 +27,7 @@ class DAPropertyFormWidget;
  *
  * @see DAPropertyFormWidget, DAFormSchemaIO
  */
-class DACOMMONWIDGETS_API DAPropertyFormDialog : public QDialog
+class DAGUI_API DAPropertyFormDialog : public QDialog
 {
     Q_OBJECT
     DA_DECLARE_PRIVATE(DAPropertyFormDialog)

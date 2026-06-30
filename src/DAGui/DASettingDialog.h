@@ -2,7 +2,7 @@
 #define DASETTINGDIALOG_H
 
 #include <QDialog>
-#include "DACommonWidgetsAPI.h"
+#include "DAGuiAPI.h"
 #include "DASettingWidget.h"
 namespace Ui
 {
@@ -14,7 +14,7 @@ namespace DA
 /**
  * @brief 设置对话框
  */
-class DACOMMONWIDGETS_API DASettingDialog : public QDialog
+class DAGUI_API DASettingDialog : public QDialog
 {
     Q_OBJECT
 

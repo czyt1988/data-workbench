@@ -50,7 +50,7 @@
 #include "DAAppSettingDialog.h"
 #include "Dialog/DAExportToPngSettingDialog.h"
 #include "Dialog/DAWorkbenchAboutDialog.h"
-// DACommonWidgets
+// DAWidgets
 #include "DAFontEditPannelWidget.h"
 #include "DAShapeEditPannelWidget.h"
 // Workflow

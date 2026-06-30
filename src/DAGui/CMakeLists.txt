@@ -64,6 +64,14 @@ set(DA_LIB_HEADER_FILES
     DAZipArchiveTask_ChartItem.h
     DAXmlHelper.h
     DASplashScreen.h
+    DAAbstractSettingPage.h
+    DAFormEditorRegistry.h
+    DAPropertyFormDialog.h
+    DAPropertyFormWidget.h
+    DAPropertyPanelContainerWidget.h
+    DAPropertyPanelWidget.h
+    DASettingDialog.h
+    DASettingWidget.h
 )
 set(DA_LIB_SOURCE_FILES
     DAAbstractChartAddItemWidget.cpp
@@ -113,6 +121,14 @@ set(DA_LIB_SOURCE_FILES
     DAZipArchiveTask_ChartItem.cpp
     DAXmlHelper.cpp
     DASplashScreen.cpp
+    DAAbstractSettingPage.cpp
+    DAFormEditorRegistry.cpp
+    DAPropertyFormDialog.cpp
+    DAPropertyFormWidget.cpp
+    DAPropertyPanelContainerWidget.cpp
+    DAPropertyPanelWidget.cpp
+    DASettingDialog.cpp
+    DASettingWidget.cpp
 )
 set(DA_LIB_QT_UI_FILES
     DAChartManageWidget.ui
@@ -130,6 +146,8 @@ set(DA_LIB_QT_UI_FILES
     DAPyWorkFlowEditWidget.ui
     DAPyWorkFlowNodeListWidget.ui
     DAPyWorkFlowNodeItemSettingWidget.ui
+    DASettingDialog.ui
+    DASettingWidget.ui
 )
 set(DA_LIB_QT_RC_FILES
     icon.qrc
@@ -357,10 +375,15 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAUtils
     ${DA_PROJECT_NAME}::DAMessageHandler
     ${DA_PROJECT_NAME}::DAData
-    ${DA_PROJECT_NAME}::DACommonWidgets
     ${DA_PROJECT_NAME}::DAPyWorkFlow
     ${DA_PROJECT_NAME}::DAFigure
 )
+
+# -------------link 3rdparty DAWidgets--------------------------
+# DAWidgets 提供基础 UI 控件（DAColorPickerButton/DAPenEditWidget/DAPropertyItemWidget 等），
+# 迁移自 DACommonWidgets 的 DAFormEditorRegistry/DAPropertyPanelWidget 等依赖这些控件。
+damacro_import_DAWidgets(${DA_LIB_NAME})
+target_link_libraries(${DA_LIB_NAME} PUBLIC DA::DAWidgets)
 
 if(DA_ENABLE_PYTHON)
     target_link_libraries(${DA_LIB_NAME} PUBLIC

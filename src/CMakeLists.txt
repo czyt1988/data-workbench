@@ -52,9 +52,6 @@ endif()
 
 
 
-add_subdirectory(DACommonWidgets)
-add_dependencies(DACommonWidgets DAUtils)
-
 add_subdirectory(DAGraphicsView)
 add_dependencies(DAGraphicsView DAUtils)
 

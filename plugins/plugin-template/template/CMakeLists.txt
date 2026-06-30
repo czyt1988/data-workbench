@@ -120,7 +120,6 @@ if(NOT TARGET DAWorkbench::DAUtils)
         DAGraphicsView
         DAPyWorkFlow
         DAFigure
-        DACommonWidgets
         DAPyCommonWidgets
         DAGui 
         DAInterface 
@@ -138,7 +137,6 @@ target_link_libraries(${DA_PLUGIN_NAME} PRIVATE
     DAWorkbench::DAGraphicsView
     DAWorkbench::DAPyWorkFlow
     DAWorkbench::DAFigure
-    DAWorkbench::DACommonWidgets
     DAWorkbench::DAPyCommonWidgets
     DAWorkbench::DAGui
     DAWorkbench::DAInterface

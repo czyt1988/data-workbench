@@ -1,7 +1,7 @@
 #ifndef DAFORMEDITORREGISTRY_H
 #define DAFORMEDITORREGISTRY_H
 
-#include "DACommonWidgetsAPI.h"
+#include "DAGuiAPI.h"
 #include "DAFormSpec.h"  // from DAUtils
 #include <QHash>
 #include <QString>
@@ -35,7 +35,7 @@ namespace DA
  *
  * @see DAPropertyFormWidget, DAFormFieldDef
  */
-class DACOMMONWIDGETS_API DAFormEditorRegistry
+class DAGUI_API DAFormEditorRegistry
 {
     DA_DECLARE_PRIVATE(DAFormEditorRegistry)
 public:

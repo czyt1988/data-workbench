@@ -54,7 +54,7 @@
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
 // Dialog
-// DACommonWidgets
+// DAWidgets
 #include "DAFontEditPannelWidget.h"
 #include "DAShapeEditPannelWidget.h"
 // Workflow

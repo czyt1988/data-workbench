@@ -1,7 +1,7 @@
 ﻿#ifndef DAABSTRACTSETTINGWIDGET_H
 #define DAABSTRACTSETTINGWIDGET_H
 #include <QWidget>
-#include "DACommonWidgetsAPI.h"
+#include "DAGuiAPI.h"
 namespace DA
 {
 
@@ -18,7 +18,7 @@ namespace DA
  * @note 重载时务必调用DAAbstractSettingPage::setConfig(c);否则getConfig函数将不起作用
  *
  */
-class DACOMMONWIDGETS_API DAAbstractSettingPage : public QWidget
+class DAGUI_API DAAbstractSettingPage : public QWidget
 {
 	Q_OBJECT
 public:
