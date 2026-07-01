@@ -120,8 +120,17 @@ buildAsyncLogger(const std::string& name, const std::vector< spdlog::sink_ptr >&
 
 DALogger::DALogger() : d_ptr(std::make_unique< PrivateData >(this))
 {
-    // 预先引用 DAMessageLogQueue，确保其在主线程构造（QTimer 必须在主线程创建）
-    // 否则首次 push（来自 spdlog pool thread）会触发单例构造，导致 QTimer 跨线程警告
+    // 先触发 spdlog::registry 单例构造，确保其先于 DALogger 注册 atexit 析构。
+    // atexit 为 LIFO：先注册的后析构，因此 registry 会在 DALogger 之后析构，
+    // 保证 ~DALogger() 调用 spdlog::shutdown() 时 registry 仍存活。
+    // 若不前置触发，registry 会在 setupRotatingFile() 中才首次构造（晚于 DALogger），
+    // 导致 registry 先析构，~DALogger() 访问已析构的 registry → UAF。
+    spdlog::details::registry::instance();
+
+    // 预先引用 DAMessageLogQueue，确保其在主线程构造（QTimer 必须在主线程创建）。
+    // 单例由 shared_ptr 管理，sink 通过 weakInstance() 持有 weak_ptr，
+    // 析构顺序：DALogger（后注册）先析构 → queue（先注册）后析构，
+    // 保证 DALogger 调用 spdlog::shutdown() 时 queue 仍存活。
     DAMessageLogQueue::instance();
 }
 
@@ -138,7 +147,10 @@ DALogger::~DALogger()
     if (d->mSystemLogger) {
         d->mSystemLogger->flush();
     }
-    spdlog::drop_all();
+    // spdlog::shutdown() 内部调用 drop_all() + reset thread_pool，
+    // thread_pool 析构时 join 后台线程，确保所有排队消息处理完毕。
+    // 注意：必须确保 registry 仍存活（由构造函数中前置触发 registry 构造保证），
+    // 否则访问已析构的 registry 是 UB。
     spdlog::shutdown();
 }
 

@@ -38,7 +38,7 @@ inline QtMsgType mapSpdlogToQtMsgType(spdlog::level::level_enum l)
     }
 }
 
-DAMessageLogSink::DAMessageLogSink()
+DAMessageLogSink::DAMessageLogSink() : mQueue(DAMessageLogQueue::weakInstance())
 {
 }
 
@@ -54,10 +54,19 @@ DAMessageLogSink::~DAMessageLogSink()
  * - msg.time → QDateTime（从 system_clock::time_point 转换）
  * - msg.source.filename / funcname / line → 文件名/函数名/行号
  * - msg.payload → 消息内容
+ *
+ * @note 通过 weak_ptr lock 检查 queue 存活：程序退出时若 queue 已析构，
+ * lock() 返回 nullptr，安全跳过推送，避免 use-after-free。
  * @param msg
  */
 void DAMessageLogSink::log(const spdlog::details::log_msg& msg)
 {
+    // weak_ptr lock：queue 已析构时返回 nullptr，安全跳过
+    auto queue = mQueue.lock();
+    if (!queue) {
+        return;
+    }
+
     QtMsgType qtType = mapSpdlogToQtMsgType(msg.level);
 
     // 从 system_clock::time_point 转换为 QDateTime
@@ -73,7 +82,7 @@ void DAMessageLogSink::log(const spdlog::details::log_msg& msg)
     QString payload = QString::fromUtf8(msg.payload.data(), static_cast< int >(msg.payload.size()));
 
     DAMessageLogItem item(qtType, fileName, funcName, msg.source.line, payload, dt);
-    DAMessageLogQueue::instance().push(item);
+    queue->push(item);
 }
 
 void DAMessageLogSink::flush()

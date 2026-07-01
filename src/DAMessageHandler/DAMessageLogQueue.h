@@ -3,6 +3,7 @@
 #include "DAMessageHandlerGlobal.h"
 #include "DAMessageLogItem.h"
 #include <QObject>
+#include <memory>
 
 namespace DA
 {
@@ -18,6 +19,9 @@ namespace DA
  * @note 由于使用了惰性信号，messageQueueAppended 和 messageQueueSizeChanged 是互斥的：
  * 队列未满时触发 messageQueueSizeChanged，队列满后循环覆写时触发 messageQueueAppended。
  *
+ * @note 单例生命周期由内部 shared_ptr 管理。DAMessageLogSink 通过 weakInstance() 持有
+ * weak_ptr，在程序退出时若 queue 已析构，sink 的 log() 会安全跳过推送，避免 use-after-free。
+ *
  * @see DAMessageLogSink
  * @see DAMessageLogsModel
  */
@@ -31,6 +35,15 @@ public:
      * @return
      */
     static DAMessageLogQueue& instance();
+
+    /**
+     * @brief 获取单例的 weak_ptr（供 DAMessageLogSink 安全访问）
+     *
+     * 程序退出时单例析构后，weak_ptr 会 lock 失败，sink 据此跳过推送，
+     * 避免 spdlog 后台线程在 queue 析构后访问已释放内存。
+     * @return
+     */
+    static std::weak_ptr< DAMessageLogQueue > weakInstance();
 
     ~DAMessageLogQueue();
 
@@ -84,6 +97,9 @@ private:
     Q_DISABLE_COPY(DAMessageLogQueue)
     void onTimeout();
     void ensureTimer();
+
+    // 持有单例的 shared_ptr 控制块，作为 atexit 析构锚点
+    static std::shared_ptr< DAMessageLogQueue >& singletonPtr();
 
 Q_SIGNALS:
     /**

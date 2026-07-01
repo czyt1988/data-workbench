@@ -50,10 +50,23 @@ DAMessageLogQueue::~DAMessageLogQueue()
 {
 }
 
+// 文件内辅助说明：singletonPtr() 是 DAMessageLogQueue 的静态私有成员，
+// 作为 atexit 析构链的锚点。析构顺序：DALogger（后注册）先析构 → s_queue（先注册）后析构，
+// 保证 DALogger 调用 spdlog::shutdown() 时 queue 仍然存活。
+std::shared_ptr< DAMessageLogQueue >& DAMessageLogQueue::singletonPtr()
+{
+    static std::shared_ptr< DAMessageLogQueue > s_queue(new DAMessageLogQueue());
+    return s_queue;
+}
+
 DAMessageLogQueue& DAMessageLogQueue::instance()
 {
-    static DAMessageLogQueue s_queue;
-    return s_queue;
+    return *singletonPtr();
+}
+
+std::weak_ptr< DAMessageLogQueue > DAMessageLogQueue::weakInstance()
+{
+    return std::weak_ptr< DAMessageLogQueue >(singletonPtr());
 }
 
 void DAMessageLogQueue::push(const DAMessageLogItem& item)
