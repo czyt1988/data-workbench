@@ -45,6 +45,16 @@ public:
     DAFigureWidget* plotToFigureWidget(QwtPlot* plot) const;
     // 获取当前的figure
     DAFigureWidget* getCurrentFigure() const;
+    // 刷新指定plotItem的可见性列显示（作用于当前treeView）
+    void refreshPlotItemVisibility(QwtPlotItem* item);
+    // 刷新指定坐标轴的可见性列显示（作用于当前treeView）
+    void refreshAxisVisibility(QwtPlot* plot, QwtAxisId axisId);
+    // 刷新指定plotItem的文字列显示（用于重命名后）
+    void refreshPlotItemText(QwtPlotItem* item);
+    // 刷新指定坐标轴的文字列显示（用于重命名后）
+    void refreshAxisText(QwtPlot* plot, QwtAxisId axisId);
+    // 刷新指定chart节点的文字列显示（用于重命名后）
+    void refreshPlotFolderText(QwtPlot* plot);
 public Q_SLOTS:
     // 把管理树展开
     void expandCurrentTree();
@@ -92,6 +102,13 @@ private slots:
     void onToolButtonFigureSettingClicked();
     // combobox
     void onComboboxCurrentIndexChanged(int index);
+    // 树形控件右键菜单请求
+    void onTreeViewContextMenuRequested(DA::DAFigureTreeView* tree, const QPoint& pos);
+    // 右键菜单动作触发
+    void onContextMenuRenameTriggered();
+    void onContextMenuVisibleTriggered(bool on);
+    void onContextMenuDeleteTriggered();
+    void onContextMenuSettingTriggered();
 
 private:
     Ui::DAChartManageWidget* ui;

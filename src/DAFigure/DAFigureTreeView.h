@@ -32,6 +32,16 @@ public:
     // 设置自动适应内容
     bool isAutoResizeColumnToContents() const;
     void setAutoResizeColumnToContents(bool on);
+    // 刷新指定plotItem的可见性列显示
+    void refreshPlotItemVisibility(QwtPlotItem* item);
+    // 刷新指定坐标轴的可见性列显示
+    void refreshAxisVisibility(QwtPlot* plot, QwtAxisId axisId);
+    // 刷新指定plotItem的文字列显示（用于重命名后）
+    void refreshPlotItemText(QwtPlotItem* item);
+    // 刷新指定坐标轴的文字列显示（用于重命名后）
+    void refreshAxisText(QwtPlot* plot, QwtAxisId axisId);
+    // 刷新指定chart节点的文字列显示（用于重命名后）
+    void refreshPlotFolderText(QwtPlot* plot);
 public Q_SLOTS:
     // 让树形控件的水平头自适应内容
     void resizeHeaderToContents();

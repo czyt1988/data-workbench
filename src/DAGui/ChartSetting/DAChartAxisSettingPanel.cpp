@@ -270,6 +270,8 @@ void DAChartAxisSettingPanel::onPropertyValueChanged(int propertyId)
     case PID_EnableAxis: {
         bool enabled = panel->getBoolValue(PID_EnableAxis);
         mPlot->enableAxis(mAxisId, enabled);
+        // 通知外部刷新树形控件的可见性列
+        Q_EMIT axisVisibilityChanged(mAxisId, enabled);
         break;
     }
     case PID_LabelText: {

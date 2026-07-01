@@ -3,6 +3,10 @@
 #include <QTreeView>
 #include <QPointer>
 #include <QDebug>
+#include <QMenu>
+#include <QAction>
+#include <QInputDialog>
+#include <QMessageBox>
 #include "DALogCategory.h"
 #include <QHash>
 #include <QSet>
@@ -11,6 +15,9 @@
 #include "DAFigureTreeView.h"
 #include "DAChartWidget.h"
 #include "qwt_figure.h"
+#include "qwt_plot.h"
+#include "qwt_plot_item.h"
+#include "qwt_text.h"
 #include "Models/DAFigureTreeModel.h"
 namespace DA
 {
@@ -19,10 +26,14 @@ namespace DA
 //===============================================================
 class DAChartManageWidget::PrivateData
 {
-public:
     DA_DECLARE_PUBLIC(DAChartManageWidget)
+public:
     PrivateData(DAChartManageWidget* p);
     DAFigureElementSelection::SelectionColumns standardItemToSelectionColumns(QStandardItem* item);
+    // 懒加载构建树形控件右键菜单（仅构建一次，后续复用）
+    void ensureTreeContextMenu(DAChartManageWidget* q);
+    // 根据节点类型更新右键菜单各 action 的可见性
+    void updateContextMenuActions(int nodeType);
 
 public:
     QPointer< DAChartOperateWidget > mChartOptWidget;
@@ -30,6 +41,18 @@ public:
     bool mSetCurrentChartOnDbClicked { true };
     QHash< QwtFigure*, DAFigureWidget* > mFigToFigWidget;             ///< 建立figure和figureWidget的关系
     QHash< DAFigureWidget*, DAFigureTreeView* > mFigureWidgetToTree;  ///< 建立figurewidget和tree的关系
+
+    // 右键菜单（懒加载复用，避免每次右键都栈上构造）
+    QMenu* mTreeContextMenu { nullptr };
+    QAction* mActRename { nullptr };
+    QAction* mActVisible { nullptr };
+    QAction* mActDelete { nullptr };
+    QAction* mActSetting { nullptr };
+    // 当前右键上下文（action 触发时使用）
+    DAFigureTreeView* mContextTree { nullptr };
+    DAFigureWidget* mContextFigureWidget { nullptr };
+    QStandardItem* mContextItem { nullptr };
+    int mContextNodeType { -1 };
 };
 DAChartManageWidget::PrivateData::PrivateData(DAChartManageWidget* p) : q_ptr(p)
 {
@@ -48,6 +71,71 @@ DAFigureElementSelection::SelectionColumns DAChartManageWidget::PrivateData::sta
         break;
     }
     return DAFigureElementSelection::ColumnName;
+}
+
+/**
+ * @brief 懒加载构建树形控件右键菜单
+ *
+ * 首次调用时创建 QMenu 及所有 QAction 并连接信号槽，后续调用直接复用。
+ * 菜单项的显隐在 @ref updateContextMenuActions 中根据节点类型动态控制。
+ */
+void DAChartManageWidget::PrivateData::ensureTreeContextMenu(DAChartManageWidget* q)
+{
+    if (mTreeContextMenu) {
+        return;
+    }
+    mTreeContextMenu = new QMenu(q);
+    mActRename  = mTreeContextMenu->addAction(tr("Rename"));   // cn:重命名
+    mActVisible = mTreeContextMenu->addAction(tr("Visible"));  // cn:可见
+    mActVisible->setCheckable(true);
+    mActDelete  = mTreeContextMenu->addAction(tr("Delete"));   // cn:删除
+    mTreeContextMenu->addSeparator();
+    mActSetting = mTreeContextMenu->addAction(tr("Setting"));  // cn:设置
+    QObject::connect(mActRename, &QAction::triggered, q, &DAChartManageWidget::onContextMenuRenameTriggered);
+    QObject::connect(mActVisible, &QAction::triggered, q, &DAChartManageWidget::onContextMenuVisibleTriggered);
+    QObject::connect(mActDelete, &QAction::triggered, q, &DAChartManageWidget::onContextMenuDeleteTriggered);
+    QObject::connect(mActSetting, &QAction::triggered, q, &DAChartManageWidget::onContextMenuSettingTriggered);
+}
+
+/**
+ * @brief 根据节点类型更新右键菜单各 action 的可见性
+ *
+ * - chart节点(NodeTypePlotFolder): 重命名、设置
+ * - layer节点(NodeTypePlot): 无菜单（调用方在外部判断，不进入此函数）
+ * - 坐标轴节点(NodeTypeAxis): 重命名、可见、设置
+ * - 图元节点(NodeTypePlotItem): 重命名、可见、删除、(分割线)、设置
+ */
+void DAChartManageWidget::PrivateData::updateContextMenuActions(int nodeType)
+{
+    if (!mTreeContextMenu) {
+        return;
+    }
+    switch (nodeType) {
+    case DAFigureTreeModel::NodeTypePlotFolder:
+        mActRename->setVisible(true);
+        mActVisible->setVisible(false);
+        mActDelete->setVisible(false);
+        mActSetting->setVisible(true);
+        break;
+    case DAFigureTreeModel::NodeTypeAxis:
+        mActRename->setVisible(true);
+        mActVisible->setVisible(true);
+        mActDelete->setVisible(false);
+        mActSetting->setVisible(true);
+        break;
+    case DAFigureTreeModel::NodeTypePlotItem:
+        mActRename->setVisible(true);
+        mActVisible->setVisible(true);
+        mActDelete->setVisible(true);
+        mActSetting->setVisible(true);
+        break;
+    default:
+        mActRename->setVisible(false);
+        mActVisible->setVisible(false);
+        mActDelete->setVisible(false);
+        mActSetting->setVisible(false);
+        break;
+    }
 }
 //===================================================
 // DAChartManageWidget
@@ -155,6 +243,68 @@ DAFigureTreeView* DAChartManageWidget::currentTreeView() const
     return qobject_cast< DAFigureTreeView* >(ui->stackedWidget->currentWidget());
 }
 
+/**
+ * @brief 刷新指定plotItem的可见性列显示
+ * @param item 需要刷新的plotItem
+ */
+void DAChartManageWidget::refreshPlotItemVisibility(QwtPlotItem* item)
+{
+    DAFigureTreeView* tree = currentTreeView();
+    if (tree) {
+        tree->refreshPlotItemVisibility(item);
+    }
+}
+
+/**
+ * @brief 刷新指定坐标轴的可见性列显示
+ * @param plot 坐标轴所在的plot
+ * @param axisId 坐标轴ID
+ */
+void DAChartManageWidget::refreshAxisVisibility(QwtPlot* plot, QwtAxisId axisId)
+{
+    DAFigureTreeView* tree = currentTreeView();
+    if (tree) {
+        tree->refreshAxisVisibility(plot, axisId);
+    }
+}
+
+/**
+ * @brief 刷新指定plotItem的文字列显示（用于重命名后）
+ * @param item 需要刷新的plotItem
+ */
+void DAChartManageWidget::refreshPlotItemText(QwtPlotItem* item)
+{
+    DAFigureTreeView* tree = currentTreeView();
+    if (tree) {
+        tree->refreshPlotItemText(item);
+    }
+}
+
+/**
+ * @brief 刷新指定坐标轴的文字列显示（用于重命名后）
+ * @param plot 坐标轴所在的plot
+ * @param axisId 坐标轴ID
+ */
+void DAChartManageWidget::refreshAxisText(QwtPlot* plot, QwtAxisId axisId)
+{
+    DAFigureTreeView* tree = currentTreeView();
+    if (tree) {
+        tree->refreshAxisText(plot, axisId);
+    }
+}
+
+/**
+ * @brief 刷新指定chart节点的文字列显示（用于重命名后）
+ * @param plot chart对应的plot
+ */
+void DAChartManageWidget::refreshPlotFolderText(QwtPlot* plot)
+{
+    DAFigureTreeView* tree = currentTreeView();
+    if (tree) {
+        tree->refreshPlotFolderText(plot);
+    }
+}
+
 void DAChartManageWidget::setCurrentDisplayView(DAFigureWidget* fig)
 {
     setStackCurrentFigure(fig);
@@ -213,6 +363,11 @@ void DAChartManageWidget::onFigureCreated(DAFigureWidget* fig)
     d_ptr->mFigureWidgetToTree[ fig ]       = figTreeview;
     connect(figTreeview, &DAFigureTreeView::itemCliecked, this, &DAChartManageWidget::figureElementClicked);
     connect(figTreeview, &DAFigureTreeView::itemDbCliecked, this, &DAChartManageWidget::figureElementDbClicked);
+    // 设置右键菜单策略
+    figTreeview->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(figTreeview, &QWidget::customContextMenuRequested, this, [ this, figTreeview ](const QPoint& pos) {
+        onTreeViewContextMenuRequested(figTreeview, pos);
+    });
     ui->stackedWidget->insertWidget(index, figTreeview);
 
     ui->comboBoxFigure->insertItem(index, fig->windowTitle(), reinterpret_cast< quintptr >(fig));
@@ -303,6 +458,285 @@ void DAChartManageWidget::onComboboxCurrentIndexChanged(int index)
     if (DAFigureWidget* fig = getCurrentFigure()) {
         setStackCurrentFigure(fig);
         Q_EMIT selectFigureChanged(fig);
+    }
+}
+
+/**
+ * @brief 树形控件右键菜单请求处理
+ *
+ * 使用懒加载复用的 QMenu（@ref PrivateData::ensureTreeContextMenu），
+ * 根据当前节点类型动态控制各 action 的显隐后 exec。
+ * 具体的动作处理在 onContextMenuXxxTriggered 系列槽中实现。
+ * @param tree 触发右键的树形控件
+ * @param pos 右键位置（相对于树形控件的viewport）
+ */
+void DAChartManageWidget::onTreeViewContextMenuRequested(DAFigureTreeView* tree, const QPoint& pos)
+{
+    if (!tree) {
+        return;
+    }
+    QModelIndex index = tree->indexAt(pos);
+    if (!index.isValid()) {
+        return;
+    }
+    DAFigureTreeModel* model = tree->getFigureTreeModel();
+    if (!model) {
+        return;
+    }
+    QStandardItem* item = model->itemFromIndex(index);
+    if (!item) {
+        return;
+    }
+    DAFigureWidget* figWidget = tree->getFigureWidget();
+    if (!figWidget) {
+        return;
+    }
+
+    const int nodeType = item->data(DAFigureTreeModel::RoleNodeType).toInt();
+    // layout 节点(NodeTypePlot) 和文件夹节点不弹出菜单
+    if (nodeType == DAFigureTreeModel::NodeTypePlot
+        || nodeType == DAFigureTreeModel::NodeTypeAxesFolder
+        || nodeType == DAFigureTreeModel::NodeTypeItemsFolder) {
+        return;
+    }
+
+    // 记录当前右键上下文，供 action 槽函数使用
+    d_ptr->ensureTreeContextMenu(this);
+    d_ptr->mContextTree         = tree;
+    d_ptr->mContextFigureWidget = figWidget;
+    d_ptr->mContextItem         = item;
+    d_ptr->mContextNodeType     = nodeType;
+    d_ptr->updateContextMenuActions(nodeType);
+
+    // 根据当前可见性同步"可见"action 的勾选状态，action->isVisible说明这个action起作用，在上面已经确认这个item需要可见性判断
+    // (checked = 当前可见, unchecked = 当前隐藏)
+    if (d_ptr->mActVisible->isVisible()) {
+        bool visible = false;
+        if (nodeType == DAFigureTreeModel::NodeTypeAxis) {
+            QwtPlot* plot = model->plotFromItem(item);
+            QwtAxisId axisId = model->axisIdFromItem(item);
+            if (plot && axisId != QwtAxis::AxisPositions) {
+                visible = plot->isAxisVisible(axisId);
+            }
+        } else if (nodeType == DAFigureTreeModel::NodeTypePlotItem) {
+            if (QwtPlotItem* plotItem = model->plotItemFromItem(item)) {
+                visible = plotItem->isVisible();
+            }
+        }
+        d_ptr->mActVisible->setChecked(visible);
+    }
+
+    d_ptr->mTreeContextMenu->exec(tree->viewport()->mapToGlobal(pos));
+}
+
+/**
+ * @brief 右键菜单"重命名"触发
+ */
+void DAChartManageWidget::onContextMenuRenameTriggered()
+{
+    DAFigureTreeView* tree = d_ptr->mContextTree;
+    QStandardItem* item    = d_ptr->mContextItem;
+    int nodeType           = d_ptr->mContextNodeType;
+    if (!tree || !item) {
+        return;
+    }
+    DAFigureTreeModel* model = tree->getFigureTreeModel();
+    if (!model) {
+        return;
+    }
+    if (nodeType == DAFigureTreeModel::NodeTypePlotFolder) {
+        QwtPlot* plot = model->plotFromItem(item);
+        if (plot) {
+            QString oldName = plot->title().text();
+            if (oldName.isEmpty()) {
+                oldName = tr("chart");  // cn:绘图
+            }
+            bool ok = false;
+            QString newName = QInputDialog::getText(tree,
+                                                    tr("Rename"),     // cn:重命名
+                                                    tr("New name:"),  // cn:新名称:
+                                                    QLineEdit::Normal,
+                                                    oldName,
+                                                    &ok);
+            if (ok && !newName.isEmpty()) {
+                plot->setTitle(newName);
+                tree->refreshPlotFolderText(plot);
+            }
+        }
+    } else if (nodeType == DAFigureTreeModel::NodeTypeAxis) {
+        QwtPlot* plot = model->plotFromItem(item);
+        QwtAxisId axisId = model->axisIdFromItem(item);
+        if (plot && axisId != QwtAxis::AxisPositions) {
+            QString oldName = plot->axisTitle(axisId).text();
+            bool ok = false;
+            QString newName = QInputDialog::getText(tree,
+                                                    tr("Rename"),     // cn:重命名
+                                                    tr("New name:"),  // cn:新名称:
+                                                    QLineEdit::Normal,
+                                                    oldName,
+                                                    &ok);
+            if (ok && !newName.isEmpty()) {
+                QwtText title = plot->axisTitle(axisId);
+                title.setText(newName);
+                plot->setAxisTitle(axisId, title);
+                tree->refreshAxisText(plot, axisId);
+                plot->replot();
+            }
+        }
+    } else if (nodeType == DAFigureTreeModel::NodeTypePlotItem) {
+        QwtPlotItem* plotItem = model->plotItemFromItem(item);
+        QwtPlot* plot = model->plotFromItem(item);
+        if (plotItem && plot) {
+            QString oldName = plotItem->title().text();
+            bool ok = false;
+            QString newName = QInputDialog::getText(tree,
+                                                    tr("Rename"),     // cn:重命名
+                                                    tr("New name:"),  // cn:新名称:
+                                                    QLineEdit::Normal,
+                                                    oldName,
+                                                    &ok);
+            if (ok && !newName.isEmpty()) {
+                plotItem->setTitle(newName);
+                tree->refreshPlotItemText(plotItem);
+                plot->replot();
+            }
+        }
+    }
+}
+
+/**
+ * @brief 右键菜单"可见"触发
+ *
+ * action 为 checkable，触发时 checked 状态已由 Qt 自动翻转，
+ * 这里直接读取新的 checked 值并应用到目标对象。
+ */
+void DAChartManageWidget::onContextMenuVisibleTriggered(bool on)
+{
+    DAFigureTreeView* tree = d_ptr->mContextTree;
+    QStandardItem* item    = d_ptr->mContextItem;
+    int nodeType           = d_ptr->mContextNodeType;
+    DAFigureWidget* figWidget = d_ptr->mContextFigureWidget;
+    if (!tree || !item || !figWidget) {
+        return;
+    }
+    DAFigureTreeModel* model = tree->getFigureTreeModel();
+    if (!model) {
+        return;
+    }
+    if (nodeType == DAFigureTreeModel::NodeTypeAxis) {
+        QwtPlot* plot = model->plotFromItem(item);
+        QwtAxisId axisId = model->axisIdFromItem(item);
+        if (plot && axisId != QwtAxis::AxisPositions) {
+            qDebug() << "onContextMenuVisibleTriggered 3" << on;
+            plot->setAxisVisible(axisId, on);
+            tree->refreshAxisVisibility(plot, axisId);
+            plot->replot();
+            // 通知设置面板刷新
+            DAFigureElementSelection sel(figWidget, plot, plot->axisWidget(axisId), axisId,
+                                          DAFigureElementSelection::ColumnVisible);
+            Q_EMIT figureElementClicked(sel);
+        }
+    } else if (nodeType == DAFigureTreeModel::NodeTypePlotItem) {
+        QwtPlotItem* plotItem = model->plotItemFromItem(item);
+        QwtPlot* plot = model->plotFromItem(item);
+        if (plotItem && plot) {
+            plotItem->setVisible(on);
+            tree->refreshPlotItemVisibility(plotItem);
+            plot->replot();
+            // 通知设置面板刷新
+            DAFigureElementSelection sel(figWidget, plot, plotItem,
+                                          DAFigureElementSelection::ColumnVisible);
+            Q_EMIT figureElementClicked(sel);
+        }
+    }
+}
+
+/**
+ * @brief 右键菜单"删除"触发（仅 plotItem 支持）
+ */
+void DAChartManageWidget::onContextMenuDeleteTriggered()
+{
+    DAFigureTreeView* tree = d_ptr->mContextTree;
+    QStandardItem* item    = d_ptr->mContextItem;
+    int nodeType           = d_ptr->mContextNodeType;
+    if (!tree || !item) {
+        return;
+    }
+    if (nodeType != DAFigureTreeModel::NodeTypePlotItem) {
+        return;
+    }
+    DAFigureTreeModel* model = tree->getFigureTreeModel();
+    if (!model) {
+        return;
+    }
+    QwtPlotItem* plotItem = model->plotItemFromItem(item);
+    QwtPlot* plot = model->plotFromItem(item);
+    if (!plotItem || !plot) {
+        return;
+    }
+    int ret = QMessageBox::question(tree,
+                                    tr("Delete"),                                       // cn:删除
+                                    tr("Are you sure to delete \"%1\"?").arg(plotItem->title().text()),  // cn:确认删除"%1"吗?
+                                    QMessageBox::Yes | QMessageBox::No,
+                                    QMessageBox::No);
+    if (ret == QMessageBox::Yes) {
+        // 优先使用DAChartWidget的removePlotItem,它会调用detach并delete
+        if (DAChartWidget* chartWidget = qobject_cast< DAChartWidget* >(plot)) {
+            chartWidget->removePlotItem(plotItem);
+        } else {
+            plotItem->detach();
+            delete plotItem;
+            plot->replot();
+        }
+        // 模型会通过QwtPlot::itemAttached信号自动更新
+    }
+}
+
+/**
+ * @brief 右键菜单"设置"触发
+ *
+ * 发出 figureElementClicked(ColumnProperty) 信号,DAAppController 会切换到对应的设置面板
+ */
+void DAChartManageWidget::onContextMenuSettingTriggered()
+{
+    DAFigureTreeView* tree = d_ptr->mContextTree;
+    QStandardItem* item    = d_ptr->mContextItem;
+    int nodeType           = d_ptr->mContextNodeType;
+    DAFigureWidget* figWidget = d_ptr->mContextFigureWidget;
+    if (!tree || !item || !figWidget) {
+        return;
+    }
+    DAFigureTreeModel* model = tree->getFigureTreeModel();
+    if (!model) {
+        return;
+    }
+    DAFigureElementSelection::SelectionColumns col = DAFigureElementSelection::ColumnProperty;
+    switch (nodeType) {
+    case DAFigureTreeModel::NodeTypePlotFolder: {
+        QwtPlot* plot = model->plotFromItem(item);
+        if (plot) {
+            Q_EMIT figureElementClicked(DAFigureElementSelection(figWidget, plot, col));
+        }
+        break;
+    }
+    case DAFigureTreeModel::NodeTypeAxis: {
+        QwtPlot* plot = model->plotFromItem(item);
+        QwtAxisId axisId = model->axisIdFromItem(item);
+        if (plot && axisId != QwtAxis::AxisPositions) {
+            Q_EMIT figureElementClicked(DAFigureElementSelection(figWidget, plot, plot->axisWidget(axisId), axisId, col));
+        }
+        break;
+    }
+    case DAFigureTreeModel::NodeTypePlotItem: {
+        QwtPlot* plot = model->plotFromItem(item);
+        QwtPlotItem* plotItem = model->plotItemFromItem(item);
+        if (plot && plotItem) {
+            Q_EMIT figureElementClicked(DAFigureElementSelection(figWidget, plot, plotItem, col));
+        }
+        break;
+    }
+    default:
+        break;
     }
 }
 

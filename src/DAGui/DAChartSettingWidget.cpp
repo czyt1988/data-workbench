@@ -111,6 +111,17 @@ DAChartSettingWidget::DAChartSettingWidget(QWidget* parent)
             QOverload< int >::of(&QComboBox::currentIndexChanged),
             this,
             &DAChartSettingWidget::onComboBoxItemIndexChanged);
+
+    // 连接各坐标轴设置面板的可见性变化信号，统一转发出去
+    auto connectAxisVisibility = [ this ](DAChartAxisSettingPanel* panel) {
+        connect(panel, &DAChartAxisSettingPanel::axisVisibilityChanged, this, [ this ](QwtAxis::Position axisId, bool visible) {
+            Q_EMIT axisVisibilityChanged(d_ptr->mPlot.data(), static_cast< int >(axisId), visible);
+        });
+    };
+    connectAxisVisibility(d_ptr->mPlotScaleYLeftSettingWidget);
+    connectAxisVisibility(d_ptr->mPlotScaleYRightSettingWidget);
+    connectAxisVisibility(d_ptr->mPlotScaleXBottomSettingWidget);
+    connectAxisVisibility(d_ptr->mPlotScaleXTopSettingWidget);
 }
 
 DAChartSettingWidget::~DAChartSettingWidget()

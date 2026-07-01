@@ -402,6 +402,13 @@ void DAAppController::initConnection()
         // 显示设置窗口 dock
         mDock->raiseDockByWidget((QWidget*)(mDock->getSettingContainerWidget()));
     });
+    // 坐标轴设置面板的可见性变化 -> 刷新DAChartManageWidget树形控件的可见性列
+    if (DASettingContainerWidget* setting = getSettingContainerWidget()) {
+        if (DAChartSettingWidget* chartSetting = setting->getChartSettingWidget()) {
+            connect(chartSetting, &DAChartSettingWidget::axisVisibilityChanged,
+                    cmw, &DAChartManageWidget::refreshAxisVisibility);
+        }
+    }
     // DAChartOperateWidget
     DAChartOperateWidget* cow = mDock->getChartOperateWidget();
     connect(cow, &DAChartOperateWidget::figureCreated, this, &DAAppController::onFigureCreated);
@@ -816,10 +823,15 @@ void DAAppController::onFigureElementDbClicked(const DAFigureElementSelection& s
     // 如果是visible双击，那么改变item的visible属性
 
     if (DAFigureElementSelection::ColumnVisible == selection.selectionColumn) {
+        DAChartManageWidget* cmw = mDock->getChartManageWidget();
         if (selection.isSelectedPlotItem()) {
             selection.plotItem->setVisible(!selection.plotItem->isVisible());
             // plotitem可见性改变后，需要通知刷新
             selection.plot->replot();
+            // 刷新树形控件的可见性列显示
+            if (cmw) {
+                cmw->refreshPlotItemVisibility(selection.plotItem);
+            }
         } else if (selection.isSelectedScaleWidget()) {
             bool isAxisVisible = selection.plot->isAxisVisible(selection.axisId);
             selection.plot->setAxisVisible(selection.axisId, !isAxisVisible);
@@ -830,6 +842,10 @@ void DAAppController::onFigureElementDbClicked(const DAFigureElementSelection& s
                         axisSettingWidget->updateUI();
                     }
                 }
+            }
+            // 刷新树形控件的可见性列显示
+            if (cmw) {
+                cmw->refreshAxisVisibility(selection.plot, selection.axisId);
             }
         }
     }

@@ -95,6 +95,68 @@ DAFigureTreeModel* DAFigureTreeView::getFigureTreeModel() const
 }
 
 /**
+ * @brief 刷新指定plotItem的可见性列显示
+ * @param item 需要刷新的plotItem
+ */
+void DAFigureTreeView::refreshPlotItemVisibility(QwtPlotItem* item)
+{
+    DAFigureTreeModel* m = d_ptr->figureModel();
+    if (m) {
+        m->notifyPlotItemVisibilityChanged(item);
+    }
+}
+
+/**
+ * @brief 刷新指定坐标轴的可见性列显示
+ * @param plot 坐标轴所在的plot
+ * @param axisId 坐标轴ID
+ */
+void DAFigureTreeView::refreshAxisVisibility(QwtPlot* plot, QwtAxisId axisId)
+{
+    DAFigureTreeModel* m = d_ptr->figureModel();
+    if (m) {
+        m->notifyAxisVisibilityChanged(plot, axisId);
+    }
+}
+
+/**
+ * @brief 刷新指定plotItem的文字列显示（用于重命名后）
+ * @param item 需要刷新的plotItem
+ */
+void DAFigureTreeView::refreshPlotItemText(QwtPlotItem* item)
+{
+    DAFigureTreeModel* m = d_ptr->figureModel();
+    if (m) {
+        m->notifyPlotItemTextChanged(item);
+    }
+}
+
+/**
+ * @brief 刷新指定坐标轴的文字列显示（用于重命名后）
+ * @param plot 坐标轴所在的plot
+ * @param axisId 坐标轴ID
+ */
+void DAFigureTreeView::refreshAxisText(QwtPlot* plot, QwtAxisId axisId)
+{
+    DAFigureTreeModel* m = d_ptr->figureModel();
+    if (m) {
+        m->notifyAxisTextChanged(plot, axisId);
+    }
+}
+
+/**
+ * @brief 刷新指定chart节点的文字列显示（用于重命名后）
+ * @param plot chart对应的plot
+ */
+void DAFigureTreeView::refreshPlotFolderText(QwtPlot* plot)
+{
+    DAFigureTreeModel* m = d_ptr->figureModel();
+    if (m) {
+        m->notifyPlotFolderTextChanged(plot);
+    }
+}
+
+/**
  * @brief 是否自动适应内容
  * @return
  */

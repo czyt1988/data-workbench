@@ -60,22 +60,9 @@
     </message>
 </context>
 <context>
-    <name>DA</name>
-    <message>
-        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+37"/>
-        <source>Exception in get selected column:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Exception in get selected series:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+71"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+91"/>
         <source>Initializing core interface...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -86,7 +73,7 @@
     </message>
     <message>
         <location line="+22"/>
-        <source>Restore UI State</source>
+        <source>Restore UI state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -105,7 +92,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+19"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -115,7 +102,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+22"/>
         <source>success save ui state to %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -130,7 +117,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+47"/>
+        <location line="+46"/>
         <source>untitle</source>
         <translation type="unfinished"></translation>
     </message>
@@ -151,33 +138,33 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+150"/>
-        <source>restore UI state error:%1</source>
+        <location line="+131"/>
+        <source>failed to restore UI state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>can not read ui state file %1,because %2</source>
+        <location line="+20"/>
+        <source>cannot read UI state file %1: %2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DAActionsInterface</name>
     <message>
-        <location filename="../DAInterface/DAActionsInterface.cpp" line="+117"/>
-        <source>DAAppActionsInterface::recordAction get null action</source>
+        <location filename="../DAInterface/DAActionsInterface.cpp" line="+119"/>
+        <source>DAActionsInterface::recordAction received a null action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>DAAppActionsInterface::recordAction(QAction objname=%1) receive same object name, and the previous record will be overwritten</source>
+        <location line="+6"/>
+        <source>DAActionsInterface::recordAction(QAction objname=%1) received a duplicate object name, the previous record will be overwritten</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+371"/>
+        <location filename="../APP/DAAppActions.cpp" line="+353"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -417,7 +404,7 @@ Vector Field</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>When this feature is selected, operations on the figure will apply to all plots, not just the currently selected one</source>
         <translation type="unfinished"></translation>
     </message>
@@ -862,7 +849,7 @@ Move</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>grouping</source>
         <translation type="unfinished"></translation>
     </message>
@@ -974,7 +961,7 @@ Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Lock the background pixmap in the workflow scene</source>
         <translation type="unfinished"></translation>
     </message>
@@ -984,7 +971,7 @@ Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Enable or disable item move with background pixmap</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1019,51 +1006,7 @@ Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>New 
-Py Workflow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Create a new Python workflow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Open 
-Py Workflow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Open a saved Python workflow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Execute 
-Py Workflow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Execute the Python workflow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Terminate 
-Py Workflow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Terminate the Python workflow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
+        <location line="+4"/>
         <source>Show 
 Workflow Area</source>
         <translation type="unfinished"></translation>
@@ -1225,7 +1168,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+504"/>
+        <location filename="../APP/DAAppController.cpp" line="+538"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1246,49 +1189,75 @@ Config</source>
     </message>
     <message>
         <location line="+9"/>
-        <source>Project saved failed!,path is %1</source>
+        <source>Failed to save project! Path: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+470"/>
-        <source>Project saved successfully,path is %1</source>
+        <location line="+495"/>
+        <source>Project saved successfully, path: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-452"/>
-        <source>Please select the data operation window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+343"/>
-        <source>Question</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Another project already exists. Do you want to replace it?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <location line="+49"/>
-        <source>project file(*.%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-25"/>
+        <location line="-62"/>
         <location line="+42"/>
-        <source>failed to load project file:%1</source>
+        <source>failed to load project file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+37"/>
-        <source>Project load successfully,path is %1</source>
+        <source>Project loaded successfully, path: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+88"/>
+        <location line="+159"/>
+        <source>Image saved successfully to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to save image to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+39"/>
+        <source>received null project interface</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+307"/>
+        <source>Before creating a new coordinate, you need to create a figure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-1000"/>
+        <source>Please select the data operation window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+351"/>
+        <location line="+19"/>
+        <source>Question</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-18"/>
+        <source>The current project has unsaved changes. Do you want to save before opening another project?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Another project already exists. Do you want to replace it?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <location line="+48"/>
+        <source>project file(*.%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+139"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1298,22 +1267,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+73"/>
-        <source>The image was successfully saved in path %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Image save failed at path %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+39"/>
-        <source>get null project</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
+        <location line="+120"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1323,32 +1277,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
-        <source>Create new Python workflow (placeholder)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Open Python workflow (placeholder)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>Execute Python workflow (placeholder)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Terminate Python workflow (placeholder)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+288"/>
-        <source>Before creating a new coordinate,you need to create a figure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+621"/>
+        <location line="+919"/>
         <source>new workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1361,7 +1290,11 @@ Config</source>
 <context>
     <name>DA::DAAppDataManager</name>
     <message>
-        <location filename="../APP/DAAppDataManager.cpp" line="+36"/>
+        <location filename="../APP/DAAppDataManager.cpp" line="+37"/>
+        <source>begin importing file: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+25"/>
         <source>begin import file:%1</source>
         <translation type="unfinished"></translation>
@@ -1428,17 +1361,17 @@ Config</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="../APP/DAAppPluginManager.cpp" line="+70"/>
+        <location filename="../APP/DAAppPluginManager.cpp" line="+72"/>
         <source>succeed load plugin %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+146"/>
+        <location line="+151"/>
         <source>Python interpreter not initialized, skip Python node discovery</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+11"/>
         <source>pyplugins scan completed, found %1 valid Python plugin paths</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1461,38 +1394,22 @@ Config</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+392"/>
-        <location line="+53"/>
-        <source>current project is busy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-50"/>
+        <location filename="../APP/DAAppProject.cpp" line="+465"/>
         <source>Saving project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+27"/>
-        <source>failed to save archive to %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+28"/>
+        <location line="+35"/>
         <source>The file %1 is not a valid project file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+16"/>
         <source>Loading project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+41"/>
-        <source>failed to laod archive from %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
+        <location line="+40"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1502,12 +1419,53 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
-        <source>Project saved failed!,path is %1</source>
+        <location line="-97"/>
+        <location line="+34"/>
+        <source>the current project is busy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+14"/>
+        <source>Creating project snapshot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to backup current project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Failed to back up the current project before loading %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Restoring previous project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to load project, restored previous project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to load project and failed to restore previous project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Failed to restore previous project from snapshot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Failed to save project! Path: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+177"/>
         <source>Save System Info</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1517,17 +1475,32 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+37"/>
+        <source>Failed to serialize workflow &apos;%1&apos; to XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+13"/>
+        <source>Save workflow data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Save Python workflow logic data (nodes, parameters, connections)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
         <source>Save workflow information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Save workflow information, including the hierarchical relationships and rendering effects of workflow graphics elements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+32"/>
         <source>An exception occurred while serializing the dataframe named %1 to %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1537,38 +1510,33 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Save data information, including data names and data organization formats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+16"/>
         <source>Save charts information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Save charts information, including chart name and chart organization formats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <location line="+1"/>
         <source>Save chart items information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+59"/>
-        <source>begin save archive to %1</source>
+        <location line="+310"/>
+        <source>Unable to serialize file %1 into a DataFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>begin load archive from %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
+        <location line="-229"/>
         <source>Loading datas</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1578,47 +1546,84 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
-        <source>Successfully save archive : %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+17"/>
         <source>Project saved successfully</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Failed to save archive : %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="-525"/>
+        <location line="+528"/>
         <source>Failed to save project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
-        <source>Successfully load archive : %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+15"/>
         <source>Project loaded successfully</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Failed to load archive : %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="-489"/>
+        <location line="+493"/>
         <source>Failed to load project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="-64"/>
+        <source>begin saving archive to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>begin loading archive from %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>Successfully saved archive: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed to save archive: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Successfully loaded archive: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Failed to load archive: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+45"/>
+        <source>Failed to parse workflow-data.xml</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Failed to create workflow tab: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Empty Python workflow data for tab: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Failed to deserialize Python workflow: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+57"/>
+        <source>appendWorkflowView: tab &apos;%1&apos; not found, skipping view load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
         <source>Missing data content</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1630,11 +1635,6 @@ Config</source>
     <message>
         <location line="+5"/>
         <source>Unable to find the temporary file corresponding to %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Unable to serialize the file %1 into a Dataframe</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1682,12 +1682,12 @@ Config</source>
     <message>
         <location line="+3"/>
         <location line="+21"/>
-        <location line="+339"/>
+        <location line="+349"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-359"/>
+        <location line="-369"/>
         <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1754,18 +1754,18 @@ Config</source>
     </message>
     <message>
         <location line="-309"/>
-        <location line="+380"/>
+        <location line="+390"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-379"/>
-        <location line="+382"/>
+        <location line="-389"/>
+        <location line="+392"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-380"/>
+        <location line="-390"/>
         <location line="+237"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
@@ -1789,12 +1789,12 @@ Config</source>
     <message>
         <location line="+1"/>
         <location line="+4"/>
-        <location line="+446"/>
+        <location line="+452"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-448"/>
+        <location line="-454"/>
         <source>Chart Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1845,7 +1845,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+28"/>
         <source>Workflow View</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1855,7 +1855,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+24"/>
         <location line="+2"/>
         <source>Chart Operate</source>
         <translation type="unfinished"></translation>
@@ -1880,37 +1880,32 @@ Config</source>
         <source>Recent Files</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location line="+301"/>
-        <source>Python Workflow</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>DA::DAAppUI</name>
     <message>
         <location filename="../APP/DAAppUI.cpp" line="+72"/>
-        <source>Failed to load JSON config for settings dialog</source>
+        <source>Failed to load form config for settings dialog</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DAAxObjectExcelWrapper</name>
     <message>
-        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+113"/>
-        <source>can not initialize OLE,error code:</source>
+        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+114"/>
+        <source>cannot initialize OLE, error code: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
-        <source>can not query subobject &apos;Workbooks&apos;</source>
+        <location line="+12"/>
+        <source>cannot query subobject &apos;Workbooks&apos;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DAChartAddOHLCSeriesWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddOHLCSeriesWidget.cpp" line="+37"/>
+        <location filename="../DAGui/DAChartAddOHLCSeriesWidget.cpp" line="+38"/>
         <source>Time</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2012,7 +2007,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddXYESeriesWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddXYESeriesWidget.cpp" line="+21"/>
+        <location filename="../DAGui/DAChartAddXYESeriesWidget.cpp" line="+22"/>
         <source>x</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2119,7 +2114,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddXYSeriesWidget.cpp" line="+23"/>
+        <location filename="../DAGui/DAChartAddXYSeriesWidget.cpp" line="+24"/>
         <source>x</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2751,7 +2746,7 @@ Config</source>
 <context>
     <name>DA::DAChartItemSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartItemSettingPanel.cpp" line="+72"/>
+        <location filename="../DAGui/ChartSetting/DAChartItemSettingPanel.cpp" line="+74"/>
         <source>Lines</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2776,7 +2771,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+27"/>
         <source>Horizontal</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2786,7 +2781,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+46"/>
         <source>Y Left</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2806,7 +2801,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+57"/>
         <source>Normal</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2994,13 +2989,54 @@ Config</source>
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/DAChartManageWidget.cpp" line="+204"/>
-        <source>get figure create signal,but can not find figure index</source>
+        <location filename="../DAGui/DAChartManageWidget.cpp" line="+356"/>
+        <source>received figure create signal, but cannot find figure index</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+24"/>
+        <source>received figure close signal, but cannot find figure index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-292"/>
+        <location line="+468"/>
+        <location line="+17"/>
         <location line="+20"/>
-        <source>get figure close signal,but can not find figure index</source>
+        <source>Rename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-504"/>
+        <source>Visible</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <location line="+588"/>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-127"/>
+        <source>chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <location line="+17"/>
+        <location line="+20"/>
+        <source>New name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+86"/>
+        <source>Are you sure to delete &quot;%1&quot;?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3068,7 +3104,7 @@ Config</source>
 <context>
     <name>DA::DAChartSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+183"/>
+        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+196"/>
         <source>Chart Area</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3136,7 +3172,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <source>Display Mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3151,7 +3187,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Color</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3358,60 +3394,6 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DACommonPropertySettingDialog</name>
-    <message>
-        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.cpp" line="+509"/>
-        <source>JSON string is empty</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Config json parse error:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>JSON object is empty</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <source>Properties array is empty</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Missing &apos;properties&apos; field in JSON config</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+84"/>
-        <location line="+32"/>
-        <source>Property not found:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Invalid value for property:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Value not found in enum items for property:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Type mismatch for property:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+53"/>
-        <source>Failed to load JSON config for settings dialog</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::DACoreInterface</name>
     <message>
         <location filename="../DAInterface/DACoreInterface.cpp" line="+68"/>
@@ -3425,27 +3407,27 @@ Config</source>
     </message>
     <message>
         <location line="+8"/>
-        <source>Scripts initialize error</source>
+        <source>Failed to initialize scripts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
-        <source>Initialize python environment error:%1</source>
+        <source>Failed to initialize Python environment: %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DADataManageTableView</name>
     <message>
-        <location filename="../DAGui/DADataManageTableView.cpp" line="+88"/>
-        <source>The item is selected in the data management table, but the corresponding data cannot be obtained</source>
+        <location filename="../DAGui/DADataManageTableView.cpp" line="+89"/>
+        <source>An item is selected in the data management table, but the corresponding data cannot be obtained</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DADataManageWidget</name>
     <message>
-        <location filename="../DAGui/DADataManageWidget.cpp" line="+76"/>
+        <location filename="../DAGui/DADataManageWidget.cpp" line="+77"/>
         <source>Please select the data item to remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3453,8 +3435,8 @@ Config</source>
 <context>
     <name>DA::DADataManager</name>
     <message>
-        <location filename="../DAData/DADataManager.cpp" line="+54"/>
-        <source>data:%1 have been added</source>
+        <location filename="../DAData/DADataManager.cpp" line="+56"/>
+        <source>data &apos;%1&apos; has been added</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3512,7 +3494,7 @@ Config</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+170"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+169"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3522,7 +3504,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+36"/>
         <source>please select valid data cells</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3532,25 +3514,25 @@ Config</source>
         <location line="+35"/>
         <location line="+41"/>
         <location line="+42"/>
-        <source>please select valid column</source>
+        <source>please select a valid column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-200"/>
-        <source>please select valid cell</source>
+        <source>please select a valid cell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+42"/>
-        <source>table have not column</source>
+        <source>table has no columns</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateWidget.cpp" line="+200"/>
-        <source>removing a widget that does not exist in tab</source>
+        <location filename="../DAGui/DADataOperateWidget.cpp" line="+201"/>
+        <source>removing a widget that does not exist in the tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3562,15 +3544,15 @@ Config</source>
 <context>
     <name>DA::DADataTableView</name>
     <message>
-        <location filename="../DAGui/DADataTableView.cpp" line="+21"/>
-        <source>DADataTableView must set model first</source>
+        <location filename="../DAGui/DADataTableView.cpp" line="+22"/>
+        <source>DADataTableView requires a model to be set first</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DADataframeToVectorPointWidget</name>
     <message>
-        <location filename="../DAGui/DADataframeToVectorPointWidget.cpp" line="+14"/>
+        <location filename="../DAGui/DADataframeToVectorPointWidget.cpp" line="+15"/>
         <source>x</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3657,12 +3639,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+27"/>
         <source>chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+52"/>
         <source>Axis</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3675,7 +3657,7 @@ Config</source>
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+854"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+845"/>
         <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3730,7 +3712,7 @@ Config</source>
 <context>
     <name>DA::DAMessageLogViewWidget</name>
     <message>
-        <location filename="../DAGui/DAMessageLogViewWidget.cpp" line="+295"/>
+        <location filename="../DAGui/DAMessageLogViewWidget.cpp" line="+293"/>
         <source>Info</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3783,7 +3765,7 @@ Config</source>
 <context>
     <name>DA::DAMessageLogsModel</name>
     <message>
-        <location filename="../DAGui/Models/DAMessageLogsModel.cpp" line="+68"/>
+        <location filename="../DAGui/Models/DAMessageLogsModel.cpp" line="+66"/>
         <source>date time</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3797,23 +3779,71 @@ Config</source>
 <context>
     <name>DA::DANodeLinkItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DANodeLinkItemSettingWidget.cpp" line="+21"/>
+        <location filename="../DAGui/DANodeLinkItemSettingWidget.cpp" line="+33"/>
+        <source>pen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>link style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Knuckle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Straight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Bezier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+144"/>
+        <location line="+6"/>
+        <source>end point size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>front style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>end style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+135"/>
         <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DANodeSettingWidget</name>
+    <message>
+        <location filename="../DAGui/DANodeSettingWidget.cpp" line="+126"/>
+        <source>Meta Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Prototype</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3828,28 +3858,28 @@ Config</source>
 <context>
     <name>DA::DAPluginManager</name>
     <message>
-        <location filename="../DAPluginSupport/DAPluginManager.cpp" line="+54"/>
-        <source>The file .pluginignore exists, but it failed to read due to the following reason:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
+        <location filename="../DAPluginSupport/DAPluginManager.cpp" line="+81"/>
         <source>No plugins ignore files, a %1 file will be automatically generated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+64"/>
-        <source>plugin dir is:%1</source>
+        <location line="-26"/>
+        <source>The file .pluginignore exists, but failed to read due to the following reason: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+89"/>
+        <source>plugin directory is: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+21"/>
-        <source>ignore plugin %1</source>
+        <source>ignoring plugin %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+5"/>
-        <source> ignore invalid file:%1</source>
+        <source>ignoring invalid file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3873,7 +3903,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+39"/>
         <source>Plugin Manager Info:is loaded=%1,plugin counts=%2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4072,98 +4102,61 @@ Config</source>
 <context>
     <name>DA::DAPyDataFrameTableView</name>
     <message>
-        <location filename="../DAGui/DAPyDataFrameTableView.cpp" line="+31"/>
-        <source>DataFrameTableView must set model first</source>
+        <location filename="../DAGui/DAPyDataFrameTableView.cpp" line="+32"/>
+        <source>DataFrameTableView requires a model to be set first</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DAPyDataframeColumnsListWidget</name>
     <message>
-        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+20"/>
+        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+38"/>
+        <source>Exception in get selected column:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <location line="+20"/>
         <source>Exception in get selected series:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAPyNodeConfigDialog</name>
-    <message>
-        <location filename="../DAGui/DAPyNodeConfigDialog.cpp" line="+75"/>
-        <location line="+69"/>
-        <source>节点参数配置</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-57"/>
-        <source>节点配置</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>确定</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>取消</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>应用</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+39"/>
-        <source>节点参数配置 - %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAPyNodeWidget</name>
-    <message>
-        <location filename="../DAGui/DAPyNodeWidget.cpp" line="+206"/>
-        <location line="+17"/>
-        <source>节点参数配置</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DAPyWorkFlowEditWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowEditWidget.cpp" line="+102"/>
-        <source>no workflow set</source>
+        <location filename="../DAGui/DAPyWorkFlowEditWidget.cpp" line="+105"/>
+        <source>no workflow has been set</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DAPyWorkFlowGraphicsView</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowGraphicsView.cpp" line="+219"/>
+        <location filename="../DAGui/DAPyWorkFlowGraphicsView.cpp" line="+228"/>
         <source>cut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+29"/>
-        <source>Unrecognized mime formats:%1,paste failed</source>
+        <source>Unrecognized mime formats: %1, paste failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+10"/>
+        <source>An exception occurred while parsing and pasting content</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-5"/>
         <source>Unsupported pasted content</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>An exception occurred during the process of parsing and pasting content</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DAPyWorkFlowNodeItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowNodeItemSettingWidget.cpp" line="+296"/>
-        <source>property</source>
+        <location filename="../DAGui/DAPyWorkFlowNodeItemSettingWidget.cpp" line="+39"/>
+        <source>参数</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4183,7 +4176,7 @@ Config</source>
 <context>
     <name>DA::DAPyWorkFlowOperateWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowOperateWidget.cpp" line="+142"/>
+        <location filename="../DAGui/DAPyWorkFlowOperateWidget.cpp" line="+150"/>
         <source>Title of new workflow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4193,7 +4186,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+176"/>
+        <location line="+193"/>
         <source>question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4203,17 +4196,10 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+144"/>
+        <location line="+185"/>
         <location line="+13"/>
+        <location line="+15"/>
         <location line="+14"/>
-        <source>Loss View</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <location line="+13"/>
-        <location line="+19"/>
-        <location line="+19"/>
         <location line="+13"/>
         <location line="+13"/>
         <location line="+13"/>
@@ -4223,19 +4209,20 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-519"/>
-        <location line="+19"/>
-        <source>Unable to get workflow correctly</source>
+        <location line="-569"/>
+        <location line="+13"/>
+        <location line="+14"/>
+        <source>Missing view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-15"/>
-        <source>Workflow execution not yet implemented via DAPyWorkFlowExecuter</source>
+        <location line="+31"/>
+        <source>Workflow execution failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+19"/>
-        <source>Workflow termination not yet implemented via DAPyWorkFlowExecuter</source>
+        <location line="+15"/>
+        <source>Workflow termination has not been implemented yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4336,57 +4323,52 @@ Config</source>
 <context>
     <name>DA::DAPyWorkFlowScene</name>
     <message>
-        <location filename="../DAPyWorkFlow/DAPyWorkFlowScene.cpp" line="+168"/>
-        <source>DAPyWorkFlowScene::createPyNode: Python workflow is not set</source>
+        <location filename="../DAPyWorkFlow/DAPyWorkFlowScene.cpp" line="+122"/>
+        <source>DAPyWorkFlowScene::syncPyNodeRegister: registerNode failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
-        <source>DAPyWorkFlowScene::createPyNode: descriptor missing qualified_name</source>
+        <location line="+61"/>
+        <source>DAPyWorkFlowScene::addPyNodeLink: connectNode failed, no valid connectionId</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
-        <source>DAPyWorkFlowScene::createPyNode: workflow object is invalid</source>
+        <location line="+41"/>
+        <source>DAPyWorkFlowScene::removePyNodeLink: disconnectNode failed for connectionId: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+146"/>
+        <source>DAPyWorkFlowScene::createPyNode: Manager or workflow is not set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>DAPyWorkFlowScene::createPyNode: invalid metadata (qualified_name: %1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>DAPyWorkFlowScene::createPyNode: invalid qualified_name: %1</source>
+        <source>DAPyWorkFlowScene::createPyNode: factory failed to create proxy for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
-        <source>DAPyWorkFlowScene::createPyNode: Python error: %1</source>
+        <location line="+7"/>
+        <source>DAPyWorkFlowScene::createPyNode: addNode failed for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+106"/>
-        <source>DAPyWorkFlowScene::removePyNodeItem: Python error removing connection: %1</source>
+        <location line="+135"/>
+        <source>Remove Node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
-        <source>DAPyWorkFlowScene::removePyNodeItem: Python error removing node: %1</source>
+        <location line="+497"/>
+        <source>Remove Selected Items</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+220"/>
-        <source>DAPyWorkFlowScene::addPyNodeLink: Python error: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+67"/>
-        <source>DAPyWorkFlowScene::removePyNodeLink: Python error: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+152"/>
-        <source>DAPyWorkFlowScene::clearPyScene: Python error: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+35"/>
+        <location line="+271"/>
         <source>DAPyWorkFlowScene::saveToXml 失败: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4401,7 +4383,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+21"/>
         <source>DAPyWorkFlowScene::saveToFile 失败: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4450,7 +4432,7 @@ Config</source>
 <context>
     <name>DA::DASettingPageCommon</name>
     <message>
-        <location filename="../APP/SettingPages/DASettingPageCommon.cpp" line="+67"/>
+        <location filename="../APP/SettingPages/DASettingPageCommon.cpp" line="+68"/>
         <source>common</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4466,15 +4448,15 @@ Config</source>
     </message>
     <message>
         <location line="+8"/>
-        <source>sucess remove window state record file</source>
+        <source>successfully removed window state record file</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DASettingWidget</name>
     <message>
-        <location filename="../DACommonWidgets/DASettingWidget.cpp" line="+96"/>
-        <source>page changed,but can not catch the sender widget</source>
+        <location filename="../DAGui/DASettingWidget.cpp" line="+97"/>
+        <source>page changed, but cannot identify the sender widget</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4520,59 +4502,6 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DATimeFormatEditWidget</name>
-    <message>
-        <location filename="../DACommonWidgets/DATimeFormatEditWidget.cpp" line="+40"/>
-        <source>example: 8:5</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>example: 08:05</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>example: 8:5:12</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>example: 08:05:12</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>example: 2017-8-1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>example: 2017-8-1 8:5</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>example: 2017-8-1 8:5:12</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>example: 2017-08-01</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>example: 2017-08-01 08:05</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>example: 2017-08-01 08:05:12</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::DAToolBox</name>
     <message>
         <location filename="../DAGui/DAToolBox.cpp" line="+88"/>
@@ -4583,8 +4512,8 @@ Config</source>
 <context>
     <name>DA::DATreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DATreeModel.cpp" line="+113"/>
-        <source>DATreeModel get invalid item</source>
+        <location filename="../DAGui/Models/DATreeModel.cpp" line="+114"/>
+        <source>DATreeModel encountered invalid item</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4723,50 +4652,9 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DAAligmentEditWidget</name>
-    <message>
-        <location filename="../DACommonWidgets/DAAligmentEditWidget.ui" line="+20"/>
-        <source>Aligment Edit Widget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+21"/>
-        <source>Aligment Left</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Aligment Right</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Aligment Top</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Aligment Bottom</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Aligment Center</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DAAligmentPositionEditWidget</name>
-    <message>
-        <location filename="../DACommonWidgets/DAAligmentPositionEditWidget.ui" line="+20"/>
-        <source>Aligment Position</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-2137"/>
+        <location filename="../APP/DAAppController.cpp" line="-2120"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4781,14 +4669,6 @@ Config</source>
     <message>
         <location line="+1"/>
         <source>The current function is not implemented, only the UI is reserved, please pay attention: https://gitee.com/czyt1988/data-work-flow</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DABrushEditWidget</name>
-    <message>
-        <location filename="../DACommonWidgets/DABrushEditWidget.ui" line="+20"/>
-        <source>Brush Edit</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5091,14 +4971,6 @@ Config</source>
     <message>
         <location line="+7"/>
         <source>Outline</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DACommonPropertySettingDialog</name>
-    <message>
-        <location filename="../DACommonWidgets/DACommonPropertySettingDialog.ui" line="+14"/>
-        <source>Dialog</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5571,34 +5443,8 @@ Config</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-773"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-764"/>
         <source>Figure</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DAFilePathEditWidget</name>
-    <message>
-        <location filename="../DACommonWidgets/DAFilePathEditWidget.ui" line="+14"/>
-        <source>File Path Edit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>Open</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Ctrl+O</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DAFontEditPannelWidget</name>
-    <message>
-        <location filename="../DACommonWidgets/DAFontEditPannelWidget.ui" line="+26"/>
-        <source>Font Edit</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5774,19 +5620,6 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DAPenEditWidget</name>
-    <message>
-        <location filename="../DACommonWidgets/DAPenEditWidget.cpp" line="+120"/>
-        <source>Pen Editor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source> px</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DAPluginManagerDialog</name>
     <message>
         <location filename="../APP/DAPluginManagerDialog.ui" line="+14"/>
@@ -5906,14 +5739,6 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DAPyWorkFlowSceneSerializer</name>
-    <message>
-        <location filename="../DAPyWorkFlow/DAPyWorkFlowSceneSerializer.cpp" line="+121"/>
-        <source>scene或doc指针为空</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DARenameColumnsNameDialog</name>
     <message>
         <location filename="../DAGui/Dialog/DARenameColumnsNameDialog.ui" line="+14"/>
@@ -5947,7 +5772,7 @@ Config</source>
 <context>
     <name>DASettingDialog</name>
     <message>
-        <location filename="../DACommonWidgets/DASettingDialog.ui" line="+14"/>
+        <location filename="../DAGui/DASettingDialog.ui" line="+14"/>
         <source>Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6028,49 +5853,8 @@ Config</source>
 <context>
     <name>DASettingWidget</name>
     <message>
-        <location filename="../DACommonWidgets/DASettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/DASettingWidget.ui" line="+14"/>
         <source>Setting</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DAShapeEditPannelWidget</name>
-    <message>
-        <location filename="../DACommonWidgets/DAShapeEditPannelWidget.ui" line="+14"/>
-        <source>Shape Edit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+21"/>
-        <source>Border</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+27"/>
-        <source>Fill</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DATimeFormatEditWidget</name>
-    <message>
-        <location filename="../DACommonWidgets/DATimeFormatEditWidget.ui" line="+26"/>
-        <source>Time Format Set</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>select time format：</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>example:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+28"/>
-        <source>TextLabel</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6917,27 +6701,27 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DataframeIOWorker</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataframeIOWorker.cpp" line="+55"/>
+        <location filename="../../plugins/DataAnalysis/DataframeIOWorker.cpp" line="+57"/>
         <source>No data is selected. Please select the data to export first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+13"/>
         <source>Export Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+18"/>
         <source>Successfully exported %1 to %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+116"/>
+        <location line="+115"/>
         <source>%1 . Elapsed: %2:%3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+20"/>
         <source>%1,Cost %2:%3</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6978,42 +6762,42 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../APP/main.cpp" line="+101"/>
+        <location filename="../APP/main.cpp" line="+104"/>
         <source>Initializing...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+5"/>
         <source>Initializing core components...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Kernel initialization failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+9"/>
         <source>Loading user interface...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+10"/>
         <source>Opening project...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+8"/>
         <source>Importing data...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+9"/>
         <source>Ready</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+85"/>
+        <location line="+91"/>
         <source>Python interpreter path is %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7023,36 +6807,20 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+49"/>
-        <location line="+37"/>
-        <source>can not open config file &quot;%1&quot;,because %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-28"/>
-        <source>can not load config file &quot;%1&quot;,because %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>config file(%1) loss &lt;configs&gt; tag</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+72"/>
-        <location line="+29"/>
-        <source>unable initialize %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-24"/>
+        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+78"/>
         <source>file &quot;%1&quot; does not exist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="-5"/>
+        <location line="+29"/>
+        <source>failed to initialize %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-17"/>
         <location line="+24"/>
-        <source>can not get excel workbook</source>
+        <source>cannot get Excel workbook</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7064,136 +6832,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="-17"/>
         <source>can not open excel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DACommonWidgets/DABrushStyleComboBox.cpp" line="+43"/>
-        <source>No Brush</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Solid Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Dense1 Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Dense2 Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Dense3 Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Dense4 Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Dense5 Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Dense6 Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Dense7 Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Hor Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Ver Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Cross Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Backward Diagonal Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Forward Diagonal Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Crossing Diagonal Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Linear Gradient Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Conical Gradient Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Radial Gradient Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Texture Pattern</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DACommonWidgets/DAPenStyleComboBox.cpp" line="+54"/>
-        <source>No Pen</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Solid Line</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Dash Line</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Dot Line</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Dash Dot Line</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Dash Dot Dot Line</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Custom Dash Line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7363,7 +7001,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+50"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+48"/>
         <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7490,13 +7128,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGraphicsView/DAGraphicsItemFactory.cpp" line="+68"/>
+        <location filename="../DAGraphicsView/DAGraphicsItemFactory.cpp" line="+69"/>
         <source>Class name %1 not registered to item factory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+13"/>
-        <source>type %1 not registered to item factory</source>
+        <source>Type %1 not registered to item factory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7552,12 +7190,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowRibbonGroup.cpp" line="+84"/>
-        <source>Python Workflow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+146"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+152"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7588,156 +7221,208 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location line="+3"/>
-        <location line="+90"/>
-        <source>load nodes occurce error</source>
+        <location line="+277"/>
+        <source>error occurred while loading nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-88"/>
+        <location line="-272"/>
+        <location line="+275"/>
+        <source>error occurred while loading node links</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-270"/>
+        <source>error occurred while loading special items</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>error occurred while loading scene info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-13"/>
         <source>load workflow nodes cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+88"/>
-        <source>load nodes link occurce error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-86"/>
+        <location line="+5"/>
         <source>load workflow links cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>load special item occurce error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>load special item cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>load scene info occurce error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>load secen info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+37"/>
+        <source>loadNodesView: error occurred</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>loadNodeLinksView: error occurred</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>loadCommonItems: error occurred</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>loadSceneInfo: error occurred</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>loadNodesView: manager or workflow is not valid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>loadNodesView: node element missing id attribute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>loadNodesView: node_id=%1 not found in Python workflow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>loadNodesView: wrapPyNode failed for node_id=%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+54"/>
+        <source>loadNodeLinksView: cannot find nodes for link (from=%1, to=%2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>loadNodeLinksView: wrapPyNodeLink failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <location line="+6"/>
+        <location line="+654"/>
+        <location line="+6"/>
+        <location line="+85"/>
+        <location line="+6"/>
+        <source>link item failed to load from xml</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-676"/>
         <source>Load Nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+11"/>
-        <source>load items occurce error</source>
+        <source>error occurred while loading items</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+179"/>
+        <location line="+75"/>
+        <source>node missing id attribute, will skip this node</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+132"/>
+        <location line="+20"/>
+        <source>node(prototype=%1,name=%2) %3 tag is missing child tag &lt;name&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+108"/>
+        <source>link item failed to save to xml</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <location line="+9"/>
+        <location line="+69"/>
+        <location line="+21"/>
+        <source>link info: cannot find node in scene, id = %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+459"/>
+        <source>An exception occurred during the process of parsing and pasting content, missing workflow tag</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+42"/>
+        <source>Cannot create item by class name:%1, maybe unregistered to DAGraphicsItemFactory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+185"/>
+        <source>unknown exception: get null figure widget at %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+875"/>
+        <source>The attribute %1=%2 under the tag %3 cannot be converted to double</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-2161"/>
         <source>Skipping legacy factory info (%1 entries)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+139"/>
-        <location line="+70"/>
-        <source>node&apos;s id=%1 can not conver to qulonglong type ,will skip this node</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-56"/>
-        <location line="+70"/>
+        <location line="+155"/>
+        <location line="+75"/>
         <source>Unable to create node by prototype=%1,name=%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-63"/>
-        <location line="+70"/>
+        <location line="-69"/>
+        <location line="+75"/>
         <source>Node item has no proxy, prototype=%1,name=%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+101"/>
-        <location line="+18"/>
-        <source>node(prototype=%1,name=%2) %3 tag loss child tag &lt;name&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+191"/>
-        <source>linkitem save to xml return false</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+33"/>
-        <location line="+8"/>
-        <location line="+70"/>
-        <location line="+18"/>
-        <source>link info can not find node in scene,id = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-81"/>
-        <location line="+88"/>
+        <location line="+281"/>
+        <location line="+91"/>
         <source>Unable to link to node %3&apos;s link point %4 through link point %2 of node %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-80"/>
-        <location line="+6"/>
-        <location line="+82"/>
-        <location line="+6"/>
-        <source>linkitem load from xml return false</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-47"/>
-        <location line="+18"/>
+        <location line="-39"/>
+        <location line="+21"/>
         <source>During the pasting process, the mapping corresponding to ID(%1) cannot be found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+129"/>
+        <location line="+131"/>
         <source>Unable to generate graphics item element during the saveing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+26"/>
         <source>Unable to load item information from &lt;%1&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+244"/>
+        <location line="+260"/>
         <source>current workflow file version:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+45"/>
         <source>An exception occurred during the process of processing pasted content XML, with the root node missing the type attribute</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>An exception occurred during the process of parsing and pasting content,miss workflow tag</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+43"/>
-        <source>Cannot create item by class name:%1,maybe unregist to DAGraphicsItemFactory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+183"/>
-        <source>unknow except:get null figure widget at %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+880"/>
-        <source>The attribute %1=%2 under the tag %3 cannot be converted to double </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7796,17 +7481,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAZipArchiveTask_Xml.cpp" line="+56"/>
-        <source>can not create archive at &quot;%1&quot;,because %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-303"/>
         <source>%1.%2,size:%3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPluginSupport/DAPluginOption.cpp" line="+97"/>
+        <location filename="../DAPluginSupport/DAPluginOption.cpp" line="+98"/>
         <source>Failed to load %1 (Reason: %2)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7816,8 +7496,8 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>Failed to cast plugin to DA plugin %1</source>
+        <location line="+11"/>
+        <source>Failed to cast to DA plugin interface: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7837,68 +7517,22 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location line="+4"/>
-        <source>success load plugin %1,but failed to initialize</source>
+        <source>successfully loaded plugin %1, but failed to initialize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+98"/>
+        <location line="+99"/>
         <source>plugin file name:%1,iid:%2,name:%3,description:%4,version:%5,error string:%6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPyIndex.cpp" line="+204"/>
-        <source>DAPyIndex get python object type is not pandas.Index</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DAPyBindQt/pandas/DAPyModulePandas.cpp" line="+163"/>
-        <source>use utf-8 open file %1 error,try to use ansi encoding</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+373"/>
-        <source>DAPySeries  get python object type is not pandas.Series</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DAPyScripts/DAPyScripts.cpp" line="+19"/>
+        <location filename="../DAPyScripts/DAPyScripts.cpp" line="+20"/>
         <source>DAPyInterpreter is not initialized</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+47"/>
-        <source>Initialized import scripts error:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DAPyScripts/DAPyScriptsDataFrame.cpp" line="+14"/>
-        <source>can not import da_dataframe module</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="+74"/>
-        <source>can not import DAWorkBench.io</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DAPyScripts/DAPyScriptsDataProcess.cpp" line="+10"/>
-        <source>can not import da_data_processing module</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>can not import DAWorkBench.data_processing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="-9"/>
-        <source>can not import da_io module</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DAPyScripts/DAPyWorkBench.cpp" line="+36"/>
-        <source>can not import DAWorkbench module</source>
+        <source>Failed to initialize import scripts: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8016,22 +7650,153 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>data query</source>
         <translation type="unfinished"></translation>
     </message>
-</context>
-<context>
-    <name>main</name>
     <message>
-        <location filename="../APP/main.cpp" line="-73"/>
-        <source>version:%1,compile datetime:%2,enable python:%3</source>
+        <location filename="../DAPyWorkFlow/DAPyNodeFactory.cpp" line="+216"/>
+        <source>DA Python Node Factory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Python工作流节点工厂，通过DANodeRegistry发现和创建Python定义的节点</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAPyWorkFlow/DAPyWorkFlowUndoCommands.cpp" line="+22"/>
+        <source>Add Node</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+59"/>
+        <source>Remove Node</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+47"/>
+        <source>Add Link</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+45"/>
+        <source>Remove Link</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAUtils/DAFormSchemaIO.cpp" line="+30"/>
+        <source>field missing required &apos;name&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+140"/>
+        <source>&apos;items&apos; must be an array</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAPyScripts/DAPyScriptsDataFrame.cpp" line="+15"/>
+        <source>cannot import da_dataframe module</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>cannot import DAWorkbench.dataframe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAPyScripts/DAPyScriptsDataProcess.cpp" line="+11"/>
+        <source>cannot import da_data_processing module</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>cannot import DAWorkbench.data_processing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAPyScripts/DAPyScriptsIO.cpp" line="+66"/>
+        <source>cannot import da_io module</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
+        <source>cannot import DAWorkbench.io</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAPyScripts/DAPyWorkBench.cpp" line="+37"/>
+        <source>cannot import DAWorkbench module</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAPyBindQt/pandas/DAPyIndex.cpp" line="+205"/>
+        <source>DAPyIndex: the Python object type is not pandas.Index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAPyBindQt/pandas/DAPyModulePandas.cpp" line="+164"/>
+        <source>failed to open file %1 with UTF-8, trying ANSI encoding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+377"/>
+        <source>DAPySeries: the Python object type is not pandas.Series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAGui/DAFormEditorRegistry.cpp" line="+376"/>
+        <source>添加</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>删除</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>新项目</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAGui/DAZipArchiveTask_Xml.cpp" line="+57"/>
+        <source>cannot create archive at &quot;%1&quot;, because %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+50"/>
+        <location line="+37"/>
+        <source>cannot open config file &quot;%1&quot;: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-28"/>
+        <source>cannot load config file &quot;%1&quot;: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>config file (%1) is missing the &lt;configs&gt; tag</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>main</name>
+    <message>
+        <location filename="../APP/main.cpp" line="-76"/>
+        <source>version:%1,compile datetime:%2,enable python:%3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>The project file to open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Import data into the application, supporting formats such as CSV, XLSX, TXT, PKL, etc.If you want to import multiple datasets, you can use the command multiple times; the program will execute them one by one</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -89,6 +89,18 @@ public:
     virtual QIcon generatePlotItemIcon(QwtPlotItem* item) const;
     // 创建一个纯颜色图标
     virtual QIcon generateBrushIcon(const QBrush& b) const;
+
+    // 通知指定plotItem的可见性列刷新（触发dataChanged信号）
+    void notifyPlotItemVisibilityChanged(QwtPlotItem* item);
+    // 通知指定坐标轴的可见性列刷新（触发dataChanged信号）
+    void notifyAxisVisibilityChanged(QwtPlot* plot, QwtAxisId axisId);
+    // 通知指定plotItem的文字列刷新（用于重命名后刷新显示）
+    void notifyPlotItemTextChanged(QwtPlotItem* item);
+    // 通知指定坐标轴的文字列刷新（用于重命名后刷新显示）
+    void notifyAxisTextChanged(QwtPlot* plot, QwtAxisId axisId);
+    // 通知指定chart节点的文字列刷新（用于重命名后刷新显示）
+    void notifyPlotFolderTextChanged(QwtPlot* plot);
+
 Q_SIGNALS:
     void chartItemAttached(QwtPlotItem* item, bool on);
 private Q_SLOTS:

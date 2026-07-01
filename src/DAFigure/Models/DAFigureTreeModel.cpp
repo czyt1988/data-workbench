@@ -113,7 +113,12 @@ void DAFigureTreeModel::addPlotToModel(QwtPlot* plot, QStandardItem* parentItem)
 
     // 创建绘图节点 - 三列
     static QIcon s_plot_icon = QIcon(":/DAFigure/icon/chart.svg");
-    QStandardItem* plotItem  = new QStandardItem(tr("chart"));  // cn:绘图
+    // 优先使用plot的title作为显示文字，为空时回退到默认"chart"
+    QString chartText = plot->title().text();
+    if (chartText.isEmpty()) {
+        chartText = tr("chart");  // cn:绘图
+    }
+    QStandardItem* plotItem = new QStandardItem(chartText);
     plotItem->setData(QVariant::fromValue(reinterpret_cast< quintptr >(plot)), RolePlot);
     plotItem->setData(NodeTypePlotFolder, RoleNodeType);
     plotItem->setIcon(s_plot_icon);
@@ -487,6 +492,142 @@ QStandardItem* DAFigureTreeModel::findItemsFolderForPlot(QStandardItem* plotItem
         }
     }
     return nullptr;
+}
+
+/**
+ * @brief 通知指定plotItem的可见性列刷新
+ *
+ * 通过发出dataChanged信号让视图重新请求可见性列的data(),
+ * 从而刷新可见性图标的显示
+ * @param item 需要刷新的plotItem
+ */
+void DAFigureTreeModel::notifyPlotItemVisibilityChanged(QwtPlotItem* item)
+{
+    if (!item) {
+        return;
+    }
+    QStandardItem* itemNode = m_plotItemItems.value(item, nullptr);
+    if (!itemNode || !itemNode->parent()) {
+        return;
+    }
+    int row = itemNode->row();
+    QStandardItem* visibleItem = itemNode->parent()->child(row, 1);
+    if (visibleItem) {
+        QModelIndex idx = indexFromItem(visibleItem);
+        Q_EMIT dataChanged(idx, idx, { Qt::DecorationRole });
+    }
+}
+
+/**
+ * @brief 通知指定坐标轴的可见性列刷新
+ * @param plot 坐标轴所在的plot
+ * @param axisId 坐标轴ID
+ */
+void DAFigureTreeModel::notifyAxisVisibilityChanged(QwtPlot* plot, QwtAxisId axisId)
+{
+    if (!plot) {
+        return;
+    }
+    QStandardItem* layerItem = m_plotItems.value(plot, nullptr);
+    if (!layerItem) {
+        return;
+    }
+    // 在layer下查找AxesFolder
+    for (int i = 0; i < layerItem->rowCount(); ++i) {
+        QStandardItem* folderItem = layerItem->child(i);
+        if (itemType(folderItem) == NodeTypeAxesFolder) {
+            // 在AxesFolder下查找对应的axis
+            for (int j = 0; j < folderItem->rowCount(); ++j) {
+                QStandardItem* axisItem = folderItem->child(j);
+                if (axisIdFromItem(axisItem) == axisId) {
+                    QStandardItem* visibleItem = folderItem->child(j, 1);
+                    if (visibleItem) {
+                        QModelIndex idx = indexFromItem(visibleItem);
+                        Q_EMIT dataChanged(idx, idx, { Qt::DecorationRole });
+                    }
+                    return;
+                }
+            }
+        }
+    }
+}
+
+/**
+ * @brief 通知指定plotItem的文字列刷新（用于重命名后）
+ * @param item 需要刷新的plotItem
+ */
+void DAFigureTreeModel::notifyPlotItemTextChanged(QwtPlotItem* item)
+{
+    if (!item) {
+        return;
+    }
+    QStandardItem* itemNode = m_plotItemItems.value(item, nullptr);
+    if (!itemNode || !itemNode->parent()) {
+        return;
+    }
+    int row = itemNode->row();
+    // 刷新第一列(名称列)
+    QStandardItem* textItem = itemNode->parent()->child(row, 0);
+    if (textItem) {
+        QModelIndex idx = indexFromItem(textItem);
+        Q_EMIT dataChanged(idx, idx, { Qt::DisplayRole, Qt::DecorationRole });
+    }
+}
+
+/**
+ * @brief 通知指定坐标轴的文字列刷新（用于重命名后）
+ * @param plot 坐标轴所在的plot
+ * @param axisId 坐标轴ID
+ */
+void DAFigureTreeModel::notifyAxisTextChanged(QwtPlot* plot, QwtAxisId axisId)
+{
+    if (!plot) {
+        return;
+    }
+    QStandardItem* layerItem = m_plotItems.value(plot, nullptr);
+    if (!layerItem) {
+        return;
+    }
+    for (int i = 0; i < layerItem->rowCount(); ++i) {
+        QStandardItem* folderItem = layerItem->child(i);
+        if (itemType(folderItem) == NodeTypeAxesFolder) {
+            for (int j = 0; j < folderItem->rowCount(); ++j) {
+                QStandardItem* axisItem = folderItem->child(j);
+                if (axisIdFromItem(axisItem) == axisId) {
+                    QStandardItem* textItem = folderItem->child(j, 0);
+                    if (textItem) {
+                        QModelIndex idx = indexFromItem(textItem);
+                        Q_EMIT dataChanged(idx, idx, { Qt::DisplayRole, Qt::DecorationRole });
+                    }
+                    return;
+                }
+            }
+        }
+    }
+}
+
+/**
+ * @brief 通知指定chart节点的文字列刷新（用于重命名后）
+ * @param plot chart对应的plot
+ */
+void DAFigureTreeModel::notifyPlotFolderTextChanged(QwtPlot* plot)
+{
+    if (!plot) {
+        return;
+    }
+    // chart节点是顶层节点，遍历顶层节点查找对应的plot
+    const int cnt = rowCount();
+    for (int r = 0; r < cnt; ++r) {
+        QStandardItem* plotFolderItem = item(r, 0);
+        if (!plotFolderItem) {
+            continue;
+        }
+        if (plotFromItem(plotFolderItem) == plot) {
+            QModelIndex idx = indexFromItem(plotFolderItem);
+            Q_EMIT dataChanged(idx, idx, { Qt::DisplayRole });
+            return;
+        }
+    }
 }
 
 }  // End Of Namespace DA

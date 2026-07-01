@@ -93,6 +93,16 @@ Q_SIGNALS:
      */
     void propertyValueChanged(int propertyId);
 
+    /**
+     * @brief 坐标轴可见性变化信号
+     *
+     * 当PID_EnableAxis变化导致坐标轴启用/禁用时发出此信号，
+     * 用于通知外部（如DAChartManageWidget树形控件）刷新可见性列显示
+     * @param axisId 发生变化的坐标轴ID
+     * @param visible 当前的可见状态
+     */
+    void axisVisibilityChanged(QwtAxis::Position axisId, bool visible);
+
 protected Q_SLOTS:
     // 构建属性面板
     void buildPropertyPanel();

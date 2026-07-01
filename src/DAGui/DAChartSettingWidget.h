@@ -108,6 +108,18 @@ protected slots:
     // 重置combobox
     void resetComboBox();
 
+Q_SIGNALS:
+    /**
+     * @brief 坐标轴可见性变化信号
+     *
+     * 当任一坐标轴设置面板的PID_EnableAxis变化时发出此信号，
+     * 用于通知外部（如DAChartManageWidget树形控件）刷新可见性列显示
+     * @param plot 当前的QwtPlot
+     * @param axisId 发生变化的坐标轴ID
+     * @param visible 当前的可见状态
+     */
+    void axisVisibilityChanged(QwtPlot* plot, int axisId, bool visible);
+
 private:
     Ui::DAChartSettingWidget* ui;
 };
