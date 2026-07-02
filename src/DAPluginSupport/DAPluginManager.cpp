@@ -1,12 +1,12 @@
 ﻿#include "DAPluginManager.h"
-#include <QDir>
-#include <QDebug>
-#include <QCoreApplication>
-#include "DAPluginOption.h"
-#include <QLibrary>
-#include <QFile>
-#include <QTextStream>
 #include "DALogCategory.h"
+#include "DAPluginOption.h"
+#include <QCoreApplication>
+#include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QLibrary>
+#include <QTextStream>
 namespace DA
 {
 class DAPluginManager::PrivateData
@@ -52,9 +52,10 @@ void DAPluginManager::PrivateData::updateIgnoreSet()
     ensureIgnoreFileExist();
     QFile ignoreFile(getIgnoreFilePath());
     if (!ignoreFile.open(QIODevice::ReadOnly)) {
-        daWarning << DAPluginManager::tr(
-                         "The file .pluginignore exists, but failed to read due to the following reason: %1")
-                         .arg(ignoreFile.errorString());  // cn:.pluginignore 文件存在，但由于以下原因读取失败：%1
+        daWarning << DAPluginManager::tr("The file .pluginignore exists, but failed to "
+                                         "read due to the following reason: %1")
+                         .arg(ignoreFile.errorString());  // cn:.pluginignore
+                                                          // 文件存在，但由于以下原因读取失败：%1
         return;
     }
     QTextStream ss(&ignoreFile);
@@ -78,7 +79,8 @@ void DAPluginManager::PrivateData::ensureIgnoreFileExist()
         return;
     }
     QFile ignoreFile(getIgnoreFilePath());
-    qDebug() << DAPluginManager::tr("No plugins ignore files, a %1 file will be automatically generated")
+    qDebug() << DAPluginManager::tr("No plugins ignore files, a %1 file will be "
+                                    "automatically generated")
                     .arg(ignoreFile.fileName());  // cn:缺少插件忽略文件，将自动生成.pluginignore文件
     if (!ignoreFile.exists()) {
         // 不存在，则创建一个
@@ -89,7 +91,8 @@ void DAPluginManager::PrivateData::ensureIgnoreFileExist()
 #else
             txt.setCodec("utf-8");
 #endif
-            txt << u8"# pluginignore file,Plugins that you do not want to load are described in this file,only write "
+            txt << u8"# pluginignore file,Plugins that you do not want to load are "
+                   u8"described in this file,only write "
                    u8"the "
                    "file base name, do not need to write suffixes"
 #if QT_VERSION_MAJOR >= 6
@@ -171,7 +174,7 @@ void DAPluginManager::loadAllPlugins(DACoreInterface* c)
             continue;
         }
         DAPluginOption pluginopt;
-        emit beginLoadPlugin(fi.absoluteFilePath());
+        Q_EMIT beginLoadPlugin(fi.absoluteFilePath());
         if (!pluginopt.load(fi.absoluteFilePath(), c)) {
             qDebug() << tr("can not load plugin:%1").arg(fi.absoluteFilePath());
             continue;
@@ -187,7 +190,8 @@ bool DAPluginManager::isLoaded() const
 }
 
 /**
- * @brief 设置插件路径，可以多次load，同一个插件（插件名称和类型组成一个key）只会加载一次
+ * @brief
+ * 设置插件路径，可以多次load，同一个插件（插件名称和类型组成一个key）只会加载一次
  */
 void DAPluginManager::setPluginPath(const QString& path)
 {

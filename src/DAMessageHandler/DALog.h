@@ -4,4 +4,5 @@
 #include "DALogger.h"
 #include "DAMessageLogQueue.h"
 #include "DAMessageLogItem.h"
+#include "DALogCategory.h"
 #endif  // DALOG_H

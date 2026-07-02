@@ -12,7 +12,12 @@ from .DAPyBase import utils
 # 以下模块依赖 C++ pybind11 绑定，在纯 Python 环境下可能不可用
 try:
     from .DAPyBase import io, dataframe, data_processing
-    from .DAPyBase import app_wrapper, thread_status_manager, form_spec, form_builder
+    from .DAPyBase import app_wrapper
+except ImportError:
+    pass
+# 纯 Python 模块，无 C++ 依赖，独立 re-export 避免连坐
+try:
+    from .DAPyBase import thread_status_manager, form_spec, form_builder
 except ImportError:
     pass
 
