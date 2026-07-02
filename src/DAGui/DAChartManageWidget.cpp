@@ -627,13 +627,13 @@ void DAChartManageWidget::onContextMenuVisibleTriggered(bool on)
         QwtPlot* plot = model->plotFromItem(item);
         QwtAxisId axisId = model->axisIdFromItem(item);
         if (plot && axisId != QwtAxis::AxisPositions) {
-            qDebug() << "onContextMenuVisibleTriggered 3" << on;
             plot->setAxisVisible(axisId, on);
             tree->refreshAxisVisibility(plot, axisId);
             plot->replot();
-            // 通知设置面板刷新
+            // 通知设置面板刷新——使用 ColumnProperty 而非 ColumnVisible，
+            // 因为可见性已在此处设置完成，ColumnVisible 会触发 onFigureElementDbClicked 再次翻转
             DAFigureElementSelection sel(figWidget, plot, plot->axisWidget(axisId), axisId,
-                                          DAFigureElementSelection::ColumnVisible);
+                                          DAFigureElementSelection::ColumnProperty);
             Q_EMIT figureElementClicked(sel);
         }
     } else if (nodeType == DAFigureTreeModel::NodeTypePlotItem) {
@@ -643,9 +643,9 @@ void DAChartManageWidget::onContextMenuVisibleTriggered(bool on)
             plotItem->setVisible(on);
             tree->refreshPlotItemVisibility(plotItem);
             plot->replot();
-            // 通知设置面板刷新
+            // 同上，使用 ColumnProperty 避免二次翻转
             DAFigureElementSelection sel(figWidget, plot, plotItem,
-                                          DAFigureElementSelection::ColumnVisible);
+                                          DAFigureElementSelection::ColumnProperty);
             Q_EMIT figureElementClicked(sel);
         }
     }

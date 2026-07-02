@@ -803,6 +803,13 @@ void DAAppController::onFigureElementClicked(const DAFigureElementSelection& sel
             selection.figureWidget->setCurrentChart(selection.plot->hostPlot());
         }
     }
+    // setSelection 在 plot 未变时不会调用 updateUI，需显式刷新坐标轴面板的可见性 checkbox，
+    // 确保右键菜单等途径修改可见性后面板状态同步
+    if (selection.isSelectedScaleWidget()) {
+        if (DAChartAxisSettingPanel* p = chartSetting->getChartAxisSetWidget(selection.axisId)) {
+            p->updateUI();
+        }
+    }
 }
 
 /**
