@@ -999,9 +999,11 @@ void DADataOperateOfDataFrameWidget::clearStyleAll()
         DATableCellStyle oldStyle = mStyleManager->getRowStyle(row);
         cmd->addChange(DACommandTableStyle::Row, row, 0, oldStyle, DATableCellStyle(), false);
     }
-    // 单元格级样式无法直接遍历键，通过 manager 清除并触发重绘
-    // 这里简化：列级和行级走 undo，单元格级直接清除（第一版可接受）
-    // TODO: 后期可为 DATableStyleManager 增加 styledCells() 遍历接口
+    // 收集单元格级样式
+    for (const QPair< int, int >& key : mStyleManager->styledCells()) {
+        DATableCellStyle oldStyle = mStyleManager->getCellStyle(key.first, key.second);
+        cmd->addChange(DACommandTableStyle::Cell, key.first, key.second, oldStyle, DATableCellStyle(), false);
+    }
     getUndoStack()->push(cmd.release());
 }
 

@@ -46,6 +46,8 @@ public:
     void setRowStyle(int actualRow, const DATableCellStyle& s, bool merge = true);
     void clearRow(int actualRow);
     QList< int > styledRows() const;
+    // 获取所有有样式的单元格键列表（actualRow, actualCol）
+    QList< QPair< int, int > > styledCells() const;
 
     // 批量清除
     void clearRange(int rowStart, int colStart, int rowEnd, int colEnd);

@@ -203,6 +203,15 @@ QList< int > DATableStyleManager::styledRows() const
 }
 
 /**
+ * @brief 获取所有有样式的单元格键列表
+ * @return (actualRow, actualCol) 键列表
+ */
+QList< QPair< int, int > > DATableStyleManager::styledCells() const
+{
+    return mCellStyles.keys();
+}
+
+/**
  * @brief 清除范围内的单元格级样式
  *
  * 仅清除单元格级（mCellStyles）样式，不影响行级/列级。
