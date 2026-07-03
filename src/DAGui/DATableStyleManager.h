@@ -65,7 +65,8 @@ public:
 Q_SIGNALS:
     // 单格样式变更，参数为 actualRow/actualCol
     void styleChanged(int actualRow, int actualCol);
-    // 范围样式变更，-1 表示"整个维度"（如 colStart=-1 表示所有列）
+    // 范围样式变更，end 坐标为 -1 表示该维度延伸到末尾
+    // 例如 setColumnStyle 发射 (0, col, -1, col) 表示该列所有行
     void styleRangeChanged(int rowStart, int colStart, int rowEnd, int colEnd);
     // 整表重置（clearAll 或行列大调整）
     void styleReset();

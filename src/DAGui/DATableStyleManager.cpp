@@ -204,6 +204,9 @@ QList< int > DATableStyleManager::styledRows() const
 
 /**
  * @brief 清除范围内的单元格级样式
+ *
+ * 仅清除单元格级（mCellStyles）样式，不影响行级/列级。
+ * 如需清除整行/整列样式，使用 clearRow/clearColumn。
  * @param rowStart 起始行
  * @param colStart 起始列
  * @param rowEnd 结束行
