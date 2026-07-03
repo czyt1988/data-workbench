@@ -290,11 +290,13 @@ file(GLOB DA_LIB_SOURCE_FILES_MimeData ${DA_LIB_SUBDIR_MimeData}/*.cpp)
 set(DA_LIB_HEADER_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandWithRedoCount.h
     ${DA_LIB_SUBDIR_Commands}/DACommandsForWorkFlow.h
+    ${DA_LIB_SUBDIR_Commands}/DACommandsTableStyle.h
 )
 
 set(DA_LIB_SOURCE_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandWithRedoCount.cpp
     ${DA_LIB_SUBDIR_Commands}/DACommandsForWorkFlow.cpp
+    ${DA_LIB_SUBDIR_Commands}/DACommandsTableStyle.cpp
 )
 if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_HEADER_FILES_Commands
