@@ -34,6 +34,8 @@
 #include "DAZipArchiveTask_ArchiveFile.h"
 #include "DAZipArchiveTask_ChartItem.h"
 #include "DADataOperateWidget.h"
+#include "DADataOperateOfDataFrameWidget.h"
+#include "DATableStyleManager.h"
 #include "DADataEnumStringUtils.h"
 #include "DAWaitCursorScoped.h"
 #include "DAChartItemsManager.h"
@@ -60,6 +62,7 @@ const QString c_workflowxml_save_filename  = QStringLiteral("workflow.xml");
 const QString c_workflowdata_save_filename = QStringLiteral("workflow-data.xml");
 const QString c_chartsxml_save_filename    = QStringLiteral("charts.xml");
 const QString c_chartitem_save_folder      = QStringLiteral("chart-data");
+const QString c_tablestylesxml_save_filename = QStringLiteral("table-styles.xml");
 
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_BEGIN
 #define DAAPPPROJECT_TASK_LOAD_ID_BEGIN 0x234
@@ -97,6 +100,13 @@ const QString c_chartitem_save_folder      = QStringLiteral("chart-data");
  */
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW_DATA
 #define DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW_DATA (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 5)
+#endif
+
+/**
+ *@def 加载任务id - 表格样式
+ */
+#ifndef DAAPPPROJECT_TASK_LOAD_ID_TABLE_STYLES
+#define DAAPPPROJECT_TASK_LOAD_ID_TABLE_STYLES (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 6)
 #endif
 namespace DA
 {
@@ -590,6 +600,9 @@ bool DAAppProject::executeSave(DAZipArchiveThreadWrapper* archive, const QString
     // datamanager
     makeSaveDataManagerTask(archive);
 
+    // 表格样式
+    makeSaveTableStyleTask(archive);
+
     // 绘图
     makeSaveChartTask(archive);
 
@@ -646,6 +659,14 @@ bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString
     // ChartItemLoadTask必须在chart info 的XmlLoadTask之前
     auto taskChartItem =
         archive->appendChartItemLoadTask(c_chartitem_save_folder, DAAPPPROJECT_TASK_LOAD_ID_CHARTITEMMANAGER);
+
+    // 表格样式加载（在 datamanager 之后，确保 widget 已创建）
+    auto taskTableStyles = archive->appendXmlLoadTask(c_tablestylesxml_save_filename,
+                                                       DAAPPPROJECT_TASK_LOAD_ID_TABLE_STYLES);
+    if (taskTableStyles) {
+        taskTableStyles->setLoadedCallBack(
+            [ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedTableStyles(t); });
+    }
     if (!taskChartItem) {
         return false;
     }
@@ -893,6 +914,50 @@ void DAAppProject::makeSaveChartTask(DAZipArchiveThreadWrapper* archive)
     auto t2 = archive->appendChartItemSaveTask(c_chartitem_save_folder, chartItemMgr);
     t2->setName(tr("Save chart items information"));      // cn:保存绘图元素的基本信息
     t2->setDescribe(tr("Save chart items information"));  // cn:保存绘图元素的基本信息
+}
+
+/**
+ * @brief 保存表格样式任务
+ *
+ * 遍历所有 DataFrame 操作窗口，收集各 styleManager 的样式，合并为 table-styles.xml。
+ * @param archive 归档器
+ */
+void DAAppProject::makeSaveTableStyleTask(DAZipArchiveThreadWrapper* archive)
+{
+    QDomDocument doc;
+    QDomProcessingInstruction pi = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+    doc.appendChild(pi);
+    QDomElement root = doc.createElement(QStringLiteral("root"));
+    root.setAttribute("type", "table-styles");
+    doc.appendChild(root);
+    QDomElement projectEle = doc.createElement(QStringLiteral("project"));
+    projectEle.setAttribute("version", getProjectVersion().toString());
+    root.appendChild(projectEle);
+    QDomElement stylesEle = doc.createElement(QStringLiteral("table-styles"));
+    projectEle.appendChild(stylesEle);
+
+    // 遍历所有 DataFrame widget 收集样式
+    DADataOperateWidget* optWidget = getDataOperateWidget();
+    if (optWidget) {
+        QList< DADataOperateOfDataFrameWidget* > widgets = optWidget->getAllDataFrameWidgets();
+        for (DADataOperateOfDataFrameWidget* w : widgets) {
+            if (!w || !w->haveData()) {
+                continue;
+            }
+            DATableStyleManager* mgr = w->styleManager();
+            if (!mgr || mgr->isEmpty()) {
+                continue;
+            }
+            QDomElement tableEle = doc.createElement(QStringLiteral("table"));
+            tableEle.setAttribute(QStringLiteral("data-name"), w->data().getName());
+            mgr->toXml(doc, tableEle);
+            stylesEle.appendChild(tableEle);
+        }
+    }
+
+    auto t = archive->appendXmlSaveTask(c_tablestylesxml_save_filename, doc);
+    t->setName(tr("Save table styles"));  // cn:保存表格样式
+    t->setDescribe(tr("Save table cell styles, including background, font, foreground"));  // cn:保存表格单元格样式
 }
 
 QDomDocument DAAppProject::createWorkflowUIDomDocument()
@@ -1231,6 +1296,71 @@ void DAAppProject::loadedChartsInfo(const std::shared_ptr< DAAbstractArchiveTask
     }
     //
     appendChartsInProject(xmlDoc, &mChartItemManager);
+}
+
+/**
+ * @brief 表格样式加载回调
+ *
+ * 解析 table-styles.xml，按 data-name 匹配对应 DataFrame widget，回填样式。
+ * @param t 归档任务
+ */
+void DAAppProject::loadedTableStyles(const std::shared_ptr< DAAbstractArchiveTask >& t)
+{
+    const std::shared_ptr< DAZipArchiveTask_Xml > xmlArchive = std::static_pointer_cast< DAZipArchiveTask_Xml >(t);
+    QDomDocument xmlDoc = xmlArchive->getDomDocument();
+    if (xmlDoc.isNull()) {
+        return;
+    }
+    QDomElement root = xmlDoc.documentElement();
+    if (root.isNull() || root.tagName() != QLatin1String("root")) {
+        return;
+    }
+    QDomElement projectEle = root.firstChildElement(QStringLiteral("project"));
+    if (projectEle.isNull()) {
+        return;
+    }
+    QDomElement stylesEle = projectEle.firstChildElement(QStringLiteral("table-styles"));
+    if (stylesEle.isNull()) {
+        return;
+    }
+    DADataOperateWidget* optWidget = getDataOperateWidget();
+    if (!optWidget) {
+        return;
+    }
+    QList< DADataOperateOfDataFrameWidget* > widgets = optWidget->getAllDataFrameWidgets();
+    QDomNode n = stylesEle.firstChild();
+    while (!n.isNull()) {
+        QDomElement tableEle = n.toElement();
+        if (tableEle.isNull() || tableEle.tagName() != QLatin1String("table")) {
+            n = n.nextSibling();
+            continue;
+        }
+        QString dataName = tableEle.attribute(QStringLiteral("data-name"));
+        if (dataName.isEmpty()) {
+            n = n.nextSibling();
+            continue;
+        }
+        // 按 data-name 匹配 widget
+        DADataOperateOfDataFrameWidget* matched = nullptr;
+        for (DADataOperateOfDataFrameWidget* w : widgets) {
+            if (w && w->haveData() && w->data().getName() == dataName) {
+                matched = w;
+                break;
+            }
+        }
+        if (!matched) {
+            daWarning << tr("table style for data '%1' has no matching data, skipped").arg(dataName);  // cn:数据'%1'的表格样式未找到匹配数据，已跳过
+            n = n.nextSibling();
+            continue;
+        }
+        DATableStyleManager* mgr = matched->styleManager();
+        if (mgr) {
+            mgr->fromXml(tableEle);
+            // 触发全表重绘
+            matched->refreshTable();
+        }
+        n = n.nextSibling();
+    }
 }
 
 void DAAppProject::setStatusBarInBusy(const QString& info)

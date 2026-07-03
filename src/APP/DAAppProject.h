@@ -77,6 +77,8 @@ protected:
 	void makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive);
 	// 创建保存绘图的任务
 	void makeSaveChartTask(DAZipArchiveThreadWrapper* archive);
+	// 保存表格样式任务
+	void makeSaveTableStyleTask(DAZipArchiveThreadWrapper* archive);
 	// 保存workflow相关内容（以xml形式）
 	QDomDocument createWorkflowUIDomDocument();
 	// 保存charts相关内容（以xml形式）
@@ -103,6 +105,8 @@ private:
 	void loadedWorkflowData(const std::shared_ptr< DAAbstractArchiveTask >& t);
 	void loadedDataManager(const std::shared_ptr< DAAbstractArchiveTask >& t);
 	void loadedChartsInfo(const std::shared_ptr< DAAbstractArchiveTask >& t);
+	// 表格样式加载回调
+	void loadedTableStyles(const std::shared_ptr< DAAbstractArchiveTask >& t);
 	void setStatusBarInBusy(const QString& info = QString());
 	void setStatusBarNotBusy(const QString& info = QString());
 	void setCurrentStatusText(const QString& info);
