@@ -1,5 +1,6 @@
 ﻿#include "DACommandsTableStyle.h"
 #include "DATableStyleManager.h"
+#include <QObject>
 
 namespace DA
 {
@@ -12,6 +13,7 @@ namespace DA
 DACommandTableStyle::DACommandTableStyle(DATableStyleManager* mgr, QUndoCommand* parent)
     : QUndoCommand(parent), mMgr(mgr)
 {
+    setText(QObject::tr("change table style"));  // cn:改变表格样式
 }
 
 /**
