@@ -1,4 +1,4 @@
-#ifndef DATABLECELLSTYLE_H
+﻿#ifndef DATABLECELLSTYLE_H
 #define DATABLECELLSTYLE_H
 #include "DAGuiAPI.h"
 #include <QBrush>
