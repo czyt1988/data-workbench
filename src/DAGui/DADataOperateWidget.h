@@ -2,6 +2,7 @@
 #define DADATAOPERATEWIDGET_H
 #include <QWidget>
 #include <QMap>
+#include <QList>
 #include "DAGuiAPI.h"
 #include "DAAbstractOperateWidget.h"
 #include "DAData.h"
@@ -37,6 +38,8 @@ public:
 
     // 当前显示的DataFrame窗口，如果不是DataFrame窗口，返回nullptr
     DADataOperateOfDataFrameWidget* getCurrentDataFrameWidget() const;
+    // 获取所有已打开的 DataFrame 操作窗口（供序列化遍历样式）
+    QList< DADataOperateOfDataFrameWidget* > getAllDataFrameWidgets() const;
     // 获取当前操作的表，这个表就是当前打开的表格
     DAData getCurrentOperateData() const;
     // 获取当前正在操作数据选中的列

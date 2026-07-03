@@ -97,6 +97,27 @@ DADataOperateOfDataFrameWidget* DADataOperateWidget::getCurrentDataFrameWidget()
 }
 
 /**
+ * @brief 获取所有已打开的 DataFrame 操作窗口
+ *
+ * 遍历 _dataToWidget，返回其中所有 DADataOperateOfDataFrameWidget 实例。
+ * 供工程序列化遍历表格样式使用。
+ * @return DataFrame 操作窗口列表
+ */
+QList< DADataOperateOfDataFrameWidget* > DADataOperateWidget::getAllDataFrameWidgets() const
+{
+    QList< DADataOperateOfDataFrameWidget* > res;
+#if DA_ENABLE_PYTHON
+    for (auto it = d_ptr->_dataToWidget.begin(); it != d_ptr->_dataToWidget.end(); ++it) {
+        DADataOperateOfDataFrameWidget* w = qobject_cast< DADataOperateOfDataFrameWidget* >(it.value());
+        if (w) {
+            res.append(w);
+        }
+    }
+#endif
+    return res;
+}
+
+/**
  * @brief 获取当前正在操作的数据
  * @return
  */
