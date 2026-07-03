@@ -24,6 +24,9 @@ public:
 
 protected:
     // 预留：条件格式扩展点，后期在子类覆写实现数据条/色阶等基于规则的绘制
+    // 注意：此 hook 在父类 paint 之前调用，适合修改 opt（如 backgroundBrush）的格式。
+    // 若需直接绘制（如数据条）并显示在背景之上/文字之下，子类需自行处理分层绘制
+    // （例如重写整个 paint，先调父类画背景，再画数据条，再画文字）。
     virtual void paintConditionalFormat(QPainter* painter, QStyleOptionViewItem& opt,
                                         const QModelIndex& index, int actualRow, int actualCol) const;
 
