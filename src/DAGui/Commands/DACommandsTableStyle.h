@@ -43,6 +43,9 @@ public:
                    const DATableCellStyle& newStyle,
                    bool merge);
 
+    // 是否没有变更记录（用于避免推送空命令到 undo 栈）
+    bool isEmpty() const;
+
     void redo() override;
     void undo() override;
 

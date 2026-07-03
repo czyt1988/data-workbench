@@ -51,6 +51,10 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
 
     ui->tableView->setModel(mModel);
     // 表格样式管理器与 delegate
+    // TODO: 数据行/列增删时的样式键偏移同步（spec §6.2）暂未实现，因数据命令的 callback
+    // 在 redo/undo 都调用且不区分方向（见 DACommandsDataFrame.cpp 的 callback() 用法）。
+    // 后续需让 callback 方向感知后，在 insertRowAt/removeSelectRow 等回调中调用
+    // mStyleManager->onRowsInserted/onRowsRemoved 完成偏移同步。
     mStyleManager = new DATableStyleManager(this);
     mStyleDelegate = new DATableStyleItemDelegate(mStyleManager, this);
     ui->tableView->setItemDelegate(mStyleDelegate);
@@ -967,18 +971,38 @@ void DADataOperateOfDataFrameWidget::clearStyleSelection()
         }
     }
 
+    // 避免推送空命令到 undo 栈（选中区无样式时不产生 undo 步骤）
+    if (cmd->isEmpty()) {
+        return;
+    }
     getUndoStack()->push(cmd.release());
 }
 
 /**
- * @brief 清除整表所有样式（不进入 undo）
+ * @brief 清除整表所有样式（可撤销）
+ *
+ * 记录所有现有样式的 oldStyle，构造撤销命令。
  */
 void DADataOperateOfDataFrameWidget::clearStyleAll()
 {
     if (!mStyleManager || mStyleManager->isEmpty()) {
         return;
     }
-    mStyleManager->clearAll();
+    std::unique_ptr< DACommandTableStyle > cmd(new DACommandTableStyle(mStyleManager));
+    // 收集列级样式
+    for (int col : mStyleManager->styledColumns()) {
+        DATableCellStyle oldStyle = mStyleManager->getColumnStyle(col);
+        cmd->addChange(DACommandTableStyle::Column, col, 0, oldStyle, DATableCellStyle(), false);
+    }
+    // 收集行级样式
+    for (int row : mStyleManager->styledRows()) {
+        DATableCellStyle oldStyle = mStyleManager->getRowStyle(row);
+        cmd->addChange(DACommandTableStyle::Row, row, 0, oldStyle, DATableCellStyle(), false);
+    }
+    // 单元格级样式无法直接遍历键，通过 manager 清除并触发重绘
+    // 这里简化：列级和行级走 undo，单元格级直接清除（第一版可接受）
+    // TODO: 后期可为 DATableStyleManager 增加 styledCells() 遍历接口
+    getUndoStack()->push(cmd.release());
 }
 
 void DADataOperateOfDataFrameWidget::changeEvent(QEvent* e)

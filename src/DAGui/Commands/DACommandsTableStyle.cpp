@@ -49,6 +49,15 @@ void DACommandTableStyle::redo()
 }
 
 /**
+ * @brief 是否没有变更记录
+ * @return 无变更记录返回 true（用于避免推送空命令到 undo 栈）
+ */
+bool DACommandTableStyle::isEmpty() const
+{
+    return mRecords.isEmpty();
+}
+
+/**
  * @brief undo：恢复所有变更记录的旧样式
  */
 void DACommandTableStyle::undo()
