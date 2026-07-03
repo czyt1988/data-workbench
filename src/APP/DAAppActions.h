@@ -73,6 +73,8 @@ public:
     QAction* actionCastToNum;          ///< 数据转换为数字
     QAction* actionCastToDatetime;     ///< 转换为日期
     QAction* actionChangeToIndex;      ///< 把某列转换为index
+    QAction* actionClearStyleSelected { nullptr };  ///< 清除选中区表格样式
+    QAction* actionClearStyleAll { nullptr };       ///< 清除整表所有样式
 
     //===================================================
     // workflow的上下文标签

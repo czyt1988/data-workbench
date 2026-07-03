@@ -8,6 +8,8 @@
 #include "DARibbonAreaInterface.h"
 #include "DADataManageWidget.h"
 #include "DAPyWorkFlowGraphicsScene.h"
+#include "SARibbonColorToolButton.h"
+#include "DAFontEditPannelWidget.h"
 #if DA_ENABLE_PYTHON
 // Py
 #include "numpy/DAPyDType.h"
@@ -347,6 +349,13 @@ private:
     DAPyDTypeComboBox* m_comboxColumnTypes;                     ///< 列类型选择器
 #endif
     SARibbonButtonGroupWidget* m_castActionsButtonGroup;  ///< 管理强制转换的action的工具栏
+    // 表格样式 category
+    SARibbonCategory* m_categoryDataframeStyle { nullptr };       ///< dataframe表格样式category
+    SARibbonPanel* m_pannelDataframeStyleFill { nullptr };        ///< 底色面板
+    SARibbonPanel* m_pannelDataframeStyleFont { nullptr };        ///< 字体面板
+    SARibbonPanel* m_pannelDataframeStyleClear { nullptr };       ///< 清除面板
+    SARibbonColorToolButton* m_btnTableFillColor { nullptr };     ///< 表格底色按钮
+    DAFontEditPannelWidget* m_widgetTableFont { nullptr };        ///< 表格字体编辑面板
     //----------------------------------------------------
     // Context - workflow
     //----------------------------------------------------

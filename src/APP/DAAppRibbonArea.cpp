@@ -15,6 +15,7 @@
 #include "SARibbonApplicationButton.h"
 #include "SARibbonLineWidgetContainer.h"
 #include "SARibbonGallery.h"
+#include "SARibbonColorToolButton.h"
 // stl
 // Qt
 #include <QFileDialog>
@@ -190,6 +191,10 @@ void DAAppRibbonArea::resetText()
     m_categoryDataframeOperate->setCategoryName(tr("Operate"));  // cn: 操作
     m_pannelDataframeOperateAxes->setPanelName(tr("Axes"));      // cn: 坐标
     m_pannelDataframeOperateDType->setPanelName(tr("Type"));     // cn: 类型
+    m_categoryDataframeStyle->setCategoryName(tr("Table Style"));  // cn:表格样式
+    m_pannelDataframeStyleFill->setPanelName(tr("Fill"));          // cn:底色
+    m_pannelDataframeStyleFont->setPanelName(tr("Font"));          // cn:字体
+    m_pannelDataframeStyleClear->setPanelName(tr("Clear"));        // cn:清除
 #if DA_ENABLE_PYTHON
     m_comboxColumnTypesContainer->setPrefix(tr("Type"));  // cn:类型
 #endif
@@ -407,6 +412,32 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     m_castActionsButtonGroup->addSeparator();
     m_castActionsButtonGroup->addAction(m_actions->actionCastToDatetime);
     m_pannelDataframeOperateDType->addWidget(m_castActionsButtonGroup, SARibbonPanelItem::Medium);
+
+    // ===== 表格样式 category =====
+    m_categoryDataframeStyle = m_contextDataFrame->addCategoryPage(tr("Table Style"));  // cn:表格样式
+    m_categoryDataframeStyle->setObjectName(QStringLiteral("da-ribbon-category-dataframe.style"));
+
+    // Fill panel - 底色
+    m_pannelDataframeStyleFill = m_categoryDataframeStyle->addPanel(tr("Fill"));  // cn:底色
+    m_pannelDataframeStyleFill->setObjectName(QStringLiteral("da-pannel-dataframe.style.fill"));
+    m_btnTableFillColor = new SARibbonColorToolButton(m_pannelDataframeStyleFill);
+    m_btnTableFillColor->setColorStyle(SARibbonColorToolButton::ColorFillToIcon);
+    m_btnTableFillColor->setupStandardColorMenu();
+    m_pannelDataframeStyleFill->addWidget(m_btnTableFillColor, SARibbonPanelItem::Large);
+
+    // Font panel - 字体
+    m_pannelDataframeStyleFont = m_categoryDataframeStyle->addPanel(tr("Font"));  // cn:字体
+    m_pannelDataframeStyleFont->setObjectName(QStringLiteral("da-pannel-dataframe.style.font"));
+    SARibbonLineWidgetContainer* fontContainer = new SARibbonLineWidgetContainer(m_pannelDataframeStyleFont);
+    m_widgetTableFont = new DAFontEditPannelWidget(fontContainer);
+    fontContainer->setWidget(m_widgetTableFont);
+    m_pannelDataframeStyleFont->addWidget(fontContainer, SARibbonPanelItem::Medium);
+
+    // Clear panel - 清除
+    m_pannelDataframeStyleClear = m_categoryDataframeStyle->addPanel(tr("Clear"));  // cn:清除
+    m_pannelDataframeStyleClear->setObjectName(QStringLiteral("da-pannel-dataframe.style.clear"));
+    m_pannelDataframeStyleClear->addLargeAction(m_actions->actionClearStyleSelected);
+    m_pannelDataframeStyleClear->addLargeAction(m_actions->actionClearStyleAll);
 }
 
 /**

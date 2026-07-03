@@ -264,6 +264,12 @@ private Q_SLOTS:
     void onActionCastToDatetimeTriggered();
     // 选中列转换为索引
     void onActionChangeToIndexTriggered();
+    // 表格样式
+    void onActionTableStyleFillColor(const QColor& c);
+    void onActionTableStyleFontChanged(const QFont& f);
+    void onActionTableStyleFontColorChanged(const QColor& c);
+    void onActionClearStyleSelectedTriggered();
+    void onActionClearStyleAllTriggered();
 
     //===================================================
     // 视图标签 View Category

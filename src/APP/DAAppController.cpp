@@ -53,6 +53,8 @@
 // DAWidgets
 #include "DAFontEditPannelWidget.h"
 #include "DAShapeEditPannelWidget.h"
+// Table style
+#include "DATableCellStyle.h"
 // Workflow
 #include "DAPyWorkFlowOperateWidget.h"
 #include "DAPyWorkFlowGraphicsView.h"
@@ -312,6 +314,17 @@ void DAAppController::initConnection()
             &DAAppController::onComboxColumnTypesCurrentDTypeChanged);
 #endif
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChangeToIndex, onActionChangeToIndexTriggered);
+    // 表格样式
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionClearStyleSelected, onActionClearStyleSelectedTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionClearStyleAll, onActionClearStyleAllTriggered);
+#if DA_ENABLE_PYTHON
+    connect(mRibbon->m_btnTableFillColor, &SARibbonColorToolButton::colorChanged,
+            this, &DAAppController::onActionTableStyleFillColor);
+    connect(mRibbon->m_widgetTableFont, &DAFontEditPannelWidget::currentFontChanged,
+            this, &DAAppController::onActionTableStyleFontChanged);
+    connect(mRibbon->m_widgetTableFont, &DAFontEditPannelWidget::currentFontColorChanged,
+            this, &DAAppController::onActionTableStyleFontColorChanged);
+#endif
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -2251,6 +2264,89 @@ void DAAppController::onActionWorkflowLinkEnableTriggered(bool on)
     if (auto wo = mDock->getWorkFlowOperateWidget()) {
         wo->setEnableWorkflowLink(on);
     }
+}
+
+/**
+ * @brief 表格底色变更
+ * @param c 颜色
+ */
+void DAAppController::onActionTableStyleFillColor(const QColor& c)
+{
+#if DA_ENABLE_PYTHON
+    DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget(false, false);
+    if (!w) {
+        return;
+    }
+    DA::DATableCellStyle fragment;
+    fragment.setBackground(QBrush(c));
+    w->applyStyleToSelection(fragment);
+#else
+    Q_UNUSED(c)
+#endif
+}
+
+/**
+ * @brief 表格字体变更
+ * @param f 字体
+ */
+void DAAppController::onActionTableStyleFontChanged(const QFont& f)
+{
+#if DA_ENABLE_PYTHON
+    DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget(false, false);
+    if (!w) {
+        return;
+    }
+    DA::DATableCellStyle fragment;
+    fragment.setFont(f);
+    w->applyStyleToSelection(fragment);
+#else
+    Q_UNUSED(f)
+#endif
+}
+
+/**
+ * @brief 表格字体颜色变更
+ * @param c 颜色
+ */
+void DAAppController::onActionTableStyleFontColorChanged(const QColor& c)
+{
+#if DA_ENABLE_PYTHON
+    DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget(false, false);
+    if (!w) {
+        return;
+    }
+    DA::DATableCellStyle fragment;
+    fragment.setForeground(c);
+    w->applyStyleToSelection(fragment);
+#else
+    Q_UNUSED(c)
+#endif
+}
+
+/**
+ * @brief 清除选中区样式
+ */
+void DAAppController::onActionClearStyleSelectedTriggered()
+{
+#if DA_ENABLE_PYTHON
+    DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget(false, false);
+    if (w) {
+        w->clearStyleSelection();
+    }
+#endif
+}
+
+/**
+ * @brief 清除整表所有样式
+ */
+void DAAppController::onActionClearStyleAllTriggered()
+{
+#if DA_ENABLE_PYTHON
+    DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget(false, false);
+    if (w) {
+        w->clearStyleAll();
+    }
+#endif
 }
 
 }  // end DA

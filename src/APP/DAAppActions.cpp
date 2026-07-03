@@ -79,6 +79,10 @@ void DAAppActions::buildDataAction()
     actionCastToDatetime    = createAction("actionCastToDatetime", ":/app/bright/Icon/castToDatetime.svg");
 
     actionChangeToIndex = createAction("actionChangeToIndex", ":/app/bright/Icon/changeToIndex.svg");
+
+    // 表格样式清除 action
+    actionClearStyleSelected = createAction("actionClearStyleSelected", ":/app/bright/Icon/removeCell.svg");
+    actionClearStyleAll      = createAction("actionClearStyleAll", ":/app/bright/Icon/removeData.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -492,6 +496,10 @@ void DAAppActions::retranslateUi()
 
     actionChangeToIndex->setText(tr("To Index"));               // cn:转换为\n索引
     actionChangeToIndex->setToolTip(tr("Cast to index type"));  // cn:转换为索引类型
+    actionClearStyleSelected->setText(tr("Clear Selected Style"));      // cn:清除选中样式
+    actionClearStyleSelected->setToolTip(tr("Clear styles in selected cells"));  // cn:清除选中单元格的样式
+    actionClearStyleAll->setText(tr("Clear All Style"));               // cn:清除所有样式
+    actionClearStyleAll->setToolTip(tr("Clear all styles in current table"));    // cn:清除当前表格所有样式
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------
