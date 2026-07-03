@@ -14,7 +14,11 @@
 #include <QMessageBox>
 // cmd
 #include "Commands/DACommandsDataFrame.h"
+#include "Commands/DACommandsTableStyle.h"
 #include "DADataManager.h"
+// table style
+#include "DATableStyleManager.h"
+#include "DATableStyleItemDelegate.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -46,6 +50,10 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mModel = new DADataTableModel(getUndoStack(), this);
 
     ui->tableView->setModel(mModel);
+    // 表格样式管理器与 delegate
+    mStyleManager = new DATableStyleManager(this);
+    mStyleDelegate = new DATableStyleItemDelegate(mStyleManager, this);
+    ui->tableView->setItemDelegate(mStyleDelegate);
     // 关闭不必要的绘制特性
     setDAData(d);
     connect(ui->tableView, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);
@@ -839,6 +847,138 @@ void DADataOperateOfDataFrameWidget::onTableViewClicked(const QModelIndex& index
     }
 
     emit selectTypeChanged({ index.column() }, t);
+}
+
+/**
+ * @brief 获取样式管理器
+ * @return 样式管理器指针
+ */
+DATableStyleManager* DADataOperateOfDataFrameWidget::styleManager() const
+{
+    return mStyleManager;
+}
+
+/**
+ * @brief 应用样式片段到选中区
+ *
+ * 自动判定层级：选中整列→列级，选中整行→行级，否则单元格级。
+ * fragment 通常只设部分属性（如只设 background），merge 到目标已有样式。
+ * @param fragment 样式片段
+ */
+void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyle& fragment)
+{
+    if (!mStyleManager) {
+        return;
+    }
+    // 判定应用层级
+    QList< int > fullCols = getFullySelectedDataframeColumns(false);
+    QList< int > fullRows = getFullySelectedDataframeRows(false);
+    QList< QPoint > cells = getSelectedDataframeCells(false);
+
+    if (cells.isEmpty() && fullCols.isEmpty() && fullRows.isEmpty()) {
+        daWarning << tr("please select a valid cell");  // cn:请选择正确的单元格
+        return;
+    }
+
+    std::unique_ptr< DACommandTableStyle > cmd(new DACommandTableStyle(mStyleManager));
+
+    // getSelectedDataframeCells 返回 QPoint(index.row(), index.column())，row 是 logical row
+    // 需转换为 actualRow（加 getCacheWindowStartRow）
+    int cacheOffset = mModel ? mModel->getCacheWindowStartRow() : 0;
+
+    if (!fullCols.isEmpty()) {
+        // 列级
+        for (int col : fullCols) {
+            DATableCellStyle oldStyle = mStyleManager->getColumnStyle(col);
+            DATableCellStyle newStyle = oldStyle;
+            newStyle.mergeFrom(fragment);
+            cmd->addChange(DACommandTableStyle::Column, col, 0, oldStyle, newStyle, true);
+        }
+    } else if (!fullRows.isEmpty()) {
+        // 行级
+        for (int row : fullRows) {
+            int actualRow = row + cacheOffset;
+            DATableCellStyle oldStyle = mStyleManager->getRowStyle(actualRow);
+            DATableCellStyle newStyle = oldStyle;
+            newStyle.mergeFrom(fragment);
+            cmd->addChange(DACommandTableStyle::Row, actualRow, 0, oldStyle, newStyle, true);
+        }
+    } else {
+        // 单元格级
+        for (const QPoint& p : cells) {
+            // QPoint(index.row(), index.column()) → p.x()=row(logical), p.y()=col
+            int actualRow = p.x() + cacheOffset;
+            int col = p.y();
+            DATableCellStyle oldStyle = mStyleManager->getCellStyle(actualRow, col);
+            DATableCellStyle newStyle = oldStyle;
+            newStyle.mergeFrom(fragment);
+            cmd->addChange(DACommandTableStyle::Cell, actualRow, col, oldStyle, newStyle, true);
+        }
+    }
+
+    getUndoStack()->push(cmd.release());
+}
+
+/**
+ * @brief 清除选中区样式
+ *
+ * 自动判定层级，仅清除有样式的目标的样式。
+ */
+void DADataOperateOfDataFrameWidget::clearStyleSelection()
+{
+    if (!mStyleManager) {
+        return;
+    }
+    QList< int > fullCols = getFullySelectedDataframeColumns(false);
+    QList< int > fullRows = getFullySelectedDataframeRows(false);
+    QList< QPoint > cells = getSelectedDataframeCells(false);
+
+    if (cells.isEmpty() && fullCols.isEmpty() && fullRows.isEmpty()) {
+        daWarning << tr("please select a valid cell");  // cn:请选择正确的单元格
+        return;
+    }
+
+    std::unique_ptr< DACommandTableStyle > cmd(new DACommandTableStyle(mStyleManager));
+    int cacheOffset = mModel ? mModel->getCacheWindowStartRow() : 0;
+
+    if (!fullCols.isEmpty()) {
+        for (int col : fullCols) {
+            if (mStyleManager->hasColumnStyle(col)) {
+                DATableCellStyle oldStyle = mStyleManager->getColumnStyle(col);
+                cmd->addChange(DACommandTableStyle::Column, col, 0, oldStyle, DATableCellStyle(), false);
+            }
+        }
+    } else if (!fullRows.isEmpty()) {
+        for (int row : fullRows) {
+            int actualRow = row + cacheOffset;
+            if (mStyleManager->hasRowStyle(actualRow)) {
+                DATableCellStyle oldStyle = mStyleManager->getRowStyle(actualRow);
+                cmd->addChange(DACommandTableStyle::Row, actualRow, 0, oldStyle, DATableCellStyle(), false);
+            }
+        }
+    } else {
+        for (const QPoint& p : cells) {
+            int actualRow = p.x() + cacheOffset;
+            int col = p.y();
+            if (mStyleManager->hasCellStyle(actualRow, col)) {
+                DATableCellStyle oldStyle = mStyleManager->getCellStyle(actualRow, col);
+                cmd->addChange(DACommandTableStyle::Cell, actualRow, col, oldStyle, DATableCellStyle(), false);
+            }
+        }
+    }
+
+    getUndoStack()->push(cmd.release());
+}
+
+/**
+ * @brief 清除整表所有样式（不进入 undo）
+ */
+void DADataOperateOfDataFrameWidget::clearStyleAll()
+{
+    if (!mStyleManager || mStyleManager->isEmpty()) {
+        return;
+    }
+    mStyleManager->clearAll();
 }
 
 void DADataOperateOfDataFrameWidget::changeEvent(QEvent* e)

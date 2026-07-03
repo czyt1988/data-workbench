@@ -19,6 +19,9 @@ class DADataTableModel;
 class DADataTableView;
 class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
+class DATableStyleManager;
+class DATableStyleItemDelegate;
+class DATableCellStyle;
 
 
 /**
@@ -56,6 +59,16 @@ public:
     int getSelectedOneDataframeColumn(bool ensureInDataframe = true) const;
     // 获取tableview
     DADataTableView* getDataTableView() const;
+
+    // 获取样式管理器
+    DATableStyleManager* styleManager() const;
+    // 应用样式片段到选中区（fragment 只设部分属性，merge 到目标）
+    // 自动判定层级：整列→列级，整行→行级，否则单元格级
+    void applyStyleToSelection(const DATableCellStyle& fragment);
+    // 清除选中区样式（自动判定层级）
+    void clearStyleSelection();
+    // 清除整表所有样式
+    void clearStyleAll();
 
     // 获取选中的序列，如果用户打开一个表格，选中了其中一列，那么将返回那一列pd.Series作为数据，如果用户选中了多列，那么每列作为一个DAData并组成list返回
     QList< DAData > getSlectedSeries() const;
@@ -106,6 +119,8 @@ private:
     Ui::DADataOperateOfDataFrameWidget* ui;
     DAData mData;
     DADataTableModel* mModel { nullptr };
+    DATableStyleManager* mStyleManager { nullptr };
+    DATableStyleItemDelegate* mStyleDelegate { nullptr };
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
