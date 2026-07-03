@@ -72,6 +72,7 @@ set(DA_LIB_HEADER_FILES
     DAPropertyPanelWidget.h
     DASettingDialog.h
     DASettingWidget.h
+    DATableCellStyle.h
 )
 set(DA_LIB_SOURCE_FILES
     DAAbstractChartAddItemWidget.cpp
@@ -129,6 +130,7 @@ set(DA_LIB_SOURCE_FILES
     DAPropertyPanelWidget.cpp
     DASettingDialog.cpp
     DASettingWidget.cpp
+    DATableCellStyle.cpp
 )
 set(DA_LIB_QT_UI_FILES
     DAChartManageWidget.ui
