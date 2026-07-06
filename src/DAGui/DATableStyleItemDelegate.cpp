@@ -44,13 +44,16 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
         actualRow = cacheModel->getCacheWindowStartRow() + index.row();
     }
 
+    DATableCellStyle style = mStyleManager->resolveCellStyle(actualRow, actualCol);
+
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);  // 先让父类填充文本/默认字体
 
-    DATableCellStyle style = mStyleManager->resolveCellStyle(actualRow, actualCol);
     if (!style.isNull()) {
         if (style.backgroundValid()) {
-            opt.backgroundBrush = style.background();
+            // 直接用 painter 填充背景色，不依赖 backgroundBrush（Qt style 在某些情况下
+            // 不使用 backgroundBrush 绘制背景，fillRect 更可靠）
+            painter->fillRect(opt.rect, style.background());
         }
         if (style.foregroundValid()) {
             opt.palette.setColor(QPalette::Text, style.foreground());
