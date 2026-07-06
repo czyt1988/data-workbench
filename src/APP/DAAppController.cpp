@@ -2370,22 +2370,20 @@ void DAAppController::onTableStyleCurrentChanged(const DA::DATableCellStyle& sty
 #if DA_ENABLE_PYTHON
     // 底色按钮
     if (mRibbon && mRibbon->m_btnTableFillColor) {
-        bool blocked = mRibbon->m_btnTableFillColor->blockSignals(true);
+        QSignalBlocker block(mRibbon->m_btnTableFillColor);
         if (style.backgroundValid()) {
             mRibbon->m_btnTableFillColor->setColor(style.background().color());
         }
-        mRibbon->m_btnTableFillColor->blockSignals(blocked);
     }
     // 字体面板
     if (mRibbon && mRibbon->m_widgetTableFont) {
-        bool blocked = mRibbon->m_widgetTableFont->blockSignals(true);
+        QSignalBlocker block(mRibbon->m_widgetTableFont);
         if (style.fontValid()) {
             mRibbon->m_widgetTableFont->setCurrentFont(style.font());
         }
         if (style.foregroundValid()) {
             mRibbon->m_widgetTableFont->setCurrentFontColor(style.foreground());
         }
-        mRibbon->m_widgetTableFont->blockSignals(blocked);
     }
 #else
     Q_UNUSED(style)
