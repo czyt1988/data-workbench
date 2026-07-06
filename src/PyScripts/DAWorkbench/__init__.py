@@ -10,16 +10,22 @@ from .DAPyBase import da_logger
 from .DAPyBase import utils
 # re-export: 保持 DAWorkbench.io、DAWorkbench.dataframe 等旧路径可用
 # 以下模块依赖 C++ pybind11 绑定，在纯 Python 环境下可能不可用
-try:
-    from .DAPyBase import io, dataframe, data_processing
-    from .DAPyBase import app_wrapper
-except ImportError:
-    pass
+# 注意：`from .DAPyBase import io, dataframe, data_processing` 是原子操作，
+# 任一子模块导入失败会导致三个名称都不绑定，从而 DAWorkbench.io 缺失。
+# 这里逐个独立导入，单个失败不影响其他可用模块。
+for _submod_name in ("io", "dataframe", "data_processing", "app_wrapper"):
+    try:
+        globals()[_submod_name] = __import__(
+            f"{__name__}.DAPyBase.{_submod_name}", fromlist=[_submod_name])
+    except ImportError:
+        pass
 # 纯 Python 模块，无 C++ 依赖，独立 re-export 避免连坐
-try:
-    from .DAPyBase import thread_status_manager, form_spec, form_builder
-except ImportError:
-    pass
+for _submod_name in ("thread_status_manager", "form_spec", "form_builder"):
+    try:
+        globals()[_submod_name] = __import__(
+            f"{__name__}.DAPyBase.{_submod_name}", fromlist=[_submod_name])
+    except ImportError:
+        pass
 
 # 注册 sys.modules 别名，使 "from DAWorkbench.da_logger import ..." 等
 # 按子模块路径导入的旧写法仍然有效
