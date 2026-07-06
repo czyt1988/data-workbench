@@ -93,6 +93,12 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     // 关闭不必要的绘制特性
     setDAData(d);
     connect(ui->tableView, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);
+    // 选中变化时反向同步 ribbon 控件
+    if (auto sm = ui->tableView->selectionModel()) {
+        connect(sm, &QItemSelectionModel::selectionChanged, this, [ this ]() {
+            Q_EMIT currentStyleChanged(getCurrentCellStyle());
+        });
+    }
 }
 
 DADataOperateOfDataFrameWidget::~DADataOperateOfDataFrameWidget()
@@ -1092,6 +1098,105 @@ void DADataOperateOfDataFrameWidget::clearStyleAll()
         cmd->addChange(DACommandTableStyle::Cell, key.first, key.second, oldStyle, DATableCellStyle(), false);
     }
     getUndoStack()->push(cmd.release());
+}
+
+/**
+ * @brief 获取选中区代表的样式
+ *
+ * 对每个属性（background/foreground/font）独立判断选中区所有单元格的一致性：
+ * - 所有单元格该属性值相同 → 该属性 valid，返回具体值
+ * - 该属性在不同单元格有不同值 → 该属性 invalid（ribbon 不调整该控件）
+ * 无选中时返回空样式。
+ * @return 代表样式
+ */
+DATableCellStyle DADataOperateOfDataFrameWidget::getCurrentCellStyle() const
+{
+    DATableCellStyle result;
+    if (!mStyleManager || !mModel) {
+        return result;
+    }
+    // 收集选中区所有单元格的 resolveCellStyle
+    QList< DATableCellStyle > styles;
+    QList< int > fullCols = getFullySelectedDataframeColumns(false);
+    QList< int > fullRows = getFullySelectedDataframeRows(false);
+    QList< QPoint > cells = getSelectedDataframeCells(false);
+    int cacheOffset = mModel->getCacheWindowStartRow();
+
+    if (!fullCols.isEmpty()) {
+        // 整列选中：取列级 resolveCellStyle（用 actualRow=0 采样）
+        // 但要检查所有选中列的一致性，且需考虑行级/单元格级叠加
+        // 简化：用所有选中单元格的 resolveCellStyle 判断一致性
+        for (const QPoint& p : cells) {
+            styles.append(mStyleManager->resolveCellStyle(p.x() + cacheOffset, p.y()));
+        }
+        if (styles.isEmpty()) {
+            // cells 为空但 fullCols 非空（极端情况），用列级样式
+            for (int col : fullCols) {
+                styles.append(mStyleManager->resolveCellStyle(0, col));
+            }
+        }
+    } else if (!fullRows.isEmpty()) {
+        for (const QPoint& p : cells) {
+            styles.append(mStyleManager->resolveCellStyle(p.x() + cacheOffset, p.y()));
+        }
+        if (styles.isEmpty()) {
+            for (int row : fullRows) {
+                styles.append(mStyleManager->resolveCellStyle(row + cacheOffset, 0));
+            }
+        }
+    } else {
+        for (const QPoint& p : cells) {
+            styles.append(mStyleManager->resolveCellStyle(p.x() + cacheOffset, p.y()));
+        }
+    }
+
+    if (styles.isEmpty()) {
+        return result;
+    }
+
+    // 对每个属性独立判断一致性
+    const DATableCellStyle& first = styles.first();
+
+    // background
+    bool bgConsistent = true;
+    for (int i = 1; i < styles.size(); ++i) {
+        if (styles[ i ].backgroundValid() != first.backgroundValid()
+            || (first.backgroundValid() && styles[ i ].background() != first.background())) {
+            bgConsistent = false;
+            break;
+        }
+    }
+    if (bgConsistent && first.backgroundValid()) {
+        result.setBackground(first.background());
+    }
+
+    // foreground
+    bool fgConsistent = true;
+    for (int i = 1; i < styles.size(); ++i) {
+        if (styles[ i ].foregroundValid() != first.foregroundValid()
+            || (first.foregroundValid() && styles[ i ].foreground() != first.foreground())) {
+            fgConsistent = false;
+            break;
+        }
+    }
+    if (fgConsistent && first.foregroundValid()) {
+        result.setForeground(first.foreground());
+    }
+
+    // font
+    bool fontConsistent = true;
+    for (int i = 1; i < styles.size(); ++i) {
+        if (styles[ i ].fontValid() != first.fontValid()
+            || (first.fontValid() && styles[ i ].font() != first.font())) {
+            fontConsistent = false;
+            break;
+        }
+    }
+    if (fontConsistent && first.fontValid()) {
+        result.setFont(first.font());
+    }
+
+    return result;
 }
 
 void DADataOperateOfDataFrameWidget::changeEvent(QEvent* e)

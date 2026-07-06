@@ -72,6 +72,8 @@ public:
     void clearStyleSelection();
     // 清除整表所有样式
     void clearStyleAll();
+    // 获取选中区代表的样式（各属性独立判断一致性，不一致的属性 valid=false）
+    DATableCellStyle getCurrentCellStyle() const;
 
     // 获取选中的序列，如果用户打开一个表格，选中了其中一列，那么将返回那一列pd.Series作为数据，如果用户选中了多列，那么每列作为一个DAData并组成list返回
     QList< DAData > getSlectedSeries() const;
@@ -79,6 +81,9 @@ public:
     void refreshTable();
     // 确保列可见
     void ensureColumnVisible(const QString& colName, bool selectCol = true);
+Q_SIGNALS:
+    // 选中区变化时发射当前代表样式，供 ribbon 控件反向同步
+    void currentStyleChanged(const DA::DATableCellStyle& style);
 public Q_SLOTS:
     void setDAData(const DA::DAData& d);
     // 在选中行后面插入行

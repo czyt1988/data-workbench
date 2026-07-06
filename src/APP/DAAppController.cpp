@@ -318,12 +318,18 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionClearStyleSelected, onActionClearStyleSelectedTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionClearStyleAll, onActionClearStyleAllTriggered);
 #if DA_ENABLE_PYTHON
-    connect(mRibbon->m_btnTableFillColor, &SARibbonColorToolButton::colorChanged,
-            this, &DAAppController::onTableStyleFillColorChanged);
-    connect(mRibbon->m_widgetTableFont, &DAFontEditPannelWidget::currentFontChanged,
-            this, &DAAppController::onTableStyleFontChanged);
-    connect(mRibbon->m_widgetTableFont, &DAFontEditPannelWidget::currentFontColorChanged,
-            this, &DAAppController::onTableStyleFontColorChanged);
+    connect(mRibbon->m_btnTableFillColor,
+            &SARibbonColorToolButton::colorChanged,
+            this,
+            &DAAppController::onTableStyleFillColorChanged);
+    connect(mRibbon->m_widgetTableFont,
+            &DAFontEditPannelWidget::currentFontChanged,
+            this,
+            &DAAppController::onTableStyleFontChanged);
+    connect(mRibbon->m_widgetTableFont,
+            &DAFontEditPannelWidget::currentFontColorChanged,
+            this,
+            &DAAppController::onTableStyleFontColorChanged);
 #endif
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
@@ -418,8 +424,7 @@ void DAAppController::initConnection()
     // 坐标轴设置面板的可见性变化 -> 刷新DAChartManageWidget树形控件的可见性列
     if (DASettingContainerWidget* setting = getSettingContainerWidget()) {
         if (DAChartSettingWidget* chartSetting = setting->getChartSettingWidget()) {
-            connect(chartSetting, &DAChartSettingWidget::axisVisibilityChanged,
-                    cmw, &DAChartManageWidget::refreshAxisVisibility);
+            connect(chartSetting, &DAChartSettingWidget::axisVisibilityChanged, cmw, &DAChartManageWidget::refreshAxisVisibility);
         }
     }
     // DAChartOperateWidget
@@ -1111,6 +1116,8 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                 &DADataOperateOfDataFrameWidget::selectTypeChanged,
                 this,
                 &DAAppController::onDataOperateDataFrameWidgetSelectTypeChanged);
+        // 选中变化时反向同步 ribbon 样式控件
+        connect(w, &DADataOperateOfDataFrameWidget::currentStyleChanged, this, &DAAppController::onTableStyleCurrentChanged);
 #endif
     } break;
     default:
@@ -2280,6 +2287,7 @@ void DAAppController::onTableStyleFillColorChanged(const QColor& c)
     DA::DATableCellStyle fragment;
     fragment.setBackground(QBrush(c));
     w->mergeStyleToSelection(fragment);
+    qDebug() << "DAAppController::onTableStyleFillColorChanged(" << c << ")";
 #else
     Q_UNUSED(c)
 #endif
@@ -2346,6 +2354,41 @@ void DAAppController::onActionClearStyleAllTriggered()
     if (w) {
         w->clearStyleAll();
     }
+#endif
+}
+
+/**
+ * @brief 选中区样式反向同步 ribbon 控件
+ *
+ * 根据选中区代表样式更新 ribbon 的底色按钮/字体面板。
+ * 各属性独立判断：valid 的属性更新对应控件，invalid 的不调整。
+ * 用 blockSignals 避免控件信号触发循环。
+ * @param style 选中区代表样式
+ */
+void DAAppController::onTableStyleCurrentChanged(const DA::DATableCellStyle& style)
+{
+#if DA_ENABLE_PYTHON
+    // 底色按钮
+    if (mRibbon && mRibbon->m_btnTableFillColor) {
+        bool blocked = mRibbon->m_btnTableFillColor->blockSignals(true);
+        if (style.backgroundValid()) {
+            mRibbon->m_btnTableFillColor->setColor(style.background().color());
+        }
+        mRibbon->m_btnTableFillColor->blockSignals(blocked);
+    }
+    // 字体面板
+    if (mRibbon && mRibbon->m_widgetTableFont) {
+        bool blocked = mRibbon->m_widgetTableFont->blockSignals(true);
+        if (style.fontValid()) {
+            mRibbon->m_widgetTableFont->setCurrentFont(style.font());
+        }
+        if (style.foregroundValid()) {
+            mRibbon->m_widgetTableFont->setCurrentFontColor(style.foreground());
+        }
+        mRibbon->m_widgetTableFont->blockSignals(blocked);
+    }
+#else
+    Q_UNUSED(style)
 #endif
 }
 

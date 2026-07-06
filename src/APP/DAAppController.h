@@ -28,6 +28,7 @@ class CDockWidget;
 }
 namespace DA
 {
+class DATableCellStyle;
 class AppMainWindow;
 class DAAppCore;
 class DAProjectInterface;
@@ -270,6 +271,8 @@ private Q_SLOTS:
     void onTableStyleFontColorChanged(const QColor& c);
     void onActionClearStyleSelectedTriggered();
     void onActionClearStyleAllTriggered();
+    // 选中区样式反向同步 ribbon 控件
+    void onTableStyleCurrentChanged(const DATableCellStyle& style);
 
     //===================================================
     // 视图标签 View Category

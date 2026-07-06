@@ -187,10 +187,10 @@ void DAAppRibbonArea::resetText()
     m_categoryView->setCategoryName(tr("View"));        // cn:视图
     m_pannelViewMainView->setPanelName(tr("Display"));  // cn:视图显示
 
-    m_contextDataFrame->setContextTitle(tr("DataFrame"));        // cn:DataFrame
-    m_categoryDataframeOperate->setCategoryName(tr("Operate"));  // cn:操作
-    m_pannelDataframeOperateAxes->setPanelName(tr("Axes"));      // cn:坐标
-    m_pannelDataframeOperateDType->setPanelName(tr("Type"));     // cn:类型
+    m_contextDataFrame->setContextTitle(tr("DataFrame"));          // cn:DataFrame
+    m_categoryDataframeOperate->setCategoryName(tr("Operate"));    // cn:操作
+    m_pannelDataframeOperateAxes->setPanelName(tr("Axes"));        // cn:坐标
+    m_pannelDataframeOperateDType->setPanelName(tr("Type"));       // cn:类型
     m_categoryDataframeStyle->setCategoryName(tr("Table Style"));  // cn:表格样式
     m_pannelDataframeStyleFill->setPanelName(tr("Fill"));          // cn:底色
     m_pannelDataframeStyleFont->setPanelName(tr("Font"));          // cn:字体
@@ -203,6 +203,8 @@ void DAAppRibbonArea::resetText()
     m_categoryEdit->setCategoryName(tr("Edit"));  // cn:编辑
 
     m_contextWorkflow->setContextTitle(tr("Workflow"));  // cn:工作流
+    // 表格
+    m_btnTableFillColor->setText(tr("Fill Color"));  // cn:填充颜色
 
     m_categoryWorkflowGraphicsEdit->setCategoryName(tr("Workflow Edit"));  // cn:工作流编辑
     m_pannelClipBoard->setPanelName(tr("Clipboard"));                      // cn:剪切板
@@ -428,10 +430,8 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     // Font panel - 字体
     m_pannelDataframeStyleFont = m_categoryDataframeStyle->addPanel(tr("Font"));  // cn:字体
     m_pannelDataframeStyleFont->setObjectName(QStringLiteral("da-pannel-dataframe.style.font"));
-    SARibbonLineWidgetContainer* fontContainer = new SARibbonLineWidgetContainer(m_pannelDataframeStyleFont);
-    m_widgetTableFont = new DAFontEditPannelWidget(fontContainer);
-    fontContainer->setWidget(m_widgetTableFont);
-    m_pannelDataframeStyleFont->addWidget(fontContainer, SARibbonPanelItem::Medium);
+    m_widgetTableFont = new DAFontEditPannelWidget(m_pannelDataframeStyleFont);
+    m_pannelDataframeStyleFont->addWidget(m_widgetTableFont, SARibbonPanelItem::Large);
 
     // Clear panel - 清除
     m_pannelDataframeStyleClear = m_categoryDataframeStyle->addPanel(tr("Clear"));  // cn:清除
@@ -688,7 +688,8 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
     m_panelFigureTheme   = new SARibbonPanel(m_categoryChartOpt);
     m_figureThemeGallery = m_panelFigureTheme->addGallery(true);
     m_figureThemeGallery->setMinimumWidth(200);
-    SARibbonGalleryGroup* group1 = m_figureThemeGallery->addCategoryActions(tr("Theme"), m_actions->actionListOfColorTheme);  // cn:主题
+    SARibbonGalleryGroup* group1 =
+        m_figureThemeGallery->addCategoryActions(tr("Theme"), m_actions->actionListOfColorTheme);  // cn:主题
     group1->setGalleryGroupStyle(SARibbonGalleryGroup::IconWithText);
     group1->setGridMinimumWidth(80);
     group1->setIconSize(QSize(120, 50));
