@@ -1,4 +1,4 @@
-﻿#include "DataFrameQueryDatasDialog.h"
+#include "DataFrameQueryDatasDialog.h"
 #include "ui_DataFrameQueryDatasDialog.h"
 #include <QLineEdit>
 
@@ -24,7 +24,7 @@ DataFrameQueryDatasDialog::DataFrameQueryDatasDialog(QWidget* parent)
            "filtering."
            "\n   **Examples**:  "
            "\n   - `A > 2 and B < 8` filters rows where **A** > 2 and **B** < 8.  "
-           "\n   - `A in (\" S \", \" C \")` filters rows where **A** is either \" S \" or \" C \"."
+           "\n   - `A in (\"S\", \"C\")` filters rows where **A** is either \"S\" or \"C\"."
            "\n"
            "\n4  **Arithmetic and Complex Logic**: Allows arithmetic operations and complex logical expressions.  "
            "\n   **Example**:  "
@@ -37,7 +37,7 @@ DataFrameQueryDatasDialog::DataFrameQueryDatasDialog(QWidget* parent)
            "\n6  **String Operations with `str` Methods**: Supports string column processing (e.g., length, prefix "
            "matching).  "
            "\n   **Example**:  "
-           "\n   `Ticket.str.startswith(\" A \")` filters rows where the **Ticket** column starts with \" A \"."
+           "\n   `Ticket.str.startswith(\"A\")` filters rows where the **Ticket** column starts with \"A\"."
            "\n"
            "\n**Note**:  "
            "\nIf a column name contains spaces or special characters, enclose it in backticks (`` ` ``), e.g., `` "

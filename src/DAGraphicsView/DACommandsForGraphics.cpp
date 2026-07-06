@@ -1,4 +1,4 @@
-﻿#include "DACommandsForGraphics.h"
+#include "DACommandsForGraphics.h"
 #include <QDebug>
 #include <QGraphicsItem>
 #include "DAGraphicsScene.h"
@@ -21,7 +21,7 @@ namespace DA
 DACommandsForGraphicsItemAdd::DACommandsForGraphicsItemAdd(QGraphicsItem* item, QGraphicsScene* scene, QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mScene(scene), mNeedDelete(false)
 {
-    setText(QObject::tr("Item Add"));
+    setText(QObject::tr("Item Add"));  // cn:添加图元
 }
 
 DACommandsForGraphicsItemAdd::~DACommandsForGraphicsItemAdd()
@@ -55,7 +55,7 @@ DACommandsForGraphicsItemsAdd::DACommandsForGraphicsItemsAdd(const QList< QGraph
                                                              QUndoCommand* parent)
     : QUndoCommand(parent), mItems(its), mScene(scene), mNeedDelete(false)
 {
-    setText(QObject::tr("Items Add"));
+    setText(QObject::tr("Items Add"));  // cn:添加多个图元
 }
 
 DACommandsForGraphicsItemsAdd::~DACommandsForGraphicsItemsAdd()
@@ -95,7 +95,7 @@ void DACommandsForGraphicsItemsAdd::undo()
 DACommandsForGraphicsItemRemove::DACommandsForGraphicsItemRemove(QGraphicsItem* item, QGraphicsScene* scene, QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mScene(scene), mNeedDelete(false)
 {
-    setText(QObject::tr("Item Remove"));
+    setText(QObject::tr("Item Remove"));  // cn:移除图元
 }
 
 DACommandsForGraphicsItemRemove::~DACommandsForGraphicsItemRemove()
@@ -127,7 +127,7 @@ DACommandsForGraphicsItemsRemove::DACommandsForGraphicsItemsRemove(const QList< 
                                                                    QUndoCommand* parent)
     : QUndoCommand(parent), mItems(its), mScene(scene), mNeedDelete(false)
 {
-    setText(QObject::tr("Items Remove"));
+    setText(QObject::tr("Items Remove"));  // cn:移除多个图元
 }
 
 DACommandsForGraphicsItemsRemove::~DACommandsForGraphicsItemsRemove()
@@ -179,7 +179,7 @@ DACommandsForGraphicsItemsMoved::DACommandsForGraphicsItemsMoved(const QList< QG
     , mCmdDatetime(QDateTime::currentDateTime())
     , mSkipFirst(skipfirst)
 {
-    setText(QObject::tr("Items Move"));
+    setText(QObject::tr("Items Move"));  // cn:移动多个图元
 }
 
 void DACommandsForGraphicsItemsMoved::redo()
@@ -261,7 +261,7 @@ DACommandsForGraphicsItemMoved::DACommandsForGraphicsItemMoved(QGraphicsItem* it
     , mSkipFirst(skipfirst)
     , mDatetime(QDateTime::currentDateTime())
 {
-    setText(QObject::tr("Item Move"));
+    setText(QObject::tr("Item Move"));  // cn:移动图元
 }
 
 void DACommandsForGraphicsItemMoved::redo()
@@ -329,7 +329,7 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsRes
     , mNewSize(newSize)
     , mSkipfirst(skipfirst)
 {
-    setText(QObject::tr("Item Resize"));
+    setText(QObject::tr("Item Resize"));  // cn:调整图元尺寸
 }
 
 DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsResizeableItem* item,
@@ -338,7 +338,7 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsRes
                                                                    QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mOldSize(oldSize), mNewSize(newSize), mDatetime(QDateTime::currentDateTime())
 {
-	setText(QObject::tr("Item Resize"));
+	setText(QObject::tr("Item Resize"));  // cn:调整图元尺寸
 	mOldpos = mNewPosition = item->pos();
 }
 
@@ -411,7 +411,7 @@ DACommandsForGraphicsItemResizeWidth::DACommandsForGraphicsItemResizeWidth(DAGra
                                                                            QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mOldWidth(oldWidth), mNewWidth(newWidth), mDatetime(QDateTime::currentDateTime())
 {
-	setText(QObject::tr("Item Resize Width"));
+	setText(QObject::tr("Item Resize Width"));  // cn:调整图元宽度
 	mHeight = item->getBodySize().height();
 }
 
@@ -454,7 +454,7 @@ DACommandsForGraphicsItemResizeHeight::DACommandsForGraphicsItemResizeHeight(DAG
                                                                              QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mOldHeight(oldHeight), mNewHeight(newHeight), mDatetime(QDateTime::currentDateTime())
 {
-	setText(QObject::tr("Item Resize Height"));
+	setText(QObject::tr("Item Resize Height"));  // cn:调整图元高度
 	mWidth = item->getBodySize().width();
 }
 
@@ -502,7 +502,7 @@ DACommandsForGraphicsItemRotation::DACommandsForGraphicsItemRotation(DAGraphicsR
     , mNewRotation(newRotation)
     , mDatetime(QDateTime::currentDateTime())
 {
-    setText(QObject::tr("Item Rotation"));
+    setText(QObject::tr("Item Rotation"));  // cn:旋转图元
 }
 
 void DACommandsForGraphicsItemRotation::redo()

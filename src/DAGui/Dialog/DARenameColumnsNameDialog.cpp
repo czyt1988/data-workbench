@@ -1,4 +1,4 @@
-﻿#include "DARenameColumnsNameDialog.h"
+#include "DARenameColumnsNameDialog.h"
 #include "ui_DARenameColumnsNameDialog.h"
 #include <QMessageBox>
 //===================================================
@@ -44,7 +44,7 @@ QString DARenameColumnsNameDialog::getDataName() const
 void DARenameColumnsNameDialog::setColumnsName(const QList< QString >& names)
 {
     m_model->clear();
-    m_model->setHorizontalHeaderLabels({ tr("name") });
+    m_model->setHorizontalHeaderLabels({ tr("name") });  // cn:名称
     for (int i = 0; i < names.size(); ++i) {
         m_model->appendRow({ new QStandardItem(names[ i ]) });
     }
@@ -88,8 +88,8 @@ void DARenameColumnsNameDialog::on_pushButtonOK_clicked()
     for (int i = 0; i < m_newCols.size(); ++i) {
         if (m_newCols.count(m_newCols[ i ]) > 1) {
             QMessageBox::warning(this,
-                                 tr("warning"),  // cn: 警告
-                                 tr("Duplicate column name \"%1\",Please reset the column name of column %2")  // cn 列名“%1”存在重复，请重新设置第%2列的列名
+                                 tr("Warning"),  // cn:警告
+                                 tr("Duplicate column name \"%1\", please reset the column name of column %2")  // cn:列名“%1”存在重复，请重新设置第%2列的列名
                                  .arg(m_newCols[ i ])
                                  .arg(i + 1));
             return;

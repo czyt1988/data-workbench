@@ -356,7 +356,7 @@ void DAAppActions::retranslateUi()
     // Main Category
     actionOpen->setText(tr("Open"));                     // cn:打开
     actionOpen->setToolTip(tr("Open file or project"));  // cn:打开文件或项目
-    actionSave->setText(tr("Save"));
+    actionSave->setText(tr("Save"));                     // cn:保存
     actionSave->setToolTip(tr("Save file or project"));                                // cn:保存文件或项目
     actionSaveAs->setText(tr("Save As"));                                              // cn:另存为
     actionSaveAs->setToolTip(tr("Save file or project as"));                           // cn:保存文件或项目为
@@ -447,7 +447,7 @@ void DAAppActions::retranslateUi()
     actionChartEnablePickerXY->setToolTip(tr("Enable or disable XY picker in the chart"));  // cn:启用或禁用图表中的点拾取
     actionChartLinkAllPickerEnabled->setText(tr("Link All Picker"));                        // cn:联动\n拾取
     actionChartLinkAllPickerEnabled->setToolTip(tr("Enable or disable all picker linked"));  // cn:启用或禁用所有拾取联动
-    actionChartEnableLegend->setText(tr("legend"));                                          // cn:图例
+    actionChartEnableLegend->setText(tr("Legend"));                                          // cn:图例
     actionChartEnableLegend->setToolTip(tr("Enable or disable legend in the chart"));  // cn:启用或禁用图表中的图例
     actionCopyFigureInClipboard->setText(tr("Copy To Clipboard"));                     // cn:复制到剪切板
     actionCopyFigureInClipboard->setToolTip(tr("Copy the figure to the clipboard"));   // cn:将绘图复制到剪切板
@@ -487,11 +487,11 @@ void DAAppActions::retranslateUi()
     actionInsertColumnRight->setToolTip(tr("Insert a column to the right of the current column"));  // cn:插入列(右)
     actionInsertColumnLeft->setText(tr("Insert Column(Left)"));                                     // cn:插入列(左)
     actionInsertColumnLeft->setToolTip(tr("Insert a column to the left of the current column"));    // cn:插入列(左)
-    actionCastToNum->setText(tr("To num"));                                                         // cn:转换为数值类型
-    actionCastToNum->setToolTip(tr("Cast to num type"));                                            // cn:转换为数值类型
-    actionCastToString->setText(tr("To str"));                      // cn:转换为字符串类型
+    actionCastToNum->setText(tr("To Numeric"));                                                 // cn:转换为数值类型
+    actionCastToNum->setToolTip(tr("Cast to numeric type"));                                    // cn:转换为数值类型
+    actionCastToString->setText(tr("To String"));                      // cn:转换为字符串类型
     actionCastToString->setToolTip(tr("Cast to string type"));      // cn:转换为字符串类型
-    actionCastToDatetime->setText(tr("To datetime"));               // cn:转换为日期类型
+    actionCastToDatetime->setText(tr("To Datetime"));               // cn:转换为日期类型
     actionCastToDatetime->setToolTip(tr("Cast to datetime type"));  // cn:转换为日期类型
 
     actionChangeToIndex->setText(tr("To Index"));               // cn:转换为\n索引
@@ -508,9 +508,9 @@ void DAAppActions::retranslateUi()
     actionWorkflowEnableItemLinkageMove->setText(tr("Linkage \nMove"));  // cn:联动
     actionWorkflowEnableItemLinkageMove->setToolTip(
         tr("When moving elements, other elements linked to this element follow the movement"));  // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
-    actionItemGrouping->setText(tr("grouping"));                                                 // cn:分组
+    actionItemGrouping->setText(tr("Grouping"));                                                 // cn:分组
     actionItemGrouping->setToolTip(tr("Group selected elements"));   // cn:对选中的元素进行分组
-    actionItemUngroup->setText(tr("ungroup"));                       // cn:取消分组
+    actionItemUngroup->setText(tr("Ungroup"));                       // cn:取消分组
     actionItemUngroup->setToolTip(tr("Ungroup selected elements"));  // cn:对选中的元素进行取消分组
     actionWorkflowStartDrawRect->setText(tr("Draw \nRect"));         // cn:绘制\n矩形
     actionWorkflowStartDrawRect->setToolTip(tr("Draw a rectangle on the workflow scene"));  // cn:在工作流场景中绘制矩形
@@ -558,22 +558,22 @@ void DAAppActions::retranslateUi()
     actionShowDataArea->setToolTip(tr("Show the data area"));                         // cn:显示数据区域
     actionShowDataManagerArea->setText(tr("Show \nData Manager"));                    // cn:数据\n管理
     actionShowDataManagerArea->setToolTip(tr("Show the data manager area"));          // cn:显示数据管理区域
-    actionShowMessageLogView->setText(tr("Show Infomation Window"));                  // cn:信息窗口
+    actionShowMessageLogView->setText(tr("Show Information Window"));                  // cn:信息窗口
     actionShowMessageLogView->setToolTip(tr("Show the message log window"));          // cn:显示信息窗口
     actionShowSettingWidget->setText(tr("Show Setting Window"));                      // cn:设置窗口
     actionShowSettingWidget->setToolTip(tr("Show the setting window"));               // cn:显示设置窗口
     actionShowLeftSideBar->setText(tr("Show Left \nSide Bar"));                       // cn:显示左侧边栏
-    actionShowLeftSideBar->setToolTip(tr("Show the left side bar"));
+    actionShowLeftSideBar->setToolTip(tr("Show the left side bar"));  // cn:显示左侧边栏
     actionShowRightSideBar->setText(tr("Show Right \nSide Bar"));       // cn:显示右侧边栏
     actionShowRightSideBar->setToolTip(tr("Show the right side bar"));  // cn:显示右侧边栏
     // Config Category
     actionPluginManager->setText(tr("Plugin \nConfig"));             // cn:插件\n设置
     actionPluginManager->setToolTip(tr("Show the plugin manager"));  // cn:显示插件管理器
     // Other
-    actionRibbonThemeOffice2013->setText(tr("Office 2013 theme"));
-    actionRibbonThemeOffice2016Blue->setText(tr("Office 2016 blue theme"));
-    actionRibbonThemeOffice2021Blue->setText(tr("Office 2021 blue theme"));
-    actionRibbonThemeDark->setText(tr("Dark theme"));
+    actionRibbonThemeOffice2013->setText(tr("Office 2013 Theme"));      // cn:Office 2013 主题
+    actionRibbonThemeOffice2016Blue->setText(tr("Office 2016 Blue Theme"));  // cn:Office 2016 蓝色主题
+    actionRibbonThemeOffice2021Blue->setText(tr("Office 2021 Blue Theme"));  // cn:Office 2021 蓝色主题
+    actionRibbonThemeDark->setText(tr("Dark Theme"));                  // cn:深色主题
 
     //
     if (actionRedo) {

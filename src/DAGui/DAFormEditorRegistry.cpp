@@ -373,8 +373,8 @@ QWidget* createListEditor(const DAFormFieldDef& field, QWidget* parent)
     btnLayout->setContentsMargins(0, 0, 0, 0);
     btnLayout->setSpacing(2);
 
-    QPushButton* btnAdd    = new QPushButton(QObject::tr("添加"), container);
-    QPushButton* btnRemove = new QPushButton(QObject::tr("删除"), container);
+    QPushButton* btnAdd    = new QPushButton(QObject::tr("Add"), container);  // cn:添加
+    QPushButton* btnRemove = new QPushButton(QObject::tr("Remove"), container);  // cn:删除
     btnLayout->addWidget(btnAdd);
     btnLayout->addWidget(btnRemove);
     btnLayout->addStretch();
@@ -397,7 +397,7 @@ QWidget* createListEditor(const DAFormFieldDef& field, QWidget* parent)
     }
 
     QObject::connect(btnAdd, &QPushButton::clicked, listWidget, [ listWidget ]() {
-        listWidget->addItem(QObject::tr("新项目"));
+        listWidget->addItem(QObject::tr("New Item"));  // cn:新项目
     });
     QObject::connect(btnRemove, &QPushButton::clicked, listWidget, [ listWidget ]() {
         QList< QListWidgetItem* > selected = listWidget->selectedItems();

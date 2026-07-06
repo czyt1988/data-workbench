@@ -1,4 +1,4 @@
-﻿#include "DAStandardItemPlot.h"
+#include "DAStandardItemPlot.h"
 #include "DAFigureTreeModel.h"
 #include "qwt_plot.h"
 #include "qwt_text.h"
@@ -50,11 +50,11 @@ QVariant DAStandardItemPlot::handleItemTextType(int role) const
         QString text;
         if (m_plot->isParasitePlot()) {
             int index = m_plot->hostPlot()->parasitePlotIndex(m_plot);
-            text      = QObject::tr("layout-%1").arg(index + 1);
+            text      = QObject::tr("layout-%1").arg(index + 1);  // cn:布局-%1
         } else {
             text = m_plot->title().text();
             if (text.isEmpty()) {
-                text = QObject::tr("layout");
+                text = QObject::tr("layout");  // cn:布局
             }
         }
         return text;
@@ -85,7 +85,7 @@ QVariant DAStandardItemPlot::handleScalePropertyType(int role) const
             return QVariant();
         }
         if (m_plot->isParasitePlot()) {
-            return QObject::tr("Parasite Plot");  // cn: 寄生绘图
+            return QObject::tr("Parasite Plot");  // cn:寄生绘图
         }
     } break;
     default:

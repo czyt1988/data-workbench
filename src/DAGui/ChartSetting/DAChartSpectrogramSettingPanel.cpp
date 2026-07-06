@@ -1,4 +1,4 @@
-﻿#include "DAChartSpectrogramSettingPanel.h"
+#include "DAChartSpectrogramSettingPanel.h"
 #include "DAPropertyPanelWidget.h"
 #include "qwt_colormap.h"
 #include "qwt_text.h"
@@ -43,34 +43,51 @@ void DAChartSpectrogramSettingPanel::buildPropertyPanel()
     auto panel = propertyPanel();
 
     // 基础属性组
-    panel->addCollapsibleGroup(tr("Basic"));
-    panel->addStringProperty(PropTitle, tr("Title"));
-    panel->addDoubleProperty(PropZValue, tr("Z Value"));
+    panel->addCollapsibleGroup(tr("Basic")  // cn:基础
+    );
+    panel->addStringProperty(PropTitle, tr("Title")  // cn:标题
+    );
+    panel->addDoubleProperty(PropZValue, tr("Z Value")  // cn:Z值
+    );
     panel->endGroup();
 
     // 坐标轴属性组
-    panel->addCollapsibleGroup(tr("Axis"));
-    addAxisProperty(PropXAxis, tr("X Axis"), false);
-    addAxisProperty(PropYAxis, tr("Y Axis"), true);
+    panel->addCollapsibleGroup(tr("Axis")  // cn:坐标轴
+    );
+    addAxisProperty(PropXAxis, tr("X Axis")  // cn:X轴
+                    ,
+                    false);
+    addAxisProperty(PropYAxis, tr("Y Axis")  // cn:Y轴
+                    ,
+                    true);
     panel->endGroup();
 
     // 显示属性组
-    panel->addCollapsibleGroup(tr("Display"));
+    panel->addCollapsibleGroup(tr("Display")  // cn:显示
+    );
     // QwtPlotSpectrogram::DisplayMode: ImageMode=1, ContourMode=2
     panel->addEnumProperty(PropDisplayMode,
-                           tr("Display Mode"),
-                           QStringList() << tr("Image Mode") << tr("Contour Mode"),
+                           tr("Display Mode")  // cn:显示模式
+                           ,
+                           QStringList() << tr("Image Mode")  // cn:图像模式
+                                         << tr("Contour Mode")  // cn:等值线模式
+                           ,
                            QList< int >() << static_cast< int >(QwtPlotSpectrogram::ImageMode)
                                           << static_cast< int >(QwtPlotSpectrogram::ContourMode));
     panel->endGroup();
     // 颜色属性组
-    panel->addCollapsibleGroup(tr("Color"));
-    panel->addColorProperty(PropFromColor, tr("From Color"));
-    panel->addColorProperty(PropToColor, tr("To Color"));
+    panel->addCollapsibleGroup(tr("Color")  // cn:颜色
+    );
+    panel->addColorProperty(PropFromColor, tr("From Color")  // cn:起始颜色
+    );
+    panel->addColorProperty(PropToColor, tr("To Color")  // cn:终止颜色
+    );
     panel->endGroup();
     // 轮廓线属性组
-    panel->addCollapsibleGroup(tr("Contour"));
-    panel->addPenProperty(PropContourPen, tr("Contour Pen"));
+    panel->addCollapsibleGroup(tr("Contour")  // cn:等值线
+    );
+    panel->addPenProperty(PropContourPen, tr("Contour Pen")  // cn:等值线画笔
+    );
     panel->setPropertyEnabled(PropContourPen, false);
     panel->endGroup();
 }

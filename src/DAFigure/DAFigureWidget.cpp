@@ -1189,7 +1189,7 @@ QDataStream& operator>>(QDataStream& in, DAFigureWidget* p)
 
     in >> tmp;
     if (tmp != magicStart) {
-        throw DABadSerializeExpection("DAFigureWidget get invalid magic strat code");  // cn: DAFigureWidget的文件头异常
+        throw DABadSerializeExpection("DAFigureWidget get invalid magic strat code");  // cn:DAFigureWidget的文件头异常
         return (in);
     }
     QByteArray geometryData, stateData;

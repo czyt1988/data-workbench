@@ -1,4 +1,4 @@
-﻿#include "DAChartAxisSettingPanel.h"
+#include "DAChartAxisSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAChartUtil.h"
 #include "qwt_plot.h"
@@ -189,22 +189,38 @@ void DAChartAxisSettingPanel::buildPropertyPanel()
 {
     auto panel = propertyPanel();
 
-    panel->addCollapsibleGroup(tr("Enable"));
-    panel->addBoolProperty(PID_EnableAxis, tr("Enable Axis"));
+    panel->addCollapsibleGroup(tr("Enable")  // cn:启用
+    );
+    panel->addBoolProperty(PID_EnableAxis, tr("Enable Axis")  // cn:启用坐标轴
+    );
     panel->endGroup();
 
-    panel->addCollapsibleGroup(tr("Label"));
-    panel->addStringProperty(PID_LabelText, tr("Label Text"));
-    panel->addFontProperty(PID_LabelFont, tr("Label Font"));
-    panel->addColorProperty(PID_LabelFontColor, tr("Label Font Color"));
-    panel->addAlignmentProperty(PID_LabelAlignment, tr("Label Alignment"));
-    panel->addDoubleProperty(PID_LabelRotation, tr("Label Rotation"), 0.0, -360.0, 360.0, 1);
+    panel->addCollapsibleGroup(tr("Label")  // cn:标签
+    );
+    panel->addStringProperty(PID_LabelText, tr("Label Text")  // cn:标签文本
+    );
+    panel->addFontProperty(PID_LabelFont, tr("Label Font")  // cn:标签字体
+    );
+    panel->addColorProperty(PID_LabelFontColor, tr("Label Font Color")  // cn:标签字体颜色
+    );
+    panel->addAlignmentProperty(PID_LabelAlignment, tr("Label Alignment")  // cn:标签对齐
+    );
+    panel->addDoubleProperty(PID_LabelRotation, tr("Label Rotation")  // cn:标签旋转
+                             ,
+                             0.0, -360.0, 360.0, 1);
     panel->endGroup();
 
-    panel->addCollapsibleGroup(tr("Scale"));
-    panel->addIntProperty(PID_Margin, tr("Margin"), 0, -20, 100);
-    panel->addDoubleProperty(PID_MinScale, tr("Min Scale"), 0.0, -1e15, 1e15, 5);
-    panel->addDoubleProperty(PID_MaxScale, tr("Max Scale"), 0.0, -1e15, 1e15, 5);
+    panel->addCollapsibleGroup(tr("Scale")  // cn:刻度
+    );
+    panel->addIntProperty(PID_Margin, tr("Margin")  // cn:边距
+                          ,
+                          0, -20, 100);
+    panel->addDoubleProperty(PID_MinScale, tr("Min Scale")  // cn:最小刻度
+                             ,
+                             0.0, -1e15, 1e15, 5);
+    panel->addDoubleProperty(PID_MaxScale, tr("Max Scale")  // cn:最大刻度
+                             ,
+                             0.0, -1e15, 1e15, 5);
     panel->endGroup();
 
     // 刻度样式: Normal/DateTime 两个RadioButton
@@ -213,8 +229,10 @@ void DAChartAxisSettingPanel::buildPropertyPanel()
     hLayout->setContentsMargins(0, 0, 0, 0);
     hLayout->setSpacing(8);
 
-    QRadioButton* rbNormal   = new QRadioButton(tr("Normal"), scaleStyleContainer);
-    QRadioButton* rbDateTime = new QRadioButton(tr("DateTime"), scaleStyleContainer);
+    QRadioButton* rbNormal   = new QRadioButton(tr("Normal")  // cn:普通
+                                                , scaleStyleContainer);
+    QRadioButton* rbDateTime = new QRadioButton(tr("DateTime")  // cn:日期时间
+                                                , scaleStyleContainer);
     rbNormal->setChecked(true);
 
     mScaleStyleButtonGroup = new QButtonGroup(scaleStyleContainer);
@@ -242,7 +260,8 @@ void DAChartAxisSettingPanel::buildPropertyPanel()
     });
 #endif
 
-    panel->addProperty(PID_ScaleStyle, tr("Scale Style"), scaleStyleContainer);
+    panel->addProperty(PID_ScaleStyle, tr("Scale Style")  // cn:刻度样式
+                       , scaleStyleContainer);
 }
 
 /**

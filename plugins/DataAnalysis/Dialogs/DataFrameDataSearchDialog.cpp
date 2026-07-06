@@ -1,4 +1,4 @@
-﻿#include "DataFrameDataSearchDialog.h"
+#include "DataFrameDataSearchDialog.h"
 #include "ui_DataFrameDataSearchDialog.h"
 #include "DAWaitCursorScoped.h"
 #include "DAPyScriptsDataFrame.h"
@@ -38,7 +38,7 @@ void DataFrameDataSearchDialog::onPushButtonNextClicked()
         mIsNeedResearch = false;
     }
     if (mMatches.empty()) {
-        ui->labelLocation->setText(tr("can not find item"));  // cn:无法找到条目
+        ui->labelLocation->setText(tr("Cannot find item"));  // cn:无法找到条目
         return;
     }
     if (mIndex >= mMatches.size()) {
@@ -46,9 +46,9 @@ void DataFrameDataSearchDialog::onPushButtonNextClicked()
     }
     QPair< int, int > cellloc = mMatches[ mIndex ];
     mDataTableView->selectActualCell(cellloc.first, cellloc.second);
-    ui->labelLocation->setText(tr("Found at column %1,line %2")
+    ui->labelLocation->setText(tr("Found at column %1, line %2")
                                    .arg(mDataTableView->actualColumnName(cellloc.second))
-                                   .arg(mDataTableView->actualRowName(cellloc.first)));
+                                   .arg(mDataTableView->actualRowName(cellloc.first)));  // cn:在第%2行、第%1列找到
     ++mIndex;
 }
 

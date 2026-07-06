@@ -1,4 +1,4 @@
-﻿#include "DAFigureWidgetSettingPanel.h"
+#include "DAFigureWidgetSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAFigureWidget.h"
 #include "qwt_figure.h"
@@ -120,15 +120,26 @@ void DAFigureWidgetSettingPanel::buildPropertyPanel()
 {
     auto panel = propertyPanel();
 
-    panel->addCollapsibleGroup(tr("Size"));
-    panel->addIntProperty(PID_MinWidth, tr("Min Width"), 0, 0, 999999999);
-    panel->addIntProperty(PID_MinHeight, tr("Min Height"), 0, 0, 999999999);
-    panel->addIntProperty(PID_MaxWidth, tr("Max Width"), 0, 0, 999999999);
-    panel->addIntProperty(PID_MaxHeight, tr("Max Height"), 0, 0, 999999999);
+    panel->addCollapsibleGroup(tr("Size")  // cn:尺寸
+    );
+    panel->addIntProperty(PID_MinWidth, tr("Min Width")  // cn:最小宽度
+                          ,
+                          0, 0, 999999999);
+    panel->addIntProperty(PID_MinHeight, tr("Min Height")  // cn:最小高度
+                          ,
+                          0, 0, 999999999);
+    panel->addIntProperty(PID_MaxWidth, tr("Max Width")  // cn:最大宽度
+                          ,
+                          0, 0, 999999999);
+    panel->addIntProperty(PID_MaxHeight, tr("Max Height")  // cn:最大高度
+                          ,
+                          0, 0, 999999999);
     panel->endGroup();
 
-    panel->addCollapsibleGroup(tr("Background"));
-    panel->addBrushProperty(PID_BackgroundBrush, tr("Background Brush"));
+    panel->addCollapsibleGroup(tr("Background")  // cn:背景
+    );
+    panel->addBrushProperty(PID_BackgroundBrush, tr("Background Brush")  // cn:背景画刷
+    );
     panel->endGroup();
 }
 

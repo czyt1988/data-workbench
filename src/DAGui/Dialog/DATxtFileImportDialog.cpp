@@ -1,4 +1,4 @@
-﻿#include "DATxtFileImportDialog.h"
+#include "DATxtFileImportDialog.h"
 #include "ui_DATxtFileImportDialog.h"
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QTextCodec>
@@ -51,7 +51,7 @@ DATxtFileImportDialog::DATxtFileImportDialog(QWidget* parent) : QDialog(parent),
 #endif
     // 分隔符
     ui->comboBoxDelimiter->addItem(tr(",(comma)"), QVariant(","));        // cn:,逗号
-    ui->comboBoxDelimiter->addItem(tr(" (space)"), QVariant(" "));        // cn: 空格
+    ui->comboBoxDelimiter->addItem(tr(" (space)"), QVariant(" "));  // cn:空格
     ui->comboBoxDelimiter->addItem(tr("\\t(tab stop)"), QVariant("\t"));  // cn:tab制表位
     ui->comboBoxDelimiter->addItem(tr(";(semicolon)"), QVariant(";"));    // cn:;分号
     ui->comboBoxDelimiter->addItem(tr("_(underscore)"), QVariant("_"));   // cn:_下横杠
@@ -194,8 +194,8 @@ void DATxtFileImportDialog::onTextReadFinished(int code)
     if (code != DATextReadWriter::NoError) {
         QMessageBox::critical(
             this,
-            tr("error"),
-            tr("read txt file(%1) occure error,reason:%2")
+            tr("Error"),  // cn:错误
+            tr("Failed to read text file(%1), reason: %2")  // cn:读取文本文件(%1)失败,原因:%2
                 .arg(getTextFilePath())
                 .arg(DATextReadWriter::errorCodeToString(static_cast< DATextReadWriter::ErrorCode >(code)))
         );

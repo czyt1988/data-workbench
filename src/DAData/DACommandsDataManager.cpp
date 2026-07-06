@@ -1,4 +1,4 @@
-﻿#include "DACommandsDataManager.h"
+#include "DACommandsDataManager.h"
 #include "DADataManager.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -12,7 +12,7 @@ using namespace DA;
 DACommandDataManagerAdd::DACommandDataManagerAdd(const DAData& d, DADataManager* mgr, QUndoCommand* par)
     : QUndoCommand(par), mData(d), mDataMgr(mgr)
 {
-    setText(QObject::tr("add data"));
+    setText(QObject::tr("add data"));  // cn:添加数据
 }
 
 void DACommandDataManagerAdd::redo()
@@ -31,7 +31,7 @@ void DACommandDataManagerAdd::undo()
 DACommandDataManagerRemove::DACommandDataManagerRemove(const DAData& d, DADataManager* mgr, QUndoCommand* par)
     : QUndoCommand(par), mData(d), mDataMgr(mgr)
 {
-    setText(QObject::tr("remove data"));
+    setText(QObject::tr("remove data"));  // cn:移除数据
 }
 
 void DACommandDataManagerRemove::redo()
@@ -50,7 +50,7 @@ void DACommandDataManagerRemove::undo()
 DACommandDataManagerRenameData::DACommandDataManagerRenameData(const DAData& d, const QString& newName, QUndoCommand* par)
     : QUndoCommand(par), mData(d)
 {
-    setText(QObject::tr("rename data"));
+    setText(QObject::tr("rename data"));  // cn:重命名数据
     m_oldNmae = d.getName();
     m_newName = newName;
 }

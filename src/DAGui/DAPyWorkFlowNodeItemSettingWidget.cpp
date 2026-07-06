@@ -36,7 +36,7 @@ void DAPyWorkFlowNodeItemSettingWidget::init()
 
     // 创建参数设置面板调度器，插入为第一个tab页（index 0）
     mParamSettingWidget = new DANodeParamSettingPanelWidget(this);
-    ui->tabWidget->insertTab(0, mParamSettingWidget, tr("参数"));
+    ui->tabWidget->insertTab(0, mParamSettingWidget, tr("Parameters"));  // cn:参数
     // 默认显示参数tab
     ui->tabWidget->setCurrentIndex(0);
 

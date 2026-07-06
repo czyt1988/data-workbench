@@ -1,4 +1,4 @@
-﻿#include "DataframeIOWorker.h"
+#include "DataframeIOWorker.h"
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
@@ -67,7 +67,7 @@ void DataframeIOWorker::exportIndividualData()
         return;
     }
     QString dataPath = QFileDialog::getSaveFileName(mainWindow(),
-                                                    tr("Export Data"),  // 导出数据
+                                                    tr("Export Data"),  // cn:导出数据
                                                     QString(),
                                                     fileFilter);
     if (dataPath.isEmpty()) {
@@ -200,7 +200,7 @@ void DataframeIOWorker::updatePythonThreadStatus(const std::string& taskid, int 
             int elapsed_min = static_cast< int >(elapsed_seconds / 60);
             int elapsed_sec = static_cast< int >(elapsed_seconds) % 60;
             QString progress_text;
-            progress_text = tr("%1 . Elapsed: %2:%3")
+            progress_text = tr("%1. Elapsed: %2:%3")
                                 .arg(QString::fromStdString(message))
                                 .arg(elapsed_min, 2, 10, QChar('0'))
                                 .arg(elapsed_sec, 2, 10, QChar('0'));  // cn:%1,已用时%2:%3
@@ -220,7 +220,7 @@ void DataframeIOWorker::updatePythonThreadStatus(const std::string& taskid, int 
             int elapsed_sec        = static_cast< int >(elapsed_seconds) % 60;
             // 生成日志
             QString logMessage =
-                QString(tr("%1,Cost %2:%3")).arg(QString::fromStdString(message)).arg(elapsed_min).arg(elapsed_sec);
+                QString(tr("%1, Cost %2:%3")).arg(QString::fromStdString(message)).arg(elapsed_min).arg(elapsed_sec);  // cn:%1，耗时%2:%3
             statusBar->showMessage(logMessage);
             if (is_success) {
                 qInfo().noquote() << logMessage;

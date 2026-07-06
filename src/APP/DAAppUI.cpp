@@ -1,4 +1,4 @@
-﻿#include "DAAppUI.h"
+#include "DAAppUI.h"
 #include <QDebug>
 #include "DAAppDockingArea.h"
 #include "DAAppRibbonArea.h"
@@ -69,7 +69,7 @@ QJsonObject DAAppUI::getConfigValues(const QString& jsonConfig, QWidget* parent,
 		if (!dialog) {
 			dialog = new DAPropertyFormDialog(parent);
 			if (!dialog->loadFromJson(jsonConfig)) {
-				qWarning() << tr("Failed to load form config for settings dialog");
+				qWarning() << tr("Failed to load form config for settings dialog");  // cn:无法加载设置对话框的表单配置
 				delete dialog;
 				return QJsonObject();
 			}

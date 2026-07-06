@@ -1,4 +1,4 @@
-﻿#include "DAAbstractData.h"
+#include "DAAbstractData.h"
 #include <QObject>
 #include <QDateTime>
 #include "DAUniqueIDGenerater.h"
@@ -99,13 +99,13 @@ QString DAAbstractData::typeToString(DAAbstractData::DataType d)
 {
 	switch (d) {
 	case TypeNone:
-		return QObject::tr("none");
+		return QObject::tr("none");  // cn:无
 	case TypePythonObject:
-		return QObject::tr("object");
+		return QObject::tr("object");  // cn:对象
 	case TypePythonDataFrame:
-		return QObject::tr("dataframe");
+		return QObject::tr("dataframe");  // cn:数据框
 	case TypeInnerData:
-		return QObject::tr("raw");
+		return QObject::tr("raw");  // cn:原始数据
 	default:
 		break;
 	}

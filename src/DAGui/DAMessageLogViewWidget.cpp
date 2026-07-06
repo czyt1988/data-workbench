@@ -1,4 +1,4 @@
-﻿#include "DAMessageLogViewWidget.h"
+#include "DAMessageLogViewWidget.h"
 #include "ui_DAMessageLogViewWidget.h"
 #include <QDebug>
 #include <QMenu>
@@ -290,16 +290,16 @@ void DAMessageLogViewWidget::changeEvent(QEvent* event)
  */
 void DAMessageLogViewWidget::retranslateUi()
 {
-    _actionMessageLogShowInfo->setText(tr("Info"));
-    _actionMessageLogShowInfo->setToolTip(tr("Show Info Message"));
-    _actionMessageLogShowWarning->setText(tr("Warning"));
-    _actionMessageLogShowWarning->setToolTip(tr("Show Warning Message"));
-    _actionMessageLogShowCritical->setText(tr("Critical"));
-    _actionMessageLogShowCritical->setToolTip(tr("Show Critical Message"));
-    _actionMessageLogClear->setText(tr("Clear"));                  // cn:清空
-    _actionMessageLogClear->setToolTip(tr("Clear All Messages"));  // cn:清空所有消息
-    _actionCopySelectMessage->setText(tr("Copy"));                 // 复制
-    _actionCopySelectMessage->setToolTip(tr("Copy Select Message"));
+    _actionMessageLogShowInfo->setText(tr("Info"));                          // cn:信息
+    _actionMessageLogShowInfo->setToolTip(tr("Show Info Message"));          // cn:显示信息消息
+    _actionMessageLogShowWarning->setText(tr("Warning"));                    // cn:警告
+    _actionMessageLogShowWarning->setToolTip(tr("Show Warning Message"));    // cn:显示警告消息
+    _actionMessageLogShowCritical->setText(tr("Critical"));                  // cn:严重
+    _actionMessageLogShowCritical->setToolTip(tr("Show Critical Message"));  // cn:显示严重消息
+    _actionMessageLogClear->setText(tr("Clear"));                            // cn:清空
+    _actionMessageLogClear->setToolTip(tr("Clear All Messages"));            // cn:清空所有消息
+    _actionCopySelectMessage->setText(tr("Copy"));                           // cn:复制
+    _actionCopySelectMessage->setToolTip(tr("Copy Selected Message"));       // cn:复制选中消息
 }
 
 /**

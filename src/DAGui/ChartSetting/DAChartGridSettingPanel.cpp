@@ -1,4 +1,4 @@
-﻿#include "DAChartGridSettingPanel.h"
+#include "DAChartGridSettingPanel.h"
 #include "DAPropertyPanelWidget.h"
 #include <QSignalBlocker>
 #include "qwt_text.h"
@@ -41,21 +41,32 @@ void DAChartGridSettingPanel::buildPropertyPanel()
     auto panel = propertyPanel();
 
     // 基础属性组
-    panel->addCollapsibleGroup(tr("Basic"));
-    panel->addStringProperty(PropTitle, tr("Title"));
-    panel->addDoubleProperty(PropZValue, tr("Z Value"));
+    panel->addCollapsibleGroup(tr("Basic")  // cn:基础
+    );
+    panel->addStringProperty(PropTitle, tr("Title")  // cn:标题
+    );
+    panel->addDoubleProperty(PropZValue, tr("Z Value")  // cn:Z值
+    );
     panel->endGroup();
 
     // 坐标轴属性组
-    panel->addCollapsibleGroup(tr("Axis"));
-    addAxisProperty(PropXAxis, tr("X Axis"), false);
-    addAxisProperty(PropYAxis, tr("Y Axis"), true);
+    panel->addCollapsibleGroup(tr("Axis")  // cn:坐标轴
+    );
+    addAxisProperty(PropXAxis, tr("X Axis")  // cn:X轴
+                    ,
+                    false);
+    addAxisProperty(PropYAxis, tr("Y Axis")  // cn:Y轴
+                    ,
+                    true);
     panel->endGroup();
 
     // 线条样式属性组
-    panel->addCollapsibleGroup(tr("Line Style"));
-    panel->addPenProperty(PropMajorPen, tr("Major Pen"));
-    panel->addPenProperty(PropMinorPen, tr("Minor Pen"));
+    panel->addCollapsibleGroup(tr("Line Style")  // cn:线条样式
+    );
+    panel->addPenProperty(PropMajorPen, tr("Major Pen")  // cn:主笔
+    );
+    panel->addPenProperty(PropMinorPen, tr("Minor Pen")  // cn:次笔
+    );
     panel->endGroup();
 }
 

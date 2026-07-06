@@ -1,4 +1,4 @@
-﻿#include "DAChartTradingCurveSettingPanel.h"
+#include "DAChartTradingCurveSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "qwt_text.h"
 #include <QSignalBlocker>
@@ -45,42 +45,65 @@ void DAChartTradingCurveSettingPanel::buildPropertyPanel()
     auto panel = propertyPanel();
 
     // 基础属性组
-    panel->addCollapsibleGroup(tr("Basic"));
-    panel->addStringProperty(PropTitle, tr("Title"));
-    panel->addDoubleProperty(PropZValue, tr("Z Value"));
-    panel->endGroup();
-
-    // 坐标轴属性组
-    panel->addCollapsibleGroup(tr("Axis"));
-    addAxisProperty(PropXAxis, tr("X Axis"), false);
-    addAxisProperty(PropYAxis, tr("Y Axis"), true);
-    panel->endGroup();
-
-    // 符号属性组
-    panel->addCollapsibleGroup(tr("Symbol"));
-    // QwtPlotTradingCurve::SymbolStyle: Bar=1, CandleStick=2
-    panel->addEnumProperty(
-        PropSymbolAttribute,
-        tr("Symbol Attribute"),
-        QStringList() << tr("Bar") << tr("Candle Stick"),
-        QList< int >() << static_cast< int >(QwtPlotTradingCurve::Bar) << static_cast< int >(QwtPlotTradingCurve::CandleStick)
+    panel->addCollapsibleGroup(tr("Basic")  // cn:基础
+    );
+    panel->addStringProperty(PropTitle, tr("Title")  // cn:标题
+    );
+    panel->addDoubleProperty(PropZValue, tr("Z Value")  // cn:Z值
     );
     panel->endGroup();
 
+    // 坐标轴属性组
+    panel->addCollapsibleGroup(tr("Axis")  // cn:坐标轴
+    );
+    addAxisProperty(PropXAxis, tr("X Axis")  // cn:X轴
+                    ,
+                    false);
+    addAxisProperty(PropYAxis, tr("Y Axis")  // cn:Y轴
+                    ,
+                    true);
+    panel->endGroup();
+
+    // 符号属性组
+    panel->addCollapsibleGroup(tr("Symbol")  // cn:符号
+    );
+    // QwtPlotTradingCurve::SymbolStyle: Bar=1, CandleStick=2
+    panel->addEnumProperty(
+        PropSymbolAttribute,
+        tr("Symbol Attribute")  // cn:符号属性
+        ,
+        QStringList() << tr("Bar")  // cn:柱状
+                      << tr("Candlestick")  // cn:K线
+        ,
+        QList< int >() << static_cast< int >(QwtPlotTradingCurve::Bar) << static_cast< int >(QwtPlotTradingCurve::CandleStick));
+    panel->endGroup();
+
     // 颜色属性组
-    panel->addCollapsibleGroup(tr("Color"));
-    panel->addBrushProperty(PropIncreasingBrush, tr("Increasing Brush"));
-    panel->addBrushProperty(PropDecreasingBrush, tr("Decreasing Brush"));
+    panel->addCollapsibleGroup(tr("Color")  // cn:颜色
+    );
+    panel->addBrushProperty(PropIncreasingBrush, tr("Increasing Brush")  // cn:上涨画刷
+    );
+    panel->addBrushProperty(PropDecreasingBrush, tr("Decreasing Brush")  // cn:下跌画刷
+    );
     panel->endGroup();
     // 方向属性组
-    panel->addCollapsibleGroup(tr("Direction"));
-    addOrientationProperty(PropOrientation, tr("Orientation"));
+    panel->addCollapsibleGroup(tr("Direction")  // cn:方向
+    );
+    addOrientationProperty(PropOrientation, tr("Orientation")  // cn:方向
+    );
     panel->endGroup();
     // 尺寸属性组
-    panel->addCollapsibleGroup(tr("Size"));
-    panel->addDoubleProperty(PropSymbolExtent, tr("Symbol Extent"), 0.6, 0.0, 1.0);
-    panel->addDoubleProperty(PropMinPrice, tr("Min Symbol Width"), 2.0, 0.0, 1000.0);
-    panel->addDoubleProperty(PropMaxPrice, tr("Max Symbol Width"), 0.0, 0.0, 1000.0);
+    panel->addCollapsibleGroup(tr("Size")  // cn:尺寸
+    );
+    panel->addDoubleProperty(PropSymbolExtent, tr("Symbol Extent")  // cn:符号范围
+                             ,
+                             0.6, 0.0, 1.0);
+    panel->addDoubleProperty(PropMinPrice, tr("Min Symbol Width")  // cn:最小符号宽度
+                             ,
+                             2.0, 0.0, 1000.0);
+    panel->addDoubleProperty(PropMaxPrice, tr("Max Symbol Width")  // cn:最大符号宽度
+                             ,
+                             0.0, 0.0, 1000.0);
     panel->endGroup();
 }
 

@@ -30,18 +30,18 @@ DANodeLinkItemSettingWidget::DANodeLinkItemSettingWidget(QWidget* parent)
     layout->addWidget(mPanel);
 
     // 添加画笔属性
-    mPanel->addPenProperty(PropertyPen, tr("pen"));
+    mPanel->addPenProperty(PropertyPen, tr("pen"));  // cn:画笔
 
     // 添加连线样式枚举属性
     mPanel->addEnumProperty(PropertyLinkStyle,
-                            tr("link style"),
-                            QStringList{ tr("Knuckle"), tr("Straight"), tr("Bezier") },
+                            tr("link style"),  // cn:连线样式
+                            QStringList{ tr("Knuckle"), tr("Straight"), tr("Bezier") },  // cn:折线,直线,贝塞尔
                             QList<int>{ int(DAGraphicsLinkItem::LinkLineKnuckle),
                                         int(DAGraphicsLinkItem::LinkLineStraight),
                                         int(DAGraphicsLinkItem::LinkLineBezier) });
 
     // 添加端点大小整数属性
-    mPanel->addIntProperty(PropertyEndpointSize, tr("end point size"), 0, 0, 999);
+    mPanel->addIntProperty(PropertyEndpointSize, tr("end point size"), 0, 0, 999);  // cn:端点大小
 
     // 创建自定义端点样式下拉框并初始化
     _comboBoxFrontStyle = new QComboBox();
@@ -49,10 +49,10 @@ DANodeLinkItemSettingWidget::DANodeLinkItemSettingWidget(QWidget* parent)
     initEndpointComboxBox();
 
     // 添加前端点样式属性(自定义编辑器)
-    mPanel->addProperty(PropertyFrontStyle, tr("front style"), _comboBoxFrontStyle);
+    mPanel->addProperty(PropertyFrontStyle, tr("front style"), _comboBoxFrontStyle);  // cn:前端点样式
 
     // 添加后端点样式属性(自定义编辑器)
-    mPanel->addProperty(PropertyEndStyle, tr("end style"), _comboBoxEndStyle);
+    mPanel->addProperty(PropertyEndStyle, tr("end style"), _comboBoxEndStyle);  // cn:后端点样式
 
     // 连接属性面板信号
     connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged, this, &DANodeLinkItemSettingWidget::onPropertyValueChanged);
@@ -187,7 +187,7 @@ void DANodeLinkItemSettingWidget::initEndpointComboxBox()
         _comboBoxFrontStyle->addItem(QIcon(generateEndPointPixmap(&item, et)), str, (int)et);
         _comboBoxEndStyle->addItem(QIcon(generateEndPointPixmap(&item, et)), str, (int)et);
     };
-    fn(DAGraphicsLinkItem::EndPointNone, tr("None"));
+    fn(DAGraphicsLinkItem::EndPointNone, tr("None"));  // cn:无
     fn(DAGraphicsLinkItem::EndPointTriangType);
 }
 

@@ -1,4 +1,4 @@
-﻿#include "DAPluginManager.h"
+#include "DAPluginManager.h"
 #include "DALogCategory.h"
 #include "DAPluginOption.h"
 #include <QCoreApplication>
@@ -54,8 +54,7 @@ void DAPluginManager::PrivateData::updateIgnoreSet()
     if (!ignoreFile.open(QIODevice::ReadOnly)) {
         daWarning << DAPluginManager::tr("The file .pluginignore exists, but failed to "
                                          "read due to the following reason: %1")
-                         .arg(ignoreFile.errorString());  // cn:.pluginignore
-                                                          // 文件存在，但由于以下原因读取失败：%1
+                         .arg(ignoreFile.errorString());  // cn:.pluginignore文件存在，但由于以下原因读取失败：%1
         return;
     }
     QTextStream ss(&ignoreFile);
@@ -176,7 +175,7 @@ void DAPluginManager::loadAllPlugins(DACoreInterface* c)
         DAPluginOption pluginopt;
         Q_EMIT beginLoadPlugin(fi.absoluteFilePath());
         if (!pluginopt.load(fi.absoluteFilePath(), c)) {
-            qDebug() << tr("can not load plugin:%1").arg(fi.absoluteFilePath());
+            qDebug() << tr("cannot load plugin:%1").arg(fi.absoluteFilePath());  // cn:无法加载插件：%1
             continue;
         }
         d_ptr->mPluginOptions.append(pluginopt);
@@ -290,9 +289,9 @@ QDebug operator<<(QDebug debug, const DAPluginManager& fmg)
 {
     QDebugStateSaver saver(debug);
 
-    debug.nospace() << DAPluginManager::tr("Plugin Manager Info:is loaded=%1,plugin counts=%2")
+    debug.nospace() << DAPluginManager::tr("Plugin Manager Info: is loaded=%1, plugin counts=%2")
                            .arg(fmg.isLoaded())
-                           .arg(fmg.getPluginCount())
+                           .arg(fmg.getPluginCount())  // cn:插件管理器信息：已加载=%1，插件数量=%2
 #if QT_VERSION_MAJOR >= 6
                     << Qt::endl;
 #else

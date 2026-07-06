@@ -267,9 +267,9 @@ void DADataManagerTreeModel::initialize()
 {
     // 设置表头
     if (d_ptr->columnStyle == ColumnWithNameOnly) {
-        setHorizontalHeaderLabels({ tr("Name") });
+        setHorizontalHeaderLabels({ tr("Name") });  // cn:名称
     } else {
-        setHorizontalHeaderLabels({ tr("Name"), tr("Properties") });
+        setHorizontalHeaderLabels({ tr("Name"), tr("Properties") });  // cn:名称,属性
     }
 }
 
@@ -355,10 +355,10 @@ void DADataManagerTreeModel::setColumnStyle(ColumnStyle style)
         d_ptr->columnStyle = style;
 
         if (style == ColumnWithNameOnly) {
-            setHorizontalHeaderLabels({ tr("Name") });
+            setHorizontalHeaderLabels({ tr("Name") });  // cn:名称
             setColumnCount(1);
         } else {
-            setHorizontalHeaderLabels({ tr("Name"), tr("Properties") });
+            setHorizontalHeaderLabels({ tr("Name"), tr("Properties") });  // cn:名称,属性
             setColumnCount(2);
         }
 
@@ -455,9 +455,9 @@ void DADataManagerTreeModel::clear()
 
     // 重置表头
     if (d_ptr->columnStyle == ColumnWithNameOnly) {
-        setHorizontalHeaderLabels({ tr("Name") });
+        setHorizontalHeaderLabels({ tr("Name") });  // cn:名称
     } else {
-        setHorizontalHeaderLabels({ tr("Name"), tr("Properties") });
+        setHorizontalHeaderLabels({ tr("Name"), tr("Properties") });  // cn:名称,属性
     }
 }
 

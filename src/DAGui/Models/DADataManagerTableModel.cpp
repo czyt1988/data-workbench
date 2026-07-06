@@ -1,4 +1,4 @@
-﻿#include "DADataManagerTableModel.h"
+#include "DADataManagerTableModel.h"
 #include <QIcon>
 
 //===================================================
@@ -30,9 +30,9 @@ QVariant DADataManagerTableModel::headerData(int section, Qt::Orientation orient
     if (Qt::Horizontal == orientation) {  // 说明是水平表头
         switch (section) {
         case 0:
-            return tr("name");
+            return tr("name");  // cn:名称
         case 1:
-            return tr("type");
+            return tr("type");  // cn:类型
         default:
             return QVariant();
         }

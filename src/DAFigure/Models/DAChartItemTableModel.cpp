@@ -1,4 +1,4 @@
-﻿#include "DAChartItemTableModel.h"
+#include "DAChartItemTableModel.h"
 #include "qwt_plot_curve.h"
 #include "qwt_plot_histogram.h"
 #include "qwt_plot_intervalcurve.h"
@@ -494,9 +494,9 @@ QString DAChartItemTableModel::getItemDimDescribe(QwtPlotItem* item, int index) 
         Q_UNUSED(p);
         switch (index) {
         case 0:
-            return tr("x");
+            return tr("x");  // cn:x
         case 1:
-            return tr("y");
+            return tr("y");  // cn:y
         default:
             return QString();
         }
@@ -504,30 +504,30 @@ QString DAChartItemTableModel::getItemDimDescribe(QwtPlotItem* item, int index) 
         Q_UNUSED(p);
         switch (index) {
         case 0:
-            return tr("value");
+            return tr("value");  // cn:值
         case 1:
-            return tr("min");
+            return tr("min");  // cn:最小值
         case 2:
-            return tr("max");
+            return tr("max");  // cn:最大值
         default:
             return QString();
         }
     } else if (const QwtSeriesStore< QwtSetSample >* p = dynamic_cast< const QwtSeriesStore< QwtSetSample >* >(item)) {
         Q_UNUSED(p);
         if (0 == index) {
-            return tr("value");
+            return tr("value");  // cn:值
         } else {
-            return tr("set %1").arg(index);
+            return tr("set %1").arg(index);  // cn:集合%1
         }
     } else if (const QwtSeriesStore< QwtPoint3D >* p = dynamic_cast< const QwtSeriesStore< QwtPoint3D >* >(item)) {
         Q_UNUSED(p);
         switch (index) {
         case 0:
-            return tr("x");
+            return tr("x");  // cn:x
         case 1:
-            return tr("y");
+            return tr("y");  // cn:y
         case 2:
-            return tr("z");
+            return tr("z");  // cn:z
         default:
             return QString();
         }
@@ -535,15 +535,15 @@ QString DAChartItemTableModel::getItemDimDescribe(QwtPlotItem* item, int index) 
 
         switch (index) {
         case 0:
-            return tr("time");
+            return tr("time");  // cn:时间
         case 1:
-            return tr("open");
+            return tr("open");  // cn:开盘
         case 2:
-            return tr("high");
+            return tr("high");  // cn:最高
         case 3:
-            return tr("low");
+            return tr("low");  // cn:最低
         case 4:
-            return tr("close");
+            return tr("close");  // cn:收盘
         }
     }
 #else
@@ -553,9 +553,9 @@ QString DAChartItemTableModel::getItemDimDescribe(QwtPlotItem* item, int index) 
     case QwtPlotItem::Rtti_PlotBarChart: {
         switch (index) {
         case 0:
-            return tr("x");
+            return tr("x");  // cn:x
         case 1:
-            return tr("y");
+            return tr("y");  // cn:y
         default:
             return QString();
         }
@@ -564,11 +564,11 @@ QString DAChartItemTableModel::getItemDimDescribe(QwtPlotItem* item, int index) 
     case QwtPlotItem::Rtti_PlotSpectroCurve: {
         switch (index) {
         case 0:
-            return tr("x");
+            return tr("x");  // cn:x
         case 1:
-            return tr("y");
+            return tr("y");  // cn:y
         case 2:
-            return tr("z");
+            return tr("z");  // cn:z
         default:
             return QString();
         }
@@ -578,11 +578,11 @@ QString DAChartItemTableModel::getItemDimDescribe(QwtPlotItem* item, int index) 
     case QwtPlotItem::Rtti_PlotHistogram: {
         switch (index) {
         case 0:
-            return tr("value");
+            return tr("value");  // cn:值
         case 1:
-            return tr("min");
+            return tr("min");  // cn:最小值
         case 2:
-            return tr("max");
+            return tr("max");  // cn:最大值
         default:
             return QString();
         }
@@ -591,23 +591,23 @@ QString DAChartItemTableModel::getItemDimDescribe(QwtPlotItem* item, int index) 
     case QwtPlotItem::Rtti_PlotTradingCurve: {
         switch (index) {
         case 0:
-            return tr("time");
+            return tr("time");  // cn:时间
         case 1:
-            return tr("open");
+            return tr("open");  // cn:开盘
         case 2:
-            return tr("high");
+            return tr("high");  // cn:最高
         case 3:
-            return tr("low");
+            return tr("low");  // cn:最低
         case 4:
-            return tr("close");
+            return tr("close");  // cn:收盘
         }
         break;
     }
     case QwtPlotItem::Rtti_PlotMultiBarChart: {
         if (0 == index) {
-            return tr("value");
+            return tr("value");  // cn:值
         } else {
-            return tr("set %1").arg(index);
+            return tr("set %1").arg(index);  // cn:集合%1
         }
         break;
     }

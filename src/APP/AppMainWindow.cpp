@@ -144,7 +144,7 @@ void AppMainWindow::changeEvent(QEvent* e)
     QWidget::changeEvent(e);
     switch (e->type()) {
     case QEvent::LanguageChange:
-        qDebug() << tr("LanguageChange");
+        qDebug() << tr("LanguageChange");  // cn:语言变更
         retranslateUi();
         break;
 
@@ -186,15 +186,15 @@ void AppMainWindow::closeEvent(QCloseEvent* e)
         if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
             QDataStream st(&file);
             st << saveUIState();
-            qDebug() << tr("success save ui state to %1").arg(uistateFile);
+            qDebug() << tr("Successfully saved UI state to %1").arg(uistateFile);  // cn:成功保存界面状态到%1
         } else {
-            qDebug() << tr("can not open %1,because:%2").arg(uistateFile, file.errorString());
+            qDebug() << tr("Cannot open %1, because: %2").arg(uistateFile, file.errorString());  // cn:无法打开%1，原因：%2
         }
     } else {
         // 不保存要删除
         if (QFile::exists(uistateFile)) {
             if (!QFile::remove(uistateFile)) {
-                qDebug() << tr("can not remove %1").arg(uistateFile);
+                qDebug() << tr("Cannot remove %1").arg(uistateFile);  // cn:无法删除%1
             }
         }
     }
@@ -240,7 +240,7 @@ void AppMainWindow::initWorkflowNodes()
     // 把数据写入toolbox
     mDockArea->getWorkflowNodeListWidget()->addItems(nodeMetaDatas);
     // 此时才创建第一个workflow，这个workflow创建时，插件已经加载好
-    mDockArea->getWorkFlowOperateWidget()->appendWorkflow(tr("untitle"));
+    mDockArea->getWorkFlowOperateWidget()->appendWorkflow(tr("Untitled"));  // cn:未命名
 
     // 执行一些必要的回调
     QList< DAAbstractNodePlugin* > nodeplugins = mPluginMgr->getNodePlugins();
@@ -258,9 +258,9 @@ void AppMainWindow::initConfig()
 void AppMainWindow::onWorkflowFinished(bool success)
 {
     if (success) {
-        QMessageBox::information(this, tr("infomation"), tr("Topology execution completed"));  // 拓扑执行完成
+        QMessageBox::information(this, tr("Information"), tr("Topology execution completed"));  // cn:信息,cn:拓扑执行完成
     } else {
-        QMessageBox::critical(this, tr("infomation"), tr("Topology execution failed"));  // 拓扑执行失败
+        QMessageBox::critical(this, tr("Information"), tr("Topology execution failed"));  // cn:信息,cn:拓扑执行失败
     }
 }
 

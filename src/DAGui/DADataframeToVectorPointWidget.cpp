@@ -1,4 +1,4 @@
-﻿#include "DADataframeToVectorPointWidget.h"
+#include "DADataframeToVectorPointWidget.h"
 #include "ui_DADataframeToVectorPointWidget.h"
 #include <iterator>
 #include <vector>
@@ -12,7 +12,7 @@ DADataframeToVectorPointWidget::DADataframeToVectorPointWidget(QWidget* parent)
 {
     ui->setupUi(this);
     _model = new DAPySeriesTableModel(this);
-    _model->setHeaderLabel({ tr("x"), tr("y") });
+    _model->setHeaderLabel({ tr("x"), tr("y") });  // cn:x,y
     ui->tableViewXY->setModel(_model);
     QFontMetrics fm = fontMetrics();
     ui->tableViewXY->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
@@ -72,7 +72,7 @@ bool DADataframeToVectorPointWidget::getToVectorPointF(QVector< QPointF >& res)
             res[ i ].setY(vy[ i ]);
         }
     } catch (const std::exception& e) {
-        daCritical << tr("Exception occurred during extracting from pandas.Series to double vector:%1")
+        daCritical << tr("Exception occurred during extraction from pandas.Series to double vector: %1")
                           .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
         return false;
     }

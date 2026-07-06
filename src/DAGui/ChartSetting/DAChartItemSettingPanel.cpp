@@ -71,11 +71,16 @@ void DAChartItemSettingPanel::onPanelPropertyValueChanged(int propertyId)
 void DAChartItemSettingPanel::addCurveStyleProperty(int id, const QString& name)
 {
     QComboBox* combo = new QComboBox(this);
-    combo->addItem(tr("Lines"), static_cast< int >(QwtPlotCurve::Lines));
-    combo->addItem(tr("Sticks"), static_cast< int >(QwtPlotCurve::Sticks));
-    combo->addItem(tr("Steps"), static_cast< int >(QwtPlotCurve::Steps));
-    combo->addItem(tr("Dots"), static_cast< int >(QwtPlotCurve::Dots));
-    combo->addItem(tr("No Curve"), static_cast< int >(QwtPlotCurve::NoCurve));
+    combo->addItem(tr("Lines")  // cn:线条
+                   , static_cast< int >(QwtPlotCurve::Lines));
+    combo->addItem(tr("Sticks")  // cn:棒状
+                   , static_cast< int >(QwtPlotCurve::Sticks));
+    combo->addItem(tr("Steps")  // cn:阶梯
+                   , static_cast< int >(QwtPlotCurve::Steps));
+    combo->addItem(tr("Dots")  // cn:点
+                   , static_cast< int >(QwtPlotCurve::Dots));
+    combo->addItem(tr("No Curve")  // cn:无曲线
+                   , static_cast< int >(QwtPlotCurve::NoCurve));
 
     // currentIndexChanged 传的是 combo index，不是 propertyId，
     // 不能 signal-to-signal 直连，必须用 lambda 把正确的 id 传出去
@@ -102,8 +107,10 @@ void DAChartItemSettingPanel::addOrientationProperty(int id, const QString& name
     hLayout->setContentsMargins(0, 0, 0, 0);
     hLayout->setSpacing(8);
 
-    QRadioButton* rbH = new QRadioButton(tr("Horizontal"), container);
-    QRadioButton* rbV = new QRadioButton(tr("Vertical"), container);
+    QRadioButton* rbH = new QRadioButton(tr("Horizontal")  // cn:水平
+                                         , container);
+    QRadioButton* rbV = new QRadioButton(tr("Vertical")  // cn:垂直
+                                         , container);
 
     QButtonGroup* group = new QButtonGroup(container);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -149,11 +156,15 @@ void DAChartItemSettingPanel::addAxisProperty(int id, const QString& name, bool 
 {
     QComboBox* combo = new QComboBox(this);
     if (isYAxis) {
-        combo->addItem(tr("Y Left"), static_cast< int >(QwtAxis::YLeft));
-        combo->addItem(tr("Y Right"), static_cast< int >(QwtAxis::YRight));
+        combo->addItem(tr("Y Left")  // cn:Y左轴
+                       , static_cast< int >(QwtAxis::YLeft));
+        combo->addItem(tr("Y Right")  // cn:Y右轴
+                       , static_cast< int >(QwtAxis::YRight));
     } else {
-        combo->addItem(tr("X Bottom"), static_cast< int >(QwtAxis::XBottom));
-        combo->addItem(tr("X Top"), static_cast< int >(QwtAxis::XTop));
+        combo->addItem(tr("X Bottom")  // cn:X底轴
+                       , static_cast< int >(QwtAxis::XBottom));
+        combo->addItem(tr("X Top")  // cn:X顶轴
+                       , static_cast< int >(QwtAxis::XTop));
     }
 
     // currentIndexChanged 传的是 combo index，不是 propertyId，
@@ -210,8 +221,10 @@ void DAChartItemSettingPanel::addScaleStyleProperty(int id, const QString& name)
     hLayout->setContentsMargins(0, 0, 0, 0);
     hLayout->setSpacing(8);
 
-    QRadioButton* rbNormal   = new QRadioButton(tr("Normal"), container);
-    QRadioButton* rbDateTime = new QRadioButton(tr("DateTime"), container);
+    QRadioButton* rbNormal   = new QRadioButton(tr("Normal")  // cn:普通
+                                                , container);
+    QRadioButton* rbDateTime = new QRadioButton(tr("DateTime")  // cn:日期时间
+                                                , container);
 
     QButtonGroup* group = new QButtonGroup(container);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)

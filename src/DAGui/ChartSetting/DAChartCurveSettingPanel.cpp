@@ -1,4 +1,4 @@
-﻿#include "DAChartCurveSettingPanel.h"
+#include "DAChartCurveSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include <QSignalBlocker>
 #include <QPen>
@@ -42,56 +42,85 @@ void DAChartCurveSettingPanel::buildPropertyPanel()
     DAPropertyPanelContainerWidget* pp = propertyPanel();
 
     // ── 通用属性 ──
-    pp->addCollapsibleGroup(tr("General"));
-    pp->addStringProperty(PID_Title, tr("Title"));
-    pp->addDoubleProperty(PID_ZValue, tr("Z Value"), 0.0, -9999.0, 9999.0, 1);
-    addAxisProperty(PID_XAxis, tr("X Axis"), false);
-    addAxisProperty(PID_YAxis, tr("Y Axis"), true);
+    pp->addCollapsibleGroup(tr("General")  // cn:通用
+    );
+    pp->addStringProperty(PID_Title, tr("Title")  // cn:标题
+    );
+    pp->addDoubleProperty(PID_ZValue, tr("Z Value")  // cn:Z值
+                          ,
+                          0.0, -9999.0, 9999.0, 1);
+    addAxisProperty(PID_XAxis, tr("X Axis")  // cn:X轴
+                    ,
+                    false);
+    addAxisProperty(PID_YAxis, tr("Y Axis")  // cn:Y轴
+                    ,
+                    true);
     pp->endGroup();
 
     // ── 曲线样式 ──
-    pp->addCollapsibleGroup(tr("Curve Style"));
-    addCurveStyleProperty(PID_CurveStyle, tr("Style"));
+    pp->addCollapsibleGroup(tr("Curve Style")  // cn:曲线样式
+    );
+    addCurveStyleProperty(PID_CurveStyle, tr("Style")  // cn:样式
+    );
     pp->endGroup();
 
     // ── 画笔 ──
-    pp->addCollapsibleGroup(tr("Pen"));
-    pp->addPenProperty(PID_Pen, tr("Pen"));
+    pp->addCollapsibleGroup(tr("Pen")  // cn:画笔
+    );
+    pp->addPenProperty(PID_Pen, tr("Pen")  // cn:画笔
+    );
     pp->endGroup();
 
     // ── 标记 ──
-    pp->addCollapsibleGroup(tr("Marker"));
-    pp->addBoolProperty(PID_EnableMarker, tr("Enable Marker"));
-    addSymbolProperty(PID_Symbol, tr("Symbol"));
+    pp->addCollapsibleGroup(tr("Marker")  // cn:标记
+    );
+    pp->addBoolProperty(PID_EnableMarker, tr("Enable Marker")  // cn:启用标记
+    );
+    addSymbolProperty(PID_Symbol, tr("Symbol")  // cn:符号
+    );
     pp->endGroup();
 
     // ── 属性 ──
-    pp->addCollapsibleGroup(tr("Attributes"));
-    pp->addBoolProperty(PID_Fitted, tr("Fitted"));
-    pp->addBoolProperty(PID_Inverted, tr("Inverted"));
+    pp->addCollapsibleGroup(tr("Attributes")  // cn:属性
+    );
+    pp->addBoolProperty(PID_Fitted, tr("Fitted")  // cn:拟合
+    );
+    pp->addBoolProperty(PID_Inverted, tr("Inverted")  // cn:反转
+    );
     pp->endGroup();
 
     // ── 图例 ──
-    pp->addCollapsibleGroup(tr("Legend"));
-    pp->addBoolProperty(PID_LegendShowLine, tr("Show Line"));
-    pp->addBoolProperty(PID_LegendShowSymbol, tr("Show Symbol"));
-    pp->addBoolProperty(PID_LegendShowBrush, tr("Show Brush"));
+    pp->addCollapsibleGroup(tr("Legend")  // cn:图例
+    );
+    pp->addBoolProperty(PID_LegendShowLine, tr("Show Line")  // cn:显示线条
+    );
+    pp->addBoolProperty(PID_LegendShowSymbol, tr("Show Symbol")  // cn:显示符号
+    );
+    pp->addBoolProperty(PID_LegendShowBrush, tr("Show Brush")  // cn:显示画刷
+    );
     pp->endGroup();
 
     // ── 填充 ──
-    pp->addCollapsibleGroup(tr("Fill"));
-    pp->addBoolProperty(PID_EnableFill, tr("Enable Fill"));
-    pp->addBrushProperty(PID_Fill, tr("Fill Brush"));
+    pp->addCollapsibleGroup(tr("Fill")  // cn:填充
+    );
+    pp->addBoolProperty(PID_EnableFill, tr("Enable Fill")  // cn:启用填充
+    );
+    pp->addBrushProperty(PID_Fill, tr("Fill Brush")  // cn:填充画刷
+    );
     pp->endGroup();
 
     // ── 基线 ──
-    pp->addCollapsibleGroup(tr("Baseline"));
-    pp->addStringProperty(PID_BaseLine, tr("Baseline"));
+    pp->addCollapsibleGroup(tr("Baseline")  // cn:基线
+    );
+    pp->addStringProperty(PID_BaseLine, tr("Baseline")  // cn:基线
+    );
     pp->endGroup();
 
     // ── 方向 ──
-    pp->addCollapsibleGroup(tr("Orientation"));
-    addOrientationProperty(PID_Orientation, tr("Orientation"));
+    pp->addCollapsibleGroup(tr("Orientation")  // cn:方向
+    );
+    addOrientationProperty(PID_Orientation, tr("Orientation")  // cn:方向
+    );
     pp->endGroup();
 }
 

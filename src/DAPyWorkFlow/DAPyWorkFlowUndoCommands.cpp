@@ -1,4 +1,4 @@
-﻿#include "DAPyWorkFlowUndoCommands.h"
+#include "DAPyWorkFlowUndoCommands.h"
 #include "DAPyWorkFlowScene.h"
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyLinkGraphicsItem.h"
@@ -19,7 +19,7 @@ DAPyWorkFlowCommand_addNodeGraphics::DAPyWorkFlowCommand_addNodeGraphics(
     if (m_nodeItem) {
         m_proxy = m_nodeItem->getProxy();
     }
-    setText(QObject::tr("Add Node"));
+    setText(QObject::tr("Add Node"));  // cn:添加节点
 }
 
 DAPyWorkFlowCommand_addNodeGraphics::~DAPyWorkFlowCommand_addNodeGraphics()
@@ -78,7 +78,7 @@ DAPyWorkFlowCommand_removeNodeGraphics::DAPyWorkFlowCommand_removeNodeGraphics(
     if (m_nodeItem) {
         m_proxy = m_nodeItem->getProxy();
     }
-    setText(QObject::tr("Remove Node"));
+    setText(QObject::tr("Remove Node"));  // cn:移除节点
 }
 
 DAPyWorkFlowCommand_removeNodeGraphics::~DAPyWorkFlowCommand_removeNodeGraphics()
@@ -125,7 +125,7 @@ DAPyWorkFlowCommand_addLinkGraphics::DAPyWorkFlowCommand_addLinkGraphics(
 )
     : QUndoCommand(parent), m_scene(scene), m_linkItem(linkItem)
 {
-    setText(QObject::tr("Add Link"));
+    setText(QObject::tr("Add Link"));  // cn:添加连接
 }
 
 DAPyWorkFlowCommand_addLinkGraphics::~DAPyWorkFlowCommand_addLinkGraphics()
@@ -170,7 +170,7 @@ DAPyWorkFlowCommand_removeLinkGraphics::DAPyWorkFlowCommand_removeLinkGraphics(
 )
     : QUndoCommand(parent), m_scene(scene), m_linkItem(linkItem)
 {
-    setText(QObject::tr("Remove Link"));
+    setText(QObject::tr("Remove Link"));  // cn:移除连接
 }
 
 DAPyWorkFlowCommand_removeLinkGraphics::~DAPyWorkFlowCommand_removeLinkGraphics()

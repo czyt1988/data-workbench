@@ -1,4 +1,4 @@
-﻿#include "DAStandardItemPlotScale.h"
+#include "DAStandardItemPlotScale.h"
 #include "DAFigureTreeModel.h"
 #include "qwt_plot.h"
 #include "qwt_scale_widget.h"
@@ -147,17 +147,17 @@ QString DAStandardItemPlotScale::axisIdToText(QwtAxisId id)
 {
     switch (id) {
     case QwtAxis::YLeft:
-        return QObject::tr("Y Left");
+        return QObject::tr("Y Left");  // cn:Y左轴
     case QwtAxis::YRight:
-        return QObject::tr("Y Right");
+        return QObject::tr("Y Right");  // cn:Y右轴
     case QwtAxis::XBottom:
-        return QObject::tr("X Bottom");
+        return QObject::tr("X Bottom");  // cn:X底轴
     case QwtAxis::XTop:
-        return QObject::tr("X Top");
+        return QObject::tr("X Top");  // cn:X顶轴
     default:
         break;
     }
-    return QObject::tr("Unknow");
+    return QObject::tr("Unknown");  // cn:未知
 }
 
 }  // end DA

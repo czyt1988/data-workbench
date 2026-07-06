@@ -548,9 +548,9 @@ void DAAppController::saveAs()
 {
     QString projectPath =
         QFileDialog::getSaveFileName(app(),
-                                     tr("Save Project"),  // 保存工程
+                                     tr("Save Project"),  // cn:保存工程
                                      QString(),
-                                     tr("project file (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件
+                                     tr("Project File (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // cn:工程文件
         );
     if (projectPath.isEmpty()) {
         // 取消退出
@@ -560,7 +560,7 @@ void DAAppController::saveAs()
     if (fi.exists()) {
         // 说明是目录
         QMessageBox::StandardButton btn = QMessageBox::question(
-            nullptr, tr("Warning"), tr("Whether to overwrite the file:%1").arg(fi.absoluteFilePath()));
+            nullptr, tr("Warning"), tr("Whether to overwrite the file: %1").arg(fi.absoluteFilePath()));  // cn:警告,cn:是否覆盖文件:%1
         if (btn != QMessageBox::Yes) {
             return;
         }
@@ -949,8 +949,8 @@ bool DAAppController::openCheck()
     if (project->isDirty()) {
         QMessageBox::StandardButton btn = QMessageBox::question(
             nullptr,
-            tr("Question"),  // 提示
-            tr("The current project has unsaved changes. Do you want to save before opening another project?"),
+            tr("Question"),  // cn:提示
+            tr("The current project has unsaved changes. Do you want to save before opening another project?"),  // cn:当前工程有未保存的更改，是否在打开其他工程之前保存？
             QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel,
             QMessageBox::StandardButton::Yes);
         switch (resolveAppOpenPreparation(hasProjectContent, true, toAppSavePromptChoice(btn))) {
@@ -968,8 +968,8 @@ bool DAAppController::openCheck()
         == DAAppOpenPreparation::ConfirmReplaceThenOpen) {
         QMessageBox::StandardButton btn = QMessageBox::question(
             nullptr,
-            tr("Question"),                                                   // 提示
-            tr("Another project already exists. Do you want to replace it?")  // 已存在其他工程，是否要替换？
+            tr("Question"),                                                   // cn:提示
+            tr("Another project already exists. Do you want to replace it?")  // cn:已存在其他工程，是否要替换？
         );
         return btn == QMessageBox::Yes;
     }
@@ -989,7 +989,7 @@ void DAAppController::open()
     // TODO : 这里要加上工程文件的打开支持
     QFileDialog dialog(app());
     QStringList filters;
-    filters << tr("project file(*.%1)").arg(DAAppProject::getProjectFileSuffix());
+    filters << tr("Project File (*.%1)").arg(DAAppProject::getProjectFileSuffix());  // cn:工程文件 (*.%1)
     dialog.setNameFilters(filters);
     if (QDialog::Accepted != dialog.exec()) {
         return;
@@ -1012,7 +1012,7 @@ bool DAAppController::openProjectFile(const QString& projectFilePath)
 {
     DAAppProject* project = DA_APP_CORE.getAppProject();
     if (!project->load(projectFilePath)) {
-        daCritical << tr("failed to load project file: %1").arg(projectFilePath);  // cn:加载工程文件失败:%1
+        daCritical << tr("Failed to load project file: %1").arg(projectFilePath);  // cn:加载工程文件失败:%1
         return false;
     }
     // 加入最近打开的文件中
@@ -1037,7 +1037,7 @@ void DAAppController::onActionAppendProjectTriggered()
 {
     QFileDialog dialog(app());
     QStringList filters;
-    filters << tr("project file(*.%1)").arg(DAAppProject::getProjectFileSuffix());
+    filters << tr("Project File (*.%1)").arg(DAAppProject::getProjectFileSuffix());  // cn:工程文件 (*.%1)
     dialog.setNameFilters(filters);
     if (QDialog::Accepted != dialog.exec()) {
         return;
@@ -1054,7 +1054,7 @@ void DAAppController::onActionAppendProjectTriggered()
         return;
     }
     if (!project->appendWorkflowInProject(file.readAll(), true)) {
-        daCritical << tr("failed to load project file: %1").arg(fileNames.first());  // cn:加载工程文件失败:%1
+        daCritical << tr("Failed to load project file: %1").arg(fileNames.first());  // cn:加载工程文件失败:%1
         return;
     }
     updateWindowTitle();
@@ -1176,8 +1176,8 @@ void DAAppController::onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType
 void DAAppController::onActionAddBackgroundPixmapTriggered()
 {
     QStringList filters;
-    filters << tr("Image files (*.png *.jpg)")  // 图片文件 (*.png *.jpg)
-            << tr("Any files (*)")              // 任意文件 (*)
+    filters << tr("Image files (*.png *.jpg)")  // cn:图片文件 (*.png *.jpg)
+            << tr("Any files (*)")              // cn:任意文件 (*)
         ;
 
     QFileDialog dialog(app());
@@ -1291,14 +1291,14 @@ void DAAppController::onActionRunCurrentWorkflowTriggered()
     // 先检查是否有工程
     DAAppProject* p = DA_APP_CORE.getAppProject();
     if (nullptr == p) {
-        daCritical << tr("received null project interface");  // cn:获取到空工程接口
+        daCritical << tr("Received null project interface");  // cn:获取到空工程接口
         return;
     }
     QString bn = p->getProjectBaseName();
     if (bn.isEmpty()) {
         QMessageBox::warning(app(),
-                             tr("warning"),                                                   // cn:警告
-                             tr("Before running the workflow, you need to save the project")  // cn：在运行工作流之前，需要先保存工程
+                             tr("Warning"),                                                   // cn:警告
+                             tr("Before running the workflow, you need to save the project")  // cn:在运行工作流之前，需要先保存工程
         );
         return;
     }
@@ -2217,8 +2217,8 @@ void DAAppController::onActionNewWorkflowTriggered()
 {
     bool ok      = false;
     QString text = QInputDialog::getText(app(),
-                                         tr("new workflow name"),   // cn:新工作流名称
-                                         tr("new workflow name:"),  // cn:新工作流名称
+                                         tr("New workflow name"),   // cn:新工作流名称
+                                         tr("New workflow name:"),  // cn:新工作流名称
                                          QLineEdit::Normal,
                                          QString(),
                                          &ok);

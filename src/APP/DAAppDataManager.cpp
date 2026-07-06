@@ -1,4 +1,4 @@
-﻿#include "DAAppDataManager.h"
+#include "DAAppDataManager.h"
 #include <QList>
 #include <QFileInfo>
 #include <QUndoStack>
@@ -34,7 +34,7 @@ DAAppDataManager::~DAAppDataManager()
 bool DAAppDataManager::importFromFile(const QString& f, const QVariantMap& args, QString* err)
 {
 #if DA_ENABLE_PYTHON
-    daInfo << tr("begin importing file: %1").arg(f);  // cn:开始导入文件:%1
+    daInfo << tr("Begin importing file: %1").arg(f);  // cn:开始导入文件:%1
     try {
         if (DAPyScripts::isInitScripts()) {
             DAPyScripts::getIO().read_and_add_to_datamanager(f, args, err);
@@ -59,18 +59,18 @@ int DAAppDataManager::importFromFiles(const QStringList& fileNames)
     QList< DAData > importDatas;
     for (const QString& f : std::as_const(fileNames)) {
 #if DA_ENABLE_PYTHON
-        qInfo() << tr("begin import file:%1").arg(f);
+        qInfo() << tr("Begin import file: %1").arg(f);  // cn:开始导入文件:%1
         if (!DAPyInterpreter::isPythonInitialized()) {
             return 0;
         }
         DAPyObjectWrapper res = DAPyScripts::getIO().read(f);
         if (DAPyDataFrame::isDataFrame(res.object())) {
-            qInfo() << tr("file:%1,conver to dataframe").arg(f);
+            qInfo() << tr("File: %1, convert to DataFrame").arg(f);  // cn:文件:%1，转换为DataFrame
             QFileInfo fi(f);
             DAPyDataFrame df = res;  // 调用的是DAPyDataFrame(const DAPyObjectWrapper& df)
             if (df.size() == 0) {
                 qWarning() << tr("The file '%1' has been successfully imported, "
-                                 "but no data can be read from the file")  // cn: 导入文件'%1'成功，但无法从文件中读取到数据
+                                 "but no data can be read from the file")  // cn:导入文件'%1'成功，但无法从文件中读取到数据
                                   .arg(f);
                 continue;
             }
@@ -80,7 +80,7 @@ int DAAppDataManager::importFromFiles(const QStringList& fileNames)
             importDatas.append(data);
         }  // else if() //其他格式
         else if (res.isNone()) {
-            qWarning() << tr("can not import file:%1").arg(f);
+            qWarning() << tr("Cannot import file: %1").arg(f);  // cn:无法导入文件:%1
             continue;
         }
 #endif

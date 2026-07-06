@@ -85,7 +85,7 @@ DANodeListWidget* DAToolBox::createFavoriteList()
     }
     _favoriteList = new DANodeListWidget(this);
     _favoriteList->setProperty("isFavoriteListWidget", true);
-    _toolBox->addItem(_favoriteList, QIcon(":/DAGui/icon/favorite.svg"), tr("Favorite"));
+    _toolBox->addItem(_favoriteList, QIcon(":/DAGui/icon/favorite.svg"), tr("Favorite"));  // cn:收藏
     return _favoriteList;
 }
 

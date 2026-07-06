@@ -161,7 +161,7 @@ QTreeWidgetItem* DANodeTreeWidget::createFavoriteItem()
 	if (_favoriteItem) {
 		return _favoriteItem;
 	}
-	_favoriteItem = new QTreeWidgetItem({ tr("Favorite") });
+	_favoriteItem = new QTreeWidgetItem({ tr("Favorite") });  // cn:收藏
 	_favoriteItem->setIcon(0, QIcon(":/DAGui/icon/favorite.svg"));
 	insertTopLevelItem(0, _favoriteItem);
 	return _favoriteItem;

@@ -1,4 +1,4 @@
-﻿#include "DAAxObjectExcelWrapper.h"
+#include "DAAxObjectExcelWrapper.h"
 #include <QFile>
 #include <QDir>
 #include <QDebug>
@@ -746,13 +746,13 @@ DATable< QVariant > DAAxObjectExcelWrapper::readExcelSheet(const QString& filena
     DAAxObjectExcelWrapper excel;
     if (!excel.isValid()) {
         if (errString) {
-            *errString = QObject::tr("The local computer does not have Excel or WPS installed");  // 当前计算机中没有安装excel或者wps
+            *errString = QObject::tr("The local computer does not have Excel or WPS installed");  // cn:当前计算机中没有安装excel或者wps
         }
         return res;
     }
     if (!excel.open(filename)) {
         if (errString) {
-            *errString = QObject::tr("can not open excel");  // 无法打开excel
+            *errString = QObject::tr("cannot open Excel");  // cn:无法打开Excel
         }
         return res;
     }
@@ -769,7 +769,7 @@ bool DAAxObjectExcelWrapper::writeExcel(const QString& filename,
     DAAxObjectExcelWrapper excel;
     if (!excel.isValid()) {
         if (errString) {
-            *errString = QObject::tr("The local computer does not have Excel or WPS installed");  // 当前计算机中没有安装excel或者wps
+            *errString = QObject::tr("The local computer does not have Excel or WPS installed");  // cn:当前计算机中没有安装excel或者wps
         }
         return false;
     }

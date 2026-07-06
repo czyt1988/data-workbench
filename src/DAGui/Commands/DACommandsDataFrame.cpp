@@ -1,4 +1,4 @@
-﻿#include "DACommandsDataFrame.h"
+#include "DACommandsDataFrame.h"
 #include "DAPyScripts.h"
 #include <QHeaderView>
 
@@ -83,7 +83,7 @@ DACommandDataFrame_insertColumn::DACommandDataFrame_insertColumn(
     , mName(name)
     , mDefaultvalue(defaultvalue)
 {
-    setText(QObject::tr("insert column \"%1\"").arg(name));  // cn: 插入列“%1”
+    setText(QObject::tr("insert column \"%1\"").arg(name));  // cn:插入列“%1”
 }
 
 /**
@@ -110,7 +110,7 @@ DACommandDataFrame_insertColumn::DACommandDataFrame_insertColumn(
     , mStart(start)
     , mStop(stop)
 {
-    setText(QObject::tr("insert column \"%1\"").arg(name));  // cn: 插入列“%1”
+    setText(QObject::tr("insert column \"%1\"").arg(name));  // cn:插入列“%1”
 }
 
 void DACommandDataFrame_insertColumn::undo()
@@ -304,7 +304,7 @@ bool DACommandDataFrame_setnan::exec()
 DACommandDataFrame_evalDatas::DACommandDataFrame_evalDatas(const DAPyDataFrame& df, const QString& exper, QUndoCommand* par)
     : DACommandWithTemporaryData(df, par), DACallBackInterface(), mExper(exper)
 {
-    setText(QObject::tr("eval datas"));  // cn:列运算
+    setText(QObject::tr("eval data"));  // cn:列运算
 }
 
 void DACommandDataFrame_evalDatas::undo()
@@ -331,7 +331,7 @@ DACommandDataFrame_castNum::DACommandDataFrame_castNum(
 )
     : DACommandWithTemporaryData(df, par), DACallBackInterface(), mIndex(index), mArgs(args)
 {
-    setText(QObject::tr("cast column to num"));  // cn:改变列数据为数值
+    setText(QObject::tr("cast column to number"));  // cn:转换列数据为数值
 }
 
 void DACommandDataFrame_castNum::undo()

@@ -1,4 +1,4 @@
-﻿#include "DAZipArchive.h"
+#include "DAZipArchive.h"
 #include <memory>
 #include <QDebug>
 #include <optional>
@@ -118,23 +118,23 @@ QString DAZipArchive::PrivateData::errorStringFromZipError(int errorCode) const
 {
 	switch (errorCode) {
 	case UNZ_OK:
-		return QObject::tr("No error");
+		return QObject::tr("No error");  // cn:无错误
 	case UNZ_END_OF_LIST_OF_FILE:
-		return QObject::tr("End of list of file");
+		return QObject::tr("End of list of file");  // cn:文件列表结束
 	case UNZ_ERRNO:
-		return QObject::tr("File I/O error: %1").arg(getSystemErrorString(errno));
+		return QObject::tr("File I/O error: %1").arg(getSystemErrorString(errno));  // cn:文件I/O错误: %1
 	case UNZ_PARAMERROR:
-		return QObject::tr("Invalid parameter");
+		return QObject::tr("Invalid parameter");  // cn:无效参数
 	case UNZ_BADZIPFILE:
-		return QObject::tr("Bad zip file");
+		return QObject::tr("Bad zip file");  // cn:损坏的zip文件
 	case UNZ_INTERNALERROR:
-		return QObject::tr("Internal error");
+		return QObject::tr("Internal error");  // cn:内部错误
 	case UNZ_CRCERROR:
-		return QObject::tr("CRC error");
+		return QObject::tr("CRC error");  // cn:CRC校验错误
 	case UNZ_OPENERROR:
-		return QObject::tr("Open error");
+		return QObject::tr("Open error");  // cn:打开错误
 	default:
-		return QObject::tr("Unknown error (%1)").arg(errorCode);
+		return QObject::tr("Unknown error (%1)").arg(errorCode);  // cn:未知错误(%1)
 	}
 }
 
@@ -514,7 +514,7 @@ bool DAZipArchive::remove(const QString& fileToRemove)
 
 		QFile::remove(archivePath);
 		if (!QFile::rename(tempZipPath, archivePath)) {
-			d->mLastErrorString = QObject::tr("Failed to replace archive file");
+			d->mLastErrorString = QObject::tr("Failed to replace archive file");  // cn:替换归档文件失败
 			success             = false;
 		} else {
 			// 重新打开原文件
@@ -588,7 +588,7 @@ bool DAZipArchive::extractToDirectory(const QString& extractDir)
 {
 	DA_D(d);
 	if (!isOpened() && !open()) {
-		qDebug() << tr("can not open archive");  // cn:无法打开档案
+		qDebug() << tr("cannot open archive");  // cn:无法打开档案
 		return false;
 	}
 	return extractToDirectory(d->mZip.get(), extractDir);
@@ -598,7 +598,7 @@ bool DAZipArchive::compressDirectory(const QString& folderPath)
 {
 	DA_D(d);
 	if (!isOpened() && !create()) {
-		qDebug() << tr("can not open archive");  // cn:无法打开档案
+		qDebug() << tr("cannot open archive");  // cn:无法打开档案
 		return false;
 	}
 	return compressDirectory(folderPath, d->mZip.get());
@@ -716,7 +716,7 @@ void DAZipArchive::loadAll(const QString& filePath)
 	}
 	if (!setBaseFilePath(filePath) || !open()) {
 		// 打开失败
-		d_ptr->mLastErrorString = QObject::tr("Failed to open archive");
+		d_ptr->mLastErrorString = QObject::tr("Failed to open archive");  // cn:打开归档失败
 		emit taskFinished(DAAbstractArchive::LoadFailed);
 		return;
 	}
@@ -777,7 +777,7 @@ bool DAZipArchive::extractToDirectory(QuaZip* zip, const QString& extractDir)
 	// 确保目标目录存在
 	QDir targetDir(extractDir);
 	if (!targetDir.exists() && !targetDir.mkpath(".")) {
-		qDebug() << tr("Failed to create target directory:%1").arg(extractDir);  // cn：无法创建目标文件夹%1
+		qDebug() << tr("Failed to create target directory:%1").arg(extractDir);  // cn:无法创建目标文件夹%1
 		return false;
 	}
 

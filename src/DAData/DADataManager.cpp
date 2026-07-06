@@ -1,4 +1,4 @@
-﻿#include "DADataManager.h"
+#include "DADataManager.h"
 #include <QList>
 #include <QMap>
 #include <QDebug>
@@ -109,7 +109,7 @@ DAData DADataManager::addData_(const DAAbstractData::Pointer& d)
  */
 void DADataManager::addDatas_(const QList< DAData >& datas)
 {
-    std::unique_ptr< QUndoCommand > cmdGroup(new QUndoCommand(tr("add datas")));
+    std::unique_ptr< QUndoCommand > cmdGroup(new QUndoCommand(tr("add datas")));  // cn:批量添加数据
     for (const DAData& d : datas) {
         new DACommandDataManagerAdd(d, this, cmdGroup.get());
     }
@@ -149,7 +149,7 @@ void DADataManager::removeData_(DAData& d)
  */
 void DADataManager::removeDatas_(const QList< DAData >& datas)
 {
-    std::unique_ptr< QUndoCommand > cmdGroup(new QUndoCommand(tr("remove datas")));
+    std::unique_ptr< QUndoCommand > cmdGroup(new QUndoCommand(tr("remove datas")));  // cn:批量移除数据
     for (const DAData& d : datas) {
         new DACommandDataManagerRemove(d, this, cmdGroup.get());
     }

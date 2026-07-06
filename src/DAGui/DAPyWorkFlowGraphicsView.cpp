@@ -225,7 +225,7 @@ void DAPyWorkFlowGraphicsView::cutSelectItems()
     copyItems(its, false);
     // 复制完成后要删除
     auto scene = getWorkFlowGraphicsScene();
-    getUndoStack()->beginMacro(tr("cut"));
+    getUndoStack()->beginMacro(tr("cut"));  // cn:剪切
     for (DAGraphicsItem* i : std::as_const(its)) {
         if (DAPyNodeGraphicsItem* ni = dynamic_cast< DAPyNodeGraphicsItem* >(i)) {
             scene->removePyNodeItem_(ni);

@@ -1,4 +1,4 @@
-﻿#include "DAChartAddtGridRasterDataWidget.h"
+#include "DAChartAddtGridRasterDataWidget.h"
 #include "ui_DAChartAddtGridRasterDataWidget.h"
 #include <QMessageBox>
 #include <qwt_interval.h>
@@ -192,7 +192,7 @@ QwtGridRasterData* DAChartAddtGridRasterDataWidget::makeGridDataFromUI()
 		// 验证数据维度
 		if (!isCorrectDim()) {
 			QMessageBox::warning(this,
-								 tr("Warning"),
+								 tr("Warning"),  // cn:警告
 								 tr("The data dimensions are incorrect. The length of x should be equal to the number "
 									"of columns in "
 									"value, and the length of y should be equal to the number of rows in value."));  // cn:数据维度不正确，要求x长度和value的列数相等，y的长度和value的行数相等
@@ -219,7 +219,8 @@ QwtGridRasterData* DAChartAddtGridRasterDataWidget::makeGridDataFromUI()
 
 		return gridData.release();
 	} catch (const std::exception& e) {
-		QMessageBox::critical(this, tr("Error"), tr("Failed to set data: %1").arg(e.what()));
+		QMessageBox::critical(this, tr("Error"),  // cn:错误
+							  tr("Failed to set data: %1").arg(e.what()));  // cn:设置数据失败:%1
 		return nullptr;
 	}
 #endif

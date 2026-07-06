@@ -1,4 +1,4 @@
-﻿#include "DataFrameCreatePivotTableDialog.h"
+#include "DataFrameCreatePivotTableDialog.h"
 #include "ui_DataFrameCreatePivotTableDialog.h"
 #include <QStandardItemModel>
 
@@ -54,7 +54,7 @@ void DataFrameCreatePivotTableDialog::setDataframe(const DA::DAPyDataFrame& df)
 
     // 设置tableview表头内容
     QStringList headers;
-    headers << tr("Value") << tr("Index") << tr("Columns");
+    headers << tr("Value") << tr("Index") << tr("Columns");  // cn:值、索引、列
 
     // 添加数据
     for (int row = 0; row < para.size(); ++row) {
@@ -173,18 +173,18 @@ QStringList DataFrameCreatePivotTableDialog::getPivotTableColumn() const
 
 void DataFrameCreatePivotTableDialog::initPivotTableAggfunc()
 {
-    ui->comboBoxAggfunc->addItem(tr("mean"), QStringLiteral("mean"));
-    ui->comboBoxAggfunc->addItem(tr("sum"), QStringLiteral("sum"));
-    ui->comboBoxAggfunc->addItem(tr("count"), QStringLiteral("count"));
-    ui->comboBoxAggfunc->addItem(tr("size"), QStringLiteral("size"));
-    ui->comboBoxAggfunc->addItem(tr("min"), QStringLiteral("min"));
-    ui->comboBoxAggfunc->addItem(tr("max"), QStringLiteral("max"));
-    ui->comboBoxAggfunc->addItem(tr("median"), QStringLiteral("median"));
-    ui->comboBoxAggfunc->addItem(tr("std"), QStringLiteral("std"));
-    ui->comboBoxAggfunc->addItem(tr("var"), QStringLiteral("var"));
-    ui->comboBoxAggfunc->addItem(tr("first"), QStringLiteral("first"));
-    ui->comboBoxAggfunc->addItem(tr("last"), QStringLiteral("last"));
-    ui->comboBoxAggfunc->addItem(tr("prod"), QStringLiteral("prod"));
+    ui->comboBoxAggfunc->addItem(tr("mean"), QStringLiteral("mean"));      // cn:均值
+    ui->comboBoxAggfunc->addItem(tr("sum"), QStringLiteral("sum"));        // cn:求和
+    ui->comboBoxAggfunc->addItem(tr("count"), QStringLiteral("count"));    // cn:计数
+    ui->comboBoxAggfunc->addItem(tr("size"), QStringLiteral("size"));      // cn:大小
+    ui->comboBoxAggfunc->addItem(tr("min"), QStringLiteral("min"));        // cn:最小值
+    ui->comboBoxAggfunc->addItem(tr("max"), QStringLiteral("max"));        // cn:最大值
+    ui->comboBoxAggfunc->addItem(tr("median"), QStringLiteral("median"));  // cn:中位数
+    ui->comboBoxAggfunc->addItem(tr("std"), QStringLiteral("std"));        // cn:标准差
+    ui->comboBoxAggfunc->addItem(tr("var"), QStringLiteral("var"));        // cn:方差
+    ui->comboBoxAggfunc->addItem(tr("first"), QStringLiteral("first"));    // cn:第一个
+    ui->comboBoxAggfunc->addItem(tr("last"), QStringLiteral("last"));      // cn:最后一个
+    ui->comboBoxAggfunc->addItem(tr("prod"), QStringLiteral("prod"));      // cn:乘积
 }
 
 /**

@@ -1,4 +1,4 @@
-﻿#include "DataframeOperateWorker.h"
+#include "DataframeOperateWorker.h"
 #include <QDebug>
 #include "DADataManagerInterface.h"
 #include "DAUIInterface.h"
@@ -49,7 +49,7 @@ void DataframeOperateWorker::createDataframeDescribe()
 {
     DA::DAData optData = dataManagerInterface()->getOperateData();
     if (optData.isNull()) {
-        uiInterface()->addWarningLogMessage(tr("Please first open the data table to be operated on."));  // cn:请先打开要操作的数据表
+        uiInterface()->addWarningLogMessage(tr("Please first open the data table to operate on."));  // cn:请先打开要操作的数据表
         return;
     }
     if (!optData.isDataFrame()) {
@@ -60,10 +60,10 @@ void DataframeOperateWorker::createDataframeDescribe()
     DA::DAPyDataFrame df          = optData.toDataFrame();
     DA::DAPyDataFrame df_describe = df.describe();
     DA::DAData data               = df;
-    data.setName(tr("%1_Describe").arg(optData.getName()));
+    data.setName(tr("%1_Describe").arg(optData.getName()));  // cn:%1_描述
     data.setDescribe(tr("Generate descriptive statistics that summarize the central tendency, dispersion and "
-                        "shape of a [%1]’s distribution, excluding NaN values")
-                         .arg(optData.getName()));
+                        "shape of the [%1]’s distribution, excluding NaN values")
+                         .arg(optData.getName()));  // cn:生成描述性统计数据，总结[%1]分布的集中趋势、离散度和形状，排除NaN值
     dataManagerInterface()->addData_(data);
     uiInterface()->setDirty(true);
     // 把数据界面抬起
@@ -116,8 +116,8 @@ void DataframeOperateWorker::createPivotTable()
         return;
     }
     DA::DAData data = df_pivottable;
-    data.setName(tr("%1_PviotTable").arg(optData.getName()));
-    data.setDescribe(tr("Generate pivot table of %1").arg(optData.getName()));
+    data.setName(tr("%1_PivotTable").arg(optData.getName()));  // cn:%1_数据透视表
+    data.setDescribe(tr("Generate a pivot table of %1").arg(optData.getName()));  // cn:生成%1的数据透视表
     dataManagerInterface()->addData_(data);
     uiInterface()->setDirty(true);
     // 把数据界面抬起

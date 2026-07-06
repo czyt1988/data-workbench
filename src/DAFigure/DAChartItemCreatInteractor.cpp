@@ -113,7 +113,7 @@ QwtPlotItem* createHLineMarkerPlotItem(QwtPlot* plot, const QPointF& pos)
 {
     QwtPlotMarker* marker = createMarkerPlotItem(
         pos,
-        QObject::tr("Horizontal Vertical Line Marker"),  // cn : 水平垂直线标记
+        QObject::tr("Horizontal Line Marker"),  // cn:水平线标记
         QPen(Qt::red, 1, Qt::DashLine),
         QwtPlotMarker::HLine
     );
@@ -125,7 +125,7 @@ QwtPlotItem* createVLineMarkerPlotItem(QwtPlot* plot, const QPointF& pos)
 {
     QwtPlotMarker* marker = createMarkerPlotItem(
         pos,
-        QObject::tr("Vertical Line Marker"),  // cn : 垂直直线标记
+        QObject::tr("Vertical Line Marker"),  // cn:垂直直线标记
         QPen(Qt::red, 1, Qt::DashLine),
         QwtPlotMarker::VLine
     );
@@ -137,7 +137,7 @@ QwtPlotItem* createCrossLineMarkerPlotItem(QwtPlot* plot, const QPointF& pos)
 {
     QwtPlotMarker* marker = createMarkerPlotItem(
         pos,
-        QObject::tr("Cross Line Marker"),  // cn : 十字线标记
+        QObject::tr("Cross Line Marker"),  // cn:十字线标记
         QPen(Qt::red, 1, Qt::DashLine),
         QwtPlotMarker::Cross
     );

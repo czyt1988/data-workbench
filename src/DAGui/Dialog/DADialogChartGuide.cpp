@@ -1,4 +1,4 @@
-﻿#include "DADialogChartGuide.h"
+#include "DADialogChartGuide.h"
 #include "ui_DADialogChartGuide.h"
 #include <QPen>
 // DA
@@ -67,27 +67,27 @@ void DADialogChartGuide::initListWidget()
 {
     QListWidgetItem* item = nullptr;
     // curve
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-curve.svg"), tr("curve"));
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-curve.svg"), tr("curve"));  // cn:曲线
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Curve));
     ui->listWidgetChartType->addItem(item);
     // scatter
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-scatter.svg"), tr("scatter"));
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-scatter.svg"), tr("scatter"));  // cn:散点
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Scatter));
     ui->listWidgetChartType->addItem(item);
     // bar
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-bar.svg"), tr("bar"));
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-bar.svg"), tr("bar"));  // cn:柱状
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Bar));
     ui->listWidgetChartType->addItem(item);
     // errorbar
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-intervalcurve.svg"), tr("error bar"));
+    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-intervalcurve.svg"), tr("error bar"));  // cn:误差棒
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::ErrorBar));
     ui->listWidgetChartType->addItem(item);
     // boxplot
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-OHLC.svg"), tr("box"));
+    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-OHLC.svg"), tr("box"));  // cn:箱体
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Box));
     ui->listWidgetChartType->addItem(item);
     // spectrogram
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-spectrogram.svg"), tr("cloud map"));
+    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-spectrogram.svg"), tr("cloud map"));  // cn:云图
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Spectrogram));
     ui->listWidgetChartType->addItem(item);
     // 初始化

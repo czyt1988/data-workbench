@@ -60,14 +60,14 @@ void DAAppDockingArea::retranslateUi()
 
 void DAAppDockingArea::resetText()
 {
-    mWorkflowNodeListDock->setWindowTitle(tr("workflow node"));    // cn:节点
-    mChartManageDock->setWindowTitle(tr("charts manager"));        // cn:绘图管理
-    mDataManageDock->setWindowTitle(tr("datas manager"));          // cn:数据管理
-    mWorkFlowOperateDock->setWindowTitle(tr("workflow operate"));  // cn:工作流操作
-    mChartOperateDock->setWindowTitle(tr("chart operate"));        // cn:绘图操作
-    mDataOperateDock->setWindowTitle(tr("data operate"));          // cn:数据操作
-    mSettingContainerDock->setWindowTitle(tr("setting"));          // cn:设置
-    mMessageLogDock->setWindowTitle(tr("log"));                    // cn:消息
+    mWorkflowNodeListDock->setWindowTitle(tr("Workflow Node"));    // cn:节点
+    mChartManageDock->setWindowTitle(tr("Charts Manager"));        // cn:绘图管理
+    mDataManageDock->setWindowTitle(tr("Data Manager"));          // cn:数据管理
+    mWorkFlowOperateDock->setWindowTitle(tr("Workflow Operate"));  // cn:工作流操作
+    mChartOperateDock->setWindowTitle(tr("Chart Operate"));        // cn:绘图操作
+    mDataOperateDock->setWindowTitle(tr("Data Operate"));          // cn:数据操作
+    mSettingContainerDock->setWindowTitle(tr("Setting"));          // cn:设置
+    mMessageLogDock->setWindowTitle(tr("Log"));                    // cn:消息
 }
 
 /**

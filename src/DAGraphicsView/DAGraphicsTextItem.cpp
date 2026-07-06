@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsTextItem.h"
+#include "DAGraphicsTextItem.h"
 #include <QDebug>
 #include <QFont>
 #include <QPainter>
@@ -37,13 +37,13 @@ DAGraphicsTextItem::PrivateData::PrivateData(DAGraphicsTextItem* p) : q_ptr(p)
 
 DAGraphicsTextItem::DAGraphicsTextItem(QGraphicsItem* parent) : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
-    init(tr("Text"));
+    init(tr("Text"));  // cn:文本
 }
 
 DAGraphicsTextItem::DAGraphicsTextItem(const QFont& f, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
-	init(tr("Text"));
+	init(tr("Text"));  // cn:文本
 	setSelectTextFont(f);
 }
 

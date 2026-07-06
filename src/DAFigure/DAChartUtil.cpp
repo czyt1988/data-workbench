@@ -38,7 +38,7 @@ namespace DA
 QString DAChartUtil::plotTitle(const QwtPlot* plot, const QwtFigure* fig)
 {
     if (!plot) {
-        return QObject::tr("unknow chart");  // cn:未知绘图
+        return QObject::tr("unknown chart");  // cn:未知绘图
     }
     QString str = plot->title().text();
     if (!str.isEmpty()) {
@@ -51,9 +51,9 @@ QString DAChartUtil::plotTitle(const QwtPlot* plot, const QwtFigure* fig)
     const auto charts = fig->allAxes(true);
     int index         = charts.indexOf(const_cast< QwtPlot* >(plot));
     if (index >= 0) {
-        return QObject::tr("chart-%1").arg(index + 1);
+        return QObject::tr("chart-%1").arg(index + 1);  // cn:绘图-%1
     }
-    return QObject::tr("untitle-chart");  // cn：绘图-未命名
+    return QObject::tr("untitle-chart");  // cn:绘图-未命名
 }
 
 QString DAChartUtil::plotItemName(const QwtPlotItem* item)
@@ -71,7 +71,7 @@ QString DAChartUtil::plotItemName(const QwtPlotItem* item)
     switch (item->rtti()) {
     //! Unspecific value, that can be used, when it doesn't matter
     case QwtPlotItem::Rtti_PlotItem:
-        return QObject::tr("item[%1]").arg(item->title().text());  // cn 图元[%1]
+        return QObject::tr("item[%1]").arg(item->title().text());  // cn:图元[%1]
     //! For QwtPlotGrid
     case QwtPlotItem::Rtti_PlotGrid:
         return QObject::tr("grid");  // cn:网格
@@ -126,7 +126,7 @@ QString DAChartUtil::plotItemName(const QwtPlotItem* item)
     default:
         break;
     }
-    return QObject::tr("unknow-%1").arg(str);
+    return QObject::tr("unknown-%1").arg(str);  // cn:未知-%1
 }
 
 QIcon DAChartUtil::plotItemIcon(const QwtPlotItem* item)

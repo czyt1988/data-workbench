@@ -213,7 +213,7 @@ QStringList DAPyNodeFactory::getNodePrototypes() const
  */
 QString DAPyNodeFactory::factoryName() const
 {
-    return QObject::tr("DA Python Node Factory");
+    return QObject::tr("DA Python Node Factory");  // cn:DA Python 节点工厂
 }
 
 /**
@@ -223,7 +223,7 @@ QString DAPyNodeFactory::factoryName() const
  */
 QString DAPyNodeFactory::factoryDescribe() const
 {
-    return QObject::tr("Python工作流节点工厂，通过DANodeRegistry发现和创建Python定义的节点");
+    return QObject::tr("Python workflow node factory, discovers and creates Python-defined nodes via DANodeRegistry");  // cn:Python工作流节点工厂，通过DANodeRegistry发现和创建Python定义的节点
 }
 
 }  // namespace DA

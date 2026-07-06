@@ -1,4 +1,4 @@
-﻿#include "DAExportToPngSettingDialog.h"
+#include "DAExportToPngSettingDialog.h"
 #include "ui_DAExportToPngSettingDialog.h"
 #include <QApplication>
 #include <QScreen>
@@ -53,7 +53,7 @@ void DAExportToPngSettingDialog::onButtonGroupDPITypeButtonClicked(QAbstractButt
 
 void DAExportToPngSettingDialog::onPushButtonExportClicked()
 {
-	mSaveFilePath = QFileDialog::getSaveFileName(this, tr(""), QString(), tr("Images (*.png)"));
+	mSaveFilePath = QFileDialog::getSaveFileName(this, tr(""), QString(), tr("Images (*.png)"));  // cn:空,cn:图片 (*.png)
 	if (mSaveFilePath.isEmpty()) {
 		return;
 	}

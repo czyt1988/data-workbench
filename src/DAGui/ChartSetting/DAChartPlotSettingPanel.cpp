@@ -1,4 +1,4 @@
-﻿#include "DAChartPlotSettingPanel.h"
+#include "DAChartPlotSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "qwt_text.h"
 #include <QSignalBlocker>
@@ -111,16 +111,24 @@ void DAChartPlotSettingPanel::buildPropertyPanel()
 {
     auto panel = propertyPanel();
 
-    panel->addCollapsibleGroup(tr("Title"));
-    panel->addStringProperty(PID_TitleText, tr("Title Text"));
-    panel->addFontProperty(PID_TitleFont, tr("Title Font"));
-    panel->addColorProperty(PID_TitleColor, tr("Title Color"));
+    panel->addCollapsibleGroup(tr("Title")  // cn:标题
+    );
+    panel->addStringProperty(PID_TitleText, tr("Title Text")  // cn:标题文本
+    );
+    panel->addFontProperty(PID_TitleFont, tr("Title Font")  // cn:标题字体
+    );
+    panel->addColorProperty(PID_TitleColor, tr("Title Color")  // cn:标题颜色
+    );
     panel->endGroup();
 
-    panel->addCollapsibleGroup(tr("Footer"));
-    panel->addStringProperty(PID_FooterText, tr("Footer Text"));
-    panel->addFontProperty(PID_FooterFont, tr("Footer Font"));
-    panel->addColorProperty(PID_FooterColor, tr("Footer Color"));
+    panel->addCollapsibleGroup(tr("Footer")  // cn:脚注
+    );
+    panel->addStringProperty(PID_FooterText, tr("Footer Text")  // cn:脚注文本
+    );
+    panel->addFontProperty(PID_FooterFont, tr("Footer Font")  // cn:脚注字体
+    );
+    panel->addColorProperty(PID_FooterColor, tr("Footer Color")  // cn:脚注颜色
+    );
     panel->endGroup();
 }
 

@@ -178,7 +178,7 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
     QString name = dlg.getName();
     if (name.isEmpty()) {
         QMessageBox::warning(this,
-                             tr("warning"),                                                     // cn: 警告
+                             tr("Warning"),                                                     // cn:警告
                              tr("The name of the new column to be inserted must be specified")  // cn:必须指定列的名字
         );
         return;
@@ -215,7 +215,7 @@ int DADataOperateOfDataFrameWidget::removeSelectRow()
     }
     QList< int > rows = getSelectedDataframeRows();
     if (rows.size() <= 0) {
-        daWarning << tr("please select valid data cells");  // cn:请选择正确的行
+        daWarning << tr("Please select valid data cells");  // cn:请选择正确的行
         return 0;
     }
     std::unique_ptr< DACommandDataFrame_dropIRow > cmd(new DACommandDataFrame_dropIRow(mData.toDataFrame(), rows));
@@ -244,7 +244,7 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
     }
     QList< int > columns = getSelectedDataframeCoumns();
     if (columns.size() <= 0) {
-        daWarning << tr("please select a valid column");  // cn:请选择正确的列
+        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
         return 0;
     }
     std::unique_ptr< DACommandDataFrame_dropIColumn > cmd(new DACommandDataFrame_dropIColumn(mData.toDataFrame(), columns));
@@ -273,7 +273,7 @@ int DADataOperateOfDataFrameWidget::removeSelectCell()
     }
     const QList< QPoint > cells = getSelectedDataframeCells();
     if (cells.size() <= 0) {
-        daWarning << tr("please select a valid cell");  // cn:请选择正确的单元格
+        daWarning << tr("Please select a valid cell");  // cn:请选择正确的单元格
         return 0;
     }
     QList< int > rows, cols;
@@ -315,7 +315,7 @@ void DADataOperateOfDataFrameWidget::renameColumns()
     }
     QList< QString > oldcols = df.columns();
     if (oldcols.size() <= 0) {
-        daWarning << tr("table has no columns");  // cn:表格没有列
+        daWarning << tr("Table has no columns");  // cn:表格没有列
         return;
     }
     DARenameColumnsNameDialog dlg(this);
@@ -355,7 +355,7 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnType(const DAPyDType& dt)
     }
     QList< int > selColumns = getSelectedDataframeCoumns();
     if (selColumns.size() <= 0) {
-        daWarning << tr("please select a valid column");  // cn:请选择正确的列
+        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
         emit selectTypeChanged({ }, DAPyDType());
         return false;
     }
@@ -390,7 +390,7 @@ void DADataOperateOfDataFrameWidget::castSelectToNum()
     }
     QList< int > colsIndex = getSelectedDataframeCoumns();
     if (colsIndex.size() <= 0) {
-        daWarning << tr("please select a valid column");  // cn:请选择正确的列
+        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
         return;
     }
     if (mDialogCastNumArgs == nullptr) {
@@ -431,7 +431,7 @@ void DADataOperateOfDataFrameWidget::castSelectToDatetime()
     }
     QList< int > colsIndex = getSelectedDataframeCoumns();
     if (colsIndex.size() <= 0) {
-        daWarning << tr("please select a valid column");  // cn:请选择正确的列
+        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
         return;
     }
     if (mDialogCastDatetimeArgs == nullptr) {
@@ -473,7 +473,7 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
     }
     QList< int > colsIndex = getSelectedDataframeCoumns();
     if (colsIndex.size() <= 0) {
-        daWarning << tr("please select a valid column");  // cn:请选择正确的列
+        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
         return false;
     }
     std::unique_ptr< DACommandDataFrame_setIndex > cmd = std::make_unique< DACommandDataFrame_setIndex >(df, colsIndex);
@@ -880,7 +880,7 @@ void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyl
     QList< QPoint > cells = getSelectedDataframeCells(false);
 
     if (cells.isEmpty() && fullCols.isEmpty() && fullRows.isEmpty()) {
-        daWarning << tr("please select a valid cell");  // cn:请选择正确的单元格
+        daWarning << tr("Please select a valid cell");  // cn:请选择正确的单元格
         return;
     }
 
@@ -938,7 +938,7 @@ void DADataOperateOfDataFrameWidget::clearStyleSelection()
     QList< QPoint > cells = getSelectedDataframeCells(false);
 
     if (cells.isEmpty() && fullCols.isEmpty() && fullRows.isEmpty()) {
-        daWarning << tr("please select a valid cell");  // cn:请选择正确的单元格
+        daWarning << tr("Please select a valid cell");  // cn:请选择正确的单元格
         return;
     }
 

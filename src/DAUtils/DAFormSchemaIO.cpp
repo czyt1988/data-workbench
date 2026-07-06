@@ -27,7 +27,7 @@ bool parseField(const QJsonObject& obj, DAFormFieldDef& field, QString* errorMes
     QJsonValue nameVal = obj.value("name");
     if (!nameVal.isString()) {
         if (errorMessage) {
-            *errorMessage = QObject::tr("field missing required 'name'");
+            *errorMessage = QObject::tr("field missing required 'name'");  // cn:字段缺少必需的 'name'
         }
         return false;
     }
@@ -167,7 +167,7 @@ bool parseItemsArray(const QJsonValue& val, QList< DAFormItemDef >& items, QStri
 {
     if (!val.isArray()) {
         if (errorMessage) {
-            *errorMessage = QObject::tr("'items' must be an array");
+            *errorMessage = QObject::tr("'items' must be an array");  // cn:'items' 必须是数组
         }
         return false;
     }

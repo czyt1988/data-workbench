@@ -13,7 +13,7 @@ DataFrameEvalDatasDialog::DataFrameEvalDatasDialog(QWidget* parent)
            "\nYou can write expressions using the following elements:"
            "\n"
            "\n- **Column names**: Use column names directly in calculations (e.g., `age`, `salary`)"
-           "\n- **Constants**: Numbers, strings, and boolean values (e.g., `10`, `\" male \"`, `True`)"
+           "\n- **Constants**: Numbers, strings, and boolean values (e.g., `10`, `\"male\"`, `True`)"
            "\n- **Operators**:"
            "\n  - Mathematical operations: `+`, `-`, `*`, `/`, `**` (power), `%` (modulus)"
            "\n  - Comparison operations: `==`, `!=`, `>`, `<`, `>=`, `<=`"
@@ -69,7 +69,7 @@ DataFrameEvalDatasDialog::DataFrameEvalDatasDialog(QWidget* parent)
            "\nname.str.contains(\"John\")"
            "\n```"
            "\n"
-           "\nThis can be used to filter rows where the name contains \" John \".")
+           "\nThis can be used to filter rows where the name contains \"John\".")
     );  // cn:
     // # 一、基本语法
     //

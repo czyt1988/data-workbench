@@ -120,8 +120,8 @@ QDrag* DAPyWorkFlowNodeListWidget::createDrag(QObject* parent, const DAPyNodeMet
 void DAPyWorkFlowNodeListWidget::buildMenu()
 {
 	_menu                 = new QMenu(this);
-	_actionAddFavorite    = new QAction(QIcon(":/DAGui/icon/favorite.svg"), tr("Favorite"), this);
-	_actionRemoveFavorite = new QAction(QIcon(":/DAGui/icon/removeFavorite.svg"), tr("Remove Favorite"), this);
+	_actionAddFavorite    = new QAction(QIcon(":/DAGui/icon/favorite.svg"), tr("Favorite"), this);  // cn:收藏
+	_actionRemoveFavorite = new QAction(QIcon(":/DAGui/icon/removeFavorite.svg"), tr("Remove Favorite"), this);  // cn:移除收藏
 	_menu->addAction(_actionAddFavorite);
 	_menu->addAction(_actionRemoveFavorite);
 	connect(_actionAddFavorite, &QAction::triggered, this, &DAPyWorkFlowNodeListWidget::onActionAddFavoriteTriggered);

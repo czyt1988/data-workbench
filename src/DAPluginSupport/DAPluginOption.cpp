@@ -1,4 +1,4 @@
-﻿#include "DAPluginOption.h"
+#include "DAPluginOption.h"
 #include <QObject>
 #include <QLibrary>
 #include <memory>
@@ -144,7 +144,7 @@ bool DAPluginOption::load(const QString& pluginPath, DACoreInterface* c)
 #endif
     // 设置core
     d_ptr->mPlugin->setCore(c);
-    qDebug() << QObject::tr("loaded plugin:%1").arg(pluginPath);
+    qDebug() << QObject::tr("loaded plugin:%1").arg(pluginPath);  // cn:已加载插件：%1
     // 设置core后调用初始化
     if (!d_ptr->mPlugin->initialize()) {
         // 初始化失败，停止加载
@@ -253,7 +253,7 @@ QDebug operator<<(QDebug debug, const DAPluginOption& po)
                                 po.getPluginName(),
                                 po.getPluginDescription(),
                                 po.getPluginVersion(),
-                                po.getErrorString())
+                                po.getErrorString())  // cn:插件文件名：%1，iid：%2，名称：%3，描述：%4，版本：%5，错误信息：%6
 #if QT_VERSION_MAJOR >= 6
                     << Qt::endl;
 #else

@@ -1,4 +1,4 @@
-﻿#include "DAMessageLogsModel.h"
+#include "DAMessageLogsModel.h"
 #include "DAMessageLogItem.h"
 #include <QDebug>
 #include <QIcon>
@@ -63,14 +63,14 @@ QVariant DAMessageLogsModel::headerData(int section, Qt::Orientation orientation
 		if (isShowDateTime()) {
 			switch (section) {
 			case 0:
-				return tr("date time");
+				return tr("date time");  // cn:日期时间
 			case 1:
-				return tr("message");
+				return tr("message");  // cn:消息
 			default:
 				return QVariant();
 			}
 		} else {
-			return tr("message");
+			return tr("message");  // cn:消息
 		}
 	} else {
 		return section + 1;

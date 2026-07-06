@@ -1,4 +1,4 @@
-﻿#include "DAChartBarSettingPanel.h"
+#include "DAChartBarSettingPanel.h"
 #include "DAPropertyPanelWidget.h"
 #include <QSignalBlocker>
 #include "qwt_text.h"
@@ -48,61 +48,90 @@ void DAChartBarSettingPanel::buildPropertyPanel()
     auto panel = propertyPanel();
 
     // 基础属性组
-    panel->addCollapsibleGroup(tr("Basic"));
-    panel->addStringProperty(PropTitle, tr("Title"));
-    panel->addDoubleProperty(PropZValue, tr("Z Value"));
-    panel->endGroup();
-
-    // 坐标轴属性组
-    panel->addCollapsibleGroup(tr("Axis"));
-    addAxisProperty(PropXAxis, tr("X Axis"), false);
-    addAxisProperty(PropYAxis, tr("Y Axis"), true);
-    panel->endGroup();
-
-    // 图例属性组
-    panel->addCollapsibleGroup(tr("Legend"));
-    // QwtPlotBarChart::LegendMode: ChartMode=0, BarMode=1
-    panel->addEnumProperty(
-        PropLegendMode, tr("Legend Mode"), QStringList() << tr("Chart Mode") << tr("Bar Mode"), QList< int >() << 0 << 1
+    panel->addCollapsibleGroup(tr("Basic")  // cn:基础
+    );
+    panel->addStringProperty(PropTitle, tr("Title")  // cn:标题
+    );
+    panel->addDoubleProperty(PropZValue, tr("Z Value")  // cn:Z值
     );
     panel->endGroup();
 
+    // 坐标轴属性组
+    panel->addCollapsibleGroup(tr("Axis")  // cn:坐标轴
+    );
+    addAxisProperty(PropXAxis, tr("X Axis")  // cn:X轴
+                    ,
+                    false);
+    addAxisProperty(PropYAxis, tr("Y Axis")  // cn:Y轴
+                    ,
+                    true);
+    panel->endGroup();
+
+    // 图例属性组
+    panel->addCollapsibleGroup(tr("Legend")  // cn:图例
+    );
+    // QwtPlotBarChart::LegendMode: ChartMode=0, BarMode=1
+    panel->addEnumProperty(
+        PropLegendMode, tr("Legend Mode")  // cn:图例模式
+        ,
+        QStringList() << tr("Chart Mode")  // cn:图表模式
+                      << tr("Bar Mode")  // cn:柱状模式
+        ,
+        QList< int >() << 0 << 1);
+    panel->endGroup();
 
     // 填充属性组
-    panel->addCollapsibleGroup(tr("Fill"));
-    panel->addBoolProperty(PropEnableFill, tr("Enable Fill"));
-    panel->addBrushProperty(PropFillBrush, tr("Fill Brush"));
+    panel->addCollapsibleGroup(tr("Fill")  // cn:填充
+    );
+    panel->addBoolProperty(PropEnableFill, tr("Enable Fill")  // cn:启用填充
+    );
+    panel->addBrushProperty(PropFillBrush, tr("Fill Brush")  // cn:填充画刷
+    );
     panel->setPropertyEnabled(PropFillBrush, false);
     panel->endGroup();
 
     // 边框属性组
-    panel->addCollapsibleGroup(tr("Edge"));
-    panel->addBoolProperty(PropEnableEdge, tr("Enable Edge"));
-    panel->addPenProperty(PropEdgePen, tr("Edge Pen"));
+    panel->addCollapsibleGroup(tr("Edge")  // cn:边框
+    );
+    panel->addBoolProperty(PropEnableEdge, tr("Enable Edge")  // cn:启用边框
+    );
+    panel->addPenProperty(PropEdgePen, tr("Edge Pen")  // cn:边框画笔
+    );
     panel->setPropertyEnabled(PropEdgePen, false);
     panel->endGroup();
 
     // 基线属性组
-    panel->addCollapsibleGroup(tr("Baseline"));
-    panel->addStringProperty(PropBaseline, tr("Baseline"));
+    panel->addCollapsibleGroup(tr("Baseline")  // cn:基线
+    );
+    panel->addStringProperty(PropBaseline, tr("Baseline")  // cn:基线
+    );
     panel->endGroup();
 
     // 布局属性组
-    panel->addCollapsibleGroup(tr("Layout"));
+    panel->addCollapsibleGroup(tr("Layout")  // cn:布局
+    );
     // LayoutPolicy枚举：AutoAdjustSamples=0, ScaleSamplesToAxes=1, ScaleSampleToCanvas=2, FixedSampleSize=3
     panel->addEnumProperty(
         PropLayoutPolicy,
-        tr("Layout Policy"),
-        QStringList() << tr("Auto Adjust Samples") << tr("Scale Samples To Axes") << tr("Scale Sample To Canvas")
-                      << tr("Fixed Sample Size"),
+        tr("Layout Policy")  // cn:布局策略
+        ,
+        QStringList() << tr("Auto Adjust Samples")  // cn:自动调整采样
+                      << tr("Scale Samples To Axes")  // cn:采样缩放至坐标轴
+                      << tr("Scale Sample To Canvas")  // cn:采样缩放至画布
+                      << tr("Fixed Sample Size")  // cn:固定采样尺寸
+        ,
         QList< int >() << static_cast< int >(QwtPlotAbstractBarChart::AutoAdjustSamples)
                        << static_cast< int >(QwtPlotAbstractBarChart::ScaleSamplesToAxes)
                        << static_cast< int >(QwtPlotAbstractBarChart::ScaleSampleToCanvas)
-                       << static_cast< int >(QwtPlotAbstractBarChart::FixedSampleSize)
+                       << static_cast< int >(QwtPlotAbstractBarChart::FixedSampleSize));
+    panel->addDoubleProperty(PropLayoutHint, tr("Layout Hint")  // cn:布局提示
     );
-    panel->addDoubleProperty(PropLayoutHint, tr("Layout Hint"));
-    panel->addIntProperty(PropSpacing, tr("Spacing"), 0, 0, 1000);
-    panel->addIntProperty(PropMargin, tr("Margin"), 0, 0, 1000);
+    panel->addIntProperty(PropSpacing, tr("Spacing")  // cn:间距
+                          ,
+                          0, 0, 1000);
+    panel->addIntProperty(PropMargin, tr("Margin")  // cn:边距
+                          ,
+                          0, 0, 1000);
     panel->endGroup();
 }
 

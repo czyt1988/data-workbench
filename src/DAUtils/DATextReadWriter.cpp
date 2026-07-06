@@ -1,4 +1,4 @@
-﻿#include "DATextReadWriter.h"
+#include "DATextReadWriter.h"
 #include <QMutexLocker>
 #include <QTextStream>
 #include <limits>
@@ -176,7 +176,7 @@ bool DATextReadWriter::open(QIODevice::OpenMode mode)
 	if (d_ptr->file->open(mode)) {
 		return true;
 	}
-	qDebug() << tr("can not open %1,because %2").arg(d_ptr->file->fileName()).arg(d_ptr->file->errorString());
+	qDebug() << tr("cannot open %1, because %2").arg(d_ptr->file->fileName()).arg(d_ptr->file->errorString());  // cn:无法打开 %1，原因：%2
 	// int code = static_cast< DATextReadWriter::ErrorCode >(d_ptr->file->error());
 	// emit occurError(code, d_ptr->file->errorString());
 	return false;
@@ -400,41 +400,41 @@ QString DATextReadWriter::errorCodeToString(ErrorCode c)
 {
 	switch (c) {
 	case NoError:
-		return QObject::tr("No error occurred");
+		return QObject::tr("No error occurred");  // cn:没有发生错误
 	case ReadError:
-		return QObject::tr("An error occurred when reading from the file");
+		return QObject::tr("An error occurred when reading from the file");  // cn:读取文件时发生错误
 	case WriteError:
-		return QObject::tr("An error occurred when writing to the file");
+		return QObject::tr("An error occurred when writing to the file");  // cn:写入文件时发生错误
 	case FatalError:
-		return QObject::tr("A fatal error occurred");
+		return QObject::tr("A fatal error occurred");  // cn:发生致命错误
 	case ResourceError:
-		return QObject::tr("Out of resources (eg, too many open files, out of memory, etc)");
+		return QObject::tr("Out of resources (eg, too many open files, out of memory, etc)");  // cn:资源不足（例如：打开文件过多、内存不足等）
 	case OpenError:
-		return QObject::tr("The file could not be opened");
+		return QObject::tr("The file could not be opened");  // cn:无法打开文件
 	case AbortError:
-		return QObject::tr("The operation was aborted");
+		return QObject::tr("The operation was aborted");  // cn:操作被中止
 	case TimeOutError:
-		return QObject::tr("A timeout occurred");
+		return QObject::tr("A timeout occurred");  // cn:发生超时
 	case UnspecifiedError:
-		return QObject::tr("An unspecified error occurred");
+		return QObject::tr("An unspecified error occurred");  // cn:发生未指定的错误
 	case RemoveError:
-		return QObject::tr("The file could not be removed");
+		return QObject::tr("The file could not be removed");  // cn:无法删除文件
 	case RenameError:
-		return QObject::tr("The file could not be renamed");
+		return QObject::tr("The file could not be renamed");  // cn:无法重命名文件
 	case PositionError:
-		return QObject::tr("The position in the file could not be changed");
+		return QObject::tr("The position in the file could not be changed");  // cn:无法更改文件位置
 	case ResizeError:
-		return QObject::tr("The file could not be resized");
+		return QObject::tr("The file could not be resized");  // cn:无法调整文件大小
 	case PermissionsError:
-		return QObject::tr("The file could not be accessed");
+		return QObject::tr("The file could not be accessed");  // cn:无法访问文件
 	case CopyError:
-		return QObject::tr("The file could not be copied");
+		return QObject::tr("The file could not be copied");  // cn:无法复制文件
 	case UserTerminate:
-		return QObject::tr("User Terminate");
+		return QObject::tr("User Terminated");  // cn:用户终止
 	default:
 		break;
 	}
-	return QObject::tr("Unknow Error");
+	return QObject::tr("Unknown Error");  // cn:未知错误
 }
 
 }

@@ -1,4 +1,4 @@
-﻿#include "DAAppConfig.h"
+#include "DAAppConfig.h"
 #include <QDir>
 #include <QFile>
 #include <QDebug>
@@ -47,7 +47,7 @@ bool DAAppConfig::loadConfig(bool noFileCreateNewOne)
     }
     if (!xmlConfigFile.open(QIODevice::ReadWrite)) {
         // 有配置文件，但打开失败
-        daWarning.noquote() << QObject::tr("cannot open config file \"%1\": %2")  // cn:无法打开配置文件\"%1\"，原因是%2
+        daWarning.noquote() << QObject::tr("Cannot open config file \"%1\": %2")  // cn:无法打开配置文件\"%1\"，原因是%2
                                    .arg(mConfigFilePath, xmlConfigFile.errorString());
         return false;
     }
@@ -56,13 +56,13 @@ bool DAAppConfig::loadConfig(bool noFileCreateNewOne)
     QString err;
     QDomDocument doc;
     if (!doc.setContent(&xmlConfigFile, &err)) {
-        daCritical.noquote() << QObject::tr("cannot load config file \"%1\": %2")  // cn:无法加载配置文件\"%1\"，原因是%2
+        daCritical.noquote() << QObject::tr("Cannot load config file \"%1\": %2")  // cn:无法加载配置文件\"%1\"，原因是%2
                                     .arg(mConfigFilePath, err);
         return false;
     }
     QDomElement configsEle = doc.firstChildElement("configs");
     if (configsEle.isNull()) {
-        daWarning.noquote() << QObject::tr("config file (%1) is missing the <configs> tag").arg(mConfigFilePath);  // cn:配置文件(%1)缺失<configs>标签
+        daWarning.noquote() << QObject::tr("Config file (%1) is missing the <configs> tag").arg(mConfigFilePath);  // cn:配置文件(%1)缺失<configs>标签
         return false;
     }
     QVersionNumber version = mVersion;
@@ -84,7 +84,7 @@ bool DAAppConfig::saveConfig()
     // 一定要带上QIODevice::Truncate
     if (!xmlConfigFile.open(QIODevice::ReadWrite | QIODevice::Truncate)) {
         // 有配置文件，但打开失败
-        daCritical << QObject::tr("cannot open config file \"%1\": %2")  // cn:无法打开配置文件\"%1\"，原因是%2
+        daCritical << QObject::tr("Cannot open config file \"%1\": %2")  // cn:无法打开配置文件\"%1\"，原因是%2
                           .arg(mConfigFilePath, xmlConfigFile.errorString());
         return false;
     }

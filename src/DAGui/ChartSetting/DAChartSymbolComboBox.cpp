@@ -1,4 +1,4 @@
-﻿#include "DAChartSymbolComboBox.h"
+#include "DAChartSymbolComboBox.h"
 #include <QPainter>
 #include <vector>
 #include <iterator>
@@ -35,81 +35,97 @@ void DAChartSymbolComboBox::buildItems()
     QwtSymbol symb;
     p.setBrush(QBrush(QColor(Qt::white)));
 
-    this->addItem(tr("No Symbol"));
+    this->addItem(tr("No Symbol")  // cn:无符号
+    );
 
     symb.setStyle(QwtSymbol::Ellipse);
     symb.drawSymbol(&p, r);
-    this->addItem(icon, tr("Ellipse"));
+    this->addItem(icon, tr("Ellipse")  // cn:椭圆
+    );
 
     symb.setStyle(QwtSymbol::Rect);
     icon.fill(c);
     symb.drawSymbol(&p, r.adjusted(0, 0, -1, -1));
-    this->addItem(icon, tr("Rectangle"));
+    this->addItem(icon, tr("Rectangle")  // cn:矩形
+    );
 
     symb.setStyle(QwtSymbol::Diamond);
     icon.fill(c);
     symb.drawSymbol(&p, r);
-    this->addItem(icon, tr("Diamond"));
+    this->addItem(icon, tr("Diamond")  // cn:菱形
+    );
 
     symb.setStyle(QwtSymbol::Triangle);
     icon.fill(c);
     symb.drawSymbol(&p, r);
-    this->addItem(icon, tr("Triangle"));
+    this->addItem(icon, tr("Triangle")  // cn:三角形
+    );
 
     symb.setStyle(QwtSymbol::DTriangle);
     icon.fill(c);
     symb.drawSymbol(&p, r);
-    this->addItem(icon, tr("Down Triangle"));
+    this->addItem(icon, tr("Down Triangle")  // cn:下三角形
+    );
 
     symb.setStyle(QwtSymbol::UTriangle);
     icon.fill(c);
     symb.drawSymbol(&p, r);
-    this->addItem(icon, tr("Up Triangle"));
+    this->addItem(icon, tr("Up Triangle")  // cn:上三角形
+    );
 
     symb.setStyle(QwtSymbol::LTriangle);
     icon.fill(c);
     symb.drawSymbol(&p, r);
-    this->addItem(icon, tr("Left Triangle"));
+    this->addItem(icon, tr("Left Triangle")  // cn:左三角形
+    );
 
     symb.setStyle(QwtSymbol::RTriangle);
     icon.fill(c);
     symb.drawSymbol(&p, r);
-    this->addItem(icon, tr("Right Triangle"));
+    this->addItem(icon, tr("Right Triangle")  // cn:右三角形
+    );
 
     symb.setStyle(QwtSymbol::Cross);
     icon.fill(c);
     symb.drawSymbol(&p, r);
-    this->addItem(icon, tr("Cross"));
+    this->addItem(icon, tr("Cross")  // cn:十字
+    );
 
     symb.setStyle(QwtSymbol::XCross);
     icon.fill(c);
     symb.drawSymbol(&p, r);
-    this->addItem(icon, tr("Diagonal Cross"));
+    this->addItem(icon, tr("Diagonal Cross")  // cn:斜十字
+    );
 
     symb.setStyle(QwtSymbol::HLine);
     icon.fill(c);
     symb.drawSymbol(&p, r);
-    this->addItem(icon, tr("Horizontal Line"));
+    this->addItem(icon, tr("Horizontal Line")  // cn:水平线
+    );
 
     symb.setStyle(QwtSymbol::VLine);
     p.eraseRect(r);
     symb.drawSymbol(&p, r);
-    this->addItem(icon, tr("Vertical Line"));
+    this->addItem(icon, tr("Vertical Line")  // cn:垂直线
+    );
 
     symb.setStyle(QwtSymbol::Star1);
     icon.fill(c);
     symb.drawSymbol(&p, r);
-    this->addItem(icon, tr("Star 1"));
+    this->addItem(icon, tr("Star 1")  // cn:星形1
+    );
 
     symb.setStyle(QwtSymbol::Star2);
     icon.fill(c);
     symb.drawSymbol(&p, r);
-    this->addItem(icon, tr("Star 2"));
+    this->addItem(icon, tr("Star 2")  // cn:星形2
+    );
 
     symb.setStyle(QwtSymbol::Hexagon);
     icon.fill(c);
     symb.drawSymbol(&p, r);
-    this->addItem(icon, tr("Hexagon"));
+    this->addItem(icon, tr("Hexagon")  // cn:六边形
+    );
 
     p.end();
 }

@@ -23,44 +23,44 @@ DAPyDTypeComboBox::DAPyDTypeComboBox(QWidget* parent) : QComboBox(parent)
 void DAPyDTypeComboBox::initItems()
 {
     clear();
-    addItem(getIconByDtypeChar('d'), tr("float64"), "d");
-    addItem(getIconByDtypeChar('f'), tr("float32"), "f");
-    addItem(getIconByDtypeChar('e'), tr("float16"), "e");
+    addItem(getIconByDtypeChar('d'), tr("float64"), "d");  // cn:float64
+    addItem(getIconByDtypeChar('f'), tr("float32"), "f");  // cn:float32
+    addItem(getIconByDtypeChar('e'), tr("float16"), "e");  // cn:float16
     insertSeparator(count());
-    addItem(getIconByDtypeChar('q'), tr("int64"), "q");
-    addItem(getIconByDtypeChar('Q'), tr("uint64"), "Q");
-    addItem(getIconByDtypeChar('l'), tr("int32"), "l");
-    addItem(getIconByDtypeChar('L'), tr("uint32"), "L");
-    addItem(getIconByDtypeChar('h'), tr("int16"), "h");
-    addItem(getIconByDtypeChar('H'), tr("uint16"), "H");
-    addItem(getIconByDtypeChar('b'), tr("int8"), "b");
-    addItem(getIconByDtypeChar('B'), tr("uint8"), "B");
+    addItem(getIconByDtypeChar('q'), tr("int64"), "q");  // cn:int64
+    addItem(getIconByDtypeChar('Q'), tr("uint64"), "Q");  // cn:uint64
+    addItem(getIconByDtypeChar('l'), tr("int32"), "l");  // cn:int32
+    addItem(getIconByDtypeChar('L'), tr("uint32"), "L");  // cn:uint32
+    addItem(getIconByDtypeChar('h'), tr("int16"), "h");  // cn:int16
+    addItem(getIconByDtypeChar('H'), tr("uint16"), "H");  // cn:uint16
+    addItem(getIconByDtypeChar('b'), tr("int8"), "b");  // cn:int8
+    addItem(getIconByDtypeChar('B'), tr("uint8"), "B");  // cn:uint8
     insertSeparator(count());
-    addItem(getIconByDtypeChar('U'), tr("str"), "U");
+    addItem(getIconByDtypeChar('U'), tr("str"), "U");  // cn:str
     insertSeparator(count());
-    addItem(getIconByDtypeChar('?'), tr("bool"), "?");
+    addItem(getIconByDtypeChar('?'), tr("bool"), "?");  // cn:bool
     insertSeparator(count());
-    addItem(getIconByDtypeChar('F'), tr("complex64"), "F");
-    addItem(getIconByDtypeChar('D'), tr("complex128"), "D");
+    addItem(getIconByDtypeChar('F'), tr("complex64"), "F");  // cn:complex64
+    addItem(getIconByDtypeChar('D'), tr("complex128"), "D");  // cn:complex128
     insertSeparator(count());
-    addItem(getIconByDtypeChar('M'), tr("datetime64"), "M");
-    addItem(getIconByDtypeChar('m'), tr("timedelta64"), "m");
+    addItem(getIconByDtypeChar('M'), tr("datetime64"), "M");  // cn:datetime64
+    addItem(getIconByDtypeChar('m'), tr("timedelta64"), "m");  // cn:timedelta64
     insertSeparator(count());
-    addItem(getIconByDtypeChar('S'), tr("bytes"), "S");
-    addItem(getIconByDtypeChar('O'), tr("object"), "O");
+    addItem(getIconByDtypeChar('S'), tr("bytes"), "S");  // cn:bytes
+    addItem(getIconByDtypeChar('O'), tr("object"), "O");  // cn:object
     insertSeparator(count());
-    addItem(getIconByDtypeChar('q'), tr("Int64 (nullable)"), "Int64");
-    addItem(getIconByDtypeChar('l'), tr("Int32 (nullable)"), "Int32");
-    addItem(getIconByDtypeChar('h'), tr("Int16 (nullable)"), "Int16");
-    addItem(getIconByDtypeChar('b'), tr("Int8 (nullable)"), "Int8");
-    addItem(getIconByDtypeChar('Q'), tr("UInt64 (nullable)"), "UInt64");
-    addItem(getIconByDtypeChar('L'), tr("UInt32 (nullable)"), "UInt32");
-    addItem(getIconByDtypeChar('H'), tr("UInt16 (nullable)"), "UInt16");
-    addItem(getIconByDtypeChar('B'), tr("UInt8 (nullable)"), "UInt8");
+    addItem(getIconByDtypeChar('q'), tr("Int64 (nullable)"), "Int64");  // cn:Int64（可空）
+    addItem(getIconByDtypeChar('l'), tr("Int32 (nullable)"), "Int32");  // cn:Int32（可空）
+    addItem(getIconByDtypeChar('h'), tr("Int16 (nullable)"), "Int16");  // cn:Int16（可空）
+    addItem(getIconByDtypeChar('b'), tr("Int8 (nullable)"), "Int8");  // cn:Int8（可空）
+    addItem(getIconByDtypeChar('Q'), tr("UInt64 (nullable)"), "UInt64");  // cn:UInt64（可空）
+    addItem(getIconByDtypeChar('L'), tr("UInt32 (nullable)"), "UInt32");  // cn:UInt32（可空）
+    addItem(getIconByDtypeChar('H'), tr("UInt16 (nullable)"), "UInt16");  // cn:UInt16（可空）
+    addItem(getIconByDtypeChar('B'), tr("UInt8 (nullable)"), "UInt8");  // cn:UInt8（可空）
     insertSeparator(count());
-    addItem(getIconByDtypeChar('?'), tr("boolean (nullable)"), "boolean");
-    addItem(getIconByDtypeChar('U'), tr("string (nullable)"), "string");
-    addItem(getIconByDtypeChar('O'), tr("category"), "category");
+    addItem(getIconByDtypeChar('?'), tr("boolean (nullable)"), "boolean");  // cn:boolean（可空）
+    addItem(getIconByDtypeChar('U'), tr("string (nullable)"), "string");  // cn:string（可空）
+    addItem(getIconByDtypeChar('O'), tr("category"), "category");  // cn:category
 }
 
 /**

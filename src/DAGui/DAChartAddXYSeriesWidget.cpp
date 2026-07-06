@@ -1,4 +1,4 @@
-﻿#include "DAChartAddXYSeriesWidget.h"
+#include "DAChartAddXYSeriesWidget.h"
 #include <QMessageBox>
 #include "ui_DAChartAddXYSeriesWidget.h"
 #include "DADataManager.h"
@@ -21,7 +21,9 @@ DAChartAddXYSeriesWidget::DAChartAddXYSeriesWidget(QWidget* parent)
     ui->setupUi(this);
 #if DA_ENABLE_PYTHON
     DAPySeriesTableModel* model = new DAPySeriesTableModel(this);
-    model->setHeaderLabel({ tr("x"), tr("y") });
+    model->setHeaderLabel({ tr("x"),  // cn:x
+                            tr("y")   // cn:y
+                          });
     ui->tableViewXY->setModel(model);
 #endif
     QFontMetrics fm = fontMetrics();
@@ -220,7 +222,7 @@ bool DAChartAddXYSeriesWidget::getYAutoIncFromUI(DAAutoincrementSeries< double >
         QMessageBox::warning(this,
                              tr("Warning"),  // cn:警告
                              tr("The initial value of y auto increment series "
-                                "must be a floating-point arithmetic number")  // cn:x自增序列的初始值必须为浮点数
+                                "must be a floating-point arithmetic number")  // cn:y自增序列的初始值必须为浮点数
         );
         return false;
     }
@@ -229,7 +231,7 @@ bool DAChartAddXYSeriesWidget::getYAutoIncFromUI(DAAutoincrementSeries< double >
         QMessageBox::warning(this,
                              tr("Warning"),  // cn:警告
                              tr("The step value of y auto increment series "
-                                "must be a floating-point arithmetic number")  // cn:x自增序列的步长必须为浮点数
+                                "must be a floating-point arithmetic number")  // cn:y自增序列的步长必须为浮点数
         );
         return false;
     }

@@ -37,8 +37,8 @@ namespace DA
  * public:
  *     void buildPropertyPanel() override
  *     {
- *         addCurveStyleProperty(1, tr("曲线样式"));
- *         addSymbolProperty(2, tr("标记"));
+ *         addCurveStyleProperty(1, tr("Curve Style"));  // cn:曲线样式
+ *         addSymbolProperty(2, tr("Symbol"));  // cn:标记
  *     }
  * };
  * @endcode

@@ -1,4 +1,4 @@
-﻿#include "DAFigureWidgetCommands.h"
+#include "DAFigureWidgetCommands.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
 namespace DA
@@ -83,7 +83,7 @@ DAChartWidget* DAFigureWidgetCommandCreateChart::getChartWidget()
 DAFigureWidgetCommandRemoveChart::DAFigureWidgetCommandRemoveChart(DAFigureWidget* fig, DAChartWidget* chart, QUndoCommand* par)
     : DAFigureWidgetCommandBase(fig, par), mChart(chart)
 {
-    setText(QObject::tr("remove chart"));  // cn:创建绘图
+    setText(QObject::tr("remove chart"));  // cn:移除绘图
                                            // 先要获取尺寸
     mChartNormRect = fig->axesNormRect(chart);
 }
@@ -147,7 +147,7 @@ DAFigureWidgetCommandAttachItem::DAFigureWidgetCommandAttachItem(DAFigureWidget*
                                                                  QUndoCommand* par)
     : DAFigureWidgetCommandBase(fig, par), mChart(chart), mItem(item), mSkipFirst(skipFirst), mNeedDelete(false)
 {
-    setText(QObject::tr("add item in chart"));  // cn:设置绘图中窗体的尺寸
+    setText(QObject::tr("add item in chart"));  // cn:添加图元到绘图
 }
 
 DAFigureWidgetCommandAttachItem::~DAFigureWidgetCommandAttachItem()

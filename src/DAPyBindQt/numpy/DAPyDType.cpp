@@ -535,36 +535,36 @@ QStringList DAPyDType::extensionDtypeNames()
 QString DAPyDType::displayName() const
 {
     if (isNone()) {
-        return QCoreApplication::translate("DAPyDType", "None");
+        return QCoreApplication::translate("DAPyDType", "None");  // cn:无
     }
     QString n = name();
     if (isExtensionDtype()) {
         if (isNullableString()) {
-            return QCoreApplication::translate("DAPyDType", "string (nullable)");
+            return QCoreApplication::translate("DAPyDType", "string (nullable)");  // cn:string（可空）
         }
         if (isNullableBool()) {
-            return QCoreApplication::translate("DAPyDType", "boolean (nullable)");
+            return QCoreApplication::translate("DAPyDType", "boolean (nullable)");  // cn:boolean（可空）
         }
         if (isNullableInt()) {
-            return n + " " + QCoreApplication::translate("DAPyDType", "(nullable)");
+            return n + " " + QCoreApplication::translate("DAPyDType", "(nullable)");  // cn:（可空）
         }
         if (isNullableUInt()) {
-            return n + " " + QCoreApplication::translate("DAPyDType", "(nullable)");
+            return n + " " + QCoreApplication::translate("DAPyDType", "(nullable)");  // cn:（可空）
         }
         if (isCategorical()) {
-            return QCoreApplication::translate("DAPyDType", "category");
+            return QCoreApplication::translate("DAPyDType", "category");  // cn:category
         }
         if (isDatetimeTZ()) {
-            return QCoreApplication::translate("DAPyDType", "datetime (with timezone)");
+            return QCoreApplication::translate("DAPyDType", "datetime (with timezone)");  // cn:datetime（带时区）
         }
         if (isPeriod()) {
-            return QCoreApplication::translate("DAPyDType", "period");
+            return QCoreApplication::translate("DAPyDType", "period");  // cn:period
         }
         if (isInterval()) {
-            return QCoreApplication::translate("DAPyDType", "interval");
+            return QCoreApplication::translate("DAPyDType", "interval");  // cn:interval
         }
         if (isArrow()) {
-            return QCoreApplication::translate("DAPyDType", "Arrow") + "[" + n + "]";
+            return QCoreApplication::translate("DAPyDType", "Arrow") + "[" + n + "]";  // cn:Arrow
         }
         return n;
     }

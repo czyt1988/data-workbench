@@ -1,4 +1,4 @@
-﻿#include "DAPyWorkFlowScene.h"
+#include "DAPyWorkFlowScene.h"
 #include "DAPybind11InQt.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QPointer>
@@ -523,7 +523,7 @@ void DAPyWorkFlowScene::removePyNodeItem_(DAPyNodeGraphicsItem* item)
     }
 
     // 使用宏命令将多个操作合并为单个undo步骤
-    undoStack().beginMacro(tr("Remove Node"));
+    undoStack().beginMacro(tr("Remove Node"));  // cn:移除节点
 
     // 先移除所有关联的连接线（带undo，通过映射表获取）
     const QList< DAPyLinkGraphicsItem* > relatedLinks = getNodeLinkItems(item);
@@ -1020,7 +1020,7 @@ int DAPyWorkFlowScene::removeSelectedItems_()
     DAPyWorkFlowCommandsFactory* fac = dynamic_cast< DAPyWorkFlowCommandsFactory* >(commandsFactory());
 
     // 使用宏命令将多个操作合并为单个undo步骤
-    undoStack().beginMacro(tr("Remove Selected Items"));
+    undoStack().beginMacro(tr("Remove Selected Items"));  // cn:移除选中项
 
     if (fac) {
         // 先移除连接线（带Python同步的专用命令）
@@ -1291,7 +1291,7 @@ bool DAPyWorkFlowScene::saveToXml(QDomDocument* doc, QDomElement* parentElement,
     DAPyWorkFlowSceneSerializer serializer;
     // 先保存到临时doc
     if (!serializer.saveSceneToXml(this, doc, ver)) {
-        daWarning << tr("DAPyWorkFlowScene::saveToXml 失败: %1").arg(serializer.getLastErrorString());  // cn:保存场景到 XML 失败：%1
+        daWarning << tr("DAPyWorkFlowScene::saveToXml failed: %1").arg(serializer.getLastErrorString());  // cn:保存场景到 XML 失败：%1
         return false;
     }
     // 将serializer创建的文档内容合并到parentElement
@@ -1327,11 +1327,11 @@ bool DAPyWorkFlowScene::loadFromXml(const QDomElement* parentElement, const QVer
         }
     }
     if (sceneEle.isNull()) {
-        daWarning << tr("DAPyWorkFlowScene::loadFromXml: 未找到DAPyWorkFlowScene元素");  // cn:从 XML 加载场景失败：未找到 DAPyWorkFlowScene 元素
+        daWarning << tr("DAPyWorkFlowScene::loadFromXml: DAPyWorkFlowScene element not found");  // cn:从 XML 加载场景失败：未找到 DAPyWorkFlowScene 元素
         return false;
     }
     if (!serializer.loadSceneFromXml(&sceneEle, this, ver)) {
-        daWarning << tr("DAPyWorkFlowScene::loadFromXml 失败: %1").arg(serializer.getLastErrorString());  // cn:从 XML 加载场景失败：%1
+        daWarning << tr("DAPyWorkFlowScene::loadFromXml failed: %1").arg(serializer.getLastErrorString());  // cn:从 XML 加载场景失败：%1
         return false;
     }
     // 加载后重建节点到连接线的映射表
@@ -1352,7 +1352,7 @@ bool DAPyWorkFlowScene::saveToFile(const QString& filePath, const QVersionNumber
 {
     DAPyWorkFlowSceneSerializer serializer;
     if (!serializer.saveSceneToFile(this, filePath, ver)) {
-        daWarning << tr("DAPyWorkFlowScene::saveToFile 失败: %1").arg(serializer.getLastErrorString());  // cn:保存场景到文件失败：%1
+        daWarning << tr("DAPyWorkFlowScene::saveToFile failed: %1").arg(serializer.getLastErrorString());  // cn:保存场景到文件失败：%1
         return false;
     }
     return true;
@@ -1373,7 +1373,7 @@ bool DAPyWorkFlowScene::loadFromFile(const QString& filePath, const QVersionNumb
 {
     DAPyWorkFlowSceneSerializer serializer;
     if (!serializer.loadSceneFromFile(filePath, this, ver)) {
-        daWarning << tr("DAPyWorkFlowScene::loadFromFile 失败: %1").arg(serializer.getLastErrorString());  // cn:从文件加载场景失败：%1
+        daWarning << tr("DAPyWorkFlowScene::loadFromFile failed: %1").arg(serializer.getLastErrorString());  // cn:从文件加载场景失败：%1
         return false;
     }
     return true;

@@ -35,7 +35,7 @@ QString DAPyDataframeColumnsListWidget::getSelectedColumn() const noexcept
         QList< QString > cols = mDataframe.columns();
         return cols[ c ];
     } catch (const std::exception& e) {
-        daCritical << tr("Exception in get selected column:%1").arg(e.what());  // cn:获取选中的列发生异常：%1
+        daCritical << tr("Exception in getting selected column: %1").arg(e.what());  // cn:获取选中的列发生异常：%1
     }
     return QString();
 }
@@ -51,7 +51,7 @@ DAPySeries DAPyDataframeColumnsListWidget::getCurrentSeries() const noexcept
         DAPySeries s = mDataframe[ c ];
         return s;
     } catch (const std::exception& e) {
-        daCritical << tr("Exception in get selected series:%1").arg(e.what());  // cn:获取选中的序列发生异常：%1
+        daCritical << tr("Exception in getting selected series: %1").arg(e.what());  // cn:获取选中的序列发生异常：%1
     }
     return DAPySeries();
 }
@@ -71,7 +71,7 @@ QList< DAPySeries > DAPyDataframeColumnsListWidget::getAllSelectedSeries() const
             res.append(s);
         }
     } catch (const std::exception& e) {
-        daCritical << tr("Exception in get selected series:%1").arg(e.what());  // cn:获取选中的序列发生异常：%1
+        daCritical << tr("Exception in getting selected series: %1").arg(e.what());  // cn:获取选中的序列发生异常：%1
     }
     return res;
 }

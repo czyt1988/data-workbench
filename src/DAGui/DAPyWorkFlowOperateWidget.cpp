@@ -147,7 +147,9 @@ DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::appendWorkflow(const QString&
 DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::appendWorkflowWithDialog()
 {
     bool ok = false;
-    QString text = QInputDialog::getText(this, tr("Title of new workflow"), tr("Title:"), QLineEdit::Normal, QString(), &ok);
+    QString text = QInputDialog::getText(this, tr("Title of new workflow"),  // cn:新工作流标题
+                                         tr("Title:"),                       // cn:标题:
+                                         QLineEdit::Normal, QString(), &ok);
     if (!ok || text.isEmpty()) {
         return nullptr;
     }
@@ -340,8 +342,8 @@ void DAPyWorkFlowOperateWidget::removeWorkflow(int index)
     }
     QMessageBox::StandardButton btn = QMessageBox::question(
         this,
-        tr("question"),                                                        // 疑问
-        tr("Confirm to delete workflow:%1").arg(getWorkFlowWidgetName(index))  // 是否确认删除工作流:%1
+        tr("Question"),                                                        // cn:疑问
+        tr("Confirm to delete workflow:%1").arg(getWorkFlowWidgetName(index))  // cn:是否确认删除工作流:%1
     );
     if (btn != QMessageBox::Yes) {
         return;
@@ -947,7 +949,7 @@ void DAPyWorkFlowOperateWidget::retranslateUi()
     d->mActionZoomIn->setText(tr("Zoom In"));                              // cn:放大
     d->mActionZoomIn->setStatusTip(tr("Zoom in graphics view"));           // cn:放大画布
     d->mActionZoomOut->setText(tr("Zoom Out"));                            // cn:缩小
-    d->mActionZoomOut->setStatusTip(tr("Zoom Out graphics view"));         // cn:缩小画布
+    d->mActionZoomOut->setStatusTip(tr("Zoom out graphics view"));         // cn:缩小画布
     d->mActionZoomFit->setText(tr("Zoom to Fit"));                         // cn:适合屏幕
     d->mActionZoomFit->setStatusTip(tr("Zoom to fit screen size"));        // cn:缩放到适合屏幕大小
     d->actionViewCrossLineMarker->setText(tr("Cross Line Marker"));        // cn:十字标记线

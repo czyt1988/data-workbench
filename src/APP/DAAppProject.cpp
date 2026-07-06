@@ -468,11 +468,11 @@ void DAAppProject::clear()
 bool DAAppProject::save(const QString& path)
 {
     if (isBusy()) {
-        daInfo << tr("the current project is busy");  // cn:当前工程正繁忙
+        daInfo << tr("The current project is busy");  // cn:当前工程正繁忙
         return false;
     }
     const QString oldProjectFilePath = getProjectFilePath();
-    setStatusBarInBusy(tr("Saving project"));
+    setStatusBarInBusy(tr("Saving project"));  // cn:正在保存工程
     setProjectPath(path);
     DA_WAIT_CURSOR_SCOPED();
     bool started = false;
@@ -502,7 +502,7 @@ bool DAAppProject::save(const QString& path)
 bool DAAppProject::load(const QString& path)
 {
     if (isBusy()) {
-        daWarning << tr("the current project is busy");  // cn:当前工程正繁忙
+        daWarning << tr("The current project is busy");  // cn:当前工程正繁忙
         return false;
     }
     // 先确认是否是符合要求的工程
@@ -563,9 +563,9 @@ bool DAAppProject::requestSave()
         QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
         projectFilePath = QFileDialog::getSaveFileName(
             nullptr,
-            tr("Save Project"),  // 保存工程
+            tr("Save Project"),  // cn:保存工程
             desktop,
-            tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // 工程文件 (*.%1)
+            tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // cn:工程文件 (*.%1)
         );
         if (projectFilePath.isEmpty()) {
             // 取消退出
@@ -813,8 +813,8 @@ void DAAppProject::makeSaveWorkflowDataTask(DAZipArchiveThreadWrapper* archive)
     xml += QStringLiteral("</workflows>\n</root>");
 
     auto t = archive->appendByteSaveTask(c_workflowdata_save_filename, xml.toUtf8());
-    t->setName(tr("Save workflow data"));
-    t->setDescribe(tr("Save Python workflow logic data (nodes, parameters, connections)"));
+    t->setName(tr("Save workflow data"));  // cn:保存工作流数据
+    t->setDescribe(tr("Save Python workflow logic data (nodes, parameters, connections)"));  // cn:保存Python工作流逻辑数据（节点、参数、连接关系）
 #else
     Q_UNUSED(archive);
 #endif
@@ -891,7 +891,7 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
     root.appendChild(dataListEle);
     // 创建archive任务队列
     auto t = archive->appendXmlSaveTask(QStringLiteral("data-manager.xml"), doc);
-    t->setName(tr("Save datas information"));                                                         // cn:保存数据信息
+    t->setName(tr("Save data information"));                                                         // cn:保存数据信息
     t->setDescribe(tr("Save data information, including data names and data organization formats"));  // cn:保存数据信息，包括数据的名称数据的组织形式
 }
 
@@ -1016,12 +1016,12 @@ bool DAAppProject::loadWorkflowUI(const QByteArray& data)
 
 void DAAppProject::onBeginSave(const QString& path)
 {
-    daInfo << tr("begin saving archive to %1").arg(path);  // cn:开始保存档案到%1
+    daInfo << tr("Begin saving archive to %1").arg(path);  // cn:开始保存档案到%1
 }
 
 void DAAppProject::onBeginLoad(const QString& path)
 {
-    daInfo << tr("begin loading archive from %1").arg(path);  // cn:开始加载%1
+    daInfo << tr("Begin loading archive from %1").arg(path);  // cn:开始加载%1
 }
 
 /**
@@ -1038,7 +1038,7 @@ void DAAppProject::onTaskProgress(std::shared_ptr< DAAbstractArchiveTask > t, in
         switch (t->getCode()) {
         case DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW: {
             // 错开，加载workflow时显示加载数据
-            setCurrentStatusText(tr("Loading datas"));  // cn:正在加载数据
+            setCurrentStatusText(tr("Loading data"));  // cn:正在加载数据
         } break;
         case DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER: {
             setCurrentStatusText(tr("Loading charts"));  // cn:正在加载绘图
@@ -1349,7 +1349,7 @@ void DAAppProject::loadedTableStyles(const std::shared_ptr< DAAbstractArchiveTas
             }
         }
         if (!matched) {
-            daWarning << tr("table style for data '%1' has no matching data, skipped").arg(dataName);  // cn:数据'%1'的表格样式未找到匹配数据，已跳过
+            daWarning << tr("Table style for data '%1' has no matching data, skipped").arg(dataName);  // cn:数据'%1'的表格样式未找到匹配数据，已跳过
             n = n.nextSibling();
             continue;
         }

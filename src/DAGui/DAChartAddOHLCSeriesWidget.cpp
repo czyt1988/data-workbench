@@ -1,4 +1,4 @@
-﻿#include "DAChartAddOHLCSeriesWidget.h"
+#include "DAChartAddOHLCSeriesWidget.h"
 #include "ui_DAChartAddOHLCSeriesWidget.h"
 #include <QMessageBox>
 #include "DADataManager.h"
@@ -35,7 +35,12 @@ DAChartAddOHLCSeriesWidget::DAChartAddOHLCSeriesWidget(QWidget* parent)
     ui->setupUi(this);
 #if DA_ENABLE_PYTHON
     DAPySeriesTableModel* m = new DAPySeriesTableModel(this);
-    m->setHeaderLabel({ tr("Time"), tr("Open"), tr("High"), tr("Low"), tr("Close") });
+    m->setHeaderLabel({ tr("Time"),   // cn:时间
+                        tr("Open"),   // cn:开盘
+                        tr("High"),   // cn:最高
+                        tr("Low"),    // cn:最低
+                        tr("Close")   // cn:收盘
+                      });
     ui->tableViewOHLC->setModel(m);
 #endif
     QFontMetrics fm = fontMetrics();
@@ -248,7 +253,7 @@ bool DAChartAddOHLCSeriesWidget::getTAutoIncFromUI(DAAutoincrementSeries< double
         QMessageBox::warning(
             this,
             tr("Warning"),                                                                                 // cn:警告
-            tr("The initial value of x auto increment series must be a floating-point arithmetic number")  // cn:x自增序列的初始值必须为浮点数
+            tr("The initial value of t auto increment series must be a floating-point arithmetic number")  // cn:t自增序列的初始值必须为浮点数
         );
         return false;
     }
@@ -256,8 +261,8 @@ bool DAChartAddOHLCSeriesWidget::getTAutoIncFromUI(DAAutoincrementSeries< double
     if (!isOK) {
         QMessageBox::warning(this,
                              tr("Warning"),  // cn:警告
-                             tr("The step value of x auto increment series "
-                                "must be a floating-point arithmetic number")  // cn:x自增序列的步长必须为浮点数
+                             tr("The step value of t auto increment series "
+                                "must be a floating-point arithmetic number")  // cn:t自增序列的步长必须为浮点数
         );
         return false;
     }

@@ -1,4 +1,4 @@
-﻿#include "DAXMLProtocol.h"
+#include "DAXMLProtocol.h"
 #include <QHash>
 #include <QVector>
 #include <QPointF>
@@ -88,11 +88,11 @@ bool DAXMLProtocol::PrivateData::parser(const QString& str)
     QDomElement rootele = doc.documentElement();
 
     if (rootele.isNull()) {
-        mErrorMsg = QObject::tr("DA xml protocol's root element error");  // DA xml协议的根节点异常
+        mErrorMsg = QObject::tr("DA xml protocol's root element error");  // cn:DA xml协议的根节点异常
         return (false);
     }
     if (rootele.tagName() != "da") {
-        mErrorMsg = QObject::tr("root element name error,require \"da\" but get %1").arg(rootele.tagName());  // DA xml协议根节点要求为"da"标签，但解析到的为%1
+        mErrorMsg = QObject::tr("root element name error, require \"da\" but get %1").arg(rootele.tagName());  // cn:DA xml协议根节点要求为"da"标签，但解析到的为%1
         return (false);
     }
     DAPropertiesGroup properties;
@@ -106,7 +106,7 @@ bool DAXMLProtocol::PrivateData::parser(const QString& str)
     QDomElement propsEle = rootele.firstChildElement("props");
     if (propsEle.isNull()) {
         //这是一个空的内容包
-        mErrorMsg = QObject::tr("DA xml protocol loss <props> tag");  // DA xml协议缺失<props>标签
+        mErrorMsg = QObject::tr("DA xml protocol missing <props> tag");  // cn:DA xml协议缺失<props>标签
         return (false);
     }
     QDomNodeList propNodeList = propsEle.childNodes();

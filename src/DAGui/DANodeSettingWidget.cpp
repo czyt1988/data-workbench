@@ -123,10 +123,10 @@ void DANodeSettingWidget::buildPropertyPanel()
 {
     auto panel = propertyPanel();
 
-    panel->addGroupLabel(tr("Meta Data"));
-    panel->addStringProperty(PID_Prototype, tr("Prototype"));
-    panel->addStringProperty(PID_Group, tr("Group"));
-    panel->addStringProperty(PID_Name, tr("Name"));
+    panel->addGroupLabel(tr("Metadata"));  // cn:元数据
+    panel->addStringProperty(PID_Prototype, tr("Prototype"));  // cn:原型
+    panel->addStringProperty(PID_Group, tr("Group"));  // cn:分组
+    panel->addStringProperty(PID_Name, tr("Name"));  // cn:名称
 }
 
 /**

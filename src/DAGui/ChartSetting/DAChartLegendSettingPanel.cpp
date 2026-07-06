@@ -1,4 +1,4 @@
-﻿#include "DAChartLegendSettingPanel.h"
+#include "DAChartLegendSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include <QSignalBlocker>
 #include "qwt_text.h"
@@ -49,34 +49,61 @@ void DAChartLegendSettingPanel::buildPropertyPanel()
     auto panel = propertyPanel();
 
     // 基础属性组
-    panel->addCollapsibleGroup(tr("Basic"));
-    panel->addStringProperty(PropTitle, tr("Title"));
-    panel->addDoubleProperty(PropZValue, tr("Z Value"));
+    panel->addCollapsibleGroup(tr("Basic")  // cn:基础
+    );
+    panel->addStringProperty(PropTitle, tr("Title")  // cn:标题
+    );
+    panel->addDoubleProperty(PropZValue, tr("Z Value")  // cn:Z值
+    );
     panel->endGroup();
 
     // 位置属性组
-    panel->addCollapsibleGroup(tr("Position"));
-    panel->addAlignmentProperty(PropAlignment, tr("Alignment"));
-    panel->addIntProperty(PropHorizontalOffset, tr("Horizontal Offset"), 0, -1000, 1000);
-    panel->addIntProperty(PropVerticalOffset, tr("Vertical Offset"), 0, -1000, 1000);
+    panel->addCollapsibleGroup(tr("Position")  // cn:位置
+    );
+    panel->addAlignmentProperty(PropAlignment, tr("Alignment")  // cn:对齐
+    );
+    panel->addIntProperty(PropHorizontalOffset, tr("Horizontal Offset")  // cn:水平偏移
+                          ,
+                          0, -1000, 1000);
+    panel->addIntProperty(PropVerticalOffset, tr("Vertical Offset")  // cn:垂直偏移
+                          ,
+                          0, -1000, 1000);
     panel->endGroup();
 
     // 间距属性组
-    panel->addCollapsibleGroup(tr("Spacing"));
-    panel->addIntProperty(PropMargin, tr("Margin"), 0, 0, 1000);
-    panel->addIntProperty(PropSpacing, tr("Spacing"), 0, 0, 1000);
-    panel->addIntProperty(PropItemMargin, tr("Item Margin"), 0, 0, 1000);
-    panel->addIntProperty(PropItemSpacing, tr("Item Spacing"), 0, 0, 1000);
-    panel->addIntProperty(PropMaxColumns, tr("Max Columns"), 0, 0, 100);
+    panel->addCollapsibleGroup(tr("Spacing")  // cn:间距
+    );
+    panel->addIntProperty(PropMargin, tr("Margin")  // cn:边距
+                          ,
+                          0, 0, 1000);
+    panel->addIntProperty(PropSpacing, tr("Spacing")  // cn:间距
+                          ,
+                          0, 0, 1000);
+    panel->addIntProperty(PropItemMargin, tr("Item Margin")  // cn:项边距
+                          ,
+                          0, 0, 1000);
+    panel->addIntProperty(PropItemSpacing, tr("Item Spacing")  // cn:项间距
+                          ,
+                          0, 0, 1000);
+    panel->addIntProperty(PropMaxColumns, tr("Max Columns")  // cn:最大列数
+                          ,
+                          0, 0, 100);
     panel->endGroup();
 
     // 外观属性组
-    panel->addCollapsibleGroup(tr("Appearance"));
-    panel->addDoubleProperty(PropBorderRadius, tr("Border Radius"), 0.0, 0.0, 100.0);
-    panel->addPenProperty(PropBorderPen, tr("Border Pen"));
-    panel->addFontProperty(PropFont, tr("Font"));
-    panel->addColorProperty(PropFontColor, tr("Font Color"));
-    panel->addBrushProperty(PropBackgroundBrush, tr("Background Brush"));
+    panel->addCollapsibleGroup(tr("Appearance")  // cn:外观
+    );
+    panel->addDoubleProperty(PropBorderRadius, tr("Border Radius")  // cn:边框圆角
+                             ,
+                             0.0, 0.0, 100.0);
+    panel->addPenProperty(PropBorderPen, tr("Border Pen")  // cn:边框画笔
+    );
+    panel->addFontProperty(PropFont, tr("Font")  // cn:字体
+    );
+    panel->addColorProperty(PropFontColor, tr("Font Color")  // cn:字体颜色
+    );
+    panel->addBrushProperty(PropBackgroundBrush, tr("Background Brush")  // cn:背景画刷
+    );
     panel->endGroup();
 }
 

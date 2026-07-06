@@ -1,4 +1,4 @@
-﻿#include "Commands.h"
+#include "Commands.h"
 #include "DACoreInterface.h"
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
@@ -22,7 +22,7 @@ CommandDataFrame_filterByColumn::CommandDataFrame_filterByColumn(
     , mUppervalue(uppervalue)
     , mIndex(index)
 {
-    setText(QObject::tr("data select"));  // cn:数据过滤
+    setText(QObject::tr("Data Select"));  // cn:数据过滤
 }
 
 void CommandDataFrame_filterByColumn::undo()
@@ -58,7 +58,7 @@ bool CommandDataFrame_filterByColumn::exec()
 CommandDataFrame_sort::CommandDataFrame_sort(const DA::DAPyDataFrame& df, const QString& by, const bool ascending, QUndoCommand* par)
     : DA::DACommandWithTemporaryData(df, par), DA::DACallBackInterface(), mBy(by), mAscending(ascending)
 {
-    setText(QObject::tr("data sort"));  // cn:数据排序
+    setText(QObject::tr("Data Sort"));  // cn:数据排序
 }
 
 void CommandDataFrame_sort::undo()
@@ -90,7 +90,7 @@ bool CommandDataFrame_sort::exec()
 CommandDataFrame_querydatas::CommandDataFrame_querydatas(const DA::DAPyDataFrame& df, const QString& exper, QUndoCommand* par)
     : DA::DACommandWithTemporaryData(df, par), DA::DACallBackInterface(), mExper(exper)
 {
-    setText(QObject::tr("data query"));  // cn:数据查询
+    setText(QObject::tr("Data Query"));  // cn:数据查询
 }
 
 void CommandDataFrame_querydatas::undo()
@@ -124,7 +124,7 @@ bool CommandDataFrame_querydatas::exec()
 CommandDataFrame_evalDatas::CommandDataFrame_evalDatas(const DA::DAPyDataFrame& df, const QString& exper, QUndoCommand* par)
     : DA::DACommandWithTemporaryData(df, par), DA::DACallBackInterface(), mExper(exper)
 {
-    setText(QObject::tr("eval datas"));  // cn:列运算
+    setText(QObject::tr("Eval Data"));  // cn:列运算
 }
 
 void CommandDataFrame_evalDatas::undo()

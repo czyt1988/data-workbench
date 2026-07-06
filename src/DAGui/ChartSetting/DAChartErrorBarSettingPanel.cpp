@@ -1,4 +1,4 @@
-﻿#include "DAChartErrorBarSettingPanel.h"
+#include "DAChartErrorBarSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "qwt_interval_symbol.h"
 #include "qwt_text.h"
@@ -46,43 +46,62 @@ void DAChartErrorBarSettingPanel::buildPropertyPanel()
     auto panel = propertyPanel();
 
     // 基础属性组
-    panel->addCollapsibleGroup(tr("Basic"));
-    panel->addStringProperty(PropTitle, tr("Title"));
-    panel->addDoubleProperty(PropZValue, tr("Z Value"));
+    panel->addCollapsibleGroup(tr("Basic")  // cn:基础
+    );
+    panel->addStringProperty(PropTitle, tr("Title")  // cn:标题
+    );
+    panel->addDoubleProperty(PropZValue, tr("Z Value")  // cn:Z值
+    );
     panel->endGroup();
 
     // 坐标轴属性组
-    panel->addCollapsibleGroup(tr("Axis"));
-    addAxisProperty(PropXAxis, tr("X Axis"), false);
-    addAxisProperty(PropYAxis, tr("Y Axis"), true);
+    panel->addCollapsibleGroup(tr("Axis")  // cn:坐标轴
+    );
+    addAxisProperty(PropXAxis, tr("X Axis")  // cn:X轴
+                    ,
+                    false);
+    addAxisProperty(PropYAxis, tr("Y Axis")  // cn:Y轴
+                    ,
+                    true);
     panel->endGroup();
 
     // 误差棒属性组
-    panel->addCollapsibleGroup(tr("Error Bar"));
-    panel->addBoolProperty(PropEnableErrorBar, tr("Enable Error Bar"));
+    panel->addCollapsibleGroup(tr("Error Bar")  // cn:误差棒
+    );
+    panel->addBoolProperty(PropEnableErrorBar, tr("Enable Error Bar")  // cn:启用误差棒
+    );
     // QwtIntervalSymbol样式：Bar, Box
     panel->addEnumProperty(
         PropErrorBarStyle,
-        tr("Error Bar Style"),
-        QStringList() << tr("Bar") << tr("Box"),
-        QList< int >() << static_cast< int >(QwtIntervalSymbol::Bar) << static_cast< int >(QwtIntervalSymbol::Box)
+        tr("Error Bar Style")  // cn:误差棒样式
+        ,
+        QStringList() << tr("Bar")  // cn:柱状
+                      << tr("Box")  // cn:方框
+        ,
+        QList< int >() << static_cast< int >(QwtIntervalSymbol::Bar) << static_cast< int >(QwtIntervalSymbol::Box));
+    panel->addPenProperty(PropErrorBarPen, tr("Error Bar Pen")  // cn:误差棒画笔
     );
-    panel->addPenProperty(PropErrorBarPen, tr("Error Bar Pen"));
     panel->setPropertyEnabled(PropErrorBarStyle, false);
     panel->setPropertyEnabled(PropErrorBarPen, false);
     panel->endGroup();
 
     // 填充属性组
-    panel->addCollapsibleGroup(tr("Fill"));
-    panel->addBoolProperty(PropEnableFill, tr("Enable Fill"));
-    panel->addBrushProperty(PropFillBrush, tr("Fill Brush"));
+    panel->addCollapsibleGroup(tr("Fill")  // cn:填充
+    );
+    panel->addBoolProperty(PropEnableFill, tr("Enable Fill")  // cn:启用填充
+    );
+    panel->addBrushProperty(PropFillBrush, tr("Fill Brush")  // cn:填充画刷
+    );
     panel->setPropertyEnabled(PropFillBrush, false);
     panel->endGroup();
 
     // 曲线属性组
-    panel->addCollapsibleGroup(tr("Curve"));
-    addOrientationProperty(PropOrientation, tr("Orientation"));
-    panel->addPenProperty(PropCurvePen, tr("Curve Pen"));
+    panel->addCollapsibleGroup(tr("Curve")  // cn:曲线
+    );
+    addOrientationProperty(PropOrientation, tr("Orientation")  // cn:方向
+    );
+    panel->addPenProperty(PropCurvePen, tr("Curve Pen")  // cn:曲线画笔
+    );
     panel->endGroup();
 }
 

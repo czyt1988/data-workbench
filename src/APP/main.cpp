@@ -180,7 +180,7 @@ void initCommandLine(QCommandLineParser* cmd)
             "main",
             "Import data into the application, supporting formats such as CSV, XLSX, TXT, "
             "PKL, etc.If you want to import multiple datasets, you can use the command "
-            "multiple times; the program will execute them one by one"),  // cn：导入数据到应用程序中，支持csv/xlsx/txt/pkl等格式，如果要导入多个数据，你可以使用多次命令，程序会逐一执行
+            "multiple times; the program will execute them one by one"),  // cn:导入数据到应用程序中，支持csv/xlsx/txt/pkl等格式，如果要导入多个数据，你可以使用多次命令，程序会逐一执行
         "path");
     cmd->addOption(importDataOption);
     QCommandLineOption noSplashOption(
@@ -237,10 +237,10 @@ void initializePythonInterpreter()
     QString pythonHomePath;
     QString pypath = DA::DAPyInterpreter::getPythonInterpreterPath();
     if (!pypath.isEmpty()) {
-        daInfo << QObject::tr("Python interpreter path is %1").arg(pypath);
+        daInfo << QObject::tr("Python interpreter path is %1").arg(pypath);  // cn:Python解释器路径为%1
         QFileInfo fi(pypath);
         pythonHomePath = fi.absolutePath();
-        daInfo << QObject::tr("Python home path is %1").arg(pythonHomePath);
+        daInfo << QObject::tr("Python home path is %1").arg(pythonHomePath);  // cn:Python主目录路径为%1
     }
     DA::DAPyInterpreter::initializePythonInterpreter(pythonHomePath);
 #endif

@@ -1,4 +1,4 @@
-﻿#include "DAChartAddXYESeriesWidget.h"
+#include "DAChartAddXYESeriesWidget.h"
 #include "ui_DAChartAddXYESeriesWidget.h"
 #include <QMessageBox>
 #include "DADataManager.h"
@@ -19,7 +19,10 @@ DAChartAddXYESeriesWidget::DAChartAddXYESeriesWidget(QWidget* parent)
     ui->setupUi(this);
 #if DA_ENABLE_PYTHON
     DAPySeriesTableModel* m = new DAPySeriesTableModel(this);
-    m->setHeaderLabel({ tr("x"), tr("y"), tr("error") });
+    m->setHeaderLabel({ tr("x"),      // cn:x
+                        tr("y"),      // cn:y
+                        tr("error")   // cn:误差
+                      });
     ui->tableViewXYE->setModel(m);
 #endif
     QFontMetrics fm = fontMetrics();
@@ -247,7 +250,7 @@ bool DAChartAddXYESeriesWidget::getYAutoIncFromUI(DAAutoincrementSeries< double 
         QMessageBox::warning(this,
                              tr("Warning"),  // cn:警告
                              tr("The initial value of y auto increment series "
-                                "must be a floating-point arithmetic number")  // cn:x自增序列的初始值必须为浮点数
+                                "must be a floating-point arithmetic number")  // cn:y自增序列的初始值必须为浮点数
         );
         return false;
     }
@@ -256,7 +259,7 @@ bool DAChartAddXYESeriesWidget::getYAutoIncFromUI(DAAutoincrementSeries< double 
         QMessageBox::warning(this,
                              tr("Warning"),  // cn:警告
                              tr("The step value of y auto increment series "
-                                "must be a floating-point arithmetic number")  // cn:x自增序列的步长必须为浮点数
+                                "must be a floating-point arithmetic number")  // cn:y自增序列的步长必须为浮点数
         );
         return false;
     }
@@ -396,7 +399,7 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
         if (!yError.isSeries()) {
             QMessageBox::warning(this,
                                  tr("Warning"),                  // cn:警告
-                                 tr("error must be a series"));  // cn:y必须是序列
+                                 tr("error must be a series"));  // cn:误差必须是序列
             return false;
         }
         DAPySeries x = xd.toSeries();

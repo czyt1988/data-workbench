@@ -1,4 +1,4 @@
-﻿#include "DAChartOperateWidget.h"
+#include "DAChartOperateWidget.h"
 #include "ui_DAChartOperateWidget.h"
 // stl
 #include <memory>
@@ -92,7 +92,7 @@ DAFigureWidget* DAChartOperateWidget::createFigure(const QString& name)
     ++g_figure_cnt;
     QString t = name;
     if (name.isEmpty()) {
-        t = tr("figure-%1").arg(g_figure_cnt);
+        t = tr("figure-%1").arg(g_figure_cnt);  // cn:图-%1
     }
     DAFigureWidget* fig = getFigureFactory()->createFigure();
     fig->setWindowTitle(t);
@@ -330,7 +330,7 @@ void DAChartOperateWidget::onTabWidgetCurrentChanged(int index)
     DAFigureWidget* fig = getFigure(index);
     if (nullptr == fig) {
         // 这个是删除最后一个绘图
-        // qCritical() << tr("chart operate widget's tab changed,but can not find figure");  // cn:绘图操作窗口的标签改变信号中，无法通过标签索引找到对应的绘图
+        // qCritical() << tr("chart operate widget's tab changed, but cannot find figure");  // cn:绘图操作窗口的标签改变信号中，无法通过标签索引找到对应的绘图
         return;
     }
     auto un = fig->getUndoStack();
@@ -352,7 +352,8 @@ void DAChartOperateWidget::onTabCloseRequested(int index)
     if (!fig) {
         return;
     }
-    QMessageBox::StandardButton btn = QMessageBox::question(this, tr("question"), tr("Whether to close the figure widget"));
+    QMessageBox::StandardButton btn = QMessageBox::question(this, tr("Question"),  // cn:询问
+                                                            tr("Whether to close the figure widget"));  // cn:是否关闭绘图窗口
     if (QMessageBox::Yes != btn) {
         return;
     }

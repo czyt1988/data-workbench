@@ -1,4 +1,4 @@
-﻿#include "DAChartCanvasSettingPanel.h"
+#include "DAChartCanvasSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "qwt_plot.h"
 #include "qwt_plot_canvas.h"
@@ -127,29 +127,42 @@ void DAChartCanvasSettingPanel::buildPropertyPanel()
 {
     auto panel = propertyPanel();
 
-    panel->addCollapsibleGroup(tr("Background"));
-    panel->addBrushProperty(PID_BackgroundBrush, tr("Background Brush"));
+    panel->addCollapsibleGroup(tr("Background")  // cn:背景
+    );
+    panel->addBrushProperty(PID_BackgroundBrush, tr("Background Brush")  // cn:背景画刷
+    );
     panel->endGroup();
 
-    panel->addCollapsibleGroup(tr("Border"));
-    panel->addIntProperty(PID_BorderWidth, tr("Border Width"), 0, 0, 20);
-    panel->addPenProperty(PID_BorderPen, tr("Border Pen"));
+    panel->addCollapsibleGroup(tr("Border")  // cn:边框
+    );
+    panel->addIntProperty(PID_BorderWidth, tr("Border Width")  // cn:边框宽度
+                          ,
+                          0, 0, 20);
+    panel->addPenProperty(PID_BorderPen, tr("Border Pen")  // cn:边框画笔
+    );
     panel->endGroup();
 
-    panel->addCollapsibleGroup(tr("Style"));
+    panel->addCollapsibleGroup(tr("Style")  // cn:样式
+    );
     // FrameStyle: 使用QComboBox填充QFrame::Shape枚举
     QComboBox* frameStyleCombo = new QComboBox(this);
-    frameStyleCombo->addItem(tr("No Frame"), static_cast< int >(QFrame::NoFrame));
-    frameStyleCombo->addItem(tr("Box"), static_cast< int >(QFrame::Box));
-    frameStyleCombo->addItem(tr("Panel"), static_cast< int >(QFrame::Panel));
-    frameStyleCombo->addItem(tr("Styled Panel"), static_cast< int >(QFrame::StyledPanel));
-    frameStyleCombo->addItem(tr("Win Panel"), static_cast< int >(QFrame::WinPanel));
+    frameStyleCombo->addItem(tr("No Frame")  // cn:无边框
+                             , static_cast< int >(QFrame::NoFrame));
+    frameStyleCombo->addItem(tr("Box")  // cn:方框
+                             , static_cast< int >(QFrame::Box));
+    frameStyleCombo->addItem(tr("Panel")  // cn:面板
+                             , static_cast< int >(QFrame::Panel));
+    frameStyleCombo->addItem(tr("Styled Panel")  // cn:样式面板
+                             , static_cast< int >(QFrame::StyledPanel));
+    frameStyleCombo->addItem(tr("Win Panel")  // cn:窗口面板
+                             , static_cast< int >(QFrame::WinPanel));
 
     connect(
         frameStyleCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), panel, &DAPropertyPanelContainerWidget::propertyValueChanged
     );
 
-    panel->addProperty(PID_FrameStyle, tr("Frame Shape"), frameStyleCombo);
+    panel->addProperty(PID_FrameStyle, tr("Frame Shape")  // cn:边框形状
+                       , frameStyleCombo);
     panel->endGroup();
 }
 
