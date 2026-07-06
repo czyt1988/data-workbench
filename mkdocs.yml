@@ -39,6 +39,7 @@ plugins:
           name: 中文
           default: true
   - search
+  - mermaid2
 
 # 导航 - 重构后的完整文档结构
 nav:
@@ -46,11 +47,13 @@ nav:
       - 项目概览: zh/overview.md
       - 项目定位与愿景: zh/index.md
       - 快速上手: zh/quick-start.md
+      - 文档构建: doc-build.md
   - 项目结构:
       - 目录结构详解: zh/project-structure.md
       - 模块职责划分: zh/dev-guide/module-dependency.md
       - 关键文件说明: zh/key-files.md
   - 开发指南:
+      - 开发指引: zh/dev-guide/developer-guide.md
       - 开发环境搭建: 
           - 环境配置总览: zh/build/build-instructions.md
           - 第三方库构建: zh/build/third-party-build.md
@@ -65,7 +68,9 @@ nav:
           - 创建设置面板: zh/dev-guide/creating-setting-panel.md
           - 工程组织: zh/large-cmake-project-guide.md
       - 架构说明:
+          - 架构设计: zh/dev-guide/architecture.md
           - 模块依赖关系: zh/dev-guide/module-dependency.md
+          - 模块业务逻辑: zh/dev-guide/module-breakdown.md
           - 接口模块: zh/dev-guide/interface-module.md
           - Python/C++ 集成:
               - 总览: zh/dev-guide/python-binding/index.md
@@ -137,10 +142,21 @@ markdown_extensions:
       custom_fences:
         - name: mermaid
           class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
+          format: !!python/name:mermaid2.fence_mermaid_custom
+  - pymdownx.arithmatex:
+      generic: true
+      smart_dollar: true
   - pymdownx.details
   - pymdownx.tabbed:
       alternate: true
 
+extra_javascript:
+  - js/mermaid.min.js
+  - js/katex.min.js
+  - js/auto-render.min.js
+  - js/katex-init.js
+
 extra_css:
   - stylesheets/extra.css
+  - css/extra.css
+  - css/katex.min.css

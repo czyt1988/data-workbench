@@ -55,7 +55,7 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     // 在 redo/undo 都调用且不区分方向（见 DACommandsDataFrame.cpp 的 callback() 用法）。
     // 后续需让 callback 方向感知后，在 insertRowAt/removeSelectRow 等回调中调用
     // mStyleManager->onRowsInserted/onRowsRemoved 完成偏移同步。
-    mStyleManager = new DATableStyleManager(this);
+    mStyleManager  = new DATableStyleManager(this);
     mStyleDelegate = new DATableStyleItemDelegate(mStyleManager, this);
     ui->tableView->setItemDelegate(mStyleDelegate);
     // 关闭不必要的绘制特性
@@ -901,7 +901,7 @@ void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyl
     } else if (!fullRows.isEmpty()) {
         // 行级
         for (int row : fullRows) {
-            int actualRow = row + cacheOffset;
+            int actualRow             = row + cacheOffset;
             DATableCellStyle oldStyle = mStyleManager->getRowStyle(actualRow);
             DATableCellStyle newStyle = oldStyle;
             newStyle.mergeFrom(fragment);
@@ -911,8 +911,8 @@ void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyl
         // 单元格级
         for (const QPoint& p : cells) {
             // QPoint(index.row(), index.column()) → p.x()=row(logical), p.y()=col
-            int actualRow = p.x() + cacheOffset;
-            int col = p.y();
+            int actualRow             = p.x() + cacheOffset;
+            int col                   = p.y();
             DATableCellStyle oldStyle = mStyleManager->getCellStyle(actualRow, col);
             DATableCellStyle newStyle = oldStyle;
             newStyle.mergeFrom(fragment);
@@ -963,7 +963,7 @@ void DADataOperateOfDataFrameWidget::clearStyleSelection()
     } else {
         for (const QPoint& p : cells) {
             int actualRow = p.x() + cacheOffset;
-            int col = p.y();
+            int col       = p.y();
             if (mStyleManager->hasCellStyle(actualRow, col)) {
                 DATableCellStyle oldStyle = mStyleManager->getCellStyle(actualRow, col);
                 cmd->addChange(DACommandTableStyle::Cell, actualRow, col, oldStyle, DATableCellStyle(), false);
@@ -990,17 +990,21 @@ void DADataOperateOfDataFrameWidget::clearStyleAll()
     }
     std::unique_ptr< DACommandTableStyle > cmd(new DACommandTableStyle(mStyleManager));
     // 收集列级样式
-    for (int col : mStyleManager->styledColumns()) {
+    const auto& cs = mStyleManager->styledColumns();
+    for (int col : cs) {
         DATableCellStyle oldStyle = mStyleManager->getColumnStyle(col);
         cmd->addChange(DACommandTableStyle::Column, col, 0, oldStyle, DATableCellStyle(), false);
     }
+
     // 收集行级样式
-    for (int row : mStyleManager->styledRows()) {
+    const auto& rs = mStyleManager->styledRows();
+    for (int row : rs) {
         DATableCellStyle oldStyle = mStyleManager->getRowStyle(row);
         cmd->addChange(DACommandTableStyle::Row, row, 0, oldStyle, DATableCellStyle(), false);
     }
     // 收集单元格级样式
-    for (const QPair< int, int >& key : mStyleManager->styledCells()) {
+    const auto& cells = mStyleManager->styledCells();
+    for (const QPair< int, int >& key : cells) {
         DATableCellStyle oldStyle = mStyleManager->getCellStyle(key.first, key.second);
         cmd->addChange(DACommandTableStyle::Cell, key.first, key.second, oldStyle, DATableCellStyle(), false);
     }

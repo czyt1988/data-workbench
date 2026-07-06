@@ -99,6 +99,21 @@ pip install -r requirements.txt
 
 项目文档见：[https://czyt1988.github.io/data-workbench](https://czyt1988.github.io/data-workbench)
 
+### 📖 文档导航
+
+| 文档 | 说明 | 路径 |
+|------|------|------|
+| 🏠 首页 | 项目概览、核心特性、快速上手 | [docs/zh/index.md](docs/zh/index.md) |
+| 📦 构建指南 | 环境配置、构建步骤、构建选项、常见错误 | [docs/zh/build/](docs/zh/build/build-instructions.md) |
+| 📝 文档构建 | 本地预览、构建部署文档站点 | [docs/doc-build.md](docs/doc-build.md) |
+| 🚀 快速上手 | 5 分钟环境搭建和首次构建 | [docs/zh/quick-start.md](docs/zh/quick-start.md) |
+| 🛠️ 开发指引 | 开发者入门完整指南 | [docs/zh/dev-guide/developer-guide.md](docs/zh/dev-guide/developer-guide.md) |
+| 🏗️ 架构设计 | 5 层架构、设计决策、扩展点 | [docs/zh/dev-guide/architecture.md](docs/zh/dev-guide/architecture.md) |
+| 📊 模块业务逻辑 | 各核心模块内部工作原理 | [docs/zh/dev-guide/module-breakdown.md](docs/zh/dev-guide/module-breakdown.md) |
+| 🔌 插件开发 | 插件系统、节点开发、插件生命周期 | [docs/zh/plugin-development.md](docs/zh/plugin-development.md) |
+| 📖 使用指南 | 命令行参数、绘图功能、配置说明 | [docs/zh/use-guide/](docs/zh/use-guide/index.md) |
+| ❓ FAQ | 构建、插件、运行时常见问题 | [docs/zh/faq.md](docs/zh/faq.md) |
+
 ## 程序截图
 
 ![动态演示](./docs/assets/screenshot/screenshot1.gif)

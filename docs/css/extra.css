@@ -1,0 +1,161 @@
+/* === Chinese Font Optimization === */
+:root {
+  --md-text-font: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --md-code-font: "Cascadia Code", "Fira Code", "Consolas", "Microsoft YaHei", monospace;
+}
+
+body {
+  line-height: 1.8;
+}
+
+/* === Mermaid Diagrams === */
+.mermaid {
+  max-width: 100%;
+  margin: 1.5em auto;
+  text-align: center;
+  overflow-x: auto;
+}
+
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* === Table Styling === */
+.md-typeset table:not([class]) {
+  font-size: 0.85rem;
+  border-collapse: collapse;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--md-primary-fg-color);
+  color: var(--md-primary-bg-color);
+  font-weight: 600;
+}
+
+.md-typeset table:not([class]) tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.md-typeset table:not([class]) td,
+.md-typeset table:not([class]) th {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  padding: 0.5em 0.8em;
+}
+
+/* === Admonition Chinese Polish === */
+.md-typeset .admonition,
+.md-typeset details {
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.md-typeset .admonition-title,
+.md-typeset summary {
+  font-weight: 600;
+}
+
+/* === Hero Area (index.md) === */
+.md-main__inner {
+  margin-top: 0;
+}
+
+.hero-container {
+  background: linear-gradient(135deg, #1565C0 0%, #0D47A1 50%, #1A237E 100%);
+  color: #ffffff;
+  padding: 3em 2em;
+  text-align: center;
+  border-radius: 0 0 1em 1em;
+  margin-bottom: 2em;
+}
+
+.hero-container h1 {
+  color: #ffffff;
+  font-size: 2.5em;
+  font-weight: 700;
+  margin-bottom: 0.3em;
+}
+
+.hero-container p {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1.1em;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* === Grid Cards Polish === */
+.grid.cards {
+  margin: 2em 0;
+}
+
+.grid.cards li {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.4em;
+  padding: 1.2em;
+  transition: box-shadow 0.2s ease;
+}
+
+.grid.cards li:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* === Content Tab Polish === */
+.md-typeset .tabbed-labels {
+  font-weight: 600;
+}
+
+/* === Code Block Chinese === */
+.md-typeset code {
+  font-size: 0.9em;
+}
+
+/* === Navigation Polish === */
+.md-nav__link {
+  line-height: 1.6;
+}
+
+/* === Footer === */
+.md-footer {
+  font-size: 0.8rem;
+}
+
+/* === Typography Scale === */
+.md-typeset h1 {
+  font-weight: 700;
+  color: var(--md-primary-fg-color--dark);
+}
+
+.md-typeset h2 {
+  font-weight: 600;
+  border-bottom: 2px solid var(--md-primary-fg-color--light);
+  padding-bottom: 0.3em;
+}
+
+.md-typeset h3 {
+  font-weight: 600;
+}
+
+/* === Print Optimizations === */
+@media print {
+  .md-typeset table:not([class]) th {
+    background-color: #e0e0e0 !important;
+    color: #000 !important;
+  }
+}
+
+/* === KaTeX Math Formulas === */
+.katex-display {
+  text-align: center;
+  margin: 1.5em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.katex {
+  font-size: 1.1em;
+}
+
+/* KaTeX inline math alignment */
+.arithmatex {
+  vertical-align: middle;
+}
