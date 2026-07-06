@@ -1690,8 +1690,8 @@ Config</source>
     <message>
         <location line="+1"/>
         <location line="+23"/>
-        <location line="+91"/>
-        <location line="+215"/>
+        <location line="+93"/>
+        <location line="+213"/>
         <source>Workflow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1708,8 +1708,8 @@ Config</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+25"/>
-        <location line="+375"/>
+        <location line="+27"/>
+        <location line="+373"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1720,50 +1720,50 @@ Config</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+191"/>
+        <location line="+193"/>
         <source>DataFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-190"/>
-        <location line="+192"/>
+        <location line="-192"/>
+        <location line="+194"/>
         <source>Operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-191"/>
-        <location line="+194"/>
+        <location line="-193"/>
+        <location line="+196"/>
         <source>Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-193"/>
+        <location line="-195"/>
         <location line="+6"/>
-        <location line="+200"/>
+        <location line="+202"/>
         <location line="+6"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-211"/>
-        <location line="+223"/>
+        <location line="-213"/>
+        <location line="+225"/>
         <source>Table Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-222"/>
-        <location line="+226"/>
+        <location line="-224"/>
+        <location line="+228"/>
         <source>Fill</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-225"/>
-        <location line="+233"/>
+        <location line="-227"/>
+        <location line="+235"/>
         <source>Font</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-232"/>
+        <location line="-234"/>
         <location line="+240"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
@@ -1775,59 +1775,64 @@ Config</source>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+318"/>
+        <source>Fill Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+316"/>
         <source>Workflow Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-317"/>
-        <location line="+322"/>
+        <location line="-315"/>
+        <location line="+320"/>
         <source>Clipboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-299"/>
+        <location line="-297"/>
         <source>Set ribbon theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-22"/>
-        <location line="+326"/>
+        <location line="+324"/>
         <source>Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-325"/>
-        <location line="+334"/>
+        <location line="-323"/>
+        <location line="+332"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-333"/>
-        <location line="+338"/>
+        <location line="-331"/>
+        <location line="+336"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-335"/>
-        <location line="+416"/>
+        <location line="-333"/>
+        <location line="+414"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-415"/>
-        <location line="+418"/>
+        <location line="-413"/>
+        <location line="+416"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-416"/>
-        <location line="+263"/>
+        <location line="-414"/>
+        <location line="+261"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-262"/>
+        <location line="-260"/>
         <location line="+5"/>
         <source>Figure Setting</source>
         <translation type="unfinished"></translation>
@@ -1845,12 +1850,12 @@ Config</source>
     <message>
         <location line="+1"/>
         <location line="+4"/>
-        <location line="+478"/>
+        <location line="+477"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-480"/>
+        <location line="-479"/>
         <source>Chart Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1861,12 +1866,12 @@ Config</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+480"/>
+        <location line="+479"/>
         <source>Select Tool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-479"/>
+        <location line="-478"/>
         <source>Chart Assist Tool</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1887,7 +1892,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+319"/>
+        <location line="+317"/>
         <source>Group</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1908,8 +1913,8 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-416"/>
-        <location line="+461"/>
+        <location line="-414"/>
+        <location line="+460"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>

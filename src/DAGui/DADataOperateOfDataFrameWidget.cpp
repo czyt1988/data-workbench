@@ -58,6 +58,38 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mStyleManager  = new DATableStyleManager(this);
     mStyleDelegate = new DATableStyleItemDelegate(mStyleManager, this);
     ui->tableView->setItemDelegate(mStyleDelegate);
+    // 样式变更时触发 view 刷新（actualRow 转回 logical row 通知 model）
+    connect(mStyleManager, &DATableStyleManager::styleChanged, this, [ this ](int actualRow, int actualCol) {
+        if (!mModel) {
+            return;
+        }
+        int logicalRow = actualRow - mModel->getCacheWindowStartRow();
+        if (logicalRow >= 0 && logicalRow < mModel->rowCount()) {
+            mModel->notifyDataChanged(logicalRow, actualCol);
+        }
+    });
+    connect(mStyleManager, &DATableStyleManager::styleRangeChanged, this, [ this ](int rowStart, int colStart, int rowEnd, int colEnd) {
+        if (!mModel) {
+            return;
+        }
+        int offset = mModel->getCacheWindowStartRow();
+        // -1 表示整个维度
+        int lrStart = (rowStart < 0) ? 0 : rowStart - offset;
+        int lrEnd   = (rowEnd < 0) ? mModel->rowCount() - 1 : rowEnd - offset;
+        int lcStart = (colStart < 0) ? 0 : colStart;
+        int lcEnd   = (colEnd < 0) ? mModel->columnCount() - 1 : colEnd;
+        if (lrStart >= 0 && lrStart < mModel->rowCount() && lcStart >= 0 && lcStart < mModel->columnCount()) {
+            lrEnd   = qMin(lrEnd, mModel->rowCount() - 1);
+            lcEnd   = qMin(lcEnd, mModel->columnCount() - 1);
+            mModel->notifyDataChanged(lrStart, lcStart, lrEnd, lcEnd);
+        }
+    });
+    connect(mStyleManager, &DATableStyleManager::styleReset, this, [ this ]() {
+        if (mModel) {
+            // 全表刷新
+            mModel->notifyDataChanged(0, 0, mModel->rowCount() - 1, mModel->columnCount() - 1);
+        }
+    });
     // 关闭不必要的绘制特性
     setDAData(d);
     connect(ui->tableView, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);

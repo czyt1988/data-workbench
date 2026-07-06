@@ -435,9 +435,9 @@ class DataFilter:
 data-workbench/
 ├── CMakeLists.txt              # 根构建文件（版本定义、项目声明）
 ├── cmake/
-│   ├── daworkbench_utils.cmake    # 工具函数
-│   ├── daworkbench_3rdparty.cmake # 第三方库查找
-│   └── plugin_utils.cmake         # 插件构建工具
+│   ├── daworkbench_utils.cmake        # 工具函数
+│   ├── daworkbench_3rdparty.cmake     # 第三方库查找
+│   └── daworkbench_plugin_utils.cmake # 插件构建工具
 ├── src/
 │   ├── 3rdparty/CMakeLists.txt    # 第三方库编译（独立构建）
 │   ├── DAShared/CMakeLists.txt    # 各模块构建文件
@@ -454,8 +454,11 @@ data-workbench/
 | 选项 | 默认值 | 影响的模块 | 说明 |
 |------|--------|-----------|------|
 | `DA_ENABLE_PYTHON` | `ON` | DAPyBindQt, DAPyScripts, DAPyCommonWidgets, DAPyWorkFlow, DAData | 关闭后所有 Python 相关模块不编译 |
-| `DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` | `ON` | APP | Windows 下自动搜索 Python 环境并复制 DLL |
-| `DA_ENABLE_AUTO_TRANSLATE` | `OFF` | i18n | 自动生成翻译文件 |
+| `DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` | `ON` | 顶层 install（复制 Python DLL 到 bin/） | Windows 下自动搜索 Python 环境并复制 DLL |
+| `DA_ENABLE_AUTO_TRANSLATE` | `ON` | i18n | 自动调用 Linguist 编译翻译文件（.ts → .qm） |
+| `DA_BUILD_PLUGINS` | `ON` | plugins/ 目录 | 是否构建插件 |
+
+完整的构建选项说明见 [构建选项参考](../build/build-options.md)。
 
 ### 构建依赖顺序
 

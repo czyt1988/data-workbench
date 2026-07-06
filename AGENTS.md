@@ -105,46 +105,15 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 
 ### 各模块职责边界
 
-| 模块 | 层 | 职责范围 | 不应该包含 | 文件数 |
-|------|---|---------|-----------|--------|
-| **DAShared** | L1 | 纯头文件模板库。基础数据结构(Table/Vector)、枚举↔字符串映射宏、Qt5/Qt6兼容宏、并发容器、算法模板 | 任何有 `.cpp` 的类；任何依赖 Qt::Widgets 的类 | 19 |
-| **DAUtils** | L1 | 通用工具类。XML序列化接口、字符串转换、CSV读写、目录管理、颜色主题、翻译管理、进程管理、树数据结构 | GUI Widget 类；业务逻辑 | 40 |
-| **DAMessageHandler** | L1 | 日志基础设施。spdlog初始化、Qt消息路由、线程安全消息队列 | 日志UI组件（属于 DAGui） | 9 |
-| **DAPyBindQt** | L1 | Python↔Qt 胶水层。pybind11类型转换器、Python解释器生命周期、GIL RAII守卫、基础 py::object 包装器、JSON↔Python双向转换、numpy/pandas 绑定 | 工作流逻辑；业务Widget | 28 |
-| **DAPyScripts** | L2 | Python 脚本包装。将 `DAWorkbench` Python 模块的 io/dataframe/data_processing 函数暴露为 C++ API | GUI 组件；数据管理 | 12 |
-| **DAPyCommonWidgets** | L2 | Python 相关基础 Widget。DataFrame列选择器、dtype选择器 | 工作流节点Widget；图表Widget | 13 |
-| **DAPyWorkFlow** | L2 | Python工作流核心。节点代理(DAPyNode)、节点工厂(DAPyNodeFactory)、工作流容器(DAPyWorkFlow)、执行引擎(DAPyWorkFlowExecutor)、信号管理(DAPySignalManager)、工作流管理器(DAPyWorkFlowManager)、场景(DAPyWorkFlowScene)、节点图形项(DAPyNodeGraphicsItem)、连线图形项(DAPyLinkGraphicsItem)、节点元数据(DAPyNodeMetaData)、节点样式(DAPyNodeStyle)、连接点(DAPyLinkPoint)、节点调色板(DAPyNodePalette)、序列化(DAPyWorkFlowSerializer/DAPyWorkFlowSceneSerializer)、撤销命令工厂(DAPyWorkFlowCommandsFactory) | 通用 Python 工具（应放在 DAPyBindQt）；通用数据描述符（应放在 DAPyBindQt 或 DAShared） | 50 |
-| **DAData** | L2 | 数据管理。抽象数据基类(DAAbstractData)、DAData包装器、DADataManager注册表、Python数据对象封装、撤销/重做命令 | GUI 组件（属于 DAGui） | 22 |
-| **DACommonWidgets** | L3 | 通用 UI 组件。属性面板、颜色选择器、画笔/笔编辑、对齐编辑、文件路径编辑、设置对话框、等待光标 | 图表专属Widget（属于 DAFigure 或 DAGui）；数据管理Widget（属于 DAGui） | 82 |
-| **DAGraphicsView** | L2 | 图形视图框架。DAGraphicsView/Scene、基础图元（矩形/文本/图片/连线）、可缩放图元、连接线图元、场景/视图动作、撤销命令、图元工厂、覆盖层 | 业务图元（属于 DAPyWorkFlow 或其它上层模块） | 54 |
-| **DAFigure** | L2 | 图表容器（纯 C++/Qwt）。QwtFigure容器、DAChartWidget、图表编辑器、数据探针、序列化、图表树模型、撤销命令 | Python 相关代码；GUI 设置面板（属于 DAGui/ChartSetting） | 103 |
-| **DAGui** | L3 | GUI 整合层（最大模块）。工作流UI、图表设置面板、数据管理UI、Model/View模型、对话框、撤销命令、压缩归档、启动画面 | 纯数据逻辑（属于 DAData）；通用工具（属于 DAUtils） | 334 |
-| **DAInterface** | L4 | 抽象接口定义。DACoreInterface、DAUIInterface、各子接口（Docking/Ribbon/StatusBar/Actions/Command/DataManager/Project） | 具体实现（属于 APP） | 28 |
-| **DAPluginSupport** | L4 | 插件框架。DAAbstractPlugin、DAPluginManager、DAAbstractNodePlugin | 具体插件实现（属于 plugins/） | 10 |
-| **APP** | L5 | 可执行程序。DAAppCore、AppMainWindow、DAAppUI、各Interface的具体实现、项目文件管理 | 可复用的库代码（应下沉到对应模块） | 190 |
+> 📖 **完整的职责边界表、依赖矩阵、典型放置指南详见** [docs/zh/dev-guide/module-dependency.md](docs/zh/dev-guide/module-dependency.md)
 
-### 模块依赖矩阵
-
-下表列出了每个模块的**直接**依赖（通过 CMake `target_link_libraries`）：
-
-| 模块 | 直接依赖（PUBLIC） | 直接依赖（PRIVATE） | 外部关键依赖 |
-|------|-------------------|--------------------|-------------|
-| **DAShared** | — | — | Qt::Core |
-| **DAUtils** | Qt::Core/Gui/Widgets/Xml | — | — |
-| **DAAxOfficeWrapper** | DAUtils, Qt::Core/Gui/Widgets/AxContainer | — | Windows only |
-| **DAMessageHandler** | Qt::Core/Gui/Widgets/Xml | DAUtils | spdlog |
-| **DAPyBindQt** | Qt::Core, pybind11::headers | DAUtils, Python3 | numpy, pandas |
-| **DAPyScripts** | Qt::Core, DAPyBindQt, pybind11 | — | Python3 |
-| **DAPyCommonWidgets** | Qt::Core/Gui/Widgets, DAPyBindQt, pybind11 | — | Python3 |
-| **DAPyWorkFlow** | DAUtils, DAGraphicsView, DAPyBindQt | Qt::Core/Gui/Widgets | Python3, pybind11 |
-| **DAData** | Qt::Core/Gui/Widgets, DAPyBindQt, DAPyScripts | DAUtils | Python3, pybind11 |
-| **DACommonWidgets** | Qt::Core/Gui/Widgets/Xml, DALiteCtk, SARibbon | DAUtils | — |
-| **DAGraphicsView** | Qt::Core/Gui/Widgets/Xml/Svg | DAUtils | — |
-| **DAFigure** | Qt::Core/Gui/Widgets/PrintSupport/Concurrent/OpenGL, Qwt | DAUtils | — |
-| **DAGui** | DAUtils, DAMessageHandler, DAData, DACommonWidgets, DAPyWorkFlow, DAFigure, DAPyBindQt, DAPyScripts, DAPyCommonWidgets, Qt::Core/Gui/Widgets/Xml/Svg, SARibbon, QtAdvancedDocking, qwt, DALiteCtk, quazip | Qt6::Core5Compat (if Qt6) | Python3, pybind11 |
-| **DAInterface** | **DAGui** (PUBLIC — 传递所有 DAGui 依赖给消费者) | Qt, SARibbon, QtAdvancedDocking, qwt, DALiteCtk | Python3, pybind11 |
-| **DAPluginSupport** | **DAInterface** (PUBLIC), **DAPyWorkFlow** (PUBLIC), Qt | QtAdvancedDocking | Python3, pybind11 |
-| **APP** | **DAPluginSupport** (PUBLIC), DAPyWorkFlow, Qt, DALiteCtk, SARibbon, QtAdvancedDocking, qwt, Dbghelp(Win) | — | Python3, pybind11 |
+| 层 | 模块 |
+|----|------|
+| **L1 基础层** | DAShared（纯头文件）、DAUtils、DAMessageHandler、DAPyBindQt |
+| **L2 功能层** | DAData、DAFigure、DAPyWorkFlow、DAGraphicsView、DAPyScripts、DAPyCommonWidgets |
+| **L3 界面层** | DAGui、DACommonWidgets |
+| **L4 接口层** | DAInterface、DAPluginSupport |
+| **L5 应用层** | APP |
 
 ### 依赖方向规则（铁律）
 
@@ -195,61 +164,31 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 
 ## 文档导航
 
-### 开发指南（dev-guide）
+> 📖 **完整文档站点**：`mkdocs serve` 后访问 http://localhost:8000，或浏览 `docs/zh/`
 
-| 文档 | 说明 |
-|------|------|
-| [workflow.md](docs/zh/dev-guide/workflow.md) | 工作流系统核心概念和架构 |
-| [workflow-lifecycle.md](docs/zh/dev-guide/workflow-lifecycle.md) | 工作流节点生命周期管理 |
-| [logging.md](docs/zh/dev-guide/logging.md) | 日志系统架构、DALogger/DALogCategory 使用指南、daInfo/daWarning/daCritical 便捷宏 |
-| [plugin-project-create.md](docs/zh/dev-guide/plugin-project-create.md) | 创建插件项目完整指南 |
-| [plugin-architecture.md](docs/zh/dev-guide/plugin-architecture.md) | 插件架构设计详解 |
-| [plugin-module.md](docs/zh/dev-guide/plugin-module.md) | DAPluginSupport 模块说明 |
-| [plugins-interfaces.md](docs/zh/dev-guide/plugins-interfaces.md) | 插件接口体系 |
-| [coding-standard.md](docs/zh/dev-guide/coding-standard.md) | 编码规范、命名约定、注释规范、调试开关 |
-| [i18n.md](docs/zh/dev-guide/i18n.md) | 国际化规范（C++/Qt + Python，含 @NodeDef 节点规则） |
-| [python-i18n.md](docs/zh/dev-guide/python-i18n.md) | Python gettext 完整实现（含节点包 i18n 章节） |
-| [module-dependency.md](docs/zh/dev-guide/module-dependency.md) | 模块依赖关系、职责边界、依赖矩阵、典型放置指南 |
-| [data-module.md](docs/zh/dev-guide/data-module.md) | DAData 数据模块详解 |
-| [python-in-cpp.md](docs/zh/dev-guide/python-in-cpp.md) | Python/C++ 集成和 pybind11 使用 |
-| [figure-abstract.md](docs/zh/dev-guide/figure-abstract.md) | DAFigure 图表抽象层 |
-| [interface-module.md](docs/zh/dev-guide/interface-module.md) | DAInterface 接口模块 |
-| [scalable-graphic-module.md](docs/zh/dev-guide/scalable-graphic-module.md) | 可缩放图形模块 |
-| [project-serialization-architecture.md](docs/zh/dev-guide/project-serialization-architecture.md) | 项目序列化架构 |
-| [settingwidget-standard.md](docs/zh/dev-guide/settingwidget-standard.md) | 设置控件规范 |
-| [third-party-manage.md](docs/zh/dev-guide/third-party-manage.md) | 第三方库管理 |
-| [creating-setting-panel.md](docs/zh/dev-guide/creating-setting-panel.md)| 创建设置面板 |
-
-### 构建文档（build）
-
-| 文档 | 说明 |
-|------|------|
-| [build-instructions.md](docs/zh/build/build-instructions.md) | 完整构建指南 |
-| [third-party-build.md](docs/zh/build/third-party-build.md) | 第三方库编译 |
-| [python-environment.md](docs/zh/build/python-environment.md) | Python 环境配置 |
-| [common-build-errors.md](docs/zh/build/common-build-errors.md) | 常见构建错误解决 |
-| [plugin-build.md](docs/zh/build/plugin-build.md) | 插件构建说明 |
-| [main-program-build.md](docs/zh/build/main-program-build.md) | 主程序构建详解 |
-
-### 用户指南（use-guide）
-
-| 文档 | 说明 |
-|------|------|
-| [index.md](docs/zh/use-guide/index.md) | 用户指南入口 |
-| [command-line-arguments.md](docs/zh/use-guide/command-line-arguments.md) | 命令行参数说明 |
-
-### 顶层文档
-
-| 文档 | 说明 |
-|------|------|
-| [overview.md](docs/zh/overview.md) | 项目概览和核心特性 |
-| [quick-start.md](docs/zh/quick-start.md) | 快速上手指南 |
-| [project-structure.md](docs/zh/project-structure.md) | 项目结构详解 |
-| [plugin-development.md](docs/zh/plugin-development.md) | 插件开发总览 |
-| [plugin-system.md](docs/zh/plugin-system.md) | 插件系统概述 |
-| [api-reference.md](docs/zh/api-reference.md) | API 参考手册 |
-| [configuration.md](docs/zh/configuration.md) | 配置系统说明 |
-| [best-practices.md](docs/zh/best-practices.md) | 开发最佳实践 |
+| 类别 | 关键文档 | 说明 |
+|------|---------|------|
+| **开发指南** | [module-dependency.md](docs/zh/dev-guide/module-dependency.md) | 模块职责边界、依赖矩阵 |
+| | [coding-standard.md](docs/zh/dev-guide/coding-standard.md) | 编码规范、命名约定、注释规范 |
+| | [architecture.md](docs/zh/dev-guide/architecture.md) | 架构设计与模块划分 |
+| | [developer-guide.md](docs/zh/dev-guide/developer-guide.md) | 开发者入门指引 |
+| | [module-breakdown.md](docs/zh/dev-guide/module-breakdown.md) | 各模块业务逻辑详解 |
+| | [i18n.md](docs/zh/dev-guide/i18n.md) / [python-i18n.md](docs/zh/dev-guide/python-i18n.md) | 国际化规范 |
+| | [workflow-overview.md](docs/zh/dev-guide/workflow-overview.md) | 工作流系统架构 |
+| | [workflow-python-node-dev.md](docs/zh/dev-guide/workflow-python-node-dev.md) | Python 节点开发 |
+| | [dapybind11-qt-caster.md](docs/zh/dev-guide/dapybind11-qt-caster.md) | pybind11↔Qt 类型转换 |
+| | [logging.md](docs/zh/dev-guide/logging.md) | 日志系统 |
+| | [creating-setting-panel.md](docs/zh/dev-guide/creating-setting-panel.md) | 创建设置面板 |
+| **构建** | [build-instructions.md](docs/zh/build/build-instructions.md) | 完整构建指南 |
+| | [build-options.md](docs/zh/build/build-options.md) | CMake 构建选项参考 |
+| | [common-build-errors.md](docs/zh/build/common-build-errors.md) | 常见构建错误 |
+| **使用指南** | [use-guide/index.md](docs/zh/use-guide/index.md) | 用户指南入口 |
+| | [workflow-usage.md](docs/zh/use-guide/workflow-usage.md) | 工作流使用 |
+| | [data-management.md](docs/zh/use-guide/data-management.md) | 数据管理使用 |
+| | [chart-usage.md](docs/zh/use-guide/chart-usage.md) | 图表使用 |
+| **顶层** | [overview.md](docs/zh/overview.md) | 项目概览 |
+| | [plugin-development.md](docs/zh/plugin-development.md) | 插件开发总览 |
+| | [api-reference.md](docs/zh/api-reference.md) / [overview.md](docs/zh/api-reference/overview.md) | API 参考 |
 
 ## CODE MAP
 
@@ -283,128 +222,58 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 
 ## CONVENTIONS
 
+> 📖 **详细编码规范见** [docs/zh/dev-guide/coding-standard.md](docs/zh/dev-guide/coding-standard.md)
+
 ### 代码风格
 
 - 严格保持与现有代码一致（命名规范、缩进、头文件组织等）
-- 代码文件、类名统一`DA`开头，并放入DA命名空间
+- 代码文件、类名统一`DA`开头，并放入`DA`命名空间
 - 遵循 Qt 开发最佳实践（使用 `Q_PROPERTY`、`Q_SIGNALS`、`Q_SLOT` 等宏，禁止使用 `slot`、`signal` 等小写命名的宏）
-
-### 信号槽设计
-
-充分发挥 Qt 的信号槽机制，工具类使用信号和槽进行事件通讯。
-
-### 属性暴露方式
-
-为了贴合 Qt 框架，类的属性使用 `Q_PROPERTY` 暴露：
-
-```cpp
-// 数据属性
-Q_PROPERTY(QImAbstractDataSeries* data READ data WRITE setData NOTIFY dataChanged)
-
-// 样式属性
-Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
-Q_PROPERTY(float size READ size WRITE setSize NOTIFY sizeChanged)
-Q_PROPERTY(float opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
-
-// 可见性属性
-Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibilityChanged)
-```
+- 工具类使用信号和槽进行事件通讯，属性使用 `Q_PROPERTY` 暴露
 
 ### Qt 版本兼容性
 
-代码需兼容Qt5和Qt6,如果一些方法在Qt6中取消了，需要使用宏来判断使用那种版本的方法，例如：
+代码需兼容 Qt5 和 Qt6，差异处理使用宏判断（`Qt5Qt6Compat_*` 系列宏定义在 `src/DAGlobals.h`）：
 
 ```cpp
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    // 使用Qt5的方法
+    // Qt5 方法
 #else
-    // 使用Qt6的方法
+    // Qt6 方法
 #endif
 ```
 
-Qt5/Qt6 兼容宏定义在 `src/DAGlobals.h`（`Qt5Qt6Compat_*` 系列）
+### Qt 容器范围迭代（避免 COW 深拷贝）
 
-### Qt 容器范围迭代（避免写时复制深拷贝）
-
-Qt 容器（QVector、QList、QMap 等）使用**写时复制（Copy-on-Write / COW）**机制。对非 const 容器使用 C++11 范围迭代（`for(T& v : container)`），编译器会认为迭代器可能修改容器内容，从而触发 COW **深拷贝**，造成不必要的性能损失。
-
-**✅ 正确写法 — 两种方式：**
-
-1. **容器本身是只读的** → 直接声明为 `const`：
-
-```cpp
-const QVector<SomeClass> vals = getXXX();
-for (const SomeClass& v : vals) {
-    // 安全：const 容器不会触发 COW
-}
-```
-
-1. **容器非 const，但遍历不会修改其内容** → 使用 `std::as_const`：
-
-```cpp
-QVector<SomeClass> vals = getXXX();
-for (const SomeClass& v : std::as_const(vals)) {
-    // 安全：std::as_const 返回 const 引用，避免 COW
-}
-```
-
-**❌ 错误写法（会触发深拷贝）：**
-
-```cpp
-QVector<SomeClass> vals = getXXX();
-for (SomeClass& v : vals) {        // ⚠️ 非const引用迭代非const容器 → COW 深拷贝
-}
-for (const SomeClass& v : vals) {   // ⚠️ 即使元素是const引用，容器本身非const → COW 深拷贝
-}
-```
-
-> **要点**：关键在于**容器本身是否为 const**，而非迭代变量。只要容器是非 const 的，无论迭代变量声明为 `T&` 还是 `const T&`，都会触发 COW。
+**禁止**对非 const Qt 容器直接使用范围迭代（`for(T& v : container)` 或 `for(const T& v : container)` 都会触发 COW 深拷贝）。必须用 `const` 声明容器或 `std::as_const()` 包裹。
 
 ## 国际化（i18n）规范
 
 > 📖 **详细规范见** [docs/zh/dev-guide/i18n.md](docs/zh/dev-guide/i18n.md) | Python 详见 [docs/zh/dev-guide/python-i18n.md](docs/zh/dev-guide/python-i18n.md)
 
-**核心原则**：所有显示到用户界面的字符串必须使用**英文源文本 + 行内中文注释**模式，翻译通过 `.ts`（C++）或 `.po`（Python）文件提供。源码中**禁止**直接写中文作为 UI 显示文本。
-
-| 语言 | 代码写法 | 翻译文件 |
-|------|---------|---------|
-| C++ (Qt) | `tr("English text")  //cn:中文文本` | `.ts` → `.qm` |
-| Python | `_("English text")  # cn:中文文本` | `.po` → `.mo` |
+**核心原则**：所有显示到用户界面的字符串必须使用**英文源文本 + 行内中文注释**模式（`tr("English") //cn:中文` / `_("English") # cn:中文`），翻译通过 `.ts`/`.po` 文件提供。源码中**禁止**直接写中文作为 UI 显示文本。
 
 **关键约束**：
 
-- **日志消息不翻译**：`qInfo`/`qWarning`/`qCritical`/`qWarning`/`logger.*`/`print` 保持纯英文
+- **日志消息不翻译**：`qInfo`/`qWarning`/`qCritical`/`logger.*`/`print` 保持纯英文
 - **`@NodeDef(name=...)` 不翻译**：`name` 参与 `qualified_name` 序列化，翻译会破坏已存工程
-- **`@NodeDef(category=...)` 翻译**：`category` 仅用于节点工具箱分类显示
 - **Python 包 `setup_i18n()` 必须在 `__init__.py` 顶部、节点模块导入之前调用**
-- **参考实现**：`plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/`（Python）、`plugins/DataAnalysis/DataAnalysisUI.cpp::retranslateUi()`（C++）
 
 ## 注释与文档规范
 
 > 📖 **详细规范见** [docs/zh/dev-guide/coding-standard.md](docs/zh/dev-guide/coding-standard.md) 的"注释规范"章节
 
-**核心原则**：函数的 Doxygen 注释写在 `.cpp` 文件中，头文件只保留单行中文简要注释（`//`），以保持头文件简洁。
-
-**头文件中可写的 Doxygen 注释**：类的注释、信号的注释（因信号无 cpp 实现）、枚举的注释、枚举值的注释。
-
-**禁止**在头文件中写入类成员函数的 Doxygen 块注释。
+**核心原则**：函数的 Doxygen 注释写在 `.cpp` 文件中，头文件只保留单行中文简要注释（`//`）。头文件仅可写类/信号/枚举的注释，**禁止**在头文件中写入类成员函数的 Doxygen 块注释。
 
 ## 插件系统
 
-插件位于 `plugins` 目录下，每个插件是一个独立的模块，可以扩展软件功能。
+插件位于 `plugins` 目录下。涉及插件开发时请阅读：
 
-### 插件开发
-
-如果涉及插件开发，你可以阅读:
-
-- [创建插件项目](./docs/zh/dev-guide/plugin-project-create.md)
+- [插件项目创建](./docs/zh/dev-guide/plugin-project-create.md)
 - [插件与接口](./docs/zh/dev-guide/plugins-interfaces.md)
-- [插件模块DAPluginSupport](./docs/zh/dev-guide/plugin-module.md)
+- [插件模块 DAPluginSupport](./docs/zh/dev-guide/plugin-module.md)
 - [插件开发创建 UI](./docs/zh/dev-guide/plugin-dev-create-ui.md)
-
-- 参考现有的插件结构（如 DataAnalysis 插件）
-- 遵循项目的代码规范和架构设计
-- 确保插件与主程序的接口兼容性
+- 参考现有插件结构（如 `plugins/DataAnalysis/`），确保与主程序接口兼容
 
 ## Git 提交规范
 

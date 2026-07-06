@@ -65,7 +65,7 @@ cmake --build build-linux --parallel
 !!! warning "Windows 构建注意事项"
     - **禁止使用 Ninja 生成器**，必须使用 Visual Studio 生成器
     - 如果 `build/` 目录已存在且是用 Ninja 配置的，使用 `.\scripts\build.ps1 -Clean` 清理后重新配置
-    - Qt 工具链文件（`qt.toolchain.cmake`）是必须的
+    - 本指南推荐使用 `build.ps1` 或 `-DCMAKE_PREFIX_PATH` 方式；`qt.toolchain.cmake` 仅在使用 Ninja + `CMAKE_TOOLCHAIN_FILE` 方式构建时需要
 
 **安装 Python 依赖**：
 
@@ -118,9 +118,9 @@ cmake --build build-linux --target DAPyWorkFlow --parallel
 data-workbench/
 ├── .github/workflows/     # CI (build.yml, page.yml)
 ├── cmake/                 # CMake 工具链模块
-│   ├── daworkbench_utils.cmake    # 工具函数
-│   ├── daworkbench_3rdparty.cmake # 第三方库查找
-│   └── plugin_utils.cmake         # 插件构建工具
+│   ├── daworkbench_utils.cmake        # 工具函数
+│   ├── daworkbench_3rdparty.cmake     # 第三方库查找
+│   └── daworkbench_plugin_utils.cmake # 插件构建工具
 ├── docs/                  # 文档
 │   ├── zh/                # 中文文档
 │   └── assets/            # 截图和资源

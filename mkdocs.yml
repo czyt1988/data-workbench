@@ -61,6 +61,7 @@ nav:
           - 插件构建: zh/build/plugin-build.md
           - Python环境配置: zh/build/python-environment.md
           - 构建常见错误: zh/build/common-build-errors.md
+          - 构建选项参考: zh/build/build-options.md
       - 开发规范:
           - 编码规范: zh/dev-guide/coding-standard.md
           - 第三方库管理: zh/dev-guide/third-party-manage.md
@@ -104,6 +105,11 @@ nav:
   - 使用指南:
       - 使用指南概述: zh/use-guide/index.md
       - 命令行参数: zh/use-guide/command-line-arguments.md
+      - 工作流使用: zh/use-guide/workflow-usage.md
+      - 数据管理使用: zh/use-guide/data-management.md
+      - 图表使用: zh/use-guide/chart-usage.md
+      - 工程文件管理: zh/use-guide/project-management.md
+      - 插件使用: zh/use-guide/plugin-usage.md
       - 绘图功能:
           - 数据探针: zh/use-guide/plot/data-probe.md
       - 配置文件说明: zh/configuration.md
@@ -118,7 +124,9 @@ nav:
       - API文档索引: zh/api-reference.md
       - 更新日志: zh/changelog.md
   - API文档:
-      - 文档首页: doxygen/index.html
+      - API 总览: zh/api-reference/overview.md
+      - API 文档索引: zh/api-reference.md
+      - Doxygen 首页: doxygen/index.html
       - 类索引: doxygen/classes.html
       - 文件列表: doxygen/files.html
 

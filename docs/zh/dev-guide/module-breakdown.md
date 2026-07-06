@@ -448,6 +448,7 @@ classDiagram
         +enableCrosshair()
     }
 
+    QwtPlot <|-- DAChartWidget
     DAChartDataInterface <|.. DAChartWidget
     DAChartStyleInterface <|.. DAChartWidget
     DAChartInteractionInterface <|.. DAChartWidget
