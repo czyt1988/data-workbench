@@ -21,6 +21,7 @@ class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
 class DATableStyleManager;
 class DATableStyleItemDelegate;
+class DATableStyleRegistry;
 class DATableCellStyle;
 
 
@@ -35,7 +36,7 @@ public:
     virtual int getDataOperatePageType() const;
 
 public:
-    explicit DADataOperateOfDataFrameWidget(const DAData& d, QWidget* parent = nullptr);
+    explicit DADataOperateOfDataFrameWidget(const DAData& d, DATableStyleRegistry* registry, QWidget* parent = nullptr);
     ~DADataOperateOfDataFrameWidget();
     // 是否存在data
     bool haveData() const;
@@ -101,6 +102,10 @@ public Q_SLOTS:
     int removeSelectCell();
     // 列更名
     void renameColumns();
+    // 重命名单列（表头右键用），col 为列位置索引，newName 为新列名
+    // 复用 DACommandDataFrame_renameColumns 命令，支持 undo/redo
+    // @return 成功返回 true（列为空/重名/越界返回 false）
+    bool renameColumn(int col, const QString& newName);
     // 设置选择列的数据类型，发射信号columnTypeChanged
     bool changeSelectColumnType(const DAPyDType& dt);
     // 把选择的行转换为数值，带交互
@@ -127,7 +132,7 @@ private:
     Ui::DADataOperateOfDataFrameWidget* ui;
     DAData mData;
     DADataTableModel* mModel { nullptr };
-    DATableStyleManager* mStyleManager { nullptr };
+    DATableStyleManager* mStyleManager { nullptr };  ///< 借自 DATableStyleRegistry，非拥有（随数据存在，widget 关闭不销毁）
     DATableStyleItemDelegate* mStyleDelegate { nullptr };
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };

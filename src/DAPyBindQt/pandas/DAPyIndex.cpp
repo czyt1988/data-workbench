@@ -168,6 +168,30 @@ QVariant DAPyIndex::value(size_t i) const
 }
 
 /**
+ * @brief 获取 label 的精确位置索引
+ *
+ * 基于 pandas Index.get_loc 实现。get_loc 对唯一 label 返回 int 位置；
+ * 对单调索引中的重复连续 label 返回 slice；对非单调索引的重复 label 返回 boolean mask。
+ * 本函数仅处理"唯一 label 返回 int"的主路径，其余情况返回 -2 由调用方回退处理。
+ * @param label 要查找的 index label
+ * @return label 唯一时返回位置（>=0）；label 重复返回 -2；异常/不存在返回 -1
+ */
+long DAPyIndex::getLoc(const pybind11::object& label) const
+{
+    try {
+        pybind11::object loc = attr("get_loc")(label);
+        if (pybind11::isinstance< pybind11::int_ >(loc)) {
+            return loc.cast< long >();
+        }
+        // slice 或 boolean mask：label 重复
+        return -2;
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+        return -1;
+    }
+}
+
+/**
  * @brief 获取索引号，返回-1代表获取失败
  * @param v
  * @param method

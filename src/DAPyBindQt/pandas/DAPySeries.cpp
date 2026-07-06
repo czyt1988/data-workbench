@@ -365,6 +365,60 @@ DAPySeries DAPySeries::toDateTime() const
     return DAPySeries(pybind11::module::import("pandas").attr("to_datetime")(object()));
 }
 
+/**
+ * @brief 返回最大值的位置索引
+ *
+ * 主路径：pandas Series.idxmax() 拿到 index label，再用 Index.get_loc 转 position。
+ * 当 label 重复（get_loc 返回 -2）或异常时，回退到 numpy.argmax 直接拿位置索引。
+ * 对空列、全 NaN 列、不可比较类型，idxmax 会抛异常，统一返回 -1。
+ * @return 位置索引（>=0），失败返回 -1
+ */
+long DAPySeries::idxmaxPosition() const
+{
+    try {
+        pybind11::object label = object().attr("idxmax")();
+        DAPyIndex idx          = index();
+        long pos               = idx.getLoc(label);
+        if (pos >= 0) {
+            return pos;
+        }
+        // -1(异常/不存在) 或 -2(重复 label)：回退 numpy.argmax
+        pybind11::object values = object().attr("values");
+        pybind11::object argmax = pybind11::module::import("numpy").attr("argmax")(values);
+        return argmax.cast< long >();
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+        return -1;
+    }
+}
+
+/**
+ * @brief 返回最小值的位置索引
+ *
+ * 主路径：pandas Series.idxmin() 拿到 index label，再用 Index.get_loc 转 position。
+ * 当 label 重复（get_loc 返回 -2）或异常时，回退到 numpy.argmin 直接拿位置索引。
+ * 对空列、全 NaN 列、不可比较类型，idxmin 会抛异常，统一返回 -1。
+ * @return 位置索引（>=0），失败返回 -1
+ */
+long DAPySeries::idxminPosition() const
+{
+    try {
+        pybind11::object label = object().attr("idxmin")();
+        DAPyIndex idx          = index();
+        long pos               = idx.getLoc(label);
+        if (pos >= 0) {
+            return pos;
+        }
+        // -1(异常/不存在) 或 -2(重复 label)：回退 numpy.argmin
+        pybind11::object values = object().attr("values");
+        pybind11::object argmin = pybind11::module::import("numpy").attr("argmin")(values);
+        return argmin.cast< long >();
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+        return -1;
+    }
+}
+
 bool DAPySeries::isSeries(const pybind11::object& obj)
 {
     return DAPyModulePandas::getInstance().isInstanceSeries(obj);

@@ -58,6 +58,12 @@ public:
     QVector< QDateTime > indexAsDateTimeVector() const;
     DAPySeries astype(const pybind11::dtype& dt) const;
     DAPySeries toDateTime() const;
+    // 返回最大值的位置索引（iloc 语义），失败返回 -1
+    // 主路径：idxmax + Index.get_loc；重复 label 时回退 numpy.argmax
+    long idxmaxPosition() const;
+    // 返回最小值的位置索引（iloc 语义），失败返回 -1
+    // 主路径：idxmin + Index.get_loc；重复 label 时回退 numpy.argmin
+    long idxminPosition() const;
 
 public:
     static bool isSeries(const pybind11::object& obj);

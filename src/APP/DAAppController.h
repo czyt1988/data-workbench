@@ -252,6 +252,14 @@ private Q_SLOTS:
     void onActionInsertColumnLeftTriggered();
     // dataframe列重命名
     void onActionRenameColumnsTriggered();
+    // dataframe单列重命名（表头右键）
+    void onActionRenameColumnTriggered();
+    // 复制列名到剪贴板（表头右键）
+    void onActionCopyColumnNameTriggered();
+    // 跳转到最大值（表头右键）
+    void onActionGotoMaxTriggered();
+    // 跳转到最小值（表头右键）
+    void onActionGotoMinTriggered();
 #if DA_ENABLE_PYTHON
     // 列数据类型改变
     void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);
@@ -418,6 +426,8 @@ private:
     void initScripts();
     // 初始化Python工作流信号槽
     void initPyWorkflowConnections();
+    // 为 DataFrame 操作窗口的表头注入右键菜单
+    void setupDataFrameHeaderContextMenu(DADataOperateOfDataFrameWidget* w);
 #endif
 
 private:

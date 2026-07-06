@@ -11,6 +11,10 @@
 #include <QMenu>
 #include <QApplication>
 #include <QActionGroup>
+#include <QHeaderView>
+#include <QItemSelectionModel>
+#include <QAbstractItemModel>
+#include <QClipboard>
 // qwt
 #include "qwt_figure.h"
 #include "qwt_plot_series_data_picker.h"
@@ -72,6 +76,7 @@
 #include "numpy/DAPyDType.h"
 // Widget
 #include "DADataOperateOfDataFrameWidget.h"
+#include "DADataTableView.h"
 // Python workflow
 #include "DAPyWorkFlowScene.h"
 #endif
@@ -300,6 +305,10 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveColumn, onActionRemoveColumnTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveCell, onActionRemoveCellTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRenameColumns, onActionRenameColumnsTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRenameColumn, onActionRenameColumnTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionCopyColumnName, onActionCopyColumnNameTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionGotoMax, onActionGotoMaxTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionGotoMin, onActionGotoMinTriggered);
 
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToNum, onActionCastToNumTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
@@ -1118,6 +1127,8 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                 &DAAppController::onDataOperateDataFrameWidgetSelectTypeChanged);
         // 选中变化时反向同步 ribbon 样式控件
         connect(w, &DADataOperateOfDataFrameWidget::currentStyleChanged, this, &DAAppController::onTableStyleCurrentChanged);
+        // 表头右键菜单注入
+        setupDataFrameHeaderContextMenu(w);
 #endif
     } break;
     default:
@@ -2071,6 +2082,194 @@ void DAAppController::onActionRenameColumnsTriggered()
     }
 #endif
 }
+
+#if DA_ENABLE_PYTHON
+/**
+ * @brief dataframe单列重命名（表头右键）
+ *
+ * 弹出 QInputDialog 让用户输入新列名，调用 widget->renameColumn。
+ * 依赖表头右键菜单已先选中目标列（B-2-a）。
+ */
+void DAAppController::onActionRenameColumnTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    int col = dfopt->getSelectedOneDataframeColumn();
+    if (col < 0) {
+        return;
+    }
+    DADataTableView* tv = dfopt->getDataTableView();
+    if (!tv) {
+        return;
+    }
+    QString oldName = tv->actualColumnName(col);
+    bool ok         = false;
+    QString newName = QInputDialog::getText(
+        dfopt,
+        tr("Rename Column"),  // cn:重命名列
+        tr("New column name:"),  // cn:新列名：
+        QLineEdit::Normal,
+        oldName,
+        &ok);
+    if (!ok) {
+        return;
+    }
+    if (dfopt->renameColumn(col, newName.trimmed())) {
+        setDirty();
+    }
+}
+
+/**
+ * @brief 复制列名到剪贴板（表头右键）
+ *
+ * 依赖表头右键菜单已先选中目标列（B-2-a），列名来源走 view 的 actualColumnName。
+ */
+void DAAppController::onActionCopyColumnNameTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    int col = dfopt->getSelectedOneDataframeColumn();
+    if (col < 0) {
+        return;
+    }
+    DADataTableView* tv = dfopt->getDataTableView();
+    if (!tv) {
+        return;
+    }
+    QString name = tv->actualColumnName(col);
+    if (name.isEmpty()) {
+        return;
+    }
+    QClipboard* cb = QApplication::clipboard();
+    if (cb) {
+        cb->setText(name);
+    }
+}
+
+/**
+ * @brief 跳转到最大值（表头右键）
+ *
+ * 取当前选中列的最大值位置索引，调用 selectActualCell 滚动并高亮。
+ * 依赖表头右键菜单已先选中目标列（B-2-a）。
+ */
+void DAAppController::onActionGotoMaxTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    int col = dfopt->getSelectedOneDataframeColumn();
+    if (col < 0) {
+        return;
+    }
+    DAPyDataFrame df = dfopt->getDataframe();
+    if (df.isNone()) {
+        return;
+    }
+    DAPySeries s = df.iloc(col);
+    long pos      = s.idxmaxPosition();
+    if (pos < 0) {
+        daWarning << tr("Cannot find the maximum value in this column (empty or all-NaN)");  // cn:此列无法找到最大值（空列或全为NaN）
+        return;
+    }
+    DADataTableView* tv = dfopt->getDataTableView();
+    if (tv) {
+        tv->selectActualCell(static_cast< int >(pos), col);
+    }
+}
+
+/**
+ * @brief 跳转到最小值（表头右键）
+ *
+ * 取当前选中列的最小值位置索引，调用 selectActualCell 滚动并高亮。
+ * 依赖表头右键菜单已先选中目标列（B-2-a）。
+ */
+void DAAppController::onActionGotoMinTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    int col = dfopt->getSelectedOneDataframeColumn();
+    if (col < 0) {
+        return;
+    }
+    DAPyDataFrame df = dfopt->getDataframe();
+    if (df.isNone()) {
+        return;
+    }
+    DAPySeries s = df.iloc(col);
+    long pos      = s.idxminPosition();
+    if (pos < 0) {
+        daWarning << tr("Cannot find the minimum value in this column (empty or all-NaN)");  // cn:此列无法找到最小值（空列或全为NaN）
+        return;
+    }
+    DADataTableView* tv = dfopt->getDataTableView();
+    if (tv) {
+        tv->selectActualCell(static_cast< int >(pos), col);
+    }
+}
+
+/**
+ * @brief 为 DataFrame 操作窗口的表头注入右键菜单
+ *
+ * 方案 B-2：controller 直接操作 widget 的 horizontalHeader。
+ * 右键时先选中该列（replace 语义），再弹出菜单。
+ * 菜单项 enable 按 Q9-A 统一判定：走到这里 col 已有效，全部 enable。
+ * 生命周期依赖 Qt 自动断连（header 是 widget 子对象，widget 销毁即断连）。
+ * @param w 目标 DataFrame 操作窗口
+ */
+void DAAppController::setupDataFrameHeaderContextMenu(DADataOperateOfDataFrameWidget* w)
+{
+    if (!w || !w->getDataTableView()) {
+        return;
+    }
+    QHeaderView* hv = w->getDataTableView()->horizontalHeader();
+    if (!hv) {
+        return;
+    }
+    hv->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(hv, &QWidget::customContextMenuRequested, this, [ this, w, hv ](const QPoint& pos) {
+        int col = hv->logicalIndexAt(pos);
+        if (col < 0) {
+            return;
+        }
+        DAPyDataFrame df = w->getDataframe();
+        if (df.isNone()) {
+            return;
+        }
+        auto shape = df.shape();
+        if (col >= (int)shape.second) {
+            return;
+        }
+        // B-2-a: 先选中该列（replace 语义）
+        DADataTableView* tv = w->getDataTableView();
+        if (tv) {
+            QItemSelectionModel* sel = tv->selectionModel();
+            QAbstractItemModel* m     = tv->model();
+            if (sel && m) {
+                sel->clearSelection();
+                QItemSelection selRange(m->index(0, col), m->index(m->rowCount() - 1, col));
+                sel->select(selRange, QItemSelectionModel::Select | QItemSelectionModel::Columns);
+            }
+        }
+        // 弹出菜单
+        QMenu menu(w);
+        menu.addAction(mActions->actionRenameColumn);
+        menu.addAction(mActions->actionRemoveColumn);
+        menu.addSeparator();
+        menu.addAction(mActions->actionCopyColumnName);
+        menu.addSeparator();
+        menu.addAction(mActions->actionGotoMax);
+        menu.addAction(mActions->actionGotoMin);
+        menu.exec(hv->mapToGlobal(pos));
+    });
+}
+#endif
 
 /**
  * @brief 选中列转换为数值

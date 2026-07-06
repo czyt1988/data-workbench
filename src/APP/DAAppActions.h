@@ -69,6 +69,10 @@ public:
     QAction* actionInsertColumnLeft;   ///< 在左边插入列
     QAction* actionInsertColumnRight;  ///< 在右边插入列
     QAction* actionRenameColumns;      ///< 更改列名
+    QAction* actionRenameColumn;       ///< 更改单列名（表头右键）
+    QAction* actionCopyColumnName;     ///< 复制列名到剪贴板（表头右键）
+    QAction* actionGotoMax;            ///< 跳转到最大值（表头右键）
+    QAction* actionGotoMin;            ///< 跳转到最小值（表头右键）
     QAction* actionCastToString;       ///< 数据转换为文本
     QAction* actionCastToNum;          ///< 数据转换为数字
     QAction* actionCastToDatetime;     ///< 转换为日期

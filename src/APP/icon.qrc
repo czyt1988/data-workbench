@@ -48,6 +48,10 @@
         <file>Icon/folder.svg</file>
         <file>Icon/insertColumnRight.svg</file>
         <file>Icon/renameColumns.svg</file>
+        <file>Icon/renameColumn.svg</file>
+        <file>Icon/copyColumnName.svg</file>
+        <file>Icon/gotoMax.svg</file>
+        <file>Icon/gotoMin.svg</file>
         <file>Icon/addFigure.svg</file>
         <file>Icon/figureResizeChart.svg</file>
         <file>Icon/newAxis.svg</file>

@@ -73,6 +73,10 @@ void DAAppActions::buildDataAction()
     actionInsertColumnRight = createAction("actionInsertColumnRight", ":/app/bright/Icon/insertColumnRight.svg");
     actionInsertColumnLeft  = createAction("actionInsertColumnLeft", ":/app/bright/Icon/insertColumnLeft.svg");
     actionRenameColumns     = createAction("actionRenameColumns", ":/app/bright/Icon/renameColumns.svg");
+    actionRenameColumn      = createAction("actionRenameColumn", ":/app/bright/Icon/renameColumn.svg");
+    actionCopyColumnName    = createAction("actionCopyColumnName", ":/app/bright/Icon/copyColumnName.svg");
+    actionGotoMax           = createAction("actionGotoMax", ":/app/bright/Icon/gotoMax.svg");
+    actionGotoMin           = createAction("actionGotoMin", ":/app/bright/Icon/gotoMin.svg");
     actionRemoveCell        = createAction("actionRemoveCell", ":/app/bright/Icon/removeCell.svg");
     actionCastToNum         = createAction("actionCastToNum", ":/app/bright/Icon/castToNum.svg");
     actionCastToString      = createAction("actionCastToString", ":/app/bright/Icon/castToString.svg");
@@ -496,6 +500,14 @@ void DAAppActions::retranslateUi()
 
     actionChangeToIndex->setText(tr("To Index"));               // cn:转换为\n索引
     actionChangeToIndex->setToolTip(tr("Cast to index type"));  // cn:转换为索引类型
+    actionRenameColumn->setText(tr("Rename Column"));                          // cn:重命名此列
+    actionRenameColumn->setToolTip(tr("Rename the column under the cursor"));  // cn:重命名光标所在列
+    actionCopyColumnName->setText(tr("Copy Column Name"));                     // cn:复制列名
+    actionCopyColumnName->setToolTip(tr("Copy the column name to clipboard")); // cn:复制列名到剪贴板
+    actionGotoMax->setText(tr("Goto Max"));                                              // cn:跳转到最大值
+    actionGotoMax->setToolTip(tr("Scroll to the maximum value of this column"));         // cn:滚动到此列最大值处
+    actionGotoMin->setText(tr("Goto Min"));                                              // cn:跳转到最小值
+    actionGotoMin->setToolTip(tr("Scroll to the minimum value of this column"));         // cn:滚动到此列最小值处
     actionClearStyleSelected->setText(tr("Clear Selected Style"));      // cn:清除选中样式
     actionClearStyleSelected->setToolTip(tr("Clear styles in selected cells"));  // cn:清除选中单元格的样式
     actionClearStyleAll->setText(tr("Clear All Style"));               // cn:清除所有样式

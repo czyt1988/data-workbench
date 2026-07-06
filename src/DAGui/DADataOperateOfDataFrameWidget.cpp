@@ -19,6 +19,7 @@
 // table style
 #include "DATableStyleManager.h"
 #include "DATableStyleItemDelegate.h"
+#include "DATableStyleRegistry.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -39,7 +40,7 @@ int DADataOperateOfDataFrameWidget::getDataOperatePageType() const
     return DADataOperatePageWidget::DataOperateOfDataFrame;
 }
 
-DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, QWidget* parent)
+DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, DATableStyleRegistry* registry, QWidget* parent)
     : DADataOperatePageWidget(parent)
     , ui(new Ui::DADataOperateOfDataFrameWidget)
     , mDialogCastNumArgs(nullptr)
@@ -51,11 +52,9 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
 
     ui->tableView->setModel(mModel);
     // 表格样式管理器与 delegate
-    // TODO: 数据行/列增删时的样式键偏移同步（spec §6.2）暂未实现，因数据命令的 callback
-    // 在 redo/undo 都调用且不区分方向（见 DACommandsDataFrame.cpp 的 callback() 用法）。
-    // 后续需让 callback 方向感知后，在 insertRowAt/removeSelectRow 等回调中调用
-    // mStyleManager->onRowsInserted/onRowsRemoved 完成偏移同步。
-    mStyleManager  = new DATableStyleManager(this);
+    // 样式管理器借自会话级 DATableStyleRegistry（随数据存在，widget 关闭后保留，重开可见）。
+    // 行列增删的样式键偏移同步在 §7 的回调中接入（onRowsInserted 等系列）。
+    mStyleManager  = registry ? registry->getOrCreate(d) : nullptr;
     mStyleDelegate = new DATableStyleItemDelegate(mStyleManager, this);
     ui->tableView->setItemDelegate(mStyleDelegate);
     // 样式变更时触发 view 刷新（actualRow 转回 logical row 通知 model）
@@ -172,6 +171,18 @@ void DADataOperateOfDataFrameWidget::insertRowAt(int row)
             modle->notifyRowsInserted({ row });
         }
     });
+    // 行列增删样式键同步：插入行时 >=row 的键 +1；撤销时按删除处理（>=row 的键 -1）
+    DATableStyleManager* styleMgr = mStyleManager;
+    cmd->setDirectionalCallBack([ styleMgr, row ](bool isUndo) {
+        if (!styleMgr) {
+            return;
+        }
+        if (isUndo) {
+            styleMgr->onRowsRemoved({ row });
+        } else {
+            styleMgr->onRowsInserted({ row });
+        }
+    });
     if (!cmd->exec()) {
         return;
     }
@@ -235,6 +246,18 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
             modle->notifyColumnsRemoved({ col });
         }
     });
+    // 行列增删样式键同步：插入列时 >=col 的键 +1；撤销时按删除处理
+    DATableStyleManager* styleMgr = mStyleManager;
+    cmd->setDirectionalCallBack([ styleMgr, col ](bool isUndo) {
+        if (!styleMgr) {
+            return;
+        }
+        if (isUndo) {
+            styleMgr->onColumnsRemoved({ col });
+        } else {
+            styleMgr->onColumnsInserted({ col });
+        }
+    });
     if (!cmd->exec()) {
         return;
     }
@@ -261,6 +284,19 @@ int DADataOperateOfDataFrameWidget::removeSelectRow()
     cmd->setCallBack([ modle, rows ]() {
         if (modle) {
             modle->notifyRowsInserted(rows);
+        }
+    });
+    // 行列增删样式键同步：删除行时 ==row 的键删除，>row 的键 -1；撤销时按插入处理
+    // 注意：被删除行的样式在删除时丢失，撤销(load恢复dataframe)无法恢复样式（已知限制，见 spec §7.3）
+    DATableStyleManager* styleMgr = mStyleManager;
+    cmd->setDirectionalCallBack([ styleMgr, rows ](bool isUndo) {
+        if (!styleMgr) {
+            return;
+        }
+        if (isUndo) {
+            styleMgr->onRowsInserted(rows);
+        } else {
+            styleMgr->onRowsRemoved(rows);
         }
     });
     if (!cmd->exec()) {
@@ -290,6 +326,19 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
     cmd->setCallBack([ modle, columns ]() {
         if (modle) {
             modle->notifyColumnsRemoved(columns);
+        }
+    });
+    // 行列增删样式键同步：删除列时 ==col 的键删除，>col 的键 -1；撤销时按插入处理
+    // 注意：被删除列的样式在删除时丢失，撤销(load恢复dataframe)无法恢复样式（已知限制，见 spec §7.3）
+    DATableStyleManager* styleMgr = mStyleManager;
+    cmd->setDirectionalCallBack([ styleMgr, columns ](bool isUndo) {
+        if (!styleMgr) {
+            return;
+        }
+        if (isUndo) {
+            styleMgr->onColumnsInserted(columns);
+        } else {
+            styleMgr->onColumnsRemoved(columns);
         }
     });
     if (!cmd->exec()) {
@@ -376,6 +425,48 @@ void DADataOperateOfDataFrameWidget::renameColumns()
     }
 
     getUndoStack()->push(cmd);
+}
+
+/**
+ * @brief 重命名单列
+ *
+ * 构造"全表列名列表，仅修改目标列"传给 DACommandDataFrame_renameColumns，
+ * 复用现有命令的 undo/redo 与 headerDataChanged 通知机制。
+ * @param col 列位置索引
+ * @param newName 新列名
+ * @return 成功返回 true；列为空/重名/越界/exec 失败返回 false
+ */
+bool DADataOperateOfDataFrameWidget::renameColumn(int col, const QString& newName)
+{
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone()) {
+        return false;
+    }
+    QList< QString > oldcols = df.columns();
+    if (col < 0 || col >= oldcols.size()) {
+        return false;
+    }
+    if (newName.isEmpty()) {
+        daWarning << tr("Column name cannot be empty");  // cn:列名不能为空
+        return false;
+    }
+    if (oldcols.contains(newName)) {
+        daWarning << tr("Column name \"%1\" already exists, please use another name").arg(newName);  // cn:列名"%1"已存在，请使用其他名称
+        return false;
+    }
+    QList< QString > newcols = oldcols;
+    newcols[ col ]           = newName;
+    QHeaderView* hv          = ui->tableView->horizontalHeader();
+    std::unique_ptr< DACommandDataFrame_renameColumns > cmd(
+        new DACommandDataFrame_renameColumns(df, newcols, oldcols, hv));
+    if (!cmd->exec()) {
+        return false;
+    }
+    if (DADataManager* mgr = mData.getDataManager()) {
+        mgr->notifyDataChangedSignal(mData, DADataManager::ChangeDataframeColumnName);
+    }
+    getUndoStack()->push(cmd.release());
+    return true;
 }
 
 /**
