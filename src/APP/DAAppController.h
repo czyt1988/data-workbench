@@ -265,9 +265,9 @@ private Q_SLOTS:
     // 选中列转换为索引
     void onActionChangeToIndexTriggered();
     // 表格样式
-    void onActionTableStyleFillColor(const QColor& c);
-    void onActionTableStyleFontChanged(const QFont& f);
-    void onActionTableStyleFontColorChanged(const QColor& c);
+    void onTableStyleFillColorChanged(const QColor& c);
+    void onTableStyleFontChanged(const QFont& f);
+    void onTableStyleFontColorChanged(const QColor& c);
     void onActionClearStyleSelectedTriggered();
     void onActionClearStyleAllTriggered();
 

@@ -62,9 +62,12 @@ public:
 
     // 获取样式管理器
     DATableStyleManager* styleManager() const;
-    // 应用样式片段到选中区（fragment 只设部分属性，merge 到目标）
+    // 合并样式片段到选中区（fragment 只设部分属性，merge 到目标已有样式）
     // 自动判定层级：整列→列级，整行→行级，否则单元格级
-    void applyStyleToSelection(const DATableCellStyle& fragment);
+    void mergeStyleToSelection(const DATableCellStyle& fragment);
+    // 设置完整样式到选中区（传入什么就设置什么，整体替换，为格式刷准备）
+    // 自动判定层级：整列→列级，整行→行级，否则单元格级
+    void applyStyleToSelection(const DATableCellStyle& style);
     // 清除选中区样式（自动判定层级）
     void clearStyleSelection();
     // 清除整表所有样式

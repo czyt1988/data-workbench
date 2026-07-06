@@ -319,11 +319,11 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionClearStyleAll, onActionClearStyleAllTriggered);
 #if DA_ENABLE_PYTHON
     connect(mRibbon->m_btnTableFillColor, &SARibbonColorToolButton::colorChanged,
-            this, &DAAppController::onActionTableStyleFillColor);
+            this, &DAAppController::onTableStyleFillColorChanged);
     connect(mRibbon->m_widgetTableFont, &DAFontEditPannelWidget::currentFontChanged,
-            this, &DAAppController::onActionTableStyleFontChanged);
+            this, &DAAppController::onTableStyleFontChanged);
     connect(mRibbon->m_widgetTableFont, &DAFontEditPannelWidget::currentFontColorChanged,
-            this, &DAAppController::onActionTableStyleFontColorChanged);
+            this, &DAAppController::onTableStyleFontColorChanged);
 #endif
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
@@ -2270,7 +2270,7 @@ void DAAppController::onActionWorkflowLinkEnableTriggered(bool on)
  * @brief 表格底色变更
  * @param c 颜色
  */
-void DAAppController::onActionTableStyleFillColor(const QColor& c)
+void DAAppController::onTableStyleFillColorChanged(const QColor& c)
 {
 #if DA_ENABLE_PYTHON
     DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget(false, false);
@@ -2279,7 +2279,7 @@ void DAAppController::onActionTableStyleFillColor(const QColor& c)
     }
     DA::DATableCellStyle fragment;
     fragment.setBackground(QBrush(c));
-    w->applyStyleToSelection(fragment);
+    w->mergeStyleToSelection(fragment);
 #else
     Q_UNUSED(c)
 #endif
@@ -2289,7 +2289,7 @@ void DAAppController::onActionTableStyleFillColor(const QColor& c)
  * @brief 表格字体变更
  * @param f 字体
  */
-void DAAppController::onActionTableStyleFontChanged(const QFont& f)
+void DAAppController::onTableStyleFontChanged(const QFont& f)
 {
 #if DA_ENABLE_PYTHON
     DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget(false, false);
@@ -2298,7 +2298,7 @@ void DAAppController::onActionTableStyleFontChanged(const QFont& f)
     }
     DA::DATableCellStyle fragment;
     fragment.setFont(f);
-    w->applyStyleToSelection(fragment);
+    w->mergeStyleToSelection(fragment);
 #else
     Q_UNUSED(f)
 #endif
@@ -2308,7 +2308,7 @@ void DAAppController::onActionTableStyleFontChanged(const QFont& f)
  * @brief 表格字体颜色变更
  * @param c 颜色
  */
-void DAAppController::onActionTableStyleFontColorChanged(const QColor& c)
+void DAAppController::onTableStyleFontColorChanged(const QColor& c)
 {
 #if DA_ENABLE_PYTHON
     DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget(false, false);
@@ -2317,7 +2317,7 @@ void DAAppController::onActionTableStyleFontColorChanged(const QColor& c)
     }
     DA::DATableCellStyle fragment;
     fragment.setForeground(c);
-    w->applyStyleToSelection(fragment);
+    w->mergeStyleToSelection(fragment);
 #else
     Q_UNUSED(c)
 #endif

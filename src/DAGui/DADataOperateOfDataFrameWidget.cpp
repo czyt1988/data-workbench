@@ -863,13 +863,13 @@ DATableStyleManager* DADataOperateOfDataFrameWidget::styleManager() const
 }
 
 /**
- * @brief 应用样式片段到选中区
+ * @brief 合并样式片段到选中区
  *
  * 自动判定层级：选中整列→列级，选中整行→行级，否则单元格级。
- * fragment 通常只设部分属性（如只设 background），merge 到目标已有样式。
+ * fragment 只设部分属性（如只设 background），merge 到目标已有样式，未设属性保留。
  * @param fragment 样式片段
  */
-void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyle& fragment)
+void DADataOperateOfDataFrameWidget::mergeStyleToSelection(const DATableCellStyle& fragment)
 {
     if (!mStyleManager) {
         return;
@@ -891,7 +891,7 @@ void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyl
     int cacheOffset = mModel ? mModel->getCacheWindowStartRow() : 0;
 
     if (!fullCols.isEmpty()) {
-        // 列级
+        // 列级：合并 fragment 到已有列样式
         for (int col : fullCols) {
             DATableCellStyle oldStyle = mStyleManager->getColumnStyle(col);
             DATableCellStyle newStyle = oldStyle;
@@ -899,7 +899,7 @@ void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyl
             cmd->addChange(DACommandTableStyle::Column, col, 0, oldStyle, newStyle, true);
         }
     } else if (!fullRows.isEmpty()) {
-        // 行级
+        // 行级：合并 fragment 到已有行样式
         for (int row : fullRows) {
             int actualRow             = row + cacheOffset;
             DATableCellStyle oldStyle = mStyleManager->getRowStyle(actualRow);
@@ -908,7 +908,7 @@ void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyl
             cmd->addChange(DACommandTableStyle::Row, actualRow, 0, oldStyle, newStyle, true);
         }
     } else {
-        // 单元格级
+        // 单元格级：合并 fragment 到已有单元格样式
         for (const QPoint& p : cells) {
             // QPoint(index.row(), index.column()) → p.x()=row(logical), p.y()=col
             int actualRow             = p.x() + cacheOffset;
@@ -917,6 +917,57 @@ void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyl
             DATableCellStyle newStyle = oldStyle;
             newStyle.mergeFrom(fragment);
             cmd->addChange(DACommandTableStyle::Cell, actualRow, col, oldStyle, newStyle, true);
+        }
+    }
+
+    getUndoStack()->push(cmd.release());
+}
+
+/**
+ * @brief 设置完整样式到选中区（整体替换，为格式刷准备）
+ *
+ * 自动判定层级：选中整列→列级，选中整行→行级，否则单元格级。
+ * 传入什么样式就设置什么样式，完全替换目标已有样式（不做 merge）。
+ * style 中 valid=false 的属性会让目标对应属性变为"未设置"。
+ * @param style 完整样式
+ */
+void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyle& style)
+{
+    if (!mStyleManager) {
+        return;
+    }
+    QList< int > fullCols = getFullySelectedDataframeColumns(false);
+    QList< int > fullRows = getFullySelectedDataframeRows(false);
+    QList< QPoint > cells = getSelectedDataframeCells(false);
+
+    if (cells.isEmpty() && fullCols.isEmpty() && fullRows.isEmpty()) {
+        daWarning << tr("Please select a valid cell");  // cn:请选择正确的单元格
+        return;
+    }
+
+    std::unique_ptr< DACommandTableStyle > cmd(new DACommandTableStyle(mStyleManager));
+    int cacheOffset = mModel ? mModel->getCacheWindowStartRow() : 0;
+
+    if (!fullCols.isEmpty()) {
+        // 列级：直接替换
+        for (int col : fullCols) {
+            DATableCellStyle oldStyle = mStyleManager->getColumnStyle(col);
+            cmd->addChange(DACommandTableStyle::Column, col, 0, oldStyle, style, false);
+        }
+    } else if (!fullRows.isEmpty()) {
+        // 行级：直接替换
+        for (int row : fullRows) {
+            int actualRow             = row + cacheOffset;
+            DATableCellStyle oldStyle = mStyleManager->getRowStyle(actualRow);
+            cmd->addChange(DACommandTableStyle::Row, actualRow, 0, oldStyle, style, false);
+        }
+    } else {
+        // 单元格级：直接替换
+        for (const QPoint& p : cells) {
+            int actualRow             = p.x() + cacheOffset;
+            int col                   = p.y();
+            DATableCellStyle oldStyle = mStyleManager->getCellStyle(actualRow, col);
+            cmd->addChange(DACommandTableStyle::Cell, actualRow, col, oldStyle, style, false);
         }
     }
 
