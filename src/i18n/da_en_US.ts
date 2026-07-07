@@ -164,7 +164,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+357"/>
+        <location filename="../APP/DAAppActions.cpp" line="+361"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -630,7 +630,7 @@ All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+25"/>
         <source>Grouping</source>
         <translation type="unfinished"></translation>
     </message>
@@ -665,7 +665,7 @@ All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-125"/>
+        <location line="-133"/>
         <source>Enable or disable legend in the chart</source>
         <translation type="unfinished"></translation>
     </message>
@@ -859,6 +859,46 @@ Column</source>
     <message>
         <location line="+1"/>
         <source>Cast to index type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Rename Column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Rename the column under the cursor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy Column Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy the column name to clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Goto Max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Scroll to the maximum value of this column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Goto Min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Scroll to the minimum value of this column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1188,18 +1228,18 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+551"/>
+        <location filename="../APP/DAAppController.cpp" line="+565"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+12"/>
-        <location line="+737"/>
+        <location line="+741"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-728"/>
+        <location line="-732"/>
         <source>Failed to save project! Path: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1215,7 +1255,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+159"/>
+        <location line="+163"/>
         <source>Image saved successfully to %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1230,7 +1270,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1007"/>
+        <location line="-1011"/>
         <source>Please select the data operation window</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1269,12 +1309,32 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+237"/>
+        <location line="+241"/>
         <source>Received null project interface</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+926"/>
+        <location line="+803"/>
+        <source>Rename Column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>New column name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+69"/>
+        <source>Cannot find the maximum value in this column (empty or all-NaN)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>Cannot find the minimum value in this column (empty or all-NaN)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+218"/>
         <source>New workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1284,7 +1344,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1042"/>
+        <location line="-1239"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1406,7 +1466,7 @@ Config</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+475"/>
+        <location filename="../APP/DAAppProject.cpp" line="+476"/>
         <source>Saving project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1471,7 +1531,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+188"/>
+        <location line="+189"/>
         <source>Save System Info</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1511,12 +1571,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+486"/>
+        <location line="+507"/>
         <source>Table style for data &apos;%1&apos; has no matching data, skipped</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-457"/>
+        <location line="-476"/>
         <source>Save data information, including data names and data organization formats</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1537,7 +1597,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+45"/>
         <source>Save table styles</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1577,30 +1637,30 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-580"/>
-        <location line="+583"/>
+        <location line="-585"/>
+        <location line="+588"/>
         <source>Failed to save project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-593"/>
+        <location line="-598"/>
         <location line="+34"/>
         <source>The current project is busy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+389"/>
+        <location line="+392"/>
         <source>Save data information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+185"/>
+        <location line="+187"/>
         <source>Project loaded successfully</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-544"/>
-        <location line="+548"/>
+        <location line="-549"/>
+        <location line="+553"/>
         <source>Failed to load project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3542,7 +3602,7 @@ Config</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+181"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+230"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3552,13 +3612,13 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+48"/>
         <source>Please select valid data cells</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+29"/>
-        <location line="+111"/>
+        <location line="+42"/>
+        <location line="+176"/>
         <location line="+35"/>
         <location line="+41"/>
         <location line="+42"/>
@@ -3566,22 +3626,33 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-200"/>
-        <location line="+607"/>
-        <location line="+58"/>
+        <location line="-252"/>
+        <location line="+659"/>
+        <location line="+61"/>
+        <location line="+48"/>
         <source>Please select a valid cell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-623"/>
+        <location line="-726"/>
         <source>Table has no columns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+50"/>
+        <source>Column name cannot be empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Column name &quot;%1&quot; already exists, please use another name</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateWidget.cpp" line="+222"/>
+        <location filename="../DAGui/DADataOperateWidget.cpp" line="+261"/>
         <source>removing a widget that does not exist in the tab</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4700,7 +4771,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1218"/>
+        <location filename="../APP/DAAppController.cpp" line="-1231"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6863,23 +6934,23 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+44"/>
         <location line="+27"/>
         <source>insert column &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+47"/>
         <source>drop dataframe rows</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+26"/>
         <source>drop dataframe columns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+66"/>
         <source>change column type</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7395,7 +7466,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPyIndex.cpp" line="+205"/>
+        <location filename="../DAPyBindQt/pandas/DAPyIndex.cpp" line="+229"/>
         <source>DAPyIndex: the Python object type is not pandas.Index</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7405,7 +7476,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+377"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+431"/>
         <source>DAPySeries: the Python object type is not pandas.Series</source>
         <translation type="unfinished"></translation>
     </message>

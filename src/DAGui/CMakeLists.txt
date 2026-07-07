@@ -74,6 +74,7 @@ set(DA_LIB_HEADER_FILES
     DASettingWidget.h
     DATableCellStyle.h
     DATableStyleManager.h
+    DATableStyleRegistry.h
     DATableStyleItemDelegate.h
 )
 set(DA_LIB_SOURCE_FILES
@@ -134,6 +135,7 @@ set(DA_LIB_SOURCE_FILES
     DASettingWidget.cpp
     DATableCellStyle.cpp
     DATableStyleManager.cpp
+    DATableStyleRegistry.cpp
     DATableStyleItemDelegate.cpp
 )
 set(DA_LIB_QT_UI_FILES

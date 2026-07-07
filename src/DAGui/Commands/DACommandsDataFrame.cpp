@@ -48,6 +48,7 @@ void DACommandDataFrame_insertNanRow::undo()
 {
     load();
     callback();
+    directionalCallback(true);
 }
 
 bool DACommandDataFrame_insertNanRow::exec()
@@ -57,6 +58,7 @@ bool DACommandDataFrame_insertNanRow::exec()
         return false;
     }
     callback();
+    directionalCallback(false);
     return true;
 }
 
@@ -118,6 +120,7 @@ void DACommandDataFrame_insertColumn::undo()
     DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
     mInsertedSeries            = pydf.itake_column(dataframe(), mCol);
     callback();
+    directionalCallback(true);
 }
 
 bool DACommandDataFrame_insertColumn::exec()
@@ -141,6 +144,7 @@ bool DACommandDataFrame_insertColumn::exec()
     }
 
     callback();
+    directionalCallback(false);
     return true;
 }
 
@@ -162,6 +166,7 @@ void DACommandDataFrame_dropIRow::undo()
 {
     load();
     callback();
+    directionalCallback(true);
 }
 
 bool DACommandDataFrame_dropIRow::exec()
@@ -171,6 +176,7 @@ bool DACommandDataFrame_dropIRow::exec()
         return false;
     }
     callback();
+    directionalCallback(false);
     return true;
 }
 
@@ -186,6 +192,7 @@ void DACommandDataFrame_dropIColumn::undo()
 {
     load();
     callback();
+    directionalCallback(true);
 }
 
 bool DACommandDataFrame_dropIColumn::exec()
@@ -195,6 +202,7 @@ bool DACommandDataFrame_dropIColumn::exec()
         return false;
     }
     callback();
+    directionalCallback(false);
     return true;
 }
 

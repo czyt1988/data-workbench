@@ -32,4 +32,16 @@ DACallBackInterface::CallBack DACallBackInterface::getCallBack() const
     return m_callback;
 }
 
+void DACallBackInterface::setDirectionalCallBack(DACallBackInterface::DirectionalCallBack fn)
+{
+    m_directionalCallback = fn;
+}
+
+void DACallBackInterface::directionalCallback(bool isUndo)
+{
+    if (m_directionalCallback) {
+        m_directionalCallback(isUndo);
+    }
+}
+
 }

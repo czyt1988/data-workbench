@@ -7,6 +7,8 @@
 #include "DADataManager.h"
 #include "DADataOperatePageWidget.h"
 #include <QUndoStack>
+// table style registry
+#include "DATableStyleRegistry.h"
 #if DA_ENABLE_PYTHON
 // widget
 #include "DADataOperateOfDataFrameWidget.h"
@@ -29,6 +31,7 @@ public:
 public:
     QMap< DA::DAData, QPointer< QWidget > > _dataToWidget;  ///< 记录数据对应的窗口
     DADataManager* _dataManager;
+    DATableStyleRegistry* _styleRegistry { nullptr };  ///< 表格样式会话级注册表，随数据存在
 };
 
 DADataOperateWidget::PrivateData::PrivateData(DADataOperateWidget* p) : q_ptr(p)
@@ -66,6 +69,10 @@ DADataOperateWidget::~DADataOperateWidget()
 void DADataOperateWidget::setDataManager(DADataManager* mgr)
 {
     d_ptr->_dataManager = mgr;
+    // 样式注册表随数据管理器存在，连接 datasCleared 信号统一清空
+    if (!d_ptr->_styleRegistry) {
+        d_ptr->_styleRegistry = new DATableStyleRegistry(mgr, this);
+    }
     connect(mgr, &DADataManager::dataRemoved, this, &DADataOperateWidget::onDataRemoved);
     connect(mgr, &DADataManager::dataChanged, this, &DADataOperateWidget::onDataChanged);
 }
@@ -115,6 +122,38 @@ QList< DADataOperateOfDataFrameWidget* > DADataOperateWidget::getAllDataFrameWid
     }
 #endif
     return res;
+}
+
+/**
+ * @brief 按 DAData 精确查找已打开的 DataFrame 窗口
+ *
+ * 供样式加载按 id 回填 registry 后，若该数据已打开则刷新表格视图。
+ * @param d 数据
+ * @return 已打开返回窗口指针，否则 nullptr
+ */
+DADataOperateOfDataFrameWidget* DADataOperateWidget::findDataFrameWidget(const DAData& d) const
+{
+#if DA_ENABLE_PYTHON
+    auto ite = d_ptr->_dataToWidget.find(d);
+    if (ite == d_ptr->_dataToWidget.end()) {
+        return nullptr;
+    }
+    return qobject_cast< DADataOperateOfDataFrameWidget* >(ite.value().data());
+#else
+    Q_UNUSED(d)
+    return nullptr;
+#endif
+}
+
+/**
+ * @brief 表格样式会话级注册表
+ *
+ * 样式生命周期脱离单个 widget，随数据存在。widget 构造时从注册表借用 manager。
+ * @return 注册表指针
+ */
+DATableStyleRegistry* DADataOperateWidget::styleRegistry() const
+{
+    return d_ptr->_styleRegistry;
 }
 
 /**
@@ -356,8 +395,8 @@ void DADataOperateWidget::showDataframeData(const DA::DAData& d)
     DADataOperateOfDataFrameWidget* w =
         qobject_cast< DADataOperateOfDataFrameWidget* >(d_ptr->_dataToWidget.value(d, nullptr).data());
     if (nullptr == w) {
-        // 没有就创建
-        w = new DADataOperateOfDataFrameWidget(d, ui->tabWidget);
+        // 没有就创建，传入样式注册表以借用会话级 manager
+        w = new DADataOperateOfDataFrameWidget(d, d_ptr->_styleRegistry, ui->tabWidget);
         emit dataTableCreated(w);
         // 记录窗口
         d_ptr->_dataToWidget[ d ] = w;
