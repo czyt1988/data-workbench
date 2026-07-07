@@ -8,7 +8,7 @@ damacro_lib_setting(
     "DAGui"
     "DA GUI | https://github.com/czyt1988"
     0
-    0
+    1
     5
 )
 

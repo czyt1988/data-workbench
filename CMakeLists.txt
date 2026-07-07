@@ -68,6 +68,10 @@ option(DA_AUTO_GENERATE_CONFIG_INFO
 option(DA_BUILD_PLUGINS
     "This option will build plugin"
     ON)
+# 此选项将让da运行测试
+option(DA_ENABLE_TESTING
+    "This option will enable testing"
+    OFF)
 if(DA_AUTO_INSTALL_PREFIX)
     message(STATUS "DA Auto Install")
     set(DA_BIN_DIR_NAME)
@@ -207,8 +211,10 @@ if(DA_BUILD_PLUGINS)
 endif()
 
 # 测试
-enable_testing()
-add_subdirectory(src/tst)
+if(DA_ENABLE_TESTING)
+    enable_testing()
+    add_subdirectory(src/tst)
+endif()
 
 ##################################
 # 安装 install

@@ -8,8 +8,8 @@ damacro_lib_setting(
     "DAPyBindQt"
     "qt wrapper python | https://github.com/czyt1988"
     0
-    0
-    3
+    1
+    4
 )
 
 

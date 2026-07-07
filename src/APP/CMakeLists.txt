@@ -8,7 +8,7 @@ damacro_app_setting(
     "DAWorkBench"
     "DAWorkBench App"
     0
-    0
+    1
     4
 )
 
