@@ -234,7 +234,7 @@ struct type_caster< QDate >
             return false;
 
         auto& date_type = get_date_type();
-        if (date_type && date_type.isinstance(src)) {
+        if (date_type && pybind11::isinstance(src, date_type.object())) {
             int year  = src.attr("year").cast< int >();
             int month = src.attr("month").cast< int >();
             int day   = src.attr("day").cast< int >();
@@ -278,7 +278,7 @@ struct type_caster< QTime >
             return false;
 
         auto& time_type = get_time_type();
-        if (time_type && time_type.isinstance(src)) {
+        if (time_type && pybind11::isinstance(src, time_type.object())) {
             int hour        = src.attr("hour").cast< int >();
             int minute      = src.attr("minute").cast< int >();
             int second      = src.attr("second").cast< int >();
@@ -333,7 +333,7 @@ struct type_caster< QDateTime >
             return false;
         }
         auto& datetime_type = get_datetime_type();
-        if (datetime_type && datetime_type.isinstance(src)) {
+        if (datetime_type && pybind11::isinstance(src, datetime_type.object())) {
             try {
                 pybind11::object timestamp = src.attr("timestamp");
                 double ts                  = timestamp().cast< double >();
@@ -371,7 +371,7 @@ struct type_caster< QDateTime >
             }
         }
         auto& np_timestamp = get_numpy_timestamp_type();
-        if (np_timestamp && np_timestamp.isinstance(src)) {
+        if (np_timestamp && pybind11::isinstance(src, np_timestamp.object())) {
             try {
                 int64_t ns = src.attr("astype")("datetime64[ns]").attr("view")("int64").cast< int64_t >();
                 value      = QDateTime::fromMSecsSinceEpoch(ns / 1000000, Qt::UTC);
@@ -382,7 +382,7 @@ struct type_caster< QDateTime >
         }
 
         auto& pd_timestamp = get_pandas_timestamp_type();
-        if (pd_timestamp && pd_timestamp.isinstance(src)) {
+        if (pd_timestamp && pybind11::isinstance(src, pd_timestamp.object())) {
             try {
                 pybind11::object tz = src.attr("tz");
                 bool has_tz         = !tz.is_none();
@@ -701,14 +701,23 @@ struct type_caster< QVariant >
     }
 
     // 辅助函数：判断是否是 numpy 对象
+    // 注意：pybind11::isinstance(obj, type) 语义为「obj 是否是 type 的实例」。
+    // ndarray_type/generic_type 持有的是 numpy 的 type 对象，src 是待检测的实例，
+    // 因此正确写法是 isinstance(src, ndarray_type)。不能用 ndarray_type.isinstance(src)，
+    // 因为 DAPyObjectWrapper::isinstance 展开为 isinstance(_object, 参数)，会把 type 对象
+    // 当 obj、实例当 type，参数顺序颠倒，第二参数非 type 时 PyObject_IsInstance 抛 TypeError，
+    // 被 catch(...) 吞掉后静默返回 false（导致 numpy 标量无法识别，如 numpy.int64 不走
+    // handle_numpy_object 分支，最终 cast<QVariant> 失败，表格数字列显示为空）。
     static bool is_numpy_array(handle src)
     {
         try {
-            static DA::DAPyObjectWrapper numpy_module = DA::PY::importPyType("numpy", "ndarray");
-            if (numpy_module) {
-                static DA::DAPyObjectWrapper ndarray_type = DA::PY::importPyType("numpy", "ndarray");
-                static DA::DAPyObjectWrapper generic_type = DA::PY::importPyType("numpy", "generic");
-                return (ndarray_type && ndarray_type.isinstance(src)) || (generic_type && generic_type.isinstance(src));
+            static DA::DAPyObjectWrapper ndarray_type = DA::PY::importPyType("numpy", "ndarray");
+            static DA::DAPyObjectWrapper generic_type = DA::PY::importPyType("numpy", "generic");
+            if (ndarray_type && pybind11::isinstance(src, ndarray_type.object())) {
+                return true;
+            }
+            if (generic_type && pybind11::isinstance(src, generic_type.object())) {
+                return true;
             }
         } catch (...) {
         }
@@ -813,7 +822,7 @@ struct type_caster< QVariant >
 
                     try {
                         static DA::DAPyObjectWrapper datetime_type = DA::PY::importPyType("datetime", "datetime");
-                        if (datetime_type && datetime_type.isinstance(item)) {
+                        if (datetime_type && pybind11::isinstance(item, datetime_type.object())) {
                             QDateTime dt_val = item.cast< QDateTime >();
                             value            = dt_val;
                             return true;
@@ -1045,7 +1054,7 @@ struct type_caster< QVariant >
             // 检查是否是 datetime.datetime
             try {
                 static DA::DAPyObjectWrapper datetime_type = DA::PY::importPyType("datetime", "datetime");
-                if (datetime_type && datetime_type.isinstance(src)) {
+                if (datetime_type && pybind11::isinstance(src, datetime_type.object())) {
                     QDateTime dt_val = src.cast< QDateTime >();
                     value            = QVariant(dt_val);
                     return true;
@@ -1055,7 +1064,7 @@ struct type_caster< QVariant >
 
             try {
                 static DA::DAPyObjectWrapper date_type = DA::PY::importPyType("datetime", "date");
-                if (date_type && date_type.isinstance(src)) {
+                if (date_type && pybind11::isinstance(src, date_type.object())) {
                     QDate date_val = src.cast< QDate >();
                     value          = QVariant(date_val);
                     return true;
@@ -1065,7 +1074,7 @@ struct type_caster< QVariant >
 
             try {
                 static DA::DAPyObjectWrapper time_type = DA::PY::importPyType("datetime", "time");
-                if (time_type && time_type.isinstance(src)) {
+                if (time_type && pybind11::isinstance(src, time_type.object())) {
                     QTime time_val = src.cast< QTime >();
                     value          = QVariant(time_val);
                     return true;
@@ -1561,19 +1570,20 @@ inline bool canCastToQDateTime(pybind11::handle src)
         // 否则 isinstance(src, Timestamp) 会返回 true，但无法转换为 QDateTime
 
         static DAPyObjectWrapper pd_NaT = DA::PY::importPyType("pandas", "NaT");
-        if (pd_NaT && pd_NaT.isinstance(src))
+        // NaT 是单例实例而非 type，不能用 isinstance 判断，用身份比较
+        if (pd_NaT && src.is(pd_NaT.object()))
             return false;
 
         static DAPyObjectWrapper datetime_type = DA::PY::importPyType("datetime", "datetime");
-        if (datetime_type && datetime_type.isinstance(src))
+        if (datetime_type && pybind11::isinstance(src, datetime_type.object()))
             return true;
 
         static DAPyObjectWrapper pd_Timestamp = DA::PY::importPyType("pandas", "Timestamp");
-        if (pd_Timestamp && pd_Timestamp.isinstance(src))
+        if (pd_Timestamp && pybind11::isinstance(src, pd_Timestamp.object()))
             return true;
 
         static DAPyObjectWrapper np_datetime64 = DA::PY::importPyType("numpy", "datetime64");
-        if (np_datetime64 && np_datetime64.isinstance(src))
+        if (np_datetime64 && pybind11::isinstance(src, np_datetime64.object()))
             return true;
     } catch (...) {
     }
@@ -1586,7 +1596,7 @@ inline bool canCastToQDate(pybind11::handle src)
         return false;
     try {
         static DAPyObjectWrapper date_type = DA::PY::importPyType("datetime", "date");
-        return date_type && date_type.isinstance(src);
+        return date_type && pybind11::isinstance(src, date_type.object());
     } catch (...) {
     }
     return false;
@@ -1598,7 +1608,7 @@ inline bool canCastToQTime(pybind11::handle src)
         return false;
     try {
         static DAPyObjectWrapper time_type = DA::PY::importPyType("datetime", "time");
-        return time_type && time_type.isinstance(src);
+        return time_type && pybind11::isinstance(src, time_type.object());
     } catch (...) {
     }
     return false;

@@ -105,7 +105,8 @@ DAPyDType DAPyDTypeComboBox::selectedDType() const
 
 /**
  * @brief 通过 numpy.char 获取图标
- * @param c
+ * @param c 注意：调用方传入的是 DAPyDType::kind()（kind 字符），int 系列为 'i'、
+ *          uint 系列为 'u'，需与 char code（'q'/'l'/'h'/'b' 等）同时覆盖
  * @return
  */
 QIcon DAPyDTypeComboBox::getIconByDtypeChar(char c)
@@ -117,6 +118,8 @@ QIcon DAPyDTypeComboBox::getIconByDtypeChar(char c)
         static QIcon s_float(":/PyCommonWidgets/icon/float.svg");
         return s_float;
     } break;
+    case 'i':  // int 系列 kind（int8/int16/int32/int64）
+    case 'u':  // uint 系列 kind（uint8/uint16/uint32/uint64）
     case 'q':
     case 'Q':
     case 'l':

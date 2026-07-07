@@ -180,6 +180,8 @@ QIcon DAStandardItemDataDataframeSeries::seriesTypeToIcon(const DAData& data, co
         if (dtype.isNone()) {
             return QIcon();
         }
+        // 注意：kind() 返回 numpy dtype 的 kind 字符，int 系列为 'i'、uint 系列为 'u'，
+        // 不要与 char code（'q'/'l'/'h'/'b' 等）混淆，两者需同时覆盖
         char c = dtype.kind();
         switch (c) {
         case 'd':
@@ -187,6 +189,8 @@ QIcon DAStandardItemDataDataframeSeries::seriesTypeToIcon(const DAData& data, co
         case 'e': {
             return s_float_type;
         } break;
+        case 'i':  // int 系列 kind（int8/int16/int32/int64）
+        case 'u':  // uint 系列 kind（uint8/uint16/uint32/uint64）
         case 'q':
         case 'Q':
         case 'l':

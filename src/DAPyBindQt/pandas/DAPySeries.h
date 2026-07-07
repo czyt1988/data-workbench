@@ -155,13 +155,12 @@ void DAPySeries::castTo(VectLikeIte begin) const
                 has_timezone = false;
             }
 
-
             pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > buf;
 
             if (has_timezone) {
                 pybind11::object dt_accessor = series.attr("dt");
                 pybind11::object utc_series  = dt_accessor.attr("tz_convert")("UTC");
-                buf                          = utc_series.attr("astype")("int64")
+                buf = utc_series.attr("astype")("int64")
                           .attr("values")
                           .cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
             } else {
@@ -200,8 +199,7 @@ void DAPySeries::castTo(VectLikeIte begin) const
             //                                            .attr("tz_convert")(pybind11::str("local"));  // 有 tz 的也转到本地
             //            values = ts_local.attr("astype")("int64").attr("values");
             // 将纳秒转换为秒
-            auto buf =
-                values.cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
+            auto buf = values.cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
             std::transform(buf.data(), buf.data() + buf.size(), begin, [](int64_t ns) -> double {
                 return static_cast< double >(ns) / 1e9;  // 纳秒转秒
             });
@@ -249,7 +247,8 @@ void DAPySeries::castTo(VectLikeIte begin) const
                     pybind11::object pd_to_datetime = pd.attr("to_datetime");
                     pybind11::object test_parse     = pd_to_datetime(first_val, pybind11::arg("errors") = "coerce");
 
-                    if (!test_parse.is_none() && !pybind11::isinstance(test_parse, pd.attr("NaT"))) {
+                    // NaT 是单例实例而非 type，不能用 isinstance 判断，用身份比较
+                    if (!test_parse.is_none() && !test_parse.is(pd.attr("NaT"))) {
                         pybind11::object dt_series = pd_to_datetime(series, pybind11::arg("errors") = "coerce");
 
                         // 获取转换后的 dtype 以确定时间单位
@@ -293,12 +292,13 @@ void DAPySeries::castTo(VectLikeIte begin) const
                             QDateTime dt = QDateTime::fromMSecsSinceEpoch(static_cast< qint64 >(ms_val));
                         }
 
-                        std::transform(buf.data(), buf.data() + buf.size(), begin, [ unit_divisor, time_unit ](int64_t raw_val) -> double {
-                            if (time_unit == "s") {
-                                return static_cast< double >(raw_val) * 1000.0;
-                            }
-                            return static_cast< double >(raw_val / unit_divisor);
-                        });
+                        std::transform(
+                            buf.data(), buf.data() + buf.size(), begin, [ unit_divisor, time_unit ](int64_t raw_val) -> double {
+                                if (time_unit == "s") {
+                                    return static_cast< double >(raw_val) * 1000.0;
+                                }
+                                return static_cast< double >(raw_val / unit_divisor);
+                            });
                         return;
                     } else {
                         qDebug() << "[DAPySeries::castTo] Failed to parse as datetime, treating as regular string";
