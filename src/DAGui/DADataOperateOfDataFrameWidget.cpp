@@ -438,44 +438,39 @@ void DADataOperateOfDataFrameWidget::renameColumns()
  */
 bool DADataOperateOfDataFrameWidget::renameColumn(int col, const QString& newName)
 {
-    qDebug() << "[renameColumn] enter: col=" << col << " newName=" << newName;
     DAPyDataFrame df = getDataframe();
     if (df.isNone()) {
-        qDebug() << "[renameColumn] df is None";
         return false;
     }
     QList< QString > oldcols = df.columns();
-    qDebug() << "[renameColumn] oldcols=" << oldcols;
     if (col < 0 || col >= oldcols.size()) {
-        qDebug() << "[renameColumn] col out of range, oldcols.size=" << oldcols.size();
         return false;
     }
     if (newName.isEmpty()) {
-        qDebug() << "[renameColumn] newName empty";
         daWarning << tr("Column name cannot be empty");  // cn:列名不能为空
         return false;
     }
     if (oldcols.contains(newName)) {
-        qDebug() << "[renameColumn] newName duplicate";
         daWarning << tr("Column name \"%1\" already exists, please use another name").arg(newName);  // cn:列名"%1"已存在，请使用其他名称
         return false;
     }
     QList< QString > newcols = oldcols;
     newcols[ col ]           = newName;
-    qDebug() << "[renameColumn] newcols=" << newcols;
     QHeaderView* hv          = ui->tableView->horizontalHeader();
     std::unique_ptr< DACommandDataFrame_renameColumns > cmd(
         new DACommandDataFrame_renameColumns(df, newcols, oldcols, hv));
     if (!cmd->exec()) {
-        qDebug() << "[renameColumn] cmd->exec() returned false";
         return false;
     }
-    qDebug() << "[renameColumn] cmd->exec() ok, pushing to undo stack";
     if (DADataManager* mgr = mData.getDataManager()) {
         mgr->notifyDataChangedSignal(mData, DADataManager::ChangeDataframeColumnName);
     }
     getUndoStack()->push(cmd.release());
-    qDebug() << "[renameColumn] pushed, done";
+    // DADataTableModel 在缓存模式下缓存了列名，headerDataChanged 信号无法刷新缓存，
+    // 需显式调用 refreshData() 重置模型以刷新表头显示
+    if (DADataTableModel* m = ui->tableView->getDataModel()) {
+        m->refreshData();
+    }
     return true;
 }
 

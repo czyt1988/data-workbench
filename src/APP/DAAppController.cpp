@@ -2173,7 +2173,7 @@ void DAAppController::onActionGotoMaxTriggered()
     DAPySeries s = df.iloc(col);
     long pos      = s.idxmaxPosition();
     if (pos < 0) {
-        daWarning << tr("Cannot find the maximum value in this column (empty or all-NaN)");  // cn:此列无法找到最大值（空列或全为NaN）
+        daWarning << tr("Cannot find the maximum value in this column (empty, all-NaN, or incomparable types)");  // cn:此列无法找到最大值（空列、全为NaN或类型不可比较）
         return;
     }
     DADataTableView* tv = dfopt->getDataTableView();
@@ -2205,7 +2205,7 @@ void DAAppController::onActionGotoMinTriggered()
     DAPySeries s = df.iloc(col);
     long pos      = s.idxminPosition();
     if (pos < 0) {
-        daWarning << tr("Cannot find the minimum value in this column (empty or all-NaN)");  // cn:此列无法找到最小值（空列或全为NaN）
+        daWarning << tr("Cannot find the minimum value in this column (empty, all-NaN, or incomparable types)");  // cn:此列无法找到最小值（空列、全为NaN或类型不可比较）
         return;
     }
     DADataTableView* tv = dfopt->getDataTableView();
