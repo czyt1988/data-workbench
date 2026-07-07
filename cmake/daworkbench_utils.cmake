@@ -377,16 +377,20 @@ endmacro(damacro_setup_test)
 
 # 将第三方库 DLL 部署到构建输出目录，确保开发调试时能正确加载。
 #
-# 第三方库（DAWidgets/SARibbonBar/qwt/ads/DALiteCtk/quazip/zlib/spdlog 等）通过
+# 第三方库（DAWidgets/SARibbonBar/qwt/ads/DALiteCtk/quazip/zlib/python 等）通过
 # src/3rdparty/CMakeLists.txt 编译安装到 ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/。
-# 本函数在指定 target 的 POST_BUILD 阶段，把该目录下的第三方 *.dll 复制到 target 的输出目录，
-# 避免开发时手动复制。
+# 本函数在指定 target 的 POST_BUILD 阶段，按白名单把该目录下的第三方 *.dll 复制到 target
+# 的输出目录，避免开发时手动复制。
 #
-# ⚠️ 重要：本函数只复制"第三方"DLL，会过滤掉项目自身的 DA 模块 DLL（DA 前缀，如 DAUtilsd.dll）。
+# ⚠️ 重要：本函数只按白名单复制"第三方"DLL，不会复制项目自身的 DA 模块 DLL。
 # 因为 ${CMAKE_INSTALL_PREFIX}/bin 在 DA_AUTO_INSTALL_PREFIX=ON 时同时存放第三方库和 DA 自身模块的
 # 安装产物，DA 自身 DLL 由各 target 的 RUNTIME_OUTPUT_DIRECTORY 直接输出到 build/bin，
 # 若从 install 目录复制旧的 DA DLL 回来会覆盖刚编译的新产物，导致符号不一致（如
 # directionalCallback 缺失）的"幽灵 DLL"运行时崩溃。
+#
+# 采用白名单而非黑名单：第三方库相对固定（见 src/3rdparty/CMakeLists.txt 的 add_subdirectory），
+# 新增第三方库时在此列表追加即可；这样比"排除 DA 模块"更明确，也避免误把以 DA 开头的第三方库
+# （如 DAWidgets/DALiteCtk）当作 DA 自身模块过滤掉。
 #
 # 函数在配置期通过 file(GLOB) 收集 DLL 列表（第三方库相对稳定，无需每次构建重新扫描）；
 # 复制使用 copy_if_different，未变更的 DLL 不会触发实际 IO。
@@ -415,35 +419,49 @@ function(dafun_deploy_3rdparty_dlls _target_name)
         return()
     endif()
 
-    # 过滤掉项目自身的 DA 模块 DLL（由各 target 直接输出到 build/bin），仅保留第三方 DLL。
-    # 从 install 目录复制旧 DA DLL 回来会覆盖刚编译的新产物，导致符号不一致的"幽灵 DLL"崩溃。
-    # 注意：DAWidgets / DALiteCtk 虽以 DA 开头，但属于第三方库（src/3rdparty 编译安装，
-    # 通过 find_package CONFIG 导入），必须保留，不在此列表中。
-    set(_da_module_prefixes
-        DAAxOfficeWrapper DAData DAFigure DAGraphicsView DAGui DAInterface
-        DAMessageHandler DAPluginSupport DAPyBindQt DAPyCommonWidgets
-        DAPyScripts DAPyWorkFlow DAUtils)
+    # 第三方库 DLL 基名白名单（不含 .dll 扩展名，不含 Debug 'd' 后缀）。
+    # 来源：src/3rdparty/CMakeLists.txt 中 add_subdirectory 的第三方库 + Python 运行时。
+    # 匹配规则：文件名（去扩展名）等于 <基名>（Release）或 <基名>d（Debug，CMAKE_DEBUG_POSTFIX）。
+    # 注意：
+    # - DAWidgets / DALiteCtk 虽以 DA 开头，但属第三方库（src/3rdparty 编译安装），必须列入
+    # - zlib 同时有 zlib.dll 和 zlibd.dll，基名 "zlib" 匹配 zlib + zlibd，正好覆盖两个文件
+    # - python311 不区分 Debug/Release，基名 "python311" 仅匹配自身
+    # - 带 Qt 版本号的库用 ${QT_VERSION_MAJOR} 适配 Qt5/Qt6
+    # - spdlog/pybind11/ordered-map 是静态库或头文件库，无 DLL，不列入
+    # 新增第三方库时，在此列表追加基名即可。
+    set(_3rdparty_dll_basenames
+        SARibbonBar
+        DAWidgets
+        DALiteCtk
+        qwtcore
+        qwtplot
+        qwtplot3d
+        qtadvanceddocking-qt${QT_VERSION_MAJOR}
+        quazip1-qt${QT_VERSION_MAJOR}
+        zlib
+        python311)
+
+    # 按白名单筛选：只复制基名匹配的 DLL
     set(_3rdparty_dlls)
-    set(_excluded_da_dlls)
+    set(_skipped_dlls)
     foreach(_dll IN LISTS _all_dlls)
         get_filename_component(_dll_name "${_dll}" NAME_WE)
-        set(_is_da_module FALSE)
-        foreach(_prefix IN LISTS _da_module_prefixes)
-            # 匹配 <prefix>（Release）或 <prefix>d（Debug，CMAKE_DEBUG_POSTFIX）
-            if(_dll_name STREQUAL "${_prefix}" OR _dll_name MATCHES "^${_prefix}d$")
-                set(_is_da_module TRUE)
+        set(_matched FALSE)
+        foreach(_base IN LISTS _3rdparty_dll_basenames)
+            if(_dll_name STREQUAL "${_base}" OR _dll_name STREQUAL "${_base}d")
+                set(_matched TRUE)
                 break()
             endif()
         endforeach()
-        if(_is_da_module)
-            list(APPEND _excluded_da_dlls "${_dll}")
-        else()
+        if(_matched)
             list(APPEND _3rdparty_dlls "${_dll}")
+        else()
+            list(APPEND _skipped_dlls "${_dll_name}")
         endif()
     endforeach()
-    if(_excluded_da_dlls)
-        list(JOIN _excluded_da_dlls "\n  - " _excluded_msg)
-        message(STATUS "dafun_deploy_3rdparty_dlls: excluded DA module DLLs from deploy:\n  - ${_excluded_msg}")
+    if(_skipped_dlls)
+        list(JOIN _skipped_dlls ", " _skipped_msg)
+        message(STATUS "dafun_deploy_3rdparty_dlls: skipped non-3rdparty DLLs: ${_skipped_msg}")
     endif()
     if(NOT _3rdparty_dlls)
         message(STATUS "dafun_deploy_3rdparty_dlls: no 3rdparty DLLs to deploy after filtering")
