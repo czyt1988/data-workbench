@@ -379,8 +379,14 @@ endmacro(damacro_setup_test)
 #
 # 第三方库（DAWidgets/SARibbonBar/qwt/ads/DALiteCtk/quazip/zlib/spdlog 等）通过
 # src/3rdparty/CMakeLists.txt 编译安装到 ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/。
-# 本函数在指定 target 的 POST_BUILD 阶段，把该目录下所有 *.dll 复制到 target 的输出目录，
+# 本函数在指定 target 的 POST_BUILD 阶段，把该目录下的第三方 *.dll 复制到 target 的输出目录，
 # 避免开发时手动复制。
+#
+# ⚠️ 重要：本函数只复制"第三方"DLL，会过滤掉项目自身的 DA 模块 DLL（DA 前缀，如 DAUtilsd.dll）。
+# 因为 ${CMAKE_INSTALL_PREFIX}/bin 在 DA_AUTO_INSTALL_PREFIX=ON 时同时存放第三方库和 DA 自身模块的
+# 安装产物，DA 自身 DLL 由各 target 的 RUNTIME_OUTPUT_DIRECTORY 直接输出到 build/bin，
+# 若从 install 目录复制旧的 DA DLL 回来会覆盖刚编译的新产物，导致符号不一致（如
+# directionalCallback 缺失）的"幽灵 DLL"运行时崩溃。
 #
 # 函数在配置期通过 file(GLOB) 收集 DLL 列表（第三方库相对稳定，无需每次构建重新扫描）；
 # 复制使用 copy_if_different，未变更的 DLL 不会触发实际 IO。
@@ -403,9 +409,44 @@ function(dafun_deploy_3rdparty_dlls _target_name)
     endif()
 
     # 配置期收集所有 DLL（第三方库相对稳定，无需每次构建重新扫描）
-    file(GLOB _3rdparty_dlls "${_3rdparty_bin_dir}/*.dll")
-    if(NOT _3rdparty_dlls)
+    file(GLOB _all_dlls "${_3rdparty_bin_dir}/*.dll")
+    if(NOT _all_dlls)
         message(STATUS "dafun_deploy_3rdparty_dlls: no DLLs found in ${_3rdparty_bin_dir}")
+        return()
+    endif()
+
+    # 过滤掉项目自身的 DA 模块 DLL（由各 target 直接输出到 build/bin），仅保留第三方 DLL。
+    # 从 install 目录复制旧 DA DLL 回来会覆盖刚编译的新产物，导致符号不一致的"幽灵 DLL"崩溃。
+    # 注意：DAWidgets / DALiteCtk 虽以 DA 开头，但属于第三方库（src/3rdparty 编译安装，
+    # 通过 find_package CONFIG 导入），必须保留，不在此列表中。
+    set(_da_module_prefixes
+        DAAxOfficeWrapper DAData DAFigure DAGraphicsView DAGui DAInterface
+        DAMessageHandler DAPluginSupport DAPyBindQt DAPyCommonWidgets
+        DAPyScripts DAPyWorkFlow DAUtils)
+    set(_3rdparty_dlls)
+    set(_excluded_da_dlls)
+    foreach(_dll IN LISTS _all_dlls)
+        get_filename_component(_dll_name "${_dll}" NAME_WE)
+        set(_is_da_module FALSE)
+        foreach(_prefix IN LISTS _da_module_prefixes)
+            # 匹配 <prefix>（Release）或 <prefix>d（Debug，CMAKE_DEBUG_POSTFIX）
+            if(_dll_name STREQUAL "${_prefix}" OR _dll_name MATCHES "^${_prefix}d$")
+                set(_is_da_module TRUE)
+                break()
+            endif()
+        endforeach()
+        if(_is_da_module)
+            list(APPEND _excluded_da_dlls "${_dll}")
+        else()
+            list(APPEND _3rdparty_dlls "${_dll}")
+        endif()
+    endforeach()
+    if(_excluded_da_dlls)
+        list(JOIN _excluded_da_dlls "\n  - " _excluded_msg)
+        message(STATUS "dafun_deploy_3rdparty_dlls: excluded DA module DLLs from deploy:\n  - ${_excluded_msg}")
+    endif()
+    if(NOT _3rdparty_dlls)
+        message(STATUS "dafun_deploy_3rdparty_dlls: no 3rdparty DLLs to deploy after filtering")
         return()
     endif()
 
