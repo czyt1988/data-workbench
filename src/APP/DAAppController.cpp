@@ -560,16 +560,21 @@ bool DAAppController::save()
  */
 void DAAppController::saveAs()
 {
-    QString projectPath =
-        QFileDialog::getSaveFileName(app(),
-                                     tr("Save Project"),  // cn:保存工程
-                                     QString(),
-                                     tr("Project File (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // cn:工程文件
-        );
-    if (projectPath.isEmpty()) {
-        // 取消退出
+    QFileDialog dialog(app(),
+                       tr("Save Project"),  // cn:保存工程
+                       QString(),
+                       tr("Project File") + QString(" (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // cn:工程文件
+    );
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setDefaultSuffix(DAAppProject::getProjectFileSuffix());
+    if (QDialog::Accepted != dialog.exec()) {
         return;
     }
+    QStringList files = dialog.selectedFiles();
+    if (files.isEmpty()) {
+        return;
+    }
+    QString projectPath = files.first();
     QFileInfo fi(projectPath);
     if (fi.exists()) {
         // 说明是目录
@@ -1000,10 +1005,10 @@ void DAAppController::open()
         return;
     }
 
-    // TODO : 这里要加上工程文件的打开支持
     QFileDialog dialog(app());
+    dialog.setFileMode(QFileDialog::ExistingFile);
     QStringList filters;
-    filters << tr("Project File (*.%1)").arg(DAAppProject::getProjectFileSuffix());  // cn:工程文件 (*.%1)
+    filters << tr("Project File") + QString(" (*.%1)").arg(DAAppProject::getProjectFileSuffix());  // cn:工程文件
     dialog.setNameFilters(filters);
     if (QDialog::Accepted != dialog.exec()) {
         return;
@@ -1050,8 +1055,9 @@ void DAAppController::onProjectDirtyStateChanged(bool isdirty)
 void DAAppController::onActionAppendProjectTriggered()
 {
     QFileDialog dialog(app());
+    dialog.setFileMode(QFileDialog::ExistingFile);
     QStringList filters;
-    filters << tr("Project File (*.%1)").arg(DAAppProject::getProjectFileSuffix());  // cn:工程文件 (*.%1)
+    filters << tr("Project File") + QString(" (*.%1)").arg(DAAppProject::getProjectFileSuffix());  // cn:工程文件
     dialog.setNameFilters(filters);
     if (QDialog::Accepted != dialog.exec()) {
         return;

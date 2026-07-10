@@ -562,16 +562,21 @@ bool DAAppProject::requestSave()
     QString projectFilePath = getProjectFilePath();
     if (projectFilePath.isEmpty()) {
         QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-        projectFilePath = QFileDialog::getSaveFileName(
-            nullptr,
-            tr("Save Project"),  // cn:保存工程
-            desktop,
-            tr("Project Files (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // cn:工程文件 (*.%1)
+        QFileDialog dialog(nullptr,
+                           tr("Save Project"),  // cn:保存工程
+                           desktop,
+                           tr("Project Files") + QString(" (*.%1)").arg(DAAppProject::getProjectFileSuffix())  // cn:工程文件
         );
-        if (projectFilePath.isEmpty()) {
-            // 取消退出
+        dialog.setAcceptMode(QFileDialog::AcceptSave);
+        dialog.setDefaultSuffix(DAAppProject::getProjectFileSuffix());
+        if (QDialog::Accepted != dialog.exec()) {
             return false;
         }
+        QStringList files = dialog.selectedFiles();
+        if (files.isEmpty()) {
+            return false;
+        }
+        projectFilePath = files.first();
     }
     bool saveRet = save(projectFilePath);
     if (!saveRet) {

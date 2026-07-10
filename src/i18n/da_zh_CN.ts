@@ -1303,7 +1303,7 @@ Config</source>
         <location line="-41"/>
         <location line="+439"/>
         <location line="+48"/>
-        <source>Project File (*.%1)</source>
+        <source>Project File</source>
         <translation>工程文件</translation>
     </message>
     <message>
@@ -1512,8 +1512,8 @@ Config</source>
     </message>
     <message>
         <location line="+2"/>
-        <source>Project Files (*.%1)</source>
-        <translation>工程文件(*.%1)</translation>
+        <source>Project Files</source>
+        <translation>工程文件</translation>
     </message>
     <message>
         <location line="-49"/>
@@ -1568,7 +1568,7 @@ Config</source>
     <message>
         <location line="+37"/>
         <source>Failed to serialize workflow &apos;%1&apos; to XML</source>
-        <translation>序列化工作流'%1'到XML失败</translation>
+        <translation>序列化工作流&apos;%1&apos;到XML失败</translation>
     </message>
     <message>
         <location line="+13"/>
@@ -1598,7 +1598,7 @@ Config</source>
     <message>
         <location line="+507"/>
         <source>Table style for data &apos;%1&apos; has no matching data, skipped</source>
-        <translation>数据'%1'的表格样式未找到匹配数据，已跳过</translation>
+        <translation>数据&apos;%1&apos;的表格样式未找到匹配数据，已跳过</translation>
     </message>
     <message>
         <location line="-476"/>
@@ -1732,7 +1732,7 @@ Config</source>
     <message>
         <location line="+57"/>
         <source>appendWorkflowView: tab &apos;%1&apos; not found, skipping view load</source>
-        <translation>appendWorkflowView: 未找到标签页'%1'，跳过视图加载</translation>
+        <translation>appendWorkflowView: 未找到标签页&apos;%1&apos;，跳过视图加载</translation>
     </message>
     <message>
         <location line="+14"/>
@@ -2017,7 +2017,7 @@ Config</source>
 <context>
     <name>DA::DAAppUI</name>
     <message>
-        <location filename="../APP/DAAppUI.cpp" line="+72"/>
+        <location filename="../APP/DAAppUI.cpp" line="+73"/>
         <source>Failed to load form config for settings dialog</source>
         <translation>无法加载设置对话框的表单配置</translation>
     </message>
@@ -2032,7 +2032,7 @@ Config</source>
     <message>
         <location line="+12"/>
         <source>cannot query subobject &apos;Workbooks&apos;</source>
-        <translation>无法查询子对象 'Workbooks'</translation>
+        <translation>无法查询子对象 &apos;Workbooks&apos;</translation>
     </message>
 </context>
 <context>
@@ -3170,7 +3170,7 @@ Config</source>
     <message>
         <location line="+85"/>
         <source>Are you sure to delete &quot;%1&quot;?</source>
-        <translation>确认删除"%1"吗?</translation>
+        <translation>确认删除&quot;%1&quot;吗?</translation>
     </message>
 </context>
 <context>
@@ -3570,7 +3570,7 @@ Config</source>
     <message>
         <location filename="../DAData/DADataManager.cpp" line="+56"/>
         <source>data &apos;%1&apos; has been added</source>
-        <translation>数据 '%1' 已被添加过</translation>
+        <translation>数据 &apos;%1&apos; 已被添加过</translation>
     </message>
     <message>
         <location line="+56"/>
@@ -3671,7 +3671,7 @@ Config</source>
     <message>
         <location line="+4"/>
         <source>Column name &quot;%1&quot; already exists, please use another name</source>
-        <translation>列名"%1"已存在，请使用其他名称</translation>
+        <translation>列名&quot;%1&quot;已存在，请使用其他名称</translation>
     </message>
 </context>
 <context>
@@ -5343,7 +5343,7 @@ Config</source>
     <message>
         <location line="+18"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specify a date parse order&lt;/p&gt;&lt;p&gt;If True, parses dates with the day first, eg 10/11/12 is parsed as 2012-11-10. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#afaf00;&quot;&gt;Warning&lt;/span&gt;:&lt;span style=&quot; font-style:italic;&quot;&gt; dayfirst=True is not strict, but will prefer to parse with day first (this is a known bug, based on dateutil behavior)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;指定日期解析顺序&lt;/p&gt;&lt;p&gt;若为 True，优先按日解析，例如 10/11/12 将解析为 2012-11-10。&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:600; color:#afaf00;"&gt;警告&lt;/span&gt;:&lt;span style=" font-style:italic;"&gt; dayfirst=True 并非严格规则，只是优先按日解析（这是基于 dateutil 行为的已知问题）。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;指定日期解析顺序&lt;/p&gt;&lt;p&gt;若为 True，优先按日解析，例如 10/11/12 将解析为 2012-11-10。&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#afaf00;&quot;&gt;警告&lt;/span&gt;:&lt;span style=&quot; font-style:italic;&quot;&gt; dayfirst=True 并非严格规则，只是优先按日解析（这是基于 dateutil 行为的已知问题）。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -5353,7 +5353,7 @@ Config</source>
     <message>
         <location line="+7"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specify a date parse order&lt;/p&gt;&lt;p&gt;- If True parses dates with the year first, eg 10/11/12 is parsed as 2010-11-12.&lt;/p&gt;&lt;p&gt;- If both dayfirst and yearfirst are True, yearfirst is preceded (same as dateutil).&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#b6a80b;&quot;&gt;Warning&lt;/span&gt;:&lt;span style=&quot; font-style:italic;&quot;&gt; yearfirst=True is not strict, but will prefer to parse with year first (this is a known bug, based on dateutil behavior).&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;指定日期解析顺序&lt;/p&gt;&lt;p&gt;- 若为 True，优先按年解析，例如 10/11/12 将解析为 2010-11-12。&lt;/p&gt;&lt;p&gt;- 若 dayfirst 和 yearfirst 同时为 True，yearfirst 优先（与 dateutil 一致）。&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:600; color:#b6a80b;"&gt;警告&lt;/span&gt;:&lt;span style=" font-style:italic;"&gt; yearfirst=True 并非严格规则，只是优先按年解析（这是基于 dateutil 行为的已知问题）。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;指定日期解析顺序&lt;/p&gt;&lt;p&gt;- 若为 True，优先按年解析，例如 10/11/12 将解析为 2010-11-12。&lt;/p&gt;&lt;p&gt;- 若 dayfirst 和 yearfirst 同时为 True，yearfirst 优先（与 dateutil 一致）。&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#b6a80b;&quot;&gt;警告&lt;/span&gt;:&lt;span style=&quot; font-style:italic;&quot;&gt; yearfirst=True 并非严格规则，只是优先按年解析（这是基于 dateutil 行为的已知问题）。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -6096,7 +6096,7 @@ Config</source>
     <message>
         <location line="+7"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:&apos;-apple-system&apos;,&apos;BlinkMacSystemFont&apos;,&apos;Segoe UI&apos;,&apos;Roboto&apos;,&apos;Ubuntu&apos;,&apos;Helvetica Neue&apos;,&apos;Helvetica&apos;,&apos;Arial&apos;,&apos;PingFang SC&apos;,&apos;Hiragino Sans GB&apos;,&apos;Microsoft YaHei UI&apos;,&apos;Microsoft YaHei&apos;,&apos;Source Han Sans CN&apos;,&apos;sans-serif&apos;,&apos;Apple Color Emoji&apos;,&apos;Segoe UI Emoji&apos;; font-size:15px; color:#05073b; background-color:#fdfdfe;&quot;&gt;In order to avoid the interface stalling due to loading of large texts, the maximum number of words in this preview is limited to 100,000 characters&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-family:'-apple-system','BlinkMacSystemFont','Segoe UI','Roboto','Ubuntu','Helvetica Neue','Helvetica','Arial','PingFang SC','Hiragino Sans GB','Microsoft YaHei UI','Microsoft YaHei','Source Han Sans CN','sans-serif','Apple Color Emoji','Segoe UI Emoji'; font-size:15px; color:#05073b; background-color:#fdfdfe;"&gt;为避免加载大段文本导致界面卡顿，此预览的最大字数限制为 100,000 字符。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:&apos;-apple-system&apos;,&apos;BlinkMacSystemFont&apos;,&apos;Segoe UI&apos;,&apos;Roboto&apos;,&apos;Ubuntu&apos;,&apos;Helvetica Neue&apos;,&apos;Helvetica&apos;,&apos;Arial&apos;,&apos;PingFang SC&apos;,&apos;Hiragino Sans GB&apos;,&apos;Microsoft YaHei UI&apos;,&apos;Microsoft YaHei&apos;,&apos;Source Han Sans CN&apos;,&apos;sans-serif&apos;,&apos;Apple Color Emoji&apos;,&apos;Segoe UI Emoji&apos;; font-size:15px; color:#05073b; background-color:#fdfdfe;&quot;&gt;为避免加载大段文本导致界面卡顿，此预览的最大字数限制为 100,000 字符。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -7395,7 +7395,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DAGui/DAZipArchiveTask_Xml.cpp" line="+57"/>
         <source>cannot create archive at &quot;%1&quot;, because %2</source>
-        <translation>无法在"%1"创建归档，因为%2</translation>
+        <translation>无法在&quot;%1&quot;创建归档，因为%2</translation>
     </message>
     <message>
         <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-307"/>
@@ -7435,12 +7435,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DAUtils/DAFormSchemaIO.cpp" line="+30"/>
         <source>field missing required &apos;name&apos;</source>
-        <translation>字段缺少必需的 'name'</translation>
+        <translation>字段缺少必需的 &apos;name&apos;</translation>
     </message>
     <message>
         <location line="+140"/>
         <source>&apos;items&apos; must be an array</source>
-        <translation>'items' 必须是数组</translation>
+        <translation>&apos;items&apos; 必须是数组</translation>
     </message>
     <message>
         <location filename="../DAUtils/DATextReadWriter.cpp" line="+224"/>
@@ -7535,7 +7535,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+4"/>
         <source>root element name error, require &quot;da&quot; but get %1</source>
-        <translation>DA xml协议根节点要求为"da"标签，但解析到的为%1</translation>
+        <translation>DA xml协议根节点要求为&quot;da&quot;标签，但解析到的为%1</translation>
     </message>
     <message>
         <location line="+14"/>
@@ -7954,7 +7954,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="-24"/>
         <source>file &quot;%1&quot; does not exist</source>
-        <translation>文件 "%1" 不存在</translation>
+        <translation>文件 &quot;%1&quot; 不存在</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -8012,12 +8012,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+50"/>
         <location line="+37"/>
         <source>Cannot open config file &quot;%1&quot;: %2</source>
-        <translation>无法打开配置文件\"%1\"，原因是%2</translation>
+        <translation>无法打开配置文件\&quot;%1\&quot;，原因是%2</translation>
     </message>
     <message>
         <location line="-28"/>
         <source>Cannot load config file &quot;%1&quot;: %2</source>
-        <translation>无法加载配置文件\"%1\"，原因是%2</translation>
+        <translation>无法加载配置文件\&quot;%1\&quot;，原因是%2</translation>
     </message>
     <message>
         <location line="+6"/>

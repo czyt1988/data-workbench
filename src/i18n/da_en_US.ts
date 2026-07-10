@@ -1278,7 +1278,7 @@ Config</source>
         <location line="-41"/>
         <location line="+439"/>
         <location line="+48"/>
-        <source>Project File (*.%1)</source>
+        <source>Project File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1487,7 +1487,7 @@ Config</source>
     </message>
     <message>
         <location line="+2"/>
-        <source>Project Files (*.%1)</source>
+        <source>Project Files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1992,7 +1992,7 @@ Config</source>
 <context>
     <name>DA::DAAppUI</name>
     <message>
-        <location filename="../APP/DAAppUI.cpp" line="+72"/>
+        <location filename="../APP/DAAppUI.cpp" line="+73"/>
         <source>Failed to load form config for settings dialog</source>
         <translation type="unfinished"></translation>
     </message>
