@@ -26,6 +26,7 @@ public:
     DADataProbeMarker::LabelPosition labelPosition { DADataProbeMarker::LabelAtTop };
     QColor probeColor { Qt::red };
     bool labelVisible { true };
+    DADataProbeMarker::LabelStyle labelStyle { DADataProbeMarker::RoundedRectBadge };
     QList< DADataProbeMarker::CapturedData > capturedData;
 };
 
@@ -263,6 +264,38 @@ void DADataProbeMarker::setLabelVisible(bool visible)
 bool DADataProbeMarker::isLabelVisible() const
 {
     return d_ptr->labelVisible;
+}
+
+/**
+ * \if ENGLISH
+ * @brief Set the label style (badge rendering style)
+ * @param style Label style enumeration value
+ * \endif
+ *
+ * \if CHINESE
+ * @brief 设置标签样式（徽章渲染样式）
+ * @param style 标签样式枚举值
+ * \endif
+ */
+void DADataProbeMarker::setLabelStyle(LabelStyle style)
+{
+    d_ptr->labelStyle = style;
+}
+
+/**
+ * \if ENGLISH
+ * @brief Get the label style
+ * @return Current label style
+ * \endif
+ *
+ * \if CHINESE
+ * @brief 获取标签样式
+ * @return 当前标签样式
+ * \endif
+ */
+DADataProbeMarker::LabelStyle DADataProbeMarker::labelStyle() const
+{
+    return d_ptr->labelStyle;
 }
 
 /**

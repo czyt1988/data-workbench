@@ -67,6 +67,22 @@ public:
 
     /**
      * \if ENGLISH
+     * @brief Label style enumeration for probe name rendering
+     * \endif
+     * \if CHINESE
+     * @brief 探针名称标签样式枚举
+     * \endif
+     */
+    enum LabelStyle
+    {
+        PlainTextBadge = 0,   ///< Plain text only, no background
+        RoundedRectBadge,     ///< Rounded rectangle badge with background
+        RectBadge,            ///< Rectangle badge with background (no rounded corners)
+        EllipseBadge          ///< Ellipse/circle badge with background
+    };
+
+    /**
+     * \if ENGLISH
      * @brief Captured data point structure
      * \endif
      * \if CHINESE
@@ -109,6 +125,10 @@ public:
     // Label visibility
     void setLabelVisible(bool visible);
     bool isLabelVisible() const;
+
+    // Label style (badge rendering style)
+    void setLabelStyle(LabelStyle style);
+    LabelStyle labelStyle() const;
 
     // Set probe color
     void setProbeColor(const QColor& color);
