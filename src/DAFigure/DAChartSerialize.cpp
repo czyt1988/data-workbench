@@ -34,6 +34,8 @@
 #include "qwt_plot_vectorfield.h"
 #include "qwt_plot_arrowmarker.h"
 #include "qwt_plot_shapeitem.h"
+// DA
+#include "DADataProbeMarker.h"
 
 #ifndef INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR
 #define INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(RttiValue, ClassName)                                                  \
@@ -326,6 +328,7 @@ DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotCurve, QwtPlotCurve)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotGrid, QwtPlotGrid)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotLegend, QwtPlotLegendItem)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotMarker, QwtPlotMarker)
+DECLARE_INITCHARTITEMSERIALIZE_FUN(DA::DADataProbeMarker::Rtti_DataProbeMarker, DA::DADataProbeMarker)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotSpectroCurve, QwtPlotSpectroCurve)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotBarChart, QwtPlotBarChart)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotIntervalCurve, QwtPlotIntervalCurve)
@@ -340,6 +343,8 @@ QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize
         INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotLegend, QwtPlotLegendItem);
     res[ QwtPlotItem::Rtti_PlotMarker ] =
         INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotMarker, QwtPlotMarker);
+    res[ DA::DADataProbeMarker::Rtti_DataProbeMarker ] =
+        INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(DA::DADataProbeMarker::Rtti_DataProbeMarker, DA::DADataProbeMarker);
     res[ QwtPlotItem::Rtti_PlotSpectroCurve ] =
         INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotSpectroCurve, QwtPlotSpectroCurve);
     res[ QwtPlotItem::Rtti_PlotBarChart ] =
@@ -881,6 +886,54 @@ QDataStream& operator>>(QDataStream& in, QwtPlotMarker* item)
         in >> symbol;
         item->setSymbol(symbol);
     }
+    return in;
+}
+
+/**
+ * @brief DA::DADataProbeMarker(Rtti_DataProbeMarker)指针的序列化
+ *
+ * 序列化顺序：先写 DADataProbeMarker 特有属性，再写基类 QwtPlotMarker。
+ * 反序列化时先恢复特有属性（setLabelPosition 会调用 updateLineStyle 设置 lineStyle/labelAlignment），
+ * 最后由基类 QwtPlotMarker 的反序列化覆盖 lineStyle/labelAlignment 为正确值。
+ * probeType 仅写入用于未来兼容，反序列化时读取但无法设置（由工厂构造时决定）。
+ */
+QDataStream& operator<<(QDataStream& out, const DA::DADataProbeMarker* item)
+{
+    out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
+    // DADataProbeMarker 特有属性
+    out << static_cast< int >(item->probeType());
+    out << item->probeName();
+    out << static_cast< int >(item->labelPosition());
+    out << static_cast< int >(item->labelStyle());
+    out << item->probeColor();
+    out << item->isLabelVisible();
+    // 基类 QwtPlotMarker
+    out << static_cast< const QwtPlotMarker* >(item);
+    return out;
+}
+
+QDataStream& operator>>(QDataStream& in, DA::DADataProbeMarker* item)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (DA::gc_dachart_magic_mark != magic) {
+        throw DA::DABadSerializeExpection();
+        return in;
+    }
+    // DADataProbeMarker 特有属性
+    int probeType, labelPosition, labelStyle;
+    QwtText probeName;
+    QColor probeColor;
+    bool labelVisible;
+    in >> probeType >> probeName >> labelPosition >> labelStyle >> probeColor >> labelVisible;
+    item->setProbeName(probeName);
+    item->setLabelPosition(static_cast< DA::DADataProbeMarker::LabelPosition >(labelPosition));
+    item->setLabelStyle(static_cast< DA::DADataProbeMarker::LabelStyle >(labelStyle));
+    item->setProbeColor(probeColor);
+    item->setLabelVisible(labelVisible);
+    // 基类 QwtPlotMarker（最后读取，覆盖 lineStyle/labelAlignment 为正确值）
+    in >> static_cast< QwtPlotMarker* >(item);
     return in;
 }
 

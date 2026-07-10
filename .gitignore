@@ -155,3 +155,4 @@ docs/superpowers
 nul
 scripts/apply_cn_to_ts.py
 scripts/_cn_map.json
+.zcode
