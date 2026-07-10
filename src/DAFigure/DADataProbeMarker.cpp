@@ -419,27 +419,47 @@ void DADataProbeMarker::draw(QPainter* painter, const QwtScaleMap& xMap, const Q
 }
 
 /**
- * @brief 绘制探针名称
+ * \if ENGLISH
+ * @brief Draw the probe name label as a badge
+ * @details Renders the probe name according to the current LabelStyle:
+ *          PlainTextBadge draws text only; RoundedRectBadge, RectBadge and
+ *          EllipseBadge draw a probeColor-filled background shape with white
+ *          centered text. The label is placed at the canvas edge determined
+ *          by labelPosition (top/bottom for vertical, left/right for horizontal).
+ * @param painter Painter object
+ * @param xMap X-axis scale map
+ * @param yMap Y-axis scale map
+ * @param canvasRect Canvas rectangle
+ * @param name Probe name text
+ * \endif
  *
- * 绘制探针名称
+ * \if CHINESE
+ * @brief 以徽章形式绘制探针名称
+ * @details 根据当前 LabelStyle 渲染探针名称：
+ *          PlainTextBadge 仅绘制文字；RoundedRectBadge、RectBadge、EllipseBadge
+ *          绘制 probeColor 填充的背景形状并居中显示白色文字。
+ *          标签位置由 labelPosition 决定（垂直探针为顶/底，水平探针为左/右），贴边显示。
  * @param painter 绘图对象
  * @param xMap X轴比例映射
  * @param yMap Y轴比例映射
  * @param canvasRect 画布矩形
  * @param name 探针名称
+ * \endif
  */
 void DA::DADataProbeMarker::drawProbeName(
     QPainter* painter, const QwtScaleMap& xMap, const QwtScaleMap& yMap, const QRectF& canvasRect, const QwtText& name
 ) const
 {
     DA_DC(d);
-    QPointF pos       = value();
-    double x          = xMap.transform(pos.x());
-    double y          = yMap.transform(pos.y());
-    QSizeF textSize   = name.textSize();
-    int offsetX       = 0;
-    int offsetY       = 0;
-    QSizeF borderSize = textSize + QSizeF(2 * offsetX, 2 * offsetY);
+    QPointF pos     = value();
+    double x        = xMap.transform(pos.x());
+    double y        = yMap.transform(pos.y());
+    QSizeF textSize = name.textSize();
+    // padding for badge styles
+    const double padX = 4.0;
+    const double padY = 2.0;
+    QSizeF borderSize = textSize + QSizeF(2 * padX, 2 * padY);
+
     QPointF labelPos;
     if (d->probeType == VerticalProbe) {
         if (d->labelPosition == LabelAtTop) {
@@ -455,10 +475,40 @@ void DA::DADataProbeMarker::drawProbeName(
         }
     }
 
+    // clamp to canvas bounds
     labelPos.setX(qBound(canvasRect.left(), labelPos.x(), canvasRect.right() - borderSize.width()));
     labelPos.setY(qBound(canvasRect.top(), labelPos.y(), canvasRect.bottom() - borderSize.height()));
-    QRectF drawTextRect(labelPos.x() + offsetX, labelPos.y() + offsetY, textSize.width(), textSize.height());
-    name.draw(painter, drawTextRect);
+
+    painter->save();
+
+    QRectF badgeRect(labelPos.x(), labelPos.y(), borderSize.width(), borderSize.height());
+
+    if (d->labelStyle == PlainTextBadge) {
+        // plain text: draw directly, use name's own color
+        QRectF drawTextRect(labelPos.x() + padX, labelPos.y() + padY, textSize.width(), textSize.height());
+        name.draw(painter, drawTextRect);
+    } else {
+        // badge styles: draw background shape first, then white text centered
+        painter->setBrush(d->probeColor);
+        painter->setPen(Qt::NoPen);
+
+        if (d->labelStyle == RoundedRectBadge) {
+            double radius = qMin(borderSize.height() / 2.0, 4.0);
+            painter->drawRoundedRect(badgeRect, radius, radius);
+        } else if (d->labelStyle == RectBadge) {
+            painter->drawRect(badgeRect);
+        } else {  // EllipseBadge
+            painter->drawEllipse(badgeRect);
+        }
+
+        // draw white text centered in badge
+        QwtText badgeText = name;
+        badgeText.setColor(Qt::white);
+        QRectF drawTextRect(labelPos.x() + padX, labelPos.y() + padY, textSize.width(), textSize.height());
+        badgeText.draw(painter, drawTextRect);
+    }
+
+    painter->restore();
 }
 /**
  * \if ENGLISH
@@ -627,7 +677,8 @@ int DADataProbeMarker::pickXValueAtPosition(double yValue, bool interpolate)
  */
 void DADataProbeMarker::updateLabel()
 {
-    setLabel(d_ptr->probeName);
+    // Label rendering is fully handled by drawProbeName().
+    // Do not set QwtPlotMarker's built-in label to avoid duplicate drawing.
 }
 
 /**
