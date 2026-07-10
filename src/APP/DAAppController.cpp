@@ -579,7 +579,10 @@ void DAAppController::saveAs()
     if (fi.exists()) {
         // 说明是目录
         QMessageBox::StandardButton btn = QMessageBox::question(
-            nullptr, tr("Warning"), tr("Whether to overwrite the file: %1").arg(fi.absoluteFilePath()));  // cn:警告,cn:是否覆盖文件:%1
+            nullptr,
+            tr("Warning"),  // cn:警告
+            tr("Whether to overwrite the file: %1").arg(fi.absoluteFilePath())  // cn:是否覆盖文件:%1
+        );
         if (btn != QMessageBox::Yes) {
             return;
         }
@@ -1200,8 +1203,8 @@ void DAAppController::onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType
 void DAAppController::onActionAddBackgroundPixmapTriggered()
 {
     QStringList filters;
-    filters << tr("Image files (*.png *.jpg)")  // cn:图片文件 (*.png *.jpg)
-            << tr("Any files (*)")              // cn:任意文件 (*)
+    filters << tr("Image files") + QString(" (*.png *.jpg)")  // cn:图片文件
+            << tr("Any files") + QString(" (*)")              // cn:任意文件
         ;
 
     QFileDialog dialog(app());

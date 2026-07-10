@@ -75,7 +75,13 @@ jobs:
           dir: C:\Qt
 
     # ----------------------
-    # 5. 编译第三方库
+    # 5. 校验翻译文件（占位符/cn:泄漏检查）
+    # ----------------------
+    - name: Validate translation files
+      run: python scripts/check_translations.py
+
+    # ----------------------
+    # 6. 编译第三方库
     # ----------------------
     - name: build 3rdparty
       working-directory: src/3rdparty
@@ -87,7 +93,7 @@ jobs:
         cmake --install . --config Release
 
     # ----------------------
-    # 6. 编译主项目
+    # 7. 编译主项目
     # ----------------------
     - name: build the project
       run: |

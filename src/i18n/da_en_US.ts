@@ -1228,24 +1228,24 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+565"/>
+        <location filename="../APP/DAAppController.cpp" line="+564"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
-        <location line="+741"/>
+        <location line="+19"/>
+        <location line="+744"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-732"/>
+        <location line="-733"/>
         <source>Failed to save project! Path: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+502"/>
+        <location line="+503"/>
         <source>Project saved successfully, path: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1270,24 +1270,24 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1011"/>
+        <location line="-1012"/>
         <source>Please select the data operation window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-41"/>
-        <location line="+439"/>
-        <location line="+48"/>
+        <location line="-50"/>
+        <location line="+448"/>
+        <location line="+49"/>
         <source>Project File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-477"/>
+        <location line="-479"/>
         <source>Whether to overwrite the file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+389"/>
+        <location line="+390"/>
         <location line="+19"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
@@ -1304,12 +1304,22 @@ Config</source>
     </message>
     <message>
         <location line="+43"/>
-        <location line="+42"/>
+        <location line="+43"/>
         <source>Failed to load project file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+241"/>
+        <location line="+126"/>
+        <source>Image files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Any files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+114"/>
         <source>Received null project interface</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1344,17 +1354,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1230"/>
-        <source>Image files (*.png *.jpg)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Any files (*)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+121"/>
+        <location line="-1108"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1481,7 +1481,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+39"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1491,7 +1491,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-49"/>
+        <location line="-48"/>
         <source>Creating project snapshot</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1526,7 +1526,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+39"/>
         <source>Failed to save project! Path: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1637,19 +1637,19 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-585"/>
-        <location line="+588"/>
+        <location line="-590"/>
+        <location line="+593"/>
         <source>Failed to save project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-598"/>
+        <location line="-603"/>
         <location line="+34"/>
         <source>The current project is busy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+392"/>
+        <location line="+397"/>
         <source>Save data information</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1659,8 +1659,8 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-549"/>
-        <location line="+553"/>
+        <location line="-554"/>
+        <location line="+558"/>
         <source>Failed to load project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3738,7 +3738,7 @@ Config</source>
     <name>DA::DAExportToPngSettingDialog</name>
     <message>
         <location filename="../APP/Dialog/DAExportToPngSettingDialog.cpp" line="+56"/>
-        <source>Images (*.png)</source>
+        <source>Images</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4771,7 +4771,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1231"/>
+        <location filename="../APP/DAAppController.cpp" line="-1240"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>

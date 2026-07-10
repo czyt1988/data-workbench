@@ -1253,24 +1253,24 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+565"/>
+        <location filename="../APP/DAAppController.cpp" line="+564"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
     <message>
-        <location line="+12"/>
-        <location line="+741"/>
+        <location line="+19"/>
+        <location line="+744"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-732"/>
+        <location line="-733"/>
         <source>Failed to save project! Path: %1</source>
         <translation>工程保存失败！路径为:%1</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+502"/>
+        <location line="+503"/>
         <source>Project saved successfully, path: %1</source>
         <translation>工程保存成功，路径为:%1</translation>
     </message>
@@ -1295,24 +1295,24 @@ Config</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-1011"/>
+        <location line="-1012"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
-        <location line="-41"/>
-        <location line="+439"/>
-        <location line="+48"/>
+        <location line="-50"/>
+        <location line="+448"/>
+        <location line="+49"/>
         <source>Project File</source>
         <translation>工程文件</translation>
     </message>
     <message>
-        <location line="-477"/>
+        <location line="-479"/>
         <source>Whether to overwrite the file: %1</source>
-        <translation>警告,cn:是否覆盖文件:%1</translation>
+        <translation>是否覆盖文件:%1</translation>
     </message>
     <message>
-        <location line="+389"/>
+        <location line="+390"/>
         <location line="+19"/>
         <source>Question</source>
         <translation>疑问</translation>
@@ -1329,12 +1329,22 @@ Config</source>
     </message>
     <message>
         <location line="+43"/>
-        <location line="+42"/>
+        <location line="+43"/>
         <source>Failed to load project file: %1</source>
         <translation>加载工程文件失败:%1</translation>
     </message>
     <message>
-        <location line="+241"/>
+        <location line="+126"/>
+        <source>Image files</source>
+        <translation>图片文件</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Any files</source>
+        <translation>任意文件</translation>
+    </message>
+    <message>
+        <location line="+114"/>
         <source>Received null project interface</source>
         <translation>获取到空工程接口</translation>
     </message>
@@ -1369,17 +1379,7 @@ Config</source>
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location line="-1230"/>
-        <source>Image files (*.png *.jpg)</source>
-        <translation>图片文件 (*.png *.jpg)</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Any files (*)</source>
-        <translation>任意文件 (*)</translation>
-    </message>
-    <message>
-        <location line="+121"/>
+        <location line="-1108"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
@@ -1506,7 +1506,7 @@ Config</source>
         <translation>正在加载工程</translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+39"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -1516,7 +1516,7 @@ Config</source>
         <translation>工程文件</translation>
     </message>
     <message>
-        <location line="-49"/>
+        <location line="-48"/>
         <source>Creating project snapshot</source>
         <translation>正在创建工程快照</translation>
     </message>
@@ -1551,7 +1551,7 @@ Config</source>
         <translation>从快照恢复之前的工程失败</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+39"/>
         <source>Failed to save project! Path: %1</source>
         <translation>工程保存失败！路径为:%1</translation>
     </message>
@@ -1662,19 +1662,19 @@ Config</source>
         <translation>成功保存工程</translation>
     </message>
     <message>
-        <location line="-585"/>
-        <location line="+588"/>
+        <location line="-590"/>
+        <location line="+593"/>
         <source>Failed to save project</source>
         <translation>无法保存工程</translation>
     </message>
     <message>
-        <location line="-598"/>
+        <location line="-603"/>
         <location line="+34"/>
         <source>The current project is busy</source>
         <translation>当前工程正繁忙</translation>
     </message>
     <message>
-        <location line="+392"/>
+        <location line="+397"/>
         <source>Save data information</source>
         <translation>保存数据信息</translation>
     </message>
@@ -1684,8 +1684,8 @@ Config</source>
         <translation>成功加载工程</translation>
     </message>
     <message>
-        <location line="-549"/>
-        <location line="+553"/>
+        <location line="-554"/>
+        <location line="+558"/>
         <source>Failed to load project</source>
         <translation>无法加载工程</translation>
     </message>
@@ -3763,8 +3763,8 @@ Config</source>
     <name>DA::DAExportToPngSettingDialog</name>
     <message>
         <location filename="../APP/Dialog/DAExportToPngSettingDialog.cpp" line="+56"/>
-        <source>Images (*.png)</source>
-        <translation>图片 (*.png)</translation>
+        <source>Images</source>
+        <translation>图片</translation>
     </message>
 </context>
 <context>
@@ -4011,7 +4011,7 @@ Config</source>
     <message>
         <location line="+26"/>
         <source>No plugins ignore files, a %1 file will be automatically generated</source>
-        <translation>缺少插件忽略文件，将自动生成.pluginignore文件</translation>
+        <translation>缺少插件忽略文件，将自动生成%1文件</translation>
     </message>
     <message>
         <location line="+65"/>
@@ -4796,7 +4796,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1231"/>
+        <location filename="../APP/DAAppController.cpp" line="-1240"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

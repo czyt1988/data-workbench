@@ -16,6 +16,7 @@ TS = os.path.join(ROOT, 'src', 'i18n', 'da_zh_CN.ts')
 
 sys.path.insert(0, os.path.join(ROOT, 'scripts'))
 from _manual_translations import TRANSLATIONS
+from translation_validate import check_placeholder_parity
 
 
 def xml_decode(s):
@@ -78,16 +79,18 @@ def main():
     )
 
     filled = 0
+    skipped_mismatch = 0
+    mismatches = []
     not_found = []
     not_found_keys = set()
 
     def replace_context(m):
-        nonlocal filled
+        nonlocal filled, skipped_mismatch
         ctx = m.group(1)
         body = m.group(2)
 
         def replace_message(mm):
-            nonlocal filled
+            nonlocal filled, skipped_mismatch
             open_tag, inner, close_tag = mm.group(1), mm.group(2), mm.group(3)
             sm = src_re.search(inner)
             if not sm:
@@ -109,6 +112,15 @@ def main():
                     not_found.append(key)
                 return open_tag + inner + close_tag
             trans = TRANSLATIONS[key]
+            # Validate placeholder/glob parity before writing
+            warns = check_placeholder_parity(src_decoded, trans, f'{ctx}: {src_decoded[:60]}')
+            if warns:
+                skipped_mismatch += 1
+                mismatches.extend(warns)
+                if key not in not_found_keys:
+                    not_found_keys.add(key)
+                    not_found.append(key)
+                return open_tag + inner + close_tag
             new_tag = f'<translation>{xml_encode(trans)}</translation>'
             new_inner = trans_re.sub(lambda _: new_tag, inner)
             filled += 1
@@ -122,7 +134,12 @@ def main():
         f.write(new_text)
 
     print(f'Filled from manual table: {filled}')
+    print(f'Skipped (placeholder/glob mismatch): {skipped_mismatch}')
     print(f'Still unfilled: {len(not_found)}')
+    if mismatches:
+        print('--- Placeholder/glob mismatches (translations NOT written) ---')
+        for w in mismatches:
+            print(f'  {w}')
     for k in not_found:
         print(f'  MISS [{k[0]}] {k[1][:80]!r}')
 

@@ -20,11 +20,47 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TS = os.path.join(ROOT, 'src', 'i18n', 'da_zh_CN.ts')
 MAP = os.path.join(ROOT, 'scripts', '_cn_map.json')
 
+sys.path.insert(0, os.path.join(ROOT, 'scripts'))
+from translation_validate import check_placeholder_parity
 
+
+def xml_encode(s):
+    """Encode text for safe inclusion as element character data.
+
+    Preserves existing XML/HTML entities (e.g. &gt;, &lt;, &quot;, &amp;,
+    &apos; and numeric &#NN;), so rich-text / markdown translations that
+    already contain entities are written through unchanged. Escapes only
+    bare '&', '<', '>' characters that are NOT part of an entity reference.
+    """
+    out = []
+    i = 0
+    n = len(s)
+    entity_re = re.compile(r'&(?:[a-zA-Z][a-zA-Z0-9]*|#[0-9]+|#[xX][0-9a-fA-F]+);')
+    while i < n:
+        c = s[i]
+        if c == '&':
+            m = entity_re.match(s, i)
+            if m:
+                out.append(m.group(0))
+                i = m.end()
+            else:
+                out.append('&amp;')
+                i += 1
+        elif c == '<':
+            out.append('&lt;')
+            i += 1
+        elif c == '>':
+            out.append('&gt;')
+            i += 1
+        else:
+            out.append(c)
+            i += 1
+    return ''.join(out)
+
+
+# Backward-compat alias for any external callers.
 def xml_escape(s):
-    return (s.replace('&', '&amp;')
-             .replace('<', '&lt;')
-             .replace('>', '&gt;'))
+    return xml_encode(s)
 
 
 def main():
@@ -66,6 +102,8 @@ def main():
 
     filled = 0
     skipped_already = 0
+    skipped_mismatch = 0
+    mismatches = []
     not_found = []
     total_msgs = 0
 
@@ -75,7 +113,7 @@ def main():
         body = m.group(2)
 
         def replace_message(mm):
-            nonlocal filled, skipped_already, total_msgs
+            nonlocal filled, skipped_already, skipped_mismatch, total_msgs
             open_tag, inner, close_tag = mm.group(1), mm.group(2), mm.group(3)
             total_msgs += 1
             sm = src_re.search(inner)
@@ -106,8 +144,16 @@ def main():
                 not_found.append((ctx_name, src_decoded))
                 # leave as-is
                 return open_tag + inner + close_tag
+            # Validate placeholder/glob parity before writing — refuse to
+            # write a translation that drops %1/(*.%1) present in source.
+            warns = check_placeholder_parity(src_decoded, trans, f'{ctx_name}: {src_decoded[:60]}')
+            if warns:
+                skipped_mismatch += 1
+                mismatches.extend(warns)
+                not_found.append((ctx_name, src_decoded))
+                return open_tag + inner + close_tag
             filled += 1
-            new_trans_tag = f'<translation>{xml_escape(trans)}</translation>'
+            new_trans_tag = f'<translation>{xml_encode(trans)}</translation>'
             new_inner = trans_re.sub(new_trans_tag, inner)
             return open_tag + new_inner + close_tag
 
@@ -123,7 +169,12 @@ def main():
     print(f'Total messages: {total_msgs}')
     print(f'Already translated (skipped): {skipped_already}')
     print(f'Filled from cn: comments: {filled}')
+    print(f'Skipped (placeholder/glob mismatch): {skipped_mismatch}')
     print(f'Remaining unfinished (need manual): {len(not_found)}')
+    if mismatches:
+        print('--- Placeholder/glob mismatches (translations NOT written) ---')
+        for w in mismatches:
+            print(f'  {w}')
     # write remaining list for manual translation
     rem_path = os.path.join(ROOT, 'scripts', '_remaining_unfinished.txt')
     with open(rem_path, 'w', encoding='utf-8') as f:
