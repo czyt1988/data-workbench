@@ -1314,7 +1314,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+803"/>
+        <location line="+799"/>
         <source>Rename Column</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1324,13 +1324,13 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+69"/>
-        <source>Cannot find the maximum value in this column (empty or all-NaN)</source>
+        <location line="+64"/>
+        <source>Cannot find the maximum value in this column (empty, all-NaN, or incomparable types)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+32"/>
-        <source>Cannot find the minimum value in this column (empty or all-NaN)</source>
+        <source>Cannot find the minimum value in this column (empty, all-NaN, or incomparable types)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1344,7 +1344,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1239"/>
+        <location line="-1230"/>
         <source>Image files (*.png *.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3574,7 +3574,7 @@ Config</source>
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+270"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+274"/>
         <location line="+2"/>
         <location line="+86"/>
         <location line="+3"/>
@@ -3618,7 +3618,7 @@ Config</source>
     </message>
     <message>
         <location line="+42"/>
-        <location line="+176"/>
+        <location line="+171"/>
         <location line="+35"/>
         <location line="+41"/>
         <location line="+42"/>
@@ -3626,25 +3626,25 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-252"/>
-        <location line="+659"/>
+        <location line="-247"/>
+        <location line="+654"/>
         <location line="+61"/>
         <location line="+48"/>
         <source>Please select a valid cell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-726"/>
+        <location line="-721"/>
         <source>Table has no columns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+45"/>
         <source>Column name cannot be empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+4"/>
         <source>Column name &quot;%1&quot; already exists, please use another name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7276,7 +7276,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-303"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-307"/>
         <source>%1.%2,size:%3</source>
         <translation type="unfinished"></translation>
     </message>
