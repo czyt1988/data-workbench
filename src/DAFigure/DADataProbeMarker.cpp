@@ -26,7 +26,7 @@ public:
     DADataProbeMarker::LabelPosition labelPosition { DADataProbeMarker::LabelAtTop };
     QColor probeColor { Qt::red };
     bool labelVisible { true };
-    DADataProbeMarker::LabelStyle labelStyle { DADataProbeMarker::RoundedRectBadge };
+    DADataProbeMarker::LabelStyle labelStyle { DADataProbeMarker::PlainTextBadge };
     QList< DADataProbeMarker::CapturedData > capturedData;
 };
 
@@ -451,6 +451,10 @@ void DA::DADataProbeMarker::drawProbeName(
 ) const
 {
     DA_DC(d);
+    // skip drawing if probe name is empty (no badge for unnamed probes)
+    if (name.text().isEmpty()) {
+        return;
+    }
     QPointF pos     = value();
     double x        = xMap.transform(pos.x());
     double y        = yMap.transform(pos.y());
