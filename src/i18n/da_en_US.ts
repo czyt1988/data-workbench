@@ -3097,31 +3097,31 @@ Config</source>
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/DAChartManageWidget.cpp" line="+88"/>
-        <location line="+468"/>
+        <location filename="../DAGui/DAChartManageWidget.cpp" line="+89"/>
+        <location line="+487"/>
         <location line="+17"/>
         <location line="+20"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-504"/>
+        <location line="-523"/>
         <source>Visible</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+587"/>
+        <location line="+606"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-585"/>
+        <location line="-604"/>
         <source>Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+263"/>
+        <location line="+282"/>
         <source>received figure create signal, but cannot find figure index</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3737,7 +3737,7 @@ Config</source>
 <context>
     <name>DA::DAExportToPngSettingDialog</name>
     <message>
-        <location filename="../APP/Dialog/DAExportToPngSettingDialog.cpp" line="+56"/>
+        <location filename="../APP/Dialog/DAExportToPngSettingDialog.cpp" line="+60"/>
         <source>Images</source>
         <translation type="unfinished"></translation>
     </message>
