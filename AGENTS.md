@@ -256,6 +256,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 **关键约束**：
 
 - **日志消息不翻译**：`qInfo`/`qWarning`/`qCritical`/`logger.*`/`print` 保持纯英文
+- **DA的界面消息必须翻译**：`daInfo`/`daWarning`/`daCritical` 都是会显示到ui界面的消息，**必需**翻译
 - **`@NodeDef(name=...)` 不翻译**：`name` 参与 `qualified_name` 序列化，翻译会破坏已存工程
 - **Python 包 `setup_i18n()` 必须在 `__init__.py` 顶部、节点模块导入之前调用**
 
