@@ -265,6 +265,7 @@ private:
     // Probe name generation (internal use)
     QString generateProbeName();
     bool isProbeNameExists(const QString& name) const;
+    QString probeNameFromCounter(int counter) const;
 };
 
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const DAFigureWidget* p);

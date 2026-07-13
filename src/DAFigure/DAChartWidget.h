@@ -9,6 +9,7 @@
 
 #include <QWidget>
 #include <memory>
+#include <functional>
 
 // QWT includes
 #include "qwt_plot.h"
@@ -255,6 +256,9 @@ private:
     // 显示元素管理
     QwtPlotGrid* getOrCreateGrid();
     QwtPlotLegendItem* getOrCreateLegend();
+
+    // 网格轴使能的公共逻辑
+    void setGridAxisEnabled(bool enable, std::function< bool() > getCurrent, std::function< void(bool) > setEnabled);
 };
 
 }  // namespace DA

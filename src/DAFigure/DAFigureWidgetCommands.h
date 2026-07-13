@@ -2,6 +2,7 @@
 #define DAFIGUREWIDGETCOMMANDS_H
 #include "DAFigureAPI.h"
 #include <QUndoCommand>
+#include <QPointer>
 #include <QRectF>
 class QWidget;
 class QwtPlotItem;
@@ -85,7 +86,7 @@ public:
 	void undo() override;
 
 public:
-	QWidget* mWidget;
+	QPointer< QWidget > mWidget;
     QRectF mOldNormRect;
     QRectF mNewNormRect;
 };
@@ -114,7 +115,7 @@ public:
 	void undo() override;
 
 public:
-	DAChartWidget* mChart;
+	QPointer< DAChartWidget > mChart;
 	QwtPlotItem* mItem;
 	bool mSkipFirst;
 	bool mNeedDelete { false };

@@ -435,7 +435,9 @@ void DAChartWidget::enableGrid(bool enable)
     }
 }
 
-void DAChartWidget::enableGridX(bool enable)
+void DAChartWidget::setGridAxisEnabled(bool enable,
+                                       std::function< bool() > getCurrent,
+                                       std::function< void(bool) > setEnabled)
 {
     if (!d_ptr->grid && enable) {
         // 如果网格不存在但需要启用，先创建网格
@@ -443,9 +445,9 @@ void DAChartWidget::enableGridX(bool enable)
     }
 
     if (d_ptr->grid) {
-        bool currentState = d_ptr->grid->xEnabled();
+        bool currentState = getCurrent();
         if (currentState != enable) {
-            d_ptr->grid->enableX(enable);
+            setEnabled(enable);
 
             // 确保网格整体可见
             if (enable && !d_ptr->grid->isVisible()) {
@@ -455,70 +457,34 @@ void DAChartWidget::enableGridX(bool enable)
             notifyPropertiesChanged(GridStyleChanged);
         }
     }
+}
+
+void DAChartWidget::enableGridX(bool enable)
+{
+    setGridAxisEnabled(enable,
+                       [ this ]() { return d_ptr->grid->xEnabled(); },
+                       [ this ](bool e) { d_ptr->grid->enableX(e); });
 }
 
 void DAChartWidget::enableGridY(bool enable)
 {
-    if (!d_ptr->grid && enable) {
-        // 如果网格不存在但需要启用，先创建网格
-        enableGrid(true);
-    }
-
-    if (d_ptr->grid) {
-        bool currentState = d_ptr->grid->yEnabled();
-        if (currentState != enable) {
-            d_ptr->grid->enableY(enable);
-
-            // 确保网格整体可见
-            if (enable && !d_ptr->grid->isVisible()) {
-                d_ptr->grid->setVisible(true);
-            }
-
-            notifyPropertiesChanged(GridStyleChanged);
-        }
-    }
+    setGridAxisEnabled(enable,
+                       [ this ]() { return d_ptr->grid->yEnabled(); },
+                       [ this ](bool e) { d_ptr->grid->enableY(e); });
 }
 
 void DAChartWidget::enableGridXMin(bool enable)
 {
-    if (!d_ptr->grid && enable) {
-        // 如果网格不存在但需要启用，先创建网格
-        enableGrid(true);
-    }
-
-    if (d_ptr->grid) {
-        bool currentState = d_ptr->grid->xMinEnabled();
-        if (currentState != enable) {
-            d_ptr->grid->enableXMin(enable);
-
-            // 确保网格整体可见
-            if (enable && !d_ptr->grid->isVisible()) {
-                d_ptr->grid->setVisible(true);
-            }
-            notifyPropertiesChanged(GridStyleChanged);
-        }
-    }
+    setGridAxisEnabled(enable,
+                       [ this ]() { return d_ptr->grid->xMinEnabled(); },
+                       [ this ](bool e) { d_ptr->grid->enableXMin(e); });
 }
 
 void DAChartWidget::enableGridYMin(bool enable)
 {
-    if (!d_ptr->grid && enable) {
-        // 如果网格不存在但需要启用，先创建网格
-        enableGrid(true);
-    }
-
-    if (d_ptr->grid) {
-        bool currentState = d_ptr->grid->yMinEnabled();
-        if (currentState != enable) {
-            d_ptr->grid->enableYMin(enable);
-
-            // 确保网格整体可见
-            if (enable && !d_ptr->grid->isVisible()) {
-                d_ptr->grid->setVisible(true);
-            }
-            notifyPropertiesChanged(GridStyleChanged);
-        }
-    }
+    setGridAxisEnabled(enable,
+                       [ this ]() { return d_ptr->grid->yMinEnabled(); },
+                       [ this ](bool e) { d_ptr->grid->enableYMin(e); });
 }
 
 bool DAChartWidget::isGridEnabled() const
@@ -1016,6 +982,7 @@ void DAChartWidget::onLegendItemToggled(const QVariant& itemInfo, bool checked)
     QwtPlotItem* item = infoToItem(itemInfo);
     if (item) {
         item->setVisible(checked);
+        replot();
     }
 }
 

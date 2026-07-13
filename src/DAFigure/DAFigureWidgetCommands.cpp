@@ -128,12 +128,18 @@ DAFigureWidgetCommandResizeWidget::DAFigureWidgetCommandResizeWidget(DAFigureWid
 
 void DAFigureWidgetCommandResizeWidget::redo()
 {
+    if (!mWidget) {
+        return;
+    }
     //= 给qwt_figure增加可以添加任意窗口的方法
     figure()->setWidgetNormPos(mWidget, mNewNormRect);
 }
 
 void DAFigureWidgetCommandResizeWidget::undo()
 {
+    if (!mWidget) {
+        return;
+    }
     figure()->setWidgetNormPos(mWidget, mOldNormRect);
 }
 
@@ -161,6 +167,9 @@ DAFigureWidgetCommandAttachItem::~DAFigureWidgetCommandAttachItem()
 
 void DAFigureWidgetCommandAttachItem::redo()
 {
+    if (!mChart || !mItem) {
+        return;
+    }
     if (mSkipFirst) {
         mSkipFirst = false;
     } else {
@@ -171,6 +180,9 @@ void DAFigureWidgetCommandAttachItem::redo()
 
 void DAFigureWidgetCommandAttachItem::undo()
 {
+    if (!mItem) {
+        return;
+    }
     mItem->detach();
     mNeedDelete = true;
 }

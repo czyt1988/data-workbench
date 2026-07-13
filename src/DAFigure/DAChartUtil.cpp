@@ -569,7 +569,6 @@ void DAChartUtil::setupSmartDateFormat(QwtDateScaleDraw* scaleDraw, const QStrin
     }
 
     // 分析格式字符串，确定包含的时间元素
-    bool hasMillisecond = fullFormat.contains("zzz", Qt::CaseInsensitive);
     bool hasSecond      = fullFormat.contains("s", Qt::CaseInsensitive);
     bool hasMinute      = fullFormat.contains("m", Qt::CaseInsensitive);
     bool hasHour        = fullFormat.contains("h", Qt::CaseInsensitive);
@@ -579,11 +578,7 @@ void DAChartUtil::setupSmartDateFormat(QwtDateScaleDraw* scaleDraw, const QStrin
 
     // 为不同间隔设置格式
     // 毫秒级别：使用完整格式
-    if (hasMillisecond) {
-        scaleDraw->setDateFormat(QwtDate::Millisecond, fullFormat);
-    } else {
-        scaleDraw->setDateFormat(QwtDate::Millisecond, fullFormat);
-    }
+    scaleDraw->setDateFormat(QwtDate::Millisecond, fullFormat);
 
     // 秒级别
     if (hasSecond) {
@@ -692,7 +687,6 @@ int DAChartUtil::otherAxis(int axisID)
     default:
         return QwtPlot::xBottom;
     }
-    return QwtPlot::xBottom;
 }
 ///
 /// \brief 判断是否是x坐标
@@ -740,18 +734,21 @@ int DAChartUtil::getItemDataSize(const QwtPlotItem* item)
         if (p) {
             return static_cast< int >(p->data()->size());
         }
+        break;
     }
     case QwtPlotItem::Rtti_PlotBarChart: {
         const QwtPlotBarChart* p = static_cast< const QwtPlotBarChart* >(item);
         if (p) {
             return static_cast< int >(p->data()->size());
         }
+        break;
     }
     case QwtPlotItem::Rtti_PlotMultiBarChart: {
         const QwtPlotMultiBarChart* p = static_cast< const QwtPlotMultiBarChart* >(item);
         if (p) {
             return static_cast< int >(p->data()->size());
         }
+        break;
     }
     default:
         break;
@@ -795,6 +792,12 @@ void DAChartUtil::getXYDatas(QVector< QPointF >& xys, const QwtSeriesStore< QPoi
 void DAChartUtil::getXYDatas(QVector< double >* xs, QVector< double >* ys, const QwtSeriesStore< QPointF >* cur)
 {
     auto size = cur->dataSize();
+    if (xs) {
+        xs->reserve(static_cast< int >(size));
+    }
+    if (ys) {
+        ys->reserve(static_cast< int >(size));
+    }
     for (auto i = 0; i < size; ++i) {
         const QPointF p = cur->sample(i);
         if (ys)
@@ -817,7 +820,11 @@ size_t DAChartUtil::getXYDatas(QVector< QPointF >& xys,
 {
     const QwtSeriesData< QPointF >* datas = cur->data();
     auto size                             = datas->size();
-    size_t realSize                       = 0;
+    xys.reserve(static_cast< int >(size));
+    if (indexs) {
+        indexs->reserve(static_cast< int >(size));
+    }
+    size_t realSize = 0;
     if (!rang.isNull() && rang.isValid()) {
         for (size_t i = 0; i < size; ++i) {
             if (rang.contains(datas->sample(i))) {
@@ -840,6 +847,15 @@ size_t DAChartUtil::getXYDatas(QVector< double >* xs,
 {
     auto size     = cur->dataSize();
     auto realSize = 0;
+    if (xs) {
+        xs->reserve(static_cast< int >(size));
+    }
+    if (ys) {
+        ys->reserve(static_cast< int >(size));
+    }
+    if (indexs) {
+        indexs->reserve(static_cast< int >(size));
+    }
     if (!rang.isNull() && rang.isValid()) {
         for (auto i = 0; i < size; ++i) {
             const QPointF p = cur->sample(i);

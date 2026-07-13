@@ -46,9 +46,6 @@
 #include "qwt_plot_series_data_picker.h"
 #include "qwt_plot_series_data_picker_group.h"
 
-#ifndef DAFigureWidget_DEBUG_PRINT
-#define DAFigureWidget_DEBUG_PRINT 1
-#endif
 namespace DA
 {
 const QRectF c_figurewidget_default_size = QRectF(0.05, 0.05, 0.9, 0.9);
@@ -126,9 +123,8 @@ public:
                 if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(plot)) {
                     fig->addItem_(chart, item, true);
                 } else {
-                    daCritical << QObject::tr(
-                        "Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
-                        "type was added to the figure");  // cn:意外的绘图操作：不属于 DAChartWidget 类型的图表被添加到了 figure 中
+                    daCritical << "Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
+                                  "type was added to the figure";  // cn:意外的绘图操作：不属于 DAChartWidget 类型的图表被添加到了 figure 中
                     item->detach();
                     delete item;
                 }
@@ -568,15 +564,10 @@ DAChartWidget* DAFigureWidget::currentChart()
  */
 DAChartWidget* DAFigureWidget::findChartFromItem(QwtPlotItem* item) const
 {
-    QList< DAChartWidget* > charts = getCharts();
-
-    for (DAChartWidget* w : std::as_const(charts)) {
-        QwtPlotItemList items = w->itemList();
-        if (items.contains(item)) {
-            return (w);
-        }
+    if (!item) {
+        return nullptr;
     }
-    return (nullptr);
+    return qobject_cast< DAChartWidget* >(item->plot());
 }
 
 /**
@@ -842,7 +833,7 @@ void DAFigureWidget::beginChartEditor(ChartEditorType type)
         d->beginHorizontalProbeEditor();
         break;
     default:
-        daWarning << tr("Unsupported chart editor type: %1").arg(type);  // cn:不支持的图表编辑器类型：%1
+        daWarning << QString("Unsupported chart editor type: %1").arg(type);  // cn:不支持的图表编辑器类型：%1
         break;
     }
 }
@@ -1157,7 +1148,7 @@ void DAFigureWidget::onChartPropertyChanged(DAChartWidget* chart, DA::DAChartWid
 
 void DAFigureWidget::onFigureChartEditorFinished(bool isCancel)
 {
-    qDebug() << "DAFigureWidget::onFigureChartEditorFinished(" << isCancel << ")";
+    Q_UNUSED(isCancel);
     endChartEditor();
 }
 
@@ -1189,8 +1180,7 @@ QDataStream& operator>>(QDataStream& in, DAFigureWidget* p)
 
     in >> tmp;
     if (tmp != magicStart) {
-        throw DABadSerializeExpection("DAFigureWidget get invalid magic strat code");  // cn:DAFigureWidget的文件头异常
-        return (in);
+        throw DABadSerializeExpection("DAFigureWidget get invalid magic start code");  // cn:DAFigureWidget的文件头异常
     }
     QByteArray geometryData, stateData;
 
@@ -1228,8 +1218,21 @@ QDataStream& operator>>(QDataStream& in, DAFigureWidget* p)
 QString DAFigureWidget::generateProbeName()
 {
     DA_D(d);
-    int counter = d->m_probeNameCounter++;
+    QString name;
+    int counter = d->m_probeNameCounter;
 
+    // 循环直到找到不存在的名称
+    do {
+        name = probeNameFromCounter(counter);
+        ++counter;
+    } while (isProbeNameExists(name) && counter < 1000);  // 上限保护
+
+    d->m_probeNameCounter = counter;
+    return name;
+}
+
+QString DAFigureWidget::probeNameFromCounter(int counter) const
+{
     if (counter < 26) {
         return QChar('A' + counter);
     }

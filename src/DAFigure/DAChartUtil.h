@@ -43,7 +43,7 @@ public:
     static QIcon plotItemIcon(const QwtPlotItem* item);
 
     // 更加强制的replot，就算设置为不实时刷新也能实现重绘
-    void replot(QwtPlot* chart);
+    static void replot(QwtPlot* chart);
 
     // 根据筛选set获取item list
     static QwtPlotItemList filterPlotItem(const QwtPlot* chart, const QSet< int >& enableRtti);

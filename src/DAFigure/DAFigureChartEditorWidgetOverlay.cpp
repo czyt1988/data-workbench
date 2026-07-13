@@ -252,7 +252,6 @@ void DAFigureChartEditorWidgetOverlay::mouseMoveEvent(QMouseEvent* me)
 void DAFigureChartEditorWidgetOverlay::mouseReleaseEvent(QMouseEvent* me)
 {
     DA_D(d);
-    DAFigureWidgetOverlay::mouseReleaseEvent(me);
     d->m_lastFigureMousePos = compat::eventPos(me);
     if (d->m_activeEditor) {
         // 这里要把事件传递过去

@@ -73,7 +73,10 @@ bool DAChartRectRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
     QPoint p = compat::eventPos(e);
     if (!d_ptr->m_isStartDrawRegion) {
         d_ptr->createTmpItem();
-        DAChartWidget* chart      = qobject_cast< DAChartWidget* >(parent());
+        DAChartWidget* chart = qobject_cast< DAChartWidget* >(parent());
+        if (!chart) {
+            return false;
+        }
         d_ptr->m_isPlotEnableZoom = chart->isZoomEnabled();
         if (d_ptr->m_isPlotEnableZoom) {
             chart->enableZoom(false);
@@ -84,6 +87,7 @@ bool DAChartRectRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
     switch (getSelectionMode()) {
     case SingleSelection: {
         d_ptr->m_lastPainterPath = QPainterPath();
+        break;
     }
     default:
         break;
@@ -159,7 +163,9 @@ bool DAChartRectRegionSelectEditor::mouseReleaseEvent(const QMouseEvent* e)
     if (d_ptr->m_isPlotEnableZoom) {
         DAChartWidget* chart = qobject_cast< DAChartWidget* >(parent());
         // 还原zoomer
-        chart->enableZoom(true);
+        if (chart) {
+            chart->enableZoom(true);
+        }
     }
     Q_EMIT finishSelection(d_ptr->m_lastPainterPath);
     Q_EMIT finishedEdit(false);

@@ -143,8 +143,8 @@ QwtPlotArrowMarker* DAChartArrowEditor::createArrowMarker(const QPointF& startPo
     // 创建标记
     QwtPlotArrowMarker* marker = new QwtPlotArrowMarker();
     marker->setLinePen(getArrowLinePen());
-    marker->setHeadStyle(getStartEndType());
-    marker->setTailStyle(getEndEndType());
+    marker->setTailStyle(getStartEndType());
+    marker->setHeadStyle(getEndEndType());
     marker->setTailSize(getArrowSize());
     marker->setPoints(startPoint, endPoint);
 
