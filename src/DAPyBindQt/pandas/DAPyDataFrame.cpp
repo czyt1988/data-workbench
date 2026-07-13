@@ -569,11 +569,12 @@ QString DAPyDataFrame::toString(std::size_t maxrow) const
         }
     }
     // 确定字符串最大长度，并对字符串的长度进行匹配
-    for (QList< QString >& vecColStr : std::as_const(strlist)) {
+    for (int ci = 0; ci < strlist.size(); ++ci) {
+        QList< QString >& vecColStr = strlist[ ci ];
         int s = 0;
-        for (const QString& str : std::as_const(vecColStr)) {
-            if (str.size() > s) {
-                s = str.size();
+        for (int si = 0; si < vecColStr.size(); ++si) {
+            if (vecColStr[ si ].size() > s) {
+                s = vecColStr[ si ].size();
             }
         }
         for (int i = 0; i < vecColStr.size(); ++i) {

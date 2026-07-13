@@ -501,7 +501,7 @@ QWidget* createFolderEditor(const DAFormFieldDef& field, QWidget* parent)
     QToolButton* toolBtn = edit->findChild< QToolButton* >();
     if (toolBtn) {
         // 仅断开 clicked 信号，避免影响 DAFilePathEditWidget 的其他内部连接
-        disconnect(toolBtn, &QToolButton::clicked, edit, nullptr);
+        QObject::disconnect(toolBtn, &QToolButton::clicked, edit, nullptr);
         QObject::connect(toolBtn, &QToolButton::clicked, edit, [ edit ]() {
             QFileDialog fileDialog;
             fileDialog.setFileMode(QFileDialog::Directory);

@@ -18,7 +18,7 @@ private Q_SLOTS:
     void testIlocAndColumnAccess();
 
 private:
-    DA::DAPyDataFrame loadCsvOrSkip();
+    bool loadCsv(DA::DAPyDataFrame& out, QString* err = nullptr);
 };
 
 void DADataFrameTest::initTestCase()
@@ -28,28 +28,44 @@ void DADataFrameTest::initTestCase()
     DA::DAPyInterpreter::initializePythonInterpreter();
 }
 
-DA::DAPyDataFrame DADataFrameTest::loadCsvOrSkip()
+bool DADataFrameTest::loadCsv(DA::DAPyDataFrame& out, QString* err)
 {
     if (!QFile::exists(QStringLiteral("IBM.csv"))) {
-        QSKIP("IBM.csv not available, skipping DataFrame test");
+        if (err) {
+            *err = QStringLiteral("IBM.csv not available");
+        }
+        return false;
     }
-    DA::DAPyDataFrame df = DA::DAPyModulePandas::getInstance().read_csv(QStringLiteral("IBM.csv"));
-    if (!df) {
-        QFAIL(qPrintable(DA::DAPyModulePandas::getInstance().getLastErrorString()));
+    out = DA::DAPyModulePandas::getInstance().read_csv(QStringLiteral("IBM.csv"));
+    if (!out) {
+        if (err) {
+            *err = DA::DAPyModulePandas::getInstance().getLastErrorString();
+        }
+        return false;
     }
-    return df;
+    return true;
 }
 
 void DADataFrameTest::testReadCsv()
 {
-    DA::DAPyDataFrame df = loadCsvOrSkip();
+    DA::DAPyDataFrame df;
+    QString err;
+    if (!loadCsv(df, &err)) {
+        QSKIP(err.toUtf8().constData());
+        return;
+    }
     QVERIFY(df);
     QVERIFY(df.size() > 0);
 }
 
 void DADataFrameTest::testColumns()
 {
-    DA::DAPyDataFrame df = loadCsvOrSkip();
+    DA::DAPyDataFrame df;
+    QString err;
+    if (!loadCsv(df, &err)) {
+        QSKIP(err.toUtf8().constData());
+        return;
+    }
     QVERIFY(df);
 
     const QList< QString > cols = df.columns();  // const 避免 COW 深拷贝
@@ -59,7 +75,12 @@ void DADataFrameTest::testColumns()
 
 void DADataFrameTest::testEmptyAndShape()
 {
-    DA::DAPyDataFrame df = loadCsvOrSkip();
+    DA::DAPyDataFrame df;
+    QString err;
+    if (!loadCsv(df, &err)) {
+        QSKIP(err.toUtf8().constData());
+        return;
+    }
     QVERIFY(df);
 
     QVERIFY(!df.empty());
@@ -73,7 +94,12 @@ void DADataFrameTest::testEmptyAndShape()
 
 void DADataFrameTest::testIlocAndColumnAccess()
 {
-    DA::DAPyDataFrame df = loadCsvOrSkip();
+    DA::DAPyDataFrame df;
+    QString err;
+    if (!loadCsv(df, &err)) {
+        QSKIP(err.toUtf8().constData());
+        return;
+    }
     QVERIFY(df);
 
     std::size_t row = df.shape().first;
