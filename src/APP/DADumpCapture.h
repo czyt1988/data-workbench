@@ -48,35 +48,8 @@ LONG applicationCrashHandler(_EXCEPTION_POINTERS* pException);
 /**
  * @brief Dump文件捕获类
  *
- * 该类用于捕获应用程序的崩溃异常，并生成dump文件和相关信息文件。
- *
- * @code{.cpp}
- * // 基本使用方法：
- * DA::DADumpCapture::initDump();
- *
- * // 自定义dump文件路径：
- * DA::DADumpCapture::initDump([]() -> QString {
- *     return "C:/MyApp/dumps/crash_" + QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss") + ".dmp";
- * });
- *
- * // 自定义前后处理函数：
- * DA::DADumpCapture::initDump(
- *     []() -> QString {
- *         return DA::DADumpCapture::getDefaultDumpDirectory() + "/myapp_crash.dmp";
- *     },
- *     [](const QString& dumpPath, bool success) {
- *         if (success) {
- *             QMessageBox::critical(nullptr, "错误", "程序发生异常，已生成dump文件：" + dumpPath);
- *         }
- *     }
- * );
- *
- * // 清理7天前的dump文件：
- * DA::DADumpCapture::cleanupOldDumps(7);
- *
- * // 清理指定目录的dump文件：
- * DA::DADumpCapture::cleanupOldDumps(7, "C:/MyApp/logs");
- * @endcode
+ * 用于捕获应用程序崩溃异常，生成dump文件和相关信息文件。
+ * 所有方法仅在 Windows/MSVC 下有效。
  */
 class DADumpCapture
 {
@@ -86,50 +59,17 @@ private:
     static bool s_initialized;               ///< 初始化状态标志
 
 public:
-    /**
-     * @brief 获取前置处理函数指针
-     * @return 前置处理函数指针
-     */
-    static FpPreposeDump getPreposeDumpFunc()
+    static FpPreposeDump getPreposeDumpFunc()  // 获取前置处理函数指针
     {
         return s_fp_prepose_dump;
     }
 
-    /**
-     * @brief 获取后置处理函数指针
-     * @return 后置处理函数指针
-     */
-    static FpPostDump getPostDumpFunc()
+    static FpPostDump getPostDumpFunc()  // 获取后置处理函数指针
     {
         return s_fp_post_dump;
     }
 
-    /**
-     * @brief 初始化dump捕获
-     *
-     * 注册异常处理函数，当程序发生崩溃时会自动生成dump文件和相关信息文件。
-     *
-     * @param fpPre 前置处理函数指针，用于返回dump文件的保存路径，如果为nullptr则使用默认路径
-     * @param fpPost 后置处理函数指针，在dump文件创建完成后调用，可用于通知用户等操作
-     *
-     * @code{.cpp}
-     * // 使用默认配置
-     * DA::DADumpCapture::initDump();
-     *
-     * // 自定义路径和回调
-     * DA::DADumpCapture::initDump(
-     *     []() -> QString {  // 自定义路径
-     *         return QApplication::applicationDirPath() + "/logs/dump.dmp";
-     *     },
-     *     [](const QString& path, bool success) {  // 创建完成后的回调
-     *         if (success) {
-     *             qDebug() << "Dump文件已创建：" << path;
-     *         }
-     *     }
-     * );
-     * @endcode
-     */
-    static void initDump(FpPreposeDump fpPre = nullptr, FpPostDump fpPost = nullptr)
+    static void initDump(FpPreposeDump fpPre = nullptr, FpPostDump fpPost = nullptr)  // 初始化dump捕获
     {
 #ifdef Q_OS_WIN
 #ifdef Q_CC_MSVC
@@ -174,25 +114,12 @@ public:
 #endif
     }
 
-    /**
-     * @brief 检查是否已初始化
-     * @return 如果已初始化返回true，否则返回false
-     */
-    static bool isInitialized()
+    static bool isInitialized()  // 检查是否已初始化
     {
         return s_initialized;
     }
 
-    /**
-     * @brief 获取默认dump目录
-     * @return 默认的dump文件保存目录路径
-     *
-     * @code{.cpp}
-     * QString defaultDir = DA::DADumpCapture::getDefaultDumpDirectory();
-     * qDebug() << "默认dump目录：" << defaultDir;
-     * @endcode
-     */
-    static QString getDefaultDumpDirectory()
+    static QString getDefaultDumpDirectory()  // 获取默认dump目录
     {
         QString dumppath = DADir::getDumpFilePath();
         QDir dir;
@@ -202,26 +129,7 @@ public:
         return dumppath;
     }
 
-    /**
-     * @brief 清理旧的dump文件
-     *
-     * 删除指定天数之前的dump文件和相关信息文件，用于清理历史文件释放磁盘空间。
-     *
-     * @param daysToKeep 保留天数，小于该天数的文件将被删除
-     * @param directory 要清理的目录路径，如果为空则使用默认dump目录
-     *
-     * @code{.cpp}
-     * // 清理默认目录中7天前的文件
-     * DA::DADumpCapture::cleanupOldDumps(7);
-     *
-     * // 清理指定目录中30天前的文件
-     * DA::DADumpCapture::cleanupOldDumps(30, "C:/MyApp/logs");
-     *
-     * // 清理自定义目录中15天前的文件
-     * DA::DADumpCapture::cleanupOldDumps(15, QApplication::applicationDirPath() + "/crash_logs");
-     * @endcode
-     */
-    static void cleanupOldDumps(int daysToKeep = 7, const QString& directory = QString())
+    static void cleanupOldDumps(int daysToKeep = 7, const QString& directory = QString())  // 清理旧的dump文件
     {
         QString dumpDir = directory.isEmpty() ? getDefaultDumpDirectory() : directory;
         QDir dir(dumpDir);

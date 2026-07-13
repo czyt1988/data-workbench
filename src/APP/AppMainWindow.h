@@ -80,7 +80,7 @@ private:
 
     // 初始化设置
     void initConfig();
-private slots:
+private Q_SLOTS:
     //
     void onWorkflowFinished(bool success);
     // 配置文件需要保存

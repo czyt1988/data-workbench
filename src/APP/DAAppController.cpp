@@ -106,22 +106,6 @@
 #define DAAPPCONTROLLER_ACTION_BIND(actionname, functionname)                                                          \
     connect(actionname, &QAction::triggered, this, &DAAppController::functionname)
 
-namespace
-{
-DA::DAAppSavePromptChoice toAppSavePromptChoice(QMessageBox::StandardButton btn)
-{
-    switch (btn) {
-    case QMessageBox::Yes:
-        return DA::DAAppSavePromptChoice::Save;
-    case QMessageBox::No:
-        return DA::DAAppSavePromptChoice::Discard;
-    case QMessageBox::Cancel:
-    default:
-        return DA::DAAppSavePromptChoice::Cancel;
-    }
-}
-}  // namespace
-
 namespace DA
 {
 
@@ -579,7 +563,7 @@ void DAAppController::saveAs()
     if (fi.exists()) {
         // 说明是目录
         QMessageBox::StandardButton btn = QMessageBox::question(
-            nullptr,
+            app(),
             tr("Warning"),  // cn:警告
             tr("Whether to overwrite the file: %1").arg(fi.absoluteFilePath())  // cn:是否覆盖文件:%1
         );
@@ -970,7 +954,7 @@ bool DAAppController::openCheck()
     const bool hasProjectContent = !project->isEmpty();
     if (project->isDirty()) {
         QMessageBox::StandardButton btn = QMessageBox::question(
-            nullptr,
+            app(),
             tr("Question"),  // cn:提示
             tr("The current project has unsaved changes. Do you want to save before opening another project?"),  // cn:当前工程有未保存的更改，是否在打开其他工程之前保存？
             QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel,
@@ -989,7 +973,7 @@ bool DAAppController::openCheck()
     if (resolveAppOpenPreparation(hasProjectContent, false, DAAppSavePromptChoice::Discard)
         == DAAppOpenPreparation::ConfirmReplaceThenOpen) {
         QMessageBox::StandardButton btn = QMessageBox::question(
-            nullptr,
+            app(),
             tr("Question"),                                                   // cn:提示
             tr("Another project already exists. Do you want to replace it?")  // cn:已存在其他工程，是否要替换？
         );
@@ -1544,8 +1528,8 @@ void DAAppController::onChartEditorStatusChanged(DAFigureWidget::ChartEditorStat
     if (DAFigureWidget::ChartEditorStatus::EndEdit == status) {
         // 结束编辑
         // 触发结束编辑有可能是按键，或一些异常状态，为了避免和按钮的状态不同步，这里结束编辑后要把actiongroup管理的action都设置为unchecked
-        auto actions = mActions->actionGroupChartEditor->actions();
-        for (auto a : actions) {
+        const QList< QAction* > actions = mActions->actionGroupChartEditor->actions();
+        for (QAction* a : actions) {
             if (a->isChecked()) {
                 a->setChecked(false);
             }
@@ -1868,10 +1852,13 @@ void DAAppController::onActionChartEnablePickerCrossTriggered(bool on)
  */
 void DAAppController::onActionChartEnablePickerYTriggered(bool on)
 {
-    applyToCharts([ on ](DAChartWidget* w) -> bool {
+    bool res = applyToCharts([ on ](DAChartWidget* w) -> bool {
         w->enableYValuePicking(on);
         return true;
     });
+    if (res) {
+        setDirty();
+    }
 }
 
 /**
@@ -1897,10 +1884,13 @@ void DAAppController::onActionGroupChartPickerTextRegionTriggered(QAction* act)
  */
 void DAAppController::onActionChartEnablePickerXYTriggered(bool on)
 {
-    applyToCharts([ on ](DAChartWidget* w) -> bool {
+    bool res = applyToCharts([ on ](DAChartWidget* w) -> bool {
         w->enableXYValuePicking(on);
         return true;
     });
+    if (res) {
+        setDirty();
+    }
 }
 
 /**

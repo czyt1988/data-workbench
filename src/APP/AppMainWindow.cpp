@@ -44,22 +44,6 @@
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
 
-namespace
-{
-DA::DAAppSavePromptChoice toAppSavePromptChoice(QMessageBox::StandardButton btn)
-{
-    switch (btn) {
-    case QMessageBox::Yes:
-        return DA::DAAppSavePromptChoice::Save;
-    case QMessageBox::No:
-        return DA::DAAppSavePromptChoice::Discard;
-    case QMessageBox::Cancel:
-    default:
-        return DA::DAAppSavePromptChoice::Cancel;
-    }
-}
-}  // namespace
-
 namespace DA
 {
 

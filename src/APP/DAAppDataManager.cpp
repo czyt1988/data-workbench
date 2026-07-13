@@ -38,8 +38,9 @@ bool DAAppDataManager::importFromFile(const QString& f, const QVariantMap& args,
     try {
         if (DAPyScripts::isInitScripts()) {
             DAPyScripts::getIO().read_and_add_to_datamanager(f, args, err);
+            return true;
         }
-        return true;
+        daWarning << tr("Python scripts not initialized, cannot import file: %1").arg(f);  // cn:Python脚本未初始化，无法导入文件:%1
     } catch (const std::exception& e) {
         qCritical() << e.what();
     }

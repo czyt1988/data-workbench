@@ -23,6 +23,7 @@ class DAPyWorkFlowGraphicsScene;
 class DADataOperateWidget;
 class DAChartOperateWidget;
 class DAAppPluginManager;
+class DAStatusBarInterface;
 /**
  * @brief 负责整个节点的工程管理
  *
@@ -110,6 +111,8 @@ private:
 	void setStatusBarInBusy(const QString& info = QString());
 	void setStatusBarNotBusy(const QString& info = QString());
 	void setCurrentStatusText(const QString& info);
+	// 获取状态栏接口，带空指针保护
+	DAStatusBarInterface* getStatusBar() const;
 
 private:
 	DAZipArchiveThreadWrapper* mArchive { nullptr };

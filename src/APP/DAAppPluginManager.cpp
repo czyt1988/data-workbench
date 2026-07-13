@@ -190,8 +190,6 @@ static QStringList scanPyPluginsDir(const QString& pyPluginsDir)
         QDir pyScriptsDir(pyScriptsPath);
         QString initFilePath = pyScriptsDir.filePath("__init__.py");
         bool hasPyPackage    = QFile::exists(initFilePath);
-        // 检查 PyScripts 下是否有包含 __init__.py 的 Python 包
-        const QStringList packageDirList = pyScriptsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
 
         if (hasPyPackage) {
             result.append(pyScriptsPath);

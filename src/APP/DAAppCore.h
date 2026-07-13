@@ -44,7 +44,7 @@ private:
     DAAppCommand* mAppCmd { nullptr };
     DAAppUI* mAppUI { nullptr };
     DAAppDataManager* mDataManager { nullptr };
-    bool mIsPythonInterpreterInitialized;
+    bool mIsPythonInterpreterInitialized { false };
     DAAppProject* mProject { nullptr };
 };
 

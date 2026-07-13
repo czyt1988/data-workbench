@@ -18,6 +18,7 @@ class DAAppUI : public DAUIInterface
     Q_OBJECT
 public:
     DAAppUI(SARibbonMainWindow* m, DACoreInterface* c);
+    ~DAAppUI();
 
     // 获取主程序
     virtual QMainWindow* getMainWindow() const override;

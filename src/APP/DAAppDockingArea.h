@@ -128,7 +128,7 @@ public:
     // 获取左右侧边栏的当前状态
     bool isLeftSidebarVisible() const;
     bool isRightSidebarVisible() const;
-public slots:
+public Q_SLOTS:
     // 显示数据
     void showDataOperateWidget(const DA::DAData& data, const QString& name = QString());
 
@@ -142,38 +142,38 @@ private:
     void buildOtherWidgets();
     // 初始化信号槽
     void initConnection();
-private slots:
+private Q_SLOTS:
     void onDataManageWidgetDataDbClicked(const DA::DAData& data);
     void onDataManageWidgetDataSeriesDbClicked(const DA::DAData& data, const QString& name);
 
 private:
-    AppMainWindow* mApp;
-    DAAppCommand* mAppCmd;  ///< cmd
-    DAAppDataManager* mDataMgr;
+    AppMainWindow* mApp { nullptr };
+    DAAppCommand* mAppCmd { nullptr };  ///< cmd
+    DAAppDataManager* mDataMgr { nullptr };
 
     // 管理窗口不允许关闭
     //  管理窗口
-    DAPyWorkFlowNodeListWidget* mWorkflowNodeListWidget;  ///< 工作流节点窗口
-    ads::CDockWidget* mWorkflowNodeListDock;            ///< m_workflowNodeListWidget对应的dock
-    DAChartManageWidget* mChartManageWidget;            ///< 绘图管理窗口
-    ads::CDockWidget* mChartManageDock;                 ///< m_chartManageWidget对应的dock
-    DADataManageWidget* mDataManageWidget;              ///< 数据窗口
-    ads::CDockWidget* mDataManageDock;                  ///< m_dataManageWidget对应的dock
+    DAPyWorkFlowNodeListWidget* mWorkflowNodeListWidget { nullptr };  ///< 工作流节点窗口
+    ads::CDockWidget* mWorkflowNodeListDock { nullptr };            ///< m_workflowNodeListWidget对应的dock
+    DAChartManageWidget* mChartManageWidget { nullptr };            ///< 绘图管理窗口
+    ads::CDockWidget* mChartManageDock { nullptr };                 ///< m_chartManageWidget对应的dock
+    DADataManageWidget* mDataManageWidget { nullptr };              ///< 数据窗口
+    ads::CDockWidget* mDataManageDock { nullptr };                  ///< m_dataManageWidget对应的dock
     // 操作窗口不允许关闭
     //  操作窗口
-    DAPyWorkFlowOperateWidget* mWorkFlowOperateWidget;  ///< 工作流操作窗口
-    ads::CDockWidget* mWorkFlowOperateDock;           ///< m_workFlowOperateWidget对应的dock
-    DAChartOperateWidget* mChartOperateWidget;        ///< 绘图操作窗口
-    ads::CDockWidget* mChartOperateDock;              ///< m_chartOperateWidget对应的dock
-    DADataOperateWidget* mDataOperateWidget;          ///< 数据操作窗口
-    ads::CDockWidget* mDataOperateDock;               ///< m_dataOperateWidget对应的dock
+    DAPyWorkFlowOperateWidget* mWorkFlowOperateWidget { nullptr };  ///< 工作流操作窗口
+    ads::CDockWidget* mWorkFlowOperateDock { nullptr };           ///< m_workFlowOperateWidget对应的dock
+    DAChartOperateWidget* mChartOperateWidget { nullptr };        ///< 绘图操作窗口
+    ads::CDockWidget* mChartOperateDock { nullptr };              ///< m_chartOperateWidget对应的dock
+    DADataOperateWidget* mDataOperateWidget { nullptr };          ///< 数据操作窗口
+    ads::CDockWidget* mDataOperateDock { nullptr };               ///< m_dataOperateWidget对应的dock
 
     // 设置窗口
-    DASettingContainerWidget* mSettingContainerWidget;  ///< 设置窗口容器
-    ads::CDockWidget* mSettingContainerDock;
+    DASettingContainerWidget* mSettingContainerWidget { nullptr };  ///< 设置窗口容器
+    ads::CDockWidget* mSettingContainerDock { nullptr };
     // 日志窗口
-    DAMessageLogViewWidget* mMessageLogViewWidget;  ///< 日志窗口
-    ads::CDockWidget* mMessageLogDock;
+    DAMessageLogViewWidget* mMessageLogViewWidget { nullptr };  ///< 日志窗口
+    ads::CDockWidget* mMessageLogDock { nullptr };
 };
 }  // namespace DA
 #endif  // DAAPPDOCKINGAREA_H

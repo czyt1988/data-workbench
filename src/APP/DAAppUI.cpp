@@ -33,6 +33,12 @@ DAAppUI::DAAppUI(SARibbonMainWindow* m, DACoreInterface* c) : DAUIInterface(m, c
     //!
 }
 
+DAAppUI::~DAAppUI()
+{
+    qDeleteAll(m_cachePropertyDialog);
+    m_cachePropertyDialog.clear();
+}
+
 QMainWindow* DAAppUI::getMainWindow() const
 {
     return static_cast< QMainWindow* >(m_ribbonArea->app());
@@ -68,7 +74,9 @@ QJsonObject DAAppUI::getConfigValues(const QString& jsonConfig, QWidget* parent,
     if (!cacheKey.isEmpty()) {
         DAPropertyFormDialog* dialog = m_cachePropertyDialog.value(cacheKey, nullptr);
         if (!dialog) {
-            dialog = new DAPropertyFormDialog(parent);
+            // 缓存的对话框使用 mainWindow() 作为 parent，确保稳定的生命周期管理
+            // 不使用调用方传入的 parent，因为 parent 可能为 nullptr 或临时窗口
+            dialog = new DAPropertyFormDialog(mainWindow());
             if (!dialog->loadFromJson(jsonConfig)) {
                 qWarning() << tr("Failed to load form config for settings dialog");  // cn:无法加载设置对话框的表单配置
                 delete dialog;
@@ -82,7 +90,7 @@ QJsonObject DAAppUI::getConfigValues(const QString& jsonConfig, QWidget* parent,
         }
         return QJsonObject();
     }
-    // 创建一个配置对话框
+    // 非缓存路径，使用调用方传入的 parent
     return DAPropertyFormDialog::showSettingsDialog(jsonConfig, parent);
 }
 

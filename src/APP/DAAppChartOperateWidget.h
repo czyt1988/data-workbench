@@ -51,7 +51,7 @@ private:
 #if DA_ENABLE_PYTHON
     DADialogChartGuide* mChartGuideDlg { nullptr };
 #endif
-    DAEvenFilterDragPlotWithGuide* mFigEventFilter;  ///< 给DAFigureWidget的eventfilter
+    DAEvenFilterDragPlotWithGuide* mFigEventFilter { nullptr };  ///< 给DAFigureWidget的eventfilter
 };
 }
 

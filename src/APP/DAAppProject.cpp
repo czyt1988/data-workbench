@@ -1048,11 +1048,10 @@ void DAAppProject::onTaskProgress(std::shared_ptr< DAAbstractArchiveTask > t, in
         // 读任务
         switch (t->getCode()) {
         case DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW: {
-            // 错开，加载workflow时显示加载数据
-            setCurrentStatusText(tr("Loading data"));  // cn:正在加载数据
+            setCurrentStatusText(tr("Loading workflow"));  // cn:正在加载工作流
         } break;
         case DAAPPPROJECT_TASK_LOAD_ID_DATAMANAGER: {
-            setCurrentStatusText(tr("Loading charts"));  // cn:正在加载绘图
+            setCurrentStatusText(tr("Loading data"));  // cn:正在加载数据
         } break;
         }
     }
@@ -1268,18 +1267,18 @@ void DAAppProject::loadedDataManager(const std::shared_ptr< DAAbstractArchiveTas
         case DAAbstractData::TypePythonDataFrame: {
             if (!DAPyScripts::isInitScripts()) {
                 daCritical << tr("Python script is not initialized");  // cn:脚本没有初始化
-                return;
+                continue;  // 跳过当前数据项，继续加载后续数据
             }
             QString tempLocalFilePath = datamgrTask->getLocalTempFilePath(valueText);
             if (tempLocalFilePath.isEmpty()) {
                 daCritical << tr("Unable to find the temporary file corresponding to %1").arg(valueText);  // cn:无法找到%1对应的临时文件
-                return;
+                continue;  // 跳过当前数据项，继续加载后续数据
             }
             DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
             DAPyDataFrame df;
             if (!pydf.from_parquet(df, tempLocalFilePath)) {
                 daCritical << tr("Unable to serialize file %1 into a DataFrame").arg(tempLocalFilePath);  // cn:无法把文件%1序列化为DataFrame
-                return;
+                continue;  // 跳过当前数据项，继续加载后续数据
             }
             qDebug() << df;
             // 创建DAData
@@ -1396,7 +1395,10 @@ void DAAppProject::loadedTableStyles(const std::shared_ptr< DAAbstractArchiveTas
 
 void DAAppProject::setStatusBarInBusy(const QString& info)
 {
-    DAStatusBarInterface* statusBar = core()->getUiInterface()->getStatusBar();
+    DAStatusBarInterface* statusBar = getStatusBar();
+    if (!statusBar) {
+        return;
+    }
     statusBar->showProgressBar();
     statusBar->setBusy(true);
     if (!info.isNull()) {
@@ -1408,7 +1410,10 @@ void DAAppProject::setStatusBarInBusy(const QString& info)
 
 void DAAppProject::setStatusBarNotBusy(const QString& info)
 {
-    DAStatusBarInterface* statusBar = core()->getUiInterface()->getStatusBar();
+    DAStatusBarInterface* statusBar = getStatusBar();
+    if (!statusBar) {
+        return;
+    }
     statusBar->setBusy(false);
     statusBar->hideProgressBar();
     if (!info.isNull()) {
@@ -1420,8 +1425,19 @@ void DAAppProject::setStatusBarNotBusy(const QString& info)
 
 void DAAppProject::setCurrentStatusText(const QString& info)
 {
-    DAStatusBarInterface* statusBar = core()->getUiInterface()->getStatusBar();
+    DAStatusBarInterface* statusBar = getStatusBar();
+    if (!statusBar) {
+        return;
+    }
     statusBar->setProgressText(info);
+}
+
+DAStatusBarInterface* DAAppProject::getStatusBar() const
+{
+    if (!core() || !core()->getUiInterface()) {
+        return nullptr;
+    }
+    return core()->getUiInterface()->getStatusBar();
 }
 
 }  // end DA

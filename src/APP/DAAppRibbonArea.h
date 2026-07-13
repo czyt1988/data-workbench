@@ -298,57 +298,57 @@ private:
     ///////////////////////////////////////////
     // pass
 
-    DAAppActions* m_actions;       ///< 所有的action管理
-    DAAppDockingArea* m_dockArea;  ///< 注意这个变量不能在构造函数中调用
-    AppMainWindow* m_app;
-    DAAppCommand* m_appCmd;                  ///< cmd
+    DAAppActions* m_actions { nullptr };       ///< 所有的action管理
+    DAAppDockingArea* m_dockArea { nullptr };  ///< 注意这个变量不能在构造函数中调用
+    AppMainWindow* m_app { nullptr };
+    DAAppCommand* m_appCmd { nullptr };                  ///< cmd
                                              //----------------------------------------------------
                                              // main
                                              //----------------------------------------------------
-    SARibbonCategory* m_categoryMain;        ///< 主页标签
-    SARibbonPanel* m_pannelMainFileOpt;      ///< 文件操作
-    SARibbonPanel* m_pannelMainDataOpt;      ///< 数据操作
-    SARibbonPanel* m_pannelMainChartOpt;     ///< 数据操作
-    SARibbonPanel* m_pannelMainWorkflowOpt;  ///< 工作流在main的pannel
-    SARibbonPanel* m_pannelSetting;          ///< 设定
+    SARibbonCategory* m_categoryMain { nullptr };        ///< 主页标签
+    SARibbonPanel* m_pannelMainFileOpt { nullptr };      ///< 文件操作
+    SARibbonPanel* m_pannelMainDataOpt { nullptr };      ///< 数据操作
+    SARibbonPanel* m_pannelMainChartOpt { nullptr };     ///< 数据操作
+    SARibbonPanel* m_pannelMainWorkflowOpt { nullptr };  ///< 工作流在main的pannel
+    SARibbonPanel* m_pannelSetting { nullptr };          ///< 设定
                                              //----------------------------------------------------
                                              // data
                                              //----------------------------------------------------
-    SARibbonCategory* m_categoryData;        ///< 数据标签
-    SARibbonPanel* m_pannelDataOperate;      ///< 数据操作
+    SARibbonCategory* m_categoryData { nullptr };        ///< 数据标签
+    SARibbonPanel* m_pannelDataOperate { nullptr };      ///< 数据操作
                                              //----------------------------------------------------
                                              // view
                                              //----------------------------------------------------
-    SARibbonCategory* m_categoryView;        ///< 视图标签
-    SARibbonPanel* m_pannelViewMainView;     ///< 主要视图操作
+    SARibbonCategory* m_categoryView { nullptr };        ///< 视图标签
+    SARibbonPanel* m_pannelViewMainView { nullptr };     ///< 主要视图操作
     //----------------------------------------------------
     // edit
     //----------------------------------------------------
     //--widget
-    DAFontEditPannelWidget* m_editFontEditPannel;          ///< 工作流的字体编辑器
-    DAShapeEditPannelWidget* m_editShapeEditPannelWidget;  ///< 图框编辑
-    SARibbonCategory* m_categoryEdit;                      ///< 编辑标签
-    SARibbonPanel* m_pannelEditWorkflow;                   ///< 主要编辑操作
+    DAFontEditPannelWidget* m_editFontEditPannel { nullptr };          ///< 工作流的字体编辑器
+    DAShapeEditPannelWidget* m_editShapeEditPannelWidget { nullptr };  ///< 图框编辑
+    SARibbonCategory* m_categoryEdit { nullptr };                      ///< 编辑标签
+    SARibbonPanel* m_pannelEditWorkflow { nullptr };                   ///< 主要编辑操作
 
     //----------------------------------------------------
     // figure
     //----------------------------------------------------
-    SARibbonCategory* m_categoryFigure;    ///< 绘图标签
-    SARibbonPanel* m_pannelFigureSetting;  ///< 绘图的设置
-    SARibbonPanel* m_pannelChartAdd;       ///< 添加绘图
+    SARibbonCategory* m_categoryFigure { nullptr };    ///< 绘图标签
+    SARibbonPanel* m_pannelFigureSetting { nullptr };  ///< 绘图的设置
+    SARibbonPanel* m_pannelChartAdd { nullptr };       ///< 添加绘图
 
     //----------------------------------------------------
     // Context - dataframe
     //----------------------------------------------------
-    SARibbonContextCategory* m_contextDataFrame;   ///< 对应dataframe的上下文
-    SARibbonCategory* m_categoryDataframeOperate;  ///< dataframe对应的category
-    SARibbonPanel* m_pannelDataframeOperateAxes;   ///< 数据信息的编辑
-    SARibbonPanel* m_pannelDataframeOperateDType;  ///< 数据类型的编辑
+    SARibbonContextCategory* m_contextDataFrame { nullptr };   ///< 对应dataframe的上下文
+    SARibbonCategory* m_categoryDataframeOperate { nullptr };  ///< dataframe对应的category
+    SARibbonPanel* m_pannelDataframeOperateAxes { nullptr };   ///< 数据信息的编辑
+    SARibbonPanel* m_pannelDataframeOperateDType { nullptr };  ///< 数据类型的编辑
 #if DA_ENABLE_PYTHON
-    SARibbonLineWidgetContainer* m_comboxColumnTypesContainer;  ///< 列类型选择器的container
-    DAPyDTypeComboBox* m_comboxColumnTypes;                     ///< 列类型选择器
+    SARibbonLineWidgetContainer* m_comboxColumnTypesContainer { nullptr };  ///< 列类型选择器的container
+    DAPyDTypeComboBox* m_comboxColumnTypes { nullptr };                     ///< 列类型选择器
 #endif
-    SARibbonButtonGroupWidget* m_castActionsButtonGroup;  ///< 管理强制转换的action的工具栏
+    SARibbonButtonGroupWidget* m_castActionsButtonGroup { nullptr };  ///< 管理强制转换的action的工具栏
     // 表格样式 category
     SARibbonCategory* m_categoryDataframeStyle { nullptr };       ///< dataframe表格样式category
     SARibbonPanel* m_pannelDataframeStyleFill { nullptr };        ///< 底色面板
@@ -359,52 +359,52 @@ private:
     //----------------------------------------------------
     // Context - workflow
     //----------------------------------------------------
-    SARibbonContextCategory* m_contextWorkflow;  ///< 对应workflow的上下文
+    SARibbonContextCategory* m_contextWorkflow { nullptr };  ///< 对应workflow的上下文
     //----------------------------------------------------
     // Context - workflow-view
     //----------------------------------------------------
-    SARibbonCategory* m_categoryWorkflowGraphicsView;  ///< 工作流视图
-    SARibbonPanel* m_pannelWorkflowView;               ///< 图元视图pannel
+    SARibbonCategory* m_categoryWorkflowGraphicsView { nullptr };  ///< 工作流视图
+    SARibbonPanel* m_pannelWorkflowView { nullptr };               ///< 图元视图pannel
 
-    SARibbonPanel* m_pannelWorkflowExport;  ///< 视图导出
+    SARibbonPanel* m_pannelWorkflowExport { nullptr };  ///< 视图导出
     //----------------------------------------------------
     // Context - workflow-edit
     //----------------------------------------------------
-    DAFontEditPannelWidget* m_workflowFontEditPannel;          ///< 工作流的字体编辑器
-    DAShapeEditPannelWidget* m_workflowShapeEditPannelWidget;  ///< 图框编辑
+    DAFontEditPannelWidget* m_workflowFontEditPannel { nullptr };          ///< 工作流的字体编辑器
+    DAShapeEditPannelWidget* m_workflowShapeEditPannelWidget { nullptr };  ///< 图框编辑
 
-    SARibbonCategory* m_categoryWorkflowGraphicsEdit;  ///< 工作流绘图编辑
-    SARibbonPanel* m_pannelClipBoard;                  ///< 剪切板
-    SARibbonPanel* m_pannelWorkflowItem;               ///< 图元编辑
-    SARibbonPanel* m_pannelWorkflowBackground;         ///< 背景编辑
-    SARibbonPanel* m_pannelWorkflowText;               ///< 文本编辑
-    SARibbonPanel* m_pannelWorkflowGroup;              ///< 图元分组相关pannel
+    SARibbonCategory* m_categoryWorkflowGraphicsEdit { nullptr };  ///< 工作流绘图编辑
+    SARibbonPanel* m_pannelClipBoard { nullptr };                  ///< 剪切板
+    SARibbonPanel* m_pannelWorkflowItem { nullptr };               ///< 图元编辑
+    SARibbonPanel* m_pannelWorkflowBackground { nullptr };         ///< 背景编辑
+    SARibbonPanel* m_pannelWorkflowText { nullptr };               ///< 文本编辑
+    SARibbonPanel* m_pannelWorkflowGroup { nullptr };              ///< 图元分组相关pannel
 
     //----------------------------------------------------
     // Context - workflow-run
     //----------------------------------------------------
-    SARibbonCategory* m_categoryWorkflowRun;  ///< 工作流运行
-    SARibbonPanel* m_pannelWorkflowRun;       ///< 运行视图pannel
+    SARibbonCategory* m_categoryWorkflowRun { nullptr };  ///< 工作流运行
+    SARibbonPanel* m_pannelWorkflowRun { nullptr };       ///< 运行视图pannel
     //----------------------------------------------------
     // Context - chart
     //----------------------------------------------------
-    SARibbonContextCategory* m_contextChart;                      ///< 对应Chart的上下文
-    SARibbonCategory* m_categoryChartOpt;                         ///< Chart操作标签
-    SARibbonPanel* m_pannelFigureSettingForContext;               ///< 绘图的设置
-    SARibbonPanel* m_pannelChartSetting;                          ///< 图表的设置
-    SARibbonButtonGroupWidget* m_chartGridDirActionsButtonGroup;  ///< grid的方向
-    SARibbonButtonGroupWidget* m_chartGridMinActionsButtonGroup;  ///< grid的min设置
-    SARibbonPanel* m_panelFigureTheme;                            ///< 绘图样式
-    SARibbonGallery* m_figureThemeGallery;                        ///< 绘图样式
-    SARibbonCategory* m_categoryChartEdit;                        ///< Chart编辑标签
-    SARibbonPanel* m_pannelChartSelectTool;                       ///< 图表选区
-    SARibbonPanel* m_pannelChartSelectOpt;                        ///< 图表选区操作
-    SARibbonPanel* m_pannelChartAssistTool;                       ///< 辅助工具
+    SARibbonContextCategory* m_contextChart { nullptr };                      ///< 对应Chart的上下文
+    SARibbonCategory* m_categoryChartOpt { nullptr };                         ///< Chart操作标签
+    SARibbonPanel* m_pannelFigureSettingForContext { nullptr };               ///< 绘图的设置
+    SARibbonPanel* m_pannelChartSetting { nullptr };                          ///< 图表的设置
+    SARibbonButtonGroupWidget* m_chartGridDirActionsButtonGroup { nullptr };  ///< grid的方向
+    SARibbonButtonGroupWidget* m_chartGridMinActionsButtonGroup { nullptr };  ///< grid的min设置
+    SARibbonPanel* m_panelFigureTheme { nullptr };                            ///< 绘图样式
+    SARibbonGallery* m_figureThemeGallery { nullptr };                        ///< 绘图样式
+    SARibbonCategory* m_categoryChartEdit { nullptr };                        ///< Chart编辑标签
+    SARibbonPanel* m_pannelChartSelectTool { nullptr };                       ///< 图表选区
+    SARibbonPanel* m_pannelChartSelectOpt { nullptr };                        ///< 图表选区操作
+    SARibbonPanel* m_pannelChartAssistTool { nullptr };                       ///< 辅助工具
     //----------------------------------------------------
     //
     //----------------------------------------------------
     // ApplicationMenu
-    DAAppRibbonApplicationMenu* mApplicationMenu;        ///< ribbon-app menu
+    DAAppRibbonApplicationMenu* mApplicationMenu { nullptr };        ///< ribbon-app menu
                                                          // 菜单相关
     QMenu* mExportWorkflowSceneToImageMenu { nullptr };  ///< scene导出为图片菜单
     QMenu* m_menuViewLineMarkers { nullptr };            ///< 视图标记线

@@ -445,7 +445,7 @@ private:
     LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
                                                             //
     DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
-    DAAppConfig* mConfig;                                   ///< 设置类
+    DAAppConfig* mConfig { nullptr };                                   ///< 设置类
 };
 }
 

@@ -1,6 +1,8 @@
 #ifndef DAAPPPROJECTACTIONPOLICY_H
 #define DAAPPPROJECTACTIONPOLICY_H
 
+#include <QMessageBox>
+
 namespace DA
 {
 /**
@@ -12,6 +14,24 @@ enum class DAAppSavePromptChoice
     Discard,  ///< 放弃修改并继续
     Cancel    ///< 取消当前操作
 };
+
+/**
+ * @brief 将 QMessageBox::StandardButton 转换为 DAAppSavePromptChoice
+ * @param btn 用户在保存提示框中点击的按钮
+ * @return 对应的保存提示选择
+ */
+inline DAAppSavePromptChoice toAppSavePromptChoice(QMessageBox::StandardButton btn)
+{
+    switch (btn) {
+    case QMessageBox::Yes:
+        return DAAppSavePromptChoice::Save;
+    case QMessageBox::No:
+        return DAAppSavePromptChoice::Discard;
+    case QMessageBox::Cancel:
+    default:
+        return DAAppSavePromptChoice::Cancel;
+    }
+}
 
 /**
  * @brief 关闭窗口前的决策
