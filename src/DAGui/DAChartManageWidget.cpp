@@ -1,5 +1,6 @@
 ﻿#include "DAChartManageWidget.h"
 #include "ui_DAChartManageWidget.h"
+#include <functional>
 #include <QTreeView>
 #include <QPointer>
 #include <QDebug>
@@ -223,7 +224,26 @@ void DAChartManageWidget::expandCurrentTree()
     if (!tree) {
         return;
     }
-    tree->expandAll();
+    QAbstractItemModel* model = tree->model();
+    if (!model) {
+        return;
+    }
+    // 展开图元节点（NodeTypeItemsFolder 及其上层节点），收起坐标轴文件夹节点（NodeTypeAxesFolder）
+    std::function< void(const QModelIndex&) > expandIndex = [&](const QModelIndex& parent) {
+        for (int row = 0; row < model->rowCount(parent); ++row) {
+            QModelIndex index = model->index(row, 0, parent);
+            if (!index.isValid()) {
+                continue;
+            }
+            // 坐标轴文件夹节点收起，其余节点展开
+            bool expand = (index.data(DAFigureTreeModel::RoleNodeType).toInt() != DAFigureTreeModel::NodeTypeAxesFolder);
+            tree->setExpanded(index, expand);
+            if (expand) {
+                expandIndex(index);
+            }
+        }
+    };
+    expandIndex(QModelIndex());
     if (tree->isAutoResizeColumnToContents()) {
         tree->resizeHeaderToContents();
     }
