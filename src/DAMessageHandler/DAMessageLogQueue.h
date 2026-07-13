@@ -30,66 +30,34 @@ class DAMESSAGEHANDLER_API DAMessageLogQueue : public QObject
     Q_OBJECT
     DA_DECLARE_PRIVATE(DAMessageLogQueue)
 public:
-    /**
-     * @brief 获取全局单例
-     * @return
-     */
+    // 获取全局单例
     static DAMessageLogQueue& instance();
 
-    /**
-     * @brief 获取单例的 weak_ptr（供 DAMessageLogSink 安全访问）
-     *
-     * 程序退出时单例析构后，weak_ptr 会 lock 失败，sink 据此跳过推送，
-     * 避免 spdlog 后台线程在 queue 析构后访问已释放内存。
-     * @return
-     */
+    // 获取单例的 weak_ptr（供 DAMessageLogSink 安全访问）
     static std::weak_ptr< DAMessageLogQueue > weakInstance();
 
     ~DAMessageLogQueue();
 
-    /**
-     * @brief 推入一条消息（由 DAMessageLogSink 在后台线程调用）
-     * @param item
-     */
+    // 推入一条消息（由 DAMessageLogSink 在后台线程调用）
     void push(const DAMessageLogItem& item);
+    void push(DAMessageLogItem&& item);  // 右值重载，避免拷贝
 
-    /**
-     * @brief 获取指定索引的消息
-     * @param index
-     * @return
-     */
+    // 获取指定索引的消息
     DAMessageLogItem at(int index) const;
 
-    /**
-     * @brief 队列当前消息数量
-     * @return
-     */
+    // 队列当前消息数量
     int size() const;
 
-    /**
-     * @brief 清空队列
-     */
+    // 清空队列
     void clear();
 
-    /**
-     * @brief 设置队列容量（环形缓冲大小）
-     * @param c
-     */
+    // 设置队列容量（环形缓冲大小）
     void setCapacity(int c);
 
-    /**
-     * @brief 获取队列容量
-     * @return
-     */
+    // 获取队列容量
     int capacity() const;
 
-    /**
-     * @brief 设置惰性信号发射
-     *
-     * 开启时（默认），信号按固定间隔发射；关闭时，每次 push 立即发射。
-     * @param on 是否开启惰性发射
-     * @param intervalMs 发射间隔（毫秒），默认 1000ms
-     */
+    // 设置惰性信号发射
     void setLazyEmit(bool on, int intervalMs = 1000);
 
 private:

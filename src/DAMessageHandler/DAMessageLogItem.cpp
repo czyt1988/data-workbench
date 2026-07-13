@@ -9,11 +9,14 @@ using namespace DA;
 // DAMessageLogItem
 //===================================================
 DAMessageLogItem::DAMessageLogItem()
-    : mValidFlag(false), mMsgType(QtDebugMsg), mMsg(""), mDatetime(QDateTime::currentDateTime())
+    : mValidFlag(false)
+    , mMsgType(QtDebugMsg)
+    , mMsg()
+    , mDatetime(QDateTime::currentDateTime())
+    , mFileName()
+    , mFunctionName()
+    , mLine(-1)
 {
-    mFileName     = "";
-    mFunctionName = "";
-    mLine         = -1;
 }
 
 DAMessageLogItem::DAMessageLogItem(QtMsgType type, const QMessageLogContext& context, const QString& m)

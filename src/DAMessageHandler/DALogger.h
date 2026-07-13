@@ -70,101 +70,44 @@ class DAMESSAGEHANDLER_API DALogger
 {
     DA_DECLARE_PRIVATE(DALogger)
 public:
-    /**
-     * @brief 获取全局单例
-     * @return
-     */
+    // 获取全局单例
     static DALogger& instance();
 
-    /**
-     * @brief 析构，自动注销 message handler 并关闭 spdlog
-     */
+    // 析构，自动注销 message handler 并关闭 spdlog
     ~DALogger();
 
-    /**
-     * @brief 设置旋转文件日志
-     *
-     * 文件达到 maxSize 后自动旋转，保留最多 maxFiles 个历史文件。
-     * @param filename 日志文件路径
-     * @param maxSize 单个文件最大字节数（默认 10MB）
-     * @param maxFiles 最大文件数量（默认 5）
-     * @param outputStdout 是否同时输出到控制台
-     * @param policy 异步队列溢出策略（默认 OverrunOldest）
-     */
+    // 设置旋转文件日志（文件达到 maxSize 后自动旋转，保留最多 maxFiles 个历史文件）
     void setupRotatingFile(const QString& filename,
-                           int maxSize             = 10 * 1048576,
+                           int maxSize             = 10 * 1024 * 1024,
                            int maxFiles            = 5,
                            bool outputStdout       = true,
                            DAOverflowPolicy policy = DAOverflowPolicy::OverrunOldest);
 
-    /**
-     * @brief 设置按日期分割的文件日志
-     *
-     * 每天生成一个新文件，保留最多 maxFiles 个历史文件。
-     * @param filename 日志文件路径基名
-     * @param maxFiles 最大文件数量（默认 5）
-     * @param outputStdout 是否同时输出到控制台
-     * @param policy 异步队列溢出策略（默认 OverrunOldest）
-     */
+    // 设置按日期分割的文件日志（每天生成一个新文件，保留最多 maxFiles 个历史文件）
     void setupDailyFile(const QString& filename,
                         int maxFiles            = 5,
                         bool outputStdout       = true,
                         DAOverflowPolicy policy = DAOverflowPolicy::OverrunOldest);
 
-    /**
-     * @brief 设置控制台日志（无文件输出）
-     * @param policy 异步队列溢出策略（默认 OverrunOldest）
-     */
+    // 设置控制台日志（无文件输出）
     void setupConsole(DAOverflowPolicy policy = DAOverflowPolicy::OverrunOldest);
 
-    /**
-     * @brief 设置日志级别（影响所有 sink）
-     * @param level
-     */
+    // 设置日志级别（影响所有 sink）
     void setLevel(DALogLevel level);
 
-    /**
-     * @brief 设置 spdlog 原生 pattern
-     *
-     * 常用占位符：
-     * - %l 级别名 (debug/info/warning/error/critical)
-     * - %L 级别首字母 (D/I/W/E/C)
-     * - %v 消息内容
-     * - %s 文件名
-     * - %# 行号
-     * - %! 函数名
-     * - %Y-%m-%d %H:%M:%S.%e 时间戳
-     * @param pattern spdlog pattern 字符串
-     */
+    // 设置 spdlog 原生 pattern
     void setPattern(const QString& pattern);
 
-    /**
-     * @brief 设置 UI 队列的日志级别（per-sink level）
-     *
-     * 例如设为 Warn，则只有 Warning 及以上消息会推送到 UI 队列，
-     * 文件和控制台仍记录所有级别。
-     *
-     * 仅影响业务日志（context.category 以 "da." 开头），系统日志永不进入 UI 队列。
-     * @param level
-     */
+    // 设置 UI 队列的日志级别（per-sink level）
     void setQueueLevel(DALogLevel level);
 
-    /**
-     * @brief 设置 flush 间隔（秒）
-     * @param seconds
-     */
+    // 设置 flush 间隔（秒）
     void setFlushInterval(int seconds);
 
-    /**
-     * @brief 启用/禁用 UI 队列捕获
-     * @param on
-     */
+    // 启用/禁用 UI 队列捕获
     void setQueueCaptureEnabled(bool on);
 
-    /**
-     * @brief 判断 UI 队列捕获是否启用
-     * @return
-     */
+    // 判断 UI 队列捕获是否启用
     bool isQueueCaptureEnabled() const;
 
 private:

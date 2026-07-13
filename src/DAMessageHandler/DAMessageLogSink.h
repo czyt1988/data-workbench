@@ -30,27 +30,16 @@ public:
     DAMessageLogSink();
     ~DAMessageLogSink() override;
 
-    /**
-     * @brief 从 log_msg 重建 DAMessageLogItem 并推送到队列
-     *
-     * 若 DAMessageLogQueue 已析构（weak_ptr lock 失败），安全跳过推送。
-     * @param msg spdlog 日志消息
-     */
+    // 从 log_msg 重建 DAMessageLogItem 并推送到队列
     void log(const spdlog::details::log_msg& msg) override;
 
-    /**
-     * @brief flush（空实现，队列无需 flush）
-     */
+    // flush（空实现，队列无需 flush）
     void flush() override;
 
-    /**
-     * @brief set_pattern（空实现，sink 不需要格式化）
-     */
+    // set_pattern（空实现，sink 不需要格式化）
     void set_pattern(const std::string& pattern) override;
 
-    /**
-     * @brief set_formatter（空实现，sink 不需要格式化）
-     */
+    // set_formatter（空实现，sink 不需要格式化）
     void set_formatter(std::unique_ptr< spdlog::formatter > sink_formatter) override;
 
 private:

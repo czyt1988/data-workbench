@@ -6,6 +6,7 @@
 #include <QCoreApplication>
 // stl
 #include <atomic>
+#include <deque>
 
 namespace DA
 {
@@ -17,9 +18,10 @@ public:
     ~PrivateData();
 
 public:
-    mutable QMutex mMutex;                ///< 保护 mMessages 和 mCapacity
-    QList< DAMessageLogItem > mMessages;  ///< 消息缓冲
-    int mCapacity { 1000 };               ///< 容量
+    mutable QMutex mMutex;                             ///< 保护 mMessages 和 mCapacity
+    std::deque< DAMessageLogItem > mMessages;          ///< 消息缓冲（O(1) 头尾操作）
+    int mCapacity { 1000 };                            ///< 容量
+    std::atomic_int mCachedSize { 0 };                 ///< 缓存的队列大小（供 onTimeout 等无锁读取）
 
     std::unique_ptr< QTimer > mTimer;                 ///< 惰性发射定时器
     int mEmitIntervalMs { 1000 };                     ///< 发射间隔
@@ -59,31 +61,60 @@ std::shared_ptr< DAMessageLogQueue >& DAMessageLogQueue::singletonPtr()
     return s_queue;
 }
 
+/**
+ * @brief 获取全局单例
+ * @return
+ */
 DAMessageLogQueue& DAMessageLogQueue::instance()
 {
     return *singletonPtr();
 }
 
+/**
+ * @brief 获取单例的 weak_ptr（供 DAMessageLogSink 安全访问）
+ *
+ * 程序退出时单例析构后，weak_ptr 会 lock 失败，sink 据此跳过推送，
+ * 避免 spdlog 后台线程在 queue 析构后访问已释放内存。
+ * @return
+ */
 std::weak_ptr< DAMessageLogQueue > DAMessageLogQueue::weakInstance()
 {
     return std::weak_ptr< DAMessageLogQueue >(singletonPtr());
 }
 
+/**
+ * @brief 推入一条消息（由 DAMessageLogSink 在后台线程调用）
+ *
+ * 队列满后循环覆写最旧消息（O(1)）。信号标记为惰性发射模式由 timer 统一发射，
+ * 非惰性模式立即发射。
+ * @param item
+ */
 void DAMessageLogQueue::push(const DAMessageLogItem& item)
 {
+    push(DAMessageLogItem(item));  // 拷贝后转发到右值重载，避免信号逻辑重复
+}
+
+/**
+ * @brief 推入一条消息（右值版本，避免拷贝）
+ * @param item
+ */
+void DAMessageLogQueue::push(DAMessageLogItem&& item)
+{
+    DA_D(d);
     bool sizeChanged = false;
+    int newSize = 0;
     {
-        DA_D(d);
         QMutexLocker lc(&d->mMutex);
-        if (d->mMessages.size() >= d->mCapacity) {
-            d->mMessages.pop_front();
+        if (static_cast< int >(d->mMessages.size()) >= d->mCapacity) {
+            d->mMessages.pop_front();  // std::deque: O(1)
         } else {
             sizeChanged = true;
         }
-        d->mMessages.append(item);
+        d->mMessages.push_back(std::move(item));
+        newSize = static_cast< int >(d->mMessages.size());
+        d->mCachedSize.store(newSize, std::memory_order_release);
     }
     // 标记信号（惰性模式由 timer 发射，非惰性模式立即发射）
-    DA_D(d);
     if (sizeChanged) {
         d->mNeedEmitSizeChanged.store(true, std::memory_order_release);
     }
@@ -104,36 +135,51 @@ void DAMessageLogQueue::push(const DAMessageLogItem& item)
             emit messageQueueAppended();
         }
         if (d->mNeedEmitSizeChanged.exchange(false, std::memory_order_acq_rel)) {
-            emit messageQueueSizeChanged(size());
+            emit messageQueueSizeChanged(newSize);  // 使用持锁时缓存的值
         }
     }
 }
 
+/**
+ * @brief 获取指定索引的消息
+ * @param index
+ * @return 索引越界时返回无效的 DAMessageLogItem
+ */
 DAMessageLogItem DAMessageLogQueue::at(int index) const
 {
     DA_DC(dc);
     QMutexLocker lc(&dc->mMutex);
-    return dc->mMessages.value(index);
+    if (index < 0 || index >= static_cast< int >(dc->mMessages.size())) {
+        return DAMessageLogItem();  // 返回无效项
+    }
+    return dc->mMessages[ static_cast< std::size_t >(index) ];
 }
 
+/**
+ * @brief 队列当前消息数量
+ * @return
+ */
 int DAMessageLogQueue::size() const
 {
     DA_DC(dc);
     QMutexLocker lc(&dc->mMutex);
-    return dc->mMessages.size();
+    return static_cast< int >(dc->mMessages.size());
 }
 
+/**
+ * @brief 清空队列
+ */
 void DAMessageLogQueue::clear()
 {
+    DA_D(d);
     int oldSize = 0;
     {
-        DA_D(d);
         QMutexLocker lc(&d->mMutex);
-        oldSize = d->mMessages.size();
+        oldSize = static_cast< int >(d->mMessages.size());
         d->mMessages.clear();
+        d->mCachedSize.store(0, std::memory_order_release);
     }
     if (oldSize > 0) {
-        DA_D(d);
         d->mNeedEmitSizeChanged.store(true, std::memory_order_release);
         if (!d->mIsLazyEmit) {
             if (!QCoreApplication::startingUp() && !QCoreApplication::closingDown()) {
@@ -145,13 +191,38 @@ void DAMessageLogQueue::clear()
     }
 }
 
+/**
+ * @brief 设置队列容量（环形缓冲大小）
+ *
+ * 若新容量小于当前消息数，截断多余消息。忽略非正容量。
+ * @param c
+ */
 void DAMessageLogQueue::setCapacity(int c)
 {
+    if (c <= 0) {
+        return;  // 忽略非法值
+    }
+    bool truncated = false;
     DA_D(d);
-    QMutexLocker lc(&d->mMutex);
-    d->mCapacity = c;
+    {
+        QMutexLocker lc(&d->mMutex);
+        d->mCapacity = c;
+        // 若当前消息数超过新容量，截断多余消息
+        while (static_cast< int >(d->mMessages.size()) > c) {
+            d->mMessages.pop_front();
+            truncated = true;
+        }
+        d->mCachedSize.store(static_cast< int >(d->mMessages.size()), std::memory_order_release);
+    }
+    if (truncated) {
+        d->mNeedEmitSizeChanged.store(true, std::memory_order_release);
+    }
 }
 
+/**
+ * @brief 获取队列容量
+ * @return
+ */
 int DAMessageLogQueue::capacity() const
 {
     DA_DC(dc);
@@ -218,7 +289,7 @@ void DAMessageLogQueue::onTimeout()
         emit messageQueueAppended();
     }
     if (needSizeChanged) {
-        emit messageQueueSizeChanged(size());
+        emit messageQueueSizeChanged(d->mCachedSize.load(std::memory_order_acquire));
     }
 }
 

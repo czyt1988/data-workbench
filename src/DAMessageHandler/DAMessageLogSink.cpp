@@ -8,6 +8,7 @@
 #include <QString>
 // stl
 #include <chrono>
+#include <utility>
 
 namespace DA
 {
@@ -82,20 +83,31 @@ void DAMessageLogSink::log(const spdlog::details::log_msg& msg)
     QString payload = QString::fromUtf8(msg.payload.data(), static_cast< int >(msg.payload.size()));
 
     DAMessageLogItem item(qtType, fileName, funcName, msg.source.line, payload, dt);
-    queue->push(item);
+    queue->push(std::move(item));
 }
 
+/**
+ * @brief flush（空实现，队列无需 flush）
+ */
 void DAMessageLogSink::flush()
 {
     // 队列无需 flush
 }
 
+/**
+ * @brief set_pattern（空实现，sink 不需要格式化）
+ * @param pattern
+ */
 void DAMessageLogSink::set_pattern(const std::string& pattern)
 {
     // sink 不需要格式化，直接使用 log_msg 原始字段
     Q_UNUSED(pattern);
 }
 
+/**
+ * @brief set_formatter（空实现，sink 不需要格式化）
+ * @param sink_formatter
+ */
 void DAMessageLogSink::set_formatter(std::unique_ptr< spdlog::formatter > sink_formatter)
 {
     Q_UNUSED(sink_formatter);

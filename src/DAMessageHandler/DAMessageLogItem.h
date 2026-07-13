@@ -23,6 +23,10 @@ public:
     DAMessageLogItem(const DAMessageLogItem& i) = default;
     //赋值操作
     DAMessageLogItem& operator=(const DAMessageLogItem& i) = default;
+    //移动构造
+    DAMessageLogItem(DAMessageLogItem&&) = default;
+    //移动赋值
+    DAMessageLogItem& operator=(DAMessageLogItem&&) = default;
 
 public:
     bool isValid() const;
