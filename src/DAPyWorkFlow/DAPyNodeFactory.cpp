@@ -147,7 +147,8 @@ DAPyNode DAPyNodeFactory::createNode(const QString& qualifiedName)
 {
     try {
         // 调用Python DANodeFactory.create_node()获取节点实例
-        pybind11::object pyNodeInstance = attr("create_node")(qualifiedName.toStdString());
+        pybind11::object pyQualifiedName = pybind11::cast(qualifiedName);
+        pybind11::object pyNodeInstance  = attr("create_node")(pyQualifiedName);
         if (pyNodeInstance.is_none()) {
             return DAPyNode();
         }

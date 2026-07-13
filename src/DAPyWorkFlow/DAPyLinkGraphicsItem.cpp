@@ -101,7 +101,7 @@ void DAPyLinkGraphicsItem::setFromNode(DAPyNodeGraphicsItem* node, const QString
     d_ptr->mFromOutputName = outputName;
 
     // 从源节点查找输出连接点，获取方向并验证way属性
-    QList< DAPyLinkPoint > outputPoints = node->getOutputLinkPoints();
+    const QList< DAPyLinkPoint > outputPoints = node->getOutputLinkPoints();
     bool found                          = false;
     for (const DAPyLinkPoint& lp : outputPoints) {
         if (lp.name == outputName) {
@@ -113,7 +113,7 @@ void DAPyLinkGraphicsItem::setFromNode(DAPyNodeGraphicsItem* node, const QString
 
     if (!found) {
         // 尝试从输入连接点查找（可能用户指定了错误的端口类型）
-        QList< DAPyLinkPoint > inputPoints = node->getInputLinkPoints();
+        const QList< DAPyLinkPoint > inputPoints = node->getInputLinkPoints();
         for (const DAPyLinkPoint& lp : inputPoints) {
             if (lp.name == outputName) {
                 // 连接点是Input类型，不是Output，拒绝连接
@@ -149,7 +149,7 @@ void DAPyLinkGraphicsItem::setToNode(DAPyNodeGraphicsItem* node, const QString& 
     d_ptr->mToInputName = inputName;
 
     // 从目标节点查找输入连接点，获取方向并验证way属性
-    QList< DAPyLinkPoint > inputPoints = node->getInputLinkPoints();
+    const QList< DAPyLinkPoint > inputPoints = node->getInputLinkPoints();
     bool found                         = false;
     for (const DAPyLinkPoint& lp : inputPoints) {
         if (lp.name == inputName) {
@@ -161,7 +161,7 @@ void DAPyLinkGraphicsItem::setToNode(DAPyNodeGraphicsItem* node, const QString& 
 
     if (!found) {
         // 尝试从输出连接点查找（可能用户指定了错误的端口类型）
-        QList< DAPyLinkPoint > outputPoints = node->getOutputLinkPoints();
+        const QList< DAPyLinkPoint > outputPoints = node->getOutputLinkPoints();
         for (const DAPyLinkPoint& lp : outputPoints) {
             if (lp.name == inputName) {
                 // 连接点是Output类型，不是Input，拒绝连接

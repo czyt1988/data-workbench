@@ -118,7 +118,8 @@ bool DAPyWorkFlow::removeNode(const QString& nodeId)
             qWarning() << "DAPyWorkFlow::removeNode: workflow object is invalid";
             return false;
         }
-        pybind11::object pyNodeRef = attr("remove_node")(pybind11::arg("node_id") = nodeId);
+        pybind11::object pyNodeId  = pybind11::cast(nodeId);
+        pybind11::object pyNodeRef = attr("remove_node")(pybind11::arg("node_id") = pyNodeId);
         if (pyNodeRef.is_none()) {
             qWarning() << "DAPyWorkFlow::removeNode: node not found for id:" << nodeId;
             return false;
@@ -228,9 +229,7 @@ bool DAPyWorkFlow::disconnectNode(const QString& connectionId)
     try {
         // 将 QString 先转换为 pybind11::object，避免函数调用模板的参数转换问题
         pybind11::object pyConnId = pybind11::cast(connectionId);
-        pybind11::object connObj  = attr("remove_connection")(pyConnId);
-        QString fromPort          = connObj.attr("source_output_channel").cast< QString >();
-        QString toPort            = connObj.attr("target_input_channel").cast< QString >();
+        attr("remove_connection")(pyConnId);
         return true;
     } catch (const pybind11::error_already_set& e) {
         dealException(e);

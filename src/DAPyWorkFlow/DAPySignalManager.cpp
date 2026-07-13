@@ -136,7 +136,7 @@ void DAPySignalManager::sendOutput(const QString& nodeId, const QString& outputC
         return;
     }
     try {
-        attr("send_output")(nodeId, outputChannel, data);
+        attr("send_output")(pybind11::cast(nodeId), pybind11::cast(outputChannel), data);
     } catch (const std::exception& e) {
         dealException(e);
     }
@@ -172,7 +172,7 @@ bool DAPySignalManager::isNodeReady(const QString& nodeId) const
         return false;
     }
     try {
-        return attr("is_node_ready")(nodeId).cast< bool >();
+        return attr("is_node_ready")(pybind11::cast(nodeId)).cast< bool >();
     } catch (const std::exception& e) {
         dealException(e);
     }

@@ -2,6 +2,7 @@
 #include "DAPybind11InQt.h"
 #include "DAPyModuleWorkflow.h"
 #include "DAPyBindQt/DAPyGILGuard.h"
+#include "DAPybind11QtCaster.hpp"
 namespace DA
 {
 

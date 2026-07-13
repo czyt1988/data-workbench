@@ -146,11 +146,12 @@ DAPyWorkFlow DAPyWorkFlowSerializer::fromJson(const QString& jsonStr, const DAPy
     }
 
     try {
+        pybind11::object pyJsonStr = pybind11::cast(jsonStr);
         pybind11::object result;
         if (!factory.isNone()) {
-            result = attr("from_json")(jsonStr, pybind11::arg("node_factory") = factory.object());
+            result = attr("from_json")(pyJsonStr, pybind11::arg("node_factory") = factory.object());
         } else {
-            result = attr("from_json")(jsonStr);
+            result = attr("from_json")(pyJsonStr);
         }
         return DAPyWorkFlow(result);
     } catch (const std::exception& e) {
@@ -201,11 +202,12 @@ DAPyWorkFlow DAPyWorkFlowSerializer::fromXml(const QString& xmlStr, const DAPyNo
     }
 
     try {
+        pybind11::object pyXmlStr = pybind11::cast(xmlStr);
         pybind11::object result;
         if (!factory.isNone()) {
-            result = attr("from_xml")(xmlStr, pybind11::arg("node_factory") = factory.object());
+            result = attr("from_xml")(pyXmlStr, pybind11::arg("node_factory") = factory.object());
         } else {
-            result = attr("from_xml")(xmlStr);
+            result = attr("from_xml")(pyXmlStr);
         }
         return DAPyWorkFlow(result);
     } catch (const std::exception& e) {
@@ -225,7 +227,7 @@ bool DAPyWorkFlowSerializer::saveToFile(const DAPyWorkFlow& workflow, const QStr
     }
 
     try {
-        attr("save_to_file")(workflow.object(), filePath);
+        attr("save_to_file")(workflow.object(), pybind11::cast(filePath));
         return true;
     } catch (const std::exception& e) {
         dealException(e);
@@ -244,11 +246,12 @@ DAPyWorkFlow DAPyWorkFlowSerializer::loadFromFile(const QString& filePath, const
     }
 
     try {
+        pybind11::object pyFilePath = pybind11::cast(filePath);
         pybind11::object result;
         if (!factory.isNone()) {
-            result = attr("load_from_file")(filePath, pybind11::arg("node_factory") = factory.object());
+            result = attr("load_from_file")(pyFilePath, pybind11::arg("node_factory") = factory.object());
         } else {
-            result = attr("load_from_file")(filePath);
+            result = attr("load_from_file")(pyFilePath);
         }
         return DAPyWorkFlow(result);
     } catch (const std::exception& e) {

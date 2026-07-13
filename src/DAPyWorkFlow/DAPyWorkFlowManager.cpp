@@ -273,7 +273,7 @@ void DAPyWorkFlowManager::setWorkflowName(const QString& name)
     DAPyGILGuard gil;
     try {
         if (d->mWorkflow && d->mWorkflow.hasattr("name")) {
-            d->mWorkflow.object().attr("name") = name.toStdString();
+            d->mWorkflow.object().attr("name") = pybind11::cast(name);
         }
     } catch (const pybind11::error_already_set& e) {
         daCritical << "DAPyWorkFlowManager::setWorkflowName:" << e.what();

@@ -455,7 +455,7 @@ bool DAPyWorkFlowScene::removePyNodeItem(DAPyNodeGraphicsItem* item)
     DA_D(d);
 
     // 先移除所有关联的连接线（通过映射表直接获取）
-    QList< DAPyLinkGraphicsItem* > relatedLinks = getNodeLinkItems(item);
+    const QList< DAPyLinkGraphicsItem* > relatedLinks = getNodeLinkItems(item);
     for (DAPyLinkGraphicsItem* link : relatedLinks) {
         // 从映射表中移除连接线记录
         DAPyNodeGraphicsItem* linkFrom = link->getFromNode();
@@ -1758,8 +1758,8 @@ void DAPyWorkFlowScene::rebuildNodeLinksMap()
     d->mNodeIdMap.clear();
     d->mNodeIdToItemMap.clear();
     d->mLinkConnectionIdMap.clear();
-    QList< DAPyNodeGraphicsItem* > nodeItems = getPyNodeItems();
-    QList< DAPyLinkGraphicsItem* > linkItems = getPyNodeLinkItems();
+    const QList< DAPyNodeGraphicsItem* > nodeItems = getPyNodeItems();
+    const QList< DAPyLinkGraphicsItem* > linkItems = getPyNodeLinkItems();
     // 重建节点nodeId映射（从Python节点对象提取node_id）
     for (DAPyNodeGraphicsItem* node : nodeItems) {
         const DAPyNode& proxy = node->getProxy();
