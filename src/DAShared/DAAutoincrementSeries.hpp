@@ -124,7 +124,7 @@ T DAAutoincrementSeries< T >::at(std::size_t index) const
  * @return
  */
 template< typename T >
-T DAAutoincrementSeries< T >::operator[](size_t index) const
+T DAAutoincrementSeries< T >::operator[](std::size_t index) const
 {
     return (mBase + index * mStep);
 }

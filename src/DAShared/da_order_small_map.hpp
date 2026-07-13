@@ -457,7 +457,7 @@ const VALUE& da_order_small_map< KEY, VALUE, CONTAINTER_KEY, CONTAINTER_VALUE >:
 template< typename KEY, typename VALUE, typename CONTAINTER_KEY, typename CONTAINTER_VALUE >
 const KEY& da_order_small_map< KEY, VALUE, CONTAINTER_KEY, CONTAINTER_VALUE >::firstKey() const
 {
-	return (mKeys.firstKey());
+	return (mKeys.first());
 }
 
 template< typename KEY, typename VALUE, typename CONTAINTER_KEY, typename CONTAINTER_VALUE >

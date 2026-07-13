@@ -6,6 +6,7 @@
 #include "da_algorithm.hpp"
 #include "DAVector.hpp"
 // Qt
+#include <QSet>
 #include <QDebug>
 namespace DA
 {
@@ -289,9 +290,13 @@ QPair< QList< typename DARowTable< T >::TablePtr >, QList< T > > groupby(const D
     if (r == nullptr) {
         return (qMakePair(restables, gr));
     }
-    gr = r->toList().toSet().toList();
+    QSet< T > uniqueSet;
+    for (const T& v : qAsConst(*r)) {
+        uniqueSet.insert(v);
+    }
+    gr = QList< T >(uniqueSet.begin(), uniqueSet.end());
     std::sort(gr.begin(), gr.end());
-    for (T v : gr) {
+    for (const T& v : qAsConst(gr)) {
         restables.append(takeByValue(table, rindex, v));
     }
     return (qMakePair(restables, gr));
@@ -433,7 +438,7 @@ bool DARowTable< T >::haveFieldid(const QString& field) const
 template< typename T >
 void DARowTable< T >::fill(const T& v)
 {
-    for (SeriesPtr r : m_d) {
+    for (const SeriesPtr& r : qAsConst(m_d)) {
         r->fill(v);
     }
 }
@@ -613,7 +618,7 @@ typename DARowTable< T >::SeriesPtr& DARowTable< T >::row(const QString& n)
 {
     int r = nameToIndex(n);
 
-    if ((r < 0) || (r > rowCount())) {
+    if ((r < 0) || (r >= rowCount())) {
         return (m_nullseries);
     }
     return (row(r));
@@ -624,7 +629,7 @@ const typename DARowTable< T >::SeriesPtr& DARowTable< T >::row(const QString& n
 {
     int r = nameToIndex(n);
 
-    if ((r < 0) || (r > rowCount())) {
+    if ((r < 0) || (r >= rowCount())) {
         return (m_nullseries);
     }
     return (row(r));
@@ -669,7 +674,7 @@ const typename DARowTable< T >::SeriesType& DARowTable< T >::operator[](const QS
 template< typename T >
 void DARowTable< T >::reserve(int size)
 {
-    for (SeriesPtr p : m_d) {
+    for (const SeriesPtr& p : qAsConst(m_d)) {
         p->reserve(size);
     }
 }
@@ -679,7 +684,7 @@ void DARowTable< T >::fixSize()
 {
     std::vector< int > ss;
 
-    for (const SeriesPtr& r : m_d) {
+    for (const SeriesPtr& r : qAsConst(m_d)) {
         ss.push_back(r->size());
     }
     int maxsize = *(std::max_element(ss.begin(), ss.end()));
@@ -740,7 +745,7 @@ QStringList DARowTable< T >::rowNames() const
 {
     QStringList r;
 
-    for (SeriesPtr p : m_d) {
+    for (const SeriesPtr& p : qAsConst(m_d)) {
         r.append(p->getName());
     }
     return (r);

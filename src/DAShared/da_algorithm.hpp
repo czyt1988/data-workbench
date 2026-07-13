@@ -85,6 +85,8 @@ void copy_inner_indexs(_IT input_begin, _IT input_end, _IT_Index index_begin, _I
 /// \code
 /// std::sort(index_begin,index_end);
 /// \endcode
+/// \note 调用者必须保证所有索引值在 [0, input_size) 范围内，且索引有序，
+///       否则行为未定义。此函数不做运行时越界检查。
 ///
 template< typename _IT, typename _IT_Index, typename _IT_RES >
 void copy_inner_indexs(_IT input_begin, _IT_Index index_begin, _IT_Index index_end, _IT_RES output_begin)

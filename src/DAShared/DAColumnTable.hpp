@@ -204,7 +204,7 @@ void DAColumnTable< T >::resize(int r, int c)
 template< typename T >
 void DAColumnTable< T >::reserve(int size)
 {
-    for (SeriesPtr p : m_d) {
+    for (const SeriesPtr& p : qAsConst(m_d)) {
         p->reserve(size);
     }
 }
@@ -239,7 +239,7 @@ int DAColumnTable< T >::columnCount() const
 template< typename T >
 void DAColumnTable< T >::fill(const T& v)
 {
-    for (SeriesPtr c : m_d) {
+    for (const SeriesPtr& c : qAsConst(m_d)) {
         c->fill(v);
     }
 }
@@ -456,7 +456,7 @@ void DAColumnTable< T >::fixSize()
     }
     int maxsize = *(std::max_element(ss.begin(), ss.end()));
 
-    for (SeriesPtr& c : m_d) {
+    for (const SeriesPtr& c : qAsConst(m_d)) {
         if (c->size() < maxsize) {
             c->resize(maxsize);
         }

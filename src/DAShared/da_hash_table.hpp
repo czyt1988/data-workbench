@@ -7,6 +7,7 @@
 #include <initializer_list>
 #include <vector>
 #include <algorithm>
+#include <limits>
 
 namespace DA
 {
@@ -1066,6 +1067,13 @@ typename da_hash_table< T, row_index_type, col_index_type, hasher >::table_index
     }
 
     // 返回最大索引+1，表示形状
+    // 防御性检查：如果 max_row/max_col 已是类型最大值，+1 会溢出
+    if (max_row == std::numeric_limits< row_index_type >::max()) {
+        return { max_row, max_col + 1 };
+    }
+    if (max_col == std::numeric_limits< col_index_type >::max()) {
+        return { max_row + 1, max_col };
+    }
     return { max_row + 1, max_col + 1 };
 }
 

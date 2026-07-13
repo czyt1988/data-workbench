@@ -224,7 +224,7 @@ using DAEnumEntry = std::pair< EnumType, const char* >;
         }                                                                                                              \
         return tmp;                                                                                                    \
     }();                                                                                                               \
-    const bool DAEnumTraits< EnumType >::caseSensitive    = false;                                                     \
+    const bool DAEnumTraits< EnumType >::caseSensitive    = true;                                                      \
     const EnumType DAEnumTraits< EnumType >::defaultValue = DefaultValue;                                              \
     const QString DAEnumTraits< EnumType >::defaultValueStr =                                                          \
         DAEnumTraits< EnumType >::enumToStringMap.value(DefaultValue);                                                 \

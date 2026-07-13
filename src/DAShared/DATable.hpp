@@ -901,23 +901,25 @@ void DATable< T >::dropColumn(IndexType col)
 {
     // 分两步，第一步删除，第二部移动
     // 先把列号等于col的移除
-    std::vector< value_type > temp;
+    // 使用非const key的pair类型，避免const key导致的无法移动
+    std::vector< std::pair< IndexPair, T > > temp;
     std::ignore = erase_if__([ col, &temp ](const value_type& v) -> bool {
         if (v.first.second == col) {
             return true;
         } else if (v.first.second > col) {
             // 大于这个列的也要删除，但要把值缓存起来，并进行左移动
-            temp.emplace_back(v);
+            // 预计算新key，避免后续再次拷贝
+            IndexPair k = v.first;
+            --k.second;
+            temp.emplace_back(std::move(k), T(v.second));
             return true;
         }
         return false;
     });
-    // 再把列号大于col的全部减去1
-    std::for_each(temp.begin(), temp.end(), [ this ](value_type& v) {
-        IndexPair k = v.first;
-        --k.second;
-        mData[ k ] = v.second;
-    });
+    // 再把缓存的值插入到新位置
+    for (auto& [ k, val ] : temp) {
+        mData[ k ] = std::move(val);
+    }
     recalcShape();
 }
 

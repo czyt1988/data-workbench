@@ -20,12 +20,12 @@ class da_concurrent_vector
 {
 public:
     using vector_type      = std::vector< T >;
-    using value_type       = vector_type::value_type;
-    using reference        = vector_type::reference;
-    using const_reference  = vector_type::const_reference;
-    using size_type        = vector_type::size_type;
-    using iterator         = vector_type::iterator;
-    using const_iterator   = vector_type::const_iterator;
+    using value_type       = typename vector_type::value_type;
+    using reference        = typename vector_type::reference;
+    using const_reference  = typename vector_type::const_reference;
+    using size_type        = typename vector_type::size_type;
+    using iterator         = typename vector_type::iterator;
+    using const_iterator   = typename vector_type::const_iterator;
     using mutex_type       = std::mutex;
     using lock_guard_type  = std::lock_guard< mutex_type >;
     using unique_lock_type = std::unique_lock< mutex_type >;
@@ -60,7 +60,7 @@ public:
     const_iterator  end() const;
 
 private:
-    vector_type< T >   m_inner_list;
+    vector_type        m_inner_list;
     mutable mutex_type m_mutex;
 };
 
@@ -80,9 +80,7 @@ da_concurrent_vector< T >::da_concurrent_vector(std::initializer_list< T > init)
 }
 
 template< typename T >
-da_concurrent_vector< T >::~da_concurrent_vector()
-{
-}
+da_concurrent_vector< T >::~da_concurrent_vector() = default;
 
 template< typename T >
 da_concurrent_vector< T >::reference da_concurrent_vector< T >::front()
@@ -187,7 +185,7 @@ void da_concurrent_vector< T >::push_front(const T& value)
 {
     unique_lock_type lg(m_mutex);
 
-    m_inner_list.push_front(value);
+    m_inner_list.insert(m_inner_list.begin(), value);
 }
 
 template< typename T >
@@ -195,7 +193,9 @@ void da_concurrent_vector< T >::pop_front()
 {
     unique_lock_type lg(m_mutex);
 
-    m_inner_list.pop_front();
+    if (!m_inner_list.empty()) {
+        m_inner_list.erase(m_inner_list.begin());
+    }
 }
 
 template< typename T >

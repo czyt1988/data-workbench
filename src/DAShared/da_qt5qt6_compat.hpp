@@ -153,6 +153,6 @@ inline void setNamedColor(QColor& c,const QString& colorName){
     c = QColor::fromString(colorName);
 #endif
 }
-}  // namespace   DA
-}  // namespace   qwt
-#endif  // QWT_QT5QT6_COMPAT_HPP
+}  // namespace compat
+}  // namespace DA
+#endif  // DA_QT5QT6_COMPAT_HPP

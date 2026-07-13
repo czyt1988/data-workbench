@@ -108,14 +108,13 @@ T da_concurrent_queue< T >::get()
     while (m_fifo.empty()) {
         m_popWait.wait(lg);
     }
-    T v = m_fifo.front();
+    T v = std::move(m_fifo.front());
 
     m_fifo.pop();
     if (m_capacity > 0) {
         //如果有推出，则推入的等待可以唤醒
         m_pushWait.notify_one();
     }
-    //通过移动语义，避免拷贝(不用显示声明std::move(v),编译器会优化)
     return v;
 }
 
@@ -131,14 +130,13 @@ T da_concurrent_queue< T >::get(int waitms)
     if (!m_popWait.wait_for(lg, std::chrono::milliseconds(waitms), [this] { return !(this->m_fifo.empty()); })) {
         return T();
     }
-    T v = m_fifo.front();
+    T v = std::move(m_fifo.front());
 
     m_fifo.pop();
     if (m_capacity > 0) {
         //如果有推出，则推入的等待可以唤醒
         m_pushWait.notify_one();
     }
-    //通过移动语义，避免拷贝(不用显示声明std::move(v),编译器会优化)
     return v;
 }
 

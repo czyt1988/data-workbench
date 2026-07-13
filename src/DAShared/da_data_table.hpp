@@ -3,6 +3,7 @@
 // Qt
 #include <QVector>
 #include <QHash>
+#include <QSet>
 #include <QDebug>
 // std
 #include <memory>
@@ -294,7 +295,7 @@ typename DADataTable< T >::TablePtr take_by_value(const DADataTable< T >& table,
     for (int i = 0; i < rsize; ++i) {
         if (table.iloc(i, c) == value) {
             typename DADataTable< T >::SeriesPtr rv = table.row(i);
-            res->appendDatas(rv->begin(), rv->end());
+            res->appendRow(rv->begin(), rv->end());
         }
     }
     return (res);
@@ -321,7 +322,7 @@ typename DADataTable< T >::TablePtr take_by_value(const DADataTable< T >& table,
     for (int i = 0; i < rsize; ++i) {
         if (table.iloc(i, c) == value) {
             typename DADataTable< T >::SeriesPtr rv = table.row(i);
-            res->appendDatas(rv->begin(), rv->end());
+            res->appendRow(rv->begin(), rv->end());
         }
     }
     return (res);
@@ -346,9 +347,13 @@ QPair< QList< typename DADataTable< T >::TablePtr >, QList< T > > group_by(const
     if (r == nullptr) {
         return (qMakePair(restables, gr));
     }
-    gr = r->toList().toSet().toList();
+    QSet< T > uniqueSet;
+    for (const T& v : qAsConst(*r)) {
+        uniqueSet.insert(v);
+    }
+    gr = QList< T >(uniqueSet.begin(), uniqueSet.end());
     std::sort(gr.begin(), gr.end());
-    for (T v : gr) {
+    for (const T& v : qAsConst(gr)) {
         restables.append(take_by_value(table, cindex, v));
     }
     return (qMakePair(restables, gr));
@@ -500,7 +505,7 @@ bool DADataTable< T >::haveColumns(const QString& field) const
 template< typename T >
 void DADataTable< T >::fill(const T& v)
 {
-    for (SeriesPtr s : m_d) {
+    for (const SeriesPtr& s : qAsConst(m_d)) {
         s->fill(v);
     }
 }
@@ -526,7 +531,7 @@ const T& DADataTable< T >::at(int r, int c) const
 template< typename T >
 T& DADataTable< T >::at(int r, int c)
 {
-    return (*(m_d[ c ])[ r ]);
+    return (*m_d[ c ])[ r ];
 }
 
 /**
@@ -562,9 +567,9 @@ T& DADataTable< T >::iloc(int r, int c)
 template< typename T >
 T DADataTable< T >::cell(int r, int c) const
 {
-    if (r < m_d.size()) {
+    if (c >= 0 && c < m_d.size()) {
         const SeriesPtr& s = series(c);
-        if (r < s->size()) {
+        if (s && r >= 0 && r < s->size()) {
             return (s->at(r));
         }
     }
@@ -595,7 +600,7 @@ void DADataTable< T >::appendSeries(SeriesPtr ser)
     } else {
         // 如果插入的函数s>m_rows
         if (getMode() == ExpandMode) {
-            for (SeriesPtr colser : m_d) {
+            for (const SeriesPtr& colser : qAsConst(m_d)) {
                 colser->resize(s);
             }
             m_d.push_back(ser);
@@ -720,7 +725,7 @@ typename DADataTable< T >::SeriesPtr& DADataTable< T >::series(const QString& n)
 {
     int r = nameToIndex(n);
 
-    if ((r < 0) || (r > columnCount())) {
+    if ((r < 0) || (r >= columnCount())) {
         return (m_nullseries);
     }
     return (series(r));
@@ -736,7 +741,7 @@ const typename DADataTable< T >::SeriesPtr& DADataTable< T >::series(const QStri
 {
     int i = nameToIndex(n);
 
-    if ((i < 0) || (i > columnCount())) {
+    if ((i < 0) || (i >= columnCount())) {
         return (m_nullseries);
     }
     return (series(i));
@@ -754,7 +759,7 @@ typename DADataTable< T >::SeriesPtr DADataTable< T >::row(int r) const
     SeriesPtr sr = std::make_shared< SeriesType >(csize);
 
     for (int c = 0; c < csize; ++c) {
-        (*sr)[ r ] = cell(r, c);
+        (*sr)[ c ] = cell(r, c);
     }
     return (sr);
 }
@@ -762,13 +767,13 @@ typename DADataTable< T >::SeriesPtr DADataTable< T >::row(int r) const
 template< typename T >
 typename DADataTable< T >::SeriesType& DADataTable< T >::operator[](int c)
 {
-    return (*(series(r)));
+    return (*(series(c)));
 }
 
 template< typename T >
 const typename DADataTable< T >::SeriesType& DADataTable< T >::operator[](int c) const
 {
-    return (*(series(r)));
+    return (*(series(c)));
 }
 
 template< typename T >
@@ -786,7 +791,7 @@ const typename DADataTable< T >::SeriesType& DADataTable< T >::operator[](const 
 template< typename T >
 void DADataTable< T >::reserve(int size)
 {
-    for (SeriesPtr& p : m_d) {
+    for (const SeriesPtr& p : qAsConst(m_d)) {
         p->reserve(size);
     }
 }
@@ -894,7 +899,7 @@ QStringList DADataTable< T >::columnNames() const
 {
     QStringList r;
 
-    for (SeriesPtr p : m_d) {
+    for (const SeriesPtr& p : qAsConst(m_d)) {
         r.append(p->getName());
     }
     return (r);
