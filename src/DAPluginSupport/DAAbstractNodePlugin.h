@@ -39,31 +39,13 @@ public:
     DAAbstractNodePlugin();
     virtual ~DAAbstractNodePlugin();
 
-    /**
-     * @brief 创建一个节点工厂
-     * @return
-     */
+    // 创建一个节点工厂
     virtual DAPyNodeFactory* createNodeFactory() = 0;
-
-    /**
-     * @brief 删除一个节点工厂(谁创建谁删除原则)
-     * @param p
-     */
+    // 删除一个节点工厂(谁创建谁删除原则)
     virtual void destroyNodeFactory(DAPyNodeFactory* p) = 0;
-
-    /**
-     * @brief 这是一个回调函数，在节点生成完成，并加入到APP后调用
-     *
-     * 这个函数的作用是等节点都加载到节点管理界面以后进行一些操作，例如对节点进行一些排序操作等，或者在节点树里加入一些其他的item
-     *
-     * 此函数默认不做任何动作
-     */
+    // 回调函数，在节点生成完成并加入到APP后调用，此函数默认不做任何动作
     virtual void afterLoadedNodes();
-
-    /**
-     * @brief 获取当前激活的工作流编辑窗口，所谓当前激活就是当前界面上正在打开的工作流编辑窗口
-     * @return
-     */
+    // 获取当前激活的工作流编辑窗口
     DAPyWorkFlowOperateWidget* getCurrentActiveWorkflowOperateWidget() const;
 };
 }  // end da

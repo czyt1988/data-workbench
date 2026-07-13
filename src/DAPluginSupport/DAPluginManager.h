@@ -19,7 +19,7 @@ public:
     explicit DAPluginManager(QObject* p = nullptr);
     ~DAPluginManager();
     // 设置忽略列表
-    void setIgnoreList(const QStringList ignorePluginsName);
+    void setIgnoreList(const QStringList& ignorePluginsName);
 
     // 加载所有插件
     virtual void loadAllPlugins(DACoreInterface* c);

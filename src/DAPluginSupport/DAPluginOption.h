@@ -17,6 +17,7 @@ public:
 	DAPluginOption(const DAPluginOption& other);
 	DAPluginOption(DAPluginOption&& other);
 	DAPluginOption& operator=(const DAPluginOption& other);
+	DAPluginOption& operator=(DAPluginOption&& other);
 
 	~DAPluginOption();
 

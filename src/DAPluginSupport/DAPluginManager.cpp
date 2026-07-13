@@ -37,7 +37,9 @@ public:
 DAPluginManager::PrivateData::PrivateData(DAPluginManager* p) : q_ptr(p)
 {
     QString pluginPath = DAPluginManager::getPluginDirPath();
-    mPluginDir.mkpath(pluginPath);
+    if (!mPluginDir.mkpath(pluginPath)) {
+        daWarning << DAPluginManager::tr("Failed to create plugin directory: %1").arg(pluginPath);  // cn:创建插件目录失败：%1
+    }
     mPluginDir.setPath(pluginPath);
     updateIgnoreSet();
 }
@@ -69,7 +71,7 @@ void DAPluginManager::PrivateData::updateIgnoreSet()
         }
         mIgnorePluginBaseName.insert(line.toLower());
     }
-    qDebug() << "will ignore plugin:" << mIgnorePluginBaseName;
+    daInfo << "will ignore plugin:" << mIgnorePluginBaseName;  // cn:将忽略以下插件
 }
 
 void DAPluginManager::PrivateData::ensureIgnoreFileExist()
@@ -78,9 +80,9 @@ void DAPluginManager::PrivateData::ensureIgnoreFileExist()
         return;
     }
     QFile ignoreFile(getIgnoreFilePath());
-    qDebug() << DAPluginManager::tr("No plugins ignore files, a %1 file will be "
-                                    "automatically generated")
-                    .arg(ignoreFile.fileName());  // cn:缺少插件忽略文件，将自动生成.pluginignore文件
+    daInfo << DAPluginManager::tr("No plugins ignore files, a %1 file will be "
+                                  "automatically generated")
+                  .arg(ignoreFile.fileName());  // cn:缺少插件忽略文件，将自动生成.pluginignore文件
     if (!ignoreFile.exists()) {
         // 不存在，则创建一个
         if (ignoreFile.open(QIODevice::ReadWrite)) {
@@ -131,9 +133,12 @@ DAPluginManager::~DAPluginManager()
  * @brief FCPluginManager::setIgnoreList
  * @param ignorePluginsName
  */
-void DAPluginManager::setIgnoreList(const QStringList ignorePluginsName)
+void DAPluginManager::setIgnoreList(const QStringList& ignorePluginsName)
 {
-    d_ptr->mIgnorePluginBaseName = QSet< QString >(ignorePluginsName.begin(), ignorePluginsName.end());
+    d_ptr->mIgnorePluginBaseName.clear();
+    for (const QString& name : ignorePluginsName) {
+        d_ptr->mIgnorePluginBaseName.insert(name.toLower());
+    }
 }
 
 /**
@@ -141,7 +146,21 @@ void DAPluginManager::setIgnoreList(const QStringList ignorePluginsName)
  */
 void DAPluginManager::loadAllPlugins(DACoreInterface* c)
 {
+    if (d_ptr->mIsLoaded) {
+        daWarning << tr("Plugins have already been loaded, skipping duplicate load.");  // cn:插件已加载，跳过重复加载
+        return;
+    }
+
+    if (!d_ptr->mPluginDir.exists()) {
+        daWarning << tr("Plugin directory does not exist: %1").arg(d_ptr->mPluginDir.absolutePath());  // cn:插件目录不存在：%1
+        d_ptr->mIsLoaded = true;
+        return;
+    }
+
     const QFileInfoList fileInfos = d_ptr->mPluginDir.entryInfoList(QDir::Files);
+    if (fileInfos.isEmpty()) {
+        daInfo << tr("No plugin files found in: %1").arg(d_ptr->mPluginDir.absolutePath());  // cn:插件目录中未找到插件文件：%1
+    }
 
     daInfo.noquote() << tr("plugin directory is: %1").arg(d_ptr->mPluginDir.absolutePath());  // cn:插件目录为：%1
     for (const QFileInfo& fi : fileInfos) {
@@ -175,7 +194,7 @@ void DAPluginManager::loadAllPlugins(DACoreInterface* c)
         DAPluginOption pluginopt;
         Q_EMIT beginLoadPlugin(fi.absoluteFilePath());
         if (!pluginopt.load(fi.absoluteFilePath(), c)) {
-            qDebug() << tr("cannot load plugin:%1").arg(fi.absoluteFilePath());  // cn:无法加载插件：%1
+            daWarning << tr("cannot load plugin: %1").arg(fi.absoluteFilePath());  // cn:无法加载插件：%1
             continue;
         }
         d_ptr->mPluginOptions.append(pluginopt);
@@ -257,9 +276,22 @@ bool DAPluginManager::unloadPlugin(const QString& pluginName)
 bool DAPluginManager::unloadAllPlugins()
 {
     bool allSuccess = true;
-    // 注意：反向迭代卸载，有时更安全，unloadPlugin执行后mPluginOptions的长度会变少1位，这样正好就顺着往下，不会受mPluginOptions长度变小影响
-    for (int i = d_ptr->mPluginOptions.size() - 1; i >= 0; --i) {
-        if (!unloadPlugin(d_ptr->mPluginOptions[ i ].getPluginName())) {
+    // 使用 takeLast 逐个取出并处理，避免二次查找，同时确保列表被清空
+    while (!d_ptr->mPluginOptions.isEmpty()) {
+        DAPluginOption opt = d_ptr->mPluginOptions.takeLast();
+        DAAbstractPlugin* plugin = opt.plugin();
+        QString name = opt.getPluginName();
+        // 1. 调用插件的 finalize() 进行清理
+        if (plugin && !plugin->finalize()) {
+            daWarning << tr("Plugin %1 refused to finalize, skip unload.").arg(name);  // cn:插件 %1 拒绝清理，跳过卸载
+            allSuccess = false;
+            continue;
+        }
+        // 2. 卸载插件库
+        if (opt.unload()) {
+            Q_EMIT pluginUnloaded(name);
+        } else {
+            daWarning << tr("Failed to unload plugin library for %1.").arg(name);  // cn:无法卸载插件 %1 的库
             allSuccess = false;
         }
     }
