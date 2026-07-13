@@ -91,7 +91,7 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
         .def(
             "getAllDatas",
             [](DA::DADataManagerInterface& self) {
-                QList< DA::DAData > datas = self.getAllDatas();
+                const QList< DA::DAData > datas = self.getAllDatas();
                 pybind11::list pyList;
                 for (const DA::DAData& data : datas) {
                     pyList.append(data);
@@ -103,7 +103,7 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
         .def(
             "getAllDataframes",
             [](DA::DADataManagerInterface& self) {
-                QList< DA::DAData > datas = self.getAllDatas();
+                const QList< DA::DAData > datas = self.getAllDatas();
                 pybind11::dict pydict;
                 for (const DA::DAData& data : datas) {
                     if (data.isDataFrame()) {
@@ -117,7 +117,7 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
         .def(
             "getSelectDatas",
             [](DA::DADataManagerInterface& self) {
-                QList< DA::DAData > datas = self.getSelectDatas();
+                const QList< DA::DAData > datas = self.getSelectDatas();
                 pybind11::list pyList;
                 for (const DA::DAData& data : datas) {
                     pyList.append(data);
@@ -130,7 +130,7 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
         .def(
             "getOperateDataSeries",
             [](DA::DADataManagerInterface& self) {
-                QList< int > colindex = self.getOperateDataSeries();
+                const QList< int > colindex = self.getOperateDataSeries();
                 pybind11::list list;
                 for (int v : colindex) {
                     list.append(v);
@@ -142,7 +142,7 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
         .def(
             "getSelectDataframes",
             [](DA::DADataManagerInterface& self) {
-                QList< DA::DAData > datas = self.getSelectDatas();
+                const QList< DA::DAData > datas = self.getSelectDatas();
                 pybind11::dict pydict;
                 for (const DA::DAData& data : datas) {
                     if (data.isDataFrame()) {
@@ -165,7 +165,7 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
         .def(
             "findDatas",
             [](DA::DADataManagerInterface& self, const QString& pattern, int cs) {
-                QList< DA::DAData > datas =
+                const QList< DA::DAData > datas =
                     self.findDatas(pattern, static_cast< Qt::CaseSensitivity >(cs));
                 pybind11::list pyList;
                 for (const DA::DAData& data : datas) {
@@ -181,7 +181,7 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             "findDatasReg",
             [](DA::DADataManagerInterface& self, const QString& regexPattern) {
                 QRegularExpression regex(regexPattern);
-                QList< DA::DAData > datas = self.findDatasReg(regex);
+                const QList< DA::DAData > datas = self.findDatasReg(regex);
                 pybind11::list pyList;
                 for (const DA::DAData& data : datas) {
                     pyList.append(data);
@@ -260,7 +260,7 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             },
             pybind11::arg("data"),
             pybind11::arg("text"),
-            pybind11::arg("isObjectPersist") = true,
+            pybind11::arg("isObjectPersist") = false,
             pybind11::arg("isSkipFirstRedo") = true,
             "Start a data operation command, which will be pushed onto the undo stack of the currently active data "
             "operation window"

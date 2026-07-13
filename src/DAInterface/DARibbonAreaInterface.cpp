@@ -2,7 +2,6 @@
 #include "SARibbonMainWindow.h"
 #include "SARibbonCategory.h"
 #include "SARibbonBar.h"
-#include "SARibbonMainWindow.h"
 #include "SARibbonPanel.h"
 namespace DA
 {
@@ -50,7 +49,7 @@ SARibbonBar* DARibbonAreaInterface::ribbonBar() const
  * @brief 获取所有标签
  * @return
  */
-QList< SARibbonCategory* > DARibbonAreaInterface::getCategorys() const
+QList< SARibbonCategory* > DARibbonAreaInterface::getCategories() const
 {
     return (d_ptr->mUiInterface->mainWindow()->ribbonBar()->categoryPages());
 }
@@ -63,7 +62,7 @@ QList< SARibbonCategory* > DARibbonAreaInterface::getCategorys() const
  */
 SARibbonCategory* DARibbonAreaInterface::getCategoryByObjectName(const QString& objname) const
 {
-    QList< SARibbonCategory* > categorys = getCategorys();
+    QList< SARibbonCategory* > categorys = getCategories();
     for (SARibbonCategory* c : std::as_const(categorys)) {
         if (c) {
             if (c->objectName() == objname) {
@@ -80,9 +79,9 @@ SARibbonCategory* DARibbonAreaInterface::getCategoryByObjectName(const QString& 
  * @param objname
  * @return 如果没找到，会返回nullptr
  */
-SARibbonPanel* DARibbonAreaInterface::getPannelByObjectName(const QString& objname) const
+SARibbonPanel* DARibbonAreaInterface::getPanelByObjectName(const QString& objname) const
 {
-    QList< SARibbonCategory* > categorys = getCategorys();
+    QList< SARibbonCategory* > categorys = getCategories();
     for (SARibbonCategory* category : std::as_const(categorys)) {
         QList< SARibbonPanel* > pannels = category->panelList();
         for (SARibbonPanel* pannel : std::as_const(pannels)) {

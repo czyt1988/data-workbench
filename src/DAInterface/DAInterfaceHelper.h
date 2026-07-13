@@ -31,7 +31,7 @@ public:
     DADataManagerInterface* dataManagerInterface() const;
     DACommandInterface* commandInterface() const;
     DAProjectInterface* projectInterface() const;
-    QMainWindow* mainWindow();
+    QMainWindow* mainWindow() const;
 
 private:
     DACoreInterface* m_core { nullptr };

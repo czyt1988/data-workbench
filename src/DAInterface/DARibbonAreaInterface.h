@@ -33,13 +33,13 @@ public:
     SARibbonBar* ribbonBar() const;
 
     // 获取所有的标签
-    QList< SARibbonCategory* > getCategorys() const;
+    QList< SARibbonCategory* > getCategories() const;
 
     // 通过obj-name获取Category(O(n))
     SARibbonCategory* getCategoryByObjectName(const QString& objname) const;
 
     // 通过obj-name获取pannel(O(n))
-    SARibbonPanel* getPannelByObjectName(const QString& objname) const;
+    SARibbonPanel* getPanelByObjectName(const QString& objname) const;
 };
 }  // namespace DA
 #endif  // DARIBBONAREAINTERFACE_H

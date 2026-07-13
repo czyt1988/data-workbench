@@ -1,7 +1,6 @@
 #include "DAProjectInterface.h"
 #include <QFileInfo>
 #include <QSysInfo>
-#include "DAPyWorkFlowOperateWidget.h"
 #include "DAStringUtil.h"
 #include "DAXmlHelper.h"
 #include "DAQtContainerUtil.hpp"
@@ -24,7 +23,6 @@ public:
 public:
     bool mIsDirty { false };  ///< 脏标识
     DADockingAreaInterface* mDockingArea { nullptr };
-    DAPyWorkFlowOperateWidget* mWorkFlowOperateWidget { nullptr };
     DADataManagerInterface* mDataManagerInterface { nullptr };
     QFileInfo mProjectFileInfo;  ///< 记录工程文件信息
 
@@ -84,7 +82,7 @@ void DAProjectInterface::setDataManagerInterface(DADataManagerInterface* d)
  * @brief 获取数据管理接口
  * @return
  */
-DADataManagerInterface* DAProjectInterface::getDataManagerInterface()
+DADataManagerInterface* DAProjectInterface::getDataManagerInterface() const
 {
     return d_ptr->mDataManagerInterface;
 }

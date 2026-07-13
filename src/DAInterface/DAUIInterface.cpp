@@ -14,7 +14,7 @@ public:
     PrivateData(DAUIInterface* p);
 
 public:
-    SARibbonMainWindow* mainWindow;
+    SARibbonMainWindow* mainWindow { nullptr };
     DACommandInterface* commandInterface { nullptr };
     DAActionsInterface* actionManager { nullptr };
     QList< DAUIExtendInterface* > extendsList;
@@ -112,7 +112,7 @@ int DAUIInterface::getExtendCount() const
  * @param index
  * @return 如果超出索引范围，返回nullptr
  */
-DAUIExtendInterface* DAUIInterface::getExtend(int index)
+DAUIExtendInterface* DAUIInterface::getExtend(int index) const
 {
     return d_ptr->extendsList.value(index, nullptr);
 }

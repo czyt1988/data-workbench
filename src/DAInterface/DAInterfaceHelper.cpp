@@ -19,14 +19,19 @@ DAInterfaceHelper::~DAInterfaceHelper()
 
 void DAInterfaceHelper::initialize(DACoreInterface* core)
 {
-    m_core          = core;
+    m_core = core;
+    if (!core) {
+        return;
+    }
     m_ui            = core->getUiInterface();
     m_dataManager   = core->getDataManagerInterface();
     m_project       = core->getProjectInterface();
-    m_dockArea      = m_ui->getDockingArea();
-    m_ribbonArea    = m_ui->getRibbonArea();
-    m_statusBarArea = m_ui->getStatusBar();
-    m_cmd           = m_ui->getCommandInterface();
+    if (m_ui) {
+        m_dockArea      = m_ui->getDockingArea();
+        m_ribbonArea    = m_ui->getRibbonArea();
+        m_statusBarArea = m_ui->getStatusBar();
+        m_cmd           = m_ui->getCommandInterface();
+    }
 }
 
 DACoreInterface* DAInterfaceHelper::core() const
@@ -69,7 +74,7 @@ DAProjectInterface* DAInterfaceHelper::projectInterface() const
     return m_project;
 }
 
-QMainWindow* DAInterfaceHelper::mainWindow()
+QMainWindow* DAInterfaceHelper::mainWindow() const
 {
     return m_ui->mainWindow();
 }

@@ -17,7 +17,6 @@ DAUIExtendInterface::~DAUIExtendInterface()
 DAUIInterface* DAUIExtendInterface::ui() const
 {
     return mUI;
-    // return qobject_cast< DAUIInterface* >(parent());
 }
 
 }

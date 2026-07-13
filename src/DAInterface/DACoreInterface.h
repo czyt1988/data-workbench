@@ -3,7 +3,6 @@
 #include "DAInterfaceAPI.h"
 #include <QObject>
 #include <QDir>
-#include <QTemporaryDir>
 #if DA_ENABLE_PYTHON
 #include "DAPythonSignalHandler.h"
 #endif

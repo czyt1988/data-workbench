@@ -45,7 +45,7 @@ void DataAnalysisUI::buildDataCategory()
     DA::DARibbonAreaInterface* ribbonArea = m_ui->getRibbonArea();
     SARibbonCategory* dataCategory = ribbonArea->getCategoryByObjectName(QStringLiteral("da-ribbon-category-data"));
     if (dataCategory) {
-        panelDataOperate = ribbonArea->getPannelByObjectName(QStringLiteral("da-pannel-data.data-opt"));
+        panelDataOperate = ribbonArea->getPanelByObjectName(QStringLiteral("da-pannel-data.data-opt"));
         // 导出单个数据
         actionExportIndividualData =
             m_actions->createAction("actionExportIndividualData", ":/DataAnalysisPluginIcon/icon/exportIndividualData.svg");

@@ -49,7 +49,7 @@ public:
     int getExtendCount() const;
 
     // 获取扩展
-    DAUIExtendInterface* getExtend(int index);
+    DAUIExtendInterface* getExtend(int index) const;
 
     // 获取命令接口，如果没有注册命令接口，返回nullptr，当前设计为一个命令接口
     DACommandInterface* getCommandInterface() const;

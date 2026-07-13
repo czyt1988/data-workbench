@@ -70,7 +70,7 @@ public:
     QList< DAData > getAllDatas() const;
     // 获取undo stack
     QUndoStack* getUndoStack() const;
-signals:
+Q_SIGNALS:
     /**
      * @brief 有数据添加发射的信号
      * @param d

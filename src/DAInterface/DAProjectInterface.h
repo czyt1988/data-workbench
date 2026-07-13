@@ -10,7 +10,6 @@ namespace DA
 {
 class DADockingAreaInterface;
 class DACoreInterface;
-class DAPyWorkFlowOperateWidget;
 class DADataManagerInterface;
 /**
  * @brief 负责总体工程的接口
@@ -31,7 +30,7 @@ public:
     void setDockingAreaInterface(DADockingAreaInterface* dock);
     // 设置数据管理接口
     void setDataManagerInterface(DADataManagerInterface* d);
-    DADataManagerInterface* getDataManagerInterface();
+    DADataManagerInterface* getDataManagerInterface() const;
     // 获取工程文件的基础名
     QString getProjectBaseName() const;
     // 工程路径,如D:/project
@@ -61,9 +60,9 @@ public Q_SLOTS:
      *
      * 实际实现时，应该调用@sa setProjectPath 记录工程路径
      *
-     * 开始保存时应该发射@sa projectBeginSave 信号
+     * 开始加载时应该发射@sa projectBeginLoad 信号
      *
-     * 保存成功后需要发射@sa projectLoaded 信号
+     * 加载成功后需要发射@sa projectLoaded 信号
      * @param path
      * @return
      */
@@ -74,9 +73,9 @@ public Q_SLOTS:
      *
      * 实际实现时，应该调用@sa setProjectPath 记录工程路径
      *
-     * 开始保存时应该发射@sa projectBeginLoad 信号
+     * 开始保存时应该发射@sa projectBeginSave 信号
      *
-     * 加载成功后需要发射@sa projectLoaded 信号
+     * 保存成功后需要发射@sa projectSaved 信号
      * @param path
      * @return
      */

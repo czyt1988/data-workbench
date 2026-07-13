@@ -2,6 +2,7 @@
 #include "DAUIInterface.h"
 #include <QPointer>
 #include <QApplication>
+#include <QTemporaryDir>
 #include "DAProjectInterface.h"
 #include "DALogCategory.h"
 #if DA_ENABLE_PYTHON
