@@ -213,6 +213,11 @@ void DATextReadWriter::setStringFun(const DATextReadWriter::StringFun& fun)
 ///
 void DATextReadWriter::startReadText()
 {
+	// 先停止当前可能正在进行的读取，再触发新读取
+	// 注意：startedReadText 信号通过 AutoConnection 连接到 onStartReadText，
+	// 同线程下为 DirectConnection（立即执行并重置 stopFlag=false），
+	// 跨线程下为 QueuedConnection（稍后在目标线程事件循环中执行）。
+	// 若快速连续调用此函数，跨线程场景下可能出现状态不一致，调用方应确保不会在同一线程中并发调用。
 	d_ptr->stopFlag = true;
 	emit startedReadText();
 }
@@ -244,11 +249,7 @@ void DATextReadWriter::appendLine(const QString& text)
 		}
 	}
 	QTextStream stream(d_ptr->file.get());
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-	stream << text << endl;
-#else
 	stream << text << Qt::endl;
-#endif
 }
 ///
 /// \brief Flushes any buffered data to the file. Returns true if successful; otherwise returns false.

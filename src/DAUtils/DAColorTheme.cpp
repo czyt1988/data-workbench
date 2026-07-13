@@ -161,7 +161,7 @@ int DAColorTheme::size() const
  * @param proportion 占比，必须为0~1之间
  * @return
  */
-QColor DAColorTheme::getColorAtPosition(float proportion) const
+QColor DAColorTheme::getColorAtPosition(double proportion) const
 {
     int totalSegments = size();
     if (totalSegments <= 0) {
@@ -180,16 +180,14 @@ QColor DAColorTheme::getColorAtPosition(float proportion) const
         segmentIndex = 0;
     }
     // 计算位置处于段中的占比
-    float dt   = 1.0f / ((float)totalSegments - 1.0f);
-    float base = dt * segmentIndex;
-    float top  = dt * (segmentIndex + 1);
-    float pos  = (proportion - base) / (top - base);
-    pos        = qBound(0.0f, pos, 1.0f);
+    double dt   = 1.0 / (static_cast< double >(totalSegments) - 1.0);
+    double base = dt * segmentIndex;
+    double top  = dt * (segmentIndex + 1);
+    double pos  = (proportion - base) / (top - base);
+    pos         = qBound(0.0, pos, 1.0);
     // 获取临近的两个颜色
     QColor c1 = at(segmentIndex);
     QColor c2 = at(segmentIndex + 1);
-    // qDebug() << "proportion=" << proportion << ",totalSegments=" << totalSegments << ",segmentIndex=" << segmentIndex
-    // 		 << ",dt=" << dt << ",base=" << base << ",top=" << top << ",pos=" << pos << ",c1=" << c1 << ",c2=" << c2;
     return interpolateColor(c1, c2, pos);
 }
 
@@ -200,7 +198,7 @@ QColor DAColorTheme::getColorAtPosition(float proportion) const
  * @param t 插值占比，t必须为0~1之间的数
  * @return
  */
-QColor DAColorTheme::interpolateColor(const QColor& color1, const QColor& color2, float t)
+QColor DAColorTheme::interpolateColor(const QColor& color1, const QColor& color2, double t)
 {
     int r = qBound(0, static_cast< int >(color1.red() + (color2.red() - color1.red()) * t), 255);
     int g = qBound(0, static_cast< int >(color1.green() + (color2.green() - color1.green()) * t), 255);

@@ -76,7 +76,7 @@ public:
     void setStopRead(bool stopRead);
     // 错误码转换为文字
     static QString errorCodeToString(ErrorCode c);
-public slots:
+public Q_SLOTS:
     // 开始读取数据，读取完成会发射readComplete信号
     void startReadText();
     // 插入文本
@@ -87,9 +87,9 @@ public slots:
     bool flush();
     // 传入一个操作QFile的函数指针，此函数指针用于操作内部保存的QFile
     void operatorFile(std::function< void(QFile*) > fun);
-private slots:
+private Q_SLOTS:
     void onStartReadText();
-signals:
+Q_SIGNALS:
     /**
      * @brief 完成一次读取会返回此信号
      * @param str 读取的文字
@@ -107,14 +107,6 @@ signals:
      * @param errcode 错误码，NoError代表正常完成
      */
     void finished(int errcode);
-#if 0
-public slots:
-    //追加文本，完成会发射appendTextComplete信号
-    void appendText(const QString & text);
-signals:
-    //appendText完成后返回的信号
-    void appendComplete(bool isSuccess);
-#endif
 };
 
 }

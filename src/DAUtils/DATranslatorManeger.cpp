@@ -40,16 +40,7 @@ void DATranslatorManeger::PrivateData::clearAllTranslator()
 DATranslatorManeger::DATranslatorManeger() : d_ptr(new DATranslatorManeger::PrivateData(this))
 {
 	const QLocale& locale = d_ptr->mLocal;
-	qDebug() << "Setting up translator:" << "\nLanguage:" << QLocale::languageToString(locale.language())
-             << "\nCountry:" << QLocale::countryToString(locale.country())
-             << "\nScript:" << QLocale::scriptToString(locale.script()) << "\nName:" << locale.name()
-             << "\nbcp47 Name:" << locale.bcp47Name() << "\n ui language:" << locale.uiLanguages()
-             << "\nAm Text:" << locale.amText() << "\nPm Text:" << locale.pmText()
-             << "\nCurrency Symbol:" << locale.currencySymbol() << "\nDate Format:" << locale.dateFormat()
-             << "\nDate Time Format:" << locale.dateTimeFormat() << "\nDecimal point:" << locale.decimalPoint()
-             << "\nGroup separator:" << locale.groupSeparator() << "\nExponential:" << locale.exponential()
-             << "\nZero digit:" << locale.zeroDigit() << "\nPercent:" << locale.percent()
-             << "\nPositive sign:" << locale.positiveSign() << "\nNegative sign:" << locale.negativeSign();
+	qDebug() << "Translator locale:" << locale.name() << "(" << QLocale::languageToString(locale.language()) << ")";
 	setTranslatorFilePaths(getDefaultTranslatorFilePath());
 }
 

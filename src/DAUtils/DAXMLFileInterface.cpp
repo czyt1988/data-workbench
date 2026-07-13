@@ -166,6 +166,7 @@ QDomElement DAXMLFileInterface::makeElement(const QString& v, const QString& tag
  */
 bool DAXMLFileInterface::loadElement(QString& p, const QDomElement* ele)
 {
+	DAXMLFileInterfaceCheckEleClass(ele, "QString");
 	p = ele->text();
 	return true;
 }
@@ -194,6 +195,7 @@ QDomElement DAXMLFileInterface::makeElement(const QColor& v, const QString& tagN
  */
 bool DAXMLFileInterface::loadElement(QColor& p, const QDomElement* ele)
 {
+	DAXMLFileInterfaceCheckEleClass(ele, "QColor");
 	DA::compat::setNamedColor(p, ele->attribute(QStringLiteral("name")));
 	return true;
 }
@@ -223,6 +225,7 @@ QDomElement DAXMLFileInterface::makeElement(const QRect& v, const QString& tagNa
  */
 bool DAXMLFileInterface::loadElement(QRect& p, const QDomElement* ele)
 {
+	DAXMLFileInterfaceCheckEleClass(ele, "QRect");
 	int v;
 	if (getStringIntValue(ele->attribute("x"), v)) {
 		p.setX(v);
@@ -263,6 +266,7 @@ QDomElement DAXMLFileInterface::makeElement(const QRectF& v, const QString& tagN
  */
 bool DAXMLFileInterface::loadElement(QRectF& p, const QDomElement* ele)
 {
+	DAXMLFileInterfaceCheckEleClass(ele, "QRectF");
 	qreal v;
 	if (getStringRealValue(ele->attribute("x"), v)) {
 		p.setX(v);
@@ -303,6 +307,7 @@ QDomElement DAXMLFileInterface::makeElement(const QPoint& v, const QString& tagN
  */
 bool DAXMLFileInterface::loadElement(QPoint& p, const QDomElement* ele)
 {
+	DAXMLFileInterfaceCheckEleClass(ele, "QPoint");
 	int v;
 	if (getStringIntValue(ele->attribute("x"), v)) {
 		p.setX(v);
@@ -336,6 +341,7 @@ QDomElement DAXMLFileInterface::makeElement(const QPointF& v, const QString& tag
  */
 bool DAXMLFileInterface::loadElement(QPointF& p, const QDomElement* ele)
 {
+	DAXMLFileInterfaceCheckEleClass(ele, "QPointF");
 	qreal v;
 	if (getStringRealValue(ele->attribute("x"), v)) {
 		p.setX(v);
@@ -370,6 +376,7 @@ QDomElement DAXMLFileInterface::makeElement(const QPen& v, const QString& tagNam
  */
 bool DAXMLFileInterface::loadElement(QPen& p, const QDomElement* ele)
 {
+	DAXMLFileInterfaceCheckEleClass(ele, "QPen");
 	QColor c;
 	c.setNamedColor(ele->attribute("color"));
 	if (c.isValid()) {
@@ -503,6 +510,7 @@ QDomElement DAXMLFileInterface::makeElement(const QFont& v, const QString& tagNa
  */
 bool DAXMLFileInterface::loadElement(QFont& p, const QDomElement* ele)
 {
+	DAXMLFileInterfaceCheckEleClass(ele, "QFont");
 	p.setBold(ele->attribute("bold").toInt());
 	p.setItalic(ele->attribute("italic").toInt());
 	// QFont默认构造时pointSizeF=-1表示使用系统默认字体大小
@@ -535,6 +543,7 @@ QDomElement DAXMLFileInterface::makeElement(const QVector3D& v, const QString& t
 
 bool DAXMLFileInterface::loadElement(QVector3D& p, const QDomElement* ele)
 {
+	DAXMLFileInterfaceCheckEleClass(ele, "QVector3D");
 	p.setX(ele->attribute("x").toDouble());
 	p.setY(ele->attribute("y").toDouble());
 	p.setZ(ele->attribute("z").toDouble());
@@ -565,8 +574,8 @@ QDomElement DAXMLFileInterface::makeElement(const QVariant& v, const QString& ta
 	// 特殊对待
 	switch (tid) {
 	case QMetaType::QStringList: {
-		QStringList vl = v.toStringList();
-		for (const QString& i : vl) {
+		const QStringList vl = v.toStringList();
+		for (const QString& i : std::as_const(vl)) {
 			QDomElement li = doc->createElement("li");
 			QDomText t     = doc->createTextNode(i);
 			li.appendChild(t);
@@ -574,8 +583,8 @@ QDomElement DAXMLFileInterface::makeElement(const QVariant& v, const QString& ta
 		}
 	} break;
 	case QMetaType::QVariantList: {
-		QVariantList vl = v.toList();
-		for (const QVariant& i : vl) {
+		const QVariantList vl = v.toList();
+		for (const QVariant& i : std::as_const(vl)) {
 			QDomElement li = makeElement(i, "li", doc);
 			varEle.appendChild(li);
 		}
@@ -1104,17 +1113,11 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
 	case QMetaType::QCursor:
 		return (converBase64StringToVariant< QCursor >(var));
 
-	case QMetaType::QDate: {
-		QDate d;
-		d.fromString(var, Qt::ISODate);
-		return (d);
-	}
+	case QMetaType::QDate:
+		return QDate::fromString(var, Qt::ISODate);
 
-	case QMetaType::QDateTime: {
-		QDateTime d;
-		d.fromString(var, Qt::ISODate);
-		return (d);
-	}
+	case QMetaType::QDateTime:
+		return QDateTime::fromString(var, Qt::ISODate);
 
 	case QMetaType::Double: {
 		double d = var.toDouble();
@@ -1146,9 +1149,8 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
 		return (converBase64StringToVariant< QImage >(var));
 	}
 
-	case QMetaType::Int: {
-		return (QString::number(var.toInt()));
-	}
+	case QMetaType::Int:
+		return QVariant(var.toInt());
 
 	case QMetaType::QKeySequence: {
 		QKeySequence d(var, QKeySequence::NativeText);
@@ -1181,9 +1183,8 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
 		return (QLocale(var));
 	}
 
-	case QMetaType::LongLong: {
-		return (QString::number(var.toLongLong()));
-	}
+	case QMetaType::LongLong:
+		return QVariant(var.toLongLong());
 
 	case QMetaType::QVariantMap: {
 		return (converBase64StringToVariant< QVariantMap >(var));
@@ -1370,11 +1371,8 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
 		return (converBase64StringToVariant< QTextLength >(var));
 	}
 
-	case QMetaType::QTime: {
-		QTime t;
-		t.fromString(var, Qt::ISODate);
-		return (t);
-	}
+	case QMetaType::QTime:
+		return QTime::fromString(var, Qt::ISODate);
 
 	case QMetaType::UInt: {
 		return (var.toUInt());

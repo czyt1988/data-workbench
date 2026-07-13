@@ -15,7 +15,7 @@ class DAUTILS_API DAProcess : public QProcess
 	Q_OBJECT
 public:
 	DAProcess(QObject* par = nullptr);
-public slots:
+public Q_SLOTS:
 	// 对start函数的槽映射，可以通过object-with-thread模式跨线程运行
 	void run();
 	void run(QIODevice::OpenMode mode);
@@ -23,7 +23,7 @@ public slots:
 	void run(const QString& program, const QStringList& arguments, QIODevice::OpenMode mode);
 	// 设置编码
 	void setEncoding(const char* codecName);
-signals:
+Q_SIGNALS:
 	/**
 	 * @brief 标准输出
 	 *
@@ -38,7 +38,7 @@ signals:
 	 * @param str
 	 */
 	void processErrorOutput(const QString& str);
-private slots:
+private Q_SLOTS:
 	// 标准输出
 	void onReadyReadStandardOutput();
 	// 标准错误
@@ -80,14 +80,14 @@ public:
 	void setProgram(const QString& program);
 	QString getProgram() const;
 	//
-public slots:
+public Q_SLOTS:
 	// 运行进程，发射beginRunProcess
 	void runProcess();
 	// kill,发射beginKillProcess
 	void kill();
 	// terminate,发射beginTerminateProcess
 	void terminate();
-signals:
+Q_SIGNALS:
 	/**
 	 * @brief 发生错误
 	 * @param error

@@ -1,7 +1,6 @@
 ﻿#include "DADir.h"
 #include <QStandardPaths>
 #include <QDir>
-#include <QApplication>
 #if defined(_WIN32) || defined(_WIN64)
 
 #include <windows.h>
@@ -56,14 +55,14 @@ QString DADir::getTempPath(const QString& folderName)
 	if (folderName.isEmpty()) {
 		return getTempPath();  // 处理空文件夹名的情况
 	}
-	// 构建完整路径
-	const static QString cs_fullPath = QDir::cleanPath(getTempPath() + QDir::separator() + folderName);
-	// 创建一个 QDir 对象
-	if (QDir().mkpath(cs_fullPath)) {
-		qWarning() << "Failed to create directory:" << cs_fullPath;
+	// 构建完整路径（不能使用 static 缓存，不同 folderName 应返回不同路径）
+	QString fullPath = QDir::cleanPath(getTempPath() + QDir::separator() + folderName);
+	// 创建目录（mkpath 返回 true 表示成功）
+	if (!QDir().mkpath(fullPath)) {
+		qWarning() << "Failed to create directory:" << fullPath;
 	}
 	// 返回目标文件夹路径
-	return cs_fullPath;
+	return fullPath;
 }
 
 QDir DADir::tempDir(const QString& folderName)
@@ -105,20 +104,21 @@ QString DADir::getConfigPath(const QString& folderName)
 
 QString DADir::getExecutablePath()
 {
-#if 0
-    return QApplication::applicationDirPath();
-#else
     const static std::string cs_executablePath = get_executable_path();
     // 这时文本是系统编码的，要转换为utf-8
     return QString::fromLocal8Bit(cs_executablePath.c_str());
-#endif
 }
 
 std::string DADir::get_executable_path()
 {
 #if defined(_WIN32) || defined(_WIN64)
 	char buffer[ MAX_PATH ];
-    GetModuleFileNameA(NULL, buffer, MAX_PATH);  // 显式 A 版
+	DWORD len = GetModuleFileNameA(NULL, buffer, MAX_PATH);  // 显式 A 版
+	if (len == 0 || len >= MAX_PATH) {
+		// 获取失败或路径过长被截断
+		return std::string();
+	}
+	buffer[ len ] = '\0';  // 确保终止
 	std::string fullPath(buffer);
     std_fs::path path(fullPath);
 	return path.parent_path().string();

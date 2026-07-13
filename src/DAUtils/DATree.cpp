@@ -47,7 +47,9 @@ DATree::DATree(const DATree& c) : d_ptr(new DATree::PrivateData(this))
 
 DATree::~DATree()
 {
-    clear();
+	// 直接清理，避免 clear() 中创建新 root item 后立即销毁
+	d_ptr->mRootItem.reset();
+	d_ptr->mProperty.clear();
 }
 /**
  * @brief 重载等号操作符实现深拷贝
@@ -61,7 +63,7 @@ DATree& DATree::operator=(const DATree& tree)
 	const int c                = items.size();
 	for (int i = 0; i < c; ++i) {
 		DATreeItem* item = new DATreeItem();
-		*item            = *(items[ c ]);
+		*item            = *(items[ i ]);
 		appendItem(item);
 	}
 	return *this;
@@ -69,7 +71,9 @@ DATree& DATree::operator=(const DATree& tree)
 
 void DATree::clear()
 {
-	d_ptr->mRootItem.reset();
+	// 销毁旧 root（会递归销毁所有子节点），然后创建新的，避免后续 appendItem/getItems 空指针解引用
+	d_ptr->mRootItem.reset(new DATreeItem());
+	d_ptr->mRootItem->setTree(this);
 	d_ptr->mProperty.clear();  // 属性清除
 }
 /**
@@ -243,6 +247,9 @@ QList< QString > DATree::getChildItemNames(const DATreeItem* parent) const
  */
 QString toJson(const DATree* tree)
 {
+	if (nullptr == tree) {
+		return QString();
+	}
 	QList< DATreeItem* > items = tree->getItems();
 	const auto c               = items.size();
 	QJsonArray mainJTree;
@@ -251,8 +258,8 @@ QString toJson(const DATree* tree)
 		mainJTree.append(write_item_to_json(item));
 	}
 	QJsonObject propobj;
-	QList< QString > props = tree->getTreePropertyNames();
-	for (const QString& k : props) {
+	const QList< QString > props = tree->getTreePropertyNames();
+	for (const QString& k : std::as_const(props)) {
 		propobj.insert(k, QJsonValue::fromVariant(tree->getTreeProperty(k)));
 	}
 	QJsonObject mainobj;
@@ -282,7 +289,7 @@ QJsonObject write_item_to_json(DATreeItem* item)
 			item->property(i, id, var);
 			propObj.insert(QString::number(id), QJsonValue::fromVariant(var));
 		}
-		itemObj.insert("porperty", propObj);
+		itemObj.insert("property", propObj);
 	}
 	const auto cc = item->childItemCount();
 	if (cc > 0) {
@@ -322,7 +329,11 @@ bool read_item_from_json(const QJsonObject& json, DATreeItem* item)
 		if (!icon.isNull())
 			item->setIcon(icon);
 	}
-	i = json.find("porperty");
+	i = json.find("property");
+	if (i == json.end()) {
+		// 向后兼容旧数据中的拼写错误
+		i = json.find("porperty");
+	}
 	if (i != json.end()) {
 		if (i.value().isObject()) {
 			QJsonObject propObj = i.value().toObject();
@@ -360,6 +371,9 @@ bool read_item_from_json(const QJsonObject& json, DATreeItem* item)
  */
 bool fromJson(const QString& json, DATree* tree)
 {
+	if (nullptr == tree) {
+		return false;
+	}
 	QJsonParseError error;
 	QJsonDocument jsonDocument = QJsonDocument::fromJson(json.toUtf8(), &error);
 	if (!jsonDocument.isObject()) {

@@ -43,7 +43,7 @@ void DAProcess::run(const QString& command, QIODevice::OpenMode mode)
 
 void DAProcess::onReadyReadStandardOutput()
 {
-	QByteArray allout = readAll();
+	QByteArray allout = readAllStandardOutput();
 	QTextStream ss(&allout);
 	setEncoding(&ss, mCodecName);
 	while (!ss.atEnd()) {
@@ -54,7 +54,7 @@ void DAProcess::onReadyReadStandardOutput()
 
 void DAProcess::onReadyReadStandardError()
 {
-	QByteArray allout = readAll();
+	QByteArray allout = readAllStandardError();
 	QTextStream ss(&allout);
 	setEncoding(&ss, mCodecName);
 	while (!ss.atEnd()) {
@@ -95,6 +95,25 @@ DAProcessWithThread::DAProcessWithThread(QObject* par) : QObject(par)
 
 DAProcessWithThread::~DAProcessWithThread()
 {
+	if (mProcess) {
+		// 断开所有信号连接，避免回调到已销毁的 this
+		disconnect(this, nullptr, nullptr, nullptr);
+		mProcess->kill();
+	}
+	if (mThread && mThread->isRunning()) {
+		mThread->quit();
+		mThread->wait(3000);  // 等待线程退出，最多 3 秒
+	}
+	// mProcess 和 mThread 在线程运行时通过 finished 信号的 deleteLater 自动销毁，
+	// 若线程未启动（mThread 非 null 但未 running），需手动清理
+	if (mThread && !mThread->isRunning()) {
+		delete mThread;
+		mThread = nullptr;
+	}
+	if (mProcess) {
+		delete mProcess;
+		mProcess = nullptr;
+	}
 }
 
 /**

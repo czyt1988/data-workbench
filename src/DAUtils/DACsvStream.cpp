@@ -104,13 +104,17 @@ QString DACsvStream::toCsvString(const QString& rawStr)
 QString DACsvStream::toCsvStringLine(const QStringList& sectionLine)
 {
 	QString res;
-	int size = sectionLine.size();
+	const int size = sectionLine.size();
+	if (size == 0) {
+		return res;
+	}
+	// 粗略预分配，避免循环中频繁重分配
+	res.reserve(size * 16);
 	for (int i = 0; i < size; ++i) {
-		if (0 == i) {
-			res += DACsvStream::toCsvString(sectionLine[ i ]);
-		} else {
-			res += ("," + DACsvStream::toCsvString(sectionLine[ i ]));
+		if (i > 0) {
+			res += ',';
 		}
+		res += DACsvStream::toCsvString(sectionLine[ i ]);
 	}
 	return res;
 }
@@ -236,15 +240,7 @@ DACsvStream& operator>>(DACsvStream& csv, QStringList& d)
 void DACsvStream::newLine()
 {
 	d_ptr->setStartLine(true);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#ifdef Q_CC_GNU
-    d_ptr->stream() << Qt::endl;
-#else
-    d_ptr->stream() << endl;
-#endif
-#else
 	d_ptr->stream() << Qt::endl;
-#endif
 }
 
 QTextStream* DACsvStream::streamPtr() const

@@ -278,10 +278,10 @@ QStringList DAXMLProtocol::getGroupNames() const
 
 QStringList DAXMLProtocol::getKeyNames(const QString& groupName) const
 {
-    if (!(d_ptr->mPropGroup.hasGroup(groupName))) {
+    if (!d_ptr->mPropGroup.hasGroup(groupName)) {
         return (QStringList());
     }
-    return (d_ptr->mPropGroup[ groupName ].keys());
+    return (d_ptr->mPropGroup.value(groupName).keys());
 }
 
 /**

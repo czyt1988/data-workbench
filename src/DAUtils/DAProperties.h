@@ -45,7 +45,7 @@ public:
     const DAProperties& properties(const QString& group) const;
 
     //获取一组属性
-    DAProperties getProperties(const QString& group);
+    DAProperties getProperties(const QString& group) const;
 
     //设置一组属性
     void setProperties(const QString& group, const DAProperties& propertys);
@@ -54,7 +54,7 @@ public:
     void setProperty(const QString& group, const QString& key, const QVariant& value);
 
     //判断是否存在分组
-    bool hasGroup(const QString& group);
+    bool hasGroup(const QString& group) const;
 };
 
 }

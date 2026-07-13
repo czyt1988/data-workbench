@@ -196,9 +196,15 @@ QRegion DAAbstractWidgetOverlay::maskRegionVOrHLine(const QLine& VOrHLine, int p
 	QRegion region;
 
 	if (VOrHLine.x1() == VOrHLine.x2()) {
-		region += QRect(VOrHLine.x1() - pw2, VOrHLine.y1(), pw, VOrHLine.y2()).normalized();
+		// 竖直线：宽度=pw，高度=|y2-y1|
+		int y1 = qMin(VOrHLine.y1(), VOrHLine.y2());
+		int y2 = qMax(VOrHLine.y1(), VOrHLine.y2());
+		region += QRect(VOrHLine.x1() - pw2, y1, pw, y2 - y1 + 1);
 	} else if (VOrHLine.y1() == VOrHLine.y2()) {
-		region += QRect(VOrHLine.x1(), VOrHLine.y1() - pw2, VOrHLine.x2(), pw).normalized();
+		// 水平线：高度=pw，宽度=|x2-x1|
+		int x1 = qMin(VOrHLine.x1(), VOrHLine.x2());
+		int x2 = qMax(VOrHLine.x1(), VOrHLine.x2());
+		region += QRect(x1, VOrHLine.y1() - pw2, x2 - x1 + 1, pw);
 	}
 
 	return region;

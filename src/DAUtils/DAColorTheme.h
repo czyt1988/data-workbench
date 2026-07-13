@@ -131,9 +131,9 @@ public:
     // 数量
     int size() const;
     // 按照比例获取颜色，颜色将使用插值获取，proportion必须为0~1之间
-    QColor getColorAtPosition(float proportion) const;
+    QColor getColorAtPosition(double proportion) const;
     // 颜色插值，在颜色1和2之间的比例取值,t必须为0~1之间的数
-    static QColor interpolateColor(const QColor& color1, const QColor& color2, float t);
+    static QColor interpolateColor(const QColor& color1, const QColor& color2, double t);
     // 主题样式
     ColorThemeStyle getColorThemeStyle() const;
     void setColorThemeStyle(ColorThemeStyle style);

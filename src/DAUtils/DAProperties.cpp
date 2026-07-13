@@ -102,7 +102,7 @@ const DAProperties& DAPropertiesGroup::properties(const QString& group) const
  * @return 如果没有，返回一个SAProperties()
  * @sa properties constProperties
  */
-DAProperties DAPropertiesGroup::getProperties(const QString& group)
+DAProperties DAPropertiesGroup::getProperties(const QString& group) const
 {
     return (value(group));
 }
@@ -135,7 +135,7 @@ void DAPropertiesGroup::setProperty(const QString& group, const QString& key, co
  * @param group 分组名
  * @return
  */
-bool DAPropertiesGroup::hasGroup(const QString& group)
+bool DAPropertiesGroup::hasGroup(const QString& group) const
 {
     return (contains(group));
 }

@@ -306,8 +306,8 @@ QList< DATreeItem* > DATreeItem::getChildItems() const
 QList< QString > DATreeItem::getChildItemNames() const
 {
 	QList< QString > res;
-	QList< DATreeItem* > ci = getChildItems();
-	for (auto i : ci) {
+	const QList< DATreeItem* > ci = getChildItems();
+	for (auto i : std::as_const(ci)) {
 		res.append(i->getName());
 	}
 	return res;

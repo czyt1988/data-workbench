@@ -84,37 +84,9 @@ int getSystemCodePage()
 
 std::wstring qstringToSystemWString(const QString& qstr)
 {
-#ifdef Q_OS_WIN
-	// Windows平台
-	// 获取系统编码的 QTextCodec
-	QTextCodec* codec = QTextCodec::codecForLocale();
-	if (!codec) {
-		// 如果无法获取系统编码的 codec，则使用 UTF-8 作为备选
-		codec = QTextCodec::codecForName("UTF-8");
-	}
-
-	// 将 QString 转换为系统编码的 QByteArray
-	QByteArray encodedBytes = codec->fromUnicode(qstr);
-
-	// 计算转换为 wchar_t 数组所需的字符数
-	int wcharCount = MultiByteToWideChar(codec->mibEnum(), 0, encodedBytes.constData(), -1, nullptr, 0);
-	if (wcharCount == 0) {
-		// 如果转换失败，则返回一个空的 std::wstring
-		return std::wstring();
-	}
-
-	// 分配 wchar_t 数组并转换
-	std::wstring result(wcharCount - 1, 0);
-	MultiByteToWideChar(codec->mibEnum(), 0, encodedBytes.constData(), -1, &result[ 0 ], wcharCount);
-
-	return result;
-#else
-	// Linux平台（或其他非Windows平台）
-	// 假设系统使用 UTF-8 编码
-	std::wstring result;
-	result.assign(qstr.toStdWString());
-	return result;
-#endif
+	// QString 内部为 UTF-16，与 Windows 上的 std::wstring 编码一致，
+	// 直接使用 toStdWString() 即可无损转换；避免 UTF-16 -> ANSI -> UTF-16 的有损往返
+	return qstr.toStdWString();
 }
 
 std::wstring stringToSystemWString(const std::string& str)
