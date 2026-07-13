@@ -16,7 +16,7 @@ class DAPYCOMMONWIDGETS_API DAPyDataframeColumnsListWidget : public QListWidget
 public:
 	DAPyDataframeColumnsListWidget(QWidget* parent = nullptr);
 	~DAPyDataframeColumnsListWidget();
-	// 设置当前的dtype
+	// 获取当前的dataframe
 	DAPyDataFrame getDataFrame() const;
 	// 获取当前选择的列名
 	QString getSelectedColumn() const noexcept;
@@ -26,8 +26,8 @@ public:
 	QList< DAPySeries > getAllSelectedSeries() const;
 	QList< int > getAllSelectedSeriesIndexs() const;
 	QList< QString > getAllSelectedSeriesNames() const;
-public slots:
-	// 设置当前的dtype
+public Q_SLOTS:
+	// 设置当前的dataframe
 	void setDataframe(const DA::DAPyDataFrame& df);
 	// 更新列信息
 	void updateColumnsInfo();

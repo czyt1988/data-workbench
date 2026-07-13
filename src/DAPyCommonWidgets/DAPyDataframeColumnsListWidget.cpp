@@ -30,12 +30,14 @@ DAPyDataFrame DAPyDataframeColumnsListWidget::getDataFrame() const
  */
 QString DAPyDataframeColumnsListWidget::getSelectedColumn() const noexcept
 {
+    int c = currentRow();
+    if (c < 0) {
+        return QString();
+    }
     try {
-        int c                 = currentRow();
-        QList< QString > cols = mDataframe.columns();
-        return cols[ c ];
+        return mDataframe.columnName(static_cast< std::size_t >(c));
     } catch (const std::exception& e) {
-        daCritical << tr("Exception in getting selected column: %1").arg(e.what());  // cn:获取选中的列发生异常：%1
+        daCritical << "Exception in getting selected column:" << e.what();
     }
     return QString();
 }
@@ -51,7 +53,7 @@ DAPySeries DAPyDataframeColumnsListWidget::getCurrentSeries() const noexcept
         DAPySeries s = mDataframe[ c ];
         return s;
     } catch (const std::exception& e) {
-        daCritical << tr("Exception in getting selected series: %1").arg(e.what());  // cn:获取选中的序列发生异常：%1
+        daCritical << "Exception in getting selected series:" << e.what();
     }
     return DAPySeries();
 }
@@ -63,15 +65,16 @@ DAPySeries DAPyDataframeColumnsListWidget::getCurrentSeries() const noexcept
 QList< DAPySeries > DAPyDataframeColumnsListWidget::getAllSelectedSeries() const
 {
     QList< DAPySeries > res;
-    auto indexs = selectedIndexes();
+    auto indexes = selectedIndexes();
     try {
-        for (int i = 0; i < indexs.size(); ++i) {
-            int dfIndex  = indexs[ i ].row();
+        for (int i = 0; i < indexes.size(); ++i) {
+            int dfIndex  = indexes[ i ].row();
             DAPySeries s = mDataframe[ dfIndex ];
             res.append(s);
         }
     } catch (const std::exception& e) {
-        daCritical << tr("Exception in getting selected series: %1").arg(e.what());  // cn:获取选中的序列发生异常：%1
+        daCritical << "Exception in getting selected series:" << e.what();
+        res.clear();
     }
     return res;
 }
@@ -84,9 +87,9 @@ QList< DAPySeries > DAPyDataframeColumnsListWidget::getAllSelectedSeries() const
 QList< int > DAPyDataframeColumnsListWidget::getAllSelectedSeriesIndexs() const
 {
     QList< int > res;
-    auto indexs = selectedIndexes();
-    for (int i = 0; i < indexs.size(); ++i) {
-        int dfIndex = indexs[ i ].row();
+    auto indexes = selectedIndexes();
+    for (int i = 0; i < indexes.size(); ++i) {
+        int dfIndex = indexes[ i ].row();
         res.append(dfIndex);
     }
     return res;
@@ -124,13 +127,12 @@ void DAPyDataframeColumnsListWidget::updateColumnsInfo(const DAPyDataFrame& df)
 {
     clear();
     if (!df) {
-        clear();
         return;
     }
     QList< QString > cols = df.columns();
     for (int i = 0; i < cols.size(); ++i) {
         QListWidgetItem* item = new QListWidgetItem(cols[ i ], this);
-        DAPyDType dt          = df[ cols[ i ] ].dtypeObject();
+        DAPyDType dt          = df.dtypeObject(static_cast< std::size_t >(i));
         item->setIcon(DAPyDTypeComboBox::getIconByDType(dt));
     }
 }

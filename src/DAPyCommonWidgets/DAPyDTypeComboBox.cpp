@@ -1,5 +1,6 @@
 #include "DAPyDTypeComboBox.h"
 #include "DAPybind11InQt.h"
+#include "DALogCategory.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -126,21 +127,38 @@ QIcon DAPyDTypeComboBox::getIconByDtypeChar(char c)
     case 'L':
     case 'h':
     case 'H':
-    case 'b':
-    case 'B': {
+    case 'b':   // int8 的 char
+    case 'B': { // uint8 的 char
         static QIcon s_int(":/PyCommonWidgets/icon/int.svg");
         return s_int;
     } break;
-    case 'U': {
+    case '?': { // bool 的 char（bool.svg 不存在，复用 int 图标兜底）
+        static QIcon s_bool(":/PyCommonWidgets/icon/int.svg");
+        return s_bool;
+    } break;
+    case 'F':   // complex64
+    case 'D': { // complex128（complex.svg 不存在，复用 float 图标兜底）
+        static QIcon s_complex(":/PyCommonWidgets/icon/float.svg");
+        return s_complex;
+    } break;
+    case 'U': { // str
         static QIcon s_str(":/PyCommonWidgets/icon/str.svg");
         return s_str;
     } break;
-    case 'M': {
-        static QIcon s_str(":/PyCommonWidgets/icon/datetime.svg");
-        return s_str;
+    case 'M': { // datetime64
+        static QIcon s_datetime(":/PyCommonWidgets/icon/datetime.svg");
+        return s_datetime;
     } break;
-    case 'O': {
-        static QIcon s_str(":/PyCommonWidgets/icon/obj.svg");
+    case 'm': { // timedelta64（复用 datetime 图标）
+        static QIcon s_datetime(":/PyCommonWidgets/icon/datetime.svg");
+        return s_datetime;
+    } break;
+    case 'O': { // object
+        static QIcon s_obj(":/PyCommonWidgets/icon/obj.svg");
+        return s_obj;
+    } break;
+    case 'S': { // bytes（bytes.svg 不存在，复用 str 图标兜底）
+        static QIcon s_str(":/PyCommonWidgets/icon/str.svg");
         return s_str;
     } break;
     default:
@@ -159,7 +177,31 @@ QIcon DAPyDTypeComboBox::getIconByDType(const DAPyDType& dt)
     if (dt.isNone()) {
         return QIcon();
     }
-    return getIconByDtypeChar(dt.kind());
+    // 基于语义判断，而非裸字符，避免 kind 和 char 语义混淆
+    // 注意：bool 的 kind 是 'b'，但 int8 的 char 也是 'b'，直接用 kind 会导致 bool 误入 int 分支
+    if (dt.isBool() || dt.isNullableBool()) {
+        return getIconByDtypeChar('?');
+    }
+    if (dt.isInt() || dt.isUInt() || dt.isNullableInt() || dt.isNullableUInt()) {
+        return getIconByDtypeChar('i');
+    }
+    if (dt.isFloat()) {
+        return getIconByDtypeChar('f');
+    }
+    if (dt.isComplex()) {
+        return getIconByDtypeChar('F');
+    }
+    if (dt.isStr() || dt.isNullableString()) {
+        return getIconByDtypeChar('U');
+    }
+    if (dt.isDatetime() || dt.isTimedelta()) {
+        return getIconByDtypeChar('M');
+    }
+    if (dt.isCategorical()) {
+        return getIconByDtypeChar('O');
+    }
+    // 其他类型（object/bytes 等）使用 obj 图标
+    return getIconByDtypeChar('O');
 }
 
 /**
@@ -196,9 +238,12 @@ void DAPyDTypeComboBox::setCurrentDType(const DAPyDType& dt)
     if (index != -1) {
         setCurrentIndex(index);
     } else {
+        // dtype 不在预置列表中，追加一个新条目，避免覆盖已有预置项或静默丢弃
+        daWarning << "DType not in preset list, appending temporary item:" << dt.name().toStdString();
         QString name = dt.displayName();
-        setItemText(currentIndex(), name);
-        setItemData(currentIndex(), dt.name());
+        QIcon icon   = getIconByDType(dt);
+        addItem(icon, name, dt.name());
+        setCurrentIndex(count() - 1);
     }
 }
 
