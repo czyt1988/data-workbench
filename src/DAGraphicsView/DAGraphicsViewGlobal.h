@@ -73,10 +73,10 @@ enum DAGraphicsItemType
     ItemType_GraphicsItem_Begin         = QGraphicsItem::UserType + 10,     ///< 针对DAGraphicsResizeableItem的类型开始
     ItemType_DAGraphicsItem_Begin       = ItemType_GraphicsItem_Begin + 1,  ///< DAGraphicsItem Type的开始范围
     ItemType_DAGraphicsItem             = ItemType_DAGraphicsItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
-    ItemType_DAGraphicsStandardTextItem = ItemType_DAGraphicsItem_Begin + 1,  ///< 标准文本
-    ItemType_DAGraphicsLabelItem        = ItemType_DAGraphicsItem_Begin + 2,  ///< 标准label
-    ItemType_DAGraphicsItemGroup        = ItemType_DAGraphicsItem_Begin + 3,  ///< 针对DAGraphicsItemGroup的类型
-    ItemType_DAGraphicsMarkItem         = ItemType_DAGraphicsItem_Begin + 4,  ///< 针对DAGraphicsMarkItem的类型
+    ItemType_DAGraphicsStandardTextItem = ItemType_DAGraphicsItem_Begin + 2,  ///< 标准文本
+    ItemType_DAGraphicsLabelItem        = ItemType_DAGraphicsItem_Begin + 3,  ///< 标准label
+    ItemType_DAGraphicsItemGroup        = ItemType_DAGraphicsItem_Begin + 4,  ///< 针对DAGraphicsItemGroup的类型
+    ItemType_DAGraphicsMarkItem         = ItemType_DAGraphicsItem_Begin + 5,  ///< 针对DAGraphicsMarkItem的类型
     //====ResizeableItem======
     ItemType_DAGraphicsResizeableItem_Begin = ItemType_DAGraphicsItem_Begin + 900,
     ItemType_DAGraphicsResizeableItem = ItemType_DAGraphicsResizeableItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型

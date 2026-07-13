@@ -20,7 +20,6 @@ public:
 	PrivateData(DAGraphicsView* p);
 
 public:
-	bool mIsPaintCrossLine;  ///< 是否绘制十字线
 	qreal mScaleMax { 3.0 };
 	qreal mScaleMin { 0.333 };
 	qreal mZoomStep { 0.1 };
@@ -198,9 +197,6 @@ void DAGraphicsView::mouseMoveEvent(QMouseEvent* event)
 	}
 	d_ptr->mMouseScenePos = mapToScene(event->pos());
 	if (isPadding()) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#else
-#endif
 		int dx = Qt5Qt6Compat_QXXEvent_x(event) - d_ptr->mStartPadPos.x();
 		int dy = Qt5Qt6Compat_QXXEvent_y(event) - d_ptr->mStartPadPos.y();
 #if DAGRAPHICSVIEW_DEBUG_PRINT
@@ -560,7 +556,7 @@ void DAGraphicsView::selectAll()
 		s->selectAll();
 	} else {
 		// 非DAGraphicsSceneWithUndoStack，就执行选中所有
-		QList< QGraphicsItem* > its = items();
+		const QList< QGraphicsItem* > its = items();
 		for (QGraphicsItem* i : its) {
 			if (!i->isSelected() && i->flags().testFlag(QGraphicsItem::ItemIsSelectable)) {
 				// 只有没有被选上，且是可选的才会执行选中动作
@@ -581,7 +577,7 @@ void DAGraphicsView::clearSelection()
 		s->clearSelection();
 	} else {
 		// 非DAGraphicsSceneWithUndoStack，就执行选中所有
-		QList< QGraphicsItem* > its = items();
+		const QList< QGraphicsItem* > its = items();
 		for (QGraphicsItem* i : its) {
 			if (!i->isSelected() && i->flags().testFlag(QGraphicsItem::ItemIsSelectable)) {
 				// 只有没有被选上，且是可选的才会执行选中动作

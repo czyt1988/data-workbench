@@ -264,7 +264,7 @@ protected:
 	void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
 	// 绘制背景
 	void drawBackground(QPainter* painter, const QRectF& rect) override;
-private slots:
+private Q_SLOTS:
 	//
 	void onSelectionChanged();
 

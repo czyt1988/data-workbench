@@ -20,7 +20,7 @@ public:
     virtual ~DAGraphicsLayout();
     // 图层名字
     QString getName() const;
-    void setName(const QString v);
+    void setName(const QString& v);
     // 图层添加item
     void addItem(QGraphicsItem* v);
 };

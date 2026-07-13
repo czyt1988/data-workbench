@@ -175,7 +175,7 @@ protected:
     // 直接改变bodysize
     void changeBodySize(const QSizeF& s);
 #if DA_USE_QGRAPHICSOBJECT
-signals:
+Q_SIGNALS:
     /**
      * @brief itemBodySizeChanged
      * @param oldsize

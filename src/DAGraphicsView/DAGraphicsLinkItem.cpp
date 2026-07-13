@@ -84,7 +84,7 @@ void DAGraphicsLinkItem::setEndPointType(DAGraphicsLinkItem::Orientations o, DAG
 	case OrientationBoth: {
 		setEndPointType(OrientationStart, epType);
 		setEndPointType(OrientationEnd, epType);
-	}
+	} break;
 	default:
 		break;
 	}
@@ -427,7 +427,7 @@ void DAGraphicsLinkItem::updateEndPoint()
  */
 qreal DAGraphicsLinkItem::pointLength(const QPointF& a, const QPointF& b)
 {
-    return (pow((a.x() - b.x()) * (a.x() - b.x()) + (a.y() - b.y()) * (a.y() - b.y()), 0.5));
+    return QLineF(a, b).length();
 }
 
 /**

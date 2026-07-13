@@ -245,8 +245,6 @@ void DAGraphicsLabelItem::updatePosition()
 	QPointF offset            = d_ptr->mOriginPoint.rectKeyPoint(br);
 	itemwillMovePoint -= offset;
 	setPos(itemwillMovePoint);
-	qDebug() << "parentRect:" << parentRect << ",boundingRect:" << br << ",offset:" << offset
-			 << ",itemwillMovePoint:" << itemwillMovePoint;
 }
 
 void DAGraphicsLabelItem::setSelectable(bool on)

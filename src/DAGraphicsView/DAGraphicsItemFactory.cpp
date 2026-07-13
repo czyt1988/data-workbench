@@ -12,10 +12,24 @@
 namespace DA
 {
 /**
- * @brief 存放已经注册的item
+ * @brief 存放已经注册的item（按类名索引）
+ * @return
  */
-QHash< QString, DAGraphicsItemFactory::FpItemCreate >* g_pRegistedItems = nullptr;
-QHash< int, DAGraphicsItemFactory::FpItemCreate >* g_pRegistedItems2    = nullptr;
+static QHash< QString, DAGraphicsItemFactory::FpItemCreate >& registedItemsByName()
+{
+    static QHash< QString, DAGraphicsItemFactory::FpItemCreate > s;
+    return s;
+}
+
+/**
+ * @brief 存放已经注册的item（按type索引）
+ * @return
+ */
+static QHash< int, DAGraphicsItemFactory::FpItemCreate >& registedItemsByType()
+{
+    static QHash< int, DAGraphicsItemFactory::FpItemCreate > s;
+    return s;
+}
 
 DAGraphicsItemFactory::DAGraphicsItemFactory()
 {
@@ -48,23 +62,14 @@ void DAGraphicsItemFactory::initialization()
  */
 void DAGraphicsItemFactory::registItem(const QString& className, DAGraphicsItemFactory::FpItemCreate fp)
 {
-    if (g_pRegistedItems == nullptr) {
-        g_pRegistedItems = new QHash< QString, DAGraphicsItemFactory::FpItemCreate >();
-    }
-    if (g_pRegistedItems2 == nullptr) {
-        g_pRegistedItems2 = new QHash< int, DAGraphicsItemFactory::FpItemCreate >();
-    }
     std::unique_ptr< QGraphicsItem > it(fp());
-    g_pRegistedItems->operator[](className)   = fp;
-    g_pRegistedItems2->operator[](it->type()) = fp;
+    registedItemsByName()[ className ] = fp;
+    registedItemsByType()[ it->type() ] = fp;
 }
 
 QGraphicsItem* DAGraphicsItemFactory::createItem(const QString& className)
 {
-    if (g_pRegistedItems == nullptr) {
-        return nullptr;
-    }
-    FpItemCreate fp = g_pRegistedItems->value(className, nullptr);
+    FpItemCreate fp = registedItemsByName().value(className, nullptr);
     if (nullptr == fp) {
         daWarning << QObject::tr("Class name %1 not registered to item factory").arg(className);  // cn:类名 %1 未注册到 item 工厂
         return nullptr;
@@ -74,10 +79,7 @@ QGraphicsItem* DAGraphicsItemFactory::createItem(const QString& className)
 
 QGraphicsItem* DAGraphicsItemFactory::createItem(int itemType)
 {
-    if (g_pRegistedItems2 == nullptr) {
-        return nullptr;
-    }
-    FpItemCreate fp = g_pRegistedItems2->value(itemType, nullptr);
+    FpItemCreate fp = registedItemsByType().value(itemType, nullptr);
     if (nullptr == fp) {
         daWarning << QObject::tr("Type %1 not registered to item factory").arg(itemType);  // cn:类型 %1 未注册到 item 工厂
         return nullptr;

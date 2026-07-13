@@ -21,6 +21,7 @@ public:
 	QString mText;
 	Qt::Alignment mTextAlignment { Qt::AlignCenter };
 	QPen mTextPen { Qt::black };
+	QBrush mRectFillBrush { Qt::transparent };  ///< 矩形填充画笔
 };
 
 DAGraphicsRectItem::PrivateData::PrivateData(DAGraphicsRectItem* p) : q_ptr(p)
@@ -80,6 +81,17 @@ void DAGraphicsRectItem::setTextPen(const QPen& p)
 	d_ptr->setTextPen(p);
 }
 
+QBrush DAGraphicsRectItem::getRectFillBrush() const
+{
+	return d_ptr->mRectFillBrush;
+}
+
+void DAGraphicsRectItem::setRectFillBrush(const QBrush& b)
+{
+	d_ptr->mRectFillBrush = b;
+	update();
+}
+
 bool DAGraphicsRectItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
 	DAGraphicsResizeableItem::saveToXml(doc, parentElement, ver);
@@ -104,10 +116,18 @@ bool DAGraphicsRectItem::loadFromXml(const QDomElement* itemElement, const QVers
 	if (rectEle.isNull()) {
 		return false;
 	}
-	QDomElement textEle = itemElement->firstChildElement("text");
+	QDomElement textEle = rectEle.firstChildElement("text");
 	if (!textEle.isNull()) {
 		d_ptr->mTextAlignment = stringToEnum< Qt::AlignmentFlag >(textEle.attribute("al"), Qt::AlignCenter);
 		d_ptr->mText          = textEle.text();
+	}
+	// 加载 text-pen
+	QDomElement textPenEle = rectEle.firstChildElement("text-pen");
+	if (!textPenEle.isNull()) {
+		QPen p;
+		if (DAXMLFileInterface::loadElement(p, &textPenEle)) {
+			d_ptr->setTextPen(p);
+		}
 	}
 	return true;
 }
@@ -117,6 +137,9 @@ void DAGraphicsRectItem::paintBody(QPainter* painter, const QStyleOptionGraphics
 	Q_UNUSED(option);
 	Q_UNUSED(widget);
 	painter->save();
+	painter->setBrush(d_ptr->mRectFillBrush);
+	painter->setPen(Qt::NoPen);
+	painter->drawRect(bodyRect);
 	if (!(d_ptr->mText.isEmpty())) {
 		painter->setPen(d_ptr->mTextPen);
 		painter->drawText(bodyRect, d_ptr->mTextAlignment, d_ptr->mText);

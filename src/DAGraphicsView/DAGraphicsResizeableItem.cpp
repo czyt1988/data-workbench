@@ -1075,6 +1075,7 @@ void DAGraphicsResizeableItem::paintResizeControlPoints(QPainter* painter,
 		case ControlPointBottomLeft:
 		case ControlPointLeftMid:
 			painter->drawRect(r.rect);
+			break;
 		default:
 			break;
 		}

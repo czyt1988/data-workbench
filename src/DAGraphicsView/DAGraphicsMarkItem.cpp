@@ -79,7 +79,6 @@ int DAGraphicsMarkItem::getMarkShape() const
 
 void DAGraphicsMarkItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-	qDebug() << option->rect;
 	painter->setPen(getBorderPen());
 	painter->setBrush(getBackgroundBrush());
 	switch (getMarkShape()) {

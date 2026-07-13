@@ -89,7 +89,7 @@ public:
 	DAGraphicsViewOverlayMouseMarker::MarkerStyle getCurrentMarkerStyle() const;
 	// 获取marker指针
 	DAGraphicsViewOverlayMouseMarker* getMarker() const;
-public slots:
+public Q_SLOTS:
 	// 放大
 	void zoomIn();
 	// 缩小

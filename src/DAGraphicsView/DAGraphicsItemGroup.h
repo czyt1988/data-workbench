@@ -20,7 +20,7 @@ public:
      */
     enum
     {
-        Type = DA::ItemType_DAGraphicsItem
+        Type = DA::ItemType_DAGraphicsItemGroup
     };
     virtual int type() const override
     {

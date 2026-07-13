@@ -331,7 +331,7 @@ QVariant DAGraphicsTextItem::itemChange(GraphicsItemChange change, const QVarian
 			// 失去选中，把mTextItem的选中状态清楚
 			d_ptr->mTextItem->clearTextSelection();
 		}
-	}
+	} break;
 	default:
 		break;
 	}

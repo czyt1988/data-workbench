@@ -191,7 +191,7 @@ QString DAGraphicsStandardTextItem::getSelectTextFamily() const
 		cursor.select(QTextCursor::Document);
 	}
 	QTextCharFormat format = cursor.charFormat();
-	if (format.isValid() || format.isEmpty()) {
+	if (!format.isValid() || format.isEmpty()) {
 		return QString();
 	}
 	return format.fontFamily();
@@ -225,7 +225,7 @@ QColor DAGraphicsStandardTextItem::getSelectTextColor() const
 		cursor.select(QTextCursor::Document);
 	}
 	QTextCharFormat format = cursor.charFormat();
-	if (format.isValid() || format.isEmpty()) {
+	if (!format.isValid() || format.isEmpty()) {
 		return QColor();
 	}
 	return format.foreground().color();
@@ -260,7 +260,7 @@ QFont DAGraphicsStandardTextItem::getSelectTextFont() const
 	}
 	// 获取该位置的字符格式
 	QTextCharFormat format = cursor.charFormat();
-	if (format.isValid() || format.isEmpty()) {
+	if (!format.isValid() || format.isEmpty()) {
 		return QFont();
 	}
 	return format.font();
@@ -295,7 +295,7 @@ int DAGraphicsStandardTextItem::getSelectTextPointSize() const
 	}
 	// 获取该位置的字符格式
 	QTextCharFormat format = cursor.charFormat();
-	if (format.isValid() || format.isEmpty()) {
+	if (!format.isValid() || format.isEmpty()) {
 		return -1;
 	}
 	return format.fontPointSize();
@@ -330,7 +330,7 @@ bool DAGraphicsStandardTextItem::getSelectTextItalic() const
 	}
 	// 获取该位置的字符格式
 	QTextCharFormat format = cursor.charFormat();
-	if (format.isValid() || format.isEmpty()) {
+	if (!format.isValid() || format.isEmpty()) {
 		return false;
 	}
 	return format.fontItalic();
@@ -365,7 +365,7 @@ bool DAGraphicsStandardTextItem::getSelectTextBold() const
 	}
 	// 获取该位置的字符格式
 	QTextCharFormat format = cursor.charFormat();
-	if (format.isValid() || format.isEmpty()) {
+	if (!format.isValid() || format.isEmpty()) {
 		return false;
 	}
 	auto w = format.fontWeight();

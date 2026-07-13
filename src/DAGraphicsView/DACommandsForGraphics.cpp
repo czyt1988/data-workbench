@@ -143,7 +143,7 @@ void DACommandsForGraphicsItemsRemove::redo()
 {
 	QUndoCommand::redo();
 	for (QGraphicsItem* item : std::as_const(mItems)) {
-		if (item->scene() != mScene) {
+		if (item->scene() == mScene) {
 			mScene->removeItem(item);
 		}
 	}
@@ -271,12 +271,16 @@ void DACommandsForGraphicsItemMoved::redo()
 		mSkipFirst = false;
 		return;
 	}
-	mItem->setPos(mEndPos);
+	if (mItem) {
+		mItem->setPos(mEndPos);
+	}
 }
 
 void DACommandsForGraphicsItemMoved::undo()
 {
-	mItem->setPos(mStartPos);
+	if (mItem) {
+		mItem->setPos(mStartPos);
+	}
 }
 
 int DACommandsForGraphicsItemMoved::id() const
@@ -417,12 +421,16 @@ DACommandsForGraphicsItemResizeWidth::DACommandsForGraphicsItemResizeWidth(DAGra
 
 void DACommandsForGraphicsItemResizeWidth::redo()
 {
-	mItem->setBodySize(QSizeF(mNewWidth, mHeight));
+	if (mItem) {
+		mItem->setBodySize(QSizeF(mNewWidth, mHeight));
+	}
 }
 
 void DACommandsForGraphicsItemResizeWidth::undo()
 {
-	mItem->setBodySize(QSizeF(mOldWidth, mHeight));
+	if (mItem) {
+		mItem->setBodySize(QSizeF(mOldWidth, mHeight));
+	}
 }
 
 int DACommandsForGraphicsItemResizeWidth::id() const
@@ -460,12 +468,16 @@ DACommandsForGraphicsItemResizeHeight::DACommandsForGraphicsItemResizeHeight(DAG
 
 void DACommandsForGraphicsItemResizeHeight::redo()
 {
-	mItem->setBodySize(QSizeF(mWidth, mNewHeight));
+	if (mItem) {
+		mItem->setBodySize(QSizeF(mWidth, mNewHeight));
+	}
 }
 
 void DACommandsForGraphicsItemResizeHeight::undo()
 {
-	mItem->setBodySize(QSizeF(mWidth, mOldHeight));
+	if (mItem) {
+		mItem->setBodySize(QSizeF(mWidth, mOldHeight));
+	}
 }
 
 int DACommandsForGraphicsItemResizeHeight::id() const
@@ -507,12 +519,16 @@ DACommandsForGraphicsItemRotation::DACommandsForGraphicsItemRotation(DAGraphicsR
 
 void DACommandsForGraphicsItemRotation::redo()
 {
-	mItem->setRotation(mNewRotation);
+	if (mItem) {
+		mItem->setRotation(mNewRotation);
+	}
 }
 
 void DACommandsForGraphicsItemRotation::undo()
 {
-	mItem->setRotation(mOldRotation);
+	if (mItem) {
+		mItem->setRotation(mOldRotation);
+	}
 }
 
 int DACommandsForGraphicsItemRotation::id() const

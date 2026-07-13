@@ -214,7 +214,7 @@ QVariant DAGraphicsItemGroup::itemChange(QGraphicsItem::GraphicsItemChange chang
 				di->groupPositionChanged(p);
 			}
 		}
-	}
+	} break;
 	default:
 		break;
 	}

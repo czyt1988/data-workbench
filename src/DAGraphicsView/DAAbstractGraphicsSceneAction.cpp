@@ -65,7 +65,7 @@ void DAAbstractGraphicsSceneAction::setCursorPixmap(const QPixmap& p)
 
 void DAAbstractGraphicsSceneAction::setupCursor()
 {
-	QList< QGraphicsView* > views = scene()->views();
+	const QList< QGraphicsView* > views = scene()->views();
 	for (QGraphicsView* v : views) {
 		v->setCursor(QCursor(mCursorPixmap));
 	}
@@ -73,7 +73,7 @@ void DAAbstractGraphicsSceneAction::setupCursor()
 
 void DAAbstractGraphicsSceneAction::restoreCursor()
 {
-	QList< QGraphicsView* > views = scene()->views();
+	const QList< QGraphicsView* > views = scene()->views();
 	for (QGraphicsView* v : views) {
 		v->unsetCursor();
 	}

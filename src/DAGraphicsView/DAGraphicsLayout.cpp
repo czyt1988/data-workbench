@@ -32,7 +32,7 @@ QString DAGraphicsLayout::getName() const
     return d_ptr->mName;
 }
 
-void DAGraphicsLayout::setName(const QString v)
+void DAGraphicsLayout::setName(const QString& v)
 {
     d_ptr->mName = v;
 }
