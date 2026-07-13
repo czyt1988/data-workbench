@@ -48,6 +48,7 @@ public:
     QVariant iat(std::size_t r, std::size_t c) const;
     pybind11::object iatObj(std::size_t r, std::size_t c) const;
     bool iat(std::size_t r, std::size_t c, const QVariant& v);
+    bool iat(std::size_t r, std::size_t c, const QVariant& v, const pybind11::dtype& dt);
     bool iat(std::size_t r, std::size_t c, const pybind11::object& v);
     DAPySeries iloc(std::size_t c) const;
     DAPySeries loc(const QString& n) const;

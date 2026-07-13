@@ -9,6 +9,7 @@
 #include "DAPybind11InQt.h"
 #include "DAPyIndex.h"
 #include "numpy/DAPyDType.h"
+#include "DAPybind11QtCaster.hpp"
 
 namespace pybind11
 {
@@ -121,7 +122,7 @@ void DAPySeries::castTo(VectLikeIte begin) const
     std::string dtype_str      = pybind11::str(dtype_obj).cast< std::string >();
 
     // 检查是否是pandas Series
-    if (pybind11::isinstance(series, pybind11::module::import("pandas").attr("Series"))) {
+    if (isSeries(series)) {
         if (dtype_str.find("datetime64") == 0) {
 
             int64_t unit_divisor  = 1'000'000;  // 默认假设纳秒，转换为毫秒
@@ -167,18 +168,6 @@ void DAPySeries::castTo(VectLikeIte begin) const
                 buf = series.attr("astype")("int64")
                           .attr("values")
                           .cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
-            }
-
-            // 调试信息：打印前几个时间戳
-            if (buf.size() > 0) {
-                int64_t raw_val = buf.data()[ 0 ];
-                double ms_val;
-                if (time_unit == "s") {
-                    ms_val = static_cast< double >(raw_val) * 1000.0;  // 秒 -> 毫秒
-                } else {
-                    ms_val = static_cast< double >(raw_val / unit_divisor);
-                }
-                QDateTime dt = QDateTime::fromMSecsSinceEpoch(static_cast< qint64 >(ms_val));
             }
 
             // 使用捕获的变量进行转换
@@ -237,19 +226,19 @@ void DAPySeries::castTo(VectLikeIte begin) const
 
     if (is_string_dtype(dtype_str)) {
         try {
-            pybind11::module pd     = pybind11::module::import("pandas");
+            static DAPyObjectWrapper pd_to_datetime = DA::PY::importPyType("pandas", "to_datetime");
+            static DAPyObjectWrapper pd_NaT         = DA::PY::importPyType("pandas", "NaT");
             pybind11::object sample = series.attr("dropna")().attr("head")(1);
             if (pybind11::len(sample) > 0) {
                 pybind11::object first_val = sample.attr("iat")[ 0 ];
                 if (pybind11::isinstance< pybind11::str >(first_val)) {
                     std::string first_val_str = first_val.cast< std::string >();
 
-                    pybind11::object pd_to_datetime = pd.attr("to_datetime");
-                    pybind11::object test_parse     = pd_to_datetime(first_val, pybind11::arg("errors") = "coerce");
+                    pybind11::object test_parse = pd_to_datetime.object()(first_val, pybind11::arg("errors") = "coerce");
 
                     // NaT 是单例实例而非 type，不能用 isinstance 判断，用身份比较
-                    if (!test_parse.is_none() && !test_parse.is(pd.attr("NaT"))) {
-                        pybind11::object dt_series = pd_to_datetime(series, pybind11::arg("errors") = "coerce");
+                    if (!test_parse.is_none() && !test_parse.is(pd_NaT.object())) {
+                        pybind11::object dt_series = pd_to_datetime.object()(series, pybind11::arg("errors") = "coerce");
 
                         // 获取转换后的 dtype 以确定时间单位
                         pybind11::object dt_dtype_obj = dt_series.attr("dtype");
@@ -280,17 +269,6 @@ void DAPySeries::castTo(VectLikeIte begin) const
                         values                      = int_series.attr("values");
                         auto buf =
                             values.cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
-
-                        if (buf.size() > 0) {
-                            int64_t raw_val = buf.data()[ 0 ];
-                            double ms_val;
-                            if (time_unit == "s") {
-                                ms_val = static_cast< double >(raw_val) * 1000.0;
-                            } else {
-                                ms_val = static_cast< double >(raw_val / unit_divisor);
-                            }
-                            QDateTime dt = QDateTime::fromMSecsSinceEpoch(static_cast< qint64 >(ms_val));
-                        }
 
                         std::transform(
                             buf.data(), buf.data() + buf.size(), begin, [ unit_divisor, time_unit ](int64_t raw_val) -> double {

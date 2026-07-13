@@ -108,7 +108,6 @@ bool DAPyModulePandas::isInstanceDataFrame_(const pybind11::object& obj)
         qCritical() << e.what();
         return false;
     }
-    return true;
 }
 /**
  * @brief 对pandas.read_csv的封装

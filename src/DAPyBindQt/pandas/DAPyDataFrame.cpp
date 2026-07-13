@@ -5,7 +5,6 @@
 #include "../numpy/DAPyModuleNumpy.h"
 #include "DAPyModulePandas.h"
 #include "DAPybind11QtCaster.hpp"
-#include "DAPyModulePandas.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -144,8 +143,6 @@ QList< QString > DAPyDataFrame::columns() const
     QList< QString > res;
     try {
         pybind11::list obj_columns = attr("columns");
-        const size_t s             = obj_columns.size();
-        res.reserve(static_cast< int >(s));
         res = DA::PY::fromPyList< QString >(obj_columns);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
@@ -311,6 +308,17 @@ bool DAPyDataFrame::iat(std::size_t r, std::size_t c, const QVariant& v)
     return false;
 }
 
+bool DAPyDataFrame::iat(std::size_t r, std::size_t c, const QVariant& v, const pybind11::dtype& dt)
+{
+    try {
+        attr("iat")[ pybind11::make_tuple(r, c) ] = DA::PY::toPyObject(v, dt);
+        return true;
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return false;
+}
+
 bool DAPyDataFrame::iat(std::size_t r, std::size_t c, const pybind11::object& v)
 {
     try {
@@ -341,7 +349,7 @@ DAPySeries DAPyDataFrame::iloc(std::size_t c) const
 DAPySeries DAPyDataFrame::loc(const QString& n) const
 {
     try {
-        pybind11::object obj = attr("iloc")[ pybind11::cast(n) ];
+        pybind11::object obj = attr("loc")[ pybind11::cast(n) ];
         return DAPySeries(obj);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
@@ -530,28 +538,40 @@ QString DAPyDataFrame::toString(std::size_t maxrow) const
         // 说明需要截断
         int showrowCnt = (int)maxrow / 2;
         for (int c = 0; c < sh.second; ++c) {
-            // 头部内容推入
-            for (int r = 0; r < showrowCnt; ++r) {
-                strlist[ c ].push_back(iat(r, c).toString());
+            // 头部内容推入：一次 Python 调用获取整列
+            pybind11::tuple head_idx = pybind11::make_tuple(
+                pybind11::slice(0, showrowCnt, 1), c);
+            pybind11::object head_col = attr("iloc")[ head_idx ];
+            pybind11::list head_vals  = head_col.attr("tolist")();
+            for (auto item : head_vals) {
+                strlist[ c ].push_back(item.cast< QVariant >().toString());
             }
             strlist[ c ].push_back("...");
-            // 尾部内容推入
-            for (int r = (int)sh.first - 1 - showrowCnt; r < (int)sh.first; ++r) {
-                strlist[ c ].push_back(iat(r, c).toString());
+            // 尾部内容推入：一次 Python 调用获取整列
+            pybind11::tuple tail_idx = pybind11::make_tuple(
+                pybind11::slice((int)sh.first - showrowCnt, (int)sh.first, 1), c);
+            pybind11::object tail_col = attr("iloc")[ tail_idx ];
+            pybind11::list tail_vals  = tail_col.attr("tolist")();
+            for (auto item : tail_vals) {
+                strlist[ c ].push_back(item.cast< QVariant >().toString());
             }
         }
     } else {
-        // 全部推入
+        // 全部推入：按列批量获取
         for (int c = 0; c < sh.second; ++c) {
-            for (int r = 0; r < sh.first; ++r) {
-                strlist[ c ].push_back(iat(r, c).toString());
+            pybind11::tuple idx = pybind11::make_tuple(
+                pybind11::slice(0, (int)sh.first, 1), c);
+            pybind11::object col      = attr("iloc")[ idx ];
+            pybind11::list vals       = col.attr("tolist")();
+            for (auto item : vals) {
+                strlist[ c ].push_back(item.cast< QVariant >().toString());
             }
         }
     }
     // 确定字符串最大长度，并对字符串的长度进行匹配
-    for (QList< QString >& vecColStr : strlist) {
+    for (QList< QString >& vecColStr : std::as_const(strlist)) {
         int s = 0;
-        for (const QString& str : vecColStr) {
+        for (const QString& str : std::as_const(vecColStr)) {
             if (str.size() > s) {
                 s = str.size();
             }
@@ -569,7 +589,7 @@ QString DAPyDataFrame::toString(std::size_t maxrow) const
     for (int r = 0; r < printRowCnt; ++r) {
         // 逐行打印
         res += "| ";
-        for (const QList< QString >& vecColStr : strlist) {
+        for (const QList< QString >& vecColStr : std::as_const(strlist)) {
             res += vecColStr[ r ] + " | ";
         }
         res += "\n";

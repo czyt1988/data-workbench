@@ -6,7 +6,6 @@
 #include <QString>
 #include <QList>
 #include <QDateTime>
-#include <QList>
 #include <QVector>
 #include <QSet>
 #include <QHash>
@@ -335,10 +334,6 @@ struct type_caster< QDateTime >
         auto& datetime_type = get_datetime_type();
         if (datetime_type && pybind11::isinstance(src, datetime_type.object())) {
             try {
-                pybind11::object timestamp = src.attr("timestamp");
-                double ts                  = timestamp().cast< double >();
-                qint64 msecs_since_epoch   = static_cast< qint64 >(ts * 1000);
-
                 pybind11::object tzinfo = src.attr("tzinfo");
                 bool has_tzinfo         = !tzinfo.is_none();
 
@@ -347,6 +342,7 @@ struct type_caster< QDateTime >
                     double ts                  = timestamp().cast< double >();
                     qint64 msecs_since_epoch   = static_cast< qint64 >(ts * 1000);
                     value                      = QDateTime::fromMSecsSinceEpoch(msecs_since_epoch, Qt::UTC);
+                    return true;
                 } else {
                     int year        = src.attr("year").cast< int >();
                     int month       = src.attr("month").cast< int >();
@@ -364,8 +360,8 @@ struct type_caster< QDateTime >
                         value = QDateTime(date, time);
                         return true;
                     }
+                    return false;
                 }
-                return true;
             } catch (...) {
                 return false;
             }
@@ -693,12 +689,6 @@ template<>
 struct type_caster< QVariant >
 {
     PYBIND11_TYPE_CASTER(QVariant, _("Any"));
-
-    // 辅助函数：检查是否为 None 或为空
-    static bool is_none_or_empty(handle src)
-    {
-        return src.is_none() || (PyObject_Size(src.ptr()) == 0 && PyErr_Occurred() == nullptr);
-    }
 
     // 辅助函数：判断是否是 numpy 对象
     // 注意：pybind11::isinstance(obj, type) 语义为「obj 是否是 type 的实例」。

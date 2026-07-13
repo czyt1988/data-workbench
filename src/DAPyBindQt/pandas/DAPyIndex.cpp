@@ -201,7 +201,7 @@ long DAPyIndex::getLoc(const pybind11::object& label) const
  * none 等同 None
  * @return
  */
-uint64_t DAPyIndex::getIndexer(pybind11::object v, const char* method)
+int64_t DAPyIndex::getIndexer(pybind11::object v, const char* method)
 {
     try {
         pybind11::object methodObj = pybind11::none();
@@ -213,7 +213,7 @@ uint64_t DAPyIndex::getIndexer(pybind11::object v, const char* method)
         list.append(v);
         pybind11::list res = attr("get_indexer")(list, pybind11::arg("method") = methodObj);
         if (res.size() > 0) {
-            return res[ 0 ].cast< uint64_t >();
+            return res[ 0 ].cast< int64_t >();
         }
         return -1;
     } catch (const std::exception& e) {

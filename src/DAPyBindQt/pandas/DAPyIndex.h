@@ -53,7 +53,7 @@ public:
     //
     QVariant value(std::size_t i) const;
     // 获取索引号
-    uint64_t getIndexer(pybind11::object v, const char* method = "nearest");
+    int64_t getIndexer(pybind11::object v, const char* method = "nearest");
     // 获取 label 的精确位置索引（基于 Index.get_loc）
     // @return label 唯一时返回位置；label 重复（非唯一）返回 -2；异常/不存在返回 -1
     long getLoc(const pybind11::object& label) const;
