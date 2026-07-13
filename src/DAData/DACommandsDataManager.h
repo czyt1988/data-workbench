@@ -52,7 +52,7 @@ public:
 
 private:
     DAData mData;
-    QString m_oldNmae;
+    QString m_oldName;
     QString m_newName;
 };
 

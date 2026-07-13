@@ -33,13 +33,14 @@ public:
     DAData();
     virtual ~DAData();
     DAData(const DAData& d);
-    DAData(DAData&& d);
+    DAData(DAData&& d) noexcept;
     DAData(const DAAbstractData::Pointer& d);
     // 注意这个等于只是判断指针等于，不是对值进行操作
     bool operator==(const DAData& d) const;
     bool operator!=(const DAData& d) const;
     bool operator<(const DAData& d) const;
     DAData& operator=(const DAData& d);
+    DAData& operator=(DAData&& d) noexcept;
     operator bool() const;
     // 是否为空
     bool isNull() const;
@@ -59,7 +60,7 @@ public:  // DAAbstractData Wrapper
     DAAbstractData::DataType getDataType() const;
     // 变量值操作
     QVariant value(std::size_t dim1, std::size_t dim2) const;
-    bool setValue(std::size_t dim1, std::size_t dim2, const QVariant& v) const;
+    bool setValue(std::size_t dim1, std::size_t dim2, const QVariant& v);
     // 变量名操作
     QString getName() const;
     void setName(const QString& n);
@@ -71,7 +72,7 @@ public:  // DAAbstractData Wrapper
     const DAAbstractData* rawPointer() const;
     // 返回智能指针
     Pointer getPointer();
-    const Pointer getPointer() const;
+    Pointer getPointer() const;
     // 获取id
     IdType id() const;
     // 是否为dataframe

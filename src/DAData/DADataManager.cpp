@@ -51,6 +51,9 @@ DADataManager::~DADataManager()
  */
 void DADataManager::addData(DAData& d)
 {
+    if (d.isNull()) {
+        return;
+    }
     if (d_ptr->_dataMap.contains(d.id())) {
         // 说明已经添加过
         daWarning << tr("data '%1' has been added").arg(d.getName());  // cn:数据 '%1' 已被添加过
@@ -186,6 +189,9 @@ int DADataManager::getDataIndex(const DAData& d) const
  */
 DAData DADataManager::getData(int index) const
 {
+    if (index < 0 || index >= d_ptr->_dataList.size()) {
+        return DAData();
+    }
     return d_ptr->_dataList.at(index);
 }
 
@@ -275,6 +281,9 @@ DAData DADataManager::findData(const QString& name, Qt::CaseSensitivity cs) cons
  */
 QList< DAData > DADataManager::findDatas(const QString& pattern, Qt::CaseSensitivity cs) const
 {
+    if (pattern.isEmpty()) {
+        return QList< DAData >();
+    }
     // 将通配符模式转换为正则表达式
     QRegularExpression regex = wildcardToRegex(pattern, cs);
     return findDatasReg(regex);
@@ -516,8 +525,13 @@ QSet< QString > DADataManager::getDatasNameSet() const
 void DADataManager::doRemoveData(DAData& d)
 {
     int index = d_ptr->_dataList.indexOf(d);
+    if (index < 0) {
+        return;
+    }
     d_ptr->_dataList.removeAt(index);
-    d_ptr->_dataMap.remove(d.id());
+    if (!d.isNull()) {
+        d_ptr->_dataMap.remove(d.id());
+    }
     d.setDataManager(nullptr);
     setDirtyFlag(true);
 }

@@ -20,8 +20,8 @@ public:
     void setSkipFirstRedo(bool skip = true);
     // 是否跳过第一次
     bool isSkipFirstRedo() const;
-    // 跳过第一次redo
-    void skipFirstRedo();
+    // 消费跳过标记，使后续 redo 正常执行
+    void consumeSkipFirstRedo();
 
 private:
     bool m_skipFirstRedo { true };  ///< 跳过第一次redo
@@ -101,7 +101,6 @@ protected:
     DAData m_data;
     QString m_oldObjectPath;
     QString m_newObjectPath;
-    bool m_isValid { false };
 };
 }
 

@@ -76,7 +76,7 @@ PYBIND11_EMBEDDED_MODULE(da_data, m)
             [](DA::DADataManager& self) {
                 QList< DA::DAData > datas = self.getAllDatas();
                 pybind11::list pyList;
-                for (const DA::DAData& data : datas) {
+                for (const DA::DAData& data : std::as_const(datas)) {
                     pyList.append(data);
                 }
                 return pyList;
@@ -88,7 +88,7 @@ PYBIND11_EMBEDDED_MODULE(da_data, m)
                 QList< DA::DAData > datas =
                     self.findDatas(QString::fromStdString(pattern), static_cast< Qt::CaseSensitivity >(cs));
                 pybind11::list pyList;
-                for (const DA::DAData& data : datas) {
+                for (const DA::DAData& data : std::as_const(datas)) {
                     pyList.append(data);
                 }
                 return pyList;
@@ -102,7 +102,7 @@ PYBIND11_EMBEDDED_MODULE(da_data, m)
                 QRegularExpression regex(QString::fromStdString(regexPattern));
                 QList< DA::DAData > datas = self.findDatasReg(regex);
                 pybind11::list pyList;
-                for (const DA::DAData& data : datas) {
+                for (const DA::DAData& data : std::as_const(datas)) {
                     pyList.append(data);
                 }
                 return pyList;

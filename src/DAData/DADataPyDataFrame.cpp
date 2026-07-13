@@ -1,5 +1,7 @@
 ﻿#include "DADataPyDataFrame.h"
 #include <iterator>
+// DAMessageHandler
+#include "DALogCategory.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -30,9 +32,14 @@ QVariant DADataPyDataFrame::toVariant(std::size_t dim1, std::size_t dim2) const
 
 bool DADataPyDataFrame::setValue(std::size_t dim1, std::size_t dim2, const QVariant& v)
 {
-    DAPyDataFrame df(mPyObject.object());
-    df.iat(dim1, dim2, v);
-    return false;
+    try {
+        DAPyDataFrame df(mPyObject.object());
+        df.iat(dim1, dim2, v);
+        return true;
+    } catch (const std::exception& e) {
+        daWarning << QString("DADataPyDataFrame::setValue failed: %1").arg(e.what());
+        return false;
+    }
 }
 
 DAPyDataFrame DADataPyDataFrame::dataframe() const
@@ -60,7 +67,11 @@ QVector< double > DADataPyDataFrame::getSeriesByVector(const QString& name) cons
             return res;
         }
         ser.castTo< double >(std::back_insert_iterator< QVector< double > >(res));
+    } catch (const std::exception& e) {
+        daWarning << QString("getSeriesByVector failed for column '%1': %2").arg(name).arg(e.what());
+        return QVector< double >();
     } catch (...) {
+        daWarning << QString("getSeriesByVector failed for column '%1': unknown exception").arg(name);
         return QVector< double >();
     }
     return res;

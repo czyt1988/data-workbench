@@ -30,7 +30,7 @@ bool DADataAbstractUndoCommand::isSkipFirstRedo() const
     return m_skipFirstRedo;
 }
 
-void DADataAbstractUndoCommand::skipFirstRedo()
+void DADataAbstractUndoCommand::consumeSkipFirstRedo()
 {
     m_skipFirstRedo = false;
 }
@@ -101,6 +101,10 @@ DADataObjectPersistUndoCommand::~DADataObjectPersistUndoCommand()
 
 void DADataObjectPersistUndoCommand::setOldData(const DAData& data)
 {
+    if (!g_tempDir.isValid()) {
+        qWarning() << "Temporary directory is invalid, cannot cache data";
+        return;
+    }
     if (!data.isDataFrame() && !data.isSeries()) {
         return;
     }
@@ -112,6 +116,10 @@ void DADataObjectPersistUndoCommand::setOldData(const DAData& data)
 
 void DADataObjectPersistUndoCommand::setNewData(const DAData& data)
 {
+    if (!g_tempDir.isValid()) {
+        qWarning() << "Temporary directory is invalid, cannot cache data";
+        return;
+    }
     if (!data.isDataFrame() && !data.isSeries()) {
         return;
     }
@@ -139,7 +147,7 @@ void DADataObjectPersistUndoCommand::undo()
 void DADataObjectPersistUndoCommand::redo()
 {
     if (isSkipFirstRedo()) {
-        skipFirstRedo();
+        consumeSkipFirstRedo();
         return;
     }
     if (m_newObjectPath.isEmpty()) {
@@ -159,9 +167,14 @@ void DADataObjectPersistUndoCommand::dumpObj(const pybind11::object& obj, const 
     static auto dumps = pybind11::module_::import("pickle").attr("dumps");
     static auto open  = pybind11::module_::import("builtins").attr("open");
 
-    auto bytes = dumps(obj);  // 二进制 bytes
+    auto bytes = dumps(obj);
     auto io    = open(DA::PY::toPyObject(path), "wb");
-    io.attr("write")(bytes);
+    try {
+        io.attr("write")(bytes);
+    } catch (...) {
+        try { io.attr("close")(); } catch (...) {}
+        throw;
+    }
     io.attr("close")();
 }
 
@@ -170,7 +183,13 @@ pybind11::object DADataObjectPersistUndoCommand::loadObj(const QString& path)
     static auto pickle = pybind11::module_::import("pickle");
     static auto open   = pybind11::module_::import("builtins").attr("open");
     auto io            = open(DA::PY::toPyObject(path), "rb");
-    auto bytes         = io.attr("read")();
+    pybind11::object bytes;
+    try {
+        bytes = io.attr("read")();
+    } catch (...) {
+        try { io.attr("close")(); } catch (...) {}
+        throw;
+    }
     io.attr("close")();
     return pickle.attr("loads")(bytes);
 }

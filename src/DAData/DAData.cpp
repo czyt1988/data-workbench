@@ -35,10 +35,9 @@ DAData::DAData(const DAData& d)
     mDataMgr = d.mDataMgr;
 }
 
-DAData::DAData(DAData&& d)
+DAData::DAData(DAData&& d) noexcept : mData(std::move(d.mData)), mDataMgr(d.mDataMgr)
 {
-    mData    = std::move(d.mData);
-    mDataMgr = std::move(d.mDataMgr);
+    d.mDataMgr = nullptr;
 }
 
 #if DA_ENABLE_PYTHON
@@ -99,6 +98,16 @@ DAData& DAData::operator=(const DAData& d)
     return *this;
 }
 
+DAData& DAData::operator=(DAData&& d) noexcept
+{
+    if (this != &d) {
+        mData      = std::move(d.mData);
+        mDataMgr   = d.mDataMgr;
+        d.mDataMgr = nullptr;
+    }
+    return *this;
+}
+
 #if DA_ENABLE_PYTHON
 DAData& DAData::operator=(const DAPyDataFrame& d)
 {
@@ -153,7 +162,7 @@ QVariant DAData::value(size_t dim1, std::size_t dim2) const
  * @param v
  * @return
  */
-bool DAData::setValue(std::size_t dim1, size_t dim2, const QVariant& v) const
+bool DAData::setValue(std::size_t dim1, size_t dim2, const QVariant& v)
 {
     if (!mData) {
         return false;
@@ -220,13 +229,16 @@ DAData::Pointer DAData::getPointer()
     return mData;
 }
 
-const DAData::Pointer DAData::getPointer() const
+DAData::Pointer DAData::getPointer() const
 {
     return mData;
 }
 
 DAData::IdType DAData::id() const
 {
+    if (!mData) {
+        return 0;
+    }
     return mData->id();
 }
 
@@ -354,7 +366,7 @@ bool DAData::writeToFile(const DAData& data, const QString& filePath)
     default:
         break;
     }
-    return true;
+    return false;
 }
 
 QString DAData::typeToString() const

@@ -100,10 +100,14 @@ QString DAAbstractData::typeToString(DAAbstractData::DataType d)
 	switch (d) {
 	case TypeNone:
 		return QObject::tr("none");  // cn:无
+	case TypeDataPackage:
+		return QObject::tr("package");  // cn:数据包
 	case TypePythonObject:
 		return QObject::tr("object");  // cn:对象
 	case TypePythonDataFrame:
 		return QObject::tr("dataframe");  // cn:数据框
+	case TypePythonSeries:
+		return QObject::tr("series");  // cn:序列
 	case TypeInnerData:
 		return QObject::tr("raw");  // cn:原始数据
 	default:

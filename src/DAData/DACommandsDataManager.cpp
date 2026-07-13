@@ -51,7 +51,7 @@ DACommandDataManagerRenameData::DACommandDataManagerRenameData(const DAData& d, 
     : QUndoCommand(par), mData(d)
 {
     setText(QObject::tr("rename data"));  // cn:重命名数据
-    m_oldNmae = d.getName();
+    m_oldName = d.getName();
     m_newName = newName;
 }
 
@@ -62,5 +62,5 @@ void DACommandDataManagerRenameData::redo()
 
 void DACommandDataManagerRenameData::undo()
 {
-    mData.setName(m_oldNmae);
+    mData.setName(m_oldName);
 }
