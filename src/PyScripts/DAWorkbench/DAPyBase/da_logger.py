@@ -2,6 +2,7 @@
 import os
 import sys
 import threading
+import functools
 from loguru import logger
 import inspect
 
@@ -91,16 +92,17 @@ def log_function_call(func):
     """
     装饰器：自动记录函数调用时的所有参数。
     """
+    sig = inspect.signature(func)  # 装饰时计算一次
 
+    @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        # 获取函数签名
-        sig = inspect.signature(func)
-        # 绑定参数
-        bound_args = sig.bind(*args, **kwargs)
-        bound_args.apply_defaults()  # 应用默认值
-
-        # 记录函数名和参数
-        logger.debug(f"Calling {func.__name__} with arguments: {bound_args.arguments}")
+        try:
+            bound_args = sig.bind(*args, **kwargs)
+            bound_args.apply_defaults()  # 应用默认值
+            logger.debug(f"Calling {func.__name__} with arguments: {bound_args.arguments}")
+        except Exception:
+            # 绑定失败时仅记录函数名，不影响正常调用
+            logger.debug(f"Calling {func.__name__}")
         return func(*args, **kwargs)
 
     return wrapper

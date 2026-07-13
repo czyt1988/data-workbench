@@ -162,21 +162,14 @@ def da_nstd_filter_outlier(df: pd.DataFrame, n=3, axis: Optional[int] = None, in
         mean = data.mean(axis=0)  # 沿着行的方向，计算每一列的平均值
         std = data.std(axis=0)    # 沿着行的方向，计算每一列的标准差
 
-        # 为每一列创建掩码，标识该列中哪些行在均值±n*标准差范围内
-        # 初始化一个全True的掩码数组
-        keep_rows = pd.Series([True] * df.shape[0], index=df.index)
+        # 利用广播一次性计算所有列的掩码
+        lower = mean - n * std     # shape: (n_cols,)
+        upper = mean + n * std     # shape: (n_cols,)
 
-        # 检查每一列，确定哪些行需要保留
-        for i, col_idx in enumerate(index):
-            col_data = df.iloc[:, col_idx]
-            col_mean = mean.iloc[i]
-            col_std = std.iloc[i]
-            col_lower = col_mean - n * col_std
-            col_upper = col_mean + n * col_std
-
-            # 更新keep_rows，只保留在所有选中列都在范围内的行
-            keep_rows = keep_rows & (col_data >= col_lower) & (
-                col_data <= col_upper)
+        # 广播比较：data shape (n_rows, n_cols) vs lower/upper shape (n_cols,)
+        # 每行所有列都在 [lower, upper] 范围内才保留
+        mask = (data >= lower) & (data <= upper)  # shape: (n_rows, n_cols)
+        keep_rows = mask.all(axis=1)  # 所有选中列都满足才保留
 
         # 直接删除不符合条件的行
         df.drop(df.index[~keep_rows], inplace=True)
@@ -236,7 +229,9 @@ def da_eval_datas(df: pd.DataFrame, expr: str, parser: str = "pandas", engine: O
     '''
     pandas.DataFrame.eval的wrapper
     '''
-    df.eval(expr, inplace=True)
+    df.eval(expr, inplace=True, parser=parser, engine=engine,
+            local_dict=local_dict, global_dict=global_dict,
+            resolvers=resolvers, level=level, target=target)
 
 
 @log_function_call
@@ -269,24 +264,27 @@ def da_search_data(df: pd.DataFrame, data, start_row=None, start_col=None):
     start_col = start_col or 0
 
     # 确保起始位置在有效范围内
-    start_row = max(0, min(start_row, len(df)-1))
-    start_col = max(0, min(start_col, len(df.columns)-1))
+    start_row = max(0, min(start_row, len(df) - 1))
+    start_col = max(0, min(start_col, len(df.columns) - 1))
 
-    matches = []
-    (rowcnt, colcnt) = df.shape
-    # 遍历行和列
-    for i in range(start_row, rowcnt):
-        for j in range(start_col, colcnt):
-            cell_value = df.iat[i, j]
+    # 截取搜索范围
+    sub = df.iloc[start_row:, start_col:]
 
-            # 处理NaN/None的特殊比较
-            if pd.isna(data):
-                if pd.isna(cell_value):
-                    matches.append((i, j))
-            # 处理其他数据类型的比较
-            elif cell_value == data:
-                matches.append((i, j))
+    if pd.isna(data):
+        # NaN 比较：使用 pd.isna 向量化
+        mask = sub.isna()
+    else:
+        # 普通值比较：向量化 ==
+        try:
+            mask = (sub == data)
+        except Exception:
+            # 类型不兼容时的降级处理
+            mask = sub.applymap(lambda x: x == data)
 
+    # np.where 返回 (row_indices, col_indices)
+    rows, cols = mask.values.nonzero()
+    # 转换为全局坐标
+    matches = [(start_row + r, start_col + c) for r, c in zip(rows, cols)]
     return matches
 
 
@@ -334,8 +332,14 @@ def da_sort(df: pd.DataFrame, by: str, ascending: bool):
 def da_to_csv(df: pd.DataFrame, path: str, sep: str):
     '''
     把dataframe写到文件
+
+    注意：此函数与 io.da_to_csv 签名不同。io.da_to_csv 接收 args 字典参数，
+    此函数接收 sep 参数并固定 index=False。两者均为 da 系统默认函数，
+    由 C++ 侧按函数名调用，不可重命名或删除。
+
     :param df: pd.DataFrame
     :param path: 文件路径
+    :param sep: 分隔符
     :return: 此函数不返回值
     '''
     df.to_csv(path, sep=sep, index=False)
@@ -345,6 +349,10 @@ def da_to_csv(df: pd.DataFrame, path: str, sep: str):
 def da_to_excel(df: pd.DataFrame, path: str):
     '''
     把dataframe写到文件
+
+    注意：此函数与 io.da_to_excel 签名不同。io.da_to_excel 接收 args 字典参数，
+    此函数固定 index=False。两者均为 da 系统默认函数，不可重命名或删除。
+
     :param df: pd.DataFrame
     :param path: 文件路径
     :return: 此函数不返回值
@@ -356,6 +364,10 @@ def da_to_excel(df: pd.DataFrame, path: str):
 def da_to_pickle(df: pd.DataFrame, path: str):
     '''
     把dataframe写到文件
+
+    注意：此函数与 io.da_to_pickle 签名不同。io.da_to_pickle 接收 args 字典参数，
+    此函数不接收额外参数。两者均为 da 系统默认函数，不可重命名或删除。
+
     :param df: pd.DataFrame
     :param path: 文件路径
     :return: 此函数不返回值
@@ -367,6 +379,10 @@ def da_to_pickle(df: pd.DataFrame, path: str):
 def da_to_parquet(df: pd.DataFrame, path: str):
     '''
     把dataframe写到文件
+
+    注意：此函数与 io.da_to_parquet 签名不同。io.da_to_parquet 接收 args 字典参数，
+    此函数不接收额外参数。两者均为 da 系统默认函数，不可重命名或删除。
+
     :param df: pd.DataFrame
     :param path: 文件路径
     :return: 此函数不返回值
@@ -378,24 +394,42 @@ def da_to_parquet(df: pd.DataFrame, path: str):
 def da_from_pickle(df: pd.DataFrame, path: str):
     '''
     从文件加载到dataframe
+
+    原地更新 df 的内容（C++ 侧持有 df 引用，要求原地修改）。
+    不使用 df.__init__() 替换内容，而是先清空再填充。
+
     :param df: pd.DataFrame
     :param path: 文件路径
     :return: 此函数不返回值，直接改变df
     '''
     tmp = pd.read_pickle(path)
-    df.__init__(tmp)
+    # 清空原 df（先删列再删行，使 df 完全空）
+    df.drop(columns=df.columns.tolist(), inplace=True)
+    df.drop(df.index, inplace=True)
+    # 填入新数据（赋值 Series 会自动设置索引）
+    for col in tmp.columns:
+        df[col] = tmp[col]
 
 
 @log_function_call
 def da_from_parquet(df: pd.DataFrame, path: str):
     '''
     从文件加载到dataframe
+
+    原地更新 df 的内容（C++ 侧持有 df 引用，要求原地修改）。
+    不使用 df.__init__() 替换内容，而是先清空再填充。
+
     :param df: pd.DataFrame
     :param path: 文件路径
     :return: 此函数不返回值，直接改变df
     '''
     tmp = pd.read_parquet(path)
-    df.__init__(tmp)
+    # 清空原 df（先删列再删行，使 df 完全空）
+    df.drop(columns=df.columns.tolist(), inplace=True)
+    df.drop(df.index, inplace=True)
+    # 填入新数据（赋值 Series 会自动设置索引）
+    for col in tmp.columns:
+        df[col] = tmp[col]
 
 
 @log_function_call
@@ -421,9 +455,17 @@ def da_setnan(df: pd.DataFrame, rowindex: List[int], colindex: List[int]):
     :return: 此函数不返回值，直接改变df
     '''
     if len(rowindex) != len(colindex):
-        raise Exception('row length len not equal column index length')
+        raise ValueError('row index length not equal column index length')
+    if not rowindex:
+        return
+    # 按列分组，每列使用 numpy 高级索引一次性赋值
+    # df[col_name].values 返回该列底层数据的视图，修改会反映到 df
+    col_to_rows = {}
     for r, c in zip(rowindex, colindex):
-        df.iat[r, c] = np.nan
+        col_to_rows.setdefault(c, []).append(r)
+    for c, rows in col_to_rows.items():
+        col_name = df.columns[c]
+        df[col_name].values[rows] = np.nan
 
 
 @log_function_call
@@ -546,7 +588,6 @@ def da_insert_column(df: pd.DataFrame, col: int, name: str,
             if stop is not None:
                 # 指定了结束日期
                 s = pd.date_range(start, stop, periods=df.shape[0])
-                print(s)
             else:
                 # 没有指定结束日期，就每秒递增
                 start = np.datetime64(start)

@@ -1,25 +1,27 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+import functools
 import da_app,da_interface
 
 def run_in_main_thread(func):
     """
     装饰器：确保被装饰的函数在Qt主线程中执行
-    
+
     用法：
     @run_in_main_thread
     def update_ui():
         # 这里可以安全操作Qt UI
         pass
     """
+    @functools.wraps(func)
     def wrapper(*args, **kwargs):
         signal_handler = da_app.getCore().getPythonSignalHandler()
         if signal_handler:
             signal_handler.callInMainThread(lambda: func(*args, **kwargs))
         else:
             func(*args, **kwargs)  # 降级处理
-    
+
     return wrapper
 
 

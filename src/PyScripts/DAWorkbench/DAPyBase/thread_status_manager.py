@@ -44,7 +44,7 @@ class ProcessingStatus:
             self._start_time = time.time()
             self._end_time = None
             self._progress = 0.0
-            self._current_stage = "初始化"
+            self._current_stage = _("Initializing")  # cn:初始化
             self._message = ""
             self._task_name = task_name
             self._custom_data.clear()
@@ -54,27 +54,29 @@ class ProcessingStatus:
         with self._lock:
             if self._is_processing and not self._is_paused:
                 self._is_paused = True
-                self._current_stage = "已暂停"
+                self._current_stage = _("Paused")  # cn:已暂停
 
     def resume(self):
         """恢复任务"""
         with self._lock:
             if self._is_paused:
                 self._is_paused = False
-                self._current_stage = "继续处理"
+                self._current_stage = _("Resumed")  # cn:继续处理
 
-    def cancel(self, message: str = "任务已取消"):
+    def cancel(self, message: str = ""):
         """取消任务"""
+        if not message:
+            message = _("Task canceled")  # cn:任务已取消
         with self._lock:
             if self._is_processing and not self._is_canceled:
                 self._is_processing = False
                 self._is_canceled = True
                 self._end_time = time.time()
                 self._progress = 0.0  # 取消后进度重置为0
-                self._current_stage = "已取消"
+                self._current_stage = _("Canceled")  # cn:已取消
                 self._message = message
 
-    def finish(self, success: bool = True, message: str = ""):
+    def finish(self, success: bool = True, message: str = "", error_details: str = ""):
         """完成任务"""
         with self._lock:
             if self._is_processing and not self._is_canceled:
@@ -82,8 +84,11 @@ class ProcessingStatus:
                 self._is_success = success
                 self._end_time = time.time()
                 self._progress = 100.0 if success else self._progress  # 成功则进度100%
-                self._current_stage = "完成" if success else "失败"
-                self._message = message
+                self._current_stage = _("Completed") if success else _("Failed")  # cn:完成/失败
+                full_msg = message
+                if error_details:
+                    full_msg = f"{message}\n[Error] {error_details}" if message else error_details
+                self._message = full_msg
 
     def update_progress(self, progress: float, message: Optional[str] = None):
         """
@@ -313,7 +318,7 @@ class StatusManager:
     def get_task_count(self) -> Tuple[int, int, int]:
         """
         获取任务统计信息
-        
+
         Returns:
             Tuple[int, int, int]: (总任务数, 活跃任务数, 已完成任务数)
         """
@@ -322,6 +327,11 @@ class StatusManager:
             active = sum(1 for status in self._status_instances.values() if status.is_active())
             finished = total - active
             return total, active, finished
+
+    def clear_all(self):
+        """清空所有任务状态"""
+        with self._lock:
+            self._status_instances.clear()
 
 
 # 全局状态管理器（单例）
@@ -424,17 +434,19 @@ def finish_task(task_id: str, success: bool = True, message: str = "",
     return False
 
 
-def cancel_task(task_id: str, message: str = "任务已取消") -> bool:
+def cancel_task(task_id: str, message: str = "") -> bool:
     """
     取消任务
-    
+
     Args:
         task_id: 任务ID
         message: 取消消息
-        
+
     Returns:
         bool: 是否成功取消
     """
+    if not message:
+        message = _("Task canceled")  # cn:任务已取消
     status = global_status_manager.get_status(task_id)
     if status:
         status.cancel(message)

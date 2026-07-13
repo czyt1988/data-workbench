@@ -4,6 +4,10 @@ import os
 import sys
 import atexit
 from typing import List, Dict, Optional
+# ⚠️ Must call setup_i18n() before importing submodules that use _().
+# Submodules (e.g. thread_status_manager) use _() in method bodies for UI strings.
+from .i18n.core import setup_i18n
+setup_i18n()
 from .DAPyBase.da_logger import setup_logging, shutdown_logging
 # 同时暴露 da_logger、utils 为顶层属性（不依赖 C++ 绑定）
 from .DAPyBase import da_logger

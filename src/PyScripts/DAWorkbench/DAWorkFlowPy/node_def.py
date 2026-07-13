@@ -417,7 +417,7 @@ class DAWorkflowNode:
                 value = value.default
             params[name] = value
 
-        _wf_dbg(f"  [run] {self.qualified_name} 调用 execute()")
+        _wf_dbg(f"  [run] {self.qualified_name} calling execute()")
         _wf_dbg(f"    inputs keys: {list(inputs.keys())}")
         _wf_dbg(f"    params: {params}")
 
@@ -429,10 +429,10 @@ class DAWorkflowNode:
             else:
                 result = self.execute()
             success = bool(result) if result is not None else True
-            _wf_dbg(f"  [run] {self.qualified_name} execute() 返回: {result} -> success={success}")
+            _wf_dbg(f"  [run] {self.qualified_name} execute() returned: {result} -> success={success}")
             return success
         except Exception as e:
-            _wf_dbg(f"  [run] {self.qualified_name} execute() 抛出异常: {type(e).__name__}: {e}")
+            _wf_dbg(f"  [run] {self.qualified_name} execute() raised exception: {type(e).__name__}: {e}")
             raise
 
 
@@ -577,7 +577,7 @@ def NodeDef(
         new_cls.input_keys = [inp["name"] for inp in inputs]
         new_cls.output_keys = [outp["name"] for outp in outputs]
 
-        _wf_dbg(f"注册节点: {qualified_name} (name='{name}', category='{category}', "
+        _wf_dbg(f"Register node: {qualified_name} (name='{name}', category='{category}', "
                 f"inputs={[i['name'] for i in inputs]}, "
                 f"outputs={[o['name'] for o in outputs]}, "
                 f"params={list(parameters_dict.keys())})")

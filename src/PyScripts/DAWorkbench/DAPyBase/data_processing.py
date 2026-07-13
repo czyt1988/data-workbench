@@ -108,11 +108,16 @@ def butterworth_filter(waveform, sampling_freq, filter_order, filter_type='lowpa
 
         b, a = scipy.signal.butter(filter_order, [
                                    normal_lower_freq, normal_upper_freq], btype=filter_type, analog=False)
+    else:
+        raise ValueError(
+            f"Invalid filter_type: {filter_type!r}, "
+            f"must be one of 'lowpass', 'highpass', 'bandpass', 'bandstop'"
+        )
 
     # 计算滤波之后的数据
     if phases:  # 如果phase为True，则计算为零相位差
         filtered_data = scipy.signal.filtfilt(b, a, waveform)
-    elif not phases:  # 如果为False,则在滤波时引入延迟
+    else:  # 如果为False,则在滤波时引入延迟
         filtered_data = scipy.signal.lfilter(b, a, waveform)
 
     return filtered_data
@@ -157,7 +162,8 @@ def peak_analysis(waveform, sampling_rate, height=None, direction=0, threshold=N
             })
 
     if direction == 1 or direction == 2:
-        ddata = [2 * height - x for x in waveform]
+        waveform_arr = np.asarray(waveform)
+        ddata = 2 * height - waveform_arr  # 向量化计算翻转波形
         dpeak, dpeak_pro = scipy.signal.find_peaks(
             ddata, -height, threshold, distance, prominence, width, wlen, rel_height, plateau_size)
         # 处理谷值数据
@@ -397,8 +403,8 @@ def da_wavelet_cwt(waveform, sampling_rate, scales, args: Optional[Dict] = None)
     '''
     time = np.arange(len(waveform)) / sampling_rate
     # 尺度系数
-    scales.dropna(inplace=True)
-    coef, freqs = wavelet_cwt(waveform, sampling_rate, scales, **args)
+    scales_clean = scales.dropna()  # 返回新对象，不修改原始 scales
+    coef, freqs = wavelet_cwt(waveform, sampling_rate, scales_clean, **args)
     return {
         "time": pd.DataFrame({'time': time}),
         "pseudo_freqs": pd.DataFrame({'pseudo_freqs': freqs}),
@@ -419,15 +425,22 @@ def da_wavelet_dwt(waveform, sampling_rate, args: Optional[Dict] = None):
     :param axis: 计算DWT的轴，默认为最后一个轴
     :return: 离散小波变换结果
     '''
+    if args is None:
+        args = {}
     dwt_res = wavelet_dwt(waveform, sampling_rate, **args)
-    level = args['level']
+    level = args.get('level')
+    if level is None:
+        # wavelet_dwt 返回的列表长度为 level+1（cA + level 个 cD）
+        level = len(dwt_res) - 1
+        if level < 1:
+            raise ValueError("DWT result is empty or invalid")
     # 存储dwt结果
     dwt_dic = {}
     # 存储近似系数
     dwt_dic[f'cA_{level}'] = dwt_res[0]
     # 存储细节系数
     for i in range(level):
-        dwt_dic[f'cD_{level-i}'] = dwt_res[i+1]
+        dwt_dic[f'cD_{level-i}'] = dwt_res[i + 1]
     dwt_data = pd.DataFrame({k: pd.Series(v) for k, v in dwt_dic.items()})
     return dwt_data
 

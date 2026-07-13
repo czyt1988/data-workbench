@@ -196,9 +196,9 @@ class DAWorkflowExecutor:
             self._error_messages.clear()
             self._result = None
 
-        _wf_dbg(f"========== 开始执行工作流 ==========")
-        _wf_dbg(f"  节点总数: {self._total_count}")
-        _wf_dbg(f"  连接总数: {len(self._workflow.get_connections())}")
+        _wf_dbg(f"========== Workflow execution started ==========")
+        _wf_dbg(f"  Total nodes: {self._total_count}")
+        _wf_dbg(f"  Total connections: {len(self._workflow.get_connections())}")
 
         self._set_state(DAExecutorState.Running)
 
@@ -212,9 +212,9 @@ class DAWorkflowExecutor:
         try:
             success = self._run_workflow()
             self._result = success
-            _wf_dbg(f"========== 工作流执行结束: {'成功' if success else '失败'} ==========")
+            _wf_dbg(f"========== Workflow execution finished: {'success' if success else 'failed'} ==========")
             if not success and self._error_messages:
-                _wf_dbg(f"  错误信息 ({len(self._error_messages)} 条):")
+                _wf_dbg(f"  Errors ({len(self._error_messages)}):")
                 for msg in self._error_messages:
                     _wf_dbg(f"    - {msg}")
             return success
@@ -222,7 +222,7 @@ class DAWorkflowExecutor:
             self._error_messages.append(str(e))
             self._set_state(DAExecutorState.Error)
             self._result = False
-            _wf_dbg(f"========== 工作流执行异常: {e} ==========")
+            _wf_dbg(f"========== Workflow execution exception: {e} ==========")
             return False
         finally:
             # 停止信号管理器
@@ -245,7 +245,7 @@ class DAWorkflowExecutor:
         if self._execution_thread is not None and self._execution_thread.is_alive():
             return  # 已有执行线程在运行
 
-        _wf_dbg("启动异步执行线程")
+        _wf_dbg("Starting async execution thread")
         self._execution_thread = threading.Thread(
             target=self._execute_thread_func,
             daemon=True,
@@ -271,7 +271,7 @@ class DAWorkflowExecutor:
         设置终止标记，当前正在执行的节点完成后将停止后续节点执行。
         不会中断正在执行中的节点，而是等待其完成后再停止。
         """
-        _wf_dbg("收到终止请求")
+        _wf_dbg("Terminate request received")
         with self._lock:
             self._terminate_requested = True
             # 如果处于暂停状态，唤醒以让终止生效
@@ -287,7 +287,7 @@ class DAWorkflowExecutor:
         """
         if self._state != DAExecutorState.Running:
             return
-        _wf_dbg("收到暂停请求")
+        _wf_dbg("Pause request received")
         with self._lock:
             self._pause_requested = True
             self._pause_event.clear()
@@ -302,7 +302,7 @@ class DAWorkflowExecutor:
         """
         if self._state != DAExecutorState.Paused:
             return
-        _wf_dbg("收到恢复请求")
+        _wf_dbg("Resume request received")
         with self._lock:
             self._pause_requested = False
             self._pause_event.set()
@@ -341,7 +341,7 @@ class DAWorkflowExecutor:
         if old_state == new_state:
             return
         self._state = new_state
-        _wf_dbg(f"执行器状态变更: {old_state.value} -> {new_state.value}")
+        _wf_dbg(f"Executor state changed: {old_state.value} -> {new_state.value}")
 
         # Python 侧回调
         if self._on_state_change is not None:
@@ -363,34 +363,34 @@ class DAWorkflowExecutor:
         # 分类节点
         global_nodes, isolated_nodes, begin_nodes = self._classify_nodes()
 
-        _wf_dbg(f"节点分类结果:")
-        _wf_dbg(f"  全局节点 ({len(global_nodes)}): {[self._node_label(nid) for nid in global_nodes]}")
-        _wf_dbg(f"  孤立节点 ({len(isolated_nodes)}): {[self._node_label(nid) for nid in isolated_nodes]}")
-        _wf_dbg(f"  开始节点 ({len(begin_nodes)}): {[self._node_label(nid) for nid in begin_nodes]}")
+        _wf_dbg(f"Node classification result:")
+        _wf_dbg(f"  Global nodes ({len(global_nodes)}): {[self._node_label(nid) for nid in global_nodes]}")
+        _wf_dbg(f"  Isolated nodes ({len(isolated_nodes)}): {[self._node_label(nid) for nid in isolated_nodes]}")
+        _wf_dbg(f"  Begin nodes ({len(begin_nodes)}): {[self._node_label(nid) for nid in begin_nodes]}")
 
         # 执行全局节点（执行但不传递数据）
         for node_id in global_nodes:
             if self._check_interrupt():
                 return False
-            _wf_dbg(f"执行全局节点: {self._node_label(node_id)}")
+            _wf_dbg(f"Execute global node: {self._node_label(node_id)}")
             success = self._execute_node(node_id, transmit=False)
             if not success:
                 self._error_messages.append(
-                    f"全局节点 '{node_id}' 执行失败"
+                    f"Global node '{node_id}' execution failed"
                 )
-                _wf_dbg(f"  全局节点执行失败: {self._node_label(node_id)}")
+                _wf_dbg(f"  Global node execution failed: {self._node_label(node_id)}")
 
         # 执行孤立节点（执行并传递数据）
         for node_id in isolated_nodes:
             if self._check_interrupt():
                 return False
-            _wf_dbg(f"执行孤立节点: {self._node_label(node_id)}")
+            _wf_dbg(f"Execute isolated node: {self._node_label(node_id)}")
             success = self._execute_node(node_id, transmit=True)
             if not success:
                 self._error_messages.append(
-                    f"孤立节点 '{node_id}' 执行失败"
+                    f"Isolated node '{node_id}' execution failed"
                 )
-                _wf_dbg(f"  孤立节点执行失败: {self._node_label(node_id)}")
+                _wf_dbg(f"  Isolated node execution failed: {self._node_label(node_id)}")
 
         # 执行开始节点（执行并传递数据到下游）
         for node_id in begin_nodes:
@@ -398,16 +398,16 @@ class DAWorkflowExecutor:
                 return False
             # 如果开始节点也是全局节点，只传递数据
             if node_id in global_nodes:
-                _wf_dbg(f"传播全局开始节点数据: {self._node_label(node_id)}")
+                _wf_dbg(f"Propagate global begin node data: {self._node_label(node_id)}")
                 self._propagate_and_transmit(node_id)
             else:
-                _wf_dbg(f"执行开始节点: {self._node_label(node_id)}")
+                _wf_dbg(f"Execute begin node: {self._node_label(node_id)}")
                 success = self._execute_node(node_id, transmit=True)
                 if not success:
                     self._error_messages.append(
-                        f"开始节点 '{node_id}' 执行失败"
+                        f"Begin node '{node_id}' execution failed"
                     )
-                    _wf_dbg(f"  开始节点执行失败: {self._node_label(node_id)}")
+                    _wf_dbg(f"  Begin node execution failed: {self._node_label(node_id)}")
 
         return len(self._error_messages) == 0
 
@@ -454,7 +454,7 @@ class DAWorkflowExecutor:
             indeg = in_degree.get(node_id, 0)
             outdeg = out_degree.get(node_id, 0)
 
-            _wf_dbg(f"  节点 {self._node_label(node_id)}: 入度={indeg}, 出度={outdeg}, 全局={is_global}")
+            _wf_dbg(f"  Node {self._node_label(node_id)}: in_degree={indeg}, out_degree={outdeg}, global={is_global}")
 
             if indeg == 0:
                 if outdeg == 0:
@@ -483,20 +483,20 @@ class DAWorkflowExecutor:
         """
         node_instance = self._workflow.get_node_by_id(node_id)
         if node_instance is None:
-            self._error_messages.append(f"节点 '{node_id}' 不存在")
+            self._error_messages.append(f"Node '{node_id}' does not exist")
             return False
 
-        _wf_dbg(f"-> 执行节点 [{self._executed_count + 1}/{self._total_count}]: "
+        _wf_dbg(f"-> Execute node [{self._executed_count + 1}/{self._total_count}]: "
                 f"{self._node_label(node_id)}, transmit={transmit}")
 
         # 打印输入数据摘要
         input_data = getattr(node_instance, '_input_data', {})
         if input_data:
             for k, v in input_data.items():
-                _wf_dbg(f"     输入 '{k}': {type(v).__name__}" +
+                _wf_dbg(f"     Input '{k}': {type(v).__name__}" +
                         (f" shape={v.shape}" if hasattr(v, 'shape') else ""))
         else:
-            _wf_dbg(f"     输入: (无)")
+            _wf_dbg(f"     Input: (none)")
 
         # 执行节点
         previous = self._current_node_id
@@ -511,7 +511,7 @@ class DAWorkflowExecutor:
             # 根据执行结果设置节点状态
             node_instance.set_node_state("success" if success else "error")
         except Exception as e:
-            self._error_messages.append(f"节点 '{node_id}' 执行异常: {e}")
+            self._error_messages.append(f"Node '{node_id}' execution exception: {e}")
             # 异常时设置节点状态为 error
             node_instance.set_node_state("error")
             success = False
@@ -523,13 +523,13 @@ class DAWorkflowExecutor:
         if output_data:
             for k, v in output_data.items():
                 if v is not None:
-                    _wf_dbg(f"     输出 '{k}': {type(v).__name__}" +
+                    _wf_dbg(f"     Output '{k}': {type(v).__name__}" +
                             (f" shape={v.shape}" if hasattr(v, 'shape') else ""))
                 else:
-                    _wf_dbg(f"     输出 '{k}': None")
+                    _wf_dbg(f"     Output '{k}': None")
 
-        _wf_dbg(f"<- 节点 {self._node_label(node_id)} 结果: "
-                f"{'成功' if success else '失败'}")
+        _wf_dbg(f"<- Node {self._node_label(node_id)} result: "
+                f"{'success' if success else 'failed'}")
 
         self._executed_count += 1
 
@@ -569,19 +569,19 @@ class DAWorkflowExecutor:
         for output_key in output_keys:
             output_data = getattr(node_instance, "_output_data", {}).get(output_key)
             if output_data is not None:
-                _wf_dbg(f"  发送输出: {self._node_label(node_id)}.{output_key} "
+                _wf_dbg(f"  Send output: {self._node_label(node_id)}.{output_key} "
                         f"({type(output_data).__name__})")
                 self._signal_manager.send_output(node_id, output_key, output_data)
 
         # 处理待传递的信号
         processed = self._signal_manager.process_pending()
-        _wf_dbg(f"  处理信号队列: {processed} 条")
+        _wf_dbg(f"  Processed signal queue: {processed} signals")
 
         # 检查下游节点是否满足执行条件
         downstream_conns = self._workflow.get_downstream_connections(node_id)
         for conn in downstream_conns:
             ready = self._signal_manager.is_node_ready(conn.target_node_id)
-            _wf_dbg(f"  下游节点 {self._node_label(conn.target_node_id)}: "
+            _wf_dbg(f"  Downstream node {self._node_label(conn.target_node_id)}: "
                     f"ready={ready}")
             if ready:
                 if self._check_interrupt():
@@ -597,7 +597,7 @@ class DAWorkflowExecutor:
         # 检查终止请求
         with self._lock:
             if self._terminate_requested:
-                _wf_dbg("执行被终止")
+                _wf_dbg("Execution terminated")
                 return True
 
         # 检查暂停请求——等待暂停事件
@@ -606,7 +606,7 @@ class DAWorkflowExecutor:
         # 再次检查终止请求（暂停恢复后可能已终止）
         with self._lock:
             if self._terminate_requested:
-                _wf_dbg("执行被终止（暂停恢复后）")
+                _wf_dbg("Execution terminated (after pause resumed)")
                 return True
 
         return False
@@ -620,7 +620,7 @@ class DAWorkflowExecutor:
         """
         node_instance = self._workflow.get_node_by_id(node_id)
         if node_instance is None:
-            return f"(未知:{node_id[:8]})"
+            return f"(unknown:{node_id[:8]})"
         name = getattr(node_instance, 'name', '') or getattr(node_instance, 'qualified_name', node_id)
         short_id = node_id[:8] if len(node_id) > 8 else node_id
         return f"{name}({short_id})"
