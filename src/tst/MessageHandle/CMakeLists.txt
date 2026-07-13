@@ -1,6 +1,8 @@
 # MessageHandleTest 的 CMakeLists.txt
 # 测试 DAMessageHandler 模块的日志功能
 
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Test REQUIRED)
+
 include_directories(
     ${CMAKE_CURRENT_LIST_DIR}/../../DAMessageHandler
 )
@@ -11,6 +13,7 @@ target_link_libraries(MessageHandleTest PRIVATE
     DAWorkbench::DAMessageHandler
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Test
 )
 
 # spdlog::spdlog 是 DAMessageHandler 的 PRIVATE 依赖，测试目标不可直接引用

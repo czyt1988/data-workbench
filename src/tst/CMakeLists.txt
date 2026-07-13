@@ -6,10 +6,8 @@
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# 添加包含目录
-include_directories(
-    ${CMAKE_CURRENT_LIST_DIR}/src
-)
+# 启用 AUTOMOC 以支持 Qt Test 的 Q_OBJECT 宏和 main.moc 包含
+set(CMAKE_AUTOMOC ON)
 
 # 查找所有测试子目录
 file(GLOB test_subdirectories RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} */)
@@ -35,8 +33,8 @@ add_custom_target(run_all_tests
     COMMENT "Running all tests"
 )
 
-# 添加一个显示测试覆盖率的自定义目标（如果使用覆盖率工具）
-add_custom_target(test_coverage
-    COMMAND echo "Test coverage reporting would be implemented here"
-    COMMENT "Generating test coverage report"
-)
+# TODO: 使用 OpenCppCoverage (Windows) 或 gcov (Linux) 实现覆盖率报告
+# add_custom_target(test_coverage
+#     COMMAND OpenCppCoverage --export_type=cobertura --output=${CMAKE_BINARY_DIR}/coverage.xml --sources ${CMAKE_SOURCE_DIR}/src -- $<TARGET_FILE:run_all_tests>
+#     COMMENT "Generating test coverage report"
+# )
