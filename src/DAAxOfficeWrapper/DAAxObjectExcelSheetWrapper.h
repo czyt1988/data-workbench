@@ -40,9 +40,9 @@ public:
 
 public:
 	// 把序号转换为A~Z表示的二十六个字母
-	static QString indexToAlphbat(int n);
+	static QString indexToAlphabet(int n);
 	// table转换为QVariant
-	static QVariant tableToVaraint(const DATable< QVariant >& table);
+	static QVariant tableToVariant(const DATable< QVariant >& table);
 
 private:
 	// 生成一个范围值，如makeRange(1,1,27,27)=A1:AA27

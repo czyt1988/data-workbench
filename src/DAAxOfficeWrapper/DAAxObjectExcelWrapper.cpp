@@ -111,8 +111,7 @@ bool DAAxObjectExcelWrapper::PrivateData::initialize(bool visible, bool displayA
 {
     HRESULT r = OleInitialize(0);
     if (r != S_OK && r != S_FALSE) {
-        daWarning.noquote() << DAAxObjectExcelWrapper::tr("cannot initialize OLE, error code: %1")
-                                   .arg((int)r);  // cn:无法初始化 OLE，错误码：%1
+        daWarning.noquote() << QString("cannot initialize OLE, error code: %1").arg((int)r);
     }
     mAxApp = std::make_unique< QAxObject >(q_ptr);
     if (!tryCreateComControl(mAxApp.get())) {
@@ -123,8 +122,7 @@ bool DAAxObjectExcelWrapper::PrivateData::initialize(bool visible, bool displayA
     setDisplayAlerts(displayAlerts);
     mAxWorkbooks = mAxApp->querySubObject("Workbooks");
     if (!mAxWorkbooks) {
-        daWarning.noquote() << DAAxObjectExcelWrapper::tr(
-            "cannot query subobject 'Workbooks'");  // cn:无法查询子对象 'Workbooks'
+        daWarning.noquote() << "cannot query subobject 'Workbooks'";
         return false;
     }
     return true;
@@ -196,19 +194,23 @@ void DAAxObjectExcelWrapper::PrivateData::setDisplayAlerts(bool on)
 bool DAAxObjectExcelWrapper::PrivateData::open(const QString& filename, bool visible, bool displayAlerts)
 {
     if (!tryInitialize(visible, displayAlerts)) {
-        daWarning << QObject::tr("failed to initialize %1").arg(cappClassNames.join(","));  // cn:无法初始化 %1
+        daWarning << QString("failed to initialize %1").arg(cappClassNames.join(","));
         return false;
     }
     QString nativeFileName = QDir::toNativeSeparators(filename);
     if (!QFile::exists(nativeFileName)) {
-        daWarning << QObject::tr("file \"%1\" does not exist").arg(nativeFileName);  // cn:文件 "%1" 不存在
+        daWarning << QString("file \"%1\" does not exist").arg(nativeFileName);
         return false;
     }
     // 文件存在
-    mAxWorkbooks->querySubObject("Open(const QString &)", nativeFileName);
+    QAxObject* workbook = mAxWorkbooks->querySubObject("Open(const QString &)", nativeFileName);
+    if (qaxobject_is_null(workbook)) {
+        daWarning << QString("failed to open Excel file \"%1\"").arg(nativeFileName);
+        return false;
+    }
     mAxWorkbook = mAxApp->querySubObject("ActiveWorkBook");
     if (!isHaveWorkbook()) {
-        daWarning << QObject::tr("cannot get Excel workbook");  // cn:无法获取 Excel 工作簿
+        daWarning << "cannot get Excel workbook";
         return false;
     }
     mAxWorkSheets = mAxWorkbook->querySubObject("Sheets");  // 获得所有工作表对象
@@ -225,14 +227,14 @@ bool DAAxObjectExcelWrapper::PrivateData::open(const QString& filename, bool vis
 bool DAAxObjectExcelWrapper::PrivateData::create(const QString& filename, bool visible, bool displayAlerts)
 {
     if (!tryInitialize(visible, displayAlerts)) {
-        daWarning << QObject::tr("failed to initialize %1").arg(cappClassNames.join(","));  // cn:无法初始化 %1
+        daWarning << QString("failed to initialize %1").arg(cappClassNames.join(","));
         return false;
     }
     // 文件不存在则创建
     mAxWorkbooks->dynamicCall("Add");
     mAxWorkbook = mAxApp->querySubObject("ActiveWorkBook");
     if (!isHaveWorkbook()) {
-        daWarning << QObject::tr("cannot get Excel workbook");  // cn:无法获取 Excel 工作簿
+        daWarning << "cannot get Excel workbook";
         return false;
     }
     saveAs(filename);
@@ -267,13 +269,17 @@ bool DAAxObjectExcelWrapper::PrivateData::saveAs(const QString& filename)
 void DAAxObjectExcelWrapper::PrivateData::close()
 {
     if (isHaveWorkbook()) {
+#if DAAXOFFICEWRAPPER_DEBUG_PRINT
         qDebug() << "close Workbook";
+#endif
         mAxWorkbook->dynamicCall("Close()");
     }
     //    if (isHaveWorkbooks()) {
     //        qDebug() << "close Workbooks";
     //        mAxWorkbooks->dynamicCall("Close()");
     //    }
+    mAxWorkbook   = nullptr;
+    mAxWorkSheets = nullptr;
 }
 
 void DAAxObjectExcelWrapper::PrivateData::release()
@@ -281,11 +287,12 @@ void DAAxObjectExcelWrapper::PrivateData::release()
     close();
     // 理论所有的AxObject的父类都是mAxApp，因此务必保证mAxApp被删除
     if (isInitialize()) {
+#if DAAXOFFICEWRAPPER_DEBUG_PRINT
         qDebug() << "quit excel";
+#endif
         mAxApp->dynamicCall("Quit()");
     }
-    mAxApp.reset(nullptr);
-    mAxApp        = nullptr;
+    mAxApp.reset();
     mAxWorkbooks  = nullptr;
     mAxWorkbook   = nullptr;
     mAxWorkSheets = nullptr;
@@ -295,12 +302,20 @@ void DAAxObjectExcelWrapper::PrivateData::release()
 void DAAxObjectExcelWrapper::PrivateData::activeWorkBook()
 {
     if (qaxobject_is_null(mAxWorkbooks)) {
+#if DAAXOFFICEWRAPPER_DEBUG_PRINT
         qDebug() << "workbooks is null";
+#endif
         return;
     }
     // 文件不存在则创建
     mAxWorkbooks->querySubObject("Add");
-    mAxWorkbook   = mAxApp->querySubObject("ActiveWorkBook");
+    mAxWorkbook = mAxApp->querySubObject("ActiveWorkBook");
+    if (qaxobject_is_null(mAxWorkbook)) {
+#if DAAXOFFICEWRAPPER_DEBUG_PRINT
+        qDebug() << "cannot get ActiveWorkBook";
+#endif
+        return;
+    }
     mAxWorkSheets = mAxWorkbook->querySubObject("Sheets");  // 获得所有工作表对象
 }
 
@@ -361,8 +376,14 @@ QAxObject* DAAxObjectExcelWrapper::PrivateData::addSheet(const QString& name)
     //! mAxWorkSheets->dynamicCall("ADD()");
     //! QAxObject* newSheet = mAxWorkSheets->querySubObject("Item(int)", count + 1);
     QAxObject* lastSheet = mAxWorkSheets->querySubObject("Item(int)", count);
+    if (qaxobject_is_null(lastSheet)) {
+        return nullptr;
+    }
     mAxWorkSheets->querySubObject("Add(QVariant)", lastSheet->asVariant());
     QAxObject* newSheet = mAxWorkSheets->querySubObject("Item(int)", count);
+    if (qaxobject_is_null(newSheet)) {
+        return nullptr;
+    }
     lastSheet->dynamicCall("Move(QVariant)", newSheet->asVariant());
 #if DAAXOFFICEWRAPPER_DEBUG_PRINT
     qDebug() << QString("WorkSheets count %1").arg(getSheetsCount());
@@ -502,16 +523,8 @@ int DAAxObjectExcelWrapper::PrivateData::getSheetIndex(QAxObject* sheetObj)
  */
 QVariant DAAxObjectExcelWrapper::PrivateData::getSheetAllData(QAxObject* sheetObj)
 {
-    QVariant var;
-
-    QAxObject* usedRange = sheetObj->querySubObject("UsedRange");
-    if (qaxobject_is_null(usedRange)) {
-        return var;
-    }
-    var = usedRange->dynamicCall("Value");
-    delete usedRange;
-
-    return var;
+    DAAxObjectExcelSheetWrapper sheet(sheetObj);
+    return sheet.getAllData();
 }
 
 /**
@@ -524,7 +537,7 @@ QList< QAxObject* > DAAxObjectExcelWrapper::PrivateData::getAllSheet(QAxObject* 
     int cnt = getWorkSheetsCount(workSheetsObj);
     QList< QAxObject* > axSheets;
     for (int i = 1; i <= cnt; ++i) {
-        QAxObject* ax = workSheetsObj->querySubObject("Item(int)", cnt);
+        QAxObject* ax = workSheetsObj->querySubObject("Item(int)", i);
         if (ax && !(ax->isNull())) {
             axSheets.append(ax);
         }
@@ -746,13 +759,13 @@ DATable< QVariant > DAAxObjectExcelWrapper::readExcelSheet(const QString& filena
     DAAxObjectExcelWrapper excel;
     if (!excel.isValid()) {
         if (errString) {
-            *errString = QObject::tr("The local computer does not have Excel or WPS installed");  // cn:当前计算机中没有安装excel或者wps
+            *errString = DAAxObjectExcelWrapper::tr("The local computer does not have Excel or WPS installed");  // cn:当前计算机中没有安装excel或者wps
         }
         return res;
     }
     if (!excel.open(filename)) {
         if (errString) {
-            *errString = QObject::tr("cannot open Excel");  // cn:无法打开Excel
+            *errString = DAAxObjectExcelWrapper::tr("cannot open Excel");  // cn:无法打开Excel
         }
         return res;
     }
@@ -769,7 +782,7 @@ bool DAAxObjectExcelWrapper::writeExcel(const QString& filename,
     DAAxObjectExcelWrapper excel;
     if (!excel.isValid()) {
         if (errString) {
-            *errString = QObject::tr("The local computer does not have Excel or WPS installed");  // cn:当前计算机中没有安装excel或者wps
+            *errString = DAAxObjectExcelWrapper::tr("The local computer does not have Excel or WPS installed");  // cn:当前计算机中没有安装excel或者wps
         }
         return false;
     }
@@ -784,8 +797,24 @@ bool DAAxObjectExcelWrapper::writeExcel(const QString& filename,
             sheet.setName(sheetName);
         }
     }
-    sheet.writeTable(table);
-    excel.saveAs(filename);
+    if (sheet.isNull()) {
+        if (errString) {
+            *errString = DAAxObjectExcelWrapper::tr("cannot get or create sheet");  // cn:无法获取或创建工作表
+        }
+        return false;
+    }
+    if (!sheet.writeTable(table)) {
+        if (errString) {
+            *errString = DAAxObjectExcelWrapper::tr("failed to write table to sheet");  // cn:写入表格数据到sheet失败
+        }
+        return false;
+    }
+    if (!excel.saveAs(filename)) {
+        if (errString) {
+            *errString = DAAxObjectExcelWrapper::tr("failed to save Excel file");  // cn:保存Excel文件失败
+        }
+        return false;
+    }
     return true;
 }
 

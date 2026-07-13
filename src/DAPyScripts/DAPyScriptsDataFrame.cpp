@@ -19,7 +19,7 @@ DAPyScriptsDataFrame::DAPyScriptsDataFrame(bool autoImport) : DAPyModule()
 
 DAPyScriptsDataFrame::DAPyScriptsDataFrame(const pybind11::object& obj) : DAPyModule(obj)
 {
-    if (isModule()) {
+    if (!isModule()) {
         daCritical << QObject::tr("cannot import DAWorkbench.dataframe");  // cn:无法导入 DAWorkbench.dataframe 模块
     }
 }
@@ -284,6 +284,13 @@ bool DAPyScriptsDataFrame::astype(DAPyDataFrame& df, const QList< int >& colsInd
  */
 bool DAPyScriptsDataFrame::setnan(DAPyDataFrame& df, const QList< int >& rowsIndex, const QList< int >& colsIndex) noexcept
 {
+    // rowsIndex 和 colsIndex 应为一一对应的坐标对，长度必须一致
+    if (rowsIndex.size() != colsIndex.size()) {
+        daWarning << QObject::tr("setnan: rowsIndex size(%1) != colsIndex size(%2)")
+                         .arg(rowsIndex.size())
+                         .arg(colsIndex.size());  // cn:setnan: 行索引长度(%1)与列索引长度(%2)不一致
+        return false;
+    }
     try {
         pybind11::object da_setnan = attr("da_setnan");
         pybind11::list rows;
@@ -621,11 +628,13 @@ bool DAPyScriptsDataFrame::clipoutlier(DAPyDataFrame& df, double lowervalue, dou
     try {
         pybind11::object da_clip_outlier = attr("da_clip_outlier");
         pybind11::dict args;
+        // 0.0 为哨兵值，表示不限制该边界
         if (lowervalue == 0.0) {
             args[ "lower" ] = pybind11::none();
         } else {
             args[ "lower" ] = lowervalue;
         }
+        // 0.0 为哨兵值，表示不限制该边界
         if (uppervalue == 0.0) {
             args[ "upper" ] = pybind11::none();
         } else {
@@ -664,18 +673,18 @@ bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr) no
 /**
  * @brief search方法的wrapper
  * @param df
- * @param expr
+ * @param value 要搜索的值（字符串形式，内部会转为数值进行匹配）
  * @return
  */
-QList< QPair< int, int > > DAPyScriptsDataFrame::searchData(const DAPyDataFrame& df, const QString& expr) noexcept
+QList< QPair< int, int > > DAPyScriptsDataFrame::searchData(const DAPyDataFrame& df, const QString& value) noexcept
 {
     QList< QPair< int, int > > matches;
     try {
-        if (expr.isEmpty()) {
+        if (value.isEmpty()) {
             return matches;
         }
         pybind11::object da_search_data = attr("da_search_data");
-        pybind11::object result         = da_search_data(df.object(), expr.toDouble());
+        pybind11::object result         = da_search_data(df.object(), value.toDouble());
 
         for (auto item : result) {
             pybind11::tuple pos = item.cast< pybind11::tuple >();
@@ -749,11 +758,13 @@ bool DAPyScriptsDataFrame::dataselect(DAPyDataFrame& df, double lowervalue, doub
     try {
         pybind11::object da_data_select = attr("da_data_select");
         pybind11::dict args;
+        // 0.0 为哨兵值，表示不限制该边界
         if (lowervalue == 0.0) {
             args[ "lower" ] = pybind11::none();
         } else {
             args[ "lower" ] = lowervalue;
         }
+        // 0.0 为哨兵值，表示不限制该边界
         if (uppervalue == 0.0) {
             args[ "upper" ] = pybind11::none();
         } else {

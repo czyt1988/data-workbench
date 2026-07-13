@@ -14,7 +14,7 @@ class QAxObject;
 #endif
 
 #ifndef DAAXOFFICEWRAPPER_DEBUG_PRINT
-#define DAAXOFFICEWRAPPER_DEBUG_PRINT 1
+#define DAAXOFFICEWRAPPER_DEBUG_PRINT 0
 #endif
 namespace DA
 {

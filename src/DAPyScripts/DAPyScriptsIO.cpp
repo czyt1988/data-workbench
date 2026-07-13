@@ -71,7 +71,7 @@ DAPyScriptsIO::DAPyScriptsIO(bool autoImport) : DAPyModule()
 
 DAPyScriptsIO::DAPyScriptsIO(const pybind11::object& obj) : DAPyModule(obj)
 {
-    if (isModule()) {
+    if (!isModule()) {
         daCritical << QObject::tr("cannot import DAWorkbench.io");  // cn:无法导入 DAWorkbench.io 模块
     }
 }
@@ -112,25 +112,6 @@ QList< QString > DAPyScriptsIO::getFileReadFilters() const
  */
 FUNCTION_STR_DICT(DAPyObjectWrapper, read, da_read)
 
-// DAPyObjectWrapper DAPyScriptsIO::read(const QString& filepath, const QVariantMap& args, QString* err)
-// {
-//     try {
-//         pybind11::object da_read = attr("da_read");
-//         if (da_read.is_none()) {
-//             qDebug() << "da_io.py have no attr da_read";
-//             return DAPyObjectWrapper();
-//         }
-//         pybind11::object f = da_read(DA::PY::toString(filepath));
-//         return DAPyObjectWrapper(std::move(f));
-//     } catch (const std::exception& e) {
-//         if (err) {
-//             *err = e.what();
-//         }
-//         qDebug() << e.what();
-//     }
-//     return DAPyObjectWrapper();
-// }
-
 /**
  * @brief 读取csv
  * @param filepath
@@ -163,7 +144,7 @@ void DAPyScriptsIO::read_and_add_to_datamanager(const QString& filepath, const Q
     try {
         pybind11::object fun = attr("da_read_and_add_to_datamanager");
         if (fun.is_none()) {
-            qDebug() << "da_io.py have no attr da_read";
+            qDebug() << "da_io.py have no attr da_read_and_add_to_datamanager";
             return;
         }
         fun(pybind11::cast(filepath), pybind11::cast(args));

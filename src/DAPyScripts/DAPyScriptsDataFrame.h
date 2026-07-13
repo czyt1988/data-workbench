@@ -84,7 +84,7 @@ public:
 	// querydatas()
 	bool queryDatas(DAPyDataFrame& df, const QString& expr) noexcept;
 	// searchdata()
-	QList< QPair< int, int > > searchData(const DAPyDataFrame& df, const QString& expr) noexcept;
+	QList< QPair< int, int > > searchData(const DAPyDataFrame& df, const QString& value) noexcept;
 	// eval
 	bool evalDatas(DAPyDataFrame& df, const QString& expr) noexcept;
 	// 排序sort()

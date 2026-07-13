@@ -1,6 +1,35 @@
 ﻿#include "DAPyScriptsDataProcess.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DALogCategory.h"
+
+/**
+ * @def DATAPROCESS_CALL_DF
+ * @brief 生成签名形如 (wave, fs, args, err) -> DAPyDataFrame 的数据处理方法
+ *
+ * 适用于 spectrum_analysis / peak_analysis / wavelet_dwt 三个签名一致的方法。
+ * butterworth_filter / stft_analysis / wavelet_cwt 因签名不同，保持显式实现。
+ */
+#define DATAPROCESS_CALL_DF(functionName, pyFunctionName)                                                       \
+    DAPyDataFrame DAPyScriptsDataProcess::functionName(                                                         \
+        const DAPySeries& wave, double fs, const QVariantMap& args, QString* err)                               \
+    {                                                                                                           \
+        try {                                                                                                   \
+            pybind11::object fn = attr(#pyFunctionName);                                                        \
+            if (fn.is_none()) {                                                                                 \
+                qDebug() << "DAWorkbench.data_processing.py have no attr " #pyFunctionName;                     \
+                return DAPyDataFrame();                                                                         \
+            }                                                                                                   \
+            pybind11::object v = fn(wave.object(), fs, pybind11::cast(args));                                   \
+            return DAPyDataFrame(std::move(v));                                                                 \
+        } catch (const std::exception& e) {                                                                     \
+            if (err) {                                                                                          \
+                *err = e.what();                                                                                \
+            }                                                                                                   \
+            qDebug() << e.what();                                                                               \
+        }                                                                                                       \
+        return DAPyDataFrame();                                                                                 \
+    }
+
 namespace DA
 {
 
@@ -15,7 +44,7 @@ DAPyScriptsDataProcess::DAPyScriptsDataProcess(bool autoImport) : DAPyModule()
 
 DAPyScriptsDataProcess::DAPyScriptsDataProcess(const pybind11::object& obj) : DAPyModule(obj)
 {
-    if (isModule()) {
+    if (!isModule()) {
         daCritical << QObject::tr(
             "cannot import DAWorkbench.data_processing");  // cn:无法导入 DAWorkbench.data_processing 模块
     }
@@ -33,25 +62,7 @@ DAPyScriptsDataProcess::~DAPyScriptsDataProcess()
  * @param err
  * @return
  */
-DAPyDataFrame
-DAPyScriptsDataProcess::spectrum_analysis(const DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
-{
-    try {
-        pybind11::object fn = attr("da_spectrum_analysis");
-        if (fn.is_none()) {
-            qDebug() << "DAWorkbench.data_processing.py have no attr da_spectrum_analysis";
-            return DAPyDataFrame();
-        }
-        pybind11::object v = fn(wave.object(), fs, pybind11::cast(args));
-        return DAPyDataFrame(std::move(v));
-    } catch (const std::exception& e) {
-        if (err) {
-            *err = e.what();
-        }
-        qDebug() << e.what();
-    }
-    return DAPyDataFrame();
-}
+DATAPROCESS_CALL_DF(spectrum_analysis, da_spectrum_analysis)
 
 DAPyDataFrame
 DAPyScriptsDataProcess::butterworth_filter(const DAPySeries& wave, double fs, int fo, const QVariantMap& args, QString* err)
@@ -73,24 +84,7 @@ DAPyScriptsDataProcess::butterworth_filter(const DAPySeries& wave, double fs, in
     return DAPyDataFrame();
 }
 
-DAPyDataFrame DAPyScriptsDataProcess::peak_analysis(const DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
-{
-    try {
-        pybind11::object fn = attr("da_peak_analysis");
-        if (fn.is_none()) {
-            qDebug() << "DAWorkbench.data_processing.py have no attr da_peak_analysis";
-            return DAPyDataFrame();
-        }
-        pybind11::object v = fn(wave.object(), fs, pybind11::cast(args));
-        return DAPyDataFrame(std::move(v));
-    } catch (const std::exception& e) {
-        if (err) {
-            *err = e.what();
-        }
-        qDebug() << e.what();
-    }
-    return DAPyDataFrame();
-}
+DATAPROCESS_CALL_DF(peak_analysis, da_peak_analysis)
 
 pybind11::dict DAPyScriptsDataProcess::stft_analysis(const DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
 {
@@ -134,24 +128,8 @@ pybind11::dict DAPyScriptsDataProcess::wavelet_cwt(const DAPySeries& wave,
     return pybind11::dict();
 }
 
-DAPyDataFrame DAPyScriptsDataProcess::wavelet_dwt(const DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
-{
-    try {
-        pybind11::object fn = attr("da_wavelet_dwt");
-        if (fn.is_none()) {
-            qDebug() << "DAWorkbench.data_processing.py have no attr da_wavelet_dwt";
-            return DAPyDataFrame();
-        }
-        pybind11::object v = fn(wave.object(), fs, pybind11::cast(args));
-        return DAPyDataFrame(std::move(v));
-    } catch (const std::exception& e) {
-        if (err) {
-            *err = e.what();
-        }
-        qDebug() << e.what();
-    }
-    return DAPyDataFrame();
-}
+DATAPROCESS_CALL_DF(wavelet_dwt, da_wavelet_dwt)
+
 bool DAPyScriptsDataProcess::import()
 {
     try {

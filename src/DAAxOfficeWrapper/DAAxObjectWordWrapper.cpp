@@ -67,6 +67,10 @@ bool DAAxObjectWordWrapper::PrivateData::tryCreateComControl(QAxObject* obj)
  */
 bool DAAxObjectWordWrapper::PrivateData::initialize()
 {
+    if (mWordApp) {
+        delete mWordApp;
+        mWordApp = nullptr;
+    }
     mWordApp = new QAxObject(q_ptr);
     tryCreateComControl(mWordApp);  // 打开word
     return !(mWordApp->isNull());
@@ -116,6 +120,7 @@ bool DAAxObjectWordWrapper::PrivateData::open(const QString& docfile, bool isvis
     if (!isInitialize()) {
         return false;
     }
+    mWordApp->setProperty("Visible", isvisible);
     QAxObject* documents = mWordApp->querySubObject("Documents");  // 获取所有的工作文档(返回一个指向QAxObject包含的COM对象)
     if (qaxobject_is_null(documents)) {
         return false;
@@ -132,6 +137,7 @@ void DAAxObjectWordWrapper::PrivateData::quit()
         mWordApp->dynamicCall("Quit()");  // 退出word
     }
     // 重置状态
+    mDocument = nullptr;
 }
 
 /**
@@ -192,12 +198,13 @@ bool DAAxObjectWordWrapper::PrivateData::replaceMark(const QString& markName, co
     }
     // 选中标签，将字符textg插入到标签位置
     QAxObject* range = bookmarkCode->querySubObject("Range");
-    if (qaxobject_is_null(range)) {
-        return false;
+    bool ok = false;
+    if (!qaxobject_is_null(range)) {
+        ok = range->setProperty("Text", replaceContent);
+        delete range;
     }
-    range->setProperty("Text", replaceContent);
-    delete range;
-    return true;
+    delete bookmarkCode;
+    return ok;
 }
 
 /**
@@ -213,12 +220,14 @@ bool DAAxObjectWordWrapper::PrivateData::insertPictureAtMark(const QString& mark
         return false;
     }
     QAxObject* Inlineshapes = mDocument->querySubObject("InlineShapes");
-    if (qaxobject_is_null(Inlineshapes)) {
-        return false;
+    bool ok = false;
+    if (!qaxobject_is_null(Inlineshapes)) {
+        Inlineshapes->dynamicCall("AddPicture(const QString&)", QDir::toNativeSeparators(picturePath));
+        ok = true;
+        delete Inlineshapes;
     }
-    Inlineshapes->dynamicCall("AddPicture(const QString&)", QDir::toNativeSeparators(picturePath));
-    delete Inlineshapes;
-    return true;
+    delete bookmarkCode;
+    return ok;
 }
 
 /**
@@ -236,14 +245,20 @@ DAAxObjectWordTableWrapper DAAxObjectWordWrapper::PrivateData::insertTableAtMark
     }
     QAxObject* selection = mWordApp->querySubObject("Selection");
     if (qaxobject_is_null(selection)) {
+        delete bookmarkCode;
         return DAAxObjectWordTableWrapper(nullptr);
     }
     QAxObject* range = selection->querySubObject("Range");
     if (qaxobject_is_null(range)) {
+        delete selection;
+        delete bookmarkCode;
         return DAAxObjectWordTableWrapper(nullptr);
     }
     QAxObject* tables = mDocument->querySubObject("Tables");
     if (qaxobject_is_null(tables)) {
+        delete range;
+        delete selection;
+        delete bookmarkCode;
         return DAAxObjectWordTableWrapper(nullptr);
     }
     QAxObject* table = tables->querySubObject("Add(QVariant,int,int)", range->asVariant(), rowCnt, colCnt);
@@ -256,6 +271,11 @@ DAAxObjectWordTableWrapper DAAxObjectWordWrapper::PrivateData::insertTableAtMark
     }
     //    table->setProperty("Style", QString(u8"网格型"));
     table->dynamicCall("AutoFitBehavior(WdAutoFitBehavior)", 2);  // 表格自动拉伸列 0固定  1根据内容调整  2 根据窗口调整
+    // 释放所有临时获取的 QAxObject
+    delete tables;
+    delete range;
+    delete selection;
+    delete bookmarkCode;
     return DAAxObjectWordTableWrapper(table);
 }
 

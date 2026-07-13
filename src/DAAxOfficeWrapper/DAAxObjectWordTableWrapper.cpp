@@ -31,6 +31,9 @@ QAxObject* DAAxObjectWordTableWrapper::axObject() const
  */
 void DAAxObjectWordTableWrapper::setAutoFitBehavior(DAAxObjectWordTableWrapper::AutoFitBehavior v)
 {
+    if (isNull()) {
+        return;
+    }
     mAxTableObject->dynamicCall("AutoFitBehavior(WdAutoFitBehavior)", static_cast< int >(v));
 }
 
@@ -40,11 +43,16 @@ void DAAxObjectWordTableWrapper::setAutoFitBehavior(DAAxObjectWordTableWrapper::
  */
 int DAAxObjectWordTableWrapper::rowCount() const
 {
+    if (isNull()) {
+        return 0;
+    }
     QAxObject* rows = mAxTableObject->querySubObject("Rows");
     if (nullptr == rows) {
         return 0;
     }
-    return rows->dynamicCall("Count").toInt();
+    int cnt = rows->dynamicCall("Count").toInt();
+    delete rows;
+    return cnt;
 }
 
 /**
@@ -53,11 +61,16 @@ int DAAxObjectWordTableWrapper::rowCount() const
  */
 int DAAxObjectWordTableWrapper::columnCount() const
 {
+    if (isNull()) {
+        return 0;
+    }
     QAxObject* columns = mAxTableObject->querySubObject("Columns");
     if (nullptr == columns) {
         return 0;
     }
-    return columns->dynamicCall("Count").toInt();
+    int cnt = columns->dynamicCall("Count").toInt();
+    delete columns;
+    return cnt;
 }
 
 /**
@@ -68,6 +81,9 @@ int DAAxObjectWordTableWrapper::columnCount() const
  */
 QAxObject* DAAxObjectWordTableWrapper::cell(int row, int col)
 {
+    if (isNull()) {
+        return nullptr;
+    }
     return mAxTableObject->querySubObject("Cell(int,int)", row + 1, col + 1);
 }
 
@@ -83,7 +99,9 @@ QAxObject* DAAxObjectWordTableWrapper::selectCellRange(int row, int col)
     if (nullptr == c) {
         return nullptr;
     }
-    return c->querySubObject("Range");
+    QAxObject* range = c->querySubObject("Range");
+    delete c;
+    return range;
 }
 
 /**
@@ -99,5 +117,6 @@ void DAAxObjectWordTableWrapper::setCellText(int row, int col, const QString& te
         return;
     }
     rang->dynamicCall("SetText(QString)", text);
+    delete rang;
 }
 }
