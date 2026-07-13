@@ -76,7 +76,7 @@ protected:
 	virtual void dropEvent(QGraphicsSceneDragDropEvent* event) override;
 #endif
 
-private slots:
+private Q_SLOTS:
 #if DA_USE_QGRAPHICSOBJECT
 	void backgroundPixmapItemXChanged();
 	void backgroundPixmapItemYChanged();

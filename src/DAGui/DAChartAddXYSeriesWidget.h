@@ -44,7 +44,7 @@ public:
     void setX(const DAData& dataframeData, const QString& seriesName);
     // 设置当前的y到list中
     void setY(const DAData& dataframeData, const QString& seriesName);
-private slots:
+private Q_SLOTS:
     void onGroupBoxXAutoincrementClicked(bool on);
     void onGroupBoxYAutoincrementClicked(bool on);
 

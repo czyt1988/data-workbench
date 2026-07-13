@@ -132,40 +132,34 @@ void DADataManageTableView::dragEnterEvent(QDragEnterEvent* e)
 {
     // QTableView::dragEnterEvent(e);
     e->ignore();
-    qDebug() << "dragEnterEvent isAccepted:" << e->isAccepted();
 }
 
 void DADataManageTableView::dragMoveEvent(QDragMoveEvent* e)
 {
     // QTableView::dragMoveEvent(e);
     e->ignore();
-    qDebug() << "dragMoveEvent isAccepted:" << e->isAccepted();
 }
 
 void DADataManageTableView::dragLeaveEvent(QDragLeaveEvent* e)
 {
     // QTableView::dragLeaveEvent(e);
     e->ignore();
-    qDebug() << "dragLeaveEvent isAccepted:" << e->isAccepted();
 }
 
 void DADataManageTableView::dropEvent(QDropEvent* e)
 {
     //    QTableView::dropEvent(e);
     e->ignore();
-    qDebug() << "dropEvent isAccepted:" << e->isAccepted();
 }
 
 void DADataManageTableView::startDrag(Qt::DropActions supportedActions)
 {
-    qDebug() << "startDrag:" << supportedActions;
     DAData d                    = getOneSelectData();
     DAMimeDataForData* mimedata = new DAMimeDataForData();
     mimedata->appendDataframe(d);
     QDrag* drag = new QDrag(this);
     drag->setMimeData(mimedata);
     Qt::DropActions r = drag->exec(Qt::CopyAction | Qt::MoveAction);
-    qDebug() << "end startDrag:" << r;
 }
 
 void DADataManageTableView::onTableViewDoubleClicked(const QModelIndex& index)

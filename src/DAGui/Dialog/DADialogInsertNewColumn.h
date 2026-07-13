@@ -34,7 +34,7 @@ public:
 private:
     //从字符串获取值
     QVariant fromString(const QString& str, const DAPyDType& dt) const;
-private slots:
+private Q_SLOTS:
     //当前类型变化
     void onCurrentDtypeChanged(const DAPyDType& dt);
 

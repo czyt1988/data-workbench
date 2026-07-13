@@ -69,7 +69,6 @@ DAPyWorkFlowOperateWidget::DAPyWorkFlowOperateWidget(QWidget* parent)
 
 DAPyWorkFlowOperateWidget::~DAPyWorkFlowOperateWidget()
 {
-    qDebug() << "DAPyWorkFlowOperateWidget begin delete ui";
     d_ptr->mIsDestroying = true;
     // 断开所有子对象到 this 的信号连接，防止析构期间信号发给已析构对象
     const auto allChildren = findChildren< QObject* >();
@@ -77,7 +76,6 @@ DAPyWorkFlowOperateWidget::~DAPyWorkFlowOperateWidget()
         obj->disconnect(this);
     }
     delete ui;
-    qDebug() << "DAPyWorkFlowOperateWidget end delete ui";
 }
 
 /**
@@ -503,7 +501,6 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowZoomIn()
         daWarning << tr("Missing view");  // cn:缺少视图
         return;
     }
-    qDebug() << "zoomIn";
     view->zoomIn();
 }
 
@@ -517,7 +514,6 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowZoomOut()
         daWarning << tr("Missing view");  // cn:缺少视图
         return;
     }
-    qDebug() << "zoomOut";
     view->zoomOut();
 }
 

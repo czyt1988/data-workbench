@@ -35,7 +35,7 @@ public:
 #if DA_ENABLE_PYTHON
 	static QVector< QVector< double > > dataframeToMatrix(const DAPyDataFrame& df);
 #endif
-private slots:
+private Q_SLOTS:
 	void onComboBoxXCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 	void onComboBoxYCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 	void onComboBoxMatricsCurrentDataChanged(const DA::DAData& data);

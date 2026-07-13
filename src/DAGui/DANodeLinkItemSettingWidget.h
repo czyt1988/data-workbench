@@ -37,7 +37,7 @@ public:
 protected:
     void initEndpointComboxBox();
     QPixmap generateEndPointPixmap(DAPyLinkGraphicsItem* link, DAGraphicsLinkItem::EndPointType epType);
-signals:
+Q_SIGNALS:
     /**
      * @brief 连线样式改变发射的信号
      * @param s
@@ -49,7 +49,7 @@ signals:
      * @param p
      */
     void linkLinePenChanged(const QPen& p);
-private slots:
+private Q_SLOTS:
     void onPropertyValueChanged(int propertyId);
     void onComboBoxFrontStyleCurrentIndexChanged(int index);
     void onComboBoxEndStyleCurrentIndexChanged(int index);

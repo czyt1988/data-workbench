@@ -67,7 +67,7 @@ public:
     static QRectF calcAllItemsSceneRange(const QList< QGraphicsItem* >& its);
     //
     static QList< QGraphicsItem* > cast(const QList< DAGraphicsItem* >& its);
-public slots:
+public Q_SLOTS:
     // 添加一个背景图
     void addBackgroundPixmap(const QString& pixmapPath);
     // 锁定背景图
@@ -102,8 +102,7 @@ public slots:
     void removeSelectItems();
     // 执行取消动作
     void cancel();
-signals:
-
+Q_SIGNALS:
     /**
      * @brief 选中了某个节点的设置窗口
      * @param w

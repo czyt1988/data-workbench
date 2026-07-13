@@ -57,7 +57,7 @@ void DASettingWidget::applyAll()
         page->apply();
     }
     mChangedPages.clear();
-    emit settingApplyed();
+    Q_EMIT settingApplyed();
 }
 
 /**
@@ -69,7 +69,7 @@ void DASettingWidget::applyChanged()
         p->apply();
     }
     mChangedPages.clear();
-    emit settingApplyed();
+    Q_EMIT settingApplyed();
 }
 
 /**
@@ -98,6 +98,6 @@ void DASettingWidget::onPageSettingChanged()
         return;
     }
     mChangedPages.insert(page);
-    emit settingChanged();
+    Q_EMIT settingChanged();
 }
 }  // DA

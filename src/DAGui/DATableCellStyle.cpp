@@ -203,7 +203,11 @@ bool DATableCellStyle::fromXml(const QDomElement& e)
         } else if (tag == QLatin1String("font")) {
             QFont f;
             f.setFamily(child.attribute(QStringLiteral("family")));
-            f.setPointSize(child.attribute(QStringLiteral("size"), "9").toInt());
+            int pointSize = child.attribute(QStringLiteral("size"), "9").toInt();
+            if (pointSize <= 0) {
+                pointSize = 9;
+            }
+            f.setPointSize(pointSize);
             f.setBold(child.attribute(QStringLiteral("bold"), "0").toInt() != 0);
             f.setItalic(child.attribute(QStringLiteral("italic"), "0").toInt() != 0);
             f.setUnderline(child.attribute(QStringLiteral("underline"), "0").toInt() != 0);

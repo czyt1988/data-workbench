@@ -12,6 +12,7 @@
 #include <QHeaderView>
 #include <QSet>
 #include <QMessageBox>
+#include <QPointer>
 // cmd
 #include "Commands/DACommandsDataFrame.h"
 #include "Commands/DACommandsTableStyle.h"
@@ -165,7 +166,7 @@ void DADataOperateOfDataFrameWidget::insertRowBelowBySelect()
 void DADataOperateOfDataFrameWidget::insertRowAt(int row)
 {
     std::unique_ptr< DACommandDataFrame_insertNanRow > cmd(new DACommandDataFrame_insertNanRow(mData.toDataFrame(), row));
-    DADataTableModel* modle = mModel;
+    QPointer< DADataTableModel > modle = mModel;
     cmd->setCallBack([ modle, row ]() {
         if (modle) {
             modle->notifyRowsInserted({ row });
@@ -239,7 +240,7 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
     } else {
         cmd.reset(new DACommandDataFrame_insertColumn(mData.toDataFrame(), col, name, dlg.getDefaultValue()));
     }
-    DADataTableModel* modle = mModel;
+    QPointer< DADataTableModel > modle = mModel;
     cmd->setCallBack([ modle, col ]() {
         if (modle) {
             // 此操作会删除一列，添加一列，整个modelreflash
@@ -280,7 +281,7 @@ int DADataOperateOfDataFrameWidget::removeSelectRow()
         return 0;
     }
     std::unique_ptr< DACommandDataFrame_dropIRow > cmd(new DACommandDataFrame_dropIRow(mData.toDataFrame(), rows));
-    DADataTableModel* modle = mModel;
+    QPointer< DADataTableModel > modle = mModel;
     cmd->setCallBack([ modle, rows ]() {
         if (modle) {
             modle->notifyRowsInserted(rows);
@@ -322,7 +323,7 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
         return 0;
     }
     std::unique_ptr< DACommandDataFrame_dropIColumn > cmd(new DACommandDataFrame_dropIColumn(mData.toDataFrame(), columns));
-    DADataTableModel* modle = mModel;
+    QPointer< DADataTableModel > modle = mModel;
     cmd->setCallBack([ modle, columns ]() {
         if (modle) {
             modle->notifyColumnsRemoved(columns);
@@ -371,7 +372,7 @@ int DADataOperateOfDataFrameWidget::removeSelectCell()
         cols.append(p.y());
     }
     std::unique_ptr< DACommandDataFrame_setnan > cmd(new DACommandDataFrame_setnan(df, rows, cols));
-    DADataTableModel* modle = mModel;
+    QPointer< DADataTableModel > modle = mModel;
     cmd->setCallBack([ modle, rows, cols ]() {
         if (modle) {
             const auto size = qMin(rows.size(), cols.size());
@@ -481,7 +482,6 @@ bool DADataOperateOfDataFrameWidget::renameColumn(int col, const QString& newNam
  */
 bool DADataOperateOfDataFrameWidget::changeSelectColumnType(const DAPyDType& dt)
 {
-    qDebug() << "changeSelectColumnType:" << dt;
     DAPyDataFrame df = getDataframe();
     if (df.isNone()) {
         emit selectTypeChanged({ }, DAPyDType());
@@ -494,7 +494,7 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnType(const DAPyDType& dt)
         return false;
     }
     std::unique_ptr< DACommandDataFrame_astype > cmd(new DACommandDataFrame_astype(df, selColumns, dt));
-    DADataTableModel* modle = mModel;
+    QPointer< DADataTableModel > modle = mModel;
     cmd->setCallBack([ modle, selColumns ]() {
         if (modle) {
             for (int c : std::as_const(selColumns)) {
@@ -536,7 +536,7 @@ void DADataOperateOfDataFrameWidget::castSelectToNum()
     DAPyDType dt        = df.dtypeObject(colsIndex.first());
     pybind11::dict args = mDialogCastNumArgs->getArgs();
     std::unique_ptr< DACommandDataFrame_castNum > cmd(new DACommandDataFrame_castNum(df, colsIndex, args));
-    DADataTableModel* modle = mModel;
+    QPointer< DADataTableModel > modle = mModel;
     cmd->setCallBack([ modle, colsIndex ]() {
         if (modle) {
             for (int c : std::as_const(colsIndex)) {
@@ -577,7 +577,7 @@ void DADataOperateOfDataFrameWidget::castSelectToDatetime()
     DAPyDType dt        = df.dtypeObject(colsIndex.first());
     pybind11::dict args = mDialogCastDatetimeArgs->getArgs();
     std::unique_ptr< DACommandDataFrame_castDatetime > cmd(new DACommandDataFrame_castDatetime(df, colsIndex, args));
-    DADataTableModel* modle = mModel;
+    QPointer< DADataTableModel > modle = mModel;
     cmd->setCallBack([ modle, colsIndex ]() {
         if (modle) {
             for (int c : std::as_const(colsIndex)) {
@@ -1026,7 +1026,7 @@ void DADataOperateOfDataFrameWidget::mergeStyleToSelection(const DATableCellStyl
 
     if (!fullCols.isEmpty()) {
         // 列级：合并 fragment 到已有列样式
-        for (int col : fullCols) {
+        for (int col : std::as_const(fullCols)) {
             DATableCellStyle oldStyle = mStyleManager->getColumnStyle(col);
             DATableCellStyle newStyle = oldStyle;
             newStyle.mergeFrom(fragment);
@@ -1034,7 +1034,7 @@ void DADataOperateOfDataFrameWidget::mergeStyleToSelection(const DATableCellStyl
         }
     } else if (!fullRows.isEmpty()) {
         // 行级：合并 fragment 到已有行样式
-        for (int row : fullRows) {
+        for (int row : std::as_const(fullRows)) {
             int actualRow             = row + cacheOffset;
             DATableCellStyle oldStyle = mStyleManager->getRowStyle(actualRow);
             DATableCellStyle newStyle = oldStyle;
@@ -1084,13 +1084,13 @@ void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyl
 
     if (!fullCols.isEmpty()) {
         // 列级：直接替换
-        for (int col : fullCols) {
+        for (int col : std::as_const(fullCols)) {
             DATableCellStyle oldStyle = mStyleManager->getColumnStyle(col);
             cmd->addChange(DACommandTableStyle::Column, col, 0, oldStyle, style, false);
         }
     } else if (!fullRows.isEmpty()) {
         // 行级：直接替换
-        for (int row : fullRows) {
+        for (int row : std::as_const(fullRows)) {
             int actualRow             = row + cacheOffset;
             DATableCellStyle oldStyle = mStyleManager->getRowStyle(actualRow);
             cmd->addChange(DACommandTableStyle::Row, actualRow, 0, oldStyle, style, false);
@@ -1131,14 +1131,14 @@ void DADataOperateOfDataFrameWidget::clearStyleSelection()
     int cacheOffset = mModel ? mModel->getCacheWindowStartRow() : 0;
 
     if (!fullCols.isEmpty()) {
-        for (int col : fullCols) {
+        for (int col : std::as_const(fullCols)) {
             if (mStyleManager->hasColumnStyle(col)) {
                 DATableCellStyle oldStyle = mStyleManager->getColumnStyle(col);
                 cmd->addChange(DACommandTableStyle::Column, col, 0, oldStyle, DATableCellStyle(), false);
             }
         }
     } else if (!fullRows.isEmpty()) {
-        for (int row : fullRows) {
+        for (int row : std::as_const(fullRows)) {
             int actualRow = row + cacheOffset;
             if (mStyleManager->hasRowStyle(actualRow)) {
                 DATableCellStyle oldStyle = mStyleManager->getRowStyle(actualRow);
@@ -1227,7 +1227,7 @@ DATableCellStyle DADataOperateOfDataFrameWidget::getCurrentCellStyle() const
         }
         if (styles.isEmpty()) {
             // cells 为空但 fullCols 非空（极端情况），用列级样式
-            for (int col : fullCols) {
+            for (int col : std::as_const(fullCols)) {
                 styles.append(mStyleManager->resolveCellStyle(0, col));
             }
         }
@@ -1236,7 +1236,7 @@ DATableCellStyle DADataOperateOfDataFrameWidget::getCurrentCellStyle() const
             styles.append(mStyleManager->resolveCellStyle(p.x() + cacheOffset, p.y()));
         }
         if (styles.isEmpty()) {
-            for (int row : fullRows) {
+            for (int row : std::as_const(fullRows)) {
                 styles.append(mStyleManager->resolveCellStyle(row + cacheOffset, 0));
             }
         }

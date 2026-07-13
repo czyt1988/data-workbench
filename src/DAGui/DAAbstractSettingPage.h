@@ -51,7 +51,7 @@ public:
 	 * @return 如果创建不成功会返回一个空的字符串
 	 */
 	static QString getConfigFileSavePath();
-signals:
+Q_SIGNALS:
 	/**
 	 * @brief 配置信息改变信号
 	 *

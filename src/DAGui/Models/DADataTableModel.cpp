@@ -1,5 +1,6 @@
 #include "DADataTableModel.h"
 #include "Commands/DACommandsDataFrame.h"
+#include <QPointer>
 namespace DA
 {
 
@@ -92,11 +93,11 @@ QVariant DADataTableModel::PrivateData::getDataframeIndexName(int i) const
         // 说明是复合表头
         QVariantList ss = res.toList();
         QString str;
-        for (int i = 0; i < ss.size(); ++i) {
-            if (i == 0) {
-                str += ss[ i ].toString();
+        for (int j = 0; j < ss.size(); ++j) {
+            if (j == 0) {
+                str += ss[ j ].toString();
             } else {
-                str += " | " + ss[ i ].toString();
+                str += " | " + ss[ j ].toString();
             }
         }
         return str;
@@ -224,7 +225,7 @@ bool DADataTableModel::setActualData(int actualRow, int actualColumn, const QVar
         }
         std::unique_ptr< DACommandDataFrame_iat > cmd_iat(
             new DACommandDataFrame_iat(df, actualRow, actualColumn, olddata, value));
-        DADataTableModel* modle = this;
+        QPointer< DADataTableModel > modle = this;
         cmd_iat->setCallBack([ modle, actualRow, actualColumn ]() {
             if (modle) {
                 modle->notifyDataChanged(actualRow, actualColumn);
@@ -236,8 +237,10 @@ bool DADataTableModel::setActualData(int actualRow, int actualColumn, const QVar
         }
         d->undoStack->push(cmd_iat.release());  // push后会自动调用redo，第二次调用redo会被忽略
         d->undoStack->setActive(true);
+    } else {
+        // Series 或其他类型暂不支持编辑，返回 false
+        return false;
     }
-    // 这里说明设置成功了
     return true;
 }
 

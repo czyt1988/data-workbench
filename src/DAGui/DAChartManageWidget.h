@@ -90,7 +90,7 @@ private:
     DAFigureWidget* getComboboxFigure(int index) const;
     void setStackCurrentFigure(DA::DAFigureWidget* fig);
     void setComboboxCurrentFigure(DA::DAFigureWidget* fig);
-private slots:
+private Q_SLOTS:
     void onFigureCreated(DA::DAFigureWidget* fig);
     void onFigureCloseing(DA::DAFigureWidget* fig);
     void onCurrentFigureChanged(DA::DAFigureWidget* fig, int index);

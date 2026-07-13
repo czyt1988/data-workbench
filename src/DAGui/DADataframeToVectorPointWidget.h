@@ -29,7 +29,7 @@ public:
 
     //刷新x，y两个列选择listwidget
     void updateDataframeColumnList();
-private slots:
+private Q_SLOTS:
     void onListWidgetXCurrentTextChanged(const QString& n);
     void onListWidgetYCurrentTextChanged(const QString& n);
 

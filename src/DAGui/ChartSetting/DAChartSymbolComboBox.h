@@ -18,13 +18,13 @@ public:
 	QwtSymbol::Style getSymbolStyle() const;
 	static QwtSymbol::Style style(int index);
 	static int symbolIndex(const QwtSymbol::Style& s);
-signals:
+Q_SIGNALS:
 	/**
 	 * @brief 符号标记改变信号
 	 * @param s
 	 */
 	void symbolStyleChanged(QwtSymbol::Style s);
-private slots:
+private Q_SLOTS:
 	void onCurrentIndexChanged(int index);
 
 private:

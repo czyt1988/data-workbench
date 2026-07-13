@@ -1,10 +1,11 @@
 ﻿#include "DAPyDataFrameTableModel.h"
 #include "Commands/DACommandsDataFrame.h"
 #include <QUndoStack>
+#include <QPointer>
 #include <algorithm>
 #include <QCache>
 #ifndef DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT
-#define DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT 1
+#define DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT 0
 #endif
 #ifndef DAPYDATAFRAMETABLEMODULE_PROFILE_REALTIME_PRINT
 #define DAPYDATAFRAMETABLEMODULE_PROFILE_REALTIME_PRINT 1
@@ -118,11 +119,11 @@ QVariant DAPyDataFrameTableModel::PrivateData::getDataframeIndexName(int i) cons
         // 说明是复合表头
         QVariantList ss = res.toList();
         QString str;
-        for (int i = 0; i < ss.size(); ++i) {
-            if (i == 0) {
-                str += ss[ i ].toString();
+        for (int j = 0; j < ss.size(); ++j) {
+            if (j == 0) {
+                str += ss[ j ].toString();
             } else {
-                str += " | " + ss[ i ].toString();
+                str += " | " + ss[ j ].toString();
             }
         }
         return str;
@@ -250,7 +251,7 @@ bool DAPyDataFrameTableModel::setActualData(int actualRow, int actualColumn, con
     }
     std::unique_ptr< DACommandDataFrame_iat > cmd_iat(
         new DACommandDataFrame_iat(d->dataframe, actualRow, actualColumn, olddata, value));
-    DAPyDataFrameTableModel* modle = this;
+    QPointer< DAPyDataFrameTableModel > modle = this;
     cmd_iat->setCallBack([ modle, actualRow, actualColumn ]() {
         if (modle) {
             modle->notifyDataChanged(actualRow, actualColumn);

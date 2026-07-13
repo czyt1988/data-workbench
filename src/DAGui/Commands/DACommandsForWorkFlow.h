@@ -33,7 +33,7 @@ public:
 	void undo();
 
 private:
-	DAPyWorkFlowGraphicsScene* _scene;
+	QPointer< DAPyWorkFlowGraphicsScene > _scene;
 	DAGraphicsPixmapItem* _oldItem;
 	DAGraphicsPixmapItem* _newItem;
 	bool _needDeleteOldItem;

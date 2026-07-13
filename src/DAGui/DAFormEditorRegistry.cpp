@@ -500,7 +500,8 @@ QWidget* createFolderEditor(const DAFormFieldDef& field, QWidget* parent)
     // 找到内部工具按钮，断开原始连接，重连为目录选择对话框
     QToolButton* toolBtn = edit->findChild< QToolButton* >();
     if (toolBtn) {
-        toolBtn->disconnect(edit);
+        // 仅断开 clicked 信号，避免影响 DAFilePathEditWidget 的其他内部连接
+        disconnect(toolBtn, &QToolButton::clicked, edit, nullptr);
         QObject::connect(toolBtn, &QToolButton::clicked, edit, [ edit ]() {
             QFileDialog fileDialog;
             fileDialog.setFileMode(QFileDialog::Directory);
@@ -510,7 +511,7 @@ QWidget* createFolderEditor(const DAFormFieldDef& field, QWidget* parent)
                 if (!files.isEmpty()) {
                     QString p = files.back();
                     edit->setFilePath(p);
-                    emit edit->selectedPath(p);   // 显式发射，触发 onFieldChanged
+                    Q_EMIT edit->selectedPath(p);   // 显式发射，触发 onFieldChanged
                 }
             }
         });

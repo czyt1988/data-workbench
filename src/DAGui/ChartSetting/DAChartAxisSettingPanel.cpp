@@ -162,15 +162,10 @@ void DAChartAxisSettingPanel::setScaleStyleValue(int style)
     }
     bool wasBlocked = mScaleStyleButtonGroup->blockSignals(true);
     auto buttons    = mScaleStyleButtonGroup->buttons();
-    for (auto btn : buttons) {
+    for (auto btn : std::as_const(buttons)) {
         int btnId = mScaleStyleButtonGroup->id(btn);
         if (btnId == style) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            // In Qt5, QAbstractButton::setChecked is available
             btn->setChecked(true);
-#else
-            btn->setChecked(true);
-#endif
             break;
         }
     }

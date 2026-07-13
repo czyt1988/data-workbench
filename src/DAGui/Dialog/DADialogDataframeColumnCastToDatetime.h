@@ -27,7 +27,7 @@ public:
 protected:
     void changeEvent(QEvent* e);
 
-private slots:
+private Q_SLOTS:
     void on_toolButtonHowEditFormat_clicked();
 
     void on_radioButtonUnix_clicked(bool checked);

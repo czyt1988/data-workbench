@@ -181,7 +181,7 @@ private:
     void removeDataItem(const DAData& data);
     void updateDataItem(const DAData& data, DADataManager::ChangeType changeType);
 
-private slots:
+private Q_SLOTS:
     void onDataAdded(const DAData& data);
     void onDataBeginRemoved(const DAData& data, int index);
     void onDataChanged(const DAData& data, DADataManager::ChangeType changeType);

@@ -29,6 +29,9 @@ DAAbstractArchive::PrivateData::PrivateData(DAAbstractArchive* p) : q_ptr(p)
 
 std::shared_ptr< DA::DAAbstractArchiveTask > DAAbstractArchive::PrivateData::takeTask()
 {
+	if (mTaskQueue.empty()) {
+		return nullptr;
+	}
 	std::shared_ptr< DA::DAAbstractArchiveTask > t = mTaskQueue.front();
 	mTaskQueue.pop_front();
 	return t;
@@ -110,13 +113,13 @@ bool DAAbstractArchive::replaceFile(const QString& file, const QString& beReplac
 {
 	// 检查文件是否存在
 	if (!QFile::exists(file)) {
-		qDebug() << "file does not exist:" << file;
+		qWarning() << "file does not exist:" << file;
 		return false;
 	}
 
 	// 确保两个文件不是同一个文件
 	if (QFileInfo(file).canonicalFilePath() == QFileInfo(beReplaceFile).canonicalFilePath()) {
-		qDebug() << "The two files are the same. No replacement needed.";
+		qWarning() << "The two files are the same. No replacement needed.";
 		return true;  // 如果是同一个文件，直接返回成功
 	}
 
@@ -124,17 +127,17 @@ bool DAAbstractArchive::replaceFile(const QString& file, const QString& beReplac
 	//! 因此，beReplaceFile如果存在，先要删除beReplaceFile
 	if (QFile::exists(beReplaceFile)) {
 		if (!QFile::remove(beReplaceFile)) {
-			qDebug() << QString("Failed to remove %1 file").arg(beReplaceFile);
+			qWarning() << QString("Failed to remove %1 file").arg(beReplaceFile);
 			return false;
 		}
 	}
 	if (!QFile::copy(file, beReplaceFile)) {
-		qDebug() << "Failed to copy replacement file to target location:" << file << "->" << beReplaceFile;
+		qWarning() << "Failed to copy replacement file to target location:" << file << "->" << beReplaceFile;
 		return false;
 	}
 	// 删除目标文件（file）
 	if (!QFile::remove(file)) {
-		qDebug() << "Failed to remove the original file:" << file;
+		qWarning() << "Failed to remove the original file:" << file;
 		// 虽然删除临时文件失败，但也返回true
 		return true;
 	}

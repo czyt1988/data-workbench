@@ -101,7 +101,7 @@ protected:
     QwtPlotItem* getPlotItemFromComboBox(int index) const;
     // 把plotitem从combobox移除
     void removePlotItemFromComboBox(const QwtPlotItem* item);
-protected slots:
+protected Q_SLOTS:
     void onComboBoxItemIndexChanged(int index);
     // plot的item发生了变换信号
     void onItemAttached(QwtPlotItem* plotItem, bool on);

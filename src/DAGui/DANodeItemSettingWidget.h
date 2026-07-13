@@ -59,7 +59,7 @@ public:
 	void updateItemState();
 	// 更新连接点的位置
 	void updateLinkPointLocation();
-private slots:
+private Q_SLOTS:
 	void onPropertyValueChanged(int propertyId);
 	void onNodeItemsRemoved(const QList< DA::DAPyNodeGraphicsItem* >& items);
 	void onButtonGroupClicked(int id);

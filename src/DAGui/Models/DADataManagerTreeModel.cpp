@@ -58,19 +58,6 @@ QVariant DAStandardItemDataDataframe::data(int role) const
     return QStandardItem::data(role);
 }
 
-// void DAStandardItemDataDataframe::setData(const QVariant& value, int role)
-//{
-//     if (role != Qt::EditRole) {
-//         return;
-//     }
-//     QString newName = value.toString().trimmed();
-//     if (newName.isEmpty()) {
-//         return;
-//     }
-//     DACommandDataManagerRenameData* cmd = new DACommandDataManagerRenameData(m_dataframe, newName);
-//     m_dataframe.getDataManager()->getUndoStack()->push(cmd);
-// }
-
 DAData DAStandardItemDataDataframe::getDataframe() const
 {
     return m_dataframe;
@@ -155,7 +142,10 @@ QString DAStandardItemDataDataframeSeries::makeDescribeText(const DAData& data, 
         std::size_t size  = series.size();
 
         t = QObject::tr("%1.%2,size:%3").arg(data.getName(), seriesName).arg(size);  // cn:%1.%2,长度:%3
+    } catch (const std::exception& e) {
+        qWarning() << "makeDescribeText failed:" << e.what();
     } catch (...) {
+        qWarning() << "makeDescribeText failed: unknown exception";
     }
     return t;
 }
@@ -216,7 +206,10 @@ QIcon DAStandardItemDataDataframeSeries::seriesTypeToIcon(const DAData& data, co
         default:
             break;
         }
+    } catch (const std::exception& e) {
+        qWarning() << "seriesTypeToIcon failed:" << e.what();
     } catch (...) {
+        qWarning() << "seriesTypeToIcon failed: unknown exception";
     }
     return QIcon();
 }
@@ -674,7 +667,7 @@ void DADataManagerTreeModel::updateDataFrameItemExpansion(QStandardItem* datafra
     }
 
     QStringList columns = df.columns();
-    for (const QString& column : columns) {
+    for (const QString& column : std::as_const(columns)) {
         QStandardItem* seriesItem = createDataFrameSeriesItem(column, data);
         if (seriesItem) {
             dataframeItem->appendRow(seriesItem);

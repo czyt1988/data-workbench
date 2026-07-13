@@ -34,7 +34,7 @@ public:
 	// 根据ui，创建一个symbol
 	QwtSymbol* createSymbol() const;
         QwtIntervalSymbol* createIntervalSymbol() const;
-signals:
+Q_SIGNALS:
 	/**
 	 * @brief 符号标记改变信号
 	 * @param s

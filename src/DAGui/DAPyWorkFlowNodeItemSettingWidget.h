@@ -65,7 +65,7 @@ public:
     void removePictureItemSettingTab();
     // 判断tab是否包含此窗口
     bool isTabContainWidget(QWidget* w);
-private slots:
+private Q_SLOTS:
     // 选择改变
     void onSceneSelectionChanged();
     // 节点双击处理：切换到参数tab

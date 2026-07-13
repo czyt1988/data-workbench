@@ -46,7 +46,7 @@ public:
 	void registDisplayFun(FpToDisplayString fp);
 	// 设置表头
 	void setHeader(const QStringList& h);
-public slots:
+public Q_SLOTS:
 	void redo();
 	void undo();
 

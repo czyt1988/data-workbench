@@ -4,6 +4,83 @@
 namespace DA
 {
 
+namespace
+{
+// 位移 QHash<int, V> 的键：key >= threshold 的键 +offset
+template < typename V >
+void shiftHashKeys(QHash< int, V >& hash, int threshold, int offset)
+{
+    QHash< int, V > shifted;
+    for (auto it = hash.begin(); it != hash.end();) {
+        if (it.key() >= threshold) {
+            shifted.insert(it.key() + offset, it.value());
+            it = hash.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    hash.unite(shifted);
+}
+
+// 位移 QHash<QPair<int,int>, V> 中第一维的键
+template < typename V >
+void shiftHashKeysFirst(QHash< QPair< int, int >, V >& hash, int threshold, int offset)
+{
+    QHash< QPair< int, int >, V > shifted;
+    for (auto it = hash.begin(); it != hash.end();) {
+        if (it.key().first >= threshold) {
+            shifted.insert(qMakePair(it.key().first + offset, it.key().second), it.value());
+            it = hash.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    hash.unite(shifted);
+}
+
+// 位移 QHash<QPair<int,int>, V> 中第二维的键
+template < typename V >
+void shiftHashKeysSecond(QHash< QPair< int, int >, V >& hash, int threshold, int offset)
+{
+    QHash< QPair< int, int >, V > shifted;
+    for (auto it = hash.begin(); it != hash.end();) {
+        if (it.key().second >= threshold) {
+            shifted.insert(qMakePair(it.key().first, it.key().second + offset), it.value());
+            it = hash.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    hash.unite(shifted);
+}
+
+// 删除 QHash<QPair<int,int>, V> 中第一维等于 val 的条目
+template < typename V >
+void removeHashKeysFirst(QHash< QPair< int, int >, V >& hash, int val)
+{
+    for (auto it = hash.begin(); it != hash.end();) {
+        if (it.key().first == val) {
+            it = hash.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+// 删除 QHash<QPair<int,int>, V> 中第二维等于 val 的条目
+template < typename V >
+void removeHashKeysSecond(QHash< QPair< int, int >, V >& hash, int val)
+{
+    for (auto it = hash.begin(); it != hash.end();) {
+        if (it.key().second == val) {
+            it = hash.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+}  // namespace
+
 /**
  * @brief 构造函数
  * @param parent 父对象
@@ -223,6 +300,10 @@ QList< QPair< int, int > > DATableStyleManager::styledCells() const
  */
 void DATableStyleManager::clearRange(int rowStart, int colStart, int rowEnd, int colEnd)
 {
+    // 规范化范围，确保 start <= end
+    if (rowStart > rowEnd) std::swap(rowStart, rowEnd);
+    if (colStart > colEnd) std::swap(colStart, colEnd);
+
     QList< QPair< int, int > > toRemove;
     for (auto it = mCellStyles.begin(); it != mCellStyles.end(); ++it) {
         int r = it.key().first;
@@ -263,34 +344,8 @@ void DATableStyleManager::onRowsInserted(const QList< int >& actualRows)
     QList< int > sortedRows = actualRows;
     std::sort(sortedRows.begin(), sortedRows.end(), std::greater< int >());
     for (int insertedRow : sortedRows) {
-        // 单元格级：row >= insertedRow 的键 +1
-        QHash< QPair< int, int >, DATableCellStyle > newCells;
-        for (auto it = mCellStyles.begin(); it != mCellStyles.end();) {
-            int r = it.key().first;
-            int c = it.key().second;
-            if (r >= insertedRow) {
-                newCells.insert(qMakePair(r + 1, c), it.value());
-                it = mCellStyles.erase(it);
-            } else {
-                ++it;
-            }
-        }
-        for (auto it = newCells.begin(); it != newCells.end(); ++it) {
-            mCellStyles.insert(it.key(), it.value());
-        }
-        // 行级：row >= insertedRow 的键 +1
-        QHash< int, DATableCellStyle > newRows;
-        for (auto it = mRowStyles.begin(); it != mRowStyles.end();) {
-            if (it.key() >= insertedRow) {
-                newRows.insert(it.key() + 1, it.value());
-                it = mRowStyles.erase(it);
-            } else {
-                ++it;
-            }
-        }
-        for (auto it = newRows.begin(); it != newRows.end(); ++it) {
-            mRowStyles.insert(it.key(), it.value());
-        }
+        shiftHashKeysFirst(mCellStyles, insertedRow, +1);
+        shiftHashKeys(mRowStyles, insertedRow, +1);
     }
     Q_EMIT styleReset();
 }
@@ -310,39 +365,11 @@ void DATableStyleManager::onRowsRemoved(const QList< int >& actualRows)
     QList< int > sortedRows = actualRows;
     std::sort(sortedRows.begin(), sortedRows.end(), std::greater< int >());
     for (int removedRow : sortedRows) {
-        // 单元格级
-        QHash< QPair< int, int >, DATableCellStyle > newCells;
-        for (auto it = mCellStyles.begin(); it != mCellStyles.end();) {
-            int r = it.key().first;
-            int c = it.key().second;
-            if (r == removedRow) {
-                it = mCellStyles.erase(it);
-            } else if (r > removedRow) {
-                newCells.insert(qMakePair(r - 1, c), it.value());
-                it = mCellStyles.erase(it);
-            } else {
-                ++it;
-            }
-        }
-        for (auto it = newCells.begin(); it != newCells.end(); ++it) {
-            mCellStyles.insert(it.key(), it.value());
-        }
-        // 行级
-        QHash< int, DATableCellStyle > newRows;
-        for (auto it = mRowStyles.begin(); it != mRowStyles.end();) {
-            int r = it.key();
-            if (r == removedRow) {
-                it = mRowStyles.erase(it);
-            } else if (r > removedRow) {
-                newRows.insert(r - 1, it.value());
-                it = mRowStyles.erase(it);
-            } else {
-                ++it;
-            }
-        }
-        for (auto it = newRows.begin(); it != newRows.end(); ++it) {
-            mRowStyles.insert(it.key(), it.value());
-        }
+        // 先删除 row == removedRow 的条目，再位移 row > removedRow 的条目
+        removeHashKeysFirst(mCellStyles, removedRow);
+        mRowStyles.remove(removedRow);
+        shiftHashKeysFirst(mCellStyles, removedRow + 1, -1);
+        shiftHashKeys(mRowStyles, removedRow + 1, -1);
     }
     Q_EMIT styleReset();
 }
@@ -362,34 +389,8 @@ void DATableStyleManager::onColumnsInserted(const QList< int >& actualCols)
     QList< int > sortedCols = actualCols;
     std::sort(sortedCols.begin(), sortedCols.end(), std::greater< int >());
     for (int insertedCol : sortedCols) {
-        // 单元格级：col >= insertedCol 的键 +1
-        QHash< QPair< int, int >, DATableCellStyle > newCells;
-        for (auto it = mCellStyles.begin(); it != mCellStyles.end();) {
-            int r = it.key().first;
-            int c = it.key().second;
-            if (c >= insertedCol) {
-                newCells.insert(qMakePair(r, c + 1), it.value());
-                it = mCellStyles.erase(it);
-            } else {
-                ++it;
-            }
-        }
-        for (auto it = newCells.begin(); it != newCells.end(); ++it) {
-            mCellStyles.insert(it.key(), it.value());
-        }
-        // 列级：col >= insertedCol 的键 +1
-        QHash< int, DATableCellStyle > newCols;
-        for (auto it = mColumnStyles.begin(); it != mColumnStyles.end();) {
-            if (it.key() >= insertedCol) {
-                newCols.insert(it.key() + 1, it.value());
-                it = mColumnStyles.erase(it);
-            } else {
-                ++it;
-            }
-        }
-        for (auto it = newCols.begin(); it != newCols.end(); ++it) {
-            mColumnStyles.insert(it.key(), it.value());
-        }
+        shiftHashKeysSecond(mCellStyles, insertedCol, +1);
+        shiftHashKeys(mColumnStyles, insertedCol, +1);
     }
     Q_EMIT styleReset();
 }
@@ -409,39 +410,11 @@ void DATableStyleManager::onColumnsRemoved(const QList< int >& actualCols)
     QList< int > sortedCols = actualCols;
     std::sort(sortedCols.begin(), sortedCols.end(), std::greater< int >());
     for (int removedCol : sortedCols) {
-        // 单元格级
-        QHash< QPair< int, int >, DATableCellStyle > newCells;
-        for (auto it = mCellStyles.begin(); it != mCellStyles.end();) {
-            int r = it.key().first;
-            int c = it.key().second;
-            if (c == removedCol) {
-                it = mCellStyles.erase(it);
-            } else if (c > removedCol) {
-                newCells.insert(qMakePair(r, c - 1), it.value());
-                it = mCellStyles.erase(it);
-            } else {
-                ++it;
-            }
-        }
-        for (auto it = newCells.begin(); it != newCells.end(); ++it) {
-            mCellStyles.insert(it.key(), it.value());
-        }
-        // 列级
-        QHash< int, DATableCellStyle > newCols;
-        for (auto it = mColumnStyles.begin(); it != mColumnStyles.end();) {
-            int c = it.key();
-            if (c == removedCol) {
-                it = mColumnStyles.erase(it);
-            } else if (c > removedCol) {
-                newCols.insert(c - 1, it.value());
-                it = mColumnStyles.erase(it);
-            } else {
-                ++it;
-            }
-        }
-        for (auto it = newCols.begin(); it != newCols.end(); ++it) {
-            mColumnStyles.insert(it.key(), it.value());
-        }
+        // 先删除 col == removedCol 的条目，再位移 col > removedCol 的条目
+        removeHashKeysSecond(mCellStyles, removedCol);
+        mColumnStyles.remove(removedCol);
+        shiftHashKeysSecond(mCellStyles, removedCol + 1, -1);
+        shiftHashKeys(mColumnStyles, removedCol + 1, -1);
     }
     Q_EMIT styleReset();
 }

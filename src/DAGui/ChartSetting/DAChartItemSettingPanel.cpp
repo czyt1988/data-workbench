@@ -337,24 +337,16 @@ void DAChartItemSettingPanel::setOrientationValue(int id, Qt::Orientation orient
     if (orientation == Qt::Horizontal) {
         // Qt5/Qt6兼容查找button
         auto buttons = group->buttons();
-        for (auto btn : buttons) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        for (auto btn : std::as_const(buttons)) {
             if (group->id(btn) == Qt::Horizontal) {
-#else
-            if (group->id(btn) == Qt::Horizontal) {
-#endif
                 btn->setChecked(true);
                 break;
             }
         }
     } else {
         auto buttons = group->buttons();
-        for (auto btn : buttons) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        for (auto btn : std::as_const(buttons)) {
             if (group->id(btn) == Qt::Vertical) {
-#else
-            if (group->id(btn) == Qt::Vertical) {
-#endif
                 btn->setChecked(true);
                 break;
             }
@@ -456,7 +448,7 @@ void DAChartItemSettingPanel::setScaleStyleValue(int id, int scaleStyle)
     QButtonGroup* group = it.value();
     bool wasBlocked     = group->blockSignals(true);
     auto buttons        = group->buttons();
-    for (auto btn : buttons) {
+    for (auto btn : std::as_const(buttons)) {
         if (group->id(btn) == scaleStyle) {
             btn->setChecked(true);
             break;

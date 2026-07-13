@@ -33,7 +33,7 @@ public:
 	// 根据配置获取数据
 	QVector< QwtOHLCSample > getSeries() const;
 
-private slots:
+private Q_SLOTS:
 	void onComboBoxTCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 	void onComboBoxOCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 	void onComboBoxHCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);

@@ -137,7 +137,7 @@ void DANodeTreeWidget::removeFavorite(const DAPyNodeMetaData& md)
 			}
 		}
 	}
-	for (QTreeWidgetItem* i : needDelete) {
+	for (QTreeWidgetItem* i : std::as_const(needDelete)) {
 		delete i;
 	}
 }

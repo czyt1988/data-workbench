@@ -32,14 +32,14 @@ public:
     DAData getCurrentSelectData() const;
     // 获取选中的数据
     QList< DAData > getAllSelectDatas() const;
-public slots:
+public Q_SLOTS:
     // 移除选中的数据
     void removeSelectData();
 
 protected:
     void changeEvent(QEvent* e);
     void retranslateUi();
-signals:
+Q_SIGNALS:
     /**
      * @brief 变量双击
      * @param data

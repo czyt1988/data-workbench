@@ -46,7 +46,7 @@ public:
     DAAbstractChartAddItemWidget* getChartAddItemWidget(DA::DAChartTypes chartType) const;
     // 根据当前绘图类型设置item属性
     void initSetPlotItem(QwtPlotItem* item);
-private slots:
+private Q_SLOTS:
     // 选择绘图类型改变
     void onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
 

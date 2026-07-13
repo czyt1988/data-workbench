@@ -43,9 +43,6 @@ public:
 
 protected:
 	DAPyDataFrame mDataframe;
-
-private:
-	static QString s_temp_dataframe;
 };
 }  // end of namespace DA
 #endif  // DACOMMANDWITHTEMPLATEDATA_H

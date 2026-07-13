@@ -55,6 +55,6 @@ void DASettingDialog::onPushButtonApplyClicked()
 {
     DA_WAIT_CURSOR_SCOPED();
     ui->settingWidget->applyChanged();
-    emit needSave();
+    Q_EMIT needSave();
 }
 }  // DA

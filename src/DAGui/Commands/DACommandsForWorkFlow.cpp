@@ -31,13 +31,17 @@ DACommandWorkFlowSceneAddBackgroundPixmap::~DACommandWorkFlowSceneAddBackgroundP
 {
 	if (_needDeleteOldItem) {
 		if (_oldItem) {
-			_scene->removeItem(_oldItem);
+			if (_scene) {
+				_scene->removeItem(_oldItem);
+			}
 			delete _oldItem;
 		}
 	}
 	if (_needDeleteNewItem) {
 		if (_newItem) {
-			_scene->removeItem(_newItem);
+			if (_scene) {
+				_scene->removeItem(_newItem);
+			}
 			delete _newItem;
 		}
 	}
@@ -85,7 +89,7 @@ DACommandGraphicsShapeBorderPenChange::~DACommandGraphicsShapeBorderPenChange()
 
 void DACommandGraphicsShapeBorderPenChange::redo()
 {
-	for (DAGraphicsItem* i : m_items) {
+	for (DAGraphicsItem* i : std::as_const(m_items)) {
 		i->setShowBorder(m_newIsShow);
 		i->setBorderPen(m_newPen);
 		i->update();
@@ -121,7 +125,7 @@ DACommandGraphicsShapeBackgroundBrushChange::~DACommandGraphicsShapeBackgroundBr
 
 void DACommandGraphicsShapeBackgroundBrushChange::redo()
 {
-	for (DAGraphicsItem* i : m_items) {
+	for (DAGraphicsItem* i : std::as_const(m_items)) {
 		i->enableShowBackground(m_newIsShow);
 		i->setBackgroundBrush(m_newBrush);
 		i->update();
@@ -249,6 +253,9 @@ DACommandGraphicsTextItemsChangeColor::DACommandGraphicsTextItemsChangeColor(con
                                                                              QUndoCommand* parent)
     : QUndoCommand(parent), m_items(items), m_newColors(newcolors)
 {
+	for (const DAGraphicsTextItem* i : items) {
+		m_oldColors.append(i->getSelectTextColor());
+	}
 }
 
 DACommandGraphicsTextItemsChangeColor::~DACommandGraphicsTextItemsChangeColor()
@@ -324,7 +331,6 @@ DACommandGraphicsTextItemsChangeHtml::DACommandGraphicsTextItemsChangeHtml(const
 {
 	for (const DAGraphicsTextItem* i : items) {
 		m_newHtml.append(i->toHtml());
-		qDebug() << m_newHtml.last();
 	}
 }
 

@@ -67,8 +67,7 @@ public:
     // 通过node元对象创建工作流节点
     DAPyNodeGraphicsItem* createNode(const DAPyNodeMetaData& md, const QPoint& viewPos);
     DAPyNodeGraphicsItem* createNode_(const DAPyNodeMetaData& md, const QPoint& viewPos);
-signals:
-
+Q_SIGNALS:
     /**
      * @brief 节点删除
      * @param item 节点

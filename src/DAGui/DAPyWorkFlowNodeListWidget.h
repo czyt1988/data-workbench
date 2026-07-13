@@ -47,7 +47,7 @@ public:
 private:
 	// 构建菜单
 	void buildMenu();
-private slots:
+private Q_SLOTS:
 	// 鼠标右键
 	void onCustomContextMenuRequested(const QPoint& pos);
 	// 添加收藏

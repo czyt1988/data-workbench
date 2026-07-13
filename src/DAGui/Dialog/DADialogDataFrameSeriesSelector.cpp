@@ -95,11 +95,8 @@ void DADialogDataFrameSeriesSelector::onCurrentDataframeComboboxActivated(int i)
 
 void DADialogDataFrameSeriesSelector::onDataframeColumnsListWidgetItemSelectionChanged()
 {
-	// 这时不能用getAllSelectedSeries，返回的不是选中的
 	auto series = ui->listWidgetColumns->getAllSelectedSeries();
 	d_ptr->mModule->setSeries(series);
-
-	qDebug() << "set series:" << series.size() << " name:" << series.back().name();
 }
 
 void DADialogDataFrameSeriesSelector::changeEvent(QEvent* e)

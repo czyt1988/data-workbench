@@ -44,7 +44,7 @@ DANodeParamSettingPanelWidget::DANodeParamSettingPanelWidget(QWidget* parent) : 
     layout->addWidget(d->mStackedWidget);
 
     // 创建占位标签
-    d->mPlaceholderLabel = new QLabel(QStringLiteral("未选中节点"), d->mStackedWidget);
+    d->mPlaceholderLabel = new QLabel(tr("No node selected"), d->mStackedWidget);  // cn:未选中节点
     d->mPlaceholderLabel->setObjectName(QStringLiteral("da_node_placeholder_label"));
     d->mPlaceholderLabel->setAlignment(Qt::AlignCenter);
     d->mPlaceholderLabel->setEnabled(false);

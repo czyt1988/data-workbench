@@ -41,7 +41,7 @@ public:
 public:
     //刷新
     void refresh(int row, int col);
-private slots:
+private Q_SLOTS:
     void onDataAdded(const DA::DAData& d);
     void onDataBeginRemoved(const DA::DAData& d, int dataIndex);
     void onDataRemoved(const DA::DAData& d, int dataIndex);

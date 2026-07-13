@@ -97,10 +97,16 @@ Qt::ItemFlags DADataManagerTableModel::flags(const QModelIndex& index) const
 void DADataManagerTableModel::setDataManager(DADataManager* dm)
 {
     beginResetModel();
+    // 断开旧连接
+    if (_dataManager) {
+        _dataManager->disconnect(this);
+    }
     _dataManager = dm;
-    connect(dm, &DADataManager::dataAdded, this, &DADataManagerTableModel::onDataAdded);
-    connect(dm, &DADataManager::dataBeginRemove, this, &DADataManagerTableModel::onDataBeginRemoved);
-    connect(dm, &DADataManager::dataRemoved, this, &DADataManagerTableModel::onDataRemoved);
+    if (dm) {
+        connect(dm, &DADataManager::dataAdded, this, &DADataManagerTableModel::onDataAdded);
+        connect(dm, &DADataManager::dataBeginRemove, this, &DADataManagerTableModel::onDataBeginRemoved);
+        connect(dm, &DADataManager::dataRemoved, this, &DADataManagerTableModel::onDataRemoved);
+    }
     endResetModel();
 }
 

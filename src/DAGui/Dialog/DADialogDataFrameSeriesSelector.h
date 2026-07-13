@@ -27,7 +27,7 @@ public:
     void setDataManager(DADataManager* mgr);
     //
     void updateUI();
-private slots:
+private Q_SLOTS:
     void onCurrentDataframeComboboxActivated(int i);
     void onDataframeColumnsListWidgetItemSelectionChanged();
 protected:

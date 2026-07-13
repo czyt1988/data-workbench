@@ -25,10 +25,10 @@ public:
     void setTextFilePath(const QString& p);
     // 获取设置内容
     QVariantMap getSetting();
-public slots:
+public Q_SLOTS:
     // 刷新
     void refresh();
-private slots:
+private Q_SLOTS:
     // 文件路径选择选择了路径
     void onFilePathEditSelectedPath(const QString& p);
     // 读取文本回调

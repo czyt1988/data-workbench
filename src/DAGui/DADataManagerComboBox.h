@@ -30,7 +30,7 @@ public:
 	void setShowSeriesUnderDataframe(bool on);
 	bool isShowSeriesUnderDataframe() const;
 
-private slots:
+private Q_SLOTS:
 	void onCurrentIndexChanged(const QString& text);
 	void onDataChanged(const DA::DAData& d, DA::DADataManager::ChangeType t);
 Q_SIGNALS:

@@ -70,7 +70,7 @@ public Q_SLOTS:
 protected:
     // 初始化figure的连接，这个函数用于重载createFigure函数时创建fig后绑定槽函数到DAChartOperateWidget用
     void initFigureConnect(DAFigureWidget* fig);
-private slots:
+private Q_SLOTS:
     // tab窗口改变
     void onTabWidgetCurrentChanged(int index);
     // tab窗口关闭

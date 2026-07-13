@@ -29,17 +29,17 @@ public:
     void addPage(DAAbstractSettingPage* page);
     //获取改变的页面
     QList< DAAbstractSettingPage* > getChanggedPages() const;
-public slots:
+public Q_SLOTS:
     //设置页面
     void setPage(int index);
     //应用所有的改变
     void applyAll();
     //应用改变
     void applyChanged();
-private slots:
+private Q_SLOTS:
     //页面配置改变
     void onPageSettingChanged();
-signals:
+Q_SIGNALS:
     /**
      * @brief 配置信息改变信号
      *

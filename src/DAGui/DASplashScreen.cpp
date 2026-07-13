@@ -49,7 +49,7 @@ DASplashScreen::DASplashScreen() : QSplashScreen(generateDefaultPixmap()), DA_PI
 {
     // 调试时不置顶，避免遮挡IDE
     if (!isDebuggerPresent()) {
-        // setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+        setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
     }
 }
 

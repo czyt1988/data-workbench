@@ -13,7 +13,7 @@
 #include "DAChartUtil.h"
 
 #ifndef DAChartSettingWidget_DEBUG_PRINT
-#define DAChartSettingWidget_DEBUG_PRINT 1
+#define DAChartSettingWidget_DEBUG_PRINT 0
 #endif
 
 namespace DA
@@ -208,6 +208,9 @@ void DAChartSettingWidget::resetComboBox()
 
 void DAChartSettingWidget::setCurrentPlotItem(QwtPlotItem* item)
 {
+    if (!item) {
+        return;
+    }
 #if DAChartSettingWidget_DEBUG_PRINT
     qDebug() << "DAChartSettingWidget::setPlotItem" << quintptr(item);
 #endif

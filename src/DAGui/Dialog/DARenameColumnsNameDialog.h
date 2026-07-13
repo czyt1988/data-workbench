@@ -32,7 +32,7 @@ private:
 protected:
     void changeEvent(QEvent* e);
 
-private slots:
+private Q_SLOTS:
     void on_pushButtonOK_clicked();
 
 private:

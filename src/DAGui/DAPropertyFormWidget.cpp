@@ -131,9 +131,12 @@ void DAPropertyFormWidget::rebuildForm()
 
     // 读取各编辑器实时值（已含适配器设置的默认值）填充当前值集合
     for (const QString& name : std::as_const(d->fieldOrder)) {
-        const DAFormFieldDef& f = d->fieldDefs[ name ];
-        QWidget* editor          = d->editors[ name ];
-        QVariant v               = d->registry.readValue(f, editor);
+        auto fIt = d->fieldDefs.find(name);
+        auto eIt = d->editors.find(name);
+        if (fIt == d->fieldDefs.end() || eIt == d->editors.end()) {
+            continue;
+        }
+        QVariant v = d->registry.readValue(fIt.value(), eIt.value());
         if (v.isValid()) {
             d->currentValueMap[ name ] = v;
         }
@@ -155,8 +158,11 @@ void DAPropertyFormWidget::onFieldChanged(const QString& fieldName)
     if (it == d->editors.end()) {
         return;
     }
-    const DAFormFieldDef& f = d->fieldDefs[ fieldName ];
-    QVariant v               = d->registry.readValue(f, it.value());
+    auto fIt = d->fieldDefs.find(fieldName);
+    if (fIt == d->fieldDefs.end()) {
+        return;
+    }
+    QVariant v = d->registry.readValue(fIt.value(), it.value());
     d->currentValueMap[ fieldName ] = v;
     Q_EMIT fieldValueChanged(fieldName, v);
     applyRules();
@@ -173,8 +179,11 @@ void DAPropertyFormWidget::applyRules()
 {
     DA_D(d);
     for (const QString& name : std::as_const(d->fieldOrder)) {
-        const DAFormFieldDef& f = d->fieldDefs[ name ];
-        DAFormFieldState state   = DAFormRuleEvaluator::evaluate(f, d->currentValueMap);
+        auto fIt = d->fieldDefs.find(name);
+        if (fIt == d->fieldDefs.end()) {
+            continue;
+        }
+        DAFormFieldState state   = DAFormRuleEvaluator::evaluate(fIt.value(), d->currentValueMap);
         int id                   = d->propertyIds.value(name, -1);
         if (id < 0) {
             continue;
@@ -200,8 +209,10 @@ void DAPropertyFormWidget::setValues(const QVariantMap& values)
         d->currentValueMap[ name ] = it.value();
         auto eIt = d->editors.find(name);
         if (eIt != d->editors.end()) {
-            const DAFormFieldDef& f = d->fieldDefs[ name ];
-            d->registry.writeValue(f, eIt.value(), it.value());
+            auto fIt = d->fieldDefs.find(name);
+            if (fIt != d->fieldDefs.end()) {
+                d->registry.writeValue(fIt.value(), eIt.value(), it.value());
+            }
         }
     }
     applyRules();
@@ -218,9 +229,12 @@ QVariantMap DAPropertyFormWidget::values() const
     DA_DC(d);
     QVariantMap result;
     for (const QString& name : std::as_const(d->fieldOrder)) {
-        const DAFormFieldDef& f = d->fieldDefs[ name ];
-        QWidget* editor          = d->editors[ name ];
-        QVariant v               = d->registry.readValue(f, editor);
+        auto fIt = d->fieldDefs.find(name);
+        auto eIt = d->editors.find(name);
+        if (fIt == d->fieldDefs.end() || eIt == d->editors.end()) {
+            continue;
+        }
+        QVariant v = d->registry.readValue(fIt.value(), eIt.value());
         if (v.isValid()) {
             result[ name ] = v;
         }
@@ -240,10 +254,12 @@ QVariant DAPropertyFormWidget::value(const QString& fieldName) const
     DA_DC(d);
     auto eIt = d->editors.find(fieldName);
     if (eIt != d->editors.end()) {
-        const DAFormFieldDef& f = d->fieldDefs[ fieldName ];
-        QVariant v               = d->registry.readValue(f, eIt.value());
-        if (v.isValid()) {
-            return v;
+        auto fIt = d->fieldDefs.find(fieldName);
+        if (fIt != d->fieldDefs.end()) {
+            QVariant v = d->registry.readValue(fIt.value(), eIt.value());
+            if (v.isValid()) {
+                return v;
+            }
         }
     }
     return d->currentValueMap.value(fieldName);

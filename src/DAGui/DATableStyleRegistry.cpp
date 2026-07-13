@@ -94,7 +94,8 @@ void DATableStyleRegistry::clear()
 QList< QPair< DAData, DATableStyleManager* > > DATableStyleRegistry::nonEmptyEntries() const
 {
     QList< QPair< DAData, DATableStyleManager* > > res;
-    for (auto it = mRegistry.begin(); it != mRegistry.end(); ++it) {
+    res.reserve(mRegistry.size());
+    for (auto it = mRegistry.constBegin(); it != mRegistry.constEnd(); ++it) {
         DATableStyleManager* mgr = it.value();
         if (mgr && !mgr->isEmpty()) {
             res.append(qMakePair(it.key(), mgr));

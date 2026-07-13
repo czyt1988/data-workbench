@@ -123,44 +123,21 @@ public:
 
 	// === 分组管理 ===
 
-	/// @brief 添加可折叠分组，后续addXxxProperty自动添加到该分组
-	/// @param[in] title 分组标题
-	/// @return 分组ID（从1开始递增）
-	int addCollapsibleGroup(const QString& title);
+	int addCollapsibleGroup(const QString& title);  // 添加可折叠分组
 
-	/// @brief 结束当前分组，后续addXxxProperty回到根面板
-	void endGroup();
+	void endGroup();  // 结束当前分组
 
-	/// @brief 添加嵌套子面板（带ID映射和信号转发）
-	/// @param[in] id 子面板ID（由调用者指定）
-	/// @param[in] groupName 子面板标题
-	/// @return 子面板指针
-	DAPropertyPanelWidget* addSubPanel(int id, const QString& groupName);
+	DAPropertyPanelWidget* addSubPanel(int id, const QString& groupName);  // 添加嵌套子面板
 
-	/// @brief 根据ID获取子面板
-	/// @param[in] id 子面板ID
-	/// @return 子面板指针，不存在则返回nullptr
-	DAPropertyPanelWidget* getSubPanel(int id) const;
+	DAPropertyPanelWidget* getSubPanel(int id) const;  // 根据ID获取子面板
 
-	/// @brief 获取子面板对应的ID
-	/// @param[in] subPanel 子面板指针
-	/// @return 子面板ID，不存在则返回-1
-	int getSubPanelId(DAPropertyPanelWidget* subPanel) const;
+	int getSubPanelId(DAPropertyPanelWidget* subPanel) const;  // 获取子面板对应的ID
 
-	/// @brief 获取分组面板指针
-	/// @param[in] groupId 分组ID
-	/// @return 分组面板指针，不存在则返回nullptr
-	DAPropertyPanelWidget* getGroupPanel(int groupId) const;
+	DAPropertyPanelWidget* getGroupPanel(int groupId) const;  // 获取分组面板指针
 
-	/// @brief 获取分组展开状态
-	/// @param[in] groupId 分组ID
-	/// @return true为展开，false为收起
-	bool isGroupExpanded(int groupId) const;
+	bool isGroupExpanded(int groupId) const;  // 获取分组展开状态
 
-	/// @brief 设置分组展开状态
-	/// @param[in] groupId 分组ID
-	/// @param[in] expanded true为展开，false为收起
-	void setGroupExpanded(int groupId, bool expanded);
+	void setGroupExpanded(int groupId, bool expanded);  // 设置分组展开状态
 
 	// === 属性项管理 ===
 
@@ -320,8 +297,7 @@ private Q_SLOTS:
 private:
 	void connectItemSignals(DAPropertyItemWidget* item);
 
-	/// @brief 获取当前目标面板（有活动分组时返回分组面板，否则返回根面板）
-	DAPropertyPanelWidget* getTargetPanel() const;
+	DAPropertyPanelWidget* getTargetPanel() const;  // 获取当前目标面板
 };
 }  // namespace DA
 #endif  // DAPROPERTYPANELWIDGET_H

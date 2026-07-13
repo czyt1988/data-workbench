@@ -39,7 +39,7 @@ public:
 	virtual int getCurrentStep() const override;
 	//
 	void updateNavButtonState();
-private slots:
+private Q_SLOTS:
 	// 顶部导航按钮点击槽
 	void onNavButtonClicked(QAbstractButton* button);
 	//

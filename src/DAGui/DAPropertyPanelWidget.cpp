@@ -804,7 +804,7 @@ int DAPropertyPanelWidget::propertyCount() const
 void DAPropertyPanelWidget::traverseItems(TraverseCallback callback)
 {
     DA_D(d);
-    for (QWidget* w : d->mWidgetList) {
+    for (QWidget* w : std::as_const(d->mWidgetList)) {
         DAPropertyItemWidget* item = qobject_cast< DAPropertyItemWidget* >(w);
         if (item) {
             if (!callback(item)) {
@@ -905,15 +905,17 @@ void DAPropertyPanelWidget::recalculatePropertyNameWidth()
 
 void DAPropertyPanelWidget::onItemValueChanged(int propertyId)
 {
-    emit propertyValueChanged(propertyId);
+    Q_EMIT propertyValueChanged(propertyId);
 }
 
 void DAPropertyPanelWidget::connectItemSignals(DAPropertyItemWidget* item)
 {
-    // 注意：DAPropertyItemWidget::valueChanged 信号当前未被触发。
+    // TODO: DAPropertyItemWidget::valueChanged 信号当前未被触发。
     // 便捷属性方法（addColorProperty等）通过 lambda 直接连接编辑器 Widget 的信号到 propertyValueChanged，
     // 这是当前唯一的信号转发路径。如果未来 DAPropertyItemWidget 自身开始触发 valueChanged，
     // 需要同时移除便捷方法中的 lambda 连接以避免双重发射。
+    // 考虑统一信号转发路径：由 DAPropertyItemWidget 统一发射 valueChanged，
+    // 便捷方法不再直接连接 propertyValueChanged。
     connect(item, &DAPropertyItemWidget::valueChanged, this, &DAPropertyPanelWidget::onItemValueChanged);
 }
 
@@ -929,8 +931,12 @@ int DAPropertyPanelWidget::addColorProperty(int id, const QString& name, const Q
     btn->setColor(color);
     // 路由到目标面板（有分组时添加到分组，无分组时添加到根）
     int propId = addProperty(id, name, btn);
+    if (propId < 0) {
+        delete btn;
+        return -1;
+    }
     connect(btn, &DAColorPickerButton::colorChanged, this, [ this, propId ](const QColor&) {
-        emit propertyValueChanged(propId);
+        Q_EMIT propertyValueChanged(propId);
     });
     return propId;
 }
@@ -950,11 +956,15 @@ int DAPropertyPanelWidget::addFontProperty(int id, const QString& name, const QF
     editor->setCurrentFont(font);
     // 路由到目标面板
     int propId = addProperty(id, name, editor, DAPropertyItemWidget::BelowLayout);
+    if (propId < 0) {
+        delete editor;
+        return -1;
+    }
     connect(editor, &DAFontEditPannelWidget::currentFontChanged, this, [ this, propId ](const QFont&) {
-        emit propertyValueChanged(propId);
+        Q_EMIT propertyValueChanged(propId);
     });
     connect(editor, &DAFontEditPannelWidget::currentFontColorChanged, this, [ this, propId ](const QColor&) {
-        emit propertyValueChanged(propId);
+        Q_EMIT propertyValueChanged(propId);
     });
     return propId;
 }
@@ -974,8 +984,12 @@ int DAPropertyPanelWidget::addBrushProperty(int id, const QString& name, const Q
     editor->setCurrentBrush(brush);
     // 路由到目标面板
     int propId = addProperty(id, name, editor, DAPropertyItemWidget::BelowLayout);
+    if (propId < 0) {
+        delete editor;
+        return -1;
+    }
     connect(editor, &DABrushEditWidget::brushChanged, this, [ this, propId ](const QBrush&) {
-        emit propertyValueChanged(propId);
+        Q_EMIT propertyValueChanged(propId);
     });
     return propId;
 }
@@ -995,8 +1009,12 @@ int DAPropertyPanelWidget::addPenProperty(int id, const QString& name, const QPe
     editor->setCurrentPen(pen);
     // 路由到目标面板
     int propId = addProperty(id, name, editor, DAPropertyItemWidget::BelowLayout);
+    if (propId < 0) {
+        delete editor;
+        return -1;
+    }
     connect(editor, &DAPenEditWidget::penChanged, this, [ this, propId ](const QPen&) {
-        emit propertyValueChanged(propId);
+        Q_EMIT propertyValueChanged(propId);
     });
     return propId;
 }
@@ -1017,8 +1035,12 @@ int DAPropertyPanelWidget::addIntProperty(int id, const QString& name, int value
     spin->setValue(value);
     // 路由到目标面板
     int propId = addProperty(id, name, spin);
+    if (propId < 0) {
+        delete spin;
+        return -1;
+    }
     connect(spin, QOverload< int >::of(&QSpinBox::valueChanged), this, [ this, propId ](int) {
-        emit propertyValueChanged(propId);
+        Q_EMIT propertyValueChanged(propId);
     });
     return propId;
 }
@@ -1040,8 +1062,12 @@ int DAPropertyPanelWidget::addDoubleProperty(int id, const QString& name, double
     spin->setDecimals(decimals);
     // 路由到目标面板
     int propId = addProperty(id, name, spin);
+    if (propId < 0) {
+        delete spin;
+        return -1;
+    }
     connect(spin, QOverload< double >::of(&QDoubleSpinBox::valueChanged), this, [ this, propId ](double) {
-        emit propertyValueChanged(propId);
+        Q_EMIT propertyValueChanged(propId);
     });
     return propId;
 }
@@ -1061,7 +1087,11 @@ int DAPropertyPanelWidget::addBoolProperty(int id, const QString& name, bool che
     checkBox->setChecked(checked);
     // 路由到目标面板
     int propId = addProperty(id, name, checkBox);
-    connect(checkBox, &QCheckBox::toggled, this, [ this, propId ](bool) { emit propertyValueChanged(propId); });
+    if (propId < 0) {
+        delete checkBox;
+        return -1;
+    }
+    connect(checkBox, &QCheckBox::toggled, this, [ this, propId ](bool) { Q_EMIT propertyValueChanged(propId); });
     return propId;
 }
 
@@ -1080,7 +1110,11 @@ int DAPropertyPanelWidget::addStringProperty(int id, const QString& name, const 
     editor->setText(text);
     // 路由到目标面板
     int propId = addProperty(id, name, editor);
-    connect(editor, &QLineEdit::textEdited, this, [ this, propId ](const QString&) { emit propertyValueChanged(propId); });
+    if (propId < 0) {
+        delete editor;
+        return -1;
+    }
+    connect(editor, &QLineEdit::textEdited, this, [ this, propId ](const QString&) { Q_EMIT propertyValueChanged(propId); });
     return propId;
 }
 
@@ -1111,6 +1145,10 @@ int DAPropertyPanelWidget::addEnumProperty(int id,
     }
     // 路由到目标面板
     int propId = addProperty(id, name, combo);
+    if (propId < 0) {
+        delete combo;
+        return -1;
+    }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     connect(combo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [ this, propId ](int) {
         Q_EMIT propertyValueChanged(propId);
@@ -1139,8 +1177,12 @@ int DAPropertyPanelWidget::addAlignmentProperty(int id, const QString& name, Qt:
     editor->setCurrentAlignment(alignment);
     // 路由到目标面板
     int propId = addProperty(id, name, editor);
+    if (propId < 0) {
+        delete editor;
+        return -1;
+    }
     connect(editor, &DAAligmentEditWidget::alignmentChanged, this, [ this, propId ](Qt::Alignment) {
-        emit propertyValueChanged(propId);
+        Q_EMIT propertyValueChanged(propId);
     });
     return propId;
 }
@@ -1160,8 +1202,12 @@ int DAPropertyPanelWidget::addAlignmentPositionProperty(int id, const QString& n
     editor->setAligmentPosition(alignment);
     // 路由到目标面板
     int propId = addProperty(id, name, editor);
+    if (propId < 0) {
+        delete editor;
+        return -1;
+    }
     connect(editor, &DAAligmentPositionEditWidget::aligmentPositionChanged, this, [ this, propId ](Qt::Alignment) {
-        emit propertyValueChanged(propId);
+        Q_EMIT propertyValueChanged(propId);
     });
     return propId;
 }
@@ -1183,8 +1229,12 @@ int DAPropertyPanelWidget::addFilePathProperty(int id, const QString& name, cons
     }
     // 路由到目标面板
     int propId = addProperty(id, name, editor);
+    if (propId < 0) {
+        delete editor;
+        return -1;
+    }
     connect(editor, &DAFilePathEditWidget::selectedPath, this, [ this, propId ](const QString&) {
-        emit propertyValueChanged(propId);
+        Q_EMIT propertyValueChanged(propId);
     });
     return propId;
 }
@@ -1573,13 +1623,11 @@ void DAPropertyPanelWidget::setEnumValue(int id, int value)
     QComboBox* combo = qobject_cast< QComboBox* >(editor);
     if (combo) {
         QSignalBlocker blocker(combo);
-        QVariant data = combo->itemData(0);
-        if (data.isValid()) {
-            int idx = combo->findData(value);
-            if (idx >= 0) {
-                combo->setCurrentIndex(idx);
-            }
-        } else {
+        // 优先按 data 查找；找不到则按索引设置
+        int idx = combo->findData(value, Qt::UserRole);
+        if (idx >= 0) {
+            combo->setCurrentIndex(idx);
+        } else if (value >= 0 && value < combo->count()) {
             combo->setCurrentIndex(value);
         }
     }

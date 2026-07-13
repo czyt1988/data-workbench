@@ -35,13 +35,13 @@ protected:
     void dragLeaveEvent(QDragLeaveEvent* e) override;
     void dropEvent(QDropEvent* e) override;
     void startDrag(Qt::DropActions supportedActions) override;
-signals:
+Q_SIGNALS:
     /**
      * @brief 变量双击
      * @param data
      */
     void dataDbClicked(const DA::DAData& data);
-private slots:
+private Q_SLOTS:
     void onTableViewDoubleClicked(const QModelIndex& index);
 
 private:

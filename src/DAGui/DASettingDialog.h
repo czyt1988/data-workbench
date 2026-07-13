@@ -24,13 +24,13 @@ public:
     DASettingWidget* settingWidget() const;
     //获取改变的页面
     QList< DAAbstractSettingPage* > getChanggedPages() const;
-public slots:
+public Q_SLOTS:
     //设置页面
     void setPage(int index);
-private slots:
+private Q_SLOTS:
     void onPushButtonOKClicked();
     void onPushButtonApplyClicked();
-signals:
+Q_SIGNALS:
     /**
      * @brief 配置改变或者应用，需要保存的信号
      */
