@@ -30,6 +30,7 @@ public:
     DADataManagerTreeFilterProxyModel* proxyModel { nullptr };
     QCompleter* completer { nullptr };
     QTimer* filterTimer { nullptr };
+    QTimer* completerDebounceTimer { nullptr };
 };
 
 DADataManagerTreeWidget::PrivateData::PrivateData(DADataManagerTreeWidget* p) : q_ptr(p)
@@ -70,6 +71,11 @@ void DADataManagerTreeWidget::PrivateData::init()
     filterTimer = new QTimer(q_ptr);
     filterTimer->setSingleShot(true);
     filterTimer->setInterval(300);  // 300ms延迟
+
+    // 补全器去抖定时器，避免 rowsInserted 频繁触发全量刷新
+    completerDebounceTimer = new QTimer(q_ptr);
+    completerDebounceTimer->setSingleShot(true);
+    completerDebounceTimer->setInterval(50);  // 50ms去抖
 }
 
 QStandardItem* DADataManagerTreeWidget::PrivateData::getCurrentSelectItem() const
@@ -94,11 +100,11 @@ DADataManagerTreeWidget::DADataManagerTreeWidget(QWidget* parent)
     connect(ui->toolButtonExpand, &QToolButton::clicked, this, &DADataManagerTreeWidget::onToolButtonExpandClicked);
     connect(ui->toolButtonCollapse, &QToolButton::clicked, this, &DADataManagerTreeWidget::onToolButtonCollapseClicked);
     connect(ui->comboBoxFilter, &QComboBox::editTextChanged, this, &DADataManagerTreeWidget::onComboBoxEditTextChanged);
-    // 连接模型变化信号，更新补全器
-
-    connect(d_ptr->model, &DADataManagerTreeModel::rowsInserted, this, &DADataManagerTreeWidget::updateCompleterModel);
-    connect(d_ptr->model, &DADataManagerTreeModel::rowsRemoved, this, &DADataManagerTreeWidget::updateCompleterModel);
-    connect(d_ptr->model, &DADataManagerTreeModel::dataChanged, this, &DADataManagerTreeWidget::updateCompleterModel);
+    // 连接模型变化信号，通过去抖定时器更新补全器，避免批量操作时频繁全量刷新
+    connect(d_ptr->model, &DADataManagerTreeModel::rowsInserted, d_ptr->completerDebounceTimer, QOverload<>::of(&QTimer::start));
+    connect(d_ptr->model, &DADataManagerTreeModel::rowsRemoved, d_ptr->completerDebounceTimer, QOverload<>::of(&QTimer::start));
+    connect(d_ptr->model, &DADataManagerTreeModel::dataChanged, d_ptr->completerDebounceTimer, QOverload<>::of(&QTimer::start));
+    connect(d_ptr->completerDebounceTimer, &QTimer::timeout, this, &DADataManagerTreeWidget::updateCompleterModel);
     connect(d_ptr->filterTimer, &QTimer::timeout, this, &DADataManagerTreeWidget::applyFilter);
 
     connect(ui->treeView, &QTreeView::doubleClicked, this, &DADataManagerTreeWidget::onTreeViewDoubleClicked);
@@ -112,7 +118,15 @@ DADataManagerTreeWidget::~DADataManagerTreeWidget()
 void DADataManagerTreeWidget::setDataManager(DADataManager* dataMgr)
 {
     DA_D(d);
+    // 断开旧 dataMgr 的批量信号连接
+    DADataManager* oldMgr = d->model->getDataManager();
+    if (oldMgr && oldMgr != dataMgr) {
+        disconnect(oldMgr, &DADataManager::datasBatchAdded, this, &DADataManagerTreeWidget::onDatasBatchAdded);
+    }
     d->model->setDataManager(dataMgr);
+    if (dataMgr) {
+        connect(dataMgr, &DADataManager::datasBatchAdded, this, &DADataManagerTreeWidget::onDatasBatchAdded);
+    }
     // 更新补全器
     updateCompleterModel();
 }
@@ -370,6 +384,13 @@ QStringList DADataManagerTreeWidget::collectAllDataNames() const
     names.prepend(tr("Search..."));  // cn:搜索
 
     return names;
+}
+
+void DADataManagerTreeWidget::onDatasBatchAdded()
+{
+    // 批量添加完成，立即停止去抖定时器并同步刷新
+    d_ptr->completerDebounceTimer->stop();
+    updateCompleterModel();
 }
 
 }  // end DA

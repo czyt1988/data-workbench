@@ -73,6 +73,7 @@ private Q_SLOTS:
     void updateCompleterModel();
     void applyFilter();
     void onTreeViewDoubleClicked(const QModelIndex& index);
+    void onDatasBatchAdded();  ///< 批量添加完成后立即刷新
 
 private:
     // 更新过滤

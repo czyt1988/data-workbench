@@ -22,6 +22,7 @@ public:
     QMap< DAData::IdType, DAData > _dataMap;
     bool _dirtyFlag;               ///< 标记是否dirty
     QUndoStack _dataManagerStack;  ///< 数据管理的stack
+    bool _suppressSignals { false };  ///< 抑制 dataAdded 信号
 };
 
 //===================================================
@@ -68,7 +69,9 @@ void DADataManager::addData(DAData& d)
     d_ptr->_dataList.push_back(d);
     d_ptr->_dataMap[ d.id() ] = d;
     setDirtyFlag(true);
-    Q_EMIT dataAdded(d);
+    if (!d_ptr->_suppressSignals) {
+        Q_EMIT dataAdded(d);
+    }
 }
 /**
  * @brief 带redo/undo的添加数据
@@ -119,6 +122,21 @@ void DADataManager::addDatas_(const QList< DAData >& datas)
     if (cmdGroup->childCount() > 0) {
         d_ptr->_dataManagerStack.push(cmdGroup.release());
     }
+}
+
+void DADataManager::setSuppressSignals(bool on)
+{
+    d_ptr->_suppressSignals = on;
+}
+
+bool DADataManager::isSuppressSignals() const
+{
+    return d_ptr->_suppressSignals;
+}
+
+void DADataManager::emitDatasBatchAdded()
+{
+    Q_EMIT datasBatchAdded();
 }
 
 /**

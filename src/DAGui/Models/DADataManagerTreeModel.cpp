@@ -281,6 +281,7 @@ void DADataManagerTreeModel::setupConnections()
     connect(d->dataMgr, &DADataManager::dataBeginRemove, this, &DADataManagerTreeModel::onDataBeginRemoved);
     connect(d->dataMgr, &DADataManager::dataChanged, this, &DADataManagerTreeModel::onDataChanged);
     connect(d->dataMgr, &DADataManager::datasCleared, this, &DADataManagerTreeModel::onDatasCleared);
+    connect(d->dataMgr, &DADataManager::datasBatchAdded, this, &DADataManagerTreeModel::onDatasBatchAdded);
 }
 
 QStandardItem* DADataManagerTreeModel::createDataItem(const DAData& data)
@@ -695,6 +696,23 @@ void DADataManagerTreeModel::onDataChanged(const DAData& data, DADataManager::Ch
 void DADataManagerTreeModel::onDatasCleared()
 {
     clear();
+}
+
+void DADataManagerTreeModel::onDatasBatchAdded()
+{
+    DA_D(d);
+    if (!d->dataMgr) {
+        return;
+    }
+    // 增量添加：找出 dataMgr 中有但 model 中还没有的 data
+    int total = d->dataMgr->getDataCount();
+    int currentRowCount = rowCount();
+    for (int i = currentRowCount; i < total; ++i) {
+        DAData data = d->dataMgr->getData(i);
+        if (!data.isNull()) {
+            addDataItem(data);
+        }
+    }
 }
 
 }  // end da

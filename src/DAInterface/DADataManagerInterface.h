@@ -24,6 +24,11 @@ public:
     // 添加数据
     virtual void addData(DAData& d);
     virtual void addData_(DAData& d);
+    // 批量添加控制：抑制 dataAdded 信号，数据照常注册
+    virtual void setSuppressSignals(bool on);
+    virtual bool isSuppressSignals() const;
+    // 批量添加完成后调用，通知界面刷新
+    virtual void emitDatasBatchAdded();
     // 移除数据
     virtual void removeData(DAData& d);
     virtual void removeData_(DAData& d);
@@ -93,6 +98,11 @@ Q_SIGNALS:
      * @param oldname
      */
     void dataChanged(const DA::DAData& d, DA::DADataManager::ChangeType t);
+
+    /**
+     * @brief 批量添加完成信号，配合 @sa setSuppressSignals 使用
+     */
+    void datasBatchAdded();
 };
 }  // namespace DA
 #endif  // DADATAMANAGERINTERFACE_H

@@ -71,6 +71,12 @@ public:
     // 触发dataInfomationChanged信号
     void notifyDataChangedSignal(const DAData& d, ChangeType t);
 
+    // 批量添加控制：抑制 dataAdded 信号，数据照常注册
+    void setSuppressSignals(bool on);
+    bool isSuppressSignals() const;
+    // 批量添加完成后调用，发射 datasBatchAdded 信号通知界面刷新
+    void emitDatasBatchAdded();
+
 protected:
     // 设置唯一名称
     virtual void setUniqueDataName(DAData& d) const;
@@ -113,6 +119,14 @@ Q_SIGNALS:
      * @brief 数据被清除信号
      */
     void datasCleared();
+
+    /**
+     * @brief 批量添加完成信号，配合 @sa setSuppressSignals 使用
+     *
+     * 当 setSuppressSignals(true) 后多次调用 addData，再调用 @sa emitDatasBatchAdded
+     * 时发射此信号，通知界面进行一次性刷新
+     */
+    void datasBatchAdded();
 
 public:
     static QRegularExpression wildcardToRegex(const QString& pattern, Qt::CaseSensitivity cs);

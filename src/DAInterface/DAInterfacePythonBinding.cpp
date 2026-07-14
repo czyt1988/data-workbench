@@ -81,6 +81,11 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
     pybind11::class_< DA::DADataManagerInterface >(m, "DADataManagerInterface")
         .def("addData", &DA::DADataManagerInterface::addData, pybind11::arg("data"), "Add data immediately")
         .def("addData_", &DA::DADataManagerInterface::addData_, pybind11::arg("data"), "Add data with undo/redo")
+        .def("setSuppressSignals", &DA::DADataManagerInterface::setSuppressSignals, pybind11::arg("on"),
+             "Suppress dataAdded signals for batch insertion")
+        .def("isSuppressSignals", &DA::DADataManagerInterface::isSuppressSignals)
+        .def("emitDatasBatchAdded", &DA::DADataManagerInterface::emitDatasBatchAdded,
+             "Emit datasBatchAdded signal to notify UI to refresh after batch insertion")
         .def("removeData", &DA::DADataManagerInterface::removeData, pybind11::arg("data"))
         .def("removeData_", &DA::DADataManagerInterface::removeData_, pybind11::arg("data"))
         .def("getDataCount", &DA::DADataManagerInterface::getDataCount)

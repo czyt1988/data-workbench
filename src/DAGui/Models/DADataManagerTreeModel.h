@@ -186,6 +186,7 @@ private Q_SLOTS:
     void onDataBeginRemoved(const DAData& data, int index);
     void onDataChanged(const DAData& data, DADataManager::ChangeType changeType);
     void onDatasCleared();
+    void onDatasBatchAdded();  ///< 批量添加完成后增量刷新
 };
 
 // 以下是递归函数用于遍历

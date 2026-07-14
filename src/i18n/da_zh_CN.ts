@@ -62,7 +62,7 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+91"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+75"/>
         <source>Initializing core interface...</source>
         <translation>正在初始化核心接口...</translation>
     </message>
@@ -1253,7 +1253,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+564"/>
+        <location filename="../APP/DAAppController.cpp" line="+548"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -1349,7 +1349,7 @@ Config</source>
         <translation>获取到空工程接口</translation>
     </message>
     <message>
-        <location line="+799"/>
+        <location line="+805"/>
         <source>Rename Column</source>
         <translation>重命名此列</translation>
     </message>
@@ -1379,7 +1379,7 @@ Config</source>
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location line="-1108"/>
+        <location line="-1114"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
@@ -1392,7 +1392,12 @@ Config</source>
         <translation>开始导入文件:%1</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+6"/>
+        <source>Python scripts not initialized, cannot import file: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
         <source>Begin import file: %1</source>
         <translation>开始导入文件:%1</translation>
     </message>
@@ -1458,17 +1463,17 @@ Config</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="../APP/DAAppPluginManager.cpp" line="+223"/>
+        <location filename="../APP/DAAppPluginManager.cpp" line="+221"/>
         <source>Python interpreter not initialized, skip Python node discovery</source>
         <translation>Python解释器未初始化，跳过Python节点发现</translation>
     </message>
     <message>
-        <location line="-151"/>
+        <location line="-149"/>
         <source>Successfully loaded plugin %1</source>
         <translation>成功加载插件%1</translation>
     </message>
     <message>
-        <location line="+162"/>
+        <location line="+160"/>
         <source>Pyplugins scan completed, found %1 valid Python plugin paths</source>
         <translation>Python插件扫描完成，发现%1个有效的Python插件路径</translation>
     </message>
@@ -1596,12 +1601,17 @@ Config</source>
         <translation>把名称为%1的dataframe序列化到%2时出现异常</translation>
     </message>
     <message>
-        <location line="+507"/>
+        <location line="+178"/>
+        <source>Loading workflow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+328"/>
         <source>Table style for data &apos;%1&apos; has no matching data, skipped</source>
         <translation>数据&apos;%1&apos;的表格样式未找到匹配数据，已跳过</translation>
     </message>
     <message>
-        <location line="-476"/>
+        <location line="-475"/>
         <source>Save data information, including data names and data organization formats</source>
         <translation>保存数据信息，包括数据的名称数据的组织形式</translation>
     </message>
@@ -1642,33 +1652,28 @@ Config</source>
         <translation>开始加载%1</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+19"/>
         <source>Loading data</source>
         <translation>正在加载数据</translation>
     </message>
     <message>
-        <location line="+229"/>
+        <location line="+226"/>
         <source>Unable to serialize file %1 into a DataFrame</source>
         <translation>无法把文件%1序列化为DataFrame</translation>
     </message>
     <message>
-        <location line="-226"/>
-        <source>Loading charts</source>
-        <translation>正在加载绘图</translation>
-    </message>
-    <message>
-        <location line="+17"/>
+        <location line="-209"/>
         <source>Project saved successfully</source>
         <translation>成功保存工程</translation>
     </message>
     <message>
-        <location line="-590"/>
-        <location line="+593"/>
+        <location line="-589"/>
+        <location line="+592"/>
         <source>Failed to save project</source>
         <translation>无法保存工程</translation>
     </message>
     <message>
-        <location line="-603"/>
+        <location line="-602"/>
         <location line="+34"/>
         <source>The current project is busy</source>
         <translation>当前工程正繁忙</translation>
@@ -1679,13 +1684,13 @@ Config</source>
         <translation>保存数据信息</translation>
     </message>
     <message>
-        <location line="+187"/>
+        <location line="+186"/>
         <source>Project loaded successfully</source>
         <translation>成功加载工程</translation>
     </message>
     <message>
-        <location line="-554"/>
-        <location line="+558"/>
+        <location line="-553"/>
+        <location line="+557"/>
         <source>Failed to load project</source>
         <translation>无法加载工程</translation>
     </message>
@@ -2017,7 +2022,7 @@ Config</source>
 <context>
     <name>DA::DAAppUI</name>
     <message>
-        <location filename="../APP/DAAppUI.cpp" line="+73"/>
+        <location filename="../APP/DAAppUI.cpp" line="+81"/>
         <source>Failed to load form config for settings dialog</source>
         <translation>无法加载设置对话框的表单配置</translation>
     </message>
@@ -2025,14 +2030,30 @@ Config</source>
 <context>
     <name>DA::DAAxObjectExcelWrapper</name>
     <message>
-        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+114"/>
-        <source>cannot initialize OLE, error code: %1</source>
-        <translation>无法初始化 OLE，错误码：%1</translation>
+        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+762"/>
+        <location line="+23"/>
+        <source>The local computer does not have Excel or WPS installed</source>
+        <translation type="unfinished">当前计算机中没有安装excel或者wps</translation>
     </message>
     <message>
-        <location line="+12"/>
-        <source>cannot query subobject &apos;Workbooks&apos;</source>
-        <translation>无法查询子对象 &apos;Workbooks&apos;</translation>
+        <location line="-17"/>
+        <source>cannot open Excel</source>
+        <translation type="unfinished">无法打开Excel</translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>cannot get or create sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>failed to write table to sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>failed to save Excel file</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2342,7 +2363,7 @@ Config</source>
 <context>
     <name>DA::DAChartAxisSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartAxisSettingPanel.cpp" line="+192"/>
+        <location filename="../DAGui/ChartSetting/DAChartAxisSettingPanel.cpp" line="+187"/>
         <source>Enable</source>
         <translation>启用</translation>
     </message>
@@ -3529,7 +3550,7 @@ Config</source>
 <context>
     <name>DA::DACoreInterface</name>
     <message>
-        <location filename="../DAInterface/DACoreInterface.cpp" line="+68"/>
+        <location filename="../DAInterface/DACoreInterface.cpp" line="+69"/>
         <source>Python interpreter is not initialized</source>
         <translation>Python 解释器未初始化</translation>
     </message>
@@ -3568,17 +3589,17 @@ Config</source>
 <context>
     <name>DA::DADataManager</name>
     <message>
-        <location filename="../DAData/DADataManager.cpp" line="+56"/>
+        <location filename="../DAData/DADataManager.cpp" line="+60"/>
         <source>data &apos;%1&apos; has been added</source>
         <translation>数据 &apos;%1&apos; 已被添加过</translation>
     </message>
     <message>
-        <location line="+56"/>
+        <location line="+58"/>
         <source>add datas</source>
         <translation>批量添加数据</translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+55"/>
         <source>remove datas</source>
         <translation>批量移除数据</translation>
     </message>
@@ -3599,9 +3620,9 @@ Config</source>
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+274"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+267"/>
         <location line="+2"/>
-        <location line="+86"/>
+        <location line="+87"/>
         <location line="+3"/>
         <location line="+97"/>
         <location line="+2"/>
@@ -3609,8 +3630,8 @@ Config</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location line="-188"/>
-        <location line="+89"/>
+        <location line="-189"/>
+        <location line="+90"/>
         <location line="+99"/>
         <source>Properties</source>
         <translation>属性</translation>
@@ -3619,7 +3640,7 @@ Config</source>
 <context>
     <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+370"/>
+        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+384"/>
         <source>Search...</source>
         <translation>搜索</translation>
     </message>
@@ -3627,7 +3648,7 @@ Config</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+230"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+231"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -3643,7 +3664,7 @@ Config</source>
     </message>
     <message>
         <location line="+42"/>
-        <location line="+171"/>
+        <location line="+170"/>
         <location line="+35"/>
         <location line="+41"/>
         <location line="+42"/>
@@ -3651,15 +3672,15 @@ Config</source>
         <translation>请选择正确的列</translation>
     </message>
     <message>
-        <location line="-247"/>
-        <location line="+654"/>
+        <location line="-246"/>
+        <location line="+653"/>
         <location line="+61"/>
         <location line="+48"/>
         <source>Please select a valid cell</source>
         <translation>请选择正确的单元格</translation>
     </message>
     <message>
-        <location line="-721"/>
+        <location line="-720"/>
         <source>Table has no columns</source>
         <translation>表格没有列</translation>
     </message>
@@ -3749,7 +3770,7 @@ Config</source>
 <context>
     <name>DA::DADockingAreaInterface</name>
     <message>
-        <location filename="../DAInterface/DADockingAreaInterface.cpp" line="+90"/>
+        <location filename="../DAInterface/DADockingAreaInterface.cpp" line="+108"/>
         <source>dock widget &quot;%1&quot; was closed and hidden</source>
         <translation>停靠窗口“%1”隐藏并关闭</translation>
     </message>
@@ -3798,14 +3819,6 @@ Config</source>
         <location line="+20"/>
         <source>plot item</source>
         <translation>图元</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAFigureWidget</name>
-    <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+845"/>
-        <source>Unsupported chart editor type: %1</source>
-        <translation>不支持的图表编辑器类型：%1</translation>
     </message>
 </context>
 <context>
@@ -3971,6 +3984,14 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DANodeParamSettingPanelWidget</name>
+    <message>
+        <location filename="../DAGui/NodeSetting/DANodeParamSettingPanelWidget.cpp" line="+47"/>
+        <source>No node selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DANodeSettingWidget</name>
     <message>
         <location filename="../DAGui/DANodeSettingWidget.cpp" line="+126"/>
@@ -4004,7 +4025,7 @@ Config</source>
 <context>
     <name>DA::DAPluginManager</name>
     <message>
-        <location filename="../DAPluginSupport/DAPluginManager.cpp" line="+55"/>
+        <location filename="../DAPluginSupport/DAPluginManager.cpp" line="+57"/>
         <source>The file .pluginignore exists, but failed to read due to the following reason: %1</source>
         <translation>.pluginignore文件存在，但由于以下原因读取失败：%1</translation>
     </message>
@@ -4014,7 +4035,22 @@ Config</source>
         <translation>缺少插件忽略文件，将自动生成%1文件</translation>
     </message>
     <message>
-        <location line="+65"/>
+        <location line="+67"/>
+        <source>Plugins have already been loaded, skipping duplicate load.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Plugin directory does not exist: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>No plugin files found in: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>plugin directory is: %1</source>
         <translation>插件目录为：%1</translation>
     </message>
@@ -4029,27 +4065,38 @@ Config</source>
         <translation>忽略无效文件：%1</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>cannot load plugin:%1</source>
-        <translation>无法加载插件：%1</translation>
+        <location line="+95"/>
+        <source>Plugin %1 refused to finalize, skip unload.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+114"/>
+        <location line="+38"/>
         <source>Plugin Manager Info: is loaded=%1, plugin counts=%2</source>
         <translation>插件管理器信息：已加载=%1，插件数量=%2</translation>
     </message>
     <message>
-        <location line="-53"/>
+        <location line="-66"/>
         <source>Plugin %1 refused to finalize, unload cancelled.</source>
         <translation>插件 %1 拒绝完成清理，卸载已取消</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-217"/>
+        <source>Failed to create plugin directory: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+156"/>
+        <source>cannot load plugin: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+70"/>
+        <location line="+27"/>
         <source>Failed to unload plugin library for %1.</source>
         <translation>无法卸载插件 %1 的库</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="-22"/>
         <source>Plugin %1 not found for unloading.</source>
         <translation>未找到要卸载的插件 %1</translation>
     </message>
@@ -4091,7 +4138,7 @@ Config</source>
 <context>
     <name>DA::DAPyDTypeComboBox</name>
     <message>
-        <location filename="../DAPyCommonWidgets/DAPyDTypeComboBox.cpp" line="+26"/>
+        <location filename="../DAPyCommonWidgets/DAPyDTypeComboBox.cpp" line="+27"/>
         <source>float64</source>
         <translation>float64</translation>
     </message>
@@ -4250,20 +4297,6 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DAPyDataframeColumnsListWidget</name>
-    <message>
-        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+38"/>
-        <source>Exception in getting selected column: %1</source>
-        <translation>获取选中的列发生异常：%1</translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <location line="+20"/>
-        <source>Exception in getting selected series: %1</source>
-        <translation>获取选中的序列发生异常：%1</translation>
-    </message>
-</context>
-<context>
     <name>DA::DAPyWorkFlowEditWidget</name>
     <message>
         <location filename="../DAGui/DAPyWorkFlowEditWidget.cpp" line="+105"/>
@@ -4274,12 +4307,12 @@ Config</source>
 <context>
     <name>DA::DAPyWorkFlowGraphicsView</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowGraphicsView.cpp" line="+228"/>
+        <location filename="../DAGui/DAPyWorkFlowGraphicsView.cpp" line="+225"/>
         <source>cut</source>
         <translation>剪切</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+28"/>
         <source>Unrecognized mime formats: %1, paste failed</source>
         <translation>无法识别的mime类型:%1,粘贴失败</translation>
     </message>
@@ -4318,7 +4351,7 @@ Config</source>
 <context>
     <name>DA::DAPyWorkFlowOperateWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowOperateWidget.cpp" line="+150"/>
+        <location filename="../DAGui/DAPyWorkFlowOperateWidget.cpp" line="+148"/>
         <source>Title of new workflow</source>
         <translation>新工作流标题</translation>
     </message>
@@ -4340,12 +4373,12 @@ Config</source>
     <message>
         <location line="+144"/>
         <location line="+13"/>
-        <location line="+14"/>
+        <location line="+13"/>
         <source>Missing view</source>
         <translation>缺少视图</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+13"/>
         <location line="+13"/>
         <location line="+15"/>
         <location line="+14"/>
@@ -4796,7 +4829,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1240"/>
+        <location filename="../APP/DAAppController.cpp" line="-1224"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -5585,7 +5618,7 @@ Config</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-764"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+78"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
@@ -7398,12 +7431,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法在&quot;%1&quot;创建归档，因为%2</translation>
     </message>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-307"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-314"/>
         <source>%1.%2,size:%3</source>
         <translation>%1.%2,长度:%3</translation>
     </message>
     <message>
-        <location filename="../DAPyWorkFlow/DAPyNodeFactory.cpp" line="+216"/>
+        <location filename="../DAPyWorkFlow/DAPyNodeFactory.cpp" line="+217"/>
         <source>DA Python Node Factory</source>
         <translation>DA Python 节点工厂</translation>
     </message>
@@ -7443,7 +7476,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>&apos;items&apos; 必须是数组</translation>
     </message>
     <message>
-        <location filename="../DAUtils/DATextReadWriter.cpp" line="+224"/>
+        <location filename="../DAUtils/DATextReadWriter.cpp" line="+225"/>
         <source>No error occurred</source>
         <translation>没有发生错误</translation>
     </message>
@@ -7543,14 +7576,24 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>DA xml协议缺失&lt;props&gt;标签</translation>
     </message>
     <message>
-        <location filename="../DAPyScripts/DAPyScripts.cpp" line="+20"/>
-        <source>DAPyInterpreter is not initialized</source>
-        <translation>Python 环境未初始化</translation>
-    </message>
-    <message>
-        <location line="+47"/>
+        <location filename="../DAPyScripts/DAPyScripts.cpp" line="+69"/>
         <source>Failed to initialize import scripts: %1</source>
         <translation>初始化导入脚本失败：%1</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>DAPyScripts is not initialized, getIO() called before initScripts()</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>DAPyScripts is not initialized, getDataFrame() called before initScripts()</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>DAPyScripts is not initialized, getDataProcess() called before initScripts()</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../DAPyScripts/DAPyScriptsDataFrame.cpp" line="+15"/>
@@ -7563,7 +7606,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法导入 DAWorkbench.dataframe 模块</translation>
     </message>
     <message>
-        <location filename="../DAPyScripts/DAPyScriptsDataProcess.cpp" line="+11"/>
+        <location line="+266"/>
+        <source>setnan: rowsIndex size(%1) != colsIndex size(%2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAPyScripts/DAPyScriptsDataProcess.cpp" line="+40"/>
         <source>cannot import da_data_processing module</source>
         <translation>无法导入 da_data_processing 模块</translation>
     </message>
@@ -7593,7 +7641,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>DAPyIndex：Python 对象类型不是 pandas.Index</translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPyModulePandas.cpp" line="+164"/>
+        <location filename="../DAPyBindQt/pandas/DAPyModulePandas.cpp" line="+163"/>
         <source>failed to open file %1 with UTF-8, trying ANSI encoding</source>
         <translation>使用 UTF-8 打开文件 %1 失败，尝试使用 ANSI 编码</translation>
     </message>
@@ -7603,7 +7651,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>DAPySeries：Python 对象类型不是 pandas.Series</translation>
     </message>
     <message>
-        <location filename="../DAPluginSupport/DAPluginOption.cpp" line="+98"/>
+        <location filename="../DAPluginSupport/DAPluginOption.cpp" line="+94"/>
         <source>Failed to load %1 (Reason: %2)</source>
         <translation>加载 %1 失败（原因：%2）</translation>
     </message>
@@ -7618,27 +7666,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法转换到 DA 插件接口：%1</translation>
     </message>
     <message>
-        <location line="+13"/>
-        <source>Plugin from %1 implements a DA interface but qobject_cast failed. This may indicate a binary compatibility issue (compiler/mismatch).</source>
-        <translation>来自 %1 的插件实现了 DA 接口，但 qobject_cast 失败，可能是二进制兼容性问题（编译器不匹配）</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>The library %1 does not appear to be a valid DA plugin. It does not implement the required interface.</source>
-        <translation>库 %1 似乎不是有效的 DA 插件，未实现所需的接口</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>loaded plugin:%1</source>
-        <translation>已加载插件：%1</translation>
-    </message>
-    <message>
-        <location line="+4"/>
+        <location line="+10"/>
         <source>successfully loaded plugin %1, but failed to initialize</source>
         <translation>成功加载插件 %1，但插件初始化失败</translation>
     </message>
     <message>
-        <location line="+99"/>
+        <location line="+107"/>
         <source>plugin file name:%1,iid:%2,name:%3,description:%4,version:%5,error string:%6</source>
         <translation>插件文件名：%1，iid：%2，名称：%3，描述：%4，版本：%5，错误信息：%6</translation>
     </message>
@@ -7673,7 +7706,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>移动图元</translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location line="+72"/>
         <location line="+9"/>
         <source>Item Resize</source>
         <translation>调整图元尺寸</translation>
@@ -7684,22 +7717,22 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>调整图元宽度</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+47"/>
         <source>Item Resize Height</source>
         <translation>调整图元高度</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+52"/>
         <source>Item Rotation</source>
         <translation>旋转图元</translation>
     </message>
     <message>
-        <location filename="../DAGraphicsView/DAGraphicsItemFactory.cpp" line="+69"/>
+        <location filename="../DAGraphicsView/DAGraphicsItemFactory.cpp" line="+74"/>
         <source>Class name %1 not registered to item factory</source>
         <translation>类名 %1 未注册到 item 工厂</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+10"/>
         <source>Type %1 not registered to item factory</source>
         <translation>类型 %1 未注册到 item 工厂</translation>
     </message>
@@ -7835,11 +7868,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>未知-%1</translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+48"/>
-        <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
-        <translation>意外的绘图操作：不属于 DAChartWidget 类型的图表被添加到了 figure 中</translation>
-    </message>
-    <message>
         <location filename="../DAFigure/DAFigureWidgetCommands.cpp" line="+35"/>
         <location line="+8"/>
         <source>create chart</source>
@@ -7856,7 +7884,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>设置绘图中窗体的尺寸</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+30"/>
         <source>add item in chart</source>
         <translation>添加图元到绘图</translation>
     </message>
@@ -7917,6 +7945,11 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location line="+2"/>
+        <source>package</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>object</source>
         <translation>对象</translation>
     </message>
@@ -7924,6 +7957,11 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+2"/>
         <source>dataframe</source>
         <translation>数据框</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>series</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
@@ -7944,34 +7982,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+19"/>
         <source>rename data</source>
         <translation>重命名数据</translation>
-    </message>
-    <message>
-        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+73"/>
-        <location line="+29"/>
-        <source>failed to initialize %1</source>
-        <translation>无法初始化 %1</translation>
-    </message>
-    <message>
-        <location line="-24"/>
-        <source>file &quot;%1&quot; does not exist</source>
-        <translation>文件 &quot;%1&quot; 不存在</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location line="+24"/>
-        <source>cannot get Excel workbook</source>
-        <translation>无法获取 Excel 工作簿</translation>
-    </message>
-    <message>
-        <location line="+514"/>
-        <location line="+23"/>
-        <source>The local computer does not have Excel or WPS installed</source>
-        <translation>当前计算机中没有安装excel或者wps</translation>
-    </message>
-    <message>
-        <location line="-17"/>
-        <source>cannot open Excel</source>
-        <translation>无法打开Excel</translation>
     </message>
     <message>
         <location filename="../../plugins/DataAnalysis/Commands.cpp" line="+25"/>

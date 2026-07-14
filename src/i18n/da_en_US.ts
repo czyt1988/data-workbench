@@ -62,7 +62,7 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+91"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+75"/>
         <source>Initializing core interface...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1228,7 +1228,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+564"/>
+        <location filename="../APP/DAAppController.cpp" line="+548"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1324,7 +1324,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+799"/>
+        <location line="+805"/>
         <source>Rename Column</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1354,7 +1354,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1108"/>
+        <location line="-1114"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1367,7 +1367,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+6"/>
+        <source>Python scripts not initialized, cannot import file: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
         <source>Begin import file: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1433,17 +1438,17 @@ Config</source>
 <context>
     <name>DA::DAAppPluginManager</name>
     <message>
-        <location filename="../APP/DAAppPluginManager.cpp" line="+223"/>
+        <location filename="../APP/DAAppPluginManager.cpp" line="+221"/>
         <source>Python interpreter not initialized, skip Python node discovery</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-151"/>
+        <location line="-149"/>
         <source>Successfully loaded plugin %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+162"/>
+        <location line="+160"/>
         <source>Pyplugins scan completed, found %1 valid Python plugin paths</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1571,12 +1576,17 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+507"/>
+        <location line="+178"/>
+        <source>Loading workflow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+328"/>
         <source>Table style for data &apos;%1&apos; has no matching data, skipped</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-476"/>
+        <location line="-475"/>
         <source>Save data information, including data names and data organization formats</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1617,33 +1627,28 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+19"/>
         <source>Loading data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+229"/>
+        <location line="+226"/>
         <source>Unable to serialize file %1 into a DataFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-226"/>
-        <source>Loading charts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
+        <location line="-209"/>
         <source>Project saved successfully</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-590"/>
-        <location line="+593"/>
+        <location line="-589"/>
+        <location line="+592"/>
         <source>Failed to save project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-603"/>
+        <location line="-602"/>
         <location line="+34"/>
         <source>The current project is busy</source>
         <translation type="unfinished"></translation>
@@ -1654,13 +1659,13 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+187"/>
+        <location line="+186"/>
         <source>Project loaded successfully</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-554"/>
-        <location line="+558"/>
+        <location line="-553"/>
+        <location line="+557"/>
         <source>Failed to load project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1992,7 +1997,7 @@ Config</source>
 <context>
     <name>DA::DAAppUI</name>
     <message>
-        <location filename="../APP/DAAppUI.cpp" line="+73"/>
+        <location filename="../APP/DAAppUI.cpp" line="+81"/>
         <source>Failed to load form config for settings dialog</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2000,13 +2005,29 @@ Config</source>
 <context>
     <name>DA::DAAxObjectExcelWrapper</name>
     <message>
-        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+114"/>
-        <source>cannot initialize OLE, error code: %1</source>
+        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+762"/>
+        <location line="+23"/>
+        <source>The local computer does not have Excel or WPS installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
-        <source>cannot query subobject &apos;Workbooks&apos;</source>
+        <location line="-17"/>
+        <source>cannot open Excel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>cannot get or create sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>failed to write table to sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>failed to save Excel file</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2317,7 +2338,7 @@ Config</source>
 <context>
     <name>DA::DAChartAxisSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartAxisSettingPanel.cpp" line="+192"/>
+        <location filename="../DAGui/ChartSetting/DAChartAxisSettingPanel.cpp" line="+187"/>
         <source>Enable</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3504,7 +3525,7 @@ Config</source>
 <context>
     <name>DA::DACoreInterface</name>
     <message>
-        <location filename="../DAInterface/DACoreInterface.cpp" line="+68"/>
+        <location filename="../DAInterface/DACoreInterface.cpp" line="+69"/>
         <source>Python interpreter is not initialized</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3543,17 +3564,17 @@ Config</source>
 <context>
     <name>DA::DADataManager</name>
     <message>
-        <location filename="../DAData/DADataManager.cpp" line="+56"/>
+        <location filename="../DAData/DADataManager.cpp" line="+60"/>
         <source>data &apos;%1&apos; has been added</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+56"/>
+        <location line="+58"/>
         <source>add datas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+55"/>
         <source>remove datas</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3574,9 +3595,9 @@ Config</source>
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+274"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+267"/>
         <location line="+2"/>
-        <location line="+86"/>
+        <location line="+87"/>
         <location line="+3"/>
         <location line="+97"/>
         <location line="+2"/>
@@ -3584,8 +3605,8 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-188"/>
-        <location line="+89"/>
+        <location line="-189"/>
+        <location line="+90"/>
         <location line="+99"/>
         <source>Properties</source>
         <translation type="unfinished"></translation>
@@ -3594,7 +3615,7 @@ Config</source>
 <context>
     <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+370"/>
+        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+384"/>
         <source>Search...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3602,7 +3623,7 @@ Config</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+230"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+231"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3618,7 +3639,7 @@ Config</source>
     </message>
     <message>
         <location line="+42"/>
-        <location line="+171"/>
+        <location line="+170"/>
         <location line="+35"/>
         <location line="+41"/>
         <location line="+42"/>
@@ -3626,15 +3647,15 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-247"/>
-        <location line="+654"/>
+        <location line="-246"/>
+        <location line="+653"/>
         <location line="+61"/>
         <location line="+48"/>
         <source>Please select a valid cell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-721"/>
+        <location line="-720"/>
         <source>Table has no columns</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3724,7 +3745,7 @@ Config</source>
 <context>
     <name>DA::DADockingAreaInterface</name>
     <message>
-        <location filename="../DAInterface/DADockingAreaInterface.cpp" line="+90"/>
+        <location filename="../DAInterface/DADockingAreaInterface.cpp" line="+108"/>
         <source>dock widget &quot;%1&quot; was closed and hidden</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3772,14 +3793,6 @@ Config</source>
     <message>
         <location line="+20"/>
         <source>plot item</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAFigureWidget</name>
-    <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+845"/>
-        <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3946,6 +3959,14 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DANodeParamSettingPanelWidget</name>
+    <message>
+        <location filename="../DAGui/NodeSetting/DANodeParamSettingPanelWidget.cpp" line="+47"/>
+        <source>No node selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DANodeSettingWidget</name>
     <message>
         <location filename="../DAGui/DANodeSettingWidget.cpp" line="+126"/>
@@ -3979,7 +4000,7 @@ Config</source>
 <context>
     <name>DA::DAPluginManager</name>
     <message>
-        <location filename="../DAPluginSupport/DAPluginManager.cpp" line="+55"/>
+        <location filename="../DAPluginSupport/DAPluginManager.cpp" line="+57"/>
         <source>The file .pluginignore exists, but failed to read due to the following reason: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3989,7 +4010,22 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+65"/>
+        <location line="+67"/>
+        <source>Plugins have already been loaded, skipping duplicate load.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Plugin directory does not exist: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>No plugin files found in: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>plugin directory is: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4004,27 +4040,38 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>cannot load plugin:%1</source>
+        <location line="+95"/>
+        <source>Plugin %1 refused to finalize, skip unload.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+114"/>
+        <location line="+38"/>
         <source>Plugin Manager Info: is loaded=%1, plugin counts=%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-53"/>
+        <location line="-66"/>
         <source>Plugin %1 refused to finalize, unload cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-217"/>
+        <source>Failed to create plugin directory: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+156"/>
+        <source>cannot load plugin: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+70"/>
+        <location line="+27"/>
         <source>Failed to unload plugin library for %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="-22"/>
         <source>Plugin %1 not found for unloading.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4066,7 +4113,7 @@ Config</source>
 <context>
     <name>DA::DAPyDTypeComboBox</name>
     <message>
-        <location filename="../DAPyCommonWidgets/DAPyDTypeComboBox.cpp" line="+26"/>
+        <location filename="../DAPyCommonWidgets/DAPyDTypeComboBox.cpp" line="+27"/>
         <source>float64</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4225,20 +4272,6 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DAPyDataframeColumnsListWidget</name>
-    <message>
-        <location filename="../DAPyCommonWidgets/DAPyDataframeColumnsListWidget.cpp" line="+38"/>
-        <source>Exception in getting selected column: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <location line="+20"/>
-        <source>Exception in getting selected series: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::DAPyWorkFlowEditWidget</name>
     <message>
         <location filename="../DAGui/DAPyWorkFlowEditWidget.cpp" line="+105"/>
@@ -4249,12 +4282,12 @@ Config</source>
 <context>
     <name>DA::DAPyWorkFlowGraphicsView</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowGraphicsView.cpp" line="+228"/>
+        <location filename="../DAGui/DAPyWorkFlowGraphicsView.cpp" line="+225"/>
         <source>cut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+28"/>
         <source>Unrecognized mime formats: %1, paste failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4293,7 +4326,7 @@ Config</source>
 <context>
     <name>DA::DAPyWorkFlowOperateWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowOperateWidget.cpp" line="+150"/>
+        <location filename="../DAGui/DAPyWorkFlowOperateWidget.cpp" line="+148"/>
         <source>Title of new workflow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4315,12 +4348,12 @@ Config</source>
     <message>
         <location line="+144"/>
         <location line="+13"/>
-        <location line="+14"/>
+        <location line="+13"/>
         <source>Missing view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+13"/>
         <location line="+13"/>
         <location line="+15"/>
         <location line="+14"/>
@@ -4771,7 +4804,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1240"/>
+        <location filename="../APP/DAAppController.cpp" line="-1224"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5560,7 +5593,7 @@ Config</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-764"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+78"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7276,12 +7309,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-307"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-314"/>
         <source>%1.%2,size:%3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyWorkFlow/DAPyNodeFactory.cpp" line="+216"/>
+        <location filename="../DAPyWorkFlow/DAPyNodeFactory.cpp" line="+217"/>
         <source>DA Python Node Factory</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7321,7 +7354,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAUtils/DATextReadWriter.cpp" line="+224"/>
+        <location filename="../DAUtils/DATextReadWriter.cpp" line="+225"/>
         <source>No error occurred</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7421,13 +7454,23 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyScripts/DAPyScripts.cpp" line="+20"/>
-        <source>DAPyInterpreter is not initialized</source>
+        <location filename="../DAPyScripts/DAPyScripts.cpp" line="+69"/>
+        <source>Failed to initialize import scripts: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+47"/>
-        <source>Failed to initialize import scripts: %1</source>
+        <location line="+14"/>
+        <source>DAPyScripts is not initialized, getIO() called before initScripts()</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>DAPyScripts is not initialized, getDataFrame() called before initScripts()</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>DAPyScripts is not initialized, getDataProcess() called before initScripts()</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7441,7 +7484,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyScripts/DAPyScriptsDataProcess.cpp" line="+11"/>
+        <location line="+266"/>
+        <source>setnan: rowsIndex size(%1) != colsIndex size(%2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAPyScripts/DAPyScriptsDataProcess.cpp" line="+40"/>
         <source>cannot import da_data_processing module</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7471,7 +7519,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPyModulePandas.cpp" line="+164"/>
+        <location filename="../DAPyBindQt/pandas/DAPyModulePandas.cpp" line="+163"/>
         <source>failed to open file %1 with UTF-8, trying ANSI encoding</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7481,7 +7529,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPluginSupport/DAPluginOption.cpp" line="+98"/>
+        <location filename="../DAPluginSupport/DAPluginOption.cpp" line="+94"/>
         <source>Failed to load %1 (Reason: %2)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7496,27 +7544,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
-        <source>Plugin from %1 implements a DA interface but qobject_cast failed. This may indicate a binary compatibility issue (compiler/mismatch).</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>The library %1 does not appear to be a valid DA plugin. It does not implement the required interface.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>loaded plugin:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
+        <location line="+10"/>
         <source>successfully loaded plugin %1, but failed to initialize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+99"/>
+        <location line="+107"/>
         <source>plugin file name:%1,iid:%2,name:%3,description:%4,version:%5,error string:%6</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7551,7 +7584,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location line="+72"/>
         <location line="+9"/>
         <source>Item Resize</source>
         <translation type="unfinished"></translation>
@@ -7562,22 +7595,22 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+47"/>
         <source>Item Resize Height</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+52"/>
         <source>Item Rotation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGraphicsView/DAGraphicsItemFactory.cpp" line="+69"/>
+        <location filename="../DAGraphicsView/DAGraphicsItemFactory.cpp" line="+74"/>
         <source>Class name %1 not registered to item factory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+10"/>
         <source>Type %1 not registered to item factory</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7713,11 +7746,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+48"/>
-        <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../DAFigure/DAFigureWidgetCommands.cpp" line="+35"/>
         <location line="+8"/>
         <source>create chart</source>
@@ -7734,7 +7762,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+30"/>
         <source>add item in chart</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7795,12 +7823,22 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location line="+2"/>
+        <source>package</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>object</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>dataframe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7821,34 +7859,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+19"/>
         <source>rename data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+73"/>
-        <location line="+29"/>
-        <source>failed to initialize %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-24"/>
-        <source>file &quot;%1&quot; does not exist</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location line="+24"/>
-        <source>cannot get Excel workbook</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+514"/>
-        <location line="+23"/>
-        <source>The local computer does not have Excel or WPS installed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-17"/>
-        <source>cannot open Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

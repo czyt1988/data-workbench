@@ -26,6 +26,7 @@ DADataManagerInterface::DADataManagerInterface(DACoreInterface* c, QObject* par)
     connect(d_ptr->mDataMgr, &DADataManager::dataBeginRemove, this, &DADataManagerInterface::dataBeginRemove);
     connect(d_ptr->mDataMgr, &DADataManager::dataRemoved, this, &DADataManagerInterface::dataRemoved);
     connect(d_ptr->mDataMgr, &DADataManager::dataChanged, this, &DADataManagerInterface::dataChanged);
+    connect(d_ptr->mDataMgr, &DADataManager::datasBatchAdded, this, &DADataManagerInterface::datasBatchAdded);
 }
 
 DADataManagerInterface::~DADataManagerInterface()
@@ -59,6 +60,21 @@ void DADataManagerInterface::addData(DAData& d)
 void DADataManagerInterface::addData_(DAData& d)
 {
     dataManager()->addData_(d);
+}
+
+void DADataManagerInterface::setSuppressSignals(bool on)
+{
+    dataManager()->setSuppressSignals(on);
+}
+
+bool DADataManagerInterface::isSuppressSignals() const
+{
+    return dataManager()->isSuppressSignals();
+}
+
+void DADataManagerInterface::emitDatasBatchAdded()
+{
+    dataManager()->emitDatasBatchAdded();
 }
 
 /**
