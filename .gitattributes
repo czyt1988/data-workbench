@@ -1,1 +1,5 @@
 kitty-specs/**/status.events.jsonl merge=spec-kitty-event-log
+
+# Qt translation files: lupdate always writes LF, force LF to avoid
+# false git modifications when core.autocrlf=true
+*.ts text eol=lf
