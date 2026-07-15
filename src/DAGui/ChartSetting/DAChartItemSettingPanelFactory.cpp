@@ -9,6 +9,7 @@
 #include "DAChartMarkerSettingPanel.h"
 #include "DAChartSpectroCurveSettingPanel.h"
 #include "DAChartHistogramSettingPanel.h"
+#include "DAChartGraphicSettingPanel.h"
 #include "DAChartLegendSettingPanel.h"
 #include "DAChartDataProbeMarkerSettingPanel.h"
 #include "DADataProbeMarker.h"
@@ -127,6 +128,11 @@ void DAChartItemSettingPanelFactory::registerAllKnownPanels()
     // QwtPlotHistogram → 直方图设置面板
     registerPanel(QwtPlotItem::Rtti_PlotHistogram, []() {
         return new DAChartHistogramSettingPanel();
+    });
+
+    // QwtPlotGraphicItem → 矢量图形设置面板
+    registerPanel(QwtPlotItem::Rtti_PlotGraphic, []() {
+        return new DAChartGraphicSettingPanel();
     });
 
     // QwtPlotLegendItem → 图例设置面板
