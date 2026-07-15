@@ -51,6 +51,8 @@ Q_SIGNALS:
     void requestItemChangeColor(QwtPlotItem* item, QStandardItem* treeItem);
     void itemCliecked(const DAFigureElementSelection& ele);
     void itemDbCliecked(const DAFigureElementSelection& ele);
+protected:
+    void dropEvent(QDropEvent* event) override;
 private Q_SLOTS:
     void onClicked(const QModelIndex& index);
     void onDoubleClicked(const QModelIndex& index);

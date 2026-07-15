@@ -21,6 +21,9 @@
         <file>icon/chart-textlabel.svg</file>
         <file>icon/chart-zone.svg</file>
         <file>icon/chart-vectorfield.svg</file>
+        <file>icon/chart-arrowmarker.svg</file>
+        <file>icon/chart-dataprobe.svg</file>
+        <file>icon/chart-boxchart.svg</file>
         <file>icon/chartitem-invisible.svg</file>
         <file>icon/chartitem-visible.svg</file>
         <file>icon/axis-xbottom.svg</file>

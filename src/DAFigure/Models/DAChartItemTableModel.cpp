@@ -6,6 +6,7 @@
 #include "qwt_plot_multi_barchart.h"
 #include "qwt_plot_spectrocurve.h"
 #include "qwt_plot_tradingcurve.h"
+#include "qwt_plot_boxchart.h"
 #include "qwt_text.h"
 #include "DAChartUtil.h"
 namespace DA
@@ -473,6 +474,27 @@ double DAChartItemTableModel::getItemData(int row, int col, QwtPlotItem* item) c
         }
         break;
     }
+    case QwtPlotItem::Rtti_PlotBoxChart: {
+        const QwtPlotBoxChart* p = static_cast< const QwtPlotBoxChart* >(item);
+        if ((size_t)row < p->dataSize()) {
+            const QwtBoxSample& s = p->sample(row);
+            switch (col) {
+            case 0:
+                return s.position;
+            case 1:
+                return s.whiskerLower;
+            case 2:
+                return s.q1;
+            case 3:
+                return s.median;
+            case 4:
+                return s.q3;
+            case 5:
+                return s.whiskerUpper;
+            }
+        }
+        break;
+    }
     default:
         break;
     }
@@ -611,6 +633,25 @@ QString DAChartItemTableModel::getItemDimDescribe(QwtPlotItem* item, int index) 
         }
         break;
     }
+    case QwtPlotItem::Rtti_PlotBoxChart: {
+        switch (index) {
+        case 0:
+            return tr("position");  // cn:位置
+        case 1:
+            return tr("whisker-lower");  // cn:下须
+        case 2:
+            return tr("Q1");  // cn:下四分位
+        case 3:
+            return tr("median");  // cn:中位数
+        case 4:
+            return tr("Q3");  // cn:上四分位
+        case 5:
+            return tr("whisker-upper");  // cn:上须
+        default:
+            return QString();
+        }
+        break;
+    }
     default:
         break;
     }
@@ -694,6 +735,35 @@ void DAChartItemTableModel::setSeriesOHLCsampleValue(QwtOHLCSample& p, int col, 
         break;
     case 4:
         p.close = val;
+        break;
+    default:
+        break;
+    }
+}
+
+void DAChartItemTableModel::setSeriesBoxSampleValue(QwtBoxSample& p, int col, double val)
+{
+    switch (col) {
+    case 0:
+        p.position = val;
+        break;
+    case 1:
+        p.whiskerLower = val;
+        p.lower        = val;
+        break;
+    case 2:
+        p.q1 = val;
+        break;
+    case 3:
+        p.median = val;
+        p.center = val;
+        break;
+    case 4:
+        p.q3 = val;
+        break;
+    case 5:
+        p.whiskerUpper = val;
+        p.upper        = val;
         break;
     default:
         break;
@@ -797,6 +867,19 @@ bool DAChartItemTableModel::setPlotItemData(int row, int col, QwtPlotItem* item,
         }
         break;
     }
+    case QwtPlotItem::Rtti_PlotBoxChart: {
+        QwtPlotBoxChart* p = static_cast< QwtPlotBoxChart* >(item);
+        if (col > 5)
+            return false;
+        QVector< QwtBoxSample > samples;
+        DAChartUtil::getSeriesData< QwtBoxSample >(samples, p);
+        if (row < samples.size()) {
+            setSeriesBoxSampleValue(samples[ row ], col, d);
+            p->setSamples(samples);
+            return true;
+        }
+        break;
+    }
     case QwtPlotItem::Rtti_PlotMultiBarChart: {
         QwtPlotMultiBarChart* p = static_cast< QwtPlotMultiBarChart* >(item);
         QVector< QwtSetSample > samples;
@@ -872,6 +955,8 @@ int DAChartItemTableModel::getItemColumnCount(QwtPlotItem* item)
         return 3;
     case QwtPlotItem::Rtti_PlotTradingCurve:
         return 5;
+    case QwtPlotItem::Rtti_PlotBoxChart:
+        return 6;
     case QwtPlotItem::Rtti_PlotMultiBarChart: {
         const QwtPlotMultiBarChart* p = static_cast< const QwtPlotMultiBarChart* >(item);
         return calcPlotMultiBarChartDim(p);

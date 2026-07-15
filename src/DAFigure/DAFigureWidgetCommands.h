@@ -120,5 +120,31 @@ public:
 	bool mSkipFirst;
 	bool mNeedDelete { false };
 };
+
+/**
+ * @brief 把图元从一个绘图移动到另一个绘图
+ *
+ * redo: item->attach(targetChart)
+ * undo: item->attach(sourceChart)
+ * QwtPlotItem::attach会自动先detach旧的plot再attach新的plot，
+ * 树模型通过QwtPlot::itemAttached信号自动更新。
+ */
+class DAFIGURE_API DAFigureWidgetCommandMoveItem : public DAFigureWidgetCommandBase
+{
+public:
+	DAFigureWidgetCommandMoveItem(DAFigureWidget* fig,
+                                 DAChartWidget* sourceChart,
+                                 DAChartWidget* targetChart,
+                                 QwtPlotItem* item,
+                                 QUndoCommand* par = nullptr);
+	~DAFigureWidgetCommandMoveItem();
+	void redo() override;
+	void undo() override;
+
+public:
+	QPointer< DAChartWidget > mSourceChart;
+	QPointer< DAChartWidget > mTargetChart;
+	QwtPlotItem* mItem;
+};
 }
 #endif  // DAFIGUREWIDGETCOMMANDS_H

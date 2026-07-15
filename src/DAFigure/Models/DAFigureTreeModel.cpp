@@ -477,6 +477,46 @@ DAFigureTreeModel::NodeType DAFigureTreeModel::itemType(QStandardItem* item) con
     return static_cast< NodeType >(v.toInt());
 }
 
+Qt::ItemFlags DAFigureTreeModel::flags(const QModelIndex& index) const
+{
+    Qt::ItemFlags f = QStandardItemModel::flags(index);
+    if (!index.isValid()) {
+        return f;
+    }
+    // 节点类型信息存储在column 0
+    QModelIndex col0 = index.sibling(index.row(), 0);
+    QStandardItem* item = itemFromIndex(col0);
+    if (!item) {
+        return f;
+    }
+    int nodeType = item->data(RoleNodeType).toInt();
+    // 只有PlotItem的第0列可拖出
+    if (index.column() == 0 && nodeType == NodeTypePlotItem) {
+        f |= Qt::ItemIsDragEnabled;
+    }
+    // 以下节点类型可接收拖放
+    switch (nodeType) {
+    case NodeTypePlotFolder:
+    case NodeTypePlot:
+    case NodeTypeItemsFolder:
+    case NodeTypePlotItem:
+        f |= Qt::ItemIsDropEnabled;
+        break;
+    default:
+        break;
+    }
+    return f;
+}
+
+QModelIndex DAFigureTreeModel::indexFromPlotItem(QwtPlotItem* item) const
+{
+    QStandardItem* stdItem = m_plotItemItems.value(item, nullptr);
+    if (!stdItem) {
+        return QModelIndex();
+    }
+    return indexFromItem(stdItem);
+}
+
 QStandardItem* DAFigureTreeModel::findPlotItem(QwtPlot* plot) const
 {
     return m_plotItems.value(plot, nullptr);

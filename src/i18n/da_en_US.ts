@@ -2943,7 +2943,7 @@ Config</source>
 <context>
     <name>DA::DAChartItemTableModel</name>
     <message>
-        <location filename="../DAFigure/Models/DAChartItemTableModel.cpp" line="+497"/>
+        <location filename="../DAFigure/Models/DAChartItemTableModel.cpp" line="+519"/>
         <location line="+29"/>
         <location line="+30"/>
         <location line="+11"/>
@@ -3018,6 +3018,36 @@ Config</source>
         <location line="-54"/>
         <location line="+56"/>
         <source>close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>whisker-lower</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Q1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>median</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Q3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>whisker-upper</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7630,7 +7660,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAChartUtil.cpp" line="+41"/>
+        <location filename="../DAFigure/DAChartUtil.cpp" line="+44"/>
         <source>unknown chart</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7741,6 +7771,21 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+3"/>
+        <source>arrow-%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>box-%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>probe-%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+4"/>
         <source>unknown-%1</source>
         <translation type="unfinished"></translation>
@@ -7764,6 +7809,11 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+30"/>
         <source>add item in chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+44"/>
+        <source>move plot item to another chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

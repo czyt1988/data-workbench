@@ -19,6 +19,7 @@
 #include "qwt_plot_zoneitem.h"
 #include "qwt_plot_vectorfield.h"
 #include "qwt_plot_arrowmarker.h"
+#include "qwt_plot_boxchart.h"
 #include "DADataProbeMarker.h"
 namespace DA
 {
@@ -47,6 +48,7 @@ static QHash< int, DAChartPlotItemFactory::FpItemCreate > initDAChartPlotItemFac
     res[ QwtPlotItem::Rtti_PlotZone ]          = []() -> QwtPlotItem* { return new QwtPlotZoneItem(); };
     res[ QwtPlotItem::Rtti_PlotVectorField ]   = []() -> QwtPlotItem* { return new QwtPlotVectorField(); };
     res[ QwtPlotItem::Rtti_PlotArrowMarker ]   = []() -> QwtPlotItem* { return new QwtPlotArrowMarker(); };
+    res[ QwtPlotItem::Rtti_PlotBoxChart ]      = []() -> QwtPlotItem* { return new QwtPlotBoxChart(); };
     res[ DADataProbeMarker::Rtti_DataProbeMarker ] = []() -> QwtPlotItem* { return new DADataProbeMarker(DADataProbeMarker::VerticalProbe); };
     return res;
 }

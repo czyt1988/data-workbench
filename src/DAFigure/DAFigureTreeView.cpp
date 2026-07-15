@@ -1,9 +1,14 @@
 ﻿#include "DAFigureTreeView.h"
 #include <QPointer>
 #include <QMouseEvent>
+#include <QDropEvent>
 #include "Models/DAFigureTreeModel.h"
 #include "DAFigureWidget.h"
+#include "DAFigureWidgetCommands.h"
+#include "DAChartWidget.h"
 #include "qwt_figure.h"
+#include "qwt_plot.h"
+#include "qwt_plot_item.h"
 namespace DA
 {
 //==============================================================
@@ -36,6 +41,11 @@ DAFigureTreeView::DAFigureTreeView(QWidget* parent) : QTreeView(parent), DA_PIMP
 {
     setSelectionMode(QAbstractItemView::SingleSelection);
     setSelectionBehavior(QAbstractItemView::SelectRows);
+    // 启用拖拽：PlotItem可在不同绘图节点间拖动
+    setDragEnabled(true);
+    setAcceptDrops(true);
+    setDragDropMode(QAbstractItemView::InternalMove);
+    setDefaultDropAction(Qt::MoveAction);
     // 连接点击/双击
     connect(this, &QTreeView::clicked, this, &DAFigureTreeView::onClicked);
     connect(this, &QTreeView::doubleClicked, this, &DAFigureTreeView::onDoubleClicked);
@@ -273,6 +283,89 @@ void DAFigureTreeView::handleClicked(const QModelIndex& index, bool doubleClicke
     }
     default:
         break;
+    }
+}
+
+void DAFigureTreeView::dropEvent(QDropEvent* event)
+{
+    if (event->source() != this) {
+        QTreeView::dropEvent(event);
+        return;
+    }
+
+    DAFigureTreeModel* model = getFigureTreeModel();
+    DAFigureWidget* fig      = getFigureWidget();
+    if (!model || !fig) {
+        event->ignore();
+        return;
+    }
+
+    // 获取拖拽源——选中的PlotItem（column 0）
+    QModelIndexList selected = selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        event->ignore();
+        return;
+    }
+    QModelIndex sourceCol0 = model->index(selected.first().row(), 0, selected.first().parent());
+    if (model->itemType(model->itemFromIndex(sourceCol0)) != DAFigureTreeModel::NodeTypePlotItem) {
+        event->ignore();
+        return;
+    }
+    QwtPlotItem* plotItem = model->plotItemFromIndex(sourceCol0);
+    QwtPlot* sourcePlot   = model->plotFromIndex(sourceCol0);
+    if (!plotItem || !sourcePlot) {
+        event->ignore();
+        return;
+    }
+
+    // 获取放置目标
+    QModelIndex dropIndex = indexAt(event->pos());
+    if (!dropIndex.isValid()) {
+        event->ignore();
+        return;
+    }
+    QModelIndex targetCol0  = model->index(dropIndex.row(), 0, dropIndex.parent());
+    QStandardItem* targetItem = model->itemFromIndex(targetCol0);
+    if (!targetItem) {
+        event->ignore();
+        return;
+    }
+    int targetType = model->itemType(targetItem);
+    QwtPlot* targetPlot = nullptr;
+    switch (targetType) {
+    case DAFigureTreeModel::NodeTypePlotFolder:
+    case DAFigureTreeModel::NodeTypePlot:
+    case DAFigureTreeModel::NodeTypeItemsFolder:
+    case DAFigureTreeModel::NodeTypePlotItem:
+        targetPlot = model->plotFromItem(targetItem);
+        break;
+    default:
+        break;
+    }
+    if (!targetPlot || targetPlot == sourcePlot) {
+        event->ignore();
+        return;
+    }
+
+    // 执行移动（通过undo命令）
+    DAChartWidget* sourceChart = qobject_cast< DAChartWidget* >(sourcePlot);
+    DAChartWidget* targetChart = qobject_cast< DAChartWidget* >(targetPlot);
+    if (!sourceChart || !targetChart) {
+        event->ignore();
+        return;
+    }
+
+    fig->push(new DAFigureWidgetCommandMoveItem(fig, sourceChart, targetChart, plotItem));
+
+    // 不调用基类的dropEvent，防止QStandardItemModel移动行
+    // 树模型已通过QwtPlot::itemAttached信号自动更新
+    // 忽略事件使QDrag::exec返回IgnoreAction，阻止startDrag中的clearOrRemove
+    event->ignore();
+
+    // 选中移动后的条目
+    QModelIndex newIdx = model->indexFromPlotItem(plotItem);
+    if (newIdx.isValid()) {
+        setCurrentIndex(newIdx);
     }
 }
 

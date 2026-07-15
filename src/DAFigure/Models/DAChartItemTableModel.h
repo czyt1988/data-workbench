@@ -58,6 +58,7 @@ public:
     static void setSeriesIntervalValue(QwtIntervalSample& p, int col, double val);
     static void setSeriesSetsampleValue(QwtSetSample& p, int col, double val);
     static void setSeriesOHLCsampleValue(QwtOHLCSample& p, int col, double val);
+    static void setSeriesBoxSampleValue(QwtBoxSample& p, int col, double val);
     //
 public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const;

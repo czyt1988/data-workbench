@@ -54,6 +54,12 @@ public:
     // item的类型
     NodeType itemType(QStandardItem* item) const;
 
+    // 返回指定plotItem对应的QModelIndex（column 0）
+    QModelIndex indexFromPlotItem(QwtPlotItem* item) const;
+
+    // 拖拽支持：PlotItem可拖出，Plot/ItemsFolder/PlotItem/PlotFolder可接收
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
+
     template< typename T >
     T* pointerFromItem(const QStandardItem* item, CustomRoles role) const
     {

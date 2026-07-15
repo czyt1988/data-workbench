@@ -43,6 +43,7 @@ class QwtPlotTextLabel;
 class QwtPlotZoneItem;
 class QwtPlotVectorField;
 class QwtPlotArrowMarker;
+class QwtPlotBoxChart;
 class QwtPlotShapeItem;
 namespace DA
 {
@@ -291,6 +292,9 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotIntervalCurve* item
 // QwtPlotArrowMarker的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotArrowMarker* item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotArrowMarker* item);
+// QwtPlotBoxChart的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotBoxChart* item);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotBoxChart* item);
 // QwtPlotShapeItem的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotShapeItem* item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotShapeItem* item);
@@ -323,6 +327,9 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtIntervalSample& item);
 // QwtInterval的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtInterval& item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtInterval& item);
+// QwtBoxSample的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtBoxSample& item);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtBoxSample& item);
 
 
 // -----------------------------

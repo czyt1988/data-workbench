@@ -33,6 +33,7 @@
 #include "qwt_plot_zoneitem.h"
 #include "qwt_plot_vectorfield.h"
 #include "qwt_plot_arrowmarker.h"
+#include "qwt_plot_boxchart.h"
 #include "qwt_plot_shapeitem.h"
 // DA
 #include "DADataProbeMarker.h"
@@ -334,6 +335,7 @@ DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotBarChart, QwtPlotBarCha
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotIntervalCurve, QwtPlotIntervalCurve)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotShape, QwtPlotShapeItem)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotArrowMarker, QwtPlotArrowMarker)
+DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotBoxChart, QwtPlotBoxChart)
 QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > > initChartItemSerialize()
 {
     QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > > res;
@@ -355,6 +357,8 @@ QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize
         INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotShape, QwtPlotShapeItem);
     res[ QwtPlotItem::Rtti_PlotArrowMarker ] =
         INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotArrowMarker, QwtPlotArrowMarker);
+    res[ QwtPlotItem::Rtti_PlotBoxChart ] =
+        INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotBoxChart, QwtPlotBoxChart);
     return res;
 }
 
@@ -1139,6 +1143,110 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotArrowMarker* item)
 }
 
 //============================================
+// QwtPlotBoxChart
+//============================================
+
+QDataStream& operator<<(QDataStream& out, const QwtPlotBoxChart* item)
+{
+    out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
+    out << (const QwtPlotItem*)item;
+    out << static_cast< int >(item->boxStyle()) << static_cast< int >(item->whiskerStyle())
+        << static_cast< int >(item->orientation()) << item->boxExtent() << item->minBoxWidth()
+        << item->maxBoxWidth() << item->pen() << item->brush() << item->medianPen()
+        << item->isMedianVisible() << item->isMeanVisible() << item->outlierJitter();
+    // save samples
+    QVector< QwtBoxSample > samples;
+    DA::DAChartUtil::getSeriesData< QwtBoxSample >(samples, item);
+    out << DA::gc_dachart_magic_mark2 << samples << DA::gc_dachart_magic_mark3;
+    // save outlier symbol
+    const QwtSymbol* os = item->outlierSymbol();
+    bool hasOutlierSymbol = (os != nullptr);
+    out << hasOutlierSymbol;
+    if (hasOutlierSymbol) {
+        out << os;
+    }
+    // save mean symbol
+    const QwtSymbol* ms = item->meanSymbol();
+    bool hasMeanSymbol = (ms != nullptr);
+    out << hasMeanSymbol;
+    if (hasMeanSymbol) {
+        out << ms;
+    }
+    return out;
+}
+
+QDataStream& operator>>(QDataStream& in, QwtPlotBoxChart* item)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (DA::gc_dachart_magic_mark != magic) {
+        throw DA::DABadSerializeExpection();
+        return in;
+    }
+    in >> (QwtPlotItem*)item;
+    int boxStyle;
+    int whiskerStyle;
+    int orientation;
+    double boxExtent;
+    double minBoxWidth;
+    double maxBoxWidth;
+    QPen pen;
+    QBrush brush;
+    QPen medianPen;
+    bool medianVisible;
+    bool meanVisible;
+    double outlierJitter;
+    in >> boxStyle >> whiskerStyle >> orientation >> boxExtent >> minBoxWidth >> maxBoxWidth
+        >> pen >> brush >> medianPen >> medianVisible >> meanVisible >> outlierJitter;
+    item->setBoxStyle(static_cast< QwtPlotBoxChart::BoxStyle >(boxStyle));
+    item->setWhiskerStyle(static_cast< QwtPlotBoxChart::WhiskerStyle >(whiskerStyle));
+    item->setOrientation(static_cast< Qt::Orientation >(orientation));
+    item->setBoxExtent(boxExtent);
+    item->setMinBoxWidth(minBoxWidth);
+    item->setMaxBoxWidth(maxBoxWidth);
+    item->setPen(pen);
+    item->setBrush(brush);
+    item->setMedianPen(medianPen);
+    item->setMedianVisible(medianVisible);
+    item->setMeanVisible(meanVisible);
+    item->setOutlierJitter(outlierJitter);
+    // load samples
+    std::uint32_t tmp0, tmp1;
+    in >> tmp0;
+    if (DA::gc_dachart_magic_mark2 != tmp0) {
+        throw DA::DABadSerializeExpection();
+        return in;
+    }
+    QVector< QwtBoxSample > samples;
+    in >> samples >> tmp1;
+    if (DA::gc_dachart_magic_mark3 != tmp1) {
+        throw DA::DABadSerializeExpection();
+        return in;
+    }
+    item->setSamples(samples);
+    // load outlier symbol
+    bool hasOutlierSymbol;
+    in >> hasOutlierSymbol;
+    if (hasOutlierSymbol) {
+        QwtSymbol* sym = nullptr;
+        in >> sym;
+        item->setOutlierSymbol(sym);
+        delete sym;
+    }
+    // load mean symbol
+    bool hasMeanSymbol;
+    in >> hasMeanSymbol;
+    if (hasMeanSymbol) {
+        QwtSymbol* sym = nullptr;
+        in >> sym;
+        item->setMeanSymbol(sym);
+        delete sym;
+    }
+    return in;
+}
+
+//============================================
 // QwtPlotShapeItem
 //============================================
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotShapeItem* item)
@@ -1832,5 +1940,26 @@ QDataStream& operator>>(QDataStream& in, QwtInterval& item)
     item.setMinValue(min);
     item.setMaxValue(max);
     item.setBorderFlags(static_cast< QwtInterval::BorderFlags >(flag));
+    return in;
+}
+
+//----------------------------------------------------
+// QwtBoxSample
+//----------------------------------------------------
+
+QDataStream& operator<<(QDataStream& out, const QwtBoxSample& item)
+{
+    out << item.position << item.whiskerLower << item.q1 << item.median << item.q3 << item.whiskerUpper
+        << item.outlierCount;
+    return out;
+}
+
+QDataStream& operator>>(QDataStream& in, QwtBoxSample& item)
+{
+    in >> item.position >> item.whiskerLower >> item.q1 >> item.median >> item.q3 >> item.whiskerUpper
+        >> item.outlierCount;
+    item.lower   = item.whiskerLower;
+    item.upper   = item.whiskerUpper;
+    item.center  = item.median;
     return in;
 }

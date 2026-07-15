@@ -62,6 +62,7 @@ DA_ENUM_STRING_INSENSITIVE_DEFINE(
     { QwtPlotItem::Rtti_PlotZone, "PlotZone" },
     { QwtPlotItem::Rtti_PlotVectorField, "PlotVectorField" },
     { QwtPlotItem::Rtti_PlotArrowMarker, "PlotArrowMarker" },
+    { QwtPlotItem::Rtti_PlotBoxChart, "PlotBoxChart" },
     { QwtPlotItem::Rtti_PlotUserItem, "PlotUserItem" }
 );
 // ================================== QWT.QwtPlot::LegendPosition ==================================

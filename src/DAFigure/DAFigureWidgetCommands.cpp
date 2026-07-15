@@ -1,6 +1,7 @@
 #include "DAFigureWidgetCommands.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
+#include "DAChartUtil.h"
 namespace DA
 {
 
@@ -185,6 +186,48 @@ void DAFigureWidgetCommandAttachItem::undo()
     }
     mItem->detach();
     mNeedDelete = true;
+}
+
+//----------------------------------------------------
+// DAFigureWidgetCommandMoveItem
+//----------------------------------------------------
+DAFigureWidgetCommandMoveItem::DAFigureWidgetCommandMoveItem(DAFigureWidget* fig,
+                                                             DAChartWidget* sourceChart,
+                                                             DAChartWidget* targetChart,
+                                                             QwtPlotItem* item,
+                                                             QUndoCommand* par)
+    : DAFigureWidgetCommandBase(fig, par), mSourceChart(sourceChart), mTargetChart(targetChart), mItem(item)
+{
+    setText(QObject::tr("move plot item to another chart"));  // cn:移动图元到另一个绘图
+}
+
+DAFigureWidgetCommandMoveItem::~DAFigureWidgetCommandMoveItem()
+{
+    // item始终attach在某个plot上，无需在此管理生命周期
+}
+
+void DAFigureWidgetCommandMoveItem::redo()
+{
+    if (!mTargetChart || !mItem) {
+        return;
+    }
+    mItem->attach(mTargetChart);
+    if (mSourceChart) {
+        DAChartUtil::replot(mSourceChart);
+    }
+    DAChartUtil::replot(mTargetChart);
+}
+
+void DAFigureWidgetCommandMoveItem::undo()
+{
+    if (!mSourceChart || !mItem) {
+        return;
+    }
+    mItem->attach(mSourceChart);
+    if (mTargetChart) {
+        DAChartUtil::replot(mTargetChart);
+    }
+    DAChartUtil::replot(mSourceChart);
 }
 
 }

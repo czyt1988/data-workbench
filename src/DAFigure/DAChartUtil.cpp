@@ -27,6 +27,9 @@
 #include "qwt_plot_legenditem.h"
 #include "qwt_plot_zoneitem.h"
 #include "qwt_plot_vectorfield.h"
+#include "qwt_plot_arrowmarker.h"
+#include "qwt_plot_boxchart.h"
+#include "DADataProbeMarker.h"
 #include "qwt_math.h"
 namespace DA
 {
@@ -123,6 +126,15 @@ QString DAChartUtil::plotItemName(const QwtPlotItem* item)
     //! For QwtPlotVectorField
     case QwtPlotItem::Rtti_PlotVectorField:                          // quiver chart represents a vector field
         return (isEmpty ? QObject::tr("quiver-%1").arg(str) : str);  // cn:流场图-%1
+    //! For QwtPlotArrowMarker
+    case QwtPlotItem::Rtti_PlotArrowMarker:                          // arrow marker
+        return (isEmpty ? QObject::tr("arrow-%1").arg(str) : str);   // cn:箭头-%1
+    //! For QwtPlotBoxChart
+    case QwtPlotItem::Rtti_PlotBoxChart:                             // box chart (box-and-whisker plot)
+        return (isEmpty ? QObject::tr("box-%1").arg(str) : str);     // cn:箱线图-%1
+    //! For DADataProbeMarker
+    case DADataProbeMarker::Rtti_DataProbeMarker:                    // data probe marker
+        return (isEmpty ? QObject::tr("probe-%1").arg(str) : str);   // cn:探针-%1
     default:
         break;
     }
@@ -226,6 +238,21 @@ QIcon DAChartUtil::plotItemIcon(const QwtPlotItem* item)
     //! For QwtPlotVectorField
     case QwtPlotItem::Rtti_PlotVectorField: {
         static QIcon s_icon(":/DAFigure/icon/chart-vectorfield.svg");
+        return s_icon;
+    }
+    //! For QwtPlotArrowMarker
+    case QwtPlotItem::Rtti_PlotArrowMarker: {
+        static QIcon s_icon(":/DAFigure/icon/chart-arrowmarker.svg");
+        return s_icon;
+    }
+    //! For QwtPlotBoxChart
+    case QwtPlotItem::Rtti_PlotBoxChart: {
+        static QIcon s_icon(":/DAFigure/icon/chart-boxchart.svg");
+        return s_icon;
+    }
+    //! For DADataProbeMarker
+    case DADataProbeMarker::Rtti_DataProbeMarker: {
+        static QIcon s_icon(":/DAFigure/icon/chart-dataprobe.svg");
         return s_icon;
     }
     default:
@@ -745,6 +772,13 @@ int DAChartUtil::getItemDataSize(const QwtPlotItem* item)
     }
     case QwtPlotItem::Rtti_PlotMultiBarChart: {
         const QwtPlotMultiBarChart* p = static_cast< const QwtPlotMultiBarChart* >(item);
+        if (p) {
+            return static_cast< int >(p->data()->size());
+        }
+        break;
+    }
+    case QwtPlotItem::Rtti_PlotBoxChart: {
+        const QwtPlotBoxChart* p = static_cast< const QwtPlotBoxChart* >(item);
         if (p) {
             return static_cast< int >(p->data()->size());
         }
@@ -1434,6 +1468,7 @@ bool DAChartUtil::isPlotGraphicsItem(QwtPlotItem* item)
     case QwtPlotItem::Rtti_PlotTradingCurve:
     case QwtPlotItem::Rtti_PlotBarChart:
     case QwtPlotItem::Rtti_PlotMultiBarChart:
+    case QwtPlotItem::Rtti_PlotBoxChart:
         return true;
     default:
         break;
@@ -1502,6 +1537,34 @@ bool DAChartUtil::setPlotItemColor(QwtPlotItem* item, const QColor& color)
             QPen pen = marker->linePen();
             pen.setColor(color);
             marker->setLinePen(pen);
+            return true;
+        }
+        break;
+    //! For DADataProbeMarker
+    case DADataProbeMarker::Rtti_DataProbeMarker:
+        if (DADataProbeMarker* probe = static_cast< DADataProbeMarker* >(item)) {
+            probe->setProbeColor(color);
+            return true;
+        }
+        break;
+    //! For QwtPlotArrowMarker
+    case QwtPlotItem::Rtti_PlotArrowMarker:
+        if (QwtPlotArrowMarker* arrow = static_cast< QwtPlotArrowMarker* >(item)) {
+            QPen pen = arrow->linePen();
+            pen.setColor(color);
+            arrow->setLinePen(pen);
+            return true;
+        }
+        break;
+    //! For QwtPlotBoxChart
+    case QwtPlotItem::Rtti_PlotBoxChart:
+        if (QwtPlotBoxChart* box = static_cast< QwtPlotBoxChart* >(item)) {
+            QPen pen = box->pen();
+            pen.setColor(color);
+            box->setPen(pen);
+            QBrush brush = box->brush();
+            brush.setColor(color);
+            box->setBrush(brush);
             return true;
         }
         break;
@@ -1606,6 +1669,21 @@ QColor DAChartUtil::getPlotItemColor(const QwtPlotItem* item)
         const QwtPlotVectorField* li = static_cast< const QwtPlotVectorField* >(item);
         color                        = li->pen().color();
     } break;
+    //! For QwtPlotArrowMarker
+    case QwtPlotItem::Rtti_PlotArrowMarker: {  // ArrowMarker 为linePen颜色
+        const QwtPlotArrowMarker* li = static_cast< const QwtPlotArrowMarker* >(item);
+        color                        = li->linePen().color();
+    } break;
+    //! For QwtPlotBoxChart
+    case QwtPlotItem::Rtti_PlotBoxChart: {  // BoxChart 为pen颜色
+        const QwtPlotBoxChart* li = static_cast< const QwtPlotBoxChart* >(item);
+        color                     = li->pen().color();
+    } break;
+    //! For DADataProbeMarker
+    case DADataProbeMarker::Rtti_DataProbeMarker: {  // DataProbeMarker 为probeColor颜色
+        const DADataProbeMarker* li = static_cast< const DADataProbeMarker* >(item);
+        color                       = li->probeColor();
+    } break;
     default:
         break;
     }
@@ -1699,6 +1777,21 @@ QBrush DAChartUtil::getPlotItemBrush(const QwtPlotItem* item)
         const QwtPlotVectorField* li = static_cast< const QwtPlotVectorField* >(item);
         brush                        = QBrush(li->pen().color(), Qt::SolidPattern);
     } break;
+    //! For QwtPlotArrowMarker
+    case QwtPlotItem::Rtti_PlotArrowMarker: {  // ArrowMarker 为linePen颜色
+        const QwtPlotArrowMarker* li = static_cast< const QwtPlotArrowMarker* >(item);
+        brush                        = QBrush(li->linePen().color(), Qt::SolidPattern);
+    } break;
+    //! For QwtPlotBoxChart
+    case QwtPlotItem::Rtti_PlotBoxChart: {  // BoxChart 为brush颜色
+        const QwtPlotBoxChart* li = static_cast< const QwtPlotBoxChart* >(item);
+        brush                     = li->brush();
+    } break;
+    //! For DADataProbeMarker
+    case DADataProbeMarker::Rtti_DataProbeMarker: {  // DataProbeMarker 为probeColor颜色
+        const DADataProbeMarker* li = static_cast< const DADataProbeMarker* >(item);
+        brush                       = QBrush(li->probeColor(), Qt::SolidPattern);
+    } break;
     default:
         break;
     }
@@ -1740,6 +1833,7 @@ bool DAChartUtil::checkIsPlotChartItem(const QwtPlotItem* item)
     case QwtPlotItem::Rtti_PlotSpectrogram:
     case QwtPlotItem::Rtti_PlotTradingCurve:
     case QwtPlotItem::Rtti_PlotMultiBarChart:
+    case QwtPlotItem::Rtti_PlotBoxChart:
         return true;
     default:
         break;
