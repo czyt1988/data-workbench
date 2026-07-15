@@ -2757,6 +2757,89 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartDataProbeMarkerSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartDataProbeMarkerSettingPanel.cpp" line="+48"/>
+        <source>Basic</source>
+        <translation type="unfinished">基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation type="unfinished">Z值</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Probe Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Label</source>
+        <translation type="unfinished">标签</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Label Visible</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Label Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Top / Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bottom / Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Label Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Plain Text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Rounded Rect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Rectangle</source>
+        <translation type="unfinished">矩形</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Ellipse</source>
+        <translation type="unfinished">椭圆</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Appearance</source>
+        <translation type="unfinished">外观</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Probe Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartErrorBarSettingPanel</name>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartErrorBarSettingPanel.cpp" line="+49"/>
@@ -7913,7 +7996,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>未知-%1</translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAFigureWidgetCommands.cpp" line="+35"/>
+        <location filename="../DAFigure/DAFigureWidgetCommands.cpp" line="+36"/>
         <location line="+8"/>
         <source>create chart</source>
         <translation>创建绘图</translation>

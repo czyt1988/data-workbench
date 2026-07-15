@@ -6,6 +6,8 @@
 #include "DAChartTradingCurveSettingPanel.h"
 #include "DAChartGridSettingPanel.h"
 #include "DAChartLegendSettingPanel.h"
+#include "DAChartDataProbeMarkerSettingPanel.h"
+#include "DADataProbeMarker.h"
 #include "qwt_plot_item.h"
 
 namespace DA
@@ -106,6 +108,11 @@ void DAChartItemSettingPanelFactory::registerAllKnownPanels()
     // QwtPlotLegendItem → 图例设置面板
     registerPanel(QwtPlotItem::Rtti_PlotLegend, []() {
         return new DAChartLegendSettingPanel();
+    });
+
+    // DADataProbeMarker → 数据探针设置面板
+    registerPanel(DADataProbeMarker::Rtti_DataProbeMarker, []() {
+        return new DAChartDataProbeMarkerSettingPanel();
     });
 }
 
