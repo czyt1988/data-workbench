@@ -6,6 +6,7 @@
 #include "DAChartTradingCurveSettingPanel.h"
 #include "DAChartGridSettingPanel.h"
 #include "DAChartScaleSettingPanel.h"
+#include "DAChartMarkerSettingPanel.h"
 #include "DAChartLegendSettingPanel.h"
 #include "DAChartDataProbeMarkerSettingPanel.h"
 #include "DADataProbeMarker.h"
@@ -109,6 +110,11 @@ void DAChartItemSettingPanelFactory::registerAllKnownPanels()
     // QwtPlotScaleItem → 刻度尺设置面板
     registerPanel(QwtPlotItem::Rtti_PlotScale, []() {
         return new DAChartScaleSettingPanel();
+    });
+
+    // QwtPlotMarker → 标记设置面板
+    registerPanel(QwtPlotItem::Rtti_PlotMarker, []() {
+        return new DAChartMarkerSettingPanel();
     });
 
     // QwtPlotLegendItem → 图例设置面板
