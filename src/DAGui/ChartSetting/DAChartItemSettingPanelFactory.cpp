@@ -7,6 +7,7 @@
 #include "DAChartGridSettingPanel.h"
 #include "DAChartScaleSettingPanel.h"
 #include "DAChartMarkerSettingPanel.h"
+#include "DAChartSpectroCurveSettingPanel.h"
 #include "DAChartLegendSettingPanel.h"
 #include "DAChartDataProbeMarkerSettingPanel.h"
 #include "DADataProbeMarker.h"
@@ -115,6 +116,11 @@ void DAChartItemSettingPanelFactory::registerAllKnownPanels()
     // QwtPlotMarker → 标记设置面板
     registerPanel(QwtPlotItem::Rtti_PlotMarker, []() {
         return new DAChartMarkerSettingPanel();
+    });
+
+    // QwtPlotSpectroCurve → 光谱曲线设置面板
+    registerPanel(QwtPlotItem::Rtti_PlotSpectroCurve, []() {
+        return new DAChartSpectroCurveSettingPanel();
     });
 
     // QwtPlotLegendItem → 图例设置面板
