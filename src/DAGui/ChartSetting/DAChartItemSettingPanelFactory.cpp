@@ -14,6 +14,7 @@
 #include "DAChartShapeSettingPanel.h"
 #include "DAChartTextLabelSettingPanel.h"
 #include "DAChartZoneSettingPanel.h"
+#include "DAChartVectorFieldSettingPanel.h"
 #include "DAChartLegendSettingPanel.h"
 #include "DAChartDataProbeMarkerSettingPanel.h"
 #include "DADataProbeMarker.h"
@@ -157,6 +158,11 @@ void DAChartItemSettingPanelFactory::registerAllKnownPanels()
     // QwtPlotZoneItem → 区间高亮设置面板
     registerPanel(QwtPlotItem::Rtti_PlotZone, []() {
         return new DAChartZoneSettingPanel();
+    });
+
+    // QwtPlotVectorField → 矢量场设置面板
+    registerPanel(QwtPlotItem::Rtti_PlotVectorField, []() {
+        return new DAChartVectorFieldSettingPanel();
     });
 
     // QwtPlotLegendItem → 图例设置面板
