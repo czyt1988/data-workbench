@@ -190,6 +190,14 @@ private Q_SLOTS:
     void onActionChartAddBoxPlotTriggered();
     // 添加谱图
     void onActionChartAddCloudMapTriggered();
+    // 添加多重柱状图
+    void onActionChartAddMultiBarTriggered();
+    // 添加直方图
+    void onActionChartAddHistogramTriggered();
+    // 添加等高线图
+    void onActionChartAddContourMapTriggered();
+    // 添加向量场图
+    void onActionChartAddVectorfieldTriggered();
     //===================================================
     // 绘图标签 Chart Context Category
     //===================================================

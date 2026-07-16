@@ -1253,7 +1253,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+548"/>
+        <location filename="../APP/DAAppController.cpp" line="+552"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -1349,7 +1349,7 @@ Config</source>
         <translation>获取到空工程接口</translation>
     </message>
     <message>
-        <location line="+805"/>
+        <location line="+849"/>
         <source>Rename Column</source>
         <translation>重命名此列</translation>
     </message>
@@ -1379,7 +1379,7 @@ Config</source>
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location line="-1114"/>
+        <location line="-1158"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
@@ -2057,6 +2057,121 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartAddBoxChartWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddBoxChartWidget.cpp" line="+83"/>
+        <location line="+18"/>
+        <location line="+28"/>
+        <source>Warning</source>
+        <translation type="unfinished">警告</translation>
+    </message>
+    <message>
+        <location line="-45"/>
+        <source>Please select a dataframe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Please select at least one column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Exception occurred during box chart data extraction:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed to extract data</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartAddContourWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddContourWidget.cpp" line="+60"/>
+        <location line="+9"/>
+        <source>Warning</source>
+        <translation type="unfinished">警告</translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <source>X, Y and Value must be series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>The selected data cannot be converted to a series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>Exception occurred during extracting contour data:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartAddErrorBarWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddErrorBarWidget.cpp" line="+22"/>
+        <source>Error Bar</source>
+        <translation type="unfinished">误差棒</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartAddHistogramWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddHistogramWidget.cpp" line="+52"/>
+        <source>Warning</source>
+        <translation type="unfinished">警告</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Please select a series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Exception occurred during extracting series:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartAddMultiBarWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddMultiBarWidget.cpp" line="+88"/>
+        <location line="+9"/>
+        <location line="+30"/>
+        <source>Warning</source>
+        <translation type="unfinished">警告</translation>
+    </message>
+    <message>
+        <location line="-38"/>
+        <source>The initial value and step of x auto increment must be floating-point numbers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Please drag a series into the X list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Please drag at least one series into the Y list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Exception occurred during extracting y series:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+52"/>
+        <source>Exception occurred during building multi-bar samples:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartAddOHLCSeriesWidget</name>
     <message>
         <location filename="../DAGui/DAChartAddOHLCSeriesWidget.cpp" line="+38"/>
@@ -2156,6 +2271,30 @@ Config</source>
         <location line="+14"/>
         <source>time value must be a series</source>
         <translation>时间必须是序列</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartAddVectorFieldWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddVectorFieldWidget.cpp" line="+62"/>
+        <location line="+10"/>
+        <source>Warning</source>
+        <translation type="unfinished">警告</translation>
+    </message>
+    <message>
+        <location line="-9"/>
+        <source>X, Y, U, V must be series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>The selected data cannot be converted to a series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Exception occurred during extracting vector field data:%1</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2358,6 +2497,186 @@ Config</source>
         <location line="+1"/>
         <source>Failed to set data: %1</source>
         <translation>设置数据失败:%1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartArrowMarkerSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartArrowMarkerSettingPanel.cpp" line="+51"/>
+        <source>Basic</source>
+        <translation type="unfinished">基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation type="unfinished">Z值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Axis</source>
+        <translation type="unfinished">X轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y轴</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Position</source>
+        <translation type="unfinished">位置</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Position Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Explicit Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Start Length Angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Start X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Start Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>End X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>End Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Line Pen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Head</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Head Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+30"/>
+        <source>None</source>
+        <translation type="unfinished">无</translation>
+    </message>
+    <message>
+        <location line="-29"/>
+        <location line="+30"/>
+        <source>Arrow Head</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-29"/>
+        <location line="+30"/>
+        <source>Circle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-29"/>
+        <location line="+30"/>
+        <source>Square</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-29"/>
+        <location line="+30"/>
+        <source>Diamond</source>
+        <translation type="unfinished">菱形</translation>
+    </message>
+    <message>
+        <location line="-29"/>
+        <location line="+30"/>
+        <source>Triangle</source>
+        <translation type="unfinished">三角形</translation>
+    </message>
+    <message>
+        <location line="-29"/>
+        <location line="+30"/>
+        <source>Custom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-21"/>
+        <source>Head Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Head Pen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Head Brush</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Tail</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Tail Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Tail Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Tail Pen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Tail Brush</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2570,6 +2889,154 @@ Config</source>
         <location line="+3"/>
         <source>Margin</source>
         <translation>边距</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartBoxChartSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartBoxChartSettingPanel.cpp" line="+51"/>
+        <source>Basic</source>
+        <translation type="unfinished">基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation type="unfinished">Z值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Axis</source>
+        <translation type="unfinished">X轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y轴</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Box</source>
+        <translation type="unfinished">方框</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Orientation</source>
+        <translation type="unfinished">方向</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Box Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>No Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Rectangle</source>
+        <translation type="unfinished">矩形</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Diamond</source>
+        <translation type="unfinished">菱形</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Notched</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Box Extent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Min Box Width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Max Box Width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Pen</source>
+        <translation type="unfinished">画笔</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Brush</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Whisker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Whisker Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>No Whiskers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Standard (T-bar)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Min-Max Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Median</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Median Visible</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Median Pen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Mean</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Mean Visible</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Outliers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Outlier Jitter</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2933,6 +3400,44 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartGraphicSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartGraphicSettingPanel.cpp" line="+42"/>
+        <source>Basic</source>
+        <translation type="unfinished">基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation type="unfinished">Z值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Axis</source>
+        <translation type="unfinished">X轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y轴</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Render</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Antialiased</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartGridSettingPanel</name>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartGridSettingPanel.cpp" line="+44"/>
@@ -2978,6 +3483,79 @@ Config</source>
         <location line="+2"/>
         <source>Minor Pen</source>
         <translation>次笔</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartHistogramSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartHistogramSettingPanel.cpp" line="+46"/>
+        <source>Basic</source>
+        <translation type="unfinished">基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation type="unfinished">Z值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Axis</source>
+        <translation type="unfinished">X轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y轴</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Style</source>
+        <translation type="unfinished">样式</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Orientation</source>
+        <translation type="unfinished">方向</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Histogram Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Outline</source>
+        <translation type="unfinished">轮廓</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Columns</source>
+        <translation type="unfinished">值、索引、列</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Lines</source>
+        <translation type="unfinished">线条</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Pen</source>
+        <translation type="unfinished">画笔</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Brush</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Baseline</source>
+        <translation type="unfinished">基线</translation>
     </message>
 </context>
 <context>
@@ -3308,6 +3886,210 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartMarkerSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartMarkerSettingPanel.cpp" line="+48"/>
+        <source>Basic</source>
+        <translation type="unfinished">基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation type="unfinished">Z值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Axis</source>
+        <translation type="unfinished">X轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y轴</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Position</source>
+        <translation type="unfinished">位置</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Line Style</source>
+        <translation type="unfinished">线条样式</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>No Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+23"/>
+        <source>Horizontal</source>
+        <translation type="unfinished">水平</translation>
+    </message>
+    <message>
+        <location line="-22"/>
+        <location line="+23"/>
+        <source>Vertical</source>
+        <translation type="unfinished">垂直</translation>
+    </message>
+    <message>
+        <location line="-22"/>
+        <source>Cross</source>
+        <translation type="unfinished">十字标记</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Line Pen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <location line="+2"/>
+        <source>Label</source>
+        <translation type="unfinished">标签</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Label Alignment</source>
+        <translation type="unfinished">标签对齐</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Label Orientation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Spacing</source>
+        <translation type="unfinished">间距</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartMultiBarSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartMultiBarSettingPanel.cpp" line="+47"/>
+        <source>Basic</source>
+        <translation type="unfinished">基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation type="unfinished">Z值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Axis</source>
+        <translation type="unfinished">X轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y轴</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Style</source>
+        <translation type="unfinished">样式</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Orientation</source>
+        <translation type="unfinished">方向</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Chart Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Grouped</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stacked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Baseline</source>
+        <translation type="unfinished">基线</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Layout</source>
+        <translation type="unfinished">布局</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Layout Policy</source>
+        <translation type="unfinished">布局策略</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Auto Adjust</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Scale To Axes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Scale To Canvas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Fixed Sample Size</source>
+        <translation type="unfinished">固定采样尺寸</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Layout Hint</source>
+        <translation type="unfinished">布局提示</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Spacing</source>
+        <translation type="unfinished">间距</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Margin</source>
+        <translation type="unfinished">边距</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartOperateWidget</name>
     <message>
         <location filename="../DAGui/DAChartOperateWidget.cpp" line="+95"/>
@@ -3369,6 +4151,85 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartScaleSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartScaleSettingPanel.cpp" line="+47"/>
+        <source>Basic</source>
+        <translation type="unfinished">基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation type="unfinished">Z值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Axis</source>
+        <translation type="unfinished">X轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y轴</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Scale</source>
+        <translation type="unfinished">刻度</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Alignment</source>
+        <translation type="unfinished">对齐</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Position</source>
+        <translation type="unfinished">位置</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Border Distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Sync Scale From Axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <location line="+2"/>
+        <source>Font</source>
+        <translation type="unfinished">字体</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartSettingWidget</name>
     <message>
         <location filename="../DAGui/DAChartSettingWidget.cpp" line="+196"/>
@@ -3399,6 +4260,142 @@ Config</source>
         <location line="+1"/>
         <source>X Top Scale</source>
         <translation>上X轴</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartShapeSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartShapeSettingPanel.cpp" line="+46"/>
+        <source>Basic</source>
+        <translation type="unfinished">基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation type="unfinished">Z值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Axis</source>
+        <translation type="unfinished">X轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y轴</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Appearance</source>
+        <translation type="unfinished">外观</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Pen</source>
+        <translation type="unfinished">画笔</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Brush</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Legend Mode</source>
+        <translation type="unfinished">图例模式</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Shape</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Color</source>
+        <translation type="unfinished">颜色</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Render</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Render Tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Clip Polygons</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartSpectroCurveSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartSpectroCurveSettingPanel.cpp" line="+46"/>
+        <source>Basic</source>
+        <translation type="unfinished">基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation type="unfinished">Z值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Axis</source>
+        <translation type="unfinished">X轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y轴</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Drawing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Orientation</source>
+        <translation type="unfinished">方向</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Pen Width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Clip Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Color Map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Color Range Min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Color Range Max</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3563,6 +4560,79 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartTextLabelSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartTextLabelSettingPanel.cpp" line="+47"/>
+        <source>Basic</source>
+        <translation type="unfinished">基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation type="unfinished">Z值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Axis</source>
+        <translation type="unfinished">X轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y轴</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Text</source>
+        <translation type="unfinished">文本</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Text Content</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Font</source>
+        <translation type="unfinished">字体</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Text Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Alignment</source>
+        <translation type="unfinished">对齐</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Margin</source>
+        <translation type="unfinished">边距</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Background</source>
+        <translation type="unfinished">背景</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Border Radius</source>
+        <translation type="unfinished">边框圆角</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Background Brush</source>
+        <translation type="unfinished">背景画刷</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartTradingCurveSettingPanel</name>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartTradingCurveSettingPanel.cpp" line="+48"/>
@@ -3658,6 +4728,182 @@ Config</source>
         <location line="+3"/>
         <source>Max Symbol Width</source>
         <translation>最大符号宽度</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartVectorFieldSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartVectorFieldSettingPanel.cpp" line="+49"/>
+        <source>Basic</source>
+        <translation type="unfinished">基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation type="unfinished">Z值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Axis</source>
+        <translation type="unfinished">X轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y轴</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Appearance</source>
+        <translation type="unfinished">外观</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Pen</source>
+        <translation type="unfinished">画笔</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Brush</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Indicator Origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Head</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tail</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Center</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Magnitude</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Magnitude As Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Magnitude As Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Min Arrow Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Max Arrow Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Magnitude Scale Factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Filter Vectors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Raster Width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Raster Height</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartZoneSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartZoneSettingPanel.cpp" line="+45"/>
+        <source>Basic</source>
+        <translation type="unfinished">基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation type="unfinished">Z值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Axis</source>
+        <translation type="unfinished">X轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y轴</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Zone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Orientation</source>
+        <translation type="unfinished">方向</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Interval Min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Interval Max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Appearance</source>
+        <translation type="unfinished">外观</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Pen</source>
+        <translation type="unfinished">画笔</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Brush</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3850,7 +5096,7 @@ Config</source>
 <context>
     <name>DA::DADialogChartGuide</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogChartGuide.cpp" line="+70"/>
+        <location filename="../DAGui/Dialog/DADialogChartGuide.cpp" line="+93"/>
         <source>curve</source>
         <translation>曲线</translation>
     </message>
@@ -3878,6 +5124,26 @@ Config</source>
         <location line="+4"/>
         <source>cloud map</source>
         <translation>云图</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>multi bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>histogram</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>contour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>vector field</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4942,7 +6208,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1224"/>
+        <location filename="../APP/DAAppController.cpp" line="-1228"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -4958,6 +6224,57 @@ Config</source>
         <location line="+1"/>
         <source>The current function is not implemented, only the UI is reserved, please pay attention: https://gitee.com/czyt1988/data-work-flow</source>
         <translation>当前功能未实现，仅保留UI，请留意：https://gitee.com/czyt1988/data-work-flow</translation>
+    </message>
+</context>
+<context>
+    <name>DAChartAddBoxChartWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddBoxChartWidget.ui" line="+14"/>
+        <source>Add Box Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>DataFrame</source>
+        <translation type="unfinished">DataFrame</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Columns</source>
+        <translation type="unfinished">值、索引、列</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Select columns to plot as box charts</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartAddContourWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddContourWidget.ui" line="+14"/>
+        <source>Add Contour Map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>X</source>
+        <translation type="unfinished">X</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Y</source>
+        <translation type="unfinished">Y</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Value</source>
+        <translation type="unfinished">值</translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>Select three columns (x, y, value) to render a contour map</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -5002,6 +6319,73 @@ Config</source>
         <location line="-41"/>
         <source>Y</source>
         <translation>Y</translation>
+    </message>
+</context>
+<context>
+    <name>DAChartAddHistogramWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddHistogramWidget.ui" line="+14"/>
+        <source>Add Histogram</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Data Series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Bins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Number of bins</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartAddMultiBarWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddMultiBarWidget.ui" line="+14"/>
+        <source>Add Multi Bar Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>X</source>
+        <translation type="unfinished">X</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Autoincrement series</source>
+        <translation type="unfinished">自增序列</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Initial value</source>
+        <translation type="unfinished">初始值</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <location line="+14"/>
+        <source>1</source>
+        <translation type="unfinished">1</translation>
+    </message>
+    <message>
+        <location line="-7"/>
+        <source>Self increasing step size</source>
+        <translation type="unfinished">自增步长</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Y (Multiple)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+39"/>
+        <source>Drag the data into the corresponding list. Multiple Y series will be grouped as bar sets.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -5079,6 +6463,39 @@ Config</source>
         <location line="+7"/>
         <source>2.Plot</source>
         <translation>2.绘图</translation>
+    </message>
+</context>
+<context>
+    <name>DAChartAddVectorFieldWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddVectorFieldWidget.ui" line="+14"/>
+        <source>Add Vector Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>X</source>
+        <translation type="unfinished">X</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Y</source>
+        <translation type="unfinished">Y</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>U (vector x)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>V (vector y)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>Select four columns (x, y, u, v) to render a vector field</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

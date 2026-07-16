@@ -176,6 +176,12 @@ if(DA_ENABLE_PYTHON)
         DAChartAddBarWidget.h
         DAChartAddIntervalCurveWidget.h
         DAChartAddTradingCurveWidget.h
+        DAChartAddErrorBarWidget.h
+        DAChartAddBoxChartWidget.h
+        DAChartAddMultiBarWidget.h
+        DAChartAddHistogramWidget.h
+        DAChartAddContourWidget.h
+        DAChartAddVectorFieldWidget.h
         DAChartAddSpectrogramWidget.h
     )
     list(APPEND DA_LIB_SOURCE_FILES
@@ -193,6 +199,12 @@ if(DA_ENABLE_PYTHON)
         DAChartAddIntervalCurveWidget.cpp
         DAChartAddSpectrogramWidget.cpp
         DAChartAddTradingCurveWidget.cpp
+        DAChartAddErrorBarWidget.cpp
+        DAChartAddBoxChartWidget.cpp
+        DAChartAddMultiBarWidget.cpp
+        DAChartAddHistogramWidget.cpp
+        DAChartAddContourWidget.cpp
+        DAChartAddVectorFieldWidget.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES
         DADataframeToVectorPointWidget.ui
@@ -201,6 +213,11 @@ if(DA_ENABLE_PYTHON)
         DAChartAddXYESeriesWidget.ui
         DAChartAddOHLCSeriesWidget.ui
         DAChartAddtGridRasterDataWidget.ui
+        DAChartAddBoxChartWidget.ui
+        DAChartAddMultiBarWidget.ui
+        DAChartAddHistogramWidget.ui
+        DAChartAddContourWidget.ui
+        DAChartAddVectorFieldWidget.ui
     )
 endif()
 # 子目录

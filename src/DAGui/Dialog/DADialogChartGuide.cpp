@@ -8,7 +8,12 @@
 #include "DAChartAddBarWidget.h"
 #include "DAChartAddIntervalCurveWidget.h"
 #include "DAChartAddTradingCurveWidget.h"
-
+#include "DAChartAddErrorBarWidget.h"
+#include "DAChartAddBoxChartWidget.h"
+#include "DAChartAddMultiBarWidget.h"
+#include "DAChartAddHistogramWidget.h"
+#include "DAChartAddContourWidget.h"
+#include "DAChartAddVectorFieldWidget.h"
 #include "DAChartAddSpectrogramWidget.h"
 #include "DAChartUtil.h"
 // qwt
@@ -30,6 +35,12 @@ public:
     DAChartAddIntervalCurveWidget* mAddIntervalCurve { nullptr };
     DAChartAddTradingCurveWidget* mAddTradingCurve { nullptr };
     DAChartAddSpectrogramWidget* mAddSpectroGram { nullptr };
+    DAChartAddErrorBarWidget* mAddErrorBar { nullptr };
+    DAChartAddBoxChartWidget* mAddBoxChart { nullptr };
+    DAChartAddMultiBarWidget* mAddMultiBar { nullptr };
+    DAChartAddHistogramWidget* mAddHistogram { nullptr };
+    DAChartAddContourWidget* mAddContour { nullptr };
+    DAChartAddVectorFieldWidget* mAddVectorField { nullptr };
 };
 
 DADialogChartGuide::PrivateData::PrivateData(DADialogChartGuide* p) : q_ptr(p)
@@ -50,11 +61,23 @@ DADialogChartGuide::DADialogChartGuide(QWidget* parent)
     d->mAddIntervalCurve = new DAChartAddIntervalCurveWidget();
     d->mAddTradingCurve  = new DAChartAddTradingCurveWidget();
     d->mAddSpectroGram   = new DAChartAddSpectrogramWidget();
+    d->mAddErrorBar      = new DAChartAddErrorBarWidget();
+    d->mAddBoxChart      = new DAChartAddBoxChartWidget();
+    d->mAddMultiBar      = new DAChartAddMultiBarWidget();
+    d->mAddHistogram     = new DAChartAddHistogramWidget();
+    d->mAddContour       = new DAChartAddContourWidget();
+    d->mAddVectorField   = new DAChartAddVectorFieldWidget();
     ui->stackedWidget->addWidget(d->mAddCurve);
     ui->stackedWidget->addWidget(d->mAddBar);
     ui->stackedWidget->addWidget(d->mAddIntervalCurve);
     ui->stackedWidget->addWidget(d->mAddTradingCurve);
     ui->stackedWidget->addWidget(d->mAddSpectroGram);
+    ui->stackedWidget->addWidget(d->mAddErrorBar);
+    ui->stackedWidget->addWidget(d->mAddBoxChart);
+    ui->stackedWidget->addWidget(d->mAddMultiBar);
+    ui->stackedWidget->addWidget(d->mAddHistogram);
+    ui->stackedWidget->addWidget(d->mAddContour);
+    ui->stackedWidget->addWidget(d->mAddVectorField);
     connect(ui->listWidgetChartType, &QListWidget::currentItemChanged, this, &DADialogChartGuide::onListWidgetCurrentItemChanged);
 }
 
@@ -89,6 +112,22 @@ void DADialogChartGuide::initListWidget()
     // spectrogram
     item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-spectrogram.svg"), tr("cloud map"));  // cn:云图
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Spectrogram));
+    ui->listWidgetChartType->addItem(item);
+    // multibar
+    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-multibar.svg"), tr("multi bar"));  // cn:多重柱状
+    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::MultiBar));
+    ui->listWidgetChartType->addItem(item);
+    // histogram
+    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-histogram.svg"), tr("histogram"));  // cn:直方图
+    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Histogram));
+    ui->listWidgetChartType->addItem(item);
+    // contour
+    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-spectrocurve.svg"), tr("contour"));  // cn:等高线
+    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Contour));
+    ui->listWidgetChartType->addItem(item);
+    // vectorfield
+    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-vectorfield.svg"), tr("vector field"));  // cn:向量场
+    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::VectorField));
     ui->listWidgetChartType->addItem(item);
     // 初始化
     ui->listWidgetChartType->setCurrentRow(0);
@@ -154,11 +193,19 @@ DAAbstractChartAddItemWidget* DADialogChartGuide::getChartAddItemWidget(DAChartT
     case DA::DAChartTypes::Bar:
         return d->mAddBar;
     case DA::DAChartTypes::ErrorBar:
-        return d->mAddIntervalCurve;
+        return d->mAddErrorBar;
     case DA::DAChartTypes::Box:
-        return d->mAddTradingCurve;
+        return d->mAddBoxChart;
     case DA::DAChartTypes::Spectrogram:
         return d->mAddSpectroGram;
+    case DA::DAChartTypes::MultiBar:
+        return d->mAddMultiBar;
+    case DA::DAChartTypes::Histogram:
+        return d->mAddHistogram;
+    case DA::DAChartTypes::Contour:
+        return d->mAddContour;
+    case DA::DAChartTypes::VectorField:
+        return d->mAddVectorField;
     default:
         break;
     }
@@ -215,17 +262,26 @@ void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current
     case DA::DAChartTypes::Bar:
         ui->stackedWidget->setCurrentWidget(d->mAddBar);
         break;
-        break;
     case DA::DAChartTypes::ErrorBar:
-        ui->stackedWidget->setCurrentWidget(d->mAddIntervalCurve);
-        break;
+        ui->stackedWidget->setCurrentWidget(d->mAddErrorBar);
         break;
     case DA::DAChartTypes::Box:
-        ui->stackedWidget->setCurrentWidget(d->mAddTradingCurve);
-        break;
+        ui->stackedWidget->setCurrentWidget(d->mAddBoxChart);
         break;
     case DA::DAChartTypes::Spectrogram:
         ui->stackedWidget->setCurrentWidget(d->mAddSpectroGram);
+        break;
+    case DA::DAChartTypes::MultiBar:
+        ui->stackedWidget->setCurrentWidget(d->mAddMultiBar);
+        break;
+    case DA::DAChartTypes::Histogram:
+        ui->stackedWidget->setCurrentWidget(d->mAddHistogram);
+        break;
+    case DA::DAChartTypes::Contour:
+        ui->stackedWidget->setCurrentWidget(d->mAddContour);
+        break;
+    case DA::DAChartTypes::VectorField:
+        ui->stackedWidget->setCurrentWidget(d->mAddVectorField);
         break;
     default:
         break;

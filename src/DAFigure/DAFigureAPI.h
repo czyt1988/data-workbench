@@ -22,6 +22,10 @@ enum class DAChartTypes
     ErrorBar,     ///< 误差棒
     Box,          ///< 箱线图
     Spectrogram,  ///< 谱图
+    MultiBar,     ///< 多重柱状图
+    Histogram,    ///< 直方图
+    Contour,      ///< 等高线图
+    VectorField,  ///< 向量场图
     Unknow = 1000
 };
 }

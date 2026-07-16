@@ -253,6 +253,10 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddErrorBar, onActionactionChartAddErrorBarTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddBoxPlot, onActionChartAddBoxPlotTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddCloudMap, onActionChartAddCloudMapTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddMultiBar, onActionChartAddMultiBarTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddHistogramBar, onActionChartAddHistogramTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddContourMap, onActionChartAddContourMapTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddVectorfield, onActionChartAddVectorfieldTriggered);
 
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGrid, onActionChartEnableGridTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridX, onActionChartEnableGridXTriggered);
@@ -1684,6 +1688,50 @@ void DAAppController::onActionChartAddCloudMapTriggered()
 {
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
     chartopt->showPlotGuideDialog(DA::DAChartTypes::Spectrogram);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+}
+
+/**
+ * @brief 添加多重柱状图
+ */
+void DAAppController::onActionChartAddMultiBarTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    chartopt->showPlotGuideDialog(DA::DAChartTypes::MultiBar);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+}
+
+/**
+ * @brief 添加直方图
+ */
+void DAAppController::onActionChartAddHistogramTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    chartopt->showPlotGuideDialog(DA::DAChartTypes::Histogram);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+}
+
+/**
+ * @brief 添加等高线图
+ */
+void DAAppController::onActionChartAddContourMapTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    chartopt->showPlotGuideDialog(DA::DAChartTypes::Contour);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+}
+
+/**
+ * @brief 添加向量场图
+ */
+void DAAppController::onActionChartAddVectorfieldTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    chartopt->showPlotGuideDialog(DA::DAChartTypes::VectorField);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
