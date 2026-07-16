@@ -16,6 +16,7 @@
 #include "DAChartZoneSettingPanel.h"
 #include "DAChartVectorFieldSettingPanel.h"
 #include "DAChartArrowMarkerSettingPanel.h"
+#include "DAChartBoxChartSettingPanel.h"
 #include "DAChartLegendSettingPanel.h"
 #include "DAChartDataProbeMarkerSettingPanel.h"
 #include "DADataProbeMarker.h"
@@ -169,6 +170,11 @@ void DAChartItemSettingPanelFactory::registerAllKnownPanels()
     // QwtPlotArrowMarker → 箭头标记设置面板
     registerPanel(QwtPlotItem::Rtti_PlotArrowMarker, []() {
         return new DAChartArrowMarkerSettingPanel();
+    });
+
+    // QwtPlotBoxChart → 箱线图设置面板
+    registerPanel(QwtPlotItem::Rtti_PlotBoxChart, []() {
+        return new DAChartBoxChartSettingPanel();
     });
 
     // QwtPlotLegendItem → 图例设置面板
