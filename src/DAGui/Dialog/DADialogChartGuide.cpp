@@ -1,6 +1,8 @@
 #include "DADialogChartGuide.h"
 #include "ui_DADialogChartGuide.h"
 #include <QPen>
+#include <QElapsedTimer>
+#include <QDebug>
 // DA
 #include "DADataManager.h"
 #include "DAAbstractChartAddItemWidget.h"
@@ -56,17 +58,21 @@ DADialogChartGuide::DADialogChartGuide(QWidget* parent)
     ui->setupUi(this);
     DA_D(d);
     initListWidget();
-    d->mAddCurve         = new DAChartAddCurveWidget();
-    d->mAddBar           = new DAChartAddBarWidget();
-    d->mAddIntervalCurve = new DAChartAddIntervalCurveWidget();
-    d->mAddTradingCurve  = new DAChartAddTradingCurveWidget();
-    d->mAddSpectroGram   = new DAChartAddSpectrogramWidget();
-    d->mAddErrorBar      = new DAChartAddErrorBarWidget();
-    d->mAddBoxChart      = new DAChartAddBoxChartWidget();
-    d->mAddMultiBar      = new DAChartAddMultiBarWidget();
-    d->mAddHistogram     = new DAChartAddHistogramWidget();
-    d->mAddContour       = new DAChartAddContourWidget();
-    d->mAddVectorField   = new DAChartAddVectorFieldWidget();
+
+    QElapsedTimer ctorTimer;
+    ctorTimer.start();
+    d->mAddCurve         = new DAChartAddCurveWidget();         qInfo() << "[ChartGuide] ctor CurveWidget elapsed=" << ctorTimer.elapsed() << "ms";
+    d->mAddBar           = new DAChartAddBarWidget();           qInfo() << "[ChartGuide] ctor BarWidget elapsed=" << ctorTimer.elapsed() << "ms";
+    d->mAddIntervalCurve = new DAChartAddIntervalCurveWidget(); qInfo() << "[ChartGuide] ctor IntervalCurveWidget elapsed=" << ctorTimer.elapsed() << "ms";
+    d->mAddTradingCurve  = new DAChartAddTradingCurveWidget();  qInfo() << "[ChartGuide] ctor TradingCurveWidget elapsed=" << ctorTimer.elapsed() << "ms";
+    d->mAddSpectroGram   = new DAChartAddSpectrogramWidget();   qInfo() << "[ChartGuide] ctor SpectrogramWidget elapsed=" << ctorTimer.elapsed() << "ms";
+    d->mAddErrorBar      = new DAChartAddErrorBarWidget();      qInfo() << "[ChartGuide] ctor ErrorBarWidget elapsed=" << ctorTimer.elapsed() << "ms";
+    d->mAddBoxChart      = new DAChartAddBoxChartWidget();      qInfo() << "[ChartGuide] ctor BoxChartWidget elapsed=" << ctorTimer.elapsed() << "ms";
+    d->mAddMultiBar      = new DAChartAddMultiBarWidget();      qInfo() << "[ChartGuide] ctor MultiBarWidget elapsed=" << ctorTimer.elapsed() << "ms";
+    d->mAddHistogram     = new DAChartAddHistogramWidget();     qInfo() << "[ChartGuide] ctor HistogramWidget elapsed=" << ctorTimer.elapsed() << "ms";
+    d->mAddContour       = new DAChartAddContourWidget();       qInfo() << "[ChartGuide] ctor ContourWidget elapsed=" << ctorTimer.elapsed() << "ms";
+    d->mAddVectorField   = new DAChartAddVectorFieldWidget();   qInfo() << "[ChartGuide] ctor VectorFieldWidget elapsed=" << ctorTimer.elapsed() << "ms";
+
     ui->stackedWidget->addWidget(d->mAddCurve);
     ui->stackedWidget->addWidget(d->mAddBar);
     ui->stackedWidget->addWidget(d->mAddIntervalCurve);
@@ -78,6 +84,8 @@ DADialogChartGuide::DADialogChartGuide(QWidget* parent)
     ui->stackedWidget->addWidget(d->mAddHistogram);
     ui->stackedWidget->addWidget(d->mAddContour);
     ui->stackedWidget->addWidget(d->mAddVectorField);
+    qInfo() << "[ChartGuide] all addWidget done, total ctor elapsed=" << ctorTimer.elapsed() << "ms";
+
     connect(ui->listWidgetChartType, &QListWidget::currentItemChanged, this, &DADialogChartGuide::onListWidgetCurrentItemChanged);
 }
 
@@ -138,12 +146,18 @@ void DADialogChartGuide::initListWidget()
  */
 void DADialogChartGuide::setDataManager(DADataManager* dmgr)
 {
+    QElapsedTimer timer;
+    timer.start();
     int c = ui->stackedWidget->count();
     for (int i = 0; i < c; ++i) {
         if (DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->widget(i))) {
+            QString name = w->metaObject()->className();
+            qint64 before = timer.elapsed();
             w->setDataManager(dmgr);
+            qInfo() << "[ChartGuide] setDataManager[" << i << "] " << name << " elapsed=" << (timer.elapsed() - before) << "ms";
         }
     }
+    qInfo() << "[ChartGuide] setDataManager total, " << c << " widgets, elapsed=" << timer.elapsed() << "ms";
 }
 
 /**

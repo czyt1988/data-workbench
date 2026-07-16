@@ -5,6 +5,8 @@
 #include "DAEvenFilterDragPlotWithGuide.h"
 #if DA_ENABLE_PYTHON
 #include "Dialog/DADialogChartGuide.h"
+#include <QElapsedTimer>
+#include <QDebug>
 #endif
 namespace DA
 {
@@ -60,12 +62,21 @@ int DAAppChartOperateWidget::execPlotGuideDialog(DAChartTypes t)
 #if DA_ENABLE_PYTHON
 void DAAppChartOperateWidget::showPlotGuideDialog(DAChartTypes t)
 {
+    QElapsedTimer timer;
+    timer.start();
+    qInfo() << "[ChartGuide] showPlotGuideDialog enter, type=" << static_cast< int >(t);
+
     if (nullptr == mChartGuideDlg) {
+        qInfo() << "[ChartGuide] first call, initChartGuideDialog begin";
         initChartGuideDialog();
+        qInfo() << "[ChartGuide] initChartGuideDialog done, elapsed=" << timer.elapsed() << "ms";
     }
 
     mChartGuideDlg->setCurrentChartType(t);
+    qInfo() << "[ChartGuide] setCurrentChartType done, elapsed=" << timer.elapsed() << "ms";
+
     mChartGuideDlg->show();
+    qInfo() << "[ChartGuide] show() done, elapsed=" << timer.elapsed() << "ms";
 }
 
 DADialogChartGuide* DAAppChartOperateWidget::getChartGuideDlg()
@@ -105,9 +116,18 @@ void DAAppChartOperateWidget::onChartGuideAccept()
 void DAAppChartOperateWidget::initChartGuideDialog()
 {
     if (nullptr == mChartGuideDlg) {
+        QElapsedTimer timer;
+        timer.start();
+        qInfo() << "[ChartGuide] new DADialogChartGuide begin";
         mChartGuideDlg = new DADialogChartGuide(this);
+        qInfo() << "[ChartGuide] new DADialogChartGuide done, elapsed=" << timer.elapsed() << "ms";
+
+        qInfo() << "[ChartGuide] setDataManager begin";
         mChartGuideDlg->setDataManager(mDataMgr);
+        qInfo() << "[ChartGuide] setDataManager done, elapsed=" << timer.elapsed() << "ms";
+
         connect(mChartGuideDlg, &DADialogChartGuide::accepted, this, &DAAppChartOperateWidget::onChartGuideAccept);
+        qInfo() << "[ChartGuide] initChartGuideDialog total elapsed=" << timer.elapsed() << "ms";
     }
 }
 
