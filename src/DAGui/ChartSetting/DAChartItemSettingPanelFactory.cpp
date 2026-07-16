@@ -11,6 +11,7 @@
 #include "DAChartHistogramSettingPanel.h"
 #include "DAChartGraphicSettingPanel.h"
 #include "DAChartMultiBarSettingPanel.h"
+#include "DAChartShapeSettingPanel.h"
 #include "DAChartLegendSettingPanel.h"
 #include "DAChartDataProbeMarkerSettingPanel.h"
 #include "DADataProbeMarker.h"
@@ -139,6 +140,11 @@ void DAChartItemSettingPanelFactory::registerAllKnownPanels()
     // QwtPlotMultiBarChart → 多组柱状图设置面板
     registerPanel(QwtPlotItem::Rtti_PlotMultiBarChart, []() {
         return new DAChartMultiBarSettingPanel();
+    });
+
+    // QwtPlotShapeItem → 形状设置面板
+    registerPanel(QwtPlotItem::Rtti_PlotShape, []() {
+        return new DAChartShapeSettingPanel();
     });
 
     // QwtPlotLegendItem → 图例设置面板
