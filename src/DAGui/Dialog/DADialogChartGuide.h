@@ -3,6 +3,7 @@
 #include "DAGuiAPI.h"
 #include "DAFigureAPI.h"
 #include <QDialog>
+#include <QSet>
 #include "DAData.h"
 #include "qwt_plot_item.h"
 namespace Ui
@@ -52,9 +53,12 @@ private Q_SLOTS:
 
 private:
     void initListWidget();
+    void ensureWidgetDataManager(DAAbstractChartAddItemWidget* w);
 
 private:
     Ui::DADialogChartGuide* ui;
+    DADataManager* mDataMgr { nullptr };
+    QSet< DAAbstractChartAddItemWidget* > mInitializedWidgets;
 };
 }  // end DA
 #endif  // DADIALOGDATAFRAMEPLOT_H

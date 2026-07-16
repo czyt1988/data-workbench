@@ -148,16 +148,29 @@ void DADialogChartGuide::setDataManager(DADataManager* dmgr)
 {
     QElapsedTimer timer;
     timer.start();
-    int c = ui->stackedWidget->count();
-    for (int i = 0; i < c; ++i) {
-        if (DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->widget(i))) {
-            QString name = w->metaObject()->className();
-            qint64 before = timer.elapsed();
-            w->setDataManager(dmgr);
-            qInfo() << "[ChartGuide] setDataManager[" << i << "] " << name << " elapsed=" << (timer.elapsed() - before) << "ms";
+    mDataMgr = dmgr;
+    // 延迟初始化：不立即遍历所有 widget，只标记需要重新初始化
+    mInitializedWidgets.clear();
+    // 预初始化当前选中的 widget
+    QListWidgetItem* cur = ui->listWidgetChartType->currentItem();
+    if (cur) {
+        DA::DAChartTypes ct = static_cast< DA::DAChartTypes >(cur->data(Qt::UserRole).toInt());
+        if (DAAbstractChartAddItemWidget* w = getChartAddItemWidget(ct)) {
+            ensureWidgetDataManager(w);
         }
     }
-    qInfo() << "[ChartGuide] setDataManager total, " << c << " widgets, elapsed=" << timer.elapsed() << "ms";
+    qInfo() << "[ChartGuide] setDataManager (lazy) elapsed=" << timer.elapsed() << "ms";
+}
+
+void DADialogChartGuide::ensureWidgetDataManager(DAAbstractChartAddItemWidget* w)
+{
+    if (w && !mInitializedWidgets.contains(w)) {
+        QElapsedTimer t;
+        t.start();
+        w->setDataManager(mDataMgr);
+        mInitializedWidgets.insert(w);
+        qInfo() << "[ChartGuide] lazy init" << w->metaObject()->className() << "elapsed=" << t.elapsed() << "ms";
+    }
 }
 
 /**
@@ -266,6 +279,10 @@ void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current
     Q_UNUSED(previous);
     DA_D(d);
     DA::DAChartTypes ct = static_cast< DA::DAChartTypes >(current->data(Qt::UserRole).toInt());
+    // 延迟初始化：切换到该 widget 时才设置 dataManager
+    if (DAAbstractChartAddItemWidget* w = getChartAddItemWidget(ct)) {
+        ensureWidgetDataManager(w);
+    }
     switch (ct) {
     case DA::DAChartTypes::Curve:
         ui->stackedWidget->setCurrentWidget(d->mAddCurve);
