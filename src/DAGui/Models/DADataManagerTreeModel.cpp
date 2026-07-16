@@ -37,6 +37,13 @@ DAStandardItemDataDataframe::~DAStandardItemDataDataframe()
 QVariant DAStandardItemDataDataframe::data(int role) const
 {
     static QIcon s_dataframe_icon = QIcon(":/DAGui/DataType/icon/data-type/dataframe.svg");
+    switch (role) {
+    case DADataManagerTreeModel::RoleDataId: {
+        return QVariant(static_cast< qulonglong >(m_dataframe.id()));
+    }
+    default:
+        break;
+    }
     if (!m_dataframe.isDataFrame()) {
         return QStandardItem::data(role);
     }
@@ -89,6 +96,16 @@ DAStandardItemDataDataframeSeries::~DAStandardItemDataDataframeSeries()
 QVariant DAStandardItemDataDataframeSeries::data(int role) const
 {
     static QIcon s_dataframe_icon = QIcon(":/DAGui/DataType/icon/data-type/dataframe.svg");
+    switch (role) {
+    case DADataManagerTreeModel::RoleDataId: {
+        return QVariant(static_cast< qulonglong >(m_dataframe.id()));
+    }
+    case DADataManagerTreeModel::RoleItemType: {
+        return DADataManagerTreeModel::SeriesInnerDataframe;
+    }
+    default:
+        break;
+    }
     if (!m_dataframe.isDataFrame()) {
         return QStandardItem::data(role);
     }
