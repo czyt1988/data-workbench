@@ -13,6 +13,7 @@
 #include "DAChartMultiBarSettingPanel.h"
 #include "DAChartShapeSettingPanel.h"
 #include "DAChartTextLabelSettingPanel.h"
+#include "DAChartZoneSettingPanel.h"
 #include "DAChartLegendSettingPanel.h"
 #include "DAChartDataProbeMarkerSettingPanel.h"
 #include "DADataProbeMarker.h"
@@ -151,6 +152,11 @@ void DAChartItemSettingPanelFactory::registerAllKnownPanels()
     // QwtPlotTextLabel → 文本标签设置面板
     registerPanel(QwtPlotItem::Rtti_PlotTextLabel, []() {
         return new DAChartTextLabelSettingPanel();
+    });
+
+    // QwtPlotZoneItem → 区间高亮设置面板
+    registerPanel(QwtPlotItem::Rtti_PlotZone, []() {
+        return new DAChartZoneSettingPanel();
     });
 
     // QwtPlotLegendItem → 图例设置面板
