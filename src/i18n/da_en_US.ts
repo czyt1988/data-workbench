@@ -1228,7 +1228,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+552"/>
+        <location filename="../APP/DAAppController.cpp" line="+556"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1265,12 +1265,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+346"/>
+        <location line="+362"/>
         <source>Before creating a new coordinate, you need to create a figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1012"/>
+        <location line="-1028"/>
         <source>Please select the data operation window</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1324,7 +1324,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+849"/>
+        <location line="+855"/>
         <source>Rename Column</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1354,7 +1354,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1158"/>
+        <location line="-1164"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2064,17 +2064,34 @@ Config</source>
 <context>
     <name>DA::DAChartAddContourWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddContourWidget.cpp" line="+60"/>
+        <location filename="../DAGui/DAChartAddContourWidget.cpp" line="+21"/>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <location line="+9"/>
         <location line="+9"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-8"/>
+        <location line="-17"/>
         <source>X, Y and Value must be series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+9"/>
         <location line="+9"/>
         <source>The selected data cannot be converted to a series</source>
         <translation type="unfinished"></translation>
@@ -2096,17 +2113,24 @@ Config</source>
 <context>
     <name>DA::DAChartAddHistogramWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddHistogramWidget.cpp" line="+64"/>
+        <location filename="../DAGui/DAChartAddHistogramWidget.cpp" line="+21"/>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+40"/>
+        <location line="+11"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-10"/>
+        <location line="+11"/>
         <source>Please select a series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+9"/>
         <source>Exception occurred during extracting series:%1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2149,50 +2173,53 @@ Config</source>
 <context>
     <name>DA::DAChartAddOHLCSeriesWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddOHLCSeriesWidget.cpp" line="+38"/>
+        <location filename="../DAGui/DAChartAddOHLCSeriesWidget.cpp" line="+39"/>
+        <location line="+10"/>
         <source>Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-9"/>
+        <location line="+10"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-9"/>
+        <location line="+10"/>
         <source>High</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-9"/>
+        <location line="+10"/>
         <source>Low</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-9"/>
+        <location line="+10"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+213"/>
+        <location line="+178"/>
         <location line="+8"/>
-        <location line="+32"/>
+        <location line="+44"/>
         <location line="+6"/>
         <location line="+6"/>
         <location line="+6"/>
-        <location line="+10"/>
         <location line="+27"/>
         <location line="+14"/>
         <location line="+7"/>
         <location line="+6"/>
         <location line="+6"/>
         <location line="+6"/>
-        <location line="+11"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-144"/>
+        <location line="-135"/>
         <source>The initial value of t auto increment series must be a floating-point arithmetic number</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2202,43 +2229,37 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+32"/>
-        <location line="+76"/>
+        <location line="+44"/>
+        <location line="+66"/>
         <source>open value must be a series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-70"/>
-        <location line="+76"/>
+        <location line="-60"/>
+        <location line="+66"/>
         <source>high value must be a series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-70"/>
-        <location line="+76"/>
+        <location line="-60"/>
+        <location line="+66"/>
         <source>low value must be a series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-70"/>
-        <location line="+76"/>
+        <location line="-60"/>
+        <location line="+66"/>
         <source>close value must be a series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-66"/>
-        <location line="+77"/>
-        <source>The None value cannot be converted to a series</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-55"/>
-        <location line="+84"/>
+        <location line="-44"/>
+        <location line="+73"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-79"/>
+        <location line="-68"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2251,17 +2272,39 @@ Config</source>
 <context>
     <name>DA::DAChartAddVectorFieldWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddVectorFieldWidget.cpp" line="+62"/>
+        <location filename="../DAGui/DAChartAddVectorFieldWidget.cpp" line="+19"/>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>U</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>V</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <location line="+10"/>
         <location line="+10"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-9"/>
+        <location line="-19"/>
         <source>X, Y, U, V must be series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+10"/>
         <location line="+10"/>
         <source>The selected data cannot be converted to a series</source>
         <translation type="unfinished"></translation>
@@ -2275,7 +2318,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddXYESeriesWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddXYESeriesWidget.cpp" line="+22"/>
+        <location filename="../DAGui/DAChartAddXYESeriesWidget.cpp" line="+23"/>
         <source>x</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2290,26 +2333,39 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+196"/>
+        <location line="+6"/>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+164"/>
         <location line="+8"/>
         <location line="+23"/>
         <location line="+9"/>
         <location line="+23"/>
-        <location line="+15"/>
-        <location line="+8"/>
+        <location line="+27"/>
         <location line="+23"/>
         <location line="+15"/>
-        <location line="+9"/>
+        <location line="+7"/>
         <location line="+23"/>
         <location line="+12"/>
         <location line="+7"/>
         <location line="+6"/>
-        <location line="+9"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-189"/>
+        <location line="-182"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2334,42 +2390,36 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+27"/>
         <source>y - value/error value must be a series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>The selected y - value/error value cannot be converted to a series</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location line="+18"/>
-        <location line="+47"/>
-        <location line="+63"/>
+        <location line="+45"/>
+        <location line="+54"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-105"/>
-        <location line="+47"/>
+        <location line="-94"/>
+        <location line="+45"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-32"/>
-        <location line="+44"/>
+        <location line="-30"/>
+        <location line="+42"/>
         <source>x must be a series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-35"/>
-        <location line="+57"/>
         <source>The None value cannot be converted to a series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-15"/>
+        <location line="+42"/>
         <source>y must be a series</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4207,7 +4257,7 @@ Config</source>
 <context>
     <name>DA::DAChartSeriesPickerWidget</name>
     <message>
-        <location filename="../DAGui/DAChartSeriesPickerWidget.cpp" line="+225"/>
+        <location filename="../DAGui/DAChartSeriesPickerWidget.cpp" line="+261"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4227,7 +4277,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="-201"/>
         <source>X:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6216,7 +6266,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1228"/>
+        <location filename="../APP/DAAppController.cpp" line="-1232"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6420,7 +6470,7 @@ Config</source>
     </message>
     <message>
         <location line="+16"/>
-        <source>X</source>
+        <source>Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6701,6 +6751,24 @@ Config</source>
     <message>
         <location line="+3"/>
         <source>...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartSeriesSelectWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartSeriesSelectWidget.ui" line="+14"/>
+        <source>Series Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Add series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Remove selected series</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9140,7 +9208,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+439"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+445"/>
         <source>DAPySeries: the Python object type is not pandas.Series</source>
         <translation type="unfinished"></translation>
     </message>

@@ -170,6 +170,7 @@ if(DA_ENABLE_PYTHON)
         DAPySeriesListView.h
         DAChartAddXYSeriesWidget.h
         DAChartSeriesPickerWidget.h
+        DAChartSeriesSelectWidget.h
         DAChartAddXYESeriesWidget.h
         DAChartAddOHLCSeriesWidget.h
         DAChartAddtGridRasterDataWidget.h
@@ -193,6 +194,7 @@ if(DA_ENABLE_PYTHON)
         DAPySeriesListView.cpp
         DAChartAddXYSeriesWidget.cpp
         DAChartSeriesPickerWidget.cpp
+        DAChartSeriesSelectWidget.cpp
         DAChartAddXYESeriesWidget.cpp
         DAChartAddOHLCSeriesWidget.cpp
         DAChartAddtGridRasterDataWidget.cpp
@@ -213,6 +215,7 @@ if(DA_ENABLE_PYTHON)
         DADataOperateOfDataFrameWidget.ui
         DAChartAddXYSeriesWidget.ui
         DAChartSeriesPickerWidget.ui
+        DAChartSeriesSelectWidget.ui
         DAChartAddXYESeriesWidget.ui
         DAChartAddOHLCSeriesWidget.ui
         DAChartAddtGridRasterDataWidget.ui

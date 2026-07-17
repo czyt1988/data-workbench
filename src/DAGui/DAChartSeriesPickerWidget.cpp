@@ -34,6 +34,14 @@ DAChartSeriesPickerWidget::DAChartSeriesPickerWidget(DADataManager* mgr, Role ro
     connect(ui->toolButtonReturn, &QToolButton::clicked, this, &DAChartSeriesPickerWidget::onButtonReturnClicked);
 }
 
+DAChartSeriesPickerWidget::DAChartSeriesPickerWidget(DADataManager* mgr, const QString& roleLabel, QWidget* parent)
+    : QWidget(parent, Qt::Tool | Qt::WindowStaysOnTopHint), ui(new Ui::DAChartSeriesPickerWidget), mDataMgr(mgr), mRole(RoleX), mRoleLabel(roleLabel), mPickActive(false), mConfirmed(false)
+{
+    ui->setupUi(this);
+    retranslateUi();
+    connect(ui->toolButtonReturn, &QToolButton::clicked, this, &DAChartSeriesPickerWidget::onButtonReturnClicked);
+}
+
 DAChartSeriesPickerWidget::~DAChartSeriesPickerWidget()
 {
     disconnectDataWidgets();
@@ -112,6 +120,34 @@ bool DAChartSeriesPickerWidget::resolveExpression(DAData& outData, QString& outS
 DAChartSeriesPickerWidget::Role DAChartSeriesPickerWidget::getRole() const
 {
     return mRole;
+}
+
+/**
+ * @brief 设置角色标签文本
+ * @param label 标签文本，非空时覆盖 Role 枚举的默认标签
+ */
+void DAChartSeriesPickerWidget::setRoleLabel(const QString& label)
+{
+    mRoleLabel = label;
+    retranslateUi();
+}
+
+/**
+ * @brief 获取角色标签文本
+ * @return 若 mRoleLabel 非空则返回 mRoleLabel，否则按 mRole 枚举返回默认值
+ */
+QString DAChartSeriesPickerWidget::getRoleLabel() const
+{
+    if (!mRoleLabel.isEmpty()) {
+        return mRoleLabel;
+    }
+    switch (mRole) {
+    case RoleX:
+        return tr("X:");  // cn:X:
+    case RoleY:
+        return tr("Y:");  // cn:Y:
+    }
+    return QString();
 }
 
 /**
@@ -307,19 +343,8 @@ QString DAChartSeriesPickerWidget::buildExpression(const DAData& data, const QSt
 void DAChartSeriesPickerWidget::retranslateUi()
 {
     setWindowTitle(tr("Select Series"));  // cn:选择序列
-    ui->labelRole->setText(roleLabel());
+    ui->labelRole->setText(getRoleLabel());
     ui->toolButtonReturn->setToolTip(tr("Return to add chart"));  // cn:回到添加绘图
-}
-
-QString DAChartSeriesPickerWidget::roleLabel() const
-{
-    switch (mRole) {
-    case RoleX:
-        return tr("X:");  // cn:X:
-    case RoleY:
-        return tr("Y:");  // cn:Y:
-    }
-    return QString();
 }
 
 /**

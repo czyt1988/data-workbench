@@ -31,7 +31,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="DA::DADataManagerComboBox" name="comboBoxX"/>
+           <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetX"/>
           </item>
           <item>
            <widget class="QGroupBox" name="groupBoxXAutoincrement">
@@ -92,7 +92,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="DA::DADataManagerComboBox" name="comboBoxY"/>
+           <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetY"/>
           </item>
           <item>
            <widget class="QGroupBox" name="groupBoxYAutoincrement">
@@ -159,7 +159,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
-           <widget class="DA::DADataManagerComboBox" name="comboBoxYE"/>
+           <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetYE"/>
           </item>
          </layout>
         </widget>
@@ -186,9 +186,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DA::DADataManagerComboBox</class>
-   <extends>QComboBox</extends>
-   <header>DADataManagerComboBox.h</header>
+   <class>DA::DAChartSeriesSelectWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartSeriesSelectWidget.h</header>
   </customwidget>
   <customwidget>
    <class>DA::DAPySeriesTableView</class>
@@ -197,5 +197,38 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>groupBoxXAutoincrement</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>selectWidgetX</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>251</x>
+     <y>120</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>321</x>
+     <y>75</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBoxYAutoincrement</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>selectWidgetY</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>264</x>
+     <y>322</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>306</x>
+     <y>283</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

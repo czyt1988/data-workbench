@@ -37,7 +37,6 @@ public:
 	YAxisMode getYAxisMode() const;
 private Q_SLOTS:
 	void onDataManagerChanged(DADataManager* dmgr);
-	void onCurrentDataChanged(const DAData& d);
 private:
 	Ui::DAChartAddHistogramWidget* ui;
 };

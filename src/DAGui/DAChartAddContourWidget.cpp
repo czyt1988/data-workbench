@@ -18,8 +18,10 @@ DAChartAddContourWidget::DAChartAddContourWidget(QWidget* parent)
 	: DAAbstractChartAddItemWidget(parent), ui(new Ui::DAChartAddContourWidget)
 {
 	ui->setupUi(this);
+	ui->selectWidgetX->setRoleLabel(tr("X"));  // cn:X
+	ui->selectWidgetY->setRoleLabel(tr("Y"));  // cn:Y
+	ui->selectWidgetValue->setRoleLabel(tr("Value"));  // cn:值
 	connect(this, &DAChartAddContourWidget::dataManagerChanged, this, &DAChartAddContourWidget::onDataManagerChanged);
-	connect(this, &DAChartAddContourWidget::currentDataChanged, this, &DAChartAddContourWidget::onCurrentDataChanged);
 }
 
 DAChartAddContourWidget::~DAChartAddContourWidget()
@@ -30,40 +32,42 @@ DAChartAddContourWidget::~DAChartAddContourWidget()
 void DAChartAddContourWidget::setDataManager(DADataManager* dmgr)
 {
 	DAAbstractChartAddItemWidget::setDataManager(dmgr);
-	ui->comboBoxX->setDataManager(dmgr);
-	ui->comboBoxY->setDataManager(dmgr);
-	ui->comboBoxValue->setDataManager(dmgr);
+	ui->selectWidgetX->setDataManager(dmgr);
+	ui->selectWidgetY->setDataManager(dmgr);
+	ui->selectWidgetValue->setDataManager(dmgr);
 }
 
 void DAChartAddContourWidget::onDataManagerChanged(DADataManager* dmgr)
 {
-	ui->comboBoxX->setDataManager(dmgr);
-	ui->comboBoxY->setDataManager(dmgr);
-	ui->comboBoxValue->setDataManager(dmgr);
-}
-
-void DAChartAddContourWidget::onCurrentDataChanged(const DAData& d)
-{
-	ui->comboBoxX->setCurrentDAData(d);
-	ui->comboBoxY->setCurrentDAData(d);
-	ui->comboBoxValue->setCurrentDAData(d);
+	ui->selectWidgetX->setDataManager(dmgr);
+	ui->selectWidgetY->setDataManager(dmgr);
+	ui->selectWidgetValue->setDataManager(dmgr);
 }
 
 QwtPlotItem* DAChartAddContourWidget::createPlotItem()
 {
 #if DA_ENABLE_PYTHON
-	DAData xd = ui->comboBoxX->getCurrentDAData();
-	DAData yd = ui->comboBoxY->getCurrentDAData();
-	DAData vd = ui->comboBoxValue->getCurrentDAData();
-	if (!xd.isSeries() || !yd.isSeries() || !vd.isSeries()) {
+	QPair< DAData, QString > xSel = ui->selectWidgetX->getCurrentSeries();
+	QPair< DAData, QString > ySel = ui->selectWidgetY->getCurrentSeries();
+	QPair< DAData, QString > vSel = ui->selectWidgetValue->getCurrentSeries();
+	if (xSel.first.isNull() || ySel.first.isNull() || vSel.first.isNull()) {
 		QMessageBox::warning(this,
 			tr("Warning"),  // cn:警告
 			tr("X, Y and Value must be series"));  // cn:X、Y和Value必须是序列
 		return nullptr;
 	}
-	DAPySeries xs = xd.toSeries();
-	DAPySeries ys = yd.toSeries();
-	DAPySeries vs = vd.toSeries();
+	DAPyDataFrame xdf = xSel.first.toDataFrame();
+	DAPyDataFrame ydf = ySel.first.toDataFrame();
+	DAPyDataFrame vdf = vSel.first.toDataFrame();
+	if (xdf.isNone() || ydf.isNone() || vdf.isNone()) {
+		QMessageBox::warning(this,
+			tr("Warning"),  // cn:警告
+			tr("The selected data cannot be converted to a series"));  // cn:所选数据无法转换为序列
+		return nullptr;
+	}
+	DAPySeries xs = xdf[ xSel.second ];
+	DAPySeries ys = ydf[ ySel.second ];
+	DAPySeries vs = vdf[ vSel.second ];
 	if (xs.isNone() || ys.isNone() || vs.isNone()) {
 		QMessageBox::warning(this,
 			tr("Warning"),  // cn:警告
@@ -100,7 +104,7 @@ QwtPlotItem* DAChartAddContourWidget::createPlotItem()
 		} else {
 			item->setColorRange(QwtInterval(0.0, 1.0));
 		}
-		item->setTitle(vd.getName());
+		item->setTitle(vSel.second);
 		return item;
 	} catch (const std::exception& e) {
 		daCritical << tr("Exception occurred during extracting contour data:%1").arg(e.what());  // cn:提取等高线数据过程中出现异常:%1

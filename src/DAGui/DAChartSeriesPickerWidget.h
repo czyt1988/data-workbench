@@ -32,6 +32,8 @@ class DAGUI_API DAChartSeriesPickerWidget : public QWidget
 public:
     /**
      * @brief 选择目标角色
+     *
+     * @note 仅为向后兼容保留，新代码应使用 @ref setRoleLabel 设置任意角色标签
      */
     enum Role
     {
@@ -40,6 +42,13 @@ public:
     };
 
     explicit DAChartSeriesPickerWidget(DADataManager* mgr, Role role, QWidget* parent = nullptr);
+    /**
+     * @brief 构造一个使用自定义角色标签的 picker
+     * @param mgr 数据管理器
+     * @param roleLabel 角色标签文本（如 "Open:" / "High:" / "U:" / "V:" / "Error:"），为空时退化为 "X:"
+     * @param parent 父窗口
+     */
+    explicit DAChartSeriesPickerWidget(DADataManager* mgr, const QString& roleLabel, QWidget* parent = nullptr);
     ~DAChartSeriesPickerWidget();
     // 获取表达式文本
     QString getExpression() const;
@@ -49,6 +58,10 @@ public:
     bool resolveExpression(DAData& outData, QString& outSeriesName) const;
     // 获取选择目标角色
     Role getRole() const;
+    // 设置角色标签文本（如 "Open:" / "U:"），覆盖 Role 枚举的默认标签
+    void setRoleLabel(const QString& label);
+    // 获取角色标签文本
+    QString getRoleLabel() const;
 
 public Q_SLOTS:
     // 开始选择：raise 数据窗口，连接点击信号
@@ -78,13 +91,13 @@ private:
     DADataOperateWidget* findDataOperateWidget() const;
     QString buildExpression(const DAData& data, const QString& seriesName) const;
     void retranslateUi();
-    QString roleLabel() const;
     static void raiseDockWidget(QWidget* w);
 
 private:
     Ui::DAChartSeriesPickerWidget* ui;
     DADataManager* mDataMgr;
     Role mRole;
+    QString mRoleLabel;  ///< 自定义角色标签，非空时覆盖 Role 枚举的默认标签
     bool mPickActive;
     bool mConfirmed;
     QMetaObject::Connection mConnTreeClicked;

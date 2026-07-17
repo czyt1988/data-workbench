@@ -24,7 +24,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="DA::DADataManagerComboBox" name="comboBoxX"/>
+       <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetX"/>
       </item>
      </layout>
     </widget>
@@ -39,7 +39,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <widget class="DA::DADataManagerComboBox" name="comboBoxY"/>
+       <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetY"/>
       </item>
      </layout>
     </widget>
@@ -54,7 +54,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_4">
       <item>
-       <widget class="DA::DADataManagerComboBox" name="comboBoxU"/>
+       <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetU"/>
       </item>
      </layout>
     </widget>
@@ -69,7 +69,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_5">
       <item>
-       <widget class="DA::DADataManagerComboBox" name="comboBoxV"/>
+       <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetV"/>
       </item>
      </layout>
     </widget>
@@ -98,9 +98,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DA::DADataManagerComboBox</class>
-   <extends>QComboBox</extends>
-   <header>DADataManagerComboBox.h</header>
+   <class>DA::DAChartSeriesSelectWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartSeriesSelectWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

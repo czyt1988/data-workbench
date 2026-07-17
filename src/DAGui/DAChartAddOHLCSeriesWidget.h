@@ -34,14 +34,13 @@ public:
 	QVector< QwtOHLCSample > getSeries() const;
 
 private Q_SLOTS:
-	void onComboBoxTCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
-	void onComboBoxOCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
-	void onComboBoxHCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
-	void onComboBoxLCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
-	void onComboBoxCCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
+	void onTSeriesChanged();
+	void onOSeriesChanged();
+	void onHSeriesChanged();
+	void onLSeriesChanged();
+	void onCSeriesChanged();
 	void onGroupBoxTAutoincrementClicked(bool on);
     void onDataManagerChanged(DADataManager* dmgr);
-    void onCurrentDataChanged(const DAData& d);
 
 protected:
 	// 获取x自增

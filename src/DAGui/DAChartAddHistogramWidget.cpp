@@ -18,8 +18,8 @@ DAChartAddHistogramWidget::DAChartAddHistogramWidget(QWidget* parent)
 	: DAAbstractChartAddItemWidget(parent), ui(new Ui::DAChartAddHistogramWidget)
 {
 	ui->setupUi(this);
+	ui->selectWidgetData->setRoleLabel(tr("Data"));  // cn:数据
 	connect(this, &DAChartAddHistogramWidget::dataManagerChanged, this, &DAChartAddHistogramWidget::onDataManagerChanged);
-	connect(this, &DAChartAddHistogramWidget::currentDataChanged, this, &DAChartAddHistogramWidget::onCurrentDataChanged);
 }
 
 DAChartAddHistogramWidget::~DAChartAddHistogramWidget()
@@ -30,17 +30,12 @@ DAChartAddHistogramWidget::~DAChartAddHistogramWidget()
 void DAChartAddHistogramWidget::setDataManager(DADataManager* dmgr)
 {
 	DAAbstractChartAddItemWidget::setDataManager(dmgr);
-	ui->comboBoxData->setDataManager(dmgr);
+	ui->selectWidgetData->setDataManager(dmgr);
 }
 
 void DAChartAddHistogramWidget::onDataManagerChanged(DADataManager* dmgr)
 {
-	ui->comboBoxData->setDataManager(dmgr);
-}
-
-void DAChartAddHistogramWidget::onCurrentDataChanged(const DAData& d)
-{
-	ui->comboBoxData->setCurrentDAData(d);
+	ui->selectWidgetData->setDataManager(dmgr);
 }
 
 /**
@@ -58,17 +53,27 @@ DAChartAddHistogramWidget::YAxisMode DAChartAddHistogramWidget::getYAxisMode() c
 QwtPlotItem* DAChartAddHistogramWidget::createPlotItem()
 {
 #if DA_ENABLE_PYTHON
-	DAData d = ui->comboBoxData->getCurrentDAData();
-	if (!d.isSeries()) {
+	QPair< DAData, QString > sel = ui->selectWidgetData->getCurrentSeries();
+	DAData d = sel.first;
+	QString seriesName = sel.second;
+	if (!d.isDataFrame()) {
 		QMessageBox::warning(this,
 			tr("Warning"),  // cn:警告
 			tr("Please select a series"));  // cn:请选择一个序列
 		return nullptr;
 	}
-	DAPySeries s = d.toSeries();
-	if (s.isNone()) {
+	DAPyDataFrame df = d.toDataFrame();
+	if (df.isNone()) {
 		return nullptr;
 	}
+	DAPySeries s = df[ seriesName ];
+	if (s.isNone()) {
+		QMessageBox::warning(this,
+			tr("Warning"),  // cn:警告
+			tr("Please select a series"));  // cn:请选择一个序列
+		return nullptr;
+	}
+	QString title = seriesName;
 	std::vector< double > raw;
 	raw.reserve(s.size());
 	try {
@@ -100,7 +105,7 @@ QwtPlotItem* DAChartAddHistogramWidget::createPlotItem()
 		samples.append(QwtIntervalSample(value, minV, minV + 1.0));
 		QwtPlotHistogram* item = new QwtPlotHistogram();
 		item->setSamples(samples);
-		item->setTitle(d.getName());
+		item->setTitle(title);
 		return item;
 	}
 	int binCount = ui->spinBoxBins->value();
@@ -131,7 +136,7 @@ QwtPlotItem* DAChartAddHistogramWidget::createPlotItem()
 	}
 	QwtPlotHistogram* item = new QwtPlotHistogram();
 	item->setSamples(samples);
-	item->setTitle(d.getName());
+	item->setTitle(title);
 	return item;
 #else
 	return nullptr;

@@ -27,14 +27,14 @@
        <item>
         <widget class="QGroupBox" name="groupBoxX">
          <property name="title">
-          <string>X</string>
+          <string>Time</string>
          </property>
          <property name="flat">
           <bool>true</bool>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="DA::DADataManagerComboBox" name="comboBoxT"/>
+           <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetT"/>
           </item>
           <item>
            <widget class="QGroupBox" name="groupBoxTAutoincrement">
@@ -95,7 +95,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="DA::DADataManagerComboBox" name="comboBoxO"/>
+           <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetO"/>
           </item>
          </layout>
         </widget>
@@ -110,7 +110,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_5">
           <item>
-           <widget class="DA::DADataManagerComboBox" name="comboBoxH"/>
+           <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetH"/>
           </item>
          </layout>
         </widget>
@@ -125,7 +125,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
-           <widget class="DA::DADataManagerComboBox" name="comboBoxL"/>
+           <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetL"/>
           </item>
          </layout>
         </widget>
@@ -140,7 +140,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
-           <widget class="DA::DADataManagerComboBox" name="comboBoxC"/>
+           <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetC"/>
           </item>
          </layout>
         </widget>
@@ -167,9 +167,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DA::DADataManagerComboBox</class>
-   <extends>QComboBox</extends>
-   <header>DADataManagerComboBox.h</header>
+   <class>DA::DAChartSeriesSelectWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartSeriesSelectWidget.h</header>
   </customwidget>
   <customwidget>
    <class>DA::DAPySeriesTableView</class>
@@ -178,5 +178,22 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>groupBoxTAutoincrement</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>selectWidgetT</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>251</x>
+     <y>120</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>321</x>
+     <y>75</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

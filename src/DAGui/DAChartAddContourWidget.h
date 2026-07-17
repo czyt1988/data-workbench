@@ -25,7 +25,6 @@ public:
 	virtual void setDataManager(DADataManager* dmgr) override;
 private Q_SLOTS:
 	void onDataManagerChanged(DADataManager* dmgr);
-	void onCurrentDataChanged(const DAData& d);
 private:
 	Ui::DAChartAddContourWidget* ui;
 };

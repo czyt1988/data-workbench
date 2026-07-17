@@ -36,13 +36,12 @@ public:
 	// 根据配置获取数据
 	QVector< QwtIntervalSample > getSeries() const;
 private Q_SLOTS:
-	void onComboBoxXCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
-	void onComboBoxYCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
-	void onComboBoxYECurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
+	void onXSeriesChanged();
+	void onYSeriesChanged();
+	void onYESeriesChanged();
 	void onGroupBoxXAutoincrementClicked(bool on);
 	void onGroupBoxYAutoincrementClicked(bool on);
 	void onDataManagerChanged(DADataManager* dmgr);
-	void onCurrentDataChanged(const DAData& d);
 
 protected:
 	// 获取x自增

@@ -4,6 +4,7 @@
 #include "DADataManager.h"
 #include "Models/DADataManagerTreeModel.h"
 #include "DALogCategory.h"
+#include "DAChartSeriesSelectWidget.h"
 #include "qwt_samples.h"
 #include "qwt_plot_tradingcurve.h"
 #if DA_ENABLE_PYTHON
@@ -45,28 +46,17 @@ DAChartAddOHLCSeriesWidget::DAChartAddOHLCSeriesWidget(QWidget* parent)
 #endif
     QFontMetrics fm = fontMetrics();
     ui->tableViewOHLC->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
+    ui->selectWidgetT->setRoleLabel(tr("Time"));  // cn:时间
+    ui->selectWidgetO->setRoleLabel(tr("Open"));  // cn:开盘
+    ui->selectWidgetH->setRoleLabel(tr("High"));  // cn:最高
+    ui->selectWidgetL->setRoleLabel(tr("Low"));  // cn:最低
+    ui->selectWidgetC->setRoleLabel(tr("Close"));  // cn:收盘
     connect(this, &DAChartAddOHLCSeriesWidget::dataManagerChanged, this, &DAChartAddOHLCSeriesWidget::onDataManagerChanged);
-    connect(this, &DAChartAddOHLCSeriesWidget::currentDataChanged, this, &DAChartAddOHLCSeriesWidget::onCurrentDataChanged);
-    connect(ui->comboBoxT,
-            &DADataManagerComboBox::currentDataframeSeriesChanged,
-            this,
-            &DAChartAddOHLCSeriesWidget::onComboBoxTCurrentDataframeSeriesChanged);
-    connect(ui->comboBoxO,
-            &DADataManagerComboBox::currentDataframeSeriesChanged,
-            this,
-            &DAChartAddOHLCSeriesWidget::onComboBoxOCurrentDataframeSeriesChanged);
-    connect(ui->comboBoxH,
-            &DADataManagerComboBox::currentDataframeSeriesChanged,
-            this,
-            &DAChartAddOHLCSeriesWidget::onComboBoxHCurrentDataframeSeriesChanged);
-    connect(ui->comboBoxL,
-            &DADataManagerComboBox::currentDataframeSeriesChanged,
-            this,
-            &DAChartAddOHLCSeriesWidget::onComboBoxLCurrentDataframeSeriesChanged);
-    connect(ui->comboBoxC,
-            &DADataManagerComboBox::currentDataframeSeriesChanged,
-            this,
-            &DAChartAddOHLCSeriesWidget::onComboBoxCCurrentDataframeSeriesChanged);
+    connect(ui->selectWidgetT, &DAChartSeriesSelectWidget::seriesChanged, this, &DAChartAddOHLCSeriesWidget::onTSeriesChanged);
+    connect(ui->selectWidgetO, &DAChartSeriesSelectWidget::seriesChanged, this, &DAChartAddOHLCSeriesWidget::onOSeriesChanged);
+    connect(ui->selectWidgetH, &DAChartSeriesSelectWidget::seriesChanged, this, &DAChartAddOHLCSeriesWidget::onHSeriesChanged);
+    connect(ui->selectWidgetL, &DAChartSeriesSelectWidget::seriesChanged, this, &DAChartAddOHLCSeriesWidget::onLSeriesChanged);
+    connect(ui->selectWidgetC, &DAChartSeriesSelectWidget::seriesChanged, this, &DAChartAddOHLCSeriesWidget::onCSeriesChanged);
     connect(ui->groupBoxTAutoincrement, &QGroupBox::clicked, this, &DAChartAddOHLCSeriesWidget::onGroupBoxTAutoincrementClicked);
 }
 
@@ -101,16 +91,16 @@ QVector< QwtOHLCSample > DAChartAddOHLCSeriesWidget::getSeries() const
  * @param data
  * @param seriesName
  */
-void DAChartAddOHLCSeriesWidget::onComboBoxTCurrentDataframeSeriesChanged(const DAData& data, const QString& seriesName)
+void DAChartAddOHLCSeriesWidget::onTSeriesChanged()
 {
-    if (seriesName.isEmpty()) {
-        return;
-    }
 #if DA_ENABLE_PYTHON
+    QPair< DAData, QString > sel = ui->selectWidgetT->getCurrentSeries();
     DAPySeries series;
-    DAPyDataFrame df = data.toDataFrame();
-    if (!df.isNone()) {
-        series = df[ seriesName ];
+    if (!sel.first.isNull()) {
+        DAPyDataFrame df = sel.first.toDataFrame();
+        if (!df.isNone()) {
+            series = df[ sel.second ];
+        }
     }
     ui->tableViewOHLC->setSeriesAt(0, series);
 #endif
@@ -121,16 +111,16 @@ void DAChartAddOHLCSeriesWidget::onComboBoxTCurrentDataframeSeriesChanged(const 
  * @param data
  * @param seriesName
  */
-void DAChartAddOHLCSeriesWidget::onComboBoxOCurrentDataframeSeriesChanged(const DAData& data, const QString& seriesName)
+void DAChartAddOHLCSeriesWidget::onOSeriesChanged()
 {
-    if (seriesName.isEmpty()) {
-        return;
-    }
 #if DA_ENABLE_PYTHON
+    QPair< DAData, QString > sel = ui->selectWidgetO->getCurrentSeries();
     DAPySeries series;
-    DAPyDataFrame df = data.toDataFrame();
-    if (!df.isNone()) {
-        series = df[ seriesName ];
+    if (!sel.first.isNull()) {
+        DAPyDataFrame df = sel.first.toDataFrame();
+        if (!df.isNone()) {
+            series = df[ sel.second ];
+        }
     }
     ui->tableViewOHLC->setSeriesAt(1, series);
 #endif
@@ -141,16 +131,16 @@ void DAChartAddOHLCSeriesWidget::onComboBoxOCurrentDataframeSeriesChanged(const 
  * @param data
  * @param seriesName
  */
-void DAChartAddOHLCSeriesWidget::onComboBoxHCurrentDataframeSeriesChanged(const DAData& data, const QString& seriesName)
+void DAChartAddOHLCSeriesWidget::onHSeriesChanged()
 {
-    if (seriesName.isEmpty()) {
-        return;
-    }
 #if DA_ENABLE_PYTHON
+    QPair< DAData, QString > sel = ui->selectWidgetH->getCurrentSeries();
     DAPySeries series;
-    DAPyDataFrame df = data.toDataFrame();
-    if (!df.isNone()) {
-        series = df[ seriesName ];
+    if (!sel.first.isNull()) {
+        DAPyDataFrame df = sel.first.toDataFrame();
+        if (!df.isNone()) {
+            series = df[ sel.second ];
+        }
     }
     ui->tableViewOHLC->setSeriesAt(2, series);
 #endif
@@ -161,16 +151,16 @@ void DAChartAddOHLCSeriesWidget::onComboBoxHCurrentDataframeSeriesChanged(const 
  * @param data
  * @param seriesName
  */
-void DAChartAddOHLCSeriesWidget::onComboBoxLCurrentDataframeSeriesChanged(const DAData& data, const QString& seriesName)
+void DAChartAddOHLCSeriesWidget::onLSeriesChanged()
 {
-    if (seriesName.isEmpty()) {
-        return;
-    }
 #if DA_ENABLE_PYTHON
+    QPair< DAData, QString > sel = ui->selectWidgetL->getCurrentSeries();
     DAPySeries series;
-    DAPyDataFrame df = data.toDataFrame();
-    if (!df.isNone()) {
-        series = df[ seriesName ];
+    if (!sel.first.isNull()) {
+        DAPyDataFrame df = sel.first.toDataFrame();
+        if (!df.isNone()) {
+            series = df[ sel.second ];
+        }
     }
     ui->tableViewOHLC->setSeriesAt(3, series);
 #endif
@@ -181,16 +171,16 @@ void DAChartAddOHLCSeriesWidget::onComboBoxLCurrentDataframeSeriesChanged(const 
  * @param data
  * @param seriesName
  */
-void DAChartAddOHLCSeriesWidget::onComboBoxCCurrentDataframeSeriesChanged(const DAData& data, const QString& seriesName)
+void DAChartAddOHLCSeriesWidget::onCSeriesChanged()
 {
-    if (seriesName.isEmpty()) {
-        return;
-    }
 #if DA_ENABLE_PYTHON
+    QPair< DAData, QString > sel = ui->selectWidgetC->getCurrentSeries();
     DAPySeries series;
-    DAPyDataFrame df = data.toDataFrame();
-    if (!df.isNone()) {
-        series = df[ seriesName ];
+    if (!sel.first.isNull()) {
+        DAPyDataFrame df = sel.first.toDataFrame();
+        if (!df.isNone()) {
+            series = df[ sel.second ];
+        }
     }
     ui->tableViewOHLC->setSeriesAt(4, series);
 #endif
@@ -210,33 +200,19 @@ void DAChartAddOHLCSeriesWidget::onGroupBoxTAutoincrementClicked(bool on)
         }
     } else {
         // 取消要读取回原来的设置
-        DAPySeries series;
-        DAData data = ui->comboBoxT->getCurrentDAData();
-        if (data) {
-            series = data.toSeries();
-        }
-        ui->tableViewOHLC->setSeriesAt(0, series);
+        onTSeriesChanged();
     }
-    ui->comboBoxT->setEnabled(!on);
+    ui->selectWidgetT->setEnabled(!on);
 #endif
 }
 
 void DAChartAddOHLCSeriesWidget::onDataManagerChanged(DADataManager* dmgr)
 {
-    ui->comboBoxT->setDataManager(dmgr);
-    ui->comboBoxO->setDataManager(dmgr);
-    ui->comboBoxH->setDataManager(dmgr);
-    ui->comboBoxL->setDataManager(dmgr);
-    ui->comboBoxC->setDataManager(dmgr);
-}
-
-void DAChartAddOHLCSeriesWidget::onCurrentDataChanged(const DAData& d)
-{
-    ui->comboBoxT->setCurrentDAData(d);
-    ui->comboBoxO->setCurrentDAData(d);
-    ui->comboBoxH->setCurrentDAData(d);
-    ui->comboBoxL->setCurrentDAData(d);
-    ui->comboBoxC->setCurrentDAData(d);
+    ui->selectWidgetT->setDataManager(dmgr);
+    ui->selectWidgetO->setDataManager(dmgr);
+    ui->selectWidgetH->setDataManager(dmgr);
+    ui->selectWidgetL->setDataManager(dmgr);
+    ui->selectWidgetC->setDataManager(dmgr);
 }
 
 /**
@@ -281,47 +257,49 @@ bool DAChartAddOHLCSeriesWidget::getToVectorPointFFromUI(QVector< QwtOHLCSample 
 {
     bool isTAuto = ui->groupBoxTAutoincrement->isChecked();
 #if DA_ENABLE_PYTHON
+    // 辅助 lambda：从 DAChartSeriesSelectWidget 提取 DAPySeries
+    auto extractSeries = [](DAChartSeriesSelectWidget* w) -> DAPySeries {
+        QPair< DAData, QString > sel = w->getCurrentSeries();
+        if (sel.first.isNull()) {
+            return DAPySeries();
+        }
+        DAPyDataFrame df = sel.first.toDataFrame();
+        if (df.isNone()) {
+            return DAPySeries();
+        }
+        return df[ sel.second ];
+    };
     if (isTAuto) {  // 不存在同时，因此这个就是x自增
         DAAutoincrementSeries< double > tinc;
         if (!getTAutoIncFromUI(tinc)) {
             return false;
         }
-        DAData od = ui->comboBoxO->getCurrentDAData();
-        DAData hd = ui->comboBoxH->getCurrentDAData();
-        DAData ld = ui->comboBoxL->getCurrentDAData();
-        DAData cd = ui->comboBoxC->getCurrentDAData();
-        if (!od.isSeries()) {
+        DAPySeries o = extractSeries(ui->selectWidgetO);
+        DAPySeries h = extractSeries(ui->selectWidgetH);
+        DAPySeries l = extractSeries(ui->selectWidgetL);
+        DAPySeries c = extractSeries(ui->selectWidgetC);
+        if (o.isNone()) {
             QMessageBox::warning(this,
                                  tr("Warning"),                       // cn:警告
                                  tr("open value must be a series"));  // cn:开盘值必须是序列
             return false;
         }
-        if (!hd.isSeries()) {
+        if (h.isNone()) {
             QMessageBox::warning(this,
                                  tr("Warning"),                       // cn:警告
                                  tr("high value must be a series"));  // cn:最高值必须是序列
             return false;
         }
-        if (!ld.isSeries()) {
+        if (l.isNone()) {
             QMessageBox::warning(this,
                                  tr("Warning"),                      // cn:警告
                                  tr("low value must be a series"));  // cn:最低值必须是序列
             return false;
         }
-        if (!cd.isSeries()) {
+        if (c.isNone()) {
             QMessageBox::warning(this,
                                  tr("Warning"),                        // cn:警告
                                  tr("close value must be a series"));  // cn:收盘值必须是序列
-            return false;
-        }
-        DAPySeries o = od.toSeries();
-        DAPySeries h = hd.toSeries();
-        DAPySeries l = ld.toSeries();
-        DAPySeries c = cd.toSeries();
-        if (o.isNone() || h.isNone() || l.isNone() || c.isNone()) {
-            QMessageBox::warning(this,
-                                 tr("Warning"),                                          // cn:警告
-                                 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
             return false;
         }
         std::size_t s = o.size();
@@ -354,51 +332,40 @@ bool DAChartAddOHLCSeriesWidget::getToVectorPointFFromUI(QVector< QwtOHLCSample 
             return false;
         }
     } else {
-        DAData td = ui->comboBoxT->getCurrentDAData();
-        DAData od = ui->comboBoxO->getCurrentDAData();
-        DAData hd = ui->comboBoxH->getCurrentDAData();
-        DAData ld = ui->comboBoxL->getCurrentDAData();
-        DAData cd = ui->comboBoxC->getCurrentDAData();
-        if (!td.isSeries()) {
+        DAPySeries t = extractSeries(ui->selectWidgetT);
+        DAPySeries o = extractSeries(ui->selectWidgetO);
+        DAPySeries h = extractSeries(ui->selectWidgetH);
+        DAPySeries l = extractSeries(ui->selectWidgetL);
+        DAPySeries c = extractSeries(ui->selectWidgetC);
+        if (t.isNone()) {
             QMessageBox::warning(this,
                                  tr("Warning"),                     // cn:警告
                                  tr("time value must be a series")  // cn:时间必须是序列
             );
             return false;
         }
-        if (!od.isSeries()) {
+        if (o.isNone()) {
             QMessageBox::warning(this,
                                  tr("Warning"),                       // cn:警告
                                  tr("open value must be a series"));  // cn:开盘值必须是序列
             return false;
         }
-        if (!hd.isSeries()) {
+        if (h.isNone()) {
             QMessageBox::warning(this,
                                  tr("Warning"),                       // cn:警告
                                  tr("high value must be a series"));  // cn:最高值必须是序列
             return false;
         }
-        if (!ld.isSeries()) {
+        if (l.isNone()) {
             QMessageBox::warning(this,
                                  tr("Warning"),                      // cn:警告
                                  tr("low value must be a series"));  // cn:最低值必须是序列
             return false;
         }
-        if (!cd.isSeries()) {
+        if (c.isNone()) {
             QMessageBox::warning(this,
                                  tr("Warning"),                        // cn:警告
                                  tr("close value must be a series"));  // cn:收盘值必须是序列
-            return false;
-        }
-        DAPySeries t = td.toSeries();
-        DAPySeries o = od.toSeries();
-        DAPySeries h = hd.toSeries();
-        DAPySeries l = ld.toSeries();
-        DAPySeries c = cd.toSeries();
-        if (o.isNone() || h.isNone() || l.isNone() || c.isNone()) {
-            QMessageBox::warning(this,
-                                 tr("Warning"),                                          // cn:警告
-                                 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
             return false;
         }
 
