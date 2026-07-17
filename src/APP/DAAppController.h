@@ -387,6 +387,8 @@ private Q_SLOTS:
     void onCurrentChartChanged(DA::DAChartWidget* c);
     // 图表编辑器状态改变
     void onChartEditorStatusChanged(DA::DAFigureWidget::ChartEditorStatus status);
+    // 绘图项创建完成（DADialogChartGuide 确认后），提升绘图 dock 显示新绘图
+    void onPlotItemCreated(DA::DAFigureWidget* f, DA::DAChartWidget* plot, QwtPlotItem* item);
     //===================================================
     // project
     //===================================================

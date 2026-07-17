@@ -428,6 +428,10 @@ void DAAppController::initConnection()
     DAChartOperateWidget* cow = mDock->getChartOperateWidget();
     connect(cow, &DAChartOperateWidget::figureCreated, this, &DAAppController::onFigureCreated);
     connect(cow, &DAChartOperateWidget::currentFigureChanged, this, &DAAppController::onCurrentFigureChanged);
+    // 绘图项创建完成时提升绘图 dock，让用户能看到新绘图
+    if (DAAppChartOperateWidget* appCow = qobject_cast< DAAppChartOperateWidget* >(cow)) {
+        connect(appCow, &DAAppChartOperateWidget::plotItemCreated, this, &DAAppController::onPlotItemCreated);
+    }
     //
     DAPyWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
     // 鼠标动作完成的触发
@@ -1541,6 +1545,22 @@ void DAAppController::onChartEditorStatusChanged(DAFigureWidget::ChartEditorStat
     }
 }
 /**
+ * @brief 绘图项创建完成（DADialogChartGuide 确认后）
+ *
+ * 此时用户已在绘图引导对话框中确认添加绘图，提升绘图 dock 让用户看到新创建的绘图
+ * @param fig 绘图窗口
+ * @param plot 图表
+ * @param item 创建的绘图项
+ */
+void DAAppController::onPlotItemCreated(DAFigureWidget* f, DAChartWidget* plot, QwtPlotItem* item)
+{
+    Q_UNUSED(f);
+    Q_UNUSED(plot);
+    Q_UNUSED(item);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+}
+
+/**
  * @brief 添加数据
  */
 void DAAppController::onActionAddDataTriggered()
@@ -1634,7 +1654,6 @@ void DAAppController::onActionChartAddCurveTriggered()
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
     chartopt->showPlotGuideDialog(DA::DAChartTypes::Curve);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
 /**
@@ -1645,7 +1664,6 @@ void DAAppController::onActionChartAddScatterTriggered()
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
     chartopt->showPlotGuideDialog(DA::DAChartTypes::Scatter);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
 /**
@@ -1656,7 +1674,6 @@ void DAAppController::onActionChartAddBarTriggered()
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
     chartopt->showPlotGuideDialog(DA::DAChartTypes::Bar);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
 /**
@@ -1667,7 +1684,6 @@ void DAAppController::onActionactionChartAddErrorBarTriggered()
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
     chartopt->showPlotGuideDialog(DA::DAChartTypes::ErrorBar);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
 /**
@@ -1678,7 +1694,6 @@ void DAAppController::onActionChartAddBoxPlotTriggered()
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
     chartopt->showPlotGuideDialog(DA::DAChartTypes::Box);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
 /**
@@ -1689,7 +1704,6 @@ void DAAppController::onActionChartAddCloudMapTriggered()
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
     chartopt->showPlotGuideDialog(DA::DAChartTypes::Spectrogram);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
 /**
@@ -1700,7 +1714,6 @@ void DAAppController::onActionChartAddMultiBarTriggered()
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
     chartopt->showPlotGuideDialog(DA::DAChartTypes::MultiBar);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
 /**
@@ -1711,7 +1724,6 @@ void DAAppController::onActionChartAddHistogramTriggered()
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
     chartopt->showPlotGuideDialog(DA::DAChartTypes::Histogram);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
 /**
@@ -1722,7 +1734,6 @@ void DAAppController::onActionChartAddContourMapTriggered()
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
     chartopt->showPlotGuideDialog(DA::DAChartTypes::Contour);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
 /**
@@ -1733,7 +1744,6 @@ void DAAppController::onActionChartAddVectorfieldTriggered()
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
     chartopt->showPlotGuideDialog(DA::DAChartTypes::VectorField);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
 /**
