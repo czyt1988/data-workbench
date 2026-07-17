@@ -93,6 +93,8 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     // 关闭不必要的绘制特性
     setDAData(d);
     connect(ui->tableView, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);
+    // 表头点击信号转发，用于"选择序列"窗口拾取列
+    connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionClicked, this, &DADataOperateOfDataFrameWidget::columnHeaderClicked);
     // 选中变化时反向同步 ribbon 控件
     if (auto sm = ui->tableView->selectionModel()) {
         connect(sm, &QItemSelectionModel::selectionChanged, this, [ this ]() {

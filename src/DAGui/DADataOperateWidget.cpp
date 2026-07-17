@@ -32,6 +32,7 @@ public:
     QMap< DA::DAData, QPointer< QWidget > > _dataToWidget;  ///< 记录数据对应的窗口
     DADataManager* _dataManager;
     DATableStyleRegistry* _styleRegistry { nullptr };  ///< 表格样式会话级注册表，随数据存在
+    QMetaObject::Connection _currentHeaderConn;  ///< 当前 DataFrame 窗口的表头点击连接
 };
 
 DADataOperateWidget::PrivateData::PrivateData(DADataOperateWidget* p) : q_ptr(p)
@@ -366,10 +367,18 @@ void DADataOperateWidget::onTabWidgetCurrentChanged(int index)
     if (!w) {
         return;
     }
+    // 断开旧的表头点击连接
+    if (d_ptr->_currentHeaderConn) {
+        disconnect(d_ptr->_currentHeaderConn);
+        d_ptr->_currentHeaderConn = QMetaObject::Connection();
+    }
 #if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* d = qobject_cast< DADataOperateOfDataFrameWidget* >(w)) {
         // 激活undostack
         d->activeUndoStack();
+        // 连接当前 DataFrame 窗口的表头点击信号，转发出去
+        d_ptr->_currentHeaderConn = connect(d, &DADataOperateOfDataFrameWidget::columnHeaderClicked,
+                                            this, &DADataOperateWidget::currentDataFrameColumnHeaderClicked);
     }
 #endif
     emit currentDataTableWidgetChanged(qobject_cast< DADataOperatePageWidget* >(w), index);

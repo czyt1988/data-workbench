@@ -85,6 +85,12 @@ public:
 Q_SIGNALS:
     // 选中区变化时发射当前代表样式，供 ribbon 控件反向同步
     void currentStyleChanged(const DA::DATableCellStyle& style);
+    /**
+     * @brief 表格水平表头单击
+     * @param logicalIndex 列逻辑索引
+     * @note 用于"选择序列"窗口拾取表格列
+     */
+    void columnHeaderClicked(int logicalIndex);
 public Q_SLOTS:
     void setDAData(const DA::DAData& d);
     // 在选中行后面插入行

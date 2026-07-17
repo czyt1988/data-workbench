@@ -22,6 +22,7 @@ DADataManageWidget::DADataManageWidget(QWidget* parent) : QWidget(parent), ui(ne
     ui->setupUi(this);
     connect(ui->dataTreeWidget, &DADataManagerTreeWidget::dataDbClicked, this, &DADataManageWidget::dataDbClicked);
     connect(ui->dataTreeWidget, &DADataManagerTreeWidget::dataSeriesDbClicked, this, &DADataManageWidget::dataSeriesDbClicked);
+    connect(ui->dataTreeWidget, &DADataManagerTreeWidget::dataSeriesClicked, this, &DADataManageWidget::dataSeriesClicked);
     retranslateUi();
 }
 

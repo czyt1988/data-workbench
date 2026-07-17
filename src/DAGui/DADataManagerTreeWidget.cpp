@@ -108,6 +108,7 @@ DADataManagerTreeWidget::DADataManagerTreeWidget(QWidget* parent)
     connect(d_ptr->filterTimer, &QTimer::timeout, this, &DADataManagerTreeWidget::applyFilter);
 
     connect(ui->treeView, &QTreeView::doubleClicked, this, &DADataManagerTreeWidget::onTreeViewDoubleClicked);
+    connect(ui->treeView, &QTreeView::clicked, this, &DADataManagerTreeWidget::onTreeViewClicked);
 }
 
 DADataManagerTreeWidget::~DADataManagerTreeWidget()
@@ -355,6 +356,30 @@ void DADataManagerTreeWidget::onTreeViewDoubleClicked(const QModelIndex& index)
             }
         }
     }
+}
+
+/**
+ * @brief 树形单击
+ *
+ * 仅子节点(dataframe.series)单击触发 dataSeriesClicked，
+ * 根节点(dataframe)单击不触发，避免误拾取整个 dataframe。
+ */
+void DADataManagerTreeWidget::onTreeViewClicked(const QModelIndex& index)
+{
+    if (!index.parent().isValid()) {
+        return;
+    }
+    DA_D(d);
+    const QModelIndex srcIndex = d->proxyModel->mapToSource(index);
+    QStandardItem* item        = d->model->itemFromIndex(srcIndex);
+    if (!item) {
+        return;
+    }
+    DAData data = DADataManagerTreeModel::itemToData(item);
+    if (data.isNull()) {
+        return;
+    }
+    Q_EMIT dataSeriesClicked(data, item->text());
 }
 
 void DADataManagerTreeWidget::updateFilter(const QString& text)

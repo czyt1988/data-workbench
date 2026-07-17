@@ -7,6 +7,7 @@
 // DAUtil
 #include "DAAutoincrementSeries.hpp"
 // DAGui
+#include "DAChartSeriesPickerWidget.h"
 
 namespace Ui
 {
@@ -54,6 +55,8 @@ private Q_SLOTS:
 
     void onButtonXRemoveClicked();
     void onButtonYRemoveClicked();
+    void onButtonXAddClicked();
+    void onButtonYAddClicked();
 
 protected:
     // 获取x自增
@@ -74,9 +77,14 @@ protected:
 
 private:
     QPair< DAData, QString > getFirstValue(const QList< QPair< DAData, QStringList > >& datas) const;
+    DAChartSeriesPickerWidget* ensurePicker(DAChartSeriesPickerWidget*& picker, DAChartSeriesPickerWidget::Role role);
+    void showParentGuideDialog();
+    void hideParentGuideDialog();
 
 private:
     Ui::DAChartAddXYSeriesWidget* ui;
+    DAChartSeriesPickerWidget* mPickerX { nullptr };
+    DAChartSeriesPickerWidget* mPickerY { nullptr };
 };
 }
 #endif  // DACHARTADDXYSERIESWIDGET_H

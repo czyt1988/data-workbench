@@ -20,10 +20,21 @@ class DAGUI_API DAChartAddHistogramWidget : public DAAbstractChartAddItemWidget
 {
 	Q_OBJECT
 public:
+	/**
+	 * @brief Y 轴显示方案
+	 */
+	enum YAxisMode
+	{
+		Count,    ///< 累计值，每个 bin 的计数
+		Density   ///< 概率密度，count/(total*binWidth)，积分为1
+	};
+
 	explicit DAChartAddHistogramWidget(QWidget* parent = nullptr);
 	~DAChartAddHistogramWidget();
 	virtual QwtPlotItem* createPlotItem() override;
 	virtual void setDataManager(DADataManager* dmgr) override;
+	// 获取 Y 轴显示方案
+	YAxisMode getYAxisMode() const;
 private Q_SLOTS:
 	void onDataManagerChanged(DADataManager* dmgr);
 	void onCurrentDataChanged(const DAData& d);

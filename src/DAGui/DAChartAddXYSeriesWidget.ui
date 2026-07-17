@@ -33,6 +33,20 @@
           <item row="0" column="1" rowspan="2">
            <widget class="DA::DAPySeriesListView" name="listViewX"/>
           </item>
+          <item row="0" column="0">
+           <widget class="QToolButton" name="toolButtonAddToX">
+            <property name="toolTip">
+             <string>Add series to X</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="icon.qrc">
+              <normaloff>:/DAGui/icon/right-add.svg</normaloff>:/DAGui/icon/right-add.svg</iconset>
+            </property>
+           </widget>
+          </item>
           <item row="1" column="0">
            <widget class="QToolButton" name="toolButtonRemoveFromX">
             <property name="text">
@@ -104,6 +118,20 @@
          <layout class="QGridLayout" name="gridLayout_3">
           <item row="0" column="1" rowspan="2">
            <widget class="DA::DAPySeriesListView" name="listViewY"/>
+          </item>
+          <item row="0" column="0">
+           <widget class="QToolButton" name="toolButtonAddToY">
+            <property name="toolTip">
+             <string>Add series to Y</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="icon.qrc">
+              <normaloff>:/DAGui/icon/right-add.svg</normaloff>:/DAGui/icon/right-add.svg</iconset>
+            </property>
+           </widget>
           </item>
           <item row="1" column="0">
            <widget class="QToolButton" name="toolButtonRemoveFromY">
@@ -244,6 +272,22 @@
    </hints>
   </connection>
   <connection>
+   <sender>groupBoxXAutoincrement</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>toolButtonAddToX</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>279</x>
+     <y>118</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>251</x>
+     <y>58</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>groupBoxYAutoincrement</sender>
    <signal>clicked(bool)</signal>
    <receiver>listViewY</receiver>
@@ -272,6 +316,22 @@
     <hint type="destinationlabel">
      <x>249</x>
      <y>293</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBoxYAutoincrement</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>toolButtonAddToY</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>251</x>
+     <y>321</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>249</x>
+     <y>263</y>
     </hint>
    </hints>
   </connection>

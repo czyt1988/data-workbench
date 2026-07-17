@@ -51,6 +51,13 @@ Q_SIGNALS:
      * @param seriesName
      */
     void dataSeriesDbClicked(const DA::DAData& data, const QString& seriesName);
+    /**
+     * @brief series单击
+     * @param data series所属dataframe
+     * @param seriesName series名
+     * @note 用于"选择序列"窗口拾取数据列
+     */
+    void dataSeriesClicked(const DA::DAData& data, const QString& seriesName);
 
 private:
     Ui::DADataManageWidget* ui;

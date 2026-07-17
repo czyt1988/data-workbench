@@ -43,6 +43,18 @@ void DAChartAddHistogramWidget::onCurrentDataChanged(const DAData& d)
 	ui->comboBoxData->setCurrentDAData(d);
 }
 
+/**
+ * @brief 获取 Y 轴显示方案
+ * @return 当前选中的模式
+ */
+DAChartAddHistogramWidget::YAxisMode DAChartAddHistogramWidget::getYAxisMode() const
+{
+	if (ui->radioButtonDensity->isChecked()) {
+		return Density;
+	}
+	return Count;
+}
+
 QwtPlotItem* DAChartAddHistogramWidget::createPlotItem()
 {
 #if DA_ENABLE_PYTHON
@@ -68,6 +80,7 @@ QwtPlotItem* DAChartAddHistogramWidget::createPlotItem()
 	if (raw.empty()) {
 		return nullptr;
 	}
+	const std::size_t total = raw.size();
 	// 计算最小最大值
 	double minV = std::numeric_limits< double >::max();
 	double maxV = std::numeric_limits< double >::lowest();
@@ -75,10 +88,16 @@ QwtPlotItem* DAChartAddHistogramWidget::createPlotItem()
 		if (v < minV) minV = v;
 		if (v > maxV) maxV = v;
 	}
+	const YAxisMode yMode = getYAxisMode();
 	if (minV == maxV) {
 		// 退化情况：所有值相同，构造一个 bin
 		QVector< QwtIntervalSample > samples;
-		samples.append(QwtIntervalSample(static_cast< double >(raw.size()), minV, minV + 1.0));
+		double value = static_cast< double >(total);
+		if (yMode == Density) {
+			// 退化时 bin 宽取 1.0，密度 = count/(total*1.0) = 1.0
+			value = 1.0;
+		}
+		samples.append(QwtIntervalSample(value, minV, minV + 1.0));
 		QwtPlotHistogram* item = new QwtPlotHistogram();
 		item->setSamples(samples);
 		item->setTitle(d.getName());
@@ -101,6 +120,14 @@ QwtPlotItem* DAChartAddHistogramWidget::createPlotItem()
 		if (bin >= binCount) bin = binCount - 1;
 		if (bin < 0) bin = 0;
 		samples[ bin ].value += 1.0;
+	}
+	// 根据 Y 轴方案转换
+	if (yMode == Density) {
+		// 概率密度：count / (total * binWidth)，积分近似为 1
+		const double scale = (total > 0 && binWidth > 0) ? 1.0 / (static_cast< double >(total) * binWidth) : 0.0;
+		for (int i = 0; i < binCount; ++i) {
+			samples[ i ].value *= scale;
+		}
 	}
 	QwtPlotHistogram* item = new QwtPlotHistogram();
 	item->setSamples(samples);

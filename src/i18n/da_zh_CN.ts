@@ -2121,7 +2121,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddHistogramWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddHistogramWidget.cpp" line="+52"/>
+        <location filename="../DAGui/DAChartAddHistogramWidget.cpp" line="+64"/>
         <source>Warning</source>
         <translation type="unfinished">警告</translation>
     </message>
@@ -2407,7 +2407,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddXYSeriesWidget.cpp" line="+24"/>
+        <location filename="../DAGui/DAChartAddXYSeriesWidget.cpp" line="+26"/>
         <source>x</source>
         <translation>x</translation>
     </message>
@@ -2417,7 +2417,7 @@ Config</source>
         <translation>y</translation>
     </message>
     <message>
-        <location line="+167"/>
+        <location line="+243"/>
         <location line="+8"/>
         <location line="+23"/>
         <location line="+9"/>
@@ -4230,6 +4230,39 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartSeriesPickerWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartSeriesPickerWidget.cpp" line="+225"/>
+        <source>Warning</source>
+        <translation type="unfinished">警告</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cannot resolve expression &apos;%1&apos;, expected format: data[&apos;column&apos;]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+83"/>
+        <source>Select Series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Return to add chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>X:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Y:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartSettingWidget</name>
     <message>
         <location filename="../DAGui/DAChartSettingWidget.cpp" line="+196"/>
@@ -4940,7 +4973,7 @@ Config</source>
 <context>
     <name>DA::DADataManageWidget</name>
     <message>
-        <location filename="../DAGui/DADataManageWidget.cpp" line="+77"/>
+        <location filename="../DAGui/DADataManageWidget.cpp" line="+78"/>
         <source>Please select the data item to remove</source>
         <translation>请选择需要删除的数据条目</translation>
     </message>
@@ -4979,7 +5012,7 @@ Config</source>
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+267"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+284"/>
         <location line="+2"/>
         <location line="+87"/>
         <location line="+3"/>
@@ -4999,7 +5032,7 @@ Config</source>
 <context>
     <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+384"/>
+        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+409"/>
         <source>Search...</source>
         <translation>搜索</translation>
     </message>
@@ -5007,7 +5040,7 @@ Config</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+231"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+233"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -5057,7 +5090,7 @@ Config</source>
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateWidget.cpp" line="+261"/>
+        <location filename="../DAGui/DADataOperateWidget.cpp" line="+262"/>
         <source>removing a widget that does not exist in the tab</source>
         <translation>正在移除一个不存在的窗口</translation>
     </message>
@@ -5096,7 +5129,7 @@ Config</source>
 <context>
     <name>DA::DADialogChartGuide</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogChartGuide.cpp" line="+93"/>
+        <location filename="../DAGui/Dialog/DADialogChartGuide.cpp" line="+96"/>
         <source>curve</source>
         <translation>曲线</translation>
     </message>
@@ -6343,6 +6376,21 @@ Config</source>
         <source>Number of bins</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location line="+23"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y轴</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Count</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Density</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>DAChartAddMultiBarWidget</name>
@@ -6560,38 +6608,48 @@ Config</source>
         <translation>X</translation>
     </message>
     <message>
-        <location line="+23"/>
-        <location line="+72"/>
+        <location line="+12"/>
+        <source>Add series to X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <location line="+86"/>
         <source>Autoincrement series</source>
         <translation>自增序列</translation>
     </message>
     <message>
-        <location line="-57"/>
-        <location line="+72"/>
+        <location line="-71"/>
+        <location line="+86"/>
         <source>Initial value</source>
         <translation>初始值</translation>
     </message>
     <message>
-        <location line="-65"/>
+        <location line="-79"/>
         <location line="+14"/>
-        <location line="+58"/>
+        <location line="+72"/>
         <location line="+14"/>
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location line="-79"/>
-        <location line="+72"/>
+        <location line="-93"/>
+        <location line="+86"/>
         <source>Self increasing step size</source>
         <translation>自增步长</translation>
     </message>
     <message>
-        <location line="-52"/>
+        <location line="-66"/>
         <source>Y</source>
         <translation>Y</translation>
     </message>
     <message>
-        <location line="+85"/>
+        <location line="+12"/>
+        <source>Add series to Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+87"/>
         <source>Drag the data into the corresponding list</source>
         <translation>把数据拖入对应的列表</translation>
     </message>
@@ -6641,6 +6699,34 @@ Config</source>
         <location filename="../DAGui/DAChartOperateWidget.ui" line="+14"/>
         <source>Chart Operate</source>
         <translation>绘图操作</translation>
+    </message>
+</context>
+<context>
+    <name>DAChartSeriesPickerWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartSeriesPickerWidget.ui" line="+14"/>
+        <source>Select Series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>X:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>data[&apos;column&apos;]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Return to add chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>...</source>
+        <translation type="unfinished">...</translation>
     </message>
 </context>
 <context>
@@ -9176,7 +9262,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>使用 UTF-8 打开文件 %1 失败，尝试使用 ANSI 编码</translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+431"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+439"/>
         <source>DAPySeries: the Python object type is not pandas.Series</source>
         <translation>DAPySeries：Python 对象类型不是 pandas.Series</translation>
     </message>

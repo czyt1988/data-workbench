@@ -62,6 +62,35 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="groupBoxYAxis">
+     <property name="title">
+      <string>Y Axis</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QRadioButton" name="radioButtonCount">
+        <property name="text">
+         <string>Count</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="radioButtonDensity">
+        <property name="text">
+         <string>Density</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>

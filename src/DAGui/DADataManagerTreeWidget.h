@@ -64,6 +64,14 @@ Q_SIGNALS:
      */
     void dataSeriesDbClicked(const DAData& data, const QString& seriesName);
 
+    /**
+     * @brief dataframe.series单击
+     * @param data series所属dataframe
+     * @param seriesName series名
+     * @note 用于"选择序列"窗口拾取数据列，根节点(dataframe)单击不会触发
+     */
+    void dataSeriesClicked(const DAData& data, const QString& seriesName);
+
 protected:
     void changeEvent(QEvent* e);
 private Q_SLOTS:
@@ -73,6 +81,7 @@ private Q_SLOTS:
     void updateCompleterModel();
     void applyFilter();
     void onTreeViewDoubleClicked(const QModelIndex& index);
+    void onTreeViewClicked(const QModelIndex& index);
     void onDatasBatchAdded();  ///< 批量添加完成后立即刷新
 
 private:

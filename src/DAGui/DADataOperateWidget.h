@@ -81,6 +81,12 @@ Q_SIGNALS:
      * @param index
      */
     void currentDataTableWidgetChanged(DA::DADataOperatePageWidget* page, int index);
+    /**
+     * @brief 当前 DataFrame 窗口的表格表头被点击
+     * @param logicalIndex 列逻辑索引
+     * @note 仅在当前 tab 为 DataFrame 窗口时转发，用于"选择序列"窗口拾取列
+     */
+    void currentDataFrameColumnHeaderClicked(int logicalIndex);
 private Q_SLOTS:
     // 数据删除对应的槽
     void onDataRemoved(const DA::DAData& d, int index);

@@ -1,9 +1,11 @@
 #include "DAChartAddXYSeriesWidget.h"
 #include <QMessageBox>
+#include <QDialog>
 #include "ui_DAChartAddXYSeriesWidget.h"
 #include "DADataManager.h"
 #include "Models/DADataManagerTreeModel.h"
 #include "DALogCategory.h"
+#include "DAChartSeriesPickerWidget.h"
 #include <QHeaderView>
 #if DA_ENABLE_PYTHON
 #include "Models/DAPySeriesTableModel.h"
@@ -36,6 +38,8 @@ DAChartAddXYSeriesWidget::DAChartAddXYSeriesWidget(QWidget* parent)
     connect(ui->listViewY, &DAPySeriesListView::seriesChanged, this, &DAChartAddXYSeriesWidget::onYSeriesChanged);
     connect(ui->toolButtonRemoveFromX, &QToolButton::clicked, this, &DAChartAddXYSeriesWidget::onButtonXRemoveClicked);
     connect(ui->toolButtonRemoveFromY, &QToolButton::clicked, this, &DAChartAddXYSeriesWidget::onButtonYRemoveClicked);
+    connect(ui->toolButtonAddToX, &QToolButton::clicked, this, &DAChartAddXYSeriesWidget::onButtonXAddClicked);
+    connect(ui->toolButtonAddToY, &QToolButton::clicked, this, &DAChartAddXYSeriesWidget::onButtonYAddClicked);
 }
 
 DAChartAddXYSeriesWidget::~DAChartAddXYSeriesWidget()
@@ -174,6 +178,80 @@ void DAChartAddXYSeriesWidget::onButtonXRemoveClicked()
 void DAChartAddXYSeriesWidget::onButtonYRemoveClicked()
 {
     ui->listViewY->removeCurrentSelect();
+}
+
+/**
+ * @brief 点击 X 旁的添加按钮
+ *
+ * 隐藏父级绘图引导对话框，弹出"选择序列"窗口供用户拾取 X 序列
+ */
+void DAChartAddXYSeriesWidget::onButtonXAddClicked()
+{
+    DAChartSeriesPickerWidget* picker = ensurePicker(mPickerX, DAChartSeriesPickerWidget::RoleX);
+    hideParentGuideDialog();
+    picker->startPick();
+}
+
+/**
+ * @brief 点击 Y 旁的添加按钮
+ *
+ * 隐藏父级绘图引导对话框，弹出"选择序列"窗口供用户拾取 Y 序列
+ */
+void DAChartAddXYSeriesWidget::onButtonYAddClicked()
+{
+    DAChartSeriesPickerWidget* picker = ensurePicker(mPickerY, DAChartSeriesPickerWidget::RoleY);
+    hideParentGuideDialog();
+    picker->startPick();
+}
+
+/**
+ * @brief 懒创建"选择序列"窗口并连接信号
+ * @param picker 成员指针引用
+ * @param role 选择目标角色
+ * @return picker 指针
+ */
+DAChartSeriesPickerWidget* DAChartAddXYSeriesWidget::ensurePicker(DAChartSeriesPickerWidget*& picker, DAChartSeriesPickerWidget::Role role)
+{
+    if (!picker) {
+        picker = new DAChartSeriesPickerWidget(getDataManager(), role, this);
+        connect(picker, &DAChartSeriesPickerWidget::seriesConfirmed, this, [ this, role ](const DAData& data, const QString& name) {
+            if (role == DAChartSeriesPickerWidget::RoleX) {
+                setX(data, name);
+            } else {
+                setY(data, name);
+            }
+            showParentGuideDialog();
+        });
+        connect(picker, &DAChartSeriesPickerWidget::canceled, this, &DAChartAddXYSeriesWidget::showParentGuideDialog);
+    } else {
+        picker->setExpression(QString());
+    }
+    return picker;
+}
+
+/**
+ * @brief 隐藏父级绘图引导对话框（DADialogChartGuide）
+ *
+ * DAChartAddXYSeriesWidget 通常嵌入在 DADialogChartGuide 中，
+ * 弹出"选择序列"窗口前需隐藏父对话框以解除模态阻塞，让用户能操作主窗口的 dock。
+ */
+void DAChartAddXYSeriesWidget::hideParentGuideDialog()
+{
+    if (auto* dlg = qobject_cast< QDialog* >(window())) {
+        dlg->hide();
+    }
+}
+
+/**
+ * @brief 显示父级绘图引导对话框
+ */
+void DAChartAddXYSeriesWidget::showParentGuideDialog()
+{
+    if (auto* dlg = qobject_cast< QDialog* >(window())) {
+        dlg->show();
+        dlg->raise();
+        dlg->activateWindow();
+    }
 }
 
 /**
