@@ -1,8 +1,6 @@
 #include "DADialogChartGuide.h"
 #include "ui_DADialogChartGuide.h"
 #include <QPen>
-#include <QElapsedTimer>
-#include <QDebug>
 // DA
 #include "DADataManager.h"
 #include "DAAbstractChartAddItemWidget.h"
@@ -59,19 +57,17 @@ DADialogChartGuide::DADialogChartGuide(QWidget* parent)
     DA_D(d);
     initListWidget();
 
-    QElapsedTimer ctorTimer;
-    ctorTimer.start();
-    d->mAddCurve         = new DAChartAddCurveWidget();         qInfo() << "[ChartGuide] ctor CurveWidget elapsed=" << ctorTimer.elapsed() << "ms";
-    d->mAddBar           = new DAChartAddBarWidget();           qInfo() << "[ChartGuide] ctor BarWidget elapsed=" << ctorTimer.elapsed() << "ms";
-    d->mAddIntervalCurve = new DAChartAddIntervalCurveWidget(); qInfo() << "[ChartGuide] ctor IntervalCurveWidget elapsed=" << ctorTimer.elapsed() << "ms";
-    d->mAddTradingCurve  = new DAChartAddTradingCurveWidget();  qInfo() << "[ChartGuide] ctor TradingCurveWidget elapsed=" << ctorTimer.elapsed() << "ms";
-    d->mAddSpectroGram   = new DAChartAddSpectrogramWidget();   qInfo() << "[ChartGuide] ctor SpectrogramWidget elapsed=" << ctorTimer.elapsed() << "ms";
-    d->mAddErrorBar      = new DAChartAddErrorBarWidget();      qInfo() << "[ChartGuide] ctor ErrorBarWidget elapsed=" << ctorTimer.elapsed() << "ms";
-    d->mAddBoxChart      = new DAChartAddBoxChartWidget();      qInfo() << "[ChartGuide] ctor BoxChartWidget elapsed=" << ctorTimer.elapsed() << "ms";
-    d->mAddMultiBar      = new DAChartAddMultiBarWidget();      qInfo() << "[ChartGuide] ctor MultiBarWidget elapsed=" << ctorTimer.elapsed() << "ms";
-    d->mAddHistogram     = new DAChartAddHistogramWidget();     qInfo() << "[ChartGuide] ctor HistogramWidget elapsed=" << ctorTimer.elapsed() << "ms";
-    d->mAddContour       = new DAChartAddContourWidget();       qInfo() << "[ChartGuide] ctor ContourWidget elapsed=" << ctorTimer.elapsed() << "ms";
-    d->mAddVectorField   = new DAChartAddVectorFieldWidget();   qInfo() << "[ChartGuide] ctor VectorFieldWidget elapsed=" << ctorTimer.elapsed() << "ms";
+    d->mAddCurve         = new DAChartAddCurveWidget();
+    d->mAddBar           = new DAChartAddBarWidget();
+    d->mAddIntervalCurve = new DAChartAddIntervalCurveWidget();
+    d->mAddTradingCurve  = new DAChartAddTradingCurveWidget();
+    d->mAddSpectroGram   = new DAChartAddSpectrogramWidget();
+    d->mAddErrorBar      = new DAChartAddErrorBarWidget();
+    d->mAddBoxChart      = new DAChartAddBoxChartWidget();
+    d->mAddMultiBar      = new DAChartAddMultiBarWidget();
+    d->mAddHistogram     = new DAChartAddHistogramWidget();
+    d->mAddContour       = new DAChartAddContourWidget();
+    d->mAddVectorField   = new DAChartAddVectorFieldWidget();
 
     ui->stackedWidget->addWidget(d->mAddCurve);
     ui->stackedWidget->addWidget(d->mAddBar);
@@ -84,7 +80,6 @@ DADialogChartGuide::DADialogChartGuide(QWidget* parent)
     ui->stackedWidget->addWidget(d->mAddHistogram);
     ui->stackedWidget->addWidget(d->mAddContour);
     ui->stackedWidget->addWidget(d->mAddVectorField);
-    qInfo() << "[ChartGuide] all addWidget done, total ctor elapsed=" << ctorTimer.elapsed() << "ms";
 
     connect(ui->listWidgetChartType, &QListWidget::currentItemChanged, this, &DADialogChartGuide::onListWidgetCurrentItemChanged);
 }
@@ -146,10 +141,7 @@ void DADialogChartGuide::initListWidget()
  */
 void DADialogChartGuide::setDataManager(DADataManager* dmgr)
 {
-    QElapsedTimer timer;
-    timer.start();
     mDataMgr = dmgr;
-    // 延迟初始化：不立即遍历所有 widget，只标记需要重新初始化
     mInitializedWidgets.clear();
     // 预初始化当前选中的 widget
     QListWidgetItem* cur = ui->listWidgetChartType->currentItem();
@@ -159,17 +151,13 @@ void DADialogChartGuide::setDataManager(DADataManager* dmgr)
             ensureWidgetDataManager(w);
         }
     }
-    qInfo() << "[ChartGuide] setDataManager (lazy) elapsed=" << timer.elapsed() << "ms";
 }
 
 void DADialogChartGuide::ensureWidgetDataManager(DAAbstractChartAddItemWidget* w)
 {
     if (w && !mInitializedWidgets.contains(w)) {
-        QElapsedTimer t;
-        t.start();
         w->setDataManager(mDataMgr);
         mInitializedWidgets.insert(w);
-        qInfo() << "[ChartGuide] lazy init" << w->metaObject()->className() << "elapsed=" << t.elapsed() << "ms";
     }
 }
 
