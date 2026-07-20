@@ -69,6 +69,7 @@
 #include "DAAppProjectActionPolicy.h"
 // Py
 #if DA_ENABLE_PYTHON
+#include "DAPybind11QtCaster.hpp"
 #include "Dialog/DATxtFileImportDialog.h"
 #include "DAPyDTypeComboBox.h"
 #include "DAPyScripts.h"
@@ -572,7 +573,7 @@ void DAAppController::saveAs()
         // 说明是目录
         QMessageBox::StandardButton btn = QMessageBox::question(
             app(),
-            tr("Warning"),  // cn:警告
+            tr("Warning"),                                                      // cn:警告
             tr("Whether to overwrite the file: %1").arg(fi.absoluteFilePath())  // cn:是否覆盖文件:%1
         );
         if (btn != QMessageBox::Yes) {
@@ -2163,13 +2164,12 @@ void DAAppController::onActionRenameColumnTriggered()
     }
     QString oldName = tv->actualColumnName(col);
     bool ok         = false;
-    QString newName = QInputDialog::getText(
-        dfopt,
-        tr("Rename Column"),  // cn:重命名列
-        tr("New column name:"),  // cn:新列名：
-        QLineEdit::Normal,
-        oldName,
-        &ok);
+    QString newName = QInputDialog::getText(dfopt,
+                                            tr("Rename Column"),     // cn:重命名列
+                                            tr("New column name:"),  // cn:新列名：
+                                            QLineEdit::Normal,
+                                            oldName,
+                                            &ok);
     if (!ok) {
         return;
     }
@@ -2227,15 +2227,29 @@ void DAAppController::onActionGotoMaxTriggered()
     if (df.isNone()) {
         return;
     }
-    DAPySeries s = df.iloc(col);
+    QString colNm = df.columnName(col);
+    DAPySeries s  = df[ colNm ];
     long pos      = s.idxmaxPosition();
     if (pos < 0) {
         daWarning << tr("Cannot find the maximum value in this column (empty, all-NaN, or incomparable types)");  // cn:此列无法找到最大值（空列、全为NaN或类型不可比较）
         return;
     }
+    // 选中并滚动到目标单元格
     DADataTableView* tv = dfopt->getDataTableView();
     if (tv) {
         tv->selectActualCell(static_cast< int >(pos), col);
+    }
+    // 打印结果到信息栏
+    {
+        pybind11::gil_scoped_acquire gil;
+        try {
+            pybind11::object val = s.iat(pos);
+            QString valStr       = pybind11::str(val).cast< QString >();
+            daInfo << tr("Column [%1] maximum value: %2, row: %3").arg(colNm, valStr).arg(pos);  // cn:列[%1] 最大值: %2, 第 %3 行
+        } catch (const std::exception& e) {
+            qCritical() << e.what();
+            daInfo << tr("Column [%1] maximum value at row %2").arg(colNm).arg(pos);  // cn:列[%1] 最大值位于第 %2 行
+        }
     }
 }
 
@@ -2259,15 +2273,28 @@ void DAAppController::onActionGotoMinTriggered()
     if (df.isNone()) {
         return;
     }
-    DAPySeries s = df.iloc(col);
+    QString colNm = df.columnName(col);
+    DAPySeries s  = df[ colNm ];
     long pos      = s.idxminPosition();
     if (pos < 0) {
         daWarning << tr("Cannot find the minimum value in this column (empty, all-NaN, or incomparable types)");  // cn:此列无法找到最小值（空列、全为NaN或类型不可比较）
         return;
     }
+    // 选中并滚动到目标单元格
     DADataTableView* tv = dfopt->getDataTableView();
     if (tv) {
         tv->selectActualCell(static_cast< int >(pos), col);
+    }
+    // 打印结果到信息栏
+    {
+        pybind11::gil_scoped_acquire gil;
+        try {
+            pybind11::object val = s.iat(pos);
+            QString valStr       = pybind11::str(val).cast< QString >();
+            daInfo << tr("Column [%1] minimum value: %2, row: %3").arg(colNm, valStr).arg(pos);  // cn:列[%1] 最小值: %2, 第 %3 行
+        } catch (...) {
+            daInfo << tr("Column [%1] minimum value at row %2").arg(colNm).arg(pos);  // cn:列[%1] 最小值位于第 %2 行
+        }
     }
 }
 
@@ -2307,7 +2334,7 @@ void DAAppController::setupDataFrameHeaderContextMenu(DADataOperateOfDataFrameWi
         DADataTableView* tv = w->getDataTableView();
         if (tv) {
             QItemSelectionModel* sel = tv->selectionModel();
-            QAbstractItemModel* m     = tv->model();
+            QAbstractItemModel* m    = tv->model();
             if (sel && m) {
                 sel->clearSelection();
                 QItemSelection selRange(m->index(0, col), m->index(m->rowCount() - 1, col));

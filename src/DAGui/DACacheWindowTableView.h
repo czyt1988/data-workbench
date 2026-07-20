@@ -35,6 +35,7 @@ private Q_SLOTS:
 
 private:
 	QElapsedTimer mLastScrollElapsed;  // 滚动节流计时器
+	bool mIsProgrammaticScroll { false };  // 程序化滚动标志，跳过 verticalScrollBarValueChanged 的 startRow 覆盖
 };
 }
 

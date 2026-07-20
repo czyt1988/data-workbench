@@ -2,6 +2,7 @@
 #include <QHeaderView>
 #include <QScrollBar>
 #include "Models/DAAbstractCacheWindowTableModel.h"
+#include "DALogCategory.h"
 namespace DA
 {
 DACacheWindowTableView::DACacheWindowTableView(QWidget* parent) : QTableView(parent)
@@ -28,7 +29,6 @@ DAAbstractCacheWindowTableModel* DACacheWindowTableView::getCacheModel() const
 
 void DACacheWindowTableView::showActualRow(int actualRow)
 {
-	// 首先计算行的占比
 	DAAbstractCacheWindowTableModel* cacheModel = getCacheModel();
 	if (!cacheModel) {
 		return;
@@ -40,15 +40,32 @@ void DACacheWindowTableView::showActualRow(int actualRow)
 	if (totalRows < 0) {
 		actualRow = 0;
 	}
-	const int maxScroll         = qMax(0, totalRows);
-	const double ratio          = static_cast< double >(actualRow) / (totalRows);
-	const int targetScrollValue = qMin(static_cast< int >(ratio * maxScroll), maxScroll);
-	if (QScrollBar* vsc = verticalScrollBar()) {
-		QSignalBlocker b(vsc);
-		vsc->setValue(targetScrollValue);
+
+	const int cacheSize = cacheModel->getCacheWindowSize();
+	int startRow        = cacheModel->getCacheWindowStartRow();
+
+	// 如果目标行不在当前缓存窗口内，调整窗口起始行使目标行落在窗口中间
+	if (actualRow < startRow || actualRow >= startRow + cacheSize) {
+		startRow = qBound(0, actualRow - cacheSize / 2, qMax(0, totalRows - cacheSize));
+		cacheModel->setCacheWindowStartRow(startRow);
 	}
-	// 设置startRow
-	cacheModel->setCacheWindowStartRow(actualRow);
+
+	// 计算目标行在模型中的逻辑行
+	int logicalRow = actualRow - cacheModel->getCacheWindowStartRow();
+
+	// 用 flag 跳过 verticalScrollBarValueChanged 的 startRow 覆盖
+	// 不用 QSignalBlocker，否则 QTableView 内部滚动机制也被屏蔽，视口不会滚动
+	mIsProgrammaticScroll = true;
+	if (QScrollBar* vsc = verticalScrollBar()) {
+		vsc->setValue(qBound(0, logicalRow, vsc->maximum()));
+	}
+	mIsProgrammaticScroll = false;
+
+	daDebug << QString("showActualRow: actualRow=%1, startRow=%2, logicalRow=%3, cacheSize=%4")
+	                .arg(actualRow)
+	                .arg(cacheModel->getCacheWindowStartRow())
+	                .arg(logicalRow)
+	                .arg(cacheSize);
 }
 
 void DACacheWindowTableView::selectActualCell(int actualRow, int col)
@@ -61,21 +78,23 @@ void DACacheWindowTableView::selectActualCell(int actualRow, int col)
 	showActualRow(actualRow);
 	showColumn(col);
 
-	QItemSelection selection;
 	int logicalRow = toLogicalRow(actualRow);
 	if (logicalRow < 0 || logicalRow >= cacheModel->rowCount()) {
 		// 超出范围
 		return;
 	}
 	QModelIndex index = cacheModel->index(logicalRow, col);
-	selection.select(index, index);
 
 	// 高亮选中项
 	QItemSelectionModel* selModel = selectionModel();
 	if (selModel) {
-		selModel->clearSelection();
-		selModel->select(selection, QItemSelectionModel::Select);
+		selModel->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
 	}
+	daDebug << QString("selectActualCell: actualRow=%1, col=%2, logicalRow=%3, indexValid=%4")
+	                .arg(actualRow)
+	                .arg(col)
+		        .arg(logicalRow)
+		        .arg(index.isValid());
 }
 
 /**
@@ -144,6 +163,9 @@ QString DACacheWindowTableView::actualColumnName(int actualCol) const
 
 void DACacheWindowTableView::verticalScrollBarValueChanged(int v)
 {
+	if (mIsProgrammaticScroll) {
+		return;  // 程序化滚动（如 selectActualCell），不覆盖 startRow
+	}
 	if (mLastScrollElapsed.isValid() && mLastScrollElapsed.elapsed() < 16) {
 		return;  // 16ms内的重复变化只处理一次(约60fps)，防止抖动
 	}

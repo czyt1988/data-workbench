@@ -60,10 +60,10 @@ public:
     DAPySeries astype(const pybind11::dtype& dt) const;
     DAPySeries toDateTime() const;
     // 返回最大值的位置索引（iloc 语义），失败返回 -1
-    // 主路径：idxmax + Index.get_loc；重复 label 时回退 numpy.argmax
+    // 两级策略：nanargmax → to_numeric/to_datetime(coerce)+nanargmax
     long idxmaxPosition() const;
     // 返回最小值的位置索引（iloc 语义），失败返回 -1
-    // 主路径：idxmin + Index.get_loc；重复 label 时回退 numpy.argmin
+    // 两级策略：nanargmin → to_numeric/to_datetime(coerce)+nanargmin
     long idxminPosition() const;
 
 public:

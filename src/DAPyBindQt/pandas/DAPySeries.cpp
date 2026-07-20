@@ -368,24 +368,45 @@ DAPySeries DAPySeries::toDateTime() const
 /**
  * @brief 返回最大值的位置索引
  *
- * 主路径：pandas Series.idxmax() 拿到 index label，再用 Index.get_loc 转 position。
- * 当 label 重复（get_loc 返回 -2）或异常时，回退到 numpy.argmax 直接拿位置索引。
- * 对空列、全 NaN 列、不可比较类型，idxmax 会抛异常，统一返回 -1。
+ * 两级策略：
+ * 1. numpy.nanargmax(series.values) —— 直接返回位置索引，跳过 NaN，
+ *    天然处理重复 index label 和各种 index 类型
+ * 2. object 列回退：先 to_numeric(coerce)，如果全 NaN 再 to_datetime(coerce)，
+ *    解决 object 列中 float/NaN 与 Timestamp 混合的 TypeError
+ * 对空列、全 NaN 列、全非数值且非时间列，最终返回 -1。
  * @return 位置索引（>=0），失败返回 -1
  */
 long DAPySeries::idxmaxPosition() const
 {
+    // 1) nanargmax：直接返回位置，跳过 NaN
     try {
-        pybind11::object label = object().attr("idxmax")();
-        DAPyIndex idx          = index();
-        long pos               = idx.getLoc(label);
-        if (pos >= 0) {
-            return pos;
-        }
-        // -1(异常/不存在) 或 -2(重复 label)：回退 numpy.argmax
         pybind11::object values = object().attr("values");
-        pybind11::object argmax = pybind11::module::import("numpy").attr("argmax")(values);
-        return argmax.cast< long >();
+        pybind11::object result = pybind11::module::import("numpy").attr("nanargmax")(values);
+        return result.cast< long >();
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    // 2) object 列回退：先尝试 to_numeric，全 NaN 则尝试 to_datetime
+    try {
+        auto pd = pybind11::module::import("pandas");
+        auto np = pybind11::module::import("numpy");
+
+        // 2a) to_numeric(coerce)
+        pybind11::object numeric = pd.attr("to_numeric")(object(), pybind11::arg("errors") = "coerce");
+        long nanCount            = numeric.attr("isna")().attr("sum")().cast< long >();
+        long totalLen            = numeric.attr("size").cast< long >();
+        if (nanCount < totalLen) {
+            // 有非 NaN 值，取极值
+            pybind11::object values = numeric.attr("values");
+            pybind11::object result = np.attr("nanargmax")(values);
+            return result.cast< long >();
+        }
+
+        // 2b) to_datetime(coerce)
+        pybind11::object dt     = pd.attr("to_datetime")(object(), pybind11::arg("errors") = "coerce");
+        pybind11::object values = dt.attr("values");
+        pybind11::object result = np.attr("nanargmax")(values);
+        return result.cast< long >();
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
         return -1;
@@ -395,24 +416,45 @@ long DAPySeries::idxmaxPosition() const
 /**
  * @brief 返回最小值的位置索引
  *
- * 主路径：pandas Series.idxmin() 拿到 index label，再用 Index.get_loc 转 position。
- * 当 label 重复（get_loc 返回 -2）或异常时，回退到 numpy.argmin 直接拿位置索引。
- * 对空列、全 NaN 列、不可比较类型，idxmin 会抛异常，统一返回 -1。
+ * 两级策略：
+ * 1. numpy.nanargmin(series.values) —— 直接返回位置索引，跳过 NaN，
+ *    天然处理重复 index label 和各种 index 类型
+ * 2. object 列回退：先 to_numeric(coerce)，如果全 NaN 再 to_datetime(coerce)，
+ *    解决 object 列中 float/NaN 与 Timestamp 混合的 TypeError
+ * 对空列、全 NaN 列、全非数值且非时间列，最终返回 -1。
  * @return 位置索引（>=0），失败返回 -1
  */
 long DAPySeries::idxminPosition() const
 {
+    // 1) nanargmin：直接返回位置，跳过 NaN
     try {
-        pybind11::object label = object().attr("idxmin")();
-        DAPyIndex idx          = index();
-        long pos               = idx.getLoc(label);
-        if (pos >= 0) {
-            return pos;
-        }
-        // -1(异常/不存在) 或 -2(重复 label)：回退 numpy.argmin
         pybind11::object values = object().attr("values");
-        pybind11::object argmin = pybind11::module::import("numpy").attr("argmin")(values);
-        return argmin.cast< long >();
+        pybind11::object result = pybind11::module::import("numpy").attr("nanargmin")(values);
+        return result.cast< long >();
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    // 2) object 列回退：先尝试 to_numeric，全 NaN 则尝试 to_datetime
+    try {
+        auto pd = pybind11::module::import("pandas");
+        auto np = pybind11::module::import("numpy");
+
+        // 2a) to_numeric(coerce)
+        pybind11::object numeric = pd.attr("to_numeric")(object(), pybind11::arg("errors") = "coerce");
+        long nanCount            = numeric.attr("isna")().attr("sum")().cast< long >();
+        long totalLen            = numeric.attr("size").cast< long >();
+        if (nanCount < totalLen) {
+            // 有非 NaN 值，取极值
+            pybind11::object values = numeric.attr("values");
+            pybind11::object result = np.attr("nanargmin")(values);
+            return result.cast< long >();
+        }
+
+        // 2b) to_datetime(coerce)
+        pybind11::object dt     = pd.attr("to_datetime")(object(), pybind11::arg("errors") = "coerce");
+        pybind11::object values = dt.attr("values");
+        pybind11::object result = np.attr("nanargmin")(values);
+        return result.cast< long >();
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
         return -1;
