@@ -6,6 +6,10 @@
 #include <QPointF>
 #include <QRectF>
 #include <QString>
+#include <QStringList>
+
+#include "qwt_samples.h"   // for QwtBoxSample, QwtIntervalSample
+#include "qwt_point_3d.h"  // for QwtPoint3D
 
 class QwtPlotItem;
 class QwtPlotCurve;
@@ -14,6 +18,12 @@ class QwtPlotIntervalCurve;
 class QwtPlotMarker;
 class QwtPlotSpectrogram;
 class QwtGridRasterData;
+class QwtPlotBoxChart;
+class QwtPlotHistogram;
+class QwtPlotMultiBarChart;
+class QwtPlotSpectroCurve;
+class QwtPlotShapeItem;
+class QPainterPath;
 namespace DA
 {
 
@@ -57,6 +67,28 @@ public:
 
     // ==================== 高级图表 ====================
     virtual QwtPlotSpectrogram* addSpectrogram(QwtGridRasterData* gridData, const QString& title = QString()) = 0;
+
+    // ==================== 箱线图 ====================
+    virtual QwtPlotBoxChart* addBoxChart(const QVector< QwtBoxSample >& samples,
+                                         const QString& title = QString()) = 0;
+
+    // ==================== 直方图 ====================
+    virtual QwtPlotHistogram* addHistogram(const QVector< QwtIntervalSample >& samples,
+                                            const QString& title = QString()) = 0;
+
+    // ==================== 分组柱状图 ====================
+    virtual QwtPlotMultiBarChart* addMultiBarChart(const QVector< double >& positions,
+                                                    const QVector< QVector< double > >& values,
+                                                    const QStringList& titles = QStringList()) = 0;
+
+    // ==================== 等高线 ====================
+    virtual QwtPlotSpectroCurve* addContour(const QVector< QwtPoint3D >& points,
+                                            const QVector< double >& levels,
+                                            const QString& title = QString()) = 0;
+
+    // ==================== 形状项（填充区域） ====================
+    virtual QwtPlotShapeItem* addShapeItem(const QPainterPath& path,
+                                            const QString& title = QString()) = 0;
 
     // ==================== 通用数据操作 ====================
     virtual void removePlotItem(QwtPlotItem* item) = 0;

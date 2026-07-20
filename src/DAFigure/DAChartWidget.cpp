@@ -22,6 +22,7 @@
 #include "qwt_scale_draw.h"
 #include "qwt_scale_widget.h"
 #include "qwt_figure.h"
+#include "qwt_colormap_preset.h"
 // Qt 头文件
 #include <QResizeEvent>
 #include <QPaintEvent>
@@ -128,7 +129,8 @@ QList< int > DAChartWidget::dataRttis() const
     rttis << QwtPlotItem::Rtti_PlotMarker << QwtPlotItem::Rtti_PlotCurve << QwtPlotItem::Rtti_PlotSpectroCurve
           << QwtPlotItem::Rtti_PlotIntervalCurve << QwtPlotItem::Rtti_PlotHistogram << QwtPlotItem::Rtti_PlotSpectrogram
           << QwtPlotItem::Rtti_PlotTradingCurve << QwtPlotItem::Rtti_PlotBarChart << QwtPlotItem::Rtti_PlotMultiBarChart
-          << QwtPlotItem::Rtti_PlotZone << QwtPlotItem::Rtti_PlotVectorField;
+          << QwtPlotItem::Rtti_PlotBoxChart << QwtPlotItem::Rtti_PlotShape << QwtPlotItem::Rtti_PlotZone
+          << QwtPlotItem::Rtti_PlotVectorField;
     return rttis;
 }
 
@@ -309,6 +311,112 @@ QwtPlotSpectrogram* DAChartWidget::addSpectrogram(QwtGridRasterData* gridData, c
     spectrogram->setData(gridData);
     spectrogram->attach(this);
     return spectrogram;
+}
+
+QwtPlotBoxChart* DAChartWidget::addBoxChart(const QVector< QwtBoxSample >& samples, const QString& title)
+{
+    if (samples.isEmpty()) {
+        qWarning() << "Empty samples for box chart:" << title;
+        return nullptr;
+    }
+
+    QwtPlotBoxChart* boxChart = new QwtPlotBoxChart(title);
+    boxChart->setSamples(samples);
+    boxChart->setPen(QPen(Qt::blue, 1.0));
+    boxChart->setBrush(QBrush(QColor(100, 149, 237, 128)));
+    boxChart->setOrientation(Qt::Vertical);
+    boxChart->setRenderHint(QwtPlotItem::RenderAntialiased);
+    boxChart->attach(this);
+    return boxChart;
+}
+
+QwtPlotHistogram* DAChartWidget::addHistogram(const QVector< QwtIntervalSample >& samples, const QString& title)
+{
+    if (samples.isEmpty()) {
+        qWarning() << "Empty samples for histogram:" << title;
+        return nullptr;
+    }
+
+    QwtPlotHistogram* histogram = new QwtPlotHistogram(title);
+    histogram->setSamples(samples);
+    histogram->setPen(QPen(QColor(65, 105, 225)));
+    histogram->setBrush(QBrush(QColor(65, 105, 225, 128)));
+    histogram->setRenderHint(QwtPlotItem::RenderAntialiased);
+    histogram->attach(this);
+    return histogram;
+}
+
+QwtPlotMultiBarChart* DAChartWidget::addMultiBarChart(
+    const QVector< double >& positions, const QVector< QVector< double > >& values, const QStringList& titles)
+{
+    if (positions.isEmpty() || values.isEmpty()) {
+        qWarning() << "Invalid data for multi bar chart:" << titles;
+        return nullptr;
+    }
+
+    int numPositions = positions.size();
+    int numSeries    = values.size();
+
+    QVector< QwtSetSample > setSamples;
+    setSamples.reserve(numPositions);
+    for (int i = 0; i < numPositions; ++i) {
+        QVector< double > set;
+        set.reserve(numSeries);
+        for (int j = 0; j < numSeries; ++j) {
+            if (i < values[ j ].size()) {
+                set.append(values[ j ][ i ]);
+            } else {
+                set.append(0.0);
+            }
+        }
+        setSamples.append(QwtSetSample(positions[ i ], set));
+    }
+
+    QwtPlotMultiBarChart* multiBarChart = new QwtPlotMultiBarChart();
+    multiBarChart->setSamples(setSamples);
+
+    if (!titles.isEmpty()) {
+        QList< QwtText > barTitles;
+        for (const QString& t : titles) {
+            barTitles.append(QwtText(t));
+        }
+        multiBarChart->setBarTitles(barTitles);
+    }
+
+    multiBarChart->setRenderHint(QwtPlotItem::RenderAntialiased);
+    multiBarChart->attach(this);
+    return multiBarChart;
+}
+
+QwtPlotSpectroCurve* DAChartWidget::addContour(
+    const QVector< QwtPoint3D >& points, const QVector< double >& levels, const QString& title)
+{
+    if (points.isEmpty()) {
+        qWarning() << "Empty points for contour:" << title;
+        return nullptr;
+    }
+
+    QwtPlotSpectroCurve* curve = new QwtPlotSpectroCurve(title);
+    curve->setSamples(points);
+    curve->setPenWidth(1.0);
+    curve->setColorMap(QwtColorMapPreset::create(QwtColorMapPreset::Viridis).release());
+    if (!levels.isEmpty()) {
+        curve->setColorRange(QwtInterval(levels.first(), levels.last()));
+    }
+    curve->setRenderHint(QwtPlotItem::RenderAntialiased);
+    curve->attach(this);
+    return curve;
+}
+
+QwtPlotShapeItem* DAChartWidget::addShapeItem(const QPainterPath& path, const QString& title)
+{
+    QwtPlotShapeItem* item = new QwtPlotShapeItem(title);
+    item->setShape(path);
+    item->setPen(QPen(Qt::NoPen));
+    item->setBrush(QBrush(QColor(100, 149, 237, 128)));
+    item->setRenderHint(QwtPlotItem::RenderAntialiased);
+    item->attach(this);
+    return item;
 }
 
 void DAChartWidget::removePlotItem(QwtPlotItem* item)

@@ -18,6 +18,14 @@
 #include "qwt_plot_marker.h"
 #include "qwt_plot_intervalcurve.h"
 #include "qwt_plot_spectrogram.h"
+#include "qwt_plot_boxchart.h"
+#include "qwt_plot_histogram.h"
+#include "qwt_plot_multi_barchart.h"
+#include "qwt_plot_spectrocurve.h"
+#include "qwt_plot_shapeitem.h"
+#include "qwt_samples.h"
+#include "qwt_point_3d.h"
+#include <QPainterPath>
 
 class QwtDateScaleDraw;
 class QwtFigure;
@@ -113,6 +121,25 @@ public:
 
     // 高级图表
     QwtPlotSpectrogram* addSpectrogram(QwtGridRasterData* gridData, const QString& title = QString()) override;
+
+    // 箱线图
+    QwtPlotBoxChart* addBoxChart(const QVector< QwtBoxSample >& samples, const QString& title = QString()) override;
+
+    // 直方图
+    QwtPlotHistogram* addHistogram(const QVector< QwtIntervalSample >& samples, const QString& title = QString()) override;
+
+    // 分组柱状图
+    QwtPlotMultiBarChart* addMultiBarChart(const QVector< double >& positions,
+                                            const QVector< QVector< double > >& values,
+                                            const QStringList& titles = QStringList()) override;
+
+    // 等高线
+    QwtPlotSpectroCurve* addContour(const QVector< QwtPoint3D >& points,
+                                     const QVector< double >& levels,
+                                     const QString& title = QString()) override;
+
+    // 形状项（填充区域）
+    QwtPlotShapeItem* addShapeItem(const QPainterPath& path, const QString& title = QString()) override;
 
     // 通用数据操作
     void removePlotItem(QwtPlotItem* item) override;

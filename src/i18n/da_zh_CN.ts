@@ -1273,7 +1273,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+559"/>
+        <location filename="../APP/DAAppController.cpp" line="+565"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -1409,7 +1409,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+235"/>
+        <location line="+322"/>
         <source>New workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -1419,7 +1419,7 @@ Config</source>
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location line="-1238"/>
+        <location line="-1325"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
@@ -5226,7 +5226,7 @@ Config</source>
 <context>
     <name>DA::DADataManageWidget</name>
     <message>
-        <location filename="../DAGui/DADataManageWidget.cpp" line="+78"/>
+        <location filename="../DAGui/DADataManageWidget.cpp" line="+83"/>
         <source>Please select the data item to remove</source>
         <translation>请选择需要删除的数据条目</translation>
     </message>
@@ -5285,7 +5285,7 @@ Config</source>
 <context>
     <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+409"/>
+        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+424"/>
         <source>Search...</source>
         <translation>搜索</translation>
     </message>
@@ -5832,7 +5832,7 @@ Config</source>
 <context>
     <name>DA::DAPyDTypeComboBox</name>
     <message>
-        <location filename="../DAPyCommonWidgets/DAPyDTypeComboBox.cpp" line="+27"/>
+        <location filename="../DAPyCommonWidgets/DAPyDTypeComboBox.cpp" line="+39"/>
         <source>float64</source>
         <translation>float64</translation>
     </message>
@@ -6523,7 +6523,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1234"/>
+        <location filename="../APP/DAAppController.cpp" line="-1240"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
