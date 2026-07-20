@@ -8,6 +8,18 @@
 using namespace DA;
 
 //===================================================
+// 局部辅助
+//===================================================
+// dtype name 别名归一化——将非标准 dtype 名称映射到预设列表中的 data 值
+// "str" 是 Python str 作为 dtype 时的 name，等价于 numpy 的 "U"（unicode string）
+static QString aliasToPresetData(const QString& name)
+{
+    if (name == "str")
+        return "U";
+    return name;
+}
+
+//===================================================
 // DAPyDTypeComboBox
 //===================================================
 DAPyDTypeComboBox::DAPyDTypeComboBox(QWidget* parent) : QComboBox(parent)
@@ -216,10 +228,18 @@ int DAPyDTypeComboBox::findDTypeIndex(const DAPyDType& dt) const
     }
     QString name = dt.name();
     if (dt.isExtensionDtype()) {
-        return findData(name);
+        int idx = findData(name);
+        if (idx == -1) {
+            idx = findData(aliasToPresetData(name));
+        }
+        return idx;
     }
     char c = dt.char_();
-    return findData(QString(QChar(c)));
+    int idx = findData(QString(QChar(c)));
+    if (idx == -1) {
+        idx = findData(aliasToPresetData(name));
+    }
+    return idx;
 }
 
 /**

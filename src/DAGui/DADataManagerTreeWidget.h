@@ -2,8 +2,10 @@
 #define DADATAMANAGERTREEWIDGET_H
 
 #include <QWidget>
+#include <QTreeView>
 #include "DAGuiAPI.h"
 #include "Models/DADataManagerTreeModel.h"
+#include "Models/DADataManagerTreeFilterProxyModel.h"
 namespace Ui
 {
 class DADataManagerTreeWidget;
@@ -15,13 +17,19 @@ class DADataManager;
 /**
  * @brief 用于展示数据管理器的数据内容的树形窗口
  */
-class DADataManagerTreeWidget : public QWidget
+class DAGUI_API DADataManagerTreeWidget : public QWidget
 {
     Q_OBJECT
     DA_DECLARE_PRIVATE(DADataManagerTreeWidget)
 public:
     explicit DADataManagerTreeWidget(QWidget* parent = nullptr);
     ~DADataManagerTreeWidget();
+    // 获取内部的 QTreeView（供 APP 层注入右键菜单等）
+    QTreeView* getTreeView() const;
+    // 获取树模型（供 APP 层通过 item 判断类型/取数据）
+    DADataManagerTreeModel* getModel() const;
+    // 获取代理模型（供 APP 层 proxy→source 映射）
+    DADataManagerTreeFilterProxyModel* getProxyModel() const;
     // 设置数据管理器
     void setDataManager(DADataManager* dataMgr);
     DADataManager* getDataManager() const;

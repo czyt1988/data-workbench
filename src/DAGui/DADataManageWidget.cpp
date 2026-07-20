@@ -31,6 +31,11 @@ DADataManageWidget::~DADataManageWidget()
     delete ui;
 }
 
+DADataManagerTreeWidget* DADataManageWidget::getTreeWidget() const
+{
+    return ui->dataTreeWidget;
+}
+
 /**
  * @brief 设置DataManager
  * @param dmgr

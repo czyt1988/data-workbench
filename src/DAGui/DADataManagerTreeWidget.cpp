@@ -116,6 +116,21 @@ DADataManagerTreeWidget::~DADataManagerTreeWidget()
     delete ui;
 }
 
+QTreeView* DADataManagerTreeWidget::getTreeView() const
+{
+    return ui->treeView;
+}
+
+DADataManagerTreeModel* DADataManagerTreeWidget::getModel() const
+{
+    return d_ptr->model;
+}
+
+DADataManagerTreeFilterProxyModel* DADataManagerTreeWidget::getProxyModel() const
+{
+    return d_ptr->proxyModel;
+}
+
 void DADataManagerTreeWidget::setDataManager(DADataManager* dataMgr)
 {
     DA_D(d);

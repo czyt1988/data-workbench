@@ -1773,7 +1773,7 @@ Config</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+177"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+179"/>
         <source>File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1955,12 +1955,12 @@ Config</source>
     <message>
         <location line="+1"/>
         <location line="+4"/>
-        <location line="+478"/>
+        <location line="+477"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-480"/>
+        <location line="-479"/>
         <source>Chart Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1971,12 +1971,12 @@ Config</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+480"/>
+        <location line="+479"/>
         <source>Select Tool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-479"/>
+        <location line="-478"/>
         <source>Chart Assist Tool</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2019,7 +2019,7 @@ Config</source>
     </message>
     <message>
         <location line="-414"/>
-        <location line="+461"/>
+        <location line="+460"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5293,14 +5293,14 @@ Config</source>
     </message>
     <message>
         <location line="-246"/>
-        <location line="+706"/>
+        <location line="+700"/>
         <location line="+61"/>
         <location line="+48"/>
         <source>Please select a valid cell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-773"/>
+        <location line="-767"/>
         <source>Table has no columns</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5315,7 +5315,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+209"/>
+        <location line="+203"/>
         <location line="+4"/>
         <source>Unable to get statistics for this column</source>
         <translation type="unfinished"></translation>
@@ -9473,7 +9473,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+473"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+528"/>
         <source>DAPySeries: the Python object type is not pandas.Series</source>
         <translation type="unfinished"></translation>
     </message>

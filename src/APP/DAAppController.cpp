@@ -225,6 +225,12 @@ void DAAppController::initialize()
 #if DA_ENABLE_PYTHON
     initScripts();
     initPyWorkflowConnections();
+    // 数据管理树的 series 节点右键菜单（与 DataFrame 表头右键共用 action）
+    if (DADataManageWidget* dmw = getDataManageWidget()) {
+        if (DADataManagerTreeWidget* tree = dmw->getTreeWidget()) {
+            setupDataManagerTreeSeriesContextMenu(tree);
+        }
+    }
 #endif
 }
 
@@ -2355,6 +2361,47 @@ void DAAppController::onActionShowColumnDescribeTriggered()
  * 生命周期依赖 Qt 自动断连（header 是 widget 子对象，widget 销毁即断连）。
  * @param w 目标 DataFrame 操作窗口
  */
+void DAAppController::populateColumnContextMenu(QMenu& menu)
+{
+    menu.addAction(mActions->actionRenameColumn);
+    menu.addAction(mActions->actionRemoveColumn);
+    menu.addSeparator();
+    menu.addAction(mActions->actionCopyColumnName);
+    menu.addSeparator();
+    menu.addAction(mActions->actionGotoMax);
+    menu.addAction(mActions->actionGotoMin);
+    menu.addSeparator();
+    menu.addAction(mActions->actionShowColumnDescribe);
+}
+
+void DAAppController::selectColumnInDataFrameWidget(DADataOperateOfDataFrameWidget* w, int col)
+{
+    if (!w || col < 0) {
+        return;
+    }
+    DADataTableView* tv = w->getDataTableView();
+    if (!tv) {
+        return;
+    }
+    QItemSelectionModel* sel = tv->selectionModel();
+    QAbstractItemModel* m   = tv->model();
+    if (!sel || !m) {
+        return;
+    }
+    sel->clearSelection();
+    QItemSelection selRange(m->index(0, col), m->index(m->rowCount() - 1, col));
+    sel->select(selRange, QItemSelectionModel::Select | QItemSelectionModel::Columns);
+}
+
+/**
+ * @brief 为 DataFrame 操作窗口的表头注入右键菜单
+ *
+ * 方案 B-2：controller 直接操作 widget 的 horizontalHeader。
+ * 右键时先选中该列（replace 语义），再弹出菜单。
+ * 菜单项 enable 按 Q9-A 统一判定：走到这里 col 已有效，全部 enable。
+ * 生命周期依赖 Qt 自动断连（header 是 widget 子对象，widget 销毁即断连）。
+ * @param w 目标 DataFrame 操作窗口
+ */
 void DAAppController::setupDataFrameHeaderContextMenu(DADataOperateOfDataFrameWidget* w)
 {
     if (!w || !w->getDataTableView()) {
@@ -2378,29 +2425,75 @@ void DAAppController::setupDataFrameHeaderContextMenu(DADataOperateOfDataFrameWi
         if (col >= (int)shape.second) {
             return;
         }
-        // B-2-a: 先选中该列（replace 语义）
-        DADataTableView* tv = w->getDataTableView();
-        if (tv) {
-            QItemSelectionModel* sel = tv->selectionModel();
-            QAbstractItemModel* m    = tv->model();
-            if (sel && m) {
-                sel->clearSelection();
-                QItemSelection selRange(m->index(0, col), m->index(m->rowCount() - 1, col));
-                sel->select(selRange, QItemSelectionModel::Select | QItemSelectionModel::Columns);
-            }
-        }
-        // 弹出菜单
+        // 先选中该列（replace 语义），槽函数通过 getSelectedOneDataframeColumn 取列
+        selectColumnInDataFrameWidget(w, col);
+        // 弹出共用菜单
         QMenu menu(w);
-        menu.addAction(mActions->actionRenameColumn);
-        menu.addAction(mActions->actionRemoveColumn);
-        menu.addSeparator();
-        menu.addAction(mActions->actionCopyColumnName);
-        menu.addSeparator();
-        menu.addAction(mActions->actionGotoMax);
-        menu.addAction(mActions->actionGotoMin);
-        menu.addSeparator();
-        menu.addAction(mActions->actionShowColumnDescribe);
+        populateColumnContextMenu(menu);
         menu.exec(hv->mapToGlobal(pos));
+    });
+}
+
+/**
+ * @brief 为数据管理树的 series 节点注入右键菜单（与表头右键共用 action）
+ *
+ * 右键 series 节点时：取 DAData + seriesName → 列名转列索引 →
+ * 找到（或打开）对应的 DataFrame 操作窗口 → 选中该列 → 弹出与表头右键相同的菜单。
+ * 槽函数无需改动，依赖 getCurrentDataFrameOperateWidget + getSelectedOneDataframeColumn。
+ * @param w 数据管理树窗口
+ */
+void DAAppController::setupDataManagerTreeSeriesContextMenu(DADataManagerTreeWidget* w)
+{
+    if (!w) {
+        return;
+    }
+    QTreeView* tv = w->getTreeView();
+    if (!tv) {
+        return;
+    }
+    tv->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(tv, &QWidget::customContextMenuRequested, this, [ this, w, tv ](const QPoint& pos) {
+        QModelIndex proxyIndex = tv->indexAt(pos);
+        if (!proxyIndex.isValid()) {
+            return;
+        }
+        // 映射到 source model
+        DADataManagerTreeFilterProxyModel* proxy = w->getProxyModel();
+        QModelIndex srcIndex                    = proxy ? proxy->mapToSource(proxyIndex) : proxyIndex;
+        QStandardItem* item                      = w->getModel()->itemFromIndex(srcIndex);
+        if (!item || !DADataManagerTreeModel::isDataframeSeriesItem(item)) {
+            return;
+        }
+        DAData data = DADataManagerTreeModel::itemToData(item);
+        if (!data.isDataFrame()) {
+            return;
+        }
+        QString seriesName = item->text();
+        DAPyDataFrame df  = data.toDataFrame();
+        if (df.isNone()) {
+            return;
+        }
+        // 列名 → 列索引
+        QList< QString > cols = df.columns();
+        int col               = cols.indexOf(seriesName);
+        if (col < 0) {
+            return;
+        }
+        // 查找已打开的 DataFrame 窗口，没有则打开
+        DADataOperateOfDataFrameWidget* dfopt = getDataOperateWidget()->findDataFrameWidget(data);
+        if (!dfopt) {
+            getDataOperateWidget()->showData(data);
+            dfopt = getDataOperateWidget()->findDataFrameWidget(data);
+        }
+        if (!dfopt) {
+            return;
+        }
+        // 选中该列，槽函数通过 getSelectedOneDataframeColumn 取列
+        selectColumnInDataFrameWidget(dfopt, col);
+        // 弹出共用菜单
+        QMenu menu(w);
+        populateColumnContextMenu(menu);
+        menu.exec(tv->viewport()->mapToGlobal(pos));
     });
 }
 #endif

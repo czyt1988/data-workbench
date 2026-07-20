@@ -165,6 +165,8 @@ void DAAppRibbonArea::buildMenu()
     m_menuChartPickSetting->addAction(m_actions->actionChartPickerTextFollowMouse);
     m_menuChartPickSetting->addSeparator();
     m_menuChartPickSetting->addAction(m_actions->actionChartYPickerShowXValueEnabled);
+    m_menuChartPickSetting->addSeparator();
+    m_menuChartPickSetting->addAction(m_actions->actionChartDataPickerSetting);
 }
 
 void DAAppRibbonArea::retranslateUi()
@@ -680,7 +682,6 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
     m_actions->actionChartEnablePickerY->setMenu(m_menuChartPickSetting);
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnablePickerY, QToolButton::MenuButtonPopup);
     m_pannelChartSetting->addLargeAction(m_actions->actionChartLinkAllPickerEnabled);
-    m_pannelChartSetting->addSmallAction(m_actions->actionChartDataPickerSetting);
     // legend
     m_pannelChartSetting->addLargeAction(m_actions->actionChartEnableLegend);
 

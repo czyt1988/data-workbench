@@ -4,6 +4,7 @@
 #include "DAGuiAPI.h"
 #include "DAData.h"
 #include "DADataManager.h"
+#include "DADataManagerTreeWidget.h"
 class QAction;
 class QActionGroup;
 
@@ -32,6 +33,8 @@ public:
     DAData getCurrentSelectData() const;
     // 获取选中的数据
     QList< DAData > getAllSelectDatas() const;
+    // 获取内部的数据管理树窗口（供 APP 层注入右键菜单等）
+    DADataManagerTreeWidget* getTreeWidget() const;
 public Q_SLOTS:
     // 移除选中的数据
     void removeSelectData();
