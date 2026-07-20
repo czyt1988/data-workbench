@@ -8,6 +8,7 @@
 #include "DAStatusBarInterface.h"
 #include "DAUIInterface.h"
 #include "DADockingAreaInterface.h"
+#include "DAChartOperateWidget.h"
 #include "DAPyWorkFlowScene.h"
 #include "DAPyWorkFlowGraphicsScene.h"
 #include "DAData.h"
@@ -351,7 +352,60 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 return self.getCurrentScene();
             },
             pybind11::return_value_policy::reference,
-            "Get the current active workflow scene as DAPyWorkFlowScene; returns None if no active scene");
+            "Get the current active workflow scene as DAPyWorkFlowScene; returns None if no active scene")
+        .def(
+            "getChartOperateWidget",
+            [](DA::DADockingAreaInterface& self) -> DA::DAChartOperateWidget* {
+                return self.getChartOperateWidget();
+            },
+            pybind11::return_value_policy::reference,
+            "Get the chart operate widget that manages all figures and charts");
+
+    /* DAChartWidget — minimal binding for type recognition.
+     * Full chart operations are exposed via da_figure.ChartHandle.
+     * Registered here so that DAChartOperateWidget.getCurrentChart() can return it. */
+    pybind11::class_< DA::DAChartWidget >(m, "DAChartWidget")
+        .def("isValid", [](DA::DAChartWidget* w) { return w != nullptr; });
+
+    /* DAChartOperateWidget — manages DAFigureWidget tabs and their charts */
+    pybind11::class_< DA::DAChartOperateWidget >(m, "DAChartOperateWidget")
+        .def(
+            "getCurrentChart",
+            [](DA::DAChartOperateWidget& self) -> DA::DAChartWidget* {
+                return self.getCurrentChart();
+            },
+            pybind11::return_value_policy::reference,
+            "Get the current active chart; returns None if no active chart")
+        .def(
+            "getCurrentFigure",
+            [](DA::DAChartOperateWidget& self) -> DA::DAFigureWidget* {
+                return self.getCurrentFigure();
+            },
+            pybind11::return_value_policy::reference,
+            "Get the current active figure widget; returns None if no active figure. "
+            "Note: da_figure module must be imported for the DAFigureWidget type to be recognized.")
+        .def(
+            "getAllCharts",
+            [](DA::DAChartOperateWidget& self) -> pybind11::list {
+                pybind11::list result;
+                for (auto* chart : self.getAllCharts()) {
+                    result.append(chart);
+                }
+                return result;
+            },
+            "Get all charts across all figures as a list of DAChartWidget")
+        .def(
+            "getFigureCount",
+            &DA::DAChartOperateWidget::getFigureCount,
+            "Get the number of figures")
+        .def(
+            "createFigure",
+            [](DA::DAChartOperateWidget& self, const QString& name) -> DA::DAFigureWidget* {
+                return self.createFigure(name);
+            },
+            pybind11::arg("name") = QString(),
+            pybind11::return_value_policy::reference,
+            "Create a new figure and return it");
 
     /* 4. DACoreInterface 补充 */
     pybind11::class_< DA::DACoreInterface >(m, "DACoreInterface")

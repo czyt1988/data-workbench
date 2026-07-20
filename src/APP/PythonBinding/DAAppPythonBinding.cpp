@@ -2,6 +2,10 @@
 #include "DAAppCore.h"
 #include "DAPybind11InQt.h"
 #include <QDebug>
+#include "DAFigurePythonBinding.h"
+#include "DAUIInterface.h"
+#include "DADockingAreaInterface.h"
+#include "DAChartOperateWidget.h"
 namespace DA
 {
 
@@ -33,4 +37,19 @@ PYBIND11_EMBEDDED_MODULE(da_app, m)
     m.def("addInfoLogMessage", &DA::addInfoLogMessage, "add the info message");
     m.def("addWarningLogMessage", &DA::addWarningLogMessage, "add the warning message");
     m.def("addCriticalLogMessage", &DA::addCriticalLogMessage, "add the critical message");
+
+    // Register the chart getter callback for the da_figure module.
+    // DAFigure cannot depend on the APP module (circular dependency), so we use
+    // a function pointer that's set here during da_app module initialization.
+    // The lambda has no captures and converts to a function pointer.
+    da_figure::setCurrentChartGetter([]() -> DA::DAChartWidget* {
+        auto& core = DA::DAAppCore::getInstance();
+        auto ui = core.getUiInterface();
+        if (!ui) return nullptr;
+        auto dock = ui->getDockingArea();
+        if (!dock) return nullptr;
+        auto chartOperate = dock->getChartOperateWidget();
+        if (!chartOperate) return nullptr;
+        return chartOperate->getCurrentChart();
+    });
 }
