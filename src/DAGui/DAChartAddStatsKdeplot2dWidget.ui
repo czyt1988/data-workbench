@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DAChartAddStatsKdeplot2dWidget</class>
+ <widget class="QWidget" name="DAChartAddStatsKdeplot2dWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>680</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Stats KDE 2D Settings</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayoutMain">
+   <item>
+    <widget class="QGroupBox" name="groupBoxData">
+     <property name="title">
+      <string>Data</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayoutData">
+      <item>
+       <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetXData"/>
+      </item>
+      <item>
+       <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetYData"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxBw">
+     <property name="title">
+      <string>Bandwidth</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QFormLayout" name="formLayoutBw">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelBwMethod">
+        <property name="text">
+         <string>Bandwidth method</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="comboBoxBwMethod">
+        <item>
+         <property name="text">
+          <string>scott</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>silverman</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>custom</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelBwValue">
+        <property name="text">
+         <string>Custom bandwidth value</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QDoubleSpinBox" name="doubleSpinBoxBwValue">
+        <property name="minimum">
+         <double>0.010000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>10.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.500000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labelGridSize">
+        <property name="text">
+         <string>Grid size (resolution)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="spinBoxGridSize">
+        <property name="minimum">
+         <number>10</number>
+        </property>
+        <property name="maximum">
+         <number>10000</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxContours">
+     <property name="title">
+      <string>Contours</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QFormLayout" name="formLayoutContours">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelLevels">
+        <property name="text">
+         <string>Number of contour levels</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="spinBoxLevels">
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>50</number>
+        </property>
+        <property name="value">
+         <number>5</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelThresh">
+        <property name="text">
+         <string>Threshold (0-1)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QDoubleSpinBox" name="doubleSpinBoxThresh">
+        <property name="minimum">
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.050000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.050000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="checkBoxFillContours">
+        <property name="text">
+         <string>Fill contours</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="checkBoxShowHeatmap">
+        <property name="text">
+         <string>Show heatmap</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxColor">
+     <property name="title">
+      <string>Colour Map</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QFormLayout" name="formLayoutColor">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelCmap">
+        <property name="text">
+         <string>Colour map</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="comboBoxCmap">
+        <item>
+         <property name="text">
+          <string>viridis</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>plasma</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>inferno</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>magma</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>cividis</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>jet</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>coolwarm</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxOptions">
+     <property name="title">
+      <string>Options</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QFormLayout" name="formLayoutOptions">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="checkBoxCommonNorm">
+        <property name="text">
+         <string>Common normalization (reserved for hue)</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DA::DAChartSeriesSelectWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartSeriesSelectWidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -83,6 +83,7 @@
 // Stats plot widgets
 #include "DAChartAddStatsHistplotWidget.h"
 #include "DAChartAddStatsKdeplot1dWidget.h"
+#include "DAChartAddStatsKdeplot2dWidget.h"
 #include "DAChartSeriesSelectWidget.h"
 #include "DAAbstractStatsChartAddWidget.h"
 #include "DAFigurePythonBinding.h"
@@ -1866,8 +1867,31 @@ void DAAppController::onActionStatsKdeplot2dTriggered()
     if (!fig) {
         return;
     }
+    DAChartWidget* chart = fig->getCurrentChart();
+    if (!chart) {
+        chart = fig->gca();
+    }
+    if (!chart) {
+        chart = fig->createChart();
+    }
+    if (!chart) {
+        return;
+    }
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    // TODO: Create DAChartAddStatsKdeplot2dWidget and show it (plan06)
+#if DA_ENABLE_PYTHON
+    auto* w = new DAChartAddStatsKdeplot2dWidget(app());
+    w->setAttribute(Qt::WA_DeleteOnClose);
+    w->setWindowTitle(tr("KDE 2D Settings"));  // cn: 二维核密度图设置
+    w->setFigureWidget(fig);
+    w->setChartWidget(chart);
+    w->setDataManager(mDatas->dataManager());
+    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
+            this, &DAAppController::onStatsPlotRequested);
+    w->show();
+#else
+    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
+                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
+#endif
 }
 
 /**

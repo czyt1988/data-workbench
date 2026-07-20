@@ -189,6 +189,7 @@ if(DA_ENABLE_PYTHON)
         DAChartAddSpectrogramWidget.h
         DAChartAddStatsHistplotWidget.h
         DAChartAddStatsKdeplot1dWidget.h
+        DAChartAddStatsKdeplot2dWidget.h
     )
     list(APPEND DA_LIB_SOURCE_FILES
         DADataframeToVectorPointWidget.cpp
@@ -215,6 +216,7 @@ if(DA_ENABLE_PYTHON)
         DAChartAddVectorFieldWidget.cpp
         DAChartAddStatsHistplotWidget.cpp
         DAChartAddStatsKdeplot1dWidget.cpp
+        DAChartAddStatsKdeplot2dWidget.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES
         DADataframeToVectorPointWidget.ui
@@ -232,6 +234,7 @@ if(DA_ENABLE_PYTHON)
         DAChartAddVectorFieldWidget.ui
         DAChartAddStatsHistplotWidget.ui
         DAChartAddStatsKdeplot1dWidget.ui
+        DAChartAddStatsKdeplot2dWidget.ui
     )
 endif()
 # 子目录

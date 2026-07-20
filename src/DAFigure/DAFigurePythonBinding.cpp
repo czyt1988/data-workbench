@@ -558,6 +558,8 @@ void setPenOnItem(QwtPlotItem* item, const QColor& color, double width)
         interval->setPen(pen);
     } else if (auto* marker = dynamic_cast< QwtPlotMarker* >(item)) {
         marker->setLinePen(pen);
+    } else if (auto* shape = dynamic_cast< QwtPlotShapeItem* >(item)) {
+        shape->setPen(pen);
     }
 }
 
@@ -573,6 +575,8 @@ void setBrushOnItem(QwtPlotItem* item, const QColor& color)
         hist->setBrush(brush);
     } else if (auto* box = dynamic_cast< QwtPlotBoxChart* >(item)) {
         box->setBrush(brush);
+    } else if (auto* shape = dynamic_cast< QwtPlotShapeItem* >(item)) {
+        shape->setBrush(brush);
     }
 }
 

@@ -1338,7 +1338,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+583"/>
+        <location filename="../APP/DAAppController.cpp" line="+584"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1347,11 +1347,12 @@ Config</source>
         <location line="+744"/>
         <location line="+465"/>
         <location line="+40"/>
+        <location line="+40"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1238"/>
+        <location line="-1278"/>
         <source>Failed to save project! Path: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1443,16 +1444,22 @@ Config</source>
     <message>
         <location line="+9"/>
         <location line="+40"/>
+        <location line="+40"/>
         <source>Python support is required for statistical plots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-9"/>
+        <location line="-49"/>
         <source>KDE 1D Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+577"/>
+        <location line="+40"/>
+        <source>KDE 2D Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+560"/>
         <source>Rename Column</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1537,7 +1544,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1784"/>
+        <location line="-1807"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2493,6 +2500,31 @@ Config</source>
         <location line="+105"/>
         <location line="+4"/>
         <source>Please select a data column before plotting</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartAddStatsKdeplot2dWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddStatsKdeplot2dWidget.cpp" line="+22"/>
+        <source>X axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Y axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+62"/>
+        <location line="+4"/>
+        <source>Please select an X-axis data column before plotting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location line="+4"/>
+        <source>Please select a Y-axis data column before plotting</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7210,6 +7242,134 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>Curve color (no hue)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartAddStatsKdeplot2dWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddStatsKdeplot2dWidget.ui" line="+14"/>
+        <source>Stats KDE 2D Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Bandwidth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Bandwidth method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>scott</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>silverman</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>custom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Custom bandwidth value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Grid size (resolution)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Contours</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Number of contour levels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Threshold (0-1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Fill contours</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Show heatmap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Colour Map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Colour map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>viridis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>plasma</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>inferno</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>magma</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>cividis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>jet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>coolwarm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Common normalization (reserved for hue)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
