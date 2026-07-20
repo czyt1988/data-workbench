@@ -336,6 +336,7 @@ private:
     SARibbonCategory* m_categoryFigure { nullptr };    ///< 绘图标签
     SARibbonPanel* m_pannelFigureSetting { nullptr };  ///< 绘图的设置
     SARibbonPanel* m_pannelChartAdd { nullptr };       ///< 添加绘图
+    SARibbonPanel* m_pannelStatsPlot { nullptr };      ///< 统计绘图面板
 
     //----------------------------------------------------
     // Context - dataframe

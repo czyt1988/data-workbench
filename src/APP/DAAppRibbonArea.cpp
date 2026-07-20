@@ -221,6 +221,7 @@ void DAAppRibbonArea::resetText()
     m_categoryFigure->setCategoryName(tr("Figure"));             // cn:绘图
     m_pannelFigureSetting->setPanelName(tr("Figure Setting"));   // cn:绘图设置
     m_pannelChartAdd->setPanelName(tr("Add Chart"));             // cn:添加绘图
+    m_pannelStatsPlot->setPanelName(tr("Stats Plot"));           // cn:统计绘图
     // 绘图上下文标签
     m_contextChart->setContextTitle(tr("Chart"));                         // cn:绘图
     m_categoryChartOpt->setCategoryName(tr("Chart Edit"));                // cn:绘图编辑
@@ -502,6 +503,21 @@ void DAAppRibbonArea::buildRibbonFigureCategory()
     m_pannelChartAdd->addLargeAction(m_actions->actionChartAddVectorfield);
 
     m_categoryFigure->addPanel(m_pannelChartAdd);
+
+    // 统计绘图面板
+    m_pannelStatsPlot = new SARibbonPanel(m_categoryFigure);
+    m_pannelStatsPlot->setObjectName(QStringLiteral("da-pannel-figure.stats-plot"));
+    m_pannelStatsPlot->setPanelName(tr("Stats Plot"));  // cn:统计绘图
+    m_pannelStatsPlot->addLargeAction(m_actions->actionStatsHistplot);
+    m_pannelStatsPlot->addLargeAction(m_actions->actionStatsKdeplot1d);
+    m_pannelStatsPlot->addLargeAction(m_actions->actionStatsKdeplot2d);
+    m_pannelStatsPlot->addMediumAction(m_actions->actionStatsBoxplot);
+    m_pannelStatsPlot->addMediumAction(m_actions->actionStatsHeatmap);
+    m_pannelStatsPlot->addMediumAction(m_actions->actionStatsScatterplot);
+    m_pannelStatsPlot->addMediumAction(m_actions->actionStatsBarplot);
+    m_pannelStatsPlot->addMediumAction(m_actions->actionStatsRegplot);
+    m_pannelStatsPlot->addMediumAction(m_actions->actionStatsECDFplot);
+    m_categoryFigure->addPanel(m_pannelStatsPlot);
 }
 
 /**

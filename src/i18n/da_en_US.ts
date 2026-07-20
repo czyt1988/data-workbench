@@ -164,7 +164,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+363"/>
+        <location filename="../APP/DAAppActions.cpp" line="+374"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -399,7 +399,7 @@ Vector Field</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+22"/>
         <source>Apply All Charts</source>
         <translation type="unfinished"></translation>
     </message>
@@ -670,7 +670,97 @@ All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="-63"/>
+        <source>Histplot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+1"/>
+        <source>Histogram with optional KDE overlay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>KDE 1D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>1D Kernel Density Estimation plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>KDE 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>2D Kernel Density Estimation plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Boxplot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Box plot with statistics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Heatmap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Heatmap matrix plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Scatter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Scatter plot with grouping</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Barplot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bar plot with aggregation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Regplot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Regression plot with CI</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>ECDF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Empirical Cumulative Distribution Function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+47"/>
         <source>Copy To Clipboard</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1248,7 +1338,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+565"/>
+        <location filename="../APP/DAAppController.cpp" line="+576"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1344,7 +1434,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+881"/>
+        <location line="+1034"/>
         <source>Rename Column</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1394,7 +1484,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1325"/>
+        <location line="-1478"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1795,13 +1885,13 @@ Config</source>
     <message>
         <location line="+1"/>
         <location line="+23"/>
-        <location line="+93"/>
-        <location line="+213"/>
+        <location line="+94"/>
+        <location line="+228"/>
         <source>Workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-328"/>
+        <location line="-344"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation type="unfinished"></translation>
@@ -1814,67 +1904,67 @@ Config</source>
     <message>
         <location line="+3"/>
         <location line="+27"/>
-        <location line="+373"/>
+        <location line="+389"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-399"/>
+        <location line="-415"/>
         <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+193"/>
+        <location line="+194"/>
         <source>DataFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-192"/>
-        <location line="+194"/>
+        <location line="-193"/>
+        <location line="+195"/>
         <source>Operate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-193"/>
-        <location line="+196"/>
+        <location line="-194"/>
+        <location line="+197"/>
         <source>Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-195"/>
+        <location line="-196"/>
         <location line="+6"/>
-        <location line="+202"/>
+        <location line="+203"/>
         <location line="+6"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-213"/>
-        <location line="+225"/>
+        <location line="-214"/>
+        <location line="+226"/>
         <source>Table Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-224"/>
-        <location line="+228"/>
+        <location line="-225"/>
+        <location line="+229"/>
         <source>Fill</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-227"/>
-        <location line="+235"/>
+        <location line="-228"/>
+        <location line="+236"/>
         <source>Font</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-234"/>
-        <location line="+240"/>
+        <location line="-235"/>
+        <location line="+241"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-234"/>
+        <location line="-235"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1885,82 +1975,82 @@ Config</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+316"/>
-        <source>Workflow Edit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-315"/>
-        <location line="+320"/>
-        <source>Clipboard</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-297"/>
-        <source>Set ribbon theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-22"/>
-        <location line="+324"/>
-        <source>Item</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-323"/>
         <location line="+332"/>
-        <source>Text</source>
+        <source>Workflow Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-331"/>
         <location line="+336"/>
+        <source>Clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-312"/>
+        <source>Set ribbon theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-23"/>
+        <location line="+340"/>
+        <source>Item</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-339"/>
+        <location line="+348"/>
+        <source>Text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-347"/>
+        <location line="+352"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-333"/>
-        <location line="+414"/>
+        <location line="-349"/>
+        <location line="+430"/>
         <source>Workflow Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-413"/>
-        <location line="+416"/>
+        <location line="-429"/>
+        <location line="+432"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-414"/>
-        <location line="+261"/>
+        <location line="-430"/>
+        <location line="+262"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-260"/>
-        <location line="+5"/>
+        <location line="-261"/>
+        <location line="+6"/>
         <source>Figure Setting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-4"/>
+        <location line="-5"/>
         <source>Add Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <location line="+4"/>
-        <location line="+477"/>
+        <location line="+492"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-479"/>
+        <location line="-494"/>
         <source>Chart Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1971,12 +2061,12 @@ Config</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+479"/>
+        <location line="+494"/>
         <source>Select Tool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-478"/>
+        <location line="-493"/>
         <source>Chart Assist Tool</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1997,7 +2087,13 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+317"/>
+        <location line="-18"/>
+        <location line="+286"/>
+        <source>Stats Plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+64"/>
         <source>Group</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2018,8 +2114,8 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-414"/>
-        <location line="+460"/>
+        <location line="-429"/>
+        <location line="+475"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6498,7 +6594,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1240"/>
+        <location filename="../APP/DAAppController.cpp" line="-1251"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>

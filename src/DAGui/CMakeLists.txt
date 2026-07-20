@@ -18,6 +18,7 @@ damacro_lib_setting(
 set(DA_LIB_HEADER_FILES
     DAGuiAPI.h
     DAAbstractChartAddItemWidget.h
+    DAAbstractStatsChartAddWidget.h
     DAAbstractNodeSettingWidget.h
     DAAbstractOperateWidget.h
     DACacheWindowTableView.h
@@ -79,6 +80,7 @@ set(DA_LIB_HEADER_FILES
 )
 set(DA_LIB_SOURCE_FILES
     DAAbstractChartAddItemWidget.cpp
+    DAAbstractStatsChartAddWidget.cpp
     DAAbstractNodeSettingWidget.cpp
     DAAbstractOperateWidget.cpp
     DACacheWindowTableView.cpp

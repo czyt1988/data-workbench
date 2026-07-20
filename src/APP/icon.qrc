@@ -133,5 +133,14 @@
         <file>Icon/chart-type/chart-spectrogram.svg</file>
         <file>Icon/chart-type/chart-vectorfield.svg</file>
         <file>Icon/chart-type/chart-scatter-2d.svg</file>
+        <file>Icon/chart-type/stats-histplot.svg</file>
+        <file>Icon/chart-type/stats-kdeplot.svg</file>
+        <file>Icon/chart-type/stats-kdeplot-2d.svg</file>
+        <file>Icon/chart-type/stats-boxplot.svg</file>
+        <file>Icon/chart-type/stats-heatmap.svg</file>
+        <file>Icon/chart-type/stats-scatterplot.svg</file>
+        <file>Icon/chart-type/stats-barplot.svg</file>
+        <file>Icon/chart-type/stats-regplot.svg</file>
+        <file>Icon/chart-type/stats-ecdfplot.svg</file>
     </qresource>
 </RCC>

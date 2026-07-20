@@ -265,6 +265,17 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddContourMap, onActionChartAddContourMapTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddVectorfield, onActionChartAddVectorfieldTriggered);
 
+    // Stats Plot
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsHistplot, onActionStatsHistplotTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsKdeplot1d, onActionStatsKdeplot1dTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsKdeplot2d, onActionStatsKdeplot2dTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsBoxplot, onActionStatsBoxplotTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsHeatmap, onActionStatsHeatmapTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsScatterplot, onActionStatsScatterplotTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsBarplot, onActionStatsBarplotTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsRegplot, onActionStatsRegplotTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsECDFplot, onActionStatsECDFplotTriggered);
+
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGrid, onActionChartEnableGridTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridX, onActionChartEnableGridXTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridY, onActionChartEnableGridYTriggered);
@@ -1753,6 +1764,159 @@ void DAAppController::onActionChartAddVectorfieldTriggered()
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
     chartopt->showPlotGuideDialog(DA::DAChartTypes::VectorField);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+}
+
+/**
+ * @brief 统计直方图
+ */
+void DAAppController::onActionStatsHistplotTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    DAFigureWidget* fig = chartopt->getCurrentFigure();
+    if (!fig) {
+        fig = chartopt->createFigure();
+    }
+    if (!fig) {
+        return;
+    }
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    // TODO: Create DAChartAddStatsHistplotWidget and show it (plan04)
+}
+
+/**
+ * @brief 一维核密度图
+ */
+void DAAppController::onActionStatsKdeplot1dTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    DAFigureWidget* fig = chartopt->getCurrentFigure();
+    if (!fig) {
+        fig = chartopt->createFigure();
+    }
+    if (!fig) {
+        return;
+    }
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    // TODO: Create DAChartAddStatsKdeplot1dWidget and show it (plan05)
+}
+
+/**
+ * @brief 二维核密度图
+ */
+void DAAppController::onActionStatsKdeplot2dTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    DAFigureWidget* fig = chartopt->getCurrentFigure();
+    if (!fig) {
+        fig = chartopt->createFigure();
+    }
+    if (!fig) {
+        return;
+    }
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    // TODO: Create DAChartAddStatsKdeplot2dWidget and show it (plan06)
+}
+
+/**
+ * @brief 统计箱线图
+ */
+void DAAppController::onActionStatsBoxplotTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    DAFigureWidget* fig = chartopt->getCurrentFigure();
+    if (!fig) {
+        fig = chartopt->createFigure();
+    }
+    if (!fig) {
+        return;
+    }
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    // TODO: Create DAChartAddStatsBoxplotWidget and show it (plan07)
+}
+
+/**
+ * @brief 热力图
+ */
+void DAAppController::onActionStatsHeatmapTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    DAFigureWidget* fig = chartopt->getCurrentFigure();
+    if (!fig) {
+        fig = chartopt->createFigure();
+    }
+    if (!fig) {
+        return;
+    }
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    // TODO: Create DAChartAddStatsHeatmapWidget and show it (plan08)
+}
+
+/**
+ * @brief 统计散点图
+ */
+void DAAppController::onActionStatsScatterplotTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    DAFigureWidget* fig = chartopt->getCurrentFigure();
+    if (!fig) {
+        fig = chartopt->createFigure();
+    }
+    if (!fig) {
+        return;
+    }
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    // TODO: Create DAChartAddStatsScatterplotWidget and show it (plan09)
+}
+
+/**
+ * @brief 统计柱状图
+ */
+void DAAppController::onActionStatsBarplotTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    DAFigureWidget* fig = chartopt->getCurrentFigure();
+    if (!fig) {
+        fig = chartopt->createFigure();
+    }
+    if (!fig) {
+        return;
+    }
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    // TODO: Create DAChartAddStatsBarplotWidget and show it (plan10)
+}
+
+/**
+ * @brief 回归图
+ */
+void DAAppController::onActionStatsRegplotTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    DAFigureWidget* fig = chartopt->getCurrentFigure();
+    if (!fig) {
+        fig = chartopt->createFigure();
+    }
+    if (!fig) {
+        return;
+    }
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    // TODO: Create DAChartAddStatsRegplotWidget and show it (plan11)
+}
+
+/**
+ * @brief 经验累积分布图
+ */
+void DAAppController::onActionStatsECDFplotTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    DAFigureWidget* fig = chartopt->getCurrentFigure();
+    if (!fig) {
+        fig = chartopt->createFigure();
+    }
+    if (!fig) {
+        return;
+    }
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    // TODO: Create DAChartAddStatsECDFplotWidget and show it (plan12)
 }
 
 /**

@@ -124,6 +124,19 @@ public:
     QAction* actionChartAddCloudMap;           ///< 云图
     QAction* actionChartAddVectorfield;        ///< 向量场图
 
+    //===================================================
+    // 统计绘图 Stats Plot
+    //===================================================
+    QAction* actionStatsHistplot;     ///< 统计直方图
+    QAction* actionStatsKdeplot1d;    ///< 一维核密度图
+    QAction* actionStatsKdeplot2d;    ///< 二维核密度图
+    QAction* actionStatsBoxplot;      ///< 统计箱线图
+    QAction* actionStatsHeatmap;      ///< 热力图
+    QAction* actionStatsScatterplot;  ///< 统计散点图
+    QAction* actionStatsBarplot;      ///< 统计柱状图
+    QAction* actionStatsRegplot;      ///< 回归图
+    QAction* actionStatsECDFplot;     ///< 经验累积分布图
+
     QAction* actionFigureSettingApplyAllChart;  ///< figure的设置应用到所有chart
     QAction* actionChartEnableGrid;             ///< 网格显示总开关
     QAction* actionChartEnableGridX;            ///< 网格显示X开关

@@ -200,6 +200,18 @@ private Q_SLOTS:
     // 添加向量场图
     void onActionChartAddVectorfieldTriggered();
     //===================================================
+    // 统计绘图 Stats Plot
+    //===================================================
+    void onActionStatsHistplotTriggered();
+    void onActionStatsKdeplot1dTriggered();
+    void onActionStatsKdeplot2dTriggered();
+    void onActionStatsBoxplotTriggered();
+    void onActionStatsHeatmapTriggered();
+    void onActionStatsScatterplotTriggered();
+    void onActionStatsBarplotTriggered();
+    void onActionStatsRegplotTriggered();
+    void onActionStatsECDFplotTriggered();
+    //===================================================
     // 绘图标签 Chart Context Category
     //===================================================
     // 允许网格

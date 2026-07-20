@@ -112,6 +112,17 @@ void DAAppActions::buildChartAction()
     actionChartAddVectorfield =
         createAction("actionChartAddVectorfield", ":/app/chart-type/Icon/chart-type/chart-vectorfield.svg");
 
+    // 统计绘图 Stats Plot
+    actionStatsHistplot     = createAction("actionStatsHistplot", ":/app/chart-type/Icon/chart-type/stats-histplot.svg");
+    actionStatsKdeplot1d    = createAction("actionStatsKdeplot1d", ":/app/chart-type/Icon/chart-type/stats-kdeplot.svg");
+    actionStatsKdeplot2d    = createAction("actionStatsKdeplot2d", ":/app/chart-type/Icon/chart-type/stats-kdeplot-2d.svg");
+    actionStatsBoxplot      = createAction("actionStatsBoxplot", ":/app/chart-type/Icon/chart-type/stats-boxplot.svg");
+    actionStatsHeatmap      = createAction("actionStatsHeatmap", ":/app/chart-type/Icon/chart-type/stats-heatmap.svg");
+    actionStatsScatterplot  = createAction("actionStatsScatterplot", ":/app/chart-type/Icon/chart-type/stats-scatterplot.svg");
+    actionStatsBarplot      = createAction("actionStatsBarplot", ":/app/chart-type/Icon/chart-type/stats-barplot.svg");
+    actionStatsRegplot      = createAction("actionStatsRegplot", ":/app/chart-type/Icon/chart-type/stats-regplot.svg");
+    actionStatsECDFplot     = createAction("actionStatsECDFplot", ":/app/chart-type/Icon/chart-type/stats-ecdfplot.svg");
+
     actionFigureSettingApplyAllChart =
         createAction("actionFigureSettingApplyAllChart", ":/app/bright/Icon/apply-to-all-figure.svg", true, true);
     actionChartEnableGrid  = createAction("actionChartEnableGrid", ":/app/bright/Icon/chart-grid.svg", true, false);
@@ -409,6 +420,26 @@ void DAAppActions::retranslateUi()
     actionChartAddCloudMap->setToolTip(tr("Add a cloud map to the chart"));        // cn:添加云图
     actionChartAddVectorfield->setText(tr("Add \nVector Field"));                  // cn:向量场图
     actionChartAddVectorfield->setToolTip(tr("Add a vector field to the chart"));  // cn:添加向量场图
+
+    // Stats Plot
+    actionStatsHistplot->setText(tr("Histplot"));                                        // cn:直方图
+    actionStatsHistplot->setToolTip(tr("Histogram with optional KDE overlay"));         // cn:直方图（可叠加核密度曲线）
+    actionStatsKdeplot1d->setText(tr("KDE 1D"));                                        // cn:一维核密度
+    actionStatsKdeplot1d->setToolTip(tr("1D Kernel Density Estimation plot"));          // cn:一维核密度图
+    actionStatsKdeplot2d->setText(tr("KDE 2D"));                                        // cn:二维核密度
+    actionStatsKdeplot2d->setToolTip(tr("2D Kernel Density Estimation plot"));          // cn:二维核密度图
+    actionStatsBoxplot->setText(tr("Boxplot"));                                         // cn:箱线图
+    actionStatsBoxplot->setToolTip(tr("Box plot with statistics"));                     // cn:统计箱线图
+    actionStatsHeatmap->setText(tr("Heatmap"));                                         // cn:热力图
+    actionStatsHeatmap->setToolTip(tr("Heatmap matrix plot"));                          // cn:热力图
+    actionStatsScatterplot->setText(tr("Scatter"));                                    // cn:散点图
+    actionStatsScatterplot->setToolTip(tr("Scatter plot with grouping"));               // cn:统计散点图
+    actionStatsBarplot->setText(tr("Barplot"));                                         // cn:柱状图
+    actionStatsBarplot->setToolTip(tr("Bar plot with aggregation"));                    // cn:统计柱状图
+    actionStatsRegplot->setText(tr("Regplot"));                                         // cn:回归图
+    actionStatsRegplot->setToolTip(tr("Regression plot with CI"));                     // cn:回归图（含置信区间）
+    actionStatsECDFplot->setText(tr("ECDF"));                                           // cn:累积分布
+    actionStatsECDFplot->setToolTip(tr("Empirical Cumulative Distribution Function"));  // cn:经验累积分布图
 
     actionFigureSettingApplyAllChart->setText(tr("Apply All Charts"));  // cn:应用到\n所有绘图
     actionFigureSettingApplyAllChart->setToolTip(tr(
