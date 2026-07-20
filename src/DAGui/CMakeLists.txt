@@ -193,6 +193,9 @@ if(DA_ENABLE_PYTHON)
         DAChartAddStatsBoxplotWidget.h
         DAChartAddStatsHeatmapWidget.h
         DAChartAddStatsScatterplotWidget.h
+        DAChartAddStatsBarplotWidget.h
+        DAChartAddStatsRegplotWidget.h
+        DAChartAddStatsEcdfplotWidget.h
     )
     list(APPEND DA_LIB_SOURCE_FILES
         DADataframeToVectorPointWidget.cpp
@@ -223,6 +226,9 @@ if(DA_ENABLE_PYTHON)
         DAChartAddStatsBoxplotWidget.cpp
         DAChartAddStatsHeatmapWidget.cpp
         DAChartAddStatsScatterplotWidget.cpp
+        DAChartAddStatsBarplotWidget.cpp
+        DAChartAddStatsRegplotWidget.cpp
+        DAChartAddStatsEcdfplotWidget.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES
         DADataframeToVectorPointWidget.ui
@@ -244,6 +250,9 @@ if(DA_ENABLE_PYTHON)
         DAChartAddStatsBoxplotWidget.ui
         DAChartAddStatsHeatmapWidget.ui
         DAChartAddStatsScatterplotWidget.ui
+        DAChartAddStatsBarplotWidget.ui
+        DAChartAddStatsRegplotWidget.ui
+        DAChartAddStatsEcdfplotWidget.ui
     )
 endif()
 # 子目录

@@ -1363,7 +1363,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+587"/>
+        <location filename="../APP/DAAppController.cpp" line="+590"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -1376,11 +1376,14 @@ Config</source>
         <location line="+40"/>
         <location line="+40"/>
         <location line="+40"/>
+        <location line="+40"/>
+        <location line="+40"/>
+        <location line="+40"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-1398"/>
+        <location line="-1518"/>
         <source>Failed to save project! Path: %1</source>
         <translation>工程保存失败！路径为:%1</translation>
     </message>
@@ -1476,11 +1479,14 @@ Config</source>
         <location line="+40"/>
         <location line="+40"/>
         <location line="+40"/>
+        <location line="+40"/>
+        <location line="+40"/>
+        <location line="+40"/>
         <source>Python support is required for statistical plots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-169"/>
+        <location line="-289"/>
         <source>KDE 1D Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1505,7 +1511,22 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+509"/>
+        <location line="+40"/>
+        <source>Barplot Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+40"/>
+        <source>Regplot Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+40"/>
+        <source>ECDF Plot Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+458"/>
         <source>Rename Column</source>
         <translation>重命名此列</translation>
     </message>
@@ -1590,7 +1611,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1876"/>
+        <location line="-1945"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
@@ -2512,6 +2533,39 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartAddStatsBarplotWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddStatsBarplotWidget.cpp" line="+22"/>
+        <source>X axis (categorical)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Y axis (numeric, optional)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Hue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+103"/>
+        <source>Please select an X-axis data column before plotting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+51"/>
+        <source>Barplot Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Countplot Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartAddStatsBoxplotWidget</name>
     <message>
         <location filename="../DAGui/DAChartAddStatsBoxplotWidget.cpp" line="+23"/>
@@ -2531,6 +2585,29 @@ Config</source>
     </message>
     <message>
         <location line="+5"/>
+        <source>Please select a data column before plotting</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartAddStatsEcdfplotWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddStatsEcdfplotWidget.cpp" line="+22"/>
+        <source>Data</source>
+        <translation type="unfinished">数据</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Hue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Weights (optional)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+80"/>
         <source>Please select a data column before plotting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2624,6 +2701,29 @@ Config</source>
     <message>
         <location line="+6"/>
         <location line="+4"/>
+        <source>Please select a Y-axis data column before plotting</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartAddStatsRegplotWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddStatsRegplotWidget.cpp" line="+23"/>
+        <source>X axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Y axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+99"/>
+        <source>Please select an X-axis data column before plotting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>Please select a Y-axis data column before plotting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7120,6 +7220,174 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DAChartAddStatsBarplotWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddStatsBarplotWidget.ui" line="+14"/>
+        <source>Barplot Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>X axis (categorical)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Y axis (numeric, optional — empty for countplot)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Hue (optional grouping column)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Statistics</source>
+        <translation type="unfinished">数据统计</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Estimator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>mean</source>
+        <translation type="unfinished">均值</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>median</source>
+        <translation type="unfinished">中位数</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>sum</source>
+        <translation type="unfinished">求和</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>count</source>
+        <translation type="unfinished">计数</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>std</source>
+        <translation type="unfinished">标准差</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>var</source>
+        <translation type="unfinished">方差</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Confidence interval</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>None</source>
+        <translation type="unfinished">无</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>68</source>
+        <translation type="unfinished">68</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>95</source>
+        <translation type="unfinished">95</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>99</source>
+        <translation type="unfinished">99</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Bootstrap iterations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Orientation</source>
+        <translation type="unfinished">方向</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>vertical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>horizontal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Bar width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Show legend (hue)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Color</source>
+        <translation type="unfinished">颜色</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Palette (hue mode)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>deep</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>muted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>pastel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>bright</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>dark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>colorblind</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Bar color (no hue)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Error bar color</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAChartAddStatsBoxplotWidget</name>
     <message>
         <location filename="../DAGui/DAChartAddStatsBoxplotWidget.ui" line="+14"/>
@@ -7204,6 +7472,109 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>Box color (no hue)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartAddStatsEcdfplotWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddStatsEcdfplotWidget.ui" line="+14"/>
+        <source>ECDF Plot Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Data</source>
+        <translation type="unfinished">数据</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Hue (optional grouping column)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Weights (optional — overrides stat to proportion)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Statistic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>proportion</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>count</source>
+        <translation type="unfinished">计数</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Complementary CDF (1-CDF)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Line width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Show legend (hue)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Color</source>
+        <translation type="unfinished">颜色</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Palette (hue mode)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>deep</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>muted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>pastel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>bright</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>dark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>colorblind</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Curve color (no hue)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7751,6 +8122,119 @@ Config</source>
     <message>
         <location line="+9"/>
         <source>Common normalization (reserved for hue)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartAddStatsRegplotWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddStatsRegplotWidget.ui" line="+14"/>
+        <source>Regplot Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>X axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Y axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Regression</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Polynomial order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Confidence interval</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>None</source>
+        <translation type="unfinished">无</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>68</source>
+        <translation type="unfinished">68</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>95</source>
+        <translation type="unfinished">95</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>99</source>
+        <translation type="unfinished">99</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Bootstrap iterations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Draw scatter points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Draw regression line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Color (default)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Base color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Scatter style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Marker color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Marker size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Alpha (transparency)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Regression line style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Line color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Line width</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

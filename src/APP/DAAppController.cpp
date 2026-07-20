@@ -87,6 +87,9 @@
 #include "DAChartAddStatsBoxplotWidget.h"
 #include "DAChartAddStatsHeatmapWidget.h"
 #include "DAChartAddStatsScatterplotWidget.h"
+#include "DAChartAddStatsBarplotWidget.h"
+#include "DAChartAddStatsRegplotWidget.h"
+#include "DAChartAddStatsEcdfplotWidget.h"
 #include "DAChartSeriesSelectWidget.h"
 #include "DAAbstractStatsChartAddWidget.h"
 #include "DAFigurePythonBinding.h"
@@ -2030,8 +2033,31 @@ void DAAppController::onActionStatsBarplotTriggered()
     if (!fig) {
         return;
     }
+    DAChartWidget* chart = fig->getCurrentChart();
+    if (!chart) {
+        chart = fig->gca();
+    }
+    if (!chart) {
+        chart = fig->createChart();
+    }
+    if (!chart) {
+        return;
+    }
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    // TODO: Create DAChartAddStatsBarplotWidget and show it (plan10)
+#if DA_ENABLE_PYTHON
+    auto* w = new DAChartAddStatsBarplotWidget(app());
+    w->setAttribute(Qt::WA_DeleteOnClose);
+    w->setWindowTitle(tr("Barplot Settings"));  // cn: 柱状图设置
+    w->setFigureWidget(fig);
+    w->setChartWidget(chart);
+    w->setDataManager(mDatas->dataManager());
+    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
+            this, &DAAppController::onStatsPlotRequested);
+    w->show();
+#else
+    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
+                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
+#endif
 }
 
 /**
@@ -2047,8 +2073,31 @@ void DAAppController::onActionStatsRegplotTriggered()
     if (!fig) {
         return;
     }
+    DAChartWidget* chart = fig->getCurrentChart();
+    if (!chart) {
+        chart = fig->gca();
+    }
+    if (!chart) {
+        chart = fig->createChart();
+    }
+    if (!chart) {
+        return;
+    }
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    // TODO: Create DAChartAddStatsRegplotWidget and show it (plan11)
+#if DA_ENABLE_PYTHON
+    auto* w = new DAChartAddStatsRegplotWidget(app());
+    w->setAttribute(Qt::WA_DeleteOnClose);
+    w->setWindowTitle(tr("Regplot Settings"));  // cn: 回归图设置
+    w->setFigureWidget(fig);
+    w->setChartWidget(chart);
+    w->setDataManager(mDatas->dataManager());
+    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
+            this, &DAAppController::onStatsPlotRequested);
+    w->show();
+#else
+    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
+                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
+#endif
 }
 
 /**
@@ -2064,8 +2113,31 @@ void DAAppController::onActionStatsECDFplotTriggered()
     if (!fig) {
         return;
     }
+    DAChartWidget* chart = fig->getCurrentChart();
+    if (!chart) {
+        chart = fig->gca();
+    }
+    if (!chart) {
+        chart = fig->createChart();
+    }
+    if (!chart) {
+        return;
+    }
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    // TODO: Create DAChartAddStatsECDFplotWidget and show it (plan12)
+#if DA_ENABLE_PYTHON
+    auto* w = new DAChartAddStatsEcdfplotWidget(app());
+    w->setAttribute(Qt::WA_DeleteOnClose);
+    w->setWindowTitle(tr("ECDF Plot Settings"));  // cn: 经验累积分布图设置
+    w->setFigureWidget(fig);
+    w->setChartWidget(chart);
+    w->setDataManager(mDatas->dataManager());
+    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
+            this, &DAAppController::onStatsPlotRequested);
+    w->show();
+#else
+    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
+                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
+#endif
 }
 
 /**
