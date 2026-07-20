@@ -55,6 +55,12 @@ void setCurrentChartGetter(GetCurrentChartFn fn)
     g_currentChartGetter = fn;
 }
 
+DA::DAChartWidget* getCurrentChartWidget()
+{
+    if (!g_currentChartGetter) return nullptr;
+    return g_currentChartGetter();
+}
+
 // ==================== ChartHandle class ====================
 //
 // Wraps a non-owning DA::DAChartWidget* pointer. All methods delegate to the

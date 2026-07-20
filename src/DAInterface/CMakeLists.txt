@@ -47,9 +47,11 @@ set(DA_LIB_SOURCE_FILES
 if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_HEADER_FILES
         DAInterfacePythonBinding.h
+        DAQwtPyPlotPythonBinding.h
     )
     list(APPEND DA_LIB_SOURCE_FILES
         DAInterfacePythonBinding.cpp
+        DAQwtPyPlotPythonBinding.cpp
     )
 endif()
 

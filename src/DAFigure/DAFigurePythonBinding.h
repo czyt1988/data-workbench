@@ -30,6 +30,17 @@ using GetCurrentChartFn = DA::DAChartWidget* (*)();
  */
 void DAFIGURE_API setCurrentChartGetter(GetCurrentChartFn fn);
 
+/**
+ * @brief Get the current active DAChartWidget via the registered callback.
+ *
+ * Returns nullptr if no callback is set or no active chart exists.
+ * Used by other Python binding modules (e.g., da_pyplot) to reuse the same
+ * chart-getter mechanism without duplicating the callback infrastructure.
+ *
+ * @return DAChartWidget* or nullptr.
+ */
+DAFIGURE_API DA::DAChartWidget* getCurrentChartWidget();
+
 }  // namespace da_figure
 
 #endif  // DAFIGUREPYTHONBINDING_H
