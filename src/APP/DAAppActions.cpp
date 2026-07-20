@@ -77,6 +77,7 @@ void DAAppActions::buildDataAction()
     actionCopyColumnName    = createAction("actionCopyColumnName", ":/app/bright/Icon/copyColumnName.svg");
     actionGotoMax           = createAction("actionGotoMax", ":/app/bright/Icon/gotoMax.svg");
     actionGotoMin           = createAction("actionGotoMin", ":/app/bright/Icon/gotoMin.svg");
+    actionShowColumnDescribe = createAction("actionShowColumnDescribe", ":/app/bright/Icon/showInfomation.svg");
     actionRemoveCell        = createAction("actionRemoveCell", ":/app/bright/Icon/removeCell.svg");
     actionCastToNum         = createAction("actionCastToNum", ":/app/bright/Icon/castToNum.svg");
     actionCastToString      = createAction("actionCastToString", ":/app/bright/Icon/castToString.svg");
@@ -185,6 +186,7 @@ void DAAppActions::buildChartAction()
         "actionAddHorizontalPlotProbeMarker", ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
     actionAddVerticalPlotProbeMarker = createAction(
         "actionAddVerticalPlotProbeMarker", ":/app/bright/Icon/plot-probe.svg", true, false, actionGroupChartEditor);
+    actionChartDataPickerSetting   = createAction("actionChartDataPickerSetting", ":/DAGui/icon/data-picker-setting.svg");
     actionChartEditorResizeSubChart->setData(static_cast< int >(DAFigureWidget::SubChartEditor));
     actionChartEditorRectSelector->setData(static_cast< int >(DAFigureWidget::RectSelectEditor));
     actionChartEditorEllipseSelector->setData(static_cast< int >(DAFigureWidget::EllipseSelectEditor));
@@ -474,6 +476,8 @@ void DAAppActions::retranslateUi()
     actionAddHorizontalPlotProbeMarker->setToolTip(tr("Add a horizontal plot probe marker to the chart"));  // cn:水平数据探针
     actionAddVerticalPlotProbeMarker->setText(tr("Add Vertical Probe"));  // cn:垂直数据探针
     actionAddVerticalPlotProbeMarker->setToolTip(tr("Add a vertical plot probe marker to the chart"));  // cn:添加垂直数据探针标记
+    actionChartDataPickerSetting->setText(tr("Data Picker Setting"));                     // cn:数据拾取设置
+    actionChartDataPickerSetting->setToolTip(tr("Configure data picker properties"));     // cn:配置数据拾取器属性
     //-----------------------------------------------------
     // 数据操作的上下文标签 Data Operate Context Category
     //-----------------------------------------------------
@@ -508,6 +512,8 @@ void DAAppActions::retranslateUi()
     actionGotoMax->setToolTip(tr("Scroll to the maximum value of this column"));         // cn:滚动到此列最大值处
     actionGotoMin->setText(tr("Goto Min"));                                              // cn:跳转到最小值
     actionGotoMin->setToolTip(tr("Scroll to the minimum value of this column"));         // cn:滚动到此列最小值处
+    actionShowColumnDescribe->setText(tr("Show Statistics"));                           // cn:显示统计信息
+    actionShowColumnDescribe->setToolTip(tr("Show statistics of this column via pandas describe")); // cn:通过pandas describe显示此列的统计信息
     actionClearStyleSelected->setText(tr("Clear Selected Style"));      // cn:清除选中样式
     actionClearStyleSelected->setToolTip(tr("Clear styles in selected cells"));  // cn:清除选中单元格的样式
     actionClearStyleAll->setText(tr("Clear All Style"));               // cn:清除所有样式

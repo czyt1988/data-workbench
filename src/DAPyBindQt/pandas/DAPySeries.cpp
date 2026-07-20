@@ -145,6 +145,44 @@ DAPyDType DAPySeries::dtypeObject() const
     }
     return DAPyDType();
 }
+
+/**
+ * @brief 返回 dtype 的字符串表示
+ *
+ * 直接对 series.dtype 调用 Python str()，返回如 "int64"、"float64"、
+ * "datetime64[ns]"、"object"、"category" 等原始字符串。
+ * 与 DAPyDType::name() 不同，此方法保留完整 dtype 表示（含时间单位等）。
+ * @return dtype 字符串，失败返回空字符串
+ */
+QString DAPySeries::dtypeString() const
+{
+    try {
+        return pybind11::str(object().attr("dtype")).cast< QString >();
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return QString();
+}
+
+/**
+ * @brief 返回指定位置元素的字符串表示
+ *
+ * 通过 Python str() 转换 iat(i) 的值，适用于所有类型（数值、日期、字符串、
+ * Timestamp、NaN 等）。当 value() 因类型不兼容返回空 QVariant 时，此方法
+ * 仍能正确输出。
+ * @param i 位置索引
+ * @return 元素的字符串表示
+ */
+QString DAPySeries::valueAsString(std::size_t i) const
+{
+    try {
+        return pybind11::str(iat(i)).cast< QString >();
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return QString();
+}
+
 /**
  * @brief Indicator whether Series/DataFrame is empty.
  * @return If Series/DataFrame is empty, return True, if not return False.
@@ -459,6 +497,23 @@ long DAPySeries::idxminPosition() const
         qCritical().noquote() << e.what();
         return -1;
     }
+}
+
+/**
+ * @brief 生成描述性统计信息
+ *
+ * 调用 pandas Series.describe()，返回一个新的 Series，其 index 为统计项名称
+ * （数值列：count/mean/std/min/25%/50%/75%/max，对象列：count/unique/top/freq）。
+ * @return 统计信息 Series，失败返回空 Series
+ */
+DAPySeries DAPySeries::describe() const
+{
+    try {
+        return DAPySeries(object().attr("describe")());
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return DAPySeries();
 }
 
 bool DAPySeries::isSeries(const pybind11::object& obj)

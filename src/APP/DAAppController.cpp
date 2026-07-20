@@ -281,6 +281,7 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartLinkAllPickerEnabled, onActionChartLinkAllPickerEnabledTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableLegend, onActionChartEnableLegendTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCopyFigureInClipboard, onActionCopyFigureToClipboardTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartDataPickerSetting, onActionChartDataPickerSettingTriggered);
     for (QAction* act : std::as_const(mActions->actionListOfColorTheme)) {
         connect(act, &QAction::triggered, this, [ this, act ]() { onActionGroupFigureThemeTriggered(act); });
     }
@@ -298,6 +299,7 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCopyColumnName, onActionCopyColumnNameTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionGotoMax, onActionGotoMaxTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionGotoMin, onActionGotoMinTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowColumnDescribe, onActionShowColumnDescribeTriggered);
 
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToNum, onActionCastToNumTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
@@ -2019,6 +2021,33 @@ void DAAppController::onActionCopyFigureToClipboardTriggered()
     fig->copyToClipboard();
 }
 
+void DAAppController::onActionChartDataPickerSettingTriggered()
+{
+    DAFigureWidget* fig = getCurrentFigure();
+    if (!fig) {
+        return;
+    }
+    DAChartWidget* chart = fig->getCurrentChart();
+    if (!chart) {
+        chart = fig->gca();
+    }
+    if (!chart) {
+        return;
+    }
+    DASettingContainerWidget* setting = getSettingContainerWidget();
+    if (!setting) {
+        return;
+    }
+    DAChartSettingWidget* chartSetting = setting->getChartSettingWidget();
+    if (!chartSetting) {
+        return;
+    }
+    chartSetting->setPlot(chart);
+    chartSetting->showDataPickerSetting();
+    setting->showChartSettingWidget();
+    mDock->raiseDockByWidget((QWidget*)(mDock->getSettingContainerWidget()));
+}
+
 void DAAppController::onActionGroupChartEditorTriggered(QAction* a)
 {
     DAFigureWidget* fig = getCurrentFigure();
@@ -2299,6 +2328,25 @@ void DAAppController::onActionGotoMinTriggered()
 }
 
 /**
+ * @brief 显示列统计信息（表头右键）
+ *
+ * 通过 DADataOperateOfDataFrameWidget::showColumnDescribe 调用 pandas describe
+ * 获取当前列的统计信息并弹窗展示。
+ */
+void DAAppController::onActionShowColumnDescribeTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    int col = dfopt->getSelectedOneDataframeColumn();
+    if (col < 0) {
+        return;
+    }
+    dfopt->showColumnDescribe(col);
+}
+
+/**
  * @brief 为 DataFrame 操作窗口的表头注入右键菜单
  *
  * 方案 B-2：controller 直接操作 widget 的 horizontalHeader。
@@ -2350,6 +2398,8 @@ void DAAppController::setupDataFrameHeaderContextMenu(DADataOperateOfDataFrameWi
         menu.addSeparator();
         menu.addAction(mActions->actionGotoMax);
         menu.addAction(mActions->actionGotoMin);
+        menu.addSeparator();
+        menu.addAction(mActions->actionShowColumnDescribe);
         menu.exec(hv->mapToGlobal(pos));
     });
 }

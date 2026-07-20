@@ -21,6 +21,7 @@ class DAChartPlotSettingPanel;
 class DAChartCanvasSettingPanel;
 class DAChartAxisSettingPanel;
 class DAChartCommonItemsSettingWidget;
+class DAChartDataPickerSettingPanel;
 /**
  * @brief 绘图设置窗口
  *
@@ -52,6 +53,7 @@ public:
         SettingYRightScale,
         SettingXBottomScale,
         SettingXTopScale,
+        SettingDataPicker,
         SettingPlotItems
     };
 
@@ -84,12 +86,14 @@ public:
     void showScaleXBottomSetting();
     void showScaleXTopSetting();
     void showPlotItemSetting(QwtPlotItem* item);
+    void showDataPickerSetting();
 
     // 获取设置窗口
     DAChartPlotSettingPanel* getChartPlotSettingWidget() const;
     DAChartCanvasSettingPanel* getChartCanvasSettingWidget() const;
     DAChartAxisSettingPanel* getChartAxisSetWidget(int axisId) const;
     DAChartCommonItemsSettingWidget* getChartCommonItemsSettingWidget() const;
+    DAChartDataPickerSettingPanel* getDataPickerSettingWidget() const;
 
 protected:
     void changeEvent(QEvent* e);

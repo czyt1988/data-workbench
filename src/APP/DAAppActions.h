@@ -73,6 +73,7 @@ public:
     QAction* actionCopyColumnName;     ///< 复制列名到剪贴板（表头右键）
     QAction* actionGotoMax;            ///< 跳转到最大值（表头右键）
     QAction* actionGotoMin;            ///< 跳转到最小值（表头右键）
+    QAction* actionShowColumnDescribe; ///< 显示列统计信息（表头右键）
     QAction* actionCastToString;       ///< 数据转换为文本
     QAction* actionCastToNum;          ///< 数据转换为数字
     QAction* actionCastToDatetime;     ///< 转换为日期
@@ -160,6 +161,7 @@ public:
     QActionGroup* actionGroupChartEditor;  ///< charteditor的action group，注意，这个actiongroup包含了actionChartEditorResizeSubChart
     QAction* actionAddVerticalPlotProbeMarker;    ///< 添加垂直数据探针标记
     QAction* actionAddHorizontalPlotProbeMarker;  ///< 添加水平数据探针标记
+    QAction* actionChartDataPickerSetting;       ///< 数据拾取设置
     //===================================================
     // 视图标签 View Category
     //===================================================

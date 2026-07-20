@@ -51,6 +51,7 @@
 #include "qwt_plot_curve.h"
 #include "qwt_plot_layout.h"
 #include "qwt_scale_widget.h"
+#include "qwt_plot_series_data_picker.h"
 namespace DA
 {
 //==============================================================
@@ -2040,6 +2041,26 @@ QDomElement DAXmlHelper::makeElement(const DAChartWidget* chart,
     chartEle.appendChild(propertyEle);
 
     //!====================
+    //!  DataPicker detail state
+    //!====================
+    QwtPlotSeriesDataPicker* picker = chart->getDataPicker();
+    if (picker) {
+        QDomElement pickerEle = doc->createElement(QStringLiteral("picker"));
+        pickerEle.setAttribute(QStringLiteral("showx"), picker->isEnableShowXValue());
+        pickerEle.setAttribute(QStringLiteral("textplacement"), static_cast< int >(picker->textArea()));
+        pickerEle.setAttribute(QStringLiteral("interpolation"), static_cast< int >(picker->interpolationMode()));
+        pickerEle.setAttribute(QStringLiteral("nearestsearchsize"), picker->nearestSearchWindowSize());
+        pickerEle.setAttribute(QStringLiteral("drawfeaturepoint"), picker->isEnableDrawFeaturePoint());
+        pickerEle.setAttribute(QStringLiteral("featurepointsize"), picker->drawFeaturePointSize());
+        pickerEle.setAttribute(QStringLiteral("textalignment"), static_cast< int >(picker->textAlignment()));
+        pickerEle.setAttribute(QStringLiteral("textoffsetx"), picker->textTrackerOffset().x());
+        pickerEle.setAttribute(QStringLiteral("textoffsety"), picker->textTrackerOffset().y());
+        QDomElement brushEle = DAXMLFileInterface::makeElement(picker->textBackgroundBrush(), QStringLiteral("textBrush"), doc);
+        pickerEle.appendChild(brushEle);
+        chartEle.appendChild(pickerEle);
+    }
+
+    //!====================
     //! title
     //!====================
     QwtText title = chart->title();
@@ -2117,6 +2138,30 @@ bool DAXmlHelper::loadElement(DAChartWidget* chart,
         }
         if (isXYPicker) {
             chart->enableXYValuePicking(true);
+        }
+    }
+    // DataPicker detail state
+    QDomElement pickerDetailEle = tag->firstChildElement(QStringLiteral("picker"));
+    if (!pickerDetailEle.isNull()) {
+        QwtPlotSeriesDataPicker* picker = chart->getDataPicker();
+        if (picker) {
+            picker->setEnableShowXValue(pickerDetailEle.attribute(QStringLiteral("showx")).toInt());
+            picker->setTextArea(static_cast< QwtPlotSeriesDataPicker::TextPlacement >(pickerDetailEle.attribute(QStringLiteral("textplacement"), "1").toInt()));
+            picker->setInterpolationMode(static_cast< QwtPlotSeriesDataPicker::InterpolationMode >(pickerDetailEle.attribute(QStringLiteral("interpolation"), "0").toInt()));
+            picker->setNearestSearchWindowSize(pickerDetailEle.attribute(QStringLiteral("nearestsearchsize"), "5").toInt());
+            picker->setEnableDrawFeaturePoint(pickerDetailEle.attribute(QStringLiteral("drawfeaturepoint"), "1").toInt());
+            picker->setDrawFeaturePointSize(pickerDetailEle.attribute(QStringLiteral("featurepointsize"), "8").toInt());
+            picker->setTextAlignment(static_cast< Qt::Alignment >(pickerDetailEle.attribute(QStringLiteral("textalignment"), QString::number(static_cast< int >(Qt::AlignLeft | Qt::AlignTop))).toInt()));
+            int offsetX = pickerDetailEle.attribute(QStringLiteral("textoffsetx"), "10").toInt();
+            int offsetY = pickerDetailEle.attribute(QStringLiteral("textoffsety"), "10").toInt();
+            picker->setTextTrackerOffset(QPoint(offsetX, offsetY));
+            QDomElement brushEle = pickerDetailEle.firstChildElement(QStringLiteral("textBrush"));
+            if (!brushEle.isNull()) {
+                QBrush brush;
+                if (DAXMLFileInterface::loadElement(brush, &brushEle)) {
+                    picker->setTextBackgroundBrush(brush);
+                }
+            }
         }
     }
     // title

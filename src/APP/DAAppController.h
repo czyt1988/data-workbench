@@ -239,6 +239,8 @@ private Q_SLOTS:
     void onActionGroupFigureThemeTriggered(QAction* act);
     // 复制到剪切板
     void onActionCopyFigureToClipboardTriggered();
+    // 数据拾取设置
+    void onActionChartDataPickerSettingTriggered();
     // 绘图编辑器的切换
     void onActionGroupChartEditorTriggered(QAction* a);
     //===================================================
@@ -268,6 +270,8 @@ private Q_SLOTS:
     void onActionGotoMaxTriggered();
     // 跳转到最小值（表头右键）
     void onActionGotoMinTriggered();
+    // 显示列统计信息（表头右键）
+    void onActionShowColumnDescribeTriggered();
 #if DA_ENABLE_PYTHON
     // 列数据类型改变
     void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);

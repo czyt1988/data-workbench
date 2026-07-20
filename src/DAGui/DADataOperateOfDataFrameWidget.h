@@ -19,6 +19,7 @@ class DADataTableModel;
 class DADataTableView;
 class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
+class DADialogDataframeColumnDescribe;
 class DATableStyleManager;
 class DATableStyleItemDelegate;
 class DATableStyleRegistry;
@@ -119,6 +120,8 @@ public Q_SLOTS:
     void castSelectToDatetime();
     // 把选择的列转换为索引
     bool changeSelectColumnToIndex();
+    // 显示列统计信息（表头右键），通过 pandas describe 获取
+    void showColumnDescribe(int col);
 Q_SIGNALS:
     /**
      * @brief 选中的列或者类型发生了变化
@@ -143,6 +146,7 @@ private:
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
+    DADialogDataframeColumnDescribe* mDialogColumnDescribe { nullptr };
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

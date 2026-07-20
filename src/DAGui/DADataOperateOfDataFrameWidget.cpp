@@ -26,6 +26,7 @@
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
 #include "Dialog/DADialogDataframeColumnCastToDatetime.h"
 #include "Dialog/DADialogInsertNewColumn.h"
+#include "Dialog/DADialogDataframeColumnDescribe.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
@@ -624,6 +625,53 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
     }
     getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
     return true;
+}
+
+/**
+ * @brief 显示列统计信息
+ *
+ * 通过 pandas Series.describe() 获取指定列的统计信息（count、mean、std、min、25%、50%、75%、max 等），
+ * 在弹出的对话框中展示。
+ * @param col 列位置索引
+ */
+void DADataOperateOfDataFrameWidget::showColumnDescribe(int col)
+{
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone()) {
+        return;
+    }
+    auto shape = df.shape();
+    if (col < 0 || col >= (int)shape.second) {
+        return;
+    }
+    QString colName = df.columnName(col);
+    QString dtypeStr;
+    QList<QPair<QString, QString>> stats;
+    pybind11::gil_scoped_acquire gil;
+    try {
+        DAPySeries s      = df[ colName ];
+        dtypeStr          = s.dtypeString();
+        DAPySeries desc   = s.describe();
+        QStringList statNames = desc.indexAsStringList();
+        for (int i = 0; i < statNames.size(); ++i) {
+            stats.append({ statNames[ i ], desc.valueAsString(i) });
+        }
+    } catch (const std::exception& e) {
+        qCritical() << e.what();
+        daWarning << tr("Unable to get statistics for this column");  // cn:无法获取此列的统计信息
+        return;
+    }
+    if (stats.isEmpty()) {
+        daWarning << tr("Unable to get statistics for this column");  // cn:无法获取此列的统计信息
+        return;
+    }
+    if (!mDialogColumnDescribe) {
+        mDialogColumnDescribe = new DADialogDataframeColumnDescribe(this);
+    }
+    mDialogColumnDescribe->setColumnName(colName);
+    mDialogColumnDescribe->setColumnDType(dtypeStr);
+    mDialogColumnDescribe->setStatistics(stats);
+    mDialogColumnDescribe->exec();
 }
 
 /**

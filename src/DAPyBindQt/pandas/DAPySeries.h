@@ -41,12 +41,16 @@ public:
 public:
     pybind11::dtype dtype() const;
     DAPyDType dtypeObject() const;
+    // 返回 dtype 的字符串表示（如 "int64"、"float64"、"datetime64[ns]"、"object" 等）
+    QString dtypeString() const;
     bool empty() const;
     std::size_t size() const;
     QString name() const;
     pybind11::object iat(std::size_t i) const;
     void iat(std::size_t r, const pybind11::object& v);
     QVariant value(std::size_t i) const;
+    // 返回指定位置元素的字符串表示（通过 Python str() 转换，适用于所有类型）
+    QString valueAsString(std::size_t i) const;
     bool setValue(std::size_t i, const QVariant& v);
     bool isNumeric() const;
     bool isDateTime() const;
@@ -65,6 +69,9 @@ public:
     // 返回最小值的位置索引（iloc 语义），失败返回 -1
     // 两级策略：nanargmin → to_numeric/to_datetime(coerce)+nanargmin
     long idxminPosition() const;
+    // 生成描述性统计信息（count、mean、std、min、25%、50%、75%、max 等）
+    // 返回一个新的 DAPySeries，其 index 为统计项名称
+    DAPySeries describe() const;
 
 public:
     static bool isSeries(const pybind11::object& obj);

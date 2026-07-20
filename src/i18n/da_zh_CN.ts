@@ -164,7 +164,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+361"/>
+        <location filename="../APP/DAAppActions.cpp" line="+363"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -618,7 +618,7 @@ All</source>
         <translation>图例</translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+42"/>
         <source>To Numeric</source>
         <translation>转换为数值类型</translation>
     </message>
@@ -638,7 +638,7 @@ All</source>
         <translation>转换为日期类型</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+27"/>
         <source>Grouping</source>
         <translation>分组</translation>
     </message>
@@ -673,7 +673,7 @@ All</source>
         <translation>深色主题</translation>
     </message>
     <message>
-        <location line="-133"/>
+        <location line="-137"/>
         <source>Enable or disable legend in the chart</source>
         <translation>启用或禁用图表中的图例</translation>
     </message>
@@ -777,6 +777,16 @@ All</source>
         <location line="+1"/>
         <source>Add a vertical plot probe marker to the chart</source>
         <translation>添加垂直数据探针标记</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Data Picker Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Configure data picker properties</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
@@ -911,6 +921,16 @@ Column</source>
         <location line="+1"/>
         <source>Scroll to the minimum value of this column</source>
         <translation>滚动到此列最小值处</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show Statistics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show statistics of this column via pandas describe</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1253,7 +1273,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+556"/>
+        <location filename="../APP/DAAppController.cpp" line="+559"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -1349,7 +1369,7 @@ Config</source>
         <translation>获取到空工程接口</translation>
     </message>
     <message>
-        <location line="+855"/>
+        <location line="+881"/>
         <source>Rename Column</source>
         <translation>重命名此列</translation>
     </message>
@@ -1359,17 +1379,37 @@ Config</source>
         <translation>新列名：</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+65"/>
         <source>Cannot find the maximum value in this column (empty, all-NaN, or incomparable types)</source>
         <translation>此列无法找到最大值（空列、全为NaN或类型不可比较）</translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+14"/>
+        <source>Column [%1] maximum value: %2, row: %3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Column [%1] maximum value at row %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+29"/>
         <source>Cannot find the minimum value in this column (empty, all-NaN, or incomparable types)</source>
         <translation>此列无法找到最小值（空列、全为NaN或类型不可比较）</translation>
     </message>
     <message>
-        <location line="+218"/>
+        <location line="+14"/>
+        <source>Column [%1] minimum value: %2, row: %3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Column [%1] minimum value at row %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+235"/>
         <source>New workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -1379,7 +1419,7 @@ Config</source>
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location line="-1164"/>
+        <location line="-1238"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
@@ -1940,12 +1980,12 @@ Config</source>
     <message>
         <location line="+1"/>
         <location line="+4"/>
-        <location line="+477"/>
+        <location line="+478"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-479"/>
+        <location line="-480"/>
         <source>Chart Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -1956,12 +1996,12 @@ Config</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+479"/>
+        <location line="+480"/>
         <source>Select Tool</source>
         <translation>选区工具</translation>
     </message>
     <message>
-        <location line="-478"/>
+        <location line="-479"/>
         <source>Chart Assist Tool</source>
         <translation>图表辅助工具</translation>
     </message>
@@ -2004,7 +2044,7 @@ Config</source>
     </message>
     <message>
         <location line="-414"/>
-        <location line="+460"/>
+        <location line="+461"/>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
@@ -3274,6 +3314,164 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartDataPickerSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartDataPickerSettingPanel.cpp" line="+115"/>
+        <source>Basic</source>
+        <translation type="unfinished">基础</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Picker Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>XY Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Show X Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Text Placement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Auto</source>
+        <translation type="unfinished">自动</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Follow Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Follow Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Follow Mouse</source>
+        <translation type="unfinished">跟随鼠标</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Canvas Top Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Canvas Top Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Canvas Bottom Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Canvas Bottom Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Canvas Top Auto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Canvas Bottom Auto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Interpolation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>None</source>
+        <translation type="unfinished">无</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Linear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Feature Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Draw Feature Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Feature Point Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Nearest Search Window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Text Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Background Brush</source>
+        <translation type="unfinished">背景画刷</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Text Alignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Text Offset X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Text Offset Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Linkage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Picker Group Enabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartDataProbeMarkerSettingPanel</name>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartDataProbeMarkerSettingPanel.cpp" line="+48"/>
@@ -4315,7 +4513,7 @@ Config</source>
 <context>
     <name>DA::DAChartSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+196"/>
+        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+202"/>
         <source>Chart Area</source>
         <translation>图表区</translation>
     </message>
@@ -4343,6 +4541,11 @@ Config</source>
         <location line="+1"/>
         <source>X Top Scale</source>
         <translation>上X轴</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Data Picker</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -5090,7 +5293,7 @@ Config</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+233"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+234"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -5115,14 +5318,14 @@ Config</source>
     </message>
     <message>
         <location line="-246"/>
-        <location line="+653"/>
+        <location line="+706"/>
         <location line="+61"/>
         <location line="+48"/>
         <source>Please select a valid cell</source>
         <translation>请选择正确的单元格</translation>
     </message>
     <message>
-        <location line="-720"/>
+        <location line="-773"/>
         <source>Table has no columns</source>
         <translation>表格没有列</translation>
     </message>
@@ -5135,6 +5338,12 @@ Config</source>
         <location line="+4"/>
         <source>Column name &quot;%1&quot; already exists, please use another name</source>
         <translation>列名&quot;%1&quot;已存在，请使用其他名称</translation>
+    </message>
+    <message>
+        <location line="+209"/>
+        <location line="+4"/>
+        <source>Unable to get statistics for this column</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -5227,6 +5436,29 @@ Config</source>
         <location line="+4"/>
         <source>vector field</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogDataframeColumnDescribe</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogDataframeColumnDescribe.cpp" line="+29"/>
+        <source>Column: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Type: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Statistic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Value</source>
+        <translation type="unfinished">值</translation>
     </message>
 </context>
 <context>
@@ -6291,7 +6523,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1232"/>
+        <location filename="../APP/DAAppController.cpp" line="-1234"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -7191,6 +7423,39 @@ Config</source>
         <location line="+11"/>
         <source>Cancel</source>
         <translation>取消</translation>
+    </message>
+</context>
+<context>
+    <name>DADialogDataframeColumnDescribe</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogDataframeColumnDescribe.ui" line="+14"/>
+        <source>Column Statistics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Column:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Statistic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Value</source>
+        <translation type="unfinished">值</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Close</source>
+        <translation type="unfinished">收盘</translation>
     </message>
 </context>
 <context>
@@ -8819,7 +9084,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>改变表格样式</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+152"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+153"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation>保存工作流扩展信息耗时: %1 ms</translation>
     </message>
@@ -9050,7 +9315,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>未知异常：在第%1个位置获取到空的figure窗口</translation>
     </message>
     <message>
-        <location line="+875"/>
+        <location line="+919"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double</source>
         <translation>标签%3下的属性%1=%2无法转换为double</translation>
     </message>
@@ -9330,7 +9595,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>使用 UTF-8 打开文件 %1 失败，尝试使用 ANSI 编码</translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+445"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+473"/>
         <source>DAPySeries: the Python object type is not pandas.Series</source>
         <translation>DAPySeries：Python 对象类型不是 pandas.Series</translation>
     </message>

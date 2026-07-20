@@ -164,7 +164,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+361"/>
+        <location filename="../APP/DAAppActions.cpp" line="+363"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -610,7 +610,7 @@ All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+42"/>
         <source>To Numeric</source>
         <translation type="unfinished"></translation>
     </message>
@@ -630,7 +630,7 @@ All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+27"/>
         <source>Grouping</source>
         <translation type="unfinished"></translation>
     </message>
@@ -665,7 +665,7 @@ All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-133"/>
+        <location line="-137"/>
         <source>Enable or disable legend in the chart</source>
         <translation type="unfinished"></translation>
     </message>
@@ -767,6 +767,16 @@ All</source>
     <message>
         <location line="+1"/>
         <source>Add a vertical plot probe marker to the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Data Picker Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Configure data picker properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -899,6 +909,16 @@ Column</source>
     <message>
         <location line="+1"/>
         <source>Scroll to the minimum value of this column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show Statistics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show statistics of this column via pandas describe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1228,7 +1248,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+556"/>
+        <location filename="../APP/DAAppController.cpp" line="+559"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1324,7 +1344,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+855"/>
+        <location line="+881"/>
         <source>Rename Column</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1334,17 +1354,37 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+65"/>
         <source>Cannot find the maximum value in this column (empty, all-NaN, or incomparable types)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+14"/>
+        <source>Column [%1] maximum value: %2, row: %3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Column [%1] maximum value at row %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+29"/>
         <source>Cannot find the minimum value in this column (empty, all-NaN, or incomparable types)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+218"/>
+        <location line="+14"/>
+        <source>Column [%1] minimum value: %2, row: %3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Column [%1] minimum value at row %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+235"/>
         <source>New workflow name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1354,7 +1394,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1164"/>
+        <location line="-1238"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1915,12 +1955,12 @@ Config</source>
     <message>
         <location line="+1"/>
         <location line="+4"/>
-        <location line="+477"/>
+        <location line="+478"/>
         <source>Chart Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-479"/>
+        <location line="-480"/>
         <source>Chart Setting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1931,12 +1971,12 @@ Config</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+479"/>
+        <location line="+480"/>
         <source>Select Tool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-478"/>
+        <location line="-479"/>
         <source>Chart Assist Tool</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1979,7 +2019,7 @@ Config</source>
     </message>
     <message>
         <location line="-414"/>
-        <location line="+460"/>
+        <location line="+461"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3249,6 +3289,164 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartDataPickerSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartDataPickerSettingPanel.cpp" line="+115"/>
+        <source>Basic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Picker Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>XY Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Show X Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Text Placement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Auto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Follow Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Follow Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Follow Mouse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Canvas Top Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Canvas Top Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Canvas Bottom Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Canvas Bottom Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Canvas Top Auto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Canvas Bottom Auto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Interpolation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Linear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Feature Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Draw Feature Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Feature Point Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Nearest Search Window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Text Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Background Brush</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Text Alignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Text Offset X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Text Offset Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Linkage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Picker Group Enabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartDataProbeMarkerSettingPanel</name>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartDataProbeMarkerSettingPanel.cpp" line="+48"/>
@@ -4290,7 +4488,7 @@ Config</source>
 <context>
     <name>DA::DAChartSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+196"/>
+        <location filename="../DAGui/DAChartSettingWidget.cpp" line="+202"/>
         <source>Chart Area</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4317,6 +4515,11 @@ Config</source>
     <message>
         <location line="+1"/>
         <source>X Top Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Data Picker</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5065,7 +5268,7 @@ Config</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+233"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+234"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5090,14 +5293,14 @@ Config</source>
     </message>
     <message>
         <location line="-246"/>
-        <location line="+653"/>
+        <location line="+706"/>
         <location line="+61"/>
         <location line="+48"/>
         <source>Please select a valid cell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-720"/>
+        <location line="-773"/>
         <source>Table has no columns</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5109,6 +5312,12 @@ Config</source>
     <message>
         <location line="+4"/>
         <source>Column name &quot;%1&quot; already exists, please use another name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+209"/>
+        <location line="+4"/>
+        <source>Unable to get statistics for this column</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5201,6 +5410,29 @@ Config</source>
     <message>
         <location line="+4"/>
         <source>vector field</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogDataframeColumnDescribe</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogDataframeColumnDescribe.cpp" line="+29"/>
+        <source>Column: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Type: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Statistic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6266,7 +6498,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1232"/>
+        <location filename="../APP/DAAppController.cpp" line="-1234"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7165,6 +7397,39 @@ Config</source>
     <message>
         <location line="+11"/>
         <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DADialogDataframeColumnDescribe</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogDataframeColumnDescribe.ui" line="+14"/>
+        <source>Column Statistics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Column:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Statistic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8697,7 +8962,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+152"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+153"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8928,7 +9193,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+875"/>
+        <location line="+919"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9208,7 +9473,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+445"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+473"/>
         <source>DAPySeries: the Python object type is not pandas.Series</source>
         <translation type="unfinished"></translation>
     </message>

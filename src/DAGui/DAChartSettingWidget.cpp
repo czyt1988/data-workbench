@@ -7,6 +7,7 @@
 #include "DAChartCanvasSettingPanel.h"
 #include "DAChartAxisSettingPanel.h"
 #include "DAChartCommonItemsSettingWidget.h"
+#include "DAChartDataPickerSettingPanel.h"
 #include "DAChartItemSettingPanelFactory.h"
 #include <QDebug>
 #include "DASignalBlockers.hpp"
@@ -36,6 +37,7 @@ public:
     DAChartAxisSettingPanel* mPlotScaleXBottomSettingWidget { nullptr };  /// 对应xbottom设置
     DAChartAxisSettingPanel* mPlotScaleYRightSettingWidget { nullptr };   /// 对应yright设置
     DAChartAxisSettingPanel* mPlotScaleXTopSettingWidget { nullptr };     /// 对应xtop设置
+    DAChartDataPickerSettingPanel* mDataPickerSettingWidget { nullptr };  /// 对应DataPicker设置
     DAChartCommonItemsSettingWidget* mPlotItemSettingWidget { nullptr };  ///< 对应plotItem设置
 };
 
@@ -65,6 +67,7 @@ void DAChartSettingWidget::PrivateData::setupUi(QStackedWidget* stackWidget)
     mPlotScaleXBottomSettingWidget = new DAChartAxisSettingPanel(QwtAxis::XBottom, stackWidget);
     mPlotScaleYRightSettingWidget  = new DAChartAxisSettingPanel(QwtAxis::YRight, stackWidget);
     mPlotScaleXTopSettingWidget    = new DAChartAxisSettingPanel(QwtAxis::XTop, stackWidget);
+    mDataPickerSettingWidget       = new DAChartDataPickerSettingPanel(stackWidget);
     mPlotItemSettingWidget         = new DAChartCommonItemsSettingWidget(stackWidget);
     stackWidget->addWidget(mPlotSettingWidget);
     stackWidget->addWidget(mPlotCanvasSettingWidget);
@@ -72,6 +75,7 @@ void DAChartSettingWidget::PrivateData::setupUi(QStackedWidget* stackWidget)
     stackWidget->addWidget(mPlotScaleXBottomSettingWidget);
     stackWidget->addWidget(mPlotScaleYRightSettingWidget);
     stackWidget->addWidget(mPlotScaleXTopSettingWidget);
+    stackWidget->addWidget(mDataPickerSettingWidget);
     stackWidget->addWidget(mPlotItemSettingWidget);
 }
 
@@ -156,6 +160,7 @@ void DAChartSettingWidget::setPlot(QwtPlot* plot)
     d->mPlotScaleXBottomSettingWidget->setTarget(plot);
     d->mPlotScaleYRightSettingWidget->setTarget(plot);
     d->mPlotScaleXTopSettingWidget->setTarget(plot);
+    d->mDataPickerSettingWidget->setTarget(plot);
 }
 
 /**
@@ -192,13 +197,15 @@ void DAChartSettingWidget::resetComboBox()
     static QIcon s_icon_yright_setting  = QIcon(":/DAGui/ChartSetting/icon/axisYRight.svg");
     static QIcon s_icon_xbottom_setting = QIcon(":/DAGui/ChartSetting/icon/axisXBottom.svg");
     static QIcon s_icon_xtop_setting    = QIcon(":/DAGui/ChartSetting/icon/axisXTop.svg");
-    // 图表区（plot）、绘图区（canvas）、4个坐标轴、plotitems
+    static QIcon s_icon_datapicker       = QIcon(":/DAGui/icon/data-picker-setting.svg");
+    // 图表区（plot）、绘图区（canvas）、4个坐标轴、datapicker、plotitems
     ui->comboBoxSelectItem->addItem(s_icon_plot_setting, tr("Chart Area"), SettingPlot);                 // cn:图表区
     ui->comboBoxSelectItem->addItem(s_icon_canvas_setting, tr("Canvas Area"), SettingCanvas);            // cn:绘图区
     ui->comboBoxSelectItem->addItem(s_icon_yleft_setting, tr("Y Left Scale"), SettingYLeftScale);        // cn:左Y轴
     ui->comboBoxSelectItem->addItem(s_icon_xbottom_setting, tr("X Bottom Scale"), SettingXBottomScale);  // cn:下X轴
     ui->comboBoxSelectItem->addItem(s_icon_yright_setting, tr("Y Right Scale"), SettingYRightScale);     // cn:右Y轴
     ui->comboBoxSelectItem->addItem(s_icon_xtop_setting, tr("X Top Scale"), SettingXTopScale);           // cn:上X轴
+    ui->comboBoxSelectItem->addItem(s_icon_datapicker, tr("Data Picker"), SettingDataPicker);           // cn:数据拾取
     // 下面是动态增加
     const QList< QwtPlotItem* > itemlist = d->mPlot->itemList();
     for (QwtPlotItem* item : itemlist) {
@@ -274,6 +281,9 @@ void DAChartSettingWidget::showSettingWidget(SettingWidgetType widType)
         break;
     case SettingXTopScale:
         ui->stackedWidget->setCurrentWidget(d_ptr->mPlotScaleXTopSettingWidget);
+        break;
+    case SettingDataPicker:
+        ui->stackedWidget->setCurrentWidget(d_ptr->mDataPickerSettingWidget);
         break;
     case SettingPlotItems:
         ui->stackedWidget->setCurrentWidget(d_ptr->mPlotItemSettingWidget);
@@ -385,6 +395,13 @@ void DAChartSettingWidget::showPlotItemSetting(QwtPlotItem* item)
     setCurrentPlotItem(item);
 }
 
+void DAChartSettingWidget::showDataPickerSetting()
+{
+    showSettingWidget(SettingDataPicker);
+    QSignalBlocker b(ui->comboBoxSelectItem);
+    d_ptr->setComboboxFixSelectionArea(ui->comboBoxSelectItem, SettingDataPicker);
+}
+
 DAChartPlotSettingPanel* DAChartSettingWidget::getChartPlotSettingWidget() const
 {
     return d_ptr->mPlotSettingWidget;
@@ -413,6 +430,11 @@ DAChartAxisSettingPanel* DAChartSettingWidget::getChartAxisSetWidget(int axisId)
 DAChartCommonItemsSettingWidget* DAChartSettingWidget::getChartCommonItemsSettingWidget() const
 {
     return d_ptr->mPlotItemSettingWidget;
+}
+
+DAChartDataPickerSettingPanel* DAChartSettingWidget::getDataPickerSettingWidget() const
+{
+    return d_ptr->mDataPickerSettingWidget;
 }
 
 void DAChartSettingWidget::changeEvent(QEvent* e)
