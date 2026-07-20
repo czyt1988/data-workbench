@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DAChartAddStatsHeatmapWidget</class>
+ <widget class="QWidget" name="DAChartAddStatsHeatmapWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>680</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Stats Heatmap Settings</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayoutMain">
+   <item>
+    <widget class="QGroupBox" name="groupBoxXData">
+     <property name="title">
+      <string>X axis (column direction)</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayoutXData">
+      <item>
+       <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetXData"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxYData">
+     <property name="title">
+      <string>Y axis (row direction)</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayoutYData">
+      <item>
+       <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetYData"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxValueColumn">
+     <property name="title">
+      <string>Value column (optional — unchecked = count)</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayoutValue">
+      <item>
+       <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetValue"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxAggregation">
+     <property name="title">
+      <string>Aggregation &amp;&amp; Colour</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QFormLayout" name="formLayoutAggregation">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelAggfunc">
+        <property name="text">
+         <string>Aggregation function</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="comboBoxAggfunc">
+        <item>
+         <property name="text">
+          <string>mean</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>sum</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>count</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>median</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>max</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>min</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelCmap">
+        <property name="text">
+         <string>Colour map</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="comboBoxCmap">
+        <item>
+         <property name="text">
+          <string>viridis</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>plasma</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>inferno</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>magma</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>cividis</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>coolwarm</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>RdBu_r</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labelStandardScale">
+        <property name="text">
+         <string>Standardisation</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="comboBoxStandardScale">
+        <item>
+         <property name="text">
+          <string>None</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>row</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>column</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxRange">
+     <property name="title">
+      <string>Value Range (0 = auto)</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QFormLayout" name="formLayoutRange">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelVmin">
+        <property name="text">
+         <string>vmin (0 = auto)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QDoubleSpinBox" name="doubleSpinBoxVmin">
+        <property name="minimum">
+         <double>-1000000.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1000000.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelVmax">
+        <property name="text">
+         <string>vmax (0 = auto)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QDoubleSpinBox" name="doubleSpinBoxVmax">
+        <property name="minimum">
+         <double>-1000000.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1000000.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labelCenter">
+        <property name="text">
+         <string>center (0 = none)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QDoubleSpinBox" name="doubleSpinBoxCenter">
+        <property name="minimum">
+         <double>-1000000.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1000000.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxAnnot">
+     <property name="title">
+      <string>Annotations</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QFormLayout" name="formLayoutAnnot">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="checkBoxAnnot">
+        <property name="text">
+         <string>Annotate cells</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelFmt">
+        <property name="text">
+         <string>Format string</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="lineEditFmt">
+        <property name="text">
+         <string>.2f</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DA::DAChartSeriesSelectWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartSeriesSelectWidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

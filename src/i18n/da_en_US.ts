@@ -1338,7 +1338,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+584"/>
+        <location filename="../APP/DAAppController.cpp" line="+587"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1348,11 +1348,14 @@ Config</source>
         <location line="+465"/>
         <location line="+40"/>
         <location line="+40"/>
+        <location line="+40"/>
+        <location line="+40"/>
+        <location line="+40"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1278"/>
+        <location line="-1398"/>
         <source>Failed to save project! Path: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1445,11 +1448,14 @@ Config</source>
         <location line="+9"/>
         <location line="+40"/>
         <location line="+40"/>
+        <location line="+40"/>
+        <location line="+40"/>
+        <location line="+40"/>
         <source>Python support is required for statistical plots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-49"/>
+        <location line="-169"/>
         <source>KDE 1D Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1459,7 +1465,22 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+560"/>
+        <location line="+40"/>
+        <source>Boxplot Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+40"/>
+        <source>Heatmap Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+40"/>
+        <source>Scatterplot Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+509"/>
         <source>Rename Column</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1544,7 +1565,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1807"/>
+        <location line="-1876"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2466,6 +2487,60 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartAddStatsBoxplotWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddStatsBoxplotWidget.cpp" line="+23"/>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Hue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+71"/>
+        <location line="+18"/>
+        <source>Please select one or more data columns before plotting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Please select a data column before plotting</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartAddStatsHeatmapWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddStatsHeatmapWidget.cpp" line="+20"/>
+        <source>X axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Y axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+81"/>
+        <location line="+4"/>
+        <source>Please select an X-axis data column before plotting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location line="+4"/>
+        <source>Please select a Y-axis data column before plotting</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartAddStatsHistplotWidget</name>
     <message>
         <location filename="../DAGui/DAChartAddStatsHistplotWidget.cpp" line="+21"/>
@@ -2517,6 +2592,36 @@ Config</source>
     </message>
     <message>
         <location line="+62"/>
+        <location line="+4"/>
+        <source>Please select an X-axis data column before plotting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location line="+4"/>
+        <source>Please select a Y-axis data column before plotting</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartAddStatsScatterplotWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddStatsScatterplotWidget.cpp" line="+22"/>
+        <source>X axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Y axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Hue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+68"/>
         <location line="+4"/>
         <source>Please select an X-axis data column before plotting</source>
         <translation type="unfinished"></translation>
@@ -6990,6 +7095,257 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DAChartAddStatsBoxplotWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddStatsBoxplotWidget.ui" line="+14"/>
+        <source>Stats Boxplot Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Data (select one or more columns)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Hue (optional grouping column)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Whisker multiplier (IQR)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Box width (0-1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Show outliers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Show means</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Palette (hue mode)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>deep</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>muted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>pastel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>bright</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>dark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>colorblind</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Box color (no hue)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartAddStatsHeatmapWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddStatsHeatmapWidget.ui" line="+14"/>
+        <source>Stats Heatmap Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>X axis (column direction)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Y axis (row direction)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Value column (optional — unchecked = count)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Aggregation &amp;&amp; Colour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Aggregation function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>mean</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>sum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>count</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>median</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Colour map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>viridis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>plasma</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>inferno</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>magma</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>cividis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>coolwarm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>RdBu_r</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Standardisation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>row</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Value Range (0 = auto)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>vmin (0 = auto)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>vmax (0 = auto)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>center (0 = none)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Annotations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Annotate cells</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Format string</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>.2f</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAChartAddStatsHistplotWidget</name>
     <message>
         <location filename="../DAGui/DAChartAddStatsHistplotWidget.ui" line="+14"/>
@@ -7370,6 +7726,134 @@ Config</source>
     <message>
         <location line="+9"/>
         <source>Common normalization (reserved for hue)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAChartAddStatsScatterplotWidget</name>
+    <message>
+        <location filename="../DAGui/DAChartAddStatsScatterplotWidget.ui" line="+14"/>
+        <source>Stats Scatterplot Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>X axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Y axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Hue (optional grouping column)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Marker size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Marker style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>circle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>square</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>diamond</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>triangle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>cross</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>plus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>star</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Alpha (transparency)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Show legend (hue)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Palette (hue mode)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>deep</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>muted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>pastel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>bright</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>dark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>colorblind</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Marker color (no hue)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

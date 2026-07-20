@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DAChartAddStatsScatterplotWidget</class>
+ <widget class="QWidget" name="DAChartAddStatsScatterplotWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>680</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Stats Scatterplot Settings</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayoutMain">
+   <item>
+    <widget class="QGroupBox" name="groupBoxXData">
+     <property name="title">
+      <string>X axis</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayoutXData">
+      <item>
+       <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetXData"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxYData">
+     <property name="title">
+      <string>Y axis</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayoutYData">
+      <item>
+       <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetYData"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxHue">
+     <property name="title">
+      <string>Hue (optional grouping column)</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayoutHue">
+      <item>
+       <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetHue"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxOptions">
+     <property name="title">
+      <string>Marker</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QFormLayout" name="formLayoutOptions">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelSize">
+        <property name="text">
+         <string>Marker size</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="spinBoxSize">
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>6</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelStyle">
+        <property name="text">
+         <string>Marker style</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="comboBoxStyle">
+        <item>
+         <property name="text">
+          <string>circle</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>square</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>diamond</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>triangle</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>cross</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>plus</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>star</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labelAlpha">
+        <property name="text">
+         <string>Alpha (transparency)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QDoubleSpinBox" name="doubleSpinBoxAlpha">
+        <property name="minimum">
+         <double>0.050000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.050000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.850000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="checkBoxLegend">
+        <property name="text">
+         <string>Show legend (hue)</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxColor">
+     <property name="title">
+      <string>Color</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QFormLayout" name="formLayoutColor">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelPalette">
+        <property name="text">
+         <string>Palette (hue mode)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="comboBoxPalette">
+        <item>
+         <property name="text">
+          <string>deep</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>muted</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>pastel</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>bright</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>dark</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>colorblind</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelColor">
+        <property name="text">
+         <string>Marker color (no hue)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="DA::DAColorPickerButton" name="colorButton">
+        <property name="minimumSize">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DA::DAChartSeriesSelectWidget</class>
+   <extends>QWidget</extends>
+   <header>DAChartSeriesSelectWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAColorPickerButton</class>
+   <extends>QToolButton</extends>
+   <header>DAColorPickerButton.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -84,6 +84,9 @@
 #include "DAChartAddStatsHistplotWidget.h"
 #include "DAChartAddStatsKdeplot1dWidget.h"
 #include "DAChartAddStatsKdeplot2dWidget.h"
+#include "DAChartAddStatsBoxplotWidget.h"
+#include "DAChartAddStatsHeatmapWidget.h"
+#include "DAChartAddStatsScatterplotWidget.h"
 #include "DAChartSeriesSelectWidget.h"
 #include "DAAbstractStatsChartAddWidget.h"
 #include "DAFigurePythonBinding.h"
@@ -1907,8 +1910,31 @@ void DAAppController::onActionStatsBoxplotTriggered()
     if (!fig) {
         return;
     }
+    DAChartWidget* chart = fig->getCurrentChart();
+    if (!chart) {
+        chart = fig->gca();
+    }
+    if (!chart) {
+        chart = fig->createChart();
+    }
+    if (!chart) {
+        return;
+    }
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    // TODO: Create DAChartAddStatsBoxplotWidget and show it (plan07)
+#if DA_ENABLE_PYTHON
+    auto* w = new DAChartAddStatsBoxplotWidget(app());
+    w->setAttribute(Qt::WA_DeleteOnClose);
+    w->setWindowTitle(tr("Boxplot Settings"));  // cn: 箱线图设置
+    w->setFigureWidget(fig);
+    w->setChartWidget(chart);
+    w->setDataManager(mDatas->dataManager());
+    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
+            this, &DAAppController::onStatsPlotRequested);
+    w->show();
+#else
+    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
+                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
+#endif
 }
 
 /**
@@ -1924,8 +1950,31 @@ void DAAppController::onActionStatsHeatmapTriggered()
     if (!fig) {
         return;
     }
+    DAChartWidget* chart = fig->getCurrentChart();
+    if (!chart) {
+        chart = fig->gca();
+    }
+    if (!chart) {
+        chart = fig->createChart();
+    }
+    if (!chart) {
+        return;
+    }
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    // TODO: Create DAChartAddStatsHeatmapWidget and show it (plan08)
+#if DA_ENABLE_PYTHON
+    auto* w = new DAChartAddStatsHeatmapWidget(app());
+    w->setAttribute(Qt::WA_DeleteOnClose);
+    w->setWindowTitle(tr("Heatmap Settings"));  // cn: 热力图设置
+    w->setFigureWidget(fig);
+    w->setChartWidget(chart);
+    w->setDataManager(mDatas->dataManager());
+    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
+            this, &DAAppController::onStatsPlotRequested);
+    w->show();
+#else
+    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
+                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
+#endif
 }
 
 /**
@@ -1941,8 +1990,31 @@ void DAAppController::onActionStatsScatterplotTriggered()
     if (!fig) {
         return;
     }
+    DAChartWidget* chart = fig->getCurrentChart();
+    if (!chart) {
+        chart = fig->gca();
+    }
+    if (!chart) {
+        chart = fig->createChart();
+    }
+    if (!chart) {
+        return;
+    }
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    // TODO: Create DAChartAddStatsScatterplotWidget and show it (plan09)
+#if DA_ENABLE_PYTHON
+    auto* w = new DAChartAddStatsScatterplotWidget(app());
+    w->setAttribute(Qt::WA_DeleteOnClose);
+    w->setWindowTitle(tr("Scatterplot Settings"));  // cn: 散点图设置
+    w->setFigureWidget(fig);
+    w->setChartWidget(chart);
+    w->setDataManager(mDatas->dataManager());
+    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
+            this, &DAAppController::onStatsPlotRequested);
+    w->show();
+#else
+    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
+                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
+#endif
 }
 
 /**
