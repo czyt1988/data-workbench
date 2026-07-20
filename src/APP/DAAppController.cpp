@@ -80,6 +80,12 @@
 #include "DADataTableView.h"
 // Python workflow
 #include "DAPyWorkFlowScene.h"
+// Stats plot widgets
+#include "DAChartAddStatsHistplotWidget.h"
+#include "DAChartSeriesSelectWidget.h"
+#include "DAAbstractStatsChartAddWidget.h"
+#include "DAFigurePythonBinding.h"
+#include "DAPyJsonCast.h"
 #endif
 //
 #include "SettingPages/DAAppConfig.h"
@@ -1779,8 +1785,31 @@ void DAAppController::onActionStatsHistplotTriggered()
     if (!fig) {
         return;
     }
+    DAChartWidget* chart = fig->getCurrentChart();
+    if (!chart) {
+        chart = fig->gca();
+    }
+    if (!chart) {
+        chart = fig->createChart();
+    }
+    if (!chart) {
+        return;
+    }
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-    // TODO: Create DAChartAddStatsHistplotWidget and show it (plan04)
+#if DA_ENABLE_PYTHON
+    auto* w = new DAChartAddStatsHistplotWidget(app());
+    w->setAttribute(Qt::WA_DeleteOnClose);
+    w->setWindowTitle(tr("Histplot Settings"));  // cn: 直方图设置
+    w->setFigureWidget(fig);
+    w->setChartWidget(chart);
+    w->setDataManager(mDatas->dataManager());
+    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
+            this, &DAAppController::onStatsPlotRequested);
+    w->show();
+#else
+    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
+                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
+#endif
 }
 
 /**
@@ -2979,5 +3008,105 @@ void DAAppController::onTableStyleCurrentChanged(const DA::DATableCellStyle& sty
     Q_UNUSED(style)
 #endif
 }
+
+#if DA_ENABLE_PYTHON
+/**
+ * @brief 统计绘图请求的统一处理槽
+ *
+ * DAAbstractStatsChartAddWidget::plotRequested 信号触发后，此函数：
+ * 1. 从 params 中读取 column / hue 列名
+ * 2. 从 widget 的数据选择组件获取 DAData/DAPyDataFrame
+ * 3. 获取 GIL，import DAWorkbench.DAPlotting.<module>
+ * 4. 调用 plot(df, column, chart_handle, **params)
+ *
+ * @note 此函数目前仅服务于 histplot (plan04)，后续 plan05~plan12 的 widget
+ *       也会复用此槽。模块名通过 params["__plot_module__"] 指定，
+ *       缺省为 "histplot"。
+ */
+void DAAppController::onStatsPlotRequested(const QJsonObject& params,
+                                          DA::DAFigureWidget* fig,
+                                          DA::DAChartWidget* chart)
+{
+    if (!fig || !chart) {
+        daWarning << tr("No figure/chart available for statistical plot");  // cn: 没有可用的图表窗口用于统计绘图
+        return;
+    }
+
+    QString columnName = params.value("column").toString();
+    if (columnName.isEmpty()) {
+        daWarning << tr("No data column selected");  // cn: 未选择数据列
+        return;
+    }
+
+    // Resolve the DAData that the widget's series-select component was bound to.
+    // The widget is the sender(); we pull the data from its selectWidgetData.
+    DAData data;
+    QObject* senderObj = sender();
+    auto* statsWidget = qobject_cast< DAAbstractStatsChartAddWidget* >(senderObj);
+    if (!statsWidget) {
+        daWarning << tr("Cannot resolve the settings widget that emitted the plot request");  // cn: 无法获取发射绘图请求的设置窗口
+        return;
+    }
+    // The base class doesn't expose the series-select widget, so we rely on
+    // the concrete subclass storing the DAData via a dynamic property set in
+    // buildPlotParams. As a fallback, we read the data through the widget's
+    // data manager if available.
+    // -- For histplot, the concrete widget stashes DAData into the params as
+    //    a QVariant under "__da_data__". This avoids reaching into private UI.
+    QVariant dataVar = statsWidget->property("__da_data__");
+    if (dataVar.isValid() && dataVar.canConvert< DAData >()) {
+        data = dataVar.value< DAData >();
+    }
+    if (!data.isDataFrame()) {
+        // Fallback: try to read the data from the chart operate widget's
+        // data manager. This is a last resort.
+        daWarning << tr("Cannot resolve the data source for statistical plot; "
+                        "please ensure a dataframe is selected in the settings window");  // cn: 无法获取统计绘图的数据源，请确保设置窗口中已选择 DataFrame
+        return;
+    }
+
+    DAPyDataFrame df = data.toDataFrame();
+    if (df.isNone()) {
+        daWarning << tr("The selected data source is empty");  // cn: 选中的数据源为空
+        return;
+    }
+
+    // Determine the Python module to call (default: histplot)
+    QString moduleName = params.value("__plot_module__").toString("histplot");
+
+    DAWaitCursorScoped wait;
+    Q_UNUSED(wait);
+
+    pybind11::gil_scoped_acquire gil;
+    try {
+        // Import da_figure and da_interface (registers DAChartWidget type)
+        pybind11::module_::import("da_interface");
+        pybind11::module_ daFig = pybind11::module_::import("da_figure");
+        // Wrap the DAChartWidget* in a ChartHandle
+        pybind11::object chartHandle = daFig.attr("getChartHandle")(chart);
+
+        // Convert QJsonObject params to a Python dict, skipping internal keys
+        pybind11::dict pyParams;
+        for (auto it = params.begin(); it != params.end(); ++it) {
+            const QString& key = it.key();
+            if (key.startsWith("__")) continue;  // skip internal keys
+            pyParams[pybind11::str(key.toStdString())] =
+                DA::PY::qjsonValueToPyObject(it.value());
+        }
+
+        // Import the plotting module and call plot(df, column, chart, params_dict)
+        // We pass params as a positional dict arg because pybind11 C++ cannot
+        // directly use Python's **dict unpacking syntax.
+        QString fullModule = QStringLiteral("DAWorkbench.DAPlotting.%1").arg(moduleName);
+        pybind11::module_ plotting = pybind11::module_::import(fullModule.toStdString().c_str());
+        pybind11::object dfObj = df.object();
+        plotting.attr("plot")(dfObj, columnName.toStdString(), chartHandle, pyParams);
+    } catch (const pybind11::error_already_set& e) {
+        daCritical << tr("Python error in statistical plot: %1").arg(e.what());  // cn: 统计绘图 Python 错误: %1
+    } catch (const std::exception& e) {
+        daCritical << tr("Error in statistical plot: %1").arg(e.what());  // cn: 统计绘图错误: %1
+    }
+}
+#endif
 
 }  // end DA

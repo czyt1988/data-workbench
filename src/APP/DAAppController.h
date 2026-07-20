@@ -5,6 +5,7 @@
 #include <QAction>
 #include <QUndoStack>
 #include <QScopedPointer>
+#include <QJsonObject>
 #include "DADataManageWidget.h"
 #include "DAPyWorkFlowGraphicsScene.h"
 #include "DAFigureElementSelection.h"
@@ -406,6 +407,10 @@ private Q_SLOTS:
     void onChartEditorStatusChanged(DA::DAFigureWidget::ChartEditorStatus status);
     // 绘图项创建完成（DADialogChartGuide 确认后），提升绘图 dock 显示新绘图
     void onPlotItemCreated(DA::DAFigureWidget* f, DA::DAChartWidget* plot, QwtPlotItem* item);
+#if DA_ENABLE_PYTHON
+    // 统计绘图请求槽：DAAbstractStatsChartAddWidget::plotRequested -> 调用 Python plot()
+    void onStatsPlotRequested(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);
+#endif
     //===================================================
     // project
     //===================================================

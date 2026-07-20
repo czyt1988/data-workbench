@@ -785,4 +785,15 @@ PYBIND11_EMBEDDED_MODULE(da_figure, m)
           },
           pybind11::arg("item"), pybind11::arg("style"),
           "Set the curve style. style is one of: 'Lines', 'Steps', 'Dots', 'Sticks', 'NoCurve'.");
+
+    // Factory: wrap a DAChartWidget* (registered in da_interface) in a ChartHandle
+    // so that C++ controller code can pass a chart to Python plotting functions.
+    m.def("getChartHandle",
+          [](DA::DAChartWidget* chart) -> da_figure::ChartHandle {
+              return da_figure::ChartHandle(chart);
+          },
+          pybind11::arg("chart"),
+          "Create a ChartHandle wrapping a DAChartWidget. "
+          "The DAChartWidget type is registered in the da_interface module; "
+          "import da_interface before calling this function if the type is not yet known.");
 }
