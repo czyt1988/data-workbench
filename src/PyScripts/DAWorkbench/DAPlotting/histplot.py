@@ -126,20 +126,6 @@ def _safe_auto_scale(chart):
         pass
 
 
-def _debug_log(message):
-    """Append a debug line to a file in the current working directory.
-
-    stdout from embedded Python is often not visible in the GUI application
-    output, so we write to ``histplot_debug.log`` for easy inspection.
-    """
-    try:
-        with open("histplot_debug.log", "a", encoding="utf-8") as f:
-            import datetime
-            f.write("[%s] %s\n" % (datetime.datetime.now().isoformat(), message))
-    except Exception:
-        pass
-
-
 def _hex_to_rgb_tuple(hex_color):
     """Convert a ``#RRGGBB`` hex string to an ``(r, g, b)`` tuple (0-255)."""
     if isinstance(hex_color, (tuple, list)):
@@ -229,15 +215,7 @@ def _plot_single(data, chart, params, stat, color, label):
             "interval": [float(edges[i]), float(edges[i + 1])],
         })
 
-    _debug_log(
-        "label=%s data_size=%d lo=%.6f hi=%.6f n_bins=%d n_samples=%d fill=%s color=%s" %
-        (label, data.size, lo, hi, len(counts), len(samples), fill, color)
-    )
-    _debug_log("first sample=%s last sample=%s" %
-               (samples[0] if samples else None, samples[-1] if samples else None))
-
     hist_item = chart.addHistogram(samples, label)
-    _debug_log("hist_item=%s" % hist_item)
     if hist_item is not None:
         if fill:
             da_figure.setBrush(hist_item, color)

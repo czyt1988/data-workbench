@@ -3098,9 +3098,6 @@ void DAAppController::executeStatsPlot(const QJsonObject& params,
         pybind11::module_::import("da_interface");
         pybind11::module_ daFig = pybind11::module_::import("da_figure");
         pybind11::object chartHandle = daFig.attr("getChartHandle")(chart);
-        qDebug() << "[executeStatsPlot] chartHandle created, chart=" << chart
-                 << "chartHandle is None=" << chartHandle.is_none()
-                 << "type=" << pybind11::str(chartHandle.get_type()).cast<std::string>().c_str();
 
         pybind11::dict pyParams;
         for (auto it = params.begin(); it != params.end(); ++it) {
@@ -3113,11 +3110,7 @@ void DAAppController::executeStatsPlot(const QJsonObject& params,
         QString fullModule = QStringLiteral("DAWorkbench.DAPlotting.%1").arg(moduleName);
         pybind11::module_ plotting = pybind11::module_::import(fullModule.toStdString().c_str());
         pybind11::object dfObj = df.object();
-        qDebug() << "[executeStatsPlot] calling Python plot() module=" << moduleName
-                 << "column=" << columnName << "df is None=" << dfObj.is_none()
-                 << "params keys=" << params.keys();
         plotting.attr("plot")(dfObj, columnName.toStdString(), chartHandle, pyParams);
-        qDebug() << "[executeStatsPlot] Python plot() completed successfully";
     } catch (const pybind11::error_already_set& e) {
         daCritical << tr("Python error in statistical plot: %1").arg(e.what());  // cn: 统计绘图 Python 错误: %1
     } catch (const std::exception& e) {

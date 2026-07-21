@@ -121,14 +121,9 @@ public:
 
     QwtPlotItem* addHistogram(const pybind11::list& samples, const QString& title)
     {
-        qDebug() << "[ChartHandle::addHistogram] isValid=" << isValid()
-                 << "m_chart=" << m_chart << "input samples=" << samples.size();
         if (!isValid()) return nullptr;
         QVector< QwtIntervalSample > histSamples = convertToIntervalSamples(samples);
-        QwtPlotItem* result = static_cast< QwtPlotItem* >(m_chart->addHistogram(histSamples, title));
-        qDebug() << "[ChartHandle::addHistogram] result=" << result
-                 << "(null=" << (result == nullptr) << ")";
-        return result;
+        return static_cast< QwtPlotItem* >(m_chart->addHistogram(histSamples, title));
     }
 
     QwtPlotItem* addMultiBarChart(const QVector< double >& positions,
@@ -292,26 +287,16 @@ private:
     // Each dict has keys: value, interval=[lo,hi]
     static QVector< QwtIntervalSample > convertToIntervalSamples(const pybind11::list& samples)
     {
-        int inputSize = static_cast< int >(samples.size());
         QVector< QwtIntervalSample > result;
-        result.reserve(inputSize);
-        int skipped = 0;
+        result.reserve(static_cast< int >(samples.size()));
         for (auto item : samples) {
-            if (!pybind11::isinstance< pybind11::dict >(item)) {
-                qDebug() << "[convertToIntervalSamples] skipping non-dict item";
-                ++skipped;
-                continue;
-            }
+            if (!pybind11::isinstance< pybind11::dict >(item)) continue;
             pybind11::dict d = item.cast< pybind11::dict >();
             double value = dictGetDouble(d, "value", 0.0);
             // interval can be a list [lo, hi] or a dict with min/max
             double lo = 0.0, hi = 0.0;
             pybind11::object intervalObj = d["interval"];
-            if (intervalObj.is_none()) {
-                qDebug() << "[convertToIntervalSamples] interval is None, skipping";
-                ++skipped;
-                continue;
-            }
+            if (intervalObj.is_none()) continue;
             if (pybind11::isinstance< pybind11::list >(intervalObj)) {
                 pybind11::list intervalList = intervalObj.cast< pybind11::list >();
                 if (intervalList.size() >= 2) {
@@ -327,11 +312,6 @@ private:
             }
             result.append(QwtIntervalSample(value, lo, hi));
         }
-        qDebug() << "[convertToIntervalSamples] input=" << inputSize
-                 << "output=" << result.size() << "skipped=" << skipped
-                 << "first: value=" << (result.isEmpty() ? 0.0 : result.first().value)
-                 << "min=" << (result.isEmpty() ? 0.0 : result.first().interval.minValue())
-                 << "max=" << (result.isEmpty() ? 0.0 : result.first().interval.maxValue());
         return result;
     }
 
@@ -576,64 +556,40 @@ static QwtPlotCurve::CurveStyle stringToCurveStyle(const QString& style)
 
 void setPenOnItem(QwtPlotItem* item, const QColor& color, double width)
 {
-    if (!item) {
-        qDebug() << "[setPenOnItem] null item, returning";
-        return;
-    }
+    if (!item) return;
     QPen pen(color, width);
     // Try each chart type that supports setPen
     if (auto* curve = dynamic_cast< QwtPlotCurve* >(item)) {
         curve->setPen(pen);
-        qDebug() << "[setPenOnItem] matched QwtPlotCurve, item=" << item << "color=" << color << "width=" << width;
     } else if (auto* bar = dynamic_cast< QwtPlotBarChart* >(item)) {
         bar->setPen(pen);
-        qDebug() << "[setPenOnItem] matched QwtPlotBarChart, item=" << item;
     } else if (auto* box = dynamic_cast< QwtPlotBoxChart* >(item)) {
         box->setPen(pen);
-        qDebug() << "[setPenOnItem] matched QwtPlotBoxChart, item=" << item;
     } else if (auto* hist = dynamic_cast< QwtPlotHistogram* >(item)) {
         hist->setPen(pen);
-        qDebug() << "[setPenOnItem] matched QwtPlotHistogram, item=" << item << "color=" << color << "width=" << width;
     } else if (auto* interval = dynamic_cast< QwtPlotIntervalCurve* >(item)) {
         interval->setPen(pen);
-        qDebug() << "[setPenOnItem] matched QwtPlotIntervalCurve, item=" << item;
     } else if (auto* marker = dynamic_cast< QwtPlotMarker* >(item)) {
         marker->setLinePen(pen);
-        qDebug() << "[setPenOnItem] matched QwtPlotMarker, item=" << item;
     } else if (auto* shape = dynamic_cast< QwtPlotShapeItem* >(item)) {
         shape->setPen(pen);
-        qDebug() << "[setPenOnItem] matched QwtPlotShapeItem, item=" << item;
-    } else {
-        qDebug() << "[setPenOnItem] WARNING: no type match for item=" << item
-                 << "rtti=" << item->rtti();
     }
 }
 
 void setBrushOnItem(QwtPlotItem* item, const QColor& color)
 {
-    if (!item) {
-        qDebug() << "[setBrushOnItem] null item, returning";
-        return;
-    }
+    if (!item) return;
     QBrush brush(color);
     if (auto* curve = dynamic_cast< QwtPlotCurve* >(item)) {
         curve->setBrush(brush);
-        qDebug() << "[setBrushOnItem] matched QwtPlotCurve, item=" << item << "color=" << color;
     } else if (auto* bar = dynamic_cast< QwtPlotBarChart* >(item)) {
         bar->setBrush(brush);
-        qDebug() << "[setBrushOnItem] matched QwtPlotBarChart, item=" << item;
     } else if (auto* hist = dynamic_cast< QwtPlotHistogram* >(item)) {
         hist->setBrush(brush);
-        qDebug() << "[setBrushOnItem] matched QwtPlotHistogram, item=" << item << "color=" << color;
     } else if (auto* box = dynamic_cast< QwtPlotBoxChart* >(item)) {
         box->setBrush(brush);
-        qDebug() << "[setBrushOnItem] matched QwtPlotBoxChart, item=" << item;
     } else if (auto* shape = dynamic_cast< QwtPlotShapeItem* >(item)) {
         shape->setBrush(brush);
-        qDebug() << "[setBrushOnItem] matched QwtPlotShapeItem, item=" << item;
-    } else {
-        qDebug() << "[setBrushOnItem] WARNING: no type match for item=" << item
-                 << "rtti=" << item->rtti();
     }
 }
 
