@@ -332,6 +332,7 @@ QwtPlotBoxChart* DAChartWidget::addBoxChart(const QVector< QwtBoxSample >& sampl
 
 QwtPlotHistogram* DAChartWidget::addHistogram(const QVector< QwtIntervalSample >& samples, const QString& title)
 {
+    qDebug() << "[DAChartWidget::addHistogram] enter, samples.size=" << samples.size() << "title=" << title << "this=" << this;
     if (samples.isEmpty()) {
         qWarning() << "Empty samples for histogram:" << title;
         return nullptr;
@@ -343,6 +344,10 @@ QwtPlotHistogram* DAChartWidget::addHistogram(const QVector< QwtIntervalSample >
     histogram->setBrush(QBrush(QColor(65, 105, 225, 128)));
     histogram->setRenderHint(QwtPlotItem::RenderAntialiased);
     histogram->attach(this);
+    qDebug() << "[DAChartWidget::addHistogram] created histogram=" << histogram
+             << "attached to this=" << this
+             << "first sample: value=" << samples.first().value
+             << "interval=" << samples.first().interval;
     return histogram;
 }
 

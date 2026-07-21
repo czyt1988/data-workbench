@@ -121,18 +121,27 @@ public:
 
     QwtPlotItem* addHistogram(const pybind11::list& samples, const QString& title)
     {
+        qDebug() << "[ChartHandle::addHistogram] isValid=" << isValid()
+                 << "m_chart=" << m_chart << "input samples=" << samples.size();
         if (!isValid()) return nullptr;
         QVector< QwtIntervalSample > histSamples = convertToIntervalSamples(samples);
-        return static_cast< QwtPlotItem* >(m_chart->addHistogram(histSamples, title));
+        QwtPlotItem* result = static_cast< QwtPlotItem* >(m_chart->addHistogram(histSamples, title));
+        qDebug() << "[ChartHandle::addHistogram] result=" << result
+                 << "(null=" << (result == nullptr) << ")";
+        return result;
     }
 
     QwtPlotItem* addMultiBarChart(const QVector< double >& positions,
                                    const pybind11::list& values,
-                                   const QStringList& titles)
+                                   const pybind11::list& titles)
     {
         if (!isValid()) return nullptr;
         QVector< QVector< double > > cppValues = convertToMultiBarValues(values);
-        return static_cast< QwtPlotItem* >(m_chart->addMultiBarChart(positions, cppValues, titles));
+        QStringList cppTitles;
+        for (auto item : titles) {
+            cppTitles.append(QString::fromStdString(item.cast<std::string>()));
+        }
+        return static_cast< QwtPlotItem* >(m_chart->addMultiBarChart(positions, cppValues, cppTitles));
     }
 
     QwtPlotItem* addContour(const pybind11::list& points,
@@ -237,6 +246,15 @@ public:
         m_chart->replot();
     }
 
+    void autoScale()
+    {
+        if (!isValid()) return;
+        m_chart->setAxisAutoScale(QwtPlot::xBottom);
+        m_chart->setAxisAutoScale(QwtPlot::yLeft);
+        m_chart->setAxisAutoScale(QwtPlot::xTop);
+        m_chart->setAxisAutoScale(QwtPlot::yRight);
+    }
+
 private:
     // ==================== Conversion helpers ====================
 
@@ -274,16 +292,26 @@ private:
     // Each dict has keys: value, interval=[lo,hi]
     static QVector< QwtIntervalSample > convertToIntervalSamples(const pybind11::list& samples)
     {
+        int inputSize = static_cast< int >(samples.size());
         QVector< QwtIntervalSample > result;
-        result.reserve(static_cast< int >(samples.size()));
+        result.reserve(inputSize);
+        int skipped = 0;
         for (auto item : samples) {
-            if (!pybind11::isinstance< pybind11::dict >(item)) continue;
+            if (!pybind11::isinstance< pybind11::dict >(item)) {
+                qDebug() << "[convertToIntervalSamples] skipping non-dict item";
+                ++skipped;
+                continue;
+            }
             pybind11::dict d = item.cast< pybind11::dict >();
             double value = dictGetDouble(d, "value", 0.0);
             // interval can be a list [lo, hi] or a dict with min/max
             double lo = 0.0, hi = 0.0;
             pybind11::object intervalObj = d["interval"];
-            if (intervalObj.is_none()) continue;
+            if (intervalObj.is_none()) {
+                qDebug() << "[convertToIntervalSamples] interval is None, skipping";
+                ++skipped;
+                continue;
+            }
             if (pybind11::isinstance< pybind11::list >(intervalObj)) {
                 pybind11::list intervalList = intervalObj.cast< pybind11::list >();
                 if (intervalList.size() >= 2) {
@@ -299,6 +327,11 @@ private:
             }
             result.append(QwtIntervalSample(value, lo, hi));
         }
+        qDebug() << "[convertToIntervalSamples] input=" << inputSize
+                 << "output=" << result.size() << "skipped=" << skipped
+                 << "first: value=" << (result.isEmpty() ? 0.0 : result.first().value)
+                 << "min=" << (result.isEmpty() ? 0.0 : result.first().interval.minValue())
+                 << "max=" << (result.isEmpty() ? 0.0 : result.first().interval.maxValue());
         return result;
     }
 
@@ -543,40 +576,64 @@ static QwtPlotCurve::CurveStyle stringToCurveStyle(const QString& style)
 
 void setPenOnItem(QwtPlotItem* item, const QColor& color, double width)
 {
-    if (!item) return;
+    if (!item) {
+        qDebug() << "[setPenOnItem] null item, returning";
+        return;
+    }
     QPen pen(color, width);
     // Try each chart type that supports setPen
     if (auto* curve = dynamic_cast< QwtPlotCurve* >(item)) {
         curve->setPen(pen);
+        qDebug() << "[setPenOnItem] matched QwtPlotCurve, item=" << item << "color=" << color << "width=" << width;
     } else if (auto* bar = dynamic_cast< QwtPlotBarChart* >(item)) {
         bar->setPen(pen);
+        qDebug() << "[setPenOnItem] matched QwtPlotBarChart, item=" << item;
     } else if (auto* box = dynamic_cast< QwtPlotBoxChart* >(item)) {
         box->setPen(pen);
+        qDebug() << "[setPenOnItem] matched QwtPlotBoxChart, item=" << item;
     } else if (auto* hist = dynamic_cast< QwtPlotHistogram* >(item)) {
         hist->setPen(pen);
+        qDebug() << "[setPenOnItem] matched QwtPlotHistogram, item=" << item << "color=" << color << "width=" << width;
     } else if (auto* interval = dynamic_cast< QwtPlotIntervalCurve* >(item)) {
         interval->setPen(pen);
+        qDebug() << "[setPenOnItem] matched QwtPlotIntervalCurve, item=" << item;
     } else if (auto* marker = dynamic_cast< QwtPlotMarker* >(item)) {
         marker->setLinePen(pen);
+        qDebug() << "[setPenOnItem] matched QwtPlotMarker, item=" << item;
     } else if (auto* shape = dynamic_cast< QwtPlotShapeItem* >(item)) {
         shape->setPen(pen);
+        qDebug() << "[setPenOnItem] matched QwtPlotShapeItem, item=" << item;
+    } else {
+        qDebug() << "[setPenOnItem] WARNING: no type match for item=" << item
+                 << "rtti=" << item->rtti();
     }
 }
 
 void setBrushOnItem(QwtPlotItem* item, const QColor& color)
 {
-    if (!item) return;
+    if (!item) {
+        qDebug() << "[setBrushOnItem] null item, returning";
+        return;
+    }
     QBrush brush(color);
     if (auto* curve = dynamic_cast< QwtPlotCurve* >(item)) {
         curve->setBrush(brush);
+        qDebug() << "[setBrushOnItem] matched QwtPlotCurve, item=" << item << "color=" << color;
     } else if (auto* bar = dynamic_cast< QwtPlotBarChart* >(item)) {
         bar->setBrush(brush);
+        qDebug() << "[setBrushOnItem] matched QwtPlotBarChart, item=" << item;
     } else if (auto* hist = dynamic_cast< QwtPlotHistogram* >(item)) {
         hist->setBrush(brush);
+        qDebug() << "[setBrushOnItem] matched QwtPlotHistogram, item=" << item << "color=" << color;
     } else if (auto* box = dynamic_cast< QwtPlotBoxChart* >(item)) {
         box->setBrush(brush);
+        qDebug() << "[setBrushOnItem] matched QwtPlotBoxChart, item=" << item;
     } else if (auto* shape = dynamic_cast< QwtPlotShapeItem* >(item)) {
         shape->setBrush(brush);
+        qDebug() << "[setBrushOnItem] matched QwtPlotShapeItem, item=" << item;
+    } else {
+        qDebug() << "[setBrushOnItem] WARNING: no type match for item=" << item
+                 << "rtti=" << item->rtti();
     }
 }
 
@@ -636,83 +693,98 @@ PYBIND11_EMBEDDED_MODULE(da_figure, m)
         .def("isValid", &da_figure::ChartHandle::isValid)
 
         // DAChartDataInterface methods - return PlotItem
+        // All addXxx return QwtPlotItem* with reference policy (no ownership transfer).
+        // The chart (DAChartWidget) owns the items; Python must not delete them.
         .def("addCurve",
              [](da_figure::ChartHandle& self, const QVector< double >& x, const QVector< double >& y, const QString& title) -> QwtPlotItem* {
                  return self.addCurveXY(x, y, title);
              },
              pybind11::arg("x"), pybind11::arg("y"), pybind11::arg("title") = QString(),
+             pybind11::return_value_policy::reference,
              "Add a curve from x and y arrays. Returns a PlotItem.")
         .def("addCurve",
              [](da_figure::ChartHandle& self, const QVector< QPointF >& points, const QString& title) -> QwtPlotItem* {
                  return self.addCurvePoints(points, title);
              },
              pybind11::arg("points"), pybind11::arg("title") = QString(),
+             pybind11::return_value_policy::reference,
              "Add a curve from a list of (x, y) point tuples. Returns a PlotItem.")
         .def("addScatter",
              [](da_figure::ChartHandle& self, const QVector< QPointF >& points, const QString& title) -> QwtPlotItem* {
                  return self.addScatter(points, title);
              },
              pybind11::arg("points"), pybind11::arg("title") = QString(),
+             pybind11::return_value_policy::reference,
              "Add a scatter plot. Returns a PlotItem.")
         .def("addBarChart",
              [](da_figure::ChartHandle& self, const QVector< double >& values, const QString& title) -> QwtPlotItem* {
                  return self.addBarChart(values, title);
              },
              pybind11::arg("values"), pybind11::arg("title") = QString(),
+             pybind11::return_value_policy::reference,
              "Add a bar chart. Returns a PlotItem.")
         .def("addIntervalCurve",
              [](da_figure::ChartHandle& self, const QVector< double >& values, const QVector< double >& mins, const QVector< double >& maxs, const QString& title) -> QwtPlotItem* {
                  return self.addIntervalCurve(values, mins, maxs, title);
              },
              pybind11::arg("values"), pybind11::arg("mins"), pybind11::arg("maxs"), pybind11::arg("title") = QString(),
+             pybind11::return_value_policy::reference,
              "Add an interval curve (error bars). Returns a PlotItem.")
         .def("addBoxChart",
              [](da_figure::ChartHandle& self, const pybind11::list& samples, const QString& title) -> QwtPlotItem* {
                  return self.addBoxChart(samples, title);
              },
              pybind11::arg("samples"), pybind11::arg("title") = QString(),
+             pybind11::return_value_policy::reference,
              "Add a box chart. samples is a list of dicts with keys: position, whiskerLower, q1, median, q3, whiskerUpper. Returns a PlotItem.")
         .def("addHistogram",
              [](da_figure::ChartHandle& self, const pybind11::list& samples, const QString& title) -> QwtPlotItem* {
                  return self.addHistogram(samples, title);
              },
              pybind11::arg("samples"), pybind11::arg("title") = QString(),
+             pybind11::return_value_policy::reference,
              "Add a histogram. samples is a list of dicts with keys: value, interval=[lo,hi]. Returns a PlotItem.")
         .def("addMultiBarChart",
-             [](da_figure::ChartHandle& self, const QVector< double >& positions, const pybind11::list& values, const QStringList& titles) -> QwtPlotItem* {
+             [](da_figure::ChartHandle& self, const QVector< double >& positions, const pybind11::list& values, const pybind11::list& titles) -> QwtPlotItem* {
                  return self.addMultiBarChart(positions, values, titles);
              },
-             pybind11::arg("positions"), pybind11::arg("values"), pybind11::arg("titles") = QStringList(),
+             pybind11::arg("positions"), pybind11::arg("values"), pybind11::arg("titles") = pybind11::list(),
+             pybind11::return_value_policy::reference,
              "Add a grouped bar chart. positions is x-axis positions, values is a list of lists (outer=groups, inner=per-category). Returns a PlotItem.")
         .def("addContour",
              [](da_figure::ChartHandle& self, const pybind11::list& points, const QVector< double >& levels, const QString& title) -> QwtPlotItem* {
                  return self.addContour(points, levels, title);
              },
              pybind11::arg("points"), pybind11::arg("levels"), pybind11::arg("title") = QString(),
+             pybind11::return_value_policy::reference,
              "Add a contour plot. points is a list of [x,y,z] triples. Returns a PlotItem.")
         .def("addShapeItem",
              [](da_figure::ChartHandle& self, const pybind11::list& polygon, const QString& title) -> QwtPlotItem* {
                  return self.addShapeItem(polygon, title);
              },
              pybind11::arg("polygon"), pybind11::arg("title") = QString(),
+             pybind11::return_value_policy::reference,
              "Add a shape item (filled polygon). polygon is a list of [x,y] pairs. Returns a PlotItem.")
         .def("addVerticalLine",
              [](da_figure::ChartHandle& self, double x, const QString& title) -> QwtPlotItem* {
                  return self.addVerticalLine(x, title);
              },
              pybind11::arg("x"), pybind11::arg("title") = QString(),
+             pybind11::return_value_policy::reference,
              "Add a vertical line marker. Returns a PlotItem.")
         .def("addHorizontalLine",
              [](da_figure::ChartHandle& self, double y, const QString& title) -> QwtPlotItem* {
                  return self.addHorizontalLine(y, title);
              },
              pybind11::arg("y"), pybind11::arg("title") = QString(),
+             pybind11::return_value_policy::reference,
              "Add a horizontal line marker. Returns a PlotItem.")
         .def("addSpectrogram",
              [](da_figure::ChartHandle& self, const pybind11::dict& gridData, const QString& title) -> QwtPlotItem* {
                  return self.addSpectrogram(gridData, title);
              },
              pybind11::arg("grid_data"), pybind11::arg("title") = QString(),
+             pybind11::return_value_policy::reference,
              "Add a spectrogram/heatmap. grid_data is a dict with keys: z (2D list), x_interval [min,max], y_interval [min,max], cmap (str). Returns a PlotItem.")
         .def("removePlotItem",
              [](da_figure::ChartHandle& self, QwtPlotItem* item) {
@@ -739,6 +811,7 @@ PYBIND11_EMBEDDED_MODULE(da_figure, m)
              pybind11::arg("color"),
              "Set the chart background color.")
         .def("replot", &da_figure::ChartHandle::replot, "Refresh the chart display.")
+        .def("autoScale", &da_figure::ChartHandle::autoScale, "Enable auto-scaling for all axes so the chart fits all attached items.")
         ;
 
     // ==================== Module-level functions ====================

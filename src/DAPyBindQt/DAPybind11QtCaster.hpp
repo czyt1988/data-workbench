@@ -1251,6 +1251,30 @@ struct type_caster< QColor >
         if (!src)
             return false;
 
+        // 支持 hex 字符串格式：#RRGGBB 或 #RRGGBBAA
+        if (PyUnicode_Check(src.ptr())) {
+            Py_ssize_t size;
+            const char* str = PyUnicode_AsUTF8AndSize(src.ptr(), &size);
+            if (!str || size < 7)
+                return false;
+
+            int r = 0, g = 0, b = 0, a = 255;
+            int offset = (str[0] == '#') ? 1 : 0;
+
+            if (size - offset == 6) {
+                // #RRGGBB
+                sscanf(str + offset, "%02x%02x%02x", &r, &g, &b);
+            } else if (size - offset == 8) {
+                // #RRGGBBAA
+                sscanf(str + offset, "%02x%02x%02x%02x", &r, &g, &b, &a);
+            } else {
+                return false;
+            }
+
+            value = QColor(r, g, b, a);
+            return true;
+        }
+
         // 接受 Python tuple 或 list，元素数量为 3 (r,g,b) 或 4 (r,g,b,a)
         if (!PyTuple_Check(src.ptr()) && !PyList_Check(src.ptr()))
             return false;

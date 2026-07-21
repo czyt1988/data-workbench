@@ -313,6 +313,7 @@ if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_HEADER_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogStatsChartGuide.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.h
@@ -323,6 +324,7 @@ if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_SOURCE_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.cpp
          ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogStatsChartGuide.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.cpp
@@ -333,6 +335,7 @@ if(DA_ENABLE_PYTHON)
     list(APPEND DA_LIB_QT_UI_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.ui
+        ${DA_LIB_SUBDIR_Dialog}/DADialogStatsChartGuide.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.ui
         ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui

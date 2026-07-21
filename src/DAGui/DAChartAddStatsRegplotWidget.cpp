@@ -51,10 +51,6 @@ DAChartAddStatsRegplotWidget::DAChartAddStatsRegplotWidget(QWidget* parent)
     connect(ui->checkBoxFitReg, &QCheckBox::toggled,
             this, &DAChartAddStatsRegplotWidget::onFitRegToggled);
 
-    // Wire the OK button
-    connect(ui->buttonBox, &QDialogButtonBox::accepted, this,
-            &DAChartAddStatsRegplotWidget::onButtonBoxAccepted);
-    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QWidget::close);
 }
 
 DAChartAddStatsRegplotWidget::~DAChartAddStatsRegplotWidget()
@@ -146,7 +142,6 @@ void DAChartAddStatsRegplotWidget::onButtonBoxAccepted()
     params["__plot_module__"] = QStringLiteral("regplot");
 
     Q_EMIT plotRequested(params, getFigureWidget(), getChartWidget());
-    close();
 }
 
 void DAChartAddStatsRegplotWidget::onCiChanged(int index)

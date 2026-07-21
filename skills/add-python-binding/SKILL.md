@@ -76,6 +76,8 @@ PYBIND11_EMBEDDED_MODULE(da_my_module, m)
 4. Singleton returns must specify `pybind11::return_value_policy::reference`, otherwise pybind11 will try to destruct it
 5. Module names follow the `da_xxx` prefix convention
 
+> **重要**：所有返回裸指针 `T*` 的工厂方法（如 `addHistogram`、`addCurve` 等）也必须指定 `return_value_policy::reference`，否则 Python GC 会 delete 底层 C++ 对象。详见项目技能 `pybind11-return-value-policy`。
+
 ### Reference Files
 
 | File | Purpose |

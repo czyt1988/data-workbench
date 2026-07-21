@@ -60,11 +60,6 @@ DAChartAddStatsKdeplot1dWidget::DAChartAddStatsKdeplot1dWidget(QWidget* parent)
     syncHueControls();
     connect(ui->groupBoxHue, &QGroupBox::toggled, this, syncHueControls);
 
-    // Wire the OK button to emit plotRequested
-    connect(ui->buttonBox, &QDialogButtonBox::accepted, this,
-            &DAChartAddStatsKdeplot1dWidget::onButtonBoxAccepted);
-    // Cancel just closes the window
-    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QWidget::close);
 }
 
 DAChartAddStatsKdeplot1dWidget::~DAChartAddStatsKdeplot1dWidget()
@@ -156,7 +151,6 @@ void DAChartAddStatsKdeplot1dWidget::onButtonBoxAccepted()
     }
 
     Q_EMIT plotRequested(params, getFigureWidget(), getChartWidget());
-    close();
 }
 
 void DAChartAddStatsKdeplot1dWidget::onBwMethodChanged(int index)

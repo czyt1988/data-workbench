@@ -35,6 +35,12 @@ public:
      */
     virtual QJsonObject buildPlotParams() const = 0;
 
+    /**
+     * @brief 用户确认时的处理逻辑（验证数据、设置属性、发射信号）
+     * @note 子类必须实现此方法，由引导对话框在 accept 时调用
+     */
+    virtual void onButtonBoxAccepted() = 0;
+
     // 设置/获取 Figure 窗口
     void setFigureWidget(DAFigureWidget* fig);
     DAFigureWidget* getFigureWidget() const;

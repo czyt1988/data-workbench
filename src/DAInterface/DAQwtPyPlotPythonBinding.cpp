@@ -210,24 +210,27 @@ PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
              "Apply tight layout to align all subplot axes.")
 
         // ---- Plotting methods ----
-        // plot() — 3 overloads
+        // All plotting methods return QwtPlotItem* with reference policy (no ownership transfer).
         .def("plot",
              [](QwtPyPlot& self, const QVector< double >& y, const QString& fmt, const QString& label) -> QwtPlotItem* {
                  return static_cast< QwtPlotItem* >(self.plot(y, fmt, label));
              },
              pybind11::arg("y"), pybind11::arg("fmt") = QString(), pybind11::arg("label") = QString(),
+             pybind11::return_value_policy::reference,
              "Plot y-only data (x auto-generated as index). Returns a PlotItem.")
         .def("plot",
              [](QwtPyPlot& self, const QVector< double >& x, const QVector< double >& y, const QString& fmt, const QString& label) -> QwtPlotItem* {
                  return static_cast< QwtPlotItem* >(self.plot(x, y, fmt, label));
              },
              pybind11::arg("x"), pybind11::arg("y"), pybind11::arg("fmt") = QString(), pybind11::arg("label") = QString(),
+             pybind11::return_value_policy::reference,
              "Plot x-y data. Returns a PlotItem.")
         .def("plot",
              [](QwtPyPlot& self, const QVector< QPointF >& data, const QString& fmt, const QString& label) -> QwtPlotItem* {
                  return static_cast< QwtPlotItem* >(self.plot(data, fmt, label));
              },
              pybind11::arg("data"), pybind11::arg("fmt") = QString(), pybind11::arg("label") = QString(),
+             pybind11::return_value_policy::reference,
              "Plot from QPointF data. Returns a PlotItem.")
 
         // scatter()
@@ -237,6 +240,7 @@ PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
              },
              pybind11::arg("x"), pybind11::arg("y"), pybind11::arg("size") = 20,
              pybind11::arg("color") = QString(), pybind11::arg("label") = QString(),
+             pybind11::return_value_policy::reference,
              "Scatter plot (markers only, no lines). Returns a PlotItem.")
 
         // bar() — 2 overloads
@@ -245,6 +249,7 @@ PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
                  return static_cast< QwtPlotItem* >(self.bar(values, color, label));
              },
              pybind11::arg("values"), pybind11::arg("color") = QString(), pybind11::arg("label") = QString(),
+             pybind11::return_value_policy::reference,
              "Bar chart from y-only values (x = index). Returns a PlotItem.")
         .def("bar",
              [](QwtPyPlot& self, const QVector< double >& x, const QVector< double >& values, double width, const QString& color, const QString& label) -> QwtPlotItem* {
@@ -252,6 +257,7 @@ PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
              },
              pybind11::arg("x"), pybind11::arg("values"), pybind11::arg("width") = 0.8,
              pybind11::arg("color") = QString(), pybind11::arg("label") = QString(),
+             pybind11::return_value_policy::reference,
              "Bar chart from x-y data with configurable width. Returns a PlotItem.")
 
         // hist()
@@ -261,6 +267,7 @@ PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
              },
              pybind11::arg("data"), pybind11::arg("bins") = 10,
              pybind11::arg("color") = QString(), pybind11::arg("label") = QString(),
+             pybind11::return_value_policy::reference,
              "Histogram from raw data with automatic binning. Returns a PlotItem.")
 
         // boxplot() — accepts list of dicts
@@ -270,6 +277,7 @@ PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
                  return static_cast< QwtPlotItem* >(self.boxplot(samples, label));
              },
              pybind11::arg("data"), pybind11::arg("label") = QString(),
+             pybind11::return_value_policy::reference,
              "Box plot from pre-computed box samples. Each sample is a dict with keys: "
              "position, whiskerLower, q1, median, q3, whiskerUpper. Returns a PlotItem.")
 
@@ -280,6 +288,7 @@ PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
              },
              pybind11::arg("x"), pybind11::arg("y1"), pybind11::arg("y2"),
              pybind11::arg("color") = QString(), pybind11::arg("alpha") = 0.3,
+             pybind11::return_value_policy::reference,
              "Fill the area between two curves. Returns a PlotItem.")
 
         // errorbar()
@@ -289,6 +298,7 @@ PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
              },
              pybind11::arg("x"), pybind11::arg("y"), pybind11::arg("yerr"),
              pybind11::arg("fmt") = QString(), pybind11::arg("label") = QString(),
+             pybind11::return_value_policy::reference,
              "Error bars (symmetric y-error). Returns a PlotItem.")
 
         // imshow() — accepts 2D list
@@ -299,6 +309,7 @@ PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
              },
              pybind11::arg("data"), pybind11::arg("cmap") = "viridis",
              pybind11::arg("vmin") = 0.0, pybind11::arg("vmax") = 0.0,
+             pybind11::return_value_policy::reference,
              "Display a 2D matrix as a color-mapped image. Returns a PlotItem.")
 
         // contour() — accepts 2D list and optional levels list
@@ -310,6 +321,7 @@ PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
              },
              pybind11::arg("data"), pybind11::arg("levels") = pybind11::list(),
              pybind11::arg("cmap") = "viridis",
+             pybind11::return_value_policy::reference,
              "Draw contour lines from a 2D matrix. Returns a PlotItem.")
 
         // quiver()
@@ -319,6 +331,7 @@ PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
              },
              pybind11::arg("x"), pybind11::arg("y"), pybind11::arg("u"), pybind11::arg("v"),
              pybind11::arg("color") = QString(),
+             pybind11::return_value_policy::reference,
              "Quiver plot (vector field). Returns a PlotItem.")
 
         // candlestick() — accepts list of dicts
@@ -328,6 +341,7 @@ PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
                  return static_cast< QwtPlotItem* >(self.candlestick(samples, label));
              },
              pybind11::arg("data"), pybind11::arg("label") = QString(),
+             pybind11::return_value_policy::reference,
              "Candlestick (OHLC) chart. Each sample is a dict with keys: "
              "time, open, high, low, close. Returns a PlotItem.")
 
@@ -337,18 +351,21 @@ PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
                  return static_cast< QwtPlotItem* >(self.grid(show, minor));
              },
              pybind11::arg("show") = true, pybind11::arg("minor") = false,
+             pybind11::return_value_policy::reference,
              "Add or remove a grid. Returns a PlotItem.")
         .def("axhline",
              [](QwtPyPlot& self, double y, const QString& fmt) -> QwtPlotItem* {
                  return static_cast< QwtPlotItem* >(self.axhline(y, fmt));
              },
              pybind11::arg("y"), pybind11::arg("fmt") = QString(),
+             pybind11::return_value_policy::reference,
              "Add a horizontal line at y. Returns a PlotItem.")
         .def("axvline",
              [](QwtPyPlot& self, double x, const QString& fmt) -> QwtPlotItem* {
                  return static_cast< QwtPlotItem* >(self.axvline(x, fmt));
              },
              pybind11::arg("x"), pybind11::arg("fmt") = QString(),
+             pybind11::return_value_policy::reference,
              "Add a vertical line at x. Returns a PlotItem.")
         .def("axhspan",
              [](QwtPyPlot& self, double y1, double y2, const QString& color, double alpha) -> QwtPlotItem* {
@@ -356,6 +373,7 @@ PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
              },
              pybind11::arg("y1"), pybind11::arg("y2"),
              pybind11::arg("color") = QString(), pybind11::arg("alpha") = 0.3,
+             pybind11::return_value_policy::reference,
              "Add a horizontal colored span between y1 and y2. Returns a PlotItem.")
         .def("axvspan",
              [](QwtPyPlot& self, double x1, double x2, const QString& color, double alpha) -> QwtPlotItem* {
@@ -363,18 +381,21 @@ PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
              },
              pybind11::arg("x1"), pybind11::arg("x2"),
              pybind11::arg("color") = QString(), pybind11::arg("alpha") = 0.3,
+             pybind11::return_value_policy::reference,
              "Add a vertical colored span between x1 and x2. Returns a PlotItem.")
         .def("annotate",
              [](QwtPyPlot& self, const QString& text, const pybind11::object& xy, const pybind11::object& xytext) -> QwtPlotItem* {
                  return static_cast< QwtPlotItem* >(self.annotate(text, convertToPointF(xy), convertToPointF(xytext)));
              },
              pybind11::arg("text"), pybind11::arg("xy"), pybind11::arg("xytext"),
+             pybind11::return_value_policy::reference,
              "Add an arrow annotation from xytext to xy. Returns a PlotItem.")
         .def("legend",
              [](QwtPyPlot& self, const QString& loc) -> QwtPlotItem* {
                  return static_cast< QwtPlotItem* >(self.legend(loc));
              },
              pybind11::arg("loc") = "best",
+             pybind11::return_value_policy::reference,
              "Add a legend (in-canvas legend item). Returns a PlotItem.")
 
         // ---- Axis configuration ----

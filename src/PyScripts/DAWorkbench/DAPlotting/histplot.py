@@ -73,6 +73,9 @@ def plot(df, column, chart, params=None, **kwargs):
     _safe_set_title(chart, title)
     _safe_enable_grid(chart, True)
     _safe_enable_legend(chart, bool(hue))
+    # Re-enable auto-scale so the chart fits the newly added histogram.
+    # Previous zoom/pan operations may have locked the axis ranges.
+    _safe_auto_scale(chart)
     _safe_replot(chart)
 
 
@@ -116,6 +119,39 @@ def _safe_replot(chart):
         pass
 
 
+def _safe_auto_scale(chart):
+    try:
+        chart.autoScale()
+    except Exception:
+        pass
+
+
+def _debug_log(message):
+    """Append a debug line to a file in the current working directory.
+
+    stdout from embedded Python is often not visible in the GUI application
+    output, so we write to ``histplot_debug.log`` for easy inspection.
+    """
+    try:
+        with open("histplot_debug.log", "a", encoding="utf-8") as f:
+            import datetime
+            f.write("[%s] %s\n" % (datetime.datetime.now().isoformat(), message))
+    except Exception:
+        pass
+
+
+def _hex_to_rgb_tuple(hex_color):
+    """Convert a ``#RRGGBB`` hex string to an ``(r, g, b)`` tuple (0-255)."""
+    if isinstance(hex_color, (tuple, list)):
+        return tuple(hex_color)
+    if not isinstance(hex_color, str) or len(hex_color) < 7:
+        return (76, 114, 176)  # fallback: seaborn deep[0]
+    r = int(hex_color[1:3], 16)
+    g = int(hex_color[3:5], 16)
+    b = int(hex_color[5:7], 16)
+    return (r, g, b)
+
+
 def _plot_grouped(df, column, hue, chart, params, stat):
     """Draw one histogram per ``hue`` category."""
     try:
@@ -140,6 +176,7 @@ def _plot_grouped(df, column, hue, chart, params, stat):
 
 def _plot_single(data, chart, params, stat, color, label):
     """Draw a single histogram bar set (and optional KDE curve) on ``chart``."""
+    color = _hex_to_rgb_tuple(color)
     bins = params.get("bins", 10)
     binwidth = params.get("binwidth", 0)
     binrange = params.get("binrange", [None, None])
@@ -148,6 +185,13 @@ def _plot_single(data, chart, params, stat, color, label):
 
     # Resolve bin edges
     lo, hi = resolve_range(data, binrange)
+
+    # Degenerate data (all values identical): expand the range so that
+    # QwtPlotHistogram has a non-zero interval width to render.
+    if lo == hi:
+        lo = lo - 0.5
+        hi = hi + 0.5
+
     if binwidth and binwidth > 0:
         # binwidth takes precedence over bins
         edges = np.arange(lo, hi + binwidth, binwidth)
@@ -185,11 +229,21 @@ def _plot_single(data, chart, params, stat, color, label):
             "interval": [float(edges[i]), float(edges[i + 1])],
         })
 
+    _debug_log(
+        "label=%s data_size=%d lo=%.6f hi=%.6f n_bins=%d n_samples=%d fill=%s color=%s" %
+        (label, data.size, lo, hi, len(counts), len(samples), fill, color)
+    )
+    _debug_log("first sample=%s last sample=%s" %
+               (samples[0] if samples else None, samples[-1] if samples else None))
+
     hist_item = chart.addHistogram(samples, label)
+    _debug_log("hist_item=%s" % hist_item)
     if hist_item is not None:
         if fill:
             da_figure.setBrush(hist_item, color)
         da_figure.setPen(hist_item, color, 1.0)
+    else:
+        raise RuntimeError("chart.addHistogram returned None for column '%s'" % label)
 
     # KDE overlay
     if params.get("kde", False) and gaussian_kde is not None:

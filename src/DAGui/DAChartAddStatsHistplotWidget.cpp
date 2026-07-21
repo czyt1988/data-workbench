@@ -25,11 +25,6 @@ DAChartAddStatsHistplotWidget::DAChartAddStatsHistplotWidget(QWidget* parent)
     ui->selectWidgetHue->setRoleLabel(tr("Hue"));  // cn: 分组
     ui->selectWidgetHue->setAcceptMode(DAPySeriesListView::AcceptOneSeries);
 
-    // Wire the OK button to emit plotRequested
-    connect(ui->buttonBox, &QDialogButtonBox::accepted, this,
-            &DAChartAddStatsHistplotWidget::onButtonBoxAccepted);
-    // Cancel just closes the window
-    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QWidget::close);
 }
 
 DAChartAddStatsHistplotWidget::~DAChartAddStatsHistplotWidget()
@@ -122,7 +117,6 @@ void DAChartAddStatsHistplotWidget::onButtonBoxAccepted()
     }
 
     Q_EMIT plotRequested(params, getFigureWidget(), getChartWidget());
-    close();
 }
 
 }  // namespace DA

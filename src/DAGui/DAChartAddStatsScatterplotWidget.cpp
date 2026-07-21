@@ -44,11 +44,6 @@ DAChartAddStatsScatterplotWidget::DAChartAddStatsScatterplotWidget(QWidget* pare
     syncHueControls();
     connect(ui->groupBoxHue, &QGroupBox::toggled, this, &DAChartAddStatsScatterplotWidget::onHueToggled);
 
-    // Wire the OK button to emit plotRequested
-    connect(ui->buttonBox, &QDialogButtonBox::accepted, this,
-            &DAChartAddStatsScatterplotWidget::onButtonBoxAccepted);
-    // Cancel just closes the window
-    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QWidget::close);
 }
 
 DAChartAddStatsScatterplotWidget::~DAChartAddStatsScatterplotWidget()
@@ -134,7 +129,6 @@ void DAChartAddStatsScatterplotWidget::onButtonBoxAccepted()
     }
 
     Q_EMIT plotRequested(params, getFigureWidget(), getChartWidget());
-    close();
 }
 
 void DAChartAddStatsScatterplotWidget::onHueToggled(bool checked)

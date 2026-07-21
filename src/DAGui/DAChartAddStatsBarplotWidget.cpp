@@ -60,10 +60,6 @@ DAChartAddStatsBarplotWidget::DAChartAddStatsBarplotWidget(QWidget* parent)
 
     // Estimator / CI controls are only active in barplot mode (Y column selected).
     // We check the Y selection widget on OK; the mode toggle is advisory here.
-    // Wire the OK button
-    connect(ui->buttonBox, &QDialogButtonBox::accepted, this,
-            &DAChartAddStatsBarplotWidget::onButtonBoxAccepted);
-    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QWidget::close);
 }
 
 DAChartAddStatsBarplotWidget::~DAChartAddStatsBarplotWidget()
@@ -159,7 +155,6 @@ void DAChartAddStatsBarplotWidget::onButtonBoxAccepted()
     }
 
     Q_EMIT plotRequested(params, getFigureWidget(), getChartWidget());
-    close();
 }
 
 void DAChartAddStatsBarplotWidget::onYColumnChanged()

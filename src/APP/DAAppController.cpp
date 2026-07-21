@@ -1,5 +1,6 @@
 #include "DAAppController.h"
 // Qt
+#include <QDebug>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
@@ -81,6 +82,7 @@
 // Python workflow
 #include "DAPyWorkFlowScene.h"
 // Stats plot widgets
+#include "Dialog/DADialogStatsChartGuide.h"
 #include "DAChartAddStatsHistplotWidget.h"
 #include "DAChartAddStatsKdeplot1dWidget.h"
 #include "DAChartAddStatsKdeplot2dWidget.h"
@@ -1785,39 +1787,7 @@ void DAAppController::onActionChartAddVectorfieldTriggered()
  */
 void DAAppController::onActionStatsHistplotTriggered()
 {
-    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    DAFigureWidget* fig = chartopt->getCurrentFigure();
-    if (!fig) {
-        fig = chartopt->createFigure();
-    }
-    if (!fig) {
-        return;
-    }
-    DAChartWidget* chart = fig->getCurrentChart();
-    if (!chart) {
-        chart = fig->gca();
-    }
-    if (!chart) {
-        chart = fig->createChart();
-    }
-    if (!chart) {
-        return;
-    }
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-#if DA_ENABLE_PYTHON
-    auto* w = new DAChartAddStatsHistplotWidget(app());
-    w->setAttribute(Qt::WA_DeleteOnClose);
-    w->setWindowTitle(tr("Histplot Settings"));  // cn: 直方图设置
-    w->setFigureWidget(fig);
-    w->setChartWidget(chart);
-    w->setDataManager(mDatas->dataManager());
-    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
-            this, &DAAppController::onStatsPlotRequested);
-    w->show();
-#else
-    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
-                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
-#endif
+    showStatsChartGuide(DA::DAChartTypes::StatsHistplot);
 }
 
 /**
@@ -1825,39 +1795,7 @@ void DAAppController::onActionStatsHistplotTriggered()
  */
 void DAAppController::onActionStatsKdeplot1dTriggered()
 {
-    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    DAFigureWidget* fig = chartopt->getCurrentFigure();
-    if (!fig) {
-        fig = chartopt->createFigure();
-    }
-    if (!fig) {
-        return;
-    }
-    DAChartWidget* chart = fig->getCurrentChart();
-    if (!chart) {
-        chart = fig->gca();
-    }
-    if (!chart) {
-        chart = fig->createChart();
-    }
-    if (!chart) {
-        return;
-    }
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-#if DA_ENABLE_PYTHON
-    auto* w = new DAChartAddStatsKdeplot1dWidget(app());
-    w->setAttribute(Qt::WA_DeleteOnClose);
-    w->setWindowTitle(tr("KDE 1D Settings"));  // cn: 一维核密度图设置
-    w->setFigureWidget(fig);
-    w->setChartWidget(chart);
-    w->setDataManager(mDatas->dataManager());
-    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
-            this, &DAAppController::onStatsPlotRequested);
-    w->show();
-#else
-    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
-                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
-#endif
+    showStatsChartGuide(DA::DAChartTypes::StatsKdeplot1d);
 }
 
 /**
@@ -1865,39 +1803,7 @@ void DAAppController::onActionStatsKdeplot1dTriggered()
  */
 void DAAppController::onActionStatsKdeplot2dTriggered()
 {
-    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    DAFigureWidget* fig = chartopt->getCurrentFigure();
-    if (!fig) {
-        fig = chartopt->createFigure();
-    }
-    if (!fig) {
-        return;
-    }
-    DAChartWidget* chart = fig->getCurrentChart();
-    if (!chart) {
-        chart = fig->gca();
-    }
-    if (!chart) {
-        chart = fig->createChart();
-    }
-    if (!chart) {
-        return;
-    }
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-#if DA_ENABLE_PYTHON
-    auto* w = new DAChartAddStatsKdeplot2dWidget(app());
-    w->setAttribute(Qt::WA_DeleteOnClose);
-    w->setWindowTitle(tr("KDE 2D Settings"));  // cn: 二维核密度图设置
-    w->setFigureWidget(fig);
-    w->setChartWidget(chart);
-    w->setDataManager(mDatas->dataManager());
-    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
-            this, &DAAppController::onStatsPlotRequested);
-    w->show();
-#else
-    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
-                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
-#endif
+    showStatsChartGuide(DA::DAChartTypes::StatsKdeplot2d);
 }
 
 /**
@@ -1905,39 +1811,7 @@ void DAAppController::onActionStatsKdeplot2dTriggered()
  */
 void DAAppController::onActionStatsBoxplotTriggered()
 {
-    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    DAFigureWidget* fig = chartopt->getCurrentFigure();
-    if (!fig) {
-        fig = chartopt->createFigure();
-    }
-    if (!fig) {
-        return;
-    }
-    DAChartWidget* chart = fig->getCurrentChart();
-    if (!chart) {
-        chart = fig->gca();
-    }
-    if (!chart) {
-        chart = fig->createChart();
-    }
-    if (!chart) {
-        return;
-    }
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-#if DA_ENABLE_PYTHON
-    auto* w = new DAChartAddStatsBoxplotWidget(app());
-    w->setAttribute(Qt::WA_DeleteOnClose);
-    w->setWindowTitle(tr("Boxplot Settings"));  // cn: 箱线图设置
-    w->setFigureWidget(fig);
-    w->setChartWidget(chart);
-    w->setDataManager(mDatas->dataManager());
-    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
-            this, &DAAppController::onStatsPlotRequested);
-    w->show();
-#else
-    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
-                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
-#endif
+    showStatsChartGuide(DA::DAChartTypes::StatsBoxplot);
 }
 
 /**
@@ -1945,39 +1819,7 @@ void DAAppController::onActionStatsBoxplotTriggered()
  */
 void DAAppController::onActionStatsHeatmapTriggered()
 {
-    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    DAFigureWidget* fig = chartopt->getCurrentFigure();
-    if (!fig) {
-        fig = chartopt->createFigure();
-    }
-    if (!fig) {
-        return;
-    }
-    DAChartWidget* chart = fig->getCurrentChart();
-    if (!chart) {
-        chart = fig->gca();
-    }
-    if (!chart) {
-        chart = fig->createChart();
-    }
-    if (!chart) {
-        return;
-    }
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-#if DA_ENABLE_PYTHON
-    auto* w = new DAChartAddStatsHeatmapWidget(app());
-    w->setAttribute(Qt::WA_DeleteOnClose);
-    w->setWindowTitle(tr("Heatmap Settings"));  // cn: 热力图设置
-    w->setFigureWidget(fig);
-    w->setChartWidget(chart);
-    w->setDataManager(mDatas->dataManager());
-    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
-            this, &DAAppController::onStatsPlotRequested);
-    w->show();
-#else
-    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
-                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
-#endif
+    showStatsChartGuide(DA::DAChartTypes::StatsHeatmap);
 }
 
 /**
@@ -1985,39 +1827,7 @@ void DAAppController::onActionStatsHeatmapTriggered()
  */
 void DAAppController::onActionStatsScatterplotTriggered()
 {
-    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    DAFigureWidget* fig = chartopt->getCurrentFigure();
-    if (!fig) {
-        fig = chartopt->createFigure();
-    }
-    if (!fig) {
-        return;
-    }
-    DAChartWidget* chart = fig->getCurrentChart();
-    if (!chart) {
-        chart = fig->gca();
-    }
-    if (!chart) {
-        chart = fig->createChart();
-    }
-    if (!chart) {
-        return;
-    }
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-#if DA_ENABLE_PYTHON
-    auto* w = new DAChartAddStatsScatterplotWidget(app());
-    w->setAttribute(Qt::WA_DeleteOnClose);
-    w->setWindowTitle(tr("Scatterplot Settings"));  // cn: 散点图设置
-    w->setFigureWidget(fig);
-    w->setChartWidget(chart);
-    w->setDataManager(mDatas->dataManager());
-    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
-            this, &DAAppController::onStatsPlotRequested);
-    w->show();
-#else
-    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
-                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
-#endif
+    showStatsChartGuide(DA::DAChartTypes::StatsScatterplot);
 }
 
 /**
@@ -2025,39 +1835,7 @@ void DAAppController::onActionStatsScatterplotTriggered()
  */
 void DAAppController::onActionStatsBarplotTriggered()
 {
-    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    DAFigureWidget* fig = chartopt->getCurrentFigure();
-    if (!fig) {
-        fig = chartopt->createFigure();
-    }
-    if (!fig) {
-        return;
-    }
-    DAChartWidget* chart = fig->getCurrentChart();
-    if (!chart) {
-        chart = fig->gca();
-    }
-    if (!chart) {
-        chart = fig->createChart();
-    }
-    if (!chart) {
-        return;
-    }
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-#if DA_ENABLE_PYTHON
-    auto* w = new DAChartAddStatsBarplotWidget(app());
-    w->setAttribute(Qt::WA_DeleteOnClose);
-    w->setWindowTitle(tr("Barplot Settings"));  // cn: 柱状图设置
-    w->setFigureWidget(fig);
-    w->setChartWidget(chart);
-    w->setDataManager(mDatas->dataManager());
-    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
-            this, &DAAppController::onStatsPlotRequested);
-    w->show();
-#else
-    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
-                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
-#endif
+    showStatsChartGuide(DA::DAChartTypes::StatsBarplot);
 }
 
 /**
@@ -2065,39 +1843,7 @@ void DAAppController::onActionStatsBarplotTriggered()
  */
 void DAAppController::onActionStatsRegplotTriggered()
 {
-    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    DAFigureWidget* fig = chartopt->getCurrentFigure();
-    if (!fig) {
-        fig = chartopt->createFigure();
-    }
-    if (!fig) {
-        return;
-    }
-    DAChartWidget* chart = fig->getCurrentChart();
-    if (!chart) {
-        chart = fig->gca();
-    }
-    if (!chart) {
-        chart = fig->createChart();
-    }
-    if (!chart) {
-        return;
-    }
-    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-#if DA_ENABLE_PYTHON
-    auto* w = new DAChartAddStatsRegplotWidget(app());
-    w->setAttribute(Qt::WA_DeleteOnClose);
-    w->setWindowTitle(tr("Regplot Settings"));  // cn: 回归图设置
-    w->setFigureWidget(fig);
-    w->setChartWidget(chart);
-    w->setDataManager(mDatas->dataManager());
-    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
-            this, &DAAppController::onStatsPlotRequested);
-    w->show();
-#else
-    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
-                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
-#endif
+    showStatsChartGuide(DA::DAChartTypes::StatsRegplot);
 }
 
 /**
@@ -2105,15 +1851,26 @@ void DAAppController::onActionStatsRegplotTriggered()
  */
 void DAAppController::onActionStatsECDFplotTriggered()
 {
+    showStatsChartGuide(DA::DAChartTypes::StatsECDFplot);
+}
+
+/**
+ * @brief 确保当前 Figure 和 Chart 存在（不存在则创建）
+ * @param fig 输出 Figure 指针
+ * @param chart 输出 Chart 指针
+ * @return 如果 fig 和 chart 都有效返回 true
+ */
+bool DAAppController::ensureFigureChart(DAFigureWidget*& fig, DAChartWidget*& chart)
+{
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    DAFigureWidget* fig = chartopt->getCurrentFigure();
+    fig = chartopt->getCurrentFigure();
     if (!fig) {
         fig = chartopt->createFigure();
     }
     if (!fig) {
-        return;
+        return false;
     }
-    DAChartWidget* chart = fig->getCurrentChart();
+    chart = fig->getCurrentChart();
     if (!chart) {
         chart = fig->gca();
     }
@@ -2121,24 +1878,39 @@ void DAAppController::onActionStatsECDFplotTriggered()
         chart = fig->createChart();
     }
     if (!chart) {
+        return false;
+    }
+    return true;
+}
+
+#if DA_ENABLE_PYTHON
+/**
+ * @brief 显示统计绘图引导对话框并预选指定类型
+ * @param type 统计绘图类型
+ */
+void DAAppController::showStatsChartGuide(DA::DAChartTypes type)
+{
+    DAFigureWidget* fig   = nullptr;
+    DAChartWidget* chart  = nullptr;
+    if (!ensureFigureChart(fig, chart)) {
         return;
     }
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
-#if DA_ENABLE_PYTHON
-    auto* w = new DAChartAddStatsEcdfplotWidget(app());
-    w->setAttribute(Qt::WA_DeleteOnClose);
-    w->setWindowTitle(tr("ECDF Plot Settings"));  // cn: 经验累积分布图设置
-    w->setFigureWidget(fig);
-    w->setChartWidget(chart);
-    w->setDataManager(mDatas->dataManager());
-    connect(w, &DAAbstractStatsChartAddWidget::plotRequested,
-            this, &DAAppController::onStatsPlotRequested);
-    w->show();
-#else
-    QMessageBox::warning(app(), tr("Warning"),  // cn: 警告
-                         tr("Python support is required for statistical plots"));  // cn: 统计绘图需要 Python 支持
-#endif
+
+    if (!mStatsChartGuideDlg) {
+        mStatsChartGuideDlg = new DADialogStatsChartGuide(app());
+        mStatsChartGuideDlg->setDataManager(mDatas->dataManager());
+        connect(mStatsChartGuideDlg, &DADialogStatsChartGuide::plotRequested,
+                this, &DAAppController::onStatsGuideAccepted);
+    }
+    mStatsChartGuideDlg->setFigureWidget(fig);
+    mStatsChartGuideDlg->setChartWidget(chart);
+    mStatsChartGuideDlg->setCurrentChartType(type);
+    mStatsChartGuideDlg->show();
+    mStatsChartGuideDlg->raise();
+    mStatsChartGuideDlg->activateWindow();
 }
+#endif
 
 /**
  * @brief 允许网格
@@ -3211,49 +2983,100 @@ void DAAppController::onTableStyleCurrentChanged(const DA::DATableCellStyle& sty
  * 3. 获取 GIL，import DAWorkbench.DAPlotting.<module>
  * 4. 调用 plot(df, column, chart_handle, **params)
  *
- * @note 此函数目前仅服务于 histplot (plan04)，后续 plan05~plan12 的 widget
- *       也会复用此槽。模块名通过 params["__plot_module__"] 指定，
- *       缺省为 "histplot"。
+ * @note 模块名通过 params["__plot_module__"] 指定，缺省为 "histplot"。
  */
 void DAAppController::onStatsPlotRequested(const QJsonObject& params,
                                           DA::DAFigureWidget* fig,
                                           DA::DAChartWidget* chart)
 {
+    qDebug() << "[onStatsPlotRequested] called, fig=" << fig << "chart=" << chart;
     if (!fig || !chart) {
-        daWarning << tr("No figure/chart available for statistical plot");  // cn: 没有可用的图表窗口用于统计绘图
+        daWarning << tr("No figure/chart available for statistical plot");
         return;
     }
 
-    QString columnName = params.value("column").toString();
-    if (columnName.isEmpty()) {
-        daWarning << tr("No data column selected");  // cn: 未选择数据列
-        return;
-    }
-
-    // Resolve the DAData that the widget's series-select component was bound to.
-    // The widget is the sender(); we pull the data from its selectWidgetData.
+    // Resolve the DAData from the sender widget's dynamic property
     DAData data;
     QObject* senderObj = sender();
+    qDebug() << "[onStatsPlotRequested] sender=" << senderObj;
     auto* statsWidget = qobject_cast< DAAbstractStatsChartAddWidget* >(senderObj);
-    if (!statsWidget) {
-        daWarning << tr("Cannot resolve the settings widget that emitted the plot request");  // cn: 无法获取发射绘图请求的设置窗口
+    if (statsWidget) {
+        QVariant dataVar = statsWidget->property("__da_data__");
+        if (dataVar.isValid() && dataVar.canConvert< DAData >()) {
+            data = dataVar.value< DAData >();
+        }
+        qDebug() << "[onStatsPlotRequested] statsWidget found, data.isDataFrame=" << data.isDataFrame();
+    } else {
+        qDebug() << "[onStatsPlotRequested] sender is NOT a StatsChartAddWidget (lambda forwarding issue?)";
+    }
+    if (!data.isDataFrame()) {
+        daWarning << tr("Cannot resolve the data source for statistical plot; "
+                        "please ensure a dataframe is selected in the settings window");
         return;
     }
-    // The base class doesn't expose the series-select widget, so we rely on
-    // the concrete subclass storing the DAData via a dynamic property set in
-    // buildPlotParams. As a fallback, we read the data through the widget's
-    // data manager if available.
-    // -- For histplot, the concrete widget stashes DAData into the params as
-    //    a QVariant under "__da_data__". This avoids reaching into private UI.
-    QVariant dataVar = statsWidget->property("__da_data__");
+
+    executeStatsPlot(params, fig, chart, data);
+}
+
+/**
+ * @brief 统计绘图引导对话框确认后的处理槽
+ *
+ * 直接从对话框获取当前 widget 的 DAData，不依赖 sender()（因为 lambda 转发会破坏 sender 链）。
+ */
+void DAAppController::onStatsGuideAccepted(const QJsonObject& params,
+                                           DA::DAFigureWidget* fig,
+                                           DA::DAChartWidget* chart)
+{
+    qDebug() << "[onStatsGuideAccepted] called, fig=" << fig << "chart=" << chart
+             << "params keys:" << params.keys();
+    if (!fig || !chart) {
+        daWarning << tr("No figure/chart available for statistical plot");
+        return;
+    }
+
+    if (!mStatsChartGuideDlg) {
+        qDebug() << "[onStatsGuideAccepted] mStatsChartGuideDlg is null!";
+        return;
+    }
+
+    DAAbstractStatsChartAddWidget* w = mStatsChartGuideDlg->getCurrentStatsChartAddWidget();
+    qDebug() << "[onStatsGuideAccepted] current widget=" << w;
+    if (!w) {
+        return;
+    }
+
+    // 从 widget 的动态属性获取 DAData
+    QVariant dataVar = w->property("__da_data__");
+    DAData data;
     if (dataVar.isValid() && dataVar.canConvert< DAData >()) {
         data = dataVar.value< DAData >();
     }
+    qDebug() << "[onStatsGuideAccepted] data.isDataFrame=" << data.isDataFrame()
+             << "column=" << params.value("column").toString();
     if (!data.isDataFrame()) {
-        // Fallback: try to read the data from the chart operate widget's
-        // data manager. This is a last resort.
         daWarning << tr("Cannot resolve the data source for statistical plot; "
-                        "please ensure a dataframe is selected in the settings window");  // cn: 无法获取统计绘图的数据源，请确保设置窗口中已选择 DataFrame
+                        "please ensure a dataframe is selected in the settings window");
+        return;
+    }
+
+    executeStatsPlot(params, fig, chart, data);
+}
+
+/**
+ * @brief 执行 Python 统计绘图的公共逻辑
+ * @param params 绘图参数 JSON
+ * @param fig 目标 Figure 窗口
+ * @param chart 目标 Chart 窗口
+ * @param data 数据源 DAData
+ */
+void DAAppController::executeStatsPlot(const QJsonObject& params,
+                                       DA::DAFigureWidget* fig,
+                                       DA::DAChartWidget* chart,
+                                       const DAData& data)
+{
+    QString columnName = params.value("column").toString();
+    if (columnName.isEmpty()) {
+        daWarning << tr("No data column selected");  // cn: 未选择数据列
         return;
     }
 
@@ -3263,36 +3086,38 @@ void DAAppController::onStatsPlotRequested(const QJsonObject& params,
         return;
     }
 
-    // Determine the Python module to call (default: histplot)
     QString moduleName = params.value("__plot_module__").toString("histplot");
+    qDebug() << "[executeStatsPlot] module=" << moduleName << "column=" << columnName
+             << "data.isDataFrame=" << data.isDataFrame();
 
     DAWaitCursorScoped wait;
     Q_UNUSED(wait);
 
     pybind11::gil_scoped_acquire gil;
     try {
-        // Import da_figure and da_interface (registers DAChartWidget type)
         pybind11::module_::import("da_interface");
         pybind11::module_ daFig = pybind11::module_::import("da_figure");
-        // Wrap the DAChartWidget* in a ChartHandle
         pybind11::object chartHandle = daFig.attr("getChartHandle")(chart);
+        qDebug() << "[executeStatsPlot] chartHandle created, chart=" << chart
+                 << "chartHandle is None=" << chartHandle.is_none()
+                 << "type=" << pybind11::str(chartHandle.get_type()).cast<std::string>().c_str();
 
-        // Convert QJsonObject params to a Python dict, skipping internal keys
         pybind11::dict pyParams;
         for (auto it = params.begin(); it != params.end(); ++it) {
             const QString& key = it.key();
-            if (key.startsWith("__")) continue;  // skip internal keys
+            if (key.startsWith("__")) continue;
             pyParams[pybind11::str(key.toStdString())] =
                 DA::PY::qjsonValueToPyObject(it.value());
         }
 
-        // Import the plotting module and call plot(df, column, chart, params_dict)
-        // We pass params as a positional dict arg because pybind11 C++ cannot
-        // directly use Python's **dict unpacking syntax.
         QString fullModule = QStringLiteral("DAWorkbench.DAPlotting.%1").arg(moduleName);
         pybind11::module_ plotting = pybind11::module_::import(fullModule.toStdString().c_str());
         pybind11::object dfObj = df.object();
+        qDebug() << "[executeStatsPlot] calling Python plot() module=" << moduleName
+                 << "column=" << columnName << "df is None=" << dfObj.is_none()
+                 << "params keys=" << params.keys();
         plotting.attr("plot")(dfObj, columnName.toStdString(), chartHandle, pyParams);
+        qDebug() << "[executeStatsPlot] Python plot() completed successfully";
     } catch (const pybind11::error_already_set& e) {
         daCritical << tr("Python error in statistical plot: %1").arg(e.what());  // cn: 统计绘图 Python 错误: %1
     } catch (const std::exception& e) {

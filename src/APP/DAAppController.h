@@ -44,6 +44,7 @@ class DADataOperateOfDataFrameWidget;
 class DAPyWorkFlowOperateWidget;
 class DADataOperateWidget;
 class DAAppChartOperateWidget;
+class DADialogStatsChartGuide;
 class DADataManageWidget;
 class DAChartWidget;
 class DADataOperatePageWidget;
@@ -410,6 +411,8 @@ private Q_SLOTS:
 #if DA_ENABLE_PYTHON
     // 统计绘图请求槽：DAAbstractStatsChartAddWidget::plotRequested -> 调用 Python plot()
     void onStatsPlotRequested(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);
+    // 统计绘图引导对话框确认槽（直接从对话框获取 widget，不依赖 sender()）
+    void onStatsGuideAccepted(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);
 #endif
     //===================================================
     // project
@@ -466,7 +469,13 @@ private:
     void populateColumnContextMenu(QMenu& menu);
     // 在 DataFrame 操作窗口中选中指定列（replace 语义，供表头/树右键共用）
     void selectColumnInDataFrameWidget(DADataOperateOfDataFrameWidget* w, int col);
+    // 显示统计绘图引导对话框并预选指定类型
+    void showStatsChartGuide(DA::DAChartTypes type);
+    // 执行 Python 统计绘图的公共逻辑
+    void executeStatsPlot(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart, const DAData& data);
 #endif
+    // 确保当前 Figure 和 Chart 存在（不存在则创建）
+    bool ensureFigureChart(DA::DAFigureWidget*& fig, DA::DAChartWidget*& chart);
 
 private:
     AppMainWindow* mMainWindow { nullptr };
@@ -484,6 +493,9 @@ private:
                                                             //
     DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
     DAAppConfig* mConfig { nullptr };                                   ///< 设置类
+#if DA_ENABLE_PYTHON
+    DADialogStatsChartGuide* mStatsChartGuideDlg { nullptr };  ///< 统计绘图引导对话框
+#endif
 };
 }
 

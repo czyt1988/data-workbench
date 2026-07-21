@@ -38,11 +38,6 @@ DAChartAddStatsHeatmapWidget::DAChartAddStatsHeatmapWidget(QWidget* parent)
     connect(ui->checkBoxAnnot, &QCheckBox::toggled,
             this, &DAChartAddStatsHeatmapWidget::onAnnotToggled);
 
-    // Wire the OK button to emit plotRequested
-    connect(ui->buttonBox, &QDialogButtonBox::accepted, this,
-            &DAChartAddStatsHeatmapWidget::onButtonBoxAccepted);
-    // Cancel just closes the window
-    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QWidget::close);
 }
 
 DAChartAddStatsHeatmapWidget::~DAChartAddStatsHeatmapWidget()
@@ -145,7 +140,6 @@ void DAChartAddStatsHeatmapWidget::onButtonBoxAccepted()
     }
 
     Q_EMIT plotRequested(params, getFigureWidget(), getChartWidget());
-    close();
 }
 
 void DAChartAddStatsHeatmapWidget::onValueColumnToggled(bool checked)

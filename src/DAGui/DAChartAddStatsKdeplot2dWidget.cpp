@@ -31,11 +31,6 @@ DAChartAddStatsKdeplot2dWidget::DAChartAddStatsKdeplot2dWidget(QWidget* parent)
     connect(ui->comboBoxBwMethod, QOverload< int >::of(&QComboBox::currentIndexChanged),
             this, &DAChartAddStatsKdeplot2dWidget::onBwMethodChanged);
 
-    // Wire the OK button to emit plotRequested
-    connect(ui->buttonBox, &QDialogButtonBox::accepted, this,
-            &DAChartAddStatsKdeplot2dWidget::onButtonBoxAccepted);
-    // Cancel just closes the window
-    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QWidget::close);
 }
 
 DAChartAddStatsKdeplot2dWidget::~DAChartAddStatsKdeplot2dWidget()
@@ -116,7 +111,6 @@ void DAChartAddStatsKdeplot2dWidget::onButtonBoxAccepted()
     params["__plot_module__"] = QStringLiteral("kdeplot_2d");
 
     Q_EMIT plotRequested(params, getFigureWidget(), getChartWidget());
-    close();
 }
 
 void DAChartAddStatsKdeplot2dWidget::onBwMethodChanged(int index)

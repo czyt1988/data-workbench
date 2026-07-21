@@ -1338,27 +1338,18 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+590"/>
+        <location filename="../APP/DAAppController.cpp" line="+592"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+19"/>
         <location line="+744"/>
-        <location line="+465"/>
-        <location line="+40"/>
-        <location line="+40"/>
-        <location line="+40"/>
-        <location line="+40"/>
-        <location line="+40"/>
-        <location line="+40"/>
-        <location line="+40"/>
-        <location line="+40"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1518"/>
+        <location line="-733"/>
         <source>Failed to save project! Path: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1443,65 +1434,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+463"/>
-        <source>Histplot Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <location line="+40"/>
-        <location line="+40"/>
-        <location line="+40"/>
-        <location line="+40"/>
-        <location line="+40"/>
-        <location line="+40"/>
-        <location line="+40"/>
-        <location line="+40"/>
-        <source>Python support is required for statistical plots</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-289"/>
-        <source>KDE 1D Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+40"/>
-        <source>KDE 2D Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+40"/>
-        <source>Boxplot Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+40"/>
-        <source>Heatmap Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+40"/>
-        <source>Scatterplot Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+40"/>
-        <source>Barplot Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+40"/>
-        <source>Regplot Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+40"/>
-        <source>ECDF Plot Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+458"/>
+        <location line="+1011"/>
         <source>Rename Column</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1551,32 +1484,29 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+184"/>
+        <location line="+183"/>
+        <location line="+39"/>
         <source>No figure/chart available for statistical plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+46"/>
         <source>No data column selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>Cannot resolve the settings widget that emitted the plot request</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
+        <location line="-66"/>
+        <location line="+44"/>
         <source>Cannot resolve the data source for statistical plot; please ensure a dataframe is selected in the settings window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+28"/>
         <source>The selected data source is empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+37"/>
         <source>Python error in statistical plot: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1586,7 +1516,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1945"/>
+        <location line="-1768"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2525,12 +2455,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+103"/>
+        <location line="+99"/>
         <source>Please select an X-axis data column before plotting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+51"/>
+        <location line="+50"/>
         <source>Barplot Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2553,7 +2483,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+66"/>
         <location line="+18"/>
         <source>Please select one or more data columns before plotting</source>
         <translation type="unfinished"></translation>
@@ -2582,7 +2512,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+80"/>
+        <location line="+76"/>
         <source>Please select a data column before plotting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2605,7 +2535,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+81"/>
+        <location line="+76"/>
         <location line="+4"/>
         <source>Please select an X-axis data column before plotting</source>
         <translation type="unfinished"></translation>
@@ -2630,7 +2560,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+73"/>
+        <location line="+68"/>
         <location line="+4"/>
         <source>Please select a data column before plotting</source>
         <translation type="unfinished"></translation>
@@ -2649,7 +2579,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+105"/>
+        <location line="+100"/>
         <location line="+4"/>
         <source>Please select a data column before plotting</source>
         <translation type="unfinished"></translation>
@@ -2668,7 +2598,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+62"/>
+        <location line="+57"/>
         <location line="+4"/>
         <source>Please select an X-axis data column before plotting</source>
         <translation type="unfinished"></translation>
@@ -2693,7 +2623,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+99"/>
+        <location line="+95"/>
         <source>Please select an X-axis data column before plotting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2721,7 +2651,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location line="+63"/>
         <location line="+4"/>
         <source>Please select an X-axis data column before plotting</source>
         <translation type="unfinished"></translation>
@@ -5857,6 +5787,54 @@ Config</source>
     <message>
         <location line="+0"/>
         <source>Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogStatsChartGuide</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogStatsChartGuide.cpp" line="+109"/>
+        <source>Histplot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>KDE 1D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>KDE 2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Boxplot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Heatmap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Scatter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Barplot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Regplot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>ECDF</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9069,6 +9047,14 @@ Config</source>
     <message>
         <location line="+7"/>
         <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DADialogStatsChartGuide</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogStatsChartGuide.ui" line="+14"/>
+        <source>Statistics Chart Guide</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

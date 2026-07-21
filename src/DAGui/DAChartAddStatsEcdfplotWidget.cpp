@@ -44,10 +44,6 @@ DAChartAddStatsEcdfplotWidget::DAChartAddStatsEcdfplotWidget(QWidget* parent)
     syncHueControls();
     connect(ui->groupBoxHue, &QGroupBox::toggled, this, &DAChartAddStatsEcdfplotWidget::onHueToggled);
 
-    // Wire the OK button
-    connect(ui->buttonBox, &QDialogButtonBox::accepted, this,
-            &DAChartAddStatsEcdfplotWidget::onButtonBoxAccepted);
-    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QWidget::close);
 }
 
 DAChartAddStatsEcdfplotWidget::~DAChartAddStatsEcdfplotWidget()
@@ -130,7 +126,6 @@ void DAChartAddStatsEcdfplotWidget::onButtonBoxAccepted()
     }
 
     Q_EMIT plotRequested(params, getFigureWidget(), getChartWidget());
-    close();
 }
 
 void DAChartAddStatsEcdfplotWidget::onHueToggled(bool checked)
