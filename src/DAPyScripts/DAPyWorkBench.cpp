@@ -12,9 +12,11 @@ public:
     DAPyScriptsIO mIO;
     DAPyScriptsDataFrame mDataframe;
     DAPyScriptsDataProcess mDataProcess;
+    DAPyScriptsStatistics mStatistics;
 };
 
-DAPyWorkBench::PrivateData::PrivateData(DAPyWorkBench* p) : q_ptr(p), mIO(false), mDataframe(false), mDataProcess(false)
+DAPyWorkBench::PrivateData::PrivateData(DAPyWorkBench* p)
+    : q_ptr(p), mIO(false), mDataframe(false), mDataProcess(false), mStatistics(false)
 {
 }
 
@@ -56,6 +58,13 @@ bool DAPyWorkBench::import()
         qCritical() << e.what();
         return false;
     }
+    // Statistics is a pure-Python subpackage, not re-exported by DAWorkbench.__init__,
+    // so it imports itself directly rather than via attr().
+    try {
+        d_ptr->mStatistics.import();
+    } catch (const std::exception& e) {
+        qWarning() << "Failed to import DAStatistics:" << e.what();
+    }
     return true;
 }
 
@@ -72,6 +81,11 @@ DAPyScriptsDataFrame& DAPyWorkBench::getDataFrame()
 DAPyScriptsDataProcess& DAPyWorkBench::getDataProcess()
 {
     return d_ptr->mDataProcess;
+}
+
+DAPyScriptsStatistics& DAPyWorkBench::getStatistics()
+{
+    return d_ptr->mStatistics;
 }
 
 }

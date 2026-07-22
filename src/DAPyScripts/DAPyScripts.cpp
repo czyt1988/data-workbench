@@ -111,6 +111,15 @@ DAPyScriptsDataProcess& DAPyScripts::getDataProcess()
     return s_models->workBench.getDataProcess();
 }
 
+DAPyScriptsStatistics& DAPyScripts::getStatistics()
+{
+    if (!s_models) {
+        daCritical << QObject::tr("DAPyScripts is not initialized, getStatistics() called before initScripts()");  // cn:DAPyScripts 未初始化，在 initScripts() 之前调用了 getStatistics()
+        Q_ASSERT_X(s_models, "DAPyScripts::getStatistics", "s_models is nullptr");
+    }
+    return s_models->workBench.getStatistics();
+}
+
 void DAPyScripts::cleanup()
 {
     s_models.reset();

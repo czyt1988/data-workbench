@@ -6,6 +6,7 @@
 #include "DAPyScriptsIO.h"
 #include "DAPyScriptsDataFrame.h"
 #include "DAPyScriptsDataProcess.h"
+#include "DAPyScriptsStatistics.h"
 namespace DA
 {
 class DAPYSCRIPTS_API DAPyWorkBench : public DAPyModule
@@ -20,6 +21,7 @@ public:
 	DAPyScriptsIO& getIO();
 	DAPyScriptsDataFrame& getDataFrame();
 	DAPyScriptsDataProcess& getDataProcess();
+	DAPyScriptsStatistics& getStatistics();
 };
 }  // end DA
 #endif  // DAPYWORKBENCH_H

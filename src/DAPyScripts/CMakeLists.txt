@@ -43,6 +43,7 @@ message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VE
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAPyBindQt
     ${DA_PROJECT_NAME}::DAMessageHandler
+    ${DA_PROJECT_NAME}::DAUtils
 )
 
 # -------------link 3rdparty python--------------------------

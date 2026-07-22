@@ -7,6 +7,7 @@
 #include "DAPyScriptsIO.h"
 #include "DAPyScriptsDataFrame.h"
 #include "DAPyScriptsDataProcess.h"
+#include "DAPyScriptsStatistics.h"
 namespace DA
 {
 /**
@@ -30,6 +31,7 @@ public:
     static DAPyScriptsIO& getIO();
     static DAPyScriptsDataFrame& getDataFrame();
     static DAPyScriptsDataProcess& getDataProcess();
+    static DAPyScriptsStatistics& getStatistics();
 
 protected:
     // 内部模块

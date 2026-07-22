@@ -14,3 +14,10 @@ Submodules:
     boxplot_stats  — five-number summary and outlier detection
     matrix         — pivot-table matrix computation for heatmaps
 """
+
+from DAWorkbench.DAStatistics.distribution import compute_histogram, compute_ecdf
+from DAWorkbench.DAStatistics.kde import compute_kde_1d, compute_kde_2d, compute_contours
+from DAWorkbench.DAStatistics.regression import fit_polynomial, compute_bootstrap_ci
+from DAWorkbench.DAStatistics.categorical import aggregate_by_category, compute_ci
+from DAWorkbench.DAStatistics.boxplot_stats import compute_boxplot_stats
+from DAWorkbench.DAStatistics.matrix import compute_pivot_matrix
