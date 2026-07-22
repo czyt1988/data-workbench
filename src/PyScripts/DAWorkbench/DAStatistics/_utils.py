@@ -1,8 +1,8 @@
-"""Shared utility functions for the DAPlotting package.
+"""Shared utility functions for the DAStatistics package.
 
 These helpers are intentionally tiny and dependency-light so that every
-plot module (histplot, kdeplot, boxplot, ...) can reuse them without pulling
-in seaborn/matplotlib at import time.
+statistics module (distribution, kde, boxplot_stats, ...) can reuse them
+without pulling in seaborn/matplotlib at import time.
 """
 
 import numpy as np
