@@ -18,10 +18,10 @@ class DAChartSeriesSelectWidget;
  *
  * Collects seaborn ``ecdfplot`` parameters (data column, hue grouping,
  * stat, complementary, weights, palette, colour, line width, legend) and
- * delegates the computation to the Python
- * ``DAWorkbench.DAPlotting.ecdfplot`` module. Emits plotRequested() on
- * OK; the DAAppController slot acquires the GIL, imports the module and
- * calls ``plot(df, column, chart, **params)``.
+ * delegates the computation to
+ * DAStatsPlotCoordinator. Emits plotRequested() on
+ * OK; the DAAppController slot invokes the coordinator which renders via
+ * DAChartPlotRenderer with DAStatistics support.
  */
 class DAGUI_API DAChartAddStatsEcdfplotWidget : public DAAbstractStatsChartAddWidget
 {

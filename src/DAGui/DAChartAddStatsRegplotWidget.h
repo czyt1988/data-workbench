@@ -18,10 +18,10 @@ class DAChartSeriesSelectWidget;
  *
  * Collects seaborn ``regplot`` parameters (X / Y columns, polynomial
  * order, CI, bootstrap iterations, scatter / fit toggles, scatter_kws,
- * reg_kws, colour) and delegates the computation to the Python
- * ``DAWorkbench.DAPlotting.regplot`` module. Emits plotRequested() on
- * OK; the DAAppController slot acquires the GIL, imports the module and
- * calls ``plot(df, column, chart, **params)``.
+ * reg_kws, colour) and delegates the computation to
+ * DAStatsPlotCoordinator. Emits plotRequested() on
+ * OK; the DAAppController slot invokes the coordinator which renders via
+ * DAChartPlotRenderer with DAStatistics support.
  */
 class DAGUI_API DAChartAddStatsRegplotWidget : public DAAbstractStatsChartAddWidget
 {

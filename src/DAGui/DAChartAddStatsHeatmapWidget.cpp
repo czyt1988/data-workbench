@@ -129,7 +129,7 @@ void DAChartAddStatsHeatmapWidget::onButtonBoxAccepted()
     // Stash the Y column name for the Python side
     params["y_column"] = selY.second;
     // Identify which Python module the controller should import
-    params["__plot_module__"] = QStringLiteral("heatmap");
+    params["__plot_type__"] = QStringLiteral("heatmap");
 
     // Value column name (if enabled)
     if (ui->groupBoxValueColumn->isChecked()) {

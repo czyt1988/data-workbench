@@ -18,10 +18,10 @@ class DAChartSeriesSelectWidget;
  *
  * Collects seaborn ``kdeplot`` 2-D parameters (bandwidth, grid size, contour
  * levels, threshold, colour map, fill mode) and delegates the computation to
- * the Python ``DAWorkbench.DAPlotting.kdeplot_2d`` module. Emits
- * plotRequested() on OK; the DAAppController slot acquires the GIL, imports
- * the module and calls ``plot(df, column, chart, **params)`` where ``column``
- * is the X-axis column and ``params["y_column"]`` carries the Y-axis column.
+ * DAStatsPlotCoordinator. Emits
+ * plotRequested() on OK; the DAAppController slot invokes the coordinator
+ * which renders via DAChartPlotRenderer with DAStatistics support, where
+ * ``column`` is the X-axis column and ``params["y_column"]`` carries the Y-axis column.
  */
 class DAGUI_API DAChartAddStatsKdeplot2dWidget : public DAAbstractStatsChartAddWidget
 {

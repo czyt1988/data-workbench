@@ -94,8 +94,7 @@
 #include "DAChartAddStatsEcdfplotWidget.h"
 #include "DAChartSeriesSelectWidget.h"
 #include "DAAbstractStatsChartAddWidget.h"
-#include "DAFigurePythonBinding.h"
-#include "DAPyJsonCast.h"
+#include "DAStatsPlotCoordinator.h"
 #endif
 //
 #include "SettingPages/DAAppConfig.h"
@@ -2980,10 +2979,9 @@ void DAAppController::onTableStyleCurrentChanged(const DA::DATableCellStyle& sty
  * DAAbstractStatsChartAddWidget::plotRequested 信号触发后，此函数：
  * 1. 从 params 中读取 column / hue 列名
  * 2. 从 widget 的数据选择组件获取 DAData/DAPyDataFrame
- * 3. 获取 GIL，import DAWorkbench.DAPlotting.<module>
- * 4. 调用 plot(df, column, chart_handle, **params)
+ * 3. 调用 executeStatsPlot，由 DAStatsPlotCoordinator 完成绘图
  *
- * @note 模块名通过 params["__plot_module__"] 指定，缺省为 "histplot"。
+ * @note 绘图类型通过 params["__plot_type__"] 指定，缺省为 "histplot"。
  */
 void DAAppController::onStatsPlotRequested(const QJsonObject& params,
                                           DA::DAFigureWidget* fig,
@@ -3063,7 +3061,7 @@ void DAAppController::onStatsGuideAccepted(const QJsonObject& params,
 }
 
 /**
- * @brief 执行 Python 统计绘图的公共逻辑
+ * @brief 执行统计绘图的公共逻辑
  * @param params 绘图参数 JSON
  * @param fig 目标 Figure 窗口
  * @param chart 目标 Chart 窗口
@@ -3086,36 +3084,15 @@ void DAAppController::executeStatsPlot(const QJsonObject& params,
         return;
     }
 
-    QString moduleName = params.value("__plot_module__").toString("histplot");
-    qDebug() << "[executeStatsPlot] module=" << moduleName << "column=" << columnName
+    QString plotType = params.value("__plot_type__").toString("histplot");
+    qDebug() << "[executeStatsPlot] type=" << plotType << "column=" << columnName
              << "data.isDataFrame=" << data.isDataFrame();
 
     DAWaitCursorScoped wait;
     Q_UNUSED(wait);
 
-    pybind11::gil_scoped_acquire gil;
-    try {
-        pybind11::module_::import("da_interface");
-        pybind11::module_ daFig = pybind11::module_::import("da_figure");
-        pybind11::object chartHandle = daFig.attr("getChartHandle")(chart);
-
-        pybind11::dict pyParams;
-        for (auto it = params.begin(); it != params.end(); ++it) {
-            const QString& key = it.key();
-            if (key.startsWith("__")) continue;
-            pyParams[pybind11::str(key.toStdString())] =
-                DA::PY::qjsonValueToPyObject(it.value());
-        }
-
-        QString fullModule = QStringLiteral("DAWorkbench.DAPlotting.%1").arg(moduleName);
-        pybind11::module_ plotting = pybind11::module_::import(fullModule.toStdString().c_str());
-        pybind11::object dfObj = df.object();
-        plotting.attr("plot")(dfObj, columnName.toStdString(), chartHandle, pyParams);
-    } catch (const pybind11::error_already_set& e) {
-        daCritical << tr("Python error in statistical plot: %1").arg(e.what());  // cn: 统计绘图 Python 错误: %1
-    } catch (const std::exception& e) {
-        daCritical << tr("Error in statistical plot: %1").arg(e.what());  // cn: 统计绘图错误: %1
-    }
+    DAStatsPlotCoordinator coordinator;
+    coordinator.execute(plotType, params, fig, chart, data);
 }
 #endif
 

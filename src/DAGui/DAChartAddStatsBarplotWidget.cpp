@@ -144,7 +144,7 @@ void DAChartAddStatsBarplotWidget::onButtonBoxAccepted()
     // Stash the Y column name for the Python side (empty string = countplot)
     params["y_column"] = hasY ? selY.second : QString();
     // Identify which Python module the controller should import
-    params["__plot_module__"] = QStringLiteral("barplot");
+    params["__plot_type__"] = QStringLiteral("barplot");
 
     // Hue column name (if enabled)
     if (ui->groupBoxHue->isChecked()) {

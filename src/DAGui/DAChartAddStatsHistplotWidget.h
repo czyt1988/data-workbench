@@ -18,9 +18,9 @@ class DAChartSeriesSelectWidget;
  *
  * Unlike the existing DAChartAddHistogramWidget which computes binning in C++,
  * this widget collects seaborn-style parameters and delegates the computation
- * to the Python ``DAWorkbench.DAPlotting.histplot`` module. It emits
- * plotRequested() on OK; the DAAppController slot acquires the GIL, imports
- * the module and calls ``plot(df, column, chart, **params)``.
+ * to DAStatsPlotCoordinator. It emits
+ * plotRequested() on OK; the DAAppController slot invokes the coordinator
+ * which renders via DAChartPlotRenderer with DAStatistics support.
  */
 class DAGUI_API DAChartAddStatsHistplotWidget : public DAAbstractStatsChartAddWidget
 {

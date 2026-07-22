@@ -18,10 +18,10 @@ class DAChartSeriesSelectWidget;
  *
  * Collects seaborn ``boxplot`` parameters (multiple data columns, hue
  * grouping, whisker multiplier, showfliers / showmeans toggles, palette,
- * box width, colour) and delegates the computation to the Python
- * ``DAWorkbench.DAPlotting.boxplot`` module. Emits plotRequested() on OK;
- * the DAAppController slot acquires the GIL, imports the module and calls
- * ``plot(df, column, chart, **params)``.
+ * box width, colour) and delegates the computation to
+ * DAStatsPlotCoordinator. Emits plotRequested() on OK;
+ * the DAAppController slot invokes the coordinator which renders via
+ * DAChartPlotRenderer with DAStatistics support.
  */
 class DAGUI_API DAChartAddStatsBoxplotWidget : public DAAbstractStatsChartAddWidget
 {

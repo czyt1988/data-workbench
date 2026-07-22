@@ -18,10 +18,10 @@ class DAChartSeriesSelectWidget;
  *
  * Collects seaborn ``heatmap`` parameters (x/y category columns, optional
  * value column, aggregation function, colour map, vmin/vmax, centre,
- * annotations, standardisation) and delegates the computation to the Python
- * ``DAWorkbench.DAPlotting.heatmap`` module. Emits plotRequested() on OK;
- * the DAAppController slot acquires the GIL, imports the module and calls
- * ``plot(df, column, chart, **params)``.
+ * annotations, standardisation) and delegates the computation to
+ * DAStatsPlotCoordinator. Emits plotRequested() on OK;
+ * the DAAppController slot invokes the coordinator which renders via
+ * DAChartPlotRenderer with DAStatistics support.
  */
 class DAGUI_API DAChartAddStatsHeatmapWidget : public DAAbstractStatsChartAddWidget
 {

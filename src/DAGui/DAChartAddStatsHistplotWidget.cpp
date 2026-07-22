@@ -106,7 +106,7 @@ void DAChartAddStatsHistplotWidget::onButtonBoxAccepted()
     // Stash the selected column name into params so the controller can read it
     params["column"] = sel.second;
     // Identify which Python module the controller should import
-    params["__plot_module__"] = QStringLiteral("histplot");
+    params["__plot_type__"] = QStringLiteral("histplot");
 
     // Hue column name (if enabled)
     if (ui->groupBoxHue->isChecked()) {

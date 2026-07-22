@@ -18,9 +18,9 @@ class DAChartSeriesSelectWidget;
  *
  * Collects seaborn ``kdeplot`` parameters (bandwidth, grid size, fill,
  * cumulative, hue grouping, palette, threshold clipping) and delegates the
- * computation to the Python ``DAWorkbench.DAPlotting.kdeplot_1d`` module.
- * Emits plotRequested() on OK; the DAAppController slot acquires the GIL,
- * imports the module and calls ``plot(df, column, chart, **params)``.
+ * computation to DAStatsPlotCoordinator.
+ * Emits plotRequested() on OK; the DAAppController slot invokes the coordinator
+ * which renders via DAChartPlotRenderer with DAStatistics support.
  */
 class DAGUI_API DAChartAddStatsKdeplot1dWidget : public DAAbstractStatsChartAddWidget
 {

@@ -9,6 +9,14 @@ class DAChartWidget;
 class DAFigureWidget;
 }
 
+//
+// da_figure module — for plugin scripts only
+//
+// This module is a pybind11 embedded Python binding that provides plugin scripts
+// with the ability to directly manipulate DAChartWidget. Core platform scripts
+// (PyScripts/DAWorkbench/DAStatistics/) must not depend on this module.
+// Core platform statistical plotting uses DAChartPlotRenderer (C++ renderer) instead.
+//
 namespace da_figure
 {
 /**

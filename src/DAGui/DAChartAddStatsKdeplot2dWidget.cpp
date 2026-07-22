@@ -108,7 +108,7 @@ void DAChartAddStatsKdeplot2dWidget::onButtonBoxAccepted()
     // Stash the Y column name for the Python side
     params["y_column"] = selY.second;
     // Identify which Python module the controller should import
-    params["__plot_module__"] = QStringLiteral("kdeplot_2d");
+    params["__plot_type__"] = QStringLiteral("kdeplot_2d");
 
     Q_EMIT plotRequested(params, getFigureWidget(), getChartWidget());
 }

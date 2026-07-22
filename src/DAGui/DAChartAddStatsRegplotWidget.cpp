@@ -139,7 +139,7 @@ void DAChartAddStatsRegplotWidget::onButtonBoxAccepted()
     // Stash the Y column name for the Python side
     params["y_column"] = selY.second;
     // Identify which Python module the controller should import
-    params["__plot_module__"] = QStringLiteral("regplot");
+    params["__plot_type__"] = QStringLiteral("regplot");
 
     Q_EMIT plotRequested(params, getFigureWidget(), getChartWidget());
 }

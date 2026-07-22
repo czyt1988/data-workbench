@@ -315,7 +315,7 @@ void DADialogStatsChartGuide::onAccepted()
         return;
     }
     // 调用 widget 的确认逻辑：验证数据选择、设置 __da_data__ 属性、
-    // 构建完整参数（含 column, __plot_module__ 等），并发射 widget 自身的
+    // 构建完整参数（含 column, __plot_type__ 等），并发射 widget 自身的
     // plotRequested 信号。该信号已在构造函数中被转发到本对话框的同名信号。
     w->onButtonBoxAccepted();
 

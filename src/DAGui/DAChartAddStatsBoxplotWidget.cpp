@@ -131,7 +131,7 @@ void DAChartAddStatsBoxplotWidget::onButtonBoxAccepted()
     }
     params["columns"] = colArray;
     // Identify which Python module the controller should import
-    params["__plot_module__"] = QStringLiteral("boxplot");
+    params["__plot_type__"] = QStringLiteral("boxplot");
 
     // Hue column name (if enabled)
     if (ui->groupBoxHue->isChecked()) {

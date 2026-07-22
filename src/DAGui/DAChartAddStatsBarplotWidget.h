@@ -19,9 +19,9 @@ class DAChartSeriesSelectWidget;
  * Collects seaborn ``barplot`` / ``countplot`` parameters (X column,
  * optional Y column, hue grouping, estimator, CI, orientation, palette,
  * error bar colour, bar colour, bar width, legend) and delegates the
- * computation to the Python ``DAWorkbench.DAPlotting.barplot`` module.
- * Emits plotRequested() on OK; the DAAppController slot acquires the GIL,
- * imports the module and calls ``plot(df, column, chart, **params)``.
+ * computation to DAStatsPlotCoordinator.
+ * Emits plotRequested() on OK; the DAAppController slot invokes the coordinator
+ * which renders via DAChartPlotRenderer with DAStatistics support.
  *
  * When ``y_column`` is empty the widget operates in **countplot** mode
  * (value counts); otherwise it is a **barplot** (grouped aggregation).

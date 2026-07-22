@@ -18,10 +18,10 @@ class DAChartSeriesSelectWidget;
  *
  * Collects seaborn ``scatterplot`` parameters (X/Y columns, hue grouping,
  * marker size / style / colour, palette, alpha, legend toggle) and
- * delegates the computation to the Python
- * ``DAWorkbench.DAPlotting.scatterplot`` module. Emits plotRequested() on
- * OK; the DAAppController slot acquires the GIL, imports the module and
- * calls ``plot(df, column, chart, **params)``.
+ * delegates the computation to
+ * DAStatsPlotCoordinator. Emits plotRequested() on
+ * OK; the DAAppController slot invokes the coordinator which renders via
+ * DAChartPlotRenderer with DAStatistics support.
  */
 class DAGUI_API DAChartAddStatsScatterplotWidget : public DAAbstractStatsChartAddWidget
 {
