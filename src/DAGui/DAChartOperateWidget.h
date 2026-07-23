@@ -41,6 +41,7 @@ public:
     DAFigureWidget* gcf() const;
     // 设置当前的figure
     void setCurrentFigure(int index);
+    void setCurrentFigure(DAFigureWidget* fig);
     // 获取figure
     DAFigureWidget* getFigure(int index) const;
     DAFigureWidget* findFigure(const QString& id) const;

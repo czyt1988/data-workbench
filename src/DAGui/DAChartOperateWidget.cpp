@@ -149,6 +149,11 @@ void DAChartOperateWidget::setCurrentFigure(int index)
     ui->tabWidget->setCurrentIndex(index);
 }
 
+void DAChartOperateWidget::setCurrentFigure(DAFigureWidget* fig)
+{
+    ui->tabWidget->setCurrentWidget(fig);
+}
+
 /**
  * @brief 根据索引获取fig
  * @param index
@@ -352,7 +357,8 @@ void DAChartOperateWidget::onTabCloseRequested(int index)
     if (!fig) {
         return;
     }
-    QMessageBox::StandardButton btn = QMessageBox::question(this, tr("Question"),  // cn:询问
+    QMessageBox::StandardButton btn = QMessageBox::question(this,
+                                                            tr("Question"),                             // cn:询问
                                                             tr("Whether to close the figure widget"));  // cn:是否关闭绘图窗口
     if (QMessageBox::Yes != btn) {
         return;

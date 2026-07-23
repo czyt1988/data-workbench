@@ -1658,6 +1658,7 @@ void DAAppController::onActionAddFigureTriggered()
     mCommand->addStack(fig->getUndoStack());
     mRibbon->updateFigureAboutRibbon(fig);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+    chartopt->setCurrentFigure(fig);
     setDirty();
 }
 
@@ -1862,7 +1863,7 @@ void DAAppController::onActionStatsECDFplotTriggered()
 bool DAAppController::ensureFigureChart(DAFigureWidget*& fig, DAChartWidget*& chart)
 {
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
-    fig = chartopt->getCurrentFigure();
+    fig                               = chartopt->getCurrentFigure();
     if (!fig) {
         fig = chartopt->createFigure();
     }
@@ -1889,8 +1890,8 @@ bool DAAppController::ensureFigureChart(DAFigureWidget*& fig, DAChartWidget*& ch
  */
 void DAAppController::showStatsChartGuide(DA::DAChartTypes type)
 {
-    DAFigureWidget* fig   = nullptr;
-    DAChartWidget* chart  = nullptr;
+    DAFigureWidget* fig  = nullptr;
+    DAChartWidget* chart = nullptr;
     if (!ensureFigureChart(fig, chart)) {
         return;
     }
@@ -1899,8 +1900,7 @@ void DAAppController::showStatsChartGuide(DA::DAChartTypes type)
     if (!mStatsChartGuideDlg) {
         mStatsChartGuideDlg = new DADialogStatsChartGuide(app());
         mStatsChartGuideDlg->setDataManager(mDatas->dataManager());
-        connect(mStatsChartGuideDlg, &DADialogStatsChartGuide::plotRequested,
-                this, &DAAppController::onStatsGuideAccepted);
+        connect(mStatsChartGuideDlg, &DADialogStatsChartGuide::plotRequested, this, &DAAppController::onStatsGuideAccepted);
     }
     mStatsChartGuideDlg->setFigureWidget(fig);
     mStatsChartGuideDlg->setChartWidget(chart);
@@ -2540,7 +2540,7 @@ void DAAppController::selectColumnInDataFrameWidget(DADataOperateOfDataFrameWidg
         return;
     }
     QItemSelectionModel* sel = tv->selectionModel();
-    QAbstractItemModel* m   = tv->model();
+    QAbstractItemModel* m    = tv->model();
     if (!sel || !m) {
         return;
     }
@@ -2615,7 +2615,7 @@ void DAAppController::setupDataManagerTreeSeriesContextMenu(DADataManagerTreeWid
         }
         // 映射到 source model
         DADataManagerTreeFilterProxyModel* proxy = w->getProxyModel();
-        QModelIndex srcIndex                    = proxy ? proxy->mapToSource(proxyIndex) : proxyIndex;
+        QModelIndex srcIndex                     = proxy ? proxy->mapToSource(proxyIndex) : proxyIndex;
         QStandardItem* item                      = w->getModel()->itemFromIndex(srcIndex);
         if (!item || !DADataManagerTreeModel::isDataframeSeriesItem(item)) {
             return;
@@ -2625,7 +2625,7 @@ void DAAppController::setupDataManagerTreeSeriesContextMenu(DADataManagerTreeWid
             return;
         }
         QString seriesName = item->text();
-        DAPyDataFrame df  = data.toDataFrame();
+        DAPyDataFrame df   = data.toDataFrame();
         if (df.isNone()) {
             return;
         }
@@ -2983,9 +2983,7 @@ void DAAppController::onTableStyleCurrentChanged(const DA::DATableCellStyle& sty
  *
  * @note 绘图类型通过 params["__plot_type__"] 指定，缺省为 "histplot"。
  */
-void DAAppController::onStatsPlotRequested(const QJsonObject& params,
-                                          DA::DAFigureWidget* fig,
-                                          DA::DAChartWidget* chart)
+void DAAppController::onStatsPlotRequested(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart)
 {
     qDebug() << "[onStatsPlotRequested] called, fig=" << fig << "chart=" << chart;
     if (!fig || !chart) {
@@ -3021,24 +3019,18 @@ void DAAppController::onStatsPlotRequested(const QJsonObject& params,
  *
  * 直接从对话框获取当前 widget 的 DAData，不依赖 sender()（因为 lambda 转发会破坏 sender 链）。
  */
-void DAAppController::onStatsGuideAccepted(const QJsonObject& params,
-                                           DA::DAFigureWidget* fig,
-                                           DA::DAChartWidget* chart)
+void DAAppController::onStatsGuideAccepted(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart)
 {
-    qDebug() << "[onStatsGuideAccepted] called, fig=" << fig << "chart=" << chart
-             << "params keys:" << params.keys();
     if (!fig || !chart) {
         daWarning << tr("No figure/chart available for statistical plot");
         return;
     }
 
     if (!mStatsChartGuideDlg) {
-        qDebug() << "[onStatsGuideAccepted] mStatsChartGuideDlg is null!";
         return;
     }
 
     DAAbstractStatsChartAddWidget* w = mStatsChartGuideDlg->getCurrentStatsChartAddWidget();
-    qDebug() << "[onStatsGuideAccepted] current widget=" << w;
     if (!w) {
         return;
     }
@@ -3049,8 +3041,6 @@ void DAAppController::onStatsGuideAccepted(const QJsonObject& params,
     if (dataVar.isValid() && dataVar.canConvert< DAData >()) {
         data = dataVar.value< DAData >();
     }
-    qDebug() << "[onStatsGuideAccepted] data.isDataFrame=" << data.isDataFrame()
-             << "column=" << params.value("column").toString();
     if (!data.isDataFrame()) {
         daWarning << tr("Cannot resolve the data source for statistical plot; "
                         "please ensure a dataframe is selected in the settings window");
@@ -3093,6 +3083,14 @@ void DAAppController::executeStatsPlot(const QJsonObject& params,
 
     DAStatsPlotCoordinator coordinator;
     coordinator.execute(plotType, params, fig, chart, data);
+
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+    mRibbon->updateFigureAboutRibbon(fig);
+    if (DAAppChartOperateWidget* chartopt = getChartOperateWidget()) {
+        chartopt->setCurrentFigure(fig);
+    }
+    // 让坐标轴显示正常
+    chart->rescaleAxes();
 }
 #endif
 

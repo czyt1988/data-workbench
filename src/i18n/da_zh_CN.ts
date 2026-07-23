@@ -1363,7 +1363,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+592"/>
+        <location filename="../APP/DAAppController.cpp" line="+591"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -1400,12 +1400,12 @@ Config</source>
         <translation>图片保存失败：%1</translation>
     </message>
     <message>
-        <location line="+362"/>
+        <location line="+363"/>
         <source>Before creating a new coordinate, you need to create a figure</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-1028"/>
+        <location line="-1029"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
@@ -1509,19 +1509,19 @@ Config</source>
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location line="+183"/>
-        <location line="+39"/>
+        <location line="+180"/>
+        <location line="+35"/>
         <source>No figure/chart available for statistical plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+42"/>
         <source>No data column selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-66"/>
-        <location line="+44"/>
+        <location line="-58"/>
+        <location line="+36"/>
         <source>Cannot resolve the data source for statistical plot; please ensure a dataframe is selected in the settings window</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1531,17 +1531,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+37"/>
-        <source>Python error in statistical plot: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Error in statistical plot: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-1768"/>
+        <location line="-1718"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
@@ -4699,7 +4689,7 @@ Config</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="+260"/>
+        <location line="+266"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
@@ -11102,6 +11092,11 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+9"/>
+        <source>DAPyScripts is not initialized, getStatistics() called before initScripts()</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../DAPyScripts/DAPyScriptsDataFrame.cpp" line="+15"/>
         <source>cannot import da_dataframe module</source>
         <translation>无法导入 da_dataframe 模块</translation>
@@ -11137,7 +11132,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法导入 DAWorkbench.io 模块</translation>
     </message>
     <message>
-        <location filename="../DAPyScripts/DAPyWorkBench.cpp" line="+37"/>
+        <location filename="../DAPyScripts/DAPyWorkBench.cpp" line="+39"/>
         <source>cannot import DAWorkbench module</source>
         <translation>无法导入 DAWorkbench 模块</translation>
     </message>
@@ -11559,6 +11554,36 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+6"/>
         <source>Config file (%1) is missing the &lt;configs&gt; tag</source>
         <translation>配置文件(%1)缺失&lt;configs&gt;标签</translation>
+    </message>
+    <message>
+        <location filename="../DAPyScripts/DAPyScriptsStatistics.cpp" line="+16"/>
+        <source>cannot import DAWorkbench.DAStatistics module</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>cannot import DAWorkbench.DAStatistics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../APP/DAStatsPlotCoordinator.cpp" line="+44"/>
+        <source>The selected data source is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Unknown plot type: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Python error in statistical plot: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Error in statistical plot: %1</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
