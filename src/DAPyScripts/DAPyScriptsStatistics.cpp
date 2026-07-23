@@ -69,6 +69,32 @@ pybind11::dict DAPyScriptsStatistics::computeHistogram(const DAPySeries& data,
     return pybind11::dict();
 }
 
+pybind11::dict DAPyScriptsStatistics::computeHistogramByHue(const DAPyDataFrame& df,
+                                                            const QString& dataCol,
+                                                            const QString& hueCol,
+                                                            const QVariantMap& args,
+                                                            QString* err)
+{
+    try {
+        pybind11::object fn = attr("compute_histogram_by_hue");
+        if (fn.is_none()) {
+            qDebug() << "DAStatistics have no attr compute_histogram_by_hue";
+            return pybind11::dict();
+        }
+        pybind11::object v = fn(df.object(), pybind11::cast(dataCol), pybind11::cast(hueCol), pybind11::cast(args));
+        if (v.is_none()) {
+            return pybind11::dict();
+        }
+        return v.cast< pybind11::dict >();
+    } catch (const std::exception& e) {
+        if (err) {
+            *err = e.what();
+        }
+        qDebug() << e.what();
+    }
+    return pybind11::dict();
+}
+
 pybind11::dict DAPyScriptsStatistics::computeECDF(const DAPySeries& data,
                                                   const QVariantMap& args,
                                                   QString* err)
@@ -108,6 +134,32 @@ pybind11::dict DAPyScriptsStatistics::computeKde1d(const DAPySeries& data,
             return pybind11::dict();
         }
         pybind11::object v = fn(data.object(), pybind11::cast(args));
+        if (v.is_none()) {
+            return pybind11::dict();
+        }
+        return v.cast< pybind11::dict >();
+    } catch (const std::exception& e) {
+        if (err) {
+            *err = e.what();
+        }
+        qDebug() << e.what();
+    }
+    return pybind11::dict();
+}
+
+pybind11::dict DAPyScriptsStatistics::computeKde1dByHue(const DAPyDataFrame& df,
+                                                        const QString& dataCol,
+                                                        const QString& hueCol,
+                                                        const QVariantMap& args,
+                                                        QString* err)
+{
+    try {
+        pybind11::object fn = attr("compute_kde_1d_by_hue");
+        if (fn.is_none()) {
+            qDebug() << "DAStatistics have no attr compute_kde_1d_by_hue";
+            return pybind11::dict();
+        }
+        pybind11::object v = fn(df.object(), pybind11::cast(dataCol), pybind11::cast(hueCol), pybind11::cast(args));
         if (v.is_none()) {
             return pybind11::dict();
         }

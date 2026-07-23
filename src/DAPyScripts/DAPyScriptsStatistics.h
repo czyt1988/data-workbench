@@ -35,6 +35,14 @@ public:
     pybind11::dict computeHistogram(const DAPySeries& data,
                                    const QVariantMap& args,
                                    QString* err = nullptr);
+    // distribution.py — compute_histogram_by_hue
+    // @param dataCol  numeric column whose distribution is histogrammed
+    // @param hueCol   column whose unique values define groups
+    pybind11::dict computeHistogramByHue(const DAPyDataFrame& df,
+                                         const QString& dataCol,
+                                         const QString& hueCol,
+                                         const QVariantMap& args,
+                                         QString* err = nullptr);
     // distribution.py — compute_ecdf
     pybind11::dict computeECDF(const DAPySeries& data,
                                const QVariantMap& args,
@@ -44,6 +52,14 @@ public:
     pybind11::dict computeKde1d(const DAPySeries& data,
                                 const QVariantMap& args,
                                 QString* err = nullptr);
+    // kde.py — compute_kde_1d_by_hue
+    // @param dataCol  numeric column to estimate density for
+    // @param hueCol   column whose unique values define groups
+    pybind11::dict computeKde1dByHue(const DAPyDataFrame& df,
+                                     const QString& dataCol,
+                                     const QString& hueCol,
+                                     const QVariantMap& args,
+                                     QString* err = nullptr);
     // kde.py — compute_kde_2d
     pybind11::dict computeKde2d(const DAPySeries& x,
                                 const DAPySeries& y,

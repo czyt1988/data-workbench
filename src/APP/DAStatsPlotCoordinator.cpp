@@ -93,31 +93,146 @@ void DAStatsPlotCoordinator::plotHistplot(const QJsonObject& params,
     QString column = params.value("column").toString();
     if (column.isEmpty()) return;
 
-    DA::DAPySeries series = df[column];
-    if (series.isNone()) return;
-
+    QString hueCol = params.value("hue").toString();
     QVariantMap args = toVariantMap(params);
 
-    // 1. Histogram statistics
-    pybind11::dict result = DA::DAPyScripts::getStatistics().computeHistogram(series, args);
-    if (result.is_none() || pybind11::len(result) == 0) return;
+    // Color palette for hue groups (matplotlib tab10)
+    static const QVector<QColor> kHuePalette = {
+        QColor(31, 119, 180),   // blue
+        QColor(255, 127, 14),   // orange
+        QColor(44, 160, 44),    // green
+        QColor(214, 39, 40),    // red
+        QColor(148, 103, 189),  // purple
+        QColor(140, 86, 75),    // brown
+        QColor(227, 119, 194),  // pink
+        QColor(127, 127, 127),  // gray
+        QColor(188, 189, 34),   // olive
+        QColor(23, 190, 207),   // cyan
+    };
 
-    // Python returns: counts (list), edges (list, len = counts + 1)
-    QVector<double> counts = dictToDoubleVector(result, "counts");
-    QVector<double> edges   = dictToDoubleVector(result, "edges");
-    if (counts.isEmpty() || edges.isEmpty()) return;
+    if (hueCol.isEmpty()) {
+        // === No hue: single histogram (existing behaviour) ===
+        DA::DAPySeries series = df[column];
+        if (series.isNone()) {
+            daWarning << QObject::tr("Column '%1' not found in data").arg(column);  // cn: 数据中找不到列 '%1'
+            return;
+        }
 
-    renderer.renderHistogram(edges, counts);
+        QString err;
+        pybind11::dict result = DA::DAPyScripts::getStatistics().computeHistogram(series, args, &err);
+        if (result.is_none() || pybind11::len(result) == 0) {
+            daWarning << QObject::tr("Failed to compute histogram for column '%1': %2").arg(column, err);  // cn: 计算列 '%1' 的直方图失败: %2
+            return;
+        }
 
-    // 2. Optional KDE overlay (atomic: separate statistics call)
-    if (params.value("kde").toBool(false)) {
-        pybind11::dict kdeResult = DA::DAPyScripts::getStatistics().computeKde1d(series, args);
-        if (!kdeResult.is_none() && pybind11::len(kdeResult) > 0) {
-            // Python returns: x (list), y (list)
-            QPolygonF kdeCurve = dictToPolygon(kdeResult, "x", "y");
-            if (!kdeCurve.isEmpty()) {
-                renderer.renderCurve(kdeCurve);
+        QVector<double> counts = dictToDoubleVector(result, "counts");
+        QVector<double> edges   = dictToDoubleVector(result, "edges");
+        if (counts.isEmpty() || edges.isEmpty()) {
+            daWarning << QObject::tr("Histogram result is empty for column '%1'").arg(column);  // cn: 列 '%1' 的直方图结果为空
+            return;
+        }
+
+        renderer.renderHistogram(edges, counts);
+
+        // Optional KDE overlay (atomic: separate statistics call)
+        if (params.value("kde").toBool(false)) {
+            QString kdeErr;
+            pybind11::dict kdeResult = DA::DAPyScripts::getStatistics().computeKde1d(series, args, &kdeErr);
+            if (!kdeResult.is_none() && pybind11::len(kdeResult) > 0) {
+                QPolygonF kdeCurve = dictToPolygon(kdeResult, "x", "y");
+                if (!kdeCurve.isEmpty()) {
+                    renderer.renderCurve(kdeCurve);
+                }
+            } else if (!kdeErr.isEmpty()) {
+                daWarning << QObject::tr("KDE overlay failed for column '%1': %2").arg(column, kdeErr);  // cn: 列 '%1' 的 KDE 叠加失败: %2
             }
+        }
+        return;
+    }
+
+    // === Hue grouping: multiple histograms with shared bin edges ===
+    QString histErr;
+    pybind11::dict result = DA::DAPyScripts::getStatistics().computeHistogramByHue(
+        df, column, hueCol, args, &histErr);
+    if (result.is_none() || pybind11::len(result) == 0) {
+        daWarning << QObject::tr("Failed to compute grouped histogram (column '%1', hue '%2'): %3")
+                         .arg(column, hueCol, histErr);  // cn: 计算分组直方图失败 (列 '%1', 分组 '%2'): %3
+        return;
+    }
+
+    // Extract groups list from result
+    pybind11::str groupsKey("groups");
+    if (!result.contains(groupsKey)) return;
+    pybind11::object groupsObj = result[groupsKey];
+    if (groupsObj.is_none() || !pybind11::isinstance<pybind11::list>(groupsObj)) return;
+
+    auto groupsList = pybind11::cast<pybind11::list>(groupsObj);
+    int groupCount  = static_cast<int>(groupsList.size());
+
+    for (int i = 0; i < groupCount; ++i) {
+        pybind11::object groupObj = groupsList[i];
+        if (!pybind11::isinstance<pybind11::dict>(groupObj)) continue;
+        auto groupDict = pybind11::cast<pybind11::dict>(groupObj);
+
+        QVector<double> counts = dictToDoubleVector(groupDict, "counts");
+        QVector<double> edges   = dictToDoubleVector(groupDict, "edges");
+        if (counts.isEmpty() || edges.isEmpty()) continue;
+
+        // Assign a colour from the palette and build style
+        const QColor& base = kHuePalette[i % kHuePalette.size()];
+        QVariantMap style;
+        style["color"]     = base;
+        style["fillColor"] = QColor(base.red(), base.green(), base.blue(), 80);
+
+        // Extract hue label for the item title
+        pybind11::str labelKey("hue_label");
+        if (groupDict.contains(labelKey)) {
+            pybind11::object labelObj = groupDict[labelKey];
+            if (!labelObj.is_none()) {
+                style["title"] = QString::fromStdString(
+                    pybind11::str(labelObj).cast<std::string>());
+            }
+        }
+
+        renderer.renderHistogram(edges, counts, style);
+    }
+
+    // Optional KDE overlay per group (atomic: separate statistics call)
+    if (params.value("kde").toBool(false)) {
+        QString kdeErr;
+        pybind11::dict kdeResult = DA::DAPyScripts::getStatistics().computeKde1dByHue(
+            df, column, hueCol, args, &kdeErr);
+        if (kdeResult.is_none() || pybind11::len(kdeResult) == 0) {
+            if (!kdeErr.isEmpty()) {
+                daWarning << QObject::tr("KDE overlay failed for hue groups: %1").arg(kdeErr);  // cn: 分组 KDE 叠加失败: %1
+            }
+            return;
+        }
+
+        pybind11::str kdeGroupsKey("groups");
+        if (!kdeResult.contains(kdeGroupsKey)) return;
+        pybind11::object kdeGroupsObj = kdeResult[kdeGroupsKey];
+        if (kdeGroupsObj.is_none() || !pybind11::isinstance<pybind11::list>(kdeGroupsObj)) return;
+
+        auto kdeGroupsList = pybind11::cast<pybind11::list>(kdeGroupsObj);
+        for (int i = 0; i < static_cast<int>(kdeGroupsList.size()); ++i) {
+            pybind11::object groupObj = kdeGroupsList[i];
+            if (!pybind11::isinstance<pybind11::dict>(groupObj)) continue;
+            auto groupDict = pybind11::cast<pybind11::dict>(groupObj);
+
+            // y is None when KDE could not be computed for a group
+            pybind11::str yKey("y");
+            if (!groupDict.contains(yKey)) continue;
+            pybind11::object yObj = groupDict[yKey];
+            if (yObj.is_none()) continue;
+
+            QPolygonF kdeCurve = dictToPolygon(groupDict, "x", "y");
+            if (kdeCurve.isEmpty()) continue;
+
+            const QColor& base = kHuePalette[i % kHuePalette.size()];
+            QVariantMap style;
+            style["color"] = base;
+            renderer.renderCurve(kdeCurve, style);
         }
     }
 }

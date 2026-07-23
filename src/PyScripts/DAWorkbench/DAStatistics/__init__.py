@@ -15,8 +15,8 @@ Submodules:
     matrix         — pivot-table matrix computation for heatmaps
 """
 
-from DAWorkbench.DAStatistics.distribution import compute_histogram, compute_ecdf
-from DAWorkbench.DAStatistics.kde import compute_kde_1d, compute_kde_2d, compute_contours
+from DAWorkbench.DAStatistics.distribution import compute_histogram, compute_histogram_by_hue, compute_ecdf
+from DAWorkbench.DAStatistics.kde import compute_kde_1d, compute_kde_1d_by_hue, compute_kde_2d, compute_contours
 from DAWorkbench.DAStatistics.regression import fit_polynomial, compute_bootstrap_ci
 from DAWorkbench.DAStatistics.categorical import aggregate_by_category, compute_ci
 from DAWorkbench.DAStatistics.boxplot_stats import compute_boxplot_stats

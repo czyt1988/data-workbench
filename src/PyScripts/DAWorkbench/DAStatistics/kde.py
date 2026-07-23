@@ -91,6 +91,125 @@ def compute_kde_1d(series, params=None, **kwargs):
     }
 
 
+def compute_kde_1d_by_hue(df, data_col, hue_col, params=None, **kwargs):
+    """Compute 1-D KDE for each hue group.
+
+    Each group's KDE is computed independently. The grid range is extended
+    to cover the **full** dataset so all group curves share the same x-axis
+    extent and can be overlaid cleanly.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame | DAPyDataFrame
+        Data source.
+    data_col : str
+        Numeric column to estimate density for.
+    hue_col : str
+        Column whose unique values define the groups.
+    params : dict, optional
+        Same keys as :func:`compute_kde_1d` (``bw_method``, ``bw_value``,
+        ``grid_size``, ``cumulative``).
+
+    **kwargs :
+        Alternative way to pass parameters.
+
+    Returns
+    -------
+    dict
+        Keys:
+        - ``groups``: list of dict — one per hue category, each containing
+          ``x`` (list), ``y`` (list), ``bw`` (float), ``hue_label`` (str).
+          ``y`` is ``None`` if KDE could not be computed for that group.
+        - ``hue_categories``: list of str — group labels (sorted)
+    """
+    if gaussian_kde is None:
+        return None
+
+    import pandas as pd
+
+    p = dict(params) if params else {}
+    p.update(kwargs)
+
+    data = drop_nan(extract_series(df, data_col))
+    # Hue column may be string/categorical — extract without float conversion
+    if hasattr(df, "columns"):
+        hue = np.asarray(df[hue_col]).ravel()
+    else:
+        hue = np.asarray(df).ravel()
+
+    min_len = min(data.size, hue.size)
+    data = data[:min_len]
+    hue = hue[:min_len]
+
+    tmp = pd.DataFrame({"data": data, "hue": hue})
+    tmp = tmp.dropna(subset=["hue"])
+    data_all = drop_nan(tmp["data"].values.astype(float))
+    if data_all.size < 2:
+        raise ValueError(
+            "KDE requires at least 2 valid data points, got %d" % data_all.size
+        )
+
+    bw = p.get("bw_method", "scott")
+    if bw == "custom":
+        bw = p.get("bw_value", 0.5)
+
+    grid_size = int(p.get("grid_size", 200))
+    grid_size = max(grid_size, 10)
+
+    # Shared grid from full dataset range (with 10% margin)
+    d_min, d_max = float(data_all.min()), float(data_all.max())
+    margin = (d_max - d_min) * 0.1 if d_max > d_min else 1.0
+    x_grid = np.linspace(d_min - margin, d_max + margin, grid_size)
+
+    hue_categories = sorted(tmp["hue"].unique().tolist())
+    hue_categories = [str(h) for h in hue_categories]
+
+    groups = []
+    for h_cat in hue_categories:
+        group_data = drop_nan(
+            tmp[tmp["hue"].astype(str) == h_cat]["data"].values.astype(float)
+        )
+        if group_data.size < 2:
+            groups.append({
+                "x": x_grid.tolist(),
+                "y": None,
+                "bw": 0.0,
+                "hue_label": h_cat,
+            })
+            continue
+
+        try:
+            kde = gaussian_kde(group_data, bw_method=bw)
+        except Exception:
+            groups.append({
+                "x": x_grid.tolist(),
+                "y": None,
+                "bw": 0.0,
+                "hue_label": h_cat,
+            })
+            continue
+
+        y_kde = kde(x_grid)
+
+        if p.get("cumulative", False):
+            dx = float(x_grid[1] - x_grid[0]) if grid_size > 1 else 1.0
+            y_kde = np.cumsum(y_kde) * dx
+            if y_kde[-1] > 0:
+                y_kde = y_kde / y_kde[-1]
+
+        groups.append({
+            "x": x_grid.tolist(),
+            "y": y_kde.tolist(),
+            "bw": float(kde.factor),
+            "hue_label": h_cat,
+        })
+
+    return {
+        "groups": groups,
+        "hue_categories": hue_categories,
+    }
+
+
 def compute_kde_2d(x, y, params=None, **kwargs):
     """Compute a 2-D kernel density estimate on a grid.
 

@@ -174,3 +174,126 @@ def compute_ecdf(series, params=None, **kwargs):
         "x": x_sorted.tolist(),
         "y": y_cum.tolist(),
     }
+
+
+def compute_histogram_by_hue(df, data_col, hue_col, params=None, **kwargs):
+    """Compute histograms for each hue group with shared bin edges.
+
+    Bin edges are determined from the **full** dataset (common_bins=True,
+    matching seaborn's default behaviour). Each group's counts are then
+    computed against those shared edges so the bars are directly comparable.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame | DAPyDataFrame
+        Data source.
+    data_col : str
+        Numeric column whose distribution is being histogrammed.
+    hue_col : str
+        Column whose unique values define the groups.
+    params : dict, optional
+        Same keys as :func:`compute_histogram` (``bins``, ``binwidth``,
+        ``binrange``, ``stat``, ``cumulative``).
+
+    **kwargs :
+        Alternative way to pass parameters.
+
+    Returns
+    -------
+    dict
+        Keys:
+        - ``groups``: list of dict — one per hue category, each containing
+          ``counts`` (list), ``edges`` (list), ``hue_label`` (str), ``n`` (int)
+        - ``hue_categories``: list of str — group labels (sorted)
+        - ``common_edges``: list of float — shared bin edges
+        - ``stat``: str — the statistic used
+    """
+    import pandas as pd
+
+    p = dict(params) if params else {}
+    p.update(kwargs)
+
+    data = extract_series(df, data_col)
+    # Hue column may be string/categorical — extract without float conversion
+    if hasattr(df, "columns"):
+        hue = np.asarray(df[hue_col]).ravel()
+    else:
+        hue = np.asarray(df).ravel()
+
+    min_len = min(data.size, hue.size)
+    data = data[:min_len]
+    hue = hue[:min_len]
+
+    # Drop rows where data or hue is NaN
+    tmp = pd.DataFrame({"data": data, "hue": hue})
+    tmp = tmp.dropna(subset=["hue"])
+    data_all = drop_nan(tmp["data"].values.astype(float))
+    if data_all.size == 0:
+        raise ValueError("No valid (non-NaN) data for histogram")
+
+    stat = p.get("stat", "count")
+    bins = p.get("bins", 10)
+    binwidth = p.get("binwidth", 0)
+    binrange = p.get("binrange", [None, None])
+    cumulative = p.get("cumulative", False)
+
+    # Compute shared bin edges from the full dataset
+    lo, hi = resolve_range(data_all, binrange)
+    if lo == hi:
+        lo = lo - 0.5
+        hi = hi + 0.5
+
+    if binwidth and binwidth > 0:
+        edges = np.arange(lo, hi + binwidth, binwidth)
+        if edges.size < 2:
+            edges = np.array([lo, hi], dtype=float)
+    else:
+        n_bins = max(int(bins), 1)
+        edges = np.linspace(lo, hi, n_bins + 1)
+
+    edges_list = edges.tolist()
+
+    # Unique hue categories (sorted), converted to str for consistency
+    hue_categories = sorted(tmp["hue"].unique().tolist())
+    hue_categories = [str(h) for h in hue_categories]
+
+    density_flag = (stat == "density")
+
+    groups = []
+    for h_cat in hue_categories:
+        group_data = tmp[tmp["hue"].astype(str) == h_cat]["data"].values.astype(float)
+        group_data = drop_nan(group_data)
+        if group_data.size == 0:
+            groups.append({
+                "counts": [0.0] * (len(edges_list) - 1),
+                "edges": edges_list,
+                "hue_label": h_cat,
+                "n": 0,
+            })
+            continue
+
+        counts, _ = np.histogram(group_data, bins=edges, density=density_flag)
+
+        if stat in ("frequency", "probability"):
+            if not density_flag:
+                counts = counts / float(group_data.size)
+        elif stat == "percent":
+            if not density_flag:
+                counts = counts / float(group_data.size) * 100.0
+
+        if cumulative:
+            counts = np.cumsum(counts)
+
+        groups.append({
+            "counts": counts.tolist(),
+            "edges": edges_list,
+            "hue_label": h_cat,
+            "n": int(group_data.size),
+        })
+
+    return {
+        "groups": groups,
+        "hue_categories": hue_categories,
+        "common_edges": edges_list,
+        "stat": stat,
+    }
