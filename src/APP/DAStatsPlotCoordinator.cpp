@@ -132,7 +132,9 @@ void DAStatsPlotCoordinator::plotHistplot(const QJsonObject& params,
             return;
         }
 
-        renderer.renderHistogram(edges, counts);
+        QVariantMap histStyle;
+        histStyle["title"] = column;
+        renderer.renderHistogram(edges, counts, histStyle);
 
         // Optional KDE overlay (atomic: separate statistics call)
         if (params.value("kde").toBool(false)) {
@@ -141,7 +143,9 @@ void DAStatsPlotCoordinator::plotHistplot(const QJsonObject& params,
             if (!kdeResult.is_none() && pybind11::len(kdeResult) > 0) {
                 QPolygonF kdeCurve = dictToPolygon(kdeResult, "x", "y");
                 if (!kdeCurve.isEmpty()) {
-                    renderer.renderCurve(kdeCurve);
+                    QVariantMap kdeStyle;
+                    kdeStyle["title"] = QStringLiteral("KDE");
+                    renderer.renderCurve(kdeCurve, kdeStyle);
                 }
             } else if (!kdeErr.isEmpty()) {
                 daWarning << QObject::tr("KDE overlay failed for column '%1': %2").arg(column, kdeErr);  // cn: 列 '%1' 的 KDE 叠加失败: %2
@@ -232,6 +236,16 @@ void DAStatsPlotCoordinator::plotHistplot(const QJsonObject& params,
             const QColor& base = kHuePalette[i % kHuePalette.size()];
             QVariantMap style;
             style["color"] = base;
+
+            // Extract hue label for the curve title
+            pybind11::str kdeLabelKey("hue_label");
+            if (groupDict.contains(kdeLabelKey)) {
+                pybind11::object labelObj = groupDict[kdeLabelKey];
+                if (!labelObj.is_none()) {
+                    style["title"] = QString::fromStdString(
+                        pybind11::str(labelObj).cast<std::string>());
+                }
+            }
             renderer.renderCurve(kdeCurve, style);
         }
     }
@@ -261,7 +275,9 @@ void DAStatsPlotCoordinator::plotKdeplot1d(const QJsonObject& params,
     QPolygonF curve = dictToPolygon(result, "x", "y");
     if (curve.isEmpty()) return;
 
-    renderer.renderCurve(curve);
+    QVariantMap style;
+    style["title"] = QStringLiteral("KDE: %1").arg(column);
+    renderer.renderCurve(curve, style);
 
     // Optional fill: construct a closed polygon (baseline → curve → baseline)
     if (params.value("fill").toBool(false)) {
@@ -270,7 +286,9 @@ void DAStatsPlotCoordinator::plotKdeplot1d(const QJsonObject& params,
         fillPoly.append(curve);
         fillPoly.append(QPointF(curve.last().x(), 0.0));
         if (fillPoly.size() >= 3) {
-            renderer.renderShape(fillPoly);
+            QVariantMap fillStyle;
+            fillStyle["title"] = QStringLiteral("KDE fill: %1").arg(column);
+            renderer.renderShape(fillPoly, fillStyle);
         }
     }
 }
@@ -335,14 +353,18 @@ void DAStatsPlotCoordinator::plotKdeplot2d(const QJsonObject& params,
     specData.ymin    = yGrid.first();
     specData.ymax    = yGrid.last();
 
-    renderer.renderSpectrogram(specData);
+    QVariantMap specStyle;
+    specStyle["title"] = QStringLiteral("KDE: %1 vs %2").arg(xCol, yCol);
+    renderer.renderSpectrogram(specData, specStyle);
 
     // Optional contour overlay (atomic: separate computeContours call)
     if (params.value("contour").toBool(false)) {
         DA::DAContourData contourData =
             DA::DAPyScripts::getStatistics().computeContours(result, args);
         if (!contourData.polygons.isEmpty()) {
-            renderer.renderContours(contourData);
+            QVariantMap contourStyle;
+            contourStyle["title"] = QStringLiteral("Contours: %1 vs %2").arg(xCol, yCol);
+            renderer.renderContours(contourData, contourStyle);
         }
     }
 }
@@ -407,10 +429,14 @@ void DAStatsPlotCoordinator::plotBoxplot(const QJsonObject& params,
         boxData.outliers[i].clear();
     }
 
-    renderer.renderBoxChart(boxData);
+    QVariantMap boxStyle;
+    boxStyle["title"] = QStringLiteral("Boxplot");
+    renderer.renderBoxChart(boxData, boxStyle);
 
     if (!allOutliers.isEmpty()) {
-        renderer.renderScatter(allOutliers);
+        QVariantMap outlierStyle;
+        outlierStyle["title"] = QStringLiteral("Outliers");
+        renderer.renderScatter(allOutliers, outlierStyle);
     }
 }
 
@@ -475,6 +501,7 @@ void DAStatsPlotCoordinator::plotHeatmap(const QJsonObject& params,
 
     // Pass vmin/vmax and cmap via style
     QVariantMap style;
+    style["title"] = QStringLiteral("%1 by %2 × %3").arg(valuesCol, indexCol, columnsCol);
     pybind11::str vminKey("vmin");
     if (result.contains(vminKey)) {
         pybind11::object vminObj = result[vminKey];
@@ -527,7 +554,9 @@ void DAStatsPlotCoordinator::plotScatterplot(const QJsonObject& params,
             points.append(QPointF(xVals[i], yVals[i]));
         }
         if (!points.isEmpty()) {
-            renderer.renderScatter(points);
+            QVariantMap style;
+            style["title"] = QStringLiteral("%1 vs %2").arg(yCol, xCol);
+            renderer.renderScatter(points, style);
         }
     } else {
         // Group by hue column values
@@ -546,7 +575,9 @@ void DAStatsPlotCoordinator::plotScatterplot(const QJsonObject& params,
         // Render each group as a separate scatter
         for (auto it = groupedPoints.begin(); it != groupedPoints.end(); ++it) {
             if (!it.value().isEmpty()) {
-                renderer.renderScatter(it.value());
+                QVariantMap style;
+                style["title"] = it.key();
+                renderer.renderScatter(it.value(), style);
             }
         }
     }
@@ -601,7 +632,11 @@ void DAStatsPlotCoordinator::plotBarplot(const QJsonObject& params,
             }
         }
 
-        renderer.renderBarChart(barData);
+        QVariantMap barStyle;
+        barStyle["title"] = yCol.isEmpty()
+            ? QStringLiteral("Count: %1").arg(xCol)
+            : QStringLiteral("%1 by %2").arg(yCol, xCol);
+        renderer.renderBarChart(barData, barStyle);
     } else {
         // Hue grouping — values is a list of lists, render each hue group separately
         QStringList hueCategories = dictToStringList(result, "hue_categories");
@@ -627,7 +662,9 @@ void DAStatsPlotCoordinator::plotBarplot(const QJsonObject& params,
                 }
             }
             if (!groupBarData.values.isEmpty()) {
-                renderer.renderBarChart(groupBarData);
+                QVariantMap groupStyle;
+                groupStyle["title"] = hueCategories[h];
+                renderer.renderBarChart(groupBarData, groupStyle);
             }
         }
     }
@@ -663,7 +700,9 @@ void DAStatsPlotCoordinator::plotRegplot(const QJsonObject& params,
         scatterPoints.append(QPointF(xVals[i], yVals[i]));
     }
     if (!scatterPoints.isEmpty()) {
-        renderer.renderScatter(scatterPoints);
+        QVariantMap scatterStyle;
+        scatterStyle["title"] = QStringLiteral("%1 vs %2").arg(yCol, xCol);
+        renderer.renderScatter(scatterPoints, scatterStyle);
     }
 
     // 2. Polynomial regression fit (atomic statistics function)
@@ -673,7 +712,9 @@ void DAStatsPlotCoordinator::plotRegplot(const QJsonObject& params,
         // Python returns: x_grid (list), y_pred (list)
         QPolygonF regLine = dictToPolygon(fitResult, "x_grid", "y_pred");
         if (!regLine.isEmpty()) {
-            renderer.renderCurve(regLine);
+            QVariantMap regStyle;
+            regStyle["title"] = QStringLiteral("Regression");
+            renderer.renderCurve(regLine, regStyle);
         }
     }
 
@@ -692,7 +733,9 @@ void DAStatsPlotCoordinator::plotRegplot(const QJsonObject& params,
                 ciData.x      = ciX;
                 ciData.yLower  = ciLower;
                 ciData.yUpper  = ciUpper;
-                renderer.renderIntervalCurve(ciData);
+                QVariantMap ciStyle;
+                ciStyle["title"] = QStringLiteral("%1% CI").arg(ci);
+                renderer.renderIntervalCurve(ciData, ciStyle);
             }
         }
     }
@@ -722,6 +765,7 @@ void DAStatsPlotCoordinator::plotEcdfplot(const QJsonObject& params,
     if (curve.isEmpty()) return;
 
     QVariantMap style;
+    style["title"]      = QStringLiteral("ECDF: %1").arg(column);
     style["curveStyle"] = QStringLiteral("Steps");
     renderer.renderCurve(curve, style);
 }
