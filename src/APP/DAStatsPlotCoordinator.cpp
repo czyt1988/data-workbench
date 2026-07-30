@@ -302,7 +302,7 @@ void DAStatsPlotCoordinator::plotKdeplot2d(const QJsonObject& params,
                                             DAChartPlotRenderer& renderer,
                                             const DA::DAPyDataFrame& df)
 {
-    QString xCol = params.value("x_column").toString();
+    QString xCol = params.value("column").toString();
     QString yCol = params.value("y_column").toString();
     if (xCol.isEmpty() || yCol.isEmpty()) return;
 
@@ -532,7 +532,7 @@ void DAStatsPlotCoordinator::plotScatterplot(const QJsonObject& params,
                                               DAChartPlotRenderer& renderer,
                                               const DA::DAPyDataFrame& df)
 {
-    QString xCol = params.value("x_column").toString();
+    QString xCol = params.value("column").toString();
     QString yCol = params.value("y_column").toString();
     if (xCol.isEmpty() || yCol.isEmpty()) return;
 
@@ -680,7 +680,7 @@ void DAStatsPlotCoordinator::plotRegplot(const QJsonObject& params,
                                           DAChartPlotRenderer& renderer,
                                           const DA::DAPyDataFrame& df)
 {
-    QString xCol = params.value("x_column").toString();
+    QString xCol = params.value("column").toString();
     QString yCol = params.value("y_column").toString();
     if (xCol.isEmpty() || yCol.isEmpty()) return;
 
