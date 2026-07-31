@@ -29,10 +29,54 @@
 #include "qwt_plot_vectorfield.h"
 #include "qwt_plot_arrowmarker.h"
 #include "qwt_plot_boxchart.h"
+#include "qwt_scale_div.h"
+#include "qwt_scale_engine.h"
+#include "qwt_text.h"
 #include "DADataProbeMarker.h"
 #include "qwt_math.h"
 namespace DA
 {
+namespace
+{
+///
+/// \brief 字符串类别刻度绘制器：把给定的数值位置映射为对应的字符串标签
+///
+/// 参考 qwt/examples/2D/distrowatch/BarChart.cpp 的 ScaleDraw 实现，
+/// 重写 QwtAbstractScaleDraw::label(double) 在指定数值位置返回字符串文本，
+/// 其它位置返回空 QwtText。配合显式 QwtScaleDiv 主刻度，可在 x 轴显示
+/// 类别字符串而非数字。
+///
+class DACategoryScaleDraw : public QwtScaleDraw
+{
+public:
+    DACategoryScaleDraw(const QVector< double >& positions, const QStringList& labels)
+        : m_positions(positions), m_labels(labels)
+    {
+        // 仅保留主刻度，去掉中/小刻度，避免在非类别位置画多余的短线
+        setTickLength(QwtScaleDiv::MinorTick, 0);
+        setTickLength(QwtScaleDiv::MediumTick, 0);
+        setTickLength(QwtScaleDiv::MajorTick, 6);
+        // 长列名倾斜显示，避免重叠
+        setLabelRotation(-30.0);
+        setLabelAlignment(Qt::AlignHCenter | Qt::AlignBottom);
+    }
+
+    // 在指定数值位置返回对应的字符串标签；未匹配的位置返回空文本
+    virtual QwtText label(double value) const override
+    {
+        for (int i = 0; i < m_positions.size(); ++i) {
+            if (qAbs(m_positions[ i ] - value) < 1e-6) {
+                return QwtText((i < m_labels.size()) ? m_labels[ i ] : QString());
+            }
+        }
+        return QwtText();
+    }
+
+private:
+    QVector< double > m_positions;
+    QStringList m_labels;
+};
+}  // namespace
 
 ///
 /// \brief 更加强制的replot，就算设置为不实时刷新也能实现重绘
@@ -690,6 +734,57 @@ QwtScaleDraw* DAChartUtil::setAxisNormalScale(QwtPlot* chart, int axisID)
         scaleEngine = new QwtLinearScaleEngine;
         chart->setAxisScaleEngine(axisID, scaleEngine);
     }
+    return scale;
+}
+
+///
+/// \brief 设置坐标轴为字符串类别刻度
+///
+/// 在 \a positions 指定的数值位置显示 \a labels 对应的字符串，其它位置不显示刻度文本。
+/// 通过显式构造 QwtScaleDiv 并关闭该轴的自动缩放，保证主刻度精确落在 \a positions 上，
+/// 适用于箱线图/柱状图等需要在数值位置上显示类别字符串的场景。
+///
+/// \param chart 目标绘图
+/// \param axisID 坐标轴 id（如 QwtPlot::xBottom）
+/// \param positions 类别所在的数值位置（与 \a labels 一一对应）
+/// \param labels 类别字符串列表（与 \a positions 一一对应）
+/// \return 安装的刻度绘制器
+///
+QwtScaleDraw* DAChartUtil::setAxisCategoryScale(QwtPlot* chart, int axisID,
+                                                const QVector< double >& tickPositions,
+                                                const QStringList& labels,
+                                                double dataLower, double dataUpper)
+{
+    if (nullptr == chart || tickPositions.isEmpty()) {
+        return nullptr;
+    }
+
+    // 安装字符串类别刻度绘制器
+    auto* scale = new DACategoryScaleDraw(tickPositions, labels);
+    chart->setAxisScaleDraw(axisID, scale);
+
+    // 确保使用线性刻度引擎，使数值位置线性映射到像素
+    QwtLinearScaleEngine* scaleEngine = dynamic_cast< QwtLinearScaleEngine* >(chart->axisScaleEngine(axisID));
+    if (nullptr == scaleEngine) {
+        scaleEngine = new QwtLinearScaleEngine;
+        chart->setAxisScaleEngine(axisID, scaleEngine);
+    }
+
+    // 构造显式刻度区间：主刻度精确落在 tickPositions 上，中/小刻度为空；
+    // 坐标轴显示范围基于 dataLower/dataUpper（覆盖全部箱体），两侧留 5% 边距，
+    // 避免边缘箱体被裁切（hue 分组时 dataLower/dataUpper 远于 tickPositions 的首尾）。
+    double margin = qMax(0.5, (dataUpper - dataLower) * 0.05);
+    QList< double > majorTicks;
+    for (double p : tickPositions) {
+        majorTicks << p;
+    }
+    QwtScaleDiv scaleDiv(dataLower - margin, dataUpper + margin,
+                         QList< double >(),           // minor ticks
+                         QList< double >(),           // medium ticks
+                         majorTicks);                 // major ticks
+    chart->setAxisScaleDiv(axisID, scaleDiv);
+    chart->setAxisAutoScale(axisID, false);
+
     return scale;
 }
 

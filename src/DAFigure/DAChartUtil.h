@@ -4,6 +4,7 @@
 #include <QColor>
 #include <QFont>
 #include <QVector>
+#include <QStringList>
 #include <QRectF>
 #include "qwt_date.h"
 #include "qwt_plot.h"
@@ -149,6 +150,14 @@ public:
 
     // 设置为普通线性坐标轴
     static QwtScaleDraw* setAxisNormalScale(QwtPlot* chart, int axisID);
+
+    // 设置坐标轴为字符串类别刻度（在 tickPositions 指定的位置显示 labels 字符串）
+    // dataLower/dataUpper 为该轴数据的实际范围（含所有箱体/数据点），用于确定坐标轴显示区间，
+    // 与 tickPositions 解耦——例如 hue 分组时 tickPositions 为各列中心，但数据范围需覆盖全部箱体。
+    static QwtScaleDraw* setAxisCategoryScale(QwtPlot* chart, int axisID,
+                                              const QVector<double>& tickPositions,
+                                              const QStringList& labels,
+                                              double dataLower, double dataUpper);
 
     // 设置坐标轴为时间坐标
     static QwtDateScaleDraw* setAxisDateTimeScale(QwtPlot* chart, int axisID, const QString& fullDateformat);

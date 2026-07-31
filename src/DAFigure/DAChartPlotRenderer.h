@@ -7,6 +7,7 @@
 #include <QVector>
 #include <QVariantMap>
 #include <QString>
+#include <QStringList>
 #include <QColor>
 #include <QPointF>
 
@@ -63,6 +64,13 @@ public:
 
     void setChartTitle(const QString& title);
     void setAxisLabel(int axis, const QString& label);
+    // 设置坐标轴为字符串类别刻度（在 tickPositions 处显示 labels 字符串）
+    // dataLower/dataUpper 为该轴数据的实际范围（用于确定显示区间，与刻度位置解耦）
+    void setAxisCategoryScale(int axis, const QVector<double>& tickPositions, const QStringList& labels,
+                              double dataLower, double dataUpper);
+    // 便捷方法：将 xBottom 轴设置为字符串类别刻度
+    void setXBottomCategoryScale(const QVector<double>& tickPositions, const QStringList& labels,
+                                 double dataLower, double dataUpper);
     void enableGrid(bool on);
     void enableLegend(bool on);
     void replot();

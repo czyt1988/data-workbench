@@ -45,10 +45,13 @@ def compute_boxplot_stats(df, params=None, **kwargs):
                 - ``whisker_upper``: float
                 - ``outliers``: list of float
                 - ``mean``: float
+                - ``column``: str — column name (x-axis category label)
+                - ``hue``: None — no hue grouping in simple mode
 
         When ``hue`` is set:
             - ``samples``: list of dict (same structure, ``position`` reflects
-              the grouped layout)
+              the grouped layout; ``column`` is the data column name and
+              ``hue`` is the hue category string)
             - ``hue_categories``: list — unique hue values
     """
     p = dict(params) if params else {}
@@ -125,6 +128,8 @@ def _compute_simple(df, columns, whis, params):
             continue
         stats = _compute_box_stats(data, whis)
         stats["position"] = float(i)
+        stats["column"] = col          # column name — x-axis category label
+        stats["hue"] = None            # no hue grouping in simple mode
         samples.append(stats)
 
     if not samples:
@@ -154,6 +159,8 @@ def _compute_grouped(df, columns, hue, whis, params):
 
             stats = _compute_box_stats(data, whis)
             stats["position"] = float(pos)
+            stats["column"] = col_name   # data column name — x-axis category label
+            stats["hue"] = str(cat)      # hue category string — color group + legend
             samples.append(stats)
             pos += 1
         pos += 0.5  # gap between columns

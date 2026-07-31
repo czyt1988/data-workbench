@@ -14,7 +14,47 @@
 
 #include <QDebug>
 #include <QColor>
+#include <QVector>
+#include <QHash>
 #include <QtGlobal>
+
+// pybind11 ↔ Qt type caster — REQUIRED in this TU for QString casts
+// (sd["column"].cast<QString>() etc.). See AGENTS.md § 类型转换铁律.
+#include "DAPybind11QtCaster.hpp"
+
+namespace {
+// Color palette for hue groups (matplotlib tab10).
+// Shared by plotHistplot and plotBoxplot (seaborn-style hue coloring).
+const QVector< QColor > kHuePalette = {
+    QColor(31, 119, 180),    // blue
+    QColor(255, 127, 14),    // orange
+    QColor(44, 160, 44),     // green
+    QColor(214, 39, 40),     // red
+    QColor(148, 103, 189),   // purple
+    QColor(140, 86, 75),     // brown
+    QColor(227, 119, 194),   // pink
+    QColor(127, 127, 127),   // gray
+    QColor(188, 189, 34),    // olive
+    QColor(23, 190, 207),    // cyan
+};
+
+// Extract outlier points for one box sample: (position, outlier_value) pairs.
+// Used by plotBoxplot to render outliers as a separate scatter item.
+QVector< QPointF > extractBoxOutliers(const pybind11::dict& sd, double pos)
+{
+    QVector< QPointF > boxOutliers;
+    pybind11::object outObj = sd["outliers"];
+    if (!outObj.is_none() && pybind11::isinstance<pybind11::list>(outObj)) {
+        auto outList = pybind11::cast<pybind11::list>(outObj);
+        for (auto val : outList) {
+            if (!val.is_none()) {
+                boxOutliers.append(QPointF(pos, pybind11::cast<double>(val)));
+            }
+        }
+    }
+    return boxOutliers;
+}
+}  // namespace
 
 // ============================================================
 // Constructor / Destructor
@@ -95,20 +135,6 @@ void DAStatsPlotCoordinator::plotHistplot(const QJsonObject& params,
 
     QString hueCol = params.value("hue").toString();
     QVariantMap args = toVariantMap(params);
-
-    // Color palette for hue groups (matplotlib tab10)
-    static const QVector<QColor> kHuePalette = {
-        QColor(31, 119, 180),   // blue
-        QColor(255, 127, 14),   // orange
-        QColor(44, 160, 44),    // green
-        QColor(214, 39, 40),    // red
-        QColor(148, 103, 189),  // purple
-        QColor(140, 86, 75),    // brown
-        QColor(227, 119, 194),  // pink
-        QColor(127, 127, 127),  // gray
-        QColor(188, 189, 34),   // olive
-        QColor(23, 190, 207),   // cyan
-    };
 
     if (hueCol.isEmpty()) {
         // === No hue: single histogram (existing behaviour) ===
@@ -384,60 +410,181 @@ void DAStatsPlotCoordinator::plotBoxplot(const QJsonObject& params,
     if (result.is_none() || pybind11::len(result) == 0) return;
 
     // Python returns: samples (list of dict), each dict has:
-    //   position, whisker_lower, q1, median, q3, whisker_upper, outliers, mean
+    //   position, whisker_lower, q1, median, q3, whisker_upper, outliers, mean,
+    //   column (str — x-axis category label), hue (str or None — color group)
     pybind11::str samplesKey("samples");
     if (!result.contains(samplesKey)) return;
     pybind11::object samplesObj = result[samplesKey];
     if (samplesObj.is_none() || !pybind11::isinstance<pybind11::list>(samplesObj)) return;
-
     auto samplesList = pybind11::cast<pybind11::list>(samplesObj);
 
-    DA::DABoxPlotData boxData;
-    QVector<QPointF> allOutliers;
+    // Hue grouping? Python returns hue_categories = None (no hue) or list of strings.
+    pybind11::str hueKey("hue_categories");
+    bool hasHue = result.contains(hueKey)
+                  && !result[hueKey].is_none()
+                  && pybind11::isinstance<pybind11::list>(result[hueKey]);
+
+    if (!hasHue) {
+        // === No hue: one box per column, single box chart.
+        //     x-axis shows the column name at each box position. ===
+        DA::DABoxPlotData boxData;
+        QVector<QPointF> allOutliers;
+        QVector<double> axisPositions;
+        QStringList axisLabels;
+        double posMin = 0.0, posMax = 0.0;
+        bool firstPos = true;
+
+        for (auto sample : samplesList) {
+            if (!pybind11::isinstance<pybind11::dict>(sample)) continue;
+            auto sd = pybind11::cast<pybind11::dict>(sample);
+
+            double pos = sd["position"].cast<double>();
+            if (firstPos) {
+                posMin = pos;
+                posMax = pos;
+                firstPos = false;
+            } else {
+                posMin = qMin(posMin, pos);
+                posMax = qMax(posMax, pos);
+            }
+            boxData.positions.append(pos);
+            boxData.q1.append(sd["q1"].cast<double>());
+            boxData.median.append(sd["median"].cast<double>());
+            boxData.q3.append(sd["q3"].cast<double>());
+            boxData.whiskerLower.append(sd["whisker_lower"].cast<double>());
+            boxData.whiskerUpper.append(sd["whisker_upper"].cast<double>());
+
+            // x-axis label = column name at this box position
+            axisPositions.append(pos);
+            axisLabels.append(sd["column"].cast<QString>());
+
+            // outliers — collected for separate scatter rendering
+            QVector<QPointF> boxOutliers = extractBoxOutliers(sd, pos);
+            boxData.outliers.append(boxOutliers);
+            allOutliers.append(boxOutliers);
+        }
+
+        if (boxData.positions.isEmpty()) return;
+
+        // Clear outliers from boxData so renderer doesn't duplicate; we render them as scatter
+        for (int i = 0; i < boxData.outliers.size(); ++i) {
+            boxData.outliers[i].clear();
+        }
+
+        QVariantMap boxStyle;
+        boxStyle["title"] = QStringLiteral("Boxplot");
+        renderer.renderBoxChart(boxData, boxStyle);
+
+        if (!allOutliers.isEmpty()) {
+            QVariantMap outlierStyle;
+            outlierStyle["title"] = QStringLiteral("Outliers");
+            renderer.renderScatter(allOutliers, outlierStyle);
+        }
+
+        // x-axis = column names at each box position; data range covers all box positions
+        renderer.setXBottomCategoryScale(axisPositions, axisLabels, posMin, posMax);
+        return;
+    }
+
+    // === Hue grouping: one box chart per hue category (seaborn-style).
+    //     x-axis shows the column name centered under each column's box cluster. ===
+    QStringList hueCats = dictToStringList(result, "hue_categories");
+    if (hueCats.isEmpty()) return;
+
+    QHash< QString, int > hueIndex;
+    for (int i = 0; i < hueCats.size(); ++i) {
+        hueIndex.insert(hueCats[i], i);
+    }
+
+    QVector< DA::DABoxPlotData > perHueData(hueCats.size());
+    QVector< QVector< QPointF > > perHueOutliers(hueCats.size());
+
+    // column name → list of box positions (for computing each column's cluster center)
+    QStringList columnOrder;
+    QHash< QString, QVector< double > > columnPositions;
+    double posMin = 0.0, posMax = 0.0;
+    bool firstPos = true;
 
     for (auto sample : samplesList) {
         if (!pybind11::isinstance<pybind11::dict>(sample)) continue;
         auto sd = pybind11::cast<pybind11::dict>(sample);
 
-        boxData.positions.append(sd["position"].cast<double>());
-        boxData.q1.append(sd["q1"].cast<double>());
-        boxData.median.append(sd["median"].cast<double>());
-        boxData.q3.append(sd["q3"].cast<double>());
-        boxData.whiskerLower.append(sd["whisker_lower"].cast<double>());
-        boxData.whiskerUpper.append(sd["whisker_upper"].cast<double>());
+        QString hueName = sd["hue"].cast<QString>();
+        int idx = hueIndex.value(hueName, -1);
+        if (idx < 0) continue;
 
-        // Outliers for this box — collect for separate scatter rendering
-        QVector<QPointF> boxOutliers;
-        pybind11::object outObj = sd["outliers"];
-        if (!outObj.is_none() && pybind11::isinstance<pybind11::list>(outObj)) {
-            auto outList = pybind11::cast<pybind11::list>(outObj);
-            double pos = sd["position"].cast<double>();
-            for (auto val : outList) {
-                if (!val.is_none()) {
-                    boxOutliers.append(QPointF(pos, pybind11::cast<double>(val)));
-                }
-            }
+        double pos = sd["position"].cast<double>();
+        if (firstPos) {
+            posMin = pos;
+            posMax = pos;
+            firstPos = false;
+        } else {
+            posMin = qMin(posMin, pos);
+            posMax = qMax(posMax, pos);
         }
-        boxData.outliers.append(boxOutliers);  // stored in data for completeness
-        allOutliers.append(boxOutliers);
+        auto& bd = perHueData[idx];
+        bd.positions.append(pos);
+        bd.q1.append(sd["q1"].cast<double>());
+        bd.median.append(sd["median"].cast<double>());
+        bd.q3.append(sd["q3"].cast<double>());
+        bd.whiskerLower.append(sd["whisker_lower"].cast<double>());
+        bd.whiskerUpper.append(sd["whisker_upper"].cast<double>());
+
+        // record column → position for axis center computation (preserve first-seen order)
+        QString colName = sd["column"].cast<QString>();
+        if (!columnPositions.contains(colName)) {
+            columnOrder.append(colName);
+        }
+        columnPositions[colName].append(pos);
+
+        QVector<QPointF> boxOutliers = extractBoxOutliers(sd, pos);
+        bd.outliers.append(boxOutliers);
+        perHueOutliers[idx].append(boxOutliers);
     }
 
-    if (boxData.positions.isEmpty()) return;
+    // Render one box chart per hue category with distinct color + legend title
+    for (int i = 0; i < hueCats.size(); ++i) {
+        auto& bd = perHueData[i];
+        if (bd.positions.isEmpty()) continue;
 
-    // Clear outliers from boxData so renderer doesn't duplicate; we render them as scatter
-    for (int i = 0; i < boxData.outliers.size(); ++i) {
-        boxData.outliers[i].clear();
+        for (int k = 0; k < bd.outliers.size(); ++k) {
+            bd.outliers[k].clear();
+        }
+
+        const QColor& base = kHuePalette[i % kHuePalette.size()];
+        QVariantMap style;
+        style["title"]     = hueCats[i];
+        style["color"]     = base;
+        style["fillColor"] = QColor(base.red(), base.green(), base.blue(), 80);
+        renderer.renderBoxChart(bd, style);
+
+        if (!perHueOutliers[i].isEmpty()) {
+            QVariantMap outStyle;
+            outStyle["title"]      = hueCats[i];
+            outStyle["color"]      = base;
+            outStyle["symbol"]     = QStringLiteral("Ellipse");
+            outStyle["symbolSize"] = 5;
+            renderer.renderScatter(perHueOutliers[i], outStyle);
+        }
     }
 
-    QVariantMap boxStyle;
-    boxStyle["title"] = QStringLiteral("Boxplot");
-    renderer.renderBoxChart(boxData, boxStyle);
+    renderer.enableLegend(true);
 
-    if (!allOutliers.isEmpty()) {
-        QVariantMap outlierStyle;
-        outlierStyle["title"] = QStringLiteral("Outliers");
-        renderer.renderScatter(allOutliers, outlierStyle);
+    // x-axis = column names at each column's box-cluster center
+    QVector< double > axisPositions;
+    axisPositions.reserve(columnOrder.size());
+    for (const QString& col : std::as_const(columnOrder)) {
+        const QVector< double > posList = columnPositions.value(col);
+        if (posList.isEmpty()) continue;
+        double center = 0.0;
+        for (double p : posList) {
+            center += p;
+        }
+        center /= posList.size();
+        axisPositions.append(center);
     }
+    // tickPositions = 列中心（显示列名），数据范围 = 全部箱体位置（覆盖边缘箱体）
+    renderer.setXBottomCategoryScale(axisPositions, columnOrder, posMin, posMax);
 }
 
 // ============================================================

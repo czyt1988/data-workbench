@@ -14,6 +14,7 @@
 
 #include "DAChartPlotRenderer.h"
 #include "DAChartWidget.h"
+#include "DAChartUtil.h"
 
 // Qwt headers
 #include "qwt_plot_item.h"
@@ -481,6 +482,20 @@ void DAChartPlotRenderer::setAxisLabel(int axis, const QString& label)
 {
     if (!mChart) return;
     mChart->setAxisLabel(axis, label);
+}
+
+void DAChartPlotRenderer::setAxisCategoryScale(int axis, const QVector<double>& tickPositions,
+                                                const QStringList& labels, double dataLower, double dataUpper)
+{
+    if (!mChart) return;
+    DA::DAChartUtil::setAxisCategoryScale(mChart, axis, tickPositions, labels, dataLower, dataUpper);
+}
+
+void DAChartPlotRenderer::setXBottomCategoryScale(const QVector<double>& tickPositions, const QStringList& labels,
+                                                  double dataLower, double dataUpper)
+{
+    if (!mChart) return;
+    DA::DAChartUtil::setAxisCategoryScale(mChart, QwtPlot::xBottom, tickPositions, labels, dataLower, dataUpper);
 }
 
 void DAChartPlotRenderer::enableGrid(bool on)
