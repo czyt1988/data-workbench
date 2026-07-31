@@ -32,6 +32,12 @@ public:
 	//! 重新扫描：删除不存在文件
 	void rescan();
 
+	//! 设置最大条目数，运行期可调用，会立即裁剪超出的记录并刷新菜单
+	void setMaxEntries(int max);
+
+	//! 获取最大条目数
+	int getMaxEntries() const;
+
 Q_SIGNALS:
 
 	/**

@@ -15,6 +15,7 @@
 #include "qwt_scale_draw.h"
 #include "qwt_date_scale_engine.h"
 #include "qwt_date_scale_draw.h"
+#include "qwt_text_scale_draw.h"
 #include "qwt_plot_multi_barchart.h"
 #include "qwt_column_symbol.h"
 #include "qwt_plot_grid.h"
@@ -36,48 +37,6 @@
 #include "qwt_math.h"
 namespace DA
 {
-namespace
-{
-///
-/// \brief 字符串类别刻度绘制器：把给定的数值位置映射为对应的字符串标签
-///
-/// 参考 qwt/examples/2D/distrowatch/BarChart.cpp 的 ScaleDraw 实现，
-/// 重写 QwtAbstractScaleDraw::label(double) 在指定数值位置返回字符串文本，
-/// 其它位置返回空 QwtText。配合显式 QwtScaleDiv 主刻度，可在 x 轴显示
-/// 类别字符串而非数字。
-///
-class DACategoryScaleDraw : public QwtScaleDraw
-{
-public:
-    DACategoryScaleDraw(const QVector< double >& positions, const QStringList& labels)
-        : m_positions(positions), m_labels(labels)
-    {
-        // 仅保留主刻度，去掉中/小刻度，避免在非类别位置画多余的短线
-        setTickLength(QwtScaleDiv::MinorTick, 0);
-        setTickLength(QwtScaleDiv::MediumTick, 0);
-        setTickLength(QwtScaleDiv::MajorTick, 6);
-        // 长列名倾斜显示，避免重叠
-        setLabelRotation(-30.0);
-        setLabelAlignment(Qt::AlignHCenter | Qt::AlignBottom);
-    }
-
-    // 在指定数值位置返回对应的字符串标签；未匹配的位置返回空文本
-    virtual QwtText label(double value) const override
-    {
-        for (int i = 0; i < m_positions.size(); ++i) {
-            if (qAbs(m_positions[ i ] - value) < 1e-6) {
-                return QwtText((i < m_labels.size()) ? m_labels[ i ] : QString());
-            }
-        }
-        return QwtText();
-    }
-
-private:
-    QVector< double > m_positions;
-    QStringList m_labels;
-};
-}  // namespace
-
 ///
 /// \brief 更加强制的replot，就算设置为不实时刷新也能实现重绘
 /// \param chart
@@ -759,8 +718,19 @@ QwtScaleDraw* DAChartUtil::setAxisCategoryScale(QwtPlot* chart, int axisID,
         return nullptr;
     }
 
-    // 安装字符串类别刻度绘制器
-    auto* scale = new DACategoryScaleDraw(tickPositions, labels);
+    // 安装字符串类别刻度绘制器：构造 value->label 映射，使用 qwt 库的 QwtTextScaleDraw
+    QMap< double, QString > labelMap;
+    const int n = static_cast< int >(qMin(tickPositions.size(), labels.size()));
+    for (int i = 0; i < n; ++i) {
+        labelMap.insert(tickPositions[ i ], labels[ i ]);
+    }
+    auto* scale = new QwtTextScaleDraw(labelMap);
+    // 应用类别轴样式（qwt 库类本身不持有应用层样式）：仅保留主刻度，长列名倾斜显示避免重叠
+    scale->setTickLength(QwtScaleDiv::MinorTick, 0);
+    scale->setTickLength(QwtScaleDiv::MediumTick, 0);
+    scale->setTickLength(QwtScaleDiv::MajorTick, 6);
+    scale->setLabelRotation(-30.0);
+    scale->setLabelAlignment(Qt::AlignHCenter | Qt::AlignBottom);
     chart->setAxisScaleDraw(axisID, scale);
 
     // 确保使用线性刻度引擎，使数值位置线性映射到像素

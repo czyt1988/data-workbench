@@ -28,6 +28,7 @@
 #include "DACoreInterface.h"
 #include "DAAbstractArchiveTask.h"
 #include "DASplashScreen.h"
+#include "SettingPages/DAAppConfig.h"
 #if DA_ENABLE_PYTHON
 #include "DAPybind11InQt.h"
 #include "DAPyInterpreter.h"
@@ -35,10 +36,11 @@
 // SARibbon
 #include "SARibbonBar.h"
 
-void setAppFont();
+void setAppFont(const DA::DAAppConfig& cfg);
 QString appPreposeDump();
 void enableHDPIScaling();
-void initializePythonInterpreter();
+void initializePythonInterpreter(const DA::DAAppConfig& cfg);
+void setupLogger(const DA::DAAppConfig& cfg);
 
 const static QString CS_CMD_IMPORTDATA = QStringLiteral("import-data");
 const static QString CS_CMD_NOSPLASH   = QStringLiteral("no-splash");
@@ -64,15 +66,21 @@ int main(int argc, char* argv[])
 #endif
     // 进行dump捕获
     DA::DADumpCapture::initDump([]() -> QString { return appPreposeDump(); });
-    // 注册旋转文件消息捕获
-    DA::DALogger::instance().setupRotatingFile(DA::DADir::getLogFilePath());
+
+    // 早期加载应用配置，供日志/Python/字体/翻译/启动画面等早期初始化使用。
+    // 这些项的变更需重启程序生效（配置由设置对话框写入，下次启动在此读取）。
+    DA::DAAppConfig earlyConfig;
+    earlyConfig.loadConfig();
+
+    // 注册旋转文件消息捕获（依据配置：轮转模式/大小/数量/stdout/级别）
+    setupLogger(earlyConfig);
     for (int i = 0; i < argc; ++i) {
         daDebug << "argv[" << i << "]" << argv[ i ];
     }
     // 打印程序默认路径
     daDebug << DA::DADir();
     // 初始化python环境,不启用python直接返回
-    initializePythonInterpreter();
+    initializePythonInterpreter(earlyConfig);
     // 高清屏的适配
     enableHDPIScaling();
     // 启动app
@@ -84,16 +92,23 @@ int main(int argc, char* argv[])
     initCommandLine(&cmdParser);
     // 解析命令行参数
     cmdParser.process(app);
-    // 字体设置
-    setAppFont();
+    // 字体设置（依据配置：字体族/字号）
+    setAppFont(earlyConfig);
 
-    //  安装翻译
+    //  安装翻译（依据配置：语言代码，空表示跟随系统）
     DA::DATranslatorManeger datr;
-    datr.installAllTranslator();
+    QString langCode = earlyConfig.value(DA_CONFIG_KEY_LANGUAGE).toString();
+    if (langCode.isEmpty()) {
+        datr.installAllTranslator();
+    } else {
+        datr.setLocale(QLocale(langCode));
+        datr.installAllTranslator(langCode);
+    }
 
     // 创建并显示启动画面(启动画面必须在QApplication之后创建)
-    // --no-splash 参数可跳过启动画面，适用于调试场景
-    bool showSplash            = !cmdParser.isSet(CS_CMD_NOSPLASH);
+    // --no-splash 参数可跳过启动画面，适用于调试场景；同时受配置项 show-splash 控制
+    bool showSplash = earlyConfig.value(DA_CONFIG_KEY_SHOW_SPLASH).toBool();
+    showSplash      = showSplash && !cmdParser.isSet(CS_CMD_NOSPLASH);
     DA::DASplashScreen* splash = nullptr;
     if (showSplash) {
         splash = new DA::DASplashScreen();
@@ -201,15 +216,61 @@ void enableHDPIScaling()
 }
 
 /**
- * @brief 设置字体
+ * @brief 根据配置设置应用字体
+ *
+ * 配置项为空/<=0 时回退到系统默认（Windows 下回退到微软雅黑）。
+ * @param cfg 早期加载的应用配置
  */
-void setAppFont()
+void setAppFont(const DA::DAAppConfig& cfg)
 {
-#ifdef Q_OS_WIN
     QFont font = QApplication::font();
-    font.setFamily(QStringLiteral(u"微软雅黑"));
-    QApplication::setFont(font);
+    QString family = cfg.value(DA_CONFIG_KEY_APP_FONT_FAMILY).toString();
+    double pointSize = cfg.value(DA_CONFIG_KEY_APP_FONT_POINT_SIZE).toDouble();
+    if (!family.isEmpty()) {
+        font.setFamily(family);
+    } else {
+#ifdef Q_OS_WIN
+        font.setFamily(QStringLiteral(u"微软雅黑"));
 #endif
+    }
+    if (pointSize > 0) {
+        font.setPointSizeF(pointSize);
+    }
+    QApplication::setFont(font);
+}
+
+/**
+ * @brief 根据配置初始化日志系统
+ *
+ * 依据轮转模式选择 rotating/daily/console，并设置日志级别与 UI 队列级别。
+ * @param cfg 早期加载的应用配置
+ */
+void setupLogger(const DA::DAAppConfig& cfg)
+{
+    QString logPath   = DA::DADir::getLogFilePath();
+    int mode          = cfg.value(DA_CONFIG_KEY_LOG_ROTATION_MODE).toInt();
+    int maxSize       = cfg.value(DA_CONFIG_KEY_LOG_MAX_SIZE).toInt();
+    int maxFiles      = cfg.value(DA_CONFIG_KEY_LOG_MAX_FILES).toInt();
+    bool outputStdout = cfg.value(DA_CONFIG_KEY_LOG_OUTPUT_STDOUT).toBool();
+    if (maxSize <= 0) {
+        maxSize = 10 * 1024 * 1024;
+    }
+    if (maxFiles <= 0) {
+        maxFiles = 5;
+    }
+    switch (mode) {
+    case 1:  // daily
+        DA::DALogger::instance().setupDailyFile(logPath, maxFiles, outputStdout);
+        break;
+    case 2:  // console only
+        DA::DALogger::instance().setupConsole();
+        break;
+    default:  // rotating
+        DA::DALogger::instance().setupRotatingFile(logPath, maxSize, maxFiles, outputStdout);
+        break;
+    }
+    DA::DALogger::instance().setLevel(static_cast< DA::DALogLevel >(cfg.value(DA_CONFIG_KEY_LOG_LEVEL).toInt()));
+    DA::DALogger::instance().setQueueLevel(static_cast< DA::DALogLevel >(cfg.value(DA_CONFIG_KEY_LOG_QUEUE_LEVEL).toInt()));
 }
 
 /**
@@ -231,7 +292,14 @@ QString appPreposeDump()
     return QDir::toNativeSeparators(dumpFileDir + "/" + dumpfileName);
 }
 
-void initializePythonInterpreter()
+/**
+ * @brief 根据配置初始化 Python 解释器
+ *
+ * 解释器路径由 DAPyInterpreter::getPythonInterpreterPath() 解析（优先 python-config.json）。
+ * 初始化后追加用户配置的额外模块搜索路径到 sys.path。
+ * @param cfg 早期加载的应用配置
+ */
+void initializePythonInterpreter(const DA::DAAppConfig& cfg)
 {
 #if DA_ENABLE_PYTHON
     QString pythonHomePath;
@@ -243,5 +311,14 @@ void initializePythonInterpreter()
         daInfo << QObject::tr("Python home path is %1").arg(pythonHomePath);  // cn:Python主目录路径为%1
     }
     DA::DAPyInterpreter::initializePythonInterpreter(pythonHomePath);
+    // 追加用户配置的额外模块搜索路径
+    QStringList extraPaths = cfg.value(DA_CONFIG_KEY_PYTHON_EXTRA_PATHS).toStringList();
+    for (const QString& p : extraPaths) {
+        if (!p.trimmed().isEmpty()) {
+            DA::DAPyInterpreter::appendSysPath(p);
+        }
+    }
+#else
+    Q_UNUSED(cfg)
 #endif
 }

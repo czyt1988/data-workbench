@@ -44,7 +44,7 @@
 #include "DAChartWidget.h"
 #include "DAChartAxisSettingPanel.h"
 #include "DAAppChartManageWidget.h"
-#include "SettingPages/DASettingPageCommon.h"
+#include "SettingPages/DASettingPageGeneral.h"
 #include "DASettingContainerWidget.h"
 #include "DARecentFilesManager.h"
 #include "DAChartSettingWidget.h"

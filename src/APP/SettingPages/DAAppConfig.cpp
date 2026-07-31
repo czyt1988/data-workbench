@@ -5,23 +5,51 @@
 #include <QApplication>
 #include <QObject>
 #include "SARibbonBar.h"
+#include "SARibbonMainWindow.h"
 #include "AppMainWindow.h"
 #include "DAAppCore.h"
 #include "DAAppUI.h"
+#include "DAAppActions.h"
+#include "DARecentFilesManager.h"
 #include "DAMessageLogQueue.h"
+#include "DALogger.h"
 #include "DALogCategory.h"
 #include "DAAbstractSettingPage.h"
+#include "DADumpCapture.h"
 namespace DA
 {
 
 DAAppConfig::DAAppConfig()
 {
-    mVersion        = QVersionNumber(0, 0, 2);
+    mVersion        = QVersionNumber(0, 0, 3);
     mConfigFilePath = getAbsoluteConfigFilePath();
     // 先设置默认参数，这些默认参数后续如果配置文件中有会被替换掉
     insert(DA_CONFIG_KEY_RIBBON_STYLE, static_cast< int >(SARibbonBar::RibbonStyleCompactTwoRow));
     insert(DA_CONFIG_KEY_SHOW_LOG_NUM, 5000);             // 5000条日志
     insert(DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE, false);  // 程序在退出时是否保存ui的状态
+    // 通用/UI
+    insert(DA_CONFIG_KEY_LANGUAGE, QString());                        // 空=跟随系统
+    insert(DA_CONFIG_KEY_RIBBON_THEME, -1);                           // -1=不覆盖框架默认主题
+    insert(DA_CONFIG_KEY_APP_FONT_FAMILY, QString());                 // 空=系统默认字体
+    insert(DA_CONFIG_KEY_APP_FONT_POINT_SIZE, -1.0);                  // <=0=系统默认字号
+    // Python
+    insert(DA_CONFIG_KEY_PYTHON_INTERPRETER_PATH, QString());         // 空=自动检测
+    insert(DA_CONFIG_KEY_PYTHON_EXTRA_PATHS, QStringList());          // 额外 sys.path
+    // 日志
+    insert(DA_CONFIG_KEY_LOG_LEVEL, static_cast< int >(DA::DALogLevel::Trace));
+    insert(DA_CONFIG_KEY_LOG_QUEUE_LEVEL, static_cast< int >(DA::DALogLevel::Info));
+    insert(DA_CONFIG_KEY_LOG_OUTPUT_STDOUT, true);
+    insert(DA_CONFIG_KEY_LOG_ROTATION_MODE, 0);                       // 0=rotating
+    insert(DA_CONFIG_KEY_LOG_MAX_SIZE, 10 * 1024 * 1024);             // 10MB
+    insert(DA_CONFIG_KEY_LOG_MAX_FILES, 5);
+    // 工作流/数据/高级
+    insert(DA_CONFIG_KEY_WORKFLOW_TIMEOUT, -1.0);                     // <0=无限等待
+    insert(DA_CONFIG_KEY_RECENT_FILES_MAX, 10);
+    insert(DA_CONFIG_KEY_DUMP_RETENTION_DAYS, 7);
+    insert(DA_CONFIG_KEY_NODE_SCRIPT_PATHS, QStringList());
+    insert(DA_CONFIG_KEY_PLUGIN_EXTRA_PATHS, QStringList());
+    insert(DA_CONFIG_KEY_SHOW_SPLASH, true);
+    insert(DA_CONFIG_KEY_AUTOSAVE_INTERVAL, 0);                      // 0=禁用
 }
 
 DAAppConfig::~DAAppConfig()
@@ -173,6 +201,10 @@ QString DAAppConfig::getAbsoluteConfigFilePath()
 
 /**
  * @brief 应用配置
+ *
+ * 此函数应用运行时可生效的配置项。对于在 main.cpp 早期初始化的项
+ * （语言、字体、Python 解释器、日志轮转参数、启动画面等），此处不重新初始化，
+ * 它们通过 @ref loadEarlyAppConfig 在下次启动时早期读取生效。
  * @return
  */
 bool DAAppConfig::apply()
@@ -184,11 +216,45 @@ bool DAAppConfig::apply()
             static_cast< SARibbonBar::RibbonStyles >(value(DA_CONFIG_KEY_RIBBON_STYLE).toInt());
         bar->setRibbonStyle(ribbonStyle);
     }
+    // ribbon 主题（-1 表示不覆盖框架默认主题）
+    if (mMainWindow) {
+        int ribbonTheme = value(DA_CONFIG_KEY_RIBBON_THEME).toInt();
+        if (ribbonTheme >= 0) {
+            mMainWindow->setRibbonTheme(static_cast< SARibbonTheme >(ribbonTheme));
+        }
+    }
+    // 日志级别与 UI 队列级别
+    DA::DALogger::instance().setLevel(static_cast< DA::DALogLevel >(value(DA_CONFIG_KEY_LOG_LEVEL).toInt()));
+    DA::DALogger::instance().setQueueLevel(static_cast< DA::DALogLevel >(value(DA_CONFIG_KEY_LOG_QUEUE_LEVEL).toInt()));
+    // 日志显示条数
     bool isOK  = false;
     int logNum = value(DA_CONFIG_KEY_SHOW_LOG_NUM).toInt(&isOK);
     if (isOK && logNum > 10 && logNum < 999999) {
         DA::DAMessageLogQueue::instance().setCapacity(logNum);
     }
+    // 最近文件最大条目数
+    if (mUI) {
+        DAAppActions* actions = mUI->getAppActions();
+        if (actions && actions->recentFilesManager) {
+            int recentMax = value(DA_CONFIG_KEY_RECENT_FILES_MAX).toInt();
+            if (recentMax > 0) {
+                actions->recentFilesManager->setMaxEntries(recentMax);
+            }
+        }
+    }
+    // 崩溃转储保留天数清理（仅 Windows/MSVC 有效）
+#if defined(Q_OS_WIN) && defined(Q_CC_MSVC)
+    int dumpDays = value(DA_CONFIG_KEY_DUMP_RETENTION_DAYS).toInt();
+    if (dumpDays > 0) {
+        DA::DADumpCapture::cleanupOldDumps(dumpDays);
+    }
+#endif
+    // 自动保存间隔（0=禁用）
+    if (mMainWindow) {
+        int autosaveMin = value(DA_CONFIG_KEY_AUTOSAVE_INTERVAL).toInt();
+        mMainWindow->setupAutosaveTimer(autosaveMin);
+    }
+    // 退出时是否保存ui的状态
     bool isSaveUIState = value(DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE).toBool();
     if (mMainWindow) {
         mMainWindow->setSaveUIStateOnClose(isSaveUIState);

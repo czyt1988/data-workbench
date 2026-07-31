@@ -62,7 +62,7 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+75"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+76"/>
         <source>Initializing core interface...</source>
         <translation>正在初始化核心接口...</translation>
     </message>
@@ -92,7 +92,7 @@
         <translation>语言变更</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+23"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
@@ -146,6 +146,16 @@
         <location line="+20"/>
         <source>cannot read UI state file %1: %2</source>
         <translation>无法读取界面状态文件%1，原因：%2</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>UI state has been reset, the default layout will be applied on next launch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>Project auto-saved</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6657,7 +6667,7 @@ Config</source>
 <context>
     <name>DA::DARecentFilesManager</name>
     <message>
-        <location filename="../DAGui/DARecentFilesManager.cpp" line="+119"/>
+        <location filename="../DAGui/DARecentFilesManager.cpp" line="+152"/>
         <source>(empty)</source>
         <translation>空</translation>
     </message>
@@ -6691,26 +6701,240 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DASettingPageCommon</name>
+    <name>DA::DASettingPageAdvanced</name>
     <message>
-        <location filename="../APP/SettingPages/DASettingPageCommon.cpp" line="+68"/>
-        <source>Common</source>
-        <translation>通用</translation>
+        <location filename="../APP/SettingPages/DASettingPageAdvanced.cpp" line="+20"/>
+        <source> s</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+98"/>
+        <location line="+1"/>
+        <source>Unlimited</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source> day</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source> min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+62"/>
+        <source>Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+68"/>
+        <source>Select plugin search path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Select node script search path</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASettingPageGeneral</name>
+    <message>
+        <location filename="../APP/SettingPages/DASettingPageGeneral.cpp" line="+78"/>
+        <source>Windows 7</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2013</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2016 Blue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2016 Green</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2016 Dark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2021 Blue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2021 Green</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2021 Dark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Dark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Dark 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>System</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+39"/>
+        <source>General</source>
+        <translation type="unfinished">通用</translation>
+    </message>
+    <message>
+        <location line="+130"/>
         <source>Question</source>
-        <translation>疑问</translation>
+        <translation type="unfinished">疑问</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>This operation will delete the file that records the window state information. After deleting the file, if the window state information recording is not enabled, the window will open in the default layout</source>
-        <translation>此操作将删除记录窗口位置信息的文件，删除文件后，如果不开启窗口位置信息记录，窗口将以默认布局打开</translation>
+        <translation type="unfinished">此操作将删除记录窗口位置信息的文件，删除文件后，如果不开启窗口位置信息记录，窗口将以默认布局打开</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Successfully removed window state record file</source>
-        <translation>成功删除窗口状态记录文件</translation>
+        <translation type="unfinished">成功删除窗口状态记录文件</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASettingPageLog</name>
+    <message>
+        <location filename="../APP/SettingPages/DASettingPageLog.cpp" line="+21"/>
+        <source>Rotating</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Daily</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Console only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source> MB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+41"/>
+        <source>Trace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Debug</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Info</source>
+        <translation type="unfinished">信息</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Warning</source>
+        <translation type="unfinished">警告</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Error</source>
+        <translation type="unfinished">错误</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Critical</source>
+        <translation type="unfinished">严重</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Log</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASettingPagePython</name>
+    <message>
+        <location filename="../APP/SettingPages/DASettingPagePython.cpp" line="+61"/>
+        <source>Cannot write python config file: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>Python</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+44"/>
+        <source>Select Python Interpreter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Information</source>
+        <translation type="unfinished">信息</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>No Python interpreter found in system PATH</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Please specify a Python interpreter path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>File does not exist: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Failed to run: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Select module search path</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9169,61 +9393,260 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DASettingPageCommon</name>
+    <name>DASettingPageAdvanced</name>
     <message>
-        <location filename="../APP/SettingPages/DASettingPageCommon.ui" line="+14"/>
-        <source>Common Setting</source>
-        <translation>通用设置</translation>
+        <location filename="../APP/SettingPages/DASettingPageAdvanced.ui" line="+14"/>
+        <source>Advanced Setting</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
-        <source>UI</source>
-        <translation>界面</translation>
+        <source>Behavior</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Workflow execution timeout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Max recent files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Crash dump retention days</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Auto-save interval</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Show splash screen on startup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Plugin search path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Browse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Node script search paths</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Add</source>
+        <translation type="unfinished">添加</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Remove</source>
+        <translation type="unfinished">删除</translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Note: plugin path, node script paths and splash changes take effect after restarting the program</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DASettingPageGeneral</name>
+    <message>
+        <location filename="../APP/SettingPages/DASettingPageGeneral.ui" line="+14"/>
+        <source>General Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Appearance</source>
+        <translation type="unfinished">外观</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Standard Mode</source>
-        <translation>标准模式</translation>
+        <translation type="unfinished">标准模式</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Standard Mode With 2 Row</source>
-        <translation>2行标准模式</translation>
+        <translation type="unfinished">2行标准模式</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Compact Mode</source>
-        <translation>紧凑模式</translation>
+        <translation type="unfinished">紧凑模式</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Minimalist mode</source>
-        <translation>最小模式</translation>
+        <translation type="unfinished">最小模式</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Ribbon theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Application font</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Size</source>
+        <translation type="unfinished">尺寸</translation>
     </message>
     <message>
         <location line="+25"/>
         <source>Is the geometry and status of the program interface recorded</source>
-        <translation>是否在程序退出的时候记录程序的界面布局和位置</translation>
+        <translation type="unfinished">是否在程序退出的时候记录程序的界面布局和位置</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Clear the saved window state</source>
-        <translation>删除窗口状态记录文件</translation>
+        <translation type="unfinished">删除窗口状态记录文件</translation>
     </message>
     <message>
         <location line="+10"/>
-        <source>Log</source>
-        <translation>日志</translation>
+        <source>Language</source>
+        <translation type="unfinished">语言</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Interface language</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>Note: language and font changes take effect after restarting the program</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DASettingPageLog</name>
+    <message>
+        <location filename="../APP/SettingPages/DASettingPageLog.ui" line="+14"/>
+        <source>Log Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Log Level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>File log level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>UI queue level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Output log to stdout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Log File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Rotation mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Max size per file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Max files to keep</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>UI Display</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Display number of logs</source>
-        <translation>显示的日志条数</translation>
+        <translation type="unfinished">显示的日志条数</translation>
     </message>
     <message>
-        <location line="+26"/>
-        <source>Language</source>
-        <translation>语言</translation>
+        <location line="+13"/>
+        <source>Note: file level, stdout and rotation changes take effect after restarting the program</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DASettingPagePython</name>
+    <message>
+        <location filename="../APP/SettingPages/DASettingPagePython.ui" line="+14"/>
+        <source>Python Setting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Python Interpreter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Interpreter path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Browse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Auto Detect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Test</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Extra module search paths (sys.path)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Add</source>
+        <translation type="unfinished">添加</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Remove</source>
+        <translation type="unfinished">删除</translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Note: interpreter and module path changes take effect after restarting the program</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10235,7 +10658,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../APP/main.cpp" line="+104"/>
+        <location filename="../APP/main.cpp" line="+119"/>
         <source>Initializing...</source>
         <translation>正在初始化...</translation>
     </message>
@@ -10270,7 +10693,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>启动完成</translation>
     </message>
     <message>
-        <location line="+91"/>
+        <location line="+144"/>
         <source>Python interpreter path is %1</source>
         <translation>Python解释器路径为%1</translation>
     </message>
@@ -10336,7 +10759,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>改变表格样式</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+153"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+155"/>
         <source>save workflow extern info cost: %1 ms</source>
         <translation>保存工作流扩展信息耗时: %1 ms</translation>
     </message>
@@ -10567,7 +10990,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>未知异常：在第%1个位置获取到空的figure窗口</translation>
     </message>
     <message>
-        <location line="+919"/>
+        <location line="+963"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double</source>
         <translation>标签%3下的属性%1=%2无法转换为double</translation>
     </message>
@@ -10958,7 +11381,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>十字线标记</translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAChartUtil.cpp" line="+88"/>
+        <location filename="../DAFigure/DAChartUtil.cpp" line="+47"/>
         <source>unknown chart</source>
         <translation>未知绘图</translation>
     </message>
@@ -11245,7 +11668,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>新项目</translation>
     </message>
     <message>
-        <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+50"/>
+        <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+78"/>
         <location line="+37"/>
         <source>Cannot open config file &quot;%1&quot;: %2</source>
         <translation>无法打开配置文件\&quot;%1\&quot;，原因是%2</translation>
@@ -11324,7 +11747,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>main</name>
     <message>
-        <location filename="../APP/main.cpp" line="-76"/>
+        <location filename="../APP/main.cpp" line="-129"/>
         <source>version:%1,compile datetime:%2,enable python:%3</source>
         <translation>版本:%1,编译时间:%2,启用 Python:%3</translation>
     </message>

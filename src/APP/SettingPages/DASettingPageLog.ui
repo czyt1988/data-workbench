@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DASettingPageLog</class>
+ <widget class="QWidget" name="DASettingPageLog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>640</width>
+    <height>560</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Log Setting</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayoutMain">
+   <item>
+    <widget class="QGroupBox" name="groupBoxLevel">
+     <property name="title">
+      <string>Log Level</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutLevel">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelLogLevel">
+        <property name="text">
+         <string>File log level</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="comboBoxLogLevel"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelQueueLevel">
+        <property name="text">
+         <string>UI queue level</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="comboBoxQueueLevel"/>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QCheckBox" name="checkBoxOutputStdout">
+        <property name="text">
+         <string>Output log to stdout</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxFile">
+     <property name="title">
+      <string>Log File</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutFile">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelRotationMode">
+        <property name="text">
+         <string>Rotation mode</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="comboBoxRotationMode"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelMaxSize">
+        <property name="text">
+         <string>Max size per file</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="spinBoxMaxSize"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labelMaxFiles">
+        <property name="text">
+         <string>Max files to keep</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="spinBoxMaxFiles"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxDisplay">
+     <property name="title">
+      <string>UI Display</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutDisplay">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelDisplayLogsNum">
+        <property name="text">
+         <string>Display number of logs</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="spinBoxDisplayLogsNum"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelRestartHint">
+     <property name="text">
+      <string>Note: file level, stdout and rotation changes take effect after restarting the program</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

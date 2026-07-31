@@ -47,10 +47,12 @@
 #include "qwt_plot_canvas.h"
 #include "qwt_scale_draw.h"
 #include "qwt_date_scale_draw.h"
+#include "qwt_text_scale_draw.h"
 #include "qwt_date_scale_engine.h"
 #include "qwt_plot_curve.h"
 #include "qwt_plot_layout.h"
 #include "qwt_scale_widget.h"
+#include "qwt_scale_div.h"
 #include "qwt_plot_series_data_picker.h"
 namespace DA
 {
@@ -2327,6 +2329,18 @@ DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, cons
         datescaleDrawEle.appendChild(dateformatEle);
         // 把date独有的添加
         scaleDrawEle.appendChild(datescaleDrawEle);
+    } else if (const QwtTextScaleDraw* textScaleDraw = dynamic_cast< const QwtTextScaleDraw* >(scaleDraw)) {
+        // 字符串类别坐标轴：保存 value->label 映射，刻度位置即映射的 keys
+        scaleDrawEle.setAttribute(QStringLiteral("type"), QStringLiteral("category"));
+        QDomElement categoryScaleEle = doc->createElement(QStringLiteral("categoryscale"));
+        const QMap< double, QString > labelMap = textScaleDraw->labelMap();
+        for (auto it = labelMap.constBegin(); it != labelMap.constEnd(); ++it) {
+            QDomElement labelEle = doc->createElement(QStringLiteral("label"));
+            labelEle.setAttribute(QStringLiteral("pos"), it.key());
+            labelEle.setAttribute(QStringLiteral("text"), it.value());
+            categoryScaleEle.appendChild(labelEle);
+        }
+        scaleDrawEle.appendChild(categoryScaleEle);
     } else {
         scaleDrawEle.setAttribute(QStringLiteral("type"), QStringLiteral("normal"));
     }
@@ -2408,6 +2422,28 @@ bool DAXmlHelper::loadQwtPlotAxisElement(DAChartWidget* chart, const QDomElement
                     safeSetDateformat(QStringLiteral("year"));
                 }
             }
+        } else if (scaleDrawEle.attribute(QStringLiteral("type")).toLower() == QStringLiteral("category")) {
+            // 字符串类别坐标轴：还原 value->label 映射
+            auto* textScaleDraw = dynamic_cast< QwtTextScaleDraw* >(scaleDraw);
+            if (!textScaleDraw) {
+                textScaleDraw = new QwtTextScaleDraw();
+                chart->setAxisScaleDraw(axisID, textScaleDraw);
+                scaleDraw = textScaleDraw;
+            }
+            QMap< double, QString > labelMap;
+            QDomElement categoryScaleEle = scaleDrawEle.firstChildElement(QStringLiteral("categoryscale"));
+            if (!categoryScaleEle.isNull()) {
+                QDomElement labelEle = categoryScaleEle.firstChildElement(QStringLiteral("label"));
+                while (!labelEle.isNull()) {
+                    bool ok = false;
+                    double pos = labelEle.attribute(QStringLiteral("pos")).toDouble(&ok);
+                    if (ok) {
+                        labelMap.insert(pos, labelEle.attribute(QStringLiteral("text")));
+                    }
+                    labelEle = labelEle.nextSiblingElement(QStringLiteral("label"));
+                }
+            }
+            textScaleDraw->setLabelMap(labelMap);
         } else {
             // 进入这里说明坐标轴非datetime
             //  说明没有scaleDraw
@@ -2470,6 +2506,16 @@ bool DAXmlHelper::loadQwtPlotAxisElement(DAChartWidget* chart, const QDomElement
     double maxValue = qwtplotTag->attribute(QStringLiteral("max")).toDouble(&isok2);
     if (isok0 && isok1 && isok2) {
         chart->setAxisScale(axisID, minValue, maxValue, stepSize);
+    }
+    // 字符串类别坐标轴：setAxisScale 会用引擎重算刻度，需用显式 scaleDiv 覆盖，
+    // 主刻度取 QwtTextScaleDraw 的 labelMap keys，bounds 用轴保存的 min/max
+    if (auto* textScaleDraw = dynamic_cast< QwtTextScaleDraw* >(chart->axisScaleDraw(axisID))) {
+        QList< double > majorTicks = textScaleDraw->labelMap().keys();
+        if (!majorTicks.isEmpty()) {
+            QwtScaleDiv div(minValue, maxValue, QList< double >(), QList< double >(), majorTicks);
+            chart->setAxisAutoScale(axisID, false);
+            chart->setAxisScaleDiv(axisID, div);
+        }
     }
     // font
     QDomElement fontEle = qwtplotTag->firstChildElement(QStringLiteral("font"));

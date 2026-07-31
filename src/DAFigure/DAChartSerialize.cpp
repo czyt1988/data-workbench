@@ -5,11 +5,13 @@
 #include <QBuffer>
 #include <QDebug>
 #include <QFontInfo>
+#include <QMap>
 // qwt
 #include "qwt_plot.h"
 #include "qwt_symbol.h"
 #include "qwt_plot_canvas.h"
 #include "qwt_scale_widget.h"
+#include "qwt_text_scale_draw.h"
 #include "qwt_colormap.h"
 #include "qwt_column_symbol.h"
 #include "qwt_plot_intervalcurve.h"
@@ -37,6 +39,14 @@
 #include "qwt_plot_shapeitem.h"
 // DA
 #include "DADataProbeMarker.h"
+
+namespace {
+/// QwtScaleWidget 序列化块版本号
+/// v1: 仅 alignment/length/labelAlignment/labelRotation 等基类几何属性
+/// v2: 在 isSD 后增加 scaleDrawType(0=normal,1=QwtTextScaleDraw)，
+///     若为 QwtTextScaleDraw 额外持久化 labelMap 与显式 scaleDiv 的 bounds
+constexpr int gcScaleWidgetBlockVersion = 2;
+}  // namespace
 
 #ifndef INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR
 #define INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(RttiValue, ClassName)                                                  \
@@ -191,6 +201,12 @@ void serialize_in_scale_widge(QDataStream& in, QwtPlot* chart, int axis)
             return;
         }
         chart->enableAxis(axis, enable);
+        // 若安装的是 QwtTextScaleDraw，把其暂存的显式 scaleDiv 同步到 plot 并关闭自动缩放，
+        // 避免 autoRefresh 用引擎重算覆盖类别刻度位置
+        if (auto* td = dynamic_cast< QwtTextScaleDraw* >(chart->axisScaleDraw(axis))) {
+            chart->setAxisAutoScale(axis, false);
+            chart->setAxisScaleDiv(axis, td->scaleDiv());
+        }
     }
 }
 
@@ -1370,7 +1386,7 @@ QDataStream& operator>>(QDataStream& in, QwtPlotIntervalCurve* item)
 ///
 QDataStream& operator<<(QDataStream& out, const QwtScaleWidget* w)
 {
-    out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
+    out << gcScaleWidgetBlockVersion << DA::gc_dachart_magic_mark;
     unsigned int c0 = 0x82fa34;
     out << c0;
     int minBorderDistStart, minBorderDistEnd;
@@ -1381,8 +1397,23 @@ QDataStream& operator<<(QDataStream& out, const QwtScaleWidget* w)
     // QwtScaleDraw
     const QwtScaleDraw* sd = w->scaleDraw();
     bool isSD              = (sd != nullptr);
+    out << isSD;
     if (isSD) {
-        out << isSD << sd;
+        // v2 起记录 ScaleDraw 子类类型，便于反序列化时还原正确子类
+        const QwtTextScaleDraw* textDraw = dynamic_cast< const QwtTextScaleDraw* >(sd);
+        int scaleDrawType                = (textDraw != nullptr) ? 1 : 0;  // 0=normal, 1=QwtTextScaleDraw
+        out << scaleDrawType;
+        out << sd;  // 基类几何属性(alignment/length/labelAlignment/labelRotation)
+        if (textDraw != nullptr) {
+            // 持久化 labelMap 及显式 scaleDiv 的 bounds，主刻度即 labelMap 的 keys
+            const QMap< double, QString > labelMap = textDraw->labelMap();
+            out << static_cast< quint32 >(labelMap.size());
+            for (auto it = labelMap.constBegin(); it != labelMap.constEnd(); ++it) {
+                out << it.key() << it.value();
+            }
+            const QwtScaleDiv& div = sd->scaleDiv();
+            out << div.lowerBound() << div.upperBound();
+        }
     }
     return out;
 }
@@ -1433,12 +1464,45 @@ QDataStream& operator>>(QDataStream& in, QwtScaleWidget* w)
     bool isSD;
     in >> isSD;
     if (isSD) {
-        QwtScaleDraw* sd = w->scaleDraw();
-        if (nullptr == sd) {
-            w->setScaleDraw(new QwtScaleDraw());
-            sd = w->scaleDraw();
+        int scaleDrawType = 0;
+        if (version >= gcScaleWidgetBlockVersion) {
+            in >> scaleDrawType;  // v2 起存在子类类型标记
         }
-        in >> sd;
+        QwtScaleDraw* sd = w->scaleDraw();
+        if (scaleDrawType == 1) {
+            // QwtTextScaleDraw：确保安装正确子类再读基类属性
+            if (dynamic_cast< QwtTextScaleDraw* >(sd) == nullptr) {
+                sd = new QwtTextScaleDraw();
+                w->setScaleDraw(sd);
+            }
+            in >> sd;
+            // 读 labelMap + 显式 scaleDiv bounds
+            quint32 cnt;
+            in >> cnt;
+            QMap< double, QString > labelMap;
+            for (quint32 i = 0; i < cnt; ++i) {
+                double key;
+                QString val;
+                in >> key >> val;
+                labelMap.insert(key, val);
+            }
+            double lower, upper;
+            in >> lower >> upper;
+            auto* textDraw = static_cast< QwtTextScaleDraw* >(sd);
+            textDraw->setLabelMap(labelMap);
+            // 在 draw 上暂存显式 scaleDiv（主刻度即 labelMap 的 keys），
+            // serialize_in_scale_widge 会通过 chart->setAxisScaleDiv 同步到 plot
+            QList< double > majorTicks = labelMap.keys();
+            QwtScaleDiv div(lower, upper, QList< double >(), QList< double >(), majorTicks);
+            sd->setScaleDiv(div);
+        } else {
+            // 普通坐标轴（v1 旧文件无 scaleDrawType，直接读基类属性）
+            if (nullptr == sd) {
+                w->setScaleDraw(new QwtScaleDraw());
+                sd = w->scaleDraw();
+            }
+            in >> sd;
+        }
     }
     return in;
 }

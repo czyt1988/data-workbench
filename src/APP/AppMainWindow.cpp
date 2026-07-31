@@ -12,6 +12,7 @@
 #include <QBuffer>
 #include <QSplashScreen>
 #include <QApplication>
+#include <QTimer>
 //
 #include "SARibbonBar.h"
 // 插件相关
@@ -143,6 +144,10 @@ void AppMainWindow::changeEvent(QEvent* e)
  */
 void AppMainWindow::closeEvent(QCloseEvent* e)
 {
+    // 退出时持久化应用配置（保证非设置对话框触发的改动也能保存）
+    if (mConfig) {
+        mConfig->saveConfig();
+    }
     DAAppCloseAction closeAction = DAAppCloseAction::CloseDirectly;
     if (mController->isDirty()) {
         // 是否保存
@@ -406,7 +411,45 @@ bool AppMainWindow::restoreUIState()
 
 void AppMainWindow::resetUIState()
 {
-    // TODO:重置ui
+    // 删除保存的窗口状态文件，下次启动将使用构造时的默认布局
+    if (isHaveStateSettingFile()) {
+        removeStateSettingFile();
+    }
+    // 重置当前窗口几何到默认尺寸
+    showNormal();
+    resize(1024, 768);
+    daInfo << tr("UI state has been reset, the default layout will be applied on next launch");  // cn:界面状态已重置，默认布局将在下次启动时应用
+}
+
+/**
+ * @brief 设置自动保存定时器
+ * @param minutes 间隔分钟数，<=0 表示禁用
+ */
+void AppMainWindow::setupAutosaveTimer(int minutes)
+{
+    if (minutes <= 0) {
+        if (mAutosaveTimer) {
+            mAutosaveTimer->stop();
+        }
+        return;
+    }
+    if (!mAutosaveTimer) {
+        mAutosaveTimer = new QTimer(this);
+        connect(mAutosaveTimer, &QTimer::timeout, this, &AppMainWindow::onAutosaveTimeout);
+    }
+    mAutosaveTimer->start(minutes * 60 * 1000);
+}
+
+/**
+ * @brief 自动保存定时触发
+ */
+void AppMainWindow::onAutosaveTimeout()
+{
+    if (mController && mController->isDirty()) {
+        if (mController->save()) {
+            daInfo << tr("Project auto-saved");  // cn:工程已自动保存
+        }
+    }
 }
 
 }  // end DA namespace

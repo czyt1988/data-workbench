@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DASettingPagePython</class>
+ <widget class="QWidget" name="DASettingPagePython">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>640</width>
+    <height>520</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Python Setting</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayoutMain">
+   <item>
+    <widget class="QGroupBox" name="groupBoxInterpreter">
+     <property name="title">
+      <string>Python Interpreter</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayoutInterpreter">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayoutPath">
+        <item>
+         <widget class="QLabel" name="labelInterpreterPath">
+          <property name="text">
+           <string>Interpreter path</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditPythonPath"/>
+        </item>
+        <item>
+         <widget class="QToolButton" name="toolButtonBrowse">
+          <property name="text">
+           <string>Browse</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="toolButtonAutoDetect">
+          <property name="text">
+           <string>Auto Detect</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="toolButtonTest">
+          <property name="text">
+           <string>Test</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QLabel" name="labelTestResult">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxExtraPaths">
+     <property name="title">
+      <string>Extra module search paths (sys.path)</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayoutExtraPaths">
+      <item>
+       <widget class="QListWidget" name="listWidgetExtraPaths"/>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayoutPaths">
+        <item>
+         <widget class="QToolButton" name="toolButtonAddPath">
+          <property name="text">
+           <string>Add</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="toolButtonRemovePath">
+          <property name="text">
+           <string>Remove</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacerPaths">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelRestartHint">
+     <property name="text">
+      <string>Note: interpreter and module path changes take effect after restarting the program</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

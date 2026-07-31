@@ -105,6 +105,39 @@ void DARecentFilesManager::rescan()
 }
 
 /**
+ * @brief 设置最大条目数
+ * @param max 最大条目数，小于 1 会被强制为 1
+ *
+ * 设置后会立即裁剪超出部分，并写回配置、刷新菜单。
+ */
+void DARecentFilesManager::setMaxEntries(int max)
+{
+    if (max < 1) {
+        max = 1;
+    }
+    if (m_max == max) {
+        return;
+    }
+    m_max = max;
+    while (m_files.size() > m_max) {
+        m_files.removeLast();
+    }
+    writeSettings();
+    if (m_recentMenu) {
+        rebuildMenu();
+    }
+}
+
+/**
+ * @brief 获取最大条目数
+ * @return
+ */
+int DARecentFilesManager::getMaxEntries() const
+{
+    return m_max;
+}
+
+/**
  * @brief 根据当前 m_files 重建菜单
  *
  * 不存在文件对应的 QAction 会被设置为带删除线字体。

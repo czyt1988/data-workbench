@@ -11,6 +11,7 @@ class AppMainWindow;
 QT_END_NAMESPACE
 
 class QCloseEvent;
+class QTimer;
 
 namespace DA
 {
@@ -21,7 +22,6 @@ class DAAppDockingArea;
 class DAAppController;
 class DAAppPluginManager;
 class DAAppConfig;
-class DAConfigsManager;
 class DAAppSettingDialog;
 
 class AppMainWindow : public SARibbonMainWindow
@@ -50,6 +50,8 @@ public:
     // 设置是否在退出时保存ui的状态
     bool isSaveUIStateOnClose() const;
     void setSaveUIStateOnClose(bool v);
+    // 设置自动保存定时器（分钟），<=0 表示禁用
+    void setupAutosaveTimer(int minutes);
     // 获取ui state 配置文件路径
     static QString getUIStateSettingFilePath();
     // 判断是否存在状态设置文件
@@ -85,6 +87,8 @@ private Q_SLOTS:
     void onWorkflowFinished(bool success);
     // 配置文件需要保存
     void onConfigNeedSave();
+    // 自动保存定时触发
+    void onAutosaveTimeout();
 
 private:
     DAAppCore* mCore { nullptr };
@@ -95,6 +99,7 @@ private:
     std::unique_ptr< DAAppConfig > mConfig;
     DAAppSettingDialog* mSettingDialog { nullptr };  ///< 设置窗口,避免过多的中间传递
     bool mIsSaveUIStateOnClose { false };            ///< 是否在退出时记录程序的状态
+    QTimer* mAutosaveTimer { nullptr };               ///< 自动保存定时器
 };
 }  // namespace DA
 #endif  // METHODMAINWINDOW_H

@@ -1,46 +1,55 @@
-﻿#ifndef DASETTINGPAGECOMMON_H
-#define DASETTINGPAGECOMMON_H
+#ifndef DASETTINGPAGEGENERAL_H
+#define DASETTINGPAGEGENERAL_H
 #include "DAAbstractSettingPage.h"
 #include <QWidget>
 #include "DAGuiAPI.h"
 #include <QButtonGroup>
+#include <QFont>
 #include "SARibbonBar.h"
 namespace Ui
 {
-class DASettingPageCommon;
+class DASettingPageGeneral;
 }
 
 namespace DA
 {
 class DAAppConfig;
-class AppMainWindow;
 
-class DASettingPageCommon : public DAAbstractSettingPage
+/**
+ * @brief 通用设置页：语言、Ribbon 样式/主题、应用字体、退出保存UI状态
+ */
+class DASettingPageGeneral : public DAAbstractSettingPage
 {
     Q_OBJECT
 
 public:
-    explicit DASettingPageCommon(QWidget* parent = nullptr);
-    ~DASettingPageCommon();
+    explicit DASettingPageGeneral(QWidget* parent = nullptr);
+    ~DASettingPageGeneral();
     // 应用设置
     virtual void apply() override;
-    // 设置页的标题，此函数影响DASettingWidget的listwidget的显示
+    // 设置页的标题
     virtual QString getSettingPageTitle() const override;
-    // 设置页的图标,此函数影响DASettingWidget的listwidget的显示
+    // 设置页的图标
     virtual QIcon getSettingPageIcon() const override;
     // 设置配置
     bool setAppConfig(DAAppConfig* p);
 private slots:
     void onButtonGroupRibbonStyleClicked(int id);
-    // 日志数量改变
-    void onSpinBoxDisplayLogsNumValueChanged(int v);
-    // 程序在退出时是否保存ui的状态
-    void onCheckBoxSaveUIStateStateChanged(int state);
-    // 清除状态按钮点击
+    void onComboBoxRibbonThemeCurrentIndexChanged(int index);
+    void onComboBoxLanguageCurrentIndexChanged(int index);
+    void onFontComboBoxAppFontCurrentFontChanged(const QFont& font);
+    void onSpinBoxFontSizeValueChanged(int v);
+    void onCheckBoxSaveUIStateChanged(int state);
     void onToolButtonClearSaveStateClicked();
 
 private:
-    Ui::DASettingPageCommon* ui;
+    // 填充 Ribbon 主题下拉
+    void fillRibbonThemeCombo();
+    // 填充语言下拉
+    void fillLanguageCombo();
+
+private:
+    Ui::DASettingPageGeneral* ui;
     DAAppConfig* mAppConfig { nullptr };
     QPixmap mPixmapRibbonStandard;
     QPixmap mPixmapRibbonStandard2Row;
@@ -51,4 +60,4 @@ private:
     SARibbonBar::RibbonStyles mNewRibbonStyle { SARibbonBar::RibbonStyleCompactTwoRow };
 };
 }
-#endif  // DASETTINGPAGECOMMON_H
+#endif  // DASETTINGPAGEGENERAL_H

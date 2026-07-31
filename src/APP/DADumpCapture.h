@@ -161,12 +161,12 @@ public:
 // 定义静态成员变量
 #ifdef Q_OS_WIN
 #ifdef Q_CC_MSVC
-FpPreposeDump DADumpCapture::s_fp_prepose_dump = nullptr;
-FpPostDump DADumpCapture::s_fp_post_dump       = nullptr;
-bool DADumpCapture::s_initialized              = false;
+inline FpPreposeDump DADumpCapture::s_fp_prepose_dump = nullptr;
+inline FpPostDump DADumpCapture::s_fp_post_dump       = nullptr;
+inline bool DADumpCapture::s_initialized              = false;
 
 // 程式异常捕获
-LONG applicationCrashHandler(_EXCEPTION_POINTERS* pException)
+inline LONG applicationCrashHandler(_EXCEPTION_POINTERS* pException)
 {
     QString createPath;
     bool dumpSuccess = false;
