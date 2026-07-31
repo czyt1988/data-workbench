@@ -424,94 +424,21 @@ void DAStatsPlotCoordinator::plotBoxplot(const QJsonObject& params,
                   && !result[hueKey].is_none()
                   && pybind11::isinstance<pybind11::list>(result[hueKey]);
 
-    if (!hasHue) {
-        // === No hue: one box per column, single box chart.
-        //     x-axis shows the column name at each box position. ===
-        DA::DABoxPlotData boxData;
-        QVector<QPointF> allOutliers;
-        QVector<double> axisPositions;
-        QStringList axisLabels;
-        double posMin = 0.0, posMax = 0.0;
-        bool firstPos = true;
-
-        for (auto sample : samplesList) {
-            if (!pybind11::isinstance<pybind11::dict>(sample)) continue;
-            auto sd = pybind11::cast<pybind11::dict>(sample);
-
-            double pos = sd["position"].cast<double>();
-            if (firstPos) {
-                posMin = pos;
-                posMax = pos;
-                firstPos = false;
-            } else {
-                posMin = qMin(posMin, pos);
-                posMax = qMax(posMax, pos);
-            }
-            boxData.positions.append(pos);
-            boxData.q1.append(sd["q1"].cast<double>());
-            boxData.median.append(sd["median"].cast<double>());
-            boxData.q3.append(sd["q3"].cast<double>());
-            boxData.whiskerLower.append(sd["whisker_lower"].cast<double>());
-            boxData.whiskerUpper.append(sd["whisker_upper"].cast<double>());
-
-            // x-axis label = column name at this box position
-            axisPositions.append(pos);
-            axisLabels.append(sd["column"].cast<QString>());
-
-            // outliers — collected for separate scatter rendering
-            QVector<QPointF> boxOutliers = extractBoxOutliers(sd, pos);
-            boxData.outliers.append(boxOutliers);
-            allOutliers.append(boxOutliers);
-        }
-
-        if (boxData.positions.isEmpty()) return;
-
-        // Clear outliers from boxData so renderer doesn't duplicate; we render them as scatter
-        for (int i = 0; i < boxData.outliers.size(); ++i) {
-            boxData.outliers[i].clear();
-        }
-
-        QVariantMap boxStyle;
-        boxStyle["title"] = QStringLiteral("Boxplot");
-        renderer.renderBoxChart(boxData, boxStyle);
-
-        if (!allOutliers.isEmpty()) {
-            QVariantMap outlierStyle;
-            outlierStyle["title"] = QStringLiteral("Outliers");
-            renderer.renderScatter(allOutliers, outlierStyle);
-        }
-
-        // x-axis = column names at each box position; data range covers all box positions
-        renderer.setXBottomCategoryScale(axisPositions, axisLabels, posMin, posMax);
-        return;
-    }
-
-    // === Hue grouping: one box chart per hue category (seaborn-style).
-    //     x-axis shows the column name centered under each column's box cluster. ===
-    QStringList hueCats = dictToStringList(result, "hue_categories");
-    if (hueCats.isEmpty()) return;
-
-    QHash< QString, int > hueIndex;
-    for (int i = 0; i < hueCats.size(); ++i) {
-        hueIndex.insert(hueCats[i], i);
-    }
-
-    QVector< DA::DABoxPlotData > perHueData(hueCats.size());
-    QVector< QVector< QPointF > > perHueOutliers(hueCats.size());
-
-    // column name → list of box positions (for computing each column's cluster center)
-    QStringList columnOrder;
-    QHash< QString, QVector< double > > columnPositions;
+    // One box chart holding all samples (no per-hue splitting / coloring).
+    // - 无 hue：每个箱对应一个数据列，x 轴标注列名。
+    // - 有 hue：hue 列作为 group-by，每个箱对应一个 hue 类别（如 男/女），
+    //   x 轴标注 hue 类别名。箱体位置由 Python 的 _compute_grouped 决定
+    //   （单列+hue 时即为 0,1,...,N-1）。
+    DA::DABoxPlotData boxData;
+    QVector<QPointF> allOutliers;
+    QVector<double> axisPositions;
+    QStringList axisLabels;
     double posMin = 0.0, posMax = 0.0;
     bool firstPos = true;
 
     for (auto sample : samplesList) {
         if (!pybind11::isinstance<pybind11::dict>(sample)) continue;
         auto sd = pybind11::cast<pybind11::dict>(sample);
-
-        QString hueName = sd["hue"].cast<QString>();
-        int idx = hueIndex.value(hueName, -1);
-        if (idx < 0) continue;
 
         double pos = sd["position"].cast<double>();
         if (firstPos) {
@@ -522,69 +449,43 @@ void DAStatsPlotCoordinator::plotBoxplot(const QJsonObject& params,
             posMin = qMin(posMin, pos);
             posMax = qMax(posMax, pos);
         }
-        auto& bd = perHueData[idx];
-        bd.positions.append(pos);
-        bd.q1.append(sd["q1"].cast<double>());
-        bd.median.append(sd["median"].cast<double>());
-        bd.q3.append(sd["q3"].cast<double>());
-        bd.whiskerLower.append(sd["whisker_lower"].cast<double>());
-        bd.whiskerUpper.append(sd["whisker_upper"].cast<double>());
+        boxData.positions.append(pos);
+        boxData.q1.append(sd["q1"].cast<double>());
+        boxData.median.append(sd["median"].cast<double>());
+        boxData.q3.append(sd["q3"].cast<double>());
+        boxData.whiskerLower.append(sd["whisker_lower"].cast<double>());
+        boxData.whiskerUpper.append(sd["whisker_upper"].cast<double>());
 
-        // record column → position for axis center computation (preserve first-seen order)
-        QString colName = sd["column"].cast<QString>();
-        if (!columnPositions.contains(colName)) {
-            columnOrder.append(colName);
-        }
-        columnPositions[colName].append(pos);
+        // x 轴标签：有 hue 时标注 hue 类别名，否则标注列名
+        axisPositions.append(pos);
+        axisLabels.append(hasHue ? sd["hue"].cast<QString>()
+                                 : sd["column"].cast<QString>());
 
+        // outliers — collected for separate scatter rendering
         QVector<QPointF> boxOutliers = extractBoxOutliers(sd, pos);
-        bd.outliers.append(boxOutliers);
-        perHueOutliers[idx].append(boxOutliers);
+        boxData.outliers.append(boxOutliers);
+        allOutliers.append(boxOutliers);
     }
 
-    // Render one box chart per hue category with distinct color + legend title
-    for (int i = 0; i < hueCats.size(); ++i) {
-        auto& bd = perHueData[i];
-        if (bd.positions.isEmpty()) continue;
+    if (boxData.positions.isEmpty()) return;
 
-        for (int k = 0; k < bd.outliers.size(); ++k) {
-            bd.outliers[k].clear();
-        }
-
-        const QColor& base = kHuePalette[i % kHuePalette.size()];
-        QVariantMap style;
-        style["title"]     = hueCats[i];
-        style["color"]     = base;
-        style["fillColor"] = QColor(base.red(), base.green(), base.blue(), 80);
-        renderer.renderBoxChart(bd, style);
-
-        if (!perHueOutliers[i].isEmpty()) {
-            QVariantMap outStyle;
-            outStyle["title"]      = hueCats[i];
-            outStyle["color"]      = base;
-            outStyle["symbol"]     = QStringLiteral("Ellipse");
-            outStyle["symbolSize"] = 5;
-            renderer.renderScatter(perHueOutliers[i], outStyle);
-        }
+    // Clear outliers from boxData so renderer doesn't duplicate; we render them as scatter
+    for (int i = 0; i < boxData.outliers.size(); ++i) {
+        boxData.outliers[i].clear();
     }
 
-    renderer.enableLegend(true);
+    QVariantMap boxStyle;
+    boxStyle["title"] = QStringLiteral("Boxplot");
+    renderer.renderBoxChart(boxData, boxStyle);
 
-    // x-axis = column names at each column's box-cluster center
-    QVector< double > axisPositions;
-    axisPositions.reserve(columnOrder.size());
-    for (const QString& col : std::as_const(columnOrder)) {
-        const QVector< double > posList = columnPositions.value(col);
-        if (posList.isEmpty()) continue;
-        double center = 0.0;
-        for (double p : posList) {
-            center += p;
-        }
-        center /= posList.size();
-        axisPositions.append(center);
+    if (!allOutliers.isEmpty()) {
+        QVariantMap outlierStyle;
+        outlierStyle["title"] = QStringLiteral("Outliers");
+        renderer.renderScatter(allOutliers, outlierStyle);
     }
-    // tickPositions = 列中心（显示列名），数据范围 = 全部箱体位置（覆盖边缘箱体）
-    renderer.setXBottomCategoryScale(axisPositions, columnOrder, posMin, posMax);
+
+    // x 轴 = 类别字符串（hue 类别名或列名），在每个箱体位置显示
+    renderer.setXBottomCategoryScale(axisPositions, axisLabels, posMin, posMax);
 }
 
 // ============================================================
