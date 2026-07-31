@@ -186,64 +186,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBoxColor">
-     <property name="title">
-      <string>Colour Map</string>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
-     <layout class="QFormLayout" name="formLayoutColor">
-      <item row="0" column="0">
-       <widget class="QLabel" name="labelCmap">
-        <property name="text">
-         <string>Colour map</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="comboBoxCmap">
-        <item>
-         <property name="text">
-          <string>viridis</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>plasma</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>inferno</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>magma</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>cividis</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>jet</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>coolwarm</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
     <widget class="QGroupBox" name="groupBoxOptions">
      <property name="title">
       <string>Options</string>

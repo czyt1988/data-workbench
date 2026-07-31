@@ -3,11 +3,9 @@
 
 #include <QJsonObject>
 #include <QVariant>
-#include <QColor>
 #include "DADataManager.h"
 #include "DAChartSeriesSelectWidget.h"
 #include "DAPySeriesListView.h"  // for AcceptMode
-#include "DAColorPickerButton.h"
 #include "DALogCategory.h"
 
 namespace DA
@@ -30,29 +28,12 @@ DAChartAddStatsBarplotWidget::DAChartAddStatsBarplotWidget(QWidget* parent)
     ui->selectWidgetHue->setRoleLabel(tr("Hue"));  // cn: 分组
     ui->selectWidgetHue->setAcceptMode(DAPySeriesListView::AcceptOneSeries);
 
-    // Default colours
-    ui->colorButton->setColor(QColor("#4C72B0"));
-    ui->errColorButton->setColor(QColor("#1a1a1a"));
-
-    // Palette / colour enable/disable sync
-    auto syncHueControls = [this]() {
-        bool hueOn = ui->groupBoxHue->isChecked();
-        ui->comboBoxPalette->setEnabled(hueOn);
-        ui->labelPalette->setEnabled(hueOn);
-        ui->colorButton->setEnabled(!hueOn);
-        ui->labelColor->setEnabled(!hueOn);
-    };
-    syncHueControls();
-    connect(ui->groupBoxHue, &QGroupBox::toggled, this, &DAChartAddStatsBarplotWidget::onHueToggled);
-
     // CI-related controls sync
     auto syncCiControls = [this]() {
         int ciIdx = ui->comboBoxCi->currentIndex();
         bool ciEnabled = (ciIdx > 0);  // index 0 = "None"
         ui->spinBoxNBoot->setEnabled(ciEnabled);
         ui->labelNBoot->setEnabled(ciEnabled);
-        ui->errColorButton->setEnabled(ciEnabled);
-        ui->labelErrColor->setEnabled(ciEnabled);
     };
     syncCiControls();
     connect(ui->comboBoxCi, QOverload< int >::of(&QComboBox::currentIndexChanged),
@@ -96,23 +77,8 @@ QJsonObject DAChartAddStatsBarplotWidget::buildPlotParams() const
     // Orientation
     p["orient"] = ui->comboBoxOrient->currentText();
 
-    // Palette (hue mode)
-    if (ui->groupBoxHue->isChecked()) {
-        p["use_hue"]  = true;
-        p["palette"]  = ui->comboBoxPalette->currentText();
-    } else {
-        p["use_hue"] = false;
-        QColor c = ui->colorButton->color();
-        if (c.isValid()) {
-            p["color"] = c.name();  // "#RRGGBB"
-        }
-    }
-
-    // Error bar colour
-    QColor errc = ui->errColorButton->color();
-    if (errc.isValid()) {
-        p["errcolor"] = errc.name();
-    }
+    // Hue grouping
+    p["use_hue"] = ui->groupBoxHue->isChecked();
 
     // Bar width
     p["width"]   = ui->doubleSpinBoxWidth->value();
@@ -171,8 +137,6 @@ void DAChartAddStatsBarplotWidget::onYColumnChanged()
     ui->labelCi->setEnabled(barplotMode);
     ui->spinBoxNBoot->setEnabled(ciActive);
     ui->labelNBoot->setEnabled(ciActive);
-    ui->errColorButton->setEnabled(ciActive);
-    ui->labelErrColor->setEnabled(ciActive);
 
     // Update window title
     if (barplotMode) {
@@ -182,16 +146,6 @@ void DAChartAddStatsBarplotWidget::onYColumnChanged()
     }
 }
 
-void DAChartAddStatsBarplotWidget::onHueToggled(bool checked)
-{
-    Q_UNUSED(checked);
-    bool hueOn = ui->groupBoxHue->isChecked();
-    ui->comboBoxPalette->setEnabled(hueOn);
-    ui->labelPalette->setEnabled(hueOn);
-    ui->colorButton->setEnabled(!hueOn);
-    ui->labelColor->setEnabled(!hueOn);
-}
-
 void DAChartAddStatsBarplotWidget::onCiChanged(int index)
 {
     Q_UNUSED(index);
@@ -199,8 +153,6 @@ void DAChartAddStatsBarplotWidget::onCiChanged(int index)
     bool barplotMode = ui->comboBoxCi->isEnabled();
     ui->spinBoxNBoot->setEnabled(ciEnabled && barplotMode);
     ui->labelNBoot->setEnabled(ciEnabled && barplotMode);
-    ui->errColorButton->setEnabled(ciEnabled && barplotMode);
-    ui->labelErrColor->setEnabled(ciEnabled && barplotMode);
 }
 
 }  // namespace DA

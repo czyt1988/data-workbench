@@ -126,82 +126,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBoxColor">
-     <property name="title">
-      <string>Color</string>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
-     <layout class="QFormLayout" name="formLayoutColor">
-      <item row="0" column="0">
-       <widget class="QLabel" name="labelPalette">
-        <property name="text">
-         <string>Palette (hue mode)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="comboBoxPalette">
-        <item>
-         <property name="text">
-          <string>deep</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>muted</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>pastel</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>bright</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>dark</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>colorblind</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="labelColor">
-        <property name="text">
-         <string>Box color (no hue)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="DA::DAColorPickerButton" name="colorButton">
-        <property name="minimumSize">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="autoRaise">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -221,11 +145,6 @@
    <class>DA::DAChartSeriesSelectWidget</class>
    <extends>QWidget</extends>
    <header>DAChartSeriesSelectWidget.h</header>
-  </customwidget>
-  <customwidget>
-   <class>DA::DAColorPickerButton</class>
-   <extends>QToolButton</extends>
-   <header>DAColorPickerButton.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

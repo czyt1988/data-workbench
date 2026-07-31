@@ -17,7 +17,7 @@ class DAChartSeriesSelectWidget;
  * @brief Statistics-style 1-D KDE settings widget (plan05)
  *
  * Collects seaborn ``kdeplot`` parameters (bandwidth, grid size, fill,
- * cumulative, hue grouping, palette, threshold clipping) and delegates the
+ * cumulative, hue grouping, threshold clipping) and delegates the
  * computation to DAStatsPlotCoordinator.
  * Emits plotRequested() on OK; the DAAppController slot invokes the coordinator
  * which renders via DAChartPlotRenderer with DAStatistics support.
@@ -39,7 +39,7 @@ private Q_SLOTS:
     void onButtonBoxAccepted();
     /// Enable/disable bw_value spin box depending on bw_method selection
     void onBwMethodChanged(int index);
-    /// Enable/disable threshold and palette controls depending on fill / hue
+    /// Enable/disable threshold controls depending on fill
     void onFillToggled(bool checked);
 
 private:

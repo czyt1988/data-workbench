@@ -17,7 +17,7 @@ class DAChartSeriesSelectWidget;
  * @brief Statistics-style scatter plot settings widget (plan09)
  *
  * Collects seaborn ``scatterplot`` parameters (X/Y columns, hue grouping,
- * marker size / style / colour, palette, alpha, legend toggle) and
+ * marker size / style, alpha, legend toggle) and
  * delegates the computation to
  * DAStatsPlotCoordinator. Emits plotRequested() on
  * OK; the DAAppController slot invokes the coordinator which renders via
@@ -38,8 +38,6 @@ public:
 
 private Q_SLOTS:
     void onButtonBoxAccepted();
-    /// Enable/disable palette / colour controls depending on hue checkbox
-    void onHueToggled(bool checked);
 
 private:
     Ui::DAChartAddStatsScatterplotWidget* ui;

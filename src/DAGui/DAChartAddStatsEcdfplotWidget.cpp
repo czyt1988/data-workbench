@@ -3,11 +3,9 @@
 
 #include <QJsonObject>
 #include <QVariant>
-#include <QColor>
 #include "DADataManager.h"
 #include "DAChartSeriesSelectWidget.h"
 #include "DAPySeriesListView.h"  // for AcceptMode
-#include "DAColorPickerButton.h"
 #include "DALogCategory.h"
 
 namespace DA
@@ -29,20 +27,6 @@ DAChartAddStatsEcdfplotWidget::DAChartAddStatsEcdfplotWidget(QWidget* parent)
     // Weights column (optional): single-series selection
     ui->selectWidgetWeights->setRoleLabel(tr("Weights (optional)"));  // cn: 权重（可选）
     ui->selectWidgetWeights->setAcceptMode(DAPySeriesListView::AcceptOneSeries);
-
-    // Default colour
-    ui->colorButton->setColor(QColor("#4C72B0"));
-
-    // Palette / colour enable/disable sync
-    auto syncHueControls = [this]() {
-        bool hueOn = ui->groupBoxHue->isChecked();
-        ui->comboBoxPalette->setEnabled(hueOn);
-        ui->labelPalette->setEnabled(hueOn);
-        ui->colorButton->setEnabled(!hueOn);
-        ui->labelColor->setEnabled(!hueOn);
-    };
-    syncHueControls();
-    connect(ui->groupBoxHue, &QGroupBox::toggled, this, &DAChartAddStatsEcdfplotWidget::onHueToggled);
 
 }
 
@@ -76,16 +60,7 @@ QJsonObject DAChartAddStatsEcdfplotWidget::buildPlotParams() const
     p["legend"] = ui->checkBoxLegend->isChecked();
 
     // Hue grouping
-    if (ui->groupBoxHue->isChecked()) {
-        p["use_hue"] = true;
-        p["palette"] = ui->comboBoxPalette->currentText();
-    } else {
-        p["use_hue"] = false;
-        QColor c = ui->colorButton->color();
-        if (c.isValid()) {
-            p["color"] = c.name();
-        }
-    }
+    p["use_hue"] = ui->groupBoxHue->isChecked();
 
     // Weights (optional)
     if (ui->groupBoxWeights->isChecked()) {
@@ -126,16 +101,6 @@ void DAChartAddStatsEcdfplotWidget::onButtonBoxAccepted()
     }
 
     Q_EMIT plotRequested(params, getFigureWidget(), getChartWidget());
-}
-
-void DAChartAddStatsEcdfplotWidget::onHueToggled(bool checked)
-{
-    Q_UNUSED(checked);
-    bool hueOn = ui->groupBoxHue->isChecked();
-    ui->comboBoxPalette->setEnabled(hueOn);
-    ui->labelPalette->setEnabled(hueOn);
-    ui->colorButton->setEnabled(!hueOn);
-    ui->labelColor->setEnabled(!hueOn);
 }
 
 }  // namespace DA

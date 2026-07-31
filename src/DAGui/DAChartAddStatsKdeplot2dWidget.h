@@ -17,7 +17,7 @@ class DAChartSeriesSelectWidget;
  * @brief Statistics-style 2-D KDE settings widget (plan06)
  *
  * Collects seaborn ``kdeplot`` 2-D parameters (bandwidth, grid size, contour
- * levels, threshold, colour map, fill mode) and delegates the computation to
+ * levels, threshold, fill mode) and delegates the computation to
  * DAStatsPlotCoordinator. Emits
  * plotRequested() on OK; the DAAppController slot invokes the coordinator
  * which renders via DAChartPlotRenderer with DAStatistics support, where

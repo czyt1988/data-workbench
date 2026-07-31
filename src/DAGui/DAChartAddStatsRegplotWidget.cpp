@@ -2,13 +2,10 @@
 #include "ui_DAChartAddStatsRegplotWidget.h"
 
 #include <QJsonObject>
-#include <QJsonObject>
 #include <QVariant>
-#include <QColor>
 #include "DADataManager.h"
 #include "DAChartSeriesSelectWidget.h"
 #include "DAPySeriesListView.h"  // for AcceptMode
-#include "DAColorPickerButton.h"
 #include "DALogCategory.h"
 
 namespace DA
@@ -26,11 +23,6 @@ DAChartAddStatsRegplotWidget::DAChartAddStatsRegplotWidget(QWidget* parent)
     // Y column: single-series selection (dependent variable)
     ui->selectWidgetYData->setRoleLabel(tr("Y axis"));  // cn: Y 轴
     ui->selectWidgetYData->setAcceptMode(DAPySeriesListView::AcceptOneSeries);
-
-    // Default colours
-    ui->colorButton->setColor(QColor("#4C72B0"));
-    ui->scatterColorButton->setColor(QColor("#4C72B0"));
-    ui->regColorButton->setColor(QColor("#4C72B0"));
 
     // CI-related sync
     auto syncCi = [this]() {
@@ -86,28 +78,14 @@ QJsonObject DAChartAddStatsRegplotWidget::buildPlotParams() const
     p["scatter"]  = ui->checkBoxScatter->isChecked();
     p["fit_reg"] = ui->checkBoxFitReg->isChecked();
 
-    // Colour (unified default)
-    QColor c = ui->colorButton->color();
-    if (c.isValid()) {
-        p["color"] = c.name();
-    }
-
     // scatter_kws
     QJsonObject scatterKws;
-    QColor sc = ui->scatterColorButton->color();
-    if (sc.isValid()) {
-        scatterKws["marker_color"] = sc.name();
-    }
     scatterKws["marker_size"] = ui->spinBoxMarkerSize->value();
     scatterKws["alpha"]       = ui->doubleSpinBoxAlpha->value();
     p["scatter_kws"] = scatterKws;
 
     // reg_kws
     QJsonObject regKws;
-    QColor rc = ui->regColorButton->color();
-    if (rc.isValid()) {
-        regKws["line_color"] = rc.name();
-    }
     regKws["line_width"] = ui->doubleSpinBoxLineWidth->value();
     p["reg_kws"] = regKws;
 

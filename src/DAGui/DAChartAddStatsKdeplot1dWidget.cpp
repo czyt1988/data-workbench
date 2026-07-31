@@ -4,11 +4,9 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QVariant>
-#include <QColor>
 #include "DADataManager.h"
 #include "DAChartSeriesSelectWidget.h"
 #include "DAPySeriesListView.h"  // for AcceptMode
-#include "DAColorPickerButton.h"
 #include "DALogCategory.h"
 
 namespace DA
@@ -46,19 +44,6 @@ DAChartAddStatsKdeplot1dWidget::DAChartAddStatsKdeplot1dWidget(QWidget* parent)
         ui->doubleSpinBoxAbove->setEnabled(
             ui->checkBoxFill->isChecked() && ui->checkBoxAbove->isChecked());
     });
-
-    // Palette is only enabled when hue is checked; color button when unchecked
-    // Set a default curve colour (seaborn deep[0])
-    ui->colorButton->setColor(QColor("#4C72B0"));
-    auto syncHueControls = [this]() {
-        bool hueOn = ui->groupBoxHue->isChecked();
-        ui->comboBoxPalette->setEnabled(hueOn);
-        ui->labelPalette->setEnabled(hueOn);
-        ui->colorButton->setEnabled(!hueOn);
-        ui->labelColor->setEnabled(!hueOn);
-    };
-    syncHueControls();
-    connect(ui->groupBoxHue, &QGroupBox::toggled, this, syncHueControls);
 
 }
 
@@ -104,17 +89,7 @@ QJsonObject DAChartAddStatsKdeplot1dWidget::buildPlotParams() const
     }
 
     // Hue grouping
-    if (ui->groupBoxHue->isChecked()) {
-        p["use_hue"] = true;
-        p["palette"] = ui->comboBoxPalette->currentText();
-    } else {
-        p["use_hue"] = false;
-        // Single-color mode: pass the chosen colour as a hex string
-        QColor c = ui->colorButton->color();
-        if (c.isValid()) {
-            p["color"] = c.name();  // "#RRGGBB"
-        }
-    }
+    p["use_hue"] = ui->groupBoxHue->isChecked();
 
     return p;
 }

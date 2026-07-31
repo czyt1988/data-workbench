@@ -17,8 +17,8 @@ class DAChartSeriesSelectWidget;
  * @brief Statistics-style box plot settings widget (plan07)
  *
  * Collects seaborn ``boxplot`` parameters (multiple data columns, hue
- * grouping, whisker multiplier, showfliers / showmeans toggles, palette,
- * box width, colour) and delegates the computation to
+ * grouping, whisker multiplier, showfliers / showmeans toggles,
+ * box width) and delegates the computation to
  * DAStatsPlotCoordinator. Emits plotRequested() on OK;
  * the DAAppController slot invokes the coordinator which renders via
  * DAChartPlotRenderer with DAStatistics support.
@@ -38,8 +38,6 @@ public:
 
 private Q_SLOTS:
     void onButtonBoxAccepted();
-    /// Enable/disable palette / colour controls depending on hue checkbox
-    void onHueToggled(bool checked);
 
 private:
     Ui::DAChartAddStatsBoxplotWidget* ui;

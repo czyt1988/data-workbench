@@ -18,7 +18,7 @@ class DAChartSeriesSelectWidget;
  *
  * Collects seaborn ``regplot`` parameters (X / Y columns, polynomial
  * order, CI, bootstrap iterations, scatter / fit toggles, scatter_kws,
- * reg_kws, colour) and delegates the computation to
+ * reg_kws) and delegates the computation to
  * DAStatsPlotCoordinator. Emits plotRequested() on
  * OK; the DAAppController slot invokes the coordinator which renders via
  * DAChartPlotRenderer with DAStatistics support.

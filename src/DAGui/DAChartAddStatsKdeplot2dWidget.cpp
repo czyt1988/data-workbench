@@ -4,7 +4,6 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QVariant>
-#include <QColor>
 #include "DADataManager.h"
 #include "DAChartSeriesSelectWidget.h"
 #include "DAPySeriesListView.h"  // for AcceptMode
@@ -63,9 +62,6 @@ QJsonObject DAChartAddStatsKdeplot2dWidget::buildPlotParams() const
 
     // Threshold
     p["thresh"] = ui->doubleSpinBoxThresh->value();
-
-    // Colour map
-    p["cmap"] = ui->comboBoxCmap->currentText();
 
     // Display options
     p["fill_contours"] = ui->checkBoxFillContours->isChecked();

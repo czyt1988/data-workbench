@@ -2430,7 +2430,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddStatsBarplotWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddStatsBarplotWidget.cpp" line="+22"/>
+        <location filename="../DAGui/DAChartAddStatsBarplotWidget.cpp" line="+20"/>
         <source>X axis (categorical)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2445,12 +2445,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+99"/>
+        <location line="+67"/>
         <source>Please select an X-axis data column before plotting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+48"/>
         <source>Barplot Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2463,7 +2463,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddStatsBoxplotWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddStatsBoxplotWidget.cpp" line="+23"/>
+        <location filename="../DAGui/DAChartAddStatsBoxplotWidget.cpp" line="+21"/>
         <source>Data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2473,7 +2473,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location line="+42"/>
         <location line="+18"/>
         <source>Please select one or more data columns before plotting</source>
         <translation type="unfinished"></translation>
@@ -2487,7 +2487,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddStatsEcdfplotWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddStatsEcdfplotWidget.cpp" line="+22"/>
+        <location filename="../DAGui/DAChartAddStatsEcdfplotWidget.cpp" line="+20"/>
         <source>Data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2502,7 +2502,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+76"/>
+        <location line="+53"/>
         <source>Please select a data column before plotting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2559,7 +2559,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddStatsKdeplot1dWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddStatsKdeplot1dWidget.cpp" line="+23"/>
+        <location filename="../DAGui/DAChartAddStatsKdeplot1dWidget.cpp" line="+21"/>
         <source>Data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2569,7 +2569,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+100"/>
+        <location line="+77"/>
         <location line="+4"/>
         <source>Please select a data column before plotting</source>
         <translation type="unfinished"></translation>
@@ -2578,7 +2578,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddStatsKdeplot2dWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddStatsKdeplot2dWidget.cpp" line="+22"/>
+        <location filename="../DAGui/DAChartAddStatsKdeplot2dWidget.cpp" line="+21"/>
         <source>X axis</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2588,7 +2588,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+57"/>
+        <location line="+54"/>
         <location line="+4"/>
         <source>Please select an X-axis data column before plotting</source>
         <translation type="unfinished"></translation>
@@ -2603,7 +2603,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddStatsRegplotWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddStatsRegplotWidget.cpp" line="+23"/>
+        <location filename="../DAGui/DAChartAddStatsRegplotWidget.cpp" line="+20"/>
         <source>X axis</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2613,7 +2613,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+95"/>
+        <location line="+76"/>
         <source>Please select an X-axis data column before plotting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2626,7 +2626,7 @@ Config</source>
 <context>
     <name>DA::DAChartAddStatsScatterplotWidget</name>
     <message>
-        <location filename="../DAGui/DAChartAddStatsScatterplotWidget.cpp" line="+22"/>
+        <location filename="../DAGui/DAChartAddStatsScatterplotWidget.cpp" line="+20"/>
         <source>X axis</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2641,7 +2641,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+39"/>
         <location line="+4"/>
         <source>Please select an X-axis data column before plotting</source>
         <translation type="unfinished"></translation>
@@ -7279,56 +7279,6 @@ Config</source>
         <source>Show legend (hue)</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location line="+13"/>
-        <source>Color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Palette (hue mode)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>deep</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>muted</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>pastel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>bright</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>dark</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>colorblind</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Bar color (no hue)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Error bar color</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>DAChartAddStatsBoxplotWidget</name>
@@ -7370,51 +7320,6 @@ Config</source>
     <message>
         <location line="+10"/>
         <source>Show means</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Palette (hue mode)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>deep</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>muted</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>pastel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>bright</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>dark</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>colorblind</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Box color (no hue)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7473,51 +7378,6 @@ Config</source>
     <message>
         <location line="+23"/>
         <source>Show legend (hue)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Palette (hue mode)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>deep</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>muted</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>pastel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>bright</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>dark</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>colorblind</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Curve color (no hue)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7894,51 +7754,6 @@ Config</source>
         <source>(NaN = no upper limit)</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location line="+10"/>
-        <source>Color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Palette (hue mode)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>deep</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>muted</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>pastel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>bright</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>dark</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>colorblind</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Curve color (no hue)</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>DAChartAddStatsKdeplot2dWidget</name>
@@ -8014,51 +7829,6 @@ Config</source>
     </message>
     <message>
         <location line="+13"/>
-        <source>Colour Map</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Colour map</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>viridis</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>plasma</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>inferno</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>magma</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>cividis</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>jet</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>coolwarm</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
         <source>Options</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8137,26 +7907,11 @@ Config</source>
     </message>
     <message>
         <location line="+13"/>
-        <source>Color (default)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Base color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
         <source>Scatter style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>Marker color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
         <source>Marker size</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8172,11 +7927,6 @@ Config</source>
     </message>
     <message>
         <location line="+9"/>
-        <source>Line color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
         <source>Line width</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8261,51 +8011,6 @@ Config</source>
     <message>
         <location line="+23"/>
         <source>Show legend (hue)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Palette (hue mode)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>deep</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>muted</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>pastel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>bright</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>dark</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>colorblind</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Marker color (no hue)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11131,7 +10836,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAChartUtil.cpp" line="+44"/>
+        <location filename="../DAFigure/DAChartUtil.cpp" line="+88"/>
         <source>unknown chart</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11444,7 +11149,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../APP/DAStatsPlotCoordinator.cpp" line="+44"/>
+        <location filename="../APP/DAStatsPlotCoordinator.cpp" line="+84"/>
         <source>The selected data source is empty</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11461,6 +11166,36 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+2"/>
         <source>Error in statistical plot: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Column &apos;%1&apos; not found in data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Failed to compute histogram for column &apos;%1&apos;: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Histogram result is empty for column &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>KDE overlay failed for column &apos;%1&apos;: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Failed to compute grouped histogram (column &apos;%1&apos;, hue &apos;%2&apos;): %3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+49"/>
+        <source>KDE overlay failed for hue groups: %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

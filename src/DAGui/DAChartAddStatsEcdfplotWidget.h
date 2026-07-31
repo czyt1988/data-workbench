@@ -17,7 +17,7 @@ class DAChartSeriesSelectWidget;
  * @brief Statistics-style empirical CDF plot settings widget (plan12)
  *
  * Collects seaborn ``ecdfplot`` parameters (data column, hue grouping,
- * stat, complementary, weights, palette, colour, line width, legend) and
+ * stat, complementary, weights, line width, legend) and
  * delegates the computation to
  * DAStatsPlotCoordinator. Emits plotRequested() on
  * OK; the DAAppController slot invokes the coordinator which renders via
@@ -38,8 +38,6 @@ public:
 
 private Q_SLOTS:
     void onButtonBoxAccepted();
-    /// Enable/disable palette / colour controls depending on hue checkbox
-    void onHueToggled(bool checked);
 
 private:
     Ui::DAChartAddStatsEcdfplotWidget* ui;

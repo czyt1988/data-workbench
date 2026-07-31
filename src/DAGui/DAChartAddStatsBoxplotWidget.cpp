@@ -4,11 +4,9 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QVariant>
-#include <QColor>
 #include "DADataManager.h"
 #include "DAChartSeriesSelectWidget.h"
 #include "DAPySeriesListView.h"  // for AcceptMode
-#include "DAColorPickerButton.h"
 #include "DALogCategory.h"
 
 namespace DA
@@ -26,20 +24,6 @@ DAChartAddStatsBoxplotWidget::DAChartAddStatsBoxplotWidget(QWidget* parent)
     // Hue column: single-series selection
     ui->selectWidgetHue->setRoleLabel(tr("Hue"));  // cn: 分组
     ui->selectWidgetHue->setAcceptMode(DAPySeriesListView::AcceptOneSeries);
-
-    // Set a default box colour (seaborn deep[0])
-    ui->colorButton->setColor(QColor("#4C72B0"));
-
-    // Palette is only enabled when hue is checked; color button when unchecked
-    auto syncHueControls = [this]() {
-        bool hueOn = ui->groupBoxHue->isChecked();
-        ui->comboBoxPalette->setEnabled(hueOn);
-        ui->labelPalette->setEnabled(hueOn);
-        ui->colorButton->setEnabled(!hueOn);
-        ui->labelColor->setEnabled(!hueOn);
-    };
-    syncHueControls();
-    connect(ui->groupBoxHue, &QGroupBox::toggled, this, &DAChartAddStatsBoxplotWidget::onHueToggled);
 
 }
 
@@ -70,17 +54,7 @@ QJsonObject DAChartAddStatsBoxplotWidget::buildPlotParams() const
     p["showmeans"] = ui->checkBoxShowMeans->isChecked();
 
     // Hue grouping
-    if (ui->groupBoxHue->isChecked()) {
-        p["use_hue"]   = true;
-        p["palette"]   = ui->comboBoxPalette->currentText();
-    } else {
-        p["use_hue"] = false;
-        // Single-color mode: pass the chosen colour as a hex string
-        QColor c = ui->colorButton->color();
-        if (c.isValid()) {
-            p["color"] = c.name();  // "#RRGGBB"
-        }
-    }
+    p["use_hue"] = ui->groupBoxHue->isChecked();
 
     return p;
 }
@@ -142,17 +116,6 @@ void DAChartAddStatsBoxplotWidget::onButtonBoxAccepted()
     }
 
     Q_EMIT plotRequested(params, getFigureWidget(), getChartWidget());
-}
-
-void DAChartAddStatsBoxplotWidget::onHueToggled(bool checked)
-{
-    Q_UNUSED(checked);
-    // Enable palette when hue is on; enable color button when hue is off
-    bool hueOn = ui->groupBoxHue->isChecked();
-    ui->comboBoxPalette->setEnabled(hueOn);
-    ui->labelPalette->setEnabled(hueOn);
-    ui->colorButton->setEnabled(!hueOn);
-    ui->labelColor->setEnabled(!hueOn);
 }
 
 }  // namespace DA

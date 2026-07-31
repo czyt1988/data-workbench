@@ -17,8 +17,8 @@ class DAChartSeriesSelectWidget;
  * @brief Statistics-style bar plot / count plot settings widget (plan10)
  *
  * Collects seaborn ``barplot`` / ``countplot`` parameters (X column,
- * optional Y column, hue grouping, estimator, CI, orientation, palette,
- * error bar colour, bar colour, bar width, legend) and delegates the
+ * optional Y column, hue grouping, estimator, CI, orientation,
+ * bar width, legend) and delegates the
  * computation to DAStatsPlotCoordinator.
  * Emits plotRequested() on OK; the DAAppController slot invokes the coordinator
  * which renders via DAChartPlotRenderer with DAStatistics support.
@@ -43,8 +43,6 @@ private Q_SLOTS:
     void onButtonBoxAccepted();
     /// Toggle barplot/countplot mode based on Y-column selection
     void onYColumnChanged();
-    /// Enable/disable palette / colour controls depending on hue checkbox
-    void onHueToggled(bool checked);
     /// Enable/disable CI-related controls
     void onCiChanged(int index);
 
