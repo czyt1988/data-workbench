@@ -1,6 +1,6 @@
 # DASystemNodes 插件开发指南
 
-DAWorkbench 系统级工作流节点插件，提供流程控制（Start/End/If/Else/Delay）、数据展示（Print/TextViewer）、数据发布（DataToManager）等通用节点。本插件是 **Python 工作流节点开发的参考实现**——所有节点使用 `@NodeDef` 装饰器定义，无 C++ 代码，是新增 Python 节点插件的最佳模板。
+DAWorkbench 系统级工作流节点插件，提供流程控制（Start/End/If/Else/Delay）、数据展示（TextViewer）、数据发布（DataToManager）等通用节点。本插件是 **Python 工作流节点开发的参考实现**——所有节点使用 `@NodeDef` 装饰器定义，无 C++ 代码，是新增 Python 节点插件的最佳模板。
 
 > 📖 阅读 `src/DAPyWorkFlow/AGENTS.md` 了解 C++ 渲染代理层架构；本文件聚焦 Python 插件节点开发。
 
@@ -24,7 +24,6 @@ DASystemNodes/
             ├── delay.py        # 延迟
             ├── constant.py     # 常量输出
             ├── data_to_manager.py  # 发布到 DataManager
-            ├── print_node.py   # 打印到日志（含 paint 自定义绘制）
             └── text_viewer.py  # 文本显示（含 paint 自定义绘制）
 ```
 
@@ -39,8 +38,8 @@ DASystemNodes/
 
 ```powershell
 # 同步单个文件
-copy /Y "plugins\DASystemNodes\PyScripts\DASystemNodes\nodes\print_node.py" `
-      "build\Desktop_Qt_6_7_3_MSVC2019_64bit-Debug\bin\pyplugins\DASystemNodes\nodes\print_node.py"
+copy /Y "plugins\DASystemNodes\PyScripts\DASystemNodes\nodes\text_viewer.py" `
+      "build\Desktop_Qt_6_7_3_MSVC2019_64bit-Debug\bin\pyplugins\DASystemNodes\nodes\text_viewer.py"
 ```
 
 > ⚠️ Python 模块在程序启动时导入，修改后需**重启程序**才能生效（不支持热重载）。
@@ -173,7 +172,7 @@ class Inputs:
 
 class Outputs:
     result = Output("DataFrame", description=_("Output data"))  # cn:输出数据
-    # 无输出的节点可以不定义 Outputs（如 PrintNode）
+    # 无输出的节点可以不定义 Outputs（如 TextViewerNode）
 ```
 
 ---
@@ -276,7 +275,7 @@ def __init__(self):
     self._cache = None
 ```
 
-> 历史背景：曾存在"DAWorkflowNode 基类可能没有显式 **init**，不强制 super().**init**()"的误导性注释，导致 `PrintNode` 报 `_last_text` 不存在的错误。已修复，所有节点**必须**调用 `super().__init__()`。
+> 历史背景：曾存在"DAWorkflowNode 基类可能没有显式 **init**，不强制 super().**init**()"的误导性注释，导致节点报实例属性不存在的错误。已修复，所有节点**必须**调用 `super().__init__()`。
 
 ### 陷阱 2：不要通过 `self.X.default` 访问 Parameter 默认值
 
@@ -335,7 +334,7 @@ def paint(self, painter, body_rect):
     # 绘制逻辑...
 ```
 
-**错误写法**（参考修复前的 `print_node.py`）：
+**错误写法**（参考修复前的节点代码）：
 
 ```python
 def paint(self, painter, body_rect):
@@ -360,7 +359,7 @@ def paint(self, painter, body_rect):
     """
 ```
 
-`DAPyPainterProxy` 暴露的方法（参考 `print_node.py` / `text_viewer.py`）：
+`DAPyPainterProxy` 暴露的方法（参考 `text_viewer.py`）：
 
 | 方法 | 说明 |
 |------|------|
@@ -415,7 +414,9 @@ class IfElseNode:
     ...
 ```
 
-**如果定义了 `paint()` 方法，`paint()` 会完全接管节点主体绘制**，`NodeDisplay` 的 `background_color` / `border_color` 等仅在 `paint()` 中手动使用（作为参考值），不会自动应用。`paint()` 中通常手动绘制背景和边框，参考 `print_node.py`。
+**如果定义了 `paint()` 方法，`paint()` 会完全接管节点主体绘制**，`NodeDisplay` 的 `background_color` / `border_color` 等仅在 `paint()` 中手动使用（作为参考值），不会自动应用。`paint()` 中通常手动绘制背景和边框，参考 `text_viewer.py`。
+
+⚠️ **`_` 变量名陷阱**：`paint()` 中解构赋值时**禁止用 `_` 作为变量名**（如 `_, h = painter.textBoundingRect(...)`），因为 Python 会将 `_` 视为局部变量，导致后续 `_("...")` 调用 `gettext._()` 时报 `UnboundLocalError`。必须用 `_w`、`_h` 等替代名称。
 
 ---
 
@@ -442,7 +443,7 @@ xcopy /E /Y /I "plugins\DASystemNodes\PyScripts\DASystemNodes" `
 目前本插件无独立单元测试。验证节点行为的方式：
 
 1. **启动程序** → 拖入节点 → 检查是否报错（看日志面板）
-2. **构建工作流** → 执行 → 检查输出（Print 节点看日志，TextViewer 看节点画面，DataToManager 看 DataManager 面板）
+2. **构建工作流** → 执行 → 检查输出（TextViewer 看节点画面（开启 log_to_console 时同时看日志），DataToManager 看 DataManager 面板）
 3. **保存/加载工程** → 验证参数和连接正确恢复
 
 ### 调试技巧
@@ -486,8 +487,7 @@ xcopy /E /Y /I "plugins\DASystemNodes\PyScripts\DASystemNodes" `
 | **IfElseNode** | `nodes/condition_if.py` | NodeDisplay 菱形样式 + LinkPointStyle 端口形状 + 多输出分支 |
 | **DelayNode** | `nodes/delay.py` | Parameter float 类型（min/max/step/decimals）+ time.sleep 阻塞执行 |
 | **DataToManagerNode** | `nodes/data_to_manager.py` | 调用 C++ API（da_app/da_data）+ 主线程切换 |
-| **PrintNode** | `nodes/print_node.py` | paint() 自定义绘制 + 缓存实例属性 + 防御性 getattr + **运行时状态持久化** |
-| **TextViewerNode** | `nodes/text_viewer.py` | paint() 多行文本绘制 + clipRect 裁剪 + 工具函数复用 + **运行时状态持久化** |
+| **TextViewerNode** | `nodes/text_viewer.py` | paint() 自定义绘制 + 缓存实例属性 + 防御性 getattr + clipRect 裁剪 + 工具函数复用 + **运行时状态持久化** + 可选日志输出（log_to_console） |
 
 新增节点时，**先找到最相似的参考节点**复制结构，再修改业务逻辑。
 
@@ -528,8 +528,7 @@ def deserialize_runtime_state(self, state: dict) -> None:
 
 | 节点 | 持久化的状态 | 说明 |
 |------|-------------|------|
-| `TextViewerNode` | `display_text` | `execute()` 字符串化的输入数据，`paint()` 直接读取绘制 |
-| `PrintNode` | `last_text`, `last_prefix` | `execute()` 打印的文本与前缀，`paint()` 拼接后绘制 |
+| `TextViewerNode` | `display_text` | `execute()` 缓存的显示文本，`paint()` 绘制 |
 
 ### XML 存储格式
 
