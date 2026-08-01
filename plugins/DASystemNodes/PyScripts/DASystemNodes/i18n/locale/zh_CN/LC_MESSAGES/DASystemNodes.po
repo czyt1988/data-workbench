@@ -72,9 +72,6 @@ msgstr "condition 为 False 时输出 data"
 msgid "Outputs data when condition is True"
 msgstr "condition 为 True 时输出 data"
 
-msgid "Print"
-msgstr "Print"
-
 msgid "System / Data"
 msgstr "系统 / 数据"
 

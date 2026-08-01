@@ -137,6 +137,8 @@ class NodeDisplay:
     :param body_icon_type: 节点体图标类型，"None"/"Pixmap"/"Svg"；None → C++ 默认 None
     :param body_icon_source: 图标源路径；None → C++ 默认空
     :param body_icon_scale: 图标缩放比例；None → C++ 默认 0.8
+    :param min_body_width: 最小 body 宽度；None → 不限制。用于自定义 paint 回调节点预留渲染空间
+    :param min_body_height: 最小 body 高度；None → 不限制。用于自定义 paint 回调节点预留渲染空间
     """
 
     # 渲染属性
@@ -164,6 +166,10 @@ class NodeDisplay:
     body_icon_type: Optional[str] = None
     body_icon_source: Optional[str] = None
     body_icon_scale: Optional[float] = None
+
+    # 最小 body 尺寸（用于自定义 paint 回调的节点预留足够渲染空间）
+    min_body_width: Optional[float] = None
+    min_body_height: Optional[float] = None
 
 
 def _normalize_render_template(render_template: str) -> str:

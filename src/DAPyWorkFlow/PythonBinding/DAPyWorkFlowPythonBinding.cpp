@@ -158,6 +158,10 @@ DAPyNodeStyle toNodeStyle(const pybind11::object& obj)
         style.bodyIconType   = readEnumAttr(obj, "body_icon_type", style.bodyIconType);
         style.bodyIconSource = readCastAttr< QString >(obj, "body_icon_source", style.bodyIconSource);
         style.bodyIconScale  = readCastAttr< double >(obj, "body_icon_scale", style.bodyIconScale);
+
+        // === 最小 body 尺寸 ===
+        style.minBodyWidth  = readCastAttr< double >(obj, "min_body_width", style.minBodyWidth);
+        style.minBodyHeight = readCastAttr< double >(obj, "min_body_height", style.minBodyHeight);
     } catch (const std::exception& e) {
         // 读取失败时返回默认样式
     }

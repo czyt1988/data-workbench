@@ -83,6 +83,8 @@ def _wrap_text_by_width(painter, text, max_width, font):
     style=NodeDisplay(
         background_color="#FDFDFD",
         border_color="#AAAAAA",
+        min_body_width=150,
+        min_body_height=80,
     ),
 )
 class TextViewerNode:
@@ -132,11 +134,7 @@ class TextViewerNode:
 
         # 可选控制台日志输出（从 Print 节点迁移的功能）
         if params.get("log_to_console", False):
-            title = params.get("title", "")
-            if title:
-                logger.info("[%s] %s", title, self._display_text)
-            else:
-                logger.info("%s", self._display_text)
+            logger.info("%s", self._display_text)
 
         return True
 
