@@ -48,7 +48,7 @@ DAPyLinkGraphicsItem::DAPyLinkGraphicsItem(QGraphicsItem* parent) : DAGraphicsLi
     setEndPointType(OrientationStart, EndPointNone);
     setEndPointType(OrientationEnd, EndPointTriangType);
     setLinkLineStyle(LinkLineBezier);
-    setZValue(-1);  // 连接线在-1层，避免在节点上面
+    setZValue(DA::ZValue_LinkItem);  // 连接线在底层，避免覆盖节点
 }
 
 DAPyLinkGraphicsItem::~DAPyLinkGraphicsItem()
@@ -361,6 +361,8 @@ bool DAPyLinkGraphicsItem::loadFromXml(const QDomElement* parentElement, const Q
     if (!DAGraphicsLinkItem::loadFromXml(parentElement, ver)) {
         return false;
     }
+    // 强制连接线 z-value，确保始终低于节点
+    setZValue(ZValue_LinkItem);
 
     // 加载节点连接信息
     QDomElement nodeInfoEle = parentElement->firstChildElement("nodeInfo");

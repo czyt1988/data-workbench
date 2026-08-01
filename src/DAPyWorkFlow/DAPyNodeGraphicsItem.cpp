@@ -302,6 +302,7 @@ DAPyNodeGraphicsItem::DAPyNodeGraphicsItem(const DAPyNode& proxy, QGraphicsItem*
     // 设置可选中和可移动
     setSelectable(true);
     setMovable(true);
+    setZValue(DA::ZValue_NodeItem);  // 显式设置节点 z-value，确保高于连接线
     // 设置默认尺寸
     setProxy(proxy);
 }

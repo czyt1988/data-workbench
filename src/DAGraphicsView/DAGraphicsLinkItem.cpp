@@ -52,7 +52,7 @@ DAGraphicsLinkItem::DAGraphicsLinkItem(QGraphicsItem* p) : DAGraphicsItem(p), DA
 	setEndPointType(OrientationStart, EndPointNone);
 	setEndPointType(OrientationEnd, EndPointTriangType);
 	setLinkLineStyle(LinkLineBezier);
-	setZValue(-1);  // 连接线在-1层，这样避免在节点上面
+	setZValue(DA::ZValue_LinkItem);  // 连接线在底层，避免覆盖节点
 }
 
 DAGraphicsLinkItem::~DAGraphicsLinkItem()
@@ -818,6 +818,8 @@ bool DAGraphicsLinkItem::saveToXml(QDomDocument* doc, QDomElement* parentElement
 bool DAGraphicsLinkItem::loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)
 {
 	DAGraphicsItem::loadFromXml(parentElement, ver);
+	// 强制连接线 z-value，确保无论 XML 中保存了什么值，连线始终低于节点
+	setZValue(ZValue_LinkItem);
 	QDomElement posEle = parentElement->firstChildElement("pos");
 	if (!posEle.isNull()) {
 		bool isok = false;

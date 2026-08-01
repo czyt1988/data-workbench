@@ -67,6 +67,11 @@ enum DAGraphicsCommandIDType
     CmdID_GraphicsEnd                = 0x200                       ///< Graphics相关的command id的结束
 };
 
+/// 连接线 z-value，确保始终低于节点
+constexpr qreal ZValue_LinkItem = -1000.0;
+/// 节点 z-value 的下限，确保始终高于连接线
+constexpr qreal ZValue_NodeItem = 0.0;
+
 /**
   @brief Item Type 枚举
 
