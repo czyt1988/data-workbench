@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsStandardTextItem.h"
+#include "DAGraphicsStandardTextItem.h"
 #include <QFont>
 #include <QDebug>
 #include <QTextCursor>
@@ -41,13 +41,7 @@ DAGraphicsStandardTextItem::~DAGraphicsStandardTextItem()
 
 void DAGraphicsStandardTextItem::initItem()
 {
-	union Combine__ {
-		uint32_t a;
-		void* b;
-	};
-	Combine__ tmp;
-	tmp.b = this;
-	mID   = DAGraphicsItemFactory::generateID(tmp.a);
+	mID   = DAGraphicsItemFactory::generateID(static_cast< uint32_t >(reinterpret_cast< uintptr_t >(this)));
 	setDefaultTextColor(Qt::black);  // 设置字体颜色
 	setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsFocusable);
 	QTextDocument* doc = document();
@@ -173,7 +167,7 @@ void DAGraphicsStandardTextItem::setSelectTextFamily(const QString& v)
 	if (!cursor.hasSelection()) {
 		cursor.select(QTextCursor::Document);
 	}
-	QTextCharFormat format;
+	QTextCharFormat format = cursor.charFormat();
 	// 设置文本颜色
 	format.setFontFamily(v);
 	// 应用格式到选中文本
@@ -191,7 +185,7 @@ QString DAGraphicsStandardTextItem::getSelectTextFamily() const
 		cursor.select(QTextCursor::Document);
 	}
 	QTextCharFormat format = cursor.charFormat();
-	if (format.isValid() || format.isEmpty()) {
+	if (!format.isValid() || format.isEmpty()) {
 		return QString();
 	}
 	return format.fontFamily();
@@ -207,7 +201,7 @@ void DAGraphicsStandardTextItem::setSelectTextColor(const QColor& v)
 	if (!cursor.hasSelection()) {
 		cursor.select(QTextCursor::Document);
 	}
-	QTextCharFormat format;
+	QTextCharFormat format = cursor.charFormat();
 	// 设置文本颜色
 	format.setForeground(QBrush(v));
 	// 应用格式到选中文本
@@ -225,7 +219,7 @@ QColor DAGraphicsStandardTextItem::getSelectTextColor() const
 		cursor.select(QTextCursor::Document);
 	}
 	QTextCharFormat format = cursor.charFormat();
-	if (format.isValid() || format.isEmpty()) {
+	if (!format.isValid() || format.isEmpty()) {
 		return QColor();
 	}
 	return format.foreground().color();
@@ -242,7 +236,7 @@ void DAGraphicsStandardTextItem::setSelectTextFont(const QFont& v)
 		cursor.select(QTextCursor::Document);
 	}
 	// 说明有选中文本
-	QTextCharFormat format;
+	QTextCharFormat format = cursor.charFormat();
 	format.setFont(v);
 	// 应用格式到选中文本
 	cursor.setCharFormat(format);
@@ -260,7 +254,7 @@ QFont DAGraphicsStandardTextItem::getSelectTextFont() const
 	}
 	// 获取该位置的字符格式
 	QTextCharFormat format = cursor.charFormat();
-	if (format.isValid() || format.isEmpty()) {
+	if (!format.isValid() || format.isEmpty()) {
 		return QFont();
 	}
 	return format.font();
@@ -277,7 +271,7 @@ void DAGraphicsStandardTextItem::setSelectTextPointSize(int v)
 		cursor.select(QTextCursor::Document);
 	}
 	// 说明有选中文本
-	QTextCharFormat format;
+	QTextCharFormat format = cursor.charFormat();
 	format.setFontPointSize(v);
 	// 应用格式到选中文本
 	cursor.setCharFormat(format);
@@ -295,7 +289,7 @@ int DAGraphicsStandardTextItem::getSelectTextPointSize() const
 	}
 	// 获取该位置的字符格式
 	QTextCharFormat format = cursor.charFormat();
-	if (format.isValid() || format.isEmpty()) {
+	if (!format.isValid() || format.isEmpty()) {
 		return -1;
 	}
 	return format.fontPointSize();
@@ -312,7 +306,7 @@ void DAGraphicsStandardTextItem::setSelectTextItalic(bool on)
 		cursor.select(QTextCursor::Document);
 	}
 	// 说明有选中文本
-	QTextCharFormat format;
+	QTextCharFormat format = cursor.charFormat();
 	format.setFontItalic(on);
 	// 应用格式到选中文本
 	cursor.setCharFormat(format);
@@ -330,7 +324,7 @@ bool DAGraphicsStandardTextItem::getSelectTextItalic() const
 	}
 	// 获取该位置的字符格式
 	QTextCharFormat format = cursor.charFormat();
-	if (format.isValid() || format.isEmpty()) {
+	if (!format.isValid() || format.isEmpty()) {
 		return false;
 	}
 	return format.fontItalic();
@@ -347,7 +341,7 @@ void DAGraphicsStandardTextItem::setSelectTextBold(bool on)
 		cursor.select(QTextCursor::Document);
 	}
 	// 说明有选中文本
-	QTextCharFormat format;
+	QTextCharFormat format = cursor.charFormat();
 	format.setFontWeight(on ? QFont::Bold : QFont::Normal);
 	// 应用格式到选中文本
 	cursor.setCharFormat(format);
@@ -365,7 +359,7 @@ bool DAGraphicsStandardTextItem::getSelectTextBold() const
 	}
 	// 获取该位置的字符格式
 	QTextCharFormat format = cursor.charFormat();
-	if (format.isValid() || format.isEmpty()) {
+	if (!format.isValid() || format.isEmpty()) {
 		return false;
 	}
 	auto w = format.fontWeight();
@@ -397,31 +391,20 @@ void DAGraphicsStandardTextItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent*
 QVariant DAGraphicsStandardTextItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value)
 {
 	if (change == QGraphicsItem::ItemSceneChange) {
+		// 断开旧的contentsChanged连接，避免重复连接导致多次push undo命令
+		if (mContentsChangedConn) {
+			disconnect(mContentsChangedConn);
+			mContentsChangedConn = QMetaObject::Connection();
+		}
 		if (QGraphicsScene* newScene = value.value< QGraphicsScene* >()) {
 			if (DAGraphicsScene* daScene = qobject_cast< DAGraphicsScene* >(newScene)) {
 				QTextDocument* doc = document();
 				if (doc) {
-
-					//! 此方法有问题，前面有2个不知名的command
-					// connect(doc,
-					// 		&QTextDocument::undoCommandAdded,
-					// 		daScene,
-					// 		std::bind(&DAGraphicsScene::textDocumentUndoCommandAdded, daScene, doc));
-
-					//! 此方法不行，undoCommandAdded获取的html不是文本改变后的html
-					//  connect(doc, &QTextDocument::undoCommandAdded, daScene, [ this, daScene ]() {
-					//  	QString hnew = this->toHtml();
-					//  	qDebug() << hnew;
-					//  	if (mOldHtml != hnew) {
-					//  		daScene->push(new DACommandTextItemHtmlContentChanged(this, mOldHtml, hnew));
-					//  		mOldHtml = hnew;
-					//  	}
-					//  });
-
-					//! 此方法可行，但是需要记录非常多的命令，每个字符串的变化都会记录，虽然可以做压缩，
-					//! 通过记录变更日期和内容进行时间和内容的压缩，但还是会每敲一个字就触发一次记录
-					//! 通过focusOutEvent，无法捕获到全局的变化，如全局的颜色设置等
-					connect(doc, &QTextDocument::contentsChanged, this, [ this, doc, daScene ]() {
+					QPointer< DAGraphicsScene > daScenePtr = daScene;
+					mContentsChangedConn = connect(doc, &QTextDocument::contentsChanged, this, [ this, doc, daScenePtr ]() {
+						if (!daScenePtr) {
+							return;
+						}
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 						QString hnew = doc->toHtml("utf-8");
 #else
@@ -432,7 +415,7 @@ QVariant DAGraphicsStandardTextItem::itemChange(QGraphicsItem::GraphicsItemChang
 							return;
 						}
 						if (this->mOldHtml != hnew) {
-							daScene->push(new DACommandTextItemHtmlContentChanged(this, mOldHtml, hnew));
+							daScenePtr->push(new DACommandTextItemHtmlContentChanged(this, mOldHtml, hnew));
 							mOldHtml = hnew;
 						}
 					});

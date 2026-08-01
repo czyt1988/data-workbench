@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsScene.h"
+#include "DAGraphicsScene.h"
 #include <QGraphicsSceneMouseEvent>
 #include "DACommandsForGraphics.h"
 #include "DAGraphicsResizeableItem.h"
@@ -136,7 +136,6 @@ void DAGraphicsScene::PrivateData::renderBackgroundCache()
 	}
 	QRectF sr = q_ptr->sceneRect();
 	if (!sr.isValid()) {
-		qDebug() << "sceneRect is invalid";
 		return;
 	}
 	QRect scr = sr.toRect();
@@ -520,6 +519,10 @@ bool DAGraphicsScene::isEnableSnapToGrid() const
 void DAGraphicsScene::setGridSize(const QSize& gs)
 {
     d_ptr->mGridSize = gs;
+    if (d_ptr->mIsPaintBackgroundInCache) {
+        d_ptr->mBackgroundCache = QPixmap();
+        d_ptr->renderBackgroundCache();
+    }
 }
 /**
  * @brief 网格尺寸
@@ -537,6 +540,10 @@ QSize DAGraphicsScene::getGridSize() const
 void DAGraphicsScene::showGridLine(bool on)
 {
     d_ptr->mShowGridLine = on;
+    if (d_ptr->mIsPaintBackgroundInCache) {
+        d_ptr->mBackgroundCache = QPixmap();
+        d_ptr->renderBackgroundCache();
+    }
 }
 
 /**
@@ -625,6 +632,10 @@ bool DAGraphicsScene::isShowGridLine()
 void DAGraphicsScene::setGridLinePen(const QPen& p)
 {
     d_ptr->mGridLinePen = p;
+    if (d_ptr->mIsPaintBackgroundInCache) {
+        d_ptr->mBackgroundCache = QPixmap();
+        d_ptr->renderBackgroundCache();
+    }
 }
 /**
  * @brief 获取网格画笔
@@ -694,7 +705,9 @@ void DAGraphicsScene::setUndoStackActive()
  */
 void DAGraphicsScene::push(QUndoCommand* cmd)
 {
-	qDebug() << "scene push:" << cmd->text();
+	if (!cmd) {
+		return;
+	}
 	d_ptr->mUndoStack.push(cmd);
 }
 

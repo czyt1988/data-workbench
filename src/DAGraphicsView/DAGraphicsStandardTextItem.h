@@ -1,8 +1,9 @@
-﻿#ifndef DAGRAPHICSSTANDARDTEXTITEM_H
+#ifndef DAGRAPHICSSTANDARDTEXTITEM_H
 #define DAGRAPHICSSTANDARDTEXTITEM_H
 
 #include <QFont>
 #include <QGraphicsTextItem>
+#include <QPointer>
 #include "DAGraphicsViewGlobal.h"
 #include "DAXMLFileInterface.h"
 class QInputMethodEvent;
@@ -86,6 +87,7 @@ private:
 	uint64_t mID { 0 };
 	QString mOldHtml;
 	bool mAutoBindRedoundoToScene { true };  ///< 标记是否自动绑定DAGraphicsScene的redo/undo
+	QMetaObject::Connection mContentsChangedConn;  ///< 记录contentsChanged连接，避免重复连接
 };
 }  // end of namespace DA
 #endif  // DAGRAPHICSSTANDARDTEXTITEM_H

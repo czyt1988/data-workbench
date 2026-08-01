@@ -84,7 +84,7 @@ void DAGraphicsLinkItem::setEndPointType(DAGraphicsLinkItem::Orientations o, DAG
 	case OrientationBoth: {
 		setEndPointType(OrientationStart, epType);
 		setEndPointType(OrientationEnd, epType);
-	}
+	} break;
 	default:
 		break;
 	}
@@ -124,6 +124,8 @@ int DAGraphicsLinkItem::getEndPointSize() const
 void DAGraphicsLinkItem::setEndPointSize(int v)
 {
     d_ptr->mEndPointSize = v;
+    updateEndPoint();
+    update();
 }
 
 /**
@@ -152,6 +154,8 @@ DAGraphicsLinkItem::LinkLineStyle DAGraphicsLinkItem::getLinkLineStyle() const
 void DAGraphicsLinkItem::setLinePen(const QPen& p)
 {
     d_ptr->mLinePen = p;
+    updateBoundingRect();
+    update();
 }
 
 /**
@@ -193,6 +197,8 @@ QRectF DAGraphicsLinkItem::updateBoundingRect()
 void DAGraphicsLinkItem::setBezierControlScale(qreal rate)
 {
     d_ptr->mBezierControlScale = rate;
+    updateBoundingRect();
+    update();
 }
 
 /**
@@ -427,7 +433,7 @@ void DAGraphicsLinkItem::updateEndPoint()
  */
 qreal DAGraphicsLinkItem::pointLength(const QPointF& a, const QPointF& b)
 {
-    return (pow((a.x() - b.x()) * (a.x() - b.x()) + (a.y() - b.y()) * (a.y() - b.y()), 0.5));
+    return (qSqrt((a.x() - b.x()) * (a.x() - b.x()) + (a.y() - b.y()) * (a.y() - b.y())));
 }
 
 /**

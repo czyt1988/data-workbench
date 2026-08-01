@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsMarkItem.h"
+#include "DAGraphicsMarkItem.h"
 #include "DAGraphicsItemFactory.h"
 #include <QDomDocument>
 #include <QDomElement>
@@ -17,7 +17,7 @@ class DAGraphicsMarkItem::PrivateData
 public:
 	PrivateData(DAGraphicsMarkItem* p);
 	std::optional< QRectF > optBoundingRect;  ///< 边界，可以设置，如果不设置就以父item为对象
-	int markShapeStyle;                       ///< 对应DAGraphicsMarkItem::MarkShape
+	int markShapeStyle { ShapeRect };                 ///< 对应DAGraphicsMarkItem::MarkShape
 };
 
 DAGraphicsMarkItem::PrivateData::PrivateData(DAGraphicsMarkItem* p) : q_ptr(p)
@@ -60,6 +60,7 @@ bool DAGraphicsMarkItem::loadFromXml(const QDomElement* parentElement, const QVe
 
 void DAGraphicsMarkItem::setMarkBoundingRect(const QRectF& r)
 {
+	prepareGeometryChange();
 	if (r.isNull()) {
 		d_ptr->optBoundingRect = std::nullopt;
 	} else {
@@ -70,6 +71,7 @@ void DAGraphicsMarkItem::setMarkBoundingRect(const QRectF& r)
 void DAGraphicsMarkItem::setMarkShape(int shapeStyle)
 {
 	d_ptr->markShapeStyle = shapeStyle;
+	update();
 }
 
 int DAGraphicsMarkItem::getMarkShape() const
@@ -79,18 +81,19 @@ int DAGraphicsMarkItem::getMarkShape() const
 
 void DAGraphicsMarkItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-	qDebug() << option->rect;
+	Q_UNUSED(widget)
 	painter->setPen(getBorderPen());
 	painter->setBrush(getBackgroundBrush());
+	const QRectF br = boundingRect();
 	switch (getMarkShape()) {
 	case DAGraphicsMarkItem::ShapeRect: {
-		painter->drawRect(option->rect);
+		painter->drawRect(br);
 	} break;
 	case DAGraphicsMarkItem::ShapeCross: {
 		// 获取中心
-		QPointF center = option->rect.center();
-		painter->drawLine(option->rect.left(), center.y(), option->rect.right(), center.y());
-		painter->drawLine(center.x(), option->rect.top(), center.x(), option->rect.bottom());
+		QPointF center = br.center();
+		painter->drawLine(br.left(), center.y(), br.right(), center.y());
+		painter->drawLine(center.x(), br.top(), center.x(), br.bottom());
 	} break;
 	default:
 		break;

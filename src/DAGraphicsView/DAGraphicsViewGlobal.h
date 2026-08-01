@@ -36,7 +36,11 @@ enum class DAAspectDirection
     West,
     North
 };
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+DAGRAPHICSVIEW_API size_t qHash(const DA::DAAspectDirection& key, size_t seed = 0) noexcept;
+#else
 DAGRAPHICSVIEW_API uint qHash(const DA::DAAspectDirection& key, uint seed = 0) noexcept;
+#endif
 
 /**
  * @brief 定义了Graphics相关的command id，用于标记相同的redo/undo
@@ -44,8 +48,8 @@ DAGRAPHICSVIEW_API uint qHash(const DA::DAAspectDirection& key, uint seed = 0) n
 enum DAGraphicsCommandIDType
 {
     CmdID_GraphicsBegin    = 0x100,                     ///< Graphics相关的command id的起始
-    CmdID_ItemAdd          = CmdID_GraphicsBegin + 1,   ///< item移动
-    CmdID_ItemRemove       = CmdID_GraphicsBegin + 2,   ///< item移动
+    CmdID_ItemAdd          = CmdID_GraphicsBegin + 1,   ///< item添加
+    CmdID_ItemRemove       = CmdID_GraphicsBegin + 2,   ///< item删除
     CmdID_ItemMove         = CmdID_GraphicsBegin + 3,   ///< item移动
     CmdID_ItemsMove        = CmdID_GraphicsBegin + 5,   ///< 多个item移动
     CmdID_ItemResize       = CmdID_GraphicsBegin + 7,   ///< item resize
@@ -73,7 +77,7 @@ enum DAGraphicsItemType
     ItemType_GraphicsItem_Begin         = QGraphicsItem::UserType + 10,     ///< 针对DAGraphicsResizeableItem的类型开始
     ItemType_DAGraphicsItem_Begin       = ItemType_GraphicsItem_Begin + 1,  ///< DAGraphicsItem Type的开始范围
     ItemType_DAGraphicsItem             = ItemType_DAGraphicsItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
-    ItemType_DAGraphicsStandardTextItem = ItemType_DAGraphicsItem_Begin + 1,  ///< 标准文本
+    ItemType_DAGraphicsStandardTextItem = ItemType_DAGraphicsItem_Begin + 5,  ///< 标准文本
     ItemType_DAGraphicsLabelItem        = ItemType_DAGraphicsItem_Begin + 2,  ///< 标准label
     ItemType_DAGraphicsItemGroup        = ItemType_DAGraphicsItem_Begin + 3,  ///< 针对DAGraphicsItemGroup的类型
     ItemType_DAGraphicsMarkItem         = ItemType_DAGraphicsItem_Begin + 4,  ///< 针对DAGraphicsMarkItem的类型

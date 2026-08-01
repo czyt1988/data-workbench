@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsCommandsFactory.h"
+#include "DAGraphicsCommandsFactory.h"
 #include "DAGraphicsScene.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
@@ -191,9 +191,12 @@ void DAGraphicsCommandsFactory::sceneMousePressEvent(QGraphicsSceneMouseEvent* m
 		// 要判断当前点击下去之后是否是移动状态，有些情况，虽然选中了item，但鼠标点击下去并不是移动状态，例如拉一个选择框的过程
 		//!  1.记录选中的所有图元，如果点击的是改变尺寸的点，这个就不执行记录
 		DAGraphicsScene* sc    = scene();
+		if (!sc) {
+			return;
+		}
 		QGraphicsItem* positem = sc->itemAt(d->sceneMousePressPos, QTransform());
-		if (!sc->isItemCanMove(positem, d_ptr->sceneMousePressPos)) {
-			d_ptr->isBeginMovingItems = false;
+		if (!sc->isItemCanMove(positem, d->sceneMousePressPos)) {
+			d->isBeginMovingItems = false;
 			return;
 		}
 		QList< QGraphicsItem* > mits = d->scene->getSelectedMovableItems();

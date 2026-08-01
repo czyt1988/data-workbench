@@ -1,9 +1,13 @@
-﻿#include "DAGraphicsViewEnumStringUtils.h"
+#include "DAGraphicsViewEnumStringUtils.h"
 // std
 #include <type_traits>
 namespace DA
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+size_t qHash(const DA::DAAspectDirection& key, size_t seed) noexcept
+#else
 uint qHash(const DA::DAAspectDirection& key, uint seed) noexcept
+#endif
 {
     using underlying_type = std::underlying_type_t< DA::DAAspectDirection >;
     return ::qHash(static_cast< underlying_type >(key), seed);

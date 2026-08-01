@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsItemFactory.h"
+#include "DAGraphicsItemFactory.h"
 #include <QDebug>
 #include <QObject>
 #include <QDateTime>
@@ -85,7 +85,7 @@ QGraphicsItem* DAGraphicsItemFactory::createItem(int itemType)
     return fp();
 }
 
-void DAGraphicsItemFactory::destoryItem(DAGraphicsItem* i)
+void DAGraphicsItemFactory::destroyItem(DAGraphicsItem* i)
 {
     delete i;
 }

@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsDrawRectSceneAction.h"
+#include "DAGraphicsDrawRectSceneAction.h"
 #include "DAGraphicsScene.h"
 #include <QGraphicsView>
 #include <QGraphicsSceneMouseEvent>
@@ -53,7 +53,6 @@ bool DAGraphicsDrawRectSceneAction::mouseReleaseEvent(QGraphicsSceneMouseEvent* 
 			QPointF rectPos = topLeftPoint(mStartPoint, endPos);
 			QSizeF drawSize = pointRectSize(mStartPoint, endPos);
 			// 如果绘制太小，默认绘制100*100
-			qDebug() << "drawSize" << drawSize;
 			if (drawSize.width() <= 5) {
 				drawSize.setWidth(100);
 			}

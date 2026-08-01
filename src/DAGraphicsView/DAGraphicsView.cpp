@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsView.h"
+#include "DAGraphicsView.h"
 #include <QWheelEvent>
 #include <QPainter>
 #include <QDebug>
@@ -510,10 +510,9 @@ void DAGraphicsView::clearViewAction()
  */
 void DAGraphicsView::markPoint(const QPointF& scenePoint, const QPen& pen)
 {
-	// auto act = new DAGraphicsMouseCrossLineViewAction(this);
-	// act->setDrawPen(pen);
-	// act->setCrossScenePos(scenePoint);
-	// setupViewAction(act);
+	// TODO: implement markPoint via DAGraphicsViewOverlayMouseMarker
+	Q_UNUSED(scenePoint)
+	Q_UNUSED(pen)
 }
 
 /**
@@ -561,7 +560,7 @@ void DAGraphicsView::selectAll()
 	} else {
 		// 非DAGraphicsSceneWithUndoStack，就执行选中所有
 		QList< QGraphicsItem* > its = items();
-		for (QGraphicsItem* i : its) {
+		for (QGraphicsItem* i : std::as_const(its)) {
 			if (!i->isSelected() && i->flags().testFlag(QGraphicsItem::ItemIsSelectable)) {
 				// 只有没有被选上，且是可选的才会执行选中动作
 				i->setSelected(true);
@@ -582,7 +581,7 @@ void DAGraphicsView::clearSelection()
 	} else {
 		// 非DAGraphicsSceneWithUndoStack，就执行选中所有
 		QList< QGraphicsItem* > its = items();
-		for (QGraphicsItem* i : its) {
+		for (QGraphicsItem* i : std::as_const(its)) {
 			if (!i->isSelected() && i->flags().testFlag(QGraphicsItem::ItemIsSelectable)) {
 				// 只有没有被选上，且是可选的才会执行选中动作
 				i->setSelected(false);

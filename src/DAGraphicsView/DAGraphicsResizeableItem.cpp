@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsResizeableItem.h"
+#include "DAGraphicsResizeableItem.h"
 #include <memory>
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
@@ -678,7 +678,6 @@ void DAGraphicsResizeableItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
 
 void DAGraphicsResizeableItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 {
-	Q_UNUSED(event);
 	if (isResizable()) {
 		if (NotUnderAnyControlType != d_ptr->mCurrentControlTypeUnderMouse) {
 			d_ptr->mCurrentControlTypeUnderMouse = NotUnderAnyControlType;
@@ -901,8 +900,8 @@ void DAGraphicsResizeableItem::setBodySize(const QSizeF& s)
 	QSizeF cs = testBodySize(s);
 	if (cs != d_ptr->mSize) {
 		QSizeF oldsize = d_ptr->mSize;
-		changeBodySize(s);
 		prepareGeometryChange();
+		changeBodySize(cs);
 		if (d_ptr->mSceneUndo) {
 			d_ptr->mSceneUndo->emitItemBodySizeChanged(this, oldsize, d_ptr->mSize);
 		}
@@ -994,6 +993,7 @@ QSizeF DAGraphicsResizeableItem::getBodyMaximumSize() const
  */
 void DAGraphicsResizeableItem::setControlerSize(const QSizeF& s)
 {
+	prepareGeometryChange();
 	d_ptr->mControlPointSize = s;
 	prepareControlInfoChange();
 }
@@ -1014,6 +1014,7 @@ void DAGraphicsResizeableItem::setEnableResize(bool on)
 			setAcceptHoverEvents(on);
 		}
 	}
+	update();
 }
 /**
  * @brief 判断是否允许
@@ -1075,6 +1076,7 @@ void DAGraphicsResizeableItem::paintResizeControlPoints(QPainter* painter,
 		case ControlPointBottomLeft:
 		case ControlPointLeftMid:
 			painter->drawRect(r.rect);
+			break;
 		default:
 			break;
 		}

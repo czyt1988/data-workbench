@@ -1,4 +1,4 @@
-﻿#ifndef DACOMMANDSFORGRAPHICS_H
+#ifndef DACOMMANDSFORGRAPHICS_H
 #define DACOMMANDSFORGRAPHICS_H
 #include "DAGraphicsViewGlobal.h"
 #include <QUndoCommand>
@@ -192,6 +192,7 @@ private:
 	QPointF mNewPosition;
 	QSizeF mNewSize;
 	bool mSkipfirst { false };
+	bool mHasPosition { true };  ///< 是否包含位置变更（false时undo/redo不设置位置）
 	QDateTime mDatetime;
 };
 

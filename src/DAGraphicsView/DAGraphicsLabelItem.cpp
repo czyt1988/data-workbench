@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsLabelItem.h"
+#include "DAGraphicsLabelItem.h"
 #include <optional>
 #include <QGraphicsScene>
 #include <QDomDocument>
@@ -21,14 +21,7 @@ public:
 
 DAGraphicsLabelItem::PrivateData::PrivateData(DAGraphicsLabelItem* p) : q_ptr(p)
 {
-	// DAGraphicsItemFactory::generateID通过一个uint32_t生成一个uint64_t的id
-	union Combine__ {
-		uint32_t a;
-		void* b;
-	};
-	Combine__ tmp;
-	tmp.b = p;
-	mID   = DAGraphicsItemFactory::generateID(tmp.a);
+	mID = DAGraphicsItemFactory::generateID(static_cast< uint32_t >(reinterpret_cast< uintptr_t >(p)));
 }
 //===============================================================
 // DAGraphicsLabelItem
@@ -129,6 +122,14 @@ bool DAGraphicsLabelItem::loadFromXml(const QDomElement* itemElement, const QVer
 		if (DAXMLFileInterface::loadElement(b, &bkEle)) {
 			setBrush(b);
 		}
+	}
+	// 恢复相对位置
+	QString relative = infoEle.attribute("relative");
+	if (!relative.isEmpty() && relative != "0") {
+		qreal rx = 0.0, ry = 0.0;
+		getStringRealValue(infoEle.attribute("rx", "0"), rx);
+		getStringRealValue(infoEle.attribute("ry", "0"), ry);
+		setRelativePosition(rx, ry);
 	}
 	return true;
 }
@@ -245,8 +246,6 @@ void DAGraphicsLabelItem::updatePosition()
 	QPointF offset            = d_ptr->mOriginPoint.rectKeyPoint(br);
 	itemwillMovePoint -= offset;
 	setPos(itemwillMovePoint);
-	qDebug() << "parentRect:" << parentRect << ",boundingRect:" << br << ",offset:" << offset
-			 << ",itemwillMovePoint:" << itemwillMovePoint;
 }
 
 void DAGraphicsLabelItem::setSelectable(bool on)

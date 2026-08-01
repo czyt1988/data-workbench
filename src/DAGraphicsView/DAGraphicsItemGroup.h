@@ -1,4 +1,4 @@
-﻿#ifndef DAGRAPHICSITEMGROUP_H
+#ifndef DAGRAPHICSITEMGROUP_H
 #define DAGRAPHICSITEMGROUP_H
 #include <QGraphicsItemGroup>
 #include "DAUtils/DAXMLFileInterface.h"
@@ -20,7 +20,7 @@ public:
      */
     enum
     {
-        Type = DA::ItemType_DAGraphicsItem
+        Type = DA::ItemType_DAGraphicsItemGroup
     };
     virtual int type() const override
     {

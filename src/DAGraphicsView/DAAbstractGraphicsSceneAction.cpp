@@ -1,4 +1,4 @@
-﻿#include "DAAbstractGraphicsSceneAction.h"
+#include "DAAbstractGraphicsSceneAction.h"
 #include "DAGraphicsScene.h"
 #include <QGraphicsView>
 #include <QSvgRenderer>
@@ -66,7 +66,7 @@ void DAAbstractGraphicsSceneAction::setCursorPixmap(const QPixmap& p)
 void DAAbstractGraphicsSceneAction::setupCursor()
 {
 	QList< QGraphicsView* > views = scene()->views();
-	for (QGraphicsView* v : views) {
+	for (QGraphicsView* v : std::as_const(views)) {
 		v->setCursor(QCursor(mCursorPixmap));
 	}
 }
@@ -74,7 +74,7 @@ void DAAbstractGraphicsSceneAction::setupCursor()
 void DAAbstractGraphicsSceneAction::restoreCursor()
 {
 	QList< QGraphicsView* > views = scene()->views();
-	for (QGraphicsView* v : views) {
+	for (QGraphicsView* v : std::as_const(views)) {
 		v->unsetCursor();
 	}
 }

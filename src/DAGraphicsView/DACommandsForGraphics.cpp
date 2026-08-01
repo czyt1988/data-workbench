@@ -10,7 +10,7 @@
 #include <QTextDocument>
 
 #ifndef DACOMMANDSFORGRAPHICS_DEBUG_PRINT
-#define DACOMMANDSFORGRAPHICS_DEBUG_PRINT 1
+#define DACOMMANDSFORGRAPHICS_DEBUG_PRINT 0
 #endif
 
 namespace DA
@@ -179,6 +179,8 @@ DACommandsForGraphicsItemsMoved::DACommandsForGraphicsItemsMoved(const QList< QG
     , mCmdDatetime(QDateTime::currentDateTime())
     , mSkipFirst(skipfirst)
 {
+    Q_ASSERT_X(mItems.size() == mStartsPos.size() && mItems.size() == mEndsPos.size(),
+               "DACommandsForGraphicsItemsMoved", "items, starts, ends size mismatch");
     setText(QObject::tr("Items Move"));  // cn:移动多个图元
 }
 
@@ -224,9 +226,6 @@ bool DACommandsForGraphicsItemsMoved::mergeWith(const QUndoCommand* command)
 	}
 	// 到这里，基本符合合并条件，只要把mEndsPos赋值给当前命令即可
 	mEndsPos = other->mEndsPos;
-#if DACOMMANDSFORGRAPHICS_DEBUG_PRINT
-	qDebug() << "ItemsMoved was merge";
-#endif
 	return true;
 }
 
@@ -271,12 +270,16 @@ void DACommandsForGraphicsItemMoved::redo()
 		mSkipFirst = false;
 		return;
 	}
-	mItem->setPos(mEndPos);
+	if (mItem) {
+		mItem->setPos(mEndPos);
+	}
 }
 
 void DACommandsForGraphicsItemMoved::undo()
 {
-	mItem->setPos(mStartPos);
+	if (mItem) {
+		mItem->setPos(mStartPos);
+	}
 }
 
 int DACommandsForGraphicsItemMoved::id() const
@@ -328,6 +331,7 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsRes
     , mNewPosition(newpos)
     , mNewSize(newSize)
     , mSkipfirst(skipfirst)
+    , mDatetime(QDateTime::currentDateTime())
 {
     setText(QObject::tr("Item Resize"));  // cn:调整图元尺寸
 }
@@ -336,7 +340,7 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsRes
                                                                    const QSizeF& oldSize,
                                                                    const QSizeF& newSize,
                                                                    QUndoCommand* parent)
-    : QUndoCommand(parent), mItem(item), mOldSize(oldSize), mNewSize(newSize), mDatetime(QDateTime::currentDateTime())
+    : QUndoCommand(parent), mItem(item), mOldSize(oldSize), mNewSize(newSize), mHasPosition(false), mDatetime(QDateTime::currentDateTime())
 {
 	setText(QObject::tr("Item Resize"));  // cn:调整图元尺寸
 	mOldpos = mNewPosition = item->pos();
@@ -353,7 +357,7 @@ void DACommandsForGraphicsItemResized::redo()
 		if (mNewSize.isValid()) {
 			mItem->setBodySize(mNewSize);
 		}
-		if (!mNewPosition.isNull()) {
+		if (mHasPosition) {
 			mItem->setPos(mNewPosition);
 		}
 	}
@@ -366,7 +370,7 @@ void DACommandsForGraphicsItemResized::undo()
 		if (mOldSize.isValid()) {
 			mItem->setBodySize(mOldSize);
 		}
-		if (!mOldpos.isNull()) {
+		if (mHasPosition) {
 			mItem->setPos(mOldpos);
 		}
 	}
@@ -417,12 +421,16 @@ DACommandsForGraphicsItemResizeWidth::DACommandsForGraphicsItemResizeWidth(DAGra
 
 void DACommandsForGraphicsItemResizeWidth::redo()
 {
-	mItem->setBodySize(QSizeF(mNewWidth, mHeight));
+	if (mItem) {
+		mItem->setBodySize(QSizeF(mNewWidth, mHeight));
+	}
 }
 
 void DACommandsForGraphicsItemResizeWidth::undo()
 {
-	mItem->setBodySize(QSizeF(mOldWidth, mHeight));
+	if (mItem) {
+		mItem->setBodySize(QSizeF(mOldWidth, mHeight));
+	}
 }
 
 int DACommandsForGraphicsItemResizeWidth::id() const
@@ -460,12 +468,16 @@ DACommandsForGraphicsItemResizeHeight::DACommandsForGraphicsItemResizeHeight(DAG
 
 void DACommandsForGraphicsItemResizeHeight::redo()
 {
-	mItem->setBodySize(QSizeF(mWidth, mNewHeight));
+	if (mItem) {
+		mItem->setBodySize(QSizeF(mWidth, mNewHeight));
+	}
 }
 
 void DACommandsForGraphicsItemResizeHeight::undo()
 {
-	mItem->setBodySize(QSizeF(mWidth, mOldHeight));
+	if (mItem) {
+		mItem->setBodySize(QSizeF(mWidth, mOldHeight));
+	}
 }
 
 int DACommandsForGraphicsItemResizeHeight::id() const
@@ -507,12 +519,16 @@ DACommandsForGraphicsItemRotation::DACommandsForGraphicsItemRotation(DAGraphicsR
 
 void DACommandsForGraphicsItemRotation::redo()
 {
-	mItem->setRotation(mNewRotation);
+	if (mItem) {
+		mItem->setRotation(mNewRotation);
+	}
 }
 
 void DACommandsForGraphicsItemRotation::undo()
 {
-	mItem->setRotation(mOldRotation);
+	if (mItem) {
+		mItem->setRotation(mOldRotation);
+	}
 }
 
 int DACommandsForGraphicsItemRotation::id() const
@@ -663,7 +679,6 @@ void DACommandTextDocumentWrapper::redo()
 {
 	if (mDoc) {
 		if (mDoc->isRedoAvailable()) {
-			qDebug() << "doc redo";
 			mDoc->redo();
 		}
 	}
@@ -673,7 +688,6 @@ void DACommandTextDocumentWrapper::undo()
 {
 	if (mDoc) {
 		if (mDoc->isUndoAvailable()) {
-			qDebug() << "doc undo";
 			mDoc->undo();
 		}
 	}
@@ -700,15 +714,19 @@ void DACommandTextItemHtmlContentChanged::redo()
 		mSkipFirst = false;
 		return;
 	}
-	QSignalBlocker b(mItem->document());
-	mItem->setHtml(mNewHtml);
+	if (mItem) {
+		QSignalBlocker b(mItem->document());
+		mItem->setHtml(mNewHtml);
+	}
 }
 
 void DACommandTextItemHtmlContentChanged::undo()
 {
 	QUndoCommand::undo();
-	QSignalBlocker b(mItem->document());
-	mItem->setHtml(mOldHtml);
+	if (mItem) {
+		QSignalBlocker b(mItem->document());
+		mItem->setHtml(mOldHtml);
+	}
 }
 
 bool DACommandTextItemHtmlContentChanged::mergeWith(const QUndoCommand* command)

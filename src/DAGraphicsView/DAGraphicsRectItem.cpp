@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsRectItem.h"
+#include "DAGraphicsRectItem.h"
 #include <QPainter>
 #include <QDomDocument>
 #include <QDomElement>
@@ -104,10 +104,18 @@ bool DAGraphicsRectItem::loadFromXml(const QDomElement* itemElement, const QVers
 	if (rectEle.isNull()) {
 		return false;
 	}
-	QDomElement textEle = itemElement->firstChildElement("text");
+	QDomElement textEle = rectEle.firstChildElement("text");
 	if (!textEle.isNull()) {
 		d_ptr->mTextAlignment = stringToEnum< Qt::AlignmentFlag >(textEle.attribute("al"), Qt::AlignCenter);
 		d_ptr->mText          = textEle.text();
+	}
+	// text-pen
+	QDomElement textPenEle = rectEle.firstChildElement("text-pen");
+	if (!textPenEle.isNull()) {
+		QPen p;
+		if (DAXMLFileInterface::loadElement(p, &textPenEle)) {
+			d_ptr->setTextPen(p);
+		}
 	}
 	return true;
 }
