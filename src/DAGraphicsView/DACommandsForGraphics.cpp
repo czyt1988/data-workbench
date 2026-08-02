@@ -2,7 +2,7 @@
 #include <QDebug>
 #include <QGraphicsItem>
 #include "DAGraphicsScene.h"
-#include "DAGraphicsResizeableItem.h"
+#include "DAIResizableGraphicsItem.h"
 #include "DAGraphicsItem.h"
 #include "DAGraphicsItemGroup.h"
 #include "DAQtContainerUtil.hpp"
@@ -317,7 +317,7 @@ bool DACommandsForGraphicsItemMoved::mergeWith(const QUndoCommand* command)
  * @param newSize
  * @param parent
  */
-DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsResizeableItem* item,
+DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAIResizableGraphicsItem* item,
                                                                    const QPointF& oldpos,
                                                                    const QSizeF& oldSize,
                                                                    const QPointF& newpos,
@@ -336,14 +336,14 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsRes
     setText(QObject::tr("Item Resize"));  // cn:调整图元尺寸
 }
 
-DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsResizeableItem* item,
+DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAIResizableGraphicsItem* item,
                                                                    const QSizeF& oldSize,
                                                                    const QSizeF& newSize,
                                                                    QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mOldSize(oldSize), mNewSize(newSize), mHasPosition(false), mDatetime(QDateTime::currentDateTime())
 {
 	setText(QObject::tr("Item Resize"));  // cn:调整图元尺寸
-	mOldpos = mNewPosition = item->pos();
+	mOldpos = mNewPosition = item->graphicsItem()->pos();
 }
 
 void DACommandsForGraphicsItemResized::redo()
@@ -358,7 +358,7 @@ void DACommandsForGraphicsItemResized::redo()
 			mItem->setBodySize(mNewSize);
 		}
 		if (mHasPosition) {
-			mItem->setPos(mNewPosition);
+			mItem->graphicsItem()->setPos(mNewPosition);
 		}
 	}
 }
@@ -371,7 +371,7 @@ void DACommandsForGraphicsItemResized::undo()
 			mItem->setBodySize(mOldSize);
 		}
 		if (mHasPosition) {
-			mItem->setPos(mOldpos);
+			mItem->graphicsItem()->setPos(mOldpos);
 		}
 	}
 }
@@ -409,27 +409,28 @@ bool DACommandsForGraphicsItemResized::mergeWith(const QUndoCommand* command)
  * @param newWidth
  * @param parent
  */
-DACommandsForGraphicsItemResizeWidth::DACommandsForGraphicsItemResizeWidth(DAGraphicsResizeableItem* item,
+DACommandsForGraphicsItemResizeWidth::DACommandsForGraphicsItemResizeWidth(DAIResizableGraphicsItem* item,
                                                                            const qreal& oldWidth,
                                                                            const qreal& newWidth,
                                                                            QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mOldWidth(oldWidth), mNewWidth(newWidth), mDatetime(QDateTime::currentDateTime())
 {
 	setText(QObject::tr("Item Resize Width"));  // cn:调整图元宽度
-	mHeight = item->getBodySize().height();
 }
 
 void DACommandsForGraphicsItemResizeWidth::redo()
 {
+	QUndoCommand::redo();
 	if (mItem) {
-		mItem->setBodySize(QSizeF(mNewWidth, mHeight));
+		mItem->setBodySize(QSizeF(mNewWidth, mItem->getBodySize().height()));
 	}
 }
 
 void DACommandsForGraphicsItemResizeWidth::undo()
 {
+	QUndoCommand::undo();
 	if (mItem) {
-		mItem->setBodySize(QSizeF(mOldWidth, mHeight));
+		mItem->setBodySize(QSizeF(mOldWidth, mItem->getBodySize().height()));
 	}
 }
 
@@ -456,27 +457,28 @@ bool DACommandsForGraphicsItemResizeWidth::mergeWith(const QUndoCommand* command
 //==============================================================
 // DACommandsForGraphicsItemResizeHeight
 //==============================================================
-DACommandsForGraphicsItemResizeHeight::DACommandsForGraphicsItemResizeHeight(DAGraphicsResizeableItem* item,
+DACommandsForGraphicsItemResizeHeight::DACommandsForGraphicsItemResizeHeight(DAIResizableGraphicsItem* item,
                                                                              const qreal& oldHeight,
                                                                              const qreal& newHeight,
                                                                              QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mOldHeight(oldHeight), mNewHeight(newHeight), mDatetime(QDateTime::currentDateTime())
 {
 	setText(QObject::tr("Item Resize Height"));  // cn:调整图元高度
-	mWidth = item->getBodySize().width();
 }
 
 void DACommandsForGraphicsItemResizeHeight::redo()
 {
+	QUndoCommand::redo();
 	if (mItem) {
-		mItem->setBodySize(QSizeF(mWidth, mNewHeight));
+		mItem->setBodySize(QSizeF(mItem->getBodySize().width(), mNewHeight));
 	}
 }
 
 void DACommandsForGraphicsItemResizeHeight::undo()
 {
+	QUndoCommand::undo();
 	if (mItem) {
-		mItem->setBodySize(QSizeF(mWidth, mOldHeight));
+		mItem->setBodySize(QSizeF(mItem->getBodySize().width(), mOldHeight));
 	}
 }
 
@@ -504,7 +506,7 @@ bool DACommandsForGraphicsItemResizeHeight::mergeWith(const QUndoCommand* comman
 //==============================================================
 // DACommandsForGraphicsItemRotation
 //==============================================================
-DACommandsForGraphicsItemRotation::DACommandsForGraphicsItemRotation(DAGraphicsResizeableItem* item,
+DACommandsForGraphicsItemRotation::DACommandsForGraphicsItemRotation(DAIResizableGraphicsItem* item,
                                                                      const qreal& oldRotation,
                                                                      const qreal& newRotation,
                                                                      QUndoCommand* parent)
@@ -519,15 +521,17 @@ DACommandsForGraphicsItemRotation::DACommandsForGraphicsItemRotation(DAGraphicsR
 
 void DACommandsForGraphicsItemRotation::redo()
 {
+	QUndoCommand::redo();
 	if (mItem) {
-		mItem->setRotation(mNewRotation);
+		mItem->graphicsItem()->setRotation(mNewRotation);
 	}
 }
 
 void DACommandsForGraphicsItemRotation::undo()
 {
+	QUndoCommand::undo();
 	if (mItem) {
-		mItem->setRotation(mOldRotation);
+		mItem->graphicsItem()->setRotation(mOldRotation);
 	}
 }
 

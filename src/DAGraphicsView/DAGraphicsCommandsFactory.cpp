@@ -130,7 +130,7 @@ DACommandsForGraphicsItemsMoved* DAGraphicsCommandsFactory::createItemsMoved()
 	return createItemsMoved(items, startPos, endsPos, true);
 }
 
-DACommandsForGraphicsItemResized* DAGraphicsCommandsFactory::createItemResized(DAGraphicsResizeableItem* item,
+DACommandsForGraphicsItemResized* DAGraphicsCommandsFactory::createItemResized(DAIResizableGraphicsItem* item,
                                                                                const QPointF& oldpos,
                                                                                const QSizeF& oldSize,
                                                                                const QPointF& newpos,
@@ -140,28 +140,28 @@ DACommandsForGraphicsItemResized* DAGraphicsCommandsFactory::createItemResized(D
     return new DACommandsForGraphicsItemResized(item, oldpos, oldSize, newpos, newSize, skipfirst);
 }
 
-DACommandsForGraphicsItemResized* DAGraphicsCommandsFactory::createItemResized(DAGraphicsResizeableItem* item,
+DACommandsForGraphicsItemResized* DAGraphicsCommandsFactory::createItemResized(DAIResizableGraphicsItem* item,
                                                                                const QSizeF& oldSize,
                                                                                const QSizeF& newSize)
 {
     return new DACommandsForGraphicsItemResized(item, oldSize, newSize);
 }
 
-DACommandsForGraphicsItemResizeWidth* DAGraphicsCommandsFactory::createItemResizeWidth(DAGraphicsResizeableItem* item,
+DACommandsForGraphicsItemResizeWidth* DAGraphicsCommandsFactory::createItemResizeWidth(DAIResizableGraphicsItem* item,
                                                                                        const qreal& oldWidth,
                                                                                        const qreal& newWidth)
 {
     return new DACommandsForGraphicsItemResizeWidth(item, oldWidth, newWidth);
 }
 
-DACommandsForGraphicsItemResizeHeight* DAGraphicsCommandsFactory::createItemResizeHeight(DAGraphicsResizeableItem* item,
+DACommandsForGraphicsItemResizeHeight* DAGraphicsCommandsFactory::createItemResizeHeight(DAIResizableGraphicsItem* item,
                                                                                          const qreal& oldHeight,
                                                                                          const qreal& newHeight)
 {
     return new DACommandsForGraphicsItemResizeHeight(item, oldHeight, newHeight);
 }
 
-DACommandsForGraphicsItemRotation* DAGraphicsCommandsFactory::createItemRotation(DAGraphicsResizeableItem* item,
+DACommandsForGraphicsItemRotation* DAGraphicsCommandsFactory::createItemRotation(DAIResizableGraphicsItem* item,
                                                                                  const qreal& oldRotation,
                                                                                  const qreal& newRotation)
 {

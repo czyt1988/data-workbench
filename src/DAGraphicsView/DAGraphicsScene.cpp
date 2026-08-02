@@ -1312,16 +1312,10 @@ void DAGraphicsScene::onRequestResize(DAIResizableGraphicsItem* target,
                                        const QPointF& newPos, const QSizeF& newSize)
 {
 	DA_D(d);
-	// dynamic_cast 失败时防护
-	// ⚠️ 临时适配：plan-04 将工厂签名改为 DAIResizableGraphicsItem* 后移除此 dynamic_cast
-	auto* resizeable = dynamic_cast< DAGraphicsResizeableItem* >(target);
-	if (!resizeable) {
-		return;
-	}
 	// 通过 undo command 应用变更
 	// skipfirst=true，因为 resize 已经在 mouseMove 中实时执行了
 	auto cmd = commandsFactory()->createItemResized(
-	    resizeable,  // 保持现有工厂方法签名
+	    target,
 	    oldPos, oldSize, newPos, newSize, true  // skipfirst=true
 	);
 	push(cmd);

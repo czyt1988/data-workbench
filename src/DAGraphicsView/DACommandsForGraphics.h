@@ -20,7 +20,7 @@ class QTextDocument;
 namespace DA
 {
 class DAGraphicsScene;
-class DAGraphicsResizeableItem;
+class DAIResizableGraphicsItem;
 /**
  * @brief 添加item命令
  *
@@ -169,14 +169,14 @@ protected:
 class DAGRAPHICSVIEW_API DACommandsForGraphicsItemResized : public QUndoCommand
 {
 public:
-	DACommandsForGraphicsItemResized(DAGraphicsResizeableItem* item,
+	DACommandsForGraphicsItemResized(DAIResizableGraphicsItem* item,
                                      const QPointF& oldpos,
                                      const QSizeF& oldSize,
                                      const QPointF& newpos,
                                      const QSizeF& newSize,
                                      bool skipfirst       = true,
                                      QUndoCommand* parent = nullptr);
-	DACommandsForGraphicsItemResized(DAGraphicsResizeableItem* item,
+	DACommandsForGraphicsItemResized(DAIResizableGraphicsItem* item,
                                      const QSizeF& oldSize,
                                      const QSizeF& newSize,
                                      QUndoCommand* parent = nullptr);
@@ -186,7 +186,7 @@ public:
 	bool mergeWith(const QUndoCommand* command) override;
 
 private:
-	DAGraphicsResizeableItem* mItem;
+	DAIResizableGraphicsItem* mItem;
 	QPointF mOldpos;
 	QSizeF mOldSize;
 	QPointF mNewPosition;
@@ -202,7 +202,7 @@ private:
 class DAGRAPHICSVIEW_API DACommandsForGraphicsItemResizeWidth : public QUndoCommand
 {
 public:
-	DACommandsForGraphicsItemResizeWidth(DAGraphicsResizeableItem* item,
+	DACommandsForGraphicsItemResizeWidth(DAIResizableGraphicsItem* item,
                                          const qreal& oldWidth,
                                          const qreal& newWidth,
                                          QUndoCommand* parent = nullptr);
@@ -212,10 +212,9 @@ public:
 	bool mergeWith(const QUndoCommand* command) override;
 
 private:
-	DAGraphicsResizeableItem* mItem;
+	DAIResizableGraphicsItem* mItem;
 	qreal mOldWidth;
 	qreal mNewWidth;
-	qreal mHeight;
 	QDateTime mDatetime;
 };
 
@@ -225,7 +224,7 @@ private:
 class DAGRAPHICSVIEW_API DACommandsForGraphicsItemResizeHeight : public QUndoCommand
 {
 public:
-	DACommandsForGraphicsItemResizeHeight(DAGraphicsResizeableItem* item,
+	DACommandsForGraphicsItemResizeHeight(DAIResizableGraphicsItem* item,
                                           const qreal& oldHeight,
                                           const qreal& newHeight,
                                           QUndoCommand* parent = nullptr);
@@ -235,10 +234,9 @@ public:
 	bool mergeWith(const QUndoCommand* command) override;
 
 private:
-	DAGraphicsResizeableItem* mItem;
+	DAIResizableGraphicsItem* mItem;
 	qreal mOldHeight;
 	qreal mNewHeight;
-	qreal mWidth;
 	QDateTime mDatetime;
 };
 
@@ -250,7 +248,7 @@ private:
 class DAGRAPHICSVIEW_API DACommandsForGraphicsItemRotation : public QUndoCommand
 {
 public:
-	DACommandsForGraphicsItemRotation(DAGraphicsResizeableItem* item,
+	DACommandsForGraphicsItemRotation(DAIResizableGraphicsItem* item,
                                       const qreal& oldRotation,
                                       const qreal& newRotation,
                                       QUndoCommand* parent = nullptr);
@@ -260,7 +258,7 @@ public:
 	bool mergeWith(const QUndoCommand* command) override;
 
 private:
-	DAGraphicsResizeableItem* mItem;
+	DAIResizableGraphicsItem* mItem;
 	qreal mOldRotation;
 	qreal mNewRotation;
 	QDateTime mDatetime;
