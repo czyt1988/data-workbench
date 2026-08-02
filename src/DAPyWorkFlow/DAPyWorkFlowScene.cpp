@@ -281,6 +281,11 @@ DAPyWorkFlowScene::DAPyWorkFlowScene(qreal x, qreal y, qreal width, qreal height
  */
 DAPyWorkFlowScene::~DAPyWorkFlowScene()
 {
+    // 必须在 clearPyScene() 前断开 selectionChanged，
+    // 否则清空节点时触发 selectionChanged → onSelectionChanged → checkSelectItem →
+    // selectItemChanged → selectPyNodeItemChanged 信号链会尝试调用
+    // 已析构的 DAPyWorkFlowEditWidget 槽，导致断言失败
+    disconnectSelectionChanged();
     clearPyScene();
 }
 

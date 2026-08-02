@@ -267,6 +267,9 @@ protected:
 	void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
 	// 绘制背景
 	void drawBackground(QPainter* painter, const QRectF& rect) override;
+	// 断开 selectionChanged → onSelectionChanged 连接
+	// 供派生类在析构时调用，防止 clearPyScene() 等清理操作触发信号链到达已析构的对象
+	void disconnectSelectionChanged();
 private Q_SLOTS:
 	//
 	void onSelectionChanged();

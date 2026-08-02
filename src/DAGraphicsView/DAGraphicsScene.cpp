@@ -204,12 +204,17 @@ void DAGraphicsScene::init()
 DAGraphicsScene::~DAGraphicsScene()
 {
 	// 断开 selectionChanged，防止 ~QGraphicsScene() 删除 item 时回调访问已释放的 d_ptr
-	disconnect(this, &QGraphicsScene::selectionChanged, this, &DAGraphicsScene::onSelectionChanged);
+	disconnectSelectionChanged();
 	DA_D(d);
 	if (d->mResizeOverlay) {
 		delete d->mResizeOverlay;
 		d->mResizeOverlay = nullptr;
 	}
+}
+
+void DAGraphicsScene::disconnectSelectionChanged()
+{
+	disconnect(this, &QGraphicsScene::selectionChanged, this, &DAGraphicsScene::onSelectionChanged);
 }
 
 /**
