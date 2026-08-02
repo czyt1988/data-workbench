@@ -1039,15 +1039,15 @@ bool DAGraphicsScene::isItemCanMove(QGraphicsItem* positem, const QPointF& scene
 	if (!positem->flags().testFlag(QGraphicsItem::ItemIsMovable)) {
 		return false;
 	}
-	// 还要确认一下是否点在了DAGraphicsResizeableItem的控制点上，点在控制点上是不能移动的
-	DAGraphicsResizeableItem* resizeitem = qgraphicsitem_cast< DAGraphicsResizeableItem* >(positem);
-	if (resizeitem) {
-		DAGraphicsResizeableItem::ControlType t = resizeitem->getControlPointByPos(resizeitem->mapFromScene(scenePos));
-		if (t != DAGraphicsResizeableItem::NotUnderAnyControlType) {
-			// 说明点击在了控制点上，也取消移动
-			return false;
-		}
-	}
+	// TODO: plan-03 将重构为 Overlay 方案，此处控制点检测代码已注释
+	// DAGraphicsResizeableItem* resizeitem = qgraphicsitem_cast< DAGraphicsResizeableItem* >(positem);
+	// if (resizeitem) {
+	//     DAGraphicsResizeableItem::ControlType t = resizeitem->getControlPointByPos(resizeitem->mapFromScene(scenePos));
+	//     if (t != DAGraphicsResizeableItem::NotUnderAnyControlType) {
+	//         // 说明点击在了控制点上，也取消移动
+	//         return false;
+	//     }
+	// }
 	return true;
 }
 
@@ -1144,16 +1144,17 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			return;
 		}
 		// todo.如果点击的是链接和control point，不属于移动
-		for (QGraphicsItem* its : std::as_const(mits)) {
-			DAGraphicsResizeableItem* ri = dynamic_cast< DAGraphicsResizeableItem* >(its);
-			if (ri) {
-				if (DAGraphicsResizeableItem::NotUnderAnyControlType
-					!= ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
-					// 说明点击在了控制点上，需要跳过
-					return;
-				}
-			}
-		}
+		// TODO: plan-03 将重构为 Overlay 方案，此处控制点检测代码已注释
+		// for (QGraphicsItem* its : std::as_const(mits)) {
+		//     DAGraphicsResizeableItem* ri = dynamic_cast< DAGraphicsResizeableItem* >(its);
+		//     if (ri) {
+		//         if (DAGraphicsResizeableItem::NotUnderAnyControlType
+		//             != ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
+		//             // 说明点击在了控制点上，需要跳过
+		//             return;
+		//         }
+		//     }
+		// }
 		//
 	}
 	// 处理鼠标移动的命令，让通过鼠标移动item也能执行redo/undo

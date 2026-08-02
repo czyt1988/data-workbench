@@ -309,7 +309,8 @@ void DAGraphicsTextItem::mousePressEvent(QGraphicsSceneMouseEvent* e)
 {
 	// qDebug() << "DAGraphicsTextItem::mousePressEvent";
 	DAGraphicsResizeableItem::mousePressEvent(e);
-	if (!isResizing()) {
+	// TODO: plan-05 正式移除此守卫，plan-02 临时修复
+	if (true) {
 		auto br = d_ptr->mTextItem->boundingRect();
 		if (br.contains(e->pos())) {
 			QTextCursor cursor(d_ptr->mTextItem->document());
