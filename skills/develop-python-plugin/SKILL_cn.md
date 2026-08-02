@@ -63,7 +63,7 @@ description: 当需要为data-workbench创建新的Python工作流节点插件�
 | DAAppPluginManager | `src/APP/DAAppPluginManager.h/.cpp` | 启动时扫描 pyplugins 目录，初始化 DAPyNodeFactory | `loadAllPlugins()`, `initPyNodeFactory()`, `scanPyPluginsDir()` |
 | DAPyNodeFactory | `src/DAPyWorkFlow/DAPyNodeFactory.h/.cpp` | 调用 Python DANodeRegistry.discover() 发现节点，维护元数据列表，继承 DAPyObjectWrapper（非 QObject） | `discoverNodes(scanPaths, useEntryPoints)`, `createNode(qualifiedName)`, `getNodeMetadataList()` |
 | DAPyModuleWorkflow | `src/DAPyWorkFlow/DAPyModuleWorkflow.h/.cpp` | 单例，导入 DAWorkbench.DAWorkFlowPy，缓存 Python 类引用 | `getInstance()`, `import()`, `getWorkflowObject()`, `getNodeRegistryObject()`, `getNodeDefDecoratorObject()`, `getNodeFactoryObject()`, `getWorkflowExecutorObject()`, `getSignalManagerObject()`, `getWorkflowSerializerObject()` |
-| DAPyNode | `src/DAPyWorkFlow/DAPyNode.h/.cpp` | Python 节点的 C++ 纯代理，继承 DAPyObjectWrapper，通过 attr() 实时读取 Python 对象属性 | `getNodeId()`, `getQualifiedName()`, `getNodeName()`, `getNodeStyle()`, `getNodeState()`, `setPyInputData()`, `getPyOutputData()`, `getParameters()`, `setParameterValue()` |
+| DAPyNode | `src/DAPyWorkFlow/DAPyNode.h/.cpp` | Python 节点的 C++ 纯代理，继承 DAPyObjectWrapper，通过 attr() 实时读取 Python 对象属性 | `getNodeId()`, `getQualifiedName()`, `getNodeName()`, `getNodeDescription()`, `getNodeStyle()`, `getNodeState()`, `setPyInputData()`, `getPyOutputData()`, `getParameters()`, `setParameterValue()` |
 | DAPyWorkFlowScene | `src/DAPyWorkFlow/DAPyWorkFlowScene.h/.cpp` | 场景管理，创建/移除节点并同步 Python DAWorkflow | `createPyNode()`, `createPyNode_()`, `initPyWorkflow()`, `setPyWorkflow()` |
 | DAPyNodeGraphicsItem | `src/DAPyWorkFlow/DAPyNodeGraphicsItem.h/.cpp` | 节点图形项，根据描述符渲染节点外观和连接点 | `setNodeStyle()`, `nodeStyle()`, `setRenderTemplate(DAPyNodeStyle::NodeRenderTemplate)` |
 | DAPyWorkFlowGraphicsView | `src/DAGui/DAPyWorkFlowGraphicsView.h/.cpp` | 视图层，处理拖拽 dropEvent 触发节点创建 | `dropEvent()`, `createNode_()`, `createNode()` |
@@ -252,6 +252,7 @@ setup(
 | `icon` | str | 否 | 图标标识或路径 |
 | `style` | `NodeDisplay`/`dict` | 否 | 节点渲染样式，NodeDisplay 实例或 dict |
 | `render_template` | str | 否 | 渲染模板：`"nodestyle"`(默认), `"widget"` |
+| `description` | str | 否 | 节点说明文本，显示在 tooltip 中。若为 `None` 则回退读取类 docstring |
 
 ### 装饰器自动生成的类属性
 
@@ -262,6 +263,7 @@ cls.qualified_name       # str:  "module.ClassName" (自动生成: cls.__module_
 cls.name                 # str:  节点显示名称
 cls.category             # str:  节点分类
 cls.icon                 # str:  图标路径
+cls.__node_description   # str:  节点说明文本（来自 description 参数或 docstring 降级）
 cls.inputs               # list[dict]: 从 Inputs 嵌套类收集的端口描述
 cls.outputs              # list[dict]: 从 Outputs 嵌套类收集的端口描述
 cls.parameters           # dict[str, Parameter]: 从类属性收集的参数描述映射

@@ -1,4 +1,4 @@
-﻿#include "DAPyNodeMetaData.h"
+#include "DAPyNodeMetaData.h"
 #include <QDebug>
 namespace DA
 {
@@ -131,12 +131,12 @@ QIcon DAPyNodeMetaData::getIcon() const
 }
 
 /**
- * @brief 获取节点提示文本
+ * @brief 获取节点说明文本
  *
- * 兼容原DANodeMetaData的getNodeTooltip()方法，
- * 直接返回tooltip字段。
+ * 返回tooltip字段，该字段存储节点的说明文本（来自 @NodeDef description 参数或类 docstring）。
+ * 用于在节点列表/树 Widget 和画布场景 tooltip 中显示。
  *
- * @return 节点提示文本字符串
+ * @return 节点说明文本字符串
  */
 QString DAPyNodeMetaData::getNodeTooltip() const
 {

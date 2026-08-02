@@ -177,4 +177,5 @@ def _extract_metadata_from_class(node_cls: type) -> dict:
     metadata["icon"] = getattr(node_cls, "icon", "")
     metadata["input_keys"] = list(getattr(node_cls, "input_keys", []))
     metadata["output_keys"] = list(getattr(node_cls, "output_keys", []))
+    metadata["node_description"] = getattr(node_cls, "__node_description", "")
     return metadata

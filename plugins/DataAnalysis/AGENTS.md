@@ -78,7 +78,8 @@ DataAnalysis/
 - `__init__.py` 顶部调用 `setup_i18n()`，在节点模块导入之前
 - 每个节点文件的 `@NodeDef(category=...)`、`Parameter(description=...)`、`Input/Output(description=...)` 用 `_()` 包裹
 - `@NodeDef(name=...)` 保持英文不翻译（参与 `qualified_name` 序列化）
-- 类 docstring 改为英文（作为 tooltip 显示）
+- `@NodeDef(description=...)` 用 `_()` 包裹翻译，显示在 tooltip 中
+- 类 docstring 改为英文（作为 `description` 的降级回退，不经过 `_()` 翻译）
 - `paint()` 中硬编码文本用 `_()` 包裹
 
 ### i18n 工作流

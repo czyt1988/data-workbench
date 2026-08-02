@@ -68,6 +68,7 @@ public:
     DAPyNode mProxy;  ///< Python节点代理（值持有）
     // 缓存字段：从DAPyNode一次性读取，避免paint时GIL开销
     QString mName;                                   ///< 缓存的节点名称
+    QString mDescription;                            ///< 缓存的节点说明文本
     QString mQualifiedName;                          ///< 缓存的限定名
     QString mIconPath;                               ///< 缓存的图标路径
     QList< QString > mInputKeys;                     ///< 缓存的输入端口key列表
@@ -131,11 +132,14 @@ int DAPyNodeGraphicsItem::PrivateData::countVisibleParameters() const
 
 /**
  * @brief 构建tooltip文本
- * @return HTML格式tooltip，包含节点名和全部参数（不截断）
+ * @return HTML格式tooltip，包含节点名、说明文本和全部参数（不截断）
  */
 QString DAPyNodeGraphicsItem::PrivateData::buildTooltip() const
 {
     QString tip = QString("<b>%1</b>").arg(mName);
+    if (!mDescription.isEmpty()) {
+        tip += QString("<hr><i>%1</i>").arg(mDescription.toHtmlEscaped());
+    }
     if (!mCachedParameters.isEmpty()) {
         tip += "<hr>";
         for (const auto& cp : std::as_const(mCachedParameters)) {
@@ -448,6 +452,7 @@ void DAPyNodeGraphicsItem::setProxy(const DAPyNode& proxy)
     if (!proxy.isNone()) {
         d_ptr->mNodeState     = proxy.getNodeState();
         d_ptr->mName          = proxy.getNodeName();
+        d_ptr->mDescription   = proxy.getNodeDescription();
         d_ptr->mQualifiedName = proxy.getQualifiedName();
         d_ptr->mIconPath      = proxy.getIcon();
         d_ptr->mInputKeys     = proxy.getInputKeys();

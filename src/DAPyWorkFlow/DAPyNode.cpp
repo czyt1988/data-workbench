@@ -115,6 +115,21 @@ QString DAPyNode::getIcon() const
     return QString();
 }
 
+QString DAPyNode::getNodeDescription() const
+{
+    if (isNone()) {
+        return QString();
+    }
+    try {
+        if (hasattr("__node_description")) {
+            return attr("__node_description").cast< QString >();
+        }
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return QString();
+}
+
 QList< QString > DAPyNode::getInputKeys() const
 {
     if (isNone()) {

@@ -56,9 +56,10 @@ copy /Y "plugins\DASystemNodes\PyScripts\DASystemNodes\nodes\text_viewer.py" `
 |------|---------|------|
 | `@NodeDef(name=...)` | ❌ **不翻译** | 保持英文，`name` 参与 `qualified_name` 序列化 |
 | `@NodeDef(category=...)` | ✅ 翻译 | `category=_("English Category"))  # cn:中文分类` |
+| `@NodeDef(description=...)` | ✅ 翻译 | `description=_("English desc"))  # cn:中文描述` |
+| 类 docstring | 改为英文 | 作为 `description` 的降级回退，不经过 `_()` 翻译 |
 | `Parameter(description=...)` | ✅ 翻译 | `description=_("English desc"))  # cn:中文描述` |
 | `Input/Output(description=...)` | ✅ 翻译 | 同上 |
-| 类 docstring | 改为英文 | docstring 作为 tooltip 显示 |
 | `paint()` 中硬编码文本 | ✅ 翻译 | `painter.drawText(..., _("English"))  # cn:中文` |
 | `execute()` 中日志 | ❌ 不翻译 | 保持英文 |
 
@@ -68,7 +69,7 @@ copy /Y "plugins\DASystemNodes\PyScripts\DASystemNodes\nodes\text_viewer.py" `
 
 ```python
 # -*- coding: utf-8 -*-
-"""My Node brief description."""  # docstring 改英文（作为 tooltip）
+"""My Node brief description."""  # docstring 改英文（作为 description 降级回退）
 
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 

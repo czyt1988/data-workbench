@@ -61,6 +61,9 @@ public:
     // 节点图标（从Python对象属性icon读取）
     QString getIcon() const;
 
+    // 节点说明文本（从Python对象属性__node_description读取）
+    QString getNodeDescription() const;
+
     // 输入/输出端口key列表（从Python对象属性input_keys/output_keys读取）
     QList< QString > getInputKeys() const;
     QList< QString > getOutputKeys() const;

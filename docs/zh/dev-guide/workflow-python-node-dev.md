@@ -49,6 +49,7 @@ class MyNode:
 | `icon` | str | 否 | 节点图标标识，默认为空字符串 |
 | `render_template` | str | 否 | 渲染模板类型，默认为 `"nodestyle"`，支持 `"nodestyle"`、`"widget"` |
 | `style` | NodeDisplay/dict | 否 | 节点样式配置，支持 `NodeDisplay` 实例或 dict（自动转换为 `NodeDisplay`），默认为 `None` |
+| `description` | str | 否 | 节点说明文本，显示在 tooltip 中。推荐用 `_("English") # cn:中文` 翻译。若为 `None` 则自动回退读取类 docstring（不翻译） |
 
 !!! tip "render_template 参数"
     `render_template` 控制节点在工作流场景中的视觉呈现方式：

@@ -72,6 +72,7 @@ DAPyNodeMetaData toNodeMetaData(const pybind11::object& obj)
     metaData.name     = readCastAttr< QString >(obj, "name", metaData.name);
     metaData.category = readCastAttr< QString >(obj, "category", metaData.category);
     metaData.iconPath = readCastAttr< QString >(obj, "icon", metaData.iconPath);
+    metaData.tooltip  = readCastAttr< QString >(obj, "__node_description", metaData.tooltip);
     return metaData;
 }
 
