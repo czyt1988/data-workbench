@@ -2,6 +2,7 @@
 #define DAGRAPHICSRESIZEOVERLAYITEM_H
 #include "DAGraphicsViewGlobal.h"
 #include <QGraphicsObject>
+#include <QCursor>
 #include <QPair>
 #include <QPointF>
 #include <QSizeF>
@@ -86,7 +87,7 @@ private:
     QPair<QPointF, QSizeF> computeResize(const QPointF& mouseLocalPos) const;
     qreal computeRotation(const QPointF& mouseScenePos) const;  // 旋转角度计算（scene 坐标）
     ControlType hitTest(const QPointF& pos) const;
-    static Qt::CursorShape controlTypeToCursor(ControlType ct);
+    static QCursor controlTypeToCursor(ControlType ct);
     static qreal rotationHandleOffset(const QSizeF& cs);  // 旋转控制点距 body 上边的距离
     QSizeF clampSize(const QSizeF& s) const;
     QList<QRectF> getHandleRects() const;

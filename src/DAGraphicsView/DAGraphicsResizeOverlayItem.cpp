@@ -2,6 +2,7 @@
 #include "DAIResizableGraphicsItem.h"
 #include "DAGraphicsScene.h"  // 评审修复R3: B2 — qobject_cast<DAGraphicsScene*> 需完整类定义
 #include <QPainter>
+#include <QSvgRenderer>
 #include <QStyleOptionGraphicsItem>
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
@@ -13,6 +14,23 @@
 #include <limits>
 namespace DA
 {
+
+// 静态加载旋转光标 — 首次调用时从 SVG 资源渲染为 QPixmap 并构造 QCursor，后续直接返回缓存
+static QCursor loadRotateCursor()
+{
+    static QCursor sRotateCursor = []() {
+        const int sz = 24;
+        QPixmap pm(sz, sz);
+        pm.fill(Qt::transparent);
+        QPainter painter(&pm);
+        QSvgRenderer renderer(QStringLiteral(":/DAGraphicsView/svg/rotate.svg"));
+        if (renderer.isValid()) {
+            renderer.render(&painter, QRectF(0, 0, sz, sz));
+        }
+        return QCursor(pm, sz / 2, sz / 2);  // hotspot 设为图标中心
+    }();
+    return sRotateCursor;
+}
 
 class DAGraphicsResizeOverlayItem::PrivateData
 {
@@ -38,13 +56,22 @@ DAGraphicsResizeOverlayItem::DAGraphicsResizeOverlayItem(DAIResizableGraphicsIte
 {
     Q_ASSERT(target != nullptr);  // 评审修复R3: W3
     d_ptr->mTarget = target;
+    // 在 target 上设置移动光标，使鼠标悬停在 body 边界区域时显示 SizeAllCursor
+    // Overlay 的 shape() 仅覆盖控制点，不覆盖 body 区域，因此 body 上的光标由 target 决定
+    target->graphicsItem()->setCursor(Qt::SizeAllCursor);
     setZValue(std::numeric_limits<qreal>::max());
     setFlag(ItemIsSelectable, false);
     setFlag(ItemIsMovable, false);
     setAcceptHoverEvents(true);
 }
 
-DAGraphicsResizeOverlayItem::~DAGraphicsResizeOverlayItem() {}
+DAGraphicsResizeOverlayItem::~DAGraphicsResizeOverlayItem()
+{
+    DA_D(d);
+    if (d->mTarget) {
+        d->mTarget->graphicsItem()->unsetCursor();
+    }
+}
 
 void DAGraphicsResizeOverlayItem::syncToTarget()
 {
@@ -164,25 +191,25 @@ DAGraphicsResizeOverlayItem::ControlType DAGraphicsResizeOverlayItem::hitTest(co
     return NotUnderAnyControlType;
 }
 
-Qt::CursorShape DAGraphicsResizeOverlayItem::controlTypeToCursor(ControlType ct)
+QCursor DAGraphicsResizeOverlayItem::controlTypeToCursor(ControlType ct)
 {
     switch (ct) {
     case ControlPointTopLeft:
     case ControlPointBottomRight:
-        return Qt::SizeFDiagCursor;
+        return QCursor(Qt::SizeFDiagCursor);
     case ControlPointTopMid:
     case ControlPointBottomMid:
-        return Qt::SizeVerCursor;
+        return QCursor(Qt::SizeVerCursor);
     case ControlPointTopRight:
     case ControlPointBottomLeft:
-        return Qt::SizeBDiagCursor;
+        return QCursor(Qt::SizeBDiagCursor);
     case ControlPointRightMid:
     case ControlPointLeftMid:
-        return Qt::SizeHorCursor;
+        return QCursor(Qt::SizeHorCursor);
     case RotationHandle:
-        return Qt::OpenHandCursor;
+        return loadRotateCursor();  // 静态缓存的旋转光标
     default:
-        return Qt::ArrowCursor;
+        return QCursor(Qt::ArrowCursor);
     }
 }
 
