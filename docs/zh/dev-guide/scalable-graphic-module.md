@@ -7,6 +7,7 @@
 **特性**
 
 - ✅ **8控制点缩放**：提供8个可视控制点，用户可通过拖拽控制点调整图元尺寸
+- ✅ **Overlay 模式**：控制点绘制和鼠标交互由独立的 `DAGraphicsResizeOverlayItem` 管理，不再耦合在图元基类中
 - ✅ **鼠标事件集成**：自动处理鼠标悬停、点击、拖拽事件，实现流畅的缩放交互
 - ✅ **尺寸限制**：支持设置最小/最大尺寸，防止图元过小或过大
 - ✅ **网格对齐**：支持网格对齐功能，便于精确定位
@@ -17,7 +18,7 @@
 
 ### 核心类关系图
 
-绘图模块的核心类通过继承关系组织，`DAGraphicsResizeableItem` 提供缩放控制功能，派生出矩形、图片等具体图元类型。下图展示了类的继承和依赖关系：
+绘图模块的核心类通过继承关系组织，`DAGraphicsResizeableItem` 提供 body 尺寸管理，`DAGraphicsResizeOverlayItem` 作为独立 Overlay 负责控制点绘制和缩放交互。下图展示了类的继承和依赖关系：
 
 ```mermaid
 classDiagram
@@ -26,7 +27,15 @@ classDiagram
         +paint()
         +type() int
     }
-    
+
+    class DAIResizableGraphicsItem {
+        <<interface>>
+        +setBodySize()
+        +getBodySize()
+        +getBodyRect()
+        +getBodyPainterStartPos()
+    }
+
     class DAGraphicsItem {
         +saveToXml()
         +loadFromXml()
@@ -35,7 +44,7 @@ classDiagram
         +setMovable()
         +setBackgroundBrush()
     }
-    
+
     class DAGraphicsResizeableItem {
         +setBodySize()
         +getBodySize()
@@ -44,13 +53,14 @@ classDiagram
         +setBodyMaximumSize()
         +setEnableResize()
         +paintBody()
-        +paintSelectedBorder()
-        +paintResizeControlPoints()
-        +prepareControlInfoChange()
-        +getControlPointByPos()
-        +isResizing()
     }
-    
+
+    class DAGraphicsResizeOverlayItem {
+        +syncToTarget()
+        +isResizing()
+        +requestResize()
+    }
+
     class DAGraphicsRectItem {
         +setText()
         +setTextAlignment()
@@ -58,7 +68,7 @@ classDiagram
         +setRectFillBrush()
         +paintBody()
     }
-    
+
     class DAGraphicsPixmapItem {
         +setPixmap()
         +setAspectRatioMode()
@@ -66,7 +76,7 @@ classDiagram
         +setAlpha()
         +paintBody()
     }
-    
+
     class DAGraphicsScene {
         +addItem_()
         +removeItem_()
@@ -74,7 +84,7 @@ classDiagram
         +setEnableSnapToGrid()
         +setGridSize()
     }
-    
+
     class DAGraphicsView {
         +setScaleRange()
         +setEnaleWheelZoom()
@@ -82,20 +92,37 @@ classDiagram
         +zoomOut()
         +zoomFit()
     }
-    
+
     QGraphicsObject <|-- DAGraphicsItem
+    DAIResizableGraphicsItem <|.. DAGraphicsResizeableItem
     DAGraphicsItem <|-- DAGraphicsResizeableItem
     DAGraphicsResizeableItem <|-- DAGraphicsRectItem
     DAGraphicsResizeableItem <|-- DAGraphicsPixmapItem
+    QGraphicsObject <|-- DAGraphicsResizeOverlayItem
+    DAGraphicsResizeOverlayItem --> DAGraphicsResizeableItem : overlay
+    DAGraphicsScene --> DAGraphicsResizeOverlayItem : 管理 lifecycle
     DAGraphicsScene --> DAGraphicsResizeableItem : 管理
     DAGraphicsView --> DAGraphicsScene : 显示
 ```
 
 上图展示了可缩放图元模块的类继承关系：
+
+- `DAIResizableGraphicsItem` 是纯虚接口，定义可缩放图元的契约
 - `DAGraphicsItem` 是所有图元的基类，提供 XML 序列化、边框、可选、可移动等基础功能
-- `DAGraphicsResizeableItem` 在基类基础上添加 8 控制点缩放功能
+- `DAGraphicsResizeableItem` 继承 `DAGraphicsItem` 并实现 `DAIResizableGraphicsItem`，提供 body 尺寸管理
+- `DAGraphicsResizeOverlayItem` 是独立的 Overlay 类（继承 `QGraphicsObject`），负责控制点绘制和鼠标缩放交互，由 `DAGraphicsScene` 管理生命周期
 - `DAGraphicsRectItem` 和 `DAGraphicsPixmapItem` 是具体的图元实现
 - `DAGraphicsScene` 和 `DAGraphicsView` 提供场景管理和视图显示
+
+### Overlay 模式架构
+
+控制点绘制和缩放交互已从 `DAGraphicsResizeableItem` 移至独立的 `DAGraphicsResizeOverlayItem`，解决了以下问题：
+
+| 问题 | 解决方案 |
+|------|----------|
+| 控制点被上层 item 遮挡 | Overlay 以最高 z-value 独立绘制，不受 item 层级影响 |
+| 旋转下缩放数学错误 | Overlay 继承 target 的 pos/rotation，局部坐标系与 target 对齐，缩放计算自动正确 |
+| 强制继承 | 缩放逻辑解耦，任何实现 `DAIResizableGraphicsItem` 的 item 均可获得缩放能力 |
 
 ### 模块依赖
 
@@ -105,17 +132,32 @@ classDiagram
 flowchart LR
     A[DAGraphicsView] --> B[DAGraphicsScene]
     B --> C[DAGraphicsResizeableItem]
+    B --> O[DAGraphicsResizeOverlayItem]
     C --> D[DAGraphicsItem]
+    C -.-> I[DAIResizableGraphicsItem]
     D --> E[Qt Graphics View Framework]
+    O --> E
 ```
 
-上图展示了模块的依赖层次：视图依赖场景，场景管理图元，图元继承基类，最终依赖 Qt Graphics View 框架。
+上图展示了模块的依赖层次：视图依赖场景，场景管理图元和 Overlay，图元继承基类并实现接口，最终依赖 Qt Graphics View 框架。
 
 ## 核心类详解
 
+### DAIResizableGraphicsItem
+
+纯虚接口，定义可缩放图元的契约。`DAGraphicsResizeableItem` 实现此接口，`DAGraphicsResizeOverlayItem` 通过此接口操作 target。
+
+| 接口方法 | 说明 |
+|----------|------|
+| `setBodySize` | 设置内容尺寸 |
+| `getBodySize` | 获取内容尺寸 |
+| `getBodyRect` | 获取内容区域矩形 |
+| `getBodyPainterStartPos` | 获取绘制起始位置 |
+| `graphicsItem` | 获取 QGraphicsItem 指针 |
+
 ### DAGraphicsResizeableItem
 
-`DAGraphicsResizeableItem` 是可缩放图元模块的核心类，继承自 `DAGraphicsItem`，提供了完整的图元缩放控制功能。
+`DAGraphicsResizeableItem` 是可缩放图元模块的核心类，继承自 `DAGraphicsItem`，实现 `DAIResizableGraphicsItem` 接口，提供 body 尺寸管理功能。控制点绘制和缩放交互已移至 `DAGraphicsResizeOverlayItem`。
 
 #### 关键设计理念
 
@@ -123,55 +165,41 @@ flowchart LR
 
 | 接口 | 说明 |
 |------|------|
-| `paint` | 完整绘制流程，包含控制点、边框、内容体 |
+| `paint` | 完整绘制流程，包含边框、内容体 |
 | `paintBody` | 仅绘制内容体，用户只需重写此方法 |
 
-这种设计将控制点绘制、边框绘制等公共逻辑封装在基类中，用户只需关注核心内容绘制。
-
-#### 控制点类型
-
-图元提供8个控制点和4条控制线，用于精确调整尺寸：
-
-```cpp
-enum ControlType {
-    NotUnderAnyControlType = 0,  // 不在控制点上
-    ControlPointTopLeft,         // 左上控制点
-    ControlPointTopMid,          // 顶部中间控制点
-    ControlPointTopRight,        // 右上控制点
-    ControlPointRightMid,        // 右边中间控制点
-    ControlPointBottomRight,     // 右下控制点
-    ControlPointBottomMid,       // 底部中间控制点
-    ControlPointBottomLeft,      // 左下控制点
-    ControlPointLeftMid,         // 左面中间控制点
-    ControlLineLeft,             // 左边控制线
-    ControlLineTop,              // 顶部控制线
-    ControlLineRight,            // 右边控制线
-    ControlLineBottom            // 底部控制线
-};
-```
-
-![resible-graphicsitem](../assets/PIC/resible-graphicsitem.png)
+!!! note "控制点绘制已移至 Overlay"
+    控制点绘制 (`paintResizeControlPoints`)、选中边框绘制 (`paintSelectedBorder`)、控制点检测 (`getControlPointByPos`)、缩放状态查询 (`isResizing`) 等方法已从 `DAGraphicsResizeableItem` 移除，由 `DAGraphicsResizeOverlayItem` 接管。
 
 #### 绘制流程
 
-`DAGraphicsResizeableItem::paint` 的完整绘制流程如下。该流程自动处理选中状态、控制点、边框的绘制，用户只需实现 `paintBody`：
+`DAGraphicsResizeableItem::paint` 的绘制流程如下。控制点绘制由独立的 `DAGraphicsResizeOverlayItem` 负责，不再在此流程中：
 
 ```mermaid
 flowchart TD
-    A[paint 开始] --> B{是否选中}
-    B -->|选中| C[paintSelectedBorder]
-    B -->|未选中| D[paintBackground]
-    C --> E[paintResizeControlPoints]
-    E --> F[paintBody]
-    D --> F
-    F --> G[paintBorder]
-    G --> H[paint 结束]
+    A[paint 开始] --> B[paintBackground]
+    B --> C[paintBody]
+    C --> D[paintBorder]
+    D --> E[paint 结束]
 ```
 
-上图展示了完整的绘制流程：
-- 选中状态决定是否绘制选中边框和控制点
-- 无论是否选中，都会绘制背景和内容体
-- 最后绘制边框，完成整体渲染
+上图展示了绘制流程：
+
+- 先绘制背景，再绘制内容体，最后绘制边框
+- 选中边框和控制点由 `DAGraphicsResizeOverlayItem` 独立绘制，与图元 `paint` 流程分离
+
+### DAGraphicsResizeOverlayItem
+
+独立的 Overlay 类，继承 `QGraphicsObject`，负责控制点绘制和鼠标缩放交互。
+
+| 方法 | 说明 |
+|------|------|
+| `syncToTarget` | 同步 Overlay 的 pos/rotation/transformOriginPoint 到 target |
+| `isResizing` | 判断当前是否正在缩放 |
+| `hitTest` | 检测指定位置在哪个控制点上 |
+| `computeResize` | 计算缩放结果（支持旋转感知） |
+
+Overlay 通过信号 `requestResize(target, oldPos, oldSize, newPos, newSize)` 通知 `DAGraphicsScene` 创建 undo command。Scene 在 `selectionChanged` 时创建/销毁 Overlay。
 
 ## 使用方法
 
@@ -238,7 +266,7 @@ scene->addItem_(pixmapItem);
 
 ### 处理尺寸变化
 
-监听图元尺寸变化信号：
+监听场景级图元尺寸变化信号（item 级信号已移除，使用场景信号）：
 
 ```cpp
 // 连接场景的尺寸变化信号
@@ -247,13 +275,10 @@ connect(scene, &DA::DAGraphicsScene::itemBodySizeChanged,
                  const QSizeF& oldSize, const QSizeF& newSize) {
     qDebug() << "图元尺寸从" << oldSize << "变为" << newSize;
 });
-
-// 连接单个图元的尺寸变化信号
-connect(rectItem, &DA::DAGraphicsResizeableItem::itemBodySizeChanged,
-        this, [](const QSizeF& oldSize, const QSizeF& newSize) {
-    qDebug() << "尺寸变化：" << oldSize << "->" << newSize;
-});
 ```
+
+!!! warning "item 级 itemBodySizeChanged 信号已移除"
+    `DAGraphicsResizeableItem` 上的 `itemBodySizeChanged` 信号已在重构中移除。请改用 `DAGraphicsScene::itemBodySizeChanged` 场景级信号。
 
 ### 配置缩放限制
 
@@ -268,9 +293,6 @@ item->setBodyMaximumSize(QSizeF(500, 400));
 
 // 禁用缩放功能
 item->setEnableResize(false);
-
-// 设置控制点大小
-item->setControlerSize(QSizeF(8, 8));
 ```
 
 ### 网格对齐
@@ -302,14 +324,15 @@ flowchart TD
     C --> D[DAPyWorkFlowScene]
     D --> E[工作流编辑界面]
     
-    F[缩放控制点] --> G[节点尺寸调整]
+    F[Overlay 控制点] --> G[节点尺寸调整]
     H[鼠标事件处理] --> I[节点交互]
     J[redo/undo] --> K[操作历史]
 ```
 
 上图展示了可缩放图元模块如何支撑工作流可视化编辑：
-- `DAAbstractNodeGraphicsItem` 继承 `DAGraphicsResizeableItem`，获得 8 控制点缩放能力
-- 缩放控制点支持节点尺寸调整，鼠标事件处理支持节点交互
+
+- `DAAbstractNodeGraphicsItem` 继承 `DAGraphicsResizeableItem`，获得缩放能力
+- `DAGraphicsResizeOverlayItem` 提供控制点和交互，支持节点尺寸调整
 - redo/undo 支持操作历史，实现完整的编辑体验
 
 工作流模块中的 `DAAbstractNodeGraphicsItem` 继承 `DAGraphicsResizeableItem`，通过可缩放图元的能力实现工作流节点的可视化编辑。
@@ -318,6 +341,16 @@ flowchart TD
     自定义工作流节点图元时，继承 `DAAbstractNodeGraphicsItem` 即可获得完整的缩放编辑能力。
 
 ## API 参考
+
+### DAIResizableGraphicsItem 接口方法
+
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `setBodySize` | QSizeF | void | 设置图元内容尺寸 |
+| `getBodySize` | 无 | QSizeF | 获取图元内容尺寸 |
+| `getBodyRect` | 无 | QRectF | 获取内容区域矩形 |
+| `getBodyPainterStartPos` | 无 | QPointF | 获取绘制起始位置 |
+| `graphicsItem` | 无 | QGraphicsItem* | 获取 QGraphicsItem 指针 |
 
 ### DAGraphicsResizeableItem 核心方法
 
@@ -330,9 +363,6 @@ flowchart TD
 | `setBodyMaximumSize` | QSizeF | void | 设置最大尺寸限制 |
 | `setEnableResize` | bool | void | 设置是否允许缩放 |
 | `isResizable` | 无 | bool | 判断是否可缩放 |
-| `setControlerSize` | QSizeF | void | 设置控制点大小 |
-| `prepareControlInfoChange` | 无 | void | 尺寸变化后刷新控制点信息 |
-| `getControlPointByPos` | QPointF | ControlType | 检测点在哪个控制点上 |
 
 ### DAGraphicsResizeableItem 需重写方法
 
@@ -342,11 +372,14 @@ flowchart TD
 | `getBodyShape` | 无 | QPainterPath | 获取内容体的形状路径 |
 | `setBodySize` | QSizeF | void | 重载可控制特殊尺寸逻辑（如保持宽高比） |
 
-### DAGraphicsResizeableItem 信号
+### DAGraphicsResizeOverlayItem 方法
 
-| 信号 | 参数 | 触发时机 |
-|------|------|----------|
-| `itemBodySizeChanged` | QSizeF, QSizeF | 内容尺寸变化时 |
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `syncToTarget` | 无 | void | 同步 Overlay 变换到 target |
+| `isResizing` | 无 | bool | 判断是否正在缩放 |
+| `hitTest` | QPointF | ControlType | 检测点在哪个控制点上 |
+| `computeResize` | QPointF, QSizeF, QSizeF | void | 计算缩放结果（支持旋转） |
 
 ### DAGraphicsScene 相关方法
 
@@ -359,6 +392,33 @@ flowchart TD
 | `setEnableSnapToGrid` | bool | void | 启用网格对齐 |
 | `setGridSize` | QSize | void | 设置网格尺寸 |
 
+### DAGraphicsScene 信号
+
+| 信号 | 参数 | 触发时机 |
+|------|------|----------|
+| `itemBodySizeChanged` | DAGraphicsResizeableItem*, QSizeF, QSizeF | 图元尺寸变化时 |
+| `itemRotationChanged` | DAGraphicsResizeableItem*, qreal | 图元旋转变化时 |
+
+## 已废弃 API
+
+以下 API 已在 Overlay 重构中废弃，请使用替代方案：
+
+| 已废弃 API | 替代方案 | 状态 |
+|------------|----------|------|
+| `DAGraphicsResizeableItem::isResizing()` | `DAGraphicsResizeOverlayItem::isResizing()` | 已移除 |
+| `DAGraphicsResizeableItem::getControlPointByPos()` | `DAGraphicsResizeOverlayItem::hitTest()` | 已移除 |
+| `DAGraphicsResizeableItem::prepareControlInfoChange()` | 无需调用，Overlay 自动同步 | 已移除 |
+| `DAGraphicsResizeableItem::paintSelectedBorder()` | 由 `DAGraphicsResizeOverlayItem` 绘制 | 已移除 |
+| `DAGraphicsResizeableItem::paintResizeControlPoints()` | 由 `DAGraphicsResizeOverlayItem` 绘制 | 已移除 |
+| `DAGraphicsResizeableItem::ControlType` 枚举 | `DAGraphicsResizeOverlayItem::ControlType` 枚举 | 已移除 |
+| `DAGraphicsResizeableItem::NotUnderAnyControlType` | `DAGraphicsResizeOverlayItem::NotUnderAnyControlType` | 已移除 |
+| `DAGraphicsResizeableItem::controlPointRect` | 由 `DAGraphicsResizeOverlayItem` 管理 | 已移除 |
+| `DAGraphicsResizeableItem::itemBodySizeChanged` 信号（item 级） | `DAGraphicsScene::itemBodySizeChanged` 信号（场景级） | 已移除 |
+| `daGlobalGraphicsResizeableItemPalette` 全局单例 | 已移除，样式直接在 Overlay 中管理 | 已移除 |
+| `DAGraphicsResizeableItemPalette` 类 | 已移除 | 已移除 |
+| `DAGraphicsResizeableItem::getBodyControlRect()` | 使用 `getBodyRect()` | 保留为 deprecated 包装 |
+| `DAGraphicsResizeableItem::setControlerSize()` | 控制点尺寸由 Overlay 管理 | 保留为 deprecated 包装 |
+
 ## 注意事项
 
 !!! warning "PIMPL 模式"
@@ -366,20 +426,11 @@ flowchart TD
     - `DA_DECLARE_PRIVATE` - 声明私有数据指针
     - `DA_D` - 获取私有数据指针
 
-!!! warning "prepareControlInfoChange 调用"
-    在尺寸变化后（如 `prepareGeometryChange` 之后）必须调用 `prepareControlInfoChange()` 刷新控制点信息，否则控制点位置可能不正确。
-
 !!! tip "paintBody 绘制范围"
     `paintBody` 的 `bodyRect` 参数限定绘制区域，请勿在此区域外绘制，否则可能导致显示异常。
 
 !!! note "Qt版本兼容性"
     Qt5 和 Qt6 的 Graphics View 框架接口基本一致，无需特殊兼容处理。
-
-!!! info "样式配置"
-    全局样式通过 `daGlobalGraphicsResizeableItemPalette` 单例管理：
-    - `resizeControlPointBorderColor` - 控制点边框颜色
-    - `resizeBorderColor` - 选中边框颜色
-    - `resizeControlPointBrush` - 控制点填充颜色
 
 ## 参考资料
 

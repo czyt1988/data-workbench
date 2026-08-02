@@ -1335,9 +1335,9 @@ QPainterPath DAPyNodeGraphicsItem::shape() const
     QPainterPath path;
 
     if (d->mStyle.bodyShape == DAPyNodeStyle::EllipseShape) {
-        path.addEllipse(getBodyControlRect());
+        path.addEllipse(getBodyRect());
     } else if (d->mStyle.bodyShape == DAPyNodeStyle::DiamondShape) {
-        QRectF r = getBodyControlRect();
+        QRectF r = getBodyRect();
         QPolygonF diamond;
         diamond << QPointF(r.center().x(), r.top()) << QPointF(r.right(), r.center().y())
                 << QPointF(r.center().x(), r.bottom()) << QPointF(r.left(), r.center().y());

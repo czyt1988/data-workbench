@@ -309,16 +309,13 @@ void DAGraphicsTextItem::mousePressEvent(QGraphicsSceneMouseEvent* e)
 {
 	// qDebug() << "DAGraphicsTextItem::mousePressEvent";
 	DAGraphicsResizeableItem::mousePressEvent(e);
-	// TODO: plan-05 正式移除此守卫，plan-02 临时修复
-	if (true) {
-		auto br = d_ptr->mTextItem->boundingRect();
-		if (br.contains(e->pos())) {
-			QTextCursor cursor(d_ptr->mTextItem->document());
-			cursor.movePosition(QTextCursor::End);
-			d_ptr->mTextItem->setTextInteractionFlags(Qt::TextEditorInteraction);
-			d_ptr->mTextItem->setTextCursor(cursor);
-			d_ptr->mTextItem->setFocus();  // 确保获得焦点以显示光标
-		}
+	auto br = d_ptr->mTextItem->boundingRect();
+	if (br.contains(e->pos())) {
+		QTextCursor cursor(d_ptr->mTextItem->document());
+		cursor.movePosition(QTextCursor::End);
+		d_ptr->mTextItem->setTextInteractionFlags(Qt::TextEditorInteraction);
+		d_ptr->mTextItem->setTextCursor(cursor);
+		d_ptr->mTextItem->setFocus();  // 确保获得焦点以显示光标
 	}
 }
 
