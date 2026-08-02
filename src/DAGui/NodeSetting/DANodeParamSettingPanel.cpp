@@ -46,10 +46,10 @@ DANodeParamSettingPanel::DANodeParamSettingPanel(QWidget* parent)
     d->mPlaceholderLabel->hide();
     layout->addWidget(d->mPlaceholderLabel);
 
+    // 字段值变化：回写节点代理实例值（必须先于转发连接，确保外部监听者读到的是已写入的值）
+    connect(d->mFormWidget, &DAPropertyFormWidget::fieldValueChanged, this, &DANodeParamSettingPanel::onFormFieldChanged);
     // 字段值变化：转发为本类信号（供 DANodeParamSettingPanelWidget 等外部监听）
     connect(d->mFormWidget, &DAPropertyFormWidget::fieldValueChanged, this, &DANodeParamSettingPanel::fieldValueChanged);
-    // 字段值变化：回写节点代理实例值
-    connect(d->mFormWidget, &DAPropertyFormWidget::fieldValueChanged, this, &DANodeParamSettingPanel::onFormFieldChanged);
 }
 
 /**
