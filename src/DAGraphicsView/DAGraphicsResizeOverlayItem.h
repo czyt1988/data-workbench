@@ -24,7 +24,8 @@ class DAIResizableGraphicsItem;
  *
  * @note 此 item 不参与序列化，不保存到 XML
  * @note 此 item 的 z-value 设置为场景最高值
- * @note 当前实现仅支持单选时显示 Overlay。多选时不创建 Overlay，多选缩放为后续迭代功能。
+ * @note 仅在单选可缩放图元时创建 Overlay（提供控制点交互）。多选时不创建 Overlay，
+ *       选中边框由图元自身 paint() 绘制，确保用户能看到选中的图元。
  * @note 当前实现假设 target 为顶层 scene item（无 parent item）。非 top-level target 的支持为后续迭代功能。 <!-- 评审修复R3: W2 -->
  */
 class DAGRAPHICSVIEW_API DAGraphicsResizeOverlayItem : public QGraphicsObject

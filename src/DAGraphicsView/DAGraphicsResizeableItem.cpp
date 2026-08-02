@@ -278,15 +278,15 @@ void DAGraphicsResizeableItem::paint(QPainter* painter, const QStyleOptionGraphi
 	paintBackground(painter, option, widget, bodyrect);
 	paintBorder(painter, option, widget, bodyrect);
 	paintBody(painter, option, widget, bodyrect);
-	// 非可缩放图元的选中边框（Overlay 仅对可缩放图元创建）
-	if (!isResizable() && isSelected()) {
+	// 选中边框始终由图元自身绘制（单选/多选均显示），Overlay 仅负责控制点
+	if (isSelected()) {
 		QPen pen(QColor(32, 128, 240));
 		pen.setStyle(Qt::DashLine);
 		painter->setPen(pen);
 		painter->setBrush(Qt::NoBrush);
 		painter->drawRect(bodyrect);
 	}
-	// 不再绘制控制点和选中边框 — 由 Overlay 负责（可缩放图元）
+	// 不再绘制控制点 — 由 Overlay 负责（仅单选可缩放图元）
 }
 
 bool DAGraphicsResizeableItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const

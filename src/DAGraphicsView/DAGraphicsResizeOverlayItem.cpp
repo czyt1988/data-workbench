@@ -107,13 +107,7 @@ void DAGraphicsResizeOverlayItem::paint(QPainter* painter, const QStyleOptionGra
     DA_D(d);
     if (!d->mTarget) return;  // 评审修复R3: W3
     QRectF body = d->mTargetBodyRect;
-    // 绘制选中边框（虚线）
-    QPen borderPen(QColor(32, 128, 240));
-    borderPen.setStyle(Qt::DashLine);
-    painter->setPen(borderPen);
-    painter->setBrush(Qt::NoBrush);
-    painter->drawRect(body);
-
+    // 选中边框由图元自身 paint() 绘制，Overlay 仅绘制控制点
     // 绘制 8 个控制点（评审修复: W1 — 使用 getHandleRects 共用计算）
     painter->setBrush(QColor(32, 128, 240));
     painter->setPen(QPen(QColor(128, 128, 147)));
