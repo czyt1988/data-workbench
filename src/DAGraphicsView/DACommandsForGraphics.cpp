@@ -509,11 +509,13 @@ bool DACommandsForGraphicsItemResizeHeight::mergeWith(const QUndoCommand* comman
 DACommandsForGraphicsItemRotation::DACommandsForGraphicsItemRotation(DAIResizableGraphicsItem* item,
                                                                      const qreal& oldRotation,
                                                                      const qreal& newRotation,
+                                                                     bool skipfirst,
                                                                      QUndoCommand* parent)
     : QUndoCommand(parent)
     , mItem(item)
     , mOldRotation(oldRotation)
     , mNewRotation(newRotation)
+    , mSkipFirst(skipfirst)
     , mDatetime(QDateTime::currentDateTime())
 {
     setText(QObject::tr("Item Rotation"));  // cn:旋转图元
@@ -522,6 +524,10 @@ DACommandsForGraphicsItemRotation::DACommandsForGraphicsItemRotation(DAIResizabl
 void DACommandsForGraphicsItemRotation::redo()
 {
 	QUndoCommand::redo();
+	if (mSkipFirst) {
+		mSkipFirst = false;
+		return;
+	}
 	if (mItem) {
 		mItem->graphicsItem()->setRotation(mNewRotation);
 	}

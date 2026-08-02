@@ -28,6 +28,7 @@ public:
     // 鼠标按下时记录的状态
     QPointF mPressPos;       // target 的 pos（按下时）
     QSizeF  mPressSize;      // target 的 bodySize（按下时）
+    qreal   mPressRotation { 0 };  // target 的 rotation（按下时，旋转控制点用）
 };
 
 DAGraphicsResizeOverlayItem::PrivateData::PrivateData(DAGraphicsResizeOverlayItem* p) : q_ptr(p) {}
@@ -65,7 +66,16 @@ QRectF DAGraphicsResizeOverlayItem::boundingRect() const
     QRectF body = d->mTargetBodyRect;
     qreal wo = d->mControlPointSize.width() / 2 + 1;
     qreal ho = d->mControlPointSize.height() / 2 + 1;
-    return body.adjusted(-wo, -ho, wo, ho);
+    // 上边需额外膨胀以容纳旋转控制点及其连线
+    qreal rotTop = rotationHandleOffset(d->mControlPointSize) + d->mControlPointSize.height() / 2 + 1;
+    qreal topExtra = qMax(ho, rotTop);
+    return body.adjusted(-wo, -topExtra, wo, ho);
+}
+
+// 旋转控制点距 body 上边的距离
+qreal DAGraphicsResizeOverlayItem::rotationHandleOffset(const QSizeF& cs)
+{
+    return cs.height() + 6;
 }
 
 // 评审修复: W1 — 提取共用辅助函数，paint() 和 hitTest() 共用同一组矩形
@@ -85,6 +95,9 @@ QList<QRectF> DAGraphicsResizeOverlayItem::getHandleRects() const
             << QRectF(QPointF(body.center().x() - hw, body.bottom() - hh), cs)            // BottomMid
             << QRectF(QPointF(body.left() - hw, body.bottom() - hh), cs)                 // BottomLeft
             << QRectF(QPointF(body.left() - hw, body.center().y() - hh), cs);             // LeftMid
+    // 旋转控制点：body 上边中点正上方
+    qreal rotOff = rotationHandleOffset(cs);
+    handles << QRectF(QPointF(body.center().x() - hw, body.top() - rotOff - hh), cs);      // RotationHandle
     return handles;
 }
 
@@ -112,9 +125,19 @@ void DAGraphicsResizeOverlayItem::paint(QPainter* painter, const QStyleOptionGra
     painter->setBrush(QColor(32, 128, 240));
     painter->setPen(QPen(QColor(128, 128, 147)));
     QList<QRectF> handles = getHandleRects();
-    for (const QRectF& r : std::as_const(handles)) {
-        painter->drawRect(r);
+    // 绘制 8 个缩放控制点（方形）
+    for (int i = 0; i < 8; ++i) {
+        painter->drawRect(handles[i]);
     }
+    // 绘制旋转控制点（圆形 + 连线）
+    QRectF rotHandle = handles.last();
+    QPointF handleCenter = rotHandle.center();
+    QPointF bodyTopMid(body.center().x(), body.top());
+    painter->setPen(QPen(QColor(128, 128, 147), 1));
+    painter->setBrush(Qt::NoBrush);
+    painter->drawLine(bodyTopMid, handleCenter);
+    painter->setBrush(QColor(32, 128, 240));
+    painter->drawEllipse(handleCenter, rotHandle.width() / 2, rotHandle.height() / 2);
 }
 
 DAGraphicsResizeOverlayItem::ControlType DAGraphicsResizeOverlayItem::hitTest(const QPointF& pos) const
@@ -130,7 +153,8 @@ DAGraphicsResizeOverlayItem::ControlType DAGraphicsResizeOverlayItem::hitTest(co
         ControlPointBottomRight,
         ControlPointBottomMid,
         ControlPointBottomLeft,
-        ControlPointLeftMid
+        ControlPointLeftMid,
+        RotationHandle
     };
     for (int i = 0; i < handles.size(); ++i) {
         if (handles[i].contains(pos)) {
@@ -155,6 +179,8 @@ Qt::CursorShape DAGraphicsResizeOverlayItem::controlTypeToCursor(ControlType ct)
     case ControlPointRightMid:
     case ControlPointLeftMid:
         return Qt::SizeHorCursor;
+    case RotationHandle:
+        return Qt::OpenHandCursor;
     default:
         return Qt::ArrowCursor;
     }
@@ -274,6 +300,34 @@ QPair<QPointF, QSizeF> DAGraphicsResizeOverlayItem::computeResize(const QPointF&
     return qMakePair(newPos, newSize);
 }
 
+qreal DAGraphicsResizeOverlayItem::computeRotation(const QPointF& mouseScenePos) const
+{
+    DA_DC(d);
+    // 使用 scene 坐标计算角度，避免 syncToTarget() 改变 overlay 旋转后
+    // 局部坐标系偏移导致的反馈抖动
+    // 旋转中心 = target 的 transformOriginPoint 映射到 scene 坐标
+    QPointF originScene = d->mTarget->graphicsItem()->mapToScene(
+        d->mTarget->getBodyTransformOriginPoint());
+    // QLineF::angle(): 0°=右(东), 逆时针为正, 范围 [0,360)
+    // QGraphicsItem::setRotation(): 0°=无旋转(正上方), 顺时针为正
+    // 旋转控制点位于正上方时 angle=90°, 对应 rotation=0°
+    QLineF line(originScene, mouseScenePos);
+    if (line.length() < 1.0) {
+        // 鼠标几乎在中心，保持当前角度
+        return d->mTarget->graphicsItem()->rotation();
+    }
+    qreal angle = line.angle();  // 0=东, 90=北(上), 逆时针为正
+    qreal newRotation = 90.0 - angle;
+    // 规范到 [-180, 180]
+    while (newRotation > 180.0) {
+        newRotation -= 360.0;
+    }
+    while (newRotation < -180.0) {
+        newRotation += 360.0;
+    }
+    return newRotation;
+}
+
 void DAGraphicsResizeOverlayItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
 {
     DA_D(d);
@@ -304,6 +358,7 @@ void DAGraphicsResizeOverlayItem::mousePressEvent(QGraphicsSceneMouseEvent* even
             // 记录按下状态
             d->mPressPos = d->mTarget->graphicsItem()->pos();
             d->mPressSize = d->mTarget->getBodySize();
+            d->mPressRotation = d->mTarget->graphicsItem()->rotation();
             event->accept();
             return;
         }
@@ -314,7 +369,20 @@ void DAGraphicsResizeOverlayItem::mousePressEvent(QGraphicsSceneMouseEvent* even
 void DAGraphicsResizeOverlayItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 {
     DA_D(d);
-    if (d->mActiveControlType != NotUnderAnyControlType) {  // 评审修复: W2
+    if (d->mActiveControlType == RotationHandle) {
+        // 旋转操作 — 使用 scene 坐标计算角度
+        qreal newRotation = computeRotation(event->scenePos());
+        // Shift 吸附 15° 倍数
+        if (event->modifiers() & Qt::ShiftModifier) {
+            newRotation = qRound(newRotation / 15.0) * 15.0;
+        }
+        d->mTarget->graphicsItem()->setRotation(newRotation);
+        syncToTarget();
+        event->accept();
+        return;
+    }
+    if (d->mActiveControlType != NotUnderAnyControlType
+        && d->mActiveControlType != RotationHandle) {  // 评审修复: W2
         // 实时修改目标
         auto result = computeResize(event->pos());
         d->mTarget->graphicsItem()->setPos(result.first);
@@ -330,6 +398,14 @@ void DAGraphicsResizeOverlayItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event
 void DAGraphicsResizeOverlayItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
     DA_D(d);
+    if (d->mActiveControlType == RotationHandle) {
+        qreal newRotation = d->mTarget->graphicsItem()->rotation();
+        Q_EMIT requestRotation(d->mTarget, d->mPressRotation, newRotation);
+        d->mActiveControlType = NotUnderAnyControlType;
+        syncToTarget();
+        event->accept();
+        return;
+    }
     if (d->mActiveControlType != NotUnderAnyControlType) {  // 评审修复: W2
         // 直接读取 target 的实际当前状态，确保 undo/redo 一致
         Q_EMIT requestResize(d->mTarget, d->mPressPos, d->mPressSize,
@@ -374,6 +450,13 @@ QSizeF DAGraphicsResizeOverlayItem::controlPointSize() const
 void DAGraphicsResizeOverlayItem::cancelResize()
 {
     DA_D(d);
+    if (d->mActiveControlType == RotationHandle) {
+        // 恢复到按下时的旋转角度
+        d->mTarget->graphicsItem()->setRotation(d->mPressRotation);
+        d->mActiveControlType = NotUnderAnyControlType;
+        syncToTarget();
+        return;
+    }
     if (d->mActiveControlType != NotUnderAnyControlType) {
         // 恢复到按下时的状态
         d->mTarget->graphicsItem()->setPos(d->mPressPos);

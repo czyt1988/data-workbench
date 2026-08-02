@@ -251,6 +251,7 @@ public:
 	DACommandsForGraphicsItemRotation(DAIResizableGraphicsItem* item,
                                       const qreal& oldRotation,
                                       const qreal& newRotation,
+                                      bool skipfirst       = false,
                                       QUndoCommand* parent = nullptr);
 	void redo() override;
 	void undo() override;
@@ -261,6 +262,7 @@ private:
 	DAIResizableGraphicsItem* mItem;
 	qreal mOldRotation;
 	qreal mNewRotation;
+	bool mSkipFirst { false };
 	QDateTime mDatetime;
 };
 

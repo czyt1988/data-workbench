@@ -43,7 +43,8 @@ public:
         ControlPointBottomRight,
         ControlPointBottomMid,
         ControlPointBottomLeft,
-        ControlPointLeftMid
+        ControlPointLeftMid,
+        RotationHandle  ///< 旋转控制点，位于 body 正上方
     };
     Q_ENUM(ControlType)
 
@@ -71,6 +72,9 @@ Q_SIGNALS:
                        const QPointF& oldPos, const QSizeF& oldSize,
                        const QPointF& newPos, const QSizeF& newSize);
 
+    void requestRotation(DAIResizableGraphicsItem* target,
+                         qreal oldRotation, qreal newRotation);
+
 protected:
     void hoverMoveEvent(QGraphicsSceneHoverEvent* event) override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
@@ -80,10 +84,12 @@ protected:
 
 private:
     QPair<QPointF, QSizeF> computeResize(const QPointF& mouseLocalPos) const;
+    qreal computeRotation(const QPointF& mouseScenePos) const;  // 旋转角度计算（scene 坐标）
     ControlType hitTest(const QPointF& pos) const;
     static Qt::CursorShape controlTypeToCursor(ControlType ct);
+    static qreal rotationHandleOffset(const QSizeF& cs);  // 旋转控制点距 body 上边的距离
     QSizeF clampSize(const QSizeF& s) const;
-    QList<QRectF> getHandleRects() const;  // 评审修复: W1
+    QList<QRectF> getHandleRects() const;
 };
 }  // namespace DA
 #endif  // DAGRAPHICSRESIZEOVERLAYITEM_H

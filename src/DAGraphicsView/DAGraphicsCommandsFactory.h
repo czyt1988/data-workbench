@@ -54,7 +54,8 @@ public:
 		DAIResizableGraphicsItem* item, const qreal& oldHeight, const qreal& newHeight
 	);
 	virtual DACommandsForGraphicsItemRotation* createItemRotation(
-		DAIResizableGraphicsItem* item, const qreal& oldRotation, const qreal& newRotation
+		DAIResizableGraphicsItem* item, const qreal& oldRotation, const qreal& newRotation,
+		bool skipfirst = false
 	);
 	virtual DACommandsForGraphicsItemGrouping* createItemGrouping(const QList< QGraphicsItem* >& groupingitems);
 	virtual DACommandsForGraphicsItemUngrouping* createItemUngrouping(QGraphicsItemGroup* group);

@@ -276,6 +276,8 @@ private Q_SLOTS:
 	void onRequestResize(DAIResizableGraphicsItem* target,
 	                     const QPointF& oldPos, const QSizeF& oldSize,
 	                     const QPointF& newPos, const QSizeF& newSize);
+	void onRequestRotation(DAIResizableGraphicsItem* target,
+	                        qreal oldRotation, qreal newRotation);
 
 private:
 	void init();

@@ -163,9 +163,10 @@ DACommandsForGraphicsItemResizeHeight* DAGraphicsCommandsFactory::createItemResi
 
 DACommandsForGraphicsItemRotation* DAGraphicsCommandsFactory::createItemRotation(DAIResizableGraphicsItem* item,
                                                                                  const qreal& oldRotation,
-                                                                                 const qreal& newRotation)
+                                                                                 const qreal& newRotation,
+                                                                                 bool skipfirst)
 {
-    return new DACommandsForGraphicsItemRotation(item, oldRotation, newRotation);
+    return new DACommandsForGraphicsItemRotation(item, oldRotation, newRotation, skipfirst);
 }
 
 DACommandsForGraphicsItemGrouping* DAGraphicsCommandsFactory::createItemGrouping(const QList< QGraphicsItem* >& groupingitems)

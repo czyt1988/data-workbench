@@ -1264,6 +1264,8 @@ void DAGraphicsScene::onSelectionChanged()
 			// 连接信号
 			d->mResizeConn = connect(d->mResizeOverlay, &DAGraphicsResizeOverlayItem::requestResize,
 			                         this, &DAGraphicsScene::onRequestResize);
+			connect(d->mResizeOverlay, &DAGraphicsResizeOverlayItem::requestRotation,
+			        this, &DAGraphicsScene::onRequestRotation);
 
 			// 连接 target 的位置/旋转变化信号，确保 target 通过键盘、undo/redo、
 			// 外部代码改变位置或旋转时 Overlay 自动同步
@@ -1327,6 +1329,18 @@ void DAGraphicsScene::onRequestResize(DAIResizableGraphicsItem* target,
 	// 命令执行后 item 尺寸变化，overlay 需要同步
 	// 此处在信号同步调用链中为冗余调用（mouseReleaseEvent 已调用 syncToTarget），保留以应对未来异步信号场景
 	// undo/redo 场景下 item 状态变化由信号触发同步，此处为安全冗余
+	if (d->mResizeOverlay) {
+		d->mResizeOverlay->syncToTarget();
+	}
+}
+
+void DAGraphicsScene::onRequestRotation(DAIResizableGraphicsItem* target,
+                                        qreal oldRotation, qreal newRotation)
+{
+	DA_D(d);
+	// skipfirst=true，因为 rotation 已经在 mouseMove 中实时执行了
+	auto cmd = commandsFactory()->createItemRotation(target, oldRotation, newRotation, true);
+	push(cmd);
 	if (d->mResizeOverlay) {
 		d->mResizeOverlay->syncToTarget();
 	}
