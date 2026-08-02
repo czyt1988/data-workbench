@@ -86,6 +86,7 @@ enum DAGraphicsItemType
     ItemType_DAGraphicsLabelItem        = ItemType_DAGraphicsItem_Begin + 2,  ///< 标准label
     ItemType_DAGraphicsItemGroup        = ItemType_DAGraphicsItem_Begin + 3,  ///< 针对DAGraphicsItemGroup的类型
     ItemType_DAGraphicsMarkItem         = ItemType_DAGraphicsItem_Begin + 4,  ///< 针对DAGraphicsMarkItem的类型
+    ItemType_DAGraphicsResizeOverlayItem = ItemType_DAGraphicsItem_Begin + 6,  ///< 针对DAGraphicsResizeOverlayItem的类型
     //====ResizeableItem======
     ItemType_DAGraphicsResizeableItem_Begin = ItemType_DAGraphicsItem_Begin + 900,
     ItemType_DAGraphicsResizeableItem = ItemType_DAGraphicsResizeableItem_Begin + 1,  ///< 针对DAGraphicsResizeableItem的类型
