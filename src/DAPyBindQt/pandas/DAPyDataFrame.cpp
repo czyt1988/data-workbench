@@ -437,6 +437,50 @@ DAPyDataFrame DAPyDataFrame::describe() const
 }
 
 /**
+ * @brief pandas.DataFrame.head(n)
+ * @param n 返回的行数，默认5
+ * @return 新的 DataFrame，包含前 n 行
+ */
+DAPyDataFrame DAPyDataFrame::head(int n) const
+{
+    try {
+        return DAPyDataFrame(attr("head")(n));
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return DAPyDataFrame();
+}
+
+/**
+ * @brief pandas.DataFrame.query(expr)
+ * @param expr pandas query 表达式，如 "col > 100"
+ * @return 满足条件的行组成的新 DataFrame
+ */
+DAPyDataFrame DAPyDataFrame::query(const QString& expr) const
+{
+    try {
+        return DAPyDataFrame(attr("query")(expr.toStdString()));
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return DAPyDataFrame();
+}
+
+/**
+ * @brief pandas.DataFrame.isnull()
+ * @return 与原 DataFrame 形状相同的布尔 DataFrame，True 表示缺失值
+ */
+DAPyDataFrame DAPyDataFrame::isNull() const
+{
+    try {
+        return DAPyDataFrame(attr("isnull")());
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return DAPyDataFrame();
+}
+
+/**
  * @brief 转换为csv
  * @param path
  * @param args
@@ -447,6 +491,24 @@ bool DAPyDataFrame::to_csv(const QString& path, const QVariantHash& args) const 
         pybind11::object obj_to_csv = attr("to_csv");
         pybind11::dict dictargs     = pybind11::cast(args);
         obj_to_csv(pybind11::cast(path), **dictargs);
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @brief 转换为excel
+ * @param path
+ * @param args
+ */
+bool DAPyDataFrame::to_excel(const QString& path, const QVariantHash& args) const noexcept
+{
+    try {
+        pybind11::object obj_to_excel = attr("to_excel");
+        pybind11::dict dictargs       = pybind11::cast(args);
+        obj_to_excel(pybind11::cast(path), **dictargs);
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
         return false;

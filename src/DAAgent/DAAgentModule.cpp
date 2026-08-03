@@ -8,6 +8,22 @@
 #include "DAPyInterpreter.h"
 #include "DAAgentSettingsWidget.h"
 #include "DALogCategory.h"
+// Platform built-in tools (plan-05)
+#include "tools/DAAgentToolListData.h"
+#include "tools/DAAgentToolDataInfo.h"
+#include "tools/DAAgentToolQueryData.h"
+#include "tools/DAAgentToolColumnStats.h"
+#include "tools/DAAgentToolExportData.h"
+#include "tools/DAAgentToolCreateChart.h"
+#include "tools/DAAgentToolAddCurve.h"
+#include "tools/DAAgentToolSetChartStyle.h"
+#include "tools/DAAgentToolAddAnnotation.h"
+#include "tools/DAAgentToolAddRegion.h"
+#include "tools/DAAgentToolCreateSubplots.h"
+#include "tools/DAAgentToolSaveChartImage.h"
+#include "tools/DAAgentToolReadFile.h"
+#include "tools/DAAgentToolWriteFile.h"
+#include "tools/DAAgentToolSaveReport.h"
 #include <QFile>
 #include <QSettings>
 #include <QJsonObject>
@@ -134,8 +150,24 @@ bool DAAgentModule::isRunning() const
 
 void DAAgentModule::registerBuiltinTools()
 {
-    // plan-05 在此注册平台内置工具（查数据、绘图、ask_user 等）。
-    // 此处留空体，仅保证 plan-04 阶段模块可链接。
+    // Data tools (5)
+    registerTool(new DAAgentToolListData(m_core, this));
+    registerTool(new DAAgentToolDataInfo(m_core, this));
+    registerTool(new DAAgentToolQueryData(m_core, this));
+    registerTool(new DAAgentToolColumnStats(m_core, this));
+    registerTool(new DAAgentToolExportData(m_core, this));
+    // Plotting tools (7)
+    registerTool(new DAAgentToolCreateChart(m_core, this));
+    registerTool(new DAAgentToolAddCurve(m_core, this));
+    registerTool(new DAAgentToolSetChartStyle(m_core, this));
+    registerTool(new DAAgentToolAddAnnotation(m_core, this));
+    registerTool(new DAAgentToolAddRegion(m_core, this));
+    registerTool(new DAAgentToolCreateSubplots(m_core, this));
+    registerTool(new DAAgentToolSaveChartImage(m_core, this));
+    // File/report tools (3)
+    registerTool(new DAAgentToolReadFile(m_core, this));
+    registerTool(new DAAgentToolWriteFile(m_core, this));
+    registerTool(new DAAgentToolSaveReport(m_core, this));
 }
 
 void DAAgentModule::connectSignals()

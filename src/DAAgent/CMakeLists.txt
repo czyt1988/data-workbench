@@ -16,15 +16,9 @@ damacro_lib_setting(
 ########################################################
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-# Note: file(GLOB) is non-recursive. When plan-05 adds tools/ subdirectory,
-# extend the glob pattern to include subdirectories:
-# file(GLOB DAAgent_TOOLS_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/tools/*.cpp")
-# file(GLOB DAAgent_TOOLS_HDRS "${CMAKE_CURRENT_SOURCE_DIR}/tools/*.h")
-# and append both to add_library(...) + install(FILES ...) (参照 DAFigure 对
-# MarkSymbol/、Models/ 子目录的分别 GLOB + 分别 install 的模式，见
-# DAFigure/CMakeLists.txt 第 20-23、88-92 行)。或使用 CONFIGURE_DEPENDS 让
-# CMake 在文件增减时自动重新 GLOB：
-# file(GLOB ... CONFIGURE_DEPENDS)
+# tools/ 子目录的源文件和头文件（plan-05 平台内置工具）
+file(GLOB DAAgent_TOOLS_SRCS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tools/*.cpp")
+file(GLOB DAAgent_TOOLS_HDRS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tools/*.h")
 
 # WebEngine/WebEngineWidgets/WebChannel 的 find_package 限定在 DAAgent 子目录内，
 # 不提升为平台全局依赖（顶层 CMakeLists.txt 的 find_package 不引入 WebEngine）。
@@ -36,6 +30,8 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
     WebEngineWidgets
     WebChannel
     Network
+    PrintSupport
+    Svg
 )
 
 # Qt 资源（Qt5/Qt6 兼容写法，与 APP 模块一致）
@@ -44,6 +40,8 @@ file(GLOB DAAgent_RESOURCES "${CMAKE_CURRENT_SOURCE_DIR}/resources/*.qrc")
 add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
+            ${DAAgent_TOOLS_HDRS}
+            ${DAAgent_TOOLS_SRCS}
             ${DA_GLOBAL_HEADER}
             ${DAAgent_RESOURCES}
 )
@@ -67,6 +65,12 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::WebChannel
     Qt${QT_VERSION_MAJOR}::Network
 )
+# PrintSupport (QPrinter for PDF export) and Svg (QSvgGenerator for SVG export)
+# are used only in tool .cpp files, so PRIVATE.
+target_link_libraries(${DA_LIB_NAME} PRIVATE
+    Qt${QT_VERSION_MAJOR}::PrintSupport
+    Qt${QT_VERSION_MAJOR}::Svg
+)
 
 # DPAPI（CryptProtectData/CryptUnprotectData）需要 Crypt32.lib
 if(WIN32)
@@ -80,13 +84,25 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAFigure
     ${DA_PROJECT_NAME}::DAPyBindQt
     ${DA_PROJECT_NAME}::DAPyScripts
+    ${DA_PROJECT_NAME}::DAGui
 )
+# DAAxOfficeWrapper (Word COM for docx export) — Windows only, PRIVATE
+if(WIN32)
+    target_link_libraries(${DA_LIB_NAME} PRIVATE ${DA_PROJECT_NAME}::DAAxOfficeWrapper)
+endif()
 
 # DAAgentModule.cpp includes DAPyInterpreter.h (→ pybind11 → Python.h),
 # 需要 Python 和 pybind11 的头文件路径。DAPyBindQt 以 PRIVATE 方式导入这两个第三方库，
 # 其 include 目录不会传递给 DAAgent，故在此显式导入。
 damacro_import_Python(${DA_LIB_NAME})
 damacro_import_pybind11(${DA_LIB_NAME})
+# tools/DAAgentToolBase.h includes DADockingAreaInterface.h which includes ads_globals.h
+# from QtAdvancedDocking. DAInterface imports it but the include dir doesn't propagate
+# (PRIVATE), so we must import it here.
+damacro_import_QtAdvancedDocking(${DA_LIB_NAME})
+# tools/DAAgentToolBase.h includes DAChartWidget.h → DAChartDataInterface.h which includes
+# qwt_samples.h. DAFigure imports qwt but the include dir doesn't propagate (PRIVATE).
+damacro_import_qwt(${DA_LIB_NAME})
 
 ########################################################
 # 设置通用库属性（AUTOMOC/AUTOUIC/AUTORCC ON、EXPORT_NAME、

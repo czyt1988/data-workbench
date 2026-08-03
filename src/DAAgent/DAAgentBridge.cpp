@@ -210,7 +210,11 @@ void DAAgentBridge::executeTool(const QString& callId,
     //    进而使子进程因收不到 tool_result 而永久挂起
     try {
         result = it.value()->execute(args);
-        result["success"] = true;
+        // Don't overwrite error responses — tools return {success:false, error:"..."}
+        // via errorResponse(). Only set success=true if the tool didn't set it.
+        if (!result.contains("success")) {
+            result["success"] = true;
+        }
     } catch (const std::exception& e) {
         result["success"] = false;
         result["error"]   = QString("Tool execution failed: %1").arg(e.what());

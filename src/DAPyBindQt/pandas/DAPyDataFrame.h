@@ -57,10 +57,14 @@ public:
     pybind11::dtype dtypes(std::size_t c) const;
     DAPyDType dtypeObject(std::size_t c) const;
     DAPyDataFrame describe() const;
+    DAPyDataFrame head(int n = 5) const;
+    DAPyDataFrame query(const QString& expr) const;
     bool to_csv(const QString& path, const QVariantHash& args = QVariantHash()) const noexcept;
+    bool to_excel(const QString& path, const QVariantHash& args = QVariantHash()) const noexcept;
     bool to_pickle(const QString& path, const QVariantHash& args = QVariantHash()) const noexcept;
     bool to_parquet(const QString& path, const QVariantHash& args = QVariantHash()) const noexcept;
     bool setIndex(const QString& colName, bool isDrop = true) noexcept;
+    DAPyDataFrame isNull() const;
 
 protected:
     void checkObjectValid();

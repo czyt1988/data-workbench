@@ -516,6 +516,41 @@ DAPySeries DAPySeries::describe() const
     return DAPySeries();
 }
 
+/**
+ * @brief pandas.Series.isnull()
+ *
+ * 返回布尔掩码 Series，标记每个元素是否为缺失值（NaN/None/NaT）。
+ * 对布尔掩码调用 sum() 可统计缺失值数量。
+ * @return 布尔掩码 Series，失败返回空 Series
+ */
+DAPySeries DAPySeries::isNull() const
+{
+    try {
+        return DAPySeries(object().attr("isnull")());
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return DAPySeries();
+}
+
+/**
+ * @brief pandas.Series.sum()
+ *
+ * 返回 Series 元素之和。对布尔掩码 Series（如 isNull() 的返回值）调用，
+ * 可统计 True 的数量（即缺失值计数）。
+ * @return 元素之和，失败返回 0
+ */
+qint64 DAPySeries::sum() const
+{
+    try {
+        pybind11::object result = object().attr("sum")();
+        return result.cast< qint64 >();
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return 0;
+}
+
 bool DAPySeries::isSeries(const pybind11::object& obj)
 {
     return DAPyModulePandas::getInstance().isInstanceSeries(obj);

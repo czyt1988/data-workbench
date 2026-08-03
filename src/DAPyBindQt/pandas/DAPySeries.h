@@ -72,6 +72,10 @@ public:
     // 生成描述性统计信息（count、mean、std、min、25%、50%、75%、max 等）
     // 返回一个新的 DAPySeries，其 index 为统计项名称
     DAPySeries describe() const;
+    // 返回布尔掩码 Series，标记每个元素是否为缺失值（NaN/None）
+    DAPySeries isNull() const;
+    // 返回 Series 元素之和（对布尔掩码求 True 计数用于缺失值统计）
+    qint64 sum() const;
 
 public:
     static bool isSeries(const pybind11::object& obj);
