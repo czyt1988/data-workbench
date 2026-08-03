@@ -188,6 +188,7 @@ public:
     QAction* actionShowSettingWidget;
     QAction* actionShowLeftSideBar;   ///< 显示/隐藏左边侧边栏
     QAction* actionShowRightSideBar;  ///< 显示/隐藏右边侧边栏
+    QAction* actionShowAgentArea;  ///< 显示 Agent 助手区域
     //===================================================
     // 主题
     //===================================================

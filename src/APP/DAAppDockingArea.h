@@ -31,6 +31,8 @@ class DADataOperateWidget;
 class DASettingContainerWidget;
 // 日志窗口
 class DAMessageLogViewWidget;
+// Agent 窗口
+class DAAgentDockWidget;
 
 /**
  * @brief 负责docking窗口区域的管理，APP分两大区域-RibbonArea和DockArea
@@ -121,6 +123,19 @@ public:
      * @return
      */
     ads::CDockWidget* getChartManageDock() const override;
+
+    /**
+     * @brief Agent 助手 dock
+     * @note base DADockingAreaInterface 无 getAgentDock() 虚函数，故不可 override
+     * @return
+     */
+    ads::CDockWidget* getAgentDock() const;
+
+    /**
+     * @brief 获取 Agent 助手 Dock Widget（原始 QWidget）
+     * @return
+     */
+    DAAgentDockWidget* getAgentDockWidget() const;
     // 切换左侧边栏（工作流节点、图表管理、数据管理）的显示/隐藏
     void toggleLeftSidebar(bool show);
     // 切换右侧边栏（设置、日志）的显示/隐藏
@@ -174,6 +189,10 @@ private:
     // 日志窗口
     DAMessageLogViewWidget* mMessageLogViewWidget { nullptr };  ///< 日志窗口
     ads::CDockWidget* mMessageLogDock { nullptr };
+
+    // Agent 窗口
+    DAAgentDockWidget* mAgentDockWidget { nullptr };  ///< Agent 助手窗口
+    ads::CDockWidget* mAgentDock { nullptr };         ///< m_agentDockWidget 对应的 dock
 };
 }  // namespace DA
 #endif  // DAAPPDOCKINGAREA_H

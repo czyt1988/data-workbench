@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/DAAgent">
+        <file>chat.html</file>
+        <file>chat.css</file>
+        <file>chat.js</file>
+        <file>markdown-it.min.js</file>
+        <file>highlight.min.js</file>
+    </qresource>
+</RCC>

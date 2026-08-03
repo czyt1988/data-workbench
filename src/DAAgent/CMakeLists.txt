@@ -37,11 +37,16 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
     WebChannel
 )
 
+# Qt 资源（Qt5/Qt6 兼容写法，与 APP 模块一致）
+file(GLOB DAAgent_RESOURCES "${CMAKE_CURRENT_SOURCE_DIR}/resources/*.qrc")
+
 add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
             ${DA_GLOBAL_HEADER}
+            ${DAAgent_RESOURCES}
 )
+# AUTORCC ON 由 damacro_set_lib_properties 设置，会自动编译 .qrc
 
 # 构建库定义的宏（Private），与 DAFigure 的 DAFIGURE_BUILD 对应
 # 配合 DAAgentAPI.h：DAAGENT_BUILD 在编译本库时使 DAAgent_API 展开为 Q_DECL_EXPORT，

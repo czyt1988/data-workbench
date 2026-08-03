@@ -31,6 +31,8 @@
 #include "DASettingContainerWidget.h"
 #include "DAPyWorkFlowNodeItemSettingWidget.h"
 #include "DAAppWorkFlowOperateWidget.h"
+// Agent 相关
+#include "DAAgentDockWidget.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -68,6 +70,7 @@ void DAAppDockingArea::resetText()
     mDataOperateDock->setWindowTitle(tr("Data Operate"));          // cn:数据操作
     mSettingContainerDock->setWindowTitle(tr("Setting"));          // cn:设置
     mMessageLogDock->setWindowTitle(tr("Log"));                    // cn:消息
+    mAgentDock->setWindowTitle(tr("Agent Assistant"));  // cn:Agent 助手
 }
 
 /**
@@ -221,6 +224,15 @@ void DAAppDockingArea::buildDockingArea()
                                        QStringLiteral("da_messageLogViewWidgetDock"),
                                        mSettingContainerDock->dockAreaWidget());
     mMessageLogDock->setIcon(QIcon(":/app/bright/Icon/showInfomation.svg"));
+
+    // Agent 助手 Dock —— createDockWidget(QWidget*, area, objectName) 把 QWidget 包装为 ads::CDockWidget
+    mAgentDockWidget = new DAAgentDockWidget(mApp);
+    mAgentDockWidget->setObjectName(QStringLiteral("da_agentDockWidget"));
+    mAgentDock = createDockWidget(
+        mAgentDockWidget,
+        ads::RightDockWidgetArea,
+        QStringLiteral("da_agentDockWidgetDock"));
+    mAgentDock->setIcon(QIcon(":/app/bright/Icon/showAgent.svg"));
 
     // 设置dock的区域大小,默认为左1：中间4：右：1
     resetDefaultSplitterSizes();
@@ -406,4 +418,14 @@ ads::CDockWidget* DAAppDockingArea::getMessageLogDock() const
 ads::CDockWidget* DAAppDockingArea::getWorkflowNodeListDock() const
 {
     return mWorkflowNodeListDock;
+}
+
+ads::CDockWidget* DAAppDockingArea::getAgentDock() const
+{
+    return mAgentDock;
+}
+
+DAAgentDockWidget* DAAppDockingArea::getAgentDockWidget() const
+{
+    return mAgentDockWidget;
 }

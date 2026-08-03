@@ -95,6 +95,7 @@ endif()
 # -------------DAWorkbench--------------------------
 target_link_libraries(${DA_APP_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAPluginSupport
+    ${DA_PROJECT_NAME}::DAAgent
 )
 if(DA_ENABLE_PYTHON)
     # -------------link DAPyWorkFlow--------------------------

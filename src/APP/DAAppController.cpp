@@ -236,6 +236,9 @@ void DAAppController::initialize()
     mDock->getDataOperateDock()->setToggleViewAction(mActions->actionShowDataArea);
     mDock->getDataManageDock()->setToggleViewActionMode(ads::CDockWidget::ActionModeShow);
     mDock->getDataManageDock()->setToggleViewAction(mActions->actionShowDataManagerArea);
+    // Agent 助手 Dock 的显示/隐藏由 actionShowAgentArea 驱动
+    mDock->getAgentDock()->setToggleViewActionMode(ads::CDockWidget::ActionModeShow);
+    mDock->getAgentDock()->setToggleViewAction(mActions->actionShowAgentArea);
     initConnection();
 #if DA_ENABLE_PYTHON
     initScripts();

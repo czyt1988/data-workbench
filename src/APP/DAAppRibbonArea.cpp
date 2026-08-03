@@ -363,6 +363,8 @@ void DAAppRibbonArea::buildRibbonViewCategory()
     m_pannelViewMainView->addSeparator();
     m_pannelViewMainView->addMediumAction(m_actions->actionShowLeftSideBar);
     m_pannelViewMainView->addMediumAction(m_actions->actionShowRightSideBar);
+    m_pannelViewMainView->addSeparator();
+    m_pannelViewMainView->addLargeAction(m_actions->actionShowAgentArea);
     m_categoryView->addPanel(m_pannelViewMainView);
 
     //----------------------------------------------------------

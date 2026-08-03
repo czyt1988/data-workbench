@@ -224,6 +224,7 @@ void DAAppActions::buildViewAction()
     actionShowSettingWidget    = createAction("actionShowSettingWidget", ":/app/bright/Icon/showSettingWidget.svg");
     actionShowLeftSideBar = createAction("actionShowLeftSideBar", ":/app/bright/Icon/left-sider-bar.svg", true, true);
     actionShowRightSideBar = createAction("actionShowRightSideBar", ":/app/bright/Icon/right-sider-bar.svg", true, true);
+    actionShowAgentArea = createAction("actionShowAgentArea", ":/app/bright/Icon/showAgent.svg");
 }
 
 void DAAppActions::buildWorkflowAction()
@@ -615,6 +616,8 @@ void DAAppActions::retranslateUi()
     actionShowLeftSideBar->setToolTip(tr("Show the left side bar"));  // cn:显示左侧边栏
     actionShowRightSideBar->setText(tr("Show Right \nSide Bar"));       // cn:显示右侧边栏
     actionShowRightSideBar->setToolTip(tr("Show the right side bar"));  // cn:显示右侧边栏
+    actionShowAgentArea->setText(tr("Show \nAgent Area"));  // cn:Agent\n助手
+    actionShowAgentArea->setToolTip(tr("Show the agent assistant area"));  // cn:显示 Agent 助手区域
     // Config Category
     actionPluginManager->setText(tr("Plugin \nConfig"));             // cn:插件\n设置
     actionPluginManager->setToolTip(tr("Show the plugin manager"));  // cn:显示插件管理器
