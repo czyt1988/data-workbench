@@ -133,6 +133,9 @@
         <file>Icon/chart-type/chart-spectrocurve.svg</file>
         <file>Icon/chart-type/chart-spectrogram.svg</file>
         <file>Icon/chart-type/chart-vectorfield.svg</file>
+        <file>Icon/chart-type/chart-surface3d.svg</file>
+        <file>Icon/chart-type/chart-bar3d.svg</file>
+        <file>Icon/chart-type/chart-line3d.svg</file>
         <file>Icon/chart-type/chart-scatter-2d.svg</file>
         <file>Icon/chart-type/stats-histplot.svg</file>
         <file>Icon/chart-type/stats-kdeplot.svg</file>

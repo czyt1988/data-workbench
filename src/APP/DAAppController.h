@@ -12,6 +12,8 @@
 #include "DAFigureWidget.h"
 #if DA_ENABLE_PYTHON
 #include "numpy/DAPyDType.h"
+#include "DAChart3DWidget.h"
+#include "qwt3d_plotitem.h"
 #endif
 // Qt
 class QComboBox;
@@ -201,6 +203,14 @@ private Q_SLOTS:
     void onActionChartAddContourMapTriggered();
     // 添加向量场图
     void onActionChartAddVectorfieldTriggered();
+#if DA_ENABLE_PYTHON
+    // 添加3D曲面图
+    void onActionChartAdd3DSurfaceTriggered();
+    // 添加3D柱状图
+    void onActionChartAdd3DBarTriggered();
+    // 添加3D线图
+    void onActionChartAdd3DLineTriggered();
+#endif
     //===================================================
     // 统计绘图 Stats Plot
     //===================================================
@@ -408,6 +418,10 @@ private Q_SLOTS:
     void onChartEditorStatusChanged(DA::DAFigureWidget::ChartEditorStatus status);
     // 绘图项创建完成（DADialogChartGuide 确认后），提升绘图 dock 显示新绘图
     void onPlotItemCreated(DA::DAFigureWidget* f, DA::DAChartWidget* plot, QwtPlotItem* item);
+#if DA_ENABLE_PYTHON
+    // 3D绘图项创建完成，提升绘图 dock 显示新3D绘图
+    void onPlot3DItemCreated(DA::DAFigureWidget* f, DA::DAChart3DWidget* plot, Qwt3DPlotItem* item);
+#endif
 #if DA_ENABLE_PYTHON
     // 统计绘图请求槽：DAAbstractStatsChartAddWidget::plotRequested -> 调用 Python plot()
     void onStatsPlotRequested(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);

@@ -503,6 +503,11 @@ void DAAppRibbonArea::buildRibbonFigureCategory()
     m_pannelChartAdd->addLargeAction(m_actions->actionChartAddContourMap);
     m_pannelChartAdd->addLargeAction(m_actions->actionChartAddCloudMap);
     m_pannelChartAdd->addLargeAction(m_actions->actionChartAddVectorfield);
+#if DA_ENABLE_PYTHON
+    m_pannelChartAdd->addLargeAction(m_actions->actionChartAdd3DSurface);
+    m_pannelChartAdd->addLargeAction(m_actions->actionChartAdd3DBar);
+    m_pannelChartAdd->addLargeAction(m_actions->actionChartAdd3DLine);
+#endif
 
     m_categoryFigure->addPanel(m_pannelChartAdd);
 

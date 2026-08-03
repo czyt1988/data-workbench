@@ -196,6 +196,10 @@ if(DA_ENABLE_PYTHON)
         DAChartAddStatsBarplotWidget.h
         DAChartAddStatsRegplotWidget.h
         DAChartAddStatsEcdfplotWidget.h
+        DAAbstractChart3DAddItemWidget.h
+        DAChartAdd3DSurfaceWidget.h
+        DAChartAdd3DBarWidget.h
+        DAChartAdd3DLineWidget.h
     )
     list(APPEND DA_LIB_SOURCE_FILES
         DADataframeToVectorPointWidget.cpp
@@ -229,6 +233,10 @@ if(DA_ENABLE_PYTHON)
         DAChartAddStatsBarplotWidget.cpp
         DAChartAddStatsRegplotWidget.cpp
         DAChartAddStatsEcdfplotWidget.cpp
+        DAAbstractChart3DAddItemWidget.cpp
+        DAChartAdd3DSurfaceWidget.cpp
+        DAChartAdd3DBarWidget.cpp
+        DAChartAdd3DLineWidget.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES
         DADataframeToVectorPointWidget.ui
@@ -253,6 +261,9 @@ if(DA_ENABLE_PYTHON)
         DAChartAddStatsBarplotWidget.ui
         DAChartAddStatsRegplotWidget.ui
         DAChartAddStatsEcdfplotWidget.ui
+        DAChartAdd3DSurfaceWidget.ui
+        DAChartAdd3DBarWidget.ui
+        DAChartAdd3DLineWidget.ui
     )
 endif()
 # 子目录

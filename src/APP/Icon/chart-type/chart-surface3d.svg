@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="64px" height="64px" viewBox="0 0 64 64" enable-background="new 0 0 64 64" xml:space="preserve">
+<!-- 3D surface wireframe -->
+<g stroke="#497CAD" stroke-width="1.5" fill="none" stroke-linejoin="round">
+	<!-- back grid -->
+	<polyline points="12,20 32,12 52,20 52,44 32,52 12,44 12,20"/>
+	<polyline points="32,12 32,52"/>
+	<polyline points="12,44 52,44"/>
+	<!-- surface mesh -->
+	<polyline points="12,32 22,28 32,36 42,24 52,30"/>
+	<polyline points="12,38 22,34 32,42 42,30 52,36"/>
+	<polyline points="22,28 22,48 22,52"/>
+	<polyline points="32,36 32,52"/>
+	<polyline points="42,24 42,44 42,52"/>
+</g>
+</svg>

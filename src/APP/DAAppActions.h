@@ -123,6 +123,11 @@ public:
     QAction* actionChartAddContourMap;         ///< 等高线图
     QAction* actionChartAddCloudMap;           ///< 云图
     QAction* actionChartAddVectorfield;        ///< 向量场图
+#if DA_ENABLE_PYTHON
+    QAction* actionChartAdd3DSurface;  ///< 添加3D曲面图
+    QAction* actionChartAdd3DBar;      ///< 添加3D柱状图
+    QAction* actionChartAdd3DLine;     ///< 添加3D线图
+#endif
 
     //===================================================
     // 统计绘图 Stats Plot

@@ -69,6 +69,9 @@
         <file>icon/chart-type/chart-spectrocurve.svg</file>
         <file>icon/chart-type/chart-spectrogram.svg</file>
         <file>icon/chart-type/chart-vectorfield.svg</file>
+        <file>icon/chart-type/chart-surface3d.svg</file>
+        <file>icon/chart-type/chart-bar3d.svg</file>
+        <file>icon/chart-type/chart-line3d.svg</file>
     </qresource>
     <qresource prefix="/DAGui/ChartSetting">
         <file>icon/axisLeftBottom.svg</file>

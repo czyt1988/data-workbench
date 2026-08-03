@@ -288,6 +288,11 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddHistogramBar, onActionChartAddHistogramTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddContourMap, onActionChartAddContourMapTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddVectorfield, onActionChartAddVectorfieldTriggered);
+#if DA_ENABLE_PYTHON
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAdd3DSurface, onActionChartAdd3DSurfaceTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAdd3DBar, onActionChartAdd3DBarTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAdd3DLine, onActionChartAdd3DLineTriggered);
+#endif
 
     // Stats Plot
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsHistplot, onActionStatsHistplotTriggered);
@@ -475,6 +480,9 @@ void DAAppController::initConnection()
     // 绘图项创建完成时提升绘图 dock，让用户能看到新绘图
     if (DAAppChartOperateWidget* appCow = qobject_cast< DAAppChartOperateWidget* >(cow)) {
         connect(appCow, &DAAppChartOperateWidget::plotItemCreated, this, &DAAppController::onPlotItemCreated);
+#if DA_ENABLE_PYTHON
+        connect(appCow, &DAAppChartOperateWidget::plot3DItemCreated, this, &DAAppController::onPlot3DItemCreated);
+#endif
     }
     //
     DAPyWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
@@ -1604,6 +1612,20 @@ void DAAppController::onPlotItemCreated(DAFigureWidget* f, DAChartWidget* plot, 
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
+#if DA_ENABLE_PYTHON
+/**
+ * @brief 3D绘图项创建完成，提升绘图 dock 显示新3D绘图
+ */
+void DAAppController::onPlot3DItemCreated(DA::DAFigureWidget* f, DA::DAChart3DWidget* plot, Qwt3DPlotItem* item)
+{
+    Q_UNUSED(f);
+    Q_UNUSED(plot);
+    Q_UNUSED(item);
+    // 提升绘图操作区域到前台
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+}
+#endif
+
 /**
  * @brief 添加数据
  */
@@ -1790,6 +1812,38 @@ void DAAppController::onActionChartAddVectorfieldTriggered()
     chartopt->showPlotGuideDialog(DA::DAChartTypes::VectorField);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
 }
+
+#if DA_ENABLE_PYTHON
+/**
+ * @brief 添加3D曲面图
+ */
+void DAAppController::onActionChartAdd3DSurfaceTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    chartopt->showPlotGuideDialog(DA::DAChartTypes::Surface3D);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+}
+
+/**
+ * @brief 添加3D柱状图
+ */
+void DAAppController::onActionChartAdd3DBarTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    chartopt->showPlotGuideDialog(DA::DAChartTypes::Bar3D);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+}
+
+/**
+ * @brief 添加3D线图
+ */
+void DAAppController::onActionChartAdd3DLineTriggered()
+{
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    chartopt->showPlotGuideDialog(DA::DAChartTypes::Line3D);
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+}
+#endif
 
 /**
  * @brief 统计直方图

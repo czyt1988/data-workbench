@@ -1,4 +1,4 @@
-﻿#ifndef DADIALOGCHARTGUIDE_H
+#ifndef DADIALOGCHARTGUIDE_H
 #define DADIALOGCHARTGUIDE_H
 #include "DAGuiAPI.h"
 #include "DAFigureAPI.h"
@@ -6,6 +6,9 @@
 #include <QSet>
 #include "DAData.h"
 #include "qwt_plot_item.h"
+#if DA_ENABLE_PYTHON
+#include "qwt3d_plotitem.h"
+#endif
 namespace Ui
 {
 class DADialogChartGuide;
@@ -16,6 +19,12 @@ namespace DA
 {
 class DADataManager;
 class DAAbstractChartAddItemWidget;
+#if DA_ENABLE_PYTHON
+class DAAbstractChart3DAddItemWidget;
+class DAChartAdd3DSurfaceWidget;
+class DAChartAdd3DBarWidget;
+class DAChartAdd3DLineWidget;
+#endif
 /**
  * @brief 把dataframe抽取两列转换为两个double-vector
  * @code
@@ -47,6 +56,18 @@ public:
     DAAbstractChartAddItemWidget* getChartAddItemWidget(DA::DAChartTypes chartType) const;
     // 根据当前绘图类型设置item属性
     void initSetPlotItem(QwtPlotItem* item);
+#if DA_ENABLE_PYTHON
+    // 创建3D绘图item，如果没有返回nullptr
+    Qwt3DPlotItem* create3DPlotItem();
+    // 获取当前的3D绘图指引窗口
+    DAAbstractChart3DAddItemWidget* getCurrentChart3DAddItemWidget() const;
+    // 根据chartType获取3D绘图指引窗口
+    DAAbstractChart3DAddItemWidget* getChartAdd3DItemWidget(DA::DAChartTypes chartType) const;
+    // 根据当前绘图类型设置3D item属性
+    void initSet3DPlotItem(Qwt3DPlotItem* item);
+    // 判断是否为3D图表类型
+    static bool is3DChartType(DA::DAChartTypes t);
+#endif
 private Q_SLOTS:
     // 选择绘图类型改变
     void onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
@@ -54,11 +75,18 @@ private Q_SLOTS:
 private:
     void initListWidget();
     void ensureWidgetDataManager(DAAbstractChartAddItemWidget* w);
+#if DA_ENABLE_PYTHON
+    // 确保3D widget的dataManager已初始化
+    void ensureWidget3DDataManager(DAAbstractChart3DAddItemWidget* w);
+#endif
 
 private:
     Ui::DADialogChartGuide* ui;
     DADataManager* mDataMgr { nullptr };
     QSet< DAAbstractChartAddItemWidget* > mInitializedWidgets;
+#if DA_ENABLE_PYTHON
+    QSet< DAAbstractChart3DAddItemWidget* > mInitialized3DWidgets;
+#endif
 };
 }  // end DA
 #endif  // DADIALOGDATAFRAMEPLOT_H

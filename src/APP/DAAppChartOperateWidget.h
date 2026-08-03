@@ -1,14 +1,18 @@
-﻿#ifndef DAAPPCHARTOPERATEWIDGET_H
+#ifndef DAAPPCHARTOPERATEWIDGET_H
 #define DAAPPCHARTOPERATEWIDGET_H
 #include "DAChartOperateWidget.h"
 #include "DAData.h"
 #include "DAFigureAPI.h"
 
 #include "qwt_plot_item.h"
+#if DA_ENABLE_PYTHON
+#include "qwt3d_plotitem.h"
+#endif
 namespace DA
 {
 #if DA_ENABLE_PYTHON
 class DADialogChartGuide;
+class DAChart3DWidget;
 #endif
 class DAEvenFilterDragPlotWithGuide;
 /**
@@ -40,6 +44,15 @@ Q_SIGNALS:
      * @param item
      */
     void plotItemCreated(DAFigureWidget* fig, DAChartWidget* plot, QwtPlotItem* item);
+#if DA_ENABLE_PYTHON
+    /**
+     * @brief 3D绘图项创建完成
+     * @param fig figure窗口
+     * @param plot 3D图表窗口
+     * @param item 3D绘图item
+     */
+    void plot3DItemCreated(DAFigureWidget* fig, DAChart3DWidget* plot, Qwt3DPlotItem* item);
+#endif
 private Q_SLOTS:
     void onChartGuideAccept();
 

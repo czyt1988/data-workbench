@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="64px" height="64px" viewBox="0 0 64 64" enable-background="new 0 0 64 64" xml:space="preserve">
+<!-- 3D line chart -->
+<g stroke="#497CAD" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round">
+	<!-- axis frame -->
+	<polyline points="10,54 10,16 14,12"/>
+	<polyline points="10,54 50,54 54,50"/>
+	<polyline points="14,12 54,12 54,50"/>
+	<polyline points="10,16 50,16 50,54"/>
+	<!-- 3D path -->
+	<polyline points="14,48 22,40 30,34 38,24 46,20 50,18"/>
+	<!-- dots -->
+	<circle cx="14" cy="48" r="2" fill="#497CAD"/>
+	<circle cx="22" cy="40" r="2" fill="#497CAD"/>
+	<circle cx="30" cy="34" r="2" fill="#497CAD"/>
+	<circle cx="38" cy="24" r="2" fill="#497CAD"/>
+	<circle cx="46" cy="20" r="2" fill="#497CAD"/>
+	<circle cx="50" cy="18" r="2" fill="#497CAD"/>
+</g>
+</svg>

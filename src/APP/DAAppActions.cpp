@@ -111,6 +111,11 @@ void DAAppActions::buildChartAction()
         createAction("actionChartAddCloudMap", ":/app/chart-type/Icon/chart-type/chart-spectrogram.svg");
     actionChartAddVectorfield =
         createAction("actionChartAddVectorfield", ":/app/chart-type/Icon/chart-type/chart-vectorfield.svg");
+#if DA_ENABLE_PYTHON
+    actionChartAdd3DSurface = createAction("actionChartAdd3DSurface", ":/app/chart-type/Icon/chart-type/chart-surface3d.svg");
+    actionChartAdd3DBar     = createAction("actionChartAdd3DBar", ":/app/chart-type/Icon/chart-type/chart-bar3d.svg");
+    actionChartAdd3DLine    = createAction("actionChartAdd3DLine", ":/app/chart-type/Icon/chart-type/chart-line3d.svg");
+#endif
 
     // 统计绘图 Stats Plot
     actionStatsHistplot     = createAction("actionStatsHistplot", ":/app/chart-type/Icon/chart-type/stats-histplot.svg");
@@ -421,6 +426,14 @@ void DAAppActions::retranslateUi()
     actionChartAddCloudMap->setToolTip(tr("Add a cloud map to the chart"));        // cn:添加云图
     actionChartAddVectorfield->setText(tr("Add \nVector Field"));                  // cn:向量场图
     actionChartAddVectorfield->setToolTip(tr("Add a vector field to the chart"));  // cn:添加向量场图
+#if DA_ENABLE_PYTHON
+    actionChartAdd3DSurface->setText(tr("Add \nSurface 3D"));                        // cn:3D曲面图
+    actionChartAdd3DSurface->setToolTip(tr("Add a 3D surface plot to the chart"));   // cn:添加3D曲面图
+    actionChartAdd3DBar->setText(tr("Add \nBar 3D"));                                 // cn:3D柱状图
+    actionChartAdd3DBar->setToolTip(tr("Add a 3D bar chart to the chart"));           // cn:添加3D柱状图
+    actionChartAdd3DLine->setText(tr("Add \nLine 3D"));                              // cn:3D线图
+    actionChartAdd3DLine->setToolTip(tr("Add a 3D line plot to the chart"));          // cn:添加3D线图
+#endif
 
     // Stats Plot
     actionStatsHistplot->setText(tr("Histplot"));                                        // cn:直方图

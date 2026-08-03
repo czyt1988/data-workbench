@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="64px" height="64px" viewBox="0 0 64 64" enable-background="new 0 0 64 64" xml:space="preserve">
+<!-- 3D bar chart -->
+<g stroke="#497CAD" stroke-width="1.5" fill="none" stroke-linejoin="round">
+	<!-- axis -->
+	<polyline points="8,56 8,16 12,12 12,52"/>
+	<polyline points="12,52 56,52 60,48 16,48"/>
+	<polyline points="8,56 52,56 56,52 56,12"/>
+	<!-- bar 1 -->
+	<polyline points="18,52 18,32 22,28 22,48 18,52"/>
+	<polyline points="22,48 22,28 26,24 26,48"/>
+	<!-- bar 2 -->
+	<polyline points="30,52 30,20 34,16 34,48 30,52"/>
+	<polyline points="34,48 34,16 38,12 38,48"/>
+	<!-- bar 3 -->
+	<polyline points="42,52 42,36 46,32 46,48 42,52"/>
+	<polyline points="46,48 46,32 50,28 50,48"/>
+</g>
+</svg>
