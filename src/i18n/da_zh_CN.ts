@@ -172,9 +172,62 @@
     </message>
 </context>
 <context>
+    <name>DA::DAAgentDockWidget</name>
+    <message>
+        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+51"/>
+        <location line="+117"/>
+        <location line="+13"/>
+        <source>Ready</source>
+        <translation type="unfinished">启动完成</translation>
+    </message>
+    <message>
+        <location line="-118"/>
+        <source>Type a message... (Ctrl+Enter to send)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Send</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+110"/>
+        <source>Agent thinking...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAgentSettingsWidget</name>
+    <message>
+        <location filename="../DAGui/Agent/DAAgentSettingsWidget.cpp" line="+44"/>
+        <source>测试连接</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Base URL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>API Key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Model</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Agent/DAAgentSettingsWidget.h" line="+40"/>
+        <source>Agent LLM 设置</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+374"/>
+        <location filename="../APP/DAAppActions.cpp" line="+375"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -663,7 +716,7 @@ All</source>
         <translation>信息窗口</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+14"/>
         <source>Office 2013 Theme</source>
         <translation>Office 2013 主题</translation>
     </message>
@@ -683,7 +736,7 @@ All</source>
         <translation>深色主题</translation>
     </message>
     <message>
-        <location line="-137"/>
+        <location line="-139"/>
         <source>Enable or disable legend in the chart</source>
         <translation>启用或禁用图表中的图例</translation>
     </message>
@@ -1338,6 +1391,17 @@ Side Bar</source>
         <translation>显示右侧边栏</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Show 
+Agent Area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the agent assistant area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>Plugin 
 Config</source>
@@ -1373,7 +1437,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+591"/>
+        <location filename="../APP/DAAppController.cpp" line="+600"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -1582,7 +1646,7 @@ Config</source>
 <context>
     <name>DA::DAAppDockingArea</name>
     <message>
-        <location filename="../APP/DAAppDockingArea.cpp" line="+63"/>
+        <location filename="../APP/DAAppDockingArea.cpp" line="+65"/>
         <source>Workflow Node</source>
         <translation>节点</translation>
     </message>
@@ -1620,6 +1684,11 @@ Config</source>
         <location line="+1"/>
         <source>Log</source>
         <translation>消息</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Agent Assistant</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1943,12 +2012,12 @@ Config</source>
         <location line="+1"/>
         <location line="+23"/>
         <location line="+94"/>
-        <location line="+228"/>
+        <location line="+230"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-344"/>
+        <location line="-346"/>
         <location line="+2"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
@@ -1961,67 +2030,67 @@ Config</source>
     <message>
         <location line="+3"/>
         <location line="+27"/>
-        <location line="+389"/>
+        <location line="+391"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-415"/>
+        <location line="-417"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+194"/>
+        <location line="+196"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-193"/>
-        <location line="+195"/>
+        <location line="-195"/>
+        <location line="+197"/>
         <source>Operate</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location line="-194"/>
-        <location line="+197"/>
+        <location line="-196"/>
+        <location line="+199"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-196"/>
+        <location line="-198"/>
         <location line="+6"/>
-        <location line="+203"/>
+        <location line="+205"/>
         <location line="+6"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-214"/>
-        <location line="+226"/>
+        <location line="-216"/>
+        <location line="+228"/>
         <source>Table Style</source>
         <translation>表格样式</translation>
     </message>
     <message>
-        <location line="-225"/>
-        <location line="+229"/>
+        <location line="-227"/>
+        <location line="+231"/>
         <source>Fill</source>
         <translation>底色</translation>
     </message>
     <message>
-        <location line="-228"/>
-        <location line="+236"/>
+        <location line="-230"/>
+        <location line="+238"/>
         <source>Font</source>
         <translation>字体</translation>
     </message>
     <message>
-        <location line="-235"/>
-        <location line="+241"/>
+        <location line="-237"/>
+        <location line="+243"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>
     <message>
-        <location line="-235"/>
+        <location line="-237"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
@@ -2032,59 +2101,59 @@ Config</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+332"/>
+        <location line="+334"/>
         <source>Workflow Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-331"/>
-        <location line="+336"/>
+        <location line="-333"/>
+        <location line="+338"/>
         <source>Clipboard</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-312"/>
+        <location line="-314"/>
         <source>Set ribbon theme</source>
         <translation>设置主题</translation>
     </message>
     <message>
         <location line="-23"/>
-        <location line="+340"/>
+        <location line="+342"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-339"/>
-        <location line="+348"/>
+        <location line="-341"/>
+        <location line="+350"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-347"/>
-        <location line="+352"/>
+        <location line="-349"/>
+        <location line="+354"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-349"/>
-        <location line="+430"/>
+        <location line="-351"/>
+        <location line="+432"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-429"/>
-        <location line="+432"/>
+        <location line="-431"/>
+        <location line="+434"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-430"/>
-        <location line="+262"/>
+        <location line="-432"/>
+        <location line="+264"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-261"/>
+        <location line="-263"/>
         <location line="+6"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
@@ -2102,12 +2171,12 @@ Config</source>
     <message>
         <location line="+1"/>
         <location line="+4"/>
-        <location line="+492"/>
+        <location line="+494"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-494"/>
+        <location line="-496"/>
         <source>Chart Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -2118,12 +2187,12 @@ Config</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+494"/>
+        <location line="+496"/>
         <source>Select Tool</source>
         <translation>选区工具</translation>
     </message>
     <message>
-        <location line="-493"/>
+        <location line="-495"/>
         <source>Chart Assist Tool</source>
         <translation>图表辅助工具</translation>
     </message>
@@ -2145,7 +2214,7 @@ Config</source>
     </message>
     <message>
         <location line="-18"/>
-        <location line="+286"/>
+        <location line="+288"/>
         <source>Stats Plot</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2171,8 +2240,8 @@ Config</source>
         <translation>绘图操作</translation>
     </message>
     <message>
-        <location line="-429"/>
-        <location line="+475"/>
+        <location line="-431"/>
+        <location line="+477"/>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
@@ -6881,7 +6950,7 @@ Config</source>
     <message>
         <location line="+23"/>
         <source>Log</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">消息</translation>
     </message>
 </context>
 <context>
@@ -7139,7 +7208,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1251"/>
+        <location filename="../APP/DAAppController.cpp" line="-1258"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -11275,7 +11344,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>使用 UTF-8 打开文件 %1 失败，尝试使用 ANSI 编码</translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+528"/>
+        <location filename="../DAPyBindQt/pandas/DAPySeries.cpp" line="+563"/>
         <source>DAPySeries: the Python object type is not pandas.Series</source>
         <translation>DAPySeries：Python 对象类型不是 pandas.Series</translation>
     </message>

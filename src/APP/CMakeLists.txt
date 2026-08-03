@@ -170,6 +170,21 @@ dafun_deploy_3rdparty_dlls(${DA_APP_NAME}
     PLUGIN_DIR "${CMAKE_BINARY_DIR}/bin/plugins/$<CONFIG>"
 )
 
+if(WIN32)
+    # 在构建输出目录生成 qt.conf，确保从构建目录直接运行时 Qt 能正确找到资源
+    # （icudtl.dat、WebEngine .pak 文件等）。
+    # 构建目录中可能存在早期 windeployqt 拷贝的局部 Qt5Cored.dll，
+    # 若无 qt.conf，Qt 会将前缀路径解析到构建目录而非 Qt 安装目录，
+    # 导致 Qt5WebEngine 初始化时找不到资源而崩溃。
+    get_target_property(_qmake_exe Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
+    if(_qmake_exe)
+        execute_process(COMMAND ${_qmake_exe} -query QT_INSTALL_PREFIX
+            OUTPUT_VARIABLE _qt_install_prefix OUTPUT_STRIP_TRAILING_WHITESPACE)
+        file(WRITE ${CMAKE_BINARY_DIR}/bin/qt.conf
+            "[Paths]\nPrefix=${_qt_install_prefix}\n")
+        message(STATUS "Generated qt.conf -> ${CMAKE_BINARY_DIR}/bin/qt.conf (Prefix=${_qt_install_prefix})")
+    endif()
+endif()
 
 if(WIN32)
     # Debug 模式使用控制台子系统
