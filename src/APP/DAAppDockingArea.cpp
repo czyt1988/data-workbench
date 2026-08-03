@@ -225,13 +225,13 @@ void DAAppDockingArea::buildDockingArea()
                                        mSettingContainerDock->dockAreaWidget());
     mMessageLogDock->setIcon(QIcon(":/app/bright/Icon/showInfomation.svg"));
 
-    // Agent 助手 Dock —— createDockWidget(QWidget*, area, objectName) 把 QWidget 包装为 ads::CDockWidget
+    // Agent 助手 Dock —— 作为左侧管理区的标签页，与"绘图管理""数据管理"同组
     mAgentDockWidget = new DAAgentDockWidget(mApp);
     mAgentDockWidget->setObjectName(QStringLiteral("da_agentDockWidget"));
-    mAgentDock = createDockWidget(
+    mAgentDock = createDockWidgetAsTab(
         mAgentDockWidget,
-        ads::RightDockWidgetArea,
-        QStringLiteral("da_agentDockWidgetDock"));
+        QStringLiteral("da_agentDockWidgetDock"),
+        mWorkflowNodeListDock->dockAreaWidget());
     mAgentDock->setIcon(QIcon(":/app/bright/Icon/showAgent.svg"));
 
     // 设置dock的区域大小,默认为左1：中间4：右：1
