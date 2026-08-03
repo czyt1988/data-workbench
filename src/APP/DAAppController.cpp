@@ -50,6 +50,7 @@
 #include "DAChartSettingWidget.h"
 #include "DAColorTheme.h"
 #include "DAGui/ChartSetting/DAFigureWidgetSettingPanel.h"
+#include "DAGui/Chart3DSetting/DAChart3DSettingWidget.h"
 // Dialog
 #include "DAPluginManagerDialog.h"
 #include "DAAppSettingDialog.h"
@@ -869,10 +870,31 @@ void DAAppController::onFigureElementClicked(const DAFigureElementSelection& sel
     if (!setting) {
         return;
     }
+
+    // === 3D 选择分支 ===
+    if (selection.isSelectedPlot3D() || selection.isSelectedPlot3DItem()) {
+        // 切换到 3D 设置面板
+        DAChart3DSettingWidget* chart3DSetting = setting->getChart3DSettingWidget();
+        if (!chart3DSetting) {
+            return;
+        }
+        chart3DSetting->setSelection(selection);
+        setting->showChart3DSettingWidget();
+        // 如果选中了 3D plot，切换 figure 的 current 3D chart
+        if (selection.isSelectedPlot3D()) {
+            selection.figureWidget->setCurrent3DChart(selection.plot3D);
+        }
+        return;
+    }
+
+    // === 2D 选择分支 ===
+    // 引入 3D 面板后，2D 分支必须显式切换回 2D 面板，
+    // 否则用户从 3D 选中切换到 2D 时面板仍停留在 3D 设置。
     DAChartSettingWidget* chartSetting = setting->getChartSettingWidget();
     if (!chartSetting) {
         return;
     }
+    setting->showChartSettingWidget();
     chartSetting->setSelection(selection);
     if (selection.isSelectedPlot()) {
         // 单独选中plot，那么把figure的current plot进行切换
@@ -897,6 +919,18 @@ void DAAppController::onFigureElementClicked(const DAFigureElementSelection& sel
  */
 void DAAppController::onFigureElementDbClicked(const DAFigureElementSelection& selection)
 {
+    // === 3D 双击：与单击一致，同步设置面板并提升 dock ===
+    if (selection.isSelectedPlot3D() || selection.isSelectedPlot3DItem()) {
+        onFigureElementClicked(selection);
+        DASettingContainerWidget* setting = getSettingContainerWidget();
+        if (setting) {
+            setting->showChart3DSettingWidget();
+        }
+        mDock->raiseDockingArea(DADockingAreaInterface::DockingAreaChartOperate);
+        return;
+    }
+
+    // === 2D 逻辑 ===
     // 和单击事件一致
     onFigureElementClicked(selection);
     // 同步查看是否设置对话框在前台
