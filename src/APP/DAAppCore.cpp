@@ -72,6 +72,12 @@ DADataManagerInterface* DAAppCore::getDataManagerInterface() const
     return mDataManager;
 }
 
+DAAgentInterface* DAAppCore::getAgentInterface() const
+{
+    // 本期为桩，真实实现由后续plan提供
+    return nullptr;
+}
+
 /**
  * @brief 获取DAAppUI，省去qobject_cast
  * @return

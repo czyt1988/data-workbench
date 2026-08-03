@@ -1,4 +1,4 @@
-﻿#ifndef DACOREINTERFACE_H
+#ifndef DACOREINTERFACE_H
 #define DACOREINTERFACE_H
 #include "DAInterfaceAPI.h"
 #include <QObject>
@@ -14,6 +14,7 @@ namespace DA
 class DAUIInterface;
 class DADataManagerInterface;
 class DAProjectInterface;
+class DAAgentInterface;
 /**
  * @brief APP的核心接口
  *
@@ -36,6 +37,8 @@ public:
     virtual DAProjectInterface* getProjectInterface() const = 0;
     // 获取数据管理接口
     virtual DADataManagerInterface* getDataManagerInterface() const = 0;
+    // 获取Agent接口
+    virtual DAAgentInterface* getAgentInterface() const = 0;
 #if DA_ENABLE_PYTHON
     // python相关
     // 初始化python环境

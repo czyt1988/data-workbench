@@ -9,6 +9,7 @@ class DAAppUI;
 class DAAppRibbonArea;
 class DAAppDataManager;
 class DAAppProject;
+class DAAgentInterface;
 /**
  * @brief DA的核心接口,作为单例存在
  */
@@ -29,6 +30,8 @@ public:
     void createUi(SARibbonMainWindow* mainwindow) override;
     // 获取数据管理接口
     DADataManagerInterface* getDataManagerInterface() const override;
+    // 获取Agent接口（本期返回nullptr，真实实现由后续plan提供）
+    virtual DAAgentInterface* getAgentInterface() const override;
 
 public:
     // 获取DAAppUI，省去qobject_cast

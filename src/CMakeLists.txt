@@ -61,6 +61,10 @@ add_subdirectory(DAGui)
 add_subdirectory(DAInterface)
 add_dependencies(DAInterface DAGui)
 
+if(DA_ENABLE_PYTHON)
+    add_subdirectory(DAAgent)
+endif()
+
 add_subdirectory(DAPluginSupport)
 add_dependencies(DAPluginSupport DAInterface DAPyWorkFlow)
 
