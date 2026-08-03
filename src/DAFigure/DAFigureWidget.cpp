@@ -27,6 +27,7 @@
 // chart
 #include "DAChartUtil.h"
 #include "DAChartWidget.h"
+#include "DAChart3DWidget.h"
 #include "DAChartSerialize.h"
 #include "DAFigureWidgetOverlay.h"
 #include "DAFigureWidgetCommands.h"
@@ -45,6 +46,9 @@
 #include "qwt_scale_draw.h"
 #include "qwt_plot_series_data_picker.h"
 #include "qwt_plot_series_data_picker_group.h"
+// qwt3d
+#include "qwt3d_plot.h"
+#include "qwt3d_plotitem.h"
 
 namespace DA
 {
@@ -66,6 +70,8 @@ public:
     QwtPlotSeriesDataPickerGroup* m_pickerGroup { nullptr };
     DAFigureWidgetOverlay* m_chartEditor { nullptr };  ///< 绘图编辑器
     int m_probeNameCounter { 0 };                      ///< 探针命名计数器
+    QList< DAChart3DWidget* > m_3dCharts;            ///< 3D chart 列表
+    QPointer< DAChart3DWidget > m_current3DChart;    ///< 当前选中的 3D chart
 public:
     PrivateData(DAFigureWidget* p) : q_ptr(p), m_colorTheme(DAColorTheme::Style_Matplotlib_Tab10)
     {
@@ -447,6 +453,238 @@ void DAFigureWidget::addChart(DAChartWidget* chart, const QRectF& versatileSize)
     addChart(chart, versatileSize.x(), versatileSize.y(), versatileSize.width(), versatileSize.height());
 }
 
+// ========== 3D chart 管理 ==========
+
+/**
+ * @brief 添加一个3D chart
+ *
+ * 默认的位置占比为0.05f, 0.05f, 0.9f, 0.9f
+ * @return 返回3D绘图的指针
+ */
+DAChart3DWidget* DAFigureWidget::create3DChart()
+{
+    return create3DChart(c_figurewidget_default_size);
+}
+
+/**
+ * @brief 创建3D绘图
+ * @param versatileSize 归一化位置
+ * @return
+ */
+DAChart3DWidget* DAFigureWidget::create3DChart(const QRectF& versatileSize)
+{
+    QwtFigure* fig = figure();
+    Q_ASSERT(fig);
+
+    DAChart3DWidget* chart3d = new DAChart3DWidget(this);
+    add3DChart(chart3d, versatileSize);
+
+    // 对于有Overlay，需要把Overlay提升到最前面，否则会被覆盖
+    if (d_ptr->m_chartEditor) {
+        d_ptr->m_chartEditor->raise();
+    }
+    return chart3d;
+}
+
+/**
+ * @brief 添加一个3D chart，指定位置占比
+ */
+DAChart3DWidget* DAFigureWidget::create3DChart(float xVersatile, float yVersatile, float wVersatile, float hVersatile)
+{
+    return create3DChart(QRectF(xVersatile, yVersatile, wVersatile, hVersatile));
+}
+
+/**
+ * @brief 添加一个3D chart，指定位置占比
+ * @param chart3d 3D绘图
+ * @param xVersatile
+ * @param yVersatile
+ * @param wVersatile
+ * @param hVersatile
+ */
+void DAFigureWidget::add3DChart(DAChart3DWidget* chart3d, qreal xVersatile, qreal yVersatile, qreal wVersatile, qreal hVersatile)
+{
+    QwtFigure* fig = figure();
+    Q_ASSERT(fig);
+    // 使用 addWidget 添加 3D chart widget（DAChart3DWidget 不是 QwtPlot 子类，不能使用 addAxes）
+    fig->addWidget(chart3d, xVersatile, yVersatile, wVersatile, hVersatile);
+    // 安装事件过滤器，用于检测3D chart被点击时设置为current3DChart
+    chart3d->installEventFilter(this);
+    // 监听销毁信号，自动清理引用。
+    // 先 disconnect 再 connect，避免 undo/redo 场景下（add3DChart 被多次调用）累积重复连接
+    disconnect(chart3d, &QObject::destroyed, this, nullptr);
+    connect(chart3d, &QObject::destroyed, this, [this](QObject* obj) {
+        DAChart3DWidget* destroyedChart = static_cast< DAChart3DWidget* >(obj);
+        d_ptr->m_3dCharts.removeAll(destroyedChart);
+        if (d_ptr->m_current3DChart == destroyedChart) {
+            d_ptr->m_current3DChart = nullptr;
+            Q_EMIT current3DChartChanged(nullptr);
+        }
+    });
+    d_ptr->m_3dCharts.append(chart3d);
+    chart3d->show();
+    Q_EMIT chart3DAdded(chart3d);
+}
+
+void DAFigureWidget::add3DChart(DAChart3DWidget* chart3d, const QRectF& versatileSize)
+{
+    add3DChart(chart3d, versatileSize.x(), versatileSize.y(), versatileSize.width(), versatileSize.height());
+}
+
+/**
+ * @brief 移除3D chart，但不会delete
+ * @param chart3d
+ */
+void DAFigureWidget::remove3DChart(DAChart3DWidget* chart3d)
+{
+    if (!chart3d) {
+        return;
+    }
+    // 移除事件过滤器
+    chart3d->removeEventFilter(this);
+    // 断开 destroyed 信号连接（add3DChart 中建立），避免 undo/redo 场景下重复连接累积
+    disconnect(chart3d, &QObject::destroyed, this, nullptr);
+    // 显式从 QwtFigureLayout 中移除 layout item（参考 QwtFigure::takeAxes() 的做法）
+    // QwtFigure 没有提供 removeWidget(QWidget*) 方法，只有 removeAxes(QwtPlot*)
+    QwtFigure* fig = figure();
+    QLayout* lay = fig->layout();
+    if (lay) {
+        for (int i = 0; i < lay->count(); ++i) {
+            QLayoutItem* item = lay->itemAt(i);
+            if (!item) {
+                continue;
+            }
+            QWidget* w = item->widget();
+            if (w == chart3d) {
+                lay->removeItem(item);
+                delete item;
+                break;
+            }
+        }
+    }
+    // 从父窗口分离
+    chart3d->setParent(nullptr);
+    chart3d->hide();
+    // 从跟踪列表中移除
+    d_ptr->m_3dCharts.removeAll(chart3d);
+    // 清理 current 指针
+    if (d_ptr->m_current3DChart == chart3d) {
+        d_ptr->m_current3DChart = nullptr;
+        Q_EMIT current3DChartChanged(nullptr);
+    }
+    Q_EMIT chart3DRemoved(chart3d);
+}
+
+void DAFigureWidget::remove3DChart_(DAChart3DWidget* chart3d)
+{
+    d_ptr->m_undoStack.push(new DAFigureWidgetCommandRemove3DChart(this, chart3d));
+}
+
+/**
+ * @brief 支持redo/undo的create3DChart
+ * @return
+ */
+DAChart3DWidget* DAFigureWidget::create3DChart_()
+{
+    return create3DChart_(c_figurewidget_default_size);
+}
+
+/**
+ * @brief 支持redo/undo的create3DChart
+ * @param versatileSize
+ * @return
+ */
+DAChart3DWidget* DAFigureWidget::create3DChart_(const QRectF& versatileSize)
+{
+    DAFigureWidgetCommandCreate3DChart* cmd = new DAFigureWidgetCommandCreate3DChart(this, versatileSize);
+    d_ptr->m_undoStack.push(cmd);
+    return cmd->getChart3DWidget();
+}
+
+/**
+ * @brief 获取所有的3D绘图
+ * @return
+ */
+QList< DAChart3DWidget* > DAFigureWidget::get3DCharts() const
+{
+    return d_ptr->m_3dCharts;
+}
+
+/**
+ * @brief 当前的3D绘图的指针
+ * @return 当没有3D绘图时返回nullptr
+ */
+DAChart3DWidget* DAFigureWidget::getCurrent3DChart() const
+{
+    return d_ptr->m_current3DChart;
+}
+
+/**
+ * @brief 设置当前的3D绘图
+ * @param chart3d 如果和当前的current3DChart一样，不做任何动作
+ */
+void DAFigureWidget::setCurrent3DChart(DAChart3DWidget* chart3d)
+{
+    DA_D(d);
+    if (d->m_current3DChart == chart3d) {
+        return;
+    }
+    d->m_current3DChart = chart3d;
+    // 通知 overlay 编辑器更新激活窗口（参考 2D 的 onCurrentAxesChanged）
+    if (d->m_chartEditor) {
+        d->m_chartEditor->setActiveWidget(chart3d);
+    }
+    Q_EMIT current3DChartChanged(chart3d);
+}
+
+/**
+ * @brief 获取当前的3D chart，如果没有current 3D chart，或figure不存在3D chart，
+ * 则创建一个新3D chart，此函数不返回nullptr
+ * @return
+ */
+DAChart3DWidget* DAFigureWidget::current3DChart()
+{
+    DAChart3DWidget* w = getCurrent3DChart();
+    if (w) {
+        return w;
+    }
+    // 到这里说明没有current 3D chart
+    QList< DAChart3DWidget* > cs = get3DCharts();
+    if (!cs.isEmpty()) {
+        return cs.first();
+    }
+    return create3DChart();
+}
+
+/**
+ * @brief 返回当前光标下的3D图
+ * @return 如果当前没有返回nullptr
+ */
+DAChart3DWidget* DAFigureWidget::getUnderCursor3DChart() const
+{
+    QWidget* w = getUnderCursorWidget();
+    return qobject_cast< DAChart3DWidget* >(w);
+}
+
+/**
+ * @brief 是否存在这个3D绘图
+ * @param chart3d 3D绘图
+ * @return
+ */
+bool DAFigureWidget::has3DChart(DAChart3DWidget* chart3d) const
+{
+    return d_ptr->m_3dCharts.contains(chart3d);
+}
+
+/**
+ * @brief 获取3D图表的数量
+ * @return
+ */
+int DAFigureWidget::get3DChartCount() const
+{
+    return d_ptr->m_3dCharts.size();
+}
+
 /**
  * @brief 获取所有的绘图
  * @return
@@ -492,6 +730,31 @@ void DAFigureWidget::clear()
 {
     QwtFigure* fig = figure();
     Q_ASSERT(fig);
+    // 先清除3D chart
+    const QList< DAChart3DWidget* > chart3ds = d_ptr->m_3dCharts;
+    for (DAChart3DWidget* chart3d : chart3ds) {
+        chart3d->removeEventFilter(this);
+        chart3d->disconnect(this);
+        // 先从布局中显式移除 layout item（参考 remove3DChart 的做法）
+        QLayout* lay = fig->layout();
+        if (lay) {
+            for (int i = 0; i < lay->count(); ++i) {
+                QLayoutItem* item = lay->itemAt(i);
+                if (item && item->widget() == chart3d) {
+                    lay->removeItem(item);
+                    delete item;
+                    break;
+                }
+            }
+        }
+        chart3d->setParent(nullptr);
+        // 信号在 setParent 之后发射，确保接收方查询时 chart 已从布局移除
+        Q_EMIT chart3DRemoved(chart3d);
+        chart3d->deleteLater();
+    }
+    d_ptr->m_3dCharts.clear();
+    d_ptr->m_current3DChart = nullptr;
+    // 再清除2D chart
     fig->clear();
 }
 
@@ -998,6 +1261,17 @@ QwtPlotIntervalCurve* DAFigureWidget::addErrorBar_(const QVector< double >& valu
 }
 
 /**
+ * @brief 支持redo/undo的添加3D item
+ * @param chart3d
+ * @param item
+ * @param skipfirstRedo 跳过第一次redo操作，针对当前item已经加入到plot的情况
+ */
+void DAFigureWidget::add3DItem_(DAChart3DWidget* chart3d, Qwt3DPlotItem* item, bool skipfirstRedo)
+{
+    push(new DAFigureWidgetCommandAttach3DItem(this, chart3d, item, skipfirstRedo));
+}
+
+/**
  * @brief 推入一个命令
  * @param cmd
  */
@@ -1086,9 +1360,12 @@ void DAFigureWidget::onWidgetGeometryChanged(QWidget* w, const QRectF& oldNormGe
 void DAFigureWidget::onOverlayActiveWidgetChanged(QWidget* oldActive, QWidget* newActive)
 {
     Q_UNUSED(oldActive);
-    DAChartWidget* c = qobject_cast< DAChartWidget* >(newActive);
-    if (c) {
+    if (DAChartWidget* c = qobject_cast< DAChartWidget* >(newActive)) {
+        // 2D chart 被激活
         setCurrentChart(c);
+    } else if (DAChart3DWidget* c3d = qobject_cast< DAChart3DWidget* >(newActive)) {
+        // 3D chart 被激活
+        setCurrent3DChart(c3d);
     }
 }
 
@@ -1146,6 +1423,24 @@ void DAFigureWidget::onChartPropertyChanged(DAChartWidget* chart, DA::DAChartWid
     }
 }
 
+/**
+ * @brief 事件过滤器，用于检测3D chart的鼠标点击
+ *
+ * 当用户点击3D chart时，将其设置为current3DChart
+ * @param obj
+ * @param event
+ * @return
+ */
+bool DAFigureWidget::eventFilter(QObject* obj, QEvent* event)
+{
+    if (event->type() == QEvent::MouseButtonPress) {
+        if (DAChart3DWidget* chart3d = qobject_cast< DAChart3DWidget* >(obj)) {
+            setCurrent3DChart(chart3d);
+        }
+    }
+    return QScrollArea::eventFilter(obj, event);
+}
+
 void DAFigureWidget::onFigureChartEditorFinished(bool isCancel)
 {
     Q_UNUSED(isCancel);
@@ -1164,6 +1459,16 @@ QDataStream& operator<<(QDataStream& out, const DAFigureWidget* p)
         for (int i = 0; i < charts.size(); ++i) {
             pos.append(fig->axesNormRect(charts[ i ]));
         }
+        // TODO: 3D chart 序列化由 plan 08 实现
+        // QList<DAChart3DWidget*> chart3ds = p->get3DCharts();
+        // QList<QRectF> pos3d;
+        // for (int i = 0; i < chart3ds.size(); ++i) {
+        //     pos3d.append(fig->widgetNormRect(chart3ds[i]));
+        // }
+        // out << pos3d;
+        // for (int i = 0; i < chart3ds.size(); ++i) {
+        //     out << chart3ds[i];
+        // }
         out << pos;
         for (int i = 0; i < charts.size(); ++i) {
             out << charts[ i ];
@@ -1198,6 +1503,17 @@ QDataStream& operator>>(QDataStream& in, DAFigureWidget* p)
             chart->show();
             chart_guard.release();
         }
+        // TODO: 3D chart 反序列化由 plan 08 实现
+        // QList<QRectF> pos3d;
+        // in >> pos3d;
+        // for (int i = 0; i < pos3d.size(); ++i) {
+        //     const QRectF& r = pos3d[i];
+        //     auto chart3d = p->create3DChart(r.x(), r.y(), r.width(), r.height());
+        //     std::unique_ptr<DAChart3DWidget> chart3d_guard(chart3d);
+        //     in >> chart3d;
+        //     chart3d->show();
+        //     chart3d_guard.release();
+        // }
     } catch (const DABadSerializeExpection& exp) {
         throw exp;
     }

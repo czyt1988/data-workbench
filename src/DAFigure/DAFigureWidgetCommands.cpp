@@ -1,7 +1,11 @@
 #include "DAFigureWidgetCommands.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
+#include "DAChart3DWidget.h"
 #include "DAChartUtil.h"
+// qwt3d
+#include "qwt3d_plot.h"
+#include "qwt3d_plotitem.h"
 namespace DA
 {
 
@@ -79,6 +83,66 @@ DAChartWidget* DAFigureWidgetCommandCreateChart::getChartWidget()
 }
 
 //===============================================================
+// DAFigureWidgetCommandCreate3DChart
+//===============================================================
+DAFigureWidgetCommandCreate3DChart::DAFigureWidgetCommandCreate3DChart(DAFigureWidget* fig,
+                                                                       qreal xPresent,
+                                                                       qreal yPresent,
+                                                                       qreal wPresent,
+                                                                       qreal hPresent,
+                                                                       QUndoCommand* par)
+    : DAFigureWidgetCommandBase(fig, par)
+    , mChart3D(nullptr)
+    , mChartSize(xPresent, yPresent, wPresent, hPresent)
+    , mNeedDelete(false)
+{
+    setText(QObject::tr("create 3D chart"));  // cn:创建3D绘图
+}
+
+DAFigureWidgetCommandCreate3DChart::DAFigureWidgetCommandCreate3DChart(DAFigureWidget* fig,
+                                                                       const QRectF& versatileSize,
+                                                                       QUndoCommand* par)
+    : DAFigureWidgetCommandBase(fig, par)
+    , mChart3D(nullptr)
+    , mChartSize(versatileSize)
+    , mNeedDelete(false)
+{
+    setText(QObject::tr("create 3D chart"));  // cn:创建3D绘图
+}
+
+DAFigureWidgetCommandCreate3DChart::~DAFigureWidgetCommandCreate3DChart()
+{
+    if (mNeedDelete) {
+        if (mChart3D) {
+            mChart3D->deleteLater();
+        }
+    }
+}
+
+void DAFigureWidgetCommandCreate3DChart::redo()
+{
+    mNeedDelete = false;
+    if (mChart3D) {
+        // 这是执行undo后执行redo会进入这个分支
+        figure()->add3DChart(mChart3D, mChartSize);
+    } else {
+        // 第一次执行redo会进入这里
+        mChart3D = figure()->create3DChart(mChartSize);
+    }
+}
+
+void DAFigureWidgetCommandCreate3DChart::undo()
+{
+    mNeedDelete = true;
+    figure()->remove3DChart(mChart3D);
+}
+
+DAChart3DWidget* DAFigureWidgetCommandCreate3DChart::getChart3DWidget()
+{
+    return mChart3D;
+}
+
+//===============================================================
 // DAFigureWidgetCommandRemoveChart
 //===============================================================
 DAFigureWidgetCommandRemoveChart::DAFigureWidgetCommandRemoveChart(DAFigureWidget* fig, DAChartWidget* chart, QUndoCommand* par)
@@ -111,6 +175,45 @@ void DAFigureWidgetCommandRemoveChart::undo()
     mNeedDelete = false;
     if (mChart) {
         figure()->addChart(mChart, mChartNormRect);
+    }
+}
+
+//===============================================================
+// DAFigureWidgetCommandRemove3DChart
+//===============================================================
+DAFigureWidgetCommandRemove3DChart::DAFigureWidgetCommandRemove3DChart(DAFigureWidget* fig,
+                                                                       DAChart3DWidget* chart3d,
+                                                                       QUndoCommand* par)
+    : DAFigureWidgetCommandBase(fig, par)
+    , mChart3D(chart3d)
+{
+    setText(QObject::tr("remove 3D chart"));  // cn:移除3D绘图
+    // 使用 widgetNormRect 获取归一化位置（3D chart 不是 QwtPlot，不能用 axesNormRect）
+    mChartNormRect = fig->widgetNormRect(chart3d);
+}
+
+DAFigureWidgetCommandRemove3DChart::~DAFigureWidgetCommandRemove3DChart()
+{
+    if (mNeedDelete) {
+        if (mChart3D) {
+            mChart3D->deleteLater();
+        }
+    }
+}
+
+void DAFigureWidgetCommandRemove3DChart::redo()
+{
+    mNeedDelete = true;
+    if (mChart3D) {
+        figure()->remove3DChart(mChart3D);
+    }
+}
+
+void DAFigureWidgetCommandRemove3DChart::undo()
+{
+    mNeedDelete = false;
+    if (mChart3D) {
+        figure()->add3DChart(mChart3D, mChartNormRect);
     }
 }
 
@@ -189,6 +292,59 @@ void DAFigureWidgetCommandAttachItem::undo()
 }
 
 //----------------------------------------------------
+// DAFigureWidgetCommandAttach3DItem
+//----------------------------------------------------
+DAFigureWidgetCommandAttach3DItem::DAFigureWidgetCommandAttach3DItem(DAFigureWidget* fig,
+                                                                     DAChart3DWidget* chart3d,
+                                                                     Qwt3DPlotItem* item,
+                                                                     bool skipFirst,
+                                                                     QUndoCommand* par)
+    : DAFigureWidgetCommandBase(fig, par)
+    , mChart3D(chart3d)
+    , mItem(item)
+    , mSkipFirst(skipFirst)
+    , mNeedDelete(false)
+{
+    setText(QObject::tr("add 3D item in chart"));  // cn:添加3D图元到绘图
+}
+
+DAFigureWidgetCommandAttach3DItem::~DAFigureWidgetCommandAttach3DItem()
+{
+    if (mNeedDelete) {
+        if (mItem) {
+            delete mItem;
+        }
+    }
+}
+
+void DAFigureWidgetCommandAttach3DItem::redo()
+{
+    if (!mChart3D || !mItem) {
+        return;
+    }
+    if (mSkipFirst) {
+        mSkipFirst = false;
+    } else {
+        mItem->attach(mChart3D);
+        mNeedDelete = false;
+        // 触发 GL 重绘（Qwt3DPlot 继承 QOpenGLWidget，update() 触发 paintGL）
+        mChart3D->update();
+    }
+}
+
+void DAFigureWidgetCommandAttach3DItem::undo()
+{
+    if (!mItem) {
+        return;
+    }
+    mItem->detach();
+    mNeedDelete = true;
+    if (mChart3D) {
+        mChart3D->update();
+    }
+}
+
+//----------------------------------------------------
 // DAFigureWidgetCommandMoveItem
 //----------------------------------------------------
 DAFigureWidgetCommandMoveItem::DAFigureWidgetCommandMoveItem(DAFigureWidget* fig,
@@ -230,4 +386,49 @@ void DAFigureWidgetCommandMoveItem::undo()
     DAChartUtil::replot(mSourceChart);
 }
 
+//----------------------------------------------------
+// DAFigureWidgetCommandMove3DItem
+//----------------------------------------------------
+DAFigureWidgetCommandMove3DItem::DAFigureWidgetCommandMove3DItem(DAFigureWidget* fig,
+                                                                  DAChart3DWidget* sourceChart3D,
+                                                                  DAChart3DWidget* targetChart3D,
+                                                                  Qwt3DPlotItem* item,
+                                                                  QUndoCommand* par)
+    : DAFigureWidgetCommandBase(fig, par)
+    , mSourceChart3D(sourceChart3D)
+    , mTargetChart3D(targetChart3D)
+    , mItem(item)
+{
+    setText(QObject::tr("move 3D plot item to another chart"));  // cn:移动3D图元到另一个绘图
 }
+
+DAFigureWidgetCommandMove3DItem::~DAFigureWidgetCommandMove3DItem()
+{
+    // item始终attach在某个plot上，无需在此管理生命周期
+}
+
+void DAFigureWidgetCommandMove3DItem::redo()
+{
+    if (!mTargetChart3D || !mItem) {
+        return;
+    }
+    mItem->attach(mTargetChart3D);
+    if (mSourceChart3D) {
+        mSourceChart3D->update();
+    }
+    mTargetChart3D->update();
+}
+
+void DAFigureWidgetCommandMove3DItem::undo()
+{
+    if (!mSourceChart3D || !mItem) {
+        return;
+    }
+    mItem->attach(mSourceChart3D);
+    if (mTargetChart3D) {
+        mTargetChart3D->update();
+    }
+    mSourceChart3D->update();
+}
+
+}  // namespace DA

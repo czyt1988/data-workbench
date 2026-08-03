@@ -1,4 +1,4 @@
-﻿#ifndef DAFIGUREAPI_H
+#ifndef DAFIGUREAPI_H
 #define DAFIGUREAPI_H
 #include <QtCore/QtGlobal>
 #include "DAGlobals.h"
@@ -37,6 +37,12 @@ enum class DAChartTypes
     StatsBarplot,       ///< 柱状图（统计版）
     StatsRegplot,       ///< 回归图
     StatsECDFplot,      ///< 经验累积分布图
+
+    // === 3D 绘图类型 ===
+    Surface3D,    ///< 3D 曲面图
+    Bar3D,        ///< 3D 柱状图
+    Line3D,       ///< 3D 线图
+
     Unknow = 1000
 };
 }

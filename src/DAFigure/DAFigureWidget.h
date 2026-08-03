@@ -18,6 +18,7 @@ class QShowEvent;
 class QwtPlot;
 class QwtPlotCurve;
 class QwtPlotItem;
+class Qwt3DPlotItem;
 class QwtFigure;
 class QwtPlotSeriesDataPickerGroup;
 namespace DA
@@ -25,6 +26,7 @@ namespace DA
 class DAChartAxisRangeBinder;
 class DAFigureWidgetOverlay;
 class DADataProbeMarker;
+class DAChart3DWidget;
 /**
  * @brief 绘图窗口
  *
@@ -90,6 +92,35 @@ public:
     void removeChart(DAChartWidget* chart);
     void removeChart_(DAChartWidget* chart);
     //
+
+    // ========== 3D chart 管理 ==========
+
+    // 添加一个3D chart
+    DAChart3DWidget* create3DChart();
+    DAChart3DWidget* create3DChart(const QRectF& versatileSize);
+    DAChart3DWidget* create3DChart(float xVersatile, float yVersatile, float wVersatile, float hVersatile);
+    DAChart3DWidget* create3DChart_();
+    DAChart3DWidget* create3DChart_(const QRectF& versatileSize);
+    // 移除3D chart，但不会delete
+    void remove3DChart(DAChart3DWidget* chart);
+    void remove3DChart_(DAChart3DWidget* chart);
+    // 添加一个已有的3D chart
+    void add3DChart(DAChart3DWidget* chart, qreal xVersatile, qreal yVersatile, qreal wVersatile, qreal hVersatile);
+    void add3DChart(DAChart3DWidget* chart, const QRectF& versatileSize);
+    // 获取所有的3D图表
+    QList< DAChart3DWidget* > get3DCharts() const;
+    // 获取当前的3D绘图指针
+    DAChart3DWidget* getCurrent3DChart() const;
+    // 设置当前的3D绘图
+    void setCurrent3DChart(DAChart3DWidget* chart);
+    // 获取当前的3D chart，如果没有则创建一个新3D chart，此函数不返回nullptr
+    DAChart3DWidget* current3DChart();
+    // 返回当前光标下的3D图
+    DAChart3DWidget* getUnderCursor3DChart() const;
+    // 是否存在这个3D绘图
+    bool has3DChart(DAChart3DWidget* chart) const;
+    // 获取3D图表的数量
+    int get3DChartCount() const;
 
     // 添加一个已有的chart
     void addChart(DAChartWidget* chart, qreal xVersatile, qreal yVersatile, qreal wVersatile, qreal hVersatile);
@@ -208,6 +239,11 @@ public:
     QwtPlotIntervalCurve*
     addErrorBar_(const QVector< double >& values, const QVector< double >& mins, const QVector< double >& maxs);
 
+    // ========== 3D item undoable 接口 ==========
+
+    // 支持redo/undo的添加3D item
+    void add3DItem_(DAChart3DWidget* chart3d, Qwt3DPlotItem* item, bool skipfirstRedo = false);
+
 public:
     // 推送一个命令
     void push(QUndoCommand* cmd);
@@ -237,11 +273,30 @@ Q_SIGNALS:
     void currentChartChanged(DA::DAChartWidget* c);
 
     /**
+     * @brief 添加了3D chart
+     * @param chart3d指针
+     */
+    void chart3DAdded(DA::DAChart3DWidget* c);
+
+    /**
+     * @brief 3D绘图移除信号
+     * @param c
+     */
+    void chart3DRemoved(DA::DAChart3DWidget* c);
+
+    /**
+     * @brief 当前的3D绘图发生了变更
+     * @param c
+     */
+    void current3DChartChanged(DA::DAChart3DWidget* c);
+
+    /**
      * @brief chartEditorStatusChanged
      */
     void chartEditorStatusChanged(DA::DAFigureWidget::ChartEditorStatus status);
 
 protected:
+    bool eventFilter(QObject* obj, QEvent* event) override;
     void keyPressEvent(QKeyEvent* e);
     void showEvent(QShowEvent* e);
 private Q_SLOTS:
