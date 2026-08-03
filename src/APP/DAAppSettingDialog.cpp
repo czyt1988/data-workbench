@@ -1,8 +1,9 @@
-﻿#include "DAAppSettingDialog.h"
+#include "DAAppSettingDialog.h"
 #include "SettingPages/DASettingPageGeneral.h"
 #include "SettingPages/DASettingPagePython.h"
 #include "SettingPages/DASettingPageLog.h"
 #include "SettingPages/DASettingPageAdvanced.h"
+#include "DAAgentSettingsWidget.h"
 #include "DAConfigs.h"
 #include <QIcon>
 #include "AppMainWindow.h"
@@ -36,6 +37,12 @@ void DAAppSettingDialog::buildUI(DAAppConfig* config)
     DASettingPageAdvanced* advanced = new DASettingPageAdvanced();
     advanced->setAppConfig(config);
     settingWidget()->addPage(advanced);
+
+    // Agent LLM 设置页
+    // 本页不调用 setAppConfig(config)——配置经 QSettings 自取
+    // （DAAgent 库无法链接 APP 的 DAAppConfig，见 plan-06 "持久化方案选择"）
+    DAAgentSettingsWidget* agentPage = new DAAgentSettingsWidget();
+    settingWidget()->addPage(agentPage);
 
     setPage(0);
 }

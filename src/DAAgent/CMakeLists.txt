@@ -35,6 +35,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
     WebEngine
     WebEngineWidgets
     WebChannel
+    Network
 )
 
 # Qt 资源（Qt5/Qt6 兼容写法，与 APP 模块一致）
@@ -64,7 +65,13 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::WebEngine
     Qt${QT_VERSION_MAJOR}::WebEngineWidgets
     Qt${QT_VERSION_MAJOR}::WebChannel
+    Qt${QT_VERSION_MAJOR}::Network
 )
+
+# DPAPI（CryptProtectData/CryptUnprotectData）需要 Crypt32.lib
+if(WIN32)
+    target_link_libraries(${DA_LIB_NAME} PRIVATE Crypt32)
+endif()
 
 # -------------link DAWorkbench 模块（导出命名空间为 DAWorkbench::）--------------------------
 target_link_libraries(${DA_LIB_NAME} PUBLIC
