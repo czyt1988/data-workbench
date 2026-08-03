@@ -1,4 +1,4 @@
-﻿#ifndef DACHARTMANAGEWIDGET_H
+#ifndef DACHARTMANAGEWIDGET_H
 #define DACHARTMANAGEWIDGET_H
 #include "DAGuiAPI.h"
 #include <QWidget>
@@ -14,6 +14,7 @@ class QStandardItem;
 // qwt
 class QwtPlot;
 class QwtPlotItem;
+class Qwt3DPlotItem;
 
 namespace DA
 {
@@ -21,6 +22,7 @@ class DAChartOperateWidget;
 class DAFigureWidget;
 class DAFigureTreeView;
 class DAChartWidget;
+class DAChart3DWidget;
 class DAChartItemStandardItem;
 class DAChartWidgetStandardItem;
 /**
@@ -55,6 +57,12 @@ public:
     void refreshAxisText(QwtPlot* plot, QwtAxisId axisId);
     // 刷新指定chart节点的文字列显示（用于重命名后）
     void refreshPlotFolderText(QwtPlot* plot);
+    // 刷新指定3D plotItem的可见性列显示（作用于当前treeView）
+    void refresh3DPlotItemVisibility(Qwt3DPlotItem* item);
+    // 刷新指定3D plotItem的文字列显示（用于重命名后）
+    void refresh3DPlotItemText(Qwt3DPlotItem* item);
+    // 刷新指定3D chart节点的文字列显示（用于重命名后）
+    void refresh3DPlot3DText(DAChart3DWidget* chart);
 public Q_SLOTS:
     // 把管理树展开
     void expandCurrentTree();

@@ -1,4 +1,4 @@
-﻿#ifndef DAFIGURETREEVIEW_H
+#ifndef DAFIGURETREEVIEW_H
 #define DAFIGURETREEVIEW_H
 #include "DAFigureAPI.h"
 #include <QTreeView>
@@ -6,10 +6,12 @@
 #include "DAFigureElementSelection.h"
 class QwtPlot;
 class QwtPlotItem;
+class Qwt3DPlotItem;
 class QStandardItem;
 namespace DA
 {
 class DAFigureWidget;
+class DAChart3DWidget;
 class DAFigureTreeModel;
 
 /**
@@ -42,6 +44,12 @@ public:
     void refreshAxisText(QwtPlot* plot, QwtAxisId axisId);
     // 刷新指定chart节点的文字列显示（用于重命名后）
     void refreshPlotFolderText(QwtPlot* plot);
+    // 刷新指定3D plotItem的可见性列显示
+    void refresh3DPlotItemVisibility(Qwt3DPlotItem* item);
+    // 刷新指定3D plotItem的文字列显示（用于重命名后）
+    void refresh3DPlotItemText(Qwt3DPlotItem* item);
+    // 刷新指定3D chart节点的文字列显示（用于重命名后）
+    void refresh3DPlot3DText(DAChart3DWidget* chart);
 public Q_SLOTS:
     // 让树形控件的水平头自适应内容
     void resizeHeaderToContents();

@@ -1,4 +1,4 @@
-﻿#include "DAFigureTreeView.h"
+#include "DAFigureTreeView.h"
 #include <QPointer>
 #include <QMouseEvent>
 #include <QDropEvent>
@@ -6,9 +6,11 @@
 #include "DAFigureWidget.h"
 #include "DAFigureWidgetCommands.h"
 #include "DAChartWidget.h"
+#include "DAChart3DWidget.h"
 #include "qwt_figure.h"
 #include "qwt_plot.h"
 #include "qwt_plot_item.h"
+#include "qwt3d_plotitem.h"
 namespace DA
 {
 //==============================================================
@@ -51,6 +53,11 @@ DAFigureTreeView::DAFigureTreeView(QWidget* parent) : QTreeView(parent), DA_PIMP
     connect(this, &QTreeView::doubleClicked, this, &DAFigureTreeView::onDoubleClicked);
     DAFigureTreeModel* m = new DAFigureTreeModel(this);
     connect(m, &DAFigureTreeModel::chartItemAttached, this, &DAFigureTreeView::onChartItemAttacted);
+    connect(m, &DAFigureTreeModel::chart3DItemAttached, this, [this](Qwt3DPlotItem* item, bool on) {
+        if (on && isAutoResizeColumnToContents()) {
+            resizeHeaderToContents();
+        }
+    });
     setModel(m);
     // 列宽自适应
     setColumnWidth(0, 200);
@@ -75,7 +82,7 @@ void DAFigureTreeView::setFigureWidget(DA::DAFigureWidget* fig)
     if (!m) {
         return;
     }
-    m->setFigure(fig->figure());
+    m->setFigureWidget(fig);
     d_ptr->mFigureWidget = fig;
     expandAll();
 }
@@ -163,6 +170,30 @@ void DAFigureTreeView::refreshPlotFolderText(QwtPlot* plot)
     DAFigureTreeModel* m = d_ptr->figureModel();
     if (m) {
         m->notifyPlotFolderTextChanged(plot);
+    }
+}
+
+void DAFigureTreeView::refresh3DPlotItemVisibility(Qwt3DPlotItem* item)
+{
+    DAFigureTreeModel* m = d_ptr->figureModel();
+    if (m) {
+        m->notify3DPlotItemVisibilityChanged(item);
+    }
+}
+
+void DAFigureTreeView::refresh3DPlotItemText(Qwt3DPlotItem* item)
+{
+    DAFigureTreeModel* m = d_ptr->figureModel();
+    if (m) {
+        m->notify3DPlotItemTextChanged(item);
+    }
+}
+
+void DAFigureTreeView::refresh3DPlot3DText(DAChart3DWidget* chart)
+{
+    DAFigureTreeModel* m = d_ptr->figureModel();
+    if (m) {
+        m->notify3DPlot3DTextChanged(chart);
     }
 }
 
@@ -279,6 +310,33 @@ void DAFigureTreeView::handleClicked(const QModelIndex& index, bool doubleClicke
         if (index.column() == 2 && plotItem) {
             Q_EMIT requestItemChangeColor(plotItem, item);
         }
+        break;
+    }
+    // === 3D 节点处理 ===
+    case DAFigureTreeModel::NodeTypePlot3DFolder: {
+        DAChart3DWidget* chart3D = model->plot3DFromItem(item);
+        DAFigureElementSelection sel(fig, chart3D, col);
+        doubleClicked ? Q_EMIT itemDbCliecked(sel) : Q_EMIT itemCliecked(sel);
+        break;
+    }
+    case DAFigureTreeModel::NodeTypePlot3D: {
+        DAChart3DWidget* chart3D = model->plot3DFromItem(item);
+        DAFigureElementSelection sel(fig, chart3D, col);
+        doubleClicked ? Q_EMIT itemDbCliecked(sel) : Q_EMIT itemCliecked(sel);
+        break;
+    }
+    case DAFigureTreeModel::NodeTypePlot3DAxis: {
+        DAChart3DWidget* chart3D = model->plot3DFromItem(item);
+        int axis3DId = item->data(DAFigureTreeModel::RoleAxis3DId).toInt();
+        DAFigureElementSelection sel(fig, chart3D, axis3DId, col);
+        doubleClicked ? Q_EMIT itemDbCliecked(sel) : Q_EMIT itemCliecked(sel);
+        break;
+    }
+    case DAFigureTreeModel::NodeTypePlot3DItem: {
+        DAChart3DWidget* chart3D = model->plot3DFromItem(item);
+        Qwt3DPlotItem* plot3DItem = model->plot3DItemFromItem(item);
+        DAFigureElementSelection sel(fig, chart3D, plot3DItem, col);
+        doubleClicked ? Q_EMIT itemDbCliecked(sel) : Q_EMIT itemCliecked(sel);
         break;
     }
     default:

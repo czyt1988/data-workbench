@@ -5,9 +5,11 @@
 class QwtPlot;
 class QwtPlotItem;
 class QwtScaleWidget;
+class Qwt3DPlotItem;
 namespace DA
 {
 class DAFigureWidget;
+class DAChart3DWidget;
 /**
  * @brief 用于存放绘图元素
  *
@@ -27,6 +29,9 @@ public:
         SelectPlot,         ///< plot,此时figureWidget、plot指针有效
         SelectScaleWidget,  ///< 刻度，此时figureWidget、plot、scaleWidget、axisId有效
         SelectPlotItem,     ///< plotitem，此时figureWidget、plot、plotItem有效
+        SelectPlot3D,       ///< 3D chart，此时figureWidget、plot3D指针有效
+        SelectPlot3DItem,   ///< 3D plotitem，此时figureWidget、plot3D、plot3DItem有效
+        SelectPlot3DAxis    ///< 3D 轴，此时figureWidget、plot3D、axis3DId有效
     };
 
     /**
@@ -44,9 +49,15 @@ public:
     DAFigureElementSelection(DAFigureWidget* fig, QwtPlot* p, SelectionColumns col);
     DAFigureElementSelection(DAFigureWidget* fig, QwtPlot* p, QwtPlotItem* item, SelectionColumns col);
     DAFigureElementSelection(DAFigureWidget* fig, QwtPlot* p, QwtScaleWidget* sw, int axis, SelectionColumns col);
+    DAFigureElementSelection(DAFigureWidget* fig, DAChart3DWidget* p3d, SelectionColumns col);
+    DAFigureElementSelection(DAFigureWidget* fig, DAChart3DWidget* p3d, Qwt3DPlotItem* item, SelectionColumns col);
+    DAFigureElementSelection(DAFigureWidget* fig, DAChart3DWidget* p3d, int axis3D, SelectionColumns col);
     bool isSelectedPlot() const;
     bool isSelectedScaleWidget() const;
     bool isSelectedPlotItem() const;
+    bool isSelectedPlot3D() const;
+    bool isSelectedPlot3DItem() const;
+    bool isSelectedPlot3DAxis() const;
 
 public:
     DAFigureWidget* figureWidget { nullptr };
@@ -54,6 +65,9 @@ public:
     QwtPlotItem* plotItem { nullptr };
     QwtScaleWidget* scaleWidget { nullptr };
     int axisId;
+    DAChart3DWidget* plot3D { nullptr };
+    Qwt3DPlotItem* plot3DItem { nullptr };
+    int axis3DId { -1 };
     SelectionTypes selectionType { SelectNone };
     SelectionColumns selectionColumn { ColumnName };
 };

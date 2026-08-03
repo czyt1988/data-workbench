@@ -1,4 +1,4 @@
-﻿#include "DAChartManageWidget.h"
+#include "DAChartManageWidget.h"
 #include "ui_DAChartManageWidget.h"
 #include <functional>
 #include <QTreeView>
@@ -15,10 +15,13 @@
 #include "DAFigureWidget.h"
 #include "DAFigureTreeView.h"
 #include "DAChartWidget.h"
+#include "DAChart3DWidget.h"
 #include "qwt_figure.h"
 #include "qwt_plot.h"
 #include "qwt_plot_item.h"
 #include "qwt_text.h"
+#include "qwt3d_plotitem.h"
+#include "qwt3d_types.h"
 #include "Models/DAFigureTreeModel.h"
 namespace DA
 {
@@ -130,6 +133,25 @@ void DAChartManageWidget::PrivateData::updateContextMenuActions(int nodeType)
         mActDelete->setVisible(true);
         mActSetting->setVisible(true);
         break;
+    // 3D 节点
+    case DAFigureTreeModel::NodeTypePlot3DFolder:
+        mActRename->setVisible(true);
+        mActVisible->setVisible(false);
+        mActDelete->setVisible(false);
+        mActSetting->setVisible(true);
+        break;
+    case DAFigureTreeModel::NodeTypePlot3DAxis:
+        mActRename->setVisible(true);
+        mActVisible->setVisible(false);
+        mActDelete->setVisible(false);
+        mActSetting->setVisible(true);
+        break;
+    case DAFigureTreeModel::NodeTypePlot3DItem:
+        mActRename->setVisible(true);
+        mActVisible->setVisible(true);
+        mActDelete->setVisible(true);
+        mActSetting->setVisible(true);
+        break;
     default:
         mActRename->setVisible(false);
         mActVisible->setVisible(false);
@@ -235,8 +257,10 @@ void DAChartManageWidget::expandCurrentTree()
             if (!index.isValid()) {
                 continue;
             }
-            // 坐标轴文件夹节点收起，其余节点展开
-            bool expand = (index.data(DAFigureTreeModel::RoleNodeType).toInt() != DAFigureTreeModel::NodeTypeAxesFolder);
+            // 坐标轴文件夹节点收起（2D + 3D），其余节点展开
+            int nt = index.data(DAFigureTreeModel::RoleNodeType).toInt();
+            bool expand = (nt != DAFigureTreeModel::NodeTypeAxesFolder
+                           && nt != DAFigureTreeModel::NodeTypePlot3DAxesFolder);
             tree->setExpanded(index, expand);
             if (expand) {
                 expandIndex(index);
@@ -322,6 +346,30 @@ void DAChartManageWidget::refreshPlotFolderText(QwtPlot* plot)
     DAFigureTreeView* tree = currentTreeView();
     if (tree) {
         tree->refreshPlotFolderText(plot);
+    }
+}
+
+void DAChartManageWidget::refresh3DPlotItemVisibility(Qwt3DPlotItem* item)
+{
+    DAFigureTreeView* tree = currentTreeView();
+    if (tree) {
+        tree->refresh3DPlotItemVisibility(item);
+    }
+}
+
+void DAChartManageWidget::refresh3DPlotItemText(Qwt3DPlotItem* item)
+{
+    DAFigureTreeView* tree = currentTreeView();
+    if (tree) {
+        tree->refresh3DPlotItemText(item);
+    }
+}
+
+void DAChartManageWidget::refresh3DPlot3DText(DAChart3DWidget* chart)
+{
+    DAFigureTreeView* tree = currentTreeView();
+    if (tree) {
+        tree->refresh3DPlot3DText(chart);
     }
 }
 
@@ -513,10 +561,13 @@ void DAChartManageWidget::onTreeViewContextMenuRequested(DAFigureTreeView* tree,
     }
 
     const int nodeType = item->data(DAFigureTreeModel::RoleNodeType).toInt();
-    // layout 节点(NodeTypePlot) 和文件夹节点不弹出菜单
+    // layout 节点和文件夹节点不弹出菜单（2D + 3D）
     if (nodeType == DAFigureTreeModel::NodeTypePlot
         || nodeType == DAFigureTreeModel::NodeTypeAxesFolder
-        || nodeType == DAFigureTreeModel::NodeTypeItemsFolder) {
+        || nodeType == DAFigureTreeModel::NodeTypeItemsFolder
+        || nodeType == DAFigureTreeModel::NodeTypePlot3D
+        || nodeType == DAFigureTreeModel::NodeTypePlot3DAxesFolder
+        || nodeType == DAFigureTreeModel::NodeTypePlot3DItemsFolder) {
         return;
     }
 
@@ -541,6 +592,10 @@ void DAChartManageWidget::onTreeViewContextMenuRequested(DAFigureTreeView* tree,
         } else if (nodeType == DAFigureTreeModel::NodeTypePlotItem) {
             if (QwtPlotItem* plotItem = model->plotItemFromItem(item)) {
                 visible = plotItem->isVisible();
+            }
+        } else if (nodeType == DAFigureTreeModel::NodeTypePlot3DItem) {
+            if (Qwt3DPlotItem* plot3DItem = model->plot3DItemFromItem(item)) {
+                visible = plot3DItem->isVisible();
             }
         }
         d_ptr->mActVisible->setChecked(visible);
@@ -622,6 +677,65 @@ void DAChartManageWidget::onContextMenuRenameTriggered()
             }
         }
     }
+    // === 3D 节点重命名 ===
+    else if (nodeType == DAFigureTreeModel::NodeTypePlot3DFolder) {
+        DAChart3DWidget* chart3D = model->plot3DFromItem(item);
+        if (chart3D) {
+            QString oldName = chart3D->getChart3DTitle();
+            if (oldName.isEmpty()) {
+                oldName = tr("3D Chart");  // cn:3D绘图
+            }
+            bool ok = false;
+            QString newName = QInputDialog::getText(tree,
+                                                    tr("Rename"),     // cn:重命名
+                                                    tr("New name:"),  // cn:新名称:
+                                                    QLineEdit::Normal,
+                                                    oldName,
+                                                    &ok);
+            if (ok && !newName.isEmpty()) {
+                chart3D->setChart3DTitle(newName);
+                // 3D folder 节点是普通 QStandardItem，无动态 data() 查询，需显式更新文本
+                item->setText(newName);
+                // 同时刷新 layer 节点（NodeTypePlot3D，DAStandardItemPlot3D 动态查询标题）
+                tree->refresh3DPlot3DText(chart3D);
+            }
+        }
+    } else if (nodeType == DAFigureTreeModel::NodeTypePlot3DItem) {
+        Qwt3DPlotItem* plot3DItem = model->plot3DItemFromItem(item);
+        if (plot3DItem) {
+            QString oldName = plot3DItem->title();
+            bool ok = false;
+            QString newName = QInputDialog::getText(tree,
+                                                    tr("Rename"),     // cn:重命名
+                                                    tr("New name:"),  // cn:新名称:
+                                                    QLineEdit::Normal,
+                                                    oldName,
+                                                    &ok);
+            if (ok && !newName.isEmpty()) {
+                plot3DItem->setTitle(newName);
+                tree->refresh3DPlotItemText(plot3DItem);
+            }
+        }
+    } else if (nodeType == DAFigureTreeModel::NodeTypePlot3DAxis) {
+        DAChart3DWidget* chart3D = model->plot3DFromItem(item);
+        int axis3DId = item->data(DAFigureTreeModel::RoleAxis3DId).toInt();
+        if (chart3D && axis3DId >= 0) {
+            QString oldName = chart3D->get3DAxisLabel(static_cast<AXIS>(axis3DId));
+            bool ok = false;
+            QString newName = QInputDialog::getText(tree,
+                                                    tr("Rename"),     // cn:重命名
+                                                    tr("New name:"),  // cn:新名称:
+                                                    QLineEdit::Normal,
+                                                    oldName,
+                                                    &ok);
+            if (ok && !newName.isEmpty()) {
+                chart3D->set3DAxisLabel(static_cast<AXIS>(axis3DId), newName);
+                // 3D 轴节点是普通 QStandardItem，无动态 data() 查询，需显式更新文本
+                item->setText(newName);
+                chart3D->update();  // 触发 GL 重绘
+            }
+        }
+    }
 }
 
 /**
@@ -669,6 +783,19 @@ void DAChartManageWidget::onContextMenuVisibleTriggered(bool on)
             Q_EMIT figureElementClicked(sel);
         }
     }
+    // === 3D item 可见性 ===
+    else if (nodeType == DAFigureTreeModel::NodeTypePlot3DItem) {
+        Qwt3DPlotItem* plot3DItem = model->plot3DItemFromItem(item);
+        DAChart3DWidget* chart3D = model->plot3DFromItem(item);
+        if (plot3DItem && chart3D) {
+            plot3DItem->setVisible(on);
+            tree->refresh3DPlotItemVisibility(plot3DItem);
+            chart3D->update();  // 触发 GL 重绘
+            DAFigureElementSelection sel(figWidget, chart3D, plot3DItem,
+                                          DAFigureElementSelection::ColumnProperty);
+            Q_EMIT figureElementClicked(sel);
+        }
+    }
 }
 
 /**
@@ -682,33 +809,56 @@ void DAChartManageWidget::onContextMenuDeleteTriggered()
     if (!tree || !item) {
         return;
     }
-    if (nodeType != DAFigureTreeModel::NodeTypePlotItem) {
+    if (nodeType != DAFigureTreeModel::NodeTypePlotItem
+        && nodeType != DAFigureTreeModel::NodeTypePlot3DItem) {
         return;
     }
     DAFigureTreeModel* model = tree->getFigureTreeModel();
     if (!model) {
         return;
     }
-    QwtPlotItem* plotItem = model->plotItemFromItem(item);
-    QwtPlot* plot = model->plotFromItem(item);
-    if (!plotItem || !plot) {
-        return;
-    }
-    int ret = QMessageBox::question(tree,
-                                    tr("Delete"),                                       // cn:删除
-                                    tr("Are you sure to delete \"%1\"?").arg(plotItem->title().text()),  // cn:确认删除"%1"吗?
-                                    QMessageBox::Yes | QMessageBox::No,
-                                    QMessageBox::No);
-    if (ret == QMessageBox::Yes) {
-        // 优先使用DAChartWidget的removePlotItem,它会调用detach并delete
-        if (DAChartWidget* chartWidget = qobject_cast< DAChartWidget* >(plot)) {
-            chartWidget->removePlotItem(plotItem);
-        } else {
-            plotItem->detach();
-            delete plotItem;
-            plot->replot();
+    if (nodeType == DAFigureTreeModel::NodeTypePlotItem) {
+        QwtPlotItem* plotItem = model->plotItemFromItem(item);
+        QwtPlot* plot = model->plotFromItem(item);
+        if (!plotItem || !plot) {
+            return;
         }
-        // 模型会通过QwtPlot::itemAttached信号自动更新
+        int ret = QMessageBox::question(tree,
+                                        tr("Delete"),                                       // cn:删除
+                                        tr("Are you sure to delete \"%1\"?").arg(plotItem->title().text()),  // cn:确认删除"%1"吗?
+                                        QMessageBox::Yes | QMessageBox::No,
+                                        QMessageBox::No);
+        if (ret == QMessageBox::Yes) {
+            // 优先使用DAChartWidget的removePlotItem,它会调用detach并delete
+            if (DAChartWidget* chartWidget = qobject_cast< DAChartWidget* >(plot)) {
+                chartWidget->removePlotItem(plotItem);
+            } else {
+                plotItem->detach();
+                delete plotItem;
+                plot->replot();
+            }
+            // 模型会通过QwtPlot::itemAttached信号自动更新
+        }
+    }
+    // === 3D item 删除 ===
+    else if (nodeType == DAFigureTreeModel::NodeTypePlot3DItem) {
+        Qwt3DPlotItem* plot3DItem = model->plot3DItemFromItem(item);
+        DAChart3DWidget* chart3D = model->plot3DFromItem(item);
+        if (!plot3DItem || !chart3D) {
+            return;
+        }
+        int ret = QMessageBox::question(tree,
+                                        tr("Delete"),                                // cn:删除
+                                        tr("Are you sure to delete \"%1\"?").arg(plot3DItem->title()),  // cn:确认删除"%1"吗?
+                                        QMessageBox::Yes | QMessageBox::No,
+                                        QMessageBox::No);
+        if (ret == QMessageBox::Yes) {
+            // 先从树中显式移除节点，确保树和 hash 一致，避免信号处理时序依赖
+            model->remove3DPlotItemFromTree(plot3DItem);
+            plot3DItem->detach();
+            delete plot3DItem;
+            chart3D->update();  // 触发 GL 重绘
+        }
     }
 }
 
@@ -752,6 +902,30 @@ void DAChartManageWidget::onContextMenuSettingTriggered()
         QwtPlotItem* plotItem = model->plotItemFromItem(item);
         if (plot && plotItem) {
             Q_EMIT figureElementClicked(DAFigureElementSelection(figWidget, plot, plotItem, col));
+        }
+        break;
+    }
+    // === 3D 节点设置 ===
+    case DAFigureTreeModel::NodeTypePlot3DFolder: {
+        DAChart3DWidget* chart3D = model->plot3DFromItem(item);
+        if (chart3D) {
+            Q_EMIT figureElementClicked(DAFigureElementSelection(figWidget, chart3D, col));
+        }
+        break;
+    }
+    case DAFigureTreeModel::NodeTypePlot3DAxis: {
+        DAChart3DWidget* chart3D = model->plot3DFromItem(item);
+        int axis3DId = item->data(DAFigureTreeModel::RoleAxis3DId).toInt();
+        if (chart3D && axis3DId >= 0) {
+            Q_EMIT figureElementClicked(DAFigureElementSelection(figWidget, chart3D, axis3DId, col));
+        }
+        break;
+    }
+    case DAFigureTreeModel::NodeTypePlot3DItem: {
+        DAChart3DWidget* chart3D = model->plot3DFromItem(item);
+        Qwt3DPlotItem* plot3DItem = model->plot3DItemFromItem(item);
+        if (chart3D && plot3DItem) {
+            Q_EMIT figureElementClicked(DAFigureElementSelection(figWidget, chart3D, plot3DItem, col));
         }
         break;
     }
