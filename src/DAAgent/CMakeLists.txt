@@ -20,22 +20,17 @@ file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB DAAgent_TOOLS_SRCS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tools/*.cpp")
 file(GLOB DAAgent_TOOLS_HDRS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tools/*.h")
 
-# WebEngine/WebEngineWidgets/WebChannel 的 find_package 限定在 DAAgent 子目录内，
-# 不提升为平台全局依赖（顶层 CMakeLists.txt 的 find_package 不引入 WebEngine）。
+# DAAgent 仅需要 Core/Gui/Widgets/PrintSupport/Svg；WebEngine/WebChannel/Network
+# 已随 GUI 文件迁移至 DAGui/Agent，由 DAGui/CMakeLists.txt 引入。
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
     Core
     Gui
     Widgets
-    WebEngine
-    WebEngineWidgets
-    WebChannel
-    Network
     PrintSupport
     Svg
 )
 
 # Qt 资源（Qt5/Qt6 兼容写法，与 APP 模块一致）
-file(GLOB DAAgent_RESOURCES "${CMAKE_CURRENT_SOURCE_DIR}/resources/*.qrc")
 
 add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES}
@@ -43,7 +38,6 @@ add_library(${DA_LIB_NAME} SHARED
             ${DAAgent_TOOLS_HDRS}
             ${DAAgent_TOOLS_SRCS}
             ${DA_GLOBAL_HEADER}
-            ${DAAgent_RESOURCES}
 )
 # AUTORCC ON 由 damacro_set_lib_properties 设置，会自动编译 .qrc
 
@@ -60,10 +54,6 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::WebEngine
-    Qt${QT_VERSION_MAJOR}::WebEngineWidgets
-    Qt${QT_VERSION_MAJOR}::WebChannel
-    Qt${QT_VERSION_MAJOR}::Network
 )
 # PrintSupport (QPrinter for PDF export) and Svg (QSvgGenerator for SVG export)
 # are used only in tool .cpp files, so PRIVATE.
@@ -71,11 +61,6 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::PrintSupport
     Qt${QT_VERSION_MAJOR}::Svg
 )
-
-# DPAPI（CryptProtectData/CryptUnprotectData）需要 Crypt32.lib
-if(WIN32)
-    target_link_libraries(${DA_LIB_NAME} PRIVATE Crypt32)
-endif()
 
 # -------------link DAWorkbench 模块（导出命名空间为 DAWorkbench::）--------------------------
 target_link_libraries(${DA_LIB_NAME} PUBLIC
@@ -128,9 +113,3 @@ install(FILES
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
     COMPONENT headers
 )
-
-# 部署 Python 脚本（后续 plan 添加 agent_runner.py）
-# 顶层 CMakeLists.txt 把 src/PyScripts 复制到 ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts，
-# 故 DAAgent 的 agent 脚本应落到同一根下的 PyScripts/DAWorkbench/agent/。
-# file(COPY python/agent_runner.py
-#      DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts/DAWorkbench/agent/)

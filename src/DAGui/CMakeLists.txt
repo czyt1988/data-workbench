@@ -394,6 +394,14 @@ if(DA_ENABLE_PYTHON)
     )
 endif()
 
+#Agent
+if(DA_ENABLE_PYTHON)
+    set(DA_LIB_SUBDIR_Agent ${CMAKE_CURRENT_SOURCE_DIR}/Agent)
+    file(GLOB DA_LIB_HEADER_FILES_Agent ${DA_LIB_SUBDIR_Agent}/*.h)
+    file(GLOB DA_LIB_SOURCE_FILES_Agent ${DA_LIB_SUBDIR_Agent}/*.cpp)
+    file(GLOB DA_LIB_RC_FILES_Agent ${DA_LIB_SUBDIR_Agent}/*.qrc ${DA_LIB_SUBDIR_Agent}/resources/*.qrc)
+endif()
+
 add_library(${DA_LIB_NAME} SHARED
             #Root
             ${DA_LIB_HEADER_FILES}
@@ -420,6 +428,10 @@ add_library(${DA_LIB_NAME} SHARED
             #NodeSetting
             ${DA_LIB_HEADER_FILES_NodeSetting}
             ${DA_LIB_SOURCE_FILES_NodeSetting}
+            #Agent
+            ${DA_LIB_HEADER_FILES_Agent}
+            ${DA_LIB_SOURCE_FILES_Agent}
+            ${DA_LIB_RC_FILES_Agent}
 )
 
 # 构建库定义的宏
@@ -435,6 +447,19 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
     Qt${QT_VERSION_MAJOR}::Svg
+)
+# Agent UI 需要 WebEngine/WebChannel/Network（DAGui/Agent 子目录的 DAAgentDockWidget 等）
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
+    WebEngine
+    WebEngineWidgets
+    WebChannel
+    Network
+)
+target_link_libraries(${DA_LIB_NAME} PUBLIC
+    Qt${QT_VERSION_MAJOR}::WebEngine
+    Qt${QT_VERSION_MAJOR}::WebEngineWidgets
+    Qt${QT_VERSION_MAJOR}::WebChannel
+    Qt${QT_VERSION_MAJOR}::Network
 )
 if(${QT_VERSION_MAJOR} EQUAL 6)
     target_link_libraries(${DA_LIB_NAME} PRIVATE Qt6::Core5Compat)
@@ -480,6 +505,10 @@ damacro_import_DALiteCtk(${DA_LIB_NAME})
 
 # -------------link quazip--------------------------
 damacro_import_quazip(${DA_LIB_NAME})
+# DPAPI（CryptProtectData/CryptUnprotectData）需要 Crypt32.lib —— DAAgentSettingsWidget 的 API Key 加密
+if(WIN32)
+    target_link_libraries(${DA_LIB_NAME} PRIVATE Crypt32)
+endif()
 ########################################################
 # 设置通用库属性
 ########################################################
@@ -497,6 +526,10 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
 target_include_directories(${DA_LIB_NAME} PUBLIC
     $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/NodeSetting>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/NodeSetting>
+)
+target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/Agent>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Agent>
 )
 
 ########################################################
@@ -543,6 +576,12 @@ install(FILES
 install(FILES
     ${DA_LIB_HEADER_FILES_NodeSetting}
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/NodeSetting
+    COMPONENT headers
+)
+#Agent
+install(FILES
+    ${DA_LIB_HEADER_FILES_Agent}
+    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/Agent
     COMPONENT headers
 )
 

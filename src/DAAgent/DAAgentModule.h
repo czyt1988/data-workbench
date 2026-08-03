@@ -23,21 +23,46 @@ class DAAgent_API DAAgentModule : public DAAgentInterface
 {
     Q_OBJECT
 public:
+    /**
+     * @brief 构造函数
+     * @param core 核心接口指针
+     * @param parent 父对象
+     */
     explicit DAAgentModule(DACoreInterface* core, QObject* parent = nullptr);
+    /**
+     * @brief 析构函数
+     */
     ~DAAgentModule();
-    // 辅助方法（不属于 DAAgentInterface）：注入核心接口
+
+    /**
+     * @brief 使用核心接口初始化模块
+     * @param core 核心接口指针
+     */
     void initialize(DACoreInterface* core);
-    // 注入由 DAAppDockingArea::buildDockingArea()（plan-03）创建的 Dock Widget。
-    // initialize() 不再 new DAAgentDockWidget，避免与 plan-03 产生两个实例。
+
+    /**
+     * @brief 注入由 DAAppDockingArea::buildDockingArea() 创建的 Dock Widget
+     *
+     * initialize() 不再 new DAAgentDockWidget，避免与 plan-03 产生两个实例。
+     * @param dock 由 DAAppDockingArea 创建的 dock 窗口
+     */
     void setDockWidget(DAAgentDockWidget* dock);
-    // DAAgentInterface overrides
+
+    /// @copydoc DAAgentInterface::registerTool
     void registerTool(DAAbstractAgentTool* tool) override;
+    /// @copydoc DAAgentInterface::registerSystemPrompt
     void registerSystemPrompt(const QString& name, const QString& content) override;
+    /// @copydoc DAAgentInterface::showDockWidget
     void showDockWidget() override;
+    /// @copydoc DAAgentInterface::hideDockWidget
     void hideDockWidget() override;
+    /// @copydoc DAAgentInterface::sendMessage
     void sendMessage(const QString& text) override;
+    /// @copydoc DAAgentInterface::isRunning
     bool isRunning() const override;
+    /// @copydoc DAAgentInterface::getLLMConfig
     QJsonObject getLLMConfig() const override;
+    /// @copydoc DAAgentInterface::setLLMConfig
     void setLLMConfig(const QJsonObject& config) override;
 private:
     DACoreInterface* m_core;

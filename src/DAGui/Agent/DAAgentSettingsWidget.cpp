@@ -1,4 +1,4 @@
-// DAAgentSettingsWidget.cpp —— Agent LLM 设置页实现
+// DAAgentSettingsWidget.cpp
 #include "DAAgentSettingsWidget.h"
 #include <QFormLayout>
 #include <QSettings>

@@ -14,7 +14,9 @@ class DAAgentToolColumnStats : public DAAgentToolBase
     Q_OBJECT
 public:
     using DAAgentToolBase::DAAgentToolBase;
+    /// @copydoc DAAbstractAgentTool::getToolSpec
     QJsonObject getToolSpec() const override;
+    /// @copydoc DAAbstractAgentTool::execute
     QJsonObject execute(const QJsonObject& params) override;
 };
 }  // namespace DA
