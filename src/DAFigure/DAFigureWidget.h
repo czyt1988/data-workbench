@@ -18,6 +18,7 @@ class QShowEvent;
 class QwtPlot;
 class QwtPlotCurve;
 class QwtPlotItem;
+class Qwt3DPlot;
 class Qwt3DPlotItem;
 class QwtFigure;
 class QwtPlotSeriesDataPickerGroup;

@@ -29,6 +29,7 @@
 #include "DAChartWidget.h"
 #include "DAChart3DWidget.h"
 #include "DAChartSerialize.h"
+#include "DAChart3DSerialize.h"
 #include "DAFigureWidgetOverlay.h"
 #include "DAFigureWidgetCommands.h"
 #include "DAChartAxisRangeBinder.h"
@@ -1449,29 +1450,33 @@ void DAFigureWidget::onFigureChartEditorFinished(bool isCancel)
 
 QDataStream& operator<<(QDataStream& out, const DAFigureWidget* p)
 {
-    const uint32_t magicStart = 0x1314abc;
+    // 使用新 magic 标识支持 2D/3D 混合格式
+    const quint32 magicStart = 0xDA3D0001;
 
     out << magicStart << p->saveGeometry();
-    QList< DAChartWidget* > charts = p->getCharts();
-    QList< QRectF > pos;
+    // 使用 const 声明避免 range-for 触发 Qt COW 深拷贝（AGENTS.md §Qt 容器范围迭代）
+    const QList< DAChartWidget* > charts2d = p->getCharts();
+    const QList< DAChart3DWidget* > charts3d = p->get3DCharts();
     QwtFigure* fig = p->figure();
+
+    quint32 totalCharts = static_cast< quint32 >(charts2d.size() + charts3d.size());
+    out << totalCharts;
+
     if (fig) {
-        for (int i = 0; i < charts.size(); ++i) {
-            pos.append(fig->axesNormRect(charts[ i ]));
+        // 写入 2D charts
+        for (DAChartWidget* chart : charts2d) {
+            QRectF rect = fig->axesNormRect(chart);
+            out << DA::gc_dafigure_chart2d_mark << rect;
+            out << chart;  // 使用 DAChartWidget 的 operator<<
         }
-        // TODO: 3D chart 序列化由 plan 08 实现
-        // QList<DAChart3DWidget*> chart3ds = p->get3DCharts();
-        // QList<QRectF> pos3d;
-        // for (int i = 0; i < chart3ds.size(); ++i) {
-        //     pos3d.append(fig->widgetNormRect(chart3ds[i]));
-        // }
-        // out << pos3d;
-        // for (int i = 0; i < chart3ds.size(); ++i) {
-        //     out << chart3ds[i];
-        // }
-        out << pos;
-        for (int i = 0; i < charts.size(); ++i) {
-            out << charts[ i ];
+        // 写入 3D charts
+        // 注意：DAChart3DWidget 继承 Qwt3DPlot → QOpenGLWidget → QWidget，不继承 QwtPlot，
+        // 因此不能使用 axesNormRect(QwtPlot*)，必须使用 widgetNormRect(QWidget*)
+        for (DAChart3DWidget* chart3d : charts3d) {
+            QRectF rect = fig->widgetNormRect(chart3d);
+            out << DA::gc_dafigure_chart3d_mark << rect;
+            // DAChart3DWidget 继承 Qwt3DPlot，使用 Qwt3DPlot 的 operator<<
+            out << static_cast< const Qwt3DPlot* >(chart3d);
         }
     }
 
@@ -1480,40 +1485,68 @@ QDataStream& operator<<(QDataStream& out, const DAFigureWidget* p)
 
 QDataStream& operator>>(QDataStream& in, DAFigureWidget* p)
 {
-    const uint32_t magicStart = 0x1314abc;
-    int tmp;
+    quint32 magicStart = 0;
+    in >> magicStart;
 
-    in >> tmp;
-    if (tmp != magicStart) {
+    if (magicStart == 0x1314abc) {
+        // 旧格式（仅 2D），调用旧的反序列化逻辑
+        QByteArray geometryData;
+        in >> geometryData;
+        p->restoreGeometry(geometryData);
+        QList< QRectF > pos;
+        in >> pos;
+        try {
+            for (int i = 0; i < pos.size(); ++i) {
+                const QRectF& r = pos[ i ];
+                auto chart      = p->createChart(r.x(), r.y(), r.width(), r.height());
+                std::unique_ptr< DAChartWidget > chart_guard(chart);
+                in >> chart;
+                chart->show();
+                chart_guard.release();
+            }
+        } catch (const DABadSerializeExpection& exp) {
+            throw exp;
+        }
+        return in;
+    }
+
+    if (magicStart != 0xDA3D0001) {
         throw DABadSerializeExpection("DAFigureWidget get invalid magic start code");  // cn:DAFigureWidget的文件头异常
     }
-    QByteArray geometryData, stateData;
 
+    // 新格式（2D + 3D 混合）
+    QByteArray geometryData;
     in >> geometryData;
     p->restoreGeometry(geometryData);
-    QList< QRectF > pos;
 
-    in >> pos;
+    quint32 chartCount = 0;
+    in >> chartCount;
+
     try {
-        for (int i = 0; i < pos.size(); ++i) {
-            const QRectF& r = pos[ i ];
-            auto chart      = p->createChart(r.x(), r.y(), r.width(), r.height());
-            std::unique_ptr< DAChartWidget > chart_guard(chart);
-            in >> chart;
-            chart->show();
-            chart_guard.release();
+        for (quint32 i = 0; i < chartCount; ++i) {
+            quint32 chartTypeMark = 0;
+            QRectF rect;
+            in >> chartTypeMark >> rect;
+
+            if (chartTypeMark == DA::gc_dafigure_chart2d_mark) {
+                // 2D chart
+                auto chart = p->createChart(rect.x(), rect.y(), rect.width(), rect.height());
+                std::unique_ptr< DAChartWidget > chart_guard(chart);
+                in >> chart;
+                chart->show();
+                chart_guard.release();
+            } else if (chartTypeMark == DA::gc_dafigure_chart3d_mark) {
+                // 3D chart
+                auto chart3d = p->create3DChart(rect.x(), rect.y(), rect.width(), rect.height());
+                std::unique_ptr< DAChart3DWidget > chart3d_guard(chart3d);
+                // DAChart3DWidget 继承 Qwt3DPlot，使用 Qwt3DPlot 的 operator>>
+                in >> static_cast< Qwt3DPlot* >(chart3d);
+                chart3d->show();
+                chart3d_guard.release();
+            } else {
+                throw DABadSerializeExpection("Unknown chart type mark in figure data");
+            }
         }
-        // TODO: 3D chart 反序列化由 plan 08 实现
-        // QList<QRectF> pos3d;
-        // in >> pos3d;
-        // for (int i = 0; i < pos3d.size(); ++i) {
-        //     const QRectF& r = pos3d[i];
-        //     auto chart3d = p->create3DChart(r.x(), r.y(), r.width(), r.height());
-        //     std::unique_ptr<DAChart3DWidget> chart3d_guard(chart3d);
-        //     in >> chart3d;
-        //     chart3d->show();
-        //     chart3d_guard.release();
-        // }
     } catch (const DABadSerializeExpection& exp) {
         throw exp;
     }
