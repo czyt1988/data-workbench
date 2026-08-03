@@ -272,6 +272,7 @@ set(DA_LIB_SUBDIR_Dialog ${CMAKE_CURRENT_SOURCE_DIR}/Dialog)
 set(DA_LIB_SUBDIR_MimeData ${CMAKE_CURRENT_SOURCE_DIR}/MimeData)
 set(DA_LIB_SUBDIR_Commands ${CMAKE_CURRENT_SOURCE_DIR}/Commands)
 set(DA_LIB_SUBDIR_ChartSetting ${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting)
+set(DA_LIB_SUBDIR_Chart3DSetting ${CMAKE_CURRENT_SOURCE_DIR}/Chart3DSetting)
 set(DA_LIB_SUBDIR_NodeSetting ${CMAKE_CURRENT_SOURCE_DIR}/NodeSetting)
 
 # Models
@@ -388,6 +389,11 @@ file(GLOB DA_LIB_HEADER_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.h)
 file(GLOB DA_LIB_SOURCE_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.cpp)
 file(GLOB DA_LIB_UI_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.ui)
 
+#Chart3DSetting
+file(GLOB DA_LIB_HEADER_FILES_Chart3DSetting ${DA_LIB_SUBDIR_Chart3DSetting}/*.h)
+file(GLOB DA_LIB_SOURCE_FILES_Chart3DSetting ${DA_LIB_SUBDIR_Chart3DSetting}/*.cpp)
+file(GLOB DA_LIB_UI_FILES_Chart3DSetting ${DA_LIB_SUBDIR_Chart3DSetting}/*.ui)
+
 #NodeSetting
 set(DA_LIB_HEADER_FILES_NodeSetting)
 if(DA_ENABLE_PYTHON)
@@ -436,6 +442,10 @@ add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES_ChartSetting}
             ${DA_LIB_SOURCE_FILES_ChartSetting}
             ${DA_LIB_UI_FILES_ChartSetting}
+            #Chart3DSetting
+            ${DA_LIB_HEADER_FILES_Chart3DSetting}
+            ${DA_LIB_SOURCE_FILES_Chart3DSetting}
+            ${DA_LIB_UI_FILES_Chart3DSetting}
             #NodeSetting
             ${DA_LIB_HEADER_FILES_NodeSetting}
             ${DA_LIB_SOURCE_FILES_NodeSetting}
@@ -535,6 +545,10 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting>
 )
 target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/Chart3DSetting>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Chart3DSetting>
+)
+target_include_directories(${DA_LIB_NAME} PUBLIC
     $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/NodeSetting>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/NodeSetting>
 )
@@ -581,6 +595,12 @@ install(FILES
 install(FILES
     ${DA_LIB_HEADER_FILES_ChartSetting}
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/ChartSetting
+    COMPONENT headers
+)
+#Chart3DSetting
+install(FILES
+    ${DA_LIB_HEADER_FILES_Chart3DSetting}
+    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/Chart3DSetting
     COMPONENT headers
 )
 #NodeSetting

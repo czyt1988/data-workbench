@@ -8,6 +8,7 @@ namespace DA
 {
 class DAPyWorkFlowNodeItemSettingWidget;
 class DAChartSettingWidget;
+class DAChart3DSettingWidget;
 class DAFigureWidgetSettingPanel;
 /**
  * @brief 这是一个类似QStackedWidget的窗体，只内部有一个scallview
@@ -29,6 +30,10 @@ public:
     DAChartSettingWidget* getChartSettingWidget();
     // 显示默认的工作流节点设置窗口
     void showChartSettingWidget();
+    // 3D 绘图设置
+    DAChart3DSettingWidget* getChart3DSettingWidget();
+    // 显示 3D 绘图设置窗口
+    void showChart3DSettingWidget();
     // Figure 设置
     DAFigureWidgetSettingPanel* getFigureWidgetSettingWidget();
     // 显示 Figure 设置窗口
@@ -40,6 +45,7 @@ protected:
 private:
     DAPyWorkFlowNodeItemSettingWidget* mWorkFlowNodeItemSettingWidget { nullptr };
 	DAChartSettingWidget* mChartSettingWidget { nullptr };
+    DAChart3DSettingWidget* mChart3DSettingWidget { nullptr };
     DAFigureWidgetSettingPanel* mFigureWidgetSettingWidget { nullptr };
 };
 }  // namespace DA

@@ -1,6 +1,7 @@
 #include "DASettingContainerWidget.h"
 #include "DAPyWorkFlowNodeItemSettingWidget.h"
 #include "DAChartSettingWidget.h"
+#include "Chart3DSetting/DAChart3DSettingWidget.h"
 #include "ChartSetting/DAFigureWidgetSettingPanel.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -42,6 +43,8 @@ void DASettingContainerWidget::initWorkFlowSettingWidgets()
 	addWidget(mWorkFlowNodeItemSettingWidget);
 	mChartSettingWidget = new DAChartSettingWidget();
 	addWidget(mChartSettingWidget);
+	mChart3DSettingWidget = new DAChart3DSettingWidget();
+	addWidget(mChart3DSettingWidget);
 	mFigureWidgetSettingWidget = new DAFigureWidgetSettingPanel();
 	addWidget(mFigureWidgetSettingWidget);
 }
@@ -79,6 +82,23 @@ DAChartSettingWidget* DASettingContainerWidget::getChartSettingWidget()
 void DASettingContainerWidget::showChartSettingWidget()
 {
     setCurrentWidget(mChartSettingWidget);
+}
+
+/**
+ * @brief 获取3D绘图设置窗口
+ * @return
+ */
+DAChart3DSettingWidget* DASettingContainerWidget::getChart3DSettingWidget()
+{
+    return mChart3DSettingWidget;
+}
+
+/**
+ * @brief 显示3D绘图设置窗口
+ */
+void DASettingContainerWidget::showChart3DSettingWidget()
+{
+    setCurrentWidget(mChart3DSettingWidget);
 }
 
 /**
