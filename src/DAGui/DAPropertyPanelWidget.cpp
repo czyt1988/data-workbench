@@ -1033,6 +1033,7 @@ int DAPropertyPanelWidget::addIntProperty(int id, const QString& name, int value
     QSpinBox* spin = new QSpinBox(d->getTargetContentWidget());
     spin->setRange(min, max);
     spin->setValue(value);
+    spin->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     // 路由到目标面板
     int propId = addProperty(id, name, spin);
     if (propId < 0) {
@@ -1060,6 +1061,7 @@ int DAPropertyPanelWidget::addDoubleProperty(int id, const QString& name, double
     spin->setRange(min, max);
     spin->setValue(value);
     spin->setDecimals(decimals);
+    spin->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     // 路由到目标面板
     int propId = addProperty(id, name, spin);
     if (propId < 0) {
@@ -1143,6 +1145,7 @@ int DAPropertyPanelWidget::addEnumProperty(int id,
     if (currentIndex >= 0 && currentIndex < items.size()) {
         combo->setCurrentIndex(currentIndex);
     }
+    combo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     // 路由到目标面板
     int propId = addProperty(id, name, combo);
     if (propId < 0) {
@@ -1175,6 +1178,7 @@ int DAPropertyPanelWidget::addAlignmentProperty(int id, const QString& name, Qt:
     DA_D(d);
     DAAligmentEditWidget* editor = new DAAligmentEditWidget(d->getTargetContentWidget());
     editor->setCurrentAlignment(alignment);
+    editor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     // 路由到目标面板
     int propId = addProperty(id, name, editor);
     if (propId < 0) {
@@ -1200,6 +1204,7 @@ int DAPropertyPanelWidget::addAlignmentPositionProperty(int id, const QString& n
     DA_D(d);
     DAAligmentPositionEditWidget* editor = new DAAligmentPositionEditWidget(d->getTargetContentWidget());
     editor->setAligmentPosition(alignment);
+    editor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     // 路由到目标面板
     int propId = addProperty(id, name, editor);
     if (propId < 0) {
@@ -1227,6 +1232,7 @@ int DAPropertyPanelWidget::addFilePathProperty(int id, const QString& name, cons
     if (!filter.isEmpty()) {
         editor->setNameFilter(filter);
     }
+    editor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     // 路由到目标面板
     int propId = addProperty(id, name, editor);
     if (propId < 0) {
