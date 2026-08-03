@@ -7,12 +7,10 @@
 #include "DAChart3DCommonItemsSettingWidget.h"
 #include "DAChart3DItemSettingPanelFactory.h"
 #include "DAChart3DWidget.h"
-
-// 07计划完成后取消以下注释：
-// #include "DAChart3DPlotSettingPanel.h"
-// #include "DAChart3DCoordSysSettingPanel.h"
-// #include "DAChart3DAxisSettingPanel.h"
-// #include "DAChart3DColorLegendSettingPanel.h"
+#include "DAChart3DPlotSettingPanel.h"
+#include "DAChart3DCoordSysSettingPanel.h"
+#include "DAChart3DAxisSettingPanel.h"
+#include "DAChart3DColorLegendSettingPanel.h"
 
 namespace DA
 {
@@ -26,13 +24,13 @@ public:
 
 public:
     QPointer< Qwt3DPlot > mPlot3D;
-    // 固定子面板（07计划实现，本阶段为占位nullptr）
-    QWidget* mChart3DSettingWidget { nullptr };      // TODO: 07计划替换为DAChart3DPlotSettingPanel*
-    QWidget* mCoordSysSettingWidget { nullptr };     // TODO: 07计划替换为DAChart3DCoordSysSettingPanel*
-    QWidget* mXAxisSettingWidget { nullptr };        // TODO: 07计划替换为DAChart3DAxisSettingPanel*
-    QWidget* mYAxisSettingWidget { nullptr };        // TODO: 07计划替换为DAChart3DAxisSettingPanel*
-    QWidget* mZAxisSettingWidget { nullptr };        // TODO: 07计划替换为DAChart3DAxisSettingPanel*
-    QWidget* mColorLegendSettingWidget { nullptr };  // TODO: 07计划替换为DAChart3DColorLegendSettingPanel*
+    // 固定子面板
+    DAChart3DPlotSettingPanel* mChart3DSettingWidget { nullptr };
+    DAChart3DCoordSysSettingPanel* mCoordSysSettingWidget { nullptr };
+    DAChart3DAxisSettingPanel* mXAxisSettingWidget { nullptr };
+    DAChart3DAxisSettingPanel* mYAxisSettingWidget { nullptr };
+    DAChart3DAxisSettingPanel* mZAxisSettingWidget { nullptr };
+    DAChart3DColorLegendSettingPanel* mColorLegendSettingWidget { nullptr };
     DAChart3DCommonItemsSettingWidget* mPlot3DItemSettingWidget { nullptr };
 };
 
@@ -42,26 +40,15 @@ DAChart3DSettingWidget::PrivateData::PrivateData(DAChart3DSettingWidget* p) : q_
 
 /**
  * @brief 创建各固定子面板并添加到stackedWidget
- *
- * 本计划阶段：固定面板使用占位QWidget，待07计划替换为具体面板。
  */
 void DAChart3DSettingWidget::PrivateData::setupUi(QStackedWidget* stackWidget)
 {
-    // 07计划完成后替换为：
-    // mChart3DSettingWidget    = new DAChart3DPlotSettingPanel(stackWidget);
-    // mCoordSysSettingWidget   = new DAChart3DCoordSysSettingPanel(stackWidget);
-    // mXAxisSettingWidget      = new DAChart3DAxisSettingPanel(AXIS::X1, stackWidget);
-    // mYAxisSettingWidget      = new DAChart3DAxisSettingPanel(AXIS::Y1, stackWidget);
-    // mZAxisSettingWidget      = new DAChart3DAxisSettingPanel(AXIS::Z1, stackWidget);
-    // mColorLegendSettingWidget = new DAChart3DColorLegendSettingPanel(stackWidget);
-
-    // 本阶段占位：
-    mChart3DSettingWidget       = new QWidget(stackWidget);
-    mCoordSysSettingWidget      = new QWidget(stackWidget);
-    mXAxisSettingWidget         = new QWidget(stackWidget);
-    mYAxisSettingWidget         = new QWidget(stackWidget);
-    mZAxisSettingWidget         = new QWidget(stackWidget);
-    mColorLegendSettingWidget   = new QWidget(stackWidget);
+    mChart3DSettingWidget     = new DAChart3DPlotSettingPanel(stackWidget);
+    mCoordSysSettingWidget    = new DAChart3DCoordSysSettingPanel(stackWidget);
+    mXAxisSettingWidget       = new DAChart3DAxisSettingPanel(DAChart3DAxisSettingPanel::DirX, stackWidget);
+    mYAxisSettingWidget       = new DAChart3DAxisSettingPanel(DAChart3DAxisSettingPanel::DirY, stackWidget);
+    mZAxisSettingWidget       = new DAChart3DAxisSettingPanel(DAChart3DAxisSettingPanel::DirZ, stackWidget);
+    mColorLegendSettingWidget = new DAChart3DColorLegendSettingPanel(stackWidget);
 
     mPlot3DItemSettingWidget = new DAChart3DCommonItemsSettingWidget(stackWidget);
 
@@ -140,9 +127,22 @@ void DAChart3DSettingWidget::setPlot3D(Qwt3DPlot* plot)
         if (chart3DWidget) {
             connect(chart3DWidget, &DAChart3DWidget::plot3DItemAttached,
                     this, &DAChart3DSettingWidget::onPlot3DItemAttached);
+            // 对固定面板调用setTarget
+            d->mChart3DSettingWidget->setTarget(chart3DWidget);
+            d->mCoordSysSettingWidget->setTarget(chart3DWidget);
+            d->mXAxisSettingWidget->setTarget(chart3DWidget);
+            d->mYAxisSettingWidget->setTarget(chart3DWidget);
+            d->mZAxisSettingWidget->setTarget(chart3DWidget);
+            d->mColorLegendSettingWidget->setTarget(chart3DWidget);
         }
+    } else {
+        d->mChart3DSettingWidget->setTarget(nullptr);
+        d->mCoordSysSettingWidget->setTarget(nullptr);
+        d->mXAxisSettingWidget->setTarget(nullptr);
+        d->mYAxisSettingWidget->setTarget(nullptr);
+        d->mZAxisSettingWidget->setTarget(nullptr);
+        d->mColorLegendSettingWidget->setTarget(nullptr);
     }
-    // TODO: 07计划完成后，对固定面板调用setTarget(plot)
 }
 
 /**

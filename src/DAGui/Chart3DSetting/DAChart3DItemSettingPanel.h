@@ -105,6 +105,8 @@ Q_SIGNALS:
 protected:
     // 纯虚函数，子类在此构建面板布局
     virtual void buildPropertyPanel() = 0;
+    // 返回常用 colormap 预设名称列表，供 item 子类的 colormap 属性共用
+    static QStringList colormapPresetNames();
 
 protected Q_SLOTS:
     // 转发DAPropertyPanelContainerWidget::propertyValueChanged

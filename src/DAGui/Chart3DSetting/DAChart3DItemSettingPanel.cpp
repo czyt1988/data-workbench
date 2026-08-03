@@ -569,4 +569,36 @@ void DAChart3DItemSettingPanel::setLightingPresetValue(int id, Qwt3DTheme::Light
     }
 }
 
+/**
+ * @brief 返回常用 colormap 预设名称列表
+ *
+ * 供 Surface/Bar/Line 三个 item 面板的 colormap 属性共用。
+ * 名称与 Qwt3DColorMapColor 构造函数接受的 presetName 一致。
+ */
+QStringList DAChart3DItemSettingPanel::colormapPresetNames()
+{
+    return QStringList() << "viridis"
+                         << "plasma"
+                         << "inferno"
+                         << "magma"
+                         << "cividis"
+                         << "jet"
+                         << "cool"
+                         << "hot"
+                         << "hsv"
+                         << "spring"
+                         << "summer"
+                         << "autumn"
+                         << "winter"
+                         << "gray"
+                         << "bone"
+                         << "copper"
+                         << "pink"
+                         << "seismic"
+                         << "turbo"
+                         << "terrain"
+                         << "ocean"
+                         << "gist_rainbow";
+}
+
 }  // namespace DA

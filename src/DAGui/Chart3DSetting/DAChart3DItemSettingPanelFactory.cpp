@@ -1,8 +1,7 @@
 #include "DAChart3DItemSettingPanelFactory.h"
-// 07计划完成后在此添加具体面板的头文件:
-// #include "DAChart3DSurfaceSettingPanel.h"
-// #include "DAChart3DBarSettingPanel.h"
-// #include "DAChart3DLineSettingPanel.h"
+#include "DAChart3DSurfaceSettingPanel.h"
+#include "DAChart3DBarSettingPanel.h"
+#include "DAChart3DLineSettingPanel.h"
 #include "qwt3d_types.h"
 
 namespace DA
@@ -58,21 +57,24 @@ QList< int > DAChart3DItemSettingPanelFactory::registeredRttiTypes() const
 /**
  * @brief 显式注册所有已知3D面板类型
  *
- * TODO: 07计划实现具体面板后，取消以下注释并注册：
- *
- * registerPanel(Rtti_Plot3DSurface, []() {
- *     return new DAChart3DSurfaceSettingPanel();
- * });
- * registerPanel(Rtti_Plot3DBar, []() {
- *     return new DAChart3DBarSettingPanel();
- * });
- * registerPanel(Rtti_Plot3DLine, []() {
- *     return new DAChart3DLineSettingPanel();
- * });
+ * 注册内置的3D图表项面板类型，包括 Surface、Bar、Line。
  */
 void DAChart3DItemSettingPanelFactory::registerAllKnown3DPanels()
 {
-    // 本计划阶段：留空，待07计划完成后补充注册代码
+    // Qwt3DSurface → Surface 设置面板
+    registerPanel(Rtti_Plot3DSurface, []() {
+        return new DAChart3DSurfaceSettingPanel();
+    });
+
+    // Qwt3DBar → Bar 设置面板
+    registerPanel(Rtti_Plot3DBar, []() {
+        return new DAChart3DBarSettingPanel();
+    });
+
+    // Qwt3DLine → Line 设置面板
+    registerPanel(Rtti_Plot3DLine, []() {
+        return new DAChart3DLineSettingPanel();
+    });
 }
 
 }  // namespace DA
