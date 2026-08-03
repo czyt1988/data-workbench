@@ -12,3 +12,4 @@ seaborn
 langgraph
 langchain-openai
 langgraph-cli[inmem]
+pydantic>=2.0

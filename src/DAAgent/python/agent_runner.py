@@ -1,0 +1,479 @@
+#!/usr/bin/env python3
+"""Agent 子进程入口脚本。
+
+通过 stdin/stdout JSON Lines 协议与 data-workbench 主进程通信。
+接收 init 消息配置 LLM 和工具，接收 user_msg 执行 agent 循环，
+通过 stdout 流式输出 token、工具调用请求、用户提问。
+
+重要：stdout 专用于 JSON Lines 协议，所有调试/日志输出必须写入 stderr。
+"""
+
+import asyncio
+import codecs
+import json
+import logging
+import sys
+
+from langchain_core.messages import (
+    HumanMessage, SystemMessage, ToolMessage
+)
+from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import StateGraph, MessagesState, START, END
+from langgraph.types import interrupt, Command
+
+# Pin stdout/stderr to UTF-8 — required because:
+# 1. stdout 是 JSON Lines 协议通道（C++ 端 QJsonDocument::fromJson 按 UTF-8 解析）
+# 2. Windows 默认为 cp936/cp1252，会破坏中文内容
+# 3. newline="\n" 保证行尾一致（不在 Windows 上产生 \r\n）
+sys.stdout.reconfigure(encoding="utf-8", newline="\n")
+sys.stderr.reconfigure(encoding="utf-8")
+
+# 所有调试输出写入 stderr，绝对禁止写入 stdout（stdout 是协议通道）
+logging.basicConfig(
+    stream=sys.stderr,
+    level=logging.DEBUG,
+    format='%(asctime)s [%(levelname)s] %(message)s'
+)
+logger = logging.getLogger("agent_runner")
+
+
+class StdioProtocol:
+    """stdin/stdout JSON Lines 协议封装。
+
+    stdout 专用于协议消息；所有日志走 stderr。
+    stdin 使用 asyncio.StreamReader 实现真正的异步非阻塞读取，
+    并用增量 UTF-8 解码器处理跨读取边界的多字节字符（strict，不产生 U+FFFD）。
+    """
+
+    def __init__(self):
+        self._reader: asyncio.StreamReader = None
+        self._buffer = b""
+        self._decoder = codecs.getincrementaldecoder("utf-8")(errors="strict")
+
+    async def init_reader(self):
+        """初始化异步 stdin 读取器。"""
+        loop = asyncio.get_running_loop()
+        self._reader = asyncio.StreamReader()
+        protocol = asyncio.StreamReaderProtocol(self._reader)
+        await loop.connect_read_pipe(lambda: protocol, sys.stdin)
+
+    # —— 发送（stdout）——
+    async def send(self, msg: dict):
+        """发送一条 JSON 消息到 stdout。"""
+        line = json.dumps(msg, ensure_ascii=False)
+        sys.stdout.write(line + "\n")
+        sys.stdout.flush()
+
+    async def send_ready(self, model: str):
+        await self.send({"type": "ready", "model": model})
+
+    async def send_token(self, content: str):
+        await self.send({"type": "token", "content": content})
+
+    async def send_message_end(self, content: str = ""):
+        await self.send({"type": "message_end", "content": content})
+
+    async def send_tool_call(self, call_id: str, tool: str, arguments: dict):
+        await self.send({
+            "type": "tool_call", "call_id": call_id,
+            "tool": tool, "arguments": arguments
+        })
+
+    async def send_question(self, text: str, options: list[str]):
+        await self.send({"type": "question", "text": text, "options": options})
+
+    async def send_error(self, message: str):
+        await self.send({"type": "error", "message": message})
+
+    async def send_done(self):
+        await self.send({"type": "done"})
+
+    # —— 接收（stdin）——
+    async def receive(self) -> dict:
+        """异步读取一行 JSON（真正非阻塞，不卡住事件循环）。"""
+        while True:
+            # 先在缓冲区里找完整的一行
+            idx = self._buffer.find(b"\n")
+            if idx >= 0:
+                line = self._buffer[:idx]
+                self._buffer = self._buffer[idx + 1:]
+                # 用增量解码器处理跨边界的多字节字符
+                text = self._decoder.decode(line)
+                return json.loads(text)
+            # 异步读取更多数据（不阻塞事件循环）
+            data = await self._reader.read(4096)
+            if not data:
+                # EOF
+                raise EOFError("stdin closed")
+            self._buffer += data
+
+
+class ToolFactory:
+    """为 ChatOpenAI.bind_tools() 生成工具 schema。
+
+    直接传递 C++ 端 getToolSpec() 返回的 OpenAI schema 字典给 bind_tools()，
+    不做 Pydantic 转换，保留完整的参数描述、enum、嵌套对象等信息。
+    无需 StructuredTool / Pydantic 模型——工具在此仅作为 LLM 的 schema，
+    实际执行由 tool_node 通过 RPC 回调 C++ 完成（不存在死代码 _execute）。
+    """
+
+    @staticmethod
+    def build_tool_schemas(tool_specs: list) -> list:
+        """将 C++ tool specs 转为 OpenAI function schema 字典列表。
+
+        ChatOpenAI.bind_tools 接受原始 schema 字典，无需 Pydantic 模型。
+        额外注入一个 ask_user 工具供 LLM 显式调用以触发 HITL 提问
+        （LLM 无法通过 prompt 约定在 additional_kwargs 里产生标记，
+        只能通过注册为真实工具让模型以 tool_call 形式调用）。
+        """
+        schemas = []
+        for spec in tool_specs:
+            schemas.append({
+                "name": spec["name"],
+                "description": spec.get("description", ""),
+                "parameters": spec.get("parameters", {"type": "object", "properties": {}})
+            })
+        # 注入 ask_user 工具用于 HITL 提问
+        schemas.append({
+            "name": "ask_user",
+            "description": "向用户提问以获取澄清或确认。当需要用户提供额外信息才能继续时使用。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "question": {
+                        "type": "string",
+                        "description": "要问用户的问题"
+                    },
+                    "options": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "可选的选项列表"
+                    }
+                },
+                "required": ["question"]
+            }
+        })
+        return schemas
+
+
+class AgentRunner:
+    """LangGraph agent 运行器。"""
+
+    def __init__(self, config: dict, tool_specs: list[dict],
+                 system_prompt: str, stdio: StdioProtocol):
+        self.stdio = stdio
+        self.system_prompt = system_prompt
+        self.config = config
+
+        # 配置 LLM
+        self.llm = ChatOpenAI(
+            base_url=config["base_url"],
+            api_key=config["api_key"],
+            model=config["model"],
+            streaming=True,
+        )
+
+        # 生成工具 schema 并绑定（直接传原始 schema 字典，无 Pydantic 转换）
+        self.tool_schemas = ToolFactory.build_tool_schemas(tool_specs)
+        self.llm_with_tools = self.llm.bind_tools(self.tool_schemas)
+
+        # 构建图（带 checkpointer 以支持 interrupt/resume）
+        self.graph = self._build_graph()
+
+        # LangGraph 线程配置（固定 thread_id，配合 MemorySaver 支持
+        # interrupt/resume；run 与 resume 共用同一 thread 以保持状态）
+        self.thread_config = {"configurable": {"thread_id": "agent_session_1"}}
+
+    async def _rpc_call(self, tool_call: dict, timeout: float = 60.0) -> dict:
+        """通过 stdin/stdout RPC 调用 C++ 侧工具执行器，带超时。"""
+        call_id = tool_call["id"]
+        await self.stdio.send_tool_call(call_id, tool_call["name"], tool_call["args"])
+        try:
+            result = await asyncio.wait_for(
+                self._wait_for_result(call_id),
+                timeout=timeout
+            )
+            return result
+        except asyncio.TimeoutError:
+            return {"error": f"Tool '{tool_call['name']}' timed out after {timeout}s"}
+
+    async def _wait_for_result(self, expected_call_id: str) -> dict:
+        """阻塞等待对应 expected_call_id 的 tool_result 消息。
+
+        严格匹配 call_id——避免在乱序或迟到的 tool_result 之间错配
+        （当前虽为顺序执行，但显式匹配更健壮）。
+        """
+        while True:
+            msg = await self.stdio.receive()
+            msg_type = msg.get("type")
+            if msg_type == "tool_result":
+                if msg.get("call_id") == expected_call_id:
+                    return msg.get("result", {})
+                # 属于其它 call_id 的结果——记日志后继续等待本 call_id
+                logger.warning(
+                    "收到 tool_result call_id=%s，期望 %s，已忽略",
+                    msg.get("call_id"), expected_call_id
+                )
+            elif msg_type == "stop":
+                raise RuntimeError("等待 tool_result 时收到 stop，agent 已停止")
+            else:
+                logger.warning("期望 tool_result，但收到 type=%s", msg_type)
+
+    def _build_graph(self):
+        """构建 LangGraph 图（带 MemorySaver checkpointer 支持 interrupt/resume）。"""
+        stdio = self.stdio
+        system_prompt = self.system_prompt
+        llm_with_tools = self.llm_with_tools
+
+        async def agent_node(state: MessagesState):
+            messages = state["messages"]
+            # 在开头插入 system prompt（避免重复插入）
+            if system_prompt and not any(m.type == "system" for m in messages):
+                messages = [SystemMessage(content=system_prompt)] + messages
+
+            # 累积 AIMessageChunk 以提取完整的 tool_calls
+            # 关键：不能逐 chunk 读 .tool_calls（那是增量 delta，多为 None/部分）
+            collected_chunks = None
+            async for chunk in llm_with_tools.astream(messages):
+                if collected_chunks is None:
+                    collected_chunks = chunk
+                else:
+                    collected_chunks = collected_chunks + chunk  # AIMessageChunk 支持累加
+                # 流式输出 token 给 UI
+                if chunk.content:
+                    await stdio.send_token(chunk.content)
+
+            # 从累积后的完整消息上读取 tool_calls（不是逐 chunk 读）
+            final_message = collected_chunks
+            if final_message.tool_calls:
+                # 有完整 tool_calls，交给 tool_node 执行
+                return {"messages": [final_message]}
+            else:
+                # 无 tool_calls——这是最终回复
+                await stdio.send_message_end(
+                    final_message.content if isinstance(final_message.content, str) else ""
+                )
+                return {"messages": [final_message]}
+
+        async def tool_node(state: MessagesState):
+            last_msg = state["messages"][-1]  # AIMessage with tool_calls
+            results = []
+            for tool_call in last_msg.tool_calls:
+                # RPC 调用 C++ host
+                result = await self._rpc_call(tool_call)
+                # ToolMessage.content 必须是 str/list，不能是 dict
+                results.append(ToolMessage(
+                    content=json.dumps(result, ensure_ascii=False),  # str，而非 dict
+                    tool_call_id=tool_call["id"]
+                ))
+            return {"messages": results}
+
+        async def ask_user_node(state: MessagesState):
+            """通过 interrupt() 中断图执行以向用户提问。
+
+            关键：本节点只负责构造 interrupt 值并暂停图，**不**在此处发送
+            question 给 C++——否则 resume 后节点会重新执行导致重复发送。
+            question 的实际发送由 _send_question_if_paused() 共享助手在
+            检测到 interrupt 状态后做一次（run() 与 resume() 均调用之）。
+            """
+            messages = state["messages"]
+            last_msg = messages[-1]
+
+            # 找到 ask_user 工具调用（同一 AIMessage 可能还含其它 tool_calls）
+            ask_call = None
+            if hasattr(last_msg, "tool_calls") and last_msg.tool_calls:
+                for tc in last_msg.tool_calls:
+                    if tc.get("name") == "ask_user":
+                        ask_call = tc
+                        break
+
+            if not ask_call:
+                return {"messages": []}
+
+            args = ask_call.get("args", {})
+            question_text = args.get("question", "")
+            options = args.get("options", [])
+
+            # 中断图执行——执行暂停于此
+            # question 与 options 作为 interrupt 值，run() 通过 aget_state 读取
+            user_answer = interrupt({"question": question_text, "options": options})
+
+            # 恢复后，user_answer 包含用户的回答
+            # 返回 ToolMessage（而非 HumanMessage），keyed 到 tool_call_id，
+            # 这样 LLM 能正确把回答与 ask_user 工具调用配对
+            return {
+                "messages": [
+                    ToolMessage(
+                        content=str(user_answer),
+                        tool_call_id=ask_call["id"]
+                    )
+                ]
+            }
+
+        def _should_ask_user(state: MessagesState) -> str:
+            """判断 agent 输出应走提问 / 工具 / 结束。
+
+            路由依据是 AIMessage.tool_calls 中是否含名为 ask_user 的调用
+            （而非 additional_kwargs['ask_user']——ChatOpenAI 永远不会
+            填充该字段，prompt 也无法让 LLM 产出该标记）。
+            """
+            messages = state["messages"]
+            if not messages:
+                return "tools"
+            last_msg = messages[-1]
+            if hasattr(last_msg, "tool_calls") and last_msg.tool_calls:
+                for tc in last_msg.tool_calls:
+                    if tc.get("name") == "ask_user":
+                        return "ask_user"
+                return "tools"  # 其它工具调用
+            return "end"  # 无 tool_calls，对话结束
+
+        graph = StateGraph(MessagesState)
+        graph.add_node("agent", agent_node)
+        graph.add_node("tools", tool_node)
+        graph.add_node("ask_user", ask_user_node)
+        graph.add_edge(START, "agent")
+        # agent 条件分支：提问 / 工具 / 结束
+        graph.add_conditional_edges(
+            "agent", _should_ask_user,
+            {"ask_user": "ask_user", "tools": "tools", "end": END}
+        )
+        graph.add_edge("tools", "agent")
+        # ask_user 之后回到 agent 继续处理用户的回答
+        graph.add_edge("ask_user", "agent")
+
+        # 必须带 checkpointer，否则 interrupt() 无法工作
+        memory = MemorySaver()
+        return graph.compile(checkpointer=memory)
+
+    async def _send_question_if_paused(self) -> bool:
+        """检查图是否在 interrupt 处暂停。若是，发送一次 question 并返回 True。
+
+        run() 与 resume() 共用本方法：若图暂停于 ask_user 的 interrupt，
+        则通过 aget_state 读取 interrupt 值（question + options），把
+        question 发送给 C++ **一次**（绝不在 ask_user_node 内发送，否则
+        resume 后节点重新执行会重复发送），并返回 True（调用方据此跳过
+        send_done）；若图未暂停（已正常结束），返回 False（调用方应发 done）。
+        """
+        state = await self.graph.aget_state(self.thread_config)
+        if state.next:  # 图已暂停（被 interrupt 阻断）
+            for task in state.tasks:
+                if hasattr(task, "interrupts") and task.interrupts:
+                    interrupt_value = task.interrupts[0].value
+                    question = interrupt_value.get("question", "")
+                    options = interrupt_value.get("options", [])
+                    # 只发送一次 question（节点 resume 后不会重发，避免重复）
+                    await self.stdio.send_question(question, options)
+                    return True  # 暂停中——调用方不应发送 done
+        return False  # 图未暂停，调用方应发送 done
+
+    async def run(self, user_message: str):
+        """执行一轮 agent 对话（带 thread_id 以支持 interrupt/resume）。
+
+        agent_node 内部已通过 llm.astream 流式输出 token，本方法只需
+        驱动图执行。若图在 ask_user_node 处因 interrupt() 暂停，则经
+        _send_question_if_paused() 读取 interrupt 值（question + options）
+        并发送一次 question，且**不**发送 done（等待 user_answer 触发
+        resume）；若图正常结束，发送 done。
+        """
+        # 仅传入新增的 HumanMessage——MemorySaver checkpointer 会维护完整历史
+        async for _event in self.graph.astream(
+            {"messages": [HumanMessage(user_message)]},
+            config=self.thread_config
+        ):
+            # agent_node 内部已流式输出 token，这里仅消费事件以推进图
+            pass
+
+        # 检查图是否在 interrupt 处暂停；若暂停则发送一次 question 且不发 done
+        if not await self._send_question_if_paused():
+            # 图正常完成（agent_node 已在无 tool_calls 时发送 message_end）
+            await self.stdio.send_done()
+
+    async def resume(self, answer: str):
+        """从 interrupt 恢复图执行（收到 user_answer 后调用）。
+
+        使用 Command(resume=answer) 与原 thread_config 恢复同一图实例，
+        ask_user_node 返回 ToolMessage 后图继续执行至 agent 产出最终回复。
+
+        恢复后图可能在后续 ask_user 处再次 interrupt（多轮 HITL 提问），
+        故同样经 _send_question_if_paused() 判断：暂停则发送一次 question
+        且**不**发 done（等待下一次 user_answer），正常结束才发送 done。
+        """
+        async for _event in self.graph.astream(
+            Command(resume=answer),
+            config=self.thread_config
+        ):
+            # agent_node 内部已流式输出 token，这里仅消费事件
+            pass
+        if not await self._send_question_if_paused():
+            await self.stdio.send_done()
+
+
+async def main():
+    stdio = StdioProtocol()
+    await stdio.init_reader()  # 初始化异步 stdin 读取器
+
+    # 1. 等待 init 消息
+    init_msg = await stdio.receive()
+    if not isinstance(init_msg, dict) or init_msg.get("type") != "init":
+        # 不回显原始 init_msg——若 C++ 误发含 api_key 的 init，repr 会把密钥泄漏到 UI
+        await stdio.send_error("Expected init message (type='init'), got invalid message")
+        return
+
+    # 显式校验 init 字段（dict.get(key, default) 不会抛 KeyError，
+    # 旧版 try/except 毫无意义；真正的异常来自 AgentRunner.__init__ 的下标访问）
+    config = init_msg.get("config")
+    if not isinstance(config, dict):
+        await stdio.send_error("init 消息缺少 config 字段或格式错误")
+        return
+
+    tools = init_msg.get("tools", [])
+    system_prompt = init_msg.get("system_prompt", "")
+
+    if not config.get("base_url") or not config.get("api_key") or not config.get("model"):
+        await stdio.send_error("config 缺少 base_url/api_key/model")
+        return
+
+    # 2. 创建 agent（真正可能抛异常的地方——下标访问 / 网络初始化）
+    try:
+        runner = AgentRunner(config, tools, system_prompt, stdio)
+    except Exception as e:
+        logger.exception("Agent init failed")
+        await stdio.send_error(f"Agent init failed: {e}")
+        return
+
+    await stdio.send_ready(config.get("model", ""))
+
+    # 3. 主循环：等待用户消息 / user_answer 恢复 / stop
+    while True:
+        msg = await stdio.receive()
+        msg_type = msg.get("type")
+        if msg_type == "user_msg":
+            try:
+                await runner.run(msg["content"])
+            except Exception as e:
+                logger.exception("Agent error")
+                await stdio.send_error(f"Agent error: {e}")
+                await stdio.send_done()
+        elif msg_type == "user_answer":
+            # 从 interrupt 恢复图执行
+            answer = msg.get("answer", "")
+            try:
+                await runner.resume(answer)
+            except Exception as e:
+                logger.exception("Agent resume error")
+                await stdio.send_error(f"Agent resume error: {e}")
+                await stdio.send_done()
+        elif msg_type == "tool_result":
+            # 超时后迟到的 tool_result，或已被 _wait_for_result 消费——记日志后忽略
+            logger.warning(
+                "收到迟到的 tool_result call_id=%s，已超时或被处理，忽略",
+                msg.get("call_id")
+            )
+        elif msg_type == "stop":
+            break
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
