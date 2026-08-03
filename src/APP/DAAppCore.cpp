@@ -12,6 +12,8 @@
 #include "DAAppProject.h"
 #include "DAAppCommand.h"
 #include "DALogCategory.h"
+// Agent
+#include "DAAgentModule.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -41,6 +43,12 @@ bool DAAppCore::initialized()
     daDebug << "core have been initialized App Data Manager";
     mProject = new DAAppProject(this, this);
     mProject->setDataManagerInterface(mDataManager);
+    // 初始化 Agent 模块（Bridge 创建，Dock 由 DAAppDockingArea 注入）
+    // initialize() 是 DAAgentModule 的辅助方法（非 DAAgentInterface 虚函数），
+    // 故用具体类型 DAAgentModule* 调用，赋值给 mAgentInterface（DAAgentInterface*）多态持有
+    auto* agentModule = new DAAgentModule(this, this);
+    agentModule->initialize(this);
+    mAgentInterface = agentModule;
     return true;
 }
 
@@ -74,8 +82,7 @@ DADataManagerInterface* DAAppCore::getDataManagerInterface() const
 
 DAAgentInterface* DAAppCore::getAgentInterface() const
 {
-    // 本期为桩，真实实现由后续plan提供
-    return nullptr;
+    return mAgentInterface;
 }
 
 /**

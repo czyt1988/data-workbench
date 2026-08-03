@@ -49,6 +49,7 @@ private:
     DAAppDataManager* mDataManager { nullptr };
     bool mIsPythonInterpreterInitialized { false };
     DAAppProject* mProject { nullptr };
+    DAAgentInterface* mAgentInterface { nullptr };  ///< Agent 接口（initialized 时创建）
 };
 
 DACoreInterface* getAppCorePtr();

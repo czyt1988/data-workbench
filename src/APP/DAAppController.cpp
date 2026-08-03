@@ -96,6 +96,8 @@
 #include "DAAbstractStatsChartAddWidget.h"
 #include "DAStatsPlotCoordinator.h"
 #endif
+// Agent
+#include "DAAgentModule.h"
 //
 #include "SettingPages/DAAppConfig.h"
 #include "DALogCategory.h"
@@ -239,6 +241,10 @@ void DAAppController::initialize()
     // Agent 助手 Dock 的显示/隐藏由 actionShowAgentArea 驱动
     mDock->getAgentDock()->setToggleViewActionMode(ads::CDockWidget::ActionModeShow);
     mDock->getAgentDock()->setToggleViewAction(mActions->actionShowAgentArea);
+    // 将已创建的 Dock Widget 注入 DAAgentModule（触发 connectSignals 建立信号链）
+    if (auto* agentMod = qobject_cast< DAAgentModule* >(mCore->getAgentInterface())) {
+        agentMod->setDockWidget(mDock->getAgentDockWidget());
+    }
     initConnection();
 #if DA_ENABLE_PYTHON
     initScripts();

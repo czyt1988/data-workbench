@@ -82,6 +82,12 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAPyScripts
 )
 
+# DAAgentModule.cpp includes DAPyInterpreter.h (→ pybind11 → Python.h),
+# 需要 Python 和 pybind11 的头文件路径。DAPyBindQt 以 PRIVATE 方式导入这两个第三方库，
+# 其 include 目录不会传递给 DAAgent，故在此显式导入。
+damacro_import_Python(${DA_LIB_NAME})
+damacro_import_pybind11(${DA_LIB_NAME})
+
 ########################################################
 # 设置通用库属性（AUTOMOC/AUTOUIC/AUTORCC ON、EXPORT_NAME、
 # DEBUG_POSTFIX、VERSION、输出目录，见 damacro_set_lib_properties）
