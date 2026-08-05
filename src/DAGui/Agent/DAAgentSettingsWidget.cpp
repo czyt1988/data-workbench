@@ -16,6 +16,12 @@ static const char* KEY_LLM_API_KEY  = "agent/llm_api_key";   // stored encrypted
 static const char* KEY_LLM_MODEL    = "agent/llm_model";
 static const char* KEY_READY_TIMEOUT_SEC = "agent/ready_timeout_sec";  // ready 等待超时(秒)
 static const char* KEY_STOP_TIMEOUT_SEC  = "agent/stop_timeout_sec";   // 停止等待超时(秒)
+// 上下文管理
+static const char* KEY_CONTEXT_WINDOW          = "agent/context_window";
+static const char* KEY_COMPACTION_THRESHOLD    = "agent/compaction_threshold";
+static const char* KEY_MAX_RECENT_MESSAGES     = "agent/max_recent_messages";
+static const char* KEY_TOOL_RESULT_MAX_CHARS   = "agent/tool_result_max_chars";
+static const char* KEY_TOOL_RESULT_PREVIEW_CHARS = "agent/tool_result_preview_chars";
 
 #ifdef Q_OS_WIN
 #ifndef WIN32_LEAN_AND_MEAN
@@ -61,6 +67,38 @@ void DAAgentSettingsWidget::setupUI()
     m_testBtn     = new QPushButton(tr("测试连接"), this);
     m_statusLabel = new QLabel(this);
 
+    // 上下文管理控件
+    m_contextWindowSpin = new QSpinBox(this);
+    m_contextWindowSpin->setRange(8192, 2097152);
+    m_contextWindowSpin->setSingleStep(1024);
+    m_contextWindowSpin->setToolTip(tr(
+        "Maximum context window of the LLM model in tokens. "
+        "deepseek-v4-flash=1048576, qwen3-coder=256000, etc."));  //cn:LLM 模型最大上下文窗口(tokens)。deepseek-v4-flash=1048576, qwen3-coder=256000 等
+
+    m_compactionThresholdSpin = new QDoubleSpinBox(this);
+    m_compactionThresholdSpin->setRange(0.50, 1.0);
+    m_compactionThresholdSpin->setSingleStep(0.05);
+    m_compactionThresholdSpin->setDecimals(2);
+    m_compactionThresholdSpin->setToolTip(tr(
+        "Compaction trigger ratio (0.85 = compact at 85% of context window)"));  //cn:压缩触发比例(0.85=窗口 85%时触发)
+
+    m_maxRecentMsgSpin = new QSpinBox(this);
+    m_maxRecentMsgSpin->setRange(4, 50);
+    m_maxRecentMsgSpin->setToolTip(tr(
+        "Number of recent messages to retain after compaction"));  //cn:压缩后保留最近消息条数
+
+    m_toolResultMaxCharsSpin = new QSpinBox(this);
+    m_toolResultMaxCharsSpin->setRange(1000, 500000);
+    m_toolResultMaxCharsSpin->setSingleStep(1000);
+    m_toolResultMaxCharsSpin->setToolTip(tr(
+        "Tool results exceeding this length will be truncated to a preview"));  //cn:工具结果超此长度将截断为预览
+
+    m_toolResultPreviewCharsSpin = new QSpinBox(this);
+    m_toolResultPreviewCharsSpin->setRange(100, 10000);
+    m_toolResultPreviewCharsSpin->setSingleStep(100);
+    m_toolResultPreviewCharsSpin->setToolTip(tr(
+        "Preview length for truncated tool results"));  //cn:截断后工具结果预览长度
+
     QFormLayout* form = new QFormLayout(this);
     form->addRow(tr("Base URL"), m_baseUrlEdit);
     form->addRow(tr("API Key"),  m_apiKeyEdit);
@@ -69,6 +107,12 @@ void DAAgentSettingsWidget::setupUI()
     form->addRow(tr("Stop Timeout"),  m_stopTimeoutSpin);    //cn:停止超时
     form->addRow(m_testBtn);
     form->addRow(m_statusLabel);
+    // 上下文管理
+    form->addRow(tr("Context Window"), m_contextWindowSpin);              //cn:上下文窗口
+    form->addRow(tr("Compaction Threshold"), m_compactionThresholdSpin);  //cn:压缩阈值
+    form->addRow(tr("Max Recent Messages"), m_maxRecentMsgSpin);         //cn:保留最近消息数
+    form->addRow(tr("Tool Result Max Chars"), m_toolResultMaxCharsSpin);  //cn:工具结果截断阈值
+    form->addRow(tr("Tool Result Preview Chars"), m_toolResultPreviewCharsSpin);  //cn:工具结果预览长度
 
     connect(m_testBtn, &QPushButton::clicked, this, &DAAgentSettingsWidget::onTestConnection);
 
@@ -90,6 +134,22 @@ void DAAgentSettingsWidget::setupUI()
     connect(m_stopTimeoutSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
         emit settingChanged();
     });
+    // 上下文管理控件的 settingChanged 连接
+    connect(m_contextWindowSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+        emit settingChanged();
+    });
+    connect(m_compactionThresholdSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, [this]() {
+        emit settingChanged();
+    });
+    connect(m_maxRecentMsgSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+        emit settingChanged();
+    });
+    connect(m_toolResultMaxCharsSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+        emit settingChanged();
+    });
+    connect(m_toolResultPreviewCharsSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+        emit settingChanged();
+    });
 
     // 注：loadConfig() 期间无需 QSignalBlocker——
     // addPage()（连接 settingChanged → 脏页追踪器）在构造函数返回之后才执行，
@@ -107,6 +167,12 @@ void DAAgentSettingsWidget::loadConfig()
     // 超时配置:默认 ready=60s(覆盖 langchain 冷启动导入)、stop=5s
     int readyTimeout = s.value(KEY_READY_TIMEOUT_SEC, 60).toInt();
     int stopTimeout  = s.value(KEY_STOP_TIMEOUT_SEC, 5).toInt();
+    // 上下文管理配置:默认值与 DAAgentModule::getLLMConfig 一致
+    int contextWindow       = s.value(KEY_CONTEXT_WINDOW, 1048576).toInt();
+    double compactionThreshold = s.value(KEY_COMPACTION_THRESHOLD, 0.85).toDouble();
+    int maxRecentMsgs       = s.value(KEY_MAX_RECENT_MESSAGES, 10).toInt();
+    int toolResultMaxChars  = s.value(KEY_TOOL_RESULT_MAX_CHARS, 50000).toInt();
+    int toolResultPreviewChars = s.value(KEY_TOOL_RESULT_PREVIEW_CHARS, 2000).toInt();
     // 诊断日志: 显示从 QSettings 读到的原始值(绝不打印 api_key 明文,只显示加密 blob 大小)
     // 用于排查"重启后字段为空"问题——若 QSettings 路径不一致/注册表为空,这里一目了然
     daDebug << "[DAAgentSettings] loadConfig: base_url=" << baseUrl
@@ -114,6 +180,11 @@ void DAAgentSettingsWidget::loadConfig()
             << " api_key_enc_size=" << encKey.size()
             << " ready_timeout=" << readyTimeout
             << " stop_timeout=" << stopTimeout
+            << " context_window=" << contextWindow
+            << " compaction_threshold=" << compactionThreshold
+            << " max_recent=" << maxRecentMsgs
+            << " tool_max=" << toolResultMaxChars
+            << " tool_preview=" << toolResultPreviewChars
             << " org=" << QCoreApplication::organizationName()
             << " app=" << QCoreApplication::applicationName();
     m_baseUrlEdit->setText(baseUrl);
@@ -123,6 +194,11 @@ void DAAgentSettingsWidget::loadConfig()
     }
     m_readyTimeoutSpin->setValue(readyTimeout);
     m_stopTimeoutSpin->setValue(stopTimeout);
+    m_contextWindowSpin->setValue(contextWindow);
+    m_compactionThresholdSpin->setValue(compactionThreshold);
+    m_maxRecentMsgSpin->setValue(maxRecentMsgs);
+    m_toolResultMaxCharsSpin->setValue(toolResultMaxChars);
+    m_toolResultPreviewCharsSpin->setValue(toolResultPreviewChars);
 }
 
 void DAAgentSettingsWidget::saveConfig()
@@ -133,19 +209,34 @@ void DAAgentSettingsWidget::saveConfig()
     QByteArray encKey = encryptApiKey(m_apiKeyEdit->text());
     int readyTimeout = m_readyTimeoutSpin->value();
     int stopTimeout  = m_stopTimeoutSpin->value();
+    int contextWindow       = m_contextWindowSpin->value();
+    double compactionThreshold = m_compactionThresholdSpin->value();
+    int maxRecentMsgs       = m_maxRecentMsgSpin->value();
+    int toolResultMaxChars  = m_toolResultMaxCharsSpin->value();
+    int toolResultPreviewChars = m_toolResultPreviewCharsSpin->value();
     s.setValue(KEY_LLM_BASE_URL, baseUrl);
     s.setValue(KEY_LLM_MODEL,    model);
     // IniFormat 原生支持 QByteArray(@ByteArray 注解),加密 blob 直接存储
     s.setValue(KEY_LLM_API_KEY,  encKey);
     s.setValue(KEY_READY_TIMEOUT_SEC, readyTimeout);
     s.setValue(KEY_STOP_TIMEOUT_SEC,  stopTimeout);
+    s.setValue(KEY_CONTEXT_WINDOW,          contextWindow);
+    s.setValue(KEY_COMPACTION_THRESHOLD,    compactionThreshold);
+    s.setValue(KEY_MAX_RECENT_MESSAGES,     maxRecentMsgs);
+    s.setValue(KEY_TOOL_RESULT_MAX_CHARS,   toolResultMaxChars);
+    s.setValue(KEY_TOOL_RESULT_PREVIEW_CHARS, toolResultPreviewChars);
     // 诊断日志: 确认 saveConfig 真的被调用且写入了 QSettings(绝不打印 api_key 明文)
     // 若 ini 文件为空但此处显示有值,说明 QSettings 写入失败(环境/权限问题)
     daDebug << "[DAAgentSettings] saveConfig written: base_url=" << baseUrl
             << " model=" << model
             << " api_key_enc_size=" << encKey.size()
             << " ready_timeout=" << readyTimeout
-            << " stop_timeout=" << stopTimeout;
+            << " stop_timeout=" << stopTimeout
+            << " context_window=" << contextWindow
+            << " compaction_threshold=" << compactionThreshold
+            << " max_recent=" << maxRecentMsgs
+            << " tool_max=" << toolResultMaxChars
+            << " tool_preview=" << toolResultPreviewChars;
 }
 
 void DAAgentSettingsWidget::apply()

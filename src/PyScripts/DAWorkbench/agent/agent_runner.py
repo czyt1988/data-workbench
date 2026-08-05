@@ -16,12 +16,25 @@ import sys
 import threading
 
 from langchain_core.messages import (
-    HumanMessage, SystemMessage, ToolMessage
+    HumanMessage, SystemMessage, ToolMessage, RemoveMessage
 )
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, MessagesState, START, END
 from langgraph.types import interrupt, Command
+
+# 上下文管理模块（token 估算、工具结果截断、自动压缩、溢出恢复）
+# 与本文件同目录，直接导入。导入失败时降级为无上下文管理（agent 仍可工作，
+# 但长会话可能因 token 超限而报错）
+try:
+    from context_manager import (
+        TokenEstimator, ToolResultTruncator, ContextCompactor,
+        is_context_overflow_error
+    )
+    _HAS_CONTEXT_MANAGER = True
+except ImportError:
+    _HAS_CONTEXT_MANAGER = False
+    logger.warning("context_manager module not available, running without context management")
 
 # Pin stdout/stderr to UTF-8 — required because:
 # 1. stdout 是 JSON Lines 协议通道（C++ 端 QJsonDocument::fromJson 按 UTF-8 解析）
@@ -226,6 +239,34 @@ class AgentRunner:
         self.tool_schemas = ToolFactory.build_tool_schemas(tool_specs)
         self.llm_with_tools = self.llm.bind_tools(self.tool_schemas)
 
+        # 上下文管理组件初始化
+        # 从 config 读取参数（C++ 端 getLLMConfig 下发，带默认值兜底）
+        self.context_window = config.get("context_window", 1048576)
+        self.compaction_threshold = config.get("compaction_threshold", 0.85)
+        self.max_recent_messages = config.get("max_recent_messages", 10)
+        tool_result_max_chars = config.get("tool_result_max_chars", 50000)
+        tool_result_preview_chars = config.get("tool_result_preview_chars", 2000)
+
+        if _HAS_CONTEXT_MANAGER:
+            self.token_estimator = TokenEstimator(config.get("model"))
+            self.tool_result_truncator = ToolResultTruncator(
+                tool_result_max_chars, tool_result_preview_chars
+            )
+            self.compactor = ContextCompactor(
+                self.llm, self.token_estimator,
+                self.context_window, self.compaction_threshold,
+                self.max_recent_messages
+            )
+            logger.info("Context management enabled: window=%d threshold=%.2f "
+                        "max_recent=%d tool_max=%d tool_preview=%d",
+                        self.context_window, self.compaction_threshold,
+                        self.max_recent_messages, tool_result_max_chars,
+                        tool_result_preview_chars)
+        else:
+            self.token_estimator = None
+            self.tool_result_truncator = None
+            self.compactor = None
+
         # 构建图（带 checkpointer 以支持 interrupt/resume）
         self.graph = self._build_graph()
 
@@ -269,19 +310,26 @@ class AgentRunner:
                 logger.warning("期望 tool_result，但收到 type=%s", msg_type)
 
     def _build_graph(self):
-        """构建 LangGraph 图（带 MemorySaver checkpointer 支持 interrupt/resume）。"""
+        """构建 LangGraph 图（带 MemorySaver checkpointer 支持 interrupt/resume）。
+
+        图结构：START → compact → agent → {ask_user | tools | END}
+                 tools → compact, ask_user → compact
+        compact 节点在每次 agent 之前检查并压缩历史（不需要时返回空，零开销）。
+        """
         stdio = self.stdio
         system_prompt = self.system_prompt
         llm_with_tools = self.llm_with_tools
+        compactor = self.compactor
+        truncator = self.tool_result_truncator
 
-        async def agent_node(state: MessagesState):
-            messages = state["messages"]
-            # 在开头插入 system prompt（避免重复插入）
-            if system_prompt and not any(m.type == "system" for m in messages):
-                messages = [SystemMessage(content=system_prompt)] + messages
+        async def _stream_llm(messages):
+            """流式调用 LLM 并输出 token 到 UI，返回累积后的完整 AIMessage。
 
-            # 累积 AIMessageChunk 以提取完整的 tool_calls
-            # 关键：不能逐 chunk 读 .tool_calls（那是增量 delta，多为 None/部分）
+            提取为辅助函数以避免 agent_node 中溢出恢复路径的代码重复
+            （正常路径与重试路径共用同一段流式逻辑）。
+            关键：不能逐 chunk 读 .tool_calls（那是增量 delta，多为 None/部分），
+            必须累积 AIMessageChunk 后从完整消息上读取。
+            """
             collected_chunks = None
             async for chunk in llm_with_tools.astream(messages):
                 if collected_chunks is None:
@@ -291,9 +339,62 @@ class AgentRunner:
                 # 流式输出 token 给 UI
                 if chunk.content:
                     await stdio.send_token(chunk.content)
+            return collected_chunks
+
+        async def compact_node(state: MessagesState):
+            """上下文压缩节点：在 agent 之前检查并压缩历史。
+
+            不需要压缩时返回空（{"messages": []}），不影响流程。
+            需要压缩时返回 [RemoveMessage(id=...) for middle, HumanMessage(summary)]，
+            MessagesState 的 add_messages reducer 会删除中间消息并追加摘要，
+            使下轮 agent_node 读到的是压缩后历史。
+
+            3 次熔断：连续失败 3 次后不再尝试（qwen-code 式），成功时重置计数。
+            """
+            if not compactor:
+                return {"messages": []}
+            messages = state["messages"]
+            if not compactor.should_compact(messages):
+                return {"messages": []}
+            logger.info("Starting context compaction, current tokens=%d",
+                        self.token_estimator.count_messages_tokens(messages))
+            try:
+                updates = await compactor.compact(messages)
+                compactor._consecutive_failures = 0  # 成功重置
+                logger.info("Compaction done, returning %d updates", len(updates))
+                return {"messages": updates}
+            except Exception as e:
+                compactor._consecutive_failures += 1
+                logger.exception("Compaction failed (%d/%d): %s",
+                                 compactor._consecutive_failures,
+                                 compactor.MAX_FAILURES, e)
+                return {"messages": []}  # 失败不压缩，下轮再试
+
+        async def agent_node(state: MessagesState):
+            messages = state["messages"]  # 已被 compact_node 处理
+            # 在开头插入 system prompt（避免重复插入）
+            if system_prompt and not any(m.type == "system" for m in messages):
+                messages = [SystemMessage(content=system_prompt)] + messages
+
+            try:
+                # 正常路径：流式调用 LLM
+                final_message = await _stream_llm(messages)
+            except Exception as e:
+                # 反应式溢出恢复（qwen-code 式安全网）：
+                # 当 token 估算不准导致实际请求超出上下文窗口时，
+                # API 返回 ContextWindowExceededError/BadRequestError。
+                # 此时强制压缩（局部，不写回 state）并重试一次。
+                if compactor and is_context_overflow_error(e):
+                    logger.warning("Context overflow detected, force-compacting and retrying")
+                    compacted = await compactor.force_compact(messages)
+                    # 重新 prepend system prompt（force_compact 返回的消息不含 system）
+                    if system_prompt:
+                        compacted = [SystemMessage(content=system_prompt)] + compacted
+                    final_message = await _stream_llm(compacted)
+                else:
+                    raise
 
             # 从累积后的完整消息上读取 tool_calls（不是逐 chunk 读）
-            final_message = collected_chunks
             if final_message.tool_calls:
                 # 有完整 tool_calls，交给 tool_node 执行
                 return {"messages": [final_message]}
@@ -311,8 +412,13 @@ class AgentRunner:
                 # RPC 调用 C++ host
                 result = await self._rpc_call(tool_call)
                 # ToolMessage.content 必须是 str/list，不能是 dict
+                content = json.dumps(result, ensure_ascii=False)  # str，而非 dict
+                # 工具结果截断：超长结果只保留预览（kimi-code v2 式）
+                # 截断后的内容直接进 state，后续轮次受益
+                if truncator:
+                    content = truncator.truncate(content)
                 results.append(ToolMessage(
-                    content=json.dumps(result, ensure_ascii=False),  # str，而非 dict
+                    content=content,
                     tool_call_id=tool_call["id"]
                 ))
             return {"messages": results}
@@ -379,18 +485,20 @@ class AgentRunner:
             return "end"  # 无 tool_calls，对话结束
 
         graph = StateGraph(MessagesState)
+        graph.add_node("compact", compact_node)  # 上下文压缩（在 agent 之前）
         graph.add_node("agent", agent_node)
         graph.add_node("tools", tool_node)
         graph.add_node("ask_user", ask_user_node)
-        graph.add_edge(START, "agent")
+        graph.add_edge(START, "compact")           # START → compact → agent
+        graph.add_edge("compact", "agent")
         # agent 条件分支：提问 / 工具 / 结束
         graph.add_conditional_edges(
             "agent", _should_ask_user,
             {"ask_user": "ask_user", "tools": "tools", "end": END}
         )
-        graph.add_edge("tools", "agent")
-        # ask_user 之后回到 agent 继续处理用户的回答
-        graph.add_edge("ask_user", "agent")
+        graph.add_edge("tools", "compact")        # tools → compact → agent
+        # ask_user 之后回到 compact 再到 agent 继续处理用户的回答
+        graph.add_edge("ask_user", "compact")      # ask_user → compact → agent
 
         # 必须带 checkpointer，否则 interrupt() 无法工作
         memory = MemorySaver()

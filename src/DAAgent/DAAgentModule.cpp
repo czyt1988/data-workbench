@@ -82,11 +82,29 @@ void DAAgentModule::registerSystemPrompt(const QString& name, const QString& con
 
 QString DAAgentModule::assembleSystemPrompt() const
 {
-    // 平台基础提示词
-    QString base = R"(你是 data-workbench 的 AI 数据分析助手。
+    // 平台基础提示词：优先从外部 markdown 文件读取（src/DAAgent/system_prompt.md
+    // 安装到 bin/PyScripts/DAWorkbench/agent/system_prompt.md），缺失时回退到内置默认，
+    // 保证开发构建未执行 install 或文件被误删时 agent 仍可用。
+    static const QString kDefaultPrompt = R"(你是 data-workbench 的 AI 数据分析助手。
 你可以使用提供的工具来查询数据、绘制图表、分析数据。
 请使用 markdown 格式输出你的回复。
 当需要用户提供信息时，使用 ask_user 工具提问。)";
+
+    QString base = kDefaultPrompt;
+    QFile promptFile(detectSystemPromptPath());
+    if (promptFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QByteArray content = promptFile.readAll();
+        promptFile.close();
+        if (!content.trimmed().isEmpty()) {
+            base = QString::fromUtf8(content);
+        } else {
+            daWarning << tr("Agent system prompt file is empty, fallback to built-in default: %1")
+                         .arg(promptFile.fileName());
+        }
+    } else {
+        daWarning << tr("Failed to read Agent system prompt file, fallback to built-in default: %1")
+                     .arg(promptFile.fileName());
+    }
 
     // 拼接插件注入的提示词
     QStringList parts;
@@ -247,6 +265,14 @@ QString DAAgentModule::detectAgentScriptPath() const
     return scriptsDir + "/DAWorkbench/agent/agent_runner.py";
 }
 
+QString DAAgentModule::detectSystemPromptPath() const
+{
+    // 系统提示词 markdown 安装到与 agent_runner.py 同目录，运行时由
+    // assembleSystemPrompt() 读取；路径解析复用 getPythonScriptsPath()。
+    QString scriptsDir = DACoreInterface::getPythonScriptsPath();
+    return scriptsDir + "/DAWorkbench/agent/system_prompt.md";
+}
+
 void DAAgentModule::showDockWidget()
 {
     if (m_dockWidget) {
@@ -274,6 +300,12 @@ QJsonObject DAAgentModule::getLLMConfig() const
     if (!encKey.isEmpty()) {
         config["api_key"] = DAAgentSettingsWidget::decryptApiKey(encKey);
     }
+    // 上下文管理配置（带默认值兜底，随 init 消息 config 字段下发给 Python）
+    config["context_window"]            = s.value("agent/context_window", 1048576).toInt();
+    config["compaction_threshold"]      = s.value("agent/compaction_threshold", 0.85).toDouble();
+    config["max_recent_messages"]       = s.value("agent/max_recent_messages", 10).toInt();
+    config["tool_result_max_chars"]     = s.value("agent/tool_result_max_chars", 50000).toInt();
+    config["tool_result_preview_chars"] = s.value("agent/tool_result_preview_chars", 2000).toInt();
     return config;
 }
 

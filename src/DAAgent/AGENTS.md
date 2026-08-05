@@ -114,6 +114,16 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 
 > ⚠️ **修改 Python 文件后必须同步到运行时目录**（重跑 cmake 配置或手动 copy），且**必须重启程序**——Python 在启动时导入，不支持热重载。cmake 的 `file(COPY)` 只在 configure 阶段执行，不会跟踪文件变更。
 
+### 4.1 系统提示词 markdown（外部可编辑）
+
+| 项 | 路径 |
+|----|------|
+| **源码** | `src/DAAgent/system_prompt.md`（开发时编辑此处） |
+| **运行时** | `<exe目录>/PyScripts/DAWorkbench/agent/system_prompt.md`（与 `agent_runner.py` 同目录） |
+| **部署机制** | `src/DAAgent/CMakeLists.txt`：`install(FILES ...)` + `file(COPY ...)` 双写（镜像 PyScripts 模式） |
+
+平台基础系统提示词不再硬编码在 C++ 中，而是由 `DAAgentModule::assembleSystemPrompt()` 在调用时（首次 `sendMessage()` 触发懒启动）从上述 markdown 文件读取。**修改 markdown 后无需重启程序，下一轮 agent 会话即生效**。文件缺失或为空时回退到内置默认提示词（`kDefaultPrompt` 常量）并写 `daWarning` 到 `da_log.log`，保证异常部署下 agent 仍可用。插件经 `registerSystemPrompt` 注入的提示词仍在基础提示词之后拼接，机制不变。
+
 **Python 依赖**（`requirements.txt`）：`langgraph`、`langchain-openai`、`pydantic>=2.0`（langgraph 的 `interrupt()` 需要）。
 
 ---
@@ -126,7 +136,7 @@ stdout 专用于协议，**绝对禁止在 stdout 打印日志**（污染协议�
 
 | type | 载荷 | 说明 |
 |------|------|------|
-| `init` | `config`{base_url, api_key, model} + `tools`(schema 数组) + `system_prompt` | 启动时一次性下发；config 缺 base_url/api_key/model 任一则报错退出 |
+| `init` | `config`{base_url, api_key, model, context_window, compaction_threshold, max_recent_messages, tool_result_max_chars, tool_result_preview_chars} + `tools`(schema 数组) + `system_prompt` | 启动时一次性下发；config 缺 base_url/api_key/model 任一则报错退出；上下文管理参数有默认值兜底 |
 | `user_msg` | `content` | 用户消息，触发一轮 agent 推理 |
 | `tool_result` | `call_id` + `result` | 工具执行结果回传（RPC 应答） |
 | `user_answer` | `answer` | 用户对 HITL 问题的回答，触发 `resume()` |
@@ -252,6 +262,11 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 | `agent/llm_model` | 模型名 | — |
 | `agent/ready_timeout_sec` | 子进程就绪超时（覆盖 langchain 冷启动 ~17s） | 60 |
 | `agent/stop_timeout_sec` | stopAgent 等待退出超时 | 5 |
+| `agent/context_window` | 模型上下文窗口大小（tokens），用于触发压缩判断 | 1048576 |
+| `agent/compaction_threshold` | 自动压缩触发比例（0.85 = 窗口 85% 时触发） | 0.85 |
+| `agent/max_recent_messages` | 压缩后保留最近消息条数 | 10 |
+| `agent/tool_result_max_chars` | 工具结果截断阈值（字符数），超此长度截断为预览 | 50000 |
+| `agent/tool_result_preview_chars` | 截断后工具结果预览长度（字符数） | 2000 |
 
 加密：Windows 用 `CryptProtectData`/`CryptUnprotectData`（`DAAgentSettingsWidget.cpp:214-264`），静态方法 `encryptApiKey`/`decryptApiKey` 供 `DAAgentModule` 调用。**日志/诊断禁止打印 api_key 明文**（只打加密 blob 大小）。
 
@@ -315,6 +330,16 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 - 诊断前缀 `[DAAgentSettings]`（loadConfig/saveConfig/apply）用于排查配置持久化问题。
 - 注意区分：`da_pyscript.log` 是**嵌入式 Python**（工作流节点等）的输出，**agent 子进程的日志在 `da_log.log`**（子进程 logging 走 stderr → QProcess stderr → da_log.log）。
 
+### T14. 上下文管理（compact_node / RemoveMessage / 溢出恢复）
+- **compact_node 必须在 agent 之前**：图结构为 `START → compact → agent → {ask_user | tools | END}`，`tools → compact`、`ask_user → compact`。compact 不需要压缩时返回 `{"messages": []}`（零开销）。
+- **RemoveMessage 需消息有 id**：`ContextCompactor.compact()` 用 `RemoveMessage(id=msg.id)` 删除中间消息。langchain 消息自动生成 id，但若消息无 id 则跳过删除（不报错）。
+- **摘要失败要熔断不阻塞流程**：compact_node 的 `try/except` 捕获摘要 LLM 调用失败，返回 `{"messages": []}`（不压缩），`_consecutive_failures` 计数；连续 3 次后 `should_compact` 返回 False（熔断），直到成功一次重置。
+- **溢出恢复是局部的（不写回 state）**：agent_node 捕获 `ContextWindowExceededError` 后调 `force_compact` 生成压缩后消息列表，**仅用于本次 LLM 重试**；下轮 compact_node 会做持久化压缩（RemoveMessage 写回 state）。
+- **系统提示词不进 state**：`agent_node` 每轮 prepend `SystemMessage`（不返回到 state），compact 的 head/tail 选择中不含 system 消息。
+- **工具结果截断在 tool_node**：`ToolResultTruncator.truncate()` 在 `json.dumps(result)` 后、构造 `ToolMessage` 前执行，截断后的内容直接进 state，后续轮次受益。
+- **摘要用 self.llm（不绑 tools）**：`ContextCompactor._generate_summary()` 用 `ChatOpenAI.ainvoke()`（无 `bind_tools`），摘要无需工具调用。
+- **token 估算只用于提前触发**：tiktoken/char-based 估算偏向早触发（宁可早压缩不要溢出），不用于"跳过"判断。反应式溢出恢复是安全网，覆盖估算不准的场景。
+
 ---
 
 ## 十二、调试指南
@@ -338,7 +363,7 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 | 任务 | 位置 |
 |------|------|
 | 新增工具 | `src/DAAgent/tools/`（继承 `DAAgentToolBase`）+ `DAAgentModule::registerBuiltinTools` |
-| 改系统提示词 | `DAAgentModule::assembleSystemPrompt()`；插件注册走 `registerSystemPrompt` |
+| 改系统提示词 | 编辑 `src/DAAgent/system_prompt.md`（运行时由 `DAAgentModule::assembleSystemPrompt()` 读取，缺失回退内置默认）；插件注入走 `registerSystemPrompt` |
 | 改聊天渲染 | `src/DAGui/Agent/resources/chat.js` / `chat.html` / `chat.css` |
 | 改聊天 UI 结构 | `src/DAGui/Agent/DAAgentDockWidget.cpp` |
 | 改 C++↔JS 桥 | `src/DAGui/Agent/DAAgentWebChannel.cpp`（注意 `toJsString` 转义与 `chatBridge` 注册名） |

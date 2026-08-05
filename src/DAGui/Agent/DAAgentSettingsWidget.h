@@ -5,6 +5,7 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <QJsonObject>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
@@ -83,6 +84,12 @@ private:
     QPushButton* m_testBtn;
     QLabel* m_statusLabel;
     QNetworkAccessManager* m_networkManager { nullptr };  // 主线程异步，构造函数中创建
+    // 上下文管理
+    QSpinBox* m_contextWindowSpin;             // 模型上下文窗口大小(tokens)
+    QDoubleSpinBox* m_compactionThresholdSpin;  // 压缩触发比例(0-1)
+    QSpinBox* m_maxRecentMsgSpin;              // 压缩后保留最近消息数
+    QSpinBox* m_toolResultMaxCharsSpin;         // 工具结果截断阈值(字符)
+    QSpinBox* m_toolResultPreviewCharsSpin;      // 工具结果预览长度(字符)
 };
 
 } // namespace DA
