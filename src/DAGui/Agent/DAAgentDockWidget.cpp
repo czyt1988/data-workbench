@@ -80,8 +80,14 @@ void DAAgentDockWidget::setupUI()
     QShortcut* sendShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+Return")), this);
     connect(sendShortcut, &QShortcut::activated, this, &DAAgentDockWidget::onSendClicked);
 
-    // 发送按钮
-    connect(m_sendButton, &QPushButton::clicked, this, &DAAgentDockWidget::onSendClicked);
+    // 发送/终止切换按钮：根据 m_agentBusy 状态分流
+    connect(m_sendButton, &QPushButton::clicked, this, [this]() {
+        if (m_agentBusy) {
+            onStopClicked();
+        } else {
+            onSendClicked();
+        }
+    });
 }
 
 void DAAgentDockWidget::setupWebChannel()
@@ -100,6 +106,10 @@ void DAAgentDockWidget::setupWebChannel()
 
 void DAAgentDockWidget::onSendClicked()
 {
+    // 忙碌时不发送——按钮此时为 Stop 功能，由 lambda 分流到 onStopClicked
+    if (m_agentBusy) {
+        return;
+    }
     // 1. 获取输入文本
     QString text = m_inputEdit->toPlainText().trimmed();
     if (text.isEmpty()) {
@@ -111,6 +121,18 @@ void DAAgentDockWidget::onSendClicked()
     m_channel->appendUserMessage(text);
     // 4. 通知 Bridge 发送消息
     emit sendMessageRequested(text);
+}
+
+void DAAgentDockWidget::onStopClicked()
+{
+    // 定稿当前流式输出中的 agent 消息 + 关闭工具分组，避免半截消息悬挂
+    if (m_channel) {
+        m_channel->onAgentStopped();
+    }
+    // 禁用按钮防止重复点击，等待 onProcessFinished→agentBusy(false) 恢复
+    m_sendButton->setEnabled(false);
+    m_statusLabel->setText(tr("Stopping..."));  // cn:终止中...
+    emit stopRequested();
 }
 
 void DAAgentDockWidget::onUserAnswer(const QString& answer)
@@ -167,6 +189,8 @@ void DAAgentDockWidget::onAgentReady(const QString& model)
     m_agentBusy = false;
     m_statusLabel->setText(tr("Ready"));  // cn:就绪
     m_inputEdit->setEnabled(true);
+    m_sendButton->setText(tr("Send"));  // cn:发送
+    m_sendButton->setStyleSheet(QString());
     m_sendButton->setEnabled(true);
 }
 
@@ -176,10 +200,17 @@ void DAAgentDockWidget::onAgentBusy(bool busy)
     if (busy) {
         m_statusLabel->setText(tr("Agent thinking..."));  // cn:Agent 思考中...
         m_inputEdit->setEnabled(false);
-        m_sendButton->setEnabled(false);
+        // 切换为终止按钮：红色背景，可点击终止 agent
+        m_sendButton->setText(tr("Stop"));  // cn:终止
+        m_sendButton->setStyleSheet(QStringLiteral(
+            "QPushButton { background-color: #d9534f; color: white; }"));
+        m_sendButton->setEnabled(true);
     } else {
         m_statusLabel->setText(tr("Ready"));  // cn:就绪
         m_inputEdit->setEnabled(true);
+        // 切换回发送按钮
+        m_sendButton->setText(tr("Send"));  // cn:发送
+        m_sendButton->setStyleSheet(QString());
         m_sendButton->setEnabled(true);
     }
 }

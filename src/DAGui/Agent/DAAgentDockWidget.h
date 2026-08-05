@@ -45,6 +45,7 @@ public:
 
 private Q_SLOTS:
     void onSendClicked();
+    void onStopClicked();
     void onUserAnswer(const QString& answer);
 
 public Q_SLOTS:
@@ -105,6 +106,11 @@ Q_SIGNALS:
      * @param text 消息文本
      */
     void sendMessageRequested(const QString& text);
+
+    /**
+     * @brief 用户请求终止 agent 信号
+     */
+    void stopRequested();
 
     /**
      * @brief 用户选择答案信号

@@ -106,4 +106,12 @@ void DAAgentWebChannel::setBusy(bool busy)
     Q_UNUSED(busy);
 }
 
+void DAAgentWebChannel::onAgentStopped()
+{
+    // 复用已有 JS 函数：flushAgentMessage 定稿半截流式消息（保留已累积文本），
+    // closeToolGroup 关闭未完成的工具分组（标记为 incomplete）。
+    callJS(QStringLiteral("flushAgentMessage()"));
+    callJS(QStringLiteral("closeToolGroup()"));
+}
+
 } // namespace DA

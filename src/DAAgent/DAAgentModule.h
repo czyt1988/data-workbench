@@ -58,6 +58,8 @@ public:
     void hideDockWidget() override;
     /// @copydoc DAAgentInterface::sendMessage
     void sendMessage(const QString& text) override;
+    /// @copydoc DAAgentInterface::stop
+    void stop() override;
     /// @copydoc DAAgentInterface::isRunning
     bool isRunning() const override;
     /// @copydoc DAAgentInterface::getLLMConfig

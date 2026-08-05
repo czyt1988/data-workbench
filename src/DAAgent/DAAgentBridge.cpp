@@ -34,6 +34,12 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
         m_readyTimer->deleteLater();
         m_readyTimer = nullptr;
     }
+    // 清理上一次的 stop kill 计时器(若存在)——避免其 lambda 误杀重启后的新进程
+    if (m_stopTimer) {
+        m_stopTimer->stop();
+        m_stopTimer->deleteLater();
+        m_stopTimer = nullptr;
+    }
 
     // 0. 清理上一次的进程——崩溃重启时旧 QProcess 仍持有资源，直接 new 会泄漏
     //    死进程对象。先 disconnect 防止旧进程的 pending 信号在 deleteLater 之后
@@ -120,6 +126,41 @@ void DAAgentBridge::stopAgent()
         if (m_process->state() != QProcess::NotRunning) {
             m_process->kill();
         }
+    }
+    m_running = false;
+}
+
+void DAAgentBridge::requestStop()
+{
+    // 停止 ready 超时计时器(若还在等待)
+    if (m_readyTimer) {
+        m_readyTimer->stop();
+        m_readyTimer->deleteLater();
+        m_readyTimer = nullptr;
+    }
+    // 停止已有的 stop 计时器(防止重复调用)
+    if (m_stopTimer) {
+        m_stopTimer->stop();
+        m_stopTimer->deleteLater();
+        m_stopTimer = nullptr;
+    }
+    if (m_running && m_process) {
+        // 标记为用户主动终止——onProcessFinished 据此抑制异常退出错误
+        m_userRequestedStop = true;
+        writeJson(QJsonObject{{"type", "stop"}});
+        // 非阻塞: 不调用 waitForFinished(会冻结 UI 最多 m_stopTimeoutMs),
+        // 改用 QTimer 在超时后 kill。进程退出后由 onProcessFinished
+        // 发射 agentBusy(false) 恢复 UI。
+        m_stopTimer = new QTimer(this);
+        m_stopTimer->setSingleShot(true);
+        connect(m_stopTimer, &QTimer::timeout, this, [this]() {
+            if (m_process && m_process->state() != QProcess::NotRunning) {
+                m_process->kill();
+            }
+            m_stopTimer->deleteLater();
+            m_stopTimer = nullptr;
+        });
+        m_stopTimer->start(m_stopTimeoutMs);
     }
     m_running = false;
 }
@@ -319,9 +360,19 @@ void DAAgentBridge::onProcessFinished(int exitCode, QProcess::ExitStatus exitSta
     }
 
     m_running = false;
-    if (exitStatus != QProcess::NormalExit || exitCode != 0) {
+    if (m_userRequestedStop) {
+        // 用户主动终止——不报异常退出错误，仅记日志
+        m_userRequestedStop = false;
+        daDebug << "Agent process stopped by user request";
+    } else if (exitStatus != QProcess::NormalExit || exitCode != 0) {
         // 子进程崩溃/异常退出——转发到 UI 聊天面板显示
         emit agentError(tr("Agent 进程异常退出，代码: %1").arg(exitCode));
+    }
+    // 停止 stop 计时器(进程已退出)
+    if (m_stopTimer) {
+        m_stopTimer->stop();
+        m_stopTimer->deleteLater();
+        m_stopTimer = nullptr;
     }
     // 恢复 UI 为可输入状态
     emit agentBusy(false);

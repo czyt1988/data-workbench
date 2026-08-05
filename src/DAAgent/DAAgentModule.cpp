@@ -119,6 +119,13 @@ void DAAgentModule::sendMessage(const QString& text)
     m_bridge->sendMessage(text);
 }
 
+void DAAgentModule::stop()
+{
+    if (m_bridge && m_bridge->isRunning()) {
+        m_bridge->requestStop();
+    }
+}
+
 void DAAgentModule::startAgentInternal()
 {
     // 获取 LLM 配置（plan-06 提供真实实现）
@@ -206,6 +213,11 @@ void DAAgentModule::connectSignals()
         // DAAgentWebChannel::appendUserMessage 实现）。此处切勿重复调用，
         // 否则每条用户消息会在对话流中渲染两次。
         sendMessage(text);
+    });
+
+    // DockWidget → Module (用户终止)
+    connect(m_dockWidget, &DAAgentDockWidget::stopRequested, this, [this]() {
+        stop();
     });
 
     // DockWidget → Bridge (用户回答问题)

@@ -49,6 +49,12 @@ public:
      */
     virtual void sendMessage(const QString& text) = 0;
     /**
+     * @brief 停止正在运行的 agent（用户主动终止）
+     *
+     * 非阻塞调用，进程退出后通过 agentBusy(false) 信号通知 UI 恢复。
+     */
+    virtual void stop() = 0;
+    /**
      * @brief 检查 agent 是否正在运行
      * @return 若 agent 正在运行返回 true
      */

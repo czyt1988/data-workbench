@@ -54,9 +54,17 @@ public:
                     int readyTimeoutMs = 60000,
                     int stopTimeoutMs = 5000);
     /**
-     * @brief 停止 agent 子进程
+     * @brief 停止 agent 子进程（阻塞，供析构/重启时调用）
      */
     void stopAgent();
+    /**
+     * @brief 请求停止 agent 子进程（非阻塞，供用户主动终止时调用）
+     *
+     * 与 stopAgent() 的区别：不调用 waitForFinished 阻塞 UI 线程，
+     * 而是用 QTimer 在 m_stopTimeoutMs 后 kill。进程退出后由
+     * onProcessFinished 发射 agentBusy(false) 恢复 UI。
+     */
+    void requestStop();
 
     /**
      * @brief 发送用户消息到 agent 子进程
@@ -160,5 +168,7 @@ private:
     QTimer* m_readyTimer = nullptr;  // agent 启动后等待 ready 消息的超时计时器,防止子进程卡死时 UI 干等
     int m_readyTimeoutMs = 60000;      // ready/booting 等待超时(毫秒),由 startAgent 参数注入
     int m_stopTimeoutMs  = 5000;       // stopAgent 等待进程退出超时(毫秒),由 startAgent 参数注入
+    bool m_userRequestedStop = false;  // 用户主动终止标志,抑制 onProcessFinished 中的异常退出错误
+    QTimer* m_stopTimer = nullptr;     // requestStop 的非阻塞 kill 计时器
 };
 } // namespace DA

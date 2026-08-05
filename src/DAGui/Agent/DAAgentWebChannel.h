@@ -88,6 +88,14 @@ public:
      */
     void setBusy(bool busy);
 
+    /**
+     * @brief 终止时定稿当前流式消息 + 关闭工具分组
+     *
+     * 调用 JS flushAgentMessage()（保留已累积的 token 文本）+ closeToolGroup()
+     *（将未完成的工具卡片标记为 incomplete），避免半截消息悬挂。
+     */
+    void onAgentStopped();
+
 Q_SIGNALS:
     /**
      * @brief 用户选择答案信号
