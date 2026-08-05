@@ -10,11 +10,12 @@ QJsonObject DAAgentToolSaveChartImage::getToolSpec() const
 {
     return QJsonObject{
         {"name", "save_chart_image"},
-        {"description", "Save a chart as an image file (PNG, PDF, or SVG)."},
+        {"description", "Save a chart as an image file (PNG, PDF, or SVG). Use figure_name to target a specific figure."},
         {"parameters", QJsonObject{
             {"type", "object"},
             {"properties", QJsonObject{
                 {"chart_id", QJsonObject{{"type", "string"}, {"description", "Chart identifier. Empty or 'current' for active chart."}}},
+                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name to target a specific figure. Empty for current active figure."}}},
                 {"file_path", QJsonObject{{"type", "string"}, {"description", "Output file path"}}},
                 {"format", QJsonObject{{"type", "string"}, {"description", "Image format: png, pdf, svg (default png)"}}},
                 {"width", QJsonObject{{"type", "integer"}, {"description", "Output width in pixels (PNG) or points (PDF/SVG)"}}},
@@ -27,9 +28,10 @@ QJsonObject DAAgentToolSaveChartImage::getToolSpec() const
 
 QJsonObject DAAgentToolSaveChartImage::execute(const QJsonObject& params)
 {
-    QString chartId  = params["chart_id"].toString();
-    QString filePath = params["file_path"].toString();
-    QString format   = params.contains("format") ? params["format"].toString().toLower() : "png";
+    QString chartId    = params["chart_id"].toString();
+    QString figureName = params["figure_name"].toString();
+    QString filePath    = params["file_path"].toString();
+    QString format      = params.contains("format") ? params["format"].toString().toLower() : "png";
     int width  = params.contains("width") ? params["width"].toInt() : 0;
     int height = params.contains("height") ? params["height"].toInt() : 0;
 
@@ -37,9 +39,10 @@ QJsonObject DAAgentToolSaveChartImage::execute(const QJsonObject& params)
         return errorResponse("file_path is required");
     }
 
-    DAChartWidget* chart = findChart(chartId);
+    DAChartWidget* chart = findChart(chartId, figureName);
     if (!chart) {
-        return errorResponse(QString("Chart '%1' not found").arg(chartId.isEmpty() ? "current" : chartId));
+        QString ref = figureName.isEmpty() ? (chartId.isEmpty() ? "current" : chartId) : (figureName + "/" + (chartId.isEmpty() ? "current" : chartId));
+        return errorResponse(QString("Chart '%1' not found").arg(ref));
     }
 
     bool ok = false;

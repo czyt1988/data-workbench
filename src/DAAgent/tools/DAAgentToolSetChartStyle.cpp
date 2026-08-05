@@ -6,11 +6,12 @@ QJsonObject DAAgentToolSetChartStyle::getToolSpec() const
 {
     return QJsonObject{
         {"name", "set_chart_style"},
-        {"description", "Set chart title, axis labels, legend, and grid visibility."},
+        {"description", "Set chart title, axis labels, legend, and grid visibility. Use figure_name to target a specific figure."},
         {"parameters", QJsonObject{
             {"type", "object"},
             {"properties", QJsonObject{
                 {"chart_id", QJsonObject{{"type", "string"}, {"description", "Chart identifier. Empty or 'current' for active chart."}}},
+                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name to target a specific figure. Empty for current active figure."}}},
                 {"title", QJsonObject{{"type", "string"}, {"description", "Chart title"}}},
                 {"x_label", QJsonObject{{"type", "string"}, {"description", "X-axis label"}}},
                 {"y_label", QJsonObject{{"type", "string"}, {"description", "Y-axis label"}}},
@@ -24,14 +25,16 @@ QJsonObject DAAgentToolSetChartStyle::getToolSpec() const
 
 QJsonObject DAAgentToolSetChartStyle::execute(const QJsonObject& params)
 {
-    QString chartId = params["chart_id"].toString();
-    QString title   = params["title"].toString();
-    QString xLabel   = params["x_label"].toString();
-    QString yLabel   = params["y_label"].toString();
+    QString chartId    = params["chart_id"].toString();
+    QString figureName = params["figure_name"].toString();
+    QString title       = params["title"].toString();
+    QString xLabel      = params["x_label"].toString();
+    QString yLabel      = params["y_label"].toString();
 
-    DAChartWidget* chart = findChart(chartId);
+    DAChartWidget* chart = findChart(chartId, figureName);
     if (!chart) {
-        return errorResponse(QString("Chart '%1' not found").arg(chartId.isEmpty() ? "current" : chartId));
+        QString ref = figureName.isEmpty() ? (chartId.isEmpty() ? "current" : chartId) : (figureName + "/" + (chartId.isEmpty() ? "current" : chartId));
+        return errorResponse(QString("Chart '%1' not found").arg(ref));
     }
 
     bool changed = false;

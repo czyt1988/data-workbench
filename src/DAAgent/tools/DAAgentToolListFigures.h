@@ -1,0 +1,22 @@
+#pragma once
+#include "DAAgentToolBase.h"
+
+namespace DA
+{
+/**
+ * @brief list_figures 工具：列出所有 figure 及其内部 chart 信息
+ *
+ * 无参数。返回每个 figure 的名称、ID、chart 数量及各 chart 的标题/索引，
+ * 便于 agent 后续通过 figure_name + chart_id 定位具体绘图进行修改。
+ */
+class DAAgentToolListFigures : public DAAgentToolBase
+{
+    Q_OBJECT
+public:
+    using DAAgentToolBase::DAAgentToolBase;
+    /// @copydoc DAAbstractAgentTool::getToolSpec
+    QJsonObject getToolSpec() const override;
+    /// @copydoc DAAbstractAgentTool::execute
+    QJsonObject execute(const QJsonObject& params) override;
+};
+}  // namespace DA

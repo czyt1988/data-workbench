@@ -46,7 +46,8 @@ QJsonObject DAAgentToolColumnStats::execute(const QJsonObject& params)
         return errorResponse(QString("Column '%1' not found in dataset").arg(column));
     }
 
-    DAPySeries col = df.loc(column);
+    // Use operator[] (df["col"]) NOT df.loc("col") which accesses rows by label
+    DAPySeries col = df[ column ];
 
     // Missing value count: isNull().sum() two-step
     DAPySeries nullMask = col.isNull();

@@ -67,7 +67,9 @@ QJsonObject DAAgentToolCreateChart::getToolSpec() const
 {
     return QJsonObject{
         {"name", "create_chart"},
-        {"description", "Create a chart (line/scatter/bar/hist/box) from dataset columns."},
+        {"description", "Create a new figure with a chart (line/scatter/bar/hist/box) from dataset columns. "
+         "Each call creates a NEW figure — use figure_name to give it a searchable name (shown as the tab title). "
+         "Other tools (add_curve, set_chart_style, etc.) can target this figure via figure_name."},
         {"parameters", QJsonObject{
             {"type", "object"},
             {"properties", QJsonObject{
@@ -75,7 +77,8 @@ QJsonObject DAAgentToolCreateChart::getToolSpec() const
                 {"data_name", QJsonObject{{"type", "string"}, {"description", "Dataset name"}}},
                 {"x", QJsonObject{{"type", "string"}, {"description", "X-axis column name"}}},
                 {"y", QJsonObject{{"type", "string"}, {"description", "Y-axis column name(s)"}}},
-                {"title", QJsonObject{{"type", "string"}, {"description", "Chart title"}}},
+                {"title", QJsonObject{{"type", "string"}, {"description", "Chart title (also used as figure_name if figure_name is empty)"}}},
+                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name shown as tab title. If empty, uses title or auto-generates. Use this name with other tools' figure_name parameter to target this figure."}}},
                 {"x_label", QJsonObject{{"type", "string"}, {"description", "X-axis label"}}},
                 {"y_label", QJsonObject{{"type", "string"}, {"description", "Y-axis label"}}}
             }},
@@ -86,13 +89,14 @@ QJsonObject DAAgentToolCreateChart::getToolSpec() const
 
 QJsonObject DAAgentToolCreateChart::execute(const QJsonObject& params)
 {
-    QString type     = params["type"].toString().toLower();
-    QString dataName = params["data_name"].toString();
-    QString xCol     = params["x"].toString();
-    QString yCol     = params["y"].toString();
-    QString title    = params["title"].toString();
-    QString xLabel   = params["x_label"].toString();
-    QString yLabel   = params["y_label"].toString();
+    QString type       = params["type"].toString().toLower();
+    QString dataName  = params["data_name"].toString();
+    QString xCol       = params["x"].toString();
+    QString yCol       = params["y"].toString();
+    QString title      = params["title"].toString();
+    QString figureName = params["figure_name"].toString();
+    QString xLabel    = params["x_label"].toString();
+    QString yLabel    = params["y_label"].toString();
 
     if (type.isEmpty() || dataName.isEmpty() || xCol.isEmpty() || yCol.isEmpty()) {
         return errorResponse("type, data_name, x, and y are all required");
@@ -103,25 +107,46 @@ QJsonObject DAAgentToolCreateChart::execute(const QJsonObject& params)
         return errorResponse(QString("Dataset '%1' not found").arg(dataName));
     }
 
-    DAFigureWidget* fig = currentFigure();
+    // Determine figure name: use figure_name if provided, else title, else auto-generate
+    if (figureName.isEmpty()) {
+        figureName = title.isEmpty() ? QString("Chart - %1").arg(yCol) : title;
+    }
+
+    // Create a new figure and set it as current — each create_chart call gets its own figure
+    DAFigureWidget* fig = createFigure(figureName);
     if (!fig) {
-        return errorResponse("No active figure. Please create or open a figure first.");
+        return errorResponse("Failed to create figure");
     }
-    DAChartWidget* chart = fig->currentChart();  // creates one if none exists
+
+    // Create a new chart in the figure (NOT currentChart() which reuses the existing chart)
+    DAChartWidget* chart = fig->createChart();
     if (!chart) {
-        return errorResponse("Failed to create chart");
+        return errorResponse("Failed to create chart in figure");
     }
+    fig->setCurrentChart(chart);
 
     DAPyGILGuard gil;
     DAPyDataFrame df = data.toDataFrame();
 
-    // Extract x data
-    DAPySeries xs = df.loc(xCol);
+    // Extract x data — use operator[] (df["col"]) NOT df.loc("col") which accesses rows by label
+    DAPySeries xs = df[ xCol ];
     QVector< double > xData = toQVectorDouble(xs);
 
     // Extract y data
-    DAPySeries ys = df.loc(yCol);
+    DAPySeries ys = df[ yCol ];
     QVector< double > yData = toQVectorDouble(ys);
+
+    // Validate data extraction — toQVectorDouble returns empty for non-numeric string columns
+    if (xData.isEmpty()) {
+        return errorResponse(QString("Column '%1' could not be converted to numeric values. "
+            "It may contain non-numeric data (text/categories). "
+            "Please use a numeric column, or pre-aggregate the data using query_data.").arg(xCol));
+    }
+    if (yData.isEmpty()) {
+        return errorResponse(QString("Column '%1' could not be converted to numeric values. "
+            "It may contain non-numeric data (text/categories). "
+            "Please use a numeric column, or pre-aggregate the data using query_data.").arg(yCol));
+    }
 
     int n = qMin(xData.size(), yData.size());
 
@@ -171,8 +196,19 @@ QJsonObject DAAgentToolCreateChart::execute(const QJsonObject& params)
     if (!yLabel.isEmpty()) {
         chart->setAxisLabel(QwtPlot::yLeft, yLabel);
     }
+
+    // Re-enable auto-scaling so data is visible.
+    // DAFigureWidget::createChart locks axes to [0,800]×[0,500] via setAxisScale,
+    // which disables Qwt auto-scaling — data outside that range would be invisible.
+    enableAutoScale(chart);
     chart->replot();
 
-    return successResponse(QString("Created %1 chart with %2 data points").arg(type).arg(n));
+    // Return structured data so the agent can reference this figure/chart later
+    QJsonObject respData;
+    respData["figure_name"] = figureName;
+    respData["chart_title"] = title.isEmpty() ? yCol : title;
+    respData["chart_type"]  = type;
+    respData["data_points"] = n;
+    return successResponse(respData);
 }
 }  // namespace DA

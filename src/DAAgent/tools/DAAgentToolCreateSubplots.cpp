@@ -8,11 +8,12 @@ QJsonObject DAAgentToolCreateSubplots::getToolSpec() const
 {
     return QJsonObject{
         {"name", "create_subplots"},
-        {"description", "Create a grid of subplots in the current figure."},
+        {"description", "Create a new figure with a grid of subplots. Each call creates a NEW figure."},
         {"parameters", QJsonObject{
             {"type", "object"},
             {"properties", QJsonObject{
                 {"layout", QJsonObject{{"type", "string"}, {"description", "Grid layout, e.g. '2x2' for 2 rows 2 columns"}}},
+                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name shown as tab title. If empty, auto-generates."}}},
                 {"data_name", QJsonObject{{"type", "string"}, {"description", "Optional dataset name for automatic plotting"}}}
             }},
             {"required", QJsonArray{"layout"}}
@@ -23,6 +24,7 @@ QJsonObject DAAgentToolCreateSubplots::getToolSpec() const
 QJsonObject DAAgentToolCreateSubplots::execute(const QJsonObject& params)
 {
     QString layout = params["layout"].toString();
+    QString figureName = params["figure_name"].toString();
 
     if (layout.isEmpty()) {
         return errorResponse("layout is required");
@@ -41,9 +43,15 @@ QJsonObject DAAgentToolCreateSubplots::execute(const QJsonObject& params)
         return errorResponse("Invalid layout dimensions. Use positive integers like '2x3'");
     }
 
-    DAFigureWidget* fig = currentFigure();
+    // Determine figure name
+    if (figureName.isEmpty()) {
+        figureName = QString("Subplots %1x%2").arg(rowCnt).arg(colCnt);
+    }
+
+    // Create a new figure and set it as current
+    DAFigureWidget* fig = createFigure(figureName);
     if (!fig) {
-        return errorResponse("No active figure. Please create or open a figure first.");
+        return errorResponse("Failed to create figure");
     }
 
     // Use createChart(QRectF) to add each chart exactly once with the correct geometry.
@@ -67,11 +75,16 @@ QJsonObject DAAgentToolCreateSubplots::execute(const QJsonObject& params)
     }
 
     // Set the first chart as current
-    QList< DAChartWidget* > charts = fig->getCharts();
+    const QList< DAChartWidget* > charts = fig->getCharts();
     if (!charts.isEmpty()) {
         fig->setCurrentChart(charts.first());
     }
 
-    return successResponse(QString("Created %1 subplots in %2x%3 grid").arg(created).arg(rowCnt).arg(colCnt));
+    // Return structured data
+    QJsonObject respData;
+    respData["figure_name"] = figureName;
+    respData["subplot_count"] = created;
+    respData["layout"] = QString("%1x%2").arg(rowCnt).arg(colCnt);
+    return successResponse(respData);
 }
 }  // namespace DA

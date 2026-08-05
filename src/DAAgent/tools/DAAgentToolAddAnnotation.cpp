@@ -12,11 +12,12 @@ QJsonObject DAAgentToolAddAnnotation::getToolSpec() const
 {
     return QJsonObject{
         {"name", "add_annotation"},
-        {"description", "Add a text, arrow, or point annotation to a chart."},
+        {"description", "Add a text, arrow, or point annotation to a chart. Use figure_name to target a specific figure."},
         {"parameters", QJsonObject{
             {"type", "object"},
             {"properties", QJsonObject{
                 {"chart_id", QJsonObject{{"type", "string"}, {"description", "Chart identifier. Empty or 'current' for active chart."}}},
+                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name to target a specific figure. Empty for current active figure."}}},
                 {"type", QJsonObject{{"type", "string"}, {"description", "Annotation type: text, arrow, point"}}},
                 {"position", QJsonObject{{"type", "array"}, {"description", "Position [x, y] in data coordinates"}, {"items", QJsonObject{{"type", "number"}}}}},
                 {"text", QJsonObject{{"type", "string"}, {"description", "Annotation text (for text type)"}}},
@@ -29,10 +30,11 @@ QJsonObject DAAgentToolAddAnnotation::getToolSpec() const
 
 QJsonObject DAAgentToolAddAnnotation::execute(const QJsonObject& params)
 {
-    QString chartId  = params["chart_id"].toString();
-    QString type     = params["type"].toString().toLower();
-    QString text     = params["text"].toString();
-    QString colorStr = params["color"].toString();
+    QString chartId    = params["chart_id"].toString();
+    QString figureName = params["figure_name"].toString();
+    QString type        = params["type"].toString().toLower();
+    QString text        = params["text"].toString();
+    QString colorStr    = params["color"].toString();
 
     if (type.isEmpty()) {
         return errorResponse("type is required");
@@ -44,9 +46,10 @@ QJsonObject DAAgentToolAddAnnotation::execute(const QJsonObject& params)
     double x = posArr[ 0 ].toDouble();
     double y = posArr[ 1 ].toDouble();
 
-    DAChartWidget* chart = findChart(chartId);
+    DAChartWidget* chart = findChart(chartId, figureName);
     if (!chart) {
-        return errorResponse(QString("Chart '%1' not found").arg(chartId.isEmpty() ? "current" : chartId));
+        QString ref = figureName.isEmpty() ? (chartId.isEmpty() ? "current" : chartId) : (figureName + "/" + (chartId.isEmpty() ? "current" : chartId));
+        return errorResponse(QString("Chart '%1' not found").arg(ref));
     }
 
     QColor color = colorStr.isEmpty() ? Qt::red : QColor(colorStr);

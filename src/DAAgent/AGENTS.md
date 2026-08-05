@@ -184,13 +184,20 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
   - `chartOperateWidget()` → `currentFigure()` / `currentChart()` / `findChart(chartId)`（链路：`DACoreInterface::getUiInterface` → `getDockingArea` → `getChartOperateWidget`）
   - `errorResponse(msg)` / `successResponse(data|message)`
 
-### 7.2 平台内置工具（15 个，`DAAgentModule::registerBuiltinTools`）
+### 7.2 平台内置工具（16 个，`DAAgentModule::registerBuiltinTools`）
 
 | 类别 | 工具（name） | 文件 |
 |------|-------------|------|
 | 数据 (5) | `list_data` / `get_data_info` / `query_data` / `get_column_stats` / `export_data` | `DAAgentToolListData` / `DAAgentToolDataInfo` / `DAAgentToolQueryData` / `DAAgentToolColumnStats` / `DAAgentToolExportData` |
-| 绘图 (7) | `create_chart` / `add_curve` / `set_chart_style` / `add_annotation` / `add_region` / `create_subplots` / `save_chart_image` | `DAAgentToolCreateChart` / `DAAgentToolAddCurve` / `DAAgentToolSetChartStyle` / `DAAgentToolAddAnnotation` / `DAAgentToolAddRegion` / `DAAgentToolCreateSubplots` / `DAAgentToolSaveChartImage` |
+| 绘图 (8) | `create_chart` / `add_curve` / `set_chart_style` / `add_annotation` / `add_region` / `create_subplots` / `save_chart_image` / `list_figures` | `DAAgentToolCreateChart` / `DAAgentToolAddCurve` / `DAAgentToolSetChartStyle` / `DAAgentToolAddAnnotation` / `DAAgentToolAddRegion` / `DAAgentToolCreateSubplots` / `DAAgentToolSaveChartImage` / `DAAgentToolListFigures` |
 | 文件/报告 (3) | `read_file` / `write_file` / `save_report` | `DAAgentToolReadFile` / `DAAgentToolWriteFile` / `DAAgentToolSaveReport` |
+
+#### 绘图工具关键设计
+
+- **`create_chart` / `create_subplots` 每次调用创建新 figure**：通过 `DAAgentToolBase::createFigure(name)` 创建新 figure（标签页），再在其内部创建 chart。不会复用已有 figure/chart，避免多张图叠加到同一绘图。
+- **`figure_name` 参数**：所有绘图工具（`add_curve` / `set_chart_style` / `add_annotation` / `add_region` / `save_chart_image`）均支持可选 `figure_name` 参数，通过 `findChart(chartId, figureName)` 在指定 figure 中定位 chart。`create_chart` / `create_subplots` 的 `figure_name` 用于命名新 figure（标签页标题）。
+- **`list_figures` 工具**：列出所有 figure 及其内部 chart 的名称/索引/标题，供 agent 检索已有绘图后通过 `figure_name` + `chart_id` 精确定位修改。
+- **坐标轴自动缩放**：`DAAgentToolBase::enableAutoScale(chart)` 在添加数据后调用 `setAxisAutoScale(xBottom/yLeft, true)`，因为 `DAFigureWidget::createChart()` 会通过 `setAxisScale(0,800)/(0,500)` 锁定坐标轴范围（禁用 Qwt auto-scale），不恢复会导致数据落在可见范围外而显示空白。
 
 > 新增内置工具：在 `tools/` 新建 `DAAgentToolXxx.h/.cpp`（继承 `DAAgentToolBase`），在 `registerBuiltinTools()` 中 `registerTool(new DAAgentToolXxx(m_core, this))` 即可。CMake GLOB 自动收集。
 

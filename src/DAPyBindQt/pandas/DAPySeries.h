@@ -241,7 +241,10 @@ void DAPySeries::castTo(VectLikeIte begin) const
             static DAPyObjectWrapper pd_NaT         = DA::PY::importPyType("pandas", "NaT");
             pybind11::object sample = series.attr("dropna")().attr("head")(1);
             if (pybind11::len(sample) > 0) {
-                pybind11::object first_val = sample.attr("iat")[ 0 ];
+                // NOTE: 必须使用 pybind11::int_(0) 而非字面量 0。
+                // 字面量 0 是空指针常量，会匹配 operator[](const char*) 重载，
+                // 传入 nullptr 导致 PyUnicode_FromString(NULL) 崩溃。
+                pybind11::object first_val = sample.attr("iat")[ pybind11::int_(0) ];
                 if (pybind11::isinstance< pybind11::str >(first_val)) {
                     std::string first_val_str = first_val.cast< std::string >();
 

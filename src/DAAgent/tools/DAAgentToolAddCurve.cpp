@@ -21,11 +21,12 @@ QJsonObject DAAgentToolAddCurve::getToolSpec() const
 {
     return QJsonObject{
         {"name", "add_curve"},
-        {"description", "Add a curve to an existing chart."},
+        {"description", "Add a curve to an existing chart. Use figure_name to target a specific figure."},
         {"parameters", QJsonObject{
             {"type", "object"},
             {"properties", QJsonObject{
                 {"chart_id", QJsonObject{{"type", "string"}, {"description", "Chart identifier (title or index). Empty or 'current' for active chart."}}},
+                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name to target a specific figure. Empty for current active figure."}}},
                 {"data_name", QJsonObject{{"type", "string"}, {"description", "Dataset name"}}},
                 {"x_column", QJsonObject{{"type", "string"}, {"description", "X-axis column name"}}},
                 {"y_column", QJsonObject{{"type", "string"}, {"description", "Y-axis column name"}}},
@@ -41,22 +42,24 @@ QJsonObject DAAgentToolAddCurve::getToolSpec() const
 
 QJsonObject DAAgentToolAddCurve::execute(const QJsonObject& params)
 {
-    QString chartId   = params["chart_id"].toString();
-    QString dataName  = params["data_name"].toString();
-    QString xCol      = params["x_column"].toString();
-    QString yCol      = params["y_column"].toString();
-    QString name      = params["name"].toString();
-    QString colorStr  = params["color"].toString();
-    double  width     = params["width"].toDouble(0.0);
-    QString styleStr  = params["style"].toString();
+    QString chartId    = params["chart_id"].toString();
+    QString figureName = params["figure_name"].toString();
+    QString dataName   = params["data_name"].toString();
+    QString xCol       = params["x_column"].toString();
+    QString yCol       = params["y_column"].toString();
+    QString name       = params["name"].toString();
+    QString colorStr   = params["color"].toString();
+    double  width      = params["width"].toDouble(0.0);
+    QString styleStr   = params["style"].toString();
 
     if (dataName.isEmpty() || xCol.isEmpty() || yCol.isEmpty()) {
         return errorResponse("data_name, x_column, and y_column are required");
     }
 
-    DAChartWidget* chart = findChart(chartId);
+    DAChartWidget* chart = findChart(chartId, figureName);
     if (!chart) {
-        return errorResponse(QString("Chart '%1' not found").arg(chartId.isEmpty() ? "current" : chartId));
+        QString ref = figureName.isEmpty() ? (chartId.isEmpty() ? "current" : chartId) : (figureName + "/" + (chartId.isEmpty() ? "current" : chartId));
+        return errorResponse(QString("Chart '%1' not found").arg(ref));
     }
 
     DAData data = findData(dataName);
@@ -66,10 +69,23 @@ QJsonObject DAAgentToolAddCurve::execute(const QJsonObject& params)
 
     DAPyGILGuard gil;
     DAPyDataFrame df = data.toDataFrame();
-    DAPySeries xs = df.loc(xCol);
-    DAPySeries ys = df.loc(yCol);
+    // Use operator[] (df["col"]) NOT df.loc("col") which accesses rows by label
+    DAPySeries xs = df[ xCol ];
+    DAPySeries ys = df[ yCol ];
     QVector< double > xData = toQVectorDouble(xs);
     QVector< double > yData = toQVectorDouble(ys);
+
+    // Validate data extraction — toQVectorDouble returns empty for non-numeric string columns
+    if (xData.isEmpty()) {
+        return errorResponse(QString("Column '%1' could not be converted to numeric values. "
+            "It may contain non-numeric data (text/categories). "
+            "Please use a numeric column, or pre-aggregate the data using query_data.").arg(xCol));
+    }
+    if (yData.isEmpty()) {
+        return errorResponse(QString("Column '%1' could not be converted to numeric values. "
+            "It may contain non-numeric data (text/categories). "
+            "Please use a numeric column, or pre-aggregate the data using query_data.").arg(yCol));
+    }
 
     int n = qMin(xData.size(), yData.size());
     if (n == 0) {
@@ -98,6 +114,8 @@ QJsonObject DAAgentToolAddCurve::execute(const QJsonObject& params)
         curve->setPen(pen);
     }
 
+    // Re-enable auto-scaling so new data is visible alongside existing curves
+    enableAutoScale(chart);
     chart->replot();
 
     return successResponse(QString("Added curve '%1' with %2 points").arg(name.isEmpty() ? yCol : name).arg(n));
