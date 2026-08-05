@@ -168,10 +168,10 @@ void DAAgentDockWidget::onAgentToolResult(const QString& toolName, const QJsonOb
     }
 }
 
-void DAAgentDockWidget::onAgentQuestion(const QString& text, const QStringList& options)
+void DAAgentDockWidget::onAgentQuestion(const QString& text, const QStringList& options, bool multiSelect)
 {
     if (m_channel) {
-        m_channel->appendQuestion(text, options);
+        m_channel->appendQuestion(text, options, multiSelect);
     }
 }
 

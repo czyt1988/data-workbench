@@ -123,8 +123,8 @@ class StdioProtocol:
             "tool": tool, "arguments": arguments
         })
 
-    async def send_question(self, text: str, options: list[str]):
-        await self.send({"type": "question", "text": text, "options": options})
+    async def send_question(self, text: str, options: list[str], multi_select: bool = False):
+        await self.send({"type": "question", "text": text, "options": options, "multi_select": multi_select})
 
     async def send_error(self, message: str):
         await self.send({"type": "error", "message": message})
@@ -192,6 +192,11 @@ class ToolFactory:
                         "type": "array",
                         "items": {"type": "string"},
                         "description": "可选的选项列表"
+                    },
+                    "multi_select": {
+                        "type": "boolean",
+                        "description": "是否允许多选（默认 false 单选）",
+                        "default": False
                     }
                 },
                 "required": ["question"]
@@ -337,10 +342,11 @@ class AgentRunner:
             args = ask_call.get("args", {})
             question_text = args.get("question", "")
             options = args.get("options", [])
+            multi_select = bool(args.get("multi_select", False))
 
             # 中断图执行——执行暂停于此
             # question 与 options 作为 interrupt 值，run() 通过 aget_state 读取
-            user_answer = interrupt({"question": question_text, "options": options})
+            user_answer = interrupt({"question": question_text, "options": options, "multi_select": multi_select})
 
             # 恢复后，user_answer 包含用户的回答
             # 返回 ToolMessage（而非 HumanMessage），keyed 到 tool_call_id，
@@ -406,8 +412,9 @@ class AgentRunner:
                     interrupt_value = task.interrupts[0].value
                     question = interrupt_value.get("question", "")
                     options = interrupt_value.get("options", [])
+                    multi_select = bool(interrupt_value.get("multi_select", False))
                     # 只发送一次 question（节点 resume 后不会重发，避免重复）
-                    await self.stdio.send_question(question, options)
+                    await self.stdio.send_question(question, options, multi_select)
                     return True  # 暂停中——调用方不应发送 done
         return False  # 图未暂停，调用方应发送 done
 

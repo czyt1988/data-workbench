@@ -119,6 +119,28 @@ body {
     background: #0056b3;
 }
 
+/* 单选/多选视觉提示：选项前加图标区分交互模式 */
+.message-bubble.question:not(.multi) .question-options button::before {
+    content: '\25C9';  /* ◉ 单选 */
+    margin-right: 6px;
+    font-size: 14px;
+    color: #007bff;
+}
+
+.message-bubble.question:not(.multi) .question-options button.selected::before {
+    color: white;
+}
+
+.message-bubble.question.multi .question-options button::before {
+    content: '\2610';  /* ☐ 未勾选 */
+    margin-right: 6px;
+    font-size: 14px;
+}
+
+.message-bubble.question.multi .question-options button.selected::before {
+    content: '\2611';  /* ☑ 已勾选 */
+}
+
 /* 自定义回答输入框 */
 .question-custom {
     margin-top: 8px;

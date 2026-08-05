@@ -277,7 +277,9 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
             executeTool(callId, toolName, args);
         });
     } else if (type == "question") {
-        emit agentQuestion(msg["text"].toString(), msg["options"].toVariant().toStringList());
+        emit agentQuestion(msg["text"].toString(),
+                           msg["options"].toVariant().toStringList(),
+                           msg.value("multi_select").toBool(false));
     } else if (type == "error") {
         emit agentError(msg["message"].toString());
     } else if (type == "done") {

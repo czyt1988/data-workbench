@@ -127,8 +127,9 @@ Q_SIGNALS:
      * @brief agent 向用户提问时发射
      * @param text 问题文本
      * @param options 可选选项列表
+     * @param multiSelect 是否允许多选
      */
-    void agentQuestion(const QString& text, const QStringList& options);
+    void agentQuestion(const QString& text, const QStringList& options, bool multiSelect);
     /**
      * @brief agent 发生错误时发射
      * @param message 错误信息

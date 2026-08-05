@@ -257,31 +257,35 @@ function appendToolResult(toolName, result) {
     scrollToBottom();
 }
 
-function appendQuestion(text, options, submitLabel, customPlaceholder) {
+function appendQuestion(text, options, submitLabel, customPlaceholder, multiSelect) {
     flushAgentMessage();
     closeToolGroup();
     let qBubble = createMessageBubble('question');
+    if (multiSelect) { qBubble.classList.add('multi'); }
     qBubble.innerHTML = '<p>' + md.renderInline(text) + '</p>';
 
-    // 选项按钮：点击切换选中（单选），不立即提交
+    // 选项按钮：单选点击切换选中（清除其他），多选 toggle 当前
     let btnContainer = document.createElement('div');
     btnContainer.className = 'question-options';
-    let selectedOption = null;
     options.forEach(function(opt) {
         let btn = document.createElement('button');
         btn.textContent = opt;
         btn.onclick = function() {
-            // 单选：清除其他选中，标记当前按钮
-            let allBtns = btnContainer.querySelectorAll('button');
-            allBtns.forEach(function(b) { b.classList.remove('selected'); });
-            btn.classList.add('selected');
-            selectedOption = opt;
+            if (multiSelect) {
+                // 多选：toggle 当前选中
+                btn.classList.toggle('selected');
+            } else {
+                // 单选：清除其他选中，标记当前
+                let allBtns = btnContainer.querySelectorAll('button');
+                allBtns.forEach(function(b) { b.classList.remove('selected'); });
+                btn.classList.add('selected');
+            }
         };
         btnContainer.appendChild(btn);
     });
     qBubble.appendChild(btnContainer);
 
-    // 自定义回答输入框（与选项并存，提交时文字优先）
+    // 自定义回答输入框（与选项并存）
     let customContainer = document.createElement('div');
     customContainer.className = 'question-custom';
     let customInput = document.createElement('textarea');
@@ -295,9 +299,22 @@ function appendQuestion(text, options, submitLabel, customPlaceholder) {
     submitBtn.className = 'question-submit';
     submitBtn.textContent = submitLabel;
     submitBtn.onclick = function() {
-        let answer = customInput.value.trim();
-        if (!answer) {
-            answer = selectedOption;
+        let customText = customInput.value.trim();
+        let answer = '';
+        if (multiSelect) {
+            // 多选：所有选中选项 + 自定义文字，换行拼接
+            let selected = [];
+            btnContainer.querySelectorAll('button.selected').forEach(function(b) {
+                selected.push(b.textContent);
+            });
+            if (customText) { selected.push(customText); }
+            answer = selected.join('\n');
+        } else {
+            // 单选：自定义文字优先，否则选中选项
+            answer = customText || (function() {
+                let s = btnContainer.querySelector('button.selected');
+                return s ? s.textContent : '';
+            })();
         }
         if (!answer) {
             // 未选择也未输入——聚焦输入框引导用户

@@ -79,8 +79,9 @@ public Q_SLOTS:
      * @brief 处理 Agent 提问信号
      * @param text 问题文本
      * @param options 选项列表
+     * @param multiSelect 是否允许多选
      */
-    void onAgentQuestion(const QString& text, const QStringList& options);
+    void onAgentQuestion(const QString& text, const QStringList& options, bool multiSelect);
 
     /**
      * @brief 处理 Agent 错误信号

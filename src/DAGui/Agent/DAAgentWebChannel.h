@@ -74,8 +74,9 @@ public:
      * @brief 追加提问信息到聊天界面
      * @param text 问题文本
      * @param options 选项列表
+     * @param multiSelect 是否允许多选
      */
-    void appendQuestion(const QString& text, const QStringList& options);
+    void appendQuestion(const QString& text, const QStringList& options, bool multiSelect);
 
     /**
      * @brief 清空聊天界面

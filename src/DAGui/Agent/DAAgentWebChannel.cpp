@@ -81,7 +81,7 @@ void DAAgentWebChannel::appendToolResult(const QString& toolName, const QJsonObj
     callJS(QString("appendToolResult(\"%1\",%2)").arg(toJsString(toolName), resultJson));
 }
 
-void DAAgentWebChannel::appendQuestion(const QString& text, const QStringList& options)
+void DAAgentWebChannel::appendQuestion(const QString& text, const QStringList& options, bool multiSelect)
 {
     QString arr;
     for (int i = 0; i < options.size(); ++i) {
@@ -91,8 +91,10 @@ void DAAgentWebChannel::appendQuestion(const QString& text, const QStringList& o
     // 问题底部的提交按钮与自定义输入框占位符（本地化标签，由 JS 渲染）
     QString submitLabel = toJsString(tr("Submit"));  // cn:提交
     QString customPlaceholder = toJsString(tr("Type your own answer..."));  // cn:输入自定义回答...
-    callJS(QString("appendQuestion(\"%1\",[%2],\"%3\",\"%4\")")
-               .arg(toJsString(text), arr, submitLabel, customPlaceholder));
+    // 第 5 个参数为 multiSelect 布尔字面量（true/false），JS 据此切换单选/多选交互
+    callJS(QString("appendQuestion(\"%1\",[%2],\"%3\",\"%4\",%5)")
+               .arg(toJsString(text), arr, submitLabel, customPlaceholder,
+                    multiSelect ? QStringLiteral("true") : QStringLiteral("false")));
 }
 
 void DAAgentWebChannel::clearChat()
