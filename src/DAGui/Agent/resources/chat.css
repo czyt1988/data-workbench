@@ -102,7 +102,64 @@ body {
     color: white;
 }
 
-.message-bubble.question.answered .question-options button {
+.message-bubble.question.answered .question-options button,
+.message-bubble.question.answered .question-custom textarea,
+.message-bubble.question.answered .question-submit {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* 选中态：与 :hover 同色，选中后保持高亮 */
+.question-options button.selected {
+    background: #007bff;
+    color: white;
+}
+
+.question-options button.selected:hover {
+    background: #0056b3;
+}
+
+/* 自定义回答输入框 */
+.question-custom {
+    margin-top: 8px;
+}
+
+.question-custom textarea {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.question-custom textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+}
+
+/* 提交按钮：主操作，绿底白字 */
+.question-submit {
+    display: block;
+    margin-top: 8px;
+    padding: 8px 20px;
+    border: none;
+    background: #28a745;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+.question-submit:hover {
+    background: #218838;
+}
+
+.question-submit:disabled {
     opacity: 0.5;
     cursor: default;
 }

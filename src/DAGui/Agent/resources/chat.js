@@ -257,23 +257,63 @@ function appendToolResult(toolName, result) {
     scrollToBottom();
 }
 
-function appendQuestion(text, options) {
+function appendQuestion(text, options, submitLabel, customPlaceholder) {
     flushAgentMessage();
     closeToolGroup();
     let qBubble = createMessageBubble('question');
     qBubble.innerHTML = '<p>' + md.renderInline(text) + '</p>';
+
+    // 选项按钮：点击切换选中（单选），不立即提交
     let btnContainer = document.createElement('div');
     btnContainer.className = 'question-options';
+    let selectedOption = null;
     options.forEach(function(opt) {
         let btn = document.createElement('button');
         btn.textContent = opt;
         btn.onclick = function() {
-            chatBridge.onUserSelect(opt);
-            qBubble.classList.add('answered');
+            // 单选：清除其他选中，标记当前按钮
+            let allBtns = btnContainer.querySelectorAll('button');
+            allBtns.forEach(function(b) { b.classList.remove('selected'); });
+            btn.classList.add('selected');
+            selectedOption = opt;
         };
         btnContainer.appendChild(btn);
     });
     qBubble.appendChild(btnContainer);
+
+    // 自定义回答输入框（与选项并存，提交时文字优先）
+    let customContainer = document.createElement('div');
+    customContainer.className = 'question-custom';
+    let customInput = document.createElement('textarea');
+    customInput.placeholder = customPlaceholder;
+    customInput.rows = 2;
+    customContainer.appendChild(customInput);
+    qBubble.appendChild(customContainer);
+
+    // 提交按钮：确认后才提交
+    let submitBtn = document.createElement('button');
+    submitBtn.className = 'question-submit';
+    submitBtn.textContent = submitLabel;
+    submitBtn.onclick = function() {
+        let answer = customInput.value.trim();
+        if (!answer) {
+            answer = selectedOption;
+        }
+        if (!answer) {
+            // 未选择也未输入——聚焦输入框引导用户
+            customInput.focus();
+            return;
+        }
+        chatBridge.onUserSelect(answer);
+        qBubble.classList.add('answered');
+        // 提交后禁用所有交互元素
+        let allBtns = btnContainer.querySelectorAll('button');
+        allBtns.forEach(function(b) { b.disabled = true; });
+        customInput.disabled = true;
+        submitBtn.disabled = true;
+    };
+    qBubble.appendChild(submitBtn);
+
     document.getElementById('messages').appendChild(qBubble);
     scrollToBottom();
 }

@@ -88,7 +88,11 @@ void DAAgentWebChannel::appendQuestion(const QString& text, const QStringList& o
         if (i) arr += ",";
         arr += QString("\"%1\"").arg(toJsString(options.at(i)));
     }
-    callJS(QString("appendQuestion(\"%1\",[%2])").arg(toJsString(text), arr));
+    // 问题底部的提交按钮与自定义输入框占位符（本地化标签，由 JS 渲染）
+    QString submitLabel = toJsString(tr("Submit"));  // cn:提交
+    QString customPlaceholder = toJsString(tr("Type your own answer..."));  // cn:输入自定义回答...
+    callJS(QString("appendQuestion(\"%1\",[%2],\"%3\",\"%4\")")
+               .arg(toJsString(text), arr, submitLabel, customPlaceholder));
 }
 
 void DAAgentWebChannel::clearChat()
