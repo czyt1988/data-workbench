@@ -175,31 +175,43 @@
     <name>DA::DAAgentDockWidget</name>
     <message>
         <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+51"/>
-        <location line="+117"/>
-        <location line="+13"/>
+        <location line="+139"/>
+        <location line="+19"/>
         <source>Ready</source>
         <translation type="unfinished">启动完成</translation>
     </message>
     <message>
-        <location line="-118"/>
+        <location line="-146"/>
         <source>Type a message... (Ctrl+Enter to send)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
+        <location line="+125"/>
+        <location line="+20"/>
         <source>Send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+110"/>
+        <location line="-78"/>
+        <source>Stopping...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+67"/>
         <source>Agent thinking...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DAAgentSettingsWidget</name>
     <message>
-        <location filename="../DAGui/Agent/DAAgentSettingsWidget.cpp" line="+51"/>
+        <location filename="../DAGui/Agent/DAAgentSettingsWidget.cpp" line="+58"/>
         <location line="+6"/>
         <source> s</source>
         <translation type="unfinished"></translation>
@@ -217,6 +229,31 @@
     <message>
         <location line="+2"/>
         <source>测试连接</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Maximum context window of the LLM model in tokens. deepseek-v4-flash=1048576, qwen3-coder=256000, etc.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Compaction trigger ratio (0.85 = compact at 85% of context window)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Number of recent messages to retain after compaction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Tool results exceeding this length will be truncated to a preview</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Preview length for truncated tool results</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -245,8 +282,46 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/Agent/DAAgentSettingsWidget.h" line="+41"/>
+        <location line="+4"/>
+        <source>Context Window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Compaction Threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Max Recent Messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tool Result Max Chars</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tool Result Preview Chars</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Agent/DAAgentSettingsWidget.h" line="+42"/>
         <source>Agent LLM 设置</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAgentWebChannel</name>
+    <message>
+        <location filename="../DAGui/Agent/DAAgentWebChannel.cpp" line="+92"/>
+        <source>Submit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Type your own answer...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7984,7 +8059,7 @@ Config</source>
 <context>
     <name>DA::DARecentFilesManager</name>
     <message>
-        <location filename="../DAGui/DARecentFilesManager.cpp" line="+152"/>
+        <location filename="../DAGui/DARecentFilesManager.cpp" line="+153"/>
         <source>(empty)</source>
         <translation>空</translation>
     </message>
@@ -12105,7 +12180,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../APP/main.cpp" line="+125"/>
+        <location filename="../APP/main.cpp" line="+181"/>
         <source>Initializing...</source>
         <translation>正在初始化...</translation>
     </message>

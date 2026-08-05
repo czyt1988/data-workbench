@@ -81,5 +81,6 @@ private:
     // Python 解释器与 agent 脚本路径解析（plan-04 §4）
     QString detectPythonExePath() const;
     QString detectAgentScriptPath() const;
+    QString detectSystemPromptPath() const;
 };
 } // namespace DA

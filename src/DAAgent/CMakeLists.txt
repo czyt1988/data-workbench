@@ -113,3 +113,15 @@ install(FILES
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
     COMPONENT headers
 )
+
+########################################################
+# 系统提示词 markdown 文件
+# 源文件 src/DAAgent/system_prompt.md，安装到与 agent_runner.py 同目录
+# （bin/PyScripts/DAWorkbench/agent/），供 DAAgentModule::assembleSystemPrompt()
+# 运行时读取。镜像根 CMakeLists.txt 对 PyScripts 的双写模式：
+# install(...) 用于部署安装，file(COPY ...) 用于从 build 目录直接运行 exe 的调试场景。
+########################################################
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/system_prompt.md
+        DESTINATION ${CMAKE_INSTALL_BINDIR}/PyScripts/DAWorkbench/agent)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/system_prompt.md
+     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts/DAWorkbench/agent)
