@@ -248,11 +248,30 @@ void DAAgentModule::connectSignals()
     connect(m_bridge, &DAAgentBridge::agentError, m_dockWidget, &DAAgentDockWidget::onAgentError);
     connect(m_bridge, &DAAgentBridge::agentReady, m_dockWidget, &DAAgentDockWidget::onAgentReady);
     connect(m_bridge, &DAAgentBridge::agentBusy, m_dockWidget, &DAAgentDockWidget::onAgentBusy);
-    // plan-02 新增的 agentUsage / agentSessionLoaded 信号本计划不接线——
-    // DockWidget 的 onAgentUsage / onAgentSessionLoaded 槽由 plan-04 添加。
-    // Qt 信号未连接可正常编译运行（Bridge emit 后无人接收，无害）。
-    // TODO(plan-04): connect agentUsage -> DockWidget::onAgentUsage
-    // TODO(plan-04): connect agentSessionLoaded -> DockWidget::onAgentSessionLoaded
+
+    // ---- plan-04: 多会话 + token UI 接线 ----
+    // 契约2: tokenUsageUpdated(5 参含 contextWindow) → DockWidget::onAgentUsage。
+    // Module 在 plan-03 agentUsage lambda 内查 context_window 后 emit 此 5 参信号。
+    connect(this, &DAAgentModule::tokenUsageUpdated, m_dockWidget, &DAAgentDockWidget::onAgentUsage);
+    // Python load_session 重建完成 → DockWidget 解除 UI 切换守卫
+    connect(m_bridge, &DAAgentBridge::agentSessionLoaded, m_dockWidget, &DAAgentDockWidget::onAgentSessionLoaded);
+    // MAJOR1(round-6): switchSession 后若 load_session 失败走 agentError 而非 session_loaded，
+    //                  m_switching 须在 agentError 路径也复位，否则后续 token 被守卫丢弃、渲染冻结。
+    //                  DockWidget::onAgentError 槽内已复位 m_switching=false（见该槽实现）；
+    //                  Bridge::agentError 已在上方 connect 到 onAgentError，此处不重复连接。
+    // Module 自身信号 → DockWidget
+    connect(this, &DAAgentModule::sessionSwitched, m_dockWidget, &DAAgentDockWidget::onSessionSwitched);
+    connect(this, &DAAgentModule::sessionCreated, m_dockWidget, &DAAgentDockWidget::onSessionCreated);
+    connect(this, &DAAgentModule::sessionListChanged, m_dockWidget, &DAAgentDockWidget::onSessionListChanged);
+    // DockWidget 会话操作信号 → Module
+    connect(m_dockWidget, &DAAgentDockWidget::sessionSwitchRequested, this, &DAAgentModule::switchSession);
+    // MAJOR1(round-4): UI "+" 调 newSession()（= createSession + emit sessionCreated → onSessionCreated → clearChat）；
+    //                  sendMessage 自动建会话仍调 createSession（无 sessionCreated，不触发 clearChat）
+    connect(m_dockWidget, &DAAgentDockWidget::sessionCreateRequested, this, [this]() {
+        newSession();
+    });
+    connect(m_dockWidget, &DAAgentDockWidget::sessionDeleteRequested, this, &DAAgentModule::deleteSession);
+    connect(m_dockWidget, &DAAgentDockWidget::sessionRenameRequested, this, &DAAgentModule::renameSession);
 
     // DockWidget → Module (用户消息)
     connect(m_dockWidget, &DAAgentDockWidget::sendMessageRequested, this, [this](const QString& text) {

@@ -186,6 +186,17 @@ body {
     cursor: default;
 }
 
+/* 契约9: 已答问气泡底部追加的答案文本块（loadHistory 重放 ask_user 历史时渲染） */
+.message-bubble.question .question-answer {
+    margin-top: 6px;
+    padding: 4px 8px;
+    font-size: 13px;
+    color: #155724;
+    background: #d4edda;
+    border-radius: 4px;
+    border-left: 3px solid #28a745;
+}
+
 /* —— 工具调用分组渲染（替代旧的居中 tool 气泡） —— */
 
 /* 分组容器：左对齐，可折叠 */

@@ -3,6 +3,7 @@
 #include <QString>
 #include <QStringList>
 #include <QJsonObject>
+#include <QVector>
 #include <QWebEngineView>
 #include "DAGuiAPI.h"
 
@@ -82,6 +83,18 @@ public:
      * @brief 清空聊天界面
      */
     void clearChat();
+
+    /**
+     * @brief 批量重放历史会话记录到聊天界面（plan-04）
+     *
+     * 遍历 plan-03 原始 JSONL 记录，把连续的 `assistant(tool_call)` + 紧随的 `tool_result`
+     * 合并为单个 UI 事件（type:user/assistant/tool/question/usage），序列化为 JSON 数组
+     * 调 `callJS("loadHistory(" + jsonArrayStr + ")")`。JS 端 loadHistory(events)
+     * 据合并后 type 分发渲染。MAJOR2: 配对在 C++ 完成，JS 不再读 _toolName/_toolArgs。
+     *
+     * @param records plan-03 原始 JSONL 记录（QVector<QJsonObject>）
+     */
+    void loadHistory(const QVector<QJsonObject>& records);
 
     /**
      * @brief 设置忙碌状态

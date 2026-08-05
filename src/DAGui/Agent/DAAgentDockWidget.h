@@ -5,8 +5,13 @@
 #include <QTextEdit>
 #include <QPushButton>
 #include <QLabel>
+#include <QComboBox>
+#include <QProgressBar>
+#include <QMenu>
 #include <QJsonObject>
+#include <QVector>
 #include <QStringList>
+#include <QVariantList>
 #include "DAGuiAPI.h"
 
 namespace DA
@@ -47,6 +52,12 @@ private Q_SLOTS:
     void onSendClicked();
     void onStopClicked();
     void onUserAnswer(const QString& answer);
+    // 会话栏按钮与下拉
+    void onSessionComboActivated(int index);
+    void onNewSessionClicked();
+    void onDeleteSessionClicked();
+    void onRenameSessionClicked();
+    void onTokenLabelClicked();
 
 public Q_SLOTS:
     /**
@@ -101,6 +112,42 @@ public Q_SLOTS:
      */
     void onAgentBusy(bool busy);
 
+    // ---- plan-04 多会话 + token UI 槽 ----
+    /**
+     * @brief 处理 token 使用量更新（契约2：5 参含 contextWindow 与 source）
+     * @param inputTokens 输入 token
+     * @param outputTokens 输出 token
+     * @param totalTokens 总 token
+     * @param contextWindow 上下文窗口大小
+     * @param source 来源（tiktoken / usage_metadata）
+     */
+    void onAgentUsage(int inputTokens, int outputTokens, int totalTokens, int contextWindow, const QString& source);
+
+    /**
+     * @brief Python load_session 重建完成，解除 UI 切换守卫
+     * @param sessionId 会话 ID
+     */
+    void onAgentSessionLoaded(const QString& sessionId);
+
+    /**
+     * @brief 会话切换完成（Module::sessionSwitched），UI 侧守卫 + clearChat + loadHistory
+     * @param sessionId 新会话 ID
+     * @param allRecords 新会话完整 JSONL 记录
+     */
+    void onSessionSwitched(const QString& sessionId, const QVector<QJsonObject>& allRecords);
+
+    /**
+     * @brief 会话列表变化（契约3：payload 每元素 QVariantMap{id,title}），直接填充下拉
+     * @param sessions 会话列表 payload
+     */
+    void onSessionListChanged(QVariantList sessions);
+
+    /**
+     * @brief 新会话创建（newSession 路径），清空聊天 + 复位守卫
+     * @param sessionId 新会话 ID
+     */
+    void onSessionCreated(const QString& sessionId);
+
 Q_SIGNALS:
     /**
      * @brief 用户请求发送消息信号
@@ -119,6 +166,24 @@ Q_SIGNALS:
      */
     void userAnswerSelected(const QString& answer);
 
+    // ---- plan-04 会话操作信号（→ Module） ----
+    /// 用户在会话下拉切换会话
+    void sessionSwitchRequested(const QString& sessionId);
+    /// 用户点击 "+" 新建会话
+    void sessionCreateRequested();
+    /// 用户点击 "×" 删除会话
+    void sessionDeleteRequested(const QString& sessionId);
+    /// 用户点击 Rename 重命名会话
+    void sessionRenameRequested(const QString& sessionId, const QString& newTitle);
+    /// 会话切换开始时请求停止当前 agent 流式输出（MAJOR4 切换时请求停止）
+    void agentStopRequested();
+
+protected:
+    /**
+     * @brief 事件过滤器：m_tokenLabel 鼠标点击弹出 token 分类明细 QMenu
+     */
+    bool eventFilter(QObject* obj, QEvent* ev) override;
+
 private:
     /**
      * @brief 初始化 UI 界面
@@ -130,11 +195,30 @@ private:
      */
     void setupWebChannel();
 
+    /// 用 sessionListChanged payload 填充 m_sessionCombo（保留当前选择）
+    void refreshSessionCombo(const QVariantList& sessions);
+    /// 按会话 ID 在 m_sessionCombo 中查找索引（未找到返回 -1）
+    int findSessionIndex(const QString& sid) const;
+    /// 重建 token 分类明细 QMenu（input/output/total/window/source）
+    void rebuildTokenMenu(int inT, int outT, int tot, int window, const QString& source);
+
     QWebEngineView* m_webView;
     DAAgentWebChannel* m_channel;
     QTextEdit* m_inputEdit;
     QPushButton* m_sendButton;
     QLabel* m_statusLabel;
     bool m_agentBusy = false;
+
+    // ---- plan-04 会话栏 ----
+    QComboBox* m_sessionCombo = nullptr;
+    QPushButton* m_newSessionBtn = nullptr;
+    QPushButton* m_deleteSessionBtn = nullptr;
+    QPushButton* m_renameSessionBtn = nullptr;
+    // ---- plan-04 token 占比状态栏 ----
+    QProgressBar* m_tokenBar = nullptr;
+    QLabel* m_tokenLabel = nullptr;
+    QMenu* m_tokenMenu = nullptr;
+    // ---- MAJOR4 UI 侧切换守卫：true 时渲染槽跳过，避免旧会话残余 token 渲染到新聊天区 ----
+    bool m_switching = false;
 };
 } // namespace DA

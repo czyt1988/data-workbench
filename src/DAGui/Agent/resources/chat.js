@@ -346,6 +346,87 @@ function clearChat() {
     pendingToolCards = [];
 }
 
+// plan-04 step6: 批量重放历史会话记录到聊天界面。
+// events 为 C++ DAAgentWebChannel::loadHistory 合并后的 UI 事件数组：
+//   {type:"user",message:{role,content}},
+//   {type:"assistant",message:{role,content}},
+//   {type:"tool",toolName,args,result,toolCallId},
+//   {type:"question",toolName,args,result:{answer},toolCallId},
+//   {type:"usage",...}/type:"summary" 跳过不渲染。
+// CRITICAL1: assistant 分支 createMessageBubble 不挂 DOM，必须 appendChild。
+// MAJOR2: 配对由 C++ 完成，JS 直接读 ev.toolName/args/result（不再读 _toolName/_toolArgs）。
+// MAJOR5 + 契约9: ask_user 历史用 appendQuestion 渲染问题气泡，然后内联 DOM 操作
+//                 禁用按钮 + 加 answered class + 追加答案文本（chat.js 无 markQuestionAnswered）。
+function loadHistory(events) {
+    clearChat();
+    if (!events || !events.length) {
+        scrollToBottom();
+        return;
+    }
+    for (const ev of events) {
+        const t = ev.type;
+        if (t === 'user') {
+            const content = (ev.message && ev.message.content) ? ev.message.content : '';
+            appendUserMessage(content);
+        } else if (t === 'assistant') {
+            // CRITICAL1: createMessageBubble 不挂 DOM，必须 appendChild，否则气泡游离、agent 文本不可见
+            const content = (ev.message && ev.message.content) ? String(ev.message.content) : '';
+            if (!content.trim()) {
+                // 空 content（纯 tool_calls 的 assistant 记录）跳过，不留白气泡
+                continue;
+            }
+            const bubble = createMessageBubble('agent');
+            bubble.dataset.rawText = content;
+            bubble.innerHTML = md.render(content);
+            document.getElementById('messages').appendChild(bubble);  // ← 必须挂到 DOM
+        } else if (t === 'tool') {
+            // MAJOR2: 读合并后字段 toolName/args/result（C++ 已配对）
+            const toolName = ev.toolName || 'tool';
+            const args = (ev.args && typeof ev.args === 'object') ? ev.args : {};
+            let result = ev.result;
+            // result 来自 C++ parseJsonStr（已 object）；防御性兼容历史 string 形态
+            if (typeof result === 'string') {
+                try { result = JSON.parse(result || '{}'); } catch (e) { result = {}; }
+            }
+            if (!result || typeof result !== 'object') { result = {}; }
+            appendToolCall(toolName, args);
+            appendToolResult(toolName, result);
+        } else if (t === 'question') {
+            // MAJOR5 + 契约9: ask_user 历史用 appendQuestion 渲染问题气泡，然后 DOM 操作
+            const a = (ev.args && typeof ev.args === 'object') ? ev.args : {};
+            appendQuestion(
+                a.question || '',
+                Array.isArray(a.options) ? a.options : [],
+                a.submit_label || 'Submit',
+                a.custom_placeholder || '',
+                !!a.multi_select
+            );
+            // appendQuestion 把 qBubble 挂到 #messages 末尾（chat.js:334），取最后一个 .message-bubble.question
+            const qBubble = document.querySelector('#messages .message-bubble.question:last-of-type');
+            if (qBubble) {
+                // 禁用所有按钮（.question-options 内的选项按钮 + .question-submit 提交按钮）
+                qBubble.querySelectorAll('button').forEach(function(b) { b.disabled = true; });
+                // 禁用自定义输入框（.question-custom 内的 textarea）
+                const ta = qBubble.querySelector('.question-custom textarea');
+                if (ta) { ta.disabled = true; }
+                // 加 answered class（chat.css:105-107 已有 .answered 禁用态样式）
+                qBubble.classList.add('answered');
+                // 追加答案文本（ev.result.answer 即用户当时的选择）
+                const answer = (ev.result && typeof ev.result === 'object' && 'answer' in ev.result)
+                             ? String(ev.result.answer)
+                             : (typeof ev.result === 'string' ? ev.result : JSON.stringify(ev.result || ''));
+                const ansDiv = document.createElement('div');
+                ansDiv.className = 'question-answer';
+                ansDiv.textContent = '\u2192 ' + answer;  // → answer
+                qBubble.appendChild(ansDiv);
+            }
+        } else if (t === 'usage' || t === 'summary') {
+            // 跳过（不渲染；token 由 C++ m_tokenBar/m_tokenLabel 显示，summary 一期不持久化渲染）
+        }
+    }
+    scrollToBottom();
+}
+
 function escapeHtml(text) {
     let div = document.createElement('div');
     div.textContent = text;

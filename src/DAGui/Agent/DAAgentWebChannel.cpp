@@ -1,6 +1,8 @@
 // DAAgentWebChannel.cpp
 #include "DAAgentWebChannel.h"
 #include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonParseError>
 
 namespace DA
 {
@@ -28,6 +30,18 @@ static QString toJsString(const QString& str)
         }
     }
     return result;
+}
+
+// 把 JSON 字符串解析为 QJsonObject；解析失败返回空对象（plan-04 loadHistory 用）
+static QJsonObject parseJsonStr(const QString& str)
+{
+    if (str.isEmpty()) return QJsonObject();
+    QJsonParseError err;
+    QJsonDocument doc = QJsonDocument::fromJson(str.toUtf8(), &err);
+    if (err.error != QJsonParseError::NoError || !doc.isObject()) {
+        return QJsonObject();
+    }
+    return doc.object();
 }
 
 DAAgentWebChannel::DAAgentWebChannel(QWebEngineView* view, QObject* parent)
@@ -100,6 +114,79 @@ void DAAgentWebChannel::appendQuestion(const QString& text, const QStringList& o
 void DAAgentWebChannel::clearChat()
 {
     callJS(QStringLiteral("clearChat()"));
+}
+
+void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
+{
+    // MAJOR2: C++ 合并连续 assistant(tool_call) + 紧随 tool_result 为单个 UI 事件。
+    // JS 端 loadHistory(events) 据合并后 type 分发；不再读 _toolName/_toolArgs。
+    // tool_calls 用简化格式（call.value("name")/("args") 顶层，对齐 plan-01/03 事件映射表）。
+    QJsonArray uiEvents;
+    QHash<QString, QJsonObject> pendingToolCalls;  // toolCallId → {toolName,args}
+
+    for (const QJsonObject& rec : records) {
+        const QString t = rec.value("type").toString();
+        const QJsonObject msg = rec.value("message").toObject();
+
+        if (t == "user" || t == "usage" || t == "summary") {
+            // 原样透传（usage/summary JS 端不再渲染，仅 user 渲染）
+            uiEvents.append(rec);
+        } else if (t == "assistant") {
+            const QJsonArray tcs = msg.value("tool_calls").toArray();
+            if (!tcs.isEmpty()) {
+                // 含 tool_calls：非空 content 留作 assistant 事件；每个 tool_call 缓存等 result
+                if (!msg.value("content").toString().isEmpty()) {
+                    QJsonObject aEv;
+                    aEv.insert("type", "assistant");
+                    aEv.insert("message", msg);
+                    uiEvents.append(aEv);
+                }
+                for (const QJsonValue& tc : tcs) {
+                    const QJsonObject call = tc.toObject();
+                    const QString id = call.value("id").toString();
+                    const QString name = call.value("name").toString();  // 简化格式顶层 name
+                    const QJsonObject args = call.value("args").toObject();  // 简化格式顶层 args（已 object）
+                    QJsonObject meta;
+                    meta.insert("toolName", name);
+                    meta.insert("args", args);
+                    pendingToolCalls.insert(id, meta);  // 缓存等 result
+                }
+            } else {
+                // 纯文本 assistant
+                uiEvents.append(rec);
+            }
+        } else if (t == "tool_result") {
+            const QString id = msg.value("tool_call_id").toString();
+            const QJsonObject meta = pendingToolCalls.take(id);
+            if (meta.isEmpty()) {
+                // 边界：无配对 tool_call（中断），一期跳过不入 uiEvents
+                continue;
+            }
+            const QString name = meta.value("toolName").toString();
+            const QJsonObject args = meta.value("args").toObject();
+            QJsonObject ev;
+            // MAJOR5: ask_user 的 tool_call+tool_result 标 type:"question"
+            ev.insert("type", (name == QStringLiteral("ask_user")) ? QStringLiteral("question") : QStringLiteral("tool"));
+            ev.insert("toolName", name);
+            ev.insert("args", args);
+            ev.insert("toolCallId", id);
+            if (name == QStringLiteral("ask_user")) {
+                // ask_user 答案是纯文本 str(answer)（plan-03），parseJsonStr 会失败返回空对象；
+                // 构造 {"answer":content} 匹配 JS question 分支读 ev.result.answer 的取值逻辑。
+                QJsonObject ansObj;
+                ansObj.insert("answer", msg.value("content").toString());
+                ev.insert("result", ansObj);
+            } else {
+                // 普通工具结果 content 是 json.dumps(result) 字符串，解析为 object
+                ev.insert("result", parseJsonStr(msg.value("content").toString()));
+            }
+            uiEvents.append(ev);
+        }
+        // 其他类型（answer 等）一期不入 uiEvents
+    }
+
+    QByteArray json = QJsonDocument(uiEvents).toJson(QJsonDocument::Compact);
+    callJS(QStringLiteral("loadHistory(") + QString::fromUtf8(json) + QStringLiteral(")"));
 }
 
 void DAAgentWebChannel::setBusy(bool busy)
