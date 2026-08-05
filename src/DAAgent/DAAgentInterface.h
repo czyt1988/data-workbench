@@ -3,6 +3,8 @@
 #include <QObject>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QHash>
+#include <QVariantList>
 #include <QString>
 #include <QStringList>
 #include "DAAbstractAgentTool.h"
@@ -70,5 +72,57 @@ public:
      * @param config LLM 配置 JSON（base_url、api_key、model）
      */
     virtual void setLLMConfig(const QJsonObject& config) = 0;
+
+    // ---- 会话管理（plan-03 新增，破坏性接口变更，插件需重编译；AGENTS.md plan-06 标注） ----
+    /**
+     * @brief 创建新会话，返回新 sessionId
+     *
+     * MAJOR3（round-3）：此方法不 emit sessionCreated（若 Module 实现如此），
+     * 供 sendMessage 自动建会话用——避免触发 UI clearChat 擦除刚显示的用户消息。
+     * UI "+" 按钮应调 newSession()（有 sessionCreated 信号）。
+     */
+    virtual QString createSession() = 0;
+    /**
+     * @brief 切换到指定会话（懒启动→下发历史→恢复）
+     * @param sessionId 目标会话 ID
+     * @return 是否启动切换流程（false=已是当前会话无操作）
+     */
+    virtual bool switchSession(const QString& sessionId) = 0;
+    /**
+     * @brief 删除指定会话
+     */
+    virtual void deleteSession(const QString& sessionId) = 0;
+    /**
+     * @brief 重命名指定会话
+     */
+    virtual void renameSession(const QString& sessionId, const QString& title) = 0;
+    /**
+     * @brief 列出所有会话（供 UI 下拉）
+     * @return QVariantList，每元素 QVariantMap（id/title/createdAt/updatedAt/messageCount/projectPath）
+     */
+    virtual QVariantList listSessions() const = 0;
+    /**
+     * @brief 获取当前活跃会话 ID
+     */
+    virtual QString currentSessionId() const = 0;
+    /**
+     * @brief 导出当前活跃会话字节（plan-05 工程保存调用）
+     * @return id -> jsonl 字节
+     */
+    virtual QHash<QString, QByteArray> exportActiveSessions() const = 0;
+    /**
+     * @brief 从工程 zip 加载会话文件（plan-05 工程加载调用）
+     * @param files id -> jsonl 字节
+     * @param projectPath 绑定工程路径（契约4：标记导入会话工程路径）
+     */
+    virtual void loadSessionsFromProject(const QHash<QString, QByteArray>& files, const QString& projectPath) = 0;
+    /**
+     * @brief 设置当前工程路径（CRITICAL round-3：提升为接口纯虚）
+     *
+     * 供 DAAppProject（L5）经 core()->getAgentInterface() 多态调用
+     * （onProjectLoaded / 工程关闭时注入），不依赖 qobject_cast。
+     * 空=自由会话模式；非空=工程绑定模式（影响会话过滤与 last_active）。
+     */
+    virtual void setCurrentProjectPath(const QString& path) = 0;
 };
 } // namespace DA
