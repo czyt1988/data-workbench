@@ -29,7 +29,7 @@ from langgraph.types import interrupt, Command
 try:
     from context_manager import (
         TokenEstimator, ToolResultTruncator, ContextCompactor,
-        is_context_overflow_error
+        is_context_overflow_error, json_to_message
     )
     _HAS_CONTEXT_MANAGER = True
 except ImportError:
@@ -127,8 +127,27 @@ class StdioProtocol:
     async def send_token(self, content: str):
         await self.send({"type": "token", "content": content})
 
-    async def send_message_end(self, content: str = ""):
-        await self.send({"type": "message_end", "content": content})
+    async def send_message_end(self, content: str = "", usage=None):
+        obj = {"type": "message_end", "content": content}
+        if usage:
+            obj["usage"] = {
+                "input_tokens": usage.get("input_tokens", 0),
+                "output_tokens": usage.get("output_tokens", 0),
+                "total_tokens": usage.get("total_tokens", 0),
+            }
+        await self.send(obj)
+
+    async def send_usage(self, input_tokens, output_tokens, total_tokens, source="agent"):
+        await self.send({
+            "type": "usage",
+            "input_tokens": int(input_tokens or 0),
+            "output_tokens": int(output_tokens or 0),
+            "total_tokens": int(total_tokens or 0),
+            "source": source,
+        })
+
+    async def send_session_loaded(self, session_id):
+        await self.send({"type": "session_loaded", "session_id": session_id})
 
     async def send_tool_call(self, call_id: str, tool: str, arguments: dict):
         await self.send({
@@ -323,15 +342,21 @@ class AgentRunner:
         truncator = self.tool_result_truncator
 
         async def _stream_llm(messages):
-            """流式调用 LLM 并输出 token 到 UI，返回累积后的完整 AIMessage。
+            """流式调用 LLM 并输出 token 到 UI，返回 (累积后的完整 AIMessage, usage_metadata)。
 
             提取为辅助函数以避免 agent_node 中溢出恢复路径的代码重复
             （正常路径与重试路径共用同一段流式逻辑）。
             关键：不能逐 chunk 读 .tool_calls（那是增量 delta，多为 None/部分），
             必须累积 AIMessageChunk 后从完整消息上读取。
+
+            返回值：collected_chunks（AIMessageChunk，可能为 None）；
+            usage_metadata（dict 或 None，仅当 provider 经 stream_options 回传时非空）。
             """
             collected_chunks = None
-            async for chunk in llm_with_tools.astream(messages):
+            # langchain-openai >= 0.2 经 _should_stream_usage 支持该 kwarg，
+            # 更旧版本静默忽略，不影响流式，仅 usage 为 None。
+            astream_kwargs = {"stream_options": {"include_usage": True}}
+            async for chunk in llm_with_tools.astream(messages, **astream_kwargs):
                 if collected_chunks is None:
                     collected_chunks = chunk
                 else:
@@ -339,7 +364,8 @@ class AgentRunner:
                 # 流式输出 token 给 UI
                 if chunk.content:
                     await stdio.send_token(chunk.content)
-            return collected_chunks
+            usage = getattr(collected_chunks, 'usage_metadata', None) if collected_chunks else None
+            return collected_chunks, usage
 
         async def compact_node(state: MessagesState):
             """上下文压缩节点：在 agent 之前检查并压缩历史。
@@ -359,9 +385,19 @@ class AgentRunner:
             logger.info("Starting context compaction, current tokens=%d",
                         self.token_estimator.count_messages_tokens(messages))
             try:
-                updates = await compactor.compact(messages)
+                # MAJOR3：compact() 现返回 (updates, summary_usage)
+                updates, summary_usage = await compactor.compact(messages)
                 compactor._consecutive_failures = 0  # 成功重置
                 logger.info("Compaction done, returning %d updates", len(updates))
+                # summary 的 usage 经独立 send_usage(source="summary") 回传
+                # （summary 无 message_end，只能走独立 usage 消息——MAJOR6）
+                if summary_usage:
+                    await stdio.send_usage(
+                        summary_usage.get("input_tokens", 0),
+                        summary_usage.get("output_tokens", 0),
+                        summary_usage.get("total_tokens", 0),
+                        source="summary",
+                    )
                 return {"messages": updates}
             except Exception as e:
                 compactor._consecutive_failures += 1
@@ -378,7 +414,7 @@ class AgentRunner:
 
             try:
                 # 正常路径：流式调用 LLM
-                final_message = await _stream_llm(messages)
+                final_message, usage = await _stream_llm(messages)  # 解构
             except Exception as e:
                 # 反应式溢出恢复（qwen-code 式安全网）：
                 # 当 token 估算不准导致实际请求超出上下文窗口时，
@@ -386,22 +422,36 @@ class AgentRunner:
                 # 此时强制压缩（局部，不写回 state）并重试一次。
                 if compactor and is_context_overflow_error(e):
                     logger.warning("Context overflow detected, force-compacting and retrying")
-                    compacted = await compactor.force_compact(messages)
+                    # CRITICAL2：force_compact 现返回 (compacted, summary_usage)
+                    compacted, summary_usage = await compactor.force_compact(messages)
+                    # force_compact 路径的 summary usage 也经独立
+                    # send_usage(source="summary") 回传（与 compact_node 正常路径一致）
+                    if summary_usage:
+                        await stdio.send_usage(
+                            summary_usage.get("input_tokens", 0),
+                            summary_usage.get("output_tokens", 0),
+                            summary_usage.get("total_tokens", 0),
+                            source="summary",
+                        )
                     # 重新 prepend system prompt（force_compact 返回的消息不含 system）
                     if system_prompt:
                         compacted = [SystemMessage(content=system_prompt)] + compacted
-                    final_message = await _stream_llm(compacted)
+                    final_message, usage = await _stream_llm(compacted)  # 解构
                 else:
                     raise
 
             # 从累积后的完整消息上读取 tool_calls（不是逐 chunk 读）
             if final_message.tool_calls:
                 # 有完整 tool_calls，交给 tool_node 执行
+                # （tool_call 路径不发 usage——非最终回复，下一轮 agent 还会再发）
                 return {"messages": [final_message]}
             else:
-                # 无 tool_calls——这是最终回复
+                # 无 tool_calls——最终回复。agent usage 挂在 message_end 上回传
+                # （MAJOR6：不单独发 send_usage(source="agent")，避免 C++ 双发
+                # 导致 token 统计翻倍）
                 await stdio.send_message_end(
-                    final_message.content if isinstance(final_message.content, str) else ""
+                    final_message.content if isinstance(final_message.content, str) else "",
+                    usage,
                 )
                 return {"messages": [final_message]}
 
@@ -567,6 +617,50 @@ class AgentRunner:
         if not await self._send_question_if_paused():
             await self.stdio.send_done()
 
+    async def load_session(self, session_id: str, messages_json: list):
+        """切换会话：重建图 + 注入历史 state。
+
+        每次 load_session 重建 graph（_build_graph 内 compile 开销可忽略），
+        避免旧 MemorySaver thread state 污染。self.llm / self.llm_with_tools
+        客户端复用不重建（LLM 配置不变）。aupdate_state 用 add_messages
+        reducer，对空 thread 即"设置"，对已有 thread 即"追加"——重建图保证
+        空 thread，所以等价于设置。
+
+        messages_json 是 C++ 下发的对话消息数组（user/assistant/tool_result），
+        按 JSONL 时序排列。一期不含 summary（对齐总纲 T9：一期不持久化
+        compact 产生的 summary，JSONL 完整 append-only 保留对话消息；
+        load_session 下发全量历史后由 compact_node 在下一轮 agent 前自动
+        重新压缩，零额外改动）。C++ 负责过滤掉 usage 记录（不参与 state）。
+
+        空 messages_json 合法（新建会话或空会话），重建空图，发 session_loaded。
+        逐条 try/except 跳过坏记录并 logger.warning（到 stderr，T1），不崩溃；
+        最终正常发 session_loaded(session_id)（一期签名无 error 字段，坏记录
+        的影响由 C++ 侧 plan-03 在读取时已容错）。
+
+        load_session 不发 done（重建 state 不是一轮对话）；session_loaded
+        由本方法内部发送。
+        """
+        self.thread_config = {"configurable": {"thread_id": session_id}}
+        self.graph = self._build_graph()  # 新 MemorySaver，丢弃旧 thread state
+        msgs = []
+        if _HAS_CONTEXT_MANAGER:
+            for m in messages_json or []:
+                try:
+                    msgs.append(json_to_message(m))
+                except Exception as e:
+                    logger.warning(
+                        "Skipping bad message record during load_session: %s", e
+                    )
+        elif messages_json:
+            logger.warning(
+                "load_session received %d messages but context_manager "
+                "unavailable, loading empty state",
+                len(messages_json),
+            )
+        if msgs:
+            await self.graph.aupdate_state(self.thread_config, {"messages": msgs})
+        await self.stdio.send_session_loaded(session_id)
+
 
 async def main():
     stdio = StdioProtocol()
@@ -629,6 +723,13 @@ async def main():
                 "收到迟到的 tool_result call_id=%s，已超时或被处理，忽略",
                 msg.get("call_id")
             )
+        elif msg_type == "load_session":
+            # C++ -> Python 下发历史 messages 重建 langgraph state（多会话切换）。
+            # load_session 不发 done（重建 state 不是一轮对话）；session_loaded
+            # 由 load_session 内部发送。空 messages 合法；坏记录逐条跳过。
+            sid = msg.get("session_id", "")
+            msgs = msg.get("messages", [])
+            await runner.load_session(sid, msgs)
         elif msg_type == "stop":
             break
 

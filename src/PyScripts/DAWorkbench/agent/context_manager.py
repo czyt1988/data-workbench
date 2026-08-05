@@ -18,7 +18,9 @@
 import json
 import logging
 
-from langchain_core.messages import HumanMessage, RemoveMessage
+from langchain_core.messages import (
+    AIMessage, HumanMessage, RemoveMessage, SystemMessage, ToolMessage
+)
 
 logger = logging.getLogger("agent_runner")
 
@@ -120,6 +122,109 @@ class TokenEstimator:
         return total
 
 
+def _tool_call_to_dict(tc) -> dict:
+    """把 langchain ToolCall（dict 或 namedtuple）统一拍平为纯 dict。"""
+    if isinstance(tc, dict):
+        return {
+            "name": tc.get("name", ""),
+            "args": tc.get("args", {}),
+            "id": tc.get("id", ""),
+        }
+    # 兼容旧版 langchain 返回 namedtuple 的情况
+    return {
+        "name": getattr(tc, "name", ""),
+        "args": getattr(tc, "args", {}),
+        "id": getattr(tc, "id", ""),
+    }
+
+
+def message_to_json(msg) -> dict:
+    """langchain BaseMessage -> JSON dict（用于持久化与 load_session 下发）。
+
+    返回 {"role": "human"|"ai"|"tool"|"system", "content": str,
+          "tool_calls": [...]?, "tool_call_id": "..."?, "id": "..."?,
+          "additional_kwargs": {...}?}
+
+    字段对齐总纲 T6 的 message 子对象。usage_metadata 不进本字段
+    （单独存 record 的 usage_metadata，由 C++ 处理），但
+    additional_kwargs.da_type="summary" 必须保留以便 C++ 识别 summary 类型。
+    """
+    # msg.type 映射 role: human/ai/tool/system
+    obj = {"role": msg.type, "content": msg.content}
+
+    # tool_calls: ai only（list of {"name","args","id"}）
+    tool_calls = getattr(msg, "tool_calls", None)
+    if tool_calls:
+        obj["tool_calls"] = [_tool_call_to_dict(tc) for tc in tool_calls]
+
+    # tool_call_id: tool only
+    tool_call_id = getattr(msg, "tool_call_id", None)
+    if tool_call_id is not None:
+        obj["tool_call_id"] = tool_call_id
+
+    # id
+    msg_id = getattr(msg, "id", None)
+    if msg_id is not None:
+        obj["id"] = msg_id
+
+    # additional_kwargs（含 da_type=summary 标记）
+    additional_kwargs = getattr(msg, "additional_kwargs", None)
+    if additional_kwargs:
+        obj["additional_kwargs"] = additional_kwargs
+
+    return obj
+
+
+def json_to_message(d: dict):
+    """JSON dict -> langchain BaseMessage。role->class 映射：
+    human->HumanMessage, ai->AIMessage, tool->ToolMessage, system->SystemMessage。
+    还原 content/tool_calls/tool_call_id/id/additional_kwargs。
+
+    注意 ToolMessage 构造需 tool_call_id 参数；ToolMessage.content 必须 str（T6）。
+    """
+    role = d.get("role", "human")
+    content = d.get("content", "")
+    # ToolMessage.content 必须 str（T6 铁律）；防御性归一化所有 role 的 content
+    if not isinstance(content, str):
+        content = json.dumps(content, ensure_ascii=False)
+
+    additional_kwargs = d.get("additional_kwargs") or {}
+    msg_id = d.get("id")
+
+    if role == "ai":
+        tool_calls = d.get("tool_calls") or []
+        return AIMessage(
+            content=content,
+            tool_calls=tool_calls,
+            id=msg_id,
+            additional_kwargs=additional_kwargs,
+        )
+    if role == "tool":
+        tool_call_id = d.get("tool_call_id", "")
+        return ToolMessage(
+            content=content,
+            tool_call_id=tool_call_id,
+            id=msg_id,
+            additional_kwargs=additional_kwargs,
+        )
+    if role == "system":
+        return SystemMessage(
+            content=content,
+            id=msg_id,
+            additional_kwargs=additional_kwargs,
+        )
+    if role != "human":
+        logger.warning(
+            "Unknown role '%s' in json_to_message, falling back to HumanMessage",
+            role,
+        )
+    return HumanMessage(
+        content=content,
+        id=msg_id,
+        additional_kwargs=additional_kwargs,
+    )
+
+
 class ToolResultTruncator:
     """工具结果截断器。
 
@@ -203,28 +308,34 @@ class ContextCompactor:
                         self._threshold * 100, self._context_window)
         return should
 
-    async def compact(self, messages: list) -> list:
-        """执行压缩，返回 state 更新消息列表（RemoveMessage + 摘要）。
+    async def compact(self, messages: list) -> tuple:
+        """执行压缩，返回 (state 更新消息列表, summary_usage)。
 
         用于 compact_node 的 return：删除中间消息 + 添加摘要。
         压缩后 state messages 变成 [head] + [摘要] + [tail]。
 
-        @return [RemoveMessage(id=...) for middle, HumanMessage(summary)]
+        @return (updates, usage)：
+            updates = [RemoveMessage(id=...) for middle, HumanMessage(summary)]
+                （summary 带 additional_kwargs={"da_type":"summary"} 标记，
+                仅为前向兼容——一期 C++ 不读该字段、不写 summary 记录，
+                二期持久化 summary 时 C++ 用其识别 type=summary 记录并跳过
+                已压缩消息，对齐总纲 T9）
+            usage = summary 的 usage_metadata（dict 或 None）
         """
         head_end = self._find_head_end(messages)
         tail_start = self._find_tail_start(messages, head_end)
 
         if tail_start <= head_end:
             logger.info("Head and tail overlap, nothing to compact")
-            return []
+            return [], None
 
         middle = messages[head_end:tail_start]
         if not middle:
             logger.info("No middle messages to compact")
-            return []
+            return [], None
 
-        # 生成摘要
-        summary = await self._generate_summary(middle)
+        # 生成摘要（CRITICAL2：解构 _generate_summary 的 (summary, usage) 返回）
+        summary, usage = await self._generate_summary(middle)
 
         # 构建 RemoveMessage 列表（只删除有 id 的消息）
         removals = []
@@ -233,47 +344,60 @@ class ContextCompactor:
             if msg_id:
                 removals.append(RemoveMessage(id=msg_id))
 
-        # 摘要消息（HumanMessage 角色，带前缀标记）
-        summary_msg = HumanMessage(content=f"[Context Summary]\n{summary}")
+        # 摘要消息（HumanMessage 角色，带前缀标记 + da_type 标记）。
+        # 仅 compact() 的 summary（会写回 state）加 da_type 标记；
+        # force_compact() 的 summary 不加（产物仅本地用，见步骤6）。
+        summary_msg = HumanMessage(
+            content=f"[Context Summary]\n{summary}",
+            additional_kwargs={"da_type": "summary"},
+        )
 
         logger.info("Compaction plan: removing %d middle messages, adding summary "
                     "(head=%d, tail=%d, total=%d)",
                     len(removals), head_end, len(messages) - tail_start, len(messages))
 
-        return removals + [summary_msg]
+        return removals + [summary_msg], usage
 
-    async def force_compact(self, messages: list) -> list:
-        """强制压缩，返回完整的压缩后消息列表（用于本地 LLM 调用）。
+    async def force_compact(self, messages: list) -> tuple:
+        """强制压缩，返回 (压缩后消息列表, summary_usage)。
 
         溢出恢复用：跳过 should_compact 和熔断检查。
         如果 LLM 摘要失败，降级为简单截断（只保留 tail）。
 
-        @return [head] + [摘要] + [tail]（不含 RemoveMessage，因为是局部用）
+        @return (messages, usage)：
+            messages = [head] + [摘要] + [tail]（不含 RemoveMessage，局部用）
+            usage = summary 的 usage_metadata（dict 或 None；
+                降级路径无 _generate_summary，返回 None）
+
+        force_compact 的 summary 不加 da_type 标记——产物仅用于溢出恢复的
+        本地 LLM 重试，不写回 state、不持久化，故无需标记（见步骤6）。
         """
         try:
             head_end = self._find_head_end(messages)
             tail_start = self._find_tail_start(messages, head_end)
 
             if tail_start <= head_end:
-                # 无法分割，只保留 tail
+                # 无法分割，只保留 tail（降级路径无 usage）
                 tail_start = max(0, len(messages) - self._max_recent_messages)
                 while tail_start < len(messages) and messages[tail_start].type != "human":
                     tail_start += 1
-                return list(messages[tail_start:])
+                return list(messages[tail_start:]), None
 
             head = list(messages[:head_end])
             middle = messages[head_end:tail_start]
             tail = list(messages[tail_start:])
 
-            summary = await self._generate_summary(middle)
+            # CRITICAL2：解构 _generate_summary 的 (summary, usage) 返回
+            summary, usage = await self._generate_summary(middle)
+            # force_compact 的 summary 不加 da_type 标记（局部用，不写回 state）
             summary_msg = HumanMessage(content=f"[Context Summary]\n{summary}")
 
-            return head + [summary_msg] + tail
+            return head + [summary_msg] + tail, usage
         except Exception as e:
             logger.exception("Force compact failed, falling back to simple truncation: %s", e)
-            # 降级：只保留 tail（简单截断）
+            # 降级：只保留 tail（简单截断）；降级路径无 usage
             tail_start = self._find_tail_start(messages, 0)
-            return list(messages[tail_start:])
+            return list(messages[tail_start:]), None
 
     def _find_head_end(self, messages: list) -> int:
         """找到 head 的结束索引（不包含）。
@@ -334,10 +458,13 @@ class ContextCompactor:
 
         return tail_start
 
-    async def _generate_summary(self, messages: list) -> str:
-        """用 LLM 对中间消息生成摘要。
+    async def _generate_summary(self, messages: list) -> tuple:
+        """用 LLM 对中间消息生成摘要。返回 (summary_text, usage_metadata)。
 
         如果中间消息太多导致摘要请求可能溢出，先截断到安全长度。
+        usage_metadata 可能为 None（provider 不返回时）。
+        ContextCompactor 不持 stdio，故 usage 经返回值向上传递
+        （由 compact()/force_compact() 透传至调用方发送）。
         """
         history = self._format_history_for_summary(messages)
 
@@ -355,7 +482,9 @@ class ContextCompactor:
             [HumanMessage(content=prompt)],
             config={"max_tokens": self.SUMMARY_MAX_TOKENS}
         )
-        return response.content if hasattr(response, 'content') else str(response)
+        summary = response.content if hasattr(response, 'content') else str(response)
+        usage = getattr(response, 'usage_metadata', None)
+        return summary, usage
 
     def _format_history_for_summary(self, messages: list) -> str:
         """格式化消息列表为摘要输入文本。"""
