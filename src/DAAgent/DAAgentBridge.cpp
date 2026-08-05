@@ -22,8 +22,19 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
                                const QJsonArray& toolSpecs,
                                const QString& systemPrompt,
                                const QString& pythonExePath,
-                               const QString& agentScriptPath)
+                               const QString& agentScriptPath,
+                               int readyTimeoutMs,
+                               int stopTimeoutMs)
 {
+    m_readyTimeoutMs = readyTimeoutMs;
+    m_stopTimeoutMs  = stopTimeoutMs;
+    // 清理上一次的 ready 超时计时器(若存在)
+    if (m_readyTimer) {
+        m_readyTimer->stop();
+        m_readyTimer->deleteLater();
+        m_readyTimer = nullptr;
+    }
+
     // 0. 清理上一次的进程——崩溃重启时旧 QProcess 仍持有资源，直接 new 会泄漏
     //    死进程对象。先 disconnect 防止旧进程的 pending 信号在 deleteLater 之后
     //    投递到新逻辑上造成错乱。
@@ -60,6 +71,12 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
         return;
     }
 
+    // 记录 agent 启动信息(不打印 api_key 明文)——用于诊断启动失败/退出码异常
+    daDebug << "Starting agent: python=" << pythonExePath
+            << " script=" << agentScriptPath
+            << " base_url=" << llmConfig.value("base_url").toString()
+            << " model=" << llmConfig.value("model").toString();
+
     // 2. 发送 init 消息（此时 state() 为 Running，writeJson 守卫通过）
     QJsonObject initMsg;
     initMsg["type"]          = "init";
@@ -68,13 +85,38 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
     initMsg["system_prompt"] = systemPrompt;
     writeJson(initMsg);
     m_running = true;
+
+    // 启动 ready 超时检测——若子进程在 m_readyTimeoutMs 内未发送 ready 或
+    // booting 心跳,视为初始化失败(常见原因:Python 导入失败、stdin 读取卡死、
+    // LLM 配置错误)。booting 心跳会在 handleJsonLine 中重置本计时器,因此
+    // langchain 冷启动导入(~16s)只要持续发出 booting 就不会被误杀。
+    // 必须主动通知用户并杀进程，避免 UI 干等无响应。
+    m_readyTimer = new QTimer(this);
+    m_readyTimer->setSingleShot(true);
+    connect(m_readyTimer, &QTimer::timeout, this, [this]() {
+        if (m_running) {
+            emit agentError(tr("Agent 子进程启动后 %1 毫秒内未就绪，初始化可能失败，请查看日志排查")
+                                .arg(m_readyTimeoutMs));
+            if (m_process && m_process->state() != QProcess::NotRunning) {
+                m_process->kill();
+            }
+            m_running = false;
+        }
+    });
+    m_readyTimer->start(m_readyTimeoutMs);
 }
 
 void DAAgentBridge::stopAgent()
 {
+    // 停止 ready 超时计时器(若还在等待)
+    if (m_readyTimer) {
+        m_readyTimer->stop();
+        m_readyTimer->deleteLater();
+        m_readyTimer = nullptr;
+    }
     if (m_running && m_process) {
         writeJson(QJsonObject{{"type", "stop"}});
-        m_process->waitForFinished(5000);  // 5秒超时
+        m_process->waitForFinished(m_stopTimeoutMs);  // 可配超时(默认 5s)
         if (m_process->state() != QProcess::NotRunning) {
             m_process->kill();
         }
@@ -162,7 +204,20 @@ void DAAgentBridge::onReadyReadStandardOutput()
 void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
 {
     QString type = msg["type"].toString();
-    if (type == "ready") {
+    if (type == "booting") {
+        // 子进程已启动、正在导入重模块(langchain_openai 冷启动 ~16s)。
+        // 收到 booting 心跳 → 重置 ready 超时计时器,避免导入期间被误杀。
+        // 不 emit 任何信号(booting 非 ready,UI 无需感知)。
+        if (m_readyTimer) {
+            m_readyTimer->start(m_readyTimeoutMs);
+        }
+    } else if (type == "ready") {
+        // 收到 ready 消息——停止 ready 超时计时器
+        if (m_readyTimer) {
+            m_readyTimer->stop();
+            m_readyTimer->deleteLater();
+            m_readyTimer = nullptr;
+        }
         emit agentReady(msg["model"].toString());
     } else if (type == "token") {
         emit agentToken(msg["content"].toString());
@@ -232,6 +287,18 @@ void DAAgentBridge::executeTool(const QString& callId,
 
 void DAAgentBridge::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
+    // 停止 ready 超时计时器(进程已退出，无需再等)
+    if (m_readyTimer) {
+        m_readyTimer->stop();
+        m_readyTimer->deleteLater();
+        m_readyTimer = nullptr;
+    }
+
+    // 记录进程退出状态——即使 agent 静默崩溃(无 stderr 输出)，
+    // 日志也有记录，便于诊断退出码含义(如 62097 等异常退出码)
+    daDebug << "Agent process finished: exitCode=" << exitCode
+            << " exitStatus=" << (exitStatus == QProcess::NormalExit ? "NormalExit" : "CrashExit");
+
     // 排空残留缓冲——若最后一个 stdout chunk 与 finished 信号几乎同时到达，
     // onReadyReadStandardOutput 可能留下未以 '\n' 结尾的完整行；不在此排空会丢失
     // 这部分消息（如最后的 message_end / done）。

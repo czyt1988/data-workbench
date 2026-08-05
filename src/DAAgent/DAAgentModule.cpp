@@ -136,9 +136,16 @@ void DAAgentModule::startAgentInternal()
         return;
     }
 
+    // 读取可配超时(与 DAAgentSettingsWidget 共用 QSettings key,默认值一致)
+    // 单位:秒→毫秒。ready 超时默认 60s 覆盖 langchain 冷启动导入(~17s)+余量;
+    // stop 超时默认 5s 保持原有行为。
+    QSettings s;
+    int readyTimeoutMs = s.value("agent/ready_timeout_sec", 60).toInt() * 1000;
+    int stopTimeoutMs   = s.value("agent/stop_timeout_sec", 5).toInt() * 1000;
+
     // 启动
     m_bridge->startAgent(config, assembleToolSpecs(), assembleSystemPrompt(),
-                         pythonExe, scriptPath);
+                         pythonExe, scriptPath, readyTimeoutMs, stopTimeoutMs);
 }
 
 bool DAAgentModule::isRunning() const

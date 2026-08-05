@@ -10,6 +10,8 @@
 #include <QMap>
 #include "DAAgentAPI.h"
 
+class QTimer;
+
 namespace DA
 {
 class DAAbstractAgentTool;
@@ -41,12 +43,16 @@ public:
      * @param systemPrompt 系统提示词
      * @param pythonExePath Python 解释器路径
      * @param agentScriptPath agent 脚本路径
+     * @param readyTimeoutMs 等待 ready/booting 心跳的超时（毫秒），默认 60s
+     * @param stopTimeoutMs stopAgent 等待进程退出的超时（毫秒），默认 5s
      */
     void startAgent(const QJsonObject& llmConfig,
                     const QJsonArray& toolSpecs,
                     const QString& systemPrompt,
                     const QString& pythonExePath,
-                    const QString& agentScriptPath);
+                    const QString& agentScriptPath,
+                    int readyTimeoutMs = 60000,
+                    int stopTimeoutMs = 5000);
     /**
      * @brief 停止 agent 子进程
      */
@@ -151,5 +157,8 @@ private:
     QMap<QString, DAAbstractAgentTool*> m_tools;  // tool name → tool impl
     QString m_pythonExePath;
     QString m_agentScriptPath;
+    QTimer* m_readyTimer = nullptr;  // agent 启动后等待 ready 消息的超时计时器,防止子进程卡死时 UI 干等
+    int m_readyTimeoutMs = 60000;      // ready/booting 等待超时(毫秒),由 startAgent 参数注入
+    int m_stopTimeoutMs  = 5000;       // stopAgent 等待进程退出超时(毫秒),由 startAgent 参数注入
 };
 } // namespace DA

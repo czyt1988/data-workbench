@@ -4,6 +4,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QLabel>
+#include <QSpinBox>
 #include <QJsonObject>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
@@ -77,6 +78,8 @@ private:
     QLineEdit* m_baseUrlEdit;
     QLineEdit* m_apiKeyEdit;       // EchoMode::Password
     QLineEdit* m_modelEdit;        // 模型名
+    QSpinBox* m_readyTimeoutSpin;  // ready 等待超时(秒)
+    QSpinBox* m_stopTimeoutSpin;   // 停止等待超时(秒)
     QPushButton* m_testBtn;
     QLabel* m_statusLabel;
     QNetworkAccessManager* m_networkManager { nullptr };  // 主线程异步，构造函数中创建

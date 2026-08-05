@@ -1,5 +1,7 @@
 // DAAgentSettingsWidget.cpp
 #include "DAAgentSettingsWidget.h"
+#include "DALogCategory.h"
+#include <QCoreApplication>
 #include <QFormLayout>
 #include <QSettings>
 #include <QTimer>
@@ -11,6 +13,8 @@
 static const char* KEY_LLM_BASE_URL = "agent/llm_base_url";
 static const char* KEY_LLM_API_KEY  = "agent/llm_api_key";   // stored encrypted
 static const char* KEY_LLM_MODEL    = "agent/llm_model";
+static const char* KEY_READY_TIMEOUT_SEC = "agent/ready_timeout_sec";  // ready 等待超时(秒)
+static const char* KEY_STOP_TIMEOUT_SEC  = "agent/stop_timeout_sec";   // 停止等待超时(秒)
 
 #ifdef Q_OS_WIN
 #ifndef WIN32_LEAN_AND_MEAN
@@ -41,6 +45,18 @@ void DAAgentSettingsWidget::setupUI()
     m_apiKeyEdit  = new QLineEdit(this);
     m_apiKeyEdit->setEchoMode(QLineEdit::Password);   // API Key 密文显示
     m_modelEdit   = new QLineEdit(this);
+    // 超时设置:可配,默认 ready=60s(覆盖 langchain 冷启动导入~17s)、stop=5s
+    m_readyTimeoutSpin = new QSpinBox(this);
+    m_readyTimeoutSpin->setRange(5, 300);
+    m_readyTimeoutSpin->setSuffix(tr(" s"));  //cn:秒
+    m_readyTimeoutSpin->setToolTip(tr(
+        "Waiting time for agent subprocess to become ready after start. "
+        "Cold start imports of langchain may take ~17s, default 60s is safe."));  //cn:agent 子进程启动后等待就绪的超时(秒)。冷启动导入 langchain 约 17s,默认 60s 较安全。
+    m_stopTimeoutSpin = new QSpinBox(this);
+    m_stopTimeoutSpin->setRange(1, 60);
+    m_stopTimeoutSpin->setSuffix(tr(" s"));  //cn:秒
+    m_stopTimeoutSpin->setToolTip(tr(
+        "Waiting time for agent subprocess to exit when stopped."));  //cn:停止 agent 时等待子进程退出的超时(秒)。
     m_testBtn     = new QPushButton(tr("测试连接"), this);
     m_statusLabel = new QLabel(this);
 
@@ -48,6 +64,8 @@ void DAAgentSettingsWidget::setupUI()
     form->addRow(tr("Base URL"), m_baseUrlEdit);
     form->addRow(tr("API Key"),  m_apiKeyEdit);
     form->addRow(tr("Model"),    m_modelEdit);
+    form->addRow(tr("Ready Timeout"), m_readyTimeoutSpin);  //cn:就绪超时
+    form->addRow(tr("Stop Timeout"),  m_stopTimeoutSpin);    //cn:停止超时
     form->addRow(m_testBtn);
     form->addRow(m_statusLabel);
 
@@ -65,6 +83,12 @@ void DAAgentSettingsWidget::setupUI()
     connect(m_modelEdit, &QLineEdit::textChanged, this, [this]() {
         emit settingChanged();
     });
+    connect(m_readyTimeoutSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+        emit settingChanged();
+    });
+    connect(m_stopTimeoutSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+        emit settingChanged();
+    });
 
     // 注：loadConfig() 期间无需 QSignalBlocker——
     // addPage()（连接 settingChanged → 脏页追踪器）在构造函数返回之后才执行，
@@ -74,26 +98,60 @@ void DAAgentSettingsWidget::setupUI()
 void DAAgentSettingsWidget::loadConfig()
 {
     QSettings s;
-    m_baseUrlEdit->setText(s.value(KEY_LLM_BASE_URL).toString());
-    m_modelEdit->setText(s.value(KEY_LLM_MODEL).toString());
+    QString baseUrl   = s.value(KEY_LLM_BASE_URL).toString();
+    QString model     = s.value(KEY_LLM_MODEL).toString();
     QByteArray encKey = s.value(KEY_LLM_API_KEY).toByteArray();
+    // 超时配置:默认 ready=60s(覆盖 langchain 冷启动导入)、stop=5s
+    int readyTimeout = s.value(KEY_READY_TIMEOUT_SEC, 60).toInt();
+    int stopTimeout  = s.value(KEY_STOP_TIMEOUT_SEC, 5).toInt();
+    // 诊断日志: 显示从 QSettings 读到的原始值(绝不打印 api_key 明文,只显示加密 blob 大小)
+    // 用于排查"重启后字段为空"问题——若 QSettings 路径不一致/注册表为空,这里一目了然
+    daDebug << "[DAAgentSettings] loadConfig: base_url=" << baseUrl
+            << " model=" << model
+            << " api_key_enc_size=" << encKey.size()
+            << " ready_timeout=" << readyTimeout
+            << " stop_timeout=" << stopTimeout
+            << " org=" << QCoreApplication::organizationName()
+            << " app=" << QCoreApplication::applicationName();
+    m_baseUrlEdit->setText(baseUrl);
+    m_modelEdit->setText(model);
     if (!encKey.isEmpty()) {
         m_apiKeyEdit->setText(decryptApiKey(encKey));
     }
+    m_readyTimeoutSpin->setValue(readyTimeout);
+    m_stopTimeoutSpin->setValue(stopTimeout);
 }
 
 void DAAgentSettingsWidget::saveConfig()
 {
     QSettings s;
-    s.setValue(KEY_LLM_BASE_URL, m_baseUrlEdit->text().trimmed());
-    s.setValue(KEY_LLM_MODEL,    m_modelEdit->text().trimmed());
-    s.setValue(KEY_LLM_API_KEY,  encryptApiKey(m_apiKeyEdit->text()));
+    QString baseUrl   = m_baseUrlEdit->text().trimmed();
+    QString model     = m_modelEdit->text().trimmed();
+    QByteArray encKey = encryptApiKey(m_apiKeyEdit->text());
+    int readyTimeout = m_readyTimeoutSpin->value();
+    int stopTimeout  = m_stopTimeoutSpin->value();
+    s.setValue(KEY_LLM_BASE_URL, baseUrl);
+    s.setValue(KEY_LLM_MODEL,    model);
+    s.setValue(KEY_LLM_API_KEY,  encKey);
+    s.setValue(KEY_READY_TIMEOUT_SEC, readyTimeout);
+    s.setValue(KEY_STOP_TIMEOUT_SEC,  stopTimeout);
+    // 诊断日志: 确认 saveConfig 真的被调用且写入了 QSettings(绝不打印 api_key 明文)
+    // 若注册表为空但此处显示有值,说明 QSettings 写入失败(环境/权限问题)
+    daDebug << "[DAAgentSettings] saveConfig written: base_url=" << baseUrl
+            << " model=" << model
+            << " api_key_enc_size=" << encKey.size()
+            << " ready_timeout=" << readyTimeout
+            << " stop_timeout=" << stopTimeout;
 }
 
 void DAAgentSettingsWidget::apply()
 {
+    // 诊断日志: 若此行不出现在日志里,说明 dirty 机制未触发,apply 没被调用
+    // (DASettingDialog OK→applyChanged 遍历 mChangedPages,只有脏页才调 apply)
+    daDebug << "[DAAgentSettings] apply entered";
     saveConfig();
     emit settingApplyed();
+    daDebug << "[DAAgentSettings] apply done";
 }
 
 QIcon DAAgentSettingsWidget::getSettingPageIcon() const

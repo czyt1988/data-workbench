@@ -13,6 +13,7 @@ import codecs
 import json
 import logging
 import sys
+import threading
 
 from langchain_core.messages import (
     HumanMessage, SystemMessage, ToolMessage
@@ -29,6 +30,14 @@ from langgraph.types import interrupt, Command
 sys.stdout.reconfigure(encoding="utf-8", newline="\n")
 sys.stderr.reconfigure(encoding="utf-8")
 
+# 在导入重模块（langchain_openai 冷启动 ~16s）之前立即发送 booting 心跳。
+# C++ 端 DAAgentBridge 收到 booting 后会重置 ready 超时计时器，避免进程
+# 在导入期间被 m_process->kill() 误杀——TerminateProcess 不 flush Python
+# stderr 块缓冲，会导致日志无任何 stderr 输出、表现为静默崩溃（exitCode=62097）。
+# 此处只能用已导入的标准库（json/sys），不能用 langchain（尚未导入）。
+sys.stdout.write('{"type": "booting"}\n')
+sys.stdout.flush()
+
 # 所有调试输出写入 stderr，绝对禁止写入 stdout（stdout 是协议通道）
 logging.basicConfig(
     stream=sys.stderr,
@@ -42,21 +51,55 @@ class StdioProtocol:
     """stdin/stdout JSON Lines 协议封装。
 
     stdout 专用于协议消息；所有日志走 stderr。
-    stdin 使用 asyncio.StreamReader 实现真正的异步非阻塞读取，
-    并用增量 UTF-8 解码器处理跨读取边界的多字节字符（strict，不产生 U+FFFD）。
+    stdin 通过后台线程阻塞读取 sys.stdin.buffer，再经 asyncio.Queue
+    把字节跨线程投递到事件循环，规避 Windows 上 asyncio pipe transport
+    的兼容性问题。增量 UTF-8 解码器处理跨读取边界的多字节字符(strict)。
     """
 
     def __init__(self):
-        self._reader: asyncio.StreamReader = None
+        self._data_queue: asyncio.Queue = None
+        self._stdin_thread: threading.Thread = None
         self._buffer = b""
         self._decoder = codecs.getincrementaldecoder("utf-8")(errors="strict")
+        self._loop = None
 
     async def init_reader(self):
-        """初始化异步 stdin 读取器。"""
-        loop = asyncio.get_running_loop()
-        self._reader = asyncio.StreamReader()
-        protocol = asyncio.StreamReaderProtocol(self._reader)
-        await loop.connect_read_pipe(lambda: protocol, sys.stdin)
+        """初始化 stdin 读取器(后台线程 + asyncio.Queue)。
+
+        Windows 上 asyncio 的 pipe transport 存在不可调和的兼容性问题:
+          * ProactorEventLoop (IOCP) 对 QProcess 创建的匿名管道句柄执行
+            CreateIoCompletionPort 会失败(WinError 6，句柄无效)
+          * SelectorEventLoop 干脆不实现 pipe transport
+            (connect_read_pipe 直接抛 NotImplementedError)
+        两条 asyncio 路都走不通，改用后台线程阻塞读取 sys.stdin.buffer，
+        通过 loop.call_soon_threadsafe + asyncio.Queue 把字节跨线程投递到
+        事件循环。此方案不依赖 event loop 类型，Selector/Proactor 均可工作；
+        httpx/langchain 的 async socket I/O 不受影响。
+        """
+        self._loop = asyncio.get_running_loop()
+        self._data_queue = asyncio.Queue()
+
+        def _stdin_reader():
+            # 后台线程: 阻塞读取 stdin 字节，跨线程投递到事件循环的 Queue。
+            # 必须用 read1 而非 read:read(n) 会阻塞等满 n 字节才返回，
+            # 对 QProcess 管道(stdin 没有.EOF，数据量小)会永久卡死；
+            # read1 只发起一次底层 read()，有数据就立即返回(不论多少字节)。
+            try:
+                while True:
+                    data = sys.stdin.buffer.read1(4096)
+                    if not data:
+                        # EOF — stdin 关闭，投递 None 作为结束标志
+                        self._loop.call_soon_threadsafe(self._data_queue.put_nowait, None)
+                        return
+                    self._loop.call_soon_threadsafe(self._data_queue.put_nowait, data)
+            except Exception as e:
+                logger.exception("stdin reader thread crashed: %s", e)
+                # 出错也投递 EOF，避免事件循环永久挂起等待
+                self._loop.call_soon_threadsafe(self._data_queue.put_nowait, None)
+
+        # daemon=True: 主进程退出时线程立即终止，不阻塞解释器关闭
+        self._stdin_thread = threading.Thread(target=_stdin_reader, daemon=True, name="agent-stdin")
+        self._stdin_thread.start()
 
     # —— 发送（stdout）——
     async def send(self, msg: dict):
@@ -91,7 +134,7 @@ class StdioProtocol:
 
     # —— 接收（stdin）——
     async def receive(self) -> dict:
-        """异步读取一行 JSON（真正非阻塞，不卡住事件循环）。"""
+        """异步读取一行 JSON(从 asyncio.Queue 取数据，不卡住事件循环)。"""
         while True:
             # 先在缓冲区里找完整的一行
             idx = self._buffer.find(b"\n")
@@ -101,10 +144,10 @@ class StdioProtocol:
                 # 用增量解码器处理跨边界的多字节字符
                 text = self._decoder.decode(line)
                 return json.loads(text)
-            # 异步读取更多数据（不阻塞事件循环）
-            data = await self._reader.read(4096)
-            if not data:
-                # EOF
+            # 从 Queue 等待后台线程投递的数据(可被事件循环中断/取消)
+            data = await self._data_queue.get()
+            if data is None:
+                # EOF — stdin 关闭
                 raise EOFError("stdin closed")
             self._buffer += data
 
@@ -476,4 +519,14 @@ async def main():
 
 
 if __name__ == "__main__":
+    # 保留 WindowsSelectorEventLoopPolicy: stdin 读取已改用后台线程(见
+    # StdioProtocol.init_reader)，不再依赖 asyncio pipe transport，因此
+    # event loop 类型对 stdin 读取无影响。但 SelectorEventLoop 仍优于
+    # ProactorEventLoop:
+    #   1. 避免 ProactorEventLoop 的 _empty_waiter bug(cpython#103631，
+    #      3.12 已修复，但 3.11 仍存在，会导致二次崩溃掩盖原始错误)
+    #   2. httpx/langchain 的 async I/O 走 socket，SelectorEventLoop 完整支持
+    #   3. 避免 ProactorEventLoop 对 QProcess 管道句柄的 IOCP WinError 6 问题
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     asyncio.run(main())
