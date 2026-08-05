@@ -24,6 +24,9 @@
         <file>icon/insertColumnRight.svg</file>
         <file>icon/renameColumns.svg</file>
         <file>icon/setting-common.svg</file>
+        <file>icon/setting-python.svg</file>
+        <file>icon/setting-log.svg</file>
+        <file>icon/setting-advanced.svg</file>
         <file>icon/picture.svg</file>
         <file>icon/chart.svg</file>
         <file>icon/data-table.svg</file>

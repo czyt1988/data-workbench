@@ -1,0 +1,13 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200">
+    <!-- Slider track 1 (knob at left) -->
+    <rect x="180" y="292" width="664" height="16" rx="8" fill="#497CAD"/>
+    <circle cx="340" cy="300" r="56" fill="#497CAD"/>
+    <!-- Slider track 2 (knob at center) -->
+    <rect x="180" y="504" width="664" height="16" rx="8" fill="#497CAD"/>
+    <circle cx="512" cy="512" r="56" fill="#497CAD"/>
+    <!-- Slider track 3 (knob at right) -->
+    <rect x="180" y="716" width="664" height="16" rx="8" fill="#497CAD"/>
+    <circle cx="684" cy="724" r="56" fill="#497CAD"/>
+</svg>

@@ -1,0 +1,13 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200">
+    <!-- Document body with folded corner -->
+    <path d="M 256 128 L 576 128 L 768 320 L 768 832 L 256 832 Z" fill="#497CAD"/>
+    <!-- Folded corner (white triangle) -->
+    <path d="M 576 128 L 576 320 L 768 320 Z" fill="#FFFFFF"/>
+    <!-- Log lines -->
+    <rect x="336" y="420" width="352" height="24" rx="12" fill="#FFFFFF"/>
+    <rect x="336" y="484" width="352" height="24" rx="12" fill="#FFFFFF"/>
+    <rect x="336" y="548" width="256" height="24" rx="12" fill="#FFFFFF"/>
+    <rect x="336" y="612" width="320" height="24" rx="12" fill="#FFFFFF"/>
+</svg>

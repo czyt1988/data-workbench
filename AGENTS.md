@@ -162,6 +162,71 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | 插件模板 | `plugins/plugin-template/` | 新插件脚手架 |
 | 文档源码 | `docs/zh/` | Doxygen Wiki 中文 |
 
+## 运行日志与调试
+
+**当用户报告运行异常、崩溃、行为不符合预期，或提到"日志"/"报错"/"看不到效果"时，应主动读取程序运行日志分析根因，不要凭猜测下结论。**
+
+### 日志文件位置
+
+程序运行日志固定写入用户 AppData 目录（不随构建目录变化），路径解析逻辑见 `src/DAUtils/DADir.cpp`（`getAppDataPath` = `QStandardPaths::AppDataLocation + "/" + "DAWorkBench"`）：
+
+| 文件 | Windows 路径 | 内容 |
+|------|--------------|------|
+| `da_log.log` | `%APPDATA%\DAWorkBench\log\da_log.log` | C++ 主程序当前日志（最新一次运行） |
+| `da_log.1.log` ~ `da_log.5.log` | 同上目录 | 轮转历史日志（rotating 模式，默认单文件 10MB，保留 5 个） |
+| `da_pyscript.log` | 同上目录 | 嵌入式 Python 脚本输出（工作流节点执行、agent_runner.py 等） |
+| `dawork-config.xml` | `%APPDATA%\DAWorkBench\config\` | DAAppConfig XML 配置（非日志，但常用于诊断持久化问题） |
+| `dump*.dmp` | `%APPDATA%\DAWorkBench\dumps\` | 崩溃转储文件（由 `DADumpCapture` 生成） |
+
+> Linux/macOS 上 `AppDataLocation` 解析为 `~/.local/share/DAWorkBench/` 或 `~/Library/Application Support/DAWorkBench/`。跨平台读取时优先用环境变量（`%APPDATA%` / `$XDG_DATA_HOME` / `~/Library/Application Support`）拼接 `DAWorkBench/log/`。
+
+### 日志格式与级别
+
+每行一条记录，格式：
+
+```
+[2026-08-04 16:58:10.977] [debug] [DAAppConfig.cpp:212] apply setting
+ └────时间戳────┘ └─级别─┘ └──源文件:行号──┘ └─消息─┘
+```
+
+级别从低到高：`trace` / `debug` / `info` / `warning` / `error` / `critical` / `off`。默认配置下 `debug` 级别会写入文件（日志里能看到 `[debug]` 条目）。级别由 `DAAppConfig` 的 `LOG_LEVEL` / `LOG_QUEUE_LEVEL` 配置项控制（见 `main.cpp` 的 `setupLogger`）。
+
+### 日志宏与分流
+
+- 业务代码用 `daDebug` / `daInfo` / `daWarning` / `daCritical` 宏（`src/DAMessageHandler/DALogCategory.h`），category = `da.user`，既写文件又进 UI 消息队列
+- `qDebug` / `qInfo` / `qWarning` / `qCritical`（Qt 自身、第三方库）只写文件和控制台，不进 UI 队列
+- 第三方库日志（SARibbon、qwt、ADS、QtWebEngine 等）在文件里可见，排查时不要误认为是本项目代码——看 `[源文件:行号]` 字段，本项目代码文件路径在 `src/` 下
+
+### 读取日志的推荐方式
+
+1. **快速定位近期事件**：用 `read_file` 读 `da_log.log` 的**尾部**（`offset` 靠近文件总行数）。文件可能接近 10MB 上限，从头读会截断且浪费上下文。先 `run_shell_command` 跑 `dir /t:w "%APPDATA%\DAWorkBench\log\da_log.log"` 看修改时间确认用户刚运行过。
+2. **按关键词检索**：用 `grep_search` 在 `da_log.log` 里搜关键词定位：
+   - 报错类：`Error|Exception|Traceback|failed|fatal|critical`
+   - 崩溃类：`crash|dump|SIGSEGV|abnormal|terminate`
+   - 模块类：`DAAgent|DAPyWorkFlow|DAAppConfig|DAAgentBridge|DAPluginManager`
+   - 自定义诊断日志前缀（开发者临时加的 `[模块名]` 标记，如 `[DAAgentSettings]`）
+3. **跨多次运行对照**：当前 `da_log.log` 是最新一次运行，`da_log.1.log` 是上一次。用户描述"之前能用现在不能"时，对比两个文件。
+4. **Python 侧问题**：工作流节点执行异常、agent 子进程报错，先看 `da_pyscript.log`；C++ 主程序行为看 `da_log.log`。
+5. **Agent 子进程 stderr**：`DAAgentBridge` 把子进程 stderr 转发到 `da_log.log`，标记为 `[DAAgentBridge.cpp:268] Agent stderr:`，Python traceback 在这里可见（注意 `\r\n` 被字面转义成字符串内容，不是真换行）。
+
+### 常见调试场景对照表
+
+| 现象 | 先看什么 | 搜什么关键词 |
+|------|---------|-------------|
+| 程序启动失败/闪退 | `da_log.log` 尾部 | `critical` / `error` / `dump` / `terminate` |
+| 插件加载失败 | `da_log.log` | `loaded plugin` / `DAPluginManager` / `plugin directory` |
+| 工作流节点执行报错 | `da_pyscript.log` + `da_log.log` | `DAPyWorkFlow` / `NodeDef` / `Traceback` |
+| Agent 对话无响应/报错 | `da_log.log` → `da_pyscript.log` | `DAAgentBridge` / `Agent stderr` / `agent_runner` |
+| 设置不持久化 | `da_log.log` + 注册表/XML | 相关模块的 `apply` / `saveConfig` 诊断日志；Windows QSettings 查 `reg query "HKCU\Software\DAWorkBench"`；DAAppConfig 查 `dawork-config.xml` |
+| 崩溃转储 | `dumps/dump*.dmp` + `.sysinfo` | dump 文件需用 WinDbg/VS 解析，`.sysinfo` 是文本可直读 |
+
+### 注意事项
+
+- 日志文件可能含敏感信息（API key 除外——业务代码应避免打印密钥明文，但第三方库或 Qt 自身可能意外泄露）。分析时不要把日志原文完整贴到对外渠道，只摘录与问题相关的行；遇到疑似密钥/token 的字符串要打码。
+- `da_log.log` 是 rotating 的，如果用户报告"几天前"的问题，可能已被轮转覆盖，只能从 `da_log.N.log` 找。
+- 程序退出时日志会 flush，但非正常退出（崩溃/强杀）最后几行可能未写入文件——这种场景看 `dumps/` 下的 dump 文件。
+- 读日志前先确认修改时间（`dir /t:w`），避免读到陈旧日志误导判断。如果用户刚遇到问题但日志时间戳很旧，说明问题没触发到日志系统（可能是 UI 层死锁或日志系统本身没初始化）。
+
 ## 文档导航
 
 > 📖 **完整文档站点**：`mkdocs serve` 后访问 http://localhost:8000，或浏览 `docs/zh/`

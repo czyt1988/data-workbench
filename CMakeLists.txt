@@ -52,10 +52,6 @@ option(DA_ENABLE_AUTO_INSTALL_PYTHON_ENV
 option(DA_ENABLE_AUTO_TRANSLATE
     "This option will automatically call the Linguist tool to translate the ts file"
     ON)
-# 此选项将自动调用Linguist工具对翻译文件进行update,此参数建议仅对翻译时开启
-option(DA_ENABLE_UPDATE_TRANSLATE
-    "This option will automatically call the Linguist tool to update ts file"
-    OFF)
 # 此选项将让da自动把结果安装到本地目录下
 option(DA_AUTO_INSTALL_PREFIX
     "This option will allow DA to automatically install the results to the local directory"
@@ -390,10 +386,10 @@ if(DA_ENABLE_AUTO_TRANSLATE)
         # 建议升级到 Qt 6.2+ 以使用新API
         if(QT_VERSION_MAJOR EQUAL 5)
             qt5_create_translation(DA_QM_FILES ${DA_LUPDATE_SOURCE_DIRS} ${DA_TS_FILES}
-                OPTIONS -locations relative -no-obsolete)
+                OPTIONS -locations relative -no-obsolete -extensions cpp,h,cc,cxx,hh,hxx,hpp,ui)
         elseif(QT_VERSION_MAJOR EQUAL 6)
             qt6_create_translation(DA_QM_FILES ${DA_LUPDATE_SOURCE_DIRS} ${DA_TS_FILES}
-                OPTIONS -locations relative -no-obsolete)
+                OPTIONS -locations relative -no-obsolete -extensions cpp,h,cc,cxx,hh,hxx,hpp,ui)
         endif()
 
         add_custom_target(da_translations ALL DEPENDS ${DA_QM_FILES})
@@ -401,6 +397,33 @@ if(DA_ENABLE_AUTO_TRANSLATE)
         message(STATUS "Translation enabled (legacy API, consider upgrading to Qt 6.2+)")
         message(STATUS "  QM files: ${DA_QM_FILES}")
         message(STATUS "  WARNING: .ts files may be rewritten on every build")
+    endif()
+
+    # 把 .qm 文件复制到构建输出目录，确保从 build 目录运行时翻译可用。
+    # 与 PyScripts 的 file(COPY) 模式一致（见上方 line 264）。
+    # 注：VS 多配置生成器下 exe 在 bin/<config>/ 子目录，
+    # PyScripts 和 translations 同样在 bin/ 层级——与 install 目录布局一致。
+    set(DA_QM_OUTPUT_DIR "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/translations")
+    file(MAKE_DIRECTORY "${DA_QM_OUTPUT_DIR}")
+    foreach(_qm_file ${DA_QM_FILES})
+        add_custom_command(TARGET da_translations POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${_qm_file}" "${DA_QM_OUTPUT_DIR}/"
+            COMMENT "Copying ${_qm_file} -> ${DA_QM_OUTPUT_DIR}"
+        )
+    endforeach()
+
+    # 复制 3rdparty 安装目录中已有的 SARibbon .qm 文件到构建输出 translations/ 目录
+    set(_3rdparty_tr_dir "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/translations")
+    if(EXISTS "${_3rdparty_tr_dir}")
+        file(GLOB _saribbon_qm_files "${_3rdparty_tr_dir}/SARibbon_*.qm")
+        foreach(_qm_file ${_saribbon_qm_files})
+            add_custom_command(TARGET da_translations POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${_qm_file}" "${DA_QM_OUTPUT_DIR}/"
+                COMMENT "Copying 3rdparty translation ${_qm_file}"
+            )
+        endforeach()
     endif()
 
     install(FILES ${DA_QM_FILES}

@@ -87,6 +87,12 @@ int main(int argc, char* argv[])
     QApplication app(argc, argv);
     QApplication::setApplicationVersion(DA_VERSION);
     QApplication::setApplicationName(DA_PROJECT_NAME);
+    // 必须设置 organizationName：QSettings 默认构造用 organizationName()+applicationName()
+    // 作为注册表路径(HKCU\Software\<org>\<app>)，org 为空时 setValue 静默失败，
+    // 表现为 DAAgentSettingsWidget::saveConfig 代码执行但配置重启后丢失。
+    // "DA" 与 DAAppActions.cpp 中 DARecentFilesManager(this,10,"DA","DAWorkBench") 保持一致，
+    // 确保所有 QSettings 用户写到同一路径 HKCU\Software\DA\DAWorkBench。
+    QApplication::setOrganizationName("DA");
     // 命令初始化
     QCommandLineParser cmdParser;
     initCommandLine(&cmdParser);

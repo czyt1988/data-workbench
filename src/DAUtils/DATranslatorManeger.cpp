@@ -1,4 +1,4 @@
-﻿#include "DATranslatorManeger.h"
+#include "DATranslatorManeger.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QLocale>
@@ -83,6 +83,22 @@ int DATranslatorManeger::installAllTranslator(const QString& langCode)
 			} else {
 				qWarning() << "can not install translator to application";
 				delete t;  // 如果安装不成功直接删除QTranslator
+			}
+		}
+	}
+	// 回退：如果指定语言没找到翻译文件，尝试 en_US 作为通用回退
+	if (d_ptr->mTranslatorLists.isEmpty() && langCode != "en_US") {
+		qDebug() << "No translator found for" << langCode << ", falling back to en_US";
+		const QList< QTranslator* > fallbackTranslators = getAvailableTranslators("en_US");
+		for (QTranslator* t : fallbackTranslators) {
+			if (t->isEmpty()) {
+				delete t;
+				continue;
+			}
+			if (QCoreApplication::installTranslator(t)) {
+				d_ptr->mTranslatorLists.append(t);
+			} else {
+				delete t;
 			}
 		}
 	}
@@ -180,7 +196,11 @@ QList< QString > DATranslatorManeger::getDefaultTranslatorFilePath()
     QString basePath   = DADir::getExecutablePath();
 	QString pathQtTr   = QDir::toNativeSeparators(basePath + "/translations");
 	QString pathUserTr = QDir::toNativeSeparators(basePath + "/translations_user");
-	return { pathQtTr, pathUserTr };
+	// 多配置生成器（如 Visual Studio）下 exe 在 bin/<config>/ 子目录，
+	// 但翻译文件在 bin/translations/（与 install 目录布局一致）。
+	// 添加父目录的 translations 路径，使构建目录调试时也能找到翻译文件。
+	QString parentTr = QDir::toNativeSeparators(QDir(basePath + "/..").absolutePath() + "/translations");
+	return { pathQtTr, pathUserTr, parentTr };
 }
 
 }
