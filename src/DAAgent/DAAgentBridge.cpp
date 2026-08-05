@@ -208,6 +208,19 @@ void DAAgentBridge::sendUserAnswer(const QString& answer)
     writeJson(msg);
 }
 
+void DAAgentBridge::sendLoadSession(const QString& sessionId, const QJsonArray& messages)
+{
+    // 与 sendMessage 的区别：不 emit agentBusy——load_session 不是一轮对话，
+    // UI 忙碌态由调用方（plan-03 switchSession）自行管理。writeJson 内部
+    // 守卫 state()==Running，进程未运行时静默返回 false 不 emit agentError；
+    // 调用方须自行用 isRunning() 守卫 + 懒启动 pending 缓存兜底。
+    QJsonObject obj;
+    obj["type"]       = "load_session";
+    obj["session_id"] = sessionId;
+    obj["messages"]   = messages;
+    writeJson(obj);
+}
+
 void DAAgentBridge::onReadyReadStandardOutput()
 {
     // 累积数据到缓冲区
@@ -264,6 +277,15 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
         emit agentToken(msg["content"].toString());
     } else if (type == "message_end") {
         emit agentMessageComplete(msg["content"].toString());
+        // plan-01 的 send_message_end(content, usage) 附带本轮 LLM usage_metadata，
+        // 作为 token 统计的权威锚点（与独立 usage 消息互补）。
+        if (msg.contains("usage")) {
+            QJsonObject u = msg.value("usage").toObject();
+            emit agentUsage(u.value("input_tokens").toInt(0),
+                            u.value("output_tokens").toInt(0),
+                            u.value("total_tokens").toInt(0),
+                            "agent");
+        }
     } else if (type == "tool_call") {
         emit agentBusy(true);
         emit agentToolCall(msg["tool"].toString(), msg["arguments"].toObject());
@@ -282,6 +304,19 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
                            msg.value("multi_select").toBool(false));
     } else if (type == "error") {
         emit agentError(msg["message"].toString());
+    } else if (type == "usage") {
+        // plan-01 独立 send_usage 消息（如摘要生成的 usage_metadata）。
+        // 字段缺失/类型错误时 toInt(0) 兜底，发 0 不崩溃。
+        int inT  = msg.value("input_tokens").toInt(0);
+        int outT = msg.value("output_tokens").toInt(0);
+        int tot  = msg.value("total_tokens").toInt(0);
+        QString src = msg.value("source").toString("agent");
+        emit agentUsage(inT, outT, tot, src);
+    } else if (type == "session_loaded") {
+        // plan-01 收到 load_session 重建 state 后回传的确认消息。
+        // 本计划只透传 session_id，session_id 与请求是否相符由 plan-03 switchSession 校验。
+        QString sid = msg.value("session_id").toString();
+        emit agentSessionLoaded(sid);
     } else if (type == "done") {
         emit agentBusy(false);
         emit agentDone();

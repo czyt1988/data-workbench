@@ -223,6 +223,11 @@ void DAAgentModule::connectSignals()
     connect(m_bridge, &DAAgentBridge::agentError, m_dockWidget, &DAAgentDockWidget::onAgentError);
     connect(m_bridge, &DAAgentBridge::agentReady, m_dockWidget, &DAAgentDockWidget::onAgentReady);
     connect(m_bridge, &DAAgentBridge::agentBusy, m_dockWidget, &DAAgentDockWidget::onAgentBusy);
+    // plan-02 新增的 agentUsage / agentSessionLoaded 信号本计划不接线——
+    // DockWidget 的 onAgentUsage / onAgentSessionLoaded 槽由 plan-04 添加。
+    // Qt 信号未连接可正常编译运行（Bridge emit 后无人接收，无害）。
+    // TODO(plan-04): connect agentUsage -> DockWidget::onAgentUsage
+    // TODO(plan-04): connect agentSessionLoaded -> DockWidget::onAgentSessionLoaded
 
     // DockWidget → Module (用户消息)
     connect(m_dockWidget, &DAAgentDockWidget::sendMessageRequested, this, [this](const QString& text) {

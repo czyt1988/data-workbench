@@ -82,6 +82,16 @@ public:
      * @param answer 用户回答文本
      */
     void sendUserAnswer(const QString& answer);
+    /**
+     * @brief 下发历史会话消息让 agent 子进程重建 state（不重启子进程切换会话）
+     * @param sessionId 会话 ID
+     * @param messages 历史消息数组（复用协议消息结构，见总纲 T6）
+     * @note 不 emit agentBusy——load_session 不是一轮对话，UI 忙碌态由调用方
+     *       （plan-03 switchSession）自行管理。不经 DAAgentInterface 多态，
+     *       plan-03 的 switchSession 直接调 m_bridge->sendLoadSession，由其
+     *       自行用 isRunning() 守卫 + 懒启动 pending 缓存兜底。
+     */
+    void sendLoadSession(const QString& sessionId, const QJsonArray& messages);
 
     /**
      * @brief 设置 C++ 侧工具映射表，供工具调用时查找执行
@@ -145,6 +155,19 @@ Q_SIGNALS:
      * @param busy 是否忙碌
      */
     void agentBusy(bool busy);
+    /**
+     * @brief agent 上报 token 使用量时发射（来自独立 usage 消息或 message_end 附带 usage）
+     * @param inputTokens 输入 token 数
+     * @param outputTokens 输出 token 数
+     * @param totalTokens 总 token 数
+     * @param source 来源标识："agent"（一轮对话）或 "summary"（摘要生成）
+     */
+    void agentUsage(int inputTokens, int outputTokens, int totalTokens, const QString& source);
+    /**
+     * @brief agent 完成会话历史重建时发射（Python 回传 session_loaded 确认）
+     * @param sessionId 已加载的会话 ID
+     */
+    void agentSessionLoaded(const QString& sessionId);
     /**
      * @brief agent 本轮处理完成时发射
      */
