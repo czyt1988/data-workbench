@@ -1,5 +1,6 @@
 // DAAgentSettingsWidget.cpp
 #include "DAAgentSettingsWidget.h"
+#include "DADir.h"
 #include "DALogCategory.h"
 #include <QCoreApplication>
 #include <QFormLayout>
@@ -97,9 +98,11 @@ void DAAgentSettingsWidget::setupUI()
 
 void DAAgentSettingsWidget::loadConfig()
 {
-    QSettings s;
+    // 显式 INI 路径(原为 QSettings 默认构造→注册表,org 为空时 setValue 静默失败)
+    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
     QString baseUrl   = s.value(KEY_LLM_BASE_URL).toString();
     QString model     = s.value(KEY_LLM_MODEL).toString();
+    // IniFormat 原生支持 QByteArray(@ByteArray 注解),api_key 直接读写
     QByteArray encKey = s.value(KEY_LLM_API_KEY).toByteArray();
     // 超时配置:默认 ready=60s(覆盖 langchain 冷启动导入)、stop=5s
     int readyTimeout = s.value(KEY_READY_TIMEOUT_SEC, 60).toInt();
@@ -124,7 +127,7 @@ void DAAgentSettingsWidget::loadConfig()
 
 void DAAgentSettingsWidget::saveConfig()
 {
-    QSettings s;
+    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
     QString baseUrl   = m_baseUrlEdit->text().trimmed();
     QString model     = m_modelEdit->text().trimmed();
     QByteArray encKey = encryptApiKey(m_apiKeyEdit->text());
@@ -132,11 +135,12 @@ void DAAgentSettingsWidget::saveConfig()
     int stopTimeout  = m_stopTimeoutSpin->value();
     s.setValue(KEY_LLM_BASE_URL, baseUrl);
     s.setValue(KEY_LLM_MODEL,    model);
+    // IniFormat 原生支持 QByteArray(@ByteArray 注解),加密 blob 直接存储
     s.setValue(KEY_LLM_API_KEY,  encKey);
     s.setValue(KEY_READY_TIMEOUT_SEC, readyTimeout);
     s.setValue(KEY_STOP_TIMEOUT_SEC,  stopTimeout);
     // 诊断日志: 确认 saveConfig 真的被调用且写入了 QSettings(绝不打印 api_key 明文)
-    // 若注册表为空但此处显示有值,说明 QSettings 写入失败(环境/权限问题)
+    // 若 ini 文件为空但此处显示有值,说明 QSettings 写入失败(环境/权限问题)
     daDebug << "[DAAgentSettings] saveConfig written: base_url=" << baseUrl
             << " model=" << model
             << " api_key_enc_size=" << encKey.size()

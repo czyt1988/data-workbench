@@ -7,6 +7,7 @@
 #include "DACoreInterface.h"
 #include "DAPyInterpreter.h"
 #include "DAAgentSettingsWidget.h"
+#include "DADir.h"
 #include "DALogCategory.h"
 // Platform built-in tools (plan-05)
 #include "tools/DAAgentToolListData.h"
@@ -21,6 +22,7 @@
 #include "tools/DAAgentToolAddRegion.h"
 #include "tools/DAAgentToolCreateSubplots.h"
 #include "tools/DAAgentToolSaveChartImage.h"
+#include "tools/DAAgentToolListFigures.h"
 #include "tools/DAAgentToolReadFile.h"
 #include "tools/DAAgentToolWriteFile.h"
 #include "tools/DAAgentToolSaveReport.h"
@@ -136,10 +138,10 @@ void DAAgentModule::startAgentInternal()
         return;
     }
 
-    // 读取可配超时(与 DAAgentSettingsWidget 共用 QSettings key,默认值一致)
+    // 读取可配超时(与 DAAgentSettingsWidget 共用 agent-config.ini,默认值一致)
     // 单位:秒→毫秒。ready 超时默认 60s 覆盖 langchain 冷启动导入(~17s)+余量;
     // stop 超时默认 5s 保持原有行为。
-    QSettings s;
+    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
     int readyTimeoutMs = s.value("agent/ready_timeout_sec", 60).toInt() * 1000;
     int stopTimeoutMs   = s.value("agent/stop_timeout_sec", 5).toInt() * 1000;
 
@@ -163,7 +165,7 @@ void DAAgentModule::registerBuiltinTools()
     registerTool(new DAAgentToolQueryData(m_core, this));
     registerTool(new DAAgentToolColumnStats(m_core, this));
     registerTool(new DAAgentToolExportData(m_core, this));
-    // Plotting tools (7)
+    // Plotting tools (8)
     registerTool(new DAAgentToolCreateChart(m_core, this));
     registerTool(new DAAgentToolAddCurve(m_core, this));
     registerTool(new DAAgentToolSetChartStyle(m_core, this));
@@ -171,6 +173,7 @@ void DAAgentModule::registerBuiltinTools()
     registerTool(new DAAgentToolAddRegion(m_core, this));
     registerTool(new DAAgentToolCreateSubplots(m_core, this));
     registerTool(new DAAgentToolSaveChartImage(m_core, this));
+    registerTool(new DAAgentToolListFigures(m_core, this));
     // File/report tools (3)
     registerTool(new DAAgentToolReadFile(m_core, this));
     registerTool(new DAAgentToolWriteFile(m_core, this));
@@ -248,12 +251,13 @@ void DAAgentModule::hideDockWidget()
 
 QJsonObject DAAgentModule::getLLMConfig() const
 {
-    // 从 QSettings 读取（与设置页 DAAgentSettingsWidget 同一存储源，保持一致）
+    // 从 agent-config.ini 读取（与设置页 DAAgentSettingsWidget 同一存储源，保持一致）
     // DAAgent 库不持有 DAAppConfig*（库无法链接 APP 可执行文件中的 DAAppConfig）
-    QSettings s;
+    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
     QJsonObject config;
     config["base_url"] = s.value("agent/llm_base_url").toString();
     config["model"]    = s.value("agent/llm_model").toString();
+    // IniFormat 原生支持 QByteArray(@ByteArray 注解),api_key 直接读取
     QByteArray encKey  = s.value("agent/llm_api_key").toByteArray();
     if (!encKey.isEmpty()) {
         config["api_key"] = DAAgentSettingsWidget::decryptApiKey(encKey);
@@ -263,12 +267,13 @@ QJsonObject DAAgentModule::getLLMConfig() const
 
 void DAAgentModule::setLLMConfig(const QJsonObject& config)
 {
-    // 与 getLLMConfig() 对称的 key 写入 QSettings（可用于运行时覆盖配置）
-    QSettings s;
+    // 与 getLLMConfig() 对称的 key 写入 agent-config.ini（可用于运行时覆盖配置）
+    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
     s.setValue("agent/llm_base_url", config.value("base_url").toString());
     s.setValue("agent/llm_model", config.value("model").toString());
     QString apiKey = config.value("api_key").toString();
     if (!apiKey.isEmpty()) {
+        // IniFormat 原生支持 QByteArray,加密 blob 直接存储
         s.setValue("agent/llm_api_key", DAAgentSettingsWidget::encryptApiKey(apiKey));
     }
 }

@@ -17,6 +17,7 @@
 #include <QFile>
 #include <QDir>
 #include <QStandardPaths>
+#include <QSettings>
 // DA
 #include "DAAppUtils.h"
 #include "DAConfigs.h"
@@ -46,6 +47,52 @@ const static QString CS_CMD_IMPORTDATA = QStringLiteral("import-data");
 const static QString CS_CMD_NOSPLASH   = QStringLiteral("no-splash");
 // 初始化所有命令
 void initCommandLine(QCommandLineParser* cmd);
+
+/**
+ * @brief 一次性数据迁移:从注册表(NativeFormat)搬到 INI 文件
+ *
+ * 用 NativeFormat 显式构造读注册表(绕过 setDefaultFormat),仅在 INI 文件不存在时迁移。
+ * 旧注册表值保留不删(作为备份)。迁移 key 包括 agent LLM 配置(5 项)和最近文件列表。
+ */
+static void migrateSettingsFromRegistry()
+{
+    // 用 NativeFormat 显式构造读注册表(绕过全局 setDefaultFormat)
+    QSettings reg(QSettings::NativeFormat, QSettings::UserScope, "DA", "DAWorkBench");
+    QString configDir = DA::DADir::getConfigPath();
+
+    // 迁移 agent 配置(5 个 key:base_url/model/api_key + ready/stop_timeout)
+    QString agentIni = configDir + "/agent-config.ini";
+    if (!QFile::exists(agentIni)
+        && (reg.contains("agent/llm_base_url") || reg.contains("agent/llm_model")
+            || reg.contains("agent/llm_api_key") || reg.contains("agent/ready_timeout_sec")
+            || reg.contains("agent/stop_timeout_sec"))) {
+        QSettings ini(agentIni, QSettings::IniFormat);
+        if (reg.contains("agent/llm_base_url"))
+            ini.setValue("agent/llm_base_url", reg.value("agent/llm_base_url"));
+        if (reg.contains("agent/llm_model"))
+            ini.setValue("agent/llm_model", reg.value("agent/llm_model"));
+        // api_key 是 QByteArray(DPAPI 加密 blob),IniFormat 原生支持 QByteArray
+        if (reg.contains("agent/llm_api_key")) {
+            QByteArray encKey = reg.value("agent/llm_api_key").toByteArray();
+            if (!encKey.isEmpty())
+                ini.setValue("agent/llm_api_key", encKey);
+        }
+        if (reg.contains("agent/ready_timeout_sec"))
+            ini.setValue("agent/ready_timeout_sec", reg.value("agent/ready_timeout_sec"));
+        if (reg.contains("agent/stop_timeout_sec"))
+            ini.setValue("agent/stop_timeout_sec", reg.value("agent/stop_timeout_sec"));
+        ini.sync();
+    }
+
+    // 迁移 recent files
+    QString rfIni = configDir + "/recent-files.ini";
+    if (reg.contains("RecentFiles") && !QFile::exists(rfIni)) {
+        QSettings ini(rfIni, QSettings::IniFormat);
+        ini.setValue("RecentFiles", reg.value("RecentFiles"));
+        ini.sync();
+    }
+}
+
 /**
  * @brief main
  * @param argc
@@ -87,12 +134,21 @@ int main(int argc, char* argv[])
     QApplication app(argc, argv);
     QApplication::setApplicationVersion(DA_VERSION);
     QApplication::setApplicationName(DA_PROJECT_NAME);
-    // 必须设置 organizationName：QSettings 默认构造用 organizationName()+applicationName()
-    // 作为注册表路径(HKCU\Software\<org>\<app>)，org 为空时 setValue 静默失败，
-    // 表现为 DAAgentSettingsWidget::saveConfig 代码执行但配置重启后丢失。
-    // "DA" 与 DAAppActions.cpp 中 DARecentFilesManager(this,10,"DA","DAWorkBench") 保持一致，
-    // 确保所有 QSettings 用户写到同一路径 HKCU\Software\DA\DAWorkBench。
+    // 设置 organizationName:保留以兼容第三方库(如 SARibbon)内部 QSettings 两参数构造。
+    // 原注册表路径(HKCU\Software\DA\DAWorkBench)的配置已迁移到 JSON 文件,
+    // 详见下方 setDefaultFormat 全局重定向 + migrateSettingsFromRegistry()。
     QApplication::setOrganizationName("DA");
+
+    // ── 全局 QSettings 重定向:NativeFormat → IniFormat,写入 AppData/config 目录 ──
+    // 必须在所有 QSettings 对象创建之前调用;对默认构造、两参数构造(org,app)均生效。
+    // 自有代码(Agent/RecentFiles)已用显式路径精确控制文件名,此全局设置作为安全网,
+    // 覆盖第三方库(如 3rdparty DAWidgets 的 DARecentFilesManager 副本)的默认/两参数构造。
+    // 注:JsonFormat 是 Qt6+ 特性,Qt5 仅支持 IniFormat;项目需兼容 Qt5,故用 IniFormat。
+    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, DA::DADir::getConfigPath());
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+
+    // ── 一次性数据迁移:从注册表搬到 JSON 文件 ──
+    migrateSettingsFromRegistry();
     // 命令初始化
     QCommandLineParser cmdParser;
     initCommandLine(&cmdParser);

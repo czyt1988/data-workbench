@@ -1,4 +1,5 @@
 #include "DARecentFilesManager.h"
+#include "DADir.h"
 #include <QCoreApplication>
 #include <QSettings>
 #include <QActionGroup>
@@ -179,7 +180,8 @@ void DARecentFilesManager::rebuildMenu()
  */
 void DARecentFilesManager::readAndCleanSettings()
 {
-    QSettings s(m_org, m_app);
+    // 显式 INI 路径(原为 QSettings(m_org, m_app) → 注册表)
+    QSettings s(DA::DADir::getConfigPath() + "/recent-files.ini", QSettings::IniFormat);
     m_files = s.value("RecentFiles").toStringList();
 
     bool changed = false;
@@ -201,7 +203,7 @@ void DARecentFilesManager::readAndCleanSettings()
  */
 void DARecentFilesManager::writeSettings()
 {
-    QSettings s(m_org, m_app);
+    QSettings s(DA::DADir::getConfigPath() + "/recent-files.ini", QSettings::IniFormat);
     s.setValue("RecentFiles", m_files);
 }
 

@@ -176,6 +176,8 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | `da_log.1.log` ~ `da_log.5.log` | 同上目录 | 轮转历史日志（rotating 模式，默认单文件 10MB，保留 5 个） |
 | `da_pyscript.log` | 同上目录 | 嵌入式 Python 脚本输出（工作流节点执行、agent_runner.py 等） |
 | `dawork-config.xml` | `%APPDATA%\DAWorkBench\config\` | DAAppConfig XML 配置（非日志，但常用于诊断持久化问题） |
+| `agent-config.ini` | `%APPDATA%\DAWorkBench\config\` | Agent LLM 配置（base_url/model/api_key/超时），QSettings IniFormat，api_key 为 DPAPI 加密的 QByteArray（@ByteArray 注解） |
+| `recent-files.ini` | `%APPDATA%\DAWorkBench\config\` | 最近打开文件列表，QSettings IniFormat |
 | `dump*.dmp` | `%APPDATA%\DAWorkBench\dumps\` | 崩溃转储文件（由 `DADumpCapture` 生成） |
 
 > Linux/macOS 上 `AppDataLocation` 解析为 `~/.local/share/DAWorkBench/` 或 `~/Library/Application Support/DAWorkBench/`。跨平台读取时优先用环境变量（`%APPDATA%` / `$XDG_DATA_HOME` / `~/Library/Application Support`）拼接 `DAWorkBench/log/`。
@@ -217,7 +219,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | 插件加载失败 | `da_log.log` | `loaded plugin` / `DAPluginManager` / `plugin directory` |
 | 工作流节点执行报错 | `da_pyscript.log` + `da_log.log` | `DAPyWorkFlow` / `NodeDef` / `Traceback` |
 | Agent 对话无响应/报错 | `da_log.log` → `da_pyscript.log` | `DAAgentBridge` / `Agent stderr` / `agent_runner` |
-| 设置不持久化 | `da_log.log` + 注册表/XML | 相关模块的 `apply` / `saveConfig` 诊断日志；Windows QSettings 查 `reg query "HKCU\Software\DAWorkBench"`；DAAppConfig 查 `dawork-config.xml` |
+| 设置不持久化 | `da_log.log` + INI/XML | 相关模块的 `apply` / `saveConfig` 诊断日志；Agent 配置查 `agent-config.ini`；最近文件查 `recent-files.ini`；DAAppConfig 查 `dawork-config.xml`；旧版注册表残留查 `reg query "HKCU\Software\DA\DAWorkBench"` |
 | 崩溃转储 | `dumps/dump*.dmp` + `.sysinfo` | dump 文件需用 WinDbg/VS 解析，`.sysinfo` 是文本可直读 |
 
 ### 注意事项
