@@ -1,10 +1,17 @@
 :root {
     --user-bg: #dcf8c6;
     --agent-bg: #ffffff;
-    --tool-bg: #f0f0f0;
     --question-bg: #fff3cd;
     --text-color: #333;
     --font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+    --tool-border: #e0e0e0;
+    --tool-bg: #fafafa;
+    --tool-head-bg: #f5f5f5;
+    --status-running: #2196f3;
+    --status-ok: #4caf50;
+    --status-err: #f44336;
+    --link-color: #0066cc;
+    --mono-font: "Consolas", "Courier New", monospace;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -65,18 +72,6 @@ body {
     background: #f6f8fa;
 }
 
-.message-bubble.tool {
-    align-self: center;
-    background: var(--tool-bg);
-    font-size: 12px;
-    max-width: 95%;
-}
-
-.message-bubble.tool .tool-name {
-    font-weight: bold;
-    color: #0066cc;
-}
-
 .message-bubble.question {
     align-self: flex-start;
     background: var(--question-bg);
@@ -107,7 +102,184 @@ body {
     color: white;
 }
 
-.question.answered .question-options button {
+.message-bubble.question.answered .question-options button {
     opacity: 0.5;
     cursor: default;
+}
+
+/* —— 工具调用分组渲染（替代旧的居中 tool 气泡） —— */
+
+/* 分组容器：左对齐，可折叠 */
+.tool-group {
+    align-self: flex-start;
+    width: 100%;
+    max-width: 92%;
+    border: 1px solid var(--tool-border);
+    border-radius: 8px;
+    background: var(--tool-bg);
+    overflow: hidden;
+    font-size: 13px;
+}
+
+.tool-group-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 6px 10px;
+    background: var(--tool-head-bg);
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: #555;
+}
+
+.tool-group-head:hover {
+    background: #eee;
+}
+
+.tool-group-body {
+    display: none;
+    padding: 4px;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tool-group.open .tool-group-body {
+    display: flex;
+}
+
+/* 状态圆点（替代 ✅/🔧 emoji） */
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-dot.running {
+    background: var(--status-running);
+    animation: da-pulse 1.2s infinite;
+}
+
+.status-dot.ok {
+    background: var(--status-ok);
+}
+
+.status-dot.err {
+    background: var(--status-err);
+}
+
+@keyframes da-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+
+.group-title {
+    font-weight: 600;
+    color: #333;
+}
+
+.group-meta {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: #888;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 折叠箭头：展开时旋转 90° 朝下 */
+.chevron {
+    flex-shrink: 0;
+    transition: transform 0.2s;
+}
+
+.tool-group.open > .tool-group-head .chevron,
+.tool-card.open > .tool-card-head .chevron {
+    transform: rotate(90deg);
+}
+
+/* 工具卡片 */
+.tool-card {
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.tool-card-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 5px 8px;
+    background: #fff;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: 12px;
+    color: #555;
+}
+
+.tool-card-head:hover {
+    background: #f9f9f9;
+}
+
+.tool-card-body {
+    display: none;
+    padding: 6px 8px;
+    border-top: 1px solid #f0f0f0;
+    background: #fafafa;
+}
+
+.tool-card.open .tool-card-body {
+    display: block;
+}
+
+.card-title {
+    font-weight: 600;
+    color: var(--link-color);
+    font-family: var(--mono-font);
+    flex-shrink: 0;
+}
+
+.card-summary {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: #666;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tool-section {
+    margin-bottom: 4px;
+}
+
+.tool-section:last-child {
+    margin-bottom: 0;
+}
+
+.tool-section-label {
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.tool-json {
+    background: #f6f8fa;
+    padding: 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: var(--mono-font);
+    overflow-x: auto;
+    max-height: 220px;
+    overflow-y: auto;
+    white-space: pre;
 }
