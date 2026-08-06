@@ -175,30 +175,41 @@
     <name>DA::DAAgentDockWidget</name>
     <message>
         <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+51"/>
-        <location line="+139"/>
+        <source>Session</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Rename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <location line="+169"/>
         <location line="+19"/>
+        <location line="+95"/>
         <source>Ready</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-146"/>
+        <location line="-258"/>
         <source>Type a message... (Ctrl+Enter to send)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+125"/>
+        <location line="+142"/>
         <location line="+20"/>
         <source>Send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-78"/>
+        <location line="-88"/>
         <source>Stopping...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+77"/>
         <source>Agent thinking...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -207,11 +218,61 @@
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location line="+48"/>
+        <source>Rename Session</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>New title:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+40"/>
+        <source>tokens: %1 / %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+65"/>
+        <source>(untitled)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>input: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>output: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>total: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>window: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>source: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAgentSettingsWidget</name>
     <message>
-        <location filename="../DAGui/Agent/DAAgentSettingsWidget.cpp" line="+58"/>
+        <location filename="../DAGui/Agent/DAAgentSettingsWidget.cpp" line="+61"/>
         <location line="+6"/>
         <source> s</source>
         <translation type="unfinished"></translation>
@@ -254,6 +315,21 @@
     <message>
         <location line="+6"/>
         <source>Preview length for truncated tool results</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Maximum number of free sessions retained in the config directory. Older sessions beyond this count are cleaned up on startup.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source> d</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Free sessions older than this many days are cleaned up on startup.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -307,6 +383,16 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+2"/>
+        <source>Max Sessions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Session Retention Days</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../DAGui/Agent/DAAgentSettingsWidget.h" line="+42"/>
         <source>Agent LLM 设置</source>
         <translation type="unfinished"></translation>
@@ -315,7 +401,7 @@
 <context>
     <name>DA::DAAgentWebChannel</name>
     <message>
-        <location filename="../DAGui/Agent/DAAgentWebChannel.cpp" line="+92"/>
+        <location filename="../DAGui/Agent/DAAgentWebChannel.cpp" line="+106"/>
         <source>Submit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1546,29 +1632,29 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+609"/>
+        <location filename="../APP/DAAppController.cpp" line="+628"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+777"/>
+        <location line="+795"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-766"/>
+        <location line="-784"/>
         <source>Failed to save project! Path: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+536"/>
+        <location line="+546"/>
         <source>Project saved successfully, path: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+25"/>
         <source>Project loaded successfully, path: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1588,7 +1674,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1076"/>
+        <location line="-1094"/>
         <source>Please select the data operation window</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1627,7 +1713,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+126"/>
+        <location line="+144"/>
         <source>Image files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1836,7 +1922,7 @@ Config</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+476"/>
+        <location filename="../APP/DAAppProject.cpp" line="+560"/>
         <source>Saving project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1901,7 +1987,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+189"/>
+        <location line="+226"/>
         <source>Save System Info</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1941,7 +2027,17 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+178"/>
+        <location line="+129"/>
+        <source>Save agent session</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Save agent chat session history</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+82"/>
         <source>Loading workflow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1951,7 +2047,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-475"/>
+        <location line="-509"/>
         <source>Save data information, including data names and data organization formats</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1982,7 +2078,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+93"/>
         <source>Begin saving archive to %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2007,30 +2103,30 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-589"/>
-        <location line="+592"/>
+        <location line="-660"/>
+        <location line="+663"/>
         <source>Failed to save project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-602"/>
+        <location line="-673"/>
         <location line="+34"/>
         <source>The current project is busy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+397"/>
+        <location line="+434"/>
         <source>Save data information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+186"/>
+        <location line="+220"/>
         <source>Project loaded successfully</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-553"/>
-        <location line="+557"/>
+        <location line="-624"/>
+        <location line="+628"/>
         <source>Failed to load project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8506,7 +8602,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1299"/>
+        <location filename="../APP/DAAppController.cpp" line="-1335"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
