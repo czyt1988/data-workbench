@@ -218,21 +218,20 @@ void DAAppDockingArea::buildDockingArea()
     mSettingContainerDock =
         createDockWidget(mSettingContainerWidget, ads::RightDockWidgetArea, QStringLiteral("da_settingDock"));
     mSettingContainerDock->setIcon(QIcon(":/app/bright/Icon/showSettingWidget.svg"));
-    // 日志窗口
-    mMessageLogDock = createDockWidget(mMessageLogViewWidget,
-                                       ads::BottomDockWidgetArea,
-                                       QStringLiteral("da_messageLogViewWidgetDock"),
-                                       mSettingContainerDock->dockAreaWidget());
-    mMessageLogDock->setIcon(QIcon(":/app/bright/Icon/showInfomation.svg"));
-
-    // Agent 助手 Dock —— 作为左侧管理区的标签页，与"绘图管理""数据管理"同组
+    // Agent 助手 Dock —— 作为右侧附属区的标签页，与"设置"同组
     mAgentDockWidget = new DAAgentDockWidget(mApp);
     mAgentDockWidget->setObjectName(QStringLiteral("da_agentDockWidget"));
     mAgentDock = createDockWidgetAsTab(
         mAgentDockWidget,
         QStringLiteral("da_agentDockWidgetDock"),
-        mWorkflowNodeListDock->dockAreaWidget());
+        mSettingContainerDock->dockAreaWidget());
     mAgentDock->setIcon(QIcon(":/app/bright/Icon/showAgent.svg"));
+
+    // 日志窗口 —— pin to right，auto-hide 到右侧边栏
+    mMessageLogDock = new ads::CDockWidget(QStringLiteral("da_messageLogViewWidgetDock"));
+    mMessageLogDock->setWidget(mMessageLogViewWidget);
+    mMessageLogDock->setIcon(QIcon(":/app/bright/Icon/showInfomation.svg"));
+    dockManager()->addAutoHideDockWidget(ads::SideBarRight, mMessageLogDock);
 
     // 设置dock的区域大小,默认为左1：中间4：右：1
     resetDefaultSplitterSizes();
