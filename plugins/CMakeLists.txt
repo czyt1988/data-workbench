@@ -86,6 +86,9 @@ endif()
 if(DA_ENABLE_PYTHON)
     add_subdirectory(DataAnalysis)
     add_subdirectory(DASystemNodes)
+    # DAAgentTools：平台内置 agent 工具插件（16 工具，plan-03 从 DAAgentModule 搬迁）。
+    # 与 DataAnalysis 同守卫——agent 工具依赖 Python（6 个工具经 DAPyDataFrame.h 用 pandas）。
+    add_subdirectory(DAAgentTools)
 endif()
 
 

@@ -49,6 +49,18 @@ target_compile_definitions(${DA_LIB_NAME} PRIVATE DAAGENT_BUILD)
 # 导出命名空间为 DAWorkbench::DAAgent
 add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 
+# plan-03：导出 tools/ 头文件目录，供 plugins/DAAgentTools 插件
+# #include "DAAgentToolBase.h" 解析（damacro_lib_install 只导出 src/DAAgent 根，
+# tools/ 不在范围；根目录已由 damacro_lib_install 以 BUILD_INTERFACE 导出，无需重复）。
+# 必须用 $<BUILD_INTERFACE:...> 包裹——install(EXPORT) 拒绝源树裸路径
+# （CMake error: INTERFACE_INCLUDE_DIRECTORIES ... prefixed in the source directory）。
+# 不加 INSTALL_INTERFACE：standalone（out-of-tree）插件构建在本计划期不可用
+# （DAAgentToolBase.h 未安装），须等 plan-04 把它 git mv 到 src/DAAgent/ 根
+# （被根 *.h GLOB 命中并随 install(FILES) 安装）后才可用，届时须删除此 tools 行。
+target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tools>
+)
+
 # -------------link Qt--------------------------
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core

@@ -23,7 +23,7 @@ namespace DA
  * 以及统一的 errorResponse / successResponse 响应构造。
  * 所有平台内置工具（数据类、绘图类、文件/报告类）均继承此类。
  */
-class DAAgentToolBase : public QObject, public DAAbstractAgentTool
+class DAAgent_API DAAgentToolBase : public QObject, public DAAbstractAgentTool
 {
     Q_OBJECT
 public:

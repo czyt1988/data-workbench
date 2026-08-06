@@ -1,5 +1,5 @@
 #pragma once
-#include "DAAgentToolBase.h"
+#include "DAAgentChartToolBase.h"
 
 namespace DA
 {
@@ -9,11 +9,11 @@ namespace DA
  * 参数：chart_id(可选)、file_path、format(png/pdf/svg，默认png)、width、height
  * PDF 需链接 Qt::PrintSupport，SVG 需链接 Qt::Svg
  */
-class DAAgentToolSaveChartImage : public DAAgentToolBase
+class DAAgentToolSaveChartImage : public DAAgentChartToolBase
 {
     Q_OBJECT
 public:
-    using DAAgentToolBase::DAAgentToolBase;
+    using DAAgentChartToolBase::DAAgentChartToolBase;
     /// @copydoc DAAbstractAgentTool::getToolSpec
     QJsonObject getToolSpec() const override;
     /// @copydoc DAAbstractAgentTool::execute

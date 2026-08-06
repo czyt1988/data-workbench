@@ -1,5 +1,5 @@
 #pragma once
-#include "DAAgentToolBase.h"
+#include "DAAgentChartToolBase.h"
 
 namespace DA
 {
@@ -8,11 +8,11 @@ namespace DA
  *
  * 参数：type(line/scatter/bar/hist/box)、data_name、x、y、title、x_label、y_label
  */
-class DAAgentToolCreateChart : public DAAgentToolBase
+class DAAgentToolCreateChart : public DAAgentChartToolBase
 {
     Q_OBJECT
 public:
-    using DAAgentToolBase::DAAgentToolBase;
+    using DAAgentChartToolBase::DAAgentChartToolBase;
     /// @copydoc DAAbstractAgentTool::getToolSpec
     QJsonObject getToolSpec() const override;
     /// @copydoc DAAbstractAgentTool::execute

@@ -8,23 +8,7 @@
 #include "DAPyInterpreter.h"
 #include "DADir.h"
 #include "DALogCategory.h"
-// Platform built-in tools (plan-05)
-#include "tools/DAAgentToolListData.h"
-#include "tools/DAAgentToolDataInfo.h"
-#include "tools/DAAgentToolQueryData.h"
-#include "tools/DAAgentToolColumnStats.h"
-#include "tools/DAAgentToolExportData.h"
-#include "tools/DAAgentToolCreateChart.h"
-#include "tools/DAAgentToolAddCurve.h"
-#include "tools/DAAgentToolSetChartStyle.h"
-#include "tools/DAAgentToolAddAnnotation.h"
-#include "tools/DAAgentToolAddRegion.h"
-#include "tools/DAAgentToolCreateSubplots.h"
-#include "tools/DAAgentToolSaveChartImage.h"
-#include "tools/DAAgentToolListFigures.h"
-#include "tools/DAAgentToolReadFile.h"
-#include "tools/DAAgentToolWriteFile.h"
-#include "tools/DAAgentToolSaveReport.h"
+// Platform built-in tools moved to plugins/DAAgentTools plugin (plan-03)
 #include <QFile>
 #include <QSettings>
 #include <QJsonObject>
@@ -145,7 +129,8 @@ void DAAgentModule::initialize(DACoreInterface* core)
     // 守卫改为仅判 m_bridge；Dock 连接已由 DAAppController 经接口完成）。
     connectSignals();
 
-    // 注册平台内置工具（plan-05；未完成时为空体）
+    // 注册平台内置工具（plan-03 搬迁到 plugins/DAAgentTools 插件，由插件 initialize
+    // 经 agent->registerTool 注册；此处保留方法壳作双轨过渡，plan-04 删除方法本身）
     registerBuiltinTools();
 }
 
@@ -293,25 +278,9 @@ bool DAAgentModule::isRunning() const
 
 void DAAgentModule::registerBuiltinTools()
 {
-    // Data tools (5)
-    registerTool(new DAAgentToolListData(m_core, this));
-    registerTool(new DAAgentToolDataInfo(m_core, this));
-    registerTool(new DAAgentToolQueryData(m_core, this));
-    registerTool(new DAAgentToolColumnStats(m_core, this));
-    registerTool(new DAAgentToolExportData(m_core, this));
-    // Plotting tools (8)
-    registerTool(new DAAgentToolCreateChart(m_core, this));
-    registerTool(new DAAgentToolAddCurve(m_core, this));
-    registerTool(new DAAgentToolSetChartStyle(m_core, this));
-    registerTool(new DAAgentToolAddAnnotation(m_core, this));
-    registerTool(new DAAgentToolAddRegion(m_core, this));
-    registerTool(new DAAgentToolCreateSubplots(m_core, this));
-    registerTool(new DAAgentToolSaveChartImage(m_core, this));
-    registerTool(new DAAgentToolListFigures(m_core, this));
-    // File/report tools (3)
-    registerTool(new DAAgentToolReadFile(m_core, this));
-    registerTool(new DAAgentToolWriteFile(m_core, this));
-    registerTool(new DAAgentToolSaveReport(m_core, this));
+    // plan-03：16 个内置工具已搬迁到 plugins/DAAgentTools 插件，由
+    // DAAgentToolsPlugin::initialize() 经 agent->registerTool 注册。本方法体清空，
+    // 保留方法声明与 initialize() 调用作双轨过渡；plan-04 删除方法本身。
 }
 
 void DAAgentModule::connectSignals()

@@ -1,5 +1,5 @@
 #pragma once
-#include "DAAgentToolBase.h"
+#include "DAAgentChartToolBase.h"
 
 namespace DA
 {
@@ -9,11 +9,11 @@ namespace DA
  * 参数：layout(如"2x2")、data_name(可选)、其他绘图参数
  * 使用 createChart(QRectF) 指定网格位置，避免双重添加
  */
-class DAAgentToolCreateSubplots : public DAAgentToolBase
+class DAAgentToolCreateSubplots : public DAAgentChartToolBase
 {
     Q_OBJECT
 public:
-    using DAAgentToolBase::DAAgentToolBase;
+    using DAAgentChartToolBase::DAAgentChartToolBase;
     /// @copydoc DAAbstractAgentTool::getToolSpec
     QJsonObject getToolSpec() const override;
     /// @copydoc DAAbstractAgentTool::execute

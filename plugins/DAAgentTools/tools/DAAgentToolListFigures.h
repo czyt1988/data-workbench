@@ -1,5 +1,5 @@
 #pragma once
-#include "DAAgentToolBase.h"
+#include "DAAgentChartToolBase.h"
 
 namespace DA
 {
@@ -9,11 +9,11 @@ namespace DA
  * 无参数。返回每个 figure 的名称、ID、chart 数量及各 chart 的标题/索引，
  * 便于 agent 后续通过 figure_name + chart_id 定位具体绘图进行修改。
  */
-class DAAgentToolListFigures : public DAAgentToolBase
+class DAAgentToolListFigures : public DAAgentChartToolBase
 {
     Q_OBJECT
 public:
-    using DAAgentToolBase::DAAgentToolBase;
+    using DAAgentChartToolBase::DAAgentChartToolBase;
     /// @copydoc DAAbstractAgentTool::getToolSpec
     QJsonObject getToolSpec() const override;
     /// @copydoc DAAbstractAgentTool::execute
