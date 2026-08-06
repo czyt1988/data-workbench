@@ -526,10 +526,6 @@ damacro_import_DALiteCtk(${DA_LIB_NAME})
 
 # -------------link quazip--------------------------
 damacro_import_quazip(${DA_LIB_NAME})
-# DPAPI（CryptProtectData/CryptUnprotectData）需要 Crypt32.lib —— DAAgentSettingsWidget 的 API Key 加密
-if(WIN32)
-    target_link_libraries(${DA_LIB_NAME} PRIVATE Crypt32)
-endif()
 ########################################################
 # 设置通用库属性
 ########################################################

@@ -30,7 +30,7 @@ public:
     void createUi(SARibbonMainWindow* mainwindow) override;
     // 获取数据管理接口
     DADataManagerInterface* getDataManagerInterface() const override;
-    // 获取Agent接口（本期返回nullptr，真实实现由后续plan提供）
+    // 获取Agent接口（initialized 时 new DAAgentModule 赋给 mAgentInterface，返回 DAAgentModule 实例）
     virtual DAAgentInterface* getAgentInterface() const override;
 
 public:

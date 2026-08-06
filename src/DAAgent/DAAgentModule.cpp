@@ -431,20 +431,50 @@ QJsonObject DAAgentModule::getLLMConfig() const
     config["max_recent_messages"]       = s.value("agent/max_recent_messages", 10).toInt();
     config["tool_result_max_chars"]     = s.value("agent/tool_result_max_chars", 50000).toInt();
     config["tool_result_preview_chars"] = s.value("agent/tool_result_preview_chars", 2000).toInt();
+    // 启动/停止超时（默认 ready=60s 覆盖 langchain 冷启动导入、stop=5s），与 startAgentInternal 读法一致
+    config["ready_timeout_sec"]         = s.value("agent/ready_timeout_sec", 60).toInt();
+    config["stop_timeout_sec"]          = s.value("agent/stop_timeout_sec", 5).toInt();
+    // 会话清理配置（默认 20/30，须与 cleanupSessions 读这两个 key 的默认值一致）
+    config["max_sessions"]             = s.value("agent/max_sessions", 20).toInt();
+    config["session_retention_days"]    = s.value("agent/session_retention_days", 30).toInt();
     return config;
 }
 
 void DAAgentModule::setLLMConfig(const QJsonObject& config)
 {
-    // 与 getLLMConfig() 对称的 key 写入 agent-config.ini（可用于运行时覆盖配置）
+    // 必须用显式 ini 路径（与 getLLMConfig/startAgentInternal/cleanupSessions 一致），
+    // 不可用默认构造 QSettings()——Windows 上后者写注册表，会与读 ini 的 getLLMConfig 错位致全部 key 丢失。
     QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    s.setValue("agent/llm_base_url", config.value("base_url").toString());
-    s.setValue("agent/llm_model", config.value("model").toString());
-    QString apiKey = config.value("api_key").toString();
-    if (!apiKey.isEmpty()) {
-        // IniFormat 原生支持 QByteArray,加密 blob 直接存储
-        s.setValue("agent/llm_api_key", encryptApiKey(apiKey));
-    }
+    // base_url / model：原已写，补 contains 守卫保持一致
+    if (config.contains("base_url"))
+        s.setValue("agent/llm_base_url", config.value("base_url").toString());
+    if (config.contains("model"))
+        s.setValue("agent/llm_model", config.value("model").toString());
+    // api_key：无条件写（移除原 if(!apiKey.isEmpty()) 守卫）。
+    //   空字符串 → encryptApiKey("") 返回空 QByteArray → 清空存储 blob，用户可清空 api_key。
+    //   getLLMConfig 侧的 if(!encKey.isEmpty()) 守卫保留（空时不 set api_key，页 loadConfig 得空，一致）。
+    if (config.contains("api_key"))
+        s.setValue("agent/llm_api_key", encryptApiKey(config.value("api_key").toString()));
+    // 5 个已读未写的 context-management key（CRITICAL #1 补写）：
+    if (config.contains("context_window"))
+        s.setValue("agent/context_window",            config.value("context_window").toInt());
+    if (config.contains("compaction_threshold"))
+        s.setValue("agent/compaction_threshold",      config.value("compaction_threshold").toDouble());
+    if (config.contains("max_recent_messages"))
+        s.setValue("agent/max_recent_messages",       config.value("max_recent_messages").toInt());
+    if (config.contains("tool_result_max_chars"))
+        s.setValue("agent/tool_result_max_chars",     config.value("tool_result_max_chars").toInt());
+    if (config.contains("tool_result_preview_chars"))
+        s.setValue("agent/tool_result_preview_chars", config.value("tool_result_preview_chars").toInt());
+    // 4 个新 key：
+    if (config.contains("ready_timeout_sec"))
+        s.setValue("agent/ready_timeout_sec",         config.value("ready_timeout_sec").toInt());
+    if (config.contains("stop_timeout_sec"))
+        s.setValue("agent/stop_timeout_sec",          config.value("stop_timeout_sec").toInt());
+    if (config.contains("max_sessions"))
+        s.setValue("agent/max_sessions",              config.value("max_sessions").toInt());
+    if (config.contains("session_retention_days"))
+        s.setValue("agent/session_retention_days",    config.value("session_retention_days").toInt());
 }
 
 // ===========================================================================

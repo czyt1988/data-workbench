@@ -79,6 +79,10 @@ target_compile_definitions(${DA_APP_NAME} PUBLIC
 ########################################################
 # 依赖链接 #!!!!** 注意变更 **!!!!
 ########################################################
+# onTestConnection 用 QNetworkAccessManager——Network 在顶层 find_package 未声明，
+# DAGui 子目录里的 find_package(Network) 产生的 IMPORTED 目标对 APP（兄弟子目录）不可见，
+# 故 APP 须自带 find_package。
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Network REQUIRED)
 # -------------link Qt--------------------------
 target_link_libraries(${DA_APP_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
@@ -86,6 +90,7 @@ target_link_libraries(${DA_APP_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Xml
     Qt${QT_VERSION_MAJOR}::Svg
+    Qt${QT_VERSION_MAJOR}::Network
 )
 if(WIN32)
     target_link_libraries(${DA_APP_NAME} PUBLIC

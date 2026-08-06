@@ -1,41 +1,29 @@
 // DAAgentSettingsWidget.cpp
+// 持久化经 m_agentInterface->get/setLLMConfig 走 agent-config.ini（DAAgent 内部 DPAPI 加解密 api_key），
+// 设置页只传明文 QJsonObject——不再持有 QSettings/DPAPI 代码（plan-01 加解密内化、plan-05 迁页）。
 #include "DAAgentSettingsWidget.h"
-#include "DADir.h"
 #include "DALogCategory.h"
-#include <QCoreApplication>
 #include <QFormLayout>
-#include <QSettings>
 #include <QTimer>
 #include <QJsonArray>
 #include <QUrl>
+#include <QLatin1String>
 
-// Config keys (static const, not DAAppConfig macros):
-// DAAgent 库无法链接 APP 的 DAAppConfig，使用 QSettings 持久化（见 plan-06 "持久化方案选择"）
-static const char* KEY_LLM_BASE_URL = "agent/llm_base_url";
-static const char* KEY_LLM_API_KEY  = "agent/llm_api_key";   // stored encrypted
-static const char* KEY_LLM_MODEL    = "agent/llm_model";
-static const char* KEY_READY_TIMEOUT_SEC = "agent/ready_timeout_sec";  // ready 等待超时(秒)
-static const char* KEY_STOP_TIMEOUT_SEC  = "agent/stop_timeout_sec";   // 停止等待超时(秒)
-// 上下文管理
-static const char* KEY_CONTEXT_WINDOW          = "agent/context_window";
-static const char* KEY_COMPACTION_THRESHOLD    = "agent/compaction_threshold";
-static const char* KEY_MAX_RECENT_MESSAGES     = "agent/max_recent_messages";
-static const char* KEY_TOOL_RESULT_MAX_CHARS   = "agent/tool_result_max_chars";
-static const char* KEY_TOOL_RESULT_PREVIEW_CHARS = "agent/tool_result_preview_chars";
-// 会话持久化（plan-06）：key 名须与 DAAgentModule::cleanupSessions 读取完全一致，默认值 20/30
-static const char* KEY_MAX_SESSIONS           = "agent/max_sessions";
-static const char* KEY_SESSION_RETENTION_DAYS = "agent/session_retention_days";
-
-#ifdef Q_OS_WIN
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
-#include <wincrypt.h>
-#endif
+namespace {
+// Qt5/Qt6 双兼容：QJsonObject::value(key, default) 在 Qt5 不存在（Qt5 的 value 只接受 1 个参数），
+// 故用这两个 helper 提供"取值并兜底默认值"语义。getLLMConfig 本应总返回全部 key（带默认），
+// 此处再兜一层防止接口实现退化时把 UI 默认值带偏。
+int jsonInt(const QJsonObject& o, const char* key, int def)
+{
+    QJsonValue v = o.value(QLatin1String(key));
+    return v.isDouble() ? v.toInt() : def;
+}
+double jsonDouble(const QJsonObject& o, const char* key, double def)
+{
+    QJsonValue v = o.value(QLatin1String(key));
+    return v.isDouble() ? v.toDouble() : def;
+}
+}  // namespace
 
 namespace DA
 {
@@ -185,98 +173,60 @@ void DAAgentSettingsWidget::setupUI()
 
 void DAAgentSettingsWidget::loadConfig()
 {
-    // 显式 INI 路径(原为 QSettings 默认构造→注册表,org 为空时 setValue 静默失败)
-    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    QString baseUrl   = s.value(KEY_LLM_BASE_URL).toString();
-    QString model     = s.value(KEY_LLM_MODEL).toString();
-    // IniFormat 原生支持 QByteArray(@ByteArray 注解),api_key 直接读写
-    QByteArray encKey = s.value(KEY_LLM_API_KEY).toByteArray();
-    // 超时配置:默认 ready=60s(覆盖 langchain 冷启动导入)、stop=5s
-    int readyTimeout = s.value(KEY_READY_TIMEOUT_SEC, 60).toInt();
-    int stopTimeout  = s.value(KEY_STOP_TIMEOUT_SEC, 5).toInt();
-    // 上下文管理配置:默认值与 DAAgentModule::getLLMConfig 一致
-    int contextWindow       = s.value(KEY_CONTEXT_WINDOW, 1048576).toInt();
-    double compactionThreshold = s.value(KEY_COMPACTION_THRESHOLD, 0.85).toDouble();
-    int maxRecentMsgs       = s.value(KEY_MAX_RECENT_MESSAGES, 10).toInt();
-    int toolResultMaxChars  = s.value(KEY_TOOL_RESULT_MAX_CHARS, 50000).toInt();
-    int toolResultPreviewChars = s.value(KEY_TOOL_RESULT_PREVIEW_CHARS, 2000).toInt();
-    // 会话持久化配置(plan-06): 默认值须与 DAAgentModule::cleanupSessions(20/30) 一致
-    int maxSessions       = s.value(KEY_MAX_SESSIONS, 20).toInt();
-    int retentionDays     = s.value(KEY_SESSION_RETENTION_DAYS, 30).toInt();
-    // 诊断日志: 显示从 QSettings 读到的原始值(绝不打印 api_key 明文,只显示加密 blob 大小)
-    // 用于排查"重启后字段为空"问题——若 QSettings 路径不一致/注册表为空,这里一目了然
-    daDebug << "[DAAgentSettings] loadConfig: base_url=" << baseUrl
-            << " model=" << model
-            << " api_key_enc_size=" << encKey.size()
-            << " ready_timeout=" << readyTimeout
-            << " stop_timeout=" << stopTimeout
-            << " context_window=" << contextWindow
-            << " compaction_threshold=" << compactionThreshold
-            << " max_recent=" << maxRecentMsgs
-            << " tool_max=" << toolResultMaxChars
-            << " tool_preview=" << toolResultPreviewChars
-            << " max_sessions=" << maxSessions
-            << " retention_days=" << retentionDays
-            << " org=" << QCoreApplication::organizationName()
-            << " app=" << QCoreApplication::applicationName();
-    m_baseUrlEdit->setText(baseUrl);
-    m_modelEdit->setText(model);
-    if (!encKey.isEmpty()) {
-        m_apiKeyEdit->setText(decryptApiKey(encKey));
+    // 经接口读 agent-config.ini（DAAgent 内部 DPAPI 解密 api_key 为明文）。
+    // m_agentInterface 未注入时（如旧构建路径误用）直接返回，避免空指针解引用。
+    if (!m_agentInterface) {
+        daDebug << "[DAAgentSettings] loadConfig skipped: no agent interface injected";
+        return;
     }
-    m_readyTimeoutSpin->setValue(readyTimeout);
-    m_stopTimeoutSpin->setValue(stopTimeout);
-    m_contextWindowSpin->setValue(contextWindow);
-    m_compactionThresholdSpin->setValue(compactionThreshold);
-    m_maxRecentMsgSpin->setValue(maxRecentMsgs);
-    m_toolResultMaxCharsSpin->setValue(toolResultMaxChars);
-    m_toolResultPreviewCharsSpin->setValue(toolResultPreviewChars);
-    m_maxSessionsSpin->setValue(maxSessions);
-    m_sessionRetentionDaysSpin->setValue(retentionDays);
+    QJsonObject c = m_agentInterface->getLLMConfig();  // api_key 已是明文
+    // 诊断日志: 确认读到配置(绝不打印 api_key 明文,只显示 api_key_empty 标志)
+    daDebug << "[DAAgentSettings] loadConfig: base_url=" << c.value("base_url").toString()
+            << " model=" << c.value("model").toString()
+            << " api_key_empty=" << c.value("api_key").toString().isEmpty()
+            << " context_window=" << c.value("context_window").toInt()
+            << " max_sessions=" << c.value("max_sessions").toInt();
+    m_baseUrlEdit->setText(c.value("base_url").toString());
+    m_modelEdit->setText(c.value("model").toString());
+    m_apiKeyEdit->setText(c.value("api_key").toString());  // 明文
+    m_readyTimeoutSpin->setValue(jsonInt(c, "ready_timeout_sec", 60));
+    m_stopTimeoutSpin->setValue(jsonInt(c, "stop_timeout_sec", 5));
+    m_contextWindowSpin->setValue(jsonInt(c, "context_window", 1048576));
+    m_compactionThresholdSpin->setValue(jsonDouble(c, "compaction_threshold", 0.85));
+    m_maxRecentMsgSpin->setValue(jsonInt(c, "max_recent_messages", 10));
+    m_toolResultMaxCharsSpin->setValue(jsonInt(c, "tool_result_max_chars", 50000));
+    m_toolResultPreviewCharsSpin->setValue(jsonInt(c, "tool_result_preview_chars", 2000));
+    m_maxSessionsSpin->setValue(jsonInt(c, "max_sessions", 20));
+    m_sessionRetentionDaysSpin->setValue(jsonInt(c, "session_retention_days", 30));
 }
 
 void DAAgentSettingsWidget::saveConfig()
 {
-    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    QString baseUrl   = m_baseUrlEdit->text().trimmed();
-    QString model     = m_modelEdit->text().trimmed();
-    QByteArray encKey = encryptApiKey(m_apiKeyEdit->text());
-    int readyTimeout = m_readyTimeoutSpin->value();
-    int stopTimeout  = m_stopTimeoutSpin->value();
-    int contextWindow       = m_contextWindowSpin->value();
-    double compactionThreshold = m_compactionThresholdSpin->value();
-    int maxRecentMsgs       = m_maxRecentMsgSpin->value();
-    int toolResultMaxChars  = m_toolResultMaxCharsSpin->value();
-    int toolResultPreviewChars = m_toolResultPreviewCharsSpin->value();
-    int maxSessions       = m_maxSessionsSpin->value();
-    int retentionDays     = m_sessionRetentionDaysSpin->value();
-    s.setValue(KEY_LLM_BASE_URL, baseUrl);
-    s.setValue(KEY_LLM_MODEL,    model);
-    // IniFormat 原生支持 QByteArray(@ByteArray 注解),加密 blob 直接存储
-    s.setValue(KEY_LLM_API_KEY,  encKey);
-    s.setValue(KEY_READY_TIMEOUT_SEC, readyTimeout);
-    s.setValue(KEY_STOP_TIMEOUT_SEC,  stopTimeout);
-    s.setValue(KEY_CONTEXT_WINDOW,          contextWindow);
-    s.setValue(KEY_COMPACTION_THRESHOLD,    compactionThreshold);
-    s.setValue(KEY_MAX_RECENT_MESSAGES,     maxRecentMsgs);
-    s.setValue(KEY_TOOL_RESULT_MAX_CHARS,   toolResultMaxChars);
-    s.setValue(KEY_TOOL_RESULT_PREVIEW_CHARS, toolResultPreviewChars);
-    s.setValue(KEY_MAX_SESSIONS,            maxSessions);
-    s.setValue(KEY_SESSION_RETENTION_DAYS, retentionDays);
-    // 诊断日志: 确认 saveConfig 真的被调用且写入了 QSettings(绝不打印 api_key 明文)
-    // 若 ini 文件为空但此处显示有值,说明 QSettings 写入失败(环境/权限问题)
-    daDebug << "[DAAgentSettings] saveConfig written: base_url=" << baseUrl
-            << " model=" << model
-            << " api_key_enc_size=" << encKey.size()
-            << " ready_timeout=" << readyTimeout
-            << " stop_timeout=" << stopTimeout
-            << " context_window=" << contextWindow
-            << " compaction_threshold=" << compactionThreshold
-            << " max_recent=" << maxRecentMsgs
-            << " tool_max=" << toolResultMaxChars
-            << " tool_preview=" << toolResultPreviewChars
-            << " max_sessions=" << maxSessions
-            << " retention_days=" << retentionDays;
+    // 经接口写 agent-config.ini（DAAgent 内部 DPAPI 加密 api_key）。页只组装明文 QJsonObject。
+    if (!m_agentInterface) {
+        daDebug << "[DAAgentSettings] saveConfig skipped: no agent interface injected";
+        return;
+    }
+    QJsonObject c;
+    c["base_url"]                  = m_baseUrlEdit->text().trimmed();
+    c["model"]                     = m_modelEdit->text().trimmed();
+    c["api_key"]                   = m_apiKeyEdit->text();  // 明文,DAAgent 内部加密
+    c["ready_timeout_sec"]         = m_readyTimeoutSpin->value();
+    c["stop_timeout_sec"]          = m_stopTimeoutSpin->value();
+    c["context_window"]            = m_contextWindowSpin->value();
+    c["compaction_threshold"]      = m_compactionThresholdSpin->value();
+    c["max_recent_messages"]       = m_maxRecentMsgSpin->value();
+    c["tool_result_max_chars"]     = m_toolResultMaxCharsSpin->value();
+    c["tool_result_preview_chars"] = m_toolResultPreviewCharsSpin->value();
+    c["max_sessions"]              = m_maxSessionsSpin->value();
+    c["session_retention_days"]    = m_sessionRetentionDaysSpin->value();
+    // 诊断日志: 确认 saveConfig 真的被调用且收集到了值(绝不打印 api_key 明文)
+    daDebug << "[DAAgentSettings] saveConfig: base_url=" << c.value("base_url").toString()
+            << " model=" << c.value("model").toString()
+            << " api_key_empty=" << c.value("api_key").toString().isEmpty()
+            << " context_window=" << c.value("context_window").toInt()
+            << " max_sessions=" << c.value("max_sessions").toInt();
+    m_agentInterface->setLLMConfig(c);
 }
 
 void DAAgentSettingsWidget::apply()
@@ -345,57 +295,5 @@ void DAAgentSettingsWidget::onTestConnection()
         reply->deleteLater();
     });
 }
-
-#ifdef Q_OS_WIN
-QByteArray DAAgentSettingsWidget::encryptApiKey(const QString& apiKey)
-{
-    if (apiKey.isEmpty()) return {};
-    QByteArray utf8 = apiKey.toUtf8();
-    DATA_BLOB inBlob;
-    inBlob.pbData = reinterpret_cast<BYTE*>(utf8.data());
-    inBlob.cbData = static_cast<DWORD>(utf8.size());
-    DATA_BLOB outBlob;
-    // 标志传 0 = 当前用户作用域，NOT CRYPTPROTECT_LOCAL_MACHINE
-    if (!CryptProtectData(&inBlob, L"AgentApiKey", nullptr, nullptr, nullptr,
-                          0, &outBlob)) {
-        return {};
-    }
-    QByteArray enc(reinterpret_cast<const char*>(outBlob.pbData),
-                   static_cast<int>(outBlob.cbData));
-    LocalFree(outBlob.pbData);
-    return enc.toBase64();
-}
-
-QString DAAgentSettingsWidget::decryptApiKey(const QByteArray& encrypted)
-{
-    if (encrypted.isEmpty()) return {};
-    QByteArray raw = QByteArray::fromBase64(encrypted);
-    DATA_BLOB inBlob;
-    inBlob.pbData = reinterpret_cast<BYTE*>(raw.data());
-    inBlob.cbData = static_cast<DWORD>(raw.size());
-    DATA_BLOB outBlob;
-    if (!CryptUnprotectData(&inBlob, nullptr, nullptr, nullptr, nullptr,
-                            0, &outBlob)) {
-        return {};
-    }
-    QString result = QString::fromUtf8(
-        reinterpret_cast<const char*>(outBlob.pbData),
-        static_cast<int>(outBlob.cbData));
-    LocalFree(outBlob.pbData);
-    return result;
-}
-#else
-// Fallback: base64 encoding (NOT secure — for non-Windows development only)
-QByteArray DAAgentSettingsWidget::encryptApiKey(const QString& apiKey)
-{
-    return apiKey.toUtf8().toBase64();
-}
-
-QString DAAgentSettingsWidget::decryptApiKey(const QByteArray& encrypted)
-{
-    if (encrypted.isEmpty()) return {};
-    return QString::fromUtf8(QByteArray::fromBase64(encrypted));
-}
-#endif
 
 } // namespace DA

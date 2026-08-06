@@ -1,6 +1,6 @@
 #pragma once
-#include "DAGuiAPI.h"
 #include "DAAbstractSettingPage.h"
+#include "DAAgentInterface.h"
 #include <QLineEdit>
 #include <QPushButton>
 #include <QLabel>
@@ -19,12 +19,12 @@ namespace DA
  * @brief Agent LLM 设置页：配置 base_url / api_key / model_name，提供连接测试
  *
  * 继承 DAAbstractSettingPage（非 QWidget），注册到平台设置系统。
- * 配置通过 QSettings 持久化（DAAgent 库无法链接 APP 的 DAAppConfig），
- * API Key 使用 DPAPI 加密存储（Windows，当前用户作用域）。
+ * 持久化经 setAgentInterface 注入的 DAAgentInterface 的 get/setLLMConfig
+ * 走 agent-config.ini（DAAgent 库内部加解密 api_key），设置页只传明文 QJsonObject。
  *
  * 参考实现：data-workbench/src/APP/SettingPages/DASettingPagePython.h
  */
-class DAGUI_API DAAgentSettingsWidget : public DAAbstractSettingPage
+class DAAgentSettingsWidget : public DAAbstractSettingPage
 {
     Q_OBJECT
 public:
@@ -52,20 +52,11 @@ public:
      */
     void apply() override;
 
-    /// DPAPI 加密/解密辅助（public，供 DAAgentModule::getLLMConfig 调用）
     /**
-     * @brief 加密 API Key（DPAPI，Windows）
-     * @param apiKey 明文 API Key
-     * @return 加密后的 Base64 字节数组
+     * @brief 注入 Agent 接口，loadConfig/saveConfig 经此接口持久化（api_key 明文经接口，DAAgent 内部加解密）
+     * @param p DAAgentInterface 实例（由 DAAppSettingDialog 经 config->getCore()->getAgentInterface() 取得）
      */
-    static QByteArray encryptApiKey(const QString& apiKey);
-
-    /**
-     * @brief 解密 API Key（DPAPI，Windows）
-     * @param encrypted 加密的 Base64 字节数组
-     * @return 解密后的明文 API Key
-     */
-    static QString decryptApiKey(const QByteArray& encrypted);
+    void setAgentInterface(DAAgentInterface* p) { m_agentInterface = p; }
 
 private Q_SLOTS:
     void onTestConnection();
@@ -76,6 +67,7 @@ private:
     void saveConfig();
 
 private:
+    DAAgentInterface* m_agentInterface { nullptr };  ///< 持久化接口（loadConfig/saveConfig 经此走 agent-config.ini）
     QLineEdit* m_baseUrlEdit;
     QLineEdit* m_apiKeyEdit;       // EchoMode::Password
     QLineEdit* m_modelEdit;        // 模型名

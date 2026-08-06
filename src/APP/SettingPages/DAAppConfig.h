@@ -105,6 +105,8 @@ public:
     DAAppConfig();
     virtual ~DAAppConfig();
     void setCore(DAAppCore* core);
+    /// 获取 core 实例（供设置页经 config->getCore()->getAgentInterface() 取 DAAgentInterface 等接口）
+    DAAppCore* getCore() const { return mCore; }
     //加载配置
     bool loadConfig(bool noFileCreateNewOne = true);
     //保存配置
