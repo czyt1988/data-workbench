@@ -463,22 +463,22 @@ void DAAgentSessionStore::setSessionProjectPath(const QString& sessionId, const 
 // ===========================================================================
 // 自动标题
 // ===========================================================================
-void DAAgentSessionStore::ensureTitle(const QString& sessionId)
+bool DAAgentSessionStore::ensureTitle(const QString& sessionId)
 {
     DA_D(d);
-    if (sessionId.isEmpty()) return;
+    if (sessionId.isEmpty()) return false;
 
     QVector<SessionMeta> metas = d->readIndexInternal();
     SessionMeta* target = nullptr;
     for (auto& m : metas) {
         if (m.id == sessionId) { target = &m; break; }
     }
-    if (!target) return;
-    if (!target->title.isEmpty()) return;  // 已有标题，不动
+    if (!target) return false;
+    if (!target->title.isEmpty()) return false;  // 已有标题，不动
 
     // 读首条 user 记录的 content
     QFile f(d->sessionFilePath(sessionId));
-    if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) return;
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) return false;
     QString firstUserContent;
     while (!f.atEnd()) {
         QByteArray line = f.readLine();
@@ -492,12 +492,21 @@ void DAAgentSessionStore::ensureTitle(const QString& sessionId)
     }
     f.close();
 
-    if (firstUserContent.isEmpty()) return;
+    if (firstUserContent.isEmpty()) return false;
 
-    // 取前 40 字符
-    target->title = firstUserContent.left(40);
+    // 取首行、trim、超长截断加省略号，生成简短会话名（首行更干净，避免多行堆砌）
+    const int MaxTitleChars = 20;
+    QString title = firstUserContent.section('\n', 0, 0).trimmed();
+    if (title.isEmpty()) title = firstUserContent.trimmed();
+    if (title.isEmpty()) return false;
+    if (title.size() > MaxTitleChars) {
+        title = title.left(MaxTitleChars) + QStringLiteral("…");
+    }
+
+    target->title = title;
     target->updatedAt = QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
     d->writeIndex(metas);
+    return true;
 }
 
 // ===========================================================================

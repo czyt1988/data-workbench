@@ -138,9 +138,10 @@ public:
 
     // ---- 自动标题 ----
     /**
-     * @brief 读首条 user 记录，若 title 空则取其 content 前 40 字符设为标题
+     * @brief 读首条 user 记录，若 title 空则取其 content 首行截断为简短标题
+     * @return 标题是否被设置（true=本次设置了标题；false=已有标题/无可取内容）
      */
-    void ensureTitle(const QString& sessionId);
+    bool ensureTitle(const QString& sessionId);
 
 private:
     DA_DECLARE_PRIVATE(DAAgentSessionStore)

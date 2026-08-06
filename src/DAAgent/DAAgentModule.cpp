@@ -154,7 +154,10 @@ void DAAgentModule::sendMessage(const QString& text)
     }
     // 发送前持久化 user 消息
     m_sessionStore->appendRecord(m_currentSessionId, makeUserRecord(text));
-    m_sessionStore->ensureTitle(m_currentSessionId);  // 首条 user 定标题
+    // 首条 user 消息定简短标题；标题变更时刷新 UI 下拉（否则 combo 一直显示 (untitled)）
+    if (m_sessionStore->ensureTitle(m_currentSessionId)) {
+        emit sessionListChanged(listSessionsForUI());
+    }
     if (!m_bridge->isRunning()) {
         // 懒启动
         startAgentInternal();

@@ -40,6 +40,7 @@ private Q_SLOTS:
     void testIndexAtomicWrite();
     void testCleanup();
     void testLastActive();
+    void testEnsureTitle();
 
 private:
     static QJsonObject makeRecord(const QString& sessionId, const QString& type, const QString& content);
@@ -286,6 +287,52 @@ void DAAgentSessionStoreTest::testLastActive()
     // 5e. 切回自由会话指针，空 filter 再次生效
     store.setLastActive(sidA, QString());
     QCOMPARE(store.lastActiveSession(QString()), sidA);
+}
+
+// ---------------------------------------------------------------------------
+// 6. ensureTitle 自动简短命名 + 幂等 + UI 刷新信号契约（ensureTitle 返回是否变更）
+// ---------------------------------------------------------------------------
+void DAAgentSessionStoreTest::testEnsureTitle()
+{
+    DA::DAAgentSessionStore store;
+    QString sid = store.createSession();
+
+    // 6a. 新会话无标题，且无 user 记录时 ensureTitle 返回 false
+    {
+        auto metas = store.listSessions();
+        QCOMPARE(metas.size(), 1);
+        QVERIFY(metas.at(0).title.isEmpty());
+    }
+    QVERIFY(!store.ensureTitle(sid));
+
+    // 6b. 首条 user 消息（多行、首行超 20 字符）→ ensureTitle 返回 true，
+    //     title 取首行前 20 字符 + 省略号，不含第二行、不含被截掉的尾部
+    //     首行 24 字符："一二三四五六七八九十一二三四五六七八九十尾部标记"
+    QString longMsg = QStringLiteral("一二三四五六七八九十一二三四五六七八九十尾部标记\n第二行不该进标题");
+    store.appendRecord(sid, makeRecord(sid, "user", longMsg));
+    QVERIFY(store.ensureTitle(sid));
+
+    auto metas = store.listSessions();
+    QCOMPARE(metas.size(), 1);
+    QString title = metas.at(0).title;
+    QVERIFY(title.startsWith(QStringLiteral("一二三四五六七八九十一二三四五六七八九十")));
+    QVERIFY(title.endsWith(QStringLiteral("…")));
+    QCOMPARE(title.size(), 21);  // 20 字符 + 省略号
+    QVERIFY(!title.contains(QStringLiteral("尾部标记")));  // 超出 20 的尾部被截
+    QVERIFY(!title.contains(QStringLiteral("第二行")));     // 非首行不进标题
+
+    // 6c. 再次 ensureTitle 幂等：已有标题不动，返回 false
+    QVERIFY(!store.ensureTitle(sid));
+
+    // 6d. 短消息（< 20 字符）不截断、无省略号（按 id 查找，不依赖 listSessions 的排序）
+    QString sid2 = store.createSession();
+    store.appendRecord(sid2, makeRecord(sid2, "user", QStringLiteral("短消息")));
+    QVERIFY(store.ensureTitle(sid2));
+    QString sid2Title;
+    for (const auto& m : store.listSessions()) {
+        if (m.id == sid2) { sid2Title = m.title; break; }
+    }
+    QCOMPARE(sid2Title, QString("短消息"));
 }
 
 // ---------------------------------------------------------------------------
