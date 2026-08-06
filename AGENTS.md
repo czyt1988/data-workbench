@@ -23,7 +23,7 @@ data-workbench/
 ├── .github/workflows/  # CI (build.yml, page.yml)
 ├── cmake/              # CMake 工具链 (daworkbench_utils.cmake, 3rdparty.cmake, plugin_utils.cmake)
 ├── docs/zh/            # 中文技术文档 (dev-guide/, use-guide/, build/)
-├── plugins/            # 插件 (DataAnalysis, CrewAIAdapter, plugin-template)
+├── plugins/            # 插件 (DataAnalysis, CrewAIAdapter, DAAgentTools, plugin-template)
 ├── src/
 │   ├── 3rdparty/       # 第三方库 (qwt, SARibbon, qt-advanced-docking 等)
 │   ├── DAShared/       # 共享基础类型 (20 files)
@@ -73,6 +73,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 界面层: DAGui (→ 所有上述模块 + SARibbon/ADS/qwt)
 接口层: DAInterface (→ DAGui)
        DAPluginSupport (→ DAInterface + DAPyWorkFlow)
+       DAAgent (→ DAInterface/DAData/DAPyBindQt/DAPyScripts；纯 agent 框架库，不依赖 GUI 模块)
 应用层: APP (→ DAPluginSupport)
 ```
 
@@ -90,7 +91,8 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 ┌─────────────────────────────────────────────────┐
 │ Layer 5: 应用层    │ APP (可执行程序)            │
 ├─────────────────────────────────────────────────┤
-│ Layer 4: 接口层    │ DAInterface, DAPluginSupport│
+│ Layer 4: 接口层    │ DAInterface, DAPluginSupport,│
+│                    │ DAAgent                      │
 ├─────────────────────────────────────────────────┤
 │ Layer 3: 界面层    │ DAGui, DACommonWidgets      │
 ├─────────────────────────────────────────────────┤
@@ -112,7 +114,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | **L1 基础层** | DAShared（纯头文件）、DAUtils、DAMessageHandler、DAPyBindQt |
 | **L2 功能层** | DAData、DAFigure、DAPyWorkFlow、DAGraphicsView、DAPyScripts、DAPyCommonWidgets |
 | **L3 界面层** | DAGui、DACommonWidgets |
-| **L4 接口层** | DAInterface、DAPluginSupport |
+| **L4 接口层** | DAInterface、DAPluginSupport、DAAgent |
 | **L5 应用层** | APP |
 
 ### 依赖方向规则（铁律）
@@ -158,6 +160,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | 通用 Widgets | `src/DACommonWidgets/` | 按钮、列表、树等基础组件 |
 | 枚举/字符串转换 | `src/DAShared/DAEnumStringUtils.hpp` | 通用枚举↔字符串映射宏，详见`docs/zh/dev-guide/da-enum-string-utils.md` |
 | 插件开发参考 | `plugins/DataAnalysis/` | 最完整的插件示例 |
+| Agent 工具/设置 | `plugins/DAAgentTools/`（16 内置工具）/ `src/APP/SettingPages/DAAgentSettingsWidget`（LLM 设置页） | 工具由 `DAAgentToolsPlugin` 注册；设置页经 `setAgentInterface` 持久化 `agent-config.ini`（DAAgent 不依赖 DAGui） |
 | Python 工作流节点开发 | `plugins/DASystemNodes/AGENTS.md` | @NodeDef 节点开发规范、**init**/paint() 等核心陷阱 |
 | 插件模板 | `plugins/plugin-template/` | 新插件脚手架 |
 | 文档源码 | `docs/zh/` | Doxygen Wiki 中文 |
@@ -267,6 +270,8 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | `DA::DAAppUI` | class | `src/APP/DAAppUI.h` | Ribbon/Docking 布局管理 |
 | `DA::DAAppPluginManager` | class | `src/APP/DAAppPluginManager.h` | 插件生命周期管理 |
 | `DA::DAAppProject` | class | `src/APP/DAAppProject.h` | 工程文件序列化 |
+| `DA::DAAgentInterface` | class | `src/DAAgent/DAAgentInterface.h` | Agent 公共接口：14 信号 + 工具/提示词注册 + `sendUserAnswer`/`newSession` + `get/setLLMConfig`（不依赖 GUI） |
+| `DA::DAAgentModule` | class | `src/DAAgent/DAAgentModule.h` | `DAAgentInterface` 实现：工具注册表、懒启动、Bridge 信号转发（不持 Dock，Dock 连接在 `DAAppController`） |
 | `DAWorkbenchFeatureType` | enum | `src/DAGlobals.h` | Workflow/Data/Chart 功能域标识 |
 | `QwtFigure` | class | `src/3rdparty/qwt/` | 多绘图布局容器 (类似 matplotlib Figure) |
 | `DA_DECLARE_PRIVATE` | macro | `src/DAGlobals.h` | PIMPL 私有数据声明 |

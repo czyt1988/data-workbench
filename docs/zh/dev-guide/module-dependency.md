@@ -22,6 +22,7 @@ data-workbench采用分层模块化架构，各模块之间有明确的依赖关
 | **DAGui** | L3 界面层 | 共享库 | 工作流UI、图表设置面板、数据管理UI、Model/View、对话框 | ~220 |
 | **DAInterface** | L4 接口层 | 共享库 | 抽象接口定义（Core/UI/Docking/Ribbon/Actions/Command/DataManager/Project） | 28 |
 | **DAPluginSupport** | L4 接口层 | 共享库 | 插件框架（DAAbstractPlugin/DAPluginManager/DAAbstractNodePlugin） | 10 |
+| **DAAgent** | L4 接口层 | 共享库 | 纯 agent 框架库（LLM 聊天/工具注册/信号链/会话持久化），不依赖 GUI 模块 | 11 |
 | **APP** | L5 应用层 | 可执行程序 | 主程序、接口具体实现、项目文件管理、插件管理 | 190 |
 | **DAAxOfficeWrapper** | L1 基础层 | 共享库 | Windows Office自动化封装（仅Win） | 10 |
 
@@ -33,7 +34,8 @@ data-workbench采用分层模块化架构，各模块之间有明确的依赖关
 ┌──────────────────────────────────────────────────────────┐
 │ Layer 5: 应用层          │ APP                           │
 ├──────────────────────────────────────────────────────────┤
-│ Layer 4: 接口层          │ DAInterface, DAPluginSupport  │
+│ Layer 4: 接口层          │ DAInterface, DAPluginSupport, │
+│                          │ DAAgent                       │
 ├──────────────────────────────────────────────────────────┤
 │ Layer 3: 界面层          │ DAGui, DACommonWidgets        │
 ├──────────────────────────────────────────────────────────┤
@@ -62,6 +64,7 @@ Python层: DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPyWorkFlow
 界面层: DAGui (→ 上述所有模块 + SARibbon/ADS/qwt/DALiteCtk/quazip)
 接口层: DAInterface (→DAGui)
        DAPluginSupport (→DAInterface + DAPyWorkFlow)
+       DAAgent (→DAInterface/DAData/DAPyBindQt/DAPyScripts；纯 agent 框架库，不依赖 GUI)
 应用层: APP (→DAPluginSupport + DAPyWorkFlow)
 ```
 
@@ -88,6 +91,7 @@ Python层: DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPyWorkFlow
 | **DAGui** | DAUtils, DAMessageHandler, DAData, DACommonWidgets, DAPyWorkFlow, DAFigure, DAPyBindQt, DAPyScripts, DAPyCommonWidgets, Qt, SARibbon, QtAdvancedDocking, qwt, DALiteCtk, quazip | Qt6::Core5Compat (if Qt6) | Python3, pybind11 |
 | **DAInterface** | **DAGui** (PUBLIC → 传递至所有消费者) | Qt, SARibbon, QtAdvancedDocking, qwt, DALiteCtk | Python3, pybind11 |
 | **DAPluginSupport** | **DAInterface** (PUBLIC), **DAPyWorkFlow** (PUBLIC), Qt | QtAdvancedDocking | Python3, pybind11 |
+| **DAAgent** | **DAInterface**, **DAData**, **DAPyBindQt**, **DAPyScripts**, Qt::Core/Gui/Widgets | Qt::PrintSupport/Svg, DAAxOfficeWrapper (Win), Crypt32 (Win, DPAPI 加密 api_key) | Python3, pybind11 |
 | **APP** | **DAPluginSupport**, DAPyWorkFlow, Qt, DALiteCtk, SARibbon, QtAdvancedDocking, qwt | — | Dbghelp (Win) |
 
 ---
@@ -132,6 +136,7 @@ graph BT
     subgraph "Layer 4 - 接口层"
         DAIF["DA<b>Interface</b><br/>抽象接口定义"]
         DAPS["DA<b>Plugin</b><br/>Support<br/>插件框架"]
+        DAAgent["DA<b>Agent</b><br/>纯 agent 框架库"]
     end
 
     subgraph "Layer 5 - 应用层"
@@ -174,6 +179,12 @@ graph BT
     DAPS --> DAIF
     DAPS --> DAPyWF
 
+    %% DAAgent → L1/L2/L4（纯 agent 框架库，不依赖 GUI 模块）
+    DAAgent --> DAIF
+    DAAgent --> DAData
+    DAAgent --> DAPyBind
+    DAAgent --> DAPyScripts
+
     %% Layer 5 → Layer 4
     APP --> DAPS
     APP --> DAPyWF
@@ -194,6 +205,7 @@ graph BT
     style DAGui fill:#fff3e0
     style DAIF fill:#f3e5f5
     style DAPS fill:#f3e5f5
+    style DAAgent fill:#f3e5f5
     style APP fill:#fff9c4
 ```
 
@@ -429,6 +441,23 @@ graph BT
 外部依赖：DAInterface + DAPyWorkFlow (both PUBLIC)
 
 消费者：APP (PUBLIC link), plugins/ 目录下所有插件
+
+#### DAAgent — AI Agent 框架库
+
+职责：纯 agent 框架库，提供工具注册机制、agent 生命周期信号、LLM 配置接口、QProcess 子进程通信管理。**不依赖任何 GUI 模块**（无 DAGui/DAFigure/qwt/ADS）——工具注册、聊天 UI 接线、LLM 设置页持久化全部由插件 / APP 层决定，DAGui 与 DAAgent 为兄弟模块互不依赖。
+
+提供内容：
+- `DAAgentInterface` — 公共接口：14 个 agent 生命周期/会话信号 + `registerTool`/`registerSystemPrompt` + `sendUserAnswer`/`newSession` + `get/setLLMConfig` + 会话管理纯虚方法
+- `DAAgentModule` — 接口实现：工具注册表、系统提示词组装、懒启动、Bridge 信号转发（**不持有 Dock**）、`agent-config.ini` 持久化（api_key 内部 DPAPI 加解密）
+- `DAAgentBridge` — QProcess 子进程管理 + JSON Lines 协议解析
+- `DAAgentSessionStore` — 会话持久化层（JSONL 读写/索引/清理）
+- `DAAgentToolBase` — 瘦工具基类（`DAAgent_API` 导出，供插件跨 DLL 继承）
+
+外部依赖：DAInterface, DAData, DAPyBindQt, DAPyScripts (PUBLIC) + Crypt32 (Win, PRIVATE, DPAPI 加密 api_key) + DAAxOfficeWrapper (Win, PRIVATE)
+
+消费者：APP（`DAAppController` connect Dock↔接口信号链，决策 D3b），`plugins/DAAgentTools/`（注册 16 个内置工具）
+
+> 工具注册、聊天 UI、LLM 设置页均不在本模块：16 个工具由 `plugins/DAAgentTools/` 提供；聊天 UI（`DAAgentDockWidget`）在 DAGui/Agent；LLM 设置页（`DAAgentSettingsWidget`）在 `src/APP/SettingPages/`。
 
 ---
 

@@ -11,15 +11,15 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 | 项 | 值 |
 |----|----|
 | 模块名 | `DAWorkbench::DAAgent`（SHARED 库） |
-| 源码目录 | `src/DAAgent/`（含 `tools/` 子目录） |
-| 依赖（PUBLIC） | DAInterface, DAData, DAFigure, DAPyBindQt, DAPyScripts, DAGui + Qt Core/Gui/Widgets |
-| 依赖（PRIVATE） | Qt PrintSupport/Svg（PDF/SVG 导出）、DAAxOfficeWrapper（Win, docx 导出） |
+| 源码目录 | `src/DAAgent/`（模块根含 `DAAgentToolBase.h/.cpp`；`tools/` 子目录已删除） |
+| 依赖（PUBLIC） | DAInterface, DAData, DAPyBindQt, DAPyScripts + Qt Core/Gui/Widgets（**无 DAGui / DAFigure / qwt / ADS**） |
+| 依赖（PRIVATE） | Qt PrintSupport/Svg（PDF/SVG 导出）、DAAxOfficeWrapper（Win, docx 导出）、Crypt32（Win, DPAPI 加密 api_key） |
 | 编译条件 | **仅 `DA_ENABLE_PYTHON=ON` 时编译**（`src/CMakeLists.txt:62`） |
 | 导出宏 | `DAAgent_API`（`DAAgentAPI.h`，`DAAGENT_BUILD` 定义于 `CMakeLists.txt:48`） |
 
-**层级**：DAAgent 位于接口层（Layer 4，与 DAInterface/DAPluginSupport 同级）。它向上提供 `DAAgentInterface` 供插件（Layer 5 及插件）注册工具/提示词、控制 UI 显隐与 LLM 配置；向下依赖 DAGui（Layer 3）等。创建新类时**禁止**让 DAAgent 依赖 APP。
+**层级**：DAAgent 位于接口层（Layer 4，与 DAInterface/DAPluginSupport 同级）。它向上提供 `DAAgentInterface` 供插件（Layer 5 及插件）注册工具/提示词、控制 UI 显隐与 LLM 配置；向下只依赖 DAInterface/DAData/DAPyBindQt/DAPyScripts（L1/L2）。**DAAgent 是纯 agent 框架库，不依赖任何 GUI 模块**（无 DAGui/DAFigure/qwt/ADS）——工具注册、UI 接线、设置页持久化全部由插件 / APP 层决定，DAGui 与 DAAgent 为兄弟模块互不依赖。创建新类时**禁止**让 DAAgent 依赖 APP，也禁止重新引入 DAGui 依赖（见铁律 T3）。
 
-**构建**：`.\scripts\build.ps1 -Target DAAgent`。`tools/*.cpp` 用 `file(GLOB ... CONFIGURE_DEPENDS)` 收集，新增工具文件无需改 CMake。
+**构建**：`.\scripts\build.ps1 -Target DAAgent`。模块根 `*.h/*.cpp` 用 `file(GLOB ... CONFIGURE_DEPENDS)` 收集（`DAAgentToolBase.h/.cpp` 在根目录）。工具不再在本模块内，新增工具在 `plugins/DAAgentTools/`（见 § 七）。
 
 ---
 
@@ -29,25 +29,28 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 ┌───────────────────────────────────────────────────────────────┐
 │  C++ 主进程 (Host)                                             │
 │  src/DAAgent/                                                  │
-│   DAAgentInterface   — 公共接口（插件注册工具/提示词）           │
-│   DAAgentModule      — 接口实现：工具注册、系统提示词组装、      │
-│                        懒启动、LLM 配置读写、会话生命周期、      │
-│                        cleanupSessions（读 ini 的 max_sessions/ │
-│                        session_retention_days，调 SessionStore）│
+│   DAAgentInterface   — 公共接口（14 信号 + 工具/提示词注册）   │
+│   DAAgentModule      — 接口实现：工具注册表、系统提示词组装、    │
+│                        懒启动、LLM 配置读写（agent-config.ini）、│
+│                        会话生命周期、cleanupSessions（读 ini 的  │
+│                        max_sessions/session_retention_days）    │
+│   DAAgentToolBase    — 瘦工具基类（DAAgent_API，数据/响应方法）  │
 │   DAAgentBridge      — QProcess 子进程管理 + JSON Lines 协议解析 │
 │                        （sendLoadSession 下发历史重建 state）   │
 │   DAAgentSessionStore — 会话持久化层：JSONL 读写 / 索引 / 清理 / │
 │                        标题 / last_active 指针（非 QObject）     │
-│   tools/             — 15 个平台内置工具（DAAgentToolBase 基类） │
 │  sessions/（运行时，DADir::getAppDataPath("sessions")）         │
 │   <id>.jsonl         — 每轮对话 append-only 追加                │
 │   sessions_index.json — 全局索引（原子写 tmp+rename）            │
 │   last_active.json    — 上次活跃会话指针（sessionId+projectPath）│
-│  src/DAGui/Agent/（UI 在 DAGui 模块）                           │
+│  src/DAGui/Agent/（UI 在 DAGui 模块，与 DAAgent 互不依赖）       │
 │   DAAgentDockWidget  — 聊天面板（QWebEngine + 输入框 + 会话下拉）│
 │   DAAgentWebChannel  — C++↔JS 桥（registerObject "chatBridge"） │
-│   DAAgentSettingsWidget — LLM 设置页（QSettings + DPAPI 加密 +   │
-│                        会话保留 max_sessions/retention_days）   │
+│  src/APP/SettingPages/（设置页在 APP 层）                       │
+│   DAAgentSettingsWidget — LLM 设置页（setAgentInterface 注入，  │
+│                        走 get/setLLMConfig 持久化，见 § 九）    │
+│  plugins/DAAgentTools/（工具插件）                              │
+│   DAAgentChartToolBase + tools/ — 16 个内置工具，插件注册       │
 └──────────────────────┬────────────────────────────────────────┘
                        │  QProcess 匿名管道
                        │  stdin/stdout: JSON Lines（每行一条 JSON）
@@ -61,6 +64,13 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 └───────────────────────────────────────────────────────────────┘
 ```
 
+
+### 信号与依赖架构（重构后）
+
+- `DAAgentInterface` 暴露 **14 个 agent 生命周期/会话信号**：Bridge 转发的 10 个（`agentToken` / `agentMessageComplete` / `agentToolCall` / `agentToolResult` / `agentQuestion` / `agentError` / `agentReady` / `agentBusy` / `agentDone` / `agentSessionLoaded`）+ Module 上移的 4 个（`tokenUsageUpdated` / `sessionSwitched` / `sessionCreated` / `sessionListChanged`），以及 `sendUserAnswer` / `newSession` 两个纯虚方法。
+- `DAAgentModule` 转发 `DAAgentBridge` 的 10 个信号到接口（`connectSignals` 内 Bridge→接口信号连接），自身 emit 4 个会话/用量信号（如 `tokenUsageUpdated` 由 Bridge `agentUsage` 经 lambda 补 `context_window` 后发射）。
+- **Dock 的信号↔槽由 `DAAppController`（APP 层）直接 connect**（决策 D3b）：接口 14 信号中 13 条 → Dock 槽、Dock 8 信号中 7 条 → 接口方法（信号→方法 PMF）。Module 不再持有 Dock，`setDockWidget` 已废弃删除，`showDockWidget`/`hideDockWidget` 为 no-op（仅留接口签名兼容）。
+- **DAGui 与 DAAgent 互不依赖**：DAGui 不 link DAAgent，DAAgent 不 link DAGui；二者由 APP 层 `connect` 协调（详见 § 六）。
 
 ### 核心设计决策
 
@@ -81,13 +91,13 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 
 | 文件 | 职责 |
 |------|------|
-| `DAAgentInterface.h` | 公共接口：`registerTool` / `registerSystemPrompt` / `showDockWidget` / `hideDockWidget` / `sendMessage` / `isRunning` / `getLLMConfig` / `setLLMConfig` |
-| `DAAgentModule.h/.cpp` | 接口实现：工具注册表 `m_tools`、系统提示词 `m_systemPrompts`、懒启动、`connectSignals()` 信号链、Python/脚本路径探测 |
+| `DAAgentInterface.h` | 公共接口：14 个信号 + `registerTool` / `registerSystemPrompt` / `showDockWidget` / `hideDockWidget`（no-op）/ `sendMessage` / `stop` / `sendUserAnswer` / `newSession` / `isRunning` / `getLLMConfig` / `setLLMConfig` |
+| `DAAgentModule.h/.cpp` | 接口实现：工具注册表 `m_tools`、系统提示词 `m_systemPrompts`、懒启动、`connectSignals()`（仅 Bridge→Module 持久化/状态 lambda，**不连 Dock**）、LLM 配置读写（agent-config.ini + api_key DPAPI 加解密）、Python/脚本路径探测 |
 | `DAAgentBridge.h/.cpp` | QProcess 生命周期（start/stop/超时）、stdin/stdout 读写、JSON Lines 解析分发、工具执行兜底；`sendLoadSession` 下发历史 messages 重建 state |
 | `DAAgentSessionStore.h/.cpp` | 会话持久化层（非 QObject，PIMPL）：JSONL append-only 读写、全局索引（原子写 tmp+rename）、`cleanupOldSessions`（数量+时间双限）、`setLastActive`/`lastActiveSession`（按工程过滤的精确匹配）、自动标题、工程导入导出 |
 | `DAAbstractAgentTool.h` | 工具抽象基类（纯虚）：`getToolSpec` / `execute` / `getOwnerModule` |
+| `DAAgentToolBase.h/.cpp` | **瘦**工具基类（`class DAAgent_API DAAgentToolBase`，模块根目录）：`dataMgr`/`findData`/`allDatas` + `errorResponse`/`successResponse`；图表方法已移入 `DAAgentChartToolBase`（见 § 七） |
 | `DAAgentAPI.h` | `DAAgent_API` 导出宏 |
-| `tools/` | 平台内置工具实现（见 § 七） |
 
 ### 3.2 `src/DAGui/Agent/`（聊天 UI，属 DAGui 模块）
 
@@ -95,8 +105,9 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 |------|------|
 | `DAAgentDockWidget.h/.cpp` | 聊天面板 QWidget（**非 QDockWidget**，见 § 八）；持有 WebEngine 视图、输入框、发送按钮、状态标签 |
 | `DAAgentWebChannel.h/.cpp` | QWebChannel 桥对象（注册名 `chatBridge`）；JS 调 `onUserSelect`/`onUserMessage`，C++ 调 `callJS()` 驱动 JS 渲染函数 |
-| `DAAgentSettingsWidget.h/.cpp` | LLM 设置页（继承 `DAAbstractSettingPage`）：base_url/api_key/model/超时 + 上下文管理 + 会话保留（`max_sessions`/`session_retention_days`）+ 连接测试；DPAPI 加解密静态方法 |
 | `resources/` | `chat.html` + `chat.js` + `chat.css` + `markdown-it.min.js` + `highlight.min.js` + `chat.qrc` |
+
+> LLM 设置页 `DAAgentSettingsWidget` 已迁至 `src/APP/SettingPages/`（APP 层），不再属 DAGui/Agent，见 § 九。
 
 ### 3.3 `src/PyScripts/DAWorkbench/agent/`（Python 子进程）
 
@@ -109,9 +120,9 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 | 文件 | 职责 |
 |------|------|
 | `DAAppCore.cpp` | `new DAAgentModule(this, this)` + `initialize()`，多态持有 `DAAgentInterface*` |
-| `DAAppDockingArea.cpp:228-236` | `new DAAgentDockWidget` + `createDockWidgetAsTab`（左侧管理区标签页） |
-| `DAAppController.cpp:242-248` | 设置 dock 的 toggle action（`actionShowAgentArea`）+ **`setDockWidget()` 注入**（触发信号链连接） |
-| `DAAppActions.cpp:232` / `DAAppRibbonArea.cpp:367` | Ribbon 大按钮「Agent 助手」 |
+| `DAAppDockingArea.cpp` | `new DAAgentDockWidget` + `createDockWidgetAsTab`（左侧管理区标签页） |
+| `DAAppController.cpp` | 初始化中直接 `connect` Dock↔`DAAgentInterface` 信号链（13 条接口信号→Dock 槽 + 7 条 Dock 信号→接口方法，见 § 六）+ 绑定 `actionShowAgentArea` toggle action |
+| `DAAppActions.cpp` / `DAAppRibbonArea.cpp` | Ribbon 大按钮「Agent 助手」 |
 
 ---
 
@@ -181,22 +192,33 @@ stdout 专用于协议，**绝对禁止在 stdout 打印日志**（污染协议�
 
 ## 六、信号链（C++ 内部）
 
+> 决策 D3b 落地后的结构（plan-01/02）：**DAAgentInterface 暴露 14 个信号**；`DAAgentModule::connectSignals` 只保留 Bridge→Module 的持久化/状态 lambda，**不再连接 Dock**；Dock 的信号↔槽由 `DAAppController::initialize()` 直接 connect。
+
 ```
-DAAgentBridge (9 个信号)
+DAAgentBridge（10 个信号转发 + agentUsage 内部消费）
   ├─ agentToken / agentMessageComplete / agentToolCall / agentToolResult
-  ├─ agentQuestion / agentError / agentReady / agentBusy / agentDone
-  └──► DAAgentModule::connectSignals()（DAAgentModule.cpp:180）
-        └─► DAAgentDockWidget::onAgent* 槽
-              └─► DAAgentWebChannel::append* → callJS() → chat.js 渲染函数
+  ├─ agentQuestion / agentError / agentReady / agentBusy / agentDone / agentSessionLoaded
+  └──► DAAgentModule::connectSignals()（只连 Bridge→Module 的持久化/状态 lambda：
+        agentMessageComplete 写会话、agentUsage→tokenUsageUpdated（补 context_window）、
+        agentQuestion/agentReady/agentBusy/agentDone/agentError 状态处理；不连 Dock）
+        └──► 转发/发射到 DAAgentInterface 的 14 个信号
+              └──► DAAppController::initialize() 直接 connect 到
+                    DAAgentDockWidget::onAgent* 槽（13 条）
+                          └─► DAAgentWebChannel::append* → callJS() → chat.js 渲染函数
 ```
+
+**接口↔Dock 的 connect 清单（`DAAppController::initialize()`，决策 D3b）**：
+
+- **接口信号 → Dock 槽（13 条）**：`agentToken` / `agentMessageComplete` / `agentToolCall` / `agentToolResult` / `agentQuestion` / `agentError` / `agentReady` / `agentBusy` / `agentSessionLoaded` / `tokenUsageUpdated` / `sessionSwitched` / `sessionListChanged` / `sessionCreated` → `DAAgentDockWidget::onAgent*` / `onSession*` 槽。（接口的 `agentDone` 目前无 Dock 槽对接，作为生命周期事件保留在接口。）
+- **Dock 信号 → 接口方法（7 条，信号→方法 PMF）**：`sendMessageRequested` → `sendMessage`、`stopRequested` → `stop`、`userAnswerSelected` → `sendUserAnswer`、`sessionSwitchRequested` → `switchSession`、`sessionDeleteRequested` → `deleteSession`、`sessionRenameRequested` → `renameSession`、`sessionCreateRequested` → **`newSession`**（不是 `createSession`——前者会 emit `sessionCreated` 触发 UI clearChat，后者不 emit）。Dock 的第 8 个信号 `agentStopRequested` 不连接口。
 
 **用户消息反向路径**：
-`onSendClicked()` → `m_channel->appendUserMessage(text)`（先渲染，勿重复调用）+ `emit sendMessageRequested` → `DAAgentModule` lambda → `sendMessage` → `m_bridge->sendMessage` → stdin。
+`onSendClicked()` → `m_channel->appendUserMessage(text)`（先渲染，勿重复调用）+ `emit sendMessageRequested` →（DAAppController connect）→ `DAAgentInterface::sendMessage` → `m_bridge->sendMessage` → stdin。
 
 **用户回答路径**：
-chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChannel::userAnswerSelected` → `DAAgentDockWidget::onUserAnswer` → `userAnswerSelected` → `DAAgentModule::connectSignals` → `m_bridge->sendUserAnswer` → stdin `user_answer`。
+chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChannel::userAnswerSelected` → `DAAgentDockWidget::onUserAnswer` → `userAnswerSelected`（Dock 信号）→（DAAppController connect）→ `DAAgentInterface::sendUserAnswer`（方法体吸收原 `connectSignals` 中 dock::userAnswerSelected 的持久化 lambda）→ `m_bridge->sendUserAnswer` → stdin `user_answer`。
 
-> ⚠️ 信号链的**两次连接**：`initialize()` 时 Dock 尚未创建（`connectSignals` 对空 dock 提前返回）；`DAAppController` 调 `setDockWidget()` 注入后再次 `connectSignals()` 完成连接。不要试图在别处 `new DAAgentDockWidget`（见铁律 T3）。
+> ⚠️ `setDockWidget` 已废弃删除；`showDockWidget`/`hideDockWidget` 为 no-op（仅留接口签名兼容）。Module 不持有 Dock、`connectSignals` 不再连 Dock，Dock 连接唯一入口是 `DAAppController::initialize()`。不要试图在别处 `new DAAgentDockWidget`（见铁律 T3）。
 
 ---
 
@@ -205,12 +227,12 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 ### 7.1 抽象与基类
 
 - `DAAbstractAgentTool`（纯虚）：`getToolSpec()` 返回 OpenAI function schema，`execute(params)` 返回结果 JSON，`getOwnerModule()` 返回归属模块。
-- `DAAgentToolBase`（`tools/DAAgentToolBase.h`）：平台内置工具基类，提供数据管理器/图表窗口的便捷访问：
+- `DAAgentToolBase`（`src/DAAgent/DAAgentToolBase.h`，`class DAAgent_API DAAgentToolBase`）：**瘦**工具基类（模块根目录，`DAAgent_API` 导出供插件跨 DLL 继承），提供数据访问 + 响应方法：
   - `dataMgr()` / `findData(name)` / `allDatas()`
-  - `chartOperateWidget()` → `currentFigure()` / `currentChart()` / `findChart(chartId)`（链路：`DACoreInterface::getUiInterface` → `getDockingArea` → `getChartOperateWidget`）
   - `errorResponse(msg)` / `successResponse(data|message)`
+  - 图表方法已移入插件的 `DAAgentChartToolBase`（本模块不再 include 图表头文件，无 DAFigure 依赖）
 
-### 7.2 平台内置工具（16 个，`DAAgentModule::registerBuiltinTools`）
+### 7.2 平台内置工具（16 个，由插件 `plugins/DAAgentTools/` 注册）
 
 | 类别 | 工具（name） | 文件 |
 |------|-------------|------|
@@ -220,32 +242,33 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 
 #### 绘图工具关键设计
 
-- **`create_chart` / `create_subplots` 每次调用创建新 figure**：通过 `DAAgentToolBase::createFigure(name)` 创建新 figure（标签页），再在其内部创建 chart。不会复用已有 figure/chart，避免多张图叠加到同一绘图。
+- **`create_chart` / `create_subplots` 每次调用创建新 figure**：通过 `DAAgentChartToolBase::createFigure(name)` 创建新 figure（标签页），再在其内部创建 chart。不会复用已有 figure/chart，避免多张图叠加到同一绘图。
 - **`figure_name` 参数**：所有绘图工具（`add_curve` / `set_chart_style` / `add_annotation` / `add_region` / `save_chart_image`）均支持可选 `figure_name` 参数，通过 `findChart(chartId, figureName)` 在指定 figure 中定位 chart。`create_chart` / `create_subplots` 的 `figure_name` 用于命名新 figure（标签页标题）。
 - **`list_figures` 工具**：列出所有 figure 及其内部 chart 的名称/索引/标题，供 agent 检索已有绘图后通过 `figure_name` + `chart_id` 精确定位修改。
-- **坐标轴自动缩放**：`DAAgentToolBase::enableAutoScale(chart)` 在添加数据后调用 `setAxisAutoScale(xBottom/yLeft, true)`，因为 `DAFigureWidget::createChart()` 会通过 `setAxisScale(0,800)/(0,500)` 锁定坐标轴范围（禁用 Qwt auto-scale），不恢复会导致数据落在可见范围外而显示空白。
+- **坐标轴自动缩放**：`DAAgentChartToolBase::enableAutoScale(chart)` 在添加数据后调用 `setAxisAutoScale(xBottom/yLeft, true)`，因为 `DAFigureWidget::createChart()` 会通过 `setAxisScale(0,800)/(0,500)` 锁定坐标轴范围（禁用 Qwt auto-scale），不恢复会导致数据落在可见范围外而显示空白。
 
-> 新增内置工具：在 `tools/` 新建 `DAAgentToolXxx.h/.cpp`（继承 `DAAgentToolBase`），在 `registerBuiltinTools()` 中 `registerTool(new DAAgentToolXxx(m_core, this))` 即可。CMake GLOB 自动收集。
+> 新增平台内置工具：在 `plugins/DAAgentTools/tools/` 新建 `DAAgentToolXxx.h/.cpp`（数据/文件工具继承瘦 `DAAgentToolBase`，图表工具继承 `DAAgentChartToolBase`），并在 `DAAgentToolsPlugin::initialize()` 中 `core()->getAgentInterface()->registerTool(new DAAgentToolXxx(c, this))`。插件 CMake GLOB 自动收集。
 
 ### 7.3 注册与执行
 
+- **内置工具插件**：16 个工具由独立插件 `plugins/DAAgentTools/` 提供。插件入口 `DAAgentToolsPlugin`（继承 `DAAbstractPlugin`，IID `org.da.abstract.plugin`）在 `initialize()` 中经 `core()->getAgentInterface()->registerTool(...)` 依次注册 16 个工具。继承关系：`DAAbstractAgentTool` → `DAAgentToolBase`（瘦，`DAAgent_API` 导出，数据/响应方法）→ 8 个非图表工具（5 数据 + 3 文件/报告）；`DAAgentToolBase` → `DAAgentChartToolBase`（7 个图表方法）→ 8 个图表工具。
+- **第三方扩展**：领域工具插件可继承瘦 `DAAgentToolBase`（数据工具）或 `DAAgentChartToolBase`（图表工具），经 `DAAgentInterface::registerTool` 注入，无需改 DAAgent。跨 DLL 派生需要 `DAAgent_API` 导出宏（`DAAGENT_BUILD` 只在编译 DAAgent 库时定义，`DAAgentToolBase` 已 `DAAgent_API` 导出）。
 - 注册：`DAAgentModule::registerTool` → `m_tools[name]` → `m_bridge->setTools(m_tools)`。
 - 执行：`DAAgentBridge::executeTool()` 查表 → **try/catch 兜底**（工具抛异常时返回 `{success:false, error:...}`，避免 Bridge 崩溃导致子进程永久挂起）→ 回传 `tool_result` → 同时 emit `agentToolResult` 供 UI 展示。工具未设置 `success` 字段时自动补 `true`。
-- **插件扩展**：插件可经 `DAAgentInterface::registerTool` 注入领域工具。注意：跨 DLL 派生 `DAAbstractAgentTool` 需要 `DAAgent_API` 导出宏（`DAAGENT_BUILD` 只在编译 DAAgent 库时定义，见 `CMakeLists.txt:44-48` 注释）。
 
 ---
 
 ## 八、DAGui 模块涉及的界面
 
-> 聊天 UI 全部在 **DAGui 模块**（`src/DAGui/Agent/`），DAAgent 库只持有信号与逻辑。改动 UI 时到 DAGui/Agent 下找。
+> 聊天 UI（`DAAgentDockWidget` / `DAAgentWebChannel` / 前端资源）在 **DAGui 模块**（`src/DAGui/Agent/`）；LLM 设置页 `DAAgentSettingsWidget` 在 **APP 层** `src/APP/SettingPages/`（见 § 九）。DAAgent 库只持有信号与逻辑，不依赖 DAGui。
 
 ### 8.1 DAAgentDockWidget（聊天面板）
 
 - 继承 **QWidget**，**不是 QDockWidget**——ADS 的 `DAAppDockingArea::createDockWidget(QWidget*, ...)` 会包装成 `ads::CDockWidget`；若继承 QDockWidget 会出现双标题栏/拖拽冲突。
 - 布局：`QWebEngineView`（主区）+ 状态标签 + `QTextEdit`（输入）+ 发送按钮；`Ctrl+Enter` 发送快捷键。
 - 加载 `qrc:///DAAgent/chat.html`；启用开发者工具（Qt6，`DeveloperToolsEnabled`；Qt5 用环境变量 `QTWEBENGINE_CHROMIUM_FLAGS=--remote-debugging-port=9222`）。
-- 槽函数直接透传 Bridge 信号给 `DAAgentWebChannel` 的 append* 方法。
-- **Dock 集成**：`DAAppDockingArea::buildDockingArea()` 创建，作为左侧管理区标签页（与工作流节点列表 `mWorkflowNodeListDock` 同组），Ribbon 大按钮 `actionShowAgentArea` 控制显隐（`DAAppRibbonArea.cpp:367`）。
+- 槽函数接收来自 `DAAgentInterface` 的信号（经 `DAAppController` connect），透传给 `DAAgentWebChannel` 的 append* 方法；信号/槽签名不变。
+- **Dock 集成**：`DAAppDockingArea::buildDockingArea()` 创建，作为左侧管理区标签页（与工作流节点列表 `mWorkflowNodeListDock` 同组），Ribbon 大按钮 `actionShowAgentArea` 控制显隐（`DAAppRibbonArea.cpp`）。Dock 的信号↔槽由 `DAAppController::initialize()` connect 到 `DAAgentInterface`（§ 六），Module 不再持有 Dock。
 
 ### 8.2 DAAgentWebChannel（C++↔JS 桥）
 
@@ -254,22 +277,17 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 - C++ → JS：`callJS("funcName(...)")` 调 `page()->runJavaScript`；`toJsString()` 做字符串转义（引号/反斜杠/控制字符 → `\uXXXX`），工具参数/结果用 JSON 直接内嵌。
 - 对应 chat.js 渲染函数：`appendUserMessage` / `appendToken`（防抖 50ms 渲染） / `finalizeAgentMessage` / `appendToolCall` / `appendToolResult` / `appendQuestion`（选项按钮 → `onUserSelect`） / `clearChat`。
 
-### 8.3 DAAgentSettingsWidget（LLM 设置页）
+### 8.3 前端资源
 
-- 继承 `DAAbstractSettingPage`（非 QWidget），注册到平台设置系统（参考 `src/APP/SettingPages/DASettingPagePython.h`）。
-- 字段：Base URL / API Key（Password 模式）/ Model / Ready Timeout / Stop Timeout / 测试连接按钮；上下文管理（context_window / compaction_threshold / max_recent_messages / tool_result_*）；会话保留（Max Sessions 5-200 / Session Retention Days 1-365，plan-06）。
-- **必须连接 `settingChanged()`** 到字段变更信号，否则平台的脏页机制不会触发 `apply()`（配置永不保存）——每个 QSpinBox/QLineEdit 都有 `connect(..., [this](){ emit settingChanged(); })`。
-- `apply()` → `saveConfig()` → QSettings；`getLLMConfig()`（DAAgentModule）与设置页共用同一组 QSettings key。`cleanupSessions`（DAAgentModule）读 `agent/max_sessions` / `agent/session_retention_days`，默认值 20/30 与设置页一致。
-
-### 8.4 前端资源
+> LLM 设置页 `DAAgentSettingsWidget` 已迁至 APP 层 `src/APP/SettingPages/`，持久化走 `DAAgentInterface::get/setLLMConfig`，见 § 九。
 
 `chat.html` 引入 `qrc:///qtwebchannel/qwebchannel.js` + markdown-it + highlight.js；`chat.js` 维护 `currentAgentMsg` 与防抖渲染。改 UI 样式在 `chat.css`。
 
 ---
 
-## 九、配置持久化（QSettings）
+## 九、配置持久化（agent-config.ini）
 
-> DAAgent 库**无法链接 APP 的 DAAppConfig**，因此用 QSettings 持久化（`DAAgentModule::getLLMConfig` 与 `DAAgentSettingsWidget` 共用同一存储源）。
+> DAAgent 库**无法链接 APP 的 DAAppConfig**，因此用 QSettings 持久化。**唯一入口是 `DAAgentInterface::getLLMConfig` / `setLLMConfig`**，读写显式路径 `DA::DADir::getConfigPath() + "/agent-config.ini"`。APP 设置页（`src/APP/SettingPages/DAAgentSettingsWidget`）经 `setAgentInterface` 注入接口，`loadConfig` 调 `getLLMConfig`（返回明文 QJsonObject）、`saveConfig` 调 `setLLMConfig`（传明文 QJsonObject）——页面不接触 QSettings / 加解密。
 
 | Key | 含义 | 默认值 |
 |-----|------|--------|
@@ -286,18 +304,20 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 | `agent/max_sessions` | 配置目录保留的自由会话最大数量（超出按 updatedAt 倒序删最旧），由 `DAAgentModule::cleanupSessions` 读取 | 20 |
 | `agent/session_retention_days` | 自由会话保留天数（早于此天数的会话启动时清理），由 `DAAgentModule::cleanupSessions` 读取 | 30 |
 
-> 注：`max_sessions` / `session_retention_days` 仅 C++ 侧用（`getLLMConfig` 不下发 Python）。三处默认值须一致：设置页 spin range/setValue、`DAAgentSettingsWidget::loadConfig`/`saveConfig`、`DAAgentModule::cleanupSessions` 的 QSettings 读取。`cleanupOldSessions` 入口已加 `qMax(1, maxCount)` / `qMax(0, retentionDays)` 防护 ini 被手改为 0/负时误删全部。
+> 接口层 JSON 键（12 个）：`base_url` / `model` / `api_key` / `context_window` / `compaction_threshold` / `max_recent_messages` / `tool_result_max_chars` / `tool_result_preview_chars` / `ready_timeout_sec` / `stop_timeout_sec` / `max_sessions` / `session_retention_days`。`getLLMConfig` 全量 round-trip（带默认值兜底）；`setLLMConfig` 对每个 key 逐一 `config.contains()` 守卫（key 存在即写，含空串；api_key 传空串可清空），api_key 经 `DAAgentModule` 内部 DPAPI 加密后写入。
 
-加密：Windows 用 `CryptProtectData`/`CryptUnprotectData`（`DAAgentSettingsWidget.cpp:214-264`），静态方法 `encryptApiKey`/`decryptApiKey` 供 `DAAgentModule` 调用。**日志/诊断禁止打印 api_key 明文**（只打加密 blob 大小）。
+> 注：`max_sessions` / `session_retention_days` 仅 C++ 侧用（`getLLMConfig` 不下发 Python）。三处默认值须一致：设置页 spin range/setValue、`src/APP/SettingPages/DAAgentSettingsWidget::loadConfig`/`saveConfig`、`DAAgentModule::cleanupSessions` 的 QSettings 读取。`cleanupOldSessions` 入口已加 `qMax(1, maxCount)` / `qMax(0, retentionDays)` 防护 ini 被手改为 0/负时误删全部。
+
+加密：`api_key` 由 `DAAgentModule` 内部 DPAPI 加解密（Win，DAAgent link `Crypt32`；`encryptApiKey`/`decryptApiKey` 为本模块匿名命名空间静态函数）/ base64 fallback（非 Win，开发用）。设置页只经接口传明文，不做任何加解密。**日志/诊断禁止打印 api_key 明文**（只打加密 blob 大小）。
 
 ---
 
 ## 十、APP 层集成（生命周期）
 
-1. `DAAppCore::initialize()` → `new DAAgentModule(this, this)` + `initialize()`（创建 Bridge、注册 15 个内置工具、预连接信号；**不创建 Dock**）。
+1. `DAAppCore::initialize()` → `new DAAgentModule(this, this)` + `initialize()`（创建 Bridge、预连接 Bridge→Module 信号；**不注册工具、不创建 Dock**——16 个内置工具由插件 `DAAgentTools` 注册）。
 2. `DAAppDockingArea::buildDockingArea()` → `new DAAgentDockWidget` + `createDockWidgetAsTab`（左侧标签页）。
-3. `DAAppController`（initConnection 附近）→ `agentMod->setDockWidget(mDock->getAgentDockWidget())`（触发 `connectSignals` 完成 Bridge↔Dock 信号链）+ 绑定 `actionShowAgentArea` toggle action。
-4. **懒启动**：首次 `sendMessage()` → `startAgentInternal()` → 读 QSettings LLM 配置 + 探测 Python/脚本路径 → `m_bridge->startAgent(...)`。
+3. `DAAppController::initialize()` → 用 `connect()` 把 Dock 的 8 个信号（其中 7 个连到接口方法）↔ 接口的 14 个信号（其中 13 个连到 Dock 槽）对接（决策 D3b，替代旧的 `setDockWidget` 注入）+ 绑定 `actionShowAgentArea` toggle action（详见 § 六）。
+4. **懒启动**：首次 `sendMessage()` → `startAgentInternal()` → 读 `agent-config.ini` LLM 配置 + 探测 Python/脚本路径 → `m_bridge->startAgent(...)`。
 5. **退出**：`DAAgentBridge` 析构自动 `stopAgent()`（写 `stop` 消息 → `waitForFinished(stopTimeout)` → 必要时 `kill()`）。
 
 ---
@@ -312,11 +332,11 @@ Python 端任何 `print`/调试输出必须走 stderr，否则污染 JSON Lines 
 ### T2. booting 心跳必须在导入 langchain 之前发送
 `agent_runner.py:38` 在 import langchain 前 `sys.stdout.write('{"type": "booting"}\n')`。若不发，C++ 的 ready 超时计时器（默认 60s）会在冷启动导入（~16s）期间 `kill()` 子进程；`TerminateProcess` 不 flush Python stderr 块缓冲 → 表现为**静默崩溃**（exitCode=62097，无任何 stderr 输出）。
 
-### T3. Dock 只能由 DAAppDockingArea 创建并注入
-`initialize()` 里 `new DAAgentDockWidget` 会导致**两个 Dock 实例**，信号链连到隐藏的（未注册的）那个。Dock 就绪后必须经 `setDockWidget()` 注入。
+### T3. Dock 只能由 DAAppDockingArea 创建，信号链由 DAAppController connect
+Dock 是 DAGui 的 `DAAgentDockWidget`，只能由 `DAAppDockingArea::buildDockingArea()` 创建（`initialize()` 里 `new` 会导致**两个 Dock 实例**，信号链连到隐藏的那个）。**DAAgentModule 不再持有 Dock**，Dock 的信号↔槽由 `DAAppController::initialize()` connect 到 `DAAgentInterface`（§ 六）；`setDockWidget` 已废弃删除。DAGui 与 DAAgent 互不依赖。
 
-### T4. 不要在 DAAgentModule::sendMessage 里 emit agentBusy
-`DAAgentInterface` 无 `agentBusy` 信号（无 signals: 段），emit 无法编译。busy 状态由 `DAAgentBridge` 统一发射（`sendMessage`/`tool_call` 时 true，`done`/进程退出时 false）。
+### T4. 只在接口已声明的信号处 emit
+`DAAgentInterface` 已声明 **14 个信号**（含 `agentBusy(bool)`，plan-01 加入），`DAAgentModule` 在这些信号上 emit 是合法的（10 个 Bridge 转发 + 4 个自身 emit）。但 busy 状态**不要**在 `sendMessage` 里手动 emit——它由 `DAAgentBridge` 统一发射（`sendMessage`/`tool_call` 时 true，`done`/进程退出时 false）并经 `connectSignals` 转发到接口。原则：**勿在接口未声明的信号处 emit**（会编译失败）；新增信号必须先在 `DAAgentInterface` 声明。
 
 ### T5. 工具执行必须 try/catch
 工具抛异常 → Bridge 崩溃 → 子进程收不到 `tool_result` **永久挂起**。`executeTool()` 已兜底；新工具内部也要自行捕获并返回 `errorResponse`。
@@ -377,8 +397,8 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 | 子进程启动后 UI 干等/被杀 | 看 `da_log.log` 是否有 "Agent 子进程启动后 X 毫秒内未就绪"；检查 Python 依赖是否装齐（langgraph/langchain-openai） |
 | 静默崩溃 exitCode=62097 无 stderr | 几乎都是 T2 问题（booting 心跳缺失/超时被杀，TerminateProcess 不 flush stderr） |
 | 中文乱码/协议解析失败 | stdout 编码（`reconfigure(encoding="utf-8")`）与 `\r\n`（T10） |
-| 工具结果不显示在对话流 | 检查 `agentToolResult` 信号是否连到 `onAgentToolResult`（`connectSignals` 是否在 `setDockWidget` 后完成） |
-| 配置不保存 | `da_log.log` 搜 `[DAAgentSettings]`；确认字段变更连接了 `settingChanged()`（§ 8.3）；Windows 查注册表 `HKCU\Software\DAWorkBench`（QSettings） |
+| 工具结果不显示在对话流 | 检查 `DAAgentInterface::agentToolResult` → `DAAgentDockWidget::onAgentToolResult` 的连接（`DAAppController::initialize()` 是否执行；接口信号→Dock 槽共 13 条，见 § 六） |
+| 配置不保存 | `da_log.log` 搜 `[DAAgentSettings]`；确认字段变更连接了 `settingChanged()`（`src/APP/SettingPages/DAAgentSettingsWidget`，§ 九）；检查 `%APPDATA%\DAWorkBench\config\agent-config.ini` |
 | 提问重复/卡在提问 | T8：question 是否在 ask_user_node 内误发；thread_id 是否一致（`agent_session_1`） |
 | API key 相关 | 日志禁止打印明文；排查 `agent/llm_api_key` 是否为空（`api_key_enc_size=0`） |
 
@@ -390,15 +410,15 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 
 | 任务 | 位置 |
 |------|------|
-| 新增工具 | `src/DAAgent/tools/`（继承 `DAAgentToolBase`）+ `DAAgentModule::registerBuiltinTools` |
+| 新增工具 | `plugins/DAAgentTools/tools/`（数据/文件工具继承瘦 `DAAgentToolBase`，图表工具继承 `DAAgentChartToolBase`）+ `DAAgentToolsPlugin::initialize()` 注册 |
 | 改系统提示词 | 编辑 `src/DAAgent/system_prompt.md`（运行时由 `DAAgentModule::assembleSystemPrompt()` 读取，缺失回退内置默认）；插件注入走 `registerSystemPrompt` |
 | 改聊天渲染 | `src/DAGui/Agent/resources/chat.js` / `chat.html` / `chat.css` |
 | 改聊天 UI 结构 | `src/DAGui/Agent/DAAgentDockWidget.cpp` |
 | 改 C++↔JS 桥 | `src/DAGui/Agent/DAAgentWebChannel.cpp`（注意 `toJsString` 转义与 `chatBridge` 注册名） |
 | 改协议 | `DAAgentBridge.cpp`（C++ 侧）+ `agent_runner.py` `StdioProtocol`/`main()`（Python 侧）——**两端必须同步** |
 | 改 agent 推理逻辑 | `agent_runner.py` `AgentRunner`（图构建/节点/路由） |
-| LLM 配置 | `DAAgentSettingsWidget.cpp`（设置页）+ `DAAgentModule.cpp` `getLLMConfig`/`setLLMConfig`（QSettings） |
-| Dock/Ribbon 集成 | `src/APP/DAAppDockingArea.cpp:228` / `DAAppController.cpp:242` / `DAAppRibbonArea.cpp:367` |
+| LLM 配置 | `src/APP/SettingPages/DAAgentSettingsWidget.cpp`（设置页，经 `setAgentInterface`）+ `src/DAAgent/DAAgentModule.cpp` `getLLMConfig`/`setLLMConfig`（agent-config.ini） |
+| Dock/Ribbon 集成 | `src/APP/DAAppDockingArea.cpp`（创建）/ `DAAppController.cpp`（connect 信号链，§ 六）/ `DAAppRibbonArea.cpp`（toggle action） |
 
 ---
 
@@ -406,10 +426,10 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 
 新增/修改 Agent 功能时逐项确认：
 
-- [ ] 新类归属模块正确（工具→DAAgent，UI→DAGui，不违反依赖方向）
+- [ ] 新类归属模块正确（工具→`plugins/DAAgentTools/`，UI→DAGui，不违反依赖方向；DAAgent 不依赖 DAGui）
 - [ ] Python 改动已同步到运行时 `bin/PyScripts/` 并重启程序验证
 - [ ] 协议改动 C++/Python 两端同步，消息 type 大小写一致
-- [ ] 新工具：`getToolSpec` schema 完整（含 required）、`execute` 内部 try/catch、错误用 `errorResponse`、已注册到 `registerBuiltinTools`
+- [ ] 新工具：`getToolSpec` schema 完整（含 required）、`execute` 内部 try/catch、错误用 `errorResponse`、已在 `DAAgentToolsPlugin::initialize()` 中 `registerTool`（`registerBuiltinTools` 已删除）
 - [ ] UI 字符串英文源 + `//cn:` 注释；`daCritical`/`daWarning` 已翻译
 - [ ] 不打印 api_key 明文日志
 - [ ] 符合根 AGENTS.md 铁律（stdout 协议、booting 心跳、单 Dock 实例、ToolMessage str 等）
@@ -442,24 +462,18 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 
 | 信号 | 用途 | 典型连接方 |
 |------|------|-----------|
-| `void agentUsage(int inputTokens, int outputTokens, int totalTokens, const QString& source)` | LLM `usage_metadata` 权威 token 统计回传（来自 `usage` 协议消息或 `message_end` 附带 usage）；UI 据此显示 `tokens: 1234 / 1048576` 占比条 + 点击展开分类（system/tools/history/current） | `DAAgentDockWidget`/`DAAgentWebChannel` → chat.js token 展示 |
-| `void agentSessionLoaded(const QString& sessionId)` | `load_session` 后 Python 重建 state 完成的确认（`session_loaded` 协议消息）；调用方据此恢复输入框可用态，方可发下一轮 `user_msg`（见铁律 T15） | `DAAgentModule::connectSignals` → UI 状态恢复 |
+| `void agentUsage(int inputTokens, int outputTokens, int totalTokens, const QString& source)` | LLM `usage_metadata` 权威 token 统计回传（来自 `usage` 协议消息或 `message_end` 附带 usage）；UI 据此显示 `tokens: 1234 / 1048576` 占比条 + 点击展开分类（system/tools/history/current） | `DAAgentModule` 内部 lambda（补 `context_window`）→ 接口 `tokenUsageUpdated` →（AppController）→ Dock → chat.js |
+| `void agentSessionLoaded(const QString& sessionId)` | `load_session` 后 Python 重建 state 完成的确认（`session_loaded` 协议消息）；调用方据此恢复输入框可用态，方可发下一轮 `user_msg`（见铁律 T15） | 转发到接口 `agentSessionLoaded` →（AppController）→ Dock 槽 |
 
-**连接示例**（UI/插件作者可能连接这两个信号）：
+**连接示例**（这两个 Bridge 信号已被 Module 消费/转发；UI 侧在 `DAAppController::initialize()` 连接口信号，插件可监听接口信号）：
 
 ```cpp
-// 在 DAAgentModule::connectSignals() 或插件初始化处
-connect(m_bridge, &DAAgentBridge::agentUsage, this, [this](int inTok, int outTok, int total, const QString& src) {
-    // 推给 UI 显示 token 占比条
-    if (m_dock) m_dock->onAgentUsage(inTok, outTok, total, src);
-});
-connect(m_bridge, &DAAgentBridge::agentSessionLoaded, this, [this](const QString& sid) {
-    // 会话切换/恢复完成，恢复输入框
-    if (m_dock) m_dock->onAgentSessionLoaded(sid);
-});
+// UI 侧连接在 DAAppController::initialize()（决策 D3b，见 § 六）
+connect(agent, &DAAgentInterface::tokenUsageUpdated, dock, &DAAgentDockWidget::onAgentUsage);
+connect(agent, &DAAgentInterface::agentSessionLoaded, dock, &DAAgentDockWidget::onAgentSessionLoaded);
 ```
 
-> 这两个信号是**新增连接点**，不改变既有信号签名，不破坏二进制兼容；插件可选择连接以获得 token 统计与会话切换通知。
+> 这两个信号是**新增连接点**，不改变既有信号签名，不破坏二进制兼容。重构后 Bridge 是 DAAgent 内部对象，外部不直接连接——改为监听 `DAAgentInterface` 上对应的转发信号。
 
 ---
 
@@ -511,7 +525,7 @@ Windows 展开为 `%APPDATA%/DA/DAWorkBench/DAWorkBench/sessions/`。
 
 ### 16.5 恢复时序
 
-- **启动程序**：`DAAppController::initialize` 末尾调 `agentMod->cleanupSessions()`（清理超限会话）+ `restoreLastActiveSession()`（读 `last_active.json` 空指针 → 恢复上次活跃自由会话）。须在 `setDockWidget()` 完成后（Dock 就绪才能渲染历史）。
+- **启动程序**：`DAAppController::initialize` 末尾调 `agentMod->cleanupSessions()`（清理超限会话）+ `restoreLastActiveSession()`（读 `last_active.json` 空指针 → 恢复上次活跃自由会话）。须在接口↔Dock 信号链 connect 完成后（Dock 就绪才能渲染历史，见 § 六）。
 - **打开工程**：`DAAppProject` 加载任务解压 `agent_sessions/*.jsonl` → 主线程回调 → `agentMod->loadSessionsFromProject(files, projectPath)` + `setCurrentProjectPath(path)` → `restoreLastActiveSession()` 按 `projectPath` 过滤恢复工程内上次活跃会话。
 - **保存工程**：`DAAppProject::executeSave` 主线程先 `agentMod->exportActiveSessions()` 收集活跃会话字节 → `appendByteSaveTask` 写入 zip 的 `agent_sessions/`（子线程，不碰 UI）。
 - **saveAs**：`setCurrentProjectPath` 同步更新新路径，`setSessionProjectPath` + `setLastActive` 更新 index 与指针的 projectPath（使打开新工程能恢复）。
@@ -559,6 +573,6 @@ Windows 展开为 `%APPDATA%/DA/DAWorkBench/DAWorkBench/sessions/`。
 | 改会话清理策略 | `DAAgentSessionStore::cleanupOldSessions`（入口已加 qMax 防护） |
 | 改 last_active 过滤语义 | `DAAgentSessionStore::PrivateData::readLastActive`（精确匹配 projectPath） |
 | 改 load_session 重建 | `DAAgentBridge::sendLoadSession`（C++）+ `agent_runner.py` `aupdate_state`（Python） |
-| 改会话保留配置 | `DAAgentSettingsWidget.cpp`（设置页 spin）+ `DAAgentModule::cleanupSessions`（读取） |
+| 改会话保留配置 | `src/APP/SettingPages/DAAgentSettingsWidget.cpp`（设置页 spin）+ `DAAgentModule::cleanupSessions`（读取） |
 | 会话持久化单元测试 | `src/tst/DAAgentSessionStoreTest/main.cpp`（5 个 C++ 用例） |
 
