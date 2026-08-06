@@ -22,6 +22,9 @@ static const char* KEY_COMPACTION_THRESHOLD    = "agent/compaction_threshold";
 static const char* KEY_MAX_RECENT_MESSAGES     = "agent/max_recent_messages";
 static const char* KEY_TOOL_RESULT_MAX_CHARS   = "agent/tool_result_max_chars";
 static const char* KEY_TOOL_RESULT_PREVIEW_CHARS = "agent/tool_result_preview_chars";
+// 会话持久化（plan-06）：key 名须与 DAAgentModule::cleanupSessions 读取完全一致，默认值 20/30
+static const char* KEY_MAX_SESSIONS           = "agent/max_sessions";
+static const char* KEY_SESSION_RETENTION_DAYS = "agent/session_retention_days";
 
 #ifdef Q_OS_WIN
 #ifndef WIN32_LEAN_AND_MEAN
@@ -99,6 +102,20 @@ void DAAgentSettingsWidget::setupUI()
     m_toolResultPreviewCharsSpin->setToolTip(tr(
         "Preview length for truncated tool results"));  //cn:截断后工具结果预览长度
 
+    // 会话持久化控件（plan-06）：自由会话保留数量与天数，供 cleanupSessions 读取
+    m_maxSessionsSpin = new QSpinBox(this);
+    m_maxSessionsSpin->setRange(5, 200);
+    m_maxSessionsSpin->setValue(20);
+    m_maxSessionsSpin->setToolTip(tr(
+        "Maximum number of free sessions retained in the config directory. "
+        "Older sessions beyond this count are cleaned up on startup."));  //cn:配置目录保留的自由会话最大数量,超出此数的旧会话在启动时清理
+    m_sessionRetentionDaysSpin = new QSpinBox(this);
+    m_sessionRetentionDaysSpin->setRange(1, 365);
+    m_sessionRetentionDaysSpin->setValue(30);
+    m_sessionRetentionDaysSpin->setSuffix(tr(" d"));  //cn:天
+    m_sessionRetentionDaysSpin->setToolTip(tr(
+        "Free sessions older than this many days are cleaned up on startup."));  //cn:早于此天数的自由会话在启动时清理
+
     QFormLayout* form = new QFormLayout(this);
     form->addRow(tr("Base URL"), m_baseUrlEdit);
     form->addRow(tr("API Key"),  m_apiKeyEdit);
@@ -113,6 +130,9 @@ void DAAgentSettingsWidget::setupUI()
     form->addRow(tr("Max Recent Messages"), m_maxRecentMsgSpin);         //cn:保留最近消息数
     form->addRow(tr("Tool Result Max Chars"), m_toolResultMaxCharsSpin);  //cn:工具结果截断阈值
     form->addRow(tr("Tool Result Preview Chars"), m_toolResultPreviewCharsSpin);  //cn:工具结果预览长度
+    // 会话持久化（plan-06）：平铺风格，不分组，对齐既有 addRow 习惯
+    form->addRow(tr("Max Sessions"), m_maxSessionsSpin);  //cn:最大会话数
+    form->addRow(tr("Session Retention Days"), m_sessionRetentionDaysSpin);  //cn:会话保留天数
 
     connect(m_testBtn, &QPushButton::clicked, this, &DAAgentSettingsWidget::onTestConnection);
 
@@ -150,6 +170,13 @@ void DAAgentSettingsWidget::setupUI()
     connect(m_toolResultPreviewCharsSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
         emit settingChanged();
     });
+    // 会话持久化控件（plan-06）：同样须连接 settingChanged，否则 apply 不触发
+    connect(m_maxSessionsSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+        emit settingChanged();
+    });
+    connect(m_sessionRetentionDaysSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+        emit settingChanged();
+    });
 
     // 注：loadConfig() 期间无需 QSignalBlocker——
     // addPage()（连接 settingChanged → 脏页追踪器）在构造函数返回之后才执行，
@@ -173,6 +200,9 @@ void DAAgentSettingsWidget::loadConfig()
     int maxRecentMsgs       = s.value(KEY_MAX_RECENT_MESSAGES, 10).toInt();
     int toolResultMaxChars  = s.value(KEY_TOOL_RESULT_MAX_CHARS, 50000).toInt();
     int toolResultPreviewChars = s.value(KEY_TOOL_RESULT_PREVIEW_CHARS, 2000).toInt();
+    // 会话持久化配置(plan-06): 默认值须与 DAAgentModule::cleanupSessions(20/30) 一致
+    int maxSessions       = s.value(KEY_MAX_SESSIONS, 20).toInt();
+    int retentionDays     = s.value(KEY_SESSION_RETENTION_DAYS, 30).toInt();
     // 诊断日志: 显示从 QSettings 读到的原始值(绝不打印 api_key 明文,只显示加密 blob 大小)
     // 用于排查"重启后字段为空"问题——若 QSettings 路径不一致/注册表为空,这里一目了然
     daDebug << "[DAAgentSettings] loadConfig: base_url=" << baseUrl
@@ -185,6 +215,8 @@ void DAAgentSettingsWidget::loadConfig()
             << " max_recent=" << maxRecentMsgs
             << " tool_max=" << toolResultMaxChars
             << " tool_preview=" << toolResultPreviewChars
+            << " max_sessions=" << maxSessions
+            << " retention_days=" << retentionDays
             << " org=" << QCoreApplication::organizationName()
             << " app=" << QCoreApplication::applicationName();
     m_baseUrlEdit->setText(baseUrl);
@@ -199,6 +231,8 @@ void DAAgentSettingsWidget::loadConfig()
     m_maxRecentMsgSpin->setValue(maxRecentMsgs);
     m_toolResultMaxCharsSpin->setValue(toolResultMaxChars);
     m_toolResultPreviewCharsSpin->setValue(toolResultPreviewChars);
+    m_maxSessionsSpin->setValue(maxSessions);
+    m_sessionRetentionDaysSpin->setValue(retentionDays);
 }
 
 void DAAgentSettingsWidget::saveConfig()
@@ -214,6 +248,8 @@ void DAAgentSettingsWidget::saveConfig()
     int maxRecentMsgs       = m_maxRecentMsgSpin->value();
     int toolResultMaxChars  = m_toolResultMaxCharsSpin->value();
     int toolResultPreviewChars = m_toolResultPreviewCharsSpin->value();
+    int maxSessions       = m_maxSessionsSpin->value();
+    int retentionDays     = m_sessionRetentionDaysSpin->value();
     s.setValue(KEY_LLM_BASE_URL, baseUrl);
     s.setValue(KEY_LLM_MODEL,    model);
     // IniFormat 原生支持 QByteArray(@ByteArray 注解),加密 blob 直接存储
@@ -225,6 +261,8 @@ void DAAgentSettingsWidget::saveConfig()
     s.setValue(KEY_MAX_RECENT_MESSAGES,     maxRecentMsgs);
     s.setValue(KEY_TOOL_RESULT_MAX_CHARS,   toolResultMaxChars);
     s.setValue(KEY_TOOL_RESULT_PREVIEW_CHARS, toolResultPreviewChars);
+    s.setValue(KEY_MAX_SESSIONS,            maxSessions);
+    s.setValue(KEY_SESSION_RETENTION_DAYS, retentionDays);
     // 诊断日志: 确认 saveConfig 真的被调用且写入了 QSettings(绝不打印 api_key 明文)
     // 若 ini 文件为空但此处显示有值,说明 QSettings 写入失败(环境/权限问题)
     daDebug << "[DAAgentSettings] saveConfig written: base_url=" << baseUrl
@@ -236,7 +274,9 @@ void DAAgentSettingsWidget::saveConfig()
             << " compaction_threshold=" << compactionThreshold
             << " max_recent=" << maxRecentMsgs
             << " tool_max=" << toolResultMaxChars
-            << " tool_preview=" << toolResultPreviewChars;
+            << " tool_preview=" << toolResultPreviewChars
+            << " max_sessions=" << maxSessions
+            << " retention_days=" << retentionDays;
 }
 
 void DAAgentSettingsWidget::apply()

@@ -266,6 +266,11 @@ void DAAgentSessionStore::setLastActive(const QString& sessionId, const QString&
 void DAAgentSessionStore::cleanupOldSessions(int maxCount, int retentionDays, const QString& skipSessionId)
 {
     DA_D(d);
+    // plan-06 边界防护：ini 被手改为 0/负时钳到合法下限，避免「保留 0 个」误删全部。
+    // qMax(1, maxCount)：maxCount>=1，数量限制始终生效（至少保留 1 个）；
+    // qMax(0, retentionDays)：负数→0，0 表示「不按时间清理」（见下方 if (retentionDays > 0)）。
+    maxCount = qMax(1, maxCount);
+    retentionDays = qMax(0, retentionDays);
     if (maxCount <= 0 && retentionDays <= 0) return;
 
     QVector<SessionMeta> metas = d->readIndexInternal();

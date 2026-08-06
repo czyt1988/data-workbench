@@ -90,6 +90,9 @@ private:
     QSpinBox* m_maxRecentMsgSpin;              // 压缩后保留最近消息数
     QSpinBox* m_toolResultMaxCharsSpin;         // 工具结果截断阈值(字符)
     QSpinBox* m_toolResultPreviewCharsSpin;      // 工具结果预览长度(字符)
+    // 会话持久化（plan-06）：自由会话保留数量与保留天数，供 DAAgentModule::cleanupSessions 读取
+    QSpinBox* m_maxSessionsSpin;                // 自由会话保留数量(5-200)
+    QSpinBox* m_sessionRetentionDaysSpin;       // 自由会话保留天数(1-365)
 };
 
 } // namespace DA

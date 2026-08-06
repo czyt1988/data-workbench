@@ -31,13 +31,23 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 │  src/DAAgent/                                                  │
 │   DAAgentInterface   — 公共接口（插件注册工具/提示词）           │
 │   DAAgentModule      — 接口实现：工具注册、系统提示词组装、      │
-│                        懒启动、LLM 配置读写                     │
+│                        懒启动、LLM 配置读写、会话生命周期、      │
+│                        cleanupSessions（读 ini 的 max_sessions/ │
+│                        session_retention_days，调 SessionStore）│
 │   DAAgentBridge      — QProcess 子进程管理 + JSON Lines 协议解析 │
+│                        （sendLoadSession 下发历史重建 state）   │
+│   DAAgentSessionStore — 会话持久化层：JSONL 读写 / 索引 / 清理 / │
+│                        标题 / last_active 指针（非 QObject）     │
 │   tools/             — 15 个平台内置工具（DAAgentToolBase 基类） │
+│  sessions/（运行时，DADir::getAppDataPath("sessions")）         │
+│   <id>.jsonl         — 每轮对话 append-only 追加                │
+│   sessions_index.json — 全局索引（原子写 tmp+rename）            │
+│   last_active.json    — 上次活跃会话指针（sessionId+projectPath）│
 │  src/DAGui/Agent/（UI 在 DAGui 模块）                           │
-│   DAAgentDockWidget  — 聊天面板（QWebEngine + 输入框）           │
+│   DAAgentDockWidget  — 聊天面板（QWebEngine + 输入框 + 会话下拉）│
 │   DAAgentWebChannel  — C++↔JS 桥（registerObject "chatBridge"） │
-│   DAAgentSettingsWidget — LLM 设置页（QSettings + DPAPI 加密）   │
+│   DAAgentSettingsWidget — LLM 设置页（QSettings + DPAPI 加密 +   │
+│                        会话保留 max_sessions/retention_days）   │
 └──────────────────────┬────────────────────────────────────────┘
                        │  QProcess 匿名管道
                        │  stdin/stdout: JSON Lines（每行一条 JSON）
@@ -47,8 +57,10 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 │   StdioProtocol — 后台线程读 stdin → asyncio.Queue              │
 │   AgentRunner   — langgraph StateGraph（agent/tools/ask_user）  │
 │   ToolFactory   — C++ tool schema → bind_tools（含注入 ask_user）│
+│   _stream_llm   — 读 collected_chunks.usage_metadata 回传 usage │
 └───────────────────────────────────────────────────────────────┘
 ```
+
 
 ### 核心设计决策
 
@@ -71,7 +83,8 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 |------|------|
 | `DAAgentInterface.h` | 公共接口：`registerTool` / `registerSystemPrompt` / `showDockWidget` / `hideDockWidget` / `sendMessage` / `isRunning` / `getLLMConfig` / `setLLMConfig` |
 | `DAAgentModule.h/.cpp` | 接口实现：工具注册表 `m_tools`、系统提示词 `m_systemPrompts`、懒启动、`connectSignals()` 信号链、Python/脚本路径探测 |
-| `DAAgentBridge.h/.cpp` | QProcess 生命周期（start/stop/超时）、stdin/stdout 读写、JSON Lines 解析分发、工具执行兜底 |
+| `DAAgentBridge.h/.cpp` | QProcess 生命周期（start/stop/超时）、stdin/stdout 读写、JSON Lines 解析分发、工具执行兜底；`sendLoadSession` 下发历史 messages 重建 state |
+| `DAAgentSessionStore.h/.cpp` | 会话持久化层（非 QObject，PIMPL）：JSONL append-only 读写、全局索引（原子写 tmp+rename）、`cleanupOldSessions`（数量+时间双限）、`setLastActive`/`lastActiveSession`（按工程过滤的精确匹配）、自动标题、工程导入导出 |
 | `DAAbstractAgentTool.h` | 工具抽象基类（纯虚）：`getToolSpec` / `execute` / `getOwnerModule` |
 | `DAAgentAPI.h` | `DAAgent_API` 导出宏 |
 | `tools/` | 平台内置工具实现（见 § 七） |
@@ -82,7 +95,7 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 |------|------|
 | `DAAgentDockWidget.h/.cpp` | 聊天面板 QWidget（**非 QDockWidget**，见 § 八）；持有 WebEngine 视图、输入框、发送按钮、状态标签 |
 | `DAAgentWebChannel.h/.cpp` | QWebChannel 桥对象（注册名 `chatBridge`）；JS 调 `onUserSelect`/`onUserMessage`，C++ 调 `callJS()` 驱动 JS 渲染函数 |
-| `DAAgentSettingsWidget.h/.cpp` | LLM 设置页（继承 `DAAbstractSettingPage`）：base_url/api_key/model/超时 + 连接测试；DPAPI 加解密静态方法 |
+| `DAAgentSettingsWidget.h/.cpp` | LLM 设置页（继承 `DAAbstractSettingPage`）：base_url/api_key/model/超时 + 上下文管理 + 会话保留（`max_sessions`/`session_retention_days`）+ 连接测试；DPAPI 加解密静态方法 |
 | `resources/` | `chat.html` + `chat.js` + `chat.css` + `markdown-it.min.js` + `highlight.min.js` + `chat.qrc` |
 
 ### 3.3 `src/PyScripts/DAWorkbench/agent/`（Python 子进程）
@@ -140,6 +153,7 @@ stdout 专用于协议，**绝对禁止在 stdout 打印日志**（污染协议�
 | `user_msg` | `content` | 用户消息，触发一轮 agent 推理 |
 | `tool_result` | `call_id` + `result` | 工具执行结果回传（RPC 应答） |
 | `user_answer` | `answer` | 用户对 HITL 问题的回答，触发 `resume()` |
+| `load_session` | `session_id` + `messages`(JSON 数组，T6 记录的 message 字段) | **切换/恢复会话**时下发历史 messages 重建 langgraph state（不重启子进程）；Python 端 `graph.aupdate_state` 注入后回 `session_loaded` 确认 |
 | `stop` | — | 优雅停止，子进程退出主循环 |
 
 ### 5.2 Python → C++（stdout）
@@ -152,6 +166,8 @@ stdout 专用于协议，**绝对禁止在 stdout 打印日志**（污染协议�
 | `message_end` | `content` | 本轮最终回复（agent_node 在无 tool_calls 时发送） |
 | `tool_call` | `call_id` + `tool` + `arguments` | 请求 C++ 执行工具；C++ 回传 `tool_result` |
 | `question` | `text` + `options` | HITL 提问（**只发一次**，见铁律 T8） |
+| `usage` | `input_tokens` + `output_tokens` + `total_tokens` + `source` | LLM `usage_metadata` 权威 token 统计回传（`_stream_llm` 读 `collected_chunks.usage_metadata`）；C++ 收到后发 `agentUsage` 信号供 UI 显示占比 |
+| `session_loaded` | `session_id` | `load_session` 后 Python 重建 state 完成的确认；C++ 收到才允许下一轮 `sendMessage`（见铁律 T15） |
 | `error` | `message` | 子进程侧错误 |
 | `done` | — | 本轮处理结束（暂停于 interrupt 时不发） |
 
@@ -241,9 +257,9 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 ### 8.3 DAAgentSettingsWidget（LLM 设置页）
 
 - 继承 `DAAbstractSettingPage`（非 QWidget），注册到平台设置系统（参考 `src/APP/SettingPages/DASettingPagePython.h`）。
-- 字段：Base URL / API Key（Password 模式）/ Model / Ready Timeout / Stop Timeout / 测试连接按钮。
-- **必须连接 `settingChanged()`** 到字段变更信号，否则平台的脏页机制不会触发 `apply()`（配置永不保存）。
-- `apply()` → `saveConfig()` → QSettings；`getLLMConfig()`（DAAgentModule）与设置页共用同一组 QSettings key。
+- 字段：Base URL / API Key（Password 模式）/ Model / Ready Timeout / Stop Timeout / 测试连接按钮；上下文管理（context_window / compaction_threshold / max_recent_messages / tool_result_*）；会话保留（Max Sessions 5-200 / Session Retention Days 1-365，plan-06）。
+- **必须连接 `settingChanged()`** 到字段变更信号，否则平台的脏页机制不会触发 `apply()`（配置永不保存）——每个 QSpinBox/QLineEdit 都有 `connect(..., [this](){ emit settingChanged(); })`。
+- `apply()` → `saveConfig()` → QSettings；`getLLMConfig()`（DAAgentModule）与设置页共用同一组 QSettings key。`cleanupSessions`（DAAgentModule）读 `agent/max_sessions` / `agent/session_retention_days`，默认值 20/30 与设置页一致。
 
 ### 8.4 前端资源
 
@@ -267,6 +283,10 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 | `agent/max_recent_messages` | 压缩后保留最近消息条数 | 10 |
 | `agent/tool_result_max_chars` | 工具结果截断阈值（字符数），超此长度截断为预览 | 50000 |
 | `agent/tool_result_preview_chars` | 截断后工具结果预览长度（字符数） | 2000 |
+| `agent/max_sessions` | 配置目录保留的自由会话最大数量（超出按 updatedAt 倒序删最旧），由 `DAAgentModule::cleanupSessions` 读取 | 20 |
+| `agent/session_retention_days` | 自由会话保留天数（早于此天数的会话启动时清理），由 `DAAgentModule::cleanupSessions` 读取 | 30 |
+
+> 注：`max_sessions` / `session_retention_days` 仅 C++ 侧用（`getLLMConfig` 不下发 Python）。三处默认值须一致：设置页 spin range/setValue、`DAAgentSettingsWidget::loadConfig`/`saveConfig`、`DAAgentModule::cleanupSessions` 的 QSettings 读取。`cleanupOldSessions` 入口已加 `qMax(1, maxCount)` / `qMax(0, retentionDays)` 防护 ini 被手改为 0/负时误删全部。
 
 加密：Windows 用 `CryptProtectData`/`CryptUnprotectData`（`DAAgentSettingsWidget.cpp:214-264`），静态方法 `encryptApiKey`/`decryptApiKey` 供 `DAAgentModule` 调用。**日志/诊断禁止打印 api_key 明文**（只打加密 blob 大小）。
 
@@ -340,6 +360,14 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 - **摘要用 self.llm（不绑 tools）**：`ContextCompactor._generate_summary()` 用 `ChatOpenAI.ainvoke()`（无 `bind_tools`），摘要无需工具调用。
 - **token 估算只用于提前触发**：tiktoken/char-based 估算偏向早触发（宁可早压缩不要溢出），不用于"跳过"判断。反应式溢出恢复是安全网，覆盖估算不准的场景。
 
+### T15. 会话持久化（plan-03/05/06）
+- **JSONL 文件不含 api_key 明文**：会话记录只存对话消息（user/assistant/tool_result/usage），init 时下发的 LLM 配置（含 api_key）绝不下发到磁盘的 jsonl；工具结果截断沿用 `tool_result_max_chars`，避免敏感数据膨胀。
+- **切换会话不重启子进程**：`DAAgentModule::switchSession` 直接调 `m_bridge->sendLoadSession(sessionId, messages)` 下发历史重建 langgraph state，**不** `stopAgent()`/`startAgent()`（冷启动 ~16s 不可接受）。切换延迟须 <500ms。
+- **`load_session` 后须等 `session_loaded` 再对话**：C++ 发 `load_session` → Python `graph.aupdate_state` 注入历史 → 回 `session_loaded` 确认。在收到 `session_loaded` 之前**禁止**发 `user_msg`（state 未重建完毕会丢历史）。`DAAgentBridge` 收到 `session_loaded` 发 `agentSessionLoaded(sessionId)` 信号，调用方（UI/Module）据此恢复输入框可用态。
+- **`cleanupOldSessions` 入口加 `qMax` 防护**：`maxCount = qMax(1, maxCount); retentionDays = qMax(0, retentionDays);`（plan-06 边界）——ini 被手改为 0/负时钳到合法下限，避免「保留 0 个」误删全部自由会话。
+- **`last_active` 精确匹配 projectPath**：空 filter 只返回自由会话（指针 projectPath 必须空），非空 filter 精确匹配工程路径——避免启动恢复把工程绑定会话当自由会话恢复（plan-05 MAJOR-4 回归保护，见 `testLastActive`）。
+- **崩溃安全**：JSONL append-only + 每条即写 flush，崩溃后最多丢最后一两行；`parseLineTolerant` 跳过损坏行不整体丢弃。
+
 ---
 
 ## 十二、调试指南
@@ -385,3 +413,152 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 - [ ] UI 字符串英文源 + `//cn:` 注释；`daCritical`/`daWarning` 已翻译
 - [ ] 不打印 api_key 明文日志
 - [ ] 符合根 AGENTS.md 铁律（stdout 协议、booting 心跳、单 Dock 实例、ToolMessage str 等）
+
+---
+
+## 十五、破坏性接口变更（plan-02/03/05，agent 上下文管理一期）
+
+> 以下接口在 `DAAgentInterface` 新增为**纯虚函数**，会破坏二进制兼容：现有派生类（含插件）必须重编译。新增派生时须实现全部。
+
+### 15.1 `DAAgentInterface` 新增 9 个纯虚函数
+
+| # | 签名 | 用途 | 实现处 |
+|---|------|------|--------|
+| 1 | `virtual QString createSession() = 0` | 创建新会话（写 index + 空 jsonl），返回 UUID4 | `DAAgentModule::createSession` |
+| 2 | `virtual bool switchSession(const QString& sessionId) = 0` | 切换会话：内部调 `m_bridge->sendLoadSession` 下发历史重建 state（不重启子进程） | `DAAgentModule::switchSession` |
+| 3 | `virtual void deleteSession(const QString& sessionId) = 0` | 删除会话（删 jsonl + 移 index） | `DAAgentModule::deleteSession` |
+| 4 | `virtual void renameSession(const QString& sessionId, const QString& title) = 0` | 重命名（更新 index title + updatedAt） | `DAAgentModule::renameSession` |
+| 5 | `virtual QVariantList listSessions() const = 0` | 列出会话（供 UI 下拉，按 updatedAt 倒序） | `DAAgentModule::listSessions` |
+| 6 | `virtual QString currentSessionId() const = 0` | 当前活跃会话 ID | `DAAgentModule::currentSessionId` |
+| 7 | `virtual QHash<QString, QByteArray> exportActiveSessions() const = 0` | 导出指定会话的 JSONL 字节（供 DAAppProject 存工程 zip） | `DAAgentModule::exportActiveSessions` |
+| 8 | `virtual void loadSessionsFromProject(const QHash<QString, QByteArray>& files, const QString& projectPath) = 0` | 导入工程内会话文件（写 sessions/ + 更新 index + 标记 projectPath） | `DAAgentModule::loadSessionsFromProject` |
+| 9 | `virtual void setCurrentProjectPath(const QString& path) = 0` | 设置当前工程路径（供 DAAppProject L5 经 `core()->getAgentInterface()` 多态调用，影响 listSessions 过滤与 last_active 指针） | `DAAgentModule::setCurrentProjectPath` |
+
+> **注 1**：`loadSession` 不在纯虚列表中——经 round2-contract 契约1 删除。`switchSession` 直接调 `DAAgentBridge::sendLoadSession`（Bridge 私有方法），不经 `DAAgentInterface`，避免把 Bridge 实现细节泄漏到接口。
+>
+> **注 2**：`setCurrentProjectPath` 经 round-3 提升为第 9 纯虚——DAAppProject（L5）需要经 `core()->getAgentInterface()` 多态调用以同步工程路径，不能走 Module 内部直接调用。
+
+### 15.2 `DAAgentBridge` 新增 2 个公共信号（非破坏性，新增连接点）
+
+| 信号 | 用途 | 典型连接方 |
+|------|------|-----------|
+| `void agentUsage(int inputTokens, int outputTokens, int totalTokens, const QString& source)` | LLM `usage_metadata` 权威 token 统计回传（来自 `usage` 协议消息或 `message_end` 附带 usage）；UI 据此显示 `tokens: 1234 / 1048576` 占比条 + 点击展开分类（system/tools/history/current） | `DAAgentDockWidget`/`DAAgentWebChannel` → chat.js token 展示 |
+| `void agentSessionLoaded(const QString& sessionId)` | `load_session` 后 Python 重建 state 完成的确认（`session_loaded` 协议消息）；调用方据此恢复输入框可用态，方可发下一轮 `user_msg`（见铁律 T15） | `DAAgentModule::connectSignals` → UI 状态恢复 |
+
+**连接示例**（UI/插件作者可能连接这两个信号）：
+
+```cpp
+// 在 DAAgentModule::connectSignals() 或插件初始化处
+connect(m_bridge, &DAAgentBridge::agentUsage, this, [this](int inTok, int outTok, int total, const QString& src) {
+    // 推给 UI 显示 token 占比条
+    if (m_dock) m_dock->onAgentUsage(inTok, outTok, total, src);
+});
+connect(m_bridge, &DAAgentBridge::agentSessionLoaded, this, [this](const QString& sid) {
+    // 会话切换/恢复完成，恢复输入框
+    if (m_dock) m_dock->onAgentSessionLoaded(sid);
+});
+```
+
+> 这两个信号是**新增连接点**，不改变既有信号签名，不破坏二进制兼容；插件可选择连接以获得 token 统计与会话切换通知。
+
+---
+
+## 十六、会话持久化（plan-03/05/06）
+
+### 16.1 设计要点
+
+- **持久化主导方=C++ 主进程**（总纲 T1）：C++ 负责 JSONL 读写 / 会话列表 / 清理 / token 锚点存储；Python 子进程只负责推理与 state 重建。历史消息本就需在 UI 侧渲染，C++ 完全掌控历史格式，与 langgraph 解耦。
+- **双存储**（总纲 D3）：未保存工程的自由会话存配置目录 `sessions/<id>.jsonl`；保存工程时活跃会话复制进 zip 的 `agent_sessions/<id>.jsonl`，配置目录原会话保留（两边独立）。
+- **自动恢复**（总纲 D5）：启动程序自动恢复上次活跃自由会话；打开工程自动加载工程内上次活跃会话。
+
+### 16.2 JSONL 记录格式（总纲 T6）
+
+每行一条 JSON，append-only 追加（崩溃安全：每条即写 flush）：
+
+```json
+{"uuid":"...","parent_uuid":null,"session_id":"...","timestamp":"ISO8601",
+ "type":"user|assistant|tool_result|usage",
+ "message":{"role":"human|ai|tool","content":"...","tool_calls":[...]?,"tool_call_id":"..."?},
+ "usage_metadata":{...}?}
+```
+
+- 一期 `type` 实际用 `user`/`assistant`/`tool_result`/`usage`；`question`/`answer` 复用 `tool_call`/`tool_result` 语义（ask_user 作为 assistant 的 tool_call）。
+- `parent_uuid` 一期固定 `null`（二期 rewind 树用）。
+- `readMessagesForLoad` 过滤 `usage`，只返回 user/assistant/tool_result 的 `message` 字段供 `load_session` 重建 state。
+- **JSONL 不写 api_key 明文**（见铁律 T15）。
+
+### 16.3 路径（总纲 T7，由 `DADir::getAppDataPath("sessions")` 决定）
+
+| 项 | 路径 |
+|----|------|
+| 自由会话文件 | `<appData>/sessions/<sessionId>.jsonl` |
+| 全局索引 | `<appData>/sessions/sessions_index.json`（`[{id,title,createdAt,updatedAt,messageCount,projectPath?}]`，原子写 tmp+rename） |
+| 工程内会话 | `<project.zip>/agent_sessions/<sessionId>.jsonl` |
+| 上次活跃会话指针 | `<appData>/sessions/last_active.json`（`{sessionId, projectPath?}`） |
+
+Windows 展开为 `%APPDATA%/DA/DAWorkBench/DAWorkBench/sessions/`。
+
+### 16.4 `load_session` 重建机制（总纲 T3）
+
+切换会话**不重启子进程**（避免 ~16s 冷启动）：
+
+1. C++ `DAAgentModule::switchSession(id)` → `m_sessionStore->readMessagesForLoad(id)` 取历史 messages 数组。
+2. → `m_bridge->sendLoadSession(id, messages)` 下发 `load_session` 协议消息（stdin）。
+3. Python 端 `graph.aupdate_state` 注入历史重建 state，回 `session_loaded` 确认。
+4. C++ 收到 `session_loaded` → 发 `agentSessionLoaded(id)` 信号 → UI 恢复输入框，方可发下一轮 `user_msg`。
+
+> 在收到 `session_loaded` 之前**禁止**发 `user_msg`（state 未重建完毕会丢历史，见铁律 T15）。
+
+### 16.5 恢复时序
+
+- **启动程序**：`DAAppController::initialize` 末尾调 `agentMod->cleanupSessions()`（清理超限会话）+ `restoreLastActiveSession()`（读 `last_active.json` 空指针 → 恢复上次活跃自由会话）。须在 `setDockWidget()` 完成后（Dock 就绪才能渲染历史）。
+- **打开工程**：`DAAppProject` 加载任务解压 `agent_sessions/*.jsonl` → 主线程回调 → `agentMod->loadSessionsFromProject(files, projectPath)` + `setCurrentProjectPath(path)` → `restoreLastActiveSession()` 按 `projectPath` 过滤恢复工程内上次活跃会话。
+- **保存工程**：`DAAppProject::executeSave` 主线程先 `agentMod->exportActiveSessions()` 收集活跃会话字节 → `appendByteSaveTask` 写入 zip 的 `agent_sessions/`（子线程，不碰 UI）。
+- **saveAs**：`setCurrentProjectPath` 同步更新新路径，`setSessionProjectPath` + `setLastActive` 更新 index 与指针的 projectPath（使打开新工程能恢复）。
+
+### 16.6 单元测试
+
+`src/tst/DAAgentSessionStoreTest/`（Qt Test，5 个 C++ 用例，不链接 Python）：
+
+| 用例 | 覆盖 |
+|------|------|
+| `testAppendAndRead` | appendRecord + readMessagesForLoad（usage 被过滤，messageCount 只计对话消息） |
+| `testParseTolerant` | JSONL 含损坏行/空行时 readMessagesForLoad 跳过坏行返回有效记录 |
+| `testIndexAtomicWrite` | listSessions 倒序，renameSession 更新 index + title，索引文件为合法 JSON 数组 |
+| `testCleanup` | 数量上限删最旧、时间上限删超期、skipSessionId 保护当前活跃、qMax 边界防护 |
+| `testLastActive` | last_active 往返 + projectPath 精确匹配（plan-05 MAJOR-4 回归保护：空 filter 不返回工程绑定会话） |
+
+> **不含 `testMessageRoundTrip`**：`message_to_json`/`json_to_message` 是 plan-01 在 Python 侧（`agent_runner.py`）定义的函数，`HumanMessage`/`AIMessage` 等是 langchain Python 类，不在 C++ `DAWorkbench::DAAgent` 库导出符号中。该序列化往返归 plan-01 的 Python 测试，见下方手测清单兜底。
+
+隔离：`main()` 起手 `QStandardPaths::setTestModeEnabled(true)` 重定向 AppData 到临时目录，绝不污染真实 `%APPDATA%/DAWorkBench/sessions/`；每个用例 `init()` 清空 sessions 目录。
+
+构建：`cmake -S . -B build -D DA_ENABLE_TESTING=ON` 后 `cmake --build build --target DAAgentSessionStoreTest --config Release`，运行 `./build/bin/DAAgentSessionStoreTest.exe -o result.txt`（Windows 上 Qt Test stdout 不可见，须用 `-o` 输出文件，见根 AGENTS.md COMMANDS）。
+
+### 16.7 端到端手测清单
+
+> 一期手测兜底（Python 序列化往返等无法在 C++ Qt Test 覆盖的场景）。逐项验证，全部应通过。
+
+- [ ] **对话 → 重启 → 恢复**：发几轮对话（含工具调用）→ 关闭程序 → 重新启动 → 上次活跃自由会话历史完整恢复，可继续对话。
+- [ ] **切换会话 → 历史重放 → 续聊**：新建会话 A 对话几轮 → 新建会话 B 对话几轮 → 下拉切回 A → 历史重放显示 A 的对话 → 发新消息续聊正常（state 已重建）。
+- [ ] **保存工程 → zip 含 agent_sessions → 打开 → 恢复**：有活跃会话时保存工程 → 用解压工具打开 `.dwproj`（zip）确认含 `agent_sessions/*.jsonl` → 关闭程序 → 打开工程 → 工程内上次活跃会话恢复。
+- [ ] **底部 token 占比随对话更新**：发消息后底部状态栏显示 `tokens: N / context_window`，点击展开看分类（system/tools/history/current）随对话增长。
+- [ ] **超 20 个会话 → 启动清理最旧**：在 `%APPDATA%/DAWorkBench/DAWorkBench/sessions/` 手造 >20 个 `<id>.jsonl` + 索引项 → 启动程序 → 确认 `cleanupSessions` 删除最旧的超限会话（保留最近 20 个），当前活跃会话不被删。
+- [ ] **超 30 天会话清理**：手造一个 updatedAt 早于 30 天的会话 → 启动 → 确认被清理。
+- [ ] **Python 序列化往返手测**（一期手测兜底，二期转 pytest）：在 `bin/PyScripts/` 下手动构造 `HumanMessage`/`AIMessage`(含 `tool_calls`)/`ToolMessage`/`SystemMessage`/带 `additional_kwargs` 的 summary，调 `message_to_json` → `json_to_message` 比对往返一致（类型/content/tool_calls/tool_call_id/additional_kwargs 不丢）。该用例归 plan-01 Python 测试范围，此处仅手测兜底。
+- [ ] **设置页配置生效**：设置页改 Max Sessions=5 / Session Retention Days=7 → 应用 → 关闭重开确认设置回显 → 造 >5 个会话启动清理保留 5 个；造 >7 天会话启动清理。
+
+---
+
+## 十七、WHERE TO LOOK（速查，更新）
+
+> 原 §十三 速查表已含基础项，此处补会话持久化相关位置。
+
+| 任务 | 位置 |
+|------|------|
+| 新增会话持久化逻辑 | `src/DAAgent/DAAgentSessionStore.h/.cpp`（非 QObject，PIMPL） |
+| 改会话清理策略 | `DAAgentSessionStore::cleanupOldSessions`（入口已加 qMax 防护） |
+| 改 last_active 过滤语义 | `DAAgentSessionStore::PrivateData::readLastActive`（精确匹配 projectPath） |
+| 改 load_session 重建 | `DAAgentBridge::sendLoadSession`（C++）+ `agent_runner.py` `aupdate_state`（Python） |
+| 改会话保留配置 | `DAAgentSettingsWidget.cpp`（设置页 spin）+ `DAAgentModule::cleanupSessions`（读取） |
+| 会话持久化单元测试 | `src/tst/DAAgentSessionStoreTest/main.cpp`（5 个 C++ 用例） |
+
