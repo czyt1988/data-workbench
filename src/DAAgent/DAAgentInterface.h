@@ -60,9 +60,10 @@ public:
     /**
      * @brief 转发用户对 agent 提问的回答给子进程
      *
-     * plan-01：方法体吸收原 connectSignals 中 dock::userAnswerSelected 的持久化 lambda
-     * （appendToolResultRecord），plan-02 删 lambda 后由 AppController 经接口直连本方法
-     * 单次执行持久化。本计划期间 Dock 仍走旧直连路径，此方法体 dormant 无害。
+     * 方法体吸收原 connectSignals 中 dock::userAnswerSelected 的持久化 lambda
+     * （appendToolResultRecord），plan-02 删 lambda 后由 DAAppController 经
+     * dock::userAnswerSelected → interface::sendUserAnswer 信号→方法直连，
+     * 单次执行持久化 + 转发子进程（无双重）。
      * @param answer 用户回答文本
      */
     virtual void sendUserAnswer(const QString& answer) = 0;

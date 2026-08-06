@@ -1,7 +1,6 @@
 // DAAgentModule.cpp
 #include "DAAgentModule.h"
 #include "DAAgentBridge.h"
-#include "DAAgentDockWidget.h"
 #include "DAAgentSessionStore.h"
 #include "DAAbstractAgentTool.h"
 #include "DAAgentInterface.h"
@@ -114,22 +113,19 @@ void DAAgentModule::initialize(DACoreInterface* core)
 {
     m_core = core;
 
-    // 不在此 new DAAgentDockWidget——Dock 由 DAAppDockingArea::buildDockingArea()
-    // （plan-03）创建，并通过 setDockWidget() 回调注入。若此处再 new，会与
-    // plan-03 产生两个 Dock 实例，本模块的信号链将连到隐藏的（未注册的）那个。
+    // Module 不创建也不持有 DAAgentDockWidget——Dock 由 DAAppDockingArea::
+    // buildDockingArea() 创建；Dock 信号链（接口信号↔Dock 槽/信号）由 DAAppController
+    // 在 initialize() 经接口直接 connect（plan-02 决策 D3b）。本模块只负责 agent
+    // 框架逻辑 + Bridge 信号转发 + 持久化 lambda，不依赖 DAGui。
 
     // 创建 Bridge（不依赖 Dock 存在）
     m_bridge = new DAAgentBridge(this);
 
-    // 把 Bridge 的 agent 生命周期信号转发到 DAAgentInterface，
-    // 供 APP 层（DAAppController）connect 到 Dock（plan-02 完成）。
-    // 注意：agentUsage 不直接转发——Module 内部 lambda（见 connectSignals）
-    // 会补 context_window 后以 tokenUsageUpdated 暴露。
-    // 此转发与 Dock 无关（PMF 到 this 的接口信号），不受 m_dockWidget 是否为空影响，
-    // 故放 initialize 而非 connectSignals（后者 dock 为空时提前 return）。
-    // 双轨过渡：plan-01 期间 connectSignals 仍保留 Bridge→Dock 直连，Dock 走旧路径；
-    // 接口信号此时无消费者（AppController 尚未 connect），空发无害。plan-02 切换
-    // AppController connect 时同步删旧直连，避免双重渲染。
+    // 把 Bridge 的 agent 生命周期信号转发到 DAAgentInterface，供 APP 层
+    // （DAAppController）connect 到 Dock。注意：agentUsage 不直接转发——
+    // Module 内部 lambda（见 connectSignals）会补 context_window 后以
+    // tokenUsageUpdated 暴露。此转发为 Bridge→this 接口信号（PMF 到 this），
+    // 与 Dock 无关。
     connect(m_bridge, &DAAgentBridge::agentToken, this, &DAAgentInterface::agentToken);
     connect(m_bridge, &DAAgentBridge::agentMessageComplete, this, &DAAgentInterface::agentMessageComplete);
     connect(m_bridge, &DAAgentBridge::agentToolCall, this, &DAAgentInterface::agentToolCall);
@@ -145,20 +141,12 @@ void DAAgentModule::initialize(DACoreInterface* core)
     // 目录就绪由 store 内部 DADir::getAppDataPath("sessions") mkpath。
     m_sessionStore = new DAAgentSessionStore();
 
-    // 连接信号链——connectSignals 内部对 m_dockWidget 为空时提前返回，
-    // 真正的连接在 setDockWidget() 传入 Dock 后完成
+    // 连接 Bridge→Module 的持久化/状态 lambda（connectSignals 不再连 Dock，
+    // 守卫改为仅判 m_bridge；Dock 连接已由 DAAppController 经接口完成）。
     connectSignals();
 
     // 注册平台内置工具（plan-05；未完成时为空体）
     registerBuiltinTools();
-}
-
-void DAAgentModule::setDockWidget(DAAgentDockWidget* dock)
-{
-    // 由 DAAppDockingArea::buildDockingArea()（plan-03）在创建 Dock 后回调注入。
-    m_dockWidget = dock;
-    // Dock 就绪后重新连接信号链（connectSignals 在 dock 为空时会提前返回）
-    connectSignals();
 }
 
 void DAAgentModule::registerTool(DAAbstractAgentTool* tool)
@@ -252,11 +240,10 @@ void DAAgentModule::stop()
 
 void DAAgentModule::sendUserAnswer(const QString& answer)
 {
-    // 持久化：原 connectSignals 的 dock::userAnswerSelected lambda（约 L344，
-    // appendToolResultRecord）在 plan-02 删除 Dock 持有后由本方法体承接。
-    // 本计划期间 Dock 仍走旧直连路径（connectSignals 的 userAnswerSelected
-    // 仍直连 dock→bridge 与持久化 lambda），此方法体未被调用（dormant 无害）；
-    // plan-02 让 AppController 经接口调用本方法后激活，由方法体单次执行持久化。
+    // 持久化：吸收原 connectSignals 的 dock::userAnswerSelected 持久化 lambda
+    // （appendToolResultRecord），plan-02 删除 Dock 持有后由本方法体承接。
+    // DAAppController 经 dock::userAnswerSelected → interface::sendUserAnswer
+    // 信号→方法 PMF 连接，单次调用即完成持久化 + 转发 Bridge（无双重）。
     if (!m_currentSessionId.isEmpty() && !m_pendingToolCallUuids.isEmpty()) {
         QString tcid = m_pendingToolCallUuids.dequeue();
         appendToolResultRecord(m_currentSessionId, tcid, answer);
@@ -329,68 +316,15 @@ void DAAgentModule::registerBuiltinTools()
 
 void DAAgentModule::connectSignals()
 {
-    // initialize() 阶段 m_dockWidget 尚未由 DAAppDockingArea 注入（为 nullptr），
-    // 此时跳过；setDockWidget() 在 Dock 就绪后会再次调用本函数完成连接。
-    if (!m_bridge || !m_dockWidget) {
+    // plan-02：Dock 信号链已由 DAAppController::initialize() 经接口直接 connect 到
+    // DAAgentDockWidget（13 条 interface→dock 槽 + 7 条 dock 信号→interface 方法）。
+    // 本函数不再持有/连接 Dock——只保留 Bridge→Module 的持久化/状态 lambda（与 Dock 无关）。
+    // Dock 不再是 Module 依赖；Bridge 仍是。
+    if (!m_bridge) {
         return;
     }
-    // Bridge → DockWidget
-    connect(m_bridge, &DAAgentBridge::agentToken, m_dockWidget, &DAAgentDockWidget::onAgentToken);
-    connect(m_bridge, &DAAgentBridge::agentMessageComplete, m_dockWidget, &DAAgentDockWidget::onAgentMessageComplete);
-    connect(m_bridge, &DAAgentBridge::agentToolCall, m_dockWidget, &DAAgentDockWidget::onAgentToolCall);
-    // 工具结果推送：plan-03 的 DAAgentDockWidget::onAgentToolResult /
-    // DAAgentWebChannel::appendToolResult 依赖此信号，否则工具结果不显示在对话流中
-    connect(m_bridge, &DAAgentBridge::agentToolResult, m_dockWidget, &DAAgentDockWidget::onAgentToolResult);
-    connect(m_bridge, &DAAgentBridge::agentQuestion, m_dockWidget, &DAAgentDockWidget::onAgentQuestion);
-    connect(m_bridge, &DAAgentBridge::agentError, m_dockWidget, &DAAgentDockWidget::onAgentError);
-    connect(m_bridge, &DAAgentBridge::agentReady, m_dockWidget, &DAAgentDockWidget::onAgentReady);
-    connect(m_bridge, &DAAgentBridge::agentBusy, m_dockWidget, &DAAgentDockWidget::onAgentBusy);
 
-    // ---- plan-04: 多会话 + token UI 接线 ----
-    // 契约2: tokenUsageUpdated(5 参含 contextWindow) → DockWidget::onAgentUsage。
-    // Module 在 plan-03 agentUsage lambda 内查 context_window 后 emit 此 5 参信号。
-    connect(this, &DAAgentModule::tokenUsageUpdated, m_dockWidget, &DAAgentDockWidget::onAgentUsage);
-    // Python load_session 重建完成 → DockWidget 解除 UI 切换守卫
-    connect(m_bridge, &DAAgentBridge::agentSessionLoaded, m_dockWidget, &DAAgentDockWidget::onAgentSessionLoaded);
-    // MAJOR1(round-6): switchSession 后若 load_session 失败走 agentError 而非 session_loaded，
-    //                  m_switching 须在 agentError 路径也复位，否则后续 token 被守卫丢弃、渲染冻结。
-    //                  DockWidget::onAgentError 槽内已复位 m_switching=false（见该槽实现）；
-    //                  Bridge::agentError 已在上方 connect 到 onAgentError，此处不重复连接。
-    // Module 自身信号 → DockWidget
-    connect(this, &DAAgentModule::sessionSwitched, m_dockWidget, &DAAgentDockWidget::onSessionSwitched);
-    connect(this, &DAAgentModule::sessionCreated, m_dockWidget, &DAAgentDockWidget::onSessionCreated);
-    connect(this, &DAAgentModule::sessionListChanged, m_dockWidget, &DAAgentDockWidget::onSessionListChanged);
-    // DockWidget 会话操作信号 → Module
-    connect(m_dockWidget, &DAAgentDockWidget::sessionSwitchRequested, this, &DAAgentModule::switchSession);
-    // MAJOR1(round-4): UI "+" 调 newSession()（= createSession + emit sessionCreated → onSessionCreated → clearChat）；
-    //                  sendMessage 自动建会话仍调 createSession（无 sessionCreated，不触发 clearChat）
-    connect(m_dockWidget, &DAAgentDockWidget::sessionCreateRequested, this, [this]() {
-        newSession();
-    });
-    connect(m_dockWidget, &DAAgentDockWidget::sessionDeleteRequested, this, &DAAgentModule::deleteSession);
-    connect(m_dockWidget, &DAAgentDockWidget::sessionRenameRequested, this, &DAAgentModule::renameSession);
-
-    // DockWidget → Module (用户消息)
-    connect(m_dockWidget, &DAAgentDockWidget::sendMessageRequested, this, [this](const QString& text) {
-        // appendUserMessage 已由 DAAgentDockWidget::onSendClicked() 在 emit
-        // sendMessageRequested 之前调用（见 plan-03 onSendClicked 流程及
-        // DAAgentWebChannel::appendUserMessage 实现）。此处切勿重复调用，
-        // 否则每条用户消息会在对话流中渲染两次。
-        sendMessage(text);
-    });
-
-    // DockWidget → Module (用户终止)
-    connect(m_dockWidget, &DAAgentDockWidget::stopRequested, this, [this]() {
-        stop();
-    });
-
-    // DockWidget → Bridge (用户回答问题)
-    // 此连接保留（原协议流程：用户回答 → Bridge sendUserAnswer → Python）。
-    // plan-03 在此之后追加并行的持久化 lambda（记录 question/answer 到 JSONL），
-    // 不覆盖此连接。
-    connect(m_dockWidget, &DAAgentDockWidget::userAnswerSelected, m_bridge, &DAAgentBridge::sendUserAnswer);
-
-    // ---- plan-03 持久化：对话事件 → JSONL ----
+    // ---- 持久化：对话事件 → JSONL ----
     // assistant 消息完成（纯文本回复）
     connect(m_bridge, &DAAgentBridge::agentMessageComplete, this, [this](const QString& fullText) {
         if (m_currentSessionId.isEmpty()) return;
@@ -434,16 +368,11 @@ void DAAgentModule::connectSignals()
         // 契约6：入队供下一条 answer 按 FIFO 配对
         m_pendingToolCallUuids.enqueue(appendToolCallRecord(m_currentSessionId, "ask_user", args));
     });
-    // 用户回答——记录为 tool_result（与上面的 agentQuestion 记录配对）
-    connect(m_dockWidget, &DAAgentDockWidget::userAnswerSelected, this, [this](const QString& answer) {
-        if (m_currentSessionId.isEmpty()) return;
-        // 契约6：FIFO 出队取配对的 question uuid
-        // MAJOR1（round-4）：dequeue 前加 isEmpty 守卫，防空队列未定义行为/崩溃
-        if (m_pendingToolCallUuids.isEmpty()) return;
-        QString tcid = m_pendingToolCallUuids.dequeue();
-        // MAJOR（round-4，from plan-04）：content 统一明文（answer 直传，对齐映射表 content:str(answer)）
-        appendToolResultRecord(m_currentSessionId, tcid, answer);
-    });
+    // 注：userAnswerSelected 的持久化路径已删除——逻辑由 DAAgentModule::sendUserAnswer
+    // 方法体承接（plan-01：dequeue m_pendingToolCallUuids + appendToolResultRecord + 转发
+    // m_bridge->sendUserAnswer）。DAAppController 经 dock::userAnswerSelected →
+    // interface::sendUserAnswer 单次调用即完成持久化+协议转发，无双重持久化。
+    // （sendUserAnswer 是方法非信号，PMF 指向虚方法，Qt5+ 合法。）
 
     // ---- 常驻 ready/busy/done/error 槽（plan-03，替代一次性 QMetaObject::Connection，
     //      避免多次连接泄漏与 ready 永不到达时堆泄漏） ----
@@ -512,16 +441,13 @@ QString DAAgentModule::detectSystemPromptPath() const
 
 void DAAgentModule::showDockWidget()
 {
-    if (m_dockWidget) {
-        m_dockWidget->show();
-    }
+    // plan-02：Module 不再持有 Dock；Dock 显隐走 ADS 的 setToggleViewAction
+    // （由 DAAppController 绑定 ribbon action），本方法为 no-op。
 }
 
 void DAAgentModule::hideDockWidget()
 {
-    if (m_dockWidget) {
-        m_dockWidget->hide();
-    }
+    // plan-02：同 showDockWidget，no-op。
 }
 
 QJsonObject DAAgentModule::getLLMConfig() const

@@ -100,6 +100,8 @@
 #endif
 // Agent
 #include "DAAgentModule.h"
+#include "DAAgentInterface.h"        // PMF connect 到接口信号/方法需完整类型
+#include "DAAgentDockWidget.h"       // DAAppDockingArea 仅前向声明；PMF connect 需完整类型（plan-02）
 //
 #include "SettingPages/DAAppConfig.h"
 #include "DALogCategory.h"
@@ -243,9 +245,37 @@ void DAAppController::initialize()
     // Agent 助手 Dock 的显示/隐藏由 actionShowAgentArea 驱动
     mDock->getAgentDock()->setToggleViewActionMode(ads::CDockWidget::ActionModeShow);
     mDock->getAgentDock()->setToggleViewAction(mActions->actionShowAgentArea);
-    // 将已创建的 Dock Widget 注入 DAAgentModule（触发 connectSignals 建立信号链）
-    if (auto* agentMod = qobject_cast< DAAgentModule* >(mCore->getAgentInterface())) {
-        agentMod->setDockWidget(mDock->getAgentDockWidget());
+    // Agent 信号链：DAGui(Dock) 与 DAAgent 互不依赖，由 APP 层 connect（决策 D3b）。
+    // 接口信号 → Dock 槽（13 条）—— DAAgentModule 不再持有 Dock，亦不再在 connectSignals
+    // 中连 Bridge→Dock / this→Dock，唯一渲染路径经接口信号。
+    auto* agent = mCore->getAgentInterface();
+    auto* dock  = mDock->getAgentDockWidget();
+    if (agent && dock) {
+        connect(agent, &DAAgentInterface::agentToken, dock, &DAAgentDockWidget::onAgentToken);
+        connect(agent, &DAAgentInterface::agentMessageComplete, dock, &DAAgentDockWidget::onAgentMessageComplete);
+        connect(agent, &DAAgentInterface::agentToolCall, dock, &DAAgentDockWidget::onAgentToolCall);
+        connect(agent, &DAAgentInterface::agentToolResult, dock, &DAAgentDockWidget::onAgentToolResult);
+        connect(agent, &DAAgentInterface::agentQuestion, dock, &DAAgentDockWidget::onAgentQuestion);
+        connect(agent, &DAAgentInterface::agentError, dock, &DAAgentDockWidget::onAgentError);
+        connect(agent, &DAAgentInterface::agentReady, dock, &DAAgentDockWidget::onAgentReady);
+        connect(agent, &DAAgentInterface::agentBusy, dock, &DAAgentDockWidget::onAgentBusy);
+        connect(agent, &DAAgentInterface::agentSessionLoaded, dock, &DAAgentDockWidget::onAgentSessionLoaded);
+        connect(agent, &DAAgentInterface::tokenUsageUpdated, dock, &DAAgentDockWidget::onAgentUsage);
+        connect(agent, &DAAgentInterface::sessionSwitched, dock, &DAAgentDockWidget::onSessionSwitched);
+        connect(agent, &DAAgentInterface::sessionListChanged, dock, &DAAgentDockWidget::onSessionListChanged);
+        connect(agent, &DAAgentInterface::sessionCreated, dock, &DAAgentDockWidget::onSessionCreated);
+        // Dock 信号 → 接口方法（7 条；均为信号→方法 PMF 连接，emit 源信号即调用方法体，
+        // 含各自持久化/启动逻辑，无需 lambda。agentStopRequested 暂无对接，略）。
+        // 注意 sessionCreateRequested 连 &DAAgentInterface::newSession（非 createSession）：
+        // newSession emit sessionCreated → onSessionCreated → clearChat；createSession 不 emit
+        // sessionCreated，连错会导致点"+"后聊天区不清空。
+        connect(dock, &DAAgentDockWidget::sendMessageRequested, agent, &DAAgentInterface::sendMessage);
+        connect(dock, &DAAgentDockWidget::stopRequested, agent, &DAAgentInterface::stop);
+        connect(dock, &DAAgentDockWidget::userAnswerSelected, agent, &DAAgentInterface::sendUserAnswer);
+        connect(dock, &DAAgentDockWidget::sessionSwitchRequested, agent, &DAAgentInterface::switchSession);
+        connect(dock, &DAAgentDockWidget::sessionDeleteRequested, agent, &DAAgentInterface::deleteSession);
+        connect(dock, &DAAgentDockWidget::sessionRenameRequested, agent, &DAAgentInterface::renameSession);
+        connect(dock, &DAAgentDockWidget::sessionCreateRequested, agent, &DAAgentInterface::newSession);
     }
     initConnection();
 #if DA_ENABLE_PYTHON
@@ -268,7 +298,7 @@ void DAAppController::initialize()
     }
 
     // 启动后恢复上次活跃自由会话（plan-05 步骤3）：
-    // singleShot(0) 延迟到事件循环空闲，确保 setDockWidget 已执行、Dock/信号链就绪。
+    // singleShot(0) 延迟到事件循环空闲，确保上方 Agent 信号链 connect 已执行、Dock 就绪。
     // projectPath=null → last_active 按 projectPath 过滤只取自由会话（MAJOR-4）。
     QTimer::singleShot(0, this, [ this ]() {
         if (auto* agentMod = qobject_cast< DAAgentModule* >(mCore->getAgentInterface())) {

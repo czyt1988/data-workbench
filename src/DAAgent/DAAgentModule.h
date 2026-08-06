@@ -14,15 +14,15 @@
 namespace DA
 {
 class DAAgentBridge;
-class DAAgentDockWidget;
 class DAAgentSessionStore;
 
 /**
  * @brief DAAgent 模块的完整实现：工具注册、系统提示词组装、懒启动生命周期管理
  *
  * DAAgentModule 作为 DAAgentInterface 的实现类，协调 DAAgentBridge（子进程管理）
- * 和 DAAgentDockWidget（聊天 UI）之间的信号链。插件通过 registerTool /
- * registerSystemPrompt 注入领域内容。
+ * 并转发 agent 生命周期信号到接口。Dock（聊天 UI）由 DAAppController 经接口
+ * 直接 connect，本模块不持有也不感知 Dock（plan-02 决策 D3b）。插件通过
+ * registerTool / registerSystemPrompt 注入领域内容。
  */
 class DAAgent_API DAAgentModule : public DAAgentInterface
 {
@@ -44,14 +44,6 @@ public:
      * @param core 核心接口指针
      */
     void initialize(DACoreInterface* core);
-
-    /**
-     * @brief 注入由 DAAppDockingArea::buildDockingArea() 创建的 Dock Widget
-     *
-     * initialize() 不再 new DAAgentDockWidget，避免与 plan-03 产生两个实例。
-     * @param dock 由 DAAppDockingArea 创建的 dock 窗口
-     */
-    void setDockWidget(DAAgentDockWidget* dock);
 
     /// @copydoc DAAgentInterface::registerTool
     void registerTool(DAAbstractAgentTool* tool) override;
@@ -122,7 +114,6 @@ public:
 private:
     DACoreInterface* m_core;
     DAAgentBridge* m_bridge = nullptr;
-    DAAgentDockWidget* m_dockWidget = nullptr;  // 由 DAAppDockingArea::buildDockingArea 创建，经 setDockWidget() 注入
     QMap<QString, DAAbstractAgentTool*> m_tools;        // tool name → impl
     QHash<QString, QString> m_systemPrompts;            // prompt name → content
     // ---- 会话持久化成员（plan-03） ----
