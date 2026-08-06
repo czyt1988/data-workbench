@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QSignalBlocker>
 #include <QStandardPaths>
+#include <QTimer>
 #include <QFontComboBox>
 #include <QComboBox>
 #include <QInputDialog>
@@ -257,6 +258,24 @@ void DAAppController::initialize()
         }
     }
 #endif
+
+    // Agent 会话清理调度（plan-05 步骤6）：启动即清，避免积压；
+    // cleanupSessions 读 QSettings agent/max_sessions(默认20)、session_retention_days(默认30)
+    // → cleanupOldSessions(max, days, m_currentSessionId)，skip 活跃会话 + lastActive 保护，
+    // 清理在任何时机都安全（非时序保护所必需）。
+    if (auto* agentMod = qobject_cast< DAAgentModule* >(mCore->getAgentInterface())) {
+        agentMod->cleanupSessions();
+    }
+
+    // 启动后恢复上次活跃自由会话（plan-05 步骤3）：
+    // singleShot(0) 延迟到事件循环空闲，确保 setDockWidget 已执行、Dock/信号链就绪。
+    // projectPath=null → last_active 按 projectPath 过滤只取自由会话（MAJOR-4）。
+    QTimer::singleShot(0, this, [ this ]() {
+        if (auto* agentMod = qobject_cast< DAAgentModule* >(mCore->getAgentInterface())) {
+            agentMod->setCurrentProjectPath(QString());  // 启动无工程，projectPath=null
+            agentMod->restoreLastActiveSession();         // 恢复自由会话
+        }
+    });
 }
 
 /**
@@ -1175,6 +1194,16 @@ void DAAppController::onProjectSaved(const QString& path)
             wf->setCurrentWorkflowName(project->getProjectBaseName());
         }
     }
+    // saveAs/save 路径更新（plan-05 MAJOR-7 + 契约5）：
+    // projectSaved 信号在 save()/saveAs() 统一触发（onSaveFinish emit），
+    // 此处同步当前工程路径 + 更新当前会话索引 projectPath 字段（plan-03 契约5），
+    // 使下拉过滤与 restoreLastActiveSession 均可命中新路径。
+    // 不在 saveAs 末尾调（避免漏 requestSave()→save() 首次保存从无路径到有路径的场景）。
+    if (auto* agentMod = qobject_cast< DAAgentModule* >(mCore->getAgentInterface())) {
+        agentMod->setCurrentProjectPath(path);             // 同步 m_currentProjectPath（MAJOR-7）
+        agentMod->setSessionProjectPathForCurrent(path);   // 契约5：转发 store.setSessionProjectPath
+                                                            // 其实现体已内含 setLastActive，无需另调
+    }
     daInfo << tr("Project saved successfully, path: %1").arg(path);  // cn:工程保存成功，路径为:%1
 }
 
@@ -1191,6 +1220,14 @@ void DAAppController::onProjectLoaded(const QString& path)
         if (wf) {
             wf->setCurrentWorkflowName(project->getProjectBaseName());
         }
+    }
+    // 工程加载恢复接入（plan-05 步骤4）：
+    // loadSessionsFromProject 已在 executeLoad 回调中调用（步骤2，先于本槽，时序见 MAJOR-5），
+    // 此处先接线当前工程路径，再按 projectPath 过滤恢复工程内上次活跃会话。
+    // 统一恢复点（MAJOR-3）：restoreLastActiveSession 只在此调一次。
+    if (auto* agentMod = qobject_cast< DAAgentModule* >(mCore->getAgentInterface())) {
+        agentMod->setCurrentProjectPath(path);     // 先设置当前工程路径（步骤5 接线）
+        agentMod->restoreLastActiveSession();       // last_active.json 按 projectPath 过滤
     }
     daInfo << tr("Project loaded successfully, path: %1").arg(path);  // cn:工程加载成功，路径为:%1
 }

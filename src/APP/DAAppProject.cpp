@@ -25,6 +25,7 @@
 #include "DAQtContainerUtil.hpp"
 #include "DAStringUtil.h"
 #include "DADataManagerInterface.h"
+#include "DAAgentInterface.h"  // plan-05：经 DAAgentInterface 多态收集/导入会话（不依赖 DAAgentModule）
 #include "DAAbstractArchiveTask.h"
 #include "DAZipArchive.h"
 #include "DAZipArchiveThreadWrapper.h"
@@ -108,6 +109,13 @@ const QString c_tablestylesxml_save_filename = QStringLiteral("table-styles.xml"
  */
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_TABLE_STYLES
 #define DAAPPPROJECT_TASK_LOAD_ID_TABLE_STYLES (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 6)
+#endif
+
+/**
+ *@def 加载任务id - Agent会话（plan-05：解压 agent_sessions/*.jsonl 后回调导入）
+ */
+#ifndef DAAPPPROJECT_TASK_LOAD_ID_AGENT_SESSIONS
+#define DAAPPPROJECT_TASK_LOAD_ID_AGENT_SESSIONS (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 7)
 #endif
 namespace DA
 {
@@ -257,6 +265,82 @@ private:
     QHash< QString, QString > mZipPathToTempFilePath;  ///< 记录zip的相对位置和解压的临时文件的相对位置的关系
     QDomDocument mDataManagerDomDocument;
     QTemporaryDir mTempDir;
+};
+
+/**
+ * @brief 加载 agent_sessions/ 文件夹下所有 .jsonl 会话文件的任务（plan-05）
+ *
+ * 仿 DAZipArchiveTask_LoadDataManager，在 worker 线程内 exec()：
+ * zip->getFolderFileNameList("agent_sessions") 列出 .jsonl → 对每个 zip->read(relPath)
+ * 读字节 → 组装 QHash<QString,QByteArray>（id → bytes）存成员。提供 takeSessions()
+ * 移交所有权，供主线程 setLoadedCallBack 回调内 loadSessionsFromProject 使用。
+ * @note 此任务在子线程执行，不操作 UI；回调由 DAZipArchiveThreadWrapper::onTaskProgress
+ * 在主线程触发（见 setLoadedCallBack 模式）。
+ */
+class DAZipArchiveTask_LoadAgentSessions : public DAAbstractArchiveTask
+{
+public:
+    DAZipArchiveTask_LoadAgentSessions() : DAAbstractArchiveTask()
+    {
+    }
+    ~DAZipArchiveTask_LoadAgentSessions()
+    {
+    }
+
+public:
+    /**
+     * @brief exec 在 worker 线程执行：读取 agent_sessions/ 下所有 .jsonl 字节
+     * @param archive 归档基类
+     * @param mode 必须为 ReadMode
+     * @return 读取成功返回 true；agent_sessions/ 不存在或为空也返回 true（空工程合法）
+     */
+    virtual bool exec(DAAbstractArchive* archive, DAAbstractArchiveTask::Mode mode) override
+    {
+        if (!archive) {
+            return false;
+        }
+        DAZipArchive* zip = static_cast< DAZipArchive* >(archive);
+        if (mode != DAAbstractArchiveTask::ReadMode) {
+            return false;  // 只支持读模式
+        }
+        if (!zip->isOpened()) {
+            if (!zip->open()) {
+                qDebug() << QString("open archive error:%1").arg(zip->getBaseFilePath());
+                return false;
+            }
+        }
+        // 列出 agent_sessions/ 下所有文件（不含子目录）
+        const QStringList allFiles = zip->getFolderFileNameList(QStringLiteral("agent_sessions"));
+        for (const QString& zipPath : allFiles) {
+            if (!zipPath.endsWith(QStringLiteral(".jsonl"), Qt::CaseInsensitive)) {
+                continue;  // 跳过非会话文件
+            }
+            // 从 "agent_sessions/<id>.jsonl" 提取 <id>
+            QString id = zipPath.mid(QStringLiteral("agent_sessions/").length());
+            if (id.endsWith(QStringLiteral(".jsonl"), Qt::CaseInsensitive)) {
+                id.chop(QStringLiteral(".jsonl").length());
+            }
+            if (id.isEmpty()) {
+                continue;
+            }
+            QByteArray bytes = zip->read(zipPath);
+            // 空字节也保留（空会话文件合法，导入侧 importSessionFiles 自行处理）
+            mSessions[ id ] = bytes;
+        }
+        return true;
+    }
+
+    /**
+     * @brief 移交会话字节所有权（id → jsonl bytes）
+     * @note exec 完成后由主线程回调调用一次
+     */
+    QHash< QString, QByteArray > takeSessions()
+    {
+        return std::move(mSessions);
+    }
+
+private:
+    QHash< QString, QByteArray > mSessions;  ///< agent_sessions/<id>.jsonl → 字节
 };
 
 ////////////////////////////////////////////////////
@@ -612,6 +696,9 @@ bool DAAppProject::executeSave(DAZipArchiveThreadWrapper* archive, const QString
     // 绘图
     makeSaveChartTask(archive);
 
+    // Agent会话（主线程收集活跃会话字节→子线程写 agent_sessions/<id>.jsonl）
+    makeSaveAgentSessionsTask(archive);
+
     // 插件
     if (m_pluginMgr) {
         const QList< DAAbstractPlugin* > plugins = m_pluginMgr->getAllPlugins();
@@ -630,7 +717,7 @@ bool DAAppProject::executeSave(DAZipArchiveThreadWrapper* archive, const QString
     return result.success;
 }
 
-bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started)
+bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started, const QString& agentProjectPath)
 {
     if (started) {
         *started = false;
@@ -638,6 +725,10 @@ bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString
     if (nullptr == archive) {
         return false;
     }
+    // agentProjectPath：供会话加载回调标记导入会话工程路径。空则用 path
+    // （正常 load 路径 path 即工程路径；快照回滚路径 restoreProjectSnapshot 显式传真实工程路径，
+    //  避免把会话标记成快照临时路径——CRITICAL-2）
+    const QString effAgentPath = agentProjectPath.isEmpty() ? path : agentProjectPath;
 
     // 创建archive任务队列 - Python工作流逻辑数据（先注册，FIFO保证先执行）
     auto taskData = archive->appendByteLoadTask(c_workflowdata_save_filename, DAAPPPROJECT_TASK_LOAD_ID_WORKFLOW_DATA);
@@ -689,6 +780,29 @@ bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString
         return false;
     }
     taskCharts->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedChartsInfo(t); });
+
+    // Agent会话加载任务（plan-05）：worker 线程解压 agent_sessions/*.jsonl，
+    // 回调（主线程，由 DAZipArchiveThreadWrapper::onTaskProgress 触发）先 setCurrentProjectPath
+    // 再 loadSessionsFromProject 导入会话。注意：回调内**不**调 restoreLastActiveSession——
+    // 恢复统一在 DAAppController::onProjectLoaded 做（MAJOR-3 统一恢复点）。
+    // 时序（MAJOR-5）：本回调先于 projectLoaded/onProjectLoaded（waitArchiveLoad 嵌套
+    // QEventLoop::exec(ExcludeUserInputEvents) + onLoadFinish emit projectLoaded）。
+    {
+        auto agentTask = std::make_shared< DAZipArchiveTask_LoadAgentSessions >();
+        agentTask->setCode(DAAPPPROJECT_TASK_LOAD_ID_AGENT_SESSIONS);
+        agentTask->setLoadedCallBack([ this, effAgentPath ](std::shared_ptr< DAAbstractArchiveTask > t) {
+            auto loaded = std::static_pointer_cast< DAZipArchiveTask_LoadAgentSessions >(t);
+            if (auto* agent = core()->getAgentInterface()) {
+                // 契约4：先设置工程路径，使后续 setLastActive/过滤命中
+                agent->setCurrentProjectPath(effAgentPath);
+                // 契约4：带 projectPath 导入（importSessionFiles 用 effAgentPath 标记导入会话）
+                agent->loadSessionsFromProject(loaded->takeSessions(), effAgentPath);
+            }
+        });
+        if (!archive->appendTask(agentTask)) {
+            return false;
+        }
+    }
 
     // 插件
     if (m_pluginMgr) {
@@ -743,12 +857,19 @@ bool DAAppProject::restoreProjectSnapshot(const QString& snapshotPath, const QSt
     clear();
     DAZipArchiveThreadWrapper archive;
     bool started = false;
-    if (!executeLoad(&archive, snapshotPath, &started) || !started) {
+    // 传 projectFilePath 作为 agentProjectPath：使会话加载回调用真实工程路径标记导入会话，
+    // 而非快照临时路径（CRITICAL-2：避免会话 projectPath 字段被临时路径污染）。
+    if (!executeLoad(&archive, snapshotPath, &started, projectFilePath) || !started) {
         return false;
     }
 
     setProjectPath(projectFilePath);
     setModified(isDirty);
+    // 回滚路径用局部 archive 不发 projectLoaded（成员 mArchive 才连 onLoadFinish），
+    // 故 onProjectLoaded/restoreLastActiveSession 不自动触发——此处显式 emit projectLoaded，
+    // 由 DAAppController::onProjectLoaded 统一接线恢复工程内上次活跃会话（CRITICAL-2 补救，
+    // 亦符合 MAJOR-3 统一恢复点：restoreLastActiveSession 只在 onProjectLoaded 调一次）。
+    Q_EMIT projectLoaded(projectFilePath);
     return true;
 }
 
@@ -969,6 +1090,40 @@ void DAAppProject::makeSaveTableStyleTask(DAZipArchiveThreadWrapper* archive)
     auto t = archive->appendXmlSaveTask(c_tablestylesxml_save_filename, doc);
     t->setName(tr("Save table styles"));  // cn:保存表格样式
     t->setDescribe(tr("Save table cell styles, including background, font, foreground"));  // cn:保存表格单元格样式
+}
+
+/**
+ * @brief 保存Agent会话任务（plan-05）
+ *
+ * 主线程先经 DAAgentInterface::exportActiveSessions() 收集当前活跃会话字节
+ * （关键：不能在子线程调 UI/Module），再循环 appendByteSaveTask 把字节交给
+ * 子线程写入 agent_sessions/<id>.jsonl。仿 makeSaveWorkflowDataTask 先序列化再
+ * appendByteSaveTask 的子线程约束模式。
+ * @param archive ZIP归档线程包装器
+ */
+void DAAppProject::makeSaveAgentSessionsTask(DAZipArchiveThreadWrapper* archive)
+{
+    DAAgentInterface* agent = core()->getAgentInterface();
+    if (!agent) {
+        return;  // 无 Agent 模块（未启用），跳过
+    }
+    // 主线程收集会话字节（exportActiveSessions 同主线程，无并发）
+    QHash< QString, QByteArray > sessions = agent->exportActiveSessions();
+    if (sessions.isEmpty()) {
+        return;  // 无活跃会话，不写 agent_sessions/（zip 无该文件夹，加载时正常空操作）
+    }
+    for (auto it = sessions.constBegin(); it != sessions.constEnd(); ++it) {
+        if (it.key().isEmpty()) {
+            continue;
+        }
+        QString relPath = QStringLiteral("agent_sessions/%1.jsonl").arg(it.key());
+        // 子线程写字节
+        auto t = archive->appendByteSaveTask(relPath, it.value());
+        if (t) {
+            t->setName(tr("Save agent session"));           // cn:保存Agent会话
+            t->setDescribe(tr("Save agent chat session history"));  // cn:保存Agent聊天会话历史
+        }
+    }
 }
 
 QDomDocument DAAppProject::createWorkflowUIDomDocument()

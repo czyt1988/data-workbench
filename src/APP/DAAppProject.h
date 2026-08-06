@@ -80,6 +80,8 @@ protected:
 	void makeSaveChartTask(DAZipArchiveThreadWrapper* archive);
 	// 保存表格样式任务
 	void makeSaveTableStyleTask(DAZipArchiveThreadWrapper* archive);
+	// 保存Agent会话任务（主线程收集活跃会话字节→子线程写 agent_sessions/<id>.jsonl）
+	void makeSaveAgentSessionsTask(DAZipArchiveThreadWrapper* archive);
 	// 保存workflow相关内容（以xml形式）
 	QDomDocument createWorkflowUIDomDocument();
 	// 保存charts相关内容（以xml形式）
@@ -98,7 +100,7 @@ private Q_SLOTS:
 
 private:
     bool executeSave(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started = nullptr);
-    bool executeLoad(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started = nullptr);
+    bool executeLoad(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started = nullptr, const QString& agentProjectPath = QString());
     bool createProjectSnapshot(QString* snapshotPath);
     bool restoreProjectSnapshot(const QString& snapshotPath, const QString& projectFilePath, bool isDirty);
 	void loadedWorkflowInfo(const std::shared_ptr< DAAbstractArchiveTask >& t);
