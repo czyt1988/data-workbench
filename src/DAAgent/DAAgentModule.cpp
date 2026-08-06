@@ -129,9 +129,9 @@ void DAAgentModule::initialize(DACoreInterface* core)
     // 守卫改为仅判 m_bridge；Dock 连接已由 DAAppController 经接口完成）。
     connectSignals();
 
-    // 注册平台内置工具（plan-03 搬迁到 plugins/DAAgentTools 插件，由插件 initialize
-    // 经 agent->registerTool 注册；此处保留方法壳作双轨过渡，plan-04 删除方法本身）
-    registerBuiltinTools();
+    // 平台内置工具由 plugins/DAAgentTools 插件在 initialize() 经
+    // agent->registerTool 注册（plan-03 搬迁、plan-04 删除本模块的内置工具
+    // 注册方法），本模块不再注册工具。
 }
 
 void DAAgentModule::registerTool(DAAbstractAgentTool* tool)
@@ -274,13 +274,6 @@ bool DAAgentModule::isRunning() const
     // 转发 Bridge 的子进程运行状态——避免桩始终返回 false，
     // 导致外部（如 UI 忙状态判断）在子进程活跃期间误判为未运行
     return m_bridge ? m_bridge->isRunning() : false;
-}
-
-void DAAgentModule::registerBuiltinTools()
-{
-    // plan-03：16 个内置工具已搬迁到 plugins/DAAgentTools 插件，由
-    // DAAgentToolsPlugin::initialize() 经 agent->registerTool 注册。本方法体清空，
-    // 保留方法声明与 initialize() 调用作双轨过渡；plan-04 删除方法本身。
 }
 
 void DAAgentModule::connectSignals()

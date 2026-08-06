@@ -129,7 +129,6 @@ private:
     QString m_pendingSwitchSessionId;
     // Helper methods（plan-04 填充实现）
     void connectSignals();
-    void registerBuiltinTools();      // plan-05 填充真实工具注册
     void startAgentInternal();
     QString assembleSystemPrompt() const;
     QJsonArray assembleToolSpecs() const;

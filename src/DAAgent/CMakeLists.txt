@@ -16,9 +16,6 @@ damacro_lib_setting(
 ########################################################
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-# tools/ 子目录的源文件和头文件（plan-05 平台内置工具）
-file(GLOB DAAgent_TOOLS_SRCS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tools/*.cpp")
-file(GLOB DAAgent_TOOLS_HDRS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tools/*.h")
 
 # DAAgent 仅需要 Core/Gui/Widgets/PrintSupport/Svg；WebEngine/WebChannel/Network
 # 已随 GUI 文件迁移至 DAGui/Agent，由 DAGui/CMakeLists.txt 引入。
@@ -35,8 +32,6 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
 add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
-            ${DAAgent_TOOLS_HDRS}
-            ${DAAgent_TOOLS_SRCS}
             ${DA_GLOBAL_HEADER}
 )
 # AUTORCC ON 由 damacro_set_lib_properties 设置，会自动编译 .qrc
@@ -48,18 +43,6 @@ add_library(${DA_LIB_NAME} SHARED
 target_compile_definitions(${DA_LIB_NAME} PRIVATE DAAGENT_BUILD)
 # 导出命名空间为 DAWorkbench::DAAgent
 add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
-
-# plan-03：导出 tools/ 头文件目录，供 plugins/DAAgentTools 插件
-# #include "DAAgentToolBase.h" 解析（damacro_lib_install 只导出 src/DAAgent 根，
-# tools/ 不在范围；根目录已由 damacro_lib_install 以 BUILD_INTERFACE 导出，无需重复）。
-# 必须用 $<BUILD_INTERFACE:...> 包裹——install(EXPORT) 拒绝源树裸路径
-# （CMake error: INTERFACE_INCLUDE_DIRECTORIES ... prefixed in the source directory）。
-# 不加 INSTALL_INTERFACE：standalone（out-of-tree）插件构建在本计划期不可用
-# （DAAgentToolBase.h 未安装），须等 plan-04 把它 git mv 到 src/DAAgent/ 根
-# （被根 *.h GLOB 命中并随 install(FILES) 安装）后才可用，届时须删除此 tools 行。
-target_include_directories(${DA_LIB_NAME} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tools>
-)
 
 # -------------link Qt--------------------------
 target_link_libraries(${DA_LIB_NAME} PUBLIC
@@ -75,13 +58,14 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
 )
 
 # -------------link DAWorkbench 模块（导出命名空间为 DAWorkbench::）--------------------------
+# plan-04：DAAgent 不再 link GUI 模块（图表工具搬到 plugins/DAAgentTools），
+# 也不再 link 图表 figure 模块（DAAgentToolBase 瘦身后不再 include 图表头文件，
+# DAAgentModule.cpp 不直接使用图表类——plan-04 §4.3 step 6 实测移除）。
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAInterface
     ${DA_PROJECT_NAME}::DAData
-    ${DA_PROJECT_NAME}::DAFigure
     ${DA_PROJECT_NAME}::DAPyBindQt
     ${DA_PROJECT_NAME}::DAPyScripts
-    ${DA_PROJECT_NAME}::DAGui
 )
 # DAAxOfficeWrapper (Word COM for docx export) — Windows only, PRIVATE
 if(WIN32)
@@ -100,13 +84,6 @@ endif()
 # 其 include 目录不会传递给 DAAgent，故在此显式导入。
 damacro_import_Python(${DA_LIB_NAME})
 damacro_import_pybind11(${DA_LIB_NAME})
-# tools/DAAgentToolBase.h includes DADockingAreaInterface.h which includes ads_globals.h
-# from QtAdvancedDocking. DAInterface imports it but the include dir doesn't propagate
-# (PRIVATE), so we must import it here.
-damacro_import_QtAdvancedDocking(${DA_LIB_NAME})
-# tools/DAAgentToolBase.h includes DAChartWidget.h → DAChartDataInterface.h which includes
-# qwt_samples.h. DAFigure imports qwt but the include dir doesn't propagate (PRIVATE).
-damacro_import_qwt(${DA_LIB_NAME})
 
 ########################################################
 # 设置通用库属性（AUTOMOC/AUTOUIC/AUTORCC ON、EXPORT_NAME、
