@@ -65,6 +65,8 @@ public:
     void sendMessage(const QString& text) override;
     /// @copydoc DAAgentInterface::stop
     void stop() override;
+    /// @copydoc DAAgentInterface::sendUserAnswer
+    void sendUserAnswer(const QString& answer) override;
     /// @copydoc DAAgentInterface::isRunning
     bool isRunning() const override;
     /// @copydoc DAAgentInterface::getLLMConfig
@@ -100,7 +102,7 @@ public:
      * sendMessage 自动建会话调 createSession（不 emit sessionCreated，避免 clearChat 擦除用户消息）；
      * UI "+" 调 newSession（emit sessionCreated 触发 plan-04 onSessionCreated → clearChat）。
      */
-    void newSession();
+    void newSession() override;
     /**
      * @brief 清理旧会话（配置 key 由 plan-06 定义，调用点由 plan-05 接入）
      */
@@ -116,16 +118,6 @@ public:
      * @brief 恢复上次活跃会话（plan-05 在启动/打开工程后调用）
      */
     void restoreLastActiveSession();
-
-Q_SIGNALS:
-    /// 切换会话完成时发射，供 plan-04 UI 重放历史
-    void sessionSwitched(const QString& sessionId, const QVector<QJsonObject>& allRecords);
-    /// 新会话创建时发射（仅 newSession 路径，触发 plan-04 onSessionCreated → clearChat）
-    void sessionCreated(const QString& sessionId);
-    /// 会话列表变化时发射，契约3：带 payload（每元素 QVariantMap{id,title}），UI 无需 Module 指针即可刷新下拉
-    void sessionListChanged(QVariantList sessions);
-    /// token 使用量更新，契约2：5 参（加 contextWindow），agentUsage lambda 内 emit
-    void tokenUsageUpdated(int inputTokens, int outputTokens, int totalTokens, int contextWindow, const QString& source);
 
 private:
     DACoreInterface* m_core;

@@ -76,6 +76,13 @@ if(WIN32)
     target_link_libraries(${DA_LIB_NAME} PRIVATE ${DA_PROJECT_NAME}::DAAxOfficeWrapper)
 endif()
 
+# DPAPI（CryptProtectData/CryptUnprotectData）——DAAgentModule 内化的 API Key 加密
+# （plan-01 加解密内化：从 DAGui/DAAgentSettingsWidget 搬到本模块匿名命名空间静态函数）。
+# 仅 Windows 走 DPAPI，PRIVATE link；plan-05 再从 DAGui CMake 移除 Crypt32。
+if(WIN32)
+    target_link_libraries(${DA_LIB_NAME} PRIVATE Crypt32)
+endif()
+
 # DAAgentModule.cpp includes DAPyInterpreter.h (→ pybind11 → Python.h),
 # 需要 Python 和 pybind11 的头文件路径。DAPyBindQt 以 PRIVATE 方式导入这两个第三方库，
 # 其 include 目录不会传递给 DAAgent，故在此显式导入。

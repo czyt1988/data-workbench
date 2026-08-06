@@ -7,7 +7,6 @@
 #include "DAAgentInterface.h"
 #include "DACoreInterface.h"
 #include "DAPyInterpreter.h"
-#include "DAAgentSettingsWidget.h"
 #include "DADir.h"
 #include "DALogCategory.h"
 // Platform built-in tools (plan-05)
@@ -39,6 +38,65 @@
 #include <QVariantList>
 #include <QVariantMap>
 
+// DPAPI（CryptProtectData/CryptUnprotectData）——DAAgentModule 内化的 API Key 加解密。
+// 从 DAGui/DAAgentSettingsWidget.cpp 搬运而来（plan-01 加解密内化），解除对 DAGui 的依赖。
+#ifdef Q_OS_WIN
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#include <wincrypt.h>
+#endif
+
+namespace {
+// DPAPI 加解密（从 DAGui/DAAgentSettingsWidget.cpp 内化而来，
+// 供 DAAgentModule::getLLMConfig/setLLMConfig 使用，解除对 DAGui 的依赖）。
+// Windows 走 DPAPI，非 Windows 走 base64 fallback（与 DAGui 原版逐字一致，
+// 已存的 agent-config.ini 加密 blob 可互解，两份并存期间无数据不兼容）。
+QByteArray encryptApiKey(const QString& apiKey)
+{
+#ifdef Q_OS_WIN
+    if (apiKey.isEmpty()) return {};
+    QByteArray utf8 = apiKey.toUtf8();
+    DATA_BLOB inBlob;
+    inBlob.pbData = reinterpret_cast<BYTE*>(utf8.data());
+    inBlob.cbData = static_cast<DWORD>(utf8.size());
+    DATA_BLOB outBlob;
+    if (!CryptProtectData(&inBlob, L"AgentApiKey", nullptr, nullptr, nullptr, 0, &outBlob)) {
+        return {};
+    }
+    QByteArray enc(reinterpret_cast<const char*>(outBlob.pbData), static_cast<int>(outBlob.cbData));
+    LocalFree(outBlob.pbData);
+    return enc.toBase64();
+#else
+    return apiKey.toUtf8().toBase64();
+#endif
+}
+
+QString decryptApiKey(const QByteArray& encrypted)
+{
+    if (encrypted.isEmpty()) return {};
+#ifdef Q_OS_WIN
+    QByteArray raw = QByteArray::fromBase64(encrypted);
+    DATA_BLOB inBlob;
+    inBlob.pbData = reinterpret_cast<BYTE*>(raw.data());
+    inBlob.cbData = static_cast<DWORD>(raw.size());
+    DATA_BLOB outBlob;
+    if (!CryptUnprotectData(&inBlob, nullptr, nullptr, nullptr, nullptr, 0, &outBlob)) {
+        return {};
+    }
+    QString result = QString::fromUtf8(reinterpret_cast<const char*>(outBlob.pbData), static_cast<int>(outBlob.cbData));
+    LocalFree(outBlob.pbData);
+    return result;
+#else
+    return QString::fromUtf8(QByteArray::fromBase64(encrypted));
+#endif
+}
+} // namespace
+
 namespace DA
 {
 
@@ -62,6 +120,26 @@ void DAAgentModule::initialize(DACoreInterface* core)
 
     // 创建 Bridge（不依赖 Dock 存在）
     m_bridge = new DAAgentBridge(this);
+
+    // 把 Bridge 的 agent 生命周期信号转发到 DAAgentInterface，
+    // 供 APP 层（DAAppController）connect 到 Dock（plan-02 完成）。
+    // 注意：agentUsage 不直接转发——Module 内部 lambda（见 connectSignals）
+    // 会补 context_window 后以 tokenUsageUpdated 暴露。
+    // 此转发与 Dock 无关（PMF 到 this 的接口信号），不受 m_dockWidget 是否为空影响，
+    // 故放 initialize 而非 connectSignals（后者 dock 为空时提前 return）。
+    // 双轨过渡：plan-01 期间 connectSignals 仍保留 Bridge→Dock 直连，Dock 走旧路径；
+    // 接口信号此时无消费者（AppController 尚未 connect），空发无害。plan-02 切换
+    // AppController connect 时同步删旧直连，避免双重渲染。
+    connect(m_bridge, &DAAgentBridge::agentToken, this, &DAAgentInterface::agentToken);
+    connect(m_bridge, &DAAgentBridge::agentMessageComplete, this, &DAAgentInterface::agentMessageComplete);
+    connect(m_bridge, &DAAgentBridge::agentToolCall, this, &DAAgentInterface::agentToolCall);
+    connect(m_bridge, &DAAgentBridge::agentToolResult, this, &DAAgentInterface::agentToolResult);
+    connect(m_bridge, &DAAgentBridge::agentQuestion, this, &DAAgentInterface::agentQuestion);
+    connect(m_bridge, &DAAgentBridge::agentError, this, &DAAgentInterface::agentError);
+    connect(m_bridge, &DAAgentBridge::agentReady, this, &DAAgentInterface::agentReady);
+    connect(m_bridge, &DAAgentBridge::agentBusy, this, &DAAgentInterface::agentBusy);
+    connect(m_bridge, &DAAgentBridge::agentDone, this, &DAAgentInterface::agentDone);
+    connect(m_bridge, &DAAgentBridge::agentSessionLoaded, this, &DAAgentInterface::agentSessionLoaded);
 
     // CRITICAL1：创建会话持久化层（非 QObject 无参构造，不传 parent）。
     // 目录就绪由 store 内部 DADir::getAppDataPath("sessions") mkpath。
@@ -169,6 +247,22 @@ void DAAgentModule::stop()
 {
     if (m_bridge && m_bridge->isRunning()) {
         m_bridge->requestStop();
+    }
+}
+
+void DAAgentModule::sendUserAnswer(const QString& answer)
+{
+    // 持久化：原 connectSignals 的 dock::userAnswerSelected lambda（约 L344，
+    // appendToolResultRecord）在 plan-02 删除 Dock 持有后由本方法体承接。
+    // 本计划期间 Dock 仍走旧直连路径（connectSignals 的 userAnswerSelected
+    // 仍直连 dock→bridge 与持久化 lambda），此方法体未被调用（dormant 无害）；
+    // plan-02 让 AppController 经接口调用本方法后激活，由方法体单次执行持久化。
+    if (!m_currentSessionId.isEmpty() && !m_pendingToolCallUuids.isEmpty()) {
+        QString tcid = m_pendingToolCallUuids.dequeue();
+        appendToolResultRecord(m_currentSessionId, tcid, answer);
+    }
+    if (m_bridge) {
+        m_bridge->sendUserAnswer(answer);
     }
 }
 
@@ -441,7 +535,7 @@ QJsonObject DAAgentModule::getLLMConfig() const
     // IniFormat 原生支持 QByteArray(@ByteArray 注解),api_key 直接读取
     QByteArray encKey  = s.value("agent/llm_api_key").toByteArray();
     if (!encKey.isEmpty()) {
-        config["api_key"] = DAAgentSettingsWidget::decryptApiKey(encKey);
+        config["api_key"] = decryptApiKey(encKey);
     }
     // 上下文管理配置（带默认值兜底，随 init 消息 config 字段下发给 Python）
     config["context_window"]            = s.value("agent/context_window", 1048576).toInt();
@@ -461,7 +555,7 @@ void DAAgentModule::setLLMConfig(const QJsonObject& config)
     QString apiKey = config.value("api_key").toString();
     if (!apiKey.isEmpty()) {
         // IniFormat 原生支持 QByteArray,加密 blob 直接存储
-        s.setValue("agent/llm_api_key", DAAgentSettingsWidget::encryptApiKey(apiKey));
+        s.setValue("agent/llm_api_key", encryptApiKey(apiKey));
     }
 }
 

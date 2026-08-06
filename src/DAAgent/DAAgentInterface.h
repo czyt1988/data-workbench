@@ -5,6 +5,7 @@
 #include <QJsonArray>
 #include <QHash>
 #include <QVariantList>
+#include <QVector>
 #include <QString>
 #include <QStringList>
 #include "DAAbstractAgentTool.h"
@@ -56,6 +57,24 @@ public:
      * 非阻塞调用，进程退出后通过 agentBusy(false) 信号通知 UI 恢复。
      */
     virtual void stop() = 0;
+    /**
+     * @brief 转发用户对 agent 提问的回答给子进程
+     *
+     * plan-01：方法体吸收原 connectSignals 中 dock::userAnswerSelected 的持久化 lambda
+     * （appendToolResultRecord），plan-02 删 lambda 后由 AppController 经接口直连本方法
+     * 单次执行持久化。本计划期间 Dock 仍走旧直连路径，此方法体 dormant 无害。
+     * @param answer 用户回答文本
+     */
+    virtual void sendUserAnswer(const QString& answer) = 0;
+    /**
+     * @brief 新建会话（UI "+" 按钮入口）—— createSession + emit sessionCreated
+     *
+     * 跨计划协调（plan-02）：Dock 的 sessionCreateRequested 连此方法（而非 createSession()），
+     * 因 Module 既有的 void newSession() 会 emit sessionCreated 触发 UI clearChat，
+     * 而 createSession() 不 emit → 连错会导致 UI 不清空。
+     * newSession 是方法不是信号。
+     */
+    virtual void newSession() = 0;
     /**
      * @brief 检查 agent 是否正在运行
      * @return 若 agent 正在运行返回 true
@@ -124,5 +143,37 @@ public:
      * 空=自由会话模式；非空=工程绑定模式（影响会话过滤与 last_active）。
      */
     virtual void setCurrentProjectPath(const QString& path) = 0;
+
+Q_SIGNALS:
+    // ---- 以下 10 个由 DAAgentModule 从 DAAgentBridge 转发 ----
+    /// agent 生成 token 时发射（流式渲染）
+    void agentToken(const QString& token);
+    /// agent 消息生成完成时发射
+    void agentMessageComplete(const QString& fullText);
+    /// agent 发起工具调用时发射
+    void agentToolCall(const QString& toolName, const QJsonObject& args);
+    /// 工具执行结果返回时发射
+    void agentToolResult(const QString& toolName, const QJsonObject& result);
+    /// agent 向用户提问时发射
+    void agentQuestion(const QString& text, const QStringList& options, bool multiSelect);
+    /// agent 发生错误时发射
+    void agentError(const QString& message);
+    /// agent 就绪时发射
+    void agentReady(const QString& model);
+    /// agent 忙碌状态变化时发射
+    void agentBusy(bool busy);
+    /// agent 本轮处理完成时发射（生命周期事件，目前无 Dock 槽对接，纳入接口备扩展）
+    void agentDone();
+    /// agent 完成会话历史重建时发射
+    void agentSessionLoaded(const QString& sessionId);
+    // ---- 以下 4 个由 DAAgentModule 自身 emit（从 Module 的 Q_SIGNALS 上移） ----
+    /// token 使用量更新（agentUsage lambda 内补 context_window 后 emit）
+    void tokenUsageUpdated(int inputTokens, int outputTokens, int totalTokens, int contextWindow, const QString& source);
+    /// 切换会话完成时发射，供 UI 重放历史
+    void sessionSwitched(const QString& sessionId, const QVector<QJsonObject>& allRecords);
+    /// 新会话创建时发射（仅 newSession 路径，触发 UI clearChat）
+    void sessionCreated(const QString& sessionId);
+    /// 会话列表变化时发射，带 payload（每元素 QVariantMap{id,title}）
+    void sessionListChanged(QVariantList sessions);
 };
 } // namespace DA
