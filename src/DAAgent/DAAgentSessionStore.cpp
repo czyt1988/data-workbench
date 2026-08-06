@@ -38,6 +38,8 @@ public:
     // last_active 读写
     QString readLastActive(const QString& projectPathFilter) const;
     bool writeLastActive(const QString& sessionId, const QString& projectPath) const;
+    // 读原始指针（不过滤 projectPath，cleanup 跳过用——last_active 全局唯一）
+    bool readLastActivePointer(QString& sid, QString& projectPath) const;
 
     // 跳过损坏行的 JSONL 行解析
     QJsonObject parseLineTolerant(const QByteArray& line, const QString& sessionId) const;
@@ -267,8 +269,14 @@ void DAAgentSessionStore::cleanupOldSessions(int maxCount, int retentionDays, co
     if (maxCount <= 0 && retentionDays <= 0) return;
 
     QVector<SessionMeta> metas = d->readIndexInternal();
-    // 跳过 lastActiveSession()（不过滤 projectPath——last_active 指针全局唯一）
-    QString lastActive = d->readLastActive(QString());
+    // 跳过 last_active 指针指向的会话（不过滤 projectPath——last_active 全局唯一，
+    // cleanup 保护上次活跃，无论自由会话还是工程绑定会话；故用 raw 读取而非
+    // readLastActive(filter)——后者空 filter 只返回自由会话会漏保工程绑定会话）
+    QString lastActive;
+    {
+        QString tmpP;
+        d->readLastActivePointer(lastActive, tmpP);
+    }
 
     // 按 updatedAt 倒序排序，保留最新
     std::sort(metas.begin(), metas.end(), [](const SessionMeta& a, const SessionMeta& b) {
@@ -562,23 +570,38 @@ bool DAAgentSessionStore::PrivateData::writeIndex(const QVector<SessionMeta>& me
 
 QString DAAgentSessionStore::PrivateData::readLastActive(const QString& projectPathFilter) const
 {
+    QString sid, p;
+    if (!readLastActivePointer(sid, p)) return QString();
+    // 精确匹配：空 filter 只返回自由会话（指针 projectPath 必须空）；
+    // 非空 filter 精确匹配工程路径。避免启动恢复把工程绑定会话当自由会话。
+    if (projectPathFilter.isEmpty()) {
+        if (!p.isEmpty()) return QString();
+    } else if (p != projectPathFilter) {
+        return QString();
+    }
+    return sid;
+}
+
+bool DAAgentSessionStore::PrivateData::readLastActivePointer(QString& sid, QString& projectPath) const
+{
+    sid.clear();
+    projectPath.clear();
     QFile f(lastActiveFilePath());
-    if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) return QString();
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) return false;
     QByteArray data = f.readAll();
     f.close();
-    if (data.trimmed().isEmpty()) return QString();
+    if (data.trimmed().isEmpty()) return false;
 
     QJsonParseError err;
     QJsonDocument doc = QJsonDocument::fromJson(data, &err);
     if (err.error != QJsonParseError::NoError || !doc.isObject()) {
         daWarning << "DAAgentSessionStore: last_active.json corrupted:" << err.errorString();  // cn: last_active 文件损坏
-        return QString();
+        return false;
     }
     QJsonObject o = doc.object();
-    QString sid = o.value("sessionId").toString();
-    QString p   = o.value("projectPath").toString();
-    if (!projectPathFilter.isEmpty() && p != projectPathFilter) return QString();
-    return sid;
+    sid         = o.value("sessionId").toString();
+    projectPath = o.value("projectPath").toString();
+    return true;
 }
 
 bool DAAgentSessionStore::PrivateData::writeLastActive(const QString& sessionId, const QString& projectPath) const
