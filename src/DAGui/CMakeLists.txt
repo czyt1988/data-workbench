@@ -332,6 +332,7 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.h
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.h
+        ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.h
     )
     list(APPEND DA_LIB_SOURCE_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.cpp
@@ -343,6 +344,7 @@ if(DA_ENABLE_PYTHON)
         ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.cpp
         ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.cpp
+        ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES_Dialog
         ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.ui

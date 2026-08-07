@@ -174,7 +174,7 @@ Q_SIGNALS:
     void sessionSwitched(const QString& sessionId, const QVector<QJsonObject>& allRecords);
     /// 新会话创建时发射（仅 newSession 路径，触发 UI clearChat）
     void sessionCreated(const QString& sessionId);
-    /// 会话列表变化时发射，带 payload（每元素 QVariantMap{id,title}）
+    /// 会话列表变化时发射，带 payload（每元素 QVariantMap{id,title,updatedAt,messageCount}）
     void sessionListChanged(QVariantList sessions);
     /// 当前无活跃会话时发射（restoreLastActiveSession 未命中且无工程会话）
     ///

@@ -234,7 +234,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+65"/>
+        <location line="+71"/>
+        <source>tokens: -</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
         <source>(untitled)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1657,7 +1662,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+660"/>
+        <location filename="../APP/DAAppController.cpp" line="+661"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -8632,7 +8637,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1365"/>
+        <location filename="../APP/DAAppController.cpp" line="-1366"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

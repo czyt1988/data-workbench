@@ -5,7 +5,6 @@
 #include <QTextEdit>
 #include <QPushButton>
 #include <QLabel>
-#include <QComboBox>
 #include <QProgressBar>
 #include <QMenu>
 #include <QJsonObject>
@@ -53,11 +52,9 @@ private Q_SLOTS:
     void onStopClicked();
     void onUserAnswer(const QString& answer);
     void onFigureLink(const QString& href);  // 绘图引用超链接点击转发
-    // 会话栏按钮与下拉
-    void onSessionComboActivated(int index);
+    // 会话栏按钮
     void onNewSessionClicked();
-    void onDeleteSessionClicked();
-    void onRenameSessionClicked();
+    void onSessionManagerClicked();
     void onTokenLabelClicked();
 
 public Q_SLOTS:
@@ -207,10 +204,9 @@ private:
      */
     void setupWebChannel();
 
-    /// 用 sessionListChanged payload 填充 m_sessionCombo（保留当前选择）
-    void refreshSessionCombo(const QVariantList& sessions);
-    /// 按会话 ID 在 m_sessionCombo 中查找索引（未找到返回 -1）
-    int findSessionIndex(const QString& sid) const;
+    /// 用 sessionListChanged payload 刷新会话缓存并更新标题
+    /// 按当前会话 ID 在缓存中查标题并更新标题标签（过长右端省略 + tooltip 全文）
+    void updateTitleLabel();
     /// 重建 token 分类明细 QMenu（input/output/total/window/source）
     void rebuildTokenMenu(int inT, int outT, int tot, int window, const QString& source);
     /// 复位 token 控件到无活跃会话初始态（进度条 0%、标签 "tokens: -"、菜单清空）
@@ -223,11 +219,13 @@ private:
     QLabel* m_statusLabel;
     bool m_agentBusy = false;
 
-    // ---- plan-04 会话栏 ----
-    QComboBox* m_sessionCombo = nullptr;
+    // ---- 顶部会话栏：标题（省略）+ 会话管理 + 新建会话 ----
+    QLabel* m_titleLabel = nullptr;
+    QPushButton* m_sessionManagerBtn = nullptr;
     QPushButton* m_newSessionBtn = nullptr;
-    QPushButton* m_deleteSessionBtn = nullptr;
-    QPushButton* m_renameSessionBtn = nullptr;
+    QString m_currentSessionId;        ///< 当前活跃会话 ID
+    QString m_currentSessionFullTitle; ///< 当前会话完整标题（供省略渲染与 tooltip）
+    QVariantList m_sessions;          ///< 缓存 sessionListChanged payload（含元信息）
     // ---- plan-04 token 占比状态栏 ----
     QProgressBar* m_tokenBar = nullptr;
     QLabel* m_tokenLabel = nullptr;

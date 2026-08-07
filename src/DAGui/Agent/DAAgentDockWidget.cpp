@@ -1,13 +1,12 @@
 // DAAgentDockWidget.cpp
 #include "DAAgentDockWidget.h"
 #include "DAAgentWebChannel.h"
+#include "Dialog/DADialogAgentSessionManager.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QWebEngineSettings>
 #include <QShortcut>
 #include <QKeySequence>
-#include <QComboBox>
-#include <QInputDialog>
 #include <QProgressBar>
 #include <QMenu>
 #include <QAction>
@@ -15,6 +14,7 @@
 #include <QMouseEvent>
 #include <QCursor>
 #include <QLabel>
+#include <QResizeEvent>
 
 namespace DA
 {
@@ -42,27 +42,27 @@ void DAAgentDockWidget::setupUI()
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    // ---- plan-04 step1: 顶部会话栏（D8：下拉 + 新建/删除/重命名按钮，紧凑不占聊天区） ----
+    // ---- 顶部会话栏：标题（左，过长右端省略）+ 会话管理 + 新建会话（右） ----
     QWidget* sessionBar = new QWidget(this);
     sessionBar->setObjectName(QStringLiteral("da_agentSessionBar"));
+    sessionBar->setStyleSheet(QStringLiteral(
+        "QWidget#da_agentSessionBar { background: #f5f5f5; border-bottom: 1px solid #ddd; }"));
     QHBoxLayout* sbLayout = new QHBoxLayout(sessionBar);
-    sbLayout->setContentsMargins(4, 2, 4, 2);
+    sbLayout->setContentsMargins(8, 4, 4, 4);
     sbLayout->setSpacing(4);
-    sbLayout->addWidget(new QLabel(tr("Session")));  // cn:会话
-    m_sessionCombo = new QComboBox(this);
-    m_sessionCombo->setObjectName(QStringLiteral("da_agentSessionCombo"));
-    sbLayout->addWidget(m_sessionCombo, 1);
-    m_newSessionBtn = new QPushButton("+", this);  // cn:新建
+    m_titleLabel = new QLabel(sessionBar);
+    m_titleLabel->setObjectName(QStringLiteral("da_agentTitleLabel"));
+    m_titleLabel->setStyleSheet(QStringLiteral(
+        "QLabel { color: #333; padding: 0 4px; }"));
+    m_titleLabel->setToolTip(QString());  // 由 updateTitleLabel 设置
+    m_titleLabel->installEventFilter(this);  // resize 时重新计算省略文本
+    sbLayout->addWidget(m_titleLabel, 1);
+    m_sessionManagerBtn = new QPushButton(tr("Session Manager"), sessionBar);  // cn:会话管理
+    m_sessionManagerBtn->setObjectName(QStringLiteral("da_agentSessionManagerBtn"));
+    m_newSessionBtn = new QPushButton(tr("New Session"), sessionBar);  // cn:新建会话
     m_newSessionBtn->setObjectName(QStringLiteral("da_agentNewSessionBtn"));
-    m_newSessionBtn->setFixedWidth(28);
-    m_renameSessionBtn = new QPushButton(tr("Rename"), this);  // cn:重命名
-    m_renameSessionBtn->setObjectName(QStringLiteral("da_agentRenameSessionBtn"));
-    m_deleteSessionBtn = new QPushButton(QString(QChar(0xD7)), this);  // × //cn:删除
-    m_deleteSessionBtn->setObjectName(QStringLiteral("da_agentDeleteSessionBtn"));
-    m_deleteSessionBtn->setFixedWidth(28);
+    sbLayout->addWidget(m_sessionManagerBtn);
     sbLayout->addWidget(m_newSessionBtn);
-    sbLayout->addWidget(m_renameSessionBtn);
-    sbLayout->addWidget(m_deleteSessionBtn);
     mainLayout->insertWidget(0, sessionBar);
 
     // QWebEngineView 占主要空间
@@ -140,12 +140,9 @@ void DAAgentDockWidget::setupUI()
         }
     });
 
-    // ---- plan-04 step1: 会话栏按钮/下拉信号 ----
-    connect(m_sessionCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::activated),
-            this, &DAAgentDockWidget::onSessionComboActivated);
+    // ---- 会话栏按钮信号 ----
     connect(m_newSessionBtn, &QPushButton::clicked, this, &DAAgentDockWidget::onNewSessionClicked);
-    connect(m_deleteSessionBtn, &QPushButton::clicked, this, &DAAgentDockWidget::onDeleteSessionClicked);
-    connect(m_renameSessionBtn, &QPushButton::clicked, this, &DAAgentDockWidget::onRenameSessionClicked);
+    connect(m_sessionManagerBtn, &QPushButton::clicked, this, &DAAgentDockWidget::onSessionManagerClicked);
 }
 
 void DAAgentDockWidget::setupWebChannel()
@@ -295,43 +292,23 @@ void DAAgentDockWidget::onAgentBusy(bool busy)
 // plan-04: 会话栏按钮槽 + token UI 槽 + 辅助方法
 // ===========================================================================
 
-void DAAgentDockWidget::onSessionComboActivated(int index)
-{
-    QString sid = m_sessionCombo->itemData(index).toString();
-    if (sid.isEmpty()) return;
-    emit sessionSwitchRequested(sid);
-}
-
 void DAAgentDockWidget::onNewSessionClicked()
 {
     emit sessionCreateRequested();
 }
 
-void DAAgentDockWidget::onDeleteSessionClicked()
+void DAAgentDockWidget::onSessionManagerClicked()
 {
-    // 边界：下拉为空时直接返回
-    if (m_sessionCombo->count() == 0) return;
-    QString sid = m_sessionCombo->currentData().toString();
-    if (sid.isEmpty()) return;
-    emit sessionDeleteRequested(sid);
-}
-
-void DAAgentDockWidget::onRenameSessionClicked()
-{
-    // 边界：下拉为空时直接返回
-    if (m_sessionCombo->count() == 0) return;
-    QString sid = m_sessionCombo->currentData().toString();
-    if (sid.isEmpty()) return;
-    QString oldTitle = m_sessionCombo->currentText();
-    bool ok = false;
-    QString newTitle = QInputDialog::getText(this,
-        tr("Rename Session"),  // cn:重命名会话
-        tr("New title:"),     // cn:新标题：
-        QLineEdit::Normal,
-        oldTitle,
-        &ok);
-    if (!ok || newTitle.trimmed().isEmpty()) return;
-    emit sessionRenameRequested(sid, newTitle.trimmed());
+    // 弹出会话管理对话框，操作经 signal→signal 直连转发到 DAAgentInterface
+    DADialogAgentSessionManager dlg(m_sessions, m_currentSessionId, this);
+    connect(&dlg, &DADialogAgentSessionManager::switchRequested,
+            this, &DAAgentDockWidget::sessionSwitchRequested);
+    connect(&dlg, &DADialogAgentSessionManager::renameRequested,
+            this, &DAAgentDockWidget::sessionRenameRequested);
+    connect(&dlg, &DADialogAgentSessionManager::deleteRequested,
+            this, &DAAgentDockWidget::sessionDeleteRequested);
+    dlg.exec();
+    // 对话框关闭后 sessionListChanged 会从 Module 回灌权威状态刷新标题
 }
 
 void DAAgentDockWidget::onTokenLabelClicked()
@@ -351,6 +328,11 @@ bool DAAgentDockWidget::eventFilter(QObject* obj, QEvent* ev)
             onTokenLabelClicked();
             return true;
         }
+    }
+    // m_titleLabel 尺寸变化 → 重新计算省略文本（标题过长右端 …）
+    if (obj == m_titleLabel && ev->type() == QEvent::Resize) {
+        updateTitleLabel();
+        return false;
     }
     return QWidget::eventFilter(obj, ev);
 }
@@ -389,48 +371,42 @@ void DAAgentDockWidget::onSessionSwitched(const QString& sessionId,
         m_channel->clearChat();
         m_channel->loadHistory(allRecords);  // 重放新会话 UI（C++ 合并后事件，见 WebChannel::loadHistory）
     }
-    int idx = findSessionIndex(sessionId);
-    if (idx >= 0) {
-        // 切换下拉选中项时屏蔽信号，避免 activated 误触发新一轮 switchSession
-        m_sessionCombo->blockSignals(true);
-        m_sessionCombo->setCurrentIndex(idx);
-        m_sessionCombo->blockSignals(false);
-    }
+    m_currentSessionId = sessionId;
+    updateTitleLabel();
 }
 
 void DAAgentDockWidget::onSessionListChanged(QVariantList sessions)
 {
-    // 契约3: 直接用 payload 填充 m_sessionCombo，无需 Module 指针、无需回调 listSessions()
-    refreshSessionCombo(sessions);
+    // 契约3: 缓存 payload（含 updatedAt/messageCount 元信息），刷新标题
+    m_sessions = sessions;
+    updateTitleLabel();
 }
 
 void DAAgentDockWidget::onSessionCreated(const QString& sessionId)
 {
-    Q_UNUSED(sessionId);
     // MAJOR7: 仅 newSession 路径触发本槽——新会话清空聊天 + 复位守卫。
-    // 下拉刷新由 sessionListChanged(payload) 信号驱动。
+    // 标题刷新由 sessionListChanged(payload) 信号驱动。
     // Bug2 修复：新会话无 usage，复位 token 控件避免拋留上一会话数值。
     m_switching = false;
+    m_currentSessionId = sessionId;
     if (m_channel) {
         m_channel->clearChat();
     }
     resetTokenStats();
+    updateTitleLabel();
 }
 
 void DAAgentDockWidget::onSessionCleared()
 {
     // Bug1 修复：restoreLastActiveSession 未命中且无工程会话时发射 sessionCleared。
-    // 清空残留聊天区（原游离会话历史）、复位 token 控件、下拉不选中、解除切换守卫。
+    // 清空残留聊天区（原游离会话历史）、复位 token 控件、清空标题、解除切换守卫。
     m_switching = false;
+    m_currentSessionId.clear();
     if (m_channel) {
         m_channel->clearChat();
     }
     resetTokenStats();
-    if (m_sessionCombo) {
-        m_sessionCombo->blockSignals(true);
-        m_sessionCombo->setCurrentIndex(-1);
-        m_sessionCombo->blockSignals(false);
-    }
+    updateTitleLabel();
 }
 
 void DAAgentDockWidget::resetTokenStats()
@@ -443,42 +419,38 @@ void DAAgentDockWidget::resetTokenStats()
 
 // ---- 辅助方法 ----
 
-void DAAgentDockWidget::refreshSessionCombo(const QVariantList& sessions)
+void DAAgentDockWidget::updateTitleLabel()
 {
-    // 保留当前选中会话 ID，刷新后若仍存在则保持选中
-    QString prevId = (m_sessionCombo->count() > 0)
-                         ? m_sessionCombo->currentData().toString()
-                         : QString();
-    m_sessionCombo->blockSignals(true);  // 避免清空/插入触发 activated
-    m_sessionCombo->clear();
-    int newIndex = -1;
-    for (int i = 0; i < sessions.size(); ++i) {
-        QVariantMap vm = sessions.at(i).toMap();
-        QString id = vm.value("id").toString();
-        QString title = vm.value("title").toString();
-        if (title.isEmpty()) {
-            title = tr("(untitled)");  // cn:（未命名）
+    // 按 m_currentSessionId 在缓存中查标题；空标题显示「(untitled)」
+    if (!m_titleLabel) return;
+    QString fullTitle;
+    if (!m_currentSessionId.isEmpty()) {
+        for (int i = 0; i < m_sessions.size(); ++i) {
+            QVariantMap vm = m_sessions.at(i).toMap();
+            if (vm.value("id").toString() == m_currentSessionId) {
+                fullTitle = vm.value("title").toString();
+                break;
+            }
         }
-        m_sessionCombo->addItem(title, id);
-        if (id == prevId) newIndex = i;
-    }
-    if (newIndex >= 0) {
-        m_sessionCombo->setCurrentIndex(newIndex);
-    } else if (m_sessionCombo->count() > 0) {
-        m_sessionCombo->setCurrentIndex(0);
-    }
-    m_sessionCombo->blockSignals(false);
-}
-
-int DAAgentDockWidget::findSessionIndex(const QString& sid) const
-{
-    if (!m_sessionCombo) return -1;
-    for (int i = 0; i < m_sessionCombo->count(); ++i) {
-        if (m_sessionCombo->itemData(i).toString() == sid) {
-            return i;
+        if (fullTitle.isEmpty()) {
+            fullTitle = tr("(untitled)");  // cn:（未命名）
         }
     }
-    return -1;
+    m_currentSessionFullTitle = fullTitle;
+    // tooltip 显示完整标题（空标题不弹 tooltip）
+    m_titleLabel->setToolTip(fullTitle);
+    // 按当前可用宽度省略渲染（右端 …）
+    int w = m_titleLabel->width();
+    if (w <= 0) {
+        // 尚未布局完成，直接放全文，resize 事件触发时会重新省略
+        m_titleLabel->setText(fullTitle);
+        return;
+    }
+    // 减去内边距避免 … 紧贴右边缘
+    const int pad = 12;
+    QString shown = m_titleLabel->fontMetrics().elidedText(
+        fullTitle, Qt::ElideRight, qMax(0, w - pad));
+    m_titleLabel->setText(shown);
 }
 
 void DAAgentDockWidget::rebuildTokenMenu(int inT, int outT, int tot,

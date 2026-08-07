@@ -569,13 +569,16 @@ QVariantList DAAgentModule::listSessions() const
 
 QVariantList DAAgentModule::listSessionsForUI() const
 {
-    // 契约3：sessionListChanged 的 payload，每元素 QVariantMap{id,title}
+    // 契约3：sessionListChanged 的 payload，每元素 QVariantMap{id,title,updatedAt,messageCount}
     // MAJOR4（round-3）：按当前工程路径过滤
+    // 会话管理对话框需要 updatedAt/messageCount 展示更多会话信息。
     QVariantList out;
     for (const auto& m : m_sessionStore->listSessions(m_currentProjectPath)) {
         QVariantMap vm;
-        vm["id"]    = m.id;
-        vm["title"] = m.title;
+        vm["id"]           = m.id;
+        vm["title"]        = m.title;
+        vm["updatedAt"]    = m.updatedAt;       // ISO8601WithMs, UTC
+        vm["messageCount"] = m.messageCount;
         out.append(vm);
     }
     return out;
