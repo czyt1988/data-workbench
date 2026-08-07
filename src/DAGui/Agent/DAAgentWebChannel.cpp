@@ -66,6 +66,11 @@ void DAAgentWebChannel::onUserMessage(const QString& text)
     emit userMessageSent(text);
 }
 
+void DAAgentWebChannel::onFigureLink(const QString& href)
+{
+    emit figureLinkRequested(href);
+}
+
 void DAAgentWebChannel::appendUserMessage(const QString& text)
 {
     callJS(QString("appendUserMessage(\"%1\")").arg(toJsString(text)));

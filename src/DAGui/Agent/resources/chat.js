@@ -44,6 +44,24 @@ function init() {
     new QWebChannel(qt.webChannelTransport, function(channel) {
         chatBridge = channel.objects.chatBridge;
     });
+    // 拦截 da-figure: 超链接点击，交给 C++ 端打开对应绘图。
+    // 事件委托挂在稳定的 #messages 上：流式防抖会重建气泡 innerHTML，
+    // 绑在气泡节点上的监听器会丢失，挂在 #messages 始终有效（clearChat 只清 innerHTML）。
+    var msgs = document.getElementById('messages');
+    if (msgs) {
+        msgs.addEventListener('click', function(e) {
+            var link = e.target.closest('a');
+            if (!link) return;
+            var href = link.getAttribute('href') || '';
+            if (href.toLowerCase().indexOf('da-figure:') !== 0) return;  // 仅匹配 da-figure: 前缀，放行普通链接
+            e.preventDefault();  // 阻止 WebEngine 内部导航（自定义 scheme 无目标页）
+            // 流式未完成时 href 可能只是 "da-figure:"，跳过避免无效调用
+            if (href === 'da-figure:' || href === 'da-figure:/') return;
+            if (chatBridge && typeof chatBridge.onFigureLink === 'function') {
+                chatBridge.onFigureLink(href);
+            }
+        });
+    }
 }
 
 // —— Agent 文本气泡辅助 ——

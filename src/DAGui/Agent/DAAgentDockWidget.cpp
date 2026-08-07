@@ -160,6 +160,9 @@ void DAAgentDockWidget::setupWebChannel()
     // so the Bridge can receive user answers to agent questions.
     connect(m_channel, &DAAgentWebChannel::userAnswerSelected,
             this, &DAAgentDockWidget::onUserAnswer);
+    // 绘图引用超链接点击：chat.js 拦截 da-figure: 链接 → onFigureLink → 此信号转发
+    connect(m_channel, &DAAgentWebChannel::figureLinkRequested,
+            this, &DAAgentDockWidget::onFigureLink);
 }
 
 void DAAgentDockWidget::onSendClicked()
@@ -196,6 +199,11 @@ void DAAgentDockWidget::onStopClicked()
 void DAAgentDockWidget::onUserAnswer(const QString& answer)
 {
     emit userAnswerSelected(answer);
+}
+
+void DAAgentDockWidget::onFigureLink(const QString& href)
+{
+    emit figureLinkRequested(href);
 }
 
 void DAAgentDockWidget::onAgentToken(const QString& token)
@@ -401,10 +409,36 @@ void DAAgentDockWidget::onSessionCreated(const QString& sessionId)
     Q_UNUSED(sessionId);
     // MAJOR7: 仅 newSession 路径触发本槽——新会话清空聊天 + 复位守卫。
     // 下拉刷新由 sessionListChanged(payload) 信号驱动。
+    // Bug2 修复：新会话无 usage，复位 token 控件避免拋留上一会话数值。
     m_switching = false;
     if (m_channel) {
         m_channel->clearChat();
     }
+    resetTokenStats();
+}
+
+void DAAgentDockWidget::onSessionCleared()
+{
+    // Bug1 修复：restoreLastActiveSession 未命中且无工程会话时发射 sessionCleared。
+    // 清空残留聊天区（原游离会话历史）、复位 token 控件、下拉不选中、解除切换守卫。
+    m_switching = false;
+    if (m_channel) {
+        m_channel->clearChat();
+    }
+    resetTokenStats();
+    if (m_sessionCombo) {
+        m_sessionCombo->blockSignals(true);
+        m_sessionCombo->setCurrentIndex(-1);
+        m_sessionCombo->blockSignals(false);
+    }
+}
+
+void DAAgentDockWidget::resetTokenStats()
+{
+    // 复位到无活跃会话初始态：进度条 0%、标签 "tokens: -"、明细菜单清空
+    if (m_tokenBar) m_tokenBar->setValue(0);
+    if (m_tokenLabel) m_tokenLabel->setText(tr("tokens: -"));  // cn:token: -
+    if (m_tokenMenu) m_tokenMenu->clear();
 }
 
 // ---- 辅助方法 ----

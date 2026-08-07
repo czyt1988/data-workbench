@@ -40,6 +40,12 @@ public:
     Q_INVOKABLE void onUserMessage(const QString& text);
 
     /**
+     * @brief JS 调用：用户点击了绘图引用超链接（da-figure: 协议）
+     * @param href 超链接 href，形如 da-figure:&lt;figure_name&gt; 或 da-figure:id=&lt;uuid&gt;
+     */
+    Q_INVOKABLE void onFigureLink(const QString& href);
+
+    /**
      * @brief 追加用户消息到聊天界面
      * @param text 消息文本
      */
@@ -122,6 +128,12 @@ Q_SIGNALS:
      * @param text 用户输入的消息文本
      */
     void userMessageSent(const QString& text);
+
+    /**
+     * @brief 用户点击绘图引用超链接信号
+     * @param href 超链接 href，形如 da-figure:&lt;figure_name&gt; 或 da-figure:id=&lt;uuid&gt;
+     */
+    void figureLinkRequested(const QString& href);
 
 private:
     /**

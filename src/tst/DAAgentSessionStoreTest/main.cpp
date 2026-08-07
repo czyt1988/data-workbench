@@ -40,6 +40,8 @@ private Q_SLOTS:
     void testIndexAtomicWrite();
     void testCleanup();
     void testLastActive();
+    void testImportSessionFiles();  // Bug1 回归：导入会话标记 projectPath + 合并
+    void testProjectPathFiltering();  // Bug1 回归：listSessions(filter) 过滤 + 倒序
     void testEnsureTitle();
 
 private:
@@ -287,6 +289,115 @@ void DAAgentSessionStoreTest::testLastActive()
     // 5e. 切回自由会话指针，空 filter 再次生效
     store.setLastActive(sidA, QString());
     QCOMPARE(store.lastActiveSession(QString()), sidA);
+}
+
+// ---------------------------------------------------------------------------
+// 5f. Bug1 回归：导入工程会话标记 projectPath + 同 id 合并覆盖
+//     （支撑 DAAgentModule::loadSessionsFromProject 的指针修正与 fallback）
+// ---------------------------------------------------------------------------
+void DAAgentSessionStoreTest::testImportSessionFiles()
+{
+    DA::DAAgentSessionStore store;
+
+    // 先建一个自由会话 sidFree，把全局指针指向它（模拟打开工程前的游离会话状态）
+    QString sidFree = store.createSession();  // projectPath 空
+    store.setLastActive(sidFree, QString());
+
+    // 构造工程内嵌会话 sidP 的 jsonl 字节：一条 user + 一条 assistant
+    QString sidP = QStringLiteral("imported-proj-session-id");
+    QByteArray jsonl;
+    {
+        QJsonObject u = makeRecord(sidP, "user", QStringLiteral("in project"));
+        QJsonObject a = makeRecord(sidP, "assistant", QStringLiteral("reply in project"));
+        jsonl += QJsonDocument(u).toJson(QJsonDocument::Compact) + "\n";
+        jsonl += QJsonDocument(a).toJson(QJsonDocument::Compact) + "\n";
+    }
+
+    // 导入：标记 projectPath = C:/proj
+    QHash< QString, QByteArray > files;
+    files.insert(sidP, jsonl);
+    store.importSessionFiles(files, QStringLiteral("C:/proj"));
+
+    // 导入后 hasSession 命中，listSessions 全量可见
+    QVERIFY(store.hasSession(sidP));
+    auto all = store.listSessions();  // 不过滤
+    QCOMPARE(all.size(), 2);  // sidFree + sidP
+
+    // 导入会话的 projectPath 必须被标记为 C:/proj（Bug1 修复依赖此标记做 fallback）
+    QString pPath;
+    for (const auto& m : std::as_const(all)) {
+        if (m.id == sidP) { pPath = m.projectPath; break; }
+    }
+    QCOMPARE(pPath, QStringLiteral("C:/proj"));
+
+    // 导入会话的记录可读，readAllRecords 含两条
+    auto recs = store.readAllRecords(sidP);
+    QCOMPARE(recs.size(), 2);
+
+    // 同 id 再次导入：合并覆盖（旧 jsonl 被新内容取代），不产生重复条目
+    QByteArray jsonl2;
+    {
+        QJsonObject u = makeRecord(sidP, "user", QStringLiteral("overwritten"));
+        jsonl2 += QJsonDocument(u).toJson(QJsonDocument::Compact) + "\n";
+    }
+    QHash< QString, QByteArray > files2;
+    files2.insert(sidP, jsonl2);
+    store.importSessionFiles(files2, QStringLiteral("C:/proj"));
+    auto all2 = store.listSessions();
+    QCOMPARE(all2.size(), 2);  // 仍是 sidFree + sidP，未新增
+    auto recs2 = store.readAllRecords(sidP);
+    QCOMPARE(recs2.size(), 1);  // 被覆盖为单条
+    QCOMPARE(recs2.at(0).value("message").toObject().value("content").toString(),
+             QStringLiteral("overwritten"));
+
+    // 空 files 导入为 no-op：不写、不改 index（仅重写不变内容）
+    QHash< QString, QByteArray > emptyFiles;
+    store.importSessionFiles(emptyFiles, QStringLiteral("C:/proj"));
+    QVERIFY(store.hasSession(sidP));
+    QVERIFY(store.hasSession(sidFree));
+}
+
+// ---------------------------------------------------------------------------
+// 5g. Bug1 回归：listSessions(projectPath) 按工程过滤 + updatedAt 倒序
+//     （支撑 restoreLastActiveSession 分支②取 bound.first() 即最新工程会话）
+// ---------------------------------------------------------------------------
+void DAAgentSessionStoreTest::testProjectPathFiltering()
+{
+    DA::DAAgentSessionStore store;
+
+    // 工程绑定会话 s1/s2/s3（按时间递增创建），自由会话 sFree
+    QString sFree = store.createSession();  // projectPath 空
+    QThread::msleep(5);
+    QString s1 = store.createSession(QStringLiteral("C:/projA"));
+    QThread::msleep(5);
+    QString s2 = store.createSession(QStringLiteral("C:/projA"));
+    QThread::msleep(5);
+    QString s3 = store.createSession(QStringLiteral("C:/projA"));
+    QThread::msleep(5);
+    QString sOther = store.createSession(QStringLiteral("C:/projB"));
+
+    // 按 projA 过滤：仅 s1/s2/s3，按 updatedAt 倒序（s3 在前）
+    auto projA = store.listSessions(QStringLiteral("C:/projA"));
+    QCOMPARE(projA.size(), 3);
+    QCOMPARE(projA.at(0).id, s3);
+    QCOMPARE(projA.at(1).id, s2);
+    QCOMPARE(projA.at(2).id, s1);
+    for (const auto& m : std::as_const(projA)) {
+        QCOMPARE(m.projectPath, QStringLiteral("C:/projA"));
+    }
+
+    // 按 projB 过滤：仅 sOther
+    auto projB = store.listSessions(QStringLiteral("C:/projB"));
+    QCOMPARE(projB.size(), 1);
+    QCOMPARE(projB.at(0).id, sOther);
+
+    // 自由会话不被任何非空 filter 返回
+    for (const auto& m : std::as_const(projA)) QVERIFY(m.id != sFree);
+    for (const auto& m : std::as_const(projB)) QVERIFY(m.id != sFree);
+
+    // 不传 filter 返回全部（含自由会话与所有工程会话）
+    auto all = store.listSessions();
+    QCOMPARE(all.size(), 5);
 }
 
 // ---------------------------------------------------------------------------

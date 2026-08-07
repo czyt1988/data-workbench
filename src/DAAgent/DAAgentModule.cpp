@@ -315,10 +315,8 @@ void DAAgentModule::connectSignals()
     connect(m_bridge, &DAAgentBridge::agentUsage, this, [this](int inT, int outT, int tot, const QString& src) {
         if (m_currentSessionId.isEmpty()) return;
         appendUsageRecord(m_currentSessionId, inT, outT, tot, src);
-        // 契约2：查 context_window（从 QSettings agent/context_window 默认 1048576），emit 5 参信号供 plan-04 UI
-        QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-        int window = s.value("agent/context_window", 1048576).toInt();
-        emit tokenUsageUpdated(inT, outT, tot, window, src);
+        // 契约2：emit 5 参信号（context_window 经 readContextWindow 复用，供 plan-04 UI 与 switchSession 回放共用）
+        emit tokenUsageUpdated(inT, outT, tot, readContextWindow(), src);
     });
     // agent 提问（ask_user）——记录为 tool_call，供下一条 answer 配对
     connect(m_bridge, &DAAgentBridge::agentQuestion, this, [this](const QString& text, const QStringList& options, bool multiSelect) {
@@ -531,6 +529,9 @@ bool DAAgentModule::switchSession(const QString& sessionId)
     }
     // 3. UI 历史重放由 plan-04 的 sessionSwitched 信号触发
     emit sessionSwitched(sessionId, m_sessionStore->readAllRecords(sessionId));
+    // 4. 切换后回放 token 统计（从持久化 usage 记录取最后一条，无则全 0），
+    //    避免 UI 拋留上一会话的 token 数值与进度条（Bug2 修复）
+    emitTokenUsageForSession(sessionId);
     return true;
 }
 
@@ -597,6 +598,20 @@ void DAAgentModule::loadSessionsFromProject(const QHash<QString, QByteArray>& fi
     // 契约4：projectPath 由 plan-05 executeLoad 回调传入（先 setCurrentProjectPath 再调本方法），
     // 标记导入会话工程路径
     m_sessionStore->importSessionFiles(files, projectPath);
+    // Bug1 加固：导入工程会话后，若全局 last_active 指针未指向本工程的会话
+    // （常因打开工程前游离会话活动覆盖了指针），把它指向导入会话中最新者，
+    // 使后续 restoreLastActiveSession(P) 的指针命中分支生效。
+    // listSessions(projectPath) 已按 updatedAt 倒序，取首个即最新。
+    if (!files.isEmpty()) {
+        QString currentPtr = m_sessionStore->lastActiveSession(projectPath);
+        if (currentPtr.isEmpty()) {
+            QVector<DAAgentSessionStore::SessionMeta> bound =
+                m_sessionStore->listSessions(projectPath);
+            if (!bound.isEmpty()) {
+                m_sessionStore->setLastActive(bound.first().id, projectPath);
+            }
+        }
+    }
     emit sessionListChanged(listSessionsForUI());  // 契约3：带 payload
 }
 
@@ -633,13 +648,31 @@ void DAAgentModule::cleanupSessions()
 
 void DAAgentModule::restoreLastActiveSession()
 {
+    // Bug1 修复：原实现仅处理"指针命中"分支，未命中时什么都不做——
+    // 导致打开工程时残留的游离会话（m_currentSessionId 非空）仍显示在聊天区，
+    // 且后续 sendMessage 把消息写进该游离会话（数据串台）。
+    // 现分三级：① 指针命中→切换；② 指针未命中但存在工程绑定会话→回退到最新者；
+    //          ③ 无任何工程会话→清空 m_currentSessionId 并 emit sessionCleared。
     QString sid = m_sessionStore->lastActiveSession(m_currentProjectPath);  // 按工程过滤
     emit sessionListChanged(listSessionsForUI());  // 契约3：启动/开工程时填充 UI 下拉
     if (!sid.isEmpty() && m_sessionStore->hasSession(sid)) {  // CRITICAL2：hasSession 读 index 判断
         // 注：listSessions() 返回 QVector<SessionMeta>，QVector::contains(QString) 类型不匹配
         // 不可编译；故用 hasSession
         switchSession(sid);
+        return;
     }
+    // 分支②：指针未命中（常因游离会话活动覆盖了全局指针），回退到工程绑定的最新会话。
+    // listSessions(filter) 已按 updatedAt 倒序，取首个即最新。
+    QVector<DAAgentSessionStore::SessionMeta> bound =
+        m_sessionStore->listSessions(m_currentProjectPath);
+    if (!bound.isEmpty()) {
+        switchSession(bound.first().id);  // switchSession 内 setLastActive 修正指针
+        return;
+    }
+    // 分支③：当前工程无任何会话——清空残留，通知 UI 清空聊天与 token 统计。
+    // 用户后续发消息时由 sendMessage 懒创建绑定 m_currentProjectPath 的新会话。
+    m_currentSessionId.clear();
+    emit sessionCleared();
 }
 
 // ===========================================================================
@@ -763,6 +796,34 @@ QJsonObject DAAgentModule::makeUserRecord(const QString& text) const
     record["type"]        = "user";
     record["message"]     = msg;
     return record;
+}
+
+int DAAgentModule::readContextWindow() const
+{
+    // 从 agent-config.ini 读 context_window（默认 1048576），供 agentUsage lambda
+    // 与 emitTokenUsageForSession 复用，避免重复 QSettings 构造与魔法数字散落
+    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
+    return s.value("agent/context_window", 1048576).toInt();
+}
+
+void DAAgentModule::emitTokenUsageForSession(const QString& sid)
+{
+    // 切换会话时回放 token 统计（Bug2 修复）：扫持久化 usage 记录取最后一条，
+    // 无记录则全 0（仍带真实 context_window，UI 显示 tokens: 0 / 窗口、进度条 0%）。
+    int inT = 0, outT = 0, tot = 0;
+    QString src;
+    if (!sid.isEmpty()) {
+        QVector<QJsonObject> records = m_sessionStore->readAllRecords(sid);
+        for (const QJsonObject& obj : std::as_const(records)) {
+            if (obj.value("type").toString() != "usage") continue;
+            QJsonObject meta = obj.value("usage_metadata").toObject();
+            inT = meta.value("input_tokens").toInt(inT);
+            outT = meta.value("output_tokens").toInt(outT);
+            tot = meta.value("total_tokens").toInt(tot);
+            src = meta.value("source").toString();
+        }
+    }
+    emit tokenUsageUpdated(inT, outT, tot, readContextWindow(), src);
 }
 
 } // namespace DA

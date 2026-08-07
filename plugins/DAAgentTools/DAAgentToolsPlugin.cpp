@@ -58,6 +58,21 @@ bool DAAgentToolsPlugin::initialize()
     agent->registerTool(new DAAgentToolReadFile(c, this));
     agent->registerTool(new DAAgentToolWriteFile(c, this));
     agent->registerTool(new DAAgentToolSaveReport(c, this));
+    // 绘图引用提示词：教 agent 用 da-figure: 超链接在回复中引用创建的绘图，
+    // 用户点击后由程序 raise 绘图区域并定位到对应 figure。
+    agent->registerSystemPrompt(QStringLiteral("figure_reference"), QStringLiteral(
+        "## Referencing Figures in Your Reply\n"
+        "When you create a chart with `create_chart` / `create_subplots`, the tool returns `figure_name` and `figure_id`.\n"
+        "To let the user open a figure directly from your reply, insert a Markdown hyperlink using the `da-figure:` scheme:\n\n"
+        "  [human-readable chart name](da-figure:<figure_name>)\n"
+        "  # precise form (use when names may duplicate):\n"
+        "  [human-readable chart name](da-figure:id=<figure_id>)\n\n"
+        "Rules:\n"
+        "- The link text should be a short human-readable name (use the chart title or figure_name).\n"
+        "- Prefer the name form for brevity; use the id form when figure names may duplicate.\n"
+        "- Only reference figures you have created in the current session (the user can click the link to raise and focus that figure).\n"
+        "- Use `list_figures` to discover existing figures and their names/ids.\n"
+    ));
     return DAAbstractPlugin::initialize();  // base default returns true
 }
 }  // namespace DA

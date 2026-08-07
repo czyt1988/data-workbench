@@ -264,6 +264,7 @@ void DAAppController::initialize()
         connect(agent, &DAAgentInterface::sessionSwitched, dock, &DAAgentDockWidget::onSessionSwitched);
         connect(agent, &DAAgentInterface::sessionListChanged, dock, &DAAgentDockWidget::onSessionListChanged);
         connect(agent, &DAAgentInterface::sessionCreated, dock, &DAAgentDockWidget::onSessionCreated);
+        connect(agent, &DAAgentInterface::sessionCleared, dock, &DAAgentDockWidget::onSessionCleared);
         // Dock 信号 → 接口方法（7 条；均为信号→方法 PMF 连接，emit 源信号即调用方法体，
         // 含各自持久化/启动逻辑，无需 lambda。agentStopRequested 暂无对接，略）。
         // 注意 sessionCreateRequested 连 &DAAgentInterface::newSession（非 createSession）：
@@ -276,6 +277,8 @@ void DAAppController::initialize()
         connect(dock, &DAAgentDockWidget::sessionDeleteRequested, agent, &DAAgentInterface::deleteSession);
         connect(dock, &DAAgentDockWidget::sessionRenameRequested, agent, &DAAgentInterface::renameSession);
         connect(dock, &DAAgentDockWidget::sessionCreateRequested, agent, &DAAgentInterface::newSession);
+        // Agent 绘图引用超链接：da-figure: 协议链接点击 → raise 绘图区并定位 figure
+        connect(dock, &DAAgentDockWidget::figureLinkRequested, this, &DAAppController::onFigureLinkRequested);
     }
     initConnection();
 #if DA_ENABLE_PYTHON
@@ -1792,6 +1795,50 @@ void DAAppController::onActionAddFigureTriggered()
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
     chartopt->setCurrentFigure(fig);
     setDirty();
+}
+
+/**
+ * @brief Agent 绘图引用超链接点击处理
+ *
+ * 解析 da-figure: 协议超链接，定位目标 figure 并 raise 绘图区域。
+ * 支持两种格式：
+ *   - da-figure:&lt;figure_name&gt;  按 tab 文本定位（agent 默认，简单）
+ *   - da-figure:id=&lt;uuid&gt;       按 figure_id 精确定位（抗重名/改名）
+ * @param href 超链接 href
+ */
+void DAAppController::onFigureLinkRequested(const QString& href)
+{
+    static const QString kPrefix = QStringLiteral("da-figure:");
+    if (!href.startsWith(kPrefix, Qt::CaseInsensitive)) {
+        qWarning() << "[FigureLink] invalid href:" << href;
+        return;
+    }
+    QString payload = href.mid(kPrefix.length());
+    DAAppChartOperateWidget* chartopt = getChartOperateWidget();
+    if (!chartopt) {
+        qWarning() << "[FigureLink] chart operate widget is null";
+        return;
+    }
+    DAFigureWidget* fig = nullptr;
+    if (payload.startsWith(QStringLiteral("id="), Qt::CaseInsensitive)) {
+        // 精确格式：da-figure:id=<uuid>
+        fig = chartopt->findFigure(payload.mid(3));
+    } else if (!payload.isEmpty()) {
+        // 简单格式：da-figure:<figure_name>，按 tab 文本遍历匹配
+        const QList< DAFigureWidget* > figs = chartopt->getFigureList();
+        for (DAFigureWidget* f : figs) {
+            if (chartopt->getFigureName(f) == payload) {
+                fig = f;
+                break;
+            }
+        }
+    }
+    if (!fig) {
+        daWarning << tr("Figure '%1' not found, it may have been closed or renamed").arg(payload);  // cn:未找到绘图"%1"，可能已关闭或被重命名
+        return;
+    }
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+    chartopt->setCurrentFigure(fig);
 }
 
 /**

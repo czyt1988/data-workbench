@@ -69,7 +69,8 @@ QJsonObject DAAgentToolCreateChart::getToolSpec() const
         {"name", "create_chart"},
         {"description", "Create a new figure with a chart (line/scatter/bar/hist/box) from dataset columns. "
          "Each call creates a NEW figure — use figure_name to give it a searchable name (shown as the tab title). "
-         "Other tools (add_curve, set_chart_style, etc.) can target this figure via figure_name."},
+         "Other tools (add_curve, set_chart_style, etc.) can target this figure via figure_name. "
+         "The returned figure_id/figure_name can be used in da-figure: hyperlinks so the user can open this figure from your reply."},
         {"parameters", QJsonObject{
             {"type", "object"},
             {"properties", QJsonObject{
@@ -205,6 +206,7 @@ QJsonObject DAAgentToolCreateChart::execute(const QJsonObject& params)
 
     // Return structured data so the agent can reference this figure/chart later
     QJsonObject respData;
+    respData["figure_id"]   = fig->getFigureId();   // 用于 da-figure:id=<figure_id> 精确引用
     respData["figure_name"] = figureName;
     respData["chart_title"] = title.isEmpty() ? yCol : title;
     respData["chart_type"]  = type;

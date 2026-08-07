@@ -52,6 +52,7 @@ private Q_SLOTS:
     void onSendClicked();
     void onStopClicked();
     void onUserAnswer(const QString& answer);
+    void onFigureLink(const QString& href);  // 绘图引用超链接点击转发
     // 会话栏按钮与下拉
     void onSessionComboActivated(int index);
     void onNewSessionClicked();
@@ -143,10 +144,18 @@ public Q_SLOTS:
     void onSessionListChanged(QVariantList sessions);
 
     /**
-     * @brief 新会话创建（newSession 路径），清空聊天 + 复位守卫
+     * @brief 新会话创建（newSession 路径），清空聊天 + 复位守卫 + 复位 token 控件
      * @param sessionId 新会话 ID
      */
     void onSessionCreated(const QString& sessionId);
+
+    /**
+     * @brief 当前无活跃会话（restoreLastActiveSession 未命中且无工程会话）
+     *
+     * 清空残留聊天区、复位 token 控件、下拉不选中、解除切换守卫。
+     * 触发场景：打开一个无内嵌会话的工程时，清空残留的游离会话聊天区。
+     */
+    void onSessionCleared();
 
 Q_SIGNALS:
     /**
@@ -165,6 +174,9 @@ Q_SIGNALS:
      * @param answer 用户选择的答案
      */
     void userAnswerSelected(const QString& answer);
+
+    /// 用户点击绘图引用超链接（da-figure: 协议），转发给 DAAppController 处理
+    void figureLinkRequested(const QString& href);
 
     // ---- plan-04 会话操作信号（→ Module） ----
     /// 用户在会话下拉切换会话
@@ -201,6 +213,8 @@ private:
     int findSessionIndex(const QString& sid) const;
     /// 重建 token 分类明细 QMenu（input/output/total/window/source）
     void rebuildTokenMenu(int inT, int outT, int tot, int window, const QString& source);
+    /// 复位 token 控件到无活跃会话初始态（进度条 0%、标签 "tokens: -"、菜单清空）
+    void resetTokenStats();
 
     QWebEngineView* m_webView;
     DAAgentWebChannel* m_channel;

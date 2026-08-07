@@ -466,6 +466,8 @@ private Q_SLOTS:
     // 绘图元素选中，信号由DAChartManageWidget发出
     void onFigureElementClicked(const DAFigureElementSelection& selection);
     void onFigureElementDbClicked(const DAFigureElementSelection& selection);
+    // Agent 绘图引用超链接点击：da-figure: 协议链接 → 解析定位 → raise 绘图区
+    void onFigureLinkRequested(const QString& href);
 
 private:
     // 初始化信号槽

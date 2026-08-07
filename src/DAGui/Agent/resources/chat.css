@@ -373,3 +373,23 @@ body {
     overflow-y: auto;
     white-space: pre;
 }
+
+/* 绘图引用超链接（da-figure: 协议）：点击后由程序打开对应绘图 */
+.message-bubble a[href^="da-figure:"],
+.message-bubble a[href^="da-figure:" i] {
+    color: var(--link-color);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.message-bubble a[href^="da-figure:"]:hover,
+.message-bubble a[href^="da-figure:" i]:hover {
+    opacity: 0.8;
+}
+
+/* 在绘图引用链接前加图表图标，提升可识别性 */
+.message-bubble a[href^="da-figure:"]::before,
+.message-bubble a[href^="da-figure:" i]::before {
+    content: '\1F4C8';  /* 📈 图表 */
+    margin-right: 3px;
+}

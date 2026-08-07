@@ -167,8 +167,8 @@ Q_SIGNALS:
     void agentDone();
     /// agent 完成会话历史重建时发射
     void agentSessionLoaded(const QString& sessionId);
-    // ---- 以下 4 个由 DAAgentModule 自身 emit（从 Module 的 Q_SIGNALS 上移） ----
-    /// token 使用量更新（agentUsage lambda 内补 context_window 后 emit）
+    // ---- 以下 5 个由 DAAgentModule 自身 emit（从 Module 的 Q_SIGNALS 上移） ----
+    /// token 使用量更新（agentUsage lambda 内补 context_window 后 emit；switchSession 也会从持久化 usage 记录 emit）
     void tokenUsageUpdated(int inputTokens, int outputTokens, int totalTokens, int contextWindow, const QString& source);
     /// 切换会话完成时发射，供 UI 重放历史
     void sessionSwitched(const QString& sessionId, const QVector<QJsonObject>& allRecords);
@@ -176,5 +176,11 @@ Q_SIGNALS:
     void sessionCreated(const QString& sessionId);
     /// 会话列表变化时发射，带 payload（每元素 QVariantMap{id,title}）
     void sessionListChanged(QVariantList sessions);
+    /// 当前无活跃会话时发射（restoreLastActiveSession 未命中且无工程会话）
+    ///
+    /// 触发场景：打开一个无内嵌会话的工程时，需清空残留的游离会话聊天区与 token 统计，
+    /// 并清空 m_currentSessionId（之后用户发消息由 sendMessage 懒创建绑定工程的会话）。
+    /// Dock 收到后应 clearChat + 复位 token 控件 + 下拉不选中。
+    void sessionCleared();
 };
 } // namespace DA

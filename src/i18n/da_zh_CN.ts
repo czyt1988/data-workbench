@@ -185,31 +185,31 @@
     </message>
     <message>
         <location line="+31"/>
-        <location line="+169"/>
+        <location line="+177"/>
         <location line="+19"/>
         <location line="+95"/>
         <source>Ready</source>
         <translation type="unfinished">启动完成</translation>
     </message>
     <message>
-        <location line="-258"/>
+        <location line="-266"/>
         <source>Type a message... (Ctrl+Enter to send)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+142"/>
+        <location line="+150"/>
         <location line="+20"/>
         <source>Send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-88"/>
+        <location line="-93"/>
         <source>Stopping...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+77"/>
+        <location line="+82"/>
         <source>Agent thinking...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -272,7 +272,7 @@
 <context>
     <name>DA::DAAgentSettingsWidget</name>
     <message>
-        <location filename="../DAGui/Agent/DAAgentSettingsWidget.cpp" line="+61"/>
+        <location filename="../APP/SettingPages/DAAgentSettingsWidget.cpp" line="+49"/>
         <location line="+6"/>
         <source> s</source>
         <translation type="unfinished"></translation>
@@ -393,7 +393,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/Agent/DAAgentSettingsWidget.h" line="+42"/>
+        <location filename="../APP/SettingPages/DAAgentSettingsWidget.h" line="+42"/>
         <source>Agent LLM 设置</source>
         <translation type="unfinished"></translation>
     </message>
@@ -401,7 +401,7 @@
 <context>
     <name>DA::DAAgentWebChannel</name>
     <message>
-        <location filename="../DAGui/Agent/DAAgentWebChannel.cpp" line="+106"/>
+        <location filename="../DAGui/Agent/DAAgentWebChannel.cpp" line="+111"/>
         <source>Submit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1657,7 +1657,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+628"/>
+        <location filename="../APP/DAAppController.cpp" line="+660"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -1694,12 +1694,12 @@ Config</source>
         <translation>图片保存失败：%1</translation>
     </message>
     <message>
-        <location line="+377"/>
+        <location line="+421"/>
         <source>Before creating a new coordinate, you need to create a figure</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-1094"/>
+        <location line="-1138"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
@@ -1753,7 +1753,12 @@ Config</source>
         <translation>获取到空工程接口</translation>
     </message>
     <message>
-        <location line="+1057"/>
+        <location line="+368"/>
+        <source>Figure &apos;%1&apos; not found, it may have been closed or renamed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+733"/>
         <source>Rename Column</source>
         <translation>重命名此列</translation>
     </message>
@@ -1825,7 +1830,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1764"/>
+        <location line="-1808"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
@@ -8627,7 +8632,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1335"/>
+        <location filename="../APP/DAAppController.cpp" line="-1365"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

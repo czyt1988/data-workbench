@@ -8,7 +8,8 @@ QJsonObject DAAgentToolCreateSubplots::getToolSpec() const
 {
     return QJsonObject{
         {"name", "create_subplots"},
-        {"description", "Create a new figure with a grid of subplots. Each call creates a NEW figure."},
+        {"description", "Create a new figure with a grid of subplots. Each call creates a NEW figure. "
+         "The returned figure_id/figure_name can be used in da-figure: hyperlinks so the user can open this figure from your reply."},
         {"parameters", QJsonObject{
             {"type", "object"},
             {"properties", QJsonObject{
@@ -82,6 +83,7 @@ QJsonObject DAAgentToolCreateSubplots::execute(const QJsonObject& params)
 
     // Return structured data
     QJsonObject respData;
+    respData["figure_id"] = fig->getFigureId();   // 用于 da-figure:id=<figure_id> 精确引用
     respData["figure_name"] = figureName;
     respData["subplot_count"] = created;
     respData["layout"] = QString("%1x%2").arg(rowCnt).arg(colCnt);

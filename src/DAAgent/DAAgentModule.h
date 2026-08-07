@@ -149,5 +149,10 @@ private:
     QJsonObject makeUserRecord(const QString& text) const;
     /// 生成 sessionListChanged 的 payload：按 m_currentProjectPath 过滤，每元素 QVariantMap{id,title}
     QVariantList listSessionsForUI() const;
+    /// 从 agent-config.ini 读 context_window（默认 1048576），供 tokenUsageUpdated 与切换回放复用
+    int readContextWindow() const;
+    /// 扫描会话持久化 usage 记录，取最后一条 emit tokenUsageUpdated；无记录则 emit 全 0
+    /// （供 switchSession 切换后回放 token 统计，避免 UI 残留上一会话数值）
+    void emitTokenUsageForSession(const QString& sid);
 };
 } // namespace DA
