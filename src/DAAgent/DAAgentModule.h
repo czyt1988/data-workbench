@@ -107,7 +107,10 @@ public:
      */
     void setSessionProjectPathForCurrent(const QString& path);
     /**
-     * @brief 恢复上次活跃会话（plan-05 在启动/打开工程后调用）
+     * @brief 启动/打开工程后初始化会话 UI——填充下拉列表但不自动恢复上次会话
+     *
+     * 始终以全新对话开始：清空 m_currentSessionId 并 emit sessionCleared，
+     * 历史会话填充到下拉供用户手动切换。
      */
     void restoreLastActiveSession();
 

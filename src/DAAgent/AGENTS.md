@@ -525,8 +525,8 @@ Windows 展开为 `%APPDATA%/DA/DAWorkBench/DAWorkBench/sessions/`。
 
 ### 16.5 恢复时序
 
-- **启动程序**：`DAAppController::initialize` 末尾调 `agentMod->cleanupSessions()`（清理超限会话）+ `restoreLastActiveSession()`（读 `last_active.json` 空指针 → 恢复上次活跃自由会话）。须在接口↔Dock 信号链 connect 完成后（Dock 就绪才能渲染历史，见 § 六）。
-- **打开工程**：`DAAppProject` 加载任务解压 `agent_sessions/*.jsonl` → 主线程回调 → `agentMod->loadSessionsFromProject(files, projectPath)` + `setCurrentProjectPath(path)` → `restoreLastActiveSession()` 按 `projectPath` 过滤恢复工程内上次活跃会话。
+- **启动程序**：`DAAppController::initialize` 末尾调 `agentMod->cleanupSessions()`（清理超限会话）+ `restoreLastActiveSession()`（填充会话下拉但不自动恢复——始终以全新对话开始）。须在接口↔Dock 信号链 connect 完成后（Dock 就绪才能渲染，见 § 六）。用户可通过下拉或会话管理器手动切换到历史会话。
+- **打开工程**：`DAAppProject` 加载任务解压 `agent_sessions/*.jsonl` → 主线程回调 → `agentMod->loadSessionsFromProject(files, projectPath)` + `setCurrentProjectPath(path)` → `restoreLastActiveSession()` 填充工程会话下拉但不自动恢复——始终以全新对话开始。
 - **保存工程**：`DAAppProject::executeSave` 主线程先 `agentMod->exportActiveSessions()` 收集活跃会话字节 → `appendByteSaveTask` 写入 zip 的 `agent_sessions/`（子线程，不碰 UI）。
 - **saveAs**：`setCurrentProjectPath` 同步更新新路径，`setSessionProjectPath` + `setLastActive` 更新 index 与指针的 projectPath（使打开新工程能恢复）。
 

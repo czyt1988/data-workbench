@@ -398,8 +398,8 @@ void DAAgentDockWidget::onSessionCreated(const QString& sessionId)
 
 void DAAgentDockWidget::onSessionCleared()
 {
-    // Bug1 修复：restoreLastActiveSession 未命中且无工程会话时发射 sessionCleared。
-    // 清空残留聊天区（原游离会话历史）、复位 token 控件、清空标题、解除切换守卫。
+    // 启动/打开工程后始终全新对话，不自动恢复上次会话。
+    // 清空残留聊天区、复位 token 控件、清空标题、解除切换守卫。
     m_switching = false;
     m_currentSessionId.clear();
     if (m_channel) {

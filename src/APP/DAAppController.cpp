@@ -300,13 +300,13 @@ void DAAppController::initialize()
         agentMod->cleanupSessions();
     }
 
-    // 启动后恢复上次活跃自由会话（plan-05 步骤3）：
+    // 启动后初始化会话 UI（plan-05 步骤3）：
     // singleShot(0) 延迟到事件循环空闲，确保上方 Agent 信号链 connect 已执行、Dock 就绪。
-    // projectPath=null → last_active 按 projectPath 过滤只取自由会话（MAJOR-4）。
+    // projectPath=null → 自由会话模式。不自动恢复上次会话，始终以全新对话开始。
     QTimer::singleShot(0, this, [ this ]() {
         if (auto* agentMod = qobject_cast< DAAgentModule* >(mCore->getAgentInterface())) {
             agentMod->setCurrentProjectPath(QString());  // 启动无工程，projectPath=null
-            agentMod->restoreLastActiveSession();         // 恢复自由会话
+            agentMod->restoreLastActiveSession();         // 填充下拉 + 全新对话
         }
     });
 }
@@ -1254,13 +1254,13 @@ void DAAppController::onProjectLoaded(const QString& path)
             wf->setCurrentWorkflowName(project->getProjectBaseName());
         }
     }
-    // 工程加载恢复接入（plan-05 步骤4）：
+    // 工程加载后初始化会话 UI（plan-05 步骤4）：
     // loadSessionsFromProject 已在 executeLoad 回调中调用（步骤2，先于本槽，时序见 MAJOR-5），
-    // 此处先接线当前工程路径，再按 projectPath 过滤恢复工程内上次活跃会话。
+    // 此处接线当前工程路径，填充会话下拉但不自动恢复上次会话——始终以全新对话开始。
     // 统一恢复点（MAJOR-3）：restoreLastActiveSession 只在此调一次。
     if (auto* agentMod = qobject_cast< DAAgentModule* >(mCore->getAgentInterface())) {
         agentMod->setCurrentProjectPath(path);     // 先设置当前工程路径（步骤5 接线）
-        agentMod->restoreLastActiveSession();       // last_active.json 按 projectPath 过滤
+        agentMod->restoreLastActiveSession();       // 填充下拉 + 全新对话
     }
     daInfo << tr("Project loaded successfully, path: %1").arg(path);  // cn:工程加载成功，路径为:%1
 }

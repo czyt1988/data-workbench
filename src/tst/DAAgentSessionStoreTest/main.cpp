@@ -359,7 +359,7 @@ void DAAgentSessionStoreTest::testImportSessionFiles()
 
 // ---------------------------------------------------------------------------
 // 5g. Bug1 回归：listSessions(projectPath) 按工程过滤 + updatedAt 倒序
-//     （支撑 restoreLastActiveSession 分支②取 bound.first() 即最新工程会话）
+//     （支撑会话下拉按当前工程过滤显示）
 // ---------------------------------------------------------------------------
 void DAAgentSessionStoreTest::testProjectPathFiltering()
 {

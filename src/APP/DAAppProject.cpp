@@ -784,7 +784,7 @@ bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString
     // Agent会话加载任务（plan-05）：worker 线程解压 agent_sessions/*.jsonl，
     // 回调（主线程，由 DAZipArchiveThreadWrapper::onTaskProgress 触发）先 setCurrentProjectPath
     // 再 loadSessionsFromProject 导入会话。注意：回调内**不**调 restoreLastActiveSession——
-    // 恢复统一在 DAAppController::onProjectLoaded 做（MAJOR-3 统一恢复点）。
+    // 初始化统一在 DAAppController::onProjectLoaded 做（MAJOR-3 统一初始化点）。
     // 时序（MAJOR-5）：本回调先于 projectLoaded/onProjectLoaded（waitArchiveLoad 嵌套
     // QEventLoop::exec(ExcludeUserInputEvents) + onLoadFinish emit projectLoaded）。
     {
@@ -867,8 +867,8 @@ bool DAAppProject::restoreProjectSnapshot(const QString& snapshotPath, const QSt
     setModified(isDirty);
     // 回滚路径用局部 archive 不发 projectLoaded（成员 mArchive 才连 onLoadFinish），
     // 故 onProjectLoaded/restoreLastActiveSession 不自动触发——此处显式 emit projectLoaded，
-    // 由 DAAppController::onProjectLoaded 统一接线恢复工程内上次活跃会话（CRITICAL-2 补救，
-    // 亦符合 MAJOR-3 统一恢复点：restoreLastActiveSession 只在 onProjectLoaded 调一次）。
+    // 由 DAAppController::onProjectLoaded 统一接线初始化会话 UI（全新对话 + 填充下拉，
+    // 亦符合 MAJOR-3 统一初始化点：restoreLastActiveSession 只在 onProjectLoaded 调一次）。
     Q_EMIT projectLoaded(projectFilePath);
     return true;
 }

@@ -147,10 +147,9 @@ public Q_SLOTS:
     void onSessionCreated(const QString& sessionId);
 
     /**
-     * @brief 当前无活跃会话（restoreLastActiveSession 未命中且无工程会话）
+     * @brief 当前无活跃会话（启动/打开工程后始终全新对话，不自动恢复上次会话）
      *
      * 清空残留聊天区、复位 token 控件、下拉不选中、解除切换守卫。
-     * 触发场景：打开一个无内嵌会话的工程时，清空残留的游离会话聊天区。
      */
     void onSessionCleared();
 

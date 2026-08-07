@@ -176,7 +176,7 @@ Q_SIGNALS:
     void sessionCreated(const QString& sessionId);
     /// 会话列表变化时发射，带 payload（每元素 QVariantMap{id,title,updatedAt,messageCount}）
     void sessionListChanged(QVariantList sessions);
-    /// 当前无活跃会话时发射（restoreLastActiveSession 未命中且无工程会话）
+    /// 当前无活跃会话时发射（启动/打开工程后不自动恢复上次会话，始终全新开始）
     ///
     /// 触发场景：打开一个无内嵌会话的工程时，需清空残留的游离会话聊天区与 token 统计，
     /// 并清空 m_currentSessionId（之后用户发消息由 sendMessage 懒创建绑定工程的会话）。

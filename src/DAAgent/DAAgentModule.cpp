@@ -651,31 +651,12 @@ void DAAgentModule::cleanupSessions()
 
 void DAAgentModule::restoreLastActiveSession()
 {
-    // Bug1 修复：原实现仅处理"指针命中"分支，未命中时什么都不做——
-    // 导致打开工程时残留的游离会话（m_currentSessionId 非空）仍显示在聊天区，
-    // 且后续 sendMessage 把消息写进该游离会话（数据串台）。
-    // 现分三级：① 指针命中→切换；② 指针未命中但存在工程绑定会话→回退到最新者；
-    //          ③ 无任何工程会话→清空 m_currentSessionId 并 emit sessionCleared。
-    QString sid = m_sessionStore->lastActiveSession(m_currentProjectPath);  // 按工程过滤
+    // 始终以全新对话开始，不自动恢复上次会话。
+    // 历史会话仍填充到 UI 下拉列表，用户可通过下拉或会话管理器手动切换。
+    // 用户首次发消息时由 sendMessage 懒创建绑定 m_currentProjectPath 的新会话。
     emit sessionListChanged(listSessionsForUI());  // 契约3：启动/开工程时填充 UI 下拉
-    if (!sid.isEmpty() && m_sessionStore->hasSession(sid)) {  // CRITICAL2：hasSession 读 index 判断
-        // 注：listSessions() 返回 QVector<SessionMeta>，QVector::contains(QString) 类型不匹配
-        // 不可编译；故用 hasSession
-        switchSession(sid);
-        return;
-    }
-    // 分支②：指针未命中（常因游离会话活动覆盖了全局指针），回退到工程绑定的最新会话。
-    // listSessions(filter) 已按 updatedAt 倒序，取首个即最新。
-    QVector<DAAgentSessionStore::SessionMeta> bound =
-        m_sessionStore->listSessions(m_currentProjectPath);
-    if (!bound.isEmpty()) {
-        switchSession(bound.first().id);  // switchSession 内 setLastActive 修正指针
-        return;
-    }
-    // 分支③：当前工程无任何会话——清空残留，通知 UI 清空聊天与 token 统计。
-    // 用户后续发消息时由 sendMessage 懒创建绑定 m_currentProjectPath 的新会话。
     m_currentSessionId.clear();
-    emit sessionCleared();
+    emit sessionCleared();  // 清空聊天区、复位 token 统计、清空标题
 }
 
 // ===========================================================================
