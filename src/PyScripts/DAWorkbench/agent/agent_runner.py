@@ -60,6 +60,11 @@ logging.basicConfig(
 logger = logging.getLogger("agent_runner")
 
 
+class AgentStoppedError(Exception):
+    """用户主动停止 agent 时抛出，不视为错误，不应在对话中显示报错。"""
+    pass
+
+
 class StdioProtocol:
     """stdin/stdout JSON Lines 协议封装。
 
@@ -324,7 +329,7 @@ class AgentRunner:
                     msg.get("call_id"), expected_call_id
                 )
             elif msg_type == "stop":
-                raise RuntimeError("等待 tool_result 时收到 stop，agent 已停止")
+                raise AgentStoppedError("等待 tool_result 时收到 stop，agent 已停止")
             else:
                 logger.warning("期望 tool_result，但收到 type=%s", msg_type)
 
@@ -704,6 +709,9 @@ async def main():
         if msg_type == "user_msg":
             try:
                 await runner.run(msg["content"])
+            except AgentStoppedError:
+                logger.info("Agent stopped by user during run")
+                await stdio.send_done()
             except Exception as e:
                 logger.exception("Agent error")
                 await stdio.send_error(f"Agent error: {e}")
@@ -713,6 +721,9 @@ async def main():
             answer = msg.get("answer", "")
             try:
                 await runner.resume(answer)
+            except AgentStoppedError:
+                logger.info("Agent stopped by user during resume")
+                await stdio.send_done()
             except Exception as e:
                 logger.exception("Agent resume error")
                 await stdio.send_error(f"Agent resume error: {e}")
