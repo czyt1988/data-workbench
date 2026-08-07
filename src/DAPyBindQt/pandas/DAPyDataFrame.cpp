@@ -5,6 +5,7 @@
 #include "../numpy/DAPyModuleNumpy.h"
 #include "DAPyModulePandas.h"
 #include "DAPybind11QtCaster.hpp"
+#include <pybind11/eval.h>
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -459,7 +460,13 @@ DAPyDataFrame DAPyDataFrame::head(int n) const
 DAPyDataFrame DAPyDataFrame::query(const QString& expr) const
 {
     try {
-        return DAPyDataFrame(attr("query")(expr.toStdString()));
+        // pandas 的 DataFrame.query/eval 内部用 sys._getframe(level) 取调用者
+        // 栈帧来解析 @local_var 引用；从 C++ 绑定裸调 df.query 时，query 的
+        // 调用者不在 Python 栈中，_getframe 会抛 "call stack is not deep enough"。
+        // 用一个 Python lambda 包一层调用，使 df.query 的调用者变成该 lambda 帧，
+        // 问题从根上消除（与 DAPyScriptsDataFrame::queryDatas 调 da_query_datas 思路一致）。
+        auto wrapper = pybind11::eval("(lambda df, expr: df.query(expr))");
+        return DAPyDataFrame(wrapper(object(), expr.toStdString()));
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
     }
