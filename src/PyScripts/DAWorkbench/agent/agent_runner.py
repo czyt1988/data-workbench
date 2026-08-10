@@ -36,6 +36,10 @@ except ImportError:
     _HAS_CONTEXT_MANAGER = False
     logger.warning("context_manager module not available, running without context management")
 
+# 错误分类 + 指数退避重试 wrapper（plan-01 创建的基础设施）
+from error_classifier import classify_error, ErrorType
+from retry_wrapper import retry_with_backoff, RetryAbortedError
+
 # Pin stdout/stderr to UTF-8 — required because:
 # 1. stdout 是 JSON Lines 协议通道（C++ 端 QJsonDocument::fromJson 按 UTF-8 解析）
 # 2. Windows 默认为 cp936/cp1252，会破坏中文内容
@@ -65,6 +69,44 @@ class AgentStoppedError(Exception):
     pass
 
 
+def _to_exhausted_error_type(exc: Exception, classification) -> str:
+    """将可重试错误映射到 *_exhausted error_type，供 main() 的 send_error 使用。
+
+    优先用 isinstance 精确判断异常类型，退化为 classification.error_type 字符匹配。
+    """
+    # 优先：isinstance 精确判断
+    try:
+        import openai
+        if isinstance(exc, openai.RateLimitError):
+            return ErrorType.RATE_LIMIT_EXHAUSTED
+        if isinstance(exc, (openai.APIConnectionError, openai.APITimeoutError)):
+            return ErrorType.NETWORK_EXHAUSTED
+        if isinstance(exc, openai.InternalServerError):
+            return ErrorType.SERVER_ERROR_EXHAUSTED
+        if hasattr(exc, 'status_code') and isinstance(exc.status_code, int):
+            if 500 <= exc.status_code <= 529:
+                return ErrorType.SERVER_ERROR_EXHAUSTED
+            if exc.status_code == 429:
+                return ErrorType.RATE_LIMIT_EXHAUSTED
+    except ImportError:
+        pass
+    # 兜底：classification.error_type 已是 *_exhausted（plan-01 修复后）
+    if classification.error_type in (
+        ErrorType.RATE_LIMIT_EXHAUSTED,
+        ErrorType.NETWORK_EXHAUSTED,
+        ErrorType.SERVER_ERROR_EXHAUSTED,
+    ):
+        return classification.error_type
+    # 最终兜底：字符串匹配
+    et = classification.error_type.lower()
+    msg = str(exc).lower()
+    if "rate" in et or "429" in msg:
+        return ErrorType.RATE_LIMIT_EXHAUSTED
+    if "network" in et or "connection" in et or "timeout" in msg or "timed out" in msg:
+        return ErrorType.NETWORK_EXHAUSTED
+    return ErrorType.SERVER_ERROR_EXHAUSTED
+
+
 class StdioProtocol:
     """stdin/stdout JSON Lines 协议封装。
 
@@ -80,6 +122,7 @@ class StdioProtocol:
         self._buffer = b""
         self._decoder = codecs.getincrementaldecoder("utf-8")(errors="strict")
         self._loop = None
+        self._stop_event = None  # 由 set_stop_event() 注册，用于 stdin 线程即时检测 stop
 
     async def init_reader(self):
         """初始化 stdin 读取器(后台线程 + asyncio.Queue)。
@@ -102,6 +145,12 @@ class StdioProtocol:
             # 必须用 read1 而非 read:read(n) 会阻塞等满 n 字节才返回，
             # 对 QProcess 管道(stdin 没有.EOF，数据量小)会永久卡死；
             # read1 只发起一次底层 read()，有数据就立即返回(不论多少字节)。
+            #
+            # ★ stop 消息即时检测：线程内维护独立行缓冲 scan_buf，
+            # 扫描完整行检测 type=="stop"，命中时通过 call_soon_threadsafe
+            # 即时设置 stop_event，不等 main() 从 Queue 消费——退避期间
+            # main() 阻塞在 runner.run()，无法消费 Queue 中的 stop 消息。
+            scan_buf = bytearray()
             try:
                 while True:
                     data = sys.stdin.buffer.read1(4096)
@@ -109,6 +158,21 @@ class StdioProtocol:
                         # EOF — stdin 关闭，投递 None 作为结束标志
                         self._loop.call_soon_threadsafe(self._data_queue.put_nowait, None)
                         return
+                    # ★ 扫描完整行检测 stop 消息，即时设置 stop_event
+                    if self._stop_event is not None:
+                        scan_buf.extend(data)
+                        while b'\n' in scan_buf:
+                            line_bytes, scan_buf = scan_buf.split(b'\n', 1)
+                            line_bytes = line_bytes.strip()
+                            if not line_bytes:
+                                continue
+                            try:
+                                scan_msg = json.loads(line_bytes.decode('utf-8'))
+                                if scan_msg.get("type") == "stop":
+                                    self._loop.call_soon_threadsafe(self._stop_event.set)
+                            except (json.JSONDecodeError, UnicodeDecodeError):
+                                pass
+                    # 原始字节照常入队，main() 仍通过 receive() 正常处理所有消息
                     self._loop.call_soon_threadsafe(self._data_queue.put_nowait, data)
             except Exception as e:
                 logger.exception("stdin reader thread crashed: %s", e)
@@ -163,11 +227,35 @@ class StdioProtocol:
     async def send_question(self, text: str, options: list[str], multi_select: bool = False):
         await self.send({"type": "question", "text": text, "options": options, "multi_select": multi_select})
 
-    async def send_error(self, message: str):
-        await self.send({"type": "error", "message": message})
+    async def send_error(self, message: str, error_type: str = "unknown", detail: str = ""):
+        obj = {"type": "error", "message": message, "error_type": error_type}
+        if detail:
+            obj["detail"] = detail
+        await self.send(obj)
+
+    async def send_retrying(self, attempt: int, max_attempts: int, delay_ms: int,
+                            error_type: str, error_message: str):
+        await self.send({
+            "type": "retrying",
+            "attempt": attempt,
+            "max_attempts": max_attempts,
+            "delay_ms": delay_ms,
+            "error_type": error_type,
+            "error_message": error_message,
+        })
 
     async def send_done(self):
         await self.send({"type": "done"})
+
+    def set_stop_event(self, event: asyncio.Event, loop: asyncio.AbstractEventLoop):
+        """注册 stop_event，使 stdin 后台线程在收到 stop 消息时即时设置。
+
+        stdin 线程在读取到 type=="stop" 的消息行时，通过 loop.call_soon_threadsafe
+        直接设置 event，不等 main() 从 Queue 消费——退避期间 main() 阻塞在
+        runner.run()，无法消费 Queue 中的 stop 消息。
+        """
+        self._stop_event = event
+        self._loop = loop
 
     # —— 接收（stdin）——
     async def receive(self) -> dict:
@@ -257,11 +345,19 @@ class AgentRunner:
             api_key=config["api_key"],
             model=config["model"],
             streaming=True,
+            max_retries=0,                                        # 禁用 openai-python 内置重试，由 wrapper 控制
+            timeout=config.get("request_timeout_sec", 120),       # HTTP 请求超时（连接+首字节）
         )
 
         # 生成工具 schema 并绑定（直接传原始 schema 字典，无 Pydantic 转换）
         self.tool_schemas = ToolFactory.build_tool_schemas(tool_specs)
         self.llm_with_tools = self.llm.bind_tools(self.tool_schemas)
+
+        # 重试配置 + stop_event（plan-02 步骤 2）
+        self._max_retries = config.get("max_retries", 7)
+        self._stop_event = asyncio.Event()  # 用户 stop 时 set，中断退避
+        # StdioProtocol 的 init_reader 后台线程在解析到 stop 消息时直接 set 此 event
+        self.stdio.set_stop_event(self._stop_event, asyncio.get_running_loop())
 
         # 上下文管理组件初始化
         # 从 config 读取参数（C++ 端 getLLMConfig 下发，带默认值兜底）
@@ -297,6 +393,10 @@ class AgentRunner:
         # LangGraph 线程配置（固定 thread_id，配合 MemorySaver 支持
         # interrupt/resume；run 与 resume 共用同一 thread 以保持状态）
         self.thread_config = {"configurable": {"thread_id": "agent_session_1"}}
+
+    def stop(self):
+        """用户请求停止——设置 stop_event 中断退避等待。"""
+        self._stop_event.set()
 
     async def _rpc_call(self, tool_call: dict, timeout: float = 60.0) -> dict:
         """通过 stdin/stdout RPC 调用 C++ 侧工具执行器，带超时。"""
@@ -347,30 +447,63 @@ class AgentRunner:
         truncator = self.tool_result_truncator
 
         async def _stream_llm(messages):
-            """流式调用 LLM 并输出 token 到 UI，返回 (累积后的完整 AIMessage, usage_metadata)。
+            """流式调用 LLM 并输出 token 到 UI，返回 (AIMessage, usage_metadata)。
 
-            提取为辅助函数以避免 agent_node 中溢出恢复路径的代码重复
-            （正常路径与重试路径共用同一段流式逻辑）。
-            关键：不能逐 chunk 读 .tool_calls（那是增量 delta，多为 None/部分），
-            必须累积 AIMessageChunk 后从完整消息上读取。
-
-            返回值：collected_chunks（AIMessageChunk，可能为 None）；
-            usage_metadata（dict 或 None，仅当 provider 经 stream_options 回传时非空）。
+            重试逻辑：仅在首个 token 之前重试（stream_yielded 追踪）。
+            首 token 后的错误不重试，直接抛出（D3 决策）。
+            error_type 的 exhausted 映射由 main() 的 catch block 负责（步骤 4）。
             """
-            collected_chunks = None
-            # langchain-openai >= 0.2 经 _should_stream_usage 支持该 kwarg，
-            # 更旧版本静默忽略，不影响流式，仅 usage 为 None。
-            astream_kwargs = {"stream_options": {"include_usage": True}}
-            async for chunk in llm_with_tools.astream(messages, **astream_kwargs):
-                if collected_chunks is None:
-                    collected_chunks = chunk
-                else:
-                    collected_chunks = collected_chunks + chunk  # AIMessageChunk 支持累加
-                # 流式输出 token 给 UI
-                if chunk.content:
-                    await stdio.send_token(chunk.content)
-            usage = getattr(collected_chunks, 'usage_metadata', None) if collected_chunks else None
-            return collected_chunks, usage
+
+            stream_yielded = False  # 闭包变量，追踪是否已推送 token
+
+            async def _call_llm():
+                """每次调用都是一次完整的 LLM 流式请求。"""
+                nonlocal stream_yielded
+                collected_chunks = None
+                # langchain-openai >= 0.2 经 _should_stream_usage 支持该 kwarg，
+                # 更旧版本静默忽略，不影响流式，仅 usage 为 None。
+                astream_kwargs = {"stream_options": {"include_usage": True}}
+                async for chunk in llm_with_tools.astream(messages, **astream_kwargs):
+                    if collected_chunks is None:
+                        collected_chunks = chunk
+                    else:
+                        collected_chunks = collected_chunks + chunk  # AIMessageChunk 支持累加
+                    if chunk.content:
+                        stream_yielded = True
+                        await stdio.send_token(chunk.content)
+                usage = getattr(collected_chunks, 'usage_metadata', None) if collected_chunks else None
+                return collected_chunks, usage
+
+            def _should_retry(exc):
+                """retryable_check 回调：只有首个 token 之前才允许重试（D3 铁律）。
+
+                retry_with_backoff 在每次捕获异常时调用此函数。
+                返回 False 时 retry_with_backoff 直接 raise，不进入退避。
+                """
+                classification = classify_error(exc)
+                if not classification.retryable:
+                    return False
+                if stream_yielded:
+                    return False  # 已推送 token，首 token 后不重试
+                return True
+
+            async def _on_retry(attempt, max_retries, delay_ms, classification):
+                """退避期间发送 retrying 协议消息。"""
+                await stdio.send_retrying(
+                    attempt, max_retries, int(delay_ms),
+                    classification.error_type, classification.user_message
+                )
+
+            # retry_with_backoff 在 _should_retry 返回 False 或重试耗尽时 raise 原始异常。
+            # _stream_llm 不做任何 except 处理——异常直接传播到 main() 的 catch block，
+            # 由 main() 负责分类和 *_exhausted 映射（步骤 4）。
+            return await retry_with_backoff(
+                _call_llm,
+                max_retries=self._max_retries,
+                on_retry=_on_retry,
+                stop_event=self._stop_event,
+                retryable_check=_should_retry,
+            )
 
         async def compact_node(state: MessagesState):
             """上下文压缩节点：在 agent 之前检查并压缩历史。
@@ -590,6 +723,7 @@ class AgentRunner:
         并发送一次 question，且**不**发送 done（等待 user_answer 触发
         resume）；若图正常结束，发送 done。
         """
+        self._stop_event.clear()  # 每轮开始时重置，确保上一轮的 stop 不影响本轮
         # 仅传入新增的 HumanMessage——MemorySaver checkpointer 会维护完整历史
         async for _event in self.graph.astream(
             {"messages": [HumanMessage(user_message)]},
@@ -709,24 +843,42 @@ async def main():
         if msg_type == "user_msg":
             try:
                 await runner.run(msg["content"])
-            except AgentStoppedError:
+            except (AgentStoppedError, RetryAbortedError):
                 logger.info("Agent stopped by user during run")
                 await stdio.send_done()
             except Exception as e:
                 logger.exception("Agent error")
-                await stdio.send_error(f"Agent error: {e}")
+                classification = classify_error(e)
+                if classification.retryable:
+                    error_type = _to_exhausted_error_type(e, classification)
+                else:
+                    error_type = classification.error_type
+                await stdio.send_error(
+                    classification.user_message or str(e),
+                    error_type=error_type,
+                    detail=classification.detail,
+                )
                 await stdio.send_done()
         elif msg_type == "user_answer":
             # 从 interrupt 恢复图执行
             answer = msg.get("answer", "")
             try:
                 await runner.resume(answer)
-            except AgentStoppedError:
+            except (AgentStoppedError, RetryAbortedError):
                 logger.info("Agent stopped by user during resume")
                 await stdio.send_done()
             except Exception as e:
                 logger.exception("Agent resume error")
-                await stdio.send_error(f"Agent resume error: {e}")
+                classification = classify_error(e)
+                if classification.retryable:
+                    error_type = _to_exhausted_error_type(e, classification)
+                else:
+                    error_type = classification.error_type
+                await stdio.send_error(
+                    classification.user_message or str(e),
+                    error_type=error_type,
+                    detail=classification.detail,
+                )
                 await stdio.send_done()
         elif msg_type == "tool_result":
             # 超时后迟到的 tool_result，或已被 _wait_for_result 消费——记日志后忽略

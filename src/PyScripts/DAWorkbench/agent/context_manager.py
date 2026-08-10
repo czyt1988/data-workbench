@@ -465,6 +465,10 @@ class ContextCompactor:
         usage_metadata 可能为 None（provider 不返回时）。
         ContextCompactor 不持 stdio，故 usage 经返回值向上传递
         （由 compact()/force_compact() 透传至调用方发送）。
+
+        摘要调用包裹 retry_with_backoff（max_retries=3），不发 retrying 消息
+        （摘要对用户不可见）。失败后异常由调用方（compact_node / force_compact）
+        的 try/except 兜底。
         """
         history = self._format_history_for_summary(messages)
 
@@ -476,12 +480,25 @@ class ContextCompactor:
 
         prompt = COMPACTION_INSTRUCTION.format(history=history)
 
-        # 用 llm 调用（不绑 tools），设置 max_tokens 限制摘要长度
-        # 注意：llm 是 ChatOpenAI 实例，ainvoke 是异步调用
-        response = await self._llm.ainvoke(
-            [HumanMessage(content=prompt)],
-            config={"max_tokens": self.SUMMARY_MAX_TOKENS}
+        from error_classifier import classify_error
+        from retry_wrapper import retry_with_backoff
+
+        async def _call_summary():
+            response = await self._llm.ainvoke(
+                [HumanMessage(content=prompt)],
+                config={"max_tokens": self.SUMMARY_MAX_TOKENS}
+            )
+            return response
+
+        # 直接调用，不加 try/except——异常由调用方（compact_node / force_compact）的
+        # try/except 兜底。此处 try/except: raise 是死代码，已移除。
+        response = await retry_with_backoff(
+            _call_summary,
+            max_retries=3,  # 摘要调用用较少重试次数
+            on_retry=None,  # 不发 retrying 消息
+            stop_event=None,
         )
+
         summary = response.content if hasattr(response, 'content') else str(response)
         usage = getattr(response, 'usage_metadata', None)
         return summary, usage
