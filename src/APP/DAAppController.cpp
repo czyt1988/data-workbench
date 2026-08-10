@@ -257,6 +257,7 @@ void DAAppController::initialize()
         connect(agent, &DAAgentInterface::agentToolResult, dock, &DAAgentDockWidget::onAgentToolResult);
         connect(agent, &DAAgentInterface::agentQuestion, dock, &DAAgentDockWidget::onAgentQuestion);
         connect(agent, &DAAgentInterface::agentError, dock, &DAAgentDockWidget::onAgentError);
+        connect(agent, &DAAgentInterface::agentRetrying, dock, &DAAgentDockWidget::onAgentRetrying);
         connect(agent, &DAAgentInterface::agentReady, dock, &DAAgentDockWidget::onAgentReady);
         connect(agent, &DAAgentInterface::agentBusy, dock, &DAAgentDockWidget::onAgentBusy);
         connect(agent, &DAAgentInterface::agentSessionLoaded, dock, &DAAgentDockWidget::onAgentSessionLoaded);

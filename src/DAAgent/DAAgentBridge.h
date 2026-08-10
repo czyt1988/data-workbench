@@ -143,8 +143,20 @@ Q_SIGNALS:
     /**
      * @brief agent 发生错误时发射
      * @param message 错误信息
+     * @param errorType 错误类型（quota_exhausted/auth_error/rate_limit_exhausted/...），空表示未知
+     * @param detail 详细错误描述（如原始异常信息），可为空
      */
-    void agentError(const QString& message);
+    void agentError(const QString& message, const QString& errorType = QString(), const QString& detail = QString());
+    /**
+     * @brief agent 正在重试 LLM 调用时发射（Python 端指数退避期间每次重试发一次）
+     * @param attempt 当前重试次数（1-based）
+     * @param maxAttempts 最大重试次数
+     * @param delayMs 本次退避延迟毫秒数
+     * @param errorType 触发重试的错误类型
+     * @param errorMessage 触发重试的错误消息
+     */
+    void agentRetrying(int attempt, int maxAttempts, int delayMs,
+                       const QString& errorType, const QString& errorMessage);
     /**
      * @brief agent 就绪时发射
      * @param model 就绪的模型名称

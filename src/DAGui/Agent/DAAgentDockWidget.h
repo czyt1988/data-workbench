@@ -95,8 +95,20 @@ public Q_SLOTS:
     /**
      * @brief 处理 Agent 错误信号
      * @param message 错误信息
+     * @param errorType 错误类型（quota_exhausted/auth_error/...），空表示未知
+     * @param detail 详细错误描述（如原始异常信息），可为空
      */
-    void onAgentError(const QString& message);
+    void onAgentError(const QString& message, const QString& errorType = QString(), const QString& detail = QString());
+
+    /**
+     * @brief 处理 Agent 重试信号（LLM 调用指数退避期间）
+     * @param attempt 当前重试次数
+     * @param maxAttempts 最大重试次数
+     * @param delayMs 本次退避延迟毫秒数
+     * @param errorType 触发重试的错误类型
+     * @param errorMessage 触发重试的错误消息
+     */
+    void onAgentRetrying(int attempt, int maxAttempts, int delayMs, const QString& errorType, const QString& errorMessage);
 
     /**
      * @brief 处理 Agent 就绪信号
@@ -210,6 +222,9 @@ private:
     void rebuildTokenMenu(int inT, int outT, int tot, int window, const QString& source);
     /// 复位 token 控件到无活跃会话初始态（进度条 0%、标签 "tokens: -"、菜单清空）
     void resetTokenStats();
+
+    /// 根据 errorType 映射错误消息为翻译后的用户文案（plan-03 step8）
+    QString mapErrorMessage(const QString& original, const QString& errorType) const;
 
     QWebEngineView* m_webView;
     DAAgentWebChannel* m_channel;

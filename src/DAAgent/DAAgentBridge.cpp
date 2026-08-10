@@ -302,8 +302,25 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
         emit agentQuestion(msg["text"].toString(),
                            msg["options"].toVariant().toStringList(),
                            msg.value("multi_select").toBool(false));
+    } else if (type == "retrying") {
+        // Python 端指数退避重试期间每次重试发一次 retrying 消息，不触发 agentBusy
+        // 状态变化——busy 状态已在 sendMessage 时设为 true，重试期间保持 true
+        emit agentRetrying(
+            msg["attempt"].toInt(),
+            msg["max_attempts"].toInt(),
+            msg["delay_ms"].toInt(),
+            msg["error_type"].toString(),
+            msg["error_message"].toString()
+        );
     } else if (type == "error") {
-        emit agentError(msg["message"].toString());
+        // D9: error 消息增强为携带 error_type，用于 C++ 端选择用户文案
+        QString errorType = msg.value("error_type").toString();
+        QString detail    = msg.value("detail").toString();
+        // Gap A 修复：error 消息也重置 busy 状态（防 Python 发 error 不发 done 时 UI 卡死）
+        // 但注意：Python 的 main() catch block 总是 error + done 连续发送，
+        // done 分支也会 emit agentBusy(false)，所以这里 emit 是双保险
+        emit agentError(msg["message"].toString(), errorType, detail);
+        emit agentBusy(false);
     } else if (type == "usage") {
         // plan-01 独立 send_usage 消息（如摘要生成的 usage_metadata）。
         // 字段缺失/类型错误时 toInt(0) 兜底，发 0 不崩溃。

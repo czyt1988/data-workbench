@@ -86,6 +86,24 @@ public:
     void appendQuestion(const QString& text, const QStringList& options, bool multiSelect);
 
     /**
+     * @brief 显示重试状态条（LLM 调用重试期间）
+     * @param attempt 当前重试次数（1-based）
+     * @param maxAttempts 最大重试次数
+     * @param delayMs 本次退避延迟毫秒数
+     * @param errorType 触发重试的错误类型
+     * @param errorMessage 触发重试的错误消息
+     */
+    void showRetryStatus(int attempt, int maxAttempts, int delayMs,
+                         const QString& errorType, const QString& errorMessage);
+
+    /**
+     * @brief 追加错误信息到聊天界面（独立错误卡片）
+     * @param message 错误消息（经 mapErrorMessage 映射后的用户文案）
+     * @param errorType 错误类型（用于 JS 端样式/图标选择）
+     */
+    void appendError(const QString& message, const QString& errorType);
+
+    /**
      * @brief 清空聊天界面
      */
     void clearChat();

@@ -158,7 +158,10 @@ Q_SIGNALS:
     /// agent 向用户提问时发射
     void agentQuestion(const QString& text, const QStringList& options, bool multiSelect);
     /// agent 发生错误时发射
-    void agentError(const QString& message);
+    void agentError(const QString& message, const QString& errorType = QString(), const QString& detail = QString());
+    /// agent 正在重试 LLM 调用时发射（Python 端指数退避期间每次重试发一次）
+    void agentRetrying(int attempt, int maxAttempts, int delayMs,
+                       const QString& errorType, const QString& errorMessage);
     /// agent 就绪时发射
     void agentReady(const QString& model);
     /// agent 忙碌状态变化时发射

@@ -366,6 +366,10 @@ void DAAgentModule::connectSignals()
         m_pendingToolCallUuids.clear();
         m_agentBusy = false;
     });
+    // 转发 agentRetrying 信号到接口（plan-03 step6）
+    connect(m_bridge, &DAAgentBridge::agentRetrying, this, [this](int attempt, int maxAttempts, int delayMs, const QString& errorType, const QString& errorMessage) {
+        emit agentRetrying(attempt, maxAttempts, delayMs, errorType, errorMessage);
+    });
 }
 
 QString DAAgentModule::detectPythonExePath() const

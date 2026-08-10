@@ -244,15 +244,26 @@ void DAAgentDockWidget::onAgentQuestion(const QString& text, const QStringList& 
     }
 }
 
-void DAAgentDockWidget::onAgentError(const QString& message)
+void DAAgentDockWidget::onAgentError(const QString& message, const QString& errorType, const QString& detail)
 {
-    // MAJOR1(round-6): agentError 路径也复位 m_switching=false。
+    Q_UNUSED(detail);
     // switchSession 后若 load_session 失败走 agentError 而非 session_loaded，
-    // 不复位会冻结后续渲染（守卫永真）。onAgentError 本身不被 m_switching 跳过。
+    // 不复位 m_switching 会冻结后续渲染（守卫永真）——沿用现有逻辑
     m_switching = false;
+    // 根据 errorType 选择用户文案
+    QString displayMessage = mapErrorMessage(message, errorType);
+    // 调用 chat.js 渲染错误（standalone error card，由 plan-06 实现）
     if (m_channel) {
-        m_channel->appendToken(QStringLiteral("**Error:** ") + message);
-        m_channel->finalizeAgentMessage(QStringLiteral("**Error:** ") + message);
+        m_channel->appendError(displayMessage, errorType);
+    }
+}
+
+void DAAgentDockWidget::onAgentRetrying(int attempt, int maxAttempts, int delayMs,
+                                         const QString& errorType, const QString& errorMessage)
+{
+    // 通过 WebChannel 调用 chat.js 的 showRetryStatus
+    if (m_channel) {
+        m_channel->showRetryStatus(attempt, maxAttempts, delayMs, errorType, errorMessage);
     }
 }
 
@@ -465,6 +476,43 @@ void DAAgentDockWidget::rebuildTokenMenu(int inT, int outT, int tot,
     m_tokenMenu->addAction(tr("window: %1").arg(window > 0 ? window : -1));  // cn:窗口：
     m_tokenMenu->addSeparator();
     m_tokenMenu->addAction(tr("source: %1").arg(source.isEmpty() ? tr("unknown") : source));  // cn:来源：
+}
+
+QString DAAgentDockWidget::mapErrorMessage(const QString& original, const QString& errorType) const
+{
+    // 按 error_type 选择翻译后的用户文案
+    if (errorType == "quota_exhausted") {
+        return tr("API quota exhausted, please check account balance or change API key"); //cn:API 配额已耗尽，请检查账户余额或更换 API Key
+    }
+    if (errorType == "auth_error") {
+        return tr("API key invalid or expired, please check settings"); //cn:API Key 无效或已过期，请在设置中检查配置
+    }
+    if (errorType == "rate_limit_exhausted") {
+        return tr("Failed after %1 retries: rate limited").arg(7); //cn:重试 7 次后仍失败：服务限流
+    }
+    if (errorType == "network_exhausted") {
+        return tr("Failed after %1 retries: network error").arg(7); //cn:重试 7 次后仍失败：网络错误
+    }
+    if (errorType == "server_error_exhausted") {
+        return tr("Failed after %1 retries: server error").arg(7); //cn:重试 7 次后仍失败：服务器错误
+    }
+    if (errorType == "bad_request") {
+        return tr("Request format error: %1").arg(original); //cn:请求格式错误：%1
+    }
+    if (errorType == "context_overflow") {
+        return tr("Context window exceeded and compaction failed"); //cn:上下文窗口超限且压缩失败
+    }
+    if (errorType == "timeout") {
+        return tr("Agent response timeout (no activity for %1 minutes)").arg(4); //cn:Agent 响应超时（%1 分钟无活动）
+    }
+    if (errorType == "crash_recovery") {
+        return tr("Agent process crashed, recovering... (%1/3)").arg(1); //cn:Agent 进程异常退出，正在恢复... (%1/3)
+    }
+    if (errorType == "crash_exhausted") {
+        return tr("Agent process crashed repeatedly, unable to recover"); //cn:Agent 进程多次崩溃，无法恢复
+    }
+    // unknown 或空
+    return tr("Agent error: %1").arg(original); //cn:Agent 错误：%1
 }
 
 } // namespace DA

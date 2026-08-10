@@ -116,6 +116,24 @@ void DAAgentWebChannel::appendQuestion(const QString& text, const QStringList& o
                     multiSelect ? QStringLiteral("true") : QStringLiteral("false")));
 }
 
+void DAAgentWebChannel::showRetryStatus(int attempt, int maxAttempts, int delayMs,
+                                         const QString& errorType, const QString& errorMessage)
+{
+    callJS(QString("showRetryStatus(%1, %2, %3, \"%4\", \"%5\")")
+        .arg(attempt)
+        .arg(maxAttempts)
+        .arg(delayMs)
+        .arg(toJsString(errorType))
+        .arg(toJsString(errorMessage)));
+}
+
+void DAAgentWebChannel::appendError(const QString& message, const QString& errorType)
+{
+    callJS(QString("appendError(\"%1\", \"%2\")")
+        .arg(toJsString(message))
+        .arg(toJsString(errorType)));
+}
+
 void DAAgentWebChannel::clearChat()
 {
     callJS(QStringLiteral("clearChat()"));
