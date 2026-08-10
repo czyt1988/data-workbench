@@ -334,8 +334,46 @@ void DAAgentModule::connectSignals()
     // interface::sendUserAnswer 单次调用即完成持久化+协议转发，无双重持久化。
     // （sendUserAnswer 是方法非信号，PMF 指向虚方法，Qt5+ 合法。）
 
+    // ---- 崩溃恢复：sessionRestoreRequested → 从 SessionStore 读取并下发 load_session ----
+    connect(m_bridge, &DAAgentBridge::sessionRestoreRequested, this, [this](const QString& sessionId) {
+        // 从 SessionStore 读取历史消息
+        if (m_sessionStore) {
+            QJsonArray messages = m_sessionStore->readMessagesForLoad(sessionId);
+            m_bridge->sendLoadSession(sessionId, messages);
+            // load_session 后 Python 回 session_loaded，经 agentSessionLoaded 信号
+            // 在 agentSessionLoaded 的恢复 lambda 中重发最后消息
+        }
+    });
+
     // ---- 常驻 ready/busy/done/error 槽（plan-03，替代一次性 QMetaObject::Connection，
     //      避免多次连接泄漏与 ready 永不到达时堆泄漏） ----
+
+    // 崩溃恢复：agentReady 恢复路径（必须在现有 pending lambda 之前 connect，
+    // 以便在 pending lambda 清空 m_pendingLoadSessionId 之前检测到它）
+    connect(m_bridge, &DAAgentBridge::agentReady, this, [this](const QString&) {
+        if (!m_bridge->isRecovering()) {
+            return;  // 非恢复路径，交给现有逻辑
+        }
+        // switchSession 懒启动期间崩溃：m_pendingLoadSessionId 非空表示有待处理的会话切换，
+        // 现有 pending lambda 会处理 load_session。恢复 lambda 不介入，避免：
+        //   1. double load_session（pending lambda + 恢复 lambda 各发一次）
+        //   2. 向错误会话重发上一会话的用户消息（agentSessionLoaded lambda 的 resendLastMessage）
+        // 清除 m_recovering 使后续 agentSessionLoaded lambda 不触发 resendLastMessage
+        if (!m_pendingLoadSessionId.isEmpty()) {
+            m_bridge->setRecovering(false);
+            return;
+        }
+        // 恢复路径：恢复会话历史或直接重发
+        if (!m_bridge->lastSessionId().isEmpty()) {
+            // 有会话——触发 Module 侧 load_session（经 sessionRestoreRequested → sendLoadSession）
+            emit m_bridge->sessionRestoreRequested(m_bridge->lastSessionId());
+        } else {
+            // 无会话——直接重发最后消息
+            m_bridge->resendLastMessage();
+        }
+    });
+
+    // switchSession 懒启动 pending lambda（ready 到达后下发 load_session）
     connect(m_bridge, &DAAgentBridge::agentReady, this, [this](const QString&) {
         // MAJOR9：switchSession 懒启动分支缓存 pending 于此，ready 到达后下发 load_session。
         // 覆盖语义天然处理快速连续切换 A→B→C（只保留最后一次 pending）。
@@ -369,6 +407,15 @@ void DAAgentModule::connectSignals()
     // 转发 agentRetrying 信号到接口（plan-03 step6）
     connect(m_bridge, &DAAgentBridge::agentRetrying, this, [this](int attempt, int maxAttempts, int delayMs, const QString& errorType, const QString& errorMessage) {
         emit agentRetrying(attempt, maxAttempts, delayMs, errorType, errorMessage);
+    });
+
+    // ---- 崩溃恢复：agentSessionLoaded 时重发最后消息 ----
+    // 如果是崩溃恢复路径，session_loaded 后重发最后一条用户消息。
+    // isRecovering() 必须在 resendLastMessage 重置 m_recovering 之前判断。
+    connect(m_bridge, &DAAgentBridge::agentSessionLoaded, this, [this](const QString&) {
+        if (m_bridge->isRecovering()) {
+            m_bridge->resendLastMessage();
+        }
     });
 }
 

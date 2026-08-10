@@ -104,6 +104,25 @@ public:
      * @return 若子进程正在运行返回 true
      */
     bool isRunning() const { return m_running; }
+    /**
+     * @brief 检查是否处于崩溃恢复流程中
+     * @return 若正在崩溃恢复返回 true
+     */
+    bool isRecovering() const { return m_recovering; }
+    /**
+     * @brief 设置崩溃恢复标志
+     * @param v 是否处于崩溃恢复
+     */
+    void setRecovering(bool v) { m_recovering = v; }
+    /**
+     * @brief 获取当前会话 ID（供崩溃恢复时 load_session 用）
+     * @return 当前会话 ID
+     */
+    QString lastSessionId() const { return m_lastSessionId; }
+    /**
+     * @brief 崩溃恢复后重发最后一条用户消息
+     */
+    void resendLastMessage();
 
 Q_SIGNALS:
     /**
@@ -184,16 +203,26 @@ Q_SIGNALS:
      * @brief agent 本轮处理完成时发射
      */
     void agentDone();
+    /**
+     * @brief 崩溃恢复时请求 Module 从 SessionStore 读取会话历史并下发 load_session
+     * @param sessionId 需要恢复的会话 ID
+     */
+    void sessionRestoreRequested(const QString& sessionId);
 
 private Q_SLOTS:
     void onReadyReadStandardOutput();
     void onReadyReadStandardError();
     void onProcessFinished(int exitCode, QProcess::ExitStatus status);
+    void onInactivityTimeout();
 
 private:
     void handleJsonLine(const QJsonObject& msg);
     bool writeJson(const QJsonObject& msg);
     void executeTool(const QString& callId, const QString& toolName, const QJsonObject& args);
+    void startInactivityTimer();
+    void recoverFromCrash();
+    // RAII guard for tool execution watchdog management (defined in .cpp)
+    friend struct ToolExecGuard;
 
     QProcess* m_process = nullptr;
     bool m_running = false;
@@ -206,5 +235,19 @@ private:
     int m_stopTimeoutMs  = 5000;       // stopAgent 等待进程退出超时(毫秒),由 startAgent 参数注入
     bool m_userRequestedStop = false;  // 用户主动终止标志,抑制 onProcessFinished 中的异常退出错误
     QTimer* m_stopTimer = nullptr;     // requestStop 的非阻塞 kill 计时器
+    // —— 无活动看门狗 ——
+    QTimer* m_inactivityTimer = nullptr;  // 无活动超时计时器
+    int m_inactivityTimeoutMs = 240000;    // 默认 4 分钟
+    bool m_toolExecuting = false;           // 工具执行期间暂停看门狗
+    bool m_turnActive = false;              // 对话进行中标志（sendMessage 置 true，done/error 置 false）
+    QString m_lastUserMessage;              // 记录最后用户消息（崩溃恢复时重发）
+    // —— 子进程崩溃恢复 ——
+    int m_restartCount = 0;                 // 当前重启次数
+    int m_maxRestarts = 3;                   // 最大重启次数
+    QString m_lastSessionId;                 // 当前会话 ID（sendLoadSession 赋值，startAgent 清空，崩溃恢复时 load_session 用）
+    bool m_recovering = false;               // 是否处于崩溃恢复流程中（agentReady 槽据此判断是否走恢复路径）
+    QJsonObject m_savedLlmConfig;            // 启动参数缓存（崩溃恢复时复用）
+    QJsonArray m_savedToolSpecs;
+    QString m_savedSystemPrompt;
 };
 } // namespace DA

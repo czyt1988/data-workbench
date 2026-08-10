@@ -11,7 +11,12 @@
 namespace DA
 {
 
-DAAgentBridge::DAAgentBridge(QObject* parent) : QObject(parent) {}
+DAAgentBridge::DAAgentBridge(QObject* parent) : QObject(parent)
+{
+    m_inactivityTimer = new QTimer(this);
+    m_inactivityTimer->setSingleShot(true);
+    connect(m_inactivityTimer, &QTimer::timeout, this, &DAAgentBridge::onInactivityTimeout);
+}
 
 DAAgentBridge::~DAAgentBridge()
 {
@@ -26,6 +31,20 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
                                int readyTimeoutMs,
                                int stopTimeoutMs)
 {
+    // 保存启动参数（崩溃恢复时复用）
+    m_savedLlmConfig   = llmConfig;
+    m_savedToolSpecs    = toolSpecs;
+    m_savedSystemPrompt = systemPrompt;
+    // 从 config 读取看门狗和重启参数（plan-05 在 getLLMConfig 中添加这些 key）
+    m_inactivityTimeoutMs = llmConfig.value("inactivity_timeout_sec").toInt(240) * 1000;
+    m_maxRestarts         = llmConfig.value("max_subprocess_restarts").toInt(3);
+    // 全新启动时重置崩溃恢复状态（recoverFromCrash 调用时 m_recovering=true，跳过重置）
+    if (!m_recovering) {
+        m_restartCount = 0;
+        m_lastSessionId.clear();  // 全新启动不应记住旧会话
+        m_userRequestedStop = false;  // 清除可能残留的主动停止标志
+    }
+
     m_readyTimeoutMs = readyTimeoutMs;
     m_stopTimeoutMs  = stopTimeoutMs;
     // 清理上一次的 ready 超时计时器(若存在)
@@ -114,6 +133,7 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
 
 void DAAgentBridge::stopAgent()
 {
+    m_inactivityTimer->stop();
     // 停止 ready 超时计时器(若还在等待)
     if (m_readyTimer) {
         m_readyTimer->stop();
@@ -121,6 +141,7 @@ void DAAgentBridge::stopAgent()
         m_readyTimer = nullptr;
     }
     if (m_running && m_process) {
+        m_userRequestedStop = true;  // 标记主动停止，防止 onProcessFinished 误判为崩溃
         writeJson(QJsonObject{{"type", "stop"}});
         m_process->waitForFinished(m_stopTimeoutMs);  // 可配超时(默认 5s)
         if (m_process->state() != QProcess::NotRunning) {
@@ -132,6 +153,7 @@ void DAAgentBridge::stopAgent()
 
 void DAAgentBridge::requestStop()
 {
+    m_inactivityTimer->stop();
     // 停止 ready 超时计时器(若还在等待)
     if (m_readyTimer) {
         m_readyTimer->stop();
@@ -183,12 +205,16 @@ bool DAAgentBridge::writeJson(const QJsonObject& obj)
 
 void DAAgentBridge::sendMessage(const QString& text)
 {
+    m_lastUserMessage = text;   // 记录用于崩溃恢复
+    m_turnActive = true;        // 标记对话进行中
+    m_restartCount = 0;         // 正常发消息时重置崩溃恢复计数
     // 用户发消息后 agent 进入"思考中"状态——此处统一发射 agentBusy(true)。
     emit agentBusy(true);
     QJsonObject msg;
     msg["type"]    = "user_msg";
     msg["content"] = text;
     writeJson(msg);
+    startInactivityTimer();     // 启动看门狗
 }
 
 void DAAgentBridge::sendToolResult(const QString& callId, const QJsonObject& result)
@@ -210,6 +236,7 @@ void DAAgentBridge::sendUserAnswer(const QString& answer)
 
 void DAAgentBridge::sendLoadSession(const QString& sessionId, const QJsonArray& messages)
 {
+    m_lastSessionId = sessionId;  // 记录当前会话 ID，供崩溃恢复时 load_session 用
     // 与 sendMessage 的区别：不 emit agentBusy——load_session 不是一轮对话，
     // UI 忙碌态由调用方（plan-03 switchSession）自行管理。writeJson 内部
     // 守卫 state()==Running，进程未运行时静默返回 false 不 emit agentError；
@@ -257,6 +284,13 @@ void DAAgentBridge::onReadyReadStandardOutput()
 
 void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
 {
+    // 任意协议消息到达——重置无活动看门狗
+    // 仅在对话进行中（m_turnActive）且非工具执行期间才 reset，
+    // 避免 ready/booting/session_loaded 等空闲期消息误启动计时器杀死空闲 agent
+    if (!m_toolExecuting && m_turnActive) {
+        startInactivityTimer();
+    }
+
     QString type = msg["type"].toString();
     if (type == "booting") {
         // 子进程已启动、正在导入重模块(langchain_openai 冷启动 ~16s)。
@@ -319,6 +353,8 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
         // Gap A 修复：error 消息也重置 busy 状态（防 Python 发 error 不发 done 时 UI 卡死）
         // 但注意：Python 的 main() catch block 总是 error + done 连续发送，
         // done 分支也会 emit agentBusy(false)，所以这里 emit 是双保险
+        m_inactivityTimer->stop();
+        m_turnActive = false;
         emit agentError(msg["message"].toString(), errorType, detail);
         emit agentBusy(false);
     } else if (type == "usage") {
@@ -335,15 +371,32 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
         QString sid = msg.value("session_id").toString();
         emit agentSessionLoaded(sid);
     } else if (type == "done") {
+        m_inactivityTimer->stop();
+        m_turnActive = false;
         emit agentBusy(false);
         emit agentDone();
     }
 }
 
+// RAII guard：工具执行期间暂停无活动看门狗，析构时恢复
+struct ToolExecGuard {
+    DAAgentBridge* self;
+    ToolExecGuard(DAAgentBridge* s) : self(s) {
+        self->m_toolExecuting = true;
+        self->m_inactivityTimer->stop();
+    }
+    ~ToolExecGuard() {
+        self->m_toolExecuting = false;
+        self->startInactivityTimer();  // sendToolResult 后 Python 会继续工作
+    }
+};
+
 void DAAgentBridge::executeTool(const QString& callId,
                                 const QString& toolName,
                                 const QJsonObject& args)
 {
+    ToolExecGuard guard(this);  // RAII：暂停看门狗，覆盖所有 return 路径
+
     QJsonObject result;
 
     // 1. 查找工具（Bridge 持有 m_tools，由 DAAgentModule::registerTool → setTools 填充）
@@ -382,7 +435,7 @@ void DAAgentBridge::executeTool(const QString& callId,
 
 void DAAgentBridge::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    // 停止 ready 超时计时器(进程已退出，无需再等)
+    // 1. 停止 ready 超时计时器(进程已退出，无需再等)
     if (m_readyTimer) {
         m_readyTimer->stop();
         m_readyTimer->deleteLater();
@@ -394,9 +447,10 @@ void DAAgentBridge::onProcessFinished(int exitCode, QProcess::ExitStatus exitSta
     daDebug << "Agent process finished: exitCode=" << exitCode
             << " exitStatus=" << (exitStatus == QProcess::NormalExit ? "NormalExit" : "CrashExit");
 
-    // 排空残留缓冲——若最后一个 stdout chunk 与 finished 信号几乎同时到达，
+    // 2. 排空残留缓冲——若最后一个 stdout chunk 与 finished 信号几乎同时到达，
     // onReadyReadStandardOutput 可能留下未以 '\n' 结尾的完整行；不在此排空会丢失
     // 这部分消息（如最后的 message_end / done）。
+    // 注意：排空可能调用 handleJsonLine（其中 done/error 会停止 inactivityTimer）
     if (!m_stdoutBuffer.isEmpty()) {
         QByteArray lastLine = m_stdoutBuffer;
         m_stdoutBuffer.clear();
@@ -413,23 +467,63 @@ void DAAgentBridge::onProcessFinished(int exitCode, QProcess::ExitStatus exitSta
         }
     }
 
+    // 3. 停止 inactivityTimer——必须在排空之后，避免排空消息重启计时器后又遗漏停止
+    m_inactivityTimer->stop();
+    m_toolExecuting = false;  // 重置工具执行标志，确保恢复从干净状态开始
+    m_turnActive = false;     // 对话中断，重置对话进行中标志
+
     m_running = false;
-    if (m_userRequestedStop) {
-        // 用户主动终止——不报异常退出错误，仅记日志
-        m_userRequestedStop = false;
-        daDebug << "Agent process stopped by user request";
-    } else if (exitStatus != QProcess::NormalExit || exitCode != 0) {
-        // 子进程崩溃/异常退出——转发到 UI 聊天面板显示
-        emit agentError(tr("Agent 进程异常退出，代码: %1").arg(exitCode));
-    }
-    // 停止 stop 计时器(进程已退出)
+
+    bool wasUserStop = m_userRequestedStop;
+    m_userRequestedStop = false;
+
+    // 4. 停止 stop 计时器(进程已退出)
     if (m_stopTimer) {
         m_stopTimer->stop();
         m_stopTimer->deleteLater();
         m_stopTimer = nullptr;
     }
-    // 恢复 UI 为可输入状态
-    emit agentBusy(false);
+
+    if (wasUserStop) {
+        m_recovering = false;
+        daDebug << "Agent process stopped by user request";
+        emit agentBusy(false);
+        return;
+    }
+
+    if (exitStatus == QProcess::NormalExit && exitCode == 0) {
+        m_recovering = false;
+        emit agentBusy(false);
+        return;
+    }
+
+    // —— 异常退出：尝试自动恢复 ——
+
+    if (m_restartCount < m_maxRestarts) {
+        m_restartCount++;
+        emit agentError(
+            tr("Agent process crashed (exit code %1), recovering... (%2/%3)")
+                //cn:Agent 进程异常退出（代码 %1），正在恢复... (%2/%3)
+                .arg(exitCode)
+                .arg(m_restartCount)
+                .arg(m_maxRestarts),
+            "crash_recovery", ""
+        );
+
+        // 延迟 1 秒后重启（避免崩溃循环过快）
+        QTimer::singleShot(1000, this, [this]() {
+            recoverFromCrash();
+        });
+    } else {
+        m_recovering = false;
+        emit agentError(
+            tr("Agent process crashed repeatedly (%1 times), please restart the application")
+                //cn:Agent 进程多次异常退出（%1 次），请重启程序
+                .arg(m_maxRestarts),
+            "crash_exhausted", ""
+        );
+        emit agentBusy(false);
+    }
 }
 
 void DAAgentBridge::onReadyReadStandardError()
@@ -441,6 +535,62 @@ void DAAgentBridge::onReadyReadStandardError()
     // 仅把关键错误转发到 UI，避免刷屏
     if (data.contains("Traceback") || data.contains("Error")) {
         emit agentError(QString::fromUtf8(data).trimmed());
+    }
+}
+
+void DAAgentBridge::onInactivityTimeout()
+{
+    // 4 分钟无活动——通知 Python 优雅停止
+    // 注意：有意先发 error 后 requestStop——让用户更快看到超时提示。
+    // 功能等价：requestStop 最终触发 onProcessFinished 的 wasUserStop 分支（无重复 error）
+    emit agentError(
+        tr("Agent response timeout (no activity for %1 minutes)") //cn:Agent 响应超时（%1 分钟无活动）
+            .arg(m_inactivityTimeoutMs / 60000),
+        "timeout", ""
+    );
+    // 发 stop 消息让 Python 优雅退出
+    requestStop();
+}
+
+void DAAgentBridge::startInactivityTimer()
+{
+    if (m_inactivityTimeoutMs > 0 && m_running) {
+        m_inactivityTimer->start(m_inactivityTimeoutMs);
+    }
+}
+
+void DAAgentBridge::recoverFromCrash()
+{
+    // 标记恢复流程——startAgent 据此跳过 m_restartCount/m_lastSessionId 重置，
+    // 现有 agentReady 持久连接据此判断是否走恢复路径（见步骤 3.5）
+    m_recovering = true;
+
+    // 直接复用现有 startAgent——它已封装：
+    //   - 旧进程清理（disconnect + kill + deleteLater）
+    //   - 新 QProcess 创建 + connect 信号
+    //   - init 消息发送
+    //   - m_readyTimer 创建（new QTimer + setSingleShot + connect timeout + start）
+    //   - m_pythonExePath / m_agentScriptPath / m_readyTimeoutMs / m_stopTimeoutMs 保存
+    // 避免重复实现整套启动序列（旧版本手动重建 m_readyTimer 会空指针解引用）
+    startAgent(m_savedLlmConfig, m_savedToolSpecs, m_savedSystemPrompt,
+               m_pythonExePath, m_agentScriptPath,
+               m_readyTimeoutMs, m_stopTimeoutMs);
+
+    // ready 消息到达后，现有 agentReady 处理逻辑检查 m_recovering 标志，
+    // 触发会话恢复 + 重发最后消息（见步骤 3.5），无需一次性连接
+}
+
+void DAAgentBridge::resendLastMessage()
+{
+    m_recovering = false;
+    if (!m_lastUserMessage.isEmpty()) {
+        m_turnActive = true;
+        emit agentBusy(true);
+        writeJson(QJsonObject{{"type", "user_msg"}, {"content", m_lastUserMessage}});
+        startInactivityTimer();
+    } else {
+        m_turnActive = false;
+        emit agentBusy(false);
     }
 }
 
