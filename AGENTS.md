@@ -1,10 +1,5 @@
 # data-workbench 项目指南
 
-**Generated:** 2026-04-28
-**Updated:** 2026-06-14
-**Commit:** `9676dc3`
-**Branch:** `workflow-rebuild`
-
 ## OVERVIEW
 
 AI Agent 驱动的数据分析工作平台 — C++17/Qt 有向图工作流引擎 + 内嵌 Python (pandas/numpy) + 交互式图表。核心栈: Qt 5.14+/6, pybind11, SARibbon, qwt, Qt-Advanced-Docking-System。
@@ -15,6 +10,7 @@ AI Agent 驱动的数据分析工作平台 — C++17/Qt 有向图工作流引擎
 - GUI 封装 pandas 核心功能，无需编程即可操作
 - 交互式图表编辑，生成论文级别矢量图
 - 插件化架构，易于扩展自定义功能
+- 集成agent，实现ai分析
 
 ## STRUCTURE
 
@@ -121,7 +117,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 
 1. **上层可以依赖下层，下层绝不能依赖上层。**（✅ DAGui → DAUtils；❌ DAUtils → DAGui）
 2. **同层模块尽量减少直接依赖**，通过上层整合模块（DAGui）协调。
-3. **Python 相关模块**仅在 `DA_ENABLE_PYTHON=ON` 时编译。
+3. **APP层是顶层，用于桥接各个层数据和信号**，不要把过多逻辑在APP层实现而是下沉到各个库，抽象对应功能
 4. **DAShared 是纯头文件库**，无需显式 CMake 链接。
 
 ### AI 开发检查清单
@@ -181,7 +177,6 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | `dawork-config.xml` | `%APPDATA%\DAWorkBench\config\` | DAAppConfig XML 配置（非日志，但常用于诊断持久化问题） |
 | `agent-config.ini` | `%APPDATA%\DAWorkBench\config\` | Agent LLM 配置（base_url/model/api_key/超时），QSettings IniFormat，api_key 为 DPAPI 加密的 QByteArray（@ByteArray 注解） |
 | `recent-files.ini` | `%APPDATA%\DAWorkBench\config\` | 最近打开文件列表，QSettings IniFormat |
-| `dump*.dmp` | `%APPDATA%\DAWorkBench\dumps\` | 崩溃转储文件（由 `DADumpCapture` 生成） |
 
 > Linux/macOS 上 `AppDataLocation` 解析为 `~/.local/share/DAWorkBench/` 或 `~/Library/Application Support/DAWorkBench/`。跨平台读取时优先用环境变量（`%APPDATA%` / `$XDG_DATA_HOME` / `~/Library/Application Support`）拼接 `DAWorkBench/log/`。
 

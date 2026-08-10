@@ -12,8 +12,8 @@ cmake_minimum_required(VERSION 3.10)
 # 版本定义
 ########################################################
 set(DA_VERSION_MAJOR 0)
-set(DA_VERSION_MINOR 0)
-set(DA_VERSION_PATCH 5)
+set(DA_VERSION_MINOR 1)
+set(DA_VERSION_PATCH 1)
 set(DA_VERSION "${DA_VERSION_MAJOR}.${DA_VERSION_MINOR}.${DA_VERSION_PATCH}")
 string(TIMESTAMP DA_COMPILE_DATETIME %y%m%d)
 string(TIMESTAMP DA_COMPILE_DATETIME_YEAR %y)

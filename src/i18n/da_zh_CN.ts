@@ -174,31 +174,21 @@
 <context>
     <name>DA::DAAgentDockWidget</name>
     <message>
-        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+51"/>
-        <source>Session</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Rename</source>
-        <translation type="unfinished">重命名</translation>
-    </message>
-    <message>
-        <location line="+31"/>
-        <location line="+177"/>
+        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+89"/>
+        <location line="+174"/>
         <location line="+19"/>
-        <location line="+95"/>
+        <location line="+80"/>
         <source>Ready</source>
         <translation type="unfinished">启动完成</translation>
     </message>
     <message>
-        <location line="-266"/>
+        <location line="-248"/>
         <source>Type a message... (Ctrl+Enter to send)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+150"/>
+        <location line="+147"/>
         <location line="+20"/>
         <source>Send</source>
         <translation type="unfinished"></translation>
@@ -219,22 +209,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+48"/>
-        <source>Rename Session</source>
+        <location line="-217"/>
+        <source>Session Manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>New title:</source>
+        <location line="+2"/>
+        <source>New Session</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+289"/>
         <source>tokens: %1 / %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+65"/>
         <source>tokens: -</source>
         <translation type="unfinished"></translation>
     </message>
@@ -244,7 +234,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+26"/>
         <source>input: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7203,6 +7193,80 @@ Config</source>
         <location line="+60"/>
         <source>Exception occurred during extraction from pandas.Series to double vector: %1</source>
         <translation>从pandas.Series提取为double vector过程中出现异常:%1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogAgentSessionManager</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogAgentSessionManager.cpp" line="+42"/>
+        <source>Session Manager</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Double-click a session to switch:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Updated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Switch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Rename</source>
+        <translation type="unfinished">重命名</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete</source>
+        <translation type="unfinished">删除</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Close</source>
+        <translation type="unfinished">收盘</translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <location line="+108"/>
+        <source>(untitled)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-9"/>
+        <source>Rename Session</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>New title:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Delete Session</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete session &quot;%1&quot;? This cannot be undone.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
