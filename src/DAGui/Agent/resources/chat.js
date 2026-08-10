@@ -208,6 +208,10 @@ function appendUserMessage(text) {
 }
 
 function appendToken(text) {
+    // 重试成功——隐藏重试状态条
+    if (retryStatusBar) {
+        hideRetryStatus();
+    }
     // Agent 文本恢复——关闭当前工具分组，使后续工具调用开启新分组。
     // 这样被 agent 叙述分隔的两组工具调用各自成组，而非混在一起。
     if (currentToolGroup) closeToolGroup();
@@ -229,6 +233,10 @@ function appendToken(text) {
 }
 
 function finalizeAgentMessage(fullText) {
+    // 重试/流结束——隐藏重试状态条
+    if (retryStatusBar) {
+        hideRetryStatus();
+    }
     // 消息结束，立即做最终渲染（取消未触发的防抖）
     if (renderTimer) {
         clearTimeout(renderTimer);
@@ -354,6 +362,7 @@ function appendQuestion(text, options, submitLabel, customPlaceholder, multiSele
 }
 
 function clearChat() {
+    hideRetryStatus();
     if (renderTimer) {
         clearTimeout(renderTimer);
         renderTimer = null;
@@ -449,6 +458,147 @@ function escapeHtml(text) {
     let div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// —— 重试状态条 + 错误消息渲染（plan-06）——
+// 被 C++ DAAgentWebChannel::callJS 调用：
+//   showRetryStatus(attempt, maxAttempts, delayMs, errorType, errorMessage)
+//   appendError(message, errorType)
+// 重试成功（token 到达）或失败（error 到达）时由 appendToken/finalizeAgentMessage
+// /appendError/clearChat 中的 hideRetryStatus 清除状态条。
+
+let retryStatusBar = null;          // 当前重试状态条 DOM 元素
+let retryCountdownInterval = null;  // 倒计时 setInterval 句柄
+
+// 显示重试状态条 + 启动倒计时。多次重试连续到达时先清除旧状态条再创建新的。
+function showRetryStatus(attempt, maxAttempts, delayMs, errorType, errorMessage) {
+    // 如果已有状态条，先移除（更新为新的重试信息）
+    hideRetryStatus();
+
+    // 创建状态条 DOM
+    retryStatusBar = document.createElement('div');
+    retryStatusBar.className = 'retry-status-bar';
+
+    const icon = document.createElement('span');
+    icon.className = 'retry-icon';
+    icon.textContent = '🔄';
+
+    const text = document.createElement('span');
+    text.className = 'retry-text';
+
+    const remainingSpan = document.createElement('span');
+    remainingSpan.className = 'retry-countdown';
+    remainingSpan.textContent = formatCountdown(delayMs);
+
+    text.innerHTML = '';
+    text.appendChild(document.createTextNode('Retry ' + attempt + '/' + maxAttempts + ' · '));
+    text.appendChild(remainingSpan);
+    text.appendChild(document.createTextNode(' · ' + errorMessage));
+
+    retryStatusBar.appendChild(icon);
+    retryStatusBar.appendChild(text);
+
+    // 插入到聊天容器末尾（当前 agent 消息之后）
+    const container = document.getElementById('messages');
+    container.appendChild(retryStatusBar);
+
+    // 启动倒计时
+    startRetryCountdown(delayMs);
+
+    // 滚动到底部
+    container.scrollTop = container.scrollHeight;
+}
+
+// 隐藏重试状态条：清理 interval 和 DOM 元素。
+function hideRetryStatus() {
+    if (retryCountdownInterval) {
+        clearInterval(retryCountdownInterval);
+        retryCountdownInterval = null;
+    }
+    if (retryStatusBar && retryStatusBar.parentNode) {
+        retryStatusBar.parentNode.removeChild(retryStatusBar);
+    }
+    retryStatusBar = null;
+}
+
+// 启动倒计时：每秒更新 .retry-countdown 文本，到 0 后显示 "Retrying..."。
+function startRetryCountdown(totalMs) {
+    let remaining = Math.ceil(totalMs / 1000);
+    const updateFn = function() {
+        if (!retryStatusBar) {
+            clearInterval(retryCountdownInterval);
+            retryCountdownInterval = null;
+            return;
+        }
+        const countdownEl = retryStatusBar.querySelector('.retry-countdown');
+        if (countdownEl) {
+            if (remaining > 0) {
+                countdownEl.textContent = formatCountdown(remaining * 1000);
+                remaining--;
+            } else {
+                countdownEl.textContent = 'Retrying...';
+                clearInterval(retryCountdownInterval);
+                retryCountdownInterval = null;
+            }
+        }
+    };
+    updateFn(); // 立即执行一次
+    retryCountdownInterval = setInterval(updateFn, 1000);
+}
+
+// 格式化倒计时：>=60s 显示 "Xm Ys"，否则 "Ns"。
+function formatCountdown(ms) {
+    const seconds = Math.ceil(ms / 1000);
+    if (seconds >= 60) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return mins + 'm ' + secs + 's';
+    }
+    return seconds + 's';
+}
+
+// 渲染错误消息：按 errorType 选择图标和配色。
+// errorType 取值见 D9 协议枚举：quota_exhausted / auth_error / rate_limit_exhausted
+// / network_exhausted / server_error_exhausted / bad_request / context_overflow
+// / crash_recovery / timeout / unknown
+function appendError(message, errorType) {
+    // 隐藏重试状态条（如果还在）
+    hideRetryStatus();
+
+    const container = document.getElementById('messages');
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+
+    // 根据 errorType 选择图标和样式
+    let icon = '⚠️';
+    let errorClass = 'error-general';
+    if (errorType === 'quota_exhausted') {
+        icon = '💳'; errorClass = 'error-quota';
+    } else if (errorType === 'auth_error') {
+        icon = '🔑'; errorClass = 'error-auth';
+    } else if (errorType === 'rate_limit_exhausted' || errorType === 'network_exhausted' || errorType === 'server_error_exhausted') {
+        icon = '🔄'; errorClass = 'error-exhausted';
+    } else if (errorType === 'crash_recovery') {
+        icon = '🔧'; errorClass = 'error-crash';
+    } else if (errorType === 'timeout') {
+        icon = '⏱️'; errorClass = 'error-timeout';
+    }
+
+    errorDiv.classList.add(errorClass);
+
+    const iconEl = document.createElement('span');
+    iconEl.className = 'error-icon';
+    iconEl.textContent = icon;
+
+    const textEl = document.createElement('span');
+    textEl.className = 'error-text';
+    textEl.textContent = message;
+
+    errorDiv.appendChild(iconEl);
+    errorDiv.appendChild(textEl);
+    container.appendChild(errorDiv);
+
+    container.scrollTop = container.scrollHeight;
 }
 
 // 初始化

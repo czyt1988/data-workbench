@@ -393,3 +393,103 @@ body {
     content: '\1F4C8';  /* 📈 图表 */
     margin-right: 3px;
 }
+
+/* —— 重试状态条（plan-06）—— */
+
+.retry-status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    margin: 4px 0;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #856404;
+    animation: retry-pulse 2s ease-in-out infinite;
+}
+
+.retry-icon {
+    font-size: 14px;
+    animation: retry-spin 2s linear infinite;
+}
+
+.retry-text {
+    flex: 1;
+}
+
+.retry-countdown {
+    font-weight: bold;
+    color: #d97706;
+}
+
+@keyframes retry-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes retry-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* —— 错误消息（plan-06）—— */
+
+.error-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 16px;
+    margin: 8px 0;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.error-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.error-text {
+    flex: 1;
+    word-wrap: break-word;
+}
+
+/* 配额耗尽——蓝色调 */
+.error-quota {
+    background: #d1ecf9;
+    border-color: #bee5eb;
+    color: #0c5460;
+}
+
+/* 认证失败——橙色调 */
+.error-auth {
+    background: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+}
+
+/* 重试耗尽——红色调 */
+.error-exhausted {
+    background: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+/* 崩溃恢复——灰色调 */
+.error-crash {
+    background: #e2e3e5;
+    border-color: #d6d8db;
+    color: #383b3f;
+}
+
+/* 超时——紫色调 */
+.error-timeout {
+    background: #f0e6ff;
+    border-color: #d6b3ff;
+    color: #5a2d9c;
+}
