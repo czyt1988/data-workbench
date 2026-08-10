@@ -240,6 +240,7 @@ private:
     int m_inactivityTimeoutMs = 240000;    // 默认 4 分钟
     bool m_toolExecuting = false;           // 工具执行期间暂停看门狗
     bool m_turnActive = false;              // 对话进行中标志（sendMessage 置 true，done/error 置 false）
+    bool m_waitingUserAnswer = false;       // 等待用户回答问题标志（question 置 true，sendUserAnswer 置 false）——期间暂停看门狗
     QString m_lastUserMessage;              // 记录最后用户消息（崩溃恢复时重发）
     // —— 子进程崩溃恢复 ——
     int m_restartCount = 0;                 // 当前重启次数

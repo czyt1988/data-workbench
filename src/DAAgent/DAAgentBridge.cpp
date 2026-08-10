@@ -228,10 +228,14 @@ void DAAgentBridge::sendToolResult(const QString& callId, const QJsonObject& res
 
 void DAAgentBridge::sendUserAnswer(const QString& answer)
 {
+    // 用户回答后 agent 恢复工作——清除等待标志并重新启动看门狗，
+    // 以便检测 agent 恢复推理后是否卡死
+    m_waitingUserAnswer = false;
     QJsonObject msg;
     msg["type"]   = "user_answer";
     msg["answer"] = answer;
     writeJson(msg);
+    startInactivityTimer();
 }
 
 void DAAgentBridge::sendLoadSession(const QString& sessionId, const QJsonArray& messages)
@@ -333,6 +337,11 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
             executeTool(callId, toolName, args);
         });
     } else if (type == "question") {
+        // agent 向用户提问后 langgraph 进入 interrupt 暂停态，等待用户回答。
+        // 期间不应启动无活动看门狗——用户可能离开较长时间才回答，
+        // 这不属于 agent 卡死。设置标志并停止看门狗，sendUserAnswer 时恢复。
+        m_waitingUserAnswer = true;
+        m_inactivityTimer->stop();
         emit agentQuestion(msg["text"].toString(),
                            msg["options"].toVariant().toStringList(),
                            msg.value("multi_select").toBool(false));
@@ -355,6 +364,7 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
         // done 分支也会 emit agentBusy(false)，所以这里 emit 是双保险
         m_inactivityTimer->stop();
         m_turnActive = false;
+        m_waitingUserAnswer = false;
         emit agentError(msg["message"].toString(), errorType, detail);
         emit agentBusy(false);
     } else if (type == "usage") {
@@ -373,6 +383,7 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
     } else if (type == "done") {
         m_inactivityTimer->stop();
         m_turnActive = false;
+        m_waitingUserAnswer = false;
         emit agentBusy(false);
         emit agentDone();
     }
@@ -470,6 +481,7 @@ void DAAgentBridge::onProcessFinished(int exitCode, QProcess::ExitStatus exitSta
     // 3. 停止 inactivityTimer——必须在排空之后，避免排空消息重启计时器后又遗漏停止
     m_inactivityTimer->stop();
     m_toolExecuting = false;  // 重置工具执行标志，确保恢复从干净状态开始
+    m_waitingUserAnswer = false;  // 重置等待用户回答标志，确保恢复从干净状态开始
     m_turnActive = false;     // 对话中断，重置对话进行中标志
 
     m_running = false;
@@ -554,6 +566,11 @@ void DAAgentBridge::onInactivityTimeout()
 
 void DAAgentBridge::startInactivityTimer()
 {
+    // 等待用户回答期间不启动看门狗——用户可能离开较长时间才回答，
+    // 此时 agent 处于 langgraph interrupt 暂停态，并非"卡死"
+    if (m_waitingUserAnswer) {
+        return;
+    }
     if (m_inactivityTimeoutMs > 0 && m_running) {
         m_inactivityTimer->start(m_inactivityTimeoutMs);
     }
