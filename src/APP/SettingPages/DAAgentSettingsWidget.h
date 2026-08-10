@@ -85,6 +85,11 @@ private:
     // 会话持久化（plan-06）：自由会话保留数量与保留天数，供 DAAgentModule::cleanupSessions 读取
     QSpinBox* m_maxSessionsSpin;                // 自由会话保留数量(5-200)
     QSpinBox* m_sessionRetentionDaysSpin;       // 自由会话保留天数(1-365)
+    // 重连与容错（plan-05）：LLM 重试/超时/子进程重启，供 DAAgentModule get/setLLMConfig 读写
+    QSpinBox* m_spinMaxRetries;           // LLM 最大重试次数(0-20)
+    QSpinBox* m_spinRequestTimeout;       // LLM 单次请求超时(秒)
+    QSpinBox* m_spinInactivityTimeout;    // 无活动看门狗超时(秒)
+    QSpinBox* m_spinMaxRestarts;          // 子进程最大重启次数(0-10)
 };
 
 } // namespace DA

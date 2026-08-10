@@ -104,6 +104,34 @@ void DAAgentSettingsWidget::setupUI()
     m_sessionRetentionDaysSpin->setToolTip(tr(
         "Free sessions older than this many days are cleaned up on startup."));  //cn:早于此天数的自由会话在启动时清理
 
+    // 重连与容错控件（plan-05）
+    m_spinMaxRetries = new QSpinBox(this);
+    m_spinMaxRetries->setRange(0, 20);
+    m_spinMaxRetries->setSuffix(tr(" times"));  //cn:次
+    m_spinMaxRetries->setToolTip(tr(
+        "Maximum number of retries for LLM API calls (429/5xx/network errors). "
+        "0 disables retry."));  //cn:LLM API 调用最大重试次数(429/5xx/网络错误)。0 表示不重试。
+
+    m_spinRequestTimeout = new QSpinBox(this);
+    m_spinRequestTimeout->setRange(10, 600);
+    m_spinRequestTimeout->setSuffix(tr(" sec"));  //cn:秒
+    m_spinRequestTimeout->setToolTip(tr(
+        "Timeout in seconds for a single LLM API request."));  //cn:单次 LLM API 请求超时(秒)。
+
+    m_spinInactivityTimeout = new QSpinBox(this);
+    m_spinInactivityTimeout->setRange(60, 600);
+    m_spinInactivityTimeout->setSuffix(tr(" sec"));  //cn:秒
+    m_spinInactivityTimeout->setToolTip(tr(
+        "If no protocol message is received for this duration, the agent "
+        "subprocess is considered hung and will be stopped."));  //cn:若此时间内未收到任何协议消息,agent 子进程将被视为卡死并停止。
+
+    m_spinMaxRestarts = new QSpinBox(this);
+    m_spinMaxRestarts->setRange(0, 10);
+    m_spinMaxRestarts->setSuffix(tr(" times"));  //cn:次
+    m_spinMaxRestarts->setToolTip(tr(
+        "Maximum number of automatic restarts after agent subprocess crash. "
+        "0 disables auto-restart."));  //cn:agent 子进程崩溃后自动重启最大次数。0 表示不自动重启。
+
     QFormLayout* form = new QFormLayout(this);
     form->addRow(tr("Base URL"), m_baseUrlEdit);
     form->addRow(tr("API Key"),  m_apiKeyEdit);
@@ -121,6 +149,11 @@ void DAAgentSettingsWidget::setupUI()
     // 会话持久化（plan-06）：平铺风格，不分组，对齐既有 addRow 习惯
     form->addRow(tr("Max Sessions"), m_maxSessionsSpin);  //cn:最大会话数
     form->addRow(tr("Session Retention Days"), m_sessionRetentionDaysSpin);  //cn:会话保留天数
+    // 重连与容错（plan-05）：平铺风格，不分组，对齐既有 addRow 习惯
+    form->addRow(tr("Max retries"), m_spinMaxRetries);  //cn:最大重试次数
+    form->addRow(tr("Request timeout"), m_spinRequestTimeout);  //cn:请求超时
+    form->addRow(tr("Inactivity timeout"), m_spinInactivityTimeout);  //cn:无活动超时
+    form->addRow(tr("Max process restarts"), m_spinMaxRestarts);  //cn:最大进程重启次数
 
     connect(m_testBtn, &QPushButton::clicked, this, &DAAgentSettingsWidget::onTestConnection);
 
@@ -165,6 +198,19 @@ void DAAgentSettingsWidget::setupUI()
     connect(m_sessionRetentionDaysSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
         emit settingChanged();
     });
+    // 重连与容错控件（plan-05）：同样须连接 settingChanged，否则 apply 不触发
+    connect(m_spinMaxRetries, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+        emit settingChanged();
+    });
+    connect(m_spinRequestTimeout, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+        emit settingChanged();
+    });
+    connect(m_spinInactivityTimeout, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+        emit settingChanged();
+    });
+    connect(m_spinMaxRestarts, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+        emit settingChanged();
+    });
 
     // 注：loadConfig() 期间无需 QSignalBlocker——
     // addPage()（连接 settingChanged → 脏页追踪器）在构造函数返回之后才执行，
@@ -198,6 +244,11 @@ void DAAgentSettingsWidget::loadConfig()
     m_toolResultPreviewCharsSpin->setValue(jsonInt(c, "tool_result_preview_chars", 2000));
     m_maxSessionsSpin->setValue(jsonInt(c, "max_sessions", 20));
     m_sessionRetentionDaysSpin->setValue(jsonInt(c, "session_retention_days", 30));
+    // 重连与容错（plan-05）
+    m_spinMaxRetries->setValue(jsonInt(c, "max_retries", 7));
+    m_spinRequestTimeout->setValue(jsonInt(c, "request_timeout_sec", 120));
+    m_spinInactivityTimeout->setValue(jsonInt(c, "inactivity_timeout_sec", 240));
+    m_spinMaxRestarts->setValue(jsonInt(c, "max_subprocess_restarts", 3));
 }
 
 void DAAgentSettingsWidget::saveConfig()
@@ -220,6 +271,11 @@ void DAAgentSettingsWidget::saveConfig()
     c["tool_result_preview_chars"] = m_toolResultPreviewCharsSpin->value();
     c["max_sessions"]              = m_maxSessionsSpin->value();
     c["session_retention_days"]    = m_sessionRetentionDaysSpin->value();
+    // 重连与容错（plan-05）
+    c["max_retries"]              = m_spinMaxRetries->value();
+    c["request_timeout_sec"]      = m_spinRequestTimeout->value();
+    c["inactivity_timeout_sec"]   = m_spinInactivityTimeout->value();
+    c["max_subprocess_restarts"]  = m_spinMaxRestarts->value();
     // 诊断日志: 确认 saveConfig 真的被调用且收集到了值(绝不打印 api_key 明文)
     daDebug << "[DAAgentSettings] saveConfig: base_url=" << c.value("base_url").toString()
             << " model=" << c.value("model").toString()

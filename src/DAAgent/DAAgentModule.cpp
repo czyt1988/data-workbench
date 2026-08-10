@@ -486,6 +486,11 @@ QJsonObject DAAgentModule::getLLMConfig() const
     // 会话清理配置（默认 20/30，须与 cleanupSessions 读这两个 key 的默认值一致）
     config["max_sessions"]             = s.value("agent/max_sessions", 20).toInt();
     config["session_retention_days"]    = s.value("agent/session_retention_days", 30).toInt();
+    // 重连与容错配置（plan-05：随 init 消息 config 字段下发给 Python/C++ 消费方）
+    config["max_retries"]              = s.value("agent/llm_max_retries", 7).toInt();
+    config["request_timeout_sec"]      = s.value("agent/llm_request_timeout_sec", 120).toInt();
+    config["inactivity_timeout_sec"]   = s.value("agent/inactivity_timeout_sec", 240).toInt();
+    config["max_subprocess_restarts"]  = s.value("agent/max_subprocess_restarts", 3).toInt();
     return config;
 }
 
@@ -524,6 +529,15 @@ void DAAgentModule::setLLMConfig(const QJsonObject& config)
         s.setValue("agent/max_sessions",              config.value("max_sessions").toInt());
     if (config.contains("session_retention_days"))
         s.setValue("agent/session_retention_days",    config.value("session_retention_days").toInt());
+    // 重连与容错配置（plan-05）
+    if (config.contains("max_retries"))
+        s.setValue("agent/llm_max_retries",           config.value("max_retries").toInt());
+    if (config.contains("request_timeout_sec"))
+        s.setValue("agent/llm_request_timeout_sec",   config.value("request_timeout_sec").toInt());
+    if (config.contains("inactivity_timeout_sec"))
+        s.setValue("agent/inactivity_timeout_sec",    config.value("inactivity_timeout_sec").toInt());
+    if (config.contains("max_subprocess_restarts"))
+        s.setValue("agent/max_subprocess_restarts",   config.value("max_subprocess_restarts").toInt());
 }
 
 // ===========================================================================
