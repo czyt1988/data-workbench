@@ -14,8 +14,7 @@ QJsonObject DAAgentToolCreateSubplots::getToolSpec() const
             {"type", "object"},
             {"properties", QJsonObject{
                 {"layout", QJsonObject{{"type", "string"}, {"description", "Grid layout, e.g. '2x2' for 2 rows 2 columns"}}},
-                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name shown as tab title. If empty, auto-generates."}}},
-                {"data_name", QJsonObject{{"type", "string"}, {"description", "Optional dataset name for automatic plotting"}}}
+                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name shown as tab title. If empty, auto-generates."}}}
             }},
             {"required", QJsonArray{"layout"}}
         }}

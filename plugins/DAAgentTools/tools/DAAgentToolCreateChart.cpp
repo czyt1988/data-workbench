@@ -68,8 +68,8 @@ QJsonObject DAAgentToolCreateChart::getToolSpec() const
     return QJsonObject{
         {"name", "create_chart"},
         {"description", "Create a new figure with a chart (line/scatter/bar/hist/box) from dataset columns. "
-         "Each call creates a NEW figure — use figure_name to give it a searchable name (shown as the tab title). "
-         "Other tools (add_curve, set_chart_style, etc.) can target this figure via figure_name. "
+         "If figure_name matches an existing figure, the chart is added to that figure (useful for building subplots). "
+         "Otherwise a new figure is created. "
          "The returned figure_id/figure_name can be used in da-figure: hyperlinks so the user can open this figure from your reply."},
         {"parameters", QJsonObject{
             {"type", "object"},
@@ -79,7 +79,7 @@ QJsonObject DAAgentToolCreateChart::getToolSpec() const
                 {"x", QJsonObject{{"type", "string"}, {"description", "X-axis column name"}}},
                 {"y", QJsonObject{{"type", "string"}, {"description", "Y-axis column name(s)"}}},
                 {"title", QJsonObject{{"type", "string"}, {"description", "Chart title (also used as figure_name if figure_name is empty)"}}},
-                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name shown as tab title. If empty, uses title or auto-generates. Use this name with other tools' figure_name parameter to target this figure."}}},
+                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name. If a figure with this name already exists, the chart is added to that figure (useful for building subplots). If no match, a new figure is created. If empty, a new figure is auto-created."}}},
                 {"x_label", QJsonObject{{"type", "string"}, {"description", "X-axis label"}}},
                 {"y_label", QJsonObject{{"type", "string"}, {"description", "Y-axis label"}}}
             }},
@@ -113,8 +113,12 @@ QJsonObject DAAgentToolCreateChart::execute(const QJsonObject& params)
         figureName = title.isEmpty() ? QString("Chart - %1").arg(yCol) : title;
     }
 
-    // Create a new figure and set it as current — each create_chart call gets its own figure
-    DAFigureWidget* fig = createFigure(figureName);
+    // If a figure with this name already exists, reuse it (enables subplot population).
+    // Otherwise create a new figure.
+    DAFigureWidget* fig = findFigureByName(figureName);
+    if (!fig) {
+        fig = createFigure(figureName);
+    }
     if (!fig) {
         return errorResponse("Failed to create figure");
     }

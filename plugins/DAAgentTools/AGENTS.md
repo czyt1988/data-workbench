@@ -1,6 +1,6 @@
 # DAAgentTools 插件开发指南
 
-DAWorkbench 平台内置 Agent 工具插件，向 LLM 暴露 **16 个工具**（5 数据 + 8 绘图 + 3 文件/报告），让 AI 能直接操作工作区数据、创建/修改图表、读写文件。工具的 OpenAI function schema 经 `DAAgentInterface::registerTool` 下发给 Python 子进程，**真实执行在 C++ 主进程**（不在 Python 端），结果经 stdin 回传。
+DAWorkbench 平台内置 Agent 工具插件，向 LLM 暴露 **19 个工具**（5 数据 + 11 绘图 + 3 文件/报告），让 AI 能直接操作工作区数据、创建/修改图表、读写文件。工具的 OpenAI function schema 经 `DAAgentInterface::registerTool` 下发给 Python 子进程，**真实执行在 C++ 主进程**（不在 Python 端），结果经 stdin 回传。
 
 > ⚠️ 本文件是 AI 开发 Agent 工具（新增/修改工具、改工具参数）的必读指南。改动前先对照 § 陷阱清单。Agent 框架本身（子进程、协议、会话持久化）的设计见 `src/DAAgent/AGENTS.md`，本文件只聚焦「工具本身怎么写」。
 
@@ -11,9 +11,9 @@ DAWorkbench 平台内置 Agent 工具插件，向 LLM 暴露 **16 个工具**（
 ```
 DAAgentTools/
 ├── CMakeLists.txt              # 插件构建（file GLOB 自动收集 .h/.cpp，新增工具通常无需改）
-├── DAAgentToolsPlugin.h/.cpp   # 插件入口：initialize() 注册 16 个工具 + figure_reference 提示词
+├── DAAgentToolsPlugin.h/.cpp   # 插件入口：initialize() 注册 19 个工具 + figure_reference 提示词
 ├── DAAgentChartToolBase.h/.cpp # 图表工具基类（7 个图表访问方法，本插件内部用，无导出宏）
-└── tools/                      # 16 个工具实现（每个一对 .h/.cpp）
+└── tools/                      # 19 个工具实现（每个一对 .h/.cpp）
     ├── DAAgentToolListData.{h,cpp}        # list_data
     ├── DAAgentToolDataInfo.{h,cpp}        # get_data_info
     ├── DAAgentToolQueryData.{h,cpp}       # query_data
@@ -22,6 +22,9 @@ DAAgentTools/
     ├── DAAgentToolCreateChart.{h,cpp}     # create_chart
     ├── DAAgentToolAddCurve.{h,cpp}        # add_curve
     ├── DAAgentToolSetChartStyle.{h,cpp}    # set_chart_style
+    ├── DAAgentToolSetAxis.{h,cpp}          # set_axis（坐标轴类型/范围/颜色）
+    ├── DAAgentToolUpdateCurveStyle.{h,cpp} # update_curve_style（修改已有曲线样式）
+    ├── DAAgentToolRemoveChartItem.{h,cpp}  # remove_chart_item（删除曲线/标注/区域）
     ├── DAAgentToolAddAnnotation.{h,cpp}   # add_annotation
     ├── DAAgentToolAddRegion.{h,cpp}       # add_region
     ├── DAAgentToolCreateSubplots.{h,cpp}  # create_subplots
@@ -56,7 +59,7 @@ DAAgentChartToolBase         (本插件 DAAgentChartToolBase.h，无导出宏，
   │  chartOperateWidget() / currentFigure() / currentChart()
   │  findFigureByName(name) / createFigure(name)
   │  findChart(chartId, figureName) / enableAutoScale(chart)
-  └──► 绘图工具 (8)                          ← 继承 DAAgentChartToolBase
+  └──► 绘图工具 (11)                         ← 继承 DAAgentChartToolBase
 ```
 
 **选择基类的判据**：
@@ -71,7 +74,7 @@ DAAgentChartToolBase         (本插件 DAAgentChartToolBase.h，无导出宏，
 
 ---
 
-## 三、16 个现有工具速查
+## 三、19 个现有工具速查
 
 | 类别 | name（schema 名） | 类 | 必填参数 | 备注 |
 |------|------------------|----|----------|------|
@@ -80,12 +83,15 @@ DAAgentChartToolBase         (本插件 DAAgentChartToolBase.h，无导出宏，
 | 数据 | `query_data` | `DAAgentToolQueryData` | `data_name` + 查询条件 | 过滤/选择/聚合 |
 | 数据 | `get_column_stats` | `DAAgentToolColumnStats` | `data_name`, `column` | describe() + 缺失值计数 |
 | 数据 | `export_data` | `DAAgentToolExportData` | `data_name`, `file_path` | 导出 csv/xlsx |
-| 绘图 | `create_chart` | `DAAgentToolCreateChart` | `type`, `data_name`, `x`, `y` | **每次创建新 figure**；返回 figure_id/figure_name |
-| 绘图 | `add_curve` | `DAAgentToolAddCurve` | `data_name`, `x_column`, `y_column` | 经 figure_name+chart_id 定位 |
-| 绘图 | `set_chart_style` | `DAAgentToolSetChartStyle` | — | 样式（标题/标签/网格等） |
+| 绘图 | `create_chart` | `DAAgentToolCreateChart` | `type`, `data_name`, `x`, `y` | 如 figure_name 已存在则复用该 figure（支持子图）；返回 figure_id/figure_name |
+| 绘图 | `add_curve` | `DAAgentToolAddCurve` | `data_name`, `x_column`, `y_column` | 经 figure_name+chart_id 定位；支持 color/width/style |
+| 绘图 | `set_chart_style` | `DAAgentToolSetChartStyle` | — | 标题/标签/网格(布尔)/图例(布尔) + 背景色/边框色/网格样式/图例位置/图例样式/figure 背景色 |
+| 绘图 | `set_axis` | `DAAgentToolSetAxis` | `axis` | 坐标轴类型(normal/datetime)/日期格式/范围(min/max)/颜色/标签旋转 |
+| 绘图 | `update_curve_style` | `DAAgentToolUpdateCurveStyle` | `curve_name` | 修改已有曲线的 color/width/style/symbol/symbol_size/fill_color |
+| 绘图 | `remove_chart_item` | `DAAgentToolRemoveChartItem` | `item_name` | 删除曲线/标注/区域，按标题或索引定位 |
 | 绘图 | `add_annotation` | `DAAgentToolAddAnnotation` | — | 文本/箭头标注 |
 | 绘图 | `add_region` | `DAAgentToolAddRegion` | — | 区域高亮 |
-| 绘图 | `create_subplots` | `DAAgentToolCreateSubplots` | — | 子图网格，返回 figure_id |
+| 绘图 | `create_subplots` | `DAAgentToolCreateSubplots` | `layout` | 子图网格，返回 figure_id |
 | 绘图 | `save_chart_image` | `DAAgentToolSaveChartImage` | `file_path` | png/pdf/svg；链接 Qt::Svg/PrintSupport |
 | 绘图 | `list_figures` | `DAAgentToolListFigures` | — | 列出所有 figure 及内部 chart |
 | 文件 | `read_file` | `DAAgentToolReadFile` | `file_path` | 含路径安全检查（禁系统目录） |
@@ -368,8 +374,8 @@ CMakeLists.txt 用 `file(GLOB ... CONFIGURE_DEPENDS)` 收集 `*.h/*.cpp`，新�
 ### P8. 非数值列转 QVector\<double> 返回空
 `toQVectorDouble(series)` 对非数值（字符串/分类）列返回空 vector。据此判空 + 返回 errorResponse 提示「列含非数值，请用数值列或先 query_data 预聚合」（见 `create_chart.cpp:141-150`），不要让 agent 反复尝试。
 
-### P9. `create_chart` 每次建新 figure，不复用
-`create_chart`/`create_subplots` 调 `createFigure(name)` 新建 figure 标签页，再 `fig->createChart()` 建新 chart——**不要**用 `currentChart()` 复用现有图（会导致多张图叠加到同一绘图）。修改其他图走 `findChart(chartId, figureName)` 定位。
+### P9. `create_chart` 可复用已有 figure
+`create_chart` 先用 `findFigureByName(name)` 查找已有 figure——若存在则在该 figure 中添加 chart（支持子图布局），不存在才 `createFigure(name)` 新建。`create_subplots` 仍始终新建 figure。修改其他图走 `findChart(chartId, figureName)` 定位。
 
 ### P10. 工具归属模块别放错
 工具属本插件 `plugins/DAAgentTools/`（L5 应用层/插件层），**不是** `src/DAAgent/`（`src/DAAgent/` 是纯框架库，不含具体工具实现，`tools/` 子目录已删除）。基类 `DAAgentToolBase` 在 `src/DAAgent/`，但具体工具实现全在本插件。详见 `src/DAAgent/AGENTS.md` § 七。
@@ -419,8 +425,8 @@ CMakeLists.txt 用 `file(GLOB ... CONFIGURE_DEPENDS)` 收集 `*.h/*.cpp`，新�
 - [ ] `getToolSpec` 的 `name` 小写 snake_case 不翻译，`required` 完整，`description` 写清用途
 - [ ] `execute` 先校验必填参数 → 数据/列存在性 → 业务逻辑 → `successResponse`/`errorResponse`
 - [ ] Python 操作有 `DAPyGILGuard`；取列用 `df[col]`；数值转换判空
-- [ ] 图表工具加数据后 `enableAutoScale` + `replot`；`create_chart` 建新 figure 不复用
+- [ ] 图表工具加数据后 `enableAutoScale` + `replot`；`create_chart` 先查找已有 figure 再新建
 - [ ] `DAAgentToolsPlugin::initialize()` 加 `registerTool(new ToolXxx(c, this))`
 - [ ] CMake 新依赖已配（Qt 模块/DA 库/三方/平台专属）
 - [ ] `.\scripts\build.ps1 -Target DAAgentTools` 构建通过
-- [ ] 运行验证：Agent 对话调用新工具，或 `da_log.log` 确认收录
+- [ ] 运行验证：Agent 对话调用新工具，或 `da_log.log` 确认收录（19 个工具）
