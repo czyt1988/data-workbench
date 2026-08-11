@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QScreen>
 #include <QLabel>
+#include <QFileInfo>
 #include "AppMainWindow.h"
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
@@ -9,6 +10,7 @@
 // API相关
 #include "DAAppCore.h"
 #include "DAAppProject.h"
+#include "DALogCategory.h"
 #include "DAUIInterface.h"
 #include "DACommandInterface.h"
 #include "DAAppCommand.h"
@@ -33,6 +35,8 @@
 #include "DAAppWorkFlowOperateWidget.h"
 // Agent 相关
 #include "DAAgentDockWidget.h"
+// Markdown 查看相关
+#include "DAMarkdownView.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -427,4 +431,35 @@ ads::CDockWidget* DAAppDockingArea::getAgentDock() const
 DAAgentDockWidget* DAAppDockingArea::getAgentDockWidget() const
 {
     return mAgentDockWidget;
+}
+
+/**
+ * @brief 在中央区按需创建 Markdown 查看 dock 并加载文件
+ *
+ * 首次调用创建 DAMarkdownView 并作为标签页挂到中央区；后续调用复用同一 dock，
+ * 重新载入文件、更新标题为文件名并 raise。
+ * @param filePath markdown 文件路径
+ * @return 加载成功返回 true
+ */
+bool DAAppDockingArea::showMarkdownFile(const QString& filePath)
+{
+    // 首次：创建 markdown 控件 + dock 标签页，挂到中央区
+    if (nullptr == mMarkdownView) {
+        mMarkdownView = new DAMarkdownView(mApp);
+        mMarkdownView->setObjectName(QStringLiteral("da_markdownView"));
+        mMarkdownDock = createDockWidgetTabAtCenterDockArea(mMarkdownView, QStringLiteral("da_markdownViewDock"));
+        mMarkdownDock->setIcon(QIcon(":/app/bright/Icon/markdown.svg"));
+        // 默认标题（无文件时）
+        mMarkdownDock->setWindowTitle(tr("Markdown Viewer"));  // cn:Markdown 查看器
+    }
+    // 载入文件
+    if (!mMarkdownView->loadFile(filePath)) {
+        daWarning << tr("Failed to open markdown file: %1").arg(filePath);  // cn:打开 Markdown 文件失败:%1
+        return false;
+    }
+    // 标题用文件名，便于多文件区分
+    mMarkdownDock->setWindowTitle(QFileInfo(filePath).fileName());
+    mMarkdownDock->raise();
+    mMarkdownView->scrollToTop();
+    return true;
 }

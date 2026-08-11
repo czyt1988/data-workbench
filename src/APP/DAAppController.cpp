@@ -323,6 +323,7 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionSave, save);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionSaveAs, saveAs);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAppendProject, onActionAppendProjectTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionOpenMarkdown, onActionOpenMarkdownTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionSetting, onActionSettingTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionPluginManager, onActionPluginManagerTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAbout, onActionAboutTriggered);
@@ -1153,6 +1154,30 @@ void DAAppController::open()
     }
     DA_WAIT_CURSOR_SCOPED();
     openProjectFile(fileNames.first());
+}
+
+/**
+ * @brief 打开 Markdown 文件，在中央区 dock 中显示
+ *
+ * 弹出文件对话框选择 .md/.markdown 文件，委托 @ref DAAppDockingArea::showMarkdownFile
+ * 在中央区按需创建/复用 dock 标签页并渲染内容。
+ */
+void DAAppController::onActionOpenMarkdownTriggered()
+{
+    QFileDialog dialog(app());
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    QStringList filters;
+    filters << tr("Markdown files") + QStringLiteral(" (*.md *.markdown)")   // cn:Markdown 文件
+            << tr("Any files") + QStringLiteral(" (*)");                      // cn:所有文件
+    dialog.setNameFilters(filters);
+    if (QDialog::Accepted != dialog.exec()) {
+        return;
+    }
+    const QStringList fileNames = dialog.selectedFiles();
+    if (fileNames.empty()) {
+        return;
+    }
+    mDock->showMarkdownFile(fileNames.first());
 }
 
 /**

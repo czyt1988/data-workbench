@@ -45,6 +45,7 @@ public:
     QAction* actionSave;           ///< 保存
     QAction* actionSaveAs;         ///< 另存为
     QAction* actionAppendProject;  ///< 追加工程
+    QAction* actionOpenMarkdown;   ///< 打开 Markdown 文件
 
     QAction* actionRedo;
     QAction* actionUndo;

@@ -162,6 +162,8 @@ private Q_SLOTS:
     // 主页标签 Main Category
     //===================================================
     void onActionAppendProjectTriggered();
+    // 打开 Markdown 文件，在中央区 dock 中显示
+    void onActionOpenMarkdownTriggered();
 
     // app设定
     void onActionSettingTriggered();

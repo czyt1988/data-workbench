@@ -746,6 +746,7 @@ void DAAppRibbonArea::buildApplicationMenu()
 {
     mApplicationMenu = new DAAppRibbonApplicationMenu(app());
     mApplicationMenu->addAction(m_actions->actionOpen);
+    mApplicationMenu->addAction(m_actions->actionOpenMarkdown);
     mApplicationMenu->addAction(m_actions->actionSave);
     mApplicationMenu->addAction(m_actions->actionSaveAs);
     m_actions->recentFilesManager->attachToMenu(mApplicationMenu, tr("Recent Files"));  // cn:最近打开的文件

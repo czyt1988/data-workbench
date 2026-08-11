@@ -33,6 +33,8 @@ class DASettingContainerWidget;
 class DAMessageLogViewWidget;
 // Agent 窗口
 class DAAgentDockWidget;
+// Markdown 查看窗口
+class DAMarkdownView;
 
 /**
  * @brief 负责docking窗口区域的管理，APP分两大区域-RibbonArea和DockArea
@@ -136,6 +138,16 @@ public:
      * @return
      */
     DAAgentDockWidget* getAgentDockWidget() const;
+
+    /**
+     * @brief 在中央区按需创建 Markdown 查看 dock 并加载文件
+     *
+     * 首次调用创建 DAMarkdownView 并作为标签页挂到中央区；后续调用复用同一 dock，
+     * 重新载入文件、更新标题为文件名并 raise。
+     * @param filePath markdown 文件路径
+     * @return 加载成功返回 true
+     */
+    bool showMarkdownFile(const QString& filePath);
     // 切换左侧边栏（工作流节点、图表管理、数据管理）的显示/隐藏
     void toggleLeftSidebar(bool show);
     // 切换右侧边栏（设置、日志）的显示/隐藏
@@ -193,6 +205,10 @@ private:
     // Agent 窗口
     DAAgentDockWidget* mAgentDockWidget { nullptr };  ///< Agent 助手窗口
     ads::CDockWidget* mAgentDock { nullptr };         ///< m_agentDockWidget 对应的 dock
+
+    // Markdown 查看窗口（按需创建）
+    DAMarkdownView* mMarkdownView { nullptr };  ///< Markdown 查看窗口
+    ads::CDockWidget* mMarkdownDock { nullptr };  ///< m_markdownView 对应的 dock
 };
 }  // namespace DA
 #endif  // DAAPPDOCKINGAREA_H

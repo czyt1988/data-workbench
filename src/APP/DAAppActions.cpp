@@ -50,6 +50,7 @@ void DAAppActions::buildMainAction()
     actionSave          = createAction("actionSave", ":/app/bright/Icon/save.svg");
     actionSaveAs        = createAction("actionSaveAs", ":/app/bright/Icon/save-as.svg");
     actionAppendProject = createAction("actionAppendProject", ":/app/bright/Icon/appendProject.svg");
+    actionOpenMarkdown  = createAction("actionOpenMarkdown", ":/app/bright/Icon/markdown.svg");
     // 注意Redo/undo action在ribbonArea中生成
     actionRedo    = nullptr;
     actionUndo    = nullptr;
@@ -385,6 +386,8 @@ void DAAppActions::retranslateUi()
     actionSaveAs->setToolTip(tr("Save file or project as"));                           // cn:保存文件或项目为
     actionAppendProject->setText(tr("Append To Project"));                             // cn:附加到项目
     actionAppendProject->setToolTip(tr("Append file or project to current project"));  // cn:附加文件或项目到当前项目
+    actionOpenMarkdown->setText(tr("Open Markdown"));  // cn:打开 Markdown
+    actionOpenMarkdown->setToolTip(tr("Open a Markdown file and display it in the central area"));  // cn:打开 Markdown 文件并在中央区显示
 
     actionRenameColumns->setText(tr("Rename Columns"));                           // cn:重命名列
     actionRenameColumns->setToolTip(tr("Rename columns in the selected table"));  // cn:重命名选中表格的列
