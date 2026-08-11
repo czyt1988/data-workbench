@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/DAMarkdown">
+        <file>markdown.html</file>
+        <file>markdown.css</file>
+        <file>markdown.js</file>
+    </qresource>
+</RCC>

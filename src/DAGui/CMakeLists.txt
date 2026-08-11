@@ -421,6 +421,14 @@ if(DA_ENABLE_PYTHON)
     file(GLOB DA_LIB_RC_FILES_Agent ${DA_LIB_SUBDIR_Agent}/*.qrc ${DA_LIB_SUBDIR_Agent}/resources/*.qrc)
 endif()
 
+#MarkdownView
+if(DA_ENABLE_PYTHON)
+    set(DA_LIB_SUBDIR_MarkdownView ${CMAKE_CURRENT_SOURCE_DIR}/MarkdownView)
+    file(GLOB DA_LIB_HEADER_FILES_MarkdownView ${DA_LIB_SUBDIR_MarkdownView}/*.h)
+    file(GLOB DA_LIB_SOURCE_FILES_MarkdownView ${DA_LIB_SUBDIR_MarkdownView}/*.cpp)
+    file(GLOB DA_LIB_RC_FILES_MarkdownView ${DA_LIB_SUBDIR_MarkdownView}/*.qrc ${DA_LIB_SUBDIR_MarkdownView}/resources/*.qrc)
+endif()
+
 add_library(${DA_LIB_NAME} SHARED
             #Root
             ${DA_LIB_HEADER_FILES}
@@ -455,6 +463,10 @@ add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES_Agent}
             ${DA_LIB_SOURCE_FILES_Agent}
             ${DA_LIB_RC_FILES_Agent}
+            #MarkdownView
+            ${DA_LIB_HEADER_FILES_MarkdownView}
+            ${DA_LIB_SOURCE_FILES_MarkdownView}
+            ${DA_LIB_RC_FILES_MarkdownView}
 )
 
 # 构建库定义的宏
@@ -554,6 +566,10 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
     $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/Agent>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Agent>
 )
+target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/MarkdownView>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/MarkdownView>
+)
 
 ########################################################
 # 安装
@@ -611,6 +627,12 @@ install(FILES
 install(FILES
     ${DA_LIB_HEADER_FILES_Agent}
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/Agent
+    COMPONENT headers
+)
+#MarkdownView
+install(FILES
+    ${DA_LIB_HEADER_FILES_MarkdownView}
+    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/MarkdownView
     COMPONENT headers
 )
 
