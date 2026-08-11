@@ -322,8 +322,9 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 
 **关键约束**：
 
-- **日志消息不翻译**：`qInfo`/`qWarning`/`qCritical`/`logger.*`/`print` 保持纯英文
-- **DA的界面消息必须翻译**：`daInfo`/`daWarning`/`daCritical` 都是会显示到ui界面的消息，**必需**翻译
+- **开发诊断日志不翻译**：`qInfo`/`qWarning`/`qCritical`/`qDebug`/`logger.*`/`print` 只写日志文件不进 UI 队列，保持纯英文
+- **DA 界面消息必须翻译**：`daInfo`/`daWarning`/`daCritical`（`src/DAMessageHandler/DALogCategory.h`，category=`da.user`）既写日志文件又进 UI 消息队列（用户可见），**必须**用 `tr("English")  //cn:中文` 翻译
+- **选宏判断标准**：写给用户看的操作反馈（成功/失败提示、可理解错误、状态栏消息）用 `da*` + `tr()`；写给开发者排查的技术诊断（`ClassName::method:` 前缀、异常 `what()` 转储、内部状态）用 `q*` 保持英文。开发诊断信息**禁止**用 `da*`（会污染 UI 消息队列），详见 [i18n.md](docs/zh/dev-guide/i18n.md) § da* 与 q* 宏的选择
 - **`@NodeDef(name=...)` 不翻译**：`name` 参与 `qualified_name` 序列化，翻译会破坏已存工程
 - **Python 包 `setup_i18n()` 必须在 `__init__.py` 顶部、节点模块导入之前调用**
 
@@ -485,7 +486,8 @@ Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若�
   遗漏 include **不会编译报错**（头文件间接可见时能编译通过），但运行时会抛 `Unable to convert call argument 'N' of type 'QString' to Python object`，且异常被 `dealException` 吞掉后表现为后续业务逻辑静默失败（如节点查找 KeyError、数据丢失等），极难排查。详见 `docs/zh/dev-guide/dapybind11-qt-caster.md` 与 `src/DAPyWorkFlow/AGENTS.md` § 类型转换铁律
 - **禁止在源码中直接写中文作为 UI 显示文本** — 必须用 `tr("English") //cn:中文`（C++）或 `_("English") # cn:中文`（Python）模式。源文本统一英文，翻译放 `.ts`/`.po` 文件。详见 § 国际化（i18n）规范
 - **禁止翻译 `@NodeDef(name=...)`** — `name` 参与 `qualified_name` 序列化（如 `DASystemNodes.Delay`），翻译会破坏已存工程的节点匹配。`category`/`description` 可翻译
-- **禁止翻译存日志消息** — `qInfo`/`qWarning`/`qCritical`/`qWarning`/`logger.*`/`print` 调试输出保持纯英文，便于跨语言环境检索
+- **禁止翻译开发诊断日志** — `qInfo`/`qWarning`/`qCritical`/`qDebug`/`logger.*`/`print` 只写日志文件不进 UI 队列，保持纯英文便于跨语言检索
+- **禁止用 `da*` 宏输出开发诊断信息** — `daInfo`/`daWarning`/`daCritical` 会进 UI 消息队列（用户可见）且必须翻译；带 `ClassName::method:` 前缀的技术诊断、异常 `what()` 转储等开发诊断应改用 `q*` 宏保持英文。详见 § 国际化规范
 - **禁止在 Python 节点包中遗漏 `setup_i18n()` 调用** — 必须在包 `__init__.py` 顶部、节点模块导入之前调用 `setup_i18n()`，否则 `_()` 未定义会导致节点注册失败
 
 ## UNIQUE STYLES
