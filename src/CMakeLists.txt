@@ -69,4 +69,6 @@ add_subdirectory(DAPluginSupport)
 add_dependencies(DAPluginSupport DAInterface DAPyWorkFlow)
 
 add_subdirectory(APP)
+# 将 App 目标名继续传递到根作用域，供根 CMakeLists.txt 的翻译块 add_dependencies 使用
+set(DA_APP_NAME ${DA_APP_NAME} PARENT_SCOPE)
 

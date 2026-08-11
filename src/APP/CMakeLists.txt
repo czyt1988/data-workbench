@@ -11,6 +11,8 @@ damacro_app_setting(
     2
     4
 )
+# 将 App 目标名传递到父作用域，供根 CMakeLists.txt 的翻译块 add_dependencies 使用
+set(DA_APP_NAME ${DA_APP_NAME} PARENT_SCOPE)
 
 
 

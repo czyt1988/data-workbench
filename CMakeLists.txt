@@ -336,84 +336,58 @@ if(DA_ENABLE_AUTO_TRANSLATE)
         ${CMAKE_CURRENT_SOURCE_DIR}/plugins/DataAnalysis
     )
 
-    # 根据Qt版本选择不同的翻译API
-    # Qt 6.2+ 推荐使用分离的 lupdate/lrelease 流程
-    if(QT_VERSION_MAJOR EQUAL 6 AND QT_VERSION VERSION_GREATER_EQUAL "6.2")
-        # 使用新API：手动分离 lupdate (更新.ts) 和 lrelease (生成.qm)
-        # 优点：
-        # - update_translations 目标（手动触发，更新.ts文件）
-        # - release_translations 目标（自动构建，生成.qm文件）
-        # - 避免每次构建都重写.ts文件
-        
-        # 1. 创建手动触发的lupdate目标（不加入ALL，避免每次构建运行）
-        add_custom_target(update_translations
-            COMMAND Qt${QT_VERSION_MAJOR}::lupdate
-                -locations relative
-                -no-obsolete
-                ${DA_LUPDATE_SOURCE_DIRS}
-                -ts ${DA_TS_FILES}
-            COMMENT "Updating translation files (.ts) - run manually when needed"
-            VERBATIM
-        )
+    # 统一的 lupdate/lrelease 翻译流程（兼容 Qt5.3+ 和 Qt6.2+）
+    # - update_translations: 手动目标，运行 lupdate 从源码提取 tr() → .ts
+    # - da_translations: ALL 目标，运行 lrelease 编译 .ts → .qm，并部署到运行时目录
+    # .qm 文件显式依赖 .ts 文件，确保编辑 .ts 后 .qm 一定会重新生成
 
-        # 2. 自动构建的lrelease目标（只从.ts生成.qm）
-        set(DA_QM_FILES)
-        foreach(ts_file ${DA_TS_FILES})
-            get_filename_component(ts_name ${ts_file} NAME_WE)
-            set(qm_file "${CMAKE_CURRENT_BINARY_DIR}/${ts_name}.qm")
-            list(APPEND DA_QM_FILES ${qm_file})
-
-            add_custom_command(OUTPUT ${qm_file}
-                COMMAND Qt${QT_VERSION_MAJOR}::lrelease
-                    ${ts_file}
-                    -qm ${qm_file}
-                DEPENDS ${ts_file}
-                COMMENT "Compiling ${ts_name}.ts -> ${ts_name}.qm"
-                VERBATIM
-            )
-        endforeach()
-
-        # 3. 将release目标加入默认构建
-        add_custom_target(da_translations ALL DEPENDS ${DA_QM_FILES})
-
-        message(STATUS "Translation enabled (Qt6.2+ separated API)")
-        message(STATUS "  QM files: ${DA_QM_FILES}")
-        message(STATUS "  To update .ts files: cmake --build <dir> --target update_translations")
-
-    else()
-        # 兼容旧版API：qt5_create_translation / qt6_create_translation
-        # 注意：此方式会在每次构建时运行 lupdate，可能导致.ts文件被无意义地重写
-        # 建议升级到 Qt 6.2+ 以使用新API
-        if(QT_VERSION_MAJOR EQUAL 5)
-            qt5_create_translation(DA_QM_FILES ${DA_LUPDATE_SOURCE_DIRS} ${DA_TS_FILES}
-                OPTIONS -locations relative -no-obsolete -extensions cpp,h,cc,cxx,hh,hxx,hpp,ui)
-        elseif(QT_VERSION_MAJOR EQUAL 6)
-            qt6_create_translation(DA_QM_FILES ${DA_LUPDATE_SOURCE_DIRS} ${DA_TS_FILES}
-                OPTIONS -locations relative -no-obsolete -extensions cpp,h,cc,cxx,hh,hxx,hpp,ui)
-        endif()
-
-        add_custom_target(da_translations ALL DEPENDS ${DA_QM_FILES})
-
-        message(STATUS "Translation enabled (legacy API, consider upgrading to Qt 6.2+)")
-        message(STATUS "  QM files: ${DA_QM_FILES}")
-        message(STATUS "  WARNING: .ts files may be rewritten on every build")
+    # 确认 lrelease/lupdate 导入目标可用
+    if(NOT TARGET Qt${QT_VERSION_MAJOR}::lrelease OR NOT TARGET Qt${QT_VERSION_MAJOR}::lupdate)
+        message(FATAL_ERROR
+            "Qt${QT_VERSION_MAJOR}::lrelease or Qt${QT_VERSION_MAJOR}::lupdate target not found. "
+            "Ensure Qt Linguist tools are installed for Qt${QT_VERSION_MAJOR}.")
     endif()
 
-    # 把 .qm 文件复制到构建输出目录，确保从 build 目录运行时翻译可用。
-    # 与 PyScripts 的 file(COPY) 模式一致（见上方 line 264）。
-    # 注：VS 多配置生成器下 exe 在 bin/<config>/ 子目录，
-    # PyScripts 和 translations 同样在 bin/ 层级——与 install 目录布局一致。
+    # 运行时翻译输出目录（构建时从 build 目录运行程序时加载 .qm 的位置）
+    # VS 多配置生成器下 exe 在 bin/<config>/，translations 在 bin/translations/，
+    # 运行时通过 <exe>/../translations 回退路径加载（见 DATranslatorManeger.cpp）
     set(DA_QM_OUTPUT_DIR "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/translations")
     file(MAKE_DIRECTORY "${DA_QM_OUTPUT_DIR}")
-    foreach(_qm_file ${DA_QM_FILES})
-        add_custom_command(TARGET da_translations POST_BUILD
+
+    # lrelease: 编译 .ts → .qm（显式依赖 .ts），同时部署到运行时翻译目录
+    # 将 copy_if_different 内联到生成步骤中，确保 .qm 重新生成时一定会重新部署
+    set(DA_QM_FILES)
+    foreach(ts_file ${DA_TS_FILES})
+        get_filename_component(ts_name ${ts_file} NAME_WE)
+        set(qm_file "${CMAKE_CURRENT_BINARY_DIR}/${ts_name}.qm")
+        list(APPEND DA_QM_FILES ${qm_file})
+
+        add_custom_command(OUTPUT ${qm_file}
+            COMMAND Qt${QT_VERSION_MAJOR}::lrelease ${ts_file} -qm ${qm_file}
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${_qm_file}" "${DA_QM_OUTPUT_DIR}/"
-            COMMENT "Copying ${_qm_file} -> ${DA_QM_OUTPUT_DIR}"
+                "${qm_file}" "${DA_QM_OUTPUT_DIR}/"
+            DEPENDS ${ts_file}
+            COMMENT "Compiling ${ts_name}.ts -> ${ts_name}.qm and deploying to ${DA_QM_OUTPUT_DIR}"
+            VERBATIM
         )
     endforeach()
 
+    # 手动触发的 lupdate 目标（不加入 ALL，避免每次构建重写 .ts）
+    # 新增 tr() 字符串后运行: cmake --build <dir> --target update_translations
+    add_custom_target(update_translations
+        COMMAND Qt${QT_VERSION_MAJOR}::lupdate
+            -locations relative -no-obsolete
+            ${DA_LUPDATE_SOURCE_DIRS}
+            -ts ${DA_TS_FILES}
+        COMMENT "Updating translation source files (.ts) - run manually when new tr() strings are added"
+        VERBATIM
+    )
+
+    # 自动构建的翻译目标（加入 ALL，编译 .ts → .qm 并部署到运行时目录）
+    add_custom_target(da_translations ALL DEPENDS ${DA_QM_FILES})
+
     # 复制 3rdparty 安装目录中已有的 SARibbon .qm 文件到构建输出 translations/ 目录
+    # 注：file(GLOB) 在配置时执行，3rdparty 重新编译后需重新配置 CMake 才能拾取新文件
     set(_3rdparty_tr_dir "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/translations")
     if(EXISTS "${_3rdparty_tr_dir}")
         file(GLOB _saribbon_qm_files "${_3rdparty_tr_dir}/SARibbon_*.qm")
@@ -425,6 +399,13 @@ if(DA_ENABLE_AUTO_TRANSLATE)
             )
         endforeach()
     endif()
+
+    # 将翻译目标绑定到 App，确保构建 App 时翻译也会生成
+    add_dependencies(${DA_APP_NAME} da_translations)
+
+    message(STATUS "Translation enabled (unified lupdate/lrelease API)")
+    message(STATUS "  QM files: ${DA_QM_FILES}")
+    message(STATUS "  To update .ts files: cmake --build <dir> --target update_translations")
 
     install(FILES ${DA_QM_FILES}
                 DESTINATION ${CMAKE_INSTALL_BINDIR}/translations
