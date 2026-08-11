@@ -223,6 +223,15 @@ void DAAgentModule::stop()
     }
 }
 
+void DAAgentModule::shutdown()
+{
+    // 阻塞停止 agent 子进程，确保在 Python 解释器关闭前子进程已干净退出。
+    // 仅在 AppMainWindow::closeEvent 中调用（QApplication 事件循环尚在运行）。
+    if (m_bridge) {
+        m_bridge->stopAgent();
+    }
+}
+
 void DAAgentModule::sendUserAnswer(const QString& answer)
 {
     // 持久化：吸收原 connectSignals 的 dock::userAnswerSelected 持久化 lambda

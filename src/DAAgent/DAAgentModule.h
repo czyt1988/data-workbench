@@ -57,6 +57,8 @@ public:
     void sendMessage(const QString& text) override;
     /// @copydoc DAAgentInterface::stop
     void stop() override;
+    /// @copydoc DAAgentInterface::shutdown
+    void shutdown() override;
     /// @copydoc DAAgentInterface::sendUserAnswer
     void sendUserAnswer(const QString& answer) override;
     /// @copydoc DAAgentInterface::isRunning

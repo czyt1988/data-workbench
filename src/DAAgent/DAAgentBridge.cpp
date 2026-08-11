@@ -133,16 +133,22 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
 
 void DAAgentBridge::stopAgent()
 {
+    if (m_stopped) {
+        return;
+    }
+    m_stopped = true;
+
     m_inactivityTimer->stop();
     // 停止 ready 超时计时器(若还在等待)
     if (m_readyTimer) {
         m_readyTimer->stop();
-        m_readyTimer->deleteLater();
+        delete m_readyTimer;
         m_readyTimer = nullptr;
     }
     if (m_running && m_process) {
         m_userRequestedStop = true;  // 标记主动停止，防止 onProcessFinished 误判为崩溃
         writeJson(QJsonObject{{"type", "stop"}});
+        m_process->closeWriteChannel();  // 关闭 stdin 写通道，使 Python 端 read1() 收到 EOF，reader 线程退出释放 BufferedReader 锁
         m_process->waitForFinished(m_stopTimeoutMs);  // 可配超时(默认 5s)
         if (m_process->state() != QProcess::NotRunning) {
             m_process->kill();
@@ -157,13 +163,13 @@ void DAAgentBridge::requestStop()
     // 停止 ready 超时计时器(若还在等待)
     if (m_readyTimer) {
         m_readyTimer->stop();
-        m_readyTimer->deleteLater();
+        delete m_readyTimer;
         m_readyTimer = nullptr;
     }
     // 停止已有的 stop 计时器(防止重复调用)
     if (m_stopTimer) {
         m_stopTimer->stop();
-        m_stopTimer->deleteLater();
+        delete m_stopTimer;
         m_stopTimer = nullptr;
     }
     if (m_running && m_process) {
@@ -179,7 +185,7 @@ void DAAgentBridge::requestStop()
             if (m_process && m_process->state() != QProcess::NotRunning) {
                 m_process->kill();
             }
-            m_stopTimer->deleteLater();
+            delete m_stopTimer;
             m_stopTimer = nullptr;
         });
         m_stopTimer->start(m_stopTimeoutMs);

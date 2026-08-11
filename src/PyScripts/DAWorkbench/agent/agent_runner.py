@@ -13,6 +13,7 @@ import codecs
 import collections
 import json
 import logging
+import os
 import sys
 import threading
 
@@ -1128,4 +1129,20 @@ if __name__ == "__main__":
     #   3. 避免 ProactorEventLoop 对 QProcess 管道句柄的 IOCP WinError 6 问题
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    finally:
+        # Safety net: close stdin fd 0 to unblock the reader daemon thread.
+        # C++ side calls QProcess::closeWriteChannel() which causes EOF on
+        # read1(), but this covers edge cases (e.g. process killed without
+        # graceful stop). Without this, the daemon thread holds the
+        # BufferedReader lock during interpreter finalization, causing
+        # _enter_buffered_busy fatal error.
+        try:
+            os.close(0)
+        except Exception:
+            pass
+        for t in threading.enumerate():
+            if t.name == "agent-stdin" and t.is_alive():
+                t.join(timeout=2.0)
+                break

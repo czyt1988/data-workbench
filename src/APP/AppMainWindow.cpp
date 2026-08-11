@@ -19,6 +19,7 @@
 #include "DAAppPluginManager.h"
 #include "DAAbstractPlugin.h"
 #include "DAAbstractNodePlugin.h"
+#include "DAAgentInterface.h"
 // 界面相关
 #include "DAAppController.h"
 #include "DAAppCore.h"
@@ -144,6 +145,10 @@ void AppMainWindow::changeEvent(QEvent* e)
  */
 void AppMainWindow::closeEvent(QCloseEvent* e)
 {
+    // 停止 agent 子进程，确保在 Python 解释器关闭前 agent 已干净退出
+    if (mCore && mCore->getAgentInterface()) {
+        mCore->getAgentInterface()->shutdown();
+    }
     // 退出时持久化应用配置（保证非设置对话框触发的改动也能保存）
     if (mConfig) {
         mConfig->saveConfig();

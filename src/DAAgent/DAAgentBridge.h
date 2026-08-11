@@ -226,6 +226,7 @@ private:
 
     QProcess* m_process = nullptr;
     bool m_running = false;
+    bool m_stopped = false;  // 防止 stopAgent() 重复执行（closeEvent + 析构双重调用）
     QByteArray m_stdoutBuffer;  // 累积不完整的行
     QMap<QString, DAAbstractAgentTool*> m_tools;  // tool name → tool impl
     QString m_pythonExePath;
