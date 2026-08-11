@@ -2,6 +2,7 @@
 #include <QFile>
 #include <QDir>
 #include <QDebug>
+#include <QCoreApplication>
 #include "DALogCategory.h"
 #include "qt_windows.h"
 namespace DA
@@ -111,7 +112,7 @@ bool DAAxObjectExcelWrapper::PrivateData::initialize(bool visible, bool displayA
 {
     HRESULT r = OleInitialize(0);
     if (r != S_OK && r != S_FALSE) {
-        daWarning.noquote() << QString("cannot initialize OLE, error code: %1").arg((int)r);
+        qWarning().noquote() << QString("cannot initialize OLE, error code: %1").arg((int)r);
     }
     mAxApp = std::make_unique< QAxObject >(q_ptr);
     if (!tryCreateComControl(mAxApp.get())) {
@@ -122,7 +123,7 @@ bool DAAxObjectExcelWrapper::PrivateData::initialize(bool visible, bool displayA
     setDisplayAlerts(displayAlerts);
     mAxWorkbooks = mAxApp->querySubObject("Workbooks");
     if (!mAxWorkbooks) {
-        daWarning.noquote() << "cannot query subobject 'Workbooks'";
+        qWarning().noquote() << "cannot query subobject 'Workbooks'";
         return false;
     }
     return true;
@@ -194,23 +195,23 @@ void DAAxObjectExcelWrapper::PrivateData::setDisplayAlerts(bool on)
 bool DAAxObjectExcelWrapper::PrivateData::open(const QString& filename, bool visible, bool displayAlerts)
 {
     if (!tryInitialize(visible, displayAlerts)) {
-        daWarning << QString("failed to initialize %1").arg(cappClassNames.join(","));
+        qWarning() << QString("failed to initialize %1").arg(cappClassNames.join(","));
         return false;
     }
     QString nativeFileName = QDir::toNativeSeparators(filename);
     if (!QFile::exists(nativeFileName)) {
-        daWarning << QString("file \"%1\" does not exist").arg(nativeFileName);
+        daWarning << QCoreApplication::translate("DAAxObjectExcelWrapper", "File \"%1\" does not exist").arg(nativeFileName);  //cn:文件 "%1" 不存在
         return false;
     }
     // 文件存在
     QAxObject* workbook = mAxWorkbooks->querySubObject("Open(const QString &)", nativeFileName);
     if (qaxobject_is_null(workbook)) {
-        daWarning << QString("failed to open Excel file \"%1\"").arg(nativeFileName);
+        daWarning << QCoreApplication::translate("DAAxObjectExcelWrapper", "Failed to open Excel file \"%1\"").arg(nativeFileName);  //cn:无法打开 Excel 文件 "%1"
         return false;
     }
     mAxWorkbook = mAxApp->querySubObject("ActiveWorkBook");
     if (!isHaveWorkbook()) {
-        daWarning << "cannot get Excel workbook";
+        qWarning() << "cannot get Excel workbook";
         return false;
     }
     mAxWorkSheets = mAxWorkbook->querySubObject("Sheets");  // 获得所有工作表对象
@@ -227,14 +228,14 @@ bool DAAxObjectExcelWrapper::PrivateData::open(const QString& filename, bool vis
 bool DAAxObjectExcelWrapper::PrivateData::create(const QString& filename, bool visible, bool displayAlerts)
 {
     if (!tryInitialize(visible, displayAlerts)) {
-        daWarning << QString("failed to initialize %1").arg(cappClassNames.join(","));
+        qWarning() << QString("failed to initialize %1").arg(cappClassNames.join(","));
         return false;
     }
     // 文件不存在则创建
     mAxWorkbooks->dynamicCall("Add");
     mAxWorkbook = mAxApp->querySubObject("ActiveWorkBook");
     if (!isHaveWorkbook()) {
-        daWarning << "cannot get Excel workbook";
+        qWarning() << "cannot get Excel workbook";
         return false;
     }
     saveAs(filename);

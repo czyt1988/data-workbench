@@ -49,7 +49,7 @@ void DAPluginManagerDialog::init()
     rootItem->setText(0, tr("Node Plugin"));  // cn:节点插件
     ui->treeWidget->insertTopLevelItem(0, rootItem);
     for (DAAbstractNodePlugin* p : nodeplugins) {
-        qDebug() << tr("Plugin name is %1").arg(p->getName());  // cn:插件名称为%1
+        qDebug() << QString("Plugin name is %1").arg(p->getName());  // cn:插件名称为%1
         QTreeWidgetItem* item = new QTreeWidgetItem(rootItem);
         item->setText(0, p->getName());
         item->setText(1, p->getVersion());

@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
 #ifdef Q_OS_WIN
     // 设置控制台输出代码页为 UTF-8 (65001)
     if (!SetConsoleOutputCP(CP_UTF8)) {
-        daWarning << "Failed to set console output codepage to UTF-8";
+        daWarning << QObject::tr("Failed to set console output codepage to UTF-8");  //cn:设置控制台输出代码页为 UTF-8 失败
     }
 #endif
     // 进行dump捕获

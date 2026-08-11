@@ -97,7 +97,7 @@ QString DAPyWorkFlow::addNode(const DAPyNode& proxy)
         }
         pybind11::object result = attr("add_node")(pyNodeRef);
         QString nodeIdStr       = result.cast< QString >();
-        DA_WF_DBG("[C++] WorkFlow::addNode: 节点已添加, nodeId=%s", nodeIdStr.toUtf8().constData());
+        DA_WF_DBG("[C++] WorkFlow::addNode: node added, nodeId=%s", nodeIdStr.toUtf8().constData());
         return nodeIdStr;
     } catch (const pybind11::error_already_set& e) {
         dealException(e);
@@ -181,7 +181,7 @@ DAPyNodeConnection DAPyWorkFlow::connectNode(const QString& srcNodeId,
             pybind11::cast(dstNodeId), pybind11::cast(dstChannel));
         result = conn;
         if (result) {
-            DA_WF_DBG("[C++] WorkFlow::connectNode: 连接成功, connId=%s",
+            DA_WF_DBG("[C++] WorkFlow::connectNode: connection succeeded, connId=%s",
                       result.getConnectionId().toUtf8().constData());
         }
     } catch (const pybind11::error_already_set& e) {

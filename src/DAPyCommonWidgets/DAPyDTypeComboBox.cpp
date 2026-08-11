@@ -259,7 +259,7 @@ void DAPyDTypeComboBox::setCurrentDType(const DAPyDType& dt)
         setCurrentIndex(index);
     } else {
         // dtype 不在预置列表中，追加一个新条目，避免覆盖已有预置项或静默丢弃
-        daWarning << "DType not in preset list, appending temporary item:" << dt.name();
+        qWarning() << "DType not in preset list, appending temporary item:" << dt.name();
         QString name = dt.displayName();
         QIcon icon   = getIconByDType(dt);
         addItem(icon, name, dt.name());

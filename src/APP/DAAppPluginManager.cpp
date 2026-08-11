@@ -69,7 +69,7 @@ void DAAppPluginManager::loadAllPlugins(DACoreInterface* c)
                 }
                 // 此操作是为了获取所有节点metadata
                 mNodeMetaDatas += fac->getNodeMetadataList();
-                qDebug() << tr("Successfully loaded plugin %1").arg(np->getName());  // cn:成功加载插件%1
+                qDebug() << QString("Successfully loaded plugin %1").arg(np->getName());  // cn:成功加载插件%1
             }
         }
     }
@@ -229,7 +229,7 @@ void DAAppPluginManager::initPyNodeFactory()
         // 扫描pyplugins目录，收集有效的Python插件路径
         QString pyPluginsDir  = QDir::toNativeSeparators(QApplication::applicationDirPath() + "/pyplugins");
         QStringList scanPaths = scanPyPluginsDir(pyPluginsDir);
-        qDebug() << tr("Pyplugins scan completed, found %1 valid Python plugin paths").arg(scanPaths.size());  // cn:Python插件扫描完成，发现%1个有效的Python插件路径
+        qDebug() << QString("Pyplugins scan completed, found %1 valid Python plugin paths").arg(scanPaths.size());  // cn:Python插件扫描完成，发现%1个有效的Python插件路径
 
         // 创建Python节点工厂，传入扫描路径并启用entry_points模式
         mPyNodeFactory = std::make_shared< DAPyNodeFactory >();
@@ -240,7 +240,7 @@ void DAAppPluginManager::initPyNodeFactory()
         }
         // 合并Python节点元数据
         mNodeMetaDatas += mPyNodeFactory->getNodeMetadataList();
-        qDebug() << tr("Python node factory initialized, discovered %1 nodes").arg(mPyNodeFactory->getNodeMetadataList().size());  // cn:Python节点工厂初始化完成，发现%1个节点
+        qDebug() << QString("Python node factory initialized, discovered %1 nodes").arg(mPyNodeFactory->getNodeMetadataList().size());  // cn:Python节点工厂初始化完成，发现%1个节点
     } catch (const std::exception& e) {
         daCritical << tr("Python node factory initialization failed: %1").arg(e.what());  // cn:Python节点工厂初始化失败:%1
         mPyNodeFactory.reset();

@@ -81,7 +81,7 @@ class DAWorkflow:
         # 获取 qualified_name（直接从类属性读取）
         qualified_name = getattr(node_instance, "qualified_name", None)
         if not qualified_name:
-            raise ValueError("节点实例必须有 qualified_name 属性")
+            raise ValueError("Node instance must have a qualified_name attribute")
 
         # 获取或生成 node_id
         existing_node_id = getattr(node_instance, "node_id", None)
@@ -96,7 +96,7 @@ class DAWorkflow:
             node_id = existing_node_id
 
         if node_id in self._nodes:
-            raise KeyError(f"节点 ID '{node_id}' 已存在")
+            raise KeyError(f"Node ID '{node_id}' already exists")
 
         self._nodes[node_id] = node_instance
         return node_id
@@ -117,13 +117,13 @@ class DAWorkflow:
         if node_instance is not None:
             resolved_id = getattr(node_instance, "node_id", None)
             if resolved_id is None:
-                raise ValueError("节点实例没有 node_id 属性")
+                raise ValueError("Node instance has no node_id attribute")
             node_id = resolved_id
         elif node_id is None:
-            raise ValueError("必须提供 node_id 或 node_instance")
+            raise ValueError("Must provide node_id or node_instance")
 
         if node_id not in self._nodes:
-            raise KeyError(f"节点 ID '{node_id}' 不存在")
+            raise KeyError(f"Node ID '{node_id}' does not exist")
 
         # 先移除相关的连接
         related_conn_ids = [
@@ -150,9 +150,9 @@ class DAWorkflow:
         """
         # 验证源节点和目标节点存在
         if connection.source_node_id not in self._nodes:
-            raise KeyError(f"源节点 '{connection.source_node_id}' 不存在")
+            raise KeyError(f"Source node '{connection.source_node_id}' does not exist")
         if connection.target_node_id not in self._nodes:
-            raise KeyError(f"目标节点 '{connection.target_node_id}' 不存在")
+            raise KeyError(f"Target node '{connection.target_node_id}' does not exist")
 
         # 检查是否已有相同端口的连接
         for existing_conn in self._connections.values():
@@ -163,12 +163,12 @@ class DAWorkflow:
                 and existing_conn.target_input_channel == connection.target_input_channel
             ):
                 raise ValueError(
-                    f"连接已存在: {existing_conn.source_node_id}:{existing_conn.source_output_channel} -> "
+                    f"Connection already exists: {existing_conn.source_node_id}:{existing_conn.source_output_channel} -> "
                     f"{existing_conn.target_node_id}:{existing_conn.target_input_channel}"
                 )
 
         if connection.connection_id in self._connections:
-            raise KeyError(f"连接 ID '{connection.connection_id}' 已存在")
+            raise KeyError(f"Connection ID '{connection.connection_id}' already exists")
 
         self._connections[connection.connection_id] = connection
         return connection.connection_id
@@ -182,7 +182,7 @@ class DAWorkflow:
         :raises KeyError: 如果 connection_id 不存在
         """
         if connection_id not in self._connections:
-            raise KeyError(f"连接 ID '{connection_id}' 不存在")
+            raise KeyError(f"Connection ID '{connection_id}' does not exist")
         return self._connections.pop(connection_id)
 
     def get_nodes(self) -> list:
@@ -219,7 +219,7 @@ class DAWorkflow:
         :raises KeyError: 如果 node_id 不存在
         """
         if node_id not in self._nodes:
-            raise KeyError(f"节点 ID '{node_id}' 不存在")
+            raise KeyError(f"Node ID '{node_id}' does not exist")
         return self._nodes[node_id]
 
     def get_connections_for_node(self, node_id: str) -> list:
@@ -329,7 +329,7 @@ class DAWorkflow:
         :raises ValueError: 如果工作流存在环（不是有效的 DAG）
         """
         if not self.is_valid_dag():
-            raise ValueError("工作流存在环，无法进行拓扑排序")
+            raise ValueError("Workflow contains a cycle, cannot perform topological sort")
 
         if not self._nodes:
             return []
@@ -448,7 +448,7 @@ class DAWorkflow:
         :raises KeyError: node_id 不存在
         """
         if node_id not in self._nodes:
-            raise KeyError(f"节点 ID '{node_id}' 不存在")
+            raise KeyError(f"Node ID '{node_id}' does not exist")
         return NodeProxy(self, node_id)
 
     def __len__(self) -> int:

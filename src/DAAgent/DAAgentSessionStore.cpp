@@ -67,7 +67,7 @@ QString DAAgentSessionStore::createSession(const QString& projectPath)
     // 创建空 jsonl 文件（占位，确保文件存在）
     QFile f(d->sessionFilePath(sid));
     if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        daWarning << "DAAgentSessionStore: failed to create session file:" << f.fileName()
+        qWarning() << "DAAgentSessionStore: failed to create session file:" << f.fileName()
                   << "error:" << f.errorString();  // cn: 创建会话文件失败
     } else {
         f.close();
@@ -96,7 +96,7 @@ void DAAgentSessionStore::deleteSession(const QString& id)
     // 删 jsonl 文件
     QFile f(d->sessionFilePath(id));
     if (f.exists() && !f.remove()) {
-        daWarning << "DAAgentSessionStore: failed to remove session file:" << f.fileName()
+        qWarning() << "DAAgentSessionStore: failed to remove session file:" << f.fileName()
                   << "error:" << f.errorString();  // cn: 删除会话文件失败
     }
 
@@ -171,7 +171,7 @@ void DAAgentSessionStore::appendRecord(const QString& sessionId, const QJsonObje
     // 崩溃安全：Append|Text|WriteOnly，每条即写 flush
     QFile f(d->sessionFilePath(sessionId));
     if (!f.open(QIODevice::Append | QIODevice::Text | QIODevice::WriteOnly)) {
-        daWarning << "DAAgentSessionStore: failed to open session file for append:" << f.fileName()
+        qWarning() << "DAAgentSessionStore: failed to open session file for append:" << f.fileName()
                   << "error:" << f.errorString();  // cn: 打开会话文件追加失败
         return;
     }
@@ -331,7 +331,7 @@ void DAAgentSessionStore::cleanupOldSessions(int maxCount, int retentionDays, co
     for (const QString& id : idsToDelete) {
         QFile f(d->sessionFilePath(id));
         if (f.exists() && !f.remove()) {
-            daWarning << "DAAgentSessionStore: cleanup failed to remove file:" << f.fileName()
+            qWarning() << "DAAgentSessionStore: cleanup failed to remove file:" << f.fileName()
                       << "error:" << f.errorString();  // cn: 清理时删除文件失败
         }
     }
@@ -376,7 +376,7 @@ void DAAgentSessionStore::importSessionFiles(const QHash<QString, QByteArray>& f
         // 写 jsonl 文件
         QFile f(d->sessionFilePath(id));
         if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            daWarning << "DAAgentSessionStore: import failed to write file:" << f.fileName()
+            qWarning() << "DAAgentSessionStore: import failed to write file:" << f.fileName()
                       << "error:" << f.errorString();  // cn: 导入会话文件写入失败
             continue;
         }
@@ -526,7 +526,7 @@ QVector<DAAgentSessionStore::SessionMeta> DAAgentSessionStore::PrivateData::read
     QJsonParseError err;
     QJsonDocument doc = QJsonDocument::fromJson(data, &err);
     if (err.error != QJsonParseError::NoError || !doc.isArray()) {
-        daWarning << "DAAgentSessionStore: index file corrupted:" << err.errorString()
+        qWarning() << "DAAgentSessionStore: index file corrupted:" << err.errorString()
                   << "at:" << indexFilePath();  // cn: 索引文件损坏
         return out;
     }
@@ -564,7 +564,7 @@ bool DAAgentSessionStore::PrivateData::writeIndex(const QVector<SessionMeta>& me
     QString tmpPath = indexFilePath() + ".tmp";
     QFile tf(tmpPath);
     if (!tf.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        daWarning << "DAAgentSessionStore: failed to open index tmp file for write:" << tmpPath
+        qWarning() << "DAAgentSessionStore: failed to open index tmp file for write:" << tmpPath
                   << "error:" << tf.errorString();  // cn: 打开索引临时文件失败
         return false;
     }
@@ -575,7 +575,7 @@ bool DAAgentSessionStore::PrivateData::writeIndex(const QVector<SessionMeta>& me
     // rename 覆盖（QFile::rename 在目标存在时失败，先 remove）
     QFile::remove(indexFilePath());
     if (!tf.rename(indexFilePath())) {
-        daWarning << "DAAgentSessionStore: failed to rename index tmp file:" << tmpPath
+        qWarning() << "DAAgentSessionStore: failed to rename index tmp file:" << tmpPath
                   << "->" << indexFilePath();  // cn: 重命名索引临时文件失败
         return false;
     }
@@ -609,7 +609,7 @@ bool DAAgentSessionStore::PrivateData::readLastActivePointer(QString& sid, QStri
     QJsonParseError err;
     QJsonDocument doc = QJsonDocument::fromJson(data, &err);
     if (err.error != QJsonParseError::NoError || !doc.isObject()) {
-        daWarning << "DAAgentSessionStore: last_active.json corrupted:" << err.errorString();  // cn: last_active 文件损坏
+        qWarning() << "DAAgentSessionStore: last_active.json corrupted:" << err.errorString();
         return false;
     }
     QJsonObject o = doc.object();
@@ -628,7 +628,7 @@ bool DAAgentSessionStore::PrivateData::writeLastActive(const QString& sessionId,
     QString tmpPath = lastActiveFilePath() + ".tmp";
     QFile tf(tmpPath);
     if (!tf.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        daWarning << "DAAgentSessionStore: failed to open last_active tmp file:" << tmpPath
+        qWarning() << "DAAgentSessionStore: failed to open last_active tmp file:" << tmpPath
                   << "error:" << tf.errorString();  // cn: 打开 last_active 临时文件失败
         return false;
     }
@@ -638,7 +638,7 @@ bool DAAgentSessionStore::PrivateData::writeLastActive(const QString& sessionId,
 
     QFile::remove(lastActiveFilePath());
     if (!tf.rename(lastActiveFilePath())) {
-        daWarning << "DAAgentSessionStore: failed to rename last_active tmp file:" << tmpPath
+        qWarning() << "DAAgentSessionStore: failed to rename last_active tmp file:" << tmpPath
                   << "->" << lastActiveFilePath();  // cn: 重命名 last_active 临时文件失败
         return false;
     }
@@ -652,7 +652,7 @@ QJsonObject DAAgentSessionStore::PrivateData::parseLineTolerant(const QByteArray
     QJsonParseError err;
     QJsonDocument doc = QJsonDocument::fromJson(trimmed, &err);
     if (err.error != QJsonParseError::NoError || !doc.isObject()) {
-        daWarning << "DAAgentSessionStore: skipping corrupted JSONL line in session" << sessionId
+        qWarning() << "DAAgentSessionStore: skipping corrupted JSONL line in session" << sessionId
                   << ":" << err.errorString();  // cn: 跳过损坏的 JSONL 行
         return QJsonObject();
     }

@@ -105,13 +105,13 @@ void DADockingAreaInterface::hideDockWidget(QWidget* w)
     ads::CDockWidget* d = findDockWidget(w);
     if (d) {
         d->toggleView(false);
-        qDebug().noquote() << tr("dock widget \"%1\" was closed and hidden").arg(d->windowTitle());  // cn:停靠窗口"%1"隐藏并关闭
+        qDebug().noquote() << QString("dock widget \"%1\" was closed and hidden").arg(d->windowTitle());  // cn:停靠窗口"%1"隐藏并关闭
     } else {
         d = qobject_cast< ads::CDockWidget* >(w);
         if (d) {
             d->toggleView(false);
         } else {
-            qDebug().noquote() << tr("cannot find widget or dock widget");  // cn:无法找到需要隐藏的dock 窗口
+            qDebug().noquote() << QString("cannot find widget or dock widget");  // cn:无法找到需要隐藏的dock 窗口
         }
     }
 }

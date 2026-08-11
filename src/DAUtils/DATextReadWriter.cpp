@@ -176,7 +176,7 @@ bool DATextReadWriter::open(QIODevice::OpenMode mode)
 	if (d_ptr->file->open(mode)) {
 		return true;
 	}
-	qDebug() << tr("cannot open %1, because %2").arg(d_ptr->file->fileName()).arg(d_ptr->file->errorString());  // cn:无法打开 %1，原因：%2
+	qDebug() << QString("cannot open %1, because %2").arg(d_ptr->file->fileName()).arg(d_ptr->file->errorString());  // cn:无法打开 %1，原因：%2
 	// int code = static_cast< DATextReadWriter::ErrorCode >(d_ptr->file->error());
 	// emit occurError(code, d_ptr->file->errorString());
 	return false;

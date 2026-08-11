@@ -305,7 +305,7 @@ bool DAZipArchive::write(const QString& relatePath, const QByteArray& byte)
 	                  Z_DEFLATED,
 	                  DAZipArchive::PrivateData::s_zip_compress_level)) {
 		d->mLastErrorString = zipFile.errorString();
-		qDebug() << tr("The file %1 in the archive could not be opened. The reason for the error is %2")
+		qDebug() << QString("The file %1 in the archive could not be opened. The reason for the error is %2")
 		                .arg(relatePath, zipFile.errorString());  // cn:无法打开文件中的%1,错误原因为%2
 		return false;
 	}
@@ -364,7 +364,7 @@ bool DAZipArchive::writeFileToZip(const QString& relatePath, const QString& loca
 {
 	DA_D(d);
 	if (!isOpened() || !d->ensureOpenForWrite()) {
-		qDebug() << tr("archive is not open");  // cn:文件还未打开
+		qDebug() << QString("archive is not open");  // cn:文件还未打开
 		return false;
 	}
 	return writeFileToZip(d->mZip.get(), relatePath, localFilePath, chunk_mb);
@@ -379,13 +379,13 @@ QByteArray DAZipArchive::read(const QString& relatePath)
 {
 	DA_D(d);
 	if (!isOpened() || !d->ensureOpenForRead()) {
-		qDebug() << tr("archive is not open");  // cn:文件还未打开
+		qDebug() << QString("archive is not open");  // cn:文件还未打开
 		return QByteArray();
 	}
 
 	if (!d->mZip->setCurrentFile(relatePath)) {
 		d->mLastErrorString = d->errorStringFromZipError(d->mZip->getZipError());
-		qDebug() << tr("Unable to locate the %1 file in the current archive. The error code is %2,err str:%3")
+		qDebug() << QString("Unable to locate the %1 file in the current archive. The error code is %2,err str:%3")
 		                .arg(relatePath)
 		                .arg(d->mZip->getZipError())
 		                .arg(d->mLastErrorString);  // cn:无法找到当前档案下的%1文件。错误码为%2,错误内容为:%3
@@ -395,7 +395,7 @@ QByteArray DAZipArchive::read(const QString& relatePath)
 	QuaZipFile zipFile(d->mZip.get());
 	if (!zipFile.open(QIODevice::ReadOnly)) {
 		d->mLastErrorString = zipFile.errorString();
-		qDebug() << tr("The file %1 in the archive could not be opened. The error code is %2")
+		qDebug() << QString("The file %1 in the archive could not be opened. The error code is %2")
 		                .arg(relatePath)
 		                .arg(zipFile.getZipError());  // cn:无法打开档案中的%1文件，错误码为%2
 		return QByteArray();
@@ -434,7 +434,7 @@ bool DAZipArchive::readToFile(const QString& zipRelatePath, const QString& local
 {
 	DA_D(d);
 	if (!isOpened()) {
-		qDebug() << tr("archive is not open");  // cn:文件还未打开
+		qDebug() << QString("archive is not open");  // cn:文件还未打开
 		return false;
 	}
 	return readToFile(d->mZip.get(), zipRelatePath, localFilePath, chunk_mb);
@@ -561,7 +561,7 @@ QString DAZipArchive::getComment() const
 {
 	DA_DC(d);
 	if (!isOpened()) {
-		qDebug() << tr("archive is not open");  // cn:文件还未打开
+		qDebug() << QString("archive is not open");  // cn:文件还未打开
 		return QString();
 	}
 
@@ -572,7 +572,7 @@ void DAZipArchive::setComment(const QString& comment)
 {
 	DA_D(d);
 	if (!isOpened()) {
-		qDebug() << tr("archive is not open");  // cn:文件还未打开
+		qDebug() << QString("archive is not open");  // cn:文件还未打开
 		return;
 	}
 
@@ -588,7 +588,7 @@ bool DAZipArchive::extractToDirectory(const QString& extractDir)
 {
 	DA_D(d);
 	if (!isOpened() && !open()) {
-		qDebug() << tr("cannot open archive");  // cn:无法打开档案
+		qDebug() << QString("cannot open archive");  // cn:无法打开档案
 		return false;
 	}
 	return extractToDirectory(d->mZip.get(), extractDir);
@@ -598,7 +598,7 @@ bool DAZipArchive::compressDirectory(const QString& folderPath)
 {
 	DA_D(d);
 	if (!isOpened() && !create()) {
-		qDebug() << tr("cannot open archive");  // cn:无法打开档案
+		qDebug() << QString("cannot open archive");  // cn:无法打开档案
 		return false;
 	}
 	return compressDirectory(folderPath, d->mZip.get());
@@ -777,7 +777,7 @@ bool DAZipArchive::extractToDirectory(QuaZip* zip, const QString& extractDir)
 	// 确保目标目录存在
 	QDir targetDir(extractDir);
 	if (!targetDir.exists() && !targetDir.mkpath(".")) {
-		qDebug() << tr("Failed to create target directory:%1").arg(extractDir);  // cn:无法创建目标文件夹%1
+		qDebug() << QString("Failed to create target directory:%1").arg(extractDir);  // cn:无法创建目标文件夹%1
 		return false;
 	}
 

@@ -130,8 +130,8 @@ public:
                 if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(plot)) {
                     fig->addItem_(chart, item, true);
                 } else {
-                    daCritical << "Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
-                                  "type was added to the figure";  // cn:意外的绘图操作：不属于 DAChartWidget 类型的图表被添加到了 figure 中
+                    daCritical << tr("Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
+                                  "type was added to the figure");  //cn:意外的绘图操作：不属于 DAChartWidget 类型的图表被添加到了 figure 中
                     item->detach();
                     delete item;
                 }
@@ -1097,7 +1097,7 @@ void DAFigureWidget::beginChartEditor(ChartEditorType type)
         d->beginHorizontalProbeEditor();
         break;
     default:
-        daWarning << QString("Unsupported chart editor type: %1").arg(type);  // cn:不支持的图表编辑器类型：%1
+        daWarning << tr("Unsupported chart editor type: %1").arg(type);  //cn:不支持的图表编辑器类型：%1
         break;
     }
 }

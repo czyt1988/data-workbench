@@ -102,8 +102,8 @@ class DANodeRegistry:
         qualified_name = getattr(node_class, "qualified_name", None)
         if not qualified_name:
             raise ValueError(
-                f"类 {node_class.__name__} 没有 qualified_name 属性，"
-                "请先使用 NodeDef 装饰器声明节点类型"
+                f"Class {node_class.__name__} has no qualified_name attribute, "
+                "please declare the node type with the NodeDef decorator first"
             )
 
         if qualified_name in self._registry:
@@ -319,7 +319,7 @@ class DANodeRegistry:
         :raises KeyError: 如果 qualified_name 未注册
         """
         if qualified_name not in self._registry:
-            raise KeyError(f"节点 '{qualified_name}' 未注册")
+            raise KeyError(f"Node '{qualified_name}' is not registered")
         return self._registry[qualified_name]
 
     def unregister_node(self, qualified_name: str) -> type:
@@ -332,7 +332,7 @@ class DANodeRegistry:
         :raises KeyError: 如果 qualified_name 未注册
         """
         if qualified_name not in self._registry:
-            raise KeyError(f"节点 '{qualified_name}' 未注册")
+            raise KeyError(f"Node '{qualified_name}' is not registered")
         return self._registry.pop(qualified_name)
 
     def clear(self):

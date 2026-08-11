@@ -71,7 +71,7 @@ void DAPluginManager::PrivateData::updateIgnoreSet()
         }
         mIgnorePluginBaseName.insert(line.toLower());
     }
-    daInfo << "will ignore plugin:" << mIgnorePluginBaseName;  // cn:将忽略以下插件
+    daInfo << DAPluginManager::tr("Will ignore plugin:") << mIgnorePluginBaseName;  //cn:将忽略以下插件
 }
 
 void DAPluginManager::PrivateData::ensureIgnoreFileExist()

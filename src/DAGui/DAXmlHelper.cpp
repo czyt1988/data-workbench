@@ -152,19 +152,19 @@ void DAXmlHelper::PrivateData::saveWorkflow(DAPyWorkFlowEditWidget* wfe, QDomDoc
     // extern info由scene的serializer处理
     QDomElement externEle = doc.createElement("extern");
     workflowEle.appendChild(externEle);
-    qDebug() << QObject::tr("save workflow extern info cost: %1 ms").arg(tes.restart());  // cn:保存工作流扩展信息耗时: %1 ms
+    qDebug() << QString("save workflow extern info cost: %1 ms").arg(tes.restart());  // cn:保存工作流扩展信息耗时: %1 ms
     // 保存所有节点
     saveNodes(wfe, doc, workflowEle);
-    qDebug() << QObject::tr("save workflow nodes cost: %1 ms").arg(tes.restart());  // cn:保存工作流节点耗时: %1 ms
+    qDebug() << QString("save workflow nodes cost: %1 ms").arg(tes.restart());  // cn:保存工作流节点耗时: %1 ms
     // 保存所有连接
     saveNodeLinks(workFlowScene, doc, workflowEle);
-    qDebug() << QObject::tr("save workflow links cost: %1 ms").arg(tes.restart());  // cn:保存工作流连线耗时: %1 ms
+    qDebug() << QString("save workflow links cost: %1 ms").arg(tes.restart());  // cn:保存工作流连线耗时: %1 ms
     // 保存特殊的item。例如文本
     saveCommonItems(workFlowScene, doc, workflowEle);
-    qDebug() << QObject::tr("save special item cost: %1 ms").arg(tes.restart());  // cn:保存特殊图元耗时: %1 ms
+    qDebug() << QString("save special item cost: %1 ms").arg(tes.restart());  // cn:保存特殊图元耗时: %1 ms
     // 保存scene信息
     saveSecenInfo(workFlowScene, doc, workflowEle);
-    qDebug() << QObject::tr("save scene info cost: %1 ms").arg(tes.restart());  // cn:保存场景信息耗时: %1 ms
+    qDebug() << QString("save scene info cost: %1 ms").arg(tes.restart());  // cn:保存场景信息耗时: %1 ms
     // 保存完成，设置场景就绪
     workFlowScene->setReady(true);
 }
@@ -193,27 +193,27 @@ bool DAXmlHelper::PrivateData::loadWorkflow(DAPyWorkFlowEditWidget* wfe, const Q
     // extern info由scene的serializer处理
     QDomElement externEle = workflowEle.firstChildElement("extern");
     Q_UNUSED(externEle);
-    qDebug() << QObject::tr("load workflow extern info cost: %1 ms").arg(tes.restart());  // cn:加载工作流扩展信息耗时: %1 ms
+    qDebug() << QString("load workflow extern info cost: %1 ms").arg(tes.restart());  // cn:加载工作流扩展信息耗时: %1 ms
     // 从文件加载
     if (!loadNodes(workFlowScene, workflowEle)) {
         daCritical << QObject::tr("error occurred while loading nodes");  // cn:加载节点时发生错误
     }
-    qDebug() << QObject::tr("load workflow nodes cost: %1 ms").arg(tes.restart());  // cn:加载工作流节点耗时: %1 ms
+    qDebug() << QString("load workflow nodes cost: %1 ms").arg(tes.restart());  // cn:加载工作流节点耗时: %1 ms
 
     if (!loadNodeLinks(workFlowScene, workflowEle)) {
         daCritical << QObject::tr("error occurred while loading node links");  // cn:加载节点连线时发生错误
     }
-    qDebug() << QObject::tr("load workflow links cost: %1 ms").arg(tes.restart());  // cn:加载工作流连线耗时: %1 ms
+    qDebug() << QString("load workflow links cost: %1 ms").arg(tes.restart());  // cn:加载工作流连线耗时: %1 ms
     // false代表不进行回退操作
     if (!loadCommonItems(workFlowScene, workflowEle, false)) {
         daCritical << QObject::tr("error occurred while loading special items");  // cn:加载特殊图元时发生错误
     }
-    qDebug() << QObject::tr("load special item cost: %1 ms").arg(tes.restart());  // cn:加载特殊图元耗时: %1 ms
+    qDebug() << QString("load special item cost: %1 ms").arg(tes.restart());  // cn:加载特殊图元耗时: %1 ms
 
     if (!loadSecenInfo(workFlowScene, workflowEle)) {
         daCritical << QObject::tr("error occurred while loading scene info");  // cn:加载场景信息时发生错误
     }
-    qDebug() << QObject::tr("load scene info cost: %1 ms").arg(tes.restart());  // cn:加载场景信息耗时: %1 ms
+    qDebug() << QString("load scene info cost: %1 ms").arg(tes.restart());  // cn:加载场景信息耗时: %1 ms
 
     // 加载完成，设置场景就绪
     workFlowScene->setReady(true);
@@ -525,7 +525,7 @@ bool DAXmlHelper::PrivateData::loadFactoryInfo(DAPyWorkFlowGraphicsScene* scene,
         // 旧版本文件有factory信息，跳过处理但记录日志
         QDomNodeList factoryEleList = factorysEle.childNodes();
         if (factoryEleList.size() > 0) {
-            qDebug() << QObject::tr("Skipping legacy factory info (%1 entries)").arg(factoryEleList.size());  // cn:跳过旧版工厂信息(%1条)
+            qDebug() << QString("Skipping legacy factory info (%1 entries)").arg(factoryEleList.size());  // cn:跳过旧版工厂信息(%1条)
         }
     }
     return true;
@@ -1246,7 +1246,7 @@ bool DAXmlHelper::PrivateData::saveItem(const QGraphicsItem* i, QDomDocument& do
     } else {
         auto itemEle = DAXmlHelper::makeElement(i, QStringLiteral("item"), &doc);
         if (itemEle.isNull()) {
-            qDebug() << QObject::tr("Unable to generate graphics item element during the saving");  // cn:保存过程中，无法生成图元元素
+            qDebug() << QString("Unable to generate graphics item element during the saving");  // cn:保存过程中，无法生成图元元素
             return false;
         }
         parentElement.appendChild(itemEle);
@@ -1577,7 +1577,7 @@ bool DAXmlHelper::loadClipBoardElement(const QDomElement* clipBoardElement, DAPy
     //! 先识别类型
     QString typestr = clipBoardElement->attribute("type");
     if (typestr.isEmpty()) {
-        qDebug() << QObject::tr("An exception occurred during the process of processing pasted content XML, with the "
+        qDebug() << QString("An exception occurred during the process of processing pasted content XML, with the "
                                 "root node missing the type attribute");  // cn:在处理粘贴内容xml过程出现异常，根节点缺失type属性
         return false;
     }

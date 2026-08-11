@@ -129,7 +129,7 @@ void AppMainWindow::changeEvent(QEvent* e)
     QWidget::changeEvent(e);
     switch (e->type()) {
     case QEvent::LanguageChange:
-        qDebug() << tr("LanguageChange");  // cn:语言变更
+        qDebug() << QString("LanguageChange");  // cn:语言变更
         retranslateUi();
         break;
 
@@ -175,15 +175,15 @@ void AppMainWindow::closeEvent(QCloseEvent* e)
         if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
             QDataStream st(&file);
             st << saveUIState();
-            qDebug() << tr("Successfully saved UI state to %1").arg(uistateFile);  // cn:成功保存界面状态到%1
+            qDebug() << QString("Successfully saved UI state to %1").arg(uistateFile);  // cn:成功保存界面状态到%1
         } else {
-            qDebug() << tr("Cannot open %1, because: %2").arg(uistateFile, file.errorString());  // cn:无法打开%1，原因：%2
+            qDebug() << QString("Cannot open %1, because: %2").arg(uistateFile, file.errorString());  // cn:无法打开%1，原因：%2
         }
     } else {
         // 不保存要删除
         if (QFile::exists(uistateFile)) {
             if (!QFile::remove(uistateFile)) {
-                qDebug() << tr("Cannot remove %1").arg(uistateFile);  // cn:无法删除%1
+                qDebug() << QString("Cannot remove %1").arg(uistateFile);  // cn:无法删除%1
             }
         }
     }

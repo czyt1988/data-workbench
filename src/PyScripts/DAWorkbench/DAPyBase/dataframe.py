@@ -298,7 +298,7 @@ def da_data_select(df: pd.DataFrame, index: str, lower: Optional[float] = None, 
     '''
     # 参数校验
     if lower is None and upper is None:
-        raise ValueError("必须指定lower或upper至少一个条件")
+        raise ValueError("Must specify at least one of lower or upper")
 
     # 创建条件掩码（初始为全True）
     mask = pd.Series(True, index=df.index)

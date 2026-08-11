@@ -78,7 +78,7 @@ QJsonObject DAAppUI::getConfigValues(const QString& jsonConfig, QWidget* parent,
             // 不使用调用方传入的 parent，因为 parent 可能为 nullptr 或临时窗口
             dialog = new DAPropertyFormDialog(mainWindow());
             if (!dialog->loadFromJson(jsonConfig)) {
-                qWarning() << tr("Failed to load form config for settings dialog");  // cn:无法加载设置对话框的表单配置
+                qWarning() << QString("Failed to load form config for settings dialog");  // cn:无法加载设置对话框的表单配置
                 delete dialog;
                 return QJsonObject();
             }

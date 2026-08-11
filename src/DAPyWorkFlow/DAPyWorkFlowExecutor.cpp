@@ -75,7 +75,7 @@ void DAPyWorkFlowExecutor::setOnProgress(ProgressCallback callback)
  */
 void DAPyWorkFlowExecutor::initExecutor(const DAPyWorkFlow& workflow)
 {
-    DA_WF_DBG("[C++] Executor::initExecutor: 开始初始化");
+    DA_WF_DBG("[C++] Executor::initExecutor: start initializing");
     if (workflow.isNone()) {
         qWarning() << "DAPyWorkFlowExecutor::initExecutor: workflow is none";
         return;
@@ -88,7 +88,7 @@ void DAPyWorkFlowExecutor::initExecutor(const DAPyWorkFlow& workflow)
                 return;
             }
         }
-        DA_WF_DBG("[C++] Executor::initExecutor: 模块导入成功");
+        DA_WF_DBG("[C++] Executor::initExecutor: module import succeeded");
         pybind11::object executorClass = pyModule.getWorkflowExecutorObject();
         if (executorClass.is_none()) {
             qWarning() << "DAPyWorkFlowExecutor::initExecutor: DAWorkflowExecutor class not available";
@@ -111,7 +111,7 @@ void DAPyWorkFlowExecutor::initExecutor(const DAPyWorkFlow& workflow)
                                  pybind11::arg("on_state_change")  = stateCallback,
                                  pybind11::arg("on_node_finished") = nodeFinishedCallback,
                                  pybind11::arg("on_progress")      = progressCallback);
-        DA_WF_DBG("[C++] Executor::initExecutor: Python DAWorkflowExecutor 实例创建成功");
+        DA_WF_DBG("[C++] Executor::initExecutor: Python DAWorkflowExecutor instance created");
     } catch (const pybind11::error_already_set& e) {
         dealException(e);
     } catch (const std::exception& e) {
@@ -124,7 +124,7 @@ void DAPyWorkFlowExecutor::initExecutor(const DAPyWorkFlow& workflow)
  */
 bool DAPyWorkFlowExecutor::execute()
 {
-    DA_WF_DBG("[C++] Executor::execute: 开始同步执行");
+    DA_WF_DBG("[C++] Executor::execute: start synchronous execution");
     if (isNone()) {
         qWarning() << "DAPyWorkFlowExecutor::execute: executor is not initialized";
         return false;
@@ -132,7 +132,7 @@ bool DAPyWorkFlowExecutor::execute()
 
     try {
         bool result = attr("execute")().cast< bool >();
-        DA_WF_DBG("[C++] Executor::execute: 执行完成, result=%s", result ? "true" : "false");
+        DA_WF_DBG("[C++] Executor::execute: execution complete, result=%s", result ? "true" : "false");
         return result;
     } catch (const pybind11::error_already_set& e) {
         qCritical() << "DAPyWorkFlowExecutor::execute: Python exception -" << e.what();

@@ -115,7 +115,7 @@ bool DAPluginOption::load(const QString& pluginPath, DACoreInterface* c)
     }
     // 设置core
     d_ptr->mPlugin->setCore(c);
-    daInfo << "loaded plugin:" << pluginPath;  // cn:已加载插件
+    daInfo << QObject::tr("Loaded plugin: %1").arg(pluginPath);  //cn:已加载插件：%1
     // 设置core后调用初始化
     if (!d_ptr->mPlugin->initialize()) {
         // 初始化失败，停止加载

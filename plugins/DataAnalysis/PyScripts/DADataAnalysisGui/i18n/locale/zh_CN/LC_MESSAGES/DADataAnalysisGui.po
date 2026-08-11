@@ -359,11 +359,9 @@ msgid "No matching values found to replace"
 msgstr ""
 
 #: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:541
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Failed to replace values: {error}"
-msgstr ""
-"导出Excel文件失败: {err1}\n"
-"{err2}"
+msgstr "替换值失败: {error}"
 
 #: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:566
 msgid "Remove Outliers (IQR Method)"
@@ -479,11 +477,9 @@ msgstr ""
 
 #: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:742
 #: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:970
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Failed to process outliers: {error}"
-msgstr ""
-"导出Excel文件失败: {err1}\n"
-"{err2}"
+msgstr "处理异常值失败: {error}"
 
 #: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:747
 msgid "Remove Outliers (IQR)"
@@ -594,11 +590,9 @@ msgid "Error transforming column '{col}': {error}"
 msgstr ""
 
 #: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1075
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Failed to transform data: {error}"
-msgstr ""
-"导出dataframe失败: {err1}\n"
-"{err2}"
+msgstr "数据变换失败: {error}"
 
 #: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1082
 #, python-brace-format

@@ -65,15 +65,15 @@ class DAConnection:
         connection_id: str = None,
     ):
         if not source_node_id:
-            raise ValueError("source_node_id 不能为空")
+            raise ValueError("source_node_id cannot be empty")
         if not source_output_channel:
-            raise ValueError("source_output_channel 不能为空")
+            raise ValueError("source_output_channel cannot be empty")
         if not target_node_id:
-            raise ValueError("target_node_id 不能为空")
+            raise ValueError("target_node_id cannot be empty")
         if not target_input_channel:
-            raise ValueError("target_input_channel 不能为空")
+            raise ValueError("target_input_channel cannot be empty")
         if source_node_id == target_node_id:
-            raise ValueError("源节点和目标节点不能相同（不允许自连接）")
+            raise ValueError("Source and target nodes cannot be the same (self-connection not allowed)")
 
         self.source_node_id = source_node_id
         self.source_output_channel = source_output_channel

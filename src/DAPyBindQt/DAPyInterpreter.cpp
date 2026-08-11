@@ -281,7 +281,7 @@ void DAPyInterpreter::shutdown()
                 // 由于 loguru 线程是守护线程，我们已经在第一步尝试停止了它，
                 // 这里可以跳过 join，避免阻塞。
                 if (!is_daemon) {
-                    qDebug() << "  正在等待非守护线程结束...";
+                    qDebug() << "  Waiting for non-daemon threads to finish...";
                     thread.attr("join")(0.5);  // 等待时间可以更短
                 }
             }

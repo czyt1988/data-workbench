@@ -37,7 +37,7 @@ bool DADataPyDataFrame::setValue(std::size_t dim1, std::size_t dim2, const QVari
         df.iat(dim1, dim2, v);
         return true;
     } catch (const std::exception& e) {
-        daWarning << QString("DADataPyDataFrame::setValue failed: %1").arg(e.what());
+        qWarning() << QString("DADataPyDataFrame::setValue failed: %1").arg(e.what());
         return false;
     }
 }
@@ -68,10 +68,10 @@ QVector< double > DADataPyDataFrame::getSeriesByVector(const QString& name) cons
         }
         ser.castTo< double >(std::back_insert_iterator< QVector< double > >(res));
     } catch (const std::exception& e) {
-        daWarning << QString("getSeriesByVector failed for column '%1': %2").arg(name).arg(e.what());
+        qWarning() << QString("getSeriesByVector failed for column '%1': %2").arg(name).arg(e.what());
         return QVector< double >();
     } catch (...) {
-        daWarning << QString("getSeriesByVector failed for column '%1': unknown exception").arg(name);
+        qWarning() << QString("getSeriesByVector failed for column '%1': unknown exception").arg(name);
         return QVector< double >();
     }
     return res;

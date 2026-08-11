@@ -24,7 +24,7 @@ from ..types import Input, Output
 # ============================================================================
 
 
-@NodeDef(name="Ellipse Demo", category="Style Demo", style=NodeDisplay(
+@NodeDef(name="Ellipse Demo", category=_("Style Demo"), style=NodeDisplay(
     body_shape="Ellipse",
     name_position="Below",
     icon_position="AboveText",
@@ -50,7 +50,7 @@ class EllipseDemoNode:
 # 2. DefaultRectNode
 #    默认样式（不设置 style 参数）
 # ============================================================================
-@NodeDef(name="Default Rect", category="Style Demo")
+@NodeDef(name="Default Rect", category=_("Style Demo"))
 class DefaultRectNode:
     """Default rectangle node, demonstrates default style behavior"""
 
@@ -70,7 +70,7 @@ class DefaultRectNode:
 # ============================================================================
 
 
-@NodeDef(name="Circle Ports", category="Style Demo", style=NodeDisplay(
+@NodeDef(name="Circle Ports", category=_("Style Demo"), style=NodeDisplay(
     input_port_side="North",
     output_port_side="South",
     input_port_style=LinkPointStyle(shape="Circle"),
@@ -95,7 +95,7 @@ class CirclePortsNode:
 # ============================================================================
 
 
-@NodeDef(name="Diamond Ports", category="Style Demo", style=NodeDisplay(
+@NodeDef(name="Diamond Ports", category=_("Style Demo"), style=NodeDisplay(
     input_port_style=LinkPointStyle(shape="Diamond", fill_color=(255, 200, 200)),
     output_port_style=LinkPointStyle(shape="Diamond", fill_color=(200, 200, 255)),
 ))
@@ -118,7 +118,7 @@ class DiamondPortsNode:
 # ============================================================================
 
 
-@NodeDef(name="Custom Colors", category="Style Demo", style=NodeDisplay(
+@NodeDef(name="Custom Colors", category=_("Style Demo"), style=NodeDisplay(
     background_color=(255, 200, 200),
     border_color=(0, 0, 255),
 ))
@@ -141,7 +141,7 @@ class CustomColorNode:
 # ============================================================================
 
 
-@NodeDef(name="Mixed Layout", category="Style Demo", style=NodeDisplay(
+@NodeDef(name="Mixed Layout", category=_("Style Demo"), style=NodeDisplay(
     body_shape="Ellipse",
     name_position="Below",
     output_port_style=LinkPointStyle(shape="Diamond"),
@@ -166,7 +166,7 @@ class MixedLayoutNode:
 # ============================================================================
 
 
-@NodeDef(name="Large Radius", category="Style Demo", style=NodeDisplay(
+@NodeDef(name="Large Radius", category=_("Style Demo"), style=NodeDisplay(
     corner_radius=12.0,
 ))
 class CornerRadiusNode:

@@ -174,11 +174,11 @@ class DAWorkflowSerializer:
         """
         factory = node_factory or self._node_factory
         if factory is None:
-            raise ValueError("反序列化需要提供 node_factory")
+            raise ValueError("Deserialization requires node_factory to be provided")
 
         # 验证数据格式
         if "nodes" not in data:
-            raise ValueError("序列化数据缺少 'nodes' 字段")
+            raise ValueError("Serialized data is missing the 'nodes' field")
 
         # 创建工作流
         workflow = DAWorkflow(name=data.get("name", ""))
@@ -408,7 +408,7 @@ class DAWorkflowSerializer:
         """
         factory = node_factory or self._node_factory
         if factory is None:
-            raise ValueError("反序列化需要提供 node_factory")
+            raise ValueError("Deserialization requires node_factory to be provided")
 
         workflow_name = element.get("name", "")
         workflow = DAWorkflow(name=workflow_name)
@@ -416,7 +416,7 @@ class DAWorkflowSerializer:
         # 节点
         nodes_ele = element.find("nodes")
         if nodes_ele is None:
-            raise ValueError("序列化数据缺少 'nodes' 元素")
+            raise ValueError("Serialized data is missing the 'nodes' element")
 
         for node_ele in nodes_ele.findall("node"):
             qualified_name = node_ele.get("qualified_name", "")

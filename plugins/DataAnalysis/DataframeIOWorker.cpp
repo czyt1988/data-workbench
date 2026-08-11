@@ -221,7 +221,7 @@ void DataframeIOWorker::updatePythonThreadStatus(const std::string& taskid, int 
             int elapsed_sec        = static_cast< int >(elapsed_seconds) % 60;
             // 生成日志
             QString logMessage =
-                QString(tr("%1, Cost %2:%3")).arg(QString::fromStdString(message)).arg(elapsed_min).arg(elapsed_sec);  // cn:%1，耗时%2:%3
+                QString("%1, Cost %2:%3").arg(QString::fromStdString(message)).arg(elapsed_min).arg(elapsed_sec);  // cn:%1，耗时%2:%3
             statusBar->showMessage(logMessage);
             if (is_success) {
                 qInfo().noquote() << logMessage;

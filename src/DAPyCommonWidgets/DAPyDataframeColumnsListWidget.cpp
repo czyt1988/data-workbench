@@ -37,7 +37,7 @@ QString DAPyDataframeColumnsListWidget::getSelectedColumn() const noexcept
     try {
         return mDataframe.columnName(static_cast< std::size_t >(c));
     } catch (const std::exception& e) {
-        daCritical << "Exception in getting selected column:" << e.what();
+        qCritical() << "Exception in getting selected column:" << e.what();
     }
     return QString();
 }
@@ -53,7 +53,7 @@ DAPySeries DAPyDataframeColumnsListWidget::getCurrentSeries() const noexcept
         DAPySeries s = mDataframe[ c ];
         return s;
     } catch (const std::exception& e) {
-        daCritical << "Exception in getting selected series:" << e.what();
+        qCritical() << "Exception in getting selected series:" << e.what();
     }
     return DAPySeries();
 }
@@ -73,7 +73,7 @@ QList< DAPySeries > DAPyDataframeColumnsListWidget::getAllSelectedSeries() const
             res.append(s);
         }
     } catch (const std::exception& e) {
-        daCritical << "Exception in getting selected series:" << e.what();
+        qCritical() << "Exception in getting selected series:" << e.what();
         res.clear();
     }
     return res;

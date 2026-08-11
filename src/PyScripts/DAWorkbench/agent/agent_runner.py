@@ -322,22 +322,22 @@ class ToolFactory:
         # 注入 ask_user 工具用于 HITL 提问
         schemas.append({
             "name": "ask_user",
-            "description": "向用户提问以获取澄清或确认。当需要用户提供额外信息才能继续时使用。",
+            "description": "Ask the user a question to get clarification or confirmation. Use when additional information from the user is needed to proceed.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "question": {
                         "type": "string",
-                        "description": "要问用户的问题"
+                        "description": "The question to ask the user"
                     },
                     "options": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "可选的选项列表"
+                        "description": "List of selectable options"
                     },
                     "multi_select": {
                         "type": "boolean",
-                        "description": "是否允许多选（默认 false 单选）",
+                        "description": "Whether multi-select is allowed (default false, single-select)",
                         "default": False
                     }
                 },
@@ -467,7 +467,7 @@ class AgentRunner:
                     msg.get("call_id"), expected_call_id
                 )
             elif msg_type == "stop":
-                raise AgentStoppedError("等待 tool_result 时收到 stop，agent 已停止")
+                raise AgentStoppedError("Received stop while waiting for tool_result, agent has stopped")
             else:
                 logger.warning("期望 tool_result，但收到 type=%s", msg_type)
 

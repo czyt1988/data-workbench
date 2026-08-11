@@ -153,7 +153,7 @@ public:
         }
 
         if (removedCount > 0) {
-            qDebug() << "总共清理了" << removedCount << "个旧文件";
+            qDebug() << "Cleaned up" << removedCount << "old files";
         }
     }
 };

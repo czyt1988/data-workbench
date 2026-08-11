@@ -105,7 +105,7 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
             }
 
             if (!metaData.isValid()) {
-                qWarning() << "发现无效的节点元数据，跳过";
+                qWarning() << "Invalid node metadata found, skipping";
                 continue;
             }
 

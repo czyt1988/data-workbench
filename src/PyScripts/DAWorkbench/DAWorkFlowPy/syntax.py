@@ -131,8 +131,8 @@ class _PortAccessor:
                 return self._proxy_class(self._workflow, self._node_id, channel)
         available = [p["name"] for p in self._port_list]
         raise KeyError(
-            f"端口 '{channel}' 不存在于节点 '{self._node_id}'，"
-            f"可用端口: {available}"
+            f"Port '{channel}' does not exist on node '{self._node_id}', "
+            f"available ports: {available}"
         )
 
     def __repr__(self) -> str:
