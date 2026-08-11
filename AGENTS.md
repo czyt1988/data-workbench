@@ -161,35 +161,9 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | 插件模板 | `plugins/plugin-template/` | 新插件脚手架 |
 | 文档源码 | `docs/zh/` | Doxygen Wiki 中文 |
 
-## 运行日志与调试
+## 日志输出规范
 
-**当用户报告运行异常、崩溃、行为不符合预期，或提到"日志"/"报错"/"看不到效果"时，应主动读取程序运行日志分析根因，不要凭猜测下结论。**
-
-### 日志文件位置
-
-程序运行日志固定写入用户 AppData 目录（不随构建目录变化），路径解析逻辑见 `src/DAUtils/DADir.cpp`（`getAppDataPath` = `QStandardPaths::AppDataLocation + "/" + "DAWorkBench"`）：
-
-| 文件 | Windows 路径 | 内容 |
-|------|--------------|------|
-| `da_log.log` | `%APPDATA%\DAWorkBench\log\da_log.log` | C++ 主程序当前日志（最新一次运行） |
-| `da_log.1.log` ~ `da_log.5.log` | 同上目录 | 轮转历史日志（rotating 模式，默认单文件 10MB，保留 5 个） |
-| `da_pyscript.log` | 同上目录 | 嵌入式 Python 脚本输出（工作流节点执行、agent_runner.py 等） |
-| `dawork-config.xml` | `%APPDATA%\DAWorkBench\config\` | DAAppConfig XML 配置（非日志，但常用于诊断持久化问题） |
-| `agent-config.ini` | `%APPDATA%\DAWorkBench\config\` | Agent LLM 配置（base_url/model/api_key/超时），QSettings IniFormat，api_key 为 DPAPI 加密的 QByteArray（@ByteArray 注解） |
-| `recent-files.ini` | `%APPDATA%\DAWorkBench\config\` | 最近打开文件列表，QSettings IniFormat |
-
-> Linux/macOS 上 `AppDataLocation` 解析为 `~/.local/share/DAWorkBench/` 或 `~/Library/Application Support/DAWorkBench/`。跨平台读取时优先用环境变量（`%APPDATA%` / `$XDG_DATA_HOME` / `~/Library/Application Support`）拼接 `DAWorkBench/log/`。
-
-### 日志格式与级别
-
-每行一条记录，格式：
-
-```
-[2026-08-04 16:58:10.977] [debug] [DAAppConfig.cpp:212] apply setting
- └────时间戳────┘ └─级别─┘ └──源文件:行号──┘ └─消息─┘
-```
-
-级别从低到高：`trace` / `debug` / `info` / `warning` / `error` / `critical` / `off`。默认配置下 `debug` 级别会写入文件（日志里能看到 `[debug]` 条目）。级别由 `DAAppConfig` 的 `LOG_LEVEL` / `LOG_QUEUE_LEVEL` 配置项控制（见 `main.cpp` 的 `setupLogger`）。
+AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息队列（用户可见），必须遵循以下分流规则。日志文件位置、读取方法、故障排查场景详见 [logging.md](docs/zh/dev-guide/logging.md) § 日志读取与故障排查。
 
 ### 日志宏与分流
 
@@ -197,35 +171,8 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 - `qDebug` / `qInfo` / `qWarning` / `qCritical`（Qt 自身、第三方库）只写文件和控制台，不进 UI 队列
 - 第三方库日志（SARibbon、qwt、ADS、QtWebEngine 等）在文件里可见，排查时不要误认为是本项目代码——看 `[源文件:行号]` 字段，本项目代码文件路径在 `src/` 下
 
-### 读取日志的推荐方式
-
-1. **快速定位近期事件**：用 `read_file` 读 `da_log.log` 的**尾部**（`offset` 靠近文件总行数）。文件可能接近 10MB 上限，从头读会截断且浪费上下文。先 `run_shell_command` 跑 `dir /t:w "%APPDATA%\DAWorkBench\log\da_log.log"` 看修改时间确认用户刚运行过。
-2. **按关键词检索**：用 `grep_search` 在 `da_log.log` 里搜关键词定位：
-   - 报错类：`Error|Exception|Traceback|failed|fatal|critical`
-   - 崩溃类：`crash|dump|SIGSEGV|abnormal|terminate`
-   - 模块类：`DAAgent|DAPyWorkFlow|DAAppConfig|DAAgentBridge|DAPluginManager`
-   - 自定义诊断日志前缀（开发者临时加的 `[模块名]` 标记，如 `[DAAgentSettings]`）
-3. **跨多次运行对照**：当前 `da_log.log` 是最新一次运行，`da_log.1.log` 是上一次。用户描述"之前能用现在不能"时，对比两个文件。
-4. **Python 侧问题**：工作流节点执行异常、agent 子进程报错，先看 `da_pyscript.log`；C++ 主程序行为看 `da_log.log`。
-5. **Agent 子进程 stderr**：`DAAgentBridge` 把子进程 stderr 转发到 `da_log.log`，标记为 `[DAAgentBridge.cpp:268] Agent stderr:`，Python traceback 在这里可见（注意 `\r\n` 被字面转义成字符串内容，不是真换行）。
-
-### 常见调试场景对照表
-
-| 现象 | 先看什么 | 搜什么关键词 |
-|------|---------|-------------|
-| 程序启动失败/闪退 | `da_log.log` 尾部 | `critical` / `error` / `dump` / `terminate` |
-| 插件加载失败 | `da_log.log` | `loaded plugin` / `DAPluginManager` / `plugin directory` |
-| 工作流节点执行报错 | `da_pyscript.log` + `da_log.log` | `DAPyWorkFlow` / `NodeDef` / `Traceback` |
-| Agent 对话无响应/报错 | `da_log.log` → `da_pyscript.log` | `DAAgentBridge` / `Agent stderr` / `agent_runner` |
-| 设置不持久化 | `da_log.log` + INI/XML | 相关模块的 `apply` / `saveConfig` 诊断日志；Agent 配置查 `agent-config.ini`；最近文件查 `recent-files.ini`；DAAppConfig 查 `dawork-config.xml`；旧版注册表残留查 `reg query "HKCU\Software\DA\DAWorkBench"` |
-| 崩溃转储 | `dumps/dump*.dmp` + `.sysinfo` | dump 文件需用 WinDbg/VS 解析，`.sysinfo` 是文本可直读 |
-
-### 注意事项
-
-- 日志文件可能含敏感信息（API key 除外——业务代码应避免打印密钥明文，但第三方库或 Qt 自身可能意外泄露）。分析时不要把日志原文完整贴到对外渠道，只摘录与问题相关的行；遇到疑似密钥/token 的字符串要打码。
-- `da_log.log` 是 rotating 的，如果用户报告"几天前"的问题，可能已被轮转覆盖，只能从 `da_log.N.log` 找。
-- 程序退出时日志会 flush，但非正常退出（崩溃/强杀）最后几行可能未写入文件——这种场景看 `dumps/` 下的 dump 文件。
-- 读日志前先确认修改时间（`dir /t:w`），避免读到陈旧日志误导判断。如果用户刚遇到问题但日志时间戳很旧，说明问题没触发到日志系统（可能是 UI 层死锁或日志系统本身没初始化）。
+> 📖 何时用 `da*` vs `q*` 的判断标准详见 § 国际化（i18n）规范；日志系统 API、配置、故障排查详见 [docs/zh/dev-guide/logging.md](docs/zh/dev-guide/logging.md)
+> 当用户报告运行异常、崩溃、行为不符合预期时，应主动读取程序运行日志分析根因，不要凭猜测下结论，详见上述文档。
 
 ## 文档导航
 
@@ -242,7 +189,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | | [workflow-overview.md](docs/zh/dev-guide/workflow-overview.md) | 工作流系统架构 |
 | | [workflow-python-node-dev.md](docs/zh/dev-guide/workflow-python-node-dev.md) | Python 节点开发 |
 | | [dapybind11-qt-caster.md](docs/zh/dev-guide/dapybind11-qt-caster.md) | pybind11↔Qt 类型转换 |
-| | [logging.md](docs/zh/dev-guide/logging.md) | 日志系统 |
+| | [logging.md](docs/zh/dev-guide/logging.md) | 日志系统、故障排查 |
 | | [creating-setting-panel.md](docs/zh/dev-guide/creating-setting-panel.md) | 创建设置面板 |
 | **构建** | [build-instructions.md](docs/zh/build/build-instructions.md) | 完整构建指南 |
 | | [build-options.md](docs/zh/build/build-options.md) | CMake 构建选项参考 |
@@ -255,37 +202,6 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | | [plugin-development.md](docs/zh/plugin-development.md) | 插件开发总览 |
 | | [api-reference.md](docs/zh/api-reference.md) / [overview.md](docs/zh/api-reference/overview.md) | API 参考 |
 
-## CODE MAP
-
-| Symbol | Type | Location | Role |
-|--------|------|----------|------|
-| `DA::AppMainWindow` | class | `src/APP/AppMainWindow.h` | 主窗口, 继承 SARibbonMainWindow |
-| `DA::DAAppCore` | class | `src/APP/DAAppCore.h` | 核心单例, 子系统初始化 |
-| `DA::DAAppController` | class | `src/APP/DAAppController.h` | MVC 控制器 |
-| `DA::DAAppUI` | class | `src/APP/DAAppUI.h` | Ribbon/Docking 布局管理 |
-| `DA::DAAppPluginManager` | class | `src/APP/DAAppPluginManager.h` | 插件生命周期管理 |
-| `DA::DAAppProject` | class | `src/APP/DAAppProject.h` | 工程文件序列化 |
-| `DA::DAAgentInterface` | class | `src/DAAgent/DAAgentInterface.h` | Agent 公共接口：14 信号 + 工具/提示词注册 + `sendUserAnswer`/`newSession` + `get/setLLMConfig`（不依赖 GUI） |
-| `DA::DAAgentModule` | class | `src/DAAgent/DAAgentModule.h` | `DAAgentInterface` 实现：工具注册表、懒启动、Bridge 信号转发（不持 Dock，Dock 连接在 `DAAppController`） |
-| `DAWorkbenchFeatureType` | enum | `src/DAGlobals.h` | Workflow/Data/Chart 功能域标识 |
-| `QwtFigure` | class | `src/3rdparty/qwt/` | 多绘图布局容器 (类似 matplotlib Figure) |
-| `DA_DECLARE_PRIVATE` | macro | `src/DAGlobals.h` | PIMPL 私有数据声明 |
-| `DA_D` / `DA_DC` | macro | `src/DAGlobals.h` | PIMPL d-pointer 访问 |
-| `DA_PIMPL_CONSTRUCT` | macro | `src/DAGlobals.h` | PIMPL 构造函数初始化 |
-| `DA::DAFormSpec` | struct | `src/DAUtils/DAFormSpec.h` | 统一表单 schema（v2），描述字段/分组/联动规则 |
-| `DA::DAFormSchemaIO` | class | `src/DAUtils/DAFormSchemaIO.h` | v2 表单 schema 的 JSON 序列化/反序列化 |
-| `DA::DAFormRuleEvaluator` | class | `src/DAUtils/DAFormRuleEvaluator.h` | 声明式联动规则求值（visible/enabled/required） |
-| `DA::DAFormEditorRegistry` | class | `src/DACommonWidgets/DAFormEditorRegistry.h` | 11 种字段类型编辑器注册表（create/read/write/connect） |
-| `DA::DAPropertyFormWidget` | class | `src/DACommonWidgets/DAPropertyFormWidget.h` | 统一表单渲染容器，驱动 DAFormSpec + 规则联动 |
-| `DA::DAPropertyFormDialog` | class | `src/DACommonWidgets/DAPropertyFormDialog.h` | 模态配置对话框，封装 DAPropertyFormWidget |
-| `DA::DAAbstractNodeSettingWidget` | class | `src/DAGui/DAAbstractNodeSettingWidget.h` | 节点设置基类, 持有 DAPyNode* |
-| `DA::DANodeParameterFormAdapter` | class | `src/DAGui/NodeSetting/DANodeParameterFormAdapter.h` | DAPyNodeParameter → DAFormSpec 适配器 |
-| `DA::DANodeParamSettingPanel` | class | `src/DAGui/NodeSetting/DANodeParamSettingPanel.h` | 通用参数面板, 基于 DAPropertyFormWidget 渲染 |
-| `DA::DANodeParamSettingPanelFactory` | class | `src/DAGui/NodeSetting/DANodeParamSettingPanelFactory.h` | 面板单例工厂, qualifiedName 路由 |
-| `DA::DANodeParamSettingPanelWidget` | class | `src/DAGui/NodeSetting/DANodeParamSettingPanelWidget.h` | QStackedWidget 调度器, 惰性加载缓存 |
-| `DA::DAPyNode` | class | `src/DAPyWorkFlow/DAPyNode.h` | 工作流节点代理, 继承 DAPyObjectWrapper |
-| `DA::DAPyWorkFlowManager` | class | `src/DAPyWorkFlow/DAPyWorkFlowManager.h` | 工作流中央调度器 (QObject), 管理节点/场景/执行 |
-| `DA::DAPyNodeStyle` | class | `src/DAPyWorkFlow/DAPyNodeStyle.h` | 节点视觉样式配置 (颜色/尺寸/字体) |
 
 ## CONVENTIONS
 
