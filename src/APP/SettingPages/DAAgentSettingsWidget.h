@@ -39,7 +39,7 @@ public:
      * @brief 获取设置页标题
      * @return 设置页标题文本
      */
-    QString getSettingPageTitle() const override { return tr("Agent LLM 设置"); }
+    QString getSettingPageTitle() const override { return tr("Agent LLM Settings"); }  //cn:Agent LLM 设置
 
     /**
      * @brief 获取设置页图标
