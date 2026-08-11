@@ -359,9 +359,17 @@ void DAAgentDockWidget::onAgentUsage(int inputTokens, int outputTokens,
     if (pct < 0) pct = 0;
     if (pct > 100) pct = 100;
     m_tokenBar->setValue(pct);  // D7 占比条值 = tot*100/window
-    m_tokenLabel->setText(tr("tokens: %1 / %2")  // cn:token: 当前 / 窗口
-                              .arg(totalTokens)
-                              .arg(contextWindow > 0 ? contextWindow : -1));
+    // streaming_estimate 期间显示 ≈ 前缀，表示是流式估算值而非权威统计；
+    // 真实 usage 到达后（source 为 agent/summary）前缀消失。
+    if (source == "streaming_estimate") {
+        m_tokenLabel->setText(tr("tokens: ~%1 / %2")  // cn:token: ~当前 / 窗口
+                                  .arg(totalTokens)
+                                  .arg(contextWindow > 0 ? contextWindow : -1));
+    } else {
+        m_tokenLabel->setText(tr("tokens: %1 / %2")  // cn:token: 当前 / 窗口
+                                  .arg(totalTokens)
+                                  .arg(contextWindow > 0 ? contextWindow : -1));
+    }
     rebuildTokenMenu(inputTokens, outputTokens, totalTokens, contextWindow, source);
 }
 

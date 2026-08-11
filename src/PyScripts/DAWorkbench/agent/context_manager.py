@@ -359,18 +359,20 @@ class ContextCompactor:
         return removals + [summary_msg], usage
 
     async def force_compact(self, messages: list) -> tuple:
-        """强制压缩，返回 (压缩后消息列表, summary_usage)。
+        """强制压缩，返回 (压缩后消息列表, summary_usage, removed_ids)。
 
         溢出恢复用：跳过 should_compact 和熔断检查。
         如果 LLM 摘要失败，降级为简单截断（只保留 tail）。
 
-        @return (messages, usage)：
-            messages = [head] + [摘要] + [tail]（不含 RemoveMessage，局部用）
+        @return (compacted, usage, removed_ids)：
+            compacted = [head] + [摘要] + [tail]（用于本地 LLM 重试）
             usage = summary 的 usage_metadata（dict 或 None；
                 降级路径无 _generate_summary，返回 None）
+            removed_ids = 被移除的中间消息 ID 列表（供 agent_node 构造
+                RemoveMessage 写回 state，打断"400 → force_compact → 400"循环）
 
-        force_compact 的 summary 不加 da_type 标记——产物仅用于溢出恢复的
-        本地 LLM 重试，不写回 state、不持久化，故无需标记（见步骤6）。
+        force_compact 的 summary 加 da_type 标记——产物现在会写回 state
+        （agent_node 返回 RemoveMessage + summary + final_message），故需标记。
         """
         try:
             head_end = self._find_head_end(messages)
@@ -381,7 +383,12 @@ class ContextCompactor:
                 tail_start = max(0, len(messages) - self._max_recent_messages)
                 while tail_start < len(messages) and messages[tail_start].type != "human":
                     tail_start += 1
-                return list(messages[tail_start:]), None
+                removed_ids = [
+                    getattr(m, 'id', None)
+                    for m in messages[:tail_start]
+                    if getattr(m, 'id', None)
+                ]
+                return list(messages[tail_start:]), None, removed_ids
 
             head = list(messages[:head_end])
             middle = messages[head_end:tail_start]
@@ -389,15 +396,29 @@ class ContextCompactor:
 
             # CRITICAL2：解构 _generate_summary 的 (summary, usage) 返回
             summary, usage = await self._generate_summary(middle)
-            # force_compact 的 summary 不加 da_type 标记（局部用，不写回 state）
-            summary_msg = HumanMessage(content=f"[Context Summary]\n{summary}")
+            # summary 加 da_type 标记（现在会写回 state，与 compact() 一致）
+            summary_msg = HumanMessage(
+                content=f"[Context Summary]\n{summary}",
+                additional_kwargs={"da_type": "summary"},
+            )
+            # 收集被移除的中间消息 ID（供 agent_node 构造 RemoveMessage）
+            removed_ids = [
+                getattr(m, 'id', None)
+                for m in middle
+                if getattr(m, 'id', None)
+            ]
 
-            return head + [summary_msg] + tail, usage
+            return head + [summary_msg] + tail, usage, removed_ids
         except Exception as e:
             logger.exception("Force compact failed, falling back to simple truncation: %s", e)
             # 降级：只保留 tail（简单截断）；降级路径无 usage
             tail_start = self._find_tail_start(messages, 0)
-            return list(messages[tail_start:]), None
+            removed_ids = [
+                getattr(m, 'id', None)
+                for m in messages[:tail_start]
+                if getattr(m, 'id', None)
+            ]
+            return list(messages[tail_start:]), None, removed_ids
 
     def _find_head_end(self, messages: list) -> int:
         """找到 head 的结束索引（不包含）。

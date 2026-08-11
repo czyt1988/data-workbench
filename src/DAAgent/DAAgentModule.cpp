@@ -314,7 +314,11 @@ void DAAgentModule::connectSignals()
     // token 使用量
     connect(m_bridge, &DAAgentBridge::agentUsage, this, [this](int inT, int outT, int tot, const QString& src) {
         if (m_currentSessionId.isEmpty()) return;
-        appendUsageRecord(m_currentSessionId, inT, outT, tot, src);
+        // streaming_estimate 是流式过程中的临时估算值，不持久化到 JSONL——
+        // 仅用于 UI 进度条实时刷新，真实 usage 由后续 message_end/usage 消息回传并持久化。
+        if (src != "streaming_estimate") {
+            appendUsageRecord(m_currentSessionId, inT, outT, tot, src);
+        }
         // 契约2：emit 5 参信号（context_window 经 readContextWindow 复用，供 plan-04 UI 与 switchSession 回放共用）
         emit tokenUsageUpdated(inT, outT, tot, readContextWindow(), src);
     });
@@ -475,10 +479,12 @@ QJsonObject DAAgentModule::getLLMConfig() const
         config["api_key"] = decryptApiKey(encKey);
     }
     // 上下文管理配置（带默认值兜底，随 init 消息 config 字段下发给 Python）
-    config["context_window"]            = s.value("agent/context_window", 1048576).toInt();
+    // context_window 默认 128000（常见模型上下文窗口，如 gpt-4o-mini 为 128K）。
+    // 用户应根据实际使用的模型在设置页调整此值——过小导致频繁压缩，过大导致 400。
+    config["context_window"]            = s.value("agent/context_window", 128000).toInt();
     config["compaction_threshold"]      = s.value("agent/compaction_threshold", 0.85).toDouble();
     config["max_recent_messages"]       = s.value("agent/max_recent_messages", 10).toInt();
-    config["tool_result_max_chars"]     = s.value("agent/tool_result_max_chars", 50000).toInt();
+    config["tool_result_max_chars"]     = s.value("agent/tool_result_max_chars", 20000).toInt();
     config["tool_result_preview_chars"] = s.value("agent/tool_result_preview_chars", 2000).toInt();
     // 启动/停止超时（默认 ready=60s 覆盖 langchain 冷启动导入、stop=5s），与 startAgentInternal 读法一致
     config["ready_timeout_sec"]         = s.value("agent/ready_timeout_sec", 60).toInt();
@@ -849,10 +855,11 @@ QJsonObject DAAgentModule::makeUserRecord(const QString& text) const
 
 int DAAgentModule::readContextWindow() const
 {
-    // 从 agent-config.ini 读 context_window（默认 1048576），供 agentUsage lambda
-    // 与 emitTokenUsageForSession 复用，避免重复 QSettings 构造与魔法数字散落
+    // 从 agent-config.ini 读 context_window（默认 128000，与 getLLMConfig 一致），
+    // 供 agentUsage lambda 与 emitTokenUsageForSession 复用，
+    // 避免重复 QSettings 构造与魔法数字散落
     QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    return s.value("agent/context_window", 1048576).toInt();
+    return s.value("agent/context_window", 128000).toInt();
 }
 
 void DAAgentModule::emitTokenUsageForSession(const QString& sid)

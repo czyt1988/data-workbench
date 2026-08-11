@@ -56,7 +56,7 @@ public:
      * @brief 注入 Agent 接口，loadConfig/saveConfig 经此接口持久化（api_key 明文经接口，DAAgent 内部加解密）
      * @param p DAAgentInterface 实例（由 DAAppSettingDialog 经 config->getCore()->getAgentInterface() 取得）
      */
-    void setAgentInterface(DAAgentInterface* p) { m_agentInterface = p; }
+    void setAgentInterface(DAAgentInterface* p);
 
 private Q_SLOTS:
     void onTestConnection();

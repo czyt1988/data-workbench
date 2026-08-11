@@ -540,14 +540,18 @@ void DAAgentBridge::onProcessFinished(int exitCode, QProcess::ExitStatus exitSta
 
 void DAAgentBridge::onReadyReadStandardError()
 {
-    // 读取 stderr 用于调试——Python traceback、langchain 警告等
+    // 读取 stderr 用于调试——Python traceback、langchain/httpx 警告等
     // 注意：不要把 stderr 原样转发到 stdout 协议解析（会污染 JSON Lines 流）
+    //
+    // 不从 stderr emit agentError：httpx/openai 在 DEBUG 级别日志中打印
+    // HTTP 错误（含 "Traceback"/"Error" 关键词）到 stderr，但这些错误
+    // 通常已被 Python 侧 agent_node 的 force_compact 路径捕获处理，
+    // agent 仍在正常运行。若从 stderr 发 agentError 会产生假警报，
+    // 且触发 Module 的 agentError lambda 清空 pending 状态，干扰流程。
+    // 真正的错误通过 stdout 的 {"type":"error"} 协议消息传递；
+    // 进程崩溃由 onProcessFinished 处理。
     QByteArray data = m_process->readAllStandardError();
     daDebug << "Agent stderr:" << QString::fromUtf8(data);
-    // 仅把关键错误转发到 UI，避免刷屏
-    if (data.contains("Traceback") || data.contains("Error")) {
-        emit agentError(QString::fromUtf8(data).trimmed());
-    }
 }
 
 void DAAgentBridge::onInactivityTimeout()

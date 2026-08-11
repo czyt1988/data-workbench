@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QUrl>
 #include <QLatin1String>
+#include <QSignalBlocker>
 
 namespace {
 // Qt5/Qt6 双兼容：QJsonObject::value(key, default) 在 Qt5 不存在（Qt5 的 value 只接受 1 个参数），
@@ -34,7 +35,19 @@ DAAgentSettingsWidget::DAAgentSettingsWidget(QWidget* parent)
     setupUI();
     // QNetworkAccessManager 在构造函数中创建（父子对象托管），避免 onTestConnection 空指针解引用
     m_networkManager = new QNetworkAccessManager(this);
-    loadConfig();
+    // loadConfig() 移到 setAgentInterface：构造时 m_agentInterface 尚未注入，
+    // 此处调用只会因空指针守卫提前返回，移除以避免误导。
+}
+
+void DAAgentSettingsWidget::setAgentInterface(DAAgentInterface* p)
+{
+    m_agentInterface = p;
+    if (p) {
+        // 接口注入后立即加载配置（构造函数中接口未注入，loadConfig 被跳过）。
+        // QSignalBlocker 防止 load 期间 setValue 触发 settingChanged 误标脏页。
+        QSignalBlocker blocker(this);
+        loadConfig();
+    }
 }
 
 void DAAgentSettingsWidget::setupUI()
@@ -50,11 +63,13 @@ void DAAgentSettingsWidget::setupUI()
     m_readyTimeoutSpin->setToolTip(tr(
         "Waiting time for agent subprocess to become ready after start. "
         "Cold start imports of langchain may take ~17s, default 60s is safe."));  //cn:agent 子进程启动后等待就绪的超时(秒)。冷启动导入 langchain 约 17s,默认 60s 较安全。
+    m_readyTimeoutSpin->setValue(60);
     m_stopTimeoutSpin = new QSpinBox(this);
     m_stopTimeoutSpin->setRange(1, 60);
     m_stopTimeoutSpin->setSuffix(tr(" s"));  //cn:秒
     m_stopTimeoutSpin->setToolTip(tr(
         "Waiting time for agent subprocess to exit when stopped."));  //cn:停止 agent 时等待子进程退出的超时(秒)。
+    m_stopTimeoutSpin->setValue(5);
     m_testBtn     = new QPushButton(tr("测试连接"), this);
     m_statusLabel = new QLabel(this);
 
@@ -62,9 +77,12 @@ void DAAgentSettingsWidget::setupUI()
     m_contextWindowSpin = new QSpinBox(this);
     m_contextWindowSpin->setRange(8192, 2097152);
     m_contextWindowSpin->setSingleStep(1024);
+    m_contextWindowSpin->setSuffix(tr(" tokens"));
     m_contextWindowSpin->setToolTip(tr(
         "Maximum context window of the LLM model in tokens. "
-        "deepseek-v4-flash=1048576, qwen3-coder=256000, etc."));  //cn:LLM 模型最大上下文窗口(tokens)。deepseek-v4-flash=1048576, qwen3-coder=256000 等
+        "Set this to match the model's actual context window. "
+        "Default 262144 (256K)."));  //cn:LLM 模型最大上下文窗口(tokens)。须与模型实际上下文窗口匹配。默认 262144(256K)
+    m_contextWindowSpin->setValue(262144);
 
     m_compactionThresholdSpin = new QDoubleSpinBox(this);
     m_compactionThresholdSpin->setRange(0.50, 1.0);
@@ -72,23 +90,27 @@ void DAAgentSettingsWidget::setupUI()
     m_compactionThresholdSpin->setDecimals(2);
     m_compactionThresholdSpin->setToolTip(tr(
         "Compaction trigger ratio (0.85 = compact at 85% of context window)"));  //cn:压缩触发比例(0.85=窗口 85%时触发)
+    m_compactionThresholdSpin->setValue(0.85);
 
     m_maxRecentMsgSpin = new QSpinBox(this);
     m_maxRecentMsgSpin->setRange(4, 50);
     m_maxRecentMsgSpin->setToolTip(tr(
         "Number of recent messages to retain after compaction"));  //cn:压缩后保留最近消息条数
+    m_maxRecentMsgSpin->setValue(10);
 
     m_toolResultMaxCharsSpin = new QSpinBox(this);
     m_toolResultMaxCharsSpin->setRange(1000, 500000);
     m_toolResultMaxCharsSpin->setSingleStep(1000);
     m_toolResultMaxCharsSpin->setToolTip(tr(
         "Tool results exceeding this length will be truncated to a preview"));  //cn:工具结果超此长度将截断为预览
+    m_toolResultMaxCharsSpin->setValue(20000);
 
     m_toolResultPreviewCharsSpin = new QSpinBox(this);
     m_toolResultPreviewCharsSpin->setRange(100, 10000);
     m_toolResultPreviewCharsSpin->setSingleStep(100);
     m_toolResultPreviewCharsSpin->setToolTip(tr(
         "Preview length for truncated tool results"));  //cn:截断后工具结果预览长度
+    m_toolResultPreviewCharsSpin->setValue(2000);
 
     // 会话持久化控件（plan-06）：自由会话保留数量与天数，供 cleanupSessions 读取
     m_maxSessionsSpin = new QSpinBox(this);
@@ -111,12 +133,14 @@ void DAAgentSettingsWidget::setupUI()
     m_spinMaxRetries->setToolTip(tr(
         "Maximum number of retries for LLM API calls (429/5xx/network errors). "
         "0 disables retry."));  //cn:LLM API 调用最大重试次数(429/5xx/网络错误)。0 表示不重试。
+    m_spinMaxRetries->setValue(7);
 
     m_spinRequestTimeout = new QSpinBox(this);
     m_spinRequestTimeout->setRange(10, 600);
     m_spinRequestTimeout->setSuffix(tr(" sec"));  //cn:秒
     m_spinRequestTimeout->setToolTip(tr(
         "Timeout in seconds for a single LLM API request."));  //cn:单次 LLM API 请求超时(秒)。
+    m_spinRequestTimeout->setValue(120);
 
     m_spinInactivityTimeout = new QSpinBox(this);
     m_spinInactivityTimeout->setRange(60, 600);
@@ -124,6 +148,7 @@ void DAAgentSettingsWidget::setupUI()
     m_spinInactivityTimeout->setToolTip(tr(
         "If no protocol message is received for this duration, the agent "
         "subprocess is considered hung and will be stopped."));  //cn:若此时间内未收到任何协议消息,agent 子进程将被视为卡死并停止。
+    m_spinInactivityTimeout->setValue(240);
 
     m_spinMaxRestarts = new QSpinBox(this);
     m_spinMaxRestarts->setRange(0, 10);
@@ -131,6 +156,7 @@ void DAAgentSettingsWidget::setupUI()
     m_spinMaxRestarts->setToolTip(tr(
         "Maximum number of automatic restarts after agent subprocess crash. "
         "0 disables auto-restart."));  //cn:agent 子进程崩溃后自动重启最大次数。0 表示不自动重启。
+    m_spinMaxRestarts->setValue(3);
 
     QFormLayout* form = new QFormLayout(this);
     form->addRow(tr("Base URL"), m_baseUrlEdit);
@@ -237,10 +263,10 @@ void DAAgentSettingsWidget::loadConfig()
     m_apiKeyEdit->setText(c.value("api_key").toString());  // 明文
     m_readyTimeoutSpin->setValue(jsonInt(c, "ready_timeout_sec", 60));
     m_stopTimeoutSpin->setValue(jsonInt(c, "stop_timeout_sec", 5));
-    m_contextWindowSpin->setValue(jsonInt(c, "context_window", 1048576));
+    m_contextWindowSpin->setValue(jsonInt(c, "context_window", 262144));
     m_compactionThresholdSpin->setValue(jsonDouble(c, "compaction_threshold", 0.85));
     m_maxRecentMsgSpin->setValue(jsonInt(c, "max_recent_messages", 10));
-    m_toolResultMaxCharsSpin->setValue(jsonInt(c, "tool_result_max_chars", 50000));
+    m_toolResultMaxCharsSpin->setValue(jsonInt(c, "tool_result_max_chars", 20000));
     m_toolResultPreviewCharsSpin->setValue(jsonInt(c, "tool_result_preview_chars", 2000));
     m_maxSessionsSpin->setValue(jsonInt(c, "max_sessions", 20));
     m_sessionRetentionDaysSpin->setValue(jsonInt(c, "session_retention_days", 30));

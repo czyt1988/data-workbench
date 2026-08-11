@@ -23,6 +23,16 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, MessagesState, START, END
 from langgraph.types import interrupt, Command
 
+# GraphRecursionError 在 agent 图达到 recursion_limit 时抛出，需在 main() 中
+# 捕获并给出友好提示，而非当作普通异常报错。低版本 langgraph 可能无此类，
+# 降级为不捕获（图会直接抛出普通 Exception）。
+try:
+    from langgraph.errors import GraphRecursionError
+    _HAS_RECURSION_ERROR = True
+except ImportError:
+    _HAS_RECURSION_ERROR = False
+    GraphRecursionError = type(None)  # 占位，isinstance 永远不匹配
+
 # 上下文管理模块（token 估算、工具结果截断、自动压缩、溢出恢复）
 # 与本文件同目录，直接导入。导入失败时降级为无上下文管理（agent 仍可工作，
 # 但长会话可能因 token 超限而报错）
@@ -62,6 +72,12 @@ logging.basicConfig(
     format='%(asctime)s [%(levelname)s] %(message)s'
 )
 logger = logging.getLogger("agent_runner")
+
+# 抑制 openai/httpx 库的 DEBUG/INFO 日志，避免请求体等巨大文本刷屏 stderr。
+# C++ 端 onReadyReadStandardError 捕获 stderr 后转发含 "[ERROR]"/"Traceback" 的内容到 UI，
+# 若不抑制，httpx 的 DEBUG 日志（含完整 Request options/traceback）会被误当错误弹给用户。
+logging.getLogger("openai").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 class AgentStoppedError(Exception):
@@ -361,10 +377,10 @@ class AgentRunner:
 
         # 上下文管理组件初始化
         # 从 config 读取参数（C++ 端 getLLMConfig 下发，带默认值兜底）
-        self.context_window = config.get("context_window", 1048576)
+        self.context_window = config.get("context_window", 262144)
         self.compaction_threshold = config.get("compaction_threshold", 0.85)
         self.max_recent_messages = config.get("max_recent_messages", 10)
-        tool_result_max_chars = config.get("tool_result_max_chars", 50000)
+        tool_result_max_chars = config.get("tool_result_max_chars", 20000)
         tool_result_preview_chars = config.get("tool_result_preview_chars", 2000)
 
         if _HAS_CONTEXT_MANAGER:
@@ -392,7 +408,14 @@ class AgentRunner:
 
         # LangGraph 线程配置（固定 thread_id，配合 MemorySaver 支持
         # interrupt/resume；run 与 resume 共用同一 thread 以保持状态）
-        self.thread_config = {"configurable": {"thread_id": "agent_session_1"}}
+        # recursion_limit 限制图的最大迭代步数（compact→agent→tools→compact→...），
+        # 防止 agent 陷入工具调用死循环时跑数千步不终止。默认 50 步足够完成
+        # 一次诊断任务（含多轮工具调用），同时兜底防止死循环。
+        self._recursion_limit = config.get("recursion_limit", 50)
+        self.thread_config = {
+            "configurable": {"thread_id": "agent_session_1"},
+            "recursion_limit": self._recursion_limit,
+        }
 
     def stop(self):
         """用户请求停止——设置 stop_event 中断退避等待。"""
@@ -445,6 +468,7 @@ class AgentRunner:
         llm_with_tools = self.llm_with_tools
         compactor = self.compactor
         truncator = self.tool_result_truncator
+        token_estimator = self.token_estimator
 
         async def _stream_llm(messages):
             """流式调用 LLM 并输出 token 到 UI，返回 (AIMessage, usage_metadata)。
@@ -463,6 +487,23 @@ class AgentRunner:
                 # langchain-openai >= 0.2 经 _should_stream_usage 支持该 kwarg，
                 # 更旧版本静默忽略，不影响流式，仅 usage 为 None。
                 astream_kwargs = {"stream_options": {"include_usage": True}}
+
+                # 流式开始前：用 tiktoken 估算 input tokens，发初始 usage 让 UI
+                # 进度条即时反映上下文占用。真实 usage_metadata 在流结束后由
+                # send_message_end 回传覆盖此估算值。
+                input_estimate = 0
+                if token_estimator:
+                    try:
+                        input_estimate = token_estimator.count_messages_tokens(messages)
+                    except Exception:
+                        pass
+                if input_estimate > 0:
+                    await stdio.send_usage(
+                        input_estimate, 0, input_estimate,
+                        source="streaming_estimate",
+                    )
+
+                chunk_count = 0
                 async for chunk in llm_with_tools.astream(messages, **astream_kwargs):
                     if collected_chunks is None:
                         collected_chunks = chunk
@@ -471,6 +512,16 @@ class AgentRunner:
                     if chunk.content:
                         stream_yielded = True
                         await stdio.send_token(chunk.content)
+                    # 每 20 个 chunk 发一次估算 usage，让进度条/标签实时增长。
+                    # 每个 astream chunk ≈ 1 token（OpenAI 流式逐 token 输出）。
+                    chunk_count += 1
+                    if chunk_count % 20 == 0:
+                        output_estimate = chunk_count
+                        total_estimate = input_estimate + output_estimate
+                        await stdio.send_usage(
+                            input_estimate, output_estimate, total_estimate,
+                            source="streaming_estimate",
+                        )
                 usage = getattr(collected_chunks, 'usage_metadata', None) if collected_chunks else None
                 return collected_chunks, usage
 
@@ -550,18 +601,28 @@ class AgentRunner:
             if system_prompt and not any(m.type == "system" for m in messages):
                 messages = [SystemMessage(content=system_prompt)] + messages
 
+            # 溢出恢复时产生的 state 更新（RemoveMessage + summary），
+            # 与 final_message 一起返回，让 MessagesState reducer 删除中间消息、
+            # 追加 summary，从而打断"400 → force_compact（局部）→ 400"循环。
+            compaction_updates = []
+
             try:
                 # 正常路径：流式调用 LLM
                 final_message, usage = await _stream_llm(messages)  # 解构
             except Exception as e:
+                # 记录异常完整信息（str(e) 对 BadRequestError 含 400 响应体 JSON），
+                # 便于在 da_log.log 中诊断 400 的确切原因（LiteLLM 返回的具体错误描述）。
+                logger.warning("LLM call failed: %s", e)
                 # 反应式溢出恢复（qwen-code 式安全网）：
                 # 当 token 估算不准导致实际请求超出上下文窗口时，
                 # API 返回 ContextWindowExceededError/BadRequestError。
-                # 此时强制压缩（局部，不写回 state）并重试一次。
+                # 此时强制压缩并重试一次。与原设计的区别：
+                # force_compact 的结果现在写回 state（RemoveMessage + summary），
+                # 使下一轮 agent_node 读到的是压缩后历史，不再 400 循环。
                 if compactor and is_context_overflow_error(e):
                     logger.warning("Context overflow detected, force-compacting and retrying")
-                    # CRITICAL2：force_compact 现返回 (compacted, summary_usage)
-                    compacted, summary_usage = await compactor.force_compact(messages)
+                    # force_compact 返回 (compacted, summary_usage, removed_ids)
+                    compacted, summary_usage, removed_ids = await compactor.force_compact(messages)
                     # force_compact 路径的 summary usage 也经独立
                     # send_usage(source="summary") 回传（与 compact_node 正常路径一致）
                     if summary_usage:
@@ -575,6 +636,23 @@ class AgentRunner:
                     if system_prompt:
                         compacted = [SystemMessage(content=system_prompt)] + compacted
                     final_message, usage = await _stream_llm(compacted)  # 解构
+
+                    # 构造 state 更新：删除被压缩的中间消息 + 追加 summary。
+                    # MessagesState 的 add_messages reducer 会：
+                    #   1. 按 RemoveMessage(id=...) 删除中间消息
+                    #   2. 追加 summary HumanMessage（da_type=summary）
+                    #   3. 追加 final_message（由下方 return 添加）
+                    # 结果：state 从 [head][middle...][tail] 变为
+                    #       [head][summary][tail][final_message]，大幅缩小。
+                    compaction_updates = [RemoveMessage(id=mid) for mid in removed_ids]
+                    # 从 compacted 中找到 summary 消息（HumanMessage 含 [Context Summary]）
+                    for m in compacted:
+                        if (isinstance(m, HumanMessage)
+                                and "[Context Summary]" in str(m.content)):
+                            compaction_updates.append(m)
+                            break
+                    # 熔断恢复——force_compact 成功说明压缩仍然有效
+                    compactor._consecutive_failures = 0
                 else:
                     raise
 
@@ -582,7 +660,7 @@ class AgentRunner:
             if final_message.tool_calls:
                 # 有完整 tool_calls，交给 tool_node 执行
                 # （tool_call 路径不发 usage——非最终回复，下一轮 agent 还会再发）
-                return {"messages": [final_message]}
+                return {"messages": compaction_updates + [final_message]}
             else:
                 # 无 tool_calls——最终回复。agent usage 挂在 message_end 上回传
                 # （MAJOR6：不单独发 send_usage(source="agent")，避免 C++ 双发
@@ -591,7 +669,7 @@ class AgentRunner:
                     final_message.content if isinstance(final_message.content, str) else "",
                     usage,
                 )
-                return {"messages": [final_message]}
+                return {"messages": compaction_updates + [final_message]}
 
         async def tool_node(state: MessagesState):
             last_msg = state["messages"][-1]  # AIMessage with tool_calls
@@ -779,7 +857,10 @@ class AgentRunner:
         load_session 不发 done（重建 state 不是一轮对话）；session_loaded
         由本方法内部发送。
         """
-        self.thread_config = {"configurable": {"thread_id": session_id}}
+        self.thread_config = {
+            "configurable": {"thread_id": session_id},
+            "recursion_limit": self._recursion_limit,
+        }
         self.graph = self._build_graph()  # 新 MemorySaver，丢弃旧 thread state
         msgs = []
         if _HAS_CONTEXT_MANAGER:
@@ -796,6 +877,32 @@ class AgentRunner:
                 "unavailable, loading empty state",
                 len(messages_json),
             )
+        # 修复悬空 tool_call：若 AIMessage 含 tool_calls 但后续无配对的
+        # ToolMessage（如进程在写 tool_call 后、写 tool_result 前崩溃），
+        # OpenAI API 会返回 400 Bad Request。为每个未满足的 tool_call_id
+        # 插入占位 ToolMessage，使消息序列满足 API 要求。
+        if msgs:
+            satisfied_ids = set()
+            for m in msgs:
+                tcid = getattr(m, 'tool_call_id', None)
+                if tcid:
+                    satisfied_ids.add(tcid)
+            fixed = []
+            for m in msgs:
+                fixed.append(m)
+                if hasattr(m, 'tool_calls') and m.tool_calls:
+                    for tc in m.tool_calls:
+                        tc_id = tc.get('id', '') if isinstance(tc, dict) else getattr(tc, 'id', '')
+                        if tc_id and tc_id not in satisfied_ids:
+                            fixed.append(ToolMessage(
+                                content="Tool execution was interrupted, result unavailable.",
+                                tool_call_id=tc_id,
+                            ))
+                            logger.warning(
+                                "Inserted placeholder ToolMessage for "
+                                "dangling tool_call_id=%s", tc_id,
+                            )
+            msgs = fixed
         if msgs:
             await self.graph.aupdate_state(self.thread_config, {"messages": msgs})
         await self.stdio.send_session_loaded(session_id)
@@ -846,6 +953,15 @@ async def main():
             except (AgentStoppedError, RetryAbortedError):
                 logger.info("Agent stopped by user during run")
                 await stdio.send_done()
+            except GraphRecursionError:
+                #cn:Agent 达到最大推理轮次限制，可能陷入循环。请尝试缩短对话历史或新建会话。
+                logger.warning("GraphRecursionError: agent reached recursion limit (%d)", runner._recursion_limit)
+                await stdio.send_error(
+                    "Agent reached maximum reasoning iterations (possible infinite loop). "
+                    "Try shortening the conversation history or starting a new session.",
+                    error_type="recursion_limit",
+                )
+                await stdio.send_done()
             except Exception as e:
                 logger.exception("Agent error")
                 classification = classify_error(e)
@@ -866,6 +982,14 @@ async def main():
                 await runner.resume(answer)
             except (AgentStoppedError, RetryAbortedError):
                 logger.info("Agent stopped by user during resume")
+                await stdio.send_done()
+            except GraphRecursionError:
+                logger.warning("GraphRecursionError during resume: reached recursion limit (%d)", runner._recursion_limit)
+                await stdio.send_error(
+                    "Agent reached maximum reasoning iterations (possible infinite loop). "
+                    "Try shortening the conversation history or starting a new session.",
+                    error_type="recursion_limit",
+                )
                 await stdio.send_done()
             except Exception as e:
                 logger.exception("Agent resume error")
@@ -890,9 +1014,22 @@ async def main():
             # C++ -> Python 下发历史 messages 重建 langgraph state（多会话切换）。
             # load_session 不发 done（重建 state 不是一轮对话）；session_loaded
             # 由 load_session 内部发送。空 messages 合法；坏记录逐条跳过。
+            #
+            # try/except 兜底：若历史消息格式异常（如悬空 tool_call 导致
+            # aupdate_state 抛异常），异常逃逸 while 循环会导致 Python 进程崩溃，
+            # 触发 C++ 崩溃恢复 → load_session（同一份坏历史）→ 再崩 → 循环 3 次。
+            # 捕获后发 error + done，让 C++ 侧知道加载失败，进程保持存活。
             sid = msg.get("session_id", "")
             msgs = msg.get("messages", [])
-            await runner.load_session(sid, msgs)
+            try:
+                await runner.load_session(sid, msgs)
+            except Exception as e:
+                logger.exception("load_session failed")
+                await stdio.send_error(
+                    f"Failed to load session: {e}",
+                    error_type="session_load_failed",
+                )
+                await stdio.send_done()
         elif msg_type == "stop":
             break
 
