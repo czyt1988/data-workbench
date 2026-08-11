@@ -72,6 +72,22 @@ body {
     background: #f6f8fa;
 }
 
+/* markdown 列表：全局 reset（* { margin:0; padding:0 }）清零了 ul/ol 默认的
+   padding-left，导致列表标记（• / 1.）溢出气泡左边界、数字贴边。
+   在气泡内恢复左内边距，为标记预留空间。 */
+.message-bubble ul,
+.message-bubble ol {
+    padding-left: 24px;
+    margin: 6px 0;
+}
+.message-bubble li {
+    margin: 2px 0;
+}
+.message-bubble li > ul,
+.message-bubble li > ol {
+    margin: 2px 0 0;
+}
+
 .message-bubble.question {
     align-self: flex-start;
     background: var(--question-bg);
