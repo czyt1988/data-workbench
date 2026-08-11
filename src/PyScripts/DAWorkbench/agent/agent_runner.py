@@ -10,13 +10,14 @@
 
 import asyncio
 import codecs
+import collections
 import json
 import logging
 import sys
 import threading
 
 from langchain_core.messages import (
-    HumanMessage, SystemMessage, ToolMessage, RemoveMessage
+    AIMessage, HumanMessage, SystemMessage, ToolMessage, RemoveMessage
 )
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
@@ -375,6 +376,18 @@ class AgentRunner:
         # StdioProtocol 的 init_reader 后台线程在解析到 stop 消息时直接 set 此 event
         self.stdio.set_stop_event(self._stop_event, asyncio.get_running_loop())
 
+        # —— 重复工具调用检测（防止 LLM 陷入死循环撞 recursion_limit）——
+        # 软引导：记录本轮已执行的工具调用签名 (name, args_canonical)，重复时
+        # tool_node 返回引导性 ToolMessage 而非重复执行（不同参数不受影响）。
+        self._executed_call_sigs = collections.deque(maxlen=8)
+        # 硬终止：跟踪连续相同的完整 tool_calls 签名，超阈值则 agent_node
+        # 强制剥离 tool_calls 并以最终回复结束（router → END），兜底防止死循环。
+        self._last_full_sig: str | None = None
+        self._full_sig_repeat_count: int = 0
+        # 阈值：连续 3 次相同完整签名触发硬终止
+        # （第 1 次正常执行，第 2 次软引导拦截，第 3 次硬终止）
+        self._repeat_terminate_threshold: int = 3
+
         # 上下文管理组件初始化
         # 从 config 读取参数（C++ 端 getLLMConfig 下发，带默认值兜底）
         self.context_window = config.get("context_window", 262144)
@@ -632,8 +645,9 @@ class AgentRunner:
                             summary_usage.get("total_tokens", 0),
                             source="summary",
                         )
-                    # 重新 prepend system prompt（force_compact 返回的消息不含 system）
-                    if system_prompt:
+                    # 重新 prepend system prompt（force_compact 的 head 可能保留原有
+                    # SystemMessage，需检查避免重复 prepend——与上方正常路径同一防护）
+                    if system_prompt and not any(m.type == "system" for m in compacted):
                         compacted = [SystemMessage(content=system_prompt)] + compacted
                     final_message, usage = await _stream_llm(compacted)  # 解构
 
@@ -658,6 +672,41 @@ class AgentRunner:
 
             # 从累积后的完整消息上读取 tool_calls（不是逐 chunk 读）
             if final_message.tool_calls:
+                # —— 硬终止检测：连续相同的完整 tool_calls 签名 ——
+                # 当 LLM 连续多次发出完全相同的工具调用组合（name + args 全相同），
+                # 说明它陷入了重复循环（软引导已被忽略或未覆盖此情形）。
+                # 超阈值时剥离 tool_calls，强制以最终回复结束（router → END），
+                # 避免 agent 撞到 recursion_limit 才粗暴报错。
+                full_sig = json.dumps(
+                    [(tc.get("name", ""), tc.get("args", {}))
+                     for tc in final_message.tool_calls],
+                    sort_keys=True, ensure_ascii=False,
+                )
+                if full_sig == self._last_full_sig:
+                    self._full_sig_repeat_count += 1
+                else:
+                    self._full_sig_repeat_count = 1
+                    self._last_full_sig = full_sig
+                if self._full_sig_repeat_count >= self._repeat_terminate_threshold:
+                    logger.warning(
+                        "Repeated tool-call signature detected (%d consecutive), "
+                        "forcing termination to avoid loop",
+                        self._full_sig_repeat_count,
+                    )
+                    loop_msg = AIMessage(
+                        content=(
+                            "Detected repeated tool-calling pattern (possible loop). "
+                            "This turn has been automatically terminated to avoid "
+                            "wasting tokens. The information gathered so far is "
+                            "available in the conversation history. To continue, try "
+                            "shortening the conversation history, starting a new "
+                            "session, or switching to a stronger model."
+                        ),
+                        id=getattr(final_message, 'id', None),
+                    )
+                    await stdio.send_message_end(loop_msg.content, None)
+                    # 无 tool_calls → _should_ask_user 返回 "end" → END
+                    return {"messages": [loop_msg]}
                 # 有完整 tool_calls，交给 tool_node 执行
                 # （tool_call 路径不发 usage——非最终回复，下一轮 agent 还会再发）
                 return {"messages": compaction_updates + [final_message]}
@@ -675,6 +724,26 @@ class AgentRunner:
             last_msg = state["messages"][-1]  # AIMessage with tool_calls
             results = []
             for tool_call in last_msg.tool_calls:
+                name = tool_call["name"]
+                args = tool_call.get("args", {})
+                # 软引导：本轮已执行过相同 (name, args) → 返回引导而非重复执行。
+                # 不同参数不受影响（签名含 args）；仅拦截本轮内重复，跨轮不累积
+                # （_executed_call_sigs 在 run()/resume() 开头已清空）。
+                sig = (name, json.dumps(args, sort_keys=True, ensure_ascii=False))
+                if sig in self._executed_call_sigs:
+                    guidance = (
+                        f"Tool '{name}' was already called with the same arguments "
+                        f"earlier in this turn. The result is already in the conversation "
+                        f"above — re-calling with identical arguments will not produce "
+                        f"new information. Do NOT repeat this call. Use the existing result, "
+                        f"change your arguments if you need different data, or produce your "
+                        f"final answer. If uncertain how to proceed, use the ask_user tool."
+                    )
+                    results.append(ToolMessage(
+                        content=guidance,
+                        tool_call_id=tool_call["id"]
+                    ))
+                    continue
                 # RPC 调用 C++ host
                 result = await self._rpc_call(tool_call)
                 # ToolMessage.content 必须是 str/list，不能是 dict
@@ -687,6 +756,8 @@ class AgentRunner:
                     content=content,
                     tool_call_id=tool_call["id"]
                 ))
+                # 记录已执行签名，供后续重复检测
+                self._executed_call_sigs.append(sig)
             return {"messages": results}
 
         async def ask_user_node(state: MessagesState):
@@ -802,6 +873,10 @@ class AgentRunner:
         resume）；若图正常结束，发送 done。
         """
         self._stop_event.clear()  # 每轮开始时重置，确保上一轮的 stop 不影响本轮
+        # 每轮开始重置循环检测状态（跨轮不累积——上轮的签名不应影响本轮判断）
+        self._executed_call_sigs.clear()
+        self._last_full_sig = None
+        self._full_sig_repeat_count = 0
         # 仅传入新增的 HumanMessage——MemorySaver checkpointer 会维护完整历史
         async for _event in self.graph.astream(
             {"messages": [HumanMessage(user_message)]},
@@ -825,6 +900,10 @@ class AgentRunner:
         故同样经 _send_question_if_paused() 判断：暂停则发送一次 question
         且**不**发 done（等待下一次 user_answer），正常结束才发送 done。
         """
+        # 恢复执行视为新一轮，重置循环检测状态
+        self._executed_call_sigs.clear()
+        self._last_full_sig = None
+        self._full_sig_repeat_count = 0
         async for _event in self.graph.astream(
             Command(resume=answer),
             config=self.thread_config

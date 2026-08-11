@@ -367,12 +367,17 @@ class ContextCompactor:
         @return (compacted, usage, removed_ids)：
             compacted = [head] + [摘要] + [tail]（用于本地 LLM 重试）
             usage = summary 的 usage_metadata（dict 或 None；
-                降级路径无 _generate_summary，返回 None）
+            降级路径无 _generate_summary，返回 None）
             removed_ids = 被移除的中间消息 ID 列表（供 agent_node 构造
-                RemoveMessage 写回 state，打断"400 → force_compact → 400"循环）
+            RemoveMessage 写回 state，打断"400 → force_compact → 400"循环）
 
         force_compact 的 summary 加 da_type 标记——产物现在会写回 state
         （agent_node 返回 RemoveMessage + summary + final_message），故需标记。
+
+        注意：head 取自 messages[:head_end]，若 messages 开头含 SystemMessage
+        （agent_node 正常路径已 prepend），则 head 会保留它。调用方
+        （agent_node 溢出恢复路径）在重新 prepend system prompt 时已有
+        not-any(m.type=="system") 防护，避免重复。
         """
         try:
             head_end = self._find_head_end(messages)
