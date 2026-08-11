@@ -158,6 +158,17 @@ void DAAgentSettingsWidget::setupUI()
         "0 disables auto-restart."));  //cn:agent 子进程崩溃后自动重启最大次数。0 表示不自动重启。
     m_spinMaxRestarts->setValue(3);
 
+    // 推理迭代上限：LangGraph 图最大步数（数据分析需频繁调用工具查数据，150 步≈50 轮工具调用）
+    m_spinRecursionLimit = new QSpinBox(this);
+    m_spinRecursionLimit->setRange(20, 1000);
+    m_spinRecursionLimit->setToolTip(tr(
+        "Maximum number of graph reasoning steps (compact->agent->tools cycle). "
+        "Each tool-call cycle consumes 3 steps. Default 150 (~50 tool-call cycles) "
+        "suits data-analysis tasks that frequently check data. Lower if the agent "
+        "loops; raise for complex multi-step analysis. Also guarded by automatic "
+        "repeated-tool-call detection."));  //cn:图最大推理步数(compact→agent→tools 循环)。每轮工具调用耗 3 步。默认 150(约 50 轮工具调用),适合数据分析频繁查数据的场景。循环时调低,复杂多步分析调高。另有自动重复调用检测兜底。
+    m_spinRecursionLimit->setValue(150);
+
     QFormLayout* form = new QFormLayout(this);
     form->addRow(tr("Base URL"), m_baseUrlEdit);
     form->addRow(tr("API Key"),  m_apiKeyEdit);
@@ -180,6 +191,7 @@ void DAAgentSettingsWidget::setupUI()
     form->addRow(tr("Request timeout"), m_spinRequestTimeout);  //cn:请求超时
     form->addRow(tr("Inactivity timeout"), m_spinInactivityTimeout);  //cn:无活动超时
     form->addRow(tr("Max process restarts"), m_spinMaxRestarts);  //cn:最大进程重启次数
+    form->addRow(tr("Reasoning iteration limit"), m_spinRecursionLimit);  //cn:推理迭代上限
 
     connect(m_testBtn, &QPushButton::clicked, this, &DAAgentSettingsWidget::onTestConnection);
 
@@ -237,6 +249,9 @@ void DAAgentSettingsWidget::setupUI()
     connect(m_spinMaxRestarts, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
         emit settingChanged();
     });
+    connect(m_spinRecursionLimit, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+        emit settingChanged();
+    });
 
     // 注：loadConfig() 期间无需 QSignalBlocker——
     // addPage()（连接 settingChanged → 脏页追踪器）在构造函数返回之后才执行，
@@ -275,6 +290,7 @@ void DAAgentSettingsWidget::loadConfig()
     m_spinRequestTimeout->setValue(jsonInt(c, "request_timeout_sec", 120));
     m_spinInactivityTimeout->setValue(jsonInt(c, "inactivity_timeout_sec", 240));
     m_spinMaxRestarts->setValue(jsonInt(c, "max_subprocess_restarts", 3));
+    m_spinRecursionLimit->setValue(jsonInt(c, "recursion_limit", 150));
 }
 
 void DAAgentSettingsWidget::saveConfig()
@@ -302,6 +318,7 @@ void DAAgentSettingsWidget::saveConfig()
     c["request_timeout_sec"]      = m_spinRequestTimeout->value();
     c["inactivity_timeout_sec"]   = m_spinInactivityTimeout->value();
     c["max_subprocess_restarts"]  = m_spinMaxRestarts->value();
+    c["recursion_limit"]          = m_spinRecursionLimit->value();
     // 诊断日志: 确认 saveConfig 真的被调用且收集到了值(绝不打印 api_key 明文)
     daDebug << "[DAAgentSettings] saveConfig: base_url=" << c.value("base_url").toString()
             << " model=" << c.value("model").toString()

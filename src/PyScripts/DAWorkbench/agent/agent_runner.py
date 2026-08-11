@@ -422,9 +422,11 @@ class AgentRunner:
         # LangGraph 线程配置（固定 thread_id，配合 MemorySaver 支持
         # interrupt/resume；run 与 resume 共用同一 thread 以保持状态）
         # recursion_limit 限制图的最大迭代步数（compact→agent→tools→compact→...），
-        # 防止 agent 陷入工具调用死循环时跑数千步不终止。默认 50 步足够完成
-        # 一次诊断任务（含多轮工具调用），同时兜底防止死循环。
-        self._recursion_limit = config.get("recursion_limit", 50)
+        # 防止 agent 陷入工具调用死循环时跑数千步不终止。默认 150 步约支持 50 轮
+        # 工具调用，满足数据分析频繁查数据的场景；C++ 端 getLLMConfig 下发此值，
+        # 用户可在设置页调整。此外 tool_node 软引导 + agent_node 硬终止提供
+        # 智能循环检测兜底，避免仅靠此粗暴上限。
+        self._recursion_limit = config.get("recursion_limit", 150)
         self.thread_config = {
             "configurable": {"thread_id": "agent_session_1"},
             "recursion_limit": self._recursion_limit,

@@ -498,9 +498,9 @@ QJsonObject DAAgentModule::getLLMConfig() const
     config["inactivity_timeout_sec"]   = s.value("agent/inactivity_timeout_sec", 240).toInt();
     config["max_subprocess_restarts"]  = s.value("agent/max_subprocess_restarts", 3).toInt();
     // recursion_limit：LangGraph 图最大迭代步数（compact→agent→tools 循环），
-    // 防止 agent 陷入死循环时跑数千步。默认 50 步约支持 16 轮工具调用；
-    // 用户可在 agent-config.ini [agent] recursion_limit=N 调整（如复杂任务需更多轮）。
-    config["recursion_limit"]          = s.value("agent/recursion_limit", 50).toInt();
+    // 防止 agent 陷入死循环时跑数千步。默认 150 步约支持 50 轮工具调用，
+    // 满足数据分析频繁查数据的场景；用户可在设置页调整。
+    config["recursion_limit"]          = s.value("agent/recursion_limit", 150).toInt();
     return config;
 }
 
@@ -548,6 +548,8 @@ void DAAgentModule::setLLMConfig(const QJsonObject& config)
         s.setValue("agent/inactivity_timeout_sec",    config.value("inactivity_timeout_sec").toInt());
     if (config.contains("max_subprocess_restarts"))
         s.setValue("agent/max_subprocess_restarts",   config.value("max_subprocess_restarts").toInt());
+    if (config.contains("recursion_limit"))
+        s.setValue("agent/recursion_limit",           config.value("recursion_limit").toInt());
 }
 
 // ===========================================================================

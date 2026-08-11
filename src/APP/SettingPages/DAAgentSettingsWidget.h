@@ -90,6 +90,7 @@ private:
     QSpinBox* m_spinRequestTimeout;       // LLM 单次请求超时(秒)
     QSpinBox* m_spinInactivityTimeout;    // 无活动看门狗超时(秒)
     QSpinBox* m_spinMaxRestarts;          // 子进程最大重启次数(0-10)
+    QSpinBox* m_spinRecursionLimit;       // LangGraph 图最大迭代步数(20-1000)
 };
 
 } // namespace DA
