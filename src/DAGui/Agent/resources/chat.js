@@ -448,7 +448,7 @@ function loadHistory(events) {
                 qBubble.appendChild(ansDiv);
             }
         } else if (t === 'usage' || t === 'summary') {
-            // 跳过（不渲染；token 由 C++ m_tokenBar/m_tokenLabel 显示，summary 一期不持久化渲染）
+            // 跳过（不渲染；token 由 C++ m_modelLabel/m_tokenLabel 显示，summary 一期不持久化渲染）
         }
     }
     scrollToBottom();

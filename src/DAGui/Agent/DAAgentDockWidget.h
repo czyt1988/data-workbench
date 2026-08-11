@@ -5,7 +5,6 @@
 #include <QTextEdit>
 #include <QPushButton>
 #include <QLabel>
-#include <QProgressBar>
 #include <QMenu>
 #include <QJsonObject>
 #include <QVector>
@@ -218,9 +217,11 @@ private:
     /// 用 sessionListChanged payload 刷新会话缓存并更新标题
     /// 按当前会话 ID 在缓存中查标题并更新标题标签（过长右端省略 + tooltip 全文）
     void updateTitleLabel();
+    /// 按当前模型名更新模型标签（过长右端省略 + tooltip 全文）
+    void updateModelLabel();
     /// 重建 token 分类明细 QMenu（input/output/total/window/source）
     void rebuildTokenMenu(int inT, int outT, int tot, int window, const QString& source);
-    /// 复位 token 控件到无活跃会话初始态（进度条 0%、标签 "tokens: -"、菜单清空）
+    /// 复位 token 控件到无活跃会话初始态（标签 "tokens: -"、菜单清空；模型名跨会话保留）
     void resetTokenStats();
 
     /// 根据 errorType 映射错误消息为翻译后的用户文案（plan-03 step8）
@@ -240,10 +241,11 @@ private:
     QString m_currentSessionId;        ///< 当前活跃会话 ID
     QString m_currentSessionFullTitle; ///< 当前会话完整标题（供省略渲染与 tooltip）
     QVariantList m_sessions;          ///< 缓存 sessionListChanged payload（含元信息）
-    // ---- plan-04 token 占比状态栏 ----
-    QProgressBar* m_tokenBar = nullptr;
+    // ---- 底部状态栏：当前模型名称 + token 计量 ----
+    QLabel* m_modelLabel = nullptr;   ///< 当前模型名称显示（替代原进度条位置）
     QLabel* m_tokenLabel = nullptr;
     QMenu* m_tokenMenu = nullptr;
+    QString m_currentModel;           ///< 当前模型名称（由 onAgentReady 回填）
     // ---- MAJOR4 UI 侧切换守卫：true 时渲染槽跳过，避免旧会话残余 token 渲染到新聊天区 ----
     bool m_switching = false;
 };

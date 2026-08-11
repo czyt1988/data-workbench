@@ -7,7 +7,7 @@
 #include <QWebEngineSettings>
 #include <QShortcut>
 #include <QKeySequence>
-#include <QProgressBar>
+#include <QIcon>
 #include <QMenu>
 #include <QAction>
 #include <QEvent>
@@ -57,10 +57,21 @@ void DAAgentDockWidget::setupUI()
     m_titleLabel->setToolTip(QString());  // 由 updateTitleLabel 设置
     m_titleLabel->installEventFilter(this);  // resize 时重新计算省略文本
     sbLayout->addWidget(m_titleLabel, 1);
-    m_sessionManagerBtn = new QPushButton(tr("Session Manager"), sessionBar);  // cn:会话管理
+    // 会话管理 / 新建会话：图标按钮（svg），tooltip 承载翻译文案
+    m_sessionManagerBtn = new QPushButton(sessionBar);
     m_sessionManagerBtn->setObjectName(QStringLiteral("da_agentSessionManagerBtn"));
-    m_newSessionBtn = new QPushButton(tr("New Session"), sessionBar);  // cn:新建会话
+    m_sessionManagerBtn->setIcon(QIcon(QStringLiteral(":/DAGui/icon/session-manager.svg")));
+    m_sessionManagerBtn->setIconSize(QSize(18, 18));
+    m_sessionManagerBtn->setFixedSize(28, 28);
+    m_sessionManagerBtn->setToolTip(tr("Session Manager"));  // cn:会话管理
+    m_sessionManagerBtn->setCursor(Qt::PointingHandCursor);
+    m_newSessionBtn = new QPushButton(sessionBar);
     m_newSessionBtn->setObjectName(QStringLiteral("da_agentNewSessionBtn"));
+    m_newSessionBtn->setIcon(QIcon(QStringLiteral(":/DAGui/icon/session-new.svg")));
+    m_newSessionBtn->setIconSize(QSize(18, 18));
+    m_newSessionBtn->setFixedSize(28, 28);
+    m_newSessionBtn->setToolTip(tr("New Session"));  // cn:新建会话
+    m_newSessionBtn->setCursor(Qt::PointingHandCursor);
     sbLayout->addWidget(m_sessionManagerBtn);
     sbLayout->addWidget(m_newSessionBtn);
     mainLayout->insertWidget(0, sessionBar);
@@ -76,30 +87,33 @@ void DAAgentDockWidget::setupUI()
 #endif
     mainLayout->addWidget(m_webView, 1);
 
-    // ---- plan-04 step2: 底部 token 占比状态栏（D7：占比条 + 点击展开分类明细） ----
-    // 原 m_statusLabel 改为并排容纳 m_tokenBar(QProgressBar 占比条) 与 m_tokenLabel(文字总量)。
+    // ---- 底部状态栏：状态文本（左）+ 当前模型名称（中，替代原进度条）+ token 计量（右） ----
     QWidget* statusBar = new QWidget(this);
     statusBar->setObjectName(QStringLiteral("da_agentStatusBar"));
+    statusBar->setStyleSheet(QStringLiteral(
+        "QWidget#da_agentStatusBar { background: #f0f0f0; border-top: 1px solid #ddd; }"));
     QHBoxLayout* stLayout = new QHBoxLayout(statusBar);
     stLayout->setContentsMargins(4, 1, 4, 1);
-    stLayout->setSpacing(4);
+    stLayout->setSpacing(0);
     m_statusLabel = new QLabel(statusBar);
     m_statusLabel->setObjectName(QStringLiteral("da_agentStatusLabel"));
-    m_statusLabel->setStyleSheet(QStringLiteral("QLabel { padding: 4px 8px; background: #f0f0f0; border-top: 1px solid #ddd; }"));
+    m_statusLabel->setStyleSheet(QStringLiteral("QLabel { color:#333; padding: 4px 8px; }"));
     m_statusLabel->setText(tr("Ready"));  // cn:就绪
     stLayout->addWidget(m_statusLabel, 1);
-    m_tokenBar = new QProgressBar(statusBar);  // D7 占比条
-    m_tokenBar->setRange(0, 100);
-    m_tokenBar->setValue(0);
-    m_tokenBar->setFixedWidth(120);
-    m_tokenBar->setFormat(QStringLiteral("%p%"));
-    stLayout->addWidget(m_tokenBar);
+    // 当前模型名称：替代原 token 进度条，作为该位置主显示（蓝色强调）
+    m_modelLabel = new QLabel(statusBar);
+    m_modelLabel->setObjectName(QStringLiteral("da_agentModelLabel"));
+    m_modelLabel->setStyleSheet(QStringLiteral(
+        "QLabel { color:#5280C1; padding: 4px 8px; }"));
+    m_modelLabel->setFixedWidth(160);
+    m_modelLabel->installEventFilter(this);  // resize 时重新计算省略文本
+    stLayout->addWidget(m_modelLabel);
     m_tokenLabel = new QLabel(QStringLiteral("tokens: -"), statusBar);  // cn:token 计量
     m_tokenLabel->setStyleSheet(QStringLiteral("color:#666; padding:0 4px;"));
     m_tokenLabel->setCursor(Qt::PointingHandCursor);
     m_tokenLabel->installEventFilter(this);  // 点击弹 m_tokenMenu
     stLayout->addWidget(m_tokenLabel);
-    m_tokenMenu = new QMenu(this);  // D7 点击弹分类明细
+    m_tokenMenu = new QMenu(this);  // 点击弹分类明细
     mainLayout->addWidget(statusBar);
 
     // 输入区：QTextEdit + 发送按钮
@@ -143,6 +157,9 @@ void DAAgentDockWidget::setupUI()
     // ---- 会话栏按钮信号 ----
     connect(m_newSessionBtn, &QPushButton::clicked, this, &DAAgentDockWidget::onNewSessionClicked);
     connect(m_sessionManagerBtn, &QPushButton::clicked, this, &DAAgentDockWidget::onSessionManagerClicked);
+
+    // 初始化模型名标签显示（agent 就绪前显示 "Model: -"）
+    updateModelLabel();
 }
 
 void DAAgentDockWidget::setupWebChannel()
@@ -269,7 +286,8 @@ void DAAgentDockWidget::onAgentRetrying(int attempt, int maxAttempts, int delayM
 
 void DAAgentDockWidget::onAgentReady(const QString& model)
 {
-    Q_UNUSED(model);
+    m_currentModel = model;
+    updateModelLabel();
     m_agentBusy = false;
     m_statusLabel->setText(tr("Ready"));  // cn:就绪
     m_inputEdit->setEnabled(true);
@@ -345,6 +363,11 @@ bool DAAgentDockWidget::eventFilter(QObject* obj, QEvent* ev)
         updateTitleLabel();
         return false;
     }
+    // m_modelLabel 尺寸变化 → 重新计算省略文本（模型名过长右端 …）
+    if (obj == m_modelLabel && ev->type() == QEvent::Resize) {
+        updateModelLabel();
+        return false;
+    }
     return QWidget::eventFilter(obj, ev);
 }
 
@@ -355,10 +378,6 @@ void DAAgentDockWidget::onAgentUsage(int inputTokens, int outputTokens,
                                      const QString& source)
 {
     // 契约2: 5 参含 contextWindow 与 source。一期不做 system/tools/history/current 四分类估算。
-    int pct = contextWindow > 0 ? int(totalTokens * 100 / contextWindow) : 0;
-    if (pct < 0) pct = 0;
-    if (pct > 100) pct = 100;
-    m_tokenBar->setValue(pct);  // D7 占比条值 = tot*100/window
     // streaming_estimate 期间显示 ≈ 前缀，表示是流式估算值而非权威统计；
     // 真实 usage 到达后（source 为 agent/summary）前缀消失。
     if (source == "streaming_estimate") {
@@ -430,8 +449,7 @@ void DAAgentDockWidget::onSessionCleared()
 
 void DAAgentDockWidget::resetTokenStats()
 {
-    // 复位到无活跃会话初始态：进度条 0%、标签 "tokens: -"、明细菜单清空
-    if (m_tokenBar) m_tokenBar->setValue(0);
+    // 复位到无活跃会话初始态：标签 "tokens: -"、明细菜单清空（模型名跨会话保留，不在此复位）
     if (m_tokenLabel) m_tokenLabel->setText(tr("tokens: -"));  // cn:token: -
     if (m_tokenMenu) m_tokenMenu->clear();
 }
@@ -470,6 +488,31 @@ void DAAgentDockWidget::updateTitleLabel()
     QString shown = m_titleLabel->fontMetrics().elidedText(
         fullTitle, Qt::ElideRight, qMax(0, w - pad));
     m_titleLabel->setText(shown);
+}
+
+void DAAgentDockWidget::updateModelLabel()
+{
+    // 按 m_currentModel 渲染模型标签：空时显示占位，非空显示 "Model: <name>"；
+    // 过长右端省略 …，tooltip 显示完整模型名（空模型不弹 tooltip）
+    if (!m_modelLabel) return;
+    QString fullText;
+    if (m_currentModel.isEmpty()) {
+        fullText = tr("Model: -");  // cn:模型：-
+        m_modelLabel->setToolTip(QString());
+    } else {
+        fullText = tr("Model: %1").arg(m_currentModel);  // cn:模型：%1
+        m_modelLabel->setToolTip(m_currentModel);
+    }
+    int w = m_modelLabel->width();
+    if (w <= 0) {
+        // 尚未布局完成，直接放全文，resize 事件触发时会重新省略
+        m_modelLabel->setText(fullText);
+        return;
+    }
+    // 减去内边距避免 … 紧贴右边缘
+    const int pad = 20;
+    m_modelLabel->setText(m_modelLabel->fontMetrics().elidedText(
+        fullText, Qt::ElideRight, qMax(0, w - pad)));
 }
 
 void DAAgentDockWidget::rebuildTokenMenu(int inT, int outT, int tot,

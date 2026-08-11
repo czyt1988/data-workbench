@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- New session: chat bubble (blue outline + white interior) with a green plus sign.
+     Flat design, palette-only colors, fill-only (no stroke). -->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+     width="200px" height="200px" viewBox="0 0 200 200">
+    <!-- Bubble outline (with tail at bottom-left), primary blue -->
+    <path fill="#5280C1" d="M36,20 H144 A16,16 0 0 1 160,36 V124 A16,16 0 0 1 144,140 H70 L50,175 L40,140 H36 A16,16 0 0 1 20,124 V36 A16,16 0 0 1 36,20 Z"/>
+    <!-- Bubble interior (white), inset 5px -->
+    <path fill="#FFFFFF" d="M41,25 H139 A11,11 0 0 1 150,36 V119 A11,11 0 0 1 139,130 H68 L52,168 L47,130 H41 A11,11 0 0 1 30,119 V36 A11,11 0 0 1 41,25 Z"/>
+    <!-- Plus sign, success green -->
+    <path fill="#669E8B" d="M84,50 H100 V70 H120 V86 H100 V106 H84 V86 H64 V70 H84 Z"/>
+</svg>

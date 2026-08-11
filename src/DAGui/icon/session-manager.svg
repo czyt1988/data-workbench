@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Session manager: a list of conversation cards (top one active/blue, others inactive/gray).
+     Flat design, palette-only colors, fill-only (no stroke). -->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+     width="200px" height="200px" viewBox="0 0 200 200">
+    <!-- Card 1 (active): light-blue fill + blue outline -->
+    <rect x="18" y="23" width="164" height="44" rx="10" fill="#5280C1"/>
+    <rect x="22" y="27" width="156" height="36" rx="6" fill="#BDCDE8"/>
+    <circle cx="42" cy="45" r="8" fill="#5280C1"/>
+    <rect x="60" y="37" width="90" height="6" rx="3" fill="#5280C1"/>
+    <rect x="60" y="49" width="70" height="6" rx="3" fill="#5280C1"/>
+    <!-- Card 2 (inactive): white fill + gray outline -->
+    <rect x="18" y="78" width="164" height="44" rx="10" fill="#727272"/>
+    <rect x="22" y="82" width="156" height="36" rx="6" fill="#FFFFFF"/>
+    <circle cx="42" cy="100" r="8" fill="#727272"/>
+    <rect x="60" y="92" width="90" height="6" rx="3" fill="#727272"/>
+    <rect x="60" y="104" width="60" height="6" rx="3" fill="#B2B2B2"/>
+    <!-- Card 3 (inactive): white fill + gray outline -->
+    <rect x="18" y="133" width="164" height="44" rx="10" fill="#727272"/>
+    <rect x="22" y="137" width="156" height="36" rx="6" fill="#FFFFFF"/>
+    <circle cx="42" cy="155" r="8" fill="#727272"/>
+    <rect x="60" y="147" width="80" height="6" rx="3" fill="#727272"/>
+    <rect x="60" y="159" width="50" height="6" rx="3" fill="#B2B2B2"/>
+</svg>
