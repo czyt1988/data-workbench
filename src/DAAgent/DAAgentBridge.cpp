@@ -92,7 +92,7 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
     // state() 仍为 Starting（非 Running），writeJson 的 Running 守卫会拒绝
     // 写入，导致 init 永不发送、子进程在 stdin 读取上阻塞挂起。
     if (!m_process->waitForStarted(5000)) {
-        emit agentError(tr("Agent 进程启动超时"));
+        emit agentError(tr("Agent process startup timed out"));  //cn:Agent 进程启动超时
         return;
     }
 
@@ -120,8 +120,8 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
     m_readyTimer->setSingleShot(true);
     connect(m_readyTimer, &QTimer::timeout, this, [this]() {
         if (m_running) {
-            emit agentError(tr("Agent 子进程启动后 %1 毫秒内未就绪，初始化可能失败，请查看日志排查")
-                                .arg(m_readyTimeoutMs));
+            emit agentError(tr("Agent subprocess not ready within %1 ms, initialization may have failed, check logs")
+                                .arg(m_readyTimeoutMs));  //cn:Agent 子进程启动后 %1 毫秒内未就绪，初始化可能失败，请查看日志排查
             if (m_process && m_process->state() != QProcess::NotRunning) {
                 m_process->kill();
             }
@@ -197,7 +197,7 @@ bool DAAgentBridge::writeJson(const QJsonObject& obj)
     qint64 written  = m_process->write(data);
     if (written != data.size()) {
         // stdin 写入失败——管道可能已关闭
-        emit agentError(tr("写入 agent 子进程 stdin 失败"));
+        emit agentError(tr("Failed to write to agent subprocess stdin"));  //cn:写入 agent 子进程 stdin 失败
         return false;
     }
     return true;

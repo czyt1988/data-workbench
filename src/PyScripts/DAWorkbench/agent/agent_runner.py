@@ -1004,14 +1004,16 @@ async def main():
     # 旧版 try/except 毫无意义；真正的异常来自 AgentRunner.__init__ 的下标访问）
     config = init_msg.get("config")
     if not isinstance(config, dict):
-        await stdio.send_error("init 消息缺少 config 字段或格式错误")
+        #cn:init 消息缺少 config 字段或格式错误
+        await stdio.send_error("init message missing 'config' field or invalid format")
         return
 
     tools = init_msg.get("tools", [])
     system_prompt = init_msg.get("system_prompt", "")
 
     if not config.get("base_url") or not config.get("api_key") or not config.get("model"):
-        await stdio.send_error("config 缺少 base_url/api_key/model")
+        #cn:config 缺少 base_url/api_key/model
+        await stdio.send_error("config missing base_url/api_key/model")
         return
 
     # 2. 创建 agent（真正可能抛异常的地方——下标访问 / 网络初始化）

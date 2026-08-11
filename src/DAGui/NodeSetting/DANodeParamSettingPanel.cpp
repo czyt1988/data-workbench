@@ -39,7 +39,7 @@ DANodeParamSettingPanel::DANodeParamSettingPanel(QWidget* parent)
     layout->addWidget(d->mFormWidget);
 
     // 空参数占位标签（默认隐藏）
-    d->mPlaceholderLabel = new QLabel(QStringLiteral("无可配置参数"), this);
+    d->mPlaceholderLabel = new QLabel(tr("No configurable parameters"), this);  //cn:无可配置参数
     d->mPlaceholderLabel->setObjectName(QStringLiteral("da_placeholder_label"));
     d->mPlaceholderLabel->setAlignment(Qt::AlignCenter);
     d->mPlaceholderLabel->setEnabled(false);

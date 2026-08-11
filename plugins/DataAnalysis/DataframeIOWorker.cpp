@@ -126,10 +126,11 @@ void DataframeIOWorker::exportToOneExcelFile()
         return;
     }
 
+    QString excelFilter = tr("Excel") + " (*.xlsx)";  //cn:Excel
     QString savePath = QFileDialog::getSaveFileName(mainWindow(),                    // 父窗口
-                                                    QString(u8"保存为 excel 文件"),  // 标题
+                                                    tr("Save as Excel File"),        //cn:保存为 excel 文件
                                                     QString(),                       // 默认打开目录（空=上次路径）
-                                                    QString(u8"excel (*.xlsx)")      // 过滤器
+                                                    excelFilter                      // 过滤器
     );
     if (savePath.isEmpty()) {
         return;

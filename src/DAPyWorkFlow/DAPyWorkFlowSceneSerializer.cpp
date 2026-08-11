@@ -16,8 +16,8 @@
 #endif
 #include <QCoreApplication>
 
-// DAPyWorkFlowSceneSerializer不是QObject，使用此宏替代tr()
-#define DA_SERIALIZER_TR(sourceText) QCoreApplication::translate("DAPyWorkFlowSceneSerializer", sourceText)
+// DAPyWorkFlowSceneSerializer 不是 QObject，直接使用 QCoreApplication::translate 获取翻译
+// （context 固定为 "DAPyWorkFlowSceneSerializer"），便于 extract_cn_comments.py 识别 //cn: 注释
 
 namespace DA
 {
@@ -98,7 +98,7 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
     DA_D(d);
     d->mLastErrorString.clear();
     if (!scene || !doc) {
-        d->mLastErrorString = DA_SERIALIZER_TR("scene或doc指针为空");
+        d->mLastErrorString = QCoreApplication::translate("DAPyWorkFlowSceneSerializer", "scene or doc pointer is null");  //cn:scene或doc指针为空
         return false;
     }
 
@@ -128,7 +128,7 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
         // 节点图元自己保存可视化属性
         QDomElement itemEle = doc->createElement("itemData");
         if (!nodeItem->saveToXml(doc, &itemEle, ver)) {
-            qWarning() << DA_SERIALIZER_TR("节点item saveToXml失败: %1").arg(nodeItem->getNodeName());
+            qWarning() << "Node item saveToXml failed:" << nodeItem->getNodeName();
         }
         nodeEle.appendChild(itemEle);
 
@@ -157,7 +157,7 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToXml(const DAPyWorkFlowScene* scene,
         // 连接线图元自己保存可视化属性
         QDomElement itemEle = doc->createElement("itemData");
         if (!linkItem->saveToXml(doc, &itemEle, ver)) {
-            qWarning() << DA_SERIALIZER_TR("连接线item saveToXml失败");
+            qWarning() << "Link item saveToXml failed";
         }
         linkEle.appendChild(itemEle);
 
@@ -191,7 +191,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
     DA_D(d);
     d->mLastErrorString.clear();
     if (!sceneElement || !scene) {
-        d->mLastErrorString = DA_SERIALIZER_TR("sceneElement或scene指针为空");
+        d->mLastErrorString = QCoreApplication::translate("DAPyWorkFlowSceneSerializer", "sceneElement or scene pointer is null");  //cn:sceneElement或scene指针为空
         return false;
     }
 
@@ -203,7 +203,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
     // 获取manager和workflow
     DAPyWorkFlowManager* mgr = scene->getManager();
     if (!mgr || !mgr->isWorkflowValid()) {
-        d->mLastErrorString = DA_SERIALIZER_TR("Manager或workflow无效");
+        d->mLastErrorString = QCoreApplication::translate("DAPyWorkFlowSceneSerializer", "Manager or workflow is invalid");  //cn:Manager或workflow无效
         return false;
     }
     DAPyWorkFlow wf = mgr->getWorkflow();
@@ -216,7 +216,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
         if (!nodeId.isEmpty()) {
             DAPyNode proxy = wf.getNodeById(nodeId);
             if (proxy.isNone()) {
-                qWarning() << DA_SERIALIZER_TR("loadSceneFromXml: node_id=%1 not found in Python workflow").arg(nodeId);
+                qWarning() << "loadSceneFromXml: node_id=" << nodeId << " not found in Python workflow";
             } else {
                 double posX = 0.0, posY = 0.0;
                 QDomElement xEle = nodeEle.firstChildElement("x");
@@ -262,8 +262,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
                 }
             }
         } else {
-            qWarning() << DA_SERIALIZER_TR("loadSceneFromXml: cannot find nodes for link (from=%1, to=%2)")
-                              .arg(fromNodeId, toNodeId);
+            qWarning() << "loadSceneFromXml: cannot find nodes for link (from=" << fromNodeId << ", to=" << toNodeId << ")";
         }
 
         linkEle = linkEle.nextSiblingElement("link");
@@ -297,7 +296,7 @@ bool DAPyWorkFlowSceneSerializer::saveSceneToFile(const DAPyWorkFlowScene* scene
 
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        d->mLastErrorString = DA_SERIALIZER_TR("无法打开文件写入: %1").arg(filePath);
+        d->mLastErrorString = QCoreApplication::translate("DAPyWorkFlowSceneSerializer", "Cannot open file for writing: %1").arg(filePath);  //cn:无法打开文件写入: %1
         return false;
     }
 
@@ -329,7 +328,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromFile(const QString& filePath,
     DA_D(d);
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        d->mLastErrorString = DA_SERIALIZER_TR("无法打开文件读取: %1").arg(filePath);
+        d->mLastErrorString = QCoreApplication::translate("DAPyWorkFlowSceneSerializer", "Cannot open file for reading: %1").arg(filePath);  //cn:无法打开文件读取: %1
         return false;
     }
 
@@ -339,7 +338,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromFile(const QString& filePath,
     int errorColumn = 0;
     if (!doc.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
         d->mLastErrorString =
-            DA_SERIALIZER_TR("XML解析错误: %1 (行:%2 列:%3)").arg(errorMsg).arg(errorLine).arg(errorColumn);
+            QCoreApplication::translate("DAPyWorkFlowSceneSerializer", "XML parse error: %1 (line:%2 col:%3)").arg(errorMsg).arg(errorLine).arg(errorColumn);  //cn:XML解析错误: %1 (行:%2 列:%3)
         file.close();
         return false;
     }
@@ -347,7 +346,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromFile(const QString& filePath,
 
     QDomElement rootEle = doc.documentElement();
     if (rootEle.isNull()) {
-        d->mLastErrorString = DA_SERIALIZER_TR("XML文档无根元素");
+        d->mLastErrorString = QCoreApplication::translate("DAPyWorkFlowSceneSerializer", "XML document has no root element");  //cn:XML文档无根元素
         return false;
     }
 

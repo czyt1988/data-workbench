@@ -81,30 +81,30 @@ void DANodeItemSettingWidget::buildPanel()
 	mainLayout->addWidget(d->mPanel);
 
 	// 尺寸组
-	d->mPanel->addGroupLabel(QString::fromUtf8("尺寸"));
-	d->mPanel->addDoubleProperty(PropWidth, QString::fromUtf8("宽度"), 0, 0, 99999, 2);
-	d->mPanel->addDoubleProperty(PropHeight, QString::fromUtf8("高度"), 0, 0, 99999, 2);
-	d->mPanel->addBoolProperty(PropLockAspectRatio, QString::fromUtf8("锁定纵横比"), false);
+	d->mPanel->addGroupLabel(tr("Size"));  //cn:尺寸
+	d->mPanel->addDoubleProperty(PropWidth, tr("Width"), 0, 0, 99999, 2);  //cn:宽度
+	d->mPanel->addDoubleProperty(PropHeight, tr("Height"), 0, 0, 99999, 2);  //cn:高度
+	d->mPanel->addBoolProperty(PropLockAspectRatio, tr("Lock aspect ratio"), false);  //cn:锁定纵横比
 	d->mPanel->addSeparator();
-	d->mPanel->addDoubleProperty(PropRotation, QString::fromUtf8("旋转"), 0, 0, 360, 1);
+	d->mPanel->addDoubleProperty(PropRotation, tr("Rotation"), 0, 0, 360, 1);  //cn:旋转
 
 	// 位置组
-	d->mPanel->addGroupLabel(QString::fromUtf8("位置"));
+	d->mPanel->addGroupLabel(tr("Position"));  //cn:位置
 	d->mPanel->addDoubleProperty(PropX, QString::fromUtf8("X"), 0, -999999, 9999999, 2);
 	d->mPanel->addDoubleProperty(PropY, QString::fromUtf8("Y"), 0, -9999999, 9999999, 2);
 
 	// 属性组
-	d->mPanel->addGroupLabel(QString::fromUtf8("属性"));
-	d->mPanel->addBoolProperty(PropMovable, QString::fromUtf8("可移动"), false);
-	d->mPanel->addBoolProperty(PropResizable, QString::fromUtf8("可缩放"), false);
+	d->mPanel->addGroupLabel(tr("Properties"));  //cn:属性
+	d->mPanel->addBoolProperty(PropMovable, tr("Movable"), false);  //cn:可移动
+	d->mPanel->addBoolProperty(PropResizable, tr("Resizable"), false);  //cn:可缩放
 
 	// 提示文本
-	d->mPanel->addStringProperty(PropTooltip, QString::fromUtf8("提示"), QString());
+	d->mPanel->addStringProperty(PropTooltip, tr("Tooltip"), QString());  //cn:提示
 
 	// 连接点位置组
-	d->mPanel->addGroupLabel(QString::fromUtf8("连接点位置"));
+	d->mPanel->addGroupLabel(tr("Link point position"));  //cn:连接点位置
 	QWidget* linkPointWidget = createLinkPointWidget();
-	d->mPanel->addProperty(QString::fromUtf8("方向"), linkPointWidget);
+	d->mPanel->addProperty(tr("Direction"), linkPointWidget);  //cn:方向
 
 	// 连接属性值变化信号
 	connect(d->mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged, this,
@@ -129,7 +129,7 @@ QWidget* DANodeItemSettingWidget::createLinkPointWidget()
 	linkPointLayout->setSpacing(2);
 
 	// 输入方向
-	QLabel* inputLabel = new QLabel(QString::fromUtf8("输入方向"), linkPointWidget);
+	QLabel* inputLabel = new QLabel(tr("Input direction"), linkPointWidget);  //cn:输入方向
 	linkPointLayout->addWidget(inputLabel);
 
 	QHBoxLayout* inputLayout = new QHBoxLayout();
@@ -163,7 +163,7 @@ QWidget* DANodeItemSettingWidget::createLinkPointWidget()
 	linkPointLayout->addLayout(inputLayout);
 
 	// 输出方向
-	QLabel* outputLabel = new QLabel(QString::fromUtf8("输出方向"), linkPointWidget);
+	QLabel* outputLabel = new QLabel(tr("Output direction"), linkPointWidget);  //cn:输出方向
 	linkPointLayout->addWidget(outputLabel);
 
 	QHBoxLayout* outputLayout = new QHBoxLayout();

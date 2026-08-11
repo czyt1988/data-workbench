@@ -249,11 +249,11 @@ void DAAgentModule::startAgentInternal()
 
     // 路径缺失时提前返回并报错——daCritical 会路由到 UI 日志窗口
     if (pythonExe.isEmpty()) {
-        daCritical << tr("无法找到 Python 解释器路径，请在设置页配置 Python 解释器");
+        daCritical << tr("Cannot find Python interpreter path, please configure it in settings");  //cn:无法找到 Python 解释器路径，请在设置页配置 Python 解释器
         return;
     }
     if (scriptPath.isEmpty() || !QFile::exists(scriptPath)) {
-        daCritical << tr("无法找到 agent_runner.py 路径: %1").arg(scriptPath);
+        daCritical << tr("Cannot find agent_runner.py path: %1").arg(scriptPath);  //cn:无法找到 agent_runner.py 路径: %1
         return;
     }
 

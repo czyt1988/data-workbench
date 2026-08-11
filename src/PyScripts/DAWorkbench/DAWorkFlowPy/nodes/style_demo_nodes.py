@@ -34,7 +34,7 @@ from ..types import Input, Output
     output_port_style=LinkPointStyle(shape="Circle"),
 ))
 class EllipseDemoNode:
-    """椭圆体演示节点，展示椭圆形状、名称下方和圆形端口"""
+    """Ellipse demo node: ellipse body, name below, circle ports"""
 
     class Inputs:
         data = Input("any")
@@ -52,7 +52,7 @@ class EllipseDemoNode:
 # ============================================================================
 @NodeDef(name="Default Rect", category="Style Demo")
 class DefaultRectNode:
-    """默认矩形节点，展示默认样式行为"""
+    """Default rectangle node, demonstrates default style behavior"""
 
     class Inputs:
         data = Input("any")
@@ -77,7 +77,7 @@ class DefaultRectNode:
     output_port_style=LinkPointStyle(shape="Circle"),
 ))
 class CirclePortsNode:
-    """圆形端口演示节点，展示矩形体 + 圆形端口 + 南北布局"""
+    """Circle ports demo node: rectangle body, circle ports, north/south layout"""
 
     class Inputs:
         data = Input("any")
@@ -100,7 +100,7 @@ class CirclePortsNode:
     output_port_style=LinkPointStyle(shape="Diamond", fill_color=(200, 200, 255)),
 ))
 class DiamondPortsNode:
-    """菱形端口演示节点，展示矩形体 + 菱形端口 + 彩色填充"""
+    """Diamond ports demo node: rectangle body, diamond ports, colored fill"""
 
     class Inputs:
         data = Input("any")
@@ -123,7 +123,7 @@ class DiamondPortsNode:
     border_color=(0, 0, 255),
 ))
 class CustomColorNode:
-    """自定义颜色演示节点，展示红色背景 + 蓝色边框"""
+    """Custom color demo node: red background, blue border"""
 
     class Inputs:
         data = Input("any")
@@ -148,7 +148,7 @@ class CustomColorNode:
     border_color=(50, 50, 200),
 ))
 class MixedLayoutNode:
-    """混合布局演示节点，展示椭圆体 + 名称下方 + 菱形端口 + 蓝色边框"""
+    """Mixed layout demo node: ellipse body, name below, diamond ports, blue border"""
 
     class Inputs:
         data = Input("any")
@@ -170,7 +170,7 @@ class MixedLayoutNode:
     corner_radius=12.0,
 ))
 class CornerRadiusNode:
-    """大圆角演示节点，展示矩形体 + 大圆角半径"""
+    """Large corner radius demo node: rectangle body, large corner radius"""
 
     class Inputs:
         data = Input("any")
