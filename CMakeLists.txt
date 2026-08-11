@@ -320,6 +320,7 @@ if(DA_ENABLE_AUTO_TRANSLATE)
     # 扫描的源码目录（按需增删）
     set(DA_LUPDATE_SOURCE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/src/APP
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/DAAgent
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAAxOfficeWrapper
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAData
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAFigure

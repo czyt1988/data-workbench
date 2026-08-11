@@ -87,12 +87,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+26"/>
-        <source>LanguageChange</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
+        <location line="+49"/>
         <source>Question</source>
         <translation type="unfinished"></translation>
     </message>
@@ -102,22 +97,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+22"/>
-        <source>Successfully saved UI state to %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Cannot open %1, because: %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Cannot remove %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+46"/>
+        <location line="+76"/>
         <source>Untitled</source>
         <translation type="unfinished"></translation>
     </message>
@@ -172,34 +152,77 @@
     </message>
 </context>
 <context>
+    <name>DA::DAAgentBridge</name>
+    <message>
+        <location filename="../DAAgent/DAAgentBridge.cpp" line="+95"/>
+        <source>Agent process startup timed out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>Agent subprocess not ready within %1 ms, initialization may have failed, check logs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+77"/>
+        <source>Failed to write to agent subprocess stdin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+79"/>
+        <source>Failed to parse JSON line from agent stdout: %1, error: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+197"/>
+        <source>Failed to parse trailing JSON line from agent stdout: %1, error: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+41"/>
+        <source>Agent process crashed (exit code %1), recovering... (%2/%3)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Agent process crashed repeatedly (%1 times), please restart the application</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>Agent response timeout (no activity for %1 minutes)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAAgentDockWidget</name>
     <message>
         <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+89"/>
-        <location line="+174"/>
+        <location line="+185"/>
         <location line="+19"/>
-        <location line="+80"/>
+        <location line="+88"/>
         <source>Ready</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-248"/>
+        <location line="-267"/>
         <source>Type a message... (Ctrl+Enter to send)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+147"/>
+        <location line="+158"/>
         <location line="+20"/>
         <source>Send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-93"/>
+        <location line="-104"/>
         <source>Stopping...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+82"/>
+        <location line="+93"/>
         <source>Agent thinking...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -209,7 +232,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-217"/>
+        <location line="-228"/>
         <source>Session Manager</source>
         <translation type="unfinished"></translation>
     </message>
@@ -219,12 +242,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+289"/>
+        <location line="+303"/>
+        <source>tokens: ~%1 / %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>tokens: %1 / %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+65"/>
+        <location line="+66"/>
         <source>tokens: -</source>
         <translation type="unfinished"></translation>
     </message>
@@ -263,72 +291,207 @@
         <source>unknown</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location line="+7"/>
+        <source>API quota exhausted, please check account balance or change API key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>API key invalid or expired, please check settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed after %1 retries: rate limited</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed after %1 retries: network error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed after %1 retries: server error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Request format error: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Context window exceeded and compaction failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Agent response timeout (no activity for %1 minutes)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Agent process crashed, recovering... (%1/3)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Agent process crashed repeatedly, unable to recover</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Agent error: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
-    <name>DA::DAAgentSettingsWidget</name>
+    <name>DA::DAAgentModule</name>
     <message>
-        <location filename="../APP/SettingPages/DAAgentSettingsWidget.cpp" line="+49"/>
-        <location line="+6"/>
-        <source> s</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-5"/>
-        <source>Waiting time for agent subprocess to become ready after start. Cold start imports of langchain may take ~17s, default 60s is safe.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Waiting time for agent subprocess to exit when stopped.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>测试连接</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Maximum context window of the LLM model in tokens. deepseek-v4-flash=1048576, qwen3-coder=256000, etc.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Compaction trigger ratio (0.85 = compact at 85% of context window)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Number of recent messages to retain after compaction</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Tool results exceeding this length will be truncated to a preview</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Preview length for truncated tool results</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Maximum number of free sessions retained in the config directory. Older sessions beyond this count are cleaned up on startup.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source> d</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Free sessions older than this many days are cleaned up on startup.</source>
+        <location filename="../DAAgent/DAAgentModule.cpp" line="+167"/>
+        <source>Agent system prompt file is empty, fallback to built-in default: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
+        <source>Failed to read Agent system prompt file, fallback to built-in default: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+81"/>
+        <source>Cannot find Python interpreter path, please configure it in settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Cannot find agent_runner.py path: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAgentSettingsWidget</name>
+    <message>
+        <location filename="../APP/SettingPages/DAAgentSettingsWidget.cpp" line="+77"/>
+        <location line="+12"/>
+        <source> s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+92"/>
+        <source> d</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-125"/>
+        <source>OpenAI-compatible API base URL. The system appends &apos;/chat/completions&apos; automatically, so only provide the base path. Recommended: &apos;https://api.openai.com/v1&apos; or your provider&apos;s equivalent. Must end with a version path (e.g. /v1), not with &apos;/chat/completions&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Authentication key for the LLM provider. Obtain it from the provider&apos;s dashboard. It is masked here and encrypted at rest with DPAPI on Windows. Pass an empty string to clear the stored key. Avoid logging or sharing this value.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Model name to use for chat completions. Must be a model supported by the provider behind Base URL. Examples: &apos;gpt-4o&apos;, &apos;deepseek-chat&apos;, &apos;qwen3-coder&apos;. A wrong model name usually yields a 404/error from the provider.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Waiting time (seconds) for the agent subprocess to become ready after start. Cold start imports of langchain may take ~17s. Recommended: 60 (safe margin over cold start). Larger: more tolerant of slow machines / first launch, but you wait longer when the process is actually hung. Smaller: detects startup failure faster, but may kill a normal cold start that is still importing dependencies.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Waiting time (seconds) for the agent subprocess to exit when stopped. If the process does not exit within this period it is force-killed. Recommended: 5. Larger: gives the subprocess more time for a graceful shutdown (flush logs, release resources). Smaller: force-terminates faster, but may lose unwritten stderr/log output.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Test Connection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source> tokens</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Maximum context window of the LLM model in tokens. Set this to match the model&apos;s actual context window (e.g. 128000 for GPT-4o, 256000 for qwen3-coder, 1048576 for deepseek-v4). Default 262144 (256K). Larger: allows more conversation history before compaction, but exceeding the model&apos;s real hard limit causes API errors. Smaller: triggers compaction earlier, which may discard useful historical context to save tokens.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Compaction trigger ratio: when used tokens reach this fraction of the context window, older messages are summarized to free space. 0.85 = compact at 85% of the context window. Larger: delays compaction, keeps more raw history, but risks hitting the model&apos;s hard context limit on long sessions. Smaller: compacts earlier, saving tokens and cost, but may discard earlier context prematurely.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Number of most recent messages retained verbatim after compaction. Older messages are summarized; these recent ones stay as-is. Recommended: 10. Larger: keeps more recent context intact (better continuity), but consumes more tokens per turn. Smaller: saves tokens, but may lose continuity for multi-step reasoning that spans many recent turns.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Character threshold: tool outputs longer than this are truncated to a preview (see Tool Result Preview Chars). Shorter outputs are kept in full. Recommended: 20000. Larger: preserves more tool output detail, but large outputs quickly consume context window. Smaller: saves tokens, but may cut off key information in tool results (e.g. a DataFrame tail row or an error message).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Preview length (characters) shown when a tool output is truncated. Only takes effect on outputs exceeding Tool Result Max Chars. Recommended: 2000. Larger: the truncated preview is more complete, but each preview occupies more context. Smaller: saves tokens, but the preview may be too short to be useful.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Maximum number of free (unsaved) sessions retained in the config directory. Sessions beyond this count are deleted oldest-first on startup. Recommended: 20. Larger: keeps more session history available for review. Smaller: cleans up sooner, saving disk space.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Free (unsaved) sessions older than this many days are deleted on startup. Recommended: 30. Larger: keeps session history for a longer period. Smaller: frees disk space sooner by removing old sessions earlier.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+40"/>
+        <source> times</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-39"/>
+        <source>Maximum number of automatic retries for LLM API calls on transient errors (HTTP 429 rate-limit, 5xx server errors, network failures). 0 disables retry entirely. Recommended: 7. Larger: more tolerant of temporary provider outages, but increases end-to-end latency when the provider is genuinely down. Smaller: fails faster, useful when you prefer quick failure over long waits; 0 means a single attempt with no retry.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <location line="+13"/>
+        <source> sec</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-12"/>
+        <source>Timeout (seconds) for a single LLM API request, covering connection and first-byte waiting. Recommended: 120. Larger: tolerates slow responses (e.g. complex multi-step reasoning), but a hung request blocks the agent longer before failing over. Smaller: fails faster on unresponsive providers, but may interrupt normal long-running reasoning that simply needs more time.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Watchdog timeout (seconds): if no protocol message is received from the agent subprocess within this period, it is considered hung and stopped. Recommended: 240. Larger: more tolerant of long-running tool executions that legitimately produce no output for a while. Smaller: detects a hung subprocess faster, but may prematurely kill a process that is executing a slow but valid task (e.g. a long pandas computation).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Maximum number of automatic restarts after the agent subprocess crashes unexpectedly. 0 disables auto-restart. Recommended: 3. Larger: gives more automatic recovery opportunities, useful on unstable environments, but may repeatedly restart a fundamentally broken process. Smaller: fewer restart attempts; 0 means the agent stays stopped after a crash until manually restarted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Maximum number of graph reasoning steps (compact-&gt;agent-&gt;tools cycle). Each tool-call cycle consumes 3 steps. Recommended: 150 (~50 tool-call cycles), suits data-analysis tasks that frequently query data. Larger: allows complex multi-step analysis, but increases cost and may let a looping agent run longer before stopping. Smaller: stops runaway loops sooner and saves cost, but may cut off legitimate long analysis chains. Also guarded by automatic repeated-tool-call detection.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
         <source>Base URL</source>
         <translation type="unfinished"></translation>
     </message>
@@ -388,8 +551,48 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+2"/>
+        <source>Max retries</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Request timeout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Inactivity timeout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Max process restarts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reasoning iteration limit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+178"/>
+        <source>Testing...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>✓ Connected (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>✗ Connection failed: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../APP/SettingPages/DAAgentSettingsWidget.h" line="+42"/>
-        <source>Agent LLM 设置</source>
+        <source>Agent LLM Settings</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1627,7 +1830,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+661"/>
+        <location filename="../APP/DAAppController.cpp" line="+662"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1817,26 +2020,6 @@ Config</source>
         <source>Python scripts not initialized, cannot import file: %1</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location line="+20"/>
-        <source>Begin import file: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>File: %1, convert to DataFrame</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>The file &apos;%1&apos; has been successfully imported, but no data can be read from the file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Cannot import file: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>DA::DAAppDockingArea</name>
@@ -1894,27 +2077,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-149"/>
-        <source>Successfully loaded plugin %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+160"/>
-        <source>Pyplugins scan completed, found %1 valid Python plugin paths</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
+        <location line="+16"/>
         <source>Python node discovery failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Python node factory initialized, discovered %1 nodes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+8"/>
         <source>Python node factory initialization failed: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2462,17 +2630,9 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DAAppUI</name>
-    <message>
-        <location filename="../APP/DAAppUI.cpp" line="+81"/>
-        <source>Failed to load form config for settings dialog</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::DAAxObjectExcelWrapper</name>
     <message>
-        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+762"/>
+        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+763"/>
         <location line="+23"/>
         <source>The local computer does not have Excel or WPS installed</source>
         <translation type="unfinished"></translation>
@@ -7384,19 +7544,6 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DADockingAreaInterface</name>
-    <message>
-        <location filename="../DAInterface/DADockingAreaInterface.cpp" line="+108"/>
-        <source>dock widget &quot;%1&quot; was closed and hidden</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>cannot find widget or dock widget</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::DAExportToPngSettingDialog</name>
     <message>
         <location filename="../APP/Dialog/DAExportToPngSettingDialog.cpp" line="+60"/>
@@ -7451,6 +7598,19 @@ Config</source>
     <message>
         <location line="+205"/>
         <source>3D Item</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAFigureWidget</name>
+    <message>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+133"/>
+        <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+967"/>
+        <source>Unsupported chart editor type: %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7569,6 +7729,79 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DANodeItemSettingWidget</name>
+    <message>
+        <location filename="../DAGui/DANodeItemSettingWidget.cpp" line="+84"/>
+        <source>Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Lock aspect ratio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Rotation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Movable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Resizable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Tooltip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Link point position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Input direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Output direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DANodeLinkItemSettingWidget</name>
     <message>
         <location filename="../DAGui/DANodeLinkItemSettingWidget.cpp" line="+33"/>
@@ -7613,6 +7846,14 @@ Config</source>
     <message>
         <location line="+135"/>
         <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DANodeParamSettingPanel</name>
+    <message>
+        <location filename="../DAGui/NodeSetting/DANodeParamSettingPanel.cpp" line="+42"/>
+        <source>No configurable parameters</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7663,7 +7904,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+17"/>
+        <source>Will ignore plugin:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>No plugins ignore files, a %1 file will be automatically generated</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7760,11 +8006,6 @@ Config</source>
     <message>
         <location line="+5"/>
         <source>Node Plugin</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Plugin name is %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8516,14 +8757,6 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DATextReadWriter</name>
-    <message>
-        <location filename="../DAUtils/DATextReadWriter.cpp" line="+179"/>
-        <source>cannot open %1, because %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DA::DAToolBox</name>
     <message>
         <location filename="../DAGui/DAToolBox.cpp" line="+88"/>
@@ -8636,47 +8869,9 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DAZipArchive</name>
-    <message>
-        <location filename="../DAGui/DAZipArchive.cpp" line="+308"/>
-        <source>The file %1 in the archive could not be opened. The reason for the error is %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+59"/>
-        <location line="+15"/>
-        <location line="+55"/>
-        <location line="+127"/>
-        <location line="+11"/>
-        <source>archive is not open</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-187"/>
-        <source>Unable to locate the %1 file in the current archive. The error code is %2,err str:%3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>The file %1 in the archive could not be opened. The error code is %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+193"/>
-        <location line="+10"/>
-        <source>cannot open archive</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+179"/>
-        <source>Failed to create target directory:%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1366"/>
+        <location filename="../APP/DAAppController.cpp" line="-1367"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8691,6 +8886,19 @@ Config</source>
     <message>
         <location line="+1"/>
         <source>The current function is not implemented, only the UI is reserved, please pay attention: https://gitee.com/czyt1988/data-work-flow</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAAxObjectExcelWrapper</name>
+    <message>
+        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="-612"/>
+        <source>File &quot;%1&quot; does not exist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Failed to open Excel file &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10710,7 +10918,7 @@ Config</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+85"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-1015"/>
         <source>Figure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11002,6 +11210,44 @@ Config</source>
     <message>
         <location filename="../DAGui/DAPyWorkFlowOperateWidget.ui" line="+26"/>
         <source>Workflow Operate</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAPyWorkFlowSceneSerializer</name>
+    <message>
+        <location filename="../DAPyWorkFlow/DAPyWorkFlowSceneSerializer.cpp" line="+101"/>
+        <source>scene or doc pointer is null</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+93"/>
+        <source>sceneElement or scene pointer is null</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Manager or workflow is invalid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+93"/>
+        <source>Cannot open file for writing: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>Cannot open file for reading: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>XML parse error: %1 (line:%2 col:%3)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>XML document has no root element</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -12182,13 +12428,18 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+115"/>
-        <source>%1. Elapsed: %2:%3</source>
+        <location line="+41"/>
+        <source>Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
-        <source>%1, Cost %2:%3</source>
+        <location line="+2"/>
+        <source>Save as Excel File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+73"/>
+        <source>%1. Elapsed: %2:%3</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -12228,7 +12479,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../APP/main.cpp" line="+181"/>
+        <location filename="../APP/main.cpp" line="+111"/>
+        <source>Failed to set console output codepage to UTF-8</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+70"/>
         <source>Initializing...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12329,79 +12585,29 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+155"/>
-        <source>save workflow extern info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>save workflow nodes cost: %1 ms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>save workflow links cost: %1 ms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>save special item cost: %1 ms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>load workflow extern info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+199"/>
         <location line="+277"/>
         <source>error occurred while loading nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-275"/>
-        <source>load workflow nodes cost: %1 ms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="-272"/>
         <location line="+275"/>
         <source>error occurred while loading node links</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-273"/>
-        <source>load workflow links cost: %1 ms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="-270"/>
         <source>error occurred while loading special items</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>load special item cost: %1 ms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="+5"/>
         <source>error occurred while loading scene info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-47"/>
-        <source>save scene info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+49"/>
-        <source>load scene info cost: %1 ms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+37"/>
+        <location line="+39"/>
         <source>loadNodesView: error occurred</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12471,12 +12677,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+44"/>
-        <source>Skipping legacy factory info (%1 entries)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+135"/>
+        <location line="+179"/>
         <location line="+75"/>
         <source>node missing id attribute, will skip this node</source>
         <translation type="unfinished"></translation>
@@ -12525,12 +12726,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+131"/>
-        <source>Unable to generate graphics item element during the saving</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
+        <location line="+157"/>
         <source>Unable to load item information from &lt;%1&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12540,12 +12736,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+45"/>
-        <source>An exception occurred during the process of processing pasted content XML, with the root node missing the type attribute</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
+        <location line="+52"/>
         <source>An exception occurred during the process of parsing and pasting content, missing workflow tag</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12565,7 +12756,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAGui/DAZipArchive.cpp" line="-659"/>
+        <location filename="../DAGui/DAZipArchive.cpp" line="+121"/>
         <source>No error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12670,7 +12861,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DAUtils/DATextReadWriter.cpp" line="+225"/>
+        <location filename="../DAUtils/DATextReadWriter.cpp" line="+404"/>
         <source>No error occurred</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12865,7 +13056,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+6"/>
+        <source>Loaded plugin: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>successfully loaded plugin %1, but failed to initialize</source>
         <translation type="unfinished"></translation>
     </message>

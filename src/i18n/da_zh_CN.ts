@@ -87,12 +87,7 @@
         <translation>正在准备界面...</translation>
     </message>
     <message>
-        <location line="+26"/>
-        <source>LanguageChange</source>
-        <translation>语言变更</translation>
-    </message>
-    <message>
-        <location line="+23"/>
+        <location line="+49"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
@@ -102,22 +97,7 @@
         <translation>是否保存工程？</translation>
     </message>
     <message>
-        <location line="+22"/>
-        <source>Successfully saved UI state to %1</source>
-        <translation>成功保存界面状态到%1</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Cannot open %1, because: %2</source>
-        <translation>无法打开%1，原因：%2</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Cannot remove %1</source>
-        <translation>无法删除%1</translation>
-    </message>
-    <message>
-        <location line="+46"/>
+        <location line="+76"/>
         <source>Untitled</source>
         <translation>未命名</translation>
     </message>
@@ -150,12 +130,12 @@
     <message>
         <location line="+18"/>
         <source>UI state has been reset, the default layout will be applied on next launch</source>
-        <translation type="unfinished"></translation>
+        <translation>界面状态已重置，默认布局将在下次启动时应用</translation>
     </message>
     <message>
         <location line="+29"/>
         <source>Project auto-saved</source>
-        <translation type="unfinished"></translation>
+        <translation>工程已自动保存</translation>
     </message>
 </context>
 <context>
@@ -172,66 +152,114 @@
     </message>
 </context>
 <context>
+    <name>DA::DAAgentBridge</name>
+    <message>
+        <location filename="../DAAgent/DAAgentBridge.cpp" line="+95"/>
+        <source>Agent process startup timed out</source>
+        <translation>Agent 进程启动超时</translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>Agent subprocess not ready within %1 ms, initialization may have failed, check logs</source>
+        <translation>Agent 子进程启动后 %1 毫秒内未就绪，初始化可能失败，请查看日志排查</translation>
+    </message>
+    <message>
+        <location line="+77"/>
+        <source>Failed to write to agent subprocess stdin</source>
+        <translation>写入 agent 子进程 stdin 失败</translation>
+    </message>
+    <message>
+        <location line="+79"/>
+        <source>Failed to parse JSON line from agent stdout: %1, error: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+197"/>
+        <source>Failed to parse trailing JSON line from agent stdout: %1, error: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+41"/>
+        <source>Agent process crashed (exit code %1), recovering... (%2/%3)</source>
+        <translation>Agent 进程异常退出（代码 %1），正在恢复... (%2/%3)</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Agent process crashed repeatedly (%1 times), please restart the application</source>
+        <translation>Agent 进程多次异常退出（%1 次），请重启程序</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>Agent response timeout (no activity for %1 minutes)</source>
+        <translation>Agent 响应超时（%1 分钟无活动）</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAAgentDockWidget</name>
     <message>
         <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+89"/>
-        <location line="+174"/>
+        <location line="+185"/>
         <location line="+19"/>
-        <location line="+80"/>
+        <location line="+88"/>
         <source>Ready</source>
-        <translation type="unfinished">启动完成</translation>
+        <translation>启动完成</translation>
     </message>
     <message>
-        <location line="-248"/>
+        <location line="-267"/>
         <source>Type a message... (Ctrl+Enter to send)</source>
-        <translation type="unfinished"></translation>
+        <translation>输入消息...（Ctrl+Enter 发送）</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+147"/>
+        <location line="+158"/>
         <location line="+20"/>
         <source>Send</source>
-        <translation type="unfinished"></translation>
+        <translation>发送</translation>
     </message>
     <message>
-        <location line="-93"/>
+        <location line="-104"/>
         <source>Stopping...</source>
-        <translation type="unfinished"></translation>
+        <translation>终止中...</translation>
     </message>
     <message>
-        <location line="+82"/>
+        <location line="+93"/>
         <source>Agent thinking...</source>
-        <translation type="unfinished"></translation>
+        <translation>Agent 思考中...</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>终止</translation>
     </message>
     <message>
-        <location line="-217"/>
+        <location line="-228"/>
         <source>Session Manager</source>
-        <translation type="unfinished"></translation>
+        <translation>会话管理</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>New Session</source>
+        <translation>新建会话</translation>
+    </message>
+    <message>
+        <location line="+303"/>
+        <source>tokens: ~%1 / %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+289"/>
+        <location line="+4"/>
         <source>tokens: %1 / %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+65"/>
+        <location line="+66"/>
         <source>tokens: -</source>
-        <translation type="unfinished"></translation>
+        <translation>token: -</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>(untitled)</source>
-        <translation type="unfinished"></translation>
+        <translation>（未命名）</translation>
     </message>
     <message>
         <location line="+26"/>
@@ -263,134 +291,309 @@
         <source>unknown</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location line="+7"/>
+        <source>API quota exhausted, please check account balance or change API key</source>
+        <translation>API 配额已耗尽，请检查账户余额或更换 API Key</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>API key invalid or expired, please check settings</source>
+        <translation>API Key 无效或已过期，请在设置中检查配置</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed after %1 retries: rate limited</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed after %1 retries: network error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed after %1 retries: server error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Request format error: %1</source>
+        <translation>请求格式错误：%1</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Context window exceeded and compaction failed</source>
+        <translation>上下文窗口超限且压缩失败</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Agent response timeout (no activity for %1 minutes)</source>
+        <translation>Agent 响应超时（%1 分钟无活动）</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Agent process crashed, recovering... (%1/3)</source>
+        <translation>Agent 进程异常退出，正在恢复... (%1/3)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Agent process crashed repeatedly, unable to recover</source>
+        <translation>Agent 进程多次崩溃，无法恢复</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Agent error: %1</source>
+        <translation>Agent 错误：%1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAgentModule</name>
+    <message>
+        <location filename="../DAAgent/DAAgentModule.cpp" line="+167"/>
+        <source>Agent system prompt file is empty, fallback to built-in default: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Failed to read Agent system prompt file, fallback to built-in default: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+81"/>
+        <source>Cannot find Python interpreter path, please configure it in settings</source>
+        <translation>无法找到 Python 解释器路径，请在设置页配置 Python 解释器</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Cannot find agent_runner.py path: %1</source>
+        <translation>无法找到 agent_runner.py 路径: %1</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAgentSettingsWidget</name>
     <message>
-        <location filename="../APP/SettingPages/DAAgentSettingsWidget.cpp" line="+49"/>
-        <location line="+6"/>
+        <location filename="../APP/SettingPages/DAAgentSettingsWidget.cpp" line="+77"/>
+        <location line="+12"/>
         <source> s</source>
-        <translation type="unfinished"></translation>
+        <translation>秒</translation>
     </message>
     <message>
-        <location line="-5"/>
-        <source>Waiting time for agent subprocess to become ready after start. Cold start imports of langchain may take ~17s, default 60s is safe.</source>
-        <translation type="unfinished"></translation>
+        <location line="+92"/>
+        <source> d</source>
+        <translation>天</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Waiting time for agent subprocess to exit when stopped.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>测试连接</source>
-        <translation type="unfinished"></translation>
+        <location line="-125"/>
+        <source>OpenAI-compatible API base URL. The system appends &apos;/chat/completions&apos; automatically, so only provide the base path. Recommended: &apos;https://api.openai.com/v1&apos; or your provider&apos;s equivalent. Must end with a version path (e.g. /v1), not with &apos;/chat/completions&apos;.</source>
+        <translation>OpenAI 兼容 API 基础地址。系统会自动拼接 &apos;/chat/completions&apos;，故只需填基础路径。建议填 &apos;https://api.openai.com/v1&apos; 或服务商等价地址。须以版本路径(如 /v1)结尾,不要以 &apos;/chat/completions&apos; 结尾。</translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>Maximum context window of the LLM model in tokens. deepseek-v4-flash=1048576, qwen3-coder=256000, etc.</source>
-        <translation type="unfinished"></translation>
+        <source>Authentication key for the LLM provider. Obtain it from the provider&apos;s dashboard. It is masked here and encrypted at rest with DPAPI on Windows. Pass an empty string to clear the stored key. Avoid logging or sharing this value.</source>
+        <translation>LLM 服务商身份认证密钥,从服务商控制台获取。界面密文显示,Windows 下本地用 DPAPI 加密存储。传空串可清除已存密钥。请勿在日志或外部渠道泄露此值。</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Model name to use for chat completions. Must be a model supported by the provider behind Base URL. Examples: &apos;gpt-4o&apos;, &apos;deepseek-chat&apos;, &apos;qwen3-coder&apos;. A wrong model name usually yields a 404/error from the provider.</source>
+        <translation>用于对话补全的模型名称,须为 Base URL 服务商支持的模型。示例:&apos;gpt-4o&apos;、&apos;deepseek-chat&apos;、&apos;qwen3-coder&apos;。填错通常返回 404 或服务商错误。</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Waiting time (seconds) for the agent subprocess to become ready after start. Cold start imports of langchain may take ~17s. Recommended: 60 (safe margin over cold start). Larger: more tolerant of slow machines / first launch, but you wait longer when the process is actually hung. Smaller: detects startup failure faster, but may kill a normal cold start that is still importing dependencies.</source>
+        <translation>agent 子进程启动后等待就绪的超时(秒)。冷启动导入 langchain 约 17s。建议 60(留足冷启动余量)。调大:更容忍慢机/首次启动,但进程卡死时等更久;调小:更快发现启动失败,但可能误杀仍在导入依赖的正常冷启动。</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Waiting time (seconds) for the agent subprocess to exit when stopped. If the process does not exit within this period it is force-killed. Recommended: 5. Larger: gives the subprocess more time for a graceful shutdown (flush logs, release resources). Smaller: force-terminates faster, but may lose unwritten stderr/log output.</source>
+        <translation>停止 agent 时等待子进程退出的超时(秒),超时则强制终止。建议 5。调大:给子进程更多优雅退出时间(刷新日志、释放资源);调小:更快强制终止,但可能丢失未写入的日志输出。</translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>Compaction trigger ratio (0.85 = compact at 85% of context window)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Number of recent messages to retain after compaction</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Tool results exceeding this length will be truncated to a preview</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Preview length for truncated tool results</source>
-        <translation type="unfinished"></translation>
+        <source>Test Connection</source>
+        <translation>测试连接</translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>Maximum number of free sessions retained in the config directory. Older sessions beyond this count are cleaned up on startup.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source> d</source>
-        <translation type="unfinished"></translation>
+        <source> tokens</source>
+        <translation> tokens</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Free sessions older than this many days are cleaned up on startup.</source>
-        <translation type="unfinished"></translation>
+        <source>Maximum context window of the LLM model in tokens. Set this to match the model&apos;s actual context window (e.g. 128000 for GPT-4o, 256000 for qwen3-coder, 1048576 for deepseek-v4). Default 262144 (256K). Larger: allows more conversation history before compaction, but exceeding the model&apos;s real hard limit causes API errors. Smaller: triggers compaction earlier, which may discard useful historical context to save tokens.</source>
+        <translation>LLM 模型最大上下文窗口(tokens),须与模型实际窗口匹配(如 GPT-4o=128000,qwen3-coder=256000,deepseek-v4=1048576)。默认 262144(256K)。调大:压缩前可容纳更多对话历史,但超出模型硬限会导致 API 报错;调小:更早触发压缩省 token,但可能丢弃有用的历史上下文。</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+15"/>
+        <source>Compaction trigger ratio: when used tokens reach this fraction of the context window, older messages are summarized to free space. 0.85 = compact at 85% of the context window. Larger: delays compaction, keeps more raw history, but risks hitting the model&apos;s hard context limit on long sessions. Smaller: compacts earlier, saving tokens and cost, but may discard earlier context prematurely.</source>
+        <translation>压缩触发比例:已用 token 达到上下文窗口的此比例时,将较早的消息摘要以腾出空间。0.85=窗口 85% 时触发。调大:更晚压缩、保留更多原始历史,但长会话可能撞模型上下文硬限;调小:更早压缩省 token 省成本,但可能过早丢弃早期上下文。</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Number of most recent messages retained verbatim after compaction. Older messages are summarized; these recent ones stay as-is. Recommended: 10. Larger: keeps more recent context intact (better continuity), but consumes more tokens per turn. Smaller: saves tokens, but may lose continuity for multi-step reasoning that spans many recent turns.</source>
+        <translation>压缩后保留为原文的最近消息条数,更早的消息被摘要,这些最近的保持原样。建议 10。调大:保留更多近期上下文(连续性更好),但每轮消耗更多 token;调小:更省 token,但跨多轮的多步推理可能丢失连续性。</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Character threshold: tool outputs longer than this are truncated to a preview (see Tool Result Preview Chars). Shorter outputs are kept in full. Recommended: 20000. Larger: preserves more tool output detail, but large outputs quickly consume context window. Smaller: saves tokens, but may cut off key information in tool results (e.g. a DataFrame tail row or an error message).</source>
+        <translation>字符阈值:工具输出超此长度则截断为预览(见“工具结果预览长度”),更短的保留全文。建议 20000。调大:保留更多工具输出细节,但大输出会快速消耗上下文窗口;调小:更省 token,但可能截断关键信息(如 DataFrame 末行或错误消息)。</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Preview length (characters) shown when a tool output is truncated. Only takes effect on outputs exceeding Tool Result Max Chars. Recommended: 2000. Larger: the truncated preview is more complete, but each preview occupies more context. Smaller: saves tokens, but the preview may be too short to be useful.</source>
+        <translation>工具输出被截断时显示的预览长度(字符),仅对超过“工具结果截断阈值”的输出生效。建议 2000。调大:截断预览更完整,但每个预览占用更多上下文;调小:更省 token,但预览可能太短而缺乏参考价值。</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Maximum number of free (unsaved) sessions retained in the config directory. Sessions beyond this count are deleted oldest-first on startup. Recommended: 20. Larger: keeps more session history available for review. Smaller: cleans up sooner, saving disk space.</source>
+        <translation>配置目录保留的自由(未另存)会话最大数量,超出此数的会话按最旧优先在启动时删除。建议 20。调大:保留更多历史会话供回看;调小:更早清理节省磁盘。</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Free (unsaved) sessions older than this many days are deleted on startup. Recommended: 30. Larger: keeps session history for a longer period. Smaller: frees disk space sooner by removing old sessions earlier.</source>
+        <translation>早于此天数的自由(未另存)会话在启动时删除。建议 30。调大:历史会话保留更久;调小:更早删除旧会话,更快释放磁盘。</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+40"/>
+        <source> times</source>
+        <translation>次</translation>
+    </message>
+    <message>
+        <location line="-39"/>
+        <source>Maximum number of automatic retries for LLM API calls on transient errors (HTTP 429 rate-limit, 5xx server errors, network failures). 0 disables retry entirely. Recommended: 7. Larger: more tolerant of temporary provider outages, but increases end-to-end latency when the provider is genuinely down. Smaller: fails faster, useful when you prefer quick failure over long waits; 0 means a single attempt with no retry.</source>
+        <translation>LLM API 调用遇到临时错误(HTTP 429 限流、5xx 服务端错误、网络故障)时的自动重试次数。0 表示完全不重试。建议 7。调大:更容忍服务商临时故障,但服务商确实宕机时端到端延迟增加;调小:更快失败,适合需要快速失败而非长时间等待的场景,0 表示仅尝试一次不重试。</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <location line="+13"/>
+        <source> sec</source>
+        <translation>秒</translation>
+    </message>
+    <message>
+        <location line="-12"/>
+        <source>Timeout (seconds) for a single LLM API request, covering connection and first-byte waiting. Recommended: 120. Larger: tolerates slow responses (e.g. complex multi-step reasoning), but a hung request blocks the agent longer before failing over. Smaller: fails faster on unresponsive providers, but may interrupt normal long-running reasoning that simply needs more time.</source>
+        <translation>单次 LLM API 请求的超时(秒),覆盖连接与首字节等待。建议 120。调大:容忍慢响应(如复杂多步推理),但请求挂起时 agent 阻塞更久才故障转移;调小:对无响应服务商更快失败,但可能中断本可正常完成的长时间推理。</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Watchdog timeout (seconds): if no protocol message is received from the agent subprocess within this period, it is considered hung and stopped. Recommended: 240. Larger: more tolerant of long-running tool executions that legitimately produce no output for a while. Smaller: detects a hung subprocess faster, but may prematurely kill a process that is executing a slow but valid task (e.g. a long pandas computation).</source>
+        <translation>看门狗超时(秒):若此时间内未收到 agent 子进程的任何协议消息,则视为卡死并停止。建议 240。调大:更容忍长时间无输出的工具执行;调小:更快检测卡死进程,但可能误杀正在执行慢但有效任务(如耗时 pandas 计算)的进程。</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Maximum number of automatic restarts after the agent subprocess crashes unexpectedly. 0 disables auto-restart. Recommended: 3. Larger: gives more automatic recovery opportunities, useful on unstable environments, but may repeatedly restart a fundamentally broken process. Smaller: fewer restart attempts; 0 means the agent stays stopped after a crash until manually restarted.</source>
+        <translation>agent 子进程意外崩溃后的自动重启最大次数。0 表示不自动重启。建议 3。调大:更多自动恢复机会,适合不稳定环境,但可能反复重启根本损坏的进程;调小:更少重启,0 表示崩溃后保持停止直到手动重启。</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Maximum number of graph reasoning steps (compact-&gt;agent-&gt;tools cycle). Each tool-call cycle consumes 3 steps. Recommended: 150 (~50 tool-call cycles), suits data-analysis tasks that frequently query data. Larger: allows complex multi-step analysis, but increases cost and may let a looping agent run longer before stopping. Smaller: stops runaway loops sooner and saves cost, but may cut off legitimate long analysis chains. Also guarded by automatic repeated-tool-call detection.</source>
+        <translation>图最大推理步数(compact→agent→tools 循环)。每轮工具调用耗 3 步。建议 150(约 50 轮工具调用),适合数据分析频繁查数据的场景。调大:支持更复杂的多步分析,但成本增加且循环 agent 运行更久才停止;调小:更早中止失控循环并节省成本,但可能截断合理的长分析链。另有自动重复调用检测兜底。</translation>
+    </message>
+    <message>
+        <location line="+13"/>
         <source>Base URL</source>
-        <translation type="unfinished"></translation>
+        <translation>基础 URL</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>API Key</source>
-        <translation type="unfinished"></translation>
+        <translation>API 密钥</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Model</source>
-        <translation type="unfinished"></translation>
+        <translation>模型</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Ready Timeout</source>
-        <translation type="unfinished"></translation>
+        <translation>就绪超时</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Stop Timeout</source>
-        <translation type="unfinished"></translation>
+        <translation>停止超时</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Context Window</source>
-        <translation type="unfinished"></translation>
+        <translation>上下文窗口</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Compaction Threshold</source>
-        <translation type="unfinished"></translation>
+        <translation>压缩阈值</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Max Recent Messages</source>
-        <translation type="unfinished"></translation>
+        <translation>保留最近消息数</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Tool Result Max Chars</source>
-        <translation type="unfinished"></translation>
+        <translation>工具结果截断阈值</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Tool Result Preview Chars</source>
-        <translation type="unfinished"></translation>
+        <translation>工具结果预览长度</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Max Sessions</source>
-        <translation type="unfinished"></translation>
+        <translation>最大会话数</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Session Retention Days</source>
-        <translation type="unfinished"></translation>
+        <translation>会话保留天数</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Max retries</source>
+        <translation>最大重试次数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Request timeout</source>
+        <translation>请求超时</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Inactivity timeout</source>
+        <translation>无活动超时</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Max process restarts</source>
+        <translation>最大进程重启次数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reasoning iteration limit</source>
+        <translation>推理迭代上限</translation>
+    </message>
+    <message>
+        <location line="+178"/>
+        <source>Testing...</source>
+        <translation>测试中...</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>✓ Connected (%1)</source>
+        <translation>✓ 连接成功 (%1)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>✗ Connection failed: %1</source>
+        <translation>✗ 连接失败: %1</translation>
     </message>
     <message>
         <location filename="../APP/SettingPages/DAAgentSettingsWidget.h" line="+42"/>
-        <source>Agent LLM 设置</source>
-        <translation type="unfinished"></translation>
+        <source>Agent LLM Settings</source>
+        <translation>Agent LLM 设置</translation>
     </message>
 </context>
 <context>
@@ -398,12 +601,12 @@
     <message>
         <location filename="../DAGui/Agent/DAAgentWebChannel.cpp" line="+111"/>
         <source>Submit</source>
-        <translation type="unfinished"></translation>
+        <translation>提交</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Type your own answer...</source>
-        <translation type="unfinished"></translation>
+        <translation>输入自定义回答...</translation>
     </message>
 </context>
 <context>
@@ -926,124 +1129,124 @@ All</source>
         <location line="-72"/>
         <source>Add 
 Surface 3D</source>
-        <translation type="unfinished"></translation>
+        <translation>3D曲面图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Add a 3D surface plot to the chart</source>
-        <translation type="unfinished"></translation>
+        <translation>添加3D曲面图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Add 
 Bar 3D</source>
-        <translation type="unfinished"></translation>
+        <translation>3D柱状图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Add a 3D bar chart to the chart</source>
-        <translation type="unfinished"></translation>
+        <translation>添加3D柱状图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Add 
 Line 3D</source>
-        <translation type="unfinished"></translation>
+        <translation>3D线图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Add a 3D line plot to the chart</source>
-        <translation type="unfinished"></translation>
+        <translation>添加3D线图</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Histplot</source>
-        <translation type="unfinished"></translation>
+        <translation>直方图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Histogram with optional KDE overlay</source>
-        <translation type="unfinished"></translation>
+        <translation>直方图（可叠加核密度曲线）</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>KDE 1D</source>
-        <translation type="unfinished"></translation>
+        <translation>一维核密度</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>1D Kernel Density Estimation plot</source>
-        <translation type="unfinished"></translation>
+        <translation>一维核密度图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>KDE 2D</source>
-        <translation type="unfinished"></translation>
+        <translation>二维核密度</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>2D Kernel Density Estimation plot</source>
-        <translation type="unfinished"></translation>
+        <translation>二维核密度图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Boxplot</source>
-        <translation type="unfinished"></translation>
+        <translation>箱线图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Box plot with statistics</source>
-        <translation type="unfinished"></translation>
+        <translation>统计箱线图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Heatmap</source>
-        <translation type="unfinished"></translation>
+        <translation>热力图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Heatmap matrix plot</source>
-        <translation type="unfinished"></translation>
+        <translation>热力图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Scatter</source>
-        <translation type="unfinished"></translation>
+        <translation>散点图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Scatter plot with grouping</source>
-        <translation type="unfinished"></translation>
+        <translation>统计散点图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Barplot</source>
-        <translation type="unfinished"></translation>
+        <translation>柱状图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Bar plot with aggregation</source>
-        <translation type="unfinished"></translation>
+        <translation>统计柱状图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Regplot</source>
-        <translation type="unfinished"></translation>
+        <translation>回归图</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Regression plot with CI</source>
-        <translation type="unfinished"></translation>
+        <translation>回归图（含置信区间）</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>ECDF</source>
-        <translation type="unfinished"></translation>
+        <translation>累积分布</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Empirical Cumulative Distribution Function</source>
-        <translation type="unfinished"></translation>
+        <translation>经验累积分布图</translation>
     </message>
     <message>
         <location line="+47"/>
@@ -1149,12 +1352,12 @@ Line 3D</source>
     <message>
         <location line="+1"/>
         <source>Data Picker Setting</source>
-        <translation type="unfinished"></translation>
+        <translation>数据拾取设置</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Configure data picker properties</source>
-        <translation type="unfinished"></translation>
+        <translation>配置数据拾取器属性</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -1293,12 +1496,12 @@ Column</source>
     <message>
         <location line="+1"/>
         <source>Show Statistics</source>
-        <translation type="unfinished"></translation>
+        <translation>显示统计信息</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Show statistics of this column via pandas describe</source>
-        <translation type="unfinished"></translation>
+        <translation>通过pandas describe显示此列的统计信息</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1609,12 +1812,13 @@ Side Bar</source>
         <location line="+1"/>
         <source>Show 
 Agent Area</source>
-        <translation type="unfinished"></translation>
+        <translation>Agent
+助手</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Show the agent assistant area</source>
-        <translation type="unfinished"></translation>
+        <translation>显示 Agent 助手区域</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1652,7 +1856,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+661"/>
+        <location filename="../APP/DAAppController.cpp" line="+662"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -1750,7 +1954,7 @@ Config</source>
     <message>
         <location line="+368"/>
         <source>Figure &apos;%1&apos; not found, it may have been closed or renamed</source>
-        <translation type="unfinished"></translation>
+        <translation>未找到绘图"%1"，可能已关闭或被重命名</translation>
     </message>
     <message>
         <location line="+733"/>
@@ -1770,12 +1974,12 @@ Config</source>
     <message>
         <location line="+14"/>
         <source>Column [%1] maximum value: %2, row: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>列[%1] 最大值: %2, 第 %3 行</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Column [%1] maximum value at row %2</source>
-        <translation type="unfinished"></translation>
+        <translation>列[%1] 最大值位于第 %2 行</translation>
     </message>
     <message>
         <location line="+29"/>
@@ -1785,12 +1989,12 @@ Config</source>
     <message>
         <location line="+14"/>
         <source>Column [%1] minimum value: %2, row: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>列[%1] 最小值: %2, 第 %3 行</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Column [%1] minimum value at row %2</source>
-        <translation type="unfinished"></translation>
+        <translation>列[%1] 最小值位于第 %2 行</translation>
     </message>
     <message>
         <location line="+322"/>
@@ -1811,7 +2015,7 @@ Config</source>
     <message>
         <location line="+42"/>
         <source>No data column selected</source>
-        <translation type="unfinished"></translation>
+        <translation>未选择数据列</translation>
     </message>
     <message>
         <location line="-58"/>
@@ -1822,7 +2026,7 @@ Config</source>
     <message>
         <location line="+28"/>
         <source>The selected data source is empty</source>
-        <translation type="unfinished"></translation>
+        <translation>选中的数据源为空</translation>
     </message>
     <message>
         <location line="-1808"/>
@@ -1840,27 +2044,7 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>Python scripts not initialized, cannot import file: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Begin import file: %1</source>
-        <translation>开始导入文件:%1</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>File: %1, convert to DataFrame</source>
-        <translation>文件:%1，转换为DataFrame</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>The file &apos;%1&apos; has been successfully imported, but no data can be read from the file</source>
-        <translation>导入文件&apos;%1&apos;成功，但无法从文件中读取到数据</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Cannot import file: %1</source>
-        <translation>无法导入文件:%1</translation>
+        <translation>Python脚本未初始化，无法导入文件:%1</translation>
     </message>
 </context>
 <context>
@@ -1908,7 +2092,7 @@ Config</source>
     <message>
         <location line="+1"/>
         <source>Agent Assistant</source>
-        <translation type="unfinished"></translation>
+        <translation>Agent 助手</translation>
     </message>
 </context>
 <context>
@@ -1919,27 +2103,12 @@ Config</source>
         <translation>Python解释器未初始化，跳过Python节点发现</translation>
     </message>
     <message>
-        <location line="-149"/>
-        <source>Successfully loaded plugin %1</source>
-        <translation>成功加载插件%1</translation>
-    </message>
-    <message>
-        <location line="+160"/>
-        <source>Pyplugins scan completed, found %1 valid Python plugin paths</source>
-        <translation>Python插件扫描完成，发现%1个有效的Python插件路径</translation>
-    </message>
-    <message>
-        <location line="+5"/>
+        <location line="+16"/>
         <source>Python node discovery failed</source>
         <translation>Python节点发现失败</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Python node factory initialized, discovered %1 nodes</source>
-        <translation>Python节点工厂初始化完成，发现%1个节点</translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+8"/>
         <source>Python node factory initialization failed: %1</source>
         <translation>Python节点工厂初始化失败:%1</translation>
     </message>
@@ -2054,17 +2223,17 @@ Config</source>
     <message>
         <location line="+129"/>
         <source>Save agent session</source>
-        <translation type="unfinished"></translation>
+        <translation>保存Agent会话</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Save agent chat session history</source>
-        <translation type="unfinished"></translation>
+        <translation>保存Agent聊天会话历史</translation>
     </message>
     <message>
         <location line="+82"/>
         <source>Loading workflow</source>
-        <translation type="unfinished"></translation>
+        <translation>正在加载工作流</translation>
     </message>
     <message>
         <location line="+328"/>
@@ -2446,7 +2615,7 @@ Config</source>
         <location line="-18"/>
         <location line="+293"/>
         <source>Stats Plot</source>
-        <translation type="unfinished"></translation>
+        <translation>统计绘图</translation>
     </message>
     <message>
         <location line="+64"/>
@@ -2487,40 +2656,32 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DAAppUI</name>
-    <message>
-        <location filename="../APP/DAAppUI.cpp" line="+81"/>
-        <source>Failed to load form config for settings dialog</source>
-        <translation>无法加载设置对话框的表单配置</translation>
-    </message>
-</context>
-<context>
     <name>DA::DAAxObjectExcelWrapper</name>
     <message>
-        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+762"/>
+        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+763"/>
         <location line="+23"/>
         <source>The local computer does not have Excel or WPS installed</source>
-        <translation type="unfinished">当前计算机中没有安装excel或者wps</translation>
+        <translation>当前计算机中没有安装excel或者wps</translation>
     </message>
     <message>
         <location line="-17"/>
         <source>cannot open Excel</source>
-        <translation type="unfinished">无法打开Excel</translation>
+        <translation>无法打开Excel</translation>
     </message>
     <message>
         <location line="+34"/>
         <source>cannot get or create sheet</source>
-        <translation type="unfinished"></translation>
+        <translation>无法获取或创建工作表</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>failed to write table to sheet</source>
-        <translation type="unfinished"></translation>
+        <translation>写入表格数据到sheet失败</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>failed to save Excel file</source>
-        <translation type="unfinished"></translation>
+        <translation>保存Excel文件失败</translation>
     </message>
 </context>
 <context>
@@ -2528,87 +2689,87 @@ Config</source>
     <message>
         <location filename="../DAGui/Chart3DSetting/DAChart3DAxisSettingPanel.cpp" line="+127"/>
         <source>Axis Selector</source>
-        <translation type="unfinished"></translation>
+        <translation>轴选择</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Axis</source>
-        <translation type="unfinished">坐标轴</translation>
+        <translation>坐标轴</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Label</source>
-        <translation type="unfinished">标签</translation>
+        <translation>标签</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Label Text</source>
-        <translation type="unfinished">标签文本</translation>
+        <translation>标签文本</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Label Font</source>
-        <translation type="unfinished">标签字体</translation>
+        <translation>标签字体</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Label Color</source>
-        <translation type="unfinished"></translation>
+        <translation>标签颜色</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Numbers</source>
-        <translation type="unfinished"></translation>
+        <translation>数字</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Number Font</source>
-        <translation type="unfinished"></translation>
+        <translation>数字字体</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Number Color</source>
-        <translation type="unfinished"></translation>
+        <translation>数字颜色</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Range</source>
-        <translation type="unfinished">范围</translation>
+        <translation>范围</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Min Range</source>
-        <translation type="unfinished"></translation>
+        <translation>最小范围</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Max Range</source>
-        <translation type="unfinished"></translation>
+        <translation>最大范围</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Major Count</source>
-        <translation type="unfinished"></translation>
+        <translation>主刻度数</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Minor Count</source>
-        <translation type="unfinished"></translation>
+        <translation>次刻度数</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Appearance</source>
-        <translation type="unfinished">外观</translation>
+        <translation>外观</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Line Width</source>
-        <translation type="unfinished"></translation>
+        <translation>线宽</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Tick Position</source>
-        <translation type="unfinished"></translation>
+        <translation>刻度位置</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -2623,27 +2784,27 @@ Config</source>
     <message>
         <location line="+5"/>
         <source>Smooth Line</source>
-        <translation type="unfinished"></translation>
+        <translation>平滑线</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Grid</source>
-        <translation type="unfinished"></translation>
+        <translation>网格</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Major Grid</source>
-        <translation type="unfinished"></translation>
+        <translation>主网格线</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Minor Grid</source>
-        <translation type="unfinished"></translation>
+        <translation>次网格线</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Grid Color</source>
-        <translation type="unfinished"></translation>
+        <translation>网格颜色</translation>
     </message>
 </context>
 <context>
@@ -2651,77 +2812,77 @@ Config</source>
     <message>
         <location filename="../DAGui/Chart3DSetting/DAChart3DBarSettingPanel.cpp" line="+35"/>
         <source>General</source>
-        <translation type="unfinished">通用</translation>
+        <translation>通用</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Style</source>
-        <translation type="unfinished">样式</translation>
+        <translation>样式</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Bar Style</source>
-        <translation type="unfinished"></translation>
+        <translation>柱样式</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Filled</source>
-        <translation type="unfinished"></translation>
+        <translation>填充</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Filled Mesh</source>
-        <translation type="unfinished"></translation>
+        <translation>填充网格</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Wireframe</source>
-        <translation type="unfinished"></translation>
+        <translation>线框</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Size</source>
-        <translation type="unfinished">尺寸</translation>
+        <translation>尺寸</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Bar Width</source>
-        <translation type="unfinished"></translation>
+        <translation>柱宽</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Bar Depth</source>
-        <translation type="unfinished"></translation>
+        <translation>柱深</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Baseline</source>
-        <translation type="unfinished">基线</translation>
+        <translation>基线</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Color</source>
-        <translation type="unfinished">颜色</translation>
+        <translation>颜色</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Colormap</source>
-        <translation type="unfinished"></translation>
+        <translation>色图</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Mesh Color</source>
-        <translation type="unfinished"></translation>
+        <translation>网格颜色</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Mesh Line Width</source>
-        <translation type="unfinished"></translation>
+        <translation>网格线宽</translation>
     </message>
 </context>
 <context>
@@ -2729,18 +2890,18 @@ Config</source>
     <message>
         <location filename="../DAGui/Chart3DSetting/DAChart3DColorLegendSettingPanel.cpp" line="+69"/>
         <source>Display</source>
-        <translation type="unfinished">视图显示</translation>
+        <translation>视图显示</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Visible</source>
-        <translation type="unfinished">可见</translation>
+        <translation>可见</translation>
     </message>
     <message>
         <location line="+5"/>
         <location line="+2"/>
         <source>Position</source>
-        <translation type="unfinished">位置</translation>
+        <translation>位置</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -2795,22 +2956,22 @@ Config</source>
     <message>
         <location line="+13"/>
         <source>Absolute X</source>
-        <translation type="unfinished"></translation>
+        <translation>绝对位置X</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Absolute Y</source>
-        <translation type="unfinished"></translation>
+        <translation>绝对位置Y</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Absolute Width</source>
-        <translation type="unfinished"></translation>
+        <translation>绝对宽度</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Absolute Height</source>
-        <translation type="unfinished"></translation>
+        <translation>绝对高度</translation>
     </message>
 </context>
 <context>
@@ -2819,97 +2980,97 @@ Config</source>
         <location filename="../DAGui/Chart3DSetting/DAChart3DCoordSysSettingPanel.cpp" line="+70"/>
         <location line="+2"/>
         <source>Style</source>
-        <translation type="unfinished">样式</translation>
+        <translation>样式</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>None</source>
-        <translation type="unfinished">无</translation>
+        <translation>无</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Box</source>
-        <translation type="unfinished">方框</translation>
+        <translation>盒形</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Frame</source>
-        <translation type="unfinished"></translation>
+        <translation>框架</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Colors</source>
-        <translation type="unfinished"></translation>
+        <translation>颜色</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Axes Color</source>
-        <translation type="unfinished"></translation>
+        <translation>轴颜色</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Number Color</source>
-        <translation type="unfinished"></translation>
+        <translation>数字颜色</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Label Color</source>
-        <translation type="unfinished"></translation>
+        <translation>标签颜色</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Grid Lines Color</source>
-        <translation type="unfinished"></translation>
+        <translation>网格线颜色</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Interior Grid Color</source>
-        <translation type="unfinished"></translation>
+        <translation>内部网格颜色</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Fonts</source>
-        <translation type="unfinished"></translation>
+        <translation>字体</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Number Font</source>
-        <translation type="unfinished"></translation>
+        <translation>数字字体</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Label Font</source>
-        <translation type="unfinished">标签字体</translation>
+        <translation>标签字体</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Ticks</source>
-        <translation type="unfinished"></translation>
+        <translation>刻度</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Tic Length</source>
-        <translation type="unfinished"></translation>
+        <translation>刻度长度</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Tic Length Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>刻度缩放</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Auto Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>自动缩放</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Auto Decoration</source>
-        <translation type="unfinished"></translation>
+        <translation>自动装饰</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Tick Position</source>
-        <translation type="unfinished"></translation>
+        <translation>刻度位置</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -2924,27 +3085,27 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>Interior Grid Width</source>
-        <translation type="unfinished"></translation>
+        <translation>内部网格线宽</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Interior Major Width</source>
-        <translation type="unfinished"></translation>
+        <translation>内部主网格线宽</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Interior Minor Width</source>
-        <translation type="unfinished"></translation>
+        <translation>内部次网格线宽</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Line</source>
-        <translation type="unfinished"></translation>
+        <translation>线</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Line Smooth</source>
-        <translation type="unfinished"></translation>
+        <translation>线平滑</translation>
     </message>
 </context>
 <context>
@@ -2952,205 +3113,205 @@ Config</source>
     <message>
         <location filename="../DAGui/Chart3DSetting/DAChart3DItemSettingPanel.cpp" line="+72"/>
         <source>No Plot</source>
-        <translation type="unfinished"></translation>
+        <translation>无绘图</translation>
     </message>
     <message>
         <location line="+1"/>
         <location line="+99"/>
         <source>Wireframe</source>
-        <translation type="unfinished"></translation>
+        <translation>线框</translation>
     </message>
     <message>
         <location line="-98"/>
         <source>Hidden Line</source>
-        <translation type="unfinished"></translation>
+        <translation>隐藏线</translation>
     </message>
     <message>
         <location line="+1"/>
         <location line="+95"/>
         <source>Filled</source>
-        <translation type="unfinished"></translation>
+        <translation>填充</translation>
     </message>
     <message>
         <location line="-94"/>
         <location line="+95"/>
         <source>Filled Mesh</source>
-        <translation type="unfinished"></translation>
+        <translation>填充网格</translation>
     </message>
     <message>
         <location line="-94"/>
         <source>Points</source>
-        <translation type="unfinished"></translation>
+        <translation>点</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Flat</source>
-        <translation type="unfinished"></translation>
+        <translation>平面着色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Gouraud</source>
-        <translation type="unfinished"></translation>
+        <translation>平滑着色</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>No Floor</source>
-        <translation type="unfinished"></translation>
+        <translation>无投影</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Isoline</source>
-        <translation type="unfinished"></translation>
+        <translation>等高线投影</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Data</source>
-        <translation type="unfinished">数据</translation>
+        <translation>数据</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>No Coord</source>
-        <translation type="unfinished"></translation>
+        <translation>无坐标系</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Box</source>
-        <translation type="unfinished">方框</translation>
+        <translation>盒形</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Frame</source>
-        <translation type="unfinished"></translation>
+        <translation>框架</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Linear</source>
-        <translation type="unfinished"></translation>
+        <translation>线性</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Log10</source>
-        <translation type="unfinished"></translation>
+        <translation>对数</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>User</source>
-        <translation type="unfinished"></translation>
+        <translation>自定义</translation>
     </message>
     <message>
         <location line="+38"/>
         <source>Lines</source>
-        <translation type="unfinished">线条</translation>
+        <translation>线条</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Tube</source>
-        <translation type="unfinished"></translation>
+        <translation>管状</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Dots</source>
-        <translation type="unfinished">点</translation>
+        <translation>点</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Dot</source>
-        <translation type="unfinished"></translation>
+        <translation>圆点</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Cube</source>
-        <translation type="unfinished"></translation>
+        <translation>立方体</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Tetrahedron</source>
-        <translation type="unfinished"></translation>
+        <translation>四面体</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Octahedron</source>
-        <translation type="unfinished"></translation>
+        <translation>八面体</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Sphere</source>
-        <translation type="unfinished"></translation>
+        <translation>球体</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Default</source>
-        <translation type="unfinished"></translation>
+        <translation>默认</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Dark</source>
-        <translation type="unfinished"></translation>
+        <translation>深色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Scientific</source>
-        <translation type="unfinished"></translation>
+        <translation>科学</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Warm</source>
-        <translation type="unfinished"></translation>
+        <translation>暖色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Cool</source>
-        <translation type="unfinished"></translation>
+        <translation>冷色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Matplotlib</source>
-        <translation type="unfinished"></translation>
+        <translation>Matplotlib</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Earth Tones</source>
-        <translation type="unfinished"></translation>
+        <translation>大地色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Ocean</source>
-        <translation type="unfinished"></translation>
+        <translation>海洋</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>High Contrast</source>
-        <translation type="unfinished"></translation>
+        <translation>高对比</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Presentation</source>
-        <translation type="unfinished"></translation>
+        <translation>演示</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>No Lighting</source>
-        <translation type="unfinished"></translation>
+        <translation>无光照</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Flat Light</source>
-        <translation type="unfinished"></translation>
+        <translation>平面光</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Studio</source>
-        <translation type="unfinished"></translation>
+        <translation>工作室</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Outdoor</source>
-        <translation type="unfinished"></translation>
+        <translation>户外</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Soft</source>
-        <translation type="unfinished"></translation>
+        <translation>柔和</translation>
     </message>
 </context>
 <context>
@@ -3158,117 +3319,117 @@ Config</source>
     <message>
         <location filename="../DAGui/Chart3DSetting/DAChart3DLineSettingPanel.cpp" line="+35"/>
         <source>General</source>
-        <translation type="unfinished">通用</translation>
+        <translation>通用</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Line</source>
-        <translation type="unfinished"></translation>
+        <translation>线</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Line Style</source>
-        <translation type="unfinished">线条样式</translation>
+        <translation>线样式</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Lines</source>
-        <translation type="unfinished">线条</translation>
+        <translation>线条</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Tube</source>
-        <translation type="unfinished"></translation>
+        <translation>管状</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Dots</source>
-        <translation type="unfinished">点</translation>
+        <translation>点</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Line Width</source>
-        <translation type="unfinished"></translation>
+        <translation>线宽</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Tube Radius</source>
-        <translation type="unfinished"></translation>
+        <translation>管半径</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Tube Segments</source>
-        <translation type="unfinished"></translation>
+        <translation>管段数</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Points</source>
-        <translation type="unfinished"></translation>
+        <translation>点</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Show Points</source>
-        <translation type="unfinished"></translation>
+        <translation>显示点</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Point Size</source>
-        <translation type="unfinished"></translation>
+        <translation>点大小</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Point Shape</source>
-        <translation type="unfinished"></translation>
+        <translation>点形状</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dot</source>
-        <translation type="unfinished"></translation>
+        <translation>圆点</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Cube</source>
-        <translation type="unfinished"></translation>
+        <translation>立方体</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Tetrahedron</source>
-        <translation type="unfinished"></translation>
+        <translation>四面体</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Octahedron</source>
-        <translation type="unfinished"></translation>
+        <translation>八面体</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Sphere</source>
-        <translation type="unfinished"></translation>
+        <translation>球体</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Color</source>
-        <translation type="unfinished">颜色</translation>
+        <translation>颜色</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Use Data Color</source>
-        <translation type="unfinished"></translation>
+        <translation>使用数据着色</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Solid Color</source>
-        <translation type="unfinished"></translation>
+        <translation>纯色</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Colormap</source>
-        <translation type="unfinished"></translation>
+        <translation>色图</translation>
     </message>
 </context>
 <context>
@@ -3276,38 +3437,38 @@ Config</source>
     <message>
         <location filename="../DAGui/Chart3DSetting/DAChart3DPlotSettingPanel.cpp" line="+70"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title Text</source>
-        <translation type="unfinished">标题文本</translation>
+        <translation>标题文本</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title Font</source>
-        <translation type="unfinished">标题字体</translation>
+        <translation>标题字体</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title Color</source>
-        <translation type="unfinished">标题颜色</translation>
+        <translation>标题颜色</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Background</source>
-        <translation type="unfinished">背景</translation>
+        <translation>背景</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Background Color</source>
-        <translation type="unfinished"></translation>
+        <translation>背景色</translation>
     </message>
     <message>
         <location line="+5"/>
         <location line="+2"/>
         <source>Projection</source>
-        <translation type="unfinished"></translation>
+        <translation>投影</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -3322,7 +3483,7 @@ Config</source>
     <message>
         <location line="+3"/>
         <source>Aspect Ratio</source>
-        <translation type="unfinished"></translation>
+        <translation>纵横比</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -3337,114 +3498,114 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>Lighting</source>
-        <translation type="unfinished"></translation>
+        <translation>光照</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Enable Lighting</source>
-        <translation type="unfinished"></translation>
+        <translation>启用光照</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Lighting Preset</source>
-        <translation type="unfinished"></translation>
+        <translation>光照预设</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>No Lighting</source>
-        <translation type="unfinished"></translation>
+        <translation>无光照</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Flat Light</source>
-        <translation type="unfinished"></translation>
+        <translation>平面光</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Studio</source>
-        <translation type="unfinished"></translation>
+        <translation>工作室</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Outdoor</source>
-        <translation type="unfinished"></translation>
+        <translation>户外</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Soft</source>
-        <translation type="unfinished"></translation>
+        <translation>柔和</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Shininess</source>
-        <translation type="unfinished"></translation>
+        <translation>光泽度</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Specular Intensity</source>
-        <translation type="unfinished"></translation>
+        <translation>镜面强度</translation>
     </message>
     <message>
         <location line="+6"/>
         <location line="+2"/>
         <source>Theme</source>
-        <translation type="unfinished">主题</translation>
+        <translation>主题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Default</source>
-        <translation type="unfinished"></translation>
+        <translation>默认</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Dark</source>
-        <translation type="unfinished"></translation>
+        <translation>深色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Scientific</source>
-        <translation type="unfinished"></translation>
+        <translation>科学</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Warm</source>
-        <translation type="unfinished"></translation>
+        <translation>暖色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Cool</source>
-        <translation type="unfinished"></translation>
+        <translation>冷色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Matplotlib</source>
-        <translation type="unfinished"></translation>
+        <translation>Matplotlib</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Earth Tones</source>
-        <translation type="unfinished"></translation>
+        <translation>大地色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Ocean</source>
-        <translation type="unfinished"></translation>
+        <translation>海洋</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>High Contrast</source>
-        <translation type="unfinished"></translation>
+        <translation>高对比</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Presentation</source>
-        <translation type="unfinished"></translation>
+        <translation>演示</translation>
     </message>
     <message>
         <location line="+14"/>
         <location line="+5"/>
         <source>Reset View</source>
-        <translation type="unfinished"></translation>
+        <translation>重置视图</translation>
     </message>
 </context>
 <context>
@@ -3452,37 +3613,37 @@ Config</source>
     <message>
         <location filename="../DAGui/Chart3DSetting/DAChart3DSettingWidget.cpp" line="+177"/>
         <source>3D Chart Area</source>
-        <translation type="unfinished"></translation>
+        <translation>3D图表区</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Coordinate System</source>
-        <translation type="unfinished"></translation>
+        <translation>坐标系</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>X Axis</source>
-        <translation type="unfinished">X轴</translation>
+        <translation>X轴</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Y Axis</source>
-        <translation type="unfinished">Y轴</translation>
+        <translation>Y轴</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Z Axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Z轴</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Color Legend</source>
-        <translation type="unfinished"></translation>
+        <translation>颜色图例</translation>
     </message>
     <message>
         <location line="+211"/>
         <source>Unnamed Item</source>
-        <translation type="unfinished"></translation>
+        <translation>未命名项</translation>
     </message>
 </context>
 <context>
@@ -3490,122 +3651,122 @@ Config</source>
     <message>
         <location filename="../DAGui/Chart3DSetting/DAChart3DSurfaceSettingPanel.cpp" line="+37"/>
         <source>General</source>
-        <translation type="unfinished">通用</translation>
+        <translation>通用</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Plot Style</source>
-        <translation type="unfinished"></translation>
+        <translation>绘图样式</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Wireframe</source>
-        <translation type="unfinished"></translation>
+        <translation>线框</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Hidden Line</source>
-        <translation type="unfinished"></translation>
+        <translation>隐藏线</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Filled</source>
-        <translation type="unfinished"></translation>
+        <translation>填充</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Filled Mesh</source>
-        <translation type="unfinished"></translation>
+        <translation>填充网格</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Points</source>
-        <translation type="unfinished"></translation>
+        <translation>点</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Style</source>
-        <translation type="unfinished">样式</translation>
+        <translation>样式</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Shading</source>
-        <translation type="unfinished"></translation>
+        <translation>着色</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Flat</source>
-        <translation type="unfinished"></translation>
+        <translation>平面着色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Gouraud</source>
-        <translation type="unfinished"></translation>
+        <translation>平滑着色</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Polygon Offset</source>
-        <translation type="unfinished"></translation>
+        <translation>多边形偏移</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Resolution</source>
-        <translation type="unfinished"></translation>
+        <translation>分辨率</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Color</source>
-        <translation type="unfinished">颜色</translation>
+        <translation>颜色</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Colormap</source>
-        <translation type="unfinished"></translation>
+        <translation>色图</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Mesh Color</source>
-        <translation type="unfinished"></translation>
+        <translation>网格颜色</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Mesh Line Width</source>
-        <translation type="unfinished"></translation>
+        <translation>网格线宽</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Isolines</source>
-        <translation type="unfinished"></translation>
+        <translation>等值线</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Isolines Count</source>
-        <translation type="unfinished"></translation>
+        <translation>等值线数量</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Smooth Mesh</source>
-        <translation type="unfinished"></translation>
+        <translation>平滑网格</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Floor</source>
-        <translation type="unfinished"></translation>
+        <translation>底面投影</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Floor Style</source>
-        <translation type="unfinished"></translation>
+        <translation>底面样式</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>None</source>
-        <translation type="unfinished">无</translation>
+        <translation>无</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -3615,27 +3776,27 @@ Config</source>
     <message>
         <location line="+1"/>
         <source>Data</source>
-        <translation type="unfinished">数据</translation>
+        <translation>数据</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Normals</source>
-        <translation type="unfinished"></translation>
+        <translation>法线</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Show Normals</source>
-        <translation type="unfinished"></translation>
+        <translation>显示法线</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Normal Length</source>
-        <translation type="unfinished"></translation>
+        <translation>法线长度</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Normal Quality</source>
-        <translation type="unfinished"></translation>
+        <translation>法线质量</translation>
     </message>
 </context>
 <context>
@@ -3643,7 +3804,7 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAdd3DBarWidget.cpp" line="+110"/>
         <source>Bar3D</source>
-        <translation type="unfinished"></translation>
+        <translation>3D柱状</translation>
     </message>
 </context>
 <context>
@@ -3651,7 +3812,7 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAdd3DLineWidget.cpp" line="+58"/>
         <source>Line3D</source>
-        <translation type="unfinished"></translation>
+        <translation>3D线图</translation>
     </message>
 </context>
 <context>
@@ -3659,7 +3820,7 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAdd3DSurfaceWidget.cpp" line="+122"/>
         <source>Surface3D</source>
-        <translation type="unfinished"></translation>
+        <translation>3D曲面</translation>
     </message>
     <message>
         <location line="+124"/>
@@ -3674,7 +3835,7 @@ Config</source>
         <location line="+18"/>
         <location line="+28"/>
         <source>Warning</source>
-        <translation type="unfinished">警告</translation>
+        <translation>警告</translation>
     </message>
     <message>
         <location line="-45"/>
@@ -3689,7 +3850,7 @@ Config</source>
     <message>
         <location line="+25"/>
         <source>Exception occurred during box chart data extraction:%1</source>
-        <translation type="unfinished"></translation>
+        <translation>箱线图数据提取过程中出现异常:%1</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -3702,24 +3863,24 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAddContourWidget.cpp" line="+21"/>
         <source>X</source>
-        <translation type="unfinished">X</translation>
+        <translation>X</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Y</source>
-        <translation type="unfinished">Y</translation>
+        <translation>Y</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Value</source>
-        <translation type="unfinished">值</translation>
+        <translation>值</translation>
     </message>
     <message>
         <location line="+32"/>
         <location line="+9"/>
         <location line="+9"/>
         <source>Warning</source>
-        <translation type="unfinished">警告</translation>
+        <translation>警告</translation>
     </message>
     <message>
         <location line="-17"/>
@@ -3735,7 +3896,7 @@ Config</source>
     <message>
         <location line="+36"/>
         <source>Exception occurred during extracting contour data:%1</source>
-        <translation type="unfinished"></translation>
+        <translation>提取等高线数据过程中出现异常:%1</translation>
     </message>
 </context>
 <context>
@@ -3743,7 +3904,7 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAddErrorBarWidget.cpp" line="+22"/>
         <source>Error Bar</source>
-        <translation type="unfinished">误差棒</translation>
+        <translation>误差棒</translation>
     </message>
 </context>
 <context>
@@ -3751,13 +3912,13 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAddHistogramWidget.cpp" line="+21"/>
         <source>Data</source>
-        <translation type="unfinished">数据</translation>
+        <translation>数据</translation>
     </message>
     <message>
         <location line="+40"/>
         <location line="+11"/>
         <source>Warning</source>
-        <translation type="unfinished">警告</translation>
+        <translation>警告</translation>
     </message>
     <message>
         <location line="-10"/>
@@ -3768,7 +3929,7 @@ Config</source>
     <message>
         <location line="+9"/>
         <source>Exception occurred during extracting series:%1</source>
-        <translation type="unfinished"></translation>
+        <translation>提取序列过程中出现异常:%1</translation>
     </message>
 </context>
 <context>
@@ -3778,7 +3939,7 @@ Config</source>
         <location line="+9"/>
         <location line="+30"/>
         <source>Warning</source>
-        <translation type="unfinished">警告</translation>
+        <translation>警告</translation>
     </message>
     <message>
         <location line="-38"/>
@@ -3798,12 +3959,12 @@ Config</source>
     <message>
         <location line="+25"/>
         <source>Exception occurred during extracting y series:%1</source>
-        <translation type="unfinished"></translation>
+        <translation>提取y序列过程中出现异常:%1</translation>
     </message>
     <message>
         <location line="+52"/>
         <source>Exception occurred during building multi-bar samples:%1</source>
-        <translation type="unfinished"></translation>
+        <translation>构建多重柱状图样本过程中出现异常:%1</translation>
     </message>
 </context>
 <context>
@@ -3910,32 +4071,32 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAddStatsBarplotWidget.cpp" line="+20"/>
         <source>X axis (categorical)</source>
-        <translation type="unfinished"></translation>
+        <translation>X 轴（分类）</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Y axis (numeric, optional)</source>
-        <translation type="unfinished"></translation>
+        <translation>Y 轴（数值，可选）</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Hue</source>
-        <translation type="unfinished"></translation>
+        <translation>分组</translation>
     </message>
     <message>
         <location line="+67"/>
         <source>Please select an X-axis data column before plotting</source>
-        <translation type="unfinished"></translation>
+        <translation>请先选择 X 轴数据列再绘图</translation>
     </message>
     <message>
         <location line="+48"/>
         <source>Barplot Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>柱状图设置</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Countplot Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>计数图设置</translation>
     </message>
 </context>
 <context>
@@ -3943,23 +4104,23 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAddStatsBoxplotWidget.cpp" line="+21"/>
         <source>Data</source>
-        <translation type="unfinished">数据</translation>
+        <translation>数据</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Hue</source>
-        <translation type="unfinished"></translation>
+        <translation>分组</translation>
     </message>
     <message>
         <location line="+42"/>
         <location line="+18"/>
         <source>Please select one or more data columns before plotting</source>
-        <translation type="unfinished"></translation>
+        <translation>请先选择数据列再绘图</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Please select a data column before plotting</source>
-        <translation type="unfinished"></translation>
+        <translation>请先选择数据列再绘图</translation>
     </message>
 </context>
 <context>
@@ -3967,22 +4128,22 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAddStatsEcdfplotWidget.cpp" line="+20"/>
         <source>Data</source>
-        <translation type="unfinished">数据</translation>
+        <translation>数据</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Hue</source>
-        <translation type="unfinished"></translation>
+        <translation>分组</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Weights (optional)</source>
-        <translation type="unfinished"></translation>
+        <translation>权重（可选）</translation>
     </message>
     <message>
         <location line="+53"/>
         <source>Please select a data column before plotting</source>
-        <translation type="unfinished"></translation>
+        <translation>请先选择数据列再绘图</translation>
     </message>
 </context>
 <context>
@@ -3990,29 +4151,29 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAddStatsHeatmapWidget.cpp" line="+20"/>
         <source>X axis</source>
-        <translation type="unfinished"></translation>
+        <translation>X 轴</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Y axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Y 轴</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Value</source>
-        <translation type="unfinished">值</translation>
+        <translation>值</translation>
     </message>
     <message>
         <location line="+76"/>
         <location line="+4"/>
         <source>Please select an X-axis data column before plotting</source>
-        <translation type="unfinished"></translation>
+        <translation>请先选择 X 轴数据列再绘图</translation>
     </message>
     <message>
         <location line="+6"/>
         <location line="+4"/>
         <source>Please select a Y-axis data column before plotting</source>
-        <translation type="unfinished"></translation>
+        <translation>请先选择 Y 轴数据列再绘图</translation>
     </message>
 </context>
 <context>
@@ -4020,18 +4181,18 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAddStatsHistplotWidget.cpp" line="+21"/>
         <source>Data</source>
-        <translation type="unfinished">数据</translation>
+        <translation>数据</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Hue</source>
-        <translation type="unfinished"></translation>
+        <translation>分组</translation>
     </message>
     <message>
         <location line="+68"/>
         <location line="+4"/>
         <source>Please select a data column before plotting</source>
-        <translation type="unfinished"></translation>
+        <translation>请先选择数据列再绘图</translation>
     </message>
 </context>
 <context>
@@ -4039,18 +4200,18 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAddStatsKdeplot1dWidget.cpp" line="+21"/>
         <source>Data</source>
-        <translation type="unfinished">数据</translation>
+        <translation>数据</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Hue</source>
-        <translation type="unfinished"></translation>
+        <translation>分组</translation>
     </message>
     <message>
         <location line="+77"/>
         <location line="+4"/>
         <source>Please select a data column before plotting</source>
-        <translation type="unfinished"></translation>
+        <translation>请先选择数据列再绘图</translation>
     </message>
 </context>
 <context>
@@ -4058,24 +4219,24 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAddStatsKdeplot2dWidget.cpp" line="+21"/>
         <source>X axis</source>
-        <translation type="unfinished"></translation>
+        <translation>X 轴</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Y axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Y 轴</translation>
     </message>
     <message>
         <location line="+54"/>
         <location line="+4"/>
         <source>Please select an X-axis data column before plotting</source>
-        <translation type="unfinished"></translation>
+        <translation>请先选择 X 轴数据列再绘图</translation>
     </message>
     <message>
         <location line="+6"/>
         <location line="+4"/>
         <source>Please select a Y-axis data column before plotting</source>
-        <translation type="unfinished"></translation>
+        <translation>请先选择 Y 轴数据列再绘图</translation>
     </message>
 </context>
 <context>
@@ -4083,22 +4244,22 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAddStatsRegplotWidget.cpp" line="+20"/>
         <source>X axis</source>
-        <translation type="unfinished"></translation>
+        <translation>X 轴</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Y axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Y 轴</translation>
     </message>
     <message>
         <location line="+76"/>
         <source>Please select an X-axis data column before plotting</source>
-        <translation type="unfinished"></translation>
+        <translation>请先选择 X 轴数据列再绘图</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Please select a Y-axis data column before plotting</source>
-        <translation type="unfinished"></translation>
+        <translation>请先选择 Y 轴数据列再绘图</translation>
     </message>
 </context>
 <context>
@@ -4106,29 +4267,29 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAddStatsScatterplotWidget.cpp" line="+20"/>
         <source>X axis</source>
-        <translation type="unfinished"></translation>
+        <translation>X 轴</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Y axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Y 轴</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Hue</source>
-        <translation type="unfinished"></translation>
+        <translation>分组</translation>
     </message>
     <message>
         <location line="+39"/>
         <location line="+4"/>
         <source>Please select an X-axis data column before plotting</source>
-        <translation type="unfinished"></translation>
+        <translation>请先选择 X 轴数据列再绘图</translation>
     </message>
     <message>
         <location line="+6"/>
         <location line="+4"/>
         <source>Please select a Y-axis data column before plotting</source>
-        <translation type="unfinished"></translation>
+        <translation>请先选择 Y 轴数据列再绘图</translation>
     </message>
 </context>
 <context>
@@ -4136,29 +4297,29 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAddVectorFieldWidget.cpp" line="+19"/>
         <source>X</source>
-        <translation type="unfinished">X</translation>
+        <translation>X</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Y</source>
-        <translation type="unfinished">Y</translation>
+        <translation>Y</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>U</source>
-        <translation type="unfinished"></translation>
+        <translation>U</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>V</source>
-        <translation type="unfinished"></translation>
+        <translation>V</translation>
     </message>
     <message>
         <location line="+35"/>
         <location line="+10"/>
         <location line="+10"/>
         <source>Warning</source>
-        <translation type="unfinished">警告</translation>
+        <translation>警告</translation>
     </message>
     <message>
         <location line="-19"/>
@@ -4174,7 +4335,7 @@ Config</source>
     <message>
         <location line="+27"/>
         <source>Exception occurred during extracting vector field data:%1</source>
-        <translation type="unfinished"></translation>
+        <translation>提取向量场数据过程中出现异常:%1</translation>
     </message>
 </context>
 <context>
@@ -4197,17 +4358,17 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>X</source>
-        <translation type="unfinished">X</translation>
+        <translation>X</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Y</source>
-        <translation type="unfinished">Y</translation>
+        <translation>Y</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Error</source>
-        <translation type="unfinished">错误</translation>
+        <translation>错误</translation>
     </message>
     <message>
         <location line="+164"/>
@@ -4391,37 +4552,37 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartArrowMarkerSettingPanel.cpp" line="+51"/>
         <source>Basic</source>
-        <translation type="unfinished">基础</translation>
+        <translation>基础</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Z Value</source>
-        <translation type="unfinished">Z值</translation>
+        <translation>Z值</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Axis</source>
-        <translation type="unfinished">X轴</translation>
+        <translation>X轴</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Y Axis</source>
-        <translation type="unfinished">Y轴</translation>
+        <translation>Y轴</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Position</source>
-        <translation type="unfinished">位置</translation>
+        <translation>位置</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Position Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>定位模式</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4436,58 +4597,58 @@ Config</source>
     <message>
         <location line="+4"/>
         <source>Start X</source>
-        <translation type="unfinished"></translation>
+        <translation>起点X</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Start Y</source>
-        <translation type="unfinished"></translation>
+        <translation>起点Y</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>End X</source>
-        <translation type="unfinished"></translation>
+        <translation>终点X</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>End Y</source>
-        <translation type="unfinished"></translation>
+        <translation>终点Y</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Length</source>
-        <translation type="unfinished"></translation>
+        <translation>长度</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Angle</source>
-        <translation type="unfinished"></translation>
+        <translation>角度</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Line</source>
-        <translation type="unfinished"></translation>
+        <translation>线</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Line Pen</source>
-        <translation type="unfinished"></translation>
+        <translation>线条画笔</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Head</source>
-        <translation type="unfinished"></translation>
+        <translation>头部</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Head Style</source>
-        <translation type="unfinished"></translation>
+        <translation>头部样式</translation>
     </message>
     <message>
         <location line="+2"/>
         <location line="+30"/>
         <source>None</source>
-        <translation type="unfinished">无</translation>
+        <translation>无</translation>
     </message>
     <message>
         <location line="-29"/>
@@ -4511,13 +4672,13 @@ Config</source>
         <location line="-29"/>
         <location line="+30"/>
         <source>Diamond</source>
-        <translation type="unfinished">菱形</translation>
+        <translation>菱形</translation>
     </message>
     <message>
         <location line="-29"/>
         <location line="+30"/>
         <source>Triangle</source>
-        <translation type="unfinished">三角形</translation>
+        <translation>三角形</translation>
     </message>
     <message>
         <location line="-29"/>
@@ -4528,42 +4689,42 @@ Config</source>
     <message>
         <location line="-21"/>
         <source>Head Size</source>
-        <translation type="unfinished"></translation>
+        <translation>头部尺寸</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Head Pen</source>
-        <translation type="unfinished"></translation>
+        <translation>头部画笔</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Head Brush</source>
-        <translation type="unfinished"></translation>
+        <translation>头部画刷</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Tail</source>
-        <translation type="unfinished"></translation>
+        <translation>尾部</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Tail Style</source>
-        <translation type="unfinished"></translation>
+        <translation>尾部样式</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Tail Size</source>
-        <translation type="unfinished"></translation>
+        <translation>尾部尺寸</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Tail Pen</source>
-        <translation type="unfinished"></translation>
+        <translation>尾部画笔</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Tail Brush</source>
-        <translation type="unfinished"></translation>
+        <translation>尾部画刷</translation>
     </message>
 </context>
 <context>
@@ -4783,42 +4944,42 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartBoxChartSettingPanel.cpp" line="+51"/>
         <source>Basic</source>
-        <translation type="unfinished">基础</translation>
+        <translation>基础</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Z Value</source>
-        <translation type="unfinished">Z值</translation>
+        <translation>Z值</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Axis</source>
-        <translation type="unfinished">X轴</translation>
+        <translation>X轴</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Y Axis</source>
-        <translation type="unfinished">Y轴</translation>
+        <translation>Y轴</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Box</source>
-        <translation type="unfinished">方框</translation>
+        <translation>盒形</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Orientation</source>
-        <translation type="unfinished">方向</translation>
+        <translation>方向</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Box Style</source>
-        <translation type="unfinished"></translation>
+        <translation>箱体样式</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4828,12 +4989,12 @@ Config</source>
     <message>
         <location line="+1"/>
         <source>Rectangle</source>
-        <translation type="unfinished">矩形</translation>
+        <translation>矩形</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Diamond</source>
-        <translation type="unfinished">菱形</translation>
+        <translation>菱形</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -4843,37 +5004,37 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>Box Extent</source>
-        <translation type="unfinished"></translation>
+        <translation>箱体宽度</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Min Box Width</source>
-        <translation type="unfinished"></translation>
+        <translation>最小宽度</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Max Box Width</source>
-        <translation type="unfinished"></translation>
+        <translation>最大宽度</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Pen</source>
-        <translation type="unfinished">画笔</translation>
+        <translation>轮廓画笔</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Brush</source>
-        <translation type="unfinished"></translation>
+        <translation>填充画刷</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Whisker</source>
-        <translation type="unfinished"></translation>
+        <translation>须线</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Whisker Style</source>
-        <translation type="unfinished"></translation>
+        <translation>须线样式</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4893,37 +5054,37 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>Median</source>
-        <translation type="unfinished"></translation>
+        <translation>中位数线</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Median Visible</source>
-        <translation type="unfinished"></translation>
+        <translation>中位数线可见</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Median Pen</source>
-        <translation type="unfinished"></translation>
+        <translation>中位数线画笔</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Mean</source>
-        <translation type="unfinished"></translation>
+        <translation>均值</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Mean Visible</source>
-        <translation type="unfinished"></translation>
+        <translation>均值标记可见</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Outliers</source>
-        <translation type="unfinished"></translation>
+        <translation>离群点</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Outlier Jitter</source>
-        <translation type="unfinished"></translation>
+        <translation>离群点抖动</translation>
     </message>
 </context>
 <context>
@@ -5115,22 +5276,22 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartDataPickerSettingPanel.cpp" line="+115"/>
         <source>Basic</source>
-        <translation type="unfinished">基础</translation>
+        <translation>基础</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Picker Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>拾取模式</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Off</source>
-        <translation type="unfinished"></translation>
+        <translation>关闭</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Y Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Y值</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5140,12 +5301,12 @@ Config</source>
     <message>
         <location line="+4"/>
         <source>Show X Value</source>
-        <translation type="unfinished"></translation>
+        <translation>显示X值</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Text Placement</source>
-        <translation type="unfinished"></translation>
+        <translation>文字位置</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -5165,7 +5326,7 @@ Config</source>
     <message>
         <location line="+1"/>
         <source>Follow Mouse</source>
-        <translation type="unfinished">跟随鼠标</translation>
+        <translation>跟随鼠标</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5200,72 +5361,72 @@ Config</source>
     <message>
         <location line="+5"/>
         <source>Interpolation</source>
-        <translation type="unfinished"></translation>
+        <translation>插值模式</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>None</source>
-        <translation type="unfinished">无</translation>
+        <translation>无</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Linear</source>
-        <translation type="unfinished"></translation>
+        <translation>线性</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Feature Point</source>
-        <translation type="unfinished"></translation>
+        <translation>特征点</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Draw Feature Point</source>
-        <translation type="unfinished"></translation>
+        <translation>绘制特征点</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Feature Point Size</source>
-        <translation type="unfinished"></translation>
+        <translation>特征点大小</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Nearest Search Window</source>
-        <translation type="unfinished"></translation>
+        <translation>搜索窗口大小</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Text Style</source>
-        <translation type="unfinished"></translation>
+        <translation>文字样式</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Background Brush</source>
-        <translation type="unfinished">背景画刷</translation>
+        <translation>背景画刷</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Text Alignment</source>
-        <translation type="unfinished"></translation>
+        <translation>文字对齐</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Text Offset X</source>
-        <translation type="unfinished"></translation>
+        <translation>文字偏移X</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Text Offset Y</source>
-        <translation type="unfinished"></translation>
+        <translation>文字偏移Y</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Linkage</source>
-        <translation type="unfinished"></translation>
+        <translation>联动</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Picker Group Enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>拾取器联动</translation>
     </message>
 </context>
 <context>
@@ -5273,37 +5434,37 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartDataProbeMarkerSettingPanel.cpp" line="+48"/>
         <source>Basic</source>
-        <translation type="unfinished">基础</translation>
+        <translation>基础</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Z Value</source>
-        <translation type="unfinished">Z值</translation>
+        <translation>Z值</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Probe Value</source>
-        <translation type="unfinished"></translation>
+        <translation>探针值</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Label</source>
-        <translation type="unfinished">标签</translation>
+        <translation>标签</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Label Visible</source>
-        <translation type="unfinished"></translation>
+        <translation>标签可见</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Label Position</source>
-        <translation type="unfinished"></translation>
+        <translation>标签位置</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -5318,7 +5479,7 @@ Config</source>
     <message>
         <location line="+4"/>
         <source>Label Style</source>
-        <translation type="unfinished"></translation>
+        <translation>标签样式</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -5333,22 +5494,22 @@ Config</source>
     <message>
         <location line="+1"/>
         <source>Rectangle</source>
-        <translation type="unfinished">矩形</translation>
+        <translation>矩形</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Ellipse</source>
-        <translation type="unfinished">椭圆</translation>
+        <translation>椭圆</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Appearance</source>
-        <translation type="unfinished">外观</translation>
+        <translation>外观</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Probe Color</source>
-        <translation type="unfinished"></translation>
+        <translation>探针颜色</translation>
     </message>
 </context>
 <context>
@@ -5449,37 +5610,37 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartGraphicSettingPanel.cpp" line="+42"/>
         <source>Basic</source>
-        <translation type="unfinished">基础</translation>
+        <translation>基础</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Z Value</source>
-        <translation type="unfinished">Z值</translation>
+        <translation>Z值</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Axis</source>
-        <translation type="unfinished">X轴</translation>
+        <translation>X轴</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Y Axis</source>
-        <translation type="unfinished">Y轴</translation>
+        <translation>Y轴</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Render</source>
-        <translation type="unfinished"></translation>
+        <translation>渲染</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Antialiased</source>
-        <translation type="unfinished"></translation>
+        <translation>抗锯齿</translation>
     </message>
 </context>
 <context>
@@ -5535,42 +5696,42 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartHistogramSettingPanel.cpp" line="+46"/>
         <source>Basic</source>
-        <translation type="unfinished">基础</translation>
+        <translation>基础</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Z Value</source>
-        <translation type="unfinished">Z值</translation>
+        <translation>Z值</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Axis</source>
-        <translation type="unfinished">X轴</translation>
+        <translation>X轴</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Y Axis</source>
-        <translation type="unfinished">Y轴</translation>
+        <translation>Y轴</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Style</source>
-        <translation type="unfinished">样式</translation>
+        <translation>样式</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Orientation</source>
-        <translation type="unfinished">方向</translation>
+        <translation>方向</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Histogram Style</source>
-        <translation type="unfinished"></translation>
+        <translation>直方图样式</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -5585,22 +5746,22 @@ Config</source>
     <message>
         <location line="+1"/>
         <source>Lines</source>
-        <translation type="unfinished">线条</translation>
+        <translation>线条</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Pen</source>
-        <translation type="unfinished">画笔</translation>
+        <translation>轮廓画笔</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Brush</source>
-        <translation type="unfinished"></translation>
+        <translation>填充画刷</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Baseline</source>
-        <translation type="unfinished">基线</translation>
+        <translation>基线</translation>
     </message>
 </context>
 <context>
@@ -5754,32 +5915,32 @@ Config</source>
     <message>
         <location line="+15"/>
         <source>position</source>
-        <translation type="unfinished"></translation>
+        <translation>位置</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>whisker-lower</source>
-        <translation type="unfinished"></translation>
+        <translation>下须</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Q1</source>
-        <translation type="unfinished"></translation>
+        <translation>下四分位</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>median</source>
-        <translation type="unfinished">中位数</translation>
+        <translation>中位数</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Q3</source>
-        <translation type="unfinished"></translation>
+        <translation>上四分位</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>whisker-upper</source>
-        <translation type="unfinished"></translation>
+        <translation>上须</translation>
     </message>
 </context>
 <context>
@@ -5934,7 +6095,7 @@ Config</source>
     <message>
         <location line="-41"/>
         <source>3D Chart</source>
-        <translation type="unfinished"></translation>
+        <translation>3D绘图</translation>
     </message>
     <message>
         <location line="+142"/>
@@ -5948,52 +6109,52 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartMarkerSettingPanel.cpp" line="+48"/>
         <source>Basic</source>
-        <translation type="unfinished">基础</translation>
+        <translation>基础</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Z Value</source>
-        <translation type="unfinished">Z值</translation>
+        <translation>Z值</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Axis</source>
-        <translation type="unfinished">X轴</translation>
+        <translation>X轴</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Y Axis</source>
-        <translation type="unfinished">Y轴</translation>
+        <translation>Y轴</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Position</source>
-        <translation type="unfinished">位置</translation>
+        <translation>位置</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Value</source>
-        <translation type="unfinished"></translation>
+        <translation>X值</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Y Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Y值</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Line</source>
-        <translation type="unfinished"></translation>
+        <translation>线</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Line Style</source>
-        <translation type="unfinished">线条样式</translation>
+        <translation>线样式</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -6004,44 +6165,44 @@ Config</source>
         <location line="+1"/>
         <location line="+23"/>
         <source>Horizontal</source>
-        <translation type="unfinished">水平</translation>
+        <translation>水平</translation>
     </message>
     <message>
         <location line="-22"/>
         <location line="+23"/>
         <source>Vertical</source>
-        <translation type="unfinished">垂直</translation>
+        <translation>垂直</translation>
     </message>
     <message>
         <location line="-22"/>
         <source>Cross</source>
-        <translation type="unfinished">十字标记</translation>
+        <translation>十字标记</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Line Pen</source>
-        <translation type="unfinished"></translation>
+        <translation>线条画笔</translation>
     </message>
     <message>
         <location line="+5"/>
         <location line="+2"/>
         <source>Label</source>
-        <translation type="unfinished">标签</translation>
+        <translation>标签</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Label Alignment</source>
-        <translation type="unfinished">标签对齐</translation>
+        <translation>标签对齐</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Label Orientation</source>
-        <translation type="unfinished"></translation>
+        <translation>标签方向</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Spacing</source>
-        <translation type="unfinished">间距</translation>
+        <translation>间距</translation>
     </message>
 </context>
 <context>
@@ -6049,42 +6210,42 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartMultiBarSettingPanel.cpp" line="+47"/>
         <source>Basic</source>
-        <translation type="unfinished">基础</translation>
+        <translation>基础</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Z Value</source>
-        <translation type="unfinished">Z值</translation>
+        <translation>Z值</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Axis</source>
-        <translation type="unfinished">X轴</translation>
+        <translation>X轴</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Y Axis</source>
-        <translation type="unfinished">Y轴</translation>
+        <translation>Y轴</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Style</source>
-        <translation type="unfinished">样式</translation>
+        <translation>样式</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Orientation</source>
-        <translation type="unfinished">方向</translation>
+        <translation>方向</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Chart Style</source>
-        <translation type="unfinished"></translation>
+        <translation>图表样式</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -6099,17 +6260,17 @@ Config</source>
     <message>
         <location line="+4"/>
         <source>Baseline</source>
-        <translation type="unfinished">基线</translation>
+        <translation>基线</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Layout</source>
-        <translation type="unfinished">布局</translation>
+        <translation>布局</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Layout Policy</source>
-        <translation type="unfinished">布局策略</translation>
+        <translation>布局策略</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -6134,17 +6295,17 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>Layout Hint</source>
-        <translation type="unfinished">布局提示</translation>
+        <translation>布局提示</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Spacing</source>
-        <translation type="unfinished">间距</translation>
+        <translation>间距</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Margin</source>
-        <translation type="unfinished">边距</translation>
+        <translation>边距</translation>
     </message>
 </context>
 <context>
@@ -6213,37 +6374,37 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartScaleSettingPanel.cpp" line="+47"/>
         <source>Basic</source>
-        <translation type="unfinished">基础</translation>
+        <translation>基础</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Z Value</source>
-        <translation type="unfinished">Z值</translation>
+        <translation>Z值</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Axis</source>
-        <translation type="unfinished">X轴</translation>
+        <translation>X轴</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Y Axis</source>
-        <translation type="unfinished">Y轴</translation>
+        <translation>Y轴</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Scale</source>
-        <translation type="unfinished">刻度</translation>
+        <translation>刻度</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Alignment</source>
-        <translation type="unfinished">对齐</translation>
+        <translation>对齐</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -6268,23 +6429,23 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>Position</source>
-        <translation type="unfinished">位置</translation>
+        <translation>位置</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Border Distance</source>
-        <translation type="unfinished"></translation>
+        <translation>边框距离</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Sync Scale From Axis</source>
-        <translation type="unfinished"></translation>
+        <translation>同步坐标轴刻度</translation>
     </message>
     <message>
         <location line="+5"/>
         <location line="+2"/>
         <source>Font</source>
-        <translation type="unfinished">字体</translation>
+        <translation>字体</translation>
     </message>
 </context>
 <context>
@@ -6292,7 +6453,7 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartSeriesPickerWidget.cpp" line="+261"/>
         <source>Warning</source>
-        <translation type="unfinished">警告</translation>
+        <translation>警告</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -6302,22 +6463,22 @@ Config</source>
     <message>
         <location line="+83"/>
         <source>Select Series</source>
-        <translation type="unfinished"></translation>
+        <translation>选择序列</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Return to add chart</source>
-        <translation type="unfinished"></translation>
+        <translation>回到添加绘图</translation>
     </message>
     <message>
         <location line="-201"/>
         <source>X:</source>
-        <translation type="unfinished"></translation>
+        <translation>X:</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Y:</source>
-        <translation type="unfinished"></translation>
+        <translation>Y:</translation>
     </message>
 </context>
 <context>
@@ -6355,7 +6516,7 @@ Config</source>
     <message>
         <location line="+1"/>
         <source>Data Picker</source>
-        <translation type="unfinished"></translation>
+        <translation>数据拾取</translation>
     </message>
 </context>
 <context>
@@ -6363,47 +6524,47 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartShapeSettingPanel.cpp" line="+46"/>
         <source>Basic</source>
-        <translation type="unfinished">基础</translation>
+        <translation>基础</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Z Value</source>
-        <translation type="unfinished">Z值</translation>
+        <translation>Z值</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Axis</source>
-        <translation type="unfinished">X轴</translation>
+        <translation>X轴</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Y Axis</source>
-        <translation type="unfinished">Y轴</translation>
+        <translation>Y轴</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Appearance</source>
-        <translation type="unfinished">外观</translation>
+        <translation>外观</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Pen</source>
-        <translation type="unfinished">画笔</translation>
+        <translation>轮廓画笔</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Brush</source>
-        <translation type="unfinished"></translation>
+        <translation>填充画刷</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Legend Mode</source>
-        <translation type="unfinished">图例模式</translation>
+        <translation>图例模式</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -6413,22 +6574,22 @@ Config</source>
     <message>
         <location line="+1"/>
         <source>Color</source>
-        <translation type="unfinished">颜色</translation>
+        <translation>颜色</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Render</source>
-        <translation type="unfinished"></translation>
+        <translation>渲染</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Render Tolerance</source>
-        <translation type="unfinished"></translation>
+        <translation>渲染容差</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Clip Polygons</source>
-        <translation type="unfinished"></translation>
+        <translation>裁剪多边形</translation>
     </message>
 </context>
 <context>
@@ -6436,62 +6597,62 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartSpectroCurveSettingPanel.cpp" line="+46"/>
         <source>Basic</source>
-        <translation type="unfinished">基础</translation>
+        <translation>基础</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Z Value</source>
-        <translation type="unfinished">Z值</translation>
+        <translation>Z值</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Axis</source>
-        <translation type="unfinished">X轴</translation>
+        <translation>X轴</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Y Axis</source>
-        <translation type="unfinished">Y轴</translation>
+        <translation>Y轴</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Drawing</source>
-        <translation type="unfinished"></translation>
+        <translation>绘制</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Orientation</source>
-        <translation type="unfinished">方向</translation>
+        <translation>方向</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Pen Width</source>
-        <translation type="unfinished"></translation>
+        <translation>笔宽</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Clip Points</source>
-        <translation type="unfinished"></translation>
+        <translation>裁剪点</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Color Map</source>
-        <translation type="unfinished"></translation>
+        <translation>颜色映射</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Color Range Min</source>
-        <translation type="unfinished"></translation>
+        <translation>颜色范围最小值</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Color Range Max</source>
-        <translation type="unfinished"></translation>
+        <translation>颜色范围最大值</translation>
     </message>
 </context>
 <context>
@@ -6660,72 +6821,72 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartTextLabelSettingPanel.cpp" line="+47"/>
         <source>Basic</source>
-        <translation type="unfinished">基础</translation>
+        <translation>基础</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Z Value</source>
-        <translation type="unfinished">Z值</translation>
+        <translation>Z值</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Axis</source>
-        <translation type="unfinished">X轴</translation>
+        <translation>X轴</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Y Axis</source>
-        <translation type="unfinished">Y轴</translation>
+        <translation>Y轴</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Text</source>
-        <translation type="unfinished">文本</translation>
+        <translation>文本</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Text Content</source>
-        <translation type="unfinished"></translation>
+        <translation>文本内容</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Font</source>
-        <translation type="unfinished">字体</translation>
+        <translation>字体</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Text Color</source>
-        <translation type="unfinished"></translation>
+        <translation>文字颜色</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Alignment</source>
-        <translation type="unfinished">对齐</translation>
+        <translation>对齐</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Margin</source>
-        <translation type="unfinished">边距</translation>
+        <translation>边距</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Background</source>
-        <translation type="unfinished">背景</translation>
+        <translation>背景</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Border Radius</source>
-        <translation type="unfinished">边框圆角</translation>
+        <translation>边框圆角</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Background Brush</source>
-        <translation type="unfinished">背景画刷</translation>
+        <translation>背景画刷</translation>
     </message>
 </context>
 <context>
@@ -6831,57 +6992,57 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartVectorFieldSettingPanel.cpp" line="+49"/>
         <source>Basic</source>
-        <translation type="unfinished">基础</translation>
+        <translation>基础</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Z Value</source>
-        <translation type="unfinished">Z值</translation>
+        <translation>Z值</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Axis</source>
-        <translation type="unfinished">X轴</translation>
+        <translation>X轴</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Y Axis</source>
-        <translation type="unfinished">Y轴</translation>
+        <translation>Y轴</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Appearance</source>
-        <translation type="unfinished">外观</translation>
+        <translation>外观</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Pen</source>
-        <translation type="unfinished">画笔</translation>
+        <translation>轮廓画笔</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Brush</source>
-        <translation type="unfinished"></translation>
+        <translation>填充画刷</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Indicator Origin</source>
-        <translation type="unfinished"></translation>
+        <translation>箭头原点</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Head</source>
-        <translation type="unfinished"></translation>
+        <translation>头部</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Tail</source>
-        <translation type="unfinished"></translation>
+        <translation>尾部</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -6891,52 +7052,52 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>Magnitude</source>
-        <translation type="unfinished"></translation>
+        <translation>幅值</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Magnitude As Color</source>
-        <translation type="unfinished"></translation>
+        <translation>幅值映射颜色</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Magnitude As Length</source>
-        <translation type="unfinished"></translation>
+        <translation>幅值映射长度</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Min Arrow Length</source>
-        <translation type="unfinished"></translation>
+        <translation>最小箭头长度</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Max Arrow Length</source>
-        <translation type="unfinished"></translation>
+        <translation>最大箭头长度</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Magnitude Scale Factor</source>
-        <translation type="unfinished"></translation>
+        <translation>幅值缩放因子</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Filter</source>
-        <translation type="unfinished"></translation>
+        <translation>过滤</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Filter Vectors</source>
-        <translation type="unfinished"></translation>
+        <translation>过滤矢量</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Raster Width</source>
-        <translation type="unfinished"></translation>
+        <translation>栅格宽度</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Raster Height</source>
-        <translation type="unfinished"></translation>
+        <translation>栅格高度</translation>
     </message>
 </context>
 <context>
@@ -6944,62 +7105,62 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartZoneSettingPanel.cpp" line="+45"/>
         <source>Basic</source>
-        <translation type="unfinished">基础</translation>
+        <translation>基础</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Z Value</source>
-        <translation type="unfinished">Z值</translation>
+        <translation>Z值</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Axis</source>
-        <translation type="unfinished">X轴</translation>
+        <translation>X轴</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Y Axis</source>
-        <translation type="unfinished">Y轴</translation>
+        <translation>Y轴</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Zone</source>
-        <translation type="unfinished"></translation>
+        <translation>区间</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Orientation</source>
-        <translation type="unfinished">方向</translation>
+        <translation>方向</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Interval Min</source>
-        <translation type="unfinished"></translation>
+        <translation>区间最小值</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Interval Max</source>
-        <translation type="unfinished"></translation>
+        <translation>区间最大值</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Appearance</source>
-        <translation type="unfinished">外观</translation>
+        <translation>外观</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Pen</source>
-        <translation type="unfinished">画笔</translation>
+        <translation>轮廓画笔</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Brush</source>
-        <translation type="unfinished"></translation>
+        <translation>填充画刷</translation>
     </message>
 </context>
 <context>
@@ -7153,7 +7314,7 @@ Config</source>
         <location line="+203"/>
         <location line="+4"/>
         <source>Unable to get statistics for this column</source>
-        <translation type="unfinished"></translation>
+        <translation>无法获取此列的统计信息</translation>
     </message>
 </context>
 <context>
@@ -7200,17 +7361,17 @@ Config</source>
     <message>
         <location filename="../DAGui/Dialog/DADialogAgentSessionManager.cpp" line="+42"/>
         <source>Session Manager</source>
-        <translation type="unfinished"></translation>
+        <translation>会话管理</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Double-click a session to switch:</source>
-        <translation type="unfinished"></translation>
+        <translation>双击切换会话：</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Title</source>
-        <translation type="unfinished">标题</translation>
+        <translation>标题</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -7225,33 +7386,33 @@ Config</source>
     <message>
         <location line="+14"/>
         <source>Switch</source>
-        <translation type="unfinished"></translation>
+        <translation>切换</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Rename</source>
-        <translation type="unfinished">重命名</translation>
+        <translation>重命名</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Delete</source>
-        <translation type="unfinished">删除</translation>
+        <translation>删除</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Close</source>
-        <translation type="unfinished">收盘</translation>
+        <translation>收盘</translation>
     </message>
     <message>
         <location line="+36"/>
         <location line="+108"/>
         <source>(untitled)</source>
-        <translation type="unfinished"></translation>
+        <translation>（未命名）</translation>
     </message>
     <message>
         <location line="-9"/>
         <source>Rename Session</source>
-        <translation type="unfinished"></translation>
+        <translation>重命名会话</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -7261,7 +7422,7 @@ Config</source>
     <message>
         <location line="+21"/>
         <source>Delete Session</source>
-        <translation type="unfinished"></translation>
+        <translation>删除会话</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -7304,37 +7465,37 @@ Config</source>
     <message>
         <location line="+4"/>
         <source>multi bar</source>
-        <translation type="unfinished"></translation>
+        <translation>多重柱状</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>histogram</source>
-        <translation type="unfinished"></translation>
+        <translation>直方图</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>contour</source>
-        <translation type="unfinished"></translation>
+        <translation>等高线</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>vector field</source>
-        <translation type="unfinished"></translation>
+        <translation>向量场</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>surface 3D</source>
-        <translation type="unfinished"></translation>
+        <translation>3D曲面</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>bar 3D</source>
-        <translation type="unfinished"></translation>
+        <translation>3D柱状</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>line 3D</source>
-        <translation type="unfinished"></translation>
+        <translation>3D线图</translation>
     </message>
 </context>
 <context>
@@ -7342,12 +7503,12 @@ Config</source>
     <message>
         <location filename="../DAGui/Dialog/DADialogDataframeColumnDescribe.cpp" line="+29"/>
         <source>Column: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>列：%1</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Type: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>类型：%1</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -7357,7 +7518,7 @@ Config</source>
     <message>
         <location line="+0"/>
         <source>Value</source>
-        <translation type="unfinished">值</translation>
+        <translation>值</translation>
     </message>
 </context>
 <context>
@@ -7365,60 +7526,47 @@ Config</source>
     <message>
         <location filename="../DAGui/Dialog/DADialogStatsChartGuide.cpp" line="+109"/>
         <source>Histplot</source>
-        <translation type="unfinished"></translation>
+        <translation>直方图</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>KDE 1D</source>
-        <translation type="unfinished"></translation>
+        <translation>一维核密度</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>KDE 2D</source>
-        <translation type="unfinished"></translation>
+        <translation>二维核密度</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Boxplot</source>
-        <translation type="unfinished"></translation>
+        <translation>箱线图</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Heatmap</source>
-        <translation type="unfinished"></translation>
+        <translation>热力图</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Scatter</source>
-        <translation type="unfinished"></translation>
+        <translation>散点图</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Barplot</source>
-        <translation type="unfinished"></translation>
+        <translation>柱状图</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Regplot</source>
-        <translation type="unfinished"></translation>
+        <translation>回归图</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>ECDF</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADockingAreaInterface</name>
-    <message>
-        <location filename="../DAInterface/DADockingAreaInterface.cpp" line="+108"/>
-        <source>dock widget &quot;%1&quot; was closed and hidden</source>
-        <translation>停靠窗口“%1”隐藏并关闭</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>cannot find widget or dock widget</source>
-        <translation>无法找到需要隐藏的dock 窗口</translation>
+        <translation>经验累积分布</translation>
     </message>
 </context>
 <context>
@@ -7466,17 +7614,30 @@ Config</source>
     <message>
         <location line="-96"/>
         <source>3D Chart</source>
-        <translation type="unfinished"></translation>
+        <translation>3D绘图</translation>
     </message>
     <message>
         <location line="+74"/>
         <source>Axis %1</source>
-        <translation type="unfinished"></translation>
+        <translation>%1轴</translation>
     </message>
     <message>
         <location line="+205"/>
         <source>3D Item</source>
-        <translation type="unfinished"></translation>
+        <translation>3D图元</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAFigureWidget</name>
+    <message>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+133"/>
+        <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
+        <translation>意外的绘图操作：不属于 DAChartWidget 类型的图表被添加到了 figure 中</translation>
+    </message>
+    <message>
+        <location line="+967"/>
+        <source>Unsupported chart editor type: %1</source>
+        <translation>不支持的图表编辑器类型：%1</translation>
     </message>
 </context>
 <context>
@@ -7594,6 +7755,79 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DANodeItemSettingWidget</name>
+    <message>
+        <location filename="../DAGui/DANodeItemSettingWidget.cpp" line="+84"/>
+        <source>Size</source>
+        <translation>尺寸</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Width</source>
+        <translation>宽度</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Height</source>
+        <translation>高度</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Lock aspect ratio</source>
+        <translation>锁定纵横比</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Rotation</source>
+        <translation>旋转</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Position</source>
+        <translation>位置</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Properties</source>
+        <translation>属性</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Movable</source>
+        <translation>可移动</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Resizable</source>
+        <translation>可缩放</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Tooltip</source>
+        <translation>提示</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Link point position</source>
+        <translation>连接点位置</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Direction</source>
+        <translation>方向</translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Input direction</source>
+        <translation>输入方向</translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Output direction</source>
+        <translation>输出方向</translation>
+    </message>
+</context>
+<context>
     <name>DA::DANodeLinkItemSettingWidget</name>
     <message>
         <location filename="../DAGui/DANodeLinkItemSettingWidget.cpp" line="+33"/>
@@ -7642,11 +7876,19 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DANodeParamSettingPanel</name>
+    <message>
+        <location filename="../DAGui/NodeSetting/DANodeParamSettingPanel.cpp" line="+42"/>
+        <source>No configurable parameters</source>
+        <translation>无可配置参数</translation>
+    </message>
+</context>
+<context>
     <name>DA::DANodeParamSettingPanelWidget</name>
     <message>
         <location filename="../DAGui/NodeSetting/DANodeParamSettingPanelWidget.cpp" line="+47"/>
         <source>No node selected</source>
-        <translation type="unfinished"></translation>
+        <translation>未选中节点</translation>
     </message>
 </context>
 <context>
@@ -7688,24 +7930,29 @@ Config</source>
         <translation>.pluginignore文件存在，但由于以下原因读取失败：%1</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+17"/>
+        <source>Will ignore plugin:</source>
+        <translation>将忽略以下插件</translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>No plugins ignore files, a %1 file will be automatically generated</source>
         <translation>缺少插件忽略文件，将自动生成%1文件</translation>
     </message>
     <message>
         <location line="+67"/>
         <source>Plugins have already been loaded, skipping duplicate load.</source>
-        <translation type="unfinished"></translation>
+        <translation>插件已加载，跳过重复加载</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Plugin directory does not exist: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>插件目录不存在：%1</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>No plugin files found in: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>插件目录中未找到插件文件：%1</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -7725,7 +7972,7 @@ Config</source>
     <message>
         <location line="+95"/>
         <source>Plugin %1 refused to finalize, skip unload.</source>
-        <translation type="unfinished"></translation>
+        <translation>插件 %1 拒绝清理，跳过卸载</translation>
     </message>
     <message>
         <location line="+38"/>
@@ -7740,12 +7987,12 @@ Config</source>
     <message>
         <location line="-217"/>
         <source>Failed to create plugin directory: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>创建插件目录失败：%1</translation>
     </message>
     <message>
         <location line="+156"/>
         <source>cannot load plugin: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>无法加载插件：%1</translation>
     </message>
     <message>
         <location line="+70"/>
@@ -7786,11 +8033,6 @@ Config</source>
         <location line="+5"/>
         <source>Node Plugin</source>
         <translation>节点插件</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Plugin name is %1</source>
-        <translation>插件名称为%1</translation>
     </message>
 </context>
 <context>
@@ -8267,42 +8509,42 @@ Config</source>
     <message>
         <location filename="../APP/SettingPages/DASettingPageAdvanced.cpp" line="+20"/>
         <source> s</source>
-        <translation type="unfinished"></translation>
+        <translation>秒</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Unlimited</source>
-        <translation type="unfinished"></translation>
+        <translation>无限</translation>
     </message>
     <message>
         <location line="+5"/>
         <source> day</source>
-        <translation type="unfinished"></translation>
+        <translation>天</translation>
     </message>
     <message>
         <location line="+3"/>
         <source> min</source>
-        <translation type="unfinished"></translation>
+        <translation>分钟</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>禁用</translation>
     </message>
     <message>
         <location line="+62"/>
         <source>Advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>高级</translation>
     </message>
     <message>
         <location line="+68"/>
         <source>Select plugin search path</source>
-        <translation type="unfinished"></translation>
+        <translation>选择插件搜索路径</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Select node script search path</source>
-        <translation type="unfinished"></translation>
+        <translation>选择节点脚本搜索路径</translation>
     </message>
 </context>
 <context>
@@ -8310,67 +8552,67 @@ Config</source>
     <message>
         <location filename="../APP/SettingPages/DASettingPageGeneral.cpp" line="+78"/>
         <source>Windows 7</source>
-        <translation type="unfinished"></translation>
+        <translation>Windows 7</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Office 2013</source>
-        <translation type="unfinished"></translation>
+        <translation>Office 2013</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Office 2016 Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>Office 2016 蓝色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Office 2016 Green</source>
-        <translation type="unfinished"></translation>
+        <translation>Office 2016 绿色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Office 2016 Dark</source>
-        <translation type="unfinished"></translation>
+        <translation>Office 2016 深色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Office 2021 Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>Office 2021 蓝色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Office 2021 Green</source>
-        <translation type="unfinished"></translation>
+        <translation>Office 2021 绿色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Office 2021 Dark</source>
-        <translation type="unfinished"></translation>
+        <translation>Office 2021 深色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Dark</source>
-        <translation type="unfinished"></translation>
+        <translation>深色</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Dark 2</source>
-        <translation type="unfinished"></translation>
+        <translation>深色2</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>System</source>
-        <translation type="unfinished"></translation>
+        <translation>跟随系统</translation>
     </message>
     <message>
         <location line="+39"/>
         <source>General</source>
-        <translation type="unfinished">通用</translation>
+        <translation>通用</translation>
     </message>
     <message>
         <location line="+130"/>
         <source>Question</source>
-        <translation type="unfinished">疑问</translation>
+        <translation>疑问</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -8380,7 +8622,7 @@ Config</source>
     <message>
         <location line="+7"/>
         <source>Successfully removed window state record file</source>
-        <translation type="unfinished">成功删除窗口状态记录文件</translation>
+        <translation>成功删除窗口状态记录文件</translation>
     </message>
 </context>
 <context>
@@ -8388,17 +8630,17 @@ Config</source>
     <message>
         <location filename="../APP/SettingPages/DASettingPageLog.cpp" line="+21"/>
         <source>Rotating</source>
-        <translation type="unfinished"></translation>
+        <translation>按大小轮转</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Daily</source>
-        <translation type="unfinished"></translation>
+        <translation>按日期分割</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Console only</source>
-        <translation type="unfinished"></translation>
+        <translation>仅控制台</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -8408,42 +8650,42 @@ Config</source>
     <message>
         <location line="+41"/>
         <source>Trace</source>
-        <translation type="unfinished"></translation>
+        <translation>跟踪</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>调试</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Info</source>
-        <translation type="unfinished">信息</translation>
+        <translation>信息</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Warning</source>
-        <translation type="unfinished">警告</translation>
+        <translation>警告</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Error</source>
-        <translation type="unfinished">错误</translation>
+        <translation>错误</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Critical</source>
-        <translation type="unfinished">严重</translation>
+        <translation>严重</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Off</source>
-        <translation type="unfinished"></translation>
+        <translation>关闭</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Log</source>
-        <translation type="unfinished">消息</translation>
+        <translation>消息</translation>
     </message>
 </context>
 <context>
@@ -8451,22 +8693,22 @@ Config</source>
     <message>
         <location filename="../APP/SettingPages/DASettingPagePython.cpp" line="+61"/>
         <source>Cannot write python config file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>无法写入Python配置文件：%1</translation>
     </message>
     <message>
         <location line="+29"/>
         <source>Python</source>
-        <translation type="unfinished"></translation>
+        <translation>Python</translation>
     </message>
     <message>
         <location line="+44"/>
         <source>Select Python Interpreter</source>
-        <translation type="unfinished"></translation>
+        <translation>选择Python解释器</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Information</source>
-        <translation type="unfinished">信息</translation>
+        <translation>信息</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -8476,27 +8718,27 @@ Config</source>
     <message>
         <location line="+11"/>
         <source>Please specify a Python interpreter path</source>
-        <translation type="unfinished"></translation>
+        <translation>请指定Python解释器路径</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>File does not exist: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>文件不存在：%1</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Failed to run: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>运行失败：%1</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>正常</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Select module search path</source>
-        <translation type="unfinished"></translation>
+        <translation>选择模块搜索路径</translation>
     </message>
 </context>
 <context>
@@ -8538,14 +8780,6 @@ Config</source>
         <location line="+2"/>
         <source>Switch to Chart Mode</source>
         <translation>切换为图表模式</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATextReadWriter</name>
-    <message>
-        <location filename="../DAUtils/DATextReadWriter.cpp" line="+179"/>
-        <source>cannot open %1, because %2</source>
-        <translation>无法打开 %1，原因：%2</translation>
     </message>
 </context>
 <context>
@@ -8661,47 +8895,9 @@ Config</source>
     </message>
 </context>
 <context>
-    <name>DA::DAZipArchive</name>
-    <message>
-        <location filename="../DAGui/DAZipArchive.cpp" line="+308"/>
-        <source>The file %1 in the archive could not be opened. The reason for the error is %2</source>
-        <translation>无法打开文件中的%1,错误原因为%2</translation>
-    </message>
-    <message>
-        <location line="+59"/>
-        <location line="+15"/>
-        <location line="+55"/>
-        <location line="+127"/>
-        <location line="+11"/>
-        <source>archive is not open</source>
-        <translation>文件还未打开</translation>
-    </message>
-    <message>
-        <location line="-187"/>
-        <source>Unable to locate the %1 file in the current archive. The error code is %2,err str:%3</source>
-        <translation>无法找到当前档案下的%1文件。错误码为%2,错误内容为:%3</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>The file %1 in the archive could not be opened. The error code is %2</source>
-        <translation>无法打开档案中的%1文件，错误码为%2</translation>
-    </message>
-    <message>
-        <location line="+193"/>
-        <location line="+10"/>
-        <source>cannot open archive</source>
-        <translation>无法打开档案</translation>
-    </message>
-    <message>
-        <location line="+179"/>
-        <source>Failed to create target directory:%1</source>
-        <translation>无法创建目标文件夹%1</translation>
-    </message>
-</context>
-<context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1366"/>
+        <location filename="../APP/DAAppController.cpp" line="-1367"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -8717,6 +8913,19 @@ Config</source>
         <location line="+1"/>
         <source>The current function is not implemented, only the UI is reserved, please pay attention: https://gitee.com/czyt1988/data-work-flow</source>
         <translation>当前功能未实现，仅保留UI，请留意：https://gitee.com/czyt1988/data-work-flow</translation>
+    </message>
+</context>
+<context>
+    <name>DAAxObjectExcelWrapper</name>
+    <message>
+        <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="-612"/>
+        <source>File &quot;%1&quot; does not exist</source>
+        <translation>文件 "%1" 不存在</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Failed to open Excel file &quot;%1&quot;</source>
+        <translation>无法打开 Excel 文件 "%1"</translation>
     </message>
 </context>
 <context>
@@ -8760,7 +8969,7 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>DataFrame</source>
-        <translation type="unfinished">DataFrame</translation>
+        <translation>DataFrame</translation>
     </message>
     <message>
         <location line="+25"/>
@@ -8783,7 +8992,7 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>DataFrame</source>
-        <translation type="unfinished">DataFrame</translation>
+        <translation>DataFrame</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -8826,7 +9035,7 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>DataFrame</source>
-        <translation type="unfinished">DataFrame</translation>
+        <translation>DataFrame</translation>
     </message>
     <message>
         <location line="+25"/>
@@ -8859,7 +9068,7 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>DataFrame</source>
-        <translation type="unfinished">DataFrame</translation>
+        <translation>DataFrame</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -8882,17 +9091,17 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>X</source>
-        <translation type="unfinished">X</translation>
+        <translation>X</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Y</source>
-        <translation type="unfinished">Y</translation>
+        <translation>Y</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Value</source>
-        <translation type="unfinished">值</translation>
+        <translation>值</translation>
     </message>
     <message>
         <location line="+28"/>
@@ -8969,7 +9178,7 @@ Config</source>
     <message>
         <location line="+23"/>
         <source>Y Axis</source>
-        <translation type="unfinished">Y轴</translation>
+        <translation>Y轴</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -8992,7 +9201,7 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>X</source>
-        <translation type="unfinished">X</translation>
+        <translation>X</translation>
     </message>
     <message>
         <location line="+23"/>
@@ -9036,7 +9245,7 @@ Config</source>
     <message>
         <location line="+16"/>
         <source>Time</source>
-        <translation type="unfinished">时间</translation>
+        <translation>时间</translation>
     </message>
     <message>
         <location line="+12"/>
@@ -9108,12 +9317,12 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartAddStatsBarplotWidget.ui" line="+14"/>
         <source>Barplot Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>柱状图设置</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>X axis (categorical)</source>
-        <translation type="unfinished"></translation>
+        <translation>X 轴（分类）</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -9128,7 +9337,7 @@ Config</source>
     <message>
         <location line="+21"/>
         <source>Statistics</source>
-        <translation type="unfinished">数据统计</translation>
+        <translation>数据统计</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -9138,32 +9347,32 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>mean</source>
-        <translation type="unfinished">均值</translation>
+        <translation>均值</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>median</source>
-        <translation type="unfinished">中位数</translation>
+        <translation>中位数</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>sum</source>
-        <translation type="unfinished">求和</translation>
+        <translation>求和</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>count</source>
-        <translation type="unfinished">计数</translation>
+        <translation>计数</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>std</source>
-        <translation type="unfinished">标准差</translation>
+        <translation>标准差</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>var</source>
-        <translation type="unfinished">方差</translation>
+        <translation>方差</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -9173,7 +9382,7 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>None</source>
-        <translation type="unfinished">无</translation>
+        <translation>无</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -9198,7 +9407,7 @@ Config</source>
     <message>
         <location line="+20"/>
         <source>Orientation</source>
-        <translation type="unfinished">方向</translation>
+        <translation>方向</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -9274,7 +9483,7 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>Data</source>
-        <translation type="unfinished">数据</translation>
+        <translation>数据</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -9304,7 +9513,7 @@ Config</source>
     <message>
         <location line="+5"/>
         <source>count</source>
-        <translation type="unfinished">计数</translation>
+        <translation>计数</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -9357,32 +9566,32 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>mean</source>
-        <translation type="unfinished">均值</translation>
+        <translation>均值</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>sum</source>
-        <translation type="unfinished">求和</translation>
+        <translation>求和</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>count</source>
-        <translation type="unfinished">计数</translation>
+        <translation>计数</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>median</source>
-        <translation type="unfinished">中位数</translation>
+        <translation>中位数</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>max</source>
-        <translation type="unfinished">最大值</translation>
+        <translation>最大值</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>min</source>
-        <translation type="unfinished">最小值</translation>
+        <translation>最小值</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -9432,7 +9641,7 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>None</source>
-        <translation type="unfinished">无</translation>
+        <translation>无</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -9495,7 +9704,7 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>Data</source>
-        <translation type="unfinished">数据</translation>
+        <translation>数据</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -9530,7 +9739,7 @@ Config</source>
     <message>
         <location line="+26"/>
         <source>Statistics</source>
-        <translation type="unfinished">数据统计</translation>
+        <translation>数据统计</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -9540,7 +9749,7 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>count</source>
-        <translation type="unfinished">计数</translation>
+        <translation>计数</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -9603,7 +9812,7 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>Data</source>
-        <translation type="unfinished">数据</translation>
+        <translation>数据</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -9706,7 +9915,7 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>Data</source>
-        <translation type="unfinished">数据</translation>
+        <translation>数据</translation>
     </message>
     <message>
         <location line="+18"/>
@@ -9789,12 +9998,12 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>X axis</source>
-        <translation type="unfinished"></translation>
+        <translation>X 轴</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Y axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Y 轴</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -9814,7 +10023,7 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>None</source>
-        <translation type="unfinished">无</translation>
+        <translation>无</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -9882,12 +10091,12 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>X axis</source>
-        <translation type="unfinished"></translation>
+        <translation>X 轴</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Y axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Y 轴</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -9897,7 +10106,7 @@ Config</source>
     <message>
         <location line="+21"/>
         <source>Marker</source>
-        <translation type="unfinished">标记</translation>
+        <translation>标记</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -9965,12 +10174,12 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>X</source>
-        <translation type="unfinished">X</translation>
+        <translation>X</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Y</source>
-        <translation type="unfinished">Y</translation>
+        <translation>Y</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -10148,12 +10357,12 @@ Config</source>
     <message>
         <location filename="../DAGui/DAChartSeriesPickerWidget.ui" line="+14"/>
         <source>Select Series</source>
-        <translation type="unfinished"></translation>
+        <translation>选择序列</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>X:</source>
-        <translation type="unfinished"></translation>
+        <translation>X:</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -10163,7 +10372,7 @@ Config</source>
     <message>
         <location line="+10"/>
         <source>Return to add chart</source>
-        <translation type="unfinished"></translation>
+        <translation>回到添加绘图</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -10610,12 +10819,12 @@ Config</source>
     <message>
         <location line="+5"/>
         <source>Value</source>
-        <translation type="unfinished">值</translation>
+        <translation>值</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Close</source>
-        <translation type="unfinished">收盘</translation>
+        <translation>收盘</translation>
     </message>
 </context>
 <context>
@@ -10735,7 +10944,7 @@ Config</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+85"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-1015"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
@@ -11031,6 +11240,44 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DAPyWorkFlowSceneSerializer</name>
+    <message>
+        <location filename="../DAPyWorkFlow/DAPyWorkFlowSceneSerializer.cpp" line="+101"/>
+        <source>scene or doc pointer is null</source>
+        <translation>scene或doc指针为空</translation>
+    </message>
+    <message>
+        <location line="+93"/>
+        <source>sceneElement or scene pointer is null</source>
+        <translation>sceneElement或scene指针为空</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Manager or workflow is invalid</source>
+        <translation>Manager或workflow无效</translation>
+    </message>
+    <message>
+        <location line="+93"/>
+        <source>Cannot open file for writing: %1</source>
+        <translation>无法打开文件写入: %1</translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>Cannot open file for reading: %1</source>
+        <translation>无法打开文件读取: %1</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>XML parse error: %1 (line:%2 col:%3)</source>
+        <translation>XML解析错误: %1 (行:%2 列:%3)</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>XML document has no root element</source>
+        <translation>XML文档无根元素</translation>
+    </message>
+</context>
+<context>
     <name>DARenameColumnsNameDialog</name>
     <message>
         <location filename="../DAGui/Dialog/DARenameColumnsNameDialog.ui" line="+14"/>
@@ -11139,12 +11386,12 @@ Config</source>
     <message>
         <location line="+11"/>
         <source>Add</source>
-        <translation type="unfinished">添加</translation>
+        <translation>添加</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Remove</source>
-        <translation type="unfinished">删除</translation>
+        <translation>删除</translation>
     </message>
     <message>
         <location line="+25"/>
@@ -11162,7 +11409,7 @@ Config</source>
     <message>
         <location line="+6"/>
         <source>Appearance</source>
-        <translation type="unfinished">外观</translation>
+        <translation>外观</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -11197,7 +11444,7 @@ Config</source>
     <message>
         <location line="+10"/>
         <source>Size</source>
-        <translation type="unfinished">尺寸</translation>
+        <translation>尺寸</translation>
     </message>
     <message>
         <location line="+25"/>
@@ -11328,12 +11575,12 @@ Config</source>
     <message>
         <location line="+11"/>
         <source>Add</source>
-        <translation type="unfinished">添加</translation>
+        <translation>添加</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Remove</source>
-        <translation type="unfinished">删除</translation>
+        <translation>删除</translation>
     </message>
     <message>
         <location line="+25"/>
@@ -12304,14 +12551,19 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>成功把%1导出到%2</translation>
     </message>
     <message>
-        <location line="+115"/>
-        <source>%1. Elapsed: %2:%3</source>
-        <translation>%1,已用时%2:%3</translation>
+        <location line="+41"/>
+        <source>Excel</source>
+        <translation>Excel</translation>
     </message>
     <message>
-        <location line="+20"/>
-        <source>%1, Cost %2:%3</source>
-        <translation>%1，耗时%2:%3</translation>
+        <location line="+2"/>
+        <source>Save as Excel File</source>
+        <translation>保存为 excel 文件</translation>
+    </message>
+    <message>
+        <location line="+73"/>
+        <source>%1. Elapsed: %2:%3</source>
+        <translation>%1,已用时%2:%3</translation>
     </message>
 </context>
 <context>
@@ -12350,7 +12602,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../APP/main.cpp" line="+181"/>
+        <location filename="../APP/main.cpp" line="+111"/>
+        <source>Failed to set console output codepage to UTF-8</source>
+        <translation>设置控制台输出代码页为 UTF-8 失败</translation>
+    </message>
+    <message>
+        <location line="+70"/>
         <source>Initializing...</source>
         <translation>正在初始化...</translation>
     </message>
@@ -12451,79 +12708,29 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>改变表格样式</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+155"/>
-        <source>save workflow extern info cost: %1 ms</source>
-        <translation>保存工作流扩展信息耗时: %1 ms</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>save workflow nodes cost: %1 ms</source>
-        <translation>保存工作流节点耗时: %1 ms</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>save workflow links cost: %1 ms</source>
-        <translation>保存工作流连线耗时: %1 ms</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>save special item cost: %1 ms</source>
-        <translation>保存特殊图元耗时: %1 ms</translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>load workflow extern info cost: %1 ms</source>
-        <translation>加载工作流扩展信息耗时: %1 ms</translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+199"/>
         <location line="+277"/>
         <source>error occurred while loading nodes</source>
         <translation>加载节点时发生错误</translation>
     </message>
     <message>
-        <location line="-275"/>
-        <source>load workflow nodes cost: %1 ms</source>
-        <translation>加载工作流节点耗时: %1 ms</translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="-272"/>
         <location line="+275"/>
         <source>error occurred while loading node links</source>
         <translation>加载节点连线时发生错误</translation>
     </message>
     <message>
-        <location line="-273"/>
-        <source>load workflow links cost: %1 ms</source>
-        <translation>加载工作流连线耗时: %1 ms</translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="-270"/>
         <source>error occurred while loading special items</source>
         <translation>加载特殊图元时发生错误</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>load special item cost: %1 ms</source>
-        <translation>加载特殊图元耗时: %1 ms</translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="+5"/>
         <source>error occurred while loading scene info</source>
         <translation>加载场景信息时发生错误</translation>
     </message>
     <message>
-        <location line="-47"/>
-        <source>save scene info cost: %1 ms</source>
-        <translation>保存场景信息耗时: %1 ms</translation>
-    </message>
-    <message>
-        <location line="+49"/>
-        <source>load scene info cost: %1 ms</source>
-        <translation>加载场景信息耗时: %1 ms</translation>
-    </message>
-    <message>
-        <location line="+37"/>
+        <location line="+39"/>
         <source>loadNodesView: error occurred</source>
         <translation>加载节点视图时发生错误</translation>
     </message>
@@ -12593,12 +12800,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>加载图元时发生错误</translation>
     </message>
     <message>
-        <location line="+44"/>
-        <source>Skipping legacy factory info (%1 entries)</source>
-        <translation>跳过旧版工厂信息(%1条)</translation>
-    </message>
-    <message>
-        <location line="+135"/>
+        <location line="+179"/>
         <location line="+75"/>
         <source>node missing id attribute, will skip this node</source>
         <translation>节点缺少id属性，将跳过此节点</translation>
@@ -12647,12 +12849,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>粘贴过程中，找不到ID(%1)对应的映射</translation>
     </message>
     <message>
-        <location line="+131"/>
-        <source>Unable to generate graphics item element during the saving</source>
-        <translation>保存过程中，无法生成图元元素</translation>
-    </message>
-    <message>
-        <location line="+26"/>
+        <location line="+157"/>
         <source>Unable to load item information from &lt;%1&gt;</source>
         <translation>无法通过&lt;%1&gt;加载元件信息</translation>
     </message>
@@ -12662,12 +12859,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>当前工作流文件版本:</translation>
     </message>
     <message>
-        <location line="+45"/>
-        <source>An exception occurred during the process of processing pasted content XML, with the root node missing the type attribute</source>
-        <translation>在处理粘贴内容xml过程出现异常，根节点缺失type属性</translation>
-    </message>
-    <message>
-        <location line="+7"/>
+        <location line="+52"/>
         <source>An exception occurred during the process of parsing and pasting content, missing workflow tag</source>
         <translation>解析粘贴内容过程出现异常,缺失workflow标签</translation>
     </message>
@@ -12687,7 +12879,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>标签%3下的属性%1=%2无法转换为double</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAZipArchive.cpp" line="-659"/>
+        <location filename="../DAGui/DAZipArchive.cpp" line="+121"/>
         <source>No error</source>
         <translation>无错误</translation>
     </message>
@@ -12792,7 +12984,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>&apos;items&apos; 必须是数组</translation>
     </message>
     <message>
-        <location filename="../DAUtils/DATextReadWriter.cpp" line="+225"/>
+        <location filename="../DAUtils/DATextReadWriter.cpp" line="+404"/>
         <source>No error occurred</source>
         <translation>没有发生错误</translation>
     </message>
@@ -12899,22 +13091,22 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+14"/>
         <source>DAPyScripts is not initialized, getIO() called before initScripts()</source>
-        <translation type="unfinished"></translation>
+        <translation>DAPyScripts 未初始化，在 initScripts() 之前调用了 getIO()</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>DAPyScripts is not initialized, getDataFrame() called before initScripts()</source>
-        <translation type="unfinished"></translation>
+        <translation>DAPyScripts 未初始化，在 initScripts() 之前调用了 getDataFrame()</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>DAPyScripts is not initialized, getDataProcess() called before initScripts()</source>
-        <translation type="unfinished"></translation>
+        <translation>DAPyScripts 未初始化，在 initScripts() 之前调用了 getDataProcess()</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>DAPyScripts is not initialized, getStatistics() called before initScripts()</source>
-        <translation type="unfinished"></translation>
+        <translation>DAPyScripts 未初始化，在 initScripts() 之前调用了 getStatistics()</translation>
     </message>
     <message>
         <location filename="../DAPyScripts/DAPyScriptsDataFrame.cpp" line="+15"/>
@@ -12929,7 +13121,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+266"/>
         <source>setnan: rowsIndex size(%1) != colsIndex size(%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>setnan: 行索引长度(%1)与列索引长度(%2)不一致</translation>
     </message>
     <message>
         <location filename="../DAPyScripts/DAPyScriptsDataProcess.cpp" line="+40"/>
@@ -12987,7 +13179,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法转换到 DA 插件接口：%1</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+6"/>
+        <source>Loaded plugin: %1</source>
+        <translation>已加载插件：%1</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>successfully loaded plugin %1, but failed to initialize</source>
         <translation>成功加载插件 %1，但插件初始化失败</translation>
     </message>
@@ -13186,17 +13383,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+3"/>
         <source>arrow-%1</source>
-        <translation type="unfinished"></translation>
+        <translation>箭头-%1</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>box-%1</source>
-        <translation type="unfinished"></translation>
+        <translation>箱线图-%1</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>probe-%1</source>
-        <translation type="unfinished"></translation>
+        <translation>探针-%1</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -13213,7 +13410,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+51"/>
         <location line="+11"/>
         <source>create 3D chart</source>
-        <translation type="unfinished"></translation>
+        <translation>创建3D绘图</translation>
     </message>
     <message>
         <location line="+41"/>
@@ -13223,7 +13420,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+39"/>
         <source>remove 3D chart</source>
-        <translation type="unfinished"></translation>
+        <translation>移除3D绘图</translation>
     </message>
     <message>
         <location line="+40"/>
@@ -13238,17 +13435,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+48"/>
         <source>add 3D item in chart</source>
-        <translation type="unfinished"></translation>
+        <translation>添加3D图元到绘图</translation>
     </message>
     <message>
         <location line="+49"/>
         <source>move plot item to another chart</source>
-        <translation type="unfinished"></translation>
+        <translation>移动图元到另一个绘图</translation>
     </message>
     <message>
         <location line="+45"/>
         <source>move 3D plot item to another chart</source>
-        <translation type="unfinished"></translation>
+        <translation>移动3D图元到另一个绘图</translation>
     </message>
     <message>
         <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+53"/>
@@ -13308,7 +13505,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+2"/>
         <source>package</source>
-        <translation type="unfinished"></translation>
+        <translation>数据包</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -13323,7 +13520,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+2"/>
         <source>series</source>
-        <translation type="unfinished"></translation>
+        <translation>序列</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -13399,67 +13596,67 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DAPyScripts/DAPyScriptsStatistics.cpp" line="+16"/>
         <source>cannot import DAWorkbench.DAStatistics module</source>
-        <translation type="unfinished"></translation>
+        <translation>无法导入 DAWorkbench.DAStatistics 模块</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>cannot import DAWorkbench.DAStatistics</source>
-        <translation type="unfinished"></translation>
+        <translation>无法导入 DAWorkbench.DAStatistics 模块</translation>
     </message>
     <message>
         <location filename="../APP/DAStatsPlotCoordinator.cpp" line="+84"/>
         <source>The selected data source is empty</source>
-        <translation type="unfinished"></translation>
+        <translation>选中的数据源为空</translation>
     </message>
     <message>
         <location line="+26"/>
         <source>Unknown plot type: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>未知的绘图类型: %1</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Python error in statistical plot: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>统计绘图 Python 错误: %1</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Error in statistical plot: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>统计绘图错误: %1</translation>
     </message>
     <message>
         <location line="+24"/>
         <source>Column &apos;%1&apos; not found in data</source>
-        <translation type="unfinished"></translation>
+        <translation>数据中找不到列 '%1'</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Failed to compute histogram for column &apos;%1&apos;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>计算列 '%1' 的直方图失败: %2</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Histogram result is empty for column &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>列 '%1' 的直方图结果为空</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>KDE overlay failed for column &apos;%1&apos;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>列 '%1' 的 KDE 叠加失败: %2</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Failed to compute grouped histogram (column &apos;%1&apos;, hue &apos;%2&apos;): %3</source>
-        <translation type="unfinished"></translation>
+        <translation>计算分组直方图失败 (列 '%1', 分组 '%2'): %3</translation>
     </message>
     <message>
         <location line="+49"/>
         <source>KDE overlay failed for hue groups: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>分组 KDE 叠加失败: %1</translation>
     </message>
     <message>
         <location filename="../DAFigure/Models/DAStandardItemPlot3D.cpp" line="+60"/>
         <source>3D Chart</source>
-        <translation type="unfinished"></translation>
+        <translation>3D绘图</translation>
     </message>
 </context>
 <context>

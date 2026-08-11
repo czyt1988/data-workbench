@@ -32,7 +32,7 @@ def _load_scan_dirs_from_cmake():
     parsing fails."""
     cmake_file = os.path.join(ROOT, 'CMakeLists.txt')
     fallback = [
-        "src/APP", "src/DAAxOfficeWrapper", "src/DAData", "src/DAFigure",
+        "src/APP", "src/DAAgent", "src/DAAxOfficeWrapper", "src/DAData", "src/DAFigure",
         "src/DAGraphicsView", "src/DAGui", "src/DAInterface", "src/DAMessageHandler",
         "src/DAPluginSupport", "src/DAPyBindQt", "src/DAPyCommonWidgets",
         "src/DAPyScripts", "src/DAUtils", "src/DAPyWorkFlow", "plugins/DataAnalysis",
@@ -46,8 +46,12 @@ def _load_scan_dirs_from_cmake():
             print("WARNING: DA_LUPDATE_SOURCE_DIRS not found in CMakeLists.txt, using fallback list")
             return fallback
         dirs = re.findall(r'(\S+)', m.group(1))
-        # Filter out CMake variables like ${...}
-        dirs = [d for d in dirs if not d.startswith('${') and not d.startswith('"')]
+        # Resolve ${CMAKE_CURRENT_SOURCE_DIR}/ prefix to relative paths (matching
+        # the fallback format). Previously every entry was ${...}-prefixed and got
+        # filtered out, so the script always fell back to the hardcoded list
+        # (which missed src/DAAgent and could drift from CMakeLists).
+        dirs = [d.replace('${CMAKE_CURRENT_SOURCE_DIR}/', '').replace('${CMAKE_CURRENT_SOURCE_DIR}', '') for d in dirs]
+        dirs = [d for d in dirs if d and not d.startswith('"') and not d.startswith('${')]
         if not dirs:
             print("WARNING: DA_LUPDATE_SOURCE_DIRS parsed empty, using fallback list")
             return fallback
@@ -195,7 +199,12 @@ def find_statement_start(text, cn_pos):
     one whose following code is non-empty/non-comment before cn_pos; if the
     last boundary leaves only whitespace+comments, we fall back to the previous
     boundary. Returns position (int)."""
-    start = max(0, cn_pos - 6000)
+    # Scan from 0 (not a windowed cn_pos-6000): a windowed start can land
+    # inside a string literal, leaving in_str uninitialised and breaking
+    # quote-parity for the whole scan -> no boundaries recorded -> the cn
+    # comment mis-pairs with an earlier tr()/translate() in a wider scope.
+    # Files here are modest, so scanning from 0 is cheap and correct.
+    start = 0
     i = start
     in_str = False
     esc = False
@@ -260,8 +269,14 @@ def _has_code(seg):
             i += 1
             continue
         if c == '/' and i + 1 < n and seg[i+1] == '/':
-            # rest is line comment
-            return False  # but maybe code before it; we already passed leading ws
+            # line comment: skip to end of line, then keep checking — code may
+            # follow on subsequent lines (e.g. a //cn: comment line followed by
+            # the next statement's code). Returning False here would discard
+            # the closest boundary and fall back to a wider multi-statement
+            # scope, causing mis-pairing of //cn: with an earlier tr() call.
+            while i < n and seg[i] != '\n':
+                i += 1
+            continue
         if c == '/' and i + 1 < n and seg[i+1] == '*':
             j = i + 2
             while j < n - 1 and not (seg[j] == '*' and seg[j+1] == '/'):
