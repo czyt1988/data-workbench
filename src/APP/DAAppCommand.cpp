@@ -1,4 +1,4 @@
-﻿#include "DAAppCommand.h"
+#include "DAAppCommand.h"
 #include "DADataUndoCommand.h"
 #include "DAUIInterface.h"
 #include "DAAppDockingArea.h"
@@ -28,14 +28,14 @@ DADataAbstractUndoCommand* DAAppCommand::beginDataOperateCommand(
 )
 {
     if (isObjectPersist) {
-        m_dataOperateCommand = std::make_unique< DADataObjectPersistUndoCommand >();
+        mDataOperateCommand = std::make_unique< DADataObjectPersistUndoCommand >();
     } else {
-        m_dataOperateCommand = std::make_unique< DADataObjectSwapUndoCommand >();
+        mDataOperateCommand = std::make_unique< DADataObjectSwapUndoCommand >();
     }
-    m_dataOperateCommand->setSkipFirstRedo(isSkipFirstRedo);
-    m_dataOperateCommand->setText(text);
-    m_dataOperateCommand->setOldData(data);
-    return m_dataOperateCommand.get();
+    mDataOperateCommand->setSkipFirstRedo(isSkipFirstRedo);
+    mDataOperateCommand->setText(text);
+    mDataOperateCommand->setOldData(data);
+    return mDataOperateCommand.get();
 }
 
 bool DAAppCommand::endDataOperateCommand(const DAData& data)
@@ -53,8 +53,8 @@ bool DAAppCommand::endDataOperateCommand(const DAData& data)
     if (!undoStack) {
         return false;
     }
-    m_dataOperateCommand->setNewData(data);
-    undoStack->push(m_dataOperateCommand.release());
+    mDataOperateCommand->setNewData(data);
+    undoStack->push(mDataOperateCommand.release());
     // 激活
     if (undoGroup().activeStack() != undoStack) {
         undoGroup().setActiveStack(undoStack);

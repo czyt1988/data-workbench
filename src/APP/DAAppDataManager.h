@@ -1,4 +1,4 @@
-﻿#ifndef DAAPPDATAMANAGER_H
+#ifndef DAAPPDATAMANAGER_H
 #define DAAPPDATAMANAGER_H
 #include <QObject>
 #include "DADataManagerInterface.h"
@@ -20,7 +20,7 @@ class DAAppDataManager : public DADataManagerInterface
     Q_OBJECT
 public:
     DAAppDataManager(DACoreInterface* c, QObject* p = nullptr);
-    ~DAAppDataManager();
+    ~DAAppDataManager() override;
     // 从文件导入数据,带redo/undo
     bool importFromFile(const QString& f, const QVariantMap& args = QVariantMap(), QString* err = nullptr);
     int importFromFiles(const QStringList& fileNames);

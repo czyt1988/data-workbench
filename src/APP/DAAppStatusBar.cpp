@@ -11,8 +11,8 @@ namespace DA
 DAAppStatusBar::DAAppStatusBar(DAUIInterface* u) : DAStatusBarInterface(u)
 {
 	DAAppUI* appui = qobject_cast< DAAppUI* >(u);
-	m_app          = qobject_cast< AppMainWindow* >(appui->mainWindow());
-	buildStatusBar(m_app);
+	mApp          = qobject_cast< AppMainWindow* >(appui->mainWindow());
+	buildStatusBar(mApp);
 }
 
 DAAppStatusBar::~DAAppStatusBar()
@@ -25,107 +25,107 @@ void DAAppStatusBar::retranslateUi()
 
 void DAAppStatusBar::showMessage(const QString& message, int timeout)
 {
-	m_statusBarWidget->showMessage(message, timeout);
+	mStatusBarWidget->showMessage(message, timeout);
 }
 
 void DAAppStatusBar::clearMessage()
 {
-	m_statusBarWidget->clearMessage();
+	mStatusBarWidget->clearMessage();
 }
 
 void DAAppStatusBar::showProgressBar()
 {
-	m_statusBarWidget->showProgressBar();
+	mStatusBarWidget->showProgressBar();
 }
 
 void DAAppStatusBar::hideProgressBar()
 {
-	m_statusBarWidget->hideProgressBar();
+	mStatusBarWidget->hideProgressBar();
 }
 
 void DAAppStatusBar::setProgress(int value)
 {
-	m_statusBarWidget->setProgress(value);
+	mStatusBarWidget->setProgress(value);
 }
 
 void DAAppStatusBar::setProgressText(const QString& text)
 {
-	m_statusBarWidget->setProgressText(text);
+	mStatusBarWidget->setProgressText(text);
 }
 
 void DAAppStatusBar::clearProgressText()
 {
-	m_statusBarWidget->clearProgressText();
+	mStatusBarWidget->clearProgressText();
 }
 
 void DAAppStatusBar::setBusy(bool busy)
 {
-	m_statusBarWidget->setBusy(busy);
+	mStatusBarWidget->setBusy(busy);
 }
 
 bool DAAppStatusBar::isBusy() const
 {
-	return m_statusBarWidget->isBusy();
+	return mStatusBarWidget->isBusy();
 }
 
 void DAAppStatusBar::resetProgress()
 {
-	m_statusBarWidget->resetProgress();
+	mStatusBarWidget->resetProgress();
 }
 
 bool DAAppStatusBar::isProgressBarVisible() const
 {
-	return m_statusBarWidget->isProgressBarVisible();
+	return mStatusBarWidget->isProgressBarVisible();
 }
 
 void DAAppStatusBar::setSwitchButtonVisible(DA::DAWorkbenchFeatureType type, bool visible)
 {
-	m_statusBarWidget->setSwitchButtonVisible(type, visible);
+	mStatusBarWidget->setSwitchButtonVisible(type, visible);
 }
 
 bool DAAppStatusBar::isSwitchButtonVisible(DA::DAWorkbenchFeatureType type) const
 {
-	return m_statusBarWidget->isSwitchButtonVisible(type);
+	return mStatusBarWidget->isSwitchButtonVisible(type);
 }
 
 AppMainWindow* DAAppStatusBar::app() const
 {
-	return m_app;
+	return mApp;
 }
 
 void DAAppStatusBar::setAppDockingArea(DAAppDockingArea* dockingArea)
 {
-	m_dockingArea = dockingArea;
+	mDockingArea = dockingArea;
 }
 
 void DAAppStatusBar::setAppActions(DAAppActions* actions)
 {
-	m_actions = actions;
+	mActions = actions;
 	// 设置完action后，构建action相关的按钮
-	m_showLeftSideBarButton = new QToolButton(m_statusBar);
-	m_showLeftSideBarButton->setAutoRaise(true);
-	m_showLeftSideBarButton->setDefaultAction(actions->actionShowLeftSideBar);
-	m_statusBar->insertWidget(0, m_showLeftSideBarButton);
-	m_showRightSideBarButton = new QToolButton(m_statusBar);
-	m_showRightSideBarButton->setAutoRaise(true);
-	m_showRightSideBarButton->setDefaultAction(actions->actionShowRightSideBar);
-	m_statusBar->addPermanentWidget(m_showRightSideBarButton);
+	mShowLeftSideBarButton = new QToolButton(mStatusBar);
+	mShowLeftSideBarButton->setAutoRaise(true);
+	mShowLeftSideBarButton->setDefaultAction(actions->actionShowLeftSideBar);
+	mStatusBar->insertWidget(0, mShowLeftSideBarButton);
+	mShowRightSideBarButton = new QToolButton(mStatusBar);
+	mShowRightSideBarButton->setAutoRaise(true);
+	mShowRightSideBarButton->setDefaultAction(actions->actionShowRightSideBar);
+	mStatusBar->addPermanentWidget(mShowRightSideBarButton);
 }
 
 void DAAppStatusBar::buildStatusBar(AppMainWindow* mainWindow)
 {
-	m_statusBar       = new QStatusBar(mainWindow);
-	m_statusBarWidget = new DAStatusBarWidget(m_statusBar);
-	m_statusBar->addWidget(m_statusBarWidget, 1);
-	mainWindow->setStatusBar(m_statusBar);
-	connect(m_statusBarWidget, &DAStatusBarWidget::requestSwitch, this, &DAAppStatusBar::onRequestSwitch);
+	mStatusBar       = new QStatusBar(mainWindow);
+	mStatusBarWidget = new DAStatusBarWidget(mStatusBar);
+	mStatusBar->addWidget(mStatusBarWidget, 1);
+	mainWindow->setStatusBar(mStatusBar);
+	connect(mStatusBarWidget, &DAStatusBarWidget::requestSwitch, this, &DAAppStatusBar::onRequestSwitch);
 }
 
 void DAAppStatusBar::onRequestSwitch(DA::DAWorkbenchFeatureType type)
 {
-	if (!m_dockingArea) {
+	if (!mDockingArea) {
 		return;
 	}
-	m_dockingArea->raiseFeatureArea(type);
+	mDockingArea->raiseFeatureArea(type);
 }
 }

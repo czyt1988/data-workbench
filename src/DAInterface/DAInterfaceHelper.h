@@ -1,4 +1,4 @@
-﻿#ifndef DAINTERFACEHELPER_H
+#ifndef DAINTERFACEHELPER_H
 #define DAINTERFACEHELPER_H
 #include "DAInterfaceAPI.h"
 class QMainWindow;
@@ -34,14 +34,14 @@ public:
     QMainWindow* mainWindow() const;
 
 private:
-    DACoreInterface* m_core { nullptr };
-    DAUIInterface* m_ui { nullptr };
-    DADockingAreaInterface* m_dockArea { nullptr };
-    DARibbonAreaInterface* m_ribbonArea { nullptr };
-    DAStatusBarInterface* m_statusBarArea { nullptr };
-    DADataManagerInterface* m_dataManager { nullptr };
-    DACommandInterface* m_cmd { nullptr };
-    DAProjectInterface* m_project { nullptr };
+    DACoreInterface* mCore { nullptr };
+    DAUIInterface* mUi { nullptr };
+    DADockingAreaInterface* mDockArea { nullptr };
+    DARibbonAreaInterface* mRibbonArea { nullptr };
+    DAStatusBarInterface* mStatusBarArea { nullptr };
+    DADataManagerInterface* mDataManager { nullptr };
+    DACommandInterface* mCmd { nullptr };
+    DAProjectInterface* mProject { nullptr };
 };
 }
 #endif  // DAINTERFACEHELPER_H

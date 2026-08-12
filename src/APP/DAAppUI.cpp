@@ -35,28 +35,28 @@ DAAppUI::DAAppUI(SARibbonMainWindow* m, DACoreInterface* c) : DAUIInterface(m, c
 
 DAAppUI::~DAAppUI()
 {
-    qDeleteAll(m_cachePropertyDialog);
-    m_cachePropertyDialog.clear();
+    qDeleteAll(cachePropertyDialog);
+    cachePropertyDialog.clear();
 }
 
 QMainWindow* DAAppUI::getMainWindow() const
 {
-    return static_cast< QMainWindow* >(m_ribbonArea->app());
+    return static_cast< QMainWindow* >(ribbonArea->app());
 }
 
 DADockingAreaInterface* DAAppUI::getDockingArea()
 {
-    return m_dockingArea;
+    return dockingArea;
 }
 
 DARibbonAreaInterface* DAAppUI::getRibbonArea()
 {
-    return m_ribbonArea;
+    return ribbonArea;
 }
 
 DAStatusBarInterface* DAAppUI::getStatusBar()
 {
-    return m_statusBar;
+    return statusBar;
 }
 
 /**
@@ -72,7 +72,7 @@ DAStatusBarInterface* DAAppUI::getStatusBar()
 QJsonObject DAAppUI::getConfigValues(const QString& jsonConfig, QWidget* parent, const QString& cacheKey)
 {
     if (!cacheKey.isEmpty()) {
-        DAPropertyFormDialog* dialog = m_cachePropertyDialog.value(cacheKey, nullptr);
+        DAPropertyFormDialog* dialog = cachePropertyDialog.value(cacheKey, nullptr);
         if (!dialog) {
             // 缓存的对话框使用 mainWindow() 作为 parent，确保稳定的生命周期管理
             // 不使用调用方传入的 parent，因为 parent 可能为 nullptr 或临时窗口
@@ -82,7 +82,7 @@ QJsonObject DAAppUI::getConfigValues(const QString& jsonConfig, QWidget* parent,
                 delete dialog;
                 return QJsonObject();
             }
-            m_cachePropertyDialog[ cacheKey ] = dialog;
+            cachePropertyDialog[ cacheKey ] = dialog;
         }
 
         if (QDialog::Accepted == dialog->exec()) {
@@ -100,17 +100,17 @@ void DAAppUI::createUi()
     createActions();  // Actions第二个创建
     createDockingArea();
     createRibbonArea();
-    m_ribbonArea->setDockingArea(m_dockingArea);
+    ribbonArea->setDockingArea(dockingArea);
     createStatusBar();
-    m_statusBar->setAppDockingArea(m_dockingArea);
-    m_statusBar->setAppActions(m_actions);
+    statusBar->setAppDockingArea(dockingArea);
+    statusBar->setAppActions(actions);
 }
 
 void DAAppUI::addInfoLogMessage(const QString& msg, bool showInStatusBar)
 {
     daInfo.noquote() << msg;
     if (showInStatusBar) {
-        m_statusBar->showMessage(msg);
+        statusBar->showMessage(msg);
     }
 }
 
@@ -118,7 +118,7 @@ void DAAppUI::addWarningLogMessage(const QString& msg, bool showInStatusBar)
 {
     daWarning.noquote() << msg;
     if (showInStatusBar) {
-        m_statusBar->showMessage(msg);
+        statusBar->showMessage(msg);
     }
 }
 
@@ -126,7 +126,7 @@ void DAAppUI::addCriticalLogMessage(const QString& msg, bool showInStatusBar)
 {
     daCritical.noquote() << msg;
     if (showInStatusBar) {
-        m_statusBar->showMessage(msg);
+        statusBar->showMessage(msg);
     }
 }
 
@@ -149,57 +149,57 @@ DAAppCore* DAAppUI::getAppCore()
 
 DAAppActions* DAAppUI::getAppActions()
 {
-    return m_actions;
+    return actions;
 }
 
 DAAppCommand* DAAppUI::getAppCmd()
 {
-    return m_cmd;
+    return cmd;
 }
 
 DAAppDockingArea* DAAppUI::getAppDockingArea()
 {
-    return m_dockingArea;
+    return dockingArea;
 }
 
 DAAppRibbonArea* DAAppUI::getAppRibbonArea()
 {
-    return m_ribbonArea;
+    return ribbonArea;
 }
 
 DAAppStatusBar* DAAppUI::getAppStatusBar()
 {
-    return m_statusBar;
+    return statusBar;
 }
 
 void DAAppUI::createActions()
 {
-    m_actions = new DAAppActions(this);
-    m_actions->retranslateUi();  // 显示调用文字翻译
-    registeAction(m_actions);
+    actions = new DAAppActions(this);
+    actions->retranslateUi();  // 显示调用文字翻译
+    registeAction(actions);
 }
 
 void DAAppUI::createCmd()
 {
-    m_cmd = new DAAppCommand(this);
-    registeCommand(m_cmd);
+    cmd = new DAAppCommand(this);
+    registeCommand(cmd);
 }
 
 void DAAppUI::createDockingArea()
 {
-    m_dockingArea = new DAAppDockingArea(this);
-    registeExtend(m_dockingArea);
+    dockingArea = new DAAppDockingArea(this);
+    registeExtend(dockingArea);
 }
 
 void DAAppUI::createRibbonArea()
 {
-    m_ribbonArea = new DAAppRibbonArea(this);
-    registeExtend(m_ribbonArea);
+    ribbonArea = new DAAppRibbonArea(this);
+    registeExtend(ribbonArea);
 }
 
 void DAAppUI::createStatusBar()
 {
 
-    m_statusBar = new DAAppStatusBar(this);
-    registeExtend(m_statusBar);
+    statusBar = new DAAppStatusBar(this);
+    registeExtend(statusBar);
 }

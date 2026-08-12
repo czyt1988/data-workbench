@@ -16,7 +16,7 @@ class DAINTERFACE_API DAUIExtendInterface : public DABaseInterface
     Q_OBJECT
 public:
     DAUIExtendInterface(DAUIInterface* u);
-    ~DAUIExtendInterface();
+    virtual ~DAUIExtendInterface() override;
     // 获取DAAppUIInterface
     DAUIInterface* ui() const;
     // 发生语言变更时会调用此函数

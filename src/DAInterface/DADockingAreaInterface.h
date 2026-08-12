@@ -55,7 +55,7 @@ public:
 
 public:
     DADockingAreaInterface(DAUIInterface* u);
-    ~DADockingAreaInterface();
+    virtual ~DADockingAreaInterface() override;
 
     // 获取CDockManager
     ads::CDockManager* dockManager();
@@ -141,52 +141,28 @@ public:
     // 获取当前正在操作的数据
     virtual DAData getCurrentOperateData() const;
 
-    /**
-     * @brief 工作流节点dock
-     * @return
-     */
+    // 工作流节点dock
     virtual ads::CDockWidget* getWorkflowNodeListDock() const = 0;
 
-    /**
-     * @brief 信息窗口dock
-     * @return
-     */
+    // 信息窗口dock
     virtual ads::CDockWidget* getMessageLogDock() const = 0;
 
-    /**
-     * @brief 设置窗口dock
-     * @return
-     */
+    // 设置窗口dock
     virtual ads::CDockWidget* getSettingContainerDock() const = 0;
 
-    /**
-     * @brief 数据操作窗口dock
-     * @return
-     */
+    // 数据操作窗口dock
     virtual ads::CDockWidget* getDataOperateDock() const = 0;
 
-    /**
-     * @brief 绘图操作窗口dock
-     * @return
-     */
+    // 绘图操作窗口dock
     virtual ads::CDockWidget* getChartOperateDock() const = 0;
 
-    /**
-     * @brief 工作流操作窗口dock
-     * @return
-     */
+    // 工作流操作窗口dock
     virtual ads::CDockWidget* getWorkFlowOperateDock() const = 0;
 
-    /**
-     * @brief 数据管理窗口dock
-     * @return
-     */
+    // 数据管理窗口dock
     virtual ads::CDockWidget* getDataManageDock() const = 0;
 
-    /**
-     * @brief 图表管理窗口dock
-     * @return
-     */
+    // 图表管理窗口dock
     virtual ads::CDockWidget* getChartManageDock() const = 0;
 
     // 判断DataOperateWidget是否是在焦点

@@ -23,7 +23,7 @@ class DAAppChartOperateWidget : public DAChartOperateWidget
     Q_OBJECT
 public:
     DAAppChartOperateWidget(QWidget* parent = nullptr);
-    ~DAAppChartOperateWidget();
+    ~DAAppChartOperateWidget() override;
     // 设置data manager
     void setDataManager(DADataManager* mgr);
     // 添加一个Figure

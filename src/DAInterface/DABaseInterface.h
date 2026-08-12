@@ -1,4 +1,4 @@
-﻿#ifndef DABASEINTERFACE_H
+#ifndef DABASEINTERFACE_H
 #define DABASEINTERFACE_H
 #include <QObject>
 #include "DAInterfaceAPI.h"
@@ -11,7 +11,7 @@ class DAINTERFACE_API DABaseInterface : public QObject
     DA_DECLARE_PRIVATE(DABaseInterface)
 public:
     DABaseInterface(DACoreInterface* c, QObject* par = nullptr);
-    ~DABaseInterface();
+    virtual ~DABaseInterface() override;
     //返回核心接口指针
     DACoreInterface* core() const;
 };

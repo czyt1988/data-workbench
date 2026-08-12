@@ -46,7 +46,7 @@ class DAAppDockingArea : public DADockingAreaInterface
 public:
 public:
     DAAppDockingArea(DAUIInterface* u);
-    ~DAAppDockingArea();
+    virtual ~DAAppDockingArea() override;
 
     // 翻译
     void retranslateUi() override;
@@ -78,65 +78,34 @@ public:
     // 获取设置窗口,设置容器可以放置多个设置窗口
     virtual DASettingContainerWidget* getSettingContainerWidget() const override;
 
-    /**
-     * @brief 工作流节点dock
-     * @return
-     */
+    // 工作流节点dock
     ads::CDockWidget* getWorkflowNodeListDock() const override;
 
-    /**
-     * @brief 信息窗口dock
-     * @return
-     */
+    // 信息窗口dock
     ads::CDockWidget* getMessageLogDock() const override;
 
-    /**
-     * @brief 设置窗口dock
-     * @return
-     */
+    // 设置窗口dock
     ads::CDockWidget* getSettingContainerDock() const override;
 
-    /**
-     * @brief 数据操作窗口dock
-     * @return
-     */
+    // 数据操作窗口dock
     ads::CDockWidget* getDataOperateDock() const override;
 
-    /**
-     * @brief 绘图操作窗口dock
-     * @return
-     */
+    // 绘图操作窗口dock
     ads::CDockWidget* getChartOperateDock() const override;
 
-    /**
-     * @brief 工作流操作窗口dock
-     * @return
-     */
+    // 工作流操作窗口dock
     ads::CDockWidget* getWorkFlowOperateDock() const override;
 
-    /**
-     * @brief 数据管理窗口dock
-     * @return
-     */
+    // 数据管理窗口dock
     ads::CDockWidget* getDataManageDock() const override;
 
-    /**
-     * @brief 图表管理窗口dock
-     * @return
-     */
+    // 图表管理窗口dock
     ads::CDockWidget* getChartManageDock() const override;
 
-    /**
-     * @brief Agent 助手 dock
-     * @note base DADockingAreaInterface 无 getAgentDock() 虚函数，故不可 override
-     * @return
-     */
+    // Agent 助手 dock
     ads::CDockWidget* getAgentDock() const;
 
-    /**
-     * @brief 获取 Agent 助手 Dock Widget（原始 QWidget）
-     * @return
-     */
+    // 获取 Agent 助手 Dock Widget（原始 QWidget）
     DAAgentDockWidget* getAgentDockWidget() const;
 
     /**

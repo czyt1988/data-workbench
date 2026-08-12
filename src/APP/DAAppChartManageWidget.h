@@ -10,7 +10,7 @@ class DAAppChartManageWidget : public DAChartManageWidget
     Q_OBJECT
 public:
     DAAppChartManageWidget(QWidget* parent = nullptr);
-    ~DAAppChartManageWidget();
+    virtual ~DAAppChartManageWidget() override;
 };
 
 }  // end DA

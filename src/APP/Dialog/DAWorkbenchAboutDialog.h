@@ -13,7 +13,7 @@ class DAWorkbenchAboutDialog : public QDialog
 
 public:
     explicit DAWorkbenchAboutDialog(QWidget *parent = nullptr);
-    ~DAWorkbenchAboutDialog();
+    virtual ~DAWorkbenchAboutDialog() override;
 private:
     void makeAboutInfo();
 private:

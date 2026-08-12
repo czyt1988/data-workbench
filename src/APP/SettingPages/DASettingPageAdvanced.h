@@ -22,12 +22,12 @@ class DASettingPageAdvanced : public DAAbstractSettingPage
 
 public:
     explicit DASettingPageAdvanced(QWidget* parent = nullptr);
-    ~DASettingPageAdvanced();
+    virtual ~DASettingPageAdvanced() override;
     virtual void apply() override;
     virtual QString getSettingPageTitle() const override;
     virtual QIcon getSettingPageIcon() const override;
     bool setAppConfig(DAAppConfig* p);
-private slots:
+private Q_SLOTS:
     void onDoubleSpinBoxWorkflowTimeoutValueChanged(double v);
     void onSpinBoxRecentFilesMaxValueChanged(int v);
     void onSpinBoxDumpRetentionDaysValueChanged(int v);

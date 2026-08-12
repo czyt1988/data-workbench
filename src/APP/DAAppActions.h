@@ -14,7 +14,7 @@ class DAAppActions : public DAActionsInterface
     Q_OBJECT
 public:
     DAAppActions(DAUIInterface* u);
-    ~DAAppActions();
+    virtual ~DAAppActions() override;
     // 发生语言变更时会调用此函数
     void retranslateUi() override;
 

@@ -1,4 +1,4 @@
-﻿#ifndef DADATAMANAGERINTERFACE_H
+#ifndef DADATAMANAGERINTERFACE_H
 #define DADATAMANAGERINTERFACE_H
 #include "DAInterfaceAPI.h"
 #include <QRegularExpression>
@@ -18,7 +18,7 @@ class DAINTERFACE_API DADataManagerInterface : public DABaseInterface
     DA_DECLARE_PRIVATE(DADataManagerInterface)
 public:
     DADataManagerInterface(DACoreInterface* c, QObject* par = nullptr);
-    ~DADataManagerInterface();
+    virtual ~DADataManagerInterface() override;
     // 获取datamanager指针
     DADataManager* dataManager() const;
     // 添加数据
@@ -35,30 +35,12 @@ public:
     // 获取数据量
     virtual int getDataCount() const;
 
-    /**
-     * @brief 获取当前选中的数据，此函数要基于界面数据管理器选择的数据返回
-     *
-     * 当前选中的数据是指数据管理窗口正在选中的数据，如果没有选中任何数据，返回一个空列表
-     * @return
-     */
+    // 获取当前选中的数据，此函数要基于界面数据管理器选择的数据返回
     virtual QList< DAData > getSelectDatas() const = 0;
-    /**
-     * @brief 获取当前正在操作的数据，当前正在操作的数据是指当前正在打开的表格所对应的数据
-     *
-     * 当前正在操作的数据是指数据操作表格正在操作的数据，如果当前没有打开任何数据，此函数返回一个空的DAData
-     * @return
-     */
+    // 获取当前正在操作的数据，当前正在操作的数据是指当前正在打开的表格所对应的数据
     virtual DAData getOperateData() const = 0;
 
-    /**
-     * @brief 获取当前正在操作窗口操作的列名
-     *
-     * 如果用户当前正在操作一个表格，且选中了某几列，那么此函数会返回选中的列名
-     *
-     * 结合@ref getOperateData 和此函数，即可获取当前用户正在操作的序列
-     * @sa getOperateData
-     * @return 返回选中的列索引，如果没有选中任何列，返回空列表
-     */
+    // 获取当前正在操作窗口操作的列名
     virtual QList< int > getOperateDataSeries() const = 0;
     // 参数的索引
     int getDataIndex(const DAData& d) const;

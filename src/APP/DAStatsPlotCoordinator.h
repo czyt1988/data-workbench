@@ -42,15 +42,7 @@ public:
     DAStatsPlotCoordinator();
     ~DAStatsPlotCoordinator();
 
-    /**
-     * @brief Execute a statistical plot orchestration.
-     * @param plotType Plot type identifier ("histplot", "kdeplot_1d", etc.)
-     * @param params Parameter JSON (column, hue, bins, kde, etc.)
-     * @param fig Target FigureWidget
-     * @param chart Target ChartWidget
-     * @param data Data source
-     * @return true on success
-     */
+    // Execute a statistical plot orchestration
     bool execute(const QString& plotType, const QJsonObject& params,
                  DA::DAFigureWidget* fig, DA::DAChartWidget* chart,
                  const DA::DAData& data);

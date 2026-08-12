@@ -1,4 +1,4 @@
-﻿#ifndef DAAPPUI_H
+#ifndef DAAPPUI_H
 #define DAAPPUI_H
 #include "DAUIInterface.h"
 namespace DA
@@ -18,7 +18,7 @@ class DAAppUI : public DAUIInterface
     Q_OBJECT
 public:
     DAAppUI(SARibbonMainWindow* m, DACoreInterface* c);
-    ~DAAppUI();
+    virtual ~DAAppUI() override;
 
     // 获取主程序
     virtual QMainWindow* getMainWindow() const override;
@@ -74,12 +74,12 @@ protected:
     void createStatusBar();
 
 public:
-    DAAppActions* m_actions;
-    DAAppCommand* m_cmd;
-    DAAppDockingArea* m_dockingArea;
-    DAAppRibbonArea* m_ribbonArea;
-    DAAppStatusBar* m_statusBar;
-    QHash< QString, DAPropertyFormDialog* > m_cachePropertyDialog;
+    DAAppActions* actions;
+    DAAppCommand* cmd;
+    DAAppDockingArea* dockingArea;
+    DAAppRibbonArea* ribbonArea;
+    DAAppStatusBar* statusBar;
+    QHash< QString, DAPropertyFormDialog* > cachePropertyDialog;
 };
 }  // namespace DA
 

@@ -26,7 +26,7 @@ class DAAppPluginManager : public DAPluginManager
     Q_OBJECT
 public:
     DAAppPluginManager(QObject* p = nullptr);
-    ~DAAppPluginManager();
+    ~DAAppPluginManager() override;
 
     // 初始化加载所有插件
     virtual void loadAllPlugins(DACoreInterface* c) override;

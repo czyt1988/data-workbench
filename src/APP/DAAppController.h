@@ -81,7 +81,7 @@ public:
 
 public:
     DAAppController(QObject* par = nullptr);
-    ~DAAppController();
+    ~DAAppController() override;
     // 设置AppMainWindow
     DAAppController& setAppMainWindow(AppMainWindow* mainWindow);
     // 设置core

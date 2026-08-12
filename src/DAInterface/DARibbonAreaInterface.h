@@ -1,4 +1,4 @@
-﻿#ifndef DARIBBONAREAINTERFACE_H
+#ifndef DARIBBONAREAINTERFACE_H
 #define DARIBBONAREAINTERFACE_H
 #include "DAInterfaceAPI.h"
 #include "DAGlobals.h"
@@ -26,7 +26,7 @@ class DAINTERFACE_API DARibbonAreaInterface : public DAUIExtendInterface
     DA_DECLARE_PRIVATE(DARibbonAreaInterface)
 public:
     DARibbonAreaInterface(DAUIInterface* u);
-    ~DARibbonAreaInterface();
+    virtual ~DARibbonAreaInterface() override;
 
 public:
     // 针对ribbon的操作

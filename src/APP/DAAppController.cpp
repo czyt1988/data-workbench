@@ -407,9 +407,9 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToDatetime, onActionCastToDatetimeTriggered);
 #if DA_ENABLE_PYTHON
     // 不知为何使用函数指针无法关联信号和槽
-    //  connect(m_comboxColumnTypes, &DAPyDTypeComboBox::currentDTypeChanged, this,&DAAppRibbonArea::onComboxColumnTypesCurrentDTypeChanged);
+    //  connect(mComboxColumnTypes, &DAPyDTypeComboBox::currentDTypeChanged, this,&DAAppRibbonArea::onComboxColumnTypesCurrentDTypeChanged);
     //  QObject::connect: signal not found in DAPyDTypeComboBox
-    connect(mRibbon->m_comboxColumnTypes,
+    connect(mRibbon->mComboxColumnTypes,
             &DAPyDTypeComboBox::currentDTypeChanged,
             this,
             &DAAppController::onComboxColumnTypesCurrentDTypeChanged);
@@ -419,15 +419,15 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionClearStyleSelected, onActionClearStyleSelectedTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionClearStyleAll, onActionClearStyleAllTriggered);
 #if DA_ENABLE_PYTHON
-    connect(mRibbon->m_btnTableFillColor,
+    connect(mRibbon->mBtnTableFillColor,
             &SARibbonColorToolButton::colorChanged,
             this,
             &DAAppController::onTableStyleFillColorChanged);
-    connect(mRibbon->m_widgetTableFont,
+    connect(mRibbon->mWidgetTableFont,
             &DAFontEditPannelWidget::currentFontChanged,
             this,
             &DAAppController::onTableStyleFontChanged);
-    connect(mRibbon->m_widgetTableFont,
+    connect(mRibbon->mWidgetTableFont,
             &DAFontEditPannelWidget::currentFontColorChanged,
             this,
             &DAAppController::onTableStyleFontColorChanged);
@@ -3188,20 +3188,20 @@ void DAAppController::onTableStyleCurrentChanged(const DA::DATableCellStyle& sty
 {
 #if DA_ENABLE_PYTHON
     // 底色按钮
-    if (mRibbon && mRibbon->m_btnTableFillColor) {
-        QSignalBlocker block(mRibbon->m_btnTableFillColor);
+    if (mRibbon && mRibbon->mBtnTableFillColor) {
+        QSignalBlocker block(mRibbon->mBtnTableFillColor);
         if (style.backgroundValid()) {
-            mRibbon->m_btnTableFillColor->setColor(style.background().color());
+            mRibbon->mBtnTableFillColor->setColor(style.background().color());
         }
     }
     // 字体面板
-    if (mRibbon && mRibbon->m_widgetTableFont) {
-        QSignalBlocker block(mRibbon->m_widgetTableFont);
+    if (mRibbon && mRibbon->mWidgetTableFont) {
+        QSignalBlocker block(mRibbon->mWidgetTableFont);
         if (style.fontValid()) {
-            mRibbon->m_widgetTableFont->setCurrentFont(style.font());
+            mRibbon->mWidgetTableFont->setCurrentFont(style.font());
         }
         if (style.foregroundValid()) {
-            mRibbon->m_widgetTableFont->setCurrentFontColor(style.foreground());
+            mRibbon->mWidgetTableFont->setCurrentFontColor(style.foreground());
         }
     }
 #else

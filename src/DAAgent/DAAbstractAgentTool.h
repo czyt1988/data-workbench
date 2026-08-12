@@ -15,21 +15,11 @@ class DAAgent_API DAAbstractAgentTool
 {
 public:
     virtual ~DAAbstractAgentTool() = default;
-    /**
-     * @brief 获取工具的 OpenAI function 规格描述
-     * @return 工具规格 JSON
-     */
+    // 获取工具的 OpenAI function 规格描述
     virtual QJsonObject getToolSpec() const = 0;
-    /**
-     * @brief 执行工具
-     * @param params 工具调用参数 JSON
-     * @return 工具执行结果 JSON
-     */
+    // 执行工具
     virtual QJsonObject execute(const QJsonObject& params) = 0;
-    /**
-     * @brief 获取拥有此工具的模块名称
-     * @return 模块名称
-     */
+    // 获取拥有此工具的模块名称
     virtual QString getOwnerModule() const = 0;
 };
 } // namespace DA

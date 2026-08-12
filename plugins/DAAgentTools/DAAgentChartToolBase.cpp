@@ -1,5 +1,5 @@
 // DAAgentChartToolBase.cpp —— 图表方法实现（plan-04 从 DAAgentToolBase.h 搬来，
-// 实现体逐字照抄不改；依赖 m_core->getUiInterface()->getDockingArea()->
+// 实现体逐字照抄不改；依赖 mCore->getUiInterface()->getDockingArea()->
 // getChartOperateWidget() 链路）。
 #include "DAAgentChartToolBase.h"
 
@@ -7,8 +7,8 @@ namespace DA
 {
 DAChartOperateWidget* DAAgentChartToolBase::chartOperateWidget() const
 {
-    if (!m_core) return nullptr;
-    auto* ui = m_core->getUiInterface();
+    if (!mCore) return nullptr;
+    auto* ui = mCore->getUiInterface();
     if (!ui) return nullptr;
     auto* dock = ui->getDockingArea();
     if (!dock) return nullptr;

@@ -512,7 +512,7 @@ QString DAAppProject::makeDataArchiveFilePath(const QString& dataName)
  */
 void DAAppProject::setPluginMgr(DAAppPluginManager* plugin)
 {
-    m_pluginMgr = plugin;
+    mPluginMgr = plugin;
 }
 
 /**
@@ -700,8 +700,8 @@ bool DAAppProject::executeSave(DAZipArchiveThreadWrapper* archive, const QString
     makeSaveAgentSessionsTask(archive);
 
     // 插件
-    if (m_pluginMgr) {
-        const QList< DAAbstractPlugin* > plugins = m_pluginMgr->getAllPlugins();
+    if (mPluginMgr) {
+        const QList< DAAbstractPlugin* > plugins = mPluginMgr->getAllPlugins();
         for (DAAbstractPlugin* plugin : plugins) {
             auto task = plugin->createArchiveTask(true);
             if (task) {
@@ -805,8 +805,8 @@ bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString
     }
 
     // 插件
-    if (m_pluginMgr) {
-        const QList< DAAbstractPlugin* > plugins = m_pluginMgr->getAllPlugins();
+    if (mPluginMgr) {
+        const QList< DAAbstractPlugin* > plugins = mPluginMgr->getAllPlugins();
         for (DAAbstractPlugin* plugin : std::as_const(plugins)) {
             auto taskPlugin = plugin->createArchiveTask(false);
             if (taskPlugin) {

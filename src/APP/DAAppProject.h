@@ -35,7 +35,7 @@ class DAAppProject : public DAProjectInterface
 	Q_OBJECT
 public:
 	DAAppProject(DACoreInterface* c, QObject* p = nullptr);
-	~DAAppProject();
+	virtual ~DAAppProject() override;
 	// 工作流操作窗口
 	DAPyWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
 	// 数据操作窗口
@@ -65,7 +65,7 @@ public Q_SLOTS:
 	// 加载工程，加载完成后需要发射projectLoaded信号
 	virtual bool load(const QString& path) override;
 	// 请求保存,会弹出保存对话框让用户选择保存路径保存
-	virtual bool requestSave();
+	virtual bool requestSave() override;
 
 protected:
 	// 保存系统信息
@@ -121,7 +121,7 @@ private:
 	DAXmlHelper mXml;
 	std::unique_ptr< QTemporaryDir > mTempDir;
 	DAChartItemsManager mChartItemManager;
-	DAAppPluginManager* m_pluginMgr { nullptr };
+	DAAppPluginManager* mPluginMgr { nullptr };
 };
 
 }  // namespace DA

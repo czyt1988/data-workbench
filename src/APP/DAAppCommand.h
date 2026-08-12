@@ -1,4 +1,4 @@
-﻿#ifndef DAAPPCOMMAND_H
+#ifndef DAAPPCOMMAND_H
 #define DAAPPCOMMAND_H
 #include "DACommandInterface.h"
 #include <QUndoStack>
@@ -18,7 +18,7 @@ class DAAppCommand : public DACommandInterface
     Q_OBJECT
 public:
     DAAppCommand(DAUIInterface* u);
-    ~DAAppCommand();
+    virtual ~DAAppCommand() override;
     // 开始一个数据操作命令，此命令会推入到当前激活的数据操作窗口的回退栈中
     virtual DADataAbstractUndoCommand* beginDataOperateCommand(const DAData& data,
                                                                const QString& text,
@@ -38,7 +38,7 @@ public:
 
 private:
     QPointer< QUndoStack > mDataManagerStack;
-    std::unique_ptr< DADataAbstractUndoCommand > m_dataOperateCommand;  ///< 记录批量操作的DADataAbstractUndoCommand
+    std::unique_ptr< DADataAbstractUndoCommand > mDataOperateCommand;  ///< 记录批量操作的DADataAbstractUndoCommand
 };
 }  // namespace DA
 

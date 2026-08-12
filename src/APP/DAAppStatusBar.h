@@ -13,9 +13,10 @@ class DAAppActions;
 
 class DAAppStatusBar : public DAStatusBarInterface
 {
+    Q_OBJECT
 public:
 	explicit DAAppStatusBar(DAUIInterface* u);
-	~DAAppStatusBar();
+	virtual ~DAAppStatusBar() override;
 	// 发生语言变更时会触发此函数
 	virtual void retranslateUi() override;
 	//
@@ -32,8 +33,8 @@ public:
 	// 获取当前状态
 	virtual bool isProgressBarVisible() const override;
 	// 设置是否显示switch button 组，switch button组用于快速切换绘图、数据、工作流三个部分，在一些场景需要隐藏
-	virtual void setSwitchButtonVisible(DA::DAWorkbenchFeatureType type, bool visible);
-	virtual bool isSwitchButtonVisible(DA::DAWorkbenchFeatureType type) const;
+	virtual void setSwitchButtonVisible(DA::DAWorkbenchFeatureType type, bool visible) override;
+	virtual bool isSwitchButtonVisible(DA::DAWorkbenchFeatureType type) const override;
 	// 获取app
 	AppMainWindow* app() const;
 	//
@@ -46,13 +47,13 @@ private:
 	void buildStatusBar(AppMainWindow* mainWindow);
 
 private:
-	AppMainWindow* m_app { nullptr };
-	QStatusBar* m_statusBar { nullptr };
-	DAStatusBarWidget* m_statusBarWidget { nullptr };
-	DAAppDockingArea* m_dockingArea { nullptr };
-	DAAppActions* m_actions { nullptr };
-	QToolButton* m_showLeftSideBarButton { nullptr };
-	QToolButton* m_showRightSideBarButton { nullptr };
+	AppMainWindow* mApp { nullptr };
+	QStatusBar* mStatusBar { nullptr };
+	DAStatusBarWidget* mStatusBarWidget { nullptr };
+	DAAppDockingArea* mDockingArea { nullptr };
+	DAAppActions* mActions { nullptr };
+	QToolButton* mShowLeftSideBarButton { nullptr };
+	QToolButton* mShowRightSideBarButton { nullptr };
 };
 }  // end DA
 #endif  // DAAPPSTATUSBAR_H

@@ -1,4 +1,4 @@
-﻿#ifndef DAEXPORTTOPNGSETTINGDIALOG_H
+#ifndef DAEXPORTTOPNGSETTINGDIALOG_H
 #define DAEXPORTTOPNGSETTINGDIALOG_H
 
 #include <QDialog>
@@ -17,12 +17,12 @@ class DAExportToPngSettingDialog : public QDialog
 
 public:
 	explicit DAExportToPngSettingDialog(QWidget* parent = nullptr);
-	~DAExportToPngSettingDialog();
+	virtual ~DAExportToPngSettingDialog() override;
 	// 获取保存的文件路径
 	QString getSelectSaveFilePath() const;
 	// 获取dpi
 	int getDPI() const;
-private slots:
+private Q_SLOTS:
 	void onButtonGroupDPITypeButtonClicked(QAbstractButton* button);
 	void onPushButtonExportClicked();
 

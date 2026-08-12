@@ -1,4 +1,4 @@
-﻿#ifndef DAAPPSETTINGDIALOG_H
+#ifndef DAAPPSETTINGDIALOG_H
 #define DAAPPSETTINGDIALOG_H
 #include "DAGuiAPI.h"
 #include <QDialog>
@@ -19,7 +19,7 @@ class DAAppSettingDialog : public DASettingDialog
 public:
     explicit DAAppSettingDialog(QWidget* parent = nullptr);
     void buildUI(DAAppConfig* config);
-    ~DAAppSettingDialog();
+    virtual ~DAAppSettingDialog() override;
 };
 }
 

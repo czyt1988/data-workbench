@@ -15,7 +15,7 @@ class DADataWorkFlow : public DAPyWorkFlow
 {
 public:
     explicit DADataWorkFlow();
-    ~DADataWorkFlow();
+    virtual ~DADataWorkFlow() override;
     //
 };
 }  // namespace DA

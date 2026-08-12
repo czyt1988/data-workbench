@@ -24,7 +24,7 @@ class DASettingPageGeneral : public DAAbstractSettingPage
 
 public:
     explicit DASettingPageGeneral(QWidget* parent = nullptr);
-    ~DASettingPageGeneral();
+    virtual ~DASettingPageGeneral() override;
     // 应用设置
     virtual void apply() override;
     // 设置页的标题
@@ -33,7 +33,7 @@ public:
     virtual QIcon getSettingPageIcon() const override;
     // 设置配置
     bool setAppConfig(DAAppConfig* p);
-private slots:
+private Q_SLOTS:
     void onButtonGroupRibbonStyleClicked(int id);
     void onComboBoxRibbonThemeCurrentIndexChanged(int index);
     void onComboBoxLanguageCurrentIndexChanged(int index);

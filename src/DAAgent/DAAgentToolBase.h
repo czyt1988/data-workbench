@@ -24,18 +24,18 @@ class DAAgent_API DAAgentToolBase : public QObject, public DAAbstractAgentTool
     Q_OBJECT
 public:
     DAAgentToolBase(DACoreInterface* core, QObject* parent = nullptr)
-        : QObject(parent), DAAbstractAgentTool(), m_core(core) {}
+        : QObject(parent), DAAbstractAgentTool(), mCore(core) {}
 
-    /// @brief 返回核心接口指针
-    DACoreInterface* core() const { return m_core; }
+    // 返回核心接口指针
+    DACoreInterface* core() const { return mCore; }
     /// @copydoc DAAbstractAgentTool::getOwnerModule
     QString getOwnerModule() const override { return "DAAgent"; }
 
 protected:
-    /// @brief 获取数据管理器接口
+    // 获取数据管理器接口
     DADataManagerInterface* dataMgr() const
     {
-        return m_core ? m_core->getDataManagerInterface() : nullptr;
+        return mCore ? mCore->getDataManagerInterface() : nullptr;
     }
 
     /// @brief 按名称查找数据，返回 DAData（按值）
@@ -80,7 +80,7 @@ protected:
     }
 
 protected:
-    /// @brief 核心接口指针
-    DACoreInterface* m_core;
+    ///< 核心接口指针
+    DACoreInterface* mCore;
 };
 }  // namespace DA

@@ -1,4 +1,4 @@
-﻿#ifndef DAUIINTERFACE_H
+#ifndef DAUIINTERFACE_H
 #define DAUIINTERFACE_H
 #include "DAInterfaceAPI.h"
 #include "DAGlobals.h"
@@ -28,7 +28,7 @@ class DAINTERFACE_API DAUIInterface : public DABaseInterface
     DA_DECLARE_PRIVATE(DAUIInterface)
 public:
     DAUIInterface(SARibbonMainWindow* m, DACoreInterface* c);
-    ~DAUIInterface();
+    virtual ~DAUIInterface() override;
 
     // 获取主窗口
     SARibbonMainWindow* mainWindow() const;

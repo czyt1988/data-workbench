@@ -22,7 +22,7 @@ class DAINTERFACE_API DAProjectInterface : public DABaseInterface
     DA_DECLARE_PRIVATE(DAProjectInterface)
 public:
     DAProjectInterface(DACoreInterface* c, QObject* par = nullptr);
-    ~DAProjectInterface();
+    virtual ~DAProjectInterface() override;
     // 是否为空
     bool isEmpty() const;
     // 设置dock接口
@@ -55,30 +55,10 @@ public:
 
 public Q_SLOTS:
 
-    /**
-     * @brief 加载工程
-     *
-     * 实际实现时，应该调用@sa setProjectPath 记录工程路径
-     *
-     * 开始加载时应该发射@sa projectBeginLoad 信号
-     *
-     * 加载成功后需要发射@sa projectLoaded 信号
-     * @param path
-     * @return
-     */
+    // 加载工程
     virtual bool load(const QString& path) = 0;
 
-    /**
-     * @brief 保存工程
-     *
-     * 实际实现时，应该调用@sa setProjectPath 记录工程路径
-     *
-     * 开始保存时应该发射@sa projectBeginSave 信号
-     *
-     * 保存成功后需要发射@sa projectSaved 信号
-     * @param path
-     * @return
-     */
+    // 保存工程
     virtual bool save(const QString& path) = 0;
     // 清空工程
     virtual void clear();

@@ -1,4 +1,4 @@
-﻿#ifndef FCPLUGINMANAGERDIALOG_H
+#ifndef FCPLUGINMANAGERDIALOG_H
 #define FCPLUGINMANAGERDIALOG_H
 
 #include <QtWidgets/QDialog>
@@ -18,7 +18,7 @@ class DAPluginManagerDialog : public QDialog
 
 public:
     explicit DAPluginManagerDialog(DAAppPluginManager* mgr, QWidget* parent = nullptr);
-    ~DAPluginManagerDialog();
+    virtual ~DAPluginManagerDialog() override;
 
 protected:
     void changeEvent(QEvent* e);

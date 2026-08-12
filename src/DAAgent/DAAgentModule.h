@@ -10,6 +10,7 @@
 #include <QJsonObject>
 #include <QVariantList>
 #include "DAAbstractAgentTool.h"
+#include "DAGlobals.h"
 
 namespace DA
 {
@@ -28,21 +29,12 @@ class DAAgent_API DAAgentModule : public DAAgentInterface
 {
     Q_OBJECT
 public:
-    /**
-     * @brief 构造函数
-     * @param core 核心接口指针
-     * @param parent 父对象
-     */
+    // 构造函数
     explicit DAAgentModule(DACoreInterface* core, QObject* parent = nullptr);
-    /**
-     * @brief 析构函数
-     */
-    ~DAAgentModule();
+    // 析构函数
+    virtual ~DAAgentModule() override;
 
-    /**
-     * @brief 使用核心接口初始化模块
-     * @param core 核心接口指针
-     */
+    // 使用核心接口初始化模块
     void initialize(DACoreInterface* core);
 
     /// @copydoc DAAgentInterface::registerTool
@@ -89,75 +81,33 @@ public:
     void setCurrentProjectPath(const QString& path) override;
 
     // ---- 会话管理辅助方法（非接口，plan-03 声明归属本计划） ----
-    /**
-     * @brief 新建会话（UI "+" 按钮用）—— createSession + emit sessionCreated
-     *
-     * MAJOR3（round-3）：与 createSession 区分——
-     * sendMessage 自动建会话调 createSession（不 emit sessionCreated，避免 clearChat 擦除用户消息）；
-     * UI "+" 调 newSession（emit sessionCreated 触发 plan-04 onSessionCreated → clearChat）。
-     */
+    // 新建会话（UI "+" 按钮用）—— createSession + emit sessionCreated
     void newSession() override;
-    /**
-     * @brief 清理旧会话（配置 key 由 plan-06 定义，调用点由 plan-05 接入）
-     */
+    // 清理旧会话（配置 key 由 plan-06 定义，调用点由 plan-05 接入）
     void cleanupSessions();
-    /**
-     * @brief 包装 store.setSessionProjectPath，供 plan-05 saveAs/save 成功后更新当前会话工程路径
-     *
-     * 契约5：同步更新 m_currentProjectPath + store.setSessionProjectPath + store.setLastActive。
-     * 保持 Module 方法（不上接口）——由 DAAppController qobject_cast 调用。
-     */
+    // 包装 store.setSessionProjectPath，供 plan-05 saveAs/save 成功后更新当前会话工程路径
     void setSessionProjectPathForCurrent(const QString& path);
-    /**
-     * @brief 启动/打开工程后初始化会话 UI——填充下拉列表但不自动恢复上次会话
-     *
-     * 始终以全新对话开始：清空 m_currentSessionId 并 emit sessionCleared，
-     * 历史会话填充到下拉供用户手动切换。
-     */
+    // 启动/打开工程后初始化会话 UI——填充下拉列表但不自动恢复上次会话
     void restoreLastActiveSession();
 
 private:
-    DACoreInterface* m_core;
-    DAAgentBridge* m_bridge = nullptr;
-    QMap<QString, DAAbstractAgentTool*> m_tools;        // tool name → impl
-    QHash<QString, QString> m_systemPrompts;            // prompt name → content
-    // ---- 会话持久化成员（plan-03） ----
-    DAAgentSessionStore* m_sessionStore = nullptr;  // 非 QObject 无参构造；initialize() 内 new、析构显式 delete（CRITICAL1）
-    QString m_currentSessionId;                     // 当前活跃会话
-    QString m_currentProjectPath;                   // 由 DAAppController::setCurrentProjectPath 注入（plan-05）；空=自由会话
-    QQueue<QString> m_pendingToolCallUuids;         // 契约6：待配对的 tool_call/question 记录 uuid 队列（FIFO），供后续 tool_result/answer 配对 tool_call_id
-    bool m_agentBusy = false;                       // 由 agentBusy(bool)/agentDone 信号维护，switchSession 入口守忙碌态
-    // 懒启动→ready 串联 load_session 的缓存（替代一次性 QMetaObject::Connection，避免多次连接泄漏）
-    QString m_pendingLoadSessionId;
-    QJsonArray m_pendingLoadMessages;
-    // 忙碌态切换排队：switchSession 遇 busy 时 requestStop 并缓存，agentDone 后续切
-    QString m_pendingSwitchSessionId;
-    // Helper methods（plan-04 填充实现）
+    // Helper methods
     void connectSignals();
     void startAgentInternal();
     QString assembleSystemPrompt() const;
     QJsonArray assembleToolSpecs() const;
-    // Python 解释器与 agent 脚本路径解析（plan-04 §4）
     QString detectPythonExePath() const;
     QString detectAgentScriptPath() const;
     QString detectSystemPromptPath() const;
-    // ---- 会话持久化私有辅助方法（plan-03） ----
-    /// 构造 tool_call 记录并追加写盘，返回本条记录 uuid（供 m_pendingToolCallUuids 入队）
     QString appendToolCallRecord(const QString& sid, const QString& tool, const QJsonObject& args);
-    /// 构造 tool_result 记录并追加写盘（content 为明文 QString）
     void appendToolResultRecord(const QString& sid, const QString& toolCallId, const QString& content);
-    /// 构造 assistant 记录并追加写盘
     void appendAssistantRecord(const QString& sid, const QString& text, const QJsonArray& toolCalls);
-    /// 构造 usage 记录并追加写盘
     void appendUsageRecord(const QString& sid, int inT, int outT, int tot, const QString& src);
-    /// 构造 user 记录对象（不写盘，供调用方 appendRecord）
     QJsonObject makeUserRecord(const QString& text) const;
-    /// 生成 sessionListChanged 的 payload：按 m_currentProjectPath 过滤，每元素 QVariantMap{id,title}
     QVariantList listSessionsForUI() const;
-    /// 从 agent-config.ini 读 context_window（默认 1048576），供 tokenUsageUpdated 与切换回放复用
     int readContextWindow() const;
-    /// 扫描会话持久化 usage 记录，取最后一条 emit tokenUsageUpdated；无记录则 emit 全 0
-    /// （供 switchSession 切换后回放 token 统计，避免 UI 残留上一会话数值）
     void emitTokenUsageForSession(const QString& sid);
+
+    DA_DECLARE_PRIVATE(DAAgentModule)
 };
 } // namespace DA

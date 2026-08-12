@@ -266,6 +266,9 @@ void DAAppDockingArea::buildWorkflowAboutWidgets()
     project->setDockingAreaInterface(this);
 }
 
+/**
+ * @brief 创建绘图相关窗口（绘图操作窗口、绘图管理窗口）
+ */
 void DAAppDockingArea::buildChartAboutWidgets()
 {
     DADataManager* dmgr = mDataMgr->dataManager();
@@ -282,6 +285,9 @@ void DAAppDockingArea::buildChartAboutWidgets()
     mChartManageWidget->setChartOperateWidget(mChartOperateWidget);
 }
 
+/**
+ * @brief 创建数据相关窗口（数据操作窗口、数据管理窗口）
+ */
 void DAAppDockingArea::buildDataAboutWidgets()
 {
     DADataManager* dmgr = mDataMgr->dataManager();
@@ -293,6 +299,9 @@ void DAAppDockingArea::buildDataAboutWidgets()
     mDataManageWidget->setDataManager(dmgr);
 }
 
+/**
+ * @brief 创建其他相关窗口（设置窗口、日志窗口）
+ */
 void DAAppDockingArea::buildOtherWidgets()
 {
     // 右侧附属区 - 添加设置视图
@@ -303,6 +312,9 @@ void DAAppDockingArea::buildOtherWidgets()
     mMessageLogViewWidget->setObjectName(QStringLiteral("da_messageLogViewWidget"));
 }
 
+/**
+ * @brief 初始化信号槽连接
+ */
 void DAAppDockingArea::initConnection()
 {
     // DADataManageWidget的数据双击，在DADataOperateWidget中显示
@@ -315,21 +327,38 @@ void DAAppDockingArea::initConnection()
     mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->setWorkFlowOperateWidget(mWorkFlowOperateWidget);
 }
 
+/**
+ * @brief 数据管理窗口数据双击回调
+ * @param data 数据
+ */
 void DAAppDockingArea::onDataManageWidgetDataDbClicked(const DA::DAData& data)
 {
     showDataOperateWidget(data);
 }
 
+/**
+ * @brief 数据管理窗口数据系列双击回调
+ * @param data 数据
+ * @param name 名称
+ */
 void DAAppDockingArea::onDataManageWidgetDataSeriesDbClicked(const DAData& data, const QString& name)
 {
     showDataOperateWidget(data, name);
 }
 
+/**
+ * @brief 获取图表管理窗口 dock
+ * @return
+ */
 ads::CDockWidget* DAAppDockingArea::getChartManageDock() const
 {
     return mChartManageDock;
 }
 
+/**
+ * @brief 切换左侧边栏（工作流节点、图表管理、数据管理）的显示/隐藏
+ * @param show 是否显示
+ */
 void DAAppDockingArea::toggleLeftSidebar(bool show)
 {
     // 左侧边栏包含的dock widgets
@@ -352,6 +381,10 @@ void DAAppDockingArea::toggleLeftSidebar(bool show)
     }
 }
 
+/**
+ * @brief 切换右侧边栏（设置、日志）的显示/隐藏
+ * @param show 是否显示
+ */
 void DAAppDockingArea::toggleRightSidebar(bool show)
 {
     // 右侧边栏包含的dock widgets
@@ -374,6 +407,10 @@ void DAAppDockingArea::toggleRightSidebar(bool show)
     }
 }
 
+/**
+ * @brief 检查左侧边栏是否至少有一个dock可见
+ * @return
+ */
 bool DAAppDockingArea::isLeftSidebarVisible() const
 {
     // 检查左侧边栏是否至少有一个dock是可见的
@@ -381,6 +418,10 @@ bool DAAppDockingArea::isLeftSidebarVisible() const
            || (mChartManageDock && !mChartManageDock->isClosed()) || (mDataManageDock && !mDataManageDock->isClosed());
 }
 
+/**
+ * @brief 检查右侧边栏是否至少有一个dock可见
+ * @return
+ */
 bool DAAppDockingArea::isRightSidebarVisible() const
 {
     // 检查右侧边栏是否至少有一个dock是可见的
@@ -388,46 +429,82 @@ bool DAAppDockingArea::isRightSidebarVisible() const
            || (mMessageLogDock && !mMessageLogDock->isClosed());
 }
 
+/**
+ * @brief 获取数据管理窗口 dock
+ * @return
+ */
 ads::CDockWidget* DAAppDockingArea::getDataManageDock() const
 {
     return mDataManageDock;
 }
 
+/**
+ * @brief 获取工作流操作窗口 dock
+ * @return
+ */
 ads::CDockWidget* DAAppDockingArea::getWorkFlowOperateDock() const
 {
     return mWorkFlowOperateDock;
 }
 
+/**
+ * @brief 获取绘图操作窗口 dock
+ * @return
+ */
 ads::CDockWidget* DAAppDockingArea::getChartOperateDock() const
 {
     return mChartOperateDock;
 }
 
+/**
+ * @brief 获取数据操作窗口 dock
+ * @return
+ */
 ads::CDockWidget* DAAppDockingArea::getDataOperateDock() const
 {
     return mDataOperateDock;
 }
 
+/**
+ * @brief 获取设置窗口 dock
+ * @return
+ */
 ads::CDockWidget* DAAppDockingArea::getSettingContainerDock() const
 {
     return mSettingContainerDock;
 }
 
+/**
+ * @brief 获取信息窗口 dock
+ * @return
+ */
 ads::CDockWidget* DAAppDockingArea::getMessageLogDock() const
 {
     return mMessageLogDock;
 }
 
+/**
+ * @brief 获取工作流节点 dock
+ * @return
+ */
 ads::CDockWidget* DAAppDockingArea::getWorkflowNodeListDock() const
 {
     return mWorkflowNodeListDock;
 }
 
+/**
+ * @brief 获取 Agent 助手 dock
+ * @return
+ */
 ads::CDockWidget* DAAppDockingArea::getAgentDock() const
 {
     return mAgentDock;
 }
 
+/**
+ * @brief 获取 Agent 助手 Dock Widget（原始 QWidget）
+ * @return
+ */
 DAAgentDockWidget* DAAppDockingArea::getAgentDockWidget() const
 {
     return mAgentDockWidget;

@@ -1,4 +1,4 @@
-﻿#ifndef DAMETHODEDITORMAINWINDOW_H
+#ifndef DAMETHODEDITORMAINWINDOW_H
 #define DAMETHODEDITORMAINWINDOW_H
 #include "SARibbonMainWindow.h"
 #include <QScopedPointer>
@@ -31,7 +31,7 @@ class AppMainWindow : public SARibbonMainWindow
 
 public:
     AppMainWindow(QWidget* parent = nullptr);
-    ~AppMainWindow();
+    ~AppMainWindow() override;
 
     // 多语言翻译
     void retranslateUi();

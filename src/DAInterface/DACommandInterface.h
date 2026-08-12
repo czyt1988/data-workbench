@@ -1,4 +1,4 @@
-﻿#ifndef DACOMMANDINTERFACE_H
+#ifndef DACOMMANDINTERFACE_H
 #define DACOMMANDINTERFACE_H
 #include <QObject>
 #include "DAInterfaceAPI.h"
@@ -24,7 +24,7 @@ class DAINTERFACE_API DACommandInterface : public DABaseInterface
     DA_DECLARE_PRIVATE(DACommandInterface)
 public:
     DACommandInterface(DAUIInterface* u);
-    ~DACommandInterface();
+    virtual ~DACommandInterface() override;
     // 获取DAAppUIInterface
     DAUIInterface* ui() const;
     // 获取undo/redoGroup
@@ -34,22 +34,12 @@ public:
     // 移除stack
     void removeStack(QUndoStack* stack);
 
-    /**
-     * @brief 开始一个数据操作命令，此命令会推入到当前激活的数据操作窗口的回退栈中
-     * @param data
-     * @param text 命令名字
-     * @param isObjectPersist 是否把对象持久化到硬盘
-     * @param isSkipFirstRedo 是否跳过第一次入栈的redo
-     * @return
-     */
+    // 开始一个数据操作命令，此命令会推入到当前激活的数据操作窗口的回退栈中
     virtual DADataAbstractUndoCommand* beginDataOperateCommand(const DAData& data,
                                                                const QString& text,
                                                                bool isObjectPersist = false,
                                                                bool isSkipFirstRedo = true) = 0;
-    /**
-     * @brief 结束一个数据操作命令
-     * @param data
-     */
+    // 结束一个数据操作命令
     virtual bool endDataOperateCommand(const DAData& data) = 0;
 };
 }  // namespace DA

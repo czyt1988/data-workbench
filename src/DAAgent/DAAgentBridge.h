@@ -9,6 +9,7 @@
 #include <QStringList>
 #include <QMap>
 #include "DAAgentAPI.h"
+#include "DAGlobals.h"
 
 class QTimer;
 
@@ -26,26 +27,12 @@ class DAAgent_API DAAgentBridge : public QObject
 {
     Q_OBJECT
 public:
-    /**
-     * @brief 构造函数
-     * @param parent 父对象
-     */
+    // 构造函数
     explicit DAAgentBridge(QObject* parent = nullptr);
-    /**
-     * @brief 析构函数，若子进程仍在运行则自动停止
-     */
-    ~DAAgentBridge();
+    // 析构函数，若子进程仍在运行则自动停止
+    virtual ~DAAgentBridge() override;
 
-    /**
-     * @brief 启动 agent 子进程
-     * @param llmConfig LLM 配置（base_url、api_key、model）
-     * @param toolSpecs 工具规格 JSON 数组（OpenAI function schema）
-     * @param systemPrompt 系统提示词
-     * @param pythonExePath Python 解释器路径
-     * @param agentScriptPath agent 脚本路径
-     * @param readyTimeoutMs 等待 ready/booting 心跳的超时（毫秒），默认 60s
-     * @param stopTimeoutMs stopAgent 等待进程退出的超时（毫秒），默认 5s
-     */
+    // 启动 agent 子进程
     void startAgent(const QJsonObject& llmConfig,
                     const QJsonArray& toolSpecs,
                     const QString& systemPrompt,
@@ -53,75 +40,32 @@ public:
                     const QString& agentScriptPath,
                     int readyTimeoutMs = 60000,
                     int stopTimeoutMs = 5000);
-    /**
-     * @brief 停止 agent 子进程（阻塞，供析构/重启时调用）
-     */
+    // 停止 agent 子进程（阻塞，供析构/重启时调用）
     void stopAgent();
-    /**
-     * @brief 请求停止 agent 子进程（非阻塞，供用户主动终止时调用）
-     *
-     * 与 stopAgent() 的区别：不调用 waitForFinished 阻塞 UI 线程，
-     * 而是用 QTimer 在 m_stopTimeoutMs 后 kill。进程退出后由
-     * onProcessFinished 发射 agentBusy(false) 恢复 UI。
-     */
+    // 请求停止 agent 子进程（非阻塞，供用户主动终止时调用）
     void requestStop();
 
-    /**
-     * @brief 发送用户消息到 agent 子进程
-     * @param text 用户消息文本
-     */
+    // 发送用户消息到 agent 子进程
     void sendMessage(const QString& text);
-    /**
-     * @brief 发送工具执行结果回 agent 子进程
-     * @param callId 工具调用 ID
-     * @param result 工具执行结果 JSON
-     */
+    // 发送工具执行结果回 agent 子进程
     void sendToolResult(const QString& callId, const QJsonObject& result);
-    /**
-     * @brief 发送用户对问题的回答回 agent 子进程
-     * @param answer 用户回答文本
-     */
+    // 发送用户对问题的回答回 agent 子进程
     void sendUserAnswer(const QString& answer);
-    /**
-     * @brief 下发历史会话消息让 agent 子进程重建 state（不重启子进程切换会话）
-     * @param sessionId 会话 ID
-     * @param messages 历史消息数组（复用协议消息结构，见总纲 T6）
-     * @note 不 emit agentBusy——load_session 不是一轮对话，UI 忙碌态由调用方
-     *       （plan-03 switchSession）自行管理。不经 DAAgentInterface 多态，
-     *       plan-03 的 switchSession 直接调 m_bridge->sendLoadSession，由其
-     *       自行用 isRunning() 守卫 + 懒启动 pending 缓存兜底。
-     */
+    // 下发历史会话消息让 agent 子进程重建 state（不重启子进程切换会话）
     void sendLoadSession(const QString& sessionId, const QJsonArray& messages);
 
-    /**
-     * @brief 设置 C++ 侧工具映射表，供工具调用时查找执行
-     * @param tools 工具名 → 工具实现指针的映射
-     */
-    void setTools(const QMap<QString, DAAbstractAgentTool*>& tools) { m_tools = tools; }
+    // 设置 C++ 侧工具映射表，供工具调用时查找执行
+    void setTools(const QMap<QString, DAAbstractAgentTool*>& tools);
 
-    /**
-     * @brief 检查 agent 子进程是否正在运行
-     * @return 若子进程正在运行返回 true
-     */
-    bool isRunning() const { return m_running; }
-    /**
-     * @brief 检查是否处于崩溃恢复流程中
-     * @return 若正在崩溃恢复返回 true
-     */
-    bool isRecovering() const { return m_recovering; }
-    /**
-     * @brief 设置崩溃恢复标志
-     * @param v 是否处于崩溃恢复
-     */
-    void setRecovering(bool v) { m_recovering = v; }
-    /**
-     * @brief 获取当前会话 ID（供崩溃恢复时 load_session 用）
-     * @return 当前会话 ID
-     */
-    QString lastSessionId() const { return m_lastSessionId; }
-    /**
-     * @brief 崩溃恢复后重发最后一条用户消息
-     */
+    // 检查 agent 子进程是否正在运行
+    bool isRunning() const;
+    // 检查是否处于崩溃恢复流程中
+    bool isRecovering() const;
+    // 设置崩溃恢复标志
+    void setRecovering(bool v);
+    // 获取当前会话 ID（供崩溃恢复时 load_session 用）
+    QString lastSessionId() const;
+    // 崩溃恢复后重发最后一条用户消息
     void resendLastMessage();
 
 Q_SIGNALS:
@@ -224,32 +168,6 @@ private:
     // RAII guard for tool execution watchdog management (defined in .cpp)
     friend struct ToolExecGuard;
 
-    QProcess* m_process = nullptr;
-    bool m_running = false;
-    bool m_stopped = false;  // 防止 stopAgent() 重复执行（closeEvent + 析构双重调用）
-    QByteArray m_stdoutBuffer;  // 累积不完整的行
-    QMap<QString, DAAbstractAgentTool*> m_tools;  // tool name → tool impl
-    QString m_pythonExePath;
-    QString m_agentScriptPath;
-    QTimer* m_readyTimer = nullptr;  // agent 启动后等待 ready 消息的超时计时器,防止子进程卡死时 UI 干等
-    int m_readyTimeoutMs = 60000;      // ready/booting 等待超时(毫秒),由 startAgent 参数注入
-    int m_stopTimeoutMs  = 5000;       // stopAgent 等待进程退出超时(毫秒),由 startAgent 参数注入
-    bool m_userRequestedStop = false;  // 用户主动终止标志,抑制 onProcessFinished 中的异常退出错误
-    QTimer* m_stopTimer = nullptr;     // requestStop 的非阻塞 kill 计时器
-    // —— 无活动看门狗 ——
-    QTimer* m_inactivityTimer = nullptr;  // 无活动超时计时器
-    int m_inactivityTimeoutMs = 240000;    // 默认 4 分钟
-    bool m_toolExecuting = false;           // 工具执行期间暂停看门狗
-    bool m_turnActive = false;              // 对话进行中标志（sendMessage 置 true，done/error 置 false）
-    bool m_waitingUserAnswer = false;       // 等待用户回答问题标志（question 置 true，sendUserAnswer 置 false）——期间暂停看门狗
-    QString m_lastUserMessage;              // 记录最后用户消息（崩溃恢复时重发）
-    // —— 子进程崩溃恢复 ——
-    int m_restartCount = 0;                 // 当前重启次数
-    int m_maxRestarts = 3;                   // 最大重启次数
-    QString m_lastSessionId;                 // 当前会话 ID（sendLoadSession 赋值，startAgent 清空，崩溃恢复时 load_session 用）
-    bool m_recovering = false;               // 是否处于崩溃恢复流程中（agentReady 槽据此判断是否走恢复路径）
-    QJsonObject m_savedLlmConfig;            // 启动参数缓存（崩溃恢复时复用）
-    QJsonArray m_savedToolSpecs;
-    QString m_savedSystemPrompt;
+    DA_DECLARE_PRIVATE(DAAgentBridge)
 };
 } // namespace DA

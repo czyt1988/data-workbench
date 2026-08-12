@@ -1,4 +1,4 @@
-﻿#ifndef DAAPPFIGUREWIDGET_H
+#ifndef DAAPPFIGUREWIDGET_H
 #define DAAPPFIGUREWIDGET_H
 #include "DAFigureWidget.h"
 
@@ -14,7 +14,7 @@ class DAAppFigureWidget : public DAFigureWidget
     Q_OBJECT
 public:
     DAAppFigureWidget(QWidget* parent = 0);
-    ~DAAppFigureWidget();
+    virtual ~DAAppFigureWidget() override;
 };
 }
 #endif  // DAAPPFIGUREWIDGET_H

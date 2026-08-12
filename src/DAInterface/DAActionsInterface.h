@@ -1,4 +1,4 @@
-﻿#ifndef DAACTIONSINTERFACE_H
+#ifndef DAACTIONSINTERFACE_H
 #define DAACTIONSINTERFACE_H
 #include <QAction>
 #include "DAGlobals.h"
@@ -17,7 +17,7 @@ class DAINTERFACE_API DAActionsInterface : public DABaseInterface
     DA_DECLARE_PRIVATE(DAActionsInterface)
 public:
     DAActionsInterface(DAUIInterface* u);
-    ~DAActionsInterface();
+    virtual ~DAActionsInterface() override;
     //创建一个action,并管理
     QAction* createAction(const char* objname);
     QAction* createAction(const char* objname, bool checkable, bool checked = false, QActionGroup* actGroup = nullptr);

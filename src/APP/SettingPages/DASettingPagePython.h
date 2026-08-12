@@ -22,12 +22,12 @@ class DASettingPagePython : public DAAbstractSettingPage
 
 public:
     explicit DASettingPagePython(QWidget* parent = nullptr);
-    ~DASettingPagePython();
+    virtual ~DASettingPagePython() override;
     virtual void apply() override;
     virtual QString getSettingPageTitle() const override;
     virtual QIcon getSettingPageIcon() const override;
     bool setAppConfig(DAAppConfig* p);
-private slots:
+private Q_SLOTS:
     void onLineEditPythonPathTextChanged(const QString& text);
     void onToolButtonBrowseClicked();
     void onToolButtonAutoDetectClicked();

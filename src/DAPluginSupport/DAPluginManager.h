@@ -1,5 +1,5 @@
-﻿#ifndef FCPLUGINMANAGER_H
-#define FCPLUGINMANAGER_H
+#ifndef DAPLUGINMANAGER_H
+#define DAPLUGINMANAGER_H
 #include <QObject>
 #include "DAPluginSupportGlobal.h"
 #include "DAAbstractPlugin.h"
@@ -17,7 +17,7 @@ class DAPLUGINSUPPORT_API DAPluginManager : public QObject
     DA_DECLARE_PRIVATE(DAPluginManager)
 public:
     explicit DAPluginManager(QObject* p = nullptr);
-    ~DAPluginManager();
+    virtual ~DAPluginManager() override;
     // 设置忽略列表
     void setIgnoreList(const QStringList& ignorePluginsName);
 
@@ -69,4 +69,4 @@ Q_SIGNALS:
 DAPLUGINSUPPORT_API QDebug operator<<(QDebug debug, const DAPluginManager& fmg);
 }  // namespace DA
 
-#endif  // FCPLUGINMANAGER_H
+#endif  // DAPLUGINMANAGER_H

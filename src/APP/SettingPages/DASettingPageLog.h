@@ -23,12 +23,12 @@ class DASettingPageLog : public DAAbstractSettingPage
 
 public:
     explicit DASettingPageLog(QWidget* parent = nullptr);
-    ~DASettingPageLog();
+    virtual ~DASettingPageLog() override;
     virtual void apply() override;
     virtual QString getSettingPageTitle() const override;
     virtual QIcon getSettingPageIcon() const override;
     bool setAppConfig(DAAppConfig* p);
-private slots:
+private Q_SLOTS:
     void onComboBoxLogLevelCurrentIndexChanged(int index);
     void onComboBoxQueueLevelCurrentIndexChanged(int index);
     void onCheckBoxOutputStdoutStateChanged(int state);

@@ -1,4 +1,4 @@
-﻿#ifndef DACOMMONCONFIG_H
+#ifndef DACOMMONCONFIG_H
 #define DACOMMONCONFIG_H
 #include "DAProperties.h"
 #include "DAXMLFileInterface.h"
@@ -103,7 +103,7 @@ class DAAppConfig : public DAProperties, public DAXMLFileInterface
 {
 public:
     DAAppConfig();
-    virtual ~DAAppConfig();
+    virtual ~DAAppConfig() override;
     void setCore(DAAppCore* core);
     /// 获取 core 实例（供设置页经 config->getCore()->getAgentInterface() 取 DAAgentInterface 等接口）
     DAAppCore* getCore() const { return mCore; }

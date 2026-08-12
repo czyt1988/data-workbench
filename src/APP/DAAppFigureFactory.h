@@ -1,4 +1,4 @@
-﻿#ifndef DAAPPFIGUREFACTORY_H
+#ifndef DAAPPFIGUREFACTORY_H
 #define DAAPPFIGUREFACTORY_H
 #include "DAFigureFactory.h"
 namespace DA
@@ -11,7 +11,7 @@ class DAAppFigureFactory : public DAFigureFactory
 {
 public:
     DAAppFigureFactory();
-    virtual ~DAAppFigureFactory();
+    virtual ~DAAppFigureFactory() override;
     virtual DAFigureWidget* createFigure(QWidget* par = nullptr) override;
 };
 }

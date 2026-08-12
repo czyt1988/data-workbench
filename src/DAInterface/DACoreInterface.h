@@ -26,7 +26,7 @@ class DAINTERFACE_API DACoreInterface : public QObject
     DA_DECLARE_PRIVATE(DACoreInterface)
 public:
     DACoreInterface(QObject* parent = nullptr);
-    virtual ~DACoreInterface();
+    virtual ~DACoreInterface() override;
 
     // 初始化函数，初始化函数里构造出DAAppUIInterface，DADataManagerInterface等实例
     virtual bool initialized() = 0;

@@ -83,19 +83,68 @@ QString decryptApiKey(const QByteArray& encrypted)
 namespace DA
 {
 
-DAAgentModule::DAAgentModule(DACoreInterface* core, QObject* parent)
-    : DAAgentInterface(parent), m_core(core) {}
-
-DAAgentModule::~DAAgentModule()
+// ===========================================================================
+// PrivateData
+// ===========================================================================
+class DAAgentModule::PrivateData
 {
-    // CRITICAL1：m_sessionStore 非 QObject 无 Qt 父子所有权，需手动 delete。
-    // m_bridge 是 QObject 子对象，parent=this，由 Qt 自动释放，不在此 delete。
-    delete m_sessionStore;
+    DA_DECLARE_PUBLIC(DAAgentModule)
+public:
+    explicit PrivateData(DAAgentModule* p);
+
+    DACoreInterface* mCore = nullptr;
+    DAAgentBridge* mBridge = nullptr;
+    QMap<QString, DAAbstractAgentTool*> mTools;        ///< tool name → impl
+    QHash<QString, QString> mSystemPrompts;            ///< prompt name → content
+    DAAgentSessionStore* mSessionStore = nullptr;  ///< 非 QObject 无参构造；initialize() 内 new、析构显式 delete
+    QString mCurrentSessionId;                     ///< 当前活跃会话
+    QString mCurrentProjectPath;                   ///< 由 DAAppController::setCurrentProjectPath 注入
+    QQueue<QString> mPendingToolCallUuids;         ///< 待配对的 tool_call/question 记录 uuid 队列（FIFO）
+    bool mAgentBusy = false;                       ///< 由 agentBusy(bool)/agentDone 信号维护
+    QString mPendingLoadSessionId;                  ///< 懒启动→ready 串联 load_session 的缓存
+    QJsonArray mPendingLoadMessages;
+    QString mPendingSwitchSessionId;               ///< 忙碌态切换排队：switchSession 遇 busy 时缓存
+};
+
+DAAgentModule::PrivateData::PrivateData(DAAgentModule* p) : q_ptr(p)
+{
 }
 
+// ===========================================================================
+// ctor / dtor
+// ===========================================================================
+
+/**
+ * @brief 构造函数
+ * @param core 核心接口指针
+ * @param parent 父对象
+ */
+DAAgentModule::DAAgentModule(DACoreInterface* core, QObject* parent)
+    : DAAgentInterface(parent), DA_PIMPL_CONSTRUCT
+{
+    DA_D(d);
+    d->mCore = core;
+}
+
+/**
+ * @brief 析构函数——手动释放非 QObject 的 SessionStore
+ */
+DAAgentModule::~DAAgentModule()
+{
+    DA_D(d);
+    // CRITICAL1：m_sessionStore 非 QObject 无 Qt 父子所有权，需手动 delete。
+    // m_bridge 是 QObject 子对象，parent=this，由 Qt 自动释放，不在此 delete。
+    delete d->mSessionStore;
+}
+
+/**
+ * @brief 使用核心接口初始化模块
+ * @param core 核心接口指针
+ */
 void DAAgentModule::initialize(DACoreInterface* core)
 {
-    m_core = core;
+    DA_D(d);
+    d->mCore = core;
 
     // Module 不创建也不持有 DAAgentDockWidget——Dock 由 DAAppDockingArea::
     // buildDockingArea() 创建；Dock 信号链（接口信号↔Dock 槽/信号）由 DAAppController
@@ -103,27 +152,27 @@ void DAAgentModule::initialize(DACoreInterface* core)
     // 框架逻辑 + Bridge 信号转发 + 持久化 lambda，不依赖 DAGui。
 
     // 创建 Bridge（不依赖 Dock 存在）
-    m_bridge = new DAAgentBridge(this);
+    d->mBridge = new DAAgentBridge(this);
 
     // 把 Bridge 的 agent 生命周期信号转发到 DAAgentInterface，供 APP 层
     // （DAAppController）connect 到 Dock。注意：agentUsage 不直接转发——
     // Module 内部 lambda（见 connectSignals）会补 context_window 后以
     // tokenUsageUpdated 暴露。此转发为 Bridge→this 接口信号（PMF 到 this），
     // 与 Dock 无关。
-    connect(m_bridge, &DAAgentBridge::agentToken, this, &DAAgentInterface::agentToken);
-    connect(m_bridge, &DAAgentBridge::agentMessageComplete, this, &DAAgentInterface::agentMessageComplete);
-    connect(m_bridge, &DAAgentBridge::agentToolCall, this, &DAAgentInterface::agentToolCall);
-    connect(m_bridge, &DAAgentBridge::agentToolResult, this, &DAAgentInterface::agentToolResult);
-    connect(m_bridge, &DAAgentBridge::agentQuestion, this, &DAAgentInterface::agentQuestion);
-    connect(m_bridge, &DAAgentBridge::agentError, this, &DAAgentInterface::agentError);
-    connect(m_bridge, &DAAgentBridge::agentReady, this, &DAAgentInterface::agentReady);
-    connect(m_bridge, &DAAgentBridge::agentBusy, this, &DAAgentInterface::agentBusy);
-    connect(m_bridge, &DAAgentBridge::agentDone, this, &DAAgentInterface::agentDone);
-    connect(m_bridge, &DAAgentBridge::agentSessionLoaded, this, &DAAgentInterface::agentSessionLoaded);
+    connect(d->mBridge, &DAAgentBridge::agentToken, this, &DAAgentInterface::agentToken);
+    connect(d->mBridge, &DAAgentBridge::agentMessageComplete, this, &DAAgentInterface::agentMessageComplete);
+    connect(d->mBridge, &DAAgentBridge::agentToolCall, this, &DAAgentInterface::agentToolCall);
+    connect(d->mBridge, &DAAgentBridge::agentToolResult, this, &DAAgentInterface::agentToolResult);
+    connect(d->mBridge, &DAAgentBridge::agentQuestion, this, &DAAgentInterface::agentQuestion);
+    connect(d->mBridge, &DAAgentBridge::agentError, this, &DAAgentInterface::agentError);
+    connect(d->mBridge, &DAAgentBridge::agentReady, this, &DAAgentInterface::agentReady);
+    connect(d->mBridge, &DAAgentBridge::agentBusy, this, &DAAgentInterface::agentBusy);
+    connect(d->mBridge, &DAAgentBridge::agentDone, this, &DAAgentInterface::agentDone);
+    connect(d->mBridge, &DAAgentBridge::agentSessionLoaded, this, &DAAgentInterface::agentSessionLoaded);
 
     // CRITICAL1：创建会话持久化层（非 QObject 无参构造，不传 parent）。
     // 目录就绪由 store 内部 DADir::getAppDataPath("sessions") mkpath。
-    m_sessionStore = new DAAgentSessionStore();
+    d->mSessionStore = new DAAgentSessionStore();
 
     // 连接 Bridge→Module 的持久化/状态 lambda（connectSignals 不再连 Dock，
     // 守卫改为仅判 m_bridge；Dock 连接已由 DAAppController 经接口完成）。
@@ -134,20 +183,36 @@ void DAAgentModule::initialize(DACoreInterface* core)
     // 注册方法），本模块不再注册工具。
 }
 
+/**
+ * @brief 注册工具供 agent 使用
+ * @param tool 工具实现指针
+ */
 void DAAgentModule::registerTool(DAAbstractAgentTool* tool)
 {
+    DA_D(d);
     QString name = tool->getToolSpec()["name"].toString();
-    m_tools[name] = tool;
-    if (m_bridge) m_bridge->setTools(m_tools);
+    d->mTools[name] = tool;
+    if (d->mBridge) d->mBridge->setTools(d->mTools);
 }
 
+/**
+ * @brief 注册命名系统提示词片段
+ * @param name 提示词片段名称
+ * @param content 提示词内容
+ */
 void DAAgentModule::registerSystemPrompt(const QString& name, const QString& content)
 {
-    m_systemPrompts[name] = content;
+    DA_D(d);
+    d->mSystemPrompts[name] = content;
 }
 
+/**
+ * @brief 组装系统提示词（基础 markdown + 插件注入片段）
+ * @return 完整的系统提示词字符串
+ */
 QString DAAgentModule::assembleSystemPrompt() const
 {
+    DA_DC(d);
     // 平台基础提示词：优先从外部 markdown 文件读取（src/DAAgent/system_prompt.md
     // 安装到 bin/PyScripts/DAWorkbench/agent/system_prompt.md），缺失时回退到内置默认，
     // 保证开发构建未执行 install 或文件被误删时 agent 仍可用。
@@ -175,23 +240,33 @@ QString DAAgentModule::assembleSystemPrompt() const
     // 拼接插件注入的提示词
     QStringList parts;
     parts << base;
-    for (auto it = m_systemPrompts.begin(); it != m_systemPrompts.end(); ++it) {
+    for (auto it = d->mSystemPrompts.cbegin(); it != d->mSystemPrompts.cend(); ++it) {
         parts << it.value();
     }
     return parts.join("\n\n");
 }
 
+/**
+ * @brief 组装工具规格 JSON 数组
+ * @return 工具规格 JSON 数组
+ */
 QJsonArray DAAgentModule::assembleToolSpecs() const
 {
+    DA_DC(d);
     QJsonArray specs;
-    for (auto* tool : m_tools) {
+    for (auto* tool : d->mTools) {
         specs.append(tool->getToolSpec());
     }
     return specs;
 }
 
+/**
+ * @brief 发送用户消息给 agent（含懒启动 + 会话持久化）
+ * @param text 用户消息文本
+ */
 void DAAgentModule::sendMessage(const QString& text)
 {
+    DA_D(d);
     // 注意：不要在此 emit agentBusy(true)——DAAgentInterface 未声明 agentBusy 信号，
     // 此处 emit 无法编译。busy 状态改由 DAAgentBridge::sendMessage() 统一发射：
     // Bridge 的 agentBusy 信号已在 connectSignals() 中连接到 DAAgentDockWidget::onAgentBusy。
@@ -200,55 +275,72 @@ void DAAgentModule::sendMessage(const QString& text)
     // ——避免触发 plan-04 onSessionCreated 的 clearChat 擦除刚显示的用户消息）。
     // UI "+" 走 newSession()（有 sessionCreated）。m_currentSessionId = createSession() 为
     // 冗余赋值（createSession 内部已设），保留以契约7 的形式。
-    if (m_currentSessionId.isEmpty()) {
-        m_currentSessionId = createSession();
+    if (d->mCurrentSessionId.isEmpty()) {
+        d->mCurrentSessionId = createSession();
     }
     // 发送前持久化 user 消息
-    m_sessionStore->appendRecord(m_currentSessionId, makeUserRecord(text));
+    d->mSessionStore->appendRecord(d->mCurrentSessionId, makeUserRecord(text));
     // 首条 user 消息定简短标题；标题变更时刷新 UI 下拉（否则 combo 一直显示 (untitled)）
-    if (m_sessionStore->ensureTitle(m_currentSessionId)) {
+    if (d->mSessionStore->ensureTitle(d->mCurrentSessionId)) {
         emit sessionListChanged(listSessionsForUI());
     }
-    if (!m_bridge->isRunning()) {
+    if (!d->mBridge->isRunning()) {
         // 懒启动
         startAgentInternal();
     }
-    m_bridge->sendMessage(text);
+    d->mBridge->sendMessage(text);
 }
 
+/**
+ * @brief 停止正在运行的 agent（用户主动终止，非阻塞）
+ */
 void DAAgentModule::stop()
 {
-    if (m_bridge && m_bridge->isRunning()) {
-        m_bridge->requestStop();
+    DA_D(d);
+    if (d->mBridge && d->mBridge->isRunning()) {
+        d->mBridge->requestStop();
     }
 }
 
+/**
+ * @brief 停止 agent 子进程并等待退出（阻塞，仅在应用关闭时调用）
+ */
 void DAAgentModule::shutdown()
 {
+    DA_D(d);
     // 阻塞停止 agent 子进程，确保在 Python 解释器关闭前子进程已干净退出。
     // 仅在 AppMainWindow::closeEvent 中调用（QApplication 事件循环尚在运行）。
-    if (m_bridge) {
-        m_bridge->stopAgent();
+    if (d->mBridge) {
+        d->mBridge->stopAgent();
     }
 }
 
+/**
+ * @brief 转发用户对 agent 提问的回答给子进程
+ * @param answer 用户回答文本
+ */
 void DAAgentModule::sendUserAnswer(const QString& answer)
 {
+    DA_D(d);
     // 持久化：吸收原 connectSignals 的 dock::userAnswerSelected 持久化 lambda
     // （appendToolResultRecord），plan-02 删除 Dock 持有后由本方法体承接。
     // DAAppController 经 dock::userAnswerSelected → interface::sendUserAnswer
     // 信号→方法 PMF 连接，单次调用即完成持久化 + 转发 Bridge（无双重）。
-    if (!m_currentSessionId.isEmpty() && !m_pendingToolCallUuids.isEmpty()) {
-        QString tcid = m_pendingToolCallUuids.dequeue();
-        appendToolResultRecord(m_currentSessionId, tcid, answer);
+    if (!d->mCurrentSessionId.isEmpty() && !d->mPendingToolCallUuids.isEmpty()) {
+        QString tcid = d->mPendingToolCallUuids.dequeue();
+        appendToolResultRecord(d->mCurrentSessionId, tcid, answer);
     }
-    if (m_bridge) {
-        m_bridge->sendUserAnswer(answer);
+    if (d->mBridge) {
+        d->mBridge->sendUserAnswer(answer);
     }
 }
 
+/**
+ * @brief 懒启动 agent 子进程（读取配置 + 探测路径 + 启动 Bridge）
+ */
 void DAAgentModule::startAgentInternal()
 {
+    DA_D(d);
     // 获取 LLM 配置（plan-06 提供真实实现）
     QJsonObject config = getLLMConfig();
 
@@ -274,72 +366,86 @@ void DAAgentModule::startAgentInternal()
     int stopTimeoutMs   = s.value("agent/stop_timeout_sec", 5).toInt() * 1000;
 
     // 启动
-    m_bridge->startAgent(config, assembleToolSpecs(), assembleSystemPrompt(),
-                         pythonExe, scriptPath, readyTimeoutMs, stopTimeoutMs);
+    d->mBridge->startAgent(config, assembleToolSpecs(), assembleSystemPrompt(),
+                           pythonExe, scriptPath, readyTimeoutMs, stopTimeoutMs);
 }
 
+/**
+ * @brief 检查 agent 是否正在运行
+ * @return 若 agent 正在运行返回 true
+ */
 bool DAAgentModule::isRunning() const
 {
+    DA_DC(d);
     // 转发 Bridge 的子进程运行状态——避免桩始终返回 false，
     // 导致外部（如 UI 忙状态判断）在子进程活跃期间误判为未运行
-    return m_bridge ? m_bridge->isRunning() : false;
+    return d->mBridge ? d->mBridge->isRunning() : false;
 }
 
+/**
+ * @brief 连接 Bridge→Module 的持久化/状态 lambda（不连 Dock）
+ */
 void DAAgentModule::connectSignals()
 {
+    DA_D(d);
     // plan-02：Dock 信号链已由 DAAppController::initialize() 经接口直接 connect 到
     // DAAgentDockWidget（13 条 interface→dock 槽 + 7 条 dock 信号→interface 方法）。
     // 本函数不再持有/连接 Dock——只保留 Bridge→Module 的持久化/状态 lambda（与 Dock 无关）。
     // Dock 不再是 Module 依赖；Bridge 仍是。
-    if (!m_bridge) {
+    if (!d->mBridge) {
         return;
     }
 
     // ---- 持久化：对话事件 → JSONL ----
     // assistant 消息完成（纯文本回复）
-    connect(m_bridge, &DAAgentBridge::agentMessageComplete, this, [this](const QString& fullText) {
-        if (m_currentSessionId.isEmpty()) return;
-        appendAssistantRecord(m_currentSessionId, fullText, /*toolCalls=*/{});
+    connect(d->mBridge, &DAAgentBridge::agentMessageComplete, this, [this](const QString& fullText) {
+        auto* d = d_func();
+        if (d->mCurrentSessionId.isEmpty()) return;
+        appendAssistantRecord(d->mCurrentSessionId, fullText, /*toolCalls=*/{});
     });
     // 工具调用（含 ask_user 提问——ask_user 复用 tool_call 语义）
-    connect(m_bridge, &DAAgentBridge::agentToolCall, this, [this](const QString& tool, const QJsonObject& args) {
-        if (m_currentSessionId.isEmpty()) return;
+    connect(d->mBridge, &DAAgentBridge::agentToolCall, this, [this](const QString& tool, const QJsonObject& args) {
+        auto* d = d_func();
+        if (d->mCurrentSessionId.isEmpty()) return;
         // 契约6：appendToolCallRecord 返回本条记录 uuid，入队供后续 tool_result 按 FIFO 配对 tool_call_id
-        m_pendingToolCallUuids.enqueue(appendToolCallRecord(m_currentSessionId, tool, args));
+        d->mPendingToolCallUuids.enqueue(appendToolCallRecord(d->mCurrentSessionId, tool, args));
     });
     // 工具结果
-    connect(m_bridge, &DAAgentBridge::agentToolResult, this, [this](const QString& /*tool*/, const QJsonObject& result) {
-        if (m_currentSessionId.isEmpty()) return;
+    connect(d->mBridge, &DAAgentBridge::agentToolResult, this, [this](const QString& /*tool*/, const QJsonObject& result) {
+        auto* d = d_func();
+        if (d->mCurrentSessionId.isEmpty()) return;
         // 契约6：FIFO 出队取配对的 tool_call uuid（_rpc_call 串行保证顺序）
         // MAJOR1（round-4）：dequeue 前加 isEmpty 守卫，防空队列未定义行为/崩溃
         // （agentError/switchSession 已 clear 队列后残余 tool_result 信号可达）
-        if (m_pendingToolCallUuids.isEmpty()) return;
-        QString tcid = m_pendingToolCallUuids.dequeue();
+        if (d->mPendingToolCallUuids.isEmpty()) return;
+        QString tcid = d->mPendingToolCallUuids.dequeue();
         // MAJOR（round-4，from plan-04）：content 统一明文（result 序列化为 JSON 字符串，
         // 对齐映射表 content:json.dumps(result)）
-        appendToolResultRecord(m_currentSessionId, tcid,
+        appendToolResultRecord(d->mCurrentSessionId, tcid,
                                QString::fromUtf8(QJsonDocument(result).toJson(QJsonDocument::Compact)));
     });
     // token 使用量
-    connect(m_bridge, &DAAgentBridge::agentUsage, this, [this](int inT, int outT, int tot, const QString& src) {
-        if (m_currentSessionId.isEmpty()) return;
+    connect(d->mBridge, &DAAgentBridge::agentUsage, this, [this](int inT, int outT, int tot, const QString& src) {
+        auto* d = d_func();
+        if (d->mCurrentSessionId.isEmpty()) return;
         // streaming_estimate 是流式过程中的临时估算值，不持久化到 JSONL——
         // 仅用于 UI 进度条实时刷新，真实 usage 由后续 message_end/usage 消息回传并持久化。
         if (src != "streaming_estimate") {
-            appendUsageRecord(m_currentSessionId, inT, outT, tot, src);
+            appendUsageRecord(d->mCurrentSessionId, inT, outT, tot, src);
         }
         // 契约2：emit 5 参信号（context_window 经 readContextWindow 复用，供 plan-04 UI 与 switchSession 回放共用）
         emit tokenUsageUpdated(inT, outT, tot, readContextWindow(), src);
     });
     // agent 提问（ask_user）——记录为 tool_call，供下一条 answer 配对
-    connect(m_bridge, &DAAgentBridge::agentQuestion, this, [this](const QString& text, const QStringList& options, bool multiSelect) {
-        if (m_currentSessionId.isEmpty()) return;
+    connect(d->mBridge, &DAAgentBridge::agentQuestion, this, [this](const QString& text, const QStringList& options, bool multiSelect) {
+        auto* d = d_func();
+        if (d->mCurrentSessionId.isEmpty()) return;
         QJsonObject args;
         args["question"]     = text;
         args["options"]      = QJsonArray::fromStringList(options);
         args["multi_select"] = multiSelect;
         // 契约6：入队供下一条 answer 按 FIFO 配对
-        m_pendingToolCallUuids.enqueue(appendToolCallRecord(m_currentSessionId, "ask_user", args));
+        d->mPendingToolCallUuids.enqueue(appendToolCallRecord(d->mCurrentSessionId, "ask_user", args));
     });
     // 注：userAnswerSelected 的持久化路径已删除——逻辑由 DAAgentModule::sendUserAnswer
     // 方法体承接（plan-01：dequeue m_pendingToolCallUuids + appendToolResultRecord + 转发
@@ -348,11 +454,12 @@ void DAAgentModule::connectSignals()
     // （sendUserAnswer 是方法非信号，PMF 指向虚方法，Qt5+ 合法。）
 
     // ---- 崩溃恢复：sessionRestoreRequested → 从 SessionStore 读取并下发 load_session ----
-    connect(m_bridge, &DAAgentBridge::sessionRestoreRequested, this, [this](const QString& sessionId) {
+    connect(d->mBridge, &DAAgentBridge::sessionRestoreRequested, this, [this](const QString& sessionId) {
+        auto* d = d_func();
         // 从 SessionStore 读取历史消息
-        if (m_sessionStore) {
-            QJsonArray messages = m_sessionStore->readMessagesForLoad(sessionId);
-            m_bridge->sendLoadSession(sessionId, messages);
+        if (d->mSessionStore) {
+            QJsonArray messages = d->mSessionStore->readMessagesForLoad(sessionId);
+            d->mBridge->sendLoadSession(sessionId, messages);
             // load_session 后 Python 回 session_loaded，经 agentSessionLoaded 信号
             // 在 agentSessionLoaded 的恢复 lambda 中重发最后消息
         }
@@ -363,8 +470,9 @@ void DAAgentModule::connectSignals()
 
     // 崩溃恢复：agentReady 恢复路径（必须在现有 pending lambda 之前 connect，
     // 以便在 pending lambda 清空 m_pendingLoadSessionId 之前检测到它）
-    connect(m_bridge, &DAAgentBridge::agentReady, this, [this](const QString&) {
-        if (!m_bridge->isRecovering()) {
+    connect(d->mBridge, &DAAgentBridge::agentReady, this, [this](const QString&) {
+        auto* d = d_func();
+        if (!d->mBridge->isRecovering()) {
             return;  // 非恢复路径，交给现有逻辑
         }
         // switchSession 懒启动期间崩溃：m_pendingLoadSessionId 非空表示有待处理的会话切换，
@@ -372,66 +480,75 @@ void DAAgentModule::connectSignals()
         //   1. double load_session（pending lambda + 恢复 lambda 各发一次）
         //   2. 向错误会话重发上一会话的用户消息（agentSessionLoaded lambda 的 resendLastMessage）
         // 清除 m_recovering 使后续 agentSessionLoaded lambda 不触发 resendLastMessage
-        if (!m_pendingLoadSessionId.isEmpty()) {
-            m_bridge->setRecovering(false);
+        if (!d->mPendingLoadSessionId.isEmpty()) {
+            d->mBridge->setRecovering(false);
             return;
         }
         // 恢复路径：恢复会话历史或直接重发
-        if (!m_bridge->lastSessionId().isEmpty()) {
+        if (!d->mBridge->lastSessionId().isEmpty()) {
             // 有会话——触发 Module 侧 load_session（经 sessionRestoreRequested → sendLoadSession）
-            emit m_bridge->sessionRestoreRequested(m_bridge->lastSessionId());
+            emit d->mBridge->sessionRestoreRequested(d->mBridge->lastSessionId());
         } else {
             // 无会话——直接重发最后消息
-            m_bridge->resendLastMessage();
+            d->mBridge->resendLastMessage();
         }
     });
 
     // switchSession 懒启动 pending lambda（ready 到达后下发 load_session）
-    connect(m_bridge, &DAAgentBridge::agentReady, this, [this](const QString&) {
+    connect(d->mBridge, &DAAgentBridge::agentReady, this, [this](const QString&) {
+        auto* d = d_func();
         // MAJOR9：switchSession 懒启动分支缓存 pending 于此，ready 到达后下发 load_session。
         // 覆盖语义天然处理快速连续切换 A→B→C（只保留最后一次 pending）。
-        if (!m_pendingLoadSessionId.isEmpty()) {
-            m_bridge->sendLoadSession(m_pendingLoadSessionId, m_pendingLoadMessages);
-            m_pendingLoadSessionId.clear();
-            m_pendingLoadMessages = QJsonArray();
+        if (!d->mPendingLoadSessionId.isEmpty()) {
+            d->mBridge->sendLoadSession(d->mPendingLoadSessionId, d->mPendingLoadMessages);
+            d->mPendingLoadSessionId.clear();
+            d->mPendingLoadMessages = QJsonArray();
         }
     });
-    connect(m_bridge, &DAAgentBridge::agentBusy, this, [this](bool busy) {
-        m_agentBusy = busy;
+    connect(d->mBridge, &DAAgentBridge::agentBusy, this, [this](bool busy) {
+        auto* d = d_func();
+        d->mAgentBusy = busy;
     });
-    connect(m_bridge, &DAAgentBridge::agentDone, this, [this]() {
-        m_agentBusy = false;
+    connect(d->mBridge, &DAAgentBridge::agentDone, this, [this]() {
+        auto* d = d_func();
+        d->mAgentBusy = false;
         // 忙碌态切换排队续切（此时已非 busy）
-        if (!m_pendingSwitchSessionId.isEmpty()) {
-            QString sid = m_pendingSwitchSessionId;
-            m_pendingSwitchSessionId.clear();
+        if (!d->mPendingSwitchSessionId.isEmpty()) {
+            QString sid = d->mPendingSwitchSessionId;
+            d->mPendingSwitchSessionId.clear();
             switchSession(sid);
         }
     });
-    connect(m_bridge, &DAAgentBridge::agentError, this, [this](const QString&) {
+    connect(d->mBridge, &DAAgentBridge::agentError, this, [this](const QString&) {
+        auto* d = d_func();
         // 兜底清理 pending，避免 ready 永不到达时泄漏
-        m_pendingLoadSessionId.clear();
-        m_pendingLoadMessages = QJsonArray();
-        m_pendingSwitchSessionId.clear();
+        d->mPendingLoadSessionId.clear();
+        d->mPendingLoadMessages = QJsonArray();
+        d->mPendingSwitchSessionId.clear();
         // MAJOR1（round-3）：出错时清空队列，避免旧会话残留 uuid 配对新会话
-        m_pendingToolCallUuids.clear();
-        m_agentBusy = false;
+        d->mPendingToolCallUuids.clear();
+        d->mAgentBusy = false;
     });
     // 转发 agentRetrying 信号到接口（plan-03 step6）
-    connect(m_bridge, &DAAgentBridge::agentRetrying, this, [this](int attempt, int maxAttempts, int delayMs, const QString& errorType, const QString& errorMessage) {
+    connect(d->mBridge, &DAAgentBridge::agentRetrying, this, [this](int attempt, int maxAttempts, int delayMs, const QString& errorType, const QString& errorMessage) {
         emit agentRetrying(attempt, maxAttempts, delayMs, errorType, errorMessage);
     });
 
     // ---- 崩溃恢复：agentSessionLoaded 时重发最后消息 ----
     // 如果是崩溃恢复路径，session_loaded 后重发最后一条用户消息。
     // isRecovering() 必须在 resendLastMessage 重置 m_recovering 之前判断。
-    connect(m_bridge, &DAAgentBridge::agentSessionLoaded, this, [this](const QString&) {
-        if (m_bridge->isRecovering()) {
-            m_bridge->resendLastMessage();
+    connect(d->mBridge, &DAAgentBridge::agentSessionLoaded, this, [this](const QString&) {
+        auto* d = d_func();
+        if (d->mBridge->isRecovering()) {
+            d->mBridge->resendLastMessage();
         }
     });
 }
 
+/**
+ * @brief 探测 Python 解释器路径
+ * @return Python 解释器路径，空表示未找到
+ */
 QString DAAgentModule::detectPythonExePath() const
 {
     // 平台已有规范的解释器解析器：DA::DAPyInterpreter::getPythonInterpreterPath()
@@ -447,6 +564,10 @@ QString DAAgentModule::detectPythonExePath() const
     return QStandardPaths::findExecutable("python");
 }
 
+/**
+ * @brief 探测 agent_runner.py 脚本路径
+ * @return agent 脚本路径
+ */
 QString DAAgentModule::detectAgentScriptPath() const
 {
     // agent 脚本位于 bin/PyScripts/DAWorkbench/agent/agent_runner.py（plan-02）。
@@ -455,6 +576,10 @@ QString DAAgentModule::detectAgentScriptPath() const
     return scriptsDir + "/DAWorkbench/agent/agent_runner.py";
 }
 
+/**
+ * @brief 探测系统提示词 markdown 文件路径
+ * @return 系统提示词文件路径
+ */
 QString DAAgentModule::detectSystemPromptPath() const
 {
     // 系统提示词 markdown 安装到与 agent_runner.py 同目录，运行时由
@@ -463,17 +588,27 @@ QString DAAgentModule::detectSystemPromptPath() const
     return scriptsDir + "/DAWorkbench/agent/system_prompt.md";
 }
 
+/**
+ * @brief 显示 agent dock 窗口（no-op，Dock 显隐走 ADS）
+ */
 void DAAgentModule::showDockWidget()
 {
     // plan-02：Module 不再持有 Dock；Dock 显隐走 ADS 的 setToggleViewAction
     // （由 DAAppController 绑定 ribbon action），本方法为 no-op。
 }
 
+/**
+ * @brief 隐藏 agent dock 窗口（no-op）
+ */
 void DAAgentModule::hideDockWidget()
 {
     // plan-02：同 showDockWidget，no-op。
 }
 
+/**
+ * @brief 获取 LLM 配置
+ * @return LLM 配置 JSON
+ */
 QJsonObject DAAgentModule::getLLMConfig() const
 {
     // 从 agent-config.ini 读取（与设置页 DAAgentSettingsWidget 同一存储源，保持一致）
@@ -513,6 +648,10 @@ QJsonObject DAAgentModule::getLLMConfig() const
     return config;
 }
 
+/**
+ * @brief 设置 LLM 配置
+ * @param config LLM 配置 JSON
+ */
 void DAAgentModule::setLLMConfig(const QJsonObject& config)
 {
     // 必须用显式 ini 路径（与 getLLMConfig/startAgentInternal/cleanupSessions 一致），
@@ -564,18 +703,27 @@ void DAAgentModule::setLLMConfig(const QJsonObject& config)
 // ===========================================================================
 // 会话管理接口实现（plan-03）
 // ===========================================================================
+
+/**
+ * @brief 创建新会话，返回新 sessionId
+ * @return 新会话 ID（UUID4）
+ */
 QString DAAgentModule::createSession()
 {
+    DA_D(d);
     // MAJOR3（round-3）：不 emit sessionCreated，供 sendMessage 自动建会话用
     // （避免触发 plan-04 onSessionCreated 的 clearChat 擦除刚显示的用户消息）。
     // MAJOR2（round-3）：内部设 m_currentSessionId，所有调用方统一受益。
-    QString sid = m_sessionStore->createSession(m_currentProjectPath);  // 带 projectPath
-    m_currentSessionId = sid;
-    m_sessionStore->setLastActive(sid, m_currentProjectPath);
+    QString sid = d->mSessionStore->createSession(d->mCurrentProjectPath);  // 带 projectPath
+    d->mCurrentSessionId = sid;
+    d->mSessionStore->setLastActive(sid, d->mCurrentProjectPath);
     emit sessionListChanged(listSessionsForUI());  // 契约3：带 payload
     return sid;
 }
 
+/**
+ * @brief 新建会话（UI "+" 按钮入口）—— createSession + emit sessionCreated
+ */
 void DAAgentModule::newSession()
 {
     // MAJOR3（round-3）：供 UI "+" 按钮——createSession + emit sessionCreated。
@@ -585,62 +733,84 @@ void DAAgentModule::newSession()
     emit sessionCreated(sid);  // 仅此路径触发 UI clearChat
 }
 
+/**
+ * @brief 切换到指定会话（懒启动→下发历史→恢复）
+ * @param sessionId 目标会话 ID
+ * @return 是否启动切换流程（false=已是当前会话无操作）
+ */
 bool DAAgentModule::switchSession(const QString& sessionId)
 {
-    if (sessionId == m_currentSessionId) return false;  // false = 已是当前会话
+    DA_D(d);
+    if (sessionId == d->mCurrentSessionId) return false;  // false = 已是当前会话
     // 0. 守忙碌态：上一轮仍在流式输出时，requestStop 并排队，agentDone 后续切，
     //    避免残余 agentToken/agentMessageComplete/agentToolCall/agentToolResult 信号被
     //    持久化 lambda 写入新会话 JSONL（旧会话尾巴污染新会话）。
-    if (m_bridge->isRunning() && m_agentBusy) {
-        m_pendingSwitchSessionId = sessionId;   // 排队；常驻 agentDone 槽续切
-        m_bridge->requestStop();                // 非阻塞停止
+    if (d->mBridge->isRunning() && d->mAgentBusy) {
+        d->mPendingSwitchSessionId = sessionId;   // 排队；常驻 agentDone 槽续切
+        d->mBridge->requestStop();                // 非阻塞停止
         return true;                             // 异步完成，sessionSwitched 在续切时 emit
     }
     // 1. 读历史消息
-    QJsonArray messages = m_sessionStore->readMessagesForLoad(sessionId);
+    QJsonArray messages = d->mSessionStore->readMessagesForLoad(sessionId);
     // MAJOR1（round-3）：实际切换前清空队列，丢弃旧会话未完成的 pending 配对
-    m_pendingToolCallUuids.clear();
-    m_currentSessionId = sessionId;
-    m_sessionStore->setLastActive(sessionId, m_currentProjectPath);  // 带工程路径
+    d->mPendingToolCallUuids.clear();
+    d->mCurrentSessionId = sessionId;
+    d->mSessionStore->setLastActive(sessionId, d->mCurrentProjectPath);  // 带工程路径
     // 2. 确保子进程：未运行则懒启动，ready 后由常驻槽发 load_session
-    if (!m_bridge->isRunning()) {
+    if (!d->mBridge->isRunning()) {
         startAgentInternal();
         // 缓存 pending load；由 connectSignals 里建立的常驻 agentReady 槽处理
         // （不再每次 new QMetaObject::Connection，避免快速连续切换时多次连接、堆积
         //  与 ready 永不到达时的堆泄漏）
-        m_pendingLoadSessionId = sessionId;
-        m_pendingLoadMessages = messages;
+        d->mPendingLoadSessionId = sessionId;
+        d->mPendingLoadMessages = messages;
     } else {
-        m_bridge->sendLoadSession(sessionId, messages);
+        d->mBridge->sendLoadSession(sessionId, messages);
     }
     // 3. UI 历史重放由 plan-04 的 sessionSwitched 信号触发
-    emit sessionSwitched(sessionId, m_sessionStore->readAllRecords(sessionId));
+    emit sessionSwitched(sessionId, d->mSessionStore->readAllRecords(sessionId));
     // 4. 切换后回放 token 统计（从持久化 usage 记录取最后一条，无则全 0），
-    //    避免 UI 拋留上一会话的 token 数值与进度条（Bug2 修复）
+    //    避免 UI 拘留上一会话的 token 数值与进度条（Bug2 修复）
     emitTokenUsageForSession(sessionId);
     return true;
 }
 
+/**
+ * @brief 删除指定会话
+ * @param sessionId 会话 ID
+ */
 void DAAgentModule::deleteSession(const QString& sessionId)
 {
-    m_sessionStore->deleteSession(sessionId);
-    if (m_currentSessionId == sessionId) {
-        m_currentSessionId.clear();  // 删当前会话后回归无活跃
+    DA_D(d);
+    d->mSessionStore->deleteSession(sessionId);
+    if (d->mCurrentSessionId == sessionId) {
+        d->mCurrentSessionId.clear();  // 删当前会话后回归无活跃
     }
     emit sessionListChanged(listSessionsForUI());  // 契约3：带 payload
 }
 
+/**
+ * @brief 重命名指定会话
+ * @param sessionId 会话 ID
+ * @param title 新标题
+ */
 void DAAgentModule::renameSession(const QString& sessionId, const QString& title)
 {
-    m_sessionStore->renameSession(sessionId, title);
+    DA_D(d);
+    d->mSessionStore->renameSession(sessionId, title);
     emit sessionListChanged(listSessionsForUI());  // 契约3：带 payload
 }
 
+/**
+ * @brief 列出所有会话（供 UI 下拉）
+ * @return QVariantList，每元素 QVariantMap
+ */
 QVariantList DAAgentModule::listSessions() const
 {
+    DA_DC(d);
     // 供 UI 下拉（全量元数据）
     QVariantList out;
-    for (const auto& m : m_sessionStore->listSessions()) {
+    for (const auto& m : d->mSessionStore->listSessions()) {
         QVariantMap vm;
         vm["id"]          = m.id;
         vm["title"]       = m.title;
@@ -653,13 +823,18 @@ QVariantList DAAgentModule::listSessions() const
     return out;
 }
 
+/**
+ * @brief 生成 sessionListChanged 的 payload（按工程路径过滤）
+ * @return QVariantList，每元素 QVariantMap{id,title,updatedAt,messageCount}
+ */
 QVariantList DAAgentModule::listSessionsForUI() const
 {
+    DA_DC(d);
     // 契约3：sessionListChanged 的 payload，每元素 QVariantMap{id,title,updatedAt,messageCount}
     // MAJOR4（round-3）：按当前工程路径过滤
     // 会话管理对话框需要 updatedAt/messageCount 展示更多会话信息。
     QVariantList out;
-    for (const auto& m : m_sessionStore->listSessions(m_currentProjectPath)) {
+    for (const auto& m : d->mSessionStore->listSessions(d->mCurrentProjectPath)) {
         QVariantMap vm;
         vm["id"]           = m.id;
         vm["title"]        = m.title;
@@ -670,78 +845,112 @@ QVariantList DAAgentModule::listSessionsForUI() const
     return out;
 }
 
+/**
+ * @brief 获取当前活跃会话 ID
+ * @return 当前会话 ID
+ */
 QString DAAgentModule::currentSessionId() const
 {
-    return m_currentSessionId;
+    DA_DC(d);
+    return d->mCurrentSessionId;
 }
 
+/**
+ * @brief 导出当前活跃会话字节（plan-05 工程保存调用）
+ * @return id -> jsonl 字节
+ */
 QHash<QString, QByteArray> DAAgentModule::exportActiveSessions() const
 {
+    DA_DC(d);
     // 一期：导出当前活跃会话单条（总纲 D3：保存工程时复制活跃会话进 zip）
-    if (m_currentSessionId.isEmpty()) return {};
-    return m_sessionStore->exportSessionFiles({m_currentSessionId});
+    if (d->mCurrentSessionId.isEmpty()) return {};
+    return d->mSessionStore->exportSessionFiles({d->mCurrentSessionId});
 }
 
+/**
+ * @brief 从工程 zip 加载会话文件（plan-05 工程加载调用）
+ * @param files id -> jsonl 字节
+ * @param projectPath 绑定工程路径
+ */
 void DAAgentModule::loadSessionsFromProject(const QHash<QString, QByteArray>& files, const QString& projectPath)
 {
+    DA_D(d);
     // 契约4：projectPath 由 plan-05 executeLoad 回调传入（先 setCurrentProjectPath 再调本方法），
     // 标记导入会话工程路径
-    m_sessionStore->importSessionFiles(files, projectPath);
+    d->mSessionStore->importSessionFiles(files, projectPath);
     // Bug1 加固：导入工程会话后，若全局 last_active 指针未指向本工程的会话
     // （常因打开工程前游离会话活动覆盖了指针），把它指向导入会话中最新者，
     // 使后续 restoreLastActiveSession(P) 的指针命中分支生效。
     // listSessions(projectPath) 已按 updatedAt 倒序，取首个即最新。
     if (!files.isEmpty()) {
-        QString currentPtr = m_sessionStore->lastActiveSession(projectPath);
+        QString currentPtr = d->mSessionStore->lastActiveSession(projectPath);
         if (currentPtr.isEmpty()) {
             QVector<DAAgentSessionStore::SessionMeta> bound =
-                m_sessionStore->listSessions(projectPath);
+                d->mSessionStore->listSessions(projectPath);
             if (!bound.isEmpty()) {
-                m_sessionStore->setLastActive(bound.first().id, projectPath);
+                d->mSessionStore->setLastActive(bound.first().id, projectPath);
             }
         }
     }
     emit sessionListChanged(listSessionsForUI());  // 契约3：带 payload
 }
 
+/**
+ * @brief 设置当前工程路径
+ * @param path 工程路径
+ */
 void DAAgentModule::setCurrentProjectPath(const QString& path)
 {
+    DA_D(d);
     // CRITICAL（round-3）：已提升为 DAAgentInterface 纯虚，DAAppProject（L5）经
     // core()->getAgentInterface() 多态调用（onProjectLoaded / 工程关闭时注入），
     // 不依赖 qobject_cast。
-    m_currentProjectPath = path;
+    d->mCurrentProjectPath = path;
 }
 
+/**
+ * @brief 包装 store.setSessionProjectPath，供 plan-05 saveAs/save 成功后更新当前会话工程路径
+ * @param path 工程路径
+ */
 void DAAgentModule::setSessionProjectPathForCurrent(const QString& path)
 {
+    DA_D(d);
     // 契约5：包装 store.setSessionProjectPath，供 plan-05 saveAs/save 成功后更新当前会话工程路径
-    if (m_currentSessionId.isEmpty()) return;
+    if (d->mCurrentSessionId.isEmpty()) return;
     // MAJOR2（round-4）：同步更新 m_currentProjectPath，使 saveAs 后 listSessionsForUI
     // 按新路径过滤能看到当前会话
-    m_currentProjectPath = path;
-    m_sessionStore->setSessionProjectPath(m_currentSessionId, path);
+    d->mCurrentProjectPath = path;
+    d->mSessionStore->setSessionProjectPath(d->mCurrentSessionId, path);
     // MAJOR（round-3，from plan-05）：saveAs 后更新 last_active.json 指针的 projectPath，
     // 使打开工程自动恢复生效
-    m_sessionStore->setLastActive(m_currentSessionId, path);
+    d->mSessionStore->setLastActive(d->mCurrentSessionId, path);
 }
 
+/**
+ * @brief 清理旧会话（读 ini 配置的 max_sessions/session_retention_days）
+ */
 void DAAgentModule::cleanupSessions()
 {
+    DA_D(d);
     // 配置 key 由 plan-06 定义（agent/max_sessions 默认 20、agent/session_retention_days 默认 30）；
     // 读法复用 startAgentInternal/getLLMConfig 现有的 agent-config.ini QSettings 访问模式
     QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
     int maxCount = s.value("agent/max_sessions", 20).toInt();
     int retentionDays = s.value("agent/session_retention_days", 30).toInt();
-    m_sessionStore->cleanupOldSessions(maxCount, retentionDays, m_currentSessionId);  // 跳过当前活跃 + lastActive
+    d->mSessionStore->cleanupOldSessions(maxCount, retentionDays, d->mCurrentSessionId);  // 跳过当前活跃 + lastActive
 }
 
+/**
+ * @brief 启动/打开工程后初始化会话 UI——填充下拉列表但不自动恢复上次会话
+ */
 void DAAgentModule::restoreLastActiveSession()
 {
+    DA_D(d);
     // 始终以全新对话开始，不自动恢复上次会话。
     // 历史会话仍填充到 UI 下拉列表，用户可通过下拉或会话管理器手动切换。
     // 用户首次发消息时由 sendMessage 懒创建绑定 m_currentProjectPath 的新会话。
     emit sessionListChanged(listSessionsForUI());  // 契约3：启动/开工程时填充 UI 下拉
-    m_currentSessionId.clear();
+    d->mCurrentSessionId.clear();
     emit sessionCleared();  // 清空聊天区、复位 token 统计、清空标题
 }
 
@@ -752,8 +961,17 @@ void DAAgentModule::restoreLastActiveSession()
 // timestamp=QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs)
 // parent_uuid 一期固定 null
 // ===========================================================================
+
+/**
+ * @brief 构造 tool_call 记录并追加写盘
+ * @param sid 会话 ID
+ * @param tool 工具名称
+ * @param args 工具调用参数
+ * @return 本条记录 uuid
+ */
 QString DAAgentModule::appendToolCallRecord(const QString& sid, const QString& tool, const QJsonObject& args)
 {
+    DA_D(d);
     QString uuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
     QString now = QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
 
@@ -776,12 +994,19 @@ QString DAAgentModule::appendToolCallRecord(const QString& sid, const QString& t
     record["type"]        = "assistant";
     record["message"]     = msg;
 
-    m_sessionStore->appendRecord(sid, record);
+    d->mSessionStore->appendRecord(sid, record);
     return uuid;  // 契约6：返回本条记录 uuid，调用方 enqueue
 }
 
+/**
+ * @brief 构造 tool_result 记录并追加写盘
+ * @param sid 会话 ID
+ * @param toolCallId 工具调用 ID
+ * @param content 记录内容（明文 QString）
+ */
 void DAAgentModule::appendToolResultRecord(const QString& sid, const QString& toolCallId, const QString& content)
 {
+    DA_D(d);
     // MAJOR（round-4，from plan-04）：content 统一明文 QString
     // （agentToolResult 传 result 的 JSON 字符串，userAnswerSelected 传 answer 明文）
     QString uuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
@@ -800,11 +1025,18 @@ void DAAgentModule::appendToolResultRecord(const QString& sid, const QString& to
     record["type"]        = "tool_result";
     record["message"]     = msg;
 
-    m_sessionStore->appendRecord(sid, record);
+    d->mSessionStore->appendRecord(sid, record);
 }
 
+/**
+ * @brief 构造 assistant 记录并追加写盘
+ * @param sid 会话 ID
+ * @param text assistant 消息文本
+ * @param toolCalls 工具调用数组
+ */
 void DAAgentModule::appendAssistantRecord(const QString& sid, const QString& text, const QJsonArray& toolCalls)
 {
+    DA_D(d);
     QString uuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
     QString now = QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
 
@@ -823,11 +1055,20 @@ void DAAgentModule::appendAssistantRecord(const QString& sid, const QString& tex
     record["type"]        = "assistant";
     record["message"]     = msg;
 
-    m_sessionStore->appendRecord(sid, record);
+    d->mSessionStore->appendRecord(sid, record);
 }
 
+/**
+ * @brief 构造 usage 记录并追加写盘
+ * @param sid 会话 ID
+ * @param inT 输入 token 数
+ * @param outT 输出 token 数
+ * @param tot 总 token 数
+ * @param src 来源标识
+ */
 void DAAgentModule::appendUsageRecord(const QString& sid, int inT, int outT, int tot, const QString& src)
 {
+    DA_D(d);
     QString uuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
     QString now = QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
 
@@ -846,11 +1087,17 @@ void DAAgentModule::appendUsageRecord(const QString& sid, int inT, int outT, int
     record["message"]      = QJsonObject{};  // usage 记录 message 为空
     record["usage_metadata"] = usageMeta;
 
-    m_sessionStore->appendRecord(sid, record);
+    d->mSessionStore->appendRecord(sid, record);
 }
 
+/**
+ * @brief 构造 user 记录对象（不写盘，供调用方 appendRecord）
+ * @param text 用户消息文本
+ * @return 完整记录对象
+ */
 QJsonObject DAAgentModule::makeUserRecord(const QString& text) const
 {
+    DA_DC(d);
     QString uuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
     QString now = QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
 
@@ -861,13 +1108,17 @@ QJsonObject DAAgentModule::makeUserRecord(const QString& text) const
     QJsonObject record;
     record["uuid"]        = uuid;
     record["parent_uuid"] = QJsonValue::Null;
-    record["session_id"]  = m_currentSessionId;
+    record["session_id"]  = d->mCurrentSessionId;
     record["timestamp"]   = now;
     record["type"]        = "user";
     record["message"]     = msg;
     return record;
 }
 
+/**
+ * @brief 从 agent-config.ini 读 context_window
+ * @return context_window 值（默认 128000）
+ */
 int DAAgentModule::readContextWindow() const
 {
     // 从 agent-config.ini 读 context_window（默认 128000，与 getLLMConfig 一致），
@@ -877,14 +1128,19 @@ int DAAgentModule::readContextWindow() const
     return s.value("agent/context_window", 128000).toInt();
 }
 
+/**
+ * @brief 扫描会话持久化 usage 记录，取最后一条 emit tokenUsageUpdated
+ * @param sid 会话 ID
+ */
 void DAAgentModule::emitTokenUsageForSession(const QString& sid)
 {
+    DA_D(d);
     // 切换会话时回放 token 统计（Bug2 修复）：扫持久化 usage 记录取最后一条，
     // 无记录则全 0（仍带真实 context_window，UI 显示 tokens: 0 / 窗口、进度条 0%）。
     int inT = 0, outT = 0, tot = 0;
     QString src;
     if (!sid.isEmpty()) {
-        QVector<QJsonObject> records = m_sessionStore->readAllRecords(sid);
+        QVector<QJsonObject> records = d->mSessionStore->readAllRecords(sid);
         for (const QJsonObject& obj : std::as_const(records)) {
             if (obj.value("type").toString() != "usage") continue;
             QJsonObject meta = obj.value("usage_metadata").toObject();

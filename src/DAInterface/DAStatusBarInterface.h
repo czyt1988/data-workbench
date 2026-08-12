@@ -9,7 +9,7 @@ class DAINTERFACE_API DAStatusBarInterface : public DAUIExtendInterface
     Q_OBJECT
 public:
     explicit DAStatusBarInterface(DAUIInterface* u);
-    ~DAStatusBarInterface();
+    virtual ~DAStatusBarInterface() override;
     // 添加状态栏信息，状态栏信息将在状态栏显示，并间隔n秒(默认n=15)后隐藏
     virtual void showMessage(const QString& message, int timeout = 15000) = 0;
     virtual void clearMessage()                                           = 0;

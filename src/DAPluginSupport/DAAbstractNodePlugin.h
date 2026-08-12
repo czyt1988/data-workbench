@@ -37,7 +37,7 @@ class DAPLUGINSUPPORT_API DAAbstractNodePlugin : public DAAbstractPlugin
 {
 public:
     DAAbstractNodePlugin();
-    virtual ~DAAbstractNodePlugin();
+    virtual ~DAAbstractNodePlugin() override;
 
     // 创建一个节点工厂
     virtual DAPyNodeFactory* createNodeFactory() = 0;
@@ -61,4 +61,4 @@ QT_END_NAMESPACE
 
 // Q_PLUGIN_METADATA(IID DAABSTRACTNODEPLUGIN_IID)
 // Q_INTERFACES(DA::DAAbstractNodePlugin)
-#endif  // FCABSTRACTNODEPLUGIN_H
+#endif  // DAABSTRACTNODEPLUGIN_H

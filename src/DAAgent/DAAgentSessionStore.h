@@ -53,94 +53,45 @@ public:
     ~DAAgentSessionStore();
 
     // ---- 会话生命周期 ----
-    /**
-     * @brief 创建新会话（写 index + 空 jsonl）
-     * @param projectPath 绑定工程路径（空=自由会话）
-     * @return 新会话 ID（UUID4）
-     */
+    // 创建新会话（写 index + 空 jsonl）
     QString createSession(const QString& projectPath = QString());
-    /**
-     * @brief 删除会话（删 jsonl 文件 + 从 index 移除）
-     */
+    // 删除会话（删 jsonl 文件 + 从 index 移除）
     void deleteSession(const QString& id);
-    /**
-     * @brief 重命名会话（更新 index 的 title + updatedAt）
-     */
+    // 重命名会话（更新 index 的 title + updatedAt）
     void renameSession(const QString& id, const QString& title);
-    /**
-     * @brief 列出会话（按 projectPath 过滤，按 updatedAt 倒序）
-     * @param projectPathFilter 空字符串=不过滤（返回全部）；非空=只返回 projectPath 匹配的会话
-     */
+    // 列出会话（按 projectPath 过滤，按 updatedAt 倒序）
     QVector<SessionMeta> listSessions(const QString& projectPathFilter = QString()) const;
-    /**
-     * @brief 判断 id 是否存在于 index（供 restoreLastActiveSession；
-     *        listSessions 返回 QVector<SessionMeta>，QVector::contains(QString) 类型不匹配不可编译）
-     */
+    // 判断 id 是否存在于 index
     bool hasSession(const QString& id) const;
 
     // ---- 记录读写 ----
-    /**
-     * @brief 追加一条 JSONL 记录（崩溃安全：每条即写 flush）。
-     *        同时更新 index 的 updatedAt 与 messageCount。
-     * @param sessionId 会话 ID
-     * @param record 完整记录对象（须含 uuid/session_id/timestamp/type/message 等字段）
-     */
+    // 追加一条 JSONL 记录（崩溃安全：每条即写 flush），同时更新 index 的 updatedAt 与 messageCount
     void appendRecord(const QString& sessionId, const QJsonObject& record);
-    /**
-     * @brief 读取会话消息用于 load_session 重建 state
-     * @return user/assistant/tool_result 的 message 数组（过滤 usage），按时序。
-     *         跳过损坏行（daWarning，不整体丢）。
-     */
+    // 读取会话消息用于 load_session 重建 state
     QJsonArray readMessagesForLoad(const QString& sessionId) const;
-    /**
-     * @brief 读取会话全量记录（UI 重放用，含 usage 记录）
-     * @return 全量记录数组，按时序。跳过损坏行。
-     */
+    // 读取会话全量记录（UI 重放用，含 usage 记录）
     QVector<QJsonObject> readAllRecords(const QString& sessionId) const;
 
     // ---- 指针 ----
-    /**
-     * @brief 读取上次活跃会话 ID（按工程过滤；空=自由会话上次活跃）
-     */
+    // 读取上次活跃会话 ID（按工程过滤；空=自由会话上次活跃）
     QString lastActiveSession(const QString& projectPathFilter = QString()) const;
-    /**
-     * @brief 设置上次活跃会话指针
-     */
+    // 设置上次活跃会话指针
     void setLastActive(const QString& sessionId, const QString& projectPath = QString());
 
     // ---- 清理 ----
-    /**
-     * @brief 按数量+时间双限清理旧会话
-     * @param maxCount 保留的最大会话数（按 updatedAt 倒序后超出的删最旧）
-     * @param retentionDays 早于 now-retentionDays 的删
-     * @param skipSessionId 跳过此会话不删（当前活跃）
-     * @note 同时跳过 lastActiveSession()，避免误删导致上下文丢失 / 指针悬空。
-     *       删时 QFile::remove jsonl + 从 index 移除；index 原子写（tmp+rename）。
-     */
+    // 按数量+时间双限清理旧会话
     void cleanupOldSessions(int maxCount, int retentionDays, const QString& skipSessionId = QString());
 
     // ---- 工程导入导出（plan-05 调用） ----
-    /**
-     * @brief 导出指定会话的 JSONL 字节（供工程 zip 保存）
-     * @return id -> jsonl 字节
-     */
+    // 导出指定会话的 JSONL 字节（供工程 zip 保存）
     QHash<QString, QByteArray> exportSessionFiles(const QStringList& sessionIds) const;
-    /**
-     * @brief 导入工程内会话文件（写 sessions/ + 更新 index + 标记导入会话 projectPath）
-     * @param files id -> jsonl 字节
-     * @param projectPath 绑定工程路径
-     */
+    // 导入工程内会话文件（写 sessions/ + 更新 index + 标记导入会话 projectPath）
     void importSessionFiles(const QHash<QString, QByteArray>& files, const QString& projectPath);
-    /**
-     * @brief 更新 index 中该会话的 projectPath 字段（原子写 tmp+rename）
-     */
+    // 更新 index 中该会话的 projectPath 字段（原子写 tmp+rename）
     void setSessionProjectPath(const QString& sessionId, const QString& projectPath);
 
     // ---- 自动标题 ----
-    /**
-     * @brief 读首条 user 记录，若 title 空则取其 content 首行截断为简短标题
-     * @return 标题是否被设置（true=本次设置了标题；false=已有标题/无可取内容）
-     */
+    // 读首条 user 记录，若 title 空则取其 content 首行截断为简短标题
     bool ensureTitle(const QString& sessionId);
 
 private:

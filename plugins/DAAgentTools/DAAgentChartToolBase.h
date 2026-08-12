@@ -15,7 +15,7 @@ namespace DA
  * 继承瘦身后的 DAAgentToolBase（数据 + 响应方法），并补全 7 个图表访问
  * 方法（chartOperateWidget / currentFigure / currentChart / findFigureByName
  * / createFigure / findChart / enableAutoScale），实现体逐字照搬自旧
- * DAAgentToolBase.h，依赖 m_core->getUiInterface()->getDockingArea()->
+ * DAAgentToolBase.h，依赖 mCore->getUiInterface()->getDockingArea()->
  * getChartOperateWidget() 链路。本类无导出宏，方法为 protected 非虚，
  * 编译进插件 DLL，8 个图表工具（同 DLL）可见即可调用。
  */
