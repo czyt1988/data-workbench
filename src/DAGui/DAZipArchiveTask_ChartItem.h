@@ -2,7 +2,7 @@
 #define DAZIPARCHIVETASK_CHARTITEM_H
 #include "DAGuiAPI.h"
 #include "DAAbstractArchiveTask.h"
-#include "DAChartItemsManager.h"
+#include "Chart/DAChartItemsManager.h"
 namespace DA
 {
 class DAZipArchive;

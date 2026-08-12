@@ -19,7 +19,7 @@ data-workbench采用分层模块化架构，各模块之间有明确的依赖关
 | **DACommonWidgets** | L3 界面层 | 共享库 | 属性面板、颜色选择器、样式编辑器、设置对话框、对齐/文件编辑 | 82 |
 | **DAGraphicsView** | L2 功能层 | 共享库 | QGraphicsView框架（场景、视图、图元、连线、动作、撤销命令） | 54 |
 | **DAFigure** | L2 功能层 | 共享库 | Qwt图表容器、图表编辑器、数据探针、序列化 | 103 |
-| **DAGui** | L3 界面层 | 共享库 | 工作流UI、图表设置面板、数据管理UI、Model/View、对话框 | ~220 |
+| **DAGui** | L3 界面层 | 共享库 | 工作流UI、图表设置面板、数据管理UI、Model/View、对话框 | ~404 |
 | **DAInterface** | L4 接口层 | 共享库 | 抽象接口定义（Core/UI/Docking/Ribbon/Actions/Command/DataManager/Project） | 28 |
 | **DAPluginSupport** | L4 接口层 | 共享库 | 插件框架（DAAbstractPlugin/DAPluginManager/DAAbstractNodePlugin） | 10 |
 | **DAAgent** | L4 接口层 | 共享库 | 纯 agent 框架库（LLM 聊天/工具注册/信号链/会话持久化），不依赖 GUI 模块 | 11 |
@@ -130,7 +130,7 @@ graph BT
 
     subgraph "Layer 3 - 界面层"
         DACW["DA<b>Common</b><br/>Widgets<br/>通用UI组件"]
-        DAGui["DA<b>Gui</b><br/>GUI整合层<br/>~220文件"]
+        DAGui["DA<b>Gui</b><br/>GUI整合层<br/>~404文件"]
     end
 
     subgraph "Layer 4 - 接口层"
@@ -382,22 +382,27 @@ graph BT
 
 消费者：DAGui (PUBLIC link)，APP + DAPluginSupport (传递依赖)
 
-#### DAGui — GUI 整合层（最大模块，~220 文件）
+#### DAGui — GUI 整合层（最大模块，~404 文件）
 
 职责：整合所有模块的 GUI 组件，提供完整用户界面。
 
-子目录：
-- `ChartSetting/` (36文件) — 每种图表类型的属性设置面板 + 工厂
-- `NodeSetting/` (8文件，Python only) — 通用节点参数面板系统（参数类型注册+SceneB模式）
-- `Commands/` (8文件) — 工作流/DataFrame 撤销命令
-- `Dialog/` (23文件) — 对话框（图表向导、导入、列类型转换、Python参数等）
-- `MimeData/` (3文件) — 拖放 MIME 数据类型
-- `Models/` (22文件) — Qt Model/View 模型（数据树、表格、消息日志、Python数据）
+子目录（文件数含 .h/.cpp/.ui）：
+- `Chart/` (11) — 图表管理容器：`DAChartOperateWidget`(图表操作总控)/`DAChartManageWidget`(对象树)/`DAChartSettingWidget`(设置宿主) + `DAChartItemsManager`(序列化 key↔item 映射)；**非 Python 门控**
+- `ChartAddItem/` (89，混合门控) — 图表添加向导面板体系：2D/3D/Stats 三组抽象基类 + 27 个 `DAChartAdd*` 派生 Widget + `DAChartSeriesPickerWidget`/`DAChartSeriesSelectWidget`。**门控铁律**：`DAAbstractChartAddItemWidget`/`DAAbstractStatsChartAddWidget` 在非 Python 变量，`DAAbstractChart3DAddItemWidget` 及 27 个 Add 在 `if(DA_ENABLE_PYTHON)` 块——不可整目录 GLOB，否则 `DA_ENABLE_PYTHON=OFF` 时改变构建行为
+- `ChartSetting/` (64) — 每种图表类型的属性设置面板 + 工厂
+- `Chart3DSetting/` (26) — 3D 图表属性设置面板
+- `NodeSetting/` (8，Python only) — 通用节点参数面板系统（参数类型注册+SceneB模式）
+- `Commands/` (10) — 工作流/DataFrame 撤销命令
+- `Dialog/` (31) — 对话框（图表向导、导入、列类型转换、Python参数等）
+- `MimeData/` (3) — 拖放 MIME 数据类型
+- `Models/` (22) — Qt Model/View 模型（数据树、表格、消息日志、Python数据）
+- `Agent/` (4，Python only) — Agent 聊天 UI（`DAAgentDockWidget`）
+- `MarkdownView/` (2，Python only) — Markdown 预览视图
 
-根级 (116+ 文件)：
+根级 (134)：
 - 工作流 UI：`DAPyWorkFlowEditWidget/GraphicsView/Scene` 等
-- 图表 UI：`DAChartOperateWidget/ManageWidget`、12种图表添加Widget
 - 数据 UI：`DADataManageWidget/OperateWidget`、`DAPyDataFrameTableView` 等
+- 通用基类：`DAAbstractOperateWidget`（被 Chart/Data/PyWorkFlow 三家继承，留顶层）
 - 工具：`DASplashScreen`、`DAZipArchive`、`DARecentFilesManager`
 
 外部依赖：**所有下层模块** + SARibbon/ADS/qwt/DALiteCtk/quazip

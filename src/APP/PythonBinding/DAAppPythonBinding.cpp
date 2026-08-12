@@ -5,7 +5,7 @@
 #include "DAFigurePythonBinding.h"
 #include "DAUIInterface.h"
 #include "DADockingAreaInterface.h"
-#include "DAChartOperateWidget.h"
+#include "Chart/DAChartOperateWidget.h"
 namespace DA
 {
 

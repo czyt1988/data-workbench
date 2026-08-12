@@ -5,7 +5,7 @@
 #include <QString>
 #include <QDomDocument>
 #include "DAAbstractArchiveTask.h"
-#include "DAChartItemsManager.h"
+#include "Chart/DAChartItemsManager.h"
 namespace DA
 {
 

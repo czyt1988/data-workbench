@@ -17,21 +17,14 @@ damacro_lib_setting(
 ########################################################
 set(DA_LIB_HEADER_FILES
     DAGuiAPI.h
-    DAAbstractChartAddItemWidget.h
-    DAAbstractStatsChartAddWidget.h
     DAAbstractNodeSettingWidget.h
     DAAbstractOperateWidget.h
     DACacheWindowTableView.h
-    DAChartItemsManager.h
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
     DADataTableView.h
     DAFigureFactory.h
     DAGraphicsPixmapItemSettingWidget.h
-    DAChartListView.h
-    DAChartManageWidget.h
-    DAChartOperateWidget.h
-    DAChartSettingWidget.h
     DADataListView.h
     DADataManageTableView.h
     DADataManageWidget.h
@@ -79,16 +72,9 @@ set(DA_LIB_HEADER_FILES
     DATableStyleItemDelegate.h
 )
 set(DA_LIB_SOURCE_FILES
-    DAAbstractChartAddItemWidget.cpp
-    DAAbstractStatsChartAddWidget.cpp
     DAAbstractNodeSettingWidget.cpp
     DAAbstractOperateWidget.cpp
     DACacheWindowTableView.cpp
-    DAChartListView.cpp
-    DAChartManageWidget.cpp
-    DAChartOperateWidget.cpp
-    DAChartSettingWidget.cpp
-    DAChartItemsManager.cpp
     DADataListView.cpp
     DADataManageTableView.cpp
     DADataManagerTreeWidget.cpp
@@ -141,9 +127,6 @@ set(DA_LIB_SOURCE_FILES
     DATableStyleItemDelegate.cpp
 )
 set(DA_LIB_QT_UI_FILES
-    DAChartManageWidget.ui
-    DAChartOperateWidget.ui
-    DAChartSettingWidget.ui
     DADataManageWidget.ui
     DADataManagerTreeWidget.ui
     DADataOperateWidget.ui
@@ -170,36 +153,6 @@ if(DA_ENABLE_PYTHON)
         DAPyDataFrameTableView.h
         DAPySeriesTableView.h
         DAPySeriesListView.h
-        DAChartAddXYSeriesWidget.h
-        DAChartSeriesPickerWidget.h
-        DAChartSeriesSelectWidget.h
-        DAChartAddXYESeriesWidget.h
-        DAChartAddOHLCSeriesWidget.h
-        DAChartAddtGridRasterDataWidget.h
-        DAChartAddCurveWidget.h
-        DAChartAddBarWidget.h
-        DAChartAddIntervalCurveWidget.h
-        DAChartAddTradingCurveWidget.h
-        DAChartAddErrorBarWidget.h
-        DAChartAddBoxChartWidget.h
-        DAChartAddMultiBarWidget.h
-        DAChartAddHistogramWidget.h
-        DAChartAddContourWidget.h
-        DAChartAddVectorFieldWidget.h
-        DAChartAddSpectrogramWidget.h
-        DAChartAddStatsHistplotWidget.h
-        DAChartAddStatsKdeplot1dWidget.h
-        DAChartAddStatsKdeplot2dWidget.h
-        DAChartAddStatsBoxplotWidget.h
-        DAChartAddStatsHeatmapWidget.h
-        DAChartAddStatsScatterplotWidget.h
-        DAChartAddStatsBarplotWidget.h
-        DAChartAddStatsRegplotWidget.h
-        DAChartAddStatsEcdfplotWidget.h
-        DAAbstractChart3DAddItemWidget.h
-        DAChartAdd3DSurfaceWidget.h
-        DAChartAdd3DBarWidget.h
-        DAChartAdd3DLineWidget.h
     )
     list(APPEND DA_LIB_SOURCE_FILES
         DADataframeToVectorPointWidget.cpp
@@ -207,63 +160,10 @@ if(DA_ENABLE_PYTHON)
         DAPyDataFrameTableView.cpp
         DAPySeriesTableView.cpp
         DAPySeriesListView.cpp
-        DAChartAddXYSeriesWidget.cpp
-        DAChartSeriesPickerWidget.cpp
-        DAChartSeriesSelectWidget.cpp
-        DAChartAddXYESeriesWidget.cpp
-        DAChartAddOHLCSeriesWidget.cpp
-        DAChartAddtGridRasterDataWidget.cpp
-        DAChartAddCurveWidget.cpp
-        DAChartAddBarWidget.cpp
-        DAChartAddIntervalCurveWidget.cpp
-        DAChartAddSpectrogramWidget.cpp
-        DAChartAddTradingCurveWidget.cpp
-        DAChartAddErrorBarWidget.cpp
-        DAChartAddBoxChartWidget.cpp
-        DAChartAddMultiBarWidget.cpp
-        DAChartAddHistogramWidget.cpp
-        DAChartAddContourWidget.cpp
-        DAChartAddVectorFieldWidget.cpp
-        DAChartAddStatsHistplotWidget.cpp
-        DAChartAddStatsKdeplot1dWidget.cpp
-        DAChartAddStatsKdeplot2dWidget.cpp
-        DAChartAddStatsBoxplotWidget.cpp
-        DAChartAddStatsHeatmapWidget.cpp
-        DAChartAddStatsScatterplotWidget.cpp
-        DAChartAddStatsBarplotWidget.cpp
-        DAChartAddStatsRegplotWidget.cpp
-        DAChartAddStatsEcdfplotWidget.cpp
-        DAAbstractChart3DAddItemWidget.cpp
-        DAChartAdd3DSurfaceWidget.cpp
-        DAChartAdd3DBarWidget.cpp
-        DAChartAdd3DLineWidget.cpp
     )
     list(APPEND DA_LIB_QT_UI_FILES
         DADataframeToVectorPointWidget.ui
         DADataOperateOfDataFrameWidget.ui
-        DAChartAddXYSeriesWidget.ui
-        DAChartSeriesPickerWidget.ui
-        DAChartSeriesSelectWidget.ui
-        DAChartAddXYESeriesWidget.ui
-        DAChartAddOHLCSeriesWidget.ui
-        DAChartAddtGridRasterDataWidget.ui
-        DAChartAddBoxChartWidget.ui
-        DAChartAddMultiBarWidget.ui
-        DAChartAddHistogramWidget.ui
-        DAChartAddContourWidget.ui
-        DAChartAddVectorFieldWidget.ui
-        DAChartAddStatsHistplotWidget.ui
-        DAChartAddStatsKdeplot1dWidget.ui
-        DAChartAddStatsKdeplot2dWidget.ui
-        DAChartAddStatsBoxplotWidget.ui
-        DAChartAddStatsHeatmapWidget.ui
-        DAChartAddStatsScatterplotWidget.ui
-        DAChartAddStatsBarplotWidget.ui
-        DAChartAddStatsRegplotWidget.ui
-        DAChartAddStatsEcdfplotWidget.ui
-        DAChartAdd3DSurfaceWidget.ui
-        DAChartAdd3DBarWidget.ui
-        DAChartAdd3DLineWidget.ui
     )
 endif()
 # 子目录
@@ -274,6 +174,8 @@ set(DA_LIB_SUBDIR_Commands ${CMAKE_CURRENT_SOURCE_DIR}/Commands)
 set(DA_LIB_SUBDIR_ChartSetting ${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting)
 set(DA_LIB_SUBDIR_Chart3DSetting ${CMAKE_CURRENT_SOURCE_DIR}/Chart3DSetting)
 set(DA_LIB_SUBDIR_NodeSetting ${CMAKE_CURRENT_SOURCE_DIR}/NodeSetting)
+set(DA_LIB_SUBDIR_Chart ${CMAKE_CURRENT_SOURCE_DIR}/Chart)
+set(DA_LIB_SUBDIR_ChartAddItem ${CMAKE_CURRENT_SOURCE_DIR}/ChartAddItem)
 
 # Models
 set(DA_LIB_HEADER_FILES_Models
@@ -413,6 +315,133 @@ if(DA_ENABLE_PYTHON)
     )
 endif()
 
+#Chart
+set(DA_LIB_HEADER_FILES_Chart
+    ${DA_LIB_SUBDIR_Chart}/DAChartOperateWidget.h
+    ${DA_LIB_SUBDIR_Chart}/DAChartManageWidget.h
+    ${DA_LIB_SUBDIR_Chart}/DAChartSettingWidget.h
+    ${DA_LIB_SUBDIR_Chart}/DAChartItemsManager.h
+)
+set(DA_LIB_SOURCE_FILES_Chart
+    ${DA_LIB_SUBDIR_Chart}/DAChartOperateWidget.cpp
+    ${DA_LIB_SUBDIR_Chart}/DAChartManageWidget.cpp
+    ${DA_LIB_SUBDIR_Chart}/DAChartSettingWidget.cpp
+    ${DA_LIB_SUBDIR_Chart}/DAChartItemsManager.cpp
+)
+set(DA_LIB_QT_UI_FILES_Chart
+    ${DA_LIB_SUBDIR_Chart}/DAChartOperateWidget.ui
+    ${DA_LIB_SUBDIR_Chart}/DAChartManageWidget.ui
+    ${DA_LIB_SUBDIR_Chart}/DAChartSettingWidget.ui
+)
+
+#ChartAddItem
+# 非 Python 部分（保持原门控语义：两个基类 .cpp 不依赖 Python）
+set(DA_LIB_HEADER_FILES_ChartAddItem
+    ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChartAddItemWidget.h
+    ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractStatsChartAddWidget.h
+)
+set(DA_LIB_SOURCE_FILES_ChartAddItem
+    ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChartAddItemWidget.cpp
+    ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractStatsChartAddWidget.cpp
+)
+
+# Python 部分（DAAbstractChart3DAddItemWidget 必须留 Python 块，保持与原 CMake 一致）
+if(DA_ENABLE_PYTHON)
+    list(APPEND DA_LIB_HEADER_FILES_ChartAddItem
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChart3DAddItemWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesPickerWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesSelectWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYSeriesWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYESeriesWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddtGridRasterDataWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddOHLCSeriesWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddCurveWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddBarWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddIntervalCurveWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddTradingCurveWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddErrorBarWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddBoxChartWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddMultiBarWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddHistogramWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddContourWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddVectorFieldWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddSpectrogramWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DSurfaceWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DBarWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DLineWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsHistplotWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsKdeplot1dWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsKdeplot2dWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsBoxplotWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsHeatmapWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsScatterplotWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsBarplotWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsRegplotWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsEcdfplotWidget.h
+    )
+    list(APPEND DA_LIB_SOURCE_FILES_ChartAddItem
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChart3DAddItemWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesPickerWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesSelectWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYSeriesWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYESeriesWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddtGridRasterDataWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddOHLCSeriesWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddCurveWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddBarWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddIntervalCurveWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddSpectrogramWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddTradingCurveWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddErrorBarWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddBoxChartWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddMultiBarWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddHistogramWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddContourWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddVectorFieldWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DSurfaceWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DBarWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DLineWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsHistplotWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsKdeplot1dWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsKdeplot2dWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsBoxplotWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsHeatmapWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsScatterplotWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsBarplotWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsRegplotWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsEcdfplotWidget.cpp
+    )
+    list(APPEND DA_LIB_QT_UI_FILES_ChartAddItem
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesPickerWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesSelectWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYSeriesWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYESeriesWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddOHLCSeriesWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddtGridRasterDataWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddBoxChartWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddMultiBarWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddHistogramWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddContourWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddVectorFieldWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DSurfaceWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DBarWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DLineWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsHistplotWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsKdeplot1dWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsKdeplot2dWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsBoxplotWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsHeatmapWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsScatterplotWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsBarplotWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsRegplotWidget.ui
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsEcdfplotWidget.ui
+        # 注：DAChartAddBarWidget / DAChartAddErrorBarWidget / DAChartAddIntervalCurveWidget /
+        #     DAChartAddTradingCurveWidget 复用基类 .ui，无独立 .ui 文件
+        # 注：DAChartAddCurveWidget.ui / DAChartAddSpectrogramWidget.ui 存在于磁盘但当前未纳入
+        #     构建（其 .cpp 未 include 对应 ui_ 头），保持原有构建行为不纳入 CMake UI 列表
+    )
+endif()
+
 #Agent
 if(DA_ENABLE_PYTHON)
     set(DA_LIB_SUBDIR_Agent ${CMAKE_CURRENT_SOURCE_DIR}/Agent)
@@ -459,6 +488,14 @@ add_library(${DA_LIB_NAME} SHARED
             #NodeSetting
             ${DA_LIB_HEADER_FILES_NodeSetting}
             ${DA_LIB_SOURCE_FILES_NodeSetting}
+            #Chart
+            ${DA_LIB_HEADER_FILES_Chart}
+            ${DA_LIB_SOURCE_FILES_Chart}
+            ${DA_LIB_QT_UI_FILES_Chart}
+            #ChartAddItem
+            ${DA_LIB_HEADER_FILES_ChartAddItem}
+            ${DA_LIB_SOURCE_FILES_ChartAddItem}
+            ${DA_LIB_QT_UI_FILES_ChartAddItem}
             #Agent
             ${DA_LIB_HEADER_FILES_Agent}
             ${DA_LIB_SOURCE_FILES_Agent}
@@ -563,6 +600,14 @@ target_include_directories(${DA_LIB_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/NodeSetting>
 )
 target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/Chart>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Chart>
+)
+target_include_directories(${DA_LIB_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/ChartAddItem>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ChartAddItem>
+)
+target_include_directories(${DA_LIB_NAME} PUBLIC
     $<INSTALL_INTERFACE:include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/Agent>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Agent>
 )
@@ -621,6 +666,18 @@ install(FILES
 install(FILES
     ${DA_LIB_HEADER_FILES_NodeSetting}
     DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/NodeSetting
+    COMPONENT headers
+)
+#Chart
+install(FILES
+    ${DA_LIB_HEADER_FILES_Chart}
+    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/Chart
+    COMPONENT headers
+)
+#ChartAddItem
+install(FILES
+    ${DA_LIB_HEADER_FILES_ChartAddItem}
+    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/ChartAddItem
     COMPONENT headers
 )
 #Agent

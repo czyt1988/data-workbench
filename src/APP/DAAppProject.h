@@ -11,7 +11,7 @@
 #include <QThread>
 #include "DAXmlHelper.h"
 #include "DAZipArchiveThreadWrapper.h"
-#include "DAChartItemsManager.h"
+#include "Chart/DAChartItemsManager.h"
 
 namespace DA
 {

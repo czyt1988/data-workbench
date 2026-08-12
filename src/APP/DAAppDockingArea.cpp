@@ -16,11 +16,11 @@
 #include "DAAppCommand.h"
 #include "DAAppDataManager.h"
 // chart相关
-#include "DAChartOperateWidget.h"
+#include "Chart/DAChartOperateWidget.h"
 #include "DAAppFigureFactory.h"
 #include "DAAppChartOperateWidget.h"
 #include "DAAppChartManageWidget.h"
-#include "DAChartSettingWidget.h"
+#include "Chart/DAChartSettingWidget.h"
 // Data相关
 #include "DADataOperateWidget.h"
 #include "DADataManageWidget.h"

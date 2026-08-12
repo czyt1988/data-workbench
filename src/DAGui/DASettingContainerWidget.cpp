@@ -1,6 +1,6 @@
 #include "DASettingContainerWidget.h"
 #include "DAPyWorkFlowNodeItemSettingWidget.h"
-#include "DAChartSettingWidget.h"
+#include "Chart/DAChartSettingWidget.h"
 #include "Chart3DSetting/DAChart3DSettingWidget.h"
 #include "ChartSetting/DAFigureWidgetSettingPanel.h"
 //===================================================

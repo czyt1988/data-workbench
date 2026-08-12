@@ -9,8 +9,8 @@
 #include "MimeData/DAMimeDataForData.h"
 #include "MimeData/DAMimeDataFormats.h"
 #include "Dialog/DADialogChartGuide.h"
-#include "DAAbstractChartAddItemWidget.h"
-#include "DAChartAddCurveWidget.h"
+#include "ChartAddItem/DAAbstractChartAddItemWidget.h"
+#include "ChartAddItem/DAChartAddCurveWidget.h"
 #include "DAChartWidget.h"
 #include "da_qt5qt6_compat.hpp"
 namespace DA

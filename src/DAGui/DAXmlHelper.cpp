@@ -36,10 +36,10 @@
 #include "DAPyWorkFlowOperateWidget.h"
 #include "DAPyWorkFlowEditWidget.h"
 #include "DAQtContainerUtil.hpp"
-#include "DAChartOperateWidget.h"
+#include "Chart/DAChartOperateWidget.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
-#include "DAChartItemsManager.h"
+#include "Chart/DAChartItemsManager.h"
 #include "DAChartAxisRangeBinder.h"
 // qwt
 #include "qwt_figure.h"

@@ -1,6 +1,6 @@
 #ifndef DAAPPCHARTOPERATEWIDGET_H
 #define DAAPPCHARTOPERATEWIDGET_H
-#include "DAChartOperateWidget.h"
+#include "Chart/DAChartOperateWidget.h"
 #include "DAData.h"
 #include "DAFigureAPI.h"
 

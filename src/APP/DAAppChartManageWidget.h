@@ -1,6 +1,6 @@
 #ifndef DAAPPCHARTMANAGEWIDGET_H
 #define DAAPPCHARTMANAGEWIDGET_H
-#include "DAChartManageWidget.h"
+#include "Chart/DAChartManageWidget.h"
 
 namespace DA
 {

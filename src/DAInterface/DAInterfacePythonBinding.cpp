@@ -8,7 +8,7 @@
 #include "DAStatusBarInterface.h"
 #include "DAUIInterface.h"
 #include "DADockingAreaInterface.h"
-#include "DAChartOperateWidget.h"
+#include "Chart/DAChartOperateWidget.h"
 #include "DAPyWorkFlowScene.h"
 #include "DAPyWorkFlowGraphicsScene.h"
 #include "DAData.h"

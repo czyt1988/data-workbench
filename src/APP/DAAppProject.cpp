@@ -40,8 +40,8 @@
 #include "DATableStyleRegistry.h"
 #include "DADataEnumStringUtils.h"
 #include "DAWaitCursorScoped.h"
-#include "DAChartItemsManager.h"
-#include "DAChartOperateWidget.h"
+#include "Chart/DAChartItemsManager.h"
+#include "Chart/DAChartOperateWidget.h"
 #include "DAAppPluginManager.h"
 #include "DALogCategory.h"
 // python
