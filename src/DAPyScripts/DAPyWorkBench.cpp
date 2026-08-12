@@ -28,10 +28,12 @@ DAPyWorkBench::DAPyWorkBench() : DAPyModule(), DA_PIMPL_CONSTRUCT
     import();
 }
 
+/** @brief 析构DAPyWorkBench */
 DAPyWorkBench::~DAPyWorkBench()
 {
 }
 
+/** @brief 导入DAWorkbench模块 */
 bool DAPyWorkBench::import()
 {
     bool res = DAPyModule::import("DAWorkbench");
@@ -68,21 +70,25 @@ bool DAPyWorkBench::import()
     return true;
 }
 
+/** @brief 获取IO脚本模块 @return IO脚本模块引用 */
 DAPyScriptsIO& DAPyWorkBench::getIO()
 {
     return d_ptr->mIO;
 }
 
+/** @brief 获取DataFrame脚本模块 @return DataFrame脚本模块引用 */
 DAPyScriptsDataFrame& DAPyWorkBench::getDataFrame()
 {
     return d_ptr->mDataframe;
 }
 
+/** @brief 获取数据处理脚本模块 @return 数据处理脚本模块引用 */
 DAPyScriptsDataProcess& DAPyWorkBench::getDataProcess()
 {
     return d_ptr->mDataProcess;
 }
 
+/** @brief 获取统计脚本模块 @return 统计脚本模块引用 */
 DAPyScriptsStatistics& DAPyWorkBench::getStatistics()
 {
     return d_ptr->mStatistics;

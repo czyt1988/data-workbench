@@ -1,4 +1,4 @@
-﻿#ifndef DAPYMODULE_H
+#ifndef DAPYMODULE_H
 #define DAPYMODULE_H
 #include "DAPyBindQtGlobal.h"
 #include "DAPybind11InQt.h"
@@ -16,7 +16,7 @@ public:
     DAPyModule(const char* moduleName);
     DAPyModule(const pybind11::object& obj);
     DAPyModule(pybind11::object&& obj);
-    virtual ~DAPyModule();
+    ~DAPyModule() override;
     DAPyModule& operator=(const DAPyObjectWrapper& obj);
     DAPyModule& operator=(const pybind11::object& obj);
 

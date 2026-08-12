@@ -15,6 +15,11 @@ namespace DA
 //===================================================
 // DAPySeries
 //===================================================
+
+/**
+ * @brief 拷贝构造
+ * @param s 另一个DAPySeries
+ */
 DAPySeries::DAPySeries(const DAPySeries& s) : DAPyObjectWrapper(s)
 {
     if (!s.isNone()) {
@@ -22,10 +27,18 @@ DAPySeries::DAPySeries(const DAPySeries& s) : DAPyObjectWrapper(s)
     }
 }
 
+/**
+ * @brief 移动构造
+ * @param s 右值DAPySeries
+ */
 DAPySeries::DAPySeries(DAPySeries&& s) : DAPyObjectWrapper(std::move(s))
 {
 }
 
+/**
+ * @brief 构造，从pybind11::object构造
+ * @param obj pybind11对象
+ */
 DAPySeries::DAPySeries(const pybind11::object& obj) : DAPyObjectWrapper(obj)
 {
     if (!obj.is_none()) {
@@ -33,6 +46,10 @@ DAPySeries::DAPySeries(const pybind11::object& obj) : DAPyObjectWrapper(obj)
     }
 }
 
+/**
+ * @brief 构造，从pybind11::object右值构造
+ * @param obj pybind11对象右值
+ */
 DAPySeries::DAPySeries(pybind11::object&& obj) : DAPyObjectWrapper(std::move(obj))
 {
     if (!obj.is_none()) {
@@ -40,24 +57,42 @@ DAPySeries::DAPySeries(pybind11::object&& obj) : DAPyObjectWrapper(std::move(obj
     }
 }
 
+/**
+ * @brief 析构
+ */
 DAPySeries::~DAPySeries()
 {
 }
 
+/**
+ * @brief 赋值操作符
+ * @param obj pybind11对象
+ * @return 返回自身的引用
+ */
 DAPySeries& DAPySeries::operator=(const pybind11::object& obj)
 {
-    _object = obj;
+    object() = obj;
     checkObjectValid();
     return *this;
 }
 
+/**
+ * @brief 移动赋值操作符
+ * @param obj pybind11对象右值
+ * @return 返回自身的引用
+ */
 DAPySeries& DAPySeries::operator=(pybind11::object&& obj)
 {
-    _object = std::move(obj);
+    object() = std::move(obj);
     checkObjectValid();
     return *this;
 }
 
+/**
+ * @brief 拷贝赋值操作符
+ * @param s 另一个DAPySeries
+ * @return 返回自身的引用
+ */
 DAPySeries& DAPySeries::operator=(const DAPySeries& s)
 {
     if (this != &s) {
@@ -67,6 +102,11 @@ DAPySeries& DAPySeries::operator=(const DAPySeries& s)
     return *this;
 }
 
+/**
+ * @brief 移动赋值操作符
+ * @param s 右值DAPySeries
+ * @return 返回自身的引用
+ */
 DAPySeries& DAPySeries::operator=(DAPySeries&& s)
 {
     if (this != &s) {
@@ -76,6 +116,11 @@ DAPySeries& DAPySeries::operator=(DAPySeries&& s)
     return *this;
 }
 
+/**
+ * @brief 赋值操作符，从DAPyObjectWrapper赋值
+ * @param obj DAPyObjectWrapper对象
+ * @return 返回自身的引用
+ */
 DAPySeries& DAPySeries::operator=(const DAPyObjectWrapper& obj)
 {
     DAPyObjectWrapper::operator=(obj);
@@ -83,6 +128,11 @@ DAPySeries& DAPySeries::operator=(const DAPyObjectWrapper& obj)
     return *this;
 }
 
+/**
+ * @brief 移动赋值操作符，从DAPyObjectWrapper移动赋值
+ * @param obj DAPyObjectWrapper对象右值
+ * @return 返回自身的引用
+ */
 DAPySeries& DAPySeries::operator=(DAPyObjectWrapper&& obj)
 {
     DAPyObjectWrapper::operator=(std::move(obj));
@@ -90,6 +140,11 @@ DAPySeries& DAPySeries::operator=(DAPyObjectWrapper&& obj)
     return *this;
 }
 
+/**
+ * @brief 通过位置索引获取元素
+ * @param i 位置索引
+ * @return 对应位置的pybind11::object
+ */
 pybind11::object DAPySeries::operator[](std::size_t i) const
 {
     return iat(i);
@@ -246,12 +301,22 @@ pybind11::object DAPySeries::iat(std::size_t i) const
     return obj_iat[ pybind11::int_(i) ];
 }
 
+/**
+ * @brief 设置指定位置的元素值
+ * @param r 位置索引
+ * @param v 要设置的值
+ */
 void DAPySeries::iat(size_t r, const pybind11::object& v)
 {
     pybind11::object obj_iat     = object().attr("iat");
     obj_iat[ pybind11::int_(r) ] = v;
 }
 
+/**
+ * @brief 获取指定位置的元素值
+ * @param i 位置索引
+ * @return 返回QVariant形式的值
+ */
 QVariant DAPySeries::value(size_t i) const
 {
     try {
@@ -262,6 +327,12 @@ QVariant DAPySeries::value(size_t i) const
     return QVariant();
 }
 
+/**
+ * @brief 设置指定位置的元素值
+ * @param i 位置索引
+ * @param v 要设置的QVariant值
+ * @return 设置成功返回true
+ */
 bool DAPySeries::setValue(size_t i, const QVariant& v)
 {
     try {
@@ -273,6 +344,10 @@ bool DAPySeries::setValue(size_t i, const QVariant& v)
     return true;
 }
 
+/**
+ * @brief 判断是否为数值类型
+ * @return 如果是数值类型返回true
+ */
 bool DAPySeries::isNumeric() const
 {
     if (isNone()) {
@@ -282,6 +357,10 @@ bool DAPySeries::isNumeric() const
     return dtype_str.find("int") == 0 || dtype_str.find("float") == 0 || dtype_str.find("complex") == 0;
 }
 
+/**
+ * @brief 判断是否为日期时间类型
+ * @return 如果是日期时间类型返回true
+ */
 bool DAPySeries::isDateTime() const
 {
     if (isNone()) {
@@ -291,6 +370,10 @@ bool DAPySeries::isDateTime() const
     return dtype_str.find("datetime") == 0;
 }
 
+/**
+ * @brief 判断是否为字符串类型
+ * @return 如果是字符串类型返回true
+ */
 bool DAPySeries::isString() const
 {
     if (isNone()) {
@@ -307,6 +390,10 @@ bool DAPySeries::isString() const
     return false;
 }
 
+/**
+ * @brief 判断是否为分类类型
+ * @return 如果是分类类型返回true
+ */
 bool DAPySeries::isCategorical() const
 {
     if (isNone()) {
@@ -316,11 +403,19 @@ bool DAPySeries::isCategorical() const
     return dtype_str.find("category") != std::string::npos;
 }
 
+/**
+ * @brief 获取Series的索引
+ * @return 返回DAPyIndex对象
+ */
 DAPyIndex DAPySeries::index() const
 {
     return DAPyIndex(object().attr("index"));
 }
 
+/**
+ * @brief 获取索引的字符串列表
+ * @return 返回索引的QStringList
+ */
 QStringList DAPySeries::indexAsStringList() const
 {
     QStringList result;
@@ -339,6 +434,10 @@ QStringList DAPySeries::indexAsStringList() const
     return result;
 }
 
+/**
+ * @brief 获取索引的浮点数向量
+ * @return 返回索引的QVector<double>
+ */
 QVector< double > DAPySeries::indexAsDoubleVector() const
 {
     QVector< double > result;
@@ -363,6 +462,10 @@ QVector< double > DAPySeries::indexAsDoubleVector() const
     return result;
 }
 
+/**
+ * @brief 获取索引的日期时间向量
+ * @return 返回索引的QVector<QDateTime>
+ */
 QVector< QDateTime > DAPySeries::indexAsDateTimeVector() const
 {
     QVector< QDateTime > result;
@@ -389,11 +492,20 @@ QVector< QDateTime > DAPySeries::indexAsDateTimeVector() const
     return result;
 }
 
+/**
+ * @brief 类型转换
+ * @param dt 目标dtype
+ * @return 转换后的DAPySeries
+ */
 DAPySeries DAPySeries::astype(const pybind11::dtype& dt) const
 {
     return DAPySeries(object().attr("astype")(dt));
 }
 
+/**
+ * @brief 转换为日期时间类型
+ * @return 转换后的DAPySeries
+ */
 DAPySeries DAPySeries::toDateTime() const
 {
     if (isDateTime()) {
@@ -551,11 +663,19 @@ qint64 DAPySeries::sum() const
     return 0;
 }
 
+/**
+ * @brief 判断对象是否为pandas.Series实例
+ * @param obj 要判断的对象
+ * @return 如果是Series返回true
+ */
 bool DAPySeries::isSeries(const pybind11::object& obj)
 {
     return DAPyModulePandas::getInstance().isInstanceSeries(obj);
 }
 
+/**
+ * @brief 检查对象是否为有效的Series，无效则置为None
+ */
 void DAPySeries::checkObjectValid()
 {
     if (!isSeries(object())) {
@@ -565,6 +685,11 @@ void DAPySeries::checkObjectValid()
     }
 }
 
+/**
+ * @brief 打印为字符串
+ * @param maxele 最大显示元素数
+ * @return 字符串表示
+ */
 QString DAPySeries::toString(std::size_t maxele) const
 {
     QString str;

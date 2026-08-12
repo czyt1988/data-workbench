@@ -1,4 +1,4 @@
-﻿#include "DAPyModulePandas.h"
+#include "DAPyModulePandas.h"
 #include "DAPybind11QtCaster.hpp"
 #include <QDebug>
 #include <QObject>
@@ -50,16 +50,26 @@ DAPyModulePandas::DAPyModulePandas() : DAPyModule(), DA_PIMPL_CONSTRUCT
     }
 }
 
+/**
+ * @brief 析构
+ */
 DAPyModulePandas::~DAPyModulePandas()
 {
 }
 
+/**
+ * @brief 获取单例实例
+ * @return 返回DAPyModulePandas单例引用
+ */
 DAPyModulePandas& DAPyModulePandas::getInstance()
 {
     static DAPyModulePandas s_pandas;
     return s_pandas;
 }
 
+/**
+ * @brief 释放模块资源
+ */
 void DAPyModulePandas::finalize()
 {
     d_ptr->del();
@@ -83,21 +93,41 @@ bool DAPyModulePandas::import()
     return DAPyModule::import("pandas");
 }
 
+/**
+ * @brief 判断对象是否为pandas.Series实例
+ * @param obj 要判断的对象
+ * @return 如果是Series返回true
+ */
 bool DAPyModulePandas::isInstanceSeries(const pybind11::object& obj) const
 {
     return pybind11::isinstance(obj, d_ptr->mSeriesType);
 }
 
+/**
+ * @brief 判断对象是否为pandas.DataFrame实例
+ * @param obj 要判断的对象
+ * @return 如果是DataFrame返回true
+ */
 bool DAPyModulePandas::isInstanceDataFrame(const pybind11::object& obj) const
 {
     return pybind11::isinstance(obj, d_ptr->mDataFrameType);
 }
 
+/**
+ * @brief 判断对象是否为pandas.Index实例
+ * @param obj 要判断的对象
+ * @return 如果是Index返回true
+ */
 bool DAPyModulePandas::isInstanceIndex(const pybind11::object& obj) const
 {
     return pybind11::isinstance(obj, d_ptr->mIndexType);
 }
 
+/**
+ * @brief 静态方法，判断对象是否为pandas.DataFrame实例（不依赖单例）
+ * @param obj 要判断的对象
+ * @return 如果是DataFrame返回true
+ */
 bool DAPyModulePandas::isInstanceDataFrame_(const pybind11::object& obj)
 {
     try {

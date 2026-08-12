@@ -1,4 +1,4 @@
-﻿#ifndef DAPYDATAFRAMECOLUMNSLISTWIDGET_H
+#ifndef DAPYDATAFRAMECOLUMNSLISTWIDGET_H
 #define DAPYDATAFRAMECOLUMNSLISTWIDGET_H
 #include <QListWidget>
 #include "DAPyCommonWidgetsAPI.h"
@@ -15,7 +15,7 @@ class DAPYCOMMONWIDGETS_API DAPyDataframeColumnsListWidget : public QListWidget
 	Q_OBJECT
 public:
 	DAPyDataframeColumnsListWidget(QWidget* parent = nullptr);
-	~DAPyDataframeColumnsListWidget();
+	~DAPyDataframeColumnsListWidget() override;
 	// 获取当前的dataframe
 	DAPyDataFrame getDataFrame() const;
 	// 获取当前选择的列名

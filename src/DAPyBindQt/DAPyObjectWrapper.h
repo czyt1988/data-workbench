@@ -14,9 +14,7 @@ namespace DA
 class DAPYBINDQT_API DAPyObjectWrapper
 {
 public:
-    /**
-     * @brief 异常错误回调函数
-     */
+    // 异常错误回调函数
     using ErrCallback = std::function< void(const char*) >;
 
 public:
@@ -62,19 +60,19 @@ public:
 public:
     pybind11::object& object()
     {
-        return _object;
+        return mObject;
     }
     const pybind11::object& object() const
     {
-        return _object;
+        return mObject;
     }
     pybind11::handle& handle()
     {
-        return _object;
+        return mObject;
     }
     const pybind11::handle& handle() const
     {
-        return _object;
+        return mObject;
     }
 
 public:
@@ -117,46 +115,16 @@ public:
     size_t refCount() const;
 
 protected:
-    pybind11::object _object;
-    ErrCallback _errcallback;
+    pybind11::object mObject;
+    ErrCallback mErrCallback;
 };
 
 /**
  * @brief 直接调用Python可调用对象
  *
- * 此函数用于调用当前包装的Python可调用对象（如函数、方法、lambda等）。
- * 如果对象不可调用，将抛出 std::runtime_error 异常。
- * 如果Python调用过程中发生异常，将通过pybind11抛出 pybind11::error_already_set 异常。
- *
  * @tparam Args 参数类型包，自动推导
  * @param args 调用参数，支持任意数量和类型的参数
  * @return pybind11::object Python调用返回的对象
- *
- * @throws std::runtime_error 如果对象不可调用
- * @throws pybind11::error_already_set 如果Python调用过程中发生异常
- *
- * @note 此函数不捕获任何异常，调用者需要自行处理可能的异常
- *
- * @code
- * // 示例1：调用无参数函数
- * DAPyObjectWrapper func = ...; // 获取Python函数
- * pybind11::object result = func.call();
- *
- * // 示例2：调用带参数函数
- * DAPyObjectWrapper func = ...; // 获取Python函数
- * pybind11::object result = func.call(42, "hello", 3.14);
- *
- * // 示例3：调用方法并处理异常
- * try {
- *     DAPyObjectWrapper obj = ...; // 获取Python对象
- *     pybind11::object result = obj.call(x, y);
- *     // 处理结果...
- * } catch (const pybind11::error_already_set& e) {
- *     qCritical() << "Python call failed:" << e.what();
- * } catch (const std::runtime_error& e) {
- *     qCritical() << "Object is not callable:" << e.what();
- * }
- * @endcode
  */
 template< typename... Args >
 pybind11::object DAPyObjectWrapper::call(Args&&... args)
@@ -164,7 +132,7 @@ pybind11::object DAPyObjectWrapper::call(Args&&... args)
     if (!isCallable()) {
         return pybind11::none();
     }
-    return _object(std::forward< Args >(args)...);
+    return mObject(std::forward< Args >(args)...);
 }
 
 // qHash自由函数（用于QHash容器的key）

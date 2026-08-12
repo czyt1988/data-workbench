@@ -1,4 +1,4 @@
-﻿#include "DAPyScriptsDataProcess.h"
+#include "DAPyScriptsDataProcess.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DALogCategory.h"
 
@@ -33,6 +33,7 @@
 namespace DA
 {
 
+/** @brief 构造DAPyScriptsDataProcess @param autoImport 是否自动导入模块 */
 DAPyScriptsDataProcess::DAPyScriptsDataProcess(bool autoImport) : DAPyModule()
 {
     if (autoImport) {
@@ -42,6 +43,7 @@ DAPyScriptsDataProcess::DAPyScriptsDataProcess(bool autoImport) : DAPyModule()
     }
 }
 
+/** @brief 构造DAPyScriptsDataProcess @param obj Python模块对象 */
 DAPyScriptsDataProcess::DAPyScriptsDataProcess(const pybind11::object& obj) : DAPyModule(obj)
 {
     if (!isModule()) {
@@ -50,6 +52,7 @@ DAPyScriptsDataProcess::DAPyScriptsDataProcess(const pybind11::object& obj) : DA
     }
 }
 
+/** @brief 析构DAPyScriptsDataProcess */
 DAPyScriptsDataProcess::~DAPyScriptsDataProcess()
 {
 }
@@ -64,6 +67,7 @@ DAPyScriptsDataProcess::~DAPyScriptsDataProcess()
  */
 DATAPROCESS_CALL_DF(spectrum_analysis, da_spectrum_analysis)
 
+/** @brief 巴特沃斯滤波 @param wave 输入信号 @param fs 采样率 @param fo 滤波器阶数 @param args 滤波参数 @param err 错误信息输出 @return 滤波后的数据 */
 DAPyDataFrame
 DAPyScriptsDataProcess::butterworth_filter(const DAPySeries& wave, double fs, int fo, const QVariantMap& args, QString* err)
 {
@@ -86,6 +90,7 @@ DAPyScriptsDataProcess::butterworth_filter(const DAPySeries& wave, double fs, in
 
 DATAPROCESS_CALL_DF(peak_analysis, da_peak_analysis)
 
+/** @brief 短时傅里叶变换分析 @param wave 输入信号 @param fs 采样率 @param args 分析参数 @param err 错误信息输出 @return 包含频率、时间、幅值信息的字典 */
 pybind11::dict DAPyScriptsDataProcess::stft_analysis(const DAPySeries& wave, double fs, const QVariantMap& args, QString* err)
 {
     try {
@@ -105,6 +110,7 @@ pybind11::dict DAPyScriptsDataProcess::stft_analysis(const DAPySeries& wave, dou
     return pybind11::dict();
 }
 
+/** @brief 连续小波变换 @param wave 输入信号 @param fs 采样率 @param scales 尺度序列 @param args 变换参数 @param err 错误信息输出 @return 包含系数、频率等信息的小波变换结果字典 */
 pybind11::dict DAPyScriptsDataProcess::wavelet_cwt(const DAPySeries& wave,
                                                    double fs,
                                                    const DA::DAPySeries& scales,
@@ -130,6 +136,7 @@ pybind11::dict DAPyScriptsDataProcess::wavelet_cwt(const DAPySeries& wave,
 
 DATAPROCESS_CALL_DF(wavelet_dwt, da_wavelet_dwt)
 
+/** @brief 导入DAWorkbench.data_processing模块 @return 导入成功返回true */
 bool DAPyScriptsDataProcess::import()
 {
     try {

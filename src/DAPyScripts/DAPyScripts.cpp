@@ -32,19 +32,21 @@ std::unique_ptr< DAPyScripts::InnerModules > DAPyScripts::s_models = nullptr;
 //===================================================
 // DAPyScripts
 //===================================================
+
+/** @brief 构造DAPyScripts，自动调用initScripts进行初始化 */
 DAPyScripts::DAPyScripts()
 {
     initScripts();  // 初始化脚本,如果已经初始化，不会在执行
 }
 
+/** @brief 析构DAPyScripts */
 DAPyScripts::~DAPyScripts()
 {
 }
 
 /**
- * @brief 此函数在main函数中调用，若失败应用程序考虑是否继续
- * @param err
- * @return
+ * @brief 判断脚本是否已初始化
+ * @return 已初始化返回true
  */
 bool DAPyScripts::isInitScripts()
 {
@@ -101,6 +103,7 @@ DAPyScriptsDataFrame& DAPyScripts::getDataFrame()
     return s_models->workBench.getDataFrame();
 }
 
+/** @brief 获取数据处理相关的script @return 数据处理脚本引用 @note 调用前必须确保 isInitScripts() 返回 true */
 DAPyScriptsDataProcess& DAPyScripts::getDataProcess()
 {
     if (!s_models) {
@@ -111,6 +114,7 @@ DAPyScriptsDataProcess& DAPyScripts::getDataProcess()
     return s_models->workBench.getDataProcess();
 }
 
+/** @brief 获取统计相关的script @return 统计脚本引用 @note 调用前必须确保 isInitScripts() 返回 true */
 DAPyScriptsStatistics& DAPyScripts::getStatistics()
 {
     if (!s_models) {
@@ -120,6 +124,7 @@ DAPyScriptsStatistics& DAPyScripts::getStatistics()
     return s_models->workBench.getStatistics();
 }
 
+/** @brief 清理脚本模块资源 */
 void DAPyScripts::cleanup()
 {
     s_models.reset();

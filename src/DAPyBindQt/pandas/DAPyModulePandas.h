@@ -1,4 +1,4 @@
-﻿#ifndef DAPYPANDAS_H
+#ifndef DAPYPANDAS_H
 #define DAPYPANDAS_H
 #include "DAPyBindQtGlobal.h"
 #include "DAPyDataFrame.h"
@@ -15,7 +15,7 @@ class DAPYBINDQT_API DAPyModulePandas : public DAPyModule
 
 public:
 	DAPyModulePandas();
-	~DAPyModulePandas();
+	~DAPyModulePandas() override;
 	// 获取实例
 	static DAPyModulePandas& getInstance();
 	// 析构

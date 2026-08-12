@@ -9,6 +9,7 @@ namespace DA
 // DAPyScriptsStatistics
 //===================================================
 
+/** @brief 构造DAPyScriptsStatistics @param autoImport 是否自动导入模块 */
 DAPyScriptsStatistics::DAPyScriptsStatistics(bool autoImport) : DAPyModule()
 {
     if (autoImport) {
@@ -18,6 +19,7 @@ DAPyScriptsStatistics::DAPyScriptsStatistics(bool autoImport) : DAPyModule()
     }
 }
 
+/** @brief 构造DAPyScriptsStatistics @param obj Python模块对象 */
 DAPyScriptsStatistics::DAPyScriptsStatistics(const pybind11::object& obj) : DAPyModule(obj)
 {
     if (!isModule()) {
@@ -25,10 +27,12 @@ DAPyScriptsStatistics::DAPyScriptsStatistics(const pybind11::object& obj) : DAPy
     }
 }
 
+/** @brief 析构DAPyScriptsStatistics */
 DAPyScriptsStatistics::~DAPyScriptsStatistics()
 {
 }
 
+/** @brief 导入DAWorkbench.DAStatistics模块 @return 导入成功返回true */
 bool DAPyScriptsStatistics::import()
 {
     try {
@@ -45,6 +49,7 @@ bool DAPyScriptsStatistics::import()
 // distribution.py
 //===================================================
 
+/** @brief 计算直方图 @param data 输入数据 @param args 计算参数 @param err 错误信息输出 @return 包含bins和counts的字典 */
 pybind11::dict DAPyScriptsStatistics::computeHistogram(const DAPySeries& data,
                                                        const QVariantMap& args,
                                                        QString* err)
@@ -69,6 +74,7 @@ pybind11::dict DAPyScriptsStatistics::computeHistogram(const DAPySeries& data,
     return pybind11::dict();
 }
 
+/** @brief 按类别计算直方图 @param df 数据表 @param dataCol 数据列名 @param hueCol 分类列名 @param args 计算参数 @param err 错误信息输出 @return 按类别分组的直方图结果字典 */
 pybind11::dict DAPyScriptsStatistics::computeHistogramByHue(const DAPyDataFrame& df,
                                                             const QString& dataCol,
                                                             const QString& hueCol,
@@ -95,6 +101,7 @@ pybind11::dict DAPyScriptsStatistics::computeHistogramByHue(const DAPyDataFrame&
     return pybind11::dict();
 }
 
+/** @brief 计算经验累积分布函数 @param data 输入数据 @param args 计算参数 @param err 错误信息输出 @return 包含x和y的ECDF结果字典 */
 pybind11::dict DAPyScriptsStatistics::computeECDF(const DAPySeries& data,
                                                   const QVariantMap& args,
                                                   QString* err)
@@ -123,6 +130,7 @@ pybind11::dict DAPyScriptsStatistics::computeECDF(const DAPySeries& data,
 // kde.py
 //===================================================
 
+/** @brief 计算一维核密度估计 @param data 输入数据 @param args 计算参数 @param err 错误信息输出 @return 包含x和pdf的核密度估计结果字典 */
 pybind11::dict DAPyScriptsStatistics::computeKde1d(const DAPySeries& data,
                                                    const QVariantMap& args,
                                                    QString* err)
@@ -147,6 +155,7 @@ pybind11::dict DAPyScriptsStatistics::computeKde1d(const DAPySeries& data,
     return pybind11::dict();
 }
 
+/** @brief 按类别计算一维核密度估计 @param df 数据表 @param dataCol 数据列名 @param hueCol 分类列名 @param args 计算参数 @param err 错误信息输出 @return 按类别分组的一维核密度估计结果字典 */
 pybind11::dict DAPyScriptsStatistics::computeKde1dByHue(const DAPyDataFrame& df,
                                                         const QString& dataCol,
                                                         const QString& hueCol,
@@ -173,6 +182,7 @@ pybind11::dict DAPyScriptsStatistics::computeKde1dByHue(const DAPyDataFrame& df,
     return pybind11::dict();
 }
 
+/** @brief 计算二维核密度估计 @param x x轴数据 @param y y轴数据 @param args 计算参数 @param err 错误信息输出 @return 包含Z、x_grid、y_grid的二维核密度估计结果字典 */
 pybind11::dict DAPyScriptsStatistics::computeKde2d(const DAPySeries& x,
                                                    const DAPySeries& y,
                                                    const QVariantMap& args,
@@ -198,6 +208,7 @@ pybind11::dict DAPyScriptsStatistics::computeKde2d(const DAPySeries& x,
     return pybind11::dict();
 }
 
+/** @brief 从KDE结果计算等高线 @param kdeResult KDE结果字典 @param args 计算参数 @param err 错误信息输出 @return 等高线数据，包含levels和polygons */
 DA::DAContourData DAPyScriptsStatistics::computeContours(const pybind11::dict& kdeResult,
                                                         const QVariantMap& args,
                                                         QString* err)
@@ -261,6 +272,7 @@ DA::DAContourData DAPyScriptsStatistics::computeContours(const pybind11::dict& k
 // regression.py
 //===================================================
 
+/** @brief 多项式拟合 @param x x轴数据 @param y y轴数据 @param args 拟合参数 @param err 错误信息输出 @return 包含系数和R方的拟合结果字典 */
 pybind11::dict DAPyScriptsStatistics::fitPolynomial(const DAPySeries& x,
                                                     const DAPySeries& y,
                                                     const QVariantMap& args,
@@ -286,6 +298,7 @@ pybind11::dict DAPyScriptsStatistics::fitPolynomial(const DAPySeries& x,
     return pybind11::dict();
 }
 
+/** @brief 计算Bootstrap置信区间 @param x x轴数据 @param y y轴数据 @param args 计算参数 @param err 错误信息输出 @return 包含置信区间信息的Bootstrap结果字典 */
 pybind11::dict DAPyScriptsStatistics::computeBootstrapCI(const DAPySeries& x,
                                                          const DAPySeries& y,
                                                          const QVariantMap& args,
@@ -315,6 +328,7 @@ pybind11::dict DAPyScriptsStatistics::computeBootstrapCI(const DAPySeries& x,
 // categorical.py
 //===================================================
 
+/** @brief 按类别聚合数据 @param df 数据表 @param xCol x轴列名 @param yCol y轴列名 @param args 聚合参数 @param err 错误信息输出 @return 按类别聚合的结果字典 */
 pybind11::dict DAPyScriptsStatistics::aggregateByCategory(const DAPyDataFrame& df,
                                                            const QString& xCol,
                                                            const QString& yCol,
@@ -343,6 +357,7 @@ pybind11::dict DAPyScriptsStatistics::aggregateByCategory(const DAPyDataFrame& d
     return pybind11::dict();
 }
 
+/** @brief 计算置信区间 @param df 数据表 @param args 计算参数 @param err 错误信息输出 @return 置信区间结果字典 */
 pybind11::dict DAPyScriptsStatistics::computeCI(const DAPyDataFrame& df,
                                                 const QVariantMap& args,
                                                 QString* err)
@@ -371,6 +386,7 @@ pybind11::dict DAPyScriptsStatistics::computeCI(const DAPyDataFrame& df,
 // boxplot_stats.py
 //===================================================
 
+/** @brief 计算箱线图统计量 @param df 数据表 @param args 计算参数 @param err 错误信息输出 @return 箱线图统计信息字典 */
 pybind11::dict DAPyScriptsStatistics::computeBoxplotStats(const DAPyDataFrame& df,
                                                           const QVariantMap& args,
                                                           QString* err)
@@ -399,6 +415,7 @@ pybind11::dict DAPyScriptsStatistics::computeBoxplotStats(const DAPyDataFrame& d
 // matrix.py
 //===================================================
 
+/** @brief 计算透视矩阵 @param df 数据表 @param indexCol 行索引列名 @param columnsCol 列索引列名 @param valuesCol 值列名 @param args 计算参数 @param err 错误信息输出 @return 透视矩阵结果字典 */
 pybind11::dict DAPyScriptsStatistics::computePivotMatrix(const DAPyDataFrame& df,
                                                          const QString& indexCol,
                                                          const QString& columnsCol,

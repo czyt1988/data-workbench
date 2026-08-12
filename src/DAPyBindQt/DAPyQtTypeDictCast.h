@@ -39,30 +39,10 @@ public:
     DAPyQtTypeDictCast() = delete;
     ~DAPyQtTypeDictCast() = delete;
 
-    /**
-     * @brief 将 QFont 转换为 pybind11::dict
-     *
-     * 输出字典格式：
-     * - "family": str，字体族名称
-     * - "size": int，字号（pointSize，若 <=0 则用 9）
-     * - "bold": bool，是否粗体
-     * - "italic": bool，是否斜体
-     *
-     * @param[in] font 要转换的 QFont 对象
-     * @return 包含 family/size/bold/italic 四个键的 pybind11::dict
-     */
+    // 将 QFont 转换为 pybind11::dict
     static pybind11::dict qFontToPyDict(const QFont& font);
 
-    /**
-     * @brief 将 pybind11::dict 转换为 QFont
-     *
-     * 从字典中提取 family/size/bold/italic 字段构建 QFont。
-     * 缺失的字段使用默认值：family="", size=9, bold=false, italic=false。
-     * 字典中的其他键（如 color）会被忽略。
-     *
-     * @param[in] dict 包含字体字段的 pybind11::dict
-     * @return 构建好的 QFont 对象
-     */
+    // 将 pybind11::dict 转换为 QFont
     static QFont pyDictToQFont(const pybind11::dict& dict);
 };
 

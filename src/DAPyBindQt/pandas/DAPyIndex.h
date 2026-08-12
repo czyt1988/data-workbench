@@ -1,4 +1,4 @@
-﻿#ifndef DAPYINDEX_H
+#ifndef DAPYINDEX_H
 #define DAPYINDEX_H
 #include "DAPyBindQtGlobal.h"
 #include "DAPyObjectWrapper.h"
@@ -31,7 +31,7 @@ public:
     DAPyIndex(DAPyIndex&& s);
     DAPyIndex(const pybind11::object& obj);
     DAPyIndex(pybind11::object&& obj);
-    ~DAPyIndex();
+    ~DAPyIndex() override;
     DAPyIndex& operator=(const pybind11::object& obj);
     DAPyIndex& operator=(pybind11::object&& obj);
     DAPyIndex& operator=(const DAPyIndex& obj);

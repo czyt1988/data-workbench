@@ -11,35 +11,63 @@ using namespace DA;
 //===================================================
 // DAPyDType
 //===================================================
+/**
+ * @brief 拷贝构造
+ * @param s 另一个DAPyDType
+ */
 DAPyDType::DAPyDType(const DAPyDType& s) : DAPyObjectWrapper(s)
 {
     checkObjectValid();
 }
 
+/**
+ * @brief 移动构造
+ * @param s 右值DAPyDType
+ */
 DAPyDType::DAPyDType(DAPyDType&& s) : DAPyObjectWrapper(std::move(s))
 {
     checkObjectValid();
 }
 
+/**
+ * @brief 构造，从pybind11::object构造
+ * @param obj pybind11对象
+ */
 DAPyDType::DAPyDType(const pybind11::object& obj) : DAPyObjectWrapper(obj)
 {
     checkObjectValid();
 }
 
+/**
+ * @brief 构造，从pybind11::object右值构造
+ * @param obj pybind11对象右值
+ */
 DAPyDType::DAPyDType(pybind11::object&& obj) : DAPyObjectWrapper(std::move(obj))
 {
     checkObjectValid();
 }
 
+/**
+ * @brief 构造，从pybind11::dtype构造
+ * @param obj pybind11::dtype对象
+ */
 DAPyDType::DAPyDType(const pybind11::dtype& obj) : DAPyObjectWrapper()
 {
     object() = obj;
 }
 
+/**
+ * @brief 构造，从pybind11::dtype右值构造
+ * @param obj pybind11::dtype对象右值
+ */
 DAPyDType::DAPyDType(pybind11::dtype&& obj) : DAPyObjectWrapper(std::move(obj))
 {
 }
 
+/**
+ * @brief 构造，通过类型名构造
+ * @param dtypename dtype类型名
+ */
 DAPyDType::DAPyDType(const QString& dtypename) : DAPyObjectWrapper()
 {
     try {
@@ -50,21 +78,39 @@ DAPyDType::DAPyDType(const QString& dtypename) : DAPyObjectWrapper()
     }
 }
 
+/**
+ * @brief 析构
+ */
 DAPyDType::~DAPyDType()
 {
 }
 
+/**
+ * @brief 判断对象是否为numpy.dtype实例
+ * @param obj 要判断的对象
+ * @return 如果是dtype返回true
+ */
 bool DAPyDType::isDtypeObj(const pybind11::object& obj)
 {
     return DAPyModuleNumpy::getInstance().isInstanceDtype(obj);
 }
 
+/**
+ * @brief 赋值操作符
+ * @param obj pybind11::dtype对象
+ * @return 返回自身的引用
+ */
 DAPyDType& DAPyDType::operator=(const pybind11::dtype& obj)
 {
     object() = obj;
     return *this;
 }
 
+/**
+ * @brief 赋值操作符
+ * @param obj pybind11对象
+ * @return 返回自身的引用
+ */
 DAPyDType& DAPyDType::operator=(const pybind11::object& obj)
 {
     object() = obj;
@@ -72,12 +118,22 @@ DAPyDType& DAPyDType::operator=(const pybind11::object& obj)
     return *this;
 }
 
+/**
+ * @brief 拷贝赋值操作符
+ * @param obj 另一个DAPyDType
+ * @return 返回自身的引用
+ */
 DAPyDType& DAPyDType::operator=(const DAPyDType& obj)
 {
     object() = obj.object();
     return *this;
 }
 
+/**
+ * @brief 赋值操作符，从DAPyObjectWrapper赋值
+ * @param obj DAPyObjectWrapper对象
+ * @return 返回自身的引用
+ */
 DAPyDType& DAPyDType::operator=(const DAPyObjectWrapper& obj)
 {
     object() = obj.object();
@@ -101,11 +157,21 @@ bool DAPyDType::operator==(const DAPyDType& other) const
     return char_() == other.char_();
 }
 
+/**
+ * @brief 判断两个dtype是否不是同一类型
+ * @param other 另一个DAPyDType
+ * @return 如果不是同一类型返回true
+ */
 bool DAPyDType::operator!=(const DAPyDType& other) const
 {
     return !(*this == other);
 }
 
+/**
+ * @brief 获取dtype对应的Python类型对象
+ * @param v 用于获取类型的值
+ * @return 返回pybind11::object
+ */
 pybind11::object DAPyDType::type(const QVariant& v) const
 {
     try {
@@ -116,6 +182,10 @@ pybind11::object DAPyDType::type(const QVariant& v) const
     return pybind11::none();
 }
 
+/**
+ * @brief 获取dtype的名称
+ * @return 返回dtype名称字符串
+ */
 QString DAPyDType::name() const
 {
     try {
@@ -127,6 +197,10 @@ QString DAPyDType::name() const
     return QString();
 }
 
+/**
+ * @brief 获取dtype的种类字符
+ * @return 返回kind字符，如'i'表示整数
+ */
 char DAPyDType::kind() const
 {
     try {
@@ -159,6 +233,10 @@ char DAPyDType::kind() const
     return 0;
 }
 
+/**
+ * @brief 获取dtype的字符码
+ * @return 返回字符码
+ */
 char DAPyDType::char_() const
 {
     try {
@@ -172,6 +250,10 @@ char DAPyDType::char_() const
     return 0;
 }
 
+/**
+ * @brief 获取dtype的数字编号
+ * @return 返回数字编号
+ */
 int DAPyDType::num() const
 {
     try {
@@ -185,6 +267,10 @@ int DAPyDType::num() const
     return -1;
 }
 
+/**
+ * @brief 判断是否为整数类型
+ * @return 如果是整数类型返回true
+ */
 bool DAPyDType::isInt() const
 {
     if (isNone()) {
@@ -196,6 +282,10 @@ bool DAPyDType::isInt() const
     return kind() == 'i';
 }
 
+/**
+ * @brief 判断是否为无符号整数类型
+ * @return 如果是无符号整数类型返回true
+ */
 bool DAPyDType::isUInt() const
 {
     if (isNone()) {
@@ -207,6 +297,10 @@ bool DAPyDType::isUInt() const
     return kind() == 'u';
 }
 
+/**
+ * @brief 判断是否为浮点类型
+ * @return 如果是浮点类型返回true
+ */
 bool DAPyDType::isFloat() const
 {
     if (isNone()) {
@@ -215,6 +309,10 @@ bool DAPyDType::isFloat() const
     return kind() == 'f';
 }
 
+/**
+ * @brief 判断是否为时间差类型
+ * @return 如果是时间差类型返回true
+ */
 bool DAPyDType::isTimedelta() const
 {
     if (isNone()) {
@@ -223,6 +321,10 @@ bool DAPyDType::isTimedelta() const
     return kind() == 'm';
 }
 
+/**
+ * @brief 判断是否为日期时间类型
+ * @return 如果是日期时间类型返回true
+ */
 bool DAPyDType::isDatetime() const
 {
     if (isNone()) {
@@ -234,6 +336,10 @@ bool DAPyDType::isDatetime() const
     return kind() == 'M';
 }
 
+/**
+ * @brief 判断是否为复数类型
+ * @return 如果是复数类型返回true
+ */
 bool DAPyDType::isComplex() const
 {
     if (isNone()) {
@@ -242,6 +348,10 @@ bool DAPyDType::isComplex() const
     return kind() == 'c';
 }
 
+/**
+ * @brief 判断是否为布尔类型
+ * @return 如果是布尔类型返回true
+ */
 bool DAPyDType::isBool() const
 {
     if (isNone()) {
@@ -253,6 +363,10 @@ bool DAPyDType::isBool() const
     return kind() == '?';
 }
 
+/**
+ * @brief 判断是否为字符串类型
+ * @return 如果是字符串类型返回true
+ */
 bool DAPyDType::isStr() const
 {
     if (isNone()) {

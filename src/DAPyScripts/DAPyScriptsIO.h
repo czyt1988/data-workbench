@@ -1,4 +1,4 @@
-﻿#ifndef DAPYSCRIPTSIO_H
+#ifndef DAPYSCRIPTSIO_H
 #define DAPYSCRIPTSIO_H
 #include "DAPyScriptsGlobal.h"
 #include "DAPyModule.h"
@@ -17,7 +17,7 @@ class DAPYSCRIPTS_API DAPyScriptsIO : public DAPyModule
 public:
     DAPyScriptsIO(bool autoImport = true);
     DAPyScriptsIO(const pybind11::object& obj);
-    ~DAPyScriptsIO();
+    ~DAPyScriptsIO() override;
     // 获取打开对话框的filter da_io.da_get_file_read_filters
     QList< QString > getFileReadFilters() const;
     // 读取内容,会自动根据后缀选择读取的函数

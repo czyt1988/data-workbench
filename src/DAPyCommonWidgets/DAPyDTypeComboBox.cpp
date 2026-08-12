@@ -12,6 +12,12 @@ using namespace DA;
 //===================================================
 // dtype name 别名归一化——将非标准 dtype 名称映射到预设列表中的 data 值
 // "str" 是 Python str 作为 dtype 时的 name，等价于 numpy 的 "U"（unicode string）
+
+/**
+ * @brief dtype 名称别名归一化，将非标准 dtype 名称映射到预设列表中的 data 值
+ * @param name 输入的 dtype 名称
+ * @return 归一化后的 data 值
+ */
 static QString aliasToPresetData(const QString& name)
 {
     if (name == "str")
@@ -22,6 +28,11 @@ static QString aliasToPresetData(const QString& name)
 //===================================================
 // DAPyDTypeComboBox
 //===================================================
+
+/**
+ * @brief 构造DAPyDTypeComboBox
+ * @param parent 父窗口
+ */
 DAPyDTypeComboBox::DAPyDTypeComboBox(QWidget* parent) : QComboBox(parent)
 {
     setEditable(false);
@@ -267,6 +278,10 @@ void DAPyDTypeComboBox::setCurrentDType(const DAPyDType& dt)
     }
 }
 
+/**
+ * @brief 下拉框选中项变化时的回调
+ * @param index 当前选中的索引
+ */
 void DAPyDTypeComboBox::onComboxCurrentIndexChanged(int index)
 {
     Q_UNUSED(index);

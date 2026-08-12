@@ -1,4 +1,4 @@
-﻿#ifndef DAPYSCRIPTSDATAFRAME_H
+#ifndef DAPYSCRIPTSDATAFRAME_H
 #define DAPYSCRIPTSDATAFRAME_H
 #include "DAPyScriptsGlobal.h"
 #include "DAPyModule.h"
@@ -21,7 +21,7 @@ class DAPYSCRIPTS_API DAPyScriptsDataFrame : public DAPyModule
 public:
 	DAPyScriptsDataFrame(bool autoImport = true);
 	DAPyScriptsDataFrame(const pybind11::object& obj);
-	~DAPyScriptsDataFrame();
+	~DAPyScriptsDataFrame() override;
 	// 引入
 	bool import() noexcept;
 

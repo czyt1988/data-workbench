@@ -1,4 +1,4 @@
-﻿#include "DAPyIndex.h"
+#include "DAPyIndex.h"
 #include "DAPyModulePandas.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DALogCategory.h"
@@ -11,59 +11,101 @@ using namespace DA;
 //===================================================
 // DAPyIndex
 //===================================================
+/**
+ * @brief 构造一个空的pandas.Index对象
+ */
 DAPyIndex::DAPyIndex() : DAPyObjectWrapper()
 {
     try {
         auto pandas = DAPyModule("pandas");
-        _object     = pandas.attr("Index");
+        object()     = pandas.attr("Index");
     } catch (const std::exception& e) {
         qCritical() << "can not import pandas,or can not create pandas.Index(),because:" << e.what();
     }
 }
 
+/**
+ * @brief 拷贝构造
+ * @param s 另一个DAPyIndex
+ */
 DAPyIndex::DAPyIndex(const DAPyIndex& s) : DAPyObjectWrapper(s)
 {
     checkObjectValid();
 }
 
+/**
+ * @brief 移动构造
+ * @param s 右值DAPyIndex
+ */
 DAPyIndex::DAPyIndex(DAPyIndex&& s) : DAPyObjectWrapper(std::move(s))
 {
     checkObjectValid();
 }
 
+/**
+ * @brief 构造，从pybind11::object构造
+ * @param obj pybind11对象
+ */
 DAPyIndex::DAPyIndex(const pybind11::object& obj) : DAPyObjectWrapper(obj)
 {
     checkObjectValid();
 }
 
+/**
+ * @brief 构造，从pybind11::object右值构造
+ * @param obj pybind11对象右值
+ */
 DAPyIndex::DAPyIndex(pybind11::object&& obj) : DAPyObjectWrapper(std::move(obj))
 {
     checkObjectValid();
 }
 
+/**
+ * @brief 析构
+ */
 DAPyIndex::~DAPyIndex()
 {
 }
 
+/**
+ * @brief 判断对象是否为pandas.Index实例
+ * @param obj 要判断的对象
+ * @return 如果是Index返回true
+ */
 bool DAPyIndex::isIndexObj(const pybind11::object& obj)
 {
     return DAPyModulePandas::getInstance().isInstanceIndex(obj);
 }
 
+/**
+ * @brief 赋值操作符
+ * @param obj pybind11对象
+ * @return 返回自身的引用
+ */
 DAPyIndex& DAPyIndex::operator=(const pybind11::object& obj)
 {
-    _object = obj;
+    object() = obj;
     checkObjectValid();
     return *this;
 }
 
+/**
+ * @brief 移动赋值操作符
+ * @param obj pybind11对象右值
+ * @return 返回自身的引用
+ */
 DAPyIndex& DAPyIndex::operator=(pybind11::object&& obj)
 {
-    _object = std::move(obj);
+    object() = std::move(obj);
     checkObjectValid();
     return *this;
 }
 
+/**
+ * @brief 拷贝赋值操作符
+ * @param obj 另一个DAPyIndex
+ * @return 返回自身的引用
+ */
 DAPyIndex& DAPyIndex::operator=(const DAPyIndex& obj)
 {
     if (this != &obj) {
@@ -73,6 +115,11 @@ DAPyIndex& DAPyIndex::operator=(const DAPyIndex& obj)
     return *this;
 }
 
+/**
+ * @brief 移动赋值操作符
+ * @param obj 右值DAPyIndex
+ * @return 返回自身的引用
+ */
 DAPyIndex& DAPyIndex::operator=(DAPyIndex&& obj)
 {
     if (this != &obj) {
@@ -82,6 +129,11 @@ DAPyIndex& DAPyIndex::operator=(DAPyIndex&& obj)
     return *this;
 }
 
+/**
+ * @brief 赋值操作符，从DAPyObjectWrapper赋值
+ * @param obj DAPyObjectWrapper对象
+ * @return 返回自身的引用
+ */
 DAPyIndex& DAPyIndex::operator=(const DAPyObjectWrapper& obj)
 {
     DAPyObjectWrapper::operator=(obj);
@@ -89,6 +141,11 @@ DAPyIndex& DAPyIndex::operator=(const DAPyObjectWrapper& obj)
     return *this;
 }
 
+/**
+ * @brief 移动赋值操作符，从DAPyObjectWrapper移动赋值
+ * @param obj DAPyObjectWrapper对象右值
+ * @return 返回自身的引用
+ */
 DAPyIndex& DAPyIndex::operator=(DAPyObjectWrapper&& obj)
 {
     DAPyObjectWrapper::operator=(std::move(obj));
@@ -96,16 +153,31 @@ DAPyIndex& DAPyIndex::operator=(DAPyObjectWrapper&& obj)
     return *this;
 }
 
+/**
+ * @brief 通过位置索引获取元素
+ * @param i 位置索引
+ * @return 对应位置的pybind11::object
+ */
 pybind11::object DAPyIndex::operator[](std::size_t i) const
 {
     return object()[ pybind11::int_(i) ];
 }
 
+/**
+ * @brief 通过位置索引获取元素
+ * @param i 位置索引
+ * @return 对应位置的pybind11::object
+ */
 pybind11::object DAPyIndex::iat(size_t i) const
 {
     return object()[ pybind11::int_(i) ];
 }
 
+/**
+ * @brief 通过位置索引集合获取元素
+ * @param slice 位置索引集合
+ * @return 对应位置的pybind11::object
+ */
 pybind11::object DAPyIndex::operator[](const QSet< std::size_t >& slice) const
 {
     try {
@@ -130,11 +202,19 @@ pybind11::dtype DAPyIndex::dtype() const
     return pybind11::none();
 }
 
+/**
+ * @brief 转换为pybind11::list
+ * @return 转换后的pybind11::list
+ */
 pybind11::list DAPyIndex::toList() const
 {
     return attr("tolist")();
 }
 
+/**
+ * @brief 判断索引是否为空
+ * @return 如果为空返回true
+ */
 bool DAPyIndex::empty() const
 {
     try {
@@ -146,6 +226,10 @@ bool DAPyIndex::empty() const
     return true;
 }
 
+/**
+ * @brief 获取索引的元素数量
+ * @return 返回元素数量
+ */
 std::size_t DAPyIndex::size() const
 {
     try {
@@ -157,6 +241,11 @@ std::size_t DAPyIndex::size() const
     return 0;
 }
 
+/**
+ * @brief 获取指定位置的元素值
+ * @param i 位置索引
+ * @return 返回QVariant形式的值
+ */
 QVariant DAPyIndex::value(size_t i) const
 {
     try {
@@ -222,6 +311,9 @@ int64_t DAPyIndex::getIndexer(pybind11::object v, const char* method)
     return -1;
 }
 
+/**
+ * @brief 检查对象是否为有效的Index，无效则置为None
+ */
 void DAPyIndex::checkObjectValid()
 {
     if (!isIndexObj(object())) {

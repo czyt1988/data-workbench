@@ -1,4 +1,4 @@
-﻿#include "DAPyScriptsIO.h"
+#include "DAPyScriptsIO.h"
 #include "DAPybind11QtCaster.hpp"
 #include <QDebug>
 #include "DALogCategory.h"
@@ -59,6 +59,8 @@ namespace DA
 //===================================================
 // DAPyScriptsIO
 //===================================================
+
+/** @brief 构造DAPyScriptsIO @param autoImport 是否自动导入模块 */
 DAPyScriptsIO::DAPyScriptsIO(bool autoImport) : DAPyModule()
 {
     if (autoImport) {
@@ -69,6 +71,7 @@ DAPyScriptsIO::DAPyScriptsIO(bool autoImport) : DAPyModule()
     }
 }
 
+/** @brief 构造DAPyScriptsIO @param obj Python模块对象 */
 DAPyScriptsIO::DAPyScriptsIO(const pybind11::object& obj) : DAPyModule(obj)
 {
     if (!isModule()) {
@@ -76,6 +79,7 @@ DAPyScriptsIO::DAPyScriptsIO(const pybind11::object& obj) : DAPyModule(obj)
     }
 }
 
+/** @brief 析构DAPyScriptsIO */
 DAPyScriptsIO::~DAPyScriptsIO()
 {
 }

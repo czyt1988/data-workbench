@@ -1,4 +1,4 @@
-﻿#include "DAPyScriptsDataFrame.h"
+#include "DAPyScriptsDataFrame.h"
 #include "DAPybind11QtCaster.hpp"
 #include <QDebug>
 #include "DALogCategory.h"
@@ -8,6 +8,8 @@ namespace DA
 //===================================================
 // DAPyScriptsDataFrame
 //===================================================
+
+/** @brief 构造DAPyScriptsDataFrame @param autoImport 是否自动导入模块 */
 DAPyScriptsDataFrame::DAPyScriptsDataFrame(bool autoImport) : DAPyModule()
 {
     if (autoImport) {
@@ -17,6 +19,7 @@ DAPyScriptsDataFrame::DAPyScriptsDataFrame(bool autoImport) : DAPyModule()
     }
 }
 
+/** @brief 构造DAPyScriptsDataFrame @param obj Python模块对象 */
 DAPyScriptsDataFrame::DAPyScriptsDataFrame(const pybind11::object& obj) : DAPyModule(obj)
 {
     if (!isModule()) {
@@ -24,6 +27,7 @@ DAPyScriptsDataFrame::DAPyScriptsDataFrame(const pybind11::object& obj) : DAPyMo
     }
 }
 
+/** @brief 析构DAPyScriptsDataFrame */
 DAPyScriptsDataFrame::~DAPyScriptsDataFrame()
 {
 }
@@ -307,6 +311,7 @@ bool DAPyScriptsDataFrame::setnan(DAPyDataFrame& df, const QList< int >& rowsInd
     return false;
 }
 
+/** @brief 导入DAWorkbench.dataframe模块 @return 导入成功返回true */
 bool DAPyScriptsDataFrame::import() noexcept
 {
     try {

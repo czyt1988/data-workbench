@@ -4,21 +4,37 @@
 #include "DALogCategory.h"
 namespace DA
 {
+
+/**
+ * @brief 构造DAPyDataframeColumnsListWidget
+ * @param parent 父窗口
+ */
 DAPyDataframeColumnsListWidget::DAPyDataframeColumnsListWidget(QWidget* parent) : QListWidget(parent)
 {
     setSelectionMode(QAbstractItemView::SingleSelection);
 }
 
+/**
+ * @brief 析构DAPyDataframeColumnsListWidget
+ */
 DAPyDataframeColumnsListWidget::~DAPyDataframeColumnsListWidget()
 {
 }
 
+/**
+ * @brief 设置DataFrame
+ * @param df 要设置的DataFrame
+ */
 void DAPyDataframeColumnsListWidget::setDataframe(const DAPyDataFrame& df)
 {
     mDataframe = df;
     updateColumnsInfo(df);
 }
 
+/**
+ * @brief 获取当前DataFrame
+ * @return 当前保存的DataFrame
+ */
 DAPyDataFrame DAPyDataframeColumnsListWidget::getDataFrame() const
 {
     return mDataframe;
@@ -26,7 +42,7 @@ DAPyDataFrame DAPyDataframeColumnsListWidget::getDataFrame() const
 
 /**
  * @brief 获取当前选择的列名
- * @return
+ * @return 选中列名，如果未选中或异常返回空字符串
  */
 QString DAPyDataframeColumnsListWidget::getSelectedColumn() const noexcept
 {
@@ -98,7 +114,7 @@ QList< int > DAPyDataframeColumnsListWidget::getAllSelectedSeriesIndexs() const
 /**
  * @brief 获取选中的索引名
  *
- * @return $RETURN
+ * @return 选中列名列表
  */
 QList< QString > DAPyDataframeColumnsListWidget::getAllSelectedSeriesNames() const
 {

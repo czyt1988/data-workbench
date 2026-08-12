@@ -28,7 +28,7 @@ public:
     DAPySeries(DAPySeries&& s);
     DAPySeries(const pybind11::object& obj);
     DAPySeries(pybind11::object&& obj);
-    ~DAPySeries();
+    ~DAPySeries() override;
     DAPySeries& operator=(const pybind11::object& obj);
     DAPySeries& operator=(const DAPySeries& s);
     DAPySeries& operator=(const DAPyObjectWrapper& obj);
@@ -95,32 +95,9 @@ DAPYBINDQT_API QVector< double > toQVectorDouble(const DA::DAPySeries& ser);
 /**
  * @brief 把series转换为一个容器数组
  *
- * 支持的数据类型转换：
- * - 数值类型：直接转换
- * - 日期时间类型（datetime64）：转换为毫秒时间戳
- * - 日期字符串（object类型中可解析为日期的字符串）：自动转换为毫秒时间戳
- * - 时间增量类型：转换为秒
- * - 分类数据：转换为分类代码
- * - 布尔类型：转换为0/1
- *
- * @code
- * // 示例1：转换为double向量
- * DAPySeries x;
- * std::vector<double> vx;
- * vx.reserve(x.size());
- * x.castTo<double>(std::back_inserter(vx));
- *
- * // 示例2：转换为QVector
- * QVector<double> qv;
- * qv.reserve(x.size());
- * x.castTo<double>(std::back_inserter(qv));
- * @endcode
- *
+ * @tparam T 目标元素类型
+ * @tparam VectLikeIte 输出迭代器类型
  * @param begin 输出迭代器
- *
- * @note 对于日期时间类型，会转换为毫秒时间戳（从1970-01-01开始）
- * @note 对于日期字符串（如"2025/12/06 19:02:48"），会自动解析并转换为毫秒时间戳
- * @note 对于无法解析的字符串类型，会抛出异常
  */
 template< typename T, typename VectLikeIte >
 void DAPySeries::castTo(VectLikeIte begin) const

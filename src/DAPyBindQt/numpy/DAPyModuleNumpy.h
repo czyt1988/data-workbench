@@ -1,4 +1,4 @@
-﻿#ifndef DAPYMODULENUMPY_H
+#ifndef DAPYMODULENUMPY_H
 #define DAPYMODULENUMPY_H
 #include "DAPyBindQtGlobal.h"
 #include "DAPyModule.h"
@@ -13,7 +13,7 @@ class DAPYBINDQT_API DAPyModuleNumpy : public DAPyModule
     DAPyModuleNumpy();
 
 public:
-    ~DAPyModuleNumpy();
+    ~DAPyModuleNumpy() override;
     //获取实例
     static DAPyModuleNumpy& getInstance();
     //析构

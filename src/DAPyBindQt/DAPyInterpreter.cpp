@@ -1,4 +1,4 @@
-﻿#include "DAPyInterpreter.h"
+#include "DAPyInterpreter.h"
 #include <QDebug>
 #include <QProcess>
 #include <QFile>
@@ -17,6 +17,10 @@ std::shared_ptr< pybind11::scoped_interpreter > DAPyInterpreter::interpreter = n
 //===================================================
 // DAPyInterpreter
 //===================================================
+
+/**
+ * @brief 构造，如果解释器未初始化则进行初始化
+ */
 DAPyInterpreter::DAPyInterpreter()
 {
     if (interpreter == nullptr) {
@@ -24,6 +28,9 @@ DAPyInterpreter::DAPyInterpreter()
     }
 }
 
+/**
+ * @brief 析构
+ */
 DAPyInterpreter::~DAPyInterpreter()
 {
 }
@@ -57,6 +64,10 @@ QList< QFileInfo > DAPyInterpreter::wherePython()
     return validFis;
 }
 
+/**
+ * @brief 从配置文件中获取python解释器路径
+ * @return 返回有效的python路径列表
+ */
 QList< QFileInfo > DAPyInterpreter::wherePythonFromConfig()
 {
     QList< QFileInfo > validFis;

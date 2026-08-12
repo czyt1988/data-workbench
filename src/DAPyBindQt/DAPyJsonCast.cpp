@@ -1,4 +1,4 @@
-﻿#include "DAPyJsonCast.h"
+#include "DAPyJsonCast.h"
 #include "DAPybind11QtCaster.hpp"
 #include <QDebug>
 #include <QJsonParseError>
@@ -58,6 +58,11 @@ QString jsonValueTypeString(const QJsonValue& value)
 }
 }  // 匿名命名空间
 
+/**
+ * @brief 将QJsonObject转换为pybind11::dict
+ * @param jsonObj QJsonObject对象
+ * @return 转换后的pybind11::dict
+ */
 pybind11::dict qjsonObjectToPyDict(const QJsonObject& jsonObj)
 {
     pybind11::dict result;
@@ -75,6 +80,11 @@ pybind11::dict qjsonObjectToPyDict(const QJsonObject& jsonObj)
     return result;
 }
 
+/**
+ * @brief 将QJsonArray转换为pybind11::list
+ * @param jsonArray QJsonArray对象
+ * @return 转换后的pybind11::list
+ */
 pybind11::list qjsonArrayToPyList(const QJsonArray& jsonArray)
 {
     pybind11::list result;
@@ -86,6 +96,11 @@ pybind11::list qjsonArrayToPyList(const QJsonArray& jsonArray)
     return result;
 }
 
+/**
+ * @brief 将QJsonValue转换为pybind11::object
+ * @param jsonValue QJsonValue对象
+ * @return 转换后的pybind11::object
+ */
 pybind11::object qjsonValueToPyObject(const QJsonValue& jsonValue)
 {
     switch (jsonValue.type()) {
@@ -124,6 +139,11 @@ pybind11::object qjsonValueToPyObject(const QJsonValue& jsonValue)
     return pybind11::none();
 }
 
+/**
+ * @brief 将pybind11::dict转换为QJsonObject
+ * @param pyDict pybind11::dict对象
+ * @return 转换后的QJsonObject
+ */
 QJsonObject pyDictToQJsonObject(const pybind11::dict& pyDict)
 {
     QJsonObject result;
@@ -153,6 +173,11 @@ QJsonObject pyDictToQJsonObject(const pybind11::dict& pyDict)
     return result;
 }
 
+/**
+ * @brief 将pybind11::list转换为QJsonArray
+ * @param pyList pybind11::list对象
+ * @return 转换后的QJsonArray
+ */
 QJsonArray pyListToQJsonArray(const pybind11::list& pyList)
 {
     QJsonArray result;
@@ -163,6 +188,11 @@ QJsonArray pyListToQJsonArray(const pybind11::list& pyList)
     return result;
 }
 
+/**
+ * @brief 将pybind11::object转换为QJsonValue
+ * @param pyObj pybind11::object对象
+ * @return 转换后的QJsonValue
+ */
 QJsonValue pyObjectToQJsonValue(const pybind11::object& pyObj)
 {
     if (pyObj.is_none()) {
@@ -256,6 +286,11 @@ QJsonValue pyObjectToQJsonValue(const pybind11::object& pyObj)
     return QJsonValue(DA::PY::fromPyString(pyObj));
 }
 
+/**
+ * @brief 将JSON字符串解析为pybind11::dict
+ * @param jsonStr JSON格式字符串
+ * @return 转换后的pybind11::dict
+ */
 pybind11::dict jsonStringToPyDict(const QString& jsonStr)
 {
     if (jsonStr.isEmpty()) {
@@ -282,6 +317,12 @@ pybind11::dict jsonStringToPyDict(const QString& jsonStr)
     return pybind11::dict();
 }
 
+/**
+ * @brief 将pybind11::dict转换为JSON字符串
+ * @param pyDict pybind11::dict对象
+ * @param indent 缩进空格数，0表示紧凑格式
+ * @return 转换后的JSON字符串
+ */
 QString pyDictToJsonString(const pybind11::dict& pyDict, int indent)
 {
     QJsonObject jsonObj = pyDictToQJsonObject(pyDict);

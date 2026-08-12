@@ -59,7 +59,7 @@ public:
     DAPyDType(const pybind11::dtype& obj);
     DAPyDType(pybind11::dtype&& obj);
     DAPyDType(const QString& dtypename);
-    ~DAPyDType();
+    ~DAPyDType() override;
     static bool isDtypeObj(const pybind11::object& obj);
     DAPyDType& operator=(const pybind11::dtype& obj);
     DAPyDType& operator=(const pybind11::object& obj);

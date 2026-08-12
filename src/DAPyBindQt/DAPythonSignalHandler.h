@@ -1,11 +1,9 @@
 #ifndef DAPYTHONSIGNALHANDLER_H
 #define DAPYTHONSIGNALHANDLER_H
 #include <QObject>
-#include <QMap>
 #include <DAPyBindQtGlobal.h>
 #include <functional>
 #include <memory>
-#include <mutex>
 #include "DAPyBindQtGlobal.h"
 namespace DA
 {
@@ -18,28 +16,20 @@ namespace DA
 class DAPYBINDQT_API DAPythonSignalHandler : public QObject
 {
     Q_OBJECT
+    DA_DECLARE_PRIVATE(DAPythonSignalHandler)
 
 public:
     explicit DAPythonSignalHandler(QObject* parent = nullptr);
-    virtual ~DAPythonSignalHandler();
+    ~DAPythonSignalHandler() override;
 
     // 删除拷贝构造和赋值操作符
     DAPythonSignalHandler(const DAPythonSignalHandler&)            = delete;
     DAPythonSignalHandler& operator=(const DAPythonSignalHandler&) = delete;
 
-    /**
-     * @brief 从Python线程调用，请求在主线程执行函数
-     * @param func 要在主线程执行的函数
-     *
-     * 这个函数是线程安全的，可以从任何线程调用
-     */
+    // 从Python线程调用，请求在主线程执行函数
     void callInMainThread(std::function< void() > func);
 
-    /**
-     * @brief 清理所有待执行的函数
-     *
-     * 在主窗口销毁前调用，确保所有函数都被清理
-     */
+    // 清理所有待执行的函数
     void clearPendingFunctions();
 
 Q_SIGNALS:
@@ -50,10 +40,7 @@ Q_SIGNALS:
     void executeRequested(int funcWrapperId);
 
 private Q_SLOTS:
-    /**
-     * @brief 在主线程执行的槽函数
-     * @param funcWrapperId 函数包装器的ID
-     */
+    // 在主线程执行的槽函数
     void onExecuteRequested(int funcWrapperId);
 
 public:
@@ -61,34 +48,22 @@ public:
     class FunctionWrapper
     {
     public:
-        explicit FunctionWrapper(std::function< void() > func) : m_func(func)
+        explicit FunctionWrapper(std::function< void() > func) : mFunc(func)
         {
         }
         void execute()
         {
-            if (m_func)
-                m_func();
+            if (mFunc)
+                mFunc();
         }
 
     private:
-        std::function< void() > m_func;
+        std::function< void() > mFunc;
     };
 
     // 使用智能指针管理函数包装器
     using FunctionWrapperPtr = std::shared_ptr< FunctionWrapper >;
-
-private:
-    // 存储函数包装器的映射，键是唯一ID
-    QMap< int, FunctionWrapperPtr > m_functionMap;
-
-    // 线程安全保护
-    std::mutex m_mutex;
-
-    // 下一个函数包装器的ID
-    int m_nextFuncId { 0 };
-
-    // 是否正在销毁中
-    bool m_destroying { false };
 };
+
 }  // end DA
 #endif  // DAPYTHONSIGNALHANDLER_H

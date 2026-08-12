@@ -1,4 +1,4 @@
-﻿#ifndef DAPYWORKBENCH_H
+#ifndef DAPYWORKBENCH_H
 #define DAPYWORKBENCH_H
 #include "DAPyScriptsGlobal.h"
 #include "DAPyModule.h"
@@ -14,7 +14,7 @@ class DAPYSCRIPTS_API DAPyWorkBench : public DAPyModule
 	DA_DECLARE_PRIVATE(DAPyWorkBench)
 public:
 	DAPyWorkBench();
-	~DAPyWorkBench();
+	~DAPyWorkBench() override;
 	// 引入
 	bool import();
 	// io模块

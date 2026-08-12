@@ -26,7 +26,7 @@ class DAPYSCRIPTS_API DAPyScriptsStatistics : public DAPyModule
 public:
     DAPyScriptsStatistics(bool autoImport = true);
     DAPyScriptsStatistics(const pybind11::object& obj);
-    ~DAPyScriptsStatistics();
+    ~DAPyScriptsStatistics() override;
     // Import the DAWorkbench.DAStatistics module
     bool import();
 

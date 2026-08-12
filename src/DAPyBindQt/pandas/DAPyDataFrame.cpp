@@ -15,45 +15,77 @@ using namespace DA;
 //===================================================
 // DAPyDataFrame
 //===================================================
+
+/**
+ * @brief 构造一个空的pandas.DataFrame对象
+ */
 DAPyDataFrame::DAPyDataFrame() : DAPyObjectWrapper()
 {
     try {
         auto pandas = DAPyModule("pandas");
-        _object     = pandas.attr("DataFrame")();
+        object()    = pandas.attr("DataFrame")();
     } catch (const std::exception& e) {
         qCritical() << "can not import pandas,or can not create pandas.Dataframe(),because:" << e.what();
     }
 }
 
+/**
+ * @brief 拷贝构造
+ * @param df 另一个DAPyDataFrame
+ */
 DAPyDataFrame::DAPyDataFrame(const DAPyDataFrame& df) : DAPyObjectWrapper(df)
 {
     checkObjectValid();
 }
 
+/**
+ * @brief 构造，从DAPyObjectWrapper构造
+ * @param df DAPyObjectWrapper对象
+ */
 DAPyDataFrame::DAPyDataFrame(const DAPyObjectWrapper& df) : DAPyObjectWrapper(df)
 {
     checkObjectValid();
 }
 
+/**
+ * @brief 移动构造
+ * @param df 右值DAPyDataFrame
+ */
 DAPyDataFrame::DAPyDataFrame(DAPyDataFrame&& df) : DAPyObjectWrapper(std::move(df))
 {
     checkObjectValid();
 }
 
+/**
+ * @brief 构造，从pybind11::object构造
+ * @param obj pybind11对象
+ */
 DAPyDataFrame::DAPyDataFrame(const pybind11::object& obj) : DAPyObjectWrapper(obj)
 {
     checkObjectValid();
 }
 
+/**
+ * @brief 构造，从pybind11::object右值构造
+ * @param obj pybind11对象右值
+ */
 DAPyDataFrame::DAPyDataFrame(pybind11::object&& obj) : DAPyObjectWrapper(std::move(obj))
 {
     checkObjectValid();
 }
 
+/**
+ * @brief 析构
+ */
 DAPyDataFrame::~DAPyDataFrame()
 {
 }
 
+/**
+ * @brief 通过列名获取Series
+ * @param n 列名
+ * @return 对应列的DAPySeries
+ */
 DAPySeries DAPyDataFrame::operator[](const QString& n) const
 {
     try {
@@ -65,6 +97,11 @@ DAPySeries DAPyDataFrame::operator[](const QString& n) const
     return DAPySeries();
 }
 
+/**
+ * @brief 通过列索引获取Series
+ * @param n 列索引
+ * @return 对应列的DAPySeries
+ */
 DAPySeries DAPyDataFrame::operator[](std::size_t n) const
 {
     try {
@@ -80,9 +117,14 @@ DAPySeries DAPyDataFrame::operator[](std::size_t n) const
     return DAPySeries();
 }
 
+/**
+ * @brief 赋值操作符
+ * @param obj pybind11对象
+ * @return 返回自身的引用
+ */
 DAPyDataFrame& DAPyDataFrame::operator=(const pybind11::object& obj)
 {
-    _object = obj;
+    object() = obj;
     checkObjectValid();
     return *this;
 }
@@ -97,13 +139,23 @@ bool DAPyDataFrame::operator<(const DAPyDataFrame& other) const
     return this->object().ptr() < other.object().ptr();
 }
 
+/**
+ * @brief 移动赋值操作符
+ * @param obj pybind11对象右值
+ * @return 返回自身的引用
+ */
 DAPyDataFrame& DAPyDataFrame::operator=(pybind11::object&& obj)
 {
-    _object = std::move(obj);
+    object() = std::move(obj);
     checkObjectValid();
     return *this;
 }
 
+/**
+ * @brief 拷贝赋值操作符
+ * @param obj 另一个DAPyDataFrame
+ * @return 返回自身的引用
+ */
 DAPyDataFrame& DAPyDataFrame::operator=(const DAPyDataFrame& obj)
 {
     if (this != &obj) {
@@ -113,6 +165,11 @@ DAPyDataFrame& DAPyDataFrame::operator=(const DAPyDataFrame& obj)
     return *this;
 }
 
+/**
+ * @brief 移动赋值操作符
+ * @param obj 右值DAPyDataFrame
+ * @return 返回自身的引用
+ */
 DAPyDataFrame& DAPyDataFrame::operator=(DAPyDataFrame&& obj)
 {
     if (this != &obj) {
@@ -122,6 +179,11 @@ DAPyDataFrame& DAPyDataFrame::operator=(DAPyDataFrame&& obj)
     return *this;
 }
 
+/**
+ * @brief 赋值操作符，从DAPyObjectWrapper赋值
+ * @param obj DAPyObjectWrapper对象
+ * @return 返回自身的引用
+ */
 DAPyDataFrame& DAPyDataFrame::operator=(const DAPyObjectWrapper& obj)
 {
     DAPyObjectWrapper::operator=(obj);
@@ -129,6 +191,11 @@ DAPyDataFrame& DAPyDataFrame::operator=(const DAPyObjectWrapper& obj)
     return *this;
 }
 
+/**
+ * @brief 移动赋值操作符，从DAPyObjectWrapper移动赋值
+ * @param obj DAPyObjectWrapper对象右值
+ * @return 返回自身的引用
+ */
 DAPyDataFrame& DAPyDataFrame::operator=(DAPyObjectWrapper&& obj)
 {
     DAPyObjectWrapper::operator=(std::move(obj));
@@ -577,6 +644,9 @@ bool DAPyDataFrame::setIndex(const QString& colName, bool isDrop) noexcept
     return true;
 }
 
+/**
+ * @brief 检查对象是否为有效的DataFrame，无效则置为None
+ */
 void DAPyDataFrame::checkObjectValid()
 {
     if (!isDataFrame(object())) {
@@ -667,11 +737,23 @@ QString DAPyDataFrame::toString(std::size_t maxrow) const
     return res;
 }
 
+/**
+ * @brief 判断对象是否为pandas.DataFrame实例
+ * @param obj 要判断的对象
+ * @return 如果是DataFrame返回true
+ */
 bool DAPyDataFrame::isDataFrame(const pybind11::object& obj)
 {
     return DAPyModulePandas::getInstance().isInstanceDataFrame(obj);
 }
 
+/**
+ * @brief 从csv文件读取数据
+ * @param path csv文件路径
+ * @param args 读取参数
+ * @param why 失败原因输出
+ * @return 读取成功返回true
+ */
 bool DAPyDataFrame::read_csv(const QString& path, const QVariantHash args, QString* why)
 {
     DAPyDataFrame df = DAPyModulePandas::getInstance().read_csv(path, args);
@@ -701,6 +783,12 @@ bool DAPyDataFrame::read_csv(const QString& path, const QVariantHash args, QStri
 //    return !isNone();
 //}
 
+/**
+ * @brief QDebug输出流操作符
+ * @param dbg QDebug对象
+ * @param df DAPyDataFrame对象
+ * @return 返回QDebug对象
+ */
 QDebug operator<<(QDebug dbg, const DAPyDataFrame& df)
 {
     QDebugStateSaver saver(dbg);

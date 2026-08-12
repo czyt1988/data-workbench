@@ -25,7 +25,7 @@ public:
     DAPyDataFrame(DAPyDataFrame&& df);
     DAPyDataFrame(const pybind11::object& obj);
     DAPyDataFrame(pybind11::object&& obj);
-    ~DAPyDataFrame();
+    ~DAPyDataFrame() override;
 
     DAPySeries operator[](const QString& n) const;
     DAPySeries operator[](size_t n) const;
