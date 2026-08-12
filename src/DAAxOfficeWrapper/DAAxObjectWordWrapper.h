@@ -57,7 +57,7 @@ class DAAXOFFICEWRAPPER_API DAAxObjectWordWrapper : public QObject
     DA_DECLARE_PRIVATE(DAAxObjectWordWrapper)
 public:
     DAAxObjectWordWrapper(QObject* par = nullptr);
-    ~DAAxObjectWordWrapper();
+    ~DAAxObjectWordWrapper() override;
     //重新加载app
     void reloadApp();
     //打开文件

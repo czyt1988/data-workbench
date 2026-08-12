@@ -1,4 +1,4 @@
-﻿#ifndef DACOMMANDSDATAMANAGER_H
+#ifndef DACOMMANDSDATAMANAGER_H
 #define DACOMMANDSDATAMANAGER_H
 #include <QUndoCommand>
 #include "DADataAPI.h"
@@ -52,8 +52,8 @@ public:
 
 private:
     DAData mData;
-    QString m_oldName;
-    QString m_newName;
+    QString mOldName;
+    QString mNewName;
 };
 
 }  // end of namespace DA

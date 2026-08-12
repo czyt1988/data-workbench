@@ -1,4 +1,4 @@
-﻿#include "DAAxObjectWordWrapper.h"
+#include "DAAxObjectWordWrapper.h"
 #include "DAAxObjectWordTableWrapper.h"
 #include <QDir>
 
@@ -45,11 +45,20 @@ public:
     QAxObject* mDocument { nullptr };                             ///< 文档
 };
 
+/**
+ * @brief 构造函数，初始化word app
+ * @param p 父对象
+ */
 DAAxObjectWordWrapper::PrivateData::PrivateData(DAAxObjectWordWrapper* p) : q_ptr(p)
 {
     initialize();
 }
 
+/**
+ * @brief 尝试打开app，依次尝试Word和WPS
+ * @param obj QAxObject对象
+ * @return 成功打开返回true
+ */
 bool DAAxObjectWordWrapper::PrivateData::tryCreateComControl(QAxObject* obj)
 {
     if (!obj->setControl(cWordAppComControlName)) {
@@ -130,6 +139,9 @@ bool DAAxObjectWordWrapper::PrivateData::open(const QString& docfile, bool isvis
     return (mDocument != nullptr);
 }
 
+/**
+ * @brief 退出app
+ */
 void DAAxObjectWordWrapper::PrivateData::quit()
 {
     if (isInitialize()) {
@@ -151,6 +163,9 @@ void DAAxObjectWordWrapper::PrivateData::close(bool on)
     }
 }
 
+/**
+ * @brief 保存
+ */
 void DAAxObjectWordWrapper::PrivateData::save()
 {
     if (isHaveDocument()) {
@@ -158,6 +173,11 @@ void DAAxObjectWordWrapper::PrivateData::save()
     }
 }
 
+/**
+ * @brief 另存为
+ * @param docfile 文件路径
+ * @return 成功返回true
+ */
 bool DAAxObjectWordWrapper::PrivateData::saveAs(const QString& docfile)
 {
     if (isHaveDocument()) {
@@ -283,10 +303,17 @@ DAAxObjectWordTableWrapper DAAxObjectWordWrapper::PrivateData::insertTableAtMark
 // DAAxObjectWordWrapper
 //===================================================
 
+/**
+ * @brief 构造函数
+ * @param par 父对象
+ */
 DAAxObjectWordWrapper::DAAxObjectWordWrapper(QObject* par) : QObject(par), DA_PIMPL_CONSTRUCT
 {
 }
 
+/**
+ * @brief 析构函数，安全清除资源
+ */
 DAAxObjectWordWrapper::~DAAxObjectWordWrapper()
 {
     d_ptr->safeClear();

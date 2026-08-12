@@ -1,4 +1,4 @@
-﻿#ifndef DADATAPYOBJECT_H
+#ifndef DADATAPYOBJECT_H
 #define DADATAPYOBJECT_H
 #include "DADataAPI.h"
 #include <memory>
@@ -15,7 +15,7 @@ class DADATA_API DADataPyObject : public DAAbstractData
 public:
     DADataPyObject();
     DADataPyObject(const DAPyObjectWrapper& d);
-    ~DADataPyObject();
+    ~DADataPyObject() override;
     // 变量类型
     DataType getDataType() const override;
     // 变量值

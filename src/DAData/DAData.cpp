@@ -1,4 +1,4 @@
-﻿// qt
+// qt
 #include <QFileDialog>
 #include <QFileInfo>
 
@@ -20,37 +20,64 @@ namespace DA
 // DAData
 //===================================================
 
+/**
+ * @brief 默认构造函数
+ */
 DAData::DAData() : mDataMgr(nullptr)
 {
 }
 
+/**
+ * @brief 通过智能指针构造
+ * @param d 抽象数据的智能指针
+ */
 DAData::DAData(const DAAbstractData::Pointer& d) : mDataMgr(nullptr)
 {
     mData = d;
 }
 
+/**
+ * @brief 拷贝构造函数
+ * @param d 另一个DAData
+ */
 DAData::DAData(const DAData& d)
 {
     mData    = d.mData;
     mDataMgr = d.mDataMgr;
 }
 
+/**
+ * @brief 移动构造函数
+ * @param d 另一个DAData
+ */
 DAData::DAData(DAData&& d) noexcept : mData(std::move(d.mData)), mDataMgr(d.mDataMgr)
 {
     d.mDataMgr = nullptr;
 }
 
 #if DA_ENABLE_PYTHON
+/**
+ * @brief 通过DAPyDataFrame构造
+ * @param d dataframe
+ */
 DAData::DAData(const DAPyDataFrame& d) : mDataMgr(nullptr)
 {
     mData = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPyDataFrame >(d));
 }
 
+/**
+ * @brief 通过DAPySeries构造
+ * @param d series
+ */
 DAData::DAData(const DAPySeries& d) : mDataMgr(nullptr)
 {
     mData = std::static_pointer_cast< DAAbstractData >(std::make_shared< DADataPySeries >(d));
 }
 
+/**
+ * @brief 直接从 Python 对象构造，不允许隐式转换
+ * @param obj python对象
+ */
 DAData::DAData(pybind11::object obj) : mDataMgr(nullptr)
 {
     if (DAPyDataFrame::isDataFrame(obj)) {
@@ -63,6 +90,9 @@ DAData::DAData(pybind11::object obj) : mDataMgr(nullptr)
 }
 #endif
 
+/**
+ * @brief 析构函数
+ */
 DAData::~DAData()
 {
 }
@@ -86,11 +116,21 @@ bool DAData::operator!=(const DAData& d) const
     return mData != d.mData;
 }
 
+/**
+ * @brief 小于比较运算符，基于原始指针比较
+ * @param d 另一个DAData
+ * @return true表示this小于d
+ */
 bool DAData::operator<(const DAData& d) const
 {
     return rawPointer() < d.rawPointer();
 }
 
+/**
+ * @brief 赋值运算符
+ * @param d 另一个DAData
+ * @return 自身引用
+ */
 DAData& DAData::operator=(const DAData& d)
 {
     mData    = d.mData;
@@ -98,6 +138,11 @@ DAData& DAData::operator=(const DAData& d)
     return *this;
 }
 
+/**
+ * @brief 移动赋值运算符
+ * @param d 另一个DAData
+ * @return 自身引用
+ */
 DAData& DAData::operator=(DAData&& d) noexcept
 {
     if (this != &d) {
@@ -109,6 +154,11 @@ DAData& DAData::operator=(DAData&& d) noexcept
 }
 
 #if DA_ENABLE_PYTHON
+/**
+ * @brief 通过DAPyDataFrame赋值
+ * @param d dataframe
+ * @return 自身引用
+ */
 DAData& DAData::operator=(const DAPyDataFrame& d)
 {
     std::shared_ptr< DAAbstractData > p =
@@ -117,6 +167,11 @@ DAData& DAData::operator=(const DAPyDataFrame& d)
     return *this;
 }
 
+/**
+ * @brief 通过DAPySeries赋值
+ * @param d series
+ * @return 自身引用
+ */
 DAData& DAData::operator=(const DAPySeries& d)
 {
     std::shared_ptr< DAAbstractData > p =
@@ -126,6 +181,10 @@ DAData& DAData::operator=(const DAPySeries& d)
 }
 #endif
 
+/**
+ * @brief bool转换运算符，判断内部数据是否非空
+ * @return 内部数据非空返回true
+ */
 DAData::operator bool() const
 {
     return mData != nullptr;
@@ -140,6 +199,10 @@ bool DAData::isNull() const
     return mData == nullptr;
 }
 
+/**
+ * @brief 获取数据类型
+ * @return 数据类型
+ */
 DAAbstractData::DataType DAData::getDataType() const
 {
     if (!mData) {
@@ -148,6 +211,12 @@ DAAbstractData::DataType DAData::getDataType() const
     return mData->getDataType();
 }
 
+/**
+ * @brief 获取变量值
+ * @param dim1 第一维索引
+ * @param dim2 第二维索引
+ * @return 对应位置的值
+ */
 QVariant DAData::value(size_t dim1, std::size_t dim2) const
 {
     if (!mData) {
@@ -176,6 +245,10 @@ bool DAData::setValue(std::size_t dim1, size_t dim2, const QVariant& v)
     return r;
 }
 
+/**
+ * @brief 获取变量名
+ * @return 变量名
+ */
 QString DAData::getName() const
 {
     if (!mData) {
@@ -184,6 +257,10 @@ QString DAData::getName() const
     return mData->getName();
 }
 
+/**
+ * @brief 设置变量名
+ * @param n 变量名
+ */
 void DAData::setName(const QString& n)
 {
     if (!mData) {
@@ -195,6 +272,10 @@ void DAData::setName(const QString& n)
     }
 }
 
+/**
+ * @brief 获取变量描述
+ * @return 变量描述
+ */
 QString DAData::getDescribe() const
 {
     if (!mData) {
@@ -203,6 +284,10 @@ QString DAData::getDescribe() const
     return mData->getDescribe();
 }
 
+/**
+ * @brief 设置变量描述
+ * @param d 变量描述
+ */
 void DAData::setDescribe(const QString& d)
 {
     if (!mData) {
@@ -214,26 +299,46 @@ void DAData::setDescribe(const QString& d)
     }
 }
 
+/**
+ * @brief 返回原始指针
+ * @return 抽象数据的裸指针
+ */
 DAAbstractData* DAData::rawPointer()
 {
     return mData.get();
 }
 
+/**
+ * @brief 返回原始指针（const版本）
+ * @return 抽象数据的const裸指针
+ */
 const DAAbstractData* DAData::rawPointer() const
 {
     return mData.get();
 }
 
+/**
+ * @brief 返回智能指针
+ * @return 抽象数据的智能指针
+ */
 DAData::Pointer DAData::getPointer()
 {
     return mData;
 }
 
+/**
+ * @brief 返回智能指针（const版本）
+ * @return 抽象数据的智能指针
+ */
 DAData::Pointer DAData::getPointer() const
 {
     return mData;
 }
 
+/**
+ * @brief 获取id
+ * @return 唯一id，如果内部数据为空返回0
+ */
 DAData::IdType DAData::id() const
 {
     if (!mData) {
@@ -242,6 +347,10 @@ DAData::IdType DAData::id() const
     return mData->id();
 }
 
+/**
+ * @brief 判断是否为dataframe
+ * @return 是dataframe返回true
+ */
 bool DAData::isDataFrame() const
 {
     if (!mData) {
@@ -250,6 +359,10 @@ bool DAData::isDataFrame() const
     return (mData->getDataType() == DAAbstractData::TypePythonDataFrame);
 }
 
+/**
+ * @brief 判断是否为series
+ * @return 是series返回true
+ */
 bool DAData::isSeries() const
 {
     if (!mData) {
@@ -324,6 +437,10 @@ pybind11::object DAData::toPyObject() const
     return pybind11::none();
 }
 
+/**
+ * @brief 设置python对象，此函数会替换掉数据管理的对象内容
+ * @param obj python对象
+ */
 void DA::DAData::setPyObject(const pybind11::object& obj)
 {
     switch (getDataType()) {
@@ -369,6 +486,10 @@ bool DAData::writeToFile(const DAData& data, const QString& filePath)
     return false;
 }
 
+/**
+ * @brief 数据类型转换为文字
+ * @return 类型对应的文字
+ */
 QString DAData::typeToString() const
 {
     if (!mData) {
@@ -395,6 +516,10 @@ bool DAData::isHaveDataManager() const
     return (mDataMgr != nullptr);
 }
 
+/**
+ * @brief 获取数据的尺寸
+ * @return 返回行列数组成的pair
+ */
 std::pair< size_t, size_t > DAData::shape() const
 {
     switch (getDataType()) {
@@ -422,6 +547,13 @@ void DAData::setDataManager(DADataManager* mgr)
 {
     mDataMgr = mgr;
 }
+
+/**
+ * @brief qHash函数，用于QHash/QMap的键计算
+ * @param key DAData键
+ * @param seed 种子
+ * @return hash值
+ */
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 uint qHash(const DAData& key, uint seed)
 #else

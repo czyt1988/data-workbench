@@ -1,4 +1,4 @@
-﻿#ifndef DAAXOBJECTEXCELWRAPPER_H
+#ifndef DAAXOBJECTEXCELWRAPPER_H
 #define DAAXOBJECTEXCELWRAPPER_H
 #include <QObject>
 #include <QAxObject>
@@ -30,7 +30,7 @@ class DAAXOFFICEWRAPPER_API DAAxObjectExcelWrapper : public QObject
 	DA_DECLARE_PRIVATE(DAAxObjectExcelWrapper)
 public:
 	DAAxObjectExcelWrapper(QObject* par = nullptr);
-	~DAAxObjectExcelWrapper();
+	~DAAxObjectExcelWrapper() override;
 	// 判断是否有效
 	bool isValid() const;
 	// 窗体是否显示

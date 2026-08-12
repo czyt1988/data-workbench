@@ -1,4 +1,4 @@
-﻿#ifndef DADATAUNDOCOMMAND_H
+#ifndef DADATAUNDOCOMMAND_H
 #define DADATAUNDOCOMMAND_H
 #include <QUndoCommand>
 #include <functional>
@@ -11,7 +11,7 @@ class DADATA_API DADataAbstractUndoCommand : public QUndoCommand, public DACallB
 {
 public:
     DADataAbstractUndoCommand(QUndoCommand* par = nullptr);
-    ~DADataAbstractUndoCommand();
+    ~DADataAbstractUndoCommand() override;
     // 设置旧对象
     virtual void setOldData(const DAData& data) = 0;
     // 设置新对象
@@ -24,7 +24,7 @@ public:
     void consumeSkipFirstRedo();
 
 private:
-    bool m_skipFirstRedo { true };  ///< 跳过第一次redo
+    bool mSkipFirstRedo { true };  ///< 跳过第一次redo
 };
 
 /**
@@ -46,7 +46,7 @@ class DADATA_API DADataObjectSwapUndoCommand : public DADataAbstractUndoCommand
 {
 public:
     DADataObjectSwapUndoCommand(QUndoCommand* par = nullptr);
-    ~DADataObjectSwapUndoCommand();
+    ~DADataObjectSwapUndoCommand() override;
     // 设置旧对象（立即 pickle 到临时文件）
     void setOldData(const DAData& data) override;
     // 设置新对象（把新对象也pickle到临时文件）
@@ -55,9 +55,9 @@ public:
     void redo() override;
 
 protected:
-    DAData m_data;
-    pybind11::object m_oldObject;
-    pybind11::object m_newObject;
+    DAData mData;
+    pybind11::object mOldObject;
+    pybind11::object mNewObject;
 };
 
 /**
@@ -83,7 +83,7 @@ class DADATA_API DADataObjectPersistUndoCommand : public DADataAbstractUndoComma
 {
 public:
     DADataObjectPersistUndoCommand(QUndoCommand* par = nullptr);
-    ~DADataObjectPersistUndoCommand();
+    ~DADataObjectPersistUndoCommand() override;
     // 设置旧对象（立即 pickle 到临时文件）
     void setOldData(const DAData& data) override;
     // 设置新对象（把新对象也pickle到临时文件）
@@ -98,9 +98,9 @@ protected:
     pybind11::object loadObj(const QString& path);
 
 protected:
-    DAData m_data;
-    QString m_oldObjectPath;
-    QString m_newObjectPath;
+    DAData mData;
+    QString mOldObjectPath;
+    QString mNewObjectPath;
 };
 }
 

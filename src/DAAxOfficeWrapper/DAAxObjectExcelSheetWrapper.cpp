@@ -1,4 +1,4 @@
-﻿#include "DAAxObjectExcelSheetWrapper.h"
+#include "DAAxObjectExcelSheetWrapper.h"
 #include <QDebug>
 
 #ifndef NULL_AXOBJECT_CHECK_AND_RETURN
@@ -22,10 +22,17 @@
 namespace DA
 {
 
+/**
+ * @brief 构造函数
+ * @param sheetObj QAxObject指针
+ */
 DAAxObjectExcelSheetWrapper::DAAxObjectExcelSheetWrapper(QAxObject* sheetObj) : mAxSheet(sheetObj)
 {
 }
 
+/**
+ * @brief 析构函数，如果设置了自动删除则释放QAxObject
+ */
 DAAxObjectExcelSheetWrapper::~DAAxObjectExcelSheetWrapper()
 {
     if (mAutoDelete) {

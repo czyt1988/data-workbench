@@ -98,16 +98,29 @@ public:
     QAxObject* mAxWorkSheets { nullptr };  ///< WorkSheets,
 };
 
+/**
+ * @brief 构造函数
+ * @param p 父对象
+ */
 DAAxObjectExcelWrapper::PrivateData::PrivateData(DAAxObjectExcelWrapper* p) : q_ptr(p)
 {
     initialize();
 }
 
+/**
+ * @brief 析构函数
+ */
 DAAxObjectExcelWrapper::PrivateData::~PrivateData()
 {
     release();
 }
 
+/**
+ * @brief 初始化，加载Excel app
+ * @param visible 是否显示窗口
+ * @param displayAlerts 是否显示警告
+ * @return 初始化成功返回true
+ */
 bool DAAxObjectExcelWrapper::PrivateData::initialize(bool visible, bool displayAlerts)
 {
     HRESULT r = OleInitialize(0);
@@ -129,11 +142,21 @@ bool DAAxObjectExcelWrapper::PrivateData::initialize(bool visible, bool displayA
     return true;
 }
 
+/**
+ * @brief 判断是否初始化完成
+ * @return 已初始化返回true
+ */
 bool DAAxObjectExcelWrapper::PrivateData::isInitialize() const
 {
     return checkAxObjectValid(mAxApp.get());
 }
 
+/**
+ * @brief 尝试初始化，如果已经初始化无动作，如果没有初始化就初始化
+ * @param visible 是否显示窗口
+ * @param displayAlerts 是否显示警告
+ * @return 初始化成功或已初始化返回true
+ */
 bool DAAxObjectExcelWrapper::PrivateData::tryInitialize(bool visible, bool displayAlerts)
 {
     if (!isInitialize()) {
@@ -144,26 +167,48 @@ bool DAAxObjectExcelWrapper::PrivateData::tryInitialize(bool visible, bool displ
     return true;
 }
 
+/**
+ * @brief 判断QAxObject*是否是有效的
+ * @param ax 待检查的对象
+ * @return 有效返回true
+ */
 bool DAAxObjectExcelWrapper::PrivateData::checkAxObjectValid(QAxObject* ax) const
 {
     return (ax != nullptr) && !(ax->isNull());
 }
 
+/**
+ * @brief 判断是否存在Workbooks
+ * @return 存在返回true
+ */
 bool DAAxObjectExcelWrapper::PrivateData::isHaveWorkbooks() const
 {
     return checkAxObjectValid(mAxWorkbooks);
 }
 
+/**
+ * @brief 判断是否存在Workbook
+ * @return 存在返回true
+ */
 bool DAAxObjectExcelWrapper::PrivateData::isHaveWorkbook() const
 {
     return checkAxObjectValid(mAxWorkbook);
 }
 
+/**
+ * @brief 判断是否存在WorkSheets
+ * @return 存在返回true
+ */
 bool DAAxObjectExcelWrapper::PrivateData::isHaveWorkSheets() const
 {
     return checkAxObjectValid(mAxWorkSheets);
 }
 
+/**
+ * @brief 尝试打开app，依次尝试Excel和WPS
+ * @param obj QAxObject对象
+ * @return 成功打开返回true
+ */
 bool DAAxObjectExcelWrapper::PrivateData::tryCreateComControl(QAxObject* obj)
 {
     bool res = false;
@@ -176,6 +221,10 @@ bool DAAxObjectExcelWrapper::PrivateData::tryCreateComControl(QAxObject* obj)
     return res;
 }
 
+/**
+ * @brief 窗体是否显示
+ * @param on true表示显示
+ */
 void DAAxObjectExcelWrapper::PrivateData::setWindowVisible(bool on)
 {
     if (!isInitialize()) {
@@ -184,6 +233,10 @@ void DAAxObjectExcelWrapper::PrivateData::setWindowVisible(bool on)
     mAxApp->dynamicCall("SetVisible(bool)", on);  // false不显示窗体
 }
 
+/**
+ * @brief 是否显示警告
+ * @param on true表示显示警告
+ */
 void DAAxObjectExcelWrapper::PrivateData::setDisplayAlerts(bool on)
 {
     if (!isInitialize()) {
@@ -192,6 +245,13 @@ void DAAxObjectExcelWrapper::PrivateData::setDisplayAlerts(bool on)
     mAxApp->setProperty("DisplayAlerts", on);  // 不显示警告。
 }
 
+/**
+ * @brief 打开excel文件
+ * @param filename excel文件名
+ * @param visible 是否可见
+ * @param displayAlerts 是否显示警告
+ * @return 成功打开返回true
+ */
 bool DAAxObjectExcelWrapper::PrivateData::open(const QString& filename, bool visible, bool displayAlerts)
 {
     if (!tryInitialize(visible, displayAlerts)) {
@@ -243,6 +303,10 @@ bool DAAxObjectExcelWrapper::PrivateData::create(const QString& filename, bool v
     return true;
 }
 
+/**
+ * @brief 保存当前工作簿
+ * @return 成功返回true
+ */
 bool DAAxObjectExcelWrapper::PrivateData::save()
 {
     if (!isHaveWorkbook()) {
@@ -252,6 +316,11 @@ bool DAAxObjectExcelWrapper::PrivateData::save()
     return true;
 }
 
+/**
+ * @brief 另存为
+ * @param filename 文件名
+ * @return 成功返回true
+ */
 bool DAAxObjectExcelWrapper::PrivateData::saveAs(const QString& filename)
 {
     if (!isHaveWorkbook()) {
@@ -267,6 +336,9 @@ bool DAAxObjectExcelWrapper::PrivateData::saveAs(const QString& filename)
     return true;
 }
 
+/**
+ * @brief 关闭工作簿
+ */
 void DAAxObjectExcelWrapper::PrivateData::close()
 {
     if (isHaveWorkbook()) {
@@ -283,6 +355,9 @@ void DAAxObjectExcelWrapper::PrivateData::close()
     mAxWorkSheets = nullptr;
 }
 
+/**
+ * @brief 释放所有资源
+ */
 void DAAxObjectExcelWrapper::PrivateData::release()
 {
     close();
@@ -300,6 +375,9 @@ void DAAxObjectExcelWrapper::PrivateData::release()
     OleUninitialize();
 }
 
+/**
+ * @brief 激活一个excel工作簿
+ */
 void DAAxObjectExcelWrapper::PrivateData::activeWorkBook()
 {
     if (qaxobject_is_null(mAxWorkbooks)) {
@@ -348,6 +426,11 @@ int DAAxObjectExcelWrapper::PrivateData::getSheetsCount() const
     return mAxWorkSheets->property("Count").toInt();  // 获取工作表的数量
 }
 
+/**
+ * @brief 添加sheet，会插入到最后
+ * @param name sheet名称
+ * @return 新建的sheet的QAxObject指针
+ */
 QAxObject* DAAxObjectExcelWrapper::PrivateData::addSheet(const QString& name)
 {
     if (!isHaveWorkbook()) {
@@ -394,6 +477,11 @@ QAxObject* DAAxObjectExcelWrapper::PrivateData::addSheet(const QString& name)
     return newSheet;
 }
 
+/**
+ * @brief 获取sheet，注意此函数是0-base
+ * @param sheetIndex sheet索引（0-base）
+ * @return sheet的QAxObject指针
+ */
 QAxObject* DAAxObjectExcelWrapper::PrivateData::getSheet(int sheetIndex)
 {
     if (!isHaveWorkbook()) {
@@ -421,6 +509,10 @@ QAxObject* DAAxObjectExcelWrapper::PrivateData::getSheet(const QString& name)
     return mAxWorkSheets->querySubObject("Item(QString)", name);
 }
 
+/**
+ * @brief 获取第一个sheet
+ * @return sheet的QAxObject指针
+ */
 QAxObject* DAAxObjectExcelWrapper::PrivateData::getFirstSheet()
 {
     return getSheet(0);
@@ -452,6 +544,11 @@ bool DAAxObjectExcelWrapper::PrivateData::setCurrentSheet(int index)
     return true;
 }
 
+/**
+ * @brief 设置当前激活的sheet
+ * @param name sheet名称
+ * @return 成功返回true
+ */
 bool DAAxObjectExcelWrapper::PrivateData::setCurrentSheet(const QString& name)
 {
     DAAxObjectExcelSheetWrapper sheet(getSheet(name));
@@ -463,6 +560,11 @@ bool DAAxObjectExcelWrapper::PrivateData::setCurrentSheet(const QString& name)
     return true;
 }
 
+/**
+ * @brief 通过sheet名字查找sheet索引
+ * @param name sheet名称
+ * @return sheet索引，未找到返回-1
+ */
 int DAAxObjectExcelWrapper::PrivateData::indexOfSheetName(const QString& name)
 {
     DAAxObjectExcelSheetWrapper sheet(getSheet(name));
@@ -473,6 +575,10 @@ int DAAxObjectExcelWrapper::PrivateData::indexOfSheetName(const QString& name)
     return sheet.getIndex();
 }
 
+/**
+ * @brief 获取当前激活的sheet
+ * @return sheet的QAxObject指针
+ */
 QAxObject* DAAxObjectExcelWrapper::PrivateData::getActiveSheet()
 {
     if (qaxobject_is_null(mAxWorkSheets)) {
@@ -512,6 +618,11 @@ QString DAAxObjectExcelWrapper::PrivateData::getSheetName(QAxObject* sheetObj)
     return sheetObj->property("Name").toString();
 }
 
+/**
+ * @brief 获取sheet的索引
+ * @param sheetObj sheet对象
+ * @return sheet索引
+ */
 int DAAxObjectExcelWrapper::PrivateData::getSheetIndex(QAxObject* sheetObj)
 {
     return sheetObj->property("Index").toInt();
@@ -550,14 +661,25 @@ QList< QAxObject* > DAAxObjectExcelWrapper::PrivateData::getAllSheet(QAxObject* 
 // DAAxObjectExcelWrapper
 //----------------------------------------------------
 
+/**
+ * @brief 构造函数
+ * @param par 父对象
+ */
 DAAxObjectExcelWrapper::DAAxObjectExcelWrapper(QObject* par) : QObject(par), DA_PIMPL_CONSTRUCT
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DAAxObjectExcelWrapper::~DAAxObjectExcelWrapper()
 {
 }
 
+/**
+ * @brief 判断是否有效
+ * @return 有效返回true
+ */
 bool DAAxObjectExcelWrapper::isValid() const
 {
     return d_ptr->isInitialize();
@@ -606,11 +728,20 @@ bool DAAxObjectExcelWrapper::create(const QString& filename, bool visible, bool 
     return d_ptr->create(filename, visible, displayAlerts);
 }
 
+/**
+ * @brief 保存
+ * @return 成功返回true
+ */
 bool DAAxObjectExcelWrapper::save()
 {
     return d_ptr->save();
 }
 
+/**
+ * @brief 另存为
+ * @param filename 文件名
+ * @return 成功返回true
+ */
 bool DAAxObjectExcelWrapper::saveAs(const QString& filename)
 {
     return d_ptr->saveAs(filename);
@@ -694,6 +825,10 @@ DATable< QVariant > DAAxObjectExcelWrapper::readTable(int sheetIndex) const
     return sheet.readTable();
 }
 
+/**
+ * @brief 读取当前sheet的所有数据
+ * @return 表格数据
+ */
 DATable< QVariant > DAAxObjectExcelWrapper::readCurrentTable() const
 {
     DATable< QVariant > res;
@@ -724,11 +859,19 @@ DAAxObjectExcelSheetWrapper DAAxObjectExcelWrapper::getSheet(int sheetIndex) con
     return DAAxObjectExcelSheetWrapper(d_ptr->getSheet(sheetIndex));
 }
 
+/**
+ * @brief 获取第一个sheet
+ * @return sheet包装器
+ */
 DAAxObjectExcelSheetWrapper DAAxObjectExcelWrapper::getFirstSheet() const
 {
     return DAAxObjectExcelSheetWrapper(d_ptr->getFirstSheet());
 }
 
+/**
+ * @brief 获取最后一个sheet
+ * @return sheet包装器
+ */
 DAAxObjectExcelSheetWrapper DAAxObjectExcelWrapper::getLastSheet() const
 {
     return DAAxObjectExcelSheetWrapper(d_ptr->getLastSheet());
@@ -754,6 +897,13 @@ DAAxObjectExcelSheetWrapper DAAxObjectExcelWrapper::addSheet(const QString& name
     return DAAxObjectExcelSheetWrapper(d_ptr->addSheet(name));
 }
 
+/**
+ * @brief 读取excel第sheetIndex的sheet的数据
+ * @param filename excel文件名
+ * @param sheetIndex sheet索引（0-base）
+ * @param errString 错误信息输出
+ * @return 表格数据
+ */
 DATable< QVariant > DAAxObjectExcelWrapper::readExcelSheet(const QString& filename, int sheetIndex, QString* errString)
 {
     DATable< QVariant > res;
@@ -774,6 +924,15 @@ DATable< QVariant > DAAxObjectExcelWrapper::readExcelSheet(const QString& filena
     return res;
 }
 
+/**
+ * @brief 把table写入excel中
+ * @param filename excel文件名
+ * @param sheetName sheet名称
+ * @param table 表格数据
+ * @param appendLast 是否追加到最后
+ * @param errString 错误信息输出
+ * @return 成功返回true
+ */
 bool DAAxObjectExcelWrapper::writeExcel(const QString& filename,
                                         const QString& sheetName,
                                         const DATable< QVariant >& table,

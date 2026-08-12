@@ -3,6 +3,10 @@
 namespace DA
 {
 
+/**
+ * @brief 构造函数
+ * @param p 表格的QAxObject指针
+ */
 DAAxObjectWordTableWrapper::DAAxObjectWordTableWrapper(QAxObject* p) : mAxTableObject(p)
 {
 }

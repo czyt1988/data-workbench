@@ -1,4 +1,4 @@
-﻿#ifndef DADATAPYDATAFRAME_H
+#ifndef DADATAPYDATAFRAME_H
 #define DADATAPYDATAFRAME_H
 
 #include "DADataAPI.h"
@@ -16,7 +16,7 @@ class DADATA_API DADataPyDataFrame : public DADataPyObject
 {
 public:
     DADataPyDataFrame(const DAPyDataFrame& d);
-    ~DADataPyDataFrame();
+    ~DADataPyDataFrame() override;
     // 变量类型
     DataType getDataType() const override;
     // 变量值

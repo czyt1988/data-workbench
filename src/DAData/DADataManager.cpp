@@ -18,28 +18,36 @@ class DADataManager::PrivateData
     DA_DECLARE_PUBLIC(DADataManager)
 public:
     PrivateData(DADataManager* p);
-    QList< DAData > _dataList;
-    QMap< DAData::IdType, DAData > _dataMap;
-    bool _dirtyFlag;               ///< 标记是否dirty
-    QUndoStack _dataManagerStack;  ///< 数据管理的stack
-    bool _suppressSignals { false };  ///< 抑制 dataAdded 信号
+    QList< DAData > mDataList;
+    QMap< DAData::IdType, DAData > mDataMap;
+    bool mDirtyFlag;               ///< 标记是否dirty
+    QUndoStack mDataManagerStack;  ///< 数据管理的stack
+    bool mSuppressSignals { false };  ///< 抑制 dataAdded 信号
 };
 
 //===================================================
 // DADataManagerPrivate
 //===================================================
 
-DADataManager::PrivateData::PrivateData(DADataManager* p) : q_ptr(p), _dirtyFlag(false)
+DADataManager::PrivateData::PrivateData(DADataManager* p) : q_ptr(p), mDirtyFlag(false)
 {
 }
 
 //===================================================
 // DADataManager
 //===================================================
+
+/**
+ * @brief 构造函数
+ * @param par 父对象
+ */
 DADataManager::DADataManager(QObject* par) : QObject(par), DA_PIMPL_CONSTRUCT
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DADataManager::~DADataManager()
 {
 }
@@ -55,7 +63,7 @@ void DADataManager::addData(DAData& d)
     if (d.isNull()) {
         return;
     }
-    if (d_ptr->_dataMap.contains(d.id())) {
+    if (d_ptr->mDataMap.contains(d.id())) {
         // 说明已经添加过
         daWarning << tr("data '%1' has been added").arg(d.getName());  // cn:数据 '%1' 已被添加过
         if (d.getDataManager() != this) {
@@ -66,10 +74,10 @@ void DADataManager::addData(DAData& d)
     }
     setUniqueDataName(d);
     d.setDataManager(this);
-    d_ptr->_dataList.push_back(d);
-    d_ptr->_dataMap[ d.id() ] = d;
+    d_ptr->mDataList.push_back(d);
+    d_ptr->mDataMap[ d.id() ] = d;
     setDirtyFlag(true);
-    if (!d_ptr->_suppressSignals) {
+    if (!d_ptr->mSuppressSignals) {
         Q_EMIT dataAdded(d);
     }
 }
@@ -82,7 +90,7 @@ void DADataManager::addData(DAData& d)
 void DADataManager::addData_(DAData& d)
 {
     DACommandDataManagerAdd* cmd = new DACommandDataManagerAdd(d, this);
-    d_ptr->_dataManagerStack.push(cmd);
+    d_ptr->mDataManagerStack.push(cmd);
 }
 
 /**
@@ -120,20 +128,31 @@ void DADataManager::addDatas_(const QList< DAData >& datas)
         new DACommandDataManagerAdd(d, this, cmdGroup.get());
     }
     if (cmdGroup->childCount() > 0) {
-        d_ptr->_dataManagerStack.push(cmdGroup.release());
+        d_ptr->mDataManagerStack.push(cmdGroup.release());
     }
 }
 
+/**
+ * @brief 设置是否抑制dataAdded信号
+ * @param on true表示抑制
+ */
 void DADataManager::setSuppressSignals(bool on)
 {
-    d_ptr->_suppressSignals = on;
+    d_ptr->mSuppressSignals = on;
 }
 
+/**
+ * @brief 判断是否抑制dataAdded信号
+ * @return true表示正在抑制
+ */
 bool DADataManager::isSuppressSignals() const
 {
-    return d_ptr->_suppressSignals;
+    return d_ptr->mSuppressSignals;
 }
 
+/**
+ * @brief 批量添加完成后调用，发射datasBatchAdded信号通知界面刷新
+ */
 void DADataManager::emitDatasBatchAdded()
 {
     Q_EMIT datasBatchAdded();
@@ -147,7 +166,7 @@ void DADataManager::emitDatasBatchAdded()
  */
 void DADataManager::removeData(DAData& d)
 {
-    int index = d_ptr->_dataList.indexOf(d);
+    int index = d_ptr->mDataList.indexOf(d);
     Q_EMIT dataBeginRemove(d, index);
     doRemoveData(d);
     Q_EMIT dataRemoved(d, index);
@@ -161,7 +180,7 @@ void DADataManager::removeData(DAData& d)
 void DADataManager::removeData_(DAData& d)
 {
     DACommandDataManagerRemove* cmd = new DACommandDataManagerRemove(d, this);
-    d_ptr->_dataManagerStack.push(cmd);
+    d_ptr->mDataManagerStack.push(cmd);
 }
 
 /**
@@ -175,7 +194,7 @@ void DADataManager::removeDatas_(const QList< DAData >& datas)
         new DACommandDataManagerRemove(d, this, cmdGroup.get());
     }
     if (cmdGroup->childCount() > 0) {
-        d_ptr->_dataManagerStack.push(cmdGroup.release());
+        d_ptr->mDataManagerStack.push(cmdGroup.release());
     }
 }
 
@@ -185,7 +204,7 @@ void DADataManager::removeDatas_(const QList< DAData >& datas)
  */
 int DADataManager::getDataCount() const
 {
-    return d_ptr->_dataList.size();
+    return d_ptr->mDataList.size();
 }
 
 /**
@@ -197,7 +216,7 @@ int DADataManager::getDataCount() const
  */
 int DADataManager::getDataIndex(const DAData& d) const
 {
-    return d_ptr->_dataList.indexOf(d);
+    return d_ptr->mDataList.indexOf(d);
 }
 
 /**
@@ -207,10 +226,10 @@ int DADataManager::getDataIndex(const DAData& d) const
  */
 DAData DADataManager::getData(int index) const
 {
-    if (index < 0 || index >= d_ptr->_dataList.size()) {
+    if (index < 0 || index >= d_ptr->mDataList.size()) {
         return DAData();
     }
-    return d_ptr->_dataList.at(index);
+    return d_ptr->mDataList.at(index);
 }
 
 /**
@@ -220,7 +239,7 @@ DAData DADataManager::getData(int index) const
  */
 DAData DADataManager::findData(const QString& name, Qt::CaseSensitivity cs) const
 {
-    for (const DAData& data : std::as_const(d_ptr->_dataList)) {
+    for (const DAData& data : std::as_const(d_ptr->mDataList)) {
         if (data.isNull()) {
             continue;
         }
@@ -307,6 +326,12 @@ QList< DAData > DADataManager::findDatas(const QString& pattern, Qt::CaseSensiti
     return findDatasReg(regex);
 }
 
+/**
+ * @brief 把通配符模式转换为正则表达式
+ * @param pattern 通配符模式字符串
+ * @param cs 大小写敏感设置
+ * @return 转换后的正则表达式对象
+ */
 QRegularExpression DADataManager::wildcardToRegex(const QString& pattern, Qt::CaseSensitivity cs)
 {
     if (pattern.isEmpty()) {
@@ -436,7 +461,7 @@ QList< DAData > DADataManager::findDatasReg(const QRegularExpression& regex) con
         return result;
     }
 
-    for (const DAData& data : std::as_const(d_ptr->_dataList)) {
+    for (const DAData& data : std::as_const(d_ptr->mDataList)) {
         if (data.isNull()) {
             continue;
         }
@@ -458,7 +483,7 @@ QList< DAData > DADataManager::findDatasReg(const QRegularExpression& regex) con
  */
 QList< DAData > DADataManager::getAllDatas() const
 {
-    return d_ptr->_dataList;
+    return d_ptr->mDataList;
 }
 
 /**
@@ -468,7 +493,7 @@ QList< DAData > DADataManager::getAllDatas() const
  */
 DAData DADataManager::getDataById(DAData::IdType id) const
 {
-    return d_ptr->_dataMap.value(id, DAData());
+    return d_ptr->mDataMap.value(id, DAData());
 }
 
 /**
@@ -477,7 +502,7 @@ DAData DADataManager::getDataById(DAData::IdType id) const
  */
 bool DADataManager::isDirty() const
 {
-    return d_ptr->_dirtyFlag;
+    return d_ptr->mDirtyFlag;
 }
 
 /**
@@ -488,7 +513,7 @@ bool DADataManager::isDirty() const
  */
 void DADataManager::setDirtyFlag(bool on)
 {
-    d_ptr->_dirtyFlag = on;
+    d_ptr->mDirtyFlag = on;
 }
 
 /**
@@ -497,7 +522,7 @@ void DADataManager::setDirtyFlag(bool on)
  */
 QUndoStack* DADataManager::getUndoStack() const
 {
-    return &(d_ptr->_dataManagerStack);
+    return &(d_ptr->mDataManagerStack);
 }
 
 /**
@@ -511,6 +536,10 @@ void DADataManager::notifyDataChangedSignal(const DAData& d, DADataManager::Chan
     Q_EMIT dataChanged(d, t);
 }
 
+/**
+ * @brief 设置唯一名称
+ * @param d 数据
+ */
 void DADataManager::setUniqueDataName(DAData& d) const
 {
     QString n = d.getName();
@@ -530,7 +559,7 @@ void DADataManager::setUniqueDataName(DAData& d) const
 QSet< QString > DADataManager::getDatasNameSet() const
 {
     QSet< QString > names;
-    for (const DAData& d : std::as_const(d_ptr->_dataList)) {
+    for (const DAData& d : std::as_const(d_ptr->mDataList)) {
         names.insert(d.getName());
     }
     return names;
@@ -542,13 +571,13 @@ QSet< QString > DADataManager::getDatasNameSet() const
  */
 void DADataManager::doRemoveData(DAData& d)
 {
-    int index = d_ptr->_dataList.indexOf(d);
+    int index = d_ptr->mDataList.indexOf(d);
     if (index < 0) {
         return;
     }
-    d_ptr->_dataList.removeAt(index);
+    d_ptr->mDataList.removeAt(index);
     if (!d.isNull()) {
-        d_ptr->_dataMap.remove(d.id());
+        d_ptr->mDataMap.remove(d.id());
     }
     d.setDataManager(nullptr);
     setDirtyFlag(true);
@@ -560,10 +589,10 @@ void DADataManager::doRemoveData(DAData& d)
 void DADataManager::clear()
 {
     // 栈清空
-    d_ptr->_dataManagerStack.clear();
+    d_ptr->mDataManagerStack.clear();
     // 数据清空
-    d_ptr->_dataList.clear();
-    d_ptr->_dataMap.clear();
+    d_ptr->mDataList.clear();
+    d_ptr->mDataMap.clear();
     setDirtyFlag(false);
     Q_EMIT datasCleared();
 }

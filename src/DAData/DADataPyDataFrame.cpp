@@ -1,4 +1,4 @@
-﻿#include "DADataPyDataFrame.h"
+#include "DADataPyDataFrame.h"
 #include <iterator>
 // DAMessageHandler
 #include "DALogCategory.h"
@@ -11,25 +11,50 @@ using namespace DA;
 //===================================================
 // DADataPyDataFrame
 //===================================================
+
+/**
+ * @brief 构造函数
+ * @param d dataframe
+ */
 DADataPyDataFrame::DADataPyDataFrame(const DAPyDataFrame& d) : DADataPyObject(d)
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DADataPyDataFrame::~DADataPyDataFrame()
 {
 }
 
+/**
+ * @brief 获取数据类型
+ * @return 返回TypePythonDataFrame
+ */
 DAAbstractData::DataType DADataPyDataFrame::getDataType() const
 {
     return TypePythonDataFrame;
 }
 
+/**
+ * @brief 获取变量值
+ * @param dim1 第一维索引（行）
+ * @param dim2 第二维索引（列）
+ * @return 对应位置的QVariant
+ */
 QVariant DADataPyDataFrame::toVariant(std::size_t dim1, std::size_t dim2) const
 {
     DAPyDataFrame df(mPyObject.object());
     return df.iat(dim1, dim2);
 }
 
+/**
+ * @brief 设置值
+ * @param dim1 第一维索引（行）
+ * @param dim2 第二维索引（列）
+ * @param v 要设置的值
+ * @return 设置成功返回true
+ */
 bool DADataPyDataFrame::setValue(std::size_t dim1, std::size_t dim2, const QVariant& v)
 {
     try {
@@ -42,11 +67,19 @@ bool DADataPyDataFrame::setValue(std::size_t dim1, std::size_t dim2, const QVari
     }
 }
 
+/**
+ * @brief 获取dataframe
+ * @return DAPyDataFrame
+ */
 DAPyDataFrame DADataPyDataFrame::dataframe() const
 {
     return DAPyDataFrame(mPyObject.object());
 }
 
+/**
+ * @brief 获取列名列表
+ * @return 列名列表
+ */
 QList< QString > DADataPyDataFrame::columns() const
 {
     return DAPyDataFrame(mPyObject.object()).columns();
