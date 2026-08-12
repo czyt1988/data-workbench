@@ -28,16 +28,22 @@ enum SessionColumn
 static constexpr int RoleSessionId = Qt::UserRole;        // 会话 ID
 static constexpr int RoleRawTitle  = Qt::UserRole + 1;    // 原始标题（未做「(untitled)」替换）
 
+/**
+ * @brief 构造函数
+ * @param sessions 会话列表 payload（每元素 QVariantMap{id,title,updatedAt,messageCount}）
+ * @param currentSessionId 当前活跃会话 ID（用于高亮与默认选中）
+ * @param parent 父窗口
+ */
 DADialogAgentSessionManager::DADialogAgentSessionManager(const QVariantList& sessions,
                                                          const QString& currentSessionId,
                                                          QWidget* parent)
     : QDialog(parent)
-    , m_table(nullptr)
-    , m_switchBtn(nullptr)
-    , m_renameBtn(nullptr)
-    , m_deleteBtn(nullptr)
-    , m_closeBtn(nullptr)
-    , m_currentSessionId(currentSessionId)
+    , mTable(nullptr)
+    , mSwitchBtn(nullptr)
+    , mRenameBtn(nullptr)
+    , mDeleteBtn(nullptr)
+    , mCloseBtn(nullptr)
+    , mCurrentSessionId(currentSessionId)
 {
     setWindowTitle(tr("Session Manager"));  // cn:会话管理
     setMinimumSize(520, 360);
@@ -50,21 +56,21 @@ DADialogAgentSessionManager::DADialogAgentSessionManager(const QVariantList& ses
     mainLayout->addWidget(hint);
 
     // ---- 会话表格 ----
-    m_table = new QTableWidget(this);
-    m_table->setColumnCount(ColumnCount);
-    m_table->setSelectionMode(QAbstractItemView::SingleSelection);
-    m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    m_table->setHorizontalHeaderLabels(QStringList()
+    mTable = new QTableWidget(this);
+    mTable->setColumnCount(ColumnCount);
+    mTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    mTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    mTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    mTable->setHorizontalHeaderLabels(QStringList()
                                        << tr("Title")     // cn:标题
                                        << tr("Messages")  // cn:消息数
                                        << tr("Updated"));  // cn:更新时间
-    m_table->verticalHeader()->setVisible(false);
-    m_table->horizontalHeader()->setStretchLastSection(false);
-    m_table->horizontalHeader()->setSectionResizeMode(ColTitle, QHeaderView::Stretch);
-    m_table->horizontalHeader()->setSectionResizeMode(ColMessages, QHeaderView::ResizeToContents);
-    m_table->horizontalHeader()->setSectionResizeMode(ColUpdated, QHeaderView::ResizeToContents);
-    mainLayout->addWidget(m_table, 1);
+    mTable->verticalHeader()->setVisible(false);
+    mTable->horizontalHeader()->setStretchLastSection(false);
+    mTable->horizontalHeader()->setSectionResizeMode(ColTitle, QHeaderView::Stretch);
+    mTable->horizontalHeader()->setSectionResizeMode(ColMessages, QHeaderView::ResizeToContents);
+    mTable->horizontalHeader()->setSectionResizeMode(ColUpdated, QHeaderView::ResizeToContents);
+    mainLayout->addWidget(mTable, 1);
 
     // ---- 底部按钮行（右对齐） ----
     QWidget* btnBar = new QWidget(this);
@@ -72,37 +78,41 @@ DADialogAgentSessionManager::DADialogAgentSessionManager(const QVariantList& ses
     btnLayout->setContentsMargins(0, 0, 0, 0);
     btnLayout->setSpacing(6);
     btnLayout->addStretch(1);
-    m_switchBtn = new QPushButton(tr("Switch"), btnBar);  // cn:切换
-    m_switchBtn->setDefault(true);
-    m_renameBtn = new QPushButton(tr("Rename"), btnBar);  // cn:重命名
-    m_deleteBtn = new QPushButton(tr("Delete"), btnBar);  // cn:删除
-    m_closeBtn  = new QPushButton(tr("Close"), btnBar);   // cn:关闭
-    btnLayout->addWidget(m_switchBtn);
-    btnLayout->addWidget(m_renameBtn);
-    btnLayout->addWidget(m_deleteBtn);
-    btnLayout->addWidget(m_closeBtn);
+    mSwitchBtn = new QPushButton(tr("Switch"), btnBar);  // cn:切换
+    mSwitchBtn->setDefault(true);
+    mRenameBtn = new QPushButton(tr("Rename"), btnBar);  // cn:重命名
+    mDeleteBtn = new QPushButton(tr("Delete"), btnBar);  // cn:删除
+    mCloseBtn  = new QPushButton(tr("Close"), btnBar);   // cn:关闭
+    btnLayout->addWidget(mSwitchBtn);
+    btnLayout->addWidget(mRenameBtn);
+    btnLayout->addWidget(mDeleteBtn);
+    btnLayout->addWidget(mCloseBtn);
     mainLayout->addWidget(btnBar);
 
     // ---- 数据填充 ----
     populateSessions(sessions);
 
     // ---- 信号连接 ----
-    connect(m_switchBtn, &QPushButton::clicked, this, &DADialogAgentSessionManager::onSwitchClicked);
-    connect(m_renameBtn, &QPushButton::clicked, this, &DADialogAgentSessionManager::onRenameClicked);
-    connect(m_deleteBtn, &QPushButton::clicked, this, &DADialogAgentSessionManager::onDeleteClicked);
-    connect(m_closeBtn, &QPushButton::clicked, this, &QDialog::reject);
+    connect(mSwitchBtn, &QPushButton::clicked, this, &DADialogAgentSessionManager::onSwitchClicked);
+    connect(mRenameBtn, &QPushButton::clicked, this, &DADialogAgentSessionManager::onRenameClicked);
+    connect(mDeleteBtn, &QPushButton::clicked, this, &DADialogAgentSessionManager::onDeleteClicked);
+    connect(mCloseBtn, &QPushButton::clicked, this, &QDialog::reject);
     // 双击行 = 切换
-    connect(m_table, &QTableWidget::cellDoubleClicked, this, &DADialogAgentSessionManager::onItemDoubleClicked);
+    connect(mTable, &QTableWidget::cellDoubleClicked, this, &DADialogAgentSessionManager::onItemDoubleClicked);
     // 选中变化刷新按钮可用态
-    connect(m_table, &QTableWidget::itemSelectionChanged, this, &DADialogAgentSessionManager::onSelectionChanged);
+    connect(mTable, &QTableWidget::itemSelectionChanged, this, &DADialogAgentSessionManager::onSelectionChanged);
 
     updateButtonStates();
 }
 
+/**
+ * @brief 填充会话表格
+ * @param sessions 会话列表 payload
+ */
 void DADialogAgentSessionManager::populateSessions(const QVariantList& sessions)
 {
-    m_table->setRowCount(0);  // 清空
-    m_table->setRowCount(sessions.size());
+    mTable->setRowCount(0);  // 清空
+    mTable->setRowCount(sessions.size());
     int selectRow = -1;
     for (int i = 0; i < sessions.size(); ++i) {
         QVariantMap vm = sessions.at(i).toMap();
@@ -126,7 +136,7 @@ void DADialogAgentSessionManager::populateSessions(const QVariantList& sessions)
         updatedItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
         // 当前会话行加粗
-        if (id == m_currentSessionId) {
+        if (id == mCurrentSessionId) {
             QFont bold = titleItem->font();
             bold.setBold(true);
             titleItem->setFont(bold);
@@ -135,20 +145,25 @@ void DADialogAgentSessionManager::populateSessions(const QVariantList& sessions)
             selectRow = i;
         }
 
-        m_table->setItem(i, ColTitle, titleItem);
-        m_table->setItem(i, ColMessages, msgItem);
-        m_table->setItem(i, ColUpdated, updatedItem);
+        mTable->setItem(i, ColTitle, titleItem);
+        mTable->setItem(i, ColMessages, msgItem);
+        mTable->setItem(i, ColUpdated, updatedItem);
     }
 
     // 选中当前会话行（屏蔽信号避免触发 onSelectionChanged 的副作用）
     if (selectRow >= 0) {
-        m_table->blockSignals(true);
-        m_table->selectRow(selectRow);
-        m_table->blockSignals(false);
+        mTable->blockSignals(true);
+        mTable->selectRow(selectRow);
+        mTable->blockSignals(false);
     }
     updateButtonStates();
 }
 
+/**
+ * @brief 把 ISO8601 时间串格式化为本地显示串
+ * @param iso ISO8601 时间串
+ * @return 格式化后的本地时间串（yyyy-MM-dd HH:mm），解析失败时回退原始串
+ */
 QString DADialogAgentSessionManager::formatTimestamp(const QString& iso)
 {
     if (iso.isEmpty()) return QString();
@@ -162,30 +177,45 @@ QString DADialogAgentSessionManager::formatTimestamp(const QString& iso)
     return dt.toLocalTime().toString(QStringLiteral("yyyy-MM-dd HH:mm"));
 }
 
+/**
+ * @brief 获取当前选中行
+ * @return 当前选中行号，无选中返回 -1
+ */
 int DADialogAgentSessionManager::currentSelectedRow() const
 {
-    QList<QTableWidgetItem*> sel = m_table->selectedItems();
+    QList<QTableWidgetItem*> sel = mTable->selectedItems();
     if (sel.isEmpty()) return -1;
     return sel.first()->row();
 }
 
+/**
+ * @brief 取指定行的会话 ID
+ * @param row 行号
+ * @return 会话 ID，无选中返回空串
+ */
 QString DADialogAgentSessionManager::sessionIdAt(int row) const
 {
-    if (row < 0 || row >= m_table->rowCount()) return QString();
-    if (auto* it = m_table->item(row, ColTitle)) {
+    if (row < 0 || row >= mTable->rowCount()) return QString();
+    if (auto* it = mTable->item(row, ColTitle)) {
         return it->data(RoleSessionId).toString();
     }
     return QString();
 }
 
+/**
+ * @brief 根据当前选中刷新按钮可用态
+ */
 void DADialogAgentSessionManager::updateButtonStates()
 {
     bool hasSelection = (currentSelectedRow() >= 0);
-    m_switchBtn->setEnabled(hasSelection);
-    m_renameBtn->setEnabled(hasSelection);
-    m_deleteBtn->setEnabled(hasSelection);
+    mSwitchBtn->setEnabled(hasSelection);
+    mRenameBtn->setEnabled(hasSelection);
+    mDeleteBtn->setEnabled(hasSelection);
 }
 
+/**
+ * @brief 切换按钮点击槽函数
+ */
 void DADialogAgentSessionManager::onSwitchClicked()
 {
     int row = currentSelectedRow();
@@ -196,17 +226,24 @@ void DADialogAgentSessionManager::onSwitchClicked()
     accept();  // 关闭对话框，便于查看聊天切换效果
 }
 
+/**
+ * @brief 表格项双击槽函数，触发切换
+ * @param row 双击的行号
+ */
 void DADialogAgentSessionManager::onItemDoubleClicked(int row)
 {
     Q_UNUSED(row);
     onSwitchClicked();
 }
 
+/**
+ * @brief 重命名按钮点击槽函数
+ */
 void DADialogAgentSessionManager::onRenameClicked()
 {
     int row = currentSelectedRow();
     if (row < 0) return;
-    if (auto* titleItem = m_table->item(row, ColTitle)) {
+    if (auto* titleItem = mTable->item(row, ColTitle)) {
         QString sid = titleItem->data(RoleSessionId).toString();
         QString oldTitle = titleItem->data(RoleRawTitle).toString();  // 原始标题（空=未命名）
         bool ok = false;
@@ -225,11 +262,14 @@ void DADialogAgentSessionManager::onRenameClicked()
     }
 }
 
+/**
+ * @brief 删除按钮点击槽函数
+ */
 void DADialogAgentSessionManager::onDeleteClicked()
 {
     int row = currentSelectedRow();
     if (row < 0) return;
-    if (auto* titleItem = m_table->item(row, ColTitle)) {
+    if (auto* titleItem = mTable->item(row, ColTitle)) {
         QString sid = titleItem->data(RoleSessionId).toString();
         QString displayTitle = titleItem->text();
         int ret = QMessageBox::question(this,
@@ -239,16 +279,19 @@ void DADialogAgentSessionManager::onDeleteClicked()
             QMessageBox::No);
         if (ret != QMessageBox::Yes) return;
         // 本地移除该行
-        m_table->removeRow(row);
+        mTable->removeRow(row);
         // 若删除的是当前会话行，清空选中
-        if (sid == m_currentSessionId) {
-            m_table->clearSelection();
+        if (sid == mCurrentSessionId) {
+            mTable->clearSelection();
         }
         emit deleteRequested(sid);
         updateButtonStates();
     }
 }
 
+/**
+ * @brief 选中变化槽函数
+ */
 void DADialogAgentSessionManager::onSelectionChanged()
 {
     updateButtonStates();

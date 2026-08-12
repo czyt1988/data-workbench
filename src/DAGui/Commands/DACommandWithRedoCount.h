@@ -25,10 +25,7 @@ public:
 	DACommandWithRedoCount(QUndoCommand* par = nullptr);
 	~DACommandWithRedoCount();
 	virtual void redo() override;
-	/**
-	 * @brief 执行函数，此函数返回false，说明执行失败，不应该被放入command stack中，在DACommandWithRedoCount中，exec函数应该替代redo函数
-	 * @return
-	 */
+	// 执行函数，此函数返回false，说明执行失败，不应该被放入command stack中，在DACommandWithRedoCount中，exec函数应该替代redo函数
 	virtual bool exec();
 
 protected:

@@ -77,7 +77,7 @@ void DACommandTableStyle::applyRecords(bool isRedo)
     if (!mMgr) {
         return;
     }
-    for (const ChangeRecord& r : mRecords) {
+    for (const ChangeRecord& r : std::as_const(mRecords)) {
         // redo 用 newStyle，undo 用 oldStyle；若目标样式为空则清除
         const DATableCellStyle& style = isRedo ? r.newStyle : r.oldStyle;
         switch (r.target) {

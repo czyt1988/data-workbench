@@ -27,18 +27,18 @@ public:
     QList< QString > getColumnsName() const;
 
 private:
-    QList< QString > _getColumnsName() const;
+    QList< QString > getColumnsNameInternal() const;
 
 protected:
-    void changeEvent(QEvent* e);
+    void changeEvent(QEvent* e) override;
 
 private Q_SLOTS:
     void on_pushButtonOK_clicked();
 
 private:
     Ui::DARenameColumnsNameDialog* ui;
-    QStandardItemModel* m_model;
-    QList< QString > m_newCols;
+    QStandardItemModel* mModel;
+    QList< QString > mNewCols;
 };
 }  // end of namespace DA
 #endif  // DARENAMECOLUMNSNAMEDIALOG_H

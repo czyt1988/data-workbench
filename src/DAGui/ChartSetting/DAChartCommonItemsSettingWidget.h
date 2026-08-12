@@ -27,7 +27,7 @@ class DAGUI_API DAChartCommonItemsSettingWidget : public DAAbstractChartItemSett
 	DA_DECLARE_PRIVATE(DAChartCommonItemsSettingWidget)
 public:
 	explicit DAChartCommonItemsSettingWidget(QWidget* parent = nullptr);
-	~DAChartCommonItemsSettingWidget();
+	~DAChartCommonItemsSettingWidget() override;
 	//
     virtual void updateUI(QwtPlotItem* item) override;
 

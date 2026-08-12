@@ -39,7 +39,7 @@ private Q_SLOTS:
     void onSpinBoxSkipFooterValueChanged(int v);
 
 protected:
-    void changeEvent(QEvent* e);
+    void changeEvent(QEvent* e) override;
     // 读取文本
     void readTextFile(const QString& p);
 

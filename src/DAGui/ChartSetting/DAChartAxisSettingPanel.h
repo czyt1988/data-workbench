@@ -62,11 +62,7 @@ public:
         DateTimeScale    ///< 日期时间刻度
     };
 
-    /**
-     * @brief 构造函数
-     * @param axisId 坐标轴ID（QwtAxis::YLeft等）
-     * @param parent 父控件
-     */
+    // 构造函数
     explicit DAChartAxisSettingPanel(QwtAxis::Position axisId, QWidget* parent = nullptr);
     ~DAChartAxisSettingPanel() override;
 

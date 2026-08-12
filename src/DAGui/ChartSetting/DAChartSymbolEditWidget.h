@@ -17,7 +17,7 @@ class DAGUI_API DAChartSymbolEditWidget : public QWidget
 
 public:
 	explicit DAChartSymbolEditWidget(QWidget* parent = nullptr);
-	~DAChartSymbolEditWidget();
+	~DAChartSymbolEditWidget() override;
 
 	// Symbol Style
 	void setSymbolStyle(QwtSymbol::Style v);

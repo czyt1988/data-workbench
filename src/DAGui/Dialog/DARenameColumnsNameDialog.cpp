@@ -10,14 +10,22 @@ using namespace DA;
 //===================================================
 // DARenameColumnsNameDialog
 //===================================================
+
+/**
+ * @brief 构造函数
+ * @param parent 父窗口
+ */
 DARenameColumnsNameDialog::DARenameColumnsNameDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::DARenameColumnsNameDialog)
 {
     ui->setupUi(this);
-    m_model = new QStandardItemModel(this);
-    ui->tableView->setModel(m_model);
+    mModel = new QStandardItemModel(this);
+    ui->tableView->setModel(mModel);
 }
 
+/**
+ * @brief 析构函数
+ */
 DARenameColumnsNameDialog::~DARenameColumnsNameDialog()
 {
     delete ui;
@@ -32,6 +40,10 @@ void DARenameColumnsNameDialog::setDataName(const QString& name)
     ui->lineEdit->setText(name);
 }
 
+/**
+ * @brief 获取数据名
+ * @return 数据名
+ */
 QString DARenameColumnsNameDialog::getDataName() const
 {
     return ui->lineEdit->text();
@@ -43,10 +55,10 @@ QString DARenameColumnsNameDialog::getDataName() const
  */
 void DARenameColumnsNameDialog::setColumnsName(const QList< QString >& names)
 {
-    m_model->clear();
-    m_model->setHorizontalHeaderLabels({ tr("name") });  // cn:名称
+    mModel->clear();
+    mModel->setHorizontalHeaderLabels({ tr("name") });  // cn:名称
     for (int i = 0; i < names.size(); ++i) {
-        m_model->appendRow({ new QStandardItem(names[ i ]) });
+        mModel->appendRow({ new QStandardItem(names[ i ]) });
     }
 }
 
@@ -56,19 +68,27 @@ void DARenameColumnsNameDialog::setColumnsName(const QList< QString >& names)
  */
 QList< QString > DARenameColumnsNameDialog::getColumnsName() const
 {
-    return m_newCols;
+    return mNewCols;
 }
 
-QList< QString > DARenameColumnsNameDialog::_getColumnsName() const
+/**
+ * @brief 从表格模型中读取列名
+ * @return 列名列表
+ */
+QList< QString > DARenameColumnsNameDialog::getColumnsNameInternal() const
 {
     QList< QString > res;
-    const int r = m_model->rowCount();
+    const int r = mModel->rowCount();
     for (int i = 0; i < r; ++i) {
-        res.append(m_model->item(i, 0)->text());
+        res.append(mModel->item(i, 0)->text());
     }
     return res;
 }
 
+/**
+ * @brief 语言变更事件处理
+ * @param e 事件指针
+ */
 void DARenameColumnsNameDialog::changeEvent(QEvent* e)
 {
     QDialog::changeEvent(e);
@@ -81,16 +101,19 @@ void DARenameColumnsNameDialog::changeEvent(QEvent* e)
     }
 }
 
+/**
+ * @brief 确定按钮点击槽函数，校验列名唯一性后接受对话框
+ */
 void DARenameColumnsNameDialog::on_pushButtonOK_clicked()
 {
-    m_newCols = _getColumnsName();
+    mNewCols = getColumnsNameInternal();
     //判断是否唯一
-    for (int i = 0; i < m_newCols.size(); ++i) {
-        if (m_newCols.count(m_newCols[ i ]) > 1) {
+    for (int i = 0; i < mNewCols.size(); ++i) {
+        if (mNewCols.count(mNewCols[ i ]) > 1) {
             QMessageBox::warning(this,
                                  tr("Warning"),  // cn:警告
-                                 tr("Duplicate column name \"%1\", please reset the column name of column %2")  // cn:列名“%1”存在重复，请重新设置第%2列的列名
-                                 .arg(m_newCols[ i ])
+                                 tr("Duplicate column name \"%1\", please reset the column name of column %2")  // cn:列名"%1"存在重复，请重新设置第%2列的列名
+                                 .arg(mNewCols[ i ])
                                  .arg(i + 1));
             return;
         }

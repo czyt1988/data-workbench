@@ -29,12 +29,7 @@ class DAGUI_API DADialogAgentSessionManager : public QDialog
 {
     Q_OBJECT
 public:
-    /**
-     * @brief 构造函数
-     * @param sessions 会话列表 payload（每元素 QVariantMap{id,title,updatedAt,messageCount}）
-     * @param currentSessionId 当前活跃会话 ID（用于高亮与默认选中）
-     * @param parent 父窗口
-     */
+    // 构造函数
     DADialogAgentSessionManager(const QVariantList& sessions, const QString& currentSessionId, QWidget* parent = nullptr);
 
 private Q_SLOTS:
@@ -65,12 +60,12 @@ private:
     static QString formatTimestamp(const QString& iso);
 
 private:
-    QTableWidget* m_table;
-    QPushButton* m_switchBtn;
-    QPushButton* m_renameBtn;
-    QPushButton* m_deleteBtn;
-    QPushButton* m_closeBtn;
-    QString m_currentSessionId;
+    QTableWidget* mTable;
+    QPushButton* mSwitchBtn;
+    QPushButton* mRenameBtn;
+    QPushButton* mDeleteBtn;
+    QPushButton* mCloseBtn;
+    QString mCurrentSessionId;
 };
 }  // namespace DA
 #endif  // DADIALOGAGENTSESSIONMANAGER_H

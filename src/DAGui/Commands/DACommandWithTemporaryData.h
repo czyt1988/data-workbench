@@ -13,12 +13,7 @@ namespace DA
 class DAGUI_API DACommandWithTemporaryData : public DACommandWithRedoCount
 {
 public:
-	/**
-	 * @brief 构造函数执行会自动把原始的dataframe保存到临时目录中
-	 * @param df
-	 * @param par
-	 * @param saveOnConstruct 是否构造时就保存副本
-	 */
+	// 构造函数执行会自动把原始的dataframe保存到临时目录中
 	DACommandWithTemporaryData(const DAPyDataFrame& df, QUndoCommand* par = nullptr, bool saveOnConstruct = true);
 	~DACommandWithTemporaryData();
 
@@ -35,10 +30,7 @@ public:
 	// 存放dataframe
 	DAPyDataFrame& dataframe();
 	const DAPyDataFrame& dataframe() const;
-	/**
-	 * @brief 获取Dataframe保存的临时文件路径
-	 * @return
-	 */
+	// 获取Dataframe保存的临时文件路径
 	static QString getDataframeTempPath();
 
 protected:

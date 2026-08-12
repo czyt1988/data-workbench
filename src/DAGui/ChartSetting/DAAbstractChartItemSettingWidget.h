@@ -33,7 +33,7 @@ class DAGUI_API DAAbstractChartItemSettingWidget : public QWidget
     Q_OBJECT
 public:
     DAAbstractChartItemSettingWidget(QWidget* parent = nullptr);
-    ~DAAbstractChartItemSettingWidget();
+    ~DAAbstractChartItemSettingWidget() override;
     // 设置plotitem
     void setPlotItem(QwtPlotItem* item);
     QwtPlotItem* getPlotItem() const;
@@ -43,19 +43,13 @@ public:
     bool checkItemRTTI(QwtPlotItem::RttiValues rtti) const;
 
     QwtPlot* getPlot() const;
-    /**
-     * @brief 快捷转换为别的item
-     * @return
-     */
+    // 快捷转换为别的item
     template< typename T >
     T d_cast()
     {
         return dynamic_cast< T >(mPlotItem);
     }
-    /**
-     * @brief 快捷转换为别的item
-     * @return
-     */
+    // 快捷转换为别的item
     template< typename T >
     T s_cast()
     {

@@ -25,7 +25,7 @@ public:
     QString getArgOriginValue() const;
 
 protected:
-    void changeEvent(QEvent* e);
+    void changeEvent(QEvent* e) override;
 
 private Q_SLOTS:
     void on_toolButtonHowEditFormat_clicked();

@@ -31,7 +31,7 @@ private Q_SLOTS:
     void onCurrentDataframeComboboxActivated(int i);
     void onDataframeColumnsListWidgetItemSelectionChanged();
 protected:
-    void changeEvent(QEvent* e);
+    void changeEvent(QEvent* e) override;
 
 private:
     Ui::DADialogDataFrameSeriesSelector* ui;

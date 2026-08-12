@@ -29,15 +29,15 @@ public:
 											  const QPixmap& pixmap,
 											  QUndoCommand* parent = nullptr);
 	~DACommandWorkFlowSceneAddBackgroundPixmap();
-	void redo();
-	void undo();
+	void redo() override;
+	void undo() override;
 
 private:
-	QPointer< DAPyWorkFlowGraphicsScene > _scene;
-	DAGraphicsPixmapItem* _oldItem;
-	DAGraphicsPixmapItem* _newItem;
-	bool _needDeleteOldItem;
-	bool _needDeleteNewItem;
+	QPointer< DAPyWorkFlowGraphicsScene > mScene;
+	DAGraphicsPixmapItem* mOldItem;
+	DAGraphicsPixmapItem* mNewItem;
+	bool mNeedDeleteOldItem;
+	bool mNeedDeleteNewItem;
 };
 
 /**
@@ -53,11 +53,11 @@ public:
 	virtual void undo() override;
 
 private:
-	QList< DAGraphicsItem* > m_items;
-	QList< QPen > m_oldPens;
-	QPen m_newPen;
-	QList< bool > m_oldIsShow;
-	bool m_newIsShow;
+	QList< DAGraphicsItem* > mItems;
+	QList< QPen > mOldPens;
+	QPen mNewPen;
+	QList< bool > mOldIsShow;
+	bool mNewIsShow;
 };
 /**
  * @brief 改变shape的bk brush
@@ -74,11 +74,11 @@ public:
 	virtual void undo() override;
 
 private:
-	QList< DAGraphicsItem* > m_items;
-	QList< QBrush > m_oldBrushs;
-	QBrush m_newBrush;
-	QList< bool > m_oldIsShow;
-	bool m_newIsShow;
+	QList< DAGraphicsItem* > mItems;
+	QList< QBrush > mOldBrushs;
+	QBrush mNewBrush;
+	QList< bool > mOldIsShow;
+	bool mNewIsShow;
 };
 
 /**
@@ -96,9 +96,9 @@ public:
 	virtual void undo() override;
 
 private:
-	QList< DAGraphicsStandardTextItem* > m_items;
-	QList< QFont > m_oldFonts;
-	QList< QFont > m_newFonts;
+	QList< DAGraphicsStandardTextItem* > mItems;
+	QList< QFont > mOldFonts;
+	QList< QFont > mNewFonts;
 };
 
 /**
@@ -116,9 +116,9 @@ public:
 	virtual void undo() override;
 
 private:
-	QList< DAGraphicsTextItem* > m_items;
-	QList< QFont > m_oldFonts;
-	QList< QFont > m_newFonts;
+	QList< DAGraphicsTextItem* > mItems;
+	QList< QFont > mOldFonts;
+	QList< QFont > mNewFonts;
 };
 
 /**
@@ -136,9 +136,9 @@ public:
 	virtual void undo() override;
 
 private:
-	QList< DAGraphicsStandardTextItem* > m_items;
-	QList< QColor > m_oldColors;
-	QList< QColor > m_newColors;
+	QList< DAGraphicsStandardTextItem* > mItems;
+	QList< QColor > mOldColors;
+	QList< QColor > mNewColors;
 };
 
 /**
@@ -156,9 +156,9 @@ public:
 	virtual void undo() override;
 
 private:
-	QList< DAGraphicsTextItem* > m_items;
-	QList< QColor > m_oldColors;
-	QList< QColor > m_newColors;
+	QList< DAGraphicsTextItem* > mItems;
+	QList< QColor > mOldColors;
+	QList< QColor > mNewColors;
 };
 
 /**
@@ -177,9 +177,9 @@ public:
 	virtual void undo() override;
 
 private:
-	QList< DAGraphicsStandardTextItem* > m_items;
-	QList< QString > m_oldHtml;
-	QList< QString > m_newHtml;
+	QList< DAGraphicsStandardTextItem* > mItems;
+	QList< QString > mOldHtml;
+	QList< QString > mNewHtml;
 	bool mSkipFirstRedo;
 };
 
@@ -199,9 +199,9 @@ public:
 	virtual void undo() override;
 
 private:
-	QList< DAGraphicsTextItem* > m_items;
-	QList< QString > m_oldHtml;
-	QList< QString > m_newHtml;
+	QList< DAGraphicsTextItem* > mItems;
+	QList< QString > mOldHtml;
+	QList< QString > mNewHtml;
 	bool mSkipFirstRedo;
 };
 
