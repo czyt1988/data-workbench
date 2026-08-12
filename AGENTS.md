@@ -167,7 +167,7 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 
 ### 日志宏与分流
 
-- 业务代码用 `daDebug` / `daInfo` / `daWarning` / `daCritical` 宏（`src/DAMessageHandler/DALogCategory.h`），category = `da.user`，既写文件又进 UI 消息队列
+- 业务代码用 `daDebug` / `daInfo` / `daWarning` / `daCritical` 宏（`src/DAMessageHandler/DALogCategory.h`），category = `da.user`，既写文件又进 UI 消息队列(**注意：使用da* 的日志是会在界面显示，必须国际化**)
 - `qDebug` / `qInfo` / `qWarning` / `qCritical`（Qt 自身、第三方库）只写文件和控制台，不进 UI 队列
 - 第三方库日志（SARibbon、qwt、ADS、QtWebEngine 等）在文件里可见，排查时不要误认为是本项目代码——看 `[源文件:行号]` 字段，本项目代码文件路径在 `src/` 下
 
@@ -248,7 +248,7 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 
 > 📖 **详细规范见** [docs/zh/dev-guide/coding-standard.md](docs/zh/dev-guide/coding-standard.md) 的"注释规范"章节
 
-**核心原则**：函数的 Doxygen 注释写在 `.cpp` 文件中，头文件只保留单行中文简要注释（`//`）。头文件仅可写类/信号/枚举的注释，**禁止**在头文件中写入类成员函数的 Doxygen 块注释。
+**核心原则**：函数的 Doxygen 注释写在 `.cpp` 文件中，头文件只保留单行中文简要注释（`//`）。头文件仅可写类/信号/枚举的注释，**禁止**在头文件中写入类成员函数的 Doxygen 块注释（hpp文件除外，头文件的模板函数除外）。
 
 ## 插件系统
 
@@ -423,7 +423,7 @@ Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若�
 | 文件 | 说明 |
 |------|------|
 | [README.md](README.md) | 项目简介和第三方库说明 |
-| [docs/doc-writing-guide.md](docs/doc-writing-guide.md) | 文档撰写规范手册 |
+| [docs/doc-writing-guide.md](docs/doc-writing-guide.md) | 文档撰写规范手册，涉及文档撰写时阅读 |
 | [docs/zh/index.md](docs/zh/index.md) | 中文文档入口 |
 
 ## NOTES
