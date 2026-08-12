@@ -40,16 +40,7 @@ public:
     };
 
 public:
-    // 构造函数
-    /**
-     * @brief 默认构造函数
-     *
-     * 初始化为默认值：
-     * - shape: PortShape::Rect
-     * - fillColor: 无效颜色（使用默认值）
-     * - borderColor: 无效颜色（使用默认值）
-     * - borderWidth: 1.0
-     */
+    // 默认构造函数，初始化为 Rect 形状、边框宽 1.0
     DAPyLinkPointStyle() : shape(PortShape::Rect), borderWidth(1.0)
     {
     }
@@ -60,20 +51,13 @@ public:
     QColor borderColor;  ///< 边框颜色（无效时使用默认值：黑色）
     qreal borderWidth;   ///< 边框宽度（默认 1.0）
 
-    // 辅助方法
-    /**
-     * @brief 判断填充颜色是否有效
-     * @return true 表示 fillColor 有效，false 表示应使用默认值
-     */
+    // 判断填充颜色是否有效
     bool isFillColorValid() const
     {
         return fillColor.isValid();
     }
 
-    /**
-     * @brief 判断边框颜色是否有效
-     * @return true 表示 borderColor 有效，false 表示应使用默认值
-     */
+    // 判断边框颜色是否有效
     bool isBorderColorValid() const
     {
         return borderColor.isValid();

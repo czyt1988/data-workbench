@@ -6,14 +6,42 @@ namespace DA
 {
 
 //===================================================
+// DAPyModuleWorkflow::PrivateData
+//===================================================
+
+class DAPyModuleWorkflow::PrivateData
+{
+    DA_DECLARE_PUBLIC(DAPyModuleWorkflow)
+public:
+    PrivateData(DAPyModuleWorkflow* p);
+    pybind11::object mObjWorkflowClass;
+    pybind11::object mObjNodeRegistryClass;
+    pybind11::object mObjNodeDefDecorator;
+    pybind11::object mObjNodeFactoryClass;
+    pybind11::object mObjWorkflowExecutorClass;
+    pybind11::object mObjSignalManagerClass;
+    pybind11::object mObjWorkflowSerializerClass;
+};
+
+DAPyModuleWorkflow::PrivateData::PrivateData(DAPyModuleWorkflow* p) : q_ptr(p)
+{
+}
+
+//===================================================
 // DAPyModuleWorkflow
 //===================================================
 
-DAPyModuleWorkflow::DAPyModuleWorkflow() : DAPyModule()
+/**
+ * @brief 构造函数，导入 DAWorkFlowPy 模块
+ */
+DAPyModuleWorkflow::DAPyModuleWorkflow() : DAPyModule(), DA_PIMPL_CONSTRUCT
 {
     import();  // 1. 先导入模块
 }
 
+/**
+ * @brief 析构函数
+ */
 DAPyModuleWorkflow::~DAPyModuleWorkflow()
 {
 }

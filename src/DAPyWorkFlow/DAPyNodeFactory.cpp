@@ -33,18 +33,34 @@ DAPyNodeFactory::DAPyNodeFactory() : DAPyObjectWrapper()
     object()                      = factoryClass();
 }
 
+/**
+ * @brief 从 pybind11::object 构造节点工厂代理
+ * @param[in] obj Python 对象
+ */
 DAPyNodeFactory::DAPyNodeFactory(const pybind11::object& obj) : DAPyObjectWrapper(obj)
 {
 }
 
+/**
+ * @brief 从 pybind11::object 移动构造节点工厂代理
+ * @param[in] obj Python 对象（右值引用）
+ */
 DAPyNodeFactory::DAPyNodeFactory(pybind11::object&& obj) : DAPyObjectWrapper(std::move(obj))
 {
 }
 
+/**
+ * @brief 从 DAPyObjectWrapper 构造节点工厂代理
+ * @param[in] obj 已有的 Python 对象包装器
+ */
 DAPyNodeFactory::DAPyNodeFactory(const DAPyObjectWrapper& obj) : DAPyObjectWrapper(obj)
 {
 }
 
+/**
+ * @brief 从 DAPyNode 构造节点工厂代理
+ * @param[in] obj 节点代理对象
+ */
 DAPyNodeFactory::DAPyNodeFactory(const DAPyNode& obj) : DAPyObjectWrapper(obj)
 {
 }

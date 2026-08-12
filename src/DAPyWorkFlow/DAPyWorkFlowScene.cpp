@@ -155,6 +155,10 @@ public:
     }
 };
 
+/**
+ * @brief 构造函数
+ * @param[in] p 父对象指针
+ */
 DAPyWorkFlowScene::PrivateData::PrivateData(DAPyWorkFlowScene* p) : q_ptr(p)
 {
 }
@@ -660,6 +664,10 @@ DAPyLinkGraphicsItem* DAPyWorkFlowScene::addPyNodeLink(DAPyNodeGraphicsItem* fro
     return link;
 }
 
+/**
+ * @brief 添加Python节点连接线（直接添加到场景，不带undo/redo）
+ * @param[in] linkItem 连接线图形项
+ */
 void DAPyWorkFlowScene::addPyNodeLink(DAPyLinkGraphicsItem* linkItem)
 {
     if (!linkItem) {
@@ -1402,21 +1410,38 @@ void DAPyWorkFlowScene::cancelLink()
     DAGraphicsScene::cancelLink();
 }
 
+/**
+ * @brief 同步Python端节点连接添加
+ * @param[in] linkItem 连接线图形项
+ */
 void DAPyWorkFlowScene::syncPyNodeLinkAdd(DAPyLinkGraphicsItem* linkItem)
 {
     d_ptr->syncPyNodeLinkAdd(linkItem);
 }
 
+/**
+ * @brief 同步Python端节点连接移除
+ * @param[in] linkItem 连接线图形项
+ */
 void DAPyWorkFlowScene::syncPyNodeLinkRemove(DAPyLinkGraphicsItem* linkItem)
 {
     d_ptr->syncPyNodeLinkRemove(linkItem);
 }
 
+/**
+ * @brief 同步Python端节点注册
+ * @param[in] nodeItem 节点图形项
+ * @return Python分配的nodeId
+ */
 QString DAPyWorkFlowScene::syncPyNodeRegister(DAPyNodeGraphicsItem* nodeItem)
 {
     return d_ptr->syncPyNodeRegister(nodeItem);
 }
 
+/**
+ * @brief 同步Python端节点注销
+ * @param[in] nodeItem 节点图形项
+ */
 void DAPyWorkFlowScene::syncPyNodeUnregister(DAPyNodeGraphicsItem* nodeItem)
 {
     d_ptr->syncPyNodeUnregister(nodeItem);

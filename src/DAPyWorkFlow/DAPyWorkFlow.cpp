@@ -21,10 +21,17 @@ DAPyWorkFlow::DAPyWorkFlow() : DAPyObjectWrapper()
     initPyWorkflow();
 }
 
+/**
+ * @brief 从 pybind11::object 构造工作流代理
+ * @param[in] obj Python 工作流对象
+ */
 DAPyWorkFlow::DAPyWorkFlow(const pybind11::object& obj) : DAPyObjectWrapper(obj)
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DAPyWorkFlow::~DAPyWorkFlow()
 {
 }
@@ -63,6 +70,10 @@ void DAPyWorkFlow::initPyWorkflow()
     }
 }
 
+/**
+ * @brief 判断工作流是否有效
+ * @return 代理非空返回 true，否则返回 false
+ */
 bool DAPyWorkFlow::isValid() const
 {
     try {
@@ -239,11 +250,19 @@ bool DAPyWorkFlow::disconnectNode(const QString& connectionId)
     return false;
 }
 
+/**
+ * @brief 移除连接（等同于 disconnectNode）
+ * @param[in] connectionId 连接ID
+ * @return 移除成功返回 true
+ */
 bool DAPyWorkFlow::removeConnection(const QString& connectionId)
 {
     return disconnectNode(connectionId);
 }
 
+/**
+ * @brief 清空工作流中的所有节点和连接
+ */
 void DAPyWorkFlow::clear()
 {
 
@@ -260,6 +279,10 @@ void DAPyWorkFlow::clear()
     }
 }
 
+/**
+ * @brief 获取工作流中的节点数量
+ * @return 节点数量，代理为空时返回 0
+ */
 int DAPyWorkFlow::nodeCount()
 {
 
@@ -273,6 +296,11 @@ int DAPyWorkFlow::nodeCount()
     return 0;
 }
 
+/**
+ * @brief 判断工作流中是否包含指定节点（按 nodeId）
+ * @param[in] nodeId 节点ID
+ * @return 包含返回 true
+ */
 bool DAPyWorkFlow::hasNode(const QString& nodeId)
 {
 
@@ -293,6 +321,11 @@ bool DAPyWorkFlow::hasNode(const QString& nodeId)
     return false;
 }
 
+/**
+ * @brief 通过图形项断开连接（未实现）
+ * @param[in] link 连接线图形项
+ * @return 始终返回 false（DAPyLinkGraphicsItem 缺少 getConnectionId() 方法）
+ */
 bool DAPyWorkFlow::disconnectNode(DAPyLinkGraphicsItem* link)
 {
     if (!link) {
@@ -304,6 +337,11 @@ bool DAPyWorkFlow::disconnectNode(DAPyLinkGraphicsItem* link)
     return false;
 }
 
+/**
+ * @brief 判断工作流中是否包含指定节点（按代理引用）
+ * @param[in] proxy 节点代理
+ * @return 包含返回 true
+ */
 bool DAPyWorkFlow::hasNode(const DAPyNode& proxy)
 {
     if (proxy.isNone()) {

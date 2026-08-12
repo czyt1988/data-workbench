@@ -47,6 +47,9 @@ DAPyWorkFlowManager::DAPyWorkFlowManager(QObject* parent) : QObject(parent), DA_
     d->mWorkflow = DAPyWorkFlow();
 }
 
+/**
+ * @brief 析构函数
+ */
 DAPyWorkFlowManager::~DAPyWorkFlowManager()
 {
 }

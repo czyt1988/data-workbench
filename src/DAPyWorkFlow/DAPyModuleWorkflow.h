@@ -13,6 +13,8 @@ namespace DA
  */
 class DAPYWORKFLOW_API DAPyModuleWorkflow : public DAPyModule
 {
+    Q_DISABLE_COPY(DAPyModuleWorkflow)
+    DA_DECLARE_PRIVATE(DAPyModuleWorkflow)
 public:
     DAPyModuleWorkflow();
     ~DAPyModuleWorkflow();
@@ -40,16 +42,6 @@ public:
     pybind11::object getSignalManagerObject() const;
     // 获取缓存的 DAWorkflowSerializer 类引用
     pybind11::object getWorkflowSerializerObject() const;
-
-private:
-    // 缓存 Python 类引用，避免每次 attr() 查找
-    pybind11::object mObjWorkflowClass;
-    pybind11::object mObjNodeRegistryClass;
-    pybind11::object mObjNodeDefDecorator;
-    pybind11::object mObjNodeFactoryClass;
-    pybind11::object mObjWorkflowExecutorClass;
-    pybind11::object mObjSignalManagerClass;
-    pybind11::object mObjWorkflowSerializerClass;
 };
 }  // namespace DA
 #endif  // DAPYMODULEWORKFLOW_H

@@ -1,11 +1,17 @@
-﻿#include "DAPyNodeMetaData.h"
+#include "DAPyNodeMetaData.h"
 #include <QDebug>
 namespace DA
 {
+/**
+ * @brief 默认构造函数
+ */
 DAPyNodeMetaData::DAPyNodeMetaData()
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DAPyNodeMetaData::~DAPyNodeMetaData()
 {
 }

@@ -148,6 +148,12 @@ bool DAPyNodeParameter::hasProperty(const QString& propName) const
     return false;
 }
 
+/**
+ * @brief 输出 DAPyNodeParameter 信息到 QDebug
+ * @param[in] dbg QDebug 对象
+ * @param[in] param 参数代理
+ * @return QDebug 对象
+ */
 QDebug operator<<(QDebug dbg, const DAPyNodeParameter& param)
 {
     QDebugStateSaver saver(dbg);

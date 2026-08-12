@@ -170,6 +170,10 @@ void DAPyNodeGraphicsItem::PrivateData::cleanupSvg()
     }
 }
 
+/**
+ * @brief 准备nodestyle需要的数据，包括预加载图标，预计算好位置
+ * @param[in] bodyRect 节点主体矩形区域
+ */
 void DAPyNodeGraphicsItem::PrivateData::updateNodeStyle(const QRectF& bodyRect)
 {
     const DAPyNodeStyle& s = mStyle;

@@ -94,12 +94,7 @@ public:
     using PortSide = DAAspectDirection;
 
 public:
-    // 构造函数
-    /**
-     * @brief 默认构造函数
-     *
-     * 调用 setDefaults() 将所有字段初始化为默认值。
-     */
+    // 默认构造函数，调用 setDefaults() 初始化所有字段
     DAPyNodeStyle()
     {
         setDefaults();
@@ -129,16 +124,7 @@ public:
 
     // 渲染模板
     NodeRenderTemplate renderTemplate;  ///< 渲染模板
-    // 辅助方法
-    /**
-     * @brief 重置所有字段为默认值
-     *
-     * 默认值与 DAPyNodeGraphicsItem::paintRectTemplate() 中的硬编码值一致：
-     * - 主体: RoundedRect, 名称Inside, 图标LeftOfText
-     * - 颜色: 背景(240,240,240), 边框(180,180,180), 边框宽1.0, 圆角4.0
-     * - 图标: 尺寸24.0, 类型None, 缩放0.8
-     * - 端口: 输入West, 输出East, 样式默认构造, 布局Auto
-     */
+    // 重置所有字段为默认值（与 paintRectTemplate() 硬编码值一致）
     void setDefaults()
     {
         // 主体样式

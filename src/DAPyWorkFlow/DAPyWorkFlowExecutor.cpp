@@ -22,14 +22,26 @@ DAPyWorkFlowExecutor::DAPyWorkFlowExecutor() : DAPyObjectWrapper()
 {
 }
 
+/**
+ * @brief 从 pybind11::object 构造执行器代理
+ * @param[in] obj Python 对象
+ */
 DAPyWorkFlowExecutor::DAPyWorkFlowExecutor(const pybind11::object& obj) : DAPyObjectWrapper(obj)
 {
 }
 
+/**
+ * @brief 从 pybind11::object 移动构造执行器代理
+ * @param[in] obj Python 对象（右值引用）
+ */
 DAPyWorkFlowExecutor::DAPyWorkFlowExecutor(pybind11::object&& obj) : DAPyObjectWrapper(std::move(obj))
 {
 }
 
+/**
+ * @brief 从 DAPyObjectWrapper 构造执行器代理
+ * @param[in] obj 已有的 Python 对象包装器
+ */
 DAPyWorkFlowExecutor::DAPyWorkFlowExecutor(const DAPyObjectWrapper& obj) : DAPyObjectWrapper(obj)
 {
 }
@@ -48,20 +60,35 @@ DAPyWorkFlowExecutor::DAPyWorkFlowExecutor(const DAPyWorkFlow& workflow) : DAPyO
     initExecutor(workflow);
 }
 
+/**
+ * @brief 析构函数
+ */
 DAPyWorkFlowExecutor::~DAPyWorkFlowExecutor()
 {
 }
 
+/**
+ * @brief 设置状态变更回调
+ * @param[in] callback 状态变更回调函数
+ */
 void DAPyWorkFlowExecutor::setOnStateChange(StateChangeCallback callback)
 {
     mOnStateChange = std::move(callback);
 }
 
+/**
+ * @brief 设置节点完成回调
+ * @param[in] callback 节点完成回调函数
+ */
 void DAPyWorkFlowExecutor::setOnNodeFinished(NodeFinishedCallback callback)
 {
     mOnNodeFinished = std::move(callback);
 }
 
+/**
+ * @brief 设置进度回调
+ * @param[in] callback 进度回调函数
+ */
 void DAPyWorkFlowExecutor::setOnProgress(ProgressCallback callback)
 {
     mOnProgress = std::move(callback);
@@ -184,6 +211,9 @@ bool DAPyWorkFlowExecutor::waitCompletion(double timeoutSec)
     return false;
 }
 
+/**
+ * @brief 终止执行
+ */
 void DAPyWorkFlowExecutor::terminate()
 {
     if (isNone()) {
@@ -197,6 +227,9 @@ void DAPyWorkFlowExecutor::terminate()
     }
 }
 
+/**
+ * @brief 暂停执行
+ */
 void DAPyWorkFlowExecutor::pause()
 {
     if (isNone()) {
@@ -210,6 +243,9 @@ void DAPyWorkFlowExecutor::pause()
     }
 }
 
+/**
+ * @brief 恢复执行
+ */
 void DAPyWorkFlowExecutor::resume()
 {
     if (isNone()) {
@@ -264,6 +300,10 @@ QPair< int, int > DAPyWorkFlowExecutor::getProgress() const
     return { 0, 0 };
 }
 
+/**
+ * @brief 获取执行结果
+ * @return 执行成功返回 true，无结果或代理为空返回 false
+ */
 bool DAPyWorkFlowExecutor::getResult() const
 {
     if (isNone()) {
@@ -281,6 +321,10 @@ bool DAPyWorkFlowExecutor::getResult() const
     return false;
 }
 
+/**
+ * @brief 判断是否已有执行结果
+ * @return 有结果返回 true，无结果或代理为空返回 false
+ */
 bool DAPyWorkFlowExecutor::hasResult() const
 {
     if (isNone()) {
@@ -315,6 +359,10 @@ QStringList DAPyWorkFlowExecutor::getErrorMessages() const
     return msgs;
 }
 
+/**
+ * @brief 获取当前正在执行的节点ID
+ * @return 当前节点ID字符串，无或代理为空时返回空字符串
+ */
 QString DAPyWorkFlowExecutor::getCurrentNodeId() const
 {
     if (isNone()) {
@@ -350,6 +398,11 @@ DAPySignalManager DAPyWorkFlowExecutor::getSignalManager() const
 
 // ==================== Python 回调桥接 ====================
 
+/**
+ * @brief Python 状态变更回调桥接
+ * @param[in] oldState 旧状态字符串
+ * @param[in] newState 新状态字符串
+ */
 void DAPyWorkFlowExecutor::onPyStateChange(const std::string& oldState, const std::string& newState)
 {
     DA_WF_DBG("[C++] Executor::onPyStateChange: %s -> %s", oldState.c_str(), newState.c_str());
@@ -358,6 +411,11 @@ void DAPyWorkFlowExecutor::onPyStateChange(const std::string& oldState, const st
     }
 }
 
+/**
+ * @brief Python 节点完成回调桥接
+ * @param[in] nodeId 节点ID
+ * @param[in] success 执行是否成功
+ */
 void DAPyWorkFlowExecutor::onPyNodeFinished(const std::string& nodeId, bool success)
 {
     DA_WF_DBG("[C++] Executor::onPyNodeFinished: nodeId=%s, success=%s",
@@ -367,6 +425,11 @@ void DAPyWorkFlowExecutor::onPyNodeFinished(const std::string& nodeId, bool succ
     }
 }
 
+/**
+ * @brief Python 进度回调桥接
+ * @param[in] executedCount 已执行节点数
+ * @param[in] totalCount 总节点数
+ */
 void DAPyWorkFlowExecutor::onPyProgress(int executedCount, int totalCount)
 {
     DA_WF_DBG("[C++] Executor::onPyProgress: %d/%d", executedCount, totalCount);

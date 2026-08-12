@@ -11,22 +11,40 @@ namespace DA
 // DAPySignalManager
 //===================================================
 
+/**
+ * @brief 默认构造函数
+ */
 DAPySignalManager::DAPySignalManager() : DAPyObjectWrapper()
 {
 }
 
+/**
+ * @brief 构造函数（从pybind11::object构造）
+ * @param[in] obj Python对象
+ */
 DAPySignalManager::DAPySignalManager(const pybind11::object& obj) : DAPyObjectWrapper(obj)
 {
 }
 
+/**
+ * @brief 构造函数（从pybind11::object右值构造）
+ * @param[in] obj Python对象右值
+ */
 DAPySignalManager::DAPySignalManager(pybind11::object&& obj) : DAPyObjectWrapper(std::move(obj))
 {
 }
 
+/**
+ * @brief 构造函数（从DAPyObjectWrapper构造）
+ * @param[in] obj DAPyObjectWrapper对象
+ */
 DAPySignalManager::DAPySignalManager(const DAPyObjectWrapper& obj) : DAPyObjectWrapper(obj)
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DAPySignalManager::~DAPySignalManager()
 {
 }

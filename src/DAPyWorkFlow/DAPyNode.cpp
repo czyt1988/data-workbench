@@ -20,26 +20,49 @@ DAPyNode::DAPyNode() : DAPyObjectWrapper()
 {
 }
 
+/**
+ * @brief 从 pybind11::object 构造节点代理
+ * @param[in] pyNode Python 节点对象
+ */
 DAPyNode::DAPyNode(const pybind11::object& pyNode) : DAPyObjectWrapper(pyNode)
 {
 }
 
+/**
+ * @brief 从 pybind11::object 移动构造节点代理
+ * @param[in] pyNode Python 节点对象（右值引用）
+ */
 DAPyNode::DAPyNode(pybind11::object&& pyNode) : DAPyObjectWrapper(std::move(pyNode))
 {
 }
 
+/**
+ * @brief 从 DAPyObjectWrapper 构造节点代理
+ * @param[in] pyNode 已有的 Python 对象包装器
+ */
 DAPyNode::DAPyNode(const DAPyObjectWrapper& pyNode) : DAPyObjectWrapper(pyNode)
 {
 }
 
+/**
+ * @brief 拷贝构造节点代理
+ * @param[in] pyNode 另一个节点代理
+ */
 DAPyNode::DAPyNode(const DAPyNode& pyNode) : DAPyObjectWrapper(pyNode)
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DAPyNode::~DAPyNode()
 {
 }
 
+/**
+ * @brief 获取节点ID
+ * @return 节点ID字符串，代理为空或属性不存在时返回空字符串
+ */
 QString DAPyNode::getNodeId() const
 {
     if (isNone()) {
@@ -55,6 +78,10 @@ QString DAPyNode::getNodeId() const
     return QString();
 }
 
+/**
+ * @brief 获取节点限定名
+ * @return 限定名字符串（如"pkg.module.ClassName"），代理为空时返回空字符串
+ */
 QString DAPyNode::getQualifiedName() const
 {
     if (isNone()) {
@@ -70,6 +97,10 @@ QString DAPyNode::getQualifiedName() const
     return QString();
 }
 
+/**
+ * @brief 获取节点名称
+ * @return 节点显示名称字符串，代理为空时返回空字符串
+ */
 QString DAPyNode::getNodeName() const
 {
     if (isNone()) {
@@ -85,6 +116,10 @@ QString DAPyNode::getNodeName() const
     return QString();
 }
 
+/**
+ * @brief 获取节点分组
+ * @return 节点分类字符串，代理为空时返回空字符串
+ */
 QString DAPyNode::getNodeCategory() const
 {
     if (isNone()) {
@@ -100,6 +135,10 @@ QString DAPyNode::getNodeCategory() const
     return QString();
 }
 
+/**
+ * @brief 获取节点图标路径
+ * @return 图标资源路径字符串，代理为空时返回空字符串
+ */
 QString DAPyNode::getIcon() const
 {
     if (isNone()) {
@@ -115,6 +154,10 @@ QString DAPyNode::getIcon() const
     return QString();
 }
 
+/**
+ * @brief 获取输入端口key列表
+ * @return 输入端口key字符串列表，代理为空时返回空列表
+ */
 QList< QString > DAPyNode::getInputKeys() const
 {
     if (isNone()) {
@@ -135,6 +178,10 @@ QList< QString > DAPyNode::getInputKeys() const
     return QList< QString >();
 }
 
+/**
+ * @brief 获取输出端口key列表
+ * @return 输出端口key字符串列表，代理为空时返回空列表
+ */
 QList< QString > DAPyNode::getOutputKeys() const
 {
     if (isNone()) {
@@ -155,6 +202,10 @@ QList< QString > DAPyNode::getOutputKeys() const
     return QList< QString >();
 }
 
+/**
+ * @brief 获取节点样式
+ * @return 节点样式结构体，代理为空时返回默认构造的 DAPyNodeStyle
+ */
 DAPyNodeStyle DAPyNode::getNodeStyle() const
 {
     if (isNone()) {
@@ -170,11 +221,20 @@ DAPyNodeStyle DAPyNode::getNodeStyle() const
     return DAPyNodeStyle();
 }
 
+/**
+ * @brief 获取节点执行状态
+ * @return 节点状态枚举值
+ */
 DAPyNodeState DAPyNode::getNodeState() const
 {
     return PY::getNodeState(object());
 }
 
+/**
+ * @brief 设置单个输入数据
+ * @param[in] key 数据键名
+ * @param[in] data Python 数据对象
+ */
 void DAPyNode::setPyInputData(const QString& key, const pybind11::object& data)
 {
     if (isNone()) {
@@ -193,6 +253,11 @@ void DAPyNode::setPyInputData(const QString& key, const pybind11::object& data)
     }
 }
 
+/**
+ * @brief 获取单个输出数据
+ * @param[in] key 数据键名
+ * @return 对应的 Python 数据对象，不存在时返回 pybind11::none()
+ */
 pybind11::object DAPyNode::getPyOutputData(const QString& key) const
 {
     if (isNone()) {
@@ -373,31 +438,62 @@ QVariant DAPyNode::getParameterValue(const QString& name) const
     return {};
 }
 
+/**
+ * @brief 获取节点元数据
+ * @return 节点元数据结构体
+ */
 DAPyNodeMetaData DAPyNode::getMetaData() const
 {
     return PY::toNodeMetaData(object());
 }
 
+/**
+ * @brief 相等比较运算符（以 node_id 为判据）
+ * @param[in] other 另一个节点代理
+ * @return node_id 相同返回 true
+ */
 bool DAPyNode::operator==(const DAPyNode& other) const
 {
     return getNodeId() == other.getNodeId();
 }
 
+/**
+ * @brief 不等比较运算符
+ * @param[in] other 另一个节点代理
+ * @return node_id 不同返回 true
+ */
 bool DAPyNode::operator!=(const DAPyNode& other) const
 {
     return !(*this == other);
 }
 
+/**
+ * @brief 小于运算符（用于排序）
+ * @param[in] other 另一个节点代理
+ * @return 当前节点 node_id 小于 other 的返回 true
+ */
 bool DAPyNode::operator<(const DAPyNode& other) const
 {
     return getNodeId() < other.getNodeId();
 }
 
+/**
+ * @brief 计算 DAPyNode 的哈希值
+ * @param[in] key 节点代理
+ * @param[in] seed 哈希种子
+ * @return 哈希值
+ */
 uint qHash(const DAPyNode& key, uint seed)
 {
     return ::qHash(key.getNodeId(), seed);
 }
 
+/**
+ * @brief 输出 DAPyNode 信息到 QDebug
+ * @param[in] dbg QDebug 对象
+ * @param[in] node 节点代理
+ * @return QDebug 对象
+ */
 QDebug operator<<(QDebug dbg, const DAPyNode& node)
 {
     QDebugStateSaver saver(dbg);

@@ -11,22 +11,34 @@ namespace DA
 //===============================================================
 // DAPyWorkFlowCommand_addNodeGraphics
 //===============================================================
+
+/**
+ * @brief 构造添加节点命令
+ * @param[in] scene 目标场景
+ * @param[in] nodeItem 要添加的节点图形项
+ * @param[in] parent 父命令
+ */
 DAPyWorkFlowCommand_addNodeGraphics::DAPyWorkFlowCommand_addNodeGraphics(
     DAPyWorkFlowScene* scene, DAPyNodeGraphicsItem* nodeItem, QUndoCommand* parent
 )
-    : QUndoCommand(parent), m_scene(scene), m_nodeItem(nodeItem)
+    : QUndoCommand(parent), mScene(scene), mNodeItem(nodeItem)
 {
-    if (m_nodeItem) {
-        m_proxy = m_nodeItem->getProxy();
+    if (mNodeItem) {
+        mProxy = mNodeItem->getProxy();
     }
     setText(QObject::tr("Add Node"));  // cn:添加节点
 }
 
+/**
+ * @brief 析构添加节点命令
+ *
+ * 若 mNeedDelete 为 true 且节点项存在，在 GIL 守卫下删除节点图形项。
+ */
 DAPyWorkFlowCommand_addNodeGraphics::~DAPyWorkFlowCommand_addNodeGraphics()
 {
-    if (m_needDelete && m_nodeItem) {
+    if (mNeedDelete && mNodeItem) {
         DAPyGILGuard gil;
-        delete m_nodeItem;
+        delete mNodeItem;
     }
 }
 
@@ -39,19 +51,19 @@ DAPyWorkFlowCommand_addNodeGraphics::~DAPyWorkFlowCommand_addNodeGraphics()
 void DAPyWorkFlowCommand_addNodeGraphics::redo()
 {
     QUndoCommand::redo();
-    if (m_scene && m_nodeItem) {
-        if (m_nodeItem->scene() != m_scene) {
-            m_scene->addItem(m_nodeItem);
+    if (mScene && mNodeItem) {
+        if (mNodeItem->scene() != mScene) {
+            mScene->addItem(mNodeItem);
         }
-        if (m_skipFirstSync) {
+        if (mSkipFirstSync) {
             // 首次redo，Python已在createPyNode()中注册，跳过同步
-            m_skipFirstSync = false;
+            mSkipFirstSync = false;
         } else {
             // undo后恢复：重新注册到Python + 更新映射表
-            m_scene->syncPyNodeRegister(m_nodeItem);
+            mScene->syncPyNodeRegister(mNodeItem);
         }
     }
-    m_needDelete = false;
+    mNeedDelete = false;
 }
 
 /**
@@ -60,32 +72,44 @@ void DAPyWorkFlowCommand_addNodeGraphics::redo()
 void DAPyWorkFlowCommand_addNodeGraphics::undo()
 {
     QUndoCommand::undo();
-    if (m_scene && m_nodeItem) {
-        m_scene->removeItem(m_nodeItem);
-        m_scene->syncPyNodeUnregister(m_nodeItem);
+    if (mScene && mNodeItem) {
+        mScene->removeItem(mNodeItem);
+        mScene->syncPyNodeUnregister(mNodeItem);
     }
-    m_needDelete = true;
+    mNeedDelete = true;
 }
 
 //===============================================================
 // DAPyWorkFlowCommand_removeNodeGraphics
 //===============================================================
+
+/**
+ * @brief 构造移除节点命令
+ * @param[in] scene 目标场景
+ * @param[in] nodeItem 要移除的节点图形项
+ * @param[in] parent 父命令
+ */
 DAPyWorkFlowCommand_removeNodeGraphics::DAPyWorkFlowCommand_removeNodeGraphics(
     DAPyWorkFlowScene* scene, DAPyNodeGraphicsItem* nodeItem, QUndoCommand* parent
 )
-    : QUndoCommand(parent), m_scene(scene), m_nodeItem(nodeItem)
+    : QUndoCommand(parent), mScene(scene), mNodeItem(nodeItem)
 {
-    if (m_nodeItem) {
-        m_proxy = m_nodeItem->getProxy();
+    if (mNodeItem) {
+        mProxy = mNodeItem->getProxy();
     }
     setText(QObject::tr("Remove Node"));  // cn:移除节点
 }
 
+/**
+ * @brief 析构移除节点命令
+ *
+ * 若 mNeedDelete 为 true 且节点项存在，在 GIL 守卫下删除节点图形项。
+ */
 DAPyWorkFlowCommand_removeNodeGraphics::~DAPyWorkFlowCommand_removeNodeGraphics()
 {
-    if (m_needDelete && m_nodeItem) {
+    if (mNeedDelete && mNodeItem) {
         DAPyGILGuard gil;
-        delete m_nodeItem;
+        delete mNodeItem;
     }
 }
 
@@ -95,11 +119,11 @@ DAPyWorkFlowCommand_removeNodeGraphics::~DAPyWorkFlowCommand_removeNodeGraphics(
 void DAPyWorkFlowCommand_removeNodeGraphics::redo()
 {
     QUndoCommand::redo();
-    if (m_scene && m_nodeItem) {
-        m_scene->removeItem(m_nodeItem);
-        m_scene->syncPyNodeUnregister(m_nodeItem);
+    if (mScene && mNodeItem) {
+        mScene->removeItem(mNodeItem);
+        mScene->syncPyNodeUnregister(mNodeItem);
     }
-    m_needDelete = true;
+    mNeedDelete = true;
 }
 
 /**
@@ -108,30 +132,42 @@ void DAPyWorkFlowCommand_removeNodeGraphics::redo()
 void DAPyWorkFlowCommand_removeNodeGraphics::undo()
 {
     QUndoCommand::undo();
-    if (m_scene && m_nodeItem) {
-        if (m_nodeItem->scene() != m_scene) {
-            m_scene->addItem(m_nodeItem);
+    if (mScene && mNodeItem) {
+        if (mNodeItem->scene() != mScene) {
+            mScene->addItem(mNodeItem);
         }
-        m_scene->syncPyNodeRegister(m_nodeItem);
+        mScene->syncPyNodeRegister(mNodeItem);
     }
-    m_needDelete = false;
+    mNeedDelete = false;
 }
 
 //===============================================================
 // DAPyWorkFlowCommand_addLinkGraphics
 //===============================================================
+
+/**
+ * @brief 构造添加连接线命令
+ * @param[in] scene 目标场景
+ * @param[in] linkItem 要添加的连接线图形项
+ * @param[in] parent 父命令
+ */
 DAPyWorkFlowCommand_addLinkGraphics::DAPyWorkFlowCommand_addLinkGraphics(
     DAPyWorkFlowScene* scene, DAPyLinkGraphicsItem* linkItem, QUndoCommand* parent
 )
-    : QUndoCommand(parent), m_scene(scene), m_linkItem(linkItem)
+    : QUndoCommand(parent), mScene(scene), mLinkItem(linkItem)
 {
     setText(QObject::tr("Add Link"));  // cn:添加连接
 }
 
+/**
+ * @brief 析构添加连接线命令
+ *
+ * 若 mNeedDelete 为 true，删除连接线图形项。
+ */
 DAPyWorkFlowCommand_addLinkGraphics::~DAPyWorkFlowCommand_addLinkGraphics()
 {
-    if (m_needDelete) {
-        delete m_linkItem;
+    if (mNeedDelete) {
+        delete mLinkItem;
     }
 }
 
@@ -144,10 +180,10 @@ DAPyWorkFlowCommand_addLinkGraphics::~DAPyWorkFlowCommand_addLinkGraphics()
 void DAPyWorkFlowCommand_addLinkGraphics::redo()
 {
     QUndoCommand::redo();
-    if (m_scene && m_linkItem) {
-        m_scene->addPyNodeLink(m_linkItem);
+    if (mScene && mLinkItem) {
+        mScene->addPyNodeLink(mLinkItem);
     }
-    m_needDelete = false;
+    mNeedDelete = false;
 }
 
 /**
@@ -156,27 +192,39 @@ void DAPyWorkFlowCommand_addLinkGraphics::redo()
 void DAPyWorkFlowCommand_addLinkGraphics::undo()
 {
     QUndoCommand::undo();
-    if (m_scene && m_linkItem) {
-        m_scene->removePyNodeLink(m_linkItem, false);
+    if (mScene && mLinkItem) {
+        mScene->removePyNodeLink(mLinkItem, false);
     }
-    m_needDelete = true;
+    mNeedDelete = true;
 }
 
 //===============================================================
 // DAPyWorkFlowCommand_removeLinkGraphics
 //===============================================================
+
+/**
+ * @brief 构造移除连接线命令
+ * @param[in] scene 目标场景
+ * @param[in] linkItem 要移除的连接线图形项
+ * @param[in] parent 父命令
+ */
 DAPyWorkFlowCommand_removeLinkGraphics::DAPyWorkFlowCommand_removeLinkGraphics(
     DAPyWorkFlowScene* scene, DAPyLinkGraphicsItem* linkItem, QUndoCommand* parent
 )
-    : QUndoCommand(parent), m_scene(scene), m_linkItem(linkItem)
+    : QUndoCommand(parent), mScene(scene), mLinkItem(linkItem)
 {
     setText(QObject::tr("Remove Link"));  // cn:移除连接
 }
 
+/**
+ * @brief 析构移除连接线命令
+ *
+ * 若 mNeedDelete 为 true，删除连接线图形项。
+ */
 DAPyWorkFlowCommand_removeLinkGraphics::~DAPyWorkFlowCommand_removeLinkGraphics()
 {
-    if (m_needDelete) {
-        delete m_linkItem;
+    if (mNeedDelete) {
+        delete mLinkItem;
     }
 }
 
@@ -186,10 +234,10 @@ DAPyWorkFlowCommand_removeLinkGraphics::~DAPyWorkFlowCommand_removeLinkGraphics(
 void DAPyWorkFlowCommand_removeLinkGraphics::redo()
 {
     QUndoCommand::redo();
-    if (m_scene && m_linkItem) {
-        m_scene->removePyNodeLink(m_linkItem, false);
+    if (mScene && mLinkItem) {
+        mScene->removePyNodeLink(mLinkItem, false);
     }
-    m_needDelete = true;
+    mNeedDelete = true;
 }
 
 /**
@@ -198,10 +246,10 @@ void DAPyWorkFlowCommand_removeLinkGraphics::redo()
 void DAPyWorkFlowCommand_removeLinkGraphics::undo()
 {
     QUndoCommand::undo();
-    if (m_scene && m_linkItem) {
-        m_scene->addPyNodeLink(m_linkItem);
+    if (mScene && mLinkItem) {
+        mScene->addPyNodeLink(mLinkItem);
     }
-    m_needDelete = false;
+    mNeedDelete = false;
 }
 
 }

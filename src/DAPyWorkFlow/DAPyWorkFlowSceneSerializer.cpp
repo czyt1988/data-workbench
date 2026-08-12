@@ -47,6 +47,10 @@ public:
     QString mLastErrorString;
 };
 
+/**
+ * @brief 构造函数
+ * @param[in] p 父对象指针
+ */
 DAPyWorkFlowSceneSerializer::PrivateData::PrivateData(DAPyWorkFlowSceneSerializer* p) : q_ptr(p)
 {
 }

@@ -1,4 +1,4 @@
-﻿#include "DAPyLinkGraphicsItem.h"
+#include "DAPyLinkGraphicsItem.h"
 #include <QPainter>
 #include <QTimer>
 #include <QDebug>
@@ -31,6 +31,10 @@ public:
     DAAspectDirection mToDirection { DAAspectDirection::East };    ///< 目标连接点引线方向
 };
 
+/**
+ * @brief 构造函数
+ * @param[in] p 父对象指针
+ */
 DAPyLinkGraphicsItem::PrivateData::PrivateData(DAPyLinkGraphicsItem* p) : q_ptr(p)
 {
     mDataFlowTimer = new QTimer(p);
@@ -42,6 +46,11 @@ DAPyLinkGraphicsItem::PrivateData::PrivateData(DAPyLinkGraphicsItem* p) : q_ptr(
 //===============================================================
 // DAPyLinkGraphicsItem
 //===============================================================
+
+/**
+ * @brief 构造函数
+ * @param[in] parent 父图形项
+ */
 DAPyLinkGraphicsItem::DAPyLinkGraphicsItem(QGraphicsItem* parent) : DAGraphicsLinkItem(parent), DA_PIMPL_CONSTRUCT
 {
     setFlags(flags() | ItemIsSelectable);
@@ -51,6 +60,9 @@ DAPyLinkGraphicsItem::DAPyLinkGraphicsItem(QGraphicsItem* parent) : DAGraphicsLi
     setZValue(-1);  // 连接线在-1层，避免在节点上面
 }
 
+/**
+ * @brief 析构函数
+ */
 DAPyLinkGraphicsItem::~DAPyLinkGraphicsItem()
 {
 }

@@ -1,4 +1,4 @@
-﻿#ifndef DAPYWORKFLOWUNDOCOMMANDS_H
+#ifndef DAPYWORKFLOWUNDOCOMMANDS_H
 #define DAPYWORKFLOWUNDOCOMMANDS_H
 #include <QUndoCommand>
 #include "DAPyNode.h"
@@ -27,11 +27,11 @@ public:
     void undo() override;
 
 private:
-    DAPyWorkFlowScene* m_scene { nullptr };
-    DAPyNodeGraphicsItem* m_nodeItem { nullptr };
-    DAPyNode m_proxy;               ///< Python节点代理，用于redo时重新注册
-    bool m_needDelete { false };    ///< 命令析构时是否删除节点
-    bool m_skipFirstSync { true };  ///< 首次redo跳过Python同步（createPyNode已完成注册）
+    DAPyWorkFlowScene* mScene { nullptr };
+    DAPyNodeGraphicsItem* mNodeItem { nullptr };
+    DAPyNode mProxy;               ///< Python节点代理，用于redo时重新注册
+    bool mNeedDelete { false };    ///< 命令析构时是否删除节点
+    bool mSkipFirstSync { true };  ///< 首次redo跳过Python同步（createPyNode已完成注册）
 };
 
 /**
@@ -50,10 +50,10 @@ public:
     void undo() override;
 
 private:
-    DAPyWorkFlowScene* m_scene { nullptr };
-    DAPyNodeGraphicsItem* m_nodeItem { nullptr };
-    DAPyNode m_proxy;            ///< Python节点代理，用于undo时重新注册
-    bool m_needDelete { false }; ///< 命令析构时是否删除节点
+    DAPyWorkFlowScene* mScene { nullptr };
+    DAPyNodeGraphicsItem* mNodeItem { nullptr };
+    DAPyNode mProxy;            ///< Python节点代理，用于undo时重新注册
+    bool mNeedDelete { false }; ///< 命令析构时是否删除节点
 };
 
 /**
@@ -71,9 +71,9 @@ public:
     void undo() override;
 
 private:
-    DAPyWorkFlowScene* m_scene { nullptr };
-    DAPyLinkGraphicsItem* m_linkItem { nullptr };
-    bool m_needDelete { false };
+    DAPyWorkFlowScene* mScene { nullptr };
+    DAPyLinkGraphicsItem* mLinkItem { nullptr };
+    bool mNeedDelete { false };
 };
 
 /**
@@ -91,9 +91,9 @@ public:
     void undo() override;
 
 private:
-    DAPyWorkFlowScene* m_scene { nullptr };
-    DAPyLinkGraphicsItem* m_linkItem { nullptr };
-    bool m_needDelete { false };
+    DAPyWorkFlowScene* mScene { nullptr };
+    DAPyLinkGraphicsItem* mLinkItem { nullptr };
+    bool mNeedDelete { false };
 };
 }
 #endif  // DAPYWORKFLOWUNDOCOMMANDS_H
