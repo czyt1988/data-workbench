@@ -16,18 +16,172 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+html, body {
+    height: 100%;
+}
+
 body {
     font-family: var(--font-family);
     color: var(--text-color);
     font-size: 14px;
     line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;  /* 由 #messages 内部滚动，body 不滚 */
 }
 
 #messages {
+    flex: 1 1 auto;
+    overflow-y: auto;        /* 聊天区作为唯一滚动容器 */
     padding: 12px;
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+
+/* —— 状态栏（聊天区与输入区之间）—— */
+#status-bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 2px 8px;
+    background: #f0f0f0;
+    border-top: 1px solid #ddd;
+    position: relative;  /* token-popover 绝对定位锚点 */
+}
+
+#status-text {
+    flex: 1 1 auto;
+    color: #333;
+    padding: 4px 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 当前模型名：蓝色强调，固定宽，过长右端省略（CSS 替代 QFontMetrics::elidedText） */
+#model-label {
+    flex: 0 0 160px;
+    width: 160px;
+    color: #5280C1;
+    padding: 4px 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: default;
+}
+
+#token-label {
+    flex: 0 0 auto;
+    color: #666;
+    padding: 4px 4px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+#token-label:hover {
+    color: #333;
+}
+
+/* token 分类明细浮层 */
+#token-popover {
+    position: absolute;
+    right: 8px;
+    bottom: 100%;
+    min-width: 160px;
+    margin-bottom: 4px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 6px 10px;
+    font-size: 12px;
+    color: #555;
+    z-index: 1000;
+    white-space: nowrap;
+}
+
+#token-popover[hidden] {
+    display: none;
+}
+
+#token-popover .popover-row {
+    padding: 2px 0;
+}
+
+#token-popover .popover-sep {
+    height: 1px;
+    margin: 4px 0;
+    background: #eee;
+}
+
+/* —— 输入区 —— */
+#input-area {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    padding: 6px 8px;
+    background: #f5f5f5;
+    border-top: 1px solid #ddd;
+}
+
+#input-edit {
+    flex: 1 1 auto;
+    min-height: 40px;
+    max-height: 120px;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+    box-sizing: border-box;
+}
+
+#input-edit:focus {
+    border-color: #5280C1;
+    box-shadow: 0 0 0 2px rgba(82, 128, 193, 0.15);
+}
+
+#input-edit:disabled {
+    background: #eee;
+    color: #999;
+    cursor: not-allowed;
+}
+
+/* 发送/终止按钮：默认主操作（蓝底白字）；.busy 态红色（Stop）；:disabled 灰 */
+#send-btn {
+    flex: 0 0 auto;
+    min-width: 64px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background: #5280C1;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#send-btn:hover {
+    background: #4274a8;
+}
+
+#send-btn.busy {
+    background: #d9534f;
+}
+
+#send-btn.busy:hover {
+    background: #c9302c;
+}
+
+#send-btn:disabled {
+    background: #aaa;
+    cursor: default;
 }
 
 .message-bubble {

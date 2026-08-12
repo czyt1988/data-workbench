@@ -71,6 +71,16 @@ void DAAgentWebChannel::onFigureLink(const QString& href)
     emit figureLinkRequested(href);
 }
 
+void DAAgentWebChannel::onReady()
+{
+    emit webReady();
+}
+
+void DAAgentWebChannel::onStopRequested()
+{
+    emit stopRequested();
+}
+
 void DAAgentWebChannel::appendUserMessage(const QString& text)
 {
     callJS(QString("appendUserMessage(\"%1\")").arg(toJsString(text)));
@@ -214,8 +224,56 @@ void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
 
 void DAAgentWebChannel::setBusy(bool busy)
 {
-    // placeholder: JS 侧可扩展 loading 指示器
-    Q_UNUSED(busy);
+    // busy 打包：JS 解释按钮 Send/Stop 切换 + 输入禁用 + 状态文案
+    callJS(QStringLiteral("setBusy(%1)").arg(busy ? QStringLiteral("true")
+                                                   : QStringLiteral("false")));
+}
+
+void DAAgentWebChannel::setStopping()
+{
+    // 停止过渡态：按钮禁用防重复点 + 状态 Stopping...
+    callJS(QStringLiteral("setStopping()"));
+}
+
+void DAAgentWebChannel::setModel(const QString& label)
+{
+    // label 已由 C++ 格式化为 "Model: <name>"，JS 仅显示（CSS ellipsis 截断）
+    callJS(QString("setModel(\"%1\")").arg(toJsString(label)));
+}
+
+void DAAgentWebChannel::setTokenStats(const QString& label, int inputTokens, int outputTokens,
+                                     int totalTokens, int contextWindow, const QString& source)
+{
+    // label 已由 C++ 格式化；5 值随推供 popover 缓存
+    callJS(QString("setTokenStats(\"%1\",%2,%3,%4,%5,\"%6\")")
+               .arg(toJsString(label))
+               .arg(inputTokens)
+               .arg(outputTokens)
+               .arg(totalTokens)
+               .arg(contextWindow)
+               .arg(toJsString(source)));
+}
+
+void DAAgentWebChannel::resetTokenStats()
+{
+    callJS(QStringLiteral("resetTokenStats()"));
+}
+
+void DAAgentWebChannel::setI18nLabels(const QVariantMap& labels)
+{
+    // 序列化为 JSON 对象推给 JS：setI18nLabels({send:"...",stop:"...",...})
+    QJsonObject obj;
+    for (auto it = labels.constBegin(); it != labels.constEnd(); ++it) {
+        obj.insert(it.key(), QJsonValue::fromVariant(it.value()));
+    }
+    QJsonDocument doc(obj);
+    QString json = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+    callJS(QStringLiteral("setI18nLabels(") + json + QStringLiteral(")"));
+}
+
+void DAAgentWebChannel::focusInput()
+{
+    callJS(QStringLiteral("focusInput()"));
 }
 
 void DAAgentWebChannel::onAgentStopped()

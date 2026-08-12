@@ -4,6 +4,7 @@
 #include <QStringList>
 #include <QJsonObject>
 #include <QVector>
+#include <QVariantMap>
 #include <QWebEngineView>
 #include "DAGuiAPI.h"
 
@@ -44,6 +45,23 @@ public:
      * @param href 超链接 href，形如 da-figure:&lt;figure_name&gt; 或 da-figure:id=&lt;uuid&gt;
      */
     Q_INVOKABLE void onFigureLink(const QString& href);
+
+    /**
+     * @brief JS 调用：web 侧初始化完成（chat.js init() 建立 QWebChannel 后回调）
+     *
+     * 握手信号：通知 C++ web 已就绪可接收状态推送。C++ 收到后回推
+     * setI18nLabels/setBusy/setModel/setTokenStats，缓解 webview 异步加载期间的
+     * JS-ready 竞态（agent 信号若在 chat.html 加载完成前触发会丢失）。
+     */
+    Q_INVOKABLE void onReady();
+
+    /**
+     * @brief JS 调用：用户在 web 输入区点击 Stop 按钮（忙碌态）
+     *
+     * web 输入区按钮 Send/Stop 切换后，Stop 走此通道直达 C++ 终止流程，
+     * 替代旧原生 m_sendButton 分流。
+     */
+    Q_INVOKABLE void onStopRequested();
 
     /**
      * @brief 追加用户消息到聊天界面
@@ -121,10 +139,51 @@ public:
     void loadHistory(const QVector<QJsonObject>& records);
 
     /**
-     * @brief 设置忙碌状态
+     * @brief 设置忙碌状态（busy 打包：JS 解释按钮 Send/Stop 切换+输入禁用+状态文案）
      * @param busy 是否忙碌
      */
     void setBusy(bool busy);
+
+    /**
+     * @brief 设置停止过渡态（onStopClicked 后、onAgentBusy(false)/Ready 前）
+     *
+     * JS 侧禁用按钮防重复点击 + 状态文案置 Stopping...。
+     */
+    void setStopping();
+
+    /**
+     * @brief 设置当前模型名标签（中）
+     * @param label 已由 C++ 格式化为 "Model: &lt;name&gt;" 的翻译串，JS 仅显示（CSS ellipsis 截断）
+     */
+    void setModel(const QString& label);
+
+    /**
+     * @brief 设置 token 计量（右）+ 缓存明细供 popover
+     * @param label 已由 C++ 格式化的 "tokens: N / window" 串（streaming_estimate 带 ~ 前缀）
+     * @param inputTokens 输入 token
+     * @param outputTokens 输出 token
+     * @param totalTokens 总 token
+     * @param contextWindow 上下文窗口大小
+     * @param source 来源（tiktoken / usage_metadata / streaming_estimate）
+     */
+    void setTokenStats(const QString& label, int inputTokens, int outputTokens,
+                       int totalTokens, int contextWindow, const QString& source);
+
+    /**
+     * @brief 复位 token 计量到无活跃会话初始态（新会话/清空时）
+     */
+    void resetTokenStats();
+
+    /**
+     * @brief 注入静态 UI 标签（握手时 C++ 一次性推送，C++ 仍是唯一 i18n 拥有者）
+     * @param labels QVariantMap，键见 chat.js setI18nLabels 注释
+     */
+    void setI18nLabels(const QVariantMap& labels);
+
+    /**
+     * @brief 聚焦 web 输入框（新会话/切换会话后）
+     */
+    void focusInput();
 
     /**
      * @brief 终止时定稿当前流式消息 + 关闭工具分组
@@ -152,6 +211,16 @@ Q_SIGNALS:
      * @param href 超链接 href，形如 da-figure:&lt;figure_name&gt; 或 da-figure:id=&lt;uuid&gt;
      */
     void figureLinkRequested(const QString& href);
+
+    /**
+     * @brief web 侧就绪信号（chat.js init() 握手，C++ 收到后 flush 当前态）
+     */
+    void webReady();
+
+    /**
+     * @brief 用户在 web 输入区点 Stop 按钮信号（直达 C++ 终止流程）
+     */
+    void stopRequested();
 
 private:
     /**

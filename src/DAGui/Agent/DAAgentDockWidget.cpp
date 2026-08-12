@@ -5,14 +5,8 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QWebEngineSettings>
-#include <QShortcut>
-#include <QKeySequence>
 #include <QIcon>
-#include <QMenu>
-#include <QAction>
 #include <QEvent>
-#include <QMouseEvent>
-#include <QCursor>
 #include <QLabel>
 #include <QResizeEvent>
 
@@ -23,9 +17,6 @@ DAAgentDockWidget::DAAgentDockWidget(QWidget* parent)
     : QWidget(parent)
     , m_webView(nullptr)
     , m_channel(nullptr)
-    , m_inputEdit(nullptr)
-    , m_sendButton(nullptr)
-    , m_statusLabel(nullptr)
     , m_agentBusy(false)
 {
     setupUI();
@@ -87,79 +78,12 @@ void DAAgentDockWidget::setupUI()
 #endif
     mainLayout->addWidget(m_webView, 1);
 
-    // ---- 底部状态栏：状态文本（左）+ 当前模型名称（中，替代原进度条）+ token 计量（右） ----
-    QWidget* statusBar = new QWidget(this);
-    statusBar->setObjectName(QStringLiteral("da_agentStatusBar"));
-    statusBar->setStyleSheet(QStringLiteral(
-        "QWidget#da_agentStatusBar { background: #f0f0f0; border-top: 1px solid #ddd; }"));
-    QHBoxLayout* stLayout = new QHBoxLayout(statusBar);
-    stLayout->setContentsMargins(4, 1, 4, 1);
-    stLayout->setSpacing(0);
-    m_statusLabel = new QLabel(statusBar);
-    m_statusLabel->setObjectName(QStringLiteral("da_agentStatusLabel"));
-    m_statusLabel->setStyleSheet(QStringLiteral("QLabel { color:#333; padding: 4px 8px; }"));
-    m_statusLabel->setText(tr("Ready"));  // cn:就绪
-    stLayout->addWidget(m_statusLabel, 1);
-    // 当前模型名称：替代原 token 进度条，作为该位置主显示（蓝色强调）
-    m_modelLabel = new QLabel(statusBar);
-    m_modelLabel->setObjectName(QStringLiteral("da_agentModelLabel"));
-    m_modelLabel->setStyleSheet(QStringLiteral(
-        "QLabel { color:#5280C1; padding: 4px 8px; }"));
-    m_modelLabel->setFixedWidth(160);
-    m_modelLabel->installEventFilter(this);  // resize 时重新计算省略文本
-    stLayout->addWidget(m_modelLabel);
-    m_tokenLabel = new QLabel(QStringLiteral("tokens: -"), statusBar);  // cn:token 计量
-    m_tokenLabel->setStyleSheet(QStringLiteral("color:#666; padding:0 4px;"));
-    m_tokenLabel->setCursor(Qt::PointingHandCursor);
-    m_tokenLabel->installEventFilter(this);  // 点击弹 m_tokenMenu
-    stLayout->addWidget(m_tokenLabel);
-    m_tokenMenu = new QMenu(this);  // 点击弹分类明细
-    mainLayout->addWidget(statusBar);
-
-    // 输入区：QTextEdit + 发送按钮
-    QWidget* inputContainer = new QWidget(this);
-    inputContainer->setObjectName(QStringLiteral("da_agentInputContainer"));
-    QHBoxLayout* inputLayout = new QHBoxLayout(inputContainer);
-    inputLayout->setContentsMargins(4, 4, 4, 4);
-    inputLayout->setSpacing(4);
-
-    m_inputEdit = new QTextEdit(inputContainer);
-    m_inputEdit->setObjectName(QStringLiteral("da_agentInputEdit"));
-    m_inputEdit->setPlaceholderText(tr("Type a message... (Ctrl+Enter to send)"));  // cn:输入消息...（Ctrl+Enter 发送）
-    m_inputEdit->setMaximumHeight(80);
-    m_inputEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-
-    m_sendButton = new QPushButton(tr("Send"), inputContainer);  // cn:发送
-    m_sendButton->setObjectName(QStringLiteral("da_agentSendButton"));
-    m_sendButton->setFixedSize(60, 32);
-
-    inputLayout->addWidget(m_inputEdit);
-    inputLayout->addWidget(m_sendButton);
-
-    mainLayout->addWidget(inputContainer);
-
-    // 加载 chat.html
+    // 加载 chat.html（现在内含 聊天区+状态栏+输入区，一个连续 web 表面）
     m_webView->setUrl(QUrl(QStringLiteral("qrc:///DAAgent/chat.html")));
-
-    // Ctrl+Enter 快捷键发送
-    QShortcut* sendShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+Return")), this);
-    connect(sendShortcut, &QShortcut::activated, this, &DAAgentDockWidget::onSendClicked);
-
-    // 发送/终止切换按钮：根据 m_agentBusy 状态分流
-    connect(m_sendButton, &QPushButton::clicked, this, [this]() {
-        if (m_agentBusy) {
-            onStopClicked();
-        } else {
-            onSendClicked();
-        }
-    });
 
     // ---- 会话栏按钮信号 ----
     connect(m_newSessionBtn, &QPushButton::clicked, this, &DAAgentDockWidget::onNewSessionClicked);
     connect(m_sessionManagerBtn, &QPushButton::clicked, this, &DAAgentDockWidget::onSessionManagerClicked);
-
-    // 初始化模型名标签显示（agent 就绪前显示 "Model: -"）
-    updateModelLabel();
 }
 
 void DAAgentDockWidget::setupWebChannel()
@@ -177,25 +101,60 @@ void DAAgentDockWidget::setupWebChannel()
     // 绘图引用超链接点击：chat.js 拦截 da-figure: 链接 → onFigureLink → 此信号转发
     connect(m_channel, &DAAgentWebChannel::figureLinkRequested,
             this, &DAAgentDockWidget::onFigureLink);
+    // web 输入区发送：chat.js onUserMessage → userMessageSent → C++ 编排（appendUserMessage + emit）
+    connect(m_channel, &DAAgentWebChannel::userMessageSent,
+            this, &DAAgentDockWidget::onUserMessageReceived);
+    // web 就绪握手：flush 当前态（i18n/busy/model/tokenStats）
+    connect(m_channel, &DAAgentWebChannel::webReady,
+            this, &DAAgentDockWidget::onWebReady);
+    // web 输入区 Stop 按钮：直达 C++ 终止流程（替代旧原生 m_sendButton 分流）
+    connect(m_channel, &DAAgentWebChannel::stopRequested,
+            this, &DAAgentDockWidget::onStopClicked);
 }
 
-void DAAgentDockWidget::onSendClicked()
+void DAAgentDockWidget::onUserMessageReceived(const QString& text)
 {
-    // 忙碌时不发送——按钮此时为 Stop 功能，由 lambda 分流到 onStopClicked
+    // C++ 仍是编排者：JS 已清框并调 chatBridge.onUserMessage(text)，此槽负责
+    // 渲染用户气泡 + 向外发消息。与旧 onSendClicked 同构（文本来源从 QTextEdit 改为 JS）。
     if (m_agentBusy) {
+        return;  // 忙碌时不发送（web 按钮此时为 Stop，理论不会触发；防御）
+    }
+    QString trimmed = text.trimmed();
+    if (trimmed.isEmpty()) {
         return;
     }
-    // 1. 获取输入文本
-    QString text = m_inputEdit->toPlainText().trimmed();
-    if (text.isEmpty()) {
-        return;
+    m_channel->appendUserMessage(trimmed);  // C++ 渲染用户气泡（单一权威）
+    emit sendMessageRequested(trimmed);
+}
+
+void DAAgentDockWidget::onWebReady()
+{
+    // web 侧就绪：注入静态 i18n 标签 + flush 当前态，缓解 JS-ready 竞态
+    // （agent 信号若在 chat.html 加载完成前触发，此处补推当前 busy/model/token）
+    if (!m_channel) return;
+    m_channel->setI18nLabels(QVariantMap{
+        {"send", tr("Send")},                       // cn:发送
+        {"stop", tr("Stop")},                        // cn:终止
+        {"ready", tr("Ready")},                      // cn:就绪
+        {"thinking", tr("Agent thinking...")},       // cn:Agent 思考中...
+        {"stopping", tr("Stopping...")},             // cn:终止中...
+        {"inputPlaceholder", tr("Type a message...")},  // cn:输入消息...
+        {"tokenEmpty", tr("tokens: -")},             // cn:token: -
+        {"popoverInput", tr("input: %1")},           // cn:输入：%1
+        {"popoverOutput", tr("output: %1")},         // cn:输出：%1
+        {"popoverTotal", tr("total: %1")},           // cn:总计：%1
+        {"popoverWindow", tr("window: %1")},         // cn:窗口：%1
+        {"popoverSource", tr("source: %1")},          // cn:来源：%1
+        {"popoverSourceUnknown", tr("unknown")}      // cn:未知
+    });
+    m_channel->setBusy(m_agentBusy);
+    m_channel->setModel(formatModelLabel());
+    if (m_hasTokenStats) {
+        m_channel->setTokenStats(formatTokenLabel(m_lastTotalTokens, m_lastContextWindow, m_lastTokenSource),
+                                  m_lastInTokens, m_lastOutTokens, m_lastTotalTokens,
+                                  m_lastContextWindow, m_lastTokenSource);
     }
-    // 2. 清空输入框
-    m_inputEdit->clear();
-    // 3. 在 UI 上显示用户消息（在 emit 之前调用，确保 UI 即时更新）
-    m_channel->appendUserMessage(text);
-    // 4. 通知 Bridge 发送消息
-    emit sendMessageRequested(text);
+    m_channel->focusInput();
 }
 
 void DAAgentDockWidget::onStopClicked()
@@ -203,10 +162,9 @@ void DAAgentDockWidget::onStopClicked()
     // 定稿当前流式输出中的 agent 消息 + 关闭工具分组，避免半截消息悬挂
     if (m_channel) {
         m_channel->onAgentStopped();
+        // 停止过渡态：web 按钮禁用防重复点 + 状态 Stopping...，持续到 onAgentBusy(false)/Ready 恢复
+        m_channel->setStopping();
     }
-    // 禁用按钮防止重复点击，等待 onProcessFinished→agentBusy(false) 恢复
-    m_sendButton->setEnabled(false);
-    m_statusLabel->setText(tr("Stopping..."));  // cn:终止中...
     emit stopRequested();
 }
 
@@ -287,33 +245,19 @@ void DAAgentDockWidget::onAgentRetrying(int attempt, int maxAttempts, int delayM
 void DAAgentDockWidget::onAgentReady(const QString& model)
 {
     m_currentModel = model;
-    updateModelLabel();
     m_agentBusy = false;
-    m_statusLabel->setText(tr("Ready"));  // cn:就绪
-    m_inputEdit->setEnabled(true);
-    m_sendButton->setText(tr("Send"));  // cn:发送
-    m_sendButton->setStyleSheet(QString());
-    m_sendButton->setEnabled(true);
+    if (m_channel) {
+        m_channel->setBusy(false);             // 复位为 ready：按钮 Send + 输入启用 + 状态 Ready
+        m_channel->setModel(formatModelLabel());  // 推送 "Model: <name>"
+    }
 }
 
 void DAAgentDockWidget::onAgentBusy(bool busy)
 {
     m_agentBusy = busy;
-    if (busy) {
-        m_statusLabel->setText(tr("Agent thinking..."));  // cn:Agent 思考中...
-        m_inputEdit->setEnabled(false);
-        // 切换为终止按钮：红色背景，可点击终止 agent
-        m_sendButton->setText(tr("Stop"));  // cn:终止
-        m_sendButton->setStyleSheet(QStringLiteral(
-            "QPushButton { background-color: #d9534f; color: white; }"));
-        m_sendButton->setEnabled(true);
-    } else {
-        m_statusLabel->setText(tr("Ready"));  // cn:就绪
-        m_inputEdit->setEnabled(true);
-        // 切换回发送按钮
-        m_sendButton->setText(tr("Send"));  // cn:发送
-        m_sendButton->setStyleSheet(QString());
-        m_sendButton->setEnabled(true);
+    // busy 打包：JS 解释按钮 Send/Stop 切换 + 输入禁用 + 状态文案（thinking/ready）
+    if (m_channel) {
+        m_channel->setBusy(busy);
     }
 }
 
@@ -340,32 +284,12 @@ void DAAgentDockWidget::onSessionManagerClicked()
     // 对话框关闭后 sessionListChanged 会从 Module 回灌权威状态刷新标题
 }
 
-void DAAgentDockWidget::onTokenLabelClicked()
-{
-    // 点击 token 文字 → 弹分类明细 QMenu（D7）
-    if (m_tokenMenu) {
-        m_tokenMenu->exec(QCursor::pos());
-    }
-}
-
 bool DAAgentDockWidget::eventFilter(QObject* obj, QEvent* ev)
 {
-    // m_tokenLabel 鼠标左键点击 → 弹 m_tokenMenu
-    if (obj == m_tokenLabel && ev->type() == QEvent::MouseButtonPress) {
-        auto* me = static_cast<QMouseEvent*>(ev);
-        if (me->button() == Qt::LeftButton) {
-            onTokenLabelClicked();
-            return true;
-        }
-    }
     // m_titleLabel 尺寸变化 → 重新计算省略文本（标题过长右端 …）
+    // （输入区/状态栏/token 明细已迁 web，eventFilter 只剩会话栏标题省略）
     if (obj == m_titleLabel && ev->type() == QEvent::Resize) {
         updateTitleLabel();
-        return false;
-    }
-    // m_modelLabel 尺寸变化 → 重新计算省略文本（模型名过长右端 …）
-    if (obj == m_modelLabel && ev->type() == QEvent::Resize) {
-        updateModelLabel();
         return false;
     }
     return QWidget::eventFilter(obj, ev);
@@ -378,18 +302,20 @@ void DAAgentDockWidget::onAgentUsage(int inputTokens, int outputTokens,
                                      const QString& source)
 {
     // 契约2: 5 参含 contextWindow 与 source。一期不做 system/tools/history/current 四分类估算。
-    // streaming_estimate 期间显示 ≈ 前缀，表示是流式估算值而非权威统计；
+    // 缓存最近一次 usage：web 未就绪时丢失的推送，onWebReady 重推。
+    m_lastInTokens = inputTokens;
+    m_lastOutTokens = outputTokens;
+    m_lastTotalTokens = totalTokens;
+    m_lastContextWindow = contextWindow;
+    m_lastTokenSource = source;
+    m_hasTokenStats = true;
+    // streaming_estimate 期间显示 ~ 前缀，表示是流式估算值而非权威统计；
     // 真实 usage 到达后（source 为 agent/summary）前缀消失。
-    if (source == "streaming_estimate") {
-        m_tokenLabel->setText(tr("tokens: ~%1 / %2")  // cn:token: ~当前 / 窗口
-                                  .arg(totalTokens)
-                                  .arg(contextWindow > 0 ? contextWindow : -1));
-    } else {
-        m_tokenLabel->setText(tr("tokens: %1 / %2")  // cn:token: 当前 / 窗口
-                                  .arg(totalTokens)
-                                  .arg(contextWindow > 0 ? contextWindow : -1));
+    if (m_channel) {
+        m_channel->setTokenStats(formatTokenLabel(totalTokens, contextWindow, source),
+                                  inputTokens, outputTokens, totalTokens,
+                                  contextWindow, source);
     }
-    rebuildTokenMenu(inputTokens, outputTokens, totalTokens, contextWindow, source);
 }
 
 void DAAgentDockWidget::onAgentSessionLoaded(const QString& sessionId)
@@ -397,7 +323,10 @@ void DAAgentDockWidget::onAgentSessionLoaded(const QString& sessionId)
     Q_UNUSED(sessionId);
     // Python load_session 重建完成，解除 UI 切换守卫（MAJOR4）
     m_switching = false;
-    m_statusLabel->setText(tr("Ready"));  // cn:就绪
+    // 重新断言当前 busy 态（若非忙则状态文案置 Ready），消除可能的 Stopping 残留
+    if (m_channel) {
+        m_channel->setBusy(m_agentBusy);
+    }
 }
 
 void DAAgentDockWidget::onSessionSwitched(const QString& sessionId,
@@ -427,10 +356,12 @@ void DAAgentDockWidget::onSessionCreated(const QString& sessionId)
     // Bug2 修复：新会话无 usage，复位 token 控件避免拋留上一会话数值。
     m_switching = false;
     m_currentSessionId = sessionId;
+    m_hasTokenStats = false;  // 新会话无 usage，复位缓存
     if (m_channel) {
         m_channel->clearChat();
+        m_channel->resetTokenStats();  // 复位 web 侧 token 标签 + popover
+        m_channel->focusInput();       // 新会话聚焦输入框
     }
-    resetTokenStats();
     updateTitleLabel();
 }
 
@@ -440,18 +371,13 @@ void DAAgentDockWidget::onSessionCleared()
     // 清空残留聊天区、复位 token 控件、清空标题、解除切换守卫。
     m_switching = false;
     m_currentSessionId.clear();
+    m_hasTokenStats = false;
     if (m_channel) {
         m_channel->clearChat();
+        m_channel->resetTokenStats();
+        m_channel->focusInput();
     }
-    resetTokenStats();
     updateTitleLabel();
-}
-
-void DAAgentDockWidget::resetTokenStats()
-{
-    // 复位到无活跃会话初始态：标签 "tokens: -"、明细菜单清空（模型名跨会话保留，不在此复位）
-    if (m_tokenLabel) m_tokenLabel->setText(tr("tokens: -"));  // cn:token: -
-    if (m_tokenMenu) m_tokenMenu->clear();
 }
 
 // ---- 辅助方法 ----
@@ -490,43 +416,26 @@ void DAAgentDockWidget::updateTitleLabel()
     m_titleLabel->setText(shown);
 }
 
-void DAAgentDockWidget::updateModelLabel()
+QString DAAgentDockWidget::formatModelLabel() const
 {
-    // 按 m_currentModel 渲染模型标签：空时显示占位，非空显示 "Model: <name>"；
-    // 过长右端省略 …，tooltip 显示完整模型名（空模型不弹 tooltip）
-    if (!m_modelLabel) return;
-    QString fullText;
+    // 返回模型标签串：空模型 "Model: -"，非空 "Model: <name>"（已 tr 翻译）。
+    // 省略由 web 侧 CSS text-overflow:ellipsis 处理，tooltip 由 JS setModel 设置。
     if (m_currentModel.isEmpty()) {
-        fullText = tr("Model: -");  // cn:模型：-
-        m_modelLabel->setToolTip(QString());
-    } else {
-        fullText = tr("Model: %1").arg(m_currentModel);  // cn:模型：%1
-        m_modelLabel->setToolTip(m_currentModel);
+        return tr("Model: -");  // cn:模型：-
     }
-    int w = m_modelLabel->width();
-    if (w <= 0) {
-        // 尚未布局完成，直接放全文，resize 事件触发时会重新省略
-        m_modelLabel->setText(fullText);
-        return;
-    }
-    // 减去内边距避免 … 紧贴右边缘
-    const int pad = 20;
-    m_modelLabel->setText(m_modelLabel->fontMetrics().elidedText(
-        fullText, Qt::ElideRight, qMax(0, w - pad)));
+    return tr("Model: %1").arg(m_currentModel);  // cn:模型：%1
 }
 
-void DAAgentDockWidget::rebuildTokenMenu(int inT, int outT, int tot,
-                                         int window, const QString& source)
+QString DAAgentDockWidget::formatTokenLabel(int totalTokens, int contextWindow, const QString& source) const
 {
-    if (!m_tokenMenu) return;
-    // D7 分类明细 QMenu：input/output/total/window/source 五项（一期不做四分类）
-    m_tokenMenu->clear();
-    m_tokenMenu->addAction(tr("input: %1").arg(inT));   // cn:输入：
-    m_tokenMenu->addAction(tr("output: %1").arg(outT)); // cn:输出：
-    m_tokenMenu->addAction(tr("total: %1").arg(tot));   // cn:总计：
-    m_tokenMenu->addAction(tr("window: %1").arg(window > 0 ? window : -1));  // cn:窗口：
-    m_tokenMenu->addSeparator();
-    m_tokenMenu->addAction(tr("source: %1").arg(source.isEmpty() ? tr("unknown") : source));  // cn:来源：
+    // 返回 token 计量串：streaming_estimate 带 ~ 前缀，否则 "tokens: N / window"（已 tr 翻译）。
+    // window<=0 显示 -1。popover 五项明细由 web 侧 JS 用注入的模板串渲染
+    // （C++ 只推这 5 原始值，标签复用 tr("input: %1") 等既有翻译，JS 做 %1→值 替换）。
+    int win = contextWindow > 0 ? contextWindow : -1;
+    if (source == QStringLiteral("streaming_estimate")) {
+        return tr("tokens: ~%1 / %2").arg(totalTokens).arg(win);  // cn:token: ~当前 / 窗口
+    }
+    return tr("tokens: %1 / %2").arg(totalTokens).arg(win);  // cn:token: 当前 / 窗口
 }
 
 QString DAAgentDockWidget::mapErrorMessage(const QString& original, const QString& errorType) const

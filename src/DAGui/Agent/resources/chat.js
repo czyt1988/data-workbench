@@ -10,6 +10,20 @@ const RENDER_DEBOUNCE_MS = 50;  // 最多每 50ms 重新渲染一次
 let currentToolGroup = null;   // 当前工具分组容器（null 表示无活跃分组）
 let pendingToolCards = [];     // 等待结果的卡片列表 [{card, toolName}]
 
+// —— 输入区/状态栏 web 化状态 ——
+// i18n 静态标签由 C++ 在握手(onReady)时经 setI18nLabels 注入（C++ 仍是唯一 i18n 拥有者，
+// 沿用 appendQuestion 推 tr("Submit") 的既有约定；JS 为哑显示）。
+let i18n = {
+    send: 'Send', stop: 'Stop',
+    ready: 'Ready', thinking: 'Agent thinking...', stopping: 'Stopping...',
+    inputPlaceholder: '', tokenEmpty: 'tokens: -',
+    popoverInput: 'input: %1', popoverOutput: 'output: %1',
+    popoverTotal: 'total: %1', popoverWindow: 'window: %1',
+    popoverSource: 'source: %1', popoverSourceUnknown: 'unknown'
+};
+let agentBusy = false;          // 当前是否思考中（驱动 send-btn 的 Send/Stop 切换）
+let tokenStatsCache = null;     // 缓存最近一次 setTokenStats 的 5 值，供 popover 渲染
+
 function initMarkdown() {
     md = window.markdownit({
         html: false,
@@ -36,13 +50,20 @@ function createMessageBubble(className) {
 }
 
 function scrollToBottom() {
-    window.scrollTo(0, document.body.scrollHeight);
+    // #messages 是唯一滚动容器（body 已 overflow:hidden），滚它而非 window
+    var m = document.getElementById('messages');
+    if (m) { m.scrollTop = m.scrollHeight; }
 }
 
 function init() {
     initMarkdown();
     new QWebChannel(qt.webChannelTransport, function(channel) {
         chatBridge = channel.objects.chatBridge;
+        // 握手：通知 C++ web 侧已就绪，C++ 回推 setI18nLabels/setBusy/setModel/setTokenStats。
+        // 缓解 JS-ready 竞态——若 agent 信号在 chat.html 加载完成前触发，此处 flush 当前态。
+        if (chatBridge && typeof chatBridge.onReady === 'function') {
+            chatBridge.onReady();
+        }
     });
     // 拦截 da-figure: 超链接点击，交给 C++ 端打开对应绘图。
     // 事件委托挂在稳定的 #messages 上：流式防抖会重建气泡 innerHTML，
@@ -61,6 +82,52 @@ function init() {
                 chatBridge.onFigureLink(href);
             }
         });
+    }
+
+    // —— 输入区：发送/终止按钮 ——
+    var sendBtn = document.getElementById('send-btn');
+    if (sendBtn) {
+        sendBtn.addEventListener('click', onSendClicked);
+    }
+
+    // —— token 明细 popover：点 token-label 切换显隐，点外部关闭 ——
+    var tokenLabel = document.getElementById('token-label');
+    var tokenPopover = document.getElementById('token-popover');
+    if (tokenLabel && tokenPopover) {
+        tokenLabel.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (tokenPopover.hasAttribute('hidden')) {
+                rebuildTokenPopover();
+                tokenPopover.removeAttribute('hidden');
+            } else {
+                tokenPopover.setAttribute('hidden', '');
+            }
+        });
+        document.addEventListener('click', function(e) {
+            if (tokenPopover.hasAttribute('hidden')) return;
+            if (e.target === tokenLabel || tokenPopover.contains(e.target)) return;
+            tokenPopover.setAttribute('hidden', '');
+        });
+    }
+}
+
+// 用户点击发送/终止按钮。C++ 仍是编排者：JS 只负责取文本+清框+通知，
+// 用户气泡由 C++ 收到 onUserMessage 后调 appendUserMessage 渲染（与旧 onSendClicked 同构）。
+function onSendClicked() {
+    if (agentBusy) {
+        // 忙碌时按钮=Stop：通知 C++ 终止
+        if (chatBridge && typeof chatBridge.onStopRequested === 'function') {
+            chatBridge.onStopRequested();
+        }
+        return;
+    }
+    var ta = document.getElementById('input-edit');
+    if (!ta) return;
+    var text = ta.value.trim();
+    if (!text) return;
+    ta.value = '';  // JS 清框（C++ 侧不再触碰输入控件）
+    if (chatBridge && typeof chatBridge.onUserMessage === 'function') {
+        chatBridge.onUserMessage(text);
     }
 }
 
@@ -371,6 +438,130 @@ function clearChat() {
     currentAgentMsg = null;
     currentToolGroup = null;
     pendingToolCards = [];
+}
+
+// —— 输入区/状态栏 web 化（被 C++ 经 DAAgentWebChannel::callJS 调用）——
+// 契约：C++ 仍是唯一 i18n 拥有者，所有显示文案由 C++ tr() 格式化后推送；
+//       静态标签在握手时经 setI18nLabels 一次性注入，动态串走对应方法。
+
+// 握手后注入静态 UI 标签。labels 为对象：{send,stop,ready,thinking,stopping,
+// inputPlaceholder,tokenEmpty,popoverInput,popoverOutput,popoverTotal,
+// popoverWindow,popoverSource,popoverSourceUnknown}。
+function setI18nLabels(labels) {
+    if (!labels || typeof labels !== 'object') return;
+    for (var k in labels) {
+        if (Object.prototype.hasOwnProperty.call(labels, k)) {
+            i18n[k] = labels[k];
+        }
+    }
+    // 应用 placeholder 到输入框
+    var ta = document.getElementById('input-edit');
+    if (ta && i18n.inputPlaceholder) { ta.placeholder = i18n.inputPlaceholder; }
+    // 同步一次按钮初始文案（ready 态）
+    applySendButtonState();
+    // token 空态文案
+    var tl = document.getElementById('token-label');
+    if (tl && (tl.textContent === 'tokens: -' || !tl.textContent)) {
+        tl.textContent = i18n.tokenEmpty;
+    }
+}
+
+// busy 打包：true→按钮 Stop(红)+输入禁用+状态 thinking；false→按钮 Send+输入启用+状态 ready。
+// JS 内聚解释"忙态长什么样"，C++ 只发一个 bool。
+function setBusy(busy) {
+    agentBusy = busy;
+    applySendButtonState();
+    var ta = document.getElementById('input-edit');
+    if (ta) { ta.disabled = busy; }
+    setStatus(busy ? i18n.thinking : i18n.ready);
+}
+
+// 停止过渡态：按钮禁用（防重复点）+状态 stopping。由 onStopClicked 触发，
+// 持续到 onAgentBusy(false)/onAgentReady 恢复。
+function setStopping() {
+    agentBusy = false;  // 非思考态，但按钮要禁用
+    var btn = document.getElementById('send-btn');
+    if (btn) { btn.disabled = true; btn.classList.remove('busy'); }
+    var ta = document.getElementById('input-edit');
+    if (ta) { ta.disabled = true; }
+    setStatus(i18n.stopping);
+}
+
+// 设置状态文案（左）。busy/stopping 内部调，也供 C++ 直接推过渡态。
+function setStatus(text) {
+    var el = document.getElementById('status-text');
+    if (el) { el.textContent = text || ''; }
+}
+
+// 设置模型名（中）。label 已由 C++ 格式化为 "Model: <name>"，CSS ellipsis 截断。
+function setModel(label) {
+    var el = document.getElementById('model-label');
+    if (!el) return;
+    el.textContent = label || '';
+    // tooltip 显示完整名（与旧 QFontMetrics tooltip 同效果）
+    el.title = label || '';
+}
+
+// 设置 token 计量（右）+ 缓存明细供 popover。label 已由 C++ 格式化。
+function setTokenStats(label, inT, outT, total, window, source) {
+    var el = document.getElementById('token-label');
+    if (el) { el.textContent = label || ''; }
+    tokenStatsCache = { inT: inT, outT: outT, total: total, window: window, source: source };
+    // 若 popover 正在显示，同步刷新内容
+    var pop = document.getElementById('token-popover');
+    if (pop && !pop.hasAttribute('hidden')) { rebuildTokenPopover(); }
+}
+
+// 复位 token 计量到无活跃会话初始态（新会话/清空时）。
+function resetTokenStats() {
+    var el = document.getElementById('token-label');
+    if (el) { el.textContent = i18n.tokenEmpty; }
+    tokenStatsCache = null;
+    var pop = document.getElementById('token-popover');
+    if (pop) { pop.innerHTML = ''; pop.setAttribute('hidden', ''); }
+}
+
+// 聚焦输入框（新会话/切换后）。
+function focusInput() {
+    var ta = document.getElementById('input-edit');
+    if (ta) { ta.focus(); }
+}
+
+// —— 内部辅助 ——
+// 按 agentBusy 同步 send-btn 文案/样式（busy→Stop 红，否则 Send）。disabled 由调用方管。
+function applySendButtonState() {
+    var btn = document.getElementById('send-btn');
+    if (!btn) return;
+    if (agentBusy) {
+        btn.textContent = i18n.stop;
+        btn.classList.add('busy');
+    } else {
+        btn.textContent = i18n.send;
+        btn.classList.remove('busy');
+    }
+}
+
+// 构建 token 明细 popover 5 行（input/output/total/window + 分隔 + source）。
+// popover 标签为 Qt 模板串 tr("input: %1")（复用既有翻译），JS 做 %1→值 替换。
+function rebuildTokenPopover() {
+    var pop = document.getElementById('token-popover');
+    if (!pop) return;
+    if (!tokenStatsCache) { pop.innerHTML = ''; return; }
+    var c = tokenStatsCache;
+    var winVal = c.window > 0 ? c.window : -1;
+    var srcVal = c.source ? c.source : i18n.popoverSourceUnknown;
+    pop.innerHTML =
+        '<div class="popover-row">' + fmtTmpl(i18n.popoverInput, c.inT) + '</div>' +
+        '<div class="popover-row">' + fmtTmpl(i18n.popoverOutput, c.outT) + '</div>' +
+        '<div class="popover-row">' + fmtTmpl(i18n.popoverTotal, c.total) + '</div>' +
+        '<div class="popover-row">' + fmtTmpl(i18n.popoverWindow, winVal) + '</div>' +
+        '<div class="popover-sep"></div>' +
+        '<div class="popover-row">' + fmtTmpl(i18n.popoverSource, srcVal) + '</div>';
+}
+
+// Qt 模板串 %1→值 替换（与 C++ .arg() 等价的 JS 侧哑替换）
+function fmtTmpl(tmpl, val) {
+    return String(tmpl).replace('%1', val);
 }
 
 // plan-04 step6: 批量重放历史会话记录到聊天界面。

@@ -2,10 +2,8 @@
 #include <QWidget>
 #include <QWebEngineView>
 #include <QWebChannel>
-#include <QTextEdit>
 #include <QPushButton>
 #include <QLabel>
-#include <QMenu>
 #include <QJsonObject>
 #include <QVector>
 #include <QStringList>
@@ -47,14 +45,18 @@ public:
     DAAgentWebChannel* webChannel() const { return m_channel; }
 
 private Q_SLOTS:
-    void onSendClicked();
     void onStopClicked();
     void onUserAnswer(const QString& answer);
     void onFigureLink(const QString& href);  // 绘图引用超链接点击转发
     // 会话栏按钮
     void onNewSessionClicked();
     void onSessionManagerClicked();
-    void onTokenLabelClicked();
+    // —— 输入区/状态栏 web 化：web↔C++ 编排 ——
+    // web 发送：JS onUserMessage → userMessageSent → 此槽（C++ 仍是编排者，
+    // 调 appendUserMessage 渲染气泡 + emit sendMessageRequested）
+    void onUserMessageReceived(const QString& text);
+    // web 就绪握手：flush 当前态（i18n/busy/model/tokenStats）
+    void onWebReady();
 
 public Q_SLOTS:
     /**
@@ -199,7 +201,7 @@ Q_SIGNALS:
 
 protected:
     /**
-     * @brief 事件过滤器：m_tokenLabel 鼠标点击弹出 token 分类明细 QMenu
+     * @brief 事件过滤器：m_titleLabel 尺寸变化时重新计算省略文本（输入区/状态栏已迁 web）
      */
     bool eventFilter(QObject* obj, QEvent* ev) override;
 
@@ -217,21 +219,16 @@ private:
     /// 用 sessionListChanged payload 刷新会话缓存并更新标题
     /// 按当前会话 ID 在缓存中查标题并更新标题标签（过长右端省略 + tooltip 全文）
     void updateTitleLabel();
-    /// 按当前模型名更新模型标签（过长右端省略 + tooltip 全文）
-    void updateModelLabel();
-    /// 重建 token 分类明细 QMenu（input/output/total/window/source）
-    void rebuildTokenMenu(int inT, int outT, int tot, int window, const QString& source);
-    /// 复位 token 控件到无活跃会话初始态（标签 "tokens: -"、菜单清空；模型名跨会话保留）
-    void resetTokenStats();
+    /// 格式化模型标签串：空模型返回 "Model: -"，非空返回 "Model: <name>"（已 tr 翻译）
+    QString formatModelLabel() const;
+    /// 格式化 token 计量串：streaming_estimate 带 ~ 前缀，否则 "tokens: N / window"
+    QString formatTokenLabel(int totalTokens, int contextWindow, const QString& source) const;
 
     /// 根据 errorType 映射错误消息为翻译后的用户文案（plan-03 step8）
     QString mapErrorMessage(const QString& original, const QString& errorType) const;
 
     QWebEngineView* m_webView;
     DAAgentWebChannel* m_channel;
-    QTextEdit* m_inputEdit;
-    QPushButton* m_sendButton;
-    QLabel* m_statusLabel;
     bool m_agentBusy = false;
 
     // ---- 顶部会话栏：标题（省略）+ 会话管理 + 新建会话 ----
@@ -241,11 +238,14 @@ private:
     QString m_currentSessionId;        ///< 当前活跃会话 ID
     QString m_currentSessionFullTitle; ///< 当前会话完整标题（供省略渲染与 tooltip）
     QVariantList m_sessions;          ///< 缓存 sessionListChanged payload（含元信息）
-    // ---- 底部状态栏：当前模型名称 + token 计量 ----
-    QLabel* m_modelLabel = nullptr;   ///< 当前模型名称显示（替代原进度条位置）
-    QLabel* m_tokenLabel = nullptr;
-    QMenu* m_tokenMenu = nullptr;
-    QString m_currentModel;           ///< 当前模型名称（由 onAgentReady 回填）
+    QString m_currentModel;           ///< 当前模型名称（由 onAgentReady 回填，onWebReady 推给 web）
+    // ---- token 统计缓存：web 未就绪时丢失的推送，onWebReady 重推 ----
+    int m_lastInTokens = 0;
+    int m_lastOutTokens = 0;
+    int m_lastTotalTokens = 0;
+    int m_lastContextWindow = 0;
+    QString m_lastTokenSource;
+    bool m_hasTokenStats = false;
     // ---- MAJOR4 UI 侧切换守卫：true 时渲染槽跳过，避免旧会话残余 token 渲染到新聊天区 ----
     bool m_switching = false;
 };
