@@ -36,8 +36,14 @@ QJsonObject DAAgentToolAddRegion::execute(const QJsonObject& params)
     QString colorStr    = params["color"].toString();
     QString label       = params["label"].toString();
 
+    if (qFuzzyCompare(startX, endX)) {
+        return errorResponse("start_x and end_x must be different");
+    }
     if (startX > endX) {
         std::swap(startX, endX);
+    }
+    if (!colorStr.isEmpty() && !QColor(colorStr).isValid()) {
+        return errorResponse(QString("Invalid color '%1'").arg(colorStr));
     }
 
     DAChartWidget* chart = findChart(chartId, figureName);
@@ -46,7 +52,14 @@ QJsonObject DAAgentToolAddRegion::execute(const QJsonObject& params)
         return errorResponse(QString("Chart '%1' not found").arg(ref));
     }
 
-    // Get y-axis range to cover the full vertical extent
+    // Re-enable auto-scale and replot so the y-axis reflects the real data
+    // range. createChart locks axes to [0,800]x[0,500] via setAxisScale, which
+    // disables Qwt auto-scaling; without this, axisScaleDiv(yLeft) below
+    // returns the stale locked range and the region spans an empty y area.
+    enableAutoScale(chart);
+    chart->replot();
+
+    // Get y-axis range to cover the full vertical extent (now the data range)
     const QwtScaleDiv& yDiv = chart->axisScaleDiv(QwtPlot::yLeft);
     double yMin = yDiv.lowerBound();
     double yMax = yDiv.upperBound();
@@ -62,14 +75,23 @@ QJsonObject DAAgentToolAddRegion::execute(const QJsonObject& params)
     QwtPlotShapeItem* item = chart->addShapeItem(path, label);
     if (item) {
         QColor fill = colorStr.isEmpty() ? QColor(255, 200, 0) : QColor(colorStr);
-        fill.setAlpha(60);  // semi-transparent
+        fill.setAlpha(100);  // semi-transparent, raised from 60 for visibility
         item->setBrush(QBrush(fill));
         QPen pen(fill.darker(150));
         pen.setStyle(Qt::DashLine);
+        pen.setWidthF(1.5);
         item->setPen(pen);
     }
 
     chart->replot();
-    return successResponse(QString("Added region [%1, %2]").arg(startX).arg(endX));
+
+    // Off-screen x-range hint: warn if the region falls entirely outside the
+    // visible axis range (so the caller knows it was added but not visible).
+    QString warning;
+    const QwtScaleDiv& xDiv = chart->axisScaleDiv(QwtPlot::xBottom);
+    if (endX < xDiv.lowerBound() || startX > xDiv.upperBound()) {
+        warning = " (warning: region x-range is outside the visible axis range)";
+    }
+    return successResponse(QString("Added region [%1, %2]%3").arg(startX).arg(endX).arg(warning));
 }
 }  // namespace DA
