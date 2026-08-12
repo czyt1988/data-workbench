@@ -1,4 +1,4 @@
-﻿#ifndef DATEXTREADWRITER_H
+#ifndef DATEXTREADWRITER_H
 #define DATEXTREADWRITER_H
 #include <QObject>
 #include <QFile>
@@ -44,7 +44,7 @@ public:
 
 public:
     DATextReadWriter(QObject* parent = nullptr);
-    ~DATextReadWriter();
+    ~DATextReadWriter() override;
     void setFileName(const QString& name);
     // 设置总共读取的行数
     int getTotalReadLineCount() const;

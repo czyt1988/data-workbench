@@ -84,10 +84,7 @@ public:
     //判断是否存在field
     bool haveFieldid(const QString& field) const;
 
-    /**
-     * @brief 填充元素
-     * @param v
-     */
+    // 填充元素
     void fill(const T& v);
     const T& at(int r, int c) const;
     T& at(int r, int c);
@@ -115,111 +112,64 @@ public:
     SeriesType& operator[](const QString& rowname);
     const SeriesType& operator[](const QString& rowname) const;
 
-    /**
-     * @brief 以最大列数进行列数修正，保证所有行同列
-     */
+    // 以最大列数进行列数修正，保证所有行同列
     void fixSize();
 
-    /**
-     * @brief 表的行数
-     * @return
-     */
+    // 表的行数
     int rowCount() const;
 
-    /**
-     * @brief 表的列数
-     * @return
-     */
+    // 表的列数
     int columnCount() const;
 
-    /**
-     * @brief 设置表格的模式
-     * @param m 模式 @ref Mode
-     */
+    // 设置表格的模式
     void setMode(Mode m);
 
-    /**
-     * @brief 获取模式
-     * @return
-     */
+    // 获取模式
     Mode getMode() const;
 
-    /**
-     * @brief 清空
-     */
+    // 清空
     void clear();
 
     void setName(const QString& n);
     QString getName() const;
 
-    /**
-     * @brief rowNames
-     * @return
-     */
+    // rowNames
     QStringList rowNames() const;
 
-    /**
-     * @brief 设置行名，如果是个空的表会生成一个默认行
-     * @param ns
-     */
+    // 设置行名，如果是个空的表会生成一个默认行
     void setRowNames(const QStringList& ns);
 
-    /**
-     * @brief 提取某个值等于value作为新表
-     * @param field
-     * @param value
-     * @param cs
-     * @return
-     */
+    // 提取某个值等于value作为新表
     TablePtr takeByValue(const QString& field, T value) const;
 
-    /**
-     * @brief groupby
-     * @param field
-     * @param cs
-     * @return
-     */
+    // groupby
     QPair< QList< TablePtr >, QList< T > > groupBy(const QString& field) const;
 
-    /**
-     * @brief orderBy
-     * @param sn
-     */
+    // orderBy
     void orderBy(const QString& sn);
     void orderBy(int rindex);
 
-    /**
-     * @brief 查找第一个大于或等于某个元素的位置
-     * @note 需要确保已经进行过排序
-     * @param v
-     * @return
-     */
+    // 查找第一个大于或等于某个元素的位置
     QPair< T, int > lowerBound(const T& v, const QString& sortedfield) const;
     QPair< T, int > lowerBound(const T& v, int r) const;
     QPair< T, int > upperBound(const T& v, const QString& sortedfield) const;
     QPair< T, int > upperBound(const T& v, int r) const;
 
-    /**
-     * @brief 设置名字查询时是否对大小写敏感
-     * @param cs
-     */
+    // 设置名字查询时是否对大小写敏感
     void setCaseSensitivity(CaseSensitivity cs);
 
-    /**
-     * @brief 判断是否大小写敏感
-     * @return
-     */
+    // 判断是否大小写敏感
     bool isCaseSensitivity() const;
     //移除
     void remove(const QString& name);
     void remove(int rindex);
 
 private:
-    DAVector< SeriesPtr > m_d;
-    size_t m_columns;
-    Mode m_mode;
-    SeriesPtr m_nullseries;
-    CaseSensitivity m_caseSensitivity;
+    DAVector< SeriesPtr > mD;
+    size_t mColumns;
+    Mode mMode;
+    SeriesPtr mNullseries;
+    CaseSensitivity mCaseSensitivity;
 };
 
 //==============================================================
@@ -246,13 +196,7 @@ typename DARowTable< T >::TablePtr takeByValue(const DARowTable< T >& table, con
     return (res);
 }
 
-/**
- * @brief takeByValue 类似于select * from table where table.r = value
- * @param table
- * @param r
- * @param value
- * @return
- */
+// takeByValue 类似于select * from table where table.r = value
 template< typename T >
 typename DARowTable< T >::TablePtr takeByValue(const DARowTable< T >& table, int r, T value)
 {
@@ -271,12 +215,7 @@ typename DARowTable< T >::TablePtr takeByValue(const DARowTable< T >& table, int
     return (res);
 }
 
-/**
- * @brief groupby 对某个字段执行group by操作
- * @param table
- * @param field
- * @return 返回一个pair，first：group by后的结构表，second，group by的结果
- */
+// groupby 对某个字段执行group by操作
 template< typename T >
 QPair< QList< typename DARowTable< T >::TablePtr >, QList< T > > groupby(const DARowTable< T >& table, const QString& field)
 {
@@ -328,11 +267,7 @@ bool operator<(const ValueWithIndex< T >& a, const ValueWithIndex< T >& b)
     return (a.value < b.value);
 }
 
-/**
- * @brief 把序列转换为带序号的序列
- * @param p
- * @return 用于带序号的排序用
- */
+// 把序列转换为带序号的序列
 template< typename T >
 std::shared_ptr< DAVector< ValueWithIndex< T > > > makeIndexSeries(const typename DARowTable< T >::SeriesPtr& p)
 {
@@ -383,44 +318,36 @@ void orderBy(DARowTable< T >& table, int r)
 //==============================================================
 
 template< typename T >
-DARowTable< T >::DARowTable() : m_columns(0), m_mode(FixedMode), m_caseSensitivity(CaseInsensitive)
+DARowTable< T >::DARowTable() : mColumns(0), mMode(FixedMode), mCaseSensitivity(CaseInsensitive)
 {
 }
 
 template< typename T >
-DARowTable< T >::DARowTable(int rows, int columns) : m_mode(FixedMode), m_caseSensitivity(CaseInsensitive)
+DARowTable< T >::DARowTable(int rows, int columns) : mMode(FixedMode), mCaseSensitivity(CaseInsensitive)
 {
-    m_d.clear();
-    m_d.reserve(rows);
+    mD.clear();
+    mD.reserve(rows);
     for (int i = 0; i < rows; ++i) {
-        m_d.push_back(SeriesType(columns));
+        mD.push_back(SeriesType(columns));
     }
-    m_columns = columns;
+    mColumns = columns;
 }
 
-/**
- * @brief 改变table 的大小
- * @param r
- * @param c
- */
+// 改变table 的大小
 template< typename T >
 void DARowTable< T >::resize(int r, int c)
 {
-    m_d.resize(r);
-    for (SeriesPtr& row : m_d) {
+    mD.resize(r);
+    for (SeriesPtr& row : mD) {
         if (row == nullptr) {
             row = makeSeries();
         }
         row->resize(c);
     }
-    m_columns = c;
+    mColumns = c;
 }
 
-/**
- * @brief 判断是否存在field
- * @param field
- * @return
- */
+// 判断是否存在field
 template< typename T >
 bool DARowTable< T >::haveFieldid(const QString& field) const
 {
@@ -438,7 +365,7 @@ bool DARowTable< T >::haveFieldid(const QString& field) const
 template< typename T >
 void DARowTable< T >::fill(const T& v)
 {
-    for (const SeriesPtr& r : qAsConst(m_d)) {
+    for (const SeriesPtr& r : qAsConst(mD)) {
         r->fill(v);
     }
 }
@@ -446,25 +373,20 @@ void DARowTable< T >::fill(const T& v)
 template< typename T >
 const T& DARowTable< T >::at(int r, int c) const
 {
-    return (m_d.at(r)->at(c));
+    return (mD.at(r)->at(c));
 }
 
 template< typename T >
 T& DARowTable< T >::at(int r, int c)
 {
-    return (m_d[ r ]->operator[](c));
+    return (mD[ r ]->operator[](c));
 }
 
-/**
- * @brief 获取单元格
- * @param r
- * @param c
- * @return 如果没有或超范围，返回默认构造
- */
+// 获取单元格
 template< typename T >
 T DARowTable< T >::cell(int r, int c) const
 {
-    if (r < m_d.size()) {
+    if (r < mD.size()) {
         const SeriesPtr& rr = row(r);
         if (c < rr->size()) {
             return (rr->at(c));
@@ -493,20 +415,20 @@ void DARowTable< T >::appendRow(SeriesPtr row)
 {
     size_t s = row->size();
 
-    if ((s == m_columns) || (0 == m_columns)) {
-        m_d.push_back(row);
-        m_columns = s;
-    } else if (s < m_columns) {  //在结尾补充
-        row->resize(m_columns);
-        m_d.push_back(row);
-    } else {  // s>m_columns
+    if ((s == mColumns) || (0 == mColumns)) {
+        mD.push_back(row);
+        mColumns = s;
+    } else if (s < mColumns) {  //在结尾补充
+        row->resize(mColumns);
+        mD.push_back(row);
+    } else {  // s>mColumns
         if (getMode() == ExpandMode) {
-            m_d.push_back(row);
+            mD.push_back(row);
             fixSize();
         } else {
             //固定模式的插入
-            row->resize(m_columns);
-            m_d.push_back(row);
+            row->resize(mColumns);
+            mD.push_back(row);
         }
     }
 }
@@ -535,7 +457,7 @@ void DARowTable< T >::appendColumn(Ite1 b, Ite2 e)
             row(i)->push_back(T());
         }
     }
-    ++m_columns;
+    ++mColumns;
 }
 
 template< typename T >
@@ -550,7 +472,7 @@ void DARowTable< T >::appendColumn(std::initializer_list< T > args)
             row(i)->push_back(T());
         }
     }
-    ++m_columns;
+    ++mColumns;
 }
 
 template< typename T >
@@ -591,26 +513,18 @@ int DARowTable< T >::nameToIndex(const QString& n) const
     return (-1);
 }
 
-/**
- * @brief 获取行引用
- * @param r
- * @return
- */
+// 获取行引用
 template< typename T >
 typename DARowTable< T >::SeriesPtr& DARowTable< T >::row(int r)
 {
-    return (m_d[ r ]);
+    return (mD[ r ]);
 }
 
-/**
- * @brief 获取行引用
- * @param r
- * @return
- */
+// 获取行引用
 template< typename T >
 const typename DARowTable< T >::SeriesPtr& DARowTable< T >::row(int r) const
 {
-    return (m_d[ r ]);
+    return (mD[ r ]);
 }
 
 template< typename T >
@@ -619,7 +533,7 @@ typename DARowTable< T >::SeriesPtr& DARowTable< T >::row(const QString& n)
     int r = nameToIndex(n);
 
     if ((r < 0) || (r >= rowCount())) {
-        return (m_nullseries);
+        return (mNullseries);
     }
     return (row(r));
 }
@@ -630,7 +544,7 @@ const typename DARowTable< T >::SeriesPtr& DARowTable< T >::row(const QString& n
     int r = nameToIndex(n);
 
     if ((r < 0) || (r >= rowCount())) {
-        return (m_nullseries);
+        return (mNullseries);
     }
     return (row(r));
 }
@@ -674,7 +588,7 @@ const typename DARowTable< T >::SeriesType& DARowTable< T >::operator[](const QS
 template< typename T >
 void DARowTable< T >::reserve(int size)
 {
-    for (const SeriesPtr& p : qAsConst(m_d)) {
+    for (const SeriesPtr& p : qAsConst(mD)) {
         p->reserve(size);
     }
 }
@@ -684,60 +598,60 @@ void DARowTable< T >::fixSize()
 {
     std::vector< int > ss;
 
-    for (const SeriesPtr& r : qAsConst(m_d)) {
+    for (const SeriesPtr& r : qAsConst(mD)) {
         ss.push_back(r->size());
     }
     int maxsize = *(std::max_element(ss.begin(), ss.end()));
 
-    for (SeriesPtr& r : m_d) {
+    for (SeriesPtr& r : mD) {
         if (r->size() < maxsize) {
             r->resize(maxsize);
         }
     }
-    m_columns = maxsize;
+    mColumns = maxsize;
 }
 
 template< typename T >
 int DARowTable< T >::rowCount() const
 {
-    return (m_d.size());
+    return (mD.size());
 }
 
 template< typename T >
 int DARowTable< T >::columnCount() const
 {
-    return (m_columns);
+    return (mColumns);
 }
 
 template< typename T >
 void DARowTable< T >::setMode(typename DARowTable< T >::Mode m)
 {
-    m_mode = m;
+    mMode = m;
 }
 
 template< typename T >
 typename DARowTable< T >::Mode DARowTable< T >::getMode() const
 {
-    return (m_mode);
+    return (mMode);
 }
 
 template< typename T >
 void DARowTable< T >::clear()
 {
-    m_d.clear();
-    m_columns = 0;
+    mD.clear();
+    mColumns = 0;
 }
 
 template< typename T >
 void DARowTable< T >::setName(const QString& n)
 {
-    m_d.setName(n);
+    mD.setName(n);
 }
 
 template< typename T >
 QString DARowTable< T >::getName() const
 {
-    return (m_d.getName());
+    return (mD.getName());
 }
 
 template< typename T >
@@ -745,7 +659,7 @@ QStringList DARowTable< T >::rowNames() const
 {
     QStringList r;
 
-    for (const SeriesPtr& p : qAsConst(m_d)) {
+    for (const SeriesPtr& p : qAsConst(mD)) {
         r.append(p->getName());
     }
     return (r);
@@ -834,13 +748,13 @@ QPair< T, int > DARowTable< T >::upperBound(const T& v, int r) const
 template< typename T >
 void DARowTable< T >::setCaseSensitivity(typename DARowTable< T >::CaseSensitivity cs)
 {
-    m_caseSensitivity = cs;
+    mCaseSensitivity = cs;
 }
 
 template< typename T >
 bool DARowTable< T >::isCaseSensitivity() const
 {
-    return (m_caseSensitivity == CaseSensitive);
+    return (mCaseSensitivity == CaseSensitive);
 }
 
 template< typename T >
@@ -856,9 +770,9 @@ void DARowTable< T >::remove(const QString& name)
 template< typename T >
 void DARowTable< T >::remove(int rindex)
 {
-    m_d.remove(rindex);
-    if (0 == m_d.size()) {
-        m_columns = 0;
+    mD.remove(rindex);
+    if (0 == mD.size()) {
+        mColumns = 0;
     }
 }
 }  // end DA

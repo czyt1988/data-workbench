@@ -36,7 +36,7 @@ public:
     // 获取单例的 weak_ptr（供 DAMessageLogSink 安全访问）
     static std::weak_ptr< DAMessageLogQueue > weakInstance();
 
-    ~DAMessageLogQueue();
+    ~DAMessageLogQueue() override;
 
     // 推入一条消息（由 DAMessageLogSink 在后台线程调用）
     void push(const DAMessageLogItem& item);

@@ -38,14 +38,14 @@ public:
     DASignalBlockers& operator=(DASignalBlockers&&) = default;
 
 private:
-    std::vector< QSignalBlocker > blockers;  // 直接在栈上存储 QSignalBlocker
+    std::vector< QSignalBlocker > mBlockers;  // 直接在栈上存储 QSignalBlocker
 
-    // 辅助函数：递归添加 QObject 到 blockers
+    // 辅助函数：递归添加 QObject 到 mBlockers
     template< typename First, typename... Rest >
     void addObjects(First* first, Rest*... rest)
     {
         if (first) {
-            blockers.emplace_back(*first);  // 在栈上创建 QSignalBlocker
+            mBlockers.emplace_back(*first);  // 在栈上创建 QSignalBlocker
         }
         if constexpr (sizeof...(rest) > 0) {  // 如果还有剩余参数
             addObjects(rest...);

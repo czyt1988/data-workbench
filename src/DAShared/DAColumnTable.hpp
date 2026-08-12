@@ -47,21 +47,12 @@ public:
     void reserve(int size);
     //判断是否存在field
     bool haveFieldid(const QString& field) const;
-    /**
-     * @brief 表的行数
-     * @return
-     */
+    // 表的行数
     int rowCount() const;
 
-    /**
-     * @brief 表的列数
-     * @return
-     */
+    // 表的列数
     int columnCount() const;
-    /**
-     * @brief 填充元素
-     * @param v
-     */
+    // 填充元素
     void fill(const T& v);
     const T& at(int r, int c) const;
     T& at(int r, int c);
@@ -87,56 +78,37 @@ public:
     SeriesType& operator[](const QString& colname);
     const SeriesType& operator[](const QString& colname) const;
 
-    /**
-     * @brief 以最大列数进行列数修正，保证所有行同列
-     */
+    // 以最大列数进行列数修正，保证所有行同列
     void fixSize();
-    /**
-     * @brief 设置表格的模式
-     * @param m 模式 @ref Mode
-     */
+    // 设置表格的模式
     void setMode(Mode m);
     Mode getMode() const;
 
-    /**
-     * @brief 清空
-     */
+    // 清空
     void clear();
 
     void setName(const QString& n);
     QString getName() const;
-    /**
-     * @brief colNames
-     * @return
-     */
+    // colNames
     QStringList columnNames() const;
-    /**
-     * @brief 设置行名，如果是个空的表会生成一个默认行
-     * @param ns
-     */
+    // 设置行名，如果是个空的表会生成一个默认行
     void setColumnNames(const QStringList& ns);
 
-    /**
-     * @brief 设置名字查询时是否对大小写敏感
-     * @param cs
-     */
+    // 设置名字查询时是否对大小写敏感
     void setCaseSensitivity(CaseSensitivity cs);
 
-    /**
-     * @brief 判断是否大小写敏感
-     * @return
-     */
+    // 判断是否大小写敏感
     bool isCaseSensitivity() const;
     //移除
     void remove(const QString& name);
     void remove(int colIndex);
 
 private:
-    DAVector< SeriesPtr > m_d;
-    size_t m_rows;  ///< 记录行数
-    Mode m_mode;
-    SeriesPtr m_nullseries;
-    CaseSensitivity m_caseSensitivity;
+    DAVector< SeriesPtr > mD;
+    size_t mRows;  ///< 记录行数
+    Mode mMode;
+    SeriesPtr mNullseries;
+    CaseSensitivity mCaseSensitivity;
 };
 
 //==============================================================
@@ -168,43 +140,39 @@ typename DAColumnTable< T >::TablePtr DAColumnTable< T >::makeTable()
 }
 
 template< typename T >
-DAColumnTable< T >::DAColumnTable() : m_rows(0), m_mode(FixedMode), m_caseSensitivity(CaseInsensitive)
+DAColumnTable< T >::DAColumnTable() : mRows(0), mMode(FixedMode), mCaseSensitivity(CaseInsensitive)
 {
 }
 
 template< typename T >
-DAColumnTable< T >::DAColumnTable(int rows, int columns) : m_mode(FixedMode), m_caseSensitivity(CaseInsensitive)
+DAColumnTable< T >::DAColumnTable(int rows, int columns) : mMode(FixedMode), mCaseSensitivity(CaseInsensitive)
 {
-    m_d.clear();
-    m_d.reserve(columns);
+    mD.clear();
+    mD.reserve(columns);
     for (int i = 0; i < columns; ++i) {
-        m_d.push_back(SeriesType(rows));
+        mD.push_back(SeriesType(rows));
     }
-    m_rows = rows;
+    mRows = rows;
 }
 
-/**
- * @brief 改变table 的大小
- * @param r
- * @param c
- */
+// 改变table 的大小
 template< typename T >
 void DAColumnTable< T >::resize(int r, int c)
 {
-    m_d.resize(c);
-    for (SeriesPtr& col : m_d) {
+    mD.resize(c);
+    for (SeriesPtr& col : mD) {
         if (col == nullptr) {
             col = makeSeries();
         }
         col->resize(r);
     }
-    m_rows = r;
+    mRows = r;
 }
 
 template< typename T >
 void DAColumnTable< T >::reserve(int size)
 {
-    for (const SeriesPtr& p : qAsConst(m_d)) {
+    for (const SeriesPtr& p : qAsConst(mD)) {
         p->reserve(size);
     }
 }
@@ -213,7 +181,7 @@ template< typename T >
 bool DAColumnTable< T >::haveFieldid(const QString& field) const
 {
     Qt::CaseSensitivity cs = isCaseSensitivity() ? Qt::CaseSensitive : Qt::CaseInsensitive;
-    for (const SeriesPtr& col : qAsConst(m_d)) {
+    for (const SeriesPtr& col : qAsConst(mD)) {
         if (col == nullptr) {
             continue;
         }
@@ -227,19 +195,19 @@ bool DAColumnTable< T >::haveFieldid(const QString& field) const
 template< typename T >
 int DAColumnTable< T >::rowCount() const
 {
-    return m_rows;
+    return mRows;
 }
 
 template< typename T >
 int DAColumnTable< T >::columnCount() const
 {
-    return (m_d.size());
+    return (mD.size());
 }
 
 template< typename T >
 void DAColumnTable< T >::fill(const T& v)
 {
-    for (const SeriesPtr& c : qAsConst(m_d)) {
+    for (const SeriesPtr& c : qAsConst(mD)) {
         c->fill(v);
     }
 }
@@ -247,25 +215,20 @@ void DAColumnTable< T >::fill(const T& v)
 template< typename T >
 const T& DAColumnTable< T >::at(int r, int c) const
 {
-    return (m_d.at(c)->at(r));
+    return (mD.at(c)->at(r));
 }
 
 template< typename T >
 T& DAColumnTable< T >::at(int r, int c)
 {
-    return (m_d[ c ]->operator[](r));
+    return (mD[ c ]->operator[](r));
 }
 
-/**
- * @brief 获取单元格
- * @param r
- * @param c
- * @return 如果没有或超范围，返回默认构造
- */
+// 获取单元格
 template< typename T >
 T DAColumnTable< T >::cell(int r, int c) const
 {
-    if (c < m_d.size()) {
+    if (c < mD.size()) {
         const SeriesPtr& cc = column(c);
         if (r < cc->size()) {
             return (cc->at(r));
@@ -287,25 +250,17 @@ int DAColumnTable< T >::nameToIndex(const QString& n) const
     }
     return (-1);
 }
-/**
- * @brief 获取列引用
- * @param r
- * @return
- */
+// 获取列引用
 template< typename T >
 typename DAColumnTable< T >::SeriesPtr& DAColumnTable< T >::column(int c)
 {
-    return (m_d[ c ]);
+    return (mD[ c ]);
 }
-/**
- * @brief 获取列引用
- * @param r
- * @return
- */
+// 获取列引用
 template< typename T >
 const typename DAColumnTable< T >::SeriesPtr& DAColumnTable< T >::column(int c) const
 {
-    return (m_d[ c ]);
+    return (mD[ c ]);
 }
 
 template< typename T >
@@ -314,7 +269,7 @@ typename DAColumnTable< T >::SeriesPtr& DAColumnTable< T >::column(const QString
     int c = nameToIndex(n);
 
     if ((c < 0) || (c >= columnCount())) {
-        return (m_nullseries);
+        return (mNullseries);
     }
     return (column(c));
 }
@@ -325,7 +280,7 @@ const typename DAColumnTable< T >::SeriesPtr& DAColumnTable< T >::column(const Q
     int c = nameToIndex(n);
 
     if ((c < 0) || (c >= columnCount())) {
-        return (m_nullseries);
+        return (mNullseries);
     }
     return (column(c));
 }
@@ -333,7 +288,7 @@ const typename DAColumnTable< T >::SeriesPtr& DAColumnTable< T >::column(const Q
 template< typename T >
 typename DAColumnTable< T >::SeriesPtr DAColumnTable< T >::appendColumn(const QString& name)
 {
-    return appendColumn(name, m_rows);
+    return appendColumn(name, mRows);
 }
 
 template< typename T >
@@ -350,20 +305,20 @@ void DAColumnTable< T >::appendColumn(DAColumnTable< T >::SeriesPtr col)
 {
     size_t s = col->size();
 
-    if ((s == m_rows) || (0 == m_rows)) {
-        m_d.push_back(col);
-        m_rows = s;
-    } else if (s < m_rows) {  //在结尾补充
-        col->resize(m_rows);
-        m_d.push_back(col);
+    if ((s == mRows) || (0 == mRows)) {
+        mD.push_back(col);
+        mRows = s;
+    } else if (s < mRows) {  //在结尾补充
+        col->resize(mRows);
+        mD.push_back(col);
     } else {  // s>m_columns
         if (getMode() == ExpandMode) {
-            m_d.push_back(col);
+            mD.push_back(col);
             fixSize();
         } else {
             //固定模式的插入
-            col->resize(m_rows);
-            m_d.push_back(col);
+            col->resize(mRows);
+            mD.push_back(col);
         }
     }
 }
@@ -392,7 +347,7 @@ void DAColumnTable< T >::appendRow(Ite1 b, Ite2 e)
             column(i)->push_back(T());
         }
     }
-    ++m_rows;
+    ++mRows;
 }
 
 template< typename T >
@@ -407,7 +362,7 @@ void DAColumnTable< T >::appendRow(std::initializer_list< T > rowDatas)
             column(i)->push_back(T());
         }
     }
-    ++m_rows;
+    ++mRows;
 }
 
 template< typename T >
@@ -449,50 +404,50 @@ template< typename T >
 void DAColumnTable< T >::fixSize()
 {
     std::vector< int > ss;
-    ss.reserve(m_d.size());
+    ss.reserve(mD.size());
 
-    for (const SeriesPtr& c : qAsConst(m_d)) {
+    for (const SeriesPtr& c : qAsConst(mD)) {
         ss.push_back(c->size());
     }
     int maxsize = *(std::max_element(ss.begin(), ss.end()));
 
-    for (const SeriesPtr& c : qAsConst(m_d)) {
+    for (const SeriesPtr& c : qAsConst(mD)) {
         if (c->size() < maxsize) {
             c->resize(maxsize);
         }
     }
-    m_rows = maxsize;
+    mRows = maxsize;
 }
 
 template< typename T >
 void DAColumnTable< T >::setMode(DAColumnTable::Mode m)
 {
-    m_mode = m;
+    mMode = m;
 }
 
 template< typename T >
 typename DAColumnTable< T >::Mode DAColumnTable< T >::getMode() const
 {
-    return (m_mode);
+    return (mMode);
 }
 
 template< typename T >
 void DAColumnTable< T >::clear()
 {
-    m_d.clear();
-    m_rows = 0;
+    mD.clear();
+    mRows = 0;
 }
 
 template< typename T >
 void DAColumnTable< T >::setName(const QString& n)
 {
-    m_d.setName(n);
+    mD.setName(n);
 }
 
 template< typename T >
 QString DAColumnTable< T >::getName() const
 {
-    return (m_d.getName());
+    return (mD.getName());
 }
 
 template< typename T >
@@ -500,7 +455,7 @@ QStringList DAColumnTable< T >::columnNames() const
 {
     QStringList r;
 
-    for (const SeriesPtr& p : qAsConst(m_d)) {
+    for (const SeriesPtr& p : qAsConst(mD)) {
         r.append(p->getName());
     }
     return (r);
@@ -518,13 +473,13 @@ void DAColumnTable< T >::setColumnNames(const QStringList& ns)
 template< typename T >
 void DAColumnTable< T >::setCaseSensitivity(DAColumnTable< T >::CaseSensitivity cs)
 {
-    m_caseSensitivity = cs;
+    mCaseSensitivity = cs;
 }
 
 template< typename T >
 bool DAColumnTable< T >::isCaseSensitivity() const
 {
-    return (m_caseSensitivity == CaseSensitive);
+    return (mCaseSensitivity == CaseSensitive);
 }
 
 template< typename T >
@@ -540,9 +495,9 @@ void DAColumnTable< T >::remove(const QString& name)
 template< typename T >
 void DAColumnTable< T >::remove(int colIndex)
 {
-    m_d.remove(colIndex);
-    if (0 == m_d.size()) {
-        m_rows = 0;
+    mD.remove(colIndex);
+    if (0 == mD.size()) {
+        mRows = 0;
     }
 }
 

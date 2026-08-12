@@ -60,216 +60,243 @@ public:
     const_iterator  end() const;
 
 private:
-    vector_type        m_inner_list;
-    mutable mutex_type m_mutex;
+    vector_type        mInnerList;
+    mutable mutex_type mMutex;
 };
 
+// 默认构造函数
 template< typename T >
 da_concurrent_vector< T >::da_concurrent_vector()
 {
 }
 
+// 指定大小的构造函数
 template< typename T >
-da_concurrent_vector< T >::da_concurrent_vector(da_concurrent_vector::size_type count) : m_inner_list(count)
+da_concurrent_vector< T >::da_concurrent_vector(da_concurrent_vector::size_type count) : mInnerList(count)
 {
 }
 
+// 初始化列表构造函数
 template< typename T >
-da_concurrent_vector< T >::da_concurrent_vector(std::initializer_list< T > init) : m_inner_list(init)
+da_concurrent_vector< T >::da_concurrent_vector(std::initializer_list< T > init) : mInnerList(init)
 {
 }
 
+// 析构函数
 template< typename T >
 da_concurrent_vector< T >::~da_concurrent_vector() = default;
 
+// 获取首元素
 template< typename T >
 da_concurrent_vector< T >::reference da_concurrent_vector< T >::front()
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.front());
+    return (mInnerList.front());
 }
 
+// 获取首元素（常量版本）
 template< typename T >
 da_concurrent_vector< T >::const_reference da_concurrent_vector< T >::front() const
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.front());
+    return (mInnerList.front());
 }
 
+// 获取尾元素
 template< typename T >
 da_concurrent_vector< T >::reference da_concurrent_vector< T >::back()
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.back());
+    return (mInnerList.back());
 }
 
+// 获取尾元素（常量版本）
 template< typename T >
 da_concurrent_vector< T >::const_reference da_concurrent_vector< T >::back() const
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.back());
+    return (mInnerList.back());
 }
 
+// 判断是否为空
 template< typename T >
 bool da_concurrent_vector< T >::empty() const
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.empty());
+    return (mInnerList.empty());
 }
 
+// 获取元素数量
 template< typename T >
 da_concurrent_vector< T >::size_type da_concurrent_vector< T >::size() const
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.size());
+    return (mInnerList.size());
 }
 
+// 清空容器
 template< typename T >
 void da_concurrent_vector< T >::clear()
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    m_inner_list.clear();
+    mInnerList.clear();
 }
 
+// 在指定位置插入元素
 template< typename T >
 da_concurrent_vector< T >::iterator da_concurrent_vector< T >::insert(da_concurrent_vector< T >::iterator pos, const T& value)
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.insert(pos, value));
+    return (mInnerList.insert(pos, value));
 }
 
+// 在指定位置插入元素（常量迭代器版本）
 template< typename T >
 da_concurrent_vector< T >::iterator da_concurrent_vector< T >::insert(da_concurrent_vector< T >::const_iterator pos, const T& value)
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.insert(pos, value));
+    return (mInnerList.insert(pos, value));
 }
 
+// 在指定位置插入多个元素
 template< typename T >
 void da_concurrent_vector< T >::insert(da_concurrent_vector< T >::iterator pos, da_concurrent_vector< T >::size_type count, const T& value)
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    m_inner_list.insert(pos, count, value);
+    mInnerList.insert(pos, count, value);
 }
 
+// 在指定位置插入多个元素（常量迭代器版本）
 template< typename T >
 da_concurrent_vector< T >::iterator da_concurrent_vector< T >::insert(da_concurrent_vector< T >::const_iterator pos,
                                                                       da_concurrent_vector< T >::size_type      count,
                                                                       const T&                                  value)
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.insert(pos, count, value));
+    return (mInnerList.insert(pos, count, value));
 }
 
+// 在末尾添加元素
 template< typename T >
 void da_concurrent_vector< T >::push_back(const T& value)
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    m_inner_list.push_back(value);
+    mInnerList.push_back(value);
 }
 
+// 在头部添加元素
 template< typename T >
 void da_concurrent_vector< T >::push_front(const T& value)
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    m_inner_list.insert(m_inner_list.begin(), value);
+    mInnerList.insert(mInnerList.begin(), value);
 }
 
+// 移除首元素
 template< typename T >
 void da_concurrent_vector< T >::pop_front()
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    if (!m_inner_list.empty()) {
-        m_inner_list.erase(m_inner_list.begin());
+    if (!mInnerList.empty()) {
+        mInnerList.erase(mInnerList.begin());
     }
 }
 
+// 移除尾元素
 template< typename T >
 void da_concurrent_vector< T >::pop_back()
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    m_inner_list.pop_back();
+    mInnerList.pop_back();
 }
 
+// 删除指定位置的元素
 template< typename T >
 da_concurrent_vector< T >::iterator da_concurrent_vector< T >::erase(da_concurrent_vector< T >::iterator pos)
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.erase(pos));
+    return (mInnerList.erase(pos));
 }
 
+// 删除指定位置的元素（常量迭代器版本）
 template< typename T >
 da_concurrent_vector< T >::iterator da_concurrent_vector< T >::erase(da_concurrent_vector< T >::const_iterator pos)
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.erase(pos));
+    return (mInnerList.erase(pos));
 }
 
+// 删除范围内的元素
 template< typename T >
 da_concurrent_vector< T >::iterator da_concurrent_vector< T >::erase(da_concurrent_vector< T >::iterator first,
                                                                      da_concurrent_vector< T >::iterator last)
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.erase(first, last));
+    return (mInnerList.erase(first, last));
 }
 
+// 删除范围内的元素（常量迭代器版本）
 template< typename T >
 da_concurrent_vector< T >::iterator da_concurrent_vector< T >::erase(da_concurrent_vector< T >::const_iterator first,
                                                                      da_concurrent_vector< T >::const_iterator last)
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.erase(first, last));
+    return (mInnerList.erase(first, last));
 }
 
+// 获取起始迭代器
 template< typename T >
 da_concurrent_vector< T >::iterator da_concurrent_vector< T >::begin()
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.begin());
+    return (mInnerList.begin());
 }
 
+// 获取起始迭代器（常量版本）
 template< typename T >
 da_concurrent_vector< T >::const_iterator da_concurrent_vector< T >::begin() const
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.begin());
+    return (mInnerList.begin());
 }
 
+// 获取结束迭代器
 template< typename T >
 da_concurrent_vector< T >::iterator da_concurrent_vector< T >::end()
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.end());
+    return (mInnerList.end());
 }
 
+// 获取结束迭代器（常量版本）
 template< typename T >
 da_concurrent_vector< T >::const_iterator da_concurrent_vector< T >::end() const
 {
-    unique_lock_type lg(m_mutex);
+    unique_lock_type lg(mMutex);
 
-    return (m_inner_list.end());
+    return (mInnerList.end());
 }
 
-#endif  // gree_concurrent_vector_HPP
+#endif  // DA_CONCURRENT_VECTOR_HPP

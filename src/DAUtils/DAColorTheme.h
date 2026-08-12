@@ -1,4 +1,4 @@
-﻿#ifndef DACOLORTHEME_H
+#ifndef DACOLORTHEME_H
 #define DACOLORTHEME_H
 #include "DAGenericIndexedContainer.hpp"
 #include <initializer_list>
@@ -65,24 +65,13 @@ public:
 
 public:
     DAColorTheme();
-    /**
-     * @brief 不要用DAColorTheme mColorTheme { DAColorTheme::ColorTheme_Archambault }这样的初始化，会被当作std::initializer_list< QColor >捕获
-     * @param th
-     */
+    // 不要用DAColorTheme mColorTheme { DAColorTheme::ColorTheme_Archambault }这样的初始化，会被当作std::initializer_list< QColor >捕获
     DAColorTheme(ColorThemeStyle th);
     DAColorTheme(const std::initializer_list< QColor >& v);
     ~DAColorTheme();
-    /**
-     * @brief 创建一个color theme
-     * @param t
-     * @return
-     */
+    // 创建一个color theme
     static DAColorTheme create(ColorThemeStyle t);
-    /**
-     * @brief 重载等于操作符，可以直接通过主题赋值
-     * @param th
-     * @return
-     */
+    // 重载等于操作符，可以直接通过主题赋值
     DAColorTheme& operator=(const ColorThemeStyle& th);
     // 获取下一个元素(索引后移)
     QColor next();

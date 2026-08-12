@@ -1,4 +1,4 @@
-﻿#ifndef DAGENERICINDEXEDCONTAINER_H
+#ifndef DAGENERICINDEXEDCONTAINER_H
 #define DAGENERICINDEXEDCONTAINER_H
 
 #include <type_traits>
@@ -143,42 +143,17 @@ public:
     /// @name 构造与初始化
     /// @{
 
-    /**
-     * @brief 默认构造空容器
-     * @note 初始索引为0，但空容器isValidIndex()返回false
-     */
+    // 默认构造空容器
     DAGenericIndexedContainer() = default;
 
-    /**
-     * @brief 完美转发构造底层容器
-     * @tparam Args 构造参数类型
-     * @param args 传递给底层容器的构造参数
-     *
-     * 示例：
-     * @code
-     * // 构造预留10个int的vector
-     * DAGenericIndexedContainer<std::vector<int>> vec(10);
-     *
-     * // 构造包含3个元素的QList
-     * DAGenericIndexedContainer<QList<double>>(3, 1.23);
-     * @endcode
-     */
+    // 完美转发构造底层容器
     template< typename... Args >
-    explicit DAGenericIndexedContainer(Args&&... args) : m_container(std::forward< Args >(args)...)
+    explicit DAGenericIndexedContainer(Args&&... args) : mContainer(std::forward< Args >(args)...)
     {
     }
 
-    /**
-     * @brief 初始化列表构造
-     * @param init 初始化元素列表
-     *
-     * 示例：
-     * @code
-     * DAGenericIndexedContainer<std::vector<char>> chars{'a', 'b', 'c'};
-     * assert(chars.size() == 3);
-     * @endcode
-     */
-    DAGenericIndexedContainer(std::initializer_list< value_type > init) : m_container(init)
+    // 初始化列表构造
+    DAGenericIndexedContainer(std::initializer_list< value_type > init) : mContainer(init)
     {
     }
     /// @}
@@ -186,124 +161,60 @@ public:
     /// @name 索引导航
     /// @{
 
-    /**
-     * @brief 移动后获取下一个元素
-     * @return 新位置的元素
-     * @warning 容器为空时行为未定义
-     */
+    // 移动后获取下一个元素
     value_type next()
     {
         moveToNext();
         return current();
     }
 
-    /**
-     * @brief 移动到下一个位置(循环)
-     * @note 空容器调用无效果
-     * @post 索引值可能回绕到0
-     *
-     * 示例：
-     * @code
-     * DAGenericIndexedContainer<std::array<int,3>> arr{1,2,3};
-     * arr.setCurrentIndex(2); // 索引2
-     * arr.moveToNext();       // 索引0
-     * @endcode
-     */
+    // 移动到下一个位置(循环)
     void moveToNext()
     {
         if (empty())
             return;
-        m_index = (m_index + 1) % static_cast< IndexType >(size());
+        mIndex = (mIndex + 1) % static_cast< IndexType >(size());
     }
 
-    /**
-     * @brief 移动后获取上一个元素
-     * @return 新位置的元素
-     * @warning 容器为空时行为未定义
-     */
+    // 移动后获取上一个元素
     value_type previous()
     {
         moveToPrevious();
         return current();
     }
 
-    /**
-     * @brief 移动到上一个位置(循环)
-     * @note 空容器调用无效果
-     * @post 索引值可能回绕到size()-1
-     *
-     * 示例：
-     * @code
-     * DAGenericIndexedContainer<QVector<QString>> vec{"First", "Second"};
-     * vec.moveToPrevious(); // 从0回绕到1
-     * assert(vec.current() == "Second");
-     * @endcode
-     */
+    // 移动到上一个位置(循环)
     void moveToPrevious()
     {
         if (empty())
             return;
-        m_index = (m_index == 0) ? static_cast< IndexType >(size() - 1) : m_index - 1;
+        mIndex = (mIndex == 0) ? static_cast< IndexType >(size() - 1) : mIndex - 1;
     }
 
-    /**
-     * @brief 获取当前元素(非常量)
-     * @return 当前索引处元素的引用
-     * @pre isValidIndex() == true
-     * @warning 无效索引调用导致未定义行为
-     *
-     * 示例：
-     * @code
-     * auto& curr = container.current(); // 获取可修改引用
-     * curr.setValue(42); // 修改当前元素
-     * @endcode
-     */
+    // 获取当前元素(非常量)
     reference current()
     {
-        return m_container[ static_cast< size_type >(m_index) ];
+        return mContainer[ static_cast< size_type >(mIndex) ];
     }
 
-    /**
-     * @brief 获取当前元素(常量)
-     * @return 当前索引处元素的常量引用
-     * @sa current()
-     */
+    // 获取当前元素(常量)
     const_reference current() const
     {
-        return m_container[ static_cast< size_type >(m_index) ];
+        return mContainer[ static_cast< size_type >(mIndex) ];
     }
     /// @}
 
     /// @name 运算符重载
     /// @{
 
-    /**
-     * @brief 前缀递增(++obj)
-     * @return 递增后的容器引用
-     * @post 索引前进一位(可能回绕)
-     *
-     * 示例：
-     * @code
-     * auto& c = ++container; // 立即使用新值
-     * @endcode
-     */
+    // 前缀递增(++obj)
     value_type operator++()
     {
         moveToNext();
         return current();
     }
 
-    /**
-     * @brief 后缀递增(obj++)
-     * @return 递增前的元素副本
-     * @post 索引前进一位(可能回绕)
-     *
-     * 示例：
-     * @code
-     * auto old = container++; // 保存旧值
-     * process(old);           // 处理旧值
-     * @endcode
-     */
+    // 后缀递增(obj++)
     value_type operator++(int)
     {
         value_type tmp = current();
@@ -311,33 +222,14 @@ public:
         return tmp;
     }
 
-    /**
-     * @brief 前缀递减(--obj)
-     * @return 递减后的容器引用
-     * @post 索引后退一位(可能回绕)
-     *
-     * 示例：
-     * @code
-     * auto c = --container; // 立即使用新值
-     * @endcode
-     */
+    // 前缀递减(--obj)
     value_type operator--()
     {
         moveToPrevious();
         return current();
     }
 
-    /**
-     * @brief 后缀递减(obj--)
-     * @return 递减前的元素副本
-     * @post 索引后退一位(可能回绕)
-     *
-     * 示例：
-     * @code
-     * auto old = container--; // 保存旧值
-     * process(old);           // 处理旧值
-     * @endcode
-     */
+    // 后缀递减(obj--)
     value_type operator--(int)
     {
         value_type tmp = current();
@@ -349,163 +241,94 @@ public:
     /// @name 容器访问
     /// @{
 
-    /**
-     * @brief 检查容器是否为空
-     * @return true 当且仅当size() == 0
-     * @note 复杂度O(1)
-     */
+    // 检查容器是否为空
     bool empty() const noexcept
     {
-        return m_container.empty();
+        return mContainer.empty();
     }
 
-    /**
-     * @brief 获取元素数量
-     * @return 容器当前存储的元素数量
-     */
+    // 获取元素数量
     size_type size() const noexcept
     {
-        return m_container.size();
+        return mContainer.size();
     }
 
-    /**
-     * @brief 清空容器并重置索引
-     * @post size() == 0 && currentIndex() == 0
-     */
+    // 清空容器并重置索引
     void clear()
     {
-        m_container.clear();
-        m_index = 0;
+        mContainer.clear();
+        mIndex = 0;
     }
 
-    /**
-     * @brief 向容器末尾原位构造元素
-     * @tparam Args 构造参数类型
-     * @param args 元素构造参数
-     * @note 要求底层容器实现emplace_back()
-     *
-     * 示例：
-     * @code
-     * container.emplace_back(1, "test"); // 构造MyClass(1, "test")
-     * @endcode
-     */
+    // 向容器末尾原位构造元素
     template< typename... Args >
     void emplace_back(Args&&... args)
     {
-        m_container.emplace_back(std::forward< Args >(args)...);
+        mContainer.emplace_back(std::forward< Args >(args)...);
     }
     /// @}
 
     /// @name 首尾元素访问
     /// @{
 
-    /**
-     * @brief 获取首元素（非常量版本）
-     * @return 容器第一个元素的引用
-     * @warning 容器为空时调用将导致未定义行为
-     * @note 等效于 operator[](0)
-     *
-     * 示例：
-     * @code
-     * cont.first() = 5;  // 修改第一个元素
-     * @endcode
-     */
+    // 获取首元素（非常量版本）
     reference first()
     {
-        return m_container.front();
+        return mContainer.front();
     }
 
-    /**
-     * @brief 获取首元素（常量版本）
-     * @sa first()
-     */
+    // 获取首元素（常量版本）
     const_reference first() const
     {
-        return m_container.front();
+        return mContainer.front();
     }
 
-    /**
-     * @brief 获取尾元素（非常量版本）
-     * @return 容器最后一个元素的引用
-     * @warning 容器为空时调用将导致未定义行为
-     * @note 等效于 operator[](size()-1)
-     *
-     * 示例：
-     * @code
-     * cont.last() += 10;  // 修改最后一个元素
-     * @endcode
-     */
+    // 获取尾元素（非常量版本）
     reference last()
     {
-        return m_container.back();
+        return mContainer.back();
     }
 
-    /**
-     * @brief 获取尾元素（常量版本）
-     * @sa last()
-     */
+    // 获取尾元素（常量版本）
     const_reference last() const
     {
-        return m_container.back();
+        return mContainer.back();
     }
 
-    /**
-     * @brief 安全获取首元素（带边界检查）
-     * @return 容器第一个元素的引用
-     * @throw std::out_of_range 当容器为空时抛出
-     *
-     * 示例安全访问：
-     * @code
-     * try {
-     *     auto& val = cont.firstChecked();
-     * } catch (const std::out_of_range&) {
-     *     // 处理空容器
-     * }
-     * @endcode
-     */
+    // 安全获取首元素（带边界检查）
     reference firstChecked()
     {
         if (empty()) {
             throw std::out_of_range("Accessing first element of empty container");
         }
-        return m_container.front();
+        return mContainer.front();
     }
 
-    /**
-     * @brief 安全获取首元素（常量版本）
-     * @sa firstChecked()
-     */
+    // 安全获取首元素（常量版本）
     const_reference firstChecked() const
     {
         if (empty()) {
             throw std::out_of_range("Accessing first element of empty container");
         }
-        return m_container.front();
+        return mContainer.front();
     }
 
-    /**
-     * @brief 安全获取尾元素（带边界检查）
-     * @return 容器最后一个元素的引用
-     * @throw std::out_of_range 当容器为空时抛出
-     */
+    // 安全获取尾元素（带边界检查）
     reference lastChecked()
     {
         if (empty()) {
             throw std::out_of_range("Accessing last element of empty container");
         }
-        return m_container.back();
+        return mContainer.back();
     }
 
-    /**
-     * @brief 安全获取尾元素（常量版本）
-     * @sa lastChecked()
-     */
+    // 安全获取尾元素（常量版本）
     const_reference lastChecked() const
     {
         if (empty()) {
             throw std::out_of_range("Accessing last element of empty container");
         }
-        return m_container.back();
+        return mContainer.back();
     }
 
     /// @}
@@ -513,67 +336,34 @@ public:
     /// @name 索引控制
     /// @{
 
-    /**
-     * @brief 获取当前索引值
-     * @return 当前索引的数值
-     * @note 返回值可能超出有效范围，需配合isValidIndex()使用
-     */
+    // 获取当前索引值
     IndexType currentIndex() const noexcept
     {
-        return m_index;
+        return mIndex;
     }
 
-    /**
-     * @brief 设置当前索引
-     * @param index 新的索引值
-     * @note 不进行范围检查，设置后应调用isValidIndex()验证
-     *
-     * 示例：
-     * @code
-     * container.setCurrentIndex(5);
-     * if (container.isValidIndex()) {
-     *     // 安全操作
-     * }
-     * @endcode
-     */
+    // 设置当前索引
     void setCurrentIndex(IndexType index) noexcept
     {
-        m_index = index;
+        mIndex = index;
     }
 
-    /**
-     * @brief 检查当前索引是否有效
-     * @return true 当 0 <= index < size()
-     *
-     * 示例：
-     * @code
-     * while (container.isValidIndex()) {
-     *     process(container.current());
-     *     ++container;
-     * }
-     * @endcode
-     */
+    // 检查当前索引是否有效
     bool isValidIndex() const noexcept
     {
-        return m_index >= 0 && static_cast< size_type >(m_index) < size();
+        return mIndex >= 0 && static_cast< size_type >(mIndex) < size();
     }
 
-    /**
-     * @brief 检查是否是第一个索引
-     * @return 如果是第一个索引或容器为空返回true
-     */
+    // 检查是否是第一个索引
     bool isFirstIndex() const
     {
-        return m_index == 0 || m_container.empty();
+        return mIndex == 0 || mContainer.empty();
     }
 
-    /**
-     * @brief 检查是否是最后一个索引
-     * @return 如果是最后一个有效索引或容器为空返回true
-     */
+    // 检查是否是最后一个索引
     bool isLastIndex() const
     {
-        return (!m_container.empty()) && (m_index == m_container.size() - 1);
+        return (!mContainer.empty()) && (mIndex == mContainer.size() - 1);
     }
 
     /// @}
@@ -581,80 +371,46 @@ public:
     /// @name 容器赋值操作
     /// @{
 
-    /**
-     * @brief 拷贝赋值底层容器
-     * @param other 要拷贝的容器
-     * @return 当前对象的引用
-     * @note 赋值后会尝试保持当前索引有效性：
-     *       - 如果原索引在新容器范围内则保留
-     *       - 否则重置为0（若新容器非空）或保持0（空容器）
-     * @warning 若新容器为空，索引将标记为无效
-     *
-     * 示例1：缩小容器大小
-     * @code
-     * DAGenericIndexedContainer<std::vector<int>> cont({1,2,3,4}); // index=0
-     * cont.setCurrentIndex(3);
-     * std::vector<int> newData{5,6};
-     * cont = newData; // 新size=2，index=0（超出原3，重置）
-     * @endcode
-     *
-     * 示例2：扩大容器大小
-     * @code
-     * cont.setCurrentIndex(1);
-     * cont = std::vector<int>{1,2,3,4,5}; // 保持index=1
-     * @endcode
-     */
+    // 拷贝赋值底层容器
     DAGenericIndexedContainer& operator=(const Container& other)
     {
 
         // 拷贝前保存原索引
-        const size_type oldIndex = static_cast< size_type >(m_index);
+        const size_type oldIndex = static_cast< size_type >(mIndex);
 
         // 执行容器拷贝
-        m_container = other;
+        mContainer = other;
 
         // 调整索引
-        if (!m_container.empty()) {
+        if (!mContainer.empty()) {
             // 新容器非空时调整索引
-            if (oldIndex < m_container.size()) {
-                m_index = static_cast< IndexType >(oldIndex);
+            if (oldIndex < mContainer.size()) {
+                mIndex = static_cast< IndexType >(oldIndex);
             } else {
-                m_index = 0;
+                mIndex = 0;
             }
         } else {
             // 新容器为空时保持索引0（无效状态）
-            m_index = 0;
+            mIndex = 0;
         }
 
         return *this;
     }
 
-    /**
-     * @brief 移动赋值底层容器
-     * @param other 要移动的容器
-     * @return 当前对象的引用
-     * @note 行为与拷贝赋值一致，但更高效
-     * @warning 移动后源容器other状态未定义
-     *
-     * 示例：
-     * @code
-     * std::vector<int> data{1,2,3};
-     * cont = std::move(data); // data状态未定义
-     * @endcode
-     */
+    // 移动赋值底层容器
     DAGenericIndexedContainer& operator=(Container&& other) noexcept
     {
         // 移动前保存原索引
-        const size_type oldIndex = static_cast< size_type >(m_index);
+        const size_type oldIndex = static_cast< size_type >(mIndex);
 
         // 执行容器移动
-        m_container = std::move(other);
+        mContainer = std::move(other);
 
         // 调整索引（逻辑同拷贝版本）
-        if (!m_container.empty()) {
-            m_index = (oldIndex < m_container.size()) ? static_cast< IndexType >(oldIndex) : 0;
+        if (!mContainer.empty()) {
+            mIndex = (oldIndex < mContainer.size()) ? static_cast< IndexType >(oldIndex) : 0;
         } else {
-            m_index = 0;
+            mIndex = 0;
         }
         return *this;
     }
@@ -664,40 +420,26 @@ public:
     /// @name 容器内容替换
     /// @{
 
-    /**
-     * @brief 替换容器内容并智能调整索引
-     * @param newContainer 新容器
-     * @param policy 索引调整策略（默认为AutoReset）
-     *
-     * 策略选项：
-     * - AutoReset: 自动重置到0或保持有效索引（默认）
-     * - PreserveRaw: 保留原始索引值（可能无效）
-     * - ForceReset: 强制重置到0
-     *
-     * 示例：强制重置索引
-     * @code
-     * cont.replace(newData, ForceReset); // 无论原索引如何，强制置0
-     * @endcode
-     */
+    // 替换容器内容并智能调整索引
     void replace(Container newContainer, IndexPolicy policy = IndexPolicy::AutoReset)
     {
-        const size_type oldIndex = static_cast< size_type >(m_index);
+        const size_type oldIndex = static_cast< size_type >(mIndex);
 
-        m_container = std::move(newContainer);
+        mContainer = std::move(newContainer);
 
         switch (policy) {
         case IndexPolicy::AutoReset:
-            if (!m_container.empty()) {
-                m_index = (oldIndex < m_container.size()) ? static_cast< IndexType >(oldIndex) : 0;
+            if (!mContainer.empty()) {
+                mIndex = (oldIndex < mContainer.size()) ? static_cast< IndexType >(oldIndex) : 0;
             } else {
-                m_index = 0;
+                mIndex = 0;
             }
             break;
         case IndexPolicy::PreserveRaw:
             // 不调整，可能无效
             break;
         case IndexPolicy::ForceReset:
-            m_index = 0;
+            mIndex = 0;
             break;
         }
     }
@@ -706,39 +448,16 @@ public:
     /// @name 元素访问
     /// @{
 
-    /**
-     * @brief 下标访问操作符（非const版本）
-     * @param index 要访问的元素索引
-     * @return 对应元素的引用
-     * @warning 不进行边界检查，调用者需确保 0 <= index < size()
-     * @note 与当前索引无关，仅访问指定位置元素
-     *
-     * 示例：
-     * @code
-     * DAGenericIndexedContainer<std::vector<int>> cont{1,2,3};
-     * cont[1] = 5;       // 直接修改索引1处元素
-     * assert(cont[1] == 5);
-     * @endcode
-     *
-     * @warning 以下情况导致未定义行为：
-     * - index < 0
-     * - index >= size()
-     * - 容器为空时访问任意索引
-     */
+    // 下标访问操作符（非const版本）
     reference operator[](IndexType index)
     {
-        return m_container[ static_cast< size_type >(index) ];
+        return mContainer[ static_cast< size_type >(index) ];
     }
 
-    /**
-     * @brief 下标访问操作符（const版本）
-     * @param index 要访问的元素索引
-     * @return 对应元素的常量引用
-     * @sa operator[](IndexType)
-     */
+    // 下标访问操作符（const版本）
     const_reference operator[](IndexType index) const
     {
-        return m_container[ static_cast< size_type >(index) ];
+        return mContainer[ static_cast< size_type >(index) ];
     }
 
     /// @}
@@ -746,153 +465,98 @@ public:
     /// @name 安全访问
     /// @{
 
-    /**
-     * @brief 带边界检查的元素访问
-     * @param index 要访问的索引
-     * @return 对应元素的引用
-     * @throw std::out_of_range 当 index 超出 [0, size()) 范围
-     *
-     * 示例：
-     * @code
-     * try {
-     *     int val = cont.at(10);
-     * } catch (const std::out_of_range& e) {
-     *     // 处理越界
-     * }
-     * @endcode
-     */
+    // 带边界检查的元素访问
     reference at(IndexType index)
     {
         const size_type idx = static_cast< size_type >(index);
         if (idx >= size()) {
             throw std::out_of_range("Index out of range");
         }
-        return m_container[ idx ];
+        return mContainer[ idx ];
     }
 
-    /**
-     * @brief 带边界检查的常量元素访问
-     * @sa at(IndexType)
-     */
+    // 带边界检查的常量元素访问
     const_reference at(IndexType index) const
     {
         const size_type idx = static_cast< size_type >(index);
         if (idx >= size()) {
             throw std::out_of_range("Index out of range");
         }
-        return m_container[ idx ];
+        return mContainer[ idx ];
     }
     /// @}
 
     /// @name 迭代器操作
     /// @{
-    /**
-     * @brief 获取指向容器首元素的迭代器
-     * @return 起始迭代器
-     *
-     * 示例遍历所有元素：
-     * @code
-     * for (auto it = cont.begin(); it != cont.end(); ++it) {
-     *     process(*it);
-     * }
-     * @endcode
-     */
+    // 获取指向容器首元素的迭代器
     iterator begin() noexcept
     {
-        return m_container.begin();
+        return mContainer.begin();
     }
 
-    /**
-     * @brief 获取指向容器末尾的迭代器
-     * @return 结束迭代器
-     */
+    // 获取指向容器末尾的迭代器
     iterator end() noexcept
     {
-        return m_container.end();
+        return mContainer.end();
     }
 
-    /**
-     * @brief 获取常量起始迭代器
-     * @sa begin()
-     */
+    // 获取常量起始迭代器
     const_iterator begin() const noexcept
     {
-        return m_container.begin();
+        return mContainer.begin();
     }
 
-    /**
-     * @brief 获取常量结束迭代器
-     * @sa end()
-     */
+    // 获取常量结束迭代器
     const_iterator end() const noexcept
     {
-        return m_container.end();
+        return mContainer.end();
     }
 
-    /**
-     * @brief 获取常量起始迭代器（C++11风格）
-     */
+    // 获取常量起始迭代器（C++11风格）
     const_iterator cbegin() const noexcept
     {
-        return m_container.cbegin();
+        return mContainer.cbegin();
     }
 
-    /**
-     * @brief 获取常量结束迭代器（C++11风格）
-     */
+    // 获取常量结束迭代器（C++11风格）
     const_iterator cend() const noexcept
     {
-        return m_container.cend();
+        return mContainer.cend();
     }
 
-    /**
-     * @brief 获取反向起始迭代器
-     *
-     * 示例反向遍历：
-     * @code
-     * for (auto rit = cont.rbegin(); rit != cont.rend(); ++rit) {
-     *     process(*rit);
-     * }
-     * @endcode
-     */
+    // 获取反向起始迭代器
     reverse_iterator rbegin() noexcept
     {
-        return m_container.rbegin();
+        return mContainer.rbegin();
     }
 
-    /**
-     * @brief 获取反向结束迭代器
-     */
+    // 获取反向结束迭代器
     reverse_iterator rend() noexcept
     {
-        return m_container.rend();
+        return mContainer.rend();
     }
 
-    /**
-     * @brief 获取常量反向起始迭代器
-     */
+    // 获取常量反向起始迭代器
     const_reverse_iterator crbegin() const noexcept
     {
-        return m_container.crbegin();
+        return mContainer.crbegin();
     }
 
-    /**
-     * @brief 获取常量反向结束迭代器
-     */
+    // 获取常量反向结束迭代器
     const_reverse_iterator crend() const noexcept
     {
-        return m_container.crend();
+        return mContainer.crend();
     }
     /// @}
 
     const Container& container() const
     {
-        return m_container;
+        return mContainer;
     }
 
 private:
-    Container m_container;  ///< 底层容器存储
-    IndexType m_index = 0;  ///< 当前索引值
+    Container mContainer;  ///< 底层容器存储
+    IndexType mIndex = 0;  ///< 当前索引值
 };
 
 }  // namespace DA

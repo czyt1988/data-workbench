@@ -23,8 +23,8 @@ public:
     void directionalCallback(bool isUndo);
 
 private:
-    CallBack m_callback;
-    DirectionalCallBack m_directionalCallback;
+    CallBack mCallback;
+    DirectionalCallBack mDirectionalCallBack;
 };
 }
 

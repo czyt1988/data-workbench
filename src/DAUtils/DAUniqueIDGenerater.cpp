@@ -1,13 +1,25 @@
-﻿#include "DAUniqueIDGenerater.h"
+#include "DAUniqueIDGenerater.h"
 #include <atomic>
 #include <chrono>
 namespace DA
 {
 
+/**
+ * @brief 构造函数
+ */
 DAUniqueIDGenerater::DAUniqueIDGenerater()
 {
 }
 
+/**
+ * @brief 生成当前进程唯一uint64_t类型的id
+ *
+ * 使用高分辨率时间戳和序列号组合生成唯一ID。
+ * 时间戳占用高位42位，序列号占用低位22位。
+ * 同一纳秒内通过递增序列号保证唯一性。
+ *
+ * @return 唯一的uint64_t类型id
+ */
 uint64_t DAUniqueIDGenerater::id_uint64()
 {
 	static std::atomic< std::uint64_t > last_timestamp { 0 };  // 保存上一次的时间戳

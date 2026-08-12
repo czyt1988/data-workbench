@@ -141,10 +141,7 @@ public:
     //判断是否存在field
     bool haveColumns(const QString& field) const;
 
-    /**
-     * @brief 填充元素
-     * @param v
-     */
+    // 填充元素
     void fill(const T& v);
     const T& at(int r, int c) const;
     T& at(int r, int c);
@@ -176,109 +173,62 @@ public:
 
     void reserve(int size);
 
-    /**
-     * @brief 以最大列数进行列数修正，保证所有行同列
-     */
+    // 以最大列数进行列数修正，保证所有行同列
     void fixSize();
 
-    /**
-     * @brief 表的行数
-     * @return
-     */
+    // 表的行数
     int columnCount() const;
 
-    /**
-     * @brief 表的列数
-     * @return
-     */
+    // 表的列数
     int rowCount() const;
 
-    /**
-     * @brief 设置表格的模式
-     * @param m 模式 @ref Mode
-     */
+    // 设置表格的模式
     void setMode(Mode m);
 
-    /**
-     * @brief 获取模式
-     * @return
-     */
+    // 获取模式
     Mode getMode() const;
 
-    /**
-     * @brief 清空
-     */
+    // 清空
     void clear();
 
     void setName(const QString& n);
     QString getName() const;
 
-    /**
-     * @brief 和pandas统一
-     * @return
-     */
+    // 和pandas统一
     QStringList columns() const;
     QStringList columnNames() const;
 
-    /**
-     * @brief 设置行名，如果是个空的表会生成一个默认行
-     * @param ns
-     */
+    // 设置行名，如果是个空的表会生成一个默认行
     void setSeriesNames(const QStringList& ns);
 
-    /**
-     * @brief 提取某个值等于value作为新表
-     * @param field
-     * @param value
-     * @param cs
-     * @return
-     */
+    // 提取某个值等于value作为新表
     TablePtr takeByValue(const QString& field, T value) const;
 
-    /**
-     * @brief groupby
-     * @param field
-     * @param cs
-     * @return
-     */
+    // groupby
     QPair< QList< TablePtr >, QList< T > > groupBy(const QString& field) const;
 
-    /**
-     * @brief orderBy
-     * @param sn
-     */
+    // orderBy
     void orderBy(const QString& sn);
     void orderBy(int cindex);
 
-    /**
-     * @brief 查找第一个大于或等于某个元素的位置
-     * @note 需要确保已经进行过排序
-     * @param v
-     * @return
-     */
+    // 查找第一个大于或等于某个元素的位置
     QPair< T, int > lowerBound(const T& v, const QString& sortedfield) const;
     QPair< T, int > lowerBound(const T& v, int c) const;
     QPair< T, int > upperBound(const T& v, const QString& sortedfield) const;
     QPair< T, int > upperBound(const T& v, int c) const;
 
-    /**
-     * @brief 设置名字查询时是否对大小写敏感
-     * @param cs
-     */
+    // 设置名字查询时是否对大小写敏感
     void setCaseSensitivity(CaseSensitivity cs);
 
-    /**
-     * @brief 判断是否大小写敏感
-     * @return
-     */
+    // 判断是否大小写敏感
     bool isCaseSensitivity() const;
 
 private:
-    DAVector< SeriesPtr > m_d;
-    size_t m_rows;
-    Mode m_mode;
-    SeriesPtr m_nullseries;
-    CaseSensitivity m_caseSensitivity;
+    DAVector< SeriesPtr > mD;
+    size_t mRows;
+    Mode mMode;
+    SeriesPtr mNullseries;
+    CaseSensitivity mCaseSensitivity;
 };
 
 template< typename T >
@@ -301,13 +251,7 @@ typename DADataTable< T >::TablePtr take_by_value(const DADataTable< T >& table,
     return (res);
 }
 
-/**
- * @brief 逐行遍历，把指定列的内容和值一致的行保留，形成一个新的表
- * @param table
- * @param c
- * @param value
- * @return
- */
+// 逐行遍历，把指定列的内容和值一致的行保留，形成一个新的表
 template< typename T >
 typename DADataTable< T >::TablePtr take_by_value(const DADataTable< T >& table, int c, T value)
 {
@@ -328,12 +272,7 @@ typename DADataTable< T >::TablePtr take_by_value(const DADataTable< T >& table,
     return (res);
 }
 
-/**
- * @brief groupby 对某个字段执行group by操作
- * @param table
- * @param field
- * @return 返回一个pair，first：group by后的结构表，second，group by的结果
- */
+// groupby 对某个字段执行group by操作
 template< typename T >
 QPair< QList< typename DADataTable< T >::TablePtr >, QList< T > > group_by(const DADataTable< T >& table, const QString& field)
 {
@@ -384,11 +323,7 @@ bool operator<(const _DAValueWithIndex< T >& a, const _DAValueWithIndex< T >& b)
     return (a.value < b.value);
 }
 
-/**
- * @brief 把序列转换为带序号的序列
- * @param p
- * @return 用于带序号的排序用
- */
+// 把序列转换为带序号的序列
 template< typename T >
 std::shared_ptr< DAVector< _DAValueWithIndex< T > > > makeIndexSeries(const typename DADataTable< T >::SeriesPtr& p)
 {
@@ -436,24 +371,18 @@ void order_by(DADataTable< T >& table, int c)
     }
 }
 
-/**
- * @brief 构造一个空的数据表
- */
+// 构造一个空的数据表
 template< typename T >
-DADataTable< T >::DADataTable() : m_rows(0), m_mode(ExpandMode), m_caseSensitivity(CaseInsensitive)
+DADataTable< T >::DADataTable() : mRows(0), mMode(ExpandMode), mCaseSensitivity(CaseInsensitive)
 {
 }
 
-/**
- * @brief 构造一个rows行，cols列的表，表的命名以column_{n}来命名
- * @param rows 行
- * @param cols 列
- */
+// 构造一个rows行，cols列的表，表的命名以column_{n}来命名
 template< typename T >
-DADataTable< T >::DADataTable(int rows, int cols) : m_mode(ExpandMode), m_caseSensitivity(CaseInsensitive)
+DADataTable< T >::DADataTable(int rows, int cols) : mMode(ExpandMode), mCaseSensitivity(CaseInsensitive)
 {
-    m_d.clear();
-    m_d.reserve(cols);
+    mD.clear();
+    mD.reserve(cols);
     for (int i = 0; i < cols; ++i) {
         SeriesPtr r = makeSeries(rows);
         r->setName(QString("column_%1").arg(i));
@@ -461,29 +390,21 @@ DADataTable< T >::DADataTable(int rows, int cols) : m_mode(ExpandMode), m_caseSe
     }
 }
 
-/**
- * @brief 改变table 的大小
- * @param r 行
- * @param c 列
- */
+// 改变table 的大小
 template< typename T >
 void DADataTable< T >::resize(int r, int c)
 {
-    m_d.resize(c);
-    for (SeriesPtr& ser : m_d) {
+    mD.resize(c);
+    for (SeriesPtr& ser : mD) {
         if (ser == nullptr) {
             ser = makeSeries();
         }
         ser->resize(r);
     }
-    m_rows = r;
+    mRows = r;
 }
 
-/**
- * @brief 判断是否存在Columns
- * @param field
- * @return
- */
+// 判断是否存在Columns
 template< typename T >
 bool DADataTable< T >::haveColumns(const QString& field) const
 {
@@ -498,76 +419,48 @@ bool DADataTable< T >::haveColumns(const QString& field) const
     return (false);
 }
 
-/**
- * @brief 填充值
- * @param v 需要填充的值
- */
+// 填充值
 template< typename T >
 void DADataTable< T >::fill(const T& v)
 {
-    for (const SeriesPtr& s : qAsConst(m_d)) {
+    for (const SeriesPtr& s : qAsConst(mD)) {
         s->fill(v);
     }
 }
 
-/**
- * @brief 定位单元格
- * @param r 行
- * @param c 列
- * @return  值
- */
+// 定位单元格
 template< typename T >
 const T& DADataTable< T >::at(int r, int c) const
 {
-    return (m_d.at(c)->at(r));
+    return (mD.at(c)->at(r));
 }
 
-/**
- * @brief 定位单元格
- * @param r 行
- * @param c 列
- * @return  值
- */
+// 定位单元格
 template< typename T >
 T& DADataTable< T >::at(int r, int c)
 {
-    return (*m_d[ c ])[ r ];
+    return (*mD[ c ])[ r ];
 }
 
-/**
- * @brief 定位单元格
- * @param r 行
- * @param c 列
- * @return  值
- */
+// 定位单元格
 template< typename T >
 const T& DADataTable< T >::iloc(int r, int c) const
 {
     return at(r, c);
 }
 
-/**
- * @brief 定位单元格
- * @param r 行
- * @param c 列
- * @return  值
- */
+// 定位单元格
 template< typename T >
 T& DADataTable< T >::iloc(int r, int c)
 {
     return at(r, c);
 }
 
-/**
- * @brief 获取单元格
- * @param r
- * @param c
- * @return 如果没有或超范围，返回默认构造
- */
+// 获取单元格
 template< typename T >
 T DADataTable< T >::cell(int r, int c) const
 {
-    if (c >= 0 && c < m_d.size()) {
+    if (c >= 0 && c < mD.size()) {
         const SeriesPtr& s = series(c);
         if (s && r >= 0 && r < s->size()) {
             return (s->at(r));
@@ -576,39 +469,36 @@ T DADataTable< T >::cell(int r, int c) const
     return (T());
 }
 
-/**
- * @brief 追加一列
- * @param ser
- */
+// 追加一列
 template< typename T >
 void DADataTable< T >::appendSeries(SeriesPtr ser)
 {
     size_t s = ser->size();
 
-    if (0 == m_rows) {
+    if (0 == mRows) {
         //如果是空表，空表不对mode做判断
         resize(s, columnCount());
-        m_d.push_back(ser);
-        m_rows = s;
-    } else if (s == m_rows) {
+        mD.push_back(ser);
+        mRows = s;
+    } else if (s == mRows) {
         //如果插入的列的行数和表行数一致，直接插入
-        m_d.push_back(ser);
-    } else if (s < m_rows) {
+        mD.push_back(ser);
+    } else if (s < mRows) {
         //如果插入的列的行数比表行数少，先在结尾补充
-        ser->resize(m_rows);
-        m_d.push_back(ser);
+        ser->resize(mRows);
+        mD.push_back(ser);
     } else {
-        // 如果插入的函数s>m_rows
+        // 如果插入的函数s>mRows
         if (getMode() == ExpandMode) {
-            for (const SeriesPtr& colser : qAsConst(m_d)) {
+            for (const SeriesPtr& colser : qAsConst(mD)) {
                 colser->resize(s);
             }
-            m_d.push_back(ser);
-            m_rows = s;
+            mD.push_back(ser);
+            mRows = s;
         } else {
             //固定模式则把ser截断插入
-            ser->resize(m_rows);
-            m_d.push_back(ser);
+            ser->resize(mRows);
+            mD.push_back(ser);
         }
     }
 }
@@ -637,7 +527,7 @@ void DADataTable< T >::appendRow(Ite1 b, Ite2 e)
             series(i)->push_back(T());
         }
     }
-    ++m_rows;
+    ++mRows;
 }
 
 template< typename T >
@@ -652,7 +542,7 @@ void DADataTable< T >::appendRow(std::initializer_list< T > args)
     //            series(i)->push_back(T());
     //        }
     //    }
-    //    ++m_rows;
+    //    ++mRows;
 }
 
 template< typename T >
@@ -693,65 +583,45 @@ int DADataTable< T >::nameToIndex(const QString& n) const
     return (-1);
 }
 
-/**
- * @brief 获取行引用
- * @param c 列索引
- * @return
- */
+// 获取行引用
 template< typename T >
 typename DADataTable< T >::SeriesPtr& DADataTable< T >::series(int c)
 {
-    return (m_d[ c ]);
+    return (mD[ c ]);
 }
 
-/**
- * @brief 获取列引用
- * @param c 列索引
- * @return
- */
+// 获取列引用
 template< typename T >
 const typename DADataTable< T >::SeriesPtr& DADataTable< T >::series(int c) const
 {
-    return (m_d[ c ]);
+    return (mD[ c ]);
 }
 
-/**
- * @brief 获取列引用
- * @param n 列名
- * @return
- */
+// 获取列引用
 template< typename T >
 typename DADataTable< T >::SeriesPtr& DADataTable< T >::series(const QString& n)
 {
     int r = nameToIndex(n);
 
     if ((r < 0) || (r >= columnCount())) {
-        return (m_nullseries);
+        return (mNullseries);
     }
     return (series(r));
 }
 
-/**
- * @brief 获取列引用
- * @param n 列名
- * @return
- */
+// 获取列引用
 template< typename T >
 const typename DADataTable< T >::SeriesPtr& DADataTable< T >::series(const QString& n) const
 {
     int i = nameToIndex(n);
 
     if ((i < 0) || (i >= columnCount())) {
-        return (m_nullseries);
+        return (mNullseries);
     }
     return (series(i));
 }
 
-/**
- * @brief 获取一行数据
- * @param r 行
- * @return
- */
+// 获取一行数据
 template< typename T >
 typename DADataTable< T >::SeriesPtr DADataTable< T >::row(int r) const
 {
@@ -791,125 +661,98 @@ const typename DADataTable< T >::SeriesType& DADataTable< T >::operator[](const 
 template< typename T >
 void DADataTable< T >::reserve(int size)
 {
-    for (const SeriesPtr& p : qAsConst(m_d)) {
+    for (const SeriesPtr& p : qAsConst(mD)) {
         p->reserve(size);
     }
 }
 
-/**
- * @brief 在每个列的行数不一样的时候调用此函数让整个表格规整
- *
- * @note 整个函数在获取series指针并单独处理后，会导致table表格不规整，需要调用此函数使得表格规整
- */
+// 在每个列的行数不一样的时候调用此函数让整个表格规整
 template< typename T >
 void DADataTable< T >::fixSize()
 {
     std::vector< int > ss;
-    ss.reserve(m_d.size());
+    ss.reserve(mD.size());
 
-    for (const SeriesPtr& r : m_d) {
+    for (const SeriesPtr& r : mD) {
         ss.push_back(r->size());
     }
     int maxsize = *(std::max_element(ss.begin(), ss.end()));
 
-    for (SeriesPtr& r : m_d) {
+    for (SeriesPtr& r : mD) {
         if (r->size() < maxsize) {
             r->resize(maxsize);
         }
     }
-    m_rows = maxsize;
+    mRows = maxsize;
 }
 
-/**
- * @brief 列数
- * @return
- */
+// 列数
 template< typename T >
 int DADataTable< T >::columnCount() const
 {
-    return (m_d.size());
+    return (mD.size());
 }
 
-/**
- * @brief 行数
- * @return
- */
+// 行数
 template< typename T >
 int DADataTable< T >::rowCount() const
 {
-    return (m_rows);
+    return (mRows);
 }
 
 template< typename T >
 void DADataTable< T >::setMode(typename DADataTable< T >::Mode m)
 {
-    m_mode = m;
+    mMode = m;
 }
 
 template< typename T >
 typename DADataTable< T >::Mode DADataTable< T >::getMode() const
 {
-    return (m_mode);
+    return (mMode);
 }
 
 template< typename T >
 void DADataTable< T >::clear()
 {
-    m_d.clear();
-    m_rows = 0;
+    mD.clear();
+    mRows = 0;
 }
 
-/**
- * @brief 设置表的名字
- * @param n
- */
+// 设置表的名字
 template< typename T >
 void DADataTable< T >::setName(const QString& n)
 {
-    m_d.setName(n);
+    mD.setName(n);
 }
 
-/**
- * @brief 获取表的名字
- * @return
- */
+// 获取表的名字
 template< typename T >
 QString DADataTable< T >::getName() const
 {
-    return (m_d.getName());
+    return (mD.getName());
 }
 
-/**
- * @brief 获取列的名字序列
- * 等同 @sa columnNames
- * @return
- */
+// 获取列的名字序列 等同 @sa columnNames
 template< typename T >
 QStringList DADataTable< T >::columns() const
 {
     return columnNames();
 }
 
-/**
- * @brief 获取列的名字序列
- * @return
- */
+// 获取列的名字序列
 template< typename T >
 QStringList DADataTable< T >::columnNames() const
 {
     QStringList r;
 
-    for (const SeriesPtr& p : qAsConst(m_d)) {
+    for (const SeriesPtr& p : qAsConst(mD)) {
         r.append(p->getName());
     }
     return (r);
 }
 
-/**
- * @brief 设置列的名字序列
- * @note 如果设置的名字多于当前的列名，会构造出默认的列
- * @param ns
- */
+// 设置列的名字序列
 template< typename T >
 void DADataTable< T >::setSeriesNames(const QStringList& ns)
 {
@@ -925,55 +768,35 @@ void DADataTable< T >::setSeriesNames(const QStringList& ns)
     }
 }
 
-/**
- * @brief 逐行遍历，把指定列的内容和值一致的行保留，形成一个新的表,主要用于匹配
- * @param field
- * @param value
- * @return
- */
+// 逐行遍历，把指定列的内容和值一致的行保留，形成一个新的表,主要用于匹配
 template< typename T >
 typename DADataTable< T >::TablePtr DADataTable< T >::takeByValue(const QString& field, T value) const
 {
     return (take_by_value(*this, field, value));
 }
 
-/**
- * @brief 聚合
- * @param field
- * @return
- */
+// 聚合
 template< typename T >
 QPair< QList< typename DADataTable< T >::TablePtr >, QList< T > > DADataTable< T >::groupBy(const QString& field) const
 {
     return (group_by(*this, field));
 }
 
-/**
- * @brief 排序
- * @param sn
- */
+// 排序
 template< typename T >
 void DADataTable< T >::orderBy(const QString& sn)
 {
     order_by(*this, sn);
 }
 
-/**
- * @brief 排序
- * @param cindex
- */
+// 排序
 template< typename T >
 void DADataTable< T >::orderBy(int cindex)
 {
     order_by(*this, cindex);
 }
 
-/**
- * @brief DADataTable<T>::lowerBound 查找
- * @param v
- * @param sortedfield
- * @return
- */
+// DADataTable<T>::lowerBound 查找
 template< typename T >
 QPair< T, int > DADataTable< T >::lowerBound(const T& v, const QString& sortedfield) const
 {
@@ -1018,24 +841,18 @@ QPair< T, int > DADataTable< T >::upperBound(const T& v, int c) const
     return (qMakePair< T, int >(*ite, dis));
 }
 
-/**
- * @brief 设置大小写敏感性
- * @param cs
- */
+// 设置大小写敏感性
 template< typename T >
 void DADataTable< T >::setCaseSensitivity(typename DADataTable< T >::CaseSensitivity cs)
 {
-    m_caseSensitivity = cs;
+    mCaseSensitivity = cs;
 }
 
-/**
- * @brief 获取大小写敏感性
- * @param cs
- */
+// 获取大小写敏感性
 template< typename T >
 bool DADataTable< T >::isCaseSensitivity() const
 {
-    return (m_caseSensitivity == CaseSensitive);
+    return (mCaseSensitivity == CaseSensitive);
 }
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))

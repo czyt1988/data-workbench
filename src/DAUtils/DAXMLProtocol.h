@@ -54,55 +54,55 @@ public:
     DAXMLProtocol(DAXMLProtocol&& other);
     DAXMLProtocol& operator=(const DAXMLProtocol& other);
 
-    virtual ~DAXMLProtocol();
+    virtual ~DAXMLProtocol() override;
 
     //设置协议功能号
-    virtual void setFunctionID(int funid);
+    virtual void setFunctionID(int funid) override;
 
     //获取协议功能号
-    virtual int getFunctionID() const;
+    virtual int getFunctionID() const override;
 
     //设置协议类号
-    virtual void setClassID(int classid);
+    virtual void setClassID(int classid) override;
 
     //获取协议类号
-    virtual int getClassID() const;
+    virtual int getClassID() const override;
 
     //设置值
-    virtual void setValue(const QString& groupName, const QString& keyName, const QVariant& var);
-    virtual void setValue(const QString& keyName, const QVariant& var);
+    virtual void setValue(const QString& groupName, const QString& keyName, const QVariant& var) override;
+    virtual void setValue(const QString& keyName, const QVariant& var) override;
 
     // 复杂度O(1) 不含默认分组
-    virtual QStringList getGroupNames() const;
+    virtual QStringList getGroupNames() const override;
 
     // 复杂度O(n)
-    virtual QStringList getKeyNames(const QString& groupName) const;
+    virtual QStringList getKeyNames(const QString& groupName) const override;
     QStringList getKeyNames() const;
 
     // 从文本转换
-    virtual bool fromString(const QString& str);
+    virtual bool fromString(const QString& str) override;
 
     //转换为文本
-    virtual QString toString() const;
+    virtual QString toString() const override;
 
     // 设置协议的内容
-    virtual bool fromByteArray(const QByteArray& data);
+    virtual bool fromByteArray(const QByteArray& data) override;
 
     // 转换为bytearray
-    virtual QByteArray toByteArray() const;
+    virtual QByteArray toByteArray() const override;
 
     //默认分组名
     static QString defaultGroupName();
 
     // 检测是否存在分组
-    virtual bool isHasGroup(const QString& groupName) const;
+    virtual bool isHasGroup(const QString& groupName) const override;
 
     // 检查在分组名下是否存在对应的键值 复杂度O(1)
-    virtual bool isHasKey(const QString& groupName, const QString& keyName) const;
+    virtual bool isHasKey(const QString& groupName, const QString& keyName) const override;
 
     // 获取键值对应的内容
-    virtual QVariant getValue(const QString& groupName, const QString& keyName, const QVariant& defaultVal = QVariant()) const;
-    virtual QVariant getDefaultGroupValue(const QString& keyName, const QVariant& defaultVal = QVariant()) const;
+    virtual QVariant getValue(const QString& groupName, const QString& keyName, const QVariant& defaultVal = QVariant()) const override;
+    virtual QVariant getDefaultGroupValue(const QString& keyName, const QVariant& defaultVal = QVariant()) const override;
 
     //转换为SAPropertiesGroup
     DAPropertiesGroup toPropGroup() const;

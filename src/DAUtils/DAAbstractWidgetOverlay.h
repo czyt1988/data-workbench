@@ -1,4 +1,4 @@
-﻿#ifndef DAABSTRACTWIDGETOVERLAY_H
+#ifndef DAABSTRACTWIDGETOVERLAY_H
 #define DAABSTRACTWIDGETOVERLAY_H
 #include "DAUtilsAPI.h"
 #include <QWidget>
@@ -17,6 +17,7 @@ namespace DA
 class DAUTILS_API DAAbstractWidgetOverlay : public QWidget
 {
 	DA_DECLARE_PRIVATE(DAAbstractWidgetOverlay)
+	Q_OBJECT
 public:
 	/*!
 		   \brief 遮罩模式
@@ -90,45 +91,16 @@ public:
 	virtual bool eventFilter(QObject* object, QEvent* event) override;
 
 public:
-	/**
-	 * @brief 矩形的遮罩区域计算
-	 * @param r 矩形
-	 * @param penWidth 画笔宽度
-	 * @return
-	 */
+	// 矩形的遮罩区域计算
 	static QRegion maskRegion(const QRect& r, int penWidth);
-	/**
-	 * @brief 针对水平线或竖直线的遮罩区域计算
-	 * @param VOrHLine 水平线或竖直线
-	 * @param penWidth 画笔的宽度
-	 * @return
-	 */
+	// 针对水平线或竖直线的遮罩区域计算
 	static QRegion maskRegionVOrHLine(const QLine& VOrHLine, int penWidth);
 
 protected:
-	/**
-	 * @brief 绘制遮罩层的主要业务实现函数
-	 *
-	 * @param painter
-	 */
+	// 绘制遮罩层的主要业务实现函数
 	virtual void drawOverlay(QPainter* painter) const = 0;
 
-	/**
-	 * @brief 计算遮罩区的近似值
-	 *
-	 *- MaskHint
-	 *  遮罩建议区域。
-	 *
-	 *- AlphaMask
-	 *  用于加速从非透明像素计算掩码的算法。
-	 *
-	 *- NoMask
-	 *  不使用遮罩。
-	 *
-	 * 默认实现返回一个无效区域，表示没有建议区域。
-	 *
-	 * @return 遮罩的建议区域
-	 */
+	// 计算遮罩区的近似值
 	virtual QRegion maskHint() const;
 
 	virtual void paintEvent(QPaintEvent* event) override;

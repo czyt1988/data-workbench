@@ -1,4 +1,4 @@
-﻿#ifndef DAXMLCONFIG_H
+#ifndef DAXMLCONFIG_H
 #define DAXMLCONFIG_H
 #include "DAUtilsAPI.h"
 #include <QVariant>
@@ -19,7 +19,7 @@ public:
     DAXMLConfig(DAXMLConfig&& other);
     DAXMLConfig& operator=(const DAXMLConfig& other);
 
-    ~DAXMLConfig();
+    ~DAXMLConfig() override;
 
 public:
     bool setFilePath(const QString& filePath);

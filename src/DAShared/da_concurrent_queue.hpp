@@ -33,61 +33,48 @@ public:
     T           get(int waitms);
 
 private:
-    size_type               m_capacity;  ///< 容积,0代表不做限制
-    queue_type              m_fifo;      ///< 缓冲队列
-    mutable mutex_type      m_mutex;     ///< 互斥锁
-    std::condition_variable m_pushWait;  ///< 写入条件变量
-    std::condition_variable m_popWait;   ///< 写入条件变量
+    size_type               mCapacity;  ///< 容积,0代表不做限制
+    queue_type              mFifo;      ///< 缓冲队列
+    mutable mutex_type      mMutex;     ///< 互斥锁
+    std::condition_variable mPushWait;  ///< 写入条件变量
+    std::condition_variable mPopWait;   ///< 写入条件变量
 };
 
-/**
- * @brief 构造函数，不限制容量的队列
- */
+// 构造函数，不限制容量的队列
 template< typename T >
-da_concurrent_queue< T >::da_concurrent_queue() : m_capacity(0)
+da_concurrent_queue< T >::da_concurrent_queue() : mCapacity(0)
 {
 }
 
-/**
- * @brief 构造函数，可指定最大容量
- * @param capacity 容量，0代表不做限制
- */
+// 构造函数，可指定最大容量
 template< typename T >
-da_concurrent_queue< T >::da_concurrent_queue(size_type capacity) : m_capacity(capacity)
+da_concurrent_queue< T >::da_concurrent_queue(size_type capacity) : mCapacity(capacity)
 {
 }
 
-/**
- * @brief 队列是否为空
- * @return
- */
+// 队列是否为空
 template< typename T >
 bool da_concurrent_queue< T >::empty() const
 {
-    std::lock_guard< std::mutex > lg(m_mutex);
+    std::lock_guard< std::mutex > lg(mMutex);
 
-    return (m_fifo.empty());
+    return (mFifo.empty());
 }
 
-/**
- * @brief 推入fifo
- *
- * 如果队列已经满，则等待，直到有容积
- * @param v
- */
+// 推入fifo
 template< typename T >
 void da_concurrent_queue< T >::push(const T& v)
 {
-    std::unique_lock< std::mutex > lg(m_mutex);
+    std::unique_lock< std::mutex > lg(mMutex);
 
-    if (m_capacity > 0) {
+    if (mCapacity > 0) {
         //只有限定容积时才做推入等待
-        while (m_fifo.size() >= m_capacity) {
-            m_pushWait.wait(lg);
+        while (mFifo.size() >= mCapacity) {
+            mPushWait.wait(lg);
         }
     }
-    m_fifo.push(v);
-    m_popWait.notify_one();
+    mFifo.push(v);
+    mPopWait.notify_one();
 }
 
 template< typename T >
@@ -96,60 +83,50 @@ void da_concurrent_queue< T >::set(const T& v)
     push(v);
 }
 
-/**
- * @brief 推出
- * @return
- */
+// 推出
 template< typename T >
 T da_concurrent_queue< T >::get()
 {
-    std::unique_lock< std::mutex > lg(m_mutex);
+    std::unique_lock< std::mutex > lg(mMutex);
 
-    while (m_fifo.empty()) {
-        m_popWait.wait(lg);
+    while (mFifo.empty()) {
+        mPopWait.wait(lg);
     }
-    T v = std::move(m_fifo.front());
+    T v = std::move(mFifo.front());
 
-    m_fifo.pop();
-    if (m_capacity > 0) {
+    mFifo.pop();
+    if (mCapacity > 0) {
         //如果有推出，则推入的等待可以唤醒
-        m_pushWait.notify_one();
+        mPushWait.notify_one();
     }
     return v;
 }
 
-/**
- * @brief 有等待时间的获取
- * @param waitms 等待的毫秒，如果超过时间还无法获取也返回一个默认构造的类型
- * @return
- */
+// 有等待时间的获取
 template< typename T >
 T da_concurrent_queue< T >::get(int waitms)
 {
-    std::unique_lock< std::mutex > lg(m_mutex);
-    if (!m_popWait.wait_for(lg, std::chrono::milliseconds(waitms), [this] { return !(this->m_fifo.empty()); })) {
+    std::unique_lock< std::mutex > lg(mMutex);
+    if (!mPopWait.wait_for(lg, std::chrono::milliseconds(waitms), [this] { return !(this->mFifo.empty()); })) {
         return T();
     }
-    T v = std::move(m_fifo.front());
+    T v = std::move(mFifo.front());
 
-    m_fifo.pop();
-    if (m_capacity > 0) {
+    mFifo.pop();
+    if (mCapacity > 0) {
         //如果有推出，则推入的等待可以唤醒
-        m_pushWait.notify_one();
+        mPushWait.notify_one();
     }
     return v;
 }
 
-/**
- * @brief 获取队列的尺寸
- * @return
- */
+// 获取队列的尺寸
 template< typename T >
 std::size_t da_concurrent_queue< T >::size() const
 {
-    std::lock_guard< std::mutex > lg(m_mutex);
+    std::lock_guard< std::mutex > lg(mMutex);
 
-    return (m_fifo.size());
+    return (mFifo.size());
 }
 
-#endif  // SAFEQUEUE_H
+#endif  // DA_CONCURRENT_QUEUE_H

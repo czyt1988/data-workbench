@@ -129,9 +129,9 @@ public:
     void set_column(std::size_t col, const std::vector< T >& values);
 
 private:
-    std::vector< T > data_;  // 一维数据存储
-    std::size_t rows_;       // 行数
-    std::size_t cols_;       // 列数
+    std::vector< T > mData;  // 一维数据存储
+    std::size_t mRows;       // 行数
+    std::size_t mCols;       // 列数
 
     // 辅助函数
     std::size_t index(std::size_t row, std::size_t col) const noexcept;
@@ -144,1110 +144,501 @@ private:
 // 实现部分
 // ============================================================================
 
-/**
- * @brief 默认构造函数
- * @tparam T 表格元素类型
- *
- * @code{.cpp}
- * // 创建一个空的表格
- * DA::da_vector_table<int> table;
- * @endcode
- */
+// 默认构造函数
 template< typename T >
-da_vector_table< T >::da_vector_table() : data_(), rows_(0), cols_(0)
+da_vector_table< T >::da_vector_table() : mData(), mRows(0), mCols(0)
 {
 }
 
-/**
- * @brief 构造函数，创建指定大小的表格
- * @tparam T 表格元素类型
- * @param rows 行数
- * @param cols 列数
- * @param value 初始值
- *
- * @code{.cpp}
- * // 创建一个3行4列的表格，所有元素初始化为0
- * DA::da_vector_table<int> table(3, 4, 0);
- *
- * // 创建一个2行3列的表格，所有元素使用默认构造
- * DA::da_vector_table<std::string> table(2, 3);
- * @endcode
- */
+// 构造函数，创建指定大小的表格
 template< typename T >
 da_vector_table< T >::da_vector_table(std::size_t rows, std::size_t cols, const T& value)
-    : data_(rows * cols, value), rows_(rows), cols_(cols)
+    : mData(rows * cols, value), mRows(rows), mCols(cols)
 {
 }
 
-/**
- * @brief 使用初始化列表构造表格
- * @tparam T 表格元素类型
- * @param init 初始化列表
- *
- * @code{.cpp}
- * // 使用初始化列表创建表格
- * DA::da_vector_table<int> table = {
- *     {1, 2, 3},
- *     {4, 5, 6},
- *     {7, 8, 9}
- * };
- * @endcode
- */
+// 使用初始化列表构造表格
 template< typename T >
 da_vector_table< T >::da_vector_table(std::initializer_list< std::initializer_list< T > > init)
-    : rows_(init.size()), cols_(0)
+    : mRows(init.size()), mCols(0)
 {
     // 确定最大列数
     for (const auto& row : init) {
-        if (row.size() > cols_) {
-            cols_ = row.size();
+        if (row.size() > mCols) {
+            mCols = row.size();
         }
     }
 
     // 分配内存
-    data_.resize(rows_ * cols_);
+    mData.resize(mRows * mCols);
 
     // 填充数据
     std::size_t row_idx = 0;
     for (const auto& row : init) {
         std::size_t col_idx = 0;
         for (const auto& value : row) {
-            data_[ index(row_idx, col_idx) ] = value;
+            mData[ index(row_idx, col_idx) ] = value;
             ++col_idx;
         }
         // 填充剩余部分（如果有）
-        for (; col_idx < cols_; ++col_idx) {
-            data_[ index(row_idx, col_idx) ] = T();
+        for (; col_idx < mCols; ++col_idx) {
+            mData[ index(row_idx, col_idx) ] = T();
         }
         ++row_idx;
     }
 }
 
-/**
- * @brief 拷贝构造函数
- * @tparam T 表格元素类型
- * @param other 要拷贝的表格
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table1(2, 3, 5);
- * // 创建table1的副本
- * DA::da_vector_table<int> table2(table1);
- * @endcode
- */
+// 拷贝构造函数
 template< typename T >
 da_vector_table< T >::da_vector_table(const da_vector_table& other)
-    : data_(other.data_), rows_(other.rows_), cols_(other.cols_)
+    : mData(other.mData), mRows(other.mRows), mCols(other.mCols)
 {
 }
 
-/**
- * @brief 移动构造函数
- * @tparam T 表格元素类型
- * @param other 要移动的表格
- *
- * @code{.cpp}
- * DA::da_vector_table<int> create_table() {
- *     DA::da_vector_table<int> table(3, 4, 1);
- *     return table; // 使用移动语义
- * }
- *
- * auto table = create_table(); // 高效，不会拷贝数据
- * @endcode
- */
+// 移动构造函数
 template< typename T >
 da_vector_table< T >::da_vector_table(da_vector_table&& other) noexcept
-    : data_(std::move(other.data_)), rows_(other.rows_), cols_(other.cols_)
+    : mData(std::move(other.mData)), mRows(other.mRows), mCols(other.mCols)
 {
-    other.rows_ = 0;
-    other.cols_ = 0;
+    other.mRows = 0;
+    other.mCols = 0;
 }
 
-/**
- * @brief 拷贝赋值运算符
- * @tparam T 表格元素类型
- * @param other 要拷贝的表格
- * @return 当前表格的引用
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table1(2, 3, 5);
- * DA::da_vector_table<int> table2;
- * table2 = table1; // 拷贝赋值
- * @endcode
- */
+// 拷贝赋值运算符
 template< typename T >
 da_vector_table< T >& da_vector_table< T >::operator=(const da_vector_table& other)
 {
     if (this != &other) {
-        data_ = other.data_;
-        rows_ = other.rows_;
-        cols_ = other.cols_;
+        mData = other.mData;
+        mRows = other.mRows;
+        mCols = other.mCols;
     }
     return *this;
 }
 
-/**
- * @brief 移动赋值运算符
- * @tparam T 表格元素类型
- * @param other 要移动的表格
- * @return 当前表格的引用
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table1(2, 3, 5);
- * DA::da_vector_table<int> table2;
- * table2 = std::move(table1); // 移动赋值，table1变为空
- * @endcode
- */
+// 移动赋值运算符
 template< typename T >
 da_vector_table< T >& da_vector_table< T >::operator=(da_vector_table&& other) noexcept
 {
     if (this != &other) {
-        data_       = std::move(other.data_);
-        rows_       = other.rows_;
-        cols_       = other.cols_;
-        other.rows_ = 0;
-        other.cols_ = 0;
+        mData       = std::move(other.mData);
+        mRows       = other.mRows;
+        mCols       = other.mCols;
+        other.mRows = 0;
+        other.mCols = 0;
     }
     return *this;
 }
 
-/**
- * @brief 检查表格是否为空
- * @tparam T 表格元素类型
- * @return 如果表格为空返回true，否则返回false
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table;
- * if (table.empty()) {
- *     std::cout << "表格为空" << std::endl;
- * }
- * @endcode
- */
+// 检查表格是否为空
 template< typename T >
 bool da_vector_table< T >::empty() const noexcept
 {
-    return data_.empty();
+    return mData.empty();
 }
 
-/**
- * @brief 返回表格中的元素总数
- * @tparam T 表格元素类型
- * @return 表格中的元素总数
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table(3, 4);
- * std::cout << "表格有 " << table.size() << " 个元素" << std::endl;
- * @endcode
- */
+// 返回表格中的元素总数
 template< typename T >
 std::size_t da_vector_table< T >::size() const noexcept
 {
-    return data_.size();
+    return mData.size();
 }
 
-/**
- * @brief 返回表格可容纳的最大元素数
- * @tparam T 表格元素类型
- * @return 表格可容纳的最大元素数
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table;
- * std::cout << "表格最大可容纳 " << table.max_size() << " 个元素" << std::endl;
- * @endcode
- */
+// 返回表格可容纳的最大元素数
 template< typename T >
 std::size_t da_vector_table< T >::max_size() const noexcept
 {
-    return data_.max_size();
+    return mData.max_size();
 }
 
-/**
- * @brief 预留存储空间
- * @tparam T 表格元素类型
- * @param new_cap 新的容量值
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table;
- * // 预留空间以提高后续添加元素的性能
- * table.reserve(100);
- * @endcode
- */
+// 预留存储空间
 template< typename T >
 void da_vector_table< T >::reserve(std::size_t new_cap)
 {
-    data_.reserve(new_cap);
+    mData.reserve(new_cap);
 }
 
-/**
- * @brief 返回当前分配的存储容量
- * @tparam T 表格元素类型
- * @return 当前分配的存储容量
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table;
- * table.reserve(50);
- * std::cout << "表格容量: " << table.capacity() << std::endl;
- * @endcode
- */
+// 返回当前分配的存储容量
 template< typename T >
 std::size_t da_vector_table< T >::capacity() const noexcept
 {
-    return data_.capacity();
+    return mData.capacity();
 }
 
-/**
- * @brief 请求移除未使用的容量
- * @tparam T 表格元素类型
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table;
- * // 添加一些元素
- * table.resize(3, 4, 1);
- * // 释放多余内存
- * table.shrink_to_fit();
- * @endcode
- */
+// 请求移除未使用的容量
 template< typename T >
 void da_vector_table< T >::shrink_to_fit()
 {
-    data_.shrink_to_fit();
+    mData.shrink_to_fit();
 }
 
-/**
- * @brief 返回指向表格第一个元素的迭代器
- * @tparam T 表格元素类型
- * @return 指向表格第一个元素的迭代器
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}, {5, 6}};
- * // 使用迭代器遍历所有元素
- * for (auto it = table.begin(); it != table.end(); ++it) {
- *     std::cout << *it << " ";
- * }
- * @endcode
- */
+// 返回指向表格第一个元素的迭代器
 template< typename T >
 typename da_vector_table< T >::iterator da_vector_table< T >::begin() noexcept
 {
-    return data_.begin();
+    return mData.begin();
 }
 
-/**
- * @brief 返回指向表格第一个元素的常量迭代器
- * @tparam T 表格元素类型
- * @return 指向表格第一个元素的常量迭代器
- *
- * @code{.cpp}
- * const DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * // 使用常量迭代器遍历所有元素
- * for (auto it = table.begin(); it != table.end(); ++it) {
- *     std::cout << *it << " ";
- * }
- * @endcode
- */
+// 返回指向表格第一个元素的常量迭代器
 template< typename T >
 typename da_vector_table< T >::const_iterator da_vector_table< T >::begin() const noexcept
 {
-    return data_.begin();
+    return mData.begin();
 }
 
-/**
- * @brief 返回指向表格第一个元素的常量迭代器
- * @tparam T 表格元素类型
- * @return 指向表格第一个元素的常量迭代器
- *
- * @code{.cpp}
- * const DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * // 使用常量迭代器遍历所有元素
- * for (auto it = table.cbegin(); it != table.cend(); ++it) {
- *     std::cout << *it << " ";
- * }
- * @endcode
- */
+// 返回指向表格第一个元素的常量迭代器
 template< typename T >
 typename da_vector_table< T >::const_iterator da_vector_table< T >::cbegin() const noexcept
 {
-    return data_.cbegin();
+    return mData.cbegin();
 }
 
-/**
- * @brief 返回指向表格尾后位置的迭代器
- * @tparam T 表格元素类型
- * @return 指向表格尾后位置的迭代器
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}, {5, 6}};
- * // 使用迭代器遍历所有元素
- * for (auto it = table.begin(); it != table.end(); ++it) {
- *     // 处理每个元素
- * }
- * @endcode
- */
+// 返回指向表格尾后位置的迭代器
 template< typename T >
 typename da_vector_table< T >::iterator da_vector_table< T >::end() noexcept
 {
-    return data_.end();
+    return mData.end();
 }
 
-/**
- * @brief 返回指向表格尾后位置的常量迭代器
- * @tparam T 表格元素类型
- * @return 指向表格尾后位置的常量迭代器
- *
- * @code{.cpp}
- * const DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * // 使用常量迭代器遍历所有元素
- * for (auto it = table.begin(); it != table.end(); ++it) {
- *     // 处理每个元素
- * }
- * @endcode
- */
+// 返回指向表格尾后位置的常量迭代器
 template< typename T >
 typename da_vector_table< T >::const_iterator da_vector_table< T >::end() const noexcept
 {
-    return data_.end();
+    return mData.end();
 }
 
-/**
- * @brief 返回指向表格尾后位置的常量迭代器
- * @tparam T 表格元素类型
- * @return 指向表格尾后位置的常量迭代器
- *
- * @code{.cpp}
- * const DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * // 使用常量迭代器遍历所有元素
- * for (auto it = table.cbegin(); it != table.cend(); ++it) {
- *     // 处理每个元素
- * }
- * @endcode
- */
+// 返回指向表格尾后位置的常量迭代器
 template< typename T >
 typename da_vector_table< T >::const_iterator da_vector_table< T >::cend() const noexcept
 {
-    return data_.cend();
+    return mData.cend();
 }
 
-/**
- * @brief 返回指向表格最后一个元素的反向迭代器
- * @tparam T 表格元素类型
- * @return 指向表格最后一个元素的反向迭代器
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}, {5, 6}};
- * // 使用反向迭代器逆序遍历所有元素
- * for (auto it = table.rbegin(); it != table.rend(); ++it) {
- *     std::cout << *it << " ";
- * }
- * @endcode
- */
+// 返回指向表格最后一个元素的反向迭代器
 template< typename T >
 typename da_vector_table< T >::reverse_iterator da_vector_table< T >::rbegin() noexcept
 {
-    return data_.rbegin();
+    return mData.rbegin();
 }
 
-/**
- * @brief 返回指向表格最后一个元素的常量反向迭代器
- * @tparam T 表格元素类型
- * @return 指向表格最后一个元素的常量反向迭代器
- *
- * @code{.cpp}
- * const DA::da_vector_table<int> table = {{1, 2}, {3, 4}, {5, 6}};
- * // 使用常量反向迭代器逆序遍历所有元素
- * for (auto it = table.rbegin(); it != table.rend(); ++it) {
- *     std::cout << *it << " ";
- * }
- * @endcode
- */
+// 返回指向表格最后一个元素的常量反向迭代器
 template< typename T >
 typename da_vector_table< T >::const_reverse_iterator da_vector_table< T >::rbegin() const noexcept
 {
-    return data_.rbegin();
+    return mData.rbegin();
 }
 
-/**
- * @brief 返回指向表格最后一个元素的常量反向迭代器
- * @tparam T 表格元素类型
- * @return 指向表格最后一个元素的常量反向迭代器
- *
- * @code{.cpp}
- * const DA::da_vector_table<int> table = {{1, 2}, {3, 4}, {5, 6}};
- * // 使用常量反向迭代器逆序遍历所有元素
- * for (auto it = table.crbegin(); it != table.crend(); ++it) {
- *     std::cout << *it << " ";
- * }
- * @endcode
- */
+// 返回指向表格最后一个元素的常量反向迭代器
 template< typename T >
 typename da_vector_table< T >::const_reverse_iterator da_vector_table< T >::crbegin() const noexcept
 {
-    return data_.crbegin();
+    return mData.crbegin();
 }
 
-/**
- * @brief 返回指向表格第一个元素前一个位置的反向迭代器
- * @tparam T 表格元素类型
- * @return 指向表格第一个元素前一个位置的反向迭代器
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}, {5, 6}};
- * // 使用反向迭代器逆序遍历所有元素
- * for (auto it = table.rbegin(); it != table.rend(); ++it) {
- *     // 处理每个元素
- * }
- * @endcode
- */
+// 返回指向表格第一个元素前一个位置的反向迭代器
 template< typename T >
 typename da_vector_table< T >::reverse_iterator da_vector_table< T >::rend() noexcept
 {
-    return data_.rend();
+    return mData.rend();
 }
 
-/**
- * @brief 返回指向表格第一个元素前一个位置的常量反向迭代器
- * @tparam T 表格元素类型
- * @return 指向表格第一个元素前一个位置的常量反向迭代器
- *
- * @code{.cpp}
- * const DA::da_vector_table<int> table = {{1, 2}, {3, 4}, {5, 6}};
- * // 使用常量反向迭代器逆序遍历所有元素
- * for (auto it = table.rbegin(); it != table.rend(); ++it) {
- *     // 处理每个元素
- * }
- * @endcode
- */
+// 返回指向表格第一个元素前一个位置的常量反向迭代器
 template< typename T >
 typename da_vector_table< T >::const_reverse_iterator da_vector_table< T >::rend() const noexcept
 {
-    return data_.rend();
+    return mData.rend();
 }
 
-/**
- * @brief 返回指向表格第一个元素前一个位置的常量反向迭代器
- * @tparam T 表格元素类型
- * @return 指向表格第一个元素前一个位置的常量反向迭代器
- *
- * @code{.cpp}
- * const DA::da_vector_table<int> table = {{1, 2}, {3, 4}, {5, 6}};
- * // 使用常量反向迭代器逆序遍历所有元素
- * for (auto it = table.crbegin(); it != table.crend(); ++it) {
- *     // 处理每个元素
- * }
- * @endcode
- */
+// 返回指向表格第一个元素前一个位置的常量反向迭代器
 template< typename T >
 typename da_vector_table< T >::const_reverse_iterator da_vector_table< T >::crend() const noexcept
 {
-    return data_.crend();
+    return mData.crend();
 }
 
-/**
- * @brief 访问指定位置的元素（函数调用运算符）
- * @tparam T 表格元素类型
- * @param row 行索引
- * @param col 列索引
- * @return 指定位置元素的引用
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * // 访问第一行第二列的元素
- * int& value = table(0, 1);
- * value = 10; // 修改为10
- * @endcode
- */
+// 访问指定位置的元素（函数调用运算符）
 template< typename T >
 T& da_vector_table< T >::operator()(std::size_t row, std::size_t col)
 {
-    return data_[ index(row, col) ];
+    return mData[ index(row, col) ];
 }
 
-/**
- * @brief 访问指定位置的元素（函数调用运算符，常量版本）
- * @tparam T 表格元素类型
- * @param row 行索引
- * @param col 列索引
- * @return 指定位置元素的常量引用
- *
- * @code{.cpp}
- * const DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * // 访问第一行第二列的元素
- * const int& value = table(0, 1);
- * std::cout << "值: " << value << std::endl;
- * @endcode
- */
+// 访问指定位置的元素（函数调用运算符，常量版本）
 template< typename T >
 const T& da_vector_table< T >::operator()(std::size_t row, std::size_t col) const
 {
-    return data_[ index(row, col) ];
+    return mData[ index(row, col) ];
 }
 
-/**
- * @brief 访问指定位置的元素，带边界检查
- * @tparam T 表格元素类型
- * @param row 行索引
- * @param col 列索引
- * @return 指定位置元素的引用
- * @throw std::out_of_range 如果row或col超出范围
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * try {
- *     int& value = table.at(0, 1); // 获取第一行第二列的元素
- *     value = 10; // 修改为10
- *
- *     // 尝试访问不存在的元素
- *     int& invalid = table.at(5, 5); // 抛出异常
- * } catch (const std::out_of_range& e) {
- *     std::cerr << "错误: " << e.what() << std::endl;
- * }
- * @endcode
- */
+// 访问指定位置的元素，带边界检查
 template< typename T >
 T& da_vector_table< T >::at(std::size_t row, std::size_t col)
 {
     check_bounds(row, col);
-    return data_[ index(row, col) ];
+    return mData[ index(row, col) ];
 }
 
-/**
- * @brief 访问指定位置的元素，带边界检查（常量版本）
- * @tparam T 表格元素类型
- * @param row 行索引
- * @param col 列索引
- * @return 指定位置元素的常量引用
- * @throw std::out_of_range 如果row或col超出范围
- *
- * @code{.cpp}
- * const DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * try {
- *     const int& value = table.at(0, 1); // 获取第一行第二列的元素
- *     std::cout << "值: " << value << std::endl;
- *
- *     // 尝试访问不存在的元素
- *     const int& invalid = table.at(5, 5); // 抛出异常
- * } catch (const std::out_of_range& e) {
- *     std::cerr << "错误: " << e.what() << std::endl;
- * }
- * @endcode
- */
+// 访问指定位置的元素，带边界检查（常量版本）
 template< typename T >
 const T& da_vector_table< T >::at(std::size_t row, std::size_t col) const
 {
     check_bounds(row, col);
-    return data_[ index(row, col) ];
+    return mData[ index(row, col) ];
 }
 
-/**
- * @brief 访问表格的第一个元素
- * @tparam T 表格元素类型
- * @return 第一个元素的引用
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * T& first = table.front();
- * first = 10; // 修改第一个元素
- * @endcode
- */
+// 访问表格的第一个元素
 template< typename T >
 T& da_vector_table< T >::front()
 {
-    return data_.front();
+    return mData.front();
 }
 
-/**
- * @brief 访问表格的第一个元素（常量版本）
- * @tparam T 表格元素类型
- * @return 第一个元素的常量引用
- *
- * @code{.cpp}
- * const DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * const T& first = table.front();
- * std::cout << "第一个元素: " << first << std::endl;
- * @endcode
- */
+// 访问表格的第一个元素（常量版本）
 template< typename T >
 const T& da_vector_table< T >::front() const
 {
-    return data_.front();
+    return mData.front();
 }
 
-/**
- * @brief 访问表格的最后一个元素
- * @tparam T 表格元素类型
- * @return 最后一个元素的引用
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * T& last = table.back();
- * last = 10; // 修改最后一个元素
- * @endcode
- */
+// 访问表格的最后一个元素
 template< typename T >
 T& da_vector_table< T >::back()
 {
-    return data_.back();
+    return mData.back();
 }
 
-/**
- * @brief 访问表格的最后一个元素（常量版本）
- * @tparam T 表格元素类型
- * @return 最后一个元素的常量引用
- *
- * @code{.cpp}
- * const DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * const T& last = table.back();
- * std::cout << "最后一个元素: " << last << std::endl;
- * @endcode
- */
+// 访问表格的最后一个元素（常量版本）
 template< typename T >
 const T& da_vector_table< T >::back() const
 {
-    return data_.back();
+    return mData.back();
 }
 
-/**
- * @brief 返回指向底层数组的指针
- * @tparam T 表格元素类型
- * @return 指向底层数组的指针
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * int* ptr = table.data();
- * // 可以直接操作底层数组
- * for (std::size_t i = 0; i < table.size(); ++i) {
- *     ptr[i] += 1;
- * }
- * @endcode
- */
+// 返回指向底层数组的指针
 template< typename T >
 T* da_vector_table< T >::data() noexcept
 {
-    return data_.data();
+    return mData.data();
 }
 
-/**
- * @brief 返回指向底层数组的指针（常量版本）
- * @tparam T 表格元素类型
- * @return 指向底层数组的常量指针
- *
- * @code{.cpp}
- * const DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * const int* ptr = table.data();
- * // 可以读取底层数组
- * for (std::size_t i = 0; i < table.size(); ++i) {
- *     std::cout << ptr[i] << " ";
- * }
- * @endcode
- */
+// 返回指向底层数组的指针（常量版本）
 template< typename T >
 const T* da_vector_table< T >::data() const noexcept
 {
-    return data_.data();
+    return mData.data();
 }
 
-/**
- * @brief 分配新内容替换当前内容
- * @tparam T 表格元素类型
- * @param rows 新行数
- * @param cols 新列数
- * @param value 填充值
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table;
- * // 分配3行4列，所有元素初始化为5
- * table.assign(3, 4, 5);
- * @endcode
- */
+// 分配新内容替换当前内容
 template< typename T >
 void da_vector_table< T >::assign(std::size_t rows, std::size_t cols, const T& value)
 {
-    data_.assign(rows * cols, value);
-    rows_ = rows;
-    cols_ = cols;
+    mData.assign(rows * cols, value);
+    mRows = rows;
+    mCols = cols;
 }
 
-/**
- * @brief 使用迭代器范围分配新内容替换当前内容
- * @tparam T 表格元素类型
- * @tparam InputIt 输入迭代器类型
- * @param first 范围起始迭代器
- * @param last 范围结束迭代器
- *
- * @note 此方法假设输入数据是按行优先顺序排列的，并且行数和列数需要预先知道
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table;
- * std::vector<int> values = {1, 2, 3, 4, 5, 6};
- * // 分配2行3列，使用前6个元素
- * table.assign(values.begin(), values.end());
- * // 需要手动设置行列数
- * table.reshape(2, 3);
- * @endcode
- */
+// 使用迭代器范围分配新内容替换当前内容
 template< typename T >
 template< typename InputIt >
 void da_vector_table< T >::assign(InputIt first, InputIt last)
 {
-    data_.assign(first, last);
-    // 注意：调用此方法后需要手动设置rows_和cols_，或者调用reshape
+    mData.assign(first, last);
+    // 注意：调用此方法后需要手动设置mRows和mCols，或者调用reshape
 }
 
-/**
- * @brief 在表格末尾添加一个元素
- * @tparam T 表格元素类型
- * @param value 要添加的元素
- *
- * @note 此操作会破坏表格的矩形结构，慎用
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table(2, 2, 1); // 2x2表格
- * table.push_back(5); // 添加一个元素，表格变为非矩形
- * @endcode
- */
+// 在表格末尾添加一个元素
 template< typename T >
 void da_vector_table< T >::push_back(const T& value)
 {
-    data_.push_back(value);
+    mData.push_back(value);
     // 注意：此操作会破坏表格结构，需要谨慎使用
 }
 
-/**
- * @brief 在表格末尾添加一个元素（移动语义）
- * @tparam T 表格元素类型
- * @param value 要添加的元素
- *
- * @note 此操作会破坏表格的矩形结构，慎用
- *
- * @code{.cpp}
- * DA::da_vector_table<std::string> table(2, 2, "hello");
- * std::string s = "world";
- * table.push_back(std::move(s)); // 移动添加一个元素
- * @endcode
- */
+// 在表格末尾添加一个元素（移动语义）
 template< typename T >
 void da_vector_table< T >::push_back(T&& value)
 {
-    data_.push_back(std::move(value));
+    mData.push_back(std::move(value));
     // 注意：此操作会破坏表格结构，需要谨慎使用
 }
 
-/**
- * @brief 在表格末尾原位构造一个元素
- * @tparam T 表格元素类型
- * @tparam Args 参数类型
- * @param args 构造参数
- *
- * @note 此操作会破坏表格的矩形结构，慎用
- *
- * @code{.cpp}
- * DA::da_vector_table<std::pair<int, std::string>> table;
- * // 原位构造一个元素
- * table.emplace_back(1, "one");
- * @endcode
- */
+// 在表格末尾原位构造一个元素
 template< typename T >
 template< typename... Args >
 void da_vector_table< T >::emplace_back(Args&&... args)
 {
-    data_.emplace_back(std::forward< Args >(args)...);
+    mData.emplace_back(std::forward< Args >(args)...);
     // 注意：此操作会破坏表格结构，需要谨慎使用
 }
 
-/**
- * @brief 移除表格的最后一个元素
- * @tparam T 表格元素类型
- *
- * @note 此操作会破坏表格的矩形结构，慎用
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * table.pop_back(); // 移除最后一个元素4
- * @endcode
- */
+// 移除表格的最后一个元素
 template< typename T >
 void da_vector_table< T >::pop_back()
 {
-    data_.pop_back();
+    mData.pop_back();
     // 注意：此操作会破坏表格结构，需要谨慎使用
 }
 
-/**
- * @brief 清空表格中的所有元素
- * @tparam T 表格元素类型
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * table.clear(); // 清空表格
- * // 现在表格为空
- * @endcode
- */
+// 清空表格中的所有元素
 template< typename T >
 void da_vector_table< T >::clear() noexcept
 {
-    data_.clear();
-    rows_ = 0;
-    cols_ = 0;
+    mData.clear();
+    mRows = 0;
+    mCols = 0;
 }
 
-/**
- * @brief 交换两个表格的内容
- * @tparam T 表格元素类型
- * @param other 要交换的另一个表格
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table1 = {{1, 2}, {3, 4}};
- * DA::da_vector_table<int> table2 = {{5, 6}};
- * table1.swap(table2);
- * // 现在table1包含{{5, 6}}，table2包含{{1, 2}, {3, 4}}
- * @endcode
- */
+// 交换两个表格的内容
 template< typename T >
 void da_vector_table< T >::swap(da_vector_table& other) noexcept
 {
-    data_.swap(other.data_);
-    std::swap(rows_, other.rows_);
-    std::swap(cols_, other.cols_);
+    mData.swap(other.mData);
+    std::swap(mRows, other.mRows);
+    std::swap(mCols, other.mCols);
 }
 
-/**
- * @brief 在表格末尾添加一行
- * @tparam T 表格元素类型
- * @param row 要添加的行
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table(2, 2, 1); // 2x2表格
- * std::vector<int> new_row = {2, 3};
- * table.append_row(new_row); // 添加一行
- * // 现在表格为3x2
- * @endcode
- */
+// 在表格末尾添加一行
 template< typename T >
 void da_vector_table< T >::append_row(const std::vector< T >& row)
 {
-    if (cols_ == 0) {
+    if (mCols == 0) {
         // 空表格，设置列数
-        cols_ = row.size();
-    } else if (row.size() != cols_) {
+        mCols = row.size();
+    } else if (row.size() != mCols) {
         throw std::invalid_argument("Row size must match table column count");
     }
 
-    data_.insert(data_.end(), row.begin(), row.end());
-    ++rows_;
+    mData.insert(mData.end(), row.begin(), row.end());
+    ++mRows;
 }
 
-/**
- * @brief 在表格末尾添加一行（移动语义）
- * @tparam T 表格元素类型
- * @param row 要添加的行
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table(2, 2, 1); // 2x2表格
- * std::vector<int> new_row = {2, 3};
- * table.append_row(std::move(new_row)); // 移动添加一行
- * // 现在表格为3x2，new_row变为空
- * @endcode
- */
+// 在表格末尾添加一行（移动语义）
 template< typename T >
 void da_vector_table< T >::append_row(std::vector< T >&& row)
 {
-    if (cols_ == 0) {
+    if (mCols == 0) {
         // 空表格，设置列数
-        cols_ = row.size();
-    } else if (row.size() != cols_) {
+        mCols = row.size();
+    } else if (row.size() != mCols) {
         throw std::invalid_argument("Row size must match table column count");
     }
 
-    data_.insert(data_.end(), std::make_move_iterator(row.begin()), std::make_move_iterator(row.end()));
-    ++rows_;
+    mData.insert(mData.end(), std::make_move_iterator(row.begin()), std::make_move_iterator(row.end()));
+    ++mRows;
 }
 
-/**
- * @brief 使用迭代器范围在表格末尾添加一行
- * @tparam T 表格元素类型
- * @tparam InputIt 输入迭代器类型
- * @param first 范围起始迭代器
- * @param last 范围结束迭代器
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table(2, 2, 1); // 2x2表格
- * std::vector<int> values = {2, 3};
- * // 添加前2个元素作为一行
- * table.append_row(values.begin(), values.end());
- * // 现在表格为3x2
- * @endcode
- */
+// 使用迭代器范围在表格末尾添加一行
 template< typename T >
 template< typename InputIt >
 void da_vector_table< T >::append_row(InputIt first, InputIt last)
 {
     const std::size_t count = std::distance(first, last);
-    if (cols_ == 0) {
+    if (mCols == 0) {
         // 空表格，设置列数
-        cols_ = count;
-    } else if (count != cols_) {
+        mCols = count;
+    } else if (count != mCols) {
         throw std::invalid_argument("Row size must match table column count");
     }
 
-    data_.insert(data_.end(), first, last);
-    ++rows_;
+    mData.insert(mData.end(), first, last);
+    ++mRows;
 }
 
-/**
- * @brief 使用初始化列表在表格末尾添加一行
- * @tparam T 表格元素类型
- * @param il 初始化列表
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table(2, 2, 1); // 2x2表格
- * // 使用初始化列表添加一行
- * table.append_row({2, 3});
- * // 现在表格为3x2
- * @endcode
- */
+// 使用初始化列表在表格末尾添加一行
 template< typename T >
 void da_vector_table< T >::append_row(std::initializer_list< T > il)
 {
-    if (cols_ == 0) {
+    if (mCols == 0) {
         // 空表格，设置列数
-        cols_ = il.size();
-    } else if (il.size() != cols_) {
+        mCols = il.size();
+    } else if (il.size() != mCols) {
         throw std::invalid_argument("Row size must match table column count");
     }
 
-    data_.insert(data_.end(), il.begin(), il.end());
-    ++rows_;
+    mData.insert(mData.end(), il.begin(), il.end());
+    ++mRows;
 }
 
-/**
- * @brief 在指定位置插入一行
- * @tparam T 表格元素类型
- * @param pos 插入位置
- * @param row 要插入的行
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {4, 5}};
- * std::vector<int> new_row = {7, 8};
- * // 在第一行后插入新行
- * table.insert_row(1, new_row);
- * // 现在表格为 {{1, 2}, {7, 8}, {4, 5}}
- * @endcode
- */
+// 在指定位置插入一行
 template< typename T >
 void da_vector_table< T >::insert_row(std::size_t pos, const std::vector< T >& row)
 {
-    check_row_bounds(pos);  // 允许在末尾插入(pos == rows_)
+    check_row_bounds(pos);  // 允许在末尾插入(pos == mRows)
 
-    if (cols_ == 0) {
+    if (mCols == 0) {
         // 空表格，设置列数
-        cols_ = row.size();
-    } else if (row.size() != cols_) {
+        mCols = row.size();
+    } else if (row.size() != mCols) {
         throw std::invalid_argument("Row size must match table column count");
     }
 
     // 计算插入位置
-    const std::size_t insert_pos = pos * cols_;
-    data_.insert(data_.begin() + insert_pos, row.begin(), row.end());
-    ++rows_;
+    const std::size_t insert_pos = pos * mCols;
+    mData.insert(mData.begin() + insert_pos, row.begin(), row.end());
+    ++mRows;
 }
 
-/**
- * @brief 在指定位置插入一行（移动语义）
- * @tparam T 表格元素类型
- * @param pos 插入位置
- * @param row 要插入的行
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {4, 5}};
- * std::vector<int> new_row = {7, 8};
- * // 在第一行后插入新行
- * table.insert_row(1, std::move(new_row));
- * // 现在表格为 {{1, 2}, {7, 8}, {4, 5}}，new_row变为空
- * @endcode
- */
+// 在指定位置插入一行（移动语义）
 template< typename T >
 void da_vector_table< T >::insert_row(std::size_t pos, std::vector< T >&& row)
 {
-    check_row_bounds(pos);  // 允许在末尾插入(pos == rows_)
+    check_row_bounds(pos);  // 允许在末尾插入(pos == mRows)
 
-    if (cols_ == 0) {
+    if (mCols == 0) {
         // 空表格，设置列数
-        cols_ = row.size();
-    } else if (row.size() != cols_) {
+        mCols = row.size();
+    } else if (row.size() != mCols) {
         throw std::invalid_argument("Row size must match table column count");
     }
 
     // 预留足够空间避免重新分配
-    if (data_.capacity() < data_.size() + cols_) {
-        data_.reserve(data_.capacity() + std::max(data_.capacity(), cols_ * 2));
+    if (mData.capacity() < mData.size() + mCols) {
+        mData.reserve(mData.capacity() + std::max(mData.capacity(), mCols * 2));
     }
 
     // 计算插入位置
-    const std::size_t insert_pos = pos * cols_;
-    data_.insert(data_.begin() + insert_pos, std::make_move_iterator(row.begin()), std::make_move_iterator(row.end()));
-    ++rows_;
+    const std::size_t insert_pos = pos * mCols;
+    mData.insert(mData.begin() + insert_pos, std::make_move_iterator(row.begin()), std::make_move_iterator(row.end()));
+    ++mRows;
 }
 
-/**
- * @brief 移除指定位置的行
- * @tparam T 表格元素类型
- * @param pos 要移除的行位置
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}, {5, 6}};
- * // 移除第二行
- * table.erase_row(1);
- * // 现在表格为 {{1, 2}, {5, 6}}
- * @endcode
- */
+// 移除指定位置的行
 template< typename T >
 void da_vector_table< T >::erase_row(std::size_t pos)
 {
     check_row_bounds(pos);
 
     // 计算要删除的范围
-    const std::size_t start_pos = pos * cols_;
-    const std::size_t end_pos   = start_pos + cols_;
+    const std::size_t start_pos = pos * mCols;
+    const std::size_t end_pos   = start_pos + mCols;
 
-    data_.erase(data_.begin() + start_pos, data_.begin() + end_pos);
-    --rows_;
+    mData.erase(mData.begin() + start_pos, mData.begin() + end_pos);
+    --mRows;
 }
 
-/**
- * @brief 使用迭代器范围在表格末尾添加一列
- * @tparam T 表格元素类型
- * @tparam InputIt 输入迭代器类型
- * @param first 范围起始迭代器
- * @param last 范围结束迭代器
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * std::vector<int> new_col = {5, 6};
- * // 添加新列
- * table.append_column(new_col.begin(), new_col.end());
- * // 现在表格为 {{1, 2, 5}, {3, 4, 6}}
- * @endcode
- */
+// 使用迭代器范围在表格末尾添加一列
 template<typename T>
 template<typename InputIt>
 void da_vector_table<T>::append_column(InputIt first, InputIt last)
 {
     // 计算元素数量
     const std::size_t count = std::distance(first, last);
-    if (count != rows_) {
+    if (count != mRows) {
         throw std::invalid_argument("Column size must match table row count");
     }
     
     // 创建新向量，容量为添加一列后的大小
     std::vector<T> new_data;
-    new_data.reserve(rows_ * (cols_ + 1));
+    new_data.reserve(mRows * (mCols + 1));
     
     // 复制现有数据并添加新列
     auto it = first;
-    for (std::size_t i = 0; i < rows_; ++i) {
-        const std::size_t row_start = i * cols_;
+    for (std::size_t i = 0; i < mRows; ++i) {
+        const std::size_t row_start = i * mCols;
         
         // 复制当前行的所有元素
-        for (std::size_t j = 0; j < cols_; ++j) {
-            new_data.push_back(std::move(data_[row_start + j]));
+        for (std::size_t j = 0; j < mCols; ++j) {
+            new_data.push_back(std::move(mData[row_start + j]));
         }
         
         // 添加新列的元素
@@ -1256,22 +647,11 @@ void da_vector_table<T>::append_column(InputIt first, InputIt last)
     }
     
     // 更新数据
-    data_ = std::move(new_data);
-    ++cols_;
+    mData = std::move(new_data);
+    ++mCols;
 }
 
-/**
- * @brief 在表格末尾添加一列
- * @tparam T 表格元素类型
- * @param col 要添加的列
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * std::vector<int> new_col = {5, 6};
- * table.append_column(new_col); // 添加一列
- * // 现在表格为 {{1, 2, 5}, {3, 4, 6}}
- * @endcode
- */
+// 在表格末尾添加一列
 template<typename T>
 void da_vector_table<T>::append_column(const std::vector<T>& col)
 {
@@ -1279,18 +659,7 @@ void da_vector_table<T>::append_column(const std::vector<T>& col)
     append_column(col.begin(), col.end());
 }
 
-/**
- * @brief 在表格末尾添加一列（移动语义）
- * @tparam T 表格元素类型
- * @param col 要添加的列
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * std::vector<int> new_col = {5, 6};
- * table.append_column(std::move(new_col)); // 移动添加一列
- * // 现在表格为 {{1, 2, 5}, {3, 4, 6}}，new_col变为空
- * @endcode
- */
+// 在表格末尾添加一列（移动语义）
 template<typename T>
 void da_vector_table<T>::append_column(std::vector<T>&& col)
 {
@@ -1299,18 +668,7 @@ void da_vector_table<T>::append_column(std::vector<T>&& col)
                   std::make_move_iterator(col.end()));
 }
 
-/**
- * @brief 使用初始化列表在表格末尾添加一列
- * @tparam T 表格元素类型
- * @param il 初始化列表
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * // 使用初始化列表添加新列
- * table.append_column({5, 6});
- * // 现在表格为 {{1, 2, 5}, {3, 4, 6}}
- * @endcode
- */
+// 使用初始化列表在表格末尾添加一列
 template<typename T>
 void da_vector_table<T>::append_column(std::initializer_list<T> il)
 {
@@ -1318,120 +676,81 @@ void da_vector_table<T>::append_column(std::initializer_list<T> il)
     append_column(il.begin(), il.end());
 }
 
-/**
- * @brief 在指定位置插入一列
- * @tparam T 表格元素类型
- * @param pos 插入位置
- * @param col 要插入的列
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 3}, {4, 6}};
- * std::vector<int> new_col = {2, 5};
- * // 在第一列后插入新列
- * table.insert_column(1, new_col);
- * // 现在表格为 {{1, 2, 3}, {4, 5, 6}}
- * @endcode
- */
+// 在指定位置插入一列
 template< typename T >
 void da_vector_table< T >::insert_column(std::size_t pos, const std::vector< T >& col)
 {
-    check_column_bounds(pos);  // 允许在末尾插入(pos == cols_)
+    check_column_bounds(pos);  // 允许在末尾插入(pos == mCols)
 
-    if (col.size() != rows_) {
+    if (col.size() != mRows) {
         throw std::invalid_argument("Column size must match table row count");
     }
 
     // 创建新向量，容量为插入一列后的大小
     std::vector< T > new_data;
-    new_data.reserve(rows_ * (cols_ + 1));
+    new_data.reserve(mRows * (mCols + 1));
 
     // 复制数据并插入新列
-    for (std::size_t i = 0; i < rows_; ++i) {
-        const std::size_t row_start = i * cols_;
+    for (std::size_t i = 0; i < mRows; ++i) {
+        const std::size_t row_start = i * mCols;
 
         // 复制当前行中插入位置之前的元素
         for (std::size_t j = 0; j < pos; ++j) {
-            new_data.push_back(data_[ row_start + j ]);
+            new_data.push_back(mData[ row_start + j ]);
         }
 
         // 插入新列的元素
         new_data.push_back(col[ i ]);
 
         // 复制当前行中插入位置之后的元素
-        for (std::size_t j = pos; j < cols_; ++j) {
-            new_data.push_back(data_[ row_start + j ]);
+        for (std::size_t j = pos; j < mCols; ++j) {
+            new_data.push_back(mData[ row_start + j ]);
         }
     }
 
     // 更新数据
-    data_ = std::move(new_data);
-    ++cols_;
+    mData = std::move(new_data);
+    ++mCols;
 }
 
-/**
- * @brief 在指定位置插入一列（移动语义）
- * @tparam T 表格元素类型
- * @param pos 插入位置
- * @param col 要插入的列
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 3}, {4, 6}};
- * std::vector<int> new_col = {2, 5};
- * // 在第一列后插入新列
- * table.insert_column(1, std::move(new_col));
- * // 现在表格为 {{1, 2, 3}, {4, 5, 6}}，new_col变为空
- * @endcode
- */
+// 在指定位置插入一列（移动语义）
 template<typename T>
 void da_vector_table<T>::insert_column(std::size_t pos, std::vector<T>&& col)
 {
-    check_column_bounds(pos); // 允许在末尾插入(pos == cols_)
+    check_column_bounds(pos); // 允许在末尾插入(pos == mCols)
     
-    if (col.size() != rows_) {
+    if (col.size() != mRows) {
         throw std::invalid_argument("Column size must match table row count");
     }
     
     // 创建新向量，容量为插入一列后的大小
     std::vector<T> new_data;
-    new_data.reserve(rows_ * (cols_ + 1));
+    new_data.reserve(mRows * (mCols + 1));
     
     // 复制数据并插入新列
-    for (std::size_t i = 0; i < rows_; ++i) {
-        const std::size_t row_start = i * cols_;
+    for (std::size_t i = 0; i < mRows; ++i) {
+        const std::size_t row_start = i * mCols;
         
         // 复制当前行中插入位置之前的元素
         for (std::size_t j = 0; j < pos; ++j) {
-            new_data.push_back(std::move(data_[row_start + j]));
+            new_data.push_back(std::move(mData[row_start + j]));
         }
         
         // 插入新列的元素（使用移动语义）
         new_data.push_back(std::move(col[i]));
         
         // 复制当前行中插入位置之后的元素
-        for (std::size_t j = pos; j < cols_; ++j) {
-            new_data.push_back(std::move(data_[row_start + j]));
+        for (std::size_t j = pos; j < mCols; ++j) {
+            new_data.push_back(std::move(mData[row_start + j]));
         }
     }
     
     // 更新数据
-    data_ = std::move(new_data);
-    ++cols_;
+    mData = std::move(new_data);
+    ++mCols;
 }
 
-/**
- * @brief 移除指定位置的列（高效版本）
- * @tparam T 表格元素类型
- * @param pos 要移除的列位置
- *
- * 此版本通过创建新向量来避免多次数据移动，提高大型表格的操作效率。
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2, 3}, {4, 5, 6}};
- * // 移除第二列
- * table.erase_column(1);
- * // 现在表格为 {{1, 3}, {4, 6}}
- * @endcode
- */
+// 移除指定位置的列（高效版本）
 template< typename T >
 void da_vector_table< T >::erase_column(std::size_t pos)
 {
@@ -1439,287 +758,167 @@ void da_vector_table< T >::erase_column(std::size_t pos)
 
     // 创建新向量，容量为移除一列后的大小
     std::vector< T > new_data;
-    new_data.reserve(rows_ * (cols_ - 1));
+    new_data.reserve(mRows * (mCols - 1));
 
     // 复制除了指定列之外的所有元素
-    for (std::size_t i = 0; i < rows_; ++i) {
-        const std::size_t row_start = i * cols_;
+    for (std::size_t i = 0; i < mRows; ++i) {
+        const std::size_t row_start = i * mCols;
 
         // 复制当前行中指定列之前的元素
         for (std::size_t j = 0; j < pos; ++j) {
-            new_data.push_back(data_[ row_start + j ]);
+            new_data.push_back(mData[ row_start + j ]);
         }
 
         // 跳过指定列，复制之后的元素
-        for (std::size_t j = pos + 1; j < cols_; ++j) {
-            new_data.push_back(data_[ row_start + j ]);
+        for (std::size_t j = pos + 1; j < mCols; ++j) {
+            new_data.push_back(mData[ row_start + j ]);
         }
     }
 
     // 更新数据
-    data_ = std::move(new_data);
-    --cols_;
+    mData = std::move(new_data);
+    --mCols;
 }
 
-/**
- * @brief 获取表格的形状（行数和列数）
- * @tparam T 表格元素类型
- * @return 包含行数和列数的pair
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table(3, 4, 1);
- * auto shape = table.shape();
- * std::cout << "表格形状: " << shape.first << " 行, "
- *           << shape.second << " 列" << std::endl;
- * // 输出: 表格形状: 3 行, 4 列
- * @endcode
- */
+// 获取表格的形状（行数和列数）
 template< typename T >
 typename da_vector_table< T >::table_index_type da_vector_table< T >::shape() const noexcept
 {
-    return { rows_, cols_ };
+    return { mRows, mCols };
 }
 
-/**
- * @brief 获取表格的行数
- * @tparam T 表格元素类型
- * @return 表格的行数
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table(3, 4);
- * std::cout << "表格有 " << table.row_count() << " 行" << std::endl;
- * // 输出: 表格有 3 行
- * @endcode
- */
+// 获取表格的行数
 template< typename T >
 std::size_t da_vector_table< T >::row_count() const noexcept
 {
-    return rows_;
+    return mRows;
 }
 
-/**
- * @brief 获取表格的列数
- * @tparam T 表格元素类型
- * @return 表格的列数
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table(3, 4);
- * std::cout << "表格有 " << table.column_count() << " 列" << std::endl;
- * // 输出: 表格有 4 列
- * @endcode
- */
+// 获取表格的列数
 template< typename T >
 std::size_t da_vector_table< T >::column_count() const noexcept
 {
-    return cols_;
+    return mCols;
 }
 
-/**
- * @brief 调整表格大小
- * @tparam T 表格元素类型
- * @param rows 新的行数
- * @param cols 新的列数
- * @param value 新元素的初始值
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * // 调整大小为3行4列，新元素初始化为0
- * table.resize(3, 4, 0);
- * // 现在表格为3行4列，新增元素为0
- * @endcode
- */
+// 调整表格大小
 template< typename T >
 void da_vector_table< T >::resize(std::size_t rows, std::size_t cols, const T& value)
 {
-    if (rows == rows_ && cols == cols_) {
+    if (rows == mRows && cols == mCols) {
         return;
     }
 
     // 如果新大小小于等于当前容量，且列数不变，可以原地调整
-    if (cols == cols_ && rows * cols <= data_.capacity()) {
-        if (rows > rows_) {
+    if (cols == mCols && rows * cols <= mData.capacity()) {
+        if (rows > mRows) {
             // 增加行数
-            data_.resize(rows * cols, value);
+            mData.resize(rows * cols, value);
         } else {
             // 减少行数
-            data_.resize(rows * cols);
+            mData.resize(rows * cols);
         }
-        rows_ = rows;
+        mRows = rows;
         return;
     }
 
     // 否则需要重新移动
     std::vector< T > new_data(rows * cols, value);
 
-    const std::size_t copy_rows = std::min(rows, rows_);
-    const std::size_t copy_cols = std::min(cols, cols_);
+    const std::size_t copy_rows = std::min(rows, mRows);
+    const std::size_t copy_cols = std::min(cols, mCols);
 
     for (std::size_t i = 0; i < copy_rows; ++i) {
         for (std::size_t j = 0; j < copy_cols; ++j) {
-            new_data[ i * cols + j ] = data_[ i * cols_ + j ];
+            new_data[ i * cols + j ] = mData[ i * mCols + j ];
         }
     }
 
-    data_ = std::move(new_data);
-    rows_ = rows;
-    cols_ = cols;
+    mData = std::move(new_data);
+    mRows = rows;
+    mCols = cols;
 }
 
-/**
- * @brief 使用形状对象调整表格大小
- * @tparam T 表格元素类型
- * @param sh 包含新行数和列数的形状对象
- * @param value 新元素的初始值
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2}, {3, 4}};
- * // 调整大小为3行4列，新元素初始化为0
- * table.resize({3, 4}, 0);
- * // 现在表格为3行4列，新增元素为0
- * @endcode
- */
+// 使用形状对象调整表格大小
 template< typename T >
 void da_vector_table< T >::resize(table_index_type sh, const T& value)
 {
     resize(sh.first, sh.second, value);
 }
 
-/**
- * @brief 改变表格形状而不改变数据总量
- * @tparam T 表格元素类型
- * @param rows 新的行数
- * @param cols 新的列数
- * @throw std::invalid_argument 如果新形状的元素总数与当前不同
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2, 3, 4}};
- * // 改变形状为2x2
- * table.reshape(2, 2);
- * // 现在表格为 {{1, 2}, {3, 4}}
- * @endcode
- */
+// 改变表格形状而不改变数据总量
 template< typename T >
 void da_vector_table< T >::reshape(std::size_t rows, std::size_t cols)
 {
-    if (rows * cols != data_.size()) {
+    if (rows * cols != mData.size()) {
         throw std::invalid_argument("New shape must have the same number of elements");
     }
 
-    rows_ = rows;
-    cols_ = cols;
+    mRows = rows;
+    mCols = cols;
 }
 
-/**
- * @brief 获取指定行的数据
- * @tparam T 表格元素类型
- * @param row 行索引
- * @return 包含指定行数据的向量
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2, 3}, {4, 5, 6}};
- * // 获取第一行
- * std::vector<int> row0 = table.get_row(0);
- * // row0 包含 {1, 2, 3}
- * @endcode
- */
+// 获取指定行的数据
 template< typename T >
 std::vector< T > da_vector_table< T >::get_row(std::size_t row) const
 {
     check_row_bounds(row);
 
     std::vector< T > result;
-    result.reserve(cols_);
+    result.reserve(mCols);
 
-    const std::size_t start = row * cols_;
-    for (std::size_t i = 0; i < cols_; ++i) {
-        result.push_back(data_[ start + i ]);
+    const std::size_t start = row * mCols;
+    for (std::size_t i = 0; i < mCols; ++i) {
+        result.push_back(mData[ start + i ]);
     }
 
     return result;
 }
 
-/**
- * @brief 获取指定列的数据
- * @tparam T 表格元素类型
- * @param col 列索引
- * @return 包含指定列数据的向量
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2, 3}, {4, 5, 6}};
- * // 获取第二列
- * std::vector<int> col1 = table.get_column(1);
- * // col1 包含 {2, 5}
- * @endcode
- */
+// 获取指定列的数据
 template< typename T >
 std::vector< T > da_vector_table< T >::get_column(std::size_t col) const
 {
     check_column_bounds(col);
 
     std::vector< T > result;
-    result.reserve(rows_);
+    result.reserve(mRows);
 
-    for (std::size_t i = 0; i < rows_; ++i) {
-        result.push_back(data_[ i * cols_ + col ]);
+    for (std::size_t i = 0; i < mRows; ++i) {
+        result.push_back(mData[ i * mCols + col ]);
     }
 
     return result;
 }
 
-/**
- * @brief 设置指定行的数据
- * @tparam T 表格元素类型
- * @param row 行索引
- * @param values 要设置的值
- * @throw std::invalid_argument 如果值数量与列数不匹配
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2, 3}, {4, 5, 6}};
- * // 设置第一行
- * table.set_row(0, {7, 8, 9});
- * // 现在表格为 {{7, 8, 9}, {4, 5, 6}}
- * @endcode
- */
+// 设置指定行的数据
 template< typename T >
 void da_vector_table< T >::set_row(std::size_t row, const std::vector< T >& values)
 {
     check_row_bounds(row);
 
-    if (values.size() != cols_) {
+    if (values.size() != mCols) {
         throw std::invalid_argument("Number of values must match column count");
     }
 
-    const std::size_t start = row * cols_;
-    for (std::size_t i = 0; i < cols_; ++i) {
-        data_[ start + i ] = values[ i ];
+    const std::size_t start = row * mCols;
+    for (std::size_t i = 0; i < mCols; ++i) {
+        mData[ start + i ] = values[ i ];
     }
 }
 
-/**
- * @brief 设置指定列的数据
- * @tparam T 表格元素类型
- * @param col 列索引
- * @param values 要设置的值
- * @throw std::invalid_argument 如果值数量与行数不匹配
- *
- * @code{.cpp}
- * DA::da_vector_table<int> table = {{1, 2, 3}, {4, 5, 6}};
- * // 设置第二列
- * table.set_column(1, {7, 8});
- * // 现在表格为 {{1, 7, 3}, {4, 8, 6}}
- * @endcode
- */
+// 设置指定列的数据
 template< typename T >
 void da_vector_table< T >::set_column(std::size_t col, const std::vector< T >& values)
 {
     check_column_bounds(col);
 
-    if (values.size() != rows_) {
+    if (values.size() != mRows) {
         throw std::invalid_argument("Number of values must match row count");
     }
 
-    for (std::size_t i = 0; i < rows_; ++i) {
-        data_[ i * cols_ + col ] = values[ i ];
+    for (std::size_t i = 0; i < mRows; ++i) {
+        mData[ i * mCols + col ] = values[ i ];
     }
 }
 
@@ -1727,61 +926,39 @@ void da_vector_table< T >::set_column(std::size_t col, const std::vector< T >& v
 // 私有辅助函数实现
 // ============================================================================
 
-/**
- * @brief 计算二维索引对应的一维索引
- * @tparam T 表格元素类型
- * @param row 行索引
- * @param col 列索引
- * @return 一维索引
- */
+// 计算二维索引对应的一维索引
 template< typename T >
 std::size_t da_vector_table< T >::index(std::size_t row, std::size_t col) const noexcept
 {
-    return row * cols_ + col;
+    return row * mCols + col;
 }
 
-/**
- * @brief 检查行列索引是否在有效范围内
- * @tparam T 表格元素类型
- * @param row 行索引
- * @param col 列索引
- * @throw std::out_of_range 如果索引超出范围
- */
+// 检查行列索引是否在有效范围内
 template< typename T >
 void da_vector_table< T >::check_bounds(std::size_t row, std::size_t col) const
 {
-    if (row >= rows_) {
+    if (row >= mRows) {
         throw std::out_of_range("Row index out of range");
     }
-    if (col >= cols_) {
+    if (col >= mCols) {
         throw std::out_of_range("Column index out of range");
     }
 }
 
-/**
- * @brief 检查行索引是否在有效范围内
- * @tparam T 表格元素类型
- * @param row 行索引
- * @throw std::out_of_range 如果索引超出范围
- */
+// 检查行索引是否在有效范围内
 template< typename T >
 void da_vector_table< T >::check_row_bounds(std::size_t row) const
 {
-    if (row > rows_) {  // 允许在末尾插入，所以可以等于rows_
+    if (row > mRows) {  // 允许在末尾插入，所以可以等于mRows
         throw std::out_of_range("Row index out of range");
     }
 }
 
-/**
- * @brief 检查列索引是否在有效范围内
- * @tparam T 表格元素类型
- * @param col 列索引
- * @throw std::out_of_range 如果索引超出范围
- */
+// 检查列索引是否在有效范围内
 template< typename T >
 void da_vector_table< T >::check_column_bounds(std::size_t col) const
 {
-    if (col > cols_) {  // 允许在末尾插入，所以可以等于cols_
+    if (col > mCols) {  // 允许在末尾插入，所以可以等于mCols
         throw std::out_of_range("Column index out of range");
     }
 }

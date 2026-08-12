@@ -1,4 +1,4 @@
-﻿#ifndef DAUNIQUEIDGENERATER_H
+#ifndef DAUNIQUEIDGENERATER_H
 #define DAUNIQUEIDGENERATER_H
 #include "DAUtilsAPI.h"
 #include <cstdint>
@@ -12,10 +12,7 @@ class DAUTILS_API DAUniqueIDGenerater
 {
 public:
 	DAUniqueIDGenerater();
-	/**
-	 * @brief 生成当前进程唯一uint64_t类型的id
-	 * @return
-	 */
+	// 生成当前进程唯一uint64_t类型的id
 	static uint64_t id_uint64();
 };
 

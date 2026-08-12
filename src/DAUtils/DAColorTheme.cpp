@@ -4,153 +4,280 @@
 namespace DA
 {
 
+/**
+ * @brief 默认构造函数
+ */
 DAColorTheme::DAColorTheme()
 {
 }
 
+/**
+ * @brief 通过主题样式构造颜色主题
+ * @param th 主题样式
+ */
 DAColorTheme::DAColorTheme(ColorThemeStyle th)
 {
     mColorList         = createColorList(th);
     mCurrentColorTheme = th;
 }
 
+/**
+ * @brief 通过初始化列表构造颜色主题
+ * @param v 颜色初始化列表
+ */
 DAColorTheme::DAColorTheme(const std::initializer_list< QColor >& v) : mColorList(v)
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DAColorTheme::~DAColorTheme()
 {
 }
 
+/**
+ * @brief 创建一个color theme
+ * @param t 主题样式
+ * @return 创建的颜色主题对象
+ */
 DAColorTheme DAColorTheme::create(DAColorTheme::ColorThemeStyle t)
 {
     return DAColorTheme(t);
 }
 
+/**
+ * @brief 重载等于操作符，可以直接通过主题赋值
+ * @param th 主题样式
+ * @return 当前颜色主题的引用
+ */
 DAColorTheme& DAColorTheme::operator=(const ColorThemeStyle& th)
 {
     *this = DAColorTheme::create(th);
     return *this;
 }
 
+/**
+ * @brief 获取下一个元素(索引后移)
+ * @return 下一个颜色
+ */
 QColor DAColorTheme::next()
 {
     return mColorList.next();
 }
 
+/**
+ * @brief 把索引移动到下一个，如果超过范围会回到头部
+ */
 void DAColorTheme::moveToNext()
 {
     mColorList.moveToNext();
 }
 
+/**
+ * @brief 前缀递增操作，++v，返回下一个颜色
+ * @return 下一个颜色
+ */
 QColor DAColorTheme::operator++()
 {
     return ++mColorList;
 }
 
+/**
+ * @brief 后缀递增操作，v++，返回当前颜色并移动到下一个
+ * @return 当前颜色
+ */
 QColor DAColorTheme::operator++(int)
 {
     return mColorList++;
 }
 
+/**
+ * @brief 获取前一个元素(索引前移)
+ * @return 前一个颜色
+ */
 QColor DAColorTheme::previous()
 {
     return mColorList.previous();
 }
 
+/**
+ * @brief 把索引移动到前一个，如果超过范围会回到尾部
+ */
 void DAColorTheme::moveToPrevious()
 {
     mColorList.moveToPrevious();
 }
 
+/**
+ * @brief 前缀递减操作，--v，回退并返回值
+ * @return 前一个颜色
+ */
 QColor DAColorTheme::operator--()
 {
     return --mColorList;
 }
 
+/**
+ * @brief 后缀递减操作，v--，返回当前颜色并回退
+ * @return 当前颜色
+ */
 QColor DAColorTheme::operator--(int)
 {
     return mColorList--;
 }
 
+/**
+ * @brief 获取当前的元素
+ * @return 当前索引对应的颜色
+ */
 QColor DAColorTheme::current() const
 {
     return mColorList.current();
 }
 
+/**
+ * @brief 按照索引获取颜色
+ * @param index 索引
+ * @return 对应索引的颜色
+ */
 QColor DAColorTheme::at(int index) const
 {
     return mColorList.at(index);
 }
 
+/**
+ * @brief 下标操作符
+ * @param index 索引
+ * @return 对应索引颜色的引用
+ */
 QColor& DAColorTheme::operator[](int index)
 {
     return mColorList[ index ];
 }
 
+/**
+ * @brief 转换为QList<QColor>
+ * @return 颜色列表
+ */
 DAColorTheme::ColorList DAColorTheme::toColorList() const
 {
     return mColorList.container();
 }
 
+/**
+ * @brief 获取最后的颜色
+ * @return 最后一个颜色
+ */
 QColor DAColorTheme::lastColor() const
 {
     return mColorList.last();
 }
 
+/**
+ * @brief 获取第一个颜色
+ * @return 第一个颜色
+ */
 QColor DAColorTheme::firstColor() const
 {
     return mColorList.first();
 }
+
+/**
+ * @brief 下标操作符（常量版本）
+ * @param index 索引
+ * @return 对应索引颜色的常量引用
+ */
 const QColor& DAColorTheme::operator[](int index) const
 {
     return mColorList[ index ];
 }
+
+/**
+ * @brief 判断当前索引是否是第一个
+ * @return 如果是第一个返回true
+ */
 bool DAColorTheme::isFirstIndex() const
 {
     return mColorList.isFirstIndex();
 }
 
+/**
+ * @brief 判断当前索引是否是最后一个
+ * @return 如果是最后一个返回true
+ */
 bool DAColorTheme::isLastIndex() const
 {
     return mColorList.isLastIndex();
 }
 
+/**
+ * @brief 判断当前索引是否在合理范围内
+ * @return 如果索引有效返回true
+ */
 bool DAColorTheme::isValidIndex() const
 {
     return mColorList.isValidIndex();
 }
 
+/**
+ * @brief 获取当前的索引
+ * @return 当前索引值
+ */
 int DAColorTheme::getCurrentIndex() const
 {
     return mColorList.currentIndex();
 }
 
+/**
+ * @brief 设置当前的索引
+ * @param v 要设置的索引值
+ */
 void DAColorTheme::setCurrentIndex(int v)
 {
     mColorList.setCurrentIndex(v);
 }
 
+/**
+ * @brief 获取起始迭代器
+ * @return 起始迭代器
+ */
 DAColorTheme::iterator DAColorTheme::begin()
 {
     return mColorList.begin();
 }
 
+/**
+ * @brief 获取起始迭代器（常量版本）
+ * @return 常量起始迭代器
+ */
 DAColorTheme::const_iterator DAColorTheme::begin() const
 {
     return mColorList.begin();
 }
 
+/**
+ * @brief 获取结束迭代器
+ * @return 结束迭代器
+ */
 DAColorTheme::iterator DAColorTheme::end()
 {
     return mColorList.end();
 }
 
+/**
+ * @brief 获取结束迭代器（常量版本）
+ * @return 常量结束迭代器
+ */
 DAColorTheme::const_iterator DAColorTheme::end() const
 {
     return mColorList.end();
 }
 
+/**
+ * @brief 获取颜色数量
+ * @return 颜色数量
+ */
 int DAColorTheme::size() const
 {
     return mColorList.size();
@@ -206,11 +333,19 @@ QColor DAColorTheme::interpolateColor(const QColor& color1, const QColor& color2
     return QColor(r, g, b);
 }
 
+/**
+ * @brief 获取主题样式
+ * @return 当前主题样式
+ */
 DAColorTheme::ColorThemeStyle DAColorTheme::getColorThemeStyle() const
 {
     return mCurrentColorTheme;
 }
 
+/**
+ * @brief 设置主题样式
+ * @param style 主题样式
+ */
 void DAColorTheme::setColorThemeStyle(ColorThemeStyle style)
 {
     if (mCurrentColorTheme == style) {
@@ -222,6 +357,11 @@ void DAColorTheme::setColorThemeStyle(ColorThemeStyle style)
     }
 }
 
+/**
+ * @brief 设置用户自定义的颜色列表
+ * @param cls 颜色列表
+ * @param style 主题样式，默认为Style_UserDefine
+ */
 void DAColorTheme::setUserDefineColorList(const ColorList& cls, ColorThemeStyle style)
 {
     setColorThemeStyle(style);
@@ -229,6 +369,11 @@ void DAColorTheme::setUserDefineColorList(const ColorList& cls, ColorThemeStyle 
     mColorList.setCurrentIndex(0);
 }
 
+/**
+ * @brief 获取主题样式的名字
+ * @param style 主题样式
+ * @return 主题样式的名称字符串
+ */
 QString DAColorTheme::colorThemeStyleName(DAColorTheme::ColorThemeStyle style)
 {
     static QHash< ColorThemeStyle, QString > s_themeStyleToName(
@@ -264,6 +409,11 @@ QString DAColorTheme::colorThemeStyleName(DAColorTheme::ColorThemeStyle style)
     return s_themeStyleToName.value(style, QString("UserDefine"));
 }
 
+/**
+ * @brief 根据主题样式创建颜色列表
+ * @param th 主题样式
+ * @return 包含对应颜色列表的容器
+ */
 DAColorTheme::container DAColorTheme::createColorList(const ColorThemeStyle& th)
 {
     switch (th) {
@@ -484,6 +634,13 @@ DAColorTheme::container DAColorTheme::createColorList(const ColorThemeStyle& th)
 }
 
 // QDebug的打印支持
+
+/**
+ * @brief QDebug的打印支持
+ * @param debug QDebug对象
+ * @param th 颜色主题
+ * @return QDebug对象
+ */
 QDebug operator<<(QDebug debug, const DAColorTheme& th)
 {
     QDebugStateSaver saver(debug);
