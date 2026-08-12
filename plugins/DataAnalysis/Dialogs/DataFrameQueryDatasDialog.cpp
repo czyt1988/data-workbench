@@ -3,6 +3,10 @@
 #include <QLineEdit>
 
 
+/**
+ * @brief 构造函数
+ * @param parent 父窗口
+ */
 DataFrameQueryDatasDialog::DataFrameQueryDatasDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::DataFrameQueryDatasDialog)
 {
@@ -74,11 +78,18 @@ DataFrameQueryDatasDialog::DataFrameQueryDatasDialog(QWidget* parent)
     // 列名含空格或特殊字符时，需用反引号 `` ` `` 包裹，例如：`Embarked On`。
 }
 
+/**
+ * @brief 析构函数
+ */
 DataFrameQueryDatasDialog::~DataFrameQueryDatasDialog()
 {
     delete ui;
 }
 
+/**
+ * @brief 获取表达式文本
+ * @return 用户输入的表达式字符串
+ */
 QString DataFrameQueryDatasDialog::getExpr() const
 {
     return ui->textEdit->toPlainText();

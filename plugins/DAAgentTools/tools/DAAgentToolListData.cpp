@@ -2,6 +2,10 @@
 
 namespace DA
 {
+
+/**
+ * @copydoc DAAbstractAgentTool::getToolSpec
+ */
 QJsonObject DAAgentToolListData::getToolSpec() const
 {
     return QJsonObject{
@@ -15,6 +19,9 @@ QJsonObject DAAgentToolListData::getToolSpec() const
     };
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::execute
+ */
 QJsonObject DAAgentToolListData::execute(const QJsonObject& params)
 {
     Q_UNUSED(params);

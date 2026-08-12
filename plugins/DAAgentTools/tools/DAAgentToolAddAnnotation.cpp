@@ -10,6 +10,10 @@
 
 namespace DA
 {
+
+/**
+ * @copydoc DAAbstractAgentTool::getToolSpec
+ */
 QJsonObject DAAgentToolAddAnnotation::getToolSpec() const
 {
     return QJsonObject{
@@ -32,6 +36,9 @@ QJsonObject DAAgentToolAddAnnotation::getToolSpec() const
     };
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::execute
+ */
 QJsonObject DAAgentToolAddAnnotation::execute(const QJsonObject& params)
 {
     QString chartId    = params["chart_id"].toString();

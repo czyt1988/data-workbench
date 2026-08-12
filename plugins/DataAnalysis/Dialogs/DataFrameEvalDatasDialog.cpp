@@ -3,6 +3,10 @@
 #include <QLineEdit>
 
 
+/**
+ * @brief 构造函数
+ * @param parent 父窗口
+ */
 DataFrameEvalDatasDialog::DataFrameEvalDatasDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::DataFrameEvalDatasDialog)
 {
@@ -134,11 +138,18 @@ DataFrameEvalDatasDialog::DataFrameEvalDatasDialog(QWidget* parent)
     // 可用于筛选名字中包含 "John" 的行。
 }
 
+/**
+ * @brief 析构函数
+ */
 DataFrameEvalDatasDialog::~DataFrameEvalDatasDialog()
 {
     delete ui;
 }
 
+/**
+ * @brief 获取表达式文本
+ * @return 用户输入的表达式字符串
+ */
 QString DataFrameEvalDatasDialog::getExpr() const
 {
     return ui->textEdit->toPlainText();

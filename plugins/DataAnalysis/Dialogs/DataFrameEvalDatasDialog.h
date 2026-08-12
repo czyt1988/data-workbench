@@ -18,7 +18,7 @@ class DataFrameEvalDatasDialog : public QDialog
 
 public:
     explicit DataFrameEvalDatasDialog(QWidget* parent = nullptr);
-    ~DataFrameEvalDatasDialog();
+    ~DataFrameEvalDatasDialog() override;
     // 获取输入的条件
     QString getExpr() const;
 

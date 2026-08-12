@@ -1,4 +1,4 @@
-﻿#ifndef DATAFRAMECREATEPIVOTTABLEDIALOG_H
+#ifndef DATAFRAMECREATEPIVOTTABLEDIALOG_H
 #define DATAFRAMECREATEPIVOTTABLEDIALOG_H
 
 #include <QDialog>
@@ -22,7 +22,7 @@ class DataFrameCreatePivotTableDialog : public QDialog
 
 public:
     explicit DataFrameCreatePivotTableDialog(QWidget* parent = nullptr);
-    ~DataFrameCreatePivotTableDialog();
+    ~DataFrameCreatePivotTableDialog() override;
 
     // 获取选中的dataframe
     DA::DAPyDataFrame getDataFrame() const;
@@ -49,7 +49,7 @@ private:
     // Aggfunc参数
     void initPivotTableAggfunc();
 
-private slots:
+private Q_SLOTS:
     void onTableItemClicked(const QModelIndex& index);
 
 private:

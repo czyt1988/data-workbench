@@ -1,4 +1,4 @@
-﻿#ifndef DATAFRAMEQUERYDATASDIALOG_H
+#ifndef DATAFRAMEQUERYDATASDIALOG_H
 #define DATAFRAMEQUERYDATASDIALOG_H
 
 #include <QDialog>
@@ -18,7 +18,7 @@ class DataFrameQueryDatasDialog : public QDialog
 
 public:
     explicit DataFrameQueryDatasDialog(QWidget* parent = nullptr);
-    ~DataFrameQueryDatasDialog();
+    ~DataFrameQueryDatasDialog() override;
     // 获取输入的条件
     QString getExpr() const;
 

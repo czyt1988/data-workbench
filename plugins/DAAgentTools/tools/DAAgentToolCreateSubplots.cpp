@@ -4,6 +4,10 @@
 
 namespace DA
 {
+
+/**
+ * @copydoc DAAbstractAgentTool::getToolSpec
+ */
 QJsonObject DAAgentToolCreateSubplots::getToolSpec() const
 {
     return QJsonObject{
@@ -21,6 +25,9 @@ QJsonObject DAAgentToolCreateSubplots::getToolSpec() const
     };
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::execute
+ */
 QJsonObject DAAgentToolCreateSubplots::execute(const QJsonObject& params)
 {
     QString layout = params["layout"].toString();

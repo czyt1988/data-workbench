@@ -25,6 +25,9 @@ static bool isPathSafe(const QString& path)
     return true;
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::getToolSpec
+ */
 QJsonObject DAAgentToolReadFile::getToolSpec() const
 {
     return QJsonObject{
@@ -40,6 +43,9 @@ QJsonObject DAAgentToolReadFile::getToolSpec() const
     };
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::execute
+ */
 QJsonObject DAAgentToolReadFile::execute(const QJsonObject& params)
 {
     QString filePath = params["file_path"].toString();

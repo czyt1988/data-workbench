@@ -17,7 +17,7 @@ class DataFrameExportRangeSelectDialog : public QDialog
 
 public:
     explicit DataFrameExportRangeSelectDialog(QWidget* parent = nullptr);
-    ~DataFrameExportRangeSelectDialog();
+    ~DataFrameExportRangeSelectDialog() override;
     // 是否保存所有，或者只是保存选中
     bool isExportAll() const;
 

@@ -6,6 +6,10 @@
 
 namespace DA
 {
+
+/**
+ * @copydoc DAAbstractAgentTool::getToolSpec
+ */
 QJsonObject DAAgentToolRemoveChartItem::getToolSpec() const
 {
     return QJsonObject{
@@ -25,6 +29,9 @@ QJsonObject DAAgentToolRemoveChartItem::getToolSpec() const
     };
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::execute
+ */
 QJsonObject DAAgentToolRemoveChartItem::execute(const QJsonObject& params)
 {
     QString chartId    = params["chart_id"].toString();
@@ -89,7 +96,7 @@ QJsonObject DAAgentToolRemoveChartItem::execute(const QJsonObject& params)
         target = candidates[ idx ];
     } else {
         // Match by title
-        for (QwtPlotItem* item : candidates) {
+        for (QwtPlotItem* item : std::as_const(candidates)) {
             if (item && item->title().text() == itemName) {
                 target = item;
                 break;

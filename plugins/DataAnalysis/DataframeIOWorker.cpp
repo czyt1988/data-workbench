@@ -16,30 +16,44 @@
 #include "DALogCategory.h"
 #include "Dialogs/DataframeExportSettingsDialog.h"
 #include "Dialogs/DataFrameExportRangeSelectDialog.h"
+
+/**
+ * @brief 构造函数
+ *
+ * @param par 父对象
+ */
 DataframeIOWorker::DataframeIOWorker(QObject* par) : DataAnalysisBaseWorker(par)
 {
     initializePythonEnv();
 }
 
+/**
+ * @brief 析构函数
+ */
 DataframeIOWorker::~DataframeIOWorker()
 {
 }
 
+/**
+ * @brief 初始化Python环境
+ *
+ * @return 初始化是否成功
+ */
 bool DataframeIOWorker::initializePythonEnv()
 {
     try {
         DA::DAPyModule DADataAnalysisGui("DADataAnalysisGui");
-        m_dataAnalysisModule  = std::make_unique< DA::DAPyModule >();
-        *m_dataAnalysisModule = DADataAnalysisGui.attr("dataframe_io");
+        mDataAnalysisModule  = std::make_unique< DA::DAPyModule >();
+        *mDataAnalysisModule = DADataAnalysisGui.attr("dataframe_io");
 
         DA::DAPyModule DAWorkbench("DAWorkbench.DAPyBase");
-        m_threadStatusMgrModule  = std::make_unique< DA::DAPyModule >();
-        *m_threadStatusMgrModule = DAWorkbench.attr("thread_status_manager");
+        mThreadStatusMgrModule  = std::make_unique< DA::DAPyModule >();
+        *mThreadStatusMgrModule = DAWorkbench.attr("thread_status_manager");
         return true;
 
     } catch (const std::exception& e) {
-        m_dataAnalysisModule.reset();
-        m_threadStatusMgrModule.reset();
+        mDataAnalysisModule.reset();
+        mThreadStatusMgrModule.reset();
         qCritical() << e.what();
     }
     return false;
@@ -59,7 +73,7 @@ void DataframeIOWorker::exportIndividualData()
     }
     QString fileFilter;
     try {
-        auto support_file_filters = m_dataAnalysisModule->attr("support_file_filters");
+        auto support_file_filters = mDataAnalysisModule->attr("support_file_filters");
         auto filters              = support_file_filters();
         fileFilter                = QString::fromStdString(filters.cast< std::string >());
     } catch (const std::exception& e) {
@@ -83,7 +97,7 @@ void DataframeIOWorker::exportIndividualData()
     QString dataFilePath = QString("%1/%2.%3").arg(baseDir, dataName, dataSuffix);
     DA::DAData data      = selDatas.first();
     try {
-        auto export_data = m_dataAnalysisModule->attr("export_data");
+        auto export_data = mDataAnalysisModule->attr("export_data");
         export_data(data.toPyObject(), DA::PY::toPyObject(dataFilePath), DA::PY::toPyObject(dataSuffix));
         daInfo << tr("Successfully exported %1 to %2").arg(data.getName(), dataFilePath);  // cn:成功把%1导出到%2
     } catch (const std::exception& e) {
@@ -92,22 +106,25 @@ void DataframeIOWorker::exportIndividualData()
     }
 }
 
+/**
+ * @brief 导出多个数据
+ */
 void DataframeIOWorker::exportMultipleData()
 {
-    if (!m_dataAnalysisModule) {
+    if (!mDataAnalysisModule) {
         return;
     }
-    if (!m_exportSettingDialog) {
-        m_exportSettingDialog = new DataframeExportSettingsDialog(mainWindow());
+    if (!mExportSettingDialog) {
+        mExportSettingDialog = new DataframeExportSettingsDialog(mainWindow());
     }
-    if (QDialog::Accepted != m_exportSettingDialog->exec()) {
+    if (QDialog::Accepted != mExportSettingDialog->exec()) {
         return;
     }
-    std::string path = m_exportSettingDialog->getSavePath().toStdString();
-    std::string type = m_exportSettingDialog->getSelectSuffix().toStdString();
-    bool isExportAll = m_exportSettingDialog->isExportAll();
+    std::string path = mExportSettingDialog->getSavePath().toStdString();
+    std::string type = mExportSettingDialog->getSelectSuffix().toStdString();
+    bool isExportAll = mExportSettingDialog->isExportAll();
     try {
-        auto process_zip_data_thread = m_dataAnalysisModule->attr("export_datamanager_thread");
+        auto process_zip_data_thread = mDataAnalysisModule->attr("export_datamanager_thread");
         auto taskid                  = process_zip_data_thread(path, type, isExportAll);
         if (taskid.is_none()) {
             return;
@@ -120,9 +137,12 @@ void DataframeIOWorker::exportMultipleData()
     }
 }
 
+/**
+ * @brief 导出到单个Excel文件
+ */
 void DataframeIOWorker::exportToOneExcelFile()
 {
-    if (!m_dataAnalysisModule) {
+    if (!mDataAnalysisModule) {
         return;
     }
 
@@ -136,15 +156,15 @@ void DataframeIOWorker::exportToOneExcelFile()
         return;
     }
 
-    if (!m_exportRangeSelectDialog) {
-        m_exportRangeSelectDialog = new DataFrameExportRangeSelectDialog(mainWindow());
+    if (!mExportRangeSelectDialog) {
+        mExportRangeSelectDialog = new DataFrameExportRangeSelectDialog(mainWindow());
     }
-    if (QDialog::Accepted != m_exportRangeSelectDialog->exec()) {
+    if (QDialog::Accepted != mExportRangeSelectDialog->exec()) {
         return;
     }
-    bool isExportAll = m_exportRangeSelectDialog->isExportAll();
+    bool isExportAll = mExportRangeSelectDialog->isExportAll();
     try {
-        auto export_datamanager_to_excel_thread = m_dataAnalysisModule->attr("export_datamanager_to_excel_thread");
+        auto export_datamanager_to_excel_thread = mDataAnalysisModule->attr("export_datamanager_to_excel_thread");
         auto taskid = export_datamanager_to_excel_thread(savePath.toStdString(), isExportAll);
         if (taskid.is_none()) {
             return;
@@ -157,9 +177,16 @@ void DataframeIOWorker::exportToOneExcelFile()
     }
 }
 
+/**
+ * @brief 更新Python线程状态
+ *
+ * @param taskid 任务ID
+ * @param msleep 休眠时间(毫秒)
+ * @param evenTime 定时查询间隔(毫秒)
+ */
 void DataframeIOWorker::updatePythonThreadStatus(const std::string& taskid, int msleep, int evenTime)
 {
-    if (!m_threadStatusMgrModule) {
+    if (!mThreadStatusMgrModule) {
         return;
     }
     try {
@@ -173,7 +200,7 @@ void DataframeIOWorker::updatePythonThreadStatus(const std::string& taskid, int 
         }
         // 休眠过后开始查询状态，看看python处理的结果
         //  调用Python函数检查状态
-        auto get_task_status  = m_threadStatusMgrModule->attr("get_task_status");
+        auto get_task_status  = mThreadStatusMgrModule->attr("get_task_status");
         pybind11::dict status = get_task_status(taskid);  // 通过任务id获取线程状态
 
         /*

@@ -5,6 +5,11 @@
 
 namespace DA
 {
+
+/**
+ * @brief 获取图表操作窗口
+ * @return 图表操作窗口指针，若核心接口或停靠区不可用则返回 nullptr
+ */
 DAChartOperateWidget* DAAgentChartToolBase::chartOperateWidget() const
 {
     if (!mCore) return nullptr;
@@ -15,18 +20,31 @@ DAChartOperateWidget* DAAgentChartToolBase::chartOperateWidget() const
     return dock->getChartOperateWidget();
 }
 
+/**
+ * @brief 获取当前活动的 Figure 窗口
+ * @return 当前 Figure 指针，若图表操作窗口不可用则返回 nullptr
+ */
 DAFigureWidget* DAAgentChartToolBase::currentFigure() const
 {
     auto* oper = chartOperateWidget();
     return oper ? oper->getCurrentFigure() : nullptr;
 }
 
+/**
+ * @brief 获取当前活动的图表
+ * @return 当前图表指针，若图表操作窗口不可用则返回 nullptr
+ */
 DAChartWidget* DAAgentChartToolBase::currentChart() const
 {
     auto* oper = chartOperateWidget();
     return oper ? oper->getCurrentChart() : nullptr;
 }
 
+/**
+ * @brief 按名称查找 Figure 窗口
+ * @param name Figure 名称
+ * @return 匹配的 Figure 指针，若未找到或名称为空则返回 nullptr
+ */
 DAFigureWidget* DAAgentChartToolBase::findFigureByName(const QString& name) const
 {
     auto* oper = chartOperateWidget();
@@ -42,6 +60,11 @@ DAFigureWidget* DAAgentChartToolBase::findFigureByName(const QString& name) cons
     return nullptr;
 }
 
+/**
+ * @brief 创建新的 Figure 窗口并设为当前活动
+ * @param name Figure 名称
+ * @return 新创建的 Figure 指针，若图表操作窗口不可用则返回 nullptr
+ */
 DAFigureWidget* DAAgentChartToolBase::createFigure(const QString& name) const
 {
     auto* oper = chartOperateWidget();
@@ -55,6 +78,12 @@ DAFigureWidget* DAAgentChartToolBase::createFigure(const QString& name) const
     return fig;
 }
 
+/**
+ * @brief 查找指定图表
+ * @param chartId 图表标识（标题或索引），为空或 "current" 表示当前活动图表
+ * @param figureName 所属 Figure 名称，为空则在当前活动 Figure 中查找
+ * @return 匹配的图表指针，若未找到则返回 nullptr
+ */
 DAChartWidget* DAAgentChartToolBase::findChart(const QString& chartId, const QString& figureName) const
 {
     DAFigureWidget* fig = nullptr;
@@ -87,6 +116,10 @@ DAChartWidget* DAAgentChartToolBase::findChart(const QString& chartId, const QSt
     return nullptr;
 }
 
+/**
+ * @brief 启用图表坐标轴的自动缩放
+ * @param chart 目标图表指针
+ */
 void DAAgentChartToolBase::enableAutoScale(DAChartWidget* chart) const
 {
     if (!chart) {

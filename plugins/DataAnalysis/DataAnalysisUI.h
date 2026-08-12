@@ -1,4 +1,4 @@
-﻿#ifndef DATAANALYSISUI_H
+#ifndef DATAANALYSISUI_H
 #define DATAANALYSISUI_H
 #include <QObject>
 #include <QAction>
@@ -74,9 +74,9 @@ public:
     QAction* actionCreateDataDescribe;  ///< 数据描述
     QAction* actionCreatePivotTable;    ///< 创建数据透视表
 private:
-    DA::DACoreInterface* m_core { nullptr };
-    DA::DAUIInterface* m_ui { nullptr };
-    DA::DAActionsInterface* m_actions { nullptr };
+    DA::DACoreInterface* mCore { nullptr };
+    DA::DAUIInterface* mUi { nullptr };
+    DA::DAActionsInterface* mActions { nullptr };
 };
 
 #endif  // DATAANALYSISPLUGIN_H

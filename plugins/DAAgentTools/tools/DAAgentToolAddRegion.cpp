@@ -7,6 +7,10 @@
 
 namespace DA
 {
+
+/**
+ * @copydoc DAAbstractAgentTool::getToolSpec
+ */
 QJsonObject DAAgentToolAddRegion::getToolSpec() const
 {
     return QJsonObject{
@@ -27,6 +31,9 @@ QJsonObject DAAgentToolAddRegion::getToolSpec() const
     };
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::execute
+ */
 QJsonObject DAAgentToolAddRegion::execute(const QJsonObject& params)
 {
     QString chartId    = params["chart_id"].toString();

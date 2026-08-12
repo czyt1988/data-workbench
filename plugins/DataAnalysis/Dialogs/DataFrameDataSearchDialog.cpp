@@ -7,6 +7,10 @@
 #include "DADataTableView.h"
 #include "DAWaitCursorScoped.h"
 
+/**
+ * @brief 构造函数
+ * @param parent 父窗口
+ */
 DataFrameDataSearchDialog::DataFrameDataSearchDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::DataFrameDataSearchDialog)
 {
@@ -15,21 +19,35 @@ DataFrameDataSearchDialog::DataFrameDataSearchDialog(QWidget* parent)
     connect(ui->pushButtonNext, &QPushButton::clicked, this, &DataFrameDataSearchDialog::onPushButtonNextClicked);
 }
 
+/**
+ * @brief 析构函数
+ */
 DataFrameDataSearchDialog::~DataFrameDataSearchDialog()
 {
     delete ui;
 }
 
+/**
+ * @brief 获取搜索文本
+ * @return 搜索文本
+ */
 QString DataFrameDataSearchDialog::getSearchText() const
 {
     return ui->lineEditFindItem->text();
 }
 
+/**
+ * @brief 获取匹配项的坐标列表
+ * @return 坐标列表
+ */
 QList< QPair< int, int > > DataFrameDataSearchDialog::getItemCoor() const
 {
     return mMatches;
 }
 
+/**
+ * @brief 点击下一个匹配项
+ */
 void DataFrameDataSearchDialog::onPushButtonNextClicked()
 {
     // 直接在此函数上操作
@@ -52,11 +70,19 @@ void DataFrameDataSearchDialog::onPushButtonNextClicked()
     ++mIndex;
 }
 
+/**
+ * @brief 获取数据表格视图
+ * @return 数据表格视图指针
+ */
 DA::DADataTableView* DataFrameDataSearchDialog::getDataTableView() const
 {
     return mDataTableView;
 }
 
+/**
+ * @brief 设置数据表格视图
+ * @param v 数据表格视图指针
+ */
 void DataFrameDataSearchDialog::setDataTableView(DA::DADataTableView* v)
 {
     if (mDataTableView == v) {
@@ -67,6 +93,9 @@ void DataFrameDataSearchDialog::setDataTableView(DA::DADataTableView* v)
     mIsNeedResearch = true;
 }
 
+/**
+ * @brief 执行搜索
+ */
 void DataFrameDataSearchDialog::searchData()
 {
     DA_WAIT_CURSOR_SCOPED_NS();
@@ -76,6 +105,10 @@ void DataFrameDataSearchDialog::searchData()
     mIndex                         = 0;
 }
 
+/**
+ * @brief 搜索文本变化时的槽函数
+ * @param t 变化后的文本
+ */
 void DataFrameDataSearchDialog::onLineEditTextChanged(const QString& t)
 {
     Q_UNUSED(t);

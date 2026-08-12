@@ -25,12 +25,20 @@ CommandDataFrame_filterByColumn::CommandDataFrame_filterByColumn(
     setText(QObject::tr("Data Select"));  // cn:数据过滤
 }
 
+/**
+ * @brief 撤销操作
+ */
 void CommandDataFrame_filterByColumn::undo()
 {
     load();
     callback();
 }
 
+/**
+ * @brief 执行过滤操作
+ *
+ * @return 执行是否成功
+ */
 bool CommandDataFrame_filterByColumn::exec()
 {
     DA::DAPyScriptsDataFrame& pydf = DA::DAPyScripts::getDataFrame();
@@ -61,12 +69,20 @@ CommandDataFrame_sort::CommandDataFrame_sort(const DA::DAPyDataFrame& df, const 
     setText(QObject::tr("Data Sort"));  // cn:数据排序
 }
 
+/**
+ * @brief 撤销操作
+ */
 void CommandDataFrame_sort::undo()
 {
     load();
     callback();
 }
 
+/**
+ * @brief 执行排序操作
+ *
+ * @return 执行是否成功
+ */
 bool CommandDataFrame_sort::exec()
 {
     DA::DAPyScriptsDataFrame& pydf = DA::DAPyScripts::getDataFrame();
@@ -93,12 +109,20 @@ CommandDataFrame_querydatas::CommandDataFrame_querydatas(const DA::DAPyDataFrame
     setText(QObject::tr("Data Query"));  // cn:数据查询
 }
 
+/**
+ * @brief 撤销操作
+ */
 void CommandDataFrame_querydatas::undo()
 {
     load();
     callback();
 }
 
+/**
+ * @brief 执行查询操作
+ *
+ * @return 执行是否成功
+ */
 bool CommandDataFrame_querydatas::exec()
 {
     DA::DAPyScriptsDataFrame& pydf = DA::DAPyScripts::getDataFrame();
@@ -127,12 +151,20 @@ CommandDataFrame_evalDatas::CommandDataFrame_evalDatas(const DA::DAPyDataFrame& 
     setText(QObject::tr("Eval Data"));  // cn:列运算
 }
 
+/**
+ * @brief 撤销操作
+ */
 void CommandDataFrame_evalDatas::undo()
 {
     load();
     callback();
 }
 
+/**
+ * @brief 执行列运算操作
+ *
+ * @return 执行是否成功
+ */
 bool CommandDataFrame_evalDatas::exec()
 {
     DA::DAPyScriptsDataFrame& pydf = DA::DAPyScripts::getDataFrame();

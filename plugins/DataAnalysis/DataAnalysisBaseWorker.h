@@ -1,4 +1,4 @@
-﻿#ifndef DATAANALYSISBASEWORKER_H
+#ifndef DATAANALYSISBASEWORKER_H
 #define DATAANALYSISBASEWORKER_H
 #include <QObject>
 #include <QMainWindow>
@@ -21,8 +21,8 @@ class DataAnalysisBaseWorker : public QObject, public DA::DAInterfaceHelper
     Q_OBJECT
 public:
     explicit DataAnalysisBaseWorker(QObject* par = nullptr);
-    ~DataAnalysisBaseWorker();
-    virtual void initialize(DA::DACoreInterface* core);
+    ~DataAnalysisBaseWorker() override;
+    virtual void initialize(DA::DACoreInterface* core) override;
 };
 
 #endif  // DATAANALYSISBASEWORKER_H

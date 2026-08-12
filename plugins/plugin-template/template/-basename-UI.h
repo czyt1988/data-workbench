@@ -1,4 +1,4 @@
-﻿#ifndef {{PLUGIN-BASE-NAME}}UI_H
+#ifndef {{PLUGIN-BASE-NAME}}UI_H
 #define {{PLUGIN-BASE-NAME}}UI_H
 #include <QObject>
 #include <QAction>
@@ -23,9 +23,9 @@ public:
 public:
 	//这里你可以用于构建你的界面，保存你的action
 private:
-    DA::DACoreInterface* m_core { nullptr };
-	DA::DAUIInterface* m_ui{nullptr};
-	DA::DAActionsInterface* m_actions { nullptr };
+    DA::DACoreInterface* mCore { nullptr };
+	DA::DAUIInterface* mUi{nullptr};
+	DA::DAActionsInterface* mActions { nullptr };
 };
 
 #endif  // {{PLUGIN-BASE-NAME}}PLUGIN_H

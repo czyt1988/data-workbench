@@ -14,6 +14,10 @@ public:
     QStandardItemModel* mModel { nullptr };
 };
 
+/**
+ * @brief 构造函数
+ * @param p 对话框指针
+ */
 DataFrameCreatePivotTableDialog::PrivateData::PrivateData(DataFrameCreatePivotTableDialog* p) : q_ptr(p)
 {
 }
@@ -22,6 +26,11 @@ DataFrameCreatePivotTableDialog::PrivateData::PrivateData(DataFrameCreatePivotTa
 // DADialogCreatePivotTable
 //===============================================================
 
+/**
+ * @brief 构造函数
+ *
+ * @param parent 父窗口
+ */
 DataFrameCreatePivotTableDialog::DataFrameCreatePivotTableDialog(QWidget* parent)
     : QDialog(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DataFrameCreatePivotTableDialog)
 {
@@ -30,16 +39,27 @@ DataFrameCreatePivotTableDialog::DataFrameCreatePivotTableDialog(QWidget* parent
     connect(ui->tableViewParameter, &QTableView::clicked, this, &DataFrameCreatePivotTableDialog::onTableItemClicked);
 }
 
+/**
+ * @brief 析构函数
+ */
 DataFrameCreatePivotTableDialog::~DataFrameCreatePivotTableDialog()
 {
     delete ui;
 }
 
+/**
+ * @brief 获取数据帧
+ * @return 数据帧对象
+ */
 DA::DAPyDataFrame DataFrameCreatePivotTableDialog::getDataFrame() const
 {
     return d_ptr->mDataframe;
 }
 
+/**
+ * @brief 设置数据帧
+ * @param df 数据帧
+ */
 void DataFrameCreatePivotTableDialog::setDataframe(const DA::DAPyDataFrame& df)
 {
     d_ptr->mDataframe = df;
@@ -109,6 +129,10 @@ void DataFrameCreatePivotTableDialog::setDataframe(const DA::DAPyDataFrame& df)
     });
 }
 
+/**
+ * @brief 获取数据透视表的值列
+ * @return 值列名列表
+ */
 QStringList DataFrameCreatePivotTableDialog::getPivotTableValue() const
 {
     QStandardItemModel* model = qobject_cast< QStandardItemModel* >(ui->tableViewParameter->model());
@@ -130,6 +154,10 @@ QStringList DataFrameCreatePivotTableDialog::getPivotTableValue() const
     return values;
 }
 
+/**
+ * @brief 获取数据透视表的索引列
+ * @return 索引列名列表
+ */
 QStringList DataFrameCreatePivotTableDialog::getPivotTableIndex() const
 {
     QStandardItemModel* model = qobject_cast< QStandardItemModel* >(ui->tableViewParameter->model());
@@ -151,6 +179,10 @@ QStringList DataFrameCreatePivotTableDialog::getPivotTableIndex() const
     return indexs;
 }
 
+/**
+ * @brief 获取数据透视表的列
+ * @return 列名列表
+ */
 QStringList DataFrameCreatePivotTableDialog::getPivotTableColumn() const
 {
     QStandardItemModel* model = qobject_cast< QStandardItemModel* >(ui->tableViewParameter->model());
@@ -171,6 +203,9 @@ QStringList DataFrameCreatePivotTableDialog::getPivotTableColumn() const
     return columns;
 }
 
+/**
+ * @brief 初始化聚合函数下拉框
+ */
 void DataFrameCreatePivotTableDialog::initPivotTableAggfunc()
 {
     ui->comboBoxAggfunc->addItem(tr("mean"), QStringLiteral("mean"));      // cn:均值
@@ -204,11 +239,19 @@ QString DataFrameCreatePivotTableDialog::getPivotTableAggfunc() const
     return data.toString();
 }
 
+/**
+ * @brief 获取是否启用分组名称
+ * @return true表示启用，false表示不启用
+ */
 bool DataFrameCreatePivotTableDialog::isEnableMarginsName() const
 {
     return ui->checkBoxMargins->isChecked();
 }
 
+/**
+ * @brief 设置是否启用分组
+ * @param on 是否启用
+ */
 void DataFrameCreatePivotTableDialog::setEnableMargins(bool on)
 {
     ui->checkBoxMargins->setChecked(on);
@@ -225,21 +268,37 @@ QString DataFrameCreatePivotTableDialog::getMarginsName() const
     return ui->lineEditMarginsName->text();
 }
 
+/**
+ * @brief 设置分组名称
+ * @param s 分组名称
+ */
 void DataFrameCreatePivotTableDialog::setMarginsName(QString& s)
 {
     ui->lineEditMarginsName->setText(s);
 }
 
+/**
+ * @brief 获取是否启用排序
+ * @return true表示启用，false表示不启用
+ */
 bool DataFrameCreatePivotTableDialog::isEnableSort() const
 {
     return ui->checkBoxSort->isChecked();
 }
 
+/**
+ * @brief 设置是否启用排序
+ * @param on 是否启用
+ */
 void DataFrameCreatePivotTableDialog::setEnableSort(bool on)
 {
     ui->checkBoxSort->setChecked(on);
 }
 
+/**
+ * @brief 表格项点击事件
+ * @param index 点击的索引
+ */
 void DataFrameCreatePivotTableDialog::onTableItemClicked(const QModelIndex& index)
 {
     if (!index.isValid())

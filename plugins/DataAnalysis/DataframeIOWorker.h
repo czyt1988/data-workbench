@@ -17,7 +17,7 @@ class DataframeIOWorker : public DataAnalysisBaseWorker
     Q_OBJECT
 public:
     explicit DataframeIOWorker(QObject* par = nullptr);
-    ~DataframeIOWorker();
+    ~DataframeIOWorker() override;
     bool initializePythonEnv();
 public Q_SLOTS:
     // 导出单一数据
@@ -31,12 +31,12 @@ private Q_SLOTS:
     void updatePythonThreadStatus(const std::string& taskid, int msleep = 500, int evenTime = 20);
 
 private:
-    std::unique_ptr< DA::DAPyModule > m_dataAnalysisModule;
-    std::unique_ptr< DA::DAPyModule > m_threadStatusMgrModule;
+    std::unique_ptr< DA::DAPyModule > mDataAnalysisModule;
+    std::unique_ptr< DA::DAPyModule > mThreadStatusMgrModule;
     // 导出多个数据
-    DataframeExportSettingsDialog* m_exportSettingDialog { nullptr };
+    DataframeExportSettingsDialog* mExportSettingDialog { nullptr };
     // 导出到excel
-    DataFrameExportRangeSelectDialog* m_exportRangeSelectDialog { nullptr };
+    DataFrameExportRangeSelectDialog* mExportRangeSelectDialog { nullptr };
 };
 
 #endif  // DATAFRAMEIOWORKER_H

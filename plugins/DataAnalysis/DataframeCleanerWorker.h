@@ -1,4 +1,4 @@
-﻿#ifndef DATAFRAMECLEANERWORKER_H
+#ifndef DATAFRAMECLEANERWORKER_H
 #define DATAFRAMECLEANERWORKER_H
 #include "DataAnalysisBaseWorker.h"
 namespace DA
@@ -13,7 +13,7 @@ class DataframeCleanerWorker : public DataAnalysisBaseWorker
     Q_OBJECT
 public:
     explicit DataframeCleanerWorker(QObject* par = nullptr);
-    ~DataframeCleanerWorker();
+    ~DataframeCleanerWorker() override;
     bool initializePythonEnv();
 public Q_SLOTS:
     // 删除异常值
@@ -36,7 +36,7 @@ private:
     bool exec(const char* funname);
 
 private:
-    std::unique_ptr< DA::DAPyModule > m_dataCleanerModule;
+    std::unique_ptr< DA::DAPyModule > mDataCleanerModule;
 };
 
 #endif  // DATAFRAMECLEANERWORKER_H

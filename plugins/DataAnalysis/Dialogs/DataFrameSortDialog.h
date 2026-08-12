@@ -17,7 +17,7 @@ class DataFrameSortDialog : public QDialog
 
 public:
     explicit DataFrameSortDialog(QWidget* parent = nullptr);
-    ~DataFrameSortDialog();
+    ~DataFrameSortDialog() override;
 
     // 获取选中的dataframe
     void setDataframe(const DA::DAPyDataFrame& df);
@@ -28,7 +28,7 @@ public:
     // 获取排序方式，升序or降序
     bool getSortType() const;
 
-private slots:
+private Q_SLOTS:
     void onAccepted();
 
 private:

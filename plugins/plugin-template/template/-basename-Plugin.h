@@ -1,4 +1,4 @@
-﻿#ifndef {{PLUGIN-BASE-NAME}}PLUGIN_H
+#ifndef {{PLUGIN-BASE-NAME}}PLUGIN_H
 #define {{PLUGIN-BASE-NAME}}PLUGIN_H
 #include <QtCore/qglobal.h>
 #include <QObject>
@@ -26,48 +26,30 @@ public:
 	// 插件id
 	virtual QString getIID() const override;
 
-	/**
-	 * @brief 插件名
-	 * @return
-	 */
+	// 插件名
 	virtual QString getName() const override;
 
-	/**
-	 * @brief 插件版本
-	 * @return
-	 */
+	// 插件版本
 	virtual QString getVersion() const override;
 
-	/**
-	 * @brief 插件描述
-	 * @return
-	 */
+	// 插件描述
 	virtual QString getDescription() const override;
 
-	/**
-	 * @brief 创建一个节点工厂
-	 * @return
-	 */
+	// 创建节点工厂
 	virtual DA::DAAbstractNodeFactory* createNodeFactory() override;
 
-	/**
-	 * @brief 删除一个节点工厂(谁创建谁删除原则)
-	 * @param p
-	 */
+	// 删除节点工厂
 	virtual void destoryNodeFactory(DA::DAAbstractNodeFactory* p) override;
-	/**
-	 * @brief 获取设置页，默认返回nullptr，代表没有设置页
-	 * @return
-	 */
+	// 获取设置页
 	virtual DA::DAAbstractSettingPage* createSettingPage() override;
 
-private slots:
+private Q_SLOTS:
 	void onFactoryDestroyed(QObject* obj);
 
 private:
 	bool loadSetting();
 private:
-	{{plugin-base-name}}UI* m_ui{nullptr};
+	{{plugin-base-name}}UI* mUi{nullptr};
 };
 
 #endif  // {{PLUGIN-BASE-NAME}}PLUGIN_H

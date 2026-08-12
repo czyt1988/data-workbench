@@ -29,56 +29,36 @@ public:
     // 插件id
     virtual QString getIID() const override;
 
-    /**
-     * @brief 插件名
-     * @return
-     */
+    // 插件名
     virtual QString getName() const override;
 
-    /**
-     * @brief 插件版本
-     * @return
-     */
+    // 插件版本
     virtual QString getVersion() const override;
 
-    /**
-     * @brief 插件描述
-     * @return
-     */
+    // 插件描述
     virtual QString getDescription() const override;
 
-    /**
-     * @brief 创建一个节点工厂
-     * @return
-     */
+    // 创建节点工厂
     virtual DA::DAPyNodeFactory* createNodeFactory() override;
 
-    /**
-     * @brief 删除一个节点工厂(谁创建谁删除原则)
-     * @param p
-     */
+    // 删除节点工厂
     virtual void destroyNodeFactory(DA::DAPyNodeFactory* p) override;
-    /**
-     * @brief 获取设置页，默认返回nullptr，代表没有设置页
-     * @return
-     */
+    // 获取设置页
     virtual DA::DAAbstractSettingPage* createSettingPage() override;
 
-    /**
-     * @brief 翻译
-     */
+    // 翻译
     virtual void retranslate() override;
-private slots:
+private Q_SLOTS:
     void onFactoryDestroyed(QObject* obj);
 
 private:
     bool loadSetting();
 
 private:
-    DataAnalysisUI* m_ui { nullptr };
-    DataframeIOWorker* m_ioWorker { nullptr };
-    DataframeCleanerWorker* m_cleanerWorker { nullptr };
-    DataframeOperateWorker* m_operateWorker { nullptr };
+    DataAnalysisUI* mUi { nullptr };
+    DataframeIOWorker* mIoWorker { nullptr };
+    DataframeCleanerWorker* mCleanerWorker { nullptr };
+    DataframeOperateWorker* mOperateWorker { nullptr };
 };
 
 #endif  // DATAANALYSISPLUGIN_H

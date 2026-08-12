@@ -1,4 +1,4 @@
-﻿#ifndef DATAFRAMEDATASELECTDIALOG_H
+#ifndef DATAFRAMEDATASELECTDIALOG_H
 #define DATAFRAMEDATASELECTDIALOG_H
 
 #include <QDialog>
@@ -19,7 +19,7 @@ class DataFrameDataSelectDialog : public QDialog
 
 public:
     explicit DataFrameDataSelectDialog(QWidget* parent = nullptr);
-    ~DataFrameDataSelectDialog();
+    ~DataFrameDataSelectDialog() override;
 
     // 初始化界面
     void initDADialogDataFrameDataSelect();

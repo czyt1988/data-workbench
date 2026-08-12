@@ -22,37 +22,52 @@
 #include "DataframeIOWorker.h"
 #include "DataframeCleanerWorker.h"
 #include "DataframeOperateWorker.h"
+/**
+ * @brief 构造函数
+ * @param par 父对象
+ */
 DataAnalysisUI::DataAnalysisUI(QObject* par) : QObject(par)
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DataAnalysisUI::~DataAnalysisUI()
 {
 }
 
+/**
+ * @brief 初始化UI
+ * @param core 核心接口指针
+ * @return 初始化是否成功
+ */
 bool DataAnalysisUI::initialize(DA::DACoreInterface* core)
 {
-    m_core    = core;
-    m_ui      = core->getUiInterface();
-    m_actions = m_ui->getActionInterface();
+    mCore    = core;
+    mUi      = core->getUiInterface();
+    mActions = mUi->getActionInterface();
     buildDataCategory();
     retranslateUi();
     return true;
 }
 
+/**
+ * @brief 构建数据操作相关的Ribbon界面
+ */
 void DataAnalysisUI::buildDataCategory()
 {
-    DA::DARibbonAreaInterface* ribbonArea = m_ui->getRibbonArea();
+    DA::DARibbonAreaInterface* ribbonArea = mUi->getRibbonArea();
     SARibbonCategory* dataCategory = ribbonArea->getCategoryByObjectName(QStringLiteral("da-ribbon-category-data"));
     if (dataCategory) {
         panelDataOperate = ribbonArea->getPanelByObjectName(QStringLiteral("da-pannel-data.data-opt"));
         // 导出单个数据
         actionExportIndividualData =
-            m_actions->createAction("actionExportIndividualData", ":/DataAnalysisPluginIcon/icon/exportIndividualData.svg");
+            mActions->createAction("actionExportIndividualData", ":/DataAnalysisPluginIcon/icon/exportIndividualData.svg");
         actionExportMultipleData =
-            m_actions->createAction("actionExportMultipleData", ":/DataAnalysisPluginIcon/icon/exportMultipleData.svg");
+            mActions->createAction("actionExportMultipleData", ":/DataAnalysisPluginIcon/icon/exportMultipleData.svg");
         actionExportToOneExcel =
-            m_actions->createAction("actionExportToOneExcel", ":/DataAnalysisPluginIcon/icon/export-to-one-xlsx.svg");
+            mActions->createAction("actionExportToOneExcel", ":/DataAnalysisPluginIcon/icon/export-to-one-xlsx.svg");
         panelDataOperate->addLargeAction(actionExportIndividualData);
         panelDataOperate->addLargeAction(actionExportMultipleData);
         panelDataOperate->addLargeAction(actionExportToOneExcel);
@@ -70,25 +85,25 @@ void DataAnalysisUI::buildDataCategory()
         panelDataCleaner->setObjectName(QStringLiteral("da-panel-dataframe.operate.datacleaner"));
         // 删除Nan值
         actionDataFrameDropNone =
-            m_actions->createAction("actionDataFrameDropNone", ":/DataAnalysisPluginIcon/icon/dataframe-drop-none.svg");
+            mActions->createAction("actionDataFrameDropNone", ":/DataAnalysisPluginIcon/icon/dataframe-drop-none.svg");
         // 重复值处理
         actionDropDuplicates =
-            m_actions->createAction("actionDropDuplicates", ":/DataAnalysisPluginIcon/icon/process-duplicate-data.svg");
+            mActions->createAction("actionDropDuplicates", ":/DataAnalysisPluginIcon/icon/process-duplicate-data.svg");
         // 填充缺失值
         actionDataFrameFillNone =
-            m_actions->createAction("actionDataFrameFillNone", ":/DataAnalysisPluginIcon/icon/dataframe-fill-none.svg");
+            mActions->createAction("actionDataFrameFillNone", ":/DataAnalysisPluginIcon/icon/dataframe-fill-none.svg");
         // 插值法填充缺失值
         actionDataFrameFillInterpolate =
-            m_actions->createAction("actionDataFrameInterpolate", ":/DataAnalysisPluginIcon/icon/dataframe-interpolate.svg");
+            mActions->createAction("actionDataFrameInterpolate", ":/DataAnalysisPluginIcon/icon/dataframe-interpolate.svg");
         // 过滤异常值
         actionDataFrameRemoveOutlierIQR =
-            m_actions->createAction("actionDataFrameRemoveOutlierIQR", ":/DataAnalysisPluginIcon/icon/dataframe-IQR.svg");
+            mActions->createAction("actionDataFrameRemoveOutlierIQR", ":/DataAnalysisPluginIcon/icon/dataframe-IQR.svg");
         // 基于Z-score替换异常值
         actionDataFrameRemoveOutliersZScore =
-            m_actions->createAction("actionDataFrameReplaceOutliersZScore", ":/DataAnalysisPluginIcon/icon/dataframe-Z-score.svg");
+            mActions->createAction("actionDataFrameReplaceOutliersZScore", ":/DataAnalysisPluginIcon/icon/dataframe-Z-score.svg");
         // 转换偏态数值数据以改善分布
         actionDataFrameTransformSkewedData =
-            m_actions->createAction("actionDataFrameTransformSkewedData", ":/DataAnalysisPluginIcon/icon/dataframe-clip-outlier.svg");
+            mActions->createAction("actionDataFrameTransformSkewedData", ":/DataAnalysisPluginIcon/icon/dataframe-clip-outlier.svg");
         panelDataCleaner->addLargeAction(actionDataFrameDropNone);
         panelDataCleaner->addLargeAction(actionDropDuplicates);
         panelDataCleaner->addLargeAction(actionDataFrameFillNone);
@@ -102,15 +117,15 @@ void DataAnalysisUI::buildDataCategory()
         pannelDataFiltering = dataframeContextCategory->addPanel(tr("Data Filtering"));  // cn:数据过滤
         pannelDataFiltering->setObjectName(QStringLiteral("DataAnalysisPlugin.pannelDataFiltering"));
         actionDataFrameEvalDatas =
-            m_actions->createAction("actionDataFrameEvalDatas", ":/DataAnalysisPluginIcon/icon/dataframe-eval-datas.svg");
+            mActions->createAction("actionDataFrameEvalDatas", ":/DataAnalysisPluginIcon/icon/dataframe-eval-datas.svg");
         actionDataFrameQueryDatas =
-            m_actions->createAction("actionDataFrameQueryDatas", ":/DataAnalysisPluginIcon/icon/dataframe-query-datas.svg");
+            mActions->createAction("actionDataFrameQueryDatas", ":/DataAnalysisPluginIcon/icon/dataframe-query-datas.svg");
         actionDataFrameDataRetrieval =
-            m_actions->createAction("actionDataFrameDataRetrieval", ":/DataAnalysisPluginIcon/icon/dataframe-data-retrieval.svg");
+            mActions->createAction("actionDataFrameDataRetrieval", ":/DataAnalysisPluginIcon/icon/dataframe-data-retrieval.svg");
         actionDataFrameDataFilterColumn =
-            m_actions->createAction("actionDataFrameDataSelect", ":/DataAnalysisPluginIcon/icon/dataframe-data-select.svg");
+            mActions->createAction("actionDataFrameDataSelect", ":/DataAnalysisPluginIcon/icon/dataframe-data-select.svg");
         actionDataFrameSort =
-            m_actions->createAction("actionDataFrameSort", ":/DataAnalysisPluginIcon/icon/dataframe-sort.svg");
+            mActions->createAction("actionDataFrameSort", ":/DataAnalysisPluginIcon/icon/dataframe-sort.svg");
         pannelDataFiltering->addLargeAction(actionDataFrameEvalDatas);
         pannelDataFiltering->addLargeAction(actionDataFrameQueryDatas);
         pannelDataFiltering->addMediumAction(actionDataFrameDataRetrieval);
@@ -123,16 +138,19 @@ void DataAnalysisUI::buildDataCategory()
         panelDataStatistic = dataframeContextCategory->addPanel(tr("Statistics"));  // cn:数据统计
         // 数据描述
         actionCreateDataDescribe =
-            m_actions->createAction("actionCreateDataDescribe", ":/DataAnalysisPluginIcon/icon/dataframe-describe.svg");
+            mActions->createAction("actionCreateDataDescribe", ":/DataAnalysisPluginIcon/icon/dataframe-describe.svg");
         // 创建数据透视表
         actionCreatePivotTable =
-            m_actions->createAction("actionDataFrameCreatePivotTable", ":/DataAnalysisPluginIcon/icon/dataframe-pivot-table.svg");
+            mActions->createAction("actionDataFrameCreatePivotTable", ":/DataAnalysisPluginIcon/icon/dataframe-pivot-table.svg");
 
         panelDataStatistic->addLargeAction(actionCreateDataDescribe);
         panelDataStatistic->addLargeAction(actionCreatePivotTable);
     }
 }
 
+/**
+ * @brief 翻译界面文本
+ */
 void DataAnalysisUI::retranslateUi()
 {
     if (panelDataOperate) {
@@ -201,6 +219,10 @@ void DataAnalysisUI::retranslateUi()
     }
 }
 
+/**
+ * @brief 绑定数据导入导出工作者
+ * @param worker 工作者对象
+ */
 void DataAnalysisUI::bind(DataframeIOWorker* worker)
 {
     connect(actionExportIndividualData, &QAction::triggered, worker, &DataframeIOWorker::exportIndividualData);
@@ -208,6 +230,10 @@ void DataAnalysisUI::bind(DataframeIOWorker* worker)
     connect(actionExportToOneExcel, &QAction::triggered, worker, &DataframeIOWorker::exportToOneExcelFile);
 }
 
+/**
+ * @brief 绑定数据清洗工作者
+ * @param worker 工作者对象
+ */
 void DataAnalysisUI::bind(DataframeCleanerWorker* worker)
 {
     connect(actionDataFrameDropNone, &QAction::triggered, worker, &DataframeCleanerWorker::dropna);
@@ -219,6 +245,10 @@ void DataAnalysisUI::bind(DataframeCleanerWorker* worker)
     connect(actionDataFrameTransformSkewedData, &QAction::triggered, worker, &DataframeCleanerWorker::transform_skewed_data);
 }
 
+/**
+ * @brief 绑定数据操作工作者
+ * @param worker 工作者对象
+ */
 void DataAnalysisUI::bind(DataframeOperateWorker* worker)
 {
     connect(actionCreateDataDescribe, &QAction::triggered, worker, &DataframeOperateWorker::createDataframeDescribe);

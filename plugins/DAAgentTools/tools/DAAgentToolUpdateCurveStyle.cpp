@@ -41,6 +41,9 @@ static QwtSymbol::Style parseSymbolStyle(const QString& s)
     return QwtSymbol::NoSymbol;
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::getToolSpec
+ */
 QJsonObject DAAgentToolUpdateCurveStyle::getToolSpec() const
 {
     return QJsonObject{
@@ -65,6 +68,9 @@ QJsonObject DAAgentToolUpdateCurveStyle::getToolSpec() const
     };
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::execute
+ */
 QJsonObject DAAgentToolUpdateCurveStyle::execute(const QJsonObject& params)
 {
     QString chartId    = params["chart_id"].toString();

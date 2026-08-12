@@ -51,7 +51,7 @@ DAAbstractAgentTool          (纯虚接口，src/DAAgent/DAAbstractAgentTool.h)
   │  getToolSpec() / execute() / getOwnerModule()
   ▼
 DAAgentToolBase              (src/DAAgent/DAAgentToolBase.h，DAAgent_API 导出，QObject)
-  │  m_core / dataMgr() / findData(name) / allDatas()
+  │  mCore / dataMgr() / findData(name) / allDatas()
   │  errorResponse(msg) / successResponse(data|message)
   ├──► 数据工具 (5) + 文件/报告工具 (3)      ← 继承 DAAgentToolBase
   ▼
@@ -126,15 +126,15 @@ class DAAgentToolColumnUnique : public DAAgentToolBase
     Q_OBJECT
 public:
     using DAAgentToolBase::DAAgentToolBase;  // 继承构造，不要手写
-    /// @copydoc DAAbstractAgentTool::getToolSpec
+    // 获取工具规格
     QJsonObject getToolSpec() const override;
-    /// @copydoc DAAbstractAgentTool::execute
+    // 执行工具
     QJsonObject execute(const QJsonObject& params) override;
 };
 }  // namespace DA
 ```
 
-**头文件规范**（项目铁律）：头文件**只写单行中文注释**或类级 Doxygen 注释；**禁止**在头文件写成员函数的 Doxygen 块注释。`Q_OBJECT` 宏必填（moc 需要它生成 staticMetaObject，跨 DLL 继承要用）。构造用 `using Base::Base;` 继承，不要手写。
+**头文件规范**（项目铁律）：头文件**只写单行中文注释**或类级 Doxygen 注释；**禁止**在头文件写成员函数的 Doxygen 块注释（`/// @copydoc` 等也属于此类，应移到 `.cpp` 的 Doxygen 块中）。`Q_OBJECT` 宏必填（moc 需要它生成 staticMetaObject，跨 DLL 继承要用）。构造用 `using Base::Base;` 继承，不要手写。
 
 ### 步骤 3：实现 `getToolSpec()`（OpenAI function schema）
 
@@ -270,7 +270,7 @@ CMakeLists.txt 用 `file(GLOB ... *.h *.cpp)` 自动收集 `tools/` 下的新文
 
 | 方法 | 用途 |
 |------|------|
-| `chartOperateWidget()` | 取图表操作窗口（DAGui），是访问 figure/chart 的入口；内部链路 `m_core->getUiInterface()->getDockingArea()->getChartOperateWidget()` |
+| `chartOperateWidget()` | 取图表操作窗口（DAGui），是访问 figure/chart 的入口；内部链路 `mCore->getUiInterface()->getDockingArea()->getChartOperateWidget()` |
 | `currentFigure()` | 当前活动 figure，无则 nullptr |
 | `currentChart()` | 当前活动 chart，无则 nullptr |
 | `findFigureByName(name)` | 按 tab 标题匹配 figure；空名/未找到返回 nullptr |

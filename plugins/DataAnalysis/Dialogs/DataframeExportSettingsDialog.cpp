@@ -2,6 +2,11 @@
 #include "ui_DataframeExportSettingsDialog.h"
 #include <QFileDialog>
 #include <QMessageBox>
+
+/**
+ * @brief 构造函数
+ * @param parent 父窗口
+ */
 DataframeExportSettingsDialog::DataframeExportSettingsDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::DataframeExportSettingsDialog)
 {
@@ -10,11 +15,18 @@ DataframeExportSettingsDialog::DataframeExportSettingsDialog(QWidget* parent)
     connect(ui->toolButtonBrowser, &QToolButton::clicked, this, &DataframeExportSettingsDialog::onBrowser);
 }
 
+/**
+ * @brief 析构函数
+ */
 DataframeExportSettingsDialog::~DataframeExportSettingsDialog()
 {
     delete ui;
 }
 
+/**
+ * @brief 获取导出文件后缀
+ * @return 文件后缀名
+ */
 QString DataframeExportSettingsDialog::getSelectSuffix() const
 {
     if (ui->radioButtonCsv->isChecked()) {
@@ -35,16 +47,27 @@ QString DataframeExportSettingsDialog::getSelectSuffix() const
     return "csv";
 }
 
+/**
+ * @brief 获取保存路径
+ * @return 保存路径
+ */
 QString DataframeExportSettingsDialog::getSavePath() const
 {
     return ui->lineEditFolderPath->text();
 }
 
+/**
+ * @brief 获取是否导出全部数据
+ * @return true表示导出全部，false表示导出选中数据
+ */
 bool DataframeExportSettingsDialog::isExportAll() const
 {
     return ui->radioButtonExportAll->isChecked();
 }
 
+/**
+ * @brief 浏览文件夹按钮的槽函数
+ */
 void DataframeExportSettingsDialog::onBrowser()
 {
     QString folderPath = QFileDialog::getExistingDirectory(this,                 // 父窗口
@@ -58,6 +81,9 @@ void DataframeExportSettingsDialog::onBrowser()
     ui->lineEditFolderPath->setText(folderPath);
 }
 
+/**
+ * @brief 确认按钮的槽函数
+ */
 void DataframeExportSettingsDialog::onAccept()
 {
     QString savepath = getSavePath();

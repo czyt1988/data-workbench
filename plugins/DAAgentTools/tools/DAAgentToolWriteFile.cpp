@@ -25,6 +25,9 @@ static bool isPathSafe_write(const QString& path)
     return true;
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::getToolSpec
+ */
 QJsonObject DAAgentToolWriteFile::getToolSpec() const
 {
     return QJsonObject{
@@ -41,6 +44,9 @@ QJsonObject DAAgentToolWriteFile::getToolSpec() const
     };
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::execute
+ */
 QJsonObject DAAgentToolWriteFile::execute(const QJsonObject& params)
 {
     QString filePath = params["file_path"].toString();

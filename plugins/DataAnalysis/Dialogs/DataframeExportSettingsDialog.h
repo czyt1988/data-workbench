@@ -14,7 +14,7 @@ class DataframeExportSettingsDialog : public QDialog
 
 public:
     explicit DataframeExportSettingsDialog(QWidget* parent = nullptr);
-    ~DataframeExportSettingsDialog();
+    ~DataframeExportSettingsDialog() override;
     // 获取选中的后缀
     QString getSelectSuffix() const;
     // 保存的目录

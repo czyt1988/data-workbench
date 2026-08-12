@@ -6,6 +6,10 @@
 
 namespace DA
 {
+
+/**
+ * @copydoc DAAbstractAgentTool::getToolSpec
+ */
 QJsonObject DAAgentToolSaveChartImage::getToolSpec() const
 {
     return QJsonObject{
@@ -26,6 +30,9 @@ QJsonObject DAAgentToolSaveChartImage::getToolSpec() const
     };
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::execute
+ */
 QJsonObject DAAgentToolSaveChartImage::execute(const QJsonObject& params)
 {
     QString chartId    = params["chart_id"].toString();

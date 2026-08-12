@@ -22,6 +22,9 @@
 //! REGISTE_CLASS(XXXXNode)
 
 
+/**
+ * @brief 构造函数
+ */
 {{plugin-base-name}}NodeFactory::{{plugin-base-name}}NodeFactory() : DA::DAAbstractNodeFactory()
 {
    //注册节点创建的函数指针,create函数会使用mPrototypeTpfp进行查询函数指针
@@ -29,10 +32,17 @@
    // REGISTE_CLASS(MyNode2);
 }
 
+/**
+ * @brief 析构函数
+ */
 {{plugin-base-name}}NodeFactory::~{{plugin-base-name}}NodeFactory()
 {
 }
 
+/**
+ * @brief 设置核心接口
+ * @param c 核心接口指针
+ */
 void {{plugin-base-name}}NodeFactory::setCore(DA::DACoreInterface* c)
 {
     // 这里可以把一些信号关联，例如scene创建
@@ -40,6 +50,10 @@ void {{plugin-base-name}}NodeFactory::setCore(DA::DACoreInterface* c)
 }
 
 
+/**
+ * @brief 注册工作流
+ * @param wf 工作流指针
+ */
 void {{plugin-base-name}}NodeFactory::registWorkflow(DA::DAPyWorkFlow* wf)
 {
     DA::DAAbstractNodeFactory::registWorkflow(wf);
@@ -91,6 +105,10 @@ DA::DAAbstractNode::SharedPointer {{plugin-base-name}}NodeFactory::create(const 
     return nullptr;
 }
 
+/**
+ * @brief 获取所有节点的原型字符串列表
+ * @return 节点原型字符串列表
+ */
 QStringList {{plugin-base-name}}NodeFactory::getPrototypes() const
 {
     QStringList res;
@@ -102,21 +120,40 @@ QStringList {{plugin-base-name}}NodeFactory::getPrototypes() const
     return (res);
 }
 
+/**
+ * @brief 获取所有节点的元数据列表
+ * @return 节点元数据列表
+ */
 QList< DA::DANodeMetaData > {{plugin-base-name}}NodeFactory::getNodesMetaData() const
 {
     return mPrototypeTpfp.keys();
 }
 
+/**
+ * @brief 节点被添加到工作流时的回调
+ * @param node 被添加的节点
+ */
 void {{plugin-base-name}}NodeFactory::nodeAddedToWorkflow(DA::DAAbstractNode::SharedPointer node)
 {
     DA::DAAbstractNodeFactory::nodeAddedToWorkflow(node);
 }
 
+/**
+ * @brief 节点开始移除时的回调
+ * @param node 开始移除的节点
+ */
 void {{plugin-base-name}}NodeFactory::nodeStartRemove(DA::DAAbstractNode::SharedPointer node)
 {
     DA::DAAbstractNodeFactory::nodeStartRemove(node);
 }
 
+/**
+ * @brief 节点连接断开时的回调
+ * @param outNode 输出节点
+ * @param outKey 输出节点的连接键
+ * @param inNode 输入节点
+ * @param inkey 输入节点的连接键
+ */
 void {{plugin-base-name}}NodeFactory::nodeLinkDetached(DA::DAAbstractNode::SharedPointer outNode,
                                                const QString& outKey,
                                                DA::DAAbstractNode::SharedPointer inNode,
@@ -125,16 +162,29 @@ void {{plugin-base-name}}NodeFactory::nodeLinkDetached(DA::DAAbstractNode::Share
     DA::DAAbstractNodeFactory::nodeLinkDetached(outNode,outKey,inNode,inkey);
 }
 
+/**
+ * @brief 保存工厂扩展信息到XML
+ * @param doc XML文档对象
+ * @param factoryExternElement 工厂扩展信息对应的XML元素
+ */
 void {{plugin-base-name}}NodeFactory::saveExternInfoToXml(QDomDocument* doc, QDomElement* factoryExternElement) const
 {
     DA::DAAbstractNodeFactory::saveExternInfoToXml(doc,factoryExternElement);
 }
 
+/**
+ * @brief 从XML加载工厂扩展信息
+ * @param factoryExternElement 工厂扩展信息对应的XML元素
+ */
 void {{plugin-base-name}}NodeFactory::loadExternInfoFromXml(const QDomElement* factoryExternElement)
 {
     DA::DAAbstractNodeFactory::loadExternInfoFromXml(factoryExternElement);
 }
 
+/**
+ * @brief 获取主窗口
+ * @return 主窗口指针
+ */
 QMainWindow* {{plugin-base-name}}NodeFactory::getMainWindow() const
 {
     return mCore->getUiInterface()->getMainWindow();

@@ -1,4 +1,4 @@
-﻿#ifndef DATAFRAMEOPERATEWORKER_H
+#ifndef DATAFRAMEOPERATEWORKER_H
 #define DATAFRAMEOPERATEWORKER_H
 #include "DataAnalysisBaseWorker.h"
 #include <functional>
@@ -27,7 +27,7 @@ public:
 
 public:
     explicit DataframeOperateWorker(QObject* par = nullptr);
-    ~DataframeOperateWorker();
+    ~DataframeOperateWorker() override;
     bool initializePythonEnv();
 public Q_SLOTS:
     // 创建数据描述
@@ -62,13 +62,13 @@ public Q_SLOTS:
     QUndoCommand* sortDatas(const DA::DAPyDataFrame& df, const QString& by, const bool ascending, Callback fp = nullptr);
 
 private:
-    std::unique_ptr< DA::DAPyModule > m_dataOperateModule;
-    DataFrameDataSearchDialog* m_searchDialog { nullptr };
-    DataFrameDataSelectDialog* m_selectDialog { nullptr };
-    DataFrameSortDialog* m_sortDialog { nullptr };
-    DataFrameQueryDatasDialog* m_queryDatasDialog { nullptr };
-    DataFrameEvalDatasDialog* m_evalDatasDialog { nullptr };
-    DataFrameCreatePivotTableDialog* m_pivotTableDialog { nullptr };
+    std::unique_ptr< DA::DAPyModule > mDataOperateModule;
+    DataFrameDataSearchDialog* mSearchDialog { nullptr };
+    DataFrameDataSelectDialog* mSelectDialog { nullptr };
+    DataFrameSortDialog* mSortDialog { nullptr };
+    DataFrameQueryDatasDialog* mQueryDatasDialog { nullptr };
+    DataFrameEvalDatasDialog* mEvalDatasDialog { nullptr };
+    DataFrameCreatePivotTableDialog* mPivotTableDialog { nullptr };
 };
 
 #endif  // DATAFRAMEOPERATEWORKER_H

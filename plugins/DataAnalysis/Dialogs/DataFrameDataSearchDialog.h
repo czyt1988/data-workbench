@@ -1,4 +1,4 @@
-﻿#ifndef DATAFRAMEDATASEARCHDIALOG_H
+#ifndef DATAFRAMEDATASEARCHDIALOG_H
 #define DATAFRAMEDATASEARCHDIALOG_H
 
 #include <QDialog>
@@ -20,7 +20,7 @@ class DataFrameDataSearchDialog : public QDialog
 
 public:
     explicit DataFrameDataSearchDialog(QWidget* parent = nullptr);
-    ~DataFrameDataSearchDialog();
+    ~DataFrameDataSearchDialog() override;
     // 获取查找内容
     QString getSearchText() const;
     // 获取内容坐标
@@ -30,7 +30,7 @@ public:
     void setDataTableView(DA::DADataTableView* v);
     // 搜索
     void searchData();
-private slots:
+private Q_SLOTS:
     void onPushButtonNextClicked();
     void onLineEditTextChanged(const QString& t);
 

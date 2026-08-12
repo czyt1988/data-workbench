@@ -23,28 +23,44 @@
 #include "Dialogs/DataFrameCreatePivotTableDialog.h"
 
 
+/**
+ * @brief 构造函数
+ *
+ * @param par 父对象
+ */
 DataframeOperateWorker::DataframeOperateWorker(QObject* par) : DataAnalysisBaseWorker(par)
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DataframeOperateWorker::~DataframeOperateWorker()
 {
 }
 
+/**
+ * @brief 初始化Python环境
+ *
+ * @return 初始化是否成功
+ */
 bool DataframeOperateWorker::initializePythonEnv()
 {
     try {
         DA::DAPyModule DADataAnalysisCore("DADataAnalysisCore");
-        m_dataOperateModule  = std::make_unique< DA::DAPyModule >();
-        *m_dataOperateModule = DADataAnalysisCore.attr("operations");
+        mDataOperateModule  = std::make_unique< DA::DAPyModule >();
+        *mDataOperateModule = DADataAnalysisCore.attr("operations");
         return true;
     } catch (const std::exception& e) {
-        m_dataOperateModule.reset();
+        mDataOperateModule.reset();
         qCritical() << e.what();
     }
     return false;
 }
 
+/**
+ * @brief 创建数据描述统计信息
+ */
 void DataframeOperateWorker::createDataframeDescribe()
 {
     DA::DAData optData = dataManagerInterface()->getOperateData();
@@ -74,6 +90,9 @@ void DataframeOperateWorker::createDataframeDescribe()
     }
 }
 
+/**
+ * @brief 创建数据透视表
+ */
 void DataframeOperateWorker::createPivotTable()
 {
     auto doptWidget = dockAreaInterface()->getDataOperateWidget();
@@ -90,22 +109,22 @@ void DataframeOperateWorker::createPivotTable()
         return;
     }
 
-    if (!m_pivotTableDialog) {
-        m_pivotTableDialog = new DataFrameCreatePivotTableDialog(uiInterface()->mainWindow());
+    if (!mPivotTableDialog) {
+        mPivotTableDialog = new DataFrameCreatePivotTableDialog(uiInterface()->mainWindow());
     }
-    m_pivotTableDialog->setDataframe(df);
-    if (QDialog::Accepted != m_pivotTableDialog->exec()) {
+    mPivotTableDialog->setDataframe(df);
+    if (QDialog::Accepted != mPivotTableDialog->exec()) {
         // 说明用户取消
         return;
     }
     // 获取创建透视表的参数
-    QStringList value   = m_pivotTableDialog->getPivotTableValue();
-    QStringList index   = m_pivotTableDialog->getPivotTableIndex();
-    QStringList columns = m_pivotTableDialog->getPivotTableColumn();
-    QString aggfunc     = m_pivotTableDialog->getPivotTableAggfunc();
-    bool margins        = m_pivotTableDialog->isEnableMarginsName();
-    QString marginsName = m_pivotTableDialog->getMarginsName();
-    bool sort           = m_pivotTableDialog->isEnableSort();
+    QStringList value   = mPivotTableDialog->getPivotTableValue();
+    QStringList index   = mPivotTableDialog->getPivotTableIndex();
+    QStringList columns = mPivotTableDialog->getPivotTableColumn();
+    QString aggfunc     = mPivotTableDialog->getPivotTableAggfunc();
+    bool margins        = mPivotTableDialog->isEnableMarginsName();
+    QString marginsName = mPivotTableDialog->getMarginsName();
+    bool sort           = mPivotTableDialog->isEnableSort();
     // 如果用户没有选定分组，则返回
     if (index.empty()) {
         return;
@@ -156,6 +175,9 @@ DA::DAPyDataFrame DataframeOperateWorker::createPivotTable(
     return df_pivottable;
 }
 
+/**
+ * @brief 数值计算，弹出对话框获取表达式并执行
+ */
 void DataframeOperateWorker::evalDatas()
 {
     auto doptWidget = dockAreaInterface()->getDataOperateWidget();
@@ -170,15 +192,15 @@ void DataframeOperateWorker::evalDatas()
     if (df.isNone()) {
         return;
     }
-    if (!m_evalDatasDialog) {
-        m_evalDatasDialog = new DataFrameEvalDatasDialog(uiInterface()->mainWindow());
+    if (!mEvalDatasDialog) {
+        mEvalDatasDialog = new DataFrameEvalDatasDialog(uiInterface()->mainWindow());
     }
-    if (QDialog::Accepted != m_evalDatasDialog->exec()) {
+    if (QDialog::Accepted != mEvalDatasDialog->exec()) {
         // 说明用户取消
         return;
     }
     // 获取填充值
-    QString exper                  = m_evalDatasDialog->getExpr();
+    QString exper                  = mEvalDatasDialog->getExpr();
     DA::DADataTableView* tableView = dfopt->getDataTableView();
     DA::DADataTableModel* modle    = tableView->getDataModel();
     Callback fp                    = [ modle ]() {
@@ -193,6 +215,14 @@ void DataframeOperateWorker::evalDatas()
     }
 }
 
+/**
+ * @brief 数值计算
+ *
+ * @param df 数据帧
+ * @param exper 表达式
+ * @param fp 回调函数
+ * @return 命令指针，返回nullptr代表执行失败
+ */
 QUndoCommand* DataframeOperateWorker::evalDatas(const DA::DAPyDataFrame& df, const QString& exper, Callback fp)
 {
     std::unique_ptr< CommandDataFrame_evalDatas > cmd = std::make_unique< CommandDataFrame_evalDatas >(df, exper);
@@ -203,6 +233,9 @@ QUndoCommand* DataframeOperateWorker::evalDatas(const DA::DAPyDataFrame& df, con
     return cmd.release();
 }
 
+/**
+ * @brief 条件筛选，弹出对话框获取表达式并执行
+ */
 void DataframeOperateWorker::queryDatas()
 {
     auto doptWidget = dockAreaInterface()->getDataOperateWidget();
@@ -217,15 +250,15 @@ void DataframeOperateWorker::queryDatas()
     if (df.isNone()) {
         return;
     }
-    if (!m_queryDatasDialog) {
-        m_queryDatasDialog = new DataFrameQueryDatasDialog(uiInterface()->mainWindow());
+    if (!mQueryDatasDialog) {
+        mQueryDatasDialog = new DataFrameQueryDatasDialog(uiInterface()->mainWindow());
     }
-    if (QDialog::Accepted != m_queryDatasDialog->exec()) {
+    if (QDialog::Accepted != mQueryDatasDialog->exec()) {
         // 说明用户取消
         return;
     }
     // 获取填充值
-    QString exper                  = m_queryDatasDialog->getExpr();
+    QString exper                  = mQueryDatasDialog->getExpr();
     DA::DADataTableView* tableView = dfopt->getDataTableView();
     DA::DADataTableModel* modle    = tableView->getDataModel();
     Callback fp                    = [ modle ]() {
@@ -241,6 +274,14 @@ void DataframeOperateWorker::queryDatas()
     }
 }
 
+/**
+ * @brief 条件筛选
+ *
+ * @param df 数据帧
+ * @param exper 表达式
+ * @param fp 回调函数
+ * @return 命令指针，返回nullptr代表执行失败
+ */
 QUndoCommand* DataframeOperateWorker::queryDatas(const DA::DAPyDataFrame& df, const QString& exper, Callback fp)
 {
     std::unique_ptr< CommandDataFrame_querydatas > cmd = std::make_unique< CommandDataFrame_querydatas >(df, exper);
@@ -272,15 +313,15 @@ void DataframeOperateWorker::searchData()
         return;
     }
 
-    if (!m_searchDialog) {
-        m_searchDialog = new DataFrameDataSearchDialog(uiInterface()->mainWindow());
+    if (!mSearchDialog) {
+        mSearchDialog = new DataFrameDataSearchDialog(uiInterface()->mainWindow());
     }
     DA::DADataTableView* tableView = dfopt->getDataTableView();
     if (!tableView) {
         return;
     }
-    m_searchDialog->setDataTableView(tableView);
-    m_searchDialog->exec();
+    mSearchDialog->setDataTableView(tableView);
+    mSearchDialog->exec();
 }
 
 /**
@@ -303,21 +344,21 @@ void DataframeOperateWorker::filterByColumn()
     if (df.isNone()) {
         return;
     }
-    if (!m_selectDialog) {
-        m_selectDialog = new DataFrameDataSelectDialog(uiInterface()->mainWindow());
+    if (!mSelectDialog) {
+        mSelectDialog = new DataFrameDataSelectDialog(uiInterface()->mainWindow());
     }
-    m_selectDialog->setDataframe(df);
+    mSelectDialog->setDataframe(df);
     // 获取选中的列
     if (dfopt->isDataframeTableHaveSelection()) {
-        m_selectDialog->setFilterData(dfopt->getSelectedOneDataframeColumn());
+        mSelectDialog->setFilterData(dfopt->getSelectedOneDataframeColumn());
     }
-    if (QDialog::Accepted != m_selectDialog->exec()) {
+    if (QDialog::Accepted != mSelectDialog->exec()) {
         return;
     }
     // 获取过滤参数
-    QString index                  = m_selectDialog->getFilterData();
-    double lowervalue              = m_selectDialog->getLowerValue();
-    double uppervalue              = m_selectDialog->getUpperValue();
+    QString index                  = mSelectDialog->getFilterData();
+    double lowervalue              = mSelectDialog->getLowerValue();
+    double uppervalue              = mSelectDialog->getUpperValue();
     DA::DADataTableView* tableView = dfopt->getDataTableView();
     DA::DADataTableModel* modle    = tableView->getDataModel();
     Callback fp                    = [ modle ]() {
@@ -375,20 +416,20 @@ void DataframeOperateWorker::sortDatas()
     if (df.isNone()) {
         return;
     }
-    if (!m_sortDialog) {
-        m_sortDialog = new DataFrameSortDialog(uiInterface()->mainWindow());
+    if (!mSortDialog) {
+        mSortDialog = new DataFrameSortDialog(uiInterface()->mainWindow());
     }
-    m_sortDialog->setDataframe(df);
+    mSortDialog->setDataframe(df);
     // 获取选中的列
     if (dfopt->isDataframeTableHaveSelection()) {
-        m_sortDialog->setSortBy(dfopt->getSelectedOneDataframeColumn());
+        mSortDialog->setSortBy(dfopt->getSelectedOneDataframeColumn());
     }
-    if (QDialog::Accepted != m_sortDialog->exec()) {
+    if (QDialog::Accepted != mSortDialog->exec()) {
         return;
     }
     // 获取排序参数
-    QString by                     = m_sortDialog->getSortBy();
-    bool ascending                 = m_sortDialog->getSortType();
+    QString by                     = mSortDialog->getSortBy();
+    bool ascending                 = mSortDialog->getSortType();
     DA::DADataTableView* tableView = dfopt->getDataTableView();
     DA::DADataTableModel* modle    = tableView->getDataModel();
     Callback fp                    = [ modle ]() {

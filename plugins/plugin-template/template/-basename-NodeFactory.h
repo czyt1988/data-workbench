@@ -29,46 +29,21 @@ public:
     //  此函数同样可以作为scene创建的回调
     virtual void registWorkflow(DA::DAPyWorkFlow* wf) override;
 
-    /**
-     * @brief 工厂的唯一标识
-     * @note 每个工厂需要保证有唯一的标识，工作流将通过标识查找工厂
-     * @note 此类型名字不能进行翻译
-     * @return
-     */
+    // 工厂唯一标识
     virtual QString factoryPrototypes() const override;
-    /**
-     * @brief 工厂名称
-     * @note 工厂名称可进行翻译
-     * @return
-     */
+    // 工厂名称
     virtual QString factoryName() const override;
 
-    /**
-     * @brief 工厂具体描述
-     * @note 工厂具体描述可进行翻译
-     * @return
-     */
+    // 工厂描述
     virtual QString factoryDescribe() const override;
 
-    /**
-     * @brief 工厂函数，创建一个DAAbstractNode，工厂不持有FCAbstractNode的管理权
-     * @param meta 元对象
-     * @return
-     * @note 此函数会在@sa DAPyWorkFlow::createNode 中调用，用户不要直接调用此函数，
-     * 因为@sa DAPyWorkFlow::createNode 中会有其他的操作
-     */
+    // 创建节点
     virtual DA::DAAbstractNode::SharedPointer create(const DA::DANodeMetaData& meta) override;
 
-    /**
-     * @brief 获取所有注册的Prototypes
-     * @return
-     */
+    // 获取所有Prototypes
     virtual QStringList getPrototypes() const override;
 
-    /**
-     * @brief 获取所有类型的元数据
-     * @return
-     */
+    // 获取所有元数据
     virtual QList< DA::DANodeMetaData > getNodesMetaData() const override;
 
     // 节点加入workflow的回调

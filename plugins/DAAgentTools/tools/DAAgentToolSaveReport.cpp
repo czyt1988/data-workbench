@@ -30,6 +30,9 @@ static bool isPathSafeReport(const QString& path)
     return true;
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::getToolSpec
+ */
 QJsonObject DAAgentToolSaveReport::getToolSpec() const
 {
     return QJsonObject{
@@ -47,6 +50,9 @@ QJsonObject DAAgentToolSaveReport::getToolSpec() const
     };
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::execute
+ */
 QJsonObject DAAgentToolSaveReport::execute(const QJsonObject& params)
 {
     QString content  = params["content"].toString();

@@ -12,6 +12,9 @@ static Qt::PenStyle parsePenStyle(const QString& s)
     return Qt::SolidLine;
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::getToolSpec
+ */
 QJsonObject DAAgentToolSetChartStyle::getToolSpec() const
 {
     return QJsonObject{
@@ -42,6 +45,9 @@ QJsonObject DAAgentToolSetChartStyle::getToolSpec() const
     };
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::execute
+ */
 QJsonObject DAAgentToolSetChartStyle::execute(const QJsonObject& params)
 {
     QString chartId    = params["chart_id"].toString();

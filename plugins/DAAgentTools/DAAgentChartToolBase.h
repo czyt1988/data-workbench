@@ -5,7 +5,7 @@
 #include "DADockingAreaInterface.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
-#include "DAChartOperateWidget.h"
+#include "Chart/DAChartOperateWidget.h"
 
 namespace DA
 {
@@ -26,19 +26,19 @@ public:
     using DAAgentToolBase::DAAgentToolBase;  // inherit constructor
 
 protected:
-    /// @brief 获取图表操作窗口（位于 DAGui 模块），是访问 figure/chart 的入口
+    // 获取图表操作窗口（位于 DAGui 模块），是访问 figure/chart 的入口
     DAChartOperateWidget* chartOperateWidget() const;
-    /// @brief 获取当前活动 figure，无活动 figure 返回 nullptr
+    // 获取当前活动 figure，无活动 figure 返回 nullptr
     DAFigureWidget* currentFigure() const;
-    /// @brief 获取当前活动 chart，无活动 chart 返回 nullptr
+    // 获取当前活动 chart，无活动 chart 返回 nullptr
     DAChartWidget* currentChart() const;
-    /// @brief 按名称查找 figure（按标签页 tab text 匹配，未找到或名称空返回 nullptr）
+    // 按名称查找 figure（按标签页 tab text 匹配，未找到或名称空返回 nullptr）
     DAFigureWidget* findFigureByName(const QString& name) const;
-    /// @brief 创建新 figure 并设置为当前活动 figure
+    // 创建新 figure 并设置为当前活动 figure
     DAFigureWidget* createFigure(const QString& name) const;
-    /// @brief 按 chart_id 查找图表（空或 "current" 用当前活动图表，否则按标题/整数索引）
+    // 按 chart_id 查找图表（空或 "current" 用当前活动图表，否则按标题/整数索引）
     DAChartWidget* findChart(const QString& chartId, const QString& figureName = QString()) const;
-    /// @brief 重新启用图表坐标轴自动缩放，确保数据可见（撤销 createChart 的 setAxisScale 锁定）
+    // 重新启用图表坐标轴自动缩放，确保数据可见
     void enableAutoScale(DAChartWidget* chart) const;
 };
 }  // namespace DA

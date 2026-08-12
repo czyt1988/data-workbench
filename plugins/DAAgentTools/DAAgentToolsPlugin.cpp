@@ -28,10 +28,20 @@
 
 namespace DA
 {
+/**
+ * @brief 构造函数
+ */
 DAAgentToolsPlugin::DAAgentToolsPlugin() : DAAbstractPlugin() {}
 
+/**
+ * @brief 析构函数
+ */
 DAAgentToolsPlugin::~DAAgentToolsPlugin() = default;
 
+/**
+ * @brief 初始化插件，注册所有内置 Agent 工具
+ * @return 初始化成功返回 true，若核心接口或 Agent 接口不可用则返回 false
+ */
 bool DAAgentToolsPlugin::initialize()
 {
     auto* c = core();

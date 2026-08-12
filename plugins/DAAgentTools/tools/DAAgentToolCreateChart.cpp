@@ -63,6 +63,9 @@ static QwtBoxSample computeBoxSample(QVector< double > data, double position = 0
 
 // ---- tool spec ----
 
+/**
+ * @copydoc DAAbstractAgentTool::getToolSpec
+ */
 QJsonObject DAAgentToolCreateChart::getToolSpec() const
 {
     return QJsonObject{
@@ -88,6 +91,9 @@ QJsonObject DAAgentToolCreateChart::getToolSpec() const
     };
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::execute
+ */
 QJsonObject DAAgentToolCreateChart::execute(const QJsonObject& params)
 {
     QString type       = params["type"].toString().toLower();

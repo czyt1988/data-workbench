@@ -16,9 +16,9 @@ class DAAgentToolSaveReport : public DAAgentToolBase
     Q_OBJECT
 public:
     using DAAgentToolBase::DAAgentToolBase;
-    /// @copydoc DAAbstractAgentTool::getToolSpec
+    // 获取工具规格
     QJsonObject getToolSpec() const override;
-    /// @copydoc DAAbstractAgentTool::execute
+    // 执行工具
     QJsonObject execute(const QJsonObject& params) override;
 };
 }  // namespace DA

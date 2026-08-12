@@ -2,6 +2,10 @@
 
 namespace DA
 {
+
+/**
+ * @copydoc DAAbstractAgentTool::getToolSpec
+ */
 QJsonObject DAAgentToolListFigures::getToolSpec() const
 {
     return QJsonObject{
@@ -16,6 +20,9 @@ QJsonObject DAAgentToolListFigures::getToolSpec() const
     };
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::execute
+ */
 QJsonObject DAAgentToolListFigures::execute(const QJsonObject& params)
 {
     auto* oper = chartOperateWidget();

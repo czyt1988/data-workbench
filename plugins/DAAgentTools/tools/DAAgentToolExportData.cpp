@@ -4,6 +4,10 @@
 
 namespace DA
 {
+
+/**
+ * @copydoc DAAbstractAgentTool::getToolSpec
+ */
 QJsonObject DAAgentToolExportData::getToolSpec() const
 {
     return QJsonObject{
@@ -21,6 +25,9 @@ QJsonObject DAAgentToolExportData::getToolSpec() const
     };
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::execute
+ */
 QJsonObject DAAgentToolExportData::execute(const QJsonObject& params)
 {
     QString dataName = params["data_name"].toString();

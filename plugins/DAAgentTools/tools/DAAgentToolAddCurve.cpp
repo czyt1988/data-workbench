@@ -17,6 +17,9 @@ static Qt::PenStyle parsePenStyle(const QString& s)
     return Qt::SolidLine;  // default "solid"
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::getToolSpec
+ */
 QJsonObject DAAgentToolAddCurve::getToolSpec() const
 {
     return QJsonObject{
@@ -40,6 +43,9 @@ QJsonObject DAAgentToolAddCurve::getToolSpec() const
     };
 }
 
+/**
+ * @copydoc DAAbstractAgentTool::execute
+ */
 QJsonObject DAAgentToolAddCurve::execute(const QJsonObject& params)
 {
     QString chartId    = params["chart_id"].toString();
