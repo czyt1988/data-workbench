@@ -116,7 +116,7 @@ public:
      * @param filePath markdown 文件路径
      * @return 加载成功返回 true
      */
-    bool showMarkdownFile(const QString& filePath);
+    bool showMarkdownFile(const QString& filePath) override;
     // 切换左侧边栏（工作流节点、图表管理、数据管理）的显示/隐藏
     void toggleLeftSidebar(bool show);
     // 切换右侧边栏（设置、日志）的显示/隐藏

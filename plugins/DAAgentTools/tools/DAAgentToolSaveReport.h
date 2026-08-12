@@ -4,12 +4,15 @@
 namespace DA
 {
 /**
- * @brief save_report 工具：保存 Markdown 报告为 md/pdf/docx
+ * @brief save_report 工具：保存 Markdown 报告为 md/pdf/docx，保存成功后自动打开
  *
  * 参数：content（必填，markdown 文本）、file_path（必填）、format（md/pdf/docx，默认 md）
  * - md: 直接写入文件
  * - pdf: 通过 QPrinter + QTextDocument 渲染（需链接 Qt::PrintSupport）
  * - docx: 通过 DAAxObjectWordWrapper Word COM 自动化（Windows only）
+ * 可选参数：open_after_save（boolean，默认 true）——保存成功后是否打开报告：
+ * - md: 通过应用内置 Markdown 查看器打开
+ * - pdf/docx: 通过系统默认程序打开
  */
 class DAAgentToolSaveReport : public DAAgentToolBase
 {

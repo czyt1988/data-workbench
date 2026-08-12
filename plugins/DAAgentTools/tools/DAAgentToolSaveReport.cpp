@@ -5,6 +5,10 @@
 #include <QTextDocument>
 #include <QPrinter>
 #include <QDateTime>
+#include <QDesktopServices>
+#include <QUrl>
+#include "DAUIInterface.h"
+#include "DADockingAreaInterface.h"
 #ifdef Q_OS_WIN
 #include "DAAxObjectWordWrapper.h"
 #endif
@@ -37,13 +41,14 @@ QJsonObject DAAgentToolSaveReport::getToolSpec() const
 {
     return QJsonObject{
         {"name", "save_report"},
-        {"description", "Save a markdown report as md, pdf, or docx file."},
+        {"description", "Save a markdown report as md, pdf, or docx file, then open it in the viewer."},
         {"parameters", QJsonObject{
             {"type", "object"},
             {"properties", QJsonObject{
                 {"content", QJsonObject{{"type", "string"}, {"description", "Report content in markdown"}}},
                 {"file_path", QJsonObject{{"type", "string"}, {"description", "Output file path"}}},
-                {"format", QJsonObject{{"type", "string"}, {"description", "Output format: md, pdf, docx (default md)"}}}
+                {"format", QJsonObject{{"type", "string"}, {"description", "Output format: md, pdf, docx (default md)"}}},
+                {"open_after_save", QJsonObject{{"type", "boolean"}, {"description", "Whether to open the report in the viewer after saving (default true)"}}}
             }},
             {"required", QJsonArray{"content", "file_path"}}
         }}
@@ -58,6 +63,7 @@ QJsonObject DAAgentToolSaveReport::execute(const QJsonObject& params)
     QString content  = params["content"].toString();
     QString filePath = params["file_path"].toString();
     QString format   = params.contains("format") ? params["format"].toString().toLower() : "md";
+    bool openAfterSave = params.contains("open_after_save") ? params["open_after_save"].toBool(true) : true;
 
     if (content.isEmpty()) {
         return errorResponse("content is required");
@@ -72,6 +78,25 @@ QJsonObject DAAgentToolSaveReport::execute(const QJsonObject& params)
     // Ensure parent directory exists
     QFileInfo fi(filePath);
     QDir().mkpath(fi.absolutePath());
+    QString absPath = fi.absoluteFilePath();
+
+    // 保存成功后打开报告：md 用应用内置 Markdown 查看器，pdf/docx 用系统默认程序
+    // 返回附加消息（追加到成功提示末尾），不抛异常；打开失败不影响保存成功状态
+    auto openReport = [this](const QString& path, const QString& fmt, bool open) -> QString {
+        if (!open) {
+            return QString();
+        }
+        if (fmt == "md") {
+            auto* ui   = mCore ? mCore->getUiInterface() : nullptr;
+            auto* dock = ui ? ui->getDockingArea() : nullptr;
+            if (dock && dock->showMarkdownFile(path)) {
+                return " and opened in viewer";
+            }
+            return " (failed to open in viewer)";
+        }
+        QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+        return " and opened";
+    };
 
     if (format == "md") {
         // Direct write
@@ -81,7 +106,7 @@ QJsonObject DAAgentToolSaveReport::execute(const QJsonObject& params)
         }
         f.write(content.toUtf8());
         f.close();
-        return successResponse(QString("Report saved as markdown to %1").arg(filePath));
+        return successResponse(QString("Report saved as markdown to %1%2").arg(absPath, openReport(absPath, format, openAfterSave)));
     }
     else if (format == "pdf") {
         // Render markdown to PDF via QTextDocument + QPrinter
@@ -93,7 +118,7 @@ QJsonObject DAAgentToolSaveReport::execute(const QJsonObject& params)
         QRectF pageRect = printer.pageRect(QPrinter::DevicePixel);
         doc.setPageSize(pageRect.size());
         doc.print(&printer);
-        return successResponse(QString("Report saved as PDF to %1").arg(filePath));
+        return successResponse(QString("Report saved as PDF to %1%2").arg(absPath, openReport(absPath, format, openAfterSave)));
     }
     else if (format == "docx") {
 #ifdef Q_OS_WIN
@@ -129,7 +154,7 @@ QJsonObject DAAgentToolSaveReport::execute(const QJsonObject& params)
         if (!ok) {
             return errorResponse("Failed to save .docx file via Word COM");
         }
-        return successResponse(QString("Report saved as DOCX to %1").arg(filePath));
+        return successResponse(QString("Report saved as DOCX to %1%2").arg(absPath, openReport(absPath, format, openAfterSave)));
 #else
         return errorResponse("DOCX export is only available on Windows with Microsoft Word installed. Use 'md' or 'pdf' format instead.");
 #endif

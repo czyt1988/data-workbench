@@ -141,6 +141,9 @@ public:
     // 获取当前正在操作的数据
     virtual DAData getCurrentOperateData() const;
 
+    // 在中央区按需创建 Markdown 查看 dock 并加载文件，加载成功返回 true
+    virtual bool showMarkdownFile(const QString& filePath) = 0;
+
     // 工作流节点dock
     virtual ads::CDockWidget* getWorkflowNodeListDock() const = 0;
 

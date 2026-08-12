@@ -359,7 +359,14 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
                 return self.getChartOperateWidget();
             },
             pybind11::return_value_policy::reference,
-            "Get the chart operate widget that manages all figures and charts");
+            "Get the chart operate widget that manages all figures and charts")
+        .def(
+            "showMarkdownFile",
+            [](DA::DADockingAreaInterface& self, const QString& filePath) -> bool {
+                return self.showMarkdownFile(filePath);
+            },
+            pybind11::arg("filePath"),
+            "Open or reuse the built-in Markdown viewer dock to display the file; returns true on success");
 
     /* DAChartWidget — minimal binding for type recognition.
      * Full chart operations are exposed via da_figure.ChartHandle.
