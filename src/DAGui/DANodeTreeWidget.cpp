@@ -38,7 +38,7 @@ void DANodeTreeWidgetItem::setNodeMetaData(const DAPyNodeMetaData& md)
 // DANodeTreeWidget
 //===================================================
 
-DANodeTreeWidget::DANodeTreeWidget(QWidget* par) : QTreeWidget(par), _favoriteItem(nullptr)
+DANodeTreeWidget::DANodeTreeWidget(QWidget* par) : QTreeWidget(par), mFavoriteItem(nullptr)
 {
 	setDragEnabled(true);  // 启用拖放
 	setHeaderHidden(true);
@@ -150,21 +150,21 @@ void DANodeTreeWidget::removeFavorite(const DAPyNodeMetaData& md)
  */
 QTreeWidgetItem* DANodeTreeWidget::getFavoriteItem()
 {
-	if (nullptr == _favoriteItem) {
+	if (nullptr == mFavoriteItem) {
 		return createFavoriteItem();
 	}
-	return _favoriteItem;
+	return mFavoriteItem;
 }
 
 QTreeWidgetItem* DANodeTreeWidget::createFavoriteItem()
 {
-	if (_favoriteItem) {
-		return _favoriteItem;
+	if (mFavoriteItem) {
+		return mFavoriteItem;
 	}
-	_favoriteItem = new QTreeWidgetItem({ tr("Favorite") });  // cn:收藏
-	_favoriteItem->setIcon(0, QIcon(":/DAGui/icon/favorite.svg"));
-	insertTopLevelItem(0, _favoriteItem);
-	return _favoriteItem;
+	mFavoriteItem = new QTreeWidgetItem({ tr("Favorite") });  // cn:收藏
+	mFavoriteItem->setIcon(0, QIcon(":/DAGui/icon/favorite.svg"));
+	insertTopLevelItem(0, mFavoriteItem);
+	return mFavoriteItem;
 }
 
 /**
@@ -188,7 +188,7 @@ DAPyNodeMetaData DANodeTreeWidget::getNodeMetaData(const QPoint& p) const
 void DANodeTreeWidget::mousePressEvent(QMouseEvent* event)
 {
 	if (event->buttons() & Qt::LeftButton) {
-		_startPressPos = event->pos();
+		mStartPressPos = event->pos();
 	}
 	QTreeWidget::mousePressEvent(event);
 }
@@ -196,8 +196,8 @@ void DANodeTreeWidget::mousePressEvent(QMouseEvent* event)
 void DANodeTreeWidget::mouseMoveEvent(QMouseEvent* event)
 {
 	if (event->buttons() & Qt::LeftButton) {
-		if ((event->pos() - _startPressPos).manhattanLength() > QApplication::startDragDistance()) {
-			QTreeWidgetItem* pitem = itemAt(_startPressPos);
+		if ((event->pos() - mStartPressPos).manhattanLength() > QApplication::startDragDistance()) {
+			QTreeWidgetItem* pitem = itemAt(mStartPressPos);
 			if (DANodeTreeWidgetItem::ThisItemType != pitem->type()) {
 				QTreeWidget::mouseMoveEvent(event);
 				return;

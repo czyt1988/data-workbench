@@ -1,4 +1,4 @@
-﻿#ifndef DADATAMANAGERTREEFILTERPROXYMODEL_H
+#ifndef DADATAMANAGERTREEFILTERPROXYMODEL_H
 #define DADATAMANAGERTREEFILTERPROXYMODEL_H
 #include <QSortFilterProxyModel>
 #include "DAGuiAPI.h"
@@ -24,7 +24,7 @@ protected:
     bool hasAcceptedChildren(int source_row, const QModelIndex& source_parent) const;
 
 private:
-    QString m_filterText;
+    QString mFilterText;
 };
 }  // end DA
 #endif  // DADATAMANAGERTREEFILTERPROXYMODEL_H

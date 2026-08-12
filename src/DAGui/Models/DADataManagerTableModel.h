@@ -1,4 +1,4 @@
-﻿#ifndef DADATAMANAGERTABLEMODEL_H
+#ifndef DADATAMANAGERTABLEMODEL_H
 #define DADATAMANAGERTABLEMODEL_H
 #include <QAbstractTableModel>
 #include "DAGlobals.h"
@@ -47,7 +47,7 @@ private Q_SLOTS:
     void onDataRemoved(const DA::DAData& d, int dataIndex);
 
 private:
-    DADataManager* _dataManager;
+    DADataManager* mDataManager;
 };
 }  // namespace DA
 #endif  // DADATAMANAGERMODEL_H

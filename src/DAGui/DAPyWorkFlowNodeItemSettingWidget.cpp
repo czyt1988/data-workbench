@@ -19,7 +19,7 @@ using namespace DA;
 // DAPyWorkFlowNodeItemSettingWidget
 //===================================================
 DAPyWorkFlowNodeItemSettingWidget::DAPyWorkFlowNodeItemSettingWidget(QWidget* parent)
-    : QWidget(parent), ui(new Ui::DAPyWorkFlowNodeItemSettingWidget), _lastTabIndex(1)
+    : QWidget(parent), ui(new Ui::DAPyWorkFlowNodeItemSettingWidget), mLastTabIndex(1)
 {
     ui->setupUi(this);
     init();
@@ -46,8 +46,8 @@ void DAPyWorkFlowNodeItemSettingWidget::init()
 
 void DAPyWorkFlowNodeItemSettingWidget::bindWorkFlowEditWidget(DAPyWorkFlowEditWidget* w)
 {
-    if (_workflowEditWidget) {
-        DAPyWorkFlowGraphicsScene* s = _workflowEditWidget->getWorkFlowGraphicsScene();
+    if (mWorkflowEditWidget) {
+        DAPyWorkFlowGraphicsScene* s = mWorkflowEditWidget->getWorkFlowGraphicsScene();
         disconnect(s,
                    &DAPyWorkFlowGraphicsScene::selectionChanged,
                    this,
@@ -69,9 +69,9 @@ void DAPyWorkFlowNodeItemSettingWidget::bindWorkFlowEditWidget(DAPyWorkFlowEditW
                    this,
                    &DAPyWorkFlowNodeItemSettingWidget::onSceneItemRotationChanged);
     }
-    _workflowEditWidget = w;
-    if (_workflowEditWidget) {
-        DAPyWorkFlowGraphicsScene* s = _workflowEditWidget->getWorkFlowGraphicsScene();
+    mWorkflowEditWidget = w;
+    if (mWorkflowEditWidget) {
+        DAPyWorkFlowGraphicsScene* s = mWorkflowEditWidget->getWorkFlowGraphicsScene();
         connect(s, &DAPyWorkFlowGraphicsScene::selectionChanged, this, &DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged);
         connect(s,
                 &DAPyWorkFlowGraphicsScene::nodeDoubleClicked,
@@ -125,15 +125,15 @@ QTabWidget* DAPyWorkFlowNodeItemSettingWidget::tabWidget()
  */
 void DAPyWorkFlowNodeItemSettingWidget::setWorkFlowOperateWidget(DAPyWorkFlowOperateWidget* wf)
 {
-    if (_workflowOptWidget) {
-        disconnect(_workflowOptWidget.data(),
+    if (mWorkflowOptWidget) {
+        disconnect(mWorkflowOptWidget.data(),
                    &DAPyWorkFlowOperateWidget::currentWorkFlowWidgetChanged,
                    this,
                    &DAPyWorkFlowNodeItemSettingWidget::onWorkFlowEditWidgetChanged);
     }
-    _workflowOptWidget = wf;
-    if (_workflowOptWidget) {
-        connect(_workflowOptWidget.data(),
+    mWorkflowOptWidget = wf;
+    if (mWorkflowOptWidget) {
+        connect(mWorkflowOptWidget.data(),
                 &DAPyWorkFlowOperateWidget::currentWorkFlowWidgetChanged,
                 this,
                 &DAPyWorkFlowNodeItemSettingWidget::onWorkFlowEditWidgetChanged);
@@ -186,8 +186,8 @@ void DAPyWorkFlowNodeItemSettingWidget::setPixmapItemSettingEnable(bool on)
 
 DAPyWorkFlowGraphicsScene* DAPyWorkFlowNodeItemSettingWidget::getCurrentScene() const
 {
-    if (_workflowEditWidget) {
-        return _workflowEditWidget->getWorkFlowGraphicsScene();
+    if (mWorkflowEditWidget) {
+        return mWorkflowEditWidget->getWorkFlowGraphicsScene();
     }
     return nullptr;
 }
@@ -350,9 +350,9 @@ void DAPyWorkFlowNodeItemSettingWidget::onSceneSelectionChanged()
         }
     }
     // 把最后用户点击的页面记录下来并显示
-    if (_lastTabIndex >= 0 && _lastTabIndex < ui->tabWidget->count()) {
-        if (ui->tabWidget->isTabEnabled(_lastTabIndex)) {
-            ui->tabWidget->setCurrentIndex(_lastTabIndex);
+    if (mLastTabIndex >= 0 && mLastTabIndex < ui->tabWidget->count()) {
+        if (ui->tabWidget->isTabEnabled(mLastTabIndex)) {
+            ui->tabWidget->setCurrentIndex(mLastTabIndex);
         }
     }
 }
@@ -416,7 +416,7 @@ void DAPyWorkFlowNodeItemSettingWidget::onSceneItemRotationChanged(DAGraphicsRes
 
 void DAPyWorkFlowNodeItemSettingWidget::onTabBarCurrentIndexChanged(int index)
 {
-    _lastTabIndex = index;
+    mLastTabIndex = index;
 }
 
 void DAPyWorkFlowNodeItemSettingWidget::onWorkFlowEditWidgetChanged(DAPyWorkFlowEditWidget* w)

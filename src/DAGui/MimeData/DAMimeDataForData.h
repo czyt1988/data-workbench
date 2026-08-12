@@ -1,4 +1,4 @@
-﻿#ifndef DAMIMEDATAFORDATA_H
+#ifndef DAMIMEDATAFORDATA_H
 #define DAMIMEDATAFORDATA_H
 #include "DAGuiAPI.h"
 #include <QMimeData>
@@ -36,8 +36,8 @@ public:
     bool isHaveDataframe() const;
 
 private:
-    QList< QPair< DAData, QStringList > > m_dataSeriess;
-    QList< DAData > m_dataframe;
+    QList< QPair< DAData, QStringList > > mDataSeriess;
+    QList< DAData > mDataframe;
 };
 }
 #endif  // DAMIMEDATAFORDATA_H

@@ -58,13 +58,13 @@ private Q_SLOTS:
 
 private:
 	Ui::DAPyWorkFlowNodeListWidget* ui;
-	QPoint _lastCustoRequestedPoint;
-	QMenu* _menu;
-	QAction* _actionViewNodeListByToolBox;
-	QAction* _actionViewNodeListByTree;
-	QActionGroup* _actionGroup;
-	QAction* _actionAddFavorite;     ///< 加入为收藏
-	QAction* _actionRemoveFavorite;  ///< 加入为收藏
+	QPoint mLastCustoRequestedPoint;
+	QMenu* mMenu;
+	QAction* mActionViewNodeListByToolBox;
+	QAction* mActionViewNodeListByTree;
+	QActionGroup* mActionGroup;
+	QAction* mActionAddFavorite;     ///< 加入为收藏
+	QAction* mActionRemoveFavorite;  ///< 加入为收藏
 };
 }  // namespace DA
 #endif  // DAPyWorkFlowNodeListWidget_H

@@ -27,12 +27,12 @@ bool DANodeMimeData::hasFormat(const QString& mimeType) const
 
 DAPyNodeMetaData DANodeMimeData::getNodeMetaData() const
 {
-    return (m_nodeMetaData);
+    return (mNodeMetaData);
 }
 
 void DANodeMimeData::setNodeMetaData(const DAPyNodeMetaData& md)
 {
-    m_nodeMetaData = md;
+    mNodeMetaData = md;
 }
 
 QString DANodeMimeData::formatString()

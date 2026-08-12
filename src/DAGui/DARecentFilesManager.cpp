@@ -19,18 +19,18 @@ namespace DA
  * @param appName      应用名（用于 QSettings），留空则用 QCoreApplication::applicationName()
  */
 DARecentFilesManager::DARecentFilesManager(QObject* parent, int maxEntries, const QString& orgName, const QString& appName)
-    : QObject(parent), m_max(maxEntries)
+    : QObject(parent), mMax(maxEntries)
 {
-    m_org = orgName.isEmpty() ? QCoreApplication::organizationName() : orgName;
-    m_app = appName.isEmpty() ? QCoreApplication::applicationName() : appName;
+    mOrg = orgName.isEmpty() ? QCoreApplication::organizationName() : orgName;
+    mApp = appName.isEmpty() ? QCoreApplication::applicationName() : appName;
 
-    m_group = new QActionGroup(this);
-    connect(m_group, &QActionGroup::triggered, this, [ this ](QAction* a) {
+    mGroup = new QActionGroup(this);
+    connect(mGroup, &QActionGroup::triggered, this, [ this ](QAction* a) {
         QString path = a->data().toString();
         if (fileExists(path)) {
             Q_EMIT fileSelected(path);
         } else {
-            m_files.removeAll(path);
+            mFiles.removeAll(path);
             writeSettings();
             rebuildMenu();
         }
@@ -46,8 +46,8 @@ DARecentFilesManager::DARecentFilesManager(QObject* parent, int maxEntries, cons
  */
 void DARecentFilesManager::attachToMenu(QMenu* parentMenu, const QString& title)
 {
-    if (!m_recentMenu) {
-        m_recentMenu = parentMenu->addMenu(title);
+    if (!mRecentMenu) {
+        mRecentMenu = parentMenu->addMenu(title);
         rebuildMenu();
     }
 }
@@ -61,13 +61,13 @@ void DARecentFilesManager::attachToMenu(QMenu* parentMenu, const QString& title)
 void DARecentFilesManager::addFile(const QString& filePath)
 {
     const QString abs = QFileInfo(filePath).absoluteFilePath();
-    m_files.removeAll(abs);
-    m_files.prepend(abs);
-    while (m_files.size() > m_max) {
-        m_files.removeLast();
+    mFiles.removeAll(abs);
+    mFiles.prepend(abs);
+    while (mFiles.size() > mMax) {
+        mFiles.removeLast();
     }
     writeSettings();
-    if (m_recentMenu) {
+    if (mRecentMenu) {
         rebuildMenu();
     }
 }
@@ -77,9 +77,9 @@ void DARecentFilesManager::addFile(const QString& filePath)
  */
 void DARecentFilesManager::clear()
 {
-    m_files.clear();
+    mFiles.clear();
     writeSettings();
-    if (m_recentMenu)
+    if (mRecentMenu)
         rebuildMenu();
 }
 
@@ -91,9 +91,9 @@ void DARecentFilesManager::clear()
 void DARecentFilesManager::rescan()
 {
     bool changed = false;
-    for (auto it = m_files.begin(); it != m_files.end();) {
+    for (auto it = mFiles.begin(); it != mFiles.end();) {
         if (!fileExists(*it)) {
-            it      = m_files.erase(it);
+            it      = mFiles.erase(it);
             changed = true;
         } else {
             ++it;
@@ -116,15 +116,15 @@ void DARecentFilesManager::setMaxEntries(int max)
     if (max < 1) {
         max = 1;
     }
-    if (m_max == max) {
+    if (mMax == max) {
         return;
     }
-    m_max = max;
-    while (m_files.size() > m_max) {
-        m_files.removeLast();
+    mMax = max;
+    while (mFiles.size() > mMax) {
+        mFiles.removeLast();
     }
     writeSettings();
-    if (m_recentMenu) {
+    if (mRecentMenu) {
         rebuildMenu();
     }
 }
@@ -135,28 +135,28 @@ void DARecentFilesManager::setMaxEntries(int max)
  */
 int DARecentFilesManager::getMaxEntries() const
 {
-    return m_max;
+    return mMax;
 }
 
 /**
- * @brief 根据当前 m_files 重建菜单
+ * @brief 根据当前 mFiles 重建菜单
  *
  * 不存在文件对应的 QAction 会被设置为带删除线字体。
  */
 void DARecentFilesManager::rebuildMenu()
 {
-    if (!m_recentMenu)
+    if (!mRecentMenu)
         return;
 
-    m_recentMenu->clear();
-    if (m_files.isEmpty()) {
-        QAction* none = m_recentMenu->addAction(tr("(empty)"));  // cn:空
+    mRecentMenu->clear();
+    if (mFiles.isEmpty()) {
+        QAction* none = mRecentMenu->addAction(tr("(empty)"));  // cn:空
         none->setEnabled(false);
         return;
     }
 
-    for (const QString& f : m_files) {
-        QAction* act = m_recentMenu->addAction(f);
+    for (const QString& f : mFiles) {
+        QAction* act = mRecentMenu->addAction(f);
         act->setData(f);
         act->setToolTip(f);
 
@@ -165,10 +165,10 @@ void DARecentFilesManager::rebuildMenu()
             font.setStrikeOut(true);
             act->setFont(font);
         }
-        m_group->addAction(act);
+        mGroup->addAction(act);
     }
-    m_recentMenu->addSeparator();
-    QAction* clearAct = m_recentMenu->addAction(tr("Clear menu"));  // cn:清空
+    mRecentMenu->addSeparator();
+    QAction* clearAct = mRecentMenu->addAction(tr("Clear menu"));  // cn:清空
     connect(clearAct, &QAction::triggered, this, &DARecentFilesManager::clear);
 }
 
@@ -180,14 +180,14 @@ void DARecentFilesManager::rebuildMenu()
  */
 void DARecentFilesManager::readAndCleanSettings()
 {
-    // 显式 INI 路径(原为 QSettings(m_org, m_app) → 注册表)
+    // 显式 INI 路径(原为 QSettings(mOrg, mApp) → 注册表)
     QSettings s(DA::DADir::getConfigPath() + "/recent-files.ini", QSettings::IniFormat);
-    m_files = s.value("RecentFiles").toStringList();
+    mFiles = s.value("RecentFiles").toStringList();
 
     bool changed = false;
-    for (auto it = m_files.begin(); it != m_files.end();) {
+    for (auto it = mFiles.begin(); it != mFiles.end();) {
         if (!fileExists(*it)) {
-            it      = m_files.erase(it);
+            it      = mFiles.erase(it);
             changed = true;
         } else {
             ++it;
@@ -204,7 +204,7 @@ void DARecentFilesManager::readAndCleanSettings()
 void DARecentFilesManager::writeSettings()
 {
     QSettings s(DA::DADir::getConfigPath() + "/recent-files.ini", QSettings::IniFormat);
-    s.setValue("RecentFiles", m_files);
+    s.setValue("RecentFiles", mFiles);
 }
 
 /**

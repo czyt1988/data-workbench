@@ -65,11 +65,11 @@ private:
         PropertyEndStyle = 5
     };
     DAPropertyPanelContainerWidget* mPanel;
-    QComboBox* _comboBoxFrontStyle;
-    QComboBox* _comboBoxEndStyle;
-    DAPyLinkGraphicsItem* _linkItem;
-    DAPyWorkFlowGraphicsScene* _scene;
-    QSize _endpointIconSize;
+    QComboBox* mComboBoxFrontStyle;
+    QComboBox* mComboBoxEndStyle;
+    DAPyLinkGraphicsItem* mLinkItem;
+    DAPyWorkFlowGraphicsScene* mScene;
+    QSize mEndpointIconSize;
 };
 }
 #endif  // DANODELINKITEMSETTINGWIDGET_H

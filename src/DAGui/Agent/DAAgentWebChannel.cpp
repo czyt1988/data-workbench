@@ -3,6 +3,7 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonParseError>
+#include <QWebEngineView>
 
 namespace DA
 {
@@ -44,58 +45,109 @@ static QJsonObject parseJsonStr(const QString& str)
     return doc.object();
 }
 
+/**
+ * @brief 构造函数
+ * @param view 关联的 WebEngineView
+ * @param parent 父对象
+ */
 DAAgentWebChannel::DAAgentWebChannel(QWebEngineView* view, QObject* parent)
-    : QObject(parent), m_view(view)
+    : QObject(parent), mView(view)
 {
 }
 
+/**
+ * @brief 调用 JS 函数
+ * @param funcCall JS 函数调用字符串
+ */
 void DAAgentWebChannel::callJS(const QString& funcCall)
 {
-    if (m_view && m_view->page()) {
-        m_view->page()->runJavaScript(funcCall);
+    if (mView && mView->page()) {
+        mView->page()->runJavaScript(funcCall);
     }
 }
 
+/**
+ * @brief JS 调用：用户选择了答案
+ * @param answer 用户选择的答案
+ */
 void DAAgentWebChannel::onUserSelect(const QString& answer)
 {
     emit userAnswerSelected(answer);
 }
 
+/**
+ * @brief JS 调用：用户发送了消息
+ * @param text 用户输入的消息文本
+ */
 void DAAgentWebChannel::onUserMessage(const QString& text)
 {
     emit userMessageSent(text);
 }
 
+/**
+ * @brief JS 调用：用户点击了绘图引用超链接（da-figure: 协议）
+ * @param href 超链接 href，形如 da-figure:&lt;figure_name&gt; 或 da-figure:id=&lt;uuid&gt;
+ */
 void DAAgentWebChannel::onFigureLink(const QString& href)
 {
     emit figureLinkRequested(href);
 }
 
+/**
+ * @brief JS 调用：web 侧初始化完成（chat.js init() 建立 QWebChannel 后回调）
+ *
+ * 握手信号：通知 C++ web 已就绪可接收状态推送。C++ 收到后回推
+ * setI18nLabels/setBusy/setModel/setTokenStats，缓解 webview 异步加载期间的
+ * JS-ready 竞态（agent 信号若在 chat.html 加载完成前触发会丢失）。
+ */
 void DAAgentWebChannel::onReady()
 {
     emit webReady();
 }
 
+/**
+ * @brief JS 调用：用户在 web 输入区点击 Stop 按钮（忙碌态）
+ *
+ * web 输入区按钮 Send/Stop 切换后，Stop 走此通道直达 C++ 终止流程，
+ * 替代旧原生 m_sendButton 分流。
+ */
 void DAAgentWebChannel::onStopRequested()
 {
     emit stopRequested();
 }
 
+/**
+ * @brief 追加用户消息到聊天界面
+ * @param text 消息文本
+ */
 void DAAgentWebChannel::appendUserMessage(const QString& text)
 {
     callJS(QString("appendUserMessage(\"%1\")").arg(toJsString(text)));
 }
 
+/**
+ * @brief 追加 Agent 流式 token 到聊天界面
+ * @param token 当前 token 文本
+ */
 void DAAgentWebChannel::appendToken(const QString& token)
 {
     callJS(QString("appendToken(\"%1\")").arg(toJsString(token)));
 }
 
+/**
+ * @brief 完成 Agent 消息（标记消息结束）
+ * @param fullText 完整消息文本
+ */
 void DAAgentWebChannel::finalizeAgentMessage(const QString& fullText)
 {
     callJS(QString("finalizeAgentMessage(\"%1\")").arg(toJsString(fullText)));
 }
 
+/**
+ * @brief 追加工具调用信息到聊天界面
+ * @param toolName 工具名称
+ * @param args 工具参数
+ */
 void DAAgentWebChannel::appendToolCall(const QString& toolName, const QJsonObject& args)
 {
     QJsonDocument doc(args);
@@ -103,6 +155,11 @@ void DAAgentWebChannel::appendToolCall(const QString& toolName, const QJsonObjec
     callJS(QString("appendToolCall(\"%1\",%2)").arg(toJsString(toolName), argsJson));
 }
 
+/**
+ * @brief 追加工具执行结果到聊天界面
+ * @param toolName 工具名称
+ * @param result 工具执行结果
+ */
 void DAAgentWebChannel::appendToolResult(const QString& toolName, const QJsonObject& result)
 {
     QJsonDocument doc(result);
@@ -110,6 +167,12 @@ void DAAgentWebChannel::appendToolResult(const QString& toolName, const QJsonObj
     callJS(QString("appendToolResult(\"%1\",%2)").arg(toJsString(toolName), resultJson));
 }
 
+/**
+ * @brief 追加提问信息到聊天界面
+ * @param text 问题文本
+ * @param options 选项列表
+ * @param multiSelect 是否允许多选
+ */
 void DAAgentWebChannel::appendQuestion(const QString& text, const QStringList& options, bool multiSelect)
 {
     QString arr;
@@ -126,6 +189,14 @@ void DAAgentWebChannel::appendQuestion(const QString& text, const QStringList& o
                     multiSelect ? QStringLiteral("true") : QStringLiteral("false")));
 }
 
+/**
+ * @brief 显示重试状态条（LLM 调用重试期间）
+ * @param attempt 当前重试次数（1-based）
+ * @param maxAttempts 最大重试次数
+ * @param delayMs 本次退避延迟毫秒数
+ * @param errorType 触发重试的错误类型
+ * @param errorMessage 触发重试的错误消息
+ */
 void DAAgentWebChannel::showRetryStatus(int attempt, int maxAttempts, int delayMs,
                                          const QString& errorType, const QString& errorMessage)
 {
@@ -137,6 +208,11 @@ void DAAgentWebChannel::showRetryStatus(int attempt, int maxAttempts, int delayM
         .arg(toJsString(errorMessage)));
 }
 
+/**
+ * @brief 追加错误信息到聊天界面（独立错误卡片）
+ * @param message 错误消息（经 mapErrorMessage 映射后的用户文案）
+ * @param errorType 错误类型（用于 JS 端样式/图标选择）
+ */
 void DAAgentWebChannel::appendError(const QString& message, const QString& errorType)
 {
     callJS(QString("appendError(\"%1\", \"%2\")")
@@ -144,11 +220,24 @@ void DAAgentWebChannel::appendError(const QString& message, const QString& error
         .arg(toJsString(errorType)));
 }
 
+/**
+ * @brief 清空聊天界面
+ */
 void DAAgentWebChannel::clearChat()
 {
     callJS(QStringLiteral("clearChat()"));
 }
 
+/**
+ * @brief 批量重放历史会话记录到聊天界面（plan-04）
+ *
+ * 遍历 plan-03 原始 JSONL 记录，把连续的 `assistant(tool_call)` + 紧随的 `tool_result`
+ * 合并为单个 UI 事件（type:user/assistant/tool/question/usage），序列化为 JSON 数组
+ * 调 `callJS("loadHistory(" + jsonArrayStr + ")")`。JS 端 loadHistory(events)
+ * 据合并后 type 分发渲染。MAJOR2: 配对在 C++ 完成，JS 不再读 _toolName/_toolArgs。
+ *
+ * @param records plan-03 原始 JSONL 记录（QVector<QJsonObject>）
+ */
 void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
 {
     // MAJOR2: C++ 合并连续 assistant(tool_call) + 紧随 tool_result 为单个 UI 事件。
@@ -222,6 +311,10 @@ void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
     callJS(QStringLiteral("loadHistory(") + QString::fromUtf8(json) + QStringLiteral(")"));
 }
 
+/**
+ * @brief 设置忙碌状态（busy 打包：JS 解释按钮 Send/Stop 切换+输入禁用+状态文案）
+ * @param busy 是否忙碌
+ */
 void DAAgentWebChannel::setBusy(bool busy)
 {
     // busy 打包：JS 解释按钮 Send/Stop 切换 + 输入禁用 + 状态文案
@@ -229,18 +322,36 @@ void DAAgentWebChannel::setBusy(bool busy)
                                                    : QStringLiteral("false")));
 }
 
+/**
+ * @brief 设置停止过渡态（onStopClicked 后、onAgentBusy(false)/Ready 前）
+ *
+ * JS 侧禁用按钮防重复点击 + 状态文案置 Stopping...。
+ */
 void DAAgentWebChannel::setStopping()
 {
     // 停止过渡态：按钮禁用防重复点 + 状态 Stopping...
     callJS(QStringLiteral("setStopping()"));
 }
 
+/**
+ * @brief 设置当前模型名标签（中）
+ * @param label 已由 C++ 格式化为 "Model: &lt;name&gt;" 的翻译串，JS 仅显示（CSS ellipsis 截断）
+ */
 void DAAgentWebChannel::setModel(const QString& label)
 {
     // label 已由 C++ 格式化为 "Model: <name>"，JS 仅显示（CSS ellipsis 截断）
     callJS(QString("setModel(\"%1\")").arg(toJsString(label)));
 }
 
+/**
+ * @brief 设置 token 计量（右）+ 缓存明细供 popover
+ * @param label 已由 C++ 格式化的 "tokens: N / window" 串（streaming_estimate 带 ~ 前缀）
+ * @param inputTokens 输入 token
+ * @param outputTokens 输出 token
+ * @param totalTokens 总 token
+ * @param contextWindow 上下文窗口大小
+ * @param source 来源（tiktoken / usage_metadata / streaming_estimate）
+ */
 void DAAgentWebChannel::setTokenStats(const QString& label, int inputTokens, int outputTokens,
                                      int totalTokens, int contextWindow, const QString& source)
 {
@@ -254,11 +365,18 @@ void DAAgentWebChannel::setTokenStats(const QString& label, int inputTokens, int
                .arg(toJsString(source)));
 }
 
+/**
+ * @brief 复位 token 计量到无活跃会话初始态（新会话/清空时）
+ */
 void DAAgentWebChannel::resetTokenStats()
 {
     callJS(QStringLiteral("resetTokenStats()"));
 }
 
+/**
+ * @brief 注入静态 UI 标签（握手时 C++ 一次性推送，C++ 仍是唯一 i18n 拥有者）
+ * @param labels QVariantMap，键见 chat.js setI18nLabels 注释
+ */
 void DAAgentWebChannel::setI18nLabels(const QVariantMap& labels)
 {
     // 序列化为 JSON 对象推给 JS：setI18nLabels({send:"...",stop:"...",...})
@@ -271,11 +389,20 @@ void DAAgentWebChannel::setI18nLabels(const QVariantMap& labels)
     callJS(QStringLiteral("setI18nLabels(") + json + QStringLiteral(")"));
 }
 
+/**
+ * @brief 聚焦 web 输入框（新会话/切换会话后）
+ */
 void DAAgentWebChannel::focusInput()
 {
     callJS(QStringLiteral("focusInput()"));
 }
 
+/**
+ * @brief 终止时定稿当前流式消息 + 关闭工具分组
+ *
+ * 调用 JS flushAgentMessage()（保留已累积的 token 文本）+ closeToolGroup()
+ *（将未完成的工具卡片标记为 incomplete），避免半截消息悬挂。
+ */
 void DAAgentWebChannel::onAgentStopped()
 {
     // 复用已有 JS 函数：flushAgentMessage 定稿半截流式消息（保留已累积文本），

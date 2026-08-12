@@ -38,7 +38,7 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent* event) override;
 
 private:
-    QPoint _startPressPos;
+    QPoint mStartPressPos;
 };
 }  // namespace DA
 #endif  // FCNODELISTWIDGET_H

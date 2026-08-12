@@ -11,9 +11,9 @@ DADataframeToVectorPointWidget::DADataframeToVectorPointWidget(QWidget* parent)
     : QWidget(parent), ui(new Ui::DADataframeToVectorPointWidget)
 {
     ui->setupUi(this);
-    _model = new DAPySeriesTableModel(this);
-    _model->setHeaderLabel({ tr("x"), tr("y") });  // cn:x,y
-    ui->tableViewXY->setModel(_model);
+    mModel = new DAPySeriesTableModel(this);
+    mModel->setHeaderLabel({ tr("x"), tr("y") });  // cn:x,y
+    ui->tableViewXY->setModel(mModel);
     QFontMetrics fm = fontMetrics();
     ui->tableViewXY->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
     connect(ui->listWidgetX,
@@ -37,18 +37,18 @@ DADataframeToVectorPointWidget::~DADataframeToVectorPointWidget()
  */
 void DADataframeToVectorPointWidget::setCurrentData(const DAData& d)
 {
-    _currentData = d;
+    mCurrentData = d;
     updateDataframeColumnList();
 }
 
 DAData DADataframeToVectorPointWidget::getCurrentData() const
 {
-    return _currentData;
+    return mCurrentData;
 }
 
 bool DADataframeToVectorPointWidget::getToVectorPointF(QVector< QPointF >& res)
 {
-    if (!_currentData.isDataFrame() || _currentData.isNull()) {
+    if (!mCurrentData.isDataFrame() || mCurrentData.isNull()) {
         return false;
     }
     DAPySeries x = ui->listWidgetX->getCurrentSeries();
@@ -83,11 +83,11 @@ void DADataframeToVectorPointWidget::updateDataframeColumnList()
 {
     ui->listWidgetX->clear();
     ui->listWidgetY->clear();
-    _model->clearData();
-    if (_currentData.isNull() || !_currentData.isDataFrame()) {
+    mModel->clearData();
+    if (mCurrentData.isNull() || !mCurrentData.isDataFrame()) {
         return;
     }
-    DAPyDataFrame df = _currentData.toDataFrame();
+    DAPyDataFrame df = mCurrentData.toDataFrame();
     if (df.isNone()) {
         return;
     }
@@ -97,7 +97,7 @@ void DADataframeToVectorPointWidget::updateDataframeColumnList()
 
 void DADataframeToVectorPointWidget::onListWidgetXCurrentTextChanged(const QString& n)
 {
-    DAPyDataFrame df = _currentData.toDataFrame();
+    DAPyDataFrame df = mCurrentData.toDataFrame();
     if (df.isNone()) {
         return;
     }
@@ -105,12 +105,12 @@ void DADataframeToVectorPointWidget::onListWidgetXCurrentTextChanged(const QStri
     if (s.isNone()) {
         return;
     }
-    _model->setSeriesAt(0, s);
+    mModel->setSeriesAt(0, s);
 }
 
 void DADataframeToVectorPointWidget::onListWidgetYCurrentTextChanged(const QString& n)
 {
-    DAPyDataFrame df = _currentData.toDataFrame();
+    DAPyDataFrame df = mCurrentData.toDataFrame();
     if (df.isNone()) {
         return;
     }
@@ -118,6 +118,6 @@ void DADataframeToVectorPointWidget::onListWidgetYCurrentTextChanged(const QStri
     if (s.isNone()) {
         return;
     }
-    _model->setSeriesAt(1, s);
+    mModel->setSeriesAt(1, s);
 }
 }

@@ -18,7 +18,7 @@ using namespace DA;
 /// DANodeLinkItemSettingWidget
 ////////////////////////////////////////////////////
 DANodeLinkItemSettingWidget::DANodeLinkItemSettingWidget(QWidget* parent)
-    : QWidget(parent), mPanel(nullptr), _comboBoxFrontStyle(nullptr), _comboBoxEndStyle(nullptr), _linkItem(nullptr), _scene(nullptr), _endpointIconSize(40, 20)
+    : QWidget(parent), mPanel(nullptr), mComboBoxFrontStyle(nullptr), mComboBoxEndStyle(nullptr), mLinkItem(nullptr), mScene(nullptr), mEndpointIconSize(40, 20)
 {
     // 创建布局
     QVBoxLayout* layout = new QVBoxLayout(this);
@@ -44,22 +44,22 @@ DANodeLinkItemSettingWidget::DANodeLinkItemSettingWidget(QWidget* parent)
     mPanel->addIntProperty(PropertyEndpointSize, tr("end point size"), 0, 0, 999);  // cn:端点大小
 
     // 创建自定义端点样式下拉框并初始化
-    _comboBoxFrontStyle = new QComboBox();
-    _comboBoxEndStyle   = new QComboBox();
+    mComboBoxFrontStyle = new QComboBox();
+    mComboBoxEndStyle   = new QComboBox();
     initEndpointComboxBox();
 
     // 添加前端点样式属性(自定义编辑器)
-    mPanel->addProperty(PropertyFrontStyle, tr("front style"), _comboBoxFrontStyle);  // cn:前端点样式
+    mPanel->addProperty(PropertyFrontStyle, tr("front style"), mComboBoxFrontStyle);  // cn:前端点样式
 
     // 添加后端点样式属性(自定义编辑器)
-    mPanel->addProperty(PropertyEndStyle, tr("end style"), _comboBoxEndStyle);  // cn:后端点样式
+    mPanel->addProperty(PropertyEndStyle, tr("end style"), mComboBoxEndStyle);  // cn:后端点样式
 
     // 连接属性面板信号
     connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged, this, &DANodeLinkItemSettingWidget::onPropertyValueChanged);
 
     // 连接自定义下拉框信号
-    connect(_comboBoxFrontStyle, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DANodeLinkItemSettingWidget::onComboBoxFrontStyleCurrentIndexChanged);
-    connect(_comboBoxEndStyle, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DANodeLinkItemSettingWidget::onComboBoxEndStyleCurrentIndexChanged);
+    connect(mComboBoxFrontStyle, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DANodeLinkItemSettingWidget::onComboBoxFrontStyleCurrentIndexChanged);
+    connect(mComboBoxEndStyle, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DANodeLinkItemSettingWidget::onComboBoxEndStyleCurrentIndexChanged);
 }
 
 DANodeLinkItemSettingWidget::~DANodeLinkItemSettingWidget()
@@ -76,9 +76,9 @@ void DANodeLinkItemSettingWidget::setCurrentLinkLineStyle(DAGraphicsLinkItem::Li
     QSignalBlocker b(mPanel);
     Q_UNUSED(b);
     mPanel->setEnumValue(PropertyLinkStyle, int(s));
-    if (updateLinkItem && _linkItem) {
-        _linkItem->setLinkLineStyle(s);
-        _linkItem->update();
+    if (updateLinkItem && mLinkItem) {
+        mLinkItem->setLinkLineStyle(s);
+        mLinkItem->update();
     }
 }
 /**
@@ -91,9 +91,9 @@ void DANodeLinkItemSettingWidget::setLinkLinePen(const QPen& p, bool updateLinkI
     QSignalBlocker b(mPanel);
     Q_UNUSED(b);
     mPanel->setPenValue(PropertyPen, p);
-    if (updateLinkItem && _linkItem) {
-        _linkItem->setLinePen(p);
-        _linkItem->update();
+    if (updateLinkItem && mLinkItem) {
+        mLinkItem->setLinePen(p);
+        mLinkItem->update();
     }
 }
 /**
@@ -102,12 +102,12 @@ void DANodeLinkItemSettingWidget::setLinkLinePen(const QPen& p, bool updateLinkI
 void DANodeLinkItemSettingWidget::updateData()
 {
     QSignalBlocker bPanel(mPanel);
-    QSignalBlocker bFront(_comboBoxFrontStyle);
-    QSignalBlocker bEnd(_comboBoxEndStyle);
+    QSignalBlocker bFront(mComboBoxFrontStyle);
+    QSignalBlocker bEnd(mComboBoxEndStyle);
     Q_UNUSED(bPanel);
     Q_UNUSED(bFront);
     Q_UNUSED(bEnd);
-    if (nullptr == _linkItem) {
+    if (nullptr == mLinkItem) {
         // 清空连线样式选择
         DAPropertyItemWidget* item = mPanel->getPropertyItem(PropertyLinkStyle);
         if (item) {
@@ -118,9 +118,9 @@ void DANodeLinkItemSettingWidget::updateData()
         }
         return;
     }
-    setCurrentLinkLineStyle(_linkItem->getLinkLineStyle(), false);
-    setLinkLinePen(_linkItem->getLinePen(), false);
-    updateLinkEndpointInfo(_linkItem);
+    setCurrentLinkLineStyle(mLinkItem->getLinkLineStyle(), false);
+    setLinkLinePen(mLinkItem->getLinePen(), false);
+    updateLinkEndpointInfo(mLinkItem);
 }
 
 /**
@@ -129,7 +129,7 @@ void DANodeLinkItemSettingWidget::updateData()
  */
 void DANodeLinkItemSettingWidget::setLinkItem(DAPyLinkGraphicsItem* link)
 {
-    _linkItem = link;
+    mLinkItem = link;
     updateData();
 }
 /**
@@ -138,7 +138,7 @@ void DANodeLinkItemSettingWidget::setLinkItem(DAPyLinkGraphicsItem* link)
  */
 DAPyLinkGraphicsItem* DANodeLinkItemSettingWidget::getLinkItem() const
 {
-    return _linkItem;
+    return mLinkItem;
 }
 
 /**
@@ -148,16 +148,16 @@ DAPyLinkGraphicsItem* DANodeLinkItemSettingWidget::getLinkItem() const
 void DANodeLinkItemSettingWidget::updateLinkEndpointInfo(DAPyLinkGraphicsItem* link)
 {
     QSignalBlocker bPanel(mPanel);
-    QSignalBlocker bFront(_comboBoxFrontStyle);
-    QSignalBlocker bEnd(_comboBoxEndStyle);
+    QSignalBlocker bFront(mComboBoxFrontStyle);
+    QSignalBlocker bEnd(mComboBoxEndStyle);
     Q_UNUSED(bPanel);
     Q_UNUSED(bFront);
     Q_UNUSED(bEnd);
     mPanel->setIntValue(PropertyEndpointSize, link->getEndPointSize());
-    _comboBoxFrontStyle->setCurrentIndex(
-        _comboBoxFrontStyle->findData((int)link->getEndPointType(DAGraphicsLinkItem::OrientationStart)));
-    _comboBoxEndStyle->setCurrentIndex(
-        _comboBoxEndStyle->findData((int)link->getEndPointType(DAGraphicsLinkItem::OrientationEnd)));
+    mComboBoxFrontStyle->setCurrentIndex(
+        mComboBoxFrontStyle->findData((int)link->getEndPointType(DAGraphicsLinkItem::OrientationStart)));
+    mComboBoxEndStyle->setCurrentIndex(
+        mComboBoxEndStyle->findData((int)link->getEndPointType(DAGraphicsLinkItem::OrientationEnd)));
 }
 
 /**
@@ -166,12 +166,12 @@ void DANodeLinkItemSettingWidget::updateLinkEndpointInfo(DAPyLinkGraphicsItem* l
  */
 void DANodeLinkItemSettingWidget::setScene(DAPyWorkFlowGraphicsScene* sc)
 {
-    if (_scene) {
-        disconnect(_scene, &DAPyWorkFlowScene::pyNodeLinksRemoved, this, &DANodeLinkItemSettingWidget::onNodeLinksRemoved);
+    if (mScene) {
+        disconnect(mScene, &DAPyWorkFlowScene::pyNodeLinksRemoved, this, &DANodeLinkItemSettingWidget::onNodeLinksRemoved);
     }
-    _scene = sc;
-    if (_scene) {
-        connect(_scene, &DAPyWorkFlowScene::pyNodeLinksRemoved, this, &DANodeLinkItemSettingWidget::onNodeLinksRemoved);
+    mScene = sc;
+    if (mScene) {
+        connect(mScene, &DAPyWorkFlowScene::pyNodeLinksRemoved, this, &DANodeLinkItemSettingWidget::onNodeLinksRemoved);
     }
 }
 
@@ -181,11 +181,11 @@ void DANodeLinkItemSettingWidget::setScene(DAPyWorkFlowGraphicsScene* sc)
 void DANodeLinkItemSettingWidget::initEndpointComboxBox()
 {
     DAPyLinkGraphicsItem item;
-    _comboBoxFrontStyle->setIconSize(_endpointIconSize);
-    _comboBoxEndStyle->setIconSize(_endpointIconSize);
+    mComboBoxFrontStyle->setIconSize(mEndpointIconSize);
+    mComboBoxEndStyle->setIconSize(mEndpointIconSize);
     auto fn = [ this, &item ](DAGraphicsLinkItem::EndPointType et, const QString& str = "") {
-        _comboBoxFrontStyle->addItem(QIcon(generateEndPointPixmap(&item, et)), str, (int)et);
-        _comboBoxEndStyle->addItem(QIcon(generateEndPointPixmap(&item, et)), str, (int)et);
+        mComboBoxFrontStyle->addItem(QIcon(generateEndPointPixmap(&item, et)), str, (int)et);
+        mComboBoxEndStyle->addItem(QIcon(generateEndPointPixmap(&item, et)), str, (int)et);
     };
     fn(DAGraphicsLinkItem::EndPointNone, tr("None"));  // cn:无
     fn(DAGraphicsLinkItem::EndPointTriangType);
@@ -199,7 +199,7 @@ void DANodeLinkItemSettingWidget::initEndpointComboxBox()
  */
 QPixmap DANodeLinkItemSettingWidget::generateEndPointPixmap(DAPyLinkGraphicsItem* link, DAGraphicsLinkItem::EndPointType epType)
 {
-    QPixmap px(_endpointIconSize);
+    QPixmap px(mEndpointIconSize);
     px.fill(Qt::transparent);  //设置为透明底
     QPainter painter(&px);
     painter.setPen(Qt::black);
@@ -222,9 +222,9 @@ void DANodeLinkItemSettingWidget::onPropertyValueChanged(int propertyId)
     switch (propertyId) {
     case PropertyPen: {
         QPen p = mPanel->getPenValue(PropertyPen);
-        if (_linkItem) {
-            _linkItem->setLinePen(p);
-            _linkItem->update();
+        if (mLinkItem) {
+            mLinkItem->setLinePen(p);
+            mLinkItem->update();
         }
         emit linkLinePenChanged(p);
         break;
@@ -232,18 +232,18 @@ void DANodeLinkItemSettingWidget::onPropertyValueChanged(int propertyId)
     case PropertyLinkStyle: {
         int val = mPanel->getEnumValue(PropertyLinkStyle);
         DAGraphicsLinkItem::LinkLineStyle s = static_cast< DAGraphicsLinkItem::LinkLineStyle >(val);
-        if (_linkItem) {
-            _linkItem->setLinkLineStyle(s);
-            _linkItem->update();
+        if (mLinkItem) {
+            mLinkItem->setLinkLineStyle(s);
+            mLinkItem->update();
         }
         emit currentLinkLineStyleChanged(s);
         break;
     }
     case PropertyEndpointSize: {
         int val = mPanel->getIntValue(PropertyEndpointSize);
-        if (_linkItem) {
-            _linkItem->setEndPointSize(val);
-            _linkItem->update();
+        if (mLinkItem) {
+            mLinkItem->setEndPointSize(val);
+            mLinkItem->update();
         }
         break;
     }
@@ -254,26 +254,26 @@ void DANodeLinkItemSettingWidget::onPropertyValueChanged(int propertyId)
 
 void DANodeLinkItemSettingWidget::onComboBoxFrontStyleCurrentIndexChanged(int index)
 {
-    DAGraphicsLinkItem::EndPointType et = static_cast< DAGraphicsLinkItem::EndPointType >(_comboBoxFrontStyle->itemData(index).toInt());
-    if (_linkItem) {
-        _linkItem->setEndPointType(DAGraphicsLinkItem::OrientationStart, et);
-        _linkItem->update();
+    DAGraphicsLinkItem::EndPointType et = static_cast< DAGraphicsLinkItem::EndPointType >(mComboBoxFrontStyle->itemData(index).toInt());
+    if (mLinkItem) {
+        mLinkItem->setEndPointType(DAGraphicsLinkItem::OrientationStart, et);
+        mLinkItem->update();
     }
 }
 
 void DANodeLinkItemSettingWidget::onComboBoxEndStyleCurrentIndexChanged(int index)
 {
-    DAGraphicsLinkItem::EndPointType et = static_cast< DAGraphicsLinkItem::EndPointType >(_comboBoxEndStyle->itemData(index).toInt());
-    if (_linkItem) {
-        _linkItem->setEndPointType(DAGraphicsLinkItem::OrientationEnd, et);
-        _linkItem->update();
+    DAGraphicsLinkItem::EndPointType et = static_cast< DAGraphicsLinkItem::EndPointType >(mComboBoxEndStyle->itemData(index).toInt());
+    if (mLinkItem) {
+        mLinkItem->setEndPointType(DAGraphicsLinkItem::OrientationEnd, et);
+        mLinkItem->update();
     }
 }
 
 void DANodeLinkItemSettingWidget::onNodeLinksRemoved(const QList< DAPyLinkGraphicsItem* >& items)
 {
-    if (items.contains(_linkItem)) {
-        _linkItem = nullptr;
+    if (items.contains(mLinkItem)) {
+        mLinkItem = nullptr;
         updateData();
     }
 }

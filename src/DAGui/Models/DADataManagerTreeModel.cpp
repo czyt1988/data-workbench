@@ -23,7 +23,7 @@ namespace DA
 //===============================================================
 // DAStandardItemDataDataframe
 //===============================================================
-DAStandardItemDataDataframe::DAStandardItemDataDataframe(const DAData& data) : QStandardItem(), m_dataframe(data)
+DAStandardItemDataDataframe::DAStandardItemDataDataframe(const DAData& data) : QStandardItem(), mDataframe(data)
 {
     setEditable(false);
     setDragEnabled(true);
@@ -39,20 +39,20 @@ QVariant DAStandardItemDataDataframe::data(int role) const
     static QIcon s_dataframe_icon = QIcon(":/DAGui/DataType/icon/data-type/dataframe.svg");
     switch (role) {
     case DADataManagerTreeModel::RoleDataId: {
-        return QVariant(static_cast< qulonglong >(m_dataframe.id()));
+        return QVariant(static_cast< qulonglong >(mDataframe.id()));
     }
     default:
         break;
     }
-    if (!m_dataframe.isDataFrame()) {
+    if (!mDataframe.isDataFrame()) {
         return QStandardItem::data(role);
     }
     switch (role) {
     case Qt::DisplayRole: {
-        return m_dataframe.getName();
+        return mDataframe.getName();
     } break;
     case Qt::ToolTipRole: {
-        return m_dataframe.getDescribe();
+        return mDataframe.getDescribe();
     } break;
     case Qt::DecorationRole: {
         // 返回类型图标
@@ -67,7 +67,7 @@ QVariant DAStandardItemDataDataframe::data(int role) const
 
 DAData DAStandardItemDataDataframe::getDataframe() const
 {
-    return m_dataframe;
+    return mDataframe;
 }
 
 bool DAStandardItemDataDataframe::isDataframeItem(QStandardItem* item)
@@ -82,7 +82,7 @@ bool DAStandardItemDataDataframe::isDataframeItem(QStandardItem* item)
 //===============================================================
 
 DAStandardItemDataDataframeSeries::DAStandardItemDataDataframeSeries(const DAData& data, const QString& seriesName)
-    : QStandardItem(), m_dataframe(data), m_name(seriesName)
+    : QStandardItem(), mDataframe(data), mName(seriesName)
 {
     setEditable(false);
     setDragEnabled(true);
@@ -98,7 +98,7 @@ QVariant DAStandardItemDataDataframeSeries::data(int role) const
     static QIcon s_dataframe_icon = QIcon(":/DAGui/DataType/icon/data-type/dataframe.svg");
     switch (role) {
     case DADataManagerTreeModel::RoleDataId: {
-        return QVariant(static_cast< qulonglong >(m_dataframe.id()));
+        return QVariant(static_cast< qulonglong >(mDataframe.id()));
     }
     case DADataManagerTreeModel::RoleItemType: {
         return DADataManagerTreeModel::SeriesInnerDataframe;
@@ -106,19 +106,19 @@ QVariant DAStandardItemDataDataframeSeries::data(int role) const
     default:
         break;
     }
-    if (!m_dataframe.isDataFrame()) {
+    if (!mDataframe.isDataFrame()) {
         return QStandardItem::data(role);
     }
     switch (role) {
     case Qt::DisplayRole: {
-        return m_name;
+        return mName;
     } break;
     case Qt::ToolTipRole: {
-        return makeDescribeText(m_dataframe, m_name);
+        return makeDescribeText(mDataframe, mName);
     } break;
     case Qt::DecorationRole: {
         // 返回类型图标
-        return seriesTypeToIcon(m_dataframe, m_name);
+        return seriesTypeToIcon(mDataframe, mName);
     } break;
     default:
         break;
@@ -129,17 +129,17 @@ QVariant DAStandardItemDataDataframeSeries::data(int role) const
 
 DAData DAStandardItemDataDataframeSeries::getDataframe() const
 {
-    return m_dataframe;
+    return mDataframe;
 }
 
 void DAStandardItemDataDataframeSeries::setSeriesName(const QString& name)
 {
-    m_name = name;
+    mName = name;
 }
 
 QString DAStandardItemDataDataframeSeries::getSeriesName() const
 {
-    return m_name;
+    return mName;
 }
 
 bool DAStandardItemDataDataframeSeries::isDataframeSeriesItem(QStandardItem* item)

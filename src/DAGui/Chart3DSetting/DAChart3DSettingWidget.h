@@ -81,7 +81,7 @@ public:
     DAChart3DCommonItemsSettingWidget* getChart3DCommonItemsSettingWidget() const;
 
 protected:
-    void changeEvent(QEvent* e);
+    void changeEvent(QEvent* e) override;
     // 通过plotitem查找combobox索引
     int findComboBoxIndexFromPlot3DItem(const Qwt3DPlotItem* item) const;
     // 添加plotitem到combobox

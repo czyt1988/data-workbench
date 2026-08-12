@@ -40,8 +40,8 @@ public:
     QWidget* currentWidget() const;
 
 private:
-    QToolBox* _toolBox;
-    DANodeListWidget* _favoriteList;
+    QToolBox* mToolBox;
+    DANodeListWidget* mFavoriteList;
 };
 }  // namespace DA
 #endif  // FCTOOLBOX_H

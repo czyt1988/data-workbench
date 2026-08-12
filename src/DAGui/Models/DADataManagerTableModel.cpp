@@ -10,7 +10,7 @@ using namespace DA;
 //===================================================
 // DADataManagerTableModel
 //===================================================
-DADataManagerTableModel::DADataManagerTableModel(QObject* p) : QAbstractTableModel(p), _dataManager(nullptr)
+DADataManagerTableModel::DADataManagerTableModel(QObject* p) : QAbstractTableModel(p), mDataManager(nullptr)
 {
 }
 
@@ -51,21 +51,21 @@ int DADataManagerTableModel::columnCount(const QModelIndex& parent) const
 int DADataManagerTableModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
-    if (nullptr == _dataManager) {
+    if (nullptr == mDataManager) {
         return 0;
     }
-    return _dataManager->getDataCount();
+    return mDataManager->getDataCount();
 }
 
 QVariant DADataManagerTableModel::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid() || nullptr == _dataManager) {
+    if (!index.isValid() || nullptr == mDataManager) {
         return QVariant();
     }
-    if (index.row() >= _dataManager->getDataCount()) {
+    if (index.row() >= mDataManager->getDataCount()) {
         return QVariant();
     }
-    DAData data = _dataManager->getData(index.row());
+    DAData data = mDataManager->getData(index.row());
 
     switch (role) {
     case Qt::TextAlignmentRole:
@@ -98,10 +98,10 @@ void DADataManagerTableModel::setDataManager(DADataManager* dm)
 {
     beginResetModel();
     // 断开旧连接
-    if (_dataManager) {
-        _dataManager->disconnect(this);
+    if (mDataManager) {
+        mDataManager->disconnect(this);
     }
-    _dataManager = dm;
+    mDataManager = dm;
     if (dm) {
         connect(dm, &DADataManager::dataAdded, this, &DADataManagerTableModel::onDataAdded);
         connect(dm, &DADataManager::dataBeginRemove, this, &DADataManagerTableModel::onDataBeginRemoved);
@@ -180,7 +180,7 @@ void DADataManagerTableModel::refresh(int row, int col)
 void DADataManagerTableModel::onDataAdded(const DA::DAData& d)
 {
     Q_UNUSED(d);
-    int dataIndex = _dataManager->getDataIndex(d);
+    int dataIndex = mDataManager->getDataIndex(d);
     beginInsertRows(QModelIndex(), dataIndex, dataIndex);
     endInsertRows();
 }

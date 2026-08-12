@@ -1,14 +1,11 @@
 #pragma once
 #include <QWidget>
-#include <QWebEngineView>
-#include <QWebChannel>
-#include <QPushButton>
-#include <QLabel>
 #include <QJsonObject>
 #include <QVector>
 #include <QStringList>
 #include <QVariantList>
 #include "DAGuiAPI.h"
+#include "DAGlobals.h"
 
 namespace DA
 {
@@ -26,144 +23,36 @@ class DAAgentWebChannel;
 class DAGUI_API DAAgentDockWidget : public QWidget
 {
     Q_OBJECT
+    DA_DECLARE_PRIVATE(DAAgentDockWidget)
 public:
-    /**
-     * @brief 构造函数
-     * @param parent 父窗口
-     */
     explicit DAAgentDockWidget(QWidget* parent = nullptr);
-
-    /**
-     * @brief 析构函数
-     */
     ~DAAgentDockWidget();
-
-    /**
-     * @brief 获取关联的 WebChannel 对象
-     * @return WebChannel 指针
-     */
-    DAAgentWebChannel* webChannel() const { return m_channel; }
+    DAAgentWebChannel* webChannel() const;
 
 private Q_SLOTS:
     void onStopClicked();
     void onUserAnswer(const QString& answer);
-    void onFigureLink(const QString& href);  // 绘图引用超链接点击转发
-    // 会话栏按钮
+    void onFigureLink(const QString& href);
     void onNewSessionClicked();
     void onSessionManagerClicked();
-    // —— 输入区/状态栏 web 化：web↔C++ 编排 ——
-    // web 发送：JS onUserMessage → userMessageSent → 此槽（C++ 仍是编排者，
-    // 调 appendUserMessage 渲染气泡 + emit sendMessageRequested）
     void onUserMessageReceived(const QString& text);
-    // web 就绪握手：flush 当前态（i18n/busy/model/tokenStats）
     void onWebReady();
 
 public Q_SLOTS:
-    /**
-     * @brief 处理 Agent 流式 token 信号
-     * @param token 当前 token 文本
-     */
     void onAgentToken(const QString& token);
-
-    /**
-     * @brief 处理 Agent 消息完成信号
-     * @param fullText 完整消息文本
-     */
     void onAgentMessageComplete(const QString& fullText);
-
-    /**
-     * @brief 处理 Agent 工具调用信号
-     * @param toolName 工具名称
-     * @param args 工具参数
-     */
     void onAgentToolCall(const QString& toolName, const QJsonObject& args);
-
-    /**
-     * @brief 处理 Agent 工具结果信号
-     * @param toolName 工具名称
-     * @param result 工具执行结果
-     */
     void onAgentToolResult(const QString& toolName, const QJsonObject& result);
-
-    /**
-     * @brief 处理 Agent 提问信号
-     * @param text 问题文本
-     * @param options 选项列表
-     * @param multiSelect 是否允许多选
-     */
     void onAgentQuestion(const QString& text, const QStringList& options, bool multiSelect);
-
-    /**
-     * @brief 处理 Agent 错误信号
-     * @param message 错误信息
-     * @param errorType 错误类型（quota_exhausted/auth_error/...），空表示未知
-     * @param detail 详细错误描述（如原始异常信息），可为空
-     */
     void onAgentError(const QString& message, const QString& errorType = QString(), const QString& detail = QString());
-
-    /**
-     * @brief 处理 Agent 重试信号（LLM 调用指数退避期间）
-     * @param attempt 当前重试次数
-     * @param maxAttempts 最大重试次数
-     * @param delayMs 本次退避延迟毫秒数
-     * @param errorType 触发重试的错误类型
-     * @param errorMessage 触发重试的错误消息
-     */
     void onAgentRetrying(int attempt, int maxAttempts, int delayMs, const QString& errorType, const QString& errorMessage);
-
-    /**
-     * @brief 处理 Agent 就绪信号
-     * @param model 模型名称
-     */
     void onAgentReady(const QString& model);
-
-    /**
-     * @brief 处理 Agent 忙碌状态信号
-     * @param busy 是否忙碌
-     */
     void onAgentBusy(bool busy);
-
-    // ---- plan-04 多会话 + token UI 槽 ----
-    /**
-     * @brief 处理 token 使用量更新（契约2：5 参含 contextWindow 与 source）
-     * @param inputTokens 输入 token
-     * @param outputTokens 输出 token
-     * @param totalTokens 总 token
-     * @param contextWindow 上下文窗口大小
-     * @param source 来源（tiktoken / usage_metadata）
-     */
     void onAgentUsage(int inputTokens, int outputTokens, int totalTokens, int contextWindow, const QString& source);
-
-    /**
-     * @brief Python load_session 重建完成，解除 UI 切换守卫
-     * @param sessionId 会话 ID
-     */
     void onAgentSessionLoaded(const QString& sessionId);
-
-    /**
-     * @brief 会话切换完成（Module::sessionSwitched），UI 侧守卫 + clearChat + loadHistory
-     * @param sessionId 新会话 ID
-     * @param allRecords 新会话完整 JSONL 记录
-     */
     void onSessionSwitched(const QString& sessionId, const QVector<QJsonObject>& allRecords);
-
-    /**
-     * @brief 会话列表变化（契约3：payload 每元素 QVariantMap{id,title}），直接填充下拉
-     * @param sessions 会话列表 payload
-     */
     void onSessionListChanged(QVariantList sessions);
-
-    /**
-     * @brief 新会话创建（newSession 路径），清空聊天 + 复位守卫 + 复位 token 控件
-     * @param sessionId 新会话 ID
-     */
     void onSessionCreated(const QString& sessionId);
-
-    /**
-     * @brief 当前无活跃会话（启动/打开工程后始终全新对话，不自动恢复上次会话）
-     *
-     * 清空残留聊天区、复位 token 控件、下拉不选中、解除切换守卫。
-     */
     void onSessionCleared();
 
 Q_SIGNALS:
@@ -200,53 +89,14 @@ Q_SIGNALS:
     void agentStopRequested();
 
 protected:
-    /**
-     * @brief 事件过滤器：m_titleLabel 尺寸变化时重新计算省略文本（输入区/状态栏已迁 web）
-     */
     bool eventFilter(QObject* obj, QEvent* ev) override;
 
 private:
-    /**
-     * @brief 初始化 UI 界面
-     */
     void setupUI();
-
-    /**
-     * @brief 初始化 WebChannel
-     */
     void setupWebChannel();
-
-    /// 用 sessionListChanged payload 刷新会话缓存并更新标题
-    /// 按当前会话 ID 在缓存中查标题并更新标题标签（过长右端省略 + tooltip 全文）
     void updateTitleLabel();
-    /// 格式化模型标签串：空模型返回 "Model: -"，非空返回 "Model: <name>"（已 tr 翻译）
     QString formatModelLabel() const;
-    /// 格式化 token 计量串：streaming_estimate 带 ~ 前缀，否则 "tokens: N / window"
     QString formatTokenLabel(int totalTokens, int contextWindow, const QString& source) const;
-
-    /// 根据 errorType 映射错误消息为翻译后的用户文案（plan-03 step8）
     QString mapErrorMessage(const QString& original, const QString& errorType) const;
-
-    QWebEngineView* m_webView;
-    DAAgentWebChannel* m_channel;
-    bool m_agentBusy = false;
-
-    // ---- 顶部会话栏：标题（省略）+ 会话管理 + 新建会话 ----
-    QLabel* m_titleLabel = nullptr;
-    QPushButton* m_sessionManagerBtn = nullptr;
-    QPushButton* m_newSessionBtn = nullptr;
-    QString m_currentSessionId;        ///< 当前活跃会话 ID
-    QString m_currentSessionFullTitle; ///< 当前会话完整标题（供省略渲染与 tooltip）
-    QVariantList m_sessions;          ///< 缓存 sessionListChanged payload（含元信息）
-    QString m_currentModel;           ///< 当前模型名称（由 onAgentReady 回填，onWebReady 推给 web）
-    // ---- token 统计缓存：web 未就绪时丢失的推送，onWebReady 重推 ----
-    int m_lastInTokens = 0;
-    int m_lastOutTokens = 0;
-    int m_lastTotalTokens = 0;
-    int m_lastContextWindow = 0;
-    QString m_lastTokenSource;
-    bool m_hasTokenStats = false;
-    // ---- MAJOR4 UI 侧切换守卫：true 时渲染槽跳过，避免旧会话残余 token 渲染到新聊天区 ----
-    bool m_switching = false;
 };
 } // namespace DA

@@ -1,4 +1,4 @@
-﻿#include "DANodeListWidget.h"
+#include "DANodeListWidget.h"
 #include "DANodeMimeData.h"
 #include "DAPyWorkFlowNodeListWidget.h"
 #include <QMouseEvent>
@@ -85,7 +85,7 @@ DAPyNodeMetaData DANodeListWidget::getNodeMetaData(const QPoint& p) const
 void DANodeListWidget::mousePressEvent(QMouseEvent* event)
 {
 	if (event->buttons() & Qt::LeftButton) {
-		_startPressPos = event->pos();
+		mStartPressPos = event->pos();
 	}
 	QListWidget::mousePressEvent(event);
 }
@@ -93,8 +93,8 @@ void DANodeListWidget::mousePressEvent(QMouseEvent* event)
 void DANodeListWidget::mouseMoveEvent(QMouseEvent* event)
 {
 	if (event->buttons() & Qt::LeftButton) {
-		if ((event->pos() - _startPressPos).manhattanLength() > QApplication::startDragDistance()) {
-			DANodeListWidgetItem* item = static_cast< DANodeListWidgetItem* >(itemAt(_startPressPos));
+		if ((event->pos() - mStartPressPos).manhattanLength() > QApplication::startDragDistance()) {
+			DANodeListWidgetItem* item = static_cast< DANodeListWidgetItem* >(itemAt(mStartPressPos));
 			if (item) {
 				DAPyNodeMetaData nodemd = item->getNodeMetaData();
 				QDrag* drag             = DAPyWorkFlowNodeListWidget::createDrag(this, nodemd);

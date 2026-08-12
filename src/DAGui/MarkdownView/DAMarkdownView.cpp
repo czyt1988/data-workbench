@@ -97,14 +97,14 @@ bool DAMarkdownWebPage::acceptNavigationRequest(const QUrl& url, NavigationType 
 // ================================================================
 
 DAMarkdownView::DAMarkdownView(QWidget* parent)
-    : QWidget(parent), m_webView(nullptr), m_page(nullptr)
+    : QWidget(parent), mWebView(nullptr), mPage(nullptr)
 {
     setupUI();
 }
 
 DAMarkdownView::~DAMarkdownView()
 {
-    // 页面的父对象是 m_webView，随 m_webView 析构自动释放
+    // 页面的父对象是 mWebView，随 mWebView 析构自动释放
 }
 
 /**
@@ -116,30 +116,30 @@ void DAMarkdownView::setupUI()
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    m_webView = new QWebEngineView(this);
-    m_webView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    mWebView = new QWebEngineView(this);
+    mWebView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    // 自定义 Page，父对象设为 m_webView，随 m_webView 析构释放
-    m_page = new DAMarkdownWebPage(m_webView);
-    m_webView->setPage(m_page);
+    // 自定义 Page，父对象设为 mWebView，随 mWebView 析构释放
+    mPage = new DAMarkdownWebPage(mWebView);
+    mWebView->setPage(mPage);
 
     // 页面加载完成后渲染缓存的 markdown
-    connect(m_webView, &QWebEngineView::loadFinished, this, [this](bool ok) {
+    connect(mWebView, &QWebEngineView::loadFinished, this, [this](bool ok) {
         if (ok) {
-            m_pageLoaded = true;
-            if (!m_markdown.isEmpty()) {
+            mPageLoaded = true;
+            if (!mMarkdown.isEmpty()) {
                 renderMarkdown();
             }
         }
     });
 
     // 链接点击信号转发
-    connect(m_page, &DAMarkdownWebPage::linkClicked, this, &DAMarkdownView::linkClicked);
+    connect(mPage, &DAMarkdownWebPage::linkClicked, this, &DAMarkdownView::linkClicked);
 
-    layout->addWidget(m_webView);
+    layout->addWidget(mWebView);
 
     // 加载 HTML 壳（markdown-it / highlight.js 由 HTML 内部从 DAAgent qrc 引用）
-    m_webView->setUrl(QUrl(QStringLiteral("qrc:///DAMarkdown/markdown.html")));
+    mWebView->setUrl(QUrl(QStringLiteral("qrc:///DAMarkdown/markdown.html")));
 }
 
 /**
@@ -150,14 +150,14 @@ void DAMarkdownView::setupUI()
  */
 void DAMarkdownView::setMarkdown(const QString& markdown)
 {
-    if (m_markdown == markdown) {
+    if (mMarkdown == markdown) {
         return;
     }
-    m_markdown = markdown;
-    if (m_pageLoaded) {
+    mMarkdown = markdown;
+    if (mPageLoaded) {
         renderMarkdown();
     }
-    emit markdownChanged(m_markdown);
+    emit markdownChanged(mMarkdown);
 }
 
 /**
@@ -166,7 +166,7 @@ void DAMarkdownView::setMarkdown(const QString& markdown)
  */
 QString DAMarkdownView::markdown() const
 {
-    return m_markdown;
+    return mMarkdown;
 }
 
 /**
@@ -174,12 +174,12 @@ QString DAMarkdownView::markdown() const
  */
 void DAMarkdownView::clear()
 {
-    if (m_markdown.isEmpty()) {
+    if (mMarkdown.isEmpty()) {
         return;
     }
-    m_markdown.clear();
-    if (m_pageLoaded && m_webView && m_webView->page()) {
-        m_webView->page()->runJavaScript(QStringLiteral("clearContent()"));
+    mMarkdown.clear();
+    if (mPageLoaded && mWebView && mWebView->page()) {
+        mWebView->page()->runJavaScript(QStringLiteral("clearContent()"));
     }
     emit markdownChanged(QString());
 }
@@ -206,8 +206,8 @@ bool DAMarkdownView::loadFile(const QString& filePath)
  */
 void DAMarkdownView::scrollToTop()
 {
-    if (m_pageLoaded && m_webView && m_webView->page()) {
-        m_webView->page()->runJavaScript(QStringLiteral("window.scrollTo(0, 0)"));
+    if (mPageLoaded && mWebView && mWebView->page()) {
+        mWebView->page()->runJavaScript(QStringLiteral("window.scrollTo(0, 0)"));
     }
 }
 
@@ -216,8 +216,8 @@ void DAMarkdownView::scrollToTop()
  */
 void DAMarkdownView::scrollToBottom()
 {
-    if (m_pageLoaded && m_webView && m_webView->page()) {
-        m_webView->page()->runJavaScript(QStringLiteral("window.scrollTo(0, document.body.scrollHeight)"));
+    if (mPageLoaded && mWebView && mWebView->page()) {
+        mWebView->page()->runJavaScript(QStringLiteral("window.scrollTo(0, document.body.scrollHeight)"));
     }
 }
 
@@ -226,11 +226,11 @@ void DAMarkdownView::scrollToBottom()
  */
 void DAMarkdownView::renderMarkdown()
 {
-    if (!m_webView || !m_webView->page()) {
+    if (!mWebView || !mWebView->page()) {
         return;
     }
-    QString js = QStringLiteral("renderMarkdown(\"%1\")").arg(toJsString(m_markdown));
-    m_webView->page()->runJavaScript(js);
+    QString js = QStringLiteral("renderMarkdown(\"%1\")").arg(toJsString(mMarkdown));
+    mWebView->page()->runJavaScript(js);
 }
 
 } // namespace DA

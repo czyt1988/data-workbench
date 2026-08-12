@@ -1,4 +1,4 @@
-﻿#ifndef DARECENTFILESMANAGER_H
+#ifndef DARECENTFILESMANAGER_H
 #define DARECENTFILESMANAGER_H
 #include "DAGuiAPI.h"
 #include <QObject>
@@ -9,7 +9,7 @@ namespace DA
 {
 
 /**
- * @brief 管理“最近打开文件”列表，支持自动过滤失效路径、菜单集成
+ * @brief 管理"最近打开文件"列表，支持自动过滤失效路径、菜单集成
  */
 class DAGUI_API DARecentFilesManager : public QObject
 {
@@ -20,22 +20,22 @@ public:
 								  const QString& orgName = QString(),
 								  const QString& appName = QString());
 
-	//! 把“最近文件”子菜单挂到任意 QMenu
+	// 把"最近文件"子菜单挂到任意 QMenu
 	void attachToMenu(QMenu* parentMenu, const QString& title = tr("Recent files"));  // cn:最近打开文件
 
-	//! 成功打开/保存文件后加入列表
+	// 成功打开/保存文件后加入列表
 	void addFile(const QString& filePath);
 
-	//! 清空所有记录
+	// 清空所有记录
 	void clear();
 
-	//! 重新扫描：删除不存在文件
+	// 重新扫描：删除不存在文件
 	void rescan();
 
-	//! 设置最大条目数，运行期可调用，会立即裁剪超出的记录并刷新菜单
+	// 设置最大条目数，运行期可调用，会立即裁剪超出的记录并刷新菜单
 	void setMaxEntries(int max);
 
-	//! 获取最大条目数
+	// 获取最大条目数
 	int getMaxEntries() const;
 
 Q_SIGNALS:
@@ -47,17 +47,17 @@ Q_SIGNALS:
 	void fileSelected(const QString& filePath);
 
 private:
-	void rebuildMenu();                              //!< 重建菜单
-	void readAndCleanSettings();                     //!< 首次读取并清理
-	void writeSettings();                            //!< 保存到注册表/ini
-	bool fileExists(const QString& filePath) const;  //!< 判断文件是否存在
+	void rebuildMenu();                              // 重建菜单
+	void readAndCleanSettings();                     // 首次读取并清理
+	void writeSettings();                            // 保存到注册表/ini
+	bool fileExists(const QString& filePath) const;  // 判断文件是否存在
 
-	QActionGroup* m_group { nullptr };
-	QMenu* m_recentMenu { nullptr };
-	QStringList m_files;
-	int m_max;
-	QString m_org;
-	QString m_app;
+	QActionGroup* mGroup { nullptr };
+	QMenu* mRecentMenu { nullptr };
+	QStringList mFiles;
+	int mMax;
+	QString mOrg;
+	QString mApp;
 };
 
 }  // end DA

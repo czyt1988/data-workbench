@@ -1,4 +1,4 @@
-﻿#ifndef DAMESSAGELOGVIEWWIDGET_H
+#ifndef DAMESSAGELOGVIEWWIDGET_H
 #define DAMESSAGELOGVIEWWIDGET_H
 #include <QWidget>
 #include "DAGuiAPI.h"
@@ -92,14 +92,14 @@ private:
 
 private:
     Ui::DAMessageLogViewWidget* ui;
-    DAMessageLogsModel* _model;
-    DAMessageLogsSortFilterProxyModel* _sortFilterModel;
-    QAction* _actionMessageLogShowInfo;
-    QAction* _actionMessageLogShowWarning;
-    QAction* _actionMessageLogShowCritical;
-    QAction* _actionMessageLogClear;    ///< 清空消息
-    QAction* _actionCopySelectMessage;  ///< 复制选中的消息
-    QMenu* _menu;
+    DAMessageLogsModel* mModel;
+    DAMessageLogsSortFilterProxyModel* mSortFilterModel;
+    QAction* mActionMessageLogShowInfo;
+    QAction* mActionMessageLogShowWarning;
+    QAction* mActionMessageLogShowCritical;
+    QAction* mActionMessageLogClear;    ///< 清空消息
+    QAction* mActionCopySelectMessage;  ///< 复制选中的消息
+    QMenu* mMenu;
     bool mIsAutoScrollToButtom { true };  ///< 是否自动滚动到最底部
 };
 }  // namespace DA

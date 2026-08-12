@@ -51,8 +51,8 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent* event) override;
 
 private:
-    QPoint _startPressPos;
-    QTreeWidgetItem* _favoriteItem;
+    QPoint mStartPressPos;
+    QTreeWidgetItem* mFavoriteItem;
 };
 }
 

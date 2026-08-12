@@ -1,4 +1,4 @@
-﻿#ifndef DADATAMANAGERTREEMODEL_H
+#ifndef DADATAMANAGERTREEMODEL_H
 #define DADATAMANAGERTREEMODEL_H
 #include <functional>
 #include <QObject>
@@ -41,7 +41,7 @@ public:
     static bool isDataframeItem(QStandardItem* item);
 
 private:
-    DAData m_dataframe;
+    DAData mDataframe;
 };
 
 /**
@@ -76,8 +76,8 @@ public:
     static QIcon seriesTypeToIcon(const DAData& data, const QString& seriesName);
 
 private:
-    DAData m_dataframe;
-    QString m_name;
+    DAData mDataframe;
+    QString mName;
 };
 
 /**

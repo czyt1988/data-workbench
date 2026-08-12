@@ -84,22 +84,11 @@ private Q_SLOTS:
 	void onItemsPositionChanged(
 		const QList< QGraphicsItem* >& items, const QList< QPointF >& oldPos, const QList< QPointF >& newPos
 	);
-	/**
-	 * @brief 节点双击处理槽，弹出参数配置对话框
-	 * @param[in] proxy 双击的节点代理（const引用）
-	 */
+	// 节点双击处理槽，弹出参数配置对话框
 	void onNodeDoubleClicked(const DA::DAPyNode& proxy);
-	/**
-	 * @brief 节点创建时连接其双击信号
-	 * @param[in] item 新创建的节点图形项
-	 */
+	// 节点创建时连接其双击信号
 	void onPyNodeItemCreated(DA::DAPyNodeGraphicsItem* item);
-	/**
-	 * @brief undo栈索引变化时更新连接线端点位置
-	 *
-	 * undo/redo恢复节点位置时，itemsPositionChanged信号不会被触发，
-	 * 因此需要通过此槽手动更新所有节点的连接线端点。
-	 */
+	// undo栈索引变化时更新连接线端点位置
 	void onUndoStackIndexChanged();
 
 private:

@@ -18,29 +18,29 @@ namespace DA
 // DAPyWorkFlowNodeListWidget
 //===================================================
 DAPyWorkFlowNodeListWidget::DAPyWorkFlowNodeListWidget(QWidget* parent)
-    : QWidget(parent), ui(new Ui::DAPyWorkFlowNodeListWidget), _menu(nullptr)
+    : QWidget(parent), ui(new Ui::DAPyWorkFlowNodeListWidget), mMenu(nullptr)
 {
 	ui->setupUi(this);
-	_actionViewNodeListByToolBox = new QAction(this);
-	_actionViewNodeListByToolBox->setObjectName("actionViewDataListByTable");
-	_actionViewNodeListByToolBox->setCheckable(true);
-	_actionViewNodeListByToolBox->setIcon(QIcon(":/DAGui/icon/showDataInList.svg"));
-	_actionViewNodeListByTree = new QAction(this);
-	_actionViewNodeListByTree->setObjectName("actionViewDataListByTree");
-	_actionViewNodeListByTree->setCheckable(true);
-	_actionViewNodeListByTree->setIcon(QIcon(":/DAGui/icon/showDataInTree.svg"));
-	_actionGroup = new QActionGroup(this);
-	_actionGroup->addAction(_actionViewNodeListByToolBox);
-	_actionGroup->addAction(_actionViewNodeListByTree);
-	_actionGroup->setExclusive(true);
-	ui->toolButtonList->setDefaultAction(_actionViewNodeListByToolBox);
-	ui->toolButtonTree->setDefaultAction(_actionViewNodeListByTree);
+	mActionViewNodeListByToolBox = new QAction(this);
+	mActionViewNodeListByToolBox->setObjectName("actionViewDataListByTable");
+	mActionViewNodeListByToolBox->setCheckable(true);
+	mActionViewNodeListByToolBox->setIcon(QIcon(":/DAGui/icon/showDataInList.svg"));
+	mActionViewNodeListByTree = new QAction(this);
+	mActionViewNodeListByTree->setObjectName("actionViewDataListByTree");
+	mActionViewNodeListByTree->setCheckable(true);
+	mActionViewNodeListByTree->setIcon(QIcon(":/DAGui/icon/showDataInTree.svg"));
+	mActionGroup = new QActionGroup(this);
+	mActionGroup->addAction(mActionViewNodeListByToolBox);
+	mActionGroup->addAction(mActionViewNodeListByTree);
+	mActionGroup->setExclusive(true);
+	ui->toolButtonList->setDefaultAction(mActionViewNodeListByToolBox);
+	ui->toolButtonTree->setDefaultAction(mActionViewNodeListByTree);
 	setDisplayMode(DisplayInToolBox);
 	connect(this,
 			&DAPyWorkFlowNodeListWidget::customContextMenuRequested,
 			this,
 			&DAPyWorkFlowNodeListWidget::onCustomContextMenuRequested);
-	connect(_actionGroup, &QActionGroup::triggered, this, &DAPyWorkFlowNodeListWidget::onActionGroupTriggered);
+	connect(mActionGroup, &QActionGroup::triggered, this, &DAPyWorkFlowNodeListWidget::onActionGroupTriggered);
 }
 
 DAPyWorkFlowNodeListWidget::~DAPyWorkFlowNodeListWidget()
@@ -66,11 +66,11 @@ void DAPyWorkFlowNodeListWidget::setDisplayMode(DAPyWorkFlowNodeListWidget::Disp
 {
 	switch (m) {
 	case DisplayInToolBox:
-		_actionViewNodeListByToolBox->setChecked(true);
+		mActionViewNodeListByToolBox->setChecked(true);
 		ui->stackedWidget->setCurrentWidget(ui->workFlowToolBox);
 		break;
 	default:
-		_actionViewNodeListByTree->setChecked(true);
+		mActionViewNodeListByTree->setChecked(true);
 		ui->stackedWidget->setCurrentWidget(ui->workflowTreeWidget);
 		break;
 	}
@@ -119,13 +119,13 @@ QDrag* DAPyWorkFlowNodeListWidget::createDrag(QObject* parent, const DAPyNodeMet
  */
 void DAPyWorkFlowNodeListWidget::buildMenu()
 {
-	_menu                 = new QMenu(this);
-	_actionAddFavorite    = new QAction(QIcon(":/DAGui/icon/favorite.svg"), tr("Favorite"), this);  // cn:收藏
-	_actionRemoveFavorite = new QAction(QIcon(":/DAGui/icon/removeFavorite.svg"), tr("Remove Favorite"), this);  // cn:移除收藏
-	_menu->addAction(_actionAddFavorite);
-	_menu->addAction(_actionRemoveFavorite);
-	connect(_actionAddFavorite, &QAction::triggered, this, &DAPyWorkFlowNodeListWidget::onActionAddFavoriteTriggered);
-	connect(_actionRemoveFavorite, &QAction::triggered, this, &DAPyWorkFlowNodeListWidget::onActionRemoveFavoriteTriggered);
+	mMenu                 = new QMenu(this);
+	mActionAddFavorite    = new QAction(QIcon(":/DAGui/icon/favorite.svg"), tr("Favorite"), this);  // cn:收藏
+	mActionRemoveFavorite = new QAction(QIcon(":/DAGui/icon/removeFavorite.svg"), tr("Remove Favorite"), this);  // cn:移除收藏
+	mMenu->addAction(mActionAddFavorite);
+	mMenu->addAction(mActionRemoveFavorite);
+	connect(mActionAddFavorite, &QAction::triggered, this, &DAPyWorkFlowNodeListWidget::onActionAddFavoriteTriggered);
+	connect(mActionRemoveFavorite, &QAction::triggered, this, &DAPyWorkFlowNodeListWidget::onActionRemoveFavoriteTriggered);
 }
 
 /**
@@ -134,10 +134,10 @@ void DAPyWorkFlowNodeListWidget::buildMenu()
  */
 void DAPyWorkFlowNodeListWidget::onCustomContextMenuRequested(const QPoint& pos)
 {
-	if (!_menu) {
+	if (!mMenu) {
 		buildMenu();
 	}
-	_lastCustoRequestedPoint = pos;
+	mLastCustoRequestedPoint = pos;
 	if (DisplayInToolBox == getDisplayMode()) {
 		DAToolBox* tb = qobject_cast< DAToolBox* >(ui->stackedWidget->currentWidget());
 		if (!tb || !tb->underMouse()) {
@@ -149,13 +149,13 @@ void DAPyWorkFlowNodeListWidget::onCustomContextMenuRequested(const QPoint& pos)
 		}
 		if (nl == tb->getFavoriteList()) {
 			// 如果这个页面就是收藏页面
-			_actionAddFavorite->setEnabled(false);
-			_actionRemoveFavorite->setEnabled(true);
+			mActionAddFavorite->setEnabled(false);
+			mActionRemoveFavorite->setEnabled(true);
 		} else {
-			_actionAddFavorite->setEnabled(true);
-			_actionRemoveFavorite->setEnabled(false);
+			mActionAddFavorite->setEnabled(true);
+			mActionRemoveFavorite->setEnabled(false);
 		}
-		_menu->exec(mapToGlobal(pos));
+		mMenu->exec(mapToGlobal(pos));
 	}
 }
 
@@ -164,10 +164,10 @@ void DAPyWorkFlowNodeListWidget::onActionAddFavoriteTriggered()
 	DAPyNodeMetaData md;
 	if (DisplayInToolBox == getDisplayMode()) {
 		DAToolBox* tb = getToolBox();
-		md            = tb->getNodeMetaData(tb->mapFromGlobal(mapToGlobal(_lastCustoRequestedPoint)));
+		md            = tb->getNodeMetaData(tb->mapFromGlobal(mapToGlobal(mLastCustoRequestedPoint)));
 	} else {
 		DANodeTreeWidget* tw = getTreeWidget();
-		md                   = tw->getNodeMetaData(tw->mapFromGlobal(mapToGlobal(_lastCustoRequestedPoint)));
+		md                   = tw->getNodeMetaData(tw->mapFromGlobal(mapToGlobal(mLastCustoRequestedPoint)));
 	}
 	// 添加到fav
 	if (md.isValid()) {
@@ -181,10 +181,10 @@ void DAPyWorkFlowNodeListWidget::onActionRemoveFavoriteTriggered()
 	DAPyNodeMetaData md;
 	if (DisplayInToolBox == getDisplayMode()) {
 		DAToolBox* tb = getToolBox();
-		md            = tb->getNodeMetaData(tb->mapFromGlobal(mapToGlobal(_lastCustoRequestedPoint)));
+		md            = tb->getNodeMetaData(tb->mapFromGlobal(mapToGlobal(mLastCustoRequestedPoint)));
 	} else {
 		DANodeTreeWidget* tw = getTreeWidget();
-		md                   = tw->getNodeMetaData(tw->mapFromGlobal(mapToGlobal(_lastCustoRequestedPoint)));
+		md                   = tw->getNodeMetaData(tw->mapFromGlobal(mapToGlobal(mLastCustoRequestedPoint)));
 	}
 	if (md.isValid()) {
 		getToolBox()->removeFavorite(md);
@@ -194,9 +194,9 @@ void DAPyWorkFlowNodeListWidget::onActionRemoveFavoriteTriggered()
 
 void DAPyWorkFlowNodeListWidget::onActionGroupTriggered(QAction* act)
 {
-	if (act == _actionViewNodeListByToolBox) {
+	if (act == mActionViewNodeListByToolBox) {
 		setDisplayMode(DisplayInToolBox);
-	} else if (act == _actionViewNodeListByTree) {
+	} else if (act == mActionViewNodeListByTree) {
 		setDisplayMode(DisplayInTree);
 	}
 }

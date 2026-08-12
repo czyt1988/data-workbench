@@ -1,4 +1,4 @@
-﻿#include "DATableStyleManager.h"
+#include "DATableStyleManager.h"
 #include <algorithm>
 
 namespace DA
@@ -312,7 +312,7 @@ void DATableStyleManager::clearRange(int rowStart, int colStart, int rowEnd, int
             toRemove.append(it.key());
         }
     }
-    for (const auto& k : toRemove) {
+    for (const auto& k : std::as_const(toRemove)) {
         mCellStyles.remove(k);
     }
     Q_EMIT styleRangeChanged(rowStart, colStart, rowEnd, colEnd);
@@ -343,7 +343,7 @@ void DATableStyleManager::onRowsInserted(const QList< int >& actualRows)
     }
     QList< int > sortedRows = actualRows;
     std::sort(sortedRows.begin(), sortedRows.end(), std::greater< int >());
-    for (int insertedRow : sortedRows) {
+    for (int insertedRow : std::as_const(sortedRows)) {
         shiftHashKeysFirst(mCellStyles, insertedRow, +1);
         shiftHashKeys(mRowStyles, insertedRow, +1);
     }
@@ -364,7 +364,7 @@ void DATableStyleManager::onRowsRemoved(const QList< int >& actualRows)
     }
     QList< int > sortedRows = actualRows;
     std::sort(sortedRows.begin(), sortedRows.end(), std::greater< int >());
-    for (int removedRow : sortedRows) {
+    for (int removedRow : std::as_const(sortedRows)) {
         // 先删除 row == removedRow 的条目，再位移 row > removedRow 的条目
         removeHashKeysFirst(mCellStyles, removedRow);
         mRowStyles.remove(removedRow);
@@ -388,7 +388,7 @@ void DATableStyleManager::onColumnsInserted(const QList< int >& actualCols)
     }
     QList< int > sortedCols = actualCols;
     std::sort(sortedCols.begin(), sortedCols.end(), std::greater< int >());
-    for (int insertedCol : sortedCols) {
+    for (int insertedCol : std::as_const(sortedCols)) {
         shiftHashKeysSecond(mCellStyles, insertedCol, +1);
         shiftHashKeys(mColumnStyles, insertedCol, +1);
     }
@@ -409,7 +409,7 @@ void DATableStyleManager::onColumnsRemoved(const QList< int >& actualCols)
     }
     QList< int > sortedCols = actualCols;
     std::sort(sortedCols.begin(), sortedCols.end(), std::greater< int >());
-    for (int removedCol : sortedCols) {
+    for (int removedCol : std::as_const(sortedCols)) {
         // 先删除 col == removedCol 的条目，再位移 col > removedCol 的条目
         removeHashKeysSecond(mCellStyles, removedCol);
         mColumnStyles.remove(removedCol);

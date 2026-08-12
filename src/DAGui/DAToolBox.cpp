@@ -12,10 +12,10 @@ namespace DA
 //===================================================
 // DAToolBox
 //===================================================
-DAToolBox::DAToolBox(QWidget* parent) : QScrollArea(parent), _favoriteList(nullptr)
+DAToolBox::DAToolBox(QWidget* parent) : QScrollArea(parent), mFavoriteList(nullptr)
 {
-    _toolBox = new QToolBox(this);
-    setWidget(_toolBox);
+    mToolBox = new QToolBox(this);
+    setWidget(mToolBox);
     setWidgetResizable(true);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -30,7 +30,7 @@ void DAToolBox::addItems(const QMap< QString, QList< DAPyNodeMetaData > >& datas
     for (auto i = datas.begin(); i != datas.end(); ++i) {
         DANodeListWidget* nlw = new DANodeListWidget(this);
         nlw->addItems(i.value());
-        _toolBox->addItem(nlw, i.key());
+        mToolBox->addItem(nlw, i.key());
     }
     adjustMinItemHight(300);
 }
@@ -54,7 +54,7 @@ void DAToolBox::addItems(const QList< DAPyNodeMetaData >& datas)
     // 创建分组的topitem
     for (const QString& g : std::as_const(orderGroup)) {
         DANodeListWidget* gitem = new DANodeListWidget(this);
-        _toolBox->addItem(gitem, g);
+        mToolBox->addItem(gitem, g);
         gitem->addItems(groupOrderNodes[ g ]);
     }
     adjustMinItemHight(300);
@@ -66,10 +66,10 @@ void DAToolBox::addItems(const QList< DAPyNodeMetaData >& datas)
  */
 DANodeListWidget* DAToolBox::getFavoriteList()
 {
-    if (nullptr == _favoriteList) {
+    if (nullptr == mFavoriteList) {
         return createFavoriteList();
     }
-    return _favoriteList;
+    return mFavoriteList;
 }
 
 /**
@@ -80,13 +80,13 @@ DANodeListWidget* DAToolBox::getFavoriteList()
  */
 DANodeListWidget* DAToolBox::createFavoriteList()
 {
-    if (_favoriteList) {
-        return _favoriteList;
+    if (mFavoriteList) {
+        return mFavoriteList;
     }
-    _favoriteList = new DANodeListWidget(this);
-    _favoriteList->setProperty("isFavoriteListWidget", true);
-    _toolBox->addItem(_favoriteList, QIcon(":/DAGui/icon/favorite.svg"), tr("Favorite"));  // cn:收藏
-    return _favoriteList;
+    mFavoriteList = new DANodeListWidget(this);
+    mFavoriteList->setProperty("isFavoriteListWidget", true);
+    mToolBox->addItem(mFavoriteList, QIcon(":/DAGui/icon/favorite.svg"), tr("Favorite"));  // cn:收藏
+    return mFavoriteList;
 }
 
 /**
@@ -129,7 +129,7 @@ void DAToolBox::removeFavorite(const DAPyNodeMetaData& md)
  */
 DAPyNodeMetaData DAToolBox::getNodeMetaData(const QPoint& p) const
 {
-    DANodeListWidget* nl = qobject_cast< DANodeListWidget* >(_toolBox->currentWidget());
+    DANodeListWidget* nl = qobject_cast< DANodeListWidget* >(mToolBox->currentWidget());
     if (!nl) {
         return DAPyNodeMetaData();
     }
@@ -144,7 +144,7 @@ DAPyNodeMetaData DAToolBox::getNodeMetaData(const QPoint& p) const
  */
 void DAToolBox::adjustMinItemHight(int minHeight)
 {
-    QWidget* w = _toolBox->currentWidget();
+    QWidget* w = mToolBox->currentWidget();
     if (w == nullptr) {
         // 没有设置窗口返回
         return;
@@ -154,8 +154,8 @@ void DAToolBox::adjustMinItemHight(int minHeight)
         return;
     }
     // 由于QToolBox没有获取item标签高度的接口，因此只能估算标签高度为文字高度的1.5倍,或者icon的1.1
-    int itemTitleHeight = _toolBox->fontMetrics().lineSpacing();
-    QIcon icon          = _toolBox->itemIcon(_toolBox->currentIndex());
+    int itemTitleHeight = mToolBox->fontMetrics().lineSpacing();
+    QIcon icon          = mToolBox->itemIcon(mToolBox->currentIndex());
     if (!icon.isNull()) {
         QList< QSize > avas = icon.availableSizes();
         for (const QSize& s : std::as_const(avas)) {
@@ -165,35 +165,35 @@ void DAToolBox::adjustMinItemHight(int minHeight)
         }
     }
     // 计算最大的高度
-    int willSetMinHeight = _toolBox->count() * itemTitleHeight;
+    int willSetMinHeight = mToolBox->count() * itemTitleHeight;
     willSetMinHeight += minHeight;
     //
-    _toolBox->setMinimumHeight(willSetMinHeight);
+    mToolBox->setMinimumHeight(willSetMinHeight);
 }
 
 int DAToolBox::addItem(QWidget* w, const QIcon& iconSet, const QString& text)
 {
-    return _toolBox->addItem(w, iconSet, text);
+    return mToolBox->addItem(w, iconSet, text);
 }
 
 int DAToolBox::addItem(QWidget* w, const QString& text)
 {
-    return _toolBox->addItem(w, text);
+    return mToolBox->addItem(w, text);
 }
 
 int DAToolBox::count() const
 {
-    return _toolBox->count();
+    return mToolBox->count();
 }
 
 int DAToolBox::currentIndex() const
 {
-    return _toolBox->currentIndex();
+    return mToolBox->currentIndex();
 }
 
 QWidget* DAToolBox::currentWidget() const
 {
-    return _toolBox->currentWidget();
+    return mToolBox->currentWidget();
 }
 
 }

@@ -722,7 +722,7 @@ QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeCoumns(bool ens
         return QList< int >();
     }
     QSet< int > res;
-    QModelIndexList selindexs = selModel->selectedIndexes();
+    const QModelIndexList selindexs = selModel->selectedIndexes();
     if (ensureInDataframe) {
         // 确保返回的列数都在dataframe里
         DAPyDataFrame df = getDataframe();
@@ -756,7 +756,7 @@ QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeRows(bool ensur
         return QList< int >();
     }
     QSet< int > res;
-    QModelIndexList selindexs = selModel->selectedIndexes();
+    const QModelIndexList selindexs = selModel->selectedIndexes();
     if (ensureInDataframe) {
         // 确保返回的列数都在dataframe里
         DAPyDataFrame df = getDataframe();
@@ -789,7 +789,7 @@ QList< int > DADataOperateOfDataFrameWidget::getFullySelectedDataframeColumns(bo
         return QList< int >();
     }
     QSet< int > res;
-    QModelIndexList selindexs = selModel->selectedColumns();
+    const QModelIndexList selindexs = selModel->selectedColumns();
     if (ensureInDataframe) {
         // 确保返回的列数都在dataframe里
         DAPyDataFrame df = getDataframe();
@@ -822,7 +822,7 @@ QList< int > DADataOperateOfDataFrameWidget::getFullySelectedDataframeRows(bool 
         return QList< int >();
     }
     QSet< int > res;
-    QModelIndexList selindexs = selModel->selectedRows();
+    const QModelIndexList selindexs = selModel->selectedRows();
     if (ensureInDataframe) {
         // 确保返回的列数都在dataframe里
         DAPyDataFrame df = getDataframe();
@@ -850,7 +850,7 @@ int DADataOperateOfDataFrameWidget::getSelectedOneDataframeRow(bool ensureInData
     if (!selModel) {
         return -1;
     }
-    QModelIndexList selindexs = selModel->selectedIndexes();
+    const QModelIndexList selindexs = selModel->selectedIndexes();
     if (selindexs.isEmpty()) {
         return -1;
     }
@@ -879,7 +879,7 @@ int DADataOperateOfDataFrameWidget::getSelectedOneDataframeColumn(bool ensureInD
     if (!selModel) {
         return -1;
     }
-    QModelIndexList selindexs = selModel->selectedIndexes();
+    const QModelIndexList selindexs = selModel->selectedIndexes();
     if (selindexs.isEmpty()) {
         return -1;
     }
@@ -990,7 +990,7 @@ QList< QPoint > DADataOperateOfDataFrameWidget::getSelectedDataframeCells(bool e
     }
     QList< int > rows;
     QList< int > cols;
-    QModelIndexList selindexs = selModel->selectedIndexes();
+    const QModelIndexList selindexs = selModel->selectedIndexes();
     if (ensureInDataframe) {
         // 确保返回的列数都在dataframe里
         DAPyDataFrame df = getDataframe();
@@ -1061,7 +1061,7 @@ void DADataOperateOfDataFrameWidget::mergeStyleToSelection(const DATableCellStyl
     // 判定应用层级
     QList< int > fullCols = getFullySelectedDataframeColumns(false);
     QList< int > fullRows = getFullySelectedDataframeRows(false);
-    QList< QPoint > cells = getSelectedDataframeCells(false);
+    const QList< QPoint > cells = getSelectedDataframeCells(false);
 
     if (cells.isEmpty() && fullCols.isEmpty() && fullRows.isEmpty()) {
         daWarning << tr("Please select a valid cell");  // cn:请选择正确的单元格
@@ -1122,7 +1122,7 @@ void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyl
     }
     QList< int > fullCols = getFullySelectedDataframeColumns(false);
     QList< int > fullRows = getFullySelectedDataframeRows(false);
-    QList< QPoint > cells = getSelectedDataframeCells(false);
+    const QList< QPoint > cells = getSelectedDataframeCells(false);
 
     if (cells.isEmpty() && fullCols.isEmpty() && fullRows.isEmpty()) {
         daWarning << tr("Please select a valid cell");  // cn:请选择正确的单元格
@@ -1170,7 +1170,7 @@ void DADataOperateOfDataFrameWidget::clearStyleSelection()
     }
     QList< int > fullCols = getFullySelectedDataframeColumns(false);
     QList< int > fullRows = getFullySelectedDataframeRows(false);
-    QList< QPoint > cells = getSelectedDataframeCells(false);
+    const QList< QPoint > cells = getSelectedDataframeCells(false);
 
     if (cells.isEmpty() && fullCols.isEmpty() && fullRows.isEmpty()) {
         daWarning << tr("Please select a valid cell");  // cn:请选择正确的单元格
@@ -1265,7 +1265,7 @@ DATableCellStyle DADataOperateOfDataFrameWidget::getCurrentCellStyle() const
     QList< DATableCellStyle > styles;
     QList< int > fullCols = getFullySelectedDataframeColumns(false);
     QList< int > fullRows = getFullySelectedDataframeRows(false);
-    QList< QPoint > cells = getSelectedDataframeCells(false);
+    const QList< QPoint > cells = getSelectedDataframeCells(false);
     int cacheOffset = mModel->getCacheWindowStartRow();
 
     if (!fullCols.isEmpty()) {

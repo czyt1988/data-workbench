@@ -18,31 +18,31 @@ using namespace DA;
 // DAMessageLogViewWidget
 //===================================================
 DAMessageLogViewWidget::DAMessageLogViewWidget(QWidget* parent)
-    : QWidget(parent), ui(new Ui::DAMessageLogViewWidget), _menu(nullptr)
+    : QWidget(parent), ui(new Ui::DAMessageLogViewWidget), mMenu(nullptr)
 {
     ui->setupUi(this);
     // 创建action
-    _actionMessageLogShowInfo     = createAction("actionMessageLogShowInfo",
+    mActionMessageLogShowInfo     = createAction("actionMessageLogShowInfo",
                                              ":/DAGui/MessageType/icon/messageType/messageTypeInfo.svg",
                                              true,
                                              true);
-    _actionMessageLogShowWarning  = createAction("actionMessageLogShowWarning",
+    mActionMessageLogShowWarning  = createAction("actionMessageLogShowWarning",
                                                 ":/DAGui/MessageType/icon/messageType/messageTypeWarning.svg",
                                                 true,
                                                 true);
-    _actionMessageLogShowCritical = createAction("actionMessageLogShowCritical",
+    mActionMessageLogShowCritical = createAction("actionMessageLogShowCritical",
                                                  ":/DAGui/MessageType/icon/messageType/messageTypeError.svg",
                                                  true,
                                                  true);
-    _actionMessageLogClear        = createAction("actionMessageLogClear", ":/DAGui/icon/clear-message.svg");
-    _actionCopySelectMessage      = createAction("actionCopySelectMessage", ":/DAGui/icon/copy.svg");
+    mActionMessageLogClear        = createAction("actionMessageLogClear", ":/DAGui/icon/clear-message.svg");
+    mActionCopySelectMessage      = createAction("actionCopySelectMessage", ":/DAGui/icon/copy.svg");
     // 构建菜单
 
     //
-    _model           = new DAMessageLogsModel(this);
-    _sortFilterModel = new DAMessageLogsSortFilterProxyModel(this);
-    _sortFilterModel->setSourceModel(_model);
-    ui->tableView->setModel(_sortFilterModel);
+    mModel           = new DAMessageLogsModel(this);
+    mSortFilterModel = new DAMessageLogsSortFilterProxyModel(this);
+    mSortFilterModel->setSourceModel(mModel);
+    ui->tableView->setModel(mSortFilterModel);
     ui->tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     ui->tableView->horizontalHeader()->setStretchLastSection(true);
 
@@ -51,16 +51,16 @@ DAMessageLogViewWidget::DAMessageLogViewWidget(QWidget* parent)
     ui->tableView->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.2);
 
     //
-    ui->toolButtonInfo->setDefaultAction(_actionMessageLogShowInfo);
-    ui->toolButtonWarning->setDefaultAction(_actionMessageLogShowWarning);
-    ui->toolButtonCritial->setDefaultAction(_actionMessageLogShowCritical);
-    ui->toolButtonClear->setDefaultAction(_actionMessageLogClear);
+    ui->toolButtonInfo->setDefaultAction(mActionMessageLogShowInfo);
+    ui->toolButtonWarning->setDefaultAction(mActionMessageLogShowWarning);
+    ui->toolButtonCritial->setDefaultAction(mActionMessageLogShowCritical);
+    ui->toolButtonClear->setDefaultAction(mActionMessageLogClear);
     //
-    connect(_actionMessageLogShowInfo, &QAction::triggered, this, &DAMessageLogViewWidget::setEnableShowInfoMsg);
-    connect(_actionMessageLogShowWarning, &QAction::triggered, this, &DAMessageLogViewWidget::setEnableShowWarningMsg);
-    connect(_actionMessageLogShowCritical, &QAction::triggered, this, &DAMessageLogViewWidget::setEnableShowCriticalMsg);
-    connect(_actionMessageLogClear, &QAction::triggered, this, &DAMessageLogViewWidget::clearAll);
-    connect(_actionCopySelectMessage, &QAction::triggered, this, &DAMessageLogViewWidget::copySelectionMessageToClipBoard);
+    connect(mActionMessageLogShowInfo, &QAction::triggered, this, &DAMessageLogViewWidget::setEnableShowInfoMsg);
+    connect(mActionMessageLogShowWarning, &QAction::triggered, this, &DAMessageLogViewWidget::setEnableShowWarningMsg);
+    connect(mActionMessageLogShowCritical, &QAction::triggered, this, &DAMessageLogViewWidget::setEnableShowCriticalMsg);
+    connect(mActionMessageLogClear, &QAction::triggered, this, &DAMessageLogViewWidget::clearAll);
+    connect(mActionCopySelectMessage, &QAction::triggered, this, &DAMessageLogViewWidget::copySelectionMessageToClipBoard);
     connect(this, &DAMessageLogViewWidget::customContextMenuRequested, this, &DAMessageLogViewWidget::onCustomContextMenuRequested);
     ui->tableView->setWordWrap(true);
     connect(ui->tableView, &QTableView::clicked, this, &DAMessageLogViewWidget::onTableViewItemClicked);
@@ -92,10 +92,10 @@ QAction* DAMessageLogViewWidget::createAction(const char* objname, const char* i
 void DAMessageLogViewWidget::onCustomContextMenuRequested(const QPoint& pos)
 {
     if (ui->tableView->underMouse()) {
-        if (nullptr == _menu) {
+        if (nullptr == mMenu) {
             buildMenu();
         }
-        _menu->exec(mapToGlobal(pos));
+        mMenu->exec(mapToGlobal(pos));
     }
 }
 
@@ -108,14 +108,14 @@ void DAMessageLogViewWidget::onMessageAppended()
 
 void DAMessageLogViewWidget::buildMenu()
 {
-    _menu = new QMenu(this);
-    _menu->addAction(_actionCopySelectMessage);
-    _menu->addSeparator();
-    _menu->addAction(_actionMessageLogShowInfo);
-    _menu->addAction(_actionMessageLogShowWarning);
-    _menu->addAction(_actionMessageLogShowCritical);
-    _menu->addSeparator();
-    _menu->addAction(_actionMessageLogClear);
+    mMenu = new QMenu(this);
+    mMenu->addAction(mActionCopySelectMessage);
+    mMenu->addSeparator();
+    mMenu->addAction(mActionMessageLogShowInfo);
+    mMenu->addAction(mActionMessageLogShowWarning);
+    mMenu->addAction(mActionMessageLogShowCritical);
+    mMenu->addSeparator();
+    mMenu->addAction(mActionMessageLogClear);
 }
 
 bool DAMessageLogViewWidget::isAutoScrollToButtom() const
@@ -133,7 +133,7 @@ void DAMessageLogViewWidget::setAutoScrollToButtom(bool isAutoScrollToButtom)
  */
 void DAMessageLogViewWidget::setEnableShowDebugMsg(bool on)
 {
-    _sortFilterModel->setAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptDebugMsg, on);
+    mSortFilterModel->setAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptDebugMsg, on);
     ui->tableView->update();
 }
 /**
@@ -142,7 +142,7 @@ void DAMessageLogViewWidget::setEnableShowDebugMsg(bool on)
  */
 bool DAMessageLogViewWidget::isEnableShowDebugMsg() const
 {
-    return _sortFilterModel->testAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptDebugMsg);
+    return mSortFilterModel->testAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptDebugMsg);
 }
 /**
  * @brief 设置是否允许WarningMsg的显示
@@ -150,7 +150,7 @@ bool DAMessageLogViewWidget::isEnableShowDebugMsg() const
  */
 void DAMessageLogViewWidget::setEnableShowWarningMsg(bool on)
 {
-    _sortFilterModel->setAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptWarningMsg, on);
+    mSortFilterModel->setAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptWarningMsg, on);
     ui->tableView->update();
 }
 /**
@@ -159,7 +159,7 @@ void DAMessageLogViewWidget::setEnableShowWarningMsg(bool on)
  */
 bool DAMessageLogViewWidget::isEnableShowWarningMsg() const
 {
-    return _sortFilterModel->testAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptWarningMsg);
+    return mSortFilterModel->testAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptWarningMsg);
 }
 /**
  * @brief 设置是否允许CriticalMsg的显示
@@ -167,7 +167,7 @@ bool DAMessageLogViewWidget::isEnableShowWarningMsg() const
  */
 void DAMessageLogViewWidget::setEnableShowCriticalMsg(bool on)
 {
-    _sortFilterModel->setAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptCriticalMsg, on);
+    mSortFilterModel->setAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptCriticalMsg, on);
     ui->tableView->update();
 }
 /**
@@ -176,7 +176,7 @@ void DAMessageLogViewWidget::setEnableShowCriticalMsg(bool on)
  */
 bool DAMessageLogViewWidget::isEnableShowCriticalMsg() const
 {
-    return _sortFilterModel->testAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptCriticalMsg);
+    return mSortFilterModel->testAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptCriticalMsg);
 }
 /**
  * @brief 设置是否允许FatalMsg的显示
@@ -184,7 +184,7 @@ bool DAMessageLogViewWidget::isEnableShowCriticalMsg() const
  */
 void DAMessageLogViewWidget::setEnableShowFatalMsg(bool on)
 {
-    _sortFilterModel->setAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptFatalMsg, on);
+    mSortFilterModel->setAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptFatalMsg, on);
     ui->tableView->update();
 }
 /**
@@ -193,7 +193,7 @@ void DAMessageLogViewWidget::setEnableShowFatalMsg(bool on)
  */
 bool DAMessageLogViewWidget::isEnableShowFatalMsg() const
 {
-    return _sortFilterModel->testAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptFatalMsg);
+    return mSortFilterModel->testAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptFatalMsg);
 }
 /**
  * @brief 设置是否允许InfoMsg的显示
@@ -201,7 +201,7 @@ bool DAMessageLogViewWidget::isEnableShowFatalMsg() const
  */
 void DAMessageLogViewWidget::setEnableShowInfoMsg(bool on)
 {
-    _sortFilterModel->setAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptInfoMsg, on);
+    mSortFilterModel->setAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptInfoMsg, on);
     ui->tableView->update();
 }
 
@@ -224,7 +224,7 @@ void DAMessageLogViewWidget::onTableViewItemClicked(const QModelIndex& index)
  */
 void DAMessageLogViewWidget::clearAll()
 {
-    _model->clearAll();
+    mModel->clearAll();
 }
 
 /**
@@ -236,7 +236,7 @@ void DAMessageLogViewWidget::copySelectionMessageToClipBoard()
     if (nullptr == sm) {
         return;
     }
-    int cc = _sortFilterModel->columnCount();
+    int cc = mSortFilterModel->columnCount();
     QSet< int > rowIndexs;
     QModelIndexList indexs = sm->selectedIndexes();
     QString text;
@@ -248,7 +248,7 @@ void DAMessageLogViewWidget::copySelectionMessageToClipBoard()
             rowIndexs.insert(i.row());
             QString line;
             for (int c = 0; c < cc; ++c) {
-                line += _sortFilterModel->data(_sortFilterModel->index(i.row(), c)).toString();
+                line += mSortFilterModel->data(mSortFilterModel->index(i.row(), c)).toString();
                 if (c != cc - 1) {
                     line += "\t";
                 }
@@ -290,16 +290,16 @@ void DAMessageLogViewWidget::changeEvent(QEvent* event)
  */
 void DAMessageLogViewWidget::retranslateUi()
 {
-    _actionMessageLogShowInfo->setText(tr("Info"));                          // cn:信息
-    _actionMessageLogShowInfo->setToolTip(tr("Show Info Message"));          // cn:显示信息消息
-    _actionMessageLogShowWarning->setText(tr("Warning"));                    // cn:警告
-    _actionMessageLogShowWarning->setToolTip(tr("Show Warning Message"));    // cn:显示警告消息
-    _actionMessageLogShowCritical->setText(tr("Critical"));                  // cn:严重
-    _actionMessageLogShowCritical->setToolTip(tr("Show Critical Message"));  // cn:显示严重消息
-    _actionMessageLogClear->setText(tr("Clear"));                            // cn:清空
-    _actionMessageLogClear->setToolTip(tr("Clear All Messages"));            // cn:清空所有消息
-    _actionCopySelectMessage->setText(tr("Copy"));                           // cn:复制
-    _actionCopySelectMessage->setToolTip(tr("Copy Selected Message"));       // cn:复制选中消息
+    mActionMessageLogShowInfo->setText(tr("Info"));                          // cn:信息
+    mActionMessageLogShowInfo->setToolTip(tr("Show Info Message"));          // cn:显示信息消息
+    mActionMessageLogShowWarning->setText(tr("Warning"));                    // cn:警告
+    mActionMessageLogShowWarning->setToolTip(tr("Show Warning Message"));    // cn:显示警告消息
+    mActionMessageLogShowCritical->setText(tr("Critical"));                  // cn:严重
+    mActionMessageLogShowCritical->setToolTip(tr("Show Critical Message"));  // cn:显示严重消息
+    mActionMessageLogClear->setText(tr("Clear"));                            // cn:清空
+    mActionMessageLogClear->setToolTip(tr("Clear All Messages"));            // cn:清空所有消息
+    mActionCopySelectMessage->setText(tr("Copy"));                           // cn:复制
+    mActionCopySelectMessage->setToolTip(tr("Copy Selected Message"));       // cn:复制选中消息
 }
 
 /**
@@ -332,15 +332,15 @@ QAction* DAMessageLogViewWidget::getAction(DAMessageLogViewWidget::MessageLogAct
 {
     switch (ac) {
     case ActionInfo:
-        return _actionMessageLogShowInfo;
+        return mActionMessageLogShowInfo;
     case ActionWarning:
-        return _actionMessageLogShowWarning;
+        return mActionMessageLogShowWarning;
     case ActionCritial:
-        return _actionMessageLogShowCritical;
+        return mActionMessageLogShowCritical;
     case ActionClear:
-        return _actionMessageLogClear;
+        return mActionMessageLogClear;
     case ActionCopy:
-        return _actionCopySelectMessage;
+        return mActionCopySelectMessage;
     default:
         break;
     }
@@ -352,5 +352,5 @@ QAction* DAMessageLogViewWidget::getAction(DAMessageLogViewWidget::MessageLogAct
  */
 bool DAMessageLogViewWidget::isEnableShowInfoMsg() const
 {
-    return _sortFilterModel->testAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptInfoMsg);
+    return mSortFilterModel->testAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptInfoMsg);
 }

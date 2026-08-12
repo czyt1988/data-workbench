@@ -1,4 +1,4 @@
-﻿#ifndef DADATAFRAMETOVECTORPOINTWIDGET_H
+#ifndef DADATAFRAMETOVECTORPOINTWIDGET_H
 #define DADATAFRAMETOVECTORPOINTWIDGET_H
 #include <QWidget>
 #include "DAGuiAPI.h"
@@ -35,8 +35,8 @@ private Q_SLOTS:
 
 private:
     Ui::DADataframeToVectorPointWidget* ui;
-    DAData _currentData;
-    DAPySeriesTableModel* _model;
+    DAData mCurrentData;
+    DAPySeriesTableModel* mModel;
 };
 }
 

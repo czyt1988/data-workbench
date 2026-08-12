@@ -56,10 +56,10 @@ private:
     void setupUI();
     void renderMarkdown();
 
-    QWebEngineView* m_webView;
-    DAMarkdownWebPage* m_page;
-    QString m_markdown;
-    bool m_pageLoaded = false;
+    QWebEngineView* mWebView;
+    DAMarkdownWebPage* mPage;
+    QString mMarkdown;
+    bool mPageLoaded = false;
 };
 
 } // namespace DA

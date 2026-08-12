@@ -16,8 +16,8 @@ class DAGUI_API DANodeMimeData : public DAMimeData
 public:
     DANodeMimeData(const DAPyNodeMetaData& md);
     //节点格式 - MIME_STANDARD_NODE
-    virtual QStringList formats() const;
-    virtual bool hasFormat(const QString& mimeType) const;
+    QStringList formats() const override;
+    bool hasFormat(const QString& mimeType) const override;
 
     //设置/获取节点名
     DAPyNodeMetaData getNodeMetaData() const;
@@ -27,7 +27,7 @@ public:
     static QString formatString();
 
 private:
-    DAPyNodeMetaData m_nodeMetaData;
+    DAPyNodeMetaData mNodeMetaData;
 };
 }  // namespace DA
 #endif  // GNODEMIMEDATA_H

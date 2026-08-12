@@ -89,10 +89,10 @@ private:
 
 private:
     Ui::DAPyWorkFlowNodeItemSettingWidget* ui;
-    QPointer< DAPyWorkFlowOperateWidget > _workflowOptWidget;
-    QPointer< DAPyWorkFlowEditWidget > _workflowEditWidget;
+    QPointer< DAPyWorkFlowOperateWidget > mWorkflowOptWidget;
+    QPointer< DAPyWorkFlowEditWidget > mWorkflowEditWidget;
     DANodeParamSettingPanelWidget* mParamSettingWidget;  // 参数设置面板调度器
-    int _lastTabIndex;
+    int mLastTabIndex;
 };
 }  // namespace DA
 #endif  // DAPyWorkFlowNodeItemSettingWidget_H

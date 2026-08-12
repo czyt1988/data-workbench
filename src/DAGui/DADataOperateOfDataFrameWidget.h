@@ -34,7 +34,7 @@ class DAGUI_API DADataOperateOfDataFrameWidget : public DADataOperatePageWidget
 {
     Q_OBJECT
 public:
-    virtual int getDataOperatePageType() const;
+    int getDataOperatePageType() const override;
 
 public:
     explicit DADataOperateOfDataFrameWidget(const DAData& d, DATableStyleRegistry* registry, QWidget* parent = nullptr);
@@ -135,7 +135,7 @@ private Q_SLOTS:
     void onTableViewClicked(const QModelIndex& index);
 
 protected:
-    void changeEvent(QEvent* e);
+    void changeEvent(QEvent* e) override;
 
 private:
     Ui::DADataOperateOfDataFrameWidget* ui;

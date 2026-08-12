@@ -1,4 +1,4 @@
-﻿#include "DADataManagerTreeFilterProxyModel.h"
+#include "DADataManagerTreeFilterProxyModel.h"
 namespace DA
 {
 DADataManagerTreeFilterProxyModel::DADataManagerTreeFilterProxyModel(QObject* par) : QSortFilterProxyModel(par)
@@ -8,7 +8,7 @@ DADataManagerTreeFilterProxyModel::DADataManagerTreeFilterProxyModel(QObject* pa
 
 void DADataManagerTreeFilterProxyModel::setFilterText(const QString& text)
 {
-    m_filterText = text;
+    mFilterText = text;
     invalidateFilter();
 }
 
@@ -38,7 +38,7 @@ QMimeData* DADataManagerTreeFilterProxyModel::mimeData(const QModelIndexList& in
 
 bool DADataManagerTreeFilterProxyModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
 {
-    if (m_filterText.isEmpty()) {
+    if (mFilterText.isEmpty()) {
         return true;
     }
 
@@ -63,7 +63,7 @@ bool DADataManagerTreeFilterProxyModel::filterAcceptsRowItself(int source_row, c
     }
 
     QString text = sourceModel()->data(index, Qt::DisplayRole).toString();
-    return text.contains(m_filterText, Qt::CaseInsensitive);
+    return text.contains(mFilterText, Qt::CaseInsensitive);
 }
 
 bool DADataManagerTreeFilterProxyModel::hasAcceptedChildren(int source_row, const QModelIndex& source_parent) const

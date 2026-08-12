@@ -1,4 +1,4 @@
-﻿#ifndef DAMESSAGELOGSMODEL_H
+#ifndef DAMESSAGELOGSMODEL_H
 #define DAMESSAGELOGSMODEL_H
 #include "DAGuiAPI.h"
 #include <QAbstractTableModel>
@@ -89,7 +89,7 @@ public:
     bool isQtMsgTypeMatchAcceptType(int msgtype) const;
 
 private:
-    AcceptMessageTypeFlags _acceptsType;
+    AcceptMessageTypeFlags mAcceptsType;
 };
 }  // namespace DA
 #endif  // DAMESSAGELOGSMODEL_H

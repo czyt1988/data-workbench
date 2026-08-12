@@ -1,4 +1,4 @@
-﻿#ifndef DACACHEWINDOWTABLEVIEW_H
+#ifndef DACACHEWINDOWTABLEVIEW_H
 #define DACACHEWINDOWTABLEVIEW_H
 #include "DAGuiAPI.h"
 #include <QTableView>
@@ -31,7 +31,7 @@ public:
 	// 真实列的名称
 	QString actualColumnName(int actualCol) const;
 private Q_SLOTS:
-	virtual void verticalScrollBarValueChanged(int v);
+	void verticalScrollBarValueChanged(int v);
 
 private:
 	QElapsedTimer mLastScrollElapsed;  // 滚动节流计时器

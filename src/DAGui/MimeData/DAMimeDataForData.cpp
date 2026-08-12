@@ -1,4 +1,4 @@
-﻿#include "DAMimeDataForData.h"
+#include "DAMimeDataForData.h"
 #include "DAMimeDataFormats.h"
 #include "DADataManager.h"
 
@@ -29,7 +29,7 @@ QStringList DAMimeDataForData::formats() const
 
 void DAMimeDataForData::appendDataSeries(const DAData& d, const QString& colName)
 {
-    for (auto& p : m_dataSeriess) {
+    for (auto& p : mDataSeriess) {
         if (p.first == d) {
             if (!p.second.contains(colName)) {
                 p.second.append(colName);
@@ -37,42 +37,42 @@ void DAMimeDataForData::appendDataSeries(const DAData& d, const QString& colName
             }
         }
     }
-    m_dataSeriess.append(qMakePair(d, QStringList() << colName));
+    mDataSeriess.append(qMakePair(d, QStringList() << colName));
 }
 
 const QList< QPair< DAData, QStringList > >& DAMimeDataForData::getDataSeries() const
 {
-    return m_dataSeriess;
+    return mDataSeriess;
 }
 
 QList< QPair< DAData, QStringList > >& DAMimeDataForData::getDataSeries()
 {
-    return m_dataSeriess;
+    return mDataSeriess;
 }
 
 bool DAMimeDataForData::isHaveDataSeries() const
 {
-    return (!m_dataSeriess.isEmpty());
+    return (!mDataSeriess.isEmpty());
 }
 
 void DAMimeDataForData::appendDataframe(const DAData& d)
 {
-    m_dataframe.append(d);
+    mDataframe.append(d);
 }
 
 const QList< DAData >& DAMimeDataForData::getDataframes() const
 {
-    return m_dataframe;
+    return mDataframe;
 }
 
 QList< DAData >& DAMimeDataForData::getDataframes()
 {
-    return m_dataframe;
+    return mDataframe;
 }
 
 bool DAMimeDataForData::isHaveDataframe() const
 {
-    return (!m_dataframe.isEmpty());
+    return (!mDataframe.isEmpty());
 }
 
 }

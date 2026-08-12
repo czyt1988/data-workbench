@@ -242,11 +242,11 @@ void DAPyWorkFlowEditWidget::setSelectTextItemFont(const QFont& f)
     if (!secen) {
         return;
     }
-    auto standarditems = getSelectStandardTextItems();
+    const auto standarditems = getSelectStandardTextItems();
     for (auto item : standarditems) {
         item->setSelectTextFont(f);
     }
-    auto items = getSelectTextItems();
+    const auto items = getSelectTextItems();
     for (auto item : items) {
         item->setSelectTextFont(f);
     }

@@ -296,7 +296,7 @@ QVariant DAMessageLogsModel::dataToolTip(DAMessageLogItem* item, const QModelInd
 //===================================================
 
 DAMessageLogsSortFilterProxyModel::DAMessageLogsSortFilterProxyModel(QObject* p)
-    : QSortFilterProxyModel(p), _acceptsType(AcceptAll)
+    : QSortFilterProxyModel(p), mAcceptsType(AcceptAll)
 {
 }
 
@@ -320,7 +320,7 @@ bool DAMessageLogsSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QM
 void DAMessageLogsSortFilterProxyModel::setAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptMessageType t,
                                                                  bool on)
 {
-	_acceptsType.setFlag(t, on);
+	mAcceptsType.setFlag(t, on);
 	invalidateFilter();
 }
 
@@ -331,7 +331,7 @@ void DAMessageLogsSortFilterProxyModel::setAcceptMessageTypeFlag(DAMessageLogsSo
  */
 bool DAMessageLogsSortFilterProxyModel::testAcceptMessageTypeFlag(DAMessageLogsSortFilterProxyModel::AcceptMessageType t) const
 {
-    return _acceptsType.testFlag(t);
+    return mAcceptsType.testFlag(t);
 }
 
 /**
@@ -343,15 +343,15 @@ bool DAMessageLogsSortFilterProxyModel::isQtMsgTypeMatchAcceptType(int msgtype) 
 {
 	switch (msgtype) {
 	case QtDebugMsg:
-		return _acceptsType.testFlag(AcceptDebugMsg);
+		return mAcceptsType.testFlag(AcceptDebugMsg);
 	case QtWarningMsg:
-		return _acceptsType.testFlag(AcceptWarningMsg);
+		return mAcceptsType.testFlag(AcceptWarningMsg);
 	case QtCriticalMsg:
-		return _acceptsType.testFlag(AcceptCriticalMsg);
+		return mAcceptsType.testFlag(AcceptCriticalMsg);
 	case QtFatalMsg:
-		return _acceptsType.testFlag(AcceptFatalMsg);
+		return mAcceptsType.testFlag(AcceptFatalMsg);
 	case QtInfoMsg:
-		return _acceptsType.testFlag(AcceptInfoMsg);
+		return mAcceptsType.testFlag(AcceptInfoMsg);
 	default:
 		break;
 	}
