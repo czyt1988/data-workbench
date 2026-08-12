@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsResizeableItem.h"
+#include "DAGraphicsResizeableItem.h"
 #include <memory>
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
@@ -38,6 +38,11 @@ namespace DA
 class DAGraphicsResizeableItemControlPointInfo
 {
 public:
+	/**
+	 * @brief 构造控制点信息
+	 * @param r 控制点的矩形区域
+	 * @param t 控制点类型
+	 */
 	DAGraphicsResizeableItemControlPointInfo(const QRectF& r, DAGraphicsResizeableItem::ControlType t)
 		: rect(r), isHighlight(false), controlPointType(t)
 	{
@@ -95,6 +100,10 @@ public:
 	std::unique_ptr< DAGraphicsResizeableItemPalette > mPalette;  ///< 记录样式
 };
 
+/**
+ * @brief 构造PrivateData
+ * @param p 父DAGraphicsResizeableItem指针
+ */
 DAGraphicsResizeableItem::PrivateData::PrivateData(DAGraphicsResizeableItem* p) : q_ptr(p)
 {
 }
@@ -147,6 +156,10 @@ bool DAGraphicsResizeableItem::PrivateData::testBodySize(QSizeF& ts) const
 	return res;
 }
 
+/**
+ * @brief 获取样式调色板，如果未设置自定义样式则返回全局默认样式
+ * @return 样式调色板引用
+ */
 const DAGraphicsResizeableItemPalette& DAGraphicsResizeableItem::PrivateData::getPalette() const
 {
 	if (mPalette) {
@@ -155,6 +168,9 @@ const DAGraphicsResizeableItemPalette& DAGraphicsResizeableItem::PrivateData::ge
 	return *(daGlobalGraphicsResizeableItemPalette);
 }
 
+/**
+ * @brief 重置控制点位置信息，根据body矩形重新计算所有控制点和控制线的位置
+ */
 void DAGraphicsResizeableItem::PrivateData::resetResizeableItemControlPointInfo()
 {
 	mControlPointInfos.clear();
@@ -174,11 +190,21 @@ void DAGraphicsResizeableItem::PrivateData::resetResizeableItemControlPointInfo(
 	appendControlPointInfo(DAGraphicsResizeableItem::ControlLineBottom, bd);
 }
 
+/**
+ * @brief 添加控制点信息
+ * @param t 控制点类型
+ * @param body body矩形区域
+ */
 void DAGraphicsResizeableItem::PrivateData::appendControlPointInfo(DAGraphicsResizeableItem::ControlType t, const QRectF& body)
 {
 	mControlPointInfos.append(DAGraphicsResizeableItemControlPointInfo(q_ptr->controlPointRect(t, body), t));
 }
 
+/**
+ * @brief 根据位置获取控制点，并更新控制点的高亮状态
+ * @param pos 鼠标位置（item坐标系）
+ * @return 返回<控制点类型, 控制点矩形>，如果不在任何控制点上返回NotUnderAnyControlType
+ */
 QPair< DAGraphicsResizeableItem::ControlType, QRectF >
 DAGraphicsResizeableItem::PrivateData::getControlPointAndUpdateByPos(const QPointF& pos)
 {
@@ -479,6 +505,10 @@ void DAGraphicsResizeableItem::PrivateData::adjustPosToGrid(QPointF& pos)
 	}
 }
 
+/**
+ * @brief 尺寸坐标匹配网格
+ * @param s 待调整的尺寸，会被修改为网格对齐后的尺寸
+ */
 void DAGraphicsResizeableItem::PrivateData::adjustSizeToGrid(QSizeF& s)
 {
 	if (!q_ptr->isSnapToGrid()) {
@@ -495,6 +525,10 @@ void DAGraphicsResizeableItem::PrivateData::adjustSizeToGrid(QSizeF& s)
 // DAGraphicsResizeableItem
 //////////////////////////////////////////////////////////////////////////////
 
+/**
+ * @brief 构造可缩放的图形项
+ * @param parent 父QGraphicsItem
+ */
 DAGraphicsResizeableItem::DAGraphicsResizeableItem(QGraphicsItem* parent) : DAGraphicsItem(parent), DA_PIMPL_CONSTRUCT
 {
 	setFlags(flags() | ItemIsSelectable | ItemIsMovable
@@ -508,6 +542,9 @@ DAGraphicsResizeableItem::DAGraphicsResizeableItem(QGraphicsItem* parent) : DAGr
 	d_ptr->mMousePressItemPos  = pos();
 }
 
+/**
+ * @brief 析构函数
+ */
 DAGraphicsResizeableItem::~DAGraphicsResizeableItem()
 {
 }
@@ -532,6 +569,10 @@ void DAGraphicsResizeableItem::setBodyPos(const QPointF& p)
 	setPos(p.x() - wo, p.y() - ho);
 }
 
+/**
+ * @brief 设置body在场景中的位置，对setScenePos的封装，减去控制点的偏移
+ * @param p 场景坐标系下的位置
+ */
 void DAGraphicsResizeableItem::setBodyScenePos(const QPointF& p)
 {
 	qreal wo = d_ptr->mControlPointSize.width() + 1;
@@ -607,11 +648,19 @@ QPair< QPointF, QSizeF > DAGraphicsResizeableItem::doItemResize(const QPointF& m
     return d_ptr->doResize(mousescenePos);
 }
 
+/**
+ * @brief 鼠标悬停进入事件
+ * @param event 悬停事件
+ */
 void DAGraphicsResizeableItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
 {
     QGraphicsItem::hoverEnterEvent(event);
 }
 
+/**
+ * @brief 鼠标悬停移动事件，根据鼠标位置更新控制点高亮状态和鼠标光标形状
+ * @param event 悬停事件
+ */
 void DAGraphicsResizeableItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
 {
 	if (isSelected()) {
@@ -676,6 +725,10 @@ void DAGraphicsResizeableItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
 	QGraphicsItem::hoverMoveEvent(event);
 }
 
+/**
+ * @brief 鼠标悬停离开事件，清除控制点高亮状态和鼠标光标
+ * @param event 悬停事件
+ */
 void DAGraphicsResizeableItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 {
 	Q_UNUSED(event);
@@ -692,6 +745,10 @@ void DAGraphicsResizeableItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 	QGraphicsItem::hoverLeaveEvent(event);
 }
 
+/**
+ * @brief 鼠标按下事件，判断是否点击在控制点上，记录鼠标按下时的状态
+ * @param event 鼠标事件
+ */
 void DAGraphicsResizeableItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
 	// 点击的时候判断点击的是哪里
@@ -711,6 +768,10 @@ void DAGraphicsResizeableItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
 	QGraphicsItem::mousePressEvent(event);
 }
 
+/**
+ * @brief 鼠标移动事件，如果在控制点上则执行缩放操作，否则交由父类处理移动
+ * @param event 鼠标事件
+ */
 void DAGraphicsResizeableItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 {
 	if (d_ptr->mCurrentControlTypeUnderMouse != NotUnderAnyControlType) {
@@ -758,6 +819,10 @@ QVariant DAGraphicsResizeableItem::itemChange(GraphicsItemChange change, const Q
 	return DAGraphicsItem::itemChange(change, value);
 }
 
+/**
+ * @brief 鼠标释放事件，如果在缩放状态则创建撤销命令并压入场景的撤销栈
+ * @param event 鼠标事件
+ */
 void DAGraphicsResizeableItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
 	DA_D(d);
@@ -825,6 +890,13 @@ void DAGraphicsResizeableItem::paint(QPainter* painter, const QStyleOptionGraphi
 	}
 }
 
+/**
+ * @brief 将缩放项的信息保存到XML中
+ * @param doc XML文档对象
+ * @param parentElement 父XML元素
+ * @param ver 版本号
+ * @return 保存成功返回true
+ */
 bool DAGraphicsResizeableItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
 	DAGraphicsItem::saveToXml(doc, parentElement, ver);
@@ -851,6 +923,12 @@ bool DAGraphicsResizeableItem::saveToXml(QDomDocument* doc, QDomElement* parentE
 	return true;
 }
 
+/**
+ * @brief 从XML中加载缩放项的信息
+ * @param itemElement XML元素
+ * @param ver 版本号
+ * @return 加载成功返回true
+ */
 bool DAGraphicsResizeableItem::loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver)
 {
 	if (!DAGraphicsItem::loadFromXml(itemElement, ver)) {
@@ -998,6 +1076,10 @@ void DAGraphicsResizeableItem::setControlerSize(const QSizeF& s)
 	prepareControlInfoChange();
 }
 
+/**
+ * @brief 获取控制器的大小
+ * @return 控制点尺寸
+ */
 QSizeF DAGraphicsResizeableItem::getControlerSize() const
 {
     return d_ptr->mControlPointSize;

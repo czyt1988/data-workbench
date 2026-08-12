@@ -17,13 +17,13 @@ public:
     explicit DAChartEllipseRegionSelectEditor(QwtPlot* parent);
     virtual ~DAChartEllipseRegionSelectEditor();
     // 获取选择的数据区域
-    virtual QPainterPath getSelectRegion() const;
+    virtual QPainterPath getSelectRegion() const override;
     // 设置选区
-    virtual void setSelectRegion(const QPainterPath& shape);
+    virtual void setSelectRegion(const QPainterPath& shape) override;
     // 设置选择模式
-    virtual void setSelectionMode(const SelectionMode& selectionMode);
+    virtual void setSelectionMode(const SelectionMode& selectionMode) override;
     // rtti
-    virtual int rtti() const;
+    virtual int rtti() const override;
     // 清理数据
     void clear();
     // 取消
@@ -34,9 +34,9 @@ private Q_SLOTS:
     void onItemAttached(QwtPlotItem* item, bool on);
 
 protected:
-    bool mousePressEvent(const QMouseEvent* e);
-    bool mouseMoveEvent(const QMouseEvent* e);
-    bool mouseReleaseEvent(const QMouseEvent* e);
+    virtual bool mousePressEvent(const QMouseEvent* e) override;
+    virtual bool mouseMoveEvent(const QMouseEvent* e) override;
+    virtual bool mouseReleaseEvent(const QMouseEvent* e) override;
 };
 }  // End Of Namespace DA
 #endif  // DACHARTELLIPSEREGIONSELECTEDITOR_H

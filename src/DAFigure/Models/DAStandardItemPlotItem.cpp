@@ -1,35 +1,48 @@
-﻿#include "DAStandardItemPlotItem.h"
+#include "DAStandardItemPlotItem.h"
 #include "qwt_plot_item.h"
 #include "DAFigureTreeModel.h"
 #include "DAChartUtil.h"
 namespace DA
 {
 
+/**
+ * @brief 构造函数
+ * @param item 关联的QwtPlotItem指针
+ * @param plotItemType 项目类型
+ */
 DAStandardItemPlotItem::DAStandardItemPlotItem(QwtPlotItem* item, ItemType plotItemType)
-    : QStandardItem(), m_plotItem(item), m_itemType(plotItemType)
+    : QStandardItem(), mPlotItem(item), mItemType(plotItemType)
 {
     setEditable(false);
     // 设置节点类型角色
     setData(DAFigureTreeModel::NodeTypePlotItem, DAFigureTreeModel::RoleNodeType);
 
-    if (m_plotItem) {
+    if (mPlotItem) {
         // 设置Plot和PlotItem指针
         setData(QVariant::fromValue(reinterpret_cast< quintptr >(item->plot())), DAFigureTreeModel::RolePlot);
         setData(QVariant::fromValue(reinterpret_cast< quintptr >(item)), DAFigureTreeModel::RolePlotItem);
     }
 }
 
+/**
+ * @brief 析构函数
+ */
 DAStandardItemPlotItem::~DAStandardItemPlotItem()
 {
 }
 
+/**
+ * @brief 获取项目数据
+ * @param role 数据角色
+ * @return 对应角色的数据
+ */
 QVariant DAStandardItemPlotItem::data(int role) const
 {
-    if (!m_plotItem) {
+    if (!mPlotItem) {
         return QStandardItem::data(role);
     }
 
-    switch (m_itemType) {
+    switch (mItemType) {
     case PlotItemText:
         return handleItemTextType(role);
     case PlotItemVisible:
@@ -50,19 +63,19 @@ QVariant DAStandardItemPlotItem::data(int role) const
  */
 QVariant DAStandardItemPlotItem::handleItemTextType(int role) const
 {
-    if (!m_plotItem) {
+    if (!mPlotItem) {
         return QVariant();
     }
     switch (role) {
     case Qt::DisplayRole: {
         if (DAFigureTreeModel* m = qobject_cast< DAFigureTreeModel* >(model())) {
-            return m->generatePlotItemName(m_plotItem);
+            return m->generatePlotItemName(mPlotItem);
         }
     } break;
     case Qt::DecorationRole: {
         // 返回类型图标
         if (DAFigureTreeModel* m = qobject_cast< DAFigureTreeModel* >(model())) {
-            return m->generatePlotItemIcon(m_plotItem);
+            return m->generatePlotItemIcon(mPlotItem);
         }
         return QVariant();
     } break;
@@ -79,7 +92,7 @@ QVariant DAStandardItemPlotItem::handleItemTextType(int role) const
  */
 QVariant DAStandardItemPlotItem::handleItemVisibleType(int role) const
 {
-    if (!m_plotItem) {
+    if (!mPlotItem) {
         return QVariant();
     }
     static QIcon s_icon_not_visible(":/DAFigure/icon/chartitem-invisible.svg");
@@ -91,7 +104,7 @@ QVariant DAStandardItemPlotItem::handleItemVisibleType(int role) const
     } break;
     case Qt::DecorationRole: {
         // 返回类型图标
-        if (m_plotItem->isVisible()) {
+        if (mPlotItem->isVisible()) {
             return s_icon_visible;
         } else {
             return s_icon_not_visible;
@@ -110,7 +123,7 @@ QVariant DAStandardItemPlotItem::handleItemVisibleType(int role) const
  */
 QVariant DAStandardItemPlotItem::handleItemColorType(int role) const
 {
-    if (!m_plotItem) {
+    if (!mPlotItem) {
         return QVariant();
     }
     switch (role) {
@@ -120,7 +133,7 @@ QVariant DAStandardItemPlotItem::handleItemColorType(int role) const
     case Qt::DecorationRole: {
         // 返回类型图标
         if (DAFigureTreeModel* m = qobject_cast< DAFigureTreeModel* >(model())) {
-            QBrush brush = DAChartUtil::getPlotItemBrush(m_plotItem);
+            QBrush brush = DAChartUtil::getPlotItemBrush(mPlotItem);
             return m->generateBrushIcon(brush);
         }
     } break;

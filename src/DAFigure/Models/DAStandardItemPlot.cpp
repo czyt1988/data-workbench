@@ -4,25 +4,39 @@
 #include "qwt_text.h"
 namespace DA
 {
+
+/**
+ * @brief 构造函数
+ * @param plot 关联的QwtPlot指针
+ * @param plotType 项目类型
+ */
 DAStandardItemPlot::DAStandardItemPlot(QwtPlot* plot, ItemType plotType)
-    : QStandardItem(), m_plot(plot), m_itemType(plotType)
+    : QStandardItem(), mPlot(plot), mItemType(plotType)
 {
     setData(DAFigureTreeModel::NodeTypePlot, DAFigureTreeModel::RoleNodeType);
     setData(QVariant::fromValue(reinterpret_cast< quintptr >(plot)), DAFigureTreeModel::RolePlot);
     setEditable(false);
 }
 
+/**
+ * @brief 析构函数
+ */
 DAStandardItemPlot::~DAStandardItemPlot()
 {
 }
 
+/**
+ * @brief 重载data函数，根据角色返回对应的数据
+ * @param role 数据角色
+ * @return 对应的数据
+ */
 QVariant DAStandardItemPlot::data(int role) const
 {
     if (!isValid()) {
         return QStandardItem::data(role);
     }
 
-    switch (m_itemType) {
+    switch (mItemType) {
     case PlotText:
         return handleItemTextType(role);
     case PlotVisible:
@@ -36,6 +50,11 @@ QVariant DAStandardItemPlot::data(int role) const
     return QStandardItem::data(role);
 }
 
+/**
+ * @brief 处理文本类型的项目数据
+ * @param role 数据角色
+ * @return 对应的数据
+ */
 QVariant DAStandardItemPlot::handleItemTextType(int role) const
 {
     if (!isValid()) {
@@ -44,15 +63,15 @@ QVariant DAStandardItemPlot::handleItemTextType(int role) const
     static QIcon s_plot_icon = QIcon(":/DAFigure/icon/layout.svg");
     switch (role) {
     case Qt::DisplayRole: {
-        if (!m_plot) {
+        if (!mPlot) {
             return QVariant();
         }
         QString text;
-        if (m_plot->isParasitePlot()) {
-            int index = m_plot->hostPlot()->parasitePlotIndex(m_plot);
+        if (mPlot->isParasitePlot()) {
+            int index = mPlot->hostPlot()->parasitePlotIndex(mPlot);
             text      = QObject::tr("layout-%1").arg(index + 1);  // cn:布局-%1
         } else {
-            text = m_plot->title().text();
+            text = mPlot->title().text();
             if (text.isEmpty()) {
                 text = QObject::tr("layout");  // cn:布局
             }
@@ -69,11 +88,21 @@ QVariant DAStandardItemPlot::handleItemTextType(int role) const
     return QStandardItem::data(role);
 }
 
+/**
+ * @brief 处理可见性类型的项目数据
+ * @param role 数据角色
+ * @return 对应的数据
+ */
 QVariant DAStandardItemPlot::handleItemVisibleType(int role) const
 {
     return QStandardItem::data(role);
 }
 
+/**
+ * @brief 处理缩放属性类型的项目数据
+ * @param role 数据角色
+ * @return 对应的数据
+ */
 QVariant DAStandardItemPlot::handleScalePropertyType(int role) const
 {
     if (!isValid()) {
@@ -81,10 +110,10 @@ QVariant DAStandardItemPlot::handleScalePropertyType(int role) const
     }
     switch (role) {
     case Qt::DisplayRole: {
-        if (!m_plot) {
+        if (!mPlot) {
             return QVariant();
         }
-        if (m_plot->isParasitePlot()) {
+        if (mPlot->isParasitePlot()) {
             return QObject::tr("Parasite Plot");  // cn:寄生绘图
         }
     } break;

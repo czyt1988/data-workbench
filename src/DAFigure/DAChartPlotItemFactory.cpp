@@ -53,10 +53,18 @@ static QHash< int, DAChartPlotItemFactory::FpItemCreate > initDAChartPlotItemFac
     return res;
 }
 
+/**
+ * @brief 构造函数
+ */
 DAChartPlotItemFactory::DAChartPlotItemFactory()
 {
 }
 
+/**
+ * @brief 根据rtti创建对应的绘图项
+ * @param rtti 绘图项类型标识
+ * @return 创建的QwtPlotItem指针，如果类型不支持返回nullptr
+ */
 QwtPlotItem* DAChartPlotItemFactory::createItem(int rtti)
 {
     FpItemCreate fp = factoryFunctionMap().value(rtti, nullptr);
@@ -66,11 +74,21 @@ QwtPlotItem* DAChartPlotItemFactory::createItem(int rtti)
     return fp();
 }
 
+/**
+ * @brief 注册创建绘图项的工厂函数
+ * @param rtti 绘图项类型标识
+ * @param fp 创建函数指针
+ */
 void DAChartPlotItemFactory::registCreateItemFucntion(int rtti, DAChartPlotItemFactory::FpItemCreate fp)
 {
     factoryFunctionMap()[ rtti ] = fp;
 }
 
+/**
+ * @brief 判断是否存在指定rtti类型的创建函数
+ * @param rtti 绘图项类型标识
+ * @return 如果存在返回true，否则返回false
+ */
 bool DAChartPlotItemFactory::isHaveCreateItemFucntion(int rtti)
 {
     return factoryFunctionMap().contains(rtti);

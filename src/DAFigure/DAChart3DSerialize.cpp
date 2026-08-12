@@ -44,6 +44,9 @@ namespace DA
 // DAChart3DItemSerialize::Header 实现
 // ============================================================
 
+/**
+ * @brief 构造函数，初始化 Header 的默认值
+ */
 DAChart3DItemSerialize::Header::Header()
     : magic(DA::gc_dachart3d_magic_mark4)
     , version(1)
@@ -52,15 +55,28 @@ DAChart3DItemSerialize::Header::Header()
     memset(byte, 0, sizeof(byte));
 }
 
+/**
+ * @brief 析构函数
+ */
 DAChart3DItemSerialize::Header::~Header()
 {
 }
 
+/**
+ * @brief 判断 Header 是否有效
+ * @return 若 magic 标记匹配则返回 true，否则返回 false
+ */
 bool DAChart3DItemSerialize::Header::isValid() const
 {
     return DA::gc_dachart3d_magic_mark4 == magic;
 }
 
+/**
+ * @brief 将 Header 序列化到数据流
+ * @param out 输出数据流
+ * @param f 要序列化的 Header
+ * @return 输出数据流引用
+ */
 QDataStream& operator<<(QDataStream& out, const DA::DAChart3DItemSerialize::Header& f)
 {
     out << f.magic << f.version << f.rtti;
@@ -68,6 +84,12 @@ QDataStream& operator<<(QDataStream& out, const DA::DAChart3DItemSerialize::Head
     return out;
 }
 
+/**
+ * @brief 从数据流反序列化 Header
+ * @param in 输入数据流
+ * @param f 接收反序列化数据的 Header
+ * @return 输入数据流引用
+ */
 QDataStream& operator>>(QDataStream& in, DA::DAChart3DItemSerialize::Header& f)
 {
     in >> f.magic >> f.version >> f.rtti;
@@ -79,14 +101,27 @@ QDataStream& operator>>(QDataStream& in, DA::DAChart3DItemSerialize::Header& f)
 // DAChart3DItemSerialize 类实现
 // ============================================================
 
+/**
+ * @brief 构造函数
+ */
 DAChart3DItemSerialize::DAChart3DItemSerialize()
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DAChart3DItemSerialize::~DAChart3DItemSerialize()
 {
 }
 
+/**
+ * @brief 注册指定 RTTI 的序列化/反序列化函数对
+ * @param rtti 运行时类型标识
+ * @param fpIn 反序列化函数指针
+ * @param fpOut 序列化函数指针
+ * @sa isSupportSerialize, getSerializeInFun, getSerializeOutFun
+ */
 void DAChart3DItemSerialize::registSerializeFun(int rtti,
                                                 DAChart3DItemSerialize::FpSerializeIn fpIn,
                                                 DAChart3DItemSerialize::FpSerializeOut fpOut)
@@ -94,23 +129,47 @@ void DAChart3DItemSerialize::registSerializeFun(int rtti,
     serializeFun()[rtti] = std::make_pair(fpIn, fpOut);
 }
 
+/**
+ * @brief 判断指定 RTTI 是否已注册序列化支持
+ * @param rtti 运行时类型标识
+ * @return 已注册返回 true，否则返回 false
+ * @sa registSerializeFun
+ */
 bool DAChart3DItemSerialize::isSupportSerialize(int rtti)
 {
     return serializeFun().contains(rtti);
 }
 
+/**
+ * @brief 获取指定 RTTI 的反序列化函数
+ * @param rtti 运行时类型标识
+ * @return 反序列化函数指针，未注册时返回 nullptr
+ * @sa registSerializeFun, getSerializeOutFun
+ */
 DAChart3DItemSerialize::FpSerializeIn DAChart3DItemSerialize::getSerializeInFun(int rtti) noexcept
 {
     auto pair = serializeFun().value(rtti, std::make_pair<FpSerializeIn, FpSerializeOut>(nullptr, nullptr));
     return pair.first;
 }
 
+/**
+ * @brief 获取指定 RTTI 的序列化函数
+ * @param rtti 运行时类型标识
+ * @return 序列化函数指针，未注册时返回 nullptr
+ * @sa registSerializeFun, getSerializeInFun
+ */
 DAChart3DItemSerialize::FpSerializeOut DAChart3DItemSerialize::getSerializeOutFun(int rtti)
 {
     auto pair = serializeFun().value(rtti, std::make_pair<FpSerializeIn, FpSerializeOut>(nullptr, nullptr));
     return pair.second;
 }
 
+/**
+ * @brief 序列化 3D 绘图项到字节数组
+ * @param item 要序列化的 Qwt3DPlotItem 指针
+ * @return 序列化后的 QByteArray，若 RTTI 未注册则返回空数组
+ * @sa serializeIn, getSerializeOutFun
+ */
 QByteArray DAChart3DItemSerialize::serializeOut(const Qwt3DPlotItem* item) const
 {
     int rtti = item->rtti();
@@ -123,6 +182,12 @@ QByteArray DAChart3DItemSerialize::serializeOut(const Qwt3DPlotItem* item) const
     return fp(item);
 }
 
+/**
+ * @brief 从字节数组反序列化 3D 绘图项
+ * @param byte 包含序列化数据的字节数组
+ * @return 反序列化后的 Qwt3DPlotItem 指针，失败时返回 nullptr
+ * @sa serializeOut, getSerializeInFun, getRtti
+ */
 Qwt3DPlotItem* DAChart3DItemSerialize::serializeIn(const QByteArray& byte) const noexcept
 {
     int rtti = getRtti(byte);
@@ -144,6 +209,12 @@ Qwt3DPlotItem* DAChart3DItemSerialize::serializeIn(const QByteArray& byte) const
     return item;
 }
 
+/**
+ * @brief 从字节数组中提取 RTTI 类型标识
+ * @param byte 包含序列化数据的字节数组
+ * @return RTTI 值，若数据无效则返回 -1
+ * @sa serializeIn, Header
+ */
 int DAChart3DItemSerialize::getRtti(const QByteArray& byte) const noexcept
 {
     int rtti = -1;
@@ -171,6 +242,11 @@ DECLARE_INITCHART3DITEMSERIALIZE_FUN(Rtti_Plot3DSurface, Qwt3DSurface)
 DECLARE_INITCHART3DITEMSERIALIZE_FUN(Rtti_Plot3DBar, Qwt3DBar)
 DECLARE_INITCHART3DITEMSERIALIZE_FUN(Rtti_Plot3DLine, Qwt3DLine)
 
+/**
+ * @brief 初始化 3D 绘图项的序列化函数映射表
+ * @return 包含所有已注册 RTTI 及其序列化/反序列化函数对的 QHash
+ * @sa serializeFun
+ */
 QHash<int, std::pair<DAChart3DItemSerialize::FpSerializeIn, DAChart3DItemSerialize::FpSerializeOut>>
 initChart3DItemSerialize()
 {
@@ -181,6 +257,11 @@ initChart3DItemSerialize()
     return res;
 }
 
+/**
+ * @brief 获取序列化函数映射表（静态单例）
+ * @return 序列化函数映射表的引用
+ * @sa initChart3DItemSerialize, registSerializeFun
+ */
 QHash<int, std::pair<DAChart3DItemSerialize::FpSerializeIn, DAChart3DItemSerialize::FpSerializeOut>>&
 DAChart3DItemSerialize::serializeFun()
 {
@@ -197,6 +278,13 @@ DAChart3DItemSerialize::serializeFun()
 // ============================
 // Qwt3DColor 基类指针序列化
 // ============================
+/**
+ * @brief 序列化 Qwt3DColor 基类指针到数据流
+ * @param out 输出数据流
+ * @param c 颜色 functor 指针
+ * @return 输出数据流引用
+ * @sa operator>>(QDataStream&, Qwt3DColor*&)
+ */
 QDataStream& operator<<(QDataStream& out, const Qwt3DColor* c)
 {
     out << DA::gc_dachart3d_version << DA::gc_dachart3d_magic_mark;
@@ -217,6 +305,13 @@ QDataStream& operator<<(QDataStream& out, const Qwt3DColor* c)
     return out;
 }
 
+/**
+ * @brief 从数据流反序列化 Qwt3DColor 基类指针
+ * @param in 输入数据流
+ * @param c 接收反序列化颜色 functor 的指针引用
+ * @return 输入数据流引用
+ * @sa operator<<(QDataStream&, const Qwt3DColor*)
+ */
 QDataStream& operator>>(QDataStream& in, Qwt3DColor*& c)
 {
     int version;
@@ -273,6 +368,13 @@ QDataStream& operator<<(QDataStream& out, const Qwt3DStandardColor* c)
     return out;
 }
 
+/**
+ * @brief 从数据流反序列化 Qwt3DStandardColor 指针
+ * @param in 输入数据流
+ * @param c 接收反序列化颜色 functor 的指针引用
+ * @return 输入数据流引用
+ * @sa operator<<(QDataStream&, const Qwt3DStandardColor*)
+ */
 QDataStream& operator>>(QDataStream& in, Qwt3DStandardColor*& c)
 {
     int version;
@@ -319,6 +421,13 @@ QDataStream& operator<<(QDataStream& out, const Qwt3DColorMapColor* c)
     return out;
 }
 
+/**
+ * @brief 从数据流反序列化 Qwt3DColorMapColor 指针
+ * @param in 输入数据流
+ * @param c 接收反序列化颜色 functor 的指针引用
+ * @return 输入数据流引用
+ * @sa operator<<(QDataStream&, const Qwt3DColorMapColor*)
+ */
 QDataStream& operator>>(QDataStream& in, Qwt3DColorMapColor*& c)
 {
     int version;
@@ -361,6 +470,13 @@ QDataStream& operator<<(QDataStream& out, const Qwt3DPlotItem* item)
     return out;
 }
 
+/**
+ * @brief 从数据流反序列化 Qwt3DPlotItem 基类属性
+ * @param in 输入数据流
+ * @param item 接收反序列化数据的绘图项指针
+ * @return 输入数据流引用
+ * @sa operator<<(QDataStream&, const Qwt3DPlotItem*)
+ */
 QDataStream& operator>>(QDataStream& in, Qwt3DPlotItem* item)
 {
     int version;
@@ -466,6 +582,13 @@ QDataStream& operator<<(QDataStream& out, const Qwt3DSurface* item)
     return out;
 }
 
+/**
+ * @brief 从数据流反序列化 Qwt3DSurface 指针
+ * @param in 输入数据流
+ * @param item 接收反序列化数据的 Surface 指针
+ * @return 输入数据流引用
+ * @sa operator<<(QDataStream&, const Qwt3DSurface*)
+ */
 QDataStream& operator>>(QDataStream& in, Qwt3DSurface* item)
 {
     int version;
@@ -621,7 +744,7 @@ QDataStream& operator<<(QDataStream& out, const Qwt3DBar* item)
         }
     } else {
         out << static_cast<int>(1);  // 1D series data 标识
-        QVector<QwtPoint3D> samples = item->samples();
+        const QVector<QwtPoint3D> samples = item->samples();
         out << static_cast<quint64>(samples.size());
         for (const auto& s : samples) {
             out << s.x() << s.y() << s.z();
@@ -630,6 +753,13 @@ QDataStream& operator<<(QDataStream& out, const Qwt3DBar* item)
     return out;
 }
 
+/**
+ * @brief 从数据流反序列化 Qwt3DBar 指针
+ * @param in 输入数据流
+ * @param item 接收反序列化数据的 Bar 指针
+ * @return 输入数据流引用
+ * @sa operator<<(QDataStream&, const Qwt3DBar*)
+ */
 QDataStream& operator>>(QDataStream& in, Qwt3DBar* item)
 {
     int version;
@@ -743,6 +873,13 @@ QDataStream& operator<<(QDataStream& out, const Qwt3DLine* item)
     return out;
 }
 
+/**
+ * @brief 从数据流反序列化 Qwt3DLine 指针
+ * @param in 输入数据流
+ * @param item 接收反序列化数据的 Line 指针
+ * @return 输入数据流引用
+ * @sa operator<<(QDataStream&, const Qwt3DLine*)
+ */
 QDataStream& operator>>(QDataStream& in, Qwt3DLine* item)
 {
     int version;
@@ -882,6 +1019,13 @@ QDataStream& operator<<(QDataStream& out, const Qwt3DPlot* plot)
     return out;
 }
 
+/**
+ * @brief 从数据流反序列化 Qwt3DPlot 视图状态
+ * @param in 输入数据流
+ * @param plot 接收反序列化数据的 3D 绘图指针
+ * @return 输入数据流引用
+ * @sa operator<<(QDataStream&, const Qwt3DPlot*)
+ */
 QDataStream& operator>>(QDataStream& in, Qwt3DPlot* plot)
 {
     int version;

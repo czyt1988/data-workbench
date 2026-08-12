@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsView.h"
+#include "DAGraphicsView.h"
 #include <QWheelEvent>
 #include <QPainter>
 #include <QDebug>
@@ -35,6 +35,10 @@ public:
 	DAGraphicsViewOverlayMouseMarker* mMarker { nullptr };  ///< 标记线绘制
 };
 
+/**
+ * @brief PrivateData 构造函数
+ * @param p DAGraphicsView指针
+ */
 DAGraphicsView::PrivateData::PrivateData(DAGraphicsView* p) : q_ptr(p)
 {
 }
@@ -43,21 +47,36 @@ DAGraphicsView::PrivateData::PrivateData(DAGraphicsView* p) : q_ptr(p)
 /// DAGraphicsView
 ////////////////////////////////////////////////
 
+/**
+ * @brief 构造函数
+ * @param parent 父窗口
+ */
 DAGraphicsView::DAGraphicsView(QWidget* parent) : QGraphicsView(parent), DA_PIMPL_CONSTRUCT
 {
 	init();
 }
 
+/**
+ * @brief 构造函数
+ * @param scene 关联的场景
+ * @param parent 父窗口
+ */
 DAGraphicsView::DAGraphicsView(QGraphicsScene* scene, QWidget* parent)
     : QGraphicsView(scene, parent), DA_PIMPL_CONSTRUCT
 {
 	init();
 }
 
+/**
+ * @brief 析构函数
+ */
 DAGraphicsView::~DAGraphicsView()
 {
 }
 
+/**
+ * @brief 初始化视图
+ */
 void DAGraphicsView::init()
 {
 	setMouseTracking(true);
@@ -68,6 +87,9 @@ void DAGraphicsView::init()
 	// setDragMode(QGraphicsView::ScrollHandDrag);
 }
 
+/**
+ * @brief 尝试初始化视图标记，如果未创建则创建标记
+ */
 void DAGraphicsView::tryInitViewMarker()
 {
 	if (!d_ptr->mMarker) {
@@ -76,17 +98,30 @@ void DAGraphicsView::tryInitViewMarker()
 	}
 }
 
+/**
+ * @brief 设置缩放范围
+ * @param min 最小缩放值
+ * @param max 最大缩放值
+ */
 void DAGraphicsView::setScaleRange(qreal min, qreal max)
 {
 	d_ptr->mScaleMin = min;
 	d_ptr->mScaleMax = max;
 }
 
+/**
+ * @brief 获取最大缩放因子
+ * @return 最大缩放因子
+ */
 qreal DAGraphicsView::getScaleMaxFactor() const
 {
 	return (d_ptr->mScaleMax);
 }
 
+/**
+ * @brief 获取最小缩放因子
+ * @return 最小缩放因子
+ */
 qreal DAGraphicsView::getScaleMinFactor() const
 {
 	return (d_ptr->mScaleMin);
@@ -187,6 +222,10 @@ void DAGraphicsView::wheelEvent(QWheelEvent* event)
 	QGraphicsView::wheelEvent(event);
 }
 
+/**
+ * @brief 鼠标移动事件
+ * @param event 鼠标事件
+ */
 void DAGraphicsView::mouseMoveEvent(QMouseEvent* event)
 {
 	if (d_ptr->mViewAction) {
@@ -228,6 +267,10 @@ void DAGraphicsView::mouseMoveEvent(QMouseEvent* event)
 	QGraphicsView::mouseMoveEvent(event);
 }
 
+/**
+ * @brief 鼠标按下事件
+ * @param event 鼠标事件
+ */
 void DAGraphicsView::mousePressEvent(QMouseEvent* event)
 {
 	if (d_ptr->mViewAction) {
@@ -262,6 +305,10 @@ void DAGraphicsView::mousePressEvent(QMouseEvent* event)
 	QGraphicsView::mousePressEvent(event);
 }
 
+/**
+ * @brief 鼠标释放事件
+ * @param event 鼠标事件
+ */
 void DAGraphicsView::mouseReleaseEvent(QMouseEvent* event)
 {
 	if (d_ptr->mViewAction) {
@@ -290,6 +337,10 @@ void DAGraphicsView::mouseReleaseEvent(QMouseEvent* event)
 	QGraphicsView::mouseReleaseEvent(event);
 }
 
+/**
+ * @brief 键盘按下事件
+ * @param event 键盘事件
+ */
 void DAGraphicsView::keyPressEvent(QKeyEvent* event)
 {
 	if (d_ptr->mViewAction) {
@@ -304,6 +355,10 @@ void DAGraphicsView::keyPressEvent(QKeyEvent* event)
 	QGraphicsView::keyPressEvent(event);
 }
 
+/**
+ * @brief 键盘释放事件
+ * @param event 键盘事件
+ */
 void DAGraphicsView::keyReleaseEvent(QKeyEvent* event)
 {
 	if (d_ptr->mViewAction) {
@@ -318,6 +373,10 @@ void DAGraphicsView::keyReleaseEvent(QKeyEvent* event)
 	QGraphicsView::keyReleaseEvent(event);
 }
 
+/**
+ * @brief 窗口大小改变事件
+ * @param event 大小改变事件
+ */
 void DAGraphicsView::resizeEvent(QResizeEvent* event)
 {
 	QGraphicsView::resizeEvent(event);
@@ -607,6 +666,12 @@ void DAGraphicsView::setViewMarkerEnable(bool on)
 	d_ptr->mMarker->setActive(on);
 }
 
+/**
+ * @brief 获取/设置是否允许滚轮缩放
+ * @param enaleWheelZoom 是否允许滚轮缩放
+ * @param zf 缩放标志
+ * @return 是否允许滚轮缩放
+ */
 bool DAGraphicsView::isEnaleWheelZoom() const
 {
 	return !d_ptr->mZoomFlags.testFlag(ZoomNotUseWheel);

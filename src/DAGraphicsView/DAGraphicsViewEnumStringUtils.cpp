@@ -1,8 +1,15 @@
-﻿#include "DAGraphicsViewEnumStringUtils.h"
+#include "DAGraphicsViewEnumStringUtils.h"
 // std
 #include <type_traits>
 namespace DA
 {
+
+/**
+ * @brief 计算DAAspectDirection枚举的哈希值
+ * @param key 枚举值
+ * @param seed 哈希种子
+ * @return 哈希值
+ */
 uint qHash(const DA::DAAspectDirection& key, uint seed) noexcept
 {
     using underlying_type = std::underlying_type_t< DA::DAAspectDirection >;

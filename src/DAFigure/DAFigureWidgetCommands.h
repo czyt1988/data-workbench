@@ -143,14 +143,7 @@ public:
 class DAFIGURE_API DAFigureWidgetCommandAttachItem : public DAFigureWidgetCommandBase
 {
 public:
-	/**
-	 * @brief 添加Item
-	 * @param fig figure
-	 * @param chart 对应的DAChartWidget指针
-	 * @param item 对应的QwtPlotItem
-	 * @param skipFirst 第一次跳过item->attach(chart);操作，后续的redo不会再跳过
-	 * @param par
-	 */
+	// 添加Item
 	DAFigureWidgetCommandAttachItem(DAFigureWidget* fig,
                                     DAChartWidget* chart,
                                     QwtPlotItem* item,
@@ -173,14 +166,7 @@ public:
 class DAFIGURE_API DAFigureWidgetCommandAttach3DItem : public DAFigureWidgetCommandBase
 {
 public:
-	/**
-	 * @brief 添加3D Item
-	 * @param fig figure
-	 * @param chart3d 对应的DAChart3DWidget指针
-	 * @param item 对应的Qwt3DPlotItem
-	 * @param skipFirst 第一次跳过item->attach(chart3d);操作，后续的redo不会再跳过
-	 * @param par
-	 */
+	// 添加3D Item
 	DAFigureWidgetCommandAttach3DItem(DAFigureWidget* fig,
                                      DAChart3DWidget* chart3d,
                                      Qwt3DPlotItem* item,

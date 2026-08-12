@@ -1,20 +1,33 @@
-﻿#include "DAChartCrossTracker.h"
+#include "DAChartCrossTracker.h"
 #include <QPen>
 #include "qwt_picker_machine.h"
 #include "qwt_plot.h"
 #include "qwt_date_scale_draw.h"
 namespace DA
 {
+/**
+ * @brief 构造函数
+ * @param w 关联的控件
+ */
 DAChartCrossTracker::DAChartCrossTracker(QWidget* w) : QwtPlotPicker(w)
 {
     init();
 }
 
+/**
+ * @brief 构造函数，指定坐标轴
+ * @param xAxis X轴ID
+ * @param yAxis Y轴ID
+ * @param w 关联的控件
+ */
 DAChartCrossTracker::DAChartCrossTracker(int xAxis, int yAxis, QWidget* w) : QwtPlotPicker(xAxis, yAxis, w)
 {
     init();
 }
 
+/**
+ * @brief 初始化十字光标追踪器
+ */
 void DAChartCrossTracker::init()
 {
     setTrackerMode(QwtPlotPicker::AlwaysOn);  //这是指定文字的显示，AlwaysOn值，光标不激活，也显示文字提示
@@ -23,6 +36,11 @@ void DAChartCrossTracker::init()
     setRubberBandPen(QPen(QColor(186, 85, 211)));
 }
 
+/**
+ * @brief 返回指定位置处的追踪文本
+ * @param pos 鼠标位置（绘图坐标）
+ * @return 格式化后的追踪文本
+ */
 QwtText DAChartCrossTracker::trackerTextF(const QPointF& pos) const
 {
     QString s("");

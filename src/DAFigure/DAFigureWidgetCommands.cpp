@@ -13,11 +13,20 @@ namespace DA
 // DAFigureWidgetCommand_base
 //----------------------------------------------------
 
+/**
+ * @brief 构造函数
+ * @param fig 关联的绘图窗口
+ * @param par 父命令
+ */
 DAFigureWidgetCommandBase::DAFigureWidgetCommandBase(DAFigureWidget* fig, QUndoCommand* par)
     : QUndoCommand(par), figureWidget(fig)
 {
 }
 
+/**
+ * @brief 获取关联的绘图窗口
+ * @return 绘图窗口指针
+ */
 DAFigureWidget* DAFigureWidgetCommandBase::figure()
 {
     return figureWidget;
@@ -26,6 +35,16 @@ DAFigureWidget* DAFigureWidgetCommandBase::figure()
 //----------------------------------------------------
 // DAFigureWidgetCommandCreateChart
 //----------------------------------------------------
+
+/**
+ * @brief 构造函数，通过百分比坐标创建图表
+ * @param fig 关联的绘图窗口
+ * @param xPresent x坐标百分比
+ * @param yPresent y坐标百分比
+ * @param wPresent 宽度百分比
+ * @param hPresent 高度百分比
+ * @param par 父命令
+ */
 DAFigureWidgetCommandCreateChart::DAFigureWidgetCommandCreateChart(DAFigureWidget* fig,
                                                                    qreal xPresent,
                                                                    qreal yPresent,
@@ -40,6 +59,12 @@ DAFigureWidgetCommandCreateChart::DAFigureWidgetCommandCreateChart(DAFigureWidge
     setText(QObject::tr("create chart"));  // cn:创建绘图
 }
 
+/**
+ * @brief 构造函数，通过归一化矩形创建图表
+ * @param fig 关联的绘图窗口
+ * @param versatileSize 归一化矩形
+ * @param par 父命令
+ */
 DAFigureWidgetCommandCreateChart::DAFigureWidgetCommandCreateChart(DAFigureWidget* fig,
                                                                    const QRectF& versatileSize,
                                                                    QUndoCommand* par)
@@ -48,6 +73,9 @@ DAFigureWidgetCommandCreateChart::DAFigureWidgetCommandCreateChart(DAFigureWidge
     setText(QObject::tr("create chart"));  // cn:创建绘图
 }
 
+/**
+ * @brief 析构函数
+ */
 DAFigureWidgetCommandCreateChart::~DAFigureWidgetCommandCreateChart()
 {
     if (mNeedDelete) {
@@ -57,6 +85,9 @@ DAFigureWidgetCommandCreateChart::~DAFigureWidgetCommandCreateChart()
     }
 }
 
+/**
+ * @brief 重做操作：创建或重新添加图表
+ */
 void DAFigureWidgetCommandCreateChart::redo()
 {
     mNeedDelete = false;
@@ -71,12 +102,19 @@ void DAFigureWidgetCommandCreateChart::redo()
     }
 }
 
+/**
+ * @brief 撤销操作：移除图表
+ */
 void DAFigureWidgetCommandCreateChart::undo()
 {
     mNeedDelete = true;
     figure()->removeChart(mChart);
 }
 
+/**
+ * @brief 获取创建的图表窗口
+ * @return 图表窗口指针
+ */
 DAChartWidget* DAFigureWidgetCommandCreateChart::getChartWidget()
 {
     return mChart;
@@ -85,6 +123,16 @@ DAChartWidget* DAFigureWidgetCommandCreateChart::getChartWidget()
 //===============================================================
 // DAFigureWidgetCommandCreate3DChart
 //===============================================================
+
+/**
+ * @brief 构造函数，通过百分比坐标创建3D图表
+ * @param fig 关联的绘图窗口
+ * @param xPresent x坐标百分比
+ * @param yPresent y坐标百分比
+ * @param wPresent 宽度百分比
+ * @param hPresent 高度百分比
+ * @param par 父命令
+ */
 DAFigureWidgetCommandCreate3DChart::DAFigureWidgetCommandCreate3DChart(DAFigureWidget* fig,
                                                                        qreal xPresent,
                                                                        qreal yPresent,
@@ -99,6 +147,12 @@ DAFigureWidgetCommandCreate3DChart::DAFigureWidgetCommandCreate3DChart(DAFigureW
     setText(QObject::tr("create 3D chart"));  // cn:创建3D绘图
 }
 
+/**
+ * @brief 构造函数，通过归一化矩形创建3D图表
+ * @param fig 关联的绘图窗口
+ * @param versatileSize 归一化矩形
+ * @param par 父命令
+ */
 DAFigureWidgetCommandCreate3DChart::DAFigureWidgetCommandCreate3DChart(DAFigureWidget* fig,
                                                                        const QRectF& versatileSize,
                                                                        QUndoCommand* par)
@@ -110,6 +164,9 @@ DAFigureWidgetCommandCreate3DChart::DAFigureWidgetCommandCreate3DChart(DAFigureW
     setText(QObject::tr("create 3D chart"));  // cn:创建3D绘图
 }
 
+/**
+ * @brief 析构函数
+ */
 DAFigureWidgetCommandCreate3DChart::~DAFigureWidgetCommandCreate3DChart()
 {
     if (mNeedDelete) {
@@ -119,6 +176,9 @@ DAFigureWidgetCommandCreate3DChart::~DAFigureWidgetCommandCreate3DChart()
     }
 }
 
+/**
+ * @brief 重做操作：创建或重新添加3D图表
+ */
 void DAFigureWidgetCommandCreate3DChart::redo()
 {
     mNeedDelete = false;
@@ -131,12 +191,19 @@ void DAFigureWidgetCommandCreate3DChart::redo()
     }
 }
 
+/**
+ * @brief 撤销操作：移除3D图表
+ */
 void DAFigureWidgetCommandCreate3DChart::undo()
 {
     mNeedDelete = true;
     figure()->remove3DChart(mChart3D);
 }
 
+/**
+ * @brief 获取创建的3D图表窗口
+ * @return 3D图表窗口指针
+ */
 DAChart3DWidget* DAFigureWidgetCommandCreate3DChart::getChart3DWidget()
 {
     return mChart3D;
@@ -145,6 +212,13 @@ DAChart3DWidget* DAFigureWidgetCommandCreate3DChart::getChart3DWidget()
 //===============================================================
 // DAFigureWidgetCommandRemoveChart
 //===============================================================
+
+/**
+ * @brief 构造函数
+ * @param fig 关联的绘图窗口
+ * @param chart 要移除的图表
+ * @param par 父命令
+ */
 DAFigureWidgetCommandRemoveChart::DAFigureWidgetCommandRemoveChart(DAFigureWidget* fig, DAChartWidget* chart, QUndoCommand* par)
     : DAFigureWidgetCommandBase(fig, par), mChart(chart)
 {
@@ -153,6 +227,9 @@ DAFigureWidgetCommandRemoveChart::DAFigureWidgetCommandRemoveChart(DAFigureWidge
     mChartNormRect = fig->axesNormRect(chart);
 }
 
+/**
+ * @brief 析构函数
+ */
 DAFigureWidgetCommandRemoveChart::~DAFigureWidgetCommandRemoveChart()
 {
     if (mNeedDelete) {
@@ -162,6 +239,9 @@ DAFigureWidgetCommandRemoveChart::~DAFigureWidgetCommandRemoveChart()
     }
 }
 
+/**
+ * @brief 重做操作：移除图表
+ */
 void DAFigureWidgetCommandRemoveChart::redo()
 {
     mNeedDelete = true;
@@ -170,6 +250,9 @@ void DAFigureWidgetCommandRemoveChart::redo()
     }
 }
 
+/**
+ * @brief 撤销操作：重新添加图表
+ */
 void DAFigureWidgetCommandRemoveChart::undo()
 {
     mNeedDelete = false;
@@ -181,6 +264,13 @@ void DAFigureWidgetCommandRemoveChart::undo()
 //===============================================================
 // DAFigureWidgetCommandRemove3DChart
 //===============================================================
+
+/**
+ * @brief 构造函数
+ * @param fig 关联的绘图窗口
+ * @param chart3d 要移除的3D图表
+ * @param par 父命令
+ */
 DAFigureWidgetCommandRemove3DChart::DAFigureWidgetCommandRemove3DChart(DAFigureWidget* fig,
                                                                        DAChart3DWidget* chart3d,
                                                                        QUndoCommand* par)
@@ -192,6 +282,9 @@ DAFigureWidgetCommandRemove3DChart::DAFigureWidgetCommandRemove3DChart(DAFigureW
     mChartNormRect = fig->widgetNormRect(chart3d);
 }
 
+/**
+ * @brief 析构函数
+ */
 DAFigureWidgetCommandRemove3DChart::~DAFigureWidgetCommandRemove3DChart()
 {
     if (mNeedDelete) {
@@ -201,6 +294,9 @@ DAFigureWidgetCommandRemove3DChart::~DAFigureWidgetCommandRemove3DChart()
     }
 }
 
+/**
+ * @brief 重做操作：移除3D图表
+ */
 void DAFigureWidgetCommandRemove3DChart::redo()
 {
     mNeedDelete = true;
@@ -209,6 +305,9 @@ void DAFigureWidgetCommandRemove3DChart::redo()
     }
 }
 
+/**
+ * @brief 撤销操作：重新添加3D图表
+ */
 void DAFigureWidgetCommandRemove3DChart::undo()
 {
     mNeedDelete = false;
@@ -220,6 +319,15 @@ void DAFigureWidgetCommandRemove3DChart::undo()
 //----------------------------------------------------
 // DAFigureWidgetCommandResizeWidget
 //----------------------------------------------------
+
+/**
+ * @brief 构造函数
+ * @param fig 关联的绘图窗口
+ * @param w 要调整尺寸的窗口
+ * @param oldNormRect 原归一化矩形
+ * @param newNormRect 新归一化矩形
+ * @param par 父命令
+ */
 DAFigureWidgetCommandResizeWidget::DAFigureWidgetCommandResizeWidget(DAFigureWidget* fig,
                                                                      QWidget* w,
                                                                      const QRectF& oldNormRect,
@@ -230,6 +338,9 @@ DAFigureWidgetCommandResizeWidget::DAFigureWidgetCommandResizeWidget(DAFigureWid
     setText(QObject::tr("set figure widget size"));  // cn:设置绘图中窗体的尺寸
 }
 
+/**
+ * @brief 重做操作：设置窗口新尺寸
+ */
 void DAFigureWidgetCommandResizeWidget::redo()
 {
     if (!mWidget) {
@@ -239,6 +350,9 @@ void DAFigureWidgetCommandResizeWidget::redo()
     figure()->setWidgetNormPos(mWidget, mNewNormRect);
 }
 
+/**
+ * @brief 撤销操作：恢复窗口原尺寸
+ */
 void DAFigureWidgetCommandResizeWidget::undo()
 {
     if (!mWidget) {
@@ -250,6 +364,15 @@ void DAFigureWidgetCommandResizeWidget::undo()
 //----------------------------------------------------
 // DAFigureWidgetCommandAttachItem
 //----------------------------------------------------
+
+/**
+ * @brief 构造函数
+ * @param fig 关联的绘图窗口
+ * @param chart 目标图表
+ * @param item 要添加的图元
+ * @param skipFirst 是否跳过第一次redo
+ * @param par 父命令
+ */
 DAFigureWidgetCommandAttachItem::DAFigureWidgetCommandAttachItem(DAFigureWidget* fig,
                                                                  DAChartWidget* chart,
                                                                  QwtPlotItem* item,
@@ -260,6 +383,9 @@ DAFigureWidgetCommandAttachItem::DAFigureWidgetCommandAttachItem(DAFigureWidget*
     setText(QObject::tr("add item in chart"));  // cn:添加图元到绘图
 }
 
+/**
+ * @brief 析构函数
+ */
 DAFigureWidgetCommandAttachItem::~DAFigureWidgetCommandAttachItem()
 {
     if (mNeedDelete) {
@@ -269,6 +395,9 @@ DAFigureWidgetCommandAttachItem::~DAFigureWidgetCommandAttachItem()
     }
 }
 
+/**
+ * @brief 重做操作：将图元附加到图表
+ */
 void DAFigureWidgetCommandAttachItem::redo()
 {
     if (!mChart || !mItem) {
@@ -282,6 +411,9 @@ void DAFigureWidgetCommandAttachItem::redo()
     }
 }
 
+/**
+ * @brief 撤销操作：将图元从图表分离
+ */
 void DAFigureWidgetCommandAttachItem::undo()
 {
     if (!mItem) {
@@ -294,6 +426,15 @@ void DAFigureWidgetCommandAttachItem::undo()
 //----------------------------------------------------
 // DAFigureWidgetCommandAttach3DItem
 //----------------------------------------------------
+
+/**
+ * @brief 构造函数
+ * @param fig 关联的绘图窗口
+ * @param chart3d 目标3D图表
+ * @param item 要添加的3D图元
+ * @param skipFirst 是否跳过第一次redo
+ * @param par 父命令
+ */
 DAFigureWidgetCommandAttach3DItem::DAFigureWidgetCommandAttach3DItem(DAFigureWidget* fig,
                                                                      DAChart3DWidget* chart3d,
                                                                      Qwt3DPlotItem* item,
@@ -308,6 +449,9 @@ DAFigureWidgetCommandAttach3DItem::DAFigureWidgetCommandAttach3DItem(DAFigureWid
     setText(QObject::tr("add 3D item in chart"));  // cn:添加3D图元到绘图
 }
 
+/**
+ * @brief 析构函数
+ */
 DAFigureWidgetCommandAttach3DItem::~DAFigureWidgetCommandAttach3DItem()
 {
     if (mNeedDelete) {
@@ -317,6 +461,9 @@ DAFigureWidgetCommandAttach3DItem::~DAFigureWidgetCommandAttach3DItem()
     }
 }
 
+/**
+ * @brief 重做操作：将3D图元附加到3D图表
+ */
 void DAFigureWidgetCommandAttach3DItem::redo()
 {
     if (!mChart3D || !mItem) {
@@ -332,6 +479,9 @@ void DAFigureWidgetCommandAttach3DItem::redo()
     }
 }
 
+/**
+ * @brief 撤销操作：将3D图元从3D图表分离
+ */
 void DAFigureWidgetCommandAttach3DItem::undo()
 {
     if (!mItem) {
@@ -347,6 +497,15 @@ void DAFigureWidgetCommandAttach3DItem::undo()
 //----------------------------------------------------
 // DAFigureWidgetCommandMoveItem
 //----------------------------------------------------
+
+/**
+ * @brief 构造函数
+ * @param fig 关联的绘图窗口
+ * @param sourceChart 源图表
+ * @param targetChart 目标图表
+ * @param item 要移动的图元
+ * @param par 父命令
+ */
 DAFigureWidgetCommandMoveItem::DAFigureWidgetCommandMoveItem(DAFigureWidget* fig,
                                                              DAChartWidget* sourceChart,
                                                              DAChartWidget* targetChart,
@@ -357,11 +516,17 @@ DAFigureWidgetCommandMoveItem::DAFigureWidgetCommandMoveItem(DAFigureWidget* fig
     setText(QObject::tr("move plot item to another chart"));  // cn:移动图元到另一个绘图
 }
 
+/**
+ * @brief 析构函数
+ */
 DAFigureWidgetCommandMoveItem::~DAFigureWidgetCommandMoveItem()
 {
     // item始终attach在某个plot上，无需在此管理生命周期
 }
 
+/**
+ * @brief 重做操作：将图元移动到目标图表
+ */
 void DAFigureWidgetCommandMoveItem::redo()
 {
     if (!mTargetChart || !mItem) {
@@ -374,6 +539,9 @@ void DAFigureWidgetCommandMoveItem::redo()
     DAChartUtil::replot(mTargetChart);
 }
 
+/**
+ * @brief 撤销操作：将图元移回源图表
+ */
 void DAFigureWidgetCommandMoveItem::undo()
 {
     if (!mSourceChart || !mItem) {
@@ -389,6 +557,15 @@ void DAFigureWidgetCommandMoveItem::undo()
 //----------------------------------------------------
 // DAFigureWidgetCommandMove3DItem
 //----------------------------------------------------
+
+/**
+ * @brief 构造函数
+ * @param fig 关联的绘图窗口
+ * @param sourceChart3D 源3D图表
+ * @param targetChart3D 目标3D图表
+ * @param item 要移动的3D图元
+ * @param par 父命令
+ */
 DAFigureWidgetCommandMove3DItem::DAFigureWidgetCommandMove3DItem(DAFigureWidget* fig,
                                                                   DAChart3DWidget* sourceChart3D,
                                                                   DAChart3DWidget* targetChart3D,
@@ -402,11 +579,17 @@ DAFigureWidgetCommandMove3DItem::DAFigureWidgetCommandMove3DItem(DAFigureWidget*
     setText(QObject::tr("move 3D plot item to another chart"));  // cn:移动3D图元到另一个绘图
 }
 
+/**
+ * @brief 析构函数
+ */
 DAFigureWidgetCommandMove3DItem::~DAFigureWidgetCommandMove3DItem()
 {
     // item始终attach在某个plot上，无需在此管理生命周期
 }
 
+/**
+ * @brief 重做操作：将3D图元移动到目标3D图表
+ */
 void DAFigureWidgetCommandMove3DItem::redo()
 {
     if (!mTargetChart3D || !mItem) {
@@ -419,6 +602,9 @@ void DAFigureWidgetCommandMove3DItem::redo()
     mTargetChart3D->update();
 }
 
+/**
+ * @brief 撤销操作：将3D图元移回源3D图表
+ */
 void DAFigureWidgetCommandMove3DItem::undo()
 {
     if (!mSourceChart3D || !mItem) {

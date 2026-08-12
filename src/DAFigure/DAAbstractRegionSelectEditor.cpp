@@ -1,31 +1,47 @@
-﻿#include "DAAbstractRegionSelectEditor.h"
+#include "DAAbstractRegionSelectEditor.h"
 #include <QEvent>
 #include <QMouseEvent>
 #include "qwt_scale_map.h"
 namespace DA
 {
+
+/**
+ * @brief 构造函数
+ * @param parent 关联的QwtPlot
+ */
 DAAbstractRegionSelectEditor::DAAbstractRegionSelectEditor(QwtPlot* parent)
     : DAAbstractChartEditor(parent)
-    , m_selectionMode(AdditionalSelection)  // SingleSelection
-    , m_xAxis(QwtPlot::xBottom)
-    , m_yAxis(QwtPlot::yLeft)
+    , mSelectionMode(AdditionalSelection)  // SingleSelection
+    , mXAxis(QwtPlot::xBottom)
+    , mYAxis(QwtPlot::yLeft)
 {
-    m_xAxis = parent->visibleXAxisId();
-    m_yAxis = parent->visibleYAxisId();
+    mXAxis = parent->visibleXAxisId();
+    mYAxis = parent->visibleYAxisId();
 }
 
+/**
+ * @brief 析构函数
+ */
 DAAbstractRegionSelectEditor::~DAAbstractRegionSelectEditor()
 {
 }
 
+/**
+ * @brief 获取选择模式
+ * @return 当前选择模式
+ */
 DAAbstractRegionSelectEditor::SelectionMode DAAbstractRegionSelectEditor::getSelectionMode() const
 {
-    return m_selectionMode;
+    return mSelectionMode;
 }
 
+/**
+ * @brief 设置选择模式
+ * @param selectionMode 选择模式
+ */
 void DAAbstractRegionSelectEditor::setSelectionMode(const SelectionMode& selectionMode)
 {
-    m_selectionMode = selectionMode;
+    mSelectionMode = selectionMode;
 }
 ///
 /// \brief 判断点是否在区域里
@@ -43,7 +59,7 @@ bool DAAbstractRegionSelectEditor::isContains(const QPointF& p) const
 ///
 int DAAbstractRegionSelectEditor::getXAxis() const
 {
-    return m_xAxis;
+    return mXAxis;
 }
 
 ///
@@ -52,7 +68,7 @@ int DAAbstractRegionSelectEditor::getXAxis() const
 ///
 int DAAbstractRegionSelectEditor::getYAxis() const
 {
-    return m_yAxis;
+    return mYAxis;
 }
 ///
 /// \brief 设置关联的坐标轴
@@ -62,8 +78,8 @@ int DAAbstractRegionSelectEditor::getYAxis() const
 ///
 void DAAbstractRegionSelectEditor::setAxis(int xAxis, int yAxis)
 {
-    m_xAxis = xAxis;
-    m_yAxis = yAxis;
+    mXAxis = xAxis;
+    mYAxis = yAxis;
 }
 
 ///

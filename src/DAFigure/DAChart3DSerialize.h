@@ -83,9 +83,7 @@ public:
     int getRtti(const QByteArray& byte) const noexcept;
 
 public:
-    /**
-     * @brief 模板化的序列化实现，参考 DAChartItemSerialize::serializeIn_T / serializeOut_T
-     */
+    // 模板化的序列化实现，参考 DAChartItemSerialize::serializeIn_T / serializeOut_T
     template< typename T, int RTTI >
     static Qwt3DPlotItem* serializeIn_T(const QByteArray& byte)
     {

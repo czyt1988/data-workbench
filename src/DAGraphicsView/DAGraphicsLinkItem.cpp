@@ -39,6 +39,10 @@ public:
 	int mEndPointSize { 12 };                ///< 记录端点大小
 };
 
+/**
+ * @brief 构造DAGraphicsLinkItem的私有数据
+ * @param p DAGraphicsLinkItem指针
+ */
 DAGraphicsLinkItem::PrivateData::PrivateData(DAGraphicsLinkItem* p) : q_ptr(p)
 {
 }
@@ -46,6 +50,11 @@ DAGraphicsLinkItem::PrivateData::PrivateData(DAGraphicsLinkItem* p) : q_ptr(p)
 //===============================================================
 // DAGraphicsLinkItem
 //===============================================================
+
+/**
+ * @brief 构造DAGraphicsLinkItem
+ * @param p 父图元
+ */
 DAGraphicsLinkItem::DAGraphicsLinkItem(QGraphicsItem* p) : DAGraphicsItem(p), DA_PIMPL_CONSTRUCT
 {
 	setFlags(flags() | ItemIsSelectable);
@@ -55,6 +64,9 @@ DAGraphicsLinkItem::DAGraphicsLinkItem(QGraphicsItem* p) : DAGraphicsItem(p), DA
 	setZValue(-1);  // 连接线在-1层，这样避免在节点上面
 }
 
+/**
+ * @brief 析构DAGraphicsLinkItem
+ */
 DAGraphicsLinkItem::~DAGraphicsLinkItem()
 {
 }
@@ -399,11 +411,19 @@ void DAGraphicsLinkItem::paintEndPoint(QPainter* painter,
 	painter->restore();
 }
 
+/**
+ * @brief 返回图元的外包围矩形
+ * @return 外包围矩形
+ */
 QRectF DAGraphicsLinkItem::boundingRect() const
 {
 	return (d_ptr->mBoundingRect);
 }
 
+/**
+ * @brief 返回图元的形状路径，用于碰撞检测和选中区域
+ * @return 形状路径
+ */
 QPainterPath DAGraphicsLinkItem::shape() const
 {
     return (d_ptr->mLineShapePath);
@@ -684,6 +704,10 @@ QPointF DAGraphicsLinkItem::calcPainterPathEndPoint(const QPainterPath& path, bo
 	return testpoint;
 }
 
+/**
+ * @brief 获取当前图元所在的DAGraphicsScene
+ * @return DAGraphicsScene指针，如果不在场景中返回nullptr
+ */
 DAGraphicsScene* DAGraphicsLinkItem::daScene() const
 {
     return dynamic_cast< DAGraphicsScene* >(scene());
@@ -777,6 +801,13 @@ bool DAGraphicsLinkItem::willCompleteLink()
     return true;
 }
 
+/**
+ * @brief 将连接线的属性保存到XML
+ * @param doc XML文档对象
+ * @param parentElement 父XML元素
+ * @param ver 版本号
+ * @return 保存成功返回true
+ */
 bool DAGraphicsLinkItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
 	DAGraphicsItem::saveToXml(doc, parentElement, ver);
@@ -809,6 +840,12 @@ bool DAGraphicsLinkItem::saveToXml(QDomDocument* doc, QDomElement* parentElement
 	return true;
 }
 
+/**
+ * @brief 从XML加载连接线的属性
+ * @param parentElement 父XML元素
+ * @param ver 版本号
+ * @return 加载成功返回true
+ */
 bool DAGraphicsLinkItem::loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)
 {
 	DAGraphicsItem::loadFromXml(parentElement, ver);
@@ -864,6 +901,12 @@ bool DAGraphicsLinkItem::loadFromXml(const QDomElement* parentElement, const QVe
 	return true;
 }
 
+/**
+ * @brief 设置连接线在场景中的位置
+ * @param p 场景坐标位置
+ * @param x 场景坐标x分量
+ * @param y 场景坐标y分量
+ */
 void DAGraphicsLinkItem::setScenePos(const QPointF& p)
 {
 	setPos(mapToParent(mapFromScene(p)));

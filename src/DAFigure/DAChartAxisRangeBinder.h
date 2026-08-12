@@ -46,13 +46,13 @@ protected Q_SLOTS:
     void onSourcePlotScaleDivChanged();
 
 private:
-    bool m_isBinded { false };
-    QPointer< QwtPlot > m_sourcePlot;
-    QPointer< QwtPlot > m_followerPlot;
-    int m_sourceAxisid { 4 };
-    int m_followerAxisid { 4 };
-    QMetaObject::Connection m_con;
-    bool m_replotImmediately { true };  ///< 立即刷新
+    bool mIsBinded { false };
+    QPointer< QwtPlot > mSourcePlot;
+    QPointer< QwtPlot > mFollowerPlot;
+    int mSourceAxisid { 4 };
+    int mFollowerAxisid { 4 };
+    QMetaObject::Connection mCon;
+    bool mReplotImmediately { true };  ///< 立即刷新
 };
 }
 

@@ -21,19 +21,29 @@ public:
     PrivateData(DAChartItemCreatInteractor* p);
     ~PrivateData();
     void releaseTmpItem();
-    FpCreatePlotItem m_createPlotItem { nullptr };
+    FpCreatePlotItem mCreatePlotItem { nullptr };
     QwtPlotItem* mTmpItem { nullptr };
 };
 
+/**
+ * @brief 构造函数
+ * @param p 父对象指针
+ */
 DAChartItemCreatInteractor::PrivateData::PrivateData(DAChartItemCreatInteractor* p)
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DAChartItemCreatInteractor::PrivateData::~PrivateData()
 {
     releaseTmpItem();
 }
 
+/**
+ * @brief 释放临时图元项
+ */
 void DAChartItemCreatInteractor::PrivateData::releaseTmpItem()
 {
     if (mTmpItem) {
@@ -45,27 +55,55 @@ void DAChartItemCreatInteractor::PrivateData::releaseTmpItem()
 //==============================================
 // DAChartItemCreatInteractor
 //==============================================
+/**
+ * @brief 构造函数
+ * @param parent 父QwtPlot对象
+ * @param fun 创建图元项的工厂函数
+ */
 DAChartItemCreatInteractor::DAChartItemCreatInteractor(QwtPlot* parent, FpCreatePlotItem fun)
     : DAAbstractChartEditor(parent), DA_PIMPL_CONSTRUCT
 {
     setPlotItemInteractorFactory(fun);
 }
 
+/**
+ * @brief 析构函数
+ */
 DAChartItemCreatInteractor::~DAChartItemCreatInteractor()
 {
 }
+
+/**
+ * @brief 设置创建图元项的工厂函数
+ * @param fun 工厂函数指针
+ */
 void DAChartItemCreatInteractor::setPlotItemInteractorFactory(FpCreatePlotItem fun)
 {
-    d_ptr->m_createPlotItem = fun;
+    d_ptr->mCreatePlotItem = fun;
 }
+
+/**
+ * @brief 获取创建图元项的工厂函数
+ * @return 工厂函数指针
+ */
 DAChartItemCreatInteractor::FpCreatePlotItem DAChartItemCreatInteractor::getPlotItemInteractorFactory() const
 {
-    return d_ptr->m_createPlotItem;
+    return d_ptr->mCreatePlotItem;
 }
+
+/**
+ * @brief 运行时类型标识
+ * @return 类型标识值
+ */
 int DAChartItemCreatInteractor::rtti() const
 {
     return DAAbstractChartEditor::RTTICreatInteractor;
 }
+
+/**
+ * @brief 提取临时图元项的所有权
+ * @return 临时图元项指针，调用后内部指针置空
+ */
 QwtPlotItem* DA::DAChartItemCreatInteractor::takeItem()
 {
     DA_D(d);
@@ -74,9 +112,14 @@ QwtPlotItem* DA::DAChartItemCreatInteractor::takeItem()
     return item;
 }
 
+/**
+ * @brief 鼠标按下事件处理
+ * @param e 鼠标事件
+ * @return 是否处理事件
+ */
 bool DAChartItemCreatInteractor::mousePressEvent(const QMouseEvent* e)
 {
-    if (d_ptr->m_createPlotItem) {
+    if (d_ptr->mCreatePlotItem) {
         QwtPlot* gca = plot();
         if (!gca) {
             return false;
@@ -87,7 +130,7 @@ bool DAChartItemCreatInteractor::mousePressEvent(const QMouseEvent* e)
         QwtScaleMap yMap = gca->canvasMap(gca->visibleYAxisId());
         QPointF pos      = QPointF(xMap.invTransform(canvasPos.x()), yMap.invTransform(canvasPos.y()));
 
-        QwtPlotItem* item = d_ptr->m_createPlotItem(gca, pos);
+        QwtPlotItem* item = d_ptr->mCreatePlotItem(gca, pos);
         if (item) {
             d_ptr->mTmpItem = item;
             QwtPlot* p      = item->plot();
@@ -100,6 +143,14 @@ bool DAChartItemCreatInteractor::mousePressEvent(const QMouseEvent* e)
     return false;
 }
 
+/**
+ * @brief 创建标记图元项
+ * @param pos 坐标位置
+ * @param title 标题
+ * @param pen 画笔
+ * @param lineStyle 线条样式
+ * @return 创建的QwtPlotMarker指针
+ */
 QwtPlotMarker* createMarkerPlotItem(const QPointF& pos, const QString& title, const QPen& pen, QwtPlotMarker::LineStyle lineStyle)
 {
     QwtPlotMarker* marker = new QwtPlotMarker(title);
@@ -109,6 +160,12 @@ QwtPlotMarker* createMarkerPlotItem(const QPointF& pos, const QString& title, co
     return marker;
 }
 
+/**
+ * @brief 创建水平线标记图元项
+ * @param plot 关联的QwtPlot
+ * @param pos 坐标位置
+ * @return 创建的QwtPlotItem指针
+ */
 QwtPlotItem* createHLineMarkerPlotItem(QwtPlot* plot, const QPointF& pos)
 {
     QwtPlotMarker* marker = createMarkerPlotItem(
@@ -121,6 +178,12 @@ QwtPlotItem* createHLineMarkerPlotItem(QwtPlot* plot, const QPointF& pos)
     return marker;
 }
 
+/**
+ * @brief 创建垂直线标记图元项
+ * @param plot 关联的QwtPlot
+ * @param pos 坐标位置
+ * @return 创建的QwtPlotItem指针
+ */
 QwtPlotItem* createVLineMarkerPlotItem(QwtPlot* plot, const QPointF& pos)
 {
     QwtPlotMarker* marker = createMarkerPlotItem(
@@ -133,6 +196,12 @@ QwtPlotItem* createVLineMarkerPlotItem(QwtPlot* plot, const QPointF& pos)
     return marker;
 }
 
+/**
+ * @brief 创建十字线标记图元项
+ * @param plot 关联的QwtPlot
+ * @param pos 坐标位置
+ * @return 创建的QwtPlotItem指针
+ */
 QwtPlotItem* createCrossLineMarkerPlotItem(QwtPlot* plot, const QPointF& pos)
 {
     QwtPlotMarker* marker = createMarkerPlotItem(
@@ -145,6 +214,12 @@ QwtPlotItem* createCrossLineMarkerPlotItem(QwtPlot* plot, const QPointF& pos)
     return marker;
 }
 
+/**
+ * @brief 创建垂直数据探针图元项
+ * @param plot 关联的QwtPlot
+ * @param pos 坐标位置
+ * @return 创建的QwtPlotItem指针
+ */
 QwtPlotItem* createVerticalDataProbePlotItem(QwtPlot* plot, const QPointF& pos)
 {
     DADataProbeMarker* probe = new DADataProbeMarker(DADataProbeMarker::VerticalProbe);
@@ -155,6 +230,12 @@ QwtPlotItem* createVerticalDataProbePlotItem(QwtPlot* plot, const QPointF& pos)
     return probe;
 }
 
+/**
+ * @brief 创建水平数据探针图元项
+ * @param plot 关联的QwtPlot
+ * @param pos 坐标位置
+ * @return 创建的QwtPlotItem指针
+ */
 QwtPlotItem* createHorizontalDataProbePlotItem(QwtPlot* plot, const QPointF& pos)
 {
     DADataProbeMarker* probe = new DADataProbeMarker(DADataProbeMarker::HorizontalProbe);

@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsItemGroup.h"
+#include "DAGraphicsItemGroup.h"
 #include "DAGraphicsItemFactory.h"
 #include <QDomDocument>
 #include <QDomElement>
@@ -23,6 +23,10 @@ public:
 	uint64_t mID { 0 };                ///< id
 };
 
+/**
+ * @brief PrivateData 构造函数
+ * @param p 父 DAGraphicsItemGroup 指针
+ */
 DAGraphicsItemGroup::PrivateData::PrivateData(DAGraphicsItemGroup* p) : q_ptr(p)
 {
 	// DAGraphicsItemFactory::generateID通过一个uint32_t生成一个uint64_t的id
@@ -40,6 +44,11 @@ DAGraphicsItemGroup::PrivateData::PrivateData(DAGraphicsItemGroup* p) : q_ptr(p)
 //===================================================
 // DAGraphicsItem
 //===================================================
+
+/**
+ * @brief DAGraphicsItemGroup 构造函数
+ * @param parent 父 QGraphicsItem
+ */
 DAGraphicsItemGroup::DAGraphicsItemGroup(QGraphicsItem* parent) : QGraphicsItemGroup(parent), DA_PIMPL_CONSTRUCT
 {
 	setFlag(QGraphicsItem::ItemIsMovable);
@@ -50,6 +59,9 @@ DAGraphicsItemGroup::DAGraphicsItemGroup(QGraphicsItem* parent) : QGraphicsItemG
 	setHandlesChildEvents(false);
 }
 
+/**
+ * @brief DAGraphicsItemGroup 析构函数
+ */
 DAGraphicsItemGroup::~DAGraphicsItemGroup()
 {
 }
@@ -152,6 +164,12 @@ bool DAGraphicsItemGroup::isShowBackground() const
     return d_ptr->mIsShowBackground;
 }
 
+/**
+ * @brief 获取/设置 Item 的 ID
+ * @param id Item 的 ID（仅 setter）
+ * @return Item 的 ID（仅 getter）
+ * @sa getItemID, setItemID
+ */
 uint64_t DAGraphicsItemGroup::getItemID() const
 {
     return d_ptr->mID;
@@ -194,6 +212,12 @@ QList< QGraphicsItem* > DAGraphicsItemGroup::childItemsExcludingGrouping() const
 	return res;
 }
 
+/**
+ * @brief 绘制选中状态的边框
+ * @param painter 画笔
+ * @param option 图形项样式选项
+ * @param widget 所属 widget
+ */
 void DAGraphicsItemGroup::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
 	if (option->state & QStyle::State_Selected) {
@@ -203,6 +227,12 @@ void DAGraphicsItemGroup::paint(QPainter* painter, const QStyleOptionGraphicsIte
 	}
 }
 
+/**
+ * @brief 图形项变化通知回调，处理位置变化时通知子 DAGraphicsItem
+ * @param change 变化类型
+ * @param value 变化的值
+ * @return 传递给基类的处理结果
+ */
 QVariant DAGraphicsItemGroup::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value)
 {
 	switch (change) {

@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsItem.h"
+#include "DAGraphicsItem.h"
 #include "DAGraphicsItemFactory.h"
 #include <QDomDocument>
 #include <QDomElement>
@@ -20,6 +20,10 @@ public:
 	uint64_t mID { 0 };                ///< id
 };
 
+/**
+ * @brief PrivateData 构造函数
+ * @param p 关联的 DAGraphicsItem 指针
+ */
 DAGraphicsItem::PrivateData::PrivateData(DAGraphicsItem* p) : q_ptr(p)
 {
 	// DAGraphicsItemFactory::generateID通过一个uint32_t生成一个uint64_t的id
@@ -35,10 +39,18 @@ DAGraphicsItem::PrivateData::PrivateData(DAGraphicsItem* p) : q_ptr(p)
 //===================================================
 // DAGraphicsItem
 //===================================================
+
+/**
+ * @brief DAGraphicsItem 构造函数
+ * @param parent 父 QGraphicsItem
+ */
 DAGraphicsItem::DAGraphicsItem(QGraphicsItem* parent) : QGraphicsObject(parent), DA_PIMPL_CONSTRUCT
 {
 }
 
+/**
+ * @brief DAGraphicsItem 析构函数
+ */
 DAGraphicsItem::~DAGraphicsItem()
 {
 }
@@ -288,21 +300,40 @@ void DAGraphicsItem::groupPositionChanged(const QPointF& p)
     Q_UNUSED(p);
 }
 
+/**
+ * @brief 设置场景坐标位置
+ * @param p 场景坐标位置
+ * @sa setScenePos(qreal, qreal)
+ */
 void DAGraphicsItem::setScenePos(const QPointF& p)
 {
     setPos(mapToParent(mapFromScene(p)));
 }
 
+/**
+ * @brief 设置场景坐标位置
+ * @param x 场景坐标 x 分量
+ * @param y 场景坐标 y 分量
+ * @sa setScenePos(const QPointF&)
+ */
 void DAGraphicsItem::setScenePos(qreal x, qreal y)
 {
     setScenePos(QPointF(x, y));
 }
 
+/**
+ * @brief 获取图元ID
+ * @return 图元ID
+ */
 uint64_t DAGraphicsItem::getItemID() const
 {
     return d_ptr->mID;
 }
 
+/**
+ * @brief 设置图元ID
+ * @param id 图元ID
+ */
 void DAGraphicsItem::setItemID(uint64_t id)
 {
     d_ptr->mID = id;
@@ -318,6 +349,10 @@ DAGraphicsItem* DAGraphicsItem::cast(QGraphicsItem* i)
 	return dynamic_cast< DAGraphicsItem* >(i);
 }
 
+/**
+ * @brief 获取当前 item 所属的 DAGraphicsScene
+ * @return 返回当前 item 所在的场景，若不在 DAGraphicsScene 中则返回 nullptr
+ */
 DAGraphicsScene* DAGraphicsItem::daScene() const
 {
 	return dynamic_cast< DAGraphicsScene* >(scene());

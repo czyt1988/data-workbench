@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsScene.h"
+#include "DAGraphicsScene.h"
 #include <QGraphicsSceneMouseEvent>
 #include "DACommandsForGraphics.h"
 #include "DAGraphicsResizeableItem.h"
@@ -96,6 +96,10 @@ void _DAGraphicsSceneItemMoveingInfos::appendStartPos(QGraphicsItem* item)
 	startsPos.append(item->pos());
 }
 
+
+/**
+ * @brief 刷新所有移动图元的结束位置
+ */
 void _DAGraphicsSceneItemMoveingInfos::updateEndPos()
 {
 	for (QGraphicsItem* i : std::as_const(items)) {
@@ -120,6 +124,11 @@ void _DAGraphicsSceneItemMoveingInfos::clear()
 //==============================
 ////////////////////////////////////////////////
 
+
+/**
+ * @brief PrivateData构造函数
+ * @param p DAGraphicsScene指针
+ */
 DAGraphicsScene::PrivateData::PrivateData(DAGraphicsScene* p) : q_ptr(p)
 {
 	registCommandsFactory(new DAGraphicsCommandsFactory());
@@ -129,6 +138,10 @@ DAGraphicsScene::PrivateData::PrivateData(DAGraphicsScene* p) : q_ptr(p)
 	mGridLinePen.setWidthF(0.5);
 }
 
+
+/**
+ * @brief 渲染背景缓存
+ */
 void DAGraphicsScene::PrivateData::renderBackgroundCache()
 {
 	if (!mShowGridLine) {
@@ -166,6 +179,11 @@ void DAGraphicsScene::PrivateData::renderBackgroundCache(QPainter* painter, cons
 	}
 }
 
+
+/**
+ * @brief 注册命令工厂
+ * @param fac 命令工厂指针
+ */
 void DAGraphicsScene::PrivateData::registCommandsFactory(DAGraphicsCommandsFactory* fac)
 {
 	this->commandsFactory.reset(fac);
@@ -176,27 +194,55 @@ void DAGraphicsScene::PrivateData::registCommandsFactory(DAGraphicsCommandsFacto
 // DAGraphicsSceneWithUndoStack
 //===============================================================
 
+
+/**
+ * @brief 构造函数
+ * @param p 父对象
+ */
 DAGraphicsScene::DAGraphicsScene(QObject* p) : QGraphicsScene(p), DA_PIMPL_CONSTRUCT
 {
 	init();
 }
 
+
+/**
+ * @brief 构造函数
+ * @param sceneRect 场景矩形区域
+ * @param p 父对象
+ */
 DAGraphicsScene::DAGraphicsScene(const QRectF& sceneRect, QObject* p) : QGraphicsScene(sceneRect, p), DA_PIMPL_CONSTRUCT
 {
     init();
 }
 
+
+/**
+ * @brief 构造函数
+ * @param x 场景矩形左上角x坐标
+ * @param y 场景矩形左上角y坐标
+ * @param width 场景矩形宽度
+ * @param height 场景矩形高度
+ * @param p 父对象
+ */
 DAGraphicsScene::DAGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObject* p)
     : QGraphicsScene(x, y, width, height, p), DA_PIMPL_CONSTRUCT
 {
     init();
 }
 
+
+/**
+ * @brief 初始化场景
+ */
 void DAGraphicsScene::init()
 {
     connect(this, &QGraphicsScene::selectionChanged, this, &DAGraphicsScene::onSelectionChanged);
 }
 
+
+/**
+ * @brief 析构函数
+ */
 DAGraphicsScene::~DAGraphicsScene()
 {
 }
@@ -277,6 +323,12 @@ QUndoCommand* DAGraphicsScene::removeItem_(QGraphicsItem* item)
 	return cmd;
 }
 
+
+/**
+ * @brief 等同多次removeItem，但使用redo/undo来移除，可以进行redo/undo操作
+ * @param its 要移除的图元列表
+ * @return 返回执行的命令
+ */
 QUndoCommand* DAGraphicsScene::removeItems_(const QList< QGraphicsItem* >& its)
 {
 	DACommandsForGraphicsItemsRemove* cmd = commandsFactory()->createItemsRemove(its);
@@ -425,6 +477,11 @@ void DAGraphicsScene::cancelLink()
 	d_ptr->mLinkItem.reset();
 }
 
+
+/**
+ * @brief 取消当前操作
+ * @sa cancelLink, clearSceneAction
+ */
 void DAGraphicsScene::cancel()
 {
 	cancelLink();
@@ -665,6 +722,11 @@ QUndoStack& DAGraphicsScene::undoStack()
     return d_ptr->mUndoStack;
 }
 
+
+/**
+ * @brief 获取DAGraphicsScene内部维护的undoStack（const版本）
+ * @return
+ */
 const QUndoStack& DAGraphicsScene::undoStack() const
 {
     return d_ptr->mUndoStack;
@@ -746,6 +808,11 @@ QGraphicsItem* DAGraphicsScene::findItemByID(const QList< QGraphicsItem* >& its,
 	return nullptr;
 }
 
+
+/**
+ * @brief 获取所有没有父图元的顶层图元
+ * @return 顶层图元列表
+ */
 QList< QGraphicsItem* > DAGraphicsScene::topItems() const
 {
 	const QList< QGraphicsItem* > its = items();
@@ -758,6 +825,12 @@ QList< QGraphicsItem* > DAGraphicsScene::topItems() const
 	return r;
 }
 
+
+/**
+ * @brief 获取指定位置下所有没有父图元的顶层图元
+ * @param scenePos 场景坐标
+ * @return 顶层图元列表
+ */
 QList< QGraphicsItem* > DAGraphicsScene::topItems(const QPointF& scenePos) const
 {
 	const QList< QGraphicsItem* > its = items(scenePos);
@@ -882,6 +955,11 @@ QList< DAGraphicsLayout* > DAGraphicsScene::getLayouts() const
     return d_ptr->mLayout;
 }
 
+
+/**
+ * @brief 是否为只读模式
+ * @return 如果为只读模式返回true
+ */
 bool DAGraphicsScene::isReadOnly() const
 {
     return d_ptr->mIsReadOnlyMode;
@@ -1079,6 +1157,11 @@ void DAGraphicsScene::addItemWithSignal(QGraphicsItem* item)
 	emit itemsAdded({ item });
 }
 
+
+/**
+ * @brief 鼠标按下事件处理
+ * @param mouseEvent 鼠标事件
+ */
 void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
 	if (d_ptr->mSceneAction) {
@@ -1146,6 +1229,11 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 	commandsFactory()->sceneMousePressEvent(mouseEvent);
 }
 
+
+/**
+ * @brief 鼠标移动事件处理
+ * @param mouseEvent 鼠标事件
+ */
 void DAGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
 	if (d_ptr->mSceneAction) {
@@ -1173,6 +1261,11 @@ void DAGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 	QGraphicsScene::mouseMoveEvent(mouseEvent);
 }
 
+
+/**
+ * @brief 鼠标释放事件处理
+ * @param mouseEvent 鼠标事件
+ */
 void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
 	DA_D(d);
@@ -1199,6 +1292,12 @@ void DAGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 	}
 }
 
+
+/**
+ * @brief 绘制场景背景
+ * @param painter 画笔
+ * @param rect 需要绘制的矩形区域
+ */
 void DAGraphicsScene::drawBackground(QPainter* painter, const QRectF& rect)
 {
 	QGraphicsScene::drawBackground(painter, rect);
@@ -1219,6 +1318,10 @@ void DAGraphicsScene::drawBackground(QPainter* painter, const QRectF& rect)
 	// 直接绘制网格线在放大时很卡
 }
 
+
+/**
+ * @brief 选中状态变化的槽函数
+ */
 void DAGraphicsScene::onSelectionChanged()
 {
 	QList< QGraphicsItem* > sits = selectedItems();
@@ -1228,6 +1331,11 @@ void DAGraphicsScene::onSelectionChanged()
 	checkSelectItem(sits.last());
 }
 
+
+/**
+ * @brief 检查选中的图元，发射对应的选中信号
+ * @param item 选中的图元
+ */
 void DAGraphicsScene::checkSelectItem(QGraphicsItem* item)
 {
 	if (DAGraphicsItem* gi = dynamic_cast< DAGraphicsItem* >(item)) {
@@ -1245,6 +1353,12 @@ void DAGraphicsScene::checkSelectItem(QGraphicsItem* item)
 	}
 }
 
+
+/**
+ * @brief 改变所有图元的选中状态
+ * @param setSelect 是否选中
+ * @return 改变选中状态的图元数量
+ */
 int DAGraphicsScene::changeAllSelection(bool setSelect)
 {
 	return setSelectionState(items(), setSelect);

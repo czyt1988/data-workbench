@@ -4,14 +4,23 @@
 #include "qwt3d_plot.h"
 namespace DA
 {
+
+/**
+ * @brief 构造函数
+ * @param chart 关联的3D图表控件
+ * @param type item类型
+ */
 DAStandardItemPlot3D::DAStandardItemPlot3D(DAChart3DWidget* chart, ItemType type)
-    : QStandardItem(), m_chart3D(chart), m_itemType(type)
+    : QStandardItem(), mChart3D(chart), mItemType(type)
 {
     setData(DAFigureTreeModel::NodeTypePlot3D, DAFigureTreeModel::RoleNodeType);
     setData(QVariant::fromValue(reinterpret_cast< quintptr >(chart)), DAFigureTreeModel::RolePlot3D);
     setEditable(false);
 }
 
+/**
+ * @brief 析构函数
+ */
 DAStandardItemPlot3D::~DAStandardItemPlot3D()
 {
 }
@@ -26,7 +35,7 @@ QVariant DAStandardItemPlot3D::data(int role) const
     if (!isValid()) {
         return QStandardItem::data(role);
     }
-    switch (m_itemType) {
+    switch (mItemType) {
     case Plot3DText:
         return handleItemTextType(role);
     case Plot3DVisible:
@@ -52,10 +61,10 @@ QVariant DAStandardItemPlot3D::handleItemTextType(int role) const
     static QIcon s_icon(":/DAFigure/icon/layout.svg");
     switch (role) {
     case Qt::DisplayRole: {
-        if (!m_chart3D) {
+        if (!mChart3D) {
             return QVariant();
         }
-        QString text = m_chart3D->getChart3DTitle();
+        QString text = mChart3D->getChart3DTitle();
         if (text.isEmpty()) {
             text = QObject::tr("3D Chart");  // cn:3D绘图
         }
@@ -70,11 +79,21 @@ QVariant DAStandardItemPlot3D::handleItemTextType(int role) const
     return QStandardItem::data(role);
 }
 
+/**
+ * @brief 处理可见性列显示
+ * @param role 数据角色
+ * @return 对应角色数据
+ */
 QVariant DAStandardItemPlot3D::handleItemVisibleType(int role) const
 {
     return QStandardItem::data(role);
 }
 
+/**
+ * @brief 处理属性列显示
+ * @param role 数据角色
+ * @return 对应角色数据
+ */
 QVariant DAStandardItemPlot3D::handleItemPropertyType(int role) const
 {
     return QStandardItem::data(role);

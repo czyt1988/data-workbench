@@ -62,6 +62,11 @@ QString DAChartUtil::plotTitle(const QwtPlot* plot, const QwtFigure* fig)
     return QObject::tr("untitle-chart");  // cn:绘图-未命名
 }
 
+/**
+ * @brief 获取绘图图元的显示名称
+ * @param item 绘图图元
+ * @return 图元的显示名称
+ */
 QString DAChartUtil::plotItemName(const QwtPlotItem* item)
 {
     QString str  = item->title().text();
@@ -144,6 +149,11 @@ QString DAChartUtil::plotItemName(const QwtPlotItem* item)
     return QObject::tr("unknown-%1").arg(str);  // cn:未知-%1
 }
 
+/**
+ * @brief 获取绘图图元的图标
+ * @param item 绘图图元
+ * @return 图元对应的图标
+ */
 QIcon DAChartUtil::plotItemIcon(const QwtPlotItem* item)
 {
     static QIcon s_default_chart_icon(":/DAFigure/icon/chart-item.svg");
@@ -264,6 +274,10 @@ QIcon DAChartUtil::plotItemIcon(const QwtPlotItem* item)
     return s_default_chart_icon;
 }
 
+/**
+ * @brief 更加强制的replot，就算设置为不实时刷新也能实现重绘
+ * @param chart 绘图指针
+ */
 void DAChartUtil::replot(QwtPlot* chart)
 {
     QwtPlotCanvas* plotCanvas = qobject_cast< QwtPlotCanvas* >(chart->canvas());
@@ -888,6 +902,12 @@ void DAChartUtil::getXYDatas(QVector< QPointF >& xys, const QwtSeriesStore< QPoi
     getSeriesData< QPointF >(xys, cur);
 }
 
+/**
+ * @brief 获取一个曲线的xy值
+ * @param xs 存放x值的容器
+ * @param ys 存放y值的容器
+ * @param cur 曲线数据源
+ */
 void DAChartUtil::getXYDatas(QVector< double >* xs, QVector< double >* ys, const QwtSeriesStore< QPointF >* cur)
 {
     auto size = cur->dataSize();
@@ -938,6 +958,15 @@ size_t DAChartUtil::getXYDatas(QVector< QPointF >& xys,
     return realSize;
 }
 
+/**
+ * @brief 提取范围内曲线的xy值
+ * @param xs 存放x值的容器
+ * @param ys 存放y值的容器
+ * @param indexs 存放索引的容器
+ * @param cur 曲线数据源
+ * @param rang 筛选范围
+ * @return 提取的数据点数
+ */
 size_t DAChartUtil::getXYDatas(QVector< double >* xs,
                                QVector< double >* ys,
                                QVector< int >* indexs,
@@ -1321,6 +1350,12 @@ int DAChartUtil::removeDataInRang(const QRectF& removeRang, QwtSeriesStore< QPoi
     return newLine.size();
 }
 
+/**
+ * @brief 把范围内的数据移除
+ * @param removeRang 需要移除的数据范围
+ * @param curve 需要移除数据的曲线
+ * @return 移除后的数据个数
+ */
 int DAChartUtil::removeDataInRang(const QPainterPath& removeRang, QwtSeriesStore< QPointF >* curve)
 {
     auto length = curve->data()->size();
@@ -1337,76 +1372,151 @@ int DAChartUtil::removeDataInRang(const QPainterPath& removeRang, QwtSeriesStore
     return newLine.size();
 }
 
+/**
+ * @brief 设置曲线的采样数据
+ * @param p 绘图图元
+ * @param datas 采样数据
+ */
 void DAChartUtil::setPlotCurveSample(QwtPlotItem* p, const QVector< QPointF >& datas)
 {
     setVectorSampleData< QPointF, QwtPlotCurve >(p, datas);
 }
 
+/**
+ * @brief 设置柱状图的采样数据
+ * @param p 绘图图元
+ * @param datas 采样数据
+ */
 void DAChartUtil::setPlotBarChartSample(QwtPlotItem* p, const QVector< QPointF >& datas)
 {
     setVectorSampleData< QPointF, QwtPlotBarChart >(p, datas);
 }
 
+/**
+ * @brief 设置直方图的采样数据
+ * @param p 绘图图元
+ * @param datas 采样数据
+ */
 void DAChartUtil::setPlotHistogramSample(QwtPlotItem* p, const QVector< QwtIntervalSample >& datas)
 {
     setVectorSampleData< QwtIntervalSample, QwtPlotHistogram >(p, datas);
 }
 
+/**
+ * @brief 设置区间曲线的采样数据
+ * @param p 绘图图元
+ * @param datas 采样数据
+ */
 void DAChartUtil::setPlotIntervalCurveSample(QwtPlotItem* p, const QVector< QwtIntervalSample >& datas)
 {
     setVectorSampleData< QwtIntervalSample, QwtPlotIntervalCurve >(p, datas);
 }
 
+/**
+ * @brief 设置多重柱状图的采样数据
+ * @param p 绘图图元
+ * @param datas 采样数据
+ */
 void DAChartUtil::setPlotMultiBarChartSample(QwtPlotItem* p, const QVector< QwtSetSample >& datas)
 {
     setVectorSampleData< QwtSetSample, QwtPlotMultiBarChart >(p, datas);
 }
 
+/**
+ * @brief 设置K线图的采样数据
+ * @param p 绘图图元
+ * @param datas 采样数据
+ */
 void DAChartUtil::setPlotTradingCurveSample(QwtPlotItem* p, const QVector< QwtOHLCSample >& datas)
 {
     setVectorSampleData< QwtOHLCSample, QwtPlotTradingCurve >(p, datas);
 }
 
+/**
+ * @brief 设置色谱曲线的采样数据
+ * @param p 绘图图元
+ * @param datas 采样数据
+ */
 void DAChartUtil::setPlotSpectroCurveSample(QwtPlotItem* p, const QVector< QwtPoint3D >& datas)
 {
     setVectorSampleData< QwtPoint3D, QwtPlotSpectroCurve >(p, datas);
 }
 
+/**
+ * @brief 获取曲线的采样数据
+ * @param p 绘图图元
+ * @param datas 存放采样数据的容器
+ */
 void DAChartUtil::getPlotCurveSample(QwtPlotItem* p, QVector< QPointF >& datas)
 {
     getVectorSampleData< QPointF, QwtPlotCurve >(p, datas);
 }
 
+/**
+ * @brief 获取柱状图的采样数据
+ * @param p 绘图图元
+ * @param datas 存放采样数据的容器
+ */
 void DAChartUtil::getPlotBarChartSample(QwtPlotItem* p, QVector< QPointF >& datas)
 {
     getVectorSampleData< QPointF, QwtPlotBarChart >(p, datas);
 }
 
+/**
+ * @brief 获取直方图的采样数据
+ * @param p 绘图图元
+ * @param datas 存放采样数据的容器
+ */
 void DAChartUtil::getPlotHistogramSample(QwtPlotItem* p, QVector< QwtIntervalSample >& datas)
 {
     getVectorSampleData< QwtIntervalSample, QwtPlotHistogram >(p, datas);
 }
 
+/**
+ * @brief 获取区间曲线的采样数据
+ * @param p 绘图图元
+ * @param datas 存放采样数据的容器
+ */
 void DAChartUtil::getPlotIntervalCurveSample(QwtPlotItem* p, QVector< QwtIntervalSample >& datas)
 {
     getVectorSampleData< QwtIntervalSample, QwtPlotIntervalCurve >(p, datas);
 }
 
+/**
+ * @brief 获取多重柱状图的采样数据
+ * @param p 绘图图元
+ * @param datas 存放采样数据的容器
+ */
 void DAChartUtil::getPlotMultiBarChartSample(QwtPlotItem* p, QVector< QwtSetSample >& datas)
 {
     getVectorSampleData< QwtSetSample, QwtPlotMultiBarChart >(p, datas);
 }
 
+/**
+ * @brief 获取K线图的采样数据
+ * @param p 绘图图元
+ * @param datas 存放采样数据的容器
+ */
 void DAChartUtil::getPlotTradingCurveSample(QwtPlotItem* p, QVector< QwtOHLCSample >& datas)
 {
     getVectorSampleData< QwtOHLCSample, QwtPlotTradingCurve >(p, datas);
 }
 
+/**
+ * @brief 获取色谱曲线的采样数据
+ * @param p 绘图图元
+ * @param datas 存放采样数据的容器
+ */
 void DAChartUtil::getPlotSpectroCurveSample(QwtPlotItem* p, QVector< QwtPoint3D >& datas)
 {
     getVectorSampleData< QwtPoint3D, QwtPlotSpectroCurve >(p, datas);
 }
 
+/**
+ * @brief 获取当前正在显示的区域
+ * @param chart 绘图指针
+ * @return 可见区域范围
+ */
 QRectF DAChartUtil::getVisibleRegionRang(QwtPlot* chart)
 {
     QwtPlot::Axis xaxis = QwtPlot::xBottom;

@@ -34,17 +34,61 @@
 namespace DA
 {
 
+class DAFigureTreeModel::PrivateData
+{
+    DA_DECLARE_PUBLIC(DAFigureTreeModel)
+public:
+    PrivateData(DAFigureTreeModel* p);
+    QwtFigure* mFigure;
+    QHash< QwtPlot*, QStandardItem* > mPlotItems;
+    QHash< QwtPlotItem*, QStandardItem* > mPlotItemItems;
+    // 3D 成员变量
+    QHash< DAChart3DWidget*, QStandardItem* > mPlot3DItems;       ///< 3D chart -> layer 树节点
+    QHash< Qwt3DPlotItem*, QStandardItem* > mPlot3DItemItems;    ///< 3D plot item -> 树节点
+    QHash< DAChart3DWidget*, QList< QMetaObject::Connection > > mPlot3DConnections;  ///< 3D chart 信号连接
+    QPointer< DAFigureWidget > mFigureWidget;  ///< DAFigureWidget 缓存
+    // 连接管理
+    QList< QMetaObject::Connection > mFigureConnections;
+    QHash< QwtPlot*, QList< QMetaObject::Connection > > mPlotConnections;
+};
+
+/**
+ * @brief PrivateData 构造函数
+ * @param p 父对象 DAFigureTreeModel 指针
+ */
+DAFigureTreeModel::PrivateData::PrivateData(DAFigureTreeModel* p) : q_ptr(p)
+{
+}
+
+
 //----------------------------------------------------
 //
 //----------------------------------------------------
 
-DAFigureTreeModel::DAFigureTreeModel(QObject* parent) : QStandardItemModel(parent), m_figure(nullptr)
+/**
+ * @brief 构造函数
+ * @param parent 父 QObject 指针
+ */
+DAFigureTreeModel::DAFigureTreeModel(QObject* parent) : QStandardItemModel(parent), DA_PIMPL_CONSTRUCT
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DAFigureTreeModel::~DAFigureTreeModel()
 {
     clearAllConnections();
+}
+
+/**
+ * @brief 获取关联的QwtFigure
+ * @return QwtFigure指针
+ */
+QwtFigure* DAFigureTreeModel::figure() const
+{
+    DA_DC(d);
+    return d->mFigure;
 }
 
 /**
@@ -53,109 +97,133 @@ DAFigureTreeModel::~DAFigureTreeModel()
  */
 void DAFigureTreeModel::setFigureWidget(DA::DAFigureWidget* figWidget)
 {
-    if (m_figureWidget == figWidget) {
+    DA_D(d);
+    if (d->mFigureWidget == figWidget) {
         return;
     }
-    m_figureWidget = figWidget;
+    d->mFigureWidget = figWidget;
     setFigure(figWidget ? figWidget->figure() : nullptr);
 }
 
+/**
+ * @brief 设置关联的 QwtFigure
+ * @param figure QwtFigure 指针
+ */
 void DAFigureTreeModel::setFigure(QwtFigure* figure)
 {
-    if (m_figure == figure) {
+    DA_D(d);
+    if (d->mFigure == figure) {
         return;
     }
 
     // 清除所有现有连接
     clearAllConnections();
 
-    m_figure = figure;
-    m_plotItems.clear();
-    m_plotItemItems.clear();
+    d->mFigure = figure;
+    d->mPlotItems.clear();
+    d->mPlotItemItems.clear();
     // 清理 3D 状态
-    m_plot3DItems.clear();
-    m_plot3DItemItems.clear();
-    m_plot3DConnections.clear();
+    d->mPlot3DItems.clear();
+    d->mPlot3DItemItems.clear();
+    d->mPlot3DConnections.clear();
 
-    if (m_figure) {
+    if (d->mFigure) {
         // 连接figure信号
-        m_figureConnections << connect(m_figure, &QwtFigure::axesAdded, this, &DAFigureTreeModel::onAxesAdded);
-        m_figureConnections << connect(m_figure, &QwtFigure::axesRemoved, this, &DAFigureTreeModel::onAxesRemoved);
-        m_figureConnections << connect(m_figure, &QwtFigure::figureCleared, this, &DAFigureTreeModel::onFigureCleared);
-        m_figureConnections << connect(
-            m_figure, &QwtFigure::currentAxesChanged, this, &DAFigureTreeModel::onCurrentAxesChanged);
+        d->mFigureConnections << connect(d->mFigure, &QwtFigure::axesAdded, this, &DAFigureTreeModel::onAxesAdded);
+        d->mFigureConnections << connect(d->mFigure, &QwtFigure::axesRemoved, this, &DAFigureTreeModel::onAxesRemoved);
+        d->mFigureConnections << connect(d->mFigure, &QwtFigure::figureCleared, this, &DAFigureTreeModel::onFigureCleared);
+        d->mFigureConnections << connect(
+            d->mFigure, &QwtFigure::currentAxesChanged, this, &DAFigureTreeModel::onCurrentAxesChanged);
     }
 
     setupModel();
 }
 
+/**
+ * @brief 断开所有信号连接
+ *
+ * 清理 figure、plot 以及 3D chart 的所有信号连接
+ */
 void DAFigureTreeModel::clearAllConnections()
 {
+    DA_D(d);
     // 断开所有figure连接
-    for (const QMetaObject::Connection& conn : m_figureConnections) {
+    for (const QMetaObject::Connection& conn : d->mFigureConnections) {
         disconnect(conn);
     }
-    m_figureConnections.clear();
+    d->mFigureConnections.clear();
 
     // 断开所有plot连接
-    for (auto it = m_plotConnections.begin(); it != m_plotConnections.end(); ++it) {
+    for (auto it = d->mPlotConnections.begin(); it != d->mPlotConnections.end(); ++it) {
         for (const QMetaObject::Connection& conn : it.value()) {
             disconnect(conn);
         }
     }
-    m_plotConnections.clear();
+    d->mPlotConnections.clear();
 
     // 断开所有3D chart信号连接
-    for (auto it = m_plot3DConnections.constBegin(); it != m_plot3DConnections.constEnd(); ++it) {
+    for (auto it = d->mPlot3DConnections.constBegin(); it != d->mPlot3DConnections.constEnd(); ++it) {
         const QList< QMetaObject::Connection >& conns = it.value();
         for (const QMetaObject::Connection& conn : conns) {
             disconnect(conn);
         }
     }
-    m_plot3DConnections.clear();
+    d->mPlot3DConnections.clear();
 }
 
+/**
+ * @brief 构建树模型
+ *
+ * 清空模型后重新填充所有 2D 和 3D chart 的树节点
+ */
 void DAFigureTreeModel::setupModel()
 {
+    DA_D(d);
     clear();
     // 设置三列表头
     setHorizontalHeaderLabels(QStringList() << tr("element")   // cn:绘图元素
                                             << tr("visible")   // cn:可见性
                                             << tr("property")  // cn:属性
     );
-    m_plotItems.clear();
-    m_plotItemItems.clear();
-    m_plot3DItems.clear();
-    m_plot3DItemItems.clear();
+    d->mPlotItems.clear();
+    d->mPlotItemItems.clear();
+    d->mPlot3DItems.clear();
+    d->mPlot3DItemItems.clear();
 
-    if (!m_figure)
+    if (!d->mFigure)
         return;
 
     QStandardItem* rootItem = invisibleRootItem();
 
     // 遍历 2D chart（现有逻辑不变）
-    const QList< QwtPlot* > plots = m_figure->allAxes();
+    const QList< QwtPlot* > plots = d->mFigure->allAxes();
     for (QwtPlot* plot : plots) {
         addPlotToModel(plot, rootItem);
     }
 
     // 遍历 3D chart
-    if (m_figureWidget) {
-        const QList< DAChart3DWidget* > charts3D = m_figureWidget->get3DCharts();
+    if (d->mFigureWidget) {
+        const QList< DAChart3DWidget* > charts3D = d->mFigureWidget->get3DCharts();
         for (DAChart3DWidget* chart3D : charts3D) {
             add3DChartToModel(chart3D, rootItem);
         }
         // 连接 DAFigureWidget 的 3D chart 增删信号
-        m_figureConnections << connect(m_figureWidget.data(), &DAFigureWidget::chart3DAdded,
+        d->mFigureConnections << connect(d->mFigureWidget.data(), &DAFigureWidget::chart3DAdded,
                                        this, &DAFigureTreeModel::on3DChartAdded);
-        m_figureConnections << connect(m_figureWidget.data(), &DAFigureWidget::chart3DRemoved,
+        d->mFigureConnections << connect(d->mFigureWidget.data(), &DAFigureWidget::chart3DRemoved,
                                        this, &DAFigureTreeModel::on3DChartRemoved);
     }
 }
 
+/**
+ * @brief 将 2D 绘图添加到树模型
+ * @param plot QwtPlot 指针
+ * @param parentItem 父节点
+ */
 void DAFigureTreeModel::addPlotToModel(QwtPlot* plot, QStandardItem* parentItem)
 {
-    if (!plot || m_plotItems.contains(plot)) {
+    DA_D(d);
+    if (!plot || d->mPlotItems.contains(plot)) {
         return;
     }
 
@@ -190,8 +258,14 @@ void DAFigureTreeModel::addPlotToModel(QwtPlot* plot, QStandardItem* parentItem)
     }
 }
 
+/**
+ * @brief 添加图层节点到树模型
+ * @param plot QwtPlot 指针
+ * @param parentItem 父节点
+ */
 void DAFigureTreeModel::addLayerToModel(QwtPlot* plot, QStandardItem* parentItem)
 {
+    DA_D(d);
     if (!plot) {
         return;
     }
@@ -209,10 +283,15 @@ void DAFigureTreeModel::addLayerToModel(QwtPlot* plot, QStandardItem* parentItem
     // 连接plot的信号
     QList< QMetaObject::Connection > plotConnections;
     plotConnections << connect(plot, &QwtPlot::itemAttached, this, &DAFigureTreeModel::onItemAttached);
-    m_plotConnections[ plot ] = plotConnections;
-    m_plotItems[ plot ]       = layerItem;
+    d->mPlotConnections[ plot ] = plotConnections;
+    d->mPlotItems[ plot ]       = layerItem;
 }
 
+/**
+ * @brief 添加坐标轴文件夹节点到图层
+ * @param plot QwtPlot 指针
+ * @param layerItem 图层节点
+ */
 void DAFigureTreeModel::addAxesToLayer(QwtPlot* plot, QStandardItem* layerItem)
 {
     static QIcon s_axes_icon  = QIcon(":/DAFigure/icon/axes.svg");
@@ -234,6 +313,11 @@ void DAFigureTreeModel::addAxesToLayer(QwtPlot* plot, QStandardItem* layerItem)
     }
 }
 
+/**
+ * @brief 添加图元文件夹节点及所有图元到图层
+ * @param plot QwtPlot 指针
+ * @param layerItem 图层节点
+ */
 void DAFigureTreeModel::addPlotItemsToLayer(QwtPlot* plot, QStandardItem* layerItem)
 {
     QStandardItem* itemsFolder = new QStandardItem(tr("plot item"));  // cn:图元
@@ -259,21 +343,28 @@ void DAFigureTreeModel::addPlotItemsToLayer(QwtPlot* plot, QStandardItem* layerI
  */
 void DAFigureTreeModel::addPlotItem(QwtPlotItem* item, QStandardItem* parentItem)
 {
+    DA_D(d);
     QStandardItem* itemNode = new DAStandardItemPlotItem(item, DAStandardItemPlotItem::PlotItemText);
     // 可见性列 - 图元节点需要可见性控制
     QStandardItem* itemVisibilityItem = new DAStandardItemPlotItem(item, DAStandardItemPlotItem::PlotItemVisible);
     // 颜色列 - 图元节点需要颜色显示
     QStandardItem* itemColorItem = new DAStandardItemPlotItem(item, DAStandardItemPlotItem::PlotItemColor);
     parentItem->appendRow(QList< QStandardItem* >() << itemNode << itemVisibilityItem << itemColorItem);
-    m_plotItemItems[ item ] = itemNode;
+    d->mPlotItemItems[ item ] = itemNode;
 }
 
+/**
+ * @brief 从树中移除图元节点
+ * @param item QwtPlotItem 指针
+ * @param parentItem 父节点
+ */
 void DAFigureTreeModel::removePlotItem(QwtPlotItem* item, QStandardItem* parentItem)
 {
-    QStandardItem* itemNode = m_plotItemItems.value(item);
+    DA_D(d);
+    QStandardItem* itemNode = d->mPlotItemItems.value(item);
     if (itemNode) {
         parentItem->removeRow(itemNode->row());
-        m_plotItemItems.remove(item);
+        d->mPlotItemItems.remove(item);
     }
 }
 
@@ -290,16 +381,31 @@ QString DAFigureTreeModel::generatePlotTitleText(QwtPlot* plot) const
     return DAChartUtil::plotTitle(plot, figure());
 }
 
+/**
+ * @brief 生成图元的显示名称
+ * @param item QwtPlotItem 指针
+ * @return 图元名称字符串
+ */
 QString DAFigureTreeModel::generatePlotItemName(QwtPlotItem* item) const
 {
     return DAChartUtil::plotItemName(item);
 }
 
+/**
+ * @brief 生成图元的图标
+ * @param item QwtPlotItem 指针
+ * @return 图标
+ */
 QIcon DAFigureTreeModel::generatePlotItemIcon(QwtPlotItem* item) const
 {
     return DAChartUtil::plotItemIcon(item);
 }
 
+/**
+ * @brief 生成画刷的图标
+ * @param b 画刷
+ * @return 图标
+ */
 QIcon DAFigureTreeModel::generateBrushIcon(const QBrush& b) const
 {
     QPixmap pixmap(22, 22);
@@ -308,30 +414,52 @@ QIcon DAFigureTreeModel::generateBrushIcon(const QBrush& b) const
     return QIcon(pixmap);
 }
 
+/**
+ * @brief 坐标轴添加信号处理
+ * @param plot 新增坐标轴所在的 QwtPlot 指针
+ */
 void DAFigureTreeModel::onAxesAdded(QwtPlot* plot)
 {
-    if (plot && !m_plotItems.contains(plot)) {
+    DA_D(d);
+    if (plot && !d->mPlotItems.contains(plot)) {
         addPlotToModel(plot, invisibleRootItem());
     }
 }
 
+/**
+ * @brief 坐标轴移除信号处理
+ * @param plot 被移除坐标轴所在的 QwtPlot 指针
+ */
 void DAFigureTreeModel::onAxesRemoved(QwtPlot* plot)
 {
     removePlotFromModel(plot);
 }
 
+/**
+ * @brief figure 清空信号处理
+ */
 void DAFigureTreeModel::onFigureCleared()
 {
     setupModel();  // 完全重建
 }
 
+/**
+ * @brief 当前坐标轴变化信号处理
+ * @param plot 当前选中的 QwtPlot 指针
+ */
 void DAFigureTreeModel::onCurrentAxesChanged(QwtPlot* plot)
 {
     updateAxesPropertyItem();
 }
 
+/**
+ * @brief 图元挂载/卸载信号处理
+ * @param item QwtPlotItem 指针
+ * @param on true=挂载，false=卸载
+ */
 void DAFigureTreeModel::onItemAttached(QwtPlotItem* item, bool on)
 {
+    DA_D(d);
     QwtPlot* plot = qobject_cast< QwtPlot* >(sender());
     if (!plot) {
         return;
@@ -348,7 +476,7 @@ void DAFigureTreeModel::onItemAttached(QwtPlotItem* item, bool on)
     }
 
     if (on) {
-        if (!m_plotItemItems.contains(item)) {
+        if (!d->mPlotItemItems.contains(item)) {
             addPlotItem(item, itemsFolder);
         }
     } else {
@@ -357,50 +485,62 @@ void DAFigureTreeModel::onItemAttached(QwtPlotItem* item, bool on)
     Q_EMIT chartItemAttached(item, on);
 }
 
+/**
+ * @brief 从树模型中移除绘图节点
+ *
+ * 断开该 plot 的所有信号连接，清理相关图元记录，移除寄生绘图记录，
+ * 最后从树中删除对应节点
+ * @param plot 要移除的 QwtPlot 指针
+ */
 void DAFigureTreeModel::removePlotFromModel(QwtPlot* plot)
 {
-    QStandardItem* plotItem = m_plotItems.value(plot);
+    DA_D(d);
+    QStandardItem* plotItem = d->mPlotItems.value(plot);
     if (plotItem) {
         // 断开该plot的所有连接
-        if (m_plotConnections.contains(plot)) {
-            const auto& connects = m_plotConnections[ plot ];
+        if (d->mPlotConnections.contains(plot)) {
+            const auto& connects = d->mPlotConnections[ plot ];
             for (const QMetaObject::Connection& conn : connects) {
                 disconnect(conn);
             }
-            m_plotConnections.remove(plot);
+            d->mPlotConnections.remove(plot);
         }
 
         // 移除所有相关的图元记录
         const QwtPlotItemList& items = plot->itemList();
         for (QwtPlotItem* item : items) {
-            m_plotItemItems.remove(item);
+            d->mPlotItemItems.remove(item);
         }
 
         // 移除寄生绘图的记录和连接
         if (plot->isHostPlot()) {
             const QList< QwtPlot* > parasites = plot->parasitePlots();
             for (QwtPlot* parasite : parasites) {
-                m_plotItems.remove(parasite);
+                d->mPlotItems.remove(parasite);
                 const QwtPlotItemList& parasiteItems = parasite->itemList();
                 for (QwtPlotItem* item : parasiteItems) {
-                    m_plotItemItems.remove(item);
+                    d->mPlotItemItems.remove(item);
                 }
 
                 // 断开寄生绘图的连接
-                if (m_plotConnections.contains(parasite)) {
-                    for (const QMetaObject::Connection& conn : std::as_const(m_plotConnections[ parasite ])) {
+                if (d->mPlotConnections.contains(parasite)) {
+                    for (const QMetaObject::Connection& conn : std::as_const(d->mPlotConnections[ parasite ])) {
                         disconnect(conn);
                     }
-                    m_plotConnections.remove(parasite);
+                    d->mPlotConnections.remove(parasite);
                 }
             }
         }
 
         invisibleRootItem()->removeRow(plotItem->row());
-        m_plotItems.remove(plot);
+        d->mPlotItems.remove(plot);
     }
 }
 
+/**
+ * @brief 创建空白的不可编辑 Item
+ * @return 新建的 QStandardItem 指针
+ */
 QStandardItem* DAFigureTreeModel::createEmptyItem() const
 {
     QStandardItem* item = new QStandardItem();
@@ -408,15 +548,23 @@ QStandardItem* DAFigureTreeModel::createEmptyItem() const
     return item;
 }
 
+/**
+ * @brief 创建坐标轴属性列 Item
+ *
+ * 如果该 plot 是当前坐标轴，则设置选中图标
+ * @param plot QwtPlot 指针
+ * @return 新建的 QStandardItem 指针
+ */
 QStandardItem* DAFigureTreeModel::createAxesPropertyItem(QwtPlot* plot) const
 {
+    DA_DC(d);
     QStandardItem* item = new QStandardItem();
     item->setEditable(false);
-    if (!m_figure) {
+    if (!d->mFigure) {
         return item;
     }
     static QIcon iconSelectedCurrentChart = QIcon(":/DAFigure/icon/select-current-chart.svg");
-    if (m_figure->currentAxes() == plot) {
+    if (d->mFigure->currentAxes() == plot) {
         item->setIcon(iconSelectedCurrentChart);
     }
     // 这里把绘图的指针存入
@@ -429,6 +577,7 @@ QStandardItem* DAFigureTreeModel::createAxesPropertyItem(QwtPlot* plot) const
  */
 void DAFigureTreeModel::updateAxesPropertyItem()
 {
+    DA_D(d);
     // 遍历一级节点的第三列
     const int cnt                         = rowCount();
     static QIcon iconSelectedCurrentChart = QIcon(":/DAFigure/icon/select-current-chart.svg");
@@ -441,7 +590,7 @@ void DAFigureTreeModel::updateAxesPropertyItem()
         if (!plot) {
             continue;
         }
-        if (plot == m_figure->currentAxes()) {
+        if (plot == d->mFigure->currentAxes()) {
             if (plotPropertyItem->icon().isNull()) {
                 plotPropertyItem->setIcon(iconSelectedCurrentChart);
             }
@@ -453,36 +602,71 @@ void DAFigureTreeModel::updateAxesPropertyItem()
     }
 }
 
+/**
+ * @brief 从 QStandardItem 获取关联的 QwtPlot 指针
+ * @param item 树节点
+ * @return QwtPlot 指针，未关联时为 nullptr
+ */
 QwtPlot* DAFigureTreeModel::plotFromItem(const QStandardItem* item) const
 {
     return pointerFromItem< QwtPlot >(item, RolePlot);
 }
 
+/**
+ * @brief 从 QModelIndex 获取关联的 QwtPlot 指针
+ * @param index 模型索引
+ * @return QwtPlot 指针，未关联时为 nullptr
+ */
 QwtPlot* DAFigureTreeModel::plotFromIndex(const QModelIndex& index) const
 {
     return pointerFromIndex< QwtPlot >(index, RolePlot);
 }
 
+/**
+ * @brief 从 QStandardItem 获取关联的 QwtScaleWidget 指针
+ * @param item 树节点
+ * @return QwtScaleWidget 指针，未关联时为 nullptr
+ */
 QwtScaleWidget* DAFigureTreeModel::scaleFromItem(const QStandardItem* item) const
 {
     return pointerFromItem< QwtScaleWidget >(item, RoleScale);
 }
 
+/**
+ * @brief 从 QModelIndex 获取关联的 QwtScaleWidget 指针
+ * @param index 模型索引
+ * @return QwtScaleWidget 指针，未关联时为 nullptr
+ */
 QwtScaleWidget* DAFigureTreeModel::scaleFromIndex(const QModelIndex& index) const
 {
     return pointerFromIndex< QwtScaleWidget >(index, RoleScale);
 }
 
+/**
+ * @brief 从 QStandardItem 获取关联的 QwtPlotItem 指针
+ * @param item 树节点
+ * @return QwtPlotItem 指针，未关联时为 nullptr
+ */
 QwtPlotItem* DAFigureTreeModel::plotItemFromItem(const QStandardItem* item) const
 {
     return pointerFromItem< QwtPlotItem >(item, RolePlotItem);
 }
 
+/**
+ * @brief 从 QModelIndex 获取关联的 QwtPlotItem 指针
+ * @param index 模型索引
+ * @return QwtPlotItem 指针，未关联时为 nullptr
+ */
 QwtPlotItem* DAFigureTreeModel::plotItemFromIndex(const QModelIndex& index) const
 {
     return pointerFromIndex< QwtPlotItem >(index, RolePlotItem);
 }
 
+/**
+ * @brief 从 QStandardItem 获取关联的坐标轴 ID
+ * @param item 树节点
+ * @return 坐标轴 ID，未关联时返回 QwtAxis::AxisPositions
+ */
 QwtAxisId DAFigureTreeModel::axisIdFromItem(const QStandardItem* item) const
 {
     if (!item) {
@@ -495,6 +679,11 @@ QwtAxisId DAFigureTreeModel::axisIdFromItem(const QStandardItem* item) const
     return v.toInt();
 }
 
+/**
+ * @brief 从 QModelIndex 获取关联的坐标轴 ID
+ * @param index 模型索引
+ * @return 坐标轴 ID，未关联时返回 QwtAxis::AxisPositions
+ */
 QwtAxisId DAFigureTreeModel::axisIdFromItem(const QModelIndex& index) const
 {
     if (!index.isValid()) {
@@ -508,11 +697,19 @@ QwtAxisId DAFigureTreeModel::axisIdFromItem(const QModelIndex& index) const
     return axisIdFromItem(item);
 }
 
+/**
+ * @brief 刷新模型，重建整个树
+ */
 void DAFigureTreeModel::refresh()
 {
     setupModel();
 }
 
+/**
+ * @brief 获取树节点的类型
+ * @param item 树节点
+ * @return 节点类型枚举值
+ */
 DAFigureTreeModel::NodeType DAFigureTreeModel::itemType(QStandardItem* item) const
 {
     if (!item) {
@@ -525,6 +722,13 @@ DAFigureTreeModel::NodeType DAFigureTreeModel::itemType(QStandardItem* item) con
     return static_cast< NodeType >(v.toInt());
 }
 
+/**
+ * @brief 返回指定模型索引的 ItemFlags
+ *
+ * 根据 2D/3D 节点类型设置拖拽和接收拖放标志
+ * @param index 模型索引
+ * @return ItemFlags
+ */
 Qt::ItemFlags DAFigureTreeModel::flags(const QModelIndex& index) const
 {
     Qt::ItemFlags f = QStandardItemModel::flags(index);
@@ -560,20 +764,38 @@ Qt::ItemFlags DAFigureTreeModel::flags(const QModelIndex& index) const
     return f;
 }
 
+/**
+ * @brief 根据 QwtPlotItem 获取对应的模型索引
+ * @param item QwtPlotItem 指针
+ * @return 模型索引，未找到时返回无效索引
+ */
 QModelIndex DAFigureTreeModel::indexFromPlotItem(QwtPlotItem* item) const
 {
-    QStandardItem* stdItem = m_plotItemItems.value(item, nullptr);
+    DA_DC(d);
+    QStandardItem* stdItem = d->mPlotItemItems.value(item, nullptr);
     if (!stdItem) {
         return QModelIndex();
     }
     return indexFromItem(stdItem);
 }
 
+/**
+ * @brief 查找 plot 对应的树节点
+ * @param plot QwtPlot 指针
+ * @return 树节点指针，未找到返回 nullptr
+ */
 QStandardItem* DAFigureTreeModel::findPlotItem(QwtPlot* plot) const
 {
-    return m_plotItems.value(plot, nullptr);
+    DA_DC(d);
+    return d->mPlotItems.value(plot, nullptr);
 }
 
+/**
+ * @brief 查找 plot 节点下的图元文件夹节点
+ * @param plotItem 绘图节点
+ * @param plot QwtPlot 指针
+ * @return 图元文件夹节点指针，未找到返回 nullptr
+ */
 QStandardItem* DAFigureTreeModel::findItemsFolderForPlot(QStandardItem* plotItem, QwtPlot* plot) const
 {
     // plotItem 下面挂两个文件夹，一个坐标轴，一个item
@@ -595,10 +817,11 @@ QStandardItem* DAFigureTreeModel::findItemsFolderForPlot(QStandardItem* plotItem
  */
 void DAFigureTreeModel::notifyPlotItemVisibilityChanged(QwtPlotItem* item)
 {
+    DA_D(d);
     if (!item) {
         return;
     }
-    QStandardItem* itemNode = m_plotItemItems.value(item, nullptr);
+    QStandardItem* itemNode = d->mPlotItemItems.value(item, nullptr);
     if (!itemNode || !itemNode->parent()) {
         return;
     }
@@ -617,10 +840,11 @@ void DAFigureTreeModel::notifyPlotItemVisibilityChanged(QwtPlotItem* item)
  */
 void DAFigureTreeModel::notifyAxisVisibilityChanged(QwtPlot* plot, QwtAxisId axisId)
 {
+    DA_D(d);
     if (!plot) {
         return;
     }
-    QStandardItem* layerItem = m_plotItems.value(plot, nullptr);
+    QStandardItem* layerItem = d->mPlotItems.value(plot, nullptr);
     if (!layerItem) {
         return;
     }
@@ -650,10 +874,11 @@ void DAFigureTreeModel::notifyAxisVisibilityChanged(QwtPlot* plot, QwtAxisId axi
  */
 void DAFigureTreeModel::notifyPlotItemTextChanged(QwtPlotItem* item)
 {
+    DA_D(d);
     if (!item) {
         return;
     }
-    QStandardItem* itemNode = m_plotItemItems.value(item, nullptr);
+    QStandardItem* itemNode = d->mPlotItemItems.value(item, nullptr);
     if (!itemNode || !itemNode->parent()) {
         return;
     }
@@ -673,10 +898,11 @@ void DAFigureTreeModel::notifyPlotItemTextChanged(QwtPlotItem* item)
  */
 void DAFigureTreeModel::notifyAxisTextChanged(QwtPlot* plot, QwtAxisId axisId)
 {
+    DA_D(d);
     if (!plot) {
         return;
     }
-    QStandardItem* layerItem = m_plotItems.value(plot, nullptr);
+    QStandardItem* layerItem = d->mPlotItems.value(plot, nullptr);
     if (!layerItem) {
         return;
     }
@@ -733,7 +959,8 @@ void DAFigureTreeModel::notifyPlotFolderTextChanged(QwtPlot* plot)
  */
 void DAFigureTreeModel::add3DChartToModel(DAChart3DWidget* chart, QStandardItem* parentItem)
 {
-    if (!chart || m_plot3DItems.contains(chart)) {
+    DA_D(d);
+    if (!chart || d->mPlot3DItems.contains(chart)) {
         return;
     }
 
@@ -765,6 +992,7 @@ void DAFigureTreeModel::add3DChartToModel(DAChart3DWidget* chart, QStandardItem*
  */
 void DAFigureTreeModel::add3DLayerToModel(DAChart3DWidget* chart, QStandardItem* parentItem)
 {
+    DA_D(d);
     if (!chart) {
         return;
     }
@@ -785,8 +1013,8 @@ void DAFigureTreeModel::add3DLayerToModel(DAChart3DWidget* chart, QStandardItem*
     QList< QMetaObject::Connection > conns;
     conns << connect(chart, &DAChart3DWidget::plot3DItemAttached,
                      this, &DAFigureTreeModel::on3DItemAttached);
-    m_plot3DConnections[ chart ] = conns;
-    m_plot3DItems[ chart ]       = layerItem;
+    d->mPlot3DConnections[ chart ] = conns;
+    d->mPlot3DItems[ chart ]       = layerItem;
 }
 
 /**
@@ -859,11 +1087,12 @@ void DAFigureTreeModel::add3DPlotItemsToLayer(DAChart3DWidget* chart, QStandardI
  */
 void DAFigureTreeModel::add3DPlotItem(Qwt3DPlotItem* item, QStandardItem* parentItem)
 {
+    DA_D(d);
     QStandardItem* itemNode = new DAStandardItemPlot3DItem(item, DAStandardItemPlot3DItem::Plot3DItemText);
     QStandardItem* itemVisibleItem = new DAStandardItemPlot3DItem(item, DAStandardItemPlot3DItem::Plot3DItemVisible);
     QStandardItem* itemColorItem   = new DAStandardItemPlot3DItem(item, DAStandardItemPlot3DItem::Plot3DItemColor);
     parentItem->appendRow(QList< QStandardItem* >() << itemNode << itemVisibleItem << itemColorItem);
-    m_plot3DItemItems[ item ] = itemNode;
+    d->mPlot3DItemItems[ item ] = itemNode;
 }
 
 /**
@@ -873,10 +1102,11 @@ void DAFigureTreeModel::add3DPlotItem(Qwt3DPlotItem* item, QStandardItem* parent
  */
 void DAFigureTreeModel::remove3DPlotItem(Qwt3DPlotItem* item, QStandardItem* parentItem)
 {
-    QStandardItem* itemNode = m_plot3DItemItems.value(item);
+    DA_D(d);
+    QStandardItem* itemNode = d->mPlot3DItemItems.value(item);
     if (itemNode) {
         parentItem->removeRow(itemNode->row());
-        m_plot3DItemItems.remove(item);
+        d->mPlot3DItemItems.remove(item);
     }
 }
 
@@ -887,6 +1117,7 @@ void DAFigureTreeModel::remove3DPlotItem(Qwt3DPlotItem* item, QStandardItem* par
  */
 void DAFigureTreeModel::on3DItemAttached(Qwt3DPlotItem* item, bool on)
 {
+    DA_D(d);
     DAChart3DWidget* chart = qobject_cast< DAChart3DWidget* >(sender());
     if (!chart || !item) {
         return;
@@ -903,7 +1134,7 @@ void DAFigureTreeModel::on3DItemAttached(Qwt3DPlotItem* item, bool on)
     }
 
     if (on) {
-        if (!m_plot3DItemItems.contains(item)) {
+        if (!d->mPlot3DItemItems.contains(item)) {
             add3DPlotItem(item, itemsFolder);
         }
     } else {
@@ -918,7 +1149,8 @@ void DAFigureTreeModel::on3DItemAttached(Qwt3DPlotItem* item, bool on)
  */
 void DAFigureTreeModel::on3DChartAdded(DA::DAChart3DWidget* chart)
 {
-    if (chart && !m_plot3DItems.contains(chart)) {
+    DA_D(d);
+    if (chart && !d->mPlot3DItems.contains(chart)) {
         add3DChartToModel(chart, invisibleRootItem());
     }
 }
@@ -938,25 +1170,26 @@ void DAFigureTreeModel::on3DChartRemoved(DA::DAChart3DWidget* chart)
  */
 void DAFigureTreeModel::remove3DChartFromModel(DAChart3DWidget* chart)
 {
-    // m_plot3DItems 存储的是 layer 节点（NodeTypePlot3D），不是 folder 节点
-    QStandardItem* layerItem = m_plot3DItems.value(chart, nullptr);
+    DA_D(d);
+    // mPlot3DItems 存储的是 layer 节点（NodeTypePlot3D），不是 folder 节点
+    QStandardItem* layerItem = d->mPlot3DItems.value(chart, nullptr);
     if (!layerItem) {
         return;
     }
 
     // 断开该 3D chart 的所有连接
-    if (m_plot3DConnections.contains(chart)) {
-        const auto& conns = m_plot3DConnections[ chart ];
+    if (d->mPlot3DConnections.contains(chart)) {
+        const auto& conns = d->mPlot3DConnections[ chart ];
         for (const QMetaObject::Connection& conn : conns) {
             disconnect(conn);
         }
-        m_plot3DConnections.remove(chart);
+        d->mPlot3DConnections.remove(chart);
     }
 
     // 移除所有相关的 3D plot item 记录
     const QList< Qwt3DPlotItem* >& items = chart->itemList();
     for (Qwt3DPlotItem* item : items) {
-        m_plot3DItemItems.remove(item);
+        d->mPlot3DItemItems.remove(item);
     }
 
     // 从树中移除整个 3D chart folder 节点（包含 layer 及其所有子节点）
@@ -974,7 +1207,7 @@ void DAFigureTreeModel::remove3DChartFromModel(DAChart3DWidget* chart)
         // 防御性：layer 节点本身是顶层节点（不应发生）
         invisibleRootItem()->removeRow(layerItem->row());
     }
-    m_plot3DItems.remove(chart);
+    d->mPlot3DItems.remove(chart);
 }
 
 /**
@@ -984,7 +1217,8 @@ void DAFigureTreeModel::remove3DChartFromModel(DAChart3DWidget* chart)
  */
 QStandardItem* DAFigureTreeModel::find3DChartItem(DAChart3DWidget* chart) const
 {
-    return m_plot3DItems.value(chart, nullptr);
+    DA_DC(d);
+    return d->mPlot3DItems.value(chart, nullptr);
 }
 
 /**
@@ -1059,10 +1293,11 @@ QIcon DAFigureTreeModel::generate3DPlotItemIcon(Qwt3DPlotItem* item) const
  */
 void DAFigureTreeModel::notify3DPlotItemVisibilityChanged(Qwt3DPlotItem* item)
 {
+    DA_D(d);
     if (!item) {
         return;
     }
-    QStandardItem* itemNode = m_plot3DItemItems.value(item, nullptr);
+    QStandardItem* itemNode = d->mPlot3DItemItems.value(item, nullptr);
     if (!itemNode || !itemNode->parent()) {
         return;
     }
@@ -1080,10 +1315,11 @@ void DAFigureTreeModel::notify3DPlotItemVisibilityChanged(Qwt3DPlotItem* item)
  */
 void DAFigureTreeModel::notify3DPlotItemTextChanged(Qwt3DPlotItem* item)
 {
+    DA_D(d);
     if (!item) {
         return;
     }
-    QStandardItem* itemNode = m_plot3DItemItems.value(item, nullptr);
+    QStandardItem* itemNode = d->mPlot3DItemItems.value(item, nullptr);
     if (!itemNode || !itemNode->parent()) {
         return;
     }
@@ -1101,14 +1337,15 @@ void DAFigureTreeModel::notify3DPlotItemTextChanged(Qwt3DPlotItem* item)
  */
 void DAFigureTreeModel::notify3DPlot3DTextChanged(DAChart3DWidget* chart)
 {
+    DA_D(d);
     if (!chart) {
         return;
     }
-    QStandardItem* layerItem = m_plot3DItems.value(chart, nullptr);
+    QStandardItem* layerItem = d->mPlot3DItems.value(chart, nullptr);
     if (!layerItem) {
         return;
     }
-    // m_plot3DItems 存储的是 layer 节点（NodeTypePlot3D），其 data() 动态查询 chart 标题
+    // mPlot3DItems 存储的是 layer 节点（NodeTypePlot3D），其 data() 动态查询 chart 标题
     QModelIndex idx = indexFromItem(layerItem);
     Q_EMIT dataChanged(idx, idx, { Qt::DisplayRole });
 }
@@ -1122,10 +1359,11 @@ void DAFigureTreeModel::notify3DPlot3DTextChanged(DAChart3DWidget* chart)
  */
 void DAFigureTreeModel::remove3DPlotItemFromTree(Qwt3DPlotItem* item)
 {
+    DA_D(d);
     if (!item) {
         return;
     }
-    QStandardItem* itemNode = m_plot3DItemItems.value(item, nullptr);
+    QStandardItem* itemNode = d->mPlot3DItemItems.value(item, nullptr);
     if (!itemNode) {
         return;
     }
@@ -1133,7 +1371,7 @@ void DAFigureTreeModel::remove3DPlotItemFromTree(Qwt3DPlotItem* item)
     if (parentItem) {
         parentItem->removeRow(itemNode->row());
     }
-    m_plot3DItemItems.remove(item);
+    d->mPlot3DItemItems.remove(item);
 }
 
 /**
@@ -1183,7 +1421,8 @@ Qwt3DPlotItem* DAFigureTreeModel::plot3DItemFromIndex(const QModelIndex& index) 
  */
 QModelIndex DAFigureTreeModel::indexFrom3DPlotItem(Qwt3DPlotItem* item) const
 {
-    QStandardItem* stdItem = m_plot3DItemItems.value(item, nullptr);
+    DA_DC(d);
+    QStandardItem* stdItem = d->mPlot3DItemItems.value(item, nullptr);
     if (!stdItem) {
         return QModelIndex();
     }

@@ -1,4 +1,4 @@
-﻿#include "DAAbstractChartEditor.h"
+#include "DAAbstractChartEditor.h"
 #include <QEvent>
 #include <QMouseEvent>
 #include <QKeyEvent>
@@ -8,42 +8,70 @@
 #include "qwt_scale_map.h"
 namespace DA
 {
-DAAbstractChartEditor::DAAbstractChartEditor(QwtPlot* parent) : QObject(parent), m_isEnable(false)
+
+/**
+ * @brief 构造函数
+ * @param parent 关联的QwtPlot
+ */
+DAAbstractChartEditor::DAAbstractChartEditor(QwtPlot* parent) : QObject(parent), mIsEnable(false)
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DAAbstractChartEditor::~DAAbstractChartEditor()
 {
 }
 
+/**
+ * @brief 获取关联的QwtPlot（const版本）
+ * @return 关联的QwtPlot指针
+ */
 const QwtPlot* DAAbstractChartEditor::plot() const
 {
     return qobject_cast< const QwtPlot* >(parent());
 }
 
+/**
+ * @brief 获取关联的QwtPlot
+ * @return 关联的QwtPlot指针
+ */
 QwtPlot* DAAbstractChartEditor::plot()
 {
     return qobject_cast< QwtPlot* >(parent());
 }
 
+/**
+ * @brief 获取关联的DAChartWidget（const版本）
+ * @return 关联的DAChartWidget指针
+ */
 const DAChartWidget* DAAbstractChartEditor::chart() const
 {
     return qobject_cast< const DAChartWidget* >(plot());
 }
 
+/**
+ * @brief 获取关联的DAChartWidget
+ * @return 关联的DAChartWidget指针
+ */
 DAChartWidget* DAAbstractChartEditor::chart()
 {
     return qobject_cast< DAChartWidget* >(plot());
 }
 
+/**
+ * @brief 设置是否启用编辑器
+ * @param on 是否启用
+ */
 void DAAbstractChartEditor::setEnabled(bool on)
 {
-    if (on == m_isEnable)
+    if (on == mIsEnable)
         return;
 
     QwtPlot* p = plot();
     if (p) {
-        m_isEnable = on;
+        mIsEnable = on;
 
         if (p->canvas()) {
             if (on) {
@@ -55,9 +83,13 @@ void DAAbstractChartEditor::setEnabled(bool on)
     }
 }
 
+/**
+ * @brief 判断编辑器是否启用
+ * @return 如果启用返回true，否则返回false
+ */
 bool DAAbstractChartEditor::isEnabled() const
 {
-    return m_isEnable;
+    return mIsEnable;
 }
 
 /**
@@ -74,14 +106,22 @@ bool DAAbstractChartEditor::cancel()
     return true;
 }
 
+/**
+ * @brief 设置拦截的按键列表
+ * @param keys 按键列表
+ */
 void DAAbstractChartEditor::setBlockKeys(const QList< int >& keys)
 {
-    m_blockKeys = keys;
+    mBlockKeys = keys;
 }
 
+/**
+ * @brief 获取拦截的按键列表
+ * @return 按键列表
+ */
 const QList< int >& DAAbstractChartEditor::getBlockKeys() const
 {
-    return m_blockKeys;
+    return mBlockKeys;
 }
 
 
@@ -101,6 +141,12 @@ QPoint DAAbstractChartEditor::mapPlotPosToCanvasPos(const QPoint& pos) const
     return canvas->mapFromGlobal(gp);
 }
 
+/**
+ * @brief 事件过滤器
+ * @param object 监听的对象
+ * @param event 事件
+ * @return 如果事件被处理返回true，否则返回false
+ */
 bool DAAbstractChartEditor::eventFilter(QObject* object, QEvent* event)
 {
     QwtPlot* plot = qobject_cast< QwtPlot* >(parent());
@@ -137,7 +183,7 @@ bool DAAbstractChartEditor::eventFilter(QObject* object, QEvent* event)
         case QEvent::KeyPress: {
             const QKeyEvent* keyEvent = static_cast< QKeyEvent* >(event);
             if (keyEvent) {
-                if (m_blockKeys.size() > 0 && m_blockKeys.contains(keyEvent->key())) {
+                if (mBlockKeys.size() > 0 && mBlockKeys.contains(keyEvent->key())) {
                     return QObject::eventFilter(object, event);
                 }
                 if (Qt::Key_Escape == keyEvent->key()) {
@@ -165,30 +211,55 @@ bool DAAbstractChartEditor::eventFilter(QObject* object, QEvent* event)
     return QObject::eventFilter(object, event);
 }
 
+/**
+ * @brief 鼠标按下事件处理
+ * @param e 鼠标事件
+ * @return 如果事件被处理返回true，否则返回false
+ */
 bool DAAbstractChartEditor::mousePressEvent(const QMouseEvent* e)
 {
     Q_UNUSED(e);
     return false;
 }
 
+/**
+ * @brief 鼠标移动事件处理
+ * @param e 鼠标事件
+ * @return 如果事件被处理返回true，否则返回false
+ */
 bool DAAbstractChartEditor::mouseMoveEvent(const QMouseEvent* e)
 {
     Q_UNUSED(e);
     return false;
 }
 
+/**
+ * @brief 鼠标释放事件处理
+ * @param e 鼠标事件
+ * @return 如果事件被处理返回true，否则返回false
+ */
 bool DAAbstractChartEditor::mouseReleaseEvent(const QMouseEvent* e)
 {
     Q_UNUSED(e);
     return false;
 }
 
+/**
+ * @brief 键盘按下事件处理
+ * @param e 键盘事件
+ * @return 如果事件被处理返回true，否则返回false
+ */
 bool DAAbstractChartEditor::keyPressEvent(const QKeyEvent* e)
 {
     Q_UNUSED(e);
     return false;
 }
 
+/**
+ * @brief 键盘释放事件处理
+ * @param e 键盘事件
+ * @return 如果事件被处理返回true，否则返回false
+ */
 bool DAAbstractChartEditor::keyReleaseEvent(const QKeyEvent* e)
 {
     Q_UNUSED(e);

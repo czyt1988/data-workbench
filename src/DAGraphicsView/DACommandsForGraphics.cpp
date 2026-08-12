@@ -18,12 +18,22 @@ namespace DA
 //----------------------------------------------------
 // DACommandsForGraphicsItemAdd
 //----------------------------------------------------
+
+/**
+ * @brief 构造函数，添加图元命令
+ * @param item 要添加的图元
+ * @param scene 目标场景
+ * @param parent 父命令
+ */
 DACommandsForGraphicsItemAdd::DACommandsForGraphicsItemAdd(QGraphicsItem* item, QGraphicsScene* scene, QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mScene(scene), mNeedDelete(false)
 {
     setText(QObject::tr("Item Add"));  // cn:添加图元
 }
 
+/**
+ * @brief 析构函数，如果图元已被移除且需要删除则释放内存
+ */
 DACommandsForGraphicsItemAdd::~DACommandsForGraphicsItemAdd()
 {
 	if (mNeedDelete) {
@@ -31,6 +41,9 @@ DACommandsForGraphicsItemAdd::~DACommandsForGraphicsItemAdd()
 	}
 }
 
+/**
+ * @brief 重做：将图元添加到场景中
+ */
 void DACommandsForGraphicsItemAdd::redo()
 {
 	QUndoCommand::redo();
@@ -40,6 +53,9 @@ void DACommandsForGraphicsItemAdd::redo()
 	mNeedDelete = false;
 }
 
+/**
+ * @brief 撤销：从场景中移除图元
+ */
 void DACommandsForGraphicsItemAdd::undo()
 {
 	QUndoCommand::undo();
@@ -50,6 +66,12 @@ void DACommandsForGraphicsItemAdd::undo()
 // DACommandsForGraphicsItemsAdd
 //----------------------------------------------------
 
+/**
+ * @brief 构造函数，添加多个图元命令
+ * @param its 要添加的图元列表
+ * @param scene 目标场景
+ * @param parent 父命令
+ */
 DACommandsForGraphicsItemsAdd::DACommandsForGraphicsItemsAdd(const QList< QGraphicsItem* > its,
                                                              QGraphicsScene* scene,
                                                              QUndoCommand* parent)
@@ -58,6 +80,9 @@ DACommandsForGraphicsItemsAdd::DACommandsForGraphicsItemsAdd(const QList< QGraph
     setText(QObject::tr("Items Add"));  // cn:添加多个图元
 }
 
+/**
+ * @brief 析构函数，如果图元已被移除且需要删除则释放所有图元内存
+ */
 DACommandsForGraphicsItemsAdd::~DACommandsForGraphicsItemsAdd()
 {
 	if (mNeedDelete) {
@@ -67,6 +92,9 @@ DACommandsForGraphicsItemsAdd::~DACommandsForGraphicsItemsAdd()
 	}
 }
 
+/**
+ * @brief 重做：将所有图元添加到场景中
+ */
 void DACommandsForGraphicsItemsAdd::redo()
 {
 	QUndoCommand::redo();
@@ -78,6 +106,9 @@ void DACommandsForGraphicsItemsAdd::redo()
 	mNeedDelete = false;
 }
 
+/**
+ * @brief 撤销：从场景中移除所有图元
+ */
 void DACommandsForGraphicsItemsAdd::undo()
 {
 	QUndoCommand::undo();
@@ -92,12 +123,21 @@ void DACommandsForGraphicsItemsAdd::undo()
 //  DACommandsForGraphicsItemRemove
 //----------------------------------------------------
 
+/**
+ * @brief 构造函数，移除图元命令
+ * @param item 要移除的图元
+ * @param scene 所在场景
+ * @param parent 父命令
+ */
 DACommandsForGraphicsItemRemove::DACommandsForGraphicsItemRemove(QGraphicsItem* item, QGraphicsScene* scene, QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mScene(scene), mNeedDelete(false)
 {
     setText(QObject::tr("Item Remove"));  // cn:移除图元
 }
 
+/**
+ * @brief 析构函数，如果图元需要删除则释放内存
+ */
 DACommandsForGraphicsItemRemove::~DACommandsForGraphicsItemRemove()
 {
 	if (mNeedDelete) {
@@ -105,6 +145,9 @@ DACommandsForGraphicsItemRemove::~DACommandsForGraphicsItemRemove()
 	}
 }
 
+/**
+ * @brief 重做：从场景中移除图元
+ */
 void DACommandsForGraphicsItemRemove::redo()
 {
 	QUndoCommand::redo();
@@ -112,6 +155,9 @@ void DACommandsForGraphicsItemRemove::redo()
 	mNeedDelete = true;
 }
 
+/**
+ * @brief 撤销：将图元重新添加到场景中
+ */
 void DACommandsForGraphicsItemRemove::undo()
 {
 	QUndoCommand::undo();
@@ -122,6 +168,13 @@ void DACommandsForGraphicsItemRemove::undo()
 //----------------------------------------------------
 //  DACommandsForGraphicsItemsRemove
 //----------------------------------------------------
+
+/**
+ * @brief 构造函数，移除多个图元命令
+ * @param its 要移除的图元列表
+ * @param scene 所在场景
+ * @param parent 父命令
+ */
 DACommandsForGraphicsItemsRemove::DACommandsForGraphicsItemsRemove(const QList< QGraphicsItem* > its,
                                                                    QGraphicsScene* scene,
                                                                    QUndoCommand* parent)
@@ -130,6 +183,9 @@ DACommandsForGraphicsItemsRemove::DACommandsForGraphicsItemsRemove(const QList< 
     setText(QObject::tr("Items Remove"));  // cn:移除多个图元
 }
 
+/**
+ * @brief 析构函数，如果图元需要删除则释放所有图元内存
+ */
 DACommandsForGraphicsItemsRemove::~DACommandsForGraphicsItemsRemove()
 {
 	if (mNeedDelete) {
@@ -139,6 +195,9 @@ DACommandsForGraphicsItemsRemove::~DACommandsForGraphicsItemsRemove()
 	}
 }
 
+/**
+ * @brief 重做：从场景中移除所有图元
+ */
 void DACommandsForGraphicsItemsRemove::redo()
 {
 	QUndoCommand::redo();
@@ -150,6 +209,9 @@ void DACommandsForGraphicsItemsRemove::redo()
 	mNeedDelete = true;
 }
 
+/**
+ * @brief 撤销：将所有图元重新添加到场景中
+ */
 void DACommandsForGraphicsItemsRemove::undo()
 {
 	QUndoCommand::undo();
@@ -182,6 +244,9 @@ DACommandsForGraphicsItemsMoved::DACommandsForGraphicsItemsMoved(const QList< QG
     setText(QObject::tr("Items Move"));  // cn:移动多个图元
 }
 
+/**
+ * @brief 重做：将所有图元移动到最终位置
+ */
 void DACommandsForGraphicsItemsMoved::redo()
 {
 	QUndoCommand::redo();
@@ -194,6 +259,9 @@ void DACommandsForGraphicsItemsMoved::redo()
 	}
 }
 
+/**
+ * @brief 撤销：将所有图元恢复到起始位置
+ */
 void DACommandsForGraphicsItemsMoved::undo()
 {
 	QUndoCommand::undo();
@@ -202,11 +270,20 @@ void DACommandsForGraphicsItemsMoved::undo()
 	}
 }
 
+/**
+ * @brief 返回命令的唯一标识ID，用于命令合并判断
+ * @return 命令ID
+ */
 int DACommandsForGraphicsItemsMoved::id() const
 {
 	return CmdID_ItemsMove;
 }
 
+/**
+ * @brief 尝试与另一个移动命令合并
+ * @param command 待合并的命令
+ * @return 合并成功返回true，否则返回false
+ */
 bool DACommandsForGraphicsItemsMoved::mergeWith(const QUndoCommand* command)
 {
 	// 说明都是移动，看看是否能合并
@@ -230,16 +307,28 @@ bool DACommandsForGraphicsItemsMoved::mergeWith(const QUndoCommand* command)
 	return true;
 }
 
+/**
+ * @brief 获取参与移动的图元列表
+ * @return 图元列表的常引用
+ */
 const QList< QGraphicsItem* >& DACommandsForGraphicsItemsMoved::getItems() const
 {
 	return mItems;
 }
 
+/**
+ * @brief 获取图元的起始位置列表
+ * @return 起始位置列表的常引用
+ */
 const QList< QPointF >& DACommandsForGraphicsItemsMoved::getStartsPos() const
 {
 	return mStartsPos;
 }
 
+/**
+ * @brief 获取图元的最终位置列表
+ * @return 最终位置列表的常引用
+ */
 const QList< QPointF >& DACommandsForGraphicsItemsMoved::getEndsPos() const
 {
 	return mEndsPos;
@@ -249,6 +338,14 @@ const QList< QPointF >& DACommandsForGraphicsItemsMoved::getEndsPos() const
 // DACommandsForGraphicsItemMoved
 //==============================================================
 
+/**
+ * @brief 构造函数，移动单个图元命令
+ * @param item 要移动的图元
+ * @param start 起始位置
+ * @param end 最终位置
+ * @param skipfirst 是否跳过第一次执行
+ * @param parent 父命令
+ */
 DACommandsForGraphicsItemMoved::DACommandsForGraphicsItemMoved(QGraphicsItem* item,
                                                                const QPointF& start,
                                                                const QPointF& end,
@@ -264,6 +361,9 @@ DACommandsForGraphicsItemMoved::DACommandsForGraphicsItemMoved(QGraphicsItem* it
     setText(QObject::tr("Item Move"));  // cn:移动图元
 }
 
+/**
+ * @brief 重做：将图元移动到最终位置
+ */
 void DACommandsForGraphicsItemMoved::redo()
 {
 	QUndoCommand::redo();
@@ -276,6 +376,9 @@ void DACommandsForGraphicsItemMoved::redo()
 	}
 }
 
+/**
+ * @brief 撤销：将图元恢复到起始位置
+ */
 void DACommandsForGraphicsItemMoved::undo()
 {
 	if (mItem) {
@@ -283,11 +386,20 @@ void DACommandsForGraphicsItemMoved::undo()
 	}
 }
 
+/**
+ * @brief 返回命令的唯一标识ID，用于命令合并判断
+ * @return 命令ID
+ */
 int DACommandsForGraphicsItemMoved::id() const
 {
 	return CmdID_ItemMove;
 }
 
+/**
+ * @brief 尝试与另一个移动命令合并
+ * @param command 待合并的命令
+ * @return 合并成功返回true，否则返回false
+ */
 bool DACommandsForGraphicsItemMoved::mergeWith(const QUndoCommand* command)
 {
 	const DACommandsForGraphicsItemMoved* other = dynamic_cast< const DACommandsForGraphicsItemMoved* >(command);
@@ -327,15 +439,22 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsRes
                                                                    QUndoCommand* parent)
     : QUndoCommand(parent)
     , mItem(item)
-    , mOldpos(oldpos)
+    , mOldPos(oldpos)
     , mOldSize(oldSize)
     , mNewPosition(newpos)
     , mNewSize(newSize)
-    , mSkipfirst(skipfirst)
+    , mSkipFirst(skipfirst)
 {
     setText(QObject::tr("Item Resize"));  // cn:调整图元尺寸
 }
 
+/**
+ * @brief 构造函数，仅改变尺寸（位置不变）
+ * @param item 目标图元
+ * @param oldSize 旧尺寸
+ * @param newSize 新尺寸
+ * @param parent 父命令
+ */
 DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsResizeableItem* item,
                                                                    const QSizeF& oldSize,
                                                                    const QSizeF& newSize,
@@ -343,14 +462,17 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAGraphicsRes
     : QUndoCommand(parent), mItem(item), mOldSize(oldSize), mNewSize(newSize), mDatetime(QDateTime::currentDateTime())
 {
 	setText(QObject::tr("Item Resize"));  // cn:调整图元尺寸
-	mOldpos = mNewPosition = item->pos();
+	mOldPos = mNewPosition = item->pos();
 }
 
+/**
+ * @brief 重做：将图元设置为新尺寸和新位置
+ */
 void DACommandsForGraphicsItemResized::redo()
 {
 	QUndoCommand::redo();
-	if (mSkipfirst) {
-		mSkipfirst = false;
+	if (mSkipFirst) {
+		mSkipFirst = false;
 		return;
 	}
 	if (mItem) {
@@ -363,6 +485,9 @@ void DACommandsForGraphicsItemResized::redo()
 	}
 }
 
+/**
+ * @brief 撤销：将图元恢复到旧尺寸和旧位置
+ */
 void DACommandsForGraphicsItemResized::undo()
 {
 	QUndoCommand::undo();
@@ -370,17 +495,26 @@ void DACommandsForGraphicsItemResized::undo()
 		if (mOldSize.isValid()) {
 			mItem->setBodySize(mOldSize);
 		}
-		if (!mOldpos.isNull()) {
-			mItem->setPos(mOldpos);
+		if (!mOldPos.isNull()) {
+			mItem->setPos(mOldPos);
 		}
 	}
 }
 
+/**
+ * @brief 返回命令的唯一标识ID，用于命令合并判断
+ * @return 命令ID
+ */
 int DACommandsForGraphicsItemResized::id() const
 {
 	return CmdID_ItemResize;
 }
 
+/**
+ * @brief 尝试与另一个改变尺寸命令合并
+ * @param command 待合并的命令
+ * @return 合并成功返回true，否则返回false
+ */
 bool DACommandsForGraphicsItemResized::mergeWith(const QUndoCommand* command)
 {
 	const DACommandsForGraphicsItemResized* other = dynamic_cast< const DACommandsForGraphicsItemResized* >(command);
@@ -419,6 +553,9 @@ DACommandsForGraphicsItemResizeWidth::DACommandsForGraphicsItemResizeWidth(DAGra
 	mHeight = item->getBodySize().height();
 }
 
+/**
+ * @brief 重做：将图元宽度设置为新宽度
+ */
 void DACommandsForGraphicsItemResizeWidth::redo()
 {
 	if (mItem) {
@@ -426,6 +563,9 @@ void DACommandsForGraphicsItemResizeWidth::redo()
 	}
 }
 
+/**
+ * @brief 撤销：将图元宽度恢复到旧宽度
+ */
 void DACommandsForGraphicsItemResizeWidth::undo()
 {
 	if (mItem) {
@@ -433,11 +573,20 @@ void DACommandsForGraphicsItemResizeWidth::undo()
 	}
 }
 
+/**
+ * @brief 返回命令的唯一标识ID，用于命令合并判断
+ * @return 命令ID
+ */
 int DACommandsForGraphicsItemResizeWidth::id() const
 {
 	return CmdID_ItemResizeWidth;
 }
 
+/**
+ * @brief 尝试与另一个改变宽度命令合并
+ * @param command 待合并的命令
+ * @return 合并成功返回true，否则返回false
+ */
 bool DACommandsForGraphicsItemResizeWidth::mergeWith(const QUndoCommand* command)
 {
 	const DACommandsForGraphicsItemResizeWidth* other = dynamic_cast< const DACommandsForGraphicsItemResizeWidth* >(command);
@@ -456,6 +605,13 @@ bool DACommandsForGraphicsItemResizeWidth::mergeWith(const QUndoCommand* command
 //==============================================================
 // DACommandsForGraphicsItemResizeHeight
 //==============================================================
+/**
+ * @brief 构造函数，仅改变图元高度命令
+ * @param item 目标图元
+ * @param oldHeight 旧高度
+ * @param newHeight 新高度
+ * @param parent 父命令
+ */
 DACommandsForGraphicsItemResizeHeight::DACommandsForGraphicsItemResizeHeight(DAGraphicsResizeableItem* item,
                                                                              const qreal& oldHeight,
                                                                              const qreal& newHeight,
@@ -466,6 +622,9 @@ DACommandsForGraphicsItemResizeHeight::DACommandsForGraphicsItemResizeHeight(DAG
 	mWidth = item->getBodySize().width();
 }
 
+/**
+ * @brief 重做：将图元高度设置为新高度
+ */
 void DACommandsForGraphicsItemResizeHeight::redo()
 {
 	if (mItem) {
@@ -473,6 +632,9 @@ void DACommandsForGraphicsItemResizeHeight::redo()
 	}
 }
 
+/**
+ * @brief 撤销：将图元高度恢复到旧高度
+ */
 void DACommandsForGraphicsItemResizeHeight::undo()
 {
 	if (mItem) {
@@ -480,11 +642,20 @@ void DACommandsForGraphicsItemResizeHeight::undo()
 	}
 }
 
+/**
+ * @brief 返回命令的唯一标识ID，用于命令合并判断
+ * @return 命令ID
+ */
 int DACommandsForGraphicsItemResizeHeight::id() const
 {
 	return CmdID_ItemResizeHeight;
 }
 
+/**
+ * @brief 尝试与另一个改变高度命令合并
+ * @param command 待合并的命令
+ * @return 合并成功返回true，否则返回false
+ */
 bool DACommandsForGraphicsItemResizeHeight::mergeWith(const QUndoCommand* command)
 {
 	const DACommandsForGraphicsItemResizeHeight* other =
@@ -504,6 +675,13 @@ bool DACommandsForGraphicsItemResizeHeight::mergeWith(const QUndoCommand* comman
 //==============================================================
 // DACommandsForGraphicsItemRotation
 //==============================================================
+/**
+ * @brief 构造函数，旋转图元命令
+ * @param item 目标图元
+ * @param oldRotation 旧旋转角度
+ * @param newRotation 新旋转角度
+ * @param parent 父命令
+ */
 DACommandsForGraphicsItemRotation::DACommandsForGraphicsItemRotation(DAGraphicsResizeableItem* item,
                                                                      const qreal& oldRotation,
                                                                      const qreal& newRotation,
@@ -517,6 +695,9 @@ DACommandsForGraphicsItemRotation::DACommandsForGraphicsItemRotation(DAGraphicsR
     setText(QObject::tr("Item Rotation"));  // cn:旋转图元
 }
 
+/**
+ * @brief 重做：将图元旋转到新角度
+ */
 void DACommandsForGraphicsItemRotation::redo()
 {
 	if (mItem) {
@@ -524,6 +705,9 @@ void DACommandsForGraphicsItemRotation::redo()
 	}
 }
 
+/**
+ * @brief 撤销：将图元旋转恢复到旧角度
+ */
 void DACommandsForGraphicsItemRotation::undo()
 {
 	if (mItem) {
@@ -531,11 +715,20 @@ void DACommandsForGraphicsItemRotation::undo()
 	}
 }
 
+/**
+ * @brief 返回命令的唯一标识ID，用于命令合并判断
+ * @return 命令ID
+ */
 int DACommandsForGraphicsItemRotation::id() const
 {
 	return CmdID_ItemRotation;
 }
 
+/**
+ * @brief 尝试与另一个旋转命令合并
+ * @param command 待合并的命令
+ * @return 合并成功返回true，否则返回false
+ */
 bool DACommandsForGraphicsItemRotation::mergeWith(const QUndoCommand* command)
 {
 	const DACommandsForGraphicsItemRotation* other = dynamic_cast< const DACommandsForGraphicsItemRotation* >(command);
@@ -556,6 +749,12 @@ bool DACommandsForGraphicsItemRotation::mergeWith(const QUndoCommand* command)
 // DACommandsForGraphicsItemGrouping
 //==============================================================
 
+/**
+ * @brief 构造函数，图元分组命令
+ * @param sc 目标场景
+ * @param groupingitems 待分组的图元列表
+ * @param parent 父命令
+ */
 DACommandsForGraphicsItemGrouping::DACommandsForGraphicsItemGrouping(DAGraphicsScene* sc,
                                                                      const QList< QGraphicsItem* >& groupingitems,
                                                                      QUndoCommand* parent)
@@ -564,6 +763,9 @@ DACommandsForGraphicsItemGrouping::DACommandsForGraphicsItemGrouping(DAGraphicsS
     mWillGroupItems = toSimple(groupingitems);
 }
 
+/**
+ * @brief 析构函数，如果分组项需要删除则释放内存
+ */
 DACommandsForGraphicsItemGrouping::~DACommandsForGraphicsItemGrouping()
 {
 	if (mNeedDelete) {
@@ -571,6 +773,9 @@ DACommandsForGraphicsItemGrouping::~DACommandsForGraphicsItemGrouping()
 	}
 }
 
+/**
+ * @brief 重做：创建分组并将图元添加到分组中
+ */
 void DACommandsForGraphicsItemGrouping::redo()
 {
 	if (!mGroupItem) {
@@ -582,6 +787,9 @@ void DACommandsForGraphicsItemGrouping::redo()
 	mNeedDelete = false;
 }
 
+/**
+ * @brief 撤销：从分组中移除所有子图元并从场景中移除分组项
+ */
 void DACommandsForGraphicsItemGrouping::undo()
 {
 	// 不能用destroyItemGroup，destroyItemGroup会删除mGroupItem，如果之前做过移动操作，mGroupItem会被保存在其它的cmd中，这时候就会触发异常
@@ -622,6 +830,10 @@ QList< QGraphicsItem* > DACommandsForGraphicsItemGrouping::toSimple(const QList<
 	return res;
 }
 
+/**
+ * @brief 获取将要分组的图元列表
+ * @return 将要分组的图元列表
+ */
 QList< QGraphicsItem* > DACommandsForGraphicsItemGrouping::getWillGroupItems() const
 {
 	return mWillGroupItems;
@@ -631,6 +843,12 @@ QList< QGraphicsItem* > DACommandsForGraphicsItemGrouping::getWillGroupItems() c
 // DACommandsForGraphicsItemUngrouping
 //==============================================================
 
+/**
+ * @brief 构造函数，取消图元分组命令
+ * @param sc 目标场景
+ * @param group 待取消分组的图元组
+ * @param parent 父命令
+ */
 DACommandsForGraphicsItemUngrouping::DACommandsForGraphicsItemUngrouping(QGraphicsScene* sc,
                                                                          QGraphicsItemGroup* group,
                                                                          QUndoCommand* parent)
@@ -639,6 +857,9 @@ DACommandsForGraphicsItemUngrouping::DACommandsForGraphicsItemUngrouping(QGraphi
     mItems = mGroupItem->childItems();
 }
 
+/**
+ * @brief 析构函数，如果分组项需要删除则释放内存
+ */
 DACommandsForGraphicsItemUngrouping::~DACommandsForGraphicsItemUngrouping()
 {
 	if (mNeedDelete) {
@@ -646,6 +867,9 @@ DACommandsForGraphicsItemUngrouping::~DACommandsForGraphicsItemUngrouping()
 	}
 }
 
+/**
+ * @brief 重做：从分组中移除所有子图元并从场景中移除分组项
+ */
 void DACommandsForGraphicsItemUngrouping::redo()
 {
 	for (QGraphicsItem* item : std::as_const(mItems)) {
@@ -656,6 +880,9 @@ void DACommandsForGraphicsItemUngrouping::redo()
 	mNeedDelete = true;
 }
 
+/**
+ * @brief 撤销：将子图元重新添加到分组中并将分组添加到场景
+ */
 void DACommandsForGraphicsItemUngrouping::undo()
 {
 	DAGraphicsScene::addItemToGroup(mGroupItem, mItems);
@@ -666,15 +893,26 @@ void DACommandsForGraphicsItemUngrouping::undo()
 //===============================================================
 // DACommandTextDocumentWrapper
 //===============================================================
+/**
+ * @brief 构造函数，QTextDocument撤销命令包装器
+ * @param doc 被包装的文本文档
+ * @param parent 父命令
+ */
 DACommandTextDocumentWrapper::DACommandTextDocumentWrapper(QTextDocument* doc, QUndoCommand* parent)
     : QUndoCommand(parent), mDoc(doc)
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DACommandTextDocumentWrapper::~DACommandTextDocumentWrapper()
 {
 }
 
+/**
+ * @brief 重做：调用文本文档的redo操作
+ */
 void DACommandTextDocumentWrapper::redo()
 {
 	if (mDoc) {
@@ -685,6 +923,9 @@ void DACommandTextDocumentWrapper::redo()
 	}
 }
 
+/**
+ * @brief 撤销：调用文本文档的undo操作
+ */
 void DACommandTextDocumentWrapper::undo()
 {
 	if (mDoc) {
@@ -697,6 +938,13 @@ void DACommandTextDocumentWrapper::undo()
 //===============================================================
 // DACommandTextItemHtmlContentChanged
 //===============================================================
+/**
+ * @brief 构造函数，文本图元HTML内容变更命令
+ * @param item 目标文本图元
+ * @param oldHtml 旧HTML内容
+ * @param newHtml 新HTML内容
+ * @param parent 父命令
+ */
 DACommandTextItemHtmlContentChanged::DACommandTextItemHtmlContentChanged(QGraphicsTextItem* item,
                                                                          const QString& oldHtml,
                                                                          const QString& newHtml,
@@ -705,10 +953,16 @@ DACommandTextItemHtmlContentChanged::DACommandTextItemHtmlContentChanged(QGraphi
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DACommandTextItemHtmlContentChanged::~DACommandTextItemHtmlContentChanged()
 {
 }
 
+/**
+ * @brief 重做：将文本图元设置为新HTML内容
+ */
 void DACommandTextItemHtmlContentChanged::redo()
 {
 	QUndoCommand::redo();
@@ -720,6 +974,9 @@ void DACommandTextItemHtmlContentChanged::redo()
 	mItem->setHtml(mNewHtml);
 }
 
+/**
+ * @brief 撤销：将文本图元恢复到旧HTML内容
+ */
 void DACommandTextItemHtmlContentChanged::undo()
 {
 	QUndoCommand::undo();
@@ -727,6 +984,11 @@ void DACommandTextItemHtmlContentChanged::undo()
 	mItem->setHtml(mOldHtml);
 }
 
+/**
+ * @brief 尝试与另一个HTML内容变更命令合并
+ * @param command 待合并的命令
+ * @return 合并成功返回true，否则返回false
+ */
 bool DACommandTextItemHtmlContentChanged::mergeWith(const QUndoCommand* command)
 {
 	if (id() != command->id()) {

@@ -1,4 +1,4 @@
-﻿#ifndef DAGRAPHICSVIEWOVERLAYMOUSEMARKER_H
+#ifndef DAGRAPHICSVIEWOVERLAYMOUSEMARKER_H
 #define DAGRAPHICSVIEWOVERLAYMOUSEMARKER_H
 #include "DAGraphicsViewGlobal.h"
 #include "DAAbstractGraphicsViewOverlay.h"
@@ -32,28 +32,16 @@ public:
 public:
 	explicit DAGraphicsViewOverlayMouseMarker(QGraphicsView* parent);
 	~DAGraphicsViewOverlayMouseMarker();
-	/**
-	 * @brief 画笔
-	 * @return
-	 */
+	// 画笔
 	QPen getDrawPen() const;
 
-	/**
-	 * @brief 设置画笔
-	 * @param v
-	 */
+	// 设置画笔
 	void setDrawPen(const QPen& v);
 
-	/**
-	 * @brief 获取标记样式
-	 * @return
-	 */
+	// 获取标记样式
 	MarkerStyle getMarkerStyle() const;
 
-	/**
-	 * @brief 设置标记样式
-	 * @param v
-	 */
+	// 设置标记样式
 	void setMarkerStyle(MarkerStyle v);
 
 protected:

@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsLabelItem.h"
+#include "DAGraphicsLabelItem.h"
 #include <optional>
 #include <QGraphicsScene>
 #include <QDomDocument>
@@ -19,6 +19,10 @@ public:
 	DAShapeKeyPoint mOriginPoint { DAShapeKeyPoint::Center };
 };
 
+/**
+ * @brief PrivateData 构造函数
+ * @param p 父对象指针
+ */
 DAGraphicsLabelItem::PrivateData::PrivateData(DAGraphicsLabelItem* p) : q_ptr(p)
 {
 	// DAGraphicsItemFactory::generateID通过一个uint32_t生成一个uint64_t的id
@@ -33,19 +37,39 @@ DAGraphicsLabelItem::PrivateData::PrivateData(DAGraphicsLabelItem* p) : q_ptr(p)
 //===============================================================
 // DAGraphicsLabelItem
 //===============================================================
+
+/**
+ * @brief 构造函数
+ * @param parent 父图形项
+ */
 DAGraphicsLabelItem::DAGraphicsLabelItem(QGraphicsItem* parent) : QGraphicsSimpleTextItem(parent), DA_PIMPL_CONSTRUCT
 {
 }
 
+/**
+ * @brief 构造函数
+ * @param str 标签文本
+ * @param parent 父图形项
+ */
 DAGraphicsLabelItem::DAGraphicsLabelItem(const QString& str, QGraphicsItem* parent)
 	: QGraphicsSimpleTextItem(str, parent), DA_PIMPL_CONSTRUCT
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DAGraphicsLabelItem::~DAGraphicsLabelItem()
 {
 }
 
+/**
+ * @brief 将标签项保存到XML节点
+ * @param doc XML文档对象
+ * @param parentElement 父XML元素
+ * @param ver 版本号
+ * @return 保存成功返回true
+ */
 bool DAGraphicsLabelItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
 	QDomElement e = doc->createElement("label-item");
@@ -75,6 +99,12 @@ bool DAGraphicsLabelItem::saveToXml(QDomDocument* doc, QDomElement* parentElemen
 	return true;
 }
 
+/**
+ * @brief 从XML元素加载标签项
+ * @param itemElement 包含标签项信息的XML元素
+ * @param ver 版本号
+ * @return 加载成功返回true，未找到label-item节点返回false
+ */
 bool DAGraphicsLabelItem::loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver)
 {
 	QDomElement infoEle = itemElement->firstChildElement("label-item");
@@ -133,26 +163,47 @@ bool DAGraphicsLabelItem::loadFromXml(const QDomElement* itemElement, const QVer
 	return true;
 }
 
+/**
+ * @brief 获取标签项的唯一ID
+ * @return 标签项ID
+ */
 uint64_t DAGraphicsLabelItem::getItemID() const
 {
 	return d_ptr->mID;
 }
 
+/**
+ * @brief 设置标签项的唯一ID
+ * @param id 要设置的ID
+ */
 void DAGraphicsLabelItem::setItemID(uint64_t id)
 {
 	d_ptr->mID = id;
 }
 
+/**
+ * @brief 设置相对位置
+ * @param xp 相对x坐标
+ * @param yp 相对y坐标
+ */
 void DAGraphicsLabelItem::setRelativePosition(qreal xp, qreal yp)
 {
 	d_ptr->mRelativePos = std::make_optional< QPointF >(xp, yp);
 }
 
+/**
+ * @brief 获取相对位置
+ * @return 相对位置坐标，若未设置则返回(0,0)
+ */
 QPointF DAGraphicsLabelItem::getRelativePosition() const
 {
 	return d_ptr->mRelativePos.value_or(QPointF());
 }
 
+/**
+ * @brief 判断是否设置了相对位置
+ * @return 已设置返回true，否则返回false
+ */
 bool DAGraphicsLabelItem::isHaveRelativePosition() const
 {
     return d_ptr->mRelativePos.has_value();
@@ -209,11 +260,19 @@ void DAGraphicsLabelItem::setAttachPoint(DAShapeKeyPoint parentAttachPoint)
 	}
 }
 
+/**
+ * @brief 设置原点位置
+ * @param originPoint 原点对应的关键点位置
+ */
 void DAGraphicsLabelItem::setOriginPoint(DAShapeKeyPoint originPoint)
 {
 	d_ptr->mOriginPoint = originPoint;
 }
 
+/**
+ * @brief 获取原点位置
+ * @return 原点对应的关键点位置
+ */
 DAShapeKeyPoint DAGraphicsLabelItem::getOriginPoint() const
 {
     return d_ptr->mOriginPoint;
@@ -247,11 +306,21 @@ void DAGraphicsLabelItem::updatePosition()
 	setPos(itemwillMovePoint);
 }
 
+/**
+ * @brief 设置是否可选择
+ * @param on 为true时启用可选择
+ */
 void DAGraphicsLabelItem::setSelectable(bool on)
 {
 	setFlag(ItemIsSelectable, on);
 }
 
+/**
+ * @brief 图形项变化时的回调函数
+ * @param change 变化类型
+ * @param value 变化值
+ * @return 变化后的值
+ */
 QVariant DAGraphicsLabelItem::itemChange(GraphicsItemChange change, const QVariant& value)
 {
 	if (change == QGraphicsItem::ItemSceneHasChanged) {

@@ -27,10 +27,18 @@ public:
     bool isAutoResizeColumnToContents { true };  ///< 是否自动刷新内容
 };
 
+/**
+ * @brief 私有数据构造函数
+ * @param p DAFigureTreeView指针
+ */
 DAFigureTreeView::PrivateData::PrivateData(DAFigureTreeView* p) : q_ptr(p)
 {
 }
 
+/**
+ * @brief 获取关联的FigureTreeModel
+ * @return FigureTreeModel指针
+ */
 DAFigureTreeModel* DAFigureTreeView::PrivateData::figureModel() const
 {
     return qobject_cast< DAFigureTreeModel* >(q_ptr->model());
@@ -39,6 +47,10 @@ DAFigureTreeModel* DAFigureTreeView::PrivateData::figureModel() const
 // DAFigureTreeView
 //==============================================================
 
+/**
+ * @brief 构造函数
+ * @param parent 父窗口
+ */
 DAFigureTreeView::DAFigureTreeView(QWidget* parent) : QTreeView(parent), DA_PIMPL_CONSTRUCT
 {
     setSelectionMode(QAbstractItemView::SingleSelection);
@@ -65,6 +77,9 @@ DAFigureTreeView::DAFigureTreeView(QWidget* parent) : QTreeView(parent), DA_PIMP
     setColumnWidth(2, 40);
 }
 
+/**
+ * @brief 析构函数
+ */
 DAFigureTreeView::~DAFigureTreeView()
 {
 }
@@ -96,6 +111,9 @@ DAFigureWidget* DAFigureTreeView::getFigureWidget() const
     return d_ptr->mFigureWidget.data();
 }
 
+/**
+ * @brief 刷新树形视图
+ */
 void DAFigureTreeView::refresh()
 {
     DAFigureTreeModel* m = d_ptr->figureModel();
@@ -106,6 +124,10 @@ void DAFigureTreeView::refresh()
     expandAll();
 }
 
+/**
+ * @brief 获取关联的FigureTreeModel
+ * @return FigureTreeModel指针
+ */
 DAFigureTreeModel* DAFigureTreeView::getFigureTreeModel() const
 {
     return d_ptr->figureModel();
@@ -173,6 +195,10 @@ void DAFigureTreeView::refreshPlotFolderText(QwtPlot* plot)
     }
 }
 
+/**
+ * @brief 刷新指定3D绘图项的可见性列显示
+ * @param item 需要刷新的3D绘图项
+ */
 void DAFigureTreeView::refresh3DPlotItemVisibility(Qwt3DPlotItem* item)
 {
     DAFigureTreeModel* m = d_ptr->figureModel();
@@ -181,6 +207,10 @@ void DAFigureTreeView::refresh3DPlotItemVisibility(Qwt3DPlotItem* item)
     }
 }
 
+/**
+ * @brief 刷新指定3D绘图项的文字列显示
+ * @param item 需要刷新的3D绘图项
+ */
 void DAFigureTreeView::refresh3DPlotItemText(Qwt3DPlotItem* item)
 {
     DAFigureTreeModel* m = d_ptr->figureModel();
@@ -189,6 +219,10 @@ void DAFigureTreeView::refresh3DPlotItemText(Qwt3DPlotItem* item)
     }
 }
 
+/**
+ * @brief 刷新指定3D绘图控件的文字列显示
+ * @param chart 需要刷新的3D绘图控件
+ */
 void DAFigureTreeView::refresh3DPlot3DText(DAChart3DWidget* chart)
 {
     DAFigureTreeModel* m = d_ptr->figureModel();
@@ -229,6 +263,11 @@ void DAFigureTreeView::resizeHeaderToContents()
     }
 }
 
+/**
+ * @brief chart项附加时的槽函数
+ * @param item 附加的plotItem
+ * @param on 是否附加
+ */
 void DAFigureTreeView::onChartItemAttacted(QwtPlotItem* item, bool on)
 {
     if (on && isAutoResizeColumnToContents()) {
@@ -237,16 +276,29 @@ void DAFigureTreeView::onChartItemAttacted(QwtPlotItem* item, bool on)
     }
 }
 
+/**
+ * @brief 单击槽函数
+ * @param index 点击的索引
+ */
 void DAFigureTreeView::onClicked(const QModelIndex& index)
 {
     handleClicked(index, false);
 }
 
+/**
+ * @brief 双击槽函数
+ * @param index 双击的索引
+ */
 void DAFigureTreeView::onDoubleClicked(const QModelIndex& index)
 {
     handleClicked(index, true);
 }
 
+/**
+ * @brief 处理点击事件
+ * @param index 点击的索引
+ * @param doubleClicked 是否为双击
+ */
 void DAFigureTreeView::handleClicked(const QModelIndex& index, bool doubleClicked)
 {
     if (!index.isValid()) {
@@ -344,6 +396,10 @@ void DAFigureTreeView::handleClicked(const QModelIndex& index, bool doubleClicke
     }
 }
 
+/**
+ * @brief 拖拽放置事件处理
+ * @param event 拖拽事件
+ */
 void DAFigureTreeView::dropEvent(QDropEvent* event)
 {
     if (event->source() != this) {

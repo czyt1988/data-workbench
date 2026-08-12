@@ -1,4 +1,4 @@
-﻿#ifndef DACHARTCROSSTRACKER_H
+#ifndef DACHARTCROSSTRACKER_H
 #define DACHARTCROSSTRACKER_H
 #include "DAFigureAPI.h"
 #include "qwt_plot_picker.h"
@@ -10,12 +10,13 @@ namespace DA
  */
 class DAFIGURE_API DAChartCrossTracker : public QwtPlotPicker
 {
+    Q_OBJECT
 public:
     DAChartCrossTracker(QWidget* w);
     DAChartCrossTracker(int xAxis, int yAxis, QWidget* w);
 
 protected:
-    virtual QwtText trackerTextF(const QPointF& pos) const;
+    virtual QwtText trackerTextF(const QPointF& pos) const override;
 
 private:
     void init();

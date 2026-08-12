@@ -27,7 +27,7 @@ public:
 	QwtFigure* figure();
 
 protected:
-	virtual bool eventFilter(QObject* object, QEvent* event);
+	virtual bool eventFilter(QObject* object, QEvent* event) override;
 	virtual bool mousePressEvent(const QMouseEvent* e);
 	virtual bool mouseMovedEvent(const QMouseEvent* e);
 	virtual bool mouseReleasedEvent(const QMouseEvent* e);
@@ -35,7 +35,7 @@ protected:
 	virtual bool keyReleaseEvent(const QKeyEvent* e);
 
 private:
-	bool m_isEnable { false };
+	bool mIsEnable { false };
 };
 }  // end namespace DA
 #endif

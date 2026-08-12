@@ -1,4 +1,4 @@
-﻿#ifndef DASTANDARDITEMPLOTSCALE_H
+#ifndef DASTANDARDITEMPLOTSCALE_H
 #define DASTANDARDITEMPLOTSCALE_H
 #include "DAFigureAPI.h"
 #include <QStandardItem>
@@ -39,22 +39,22 @@ public:
     // 获取关联的PlotItem
     QwtPlot* plot() const
     {
-        return m_plot;
+        return mPlot;
     }
 
     QwtAxisId axisId() const
     {
-        return m_axisId;
+        return mAxisId;
     }
     // 获取Item类型
     ItemType itemType() const
     {
-        return m_itemType;
+        return mItemType;
     }
 
     bool isValid() const
     {
-        return (m_plot && (m_axisId != QwtAxis::AxisPositions));
+        return (mPlot && (mAxisId != QwtAxis::AxisPositions));
     }
     // 获取坐标轴的类型文本，线性轴、时间轴、对数轴等
     QString axisScaleTypeString(const QwtPlot* plot, QwtAxisId axisId);
@@ -62,9 +62,9 @@ public:
     static QString axisIdToText(QwtAxisId id);
 
 private:
-    QwtPlot* m_plot { nullptr };
-    QwtAxisId m_axisId { QwtAxis::AxisPositions };
-    ItemType m_itemType { PlotScaleText };
+    QwtPlot* mPlot { nullptr };
+    QwtAxisId mAxisId { QwtAxis::AxisPositions };
+    ItemType mItemType { PlotScaleText };
 };
 }  // end DA
 #endif  // DASTANDARDITEMPLOTSCALE_H

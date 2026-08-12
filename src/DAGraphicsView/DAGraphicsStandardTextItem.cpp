@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsStandardTextItem.h"
+#include "DAGraphicsStandardTextItem.h"
 #include <QFont>
 #include <QDebug>
 #include <QTextCursor>
@@ -15,11 +15,22 @@ namespace DA
 //===================================================
 // DAStandardGraphicsTextItem
 //===================================================
+
+/**
+ * @brief 构造函数
+ * @param parent 父项
+ */
 DAGraphicsStandardTextItem::DAGraphicsStandardTextItem(QGraphicsItem* parent) : QGraphicsTextItem(parent)
 {
     initItem();
 }
 
+/**
+ * @brief 构造函数，指定文本内容、字体和父项
+ * @param str 文本内容
+ * @param f 字体
+ * @param parent 父项
+ */
 DAGraphicsStandardTextItem::DAGraphicsStandardTextItem(const QString& str, const QFont& f, QGraphicsItem* parent)
     : QGraphicsTextItem(parent)
 {
@@ -28,6 +39,11 @@ DAGraphicsStandardTextItem::DAGraphicsStandardTextItem(const QString& str, const
 	setFont(f);
 }
 
+/**
+ * @brief 构造函数，指定字体和父项
+ * @param f 字体
+ * @param parent 父项
+ */
 DAGraphicsStandardTextItem::DAGraphicsStandardTextItem(const QFont& f, QGraphicsItem* parent)
     : QGraphicsTextItem(parent)
 {
@@ -35,10 +51,16 @@ DAGraphicsStandardTextItem::DAGraphicsStandardTextItem(const QFont& f, QGraphics
 	setFont(f);
 }
 
+/**
+ * @brief 析构函数
+ */
 DAGraphicsStandardTextItem::~DAGraphicsStandardTextItem()
 {
 }
 
+/**
+ * @brief 初始化文本项，设置默认属性
+ */
 void DAGraphicsStandardTextItem::initItem()
 {
 	union Combine__ {
@@ -75,6 +97,13 @@ bool DAGraphicsStandardTextItem::isEditable() const
     return textInteractionFlags().testFlag(Qt::TextEditorInteraction);
 }
 
+/**
+ * @brief 将文本项信息保存到XML
+ * @param doc XML文档
+ * @param parentElement 父XML元素
+ * @param ver 版本号
+ * @return 保存成功返回true
+ */
 bool DAGraphicsStandardTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
 	QDomElement textItemEle = doc->createElement("text-info");
@@ -98,6 +127,12 @@ bool DAGraphicsStandardTextItem::saveToXml(QDomDocument* doc, QDomElement* paren
 	return true;
 }
 
+/**
+ * @brief 从XML加载文本项信息
+ * @param itemElement XML元素
+ * @param ver 版本号
+ * @return 加载成功返回true
+ */
 bool DAGraphicsStandardTextItem::loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver)
 {
 	QDomElement textItemEle = itemElement->firstChildElement("text-info");
@@ -143,21 +178,40 @@ bool DAGraphicsStandardTextItem::loadFromXml(const QDomElement* itemElement, con
 	return true;
 }
 
+/**
+ * @brief 设置文本项在场景中的位置
+ * @param p 场景坐标
+ */
 void DAGraphicsStandardTextItem::setScenePos(const QPointF& p)
 {
 	setPos(mapToParent(mapFromScene(p)));
 }
 
+/**
+ * @brief 设置文本项在场景中的位置
+ * @param x x坐标
+ * @param y y坐标
+ */
 void DAGraphicsStandardTextItem::setScenePos(qreal x, qreal y)
 {
 	setScenePos(QPointF(x, y));
 }
 
+/**
+ * @brief 获取文本项的唯一ID
+ * @return 文本项ID
+ * @sa setItemID
+ */
 uint64_t DAGraphicsStandardTextItem::getItemID() const
 {
 	return mID;
 }
 
+/**
+ * @brief 设置文本项的唯一ID
+ * @param id 文本项ID
+ * @sa getItemID
+ */
 void DAGraphicsStandardTextItem::setItemID(uint64_t id)
 {
 	mID = id;
@@ -372,6 +426,10 @@ bool DAGraphicsStandardTextItem::getSelectTextBold() const
 	return w == QFont::Bold;
 }
 
+/**
+ * @brief 焦点离开事件，退出编辑模式
+ * @param focusEvent 焦点事件
+ */
 void DAGraphicsStandardTextItem::focusOutEvent(QFocusEvent* focusEvent)
 {
 	//! 这里不能执行下面这些语句，尤其把选中内容取消，这样会导致一些控件无法选中文本进行修改，
@@ -384,6 +442,10 @@ void DAGraphicsStandardTextItem::focusOutEvent(QFocusEvent* focusEvent)
 	QGraphicsTextItem::focusOutEvent(focusEvent);
 }
 
+/**
+ * @brief 鼠标双击事件，左键双击进入编辑模式
+ * @param event 鼠标事件
+ */
 void DAGraphicsStandardTextItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event)
 {
 	if (event->button() == Qt::LeftButton) {
@@ -394,6 +456,12 @@ void DAGraphicsStandardTextItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent*
 	QGraphicsTextItem::mouseDoubleClickEvent(event);
 }
 
+/**
+ * @brief 项变化事件，当场景改变时绑定文本内容变化到DAGraphicsScene的undo/redo
+ * @param change 变化类型
+ * @param value 变化值
+ * @return 返回变化后的值
+ */
 QVariant DAGraphicsStandardTextItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant& value)
 {
 	if (change == QGraphicsItem::ItemSceneChange) {

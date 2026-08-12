@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsRectItem.h"
+#include "DAGraphicsRectItem.h"
 #include <QPainter>
 #include <QDomDocument>
 #include <QDomElement>
@@ -24,15 +24,27 @@ public:
 	QBrush mRectFillBrush { Qt::transparent };  ///< 矩形填充画笔
 };
 
+/**
+ * @brief 构造函数
+ * @param p 父对象指针
+ */
 DAGraphicsRectItem::PrivateData::PrivateData(DAGraphicsRectItem* p) : q_ptr(p)
 {
 }
 
+/**
+ * @brief 获取文本画笔
+ * @return 文本画笔
+ */
 QPen DAGraphicsRectItem::PrivateData::getTextPen() const
 {
 	return mTextPen;
 }
 
+/**
+ * @brief 设置文本画笔
+ * @param p 文本画笔
+ */
 void DAGraphicsRectItem::PrivateData::setTextPen(const QPen& p)
 {
 	mTextPen = p;
@@ -40,6 +52,10 @@ void DAGraphicsRectItem::PrivateData::setTextPen(const QPen& p)
 //===================================================
 // DAGraphicsRectItem
 //===================================================
+/**
+ * @brief 构造函数
+ * @param parent 父图形项
+ */
 DAGraphicsRectItem::DAGraphicsRectItem(QGraphicsItem* parent) : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
 	enableShowBackground(false);
@@ -47,51 +63,93 @@ DAGraphicsRectItem::DAGraphicsRectItem(QGraphicsItem* parent) : DAGraphicsResize
 	setBorderPen(QPen(QColor(Qt::black)));
 }
 
+/**
+ * @brief 析构函数
+ */
 DAGraphicsRectItem::~DAGraphicsRectItem()
 {
 }
 
+/**
+ * @brief 设置文本
+ * @param t 文本内容
+ */
 void DAGraphicsRectItem::setText(const QString& t)
 {
 	d_ptr->mText = t;
 }
 
+/**
+ * @brief 获取文本
+ * @return 文本内容
+ */
 QString DAGraphicsRectItem::getText() const
 {
 	return d_ptr->mText;
 }
 
+/**
+ * @brief 设置文本对齐方式
+ * @param al 对齐方式
+ */
 void DAGraphicsRectItem::setTextAlignment(Qt::Alignment al)
 {
 	d_ptr->mTextAlignment = al;
 }
 
+/**
+ * @brief 获取文本对齐方式
+ * @return 对齐方式
+ */
 Qt::Alignment DAGraphicsRectItem::getTextAlignment() const
 {
 	return d_ptr->mTextAlignment;
 }
 
+/**
+ * @brief 获取文本画笔
+ * @return 文本画笔
+ */
 QPen DAGraphicsRectItem::getTextPen() const
 {
 	return d_ptr->getTextPen();
 }
 
+/**
+ * @brief 设置文本画笔
+ * @param p 文本画笔
+ */
 void DAGraphicsRectItem::setTextPen(const QPen& p)
 {
 	d_ptr->setTextPen(p);
 }
 
+/**
+ * @brief 获取矩形填充画笔
+ * @return 矩形填充画笔
+ */
 QBrush DAGraphicsRectItem::getRectFillBrush() const
 {
 	return d_ptr->mRectFillBrush;
 }
 
+/**
+ * @brief 设置矩形填充画笔
+ * @param b 矩形填充画笔
+ */
 void DAGraphicsRectItem::setRectFillBrush(const QBrush& b)
 {
 	d_ptr->mRectFillBrush = b;
 	update();
 }
 
+/**
+ * @brief 保存到XML
+ * @param doc XML文档对象
+ * @param parentElement 父XML元素
+ * @param ver 版本号
+ * @return 保存成功返回true
+ */
 bool DAGraphicsRectItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
 	DAGraphicsResizeableItem::saveToXml(doc, parentElement, ver);
@@ -107,6 +165,12 @@ bool DAGraphicsRectItem::saveToXml(QDomDocument* doc, QDomElement* parentElement
 	return true;
 }
 
+/**
+ * @brief 从XML加载
+ * @param itemElement XML元素
+ * @param ver 版本号
+ * @return 加载成功返回true
+ */
 bool DAGraphicsRectItem::loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver)
 {
 	if (!DAGraphicsResizeableItem::loadFromXml(itemElement, ver)) {
@@ -132,6 +196,13 @@ bool DAGraphicsRectItem::loadFromXml(const QDomElement* itemElement, const QVers
 	return true;
 }
 
+/**
+ * @brief 绘制矩形主体
+ * @param painter 画笔对象
+ * @param option 样式选项
+ * @param widget 所属widget
+ * @param bodyRect 矩形主体区域
+ */
 void DAGraphicsRectItem::paintBody(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget, const QRectF& bodyRect)
 {
 	Q_UNUSED(option);

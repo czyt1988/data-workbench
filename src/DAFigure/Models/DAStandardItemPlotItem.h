@@ -1,4 +1,4 @@
-﻿#ifndef DASTANDARDITEMPLOTITEM_H
+#ifndef DASTANDARDITEMPLOTITEM_H
 #define DASTANDARDITEMPLOTITEM_H
 #include "DAFigureAPI.h"
 #include <QStandardItem>
@@ -38,18 +38,18 @@ public:
     // 获取关联的PlotItem
     QwtPlotItem* plotItem() const
     {
-        return m_plotItem;
+        return mPlotItem;
     }
 
     // 获取Item类型
     ItemType itemType() const
     {
-        return m_itemType;
+        return mItemType;
     }
 
 private:
-    QwtPlotItem* m_plotItem { nullptr };
-    ItemType m_itemType { PlotItemText };
+    QwtPlotItem* mPlotItem { nullptr };
+    ItemType mItemType { PlotItemText };
 };
 }  // end DA
 #endif  // DASTANDARDITEMPLOTITEM_H

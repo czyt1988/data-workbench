@@ -25,6 +25,10 @@ public:
 	DAGraphicsStandardTextItem* mTextItem { nullptr };
 };
 
+/**
+ * @brief PrivateData 构造函数
+ * @param p 父对象指针
+ */
 DAGraphicsTextItem::PrivateData::PrivateData(DAGraphicsTextItem* p) : q_ptr(p)
 {
 	mTextItem = new DAGraphicsStandardTextItem(p);
@@ -35,11 +39,20 @@ DAGraphicsTextItem::PrivateData::PrivateData(DAGraphicsTextItem* p) : q_ptr(p)
 // DAGraphicsTextItem
 //----------------------------------------------------
 
+/**
+ * @brief 构造函数
+ * @param parent 父项
+ */
 DAGraphicsTextItem::DAGraphicsTextItem(QGraphicsItem* parent) : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
     init(tr("Text"));  // cn:文本
 }
 
+/**
+ * @brief 构造函数
+ * @param f 字体
+ * @param parent 父项
+ */
 DAGraphicsTextItem::DAGraphicsTextItem(const QFont& f, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
@@ -47,6 +60,12 @@ DAGraphicsTextItem::DAGraphicsTextItem(const QFont& f, QGraphicsItem* parent)
 	setSelectTextFont(f);
 }
 
+/**
+ * @brief 构造函数
+ * @param str 文本内容
+ * @param f 字体
+ * @param parent 父项
+ */
 DAGraphicsTextItem::DAGraphicsTextItem(const QString& str, const QFont& f, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
@@ -55,10 +74,17 @@ DAGraphicsTextItem::DAGraphicsTextItem(const QString& str, const QFont& f, QGrap
 	setPlainText(str);
 }
 
+/**
+ * @brief 析构函数
+ */
 DAGraphicsTextItem::~DAGraphicsTextItem()
 {
 }
 
+/**
+ * @brief 初始化函数
+ * @param initText 初始文本
+ */
 void DAGraphicsTextItem::init(const QString& initText)
 {
 	setAcceptDrops(true);
@@ -76,6 +102,13 @@ void DAGraphicsTextItem::init(const QString& initText)
 	}
 }
 
+/**
+ * @brief 保存到XML
+ * @param doc XML文档
+ * @param parentElement 父元素
+ * @param ver 版本号
+ * @return 是否保存成功
+ */
 bool DAGraphicsTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
 	DAGraphicsResizeableItem::saveToXml(doc, parentElement, ver);
@@ -85,6 +118,12 @@ bool DAGraphicsTextItem::saveToXml(QDomDocument* doc, QDomElement* parentElement
 	return true;
 }
 
+/**
+ * @brief 从XML加载
+ * @param itemElement 元素
+ * @param ver 版本号
+ * @return 是否加载成功
+ */
 bool DAGraphicsTextItem::loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver)
 {
 	DAGraphicsResizeableItem::loadFromXml(itemElement, ver);
@@ -98,11 +137,19 @@ bool DAGraphicsTextItem::loadFromXml(const QDomElement* itemElement, const QVers
 	return true;
 }
 
+/**
+ * @brief 获取内部文本项
+ * @return 文本项指针
+ */
 DAGraphicsStandardTextItem* DAGraphicsTextItem::textItem() const
 {
 	return d_ptr->mTextItem;
 }
 
+/**
+ * @brief 设置主体大小
+ * @param s 大小
+ */
 void DAGraphicsTextItem::setBodySize(const QSizeF& s)
 {
 	DAGraphicsResizeableItem::setBodySize(s);
@@ -282,6 +329,10 @@ QString DAGraphicsTextItem::toHtml() const
     return d_ptr->mTextItem->toHtml();
 }
 
+/**
+ * @brief 设置富文本内容
+ * @param html 富文本字符串
+ */
 void DAGraphicsTextItem::setHtml(const QString& html)
 {
     d_ptr->mTextItem->setHtml(html);
@@ -305,6 +356,10 @@ void DAGraphicsTextItem::paintBody(QPainter* painter, const QStyleOptionGraphics
 	}
 }
 
+/**
+ * @brief 鼠标按下事件
+ * @param e 鼠标事件
+ */
 void DAGraphicsTextItem::mousePressEvent(QGraphicsSceneMouseEvent* e)
 {
 	// qDebug() << "DAGraphicsTextItem::mousePressEvent";
@@ -321,6 +376,12 @@ void DAGraphicsTextItem::mousePressEvent(QGraphicsSceneMouseEvent* e)
 	}
 }
 
+/**
+ * @brief 项状态变化事件
+ * @param change 变化类型
+ * @param value 变化值
+ * @return 变化后的值
+ */
 QVariant DAGraphicsTextItem::itemChange(GraphicsItemChange change, const QVariant& value)
 {
 	switch (change) {

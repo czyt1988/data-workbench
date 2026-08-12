@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsPixmapItem.h"
+#include "DAGraphicsPixmapItem.h"
 #include <QPainter>
 #include <QDebug>
 #include <QStyleOptionGraphicsItem>
@@ -33,10 +33,19 @@ public:
 	Qt::AspectRatioMode mAspectRatioMode { Qt::IgnoreAspectRatio };
 };
 
+/**
+ * @brief PrivateData 构造函数
+ * @param p 指向DAGraphicsPixmapItem的指针
+ */
 DAGraphicsPixmapItem::PrivateData::PrivateData(DAGraphicsPixmapItem* p) : q_ptr(p)
 {
 }
 
+/**
+ * @brief 把pixmap转换为base64的字符串
+ * @param pixmap 要转换的图片
+ * @return base64编码的字符串
+ */
 QString DAGraphicsPixmapItem::PrivateData::pixmapToString(const QPixmap& pixmap)
 {
 	QBuffer buff;
@@ -48,6 +57,11 @@ QString DAGraphicsPixmapItem::PrivateData::pixmapToString(const QPixmap& pixmap)
 	return dataimg.toBase64();
 }
 
+/**
+ * @brief 字符串转换为pixmap
+ * @param base64 base64编码的字符串
+ * @return 转换后的QPixmap
+ */
 QPixmap DAGraphicsPixmapItem::PrivateData::stringToPixmap(const QString& base64)
 {
 	QByteArray imgData = QByteArray::fromBase64(base64.toUtf8());
@@ -89,6 +103,11 @@ DAGraphicsPixmapItem::DAGraphicsPixmapItem(QGraphicsItem* parent) : DAGraphicsRe
 {
 }
 
+/**
+ * @brief 构造函数，指定pixmap
+ * @param pixmap 图片
+ * @param parent 父项
+ */
 DAGraphicsPixmapItem::DAGraphicsPixmapItem(const QPixmap& pixmap, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
@@ -98,6 +117,11 @@ DAGraphicsPixmapItem::DAGraphicsPixmapItem(const QPixmap& pixmap, QGraphicsItem*
 	changeBodySize(pixmap.size());
 }
 
+/**
+ * @brief 构造函数，移动语义指定pixmap
+ * @param pixmap 图片（右值引用）
+ * @param parent 父项
+ */
 DAGraphicsPixmapItem::DAGraphicsPixmapItem(QPixmap&& pixmap, QGraphicsItem* parent)
     : DAGraphicsResizeableItem(parent), DA_PIMPL_CONSTRUCT
 {
@@ -106,6 +130,9 @@ DAGraphicsPixmapItem::DAGraphicsPixmapItem(QPixmap&& pixmap, QGraphicsItem* pare
 	changeBodySize(d_ptr->mPixmap.size());
 }
 
+/**
+ * @brief 析构函数
+ */
 DAGraphicsPixmapItem::~DAGraphicsPixmapItem()
 {
 }
@@ -119,21 +146,37 @@ void DAGraphicsPixmapItem::setMoveable(bool on)
     setFlag(QGraphicsItem::ItemIsMovable, on);
 }
 
+/**
+ * @brief 是否可移动
+ * @return 可移动返回true，否则返回false
+ */
 bool DAGraphicsPixmapItem::isMoveable() const
 {
     return flags().testFlag(QGraphicsItem::ItemIsMovable);
 }
 
+/**
+ * @brief 设置是否可选择
+ * @param on 是否可选择
+ */
 void DAGraphicsPixmapItem::setSelectable(bool on)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, on);
 }
 
+/**
+ * @brief 是否可选择
+ * @return 可选择返回true，否则返回false
+ */
 bool DAGraphicsPixmapItem::isSelectable() const
 {
     return flags().testFlag(QGraphicsItem::ItemIsSelectable);
 }
 
+/**
+ * @brief 设置图片
+ * @param pixmap 要设置的图片
+ */
 void DAGraphicsPixmapItem::setPixmap(const QPixmap& pixmap)
 {
 	// 先赋值给原始图片
@@ -142,6 +185,10 @@ void DAGraphicsPixmapItem::setPixmap(const QPixmap& pixmap)
 	setBodySize(pixmap.size());
 }
 
+/**
+ * @brief 获取图片
+ * @return 当前显示的图片
+ */
 const QPixmap& DAGraphicsPixmapItem::getPixmap() const
 {
     return d_ptr->mPixmap;
@@ -167,16 +214,28 @@ void DAGraphicsPixmapItem::setTransformationMode(Qt::TransformationMode t)
     d_ptr->mTransformationMode = t;
 }
 
+/**
+ * @brief 获取变换模式
+ * @return 变换模式
+ */
 Qt::TransformationMode DAGraphicsPixmapItem::getTransformationMode() const
 {
     return d_ptr->mTransformationMode;
 }
 
+/**
+ * @brief 设置宽高比模式
+ * @param t 宽高比模式
+ */
 void DAGraphicsPixmapItem::setAspectRatioMode(Qt::AspectRatioMode t)
 {
     d_ptr->mAspectRatioMode = t;
 }
 
+/**
+ * @brief 获取宽高比模式
+ * @return 宽高比模式
+ */
 Qt::AspectRatioMode DAGraphicsPixmapItem::getAspectRatioMode() const
 {
     return d_ptr->mAspectRatioMode;
@@ -201,11 +260,19 @@ void DAGraphicsPixmapItem::setAlpha(int a)
 	update();
 }
 
+/**
+ * @brief 获取透明度
+ * @return 透明度值（0~255）
+ */
 int DAGraphicsPixmapItem::getAlpha() const
 {
 	return d_ptr->mAlpha;
 }
 
+/**
+ * @brief 设置主体尺寸
+ * @param s 要设置的尺寸
+ */
 void DAGraphicsPixmapItem::setBodySize(const QSizeF& s)
 {
 	// 设置尺寸
@@ -280,6 +347,13 @@ bool DAGraphicsPixmapItem::loadFromXml(const QDomElement* itemElement, const QVe
 	return DAGraphicsResizeableItem::loadFromXml(itemElement, ver);
 }
 
+/**
+ * @brief 绘制主体内容
+ * @param painter 画笔
+ * @param option 样式选项
+ * @param widget 所属widget
+ * @param bodyRect 主体矩形区域
+ */
 void DAGraphicsPixmapItem::paintBody(QPainter* painter,
                                      const QStyleOptionGraphicsItem* option,
                                      QWidget* widget,

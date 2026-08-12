@@ -1,4 +1,4 @@
-﻿#ifndef DAGRAPHICSPIXMAPITEM_H
+#ifndef DAGRAPHICSPIXMAPITEM_H
 #define DAGRAPHICSPIXMAPITEM_H
 #include "DAGraphicsViewGlobal.h"
 #include <QGraphicsPixmapItem>
@@ -57,7 +57,7 @@ public:
     // 保存到xml中
     virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const override;
     virtual bool loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver) override;
-signals:
+Q_SIGNALS:
     void itemPosChange(const QPointF& oldPos, const QPointF& newPos);
 
 protected:

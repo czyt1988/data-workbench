@@ -1,4 +1,4 @@
-﻿#include "DAFigureChartEditorWidgetOverlay.h"
+#include "DAFigureChartEditorWidgetOverlay.h"
 #include <QPoint>
 #include <QMouseEvent>
 #include <QDebug>
@@ -23,18 +23,28 @@ public:
     QPoint mapMousePosToPlotCanvas();
 
 public:
-    DAFigureChartEditorWidgetOverlay::FpChartEditorFactory m_funFactory { nullptr };
-    QPointer< QwtPlot > m_activePlot;
-    QPointer< DAAbstractChartEditor > m_activeEditor;
-    QPoint m_lastFigureMousePos;
-    bool m_autoStart { false };
-    FpActiveChartCanvasPainter m_activeChartCanvasPainter { nullptr };
+    DAFigureChartEditorWidgetOverlay::FpChartEditorFactory mFunFactory { nullptr };
+    QPointer< QwtPlot > mActivePlot;
+    QPointer< DAAbstractChartEditor > mActiveEditor;
+    QPoint mLastFigureMousePos;
+    bool mAutoStart { false };
+    FpActiveChartCanvasPainter mActiveChartCanvasPainter { nullptr };
 };
 
+/**
+ * @brief 构造函数
+ * @param p 父对象指针
+ */
 DAFigureChartEditorWidgetOverlay::PrivateData::PrivateData(DAFigureChartEditorWidgetOverlay* p) : q_ptr(p)
 {
 }
 
+/**
+ * @brief 将Figure坐标系的位置映射到指定Plot的canvas坐标系
+ * @param plot 目标QwtPlot
+ * @param figPos Figure坐标系下的位置
+ * @return 映射到Plot canvas坐标系下的位置
+ */
 QPoint DAFigureChartEditorWidgetOverlay::PrivateData::mapPosToPlotCanvas(const QwtPlot* plot, const QPoint& figPos)
 {
     if (!plot) {
@@ -49,40 +59,67 @@ QPoint DAFigureChartEditorWidgetOverlay::PrivateData::mapPosToPlotCanvas(const Q
     return canvas->mapFromGlobal(globalPos);
 }
 
+/**
+ * @brief 将Figure坐标系的位置映射到当前激活Plot的canvas坐标系
+ * @param figPos Figure坐标系下的位置
+ * @return 映射到当前激活Plot canvas坐标系下的位置
+ */
 QPoint DAFigureChartEditorWidgetOverlay::PrivateData::mapPosToPlotCanvas(const QPoint& figPos)
 {
-    return mapPosToPlotCanvas(m_activePlot.data(), figPos);
+    return mapPosToPlotCanvas(mActivePlot.data(), figPos);
 }
 
+/**
+ * @brief 将最后记录的鼠标位置映射到当前激活Plot的canvas坐标系
+ * @return 映射到canvas坐标系下的位置
+ */
 QPoint DAFigureChartEditorWidgetOverlay::PrivateData::mapMousePosToPlotCanvas()
 {
-    return mapPosToPlotCanvas(m_lastFigureMousePos);
+    return mapPosToPlotCanvas(mLastFigureMousePos);
 }
 //----------------------------------------------------
 // DAFigureChartEditorWidgetOverlay
 //----------------------------------------------------
+
+/**
+ * @brief 构造函数
+ * @param fig 关联的QwtFigure
+ * @param funFactory 图表编辑器工厂函数
+ */
 DAFigureChartEditorWidgetOverlay::DAFigureChartEditorWidgetOverlay(QwtFigure* fig, FpChartEditorFactory funFactory)
     : DAFigureWidgetOverlay(fig), DA_PIMPL_CONSTRUCT
 {
     setBuiltInFunctionsEnable(QwtFigureWidgetOverlay::FunResizePlot, false);
     setChartEditorFactory(funFactory);
-    d_ptr->m_activePlot = fig->currentAxes();
+    d_ptr->mActivePlot = fig->currentAxes();
     // 这里先不创建editor，有可能会切换gca
     connect(this, &DAFigureWidgetOverlay::activeWidgetChanged, this, &DAFigureChartEditorWidgetOverlay::onActiveWidgetChanged);
 }
 
+/**
+ * @brief 析构函数
+ */
 DAFigureChartEditorWidgetOverlay::~DAFigureChartEditorWidgetOverlay()
 {
 }
+
+/**
+ * @brief 设置图表编辑器工厂函数
+ * @param funFactory 图表编辑器工厂函数
+ */
 void DAFigureChartEditorWidgetOverlay::setChartEditorFactory(FpChartEditorFactory funFactory)
 {
     DA_D(d);
-    d->m_funFactory = funFactory;
+    d->mFunFactory = funFactory;
 }
 
+/**
+ * @brief 获取图表编辑器工厂函数
+ * @return 图表编辑器工厂函数
+ */
 DAFigureChartEditorWidgetOverlay::FpChartEditorFactory DAFigureChartEditorWidgetOverlay::getChartEditorFactory() const
 {
-    return d_ptr->m_funFactory;
+    return d_ptr->mFunFactory;
 }
 
 /**
@@ -95,7 +132,7 @@ DAFigureChartEditorWidgetOverlay::FpChartEditorFactory DAFigureChartEditorWidget
 void DA::DAFigureChartEditorWidgetOverlay::setAutoStart(bool autoStart)
 {
     DA_D(d);
-    d->m_autoStart = autoStart;
+    d->mAutoStart = autoStart;
 }
 
 /**
@@ -104,7 +141,7 @@ void DA::DAFigureChartEditorWidgetOverlay::setAutoStart(bool autoStart)
  */
 bool DAFigureChartEditorWidgetOverlay::isAutoStart() const
 {
-    return d_ptr->m_autoStart;
+    return d_ptr->mAutoStart;
 }
 
 /**
@@ -113,7 +150,7 @@ bool DAFigureChartEditorWidgetOverlay::isAutoStart() const
  */
 bool DAFigureChartEditorWidgetOverlay::isChartEditorActive() const
 {
-    return d_ptr->m_activeEditor != nullptr;
+    return d_ptr->mActiveEditor != nullptr;
 }
 
 /**
@@ -125,12 +162,16 @@ bool DAFigureChartEditorWidgetOverlay::isChartEditorActive() const
  */
 void DAFigureChartEditorWidgetOverlay::setActiveChartCanvasPainter(FpActiveChartCanvasPainter painterFp)
 {
-    d_ptr->m_activeChartCanvasPainter = painterFp;
+    d_ptr->mActiveChartCanvasPainter = painterFp;
 }
 
+/**
+ * @brief 获取激活的图表canvas绘制函数
+ * @return 激活的图表canvas绘制函数
+ */
 DAFigureChartEditorWidgetOverlay::FpActiveChartCanvasPainter DAFigureChartEditorWidgetOverlay::getActiveChartCanvasPainter() const
 {
-    return d_ptr->m_activeChartCanvasPainter;
+    return d_ptr->mActiveChartCanvasPainter;
 }
 
 /**
@@ -163,15 +204,20 @@ QRect DAFigureChartEditorWidgetOverlay::mapRectTo(const QWidget* sourceWidget, c
  */
 DAAbstractChartEditor* DA::DAFigureChartEditorWidgetOverlay::getChartEditor() const
 {
-    return d_ptr->m_activeEditor;
+    return d_ptr->mActiveEditor;
 }
 
+/**
+ * @brief 活跃Widget切换时触发，用于在新激活的绘图上创建编辑器
+ * @param oldActive 之前活跃的Widget
+ * @param newActive 新激活的Widget
+ */
 void DAFigureChartEditorWidgetOverlay::onActiveWidgetChanged(QWidget* oldActive, QWidget* newActive)
 {
     DA_D(d);
     Q_UNUSED(oldActive);
 
-    if (!(d->m_funFactory) || !newActive || !(d->m_activeEditor.isNull())) {
+    if (!(d->mFunFactory) || !newActive || !(d->mActiveEditor.isNull())) {
         return;
     }
     QwtPlot* plot = qobject_cast< QwtPlot* >(newActive);
@@ -181,86 +227,105 @@ void DAFigureChartEditorWidgetOverlay::onActiveWidgetChanged(QWidget* oldActive,
     createChartEditor(plot);
 }
 
+/**
+ * @brief 编辑器完成编辑时触发，清理编辑器并发出finished信号
+ * @param isCancel 是否取消编辑
+ */
 void DAFigureChartEditorWidgetOverlay::onEditorFinished(bool isCancel)
 {
     DA_D(d);
-    if (d->m_activeEditor) {
-        d->m_activeEditor->setEnabled(false);
-        d->m_activeEditor->deleteLater();
-        d->m_activeEditor = nullptr;
+    if (d->mActiveEditor) {
+        d->mActiveEditor->setEnabled(false);
+        d->mActiveEditor->deleteLater();
+        d->mActiveEditor = nullptr;
     }
     // 自身也需要完成
     Q_EMIT finished(isCancel);
 }
 
+/**
+ * @brief 编辑器开始编辑时触发
+ */
 void DAFigureChartEditorWidgetOverlay::onEditorBegin()
 {
     // 开始编辑DAFigureChartEditorWidgetOverlay可以隐藏取消
     // hide();
 }
 
+/**
+ * @brief 创建图表编辑器并关联到指定绘图
+ * @param plot 目标QwtPlot
+ */
 void DAFigureChartEditorWidgetOverlay::createChartEditor(QwtPlot* plot)
 {
     DA_D(d);
-    if (!plot || !(d->m_funFactory)) {
+    if (!plot || !(d->mFunFactory)) {
         return;
     }
-    if (d->m_activeEditor) {
-        d->m_activeEditor->setEnabled(false);
-        d->m_activeEditor->deleteLater();
+    if (d->mActiveEditor) {
+        d->mActiveEditor->setEnabled(false);
+        d->mActiveEditor->deleteLater();
     }
-    if (d->m_activePlot != plot) {
-        d->m_activePlot = plot;
+    if (d->mActivePlot != plot) {
+        d->mActivePlot = plot;
     }
-    d->m_activeEditor = d->m_funFactory(d->m_activePlot.data());
-    if (d->m_activeEditor) {
-        d->m_activeEditor->setEnabled(true);
-        connect(d->m_activeEditor, &DAAbstractChartEditor::finishedEdit, this, &DAFigureChartEditorWidgetOverlay::onEditorFinished);
-        connect(d->m_activeEditor, &DAAbstractChartEditor::beginEdit, this, &DAFigureChartEditorWidgetOverlay::onEditorBegin);
+    d->mActiveEditor = d->mFunFactory(d->mActivePlot.data());
+    if (d->mActiveEditor) {
+        d->mActiveEditor->setEnabled(true);
+        connect(d->mActiveEditor, &DAAbstractChartEditor::finishedEdit, this, &DAFigureChartEditorWidgetOverlay::onEditorFinished);
+        connect(d->mActiveEditor, &DAAbstractChartEditor::beginEdit, this, &DAFigureChartEditorWidgetOverlay::onEditorBegin);
     }
 }
 
+/**
+ * @brief 鼠标移动事件处理
+ * @param me 鼠标事件
+ */
 void DAFigureChartEditorWidgetOverlay::mouseMoveEvent(QMouseEvent* me)
 {
     DA_D(d);
 #if DAFigureChartEditorWidgetOverlay_DebugPrint
     qDebug() << "DAFigureChartEditorWidgetOverlay::mouseMoveEvent";
 #endif
-    d->m_lastFigureMousePos = compat::eventPos(me);
-    if (d->m_autoStart) {
-        if (!d->m_activeEditor) {
+    d->mLastFigureMousePos = compat::eventPos(me);
+    if (d->mAutoStart) {
+        if (!d->mActiveEditor) {
             // 检查当前鼠标所在绘图是否在当前激活的绘图上
-            QwtPlot* activePlot = figure()->plotUnderPos(d->m_lastFigureMousePos);
+            QwtPlot* activePlot = figure()->plotUnderPos(d->mLastFigureMousePos);
             if (activePlot && (activePlot == currentActivePlot())) {
                 createChartEditor(activePlot);
             }
         }
     }
-    if (d->m_activeEditor) {
+    if (d->mActiveEditor) {
         // 这里要把事件传递过去
         QPoint plotPos = d_ptr->mapMousePosToPlotCanvas();
         // 把事件传递给editor
         QMouseEvent mappedEvent(
             QEvent::MouseButtonPress, plotPos, plotPos, compat::eventGlobalPos(me), me->button(), me->buttons(), me->modifiers()
         );
-        d->m_activeEditor->mouseMoveEvent(&mappedEvent);
+        d->mActiveEditor->mouseMoveEvent(&mappedEvent);
     } else {
         DAFigureWidgetOverlay::mouseMoveEvent(me);
     }
 }
 
+/**
+ * @brief 鼠标释放事件处理
+ * @param me 鼠标事件
+ */
 void DAFigureChartEditorWidgetOverlay::mouseReleaseEvent(QMouseEvent* me)
 {
     DA_D(d);
-    d->m_lastFigureMousePos = compat::eventPos(me);
-    if (d->m_activeEditor) {
+    d->mLastFigureMousePos = compat::eventPos(me);
+    if (d->mActiveEditor) {
         // 这里要把事件传递过去
         QPoint plotPos = d_ptr->mapMousePosToPlotCanvas();
         // 把事件传递给editor
         QMouseEvent mappedEvent(
             QEvent::MouseButtonPress, plotPos, plotPos, compat::eventGlobalPos(me), me->button(), me->buttons(), me->modifiers()
         );
-        d->m_activeEditor->mouseReleaseEvent(&mappedEvent);
+        d->mActiveEditor->mouseReleaseEvent(&mappedEvent);
         releaseMouse();
         me->accept();
     } else {
@@ -268,41 +333,49 @@ void DAFigureChartEditorWidgetOverlay::mouseReleaseEvent(QMouseEvent* me)
     }
 }
 
+/**
+ * @brief 鼠标按下事件处理
+ * @param me 鼠标事件
+ */
 void DAFigureChartEditorWidgetOverlay::mousePressEvent(QMouseEvent* me)
 {
     DA_D(d);
-    d->m_lastFigureMousePos = compat::eventPos(me);
+    d->mLastFigureMousePos = compat::eventPos(me);
 #if DAFigureChartEditorWidgetOverlay_DebugPrint
-    qDebug() << "DAFigureChartEditorWidgetOverlay::mousePressEvent(" << d->m_lastFigureMousePos
-             << "),m_activeEditor=" << d->m_activeEditor;
+    qDebug() << "DAFigureChartEditorWidgetOverlay::mousePressEvent(" << d->mLastFigureMousePos
+             << "),mActiveEditor=" << d->mActiveEditor;
 #endif
     DAFigureWidgetOverlay::mousePressEvent(me);
     if (me->isAccepted()) {
         return;
     }
-    if (!d->m_activeEditor) {
+    if (!d->mActiveEditor) {
         if (QwtPlot* activePlot = currentActivePlot()) {
             createChartEditor(activePlot);
         }
     }
-    if (d->m_activeEditor) {
+    if (d->mActiveEditor) {
         // 这里要把第一个点击传递过去
         QPoint canvasPos = d_ptr->mapMousePosToPlotCanvas();
         // 把事件传递给editor
         QMouseEvent mappedEvent(
             QEvent::MouseButtonPress, canvasPos, canvasPos, compat::eventGlobalPos(me), me->button(), me->buttons(), me->modifiers()
         );
-        d->m_activeEditor->mousePressEvent(&mappedEvent);
+        d->mActiveEditor->mousePressEvent(&mappedEvent);
         grabMouse();
         me->accept();
     }
 }
 
 
+/**
+ * @brief 键盘按键事件处理
+ * @param ke 键盘事件
+ */
 void DAFigureChartEditorWidgetOverlay::keyPressEvent(QKeyEvent* ke)
 {
     DA_D(d);
-    if (d->m_activeEditor) {
+    if (d->mActiveEditor) {
         QKeyEvent nke(
             ke->type(),
             ke->key(),
@@ -314,18 +387,23 @@ void DAFigureChartEditorWidgetOverlay::keyPressEvent(QKeyEvent* ke)
             ke->isAutoRepeat(),
             ke->count()
         );
-        if (d->m_activeEditor->keyPressEvent(&nke)) {
+        if (d->mActiveEditor->keyPressEvent(&nke)) {
             ke->accept();
             return;
         }
     }
     DAFigureWidgetOverlay::keyPressEvent(ke);
 }
+
+/**
+ * @brief 绘制事件处理，在激活的canvas上绘制自定义内容
+ * @param pe 绘制事件
+ */
 void DAFigureChartEditorWidgetOverlay::paintEvent(QPaintEvent* pe)
 {
     DA_D(d);
     DAFigureWidgetOverlay::paintEvent(pe);
-    if (d->m_activeChartCanvasPainter) {
+    if (d->mActiveChartCanvasPainter) {
         QwtPlot* activePlot = currentActivePlot();
         if (activePlot) {
             QPainter painter(this);
@@ -334,7 +412,7 @@ void DAFigureChartEditorWidgetOverlay::paintEvent(QPaintEvent* pe)
                 return;
             }
             QRect canvasRect = mapRectTo(activePlot, figure(), canvas->geometry());
-            d->m_activeChartCanvasPainter(&painter, d->m_lastFigureMousePos, canvasRect);
+            d->mActiveChartCanvasPainter(&painter, d->mLastFigureMousePos, canvasRect);
         }
     }
 }

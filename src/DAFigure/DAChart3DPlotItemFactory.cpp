@@ -23,10 +23,18 @@ static QHash< int, DAChart3DPlotItemFactory::Fp3DItemCreate > initDAChart3DPlotI
     return res;
 }
 
+/**
+ * @brief 默认构造函数
+ */
 DAChart3DPlotItemFactory::DAChart3DPlotItemFactory()
 {
 }
 
+/**
+ * @brief 根据RTTI值创建3D绘图项
+ * @param rtti 运行时类型识别值
+ * @return 创建的3D绘图项指针，如果类型不存在则返回nullptr
+ */
 Qwt3DPlotItem* DAChart3DPlotItemFactory::createItem(int rtti)
 {
     Fp3DItemCreate fp = factoryFunctionMap().value(rtti, nullptr);
@@ -36,11 +44,21 @@ Qwt3DPlotItem* DAChart3DPlotItemFactory::createItem(int rtti)
     return fp();
 }
 
+/**
+ * @brief 注册3D绘图项创建函数
+ * @param rtti 运行时类型识别值
+ * @param fp 创建函数指针
+ */
 void DAChart3DPlotItemFactory::registCreateItemFucntion(int rtti, DAChart3DPlotItemFactory::Fp3DItemCreate fp)
 {
     factoryFunctionMap()[ rtti ] = fp;
 }
 
+/**
+ * @brief 判断是否已注册指定RTTI的创建函数
+ * @param rtti 运行时类型识别值
+ * @return 如果已注册返回true，否则返回false
+ */
 bool DAChart3DPlotItemFactory::isHaveCreateItemFucntion(int rtti)
 {
     return factoryFunctionMap().contains(rtti);

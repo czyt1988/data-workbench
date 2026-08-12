@@ -1,4 +1,4 @@
-﻿#ifndef DACHARTSELECTREGIONSHAPEITEM_H
+#ifndef DACHARTSELECTREGIONSHAPEITEM_H
 #define DACHARTSELECTREGIONSHAPEITEM_H
 #include "qwt_plot_shapeitem.h"
 #include "DAFigureAPI.h"
@@ -11,7 +11,7 @@ class DAFIGURE_API DAChartSelectRegionShapeItem : public QwtPlotShapeItem
 {
 public:
     DAChartSelectRegionShapeItem(const QString& title = QString());
-    virtual void draw(QPainter* p, const QwtScaleMap& xMap, const QwtScaleMap& yMap, const QRectF& rect) const;
+    virtual void draw(QPainter* p, const QwtScaleMap& xMap, const QwtScaleMap& yMap, const QRectF& rect) const override;
     void setEllipse(const QRectF& rect);
 };
 }  // End Of Namespace DA

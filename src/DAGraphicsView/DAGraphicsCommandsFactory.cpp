@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsCommandsFactory.h"
+#include "DAGraphicsCommandsFactory.h"
 #include "DAGraphicsScene.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
@@ -24,10 +24,19 @@ public:
 	QList< std::pair< QGraphicsItem*, QPointF > > movingItemsEndPos;  ///< 记录移动结束的位置
 };
 
+/**
+ * @brief PrivateData 构造函数
+ * @param p 指向公开类的指针
+ */
 DAGraphicsCommandsFactory::PrivateData::PrivateData(DAGraphicsCommandsFactory* p) : q_ptr(p)
 {
 }
 
+/**
+ * @brief 清空鼠标移动状态特征的标记信息
+ *
+ * 清空移动起始和结束位置列表，并重置移动状态标记
+ */
 void DAGraphicsCommandsFactory::PrivateData::clearMouseMovementCycleState()
 {
 	if (!movingItemsStartPos.empty()) {
@@ -43,40 +52,83 @@ void DAGraphicsCommandsFactory::PrivateData::clearMouseMovementCycleState()
 //----------------------------------------------------
 // DAGraphicsCommandsFactory
 //----------------------------------------------------
+/**
+ * @brief 构造函数
+ */
 DAGraphicsCommandsFactory::DAGraphicsCommandsFactory() : DA_PIMPL_CONSTRUCT
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DAGraphicsCommandsFactory::~DAGraphicsCommandsFactory()
 {
 }
 
+/**
+ * @brief 创建添加图元的撤销命令
+ * @param item 要添加的图元
+ * @return 添加图元的撤销命令指针
+ */
 DACommandsForGraphicsItemAdd* DAGraphicsCommandsFactory::createItemAdd(QGraphicsItem* item)
 {
 	return new DACommandsForGraphicsItemAdd(item, scene());
 }
 
+/**
+ * @brief 创建批量添加图元的撤销命令
+ * @param its 要添加的图元列表
+ * @return 批量添加图元的撤销命令指针
+ */
 DACommandsForGraphicsItemsAdd* DAGraphicsCommandsFactory::createItemsAdd(const QList< QGraphicsItem* > its)
 {
 	return new DACommandsForGraphicsItemsAdd(its, scene());
 }
 
+/**
+ * @brief 创建移除图元的撤销命令
+ * @param item 要移除的图元
+ * @param parent 父撤销命令
+ * @return 移除图元的撤销命令指针
+ */
 DACommandsForGraphicsItemRemove* DAGraphicsCommandsFactory::createItemRemove(QGraphicsItem* item, QUndoCommand* parent)
 {
 	return new DACommandsForGraphicsItemRemove(item, scene(), parent);
 }
 
+/**
+ * @brief 创建批量移除图元的撤销命令
+ * @param its 要移除的图元列表
+ * @return 批量移除图元的撤销命令指针
+ */
 DACommandsForGraphicsItemsRemove* DAGraphicsCommandsFactory::createItemsRemove(const QList< QGraphicsItem* > its)
 {
 	return new DACommandsForGraphicsItemsRemove(its, scene());
 }
 
+/**
+ * @brief 创建图元移动的撤销命令
+ * @param item 要移动的图元
+ * @param start 移动起始位置
+ * @param end 移动结束位置
+ * @param skipfirst 是否跳过第一次执行
+ * @return 图元移动的撤销命令指针
+ */
 DACommandsForGraphicsItemMoved*
 DAGraphicsCommandsFactory::createItemMoved(QGraphicsItem* item, const QPointF& start, const QPointF& end, bool skipfirst)
 {
     return new DACommandsForGraphicsItemMoved(item, start, end, skipfirst);
 }
 
+/**
+ * @brief 创建批量图元移动的撤销命令
+ * @param items 要移动的图元列表
+ * @param starts 移动起始位置列表
+ * @param ends 移动结束位置列表
+ * @param skipfirst 是否跳过第一次执行
+ * @return 批量图元移动的撤销命令指针
+ */
 DACommandsForGraphicsItemsMoved* DAGraphicsCommandsFactory::createItemsMoved(const QList< QGraphicsItem* >& items,
                                                                              const QList< QPointF >& starts,
                                                                              const QList< QPointF >& ends,
@@ -130,6 +182,16 @@ DACommandsForGraphicsItemsMoved* DAGraphicsCommandsFactory::createItemsMoved()
 	return createItemsMoved(items, startPos, endsPos, true);
 }
 
+/**
+ * @brief 创建图元缩放的撤销命令（带位置和尺寸参数）
+ * @param item 要缩放的图元
+ * @param oldpos 缩放前位置
+ * @param oldSize 缩放前尺寸
+ * @param newpos 缩放后位置
+ * @param newSize 缩放后尺寸
+ * @param skipfirst 是否跳过第一次执行
+ * @return 图元缩放的撤销命令指针
+ */
 DACommandsForGraphicsItemResized* DAGraphicsCommandsFactory::createItemResized(DAGraphicsResizeableItem* item,
                                                                                const QPointF& oldpos,
                                                                                const QSizeF& oldSize,
@@ -140,6 +202,13 @@ DACommandsForGraphicsItemResized* DAGraphicsCommandsFactory::createItemResized(D
     return new DACommandsForGraphicsItemResized(item, oldpos, oldSize, newpos, newSize, skipfirst);
 }
 
+/**
+ * @brief 创建图元缩放的撤销命令（仅带尺寸参数）
+ * @param item 要缩放的图元
+ * @param oldSize 缩放前尺寸
+ * @param newSize 缩放后尺寸
+ * @return 图元缩放的撤销命令指针
+ */
 DACommandsForGraphicsItemResized* DAGraphicsCommandsFactory::createItemResized(DAGraphicsResizeableItem* item,
                                                                                const QSizeF& oldSize,
                                                                                const QSizeF& newSize)
@@ -147,6 +216,13 @@ DACommandsForGraphicsItemResized* DAGraphicsCommandsFactory::createItemResized(D
     return new DACommandsForGraphicsItemResized(item, oldSize, newSize);
 }
 
+/**
+ * @brief 创建图元宽度调整的撤销命令
+ * @param item 要调整宽度的图元
+ * @param oldWidth 调整前宽度
+ * @param newWidth 调整后宽度
+ * @return 图元宽度调整的撤销命令指针
+ */
 DACommandsForGraphicsItemResizeWidth* DAGraphicsCommandsFactory::createItemResizeWidth(DAGraphicsResizeableItem* item,
                                                                                        const qreal& oldWidth,
                                                                                        const qreal& newWidth)
@@ -154,6 +230,13 @@ DACommandsForGraphicsItemResizeWidth* DAGraphicsCommandsFactory::createItemResiz
     return new DACommandsForGraphicsItemResizeWidth(item, oldWidth, newWidth);
 }
 
+/**
+ * @brief 创建图元高度调整的撤销命令
+ * @param item 要调整高度的图元
+ * @param oldHeight 调整前高度
+ * @param newHeight 调整后高度
+ * @return 图元高度调整的撤销命令指针
+ */
 DACommandsForGraphicsItemResizeHeight* DAGraphicsCommandsFactory::createItemResizeHeight(DAGraphicsResizeableItem* item,
                                                                                          const qreal& oldHeight,
                                                                                          const qreal& newHeight)
@@ -161,6 +244,13 @@ DACommandsForGraphicsItemResizeHeight* DAGraphicsCommandsFactory::createItemResi
     return new DACommandsForGraphicsItemResizeHeight(item, oldHeight, newHeight);
 }
 
+/**
+ * @brief 创建图元旋转的撤销命令
+ * @param item 要旋转的图元
+ * @param oldRotation 旋转前角度
+ * @param newRotation 旋转后角度
+ * @return 图元旋转的撤销命令指针
+ */
 DACommandsForGraphicsItemRotation* DAGraphicsCommandsFactory::createItemRotation(DAGraphicsResizeableItem* item,
                                                                                  const qreal& oldRotation,
                                                                                  const qreal& newRotation)
@@ -168,16 +258,32 @@ DACommandsForGraphicsItemRotation* DAGraphicsCommandsFactory::createItemRotation
     return new DACommandsForGraphicsItemRotation(item, oldRotation, newRotation);
 }
 
+/**
+ * @brief 创建图元组合的撤销命令
+ * @param groupingitems 要组合的图元列表
+ * @return 图元组合的撤销命令指针
+ */
 DACommandsForGraphicsItemGrouping* DAGraphicsCommandsFactory::createItemGrouping(const QList< QGraphicsItem* >& groupingitems)
 {
     return new DACommandsForGraphicsItemGrouping(scene(), groupingitems);
 }
 
+/**
+ * @brief 创建图元取消组合的撤销命令
+ * @param group 要取消组合的图元组
+ * @return 图元取消组合的撤销命令指针
+ */
 DACommandsForGraphicsItemUngrouping* DAGraphicsCommandsFactory::createItemUngrouping(QGraphicsItemGroup* group)
 {
     return new DACommandsForGraphicsItemUngrouping(scene(), group);
 }
 
+/**
+ * @brief 处理场景鼠标按下事件
+ *
+ * 记录鼠标按下位置，判断是否开始移动图元，并记录选中可移动图元的起始位置
+ * @param mouseEvent 鼠标事件
+ */
 void DAGraphicsCommandsFactory::sceneMousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
 	if (!mouseEvent) {
@@ -205,6 +311,12 @@ void DAGraphicsCommandsFactory::sceneMousePressEvent(QGraphicsSceneMouseEvent* m
 	}
 }
 
+/**
+ * @brief 处理场景鼠标移动事件
+ *
+ * 根据是否开始移动图元来标记鼠标移动周期是否完成
+ * @param mouseEvent 鼠标事件
+ */
 void DAGraphicsCommandsFactory::sceneMouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
 	Q_UNUSED(mouseEvent);
@@ -215,6 +327,12 @@ void DAGraphicsCommandsFactory::sceneMouseMoveEvent(QGraphicsSceneMouseEvent* mo
 	}
 }
 
+/**
+ * @brief 处理场景鼠标释放事件
+ *
+ * 记录鼠标释放位置，判断是否形成完整的鼠标移动周期，并记录图元结束位置
+ * @param mouseEvent 鼠标事件
+ */
 void DAGraphicsCommandsFactory::sceneMouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
 	if (!mouseEvent) {
@@ -304,11 +422,21 @@ void DAGraphicsCommandsFactory::resetMouseMovementCycleState()
     d_ptr->clearMouseMovementCycleState();
 }
 
+/**
+ * @brief 设置关联的场景
+ * @param s 关联的场景指针
+ * @sa scene()
+ */
 void DAGraphicsCommandsFactory::setScene(DAGraphicsScene* s)
 {
     d_ptr->scene = s;
 }
 
+/**
+ * @brief 获取关联的场景
+ * @return 关联的场景指针
+ * @sa setScene()
+ */
 DAGraphicsScene* DAGraphicsCommandsFactory::scene() const
 {
     return d_ptr->scene;

@@ -48,16 +48,7 @@ public:
     // 把绘图QwtPlot的坐标映射到canvas上面
     QPoint mapPlotPosToCanvasPos(const QPoint& pos) const;
 
-    /**
-     * @brief 获取当前编辑器对应的plot item
-     *
-     * 这是当前编辑器对应的plot item，用于在编辑过程中添加、删除、修改item
-     *
-     * 这个函数一般是编辑器结束后调用，用于获取临时项
-     *
-     * 此函数调用后编辑器维护的临时对象应该清理，代表所有权已经移交给绘图
-     * @return QwtPlotItem*
-     */
+    // 获取当前编辑器对应的plot item
     virtual QwtPlotItem* takeItem() = 0;
 
     // 屏幕坐标转换为数据坐标
@@ -81,7 +72,7 @@ Q_SIGNALS:
     void finishedEdit(bool isCancel);
 
 protected:
-    virtual bool eventFilter(QObject* object, QEvent* event);
+    virtual bool eventFilter(QObject* object, QEvent* event) override;
     virtual bool mousePressEvent(const QMouseEvent* e);
     virtual bool mouseMoveEvent(const QMouseEvent* e);
     virtual bool mouseReleaseEvent(const QMouseEvent* e);
@@ -89,8 +80,8 @@ protected:
     virtual bool keyReleaseEvent(const QKeyEvent* e);
 
 private:
-    bool m_isEnable;           ///< 是否生效
-    QList< int > m_blockKeys;  ///< 屏蔽按键
+    bool mIsEnable;           ///< 是否生效
+    QList< int > mBlockKeys;  ///< 屏蔽按键
 };
 }  // End Of Namespace DA
 #endif  // DAABSTRACTPLOTEDITOR_H

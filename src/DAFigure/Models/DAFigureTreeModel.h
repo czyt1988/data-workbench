@@ -58,10 +58,8 @@ public:
     ~DAFigureTreeModel();
 
     void setFigure(QwtFigure* figure);
-    QwtFigure* figure() const
-    {
-        return m_figure;
-    }
+    // 获取关联的QwtFigure
+    QwtFigure* figure() const;
 
     // 设置 DAFigureWidget（包含 3D chart 管理入口）
     void setFigureWidget(DA::DAFigureWidget* figWidget);
@@ -192,18 +190,7 @@ private:
     QStandardItem* find3DItemsFolderForChart(QStandardItem* chartItem) const;
 
 private:
-    QwtFigure* m_figure;
-    QHash< QwtPlot*, QStandardItem* > m_plotItems;
-    QHash< QwtPlotItem*, QStandardItem* > m_plotItemItems;
-    // 3D 成员变量
-    QHash< DAChart3DWidget*, QStandardItem* > m_plot3DItems;       ///< 3D chart → layer 树节点
-    QHash< Qwt3DPlotItem*, QStandardItem* > m_plot3DItemItems;    ///< 3D plot item → 树节点
-    QHash< DAChart3DWidget*, QList< QMetaObject::Connection > > m_plot3DConnections;  ///< 3D chart 信号连接
-    QPointer< DAFigureWidget > m_figureWidget;  ///< DAFigureWidget 缓存
-
-    // 连接管理
-    QList< QMetaObject::Connection > m_figureConnections;
-    QHash< QwtPlot*, QList< QMetaObject::Connection > > m_plotConnections;
+    DA_DECLARE_PRIVATE(DAFigureTreeModel)
 };
 
 }  // End Of Namespace DA

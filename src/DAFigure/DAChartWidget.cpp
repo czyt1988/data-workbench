@@ -68,6 +68,9 @@ public:
     DAChartWidget::DataPickerFactory dataPickerFactory;
 };
 
+/**
+ * @brief 初始化私有数据，设置画布、布局和样式
+ */
 void DAChartWidget::PrivateData::initialize()
 {
     setupCanvas();
@@ -86,6 +89,9 @@ void DAChartWidget::PrivateData::initialize()
     pickerFactory = [](QWidget* canvas) -> QwtPlotPicker* { return new DAChartCrossTracker(canvas); };
 }
 
+/**
+ * @brief 设置自定义画布，配置光标和焦点策略
+ */
 void DAChartWidget::PrivateData::setupCanvas()
 {
     // 创建自定义画布
@@ -96,6 +102,9 @@ void DAChartWidget::PrivateData::setupCanvas()
     q_ptr->setCanvas(canvas);
 }
 
+/**
+ * @brief 设置交互组件（延迟创建）
+ */
 void DAChartWidget::PrivateData::setupInteractions()
 {
     // 交互组件在需要时延迟创建
@@ -103,12 +112,19 @@ void DAChartWidget::PrivateData::setupInteractions()
 
 // ==================== DAChartWidget 实现 ====================
 
+/**
+ * @brief 构造函数
+ * @param parent 父窗口部件
+ */
 DAChartWidget::DAChartWidget(QWidget* parent) : QwtPlot(parent), DA_PIMPL_CONSTRUCT
 {
     d_ptr->initialize();
     enableMouseWheelZoom(true);  // 默认开启滚轮缩放
 }
 
+/**
+ * @brief 析构函数
+ */
 DAChartWidget::~DAChartWidget()
 {
     // 智能指针自动清理
@@ -134,6 +150,13 @@ QList< int > DAChartWidget::dataRttis() const
     return rttis;
 }
 
+/**
+ * @brief 添加曲线
+ * @param xData x轴数据
+ * @param yData y轴数据
+ * @param title 曲线标题
+ * @return 创建的曲线指针，如果数据无效返回nullptr
+ */
 QwtPlotCurve* DAChartWidget::addCurve(const QVector< double >& xData, const QVector< double >& yData, const QString& title)
 {
     if (xData.isEmpty() || yData.isEmpty() || xData.size() != yData.size()) {
@@ -148,6 +171,12 @@ QwtPlotCurve* DAChartWidget::addCurve(const QVector< double >& xData, const QVec
     return curve;
 }
 
+/**
+ * @brief 添加曲线
+ * @param points 点集合
+ * @param title 曲线标题
+ * @return 创建的曲线指针，如果点集合为空返回nullptr
+ */
 QwtPlotCurve* DAChartWidget::addCurve(const QVector< QPointF >& points, const QString& title)
 {
     if (points.isEmpty()) {
@@ -163,6 +192,10 @@ QwtPlotCurve* DAChartWidget::addCurve(const QVector< QPointF >& points, const QS
     return curve;
 }
 
+/**
+ * @brief 获取所有曲线
+ * @return 曲线列表
+ */
 QList< QwtPlotCurve* > DAChartWidget::getCurves() const
 {
     QList< QwtPlotCurve* > curves;
@@ -177,6 +210,10 @@ QList< QwtPlotCurve* > DAChartWidget::getCurves() const
     return curves;
 }
 
+/**
+ * @brief 移除曲线
+ * @param curve 要移除的曲线指针
+ */
 void DAChartWidget::removeCurve(QwtPlotCurve* curve)
 {
     if (!curve)
@@ -186,6 +223,12 @@ void DAChartWidget::removeCurve(QwtPlotCurve* curve)
     delete curve;
 }
 
+/**
+ * @brief 添加散点图
+ * @param points 点集合
+ * @param title 散点图标题
+ * @return 创建的曲线指针（散点样式），如果点集合为空返回nullptr
+ */
 QwtPlotCurve* DAChartWidget::addScatter(const QVector< QPointF >& points, const QString& title)
 {
     QwtPlotCurve* curve = addCurve(points, title);
@@ -197,6 +240,12 @@ QwtPlotCurve* DAChartWidget::addScatter(const QVector< QPointF >& points, const 
     return curve;
 }
 
+/**
+ * @brief 添加柱状图
+ * @param values 值数组
+ * @param title 柱状图标题
+ * @return 创建的柱状图指针，如果值为空返回nullptr
+ */
 QwtPlotBarChart* DAChartWidget::addBarChart(const QVector< double >& values, const QString& title)
 {
     if (values.isEmpty()) {
@@ -225,6 +274,12 @@ QwtPlotBarChart* DAChartWidget::addBarChart(const QVector< double >& values, con
     return barChart;
 }
 
+/**
+ * @brief 添加柱状图
+ * @param points 点集合
+ * @param title 柱状图标题
+ * @return 创建的柱状图指针，如果点集合为空返回nullptr
+ */
 QwtPlotBarChart* DAChartWidget::addBarChart(const QVector< QPointF >& points, const QString& title)
 {
     if (points.isEmpty()) {
@@ -244,6 +299,14 @@ QwtPlotBarChart* DAChartWidget::addBarChart(const QVector< QPointF >& points, co
     return barChart;
 }
 
+/**
+ * @brief 添加区间曲线
+ * @param values 值数组
+ * @param mins 最小值数组
+ * @param maxs 最大值数组
+ * @param title 区间曲线标题
+ * @return 创建的区间曲线指针，如果数据无效返回nullptr
+ */
 QwtPlotIntervalCurve* DAChartWidget::addIntervalCurve(
     const QVector< double >& values, const QVector< double >& mins, const QVector< double >& maxs, const QString& title
 )
@@ -269,6 +332,12 @@ QwtPlotIntervalCurve* DAChartWidget::addIntervalCurve(
     return intervalCurve;
 }
 
+/**
+ * @brief 添加垂直线标记
+ * @param x x轴位置
+ * @param title 标记标题
+ * @return 创建的标记指针
+ */
 QwtPlotMarker* DAChartWidget::addVerticalLine(double x, const QString& title)
 {
     QwtPlotMarker* marker = new QwtPlotMarker(title);
@@ -279,6 +348,12 @@ QwtPlotMarker* DAChartWidget::addVerticalLine(double x, const QString& title)
     return marker;
 }
 
+/**
+ * @brief 添加水平线标记
+ * @param y y轴位置
+ * @param title 标记标题
+ * @return 创建的标记指针
+ */
 QwtPlotMarker* DAChartWidget::addHorizontalLine(double y, const QString& title)
 {
     QwtPlotMarker* marker = new QwtPlotMarker(title);
@@ -289,6 +364,13 @@ QwtPlotMarker* DAChartWidget::addHorizontalLine(double y, const QString& title)
     return marker;
 }
 
+/**
+ * @brief 添加十字线标记
+ * @param x x轴位置
+ * @param y y轴位置
+ * @param title 标记标题
+ * @return 创建的标记指针
+ */
 QwtPlotMarker* DAChartWidget::addCrossLine(double x, double y, const QString& title)
 {
     QwtPlotMarker* marker = new QwtPlotMarker(title);
@@ -300,6 +382,12 @@ QwtPlotMarker* DAChartWidget::addCrossLine(double x, double y, const QString& ti
     return marker;
 }
 
+/**
+ * @brief 添加光谱图
+ * @param gridData 网格栅格数据
+ * @param title 光谱图标题
+ * @return 创建的光谱图指针，如果网格数据为空返回nullptr
+ */
 QwtPlotSpectrogram* DAChartWidget::addSpectrogram(QwtGridRasterData* gridData, const QString& title)
 {
     if (!gridData) {
@@ -313,6 +401,12 @@ QwtPlotSpectrogram* DAChartWidget::addSpectrogram(QwtGridRasterData* gridData, c
     return spectrogram;
 }
 
+/**
+ * @brief 添加箱线图
+ * @param samples 箱线图样本集合
+ * @param title 箱线图标题
+ * @return 创建的箱线图指针，如果样本为空返回nullptr
+ */
 QwtPlotBoxChart* DAChartWidget::addBoxChart(const QVector< QwtBoxSample >& samples, const QString& title)
 {
     if (samples.isEmpty()) {
@@ -330,6 +424,12 @@ QwtPlotBoxChart* DAChartWidget::addBoxChart(const QVector< QwtBoxSample >& sampl
     return boxChart;
 }
 
+/**
+ * @brief 添加直方图
+ * @param samples 区间样本集合
+ * @param title 直方图标题
+ * @return 创建的直方图指针，如果样本为空返回nullptr
+ */
 QwtPlotHistogram* DAChartWidget::addHistogram(const QVector< QwtIntervalSample >& samples, const QString& title)
 {
     if (samples.isEmpty()) {
@@ -346,6 +446,13 @@ QwtPlotHistogram* DAChartWidget::addHistogram(const QVector< QwtIntervalSample >
     return histogram;
 }
 
+/**
+ * @brief 添加多柱状图
+ * @param positions 位置数组
+ * @param values 每组柱子的值集合
+ * @param titles 每组柱子的标题列表
+ * @return 创建的多柱状图指针，如果数据无效返回nullptr
+ */
 QwtPlotMultiBarChart* DAChartWidget::addMultiBarChart(
     const QVector< double >& positions, const QVector< QVector< double > >& values, const QStringList& titles)
 {
@@ -388,6 +495,13 @@ QwtPlotMultiBarChart* DAChartWidget::addMultiBarChart(
     return multiBarChart;
 }
 
+/**
+ * @brief 添加等高线图
+ * @param points 三维点集合
+ * @param levels 等高线级别数组
+ * @param title 等高线图标题
+ * @return 创建的等高线图指针，如果点集合为空返回nullptr
+ */
 QwtPlotSpectroCurve* DAChartWidget::addContour(
     const QVector< QwtPoint3D >& points, const QVector< double >& levels, const QString& title)
 {
@@ -408,6 +522,12 @@ QwtPlotSpectroCurve* DAChartWidget::addContour(
     return curve;
 }
 
+/**
+ * @brief 添加图形项
+ * @param path 绘图路径
+ * @param title 图形项标题
+ * @return 创建的图形项指针
+ */
 QwtPlotShapeItem* DAChartWidget::addShapeItem(const QPainterPath& path, const QString& title)
 {
     QwtPlotShapeItem* item = new QwtPlotShapeItem(title);
@@ -419,6 +539,10 @@ QwtPlotShapeItem* DAChartWidget::addShapeItem(const QPainterPath& path, const QS
     return item;
 }
 
+/**
+ * @brief 移除绘图项
+ * @param item 要移除的绘图项指针
+ */
 void DAChartWidget::removePlotItem(QwtPlotItem* item)
 {
     if (!item) {
@@ -429,6 +553,10 @@ void DAChartWidget::removePlotItem(QwtPlotItem* item)
     delete item;
 }
 
+/**
+ * @brief 清除所有数据相关的绘图项（保留网格、图例等显示元素）
+ * @sa dataRttis
+ */
 void DAChartWidget::clearAllData()
 {
     const QwtPlotItemList items = itemList();
@@ -443,11 +571,19 @@ void DAChartWidget::clearAllData()
     }
 }
 
+/**
+ * @brief 获取数据边界范围
+ * @return 数据可见区域的矩形范围
+ */
 QRectF DAChartWidget::getDataBounds() const
 {
     return DAChartUtil::getVisibleRegionRang(const_cast< DAChartWidget* >(this));
 }
 
+/**
+ * @brief 判断图表中是否有数据
+ * @return 如果有数据返回true，否则返回false
+ */
 bool DAChartWidget::hasData() const
 {
     const QList< int > rttis    = dataRttis();
@@ -462,17 +598,29 @@ bool DAChartWidget::hasData() const
 
 // ==================== DAChartStyleInterface 实现 ====================
 
+/**
+ * @brief 设置图表标题
+ * @param title 图表标题文本
+ */
 void DAChartWidget::setChartTitle(const QString& title)
 {
     setTitle(title);
     notifyPropertiesChanged(ChartTitleChanged);
 }
 
+/**
+ * @brief 获取图表标题
+ * @return 图表标题文本
+ */
 QString DAChartWidget::getChartTitle() const
 {
     return title().text();
 }
 
+/**
+ * @brief 设置背景画刷
+ * @param brush 背景画刷
+ */
 void DAChartWidget::setBackgroundBrush(const QBrush& brush)
 {
     d_ptr->backgroundBrush = brush;
@@ -483,11 +631,19 @@ void DAChartWidget::setBackgroundBrush(const QBrush& brush)
     notifyPropertiesChanged(BackgroundChanged);
 }
 
+/**
+ * @brief 获取背景画刷
+ * @return 背景画刷
+ */
 QBrush DAChartWidget::getBackgroundBrush() const
 {
     return d_ptr->backgroundBrush;
 }
 
+/**
+ * @brief 设置边框颜色
+ * @param color 边框颜色
+ */
 void DAChartWidget::setBorderColor(const QColor& color)
 {
     if (d_ptr->borderColor != color) {
@@ -497,22 +653,41 @@ void DAChartWidget::setBorderColor(const QColor& color)
     }
 }
 
+/**
+ * @brief 获取边框颜色
+ * @return 边框颜色
+ */
 QColor DAChartWidget::getBorderColor() const
 {
     return d_ptr->borderColor;
 }
 
+/**
+ * @brief 设置坐标轴标签
+ * @param axisId 坐标轴ID
+ * @param label 标签文本
+ */
 void DAChartWidget::setAxisLabel(int axisId, const QString& label)
 {
     setAxisTitle(axisId, label);
     notifyPropertiesChanged(AxisLabelChanged);
 }
 
+/**
+ * @brief 获取坐标轴标签
+ * @param axisId 坐标轴ID
+ * @return 标签文本
+ */
 QString DAChartWidget::getAxisLabel(int axisId) const
 {
     return axisTitle(axisId).text();
 }
 
+/**
+ * @brief 设置坐标轴颜色
+ * @param axisId 坐标轴ID
+ * @param color 颜色
+ */
 void DAChartWidget::setAxisColor(int axisId, const QColor& color)
 {
     QwtScaleWidget* aw = this->axisWidget(axisId);
@@ -522,12 +697,21 @@ void DAChartWidget::setAxisColor(int axisId, const QColor& color)
     }
 }
 
+/**
+ * @brief 获取坐标轴颜色
+ * @param axisId 坐标轴ID
+ * @return 坐标轴颜色，如果坐标轴不存在返回无效颜色
+ */
 QColor DAChartWidget::getAxisColor(int axisId) const
 {
     const QwtScaleWidget* aw = this->axisWidget(axisId);
     return aw ? aw->scaleColor() : QColor();
 }
 
+/**
+ * @brief 启用或禁用网格
+ * @param enable 是否启用
+ */
 void DAChartWidget::enableGrid(bool enable)
 {
     if (!d_ptr->grid && enable) {
@@ -543,6 +727,12 @@ void DAChartWidget::enableGrid(bool enable)
     }
 }
 
+/**
+ * @brief 设置网格轴启用状态的辅助函数
+ * @param enable 是否启用
+ * @param getCurrent 获取当前状态的回调函数
+ * @param setEnabled 设置状态的回调函数
+ */
 void DAChartWidget::setGridAxisEnabled(bool enable,
                                        std::function< bool() > getCurrent,
                                        std::function< void(bool) > setEnabled)
@@ -567,6 +757,10 @@ void DAChartWidget::setGridAxisEnabled(bool enable,
     }
 }
 
+/**
+ * @brief 启用或禁用X轴网格
+ * @param enable 是否启用
+ */
 void DAChartWidget::enableGridX(bool enable)
 {
     setGridAxisEnabled(enable,
@@ -574,6 +768,10 @@ void DAChartWidget::enableGridX(bool enable)
                        [ this ](bool e) { d_ptr->grid->enableX(e); });
 }
 
+/**
+ * @brief 启用或禁用Y轴网格
+ * @param enable 是否启用
+ */
 void DAChartWidget::enableGridY(bool enable)
 {
     setGridAxisEnabled(enable,
@@ -581,6 +779,10 @@ void DAChartWidget::enableGridY(bool enable)
                        [ this ](bool e) { d_ptr->grid->enableY(e); });
 }
 
+/**
+ * @brief 启用或禁用X轴次网格
+ * @param enable 是否启用
+ */
 void DAChartWidget::enableGridXMin(bool enable)
 {
     setGridAxisEnabled(enable,
@@ -588,6 +790,10 @@ void DAChartWidget::enableGridXMin(bool enable)
                        [ this ](bool e) { d_ptr->grid->enableXMin(e); });
 }
 
+/**
+ * @brief 启用或禁用Y轴次网格
+ * @param enable 是否启用
+ */
 void DAChartWidget::enableGridYMin(bool enable)
 {
     setGridAxisEnabled(enable,
@@ -595,31 +801,58 @@ void DAChartWidget::enableGridYMin(bool enable)
                        [ this ](bool e) { d_ptr->grid->enableYMin(e); });
 }
 
+/**
+ * @brief 判断网格是否启用
+ * @return 如果网格启用返回true，否则返回false
+ */
 bool DAChartWidget::isGridEnabled() const
 {
     return d_ptr->grid && d_ptr->grid->isVisible();
 }
 
+/**
+ * @brief 判断X轴网格是否启用
+ * @return 如果X轴网格启用返回true，否则返回false
+ */
 bool DAChartWidget::isGridXEnabled() const
 {
     return d_ptr->grid && d_ptr->grid->isVisible() && d_ptr->grid->xEnabled();
 }
 
+/**
+ * @brief 判断Y轴网格是否启用
+ * @return 如果Y轴网格启用返回true，否则返回false
+ */
 bool DAChartWidget::isGridYEnabled() const
 {
     return d_ptr->grid && d_ptr->grid->isVisible() && d_ptr->grid->yEnabled();
 }
 
+/**
+ * @brief 判断X轴次网格是否启用
+ * @return 如果X轴次网格启用返回true，否则返回false
+ */
 bool DAChartWidget::isGridXMinEnabled() const
 {
     return d_ptr->grid && d_ptr->grid->isVisible() && d_ptr->grid->xMinEnabled();
 }
 
+/**
+ * @brief 判断Y轴次网格是否启用
+ * @return 如果Y轴次网格启用返回true，否则返回false
+ */
 bool DAChartWidget::isGridYMinEnabled() const
 {
     return d_ptr->grid && d_ptr->grid->isVisible() && d_ptr->grid->yMinEnabled();
 }
 
+/**
+ * @brief 设置网格样式
+ * @param color 颜色
+ * @param width 线宽
+ * @param style 画笔样式
+ * @param isMajor 是否为主网格线
+ */
 void DAChartWidget::setGridStyle(const QColor& color, qreal width, Qt::PenStyle style, bool isMajor)
 {
     if (!d_ptr->grid) {
@@ -636,16 +869,32 @@ void DAChartWidget::setGridStyle(const QColor& color, qreal width, Qt::PenStyle 
     }
 }
 
+/**
+ * @brief 设置主网格线样式
+ * @param color 颜色
+ * @param width 线宽
+ * @param style 画笔样式
+ */
 void DAChartWidget::setGridMajorStyle(const QColor& color, qreal width, Qt::PenStyle style)
 {
     setGridStyle(color, width, style, true);
 }
 
+/**
+ * @brief 设置次网格线样式
+ * @param color 颜色
+ * @param width 线宽
+ * @param style 画笔样式
+ */
 void DAChartWidget::setGridMinorStyle(const QColor& color, qreal width, Qt::PenStyle style)
 {
     setGridStyle(color, width, style, false);
 }
 
+/**
+ * @brief 启用或禁用图例
+ * @param enable 是否启用
+ */
 void DAChartWidget::enableLegend(bool enable)
 {
     if (!d_ptr->legend && enable) {
@@ -663,11 +912,19 @@ void DAChartWidget::enableLegend(bool enable)
     }
 }
 
+/**
+ * @brief 判断图例是否启用
+ * @return 如果图例启用返回true，否则返回false
+ */
 bool DAChartWidget::isLegendEnabled() const
 {
     return d_ptr->legend && d_ptr->legend->isVisible();
 }
 
+/**
+ * @brief 设置图例位置
+ * @param alignment 对齐方式
+ */
 void DAChartWidget::setLegendPosition(Qt::Alignment alignment)
 {
     if (d_ptr->legend) {
@@ -676,6 +933,10 @@ void DAChartWidget::setLegendPosition(Qt::Alignment alignment)
     }
 }
 
+/**
+ * @brief 获取图例位置
+ * @return 图例对齐方式，如果图例不存在返回右上角对齐
+ */
 Qt::Alignment DAChartWidget::getLegendPosition() const
 {
     // QwtPlotLegendItem 没有直接的位置获取方法
@@ -685,6 +946,10 @@ Qt::Alignment DAChartWidget::getLegendPosition() const
     return Qt::AlignRight | Qt::AlignTop;
 }
 
+/**
+ * @brief 设置图例背景画刷
+ * @param brush 背景画刷
+ */
 void DAChartWidget::setLegendBackground(const QBrush& brush)
 {
     if (d_ptr->legend) {
@@ -693,11 +958,19 @@ void DAChartWidget::setLegendBackground(const QBrush& brush)
     }
 }
 
+/**
+ * @brief 获取图例背景画刷
+ * @return 背景画刷，如果图例不存在返回空画刷
+ */
 QBrush DAChartWidget::getLegendBackground() const
 {
     return d_ptr->legend ? d_ptr->legend->backgroundBrush() : QBrush();
 }
 
+/**
+ * @brief 设置图例文字颜色
+ * @param color 文字颜色
+ */
 void DAChartWidget::setLegendTextColor(const QColor& color)
 {
     if (d_ptr->legend) {
@@ -706,11 +979,20 @@ void DAChartWidget::setLegendTextColor(const QColor& color)
     }
 }
 
+/**
+ * @brief 获取图例文字颜色
+ * @return 文字颜色，如果图例不存在返回无效颜色
+ */
 QColor DAChartWidget::getLegendTextColor() const
 {
     return d_ptr->legend ? d_ptr->legend->textPen().color() : QColor();
 }
 
+/**
+ * @brief 设置日期时间坐标轴
+ * @param axisId 坐标轴ID
+ * @param format 日期时间格式字符串
+ */
 void DAChartWidget::setupDateTimeAxis(int axisId, const QString& format)
 {
     QwtDateScaleDraw* dateScale = new QwtDateScaleDraw(Qt::LocalTime);
@@ -724,6 +1006,11 @@ void DAChartWidget::setupDateTimeAxis(int axisId, const QString& format)
     notifyPropertiesChanged(DateTimeScaleSetup);
 }
 
+/**
+ * @brief 判断坐标轴是否为日期时间轴
+ * @param axisId 坐标轴ID
+ * @return 如果是日期时间轴返回true，否则返回false
+ */
 bool DAChartWidget::isDateTimeAxis(int axisId) const
 {
     return dynamic_cast< const QwtDateScaleDraw* >(axisScaleDraw(axisId)) != nullptr;
@@ -731,6 +1018,10 @@ bool DAChartWidget::isDateTimeAxis(int axisId) const
 
 // ==================== DAChartInteractionInterface 实现 ====================
 
+/**
+ * @brief 启用或禁用缩放
+ * @param enable 是否启用
+ */
 void DAChartWidget::enableZoom(bool enable)
 {
     if (!d_ptr->zoomer && enable) {
@@ -748,11 +1039,18 @@ void DAChartWidget::enableZoom(bool enable)
     }
 }
 
+/**
+ * @brief 判断缩放是否启用
+ * @return 如果缩放启用返回true，否则返回false
+ */
 bool DAChartWidget::isZoomEnabled() const
 {
     return d_ptr->zoomer && d_ptr->zoomer->isEnabled();
 }
 
+/**
+ * @brief 重置缩放到原始状态
+ */
 void DAChartWidget::zoomToOriginal()
 {
     if (d_ptr->zoomer) {
@@ -761,6 +1059,9 @@ void DAChartWidget::zoomToOriginal()
     }
 }
 
+/**
+ * @brief 放大
+ */
 void DAChartWidget::zoomIn()
 {
     if (!d_ptr->magnifier) {
@@ -772,6 +1073,9 @@ void DAChartWidget::zoomIn()
     }
 }
 
+/**
+ * @brief 缩小
+ */
 void DAChartWidget::zoomOut()
 {
     if (!d_ptr->magnifier) {
@@ -783,11 +1087,19 @@ void DAChartWidget::zoomOut()
     }
 }
 
+/**
+ * @brief 获取缩放器
+ * @return 缩放器指针
+ */
 QwtPlotCanvasZoomer* DAChartWidget::getZoomer() const
 {
     return d_ptr->zoomer;
 }
 
+/**
+ * @brief 启用或禁用平移
+ * @param enable 是否启用
+ */
 void DAChartWidget::enablePan(bool enable)
 {
     if (!d_ptr->panner && enable) {
@@ -805,16 +1117,28 @@ void DAChartWidget::enablePan(bool enable)
     }
 }
 
+/**
+ * @brief 判断平移是否启用
+ * @return 如果平移启用返回true，否则返回false
+ */
 bool DAChartWidget::isPanEnabled() const
 {
     return d_ptr->panner && d_ptr->panner->isEnabled();
 }
 
+/**
+ * @brief 获取平移器
+ * @return 平移器指针
+ */
 QwtPlotPanner* DAChartWidget::getPanner() const
 {
     return d_ptr->panner;
 }
 
+/**
+ * @brief 启用或禁用十字光标
+ * @param enable 是否启用
+ */
 void DAChartWidget::enableCrosshair(bool enable)
 {
     if (!d_ptr->crosshair && enable) {
@@ -827,21 +1151,37 @@ void DAChartWidget::enableCrosshair(bool enable)
     }
 }
 
+/**
+ * @brief 判断十字光标是否启用
+ * @return 如果十字光标启用返回true，否则返回false
+ */
 bool DAChartWidget::isCrosshairEnabled() const
 {
     return d_ptr->crosshair && d_ptr->crosshair->isEnabled();
 }
 
+/**
+ * @brief 获取十字光标选择器
+ * @return 十字光标选择器指针
+ */
 QwtPlotPicker* DAChartWidget::getCrosshair() const
 {
     return d_ptr->crosshair;
 }
 
+/**
+ * @brief 判断数据选取是否启用
+ * @return 如果Y值选取或XY值选取启用返回true，否则返回false
+ */
 bool DAChartWidget::isDataPickingEnabled() const
 {
     return isYValuePickingEnabled() || isXYValuePickingEnabled();
 }
 
+/**
+ * @brief 启用或禁用Y值选取
+ * @param enable 是否启用
+ */
 void DAChartWidget::enableYValuePicking(bool enable)
 {
     if (!d_ptr->dataPicker && enable) {
@@ -859,12 +1199,20 @@ void DAChartWidget::enableYValuePicking(bool enable)
     }
 }
 
+/**
+ * @brief 判断Y值选取是否启用
+ * @return 如果Y值选取启用返回true，否则返回false
+ */
 bool DAChartWidget::isYValuePickingEnabled() const
 {
     return d_ptr->dataPicker && d_ptr->dataPicker->isEnabled()
            && d_ptr->dataPicker->pickMode() == QwtPlotSeriesDataPicker::PickYValue;
 }
 
+/**
+ * @brief 启用或禁用XY值选取
+ * @param enable 是否启用
+ */
 void DAChartWidget::enableXYValuePicking(bool enable)
 {
     if (!d_ptr->dataPicker && enable) {
@@ -882,17 +1230,29 @@ void DAChartWidget::enableXYValuePicking(bool enable)
     }
 }
 
+/**
+ * @brief 判断XY值选取是否启用
+ * @return 如果XY值选取启用返回true，否则返回false
+ */
 bool DAChartWidget::isXYValuePickingEnabled() const
 {
     return d_ptr->dataPicker && d_ptr->dataPicker->isEnabled()
            && d_ptr->dataPicker->pickMode() == QwtPlotSeriesDataPicker::PickNearestPoint;
 }
 
+/**
+ * @brief 获取数据选择器
+ * @return 数据选择器指针
+ */
 QwtPlotSeriesDataPicker* DAChartWidget::getDataPicker() const
 {
     return d_ptr->dataPicker;
 }
 
+/**
+ * @brief 启用或禁用滚轮缩放
+ * @param enable 是否启用
+ */
 void DAChartWidget::enableMouseWheelZoom(bool enable)
 {
     if (!d_ptr->magnifier && enable) {
@@ -905,16 +1265,28 @@ void DAChartWidget::enableMouseWheelZoom(bool enable)
     }
 }
 
+/**
+ * @brief 判断滚轮缩放是否启用
+ * @return 如果滚轮缩放启用返回true，否则返回false
+ */
 bool DAChartWidget::isMouseWheelZoomEnabled() const
 {
     return d_ptr->magnifier && d_ptr->magnifier->isEnabled();
 }
 
+/**
+ * @brief 获取放大器
+ * @return 放大器指针
+ */
 QwtPlotMagnifier* DAChartWidget::getMagnifier() const
 {
     return d_ptr->magnifier;
 }
 
+/**
+ * @brief 启用或禁用图例面板
+ * @param enable 是否启用
+ */
 void DAChartWidget::enableLegendPanel(bool enable)
 {
     if (!d_ptr->legendPanel && enable) {
@@ -927,26 +1299,46 @@ void DAChartWidget::enableLegendPanel(bool enable)
     }
 }
 
+/**
+ * @brief 判断图例面板是否启用
+ * @return 如果图例面板启用返回true，否则返回false
+ */
 bool DAChartWidget::isLegendPanelEnabled() const
 {
     return d_ptr->legendPanel && d_ptr->legendPanel->isVisible();
 }
 
+/**
+ * @brief 获取图例面板
+ * @return 图例面板指针
+ */
 QwtLegend* DAChartWidget::getLegendPanel() const
 {
     return d_ptr->legendPanel;
 }
 
+/**
+ * @brief 注册平移器工厂函数
+ * @param factory 平移器工厂
+ */
 void DAChartWidget::registerPannerFactory(const PannerFactory& factory)
 {
     d_ptr->pannerFactory = factory;
 }
 
+/**
+ * @brief 注册选择器工厂函数
+ * @param factory 选择器工厂
+ */
 void DAChartWidget::registerPickerFactory(const PickerFactory& factory)
 {
     d_ptr->pickerFactory = factory;
 }
 
+/**
+ * @brief 注册数据选择器工厂函数
+ * @param factory 数据选择器工厂
+ */
 void DAChartWidget::registerDataPickerFactory(const DataPickerFactory& factory)
 {
     d_ptr->dataPickerFactory = factory;
@@ -954,6 +1346,10 @@ void DAChartWidget::registerDataPickerFactory(const DataPickerFactory& factory)
 
 // ==================== 工具函数 ====================
 
+/**
+ * @brief 获取所属的Figure对象
+ * @return Figure指针，如果不存在返回nullptr
+ */
 QwtFigure* DAChartWidget::figure() const
 {
     QWidget* parent = const_cast< DAChartWidget* >(this);
@@ -966,6 +1362,10 @@ QwtFigure* DAChartWidget::figure() const
     return nullptr;
 }
 
+/**
+ * @brief 获取所属的DAFigureWidget对象
+ * @return DAFigureWidget指针，如果不存在返回nullptr
+ */
 DAFigureWidget* DA::DAChartWidget::figureWidget() const
 {
     QWidget* parent = const_cast< DAChartWidget* >(this);
@@ -978,6 +1378,10 @@ DAFigureWidget* DA::DAChartWidget::figureWidget() const
     return nullptr;
 }
 
+/**
+ * @brief 通知属性变更
+ * @param flag 变更标志位
+ */
 void DAChartWidget::notifyPropertiesChanged(ChartPropertyChangeFlags flag)
 {
     Q_EMIT chartPropertiesChanged(this, flag);
@@ -985,6 +1389,10 @@ void DAChartWidget::notifyPropertiesChanged(ChartPropertyChangeFlags flag)
 
 // ==================== 事件处理 ====================
 
+/**
+ * @brief 绘制事件处理，绘制边框并调用基类绘制
+ * @param event 绘制事件
+ */
 void DAChartWidget::paintEvent(QPaintEvent* event)
 {
 
@@ -1000,6 +1408,9 @@ void DAChartWidget::paintEvent(QPaintEvent* event)
 
 // ==================== 私有方法实现 ====================
 
+/**
+ * @brief 设置缩放器
+ */
 void DAChartWidget::setupZoomer()
 {
     if (d_ptr->zoomer) {
@@ -1013,6 +1424,9 @@ void DAChartWidget::setupZoomer()
     d_ptr->zoomer->setMaxStackDepth(30);
 }
 
+/**
+ * @brief 设置平移器
+ */
 void DAChartWidget::setupPanner()
 {
     if (d_ptr->panner) {
@@ -1029,6 +1443,9 @@ void DAChartWidget::setupPanner()
     d_ptr->panner->setMouseButton(Qt::MiddleButton);
 }
 
+/**
+ * @brief 设置放大器
+ */
 void DAChartWidget::setupMagnifier()
 {
     if (d_ptr->magnifier) {
@@ -1039,6 +1456,9 @@ void DAChartWidget::setupMagnifier()
     d_ptr->magnifier = new QwtPlotMagnifier(canvas());
 }
 
+/**
+ * @brief 设置十字光标
+ */
 void DAChartWidget::setupCrosshair()
 {
     if (d_ptr->crosshair) {
@@ -1057,6 +1477,9 @@ void DAChartWidget::setupCrosshair()
     }
 }
 
+/**
+ * @brief 设置数据选择器
+ */
 void DAChartWidget::setupDataPicker()
 {
     if (d_ptr->dataPicker) {
@@ -1071,6 +1494,9 @@ void DAChartWidget::setupDataPicker()
     }
 }
 
+/**
+ * @brief 设置图例面板
+ */
 void DAChartWidget::setupLegendPanel()
 {
     if (d_ptr->legendPanel) {
@@ -1085,6 +1511,11 @@ void DAChartWidget::setupLegendPanel()
     connect(d_ptr->legendPanel, &QwtLegend::checked, this, &DAChartWidget::onLegendItemToggled);
 }
 
+/**
+ * @brief 图例项切换状态回调
+ * @param itemInfo 图例项信息
+ * @param checked 是否选中
+ */
 void DAChartWidget::onLegendItemToggled(const QVariant& itemInfo, bool checked)
 {
     QwtPlotItem* item = infoToItem(itemInfo);

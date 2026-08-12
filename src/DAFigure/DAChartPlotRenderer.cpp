@@ -74,12 +74,26 @@ static QwtPlotCurve::CurveStyle stringToCurveStyle(const QString& style)
 
 // ==================== Constructor / Destructor ====================
 
+/**
+ * @brief 构造函数，绑定目标图表控件
+ * @param chart 关联的DAChartWidget指针
+ */
 DAChartPlotRenderer::DAChartPlotRenderer(DA::DAChartWidget* chart) : mChart(chart) {}
 
+/**
+ * @brief 析构函数
+ */
 DAChartPlotRenderer::~DAChartPlotRenderer() = default;
 
 // ==================== Style fallback helpers ====================
 
+/**
+ * @brief 从样式映射中获取颜色值，不存在时返回默认值
+ * @param style 样式映射表
+ * @param key 键名
+ * @param fallback 默认颜色
+ * @return 样式中的颜色或默认值
+ */
 QColor DAChartPlotRenderer::defaultColor(const QVariantMap& style, const QString& key, const QColor& fallback) const
 {
     auto it = style.constFind(key);
@@ -88,6 +102,13 @@ QColor DAChartPlotRenderer::defaultColor(const QVariantMap& style, const QString
     return fallback;
 }
 
+/**
+ * @brief 从样式映射中获取浮点数，不存在时返回默认值
+ * @param style 样式映射表
+ * @param key 键名
+ * @param fallback 默认值
+ * @return 样式中的浮点数或默认值
+ */
 double DAChartPlotRenderer::defaultDouble(const QVariantMap& style, const QString& key, double fallback) const
 {
     auto it = style.constFind(key);
@@ -97,6 +118,13 @@ double DAChartPlotRenderer::defaultDouble(const QVariantMap& style, const QStrin
     return ok ? val : fallback;
 }
 
+/**
+ * @brief 从样式映射中获取字符串，不存在时返回默认值
+ * @param style 样式映射表
+ * @param key 键名
+ * @param fallback 默认值
+ * @return 样式中的字符串或默认值
+ */
 QString DAChartPlotRenderer::defaultString(const QVariantMap& style, const QString& key, const QString& fallback) const
 {
     auto it = style.constFind(key);
@@ -104,6 +132,13 @@ QString DAChartPlotRenderer::defaultString(const QVariantMap& style, const QStri
     return it->toString();
 }
 
+/**
+ * @brief 从样式映射中获取整数，不存在时返回默认值
+ * @param style 样式映射表
+ * @param key 键名
+ * @param fallback 默认值
+ * @return 样式中的整数或默认值
+ */
 int DAChartPlotRenderer::defaultInt(const QVariantMap& style, const QString& key, int fallback) const
 {
     auto it = style.constFind(key);
@@ -115,6 +150,12 @@ int DAChartPlotRenderer::defaultInt(const QVariantMap& style, const QString& key
 
 // ==================== Style application helpers ====================
 
+/**
+ * @brief 为绘图项设置画笔
+ * @param item 目标绘图项
+ * @param color 画笔颜色
+ * @param width 画笔宽度
+ */
 void DAChartPlotRenderer::applyPen(QwtPlotItem* item, const QColor& color, double width)
 {
     if (!item) return;
@@ -134,6 +175,11 @@ void DAChartPlotRenderer::applyPen(QwtPlotItem* item, const QColor& color, doubl
     }
 }
 
+/**
+ * @brief 为绘图项设置画刷
+ * @param item 目标绘图项
+ * @param color 画刷颜色
+ */
 void DAChartPlotRenderer::applyBrush(QwtPlotItem* item, const QColor& color)
 {
     if (!item) return;
@@ -151,6 +197,13 @@ void DAChartPlotRenderer::applyBrush(QwtPlotItem* item, const QColor& color)
     }
 }
 
+/**
+ * @brief 为绘图项设置符号样式
+ * @param item 目标绘图项
+ * @param symbolStyle 符号样式名称
+ * @param size 符号大小
+ * @param color 符号颜色
+ */
 void DAChartPlotRenderer::applySymbol(QwtPlotItem* item, const QString& symbolStyle, int size, const QColor& color)
 {
     if (!item) return;
@@ -164,6 +217,12 @@ void DAChartPlotRenderer::applySymbol(QwtPlotItem* item, const QString& symbolSt
 
 // ==================== Basic primitives ====================
 
+/**
+ * @brief 渲染曲线
+ * @param points 曲线数据点
+ * @param style 样式映射表
+ * @return 创建的QwtPlotItem指针，失败返回nullptr
+ */
 QwtPlotItem* DAChartPlotRenderer::renderCurve(const QPolygonF& points, const QVariantMap& style)
 {
     if (!mChart || points.isEmpty()) return nullptr;
@@ -206,6 +265,12 @@ QwtPlotItem* DAChartPlotRenderer::renderCurve(const QPolygonF& points, const QVa
     return static_cast<QwtPlotItem*>(curve);
 }
 
+/**
+ * @brief 渲染散点图
+ * @param points 散点数据
+ * @param style 样式映射表
+ * @return 创建的QwtPlotItem指针，失败返回nullptr
+ */
 QwtPlotItem* DAChartPlotRenderer::renderScatter(const QVector<QPointF>& points, const QVariantMap& style)
 {
     if (!mChart || points.isEmpty()) return nullptr;
@@ -227,6 +292,13 @@ QwtPlotItem* DAChartPlotRenderer::renderScatter(const QVector<QPointF>& points, 
     return static_cast<QwtPlotItem*>(curve);
 }
 
+/**
+ * @brief 渲染直方图
+ * @param bins 区间边界数组
+ * @param counts 每个区间的计数值
+ * @param style 样式映射表
+ * @return 创建的QwtPlotItem指针，失败返回nullptr
+ */
 QwtPlotItem* DAChartPlotRenderer::renderHistogram(const QVector<double>& bins,
                                                    const QVector<double>& counts,
                                                    const QVariantMap& style)
@@ -256,6 +328,12 @@ QwtPlotItem* DAChartPlotRenderer::renderHistogram(const QVector<double>& bins,
     return static_cast<QwtPlotItem*>(hist);
 }
 
+/**
+ * @brief 渲染区间曲线
+ * @param data 区间曲线数据
+ * @param style 样式映射表
+ * @return 创建的QwtPlotItem指针，失败返回nullptr
+ */
 QwtPlotItem* DAChartPlotRenderer::renderIntervalCurve(const DA::DAIntervalCurveData& data, const QVariantMap& style)
 {
     if (!mChart || data.x.isEmpty()) return nullptr;
@@ -281,6 +359,12 @@ QwtPlotItem* DAChartPlotRenderer::renderIntervalCurve(const DA::DAIntervalCurveD
     return static_cast<QwtPlotItem*>(curve);
 }
 
+/**
+ * @brief 渲染多边形形状
+ * @param polygon 多边形顶点
+ * @param style 样式映射表
+ * @return 创建的QwtPlotItem指针，失败返回nullptr
+ */
 QwtPlotItem* DAChartPlotRenderer::renderShape(const QPolygonF& polygon, const QVariantMap& style)
 {
     if (!mChart || polygon.isEmpty()) return nullptr;
@@ -307,6 +391,12 @@ QwtPlotItem* DAChartPlotRenderer::renderShape(const QPolygonF& polygon, const QV
 
 // ==================== Composite types ====================
 
+/**
+ * @brief 渲染箱线图
+ * @param data 箱线图数据
+ * @param style 样式映射表
+ * @return 创建的QwtPlotItem指针，失败返回nullptr
+ */
 QwtPlotItem* DAChartPlotRenderer::renderBoxChart(const DA::DABoxPlotData& data, const QVariantMap& style)
 {
     if (!mChart || data.positions.isEmpty()) return nullptr;
@@ -349,6 +439,12 @@ QwtPlotItem* DAChartPlotRenderer::renderBoxChart(const DA::DABoxPlotData& data, 
     return static_cast<QwtPlotItem*>(box);
 }
 
+/**
+ * @brief 渲染柱状图
+ * @param data 柱状图数据
+ * @param style 样式映射表
+ * @return 创建的QwtPlotItem指针，失败返回nullptr
+ */
 QwtPlotItem* DAChartPlotRenderer::renderBarChart(const DA::DABarChartData& data, const QVariantMap& style)
 {
     if (!mChart || data.values.isEmpty()) return nullptr;
@@ -381,6 +477,12 @@ QwtPlotItem* DAChartPlotRenderer::renderBarChart(const DA::DABarChartData& data,
     return static_cast<QwtPlotItem*>(bar);
 }
 
+/**
+ * @brief 渲染光谱图
+ * @param data 光谱图数据
+ * @param style 样式映射表
+ * @return 创建的QwtPlotItem指针，失败返回nullptr
+ */
 QwtPlotItem* DAChartPlotRenderer::renderSpectrogram(const DA::DASpectrogramData& data, const QVariantMap& style)
 {
     if (!mChart || data.values.isEmpty() || data.nrows <= 0 || data.ncols <= 0) return nullptr;
@@ -435,6 +537,12 @@ QwtPlotItem* DAChartPlotRenderer::renderSpectrogram(const DA::DASpectrogramData&
     return static_cast<QwtPlotItem*>(spectro);
 }
 
+/**
+ * @brief 渲染等高线
+ * @param data 等高线数据
+ * @param style 样式映射表
+ * @return 创建的QwtPlotItem指针，失败返回nullptr
+ */
 QwtPlotItem* DAChartPlotRenderer::renderContours(const DA::DAContourData& data, const QVariantMap& style)
 {
     if (!mChart || data.polygons.isEmpty()) return nullptr;
@@ -472,18 +580,35 @@ QwtPlotItem* DAChartPlotRenderer::renderContours(const DA::DAContourData& data, 
 
 // ==================== Chart metadata ====================
 
+/**
+ * @brief 设置图表标题
+ * @param title 标题文本
+ */
 void DAChartPlotRenderer::setChartTitle(const QString& title)
 {
     if (!mChart) return;
     mChart->setChartTitle(title);
 }
 
+/**
+ * @brief 设置坐标轴标签
+ * @param axis 坐标轴编号
+ * @param label 标签文本
+ */
 void DAChartPlotRenderer::setAxisLabel(int axis, const QString& label)
 {
     if (!mChart) return;
     mChart->setAxisLabel(axis, label);
 }
 
+/**
+ * @brief 设置坐标轴为分类刻度
+ * @param axis 坐标轴编号
+ * @param tickPositions 刻度位置数组
+ * @param labels 刻度标签列表
+ * @param dataLower 数据下界
+ * @param dataUpper 数据上界
+ */
 void DAChartPlotRenderer::setAxisCategoryScale(int axis, const QVector<double>& tickPositions,
                                                 const QStringList& labels, double dataLower, double dataUpper)
 {
@@ -491,6 +616,13 @@ void DAChartPlotRenderer::setAxisCategoryScale(int axis, const QVector<double>& 
     DA::DAChartUtil::setAxisCategoryScale(mChart, axis, tickPositions, labels, dataLower, dataUpper);
 }
 
+/**
+ * @brief 设置底部X轴为分类刻度
+ * @param tickPositions 刻度位置数组
+ * @param labels 刻度标签列表
+ * @param dataLower 数据下界
+ * @param dataUpper 数据上界
+ */
 void DAChartPlotRenderer::setXBottomCategoryScale(const QVector<double>& tickPositions, const QStringList& labels,
                                                   double dataLower, double dataUpper)
 {
@@ -498,18 +630,29 @@ void DAChartPlotRenderer::setXBottomCategoryScale(const QVector<double>& tickPos
     DA::DAChartUtil::setAxisCategoryScale(mChart, QwtPlot::xBottom, tickPositions, labels, dataLower, dataUpper);
 }
 
+/**
+ * @brief 启用或禁用网格
+ * @param on 是否启用
+ */
 void DAChartPlotRenderer::enableGrid(bool on)
 {
     if (!mChart) return;
     mChart->enableGrid(on);
 }
 
+/**
+ * @brief 启用或禁用图例
+ * @param on 是否启用
+ */
 void DAChartPlotRenderer::enableLegend(bool on)
 {
     if (!mChart) return;
     mChart->enableLegend(on);
 }
 
+/**
+ * @brief 刷新图表重绘
+ */
 void DAChartPlotRenderer::replot()
 {
     if (!mChart) return;

@@ -119,13 +119,13 @@ private:
     static QPainterPath createEndPath(ArrowEndType endType, qreal size, bool isStart);
 
 private:
-    ArrowEndType m_startEndType;      ///< Start end type
-    ArrowEndType m_endEndType;        ///< End end type
-    qreal m_arrowSize;                ///< Arrow size
-    qreal m_arrowLength;              ///< Arrow length
-    qreal m_arrowAngle;               ///< Arrow angle in degrees
-    qreal m_arrowLineWidth;           ///< Arrow line width
-    OriginPosition m_originPosition;  ///< Origin position
+    ArrowEndType mStartEndType;      ///< Start end type
+    ArrowEndType mEndEndType;        ///< End end type
+    qreal mArrowSize;                ///< Arrow size
+    qreal mArrowLength;              ///< Arrow length
+    qreal mArrowAngle;               ///< Arrow angle in degrees
+    qreal mArrowLineWidth;           ///< Arrow line width
+    OriginPosition mOriginPosition;  ///< Origin position
 };
 
 }  // End Of Namespace DA

@@ -4,19 +4,28 @@
 #include "qwt3d_plotitem.h"
 namespace DA
 {
+
+/**
+ * @brief 构造函数，构建3D绘图项的标准项
+ * @param item 3D绘图项指针
+ * @param type 项类型
+ */
 DAStandardItemPlot3DItem::DAStandardItemPlot3DItem(Qwt3DPlotItem* item, ItemType type)
-    : QStandardItem(), m_plot3DItem(item), m_itemType(type)
+    : QStandardItem(), mPlot3DItem(item), mItemType(type)
 {
     setEditable(false);
     setData(DAFigureTreeModel::NodeTypePlot3DItem, DAFigureTreeModel::RoleNodeType);
-    if (m_plot3DItem) {
-        setData(QVariant::fromValue(reinterpret_cast< quintptr >(m_plot3DItem->plot())),
+    if (mPlot3DItem) {
+        setData(QVariant::fromValue(reinterpret_cast< quintptr >(mPlot3DItem->plot())),
                 DAFigureTreeModel::RolePlot3D);
-        setData(QVariant::fromValue(reinterpret_cast< quintptr >(m_plot3DItem)),
+        setData(QVariant::fromValue(reinterpret_cast< quintptr >(mPlot3DItem)),
                 DAFigureTreeModel::RolePlot3DItem);
     }
 }
 
+/**
+ * @brief 析构函数
+ */
 DAStandardItemPlot3DItem::~DAStandardItemPlot3DItem()
 {
 }
@@ -28,10 +37,10 @@ DAStandardItemPlot3DItem::~DAStandardItemPlot3DItem()
  */
 QVariant DAStandardItemPlot3DItem::data(int role) const
 {
-    if (!m_plot3DItem) {
+    if (!mPlot3DItem) {
         return QStandardItem::data(role);
     }
-    switch (m_itemType) {
+    switch (mItemType) {
     case Plot3DItemText:
         return handleItemTextType(role);
     case Plot3DItemVisible:
@@ -51,19 +60,19 @@ QVariant DAStandardItemPlot3DItem::data(int role) const
  */
 QVariant DAStandardItemPlot3DItem::handleItemTextType(int role) const
 {
-    if (!m_plot3DItem) {
+    if (!mPlot3DItem) {
         return QVariant();
     }
     switch (role) {
     case Qt::DisplayRole: {
         if (DAFigureTreeModel* m = qobject_cast< DAFigureTreeModel* >(model())) {
-            return m->generate3DPlotItemName(m_plot3DItem);
+            return m->generate3DPlotItemName(mPlot3DItem);
         }
-        return m_plot3DItem->title();
+        return mPlot3DItem->title();
     } break;
     case Qt::DecorationRole: {
         if (DAFigureTreeModel* m = qobject_cast< DAFigureTreeModel* >(model())) {
-            return m->generate3DPlotItemIcon(m_plot3DItem);
+            return m->generate3DPlotItemIcon(mPlot3DItem);
         }
         return QVariant();
     } break;
@@ -80,7 +89,7 @@ QVariant DAStandardItemPlot3DItem::handleItemTextType(int role) const
  */
 QVariant DAStandardItemPlot3DItem::handleItemVisibleType(int role) const
 {
-    if (!m_plot3DItem) {
+    if (!mPlot3DItem) {
         return QVariant();
     }
     static QIcon s_icon_not_visible(":/DAFigure/icon/chartitem-invisible.svg");
@@ -90,7 +99,7 @@ QVariant DAStandardItemPlot3DItem::handleItemVisibleType(int role) const
         return QVariant();
     } break;
     case Qt::DecorationRole: {
-        if (m_plot3DItem->isVisible()) {
+        if (mPlot3DItem->isVisible()) {
             return s_icon_visible;
         } else {
             return s_icon_not_visible;
@@ -109,7 +118,7 @@ QVariant DAStandardItemPlot3DItem::handleItemVisibleType(int role) const
  */
 QVariant DAStandardItemPlot3DItem::handleItemColorType(int role) const
 {
-    if (!m_plot3DItem) {
+    if (!mPlot3DItem) {
         return QVariant();
     }
     switch (role) {

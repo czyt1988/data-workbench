@@ -7,8 +7,14 @@
 namespace DA
 {
 
+/**
+ * @brief 构造函数
+ * @param plot 关联的QwtPlot
+ * @param axisid 坐标轴id
+ * @param plotScaleType 坐标轴item类型
+ */
 DAStandardItemPlotScale::DAStandardItemPlotScale(QwtPlot* plot, QwtAxisId axisid, ItemType plotScaleType)
-    : QStandardItem(), m_plot(plot), m_axisId(axisid), m_itemType(plotScaleType)
+    : QStandardItem(), mPlot(plot), mAxisId(axisid), mItemType(plotScaleType)
 {
     // 设置节点类型角色
     setData(DAFigureTreeModel::NodeTypeAxis, DAFigureTreeModel::RoleNodeType);
@@ -18,17 +24,25 @@ DAStandardItemPlotScale::DAStandardItemPlotScale(QwtPlot* plot, QwtAxisId axisid
     setEditable(false);
 }
 
+/**
+ * @brief 析构函数
+ */
 DAStandardItemPlotScale::~DAStandardItemPlotScale()
 {
 }
 
+/**
+ * @brief 返回item的数据
+ * @param role 数据角色
+ * @return 对应角色的数据
+ */
 QVariant DAStandardItemPlotScale::data(int role) const
 {
     if (!isValid()) {
         return QStandardItem::data(role);
     }
 
-    switch (m_itemType) {
+    switch (mItemType) {
     case PlotScaleText:
         return handleItemTextType(role);
     case PlotScaleVisible:
@@ -58,13 +72,13 @@ QVariant DAStandardItemPlotScale::handleItemTextType(int role) const
     static QIcon s_icon_xtop(":/DAFigure/icon/axis-xtop.svg");
     switch (role) {
     case Qt::DisplayRole: {
-        if (QwtScaleWidget* sw = m_plot->axisWidget(m_axisId)) {
-            return QString("[%1]%2").arg(axisIdToText(m_axisId), sw->title().text());
+        if (QwtScaleWidget* sw = mPlot->axisWidget(mAxisId)) {
+            return QString("[%1]%2").arg(axisIdToText(mAxisId), sw->title().text());
         }
     } break;
     case Qt::DecorationRole: {
         // 返回类型图标
-        switch (m_axisId) {
+        switch (mAxisId) {
         case QwtAxis::YLeft:
             return s_icon_yleft;
         case QwtAxis::YRight:
@@ -84,6 +98,11 @@ QVariant DAStandardItemPlotScale::handleItemTextType(int role) const
     return QStandardItem::data(role);
 }
 
+/**
+ * @brief 处理可见性显示
+ * @param role 数据角色
+ * @return 对应角色的数据
+ */
 QVariant DAStandardItemPlotScale::handleItemVisibleType(int role) const
 {
     if (!isValid()) {
@@ -97,7 +116,7 @@ QVariant DAStandardItemPlotScale::handleItemVisibleType(int role) const
     } break;
     case Qt::DecorationRole: {
         // 返回类型图标
-        if (m_plot->isAxisVisible(m_axisId)) {
+        if (mPlot->isAxisVisible(mAxisId)) {
             return s_icon_visible;
         } else {
             return s_icon_not_visible;
@@ -109,6 +128,11 @@ QVariant DAStandardItemPlotScale::handleItemVisibleType(int role) const
     return QStandardItem::data(role);
 }
 
+/**
+ * @brief 处理属性显示
+ * @param role 数据角色
+ * @return 对应角色的数据
+ */
 QVariant DAStandardItemPlotScale::handleScalePropertyType(int role) const
 {
     if (!isValid()) {
@@ -127,6 +151,12 @@ QVariant DAStandardItemPlotScale::handleScalePropertyType(int role) const
     return QStandardItem::data(role);
 }
 
+/**
+ * @brief 获取坐标轴的缩放类型文本
+ * @param plot 关联的QwtPlot
+ * @param axisId 坐标轴id
+ * @return 缩放类型文本，如时间轴、对数轴等，普通线性轴返回空字符串
+ */
 QString DAStandardItemPlotScale::axisScaleTypeString(const QwtPlot* plot, QwtAxisId axisId)
 {
     if (!plot || axisId == QwtAxis::AxisPositions) {
@@ -143,6 +173,11 @@ QString DAStandardItemPlotScale::axisScaleTypeString(const QwtPlot* plot, QwtAxi
     return QString();
 }
 
+/**
+ * @brief 将坐标轴id转换为文本描述
+ * @param id 坐标轴id
+ * @return 坐标轴文本描述，如Y左轴、Y右轴等
+ */
 QString DAStandardItemPlotScale::axisIdToText(QwtAxisId id)
 {
     switch (id) {

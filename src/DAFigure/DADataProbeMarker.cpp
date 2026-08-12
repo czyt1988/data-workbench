@@ -30,10 +30,17 @@ public:
     QList< DADataProbeMarker::CapturedData > capturedData;
 };
 
+/**
+ * @brief 构造PrivateData
+ * @param p 指向DADataProbeMarker的指针
+ */
 DADataProbeMarker::PrivateData::PrivateData(DADataProbeMarker* p) : q_ptr(p)
 {
 }
 
+/**
+ * @brief 析构PrivateData
+ */
 DADataProbeMarker::PrivateData::~PrivateData()
 {
 }

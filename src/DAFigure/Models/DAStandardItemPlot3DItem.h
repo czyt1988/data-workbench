@@ -33,16 +33,16 @@ public:
     }
     Qwt3DPlotItem* plot3DItem() const
     {
-        return m_plot3DItem;
+        return mPlot3DItem;
     }
     ItemType itemType() const
     {
-        return m_itemType;
+        return mItemType;
     }
 
 private:
-    Qwt3DPlotItem* m_plot3DItem { nullptr };
-    ItemType m_itemType { Plot3DItemText };
+    Qwt3DPlotItem* mPlot3DItem { nullptr };
+    ItemType mItemType { Plot3DItemText };
 };
 }  // end DA
 #endif  // DASTANDARDITEMPLOT3DITEM_H

@@ -28,10 +28,16 @@ public:
     QHash< AXIS, QString > axisLabels;
 };
 
+/**
+ * @brief 构造PrivateData
+ */
 DAChart3DWidget::PrivateData::PrivateData(DAChart3DWidget* q) : q_ptr(q)
 {
 }
 
+/**
+ * @brief 初始化3D图表部件
+ */
 void DAChart3DWidget::PrivateData::initialize()
 {
     // 设置白色背景
@@ -46,11 +52,17 @@ void DAChart3DWidget::PrivateData::initialize()
 
 // ==================== DAChart3DWidget 实现 ====================
 
+/**
+ * @brief 构造DAChart3DWidget
+ */
 DAChart3DWidget::DAChart3DWidget(QWidget* parent) : Qwt3DPlot(parent), DA_PIMPL_CONSTRUCT
 {
     d_ptr->initialize();
 }
 
+/**
+ * @brief 析构DAChart3DWidget
+ */
 DAChart3DWidget::~DAChart3DWidget()
 {
     // unique_ptr 自动清理 PrivateData
@@ -432,6 +444,11 @@ QColor DAChart3DWidget::get3DAxesColor()
     return GL2Qt(ac.r, ac.g, ac.b);
 }
 
+/**
+ * @brief 设置轴刻度类型
+ * @param axis 轴索引
+ * @param type 刻度类型
+ */
 void DAChart3DWidget::set3DAxisScale(AXIS axis, SCALETYPE type)
 {
     Qwt3DCoordinateSystem* coords = coordinates();
@@ -441,6 +458,10 @@ void DAChart3DWidget::set3DAxisScale(AXIS axis, SCALETYPE type)
     }
 }
 
+/**
+ * @brief 设置是否自动缩放
+ * @param on 是否启用
+ */
 void DAChart3DWidget::set3DAutoScale(bool on)
 {
     Qwt3DCoordinateSystem* coords = coordinates();
@@ -450,6 +471,10 @@ void DAChart3DWidget::set3DAutoScale(bool on)
     }
 }
 
+/**
+ * @brief 设置坐标系样式
+ * @param style 坐标系样式
+ */
 void DAChart3DWidget::setCoordSysStyle(COORDSTYLE style)
 {
     Qwt3DCoordinateSystem* coords = coordinates();
@@ -459,6 +484,10 @@ void DAChart3DWidget::setCoordSysStyle(COORDSTYLE style)
     }
 }
 
+/**
+ * @brief 获取坐标系样式
+ * @return 坐标系样式
+ */
 // 非 const：Qwt3DPlot::coordinates() 无 const 重载
 COORDSTYLE DAChart3DWidget::getCoordSysStyle()
 {
@@ -481,6 +510,10 @@ void DAChart3DWidget::enable3DGrid(bool majors, bool minors, int sides)
     }
 }
 
+/**
+ * @brief 网格线是否启用
+ * @return 是否启用
+ */
 // 非 const：Qwt3DPlot::coordinates() 无 const 重载
 bool DAChart3DWidget::is3DGridEnabled()
 {
@@ -488,6 +521,12 @@ bool DAChart3DWidget::is3DGridEnabled()
     return coords ? (coords->grids() != 0) : false;
 }
 
+/**
+ * @brief 启用/禁用内部网格线
+ * @param majors 是否启用主网格
+ * @param minors 是否启用次网格
+ * @param directions 方向
+ */
 void DAChart3DWidget::enable3DInteriorGrid(bool majors, bool minors, int directions)
 {
     Qwt3DCoordinateSystem* coords = coordinates();
@@ -497,6 +536,10 @@ void DAChart3DWidget::enable3DInteriorGrid(bool majors, bool minors, int directi
     }
 }
 
+/**
+ * @brief 内部网格线是否启用
+ * @return 是否启用
+ */
 // 非 const：Qwt3DPlot::coordinates() 无 const 重载
 bool DAChart3DWidget::is3DInteriorGridEnabled()
 {
@@ -504,6 +547,10 @@ bool DAChart3DWidget::is3DInteriorGridEnabled()
     return coords ? (coords->interiorGrids() != 0) : false;
 }
 
+/**
+ * @brief 设置网格线颜色
+ * @param color 颜色
+ */
 void DAChart3DWidget::set3DGridLinesColor(const QColor& color)
 {
     Qwt3DCoordinateSystem* coords = coordinates();
@@ -513,6 +560,10 @@ void DAChart3DWidget::set3DGridLinesColor(const QColor& color)
     }
 }
 
+/**
+ * @brief 设置内部网格线颜色
+ * @param color 颜色
+ */
 void DAChart3DWidget::set3DInteriorGridLinesColor(const QColor& color)
 {
     Qwt3DCoordinateSystem* coords = coordinates();
@@ -545,12 +596,20 @@ bool DAChart3DWidget::is3DColorLegendEnabled() const
     return isColorLegendShown();
 }
 
+/**
+ * @brief 设置颜色图例位置
+ * @param pos 图例位置
+ */
 void DAChart3DWidget::set3DColorLegendPosition(Qwt3DColorLegend::Position pos)
 {
     setLegendPosition(pos);
     notifyPropertiesChanged(ColorLegendPositionChanged);
 }
 
+/**
+ * @brief 获取颜色图例位置
+ * @return 图例位置
+ */
 // 非 const：Qwt3DPlot::legend() 无 const 重载
 Qwt3DColorLegend::Position DAChart3DWidget::get3DColorLegendPosition()
 {
@@ -576,12 +635,20 @@ void DAChart3DWidget::apply3DTheme(Qwt3DTheme::Preset preset)
     notifyPropertiesChanged(ThemeChanged);
 }
 
+/**
+ * @brief 通过名称应用主题预设
+ * @param presetName 主题名称
+ */
 void DAChart3DWidget::apply3DTheme(const QString& presetName)
 {
     applyTheme(presetName);
     notifyPropertiesChanged(ThemeChanged);
 }
 
+/**
+ * @brief 获取当前主题
+ * @return 主题对象
+ */
 Qwt3DTheme DAChart3DWidget::get3DTheme() const
 {
     return theme();
@@ -604,36 +671,66 @@ void DAChart3DWidget::resetView()
     notifyPropertiesChanged(ViewRotationChanged | ViewShiftChanged | ViewScaleChanged | ViewZoomChanged);
 }
 
+/**
+ * @brief 设置视图旋转角度
+ * @param xVal X轴旋转角度
+ * @param yVal Y轴旋转角度
+ * @param zVal Z轴旋转角度
+ */
 void DAChart3DWidget::setViewRotation(double xVal, double yVal, double zVal)
 {
     setRotation(xVal, yVal, zVal);
     notifyPropertiesChanged(ViewRotationChanged);
 }
 
+/**
+ * @brief 设置视图平移
+ * @param xVal X轴平移量
+ * @param yVal Y轴平移量
+ * @param zVal Z轴平移量
+ */
 void DAChart3DWidget::setViewShift(double xVal, double yVal, double zVal)
 {
     setShift(xVal, yVal, zVal);
     notifyPropertiesChanged(ViewShiftChanged);
 }
 
+/**
+ * @brief 设置视图缩放比例
+ * @param xVal X轴缩放
+ * @param yVal Y轴缩放
+ * @param zVal Z轴缩放
+ */
 void DAChart3DWidget::setViewScale(double xVal, double yVal, double zVal)
 {
     setScale(xVal, yVal, zVal);
     notifyPropertiesChanged(ViewScaleChanged);
 }
 
+/**
+ * @brief 设置视图缩放
+ * @param zoom 缩放比例
+ */
 void DAChart3DWidget::setViewZoom(double zoom)
 {
     setZoom(zoom);
     notifyPropertiesChanged(ViewZoomChanged);
 }
 
+/**
+ * @brief 设置投影模式
+ * @param ortho 是否为正交投影
+ */
 void DAChart3DWidget::setProjection(bool ortho)
 {
     setOrtho(ortho);
     notifyPropertiesChanged(ProjectionChanged);
 }
 
+/**
+ * @brief 设置纵横比模式
+ * @param mode 纵横比模式
+ */
 void DAChart3DWidget::setAspectRatioMode(ASPECTRATIOMODE mode)
 {
     // 必须限定 Qwt3DPlot::，否则递归调用自身导致栈溢出
@@ -656,6 +753,10 @@ void DAChart3DWidget::enable3DLighting(bool enable)
     notifyPropertiesChanged(LightingStateChanged);
 }
 
+/**
+ * @brief 光照是否启用
+ * @return 是否启用
+ */
 bool DAChart3DWidget::is3DLightingEnabled() const
 {
     return lightingEnabled();
@@ -679,6 +780,10 @@ void DAChart3DWidget::apply3DLightingPreset(Qwt3DTheme::LightingPreset preset)
     notifyPropertiesChanged(LightingPresetChanged);
 }
 
+/**
+ * @brief 启用/禁用鼠标交互
+ * @param enable 是否启用
+ */
 void DAChart3DWidget::enable3DMouse(bool enable)
 {
     if (enable) {
@@ -689,11 +794,19 @@ void DAChart3DWidget::enable3DMouse(bool enable)
     notifyPropertiesChanged(MouseStateChanged);
 }
 
+/**
+ * @brief 鼠标交互是否启用
+ * @return 是否启用
+ */
 bool DAChart3DWidget::is3DMouseEnabled() const
 {
     return mouseEnabled();
 }
 
+/**
+ * @brief 启用/禁用键盘交互
+ * @param enable 是否启用
+ */
 void DAChart3DWidget::enable3DKeyboard(bool enable)
 {
     if (enable) {
@@ -704,6 +817,10 @@ void DAChart3DWidget::enable3DKeyboard(bool enable)
     notifyPropertiesChanged(KeyboardStateChanged);
 }
 
+/**
+ * @brief 键盘交互是否启用
+ * @return 是否启用
+ */
 bool DAChart3DWidget::is3DKeyboardEnabled() const
 {
     return keyboardEnabled();

@@ -1,4 +1,4 @@
-﻿#ifndef DAABSTRACTGRAPHICSVIEWACTION_H
+#ifndef DAABSTRACTGRAPHICSVIEWACTION_H
 #define DAABSTRACTGRAPHICSVIEWACTION_H
 #include "DAGraphicsViewGlobal.h"
 class QPaintEvent;
@@ -20,35 +20,20 @@ class DAGRAPHICSVIEW_API DAAbstractGraphicsViewAction
 public:
 	DAAbstractGraphicsViewAction(DAGraphicsView* v);
 	virtual ~DAAbstractGraphicsViewAction();
-	/**
-	 * @brief 视图
-	 * @return
-	 */
+	// 视图
 	DAGraphicsView* view() const;
 
-	/**
-	 * @brief 结束action
-	 *
-	 * 此行数会删除action，destroy后不能有任何成员函数的操作，否则会出现异常
-	 */
+	// 结束action
 	void destroy();
 
 protected:
-	/**
-	 * @brief 开始激活时的回调
-	 */
+	// 开始激活时的回调
 	virtual void beginActive();
 
-	/**
-	 * @brief 结束激活时的回调
-	 */
+	// 结束激活时的回调
 	virtual void endAction();
 
-	/**
-	 * @brief 捕获的按钮点击事件
-	 * @param event
-	 * @return
-	 */
+	// 捕获的按钮点击事件
 	virtual bool keyPressEvent(QKeyEvent* event);
 	virtual bool keyReleaseEvent(QKeyEvent* event);
 	virtual bool mouseDoubleClickEvent(QMouseEvent* event);

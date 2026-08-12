@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsMarkItem.h"
+#include "DAGraphicsMarkItem.h"
 #include "DAGraphicsItemFactory.h"
 #include <QDomDocument>
 #include <QDomElement>
@@ -20,6 +20,10 @@ public:
 	int markShapeStyle;                       ///< 对应DAGraphicsMarkItem::MarkShape
 };
 
+/**
+ * @brief PrivateData 构造函数
+ * @param p 指向 DAGraphicsMarkItem 的指针
+ */
 DAGraphicsMarkItem::PrivateData::PrivateData(DAGraphicsMarkItem* p) : q_ptr(p)
 {
 }
@@ -27,10 +31,18 @@ DAGraphicsMarkItem::PrivateData::PrivateData(DAGraphicsMarkItem* p) : q_ptr(p)
 //===================================================
 // DAGraphicsMarkItem
 //===================================================
+
+/**
+ * @brief 构造函数
+ * @param parent 父 QGraphicsItem
+ */
 DAGraphicsMarkItem::DAGraphicsMarkItem(QGraphicsItem* parent) : DAGraphicsItem(parent), DA_PIMPL_CONSTRUCT
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DAGraphicsMarkItem::~DAGraphicsMarkItem()
 {
 }
@@ -58,6 +70,10 @@ bool DAGraphicsMarkItem::loadFromXml(const QDomElement* parentElement, const QVe
 	return true;
 }
 
+/**
+ * @brief 设置标记的边界矩形
+ * @param r 边界矩形，若为空则清除自定义边界
+ */
 void DAGraphicsMarkItem::setMarkBoundingRect(const QRectF& r)
 {
 	if (r.isNull()) {
@@ -67,6 +83,11 @@ void DAGraphicsMarkItem::setMarkBoundingRect(const QRectF& r)
 	}
 }
 
+/**
+ * @brief 获取/设置标记形状样式
+ * @param shapeStyle 标记形状样式，对应 DAGraphicsMarkItem::MarkShape
+ * @return 标记形状样式
+ */
 void DAGraphicsMarkItem::setMarkShape(int shapeStyle)
 {
 	d_ptr->markShapeStyle = shapeStyle;
@@ -77,6 +98,12 @@ int DAGraphicsMarkItem::getMarkShape() const
 	return d_ptr->markShapeStyle;
 }
 
+/**
+ * @brief 绘制标记图形
+ * @param painter 画家对象
+ * @param option 样式选项
+ * @param widget 关联的 widget
+ */
 void DAGraphicsMarkItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
 	painter->setPen(getBorderPen());
@@ -96,6 +123,14 @@ void DAGraphicsMarkItem::paint(QPainter* painter, const QStyleOptionGraphicsItem
 	}
 }
 
+/**
+ * @brief 获取标记的边界矩形
+ *
+ * 若设置了自定义边界则返回自定义值，否则返回父级 item 的边界（略微扩大），
+ * 若无父级则返回默认矩形。
+ *
+ * @return 边界矩形
+ */
 QRectF DAGraphicsMarkItem::boundingRect() const
 {
 	if (d_ptr->optBoundingRect) {

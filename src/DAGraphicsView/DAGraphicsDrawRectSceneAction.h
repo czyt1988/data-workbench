@@ -1,4 +1,4 @@
-﻿#ifndef DAGRAPHICSDRAWRECTSCENEACTION_H
+#ifndef DAGRAPHICSDRAWRECTSCENEACTION_H
 #define DAGRAPHICSDRAWRECTSCENEACTION_H
 #include "DAGraphicsViewGlobal.h"
 #include "DAAbstractGraphicsSceneAction.h"
@@ -16,13 +16,13 @@ public:
 
 protected:
 	// 开始激活，这是使用setAction后调用的函数
-	virtual void beginActive();
+	virtual void beginActive() override;
 	// 鼠标点击事件,返回true，代表action劫持了此事件，不会在scene中继续传递事件,默认返回false
-	virtual bool mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent);
+	virtual bool mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
     // 鼠标释放
-    virtual bool mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent);
+    virtual bool mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
 	// 鼠标移动事件,返回true，代表action劫持了此事件，不会在scene中继续传递事件,默认返回false
-	virtual bool mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent);
+	virtual bool mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
 
 private:
 	QPointF mStartPoint;

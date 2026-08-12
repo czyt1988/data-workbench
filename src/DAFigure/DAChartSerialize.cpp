@@ -1,4 +1,4 @@
-﻿#include "DAChartSerialize.h"
+#include "DAChartSerialize.h"
 #include "DAChartUtil.h"
 #include <cstring>
 #include <cmath>
@@ -126,30 +126,54 @@ inline double validateDoubleRange(double value, double minValue, double defaultV
 void serialize_out_scale_widge(QDataStream& out, const QwtPlot* chart, int axis);
 void serialize_in_scale_widge(QDataStream& in, QwtPlot* chart, int axis);
 
+/**
+ * @brief 构造DABadSerializeExpection，默认错误信息
+ */
 DABadSerializeExpection::DABadSerializeExpection()
 {
     mWhy = "serialize error";
 }
 
+/**
+ * @brief 构造DABadSerializeException，指定错误信息
+ * @param why 错误描述字符串
+ */
 DABadSerializeExpection::DABadSerializeExpection(const char* why)
 {
     mWhy = why;
 }
 
+/**
+ * @brief 构造DABadSerializeExpection，指定错误信息
+ * @param why 错误描述字符串
+ */
 DABadSerializeExpection::DABadSerializeExpection(const std::string& why)
 {
     mWhy = why;
 }
 
+/**
+ * @brief 析构DABadSerializeExpection
+ */
 DABadSerializeExpection::~DABadSerializeExpection()
 {
 }
 
+/**
+ * @brief 获取错误描述
+ * @return 错误描述的C字符串
+ */
 const char* DABadSerializeExpection::what() const noexcept
 {
     return mWhy.c_str();
 }
 
+/**
+ * @brief 序列化输出坐标轴刻度部件
+ * @param out 输出数据流
+ * @param chart 绘图对象
+ * @param axis 坐标轴ID
+ */
 void serialize_out_scale_widge(QDataStream& out, const QwtPlot* chart, int axis)
 {
     const QwtScaleWidget* axisWid = chart->axisWidget(axis);
@@ -163,6 +187,12 @@ void serialize_out_scale_widge(QDataStream& out, const QwtPlot* chart, int axis)
     }
 }
 
+/**
+ * @brief 反序列化输入坐标轴刻度部件
+ * @param in 输入数据流
+ * @param chart 绘图对象
+ * @param axis 坐标轴ID
+ */
 void serialize_in_scale_widge(QDataStream& in, QwtPlot* chart, int axis)
 {
     bool isaxis;
@@ -214,21 +244,37 @@ void serialize_in_scale_widge(QDataStream& in, QwtPlot* chart, int axis)
 // Header
 //----------------------------------------------------
 
+/**
+ * @brief 构造Header，初始化魔数、版本和RTTI
+ */
 DAChartItemSerialize::Header::Header() : magic(DA::gc_dachart_magic_mark4), version(1), rtti(QwtPlotItem::Rtti_PlotItem)
 {
     memset(byte, 0, sizeof(byte));
 }
 
+/**
+ * @brief 析构Header
+ */
 DAChartItemSerialize::Header::~Header()
 {
 }
 
+/**
+ * @brief 检查Header是否有效
+ * @return 魔数匹配返回true，否则返回false
+ */
 bool DAChartItemSerialize::Header::isValid() const
 {
     return DA::gc_dachart_magic_mark4 == magic;
 }
 
 // ADL原则，这个应放在DA命名空间下
+/**
+ * @brief Header的序列化输出
+ * @param out 输出数据流
+ * @param f Header对象
+ * @return 输出数据流
+ */
 QDataStream& operator<<(QDataStream& out, const DA::DAChartItemSerialize::Header& f)
 {
     out << f.magic << f.version << f.rtti;
@@ -236,6 +282,12 @@ QDataStream& operator<<(QDataStream& out, const DA::DAChartItemSerialize::Header
     return out;
 }
 
+/**
+ * @brief Header的反序列化输入
+ * @param in 输入数据流
+ * @param f Header对象
+ * @return 输入数据流
+ */
 QDataStream& operator>>(QDataStream& in, DA::DAChartItemSerialize::Header& f)
 {
     in >> f.magic >> f.version;
@@ -247,14 +299,26 @@ QDataStream& operator>>(QDataStream& in, DA::DAChartItemSerialize::Header& f)
 //===============================================================
 // name
 //===============================================================
+/**
+ * @brief 构造DAChartItemSerialize
+ */
 DAChartItemSerialize::DAChartItemSerialize()
 {
 }
 
+/**
+ * @brief 析构DAChartItemSerialize
+ */
 DAChartItemSerialize::~DAChartItemSerialize()
 {
 }
 
+/**
+ * @brief 注册序列化函数
+ * @param rtti 绘图项的RTTI值
+ * @param fpIn 反序列化函数指针
+ * @param fpOut 序列化函数指针
+ */
 void DAChartItemSerialize::registSerializeFun(int rtti,
                                               DAChartItemSerialize::FpSerializeIn fpIn,
                                               DAChartItemSerialize::FpSerializeOut fpOut)
@@ -262,23 +326,43 @@ void DAChartItemSerialize::registSerializeFun(int rtti,
     serializeFun()[ rtti ] = std::make_pair(fpIn, fpOut);
 }
 
+/**
+ * @brief 判断指定RTTI是否支持序列化
+ * @param rtti 绘图项的RTTI值
+ * @return 支持返回true，否则返回false
+ */
 bool DAChartItemSerialize::isSupportSerialize(int rtti)
 {
     return serializeFun().contains(rtti);
 }
 
+/**
+ * @brief 获取反序列化函数
+ * @param rtti 绘图项的RTTI值
+ * @return 反序列化函数指针，未注册返回nullptr
+ */
 DAChartItemSerialize::FpSerializeIn DAChartItemSerialize::getSerializeInFun(int rtti) noexcept
 {
     auto pair = serializeFun().value(rtti, std::make_pair< FpSerializeIn, FpSerializeOut >(nullptr, nullptr));
     return pair.first;
 }
 
+/**
+ * @brief 获取序列化函数
+ * @param rtti 绘图项的RTTI值
+ * @return 序列化函数指针，未注册返回nullptr
+ */
 DAChartItemSerialize::FpSerializeOut DAChartItemSerialize::getSerializeOutFun(int rtti)
 {
     auto pair = serializeFun().value(rtti, std::make_pair< FpSerializeIn, FpSerializeOut >(nullptr, nullptr));
     return pair.second;
 }
 
+/**
+ * @brief 序列化输出绘图项
+ * @param item 绘图项指针
+ * @return 序列化后的字节数组
+ */
 QByteArray DAChartItemSerialize::serializeOut(const QwtPlotItem* item) const
 {
     int rtti          = item->rtti();
@@ -291,6 +375,11 @@ QByteArray DAChartItemSerialize::serializeOut(const QwtPlotItem* item) const
     return fp(item);
 }
 
+/**
+ * @brief 反序列化输入绘图项
+ * @param byte 序列化的字节数组
+ * @return 反序列化后的绘图项指针，失败返回nullptr
+ */
 QwtPlotItem* DAChartItemSerialize::serializeIn(const QByteArray& byte) const noexcept
 {
     // 使用QBuffer避免额外内存分配
@@ -313,6 +402,11 @@ QwtPlotItem* DAChartItemSerialize::serializeIn(const QByteArray& byte) const noe
     return item;
 }
 
+/**
+ * @brief 从字节数组中提取RTTI值
+ * @param byte 序列化的字节数组
+ * @return RTTI值，无效返回-1
+ */
 int DAChartItemSerialize::getRtti(const QByteArray& byte) const noexcept
 {
     // 使用QBuffer避免额外内存分配
@@ -352,6 +446,10 @@ DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotIntervalCurve, QwtPlotI
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotShape, QwtPlotShapeItem)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotArrowMarker, QwtPlotArrowMarker)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotBoxChart, QwtPlotBoxChart)
+/**
+ * @brief 初始化所有支持的绘图项序列化函数映射表
+ * @return 序列化函数映射表
+ */
 QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > > initChartItemSerialize()
 {
     QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > > res;
@@ -378,6 +476,10 @@ QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize
     return res;
 }
 
+/**
+ * @brief 获取序列化函数映射表的静态引用
+ * @return 序列化函数映射表的引用
+ */
 QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize::FpSerializeOut > >&
 DAChartItemSerialize::serializeFun()
 {
@@ -387,6 +489,12 @@ DAChartItemSerialize::serializeFun()
 
 }  // end DA
 
+/**
+ * @brief QwtText的序列化输出
+ * @param out 输出数据流
+ * @param t QwtText对象
+ * @return 输出数据流
+ */
 QDataStream& operator<<(QDataStream& out, const QwtText& t)
 {
     out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
@@ -397,6 +505,12 @@ QDataStream& operator<<(QDataStream& out, const QwtText& t)
     return out;
 }
 
+/**
+ * @brief QwtText的反序列化输入
+ * @param in 输入数据流
+ * @param t QwtText对象
+ * @return 输入数据流
+ */
 QDataStream& operator>>(QDataStream& in, QwtText& t)
 {
     int version;
@@ -490,6 +604,12 @@ QDataStream& operator>>(QDataStream& in, QwtSymbol* t)
     return in;
 }
 
+/**
+ * @brief QwtIntervalSymbol的序列化输出
+ * @param out 输出数据流
+ * @param t QwtIntervalSymbol指针
+ * @return 输出数据流
+ */
 QDataStream& operator<<(QDataStream& out, const QwtIntervalSymbol* t)
 {
     out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
@@ -497,6 +617,12 @@ QDataStream& operator<<(QDataStream& out, const QwtIntervalSymbol* t)
     return out;
 }
 
+/**
+ * @brief QwtIntervalSymbol的反序列化输入
+ * @param in 输入数据流
+ * @param t QwtIntervalSymbol指针
+ * @return 输入数据流
+ */
 QDataStream& operator>>(QDataStream& in, QwtIntervalSymbol* t)
 {
     int version;
@@ -742,6 +868,12 @@ QDataStream& operator<<(QDataStream& out, const QwtPlotGrid* item)
     return out;
 }
 
+/**
+ * @brief QwtPlotGrid指针的反序列化
+ * @param in 输入数据流
+ * @param item QwtPlotGrid指针
+ * @return 输入数据流
+ */
 QDataStream& operator>>(QDataStream& in, QwtPlotGrid* item)
 {
     int version;
@@ -777,6 +909,12 @@ QDataStream& operator<<(QDataStream& out, const QwtPlotScaleItem* item)
     out << item->borderDistance() << item->font() << item->isScaleDivFromAxis() << item->palette() << item->position();
     return out;
 }
+/**
+ * @brief QwtPlotScaleItem(Rtti_PlotScale)指针的反序列化
+ * @param in 输入数据流
+ * @param item QwtPlotScaleItem指针
+ * @return 输入数据流
+ */
 QDataStream& operator>>(QDataStream& in, QwtPlotScaleItem* item)
 {
     int version;
@@ -817,6 +955,12 @@ QDataStream& operator<<(QDataStream& out, const QwtPlotLegendItem* item)
         << item->itemMargin() << item->itemSpacing() << item->textPen();
     return out;
 }
+/**
+ * @brief QwtPlotLegendItem(Rtti_PlotLegend)指针的反序列化
+ * @param in 输入数据流
+ * @param item QwtPlotLegendItem指针
+ * @return 输入数据流
+ */
 QDataStream& operator>>(QDataStream& in, QwtPlotLegendItem* item)
 {
     int version;
@@ -875,6 +1019,12 @@ QDataStream& operator<<(QDataStream& out, const QwtPlotMarker* item)
     }
     return out;
 }
+/**
+ * @brief QwtPlotMarker(Rtti_PlotMarker)指针的反序列化
+ * @param in 输入数据流
+ * @param item QwtPlotMarker指针
+ * @return 输入数据流
+ */
 QDataStream& operator>>(QDataStream& in, QwtPlotMarker* item)
 {
     int version;
@@ -932,6 +1082,12 @@ QDataStream& operator<<(QDataStream& out, const DA::DADataProbeMarker* item)
     return out;
 }
 
+/**
+ * @brief DA::DADataProbeMarker(Rtti_DataProbeMarker)指针的反序列化
+ * @param in 输入数据流
+ * @param item DADataProbeMarker指针
+ * @return 输入数据流
+ */
 QDataStream& operator>>(QDataStream& in, DA::DADataProbeMarker* item)
 {
     int version;
@@ -971,6 +1127,12 @@ QDataStream& operator<<(QDataStream& out, const QwtPlotSpectroCurve* item)
         << item->testPaintAttribute(QwtPlotSpectroCurve::ClipPoints);
     return out;
 }
+/**
+ * @brief QwtPlotSpectroCurve(Rtti_PlotSpectroCurve)指针的反序列化
+ * @param in 输入数据流
+ * @param item QwtPlotSpectroCurve指针
+ * @return 输入数据流
+ */
 QDataStream& operator>>(QDataStream& in, QwtPlotSpectroCurve* item)
 {
     int version;
@@ -1079,6 +1241,12 @@ QDataStream& operator>>(QDataStream& in, QwtPlotBarChart* item)
 // QwtPlotArrowMarker
 //============================================
 
+/**
+ * @brief QwtPlotArrowMarker指针的序列化
+ * @param out 输出数据流
+ * @param item QwtPlotArrowMarker指针
+ * @return 输出数据流
+ */
 QDataStream& operator<<(QDataStream& out, const QwtPlotArrowMarker* item)
 {
     out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
@@ -1096,6 +1264,12 @@ QDataStream& operator<<(QDataStream& out, const QwtPlotArrowMarker* item)
     return out;
 }
 
+/**
+ * @brief QwtPlotArrowMarker指针的反序列化
+ * @param in 输入数据流
+ * @param item QwtPlotArrowMarker指针
+ * @return 输入数据流
+ */
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotArrowMarker* item)
 {
     int version;
@@ -1162,6 +1336,12 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotArrowMarker* item)
 // QwtPlotBoxChart
 //============================================
 
+/**
+ * @brief QwtPlotBoxChart指针的序列化
+ * @param out 输出数据流
+ * @param item QwtPlotBoxChart指针
+ * @return 输出数据流
+ */
 QDataStream& operator<<(QDataStream& out, const QwtPlotBoxChart* item)
 {
     out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
@@ -1191,6 +1371,12 @@ QDataStream& operator<<(QDataStream& out, const QwtPlotBoxChart* item)
     return out;
 }
 
+/**
+ * @brief QwtPlotBoxChart指针的反序列化
+ * @param in 输入数据流
+ * @param item QwtPlotBoxChart指针
+ * @return 输入数据流
+ */
 QDataStream& operator>>(QDataStream& in, QwtPlotBoxChart* item)
 {
     int version;
@@ -1265,6 +1451,12 @@ QDataStream& operator>>(QDataStream& in, QwtPlotBoxChart* item)
 //============================================
 // QwtPlotShapeItem
 //============================================
+/**
+ * @brief QwtPlotShapeItem指针的序列化
+ * @param out 输出数据流
+ * @param item QwtPlotShapeItem指针
+ * @return 输出数据流
+ */
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotShapeItem* item)
 {
     out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
@@ -1275,6 +1467,12 @@ DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotShapeItem* i
     return out;
 }
 
+/**
+ * @brief QwtPlotShapeItem指针的反序列化
+ * @param in 输入数据流
+ * @param item QwtPlotShapeItem指针
+ * @return 输入数据流
+ */
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotShapeItem* item)
 {
     int version;
@@ -1306,6 +1504,12 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotShapeItem* item)
 // QwtPlotIntervalCurve
 //============================================
 
+/**
+ * @brief QwtPlotIntervalCurve指针的序列化
+ * @param out 输出数据流
+ * @param item QwtPlotIntervalCurve指针
+ * @return 输出数据流
+ */
 QDataStream& operator<<(QDataStream& out, const QwtPlotIntervalCurve* item)
 {
     out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
@@ -1329,6 +1533,12 @@ QDataStream& operator<<(QDataStream& out, const QwtPlotIntervalCurve* item)
     return out;
 }
 
+/**
+ * @brief QwtPlotIntervalCurve指针的反序列化
+ * @param in 输入数据流
+ * @param item QwtPlotIntervalCurve指针
+ * @return 输入数据流
+ */
 QDataStream& operator>>(QDataStream& in, QwtPlotIntervalCurve* item)
 {
     int version;
@@ -1884,6 +2094,12 @@ QDataStream& operator>>(QDataStream& in, QwtAlphaColorMap* c)
 //----------------------------------------------------
 // QwtHueColorMap
 //----------------------------------------------------
+/**
+ * @brief QwtHueColorMap的序列化
+ * @param out 输出数据流
+ * @param c QwtHueColorMap指针
+ * @return 输出数据流
+ */
 QDataStream& operator<<(QDataStream& out, const QwtHueColorMap* c)
 {
     out << DA::gc_dachart_version << DA::gc_dachart_magic_mark2;
@@ -1891,6 +2107,12 @@ QDataStream& operator<<(QDataStream& out, const QwtHueColorMap* c)
     out << c->hue1() << c->hue2() << c->saturation() << c->value() << c->alpha();
     return out;
 }
+/**
+ * @brief QwtHueColorMap的反序列化
+ * @param in 输入数据流
+ * @param c QwtHueColorMap指针
+ * @return 输入数据流
+ */
 QDataStream& operator>>(QDataStream& in, QwtHueColorMap* c)
 {
     int version;
@@ -1918,6 +2140,12 @@ QDataStream& operator>>(QDataStream& in, QwtHueColorMap* c)
 // QwtSaturationValueColorMap
 //----------------------------------------------------
 
+/**
+ * @brief QwtSaturationValueColorMap的序列化
+ * @param out 输出数据流
+ * @param c QwtSaturationValueColorMap指针
+ * @return 输出数据流
+ */
 QDataStream& operator<<(QDataStream& out, const QwtSaturationValueColorMap* c)
 {
     out << DA::gc_dachart_version << DA::gc_dachart_magic_mark2;
@@ -1925,6 +2153,12 @@ QDataStream& operator<<(QDataStream& out, const QwtSaturationValueColorMap* c)
     out << c->hue() << c->saturation1() << c->saturation2() << c->value1() << c->value2() << c->alpha();
     return out;
 }
+/**
+ * @brief QwtSaturationValueColorMap的反序列化
+ * @param in 输入数据流
+ * @param c QwtSaturationValueColorMap指针
+ * @return 输入数据流
+ */
 QDataStream& operator>>(QDataStream& in, QwtSaturationValueColorMap* c)
 {
     int version;
@@ -2011,6 +2245,12 @@ QDataStream& operator>>(QDataStream& in, QwtInterval& item)
 // QwtBoxSample
 //----------------------------------------------------
 
+/**
+ * @brief QwtBoxSample序列化支持
+ * @param out 输出数据流
+ * @param item QwtBoxSample引用
+ * @return 输出数据流
+ */
 QDataStream& operator<<(QDataStream& out, const QwtBoxSample& item)
 {
     out << item.position << item.whiskerLower << item.q1 << item.median << item.q3 << item.whiskerUpper
@@ -2018,6 +2258,12 @@ QDataStream& operator<<(QDataStream& out, const QwtBoxSample& item)
     return out;
 }
 
+/**
+ * @brief QwtBoxSample反序列化支持
+ * @param in 输入数据流
+ * @param item QwtBoxSample引用
+ * @return 输入数据流
+ */
 QDataStream& operator>>(QDataStream& in, QwtBoxSample& item)
 {
     in >> item.position >> item.whiskerLower >> item.q1 >> item.median >> item.q3 >> item.whiskerUpper

@@ -1,4 +1,4 @@
-﻿#ifndef DACOMMANDSFORGRAPHICS_H
+#ifndef DACOMMANDSFORGRAPHICS_H
 #define DACOMMANDSFORGRAPHICS_H
 #include "DAGraphicsViewGlobal.h"
 #include <QUndoCommand>
@@ -187,11 +187,11 @@ public:
 
 private:
 	DAGraphicsResizeableItem* mItem;
-	QPointF mOldpos;
+	QPointF mOldPos;
 	QSizeF mOldSize;
 	QPointF mNewPosition;
 	QSizeF mNewSize;
-	bool mSkipfirst { false };
+	bool mSkipFirst { false };
 	QDateTime mDatetime;
 };
 

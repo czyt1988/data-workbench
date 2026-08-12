@@ -50,11 +50,21 @@ namespace da_figure
 
 static GetCurrentChartFn g_currentChartGetter = nullptr;
 
+/**
+ * @brief 设置获取当前图表控件的回调函数
+ * @param fn 获取当前图表控件的回调函数指针
+ * @sa getCurrentChartWidget()
+ */
 void setCurrentChartGetter(GetCurrentChartFn fn)
 {
     g_currentChartGetter = fn;
 }
 
+/**
+ * @brief 获取当前图表控件
+ * @return 返回当前图表控件指针，若未设置回调则返回nullptr
+ * @sa setCurrentChartGetter()
+ */
 DA::DAChartWidget* getCurrentChartWidget()
 {
     if (!g_currentChartGetter) return nullptr;
@@ -69,38 +79,38 @@ DA::DAChartWidget* getCurrentChartWidget()
 class ChartHandle
 {
 protected:
-    DA::DAChartWidget* m_chart;
+    DA::DAChartWidget* mChart;
 
 public:
-    ChartHandle(DA::DAChartWidget* chart = nullptr) : m_chart(chart) {}
+    ChartHandle(DA::DAChartWidget* chart = nullptr) : mChart(chart) {}
 
-    bool isValid() const { return m_chart != nullptr; }
-    DA::DAChartWidget* chart() const { return m_chart; }
+    bool isValid() const { return mChart != nullptr; }
+    DA::DAChartWidget* chart() const { return mChart; }
 
     // ==================== DAChartDataInterface methods ====================
 
     QwtPlotItem* addCurveXY(const QVector< double >& x, const QVector< double >& y, const QString& title)
     {
         if (!isValid()) return nullptr;
-        return static_cast< QwtPlotItem* >(m_chart->addCurve(x, y, title));
+        return static_cast< QwtPlotItem* >(mChart->addCurve(x, y, title));
     }
 
     QwtPlotItem* addCurvePoints(const QVector< QPointF >& points, const QString& title)
     {
         if (!isValid()) return nullptr;
-        return static_cast< QwtPlotItem* >(m_chart->addCurve(points, title));
+        return static_cast< QwtPlotItem* >(mChart->addCurve(points, title));
     }
 
     QwtPlotItem* addScatter(const QVector< QPointF >& points, const QString& title)
     {
         if (!isValid()) return nullptr;
-        return static_cast< QwtPlotItem* >(m_chart->addScatter(points, title));
+        return static_cast< QwtPlotItem* >(mChart->addScatter(points, title));
     }
 
     QwtPlotItem* addBarChart(const QVector< double >& values, const QString& title)
     {
         if (!isValid()) return nullptr;
-        return static_cast< QwtPlotItem* >(m_chart->addBarChart(values, title));
+        return static_cast< QwtPlotItem* >(mChart->addBarChart(values, title));
     }
 
     QwtPlotItem* addIntervalCurve(const QVector< double >& values,
@@ -109,21 +119,21 @@ public:
                                    const QString& title)
     {
         if (!isValid()) return nullptr;
-        return static_cast< QwtPlotItem* >(m_chart->addIntervalCurve(values, mins, maxs, title));
+        return static_cast< QwtPlotItem* >(mChart->addIntervalCurve(values, mins, maxs, title));
     }
 
     QwtPlotItem* addBoxChart(const pybind11::list& samples, const QString& title)
     {
         if (!isValid()) return nullptr;
         QVector< QwtBoxSample > boxSamples = convertToBoxSamples(samples);
-        return static_cast< QwtPlotItem* >(m_chart->addBoxChart(boxSamples, title));
+        return static_cast< QwtPlotItem* >(mChart->addBoxChart(boxSamples, title));
     }
 
     QwtPlotItem* addHistogram(const pybind11::list& samples, const QString& title)
     {
         if (!isValid()) return nullptr;
         QVector< QwtIntervalSample > histSamples = convertToIntervalSamples(samples);
-        return static_cast< QwtPlotItem* >(m_chart->addHistogram(histSamples, title));
+        return static_cast< QwtPlotItem* >(mChart->addHistogram(histSamples, title));
     }
 
     QwtPlotItem* addMultiBarChart(const QVector< double >& positions,
@@ -136,7 +146,7 @@ public:
         for (auto item : titles) {
             cppTitles.append(QString::fromStdString(item.cast<std::string>()));
         }
-        return static_cast< QwtPlotItem* >(m_chart->addMultiBarChart(positions, cppValues, cppTitles));
+        return static_cast< QwtPlotItem* >(mChart->addMultiBarChart(positions, cppValues, cppTitles));
     }
 
     QwtPlotItem* addContour(const pybind11::list& points,
@@ -145,26 +155,26 @@ public:
     {
         if (!isValid()) return nullptr;
         QVector< QwtPoint3D > contourPoints = convertToPoint3D(points);
-        return static_cast< QwtPlotItem* >(m_chart->addContour(contourPoints, levels, title));
+        return static_cast< QwtPlotItem* >(mChart->addContour(contourPoints, levels, title));
     }
 
     QwtPlotItem* addShapeItem(const pybind11::list& polygon, const QString& title)
     {
         if (!isValid()) return nullptr;
         QPainterPath path = convertToPainterPath(polygon);
-        return static_cast< QwtPlotItem* >(m_chart->addShapeItem(path, title));
+        return static_cast< QwtPlotItem* >(mChart->addShapeItem(path, title));
     }
 
     QwtPlotItem* addVerticalLine(double x, const QString& title)
     {
         if (!isValid()) return nullptr;
-        return static_cast< QwtPlotItem* >(m_chart->addVerticalLine(x, title));
+        return static_cast< QwtPlotItem* >(mChart->addVerticalLine(x, title));
     }
 
     QwtPlotItem* addHorizontalLine(double y, const QString& title)
     {
         if (!isValid()) return nullptr;
-        return static_cast< QwtPlotItem* >(m_chart->addHorizontalLine(y, title));
+        return static_cast< QwtPlotItem* >(mChart->addHorizontalLine(y, title));
     }
 
     QwtPlotItem* addSpectrogram(const pybind11::dict& gridData, const QString& title)
@@ -172,7 +182,7 @@ public:
         if (!isValid()) return nullptr;
         QwtGridRasterData* rasterData = convertToRasterData(gridData);
         if (!rasterData) return nullptr;
-        QwtPlotSpectrogram* spectro = m_chart->addSpectrogram(rasterData, title);
+        QwtPlotSpectrogram* spectro = mChart->addSpectrogram(rasterData, title);
         // Set color map if specified
         if (gridData.contains("cmap")) {
             pybind11::object cmapObj = gridData["cmap"];
@@ -190,13 +200,13 @@ public:
     void removePlotItem(QwtPlotItem* item)
     {
         if (!isValid() || !item) return;
-        m_chart->removePlotItem(item);
+        mChart->removePlotItem(item);
     }
 
     void clearAllData()
     {
         if (!isValid()) return;
-        m_chart->clearAllData();
+        mChart->clearAllData();
     }
 
     // ==================== DAChartStyleInterface methods ====================
@@ -204,7 +214,7 @@ public:
     void setChartTitle(const QString& title)
     {
         if (!isValid()) return;
-        m_chart->setChartTitle(title);
+        mChart->setChartTitle(title);
     }
 
     void setAxisLabel(const QString& axis, const QString& label)
@@ -212,25 +222,25 @@ public:
         if (!isValid()) return;
         int axisId = axisNameToId(axis);
         if (axisId < 0) return;
-        m_chart->setAxisLabel(axisId, label);
+        mChart->setAxisLabel(axisId, label);
     }
 
     void enableGrid(bool on)
     {
         if (!isValid()) return;
-        m_chart->enableGrid(on);
+        mChart->enableGrid(on);
     }
 
     void enableLegend(bool on)
     {
         if (!isValid()) return;
-        m_chart->enableLegend(on);
+        mChart->enableLegend(on);
     }
 
     void setBackgroundBrush(const QColor& color)
     {
         if (!isValid()) return;
-        m_chart->setBackgroundBrush(QBrush(color));
+        mChart->setBackgroundBrush(QBrush(color));
     }
 
     // ==================== Refresh ====================
@@ -238,16 +248,16 @@ public:
     void replot()
     {
         if (!isValid()) return;
-        m_chart->replot();
+        mChart->replot();
     }
 
     void autoScale()
     {
         if (!isValid()) return;
-        m_chart->setAxisAutoScale(QwtPlot::xBottom);
-        m_chart->setAxisAutoScale(QwtPlot::yLeft);
-        m_chart->setAxisAutoScale(QwtPlot::xTop);
-        m_chart->setAxisAutoScale(QwtPlot::yRight);
+        mChart->setAxisAutoScale(QwtPlot::xBottom);
+        mChart->setAxisAutoScale(QwtPlot::yLeft);
+        mChart->setAxisAutoScale(QwtPlot::xTop);
+        mChart->setAxisAutoScale(QwtPlot::yRight);
     }
 
 private:
@@ -522,6 +532,11 @@ private:
 
 // ==================== Module-level style functions ====================
 
+/**
+ * @brief 将字符串转换为Qwt符号样式
+ * @param style 符号样式名称字符串
+ * @return 对应的QwtSymbol::Style枚举值，无法匹配时返回QwtSymbol::NoSymbol
+ */
 static QwtSymbol::Style stringToSymbolStyle(const QString& style)
 {
     QString s = style.toLower();
@@ -543,6 +558,11 @@ static QwtSymbol::Style stringToSymbolStyle(const QString& style)
     return QwtSymbol::NoSymbol;
 }
 
+/**
+ * @brief 将字符串转换为Qwt曲线样式
+ * @param style 曲线样式名称字符串
+ * @return 对应的QwtPlotCurve::CurveStyle枚举值，无法匹配时返回QwtPlotCurve::Lines
+ */
 static QwtPlotCurve::CurveStyle stringToCurveStyle(const QString& style)
 {
     QString s = style.toLower();
@@ -554,6 +574,13 @@ static QwtPlotCurve::CurveStyle stringToCurveStyle(const QString& style)
     return QwtPlotCurve::Lines;
 }
 
+/**
+ * @brief 设置图表项的画笔（颜色和线宽）
+ * @param item 图表项指针
+ * @param color 画笔颜色
+ * @param width 画笔线宽
+ * @sa setBrushOnItem(), setSymbolOnItem()
+ */
 void setPenOnItem(QwtPlotItem* item, const QColor& color, double width)
 {
     if (!item) return;
@@ -576,6 +603,12 @@ void setPenOnItem(QwtPlotItem* item, const QColor& color, double width)
     }
 }
 
+/**
+ * @brief 设置图表项的画刷（填充颜色）
+ * @param item 图表项指针
+ * @param color 画刷颜色
+ * @sa setPenOnItem(), setSymbolOnItem()
+ */
 void setBrushOnItem(QwtPlotItem* item, const QColor& color)
 {
     if (!item) return;
@@ -593,6 +626,14 @@ void setBrushOnItem(QwtPlotItem* item, const QColor& color)
     }
 }
 
+/**
+ * @brief 设置曲线图表项的符号样式
+ * @param item 图表项指针，仅对QwtPlotCurve类型生效
+ * @param style 符号样式名称字符串
+ * @param size 符号大小（像素）
+ * @param color 符号颜色
+ * @sa setPenOnItem(), setBrushOnItem()
+ */
 void setSymbolOnItem(QwtPlotItem* item, const QString& style, int size, const QColor& color)
 {
     if (!item) return;
@@ -604,6 +645,12 @@ void setSymbolOnItem(QwtPlotItem* item, const QString& style, int size, const QC
     }
 }
 
+/**
+ * @brief 设置曲线图表项的绘制样式
+ * @param item 图表项指针，仅对QwtPlotCurve类型生效
+ * @param style 曲线样式名称字符串
+ * @sa stringToCurveStyle()
+ */
 void setCurveStyleOnItem(QwtPlotItem* item, const QString& style)
 {
     if (!item) return;

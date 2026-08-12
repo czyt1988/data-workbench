@@ -1,4 +1,4 @@
-﻿#ifndef DAABSTRACTGRAPHICSVIEWOVERLAY_H
+#ifndef DAABSTRACTGRAPHICSVIEWOVERLAY_H
 #define DAABSTRACTGRAPHICSVIEWOVERLAY_H
 #include "DAGraphicsViewGlobal.h"
 #include "DAAbstractWidgetOverlay.h"
@@ -21,66 +21,29 @@ public:
 	QRect overlayRect() const;
 	//
 	QPoint getMousePos() const;
-	/**
-	 * @brief 是否激活
-	 * @return
-	 */
+	// 是否激活
 	bool isActive() const;
 
-	/**
-	 * @brief 激活
-	 * @param v
-	 */
+	// 激活
 	void setActive(bool v);
 
-	/**
-	 * @brief 对父窗口进行过滤
-	 *
-	 * overlay已经默认捕获父窗口，不需要手动再次安装
-	 */
-	virtual bool eventFilter(QObject* obj, QEvent* event);
+	// 对父窗口进行过滤
+	virtual bool eventFilter(QObject* obj, QEvent* event) override;
 
-	/**
-	 * @brief 获取view
-	 *
-	 * @return 如果没有返回nullptr
-	 */
+	// 获取view
 	QGraphicsView* view() const;
 
-	/**
-	 * @brief 判断是否有效，如果view没有场景，就属于无效
-	 */
+	// 判断是否有效，如果view没有场景，就属于无效
 	bool isValid() const;
 
 protected:
-	/**
-	 * @brief view的鼠标移动事件
-	 *
-	 * 类似widget的鼠标事件，但由于overlay是透明窗口，本身是没有鼠标事件，这里是捕获了view的鼠标事件，
-	 * 方便基于宿主的状态进行特殊的显示
-	 *
-	 * @note 注意，在继承此虚函数，要保证父类的虚函数运行，否则@ref DAAbstractGraphicsViewOverlay::getMousePos 将不起作用
-	 */
+	// view的鼠标移动事件
 	virtual void viewMouseMove(const QPoint& viewPos);
 
-	/**
-	 * @brief view的鼠标点击事件
-	 *
-	 * 类似widget的鼠标事件，但由于overlay是透明窗口，本身是没有鼠标事件，这里是捕获了view的鼠标事件，
-	 * 方便基于宿主的状态进行特殊的显示
-	 *
-	 * @note 注意，在继承此虚函数，要保证父类的虚函数运行，否则@ref DAAbstractGraphicsViewOverlay::getMousePos 将不起作用
-	 */
+	// view的鼠标点击事件
 	virtual void viewMousePress(const QPoint& viewPos);
 
-	/**
-	 * @brief view的鼠标释放事件
-	 *
-	 * 类似widget的鼠标事件，但由于overlay是透明窗口，本身是没有鼠标事件，这里是捕获了view的鼠标事件，
-	 * 方便基于宿主的状态进行特殊的显示
-	 *
-	 * @note 注意，在继承此虚函数，要保证父类的虚函数运行，否则@ref DAAbstractGraphicsViewOverlay::getMousePos 将不起作用
-	 */
+	// view的鼠标释放事件
 	virtual void viewMouseRelease(const QPoint& viewPos);
 
 private:

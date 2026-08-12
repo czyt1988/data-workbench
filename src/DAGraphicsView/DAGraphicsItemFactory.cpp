@@ -1,4 +1,4 @@
-﻿#include "DAGraphicsItemFactory.h"
+#include "DAGraphicsItemFactory.h"
 #include <QDebug>
 #include <QObject>
 #include <QDateTime>
@@ -31,14 +31,23 @@ static QHash< int, DAGraphicsItemFactory::FpItemCreate >& registedItemsByType()
     return s;
 }
 
+/**
+ * @brief 构造函数
+ */
 DAGraphicsItemFactory::DAGraphicsItemFactory()
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DAGraphicsItemFactory::~DAGraphicsItemFactory()
 {
 }
 
+/**
+ * @brief 初始化工厂，注册内置的图形项
+ */
 void DAGraphicsItemFactory::initialization()
 {
     // Qt
@@ -67,6 +76,11 @@ void DAGraphicsItemFactory::registItem(const QString& className, DAGraphicsItemF
     registedItemsByType()[ it->type() ] = fp;
 }
 
+/**
+ * @brief 根据类名创建图形项
+ * @param className 类名
+ * @return 创建的图形项指针，若类名未注册则返回nullptr
+ */
 QGraphicsItem* DAGraphicsItemFactory::createItem(const QString& className)
 {
     FpItemCreate fp = registedItemsByName().value(className, nullptr);
@@ -77,6 +91,11 @@ QGraphicsItem* DAGraphicsItemFactory::createItem(const QString& className)
     return fp();
 }
 
+/**
+ * @brief 根据类型创建图形项
+ * @param itemType 类型枚举值
+ * @return 创建的图形项指针，若类型未注册则返回nullptr
+ */
 QGraphicsItem* DAGraphicsItemFactory::createItem(int itemType)
 {
     FpItemCreate fp = registedItemsByType().value(itemType, nullptr);
@@ -87,6 +106,10 @@ QGraphicsItem* DAGraphicsItemFactory::createItem(int itemType)
     return fp();
 }
 
+/**
+ * @brief 销毁图形项
+ * @param i 要销毁的图形项指针
+ */
 void DAGraphicsItemFactory::destoryItem(DAGraphicsItem* i)
 {
     delete i;

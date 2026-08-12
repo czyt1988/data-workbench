@@ -17,13 +17,13 @@ namespace DA
  * \endif
  */
 DAArrowGenerator::DAArrowGenerator()
-    : m_startEndType(NoEnd)
-    , m_endEndType(SimpleEnd)
-    , m_arrowSize(10.0)
-    , m_arrowLength(50.0)
-    , m_arrowAngle(0.0)
-    , m_arrowLineWidth(1.0)
-    , m_originPosition(OriginAtEnd)
+    : mStartEndType(NoEnd)
+    , mEndEndType(SimpleEnd)
+    , mArrowSize(10.0)
+    , mArrowLength(50.0)
+    , mArrowAngle(0.0)
+    , mArrowLineWidth(1.0)
+    , mOriginPosition(OriginAtEnd)
 {
 }
 
@@ -51,13 +51,13 @@ DAArrowGenerator::DAArrowGenerator()
  * \endif
  */
 DAArrowGenerator::DAArrowGenerator(ArrowEndType startEnd, ArrowEndType endEnd, qreal size, qreal length, qreal angle, qreal lineWidth)
-    : m_startEndType(startEnd)
-    , m_endEndType(endEnd)
-    , m_arrowSize(size)
-    , m_arrowLength(length)
-    , m_arrowAngle(angle)
-    , m_arrowLineWidth(lineWidth)
-    , m_originPosition(OriginAtEnd)
+    : mStartEndType(startEnd)
+    , mEndEndType(endEnd)
+    , mArrowSize(size)
+    , mArrowLength(length)
+    , mArrowAngle(angle)
+    , mArrowLineWidth(lineWidth)
+    , mOriginPosition(OriginAtEnd)
 {
 }
 
@@ -90,7 +90,7 @@ DAArrowGenerator::~DAArrowGenerator()
  */
 void DAArrowGenerator::setStartEndType(ArrowEndType type)
 {
-    m_startEndType = type;
+    mStartEndType = type;
 }
 
 /**
@@ -108,7 +108,7 @@ void DAArrowGenerator::setStartEndType(ArrowEndType type)
  */
 DAArrowGenerator::ArrowEndType DAArrowGenerator::getStartEndType() const
 {
-    return m_startEndType;
+    return mStartEndType;
 }
 
 /**
@@ -126,7 +126,7 @@ DAArrowGenerator::ArrowEndType DAArrowGenerator::getStartEndType() const
  */
 void DAArrowGenerator::setEndEndType(ArrowEndType type)
 {
-    m_endEndType = type;
+    mEndEndType = type;
 }
 
 /**
@@ -144,7 +144,7 @@ void DAArrowGenerator::setEndEndType(ArrowEndType type)
  */
 DAArrowGenerator::ArrowEndType DAArrowGenerator::getEndEndType() const
 {
-    return m_endEndType;
+    return mEndEndType;
 }
 
 /**
@@ -162,7 +162,7 @@ DAArrowGenerator::ArrowEndType DAArrowGenerator::getEndEndType() const
  */
 void DAArrowGenerator::setArrowSize(qreal size)
 {
-    m_arrowSize = size;
+    mArrowSize = size;
 }
 
 /**
@@ -180,7 +180,7 @@ void DAArrowGenerator::setArrowSize(qreal size)
  */
 qreal DAArrowGenerator::getArrowSize() const
 {
-    return m_arrowSize;
+    return mArrowSize;
 }
 
 /**
@@ -198,7 +198,7 @@ qreal DAArrowGenerator::getArrowSize() const
  */
 void DAArrowGenerator::setArrowLength(qreal length)
 {
-    m_arrowLength = length;
+    mArrowLength = length;
 }
 
 /**
@@ -216,7 +216,7 @@ void DAArrowGenerator::setArrowLength(qreal length)
  */
 qreal DAArrowGenerator::getArrowLength() const
 {
-    return m_arrowLength;
+    return mArrowLength;
 }
 
 /**
@@ -234,7 +234,7 @@ qreal DAArrowGenerator::getArrowLength() const
  */
 void DAArrowGenerator::setArrowAngle(qreal angle)
 {
-    m_arrowAngle = angle;
+    mArrowAngle = angle;
 }
 
 /**
@@ -252,7 +252,7 @@ void DAArrowGenerator::setArrowAngle(qreal angle)
  */
 qreal DAArrowGenerator::getArrowAngle() const
 {
-    return m_arrowAngle;
+    return mArrowAngle;
 }
 
 /**
@@ -270,7 +270,7 @@ qreal DAArrowGenerator::getArrowAngle() const
  */
 void DAArrowGenerator::setArrowLineWidth(qreal width)
 {
-    m_arrowLineWidth = width;
+    mArrowLineWidth = width;
 }
 
 /**
@@ -288,7 +288,7 @@ void DAArrowGenerator::setArrowLineWidth(qreal width)
  */
 qreal DAArrowGenerator::getArrowLineWidth() const
 {
-    return m_arrowLineWidth;
+    return mArrowLineWidth;
 }
 
 /**
@@ -306,7 +306,7 @@ qreal DAArrowGenerator::getArrowLineWidth() const
  */
 void DAArrowGenerator::setOriginPosition(OriginPosition pos)
 {
-    m_originPosition = pos;
+    mOriginPosition = pos;
 }
 
 /**
@@ -324,7 +324,7 @@ void DAArrowGenerator::setOriginPosition(OriginPosition pos)
  */
 DAArrowGenerator::OriginPosition DAArrowGenerator::getOriginPosition() const
 {
-    return m_originPosition;
+    return mOriginPosition;
 }
 
 /**
@@ -342,7 +342,7 @@ DAArrowGenerator::OriginPosition DAArrowGenerator::getOriginPosition() const
  */
 QPainterPath DAArrowGenerator::generatePath() const
 {
-    return createArrowPath(m_arrowSize, m_startEndType, m_endEndType, m_arrowLength, m_arrowAngle, m_originPosition);
+    return createArrowPath(mArrowSize, mStartEndType, mEndEndType, mArrowLength, mArrowAngle, mOriginPosition);
 }
 
 /**

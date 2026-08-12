@@ -28,25 +28,13 @@ public:
 public:
     DAChart3DPlotItemFactory();
 
-    /**
-     * @brief 创建3D item
-     * @param rtti
-     * @return 如果未知的rtti，返回nullptr
-     */
+    // 创建3D item，如果未知的rtti，返回nullptr
     static Qwt3DPlotItem* createItem(int rtti);
 
-    /**
-     * @brief 注册工厂函数
-     * @param rtti
-     * @param fp
-     */
+    // 注册工厂函数
     static void registCreateItemFucntion(int rtti, Fp3DItemCreate fp);
 
-    /**
-     * @brief 判断是否存在此工厂函数
-     * @param rtti
-     * @return
-     */
+    // 判断是否存在此工厂函数
     static bool isHaveCreateItemFucntion(int rtti);
 
 private:

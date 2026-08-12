@@ -33,20 +33,20 @@ public:
     }
     DAChart3DWidget* chart3D() const
     {
-        return m_chart3D;
+        return mChart3D;
     }
     ItemType itemType() const
     {
-        return m_itemType;
+        return mItemType;
     }
     bool isValid() const
     {
-        return (m_chart3D != nullptr);
+        return (mChart3D != nullptr);
     }
 
 private:
-    DAChart3DWidget* m_chart3D { nullptr };
-    ItemType m_itemType { Plot3DText };
+    DAChart3DWidget* mChart3D { nullptr };
+    ItemType mItemType { Plot3DText };
 };
 }  // end DA
 #endif  // DASTANDARDITEMPLOT3D_H

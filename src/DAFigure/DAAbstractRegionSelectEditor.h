@@ -1,4 +1,4 @@
-﻿#ifndef DAABSTRACTREGIONSELECTEDITOR_H
+#ifndef DAABSTRACTREGIONSELECTEDITOR_H
 #define DAABSTRACTREGIONSELECTEDITOR_H
 #include "DAFigureAPI.h"
 #include "DAAbstractChartEditor.h"
@@ -53,9 +53,9 @@ Q_SIGNALS:
     void finishSelection(const QPainterPath& shape);
 
 private:
-    SelectionMode m_selectionMode;  ///< 选框类型
-    int m_xAxis;
-    int m_yAxis;
+    SelectionMode mSelectionMode;  ///< 选框类型
+    int mXAxis;
+    int mYAxis;
 };
 }  // End Of Namespace DA
 #endif  // DAABSTRACTREGIONSELECTEDITOR_H

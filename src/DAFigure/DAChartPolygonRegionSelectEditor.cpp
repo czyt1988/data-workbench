@@ -1,4 +1,4 @@
-﻿#include "DAChartPolygonRegionSelectEditor.h"
+#include "DAChartPolygonRegionSelectEditor.h"
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include "da_qt5qt6_compat.hpp"
@@ -10,21 +10,32 @@ class DAChartPolygonRegionSelectEditor::PrivateData
     DA_DECLARE_PUBLIC(DAChartPolygonRegionSelectEditor)
 public:
     bool mIsStartDrawRegion { false };  ///< 是否生效
-    bool mIsFinishOneRegion { false };  ///< 标定是否已经完成了一次区域，m_tmpItem还是m_shapeItem显示
+    bool mIsFinishOneRegion { false };  ///< 标定是否已经完成了一次区域，mTmpItem还是mShapeItem显示
     DAChartSelectRegionShapeItem* mTmpItem { nullptr };
     QPolygonF mPolygon;  ///< 多边形
     QPainterPath mLastPainterPath;
     static bool isPointClose(const QPoint& p1, const QPoint& p2, int threshold = 3);
 
 public:
+    /**
+     * @brief 构造函数
+     * @param p 父对象指针
+     */
     PrivateData(DAChartPolygonRegionSelectEditor* p) : q_ptr(p)
     {
     }
+
+    /**
+     * @brief 析构函数
+     */
     ~PrivateData()
     {
         releaseTmpItem();
     }
 
+    /**
+     * @brief 释放临时图元
+     */
     void releaseTmpItem()
     {
         if (mTmpItem) {
@@ -33,6 +44,10 @@ public:
             mTmpItem = nullptr;
         }
     }
+
+    /**
+     * @brief 创建临时图元
+     */
     void createTmpItem()
     {
         if (nullptr == mTmpItem) {
@@ -42,6 +57,13 @@ public:
     }
 };
 
+/**
+ * @brief 判断两个点是否足够接近
+ * @param p1 第一个点
+ * @param p2 第二个点
+ * @param threshold 距离阈值，默认为3
+ * @return 如果两点距离小于阈值返回true，否则返回false
+ */
 bool DAChartPolygonRegionSelectEditor::PrivateData::isPointClose(const QPoint& p1, const QPoint& p2, int threshold)
 {
     int dx = p1.x() - p2.x();
@@ -52,6 +74,10 @@ bool DAChartPolygonRegionSelectEditor::PrivateData::isPointClose(const QPoint& p
 // DAChartPolygonRegionSelectEditor
 //===================================================
 
+/**
+ * @brief 构造函数
+ * @param parent 关联的QwtPlot指针
+ */
 DAChartPolygonRegionSelectEditor::DAChartPolygonRegionSelectEditor(QwtPlot* parent)
     : DAAbstractRegionSelectEditor(parent), DA_PIMPL_CONSTRUCT
 {
@@ -59,30 +85,52 @@ DAChartPolygonRegionSelectEditor::DAChartPolygonRegionSelectEditor(QwtPlot* pare
     connect(parent, &QwtPlot::itemAttached, this, &DAChartPolygonRegionSelectEditor::onItemAttached);
 }
 
+/**
+ * @brief 析构函数
+ */
 DAChartPolygonRegionSelectEditor::~DAChartPolygonRegionSelectEditor()
 {
 }
 
+/**
+ * @brief 获取当前选中的区域
+ * @return 返回选中区域的QPainterPath
+ */
 QPainterPath DAChartPolygonRegionSelectEditor::getSelectRegion() const
 {
     return d_ptr->mLastPainterPath;
 }
 
+/**
+ * @brief 设置选中区域
+ * @param shape 要设置的QPainterPath
+ */
 void DAChartPolygonRegionSelectEditor::setSelectRegion(const QPainterPath& shape)
 {
     d_ptr->mLastPainterPath = shape;
 }
 
+/**
+ * @brief 设置选择模式
+ * @param selectionMode 选择模式
+ */
 void DAChartPolygonRegionSelectEditor::setSelectionMode(const DAAbstractRegionSelectEditor::SelectionMode& selectionMode)
 {
     DAAbstractRegionSelectEditor::setSelectionMode(selectionMode);
 }
 
+/**
+ * @brief 获取运行时类型标识
+ * @return 返回RTTIPolygonRegionSelectEditor
+ */
 int DAChartPolygonRegionSelectEditor::rtti() const
 {
     return RTTIPolygonRegionSelectEditor;
 }
 
+/**
+ * @brief 清除所有状态和临时图元
+ */
 void DAChartPolygonRegionSelectEditor::clear()
 {
     d_ptr->releaseTmpItem();
@@ -90,12 +138,20 @@ void DAChartPolygonRegionSelectEditor::clear()
     d_ptr->mLastPainterPath = QPainterPath();
 }
 
+/**
+ * @brief 取消当前操作
+ * @return 始终返回true
+ */
 bool DAChartPolygonRegionSelectEditor::cancel()
 {
     clear();
     return true;
 }
 
+/**
+ * @brief 取出临时图元并转移所有权
+ * @return 返回临时图元指针，调用者获得所有权
+ */
 QwtPlotItem* DAChartPolygonRegionSelectEditor::takeItem()
 {
     QwtPlotItem* item = d_ptr->mTmpItem;
@@ -103,6 +159,11 @@ QwtPlotItem* DAChartPolygonRegionSelectEditor::takeItem()
     return item;
 }
 
+/**
+ * @brief 图元附加到plot时的回调
+ * @param item 关联的图元
+ * @param on 是否附加
+ */
 void DAChartPolygonRegionSelectEditor::onItemAttached(QwtPlotItem* item, bool on)
 {
     if (!on) {
@@ -112,6 +173,11 @@ void DAChartPolygonRegionSelectEditor::onItemAttached(QwtPlotItem* item, bool on
     }
 }
 
+/**
+ * @brief 鼠标按下事件处理
+ * @param e 鼠标事件
+ * @return 如果事件被处理返回true，否则返回false
+ */
 bool DAChartPolygonRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
 {
     if (Qt::MiddleButton == e->button()) {
@@ -159,6 +225,11 @@ bool DAChartPolygonRegionSelectEditor::mousePressEvent(const QMouseEvent* e)
     return true;
 }
 
+/**
+ * @brief 鼠标移动事件处理
+ * @param e 鼠标事件
+ * @return 如果事件被处理返回true，否则返回false
+ */
 bool DAChartPolygonRegionSelectEditor::mouseMoveEvent(const QMouseEvent* e)
 {
     if (!d_ptr->mIsStartDrawRegion) {
@@ -180,6 +251,11 @@ bool DAChartPolygonRegionSelectEditor::mouseMoveEvent(const QMouseEvent* e)
     return DAAbstractRegionSelectEditor::mouseMoveEvent(e);  // 把移动的事件继续传递下去
 }
 
+/**
+ * @brief 键盘按键事件处理
+ * @param e 键盘事件
+ * @return 如果事件被处理返回true，否则返回false
+ */
 bool DAChartPolygonRegionSelectEditor::keyPressEvent(const QKeyEvent* e)
 {
     if (Qt::Key_Enter == e->key() || Qt::Key_Return == e->key()) {
@@ -190,6 +266,10 @@ bool DAChartPolygonRegionSelectEditor::keyPressEvent(const QKeyEvent* e)
     return DAAbstractRegionSelectEditor::keyPressEvent(e);
 }
 
+/**
+ * @brief 完成多边形区域选择
+ * @return 如果成功完成返回true，点数不足时返回false
+ */
 bool DAChartPolygonRegionSelectEditor::completeRegion()
 {
     if (d_ptr->mPolygon.size() <= 2) {

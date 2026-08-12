@@ -25,6 +25,10 @@ public:
     QMap< int, QPair< QwtPlotItem*, int > > mColumnMap;
 
 public:
+    /**
+     * @brief 构造函数
+     * @param d 父DAChartItemTableModel指针
+     */
     PrivateData(DAChartItemTableModel* d) : q_ptr(d)
     {
     }
@@ -33,14 +37,26 @@ public:
 //===================================================
 // DAChartItemTableModel
 //===================================================
+
+/**
+ * @brief 构造函数
+ * @param p 父QObject指针
+ */
 DAChartItemTableModel::DAChartItemTableModel(QObject* p) : QAbstractTableModel(p), DA_PIMPL_CONSTRUCT
 {
 }
 
+/**
+ * @brief 析构函数
+ */
 DAChartItemTableModel::~DAChartItemTableModel()
 {
 }
 
+/**
+ * @brief 设置要显示的绘图项列表
+ * @param items 绘图项列表
+ */
 void DAChartItemTableModel::setPlotItems(const QList< QwtPlotItem* >& items)
 {
     beginResetModel();
@@ -51,11 +67,18 @@ void DAChartItemTableModel::setPlotItems(const QList< QwtPlotItem* >& items)
     endResetModel();
 }
 
+/**
+ * @brief 获取当前显示的绘图项列表
+ * @return 绘图项列表的const引用
+ */
 const QList< QwtPlotItem* >& DAChartItemTableModel::getPlotItems() const
 {
     return d_ptr->mItems;
 }
 
+/**
+ * @brief 清空所有数据和绘图项
+ */
 void DAChartItemTableModel::clear()
 {
     beginResetModel();
@@ -68,18 +91,35 @@ void DAChartItemTableModel::clear()
     endResetModel();
 }
 
+/**
+ * @brief 返回行数
+ * @param parent 父模型索引
+ * @return 行数
+ */
 int DAChartItemTableModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
     return d_ptr->mRowCount;
 }
 
+/**
+ * @brief 返回列数
+ * @param parent 父模型索引
+ * @return 列数
+ */
 int DAChartItemTableModel::columnCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
     return d_ptr->mColumnMap.size();
 }
 
+/**
+ * @brief 返回表头数据
+ * @param section 表头段索引
+ * @param orientation 表头方向（水平或垂直）
+ * @param role 数据角色
+ * @return 表头数据
+ */
 QVariant DAChartItemTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role != Qt::DisplayRole)
@@ -97,6 +137,12 @@ QVariant DAChartItemTableModel::headerData(int section, Qt::Orientation orientat
     return QVariant();
 }
 
+/**
+ * @brief 返回指定索引的数据
+ * @param index 模型索引
+ * @param role 数据角色
+ * @return 对应的数据
+ */
 QVariant DAChartItemTableModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid())
@@ -126,6 +172,13 @@ QVariant DAChartItemTableModel::data(const QModelIndex& index, int role) const
     return QVariant();
 }
 
+/**
+ * @brief 设置指定索引的数据
+ * @param index 模型索引
+ * @param value 要设置的值
+ * @param role 数据角色
+ * @return 成功设置返回true，否则返回false
+ */
 bool DAChartItemTableModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
     if (!index.isValid())
@@ -142,6 +195,11 @@ bool DAChartItemTableModel::setData(const QModelIndex& index, const QVariant& va
     return setPlotItemData(index.row(), col, item, value);
 }
 
+/**
+ * @brief 返回指定索引的项标志
+ * @param index 模型索引
+ * @return 项标志
+ */
 Qt::ItemFlags DAChartItemTableModel::flags(const QModelIndex& index) const
 {
     if (!index.isValid())
@@ -149,6 +207,11 @@ Qt::ItemFlags DAChartItemTableModel::flags(const QModelIndex& index) const
     return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
 }
 
+/**
+ * @brief 启用或禁用背景色
+ * @param enable 是否启用背景色
+ * @param alpha 背景透明度
+ */
 void DAChartItemTableModel::enableBackgroundColor(bool enable, int alpha)
 {
     beginResetModel();
@@ -160,6 +223,10 @@ void DAChartItemTableModel::enableBackgroundColor(bool enable, int alpha)
     endResetModel();
 }
 
+/**
+ * @brief 返回NaN值
+ * @return 静默NaN值
+ */
 double DAChartItemTableModel::nan()
 {
     return std::numeric_limits< double >::quiet_NaN();
@@ -305,6 +372,13 @@ int DAChartItemTableModel::calcItemDataColumnCount(QwtPlotItem* item) const
     return getItemColumnCount(item);
 }
 
+/**
+ * @brief 获取指定绘图项的数据
+ * @param row 行号
+ * @param col 列号
+ * @param item 绘图项指针
+ * @return 对应的数据值，如果无效返回NaN
+ */
 double DAChartItemTableModel::getItemData(int row, int col, QwtPlotItem* item) const
 {
     if (nullptr == item || col < 0) {
@@ -659,6 +733,12 @@ QString DAChartItemTableModel::getItemDimDescribe(QwtPlotItem* item, int index) 
     return QString();
 }
 
+/**
+ * @brief 设置QPointF系列数据的值
+ * @param p 数据点引用
+ * @param col 列号（0为x，1为y）
+ * @param val 要设置的值
+ */
 void DAChartItemTableModel::setSeriesPointFValue(QPointF& p, int col, double val)
 {
     switch (col) {
@@ -673,6 +753,12 @@ void DAChartItemTableModel::setSeriesPointFValue(QPointF& p, int col, double val
     }
 }
 
+/**
+ * @brief 设置QwtPoint3D系列数据的值
+ * @param p 3D数据点引用
+ * @param col 列号（0为x，1为y，2为z）
+ * @param val 要设置的值
+ */
 void DAChartItemTableModel::setSeriesPoint3dValue(QwtPoint3D& p, int col, double val)
 {
     switch (col) {
@@ -690,6 +776,12 @@ void DAChartItemTableModel::setSeriesPoint3dValue(QwtPoint3D& p, int col, double
     }
 }
 
+/**
+ * @brief 设置QwtIntervalSample系列数据的值
+ * @param p 区间样本引用
+ * @param col 列号（0为value，1为minValue，2为maxValue）
+ * @param val 要设置的值
+ */
 void DAChartItemTableModel::setSeriesIntervalValue(QwtIntervalSample& p, int col, double val)
 {
     switch (col) {
@@ -707,6 +799,12 @@ void DAChartItemTableModel::setSeriesIntervalValue(QwtIntervalSample& p, int col
     }
 }
 
+/**
+ * @brief 设置QwtSetSample系列数据的值
+ * @param p 集合样本引用
+ * @param col 列号（0为value，其余为set中的元素索引）
+ * @param val 要设置的值
+ */
 void DAChartItemTableModel::setSeriesSetsampleValue(QwtSetSample& p, int col, double val)
 {
     if (0 == col) {
@@ -718,6 +816,12 @@ void DAChartItemTableModel::setSeriesSetsampleValue(QwtSetSample& p, int col, do
     }
 }
 
+/**
+ * @brief 设置QwtOHLCSample系列数据的值
+ * @param p OHLC样本引用
+ * @param col 列号（0为time，1为open，2为high，3为low，4为close）
+ * @param val 要设置的值
+ */
 void DAChartItemTableModel::setSeriesOHLCsampleValue(QwtOHLCSample& p, int col, double val)
 {
     switch (col) {
@@ -741,6 +845,12 @@ void DAChartItemTableModel::setSeriesOHLCsampleValue(QwtOHLCSample& p, int col, 
     }
 }
 
+/**
+ * @brief 设置QwtBoxSample系列数据的值
+ * @param p 箱线图样本引用
+ * @param col 列号（0为position，1为whiskerLower，2为q1，3为median，4为q3，5为whiskerUpper）
+ * @param val 要设置的值
+ */
 void DAChartItemTableModel::setSeriesBoxSampleValue(QwtBoxSample& p, int col, double val)
 {
     switch (col) {
@@ -907,6 +1017,11 @@ QColor DAChartItemTableModel::getItemColor(QwtPlotItem* item) const
     return d_ptr->mItemsColor.value(item, QColor());
 }
 
+/**
+ * @brief 获取指定绘图项的行数
+ * @param item 绘图项指针
+ * @return 对应的行数
+ */
 int DAChartItemTableModel::getItemRowCount(QwtPlotItem* item) const
 {
     return d_ptr->mItemsRowCount.value(item, 0);

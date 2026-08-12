@@ -298,8 +298,8 @@ Q_SIGNALS:
 
 protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
-    void keyPressEvent(QKeyEvent* e);
-    void showEvent(QShowEvent* e);
+    void keyPressEvent(QKeyEvent* e) override;
+    void showEvent(QShowEvent* e) override;
 private Q_SLOTS:
     // 窗口的位置发生改变槽
     void onWidgetGeometryChanged(QWidget* w, const QRectF& oldNormGeo, const QRectF& newNormGeo);
