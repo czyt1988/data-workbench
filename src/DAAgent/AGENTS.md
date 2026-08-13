@@ -50,7 +50,7 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 │   DAAgentSettingsWidget — LLM 设置页（setAgentInterface 注入，  │
 │                        走 get/setLLMConfig 持久化，见 § 九）    │
 │  plugins/DAAgentTools/（工具插件）                              │
-│   DAAgentChartToolBase + tools/ — 16 个内置工具，插件注册       │
+│   DAAgentChartToolBase + tools/ — 19 个内置工具，插件注册       │
 └──────────────────────┬────────────────────────────────────────┘
                        │  QProcess 匿名管道
                        │  stdin/stdout: JSON Lines（每行一条 JSON）
@@ -232,12 +232,12 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
   - `errorResponse(msg)` / `successResponse(data|message)`
   - 图表方法已移入插件的 `DAAgentChartToolBase`（本模块不再 include 图表头文件，无 DAFigure 依赖）
 
-### 7.2 平台内置工具（16 个，由插件 `plugins/DAAgentTools/` 注册）
+### 7.2 平台内置工具（19 个，由插件 `plugins/DAAgentTools/` 注册）
 
 | 类别 | 工具（name） | 文件 |
 |------|-------------|------|
 | 数据 (5) | `list_data` / `get_data_info` / `query_data` / `get_column_stats` / `export_data` | `DAAgentToolListData` / `DAAgentToolDataInfo` / `DAAgentToolQueryData` / `DAAgentToolColumnStats` / `DAAgentToolExportData` |
-| 绘图 (8) | `create_chart` / `add_curve` / `set_chart_style` / `add_annotation` / `add_region` / `create_subplots` / `save_chart_image` / `list_figures` | `DAAgentToolCreateChart` / `DAAgentToolAddCurve` / `DAAgentToolSetChartStyle` / `DAAgentToolAddAnnotation` / `DAAgentToolAddRegion` / `DAAgentToolCreateSubplots` / `DAAgentToolSaveChartImage` / `DAAgentToolListFigures` |
+| 绘图 (11) | `create_chart` / `add_curve` / `set_chart_style` / `set_axis` / `update_curve_style` / `remove_chart_item` / `add_annotation` / `add_region` / `create_subplots` / `save_chart_image` / `list_figures` | `DAAgentToolCreateChart` / `DAAgentToolAddCurve` / `DAAgentToolSetChartStyle` / `DAAgentToolSetAxis` / `DAAgentToolUpdateCurveStyle` / `DAAgentToolRemoveChartItem` / `DAAgentToolAddAnnotation` / `DAAgentToolAddRegion` / `DAAgentToolCreateSubplots` / `DAAgentToolSaveChartImage` / `DAAgentToolListFigures` |
 | 文件/报告 (3) | `read_file` / `write_file` / `save_report` | `DAAgentToolReadFile` / `DAAgentToolWriteFile` / `DAAgentToolSaveReport` |
 
 #### 绘图工具关键设计
@@ -251,7 +251,7 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 
 ### 7.3 注册与执行
 
-- **内置工具插件**：16 个工具由独立插件 `plugins/DAAgentTools/` 提供。插件入口 `DAAgentToolsPlugin`（继承 `DAAbstractPlugin`，IID `org.da.abstract.plugin`）在 `initialize()` 中经 `core()->getAgentInterface()->registerTool(...)` 依次注册 16 个工具。继承关系：`DAAbstractAgentTool` → `DAAgentToolBase`（瘦，`DAAgent_API` 导出，数据/响应方法）→ 8 个非图表工具（5 数据 + 3 文件/报告）；`DAAgentToolBase` → `DAAgentChartToolBase`（7 个图表方法）→ 8 个图表工具。
+- **内置工具插件**：19 个工具由独立插件 `plugins/DAAgentTools/` 提供。插件入口 `DAAgentToolsPlugin`（继承 `DAAbstractPlugin`，IID `org.da.abstract.plugin`）在 `initialize()` 中经 `core()->getAgentInterface()->registerTool(...)` 依次注册 19 个工具。继承关系：`DAAbstractAgentTool` → `DAAgentToolBase`（瘦，`DAAgent_API` 导出，数据/响应方法）→ 8 个非图表工具（5 数据 + 3 文件/报告）；`DAAgentToolBase` → `DAAgentChartToolBase`（7 个图表方法）→ 11 个图表工具。
 - **第三方扩展**：领域工具插件可继承瘦 `DAAgentToolBase`（数据工具）或 `DAAgentChartToolBase`（图表工具），经 `DAAgentInterface::registerTool` 注入，无需改 DAAgent。跨 DLL 派生需要 `DAAgent_API` 导出宏（`DAAGENT_BUILD` 只在编译 DAAgent 库时定义，`DAAgentToolBase` 已 `DAAgent_API` 导出）。
 - 注册：`DAAgentModule::registerTool` → `m_tools[name]` → `m_bridge->setTools(m_tools)`。
 - 执行：`DAAgentBridge::executeTool()` 查表 → **try/catch 兜底**（工具抛异常时返回 `{success:false, error:...}`，避免 Bridge 崩溃导致子进程永久挂起）→ 回传 `tool_result` → 同时 emit `agentToolResult` 供 UI 展示。工具未设置 `success` 字段时自动补 `true`。
@@ -314,7 +314,7 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 
 ## 十、APP 层集成（生命周期）
 
-1. `DAAppCore::initialize()` → `new DAAgentModule(this, this)` + `initialize()`（创建 Bridge、预连接 Bridge→Module 信号；**不注册工具、不创建 Dock**——16 个内置工具由插件 `DAAgentTools` 注册）。
+1. `DAAppCore::initialize()` → `new DAAgentModule(this, this)` + `initialize()`（创建 Bridge、预连接 Bridge→Module 信号；**不注册工具、不创建 Dock**——19 个内置工具由插件 `DAAgentTools` 注册）。
 2. `DAAppDockingArea::buildDockingArea()` → `new DAAgentDockWidget` + `createDockWidgetAsTab`（左侧标签页）。
 3. `DAAppController::initialize()` → 用 `connect()` 把 Dock 的 8 个信号（其中 7 个连到接口方法）↔ 接口的 14 个信号（其中 13 个连到 Dock 槽）对接（决策 D3b，替代旧的 `setDockWidget` 注入）+ 绑定 `actionShowAgentArea` toggle action（详见 § 六）。
 4. **懒启动**：首次 `sendMessage()` → `startAgentInternal()` → 读 `agent-config.ini` LLM 配置 + 探测 Python/脚本路径 → `m_bridge->startAgent(...)`。
@@ -462,7 +462,7 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 
 | 信号 | 用途 | 典型连接方 |
 |------|------|-----------|
-| `void agentUsage(int inputTokens, int outputTokens, int totalTokens, const QString& source)` | LLM `usage_metadata` 权威 token 统计回传（来自 `usage` 协议消息或 `message_end` 附带 usage）；UI 据此显示 `tokens: 1234 / 1048576` 占比条 + 点击展开分类（system/tools/history/current） | `DAAgentModule` 内部 lambda（补 `context_window`）→ 接口 `tokenUsageUpdated` →（AppController）→ Dock → chat.js |
+| `void agentUsage(int inputTokens, int outputTokens, int totalTokens, const QString& source)` | LLM `usage_metadata` 权威 token 统计回传（来自 `usage` 协议消息或 `message_end` 附带 usage）；`source` 为 `agent`/`summary` 时累加到会话累计 token（`streaming_estimate` 为流式估算不累加），UI 显示 `tokens: 累计值 / 1048576` 占比条 + 点击展开分类（input/output/total/window/source）。**会话累计 token 跨轮次单调增长，上下文压缩不重置**——压缩后显示值不会骤降 | `DAAgentModule` 内部 lambda（补 `context_window` + 累加会话累计成员）→ 接口 `tokenUsageUpdated` →（AppController）→ Dock → chat.js |
 | `void agentSessionLoaded(const QString& sessionId)` | `load_session` 后 Python 重建 state 完成的确认（`session_loaded` 协议消息）；调用方据此恢复输入框可用态，方可发下一轮 `user_msg`（见铁律 T15） | 转发到接口 `agentSessionLoaded` →（AppController）→ Dock 槽 |
 
 **连接示例**（这两个 Bridge 信号已被 Module 消费/转发；UI 侧在 `DAAppController::initialize()` 连接口信号，插件可监听接口信号）：

@@ -104,6 +104,9 @@ public:
     QString mPendingLoadSessionId;                  ///< 懒启动→ready 串联 load_session 的缓存
     QJsonArray mPendingLoadMessages;
     QString mPendingSwitchSessionId;               ///< 忙碌态切换排队：switchSession 遇 busy 时缓存
+    int mCumulativeInTokens = 0;                   ///< 会话累计输入 token（跨轮次累加，压缩不重置）
+    int mCumulativeOutTokens = 0;                  ///< 会话累计输出 token
+    int mCumulativeTotalTokens = 0;                ///< 会话累计总 token
 };
 
 DAAgentModule::PrivateData::PrivateData(DAAgentModule* p) : q_ptr(p)
@@ -428,13 +431,22 @@ void DAAgentModule::connectSignals()
     connect(d->mBridge, &DAAgentBridge::agentUsage, this, [this](int inT, int outT, int tot, const QString& src) {
         auto* d = d_func();
         if (d->mCurrentSessionId.isEmpty()) return;
-        // streaming_estimate 是流式过程中的临时估算值，不持久化到 JSONL——
+        // streaming_estimate 是流式过程中的临时估算值，不持久化到 JSONL、不进累计——
         // 仅用于 UI 进度条实时刷新，真实 usage 由后续 message_end/usage 消息回传并持久化。
         if (src != "streaming_estimate") {
             appendUsageRecord(d->mCurrentSessionId, inT, outT, tot, src);
+            // 真实 usage（agent/summary）累加到会话累计：跨轮次单调增长，压缩不重置
+            d->mCumulativeInTokens += inT;
+            d->mCumulativeOutTokens += outT;
+            d->mCumulativeTotalTokens += tot;
+            // 契约2：emit 5 参信号（context_window 经 readContextWindow 复用），累计值供 UI 显示
+            emit tokenUsageUpdated(d->mCumulativeInTokens, d->mCumulativeOutTokens,
+                                   d->mCumulativeTotalTokens, readContextWindow(), src);
+        } else {
+            // 流式估算不累加：emit“累计 + 本轮估算”的临时值，~ 前缀由 UI 侧 formatTokenLabel 添加
+            emit tokenUsageUpdated(d->mCumulativeInTokens + inT, d->mCumulativeOutTokens + outT,
+                                   d->mCumulativeTotalTokens + tot, readContextWindow(), src);
         }
-        // 契约2：emit 5 参信号（context_window 经 readContextWindow 复用，供 plan-04 UI 与 switchSession 回放共用）
-        emit tokenUsageUpdated(inT, outT, tot, readContextWindow(), src);
     });
     // agent 提问（ask_user）——记录为 tool_call，供下一条 answer 配对
     connect(d->mBridge, &DAAgentBridge::agentQuestion, this, [this](const QString& text, const QStringList& options, bool multiSelect) {
@@ -717,6 +729,7 @@ QString DAAgentModule::createSession()
     QString sid = d->mSessionStore->createSession(d->mCurrentProjectPath);  // 带 projectPath
     d->mCurrentSessionId = sid;
     d->mSessionStore->setLastActive(sid, d->mCurrentProjectPath);
+    resetCumulativeTokens();  // 新会话 0 消耗，清零累计成员
     emit sessionListChanged(listSessionsForUI());  // 契约3：带 payload
     return sid;
 }
@@ -769,7 +782,7 @@ bool DAAgentModule::switchSession(const QString& sessionId)
     }
     // 3. UI 历史重放由 plan-04 的 sessionSwitched 信号触发
     emit sessionSwitched(sessionId, d->mSessionStore->readAllRecords(sessionId));
-    // 4. 切换后回放 token 统计（从持久化 usage 记录取最后一条，无则全 0），
+    // 4. 切换后回放 token 统计：从持久化 usage 记录求和重算会话累计值（无则全 0），
     //    避免 UI 拘留上一会话的 token 数值与进度条（Bug2 修复）
     emitTokenUsageForSession(sessionId);
     return true;
@@ -785,6 +798,7 @@ void DAAgentModule::deleteSession(const QString& sessionId)
     d->mSessionStore->deleteSession(sessionId);
     if (d->mCurrentSessionId == sessionId) {
         d->mCurrentSessionId.clear();  // 删当前会话后回归无活跃
+        resetCumulativeTokens();       // 清零累计，避免残留被下一会话误用
     }
     emit sessionListChanged(listSessionsForUI());  // 契约3：带 payload
 }
@@ -951,6 +965,7 @@ void DAAgentModule::restoreLastActiveSession()
     // 用户首次发消息时由 sendMessage 懒创建绑定 m_currentProjectPath 的新会话。
     emit sessionListChanged(listSessionsForUI());  // 契约3：启动/开工程时填充 UI 下拉
     d->mCurrentSessionId.clear();
+    resetCumulativeTokens();  // 清零累计，始终以全新对话开始
     emit sessionCleared();  // 清空聊天区、复位 token 统计、清空标题
 }
 
@@ -1129,28 +1144,49 @@ int DAAgentModule::readContextWindow() const
 }
 
 /**
- * @brief 扫描会话持久化 usage 记录，取最后一条 emit tokenUsageUpdated
+ * @brief 扫描会话持久化 usage 记录求和，emit tokenUsageUpdated（会话累计值）
  * @param sid 会话 ID
+ *
+ * 切换会话时从 JSONL 重算会话累计 token（所有真实 usage 记录之和，含 summary），
+ * 同步刷新累计成员，使 UI 显示该会话的总消耗。streaming_estimate 不持久化故不参与。
+ * 无记录则全 0（仍带真实 context_window，UI 显示 tokens: 0 / 窗口、进度条 0%）。
  */
 void DAAgentModule::emitTokenUsageForSession(const QString& sid)
 {
     DA_D(d);
-    // 切换会话时回放 token 统计（Bug2 修复）：扫持久化 usage 记录取最后一条，
-    // 无记录则全 0（仍带真实 context_window，UI 显示 tokens: 0 / 窗口、进度条 0%）。
-    int inT = 0, outT = 0, tot = 0;
+    // 先清零累计成员，再从持久化 usage 记录求和重算（switchSession 由此恢复累计态）
+    d->mCumulativeInTokens = 0;
+    d->mCumulativeOutTokens = 0;
+    d->mCumulativeTotalTokens = 0;
     QString src;
     if (!sid.isEmpty()) {
         QVector<QJsonObject> records = d->mSessionStore->readAllRecords(sid);
         for (const QJsonObject& obj : std::as_const(records)) {
             if (obj.value("type").toString() != "usage") continue;
             QJsonObject meta = obj.value("usage_metadata").toObject();
-            inT = meta.value("input_tokens").toInt(inT);
-            outT = meta.value("output_tokens").toInt(outT);
-            tot = meta.value("total_tokens").toInt(tot);
-            src = meta.value("source").toString();
+            d->mCumulativeInTokens   += meta.value("input_tokens").toInt(0);
+            d->mCumulativeOutTokens  += meta.value("output_tokens").toInt(0);
+            d->mCumulativeTotalTokens += meta.value("total_tokens").toInt(0);
+            src = meta.value("source").toString();  // 取最后一条 source 作展示
         }
     }
-    emit tokenUsageUpdated(inT, outT, tot, readContextWindow(), src);
+    emit tokenUsageUpdated(d->mCumulativeInTokens, d->mCumulativeOutTokens,
+                           d->mCumulativeTotalTokens, readContextWindow(), src);
+}
+
+/**
+ * @brief 会话累计 token 清零（新建/删除当前/恢复时调用）
+ *
+ * 配合 mCurrentSessionId 的变更点：新建会话（0 消耗）、删除当前会话、
+ * 启动/开工程恢复（始终以全新对话开始）。switchSession 不调用本方法——
+ * 它经 emitTokenUsageForSession 先清零再从 JSONL 重算恢复累计态。
+ */
+void DAAgentModule::resetCumulativeTokens()
+{
+    DA_D(d);
+    d->mCumulativeInTokens = 0;
+    d->mCumulativeOutTokens = 0;
+    d->mCumulativeTotalTokens = 0;
 }
 
 } // namespace DA

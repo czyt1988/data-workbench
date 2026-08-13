@@ -107,6 +107,8 @@ private:
     QVariantList listSessionsForUI() const;
     int readContextWindow() const;
     void emitTokenUsageForSession(const QString& sid);
+    // 会话累计 token 清零（新建/删除当前/恢复时调用）
+    void resetCumulativeTokens();
 
     DA_DECLARE_PRIVATE(DAAgentModule)
 };
