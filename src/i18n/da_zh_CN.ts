@@ -8670,7 +8670,7 @@ Config</source>
     <message>
         <location line="+1"/>
         <source>This operation will delete the file that records the window state information. After deleting the file, if the window state information recording is not enabled, the window will open in the default layout</source>
-        <translation type="unfinished">此操作将删除记录窗口位置信息的文件，删除文件后，如果不开启窗口位置信息记录，窗口将以默认布局打开</translation>
+        <translation>此操作将删除记录窗口位置信息的文件，删除文件后，如果不开启窗口位置信息记录，窗口将以默认布局打开</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -8698,7 +8698,7 @@ Config</source>
     <message>
         <location line="+4"/>
         <source> MB</source>
-        <translation type="unfinished"></translation>
+        <translation> MB</translation>
     </message>
     <message>
         <location line="+41"/>
@@ -8766,7 +8766,7 @@ Config</source>
     <message>
         <location line="+1"/>
         <source>No Python interpreter found in system PATH</source>
-        <translation type="unfinished"></translation>
+        <translation>系统PATH中未找到Python解释器</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -11389,52 +11389,52 @@ Config</source>
     <message>
         <location filename="../APP/SettingPages/DASettingPageAdvanced.ui" line="+14"/>
         <source>Advanced Setting</source>
-        <translation type="unfinished"></translation>
+        <translation>高级设置</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Behavior</source>
-        <translation type="unfinished"></translation>
+        <translation>行为</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Workflow execution timeout</source>
-        <translation type="unfinished"></translation>
+        <translation>工作流执行超时</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Max recent files</source>
-        <translation type="unfinished"></translation>
+        <translation>最大最近文件数</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Crash dump retention days</source>
-        <translation type="unfinished"></translation>
+        <translation>崩溃转储保留天数</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Auto-save interval</source>
-        <translation type="unfinished"></translation>
+        <translation>自动保存间隔</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Show splash screen on startup</source>
-        <translation type="unfinished"></translation>
+        <translation>启动时显示启动画面</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Plugin search path</source>
-        <translation type="unfinished"></translation>
+        <translation>插件搜索路径</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation>浏览</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Node script search paths</source>
-        <translation type="unfinished"></translation>
+        <translation>节点脚本搜索路径</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -11449,7 +11449,7 @@ Config</source>
     <message>
         <location line="+25"/>
         <source>Note: plugin path, node script paths and splash changes take effect after restarting the program</source>
-        <translation type="unfinished"></translation>
+        <translation>注意：插件路径、节点脚本路径和启动画面更改在重启程序后生效</translation>
     </message>
 </context>
 <context>
@@ -11457,7 +11457,7 @@ Config</source>
     <message>
         <location filename="../APP/SettingPages/DASettingPageGeneral.ui" line="+14"/>
         <source>General Setting</source>
-        <translation type="unfinished"></translation>
+        <translation>通用设置</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -11467,32 +11467,32 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>Standard Mode</source>
-        <translation type="unfinished">标准模式</translation>
+        <translation>标准模式</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Standard Mode With 2 Row</source>
-        <translation type="unfinished">2行标准模式</translation>
+        <translation>2行标准模式</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Compact Mode</source>
-        <translation type="unfinished">紧凑模式</translation>
+        <translation>紧凑模式</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Minimalist mode</source>
-        <translation type="unfinished">最小模式</translation>
+        <translation>最小模式</translation>
     </message>
     <message>
         <location line="+27"/>
         <source>Ribbon theme</source>
-        <translation type="unfinished"></translation>
+        <translation>Ribbon 主题</translation>
     </message>
     <message>
         <location line="+27"/>
         <source>Application font</source>
-        <translation type="unfinished"></translation>
+        <translation>应用程序字体</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -11502,27 +11502,27 @@ Config</source>
     <message>
         <location line="+25"/>
         <source>Is the geometry and status of the program interface recorded</source>
-        <translation type="unfinished">是否在程序退出的时候记录程序的界面布局和位置</translation>
+        <translation>是否在程序退出的时候记录程序的界面布局和位置</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Clear the saved window state</source>
-        <translation type="unfinished">删除窗口状态记录文件</translation>
+        <translation>删除窗口状态记录文件</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Language</source>
-        <translation type="unfinished">语言</translation>
+        <translation>语言</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Interface language</source>
-        <translation type="unfinished"></translation>
+        <translation>界面语言</translation>
     </message>
     <message>
         <location line="+28"/>
         <source>Note: language and font changes take effect after restarting the program</source>
-        <translation type="unfinished"></translation>
+        <translation>注意：语言和字体更改在重启程序后生效</translation>
     </message>
 </context>
 <context>
@@ -11530,62 +11530,62 @@ Config</source>
     <message>
         <location filename="../APP/SettingPages/DASettingPageLog.ui" line="+14"/>
         <source>Log Setting</source>
-        <translation type="unfinished"></translation>
+        <translation>日志设置</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Log Level</source>
-        <translation type="unfinished"></translation>
+        <translation>日志级别</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>File log level</source>
-        <translation type="unfinished"></translation>
+        <translation>文件日志级别</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>UI queue level</source>
-        <translation type="unfinished"></translation>
+        <translation>UI 队列级别</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Output log to stdout</source>
-        <translation type="unfinished"></translation>
+        <translation>输出日志到标准输出</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Log File</source>
-        <translation type="unfinished"></translation>
+        <translation>日志文件</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Rotation mode</source>
-        <translation type="unfinished"></translation>
+        <translation>轮转模式</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Max size per file</source>
-        <translation type="unfinished"></translation>
+        <translation>单文件最大大小</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Max files to keep</source>
-        <translation type="unfinished"></translation>
+        <translation>最大保留文件数</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>UI Display</source>
-        <translation type="unfinished"></translation>
+        <translation>界面显示</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Display number of logs</source>
-        <translation type="unfinished">显示的日志条数</translation>
+        <translation>显示的日志条数</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Note: file level, stdout and rotation changes take effect after restarting the program</source>
-        <translation type="unfinished"></translation>
+        <translation>注意：文件级别、标准输出和轮转更改在重启程序后生效</translation>
     </message>
 </context>
 <context>
@@ -11593,37 +11593,37 @@ Config</source>
     <message>
         <location filename="../APP/SettingPages/DASettingPagePython.ui" line="+14"/>
         <source>Python Setting</source>
-        <translation type="unfinished"></translation>
+        <translation>Python 设置</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Python Interpreter</source>
-        <translation type="unfinished"></translation>
+        <translation>Python 解释器</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Interpreter path</source>
-        <translation type="unfinished"></translation>
+        <translation>解释器路径</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation>浏览</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Auto Detect</source>
-        <translation type="unfinished"></translation>
+        <translation>自动检测</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Test</source>
-        <translation type="unfinished"></translation>
+        <translation>测试</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Extra module search paths (sys.path)</source>
-        <translation type="unfinished"></translation>
+        <translation>额外模块搜索路径 (sys.path)</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -11638,7 +11638,7 @@ Config</source>
     <message>
         <location line="+25"/>
         <source>Note: interpreter and module path changes take effect after restarting the program</source>
-        <translation type="unfinished"></translation>
+        <translation>注意：解释器和模块路径更改在重启程序后生效</translation>
     </message>
 </context>
 <context>

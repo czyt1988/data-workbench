@@ -1,0 +1,20 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200">
+    <!-- Antenna stem -->
+    <rect x="488" y="120" width="48" height="120" rx="24" fill="#497CAD"/>
+    <!-- Antenna tip -->
+    <circle cx="512" cy="112" r="40" fill="#497CAD"/>
+    <!-- Head body (rounded rectangle) -->
+    <rect x="224" y="280" width="576" height="496" rx="80" fill="#497CAD"/>
+    <!-- Left eye -->
+    <rect x="340" y="420" width="120" height="60" rx="30" fill="#FFFFFF"/>
+    <!-- Right eye -->
+    <rect x="564" y="420" width="120" height="60" rx="30" fill="#FFFFFF"/>
+    <!-- Mouth -->
+    <rect x="380" y="580" width="264" height="44" rx="22" fill="#FFFFFF"/>
+    <!-- Neck stem -->
+    <rect x="464" y="776" width="96" height="80" fill="#497CAD"/>
+    <!-- Shoulders/base -->
+    <rect x="304" y="856" width="416" height="56" rx="28" fill="#497CAD"/>
+</svg>

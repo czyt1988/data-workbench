@@ -264,10 +264,10 @@ void DAAgentSettingsWidget::setupUI()
     form->addRow(tr("Model"),    mModelEdit);
     form->addRow(tr("Ready Timeout"), mReadyTimeoutSpin);  //cn:就绪超时
     form->addRow(tr("Stop Timeout"),  mStopTimeoutSpin);    //cn:停止超时
-    form->addRow(mTestBtn);
-    form->addRow(mStatusLabel);
     // 上下文管理
     form->addRow(tr("Context Window"), mContextWindowSpin);              //cn:上下文窗口
+    form->addRow(mTestBtn);
+    form->addRow(mStatusLabel);
     form->addRow(tr("Compaction Threshold"), mCompactionThresholdSpin);  //cn:压缩阈值
     form->addRow(tr("Max Recent Messages"), mMaxRecentMsgSpin);         //cn:保留最近消息数
     form->addRow(tr("Tool Result Max Chars"), mToolResultMaxCharsSpin);  //cn:工具结果截断阈值
@@ -433,8 +433,7 @@ void DAAgentSettingsWidget::apply()
 /** @brief 获取设置页图标 */
 QIcon DAAgentSettingsWidget::getSettingPageIcon() const
 {
-    // 暂不创建专用图标资源（plan-01 的 agent.qrc 未启用）
-    return QIcon();
+    return QIcon(":/DAGui/icon/setting-agent.svg");
 }
 
 /** @brief 测试 LLM API 连接是否可用 */
