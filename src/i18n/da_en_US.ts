@@ -7662,6 +7662,59 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAMarkdownView</name>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Select All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>View Markdown Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Save Markdown As...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Reload</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Markdown Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Save Markdown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Markdown Files (*.md);;Text Files (*.txt);;All Files (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Failed to save markdown: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Markdown saved to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAMessageLogViewWidget</name>
     <message>
         <location filename="../DAGui/DAMessageLogViewWidget.cpp" line="+293"/>

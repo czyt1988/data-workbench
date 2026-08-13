@@ -5,6 +5,9 @@
 #include <QUrl>
 #include "DAGuiAPI.h"
 
+class QMenu;
+class QAction;
+
 namespace DA
 {
 
@@ -52,14 +55,32 @@ Q_SIGNALS:
     // 用户点击链接（外部 URL 或自定义协议如 da-figure:）
     void linkClicked(const QUrl& url);
 
+protected:
+    // 拦截 QWebEngineView 默认右键菜单，改用自定义菜单
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
 private:
     void setupUI();
     void renderMarkdown();
+    // 构建右键菜单及其 action（仅构建一次，供 showContextMenu 复用）
+    void buildContextMenu();
+    // 弹出自定义右键菜单
+    void showContextMenu(const QPoint& globalPos);
+    // 在只读对话框中展示当前 markdown 源文本
+    void onViewMarkdownSource();
+    // 将当前 markdown 源文本保存为文件
+    void onSaveMarkdownAs();
 
     QWebEngineView* mWebView;
     DAMarkdownWebPage* mPage;
     QString mMarkdown;
     bool mPageLoaded = false;
+
+    // 右键菜单及其需动态刷新可用状态的 action（构建一次复用）
+    QMenu* mContextMenu = nullptr;
+    QAction* mCopyAction = nullptr;
+    QAction* mViewMarkdownSourceAction = nullptr;
+    QAction* mSaveMarkdownAction = nullptr;
 };
 
 } // namespace DA

@@ -7688,6 +7688,59 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAMarkdownView</name>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Select All</source>
+        <translation>全选</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>View Markdown Source</source>
+        <translation>查看 Markdown 源码</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Save Markdown As...</source>
+        <translation>保存 Markdown 为...</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Reload</source>
+        <translation>重新加载</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Markdown Source</source>
+        <translation>Markdown 源码</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Save Markdown</source>
+        <translation>保存 Markdown</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Markdown Files (*.md);;Text Files (*.txt);;All Files (*)</source>
+        <translation>Markdown 文件 (*.md);;文本文件 (*.txt);;所有文件 (*)</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Failed to save markdown: %1</source>
+        <translation>保存 Markdown 失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp"/>
+        <source>Markdown saved to %1</source>
+        <translation>Markdown 已保存到 %1</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAMessageLogViewWidget</name>
     <message>
         <location filename="../DAGui/DAMessageLogViewWidget.cpp" line="+293"/>

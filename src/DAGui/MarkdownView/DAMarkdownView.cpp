@@ -1,7 +1,16 @@
 #include "DAMarkdownView.h"
 #include <QVBoxLayout>
 #include <QFile>
+#include <QFileDialog>
+#include <QMenu>
+#include <QAction>
+#include <QContextMenuEvent>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QPlainTextEdit>
+#include <QFont>
 #include <QUrl>
+#include "DALogCategory.h"
 
 namespace DA
 {
@@ -118,6 +127,8 @@ void DAMarkdownView::setupUI()
 
     mWebView = new QWebEngineView(this);
     mWebView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    // 拦截 QWebEngineView 默认右键菜单，改用自定义菜单
+    mWebView->installEventFilter(this);
 
     // 自定义 Page，父对象设为 mWebView，随 mWebView 析构释放
     mPage = new DAMarkdownWebPage(mWebView);
@@ -140,6 +151,9 @@ void DAMarkdownView::setupUI()
 
     // 加载 HTML 壳（markdown-it / highlight.js 由 HTML 内部从 DAAgent qrc 引用）
     mWebView->setUrl(QUrl(QStringLiteral("qrc:///DAMarkdown/markdown.html")));
+
+    // 构建右键菜单（仅一次，后续右键复用）
+    buildContextMenu();
 }
 
 /**
@@ -231,6 +245,151 @@ void DAMarkdownView::renderMarkdown()
     }
     QString js = QStringLiteral("renderMarkdown(\"%1\")").arg(toJsString(mMarkdown));
     mWebView->page()->runJavaScript(js);
+}
+
+/**
+ * @brief 拦截 QWebEngineView 的右键事件，改用自定义菜单
+ *
+ * 默认菜单的“Save page”/“View page source”针对 qrc:// HTML 壳无法工作，
+ * 且菜单文本来自 Qt WebEngine 自身翻译（项目未随附，显示为英文）。
+ * 这里在事件过滤器层拦截并替换为项目自定义、可翻译的菜单。
+ * @param watched 被监听的对象（mWebView）
+ * @param event 事件
+ * @return 已处理返回 true，否则交给基类
+ */
+bool DAMarkdownView::eventFilter(QObject* watched, QEvent* event)
+{
+    if (watched == mWebView && event->type() == QEvent::ContextMenu) {
+        auto* ctxEvent = static_cast< QContextMenuEvent* >(event);
+        showContextMenu(ctxEvent->globalPos());
+        return true;  // 阻止 QWebEngineView 弹出默认菜单
+    }
+    return QWidget::eventFilter(watched, event);
+}
+
+/**
+ * @brief 构建右键菜单及其 action（仅在 setupUI 中调用一次）
+ *
+ * 菜单项：Copy / Select All / View Markdown Source / Save Markdown As... / Reload，
+ * 全部使用 tr() 翻译。菜单与 action 持久存在、复用，随上下文变化的可用状态
+ * 在 showContextMenu 中刷新，避免每次右键都重建。
+ */
+void DAMarkdownView::buildContextMenu()
+{
+    mContextMenu = new QMenu(this);
+
+    // 复制
+    mCopyAction = mContextMenu->addAction(tr("Copy"));  // cn:复制
+    QObject::connect(mCopyAction, &QAction::triggered, this, [this]() {
+        if (mPage) {
+            mPage->triggerAction(QWebEnginePage::Copy);
+        }
+    });
+
+    // 全选
+    QAction* selectAllAct = mContextMenu->addAction(tr("Select All"));  // cn:全选
+    QObject::connect(selectAllAct, &QAction::triggered, this, [this]() {
+        if (mPage) {
+            mPage->triggerAction(QWebEnginePage::SelectAll);
+        }
+    });
+
+    mContextMenu->addSeparator();
+
+    // 查看 Markdown 源码
+    mViewMarkdownSourceAction = mContextMenu->addAction(tr("View Markdown Source"));  // cn:查看 Markdown 源码
+    QObject::connect(mViewMarkdownSourceAction, &QAction::triggered, this, &DAMarkdownView::onViewMarkdownSource);
+
+    // 保存 Markdown 为文件
+    mSaveMarkdownAction = mContextMenu->addAction(tr("Save Markdown As..."));  // cn:保存 Markdown 为...
+    QObject::connect(mSaveMarkdownAction, &QAction::triggered, this, &DAMarkdownView::onSaveMarkdownAs);
+
+    mContextMenu->addSeparator();
+
+    // 重新加载 HTML 壳并重新渲染缓存内容
+    QAction* reloadAct = mContextMenu->addAction(tr("Reload"));  // cn:重新加载
+    QObject::connect(reloadAct, &QAction::triggered, this, [this]() {
+        if (mWebView) {
+            mWebView->reload();
+        }
+    });
+}
+
+/**
+ * @brief 弹出右键菜单
+ *
+ * 菜单及 action 在 buildContextMenu 中一次性构建，此处仅刷新随上下文
+ * 变化的可用状态后弹出。
+ * @param globalPos 菜单弹出的全局坐标
+ */
+void DAMarkdownView::showContextMenu(const QPoint& globalPos)
+{
+    if (!mContextMenu) {
+        return;
+    }
+    // 刷新随上下文变化的可用状态
+    mCopyAction->setEnabled(mPage && mPage->action(QWebEnginePage::Copy)->isEnabled());
+    mViewMarkdownSourceAction->setEnabled(!mMarkdown.isEmpty());
+    mSaveMarkdownAction->setEnabled(!mMarkdown.isEmpty());
+    mContextMenu->exec(globalPos);
+}
+
+/**
+ * @brief 在只读对话框中展示当前 markdown 源文本
+ */
+void DAMarkdownView::onViewMarkdownSource()
+{
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Markdown Source"));  // cn:Markdown 源码
+    auto* edit = new QPlainTextEdit(&dlg);
+    edit->setPlainText(mMarkdown);
+    edit->setReadOnly(true);
+    edit->setLineWrapMode(QPlainTextEdit::NoWrap);
+    QFont monoFont(QStringLiteral("Consolas"), 10);
+    monoFont.setStyleHint(QFont::Monospace);
+    edit->setFont(monoFont);
+    auto* btnBox = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
+    QObject::connect(btnBox, &QDialogButtonBox::rejected, &dlg, &QDialog::close);
+    auto* layout = new QVBoxLayout(&dlg);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(edit, 1);
+    layout->addWidget(btnBox);
+    dlg.resize(640, 520);
+    dlg.exec();
+}
+
+/**
+ * @brief 将当前 markdown 源文本保存为 UTF-8 文件
+ *
+ * 保存成功/失败通过 daInfo/daWarning 反馈到 UI 消息队列。
+ */
+void DAMarkdownView::onSaveMarkdownAs()
+{
+    if (mMarkdown.isEmpty()) {
+        return;
+    }
+    const QString defaultName = QStringLiteral("markdown.md");
+    const QString path = QFileDialog::getSaveFileName(
+        this,
+        tr("Save Markdown"),  // cn:保存 Markdown
+        defaultName,
+        tr("Markdown Files (*.md);;Text Files (*.txt);;All Files (*)"));  // cn:Markdown 文件 (*.md);;文本文件 (*.txt);;所有文件 (*)
+    if (path.isEmpty()) {
+        return;  // 用户取消
+    }
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly)) {
+        daWarning << tr("Failed to save markdown: %1").arg(file.errorString());  // cn:保存 Markdown 失败：%1
+        return;
+    }
+    const QByteArray data = mMarkdown.toUtf8();
+    if (file.write(data) != data.size()) {
+        daWarning << tr("Failed to save markdown: %1").arg(file.errorString());  // cn:保存 Markdown 失败：%1
+        file.close();
+        return;
+    }
+    file.close();
+    daInfo << tr("Markdown saved to %1").arg(path);  // cn:Markdown 已保存到 %1
 }
 
 } // namespace DA
