@@ -379,6 +379,10 @@ body {
     background: var(--tool-bg);
     overflow: hidden;
     font-size: 13px;
+    /* #messages 是 flex 列容器且 overflow-y:auto；本元素 overflow:hidden 会使
+       min-height:auto 归零（flex 规范），配合默认 flex-shrink:1 在窗口缩小时会被
+       挤压成一条横线。禁缩，让其保持内容高度、由 #messages 滚动。 */
+    flex-shrink: 0;
 }
 
 .tool-group-head {
@@ -468,6 +472,9 @@ body {
     border-radius: 6px;
     background: #fff;
     overflow: hidden;
+    /* 同 .tool-group：作为 .tool-group-body(flex列) 的子项，overflow:hidden 使
+       min-height 归零，禁缩防止被挤压。 */
+    flex-shrink: 0;
 }
 
 .tool-card-head {
