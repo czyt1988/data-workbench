@@ -235,6 +235,9 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotBarChart* item);
 // QwtPlotIntervalCurve指针的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotIntervalCurve* item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotIntervalCurve* item);
+// QwtPlotHistogram指针的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotHistogram* item);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotHistogram* item);
 // QwtPlotArrowMarker的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotArrowMarker* item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotArrowMarker* item);

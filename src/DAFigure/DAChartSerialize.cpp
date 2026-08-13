@@ -446,6 +446,7 @@ DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotIntervalCurve, QwtPlotI
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotShape, QwtPlotShapeItem)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotArrowMarker, QwtPlotArrowMarker)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotBoxChart, QwtPlotBoxChart)
+DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotHistogram, QwtPlotHistogram)
 /**
  * @brief 初始化所有支持的绘图项序列化函数映射表
  * @return 序列化函数映射表
@@ -473,6 +474,8 @@ QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize
         INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotArrowMarker, QwtPlotArrowMarker);
     res[ QwtPlotItem::Rtti_PlotBoxChart ] =
         INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotBoxChart, QwtPlotBoxChart);
+    res[ QwtPlotItem::Rtti_PlotHistogram ] =
+        INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotHistogram, QwtPlotHistogram);
     return res;
 }
 
@@ -1584,6 +1587,73 @@ QDataStream& operator>>(QDataStream& in, QwtPlotIntervalCurve* item)
         QwtIntervalSymbol* symbol = new QwtIntervalSymbol();
         in >> symbol;
         item->setSymbol(symbol);
+    }
+    return in;
+}
+
+//============================================
+// QwtPlotHistogram
+//============================================
+
+QDataStream& operator<<(QDataStream& out, const QwtPlotHistogram* item)
+{
+    out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
+    out << (const QwtPlotItem*)item;
+    out << item->baseline() << item->pen() << item->brush() << static_cast< int >(item->style());
+    // save sample
+    QVector< QwtIntervalSample > sample;
+    DA::DAChartUtil::getIntervalSampleDatas(sample, item);
+    out << DA::gc_dachart_magic_mark2 << sample << DA::gc_dachart_magic_mark3;
+    // Symbol
+    const QwtColumnSymbol* cs = item->symbol();
+    bool isColumnSymbol       = (cs != nullptr);
+    out << isColumnSymbol;
+    if (isColumnSymbol) {
+        out << cs;
+    }
+    return out;
+}
+
+QDataStream& operator>>(QDataStream& in, QwtPlotHistogram* item)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (DA::gc_dachart_magic_mark != magic) {
+        throw DA::DABadSerializeExpection();
+        return in;
+    }
+    in >> (QwtPlotItem*)item;
+    double baseline;
+    QPen pen;
+    QBrush brush;
+    int style;
+    in >> baseline >> pen >> brush >> style;
+    item->setBaseline(baseline);
+    item->setPen(pen);
+    item->setBrush(brush);
+    item->setStyle(static_cast< QwtPlotHistogram::HistogramStyle >(style));
+    // load sample
+    std::uint32_t tmp0, tmp1;
+    in >> tmp0;
+    if (DA::gc_dachart_magic_mark2 != tmp0) {
+        throw DA::DABadSerializeExpection();
+        return in;
+    }
+    QVector< QwtIntervalSample > sample;
+    in >> sample >> tmp1;
+    if (DA::gc_dachart_magic_mark3 != tmp1) {
+        throw DA::DABadSerializeExpection();
+        return in;
+    }
+    item->setSamples(sample);
+    // Symbol
+    bool isColumnSymbol;
+    in >> isColumnSymbol;
+    if (isColumnSymbol) {
+        QwtColumnSymbol* cs = new QwtColumnSymbol;
+        in >> cs;
+        item->setSymbol(cs);
     }
     return in;
 }
