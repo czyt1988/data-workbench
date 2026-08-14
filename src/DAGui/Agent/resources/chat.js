@@ -472,6 +472,10 @@ function setI18nLabels(labels) {
 function setBusy(busy) {
     agentBusy = busy;
     applySendButtonState();
+    var btn = document.getElementById('send-btn');
+    // 清除 starting/stopping 过渡态设的 disabled，恢复按钮可点击
+    // （busy 时按钮为 Stop 需可点击停止，非 busy 时为 Send 需可点击发送）
+    if (btn) { btn.disabled = false; }
     var ta = document.getElementById('input-edit');
     if (ta) { ta.disabled = busy; }
     setStatus(busy ? i18n.thinking : i18n.ready);
