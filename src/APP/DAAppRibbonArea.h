@@ -47,6 +47,7 @@ class SARibbonLineWidgetContainer;
 class SARibbonButtonGroupWidget;
 class SARibbonCtrlContainer;
 class SARibbonGallery;
+class SARibbonGalleryGroup;
 namespace DA
 {
 class AppMainWindow;
@@ -212,6 +213,16 @@ private:
     void buildApplicationMenu();
     // 构建右工具栏
     void buildRightButtonBar();
+#if DA_ENABLE_PYTHON
+    // 构建 AI分析 标签页（agent 提示词库 gallery + 管理/执行）
+    void buildRibbonAgentCategory();
+private Q_SLOTS:
+    void onActionAgentManage();
+    void onActionRunAgent();
+    void onAgentGalleryTriggered(QAction* act);
+private:
+    void populateAgentGallery();
+#endif
 
     DAAPPRIBBONAREA_COMMON_SETTING_H(Edit)
     DAAPPRIBBONAREA_COMMON_SETTING_H(WorkFlowEdit)
@@ -398,6 +409,19 @@ private:
     SARibbonPanel* mPannelChartSelectTool { nullptr };                       ///< 图表选区
     SARibbonPanel* mPannelChartSelectOpt { nullptr };                        ///< 图表选区操作
     SARibbonPanel* mPannelChartAssistTool { nullptr };                       ///< 辅助工具
+#if DA_ENABLE_PYTHON
+    //----------------------------------------------------
+    // AI分析（agent 提示词库）
+    //----------------------------------------------------
+    SARibbonCategory* mCategoryAgent { nullptr };       ///< AI分析标签
+    SARibbonPanel* mPanelAgent { nullptr };             ///< AI分析面板
+    SARibbonGallery* mAgentGallery { nullptr };         ///< agent gallery
+    SARibbonGalleryGroup* mAgentGalleryGroup { nullptr }; ///< agent gallery 分组
+    QList< QAction* > mAgentActions;                     ///< gallery 临时 action
+    QAction* mActionAgentManage { nullptr };             ///< agent 管理
+    QAction* mActionRunAgent { nullptr };                ///< 执行 agent
+    QString mSelectedAgentTitle;                          ///< 当前选中的 agent 标题
+#endif
     //----------------------------------------------------
     //
     //----------------------------------------------------

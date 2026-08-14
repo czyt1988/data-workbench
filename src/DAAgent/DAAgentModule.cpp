@@ -2,6 +2,8 @@
 #include "DAAgentModule.h"
 #include "DAAgentBridge.h"
 #include "DAAgentSessionStore.h"
+#include "DAAgentManager.h"
+#include "DAAgentPromptOps.h"
 #include "DAAbstractAgentTool.h"
 #include "DAAgentInterface.h"
 #include "DACoreInterface.h"
@@ -94,6 +96,7 @@ public:
 
     DACoreInterface* mCore = nullptr;
     DAAgentBridge* mBridge = nullptr;
+    DAAgentManager* mAgentManager = nullptr;          ///< 提示词库管理器（QObject，parent=this）
     QMap<QString, DAAbstractAgentTool*> mTools;        ///< tool name → impl
     QHash<QString, QString> mSystemPrompts;            ///< prompt name → content
     DAAgentSessionStore* mSessionStore = nullptr;  ///< 非 QObject 无参构造；initialize() 内 new、析构显式 delete
@@ -177,6 +180,12 @@ void DAAgentModule::initialize(DACoreInterface* core)
     // CRITICAL1：创建会话持久化层（非 QObject 无参构造，不传 parent）。
     // 目录就绪由 store 内部 DADir::getAppDataPath("sessions") mkpath。
     d->mSessionStore = new DAAgentSessionStore();
+
+    // 提示词库管理器：播种通用默认 agent、加载用户已有提示词。
+    // m_agentManager 为 QObject，parent=this，随 Module 释放。
+    d->mAgentManager = new DAAgentManager(this);
+    d->mAgentManager->ensureDefaultAgent();
+    d->mAgentManager->loadAgents();
 
     // 连接 Bridge→Module 的持久化/状态 lambda（connectSignals 不再连 Dock，
     // 守卫改为仅判 m_bridge；Dock 连接已由 DAAppController 经接口完成）。
@@ -962,6 +971,58 @@ void DAAgentModule::setCurrentProjectPath(const QString& path)
     // core()->getAgentInterface() 多态调用（onProjectLoaded / 工程关闭时注入），
     // 不依赖 qobject_cast。
     d->mCurrentProjectPath = path;
+}
+
+/**
+ * @brief 注册内置 agent 提示词（委托 DAAgentManager）
+ * @param name 提示词标题（文件名）
+ * @param content 提示词正文
+ */
+void DAAgentModule::registerBuiltinAgent(const QString& name, const QString& content)
+{
+    DA_D(d);
+    if (d->mAgentManager) {
+        d->mAgentManager->registerBuiltin(name, content);
+        d->mAgentManager->loadAgents();
+    }
+}
+
+/**
+ * @brief 按标题执行 agent：查提示词→校验 LLM 配置→显示 dock 并发送消息
+ * @param title agent 标题
+ * @return 成功触发返回 true，未找到提示词或 LLM 未配置返回 false
+ */
+bool DAAgentModule::runAgent(const QString& title)
+{
+    DA_D(d);
+    if (!d->mAgentManager) {
+        return false;
+    }
+    const DAAgentPrompt* a = d->mAgentManager->findAgent(title);
+    if (!a || a->content.isEmpty()) {
+        return false;
+    }
+    QJsonObject config = getLLMConfig();
+    if (config.value("base_url").toString().isEmpty() ||
+        config.value("api_key").toString().isEmpty() ||
+        config.value("model").toString().isEmpty()) {
+        daWarning << tr("LLM is not configured, skip agent analysis. "
+                        "Please configure LLM in settings first.");  //cn:LLM 未配置，跳过 Agent 分析，请先在设置中配置 LLM
+        return false;
+    }
+    showDockWidget();
+    sendMessage(a->content);
+    return true;
+}
+
+/**
+ * @brief 获取提示词库操作回调
+ * @return DAAgentPromptOps 指针（所有权归 DAAgentModule，调用方不销毁）
+ */
+DAAgentPromptOps* DAAgentModule::agentPromptOps()
+{
+    DA_D(d);
+    return d->mAgentManager;
 }
 
 /**

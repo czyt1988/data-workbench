@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/da/icon">
+        <file>agent.svg</file>
+        <file>agent-manage.svg</file>
+        <file>agent-add.svg</file>
+        <file>agent-edit.svg</file>
+        <file>agent-delete.svg</file>
+        <file>run-agent.svg</file>
+    </qresource>
+</RCC>

@@ -16,6 +16,7 @@ namespace DA
 {
 class DAAgentBridge;
 class DAAgentSessionStore;
+class DAAgentManager;
 
 /**
  * @brief DAAgent 模块的完整实现：工具注册、系统提示词组装、懒启动生命周期管理
@@ -79,6 +80,14 @@ public:
     void loadSessionsFromProject(const QHash<QString, QByteArray>& files, const QString& projectPath) override;
     /// @copydoc DAAgentInterface::setCurrentProjectPath
     void setCurrentProjectPath(const QString& path) override;
+
+    // ---- 提示词库管理（override DAAgentInterface 3 个新纯虚） ----
+    /// @copydoc DAAgentInterface::registerBuiltinAgent
+    void registerBuiltinAgent(const QString& name, const QString& content) override;
+    /// @copydoc DAAgentInterface::runAgent
+    bool runAgent(const QString& title) override;
+    /// @copydoc DAAgentInterface::agentPromptOps
+    DAAgentPromptOps* agentPromptOps() override;
 
     // ---- 会话管理辅助方法（非接口，plan-03 声明归属本计划） ----
     // 新建会话（UI "+" 按钮用）—— createSession + emit sessionCreated

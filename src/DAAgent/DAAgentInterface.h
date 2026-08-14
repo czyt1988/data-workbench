@@ -12,6 +12,8 @@
 
 namespace DA
 {
+class DAAgentPromptOps;
+
 /**
  * @brief DAAgent 模块的公共接口
  *
@@ -72,6 +74,15 @@ public:
     virtual void loadSessionsFromProject(const QHash<QString, QByteArray>& files, const QString& projectPath) = 0;
     // 设置当前工程路径（CRITICAL round-3：提升为接口纯虚）
     virtual void setCurrentProjectPath(const QString& path) = 0;
+
+    // ---- 提示词库管理（agent 提示词库内置注入 / 执行 / CRUD 回调） ----
+    /// 注册内置 agent：仅当 <daAgent>/<name>.md 不存在时写入（尊重用户已有编辑）
+    virtual void registerBuiltinAgent(const QString& name, const QString& content) = 0;
+    /// 按标题执行 agent：查找提示词→校验 LLM 配置→显示 dock 并发送消息；未配置则警告
+    virtual bool runAgent(const QString& title) = 0;
+    /// 获取提示词库操作回调（由 DAAgentManager 实现），供 DAGui 对话框执行 CRUD
+    /// 返回的指针所有权归 DAAgentModule，调用方不销毁
+    virtual DAAgentPromptOps* agentPromptOps() = 0;
 
 Q_SIGNALS:
     // ---- 以下 10 个由 DAAgentModule 从 DAAgentBridge 转发 ----

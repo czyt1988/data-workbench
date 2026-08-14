@@ -69,7 +69,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 界面层: DAGui (→ 所有上述模块 + SARibbon/ADS/qwt)
 接口层: DAInterface (→ DAGui)
        DAPluginSupport (→ DAInterface + DAPyWorkFlow)
-       DAAgent (→ DAInterface/DAData/DAPyBindQt/DAPyScripts；纯 agent 框架库，不依赖 GUI 模块)
+       DAAgent (→ DAInterface/DAData/DAPyBindQt/DAPyScripts；纯 agent 框架库 + 提示词库管理，不依赖 GUI 模块)
 应用层: APP (→ DAPluginSupport)
 ```
 
@@ -156,7 +156,8 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | 通用 Widgets | `src/DACommonWidgets/` | 按钮、列表、树等基础组件 |
 | 枚举/字符串转换 | `src/DAShared/DAEnumStringUtils.hpp` | 通用枚举↔字符串映射宏，详见`docs/zh/dev-guide/da-enum-string-utils.md` |
 | 插件开发参考 | `plugins/DataAnalysis/` | 最完整的插件示例 |
-| Agent 工具/设置 | `plugins/DAAgentTools/`（16 内置工具）/ `src/APP/SettingPages/DAAgentSettingsWidget`（LLM 设置页） | 工具由 `DAAgentToolsPlugin` 注册；设置页经 `setAgentInterface` 持久化 `agent-config.ini`（DAAgent 不依赖 DAGui） |
+| Agent 工具/设置 | `plugins/DAAgentTools/`（19 内置工具）/ `src/APP/SettingPages/DAAgentSettingsWidget`（LLM 设置页） | 工具由 `DAAgentToolsPlugin` 注册；设置页经 `setAgentInterface` 持久化 `agent-config.ini`（DAAgent 不依赖 DAGui） |
+| Agent 提示词库 | `src/DAAgent/DAAgentManager`（提示词引擎，实现 `DAAgentPromptOps`）/ `src/DAAgent/DAAgentPromptOps`（CRUD 回调接口）/ `src/DAAgent/DAAgentPrompt`（提示词数据结构）/ `src/DAUtils/DAMarkdownHighlighter`（通用 Markdown 高亮器）/ `src/APP/Dialog/DAAgentManagerDialog`、`DAAgentEditorDialog`（管理/编辑 UI） | 平台核心能力：`DAAgentInterface` 的 `registerBuiltinAgent`/`runAgent`/`agentPromptOps` 三方法；提示词库类型与引擎均在 DAAgent 模块内，通用高亮器在 DAUtils，对话框在 APP/Dialog（参照 `DAAgentSettingsWidget` 的 L5→L4 依赖先例）；插件经 `registerBuiltinAgent` 注入领域提示词，UI 由 `DAAppRibbonArea::buildRibbonAgentCategory` 构建「AI分析」标签页 |
 | Python 工作流节点开发 | `plugins/DASystemNodes/AGENTS.md` | @NodeDef 节点开发规范、**init**/paint() 等核心陷阱 |
 | 插件模板 | `plugins/plugin-template/` | 新插件脚手架 |
 | 文档源码 | `docs/zh/` | Doxygen Wiki 中文 |

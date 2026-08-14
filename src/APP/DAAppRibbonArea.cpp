@@ -37,6 +37,12 @@
 // Widget
 #include "DAPyDTypeComboBox.h"
 #include "DADataOperateOfDataFrameWidget.h"
+// Agent 提示词库（AI分析 标签页）
+#include "DAAgentInterface.h"
+#include "DACoreInterface.h"
+#include "Dialog/DAAgentManagerDialog.h"
+#include "DAAgentPrompt.h"
+#include "DAAgentPromptOps.h"
 #endif
 
 // api
@@ -259,6 +265,9 @@ void DAAppRibbonArea::buildRibbon()
     buildRibbonViewCategory();
     buildRibbonEditCategory();
     buildRibbonFigureCategory();
+#if DA_ENABLE_PYTHON
+    buildRibbonAgentCategory();
+#endif
     buildRibbonQuickAccessBar();
     // 上下文标签
     buildContextCategoryDataFrame();
@@ -1063,6 +1072,141 @@ void DAAppRibbonArea::setDataframeOperateCurrentDType(const DAPyDType& d)
     QSignalBlocker blocker(mComboxColumnTypes);
     Q_UNUSED(blocker);
     mComboxColumnTypes->setCurrentDType(d);
+}
+
+/**
+ * @brief 构建 AI分析 标签页
+ *
+ * 布局：| agent管理(large) | agent gallery(最大宽度700px) | 执行agent(large) |
+ * gallery 每个 action 对应一个 agent 提示词，选中后由"执行agent"触发 runAgent。
+ */
+void DAAppRibbonArea::buildRibbonAgentCategory()
+{
+    mCategoryAgent = ribbonBar()->addCategoryPage(tr("AI Analysis"));  //cn:AI分析
+    mCategoryAgent->setObjectName(QStringLiteral("da-ribbon-category-agent"));
+    mPanelAgent = mCategoryAgent->addPanel(tr("AI Analysis"));  //cn:AI分析
+
+    // agent 管理（large button）
+    mActionAgentManage = new QAction(QIcon(":/da/icon/agent-manage.svg"), tr("Agent Manager"), this);  //cn:agent管理
+    mActionAgentManage->setToolTip(tr("Manage agents: add, edit, delete prompts"));  //cn:管理 agent：新增、修改、删除提示词
+    mPanelAgent->addLargeAction(mActionAgentManage);
+
+    // agent gallery（最大宽度 700px）
+    mAgentGallery = mPanelAgent->addGallery(true);
+    mAgentGallery->setMaximumWidth(700);
+
+    // 执行 agent（large button）
+    mActionRunAgent = new QAction(QIcon(":/da/icon/run-agent.svg"), tr("Run Agent"), this);  //cn:执行agent
+    mActionRunAgent->setToolTip(tr("Run AI analysis with the selected agent prompt"));  //cn:使用当前选中的 agent 提示词执行 AI 分析
+    mPanelAgent->addLargeAction(mActionRunAgent);
+
+    populateAgentGallery();
+
+    connect(mActionAgentManage, &QAction::triggered, this, &DAAppRibbonArea::onActionAgentManage);
+    connect(mActionRunAgent, &QAction::triggered, this, &DAAppRibbonArea::onActionRunAgent);
+}
+
+/**
+ * @brief 填充 agent gallery，从 DAAgentInterface::agentPromptOps 取提示词列表
+ */
+void DAAppRibbonArea::populateAgentGallery()
+{
+    if (!mAgentGallery) {
+        return;
+    }
+    // 清空旧 action
+    for (QAction* act : std::as_const(mAgentActions)) {
+        act->deleteLater();
+    }
+    mAgentActions.clear();
+
+    static QIcon sAgentIcon(":/da/icon/agent.svg");
+    DA::DAAgentInterface* agent = DA_APP_CORE.getAgentInterface();
+    QList< DA::DAAgentPrompt > prompts;
+    if (agent) {
+        DA::DAAgentPromptOps* ops = agent->agentPromptOps();
+        if (ops) {
+            prompts = ops->agentPrompts();
+        }
+    }
+    for (const DA::DAAgentPrompt& a : std::as_const(prompts)) {
+        QAction* act = new QAction(sAgentIcon, a.title, this);
+        // tooltip 显示完整提示词内容（富文本换行）
+        QString tooltip = QString("<html><body><div style=\"white-space:pre-wrap; max-width:480px;\">%1</div></body></html>")
+                              .arg(a.content.toHtmlEscaped());
+        act->setToolTip(tooltip);
+        act->setData(a.title);
+        mAgentActions.append(act);
+    }
+    if (!mAgentGalleryGroup) {
+        // 首次构建：添加分组 + 样式 + 连接信号
+        mAgentGalleryGroup = mAgentGallery->addCategoryActions(tr("Agent"), mAgentActions);  //cn:Agent
+        mAgentGalleryGroup->setGalleryGroupStyle(SARibbonGalleryGroup::IconWithWordWrapText);
+        mAgentGalleryGroup->setGridMinimumWidth(80);
+        connect(mAgentGalleryGroup, &SARibbonGalleryGroup::triggered, this, &DAAppRibbonArea::onAgentGalleryTriggered);
+    } else {
+        // 已有分组：清空 model 重新填充
+        SARibbonGalleryGroupModel* model = mAgentGalleryGroup->groupModel();
+        model->clear();
+        mAgentGalleryGroup->addActionItemList(mAgentActions);
+    }
+    // 默认选中第一个 agent
+    if (!mAgentActions.isEmpty()) {
+        onAgentGalleryTriggered(mAgentActions.first());
+    } else {
+        mSelectedAgentTitle.clear();
+    }
+}
+
+/**
+ * @brief agent 管理按钮：打开管理对话框，关闭后刷新 gallery
+ */
+void DAAppRibbonArea::onActionAgentManage()
+{
+    DA::DAAgentInterface* agent = DA_APP_CORE.getAgentInterface();
+    if (!agent) {
+        return;
+    }
+    DA::DAAgentPromptOps* ops = agent->agentPromptOps();
+    if (!ops) {
+        return;
+    }
+    DA::DAAgentManagerDialog dlg(ops, app());
+    QString prevTitle = mSelectedAgentTitle;
+    dlg.exec();
+    // 管理结束后刷新 gallery（agentPrompts 直接读磁盘最新状态）
+    populateAgentGallery();
+    if (!prevTitle.isEmpty()) {
+        mSelectedAgentTitle = prevTitle;
+    }
+}
+
+/**
+ * @brief gallery 选中项变化：记录当前选中的 agent 标题
+ */
+void DAAppRibbonArea::onAgentGalleryTriggered(QAction* act)
+{
+    if (!act) {
+        return;
+    }
+    mSelectedAgentTitle = act->data().toString();
+}
+
+/**
+ * @brief 执行 agent 按钮：调用 DAAgentInterface::runAgent 触发 AI 分析
+ */
+void DAAppRibbonArea::onActionRunAgent()
+{
+    if (mSelectedAgentTitle.isEmpty()) {
+        QMessageBox::warning(app(), tr("Tip"), tr("Please select an agent in the gallery first"));  //cn:提示 //cn:请先在 gallery 中选择一个 agent
+        return;
+    }
+    DA::DAAgentInterface* agent = DA_APP_CORE.getAgentInterface();
+    if (!agent) {
+        QMessageBox::warning(app(), tr("Tip"), tr("Agent module is not ready"));  //cn:提示 //cn:Agent 模块未就绪
+        return;
+    }
+    agent->runAgent(mSelectedAgentTitle);
 }
 
 #endif
