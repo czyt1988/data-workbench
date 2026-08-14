@@ -108,8 +108,9 @@ if(NOT TARGET DAWorkbench::DAUtils)
     )
 endif()
 
-# 工具继承 DAAgentToolBase（fat，暂含图表方法）+ 跨 DLL moc：DAAgentToolBase::staticMetaObject
-# 随 DAAgent.dll 导出（已加 DAAgent_API，见 §3.4 步骤 3）。PUBLIC 因工具头暴露 DAAgentToolBase。
+# 工具继承 DAAgentToolBase（瘦身版，数据/响应方法）+ DAAgentChartToolBase（图表方法）。
+# 跨 DLL moc：DAAgentToolBase::staticMetaObject 随 DAAgent.dll 导出（已加 DAAgent_API），
+# 故 DAAgent 需 PUBLIC link（工具头暴露 DAAgentToolBase.h）。
 target_link_libraries(${DA_PLUGIN_NAME} PUBLIC
     DAWorkbench::DAAgent
 )
@@ -119,10 +120,10 @@ target_link_libraries(${DA_PLUGIN_NAME} PUBLIC
 target_link_libraries(${DA_PLUGIN_NAME} PRIVATE
     DAWorkbench::DAPluginSupport
 )
-# 图表工具用 DAChartOperateWidget（DAGui）。当前经 DAAgent PUBLIC 已传递（DAAgent L72
-# PUBLIC-link DAGui），此处显式 link 仅为 plan-04 正向兼容（plan-04 从 DAAgent 移除
-# DAGui 后插件需自挂）。PUBLIC 因 DAAgentChartToolBase.h 经 DAAgentToolBase.h 暴露 DAGui 头。
-# DAFigure 同理经 DAAgent PUBLIC 传递（DAAgent L69），插件无需显式 link DAFigure。
+# 图表工具用 DAChartOperateWidget（DAGui）。DAAgent 已不再 link DAGui（plan-04 解耦），
+# 插件必须显式 link。PUBLIC 因 DAAgentChartToolBase.h 暴露 DAGui 头
+# （DAChartOperateWidget / DAFigureWidget / DAChartWidget）。
+# DAFigure 经 DAGui PUBLIC 传递（DAGui CMakeLists L544），插件无需显式 link DAFigure。
 target_link_libraries(${DA_PLUGIN_NAME} PUBLIC
     DAWorkbench::DAGui
 )
@@ -134,14 +135,14 @@ if(WIN32)
 endif()
 
 # -------------link 3rdparty--------------------------
-# DAAgentToolBase.h（fat 基类，经 DAAgent PUBLIC include 可见）的 include 链需要两个三方库：
+# DAAgentChartToolBase.h（图表基类，include DAGui 头）的 include 链需要两个三方库：
 #   DADockingAreaInterface.h → ads_globals.h        (QtAdvancedDocking)
 #   DAChartWidget.h → DAChartDataInterface.h → qwt_samples.h  (qwt)
 # 实测：damacro_import_* 宏加的 include 目录不随 DAAgent PUBLIC 传递给下游链接器
 # （插件编译报 C1083 ads_globals.h / qwt_samples.h 找不到），故插件须显式导入，
 # 照 DataAnalysis L124-127 惯例。pybind11.h 经 DAAgent→DAPyBindQt PUBLIC 链已传递
 # （DAPybind11QtCaster.hpp 可正常编译，无需重复导入）。Python3 同照 DataAnalysis L127
-# 导入（6 个数据/图表工具经 DAPyDataFrame.h → Python.h）。
+# 导入（数据/图表工具经 DAPyDataFrame.h → Python.h）。
 damacro_import_QtAdvancedDocking(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 damacro_import_qwt(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
 damacro_import_Python(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
