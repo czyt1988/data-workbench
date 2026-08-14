@@ -46,6 +46,7 @@ public Q_SLOTS:
     void onAgentQuestion(const QString& text, const QStringList& options, bool multiSelect);
     void onAgentError(const QString& message, const QString& errorType = QString(), const QString& detail = QString());
     void onAgentRetrying(int attempt, int maxAttempts, int delayMs, const QString& errorType, const QString& errorMessage);
+    void onAgentStarting();
     void onAgentReady(const QString& model);
     void onAgentBusy(bool busy);
     void onAgentUsage(int inputTokens, int outputTokens, int totalTokens, int contextWindow, const QString& source);

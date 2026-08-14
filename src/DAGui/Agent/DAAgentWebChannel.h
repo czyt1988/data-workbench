@@ -42,6 +42,7 @@ public:
     void loadHistory(const QVector<QJsonObject>& records);
     void setBusy(bool busy);
     void setStopping();
+    void setStarting();
     void setModel(const QString& label);
     void setTokenStats(const QString& label, int inputTokens, int outputTokens,
                        int totalTokens, int contextWindow, const QString& source);

@@ -26,6 +26,13 @@ double jsonDouble(const QJsonObject& o, const char* key, double def)
     QJsonValue v = o.value(QLatin1String(key));
     return v.isDouble() ? v.toDouble() : def;
 }
+
+/** @brief 从 QJsonObject 中读取 bool 值并兜底默认值 */
+bool jsonBool(const QJsonObject& o, const char* key, bool def)
+{
+    QJsonValue v = o.value(QLatin1String(key));
+    return v.isBool() ? v.toBool() : def;
+}
 }  // namespace
 
 namespace DA
@@ -258,6 +265,16 @@ void DAAgentSettingsWidget::setupUI()
         "Also guarded by automatic repeated-tool-call detection."));  //cn:图最大推理步数(compact→agent→tools 循环)。每轮工具调用耗 3 步。建议 150(约 50 轮工具调用),适合数据分析频繁查数据的场景。调大:支持更复杂的多步分析,但成本增加且循环 agent 运行更久才停止;调小:更早中止失控循环并节省成本,但可能截断合理的长分析链。另有自动重复调用检测兜底。
     mSpinRecursionLimit->setValue(150);
 
+    // 预启动开关：程序启动时是否自动预热 agent 子进程（默认勾选）
+    mCheckAutoPrestart = new QCheckBox(this);
+    mCheckAutoPrestart->setToolTip(tr(
+        "Start the agent subprocess in the background when the program launches, "
+        "so the chat is ready immediately without a startup wait. "
+        "Enabled by default. "
+        "Disable to save memory (~100-200MB) when you rarely use the agent; "
+        "the subprocess will then start on first message (with a startup delay)."));  //cn:程序启动时在后台预启动 agent 子进程,使对话立即可用无需等待启动。默认开启。关闭可节省内存(约100-200MB),适合很少使用 agent 的用户;关闭后子进程将在首次发消息时启动(有启动等待)。
+    mCheckAutoPrestart->setChecked(true);
+
     QFormLayout* form = new QFormLayout(this);
     form->addRow(tr("Base URL"), mBaseUrlEdit);
     form->addRow(tr("API Key"),  mApiKeyEdit);
@@ -281,6 +298,7 @@ void DAAgentSettingsWidget::setupUI()
     form->addRow(tr("Inactivity timeout"), mSpinInactivityTimeout);  //cn:无活动超时
     form->addRow(tr("Max process restarts"), mSpinMaxRestarts);  //cn:最大进程重启次数
     form->addRow(tr("Reasoning iteration limit"), mSpinRecursionLimit);  //cn:推理迭代上限
+    form->addRow(tr("Auto prestart on launch"), mCheckAutoPrestart);  //cn:启动时自动预热
 
     connect(mTestBtn, &QPushButton::clicked, this, &DAAgentSettingsWidget::onTestConnection);
 
@@ -341,6 +359,9 @@ void DAAgentSettingsWidget::setupUI()
     connect(mSpinRecursionLimit, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
         emit settingChanged();
     });
+    connect(mCheckAutoPrestart, &QCheckBox::toggled, this, [this]() {
+        emit settingChanged();
+    });
 
     // 注：loadConfig() 期间无需 QSignalBlocker——
     // addPage()（连接 settingChanged → 脏页追踪器）在构造函数返回之后才执行，
@@ -381,6 +402,7 @@ void DAAgentSettingsWidget::loadConfig()
     mSpinInactivityTimeout->setValue(jsonInt(c, "inactivity_timeout_sec", 240));
     mSpinMaxRestarts->setValue(jsonInt(c, "max_subprocess_restarts", 3));
     mSpinRecursionLimit->setValue(jsonInt(c, "recursion_limit", 150));
+    mCheckAutoPrestart->setChecked(jsonBool(c, "auto_prestart", true));
 }
 
 /** @brief 将界面配置保存到 agent-config.ini */
@@ -410,6 +432,7 @@ void DAAgentSettingsWidget::saveConfig()
     c["inactivity_timeout_sec"]   = mSpinInactivityTimeout->value();
     c["max_subprocess_restarts"]  = mSpinMaxRestarts->value();
     c["recursion_limit"]          = mSpinRecursionLimit->value();
+    c["auto_prestart"]            = mCheckAutoPrestart->isChecked();
     // 诊断日志: 确认 saveConfig 真的被调用且收集到了值(绝不打印 api_key 明文)
     daDebug << "[DAAgentSettings] saveConfig: base_url=" << c.value("base_url").toString()
             << " model=" << c.value("model").toString()

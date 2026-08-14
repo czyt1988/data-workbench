@@ -25,6 +25,7 @@ public:
     QWebEngineView* mWebView;
     DAAgentWebChannel* mChannel;
     bool mAgentBusy;
+    bool mAgentStarting;  ///< agent 子进程启动中，UI 显示"启动中"
 
     // ---- 顶部会话栏：标题（省略）+ 会话管理 + 新建会话 ----
     QLabel* mTitleLabel;
@@ -50,6 +51,7 @@ DAAgentDockWidget::PrivateData::PrivateData(DAAgentDockWidget* p)
     , mWebView(nullptr)
     , mChannel(nullptr)
     , mAgentBusy(false)
+    , mAgentStarting(false)
     , mTitleLabel(nullptr)
     , mSessionManagerBtn(nullptr)
     , mNewSessionBtn(nullptr)
@@ -193,8 +195,8 @@ void DAAgentDockWidget::onUserMessageReceived(const QString& text)
     DA_D(d);
     // C++ 仍是编排者：JS 已清框并调 chatBridge.onUserMessage(text)，此槽负责
     // 渲染用户气泡 + 向外发消息。与旧 onSendClicked 同构（文本来源从 QTextEdit 改为 JS）。
-    if (d->mAgentBusy) {
-        return;  // 忙碌时不发送（web 按钮此时为 Stop，理论不会触发；防御）
+    if (d->mAgentBusy || d->mAgentStarting) {
+        return;  // 忙碌/启动中时不发送（按钮此时禁用，理论不会触发；防御）
     }
     QString trimmed = text.trimmed();
     if (trimmed.isEmpty()) {
@@ -217,6 +219,7 @@ void DAAgentDockWidget::onWebReady()
         {"send", tr("Send")},                       // cn:发送
         {"stop", tr("Stop")},                        // cn:终止
         {"ready", tr("Ready")},                      // cn:就绪
+        {"starting", tr("Agent starting...")},       // cn:Agent 启动中...
         {"thinking", tr("Agent thinking...")},       // cn:Agent 思考中...
         {"stopping", tr("Stopping...")},             // cn:终止中...
         {"inputPlaceholder", tr("Type a message...")},  // cn:输入消息...
@@ -228,7 +231,13 @@ void DAAgentDockWidget::onWebReady()
         {"popoverSource", tr("source: %1")},          // cn:来源：%1
         {"popoverSourceUnknown", tr("unknown")}      // cn:未知
     });
-    d->mChannel->setBusy(d->mAgentBusy);
+    // 启动中优先推 starting 态，缓解 JS-ready 竞态——agent 信号若在 chat.html 加载
+    // 完成前触发，此处补推当前 starting/busy 态
+    if (d->mAgentStarting) {
+        d->mChannel->setStarting();
+    } else {
+        d->mChannel->setBusy(d->mAgentBusy);
+    }
     d->mChannel->setModel(formatModelLabel());
     if (d->mHasTokenStats) {
         d->mChannel->setTokenStats(formatTokenLabel(d->mLastTotalTokens, d->mLastContextWindow, d->mLastTokenSource),
@@ -381,12 +390,28 @@ void DAAgentDockWidget::onAgentRetrying(int attempt, int maxAttempts, int delayM
 }
 
 /**
+ * @brief 处理 Agent 启动信号（预启动/懒启动/崩溃重启均触发）
+ *
+ * UI 进入"启动中"过渡态：按钮+输入禁用、状态"启动中"。
+ * 与 onAgentBusy(thinking) 区分——启动中并非思考中。ready/error 后清除。
+ */
+void DAAgentDockWidget::onAgentStarting()
+{
+    DA_D(d);
+    d->mAgentStarting = true;
+    if (d->mChannel) {
+        d->mChannel->setStarting();
+    }
+}
+
+/**
  * @brief 处理 Agent 就绪信号
  * @param model 模型名称
  */
 void DAAgentDockWidget::onAgentReady(const QString& model)
 {
     DA_D(d);
+    d->mAgentStarting = false;  // 启动完成，清除启动态
     d->mCurrentModel = model;
     d->mAgentBusy = false;
     if (d->mChannel) {
@@ -403,6 +428,16 @@ void DAAgentDockWidget::onAgentBusy(bool busy)
 {
     DA_D(d);
     d->mAgentBusy = busy;
+    // busy(false) 兜底清除启动态——崩溃恢复最终失败/正常退出/用户停止均 emit agentBusy(false)
+    if (!busy && d->mAgentStarting) {
+        d->mAgentStarting = false;
+    }
+    // 启动中优先于思考中：懒启动 fallback 时 startAgent 的 agentStarting 与
+    // sendMessage 的 agentBusy(true) 几乎同时到达，但子进程实际在启动而非思考。
+    // 保持"启动中"显示直到 ready，避免误导用户为"思考中"。
+    if (d->mAgentStarting) {
+        return;
+    }
     // busy 打包：JS 解释按钮 Send/Stop 切换 + 输入禁用 + 状态文案（thinking/ready）
     if (d->mChannel) {
         d->mChannel->setBusy(busy);

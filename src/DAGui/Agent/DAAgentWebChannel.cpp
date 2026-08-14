@@ -334,6 +334,17 @@ void DAAgentWebChannel::setStopping()
 }
 
 /**
+ * @brief 设置启动过渡态（agentStarting 信号触发，ready/error 清除）
+ *
+ * JS 侧禁用按钮+输入 + 状态文案置"启动中"。区别于 setBusy(thinking)——
+ * 启动中并非思考中，UI 应明确提示用户等待启动完成。
+ */
+void DAAgentWebChannel::setStarting()
+{
+    callJS(QStringLiteral("setStarting()"));
+}
+
+/**
  * @brief 设置当前模型名标签（中）
  * @param label 已由 C++ 格式化为 "Model: &lt;name&gt;" 的翻译串，JS 仅显示（CSS ellipsis 截断）
  */

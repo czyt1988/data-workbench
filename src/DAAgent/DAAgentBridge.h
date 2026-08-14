@@ -126,6 +126,14 @@ Q_SIGNALS:
      */
     void agentReady(const QString& model);
     /**
+     * @brief agent 子进程开始启动时发射（预启动/懒启动/崩溃重启均触发）
+     *
+     * UI 据此进入"启动中"过渡态（按钮+输入禁用、状态"启动中"），
+     * 与 agentBusy(thinking) 区分——启动中并非思考中。
+     * ready/ready 超时/进程异常退出后由 agentReady/agentBusy(false) 清除该态。
+     */
+    void agentStarting();
+    /**
      * @brief agent 忙碌状态变化时发射
      * @param busy 是否忙碌
      */

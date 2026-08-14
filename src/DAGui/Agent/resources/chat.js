@@ -16,6 +16,7 @@ let pendingToolCards = [];     // 等待结果的卡片列表 [{card, toolName}]
 let i18n = {
     send: 'Send', stop: 'Stop',
     ready: 'Ready', thinking: 'Agent thinking...', stopping: 'Stopping...',
+    starting: 'Agent starting...',
     inputPlaceholder: '', tokenEmpty: 'tokens: -',
     popoverInput: 'input: %1', popoverOutput: 'output: %1',
     popoverTotal: 'total: %1', popoverWindow: 'window: %1',
@@ -485,6 +486,18 @@ function setStopping() {
     var ta = document.getElementById('input-edit');
     if (ta) { ta.disabled = true; }
     setStatus(i18n.stopping);
+}
+
+// 启动过渡态：按钮+输入禁用 + 状态 starting。由 C++ agentStarting 信号触发，
+// 持续到 onAgentReady（→setBusy(false)）/onAgentBusy(false) 恢复。
+// 区别于 setStopping（终止中）——启动中是等待子进程冷启动完成。
+function setStarting() {
+    agentBusy = false;  // 非思考态
+    var btn = document.getElementById('send-btn');
+    if (btn) { btn.disabled = true; btn.classList.remove('busy'); btn.textContent = i18n.send; }
+    var ta = document.getElementById('input-edit');
+    if (ta) { ta.disabled = true; }
+    setStatus(i18n.starting);
 }
 
 // 设置状态文案（左）。busy/stopping 内部调，也供 C++ 直接推过渡态。

@@ -259,6 +259,7 @@ void DAAppController::initialize()
         connect(agent, &DAAgentInterface::agentError, dock, &DAAgentDockWidget::onAgentError);
         connect(agent, &DAAgentInterface::agentRetrying, dock, &DAAgentDockWidget::onAgentRetrying);
         connect(agent, &DAAgentInterface::agentReady, dock, &DAAgentDockWidget::onAgentReady);
+        connect(agent, &DAAgentInterface::agentStarting, dock, &DAAgentDockWidget::onAgentStarting);
         connect(agent, &DAAgentInterface::agentBusy, dock, &DAAgentDockWidget::onAgentBusy);
         connect(agent, &DAAgentInterface::agentSessionLoaded, dock, &DAAgentDockWidget::onAgentSessionLoaded);
         connect(agent, &DAAgentInterface::tokenUsageUpdated, dock, &DAAgentDockWidget::onAgentUsage);
@@ -308,6 +309,7 @@ void DAAppController::initialize()
         if (auto* agentMod = qobject_cast< DAAgentModule* >(mCore->getAgentInterface())) {
             agentMod->setCurrentProjectPath(QString());  // 启动无工程，projectPath=null
             agentMod->restoreLastActiveSession();         // 填充下拉 + 全新对话
+            agentMod->prestartAgent();  // 预启动 agent 子进程（受 auto_prestart 开关 + LLM 配置控制）
         }
     });
 }

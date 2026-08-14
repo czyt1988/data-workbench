@@ -92,6 +92,8 @@ Q_SIGNALS:
                        const QString& errorType, const QString& errorMessage);
     /// agent 就绪时发射
     void agentReady(const QString& model);
+    /// agent 子进程开始启动时发射（预启动/懒启动/崩溃重启均触发），UI 进入"启动中"过渡态
+    void agentStarting();
     /// agent 忙碌状态变化时发射
     void agentBusy(bool busy);
     /// agent 本轮处理完成时发射（生命周期事件，目前无 Dock 槽对接，纳入接口备扩展）

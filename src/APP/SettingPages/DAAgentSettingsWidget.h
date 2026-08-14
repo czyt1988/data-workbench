@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QSpinBox>
 #include <QDoubleSpinBox>
+#include <QCheckBox>
 #include <QJsonObject>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
@@ -77,6 +78,7 @@ private:
     QSpinBox* mSpinInactivityTimeout;    // 无活动看门狗超时(秒)
     QSpinBox* mSpinMaxRestarts;          // 子进程最大重启次数(0-10)
     QSpinBox* mSpinRecursionLimit;       // LangGraph 图最大迭代步数(20-1000)
+    QCheckBox* mCheckAutoPrestart;        // 启动时自动预热 Agent（默认勾选）
 };
 
 } // namespace DA

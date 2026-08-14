@@ -169,6 +169,7 @@ void DAAgentModule::initialize(DACoreInterface* core)
     connect(d->mBridge, &DAAgentBridge::agentQuestion, this, &DAAgentInterface::agentQuestion);
     connect(d->mBridge, &DAAgentBridge::agentError, this, &DAAgentInterface::agentError);
     connect(d->mBridge, &DAAgentBridge::agentReady, this, &DAAgentInterface::agentReady);
+    connect(d->mBridge, &DAAgentBridge::agentStarting, this, &DAAgentInterface::agentStarting);
     connect(d->mBridge, &DAAgentBridge::agentBusy, this, &DAAgentInterface::agentBusy);
     connect(d->mBridge, &DAAgentBridge::agentDone, this, &DAAgentInterface::agentDone);
     connect(d->mBridge, &DAAgentBridge::agentSessionLoaded, this, &DAAgentInterface::agentSessionLoaded);
@@ -371,6 +372,34 @@ void DAAgentModule::startAgentInternal()
     // 启动
     d->mBridge->startAgent(config, assembleToolSpecs(), assembleSystemPrompt(),
                            pythonExe, scriptPath, readyTimeoutMs, stopTimeoutMs);
+}
+
+/**
+ * @brief 预启动 agent 子进程（程序启动时调用）
+ *
+ * 受 agent/auto_prestart 配置开关（默认 true）+ LLM 配置就绪（base_url/api_key/model 非空）
+ * 双重控制。未配置或关闭开关时不预启动，用户发消息时走 sendMessage 的懒启动 fallback。
+ * 子进程已在运行时不重复启动。
+ */
+void DAAgentModule::prestartAgent()
+{
+    DA_D(d);
+    if (d->mBridge && d->mBridge->isRunning()) {
+        return;  // 已在运行，不重复启动
+    }
+    QJsonObject config = getLLMConfig();
+    // 检查 auto_prestart 开关（默认 true）
+    if (!config.value("auto_prestart").toBool(true)) {
+        return;  // 用户关闭了自动预热
+    }
+    // 检查 LLM 必填项是否就绪
+    QString baseUrl = config.value("base_url").toString().trimmed();
+    QString apiKey  = config.value("api_key").toString().trimmed();
+    QString model   = config.value("model").toString().trimmed();
+    if (baseUrl.isEmpty() || apiKey.isEmpty() || model.isEmpty()) {
+        return;  // 未配置 LLM，不预启动（发消息时走懒启动 fallback 报错提示）
+    }
+    startAgentInternal();
 }
 
 /**
@@ -657,6 +686,8 @@ QJsonObject DAAgentModule::getLLMConfig() const
     // 防止 agent 陷入死循环时跑数千步。默认 150 步约支持 50 轮工具调用，
     // 满足数据分析频繁查数据的场景；用户可在设置页调整。
     config["recursion_limit"]          = s.value("agent/recursion_limit", 150).toInt();
+    // 预启动开关：程序启动时是否自动预热 agent 子进程（默认 true）
+    config["auto_prestart"]            = s.value("agent/auto_prestart", true).toBool();
     return config;
 }
 
@@ -710,6 +741,8 @@ void DAAgentModule::setLLMConfig(const QJsonObject& config)
         s.setValue("agent/max_subprocess_restarts",   config.value("max_subprocess_restarts").toInt());
     if (config.contains("recursion_limit"))
         s.setValue("agent/recursion_limit",           config.value("recursion_limit").toInt());
+    if (config.contains("auto_prestart"))
+        s.setValue("agent/auto_prestart",              config.value("auto_prestart").toBool());
 }
 
 // ===========================================================================

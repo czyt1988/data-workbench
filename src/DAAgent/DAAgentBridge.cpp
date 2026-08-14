@@ -197,6 +197,11 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
         }
     });
     d->mReadyTimer->start(d->mReadyTimeoutMs);
+
+    // 通知 UI 进入"启动中"过渡态——与 agentBusy(thinking) 区分，
+    // 避免冷启动期间（~16s langchain 导入）被误显示为"思考中"。
+    // ready/ready 超时/进程退出后由 agentReady/agentBusy(false) 清除。
+    emit agentStarting();
 }
 
 /**

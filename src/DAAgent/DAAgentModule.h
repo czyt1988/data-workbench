@@ -89,6 +89,8 @@ public:
     void setSessionProjectPathForCurrent(const QString& path);
     // 启动/打开工程后初始化会话 UI——填充下拉列表但不自动恢复上次会话
     void restoreLastActiveSession();
+    // 预启动 agent 子进程（程序启动时调用，受 auto_prestart 配置开关 + LLM 配置就绪控制）
+    void prestartAgent();
 
 private:
     // Helper methods
