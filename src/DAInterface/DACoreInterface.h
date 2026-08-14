@@ -3,9 +3,7 @@
 #include "DAInterfaceAPI.h"
 #include <QObject>
 #include <QDir>
-#if DA_ENABLE_PYTHON
 #include "DAPythonSignalHandler.h"
-#endif
 
 class SARibbonMainWindow;
 
@@ -39,7 +37,6 @@ public:
     virtual DADataManagerInterface* getDataManagerInterface() const = 0;
     // 获取Agent接口
     virtual DAAgentInterface* getAgentInterface() const = 0;
-#if DA_ENABLE_PYTHON
     // python相关
     // 初始化python环境
     bool initializePythonScripts();
@@ -49,7 +46,6 @@ public:
     static QString getPythonScriptsPath();
     // python内核是否初始化成功
     static bool isPythonInterpreterInitialized();
-#endif
 public:
     // 工程是否dirty的操作
     bool isProjectDirty() const;

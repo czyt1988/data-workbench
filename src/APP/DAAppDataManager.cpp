@@ -12,9 +12,7 @@
 // DAUtils
 #include "DAStringUtil.h"
 #include "DALogCategory.h"
-#if DA_ENABLE_PYTHON
 #include "DAPyScripts.h"
-#endif
 
 namespace DA
 {
@@ -33,7 +31,6 @@ DAAppDataManager::~DAAppDataManager()
 
 bool DAAppDataManager::importFromFile(const QString& f, const QVariantMap& args, QString* err)
 {
-#if DA_ENABLE_PYTHON
     daInfo << tr("Begin importing file: %1").arg(f);  // cn:开始导入文件:%1
     try {
         if (DAPyScripts::isInitScripts()) {
@@ -44,7 +41,6 @@ bool DAAppDataManager::importFromFile(const QString& f, const QVariantMap& args,
     } catch (const std::exception& e) {
         qCritical() << e.what();
     }
-#endif
     return false;
 }
 
@@ -59,7 +55,6 @@ int DAAppDataManager::importFromFiles(const QStringList& fileNames)
     qDebug() << "data manager begin import files:" << fileNames;
     QList< DAData > importDatas;
     for (const QString& f : std::as_const(fileNames)) {
-#if DA_ENABLE_PYTHON
         qInfo() << QString("Begin import file: %1").arg(f);  // cn:开始导入文件:%1
         if (!DAPyInterpreter::isPythonInitialized()) {
             return 0;
@@ -84,7 +79,6 @@ int DAAppDataManager::importFromFiles(const QStringList& fileNames)
             qWarning() << QString("Cannot import file: %1").arg(f);  // cn:无法导入文件:%1
             continue;
         }
-#endif
     }
     if (importDatas.size() > 0) {
         addDatas(importDatas);

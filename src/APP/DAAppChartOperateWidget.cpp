@@ -3,11 +3,9 @@
 #include "DAWaitCursorScoped.h"
 #include "DAChartUtil.h"
 #include "DAEvenFilterDragPlotWithGuide.h"
-#if DA_ENABLE_PYTHON
 #include "Dialog/DADialogChartGuide.h"
 #include "DAFigureWidget.h"
 #include "DAChart3DWidget.h"
-#endif
 namespace DA
 {
 
@@ -59,7 +57,6 @@ int DAAppChartOperateWidget::execPlotGuideDialog(DAChartTypes t)
     return mChartGuideDlg->exec();
 }
 */
-#if DA_ENABLE_PYTHON
 void DAAppChartOperateWidget::showPlotGuideDialog(DAChartTypes t)
 {
     if (nullptr == mChartGuideDlg) {
@@ -77,14 +74,12 @@ DADialogChartGuide* DAAppChartOperateWidget::getChartGuideDlg()
     }
     return mChartGuideDlg;
 }
-#endif
 
 void DAAppChartOperateWidget::onChartGuideAccept()
 {
     DAWaitCursorScoped wait;
     Q_UNUSED(wait);
     DA::DAChartTypes ct = mChartGuideDlg->getCurrentChartType();
-#if DA_ENABLE_PYTHON
     if (DADialogChartGuide::is3DChartType(ct)) {
         // === 3D 路径 ===
         Qwt3DPlotItem* item = mChartGuideDlg->create3DPlotItem();
@@ -106,7 +101,6 @@ void DAAppChartOperateWidget::onChartGuideAccept()
         chart3d->update();  // trigger GL repaint
         Q_EMIT plot3DItemCreated(fig, chart3d, item);
     } else
-#endif
     {
         // === 2D 路径（现有逻辑） ===
         QwtPlotItem* item = mChartGuideDlg->createPlotItem();

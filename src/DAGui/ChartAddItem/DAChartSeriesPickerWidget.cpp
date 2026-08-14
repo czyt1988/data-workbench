@@ -16,9 +16,7 @@
 #include "DADataOperateWidget.h"
 #include "DADataOperateOfDataFrameWidget.h"
 #include "DALogCategory.h"
-#if DA_ENABLE_PYTHON
 #include "pandas/DAPyDataFrame.h"
-#endif
 
 namespace DA
 {
@@ -100,7 +98,6 @@ bool DAChartSeriesPickerWidget::resolveExpression(DAData& outData, QString& outS
     if (data.isNull() || !data.isDataFrame()) {
         return false;
     }
-#if DA_ENABLE_PYTHON
     DAPyDataFrame df = data.toDataFrame();
     if (df.isNone()) {
         return false;
@@ -109,9 +106,6 @@ bool DAChartSeriesPickerWidget::resolveExpression(DAData& outData, QString& outS
     if (!cols.contains(colName)) {
         return false;
     }
-#else
-    return false;
-#endif
     outData        = data;
     outSeriesName  = colName;
     return true;
@@ -233,7 +227,6 @@ void DAChartSeriesPickerWidget::onDataOperateHeaderClicked(int logicalIndex)
     if (data.isNull() || !data.isDataFrame()) {
         return;
     }
-#if DA_ENABLE_PYTHON
     DAPyDataFrame df = data.toDataFrame();
     if (df.isNone()) {
         return;
@@ -244,7 +237,6 @@ void DAChartSeriesPickerWidget::onDataOperateHeaderClicked(int logicalIndex)
     }
     QString colName = cols.at(logicalIndex);
     ui->lineEditExpr->setText(buildExpression(data, colName));
-#endif
 }
 
 /**

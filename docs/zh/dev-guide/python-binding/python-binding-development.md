@@ -1050,35 +1050,32 @@ Qt 类型与 Python 类型之间的转换是绑定的核心难点。`DAPybind11Q
 
 ### 绑定步骤五：CMake 配置
 
-Python 绑定代码必须通过 `DA_ENABLE_PYTHON` 条件编译控制，确保在不启用 Python 时项目仍可正常编译：
+Python 绑定代码始终参与编译（Python 为强制依赖，不可禁用），在模块的 CMakeLists.txt 中直接添加绑定源文件即可：
 
-```cmake title="CMakeLists.txt - Python 绑定条件编译配置"
+```cmake title="CMakeLists.txt - Python 绑定配置"
 # 在模块的 CMakeLists.txt 中
-if(DA_ENABLE_PYTHON)
-    # 添加绑定源文件
-    target_sources(${PROJECT_NAME} PRIVATE
-        DADataPythonBinding.h
-        DADataPythonBinding.cpp
-    )
-    
-    # 链接 pybind11
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-        pybind11::embed
-        DAPyBindQt  # Qt 类型 caster 模块
-    )
-    
-    # 确保绑定头文件可被其他模块引用
-    target_include_directories(${PROJECT_NAME} PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-    )
-endif()
+# 添加绑定源文件
+target_sources(${PROJECT_NAME} PRIVATE
+    DADataPythonBinding.h
+    DADataPythonBinding.cpp
+)
+
+# 链接 pybind11
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    pybind11::embed
+    DAPyBindQt  # Qt 类型 caster 模块
+)
+
+# 确保绑定头文件可被其他模块引用
+target_include_directories(${PROJECT_NAME} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
 ```
 
-!!! warning "条件编译的重要性"
-    - `DA_ENABLE_PYTHON` 由主 `CMakeLists.txt` 根据是否找到 Python 决定
-    - 绑定文件中所有 `#include "DAPybind11InQt.h"` 等依赖应包裹在 `#ifdef DA_ENABLE_PYTHON` 中
-    - 头文件中的 `initXXXPythonBinding()` 声明也应在 `DA_ENABLE_PYTHON` 条件下
-    - **不启用 Python 时**，绑定代码完全不参与编译，不影响无 Python 环境的用户
+!!! info "无条件编译"
+    - Python 为强制依赖，绑定代码始终参与编译，无需任何条件编译块或 `#ifdef` 宏保护
+    - 绑定文件中直接 `#include "DAPybind11InQt.h"` 等依赖即可
+    - 头文件中的 `initXXXPythonBinding()` 声明也无需条件编译守卫
 
 ### 绑定步骤六：构建与测试
 
@@ -1086,9 +1083,8 @@ endif()
 
 **构建验证步骤**：
 
-1. **编译检查**：确认 `DA_ENABLE_PYTHON=ON` 时绑定文件编译无错误
-2. **无 Python 编译检查**：确认 `DA_ENABLE_PYTHON=OFF` 时项目仍可正常编译
-3. **运行测试**：在 Python 解释器中验证绑定模块
+1. **编译检查**：确认绑定文件编译无错误
+2. **运行测试**：在 Python 解释器中验证绑定模块
 
 ```python title="Python 端验证绑定"
 # 在 DAWorkBench 内嵌 Python 中执行

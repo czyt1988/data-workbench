@@ -12,21 +12,17 @@
 //
 #include "DADataManager.h"
 
-#if DA_ENABLE_PYTHON
 #include "pandas/DAPyDataFrame.h"
 #include "DAPyScripts.h"
 #include "Models/DAPyDataFrameTableModel.h"
-#endif
 namespace DA
 {
 DATxtFileImportDialog::DATxtFileImportDialog(QWidget* parent) : QDialog(parent), ui(new Ui::DATxtFileImportDialog)
 {
     ui->setupUi(this);
-#if DA_ENABLE_PYTHON
     // 第一个参数为nullptr，说明不用redo/undo
     mModule = new DAPyDataFrameTableModel(nullptr, this);
     ui->tableView->setModel(mModule);
-#endif
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     // 存在qt6不兼容性
     QList< QByteArray > codecs = QTextCodec::availableCodecs();
@@ -164,7 +160,6 @@ void DATxtFileImportDialog::refresh()
     QVariantMap args = getSetting();
     // 预览状态下，预览的最大行数单独再设置
     args[ "nrows" ] = ui->spinBoxPreviewMaxRow->value();
-#if DA_ENABLE_PYTHON
     DAPyScriptsIO& io = DAPyScripts::getIO();
     QString err;
     DAPyDataFrame df = io.read_txt(path, args, &err);
@@ -176,7 +171,6 @@ void DATxtFileImportDialog::refresh()
     }
     qDebug() << df.shape();
     ui->tableView->setDataFrame(df);
-#endif
 }
 
 void DATxtFileImportDialog::onFilePathEditSelectedPath(const QString& p)

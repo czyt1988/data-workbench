@@ -43,10 +43,7 @@ cmake -DCMAKE_PREFIX_PATH=/path/to/Qt/5.15.2/msvc2019_64 ..
 **A:**
 
 ```bash
-# 禁用 Python 支持
-cmake -DDA_ENABLE_PYTHON=OFF ..
-
-# 自动配置 Python 环境
+# Python 为强制依赖，无法禁用；以下为自动配置 Python 环境示例
 cmake -DDA_ENABLE_AUTO_INSTALL_PYTHON_ENV=ON ..
 ```
 

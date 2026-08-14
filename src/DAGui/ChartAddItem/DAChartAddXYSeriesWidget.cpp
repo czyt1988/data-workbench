@@ -7,9 +7,7 @@
 #include "DALogCategory.h"
 #include "DAChartSeriesPickerWidget.h"
 #include <QHeaderView>
-#if DA_ENABLE_PYTHON
 #include "Models/DAPySeriesTableModel.h"
-#endif
 namespace DA
 {
 
@@ -21,13 +19,11 @@ DAChartAddXYSeriesWidget::DAChartAddXYSeriesWidget(QWidget* parent)
     : DAAbstractChartAddItemWidget(parent), ui(new Ui::DAChartAddXYSeriesWidget)
 {
     ui->setupUi(this);
-#if DA_ENABLE_PYTHON
     DAPySeriesTableModel* model = new DAPySeriesTableModel(this);
     model->setHeaderLabel({ tr("x"),  // cn:x
                             tr("y")   // cn:y
                           });
     ui->tableViewXY->setModel(model);
-#endif
     QFontMetrics fm = fontMetrics();
     ui->tableViewXY->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
     ui->listViewX->setAcceptMode(DAPySeriesListView::AcceptOneSeries);
@@ -335,7 +331,6 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
         );
         return false;
     }
-#if DA_ENABLE_PYTHON
     if (isXAuto) {  // 不存在同时，因此这个就是x自增
         DAAutoincrementSeries< double > xinc;
         if (!getXAutoIncFromUI(xinc)) {
@@ -432,7 +427,6 @@ bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
             return false;
         }
     }
-#endif
     return true;
 }
 

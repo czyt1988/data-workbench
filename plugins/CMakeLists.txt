@@ -60,12 +60,7 @@ if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
         endif()
         set(DAWorkbench_DIR ${DAWorkbench_INSTALL_PATH}/lib/cmake/DAWorkbench)
     endif()
-    if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-        message(STATUS "set DA_ENABLE_PYTHON=ON")
-        set(DA_ENABLE_PYTHON ON)
-    endif()
     set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_PATH})
-    message(STATUS "DA Plugins build,DA_ENABLE_PYTHON=${DA_ENABLE_PYTHON}")
     set(DA_INSTALL_LIB_CMAKE_PATH ${DAWorkbench_INSTALL_PATH}/lib/cmake)
     set(DA_INSTALL_LIB_SHARE_PATH ${DAWorkbench_INSTALL_PATH}/share/cmake)
     # 把安装目录加入 CMAKE_PREFIX_PATH,这样 find_package(xxx CONFIG) 会自动在
@@ -83,13 +78,11 @@ endif()
 ########################################################
 # 子工程加载
 ########################################################
-if(DA_ENABLE_PYTHON)
-    add_subdirectory(DataAnalysis)
-    add_subdirectory(DASystemNodes)
-    # DAAgentTools：平台内置 agent 工具插件（16 工具，plan-03 从 DAAgentModule 搬迁）。
-    # 与 DataAnalysis 同守卫——agent 工具依赖 Python（6 个工具经 DAPyDataFrame.h 用 pandas）。
-    add_subdirectory(DAAgentTools)
-endif()
+add_subdirectory(DataAnalysis)
+add_subdirectory(DASystemNodes)
+# DAAgentTools：平台内置 agent 工具插件（16 工具，plan-03 从 DAAgentModule 搬迁）。
+# agent 工具依赖 Python（6 个工具经 DAPyDataFrame.h 用 pandas）。
+add_subdirectory(DAAgentTools)
 
 
 ##################################

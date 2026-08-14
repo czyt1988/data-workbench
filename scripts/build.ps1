@@ -2,7 +2,7 @@
 # Usage: .\build.ps1 [options]
 # Options: -Target <name>  -Full  -Clean  -Test  -QtPath <path>
 #          -VSVersion <2019|2022>  -Config <Release|Debug|...>
-#          -Python <ON|OFF>  -Plugins <ON|OFF>
+#          -Plugins <ON|OFF>
 #
 # Examples:
 #   .\build.ps1                          # Full build (configure + build Release)
@@ -22,8 +22,6 @@ param(
     [ValidateSet('Release', 'Debug', 'RelWithDebInfo', 'MinSizeRel')]
     [string]$Config = 'Release',
 
-    [ValidateSet('ON', 'OFF')]
-    [string]$Python = 'ON',
     [ValidateSet('ON', 'OFF')]
     [string]$Plugins = 'ON'
 )
@@ -242,7 +240,6 @@ Options:
   -QtPath <path>          Qt installation path (auto-detect if omitted)
   -VSVersion <2019|2022>  Visual Studio version (auto-detect if omitted)
   -Config <Release|Debug|RelWithDebInfo|MinSizeRel>  Build configuration
-  -Python <ON|OFF>        Enable Python modules (default: ON)
   -Plugins <ON|OFF>       Build plugins (default: ON)
 
 Examples:
@@ -286,7 +283,6 @@ Write-Host "  VS:          $($vsInfo.VSVersion)"
 Write-Host "  Generator:   $($vsInfo.Generator)"
 Write-Host "  CMake:       $cmakeExe"
 Write-Host "  Config:      $Config"
-Write-Host "  Python:      $Python"
 Write-Host "  Plugins:     $Plugins"
 if ($Target) {
     Write-Host "  Target:      $Target"
@@ -350,7 +346,6 @@ if ($needsConfigure) {
         '-G', $vsInfo.Generator,
         '-A', 'x64',
         "-DCMAKE_PREFIX_PATH=$qtDir",
-        "-DDA_ENABLE_PYTHON=$Python",
         "-DDA_BUILD_PLUGINS=$Plugins"
     )
 

@@ -4,9 +4,7 @@
 #include <qwt_interval.h>
 #include <qwt_matrix_raster_data.h>
 #include "DADataManager.h"
-#if DA_ENABLE_PYTHON
 #include "Models/DAPyGridDataTableModel.h"
-#endif
 namespace DA
 {
 
@@ -18,10 +16,8 @@ DAChartAddtGridRasterDataWidget::DAChartAddtGridRasterDataWidget(QWidget* parent
     : DAAbstractChartAddItemWidget(parent), ui(new Ui::DAChartAddtGridRasterDataWidget)
 {
 	ui->setupUi(this);
-#if DA_ENABLE_PYTHON
 	mModel = new DAPyGridDataTableModel(nullptr, this);
 	ui->tableViewRaster->setModel(mModel);
-#endif
 	QFontMetrics fm = fontMetrics();
 	ui->tableViewRaster->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
 	connect(this,
@@ -67,7 +63,6 @@ QwtGridRasterData* DAChartAddtGridRasterDataWidget::makeSeries() const
  */
 bool DAChartAddtGridRasterDataWidget::isCorrectDim() const
 {
-#if DA_ENABLE_PYTHON
 	const DAPySeries& x        = mModel->xSeries();
 	const DAPySeries& y        = mModel->ySeries();
 	const DAPyDataFrame& value = mModel->dataFrame();
@@ -79,12 +74,8 @@ bool DAChartAddtGridRasterDataWidget::isCorrectDim() const
 		return false;
 	}
 	return true;
-#else
-	return false;
-#endif
 }
 
-#if DA_ENABLE_PYTHON
 /**
  * @brief 转换为矩阵
  * @param df
@@ -107,7 +98,6 @@ QVector< QVector< double > > DAChartAddtGridRasterDataWidget::dataframeToMatrix(
 	}
 	return res;
 }
-#endif
 
 /**
  * @brief DAChartAddtGridRasterDataWidget::onComboBoxXCurrentDataframeSeriesChanged
@@ -119,14 +109,12 @@ void DAChartAddtGridRasterDataWidget::onComboBoxXCurrentDataframeSeriesChanged(c
 	if (seriesName.isEmpty()) {
 		return;
 	}
-#if DA_ENABLE_PYTHON
 	DAPySeries series;
 	DAPyDataFrame df = data.toDataFrame();
 	if (!df.isNone()) {
 		series = df[ seriesName ];
 		mModel->setGridX(series);
 	}
-#endif
 }
 
 /**
@@ -139,14 +127,12 @@ void DAChartAddtGridRasterDataWidget::onComboBoxYCurrentDataframeSeriesChanged(c
 	if (seriesName.isEmpty()) {
 		return;
 	}
-#if DA_ENABLE_PYTHON
 	DAPySeries series;
 	DAPyDataFrame df = data.toDataFrame();
 	if (!df.isNone()) {
 		series = df[ seriesName ];
 	}
 	mModel->setGridY(series);
-#endif
 }
 
 /**
@@ -156,13 +142,11 @@ void DAChartAddtGridRasterDataWidget::onComboBoxYCurrentDataframeSeriesChanged(c
  */
 void DAChartAddtGridRasterDataWidget::onComboBoxMatricsCurrentDataChanged(const DAData& data)
 {
-#if DA_ENABLE_PYTHON
 	DAPySeries series;
 	DAPyDataFrame df = data.toDataFrame();
 	if (!df.isNone()) {
 		mModel->setDataFrame(df);
 	}
-#endif
 }
 
 void DAChartAddtGridRasterDataWidget::onDataManagerChanged(DADataManager* dmgr)
@@ -187,7 +171,6 @@ void DAChartAddtGridRasterDataWidget::onCurrentDataChanged(const DAData& d)
  */
 QwtGridRasterData* DAChartAddtGridRasterDataWidget::makeGridDataFromUI()
 {
-#if DA_ENABLE_PYTHON
 	try {
 		// 验证数据维度
 		if (!isCorrectDim()) {
@@ -223,7 +206,6 @@ QwtGridRasterData* DAChartAddtGridRasterDataWidget::makeGridDataFromUI()
 							  tr("Failed to set data: %1").arg(e.what()));  // cn:设置数据失败:%1
 		return nullptr;
 	}
-#endif
 	return nullptr;
 }
 }

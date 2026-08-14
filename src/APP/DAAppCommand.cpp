@@ -3,9 +3,7 @@
 #include "DAUIInterface.h"
 #include "DAAppDockingArea.h"
 #include "DADataOperateWidget.h"
-#if DA_ENABLE_PYTHON
 #include "Commands/DACommandWithTemporaryData.h"
-#endif
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================

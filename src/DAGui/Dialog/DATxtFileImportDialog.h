@@ -45,9 +45,7 @@ protected:
 
 private:
     Ui::DATxtFileImportDialog* ui;
-#if DA_ENABLE_PYTHON
     DAPyDataFrameTableModel* mModule { nullptr };
-#endif
 };
 }
 

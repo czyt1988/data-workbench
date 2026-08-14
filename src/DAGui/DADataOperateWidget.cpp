@@ -9,12 +9,10 @@
 #include <QUndoStack>
 // table style registry
 #include "DATableStyleRegistry.h"
-#if DA_ENABLE_PYTHON
 // widget
 #include "DADataOperateOfDataFrameWidget.h"
 // py
 #include "DADataPyObject.h"
-#endif
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
 //===================================================
@@ -97,11 +95,7 @@ QWidget* DADataOperateWidget::currentWidget() const
  */
 DADataOperateOfDataFrameWidget* DADataOperateWidget::getCurrentDataFrameWidget() const
 {
-#if DA_ENABLE_PYTHON
     return qobject_cast< DADataOperateOfDataFrameWidget* >(currentWidget());
-#else
-    return nullptr;
-#endif
 }
 
 /**
@@ -114,14 +108,12 @@ DADataOperateOfDataFrameWidget* DADataOperateWidget::getCurrentDataFrameWidget()
 QList< DADataOperateOfDataFrameWidget* > DADataOperateWidget::getAllDataFrameWidgets() const
 {
     QList< DADataOperateOfDataFrameWidget* > res;
-#if DA_ENABLE_PYTHON
     for (auto it = d_ptr->_dataToWidget.begin(); it != d_ptr->_dataToWidget.end(); ++it) {
         DADataOperateOfDataFrameWidget* w = qobject_cast< DADataOperateOfDataFrameWidget* >(it.value());
         if (w) {
             res.append(w);
         }
     }
-#endif
     return res;
 }
 
@@ -134,16 +126,11 @@ QList< DADataOperateOfDataFrameWidget* > DADataOperateWidget::getAllDataFrameWid
  */
 DADataOperateOfDataFrameWidget* DADataOperateWidget::findDataFrameWidget(const DAData& d) const
 {
-#if DA_ENABLE_PYTHON
     auto ite = d_ptr->_dataToWidget.find(d);
     if (ite == d_ptr->_dataToWidget.end()) {
         return nullptr;
     }
     return qobject_cast< DADataOperateOfDataFrameWidget* >(ite.value().data());
-#else
-    Q_UNUSED(d)
-    return nullptr;
-#endif
 }
 
 /**
@@ -185,23 +172,19 @@ QList< int > DADataOperateWidget::getCurrentOperateDataSelectedColumns() const
 
 QUndoStack* DADataOperateWidget::getUndoStack()
 {
-#if DA_ENABLE_PYTHON
     DADataOperateOfDataFrameWidget* w = getCurrentDataFrameWidget();
     if (w) {
         return w->getUndoStack();
     }
-#endif
     return nullptr;
 }
 
 void DADataOperateWidget::refreshCurrentOperateTableView()
 {
-#if DA_ENABLE_PYTHON
     DADataOperateOfDataFrameWidget* w = getCurrentDataFrameWidget();
     if (w) {
         w->refreshTable();
     }
-#endif
 }
 
 /**
@@ -210,13 +193,11 @@ void DADataOperateWidget::refreshCurrentOperateTableView()
  */
 void DADataOperateWidget::ensureCurrentTableColumnVisible(const QString& colName, bool selectCol)
 {
-#if DA_ENABLE_PYTHON
     DADataOperateOfDataFrameWidget* w = getCurrentDataFrameWidget();
     if (!w) {
         return;
     }
     w->ensureColumnVisible(colName, selectCol);
-#endif
 }
 
 /**
@@ -372,7 +353,6 @@ void DADataOperateWidget::onTabWidgetCurrentChanged(int index)
         disconnect(d_ptr->_currentHeaderConn);
         d_ptr->_currentHeaderConn = QMetaObject::Connection();
     }
-#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* d = qobject_cast< DADataOperateOfDataFrameWidget* >(w)) {
         // 激活undostack
         d->activeUndoStack();
@@ -380,7 +360,6 @@ void DADataOperateWidget::onTabWidgetCurrentChanged(int index)
         d_ptr->_currentHeaderConn = connect(d, &DADataOperateOfDataFrameWidget::columnHeaderClicked,
                                             this, &DADataOperateWidget::currentDataFrameColumnHeaderClicked);
     }
-#endif
     emit currentDataTableWidgetChanged(qobject_cast< DADataOperatePageWidget* >(w), index);
 }
 
@@ -399,7 +378,6 @@ void DADataOperateWidget::onTabWidgetCloseRequested(int index)
 
 void DADataOperateWidget::showDataframeData(const DA::DAData& d)
 {
-#if DA_ENABLE_PYTHON
     // 先查找是否已经存在对于窗口
     DADataOperateOfDataFrameWidget* w =
         qobject_cast< DADataOperateOfDataFrameWidget* >(d_ptr->_dataToWidget.value(d, nullptr).data());
@@ -421,7 +399,6 @@ void DADataOperateWidget::showDataframeData(const DA::DAData& d)
     ui->tabWidget->setTabToolTip(index, d.getDescribe());
     // 把当前的tabwidget唤起
     ui->tabWidget->setCurrentIndex(index);
-#endif
 }
 
 }

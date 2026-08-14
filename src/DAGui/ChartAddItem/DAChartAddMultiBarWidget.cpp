@@ -7,9 +7,6 @@
 #include "qwt_plot_multi_barchart.h"
 #include "qwt_samples.h"
 #include "qwt_text.h"
-#if DA_ENABLE_PYTHON
-// DAPyDataFrame/DAPySeries 通过 DAData.h 间接 include
-#endif
 #include <algorithm>
 namespace DA
 {
@@ -80,7 +77,6 @@ bool DAChartAddMultiBarWidget::tryGetXSelfInc(double& base, double& step)
 
 bool DAChartAddMultiBarWidget::extractXSeries(std::vector< double >& res)
 {
-#if DA_ENABLE_PYTHON
 	if (ui->groupBoxXAutoincrement->isChecked()) {
 		double base, step;
 		if (!tryGetXSelfInc(base, step)) {
@@ -114,14 +110,10 @@ bool DAChartAddMultiBarWidget::extractXSeries(std::vector< double >& res)
 		s.castTo< double >(std::back_inserter(res));
 	}
 	return true;
-#else
-	return false;
-#endif
 }
 
 bool DAChartAddMultiBarWidget::extractYSeriesList(QVector< std::vector< double > >& res, QStringList& names)
 {
-#if DA_ENABLE_PYTHON
 	QList< QPair< DAData, QStringList > > yData = ui->listViewY->getSeries();
 	if (yData.isEmpty()) {
 		QMessageBox::warning(this, tr("Warning"), tr("Please drag at least one series into the Y list"));  // cn:警告 / 请至少把一个序列拖入Y列表
@@ -153,14 +145,10 @@ bool DAChartAddMultiBarWidget::extractYSeriesList(QVector< std::vector< double >
 		return false;
 	}
 	return !res.isEmpty();
-#else
-	return false;
-#endif
 }
 
 QwtPlotItem* DAChartAddMultiBarWidget::createPlotItem()
 {
-#if DA_ENABLE_PYTHON
 	std::vector< double > xValues;
 	if (!extractXSeries(xValues)) {
 		return nullptr;
@@ -214,9 +202,6 @@ QwtPlotItem* DAChartAddMultiBarWidget::createPlotItem()
 	item->setBarTitles(barTitles);
 	item->setTitle(yNames.join("|"));
 	return item;
-#else
-	return nullptr;
-#endif
 }
 
 }  // namespace DA

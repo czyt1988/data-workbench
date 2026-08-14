@@ -30,10 +30,8 @@
 #include "DAAbstractArchiveTask.h"
 #include "DASplashScreen.h"
 #include "SettingPages/DAAppConfig.h"
-#if DA_ENABLE_PYTHON
 #include "DAPybind11InQt.h"
 #include "DAPyInterpreter.h"
-#endif
 // SARibbon
 #include "SARibbonBar.h"
 
@@ -241,10 +239,9 @@ int main(int argc, char* argv[])
  */
 void initCommandLine(QCommandLineParser* cmd)
 {
-    cmd->setApplicationDescription(QCoreApplication::translate("main", "version:%1,compile datetime:%2,enable python:%3")
+    cmd->setApplicationDescription(QCoreApplication::translate("main", "version:%1,compile datetime:%2")
                                        .arg(DA_VERSION)
-                                       .arg(DA_COMPILE_DATETIME)
-                                       .arg(DA_ENABLE_PYTHON));
+                                       .arg(DA_COMPILE_DATETIME));
     cmd->addHelpOption();
     cmd->addVersionOption();
     cmd->addPositionalArgument("file",
@@ -363,7 +360,6 @@ QString appPreposeDump()
  */
 void initializePythonInterpreter(const DA::DAAppConfig& cfg)
 {
-#if DA_ENABLE_PYTHON
     QString pythonHomePath;
     QString pypath = DA::DAPyInterpreter::getPythonInterpreterPath();
     if (!pypath.isEmpty()) {
@@ -380,7 +376,4 @@ void initializePythonInterpreter(const DA::DAAppConfig& cfg)
             DA::DAPyInterpreter::appendSysPath(p);
         }
     }
-#else
-    Q_UNUSED(cfg)
-#endif
 }

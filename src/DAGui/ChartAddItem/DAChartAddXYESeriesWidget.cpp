@@ -4,9 +4,7 @@
 #include "DADataManager.h"
 #include "DALogCategory.h"
 #include "DAChartSeriesSelectWidget.h"
-#if DA_ENABLE_PYTHON
 #include "Models/DAPySeriesTableModel.h"
-#endif
 namespace DA
 {
 
@@ -18,14 +16,12 @@ DAChartAddXYESeriesWidget::DAChartAddXYESeriesWidget(QWidget* parent)
     : DAAbstractChartAddItemWidget(parent), ui(new Ui::DAChartAddXYESeriesWidget)
 {
     ui->setupUi(this);
-#if DA_ENABLE_PYTHON
     DAPySeriesTableModel* m = new DAPySeriesTableModel(this);
     m->setHeaderLabel({ tr("x"),      // cn:x
                         tr("y"),      // cn:y
                         tr("error")   // cn:误差
                       });
     ui->tableViewXYE->setModel(m);
-#endif
     QFontMetrics fm = fontMetrics();
     ui->tableViewXYE->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
     ui->selectWidgetX->setRoleLabel(tr("X"));  // cn:X
@@ -81,7 +77,6 @@ QVector< QwtIntervalSample > DAChartAddXYESeriesWidget::getSeries() const
  */
 void DAChartAddXYESeriesWidget::onXSeriesChanged()
 {
-#if DA_ENABLE_PYTHON
     QPair< DAData, QString > sel = ui->selectWidgetX->getCurrentSeries();
     DAPySeries series;
     if (!sel.first.isNull()) {
@@ -91,7 +86,6 @@ void DAChartAddXYESeriesWidget::onXSeriesChanged()
         }
     }
     ui->tableViewXYE->setSeriesAt(0, series);
-#endif
 }
 
 /**
@@ -101,7 +95,6 @@ void DAChartAddXYESeriesWidget::onXSeriesChanged()
  */
 void DAChartAddXYESeriesWidget::onYSeriesChanged()
 {
-#if DA_ENABLE_PYTHON
     QPair< DAData, QString > sel = ui->selectWidgetY->getCurrentSeries();
     DAPySeries series;
     if (!sel.first.isNull()) {
@@ -111,7 +104,6 @@ void DAChartAddXYESeriesWidget::onYSeriesChanged()
         }
     }
     ui->tableViewXYE->setSeriesAt(1, series);
-#endif
 }
 
 /**
@@ -121,7 +113,6 @@ void DAChartAddXYESeriesWidget::onYSeriesChanged()
  */
 void DAChartAddXYESeriesWidget::onYESeriesChanged()
 {
-#if DA_ENABLE_PYTHON
     QPair< DAData, QString > sel = ui->selectWidgetYE->getCurrentSeries();
     DAPySeries series;
     if (!sel.first.isNull()) {
@@ -131,7 +122,6 @@ void DAChartAddXYESeriesWidget::onYESeriesChanged()
         }
     }
     ui->tableViewXYE->setSeriesAt(2, series);
-#endif
 }
 
 /**
@@ -140,7 +130,6 @@ void DAChartAddXYESeriesWidget::onYESeriesChanged()
  */
 void DAChartAddXYESeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
 {
-#if DA_ENABLE_PYTHON
     if (on) {
         double base, step;
         if (tryGetXSelfInc(base, step)) {
@@ -151,7 +140,6 @@ void DAChartAddXYESeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
         onXSeriesChanged();
     }
     ui->selectWidgetX->setEnabled(!on);
-#endif
 }
 
 /**
@@ -160,7 +148,6 @@ void DAChartAddXYESeriesWidget::onGroupBoxXAutoincrementClicked(bool on)
  */
 void DAChartAddXYESeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
 {
-#if DA_ENABLE_PYTHON
     if (on) {
         double base, step;
         if (tryGetYSelfInc(base, step)) {
@@ -171,7 +158,6 @@ void DAChartAddXYESeriesWidget::onGroupBoxYAutoincrementClicked(bool on)
         onYSeriesChanged();
     }
     ui->selectWidgetY->setEnabled(!on);
-#endif
 }
 
 void DAChartAddXYESeriesWidget::onDataManagerChanged(DADataManager* dmgr)
@@ -262,7 +248,6 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
         );
         return false;
     }
-#if DA_ENABLE_PYTHON
     // 辅助 lambda：从 DAChartSeriesSelectWidget 提取 DAPySeries
     auto extractSeries = [](DAChartSeriesSelectWidget* w) -> DAPySeries {
         QPair< DAData, QString > sel = w->getCurrentSeries();
@@ -407,7 +392,6 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
             return false;
         }
     }
-#endif
     return true;
 }
 

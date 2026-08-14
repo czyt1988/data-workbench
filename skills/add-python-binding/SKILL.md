@@ -403,7 +403,7 @@ After adding a new Python binding module, these files must be updated synchronou
 - ✅ **stubs/mock/** — Add a mock `.py` file following existing mock format. Note lazy-loading pattern: see `stubs/mock/da_interface.py` for avoiding circular dependencies
 - ✅ **docs/zh/dev-guide/python-in-cpp.md** — Update section 9 roadmap table, add row for the new module
 - ✅ **docs/zh/dev-guide/embedded-python-debugging.md** — Update section 2 module overview table, add row for the new module
-- ✅ **CMakeLists.txt** — Add new binding files in the `DA_ENABLE_PYTHON` conditional block
+- ✅ **CMakeLists.txt** — Add new binding files unconditionally (Python is mandatory; do not wrap them in any conditional CMake block)
 - ✅ **mkdocs.yml** — If navigation structure needs updating (new module docs page)
 
 ## Compatibility Notes
@@ -414,9 +414,9 @@ After adding a new Python binding module, these files must be updated synchronou
 - `QVector` only exists in Qt5; in Qt6 `QVector` = `QList`. Use version-check macros if needed
 - `QButtonGroup::buttonClicked` in Qt5 uses `QOverload<int>::of()`, Qt6 uses `idClicked`
 
-### DA_ENABLE_PYTHON Conditional Compilation
+### Unconditional Compilation
 
-All binding code must be guarded with `#ifdef DA_ENABLE_PYTHON`. In CMakeLists.txt, binding files are only compiled when `DA_ENABLE_PYTHON=ON`.
+Python is a mandatory dependency and is always built. Binding code must **not** be wrapped in any conditional compilation guards or `#ifdef` macros. In CMakeLists.txt, add binding files unconditionally — there is no conditional CMake block that gates Python.
 
 ### PIMPL Classes
 

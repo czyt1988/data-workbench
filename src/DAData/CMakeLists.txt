@@ -30,22 +30,20 @@ set(DA_LIB_SOURCE_FILES
     DACommandsDataManager.cpp
     DADataEnumStringUtils.cpp
 )
-if(DA_ENABLE_PYTHON)
-    list(APPEND DA_LIB_HEADER_FILES
-        DADataPythonBinding.h
-        DADataPyDataFrame.h
-        DADataPyObject.h
-        DADataPySeries.h
-        DADataUndoCommand.h
-    )
-    list(APPEND DA_LIB_SOURCE_FILES
-        DADataPythonBinding.cpp
-        DADataPyDataFrame.cpp
-        DADataPyObject.cpp
-        DADataPySeries.cpp
-        DADataUndoCommand.cpp
-    )
-endif()
+list(APPEND DA_LIB_HEADER_FILES
+    DADataPythonBinding.h
+    DADataPyDataFrame.h
+    DADataPyObject.h
+    DADataPySeries.h
+    DADataUndoCommand.h
+)
+list(APPEND DA_LIB_SOURCE_FILES
+    DADataPythonBinding.cpp
+    DADataPyDataFrame.cpp
+    DADataPyObject.cpp
+    DADataPySeries.cpp
+    DADataUndoCommand.cpp
+)
 
 add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES}
@@ -54,10 +52,6 @@ add_library(${DA_LIB_NAME} SHARED
 )	
 # 构建库定义的宏
 target_compile_definitions(${DA_LIB_NAME} PRIVATE DADATA_BUILDLIB)#!!!!** 注意变更 **!!!!
-if(DA_ENABLE_PYTHON)
-    #此宏一定要显示声明为public让调用者知道
-    target_compile_definitions(${DA_LIB_NAME} PUBLIC -DDA_ENABLE_PYTHON=1)
-endif()
 add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
 
 # -------------link Qt--------------------------
@@ -68,32 +62,29 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
 )
 message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 
-if(DA_ENABLE_PYTHON)
-    # -------------link Python--------------------------
-    damacro_import_Python(${DA_LIB_NAME})
+# -------------link Python--------------------------
+damacro_import_Python(${DA_LIB_NAME})
 
-    # -------------link pybind11--------------------------
-    damacro_import_pybind11(${DA_LIB_NAME})
-    message(STATUS "  |-pybind11 include: ${pybind11_DIR}/include")
-endif()
+# -------------link pybind11--------------------------
+damacro_import_pybind11(${DA_LIB_NAME})
+message(STATUS "  |-pybind11 include: ${pybind11_DIR}/include")
+
 # -------------link DAWorkBench--------------------------
 target_link_libraries(${DA_LIB_NAME} PRIVATE
     ${DA_PROJECT_NAME}::DAUtils
     ${DA_PROJECT_NAME}::DAMessageHandler
 )
 
-if(DA_ENABLE_PYTHON)
-    # DAData的头文件包含了DAPyBindQt库的内容，因此DAPyBindQt需要公开链接
-    target_link_libraries(${DA_LIB_NAME} PUBLIC
-        ${DA_PROJECT_NAME}::DAPyBindQt
-        ${DA_PROJECT_NAME}::DAPyScripts
-    )
-    include_directories(${DAPyBindQt_INCLUDE_DIR})
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyBindQt")
-    message(STATUS "  | |-include dir:${DAPyBindQt_INCLUDE_DIR}")
-    message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyScripts")
-    message(STATUS "  | |-include dir:${DAPyScripts_INCLUDE_DIR}")
-endif()
+# DAData的头文件包含了DAPyBindQt库的内容，因此DAPyBindQt需要公开链接
+target_link_libraries(${DA_LIB_NAME} PUBLIC
+    ${DA_PROJECT_NAME}::DAPyBindQt
+    ${DA_PROJECT_NAME}::DAPyScripts
+)
+include_directories(${DAPyBindQt_INCLUDE_DIR})
+message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyBindQt")
+message(STATUS "  | |-include dir:${DAPyBindQt_INCLUDE_DIR}")
+message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyScripts")
+message(STATUS "  | |-include dir:${DAPyScripts_INCLUDE_DIR}")
 
 ########################################################
 # 设置通用库属性

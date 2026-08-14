@@ -7,9 +7,6 @@
 #include "qwt_plot_boxchart.h"
 #include "qwt_box_statistics.h"
 #include "qwt_samples.h"
-#if DA_ENABLE_PYTHON
-// DAPyDataFrame/DAPySeries 通过 DAData.h 间接 include
-#endif
 namespace DA
 {
 
@@ -57,7 +54,6 @@ void DAChartAddBoxChartWidget::onComboBoxCurrentDataChanged(const DAData& d)
 void DAChartAddBoxChartWidget::refreshColumns()
 {
 	ui->listWidgetColumns->clear();
-#if DA_ENABLE_PYTHON
 	DAData d = ui->comboBoxDataFrame->getCurrentDAData();
 	if (!d.isDataFrame()) {
 		return;
@@ -71,12 +67,10 @@ void DAChartAddBoxChartWidget::refreshColumns()
 		QListWidgetItem* item = new QListWidgetItem(name, ui->listWidgetColumns);
 		item->setCheckState(Qt::Unchecked);
 	}
-#endif
 }
 
 QwtPlotItem* DAChartAddBoxChartWidget::createPlotItem()
 {
-#if DA_ENABLE_PYTHON
 	DAData d = ui->comboBoxDataFrame->getCurrentDAData();
 	if (!d.isDataFrame()) {
 		QMessageBox::warning(this,
@@ -137,9 +131,6 @@ QwtPlotItem* DAChartAddBoxChartWidget::createPlotItem()
 	item->setSamples(samples);
 	item->setTitle(selectedCols.join("|"));
 	return item;
-#else
-	return nullptr;
-#endif
 }
 
 }  // namespace DA

@@ -36,7 +36,7 @@ cat test_result.txt
 | CMake | 3.15+ | 项目使用 CMake 构建系统 |
 | C++17 编译器 | - | MSVC 2019+ / GCC 9+ |
 | Qt | 5.14+ 或 6.x | 需要 Core、Gui、Widgets、Xml、Svg 等模块 |
-| Python | 3.x（含开发头文件） | pybind11 绑定需要，`DA_ENABLE_PYTHON=OFF` 可跳过 |
+| Python | 3.x（含开发头文件） | pybind11 绑定需要，为强制依赖 |
 
 ### Linux / WSL 依赖安装（Ubuntu 24.04）
 

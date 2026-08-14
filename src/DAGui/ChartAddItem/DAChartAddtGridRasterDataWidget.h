@@ -15,9 +15,7 @@ class DAChartAddtGridRasterDataWidget;
 
 namespace DA
 {
-#if DA_ENABLE_PYTHON
 class DAPyGridDataTableModel;
-#endif
 class DADataManager;
 
 /**
@@ -32,9 +30,7 @@ public:
 	QwtGridRasterData* makeSeries() const;
 	// 判断当前的维度是否正确
 	bool isCorrectDim() const;
-#if DA_ENABLE_PYTHON
 	static QVector< QVector< double > > dataframeToMatrix(const DAPyDataFrame& df);
-#endif
 private Q_SLOTS:
 	void onComboBoxXCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
 	void onComboBoxYCurrentDataframeSeriesChanged(const DA::DAData& data, const QString& seriesName);
@@ -47,10 +43,7 @@ protected:
 
 private:
 	Ui::DAChartAddtGridRasterDataWidget* ui;
-#if DA_ENABLE_PYTHON
 	DAPyGridDataTableModel* mModel { nullptr };
-#else
-#endif
 };
 }
 

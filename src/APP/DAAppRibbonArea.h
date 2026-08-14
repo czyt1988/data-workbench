@@ -10,10 +10,8 @@
 #include "DAPyWorkFlowGraphicsScene.h"
 #include "SARibbonColorToolButton.h"
 #include "DAFontEditPannelWidget.h"
-#if DA_ENABLE_PYTHON
 // Py
 #include "numpy/DAPyDType.h"
-#endif
 
 #define DAAPPRIBBONAREA_COMMON_SETTING_H(MiddleName)                                                                   \
 public:                                                                                                                \
@@ -176,10 +174,8 @@ public:
 
 public:
     // Python相关
-#if DA_ENABLE_PYTHON
     // 设置DataFrame的类型，【Context】 - 【dataframe】 DataFrame -> Type -> Type,此函数的调用忽略combox的currentindexchanged信号
     void setDataframeOperateCurrentDType(const DAPyDType& d);
-#endif
 private:
     // 构建所有的action
     void buildMenu();
@@ -213,7 +209,6 @@ private:
     void buildApplicationMenu();
     // 构建右工具栏
     void buildRightButtonBar();
-#if DA_ENABLE_PYTHON
     // 构建 AI分析 标签页（agent 提示词库 gallery + 管理/执行）
     void buildRibbonAgentCategory();
 private Q_SLOTS:
@@ -222,7 +217,6 @@ private Q_SLOTS:
     void onAgentGalleryTriggered(QAction* act);
 private:
     void populateAgentGallery();
-#endif
 
     DAAPPRIBBONAREA_COMMON_SETTING_H(Edit)
     DAAPPRIBBONAREA_COMMON_SETTING_H(WorkFlowEdit)
@@ -353,10 +347,8 @@ private:
     SARibbonCategory* mCategoryDataframeOperate { nullptr };  ///< dataframe对应的category
     SARibbonPanel* mPannelDataframeOperateAxes { nullptr };   ///< 数据信息的编辑
     SARibbonPanel* mPannelDataframeOperateDType { nullptr };  ///< 数据类型的编辑
-#if DA_ENABLE_PYTHON
     SARibbonLineWidgetContainer* mComboxColumnTypesContainer { nullptr };  ///< 列类型选择器的container
     DAPyDTypeComboBox* mComboxColumnTypes { nullptr };                     ///< 列类型选择器
-#endif
     SARibbonButtonGroupWidget* mCastActionsButtonGroup { nullptr };  ///< 管理强制转换的action的工具栏
     // 表格样式 category
     SARibbonCategory* mCategoryDataframeStyle { nullptr };       ///< dataframe表格样式category
@@ -409,7 +401,6 @@ private:
     SARibbonPanel* mPannelChartSelectTool { nullptr };                       ///< 图表选区
     SARibbonPanel* mPannelChartSelectOpt { nullptr };                        ///< 图表选区操作
     SARibbonPanel* mPannelChartAssistTool { nullptr };                       ///< 辅助工具
-#if DA_ENABLE_PYTHON
     //----------------------------------------------------
     // AI分析（agent 提示词库）
     //----------------------------------------------------
@@ -421,7 +412,6 @@ private:
     QAction* mActionAgentManage { nullptr };             ///< agent 管理
     QAction* mActionRunAgent { nullptr };                ///< 执行 agent
     QString mSelectedAgentTitle;                          ///< 当前选中的 agent 标题
-#endif
     //----------------------------------------------------
     //
     //----------------------------------------------------

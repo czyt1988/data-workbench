@@ -4,11 +4,9 @@
 
 #include "DAData.h"
 #include "DADataManager.h"
-#if DA_ENABLE_PYTHON
 #include "DADataPyObject.h"
 #include "DADataPyDataFrame.h"
 #include "DADataPySeries.h"
-#endif
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -55,7 +53,6 @@ DAData::DAData(DAData&& d) noexcept : mData(std::move(d.mData)), mDataMgr(d.mDat
     d.mDataMgr = nullptr;
 }
 
-#if DA_ENABLE_PYTHON
 /**
  * @brief 通过DAPyDataFrame构造
  * @param d dataframe
@@ -88,7 +85,6 @@ DAData::DAData(pybind11::object obj) : mDataMgr(nullptr)
         throw std::invalid_argument("Unsupported Python object");
     }
 }
-#endif
 
 /**
  * @brief 析构函数
@@ -153,7 +149,6 @@ DAData& DAData::operator=(DAData&& d) noexcept
     return *this;
 }
 
-#if DA_ENABLE_PYTHON
 /**
  * @brief 通过DAPyDataFrame赋值
  * @param d dataframe
@@ -179,7 +174,6 @@ DAData& DAData::operator=(const DAPySeries& d)
     mData = p;
     return *this;
 }
-#endif
 
 /**
  * @brief bool转换运算符，判断内部数据是否非空
@@ -383,7 +377,6 @@ bool DAData::isDataPackage() const
     return (mData->getDataType() == DAAbstractData::TypeDataPackage);
 }
 
-#if DA_ENABLE_PYTHON
 /**
  * @brief 转换为DAPyDataFrame
  * @return 如果内部维护的不是DAPyDataFrame，返回一个默认构造的DAPyDataFrame(isNone=true)
@@ -462,8 +455,6 @@ void DA::DAData::setPyObject(const pybind11::object& obj)
     }
 }
 
-
-#endif
 
 /**
  * @brief 把数据写到文件

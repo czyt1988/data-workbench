@@ -401,7 +401,7 @@ DAPyModuleMyLib& DAPyModuleMyLib::getInstance()
 - ✅ **stubs/mock/** — 新增 mock `.py` 文件，参考现有 mock 格式。注意懒加载模式：参考 `stubs/mock/da_interface.py` 的懒加载避免循环依赖
 - ✅ **docs/zh/dev-guide/python-in-cpp.md** — 更新第九部分路线图表格，新增已完成模块行
 - ✅ **docs/zh/dev-guide/embedded-python-debugging.md** — 更新第二部分模块概览表格，新增模块行
-- ✅ **CMakeLists.txt** — 在 `DA_ENABLE_PYTHON` 条件块中添加新绑定文件
+- ✅ **CMakeLists.txt** — 无条件添加新绑定文件（Python 为强制依赖，无需包裹在任何条件编译块中）
 - ✅ **mkdocs.yml** — 如果导航结构需要更新（新模块文档页面）
 
 ## 兼容性说明
@@ -412,9 +412,9 @@ DAPyModuleMyLib& DAPyModuleMyLib::getInstance()
 - `QVector` 仅 Qt5 有，Qt6 中 `QVector` = `QList`，如需使用需加版本判断宏
 - `QButtonGroup::buttonClicked` Qt5 用 `QOverload<int>::of()`，Qt6 用 `idClicked`
 
-### DA_ENABLE_PYTHON 条件编译
+### 无条件编译
 
-所有绑定代码需 `#ifdef DA_ENABLE_PYTHON` 保护。CMakeLists.txt 中绑定文件只在 `DA_ENABLE_PYTHON=ON` 时编译。
+Python 为强制依赖，始终参与构建。绑定代码**无需**任何条件编译宏（如 `#ifdef`）保护。CMakeLists.txt 中直接无条件添加绑定文件，不存在控制 Python 编译的条件块。
 
 ### PIMPL类
 

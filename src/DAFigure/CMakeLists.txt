@@ -24,12 +24,6 @@ file(GLOB DA_LIB_SOURCE_FILES_Models "${CMAKE_CURRENT_SOURCE_DIR}/Models/*.cpp")
 file(GLOB DA_LIB_QT_UI_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.ui")
 file(GLOB DA_LIB_QT_RC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.qrc")
 
-# Exclude Python binding files when Python is not enabled
-if(NOT DA_ENABLE_PYTHON)
-    list(REMOVE_ITEM DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/DAFigurePythonBinding.cpp")
-    list(REMOVE_ITEM DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/DAFigurePythonBinding.h")
-endif()
-
 add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
@@ -62,13 +56,10 @@ target_link_libraries(${DA_LIB_NAME} PRIVATE
 # -------------link 3rdparty qwt--------------------------
 damacro_import_qwt(${DA_LIB_NAME})
 
-# -------------link Python & pybind11 (conditional)--------------------------
-if(DA_ENABLE_PYTHON)
-    damacro_import_Python(${DA_LIB_NAME})
-    damacro_import_pybind11(${DA_LIB_NAME})
-    target_link_libraries(${DA_LIB_NAME} PUBLIC ${DA_PROJECT_NAME}::DAPyBindQt)
-    target_compile_definitions(${DA_LIB_NAME} PUBLIC DA_ENABLE_PYTHON=1)
-endif()
+# -------------link Python & pybind11--------------------------
+damacro_import_Python(${DA_LIB_NAME})
+damacro_import_pybind11(${DA_LIB_NAME})
+target_link_libraries(${DA_LIB_NAME} PUBLIC ${DA_PROJECT_NAME}::DAPyBindQt)
 
 ########################################################
 # 设置通用库属性

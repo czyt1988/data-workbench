@@ -33,7 +33,7 @@ set(DA_VERSION_MINOR 0)
 set(DA_VERSION_PATCH 3)
 
 # 编译选项 - 可自定义的构建开关
-option(DA_ENABLE_PYTHON "Enable Python support" ON)      # Python 支持开关
+# Python 为强制依赖，始终参与构建，无开关
 option(DA_BUILD_PLUGINS "Build plugins" ON)              # 插件构建开关
 option(DA_AUTO_INSTALL_PREFIX "Auto install" ON)         # 自动安装路径
 

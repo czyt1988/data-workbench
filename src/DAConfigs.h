@@ -62,13 +62,6 @@
 #endif
 
 /**
- * @def 是否开启python（bool）
- */
-#ifndef DA_ENABLE_PYTHON
-#define DA_ENABLE_PYTHON 0
-#endif
-
-/**
  * @def 工程构建的名称（字符串）
  */
 #ifndef DA_PROJECT_NAME

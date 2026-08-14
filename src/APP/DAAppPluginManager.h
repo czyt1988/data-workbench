@@ -47,15 +47,11 @@ public:
     std::shared_ptr< DAPyNodeFactory > getPyNodeFactory() const;
 
 private:
-#if DA_ENABLE_PYTHON
     // 初始化Python节点工厂
     void initPyNodeFactory();
-#endif
     QList< DAAbstractPlugin* > mPlugins;
     QList< DAPyNodeMetaData > mNodeMetaDatas;
-#if DA_ENABLE_PYTHON
     std::shared_ptr< DAPyNodeFactory > mPyNodeFactory;  // Python节点工厂
-#endif
 };
 }  // namespace DA
 #endif  // FCMETHODEDITORPLUGINMANAGER_H

@@ -6,9 +6,6 @@
 #include "qwt_plot_vectorfield.h"
 #include "qwt_samples.h"
 #include <algorithm>
-#if DA_ENABLE_PYTHON
-// DAPyDataFrame/DAPySeries 通过 DAData.h 间接 include
-#endif
 namespace DA
 {
 
@@ -47,7 +44,6 @@ void DAChartAddVectorFieldWidget::onDataManagerChanged(DADataManager* dmgr)
 
 QwtPlotItem* DAChartAddVectorFieldWidget::createPlotItem()
 {
-#if DA_ENABLE_PYTHON
 	QPair< DAData, QString > xSel = ui->selectWidgetX->getCurrentSeries();
 	QPair< DAData, QString > ySel = ui->selectWidgetY->getCurrentSeries();
 	QPair< DAData, QString > uSel = ui->selectWidgetU->getCurrentSeries();
@@ -105,9 +101,6 @@ QwtPlotItem* DAChartAddVectorFieldWidget::createPlotItem()
 		daCritical << tr("Exception occurred during extracting vector field data:%1").arg(e.what());  // cn:提取向量场数据过程中出现异常:%1
 		return nullptr;
 	}
-#else
-	return nullptr;
-#endif
 }
 
 }  // namespace DA

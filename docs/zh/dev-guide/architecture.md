@@ -97,7 +97,7 @@ DAGui 是项目中最庞大的模块，承担了工作流 UI、图表设置、�
 
 - **职责**：核心业务功能实现——数据管理、图表、工作流、图形视图
 - **包含模块**：DAData、DAFigure、DAPyWorkFlow、DAGraphicsView、DAPyScripts、DAPyCommonWidgets
-- **关键特点**：Python 相关模块（DAPyWorkFlow、DAPyScripts、DAPyCommonWidgets）仅在 `DA_ENABLE_PYTHON=ON` 时编译
+- **关键特点**：Python 相关模块（DAPyWorkFlow、DAPyScripts、DAPyCommonWidgets）为强制依赖，始终参与编译
 
 功能层是系统的核心引擎。DAPyWorkFlow 采用 **Python-first** 设计——Python 定义节点逻辑，C++ 负责可视化渲染和执行调度。DAFigure 基于 Qwt 提供论文级图表能力。DAData 提供抽象数据基类和 Python DataFrame 封装。
 
@@ -201,7 +201,7 @@ graph LR
 
 1. **上层可以依赖下层，下层绝不能依赖上层**（✅ DAGui → DAUtils；❌ DAUtils → DAGui）
 2. **同层模块尽量减少直接依赖**，通过上层整合模块（DAGui）协调
-3. **Python 相关模块**仅在 `DA_ENABLE_PYTHON=ON` 时编译
+3. **Python 相关模块**为强制依赖，始终参与编译
 4. **DAShared 是纯头文件库**，无需显式 CMake 链接
 
 ---
@@ -453,7 +453,6 @@ data-workbench/
 
 | 选项 | 默认值 | 影响的模块 | 说明 |
 |------|--------|-----------|------|
-| `DA_ENABLE_PYTHON` | `ON` | DAPyBindQt, DAPyScripts, DAPyCommonWidgets, DAPyWorkFlow, DAData | 关闭后所有 Python 相关模块不编译 |
 | `DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` | `ON` | 顶层 install（复制 Python DLL 到 bin/） | Windows 下自动搜索 Python 环境并复制 DLL |
 | `DA_ENABLE_AUTO_TRANSLATE` | `ON` | i18n | 自动调用 Linguist 编译翻译文件（.ts → .qm） |
 | `DA_BUILD_PLUGINS` | `ON` | plugins/ 目录 | 是否构建插件 |

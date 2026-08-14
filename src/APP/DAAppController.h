@@ -10,11 +10,9 @@
 #include "DAPyWorkFlowGraphicsScene.h"
 #include "DAFigureElementSelection.h"
 #include "DAFigureWidget.h"
-#if DA_ENABLE_PYTHON
 #include "numpy/DAPyDType.h"
 #include "DAChart3DWidget.h"
 #include "qwt3d_plotitem.h"
-#endif
 // Qt
 class QComboBox;
 class QToolBar;
@@ -205,14 +203,12 @@ private Q_SLOTS:
     void onActionChartAddContourMapTriggered();
     // 添加向量场图
     void onActionChartAddVectorfieldTriggered();
-#if DA_ENABLE_PYTHON
     // 添加3D曲面图
     void onActionChartAdd3DSurfaceTriggered();
     // 添加3D柱状图
     void onActionChartAdd3DBarTriggered();
     // 添加3D线图
     void onActionChartAdd3DLineTriggered();
-#endif
     //===================================================
     // 统计绘图 Stats Plot
     //===================================================
@@ -299,11 +295,9 @@ private Q_SLOTS:
     void onActionGotoMinTriggered();
     // 显示列统计信息（表头右键）
     void onActionShowColumnDescribeTriggered();
-#if DA_ENABLE_PYTHON
     // 列数据类型改变
     void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);
     void onDataOperateDataFrameWidgetSelectTypeChanged(const QList< int >& column, DA::DAPyDType dt);
-#endif
     // 选中列转换为数值
     void onActionCastToNumTriggered();
     // 选中列转换为文字
@@ -420,16 +414,12 @@ private Q_SLOTS:
     void onChartEditorStatusChanged(DA::DAFigureWidget::ChartEditorStatus status);
     // 绘图项创建完成（DADialogChartGuide 确认后），提升绘图 dock 显示新绘图
     void onPlotItemCreated(DA::DAFigureWidget* f, DA::DAChartWidget* plot, QwtPlotItem* item);
-#if DA_ENABLE_PYTHON
     // 3D绘图项创建完成，提升绘图 dock 显示新3D绘图
     void onPlot3DItemCreated(DA::DAFigureWidget* f, DA::DAChart3DWidget* plot, Qwt3DPlotItem* item);
-#endif
-#if DA_ENABLE_PYTHON
     // 统计绘图请求槽：DAAbstractStatsChartAddWidget::plotRequested -> 调用 Python plot()
     void onStatsPlotRequested(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);
     // 统计绘图引导对话框确认槽（直接从对话框获取 widget，不依赖 sender()）
     void onStatsGuideAccepted(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);
-#endif
     //===================================================
     // project
     //===================================================
@@ -474,7 +464,6 @@ private Q_SLOTS:
 private:
     // 初始化信号槽
     void initConnection();
-#if DA_ENABLE_PYTHON
     // 初始化脚本信息
     void initScripts();
     // 初始化Python工作流信号槽
@@ -491,7 +480,6 @@ private:
     void showStatsChartGuide(DA::DAChartTypes type);
     // 执行 Python 统计绘图的公共逻辑
     void executeStatsPlot(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart, const DAData& data);
-#endif
     // 确保当前 Figure 和 Chart 存在（不存在则创建）
     bool ensureFigureChart(DA::DAFigureWidget*& fig, DA::DAChartWidget*& chart);
 
@@ -511,9 +499,7 @@ private:
                                                             //
     DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
     DAAppConfig* mConfig { nullptr };                                   ///< 设置类
-#if DA_ENABLE_PYTHON
     DADialogStatsChartGuide* mStatsChartGuideDlg { nullptr };  ///< 统计绘图引导对话框
-#endif
 };
 }
 

@@ -22,7 +22,6 @@
 #include "qwt_plot_intervalcurve.h"
 #include "qwt_plot_tradingcurve.h"
 #include "qwt_plot_spectrogram.h"
-#if DA_ENABLE_PYTHON
 #include "ChartAddItem/DAAbstractChart3DAddItemWidget.h"
 #include "ChartAddItem/DAChartAdd3DSurfaceWidget.h"
 #include "ChartAddItem/DAChartAdd3DBarWidget.h"
@@ -31,7 +30,6 @@
 #include "qwt3d_surface.h"
 #include "qwt3d_bar.h"
 #include "qwt3d_line3d.h"
-#endif
 
 namespace DA
 {
@@ -51,11 +49,9 @@ public:
     DAChartAddHistogramWidget* mAddHistogram { nullptr };
     DAChartAddContourWidget* mAddContour { nullptr };
     DAChartAddVectorFieldWidget* mAddVectorField { nullptr };
-#if DA_ENABLE_PYTHON
     DAChartAdd3DSurfaceWidget* mAdd3DSurface { nullptr };
     DAChartAdd3DBarWidget* mAdd3DBar { nullptr };
     DAChartAdd3DLineWidget* mAdd3DLine { nullptr };
-#endif
 };
 
 DADialogChartGuide::PrivateData::PrivateData(DADialogChartGuide* p) : q_ptr(p)
@@ -96,7 +92,6 @@ DADialogChartGuide::DADialogChartGuide(QWidget* parent)
     ui->stackedWidget->addWidget(d->mAddContour);
     ui->stackedWidget->addWidget(d->mAddVectorField);
 
-#if DA_ENABLE_PYTHON
     d->mAdd3DSurface = new DAChartAdd3DSurfaceWidget();
     d->mAdd3DBar     = new DAChartAdd3DBarWidget();
     d->mAdd3DLine    = new DAChartAdd3DLineWidget();
@@ -104,7 +99,6 @@ DADialogChartGuide::DADialogChartGuide(QWidget* parent)
     ui->stackedWidget->addWidget(d->mAdd3DSurface);
     ui->stackedWidget->addWidget(d->mAdd3DBar);
     ui->stackedWidget->addWidget(d->mAdd3DLine);
-#endif
 
     connect(ui->listWidgetChartType, &QListWidget::currentItemChanged, this, &DADialogChartGuide::onListWidgetCurrentItemChanged);
 }
@@ -157,7 +151,6 @@ void DADialogChartGuide::initListWidget()
     item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-vectorfield.svg"), tr("vector field"));  // cn:向量场
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::VectorField));
     ui->listWidgetChartType->addItem(item);
-#if DA_ENABLE_PYTHON
     // surface3d
     item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-surface3d.svg"), tr("surface 3D"));  // cn:3D曲面
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Surface3D));
@@ -170,7 +163,6 @@ void DADialogChartGuide::initListWidget()
     item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-line3d.svg"), tr("line 3D"));  // cn:3D线图
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Line3D));
     ui->listWidgetChartType->addItem(item);
-#endif
     // 初始化
     ui->listWidgetChartType->setCurrentRow(0);
 }
@@ -182,20 +174,16 @@ void DADialogChartGuide::setDataManager(DADataManager* dmgr)
 {
     mDataMgr = dmgr;
     mInitializedWidgets.clear();
-#if DA_ENABLE_PYTHON
     mInitialized3DWidgets.clear();
-#endif
     // 预初始化当前选中的 widget
     QListWidgetItem* cur = ui->listWidgetChartType->currentItem();
     if (cur) {
         DA::DAChartTypes ct = static_cast< DA::DAChartTypes >(cur->data(Qt::UserRole).toInt());
-#if DA_ENABLE_PYTHON
         if (is3DChartType(ct)) {
             if (DAAbstractChart3DAddItemWidget* w = getChartAdd3DItemWidget(ct)) {
                 ensureWidget3DDataManager(w);
             }
         } else
-#endif
         {
             if (DAAbstractChartAddItemWidget* w = getChartAddItemWidget(ct)) {
                 ensureWidgetDataManager(w);
@@ -212,7 +200,6 @@ void DADialogChartGuide::ensureWidgetDataManager(DAAbstractChartAddItemWidget* w
     }
 }
 
-#if DA_ENABLE_PYTHON
 /**
  * @brief 确保3D widget的dataManager已初始化
  * @param w
@@ -224,7 +211,6 @@ void DADialogChartGuide::ensureWidget3DDataManager(DAAbstractChart3DAddItemWidge
         mInitialized3DWidgets.insert(w);
     }
 }
-#endif
 
 /**
  * @brief 获取当前的绘图类型
@@ -311,7 +297,6 @@ void DADialogChartGuide::initSetPlotItem(QwtPlotItem* item)
     }
 }
 
-#if DA_ENABLE_PYTHON
 /**
  * @brief 判断是否为3D图表类型
  * @param t 图表类型
@@ -387,7 +372,6 @@ void DADialogChartGuide::initSet3DPlotItem(Qwt3DPlotItem* item)
         break;
     }
 }
-#endif
 
 /**
  * @brief 设置当前的绘图类型
@@ -411,13 +395,11 @@ void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current
     DA_D(d);
     DA::DAChartTypes ct = static_cast< DA::DAChartTypes >(current->data(Qt::UserRole).toInt());
     // 延迟初始化：切换到该 widget 时才设置 dataManager
-#if DA_ENABLE_PYTHON
     if (is3DChartType(ct)) {
         if (DAAbstractChart3DAddItemWidget* w = getChartAdd3DItemWidget(ct)) {
             ensureWidget3DDataManager(w);
         }
     } else
-#endif
     {
         if (DAAbstractChartAddItemWidget* w = getChartAddItemWidget(ct)) {
             ensureWidgetDataManager(w);
@@ -454,7 +436,6 @@ void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current
     case DA::DAChartTypes::VectorField:
         ui->stackedWidget->setCurrentWidget(d->mAddVectorField);
         break;
-#if DA_ENABLE_PYTHON
     case DA::DAChartTypes::Surface3D:
         ui->stackedWidget->setCurrentWidget(d->mAdd3DSurface);
         break;
@@ -464,7 +445,6 @@ void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current
     case DA::DAChartTypes::Line3D:
         ui->stackedWidget->setCurrentWidget(d->mAdd3DLine);
         break;
-#endif
     default:
         break;
     }

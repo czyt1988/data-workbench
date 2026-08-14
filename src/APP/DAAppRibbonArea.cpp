@@ -30,7 +30,6 @@
 // ui
 #include "DAAppRibbonApplicationMenu.h"
 
-#if DA_ENABLE_PYTHON
 // Py
 #include "pandas/DAPyDataFrame.h"
 #include "numpy/DAPyDType.h"
@@ -43,7 +42,6 @@
 #include "Dialog/DAAgentManagerDialog.h"
 #include "DAAgentPrompt.h"
 #include "DAAgentPromptOps.h"
-#endif
 
 // api
 #include "DAAppUI.h"
@@ -209,9 +207,7 @@ void DAAppRibbonArea::resetText()
     mPannelDataframeStyleFill->setPanelName(tr("Fill"));          // cn:底色
     mPannelDataframeStyleFont->setPanelName(tr("Font"));          // cn:字体
     mPannelDataframeStyleClear->setPanelName(tr("Clear"));        // cn:清除
-#if DA_ENABLE_PYTHON
     mComboxColumnTypesContainer->setPrefix(tr("Type"));  // cn:类型
-#endif
 
     // 编辑标签
     mCategoryEdit->setCategoryName(tr("Edit"));  // cn:编辑
@@ -265,9 +261,7 @@ void DAAppRibbonArea::buildRibbon()
     buildRibbonViewCategory();
     buildRibbonEditCategory();
     buildRibbonFigureCategory();
-#if DA_ENABLE_PYTHON
     buildRibbonAgentCategory();
-#endif
     buildRibbonQuickAccessBar();
     // 上下文标签
     buildContextCategoryDataFrame();
@@ -420,14 +414,12 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     // Type pannel
     mPannelDataframeOperateDType = mCategoryDataframeOperate->addPanel(tr("Type"));  // cn:类型
     mPannelDataframeOperateDType->setObjectName(QStringLiteral("da-pannel-dataframe.operate.type"));
-#if DA_ENABLE_PYTHON
     mComboxColumnTypesContainer = new SARibbonLineWidgetContainer(mPannelDataframeOperateDType);
     mComboxColumnTypes          = new DAPyDTypeComboBox(mComboxColumnTypesContainer);
     mComboxColumnTypes->setMinimumWidth(Qt5Qt6Compat_fontMetrics_width(mApp->fontMetrics(), "timedelta64(scoll)"));  // 设置最小宽度
     mComboxColumnTypesContainer->setPrefix(tr("Type"));  // cn:类型
     mComboxColumnTypesContainer->setWidget(mComboxColumnTypes);
     mPannelDataframeOperateDType->addWidget(mComboxColumnTypesContainer, SARibbonPanelItem::Medium);
-#endif
     mCastActionsButtonGroup = new SARibbonButtonGroupWidget();
     mCastActionsButtonGroup->addAction(mActions->actionCastToNum);
     mCastActionsButtonGroup->addAction(mActions->actionCastToString);
@@ -521,11 +513,9 @@ void DAAppRibbonArea::buildRibbonFigureCategory()
     mPannelChartAdd->addLargeAction(mActions->actionChartAddContourMap);
     mPannelChartAdd->addLargeAction(mActions->actionChartAddCloudMap);
     mPannelChartAdd->addLargeAction(mActions->actionChartAddVectorfield);
-#if DA_ENABLE_PYTHON
     mPannelChartAdd->addLargeAction(mActions->actionChartAdd3DSurface);
     mPannelChartAdd->addLargeAction(mActions->actionChartAdd3DBar);
     mPannelChartAdd->addLargeAction(mActions->actionChartAdd3DLine);
-#endif
 
     mCategoryFigure->addPanel(mPannelChartAdd);
 
@@ -1061,7 +1051,6 @@ void DAAppRibbonArea::hideContextCategory(DAAppRibbonArea::ContextCategoryType t
         break;
     }
 }
-#if DA_ENABLE_PYTHON
 /**
  * @brief 设置DataFrame的类型，[Context Category - dataframe] [Type] -> Type
  * @param d
@@ -1209,4 +1198,3 @@ void DAAppRibbonArea::onActionRunAgent()
     agent->runAgent(mSelectedAgentTitle);
 }
 
-#endif

@@ -8,9 +8,6 @@ set(_package_name @PROJECT_NAME@)
 set(_${_package_name}_supported_components DAUtils DAAxOfficeWrapper DAMessageHandler DAPyBindQt DAPyScripts DAData DAPyCommonWidgets DAGraphicsView DAWorkFlow DAFigure DAGui DAInterface DAPluginSupport)
 set(_${_package_name}_available_components "")
 
-# 把DA_ENABLE_PYTHON变量传递到此处
-set(DA_ENABLE_PYTHON @DA_ENABLE_PYTHON@)
-
 # 遍历所有要导入的模块
 foreach(_component ${${_package_name}_FIND_COMPONENTS})
     # 首先判断是否在所支持列表中

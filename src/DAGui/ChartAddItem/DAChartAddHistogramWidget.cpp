@@ -8,9 +8,6 @@
 #include "qwt_samples.h"
 #include <algorithm>
 #include <limits>
-#if DA_ENABLE_PYTHON
-// DAPyDataFrame/DAPySeries 通过 DAData.h 间接 include
-#endif
 namespace DA
 {
 
@@ -52,7 +49,6 @@ DAChartAddHistogramWidget::YAxisMode DAChartAddHistogramWidget::getYAxisMode() c
 
 QwtPlotItem* DAChartAddHistogramWidget::createPlotItem()
 {
-#if DA_ENABLE_PYTHON
 	QPair< DAData, QString > sel = ui->selectWidgetData->getCurrentSeries();
 	DAData d = sel.first;
 	QString seriesName = sel.second;
@@ -138,9 +134,6 @@ QwtPlotItem* DAChartAddHistogramWidget::createPlotItem()
 	item->setSamples(samples);
 	item->setTitle(title);
 	return item;
-#else
-	return nullptr;
-#endif
 }
 
 }  // namespace DA

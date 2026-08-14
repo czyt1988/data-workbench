@@ -3,9 +3,7 @@
 #include <QtCore/qglobal.h>
 #include "DADataAPI.h"
 #include "DAAbstractData.h"
-#if DA_ENABLE_PYTHON
 #include "pandas/DAPyDataFrame.h"
-#endif
 
 namespace DA
 {
@@ -46,7 +44,6 @@ public:
     bool isNull() const;
 
 public:
-#if DA_ENABLE_PYTHON
     // 以下操作符是为了实现业务的快速响应，会带来一定的耦合
     DAData(const DAPyDataFrame& d);
     DAData(const DAPySeries& d);
@@ -55,7 +52,6 @@ public:
 
     DAData& operator=(const DAPyDataFrame& d);
     DAData& operator=(const DAPySeries& d);
-#endif
 public:  // DAAbstractData Wrapper
     DAAbstractData::DataType getDataType() const;
     // 变量值操作
@@ -88,7 +84,6 @@ public:  // DAAbstractData Wrapper
     bool isHaveDataManager() const;
     // 尺寸
     std::pair< std::size_t, std::size_t > shape() const;
-#if DA_ENABLE_PYTHON
     // 转换为pyDataframe
     DAPyDataFrame toDataFrame() const;
     DAPySeries toSeries() const;
@@ -96,7 +91,6 @@ public:  // DAAbstractData Wrapper
     pybind11::object toPyObject() const;
     // 设置python对象，此函数会替换掉数据管理的对象内容
     void setPyObject(const pybind11::object& obj);
-#endif
     // 把数据写到文件
     static bool writeToFile(const DAData& data, const QString& filePath);
 

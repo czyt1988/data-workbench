@@ -10,11 +10,9 @@
 #include "DACommandsDataManager.h"
 #include "MimeData/DAMimeDataForData.h"
 #include "MimeData/DAMimeDataFormats.h"
-#if DA_ENABLE_PYTHON
 // Py
 #include "pandas/DAPyDataFrame.h"
 #include "DAPybind11QtCaster.hpp"
-#endif
 //
 
 namespace DA
@@ -527,7 +525,6 @@ QVariant DADataManagerTreeModel::data(const QModelIndex& index, int role) const
             return QVariant();
         }
 
-#if DA_ENABLE_PYTHON
         if (data.isDataFrame()) {
             DAPyDataFrame df = data.toDataFrame();
             if (!df.isNone()) {
@@ -538,7 +535,6 @@ QVariant DADataManagerTreeModel::data(const QModelIndex& index, int role) const
             DAPySeries series = data.toSeries();
             return PY::toString(series.dtype());
         }
-#endif
     }
 
     return QVariant();
@@ -672,7 +668,6 @@ void DADataManagerTreeModel::updateDataFrameItemExpansion(QStandardItem* datafra
         return;
     }
 
-#if DA_ENABLE_PYTHON
     // 添加Series子项
     DAData data = itemToData(dataframeItem);
     if (data.isNull() || !data.isDataFrame()) {
@@ -691,7 +686,6 @@ void DADataManagerTreeModel::updateDataFrameItemExpansion(QStandardItem* datafra
             dataframeItem->appendRow(seriesItem);
         }
     }
-#endif
 }
 
 void DADataManagerTreeModel::onDataAdded(const DAData& data)

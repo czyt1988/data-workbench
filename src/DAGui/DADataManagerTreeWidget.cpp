@@ -11,9 +11,7 @@
 #include "Models/DADataManagerTreeModel.h"
 #include "DADataManager.h"
 #include "Models/DADataManagerTreeFilterProxyModel.h"
-#if DA_ENABLE_PYTHON
 #include "pandas/DAPyDataFrame.h"
-#endif
 namespace DA
 {
 
@@ -328,10 +326,8 @@ void DADataManagerTreeWidget::updateCompleterModel()
             continue;
         }
         names.append(data.getName());
-#if DA_ENABLE_PYTHON
         DAPyDataFrame df = data.toDataFrame();
         names += df.columns();
-#endif
     }
     names.removeDuplicates();  // 原地去重，保留原顺序
     QStringListModel* model = qobject_cast< QStringListModel* >(d->completer->model());

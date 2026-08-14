@@ -31,23 +31,19 @@ endif()
 add_subdirectory(DAMessageHandler)
 add_dependencies(DAMessageHandler DAUtils)
 
-if(DA_ENABLE_PYTHON)
-    add_subdirectory(DAPyBindQt)
+add_subdirectory(DAPyBindQt)
 
-    add_subdirectory(DAPyScripts)
-    add_dependencies(DAPyScripts DAPyBindQt)
+add_subdirectory(DAPyScripts)
+add_dependencies(DAPyScripts DAPyBindQt)
 
-    add_subdirectory(DAPyCommonWidgets)
-    add_dependencies(DAPyCommonWidgets DAPyBindQt)
+add_subdirectory(DAPyCommonWidgets)
+add_dependencies(DAPyCommonWidgets DAPyBindQt)
 
-    add_subdirectory(DAPyWorkFlow)
-    add_dependencies(DAPyWorkFlow DAUtils DAGraphicsView DAPyBindQt)
+add_subdirectory(DAPyWorkFlow)
+add_dependencies(DAPyWorkFlow DAUtils DAGraphicsView DAPyBindQt)
 
-    add_subdirectory(DAData)
-    add_dependencies(DAData DAUtils DAPyBindQt DAPyScripts)
-else()
-    add_subdirectory(DAData)
-endif()
+add_subdirectory(DAData)
+add_dependencies(DAData DAUtils DAPyBindQt DAPyScripts)
 
 
 
@@ -61,9 +57,7 @@ add_subdirectory(DAGui)
 add_subdirectory(DAInterface)
 add_dependencies(DAInterface DAGui)
 
-if(DA_ENABLE_PYTHON)
-    add_subdirectory(DAAgent)
-endif()
+add_subdirectory(DAAgent)
 
 add_subdirectory(DAPluginSupport)
 add_dependencies(DAPluginSupport DAInterface DAPyWorkFlow)

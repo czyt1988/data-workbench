@@ -146,26 +146,24 @@ set(DA_LIB_QT_RC_FILES
     icon.qrc
 )
 # python about
-if(DA_ENABLE_PYTHON)
-    list(APPEND DA_LIB_HEADER_FILES
-        DADataframeToVectorPointWidget.h
-        DADataOperateOfDataFrameWidget.h
-        DAPyDataFrameTableView.h
-        DAPySeriesTableView.h
-        DAPySeriesListView.h
-    )
-    list(APPEND DA_LIB_SOURCE_FILES
-        DADataframeToVectorPointWidget.cpp
-        DADataOperateOfDataFrameWidget.cpp
-        DAPyDataFrameTableView.cpp
-        DAPySeriesTableView.cpp
-        DAPySeriesListView.cpp
-    )
-    list(APPEND DA_LIB_QT_UI_FILES
-        DADataframeToVectorPointWidget.ui
-        DADataOperateOfDataFrameWidget.ui
-    )
-endif()
+list(APPEND DA_LIB_HEADER_FILES
+    DADataframeToVectorPointWidget.h
+    DADataOperateOfDataFrameWidget.h
+    DAPyDataFrameTableView.h
+    DAPySeriesTableView.h
+    DAPySeriesListView.h
+)
+list(APPEND DA_LIB_SOURCE_FILES
+    DADataframeToVectorPointWidget.cpp
+    DADataOperateOfDataFrameWidget.cpp
+    DAPyDataFrameTableView.cpp
+    DAPySeriesTableView.cpp
+    DAPySeriesListView.cpp
+)
+list(APPEND DA_LIB_QT_UI_FILES
+    DADataframeToVectorPointWidget.ui
+    DADataOperateOfDataFrameWidget.ui
+)
 # 子目录
 set(DA_LIB_SUBDIR_Models ${CMAKE_CURRENT_SOURCE_DIR}/Models)
 set(DA_LIB_SUBDIR_Dialog ${CMAKE_CURRENT_SOURCE_DIR}/Dialog)
@@ -198,18 +196,16 @@ set(DA_LIB_SOURCE_FILES_Models
     ${DA_LIB_SUBDIR_Models}/DAMessageLogsModel.cpp
     ${DA_LIB_SUBDIR_Models}/DAVariantTableModel.cpp
 )
-if(DA_ENABLE_PYTHON)
-    list(APPEND DA_LIB_HEADER_FILES_Models
-        ${DA_LIB_SUBDIR_Models}/DAPySeriesTableModel.h
-        ${DA_LIB_SUBDIR_Models}/DAPyDataFrameTableModel.h
-        ${DA_LIB_SUBDIR_Models}/DAPyGridDataTableModel.h
-    )
-    list(APPEND DA_LIB_SOURCE_FILES_Models
-        ${DA_LIB_SUBDIR_Models}/DAPySeriesTableModel.cpp
-        ${DA_LIB_SUBDIR_Models}/DAPyDataFrameTableModel.cpp
-        ${DA_LIB_SUBDIR_Models}/DAPyGridDataTableModel.cpp
-    )
-endif()
+list(APPEND DA_LIB_HEADER_FILES_Models
+    ${DA_LIB_SUBDIR_Models}/DAPySeriesTableModel.h
+    ${DA_LIB_SUBDIR_Models}/DAPyDataFrameTableModel.h
+    ${DA_LIB_SUBDIR_Models}/DAPyGridDataTableModel.h
+)
+list(APPEND DA_LIB_SOURCE_FILES_Models
+    ${DA_LIB_SUBDIR_Models}/DAPySeriesTableModel.cpp
+    ${DA_LIB_SUBDIR_Models}/DAPyDataFrameTableModel.cpp
+    ${DA_LIB_SUBDIR_Models}/DAPyGridDataTableModel.cpp
+)
 
 #Dialog
 set(DA_LIB_HEADER_FILES_Dialog
@@ -223,42 +219,40 @@ set(DA_LIB_SOURCE_FILES_Dialog
 set(DA_LIB_QT_UI_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DARenameColumnsNameDialog.ui
 )
-if(DA_ENABLE_PYTHON)
-    list(APPEND DA_LIB_HEADER_FILES_Dialog
-        ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogStatsChartGuide.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.h
-        ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.h
-    )
-    list(APPEND DA_LIB_SOURCE_FILES_Dialog
-        ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.cpp
-         ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogStatsChartGuide.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.cpp
-        ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.cpp
-    )
-    list(APPEND DA_LIB_QT_UI_FILES_Dialog
-        ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogStatsChartGuide.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.ui
-        ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.ui
-    )
-endif()
+list(APPEND DA_LIB_HEADER_FILES_Dialog
+    ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogStatsChartGuide.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.h
+)
+list(APPEND DA_LIB_SOURCE_FILES_Dialog
+    ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.cpp
+     ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogStatsChartGuide.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.cpp
+)
+list(APPEND DA_LIB_QT_UI_FILES_Dialog
+    ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.ui
+    ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.ui
+    ${DA_LIB_SUBDIR_Dialog}/DADialogStatsChartGuide.ui
+    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.ui
+    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.ui
+    ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui
+    ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.ui
+    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.ui
+)
 #MimeData
 file(GLOB DA_LIB_HEADER_FILES_MimeData ${DA_LIB_SUBDIR_MimeData}/*.h)
 file(GLOB DA_LIB_SOURCE_FILES_MimeData ${DA_LIB_SUBDIR_MimeData}/*.cpp)
@@ -276,16 +270,14 @@ set(DA_LIB_SOURCE_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandsForWorkFlow.cpp
     ${DA_LIB_SUBDIR_Commands}/DACommandsTableStyle.cpp
 )
-if(DA_ENABLE_PYTHON)
-    list(APPEND DA_LIB_HEADER_FILES_Commands
-        ${DA_LIB_SUBDIR_Commands}/DACommandWithTemporaryData.h
-        ${DA_LIB_SUBDIR_Commands}/DACommandsDataFrame.h
-    )
-    list(APPEND DA_LIB_SOURCE_FILES_Commands
-        ${DA_LIB_SUBDIR_Commands}/DACommandWithTemporaryData.cpp
-        ${DA_LIB_SUBDIR_Commands}/DACommandsDataFrame.cpp
-    )
-endif()
+list(APPEND DA_LIB_HEADER_FILES_Commands
+    ${DA_LIB_SUBDIR_Commands}/DACommandWithTemporaryData.h
+    ${DA_LIB_SUBDIR_Commands}/DACommandsDataFrame.h
+)
+list(APPEND DA_LIB_SOURCE_FILES_Commands
+    ${DA_LIB_SUBDIR_Commands}/DACommandWithTemporaryData.cpp
+    ${DA_LIB_SUBDIR_Commands}/DACommandsDataFrame.cpp
+)
 
 #ChartSetting
 # 这里直接遍历，不需要区分
@@ -300,20 +292,18 @@ file(GLOB DA_LIB_UI_FILES_Chart3DSetting ${DA_LIB_SUBDIR_Chart3DSetting}/*.ui)
 
 #NodeSetting
 set(DA_LIB_HEADER_FILES_NodeSetting)
-if(DA_ENABLE_PYTHON)
-    list(APPEND DA_LIB_HEADER_FILES_NodeSetting
-        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanel.h
-        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelFactory.h
-        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelWidget.h
-        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParameterFormAdapter.h
-    )
-    list(APPEND DA_LIB_SOURCE_FILES_NodeSetting
-        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanel.cpp
-        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelFactory.cpp
-        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelWidget.cpp
-        ${DA_LIB_SUBDIR_NodeSetting}/DANodeParameterFormAdapter.cpp
-    )
-endif()
+list(APPEND DA_LIB_HEADER_FILES_NodeSetting
+    ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanel.h
+    ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelFactory.h
+    ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelWidget.h
+    ${DA_LIB_SUBDIR_NodeSetting}/DANodeParameterFormAdapter.h
+)
+list(APPEND DA_LIB_SOURCE_FILES_NodeSetting
+    ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanel.cpp
+    ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelFactory.cpp
+    ${DA_LIB_SUBDIR_NodeSetting}/DANodeParamSettingPanelWidget.cpp
+    ${DA_LIB_SUBDIR_NodeSetting}/DANodeParameterFormAdapter.cpp
+)
 
 #Chart
 set(DA_LIB_HEADER_FILES_Chart
@@ -345,9 +335,8 @@ set(DA_LIB_SOURCE_FILES_ChartAddItem
     ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractStatsChartAddWidget.cpp
 )
 
-# Python 部分（DAAbstractChart3DAddItemWidget 必须留 Python 块，保持与原 CMake 一致）
-if(DA_ENABLE_PYTHON)
-    list(APPEND DA_LIB_HEADER_FILES_ChartAddItem
+# Python 部分（DAAbstractChart3DAddItemWidget 等）
+list(APPEND DA_LIB_HEADER_FILES_ChartAddItem
         ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChart3DAddItemWidget.h
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesPickerWidget.h
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesSelectWidget.h
@@ -440,23 +429,18 @@ if(DA_ENABLE_PYTHON)
         # 注：DAChartAddCurveWidget.ui / DAChartAddSpectrogramWidget.ui 存在于磁盘但当前未纳入
         #     构建（其 .cpp 未 include 对应 ui_ 头），保持原有构建行为不纳入 CMake UI 列表
     )
-endif()
 
 #Agent
-if(DA_ENABLE_PYTHON)
-    set(DA_LIB_SUBDIR_Agent ${CMAKE_CURRENT_SOURCE_DIR}/Agent)
-    file(GLOB DA_LIB_HEADER_FILES_Agent ${DA_LIB_SUBDIR_Agent}/*.h)
-    file(GLOB DA_LIB_SOURCE_FILES_Agent ${DA_LIB_SUBDIR_Agent}/*.cpp)
-    file(GLOB DA_LIB_RC_FILES_Agent ${DA_LIB_SUBDIR_Agent}/*.qrc ${DA_LIB_SUBDIR_Agent}/resources/*.qrc)
-endif()
+set(DA_LIB_SUBDIR_Agent ${CMAKE_CURRENT_SOURCE_DIR}/Agent)
+file(GLOB DA_LIB_HEADER_FILES_Agent ${DA_LIB_SUBDIR_Agent}/*.h)
+file(GLOB DA_LIB_SOURCE_FILES_Agent ${DA_LIB_SUBDIR_Agent}/*.cpp)
+file(GLOB DA_LIB_RC_FILES_Agent ${DA_LIB_SUBDIR_Agent}/*.qrc ${DA_LIB_SUBDIR_Agent}/resources/*.qrc)
 
 #MarkdownView
-if(DA_ENABLE_PYTHON)
-    set(DA_LIB_SUBDIR_MarkdownView ${CMAKE_CURRENT_SOURCE_DIR}/MarkdownView)
-    file(GLOB DA_LIB_HEADER_FILES_MarkdownView ${DA_LIB_SUBDIR_MarkdownView}/*.h)
-    file(GLOB DA_LIB_SOURCE_FILES_MarkdownView ${DA_LIB_SUBDIR_MarkdownView}/*.cpp)
-    file(GLOB DA_LIB_RC_FILES_MarkdownView ${DA_LIB_SUBDIR_MarkdownView}/*.qrc ${DA_LIB_SUBDIR_MarkdownView}/resources/*.qrc)
-endif()
+set(DA_LIB_SUBDIR_MarkdownView ${CMAKE_CURRENT_SOURCE_DIR}/MarkdownView)
+file(GLOB DA_LIB_HEADER_FILES_MarkdownView ${DA_LIB_SUBDIR_MarkdownView}/*.h)
+file(GLOB DA_LIB_SOURCE_FILES_MarkdownView ${DA_LIB_SUBDIR_MarkdownView}/*.cpp)
+file(GLOB DA_LIB_RC_FILES_MarkdownView ${DA_LIB_SUBDIR_MarkdownView}/*.qrc ${DA_LIB_SUBDIR_MarkdownView}/resources/*.qrc)
 
 add_library(${DA_LIB_NAME} SHARED
             #Root
@@ -550,18 +534,16 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
 damacro_import_DAWidgets(${DA_LIB_NAME})
 target_link_libraries(${DA_LIB_NAME} PUBLIC DA::DAWidgets)
 
-if(DA_ENABLE_PYTHON)
-    target_link_libraries(${DA_LIB_NAME} PUBLIC
-        ${DA_PROJECT_NAME}::DAPyBindQt
-        ${DA_PROJECT_NAME}::DAPyScripts
-        ${DA_PROJECT_NAME}::DAPyCommonWidgets
-    )
+target_link_libraries(${DA_LIB_NAME} PUBLIC
+    ${DA_PROJECT_NAME}::DAPyBindQt
+    ${DA_PROJECT_NAME}::DAPyScripts
+    ${DA_PROJECT_NAME}::DAPyCommonWidgets
+)
 
-    # -------------link python--------------------------
-    damacro_import_Python(${DA_LIB_NAME})
-    # -------------link 3rdparty pybind11--------------------------
-    damacro_import_pybind11(${DA_LIB_NAME})
-endif()
+# -------------link python--------------------------
+damacro_import_Python(${DA_LIB_NAME})
+# -------------link 3rdparty pybind11--------------------------
+damacro_import_pybind11(${DA_LIB_NAME})
 
 # -------------link SARibbon--------------------------
 damacro_import_SARibbonBar(${DA_LIB_NAME})

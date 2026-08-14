@@ -1,6 +1,5 @@
 #include "DASettingPagePython.h"
 #include "DAConfigs.h"
-#if DA_ENABLE_PYTHON
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QJsonDocument>
@@ -191,4 +190,3 @@ void DASettingPagePython::onToolButtonRemovePathClicked()
 }
 
 }  // end DA
-#endif  // DA_ENABLE_PYTHON

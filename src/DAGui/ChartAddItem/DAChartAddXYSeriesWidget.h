@@ -16,9 +16,7 @@ class DAChartAddXYSeriesWidget;
 
 namespace DA
 {
-#if DA_ENABLE_PYTHON
 class DAPySeriesTableModel;
-#endif
 class DADataManager;
 
 /**

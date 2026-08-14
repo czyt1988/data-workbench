@@ -45,7 +45,6 @@
 #include "DAAppPluginManager.h"
 #include "DALogCategory.h"
 // python
-#if DA_ENABLE_PYTHON
 #include "DAPyInterpreter.h"
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
@@ -59,7 +58,6 @@
 #include "DAPyGILGuard.h"
 #include "DAPybind11QtCaster.hpp"
 #include "DAZipArchiveTask_ByteArray.h"
-#endif
 const QString c_workflowxml_save_filename  = QStringLiteral("workflow.xml");
 const QString c_workflowdata_save_filename = QStringLiteral("workflow-data.xml");
 const QString c_chartsxml_save_filename    = QStringLiteral("charts.xml");
@@ -906,7 +904,6 @@ void DAAppProject::makeSaveSystemInfoTask(DAZipArchiveThreadWrapper* archive)
  */
 void DAAppProject::makeSaveWorkflowDataTask(DAZipArchiveThreadWrapper* archive)
 {
-#if DA_ENABLE_PYTHON
     DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
     Q_CHECK_PTR(wfo);
     DAPyWorkFlowSerializer serializer;
@@ -943,9 +940,6 @@ void DAAppProject::makeSaveWorkflowDataTask(DAZipArchiveThreadWrapper* archive)
     auto t = archive->appendByteSaveTask(c_workflowdata_save_filename, xml.toUtf8());
     t->setName(tr("Save workflow data"));  // cn:保存工作流数据
     t->setDescribe(tr("Save Python workflow logic data (nodes, parameters, connections)"));  // cn:保存Python工作流逻辑数据（节点、参数、连接关系）
-#else
-    Q_UNUSED(archive);
-#endif
 }
 
 /**
@@ -1285,7 +1279,6 @@ void DAAppProject::loadedWorkflowData(const std::shared_ptr< DAAbstractArchiveTa
         return;
     }
 
-#if DA_ENABLE_PYTHON
     // 解析外层XML获取<workflows>列表
     QDomDocument doc;
     if (!doc.setContent(data)) {
@@ -1337,9 +1330,6 @@ void DAAppProject::loadedWorkflowData(const std::shared_ptr< DAAbstractArchiveTa
         // 替换空的Python workflow
         wfe->getManager()->setWorkflow(wf);
     }
-#else
-    Q_UNUSED(t);
-#endif
 }
 
 /**
@@ -1418,7 +1408,6 @@ void DAAppProject::loadedDataManager(const std::shared_ptr< DAAbstractArchiveTas
         QString describeText       = describeEle.text();
         DAAbstractData::DataType t = stringToEnum(type, DAAbstractData::TypeNone);
         switch (t) {
-#if DA_ENABLE_PYTHON
         case DAAbstractData::TypePythonDataFrame: {
             if (!DAPyScripts::isInitScripts()) {
                 daCritical << tr("Python script is not initialized");  // cn:脚本没有初始化
@@ -1452,7 +1441,6 @@ void DAAppProject::loadedDataManager(const std::shared_ptr< DAAbstractArchiveTas
             // 不使用dataMgr->addData(),因为这个是带回退的
             dataMgr->dataManager()->addData(dataDataframe);
         } break;
-#endif
         default:
             break;
         }

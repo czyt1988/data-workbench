@@ -8,9 +8,6 @@
 #include "qwt_interval.h"
 #include <algorithm>
 #include <limits>
-#if DA_ENABLE_PYTHON
-// DAPyDataFrame/DAPySeries 通过 DAData.h 间接 include
-#endif
 namespace DA
 {
 
@@ -46,7 +43,6 @@ void DAChartAddContourWidget::onDataManagerChanged(DADataManager* dmgr)
 
 QwtPlotItem* DAChartAddContourWidget::createPlotItem()
 {
-#if DA_ENABLE_PYTHON
 	QPair< DAData, QString > xSel = ui->selectWidgetX->getCurrentSeries();
 	QPair< DAData, QString > ySel = ui->selectWidgetY->getCurrentSeries();
 	QPair< DAData, QString > vSel = ui->selectWidgetValue->getCurrentSeries();
@@ -110,9 +106,6 @@ QwtPlotItem* DAChartAddContourWidget::createPlotItem()
 		daCritical << tr("Exception occurred during extracting contour data:%1").arg(e.what());  // cn:提取等高线数据过程中出现异常:%1
 		return nullptr;
 	}
-#else
-	return nullptr;
-#endif
 }
 
 }  // namespace DA

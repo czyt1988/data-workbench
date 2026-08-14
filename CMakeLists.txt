@@ -41,10 +41,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_3rdparty.cmake)
 ########################################################
 # 可选的变量
 ########################################################
-# 此选项将设置是否开启python
-option(DA_ENABLE_PYTHON
-    "enable python|if ON will add DAPythonBind DAPyScript DAPyCommonWidgets COMPONENTS"
-    ON)
 option(DA_ENABLE_AUTO_INSTALL_PYTHON_ENV
     "This parameter allows cmake to automatically search for the Python environment and copy the necessary DLLs from the Python environment to the bin directory without manual deployment. It is recommended to enable this option for Windows users who have not set the Python directory as a system environment variable"
     ON)
@@ -250,29 +246,27 @@ install(FILES
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${DA_PROJECT_NAME}
         COMPONENT headers
  )
-if(DA_ENABLE_PYTHON)
-    # 把PyScripts文件夹复制过去
-    install(DIRECTORY
-        ${CMAKE_CURRENT_LIST_DIR}/src/PyScripts
-        DESTINATION ${CMAKE_INSTALL_BINDIR}
-    )
-    # 为了能调试的时候运行，需要把src/PyScripts文件夹复制到${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
-    file(COPY "${CMAKE_CURRENT_LIST_DIR}/src/PyScripts" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
-    message(STATUS "COPY ${CMAKE_CURRENT_LIST_DIR}/src/PyScripts DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}")
-    if(DA_ENABLE_AUTO_INSTALL_PYTHON_ENV)
-        # 如果使用的是非系统目录下的 Python 可以通过指定 Python3_ROOT_DIR 改变查找路径
-        find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
-        if(${Python3_FOUND})
-            if(WIN32)
-                set(DA_PYTHON_DLL_PATH ${Python3_RUNTIME_LIBRARY_DIRS}/python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.dll)
-                # 把dll复制到bin中否则无法运行
-                file(COPY ${DA_PYTHON_DLL_PATH} DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
-                install(FILES
-                        ${DA_PYTHON_DLL_PATH}
-                        DESTINATION
-                        ${CMAKE_INSTALL_BINDIR}
-                 )
-            endif()
+# 把PyScripts文件夹复制过去
+install(DIRECTORY
+    ${CMAKE_CURRENT_LIST_DIR}/src/PyScripts
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+# 为了能调试的时候运行，需要把src/PyScripts文件夹复制到${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/src/PyScripts" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
+message(STATUS "COPY ${CMAKE_CURRENT_LIST_DIR}/src/PyScripts DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}")
+if(DA_ENABLE_AUTO_INSTALL_PYTHON_ENV)
+    # 如果使用的是非系统目录下的 Python 可以通过指定 Python3_ROOT_DIR 改变查找路径
+    find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+    if(${Python3_FOUND})
+        if(WIN32)
+            set(DA_PYTHON_DLL_PATH ${Python3_RUNTIME_LIBRARY_DIRS}/python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.dll)
+            # 把dll复制到bin中否则无法运行
+            file(COPY ${DA_PYTHON_DLL_PATH} DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
+            install(FILES
+                    ${DA_PYTHON_DLL_PATH}
+                    DESTINATION
+                    ${CMAKE_INSTALL_BINDIR}
+             )
         endif()
     endif()
 endif()

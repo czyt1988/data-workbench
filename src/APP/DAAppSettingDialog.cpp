@@ -21,12 +21,10 @@ void DAAppSettingDialog::buildUI(DAAppConfig* config)
     general->setAppConfig(config);
     settingWidget()->addPage(general);
 
-#if DA_ENABLE_PYTHON
     // Python 环境设置页（仅启用 Python 时注册）
     DASettingPagePython* python = new DASettingPagePython();
     python->setAppConfig(config);
     settingWidget()->addPage(python);
-#endif
 
     // 日志设置页
     DASettingPageLog* logPage = new DASettingPageLog();

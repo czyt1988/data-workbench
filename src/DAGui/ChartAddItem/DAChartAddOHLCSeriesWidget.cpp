@@ -7,9 +7,7 @@
 #include "DAChartSeriesSelectWidget.h"
 #include "qwt_samples.h"
 #include "qwt_plot_tradingcurve.h"
-#if DA_ENABLE_PYTHON
 #include "Models/DAPySeriesTableModel.h"
-#endif
 namespace DA
 {
 
@@ -34,7 +32,6 @@ DAChartAddOHLCSeriesWidget::DAChartAddOHLCSeriesWidget(QWidget* parent)
     : DAAbstractChartAddItemWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAChartAddOHLCSeriesWidget)
 {
     ui->setupUi(this);
-#if DA_ENABLE_PYTHON
     DAPySeriesTableModel* m = new DAPySeriesTableModel(this);
     m->setHeaderLabel({ tr("Time"),   // cn:时间
                         tr("Open"),   // cn:开盘
@@ -43,7 +40,6 @@ DAChartAddOHLCSeriesWidget::DAChartAddOHLCSeriesWidget(QWidget* parent)
                         tr("Close")   // cn:收盘
                       });
     ui->tableViewOHLC->setModel(m);
-#endif
     QFontMetrics fm = fontMetrics();
     ui->tableViewOHLC->verticalHeader()->setDefaultSectionSize(fm.lineSpacing() * 1.1);
     ui->selectWidgetT->setRoleLabel(tr("Time"));  // cn:时间
@@ -93,7 +89,6 @@ QVector< QwtOHLCSample > DAChartAddOHLCSeriesWidget::getSeries() const
  */
 void DAChartAddOHLCSeriesWidget::onTSeriesChanged()
 {
-#if DA_ENABLE_PYTHON
     QPair< DAData, QString > sel = ui->selectWidgetT->getCurrentSeries();
     DAPySeries series;
     if (!sel.first.isNull()) {
@@ -103,7 +98,6 @@ void DAChartAddOHLCSeriesWidget::onTSeriesChanged()
         }
     }
     ui->tableViewOHLC->setSeriesAt(0, series);
-#endif
 }
 
 /**
@@ -113,7 +107,6 @@ void DAChartAddOHLCSeriesWidget::onTSeriesChanged()
  */
 void DAChartAddOHLCSeriesWidget::onOSeriesChanged()
 {
-#if DA_ENABLE_PYTHON
     QPair< DAData, QString > sel = ui->selectWidgetO->getCurrentSeries();
     DAPySeries series;
     if (!sel.first.isNull()) {
@@ -123,7 +116,6 @@ void DAChartAddOHLCSeriesWidget::onOSeriesChanged()
         }
     }
     ui->tableViewOHLC->setSeriesAt(1, series);
-#endif
 }
 
 /**
@@ -133,7 +125,6 @@ void DAChartAddOHLCSeriesWidget::onOSeriesChanged()
  */
 void DAChartAddOHLCSeriesWidget::onHSeriesChanged()
 {
-#if DA_ENABLE_PYTHON
     QPair< DAData, QString > sel = ui->selectWidgetH->getCurrentSeries();
     DAPySeries series;
     if (!sel.first.isNull()) {
@@ -143,7 +134,6 @@ void DAChartAddOHLCSeriesWidget::onHSeriesChanged()
         }
     }
     ui->tableViewOHLC->setSeriesAt(2, series);
-#endif
 }
 
 /**
@@ -153,7 +143,6 @@ void DAChartAddOHLCSeriesWidget::onHSeriesChanged()
  */
 void DAChartAddOHLCSeriesWidget::onLSeriesChanged()
 {
-#if DA_ENABLE_PYTHON
     QPair< DAData, QString > sel = ui->selectWidgetL->getCurrentSeries();
     DAPySeries series;
     if (!sel.first.isNull()) {
@@ -163,7 +152,6 @@ void DAChartAddOHLCSeriesWidget::onLSeriesChanged()
         }
     }
     ui->tableViewOHLC->setSeriesAt(3, series);
-#endif
 }
 
 /**
@@ -173,7 +161,6 @@ void DAChartAddOHLCSeriesWidget::onLSeriesChanged()
  */
 void DAChartAddOHLCSeriesWidget::onCSeriesChanged()
 {
-#if DA_ENABLE_PYTHON
     QPair< DAData, QString > sel = ui->selectWidgetC->getCurrentSeries();
     DAPySeries series;
     if (!sel.first.isNull()) {
@@ -183,7 +170,6 @@ void DAChartAddOHLCSeriesWidget::onCSeriesChanged()
         }
     }
     ui->tableViewOHLC->setSeriesAt(4, series);
-#endif
 }
 
 /**
@@ -192,7 +178,6 @@ void DAChartAddOHLCSeriesWidget::onCSeriesChanged()
  */
 void DAChartAddOHLCSeriesWidget::onGroupBoxTAutoincrementClicked(bool on)
 {
-#if DA_ENABLE_PYTHON
     if (on) {
         double base, step;
         if (tryGetTSelfInc(base, step)) {
@@ -203,7 +188,6 @@ void DAChartAddOHLCSeriesWidget::onGroupBoxTAutoincrementClicked(bool on)
         onTSeriesChanged();
     }
     ui->selectWidgetT->setEnabled(!on);
-#endif
 }
 
 void DAChartAddOHLCSeriesWidget::onDataManagerChanged(DADataManager* dmgr)
@@ -256,7 +240,6 @@ bool DAChartAddOHLCSeriesWidget::getTAutoIncFromUI(DAAutoincrementSeries< double
 bool DAChartAddOHLCSeriesWidget::getToVectorPointFFromUI(QVector< QwtOHLCSample >& res)
 {
     bool isTAuto = ui->groupBoxTAutoincrement->isChecked();
-#if DA_ENABLE_PYTHON
     // 辅助 lambda：从 DAChartSeriesSelectWidget 提取 DAPySeries
     auto extractSeries = [](DAChartSeriesSelectWidget* w) -> DAPySeries {
         QPair< DAData, QString > sel = w->getCurrentSeries();
@@ -399,7 +382,6 @@ bool DAChartAddOHLCSeriesWidget::getToVectorPointFFromUI(QVector< QwtOHLCSample 
             return false;
         }
     }
-#endif
     return true;
 }
 

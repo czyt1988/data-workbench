@@ -14,7 +14,7 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 | 源码目录 | `src/DAAgent/`（模块根含 `DAAgentToolBase.h/.cpp`；`tools/` 子目录已删除） |
 | 依赖（PUBLIC） | DAInterface, DAData, DAPyBindQt, DAPyScripts + Qt Core/Gui/Widgets（**无 DAGui / DAFigure / qwt / ADS**） |
 | 依赖（PRIVATE） | Qt PrintSupport/Svg（PDF/SVG 导出）、DAAxOfficeWrapper（Win, docx 导出）、Crypt32（Win, DPAPI 加密 api_key） |
-| 编译条件 | **仅 `DA_ENABLE_PYTHON=ON` 时编译**（`src/CMakeLists.txt:62`） |
+| 编译条件 | Python 为强制依赖，始终参与编译（`src/CMakeLists.txt:62`） |
 | 导出宏 | `DAAgent_API`（`DAAgentAPI.h`，`DAAGENT_BUILD` 定义于 `CMakeLists.txt:48`） |
 
 **层级**：DAAgent 位于接口层（Layer 4，与 DAInterface/DAPluginSupport 同级）。它向上提供 `DAAgentInterface` 供插件（Layer 5 及插件）注册工具/提示词、控制 UI 显隐与 LLM 配置；向下只依赖 DAInterface/DAData/DAPyBindQt/DAPyScripts（L1/L2）。**DAAgent 是纯 agent 框架库，不依赖任何 GUI 模块**（无 DAGui/DAFigure/qwt/ADS）——工具注册、UI 接线、设置页持久化全部由插件 / APP 层决定，DAGui 与 DAAgent 为兄弟模块互不依赖。创建新类时**禁止**让 DAAgent 依赖 APP，也禁止重新引入 DAGui 依赖（见铁律 T3）。

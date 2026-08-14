@@ -123,19 +123,12 @@ Scripts -->|操作| IF
         PRIVATE
             ${Python3_INCLUDE_DIRS}  # Python 头文件
     )
-
-    # 定义嵌入模式宏
-    target_compile_definitions(DAWorkBench
-        PRIVATE
-            DA_ENABLE_PYTHON=1
-    )
     ```
 
 上述嵌入式配置的关键点：
 
 - 链接 `Python3::Python` 和 `Python3::Module` 获取 Python 库支持
 - 包含 `Python3_INCLUDE_DIRS` 获取 Python 头文件
-- 定义 `DA_ENABLE_PYTHON=1` 宏标记 Python 功能启用
 
 以下配置展示了如何创建 Python 绑定模块：
 

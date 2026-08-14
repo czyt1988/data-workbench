@@ -71,7 +71,6 @@
 #include "DAAppProject.h"
 #include "DAAppProjectActionPolicy.h"
 // Py
-#if DA_ENABLE_PYTHON
 #include "DAPybind11QtCaster.hpp"
 #include "Dialog/DATxtFileImportDialog.h"
 #include "DAPyDTypeComboBox.h"
@@ -97,7 +96,6 @@
 #include "ChartAddItem/DAChartSeriesSelectWidget.h"
 #include "ChartAddItem/DAAbstractStatsChartAddWidget.h"
 #include "DAStatsPlotCoordinator.h"
-#endif
 // Agent
 #include "DAAgentModule.h"
 #include "DAAgentInterface.h"        // PMF connect 到接口信号/方法需完整类型
@@ -283,7 +281,6 @@ void DAAppController::initialize()
         connect(dock, &DAAgentDockWidget::figureLinkRequested, this, &DAAppController::onFigureLinkRequested);
     }
     initConnection();
-#if DA_ENABLE_PYTHON
     initScripts();
     initPyWorkflowConnections();
     // 数据管理树的 series 节点右键菜单（与 DataFrame 表头右键共用 action）
@@ -292,7 +289,6 @@ void DAAppController::initialize()
             setupDataManagerTreeSeriesContextMenu(tree);
         }
     }
-#endif
 
     // Agent 会话清理调度（plan-05 步骤6）：启动即清，避免积压；
     // cleanupSessions 读 QSettings agent/max_sessions(默认20)、session_retention_days(默认30)
@@ -345,11 +341,9 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddHistogramBar, onActionChartAddHistogramTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddContourMap, onActionChartAddContourMapTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddVectorfield, onActionChartAddVectorfieldTriggered);
-#if DA_ENABLE_PYTHON
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAdd3DSurface, onActionChartAdd3DSurfaceTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAdd3DBar, onActionChartAdd3DBarTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAdd3DLine, onActionChartAdd3DLineTriggered);
-#endif
 
     // Stats Plot
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsHistplot, onActionStatsHistplotTriggered);
@@ -407,7 +401,6 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToNum, onActionCastToNumTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToDatetime, onActionCastToDatetimeTriggered);
-#if DA_ENABLE_PYTHON
     // 不知为何使用函数指针无法关联信号和槽
     //  connect(mComboxColumnTypes, &DAPyDTypeComboBox::currentDTypeChanged, this,&DAAppRibbonArea::onComboxColumnTypesCurrentDTypeChanged);
     //  QObject::connect: signal not found in DAPyDTypeComboBox
@@ -415,12 +408,10 @@ void DAAppController::initConnection()
             &DAPyDTypeComboBox::currentDTypeChanged,
             this,
             &DAAppController::onComboxColumnTypesCurrentDTypeChanged);
-#endif
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChangeToIndex, onActionChangeToIndexTriggered);
     // 表格样式
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionClearStyleSelected, onActionClearStyleSelectedTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionClearStyleAll, onActionClearStyleAllTriggered);
-#if DA_ENABLE_PYTHON
     connect(mRibbon->mBtnTableFillColor,
             &SARibbonColorToolButton::colorChanged,
             this,
@@ -433,7 +424,6 @@ void DAAppController::initConnection()
             &DAFontEditPannelWidget::currentFontColorChanged,
             this,
             &DAAppController::onTableStyleFontColorChanged);
-#endif
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -537,9 +527,7 @@ void DAAppController::initConnection()
     // 绘图项创建完成时提升绘图 dock，让用户能看到新绘图
     if (DAAppChartOperateWidget* appCow = qobject_cast< DAAppChartOperateWidget* >(cow)) {
         connect(appCow, &DAAppChartOperateWidget::plotItemCreated, this, &DAAppController::onPlotItemCreated);
-#if DA_ENABLE_PYTHON
         connect(appCow, &DAAppChartOperateWidget::plot3DItemCreated, this, &DAAppController::onPlot3DItemCreated);
-#endif
     }
     //
     DAPyWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
@@ -1304,7 +1292,6 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
     }
     switch (page->getDataOperatePageType()) {
     case DADataOperatePageWidget::DataOperateOfDataFrame: {
-#if DA_ENABLE_PYTHON
         DADataOperateOfDataFrameWidget* w = static_cast< DADataOperateOfDataFrameWidget* >(page);
         connect(w,
                 &DADataOperateOfDataFrameWidget::selectTypeChanged,
@@ -1314,14 +1301,11 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
         connect(w, &DADataOperateOfDataFrameWidget::currentStyleChanged, this, &DAAppController::onTableStyleCurrentChanged);
         // 表头右键菜单注入
         setupDataFrameHeaderContextMenu(w);
-#endif
     } break;
     default:
         break;
     }
 }
-
-#if DA_ENABLE_PYTHON
 
 /**
  * @brief 脚本定义的内容初始化
@@ -1337,7 +1321,6 @@ void DAAppController::initScripts()
     qDebug() << mFileReadFilters;
 }
 
-#if DA_ENABLE_PYTHON
 /**
  * @brief 初始化Python工作流信号槽连接
  *
@@ -1350,7 +1333,6 @@ void DAAppController::initPyWorkflowConnections()
     // 当前Action的信号槽已在initConnection中通过DAAPPCONTROLLER_ACTION_BIND宏绑定
     qDebug() << "Python workflow connections initialized (placeholder)";
 }
-#endif
 /**
  * @brief 选择的样式改变信号
  * @param column
@@ -1372,7 +1354,6 @@ void DAAppController::onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType
         dfopt->changeSelectColumnType(dt);
     }
 }
-#endif
 /**
  * @brief 添加背景图
  */
@@ -1744,7 +1725,6 @@ void DAAppController::onPlotItemCreated(DAFigureWidget* f, DAChartWidget* plot, 
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
-#if DA_ENABLE_PYTHON
 /**
  * @brief 3D绘图项创建完成，提升绘图 dock 显示新3D绘图
  */
@@ -1756,7 +1736,6 @@ void DAAppController::onPlot3DItemCreated(DA::DAFigureWidget* f, DA::DAChart3DWi
     // 提升绘图操作区域到前台
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
-#endif
 
 /**
  * @brief 添加数据
@@ -1779,7 +1758,6 @@ void DAAppController::onActionAddDataTriggered()
     QString err;
     QFileInfo fi(fileName);
     if (fi.suffix().toLower() == "txt") {
-#if DA_ENABLE_PYTHON
         DATxtFileImportDialog dlg(mMainWindow);
         dlg.setTextFilePath(fileName);
         if (QDialog::Accepted != dlg.exec()) {
@@ -1788,7 +1766,6 @@ void DAAppController::onActionAddDataTriggered()
         // 获取导入txt的配置
         args = dlg.getSetting();
         qDebug() << "da_read:args->" << args;
-#endif
     } else {
     }
     DA_WAIT_CURSOR_SCOPED();
@@ -1989,7 +1966,6 @@ void DAAppController::onActionChartAddVectorfieldTriggered()
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
 }
 
-#if DA_ENABLE_PYTHON
 /**
  * @brief 添加3D曲面图
  */
@@ -2019,7 +1995,6 @@ void DAAppController::onActionChartAdd3DLineTriggered()
     chartopt->showPlotGuideDialog(DA::DAChartTypes::Line3D);
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
 }
-#endif
 
 /**
  * @brief 统计直方图
@@ -2122,7 +2097,6 @@ bool DAAppController::ensureFigureChart(DAFigureWidget*& fig, DAChartWidget*& ch
     return true;
 }
 
-#if DA_ENABLE_PYTHON
 /**
  * @brief 显示统计绘图引导对话框并预选指定类型
  * @param type 统计绘图类型
@@ -2148,7 +2122,6 @@ void DAAppController::showStatsChartGuide(DA::DAChartTypes type)
     mStatsChartGuideDlg->raise();
     mStatsChartGuideDlg->activateWindow();
 }
-#endif
 
 /**
  * @brief 允许网格
@@ -2474,12 +2447,10 @@ void DAAppController::onActionGroupChartEditorTriggered(QAction* a)
  */
 void DAAppController::onActionRemoveRowTriggered()
 {
-#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->removeSelectRow();
         setDirty();
     }
-#endif
 }
 
 /**
@@ -2487,12 +2458,10 @@ void DAAppController::onActionRemoveRowTriggered()
  */
 void DAAppController::onActionRemoveColumnTriggered()
 {
-#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->removeSelectColumn();
         setDirty();
     }
-#endif
 }
 
 /**
@@ -2500,12 +2469,10 @@ void DAAppController::onActionRemoveColumnTriggered()
  */
 void DAAppController::onActionRemoveCellTriggered()
 {
-#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->removeSelectCell();
         setDirty();
     }
-#endif
 }
 
 /**
@@ -2513,12 +2480,10 @@ void DAAppController::onActionRemoveCellTriggered()
  */
 void DAAppController::onActionInsertRowTriggered()
 {
-#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->insertRowBelowBySelect();
         setDirty();
     }
-#endif
 }
 
 /**
@@ -2526,36 +2491,30 @@ void DAAppController::onActionInsertRowTriggered()
  */
 void DAAppController::onActionInsertRowAboveTriggered()
 {
-#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->insertRowAboveBySelect();
         setDirty();
     }
-#endif
 }
 /**
  * @brief 在选中位置右边插入一列
  */
 void DAAppController::onActionInsertColumnRightTriggered()
 {
-#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->insertColumnRightBySelect();
         setDirty();
     }
-#endif
 }
 /**
  * @brief 在选中位置左边插入一列
  */
 void DAAppController::onActionInsertColumnLeftTriggered()
 {
-#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->insertColumnLeftBySelect();
         setDirty();
     }
-#endif
 }
 
 /**
@@ -2563,15 +2522,12 @@ void DAAppController::onActionInsertColumnLeftTriggered()
  */
 void DAAppController::onActionRenameColumnsTriggered()
 {
-#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->renameColumns();
         setDirty();
     }
-#endif
 }
 
-#if DA_ENABLE_PYTHON
 /**
  * @brief dataframe单列重命名（表头右键）
  *
@@ -2891,19 +2847,16 @@ void DAAppController::setupDataManagerTreeSeriesContextMenu(DADataManagerTreeWid
         menu.exec(tv->viewport()->mapToGlobal(pos));
     });
 }
-#endif
 
 /**
  * @brief 选中列转换为数值
  */
 void DAAppController::onActionCastToNumTriggered()
 {
-#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->castSelectToNum();
         setDirty();
     }
-#endif
 }
 
 /**
@@ -2919,12 +2872,10 @@ void DAAppController::onActionCastToStringTriggered()
  */
 void DAAppController::onActionCastToDatetimeTriggered()
 {
-#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->castSelectToDatetime();
         setDirty();
     }
-#endif
 }
 
 /**
@@ -2932,12 +2883,10 @@ void DAAppController::onActionCastToDatetimeTriggered()
  */
 void DAAppController::onActionChangeToIndexTriggered()
 {
-#if DA_ENABLE_PYTHON
     if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
         dfopt->changeSelectColumnToIndex();
         setDirty();
     }
-#endif
 }
 
 /**
@@ -3100,7 +3049,6 @@ void DAAppController::onActionWorkflowLinkEnableTriggered(bool on)
  */
 void DAAppController::onTableStyleFillColorChanged(const QColor& c)
 {
-#if DA_ENABLE_PYTHON
     DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget(false, false);
     if (!w) {
         return;
@@ -3109,9 +3057,6 @@ void DAAppController::onTableStyleFillColorChanged(const QColor& c)
     fragment.setBackground(QBrush(c));
     w->mergeStyleToSelection(fragment);
     qDebug() << "DAAppController::onTableStyleFillColorChanged(" << c << ")";
-#else
-    Q_UNUSED(c)
-#endif
 }
 
 /**
@@ -3120,7 +3065,6 @@ void DAAppController::onTableStyleFillColorChanged(const QColor& c)
  */
 void DAAppController::onTableStyleFontChanged(const QFont& f)
 {
-#if DA_ENABLE_PYTHON
     DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget(false, false);
     if (!w) {
         return;
@@ -3128,9 +3072,6 @@ void DAAppController::onTableStyleFontChanged(const QFont& f)
     DA::DATableCellStyle fragment;
     fragment.setFont(f);
     w->mergeStyleToSelection(fragment);
-#else
-    Q_UNUSED(f)
-#endif
 }
 
 /**
@@ -3139,7 +3080,6 @@ void DAAppController::onTableStyleFontChanged(const QFont& f)
  */
 void DAAppController::onTableStyleFontColorChanged(const QColor& c)
 {
-#if DA_ENABLE_PYTHON
     DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget(false, false);
     if (!w) {
         return;
@@ -3147,9 +3087,6 @@ void DAAppController::onTableStyleFontColorChanged(const QColor& c)
     DA::DATableCellStyle fragment;
     fragment.setForeground(c);
     w->mergeStyleToSelection(fragment);
-#else
-    Q_UNUSED(c)
-#endif
 }
 
 /**
@@ -3157,12 +3094,10 @@ void DAAppController::onTableStyleFontColorChanged(const QColor& c)
  */
 void DAAppController::onActionClearStyleSelectedTriggered()
 {
-#if DA_ENABLE_PYTHON
     DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget(false, false);
     if (w) {
         w->clearStyleSelection();
     }
-#endif
 }
 
 /**
@@ -3170,12 +3105,10 @@ void DAAppController::onActionClearStyleSelectedTriggered()
  */
 void DAAppController::onActionClearStyleAllTriggered()
 {
-#if DA_ENABLE_PYTHON
     DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget(false, false);
     if (w) {
         w->clearStyleAll();
     }
-#endif
 }
 
 /**
@@ -3188,7 +3121,6 @@ void DAAppController::onActionClearStyleAllTriggered()
  */
 void DAAppController::onTableStyleCurrentChanged(const DA::DATableCellStyle& style)
 {
-#if DA_ENABLE_PYTHON
     // 底色按钮
     if (mRibbon && mRibbon->mBtnTableFillColor) {
         QSignalBlocker block(mRibbon->mBtnTableFillColor);
@@ -3206,12 +3138,8 @@ void DAAppController::onTableStyleCurrentChanged(const DA::DATableCellStyle& sty
             mRibbon->mWidgetTableFont->setCurrentFontColor(style.foreground());
         }
     }
-#else
-    Q_UNUSED(style)
-#endif
 }
 
-#if DA_ENABLE_PYTHON
 /**
  * @brief 统计绘图请求的统一处理槽
  *
@@ -3331,6 +3259,5 @@ void DAAppController::executeStatsPlot(const QJsonObject& params,
     // 让坐标轴显示正常
     chart->rescaleAxes();
 }
-#endif
 
 }  // end DA

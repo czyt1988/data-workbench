@@ -4,10 +4,8 @@
 #include "spdlog/version.h"
 #include "qwt_global.h"
 #include "DAGlobals.h"
-#if DA_ENABLE_PYTHON
 // 通过此宏引入pybind11，避免qt中slot关键字冲突
 #include "DAPybind11InQt.h"
-#endif
 namespace DA
 {
 DAWorkbenchAboutDialog::DAWorkbenchAboutDialog(QWidget* parent) : QDialog(parent), ui(new Ui::DAWorkbenchAboutDialog)
@@ -37,10 +35,8 @@ void DAWorkbenchAboutDialog::makeAboutInfo()
 		tr("spdlog, MIT, Version: %1.%2.%3").arg(SPDLOG_VER_MAJOR).arg(SPDLOG_VER_MINOR).arg(SPDLOG_VER_PATCH));  // cn:spdlog,MIT,版本:%1.%2.%3
 	ui->textEdit->append(tr("Qt-Advanced-Docking-System, LGPL v2.1, Version:"));  // cn:Qt-Advanced-Docking-System,LGPL v2.1,版本:
 	ui->textEdit->append(tr("qwt, LGPL, Version: %1").arg(QWT_VERSION_STR));  // cn:qwt,LGPL,版本:%1
-#if DA_ENABLE_PYTHON
 	ui->textEdit->append(tr(""));  // cn:空行
 	ui->textEdit->append(tr("This is a Python dependent version"));  // cn:这是依赖python的版本
 	ui->textEdit->append(tr("pybind11, BSD, Version: %1.%2").arg(PYBIND11_VERSION_MAJOR).arg(PYBIND11_VERSION_MINOR));  // cn:pybind11,BSD,版本:%1.%2
-#endif
 }
 }  // end DA

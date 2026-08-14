@@ -104,7 +104,7 @@ Python层: DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPyWorkFlow
    - ✅ DAGui → DAUtils（界面层依赖基础层）
    - ❌ DAUtils → DAGui（基础层绝不能依赖界面层）
 2. **同层模块尽量减少直接依赖**，通过上层整合模块（DAGui）协调。
-3. **Python 相关模块**（DAPyBindQt/DAPyScripts/DAPyCommonWidgets/DAPyWorkFlow）仅在 `DA_ENABLE_PYTHON=ON` 时编译。
+3. **Python 相关模块**（DAPyBindQt/DAPyScripts/DAPyCommonWidgets/DAPyWorkFlow）为强制依赖，始终参与编译。
 4. **DAShared 是纯头文件库**，所有模块可通过 include path 直接使用其头文件，无需显式 CMake 链接。
 
 ### 模块依赖关系图
@@ -388,7 +388,7 @@ graph BT
 
 子目录（文件数含 .h/.cpp/.ui）：
 - `Chart/` (11) — 图表管理容器：`DAChartOperateWidget`(图表操作总控)/`DAChartManageWidget`(对象树)/`DAChartSettingWidget`(设置宿主) + `DAChartItemsManager`(序列化 key↔item 映射)；**非 Python 门控**
-- `ChartAddItem/` (89，混合门控) — 图表添加向导面板体系：2D/3D/Stats 三组抽象基类 + 27 个 `DAChartAdd*` 派生 Widget + `DAChartSeriesPickerWidget`/`DAChartSeriesSelectWidget`。**门控铁律**：`DAAbstractChartAddItemWidget`/`DAAbstractStatsChartAddWidget` 在非 Python 变量，`DAAbstractChart3DAddItemWidget` 及 27 个 Add 在 `if(DA_ENABLE_PYTHON)` 块——不可整目录 GLOB，否则 `DA_ENABLE_PYTHON=OFF` 时改变构建行为
+- `ChartAddItem/` (89) — 图表添加向导面板体系：2D/3D/Stats 三组抽象基类 + 27 个 `DAChartAdd*` 派生 Widget + `DAChartSeriesPickerWidget`/`DAChartSeriesSelectWidget`。**不可整目录 GLOB**，应显式列出源文件，否则会改变构建行为
 - `ChartSetting/` (64) — 每种图表类型的属性设置面板 + 工厂
 - `Chart3DSetting/` (26) — 3D 图表属性设置面板
 - `NodeSetting/` (8，Python only) — 通用节点参数面板系统（参数类型注册+SceneB模式）
@@ -542,7 +542,7 @@ graph BT
     DAPyWorkFlow 模块历史上存在类放置错误，大部分已在之前的重构中迁移（见上方§历史重构记录）。创建新类前仍需判断是否属于 DAPyBindQt 或 DAShared。
 
 !!! note "Python模块"
-    Python相关模块需要Python环境和pybind11支持。未启用 Python (DA_ENABLE_PYTHON=OFF) 时，DAPyBindQt/DAPyScripts/DAPyCommonWidgets/DAPyWorkFlow 不会构建，DAData/DAGui/DAInterface/DAPluginSupport/APP 中的 Python 相关代码也会跳过编译。
+    Python相关模块需要Python环境和pybind11支持。Python 为强制依赖，DAPyBindQt/DAPyScripts/DAPyCommonWidgets/DAPyWorkFlow 始终参与构建，DAData/DAGui/DAInterface/DAPluginSupport/APP 中的 Python 相关代码也始终参与编译。
 
 !!! note "平台差异"
     DAAxOfficeWrapper 仅在 Windows 平台构建，使用 Qt::AxContainer 组件。

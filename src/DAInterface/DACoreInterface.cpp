@@ -5,17 +5,11 @@
 #include <QTemporaryDir>
 #include "DAProjectInterface.h"
 #include "DALogCategory.h"
-#if DA_ENABLE_PYTHON
 #include <memory>
 // DA Python
 #include "DAPyInterpreter.h"
 #include "DAPyScripts.h"
 #include "DAPythonSignalHandler.h"
-#else
-#include <QProcess>
-#include <QList>
-#include <QFileInfo>
-#endif
 namespace DA
 {
 
@@ -27,10 +21,8 @@ public:
 
 public:
     QTemporaryDir mTempDir;
-#if DA_ENABLE_PYTHON
     std::shared_ptr< pybind11::scoped_interpreter > interpreter;
     std::unique_ptr< DAPythonSignalHandler > pythonHandler;
-#endif
 };
 
 DACoreInterface::PrivateData::PrivateData(DACoreInterface* p) : q_ptr(p)
@@ -40,22 +32,17 @@ DACoreInterface::PrivateData::PrivateData(DACoreInterface* p) : q_ptr(p)
 DACoreInterface::DACoreInterface(QObject* parent) : QObject(parent), DA_PIMPL_CONSTRUCT
 {
     d_ptr->mTempDir.setAutoRemove(true);
-#if DA_ENABLE_PYTHON
     initializePythonScripts();
-#endif
 }
 
 DACoreInterface::~DACoreInterface()
 {
-#if DA_ENABLE_PYTHON
     d_ptr->pythonHandler.reset();
     DAPyScripts::cleanup();
     d_ptr->interpreter = nullptr;
     DAPyInterpreter::ensureShutdown();
-#endif
 }
 
-#if DA_ENABLE_PYTHON
 /**
  * @brief 初始化python环境,加载默认脚本
  *
@@ -114,8 +101,6 @@ bool DACoreInterface::isPythonInterpreterInitialized()
 {
     return DAPyInterpreter::isPythonInitialized();
 }
-
-#endif  // end DA_ENABLE_PYTHON
 
 bool DACoreInterface::isProjectDirty() const
 {

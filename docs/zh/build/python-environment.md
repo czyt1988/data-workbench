@@ -8,7 +8,6 @@
 
 **特性**
 
-- ✅ **可选 Python 支持**：可禁用 Python 模块，仅使用绘图功能
 - ✅ **嵌入式 Python**：支持 embeddable package，便于打包发布
 - ✅ **灵活配置**：支持配置文件和系统环境两种查找方式
 
@@ -18,13 +17,10 @@
 
 ### 构建时 Python 环境
 
-DAWorkBench 可选择是否依赖 Python：
+DAWorkBench 强制依赖 Python，Python 相关模块始终参与编译：
 
-- **启用 Python**：自动查找系统 Python 环境，编译 Python 相关模块
-- **禁用 Python**：通过 CMake 选项 `DA_ENABLE_PYTHON=OFF` 禁用
-
-!!! tip "仅绘图场景"
-    如果仅需使用绘图模块，可禁用 Python 环境以简化构建。
+- 自动查找系统 Python 环境，编译 Python 相关模块（DAPyBindQt、DAPyScripts 等）
+- Python 不可禁用，是项目的必需依赖
 
 ### 运行时 Python 环境
 
@@ -171,24 +167,11 @@ del get-pip.py
 
 | 选项 | 默认值 | 说明 |
 |------|--------|------|
-| `DA_ENABLE_PYTHON` | ON | 启用/禁用 Python 模块 |
 | `DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` | OFF | 自动安装 Python 依赖 |
 | `Python_ROOT_DIR` | - | 指定 Python 安装路径 |
 
-### 禁用 Python 构建
-
-如果仅需使用绘图功能，可通过 CMake 参数禁用 Python 模块。以下命令展示如何构建不包含 Python 支持的版本：
-
-```powershell
-# 配置项目并禁用 Python 模块
-# DA_ENABLE_PYTHON=OFF 跳过 Python 相关代码编译
-cmake -S . -B build -G Ninja `
-    -DCMAKE_BUILD_TYPE=Release `
-    -DCMAKE_TOOLCHAIN_FILE="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake" `
-    -DDA_ENABLE_PYTHON=OFF
-```
-
-禁用 Python 后，软件仅保留绘图和数据可视化功能，无法执行 pandas 数据处理操作。
+!!! info "Python 为强制依赖"
+    Python 不可禁用，始终参与编译。`DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` 仅控制是否自动部署 Python DLL，不影响 Python 模块本身的编译。
 
 ---
 

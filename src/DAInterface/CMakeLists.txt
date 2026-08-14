@@ -44,16 +44,14 @@ set(DA_LIB_SOURCE_FILES
     DAUIInterface.cpp
     DAInterfaceHelper.cpp
 )
-if(DA_ENABLE_PYTHON)
-    list(APPEND DA_LIB_HEADER_FILES
-        DAInterfacePythonBinding.h
-        DAQwtPyPlotPythonBinding.h
-    )
-    list(APPEND DA_LIB_SOURCE_FILES
-        DAInterfacePythonBinding.cpp
-        DAQwtPyPlotPythonBinding.cpp
-    )
-endif()
+list(APPEND DA_LIB_HEADER_FILES
+    DAInterfacePythonBinding.h
+    DAQwtPyPlotPythonBinding.h
+)
+list(APPEND DA_LIB_SOURCE_FILES
+    DAInterfacePythonBinding.cpp
+    DAQwtPyPlotPythonBinding.cpp
+)
 
 
 message(STATUS "DA_LIB_HEADER_FILES=${DA_LIB_HEADER_FILES}")
@@ -87,12 +85,10 @@ damacro_import_qwt(${DA_LIB_NAME})
 # -------------link ctk--------------------------
 damacro_import_DALiteCtk(${DA_LIB_NAME})
 
-if(DA_ENABLE_PYTHON)
-    # -------------link python--------------------------
-    damacro_import_Python(${DA_LIB_NAME})
-    # -------------link 3rdparty pybind11--------------------------
-    damacro_import_pybind11(${DA_LIB_NAME})
-endif()
+# -------------link python--------------------------
+damacro_import_Python(${DA_LIB_NAME})
+# -------------link 3rdparty pybind11--------------------------
+damacro_import_pybind11(${DA_LIB_NAME})
 
 target_link_libraries(${DA_LIB_NAME} PUBLIC
     ${DA_PROJECT_NAME}::DAGui

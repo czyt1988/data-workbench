@@ -7,10 +7,8 @@
 #include <QApplication>
 #include <QDir>
 #include <QFileInfo>
-#if DA_ENABLE_PYTHON
 #include "DAPyNodeFactory.h"
 #include "DAPyInterpreter.h"
-#endif
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -73,10 +71,8 @@ void DAAppPluginManager::loadAllPlugins(DACoreInterface* c)
             }
         }
     }
-#if DA_ENABLE_PYTHON
     // 初始化Python节点工厂
     initPyNodeFactory();
-#endif
     // 最后对_nodeMetaDatas去重，此去重要保证原来的顺序
     QMap< DAPyNodeMetaData, int > mapcnt;
     // 说明有重复项，需要去除
@@ -129,11 +125,9 @@ QList< std::shared_ptr< DAPyNodeFactory > > DAAppPluginManager::createNodeFactor
     for (DAAbstractNodePlugin* d : std::as_const(nodePlugins)) {
         res.append(std::shared_ptr< DAPyNodeFactory >(d->createNodeFactory()));
     }
-#if DA_ENABLE_PYTHON
     if (mPyNodeFactory) {
         res.append(mPyNodeFactory);
     }
-#endif
     return (res);
 }
 
@@ -156,14 +150,9 @@ QList< DAPyNodeMetaData > DAAppPluginManager::getAllNodeMetaDatas() const
  */
 std::shared_ptr< DAPyNodeFactory > DAAppPluginManager::getPyNodeFactory() const
 {
-#if DA_ENABLE_PYTHON
     return mPyNodeFactory;
-#else
-    return nullptr;
-#endif
 }
 
-#if DA_ENABLE_PYTHON
 
 /**
  * @brief 扫描pyplugins目录，收集有效的Python插件路径
@@ -246,6 +235,5 @@ void DAAppPluginManager::initPyNodeFactory()
         mPyNodeFactory.reset();
     }
 }
-#endif
 
 }
