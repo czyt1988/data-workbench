@@ -22,8 +22,8 @@ public:
     ~DAAppChartOperateWidget() override;
     // 设置data manager
     void setDataManager(DADataManager* mgr);
-    // 添加一个Figure
-    virtual DAFigureWidget* createFigure(const QString& name = QString()) override;
+    // 添加一个Figure，id 非空时用作 figure 持久 id（供工程反序列化恢复布局）
+    virtual DAFigureWidget* createFigure(const QString& name = QString(), const QString& id = QString()) override;
     // 绘制,如果没成功，返回nullptr
     // int execPlotGuideDialog(DA::DAChartTypes t = DA::DAChartTypes::Curve);
     // 通过open打开引导对话框来创建item，这时将通过createItem信号来接收创建好的item

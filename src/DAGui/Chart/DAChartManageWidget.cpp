@@ -419,9 +419,9 @@ void DAChartManageWidget::setComboboxCurrentFigure(DAFigureWidget* fig)
 
 void DAChartManageWidget::onFigureCreated(DAFigureWidget* fig)
 {
-    int index = d_ptr->mChartOptWidget->getFigureIndex(fig);
-    if (index < 0) {
-        daCritical << tr("received figure create signal, but cannot find figure index");  // cn:获取了绘图创建的信号，但无法找到绘图的索引
+    // figure 在 ADS 嵌套停靠下不再有稳定的线性布局索引，这里仅做存在性校验后追加
+    if (!fig || d_ptr->mChartOptWidget->getFigureIndex(fig) < 0) {
+        daCritical << tr("received figure create signal, but cannot find figure");  // cn:获取了绘图创建的信号，但无法找到绘图
         return;
     }
 
@@ -436,9 +436,10 @@ void DAChartManageWidget::onFigureCreated(DAFigureWidget* fig)
     connect(figTreeview, &QWidget::customContextMenuRequested, this, [ this, figTreeview ](const QPoint& pos) {
         onTreeViewContextMenuRequested(figTreeview, pos);
     });
-    ui->stackedWidget->insertWidget(index, figTreeview);
+    // combobox/stackedWidget 顺序 = 创建顺序（稳定），不再依赖停靠布局索引
+    ui->stackedWidget->addWidget(figTreeview);
 
-    ui->comboBoxFigure->insertItem(index, fig->windowTitle(), reinterpret_cast< quintptr >(fig));
+    ui->comboBoxFigure->addItem(fig->windowTitle(), reinterpret_cast< quintptr >(fig));
 }
 
 void DAChartManageWidget::onFigureCloseing(DAFigureWidget* fig)
@@ -520,13 +521,16 @@ void DAChartManageWidget::onToolButtonFigureSettingClicked()
 
 void DAChartManageWidget::onComboboxCurrentIndexChanged(int index)
 {
-    // 联动ChartOptWidget,此函数会触发槽onCurrentFigureChanged，调用setCurrentDisplayView，
+    // 用指针而非 index 联动 ChartOperateWidget（ADS 嵌套停靠下 index 不再对应停靠布局）
+    // 此函数会触发槽onCurrentFigureChanged，调用setCurrentDisplayView，
     // 但在setCurrentDisplayView中，combobx的currentIndex已经是index，就不会再设置，从而避免递归调用
-    d_ptr->mChartOptWidget->setCurrentFigure(index);
-    if (DAFigureWidget* fig = getCurrentFigure()) {
-        setStackCurrentFigure(fig);
-        Q_EMIT selectFigureChanged(fig);
+    DAFigureWidget* fig = getComboboxFigure(index);
+    if (!fig) {
+        return;
     }
+    d_ptr->mChartOptWidget->setCurrentFigure(fig);
+    setStackCurrentFigure(fig);
+    Q_EMIT selectFigureChanged(fig);
 }
 
 /**

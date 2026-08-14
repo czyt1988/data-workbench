@@ -30,11 +30,13 @@ void DAAppChartOperateWidget::setDataManager(DADataManager* mgr)
 
 /**
  * @brief 创建figure
+ * @param name 绘图名称
+ * @param id 持久 id（工程反序列化时传入，用于恢复停靠布局）
  * @return
  */
-DAFigureWidget* DAAppChartOperateWidget::createFigure(const QString& name)
+DAFigureWidget* DAAppChartOperateWidget::createFigure(const QString& name, const QString& id)
 {
-    DAFigureWidget* fig = DAChartOperateWidget::createFigure(name);
+    DAFigureWidget* fig = DAChartOperateWidget::createFigure(name, id);
     if (DAAppFigureWidget* appFig = qobject_cast< DAAppFigureWidget* >(fig)) {
         appFig->installEventFilter(mFigEventFilter);
     }

@@ -1,13 +1,20 @@
 #include "DAChartOperateWidget.h"
-#include "ui_DAChartOperateWidget.h"
 // stl
 #include <memory>
+#include <utility>
 // Qt
 #include <QUndoStack>
 #include <QMessageBox>
+#include <QVBoxLayout>
+#include <QPointer>
 #include <QDebug>
+// ADS
+#include "DockManager.h"
+#include "DockWidget.h"
+#include "DockAreaWidget.h"
 // DAFigure
 #include "DAFigureFactory.h"
+#include "DAFigureDockWidget.h"
 namespace DA
 {
 int g_figure_cnt = 0;  ///< 绘图的数量，仅限当前程序创建计数
@@ -19,35 +26,92 @@ class DAChartOperateWidgetPrivate
     DA_IMPL_PUBLIC(DAChartOperateWidget)
 public:
     DAChartOperateWidgetPrivate(DAChartOperateWidget* p);
+    // 根据 figure 获取其 dock
+    ads::CDockWidget* dockOfFigure(DAFigureWidget* fig) const;
+    // 根据 dock 获取其 figure
+    DAFigureWidget* figureOfDock(ads::CDockWidget* dock) const;
+    // 获取新 figure 应加入的 dock area（当前聚焦 dock 所在 area，否则任意已有 area，否则 nullptr）
+    ads::CDockAreaWidget* targetAreaForNewFigure() const;
 
 public:
     std::unique_ptr< DAFigureFactory > mFigureFactory;
+    ads::CDockManager* mDockManager { nullptr };                       ///< 嵌套停靠管理器
+    QList< DAFigureWidget* > mFigures;                                 ///< 插入顺序，作为 index 基础
+    QHash< DAFigureWidget*, ads::CDockWidget* > mFigToDock;            ///< figure -> dock
+    QHash< DAFigureWidget*, DAFigureDockWidget* > mFigToFigureDock;    ///< figure -> figureDock
+    QPointer< DAFigureWidget > mCurrentFigure;                         ///< 当前激活 figure
+    bool mSuppressCurrentChanged { false };                            ///< 创建/加载期间抑制 currentFigureChanged
 };
+
 DAChartOperateWidgetPrivate::DAChartOperateWidgetPrivate(DAChartOperateWidget* p) : q_ptr(p)
 {
     mFigureFactory = std::make_unique< DAFigureFactory >();
+}
+
+ads::CDockWidget* DAChartOperateWidgetPrivate::dockOfFigure(DAFigureWidget* fig) const
+{
+    return mFigToDock.value(fig, nullptr);
+}
+
+DAFigureWidget* DAChartOperateWidgetPrivate::figureOfDock(ads::CDockWidget* dock) const
+{
+    if (!dock) {
+        return nullptr;
+    }
+    if (DAFigureDockWidget* fd = qobject_cast< DAFigureDockWidget* >(dock->widget())) {
+        return fd->getFigureWidget();
+    }
+    return nullptr;
+}
+
+ads::CDockAreaWidget* DAChartOperateWidgetPrivate::targetAreaForNewFigure() const
+{
+    if (!mDockManager) {
+        return nullptr;
+    }
+    // 优先加入当前聚焦 dock 所在 area
+    if (ads::CDockWidget* focused = mDockManager->focusedDockWidget()) {
+        if (ads::CDockAreaWidget* a = focused->dockAreaWidget()) {
+            return a;
+        }
+    }
+    // 否则取任意一个已有 area（按插入顺序）
+    for (DAFigureWidget* f : std::as_const(mFigures)) {
+        if (ads::CDockWidget* d = mFigToDock.value(f, nullptr)) {
+            if (ads::CDockAreaWidget* a = d->dockAreaWidget()) {
+                return a;
+            }
+        }
+    }
+    return nullptr;
 }
 
 //===================================================
 // DAChartOperateWidget
 //===================================================
 DAChartOperateWidget::DAChartOperateWidget(QWidget* parent)
-    : DAAbstractOperateWidget(parent), d_ptr(new DAChartOperateWidgetPrivate(this)), ui(new Ui::DAChartOperateWidget)
+    : DAAbstractOperateWidget(parent), d_ptr(new DAChartOperateWidgetPrivate(this))
 {
-    ui->setupUi(this);
-    connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DAChartOperateWidget::onTabWidgetCurrentChanged);
-    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &DAChartOperateWidget::onTabCloseRequested);
+    QVBoxLayout* lay = new QVBoxLayout(this);
+    lay->setContentsMargins(0, 0, 0, 0);
+    lay->setSpacing(0);
+    d_ptr->mDockManager = new ads::CDockManager(this);
+    lay->addWidget(d_ptr->mDockManager);
+    // 禁止 figure dock 浮动为独立窗口（全局锁，对所有当前及后续 dock 生效），保留分屏/并栏/拖拽
+    d_ptr->mDockManager->lockDockWidgetFeaturesGlobally(ads::CDockWidget::DockWidgetFloatable);
+    connect(d_ptr->mDockManager, &ads::CDockManager::focusedDockWidgetChanged,
+            this, &DAChartOperateWidget::onFocusedDockChanged);
 }
 
 DAChartOperateWidget::~DAChartOperateWidget()
 {
-    delete ui;
+    // mDockManager 作为本部件的子对象，由 Qt 自动销毁；figure dock 禁止浮动，无浮动窗口需额外清理
 }
 
 // 获取窗口数量
 int DAChartOperateWidget::getFigureCount() const
 {
-    return ui->tabWidget->count();
+    return d_ptr->mFigures.size();
 }
 
 /**
@@ -84,10 +148,16 @@ DAFigureFactory* DAChartOperateWidget::getFigureFactory() const
 /**
  * @brief 创建一个绘图
  *
+ * 基于嵌套 ads::CDockManager 管理：DAFigureWidget 包成 DAFigureDockWidget 后由
+ * ads::CDockWidget 包装加入停靠区。id 非空时用作 figure 持久 id 与 dock objectName，
+ * 供工程反序列化时 restoreState 按 objectName 匹配恢复布局。
+ *
  * @note 重载此函数，如果没有调用DAChartOperateWidget::createFigure，必须调用initFigureConnect(fig);来初始化创建的fig，同时也要发射信号figureCreated
+ * @param name 绘图名称，为空时自动生成
+ * @param id 持久 id，非空时覆盖 figure 默认 id（供工程反序列化恢复布局）
  * @return
  */
-DAFigureWidget* DAChartOperateWidget::createFigure(const QString& name)
+DAFigureWidget* DAChartOperateWidget::createFigure(const QString& name, const QString& id)
 {
     ++g_figure_cnt;
     QString t = name;
@@ -96,10 +166,36 @@ DAFigureWidget* DAChartOperateWidget::createFigure(const QString& name)
     }
     DAFigureWidget* fig = getFigureFactory()->createFigure();
     fig->setWindowTitle(t);
-
-    // ui->tabWidget->addTab会触发currentFigureChanged信号，这里会发射figureCreated，不触发currentFigureChanged信号
-    QSignalBlocker b(ui->tabWidget);
-    ui->tabWidget->addTab(fig, t);
+    if (!id.isEmpty()) {
+        // 工程反序列化时恢复持久 id，同时作为 dock objectName 供 restoreState 匹配
+        fig->setFigureId(id);
+    }
+    // 封装为 DAFigureDockWidget（纯 QWidget，遵循项目约定，不继承 ads::CDockWidget）
+    DAFigureDockWidget* figureDock = new DAFigureDockWidget(fig);
+    // 包装进 ads::CDockWidget（使用 manager 构造以走管理器组件工厂，避免已弃用的两参构造）
+    ads::CDockWidget* dock = new ads::CDockWidget(d_ptr->mDockManager, t);
+    dock->setObjectName(fig->getFigureId());
+    dock->setWidget(figureDock, ads::CDockWidget::ForceNoScrollArea);
+    // 关闭按钮触发 closeRequested 而非自动隐藏，便于弹确认框后再删除
+    dock->setFeature(ads::CDockWidget::CustomCloseHandling, true);
+    connect(dock, &ads::CDockWidget::closeRequested, this, [this, fig]() {
+        onFigureCloseRequested(fig);
+    });
+    // 记录映射
+    d_ptr->mFigToDock[fig]        = dock;
+    d_ptr->mFigToFigureDock[fig]  = figureDock;
+    d_ptr->mFigures.append(fig);
+    // 抑制聚焦改变，避免 addDockWidget 触发 currentFigureChanged（保留原不变量：创建只发 figureCreated）
+    d_ptr->mSuppressCurrentChanged = true;
+    ads::CDockAreaWidget* area = d_ptr->targetAreaForNewFigure();
+    if (area) {
+        // 默认以标签形式加入当前聚焦 dock 所在 area
+        d_ptr->mDockManager->addDockWidgetTabToArea(dock, area);
+    } else {
+        // 首个 figure：在容器根创建 dock area
+        d_ptr->mDockManager->addDockWidget(ads::CenterDockWidgetArea, dock);
+    }
+    d_ptr->mSuppressCurrentChanged = false;
     initFigureConnect(fig);
     Q_EMIT figureCreated(fig);
     return fig;
@@ -111,15 +207,7 @@ DAFigureWidget* DAChartOperateWidget::createFigure(const QString& name)
  */
 QList< DAFigureWidget* > DAChartOperateWidget::getFigureList() const
 {
-    QList< DAFigureWidget* > res;
-    int count = getFigureCount();
-    for (int i = 0; i < count; ++i) {
-        DAFigureWidget* fig = getFigure(i);
-        if (fig) {
-            res.append(fig);
-        }
-    }
-    return res;
+    return d_ptr->mFigures;
 }
 
 /**
@@ -128,7 +216,15 @@ QList< DAFigureWidget* > DAChartOperateWidget::getFigureList() const
  */
 DAFigureWidget* DAChartOperateWidget::getCurrentFigure() const
 {
-    return qobject_cast< DAFigureWidget* >(ui->tabWidget->currentWidget());
+    // 优先返回追踪的当前 figure（QPointer 在 figure 销毁后自动置空）
+    if (d_ptr->mCurrentFigure) {
+        return d_ptr->mCurrentFigure;
+    }
+    // 回退到聚焦 dock 对应的 figure
+    if (d_ptr->mDockManager) {
+        return d_ptr->figureOfDock(d_ptr->mDockManager->focusedDockWidget());
+    }
+    return nullptr;
 }
 
 /**
@@ -146,12 +242,33 @@ DAFigureWidget* DAChartOperateWidget::gcf() const
  */
 void DAChartOperateWidget::setCurrentFigure(int index)
 {
-    ui->tabWidget->setCurrentIndex(index);
+    setCurrentFigure(d_ptr->mFigures.value(index, nullptr));
 }
 
+/**
+ * @brief 把绘图设置为当前绘图
+ * @param fig
+ */
 void DAChartOperateWidget::setCurrentFigure(DAFigureWidget* fig)
 {
-    ui->tabWidget->setCurrentWidget(fig);
+    if (!fig) {
+        return;
+    }
+    ads::CDockWidget* dock = d_ptr->dockOfFigure(fig);
+    if (!dock) {
+        return;
+    }
+    dock->raise();  // 标签则置为当前，浮动则 raise 窗口
+    // raise 可能不触发 focusedDockWidgetChanged（如同 area 内已是当前），主动同步
+    if (d_ptr->mCurrentFigure != fig) {
+        d_ptr->mCurrentFigure = fig;
+        if (QUndoStack* un = fig->getUndoStack()) {
+            if (!un->isActive()) {
+                un->setActive(true);
+            }
+        }
+        Q_EMIT currentFigureChanged(fig, d_ptr->mFigures.indexOf(fig));
+    }
 }
 
 /**
@@ -161,7 +278,7 @@ void DAChartOperateWidget::setCurrentFigure(DAFigureWidget* fig)
  */
 DAFigureWidget* DAChartOperateWidget::getFigure(int index) const
 {
-    return qobject_cast< DAFigureWidget* >(ui->tabWidget->widget(index));
+    return d_ptr->mFigures.value(index, nullptr);
 }
 
 /**
@@ -171,8 +288,7 @@ DAFigureWidget* DAChartOperateWidget::getFigure(int index) const
  */
 DAFigureWidget* DAChartOperateWidget::findFigure(const QString& id) const
 {
-    const QList< DAFigureWidget* > figs = getFigureList();
-    for (DAFigureWidget* fig : figs) {
+    for (DAFigureWidget* fig : std::as_const(d_ptr->mFigures)) {
         if (fig->getFigureId() == id) {
             return fig;
         }
@@ -187,16 +303,13 @@ DAFigureWidget* DAChartOperateWidget::findFigure(const QString& id) const
  */
 QString DAChartOperateWidget::getFigureName(int index) const
 {
-    return ui->tabWidget->tabText(index);
+    DAFigureWidget* fig = getFigure(index);
+    return fig ? fig->windowTitle() : QString();
 }
 
 QString DAChartOperateWidget::getFigureName(DAFigureWidget* f) const
 {
-    int index = getFigureIndex(f);
-    if (index < 0) {
-        return QString();
-    }
-    return getFigureName(index);
+    return f ? f->windowTitle() : QString();
 }
 
 /**
@@ -206,26 +319,26 @@ QString DAChartOperateWidget::getFigureName(DAFigureWidget* f) const
  */
 void DAChartOperateWidget::setFigureName(int index, const QString& name)
 {
-    ui->tabWidget->setTabText(index, name);
+    setFigureName(getFigure(index), name);
 }
 
 void DAChartOperateWidget::setFigureName(DAFigureWidget* f, const QString& name)
 {
-    int index = getFigureIndex(f);
-    if (index < 0) {
+    if (!f) {
         return;
     }
-    setFigureName(index, name);
+    // 设置 figure 窗口标题 → windowTitleChanged → onFigureTitleChanged 同步 dock 标签 + 发射 figureTitleChanged
+    f->setWindowTitle(name);
 }
 
 /**
- * @brief 获取fig在DAChartOperateWidget的索引
+ * @brief 获取fig在DAChartOperateWidget的索引（创建/插入顺序）
  * @param f
  * @return
  */
 int DAChartOperateWidget::getFigureIndex(DAFigureWidget* f) const
 {
-    return ui->tabWidget->indexOf(f);
+    return d_ptr->mFigures.indexOf(f);
 }
 
 /**
@@ -238,14 +351,23 @@ void DAChartOperateWidget::removeFigure(DAFigureWidget* f, bool deleteFigure)
     if (!f) {
         return;
     }
-    int index = getFigureIndex(f);
-    if (index < 0) {
-        return;
+    ads::CDockWidget* dock = d_ptr->dockOfFigure(f);
+    if (!dock) {
+        return;  // 不由本部件管理
     }
-    Q_EMIT figureRemoving(f);
-    ui->tabWidget->removeTab(index);
+    Q_EMIT figureRemoving(f);  // 不变量：移除前发射，供监听者在此期间访问 figure
+    d_ptr->mFigures.removeAll(f);
+    d_ptr->mFigToFigureDock.remove(f);
+    d_ptr->mFigToDock.remove(f);
+    if (d_ptr->mCurrentFigure == f) {
+        d_ptr->mCurrentFigure = nullptr;
+    }
+    if (d_ptr->mDockManager) {
+        d_ptr->mDockManager->removeDockWidget(dock);
+    }
     if (deleteFigure) {
-        f->deleteLater();
+        // 级联删除 figureDock + fig，延迟到事件循环（与原 f->deleteLater() 语义一致）
+        dock->deleteLater();
     }
 }
 
@@ -303,15 +425,45 @@ QUndoStack* DAChartOperateWidget::getUndoStack()
 }
 
 /**
+ * @brief 保存嵌套停靠区布局（供工程序列化）
+ *
+ * 顶层 ads::CDockManager::saveState 不会捕获嵌套管理器的布局，故需单独保存
+ * @return 布局状态字节数组，无停靠区时返回空
+ */
+QByteArray DAChartOperateWidget::saveChartLayout() const
+{
+    if (!d_ptr->mDockManager) {
+        return QByteArray();
+    }
+    return d_ptr->mDockManager->saveState();
+}
+
+/**
+ * @brief 恢复嵌套停靠区布局（供工程反序列化）
+ *
+ * 调用前需先按保存顺序 createFigure(name, id) 重建所有 figure dock（objectName=figureId），
+ * restoreState 按 objectName 重新挂接布局。state 为空或匹配失败返回 false（保持默认标签顺序）
+ * @param state saveChartLayout 返回的状态
+ * @return 恢复成功返回 true
+ */
+bool DAChartOperateWidget::restoreChartLayout(const QByteArray& state)
+{
+    if (!d_ptr->mDockManager || state.isEmpty()) {
+        return false;
+    }
+    return d_ptr->mDockManager->restoreState(state);
+}
+
+/**
  * @brief 清除所有绘图
  */
 void DAChartOperateWidget::clear()
 {
-    const QList< DAFigureWidget* > figs = getFigureList();
-    for (DAFigureWidget* fig : figs) {
+    // 拷贝后遍历，removeFigure 会修改 mFigures
+    const QList< DAFigureWidget* > figs = d_ptr->mFigures;
+    for (DAFigureWidget* fig : std::as_const(figs)) {
         removeFigure(fig, true);
     }
-    ui->tabWidget->clear();
 }
 
 /**
@@ -322,38 +474,43 @@ void DAChartOperateWidget::clear()
  */
 void DAChartOperateWidget::initFigureConnect(DAFigureWidget* fig)
 {
-    // 信号转发
+    // 信号转发：figure 标题改变 → 同步 dock 标签 + 发射 figureTitleChanged
     connect(fig, &DAFigureWidget::windowTitleChanged, this, &DAChartOperateWidget::onFigureTitleChanged);
 }
 
 /**
- * @brief tab窗口改变
- * @param index
+ * @brief 嵌套停靠区聚焦 dock 改变
+ * @param oldDock
+ * @param nowDock
  */
-void DAChartOperateWidget::onTabWidgetCurrentChanged(int index)
+void DAChartOperateWidget::onFocusedDockChanged(ads::CDockWidget* oldDock, ads::CDockWidget* nowDock)
 {
-    DAFigureWidget* fig = getFigure(index);
-    if (nullptr == fig) {
-        // 这个是删除最后一个绘图
-        // qCritical() << tr("chart operate widget's tab changed, but cannot find figure");  // cn:绘图操作窗口的标签改变信号中，无法通过标签索引找到对应的绘图
+    Q_UNUSED(oldDock);
+    if (d_ptr->mSuppressCurrentChanged) {
         return;
     }
-    auto un = fig->getUndoStack();
-    if (un) {
+    DAFigureWidget* fig = d_ptr->figureOfDock(nowDock);
+    if (d_ptr->mCurrentFigure == fig) {
+        return;  // 未变化，避免重复发射
+    }
+    d_ptr->mCurrentFigure = fig;
+    if (!fig) {
+        return;
+    }
+    if (QUndoStack* un = fig->getUndoStack()) {
         if (!un->isActive()) {
             un->setActive(true);
         }
     }
-    Q_EMIT currentFigureChanged(fig, index);
+    Q_EMIT currentFigureChanged(fig, d_ptr->mFigures.indexOf(fig));
 }
 
 /**
- * @brief tab窗口关闭
- * @param index
+ * @brief dock 关闭请求处理（经 closeRequested 信号触发）
+ * @param fig 对应的 figure
  */
-void DAChartOperateWidget::onTabCloseRequested(int index)
+void DAChartOperateWidget::onFigureCloseRequested(DAFigureWidget* fig)
 {
-    DAFigureWidget* fig = getFigure(index);
     if (!fig) {
         return;
     }
@@ -363,7 +520,6 @@ void DAChartOperateWidget::onTabCloseRequested(int index)
     if (QMessageBox::Yes != btn) {
         return;
     }
-    // 这里不能直接调用removeFigure，removeFigure里面会判断tab
     removeFigure(fig, true);
 }
 
@@ -374,13 +530,14 @@ void DAChartOperateWidget::onTabCloseRequested(int index)
 void DAChartOperateWidget::onFigureTitleChanged(const QString& t)
 {
     DAFigureWidget* fig = qobject_cast< DAFigureWidget* >(sender());
-    if (fig) {
-        int i = getFigureIndex(fig);
-        if (i >= 0) {
-            ui->tabWidget->setTabText(i, t);
-        }
-        Q_EMIT figureTitleChanged(fig, t);
+    if (!fig) {
+        return;
     }
+    if (ads::CDockWidget* dock = d_ptr->dockOfFigure(fig)) {
+        // 设置 dock 窗口标题会触发 WindowTitleChange 事件，ADS 据此更新标签文本
+        dock->setWindowTitle(t);
+    }
+    Q_EMIT figureTitleChanged(fig, t);
 }
 
 }  // end DA

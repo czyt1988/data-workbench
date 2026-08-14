@@ -1818,6 +1818,15 @@ QDomElement DAXmlHelper::makeElement(DAChartOperateWidget* chartOpt,
         figEle.setAttribute(QStringLiteral("figure-name"), chartOpt->getFigureName(i));
         chartsElement.appendChild(figEle);
     }
+    // 嵌套停靠区布局：顶层 ads::CDockManager::saveState 不捕获嵌套管理器，需单独保存
+    // base64 编码避免二进制内容破坏 XML 文本
+    QByteArray layoutState = chartOpt->saveChartLayout();
+    if (!layoutState.isEmpty()) {
+        QDomElement layoutEle = doc->createElement(QStringLiteral("chart-layout"));
+        QDomText layoutText   = doc->createTextNode(QString::fromLatin1(layoutState.toBase64()));
+        layoutEle.appendChild(layoutText);
+        chartsElement.appendChild(layoutEle);
+    }
     return chartsElement;
 }
 
@@ -1826,21 +1835,38 @@ bool DAXmlHelper::loadElement(DAChartOperateWidget* chartOpt,
                               const DAChartItemsManager* itemsMgr,
                               const QVersionNumber& v)
 {
+    QByteArray chartLayout;
     auto childs = tag->childNodes();
     for (int i = 0; i < childs.size(); ++i) {
         QDomElement figEle = childs.at(i).toElement();
         if (figEle.isNull()) {
             continue;
         }
-        DAFigureWidget* fig = chartOpt->createFigure();
+        // 嵌套停靠区布局节点，延迟到所有 figure 创建完成后恢复
+        if (figEle.tagName() == QLatin1String("chart-layout")) {
+            chartLayout = QByteArray::fromBase64(figEle.text().toLatin1());
+            continue;
+        }
+        // 仅处理 figure 节点（兼容性：跳过未知子节点）
+        if (figEle.tagName() != QLatin1String("figure")) {
+            continue;
+        }
+        // id 用于恢复 figure 持久 id 与 dock objectName，供 restoreState 按 objectName 匹配布局
+        QString figId   = figEle.attribute(QStringLiteral("id"));
+        QString figName = figEle.attribute(QStringLiteral("figure-name"));
+        DAFigureWidget* fig = chartOpt->createFigure(figName, figId);
         if (!loadElement(fig, &figEle, itemsMgr)) {
             // 加载失败，删除窗口
             qDebug() << "load figure error";
             chartOpt->removeFigure(fig, true);
+            continue;
         }
-        // 获取窗口名字
-        QString figName = figEle.attribute(QStringLiteral("figure-name"));
+        // 名称已在 createFigure 传入，这里保持与原流程一致
         chartOpt->setFigureName(fig, figName);
+    }
+    // 所有 figure 创建完毕后恢复停靠布局（按 objectName=figureId 匹配；无布局时保持默认标签顺序）
+    if (!chartLayout.isEmpty()) {
+        chartOpt->restoreChartLayout(chartLayout);
     }
     return true;
 }

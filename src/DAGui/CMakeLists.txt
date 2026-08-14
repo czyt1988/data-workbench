@@ -311,15 +311,16 @@ set(DA_LIB_HEADER_FILES_Chart
     ${DA_LIB_SUBDIR_Chart}/DAChartManageWidget.h
     ${DA_LIB_SUBDIR_Chart}/DAChartSettingWidget.h
     ${DA_LIB_SUBDIR_Chart}/DAChartItemsManager.h
+    ${DA_LIB_SUBDIR_Chart}/DAFigureDockWidget.h
 )
 set(DA_LIB_SOURCE_FILES_Chart
     ${DA_LIB_SUBDIR_Chart}/DAChartOperateWidget.cpp
     ${DA_LIB_SUBDIR_Chart}/DAChartManageWidget.cpp
     ${DA_LIB_SUBDIR_Chart}/DAChartSettingWidget.cpp
     ${DA_LIB_SUBDIR_Chart}/DAChartItemsManager.cpp
+    ${DA_LIB_SUBDIR_Chart}/DAFigureDockWidget.cpp
 )
 set(DA_LIB_QT_UI_FILES_Chart
-    ${DA_LIB_SUBDIR_Chart}/DAChartOperateWidget.ui
     ${DA_LIB_SUBDIR_Chart}/DAChartManageWidget.ui
     ${DA_LIB_SUBDIR_Chart}/DAChartSettingWidget.ui
 )
