@@ -160,6 +160,17 @@ bool DAAgentSessionStore::hasSession(const QString& id) const
     return false;
 }
 
+int DAAgentSessionStore::messageCount(const QString& id) const
+{
+    DA_DC(d);
+    if (id.isEmpty()) return -1;
+    QVector<SessionMeta> metas = d->readIndexInternal();
+    for (const auto& m : metas) {
+        if (m.id == id) return m.messageCount;
+    }
+    return -1;
+}
+
 // ===========================================================================
 // 记录读写
 // ===========================================================================

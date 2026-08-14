@@ -739,9 +739,18 @@ QString DAAgentModule::createSession()
  */
 void DAAgentModule::newSession()
 {
+    DA_D(d);
     // MAJOR3（round-3）：供 UI "+" 按钮——createSession + emit sessionCreated。
     // sendMessage 自动建会话调 createSession（无 sessionCreated），
     // UI "+" 调 newSession（有 sessionCreated）。
+    // 若当前已有活跃会话且仍为全新（无任何消息记录、agent 未启动），
+    // 直接复用该会话——避免用户连续点击"+"堆积无用空会话。
+    if (!d->mCurrentSessionId.isEmpty()
+        && !isRunning()
+        && d->mSessionStore->messageCount(d->mCurrentSessionId) == 0) {
+        emit sessionCreated(d->mCurrentSessionId);  // 复用：仅触发 UI 幂等刷新（clearChat 对已空聊天为 no-op），不落盘新会话
+        return;
+    }
     QString sid = createSession();
     emit sessionCreated(sid);  // 仅此路径触发 UI clearChat
 }

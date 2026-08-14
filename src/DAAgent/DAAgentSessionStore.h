@@ -63,6 +63,8 @@ public:
     QVector<SessionMeta> listSessions(const QString& projectPathFilter = QString()) const;
     // 判断 id 是否存在于 index
     bool hasSession(const QString& id) const;
+    // 读取指定会话的消息计数（索引维护值；仅计 user/assistant/tool_result；不存在/空 id 返回 -1）
+    int messageCount(const QString& id) const;
 
     // ---- 记录读写 ----
     // 追加一条 JSONL 记录（崩溃安全：每条即写 flush），同时更新 index 的 updatedAt 与 messageCount

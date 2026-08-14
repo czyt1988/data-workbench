@@ -43,6 +43,7 @@ private Q_SLOTS:
     void testImportSessionFiles();  // Bug1 回归：导入会话标记 projectPath + 合并
     void testProjectPathFiltering();  // Bug1 回归：listSessions(filter) 过滤 + 倒序
     void testEnsureTitle();
+    void testMessageCount();  // 按会话 ID 查消息计数（newSession 空会话复用守卫依赖）
 
 private:
     static QJsonObject makeRecord(const QString& sessionId, const QString& type, const QString& content);
@@ -444,6 +445,40 @@ void DAAgentSessionStoreTest::testEnsureTitle()
         if (m.id == sid2) { sid2Title = m.title; break; }
     }
     QCOMPARE(sid2Title, QString("短消息"));
+}
+
+// ---------------------------------------------------------------------------
+// 7. 按会话 ID 查消息计数：支撑 DAAgentModule::newSession 空会话复用守卫
+//    （守卫靠 messageCount(id)==0 判定"当前会话仍为全新，无需再建一个"）
+// ---------------------------------------------------------------------------
+void DAAgentSessionStoreTest::testMessageCount()
+{
+    DA::DAAgentSessionStore store;
+    QString sid = store.createSession();
+
+    // 7a. 全新会话无任何消息记录 → 0（newSession 守卫据此判定可复用）
+    QCOMPARE(store.messageCount(sid), 0);
+
+    // 7b. 仅计 user/assistant/tool_result；usage 不计（与 listSessions 的 messageCount 语义一致）
+    store.appendRecord(sid, makeRecord(sid, "user", "hello"));
+    QCOMPARE(store.messageCount(sid), 1);
+    store.appendRecord(sid, makeRecord(sid, "assistant", "hi there"));
+    QCOMPARE(store.messageCount(sid), 2);
+    store.appendRecord(sid, makeRecord(sid, "tool_result", "42"));
+    QCOMPARE(store.messageCount(sid), 3);
+    store.appendRecord(sid, makeRecord(sid, "usage", QString()));  // usage 不计入
+    QCOMPARE(store.messageCount(sid), 3);
+
+    // 7c. 与 listSessions 返回的同名字段一致（索引维护值的单一真相源）
+    auto metas = store.listSessions();
+    QCOMPARE(metas.size(), 1);
+    QCOMPARE(metas.at(0).messageCount, store.messageCount(sid));
+
+    // 7d. 不存在的 id → -1（守卫据此回退到 createSession，不误判为空会话）
+    QCOMPARE(store.messageCount(QStringLiteral("not-a-real-session-id")), -1);
+
+    // 7e. 空 id → -1
+    QCOMPARE(store.messageCount(QString()), -1);
 }
 
 // ---------------------------------------------------------------------------
