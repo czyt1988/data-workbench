@@ -4,7 +4,12 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import remove_outliers_zscore_impl
 
 
-@NodeDef(name="Remove Outliers Z-Score", category=_("Data Cleaning"), icon="outlier_zscore")  # cn:数据清洗
+@NodeDef(
+    name="Remove Outliers Z-Score",
+    category=_("Data Cleaning"),  # cn:数据清洗
+    icon="outlier_zscore",
+    description=_("Removes outlier rows from a DataFrame using Z-score method. A row is removed if its Z-score (standard deviations from the mean) in the specified column exceeds the threshold (default 3.0)."),  # cn:使用 Z-score 方法移除 DataFrame 中的异常值行。若指定列的 Z-score（偏离均值的标准差倍数）超过阈值（默认 3.0）则移除该行。
+)
 class DataRemoveOutliersZScoreNode:
     """Remove outliers based on Z-score."""
 

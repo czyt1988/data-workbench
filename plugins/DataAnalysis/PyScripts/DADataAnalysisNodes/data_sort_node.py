@@ -4,7 +4,12 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.operations import sort_dataframe
 
 
-@NodeDef(name="Sort", category=_("Data Operations"), icon="sort")  # cn:数据操作
+@NodeDef(
+    name="Sort",
+    category=_("Data Operations"),  # cn:数据操作
+    icon="sort",
+    description=_("Sorts a DataFrame by one or more columns. Specify column names as a comma-separated list and choose ascending or descending order."),  # cn:按一个或多个列对 DataFrame 排序。列名以逗号分隔，可选择升序或降序。
+)
 class DataSortNode:
     """Sort a DataFrame."""
 

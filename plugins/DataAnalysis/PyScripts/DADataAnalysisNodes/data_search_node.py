@@ -4,7 +4,12 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.operations import search_dataframe
 
 
-@NodeDef(name="Search", category=_("Data Operations"), icon="search")  # cn:数据操作
+@NodeDef(
+    name="Search",
+    category=_("Data Operations"),  # cn:数据操作
+    icon="search",
+    description=_("Searches a DataFrame for rows matching a pattern in a specified column. Supports regex patterns and case-sensitive matching. Outputs matching rows and the match count."),  # cn:在 DataFrame 的指定列中搜索匹配模式的行。支持正则表达式和区分大小写匹配。输出匹配行和匹配数。
+)
 class DataSearchNode:
     """Search rows matching a pattern in a given column."""
 

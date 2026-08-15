@@ -15,6 +15,7 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
     name="Data Transform",
     category=_("Data Analysis"),  # cn:数据分析
     icon="data_transform",
+    description=_("Transforms a DataFrame column: rename a column, drop a column, or fill missing values in a column. Specify the target column, operation type, and the corresponding parameter (new name or fill value)."),  # cn:变换 DataFrame 列：重命名列、删除列或填充列中的缺失值。指定目标列、操作类型和相应参数（新列名或填充值）。
 )
 class DataTransformNode:
     """Column transformation node."""

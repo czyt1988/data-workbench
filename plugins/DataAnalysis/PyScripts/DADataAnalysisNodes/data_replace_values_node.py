@@ -4,7 +4,12 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import replace_values_impl
 
 
-@NodeDef(name="Replace Values", category=_("Data Cleaning"), icon="replace")  # cn:数据清洗
+@NodeDef(
+    name="Replace Values",
+    category=_("Data Cleaning"),  # cn:数据清洗
+    icon="replace",
+    description=_("Replaces a specific value with a new value in a selected column. Matching is case-sensitive. Outputs the modified DataFrame and the count of replacements made."),  # cn:在选定列中将指定旧值替换为新值。区分大小写。输出修改后的 DataFrame 和替换次数。
+)
 class DataReplaceValuesNode:
     """Replace specific values in a given column."""
 

@@ -15,6 +15,7 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
     name="Data Filter",
     category=_("Data Analysis"),  # cn:数据分析
     icon="data_filter",
+    description=_("Filters DataFrame rows using a pandas query expression (e.g. 'age > 25') or by non-null values in a specified column. Outputs the filtered data and the count of removed rows."),  # cn:使用 pandas query 表达式（如 'age > 25'）或指定列的非空值来筛选 DataFrame 行。输出筛选后的数据和移除的行数。
 )
 class DataFilterNode:
     """Conditional filtering node."""

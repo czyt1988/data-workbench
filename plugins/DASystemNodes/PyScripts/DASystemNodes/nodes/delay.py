@@ -9,6 +9,7 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
     name="Delay",
     category=_("System / Flow Control"),  # cn:系统 / 流程控制
     icon="",
+    description=_("Pauses execution for a specified number of seconds, then forwards the trigger input to the output unchanged. Useful for timing control or rate-limiting in workflows."),  # cn:暂停执行指定秒数，然后将触发输入原样转发到输出。用于工作流中的定时控制或限流。
 )
 class DelayNode:
     """Delay for a specified number of seconds before passing data downstream."""

@@ -19,7 +19,12 @@ import pandas as pd
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
-@NodeDef(name="Data Plot", category=_("Data Analysis"), icon="data_plot")  # cn:数据分析
+@NodeDef(
+    name="Data Plot",
+    category=_("Data Analysis"),  # cn:数据分析
+    icon="data_plot",
+    description=_("Generates a bar, line, or scatter chart from a DataFrame and saves it as a PNG image. Specify the target column and chart type; the file path is output for downstream use."),  # cn:从 DataFrame 生成柱状图、折线图或散点图并保存为 PNG 图片。指定目标列和图表类型；输出文件路径供下游使用。
+)
 class DataPlotNode:
     """Data plotting node."""
 

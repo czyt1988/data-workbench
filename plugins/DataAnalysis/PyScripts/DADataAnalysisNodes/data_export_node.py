@@ -16,6 +16,7 @@ from DADataAnalysisCore.io import export_data
     name="Data Export",
     category=_("Data Analysis"),  # cn:数据分析
     icon="data_export",
+    description=_("Exports a DataFrame to a file in CSV, JSON, Excel, Parquet, or Feather format. Specify the output path and format; the output directory is created automatically if it does not exist."),  # cn:将 DataFrame 导出为 CSV、JSON、Excel、Parquet 或 Feather 格式文件。指定输出路径和格式；输出目录不存在时自动创建。
 )
 class DataExportNode:
     """Data export node."""
