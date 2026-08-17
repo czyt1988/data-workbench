@@ -86,7 +86,7 @@ protected:
     // 初始化figure的连接，这个函数用于重载createFigure函数时创建fig后绑定槽函数到DAChartOperateWidget用
     void initFigureConnect(DAFigureWidget* fig);
 private Q_SLOTS:
-    // 嵌套停靠区聚焦 dock 改变
+    // 嵌套停靠区聚焦 dock 改变（过滤掉非本管理器的顶层 dock）
     void onFocusedDockChanged(ads::CDockWidget* oldDock, ads::CDockWidget* nowDock);
     // 绘图的标题改变槽函数
     void onFigureTitleChanged(const QString& t);

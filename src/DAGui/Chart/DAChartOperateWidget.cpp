@@ -30,7 +30,7 @@ public:
     ads::CDockWidget* dockOfFigure(DAFigureWidget* fig) const;
     // 根据 dock 获取其 figure
     DAFigureWidget* figureOfDock(ads::CDockWidget* dock) const;
-    // 获取新 figure 应加入的 dock area（当前聚焦 dock 所在 area，否则任意已有 area，否则 nullptr）
+    // 获取新 figure 应加入的 dock area（取嵌套管理器内已有 figure 所在 area，否则 nullptr）
     ads::CDockAreaWidget* targetAreaForNewFigure() const;
 
 public:
@@ -66,24 +66,19 @@ DAFigureWidget* DAChartOperateWidgetPrivate::figureOfDock(ads::CDockWidget* dock
 
 ads::CDockAreaWidget* DAChartOperateWidgetPrivate::targetAreaForNewFigure() const
 {
-    if (!mDockManager) {
-        return nullptr;
-    }
-    // 优先加入当前聚焦 dock 所在 area
-    if (ads::CDockWidget* focused = mDockManager->focusedDockWidget()) {
-        if (ads::CDockAreaWidget* a = focused->dockAreaWidget()) {
-            return a;
-        }
-    }
-    // 否则取任意一个已有 area（按插入顺序）
-    for (DAFigureWidget* f : std::as_const(mFigures)) {
-        if (ads::CDockWidget* d = mFigToDock.value(f, nullptr)) {
+    // 关键：不能用 mDockManager->focusedDockWidget()——FocusHighlighting 下嵌套管理器的焦点
+    // 控制器与顶层管理器共享 window 属性（DockFocusController.cpp onApplicationFocusChanged 不
+    // 校验 dock 所属管理器），用户点过顶层 dock 后 nested->focusedDockWidget() 会返回顶层 dock，
+    // 用它作 target 会让新 figure 被加到顶层中心区（逃逸出 DAChartOperateWidget）。
+    // 改为从本嵌套管理器已有的 figure dock 取 area，确保新 figure 落在嵌套管理器内。
+    for (int i = mFigures.size() - 1; i >= 0; --i) {
+        if (ads::CDockWidget* d = mFigToDock.value(mFigures.at(i), nullptr)) {
             if (ads::CDockAreaWidget* a = d->dockAreaWidget()) {
                 return a;
             }
         }
     }
-    return nullptr;
+    return nullptr;  // 首个 figure：在容器根创建 area
 }
 
 //===================================================
@@ -99,6 +94,8 @@ DAChartOperateWidget::DAChartOperateWidget(QWidget* parent)
     lay->addWidget(d_ptr->mDockManager);
     // 禁止 figure dock 浮动为独立窗口（全局锁，对所有当前及后续 dock 生效），保留分屏/并栏/拖拽
     d_ptr->mDockManager->lockDockWidgetFeaturesGlobally(ads::CDockWidget::DockWidgetFloatable);
+    // 嵌套停靠区聚焦改变：onFocusedDockChanged 内部会过滤掉非本管理器的 dock，
+    // 规避 FocusHighlighting 下嵌套焦点控制器跨管理器回调顶层 dock 的问题
     connect(d_ptr->mDockManager, &ads::CDockManager::focusedDockWidgetChanged,
             this, &DAChartOperateWidget::onFocusedDockChanged);
 }
@@ -216,13 +213,13 @@ QList< DAFigureWidget* > DAChartOperateWidget::getFigureList() const
  */
 DAFigureWidget* DAChartOperateWidget::getCurrentFigure() const
 {
-    // 优先返回追踪的当前 figure（QPointer 在 figure 销毁后自动置空）
+    // 返回追踪的当前 figure（QPointer 在 figure 销毁后自动置空）
     if (d_ptr->mCurrentFigure) {
         return d_ptr->mCurrentFigure;
     }
-    // 回退到聚焦 dock 对应的 figure
-    if (d_ptr->mDockManager) {
-        return d_ptr->figureOfDock(d_ptr->mDockManager->focusedDockWidget());
+    // 回退到最近创建的 figure（不使用 focusedDockWidget，见 targetAreaForNewFigure 注释）
+    if (!d_ptr->mFigures.isEmpty()) {
+        return d_ptr->mFigures.constLast();
     }
     return nullptr;
 }
@@ -480,13 +477,22 @@ void DAChartOperateWidget::initFigureConnect(DAFigureWidget* fig)
 
 /**
  * @brief 嵌套停靠区聚焦 dock 改变
- * @param oldDock
- * @param nowDock
+ *
+ * FocusHighlighting 下嵌套管理器的 CDockFocusController 与顶层管理器共享 window 属性，
+ * 用户聚焦顶层 dock（如工作流操作）时本信号也会被回调到顶层 dock。这里通过
+ * nowDock->dockManager() 过滤，只处理属于本嵌套管理器的 figure dock，避免 currentFigure
+ * 被误置空/误切换。
+ * @param oldDock 旧聚焦 dock
+ * @param nowDock 新聚焦 dock
  */
 void DAChartOperateWidget::onFocusedDockChanged(ads::CDockWidget* oldDock, ads::CDockWidget* nowDock)
 {
     Q_UNUSED(oldDock);
     if (d_ptr->mSuppressCurrentChanged) {
+        return;
+    }
+    // 过滤掉非本嵌套管理器的 dock（顶层 dock 的跨管理器回调）
+    if (nowDock && nowDock->dockManager() != d_ptr->mDockManager) {
         return;
     }
     DAFigureWidget* fig = d_ptr->figureOfDock(nowDock);
