@@ -52,7 +52,8 @@ body {
 }
 
 #status-text {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
+    min-width: 0;
     color: #333;
     padding: 4px 8px;
     overflow: hidden;
@@ -60,20 +61,190 @@ body {
     white-space: nowrap;
 }
 
-/* 当前模型名：蓝色强调，固定宽，过长右端省略（CSS 替代 QFontMetrics::elidedText） */
-#model-label {
-    flex: 0 0 160px;
-    width: 160px;
-    color: #5280C1;
+/* 两级模型选择器：紧贴状态文案靠左；触发按钮蓝色强调，下拉面板向上展开 */
+#model-selector {
+    flex: 0 0 auto;
+    position: relative;  /* 下拉面板绝对定位锚点 */
+    min-width: 0;
+    max-width: 260px;
+}
+
+#model-trigger {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
     padding: 4px 8px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: #5280C1;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+#model-trigger:hover {
+    background: rgba(82, 128, 193, 0.08);
+}
+
+#model-trigger.open {
+    background: rgba(82, 128, 193, 0.12);
+    border-color: rgba(82, 128, 193, 0.3);
+}
+
+#model-trigger-text {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    cursor: default;
+}
+
+/* 触发按钮下拉箭头：展开时上翻 */
+.model-trigger-chevron {
+    flex-shrink: 0;
+    transition: transform 0.2s;
+}
+
+#model-trigger.open .model-trigger-chevron {
+    transform: rotate(180deg);
+}
+
+/* 两级下拉面板：向上展开、左对齐触发按钮 */
+#model-dropdown {
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    margin-bottom: 4px;
+    min-width: 220px;
+    max-width: 340px;
+    max-height: 320px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+    padding: 4px 0;
+    z-index: 1000;
+}
+
+#model-dropdown[hidden] {
+    display: none;
+}
+
+#model-dropdown .model-dd-empty {
+    padding: 8px 12px;
+    color: #999;
+    font-size: 13px;
+}
+
+#model-dropdown .model-dd-title {
+    padding: 4px 12px;
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 2px;
+}
+
+#model-dropdown .model-dd-row,
+#model-dropdown .model-dd-back {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 6px 12px;
+    border: none;
+    background: #fff;
+    cursor: pointer;
+    text-align: left;
+    font-size: 13px;
+    font-family: inherit;
+    color: #333;
+}
+
+#model-dropdown .model-dd-row:hover,
+#model-dropdown .model-dd-back:hover {
+    background: #f5f7fb;
+}
+
+#model-dropdown .model-dd-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#model-dropdown .model-dd-meta {
+    flex: 0 0 auto;
+    color: #999;
+    font-size: 12px;
+}
+
+#model-dropdown .model-dd-chevron,
+#model-dropdown .model-dd-back svg {
+    flex: 0 0 auto;
+    color: #aaa;
+}
+
+/* 供应商行：激活供应商左侧蓝点标记 */
+#model-dropdown .provider-row.active-provider::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #5280C1;
+    flex-shrink: 0;
+    margin-right: 2px;
+}
+
+#model-dropdown .provider-row:not(.active-provider)::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    margin-right: 2px;
+}
+
+/* 返回按钮：左箭头 + 供应商名，底部分隔 */
+#model-dropdown .model-dd-back {
+    color: #5280C1;
+    font-weight: 600;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 2px;
+}
+
+#model-dropdown .model-dd-back svg {
+    color: #5280C1;
+}
+
+/* 模型行：激活模型蓝色强调 + 右侧 ✓ 标记 */
+#model-dropdown .model-row.active-model {
+    color: #5280C1;
+    background: rgba(82, 128, 193, 0.06);
+}
+
+#model-dropdown .model-dd-check {
+    flex: 0 0 auto;
+    width: 14px;
+    color: #5280C1;
+    font-size: 13px;
+    text-align: center;
+    visibility: hidden;
+}
+
+#model-dropdown .model-row.active-model .model-dd-check {
+    visibility: visible;
 }
 
 #token-label {
     flex: 0 0 auto;
+    margin-left: auto;  /* 推到状态栏右端，与左侧状态文案/模型选择器分开 */
     color: #666;
     padding: 4px 4px;
     cursor: pointer;

@@ -11,10 +11,20 @@
 <body>
     <div id="messages"></div>
 
-    <!-- 状态栏：状态文案（左）+ 当前模型（中）+ token 计量（右，可点弹明细） -->
+    <!-- 状态栏：状态文案（左）+ 模型选择器（左，紧贴状态文案）+ token 计量（右，可点弹明细） -->
     <div id="status-bar">
         <span id="status-text"></span>
-        <span id="model-label"></span>
+        <!-- 两级模型选择器：点击触发按钮 → 第一层供应商列表 → 第二层模型列表 -->
+        <div id="model-selector">
+            <button id="model-trigger" type="button">
+                <span id="model-trigger-text"></span>
+                <svg class="model-trigger-chevron" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
+                    <path fill="currentColor" d="M7 10l5 5l5-5z"/>
+                </svg>
+            </button>
+            <!-- 两级下拉面板（向上展开） -->
+            <div id="model-dropdown" hidden></div>
+        </div>
         <span id="token-label">tokens: -</span>
         <!-- token 分类明细浮层（点击 token-label 切换显隐） -->
         <div id="token-popover" hidden></div>

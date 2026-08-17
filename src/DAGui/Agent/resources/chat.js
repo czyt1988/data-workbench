@@ -20,10 +20,21 @@ let i18n = {
     inputPlaceholder: '', tokenEmpty: 'tokens: -',
     popoverInput: 'input: %1', popoverOutput: 'output: %1',
     popoverTotal: 'total: %1', popoverWindow: 'window: %1',
-    popoverSource: 'source: %1', popoverSourceUnknown: 'unknown'
+    popoverSource: 'source: %1', popoverSourceUnknown: 'unknown',
+    modelEmpty: 'No model', modelSelectTip: 'Select LLM model',
+    modelProvidersTitle: 'Providers', modelBack: 'Back'
 };
 let agentBusy = false;          // 当前是否思考中（驱动 send-btn 的 Send/Stop 切换）
 let tokenStatsCache = null;     // 缓存最近一次 setTokenStats 的 5 值，供 popover 渲染
+
+// —— 两级模型选择器状态 ——
+// C++ 推送 flat 可用模型列表（{provider,model,context_window,max_output_tokens}），
+// JS 按 provider 分组渲染两级选择器：第一层供应商列表，第二层该供应商的模型列表。
+let modelSelectorData = [];      // 分组后 [{provider, models:[{model,...}]}]
+let activeProvider = '';          // 当前激活供应商
+let activeModel = '';             // 当前激活模型 id
+let modelDropdownView = 'providers';  // 'providers'（供应商层）| 'models'（模型层）
+let modelDropdownProvider = '';       // 模型层当前展示的供应商
 
 function initMarkdown() {
     md = window.markdownit({
@@ -60,7 +71,7 @@ function init() {
     initMarkdown();
     new QWebChannel(qt.webChannelTransport, function(channel) {
         chatBridge = channel.objects.chatBridge;
-        // 握手：通知 C++ web 侧已就绪，C++ 回推 setI18nLabels/setBusy/setModel/setTokenStats。
+        // 握手：通知 C++ web 侧已就绪，C++ 回推 setI18nLabels/setBusy/setAvailableModels/setActiveModel/setTokenStats。
         // 缓解 JS-ready 竞态——若 agent 信号在 chat.html 加载完成前触发，此处 flush 当前态。
         if (chatBridge && typeof chatBridge.onReady === 'function') {
             chatBridge.onReady();
@@ -110,6 +121,30 @@ function init() {
             tokenPopover.setAttribute('hidden', '');
         });
     }
+
+    // —— 两级模型选择器：触发按钮切换 + 点外部关闭 ——
+    var modelTrigger = document.getElementById('model-trigger');
+    if (modelTrigger) {
+        modelTrigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var dd = document.getElementById('model-dropdown');
+            if (!dd) return;
+            if (dd.hasAttribute('hidden')) {
+                openModelDropdown();
+            } else {
+                closeModelDropdown();
+            }
+        });
+    }
+    var modelSelector = document.getElementById('model-selector');
+    document.addEventListener('click', function(e) {
+        var dd = document.getElementById('model-dropdown');
+        if (!dd || dd.hasAttribute('hidden')) return;
+        if (modelSelector && modelSelector.contains(e.target)) return;
+        closeModelDropdown();
+    });
+    // 初始化触发按钮文案
+    updateModelTrigger();
 }
 
 // 用户点击发送/终止按钮。C++ 仍是编排者：JS 只负责取文本+清框+通知，
@@ -465,6 +500,8 @@ function setI18nLabels(labels) {
     if (tl && (tl.textContent === 'tokens: -' || !tl.textContent)) {
         tl.textContent = i18n.tokenEmpty;
     }
+    // 模型选择器触发按钮文案（空态用 i18n.modelEmpty）
+    updateModelTrigger();
 }
 
 // busy 打包：true→按钮 Stop(红)+输入禁用+状态 thinking；false→按钮 Send+输入启用+状态 ready。
@@ -510,13 +547,173 @@ function setStatus(text) {
     if (el) { el.textContent = text || ''; }
 }
 
-// 设置模型名（中）。label 已由 C++ 格式化为 "Model: <name>"，CSS ellipsis 截断。
-function setModel(label) {
-    var el = document.getElementById('model-label');
+// —— 两级模型选择器（被 C++ 经 DAAgentWebChannel::callJS 调用）——
+// C++ 推 flat 可用模型列表 + 激活供应商/模型；JS 按 provider 分组渲染两级选择器。
+
+// 推送可用模型列表（flat 数组 {provider,model,context_window,max_output_tokens}）。
+// JS 按 provider 分组（保持首次出现顺序），刷新下拉面板。
+function setAvailableModels(models) {
+    var order = [];
+    var map = {};
+    (models || []).forEach(function(m) {
+        var p = (m && m.provider) ? m.provider : '';
+        if (!(p in map)) { map[p] = []; order.push(p); }
+        map[p].push(m);
+    });
+    modelSelectorData = order.map(function(p) {
+        return { provider: p, models: map[p] };
+    });
+    updateModelTrigger();
+    // 若下拉正打开，刷新内容以反映新列表
+    var dd = document.getElementById('model-dropdown');
+    if (dd && !dd.hasAttribute('hidden')) { renderModelDropdown(); }
+}
+
+// 推送激活供应商+模型：更新触发按钮文案 + 刷新选中高亮。
+function setActiveModel(provider, model) {
+    activeProvider = provider || '';
+    activeModel = model || '';
+    updateModelTrigger();
+    var dd = document.getElementById('model-dropdown');
+    if (dd && !dd.hasAttribute('hidden')) { renderModelDropdown(); }
+}
+
+// 更新触发按钮文案：空列表/空模型显示 i18n.modelEmpty，否则 "provider · model"。
+function updateModelTrigger() {
+    var el = document.getElementById('model-trigger-text');
     if (!el) return;
-    el.textContent = label || '';
-    // tooltip 显示完整名（与旧 QFontMetrics tooltip 同效果）
-    el.title = label || '';
+    var text = '';
+    if (!modelSelectorData.length || !activeModel) {
+        text = i18n.modelEmpty;
+    } else if (activeProvider) {
+        text = activeProvider + ' \u00b7 ' + activeModel;
+    } else {
+        text = activeModel;
+    }
+    el.textContent = text;
+    var trig = document.getElementById('model-trigger');
+    if (trig) { trig.title = i18n.modelSelectTip || ''; }
+}
+
+// 打开下拉：默认进供应商层（若激活供应商存在则直接进其模型层，优化常见切换）。
+function openModelDropdown() {
+    var dd = document.getElementById('model-dropdown');
+    if (!dd) return;
+    var hasActiveProvider = activeProvider && modelSelectorData.some(function(g) { return g.provider === activeProvider; });
+    modelDropdownView = hasActiveProvider ? 'models' : 'providers';
+    modelDropdownProvider = hasActiveProvider ? activeProvider : '';
+    renderModelDropdown();
+    dd.removeAttribute('hidden');
+    var trig = document.getElementById('model-trigger');
+    if (trig) { trig.classList.add('open'); }
+}
+
+function closeModelDropdown() {
+    var dd = document.getElementById('model-dropdown');
+    if (dd) { dd.setAttribute('hidden', ''); }
+    var trig = document.getElementById('model-trigger');
+    if (trig) { trig.classList.remove('open'); }
+}
+
+// 渲染下拉面板（按 modelDropdownView 分发）。
+function renderModelDropdown() {
+    var dd = document.getElementById('model-dropdown');
+    if (!dd) return;
+    dd.innerHTML = '';
+    if (!modelSelectorData.length) {
+        var empty = document.createElement('div');
+        empty.className = 'model-dd-empty';
+        empty.textContent = i18n.modelEmpty;
+        dd.appendChild(empty);
+        return;
+    }
+    if (modelDropdownView === 'models') {
+        renderModelList(dd, modelDropdownProvider);
+    } else {
+        renderProviderList(dd);
+    }
+}
+
+// 第一层：供应商列表。每项显示供应商名 + 模型数 + 右箭头，点击进第二层。
+function renderProviderList(dd) {
+    var title = document.createElement('div');
+    title.className = 'model-dd-title';
+    title.textContent = i18n.modelProvidersTitle;
+    dd.appendChild(title);
+    modelSelectorData.forEach(function(g) {
+        var row = document.createElement('button');
+        row.className = 'model-dd-row provider-row';
+        row.type = 'button';
+        if (g.provider === activeProvider) { row.classList.add('active-provider'); }
+        var label = document.createElement('span');
+        label.className = 'model-dd-label';
+        label.textContent = g.provider || '?';
+        var count = document.createElement('span');
+        count.className = 'model-dd-meta';
+        count.textContent = g.models.length;
+        var chev = document.createElement('span');
+        chev.className = 'model-dd-chevron';
+        chev.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">' +
+            '<path fill="currentColor" d="m13.172 12l-4.95-4.95l1.414-1.413L16 12l-6.364 6.364l-1.414-1.415z"/></svg>';
+        row.appendChild(label);
+        row.appendChild(count);
+        row.appendChild(chev);
+        row.addEventListener('click', function() {
+            modelDropdownView = 'models';
+            modelDropdownProvider = g.provider;
+            renderModelDropdown();
+        });
+        dd.appendChild(row);
+    });
+}
+
+// 第二层：指定供应商的模型列表。顶部返回按钮回供应商层。
+function renderModelList(dd, provider) {
+    var back = document.createElement('button');
+    back.className = 'model-dd-back';
+    back.type = 'button';
+    back.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">' +
+        '<path fill="currentColor" d="M10 7l5 5l-5 5z"/></svg>' +
+        '<span>' + escapeHtml(provider || '') + '</span>';
+    back.addEventListener('click', function() {
+        modelDropdownView = 'providers';
+        modelDropdownProvider = '';
+        renderModelDropdown();
+    });
+    dd.appendChild(back);
+    var group = null;
+    for (var i = 0; i < modelSelectorData.length; i++) {
+        if (modelSelectorData[i].provider === provider) { group = modelSelectorData[i]; break; }
+    }
+    if (!group) { return; }
+    group.models.forEach(function(m) {
+        var row = document.createElement('button');
+        row.className = 'model-dd-row model-row';
+        row.type = 'button';
+        if (m.model === activeModel && provider === activeProvider) {
+            row.classList.add('active-model');
+        }
+        var label = document.createElement('span');
+        label.className = 'model-dd-label';
+        label.textContent = m.model || '';
+        var meta = document.createElement('span');
+        meta.className = 'model-dd-meta';
+        var cw = (typeof m.context_window === 'number') ? m.context_window : 0;
+        meta.textContent = cw > 0 ? (cw >= 1000 ? (Math.round(cw / 1000) + 'K') : String(cw)) : '';
+        var check = document.createElement('span');
+        check.className = 'model-dd-check';
+        check.textContent = '\u2713';  // ✓
+        row.appendChild(label);
+        row.appendChild(meta);
+        row.appendChild(check);
+        row.addEventListener('click', function() {
+            closeModelDropdown();
+            if (chatBridge && typeof chatBridge.onModelSelect === 'function') {
+                chatBridge.onModelSelect(provider, m.model);
+            }
+        });
+        dd.appendChild(row);
+    });
 }
 
 // 设置 token 计量（右）+ 缓存明细供 popover。label 已由 C++ 格式化。

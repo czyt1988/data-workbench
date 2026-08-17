@@ -158,6 +158,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | 插件开发参考 | `plugins/DataAnalysis/` | 最完整的插件示例 |
 | Agent 工具/设置 | `plugins/DAAgentTools/`（19 内置工具）/ `src/APP/SettingPages/DAAgentSettingsWidget`（LLM 设置页） | 工具由 `DAAgentToolsPlugin` 注册；设置页经 `setAgentInterface` 持久化 `agent-config.ini`（DAAgent 不依赖 DAGui） |
 | Agent 提示词库 | `src/DAAgent/DAAgentManager`（提示词引擎，实现 `DAAgentPromptOps`）/ `src/DAAgent/DAAgentPromptOps`（CRUD 回调接口）/ `src/DAAgent/DAAgentPrompt`（提示词数据结构）/ `src/DAUtils/DAMarkdownHighlighter`（通用 Markdown 高亮器）/ `src/APP/Dialog/DAAgentManagerDialog`、`DAAgentEditorDialog`（管理/编辑 UI） | 平台核心能力：`DAAgentInterface` 的 `registerBuiltinAgent`/`runAgent`/`agentPromptOps` 三方法；提示词库类型与引擎均在 DAAgent 模块内，通用高亮器在 DAUtils，对话框在 APP/Dialog（参照 `DAAgentSettingsWidget` 的 L5→L4 依赖先例）；插件经 `registerBuiltinAgent` 注入领域提示词，UI 由 `DAAppRibbonArea::buildRibbonAgentCategory` 构建「AI分析」标签页 |
+| **图标 / UI 设计** | `src/DAGui/icon/`、`src/APP/Icon/` | **🔴 涉及 SVG 图标设计必须先阅读** [docs/zh/dev-guide/icon-ui-design-guide.md](docs/zh/dev-guide/icon-ui-design-guide.md)：画布规格、语义色板、色彩组合规则、UI 配色映射、AI Checklist |
 | Python 工作流节点开发 | `plugins/DASystemNodes/AGENTS.md` | @NodeDef 节点开发规范、**init**/paint() 等核心陷阱 |
 | 插件模板 | `plugins/plugin-template/` | 新插件脚手架 |
 | 文档源码 | `docs/zh/` | Doxygen Wiki 中文 |
@@ -193,6 +194,7 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 | | [chart-dock-nesting.md](docs/zh/dev-guide/chart-dock-nesting.md) | 绘图窗口 ADS 嵌套停靠区、FocusHighlighting 焦点陷阱 |
 | | [logging.md](docs/zh/dev-guide/logging.md) | 日志系统、故障排查 |
 | | [creating-setting-panel.md](docs/zh/dev-guide/creating-setting-panel.md) | 创建设置面板 |
+| | [icon-ui-design-guide.md](docs/zh/dev-guide/icon-ui-design-guide.md) | 图标与 UI 设计规范（SVG 图标设计必读） |
 | **构建** | [build-instructions.md](docs/zh/build/build-instructions.md) | 完整构建指南 |
 | | [build-options.md](docs/zh/build/build-options.md) | CMake 构建选项参考 |
 | | [common-build-errors.md](docs/zh/build/common-build-errors.md) | 常见构建错误 |
@@ -231,6 +233,21 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 ### Qt 容器范围迭代（避免 COW 深拷贝）
 
 **禁止**对非 const Qt 容器直接使用范围迭代（`for(T& v : container)` 或 `for(const T& v : container)` 都会触发 COW 深拷贝）。必须用 `const` 声明容器或 `std::as_const()` 包裹。
+
+### 图标与 UI 设计规范
+
+> 📖 **详细规范见** [docs/zh/dev-guide/icon-ui-design-guide.md](docs/zh/dev-guide/icon-ui-design-guide.md)
+
+**强制规则**：**如果涉及 SVG 图标的设计（新增、替换、修改 `src/DAGui/icon/` 或 `src/APP/Icon/` 下任意 `.svg` 文件），必须先阅读上述文档**，并按其 §10 Checklist 逐项核对。该文档是项目图标与 UI 设计的唯一权威规范，涵盖：
+
+- 画布规格（viewBox：200×200 / 64×64 / 32×32 / 1024×1024）
+- 语义化色板（主蓝 `#5280C1`、中灰 `#727272`、绿 `#669E8B`、橙红 `#CE6043`、金黄 `#E6C27C` 等，不引入新色值）
+- 色彩组合规则（容器型 / 功能操作 / 图表类型 / 数据类型 / 消息类型）
+- UI 控件配色映射（按钮、面板、状态指示与图标语义色同源）
+- 命名规范（`camelCase` 文件名、`kebab-case` 子目录）
+- 禁止事项（禁渐变/阴影、禁 `<text>`、禁动画、禁 UI 控件配色与配套图标语义色不一致）
+
+源码目录入口 [`src/DAGui/icon/AGENTS.md`](src/DAGui/icon/AGENTS.md) 仅作为目录级指引，完整规范以 docs 文档为准。
 
 ## 国际化（i18n）规范
 
@@ -426,6 +443,7 @@ Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若�
 |------|------|
 | [README.md](README.md) | 项目简介和第三方库说明 |
 | [docs/doc-writing-guide.md](docs/doc-writing-guide.md) | 文档撰写规范手册，涉及文档撰写时阅读 |
+| [docs/zh/dev-guide/icon-ui-design-guide.md](docs/zh/dev-guide/icon-ui-design-guide.md) | 图标与 UI 设计规范，涉及 SVG 图标设计时阅读 |
 | [docs/zh/index.md](docs/zh/index.md) | 中文文档入口 |
 
 ## NOTES

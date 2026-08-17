@@ -12,8 +12,6 @@
 #include <QIcon>
 #include <QEvent>
 #include <QResizeEvent>
-#include <QComboBox>
-#include <QSignalBlocker>
 
 namespace DA
 {
@@ -33,13 +31,13 @@ public:
     QLabel* mTitleLabel;
     QPushButton* mSessionManagerBtn;
     QPushButton* mNewSessionBtn;
-    // ---- 模型选择下拉（多供应商多模型） ----
-    QComboBox* mModelCombo;            ///< 顶部模型下拉，每项 provider/model
-    QVariantList mAvailableModels;     ///< 缓存 availableModelsChanged payload（{provider,model}）
+    // ---- 模型选择：已迁 web 两级选择器，此处仅缓存供 onWebReady flush ----
+    QVariantList mAvailableModels;     ///< 缓存 availableModelsChanged payload（flat {provider,model,...}）
+    QString mCurrentProvider;          ///< 当前激活供应商（由 onActiveModelChanged 回填，onWebReady 推给 web）
     QString mCurrentSessionId;        ///< 当前活跃会话 ID
     QString mCurrentSessionFullTitle; ///< 当前会话完整标题（供省略渲染与 tooltip）
     QVariantList mSessions;           ///< 缓存 sessionListChanged payload（含元信息）
-    QString mCurrentModel;            ///< 当前模型名称（由 onAgentReady 回填，onWebReady 推给 web）
+    QString mCurrentModel;            ///< 当前模型名称（由 onAgentReady/onActiveModelChanged 回填，onWebReady 推给 web）
     // ---- token 统计缓存：web 未就绪时丢失的推送，onWebReady 重推 ----
     int mLastInTokens;
     int mLastOutTokens;
@@ -60,7 +58,6 @@ DAAgentDockWidget::PrivateData::PrivateData(DAAgentDockWidget* p)
     , mTitleLabel(nullptr)
     , mSessionManagerBtn(nullptr)
     , mNewSessionBtn(nullptr)
-    , mModelCombo(nullptr)
     , mLastInTokens(0)
     , mLastOutTokens(0)
     , mLastTotalTokens(0)
@@ -139,16 +136,7 @@ void DAAgentDockWidget::setupUI()
     d->mNewSessionBtn->setFixedSize(28, 28);
     d->mNewSessionBtn->setToolTip(tr("New Session"));  // cn:新建会话
     d->mNewSessionBtn->setCursor(Qt::PointingHandCursor);
-    // 模型选择下拉：列出所有供应商的所有模型，用户可切换（→ activeModelChangeRequested）
-    d->mModelCombo = new QComboBox(sessionBar);
-    d->mModelCombo->setObjectName(QStringLiteral("da_agentModelCombo"));
-    d->mModelCombo->setToolTip(tr("Select LLM model"));  // cn:选择 LLM 模型
-    d->mModelCombo->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-    d->mModelCombo->setMinimumContentsLength(12);
-    d->mModelCombo->setMaximumWidth(220);
-    // 占位项：未收到 availableModelsChanged 前显示
-    d->mModelCombo->addItem(tr("No model"), QString());
-    sbLayout->addWidget(d->mModelCombo);
+    // 模型选择已迁 web 状态栏两级选择器（供应商→模型），此处不再放 Qt 下拉
     sbLayout->addWidget(d->mSessionManagerBtn);
     sbLayout->addWidget(d->mNewSessionBtn);
     mainLayout->insertWidget(0, sessionBar);
@@ -170,9 +158,8 @@ void DAAgentDockWidget::setupUI()
     // ---- 会话栏按钮信号 ----
     connect(d->mNewSessionBtn, &QPushButton::clicked, this, &DAAgentDockWidget::onNewSessionClicked);
     connect(d->mSessionManagerBtn, &QPushButton::clicked, this, &DAAgentDockWidget::onSessionManagerClicked);
-    // 模型下拉切换：用户手动选择不同模型 → 定稿当前流式 + emit activeModelChangeRequested
-    connect(d->mModelCombo, QOverload<int>::of(&QComboBox::activated),
-            this, &DAAgentDockWidget::onModelComboChanged);
+    // 模型切换由 web 两级选择器发起：chat.js onModelSelect → chatBridge.onModelSelect
+    // → 此处 onModelSelect（见 setupWebChannel 连接）→ activeModelChangeRequested
 }
 
 /**
@@ -203,6 +190,9 @@ void DAAgentDockWidget::setupWebChannel()
     // web 输入区 Stop 按钮：直达 C++ 终止流程（替代旧原生 m_sendButton 分流）
     connect(d->mChannel, &DAAgentWebChannel::stopRequested,
             this, &DAAgentDockWidget::onStopClicked);
+    // web 两级模型选择器：用户选定供应商+模型 → onModelSelect → activeModelChangeRequested
+    connect(d->mChannel, &DAAgentWebChannel::modelChangeRequested,
+            this, &DAAgentDockWidget::onModelSelect);
 }
 
 /**
@@ -248,7 +238,11 @@ void DAAgentDockWidget::onWebReady()
         {"popoverTotal", tr("total: %1")},           // cn:总计：%1
         {"popoverWindow", tr("window: %1")},         // cn:窗口：%1
         {"popoverSource", tr("source: %1")},          // cn:来源：%1
-        {"popoverSourceUnknown", tr("unknown")}      // cn:未知
+        {"popoverSourceUnknown", tr("unknown")},      // cn:未知
+        {"modelEmpty", tr("No model")},               // cn:无模型
+        {"modelSelectTip", tr("Select LLM model")},   // cn:选择 LLM 模型
+        {"modelProvidersTitle", tr("Providers")},     // cn:供应商
+        {"modelBack", tr("Back")}                     // cn:返回
     });
     // 启动中优先推 starting 态，缓解 JS-ready 竞态——agent 信号若在 chat.html 加载
     // 完成前触发，此处补推当前 starting/busy 态
@@ -257,7 +251,9 @@ void DAAgentDockWidget::onWebReady()
     } else {
         d->mChannel->setBusy(d->mAgentBusy);
     }
-    d->mChannel->setModel(formatModelLabel());
+    // 推送可用模型列表 + 激活供应商/模型给 web 两级选择器
+    d->mChannel->setAvailableModels(d->mAvailableModels);
+    d->mChannel->setActiveModel(d->mCurrentProvider, d->mCurrentModel);
     if (d->mHasTokenStats) {
         d->mChannel->setTokenStats(formatTokenLabel(d->mLastTotalTokens, d->mLastContextWindow, d->mLastTokenSource),
                                   d->mLastInTokens, d->mLastOutTokens, d->mLastTotalTokens,
@@ -435,7 +431,8 @@ void DAAgentDockWidget::onAgentReady(const QString& model)
     d->mAgentBusy = false;
     if (d->mChannel) {
         d->mChannel->setBusy(false);             // 复位为 ready：按钮 Send + 输入启用 + 状态 Ready
-        d->mChannel->setModel(formatModelLabel());  // 推送 "Model: <name>"
+        // 推送激活供应商+模型给 web 选择器（触发按钮文案 + 选中高亮）
+        d->mChannel->setActiveModel(d->mCurrentProvider, d->mCurrentModel);
     }
 }
 
@@ -631,87 +628,55 @@ void DAAgentDockWidget::onSessionCleared()
 }
 
 // ===========================================================================
-// 供应商/多模型选择（Dock 下拉选择不同模型）
+// 供应商/多模型选择（web 两级选择器：供应商→模型）
 // ===========================================================================
 
 /**
- * @brief 可用模型列表变化，填充模型下拉
- * @param models 每元素 QVariantMap{provider,model}
+ * @brief 可用模型列表变化，推送 flat 列表到 web 两级选择器
+ * @param models 每元素 QVariantMap{provider,model,context_window,max_output_tokens}
  *
- * 程序化填充时抑制 onModelComboChanged，避免触发误请求。
+ * web 侧按 provider 分组渲染两级选择器（第一层供应商、第二层模型）。
  */
 void DAAgentDockWidget::onAvailableModelsChanged(QVariantList models)
 {
     DA_D(d);
     d->mAvailableModels = models;
-    QSignalBlocker blocker(d->mModelCombo);  // 填充期间阻塞 activated 信号
-    d->mModelCombo->clear();
-    if (models.isEmpty()) {
-        d->mModelCombo->addItem(tr("No model"), QString());  // cn:无模型
-        return;
-    }
-    for (const QVariant& v : std::as_const(models)) {
-        QVariantMap m = v.toMap();
-        QString provider = m.value("provider").toString();
-        QString model    = m.value("model").toString();
-        // 显示 "model (provider)"，data 存 provider 用于选中定位
-        QString label = model;
-        if (!provider.isEmpty()) {
-            label = tr("%1 (%2)").arg(model, provider);  // cn:%1 (%2)
-        }
-        d->mModelCombo->addItem(label, provider);
+    if (d->mChannel) {
+        d->mChannel->setAvailableModels(models);
     }
 }
 
 /**
- * @brief 激活模型变化，选中下拉对应项 + 刷新模型标签
+ * @brief 激活模型变化，缓存供应商/模型并推送激活态到 web 选择器
  * @param provider 激活供应商
  * @param model 激活模型 id
  */
 void DAAgentDockWidget::onActiveModelChanged(const QString& provider, const QString& model)
 {
     DA_D(d);
+    d->mCurrentProvider = provider;
     d->mCurrentModel = model;
-    // 在下拉中选中 provider+model 对应项
-    int matchIdx = -1;
-    for (int i = 0; i < d->mAvailableModels.size(); ++i) {
-        QVariantMap m = d->mAvailableModels.at(i).toMap();
-        if (m.value("provider").toString() == provider && m.value("model").toString() == model) {
-            matchIdx = i;
-            break;
-        }
-    }
-    if (matchIdx >= 0 && matchIdx < d->mModelCombo->count()) {
-        QSignalBlocker blocker(d->mModelCombo);
-        d->mModelCombo->setCurrentIndex(matchIdx);
-    }
-    // 推送模型标签到 web 状态栏
+    // 推送激活供应商+模型给 web 选择器（触发按钮文案 + 选中高亮）
     if (d->mChannel) {
-        d->mChannel->setModel(formatModelLabel());
+        d->mChannel->setActiveModel(provider, model);
     }
 }
 
 /**
- * @brief 模型下拉选择变化：定稿当前流式输出 + emit activeModelChangeRequested
+ * @brief web 两级选择器选定供应商+模型：定稿当前流式 + emit activeModelChangeRequested
  *
- * activated 信号仅用户手动选择触发（程序化 setCurrentIndex 不触发），
- * 故无需额外抑制守卫。定稿当前流式输出避免半截消息悬挂（同 onStopClicked 的 channel 收尾）。
+ * 仅由 web 用户手动选择触发（chat.js onModelSelect → chatBridge.onModelSelect）。
+ * 已是当前激活模型则不重复触发（避免重选相同项导致无谓停止运行中的 agent）。
+ * 定稿当前流式输出中的 agent 消息（若有），避免切换模型时半截消息悬挂。
  */
-void DAAgentDockWidget::onModelComboChanged()
+void DAAgentDockWidget::onModelSelect(const QString& provider, const QString& model)
 {
     DA_D(d);
-    int idx = d->mModelCombo->currentIndex();
-    if (idx < 0 || idx >= d->mAvailableModels.size()) {
-        return;
-    }
-    QVariantMap m = d->mAvailableModels.at(idx).toMap();
-    QString provider = m.value("provider").toString();
-    QString model    = m.value("model").toString();
     if (model.isEmpty()) {
         return;
     }
-    // 已是当前激活模型则不重复触发（避免重选相同项导致无谓停止运行中的 agent）
-    if (model == d->mCurrentModel) {
+    // 已是当前激活供应商+模型则不重复触发
+    if (provider == d->mCurrentProvider && model == d->mCurrentModel) {
         return;
     }
     // 定稿当前流式输出中的 agent 消息（若有），避免切换模型时半截消息悬挂
@@ -762,21 +727,6 @@ void DAAgentDockWidget::updateTitleLabel()
     QString shown = d->mTitleLabel->fontMetrics().elidedText(
         fullTitle, Qt::ElideRight, qMax(0, w - pad));
     d->mTitleLabel->setText(shown);
-}
-
-/**
- * @brief 格式化模型标签串：空模型返回 "Model: -"，非空返回 "Model: <name>"（已 tr 翻译）
- * @return 格式化后的模型标签串
- */
-QString DAAgentDockWidget::formatModelLabel() const
-{
-    DA_DC(d);
-    // 返回模型标签串：空模型 "Model: -"，非空 "Model: <name>"（已 tr 翻译）。
-    // 省略由 web 侧 CSS text-overflow:ellipsis 处理，tooltip 由 JS setModel 设置。
-    if (d->mCurrentModel.isEmpty()) {
-        return tr("Model: -");  // cn:模型：-
-    }
-    return tr("Model: %1").arg(d->mCurrentModel);  // cn:模型：%1
 }
 
 /**

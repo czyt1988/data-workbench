@@ -570,4 +570,5 @@ data_mgr = core.getDataManagerInterface()
 - [模块业务逻辑详解](./module-breakdown.md) — 各模块内部工作原理
 - [模块依赖关系](./module-dependency.md) — 详细的依赖矩阵和职责边界
 - [编码规范](./coding-standard.md) — 命名、注释、代码风格规范
+- [图标与 UI 设计规范](./icon-ui-design-guide.md) — SVG 图标画布/色板、UI 控件配色映射（涉及图标设计必读）
 - [贡献指南](../contribution-guide.md) — 代码评审和协作流程

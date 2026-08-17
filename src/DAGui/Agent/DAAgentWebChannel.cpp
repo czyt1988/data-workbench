@@ -2,6 +2,7 @@
 #include "DAAgentWebChannel.h"
 #include <QJsonDocument>
 #include <QJsonArray>
+#include <QJsonValue>
 #include <QJsonParseError>
 #include <QWebEngineView>
 
@@ -345,13 +346,42 @@ void DAAgentWebChannel::setStarting()
 }
 
 /**
- * @brief 设置当前模型名标签（中）
- * @param label 已由 C++ 格式化为 "Model: &lt;name&gt;" 的翻译串，JS 仅显示（CSS ellipsis 截断）
+ * @brief JS 调用：用户在 web 两级模型选择器选定供应商+模型
+ * @param provider 供应商名称
+ * @param model 模型 id
  */
-void DAAgentWebChannel::setModel(const QString& label)
+void DAAgentWebChannel::onModelSelect(const QString& provider, const QString& model)
 {
-    // label 已由 C++ 格式化为 "Model: <name>"，JS 仅显示（CSS ellipsis 截断）
-    callJS(QString("setModel(\"%1\")").arg(toJsString(label)));
+    emit modelChangeRequested(provider, model);
+}
+
+/**
+ * @brief 推送可用模型列表到 web（flat 数组，JS 据供应商分组渲染两级选择器）
+ * @param models 每元素 QVariantMap{provider,model,context_window,max_output_tokens}
+ */
+void DAAgentWebChannel::setAvailableModels(const QVariantList& models)
+{
+    // flat 数组序列化为 JSON 推给 JS：setAvailableModels([{provider,model,...},...])
+    // JS 端按 provider 分组渲染两级选择器（第一层供应商、第二层模型）
+    QJsonArray arr;
+    for (const QVariant& v : models) {
+        arr.append(QJsonValue::fromVariant(v));
+    }
+    QJsonDocument doc(arr);
+    QString json = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+    callJS(QStringLiteral("setAvailableModels(") + json + QStringLiteral(")"));
+}
+
+/**
+ * @brief 推送激活供应商+模型到 web（JS 更新触发按钮文案 + 选中高亮）
+ * @param provider 激活供应商名称
+ * @param model 激活模型 id
+ */
+void DAAgentWebChannel::setActiveModel(const QString& provider, const QString& model)
+{
+    // JS 据此更新触发按钮文案（"provider · model"）+ 在两级选择器中标记选中
+    callJS(QString("setActiveModel(\"%1\",\"%2\")")
+               .arg(toJsString(provider), toJsString(model)));
 }
 
 /**

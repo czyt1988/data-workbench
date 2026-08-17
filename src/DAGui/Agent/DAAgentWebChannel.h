@@ -5,6 +5,7 @@
 #include <QJsonObject>
 #include <QVector>
 #include <QVariantMap>
+#include <QVariantList>
 #include "DAGuiAPI.h"
 
 class QWebEngineView;
@@ -29,6 +30,8 @@ public:
     Q_INVOKABLE void onFigureLink(const QString& href);
     Q_INVOKABLE void onReady();
     Q_INVOKABLE void onStopRequested();
+    /// JS 调用：用户在 web 两级模型选择器选定供应商+模型
+    Q_INVOKABLE void onModelSelect(const QString& provider, const QString& model);
     void appendUserMessage(const QString& text);
     void appendToken(const QString& token);
     void finalizeAgentMessage(const QString& fullText);
@@ -43,7 +46,10 @@ public:
     void setBusy(bool busy);
     void setStopping();
     void setStarting();
-    void setModel(const QString& label);
+    /// 推送可用模型列表（flat 数组 {provider,model,...}，JS 据此分组渲染两级选择器）
+    void setAvailableModels(const QVariantList& models);
+    /// 推送激活供应商+模型（JS 更新触发按钮文案 + 选中高亮）
+    void setActiveModel(const QString& provider, const QString& model);
     void setTokenStats(const QString& label, int inputTokens, int outputTokens,
                        int totalTokens, int contextWindow, const QString& source);
     void resetTokenStats();
@@ -79,6 +85,13 @@ Q_SIGNALS:
      * @brief 用户在 web 输入区点 Stop 按钮信号（直达 C++ 终止流程）
      */
     void stopRequested();
+
+    /**
+     * @brief 用户在 web 两级模型选择器选定供应商+模型信号
+     * @param provider 供应商名称
+     * @param model 模型 id
+     */
+    void modelChangeRequested(const QString& provider, const QString& model);
 
 private:
     void callJS(const QString& funcCall);

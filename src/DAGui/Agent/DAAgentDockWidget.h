@@ -37,8 +37,8 @@ private Q_SLOTS:
     void onSessionManagerClicked();
     void onUserMessageReceived(const QString& text);
     void onWebReady();
-    /// 模型下拉选择变化（用户手动切换）：定稿当前流式输出 + emit activeModelChangeRequested
-    void onModelComboChanged();
+    /// web 两级模型选择器选定供应商+模型（用户手动切换）：定稿当前流式 + emit activeModelChangeRequested
+    void onModelSelect(const QString& provider, const QString& model);
 
 public Q_SLOTS:
     void onAgentToken(const QString& token);
@@ -58,10 +58,10 @@ public Q_SLOTS:
     void onSessionCreated(const QString& sessionId);
     void onSessionCleared();
 
-    // ---- 供应商/多模型选择（Dock 下拉选择不同模型） ----
-    /// 可用模型列表变化（供应商变更/设置页 apply），填充模型下拉
+    // ---- 供应商/多模型选择（web 两级选择器） ----
+    /// 可用模型列表变化（供应商变更/设置页 apply），推送列表到 web 选择器
     void onAvailableModelsChanged(QVariantList models);
-    /// 激活模型变化（Dock 选择/设置页 apply），选中下拉项 + 刷新模型标签
+    /// 激活模型变化（web 选择/设置页 apply），推送激活供应商+模型到 web
     void onActiveModelChanged(const QString& provider, const QString& model);
 
 Q_SIGNALS:
@@ -98,7 +98,7 @@ Q_SIGNALS:
     void agentStopRequested();
 
     // ---- 供应商/多模型选择 ----
-    /// 用户在模型下拉切换模型，请求设置激活供应商+模型（→ DAAgentInterface::setActiveModel）
+    /// 用户在 web 两级选择器选定供应商+模型，请求设置激活（→ DAAgentInterface::setActiveModel）
     void activeModelChangeRequested(const QString& provider, const QString& model);
 
 protected:
@@ -108,7 +108,6 @@ private:
     void setupUI();
     void setupWebChannel();
     void updateTitleLabel();
-    QString formatModelLabel() const;
     QString formatTokenLabel(int totalTokens, int contextWindow, const QString& source) const;
     QString mapErrorMessage(const QString& original, const QString& errorType) const;
 };

@@ -64,6 +64,7 @@ nav:
           - 构建选项参考: zh/build/build-options.md
       - 开发规范:
           - 编码规范: zh/dev-guide/coding-standard.md
+          - 图标与UI设计规范: zh/dev-guide/icon-ui-design-guide.md
           - 第三方库管理: zh/dev-guide/third-party-manage.md
           - 设置类窗体规范: zh/dev-guide/settingwidget-standard.md
           - 创建设置面板: zh/dev-guide/creating-setting-panel.md
