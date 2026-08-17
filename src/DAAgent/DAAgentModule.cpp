@@ -82,6 +82,36 @@ QString decryptApiKey(const QByteArray& encrypted)
 }
 } // namespace
 
+// 模型条目既可能是对象 {id,context_window,max_output_tokens}，也可能是旧格式字符串。
+// 以下 helper 兼容两种读法，保证旧 providers JSON 也能解析。
+namespace {
+/// 取模型 id（兼容字符串与对象格式）
+QString modelIdOf(const QJsonValue& mv)
+{
+    if (mv.isString()) return mv.toString();
+    if (mv.isObject()) return mv.toObject().value("id").toString();
+    return {};
+}
+/// 取模型上下文窗口大小（对象格式，缺省/非正则回退 def）
+int modelContextWindowOf(const QJsonValue& mv, int def)
+{
+    if (mv.isObject()) {
+        int v = mv.toObject().value("context_window").toInt(def);
+        return v > 0 ? v : def;
+    }
+    return def;
+}
+/// 取模型最大输出 token（对象格式，缺省/非正则回退 def）
+int modelMaxOutputOf(const QJsonValue& mv, int def)
+{
+    if (mv.isObject()) {
+        int v = mv.toObject().value("max_output_tokens").toInt(def);
+        return v > 0 ? v : def;
+    }
+    return def;
+}
+} // namespace
+
 namespace DA
 {
 
@@ -673,9 +703,10 @@ QJsonObject DAAgentModule::getLLMConfig() const
         config["api_key"] = decryptApiKey(encKey);
     }
     // 上下文管理配置（带默认值兜底，随 init 消息 config 字段下发给 Python）
-    // context_window 默认 128000（常见模型上下文窗口，如 gpt-4o-mini 为 128K）。
-    // 用户应根据实际使用的模型在设置页调整此值——过小导致频繁压缩，过大导致 400。
-    config["context_window"]            = s.value("agent/context_window", 128000).toInt();
+    // context_window / max_output_tokens 由激活模型派生（setActiveModel/syncActiveConnection 写入），
+    // 默认 262144(256K) / 8192。
+    config["context_window"]            = s.value("agent/context_window", 262144).toInt();
+    config["max_output_tokens"]         = s.value("agent/max_output_tokens", 8192).toInt();
     config["compaction_threshold"]      = s.value("agent/compaction_threshold", 0.85).toDouble();
     config["max_recent_messages"]       = s.value("agent/max_recent_messages", 10).toInt();
     config["tool_result_max_chars"]     = s.value("agent/tool_result_max_chars", 20000).toInt();
@@ -720,8 +751,12 @@ void DAAgentModule::setLLMConfig(const QJsonObject& config)
     if (config.contains("api_key"))
         s.setValue("agent/llm_api_key", encryptApiKey(config.value("api_key").toString()));
     // 5 个已读未写的 context-management key（CRITICAL #1 补写）：
+    // 注：context_window / max_output_tokens 通常由激活模型派生（setActiveModel/syncActiveConnection
+    // 写入），设置页不再直接编辑这两个 key；此处保留守卫以兼容外部直接 setLLMConfig 的场景。
     if (config.contains("context_window"))
         s.setValue("agent/context_window",            config.value("context_window").toInt());
+    if (config.contains("max_output_tokens"))
+        s.setValue("agent/max_output_tokens",         config.value("max_output_tokens").toInt());
     if (config.contains("compaction_threshold"))
         s.setValue("agent/compaction_threshold",      config.value("compaction_threshold").toDouble());
     if (config.contains("max_recent_messages"))
@@ -760,10 +795,12 @@ void DAAgentModule::setLLMConfig(const QJsonObject& config)
 
 /**
  * @brief 获取所有供应商配置（api_key 已解密为明文返回）
- * @return 供应商 JSON 数组，每元素 {name, base_url, api_key, models:[id,...]}
+ * @return 供应商 JSON 数组，每元素 {name, base_url, api_key, models:[{id,context_window,max_output_tokens}]}
  *
  * 若 agent/providers 未配置（旧版本仅有 flat key），自动迁移：以 llm_base_url /
- * llm_api_key(解密) / llm_model 合成单个 "Default" 供应商，保证旧配置平滑升级。
+ * llm_api_key(解密) / llm_model 合成单个 "Default" 供应商（模型带默认
+ * context_window=262144 / max_output_tokens=8192），保证旧配置平滑升级。
+ * 模型条目若为旧格式字符串也按对象规范化返回。
  */
 QJsonArray DAAgentModule::getProviders() const
 {
@@ -777,6 +814,21 @@ QJsonArray DAAgentModule::getProviders() const
             QJsonObject p = pv.toObject();
             QString enc = p.value("api_key").toString();
             p["api_key"] = enc.isEmpty() ? QString() : decryptApiKey(QByteArray::fromBase64(enc.toUtf8()));
+            // 规范化 models：旧格式字符串 → 对象 {id,context_window,max_output_tokens}
+            QJsonArray normModels;
+            const QJsonArray models = p.value("models").toArray();
+            for (const QJsonValue& mv : models) {
+                if (mv.isObject()) {
+                    normModels.append(mv.toObject());
+                } else if (mv.isString()) {
+                    QJsonObject mo;
+                    mo["id"] = mv.toString();
+                    mo["context_window"] = 262144;
+                    mo["max_output_tokens"] = 8192;
+                    normModels.append(mo);
+                }
+            }
+            p["models"] = normModels;
             out.append(p);
         }
         return out;
@@ -790,7 +842,13 @@ QJsonArray DAAgentModule::getProviders() const
     p["api_key"] = encKey.isEmpty() ? QString() : decryptApiKey(encKey);
     QString model = s.value("agent/llm_model").toString();
     QJsonArray models;
-    if (!model.isEmpty()) models.append(model);
+    if (!model.isEmpty()) {
+        QJsonObject mo;
+        mo["id"] = model;
+        mo["context_window"] = s.value("agent/context_window", 262144).toInt();
+        mo["max_output_tokens"] = 8192;
+        models.append(mo);
+    }
     p["models"] = models;
     out.append(p);
     return out;
@@ -832,7 +890,7 @@ QString DAAgentModule::getActiveProvider() const
 
 /**
  * @brief 获取所有可选模型列表（Dock 下拉用，不含 api_key）
- * @return QVariantList，每元素 QVariantMap{provider,model}
+ * @return QVariantList，每元素 QVariantMap{provider,model,context_window,max_output_tokens}
  */
 QVariantList DAAgentModule::getAvailableModels() const
 {
@@ -845,7 +903,9 @@ QVariantList DAAgentModule::getAvailableModels() const
         for (const QJsonValue& mv : models) {
             QVariantMap item;
             item["provider"] = pname;
-            item["model"]    = mv.toString();
+            item["model"]    = modelIdOf(mv);
+            item["context_window"]    = modelContextWindowOf(mv, 262144);
+            item["max_output_tokens"] = modelMaxOutputOf(mv, 8192);
             out.append(item);
         }
     }
@@ -868,24 +928,27 @@ QString DAAgentModule::getActiveModel() const
  * @param model 模型 id
  *
  * 校验 supplier+model 存在后，写入 agent/active_provider / llm_model，并从该供应商
- * 同步 base_url/api_key 到 flat key（供 getLLMConfig/startAgentInternal 读取）。
- * emit activeModelChanged 通知 Dock 刷新。若子进程正在运行则 requestStop，
- * 使下次发消息时懒启动使用新模型。
+ * 同步 base_url/api_key 到 flat key、从该模型同步 context_window/max_output_tokens
+ * （供 getLLMConfig/startAgentInternal 读取）。emit activeModelChanged 通知 Dock 刷新。
+ * 若子进程正在运行则 requestStop，使下次发消息时懒启动使用新模型。
  */
 void DAAgentModule::setActiveModel(const QString& provider, const QString& model)
 {
     DA_D(d);
     const QJsonArray providers = getProviders();
     QString baseUrl, apiKey;
+    int ctxWin = 262144, maxOut = 8192;
     bool found = false;
     for (const QJsonValue& pv : providers) {
         QJsonObject p = pv.toObject();
         if (p.value("name").toString() != provider) continue;
         const QJsonArray models = p.value("models").toArray();
         for (const QJsonValue& mv : models) {
-            if (mv.toString() == model) {
+            if (modelIdOf(mv) == model) {
                 baseUrl = p.value("base_url").toString();
                 apiKey  = p.value("api_key").toString();
+                ctxWin  = modelContextWindowOf(mv, 262144);
+                maxOut  = modelMaxOutputOf(mv, 8192);
                 found   = true;
                 break;
             }
@@ -898,6 +961,8 @@ void DAAgentModule::setActiveModel(const QString& provider, const QString& model
     s.setValue("agent/llm_model",        model);
     s.setValue("agent/llm_base_url",     baseUrl);
     s.setValue("agent/llm_api_key",      encryptApiKey(apiKey));
+    s.setValue("agent/context_window",  ctxWin);
+    s.setValue("agent/max_output_tokens", maxOut);
     emit activeModelChanged(provider, model);
     // 子进程运行中则停止，使下次启动使用新模型（模型在 init 时固化进 ChatOpenAI，无法热切换）
     if (d->mBridge && d->mBridge->isRunning()) {
@@ -906,12 +971,12 @@ void DAAgentModule::setActiveModel(const QString& provider, const QString& model
 }
 
 /**
- * @brief 从激活供应商同步 base_url/api_key/model 到 flat ini key
+ * @brief 从激活供应商同步 base_url/api_key/model/context_window/max_output_tokens 到 flat ini key
  *
- * setProviders 后调用：保存的供应商可能改了激活供应商的 base_url/api_key，
- * 需同步到 flat key 供 getLLMConfig 读取。激活模型保留原 llm_model（若仍属于
- * 激活供应商则保留，否则改用激活供应商第一个模型）；激活供应商为空或已不存在
- * （被删除）时兜底取第一个供应商，使配置始终可启动。
+ * setProviders 后调用：保存的供应商可能改了激活供应商的 base_url/api_key，需同步到
+ * flat key 供 getLLMConfig 读取。激活模型保留原 llm_model（若仍属于激活供应商则保留，
+ * 否则改用激活供应商第一个模型），并同步该模型的 context_window/max_output_tokens。
+ * 激活供应商为空或已不存在（被删除）时兜底取第一个供应商，使配置始终可启动。
  */
 void DAAgentModule::syncActiveConnection()
 {
@@ -941,14 +1006,21 @@ void DAAgentModule::syncActiveConnection()
         // 激活模型：保留原 llm_model（若属于本供应商），否则取本供应商第一个模型
         QString curModel = s.value("agent/llm_model").toString();
         const QJsonArray models = p.value("models").toArray();
-        bool modelBelongs = false;
-        for (const QJsonValue& mv : models) {
-            if (mv.toString() == curModel) { modelBelongs = true; break; }
+        int matchedIdx = -1;
+        for (int i = 0; i < models.size(); ++i) {
+            if (modelIdOf(models.at(i)) == curModel) { matchedIdx = i; break; }
         }
-        if (!modelBelongs && !models.isEmpty()) {
-            s.setValue("agent/llm_model", models.first().toString());
+        if (matchedIdx < 0 && !models.isEmpty()) {
+            matchedIdx = 0;
+            s.setValue("agent/llm_model", modelIdOf(models.at(0)));
         } else if (models.isEmpty()) {
             s.setValue("agent/llm_model", QString());  // 无模型则清空
+        }
+        // 同步激活模型的 context_window / max_output_tokens
+        if (matchedIdx >= 0) {
+            const QJsonValue mv = models.at(matchedIdx);
+            s.setValue("agent/context_window", modelContextWindowOf(mv, 262144));
+            s.setValue("agent/max_output_tokens", modelMaxOutputOf(mv, 8192));
         }
         break;
     }
@@ -1459,7 +1531,7 @@ int DAAgentModule::readContextWindow() const
     // 供 agentUsage lambda 与 emitTokenUsageForSession 复用，
     // 避免重复 QSettings 构造与魔法数字散落
     QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    return s.value("agent/context_window", 128000).toInt();
+    return s.value("agent/context_window", 262144).toInt();
 }
 
 /**

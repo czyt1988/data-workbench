@@ -363,6 +363,7 @@ class AgentRunner:
             api_key=config["api_key"],
             model=config["model"],
             streaming=True,
+            max_tokens=config.get("max_output_tokens", 8192),   # 模型最大输出 token（由激活模型派生）
             max_retries=0,                                        # 禁用 openai-python 内置重试，由 wrapper 控制
             timeout=config.get("request_timeout_sec", 120),       # HTTP 请求超时（连接+首字节）
         )

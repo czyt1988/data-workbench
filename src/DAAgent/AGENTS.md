@@ -294,8 +294,9 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 | `agent/llm_base_url` | LLM Base URL（激活供应商派生，见 `agent/providers`） | — |
 | `agent/llm_api_key` | **DPAPI 加密**后 Base64（Windows 当前用户作用域；非 Windows 仅为 base64，开发用）；激活供应商派生 | — |
 | `agent/llm_model` | 当前激活模型 id（激活供应商下的某个模型） | — |
-| `agent/providers` | 供应商 JSON 数组（Compact 字符串）：每元素 `{name, base_url, api_key(加密 base64), models:[id,...]}`。由 `getProviders`/`setProviders` 读写，api_key 内部 DPAPI 加解密 | — |
+| `agent/providers` | 供应商 JSON 数组（Compact 字符串）：每元素 `{name, base_url, api_key(加密 base64), models:[{id,context_window,max_output_tokens}]}`。由 `getProviders`/`setProviders` 读写，api_key 内部 DPAPI 加解密；模型为对象，含每模型上下文窗口与最大输出 token | — |
 | `agent/active_provider` | 当前激活供应商名称（Dock 模型下拉选择 / 设置页 apply 写入） | — |
+| `agent/max_output_tokens` | 当前激活模型最大输出 token（由激活模型派生，随 init 下发 Python `max_tokens`），默认 8192 | 8192 |
 | `agent/ready_timeout_sec` | 子进程就绪超时（覆盖 langchain 冷启动 ~17s） | 60 |
 | `agent/stop_timeout_sec` | stopAgent 等待退出超时 | 5 |
 | `agent/context_window` | 模型上下文窗口大小（tokens），用于触发压缩判断 | 1048576 |
@@ -479,16 +480,20 @@ connect(agent, &DAAgentInterface::agentSessionLoaded, dock, &DAAgentDockWidget::
 
 ### 15.3 多供应商多模型管理（6 个新纯虚 + 2 个新信号）
 
-> 支持配置多个供应商（每个供应商含 base_url/api_key/多个模型 id），Dock 可选择不同模型。激活供应商+模型派生 `agent/llm_base_url`/`llm_api_key`/`llm_model`（仍经 `getLLMConfig` 下发子进程 init），无需改 Python 协议。
+> 支持配置多个供应商（每个供应商含 base_url/api_key/多个模型），Dock/web 两级选择器可选不同模型。
+> 模型为对象 `{id, context_window, max_output_tokens}`（默认 256K / 8192）。激活供应商+模型派生
+> `agent/llm_base_url`/`llm_api_key`/`llm_model`/`agent/context_window`/`agent/max_output_tokens`
+> （经 `getLLMConfig` 下发子进程 init，Python 端 `ChatOpenAI(max_tokens=max_output_tokens)`），切换模型
+> 时 requestStop 使下次启动使用新模型（init 时固化进 ChatOpenAI，无法热切换）。
 
 | # | 签名 | 用途 | 实现处 |
 |---|------|------|--------|
-| 1 | `virtual QJsonArray getProviders() const = 0` | 取所有供应商（api_key 已解密明文）；旧 flat-key 配置自动迁移为单 "Default" 供应商 | `DAAgentModule::getProviders` |
+| 1 | `virtual QJsonArray getProviders() const = 0` | 取所有供应商（api_key 已解密明文）；旧 flat-key/字符串模型配置自动迁移为单 "Default" 供应商（模型对象化，默认 256K/8192） | `DAAgentModule::getProviders` |
 | 2 | `virtual void setProviders(const QJsonArray& providers) = 0` | 存所有供应商（api_key 明文传入，内部 DPAPI 加密）；保存后 syncActiveConnection + emit 可用模型/激活变化 | `DAAgentModule::setProviders` |
 | 3 | `virtual QString getActiveProvider() const = 0` | 当前激活供应商名 | `DAAgentModule::getActiveProvider` |
-| 4 | `virtual QVariantList getAvailableModels() const = 0` | 所有可选模型（Dock 下拉用，不含 api_key）：每元素 `{provider,model}` | `DAAgentModule::getAvailableModels` |
+| 4 | `virtual QVariantList getAvailableModels() const = 0` | 所有可选模型（Dock/web 选择器用，不含 api_key）：每元素 `{provider,model,context_window,max_output_tokens}` | `DAAgentModule::getAvailableModels` |
 | 5 | `virtual QString getActiveModel() const = 0` | 当前激活模型 id（= `agent/llm_model`） | `DAAgentModule::getActiveModel` |
-| 6 | `virtual void setActiveModel(const QString& provider, const QString& model) = 0` | 设置激活供应商+模型：同步 base_url/api_key/model + emit activeModelChanged；子进程运行中则 requestStop（模型 init 时固化进 ChatOpenAI，无法热切换，下次启动生效） | `DAAgentModule::setActiveModel` |
+| 6 | `virtual void setActiveModel(const QString& provider, const QString& model) = 0` | 设置激活供应商+模型：同步 base_url/api_key/model/context_window/max_output_tokens + emit activeModelChanged；子进程运行中则 requestStop | `DAAgentModule::setActiveModel` |
 
 **新增 2 个信号**（`DAAgentInterface`，AppController 连到 Dock）：
 

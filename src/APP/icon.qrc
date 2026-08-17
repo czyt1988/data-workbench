@@ -104,6 +104,9 @@
         <file>Icon/arrow.svg</file>
         <file>Icon/plot-probe.svg</file>
         <file>Icon/showAgent.svg</file>
+        <file>Icon/addProvider.svg</file>
+        <file>Icon/removeProvider.svg</file>
+        <file>Icon/editProvider.svg</file>
     </qresource>
     <qresource prefix="/app/dataType">
         <file>Icon/typeDataframe.svg</file>
