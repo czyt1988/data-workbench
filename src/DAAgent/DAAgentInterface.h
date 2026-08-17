@@ -55,6 +55,23 @@ public:
     // 设置 LLM 配置
     virtual void setLLMConfig(const QJsonObject& config) = 0;
 
+    // ---- 供应商与多模型管理（多供应商多模型） ----
+    // 每个供应商含 name / base_url / api_key / models(模型 id 字符串数组)。
+    // 激活供应商 + 激活模型决定实际下发给子进程的 base_url/api_key/model。
+    /// 获取所有供应商配置（设置页 CRUD 用；api_key 已解密为明文返回）
+    virtual QJsonArray getProviders() const = 0;
+    /// 保存所有供应商配置（设置页 apply 用；api_key 明文传入，内部加密存储）
+    virtual void setProviders(const QJsonArray& providers) = 0;
+    /// 获取当前激活供应商名称
+    virtual QString getActiveProvider() const = 0;
+    /// 获取所有可选模型列表（Dock 下拉用，不含 api_key）：每元素 QVariantMap{provider,model}
+    virtual QVariantList getAvailableModels() const = 0;
+    /// 获取当前激活模型 id
+    virtual QString getActiveModel() const = 0;
+    /// 设置激活供应商+模型（Dock 选择用）：同步 base_url/api_key/model，emit activeModelChanged；
+    /// 若子进程正在运行则停止以便下次启动使用新模型
+    virtual void setActiveModel(const QString& provider, const QString& model) = 0;
+
     // ---- 会话管理（plan-03 新增，破坏性接口变更，插件需重编译；AGENTS.md plan-06 标注） ----
     // 创建新会话，返回新 sessionId
     virtual QString createSession() = 0;
@@ -126,5 +143,12 @@ Q_SIGNALS:
     /// 并清空 m_currentSessionId（之后用户发消息由 sendMessage 懒创建绑定工程的会话）。
     /// Dock 收到后应 clearChat + 复位 token 控件 + 下拉不选中。
     void sessionCleared();
+
+    // ---- 供应商与多模型管理信号 ----
+    /// 可用模型列表变化（供应商变更/设置页 apply 后），Dock 据此填充下拉
+    /// payload 每元素 QVariantMap{provider,model}
+    void availableModelsChanged(QVariantList models);
+    /// 激活模型变化（Dock 选择 / 设置页 apply 触发），Dock 据此选中下拉项 + 刷新模型标签
+    void activeModelChanged(const QString& provider, const QString& model);
 };
 } // namespace DA

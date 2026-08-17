@@ -291,9 +291,11 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 
 | Key | 含义 | 默认值 |
 |-----|------|--------|
-| `agent/llm_base_url` | LLM Base URL | — |
-| `agent/llm_api_key` | **DPAPI 加密**后 Base64（Windows 当前用户作用域；非 Windows 仅为 base64，开发用） | — |
-| `agent/llm_model` | 模型名 | — |
+| `agent/llm_base_url` | LLM Base URL（激活供应商派生，见 `agent/providers`） | — |
+| `agent/llm_api_key` | **DPAPI 加密**后 Base64（Windows 当前用户作用域；非 Windows 仅为 base64，开发用）；激活供应商派生 | — |
+| `agent/llm_model` | 当前激活模型 id（激活供应商下的某个模型） | — |
+| `agent/providers` | 供应商 JSON 数组（Compact 字符串）：每元素 `{name, base_url, api_key(加密 base64), models:[id,...]}`。由 `getProviders`/`setProviders` 读写，api_key 内部 DPAPI 加解密 | — |
+| `agent/active_provider` | 当前激活供应商名称（Dock 模型下拉选择 / 设置页 apply 写入） | — |
 | `agent/ready_timeout_sec` | 子进程就绪超时（覆盖 langchain 冷启动 ~17s） | 60 |
 | `agent/stop_timeout_sec` | stopAgent 等待退出超时 | 5 |
 | `agent/context_window` | 模型上下文窗口大小（tokens），用于触发压缩判断 | 1048576 |
@@ -474,6 +476,36 @@ connect(agent, &DAAgentInterface::agentSessionLoaded, dock, &DAAgentDockWidget::
 ```
 
 > 这两个信号是**新增连接点**，不改变既有信号签名，不破坏二进制兼容。重构后 Bridge 是 DAAgent 内部对象，外部不直接连接——改为监听 `DAAgentInterface` 上对应的转发信号。
+
+### 15.3 多供应商多模型管理（6 个新纯虚 + 2 个新信号）
+
+> 支持配置多个供应商（每个供应商含 base_url/api_key/多个模型 id），Dock 可选择不同模型。激活供应商+模型派生 `agent/llm_base_url`/`llm_api_key`/`llm_model`（仍经 `getLLMConfig` 下发子进程 init），无需改 Python 协议。
+
+| # | 签名 | 用途 | 实现处 |
+|---|------|------|--------|
+| 1 | `virtual QJsonArray getProviders() const = 0` | 取所有供应商（api_key 已解密明文）；旧 flat-key 配置自动迁移为单 "Default" 供应商 | `DAAgentModule::getProviders` |
+| 2 | `virtual void setProviders(const QJsonArray& providers) = 0` | 存所有供应商（api_key 明文传入，内部 DPAPI 加密）；保存后 syncActiveConnection + emit 可用模型/激活变化 | `DAAgentModule::setProviders` |
+| 3 | `virtual QString getActiveProvider() const = 0` | 当前激活供应商名 | `DAAgentModule::getActiveProvider` |
+| 4 | `virtual QVariantList getAvailableModels() const = 0` | 所有可选模型（Dock 下拉用，不含 api_key）：每元素 `{provider,model}` | `DAAgentModule::getAvailableModels` |
+| 5 | `virtual QString getActiveModel() const = 0` | 当前激活模型 id（= `agent/llm_model`） | `DAAgentModule::getActiveModel` |
+| 6 | `virtual void setActiveModel(const QString& provider, const QString& model) = 0` | 设置激活供应商+模型：同步 base_url/api_key/model + emit activeModelChanged；子进程运行中则 requestStop（模型 init 时固化进 ChatOpenAI，无法热切换，下次启动生效） | `DAAgentModule::setActiveModel` |
+
+**新增 2 个信号**（`DAAgentInterface`，AppController 连到 Dock）：
+
+| 信号 | 用途 |
+|------|------|
+| `void availableModelsChanged(QVariantList models)` | 可用模型列表变化（setProviders / 设置页 apply），Dock 据此填充下拉 |
+| `void activeModelChanged(const QString& provider, const QString& model)` | 激活模型变化，Dock 据此选中下拉项 + 刷新 "Model: <name>" 标签 |
+
+**连接清单**（`DAAppController::initialize()`）：
+
+```cpp
+connect(agent, &DAAgentInterface::availableModelsChanged, dock, &DAAgentDockWidget::onAvailableModelsChanged);
+connect(agent, &DAAgentInterface::activeModelChanged, dock, &DAAgentDockWidget::onActiveModelChanged);
+connect(dock, &DAAgentDockWidget::activeModelChangeRequested, agent, &DAAgentInterface::setActiveModel);
+```
+
+**初始推送**：`DAAppController` 在接口↔Dock 信号链 connect 完成后调 `agentMod->pushModelSelection()`（DAAgentModule 非 interface 辅助方法），emit 两个信号填充 Dock 下拉；首次运行/旧配置时 `syncActiveConnection` 兜底取首个供应商为激活。
 
 ---
 

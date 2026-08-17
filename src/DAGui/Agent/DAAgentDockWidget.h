@@ -37,6 +37,8 @@ private Q_SLOTS:
     void onSessionManagerClicked();
     void onUserMessageReceived(const QString& text);
     void onWebReady();
+    /// 模型下拉选择变化（用户手动切换）：定稿当前流式输出 + emit activeModelChangeRequested
+    void onModelComboChanged();
 
 public Q_SLOTS:
     void onAgentToken(const QString& token);
@@ -55,6 +57,12 @@ public Q_SLOTS:
     void onSessionListChanged(QVariantList sessions);
     void onSessionCreated(const QString& sessionId);
     void onSessionCleared();
+
+    // ---- 供应商/多模型选择（Dock 下拉选择不同模型） ----
+    /// 可用模型列表变化（供应商变更/设置页 apply），填充模型下拉
+    void onAvailableModelsChanged(QVariantList models);
+    /// 激活模型变化（Dock 选择/设置页 apply），选中下拉项 + 刷新模型标签
+    void onActiveModelChanged(const QString& provider, const QString& model);
 
 Q_SIGNALS:
     /**
@@ -88,6 +96,10 @@ Q_SIGNALS:
     void sessionRenameRequested(const QString& sessionId, const QString& newTitle);
     /// 会话切换开始时请求停止当前 agent 流式输出（MAJOR4 切换时请求停止）
     void agentStopRequested();
+
+    // ---- 供应商/多模型选择 ----
+    /// 用户在模型下拉切换模型，请求设置激活供应商+模型（→ DAAgentInterface::setActiveModel）
+    void activeModelChangeRequested(const QString& provider, const QString& model);
 
 protected:
     bool eventFilter(QObject* obj, QEvent* ev) override;

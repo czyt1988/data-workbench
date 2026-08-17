@@ -7,23 +7,28 @@
 #include <QSpinBox>
 #include <QDoubleSpinBox>
 #include <QCheckBox>
+#include <QListWidget>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QJsonDocument>
 
+class QTabWidget;
+
 namespace DA
 {
 
 /**
- * @brief Agent LLM 设置页：配置 base_url / api_key / model_name，提供连接测试
+ * @brief Agent LLM 设置页：多供应商多模型管理 + Agent 其它设置（超时/上下文/会话/容错）
+ *
+ * 采用 QTabWidget 分两页：
+ *  - Tab "Model Providers"：供应商 CRUD（名称/base_url/api_key/模型 id 列表），可增删供应商与模型，
+ *    提供连接测试。持久化经 DAAgentInterface::getProviders/setProviders（api_key 内部加解密）。
+ *  - Tab "Agent Settings"：超时/上下文管理/会话保留/重连容错/预启动开关，经 getLLMConfig/setLLMConfig。
  *
  * 继承 DAAbstractSettingPage（非 QWidget），注册到平台设置系统。
- * 持久化经 setAgentInterface 注入的 DAAgentInterface 的 get/setLLMConfig
- * 走 agent-config.ini（DAAgent 库内部加解密 api_key），设置页只传明文 QJsonObject。
- *
- * 参考实现：data-workbench/src/APP/SettingPages/DASettingPagePython.h
  */
 class DAAgentSettingsWidget : public DAAbstractSettingPage
 {
@@ -47,32 +52,64 @@ public:
 
 private Q_SLOTS:
     void onTestConnection();
+    // 供应商 CRUD
+    void onAddProvider();
+    void onRemoveProvider();
+    void onProviderSelected(int row);
+    void onProviderNameEdited(const QString& text);
+    // 模型 CRUD
+    void onAddModel();
+    void onRemoveModel();
 
 private:
     void setupUI();
+    void setupProvidersTab();
+    void setupAgentSettingsTab();
     void loadConfig();
     void saveConfig();
+    // 供应商 Tab 辅助
+    void refreshProviderList();
+    void loadProviderToForm(int idx);
+    void saveFormToProvider(int idx);
+    int currentProviderRow() const;
+    int currentModelIndex() const;
 
 private:
-    DAAgentInterface* mAgentInterface { nullptr };  ///< 持久化接口（loadConfig/saveConfig 经此走 agent-config.ini）
-    QLineEdit* mBaseUrlEdit;
-    QLineEdit* mApiKeyEdit;       // EchoMode::Password
-    QLineEdit* mModelEdit;        // 模型名
+    DAAgentInterface* mAgentInterface { nullptr };  ///< 持久化接口
+
+    // ---- 顶层 Tab ----
+    QTabWidget* mTabWidget;
+
+    // ---- Tab1: 供应商管理 ----
+    QListWidget* mProviderList;          ///< 供应商列表（每项名称 + 激活标记）
+    QLineEdit* mProviderNameEdit;        ///< 供应商名称
+    QLineEdit* mProviderBaseUrlEdit;     ///< base_url
+    QLineEdit* mProviderApiKeyEdit;      // api_key (EchoMode::Password)
+    QListWidget* mModelList;             ///< 模型 id 列表
+    QLineEdit* mModelIdEdit;             ///< 新增模型 id 输入
+    QPushButton* mAddModelBtn;
+    QPushButton* mRemoveModelBtn;
+    QPushButton* mAddProviderBtn;
+    QPushButton* mRemoveProviderBtn;
+    QPushButton* mTestBtn;               ///< 测试连接（测试当前选中供应商 + 其首个模型）
+    QLabel* mStatusLabel;                ///< 测试结果
+    QNetworkAccessManager* mNetworkManager { nullptr };
+    QJsonArray mProviders;               ///< 内存中的供应商缓存（api_key 明文）
+    int mCurrentProviderIdx { -1 };      ///< 当前选中供应商索引
+
+    // ---- Tab2: Agent 其它设置 ----
     QSpinBox* mReadyTimeoutSpin;  // ready 等待超时(秒)
     QSpinBox* mStopTimeoutSpin;   // 停止等待超时(秒)
-    QPushButton* mTestBtn;
-    QLabel* mStatusLabel;
-    QNetworkAccessManager* mNetworkManager { nullptr };  // 主线程异步，构造函数中创建
     // 上下文管理
     QSpinBox* mContextWindowSpin;             // 模型上下文窗口大小(tokens)
     QDoubleSpinBox* mCompactionThresholdSpin;  // 压缩触发比例(0-1)
     QSpinBox* mMaxRecentMsgSpin;              // 压缩后保留最近消息数
     QSpinBox* mToolResultMaxCharsSpin;         // 工具结果截断阈值(字符)
     QSpinBox* mToolResultPreviewCharsSpin;      // 工具结果预览长度(字符)
-    // 会话持久化（plan-06）：自由会话保留数量与保留天数，供 DAAgentModule::cleanupSessions 读取
+    // 会话持久化（plan-06）
     QSpinBox* mMaxSessionsSpin;                // 自由会话保留数量(5-200)
     QSpinBox* mSessionRetentionDaysSpin;       // 自由会话保留天数(1-365)
-    // 重连与容错（plan-05）：LLM 重试/超时/子进程重启，供 DAAgentModule get/setLLMConfig 读写
+    // 重连与容错（plan-05）
     QSpinBox* mSpinMaxRetries;           // LLM 最大重试次数(0-20)
     QSpinBox* mSpinRequestTimeout;       // LLM 单次请求超时(秒)
     QSpinBox* mSpinInactivityTimeout;    // 无活动看门狗超时(秒)

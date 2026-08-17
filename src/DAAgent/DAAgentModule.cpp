@@ -755,6 +755,222 @@ void DAAgentModule::setLLMConfig(const QJsonObject& config)
 }
 
 // ===========================================================================
+// 供应商与多模型管理实现
+// ===========================================================================
+
+/**
+ * @brief 获取所有供应商配置（api_key 已解密为明文返回）
+ * @return 供应商 JSON 数组，每元素 {name, base_url, api_key, models:[id,...]}
+ *
+ * 若 agent/providers 未配置（旧版本仅有 flat key），自动迁移：以 llm_base_url /
+ * llm_api_key(解密) / llm_model 合成单个 "Default" 供应商，保证旧配置平滑升级。
+ */
+QJsonArray DAAgentModule::getProviders() const
+{
+    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
+    QString raw = s.value("agent/providers").toString();
+    if (!raw.isEmpty()) {
+        const QJsonDocument doc = QJsonDocument::fromJson(raw.toUtf8());
+        const QJsonArray arr = doc.array();
+        QJsonArray out;
+        for (const QJsonValue& pv : arr) {
+            QJsonObject p = pv.toObject();
+            QString enc = p.value("api_key").toString();
+            p["api_key"] = enc.isEmpty() ? QString() : decryptApiKey(QByteArray::fromBase64(enc.toUtf8()));
+            out.append(p);
+        }
+        return out;
+    }
+    // 迁移：旧版本仅有 flat key，合成单个 "Default" 供应商
+    QJsonArray out;
+    QJsonObject p;
+    p["name"]     = QStringLiteral("Default");
+    p["base_url"] = s.value("agent/llm_base_url").toString();
+    QByteArray encKey = s.value("agent/llm_api_key").toByteArray();
+    p["api_key"] = encKey.isEmpty() ? QString() : decryptApiKey(encKey);
+    QString model = s.value("agent/llm_model").toString();
+    QJsonArray models;
+    if (!model.isEmpty()) models.append(model);
+    p["models"] = models;
+    out.append(p);
+    return out;
+}
+
+/**
+ * @brief 保存所有供应商配置（api_key 明文传入，内部加密存储）
+ * @param providers 供应商 JSON 数组，每元素 {name, base_url, api_key, models:[id,...]}
+ *
+ * 存储为 agent/providers 单条 JSON 字符串（Compact），api_key 经 encryptApiKey
+ * 加密为 base64。保存后重新同步激活连接（base_url/api_key/model）并刷新 Dock。
+ */
+void DAAgentModule::setProviders(const QJsonArray& providers)
+{
+    QJsonArray stored;
+    for (const QJsonValue& pv : providers) {
+        QJsonObject p = pv.toObject();
+        QString key = p.value("api_key").toString();
+        p["api_key"] = QString::fromUtf8(encryptApiKey(key));  // 加密 base64 字符串
+        stored.append(p);
+    }
+    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
+    s.setValue("agent/providers", QString::fromUtf8(QJsonDocument(stored).toJson(QJsonDocument::Compact)));
+    // 重新同步激活连接（激活供应商的 base_url/api_key/model 写入 flat key）
+    syncActiveConnection();
+    emit availableModelsChanged(getAvailableModels());
+    emit activeModelChanged(getActiveProvider(), getActiveModel());
+}
+
+/**
+ * @brief 获取当前激活供应商名称
+ * @return 激活供应商名称；未配置返回空
+ */
+QString DAAgentModule::getActiveProvider() const
+{
+    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
+    return s.value("agent/active_provider").toString();
+}
+
+/**
+ * @brief 获取所有可选模型列表（Dock 下拉用，不含 api_key）
+ * @return QVariantList，每元素 QVariantMap{provider,model}
+ */
+QVariantList DAAgentModule::getAvailableModels() const
+{
+    QVariantList out;
+    const QJsonArray providers = getProviders();
+    for (const QJsonValue& pv : providers) {
+        QJsonObject p = pv.toObject();
+        QString pname = p.value("name").toString();
+        const QJsonArray models = p.value("models").toArray();
+        for (const QJsonValue& mv : models) {
+            QVariantMap item;
+            item["provider"] = pname;
+            item["model"]    = mv.toString();
+            out.append(item);
+        }
+    }
+    return out;
+}
+
+/**
+ * @brief 获取当前激活模型 id
+ * @return 激活模型 id（即 agent/llm_model）
+ */
+QString DAAgentModule::getActiveModel() const
+{
+    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
+    return s.value("agent/llm_model").toString();
+}
+
+/**
+ * @brief 设置激活供应商+模型（Dock 选择用）
+ * @param provider 供应商名称
+ * @param model 模型 id
+ *
+ * 校验 supplier+model 存在后，写入 agent/active_provider / llm_model，并从该供应商
+ * 同步 base_url/api_key 到 flat key（供 getLLMConfig/startAgentInternal 读取）。
+ * emit activeModelChanged 通知 Dock 刷新。若子进程正在运行则 requestStop，
+ * 使下次发消息时懒启动使用新模型。
+ */
+void DAAgentModule::setActiveModel(const QString& provider, const QString& model)
+{
+    DA_D(d);
+    const QJsonArray providers = getProviders();
+    QString baseUrl, apiKey;
+    bool found = false;
+    for (const QJsonValue& pv : providers) {
+        QJsonObject p = pv.toObject();
+        if (p.value("name").toString() != provider) continue;
+        const QJsonArray models = p.value("models").toArray();
+        for (const QJsonValue& mv : models) {
+            if (mv.toString() == model) {
+                baseUrl = p.value("base_url").toString();
+                apiKey  = p.value("api_key").toString();
+                found   = true;
+                break;
+            }
+        }
+        break;
+    }
+    if (!found) return;
+    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
+    s.setValue("agent/active_provider", provider);
+    s.setValue("agent/llm_model",        model);
+    s.setValue("agent/llm_base_url",     baseUrl);
+    s.setValue("agent/llm_api_key",      encryptApiKey(apiKey));
+    emit activeModelChanged(provider, model);
+    // 子进程运行中则停止，使下次启动使用新模型（模型在 init 时固化进 ChatOpenAI，无法热切换）
+    if (d->mBridge && d->mBridge->isRunning()) {
+        d->mBridge->requestStop();
+    }
+}
+
+/**
+ * @brief 从激活供应商同步 base_url/api_key/model 到 flat ini key
+ *
+ * setProviders 后调用：保存的供应商可能改了激活供应商的 base_url/api_key，
+ * 需同步到 flat key 供 getLLMConfig 读取。激活模型保留原 llm_model（若仍属于
+ * 激活供应商则保留，否则改用激活供应商第一个模型）；激活供应商为空或已不存在
+ * （被删除）时兜底取第一个供应商，使配置始终可启动。
+ */
+void DAAgentModule::syncActiveConnection()
+{
+    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
+    const QJsonArray providers = getProviders();
+    if (providers.isEmpty()) {
+        return;  // 无供应商，无可同步
+    }
+    QString active = s.value("agent/active_provider").toString();
+    // 校验 active 是否仍存在于 providers；空或不存在则兜底取第一个
+    bool activeExists = false;
+    for (const QJsonValue& pv : providers) {
+        if (pv.toObject().value("name").toString() == active) {
+            activeExists = true;
+            break;
+        }
+    }
+    if (!activeExists) {
+        active = providers.first().toObject().value("name").toString();
+        s.setValue("agent/active_provider", active);
+    }
+    for (const QJsonValue& pv : providers) {
+        QJsonObject p = pv.toObject();
+        if (p.value("name").toString() != active) continue;
+        s.setValue("agent/llm_base_url", p.value("base_url").toString());
+        s.setValue("agent/llm_api_key", encryptApiKey(p.value("api_key").toString()));
+        // 激活模型：保留原 llm_model（若属于本供应商），否则取本供应商第一个模型
+        QString curModel = s.value("agent/llm_model").toString();
+        const QJsonArray models = p.value("models").toArray();
+        bool modelBelongs = false;
+        for (const QJsonValue& mv : models) {
+            if (mv.toString() == curModel) { modelBelongs = true; break; }
+        }
+        if (!modelBelongs && !models.isEmpty()) {
+            s.setValue("agent/llm_model", models.first().toString());
+        } else if (models.isEmpty()) {
+            s.setValue("agent/llm_model", QString());  // 无模型则清空
+        }
+        break;
+    }
+}
+
+/**
+ * @brief 推送当前供应商/模型选择到 Dock
+ *
+ * 由 DAAppController 在接口↔Dock 信号链 connect 完成后调用（与 restoreLastActiveSession
+ * 同处）。首次运行/旧配置迁移时若 active_provider 为空，先 syncActiveConnection 兜底
+ * 取首个供应商并持久化，再 emit availableModelsChanged + activeModelChanged。
+ */
+void DAAgentModule::pushModelSelection()
+{
+    if (getActiveProvider().isEmpty()) {
+        syncActiveConnection();  // 兜底：取首个供应商为激活并同步 flat key
+    }
+    emit availableModelsChanged(getAvailableModels());
+    emit activeModelChanged(getActiveProvider(), getActiveModel());
+}
+
+// ===========================================================================
 // 会话管理接口实现（plan-03）
 // ===========================================================================
 

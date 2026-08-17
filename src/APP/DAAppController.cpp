@@ -265,6 +265,10 @@ void DAAppController::initialize()
         connect(agent, &DAAgentInterface::sessionListChanged, dock, &DAAgentDockWidget::onSessionListChanged);
         connect(agent, &DAAgentInterface::sessionCreated, dock, &DAAgentDockWidget::onSessionCreated);
         connect(agent, &DAAgentInterface::sessionCleared, dock, &DAAgentDockWidget::onSessionCleared);
+        // 供应商/多模型选择：接口信号 → Dock 槽（2 条），Dock 信号 → 接口方法（1 条）
+        connect(agent, &DAAgentInterface::availableModelsChanged, dock, &DAAgentDockWidget::onAvailableModelsChanged);
+        connect(agent, &DAAgentInterface::activeModelChanged, dock, &DAAgentDockWidget::onActiveModelChanged);
+        connect(dock, &DAAgentDockWidget::activeModelChangeRequested, agent, &DAAgentInterface::setActiveModel);
         // Dock 信号 → 接口方法（7 条；均为信号→方法 PMF 连接，emit 源信号即调用方法体，
         // 含各自持久化/启动逻辑，无需 lambda。agentStopRequested 暂无对接，略）。
         // 注意 sessionCreateRequested 连 &DAAgentInterface::newSession（非 createSession）：
@@ -305,6 +309,7 @@ void DAAppController::initialize()
         if (auto* agentMod = qobject_cast< DAAgentModule* >(mCore->getAgentInterface())) {
             agentMod->setCurrentProjectPath(QString());  // 启动无工程，projectPath=null
             agentMod->restoreLastActiveSession();         // 填充下拉 + 全新对话
+            agentMod->pushModelSelection();  // 推送供应商/模型列表 + 激活选择到 Dock 下拉
             agentMod->prestartAgent();  // 预启动 agent 子进程（受 auto_prestart 开关 + LLM 配置控制）
         }
     });

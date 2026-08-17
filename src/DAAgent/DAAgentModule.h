@@ -61,6 +61,20 @@ public:
     /// @copydoc DAAgentInterface::setLLMConfig
     void setLLMConfig(const QJsonObject& config) override;
 
+    // ---- 供应商与多模型管理（override DAAgentInterface 6 个新纯虚） ----
+    /// @copydoc DAAgentInterface::getProviders
+    QJsonArray getProviders() const override;
+    /// @copydoc DAAgentInterface::setProviders
+    void setProviders(const QJsonArray& providers) override;
+    /// @copydoc DAAgentInterface::getActiveProvider
+    QString getActiveProvider() const override;
+    /// @copydoc DAAgentInterface::getAvailableModels
+    QVariantList getAvailableModels() const override;
+    /// @copydoc DAAgentInterface::getActiveModel
+    QString getActiveModel() const override;
+    /// @copydoc DAAgentInterface::setActiveModel
+    void setActiveModel(const QString& provider, const QString& model) override;
+
     // ---- 会话管理接口（plan-03，override DAAgentInterface 9 个新纯虚） ----
     /// @copydoc DAAgentInterface::createSession
     QString createSession() override;
@@ -100,6 +114,9 @@ public:
     void restoreLastActiveSession();
     // 预启动 agent 子进程（程序启动时调用，受 auto_prestart 配置开关 + LLM 配置就绪控制）
     void prestartAgent();
+    // 推送当前供应商/模型选择到 Dock（emit availableModelsChanged + activeModelChanged）
+    // 由 DAAppController 在接口↔Dock 信号链 connect 完成后调用
+    void pushModelSelection();
 
 private:
     // Helper methods
@@ -120,6 +137,8 @@ private:
     void emitTokenUsageForSession(const QString& sid);
     // 会话累计 token 清零（新建/删除当前/恢复时调用）
     void resetCumulativeTokens();
+    // 供应商管理私有辅助：从激活供应商同步 base_url/api_key/model 到 flat ini keys
+    void syncActiveConnection();
 
     DA_DECLARE_PRIVATE(DAAgentModule)
 };
