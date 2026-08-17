@@ -8,13 +8,17 @@ cmake_minimum_required(VERSION 3.10)
 
 ########################################################
 # 自动化生成配置头文件
+# 注意:此处必须无条件执行 configure_file，保证 DAConfigs.h 始终由
+# DAConfigs.h.in 结合顶层 CMakeLists.txt 中的 DA_VERSION_* 变量生成，
+# 从而让启动画面/关于对话框/--version 显示的版本号与 CMakeLists.txt 保持一致。
+# （历史上此处曾以 DA_AUTO_UPDATE_CONFIG_INFO 作为开关，但该变量名与顶层
+#   option(DA_AUTO_GENERATE_CONFIG_INFO) 不一致，导致生成从未被触发，
+#   仓库中 DAConfigs.h 长期为陈旧版本。）
 ########################################################
-if(DA_AUTO_UPDATE_CONFIG_INFO)
-    configure_file (
-      "${CMAKE_CURRENT_LIST_DIR}/DAConfigs.h.in"
-      "${CMAKE_CURRENT_LIST_DIR}/DAConfigs.h"
-    )
-endif()
+configure_file(
+    "${CMAKE_CURRENT_LIST_DIR}/DAConfigs.h.in"
+    "${CMAKE_CURRENT_LIST_DIR}/DAConfigs.h"
+)
 
 ########################################################
 # 加载库

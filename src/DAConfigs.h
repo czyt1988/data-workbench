@@ -16,42 +16,42 @@
  * @def 版本号-minor（数字）
  */
 #ifndef DA_VERSION_MINOR
-#define DA_VERSION_MINOR 0
+#define DA_VERSION_MINOR 1
 #endif
 
 /**
  * @def 版本号-patch（数字）
  */
 #ifndef DA_VERSION_PATCH
-#define DA_VERSION_PATCH 2
+#define DA_VERSION_PATCH 1
 #endif
 
 /**
  * @def 版本号（字符串）
  */
 #ifndef DA_VERSION
-#define DA_VERSION "0.0.2"
+#define DA_VERSION "0.1.1"
 #endif
 
 /**
  * @def 编译的日期（字符串）
  */
 #ifndef DA_COMPILE_DATETIME
-#define DA_COMPILE_DATETIME "240617"
+#define DA_COMPILE_DATETIME "260817"
 #endif
 
 /**
  * @def 编译的年份（字符串）
  */
 #ifndef DA_COMPILE_DATETIME_YEAR
-#define DA_COMPILE_DATETIME_YEAR "24"
+#define DA_COMPILE_DATETIME_YEAR "26"
 #endif
 
 /**
  * @def 编译的月份（字符串）
  */
 #ifndef DA_COMPILE_DATETIME_MONTH
-#define DA_COMPILE_DATETIME_MONTH "06"
+#define DA_COMPILE_DATETIME_MONTH "08"
 #endif
 
 /**

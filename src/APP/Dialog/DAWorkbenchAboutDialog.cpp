@@ -22,7 +22,7 @@ DAWorkbenchAboutDialog::~DAWorkbenchAboutDialog()
 void DAWorkbenchAboutDialog::makeAboutInfo()
 {
 	ui->textEdit->append(
-		tr("DAWorkbench, LGPL, Version: %1.%2.%3").arg(DA_VERSION_MAJ).arg(DA_VERSION_MIN).arg(DA_VERSION_PAR));  // cn:DAWorkbench,LGPL,版本:%1.%2.%3
+		tr("DAWorkbench, LGPL, Version: %1.%2.%3").arg(DA_VERSION_MAJOR).arg(DA_VERSION_MINOR).arg(DA_VERSION_PATCH));  // cn:DAWorkbench,LGPL,版本:%1.%2.%3
 	ui->textEdit->append(tr("Email: czy.t@163.com"));  // cn:邮箱:czy.t@163.com
 	ui->textEdit->append(tr("GitHub: https://github.com/czyt1988/data-workbench"));  // cn:GitHub:https://github.com/czyt1988/data-workbench
 	ui->textEdit->append(tr(""));  // cn:空行
