@@ -91,6 +91,7 @@ nav:
               - 可缩放图元模块: zh/dev-guide/scalable-graphic-module.md
           - 绘图模块:
               - 绘图模块概述: zh/dev-guide/figure-abstract.md
+              - 绘图窗口停靠布局: zh/dev-guide/chart-dock-nesting.md
           - Agent 模块:
               - Agent 概述: zh/dev-guide/agent/index.md
               - 架构设计: zh/dev-guide/agent/architecture.md

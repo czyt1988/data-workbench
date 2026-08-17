@@ -190,6 +190,7 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 | | [workflow-overview.md](docs/zh/dev-guide/workflow-overview.md) | 工作流系统架构 |
 | | [workflow-python-node-dev.md](docs/zh/dev-guide/workflow-python-node-dev.md) | Python 节点开发 |
 | | [dapybind11-qt-caster.md](docs/zh/dev-guide/dapybind11-qt-caster.md) | pybind11↔Qt 类型转换 |
+| | [chart-dock-nesting.md](docs/zh/dev-guide/chart-dock-nesting.md) | 绘图窗口 ADS 嵌套停靠区、FocusHighlighting 焦点陷阱 |
 | | [logging.md](docs/zh/dev-guide/logging.md) | 日志系统、故障排查 |
 | | [creating-setting-panel.md](docs/zh/dev-guide/creating-setting-panel.md) | 创建设置面板 |
 | **构建** | [build-instructions.md](docs/zh/build/build-instructions.md) | 完整构建指南 |

@@ -294,6 +294,8 @@ sequenceDiagram
 
 图表创建流程涉及 DAGui 的 `ChartSetting/` 子模块和 DAFigure 模块的协作。用户在 ChartSetting 面板中选择数据和图表类型后，DAFigure 模块创建 `QwtFigure` 容器（类似 matplotlib 的 Figure），内部使用 Qwt 的 `QwtPlot`、`QwtPlotCurve` 等组件绘制图表，最终包装为 `DAChartWidget` 嵌入到 Docking 面板中。
 
+图表窗口在 `DAChartOperateWidget` 中以 ADS 嵌套停靠区管理（多窗口自由分屏、隔离在绘图区内），其设计与一个 `FocusHighlighting` 焦点跨管理器陷阱详见 [绘图窗口停靠布局](chart-dock-nesting.md)。
+
 ---
 
 ## 关键设计决策

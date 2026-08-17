@@ -266,6 +266,7 @@ figure->getUndoStack()->redo();
 - 依赖 `Qt::Concurrent` 实现异步绑图
 - 依赖 `Qt::PrintSupport` 实现图表打印和导出
 - 绘图模块的属性设置窗口（如轴设置、曲线样式等）位于 `DAGui` 模块中
+- `DAFigureWidget` 实例由 `DAGui` 的 `DAChartOperateWidget` 以 ADS 嵌套停靠区管理（多窗口自由分屏/并栏、隔离在绘图区内），详见 [绘图窗口停靠布局](chart-dock-nesting.md)
 
 ## API 参考
 

@@ -612,6 +612,9 @@ classDiagram
     DADataOperateWidget --> DADataOperatePageWidget : 管理
 ```
 
+!!! info "DAChartOperateWidget 的停靠实现"
+    `DAChartOperateWidget` 基于 ADS 的 dockindock 嵌套停靠区管理多个 `DAFigureWidget`（隔离在绘图区内、自由分屏、布局随工程持久化）。该机制有一个隐蔽的 `FocusHighlighting` 焦点跨管理器陷阱，修改停靠相关逻辑前必读 [绘图窗口停靠布局](chart-dock-nesting.md)。
+
 ### 业务逻辑流程
 
 #### 图表设置面板的创建与使用
