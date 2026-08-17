@@ -396,6 +396,24 @@ void DAAgentBridge::sendLoadSession(const QString& sessionId, const QJsonArray& 
     writeJson(obj);
 }
 
+/**
+ * @brief 热替换 LLM 配置（不重启子进程、不丢 MemorySaver 会话状态）
+ * @param config 新的 LLM 配置（base_url/api_key/model/max_output_tokens 等）
+ *
+ * 下发 reconfigure 消息给运行中的子进程，Python 端 AgentRunner.reconfigure() 热替换
+ * ChatOpenAI 实例及相关组件（compactor/token_estimator 等），图与 MemorySaver 状态不动。
+ * reconfigure 消息在 stdin 缓冲区排队，当前轮 run()/resume() 返回后主循环才处理，
+ * 因此天然在两轮之间应用——当前轮用旧模型跑完，下一轮用新模型。Python 回 ready 确认。
+ * 与 sendLoadSession 同构：不 emit agentBusy（非一轮对话），writeJson 守卫 state()==Running。
+ */
+void DAAgentBridge::reconfigureAgent(const QJsonObject& config)
+{
+    QJsonObject obj;
+    obj["type"]   = "reconfigure";
+    obj["config"] = config;
+    writeJson(obj);
+}
+
 // ===========================================================================
 // 私有方法
 // ===========================================================================

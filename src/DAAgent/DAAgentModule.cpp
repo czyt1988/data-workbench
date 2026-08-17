@@ -930,7 +930,8 @@ QString DAAgentModule::getActiveModel() const
  * 校验 supplier+model 存在后，写入 agent/active_provider / llm_model，并从该供应商
  * 同步 base_url/api_key 到 flat key、从该模型同步 context_window/max_output_tokens
  * （供 getLLMConfig/startAgentInternal 读取）。emit activeModelChanged 通知 Dock 刷新。
- * 若子进程正在运行则 requestStop，使下次发消息时懒启动使用新模型。
+ * 若子进程正在运行则热替换 LLM 配置（reconfigureAgent，不重启子进程、不丢
+ * MemorySaver 会话状态）；未运行时仅写 ini，下次懒启动用新配置。
  */
 void DAAgentModule::setActiveModel(const QString& provider, const QString& model)
 {
@@ -963,10 +964,14 @@ void DAAgentModule::setActiveModel(const QString& provider, const QString& model
     s.setValue("agent/llm_api_key",      encryptApiKey(apiKey));
     s.setValue("agent/context_window",  ctxWin);
     s.setValue("agent/max_output_tokens", maxOut);
+    s.sync();  // 确保 6 个 flat key 落盘，供下方 getLLMConfig() 读到最新配置
     emit activeModelChanged(provider, model);
-    // 子进程运行中则停止，使下次启动使用新模型（模型在 init 时固化进 ChatOpenAI，无法热切换）
+    // 子进程运行中则热替换 LLM 配置（不重启子进程、不丢 MemorySaver 会话状态）；
+    // reconfigure 在 stdin 排队，当前轮跑完后 Python 主循环处理，下一轮用新模型。
+    // 未运行时仅写 ini，下次懒启动用新 config。getLLMConfig() 在写完 6 个 flat
+    // key 后调用，读到的是最新配置（含 base_url/api_key/model/context_window 等）。
     if (d->mBridge && d->mBridge->isRunning()) {
-        d->mBridge->requestStop();
+        d->mBridge->reconfigureAgent(getLLMConfig());
     }
 }
 

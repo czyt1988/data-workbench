@@ -438,6 +438,69 @@ class AgentRunner:
         """用户请求停止——设置 stop_event 中断退避等待。"""
         self._stop_event.set()
 
+    async def reconfigure(self, config: dict):
+        """热替换 LLM 配置（不重启子进程、不重建图、不丢 MemorySaver 会话状态）。
+
+        LLM API 本身无状态——ChatOpenAI 只持有配置（base_url/api_key/model/
+        max_tokens），对话历史在 langgraph MemorySaver 中，二者解耦。因此可在
+        不重建图的前提下热替换 ChatOpenAI 实例。图节点闭包经 self.* call-time
+        读取 llm_with_tools/compactor/token_estimator/truncator（见 _build_graph
+        开头注释），reconfigure 更新这些属性后下一轮节点执行自动用新模型。
+
+        失败安全：先构造新 ChatOpenAI，成功后才更新 self.*，构造失败发 error
+        不破坏旧 LLM（旧模型继续可用）。本方法不发 done——reconfigure 不是一轮
+        对话（与 load_session 同构），仅发 ready 确认。
+
+        本方法由主循环在收到 reconfigure 消息时调用。reconfigure 消息在 stdin
+        缓冲区排队，当前轮 run()/resume() 返回（done 已发）后主循环才处理它，
+        因此天然在两轮之间应用——当前轮用旧模型跑完，下一轮用新模型。
+        """
+        try:
+            new_llm = ChatOpenAI(
+                base_url=config["base_url"],
+                api_key=config["api_key"],
+                model=config["model"],
+                streaming=True,
+                max_tokens=config.get("max_output_tokens", 8192),
+                max_retries=0,                                        # 禁用 openai-python 内置重试，由 wrapper 控制
+                timeout=config.get("request_timeout_sec", 120),       # HTTP 请求超时（连接+首字节）
+            )
+            new_llm_with_tools = new_llm.bind_tools(self.tool_schemas)
+        except Exception as e:
+            logger.exception("reconfigure: failed to construct new LLM, keeping old model")
+            await self.stdio.send_error(
+                f"Reconfigure failed: {e}", error_type="reconfigure_failed"
+            )
+            return
+        # 构造成功，原子更新 self.*——图节点闭包经 self.* call-time 读取，无需重建图
+        self.config = config
+        self.llm = new_llm
+        self.llm_with_tools = new_llm_with_tools
+        # 更新 config 派生字段
+        self.context_window = config.get("context_window", 262144)
+        self.compaction_threshold = config.get("compaction_threshold", 0.85)
+        self.max_recent_messages = config.get("max_recent_messages", 10)
+        self._max_retries = config.get("max_retries", 7)
+        new_recursion = config.get("recursion_limit", 150)
+        if new_recursion != self._recursion_limit:
+            self._recursion_limit = new_recursion
+            self.thread_config["recursion_limit"] = new_recursion
+        # 重建依赖 llm 的组件（闭包经 self.* 读取，无需重建图）
+        if _HAS_CONTEXT_MANAGER:
+            self.token_estimator = TokenEstimator(config.get("model"))
+            self.tool_result_truncator = ToolResultTruncator(
+                config.get("tool_result_max_chars", 20000),
+                config.get("tool_result_preview_chars", 2000),
+            )
+            self.compactor = ContextCompactor(
+                self.llm, self.token_estimator,
+                self.context_window, self.compaction_threshold,
+                self.max_recent_messages,
+            )
+        logger.info("reconfigure: LLM hot-swapped to model=%s base_url=%s",
+                    config.get("model"), config.get("base_url"))
+        await self.stdio.send_ready(config.get("model", ""))
+
     async def _rpc_call(self, tool_call: dict, timeout: float = 60.0) -> dict:
         """通过 stdin/stdout RPC 调用 C++ 侧工具执行器，带超时。"""
         call_id = tool_call["id"]
@@ -482,10 +545,10 @@ class AgentRunner:
         """
         stdio = self.stdio
         system_prompt = self.system_prompt
-        llm_with_tools = self.llm_with_tools
-        compactor = self.compactor
-        truncator = self.tool_result_truncator
-        token_estimator = self.token_estimator
+        # 注：llm_with_tools / compactor / truncator / token_estimator 不在此处捕获为局部
+        # 量，闭包内直接经 self.* call-time 读取，使 reconfigure() 热替换 LLM 配置后
+        # 无需重建图即可生效（保留 MemorySaver 会话状态）。stdio / system_prompt 不随
+        # 模型切换变化，保留局部捕获无副作用。
 
         async def _stream_llm(messages):
             """流式调用 LLM 并输出 token 到 UI，返回 (AIMessage, usage_metadata)。
@@ -509,9 +572,9 @@ class AgentRunner:
                 # 进度条即时反映上下文占用。真实 usage_metadata 在流结束后由
                 # send_message_end 回传覆盖此估算值。
                 input_estimate = 0
-                if token_estimator:
+                if self.token_estimator:
                     try:
-                        input_estimate = token_estimator.count_messages_tokens(messages)
+                        input_estimate = self.token_estimator.count_messages_tokens(messages)
                     except Exception:
                         pass
                 if input_estimate > 0:
@@ -521,7 +584,7 @@ class AgentRunner:
                     )
 
                 chunk_count = 0
-                async for chunk in llm_with_tools.astream(messages, **astream_kwargs):
+                async for chunk in self.llm_with_tools.astream(messages, **astream_kwargs):
                     if collected_chunks is None:
                         collected_chunks = chunk
                     else:
@@ -583,17 +646,17 @@ class AgentRunner:
 
             3 次熔断：连续失败 3 次后不再尝试（qwen-code 式），成功时重置计数。
             """
-            if not compactor:
+            if not self.compactor:
                 return {"messages": []}
             messages = state["messages"]
-            if not compactor.should_compact(messages):
+            if not self.compactor.should_compact(messages):
                 return {"messages": []}
             logger.info("Starting context compaction, current tokens=%d",
                         self.token_estimator.count_messages_tokens(messages))
             try:
                 # MAJOR3：compact() 现返回 (updates, summary_usage)
-                updates, summary_usage = await compactor.compact(messages)
-                compactor._consecutive_failures = 0  # 成功重置
+                updates, summary_usage = await self.compactor.compact(messages)
+                self.compactor._consecutive_failures = 0  # 成功重置
                 logger.info("Compaction done, returning %d updates", len(updates))
                 # summary 的 usage 经独立 send_usage(source="summary") 回传
                 # （summary 无 message_end，只能走独立 usage 消息——MAJOR6）
@@ -606,10 +669,10 @@ class AgentRunner:
                     )
                 return {"messages": updates}
             except Exception as e:
-                compactor._consecutive_failures += 1
+                self.compactor._consecutive_failures += 1
                 logger.exception("Compaction failed (%d/%d): %s",
-                                 compactor._consecutive_failures,
-                                 compactor.MAX_FAILURES, e)
+                                 self.compactor._consecutive_failures,
+                                 self.compactor.MAX_FAILURES, e)
                 return {"messages": []}  # 失败不压缩，下轮再试
 
         async def agent_node(state: MessagesState):
@@ -636,10 +699,10 @@ class AgentRunner:
                 # 此时强制压缩并重试一次。与原设计的区别：
                 # force_compact 的结果现在写回 state（RemoveMessage + summary），
                 # 使下一轮 agent_node 读到的是压缩后历史，不再 400 循环。
-                if compactor and is_context_overflow_error(e):
+                if self.compactor and is_context_overflow_error(e):
                     logger.warning("Context overflow detected, force-compacting and retrying")
                     # force_compact 返回 (compacted, summary_usage, removed_ids)
-                    compacted, summary_usage, removed_ids = await compactor.force_compact(messages)
+                    compacted, summary_usage, removed_ids = await self.compactor.force_compact(messages)
                     # force_compact 路径的 summary usage 也经独立
                     # send_usage(source="summary") 回传（与 compact_node 正常路径一致）
                     if summary_usage:
@@ -670,7 +733,7 @@ class AgentRunner:
                             compaction_updates.append(m)
                             break
                     # 熔断恢复——force_compact 成功说明压缩仍然有效
-                    compactor._consecutive_failures = 0
+                    self.compactor._consecutive_failures = 0
                 else:
                     raise
 
@@ -754,8 +817,8 @@ class AgentRunner:
                 content = json.dumps(result, ensure_ascii=False)  # str，而非 dict
                 # 工具结果截断：超长结果只保留预览（kimi-code v2 式）
                 # 截断后的内容直接进 state，后续轮次受益
-                if truncator:
-                    content = truncator.truncate(content)
+                if self.tool_result_truncator:
+                    content = self.tool_result_truncator.truncate(content)
                 results.append(ToolMessage(
                     content=content,
                     tool_call_id=tool_call["id"]
@@ -1115,6 +1178,30 @@ async def main():
                     error_type="session_load_failed",
                 )
                 await stdio.send_done()
+        elif msg_type == "reconfigure":
+            # C++ -> Python 热替换 LLM 配置（不重启子进程、不重建图、不丢
+            # MemorySaver 会话状态）。reconfigure 消息在 stdin 缓冲区排队，
+            # 当前轮 run()/resume() 返回（done 已发）后主循环才处理它，因此
+            # 天然在两轮之间应用——当前轮用旧模型跑完，下一轮用新模型。
+            # reconfigure 不发 done（与 load_session 同构，非一轮对话）；
+            # 成功由 reconfigure() 内部发 ready 确认。
+            new_config = msg.get("config")
+            if (not isinstance(new_config, dict)
+                    or not new_config.get("base_url")
+                    or not new_config.get("api_key")
+                    or not new_config.get("model")):
+                await stdio.send_error(
+                    "reconfigure missing valid config (base_url/api_key/model)",
+                    error_type="reconfigure_failed",
+                )
+                continue
+            try:
+                await runner.reconfigure(new_config)
+            except Exception as e:
+                logger.exception("reconfigure exception")
+                await stdio.send_error(
+                    f"Reconfigure failed: {e}", error_type="reconfigure_failed"
+                )
         elif msg_type == "stop":
             break
 

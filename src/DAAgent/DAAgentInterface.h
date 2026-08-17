@@ -69,7 +69,7 @@ public:
     /// 获取当前激活模型 id
     virtual QString getActiveModel() const = 0;
     /// 设置激活供应商+模型（Dock 选择用）：同步 base_url/api_key/model，emit activeModelChanged；
-    /// 若子进程正在运行则停止以便下次启动使用新模型
+    /// 若子进程正在运行则热替换 LLM 配置（reconfigureAgent，不重启子进程、不丢会话状态）
     virtual void setActiveModel(const QString& provider, const QString& model) = 0;
 
     // ---- 会话管理（plan-03 新增，破坏性接口变更，插件需重编译；AGENTS.md plan-06 标注） ----

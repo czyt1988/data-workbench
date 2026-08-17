@@ -679,11 +679,9 @@ void DAAgentDockWidget::onModelSelect(const QString& provider, const QString& mo
     if (provider == d->mCurrentProvider && model == d->mCurrentModel) {
         return;
     }
-    // 定稿当前流式输出中的 agent 消息（若有），避免切换模型时半截消息悬挂
-    if (d->mChannel) {
-        d->mChannel->onAgentStopped();
-        d->mChannel->setStopping();
-    }
+    // 不再终止当前生成：reconfigure 在 stdin 排队，当前轮用旧模型跑完，下一轮用新模型。
+    // 选择器高亮经 onActiveModelChanged 立即更新；ready 到达后模型标签确认。
+    // 忙碌中切换时当前回复正常完成（message_end/done 自然到达），不截断不丢失。
     emit activeModelChangeRequested(provider, model);
 }
 
@@ -786,6 +784,9 @@ QString DAAgentDockWidget::mapErrorMessage(const QString& original, const QStrin
     }
     if (errorType == "crash_exhausted") {
         return tr("Agent process crashed repeatedly, unable to recover"); //cn:Agent 进程多次崩溃，无法恢复
+    }
+    if (errorType == "reconfigure_failed") {
+        return tr("Failed to switch model, keeping current model"); //cn:模型切换失败，已保留当前模型
     }
     // unknown 或空
     return tr("Agent error: %1").arg(original); //cn:Agent 错误：%1

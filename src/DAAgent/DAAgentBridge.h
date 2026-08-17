@@ -53,6 +53,10 @@ public:
     void sendUserAnswer(const QString& answer);
     // 下发历史会话消息让 agent 子进程重建 state（不重启子进程切换会话）
     void sendLoadSession(const QString& sessionId, const QJsonArray& messages);
+    // 热替换 LLM 配置（不重启子进程、不丢 MemorySaver 会话状态）：
+    // 下发 reconfigure 消息给运行中的子进程，Python 端热替换 ChatOpenAI 实例。
+    // 未运行时 writeJson 静默返回 false（调用方 setActiveModel 已守卫 isRunning）。
+    void reconfigureAgent(const QJsonObject& config);
 
     // 设置 C++ 侧工具映射表，供工具调用时查找执行
     void setTools(const QMap<QString, DAAbstractAgentTool*>& tools);

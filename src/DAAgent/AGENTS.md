@@ -165,6 +165,7 @@ stdout 专用于协议，**绝对禁止在 stdout 打印日志**（污染协议�
 | `tool_result` | `call_id` + `result` | 工具执行结果回传（RPC 应答） |
 | `user_answer` | `answer` | 用户对 HITL 问题的回答，触发 `resume()` |
 | `load_session` | `session_id` + `messages`(JSON 数组，T6 记录的 message 字段) | **切换/恢复会话**时下发历史 messages 重建 langgraph state（不重启子进程）；Python 端 `graph.aupdate_state` 注入后回 `session_loaded` 确认 |
+| `reconfigure` | `config`{base_url, api_key, model, max_output_tokens, context_window, ...} | **热替换 LLM 配置**（不重启子进程、不丢 MemorySaver 会话状态）：Python 端 `AgentRunner.reconfigure()` 热替换 ChatOpenAI + compactor/token_estimator，图与 state 不动，回 `ready` 确认。消息在 stdin 排队，当前轮跑完后主循环处理，下一轮用新模型（见 §15.3） |
 | `stop` | — | 优雅停止，子进程退出主循环 |
 
 ### 5.2 Python → C++（stdout）
@@ -172,7 +173,7 @@ stdout 专用于协议，**绝对禁止在 stdout 打印日志**（污染协议�
 | type | 载荷 | 说明 |
 |------|------|------|
 | `booting` | — | **必须在导入 langchain 之前发送**；C++ 收到后重置 ready 超时计时器（冷启动 ~16s） |
-| `ready` | `model` | 初始化完成，C++ 停止 ready 计时器 |
+| `ready` | `model` | 初始化完成（或 `reconfigure` 热替换完成），C++ 停止 ready 计时器。Module 的 `agentReady` 处理器在非恢复路径（`isRecovering()==false` 且无 pending load_session）时早返回，故 `reconfigure` 复用本信号安全无副作用 |
 | `token` | `content` | 流式 token |
 | `message_end` | `content` | 本轮最终回复（agent_node 在无 tool_calls 时发送） |
 | `tool_call` | `call_id` + `tool` + `arguments` | 请求 C++ 执行工具；C++ 回传 `tool_result` |
@@ -484,7 +485,10 @@ connect(agent, &DAAgentInterface::agentSessionLoaded, dock, &DAAgentDockWidget::
 > 模型为对象 `{id, context_window, max_output_tokens}`（默认 256K / 8192）。激活供应商+模型派生
 > `agent/llm_base_url`/`llm_api_key`/`llm_model`/`agent/context_window`/`agent/max_output_tokens`
 > （经 `getLLMConfig` 下发子进程 init，Python 端 `ChatOpenAI(max_tokens=max_output_tokens)`），切换模型
-> 时 requestStop 使下次启动使用新模型（init 时固化进 ChatOpenAI，无法热切换）。
+> 时经 `reconfigure` 消息热替换（不重启子进程、不丢 MemorySaver 会话状态，详见 §5.1）。
+> `_build_graph` 闭包内 `llm_with_tools`/`compactor`/`token_estimator`/`truncator`
+> 经 `self.*` call-time 读取（非局部值捕获），故 `reconfigure` 更新 `self.*` 后
+> 无需重建图即可生效，下一轮节点执行自动用新模型。
 
 | # | 签名 | 用途 | 实现处 |
 |---|------|------|--------|
@@ -493,7 +497,7 @@ connect(agent, &DAAgentInterface::agentSessionLoaded, dock, &DAAgentDockWidget::
 | 3 | `virtual QString getActiveProvider() const = 0` | 当前激活供应商名 | `DAAgentModule::getActiveProvider` |
 | 4 | `virtual QVariantList getAvailableModels() const = 0` | 所有可选模型（Dock/web 选择器用，不含 api_key）：每元素 `{provider,model,context_window,max_output_tokens}` | `DAAgentModule::getAvailableModels` |
 | 5 | `virtual QString getActiveModel() const = 0` | 当前激活模型 id（= `agent/llm_model`） | `DAAgentModule::getActiveModel` |
-| 6 | `virtual void setActiveModel(const QString& provider, const QString& model) = 0` | 设置激活供应商+模型：同步 base_url/api_key/model/context_window/max_output_tokens + emit activeModelChanged；子进程运行中则 requestStop | `DAAgentModule::setActiveModel` |
+| 6 | `virtual void setActiveModel(const QString& provider, const QString& model) = 0` | 设置激活供应商+模型：同步 base_url/api_key/model/context_window/max_output_tokens + emit activeModelChanged；子进程运行中则 `reconfigureAgent` 热替换（不重启子进程、不丢会话状态），未运行时仅写 ini 下次懒启动用新 config | `DAAgentModule::setActiveModel` |
 
 **新增 2 个信号**（`DAAgentInterface`，AppController 连到 Dock）：
 
