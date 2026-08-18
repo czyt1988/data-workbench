@@ -423,8 +423,17 @@ bool DAAppProject::appendWorkflowInProject(const QDomDocument& doc, bool skipInd
     }
     QDomNodeList wfListNodes = workflowsEle.childNodes();
     QSet< QString > names    = qlist_to_qset(wfo->getAllWorkflowNames());
+    // 收集嵌套停靠区布局节点，延迟到所有工作流创建完成后恢复
+    QByteArray workflowLayout;
     for (int i = 0; i < wfListNodes.size(); ++i) {
         QDomElement workflowEle = wfListNodes.at(i).toElement();
+        if (workflowEle.isNull()) {
+            continue;
+        }
+        if (workflowEle.tagName() == QLatin1String("workflow-layout")) {
+            workflowLayout = QByteArray::fromBase64(workflowEle.text().toLatin1());
+            continue;
+        }
         if (workflowEle.tagName() != "workflow") {
             continue;
         }
@@ -432,9 +441,15 @@ bool DAAppProject::appendWorkflowInProject(const QDomDocument& doc, bool skipInd
         // 生成一个唯一名字
         name = DA::makeUniqueString(names, name);
         names.insert(name);
+        // id 用于恢复工作流持久 id 与 dock objectName，供 restoreState 匹配布局
+        QString id = workflowEle.attribute("id");
         // 建立工作流窗口
-        DAPyWorkFlowEditWidget* wfe = wfo->appendWorkflow(name);
+        DAPyWorkFlowEditWidget* wfe = wfo->appendWorkflow(name, id);
         isok &= mXml.loadElement(wfe, &workflowEle);
+    }
+    // 所有工作流创建完毕后恢复停靠布局（按 objectName=id 匹配；无布局时保持默认标签顺序）
+    if (!workflowLayout.isEmpty()) {
+        wfo->restoreWorkFlowLayout(workflowLayout);
     }
     if (skipIndex) {
         int index = workflowsEle.attribute("currentIndex").toInt();
@@ -950,7 +965,10 @@ void DAAppProject::makeSaveWorkflowDataTask(DAZipArchiveThreadWrapper* archive)
         }
         // CDATA注入防护：转义 ]]>
         pyXml.replace("]]>", "]]]]><![CDATA[>");
-        xml += "<workflow name=\"" + tabName.toHtmlEscaped() + "\"><![CDATA[";
+        // id 写入外层包装（纯 C++），供 loadedWorkflowData 反序列化时 appendWorkflow(name, id) 恢复，
+        // 并作为嵌套停靠区 dock objectName，供 workflow.xml 的 <workflow-layout> restoreState 匹配
+        xml += "<workflow name=\"" + tabName.toHtmlEscaped() + "\" id=\"" + wfe->getWorkFlowId()
+               + "\"><![CDATA[";
         xml += pyXml;
         xml += "]]></workflow>\n";
     }
@@ -1376,8 +1394,10 @@ void DAAppProject::loadedWorkflowData(const std::shared_ptr< DAAbstractArchiveTa
         }
 
         QString tabName = wfEle.attribute("name");
+        // id 用于恢复工作流持久 id 与 dock objectName，供后续 workflow.xml 的 <workflow-layout> restoreState 匹配
+        QString id = wfEle.attribute("id");
         // 创建空tab（Manager自动创建空的Python workflow）
-        DAPyWorkFlowEditWidget* wfe = wfo->appendWorkflow(tabName);
+        DAPyWorkFlowEditWidget* wfe = wfo->appendWorkflow(tabName, id);
         if (!wfe) {
             daWarning << tr("Failed to create workflow tab: %1").arg(tabName);  // cn:创建工作流标签页失败:%1
             continue;
@@ -1430,19 +1450,33 @@ void DAAppProject::appendWorkflowView(const QDomDocument& doc)
     }
 
     QDomNodeList wfList = workflowsEle.childNodes();
+    // 收集嵌套停靠区布局节点，延迟到所有工作流视图加载完成后恢复
+    QByteArray workflowLayout;
     for (int i = 0; i < wfList.size(); ++i) {
         QDomElement workflowEle = wfList.at(i).toElement();
-        if (workflowEle.tagName() != "workflow") {
+        if (workflowEle.isNull()) {
+            continue;
+        }
+        // 嵌套停靠区布局节点，延迟到所有工作流视图加载完成后恢复
+        if (workflowEle.tagName() == QLatin1String("workflow-layout")) {
+            workflowLayout = QByteArray::fromBase64(workflowEle.text().toLatin1());
+            continue;
+        }
+        if (workflowEle.tagName() != QLatin1String("workflow")) {
             continue;
         }
 
+        // 优先按 id 匹配（稳定，不受 makeUniqueString 改名影响），回退 name 匹配
+        QString id      = workflowEle.attribute("id");
         QString tabName = workflowEle.attribute("name");
-        // 查找已有tab（由loadedWorkflowData创建）
-        DAPyWorkFlowEditWidget* wfe = nullptr;
-        for (int j = 0; j < wfo->count(); ++j) {
-            if (wfo->getWorkFlowWidgetName(j) == tabName) {
-                wfe = wfo->getWorkFlowWidget(j);
-                break;
+        DAPyWorkFlowEditWidget* wfe = wfo->findWorkFlowWidget(id);
+        if (!wfe) {
+            // 查找已有tab（由loadedWorkflowData创建）
+            for (int j = 0; j < wfo->count(); ++j) {
+                if (wfo->getWorkFlowWidgetName(j) == tabName) {
+                    wfe = wfo->getWorkFlowWidget(j);
+                    break;
+                }
             }
         }
         if (wfe) {
@@ -1451,6 +1485,10 @@ void DAAppProject::appendWorkflowView(const QDomDocument& doc)
             daWarning << tr("appendWorkflowView: tab '%1' not found, skipping view load")
                              .arg(tabName);  // cn:appendWorkflowView: 未找到标签页'%1'，跳过视图加载
         }
+    }
+    // 所有工作流视图加载完毕后恢复停靠布局（按 objectName=id 匹配；无布局时保持默认标签顺序）
+    if (!workflowLayout.isEmpty()) {
+        wfo->restoreWorkFlowLayout(workflowLayout);
     }
 }
 

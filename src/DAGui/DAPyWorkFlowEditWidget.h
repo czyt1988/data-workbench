@@ -59,6 +59,10 @@ public:
     void setDefaultTextColor(const QColor& c);
     // 添加一个图片item
     DAGraphicsPixmapItem* addPixmapItem_(const QImage& img);
+    // 获取工作流持久 id（稳定唯一标识，供工程序列化与嵌套停靠区 restoreState 匹配）
+    QString getWorkFlowId() const;
+    // 设置工作流持久 id（工程反序列化时恢复；通常仅由 operate widget 在加载时调用）
+    void setWorkFlowId(const QString& id);
     // 获取当前view视图下的scene中心
     QPointF getViewCenterMapToScene() const;
     // 把item移动到屏幕中心
@@ -150,6 +154,7 @@ private:
 private:
     Ui::DAPyWorkFlowEditWidget* ui;
     DAPyWorkFlowGraphicsScene* mScene { nullptr };
+    QString mWorkFlowId;  ///< 工作流持久 id，构造时自生成 uuid，供序列化与 restoreState 匹配
 };
 }  // end of DA
 #endif  // DAPyWorkFlowEditWidget_H

@@ -1501,16 +1501,31 @@ QDomElement DAXmlHelper::makeElement(DAPyWorkFlowOperateWidget* wfo, const QStri
         QDomElement workflowEle     = makeElement(wfe, "workflow", doc);
         QString name                = wfo->getWorkFlowWidgetName(i);
         workflowEle.setAttribute("name", name);
+        // 工作流持久 id：供反序列化时 appendWorkflow(name, id) 恢复，并作为 dock objectName 供 restoreState 匹配布局
+        workflowEle.setAttribute("id", wfe->getWorkFlowId());
         workflowsElement.appendChild(workflowEle);
     }
     int currentIndex = wfo->getCurrentWorkflowIndex();
     workflowsElement.setAttribute("currentIndex", currentIndex);
     workflowsElement.setAttribute("ver", getCurrentVersionNumber().toString());
+    // 嵌套停靠区布局：顶层 ads::CDockManager::saveState 不捕获嵌套管理器，需单独保存
+    // base64 编码避免二进制内容破坏 XML 文本
+    QByteArray layoutState = wfo->saveWorkFlowLayout();
+    if (!layoutState.isEmpty()) {
+        QDomElement layoutEle = doc->createElement(QStringLiteral("workflow-layout"));
+        QDomText layoutText   = doc->createTextNode(QString::fromLatin1(layoutState.toBase64()));
+        layoutEle.appendChild(layoutText);
+        workflowsElement.appendChild(layoutEle);
+    }
     return workflowsElement;
 }
 
 /**
  * @brief 从xml中加载DAPyWorkFlowOperateWidget
+ *
+ * @note 此重载为旧路径使用，DAAppProject 现行工程加载采用两阶段方式（loadedWorkflowData 创建
+ *       tab + 注入 Python 数据，appendWorkflowView 仅加载视图），不经过此函数。保留用于
+ *       appendWorkflowInProject 的导入/兼容场景，并已对齐 id 与 <workflow-layout> 恢复逻辑。
  * @param wfo
  * @param ele
  * @return
@@ -1533,17 +1548,34 @@ bool DAXmlHelper::loadElement(DAPyWorkFlowOperateWidget* wfo, const QDomElement*
         setLoadedVersionNumber(QVersionNumber(1, 1, 0));
     }
     daInfo << QObject::tr("current workflow file version:").arg(getLoaderVersionNumber().toString());  // cn:当前工作流文件版本:
+    // 收集嵌套停靠区布局节点，延迟到所有工作流创建完成后恢复
+    QByteArray workflowLayout;
     for (int i = 0; i < wfListNodes.size(); ++i) {
         QDomElement workflowEle = wfListNodes.at(i).toElement();
-        if (workflowEle.tagName() != "workflow") {
+        if (workflowEle.isNull()) {
+            continue;
+        }
+        // 嵌套停靠区布局节点，延迟到所有工作流创建完成后恢复
+        if (workflowEle.tagName() == QLatin1String("workflow-layout")) {
+            workflowLayout = QByteArray::fromBase64(workflowEle.text().toLatin1());
+            continue;
+        }
+        if (workflowEle.tagName() != QLatin1String("workflow")) {
             continue;
         }
         QString name = workflowEle.attribute("name");
         // 生成一个唯一名字
         name = DA::makeUniqueString(names, name);
+        names.insert(name);
+        // id 用于恢复工作流持久 id 与 dock objectName，供 restoreState 按 objectName 匹配布局
+        QString id = workflowEle.attribute("id");
         // 建立工作流窗口
-        DAPyWorkFlowEditWidget* wfe = wfo->appendWorkflow(name);
+        DAPyWorkFlowEditWidget* wfe = wfo->appendWorkflow(name, id);
         isok &= loadElement(wfe, &workflowEle);
+    }
+    // 所有工作流创建完毕后恢复停靠布局（按 objectName=id 匹配；无布局时保持默认标签顺序）
+    if (!workflowLayout.isEmpty()) {
+        wfo->restoreWorkFlowLayout(workflowLayout);
     }
     return isok;
 }

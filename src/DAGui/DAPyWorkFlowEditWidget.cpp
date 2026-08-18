@@ -13,6 +13,7 @@
 #include <QApplication>
 #include <QFileInfo>
 #include <QThread>
+#include <QUuid>
 #include "DAGraphicsTextItem.h"
 // workflow
 #include "DAPyWorkFlowGraphicsView.h"
@@ -30,6 +31,7 @@ namespace DA
 DAPyWorkFlowEditWidget::DAPyWorkFlowEditWidget(QWidget* parent)
     : QWidget(parent), ui(new Ui::DAPyWorkFlowEditWidget), mScene(nullptr)
 {
+    mWorkFlowId = QUuid::createUuid().toString();  // 自生成稳定唯一 id
     ui->setupUi(this);
     createScene();
 }
@@ -77,6 +79,29 @@ DAPyWorkFlowGraphicsView* DAPyWorkFlowEditWidget::getWorkFlowGraphicsView() cons
 DAPyWorkFlowGraphicsScene* DAPyWorkFlowEditWidget::getWorkFlowGraphicsScene() const
 {
     return mScene;
+}
+
+/**
+ * @brief 获取工作流持久 id
+ *
+ * id 在构造时自生成（QUuid），工程反序列化时可通过 @ref setWorkFlowId 恢复为存档值。
+ * 此 id 同时作为嵌套停靠区 ads::CDockWidget 的 objectName，供 ADS restoreState 匹配布局。
+ * @return 工作流持久 id
+ */
+QString DAPyWorkFlowEditWidget::getWorkFlowId() const
+{
+    return mWorkFlowId;
+}
+
+/**
+ * @brief 设置工作流持久 id
+ *
+ * 通常仅由 DAPyWorkFlowOperateWidget 在工程反序列化时调用，用于恢复存档 id。
+ * @param id 持久 id
+ */
+void DAPyWorkFlowEditWidget::setWorkFlowId(const QString& id)
+{
+    mWorkFlowId = id;
 }
 
 void DAPyWorkFlowEditWidget::setUndoStackActive()

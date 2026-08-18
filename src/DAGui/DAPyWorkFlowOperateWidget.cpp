@@ -1,5 +1,4 @@
 #include "DAPyWorkFlowOperateWidget.h"
-#include "ui_DAPyWorkFlowOperateWidget.h"
 // qt
 #include <QAction>
 #include <QActionGroup>
@@ -9,6 +8,12 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QUndoStack>
+#include <QVBoxLayout>
+#include <QPointer>
+// ADS
+#include "DockManager.h"
+#include "DockWidget.h"
+#include "DockAreaWidget.h"
 // workflow
 #include "DAPyWorkFlowGraphicsView.h"
 #include "DAPyWorkFlowGraphicsScene.h"
@@ -17,6 +22,7 @@
 #include "DAGraphicsPixmapItem.h"
 //
 #include "DAPyWorkFlowEditWidget.h"
+#include "DAPyWorkFlowEditWidgetDockWidget.h"
 #include "DAPyNodeGraphicsItem.h"
 #include "Commands/DACommandsForWorkFlow.h"
 
@@ -28,13 +34,25 @@ class DAPyWorkFlowOperateWidget::PrivateData
     DA_DECLARE_PUBLIC(DAPyWorkFlowOperateWidget)
 public:
     PrivateData(DAPyWorkFlowOperateWidget* p);
+    // 根据工作流编辑窗口获取其 dock
+    ads::CDockWidget* dockOfWorkflow(DAPyWorkFlowEditWidget* wfe) const;
+    // 根据 dock 获取其工作流编辑窗口
+    DAPyWorkFlowEditWidget* workflowOfDock(ads::CDockWidget* dock) const;
+    // 获取新工作流应加入的 dock area（取嵌套管理器内已有工作流所在 area，否则 nullptr）
+    ads::CDockAreaWidget* targetAreaForNewWorkflow() const;
 
+public:
     bool mIsShowGrid { true };
     QColor mDefaultTextColor { Qt::black };
     QFont mDefaultFont;
     bool mIsDestroying { false };
     bool mOnlyOneWorkflow { false };    ///< 设置只允许一个工作流
     bool mEnableWorkflowLink { true };  ///< 是否允许工作流连接
+    ads::CDockManager* mDockManager { nullptr };                   ///< 嵌套停靠管理器
+    QList< DAPyWorkFlowEditWidget* > mWorkflows;                   ///< 插入顺序，作为 index 基础
+    QHash< DAPyWorkFlowEditWidget*, ads::CDockWidget* > mWfToDock;  ///< 工作流 -> dock
+    QPointer< DAPyWorkFlowEditWidget > mCurrentWorkFlow;           ///< 当前激活工作流
+    bool mSuppressCurrentChanged { false };                        ///< 创建/加载期间抑制 currentWorkFlowWidgetChanged
     QAction* mActionCopy { nullptr };
     QAction* mActionCut { nullptr };
     QAction* mActionPaste { nullptr };
@@ -55,16 +73,57 @@ DAPyWorkFlowOperateWidget::PrivateData::PrivateData(DAPyWorkFlowOperateWidget* p
 {
 }
 
+ads::CDockWidget* DAPyWorkFlowOperateWidget::PrivateData::dockOfWorkflow(DAPyWorkFlowEditWidget* wfe) const
+{
+    return mWfToDock.value(wfe, nullptr);
+}
+
+DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::PrivateData::workflowOfDock(ads::CDockWidget* dock) const
+{
+    if (!dock) {
+        return nullptr;
+    }
+    if (DAPyWorkFlowEditWidgetDockWidget* ed = qobject_cast< DAPyWorkFlowEditWidgetDockWidget* >(dock->widget())) {
+        return ed->getEditWidget();
+    }
+    return nullptr;
+}
+
+ads::CDockAreaWidget* DAPyWorkFlowOperateWidget::PrivateData::targetAreaForNewWorkflow() const
+{
+    // 关键：不能用 mDockManager->focusedDockWidget()——FocusHighlighting 下嵌套管理器的焦点
+    // 控制器与顶层管理器共享 window 属性（DockFocusController.cpp onApplicationFocusChanged 不
+    // 校验 dock 所属管理器），用户点过顶层 dock 后 nested->focusedDockWidget() 会返回顶层 dock，
+    // 用它作 target 会让新工作流被加到顶层中心区（逃逸出 DAPyWorkFlowOperateWidget）。
+    // 改为从本嵌套管理器已有的工作流 dock 取 area，确保新工作流落在嵌套管理器内。
+    for (int i = mWorkflows.size() - 1; i >= 0; --i) {
+        if (ads::CDockWidget* d = mWfToDock.value(mWorkflows.at(i), nullptr)) {
+            if (ads::CDockAreaWidget* a = d->dockAreaWidget()) {
+                return a;
+            }
+        }
+    }
+    return nullptr;  // 首个工作流：在容器根创建 area
+}
+
 //===================================================
 // DAPyWorkFlowOperateWidget
 //===================================================
 DAPyWorkFlowOperateWidget::DAPyWorkFlowOperateWidget(QWidget* parent)
-    : DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DAPyWorkFlowOperateWidget)
+    : DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT
 {
-    ui->setupUi(this);
+    QVBoxLayout* lay = new QVBoxLayout(this);
+    lay->setContentsMargins(0, 0, 0, 0);
+    lay->setSpacing(0);
+    d_ptr->mDockManager = new ads::CDockManager(this);
+    lay->addWidget(d_ptr->mDockManager);
+    // 禁止工作流 dock 浮动为独立窗口（全局锁，对所有当前及后续 dock 生效），保留分屏/并栏/拖拽
+    d_ptr->mDockManager->lockDockWidgetFeaturesGlobally(ads::CDockWidget::DockWidgetFloatable);
+    // 嵌套停靠区聚焦改变：onFocusedDockChanged 内部会过滤掉非本管理器的 dock，
+    // 规避 FocusHighlighting 下嵌套焦点控制器跨管理器回调顶层 dock 的问题
+    connect(d_ptr->mDockManager, &ads::CDockManager::focusedDockWidgetChanged,
+            this, &DAPyWorkFlowOperateWidget::onFocusedDockChanged);
     initActions();
-    connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DAPyWorkFlowOperateWidget::onTabWidgetCurrentChanged);
-    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &DAPyWorkFlowOperateWidget::onTabWidgetTabCloseRequested);
 }
 
 DAPyWorkFlowOperateWidget::~DAPyWorkFlowOperateWidget()
@@ -75,7 +134,7 @@ DAPyWorkFlowOperateWidget::~DAPyWorkFlowOperateWidget()
     for (auto* obj : allChildren) {
         obj->disconnect(this);
     }
-    delete ui;
+    // mDockManager 作为本部件的子对象，由 Qt 自动销毁；工作流 dock 禁止浮动，无浮动窗口需额外清理
 }
 
 /**
@@ -94,19 +153,27 @@ DAPyWorkFlowManager* DAPyWorkFlowOperateWidget::createManager()
 /**
  * @brief 添加一个工作流编辑窗口
  *
+ * 基于嵌套 ads::CDockManager 管理：DAPyWorkFlowEditWidget 包成
+ * DAPyWorkFlowEditWidgetDockWidget 后由 ads::CDockWidget 包装加入停靠区。
+ * id 非空时用作工作流持久 id 与 dock objectName，供工程反序列化时 restoreState
+ * 按 objectName 匹配恢复布局。
+ *
  * 此函数发射信号workflowCreated（先），也会触发currentWorkFlowWidgetChanged（后）
- * @param wfe
+ * @param name 工作流名称
+ * @param id 持久 id，非空时覆盖工作流默认 id（供工程反序列化恢复布局）
  */
-DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::appendWorkflow(const QString& name)
+DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::appendWorkflow(const QString& name, const QString& id)
 {
-    if (isOnlyOneWorkflow()) {
-        if (ui->tabWidget->count() >= 1) {
-            return nullptr;
-        }
-    }
     DA_D(d);
-    DAPyWorkFlowEditWidget* wfe = new DAPyWorkFlowEditWidget(ui->tabWidget);
-    DAPyWorkFlowManager* mgr    = createManager();
+    if (isOnlyOneWorkflow() && d->mWorkflows.size() >= 1) {
+        return nullptr;
+    }
+    DAPyWorkFlowEditWidget* wfe = new DAPyWorkFlowEditWidget(this);
+    if (!id.isEmpty()) {
+        // 工程反序列化时恢复持久 id，同时作为 dock objectName 供 restoreState 匹配
+        wfe->setWorkFlowId(id);
+    }
+    DAPyWorkFlowManager* mgr = createManager();
     mgr->setParent(wfe);  // Manager 生命周期绑定到 EditWidget
     wfe->setManager(mgr);
     // 把undo添加进去
@@ -128,11 +195,39 @@ DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::appendWorkflow(const QString&
         emit nodeExecuteFinished(wfe, n, state);
     });
     connect(wfe, &DAPyWorkFlowEditWidget::finished, this, [ this, wfe ](bool s) { emit workflowFinished(wfe, s); });
-    ui->tabWidget->addTab(wfe, name);
+    // 信号转发：工作流标题改变 → 同步 dock 标签
+    connect(wfe, &DAPyWorkFlowEditWidget::windowTitleChanged, this, &DAPyWorkFlowOperateWidget::onWorkflowTitleChanged);
+
+    // 封装为 DAPyWorkFlowEditWidgetDockWidget（纯 QWidget，遵循项目约定，不继承 ads::CDockWidget）
+    DAPyWorkFlowEditWidgetDockWidget* editDock = new DAPyWorkFlowEditWidgetDockWidget(wfe);
+    // 包装进 ads::CDockWidget（使用 manager 构造以走管理器组件工厂，避免已弃用的两参构造）
+    ads::CDockWidget* dock = new ads::CDockWidget(d->mDockManager, name);
+    dock->setObjectName(wfe->getWorkFlowId());
+    dock->setWidget(editDock, ads::CDockWidget::ForceNoScrollArea);
+    // 关闭按钮触发 closeRequested 而非自动隐藏，便于弹确认框后再删除
+    dock->setFeature(ads::CDockWidget::CustomCloseHandling, true);
+    connect(dock, &ads::CDockWidget::closeRequested, this, [ this, wfe ]() {
+        onWorkflowCloseRequested(wfe);
+    });
+    // 记录映射
+    d->mWfToDock[ wfe ] = dock;
+    d->mWorkflows.append(wfe);
+    // 抑制聚焦改变，避免 addDockWidget 触发 currentWorkFlowWidgetChanged（保留原不变量：创建只发 workflowCreated）
+    d->mSuppressCurrentChanged = true;
+    ads::CDockAreaWidget* area = d->targetAreaForNewWorkflow();
+    if (area) {
+        // 默认以标签形式加入当前聚焦 dock 所在 area
+        d->mDockManager->addDockWidgetTabToArea(dock, area);
+    } else {
+        // 首个工作流：在容器根创建 dock area
+        d->mDockManager->addDockWidget(ads::CenterDockWidgetArea, dock);
+    }
+    d->mSuppressCurrentChanged = false;
     // 把名字保存到DAPyWorkFlowEditWidget中，在DAProject保存的时候会用到
     wfe->setWindowTitle(name);
     emit workflowCreated(wfe);
-    ui->tabWidget->setCurrentIndex(ui->tabWidget->indexOf(wfe));
+    // 新建即激活（替代旧 ui->tabWidget->setCurrentIndex）
+    setCurrentWorkflowWidget(wfe);
 
     return wfe;
 }
@@ -160,7 +255,7 @@ DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::appendWorkflowWithDialog()
  */
 int DAPyWorkFlowOperateWidget::getCurrentWorkflowIndex() const
 {
-    return ui->tabWidget->currentIndex();
+    return d_ptr->mWorkflows.indexOf(d_ptr->mCurrentWorkFlow);
 }
 
 /**
@@ -169,7 +264,7 @@ int DAPyWorkFlowOperateWidget::getCurrentWorkflowIndex() const
  */
 void DAPyWorkFlowOperateWidget::setCurrentWorkflow(int index)
 {
-    ui->tabWidget->setCurrentIndex(index);
+    setCurrentWorkflowWidget(d_ptr->mWorkflows.value(index, nullptr));
 }
 
 /**
@@ -203,11 +298,32 @@ DAPyWorkFlow DAPyWorkFlowOperateWidget::getCurrentWorkflow() const
 
 /**
  * @brief 设置当前的页面
+ *
+ * raise() 把 dock 置为当前标签（浮动则 raise 窗口，已禁浮动故仅标签）。
+ * raise 可能不触发 focusedDockWidgetChanged（如同 area 内已是当前），主动同步 mCurrentWorkFlow。
  * @param wf
  */
 void DAPyWorkFlowOperateWidget::setCurrentWorkflowWidget(DAPyWorkFlowEditWidget* wf)
 {
-    ui->tabWidget->setCurrentWidget(wf);
+    if (!wf) {
+        return;
+    }
+    ads::CDockWidget* dock = d_ptr->dockOfWorkflow(wf);
+    if (!dock) {
+        return;
+    }
+    dock->raise();
+    if (d_ptr->mCurrentWorkFlow == wf) {
+        return;
+    }
+    d_ptr->mCurrentWorkFlow = wf;
+    if (auto un = wf->getUndoStack()) {
+        if (!un->isActive()) {
+            un->setActive(true);
+        }
+    }
+    syncLineMarkerActionForView(wf->getWorkFlowGraphicsView());
+    emit currentWorkFlowWidgetChanged(wf);
 }
 
 /**
@@ -216,17 +332,24 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowWidget(DAPyWorkFlowEditWidget*
  */
 DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::getCurrentWorkFlowWidget() const
 {
-    QWidget* w = ui->tabWidget->currentWidget();
-    if (nullptr == w) {
-        return nullptr;
+    // 返回追踪的当前工作流（QPointer 在工作流销毁后自动置空）
+    if (d_ptr->mCurrentWorkFlow) {
+        return d_ptr->mCurrentWorkFlow;
     }
-    return qobject_cast< DAPyWorkFlowEditWidget* >(w);
+    // 回退到最近创建的工作流（不使用 focusedDockWidget，见 targetAreaForNewWorkflow 注释）
+    if (!d_ptr->mWorkflows.isEmpty()) {
+        return d_ptr->mWorkflows.constLast();
+    }
+    return nullptr;
 }
 
 void DAPyWorkFlowOperateWidget::setCurrentWorkflowName(const QString& name)
 {
-    int i = getCurrentWorkflowIndex();
-    renameWorkFlowWidget(i, name);
+    DAPyWorkFlowEditWidget* w = getCurrentWorkFlowWidget();
+    if (w) {
+        // setWindowTitle → windowTitleChanged → onWorkflowTitleChanged 同步 dock 标签
+        w->setWindowTitle(name);
+    }
 }
 
 /**
@@ -235,12 +358,7 @@ void DAPyWorkFlowOperateWidget::setCurrentWorkflowName(const QString& name)
  */
 QList< DAPyWorkFlowEditWidget* > DAPyWorkFlowOperateWidget::getAllWorkFlowWidgets() const
 {
-    QList< DAPyWorkFlowEditWidget* > res;
-    for (int i = 0; i < ui->tabWidget->count(); ++i) {
-        auto w = qobject_cast< DAPyWorkFlowEditWidget* >(ui->tabWidget->widget(i));
-        res.append(w);
-    }
-    return res;
+    return d_ptr->mWorkflows;
 }
 
 /**
@@ -263,12 +381,9 @@ DAPyWorkFlowGraphicsScene* DAPyWorkFlowOperateWidget::getCurrentWorkFlowScene() 
 QList< DAPyWorkFlowGraphicsScene* > DAPyWorkFlowOperateWidget::getAllWorkFlowScene() const
 {
     QList< DAPyWorkFlowGraphicsScene* > res;
-    int c = ui->tabWidget->count();
-    for (int i = 0; i < c; ++i) {
-        DAPyWorkFlowEditWidget* we = qobject_cast< DAPyWorkFlowEditWidget* >(ui->tabWidget->widget(i));
+    for (DAPyWorkFlowEditWidget* we : std::as_const(d_ptr->mWorkflows)) {
         if (we) {
-            DAPyWorkFlowGraphicsScene* sc = we->getWorkFlowGraphicsScene();
-            if (sc) {
+            if (DAPyWorkFlowGraphicsScene* sc = we->getWorkFlowGraphicsScene()) {
                 res.append(sc);
             }
         }
@@ -296,7 +411,25 @@ DAPyWorkFlowGraphicsView* DAPyWorkFlowOperateWidget::getCurrentWorkFlowView() co
  */
 DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::getWorkFlowWidget(int index) const
 {
-    return qobject_cast< DAPyWorkFlowEditWidget* >(ui->tabWidget->widget(index));
+    return d_ptr->mWorkflows.value(index, nullptr);
+}
+
+/**
+ * @brief 按 id 查找工作流窗口
+ * @param id 工作流持久 id
+ * @return 匹配的工作流编辑窗口，未找到返回 nullptr
+ */
+DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::findWorkFlowWidget(const QString& id) const
+{
+    if (id.isEmpty()) {
+        return nullptr;
+    }
+    for (DAPyWorkFlowEditWidget* wfe : std::as_const(d_ptr->mWorkflows)) {
+        if (wfe && wfe->getWorkFlowId() == id) {
+            return wfe;
+        }
+    }
+    return nullptr;
 }
 
 /**
@@ -306,7 +439,8 @@ DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::getWorkFlowWidget(int index) 
  */
 QString DAPyWorkFlowOperateWidget::getWorkFlowWidgetName(int index) const
 {
-    return ui->tabWidget->tabText(index);
+    DAPyWorkFlowEditWidget* w = getWorkFlowWidget(index);
+    return w ? w->windowTitle() : QString();
 }
 
 /**
@@ -316,7 +450,11 @@ QString DAPyWorkFlowOperateWidget::getWorkFlowWidgetName(int index) const
  */
 void DAPyWorkFlowOperateWidget::renameWorkFlowWidget(int index, const QString& name)
 {
-    ui->tabWidget->setTabText(index, name);
+    DAPyWorkFlowEditWidget* w = getWorkFlowWidget(index);
+    if (w) {
+        // setWindowTitle → windowTitleChanged → onWorkflowTitleChanged 同步 dock 标签
+        w->setWindowTitle(name);
+    }
 }
 
 /**
@@ -325,7 +463,37 @@ void DAPyWorkFlowOperateWidget::renameWorkFlowWidget(int index, const QString& n
  */
 int DAPyWorkFlowOperateWidget::count() const
 {
-    return ui->tabWidget->count();
+    return d_ptr->mWorkflows.size();
+}
+
+/**
+ * @brief 实际移除工作流（不发确认框，不发 workflowRemoving）
+ *
+ * 供 removeWorkflow / onWorkflowCloseRequested / clear 共用，承担 dock 拆除与映射清理。
+ * @param wfe 工作流编辑窗口
+ * @param deleteWidget 是否级联删除工作流及其封装，默认 true
+ */
+void DAPyWorkFlowOperateWidget::removeWorkflowNoConfirm(DAPyWorkFlowEditWidget* wfe, bool deleteWidget)
+{
+    if (!wfe) {
+        return;
+    }
+    ads::CDockWidget* dock = d_ptr->dockOfWorkflow(wfe);
+    if (!dock) {
+        return;  // 不由本部件管理
+    }
+    d_ptr->mWorkflows.removeAll(wfe);
+    d_ptr->mWfToDock.remove(wfe);
+    if (d_ptr->mCurrentWorkFlow == wfe) {
+        d_ptr->mCurrentWorkFlow = nullptr;  // 回退交由 getCurrentWorkFlowWidget
+    }
+    if (d_ptr->mDockManager) {
+        d_ptr->mDockManager->removeDockWidget(dock);
+    }
+    if (deleteWidget) {
+        // 级联删除 editDock + wfe，延迟到事件循环（与原 deleteLater 语义一致）
+        dock->deleteLater();
+    }
 }
 
 /**
@@ -334,8 +502,8 @@ int DAPyWorkFlowOperateWidget::count() const
  */
 void DAPyWorkFlowOperateWidget::removeWorkflow(int index)
 {
-    QWidget* w = ui->tabWidget->widget(index);
-    if (nullptr == w) {
+    DAPyWorkFlowEditWidget* wfe = getWorkFlowWidget(index);
+    if (nullptr == wfe) {
         return;
     }
     QMessageBox::StandardButton btn = QMessageBox::question(
@@ -347,10 +515,8 @@ void DAPyWorkFlowOperateWidget::removeWorkflow(int index)
         return;
     }
     // 发射移除信号
-    emit workflowRemoving(qobject_cast< DA::DAPyWorkFlowEditWidget* >(w));
-    ui->tabWidget->removeTab(index);
-    w->hide();
-    w->deleteLater();
+    emit workflowRemoving(wfe);
+    removeWorkflowNoConfirm(wfe, true);
 }
 
 /**
@@ -688,52 +854,103 @@ void DAPyWorkFlowOperateWidget::setDefaultTextColor(const QColor& c)
 }
 
 /**
- * @brief tab窗口发送了变化
- * @param index
+ * @brief 嵌套停靠区聚焦 dock 改变
+ *
+ * FocusHighlighting 下嵌套管理器的 CDockFocusController 与顶层管理器共享 window 属性，
+ * 用户聚焦顶层 dock（如数据操作）时本信号也会被回调到顶层 dock。这里通过
+ * nowDock->dockManager() 过滤，只处理属于本嵌套管理器的工作流 dock，避免
+ * mCurrentWorkFlow 被误置空/误切换。
+ * @param oldDock 旧聚焦 dock
+ * @param nowDock 新聚焦 dock
  */
-void DAPyWorkFlowOperateWidget::onTabWidgetCurrentChanged(int index)
+void DAPyWorkFlowOperateWidget::onFocusedDockChanged(ads::CDockWidget* oldDock, ads::CDockWidget* nowDock)
 {
-    DAPyWorkFlowEditWidget* w = getWorkFlowWidget(index);
-    if (nullptr == w) {
+    Q_UNUSED(oldDock);
+    if (d_ptr->mIsDestroying || d_ptr->mSuppressCurrentChanged) {
         return;
     }
-    // 激活undostack
-    auto un = w->getUndoStack();
-    if (un) {
+    // 过滤掉非本嵌套管理器的 dock（顶层 dock 的跨管理器回调）
+    if (nowDock && nowDock->dockManager() != d_ptr->mDockManager) {
+        return;
+    }
+    DAPyWorkFlowEditWidget* wfe = d_ptr->workflowOfDock(nowDock);
+    if (d_ptr->mCurrentWorkFlow == wfe) {
+        return;  // 未变化，避免重复发射
+    }
+    d_ptr->mCurrentWorkFlow = wfe;
+    if (!wfe) {
+        return;
+    }
+    if (auto un = wfe->getUndoStack()) {
         if (!un->isActive()) {
             un->setActive(true);
         }
     }
-    // 更新action的状态
-    if (DAPyWorkFlowGraphicsView* view = w->getWorkFlowGraphicsView()) {
-        auto markerStyle = view->getCurrentMarkerStyle();
-        switch (markerStyle) {
-        case DAGraphicsViewOverlayMouseMarker::CrossLine:
-            d_ptr->actionViewCrossLineMarker->setChecked(true);
-            break;
-        case DAGraphicsViewOverlayMouseMarker::VLine:
-            d_ptr->actionViewVLineMarker->setChecked(true);
-            break;
-        case DAGraphicsViewOverlayMouseMarker::HLine:
-            d_ptr->actionViewHLineMarker->setChecked(true);
-            break;
-        case DAGraphicsViewOverlayMouseMarker::NoMarkerStyle:
-            d_ptr->actionViewNoneMarker->setChecked(true);
-            break;
-        default:
-            break;
-        }
-    }
-    emit currentWorkFlowWidgetChanged(w);
+    syncLineMarkerActionForView(wfe->getWorkFlowGraphicsView());
+    emit currentWorkFlowWidgetChanged(wfe);
 }
 
 /**
- * @brief 请求关闭
- * @param index
+ * @brief dock 关闭请求处理（经 closeRequested 信号触发）
+ * @param wfe 对应的工作流编辑窗口
  */
-void DAPyWorkFlowOperateWidget::onTabWidgetTabCloseRequested(int index)
+void DAPyWorkFlowOperateWidget::onWorkflowCloseRequested(DAPyWorkFlowEditWidget* wfe)
 {
-    removeWorkflow(index);
+    if (!wfe) {
+        return;
+    }
+    QMessageBox::StandardButton btn = QMessageBox::question(this,
+                                                            tr("Question"),                          // cn:疑问
+                                                            tr("Confirm to close workflow"));  // cn:是否确认关闭工作流
+    if (QMessageBox::Yes != btn) {
+        return;
+    }
+    emit workflowRemoving(wfe);
+    removeWorkflowNoConfirm(wfe, true);
+}
+
+/**
+ * @brief 工作流标题改变槽函数
+ * @param t
+ */
+void DAPyWorkFlowOperateWidget::onWorkflowTitleChanged(const QString& t)
+{
+    DAPyWorkFlowEditWidget* wfe = qobject_cast< DAPyWorkFlowEditWidget* >(sender());
+    if (!wfe) {
+        return;
+    }
+    if (ads::CDockWidget* dock = d_ptr->dockOfWorkflow(wfe)) {
+        // 设置 dock 窗口标题会触发 WindowTitleChange 事件，ADS 据此更新标签文本
+        dock->setWindowTitle(t);
+    }
+}
+
+/**
+ * @brief 把当前视图的标记线样式同步到 line-marker action group 的选中状态
+ * @param view 当前工作流视图，空则跳过
+ */
+void DAPyWorkFlowOperateWidget::syncLineMarkerActionForView(DAPyWorkFlowGraphicsView* view)
+{
+    if (!view) {
+        return;
+    }
+    auto markerStyle = view->getCurrentMarkerStyle();
+    switch (markerStyle) {
+    case DAGraphicsViewOverlayMouseMarker::CrossLine:
+        d_ptr->actionViewCrossLineMarker->setChecked(true);
+        break;
+    case DAGraphicsViewOverlayMouseMarker::VLine:
+        d_ptr->actionViewVLineMarker->setChecked(true);
+        break;
+    case DAGraphicsViewOverlayMouseMarker::HLine:
+        d_ptr->actionViewHLineMarker->setChecked(true);
+        break;
+    case DAGraphicsViewOverlayMouseMarker::NoMarkerStyle:
+        d_ptr->actionViewNoneMarker->setChecked(true);
+        break;
+    default:
+        break;
+    }
 }
 
 /**
@@ -742,9 +959,6 @@ void DAPyWorkFlowOperateWidget::onTabWidgetTabCloseRequested(int index)
 void DAPyWorkFlowOperateWidget::onSelectionChanged()
 {
     if (d_ptr->mIsDestroying) {
-        //! 很奇怪，DAPyWorkFlowGraphicsScene已经析构了，但此槽函数还是能调用，在DAPyWorkFlowOperateWidget
-        //! 开始delete ui的时候，先析构DAPyWorkFlowGraphicsView，再析构DAPyWorkFlowGraphicsScene
-        //! 然后就会调用此槽函数，这时导致错误，从qt原理上，在析构时应该会把槽函数都断开连接才合理
         return;
     }
     DAPyWorkFlowGraphicsScene* scene = getCurrentWorkFlowScene();
@@ -1061,26 +1275,46 @@ bool DAPyWorkFlowOperateWidget::setPreDefineSceneAction(DAPyWorkFlowGraphicsScen
 
 /**
  * @brief 清空
- * @note 此函数会发射@ref workflowClearing 信号
+ * @note 此函数会发射@ref workflowClearing 信号，不会逐个发射 workflowRemoving
  */
 void DAPyWorkFlowOperateWidget::clear()
 {
     emit workflowClearing();
-    int count = ui->tabWidget->count();
-    QList< DAPyWorkFlowEditWidget* > wfes;
-    for (int i = 0; i < count; ++i) {
-        DAPyWorkFlowEditWidget* wfe = getWorkFlowWidget(i);
-        wfes.append(wfe);
+    // 拷贝后遍历，removeWorkflowNoConfirm 会修改 mWorkflows
+    const QList< DAPyWorkFlowEditWidget* > wfes = d_ptr->mWorkflows;
+    for (DAPyWorkFlowEditWidget* wfe : std::as_const(wfes)) {
+        removeWorkflowNoConfirm(wfe, true);
     }
-    // 清空tab
-    while (ui->tabWidget->count() > 0) {
-        ui->tabWidget->removeTab(0);
+}
+
+/**
+ * @brief 保存嵌套停靠区布局（供工程序列化）
+ *
+ * 顶层 ads::CDockManager::saveState 不会捕获嵌套管理器的布局，故需单独保存
+ * @return 布局状态字节数组，无停靠区时返回空
+ */
+QByteArray DAPyWorkFlowOperateWidget::saveWorkFlowLayout() const
+{
+    if (!d_ptr->mDockManager) {
+        return QByteArray();
     }
-    // 清空
-    for (DAPyWorkFlowEditWidget* w : wfes) {
-        w->hide();
-        w->deleteLater();
+    return d_ptr->mDockManager->saveState();
+}
+
+/**
+ * @brief 恢复嵌套停靠区布局（供工程反序列化）
+ *
+ * 调用前需先按保存顺序 appendWorkflow(name, id) 重建所有工作流 dock（objectName=id），
+ * restoreState 按 objectName 重新挂接布局。state 为空或匹配失败返回 false（保持默认标签顺序）
+ * @param state saveWorkFlowLayout 返回的状态
+ * @return 恢复成功返回 true
+ */
+bool DAPyWorkFlowOperateWidget::restoreWorkFlowLayout(const QByteArray& state)
+{
+    if (!d_ptr->mDockManager || state.isEmpty()) {
+        return false;
     }
+    return d_ptr->mDockManager->restoreState(state);
 }
 
 /**
@@ -1090,9 +1324,10 @@ void DAPyWorkFlowOperateWidget::clear()
 QList< QString > DAPyWorkFlowOperateWidget::getAllWorkflowNames() const
 {
     QList< QString > names;
-    int c = ui->tabWidget->count();
-    for (int i = 0; i < c; ++i) {
-        names.append(ui->tabWidget->tabText(i));
+    for (DAPyWorkFlowEditWidget* wfe : std::as_const(d_ptr->mWorkflows)) {
+        if (wfe) {
+            names.append(wfe->windowTitle());
+        }
     }
     return names;
 }

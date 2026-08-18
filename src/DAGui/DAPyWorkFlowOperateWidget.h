@@ -1,18 +1,22 @@
 #ifndef DAPYWORKFLOWOPERATEWIDGET_H
 #define DAPYWORKFLOWOPERATEWIDGET_H
 #include <QWidget>
+#include <QByteArray>
 #include <functional>
 #include "DAGuiAPI.h"
 #include "DAAbstractOperateWidget.h"
 #include "DAGraphicsStandardTextItem.h"
 #include "DAPyWorkFlowGraphicsScene.h"
 #include "DAPyWorkFlowEditWidget.h"
-namespace Ui
-{
-class DAPyWorkFlowOperateWidget;
-}
 class QUndoStack;
 class QActionGroup;
+
+namespace ads
+{
+class CDockManager;
+class CDockWidget;
+class CDockAreaWidget;
+}
 
 namespace DA
 {
@@ -20,8 +24,15 @@ class DADataWorkFlow;
 class DAPyWorkFlowManager;
 class DAPyWorkFlowGraphicsView;
 class DAPyNodeGraphicsItem;
+class DAPyWorkFlowEditWidgetDockWidget;
 /**
  * @brief 工作流绘图建模窗口
+ *
+ * 基于 Qt-Advanced-Docking-System (ADS) 的 dockindock 嵌套模式实现：内部持有一个嵌套的
+ * ads::CDockManager，每个 DAPyWorkFlowEditWidget 包成 DAPyWorkFlowEditWidgetDockWidget
+ * （纯 QWidget）后由 ads::CDockWidget 包装加入停靠区。工作流 dock 无法逃逸到 app 顶层
+ * 管理器，满足"只能在本窗口内布局"。默认以标签形式加入当前聚焦 dock area，用户可自由
+ * 拖拽分屏/并栏（禁浮动，保留 movable）。
  */
 class DAGUI_API DAPyWorkFlowOperateWidget : public DAAbstractOperateWidget
 {
@@ -65,7 +76,8 @@ public:
     // 创建工作流管理器，子类可覆写以注入自定义 workflow 类型
     virtual DAPyWorkFlowManager* createManager();
     // 创建工作流页面，会触发workflowCreated信号
-    DAPyWorkFlowEditWidget* appendWorkflow(const QString& name);
+    // id 非空时用作工作流持久 id 与 dock objectName（供工程反序列化恢复布局）；为空时使用工作流自生成 uuid
+    DAPyWorkFlowEditWidget* appendWorkflow(const QString& name, const QString& id = QString());
     // 创建一个新的工作流窗口，此函数带有交互
     DAPyWorkFlowEditWidget* appendWorkflowWithDialog();
     // 获取当前工作流的索引
@@ -89,6 +101,8 @@ public:
     DAPyWorkFlowGraphicsView* getCurrentWorkFlowView() const;
     // 获取工作流窗口
     DAPyWorkFlowEditWidget* getWorkFlowWidget(int index) const;
+    // 按 id 查找工作流窗口
+    DAPyWorkFlowEditWidget* findWorkFlowWidget(const QString& id) const;
 
     // 获取工作流窗口的名称
     QString getWorkFlowWidgetName(int index) const;
@@ -109,6 +123,10 @@ public:
     bool setPreDefineSceneAction(DAPyWorkFlowGraphicsScene::SceneActionFlag mf);
     // 清空所有工程
     void clear();
+    // 保存嵌套停靠区布局（供工程序列化），无停靠区时返回空
+    QByteArray saveWorkFlowLayout() const;
+    // 恢复嵌套停靠区布局（供工程反序列化），state 为空或失败返回 false
+    bool restoreWorkFlowLayout(const QByteArray& state);
     // 获取所有工作流的名字
     QList< QString > getAllWorkflowNames() const;
     // 设置文本字体 -- 此参数设置决定创建文本框时的字体和颜色
@@ -257,10 +275,8 @@ Q_SIGNALS:
      */
     void itemsRemoved(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
 private Q_SLOTS:
-    // 当前tab发生了改变
-    void onTabWidgetCurrentChanged(int index);
-    // 请求关闭
-    void onTabWidgetTabCloseRequested(int index);
+    // 嵌套停靠区聚焦 dock 改变（过滤掉非本管理器的顶层 dock）
+    void onFocusedDockChanged(ads::CDockWidget* oldDock, ads::CDockWidget* nowDock);
     // 选中改变
     void onSelectionChanged();
     //
@@ -270,14 +286,19 @@ private Q_SLOTS:
     void onActionGroupViewLineMarkersTriggered(QAction* act);
 
 private:
+    // dock 关闭请求处理（经 closeRequested 信号触发，传入对应工作流编辑窗口）
+    void onWorkflowCloseRequested(DAPyWorkFlowEditWidget* wfe);
+    // 工作流标题改变槽函数（同步 dock 标签）
+    void onWorkflowTitleChanged(const QString& t);
+    // 实际移除工作流（不发确认框，不发 workflowRemoving），供 clear/关闭/移除共用
+    void removeWorkflowNoConfirm(DAPyWorkFlowEditWidget* wfe, bool deleteWidget = true);
     QList< DAGraphicsStandardTextItem* > getSelectTextItems();
     // 初始化actions
     void initActions();
+    // 把当前视图的标记线样式同步到 line-marker action group 的选中状态
+    void syncLineMarkerActionForView(DAPyWorkFlowGraphicsView* view);
     //
     void retranslateUi();
-
-private:
-    Ui::DAPyWorkFlowOperateWidget* ui;
 };
 }  // namespace DA
 #endif  // DAPYWORKFLOWOPERATEWIDGET_H

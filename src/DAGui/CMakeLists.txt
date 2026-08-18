@@ -41,6 +41,7 @@ set(DA_LIB_HEADER_FILES
     DARecentFilesManager.h
     DAToolBox.h
     DAPyWorkFlowEditWidget.h
+    DAPyWorkFlowEditWidgetDockWidget.h
     DAPyWorkFlowGraphicsScene.h
     DAPyWorkFlowGraphicsView.h
     DAPyWorkFlowNodeListWidget.h
@@ -96,6 +97,7 @@ set(DA_LIB_SOURCE_FILES
     DARecentFilesManager.cpp
     DAToolBox.cpp
     DAPyWorkFlowEditWidget.cpp
+    DAPyWorkFlowEditWidgetDockWidget.cpp
     DAPyWorkFlowGraphicsScene.cpp
     DAPyWorkFlowGraphicsView.cpp
     DAPyWorkFlowNodeListWidget.cpp
@@ -134,7 +136,6 @@ set(DA_LIB_QT_UI_FILES
     DANodeItemSettingWidget.ui
     DANodeLinkItemSettingWidget.ui
     DANodeSettingWidget.ui
-    DAPyWorkFlowOperateWidget.ui
     DAPyWorkFlowEditWidget.ui
     DAPyWorkFlowNodeListWidget.ui
     DAPyWorkFlowNodeItemSettingWidget.ui
