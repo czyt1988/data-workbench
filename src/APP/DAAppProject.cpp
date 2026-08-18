@@ -63,6 +63,7 @@ const QString c_workflowdata_save_filename = QStringLiteral("workflow-data.xml")
 const QString c_chartsxml_save_filename    = QStringLiteral("charts.xml");
 const QString c_chartitem_save_folder      = QStringLiteral("chart-data");
 const QString c_tablestylesxml_save_filename = QStringLiteral("table-styles.xml");
+const QString c_dataoperatexml_save_filename = QStringLiteral("data-operate.xml");
 
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_BEGIN
 #define DAAPPPROJECT_TASK_LOAD_ID_BEGIN 0x234
@@ -114,6 +115,13 @@ const QString c_tablestylesxml_save_filename = QStringLiteral("table-styles.xml"
  */
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_AGENT_SESSIONS
 #define DAAPPPROJECT_TASK_LOAD_ID_AGENT_SESSIONS (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 7)
+#endif
+
+/**
+ *@def 加载任务id - 数据操作窗口嵌套停靠区布局（在 datamanager 之后，重建已打开数据页 + 恢复 dock 布局）
+ */
+#ifndef DAAPPPROJECT_TASK_LOAD_ID_DATA_OPERATE_LAYOUT
+#define DAAPPPROJECT_TASK_LOAD_ID_DATA_OPERATE_LAYOUT (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 8)
 #endif
 namespace DA
 {
@@ -691,6 +699,9 @@ bool DAAppProject::executeSave(DAZipArchiveThreadWrapper* archive, const QString
     // 表格样式
     makeSaveTableStyleTask(archive);
 
+    // 数据操作窗口嵌套停靠区布局（已打开数据页列表 + dock 布局）
+    makeSaveDataOperateLayoutTask(archive);
+
     // 绘图
     makeSaveChartTask(archive);
 
@@ -762,6 +773,15 @@ bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString
     if (taskTableStyles) {
         taskTableStyles->setLoadedCallBack(
             [ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedTableStyles(t); });
+    }
+
+    // 数据操作窗口布局加载（在 datamanager 与 table-styles 之后：此时 DAData 及 id 已恢复，
+    // 样式注册表已回填，showData 重建数据页可立即借用到会话级样式 manager）
+    auto taskDataOperateLayout = archive->appendXmlLoadTask(c_dataoperatexml_save_filename,
+                                                             DAAPPPROJECT_TASK_LOAD_ID_DATA_OPERATE_LAYOUT);
+    if (taskDataOperateLayout) {
+        taskDataOperateLayout->setLoadedCallBack(
+            [ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedDataOperateLayout(t); });
     }
     if (!taskChartItem) {
         return false;
@@ -1084,6 +1104,57 @@ void DAAppProject::makeSaveTableStyleTask(DAZipArchiveThreadWrapper* archive)
     auto t = archive->appendXmlSaveTask(c_tablestylesxml_save_filename, doc);
     t->setName(tr("Save table styles"));  // cn:保存表格样式
     t->setDescribe(tr("Save table cell styles, including background, font, foreground"));  // cn:保存表格单元格样式
+}
+
+/**
+ * @brief 保存数据操作窗口嵌套停靠区布局任务
+ *
+ * 遍历 DADataOperateWidget 已打开数据页列表（按插入顺序），写 <data-page data-id/data-name>，
+ * 再追加 <data-layout> 节点装 saveDataLayout() 的 base64。顶层 ads::CDockManager::saveState
+ * 不捕获嵌套管理器布局，故需单独保存。data-id 跨会话稳定（持久化于 data-manager.xml），
+ * data-name 作人类可读与旧工程回退。
+ * @param archive 归档器
+ */
+void DAAppProject::makeSaveDataOperateLayoutTask(DAZipArchiveThreadWrapper* archive)
+{
+    QDomDocument doc;
+    QDomProcessingInstruction pi = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
+    doc.appendChild(pi);
+    QDomElement root = doc.createElement(QStringLiteral("root"));
+    root.setAttribute("type", "data-operate");
+    doc.appendChild(root);
+    QDomElement projectEle = doc.createElement(QStringLiteral("project"));
+    projectEle.setAttribute("version", getProjectVersion().toString());
+    root.appendChild(projectEle);
+    QDomElement dataOperateEle = doc.createElement(QStringLiteral("data-operate"));
+    projectEle.appendChild(dataOperateEle);
+
+    DADataOperateWidget* optWidget = getDataOperateWidget();
+    if (optWidget) {
+        // 已打开数据页列表（插入顺序），供加载时按顺序 showData 重建 dock
+        QList< DAData > openedDatas = optWidget->getOpenedDataList();
+        for (const DAData& d : std::as_const(openedDatas)) {
+            if (d.isNull()) {
+                continue;
+            }
+            QDomElement pageEle = doc.createElement(QStringLiteral("data-page"));
+            pageEle.setAttribute(QStringLiteral("data-id"), QString::number(d.id()));
+            pageEle.setAttribute(QStringLiteral("data-name"), d.getName());
+            dataOperateEle.appendChild(pageEle);
+        }
+        // 嵌套停靠区布局：base64 编码避免二进制内容破坏 XML 文本
+        QByteArray layoutState = optWidget->saveDataLayout();
+        if (!layoutState.isEmpty()) {
+            QDomElement layoutEle = doc.createElement(QStringLiteral("data-layout"));
+            QDomText layoutText   = doc.createTextNode(QString::fromLatin1(layoutState.toBase64()));
+            layoutEle.appendChild(layoutText);
+            dataOperateEle.appendChild(layoutEle);
+        }
+    }
+
+    auto t = archive->appendXmlSaveTask(c_dataoperatexml_save_filename, doc);
+    t->setName(tr("Save data operate layout"));                // cn:保存数据操作布局
+    t->setDescribe(tr("Save opened data pages and dock layout"));  // cn:保存已打开数据页与停靠布局
 }
 
 /**
@@ -1533,6 +1604,94 @@ void DAAppProject::loadedTableStyles(const std::shared_ptr< DAAbstractArchiveTas
             }
         }
         n = n.nextSibling();
+    }
+}
+
+/**
+ * @brief 数据操作窗口布局加载回调
+ *
+ * 先遍历 <data-page>：按 data-id 匹配（跨会话稳定，持久化于 data-manager.xml），
+ * 回退 data-name（旧工程）；命中则 showData 重建数据页 dock（objectName=data id），
+ * 供 restoreDataLayout 按 objectName 匹配布局。所有页重建后 restoreDataLayout 恢复
+ * dock 排布；无 <data-layout> 节点则保持默认标签顺序（向后兼容）。
+ * @note 依赖时序：本回调在 loadedDataManager、loadedTableStyles 之后触发（FIFO），
+ *       DAData 及 id 已恢复，样式注册表已回填。
+ * @param t 归档任务
+ */
+void DAAppProject::loadedDataOperateLayout(const std::shared_ptr< DAAbstractArchiveTask >& t)
+{
+    const std::shared_ptr< DAZipArchiveTask_Xml > xmlArchive = std::static_pointer_cast< DAZipArchiveTask_Xml >(t);
+    QDomDocument xmlDoc = xmlArchive->getDomDocument();
+    if (xmlDoc.isNull()) {
+        return;
+    }
+    QDomElement root = xmlDoc.documentElement();
+    if (root.isNull() || root.tagName() != QLatin1String("root")) {
+        return;
+    }
+    QDomElement projectEle = root.firstChildElement(QStringLiteral("project"));
+    if (projectEle.isNull()) {
+        return;
+    }
+    QDomElement dataOperateEle = projectEle.firstChildElement(QStringLiteral("data-operate"));
+    if (dataOperateEle.isNull()) {
+        return;
+    }
+    DADataOperateWidget* optWidget = getDataOperateWidget();
+    if (!optWidget) {
+        return;
+    }
+    DADataManagerInterface* dataMgr = getDataManagerInterface();
+    // 第一遍：按顺序重建所有数据页 dock（restoreState 需所有 dock 已存在且 objectName 匹配）
+    QDomNode n = dataOperateEle.firstChild();
+    QByteArray dataLayout;
+    while (!n.isNull()) {
+        QDomElement childEle = n.toElement();
+        if (childEle.isNull()) {
+            n = n.nextSibling();
+            continue;
+        }
+        // data-layout 节点，延迟到所有页重建完成后恢复
+        if (childEle.tagName() == QLatin1String("data-layout")) {
+            dataLayout = QByteArray::fromBase64(childEle.text().toLatin1());
+            n = n.nextSibling();
+            continue;
+        }
+        // 仅处理 data-page 节点（兼容性：跳过未知子节点）
+        if (childEle.tagName() != QLatin1String("data-page")) {
+            n = n.nextSibling();
+            continue;
+        }
+        // 优先按 data-id 匹配（跨会话稳定），回退 data-name（旧工程）
+        DAData matched;
+        if (childEle.hasAttribute(QStringLiteral("data-id"))) {
+            bool ok = false;
+            DAAbstractData::IdType id = childEle.attribute(QStringLiteral("data-id")).toULongLong(&ok);
+            if (ok && id != 0) {
+                matched = dataMgr->getDataById(id);
+            }
+        }
+        if (matched.isNull()) {
+            QString dataName = childEle.attribute(QStringLiteral("data-name"));
+            if (!dataName.isEmpty()) {
+                matched = dataMgr->dataManager()->findData(dataName);
+            }
+        }
+        if (matched.isNull()) {
+            QString hint = childEle.attribute(QStringLiteral("data-name"));
+            if (hint.isEmpty()) {
+                hint = childEle.attribute(QStringLiteral("data-id"));
+            }
+            daWarning << tr("Data operate page '%1' has no matching data, skipped").arg(hint);  // cn:数据操作页'%1'未找到匹配数据，已跳过
+            n = n.nextSibling();
+            continue;
+        }
+        optWidget->showData(matched);
+        n = n.nextSibling();
+    }
+    // 第二遍：所有数据页创建完毕后恢复停靠布局（按 objectName=data id 匹配；无布局时保持默认标签顺序）
+    if (!dataLayout.isEmpty()) {
+        optWidget->restoreDataLayout(dataLayout);
     }
 }
 

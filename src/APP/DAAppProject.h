@@ -80,6 +80,8 @@ protected:
 	void makeSaveChartTask(DAZipArchiveThreadWrapper* archive);
 	// 保存表格样式任务
 	void makeSaveTableStyleTask(DAZipArchiveThreadWrapper* archive);
+	// 保存数据操作窗口嵌套停靠区布局任务（已打开数据页列表 + dock 布局）
+	void makeSaveDataOperateLayoutTask(DAZipArchiveThreadWrapper* archive);
 	// 保存Agent会话任务（主线程收集活跃会话字节→子线程写 agent_sessions/<id>.jsonl）
 	void makeSaveAgentSessionsTask(DAZipArchiveThreadWrapper* archive);
 	// 保存workflow相关内容（以xml形式）
@@ -110,6 +112,8 @@ private:
 	void loadedChartsInfo(const std::shared_ptr< DAAbstractArchiveTask >& t);
 	// 表格样式加载回调
 	void loadedTableStyles(const std::shared_ptr< DAAbstractArchiveTask >& t);
+	// 数据操作窗口布局加载回调（重建已打开数据页 + 恢复 dock 布局）
+	void loadedDataOperateLayout(const std::shared_ptr< DAAbstractArchiveTask >& t);
 	void setStatusBarInBusy(const QString& info = QString());
 	void setStatusBarNotBusy(const QString& info = QString());
 	void setCurrentStatusText(const QString& info);

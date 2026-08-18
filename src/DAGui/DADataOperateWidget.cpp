@@ -1,8 +1,13 @@
 ﻿#include "DADataOperateWidget.h"
-#include "ui_DADataOperateWidget.h"
 #include <QDebug>
-#include "DALogCategory.h"
+#include <QMessageBox>
+#include <QVBoxLayout>
 #include <QPointer>
+#include "DALogCategory.h"
+// ADS
+#include "DockManager.h"
+#include "DockWidget.h"
+#include "DockAreaWidget.h"
 // api
 #include "DADataManager.h"
 #include "DADataOperatePageWidget.h"
@@ -13,6 +18,8 @@
 #include "DADataOperateOfDataFrameWidget.h"
 // py
 #include "DADataPyObject.h"
+// pybind11 <-> Qt 类型转换（本 cpp 出现 QString 作为参数传给 Python 可调用对象等场景）
+#include "DAPybind11QtCaster.hpp"
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
 //===================================================
@@ -22,47 +29,108 @@ namespace DA
 
 class DADataOperateWidget::PrivateData
 {
-public:
     DA_DECLARE_PUBLIC(DADataOperateWidget)
+public:
     PrivateData(DADataOperateWidget* p);
+    // 根据 page 获取其 dock
+    ads::CDockWidget* dockOfPage(DADataOperatePageWidget* page) const;
+    // 根据 dock 获取其 page
+    DADataOperatePageWidget* pageOfDock(ads::CDockWidget* dock) const;
+    // 获取新数据页应加入的 dock area（取嵌套管理器内已有 page 所在 area，否则 nullptr）
+    ads::CDockAreaWidget* targetAreaForNewData() const;
 
 public:
     QMap< DA::DAData, QPointer< QWidget > > _dataToWidget;  ///< 记录数据对应的窗口
-    DADataManager* _dataManager;
+    DADataManager* _dataManager { nullptr };
     DATableStyleRegistry* _styleRegistry { nullptr };  ///< 表格样式会话级注册表，随数据存在
     QMetaObject::Connection _currentHeaderConn;  ///< 当前 DataFrame 窗口的表头点击连接
+    ads::CDockManager* _dockManager { nullptr };  ///< 嵌套停靠管理器
+    QList< DADataOperatePageWidget* > _pages;  ///< 插入顺序，作为 index 基础
+    QHash< DADataOperatePageWidget*, ads::CDockWidget* > _pageToDock;  ///< page -> dock
+    QPointer< DADataOperatePageWidget > _currentPage;  ///< 当前激活 page
+    bool _suppressCurrentChanged { false };  ///< 创建/加载期间抑制 currentDataTableWidgetChanged
 };
 
 DADataOperateWidget::PrivateData::PrivateData(DADataOperateWidget* p) : q_ptr(p)
 {
 }
 
+/**
+ * @brief 根据 page 获取其 dock
+ */
+ads::CDockWidget* DADataOperateWidget::PrivateData::dockOfPage(DADataOperatePageWidget* page) const
+{
+    return _pageToDock.value(page, nullptr);
+}
+
+/**
+ * @brief 根据 dock 获取其 page
+ *
+ * dock->widget() 即为包装进来的 DADataOperateOfDataFrameWidget（纯 QWidget）。
+ */
+DADataOperatePageWidget* DADataOperateWidget::PrivateData::pageOfDock(ads::CDockWidget* dock) const
+{
+    if (!dock) {
+        return nullptr;
+    }
+    return qobject_cast< DADataOperatePageWidget* >(dock->widget());
+}
+
+/**
+ * @brief 获取新数据页应加入的 dock area
+ *
+ * 关键：不能用 _dockManager->focusedDockWidget()——FocusHighlighting 下嵌套管理器的焦点
+ * 控制器与顶层管理器共享 window 属性（DockFocusController.cpp onApplicationFocusChanged 不
+ * 校验 dock 所属管理器），用户点过顶层 dock 后 nested->focusedDockWidget() 会返回顶层 dock，
+ * 用它作 target 会让新数据页被加到顶层中心区（逃逸出 DADataOperateWidget）。
+ * 改为从本嵌套管理器已有的 page dock 取 area，确保新页落在嵌套管理器内。
+ */
+ads::CDockAreaWidget* DADataOperateWidget::PrivateData::targetAreaForNewData() const
+{
+    for (int i = _pages.size() - 1; i >= 0; --i) {
+        if (ads::CDockWidget* d = _pageToDock.value(_pages.at(i), nullptr)) {
+            if (ads::CDockAreaWidget* a = d->dockAreaWidget()) {
+                return a;
+            }
+        }
+    }
+    return nullptr;  // 首个数据页：在容器根创建 area
+}
+
 //===================================================
 // DADataOperateWidget
 //===================================================
 DADataOperateWidget::DADataOperateWidget(DADataManager* mgr, QWidget* parent)
-    : DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADataOperateWidget)
+    : DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT
 {
     init();
     setDataManager(mgr);
 }
 
 DADataOperateWidget::DADataOperateWidget(QWidget* parent)
-    : DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADataOperateWidget)
+    : DAAbstractOperateWidget(parent), DA_PIMPL_CONSTRUCT
 {
     init();
 }
 
 void DADataOperateWidget::init()
 {
-    ui->setupUi(this);
-    connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DADataOperateWidget::onTabWidgetCurrentChanged);
-    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &DADataOperateWidget::onTabWidgetCloseRequested);
+    QVBoxLayout* lay = new QVBoxLayout(this);
+    lay->setContentsMargins(0, 0, 0, 0);
+    lay->setSpacing(0);
+    d_ptr->_dockManager = new ads::CDockManager(this);
+    lay->addWidget(d_ptr->_dockManager);
+    // 禁止数据页 dock 浮动为独立窗口（全局锁，对所有当前及后续 dock 生效），保留分屏/并栏/拖拽
+    d_ptr->_dockManager->lockDockWidgetFeaturesGlobally(ads::CDockWidget::DockWidgetFloatable);
+    // 嵌套停靠区聚焦改变：onFocusedDockChanged 内部会过滤掉非本管理器的 dock，
+    // 规避 FocusHighlighting 下嵌套焦点控制器跨管理器回调顶层 dock 的问题
+    connect(d_ptr->_dockManager, &ads::CDockManager::focusedDockWidgetChanged,
+            this, &DADataOperateWidget::onFocusedDockChanged);
 }
 
 DADataOperateWidget::~DADataOperateWidget()
 {
-    delete ui;
+    // _dockManager 作为本部件的子对象，由 Qt 自动销毁；数据页 dock 禁止浮动，无浮动窗口需额外清理
 }
 
 void DADataOperateWidget::setDataManager(DADataManager* mgr)
@@ -87,7 +155,7 @@ DADataManager* DADataOperateWidget::getDataManger() const
  */
 QWidget* DADataOperateWidget::currentWidget() const
 {
-    return ui->tabWidget->currentWidget();
+    return d_ptr->_currentPage.data();
 }
 /**
  * @brief 当前显示的DataFrame窗口，如果不是DataFrame窗口，返回nullptr
@@ -131,6 +199,23 @@ DADataOperateOfDataFrameWidget* DADataOperateWidget::findDataFrameWidget(const D
         return nullptr;
     }
     return qobject_cast< DADataOperateOfDataFrameWidget* >(ite.value().data());
+}
+
+/**
+ * @brief 按插入顺序返回已打开数据列表
+ *
+ * 供工程序列化遍历数据页（类比 DAChartOperateWidget::getFigureList）。
+ * @return 已打开数据列表（插入顺序）
+ */
+QList< DAData > DADataOperateWidget::getOpenedDataList() const
+{
+    QList< DAData > res;
+    for (DADataOperatePageWidget* page : std::as_const(d_ptr->_pages)) {
+        if (DADataOperateOfDataFrameWidget* dfw = qobject_cast< DADataOperateOfDataFrameWidget* >(page)) {
+            res.append(dfw->data());
+        }
+    }
+    return res;
 }
 
 /**
@@ -217,7 +302,37 @@ std::pair< DAData, QList< int > > DADataOperateWidget::getCurrentOperateDataInfo
 }
 
 /**
- * @brief 显示数据，如果数据已经有，唤起对应的tab，如果没有，则创建一个sheet
+ * @brief 保存嵌套停靠区布局（供工程序列化）
+ *
+ * 顶层 ads::CDockManager::saveState 不会捕获嵌套管理器的布局，故需单独保存
+ * @return 布局状态字节数组，无停靠区时返回空
+ */
+QByteArray DADataOperateWidget::saveDataLayout() const
+{
+    if (!d_ptr->_dockManager) {
+        return QByteArray();
+    }
+    return d_ptr->_dockManager->saveState();
+}
+
+/**
+ * @brief 恢复嵌套停靠区布局（供工程反序列化）
+ *
+ * 调用前需先按保存顺序 showData 重建所有数据页 dock（objectName=data id），
+ * restoreState 按 objectName 重新挂接布局。state 为空或匹配失败返回 false（保持默认标签顺序）
+ * @param state saveDataLayout 返回的状态
+ * @return 恢复成功返回 true
+ */
+bool DADataOperateWidget::restoreDataLayout(const QByteArray& state)
+{
+    if (!d_ptr->_dockManager || state.isEmpty()) {
+        return false;
+    }
+    return d_ptr->_dockManager->restoreState(state);
+}
+
+/**
+ * @brief 显示数据，如果数据已经有，唤起对应的dock，如果没有，则创建一个数据页
  * @param d
  */
 void DADataOperateWidget::showData(const DA::DAData& d)
@@ -232,26 +347,27 @@ void DADataOperateWidget::showData(const DA::DAData& d)
 }
 
 /**
- * @brief 删除tab窗口，同时删除tab标签和上次tab对应的widget
+ * @brief 删除dock窗口，同时删除dock和其对应的widget
  * @param w
  * @return 成功删除返回true
  */
 bool DADataOperateWidget::removeTabWidget(QWidget* w)
 {
-    int ti = ui->tabWidget->indexOf(w);
-    if (ti < 0) {
-        daCritical << tr("removing a widget that does not exist in the tab");  // cn:正在移除一个不存在的窗口
+    DADataOperatePageWidget* page = qobject_cast< DADataOperatePageWidget* >(w);
+    if (!page) {
         return false;
     }
-    if (ti >= 0) {
-        ui->tabWidget->removeTab(ti);
+    ads::CDockWidget* dock = d_ptr->dockOfPage(page);
+    if (!dock) {
+        daCritical << tr("removing a widget that does not exist in the dock");  // cn:正在移除一个不存在的窗口
+        return false;
     }
-    DADataOperatePageWidget* page = qobject_cast< DADataOperatePageWidget* >(w);
-    if (page) {
-        emit dataTableRemoving(page);
+    emit dataTableRemoving(page);
+    d_ptr->_pages.removeAll(page);
+    d_ptr->_pageToDock.remove(page);
+    if (d_ptr->_currentPage == page) {
+        d_ptr->_currentPage = nullptr;
     }
-    w->hide();
-    w->deleteLater();
     // 移除_dataToWidget记录
     for (auto i = d_ptr->_dataToWidget.begin(); i != d_ptr->_dataToWidget.end();) {
         if (i.value() == w) {
@@ -260,6 +376,11 @@ bool DADataOperateWidget::removeTabWidget(QWidget* w)
             ++i;
         }
     }
+    if (d_ptr->_dockManager) {
+        d_ptr->_dockManager->removeDockWidget(dock);
+    }
+    // 级联删除 page（page 为 dock->widget()，setWidget 时 reparent 进 dock），延迟到事件循环
+    dock->deleteLater();
     return true;
 }
 
@@ -272,13 +393,25 @@ void DADataOperateWidget::clear()
     if (auto undostack = getUndoStack()) {
         undostack->clear();
     }
-    // 窗口删除
-    while (ui->tabWidget->count() != 0) {
-        QWidget* tabWidget = ui->tabWidget->widget(0);
-        ui->tabWidget->removeTab(0);
-        // 删除窗口
-        tabWidget->deleteLater();
+    // 断开当前表头点击连接
+    if (d_ptr->_currentHeaderConn) {
+        disconnect(d_ptr->_currentHeaderConn);
+        d_ptr->_currentHeaderConn = QMetaObject::Connection();
     }
+    // 移除所有 dock（不发 dataTableRemoving，保持原 clear 不发信号的语义）
+    const QList< DADataOperatePageWidget* > pages = d_ptr->_pages;
+    for (DADataOperatePageWidget* page : std::as_const(pages)) {
+        if (ads::CDockWidget* dock = d_ptr->_pageToDock.value(page, nullptr)) {
+            if (d_ptr->_dockManager) {
+                d_ptr->_dockManager->removeDockWidget(dock);
+            }
+            dock->deleteLater();
+        }
+    }
+    d_ptr->_pages.clear();
+    d_ptr->_pageToDock.clear();
+    d_ptr->_dataToWidget.clear();
+    d_ptr->_currentPage = nullptr;
     // 数据清除
     getDataManger()->clear();
 }
@@ -295,12 +428,18 @@ void DADataOperateWidget::onDataRemoved(const DA::DAData& d, int index)
     if (ite == d_ptr->_dataToWidget.end()) {
         return;
     }
-    // 标记数据已经删除
-    int ti          = ui->tabWidget->indexOf(ite.value());
-    QString tabName = ui->tabWidget->tabText(ti);
-    // 标记已删除
-    tabName = tabName + tr("[deleted]");  // cn:[已删除]
-    ui->tabWidget->setTabText(ti, tabName);
+    DADataOperatePageWidget* page = qobject_cast< DADataOperatePageWidget* >(ite.value().data());
+    if (!page) {
+        return;
+    }
+    ads::CDockWidget* dock = d_ptr->dockOfPage(page);
+    if (!dock) {
+        return;
+    }
+    // 标记已删除（追加到当前 dock 标题，匹配原 setTabText 语义）
+    QString title = dock->windowTitle();
+    title += tr("[deleted]");  // cn:[已删除]
+    dock->setWindowTitle(title);
 }
 
 /**
@@ -314,21 +453,25 @@ void DADataOperateWidget::onDataChanged(const DA::DAData& d, DADataManager::Chan
     if (ite == d_ptr->_dataToWidget.end()) {
         return;
     }
-    int ti = ui->tabWidget->indexOf(ite.value());
-
-    if (ti < 0) {
+    DADataOperatePageWidget* page = qobject_cast< DADataOperatePageWidget* >(ite.value().data());
+    if (!page) {
         return;
     }
+    ads::CDockWidget* dock = d_ptr->dockOfPage(page);
     switch (t) {
     case DADataManager::ChangeName:
-        ui->tabWidget->setTabText(ti, d.getName());
+        if (dock) {
+            dock->setWindowTitle(d.getName());
+        }
         break;
     case DADataManager::ChangeDescribe:
-        ui->tabWidget->setTabToolTip(ti, d.getDescribe());
+        if (dock) {
+            dock->setToolTip(d.getDescribe());
+        }
         break;
     case DADataManager::ChangeValue: {
         // 值发生了变化，要刷新界面
-        DADataOperateOfDataFrameWidget* dfWidget = qobject_cast< DADataOperateOfDataFrameWidget* >(ite.value().data());
+        DADataOperateOfDataFrameWidget* dfWidget = qobject_cast< DADataOperateOfDataFrameWidget* >(page);
         if (dfWidget) {
             dfWidget->refreshTable();
         }
@@ -339,66 +482,132 @@ void DADataOperateWidget::onDataChanged(const DA::DAData& d, DADataManager::Chan
 }
 
 /**
- * @brief tab标签切换
- * @param index
+ * @brief 嵌套停靠区聚焦 dock 改变
+ *
+ * FocusHighlighting 下嵌套管理器的 CDockFocusController 与顶层管理器共享 window 属性，
+ * 用户聚焦顶层 dock（如工作流操作）时本信号也会被回调到顶层 dock。这里通过
+ * nowDock->dockManager() 过滤，只处理属于本嵌套管理器的数据页 dock，避免 currentPage
+ * 被误置空/误切换。焦点离开所有 dock 时保留 _currentPage，匹配 QTabWidget"有页即有当前"语义。
+ * @param oldDock 旧聚焦 dock
+ * @param nowDock 新聚焦 dock
  */
-void DADataOperateWidget::onTabWidgetCurrentChanged(int index)
+void DADataOperateWidget::onFocusedDockChanged(ads::CDockWidget* oldDock, ads::CDockWidget* nowDock)
 {
-    QWidget* w = ui->tabWidget->widget(index);
-    if (!w) {
+    Q_UNUSED(oldDock);
+    if (d_ptr->_suppressCurrentChanged) {
         return;
     }
+    // 过滤掉非本嵌套管理器的 dock（顶层 dock 的跨管理器回调）
+    if (nowDock && nowDock->dockManager() != d_ptr->_dockManager) {
+        return;
+    }
+    DADataOperatePageWidget* page = d_ptr->pageOfDock(nowDock);
+    if (!page) {
+        // 焦点离开所有 dock，保留 _currentPage
+        return;
+    }
+    setCurrentPage(page);
+}
+
+/**
+ * @brief dock 关闭请求处理（经 closeRequested 信号触发）
+ * @param page 对应的数据页
+ */
+void DADataOperateWidget::onDataCloseRequested(DADataOperatePageWidget* page)
+{
+    if (!page) {
+        return;
+    }
+    QMessageBox::StandardButton btn = QMessageBox::question(this,
+                                                             tr("Question"),                             // cn:询问
+                                                             tr("Whether to close the data table widget"));  // cn:是否关闭数据表窗口
+    if (QMessageBox::Yes != btn) {
+        return;
+    }
+    removeTabWidget(page);
+}
+
+/**
+ * @brief 同步当前页
+ *
+ * 激活 undo 栈 + 重连表头点击 + 发射 currentDataTableWidgetChanged。
+ * 带 _currentPage==page 提前返回，避免 onFocusedDockChanged 与 showData 双路径重复发射。
+ * @param page 当前页
+ */
+void DADataOperateWidget::setCurrentPage(DADataOperatePageWidget* page)
+{
+    if (d_ptr->_currentPage == page) {
+        return;
+    }
+    d_ptr->_currentPage = page;
     // 断开旧的表头点击连接
     if (d_ptr->_currentHeaderConn) {
         disconnect(d_ptr->_currentHeaderConn);
         d_ptr->_currentHeaderConn = QMetaObject::Connection();
     }
-    if (DADataOperateOfDataFrameWidget* d = qobject_cast< DADataOperateOfDataFrameWidget* >(w)) {
-        // 激活undostack
-        d->activeUndoStack();
-        // 连接当前 DataFrame 窗口的表头点击信号，转发出去
+    if (!page) {
+        emit currentDataTableWidgetChanged(nullptr, -1);
+        return;
+    }
+    // 激活undostack
+    page->activeUndoStack();
+    // 连接当前 DataFrame 窗口的表头点击信号，转发出去
+    if (DADataOperateOfDataFrameWidget* d = qobject_cast< DADataOperateOfDataFrameWidget* >(page)) {
         d_ptr->_currentHeaderConn = connect(d, &DADataOperateOfDataFrameWidget::columnHeaderClicked,
                                             this, &DADataOperateWidget::currentDataFrameColumnHeaderClicked);
     }
-    emit currentDataTableWidgetChanged(qobject_cast< DADataOperatePageWidget* >(w), index);
-}
-
-/**
- * @brief tab的关闭请求
- * @param index
- */
-void DADataOperateWidget::onTabWidgetCloseRequested(int index)
-{
-    QWidget* w = ui->tabWidget->widget(index);
-    if (!w) {
-        return;
-    }
-    removeTabWidget(w);
+    emit currentDataTableWidgetChanged(page, d_ptr->_pages.indexOf(page));
 }
 
 void DADataOperateWidget::showDataframeData(const DA::DAData& d)
 {
-    // 先查找是否已经存在对于窗口
+    // 先查找是否已经存在对应窗口
     DADataOperateOfDataFrameWidget* w =
         qobject_cast< DADataOperateOfDataFrameWidget* >(d_ptr->_dataToWidget.value(d, nullptr).data());
     if (nullptr == w) {
         // 没有就创建，传入样式注册表以借用会话级 manager
-        w = new DADataOperateOfDataFrameWidget(d, d_ptr->_styleRegistry, ui->tabWidget);
+        w = new DADataOperateOfDataFrameWidget(d, d_ptr->_styleRegistry, d_ptr->_dockManager);
         emit dataTableCreated(w);
         // 记录窗口
         d_ptr->_dataToWidget[ d ] = w;
-    }
-    // 在判断窗口是否已经存在于tabwidget
-    int index = ui->tabWidget->indexOf(w);
-    if (index < 0) {
-        // 说明tab没有，添加进去
-        index = ui->tabWidget->addTab(w, d.getName());
+        // 包装进 ads::CDockWidget（使用 manager 构造以走管理器组件工厂，避免已弃用的两参构造）
+        ads::CDockWidget* dock = new ads::CDockWidget(d_ptr->_dockManager, d.getName());
+        // 稳定 objectName = data id，供 restoreState 按 objectName 匹配布局
+        dock->setObjectName(QString::number(d.id()));
+        dock->setWidget(w, ads::CDockWidget::ForceNoScrollArea);
+        // 关闭按钮触发 closeRequested 而非自动隐藏，便于弹确认框后再删除
+        dock->setFeature(ads::CDockWidget::CustomCloseHandling, true);
+        dock->setToolTip(d.getDescribe());
+        connect(dock, &ads::CDockWidget::closeRequested, this, [ this, w ]() {
+            onDataCloseRequested(w);
+        });
+        // 记录映射
+        d_ptr->_pageToDock[ w ] = dock;
+        d_ptr->_pages.append(w);
+        // 抑制聚焦改变，避免 addDockWidget 触发 currentDataTableWidgetChanged
+        d_ptr->_suppressCurrentChanged = true;
+        ads::CDockAreaWidget* area = d_ptr->targetAreaForNewData();
+        if (area) {
+            // 默认以标签形式加入当前聚焦 dock 所在 area
+            d_ptr->_dockManager->addDockWidgetTabToArea(dock, area);
+        } else {
+            // 首个数据页：在容器根创建 dock area
+            d_ptr->_dockManager->addDockWidget(ads::CenterDockWidgetArea, dock);
+        }
+        d_ptr->_suppressCurrentChanged = false;
+        // 主动同步当前页（addDockWidget 可能不触发 focusedDockWidgetChanged）
+        setCurrentPage(w);
     } else {
-        ui->tabWidget->setTabText(index, d.getName());  // 防止关闭tab后，窗口不销毁，且data进行了其他操作
+        // 已存在，唤起对应的 dock
+        ads::CDockWidget* dock = d_ptr->dockOfPage(w);
+        if (dock) {
+            dock->setWindowTitle(d.getName());
+            dock->setToolTip(d.getDescribe());
+            dock->raise();  // 标签则置为当前，浮动则 raise 窗口
+        }
+        // raise 可能不触发 focusedDockWidgetChanged，主动同步
+        setCurrentPage(w);
     }
-    ui->tabWidget->setTabToolTip(index, d.getDescribe());
-    // 把当前的tabwidget唤起
-    ui->tabWidget->setCurrentIndex(index);
 }
 
-}
+}  // namespace DA

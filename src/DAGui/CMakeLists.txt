@@ -129,7 +129,6 @@ set(DA_LIB_SOURCE_FILES
 set(DA_LIB_QT_UI_FILES
     DADataManageWidget.ui
     DADataManagerTreeWidget.ui
-    DADataOperateWidget.ui
     DAGraphicsPixmapItemSettingWidget.ui
     DAMessageLogViewWidget.ui
     DANodeItemSettingWidget.ui
