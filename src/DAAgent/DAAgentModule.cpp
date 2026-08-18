@@ -71,6 +71,7 @@ QString decryptApiKey(const QByteArray& encrypted)
     inBlob.cbData = static_cast<DWORD>(raw.size());
     DATA_BLOB outBlob;
     if (!CryptUnprotectData(&inBlob, nullptr, nullptr, nullptr, nullptr, 0, &outBlob)) {
+        qWarning("decryptApiKey: CryptUnprotectData failed, GetLastError=%lu", GetLastError());
         return {};
     }
     QString result = QString::fromUtf8(reinterpret_cast<const char*>(outBlob.pbData), static_cast<int>(outBlob.cbData));
@@ -872,6 +873,7 @@ void DAAgentModule::setProviders(const QJsonArray& providers)
     }
     QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
     s.setValue("agent/providers", QString::fromUtf8(QJsonDocument(stored).toJson(QJsonDocument::Compact)));
+    s.sync();  // 确保 providers JSON 落盘，供下方 syncActiveConnection 的 getProviders 读到最新值
     // 重新同步激活连接（激活供应商的 base_url/api_key/model 写入 flat key）
     syncActiveConnection();
     emit availableModelsChanged(getAvailableModels());
@@ -961,7 +963,10 @@ void DAAgentModule::setActiveModel(const QString& provider, const QString& model
     s.setValue("agent/active_provider", provider);
     s.setValue("agent/llm_model",        model);
     s.setValue("agent/llm_base_url",     baseUrl);
-    s.setValue("agent/llm_api_key",      encryptApiKey(apiKey));
+    // DPAPI 解密失败时 apiKey 为空，不覆盖 flat key（保留可能有效的旧值）
+    if (!apiKey.isEmpty()) {
+        s.setValue("agent/llm_api_key", encryptApiKey(apiKey));
+    }
     s.setValue("agent/context_window",  ctxWin);
     s.setValue("agent/max_output_tokens", maxOut);
     s.sync();  // 确保 6 个 flat key 落盘，供下方 getLLMConfig() 读到最新配置
@@ -1007,7 +1012,16 @@ void DAAgentModule::syncActiveConnection()
         QJsonObject p = pv.toObject();
         if (p.value("name").toString() != active) continue;
         s.setValue("agent/llm_base_url", p.value("base_url").toString());
-        s.setValue("agent/llm_api_key", encryptApiKey(p.value("api_key").toString()));
+        // DPAPI 解密失败时 getProviders 返回空 api_key，此时不覆盖 flat key
+        // （保留可能有效的旧值），避免每次启动 pushModelSelection→syncActiveConnection
+        // 把 flat key 清空导致 getLLMConfig 读不到 api_key（报 config missing）
+        QString decryptedKey = p.value("api_key").toString();
+        if (!decryptedKey.isEmpty()) {
+            s.setValue("agent/llm_api_key", encryptApiKey(decryptedKey));
+        } else {
+            qWarning("syncActiveConnection: provider api_key DPAPI decryption failed, "
+                     "keeping existing flat key to avoid destroying it");
+        }
         // 激活模型：保留原 llm_model（若属于本供应商），否则取本供应商第一个模型
         QString curModel = s.value("agent/llm_model").toString();
         const QJsonArray models = p.value("models").toArray();
