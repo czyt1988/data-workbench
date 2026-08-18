@@ -14,6 +14,7 @@ graph LR
         TOOL_R["tool_result"]
         ANSWER["user_answer"]
         LOAD["load_session"]
+        RECONF["reconfigure"]
         STOP["stop"]
     end
 
@@ -47,13 +48,22 @@ graph LR
         "base_url": "https://api.deepseek.com/v1",
         "api_key": "sk-...",
         "model": "deepseek-chat",
-        "context_window": 1048576,
+        "context_window": 262144,
+        "max_output_tokens": 8192,
         "compaction_threshold": 0.85,
         "max_recent_messages": 10,
-        "tool_result_max_chars": 50000,
+        "tool_result_max_chars": 20000,
         "tool_result_preview_chars": 2000,
         "request_timeout_sec": 120,
-        "max_retries": 7
+        "max_retries": 7,
+        "recursion_limit": 150,
+        "inactivity_timeout_sec": 240,
+        "max_subprocess_restarts": 3,
+        "auto_prestart": true,
+        "ready_timeout_sec": 60,
+        "stop_timeout_sec": 5,
+        "max_sessions": 20,
+        "session_retention_days": 30
     },
     "tools": [
         {
@@ -75,6 +85,9 @@ graph LR
 
 !!! warning "config 必填字段"
     `config` 中 `base_url`/`api_key`/`model` 三项缺一不可，子进程会报错退出。上下文管理参数有默认值兜底。
+
+!!! note "context_window / max_output_tokens 按激活模型派生"
+    `context_window`（默认 262144）与 `max_output_tokens`（默认 8192）不再是一个全局固定值，而是由激活供应商 + 激活模型条目派生（见 `DAAgentModule.cpp` 的 `setActiveModel` / `syncActiveConnection`）。切换激活模型时，经 `reconfigure` 消息把新值热下发给运行中的子进程。
 
 ### user_msg — 用户消息
 
@@ -120,6 +133,44 @@ C++ 执行工具后，将结果回传给 Python（RPC 应答）。
         {"role": "ai", "content": "你好！有什么可以帮你的？"}
     ]
 }
+```
+
+### reconfigure — 模型热替换
+
+运行中热替换 LLM 配置（base_url/api_key/model/max_output_tokens 等），不重启子进程、不重建图、不丢 MemorySaver 会话状态。
+
+```json
+{
+    "type": "reconfigure",
+    "config": {
+        "base_url": "https://api.deepseek.com/v1",
+        "api_key": "sk-...",
+        "model": "deepseek-chat",
+        "max_output_tokens": 8192,
+        "request_timeout_sec": 120,
+        "context_window": 262144
+    }
+}
+```
+
+!!! note "reconfigure 不发 done"
+    `reconfigure` 与 `load_session` 同构，不是一轮对话：消息在 stdin 缓冲区排队，当前轮 `run()`/`resume()` 返回（`done` 已发）后主循环才处理它——当前轮用旧模型跑完，下一轮用新模型。成功由 Python 端 `AgentRunner.reconfigure()` 内部发 `ready` 确认（不发 `done`）。失败安全：先构造新 `ChatOpenAI`，成功后才更新 `self.*`，构造失败发 `error` 不破坏旧 LLM。
+
+```mermaid
+sequenceDiagram
+    participant U as 用户(Dock 下拉)
+    participant C as C++ DAAgentModule
+    participant B as DAAgentBridge
+    participant P as Python agent_runner.py
+
+    U->>C: setActiveModel(provider, model)
+    Note over C: 同步 base_url/api_key/model + 派生 context_window
+    C->>B: reconfigureAgent(config)
+    B->>P: {"type":"reconfigure","config":{...}}
+    Note over P: 当前轮返回(done 已发)后处理
+    Note over P: AgentRunner.reconfigure(): 构造新 ChatOpenAI,<br/>更新 llm_with_tools/compactor 等
+    P-->>B: {"type":"ready","model":"deepseek-chat"}
+    B-->>C: emit agentReady(model) + activeModelChanged(...)
 ```
 
 ### stop — 停止
@@ -177,6 +228,9 @@ LLM 生成的 token 逐个推送。
 }
 ```
 
+!!! note "message_end.usage 是每轮权威锚点"
+    `message_end` 附带的 `usage` 是本轮 LLM 返回的真实 token 用量，作为权威锚点（与独立的 `usage` 消息互补）。C++ 侧将其**累加进会话累计统计**（`mCumulativeIn/Out/TotalTokens`），上下文压缩不再重置这些累计值——UI 展示的是会话级累计用量，切换会话时从持久化 `usage` 记录重放累计。
+
 ### tool_call — 工具调用
 
 请求 C++ 执行工具。Python 端会阻塞等待匹配 `call_id` 的 `tool_result`。
@@ -216,6 +270,14 @@ LLM 生成的 token 逐个推送。
     "source": "summary"
 }
 ```
+
+`source` 字段标识用量来源，取值：
+
+| `source` 值 | 含义 |
+|------------|------|
+| `agent`（默认） | 普通对话轮的用量（含 `message_end.usage` 经 `agentUsage` 转发的 `source="agent"`） |
+| `summary` | 上下文摘要（compact）生成产生的用量 |
+| `streaming_estimate` | 流式过程中的 token 估算（`message_end.usage` 到达前的预估） |
 
 ### session_loaded — 会话加载完成
 

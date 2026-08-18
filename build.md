@@ -74,6 +74,19 @@ sudo apt install qt6-base-dev qt6-base-dev-tools qt6-svg-dev \
 - **VS 自动检测**：根据 Qt 的 MSVC 版本自动选择 VS 生成器（2019/2022）
 - **CMake 自动检测**：从 PATH 或 VS 内嵌路径查找 cmake.exe
 
+脚本支持的完整参数：
+
+| 参数 | 取值 | 说明 |
+|------|------|------|
+| `-Target` | 模块名（可选） | 仅构建指定目标，省略时构建全部 |
+| `-Full` | 开关 | 完整构建（所有模块） |
+| `-Clean` | 开关 | 清理后重新配置+编译 |
+| `-Test` | 开关 | 构建后通过 `ctest` 运行测试（测试目标需 `DA_ENABLE_TESTING=ON` 才会编译） |
+| `-QtPath` | 路径 | 手动指定 Qt 安装路径，覆盖自动检测 |
+| `-VSVersion` | `2019` / `2022` | 手动指定 Visual Studio 版本，覆盖根据 Qt 自动推断的结果 |
+| `-Config` | `Release` / `Debug` / `RelWithDebInfo` / `MinSizeRel` | 构建配置，默认 `Release` |
+| `-Plugins` | `ON` / `OFF` | 是否构建 plugins，对应 `DA_BUILD_PLUGINS`，默认 `ON` |
+
 也可手动指定 Qt 路径（覆盖自动检测）：
 
 ```powershell
@@ -87,6 +100,9 @@ sudo apt install qt6-base-dev qt6-base-dev-tools qt6-svg-dev \
 > **仅首次构建或第三方库有更新时需要执行**。编译产物会安装到项目根目录的 `bin_<BuildType>_qt<QtVersion>_<Compiler>_<Arch>/` 目录，后续主项目构建会自动找到。
 
 第三方库位于 `src/3rdparty/`，包含 SARibbon、qwt、ADS 等依赖。
+
+!!! warning "zlib 需预先安装"
+    `src/3rdparty/CMakeLists.txt` 通过 `find_package(ZLIB QUIET)` 查找 zlib，并未 `add_subdirectory(zlib)`（虽然 zlib 是 submodule，但不在此处统一构建）。因此执行下面的单命令构建前，**必须先独立编译并安装 zlib**，否则 `quazip` 会因找不到 zlib 而配置失败。zlib 的独立构建见 [构建说明 - 分步构建](docs/zh/build/build-instructions.md#分步构建)。
 
 ### Windows (Visual Studio 生成器)
 

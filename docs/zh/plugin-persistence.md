@@ -56,24 +56,28 @@
 
 ```cpp
 #include "DAProjectInterface.h"
-#include "DAUtils.h"
+#include "DADir.h"  // DA::DADir 路径助手
 
 bool MyPlugin::initialize()
 {
     DA::DACoreInterface* core = this->core();
-    
-    // 获取项目目录（项目打开后有效）
+
+    // 获取项目目录（项目加载后有效）
+    // 注意：DAProjectInterface 提供 getProjectDir() 和 getProjectFilePath()，没有 getProjectPath()
     DA::DAProjectInterface* project = core->getProjectInterface();
-    QString projectPath = project->getProjectPath();
-    QString pluginDataDir = projectPath + "/plugins/MyPlugin";
-    
-    // 获取全局配置目录（始终有效）
-    QString globalConfigDir = DA::getUserConfigPath() + "/plugins/MyPlugin";
-    
-    // 确保目录存在
-    DA::ensureDirectoryExists(pluginDataDir);
-    DA::ensureDirectoryExists(globalConfigDir);
-    
+    QString projectDir = project->getProjectDir();              // 如 D:/project
+    QString projectFile = project->getProjectFilePath();        // 如 D:/project/da-project.dapro
+    QString pluginDataDir = projectDir + "/plugins/MyPlugin";
+
+    // 获取全局配置目录（始终有效，不存在会自动创建）
+    // 用 DA::DADir::getConfigPath()，不是 DA::getUserConfigPath()
+    QString globalConfigDir = DA::DADir::getConfigPath() + "/plugins/MyPlugin";
+
+    // 获取临时目录（程序结束时自动删除）
+    QString tempDir = DA::DADir::getTempPath() + "/MyPlugin";
+
+    // DADir 的路径获取函数会自动确保目录存在，无需 DA::ensureDirectoryExists
+
     return true;
 }
 ```
@@ -112,36 +116,36 @@ QString generateTimestampFilename(const QString& prefix)
     适用于键值对形式的简单配置，系统原生支持。
 
 ```cpp
-// 保存配置
+// 保存配置（用 DA::DADir::getConfigPath()，不是 DA::getUserConfigPath()）
 void MyPlugin::saveConfig()
 {
-    QSettings settings(DA::getUserConfigPath() + "/plugins/MyPlugin/settings.ini",
+    QSettings settings(DA::DADir::getConfigPath() + "/plugins/MyPlugin/settings.ini",
                        QSettings::IniFormat);
-    
+
     settings.beginGroup("General");
     settings.setValue("auto_save", m_autoSave);
     settings.setValue("max_cache_size", m_maxCacheSize);
     settings.endGroup();
-    
+
     settings.beginGroup("Processing");
     settings.setValue("algorithm", m_algorithm);
     settings.setValue("threshold", m_threshold);
     settings.endGroup();
-    
+
     settings.sync();
 }
 
 // 加载配置
 void MyPlugin::loadConfig()
 {
-    QSettings settings(DA::getUserConfigPath() + "/plugins/MyPlugin/settings.ini",
+    QSettings settings(DA::DADir::getConfigPath() + "/plugins/MyPlugin/settings.ini",
                        QSettings::IniFormat);
-    
+
     settings.beginGroup("General");
     m_autoSave = settings.value("auto_save", true).toBool();
     m_maxCacheSize = settings.value("max_cache_size", 100).toInt();
     settings.endGroup();
-    
+
     settings.beginGroup("Processing");
     m_algorithm = settings.value("algorithm", "default").toString();
     m_threshold = settings.value("threshold", 0.5).toDouble();
@@ -186,7 +190,7 @@ void MyPlugin::saveJsonConfig()
     root["processing"] = processing;
     
     // 写入文件
-    QString configPath = DA::getUserConfigPath() + "/plugins/MyPlugin/config.json";
+    QString configPath = DA::DADir::getConfigPath() + "/plugins/MyPlugin/config.json";
     QFile file(configPath);
     if (file.open(QIODevice::WriteOnly)) {
         QJsonDocument doc(root);
@@ -198,7 +202,7 @@ void MyPlugin::saveJsonConfig()
 // 加载 JSON 配置
 void MyPlugin::loadJsonConfig()
 {
-    QString configPath = DA::getUserConfigPath() + "/plugins/MyPlugin/config.json";
+    QString configPath = DA::DADir::getConfigPath() + "/plugins/MyPlugin/config.json";
     QFile file(configPath);
     
     if (!file.open(QIODevice::ReadOnly)) {
@@ -343,62 +347,73 @@ QJsonObject MyPlugin::upgradeConfig(const QJsonObject& oldConfig, int oldVersion
 !!! note "内置支持"
     DAWorkBench 自动保存工作流和节点数据，插件无需手动处理。
 
-节点数据通过 `saveToVariant()` 和 `loadFromVariant()` 序列化：
+节点参数通过内置序列化机制保存。当前 Python-first 节点用 `@NodeDef` 声明，`Parameter` 声明的参数由 `DAWorkflowSerializer` 自动序列化，**运行时缓存状态**通过 `serialize_runtime_state()` / `deserialize_runtime_state()` 钩子持久化（见 `plugins/DASystemNodes/AGENTS.md` 第九章）：
+
+```python
+class TextViewerNode:
+    def __init__(self):
+        super().__init__()
+        self._display_text = ""
+
+    def execute(self, inputs=None, params=None):
+        value = (inputs or {}).get("value")
+        self._display_text = str(value) if value is not None else ""
+        return True
+
+    def serialize_runtime_state(self) -> dict:
+        """保存时调用，返回需要持久化的运行时状态。"""
+        return {"display_text": getattr(self, "_display_text", "")}
+
+    def deserialize_runtime_state(self, state: dict) -> None:
+        """加载时调用，从 state 恢复运行时状态。"""
+        self._display_text = state.get("display_text", "")
+```
+
+!!! warning "旧 C++ 节点钩子已废弃"
+    旧 C++ `DAAbstractNode` 的 `saveToVariant()` / `loadFromVariant()` 虚函数属于已废弃架构，当前工作流节点统一用 Python `@NodeDef` 模型，不要使用这些 C++ 钩子。仅作历史背景：
 
 ```cpp
-class MyWorker : public DA::DAAbstractNode
+// 旧 C++ 节点序列化钩子（已废弃，当前代码库不再使用）
+class MyWorker : public DA::DAAbstractNode  // 此继承关系在当前代码库无法编译
 {
 public:
-    // 保存节点数据
+    // 保存节点数据（旧）
     QVariant saveToVariant() const override
     {
         QVariantMap data;
-        
-        // 基本数据
         data["algorithm"] = m_algorithm;
         data["threshold"] = m_threshold;
-        
-        // 复杂数据
-        if (m_customData.isValid()) {
-            data["custom_data"] = DA::serializeCustomData(m_customData);
-        }
-        
         return data;
     }
-    
-    // 加载节点数据
+
+    // 加载节点数据（旧）
     void loadFromVariant(const QVariant& var) override
     {
         QVariantMap data = var.toMap();
-        
         m_algorithm = data["algorithm"].toString();
         m_threshold = data["threshold"].toDouble();
-        
-        if (data.contains("custom_data")) {
-            m_customData = DA::deserializeCustomData(data["custom_data"]);
-        }
     }
 };
 ```
 
 ### 大数据存储
 
-对于大型数据（如 DataFrame），不建议序列化到工作流文件：
+对于大型数据（如 DataFrame），不建议序列化到工作流文件。数据包装类为 `DAData`（`src/DAData/DAData.h`），**不是** `DADataPackage`：
 
 ```cpp
 bool MyWorker::exec()
 {
-    // 处理大型数据
-    DA::DADataPackage result = processLargeData(inputData);
-    
+    // 处理大型数据 —— 用 DAData，不是 DADataPackage
+    DA::DAData result = processLargeData(inputData);
+
     // 不要将大数据存储在节点中
     // 而是存储引用或文件路径
     QString dataPath = generateCacheFilePath();
     saveDataToFile(result, dataPath);
-    
+
     // 只存储路径引用
     setOutputData("output_data", QVariant::fromValue(dataPath));
-    
+
     return true;
 }
 ```
@@ -410,14 +425,15 @@ bool MyWorker::exec()
 ### 缓存目录创建
 
 ```cpp
+// 用 DA::DADir::getTempPath()，不是 DA::getTempPath()
 QString MyPlugin::getCacheDirectory()
 {
-    QString cacheDir = DA::getTempPath() + "/MyPlugin/cache";
-    
+    QString cacheDir = DA::DADir::getTempPath() + "/MyPlugin/cache";
+
     if (!QDir(cacheDir).exists()) {
         QDir().mkpath(cacheDir);
     }
-    
+
     return cacheDir;
 }
 ```
@@ -443,8 +459,8 @@ void MyPlugin::cleanupOldCache()
     }
 }
 
-// 在插件卸载时清理
-void MyPlugin::aboutToUnload()
+// 在插件卸载时清理（finalize 是 aboutToUnload 的替代）
+void MyPlugin::finalize()
 {
     cleanupOldCache();
 }
@@ -511,12 +527,13 @@ private:
 MyPluginDataManager::MyPluginDataManager(const QString& pluginName)
     : m_pluginName(pluginName)
 {
-    QString basePath = DA::getUserConfigPath() + "/plugins/" + pluginName;
-    
+    // 用 DA::DADir::getConfigPath()，不是 DA::getUserConfigPath()
+    QString basePath = DA::DADir::getConfigPath() + "/plugins/" + pluginName;
+
     m_configDir = basePath;
     m_cacheDir = basePath + "/cache";
     m_userDataDir = basePath + "/data";
-    
+
     // 确保目录存在
     QDir().mkpath(m_configDir);
     QDir().mkpath(m_cacheDir);

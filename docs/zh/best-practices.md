@@ -15,6 +15,18 @@
 
 ## 插件开发最佳实践
 
+!!! warning "工作流节点 API：C++ 接口为遗留接口"
+    下文部分代码示例使用 C++ 节点接口的 `exec()` / `getInputData()` / `setOutputData()` 模式，这是**遗留 C++ 节点接口**，仅作历史参考。当前工作流节点推荐使用 **Python 优先**的 `@NodeDef` 装饰器写法：
+
+    ```python
+    def execute(self, inputs=None, params=None):
+        df = (inputs or {}).get("data")
+        self._output_data["result"] = processed_df
+        return True
+    ```
+
+    详见 [DASystemNodes 插件开发指南](../../plugins/DASystemNodes/AGENTS.md) 与 [Python 节点开发](./dev-guide/workflow-python-node-dev.md)。数据包装类为 `DA::DAData`（提供 `toDataFrame()` / `toSeries()` / `isNull()`），**不存在** `DADataPackage`。
+
 ### 1. 架构设计原则
 
 | 原则 | 说明 | 实现建议 |
@@ -115,14 +127,14 @@ bool MyWorker::exec()
 下面的代码展示了大数据分块处理的实现方式：
 
 ```cpp
-// 大数据分块处理 - 避免一次性加载全部数据
+// 大数据分块处理 - 避免一次性加载全部数据（遗留 C++ 节点接口示例）
 bool MyWorker::exec()
 {
-    DA::DADataPackage input = getInputData("input_data");
-    
-    // 获取 DataFrame - pandas DataFrame 对象
-    auto df = input.getDataFrame();
-    int rowCount = df.row_count();
+    DA::DAData input = getInputData("input_data");  // 数据包装类为 DAData
+
+    // 获取 DataFrame - pandas DataFrame 对象（DAData::toDataFrame）
+    auto df = input.toDataFrame();
+    auto [rowCount, colCount] = df.shape();   // 行数 / 列数
     int chunkSize = 10000;  // 分块大小：每块处理 1 万行
     
     for (int i = 0; i < rowCount; i += chunkSize) {
@@ -183,19 +195,19 @@ private:
 下面的代码展示了正确的内存管理方式：
 
 ```cpp
-// 避免不必要的深拷贝 - 使用引用或 Qt 隐式共享
+// 避免不必要的深拷贝 - 使用引用或 Qt 隐式共享（遗留 C++ 节点接口示例）
 bool MyWorker::exec()
 {
     // ❌ 错误：深拷贝 - 复制整个 DataFrame，内存翻倍
-    DA::DADataPackage copy = input;
-    
+    DA::DAData copy = input;
+
     // ✅ 正确：引用或浅拷贝
-    const DA::DADataPackage& ref = input;
-    
+    const DA::DAData& ref = input;
+
     // 处理完成后只存储必要的结果
     QVariant result;
     result.setValue(ref);  // Qt 的隐式共享
-    
+
     setOutputData("output_data", result);
 }
 ```
@@ -357,7 +369,7 @@ message(STATUS "Using Qt version: ${QT_VERSION}")
 1. 检查插件是否正确导出接口
 
 ```cpp
-Q_PLUGIN_METADATA(IID "Plugin.YourPlugin")
+Q_PLUGIN_METADATA(IID DAABSTRACTNODEPLUGIN_IID)
 Q_INTERFACES(DA::DAAbstractNodePlugin)
 ```
 
@@ -472,15 +484,18 @@ if (icon.isNull()) {
 
 **问题**：Dock 窗口出现在非预期位置
 
-**解决**：
+**解决**：通过 `DADockingAreaInterface::createDockWidget` 明确指定停靠区域（基于 Qt-Advanced-Docking-System 的 `ads::DockWidgetArea`，**不是** Qt 原生 `QDockWidget` 的 `Qt::DockWidgetArea`）：
 
 ```cpp
-// 明确指定位置
-dock->addDockWidget(m_widget, 
-                    tr("My Window"), 
-                    Qt::RightDockWidgetArea,  // 指定区域
-                    "myplugin.dock.widget");
+// 明确指定停靠区域与窗口名
+auto* docking = core()->getUiInterface()->getDockingArea();
+ads::CDockWidget* dock = docking->createDockWidget(
+    m_widget,                       // 要停靠的 QWidget
+    ads::RightDockWidgetArea,       // ads::DockWidgetArea，指定停靠区域
+    "myplugin.dock.widget");        // 窗口名（objectName）
 ```
+
+如需作为标签页加入中央停靠区，用 `createDockWidgetTabAtCenterDockArea(w, widgetName)`。
 
 ## 兼容性注意事项
 

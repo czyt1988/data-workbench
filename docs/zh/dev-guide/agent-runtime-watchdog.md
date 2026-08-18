@@ -1,10 +1,16 @@
-# Agent 运行期卡死问题诊断与修复待办
+# Agent 运行期卡死问题诊断与修复
 
-> 本文档记录 DAWorkBench agent 功能"运行到一半静默卡死"问题的诊断结论与待修复的结构性缺口，供后续实现参考。
->
-> **范围说明**：本文档**不**包含已修复的 `DAPyDataFrame::query` ValueError（该问题已另行修复，见 `src/DAPyBindQt/pandas/DAPyDataFrame.cpp` 的 `query` 方法——根因是从 C++ 绑定裸调 `df.query` 致使 `pandas` 的 `sys._getframe(level)` 取不到调用者栈帧）。本文档只记录导致 agent **静默卡死、无日志、无恢复**的三个独立结构性缺口。
+!!! success "STATUS: 三个结构性缺口均已修复"
+    本文档原记录的三个导致 agent 静默卡死的结构性缺口（缺口 A / B / C）**已全部修复**，并补充了重复工具调用硬终止守卫。当前运行时看门狗的权威规范已迁至 [崩溃恢复与重连](agent/crash-recovery.md)，本页保留为历史诊断记录与修复证据索引。
 
-## 1. 问题现象
+    - **缺口 A — LLM 流式客户端无超时**：已修复（commit `6a7a31e`）
+    - **缺口 B — 运行期无看门狗**：已修复（commit `6a7a31e`，暂停于用户回答见 `5c690cc`）
+    - **缺口 C — 无 recursion_limit**：已修复（commit `644fe5c`）
+    - **补充守卫 — 模型热替换不重启**（commit `bae7567`）、**token 统计会话累计**（commit `44e11eb`）
+
+> **范围说明**：本文档**不**包含已修复的 `DAPyDataFrame::query` ValueError（该问题已另行修复，见 `src/DAPyBindQt/pandas/DAPyDataFrame.cpp` 的 `query` 方法——根因是从 C++ 绑定裸调 `df.query` 致使 `pandas` 的 `sys._getframe(level)` 取不到调用者栈帧）。本文档只记录曾导致 agent **静默卡死、无日志、无恢复**的三个独立结构性缺口及其修复现状。
+
+## 1. 问题现象（历史）
 
 agent 对话运行到一半停止响应：
 
@@ -24,110 +30,138 @@ agent 对话运行到一半停止响应：
 
 > 关键链路：工具报错让 LLM 每轮重试同一查询 → 每轮一次流式调用 → 其中一次流式响应挂死 → 没有任何兜底，agent 永久卡住。
 
-## 3. 根因：三个独立的结构性缺口
+## 3. 根因与修复现状：三个独立的结构性缺口
 
-### 缺口 A — LLM 流式客户端无超时
+### 缺口 A — LLM 流式客户端无超时（已修复）
 
-**位置**：`src/PyScripts/DAWorkbench/agent/agent_runner.py:255-260`
+**修复**：`agent_runner.py` 构造 `ChatOpenAI` 时显式传入 `timeout` 与 `max_retries=0`（禁用 openai-python 内置重试，由 wrapper 控制）：
 
 ```python
+# agent_runner.py — AgentRunner.__init__ 构造 LLM
 self.llm = ChatOpenAI(
     base_url=config["base_url"],
     api_key=config["api_key"],
     model=config["model"],
     streaming=True,
+    max_tokens=config.get("max_output_tokens", 8192),
+    max_retries=0,                                        # 禁用 openai-python 内置重试，由 wrapper 控制
+    timeout=config.get("request_timeout_sec", 120),       # HTTP 请求超时（连接+首字节）
 )
 ```
 
-**问题**：构造 `ChatOpenAI` 时未传 `request_timeout` / `timeout` / `max_retries`，单次流式调用（`llm_with_tools.astream(...)`，见 `_stream_llm` 第 364 行）挂死时无客户端侧读超时兜底，挂多久都没人管。本次 5 分钟挂死即由此而来。
+热替换路径（`AgentRunner.reconfigure()`）构造新 `ChatOpenAI` 时同样设置 `max_retries=0` + `timeout=config.get("request_timeout_sec", 120)`，确保切换模型后不回退到无超时状态。配置键为 `agent/llm_request_timeout_sec`（默认 120 秒）与 `agent/llm_max_retries`（默认 7，由 `RetryWrapper` 而非 SDK 消费）。
 
-### 缺口 B — 运行期无看门狗（最关键）
+> 修复 commit：`6a7a31e`。
 
-**位置**：`src/DAAgent/DAAgentBridge.cpp`
+### 缺口 B — 运行期无看门狗（已修复，最关键）
 
-当前 `m_readyTimer`（100-112 行）是**仅在启动期生效**的心跳看门狗：收到第一条 `ready` 消息后即被 `stop` + `deleteLater` + 置空：
+**修复**：`DAAgentBridge` 引入运行期无活动看门狗 `mInactivityTimer`（`QTimer`，single-shot，默认 240000ms = 4 分钟），在 `DAAgentBridge` 构造时创建并连接到 `onInactivityTimeout`：
 
 ```cpp
-// DAAgentBridge.cpp:268-274
-} else if (type == "ready") {
-    // 收到 ready 消息——停止 ready 超时计时器
-    if (m_readyTimer) {
-        m_readyTimer->stop();
-        m_readyTimer->deleteLater();
-        m_readyTimer = nullptr;   // ← 此后运行期再无任何计时器
-    }
-    emit agentReady(msg["model"].toString());
+// DAAgentBridge.cpp — 构造函数
+d->mInactivityTimer = new QTimer(this);
+d->mInactivityTimer->setSingleShot(true);
+connect(d->mInactivityTimer, &QTimer::timeout, this, &DAAgentBridge::onInactivityTimeout);
+```
+
+**启动时机**：收到 `user_msg`（`sendMessage` 后）、`tool_call`（开始工具执行前的活动信号）、`sendToolResult` 后（工具执行完 Python 会继续工作）等"对话进行中"的活动节点启动。
+
+**停止时机**：收到 `done` / `error` / `question`（等待用户回答）/ `stop`（用户主动停止）/ 进程退出时停止，避免误杀。
+
+**`ToolExecGuard` 暂停**：工具执行期间用 RAII 守卫 `ToolExecGuard` 暂停看门狗（构造时 `mToolExecuting=true` + `stop()`，析构时恢复），覆盖所有 return 路径——因为工具执行耗时由 C++ 侧掌控，不应计入"子进程无活动"。
+
+**超时处理**：`onInactivityTimeout` 先 `emit agentError(..., "timeout", "")` 让用户更快看到超时提示，再 `requestStop()` 让 Python 优雅退出，最终经 `onProcessFinished` 恢复 `agentBusy(false)`。
+
+**重要细节（per-token 不重置）**：token 流处理分支（`type == "token"`）**不**重置该计时器——即 240 秒窗口覆盖的是一次完整流式响应（从 `user_msg`/`tool_call` 到 `message_end`/`done`），而非每个 token 重置。这意味着一次正常的长回复若超过 240 秒仍会触发看门狗。如需更细粒度的流式活动感知，可在 token 分支按时间窗口重置，但当前实现选择"整轮覆盖"以简化语义。
+
+> 修复 commit：`6a7a31e`（看门狗主体）、`5c690cc`（暂停于等待用户回答期间）。
+
+### 缺口 C — 无 recursion_limit（已修复）
+
+**修复**：`AgentRunner.__init__` 从 config 读取 `recursion_limit`（默认 150），注入 `thread_config["recursion_limit"]`：
+
+```python
+# agent_runner.py
+self._recursion_limit = config.get("recursion_limit", 150)
+self.thread_config = {
+    "configurable": {"thread_id": "agent_session_1"},
+    "recursion_limit": self._recursion_limit,
 }
 ```
 
-之后 `handleJsonLine` 对 `token` / `message_end` / `tool_call` / `tool_result` / `done` 等所有消息类型都**不再碰任何计时器**（276 行起）。`m_stopTimer`（154-163 行，默认 5000ms）**只在用户主动 `requestStop()` 时用**，不是自动看门狗。
-
-**后果**：agent 就绪后，子进程长时间无输出（流式挂死、死循环、死锁）时**不会被检测、不会被 kill**，UI 干等无响应。`onProcessFinished`（366-378 行）虽有 exitCode 记录、406 行有 `emit agentError`，但**只在进程真正退出时才触发**——卡死场景进程根本不退出，所以这条诊断路径不会生效，这正是"静默卡死、无任何退出日志"的结构性原因。
-
-### 缺口 C — 无 recursion_limit
-
-**位置**：`src/PyScripts/DAWorkbench/agent/agent_runner.py:594-597` 与 `616-619`
+`GraphRecursionError` 在 `main()` 的 `run()` / `resume()` 调用处被捕获，报为 `error_type="recursion_limit"` 并发 `done` 结束本轮：
 
 ```python
-# run()
-async for _event in self.graph.astream(
-    {"messages": [HumanMessage(user_message)]},
-    config=self.thread_config
-):
-    pass
+except GraphRecursionError:
+    logger.warning("GraphRecursionError: agent reached recursion limit (%d)", runner._recursion_limit)
+    await stdio.send_error(
+        "Agent reached maximum reasoning iterations (possible infinite loop). "
+        "Try shortening the conversation history or starting a new session.",
+        error_type="recursion_limit",
+    )
+    await stdio.send_done()
 ```
 
-**问题**：`graph.astream` 未传 `recursion_limit`，靠 LangGraph 默认 25 步。当某个工具持续返回空 / 错误、LLM 反复重试同一工具时，无显式上限，最长 25 个 super-step 后才抛 `GraphRecursionError`——但每步含一次完整流式调用，一次流式挂死就够卡住，recursion_limit 兜不住流式挂死本身，但能限制死循环规模、避免无限重试。
+配置键为 `agent/recursion_limit`（默认 150 步，约支持 50 轮工具调用），用户可在设置页调整。
 
-## 4. 当前实现摘录（供实现者参照）
+> 修复 commit：`644fe5c`。
 
-### agent_runner.py 关键路径
+### 补充守卫 — 重复工具调用硬终止
 
-- **流式调用** `_stream_llm`（349-373 行）：先**完整消费流**累积出完整 AIMessage，之后 `agent_node`（448 行）才读 `tool_calls` 交 `tool_node` 执行。即工具失败发生在流式结束之后，**无法用 `GeneratorExit` 打断在途流**——早期诊断中"工具失败打断流式 → SDK 重试"的因果链在本架构下不成立。`GeneratorExit()` 是那次流式响应体读取本身中途失败（服务端断连 / 客户端生成器被关闭）的记录。
-- **工具 RPC** `_rpc_call`（301-312 行）：有 `asyncio.wait_for(..., timeout=60)` 兜底，工具 60s 无结果返回 `{"error": ...}`。
-- **工具失败处理** `tool_node`（463-479 行）：结果 `json.dumps` 成 `ToolMessage` 喂回 LLM，**不中断 agent**——LLM 通常会再次调用同一坏工具，形成循环。
-- **溢出恢复** `agent_node`（423-446 行）：仅处理 `is_context_overflow_error`，与流式中断无关。
+为在撞到 `recursion_limit` 之前更优雅地终止 LLM 死循环，`AgentRunner` 额外实现了重复工具调用检测：
 
-### DAAgentBridge.cpp 关键路径
+- **软引导**：`tool_node` 用 `_executed_call_sigs`（`deque(maxlen=8)`）记录本轮已执行的工具调用签名（`name`, `args_canonical`），重复时返回引导性 `ToolMessage` 而非重复执行（不同参数不受影响）。
+- **硬终止**：`agent_node` 跟踪 `_last_full_sig` / `_full_sig_repeat_count`，连续 3 次相同完整 `tool_calls` 签名（阈值 `_repeat_terminate_threshold=3`）则强制剥离 `tool_calls` 并以最终回复结束（router → END）。
 
-- `startAgent`（55-113 行）：QProcess 启动 + 连接信号 + `m_readyTimer` 启动期看门狗。
-- `handleJsonLine`（258 行起）：`booting` 重置 readyTimer；`ready` 销毁 readyTimer；之后各消息类型均无计时器。
-- `stopAgent` / `requestStop`（115-166 行）：主动停止，`m_stopTimer` 5s 后 kill。
-- `onProcessFinished`（366-378 行）：`daDebug` 记 exitCode / exitStatus；406 行异常退出 `emit agentError`；415 行 `emit agentBusy(false)` 恢复 UI。
-- `onReadyReadStandardError`（418-428 行）：423 行 `daDebug << "Agent stderr:"` 转发全部 stderr 到日志；425-427 行仅当 chunk 含 `Traceback` / `Error` 时才 `emit agentError` 转发到 UI。
+详见 [架构设计 - LangGraph 状态机](agent/architecture.md#langgraph-状态机) 与 [崩溃恢复 - 死循环防护](agent/crash-recovery.md#死循环防护)。
 
-## 5. 建议修复方向（供参考，非死方案）
+### 补充能力 — 模型热替换（不重启子进程）
+
+切换 LLM 配置不再需要杀子进程重启。`DAAgentBridge::reconfigureAgent()` 下发 `reconfigure` 消息，Python 端 `AgentRunner.reconfigure()` 在两轮之间热替换 `ChatOpenAI` 实例，不丢 `MemorySaver` 会话状态，作为崩溃恢复路径之外的容错替代。详见 [通信协议 - reconfigure](agent/protocol.md#reconfigure--模型热替换)。
+
+> 修复 commit：`bae7567`。
+
+## 4. 当前实现摘录
+
+!!! tip "权威规范已迁出"
+    运行时看门狗、崩溃恢复、重试退避的**当前权威规范**位于 [崩溃恢复与重连](agent/crash-recovery.md)。以下仅作历史诊断与代码定位参考。注意 `agent_runner.py` 已增至 1236 行、`DAAgentBridge.cpp` 行号亦已变化，下述行号为诊断当时值，定位时请以函数名为准。
+
+### agent_runner.py 关键路径（函数名定位）
+
+- **流式调用** `_stream_llm`：先**完整消费流**累积出完整 `AIMessage`，之后 `agent_node` 才读 `tool_calls` 交 `tool_node` 执行。即工具失败发生在流式结束之后，**无法用 `GeneratorExit` 打断在途流**——早期诊断中"工具失败打断流式 → SDK 重试"的因果链在本架构下不成立。`GeneratorExit()` 是那次流式响应体读取本身中途失败（服务端断连 / 客户端生成器被关闭）的记录。
+- **工具 RPC** `_rpc_call`：有 `asyncio.wait_for(..., timeout=60)` 兜底，工具 60s 无结果返回 `{"error": ...}`。
+- **工具失败处理** `tool_node`：结果 `json.dumps` 成 `ToolMessage` 喂回 LLM；配合软引导 / 硬终止避免无限重试同一坏工具。
+- **溢出恢复** `agent_node`：仅处理 `is_context_overflow_error`，与流式中断无关。
+- **热替换** `AgentRunner.reconfigure()`：构造新 `ChatOpenAI`（同样设 `max_retries=0` + `timeout`），成功后才更新 `self.*`，失败发 `error` 不破坏旧 LLM；不发 `done`，仅发 `ready` 确认。
+
+### DAAgentBridge.cpp 关键路径（函数名定位）
+
+- `startAgent`：QProcess 启动 + 连接信号 + `m_readyTimer` 启动期看门狗 + `emit agentStarting()`（UI"启动中"过渡态）。
+- `reconfigureAgent`：下发 `reconfigure` 消息热替换 LLM（不重启子进程）。
+- `handleJsonLine`：`booting` 重置 readyTimer；`ready` 销毁 readyTimer；`user_msg`/`tool_call`/`sendToolResult` 启动 `mInactivityTimer`；`done`/`error`/`question`/`stop` 停止之。
+- `executeTool` + `ToolExecGuard`：RAII 暂停 / 恢复 `mInactivityTimer`，覆盖工具执行全程。
+- `onInactivityTimeout`：先 `emit agentError("timeout")` 再 `requestStop()`，经 `onProcessFinished` 恢复 `agentBusy(false)`。
+- `stopAgent` / `requestStop`：主动停止，`m_stopTimer` 5s 后 kill。
+- `onProcessFinished`：记录 exitCode / exitStatus；异常退出 `emit agentError`；`emit agentBusy(false)` 恢复 UI。
+- `onReadyReadStandardError`：转发全部 stderr 到日志；仅当 chunk 含 `Traceback` / `Error` 时才 `emit agentError` 转发到 UI。
+
+## 5. 建议修复方向（历史，已落地）
+
+以下为诊断当时提出的修复方向，现已全部落地（见第 3 节修复现状），保留以记录设计取舍。
 
 ### 缺口 A
 
-给 `ChatOpenAI` 加显式超时与重试上限：
+给 `ChatOpenAI` 加显式超时与重试上限。**已实现**：`timeout=config.get("request_timeout_sec", 120)` + `max_retries=0`（重试交由 `RetryWrapper`）。
 
-```python
-self.llm = ChatOpenAI(
-    base_url=config["base_url"],
-    api_key=config["api_key"],
-    model=config["model"],
-    streaming=True,
-    request_timeout=120,   # 或从 config 读取，如 config.get("request_timeout", 120)
-    max_retries=2,
-)
-```
-
-> 注：`request_timeout` 对流式响应"已开始但中途挂死"是否生效，取决于 langchain-openai / httpx 版本如何处理流式读超时。建议实现时验证：mock 一个建立连接后不继续推 body 的网关，确认 `request_timeout` 能在 120s 后抛出而非无限挂；若 SDK 流式读超时不完善，需依赖缺口 B 的看门狗兜底。
+> 注：`request_timeout` 对流式响应"已开始但中途挂死"是否生效，取决于 langchain-openai / httpx 版本如何处理流式读超时。因此缺口 B 的看门狗作为最终兜底仍然必要——即便 SDK 流式读超时不完善，240s 看门狗也能 kill 子进程恢复。
 
 ### 缺口 B（最关键）
 
-在 `DAAgentBridge` 加运行期心跳看门狗，命名如 `m_runtimeTimer`：
-
-- 在 `handleJsonLine` 收到 `token` / `message_end` / `tool_call` / `tool_result` 等活动消息时重置该单次 `QTimer`；超时则 kill 子进程 + `emit agentError` + 落日志。
-- 可复用 `m_readyTimer` 的 config 读取模式（`DAAgentModule.cpp` 读 `agent/ready_timeout_sec`），新增 `agent/runtime_timeout_sec`（默认如 180s）。
-- 确保看门狗触发 kill 后，`onProcessFinished` 被调用 → 记 exitCode → `emit agentError` → `emit agentBusy(false)` 恢复 UI 可输入。
-- 用户主动 `requestStop()` / 收到 `done` 时停止该计时器，避免误杀。
-- 流式输出 token 期间持续重置计时器（每个 token 重置，或按时间窗口重置），避免正常长回复被误杀。
+在 `DAAgentBridge` 加运行期心跳看门狗。**已实现**为 `mInactivityTimer`（240s single-shot），启动 / 停止 / `ToolExecGuard` 暂停语义见第 3 节。
 
 ### 缺口 C
 
-给 `astream` 传显式 `recursion_limit`（可从 config 读取），或在 `tool_node` 加"同一工具连续失败 N 次则中断 / 上报"的计数。
+给图传显式 `recursion_limit`，并在 `tool_node` 加重复调用检测。**已实现**：`recursion_limit=150`（可配置）+ 软引导 + 硬终止（阈值 3）。
 
 ## 6. 验证方法
 

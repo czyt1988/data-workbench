@@ -17,10 +17,10 @@
 |------|:------:|------|---------|
 | `DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` | `ON` | 自动搜索并部署 Python DLL | APP（仅 Windows） |
 | `DA_ENABLE_AUTO_TRANSLATE` | `ON` | 自动编译翻译文件（.ts → .qm） | i18n |
-| `DA_ENABLE_UPDATE_TRANSLATE` | `OFF` | 自动更新翻译源文件 | i18n（仅翻译时使用） |
 | `DA_AUTO_INSTALL_PREFIX` | `ON` | 自动安装到本地目录 | 所有模块的 install 行为 |
-| `DA_AUTO_GENERATE_CONFIG_INFO` | `OFF` | 自动生成 DAConfig.h | 库开发者专用 |
+| `DA_AUTO_GENERATE_CONFIG_INFO` | `OFF` | 自动生成 DAConfigs.h（已改为无条件生成） | 库开发者专用 |
 | `DA_BUILD_PLUGINS` | `ON` | 构建 plugins/ 目录下的插件 | plugins/ 子目录 |
+| `DA_ENABLE_TESTING` | `OFF` | 启用测试构建（enable_testing + src/tst） | src/tst 子目录 |
 
 ---
 
@@ -62,21 +62,6 @@ cmake -DDA_ENABLE_AUTO_TRANSLATE=ON ...
 cmake -DDA_ENABLE_AUTO_TRANSLATE=OFF ...
 ```
 
-### DA_ENABLE_UPDATE_TRANSLATE
-
-- **默认值**：`OFF`
-- **作用**：自动调用 `lupdate` 更新 `.ts` 翻译源文件（提取新增的 `tr()` 字符串）
-- **适用场景**：仅在进行翻译工作时开启，日常开发保持关闭
-- **影响范围**：i18n 翻译源文件
-
-```bash
-# 更新翻译源文件（翻译时使用）
-cmake -DDA_ENABLE_UPDATE_TRANSLATE=ON ...
-```
-
-!!! warning "日常开发不要开启"
-    此选项会修改 `.ts` 源文件内容，日常开发保持 `OFF`。仅当新增了需要翻译的字符串时临时开启。
-
 ### DA_AUTO_INSTALL_PREFIX
 
 - **默认值**：`ON`
@@ -94,14 +79,23 @@ cmake -DCMAKE_INSTALL_PREFIX=/custom/path -DDA_AUTO_INSTALL_PREFIX=OFF ...
 ### DA_AUTO_GENERATE_CONFIG_INFO
 
 - **默认值**：`OFF`
-- **作用**：自动生成 `DAConfig.h` 配置头文件，包含编译时信息
-- **适用场景**：仅库开发者需要开启，库使用者保持默认 `OFF`
-- **影响范围**：`DAConfig.h` 文件生成
+- **作用**：历史上用于控制是否生成 `DAConfigs.h` 配置头文件（包含版本号等编译时信息）
+- **现状**：`DAConfigs.h` 现已改为**无条件**生成。`src/CMakeLists.txt` 通过 `configure_file` 从 `DAConfigs.h.in` 结合顶层 `CMakeLists.txt` 中的 `DA_VERSION_*` 变量生成 `DAConfigs.h`，确保启动画面/关于对话框/`--version` 显示的版本号始终与 CMake 定义保持同步
+- **背景**：历史上此处曾以 `DA_AUTO_UPDATE_CONFIG_INFO` 作为开关，但该变量名与顶层 `option(DA_AUTO_GENERATE_CONFIG_INFO)` 不一致，导致生成从未被触发，仓库中 `DAConfigs.h` 长期为陈旧版本。该开关已移除，生成现无条件执行
+- **影响范围**：`DAConfigs.h` 文件生成（实际已与该选项无关，选项保留仅为历史兼容）
 
 ```bash
-# 库开发者构建时开启
+# 该选项当前对生成行为无实质影响，DAConfigs.h 已无条件生成
 cmake -DDA_AUTO_GENERATE_CONFIG_INFO=ON ...
 ```
+
+!!! info "翻译源文件更新"
+    若需提取新增的 `tr()` 字符串到 `.ts` 翻译源文件，不再通过 CMake 选项触发，而是构建 `update_translations` 自定义目标：
+
+    ```bash
+    # 手动更新 .ts 翻译源文件（不加入 ALL，避免每次构建重写 .ts）
+    cmake --build <build-dir> --target update_translations
+    ```
 
 ### DA_BUILD_PLUGINS
 
@@ -117,6 +111,24 @@ cmake -DDA_BUILD_PLUGINS=ON ...
 cmake -DDA_BUILD_PLUGINS=OFF ...
 ```
 
+### DA_ENABLE_TESTING
+
+- **默认值**：`OFF`
+- **作用**：开启时调用 `enable_testing()` 并 `add_subdirectory(src/tst)`，构建 `src/tst` 下的各测试工程
+- **影响范围**：`src/tst` 子目录（如 `DAPyWorkFlowTests`、`DADataFrameTest` 等）
+- **配套工具**：`scripts/build.ps1 -Test` 在构建完成后调用 `ctest` 运行测试。注意 `-Test` 仅负责执行 `ctest`，测试目标本身需在配置阶段通过 `DA_ENABLE_TESTING=ON` 才会参与编译
+
+```bash
+# 启用测试构建
+cmake -DDA_ENABLE_TESTING=ON ...
+
+# 构建并运行测试（使用项目脚本）
+.\scripts\build.ps1 -Target DAPyWorkFlow -Test
+```
+
+!!! warning "默认关闭"
+    测试工程不参与日常构建。仅当需要运行/开发测试时，在配置阶段显式设为 `ON`，否则 `src/tst` 不会被加入构建。
+
 ---
 
 ## 选项交互关系
@@ -126,16 +138,18 @@ cmake -DDA_BUILD_PLUGINS=OFF ...
 ```mermaid
 flowchart TD
     D["DA_ENABLE_AUTO_TRANSLATE"] -->|ON 时需要| E["Qt Linguist (lrelease)"]
-    F["DA_ENABLE_UPDATE_TRANSLATE"] -->|ON 时需要| G["Qt Linguist (lupdate)"]
-    F -->|建议同时| D
+    U["update_translations 目标"] -->|手动触发需要| G["Qt Linguist (lupdate)"]
 ```
+
+!!! info "update_translations 是 CMake 目标而非选项"
+    `lupdate` 的触发已从 CMake 选项改为自定义目标 `update_translations`，不加入 `ALL`，避免每次构建重写 `.ts` 文件。仅在新增 `tr()` 字符串后手动构建该目标。
 
 ### 冲突与约束
 
 | 组合 | 结果 |
 |------|------|
 | `DA_ENABLE_AUTO_TRANSLATE=ON` 但无 Qt Linguist | 构建报错，找不到 `lrelease` |
-| `DA_ENABLE_UPDATE_TRANSLATE=ON` + 日常开发 | `.ts` 文件被意外修改 |
+| 手动构建 `update_translations` 目标但无 Qt Linguist | 构建报错，找不到 `lupdate` |
 
 ---
 
@@ -162,12 +176,19 @@ cmake -S . -B build -G "Visual Studio 16 2019" -A x64 \
 
 ### 场景 3：翻译更新
 
+新增 `tr()` 字符串后，通过 `update_translations` 目标手动更新 `.ts` 文件，再正常构建以编译为 `.qm`：
+
 ```bash
+# 配置项目（保持 DA_ENABLE_AUTO_TRANSLATE=ON 以编译 .ts -> .qm）
 cmake -S . -B build -G "Visual Studio 16 2019" -A x64 \
   -DCMAKE_PREFIX_PATH="C:/Qt/6.7.3/msvc2019_64" \
-  -DDA_ENABLE_UPDATE_TRANSLATE=ON \
   -DDA_ENABLE_AUTO_TRANSLATE=ON
-# 构建后会更新并编译 .ts 文件
+
+# 手动更新 .ts 翻译源文件（提取新增的 tr() 字符串）
+cmake --build build --target update_translations
+
+# 正常构建会编译 .ts -> .qm 并部署
+cmake --build build --config Release --parallel
 ```
 
 ---

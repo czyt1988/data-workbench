@@ -149,48 +149,56 @@ flowchart LR
     end
     
     subgraph CoreLibs["核心库"]
-        Common["DACommonWidgets"]
         Data["DAData"]
         Figure["DAFigure"]
         Graphics["DAGraphicsView"]
     end
-    
+
     subgraph Binding["绑定层"]
         PyBind["DAPyBindQt"]
         Interface["DAInterface"]
+        Agent["DAAgent"]
     end
-    
+
     subgraph App["应用"]
         APP["APP"]
     end
-    
+
     subgraph Plugins["插件"]
         PA["DataAnalysis"]
     end
-    
-    Qt --> Common
+
     Qt --> Data
     PD --> PyBind
     PB --> PyBind
-    
-    Common --> Data
+
     Data --> Figure
     Figure --> Graphics
-    
+
     PyBind --> Interface
     Data --> Interface
-    
+
+    Agent --> Interface
+    Agent --> Data
+    Agent --> PyBind
+
     Interface --> APP
     Interface --> PA
-    
+
 APP --> PA
     ```
+
+!!! note "DACommonWidgets 已并入 DAGui"
+    历史 `DACommonWidgets` 通用控件库已整体并入 `DAGui`，不再作为独立模块出现在核心库层；上图已移除该节点。
+
+!!! note "Agent 工具注册插件模式"
+    `DAAgent` 模块暴露 `DAAgentInterface` 契约，内置 agent 工具以插件形式注册：`plugins/DAAgentTools/` 在插件 `initialize()` 中调用 `DAAgentInterface::registerTool(DAAgentToolBase*)` 把 16 个内置工具注册进 `DAAgentModule` 的工具表。这与工作流节点插件（`DAAbstractNodePlugin` → `createNodeFactory()`）是两套并行的插件扩展点，前者面向 Agent 工具，后者面向工作流节点。详见 [Agent 开发指南](./agent/index.md)。
 
 上图展示了模块依赖关系的层次结构：
 
 - **第三方库层**：Qt、pandas/numpy、pybind11 构成基础设施
-- **核心库层**：DACommonWidgets、DAData、DAFigure 等提供核心功能
-- **绑定层**：DAPyBindQt 和 DAInterface 作为主程序与插件之间的桥梁
+- **核心库层**：DAData、DAFigure、DAGraphicsView 等提供核心功能（历史 DACommonWidgets 已并入 DAGui）
+- **绑定层**：DAPyBindQt、DAInterface 与 DAAgent 作为主程序与插件之间的桥梁（DAAgent 消费 DAInterface/DAData/DAPyBindQt/DAPyScripts，不依赖 GUI）
 - **应用层**：APP 模块协调各模块工作，管理应用生命周期
 - **插件层**：插件依赖 DAInterface 接口，通过接口访问主程序功能
 
@@ -236,7 +244,8 @@ classDiagram
     
     class DAUIInterface {
         <<interface>>
-        +getMainWindow() QMainWindow*
+        +mainWindow() SARibbonMainWindow*
+        +getMainWindow() QMainWindow*  {virtual pure}
         +getStatusBar() DAStatusBarInterface*
         +getCommandInterface() DACommandInterface*
         +getDockingArea() DAAppDockingAreaInterface*
@@ -306,6 +315,14 @@ classDiagram
     DAUIInterface --> DAStatusBarInterface : getStatusBar
 DAUIInterface --> DACommandInterface : getCommandInterface
     ```
+
+!!! warning "mainWindow() 与 getMainWindow() 是两个不同方法"
+    `src/DAInterface/DAUIInterface.h` 同时声明了两个获取主窗口的方法，二者**并非同一方法的别名**：
+
+    - `SARibbonMainWindow* mainWindow() const;` — **具体方法**，返回具体的 `SARibbonMainWindow*`（绑定 Ribbon 框架）。
+    - `virtual QMainWindow* getMainWindow() const = 0;` — **纯虚方法**，返回抽象的 `QMainWindow*`，供不希望依赖 SARibbon 类型的插件实现使用。
+
+    插件按需选择：需要 Ribbon 能力时用 `mainWindow()`，仅需通用窗口父对象（如对话框父窗口）时用 `getMainWindow()`。
 
 上图展示了接口的层次结构：
 
@@ -1953,6 +1970,7 @@ UI->>User: 显示结果
 |------|------|
 | `DAPluginSupport` | 插件支持模块，提供插件基类和管理器 |
 | `DAInterface` | 接口模块，定义核心接口 |
+| `DAAgent` | Agent 框架模块，暴露 `DAAgentInterface`（工具注册/LLM 配置/会话），与 DAInterface 并列于 L4 |
 | `DAPyBindQt` | Python 绑定模块 |
 | `DAData` | 数据处理模块 |
 

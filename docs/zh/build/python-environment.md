@@ -13,7 +13,7 @@
 
 ---
 
-## Python 环置概述
+## Python 环境概述
 
 ### 构建时 Python 环境
 
@@ -40,6 +40,8 @@ DAWorkBench 强制依赖 Python，Python 相关模块始终参与编译：
 
 ### Python 依赖库
 
+项目根目录的 `requirements.txt` 列出了运行时所需的全部 Python 包（共 16 个）。下表按用途分组说明：
+
 | 库名 | 用途 |
 |------|------|
 | pandas | 数据处理核心 |
@@ -50,6 +52,17 @@ DAWorkBench 强制依赖 Python，Python 相关模块始终参与编译：
 | chardet | 字符编码检测 |
 | PyWavelets | 小波分析 |
 | pyarrow | Parquet/Feather 格式支持 |
+| typing_extensions | 类型注解向后兼容 |
+| matplotlib | 绘图后端 |
+| seaborn | 统计可视化 |
+| langgraph | AI Agent 工作流编排（DAAgent 子系统） |
+| langchain-openai | 大语言模型接入（DAAgent 子系统） |
+| langgraph-cli[inmem] | LangGraph 内存运行时（DAAgent 子系统） |
+| pydantic>=2.0 | Agent 数据模型校验（DAAgent 子系统） |
+| tiktoken | LLM 分词计数（DAAgent 子系统） |
+
+!!! info "AI/Agent 栈为必需依赖"
+    `langgraph`、`langchain-openai`、`langgraph-cli[inmem]`、`pydantic`、`tiktoken` 五个包为 DAAgent 子系统所必需，不可省略。仅安装 pandas/numpy/scipy 会导致 Agent 相关功能无法运行。
 
 安装依赖：
 
@@ -67,8 +80,8 @@ pip install -r requirements.txt
 # 安装数据处理核心库
 pip install pandas numpy scipy
 
-# 安装辅助库（Excel、编码检测等）
-pip install openpyxl chardet loguru
+# 安装 AI/Agent 栈（DAAgent 子系统必需）
+pip install langgraph langchain-openai "langgraph-cli[inmem]" "pydantic>=2.0" tiktoken
 ```
 
 ---
@@ -167,7 +180,7 @@ del get-pip.py
 
 | 选项 | 默认值 | 说明 |
 |------|--------|------|
-| `DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` | OFF | 自动安装 Python 依赖 |
+| `DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` | ON | 构建完成后自动搜索 Python 环境并把必要 DLL 复制到 `bin/` 目录 |
 | `Python_ROOT_DIR` | - | 指定 Python 安装路径 |
 
 !!! info "Python 为强制依赖"

@@ -10,7 +10,7 @@ Agent 在多轮对话中需要管理 LLM 的上下文窗口，避免对话历史
 
 ```mermaid
 graph TD
-    A["工具执行结果"] --> B{"ToolResultTruncator<br/>结果超 50000 字符?"}
+    A["工具执行结果"] --> B{"ToolResultTruncator<br/>结果超 20000 字符?"}
     B -->|"是"| C["截断为前 2000 字符 + 占位提示"]
     B -->|"否"| D["原样保留"]
     C --> E["截断后内容进入 state"]
@@ -66,7 +66,7 @@ graph TD
 ### 截断逻辑
 
 ```
-如果 tool_result 字符数 > max_chars (默认 50000):
+如果 tool_result 字符数 > max_chars (默认 20000):
     保留前 preview_chars 字符 (默认 2000)
     + 占位提示: "[结果已截断，原长度 X 字符。如需完整数据，请使用更具体的查询参数重新调用工具。]"
 ```
@@ -77,7 +77,7 @@ graph TD
 
 | 参数 | 配置键 | 默认值 | 说明 |
 |------|--------|--------|------|
-| 截断阈值 | `tool_result_max_chars` | 50000 | 超此字符数的结果触发截断 |
+| 截断阈值 | `tool_result_max_chars` | 20000 | 超此字符数的结果触发截断 |
 | 预览长度 | `tool_result_preview_chars` | 2000 | 截断后保留的前缀长度 |
 
 ---
@@ -238,13 +238,21 @@ async def compact_node(state):
 
 所有上下文管理参数通过 `agent-config.ini` 配置，在 `init` 消息中下发给 Python 侧：
 
-| 参数 | 配置键 | 默认值 | 范围 | 说明 |
-|------|--------|--------|------|------|
-| 上下文窗口 | `context_window` | 1048576 | 8192-2097152 | 模型上下文窗口大小（tokens） |
-| 压缩阈值 | `compaction_threshold` | 0.85 | 0.50-1.0 | 窗口占比达到此比例时触发压缩 |
-| 保留消息数 | `max_recent_messages` | 10 | 4-50 | 压缩后保留的最近消息条数 |
-| 工具结果截断阈值 | `tool_result_max_chars` | 50000 | 1000-500000 | 超此字符数的工具结果被截断 |
-| 工具结果预览长度 | `tool_result_preview_chars` | 2000 | 100-10000 | 截断后保留的前缀长度 |
+| 参数 | 配置键 | 默认值 | 说明 |
+|------|--------|--------|------|
+| 上下文窗口 | `context_window` | 262144 | 模型上下文窗口大小（tokens）。**按激活模型派生**（`setActiveModel` / `syncActiveConnection` 写入），非全局固定值；C++ 侧经 `QSettings` 原值读取，不做范围钳制 |
+| 最大输出 token | `max_output_tokens` | 8192 | 模型单轮最大输出 token（按激活模型派生，随 `init` / `reconfigure` 下发） |
+| 压缩阈值 | `compaction_threshold` | 0.85 | 窗口占比达到此比例时触发压缩 |
+| 保留消息数 | `max_recent_messages` | 10 | 压缩后保留的最近消息条数 |
+| 工具结果截断阈值 | `tool_result_max_chars` | 20000 | 超此字符数的工具结果被截断 |
+| 工具结果预览长度 | `tool_result_preview_chars` | 2000 | 截断后保留的前缀长度 |
+| 图最大迭代步数 | `recursion_limit` | 150 | LangGraph 图最大迭代步数（compact→agent→tools 循环），防死循环；`GraphRecursionError` 报为 `error_type="recursion_limit"` |
+| 预启动开关 | `auto_prestart` | true | 程序启动时是否自动预热 agent 子进程 |
+| 无活动看门狗 | `inactivity_timeout_sec` | 240 | 子进程无活动超时（秒），触发崩溃恢复 |
+| 最大重启次数 | `max_subprocess_restarts` | 3 | 崩溃恢复最大重启次数 |
+
+!!! note "上下文压缩不重置会话累计 token"
+    自 commit `44e11eb` 起，token 统计改为会话累计（`mCumulativeIn/Out/TotalTokens`），上下文压缩（`compact`）不再清零这些累计值。UI 展示的是会话级累计用量。
 
 ---
 

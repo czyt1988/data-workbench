@@ -17,10 +17,10 @@ graph TB
     subgraph L4["Layer 4: 接口层"]
         DAI["DAInterface<br/>抽象接口定义"]
         DAPS["DAPluginSupport<br/>插件框架"]
+        DAAG["DAAgent<br/>AI Agent 框架（无 GUI 依赖）"]
     end
     subgraph L3["Layer 3: 界面层"]
-        DAGui["DAGui<br/>GUI 整合层（最大模块）"]
-        DACW["DACommonWidgets<br/>通用 UI 组件"]
+        DAGui["DAGui<br/>GUI 整合层（最大模块，405 文件）"]
     end
     subgraph L2["Layer 2: 功能层"]
         DAD["DAData<br/>数据管理"]
@@ -39,14 +39,17 @@ graph TB
 
     APP --> DAI
     APP --> DAPS
+    APP --> DAAG
     DAI --> DAGui
     DAPS --> DAI
     DAPS --> DAPW
+    DAAG --> DAI
+    DAAG --> DAD
+    DAAG --> DAPBQ
     DAGui --> DAD
     DAGui --> DAF
     DAGui --> DAPW
     DAGui --> DAGV
-    DAGui --> DACW
     DAGui --> DAPBQ
     DAGui --> DAPS2
     DAGui --> DAPCW
@@ -57,7 +60,6 @@ graph TB
     DAD --> DAPS2
     DAF --> DAU
     DAGV --> DAU
-    DACW --> DAU
     DAPCW --> DAPBQ
     DAPS2 --> DAPBQ
     DAPBQ --> DAU
@@ -69,25 +71,27 @@ data-workbench 采用严格的 5 层架构，**上层可以依赖下层，下层
 ### Layer 5：应用层（APP）
 
 - **职责**：可执行程序入口，所有接口的具体实现
-- **包含模块**：APP（190 文件）
+- **包含模块**：APP（92 文件）
 - **核心类**：`DAAppCore`（单例核心）、`AppMainWindow`（主窗口）、`DAAppUI`（Ribbon/Docking 布局）、`DAAppController`（MVC 控制器）、`DAAppProject`（工程文件序列化）、`DAAppPluginManager`（插件生命周期）
 - **向下依赖**：DAPluginSupport、DAPyWorkFlow
 
 应用层是整个系统的入口点。`main.cpp` 负责初始化 QApplication、Python 解释器和命令行参数解析，然后创建 `AppMainWindow` 主窗口。`DAAppCore` 作为单例持有所有子系统的实例，通过 `DACoreInterface` 接口对外暴露。
 
-### Layer 4：接口层（DAInterface + DAPluginSupport）
+### Layer 4：接口层（DAInterface + DAPluginSupport + DAAgent）
 
-- **职责**：定义抽象接口，隔离应用层与功能层；提供插件框架
-- **包含模块**：DAInterface（28 文件）、DAPluginSupport（10 文件）
-- **核心类**：`DACoreInterface`、`DAUIInterface`、`DADataManagerInterface`、`DAProjectInterface`、`DAAbstractPlugin`、`DAPluginManager`、`DAAbstractNodePlugin`
-- **向下依赖**：DAGui（PUBLIC 依赖，传递所有 DAGui 依赖给消费者）
+- **职责**：定义抽象接口，隔离应用层与功能层；提供插件框架；提供 AI Agent 框架
+- **包含模块**：DAInterface（29 文件）、DAPluginSupport（9 文件）、DAAgent（17 文件）
+- **核心类**：`DACoreInterface`、`DAUIInterface`、`DADataManagerInterface`、`DAProjectInterface`、`DAAbstractPlugin`、`DAPluginManager`、`DAAbstractNodePlugin`、`DAAgentInterface`、`DAAgentModule`、`DAAgentBridge`、`DAAgentSessionStore`
+- **向下依赖**：DAInterface → DAGui（PUBLIC 依赖，传递所有 DAGui 依赖给消费者）；DAAgent → DAInterface/DAData/DAPyBindQt/DAPyScripts（**不依赖 GUI**，与 DAGui 为兄弟模块）
 
 接口层的关键设计是 **DAInterface 以 PUBLIC 方式依赖 DAGui**，这意味着所有消费 DAInterface 的模块（如插件）都自动获得了 DAGui 及其下层的全部能力。这是有意为之的设计——插件需要访问完整的 UI 和数据能力。
 
-### Layer 3：界面层（DAGui + DACommonWidgets）
+DAAgent 是 L4 中的纯 Agent 框架库，暴露 `DAAgentInterface` 契约（工具注册 / 系统提示词 / 生命周期信号 / LLM 配置读写 / 会话管理）。它**刻意不依赖任何 GUI 模块**：聊天 UI（`DAAgentDockWidget`）位于 DAGui/Agent，16 个内置工具位于 `plugins/DAAgentTools/`，LLM 设置页位于 `src/APP/SettingPages/`，由 APP 的 `DAAppController` 负责信号链接线。详见 [Agent 开发指南](./agent/index.md)。
+
+### Layer 3：界面层（DAGui）
 
 - **职责**：GUI 整合、用户交互、Model/View 模型
-- **包含模块**：DAGui（334 文件，最大模块）、DACommonWidgets（82 文件）
+- **包含模块**：DAGui（405 文件，最大模块）
 - **核心子目录**：`ChartSetting/`（图表属性面板）、`NodeSetting/`（节点设置面板，基于 DAFormSpec 统一表单）、`Commands/`（QUndoCommand）、`Dialog/`、`Models/`
 - **向下依赖**：所有 L1/L2 模块 + SARibbon/ADS/qwt/DALiteCtk/quazip
 
@@ -118,20 +122,23 @@ DAGui 是项目中最庞大的模块，承担了工作流 UI、图表设置、�
 | 模块 | 层 | 核心职责 | 关键类 | 文件数 |
 |------|-----|----------|--------|:------:|
 | DAShared | L1 | 纯头文件模板库 | 宏定义、模板 | 19 |
-| DAUtils | L1 | 通用工具类 | XML序列化、CSV读写、目录管理 | 40 |
-| DAMessageHandler | L1 | 日志基础设施 | DALogger、spdlog | 9 |
-| DAPyBindQt | L1 | Python↔Qt 绑定 | 类型转换器、GIL守卫 | 28 |
-| DAPyScripts | L2 | Python 脚本包装 | I/O、DataFrame 操作 | 12 |
-| DAPyCommonWidgets | L2 | Python 通用控件 | 列选择器、dtype选择器 | 13 |
-| DAPyWorkFlow | L2 | 工作流引擎 | DAPyNode、DAPyWorkFlowManager | 50 |
-| DAData | L2 | 数据管理 | DAAbstractData、DADataManager | 22 |
-| DAGraphicsView | L2 | 图形视图框架 | DAGraphicsView、DAGraphicsScene | 54 |
-| DAFigure | L2 | 图表容器 | QwtFigure、DAChartWidget | 103 |
-| DACommonWidgets | L3 | 通用 UI 组件 | 属性面板、颜色选择器 | 82 |
-| DAGui | L3 | GUI 整合层 | 工作流UI、图表设置、Model/View | 334 |
-| DAInterface | L4 | 抽象接口定义 | DACoreInterface、DAUIInterface | 28 |
-| DAPluginSupport | L4 | 插件框架 | DAAbstractPlugin、DAPluginManager | 10 |
-| APP | L5 | 可执行程序 | DAAppCore、AppMainWindow | 190 |
+| DAUtils | L1 | 通用工具类 | XML序列化、CSV读写、目录管理 | 48 |
+| DAMessageHandler | L1 | 日志基础设施 | DALogger、spdlog | 12 |
+| DAPyBindQt | L1 | Python↔Qt 绑定 | 类型转换器、GIL守卫 | 30 |
+| DAPyScripts | L2 | Python 脚本包装 | I/O、DataFrame 操作 | 13 |
+| DAPyCommonWidgets | L2 | Python 通用控件 | 列选择器、dtype选择器 | 5 |
+| DAPyWorkFlow | L2 | 工作流引擎 | DAPyNode、DAPyWorkFlowManager | 52 |
+| DAData | L2 | 数据管理 | DAAbstractData、DADataManager | 21 |
+| DAGraphicsView | L2 | 图形视图框架 | DAGraphicsView、DAGraphicsScene | 51 |
+| DAFigure | L2 | 图表容器 | QwtFigure、DAChartWidget | 85 |
+| DAGui | L3 | GUI 整合层 | 工作流UI、图表设置、Model/View（含已并入的 DACommonWidgets 控件） | 405 |
+| DAInterface | L4 | 抽象接口定义 | DACoreInterface、DAUIInterface | 29 |
+| DAPluginSupport | L4 | 插件框架 | DAAbstractPlugin、DAPluginManager | 9 |
+| DAAgent | L4 | AI Agent 框架（无 GUI 依赖） | DAAgentInterface、DAAgentModule、DAAgentBridge、DAAgentSessionStore | 17 |
+| APP | L5 | 可执行程序 | DAAppCore、AppMainWindow | 92 |
+
+!!! note "文件计数口径"
+    “文件数”统计各模块目录下的 `.h` / `.hpp` / `.cpp` / `.ui` 源文件数。历史 `DACommonWidgets` 已并入 `DAGui`，不再作为独立模块列出。
 
 ### 模块依赖关系图
 
@@ -143,10 +150,10 @@ graph LR
     subgraph L4["接口层"]
         DAI[DAInterface]
         DAPS[DAPluginSupport]
+        DAAG[DAAgent]
     end
     subgraph L3["界面层"]
         DAGui
-        DACW[DACommonWidgets]
     end
     subgraph L2["功能层"]
         DAD[DAData]
@@ -165,14 +172,17 @@ graph LR
 
     APP --> DAPS
     APP --> DAPW
+    APP --> DAAG
     DAPS --> DAI
     DAPS --> DAPW
     DAI --> DAGui
+    DAAG --> DAI
+    DAAG --> DAD
+    DAAG --> DAPBQ
     DAGui --> DAD
     DAGui --> DAF
     DAGui --> DAPW
     DAGui --> DAGV
-    DAGui --> DACW
     DAGui --> DAPBQ
     DAGui --> DAPS2
     DAGui --> DAPCW
@@ -184,7 +194,6 @@ graph LR
     DAD --> DAPS2
     DAF --> DAU
     DAGV --> DAU
-    DACW --> DAU
     DAPCW --> DAPBQ
     DAPS2 --> DAPBQ
     DAPBQ --> DAU
@@ -446,7 +455,10 @@ data-workbench/
 │   ├── DAUtils/CMakeLists.txt
 │   └── ...
 ├── plugins/
-│   └── DataAnalysis/CMakeLists.txt # 插件构建
+│   ├── DataAnalysis/CMakeLists.txt   # 数据分析插件构建
+│   ├── DASystemNodes/CMakeLists.txt # 系统节点插件构建（内置工作流节点）
+│   ├── DAAgentTools/CMakeLists.txt  # Agent 工具插件构建（16 个内置工具）
+│   └── plugin-template/             # 插件模板生成工具
 └── scripts/
     └── build.ps1                   # Windows 构建脚本
 ```
@@ -457,7 +469,10 @@ data-workbench/
 |------|--------|-----------|------|
 | `DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` | `ON` | 顶层 install（复制 Python DLL 到 bin/） | Windows 下自动搜索 Python 环境并复制 DLL |
 | `DA_ENABLE_AUTO_TRANSLATE` | `ON` | i18n | 自动调用 Linguist 编译翻译文件（.ts → .qm） |
+| `DA_AUTO_INSTALL_PREFIX` | `ON` | 顶层 install 路径 | 自动把构建结果安装到本地目录 |
+| `DA_AUTO_GENERATE_CONFIG_INFO` | `OFF` | `src/DAConfigs.h` 生成 | 自动生成 DAConfig.h，仅库开发者需 ON，库使用者默认 OFF |
 | `DA_BUILD_PLUGINS` | `ON` | plugins/ 目录 | 是否构建插件 |
+| `DA_ENABLE_TESTING` | `OFF` | tst/ 测试 | 是否启用测试 |
 
 完整的构建选项说明见 [构建选项参考](../build/build-options.md)。
 

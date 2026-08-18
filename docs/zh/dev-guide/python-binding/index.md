@@ -84,81 +84,109 @@ Scripts -->|操作| IF
 
 ## CMake 配置详解
 
-以下配置展示了 Python 集成的基础 CMake 设置，包括 Python 开发库查找和 pybind11 配置：
+DAWorkBench 采用 **嵌入式（embedded）** 绑定方案：绑定代码通过 `PYBIND11_EMBEDDED_MODULE` 宏以进程内模块形式注册到解释器，而非用 `pybind11_add_module` 编译成独立的 `.pyd`。因此 CMake 侧不产生单独的绑定目标，而是把绑定源文件并入对应库的源列表，再通过项目封装的导入宏链接 Python 与 pybind11。
 
-=== "基础配置"
+=== "Python 与 pybind11 导入宏"
 
-    ```cmake
-    # CMakeLists.txt - Python 集成基础配置
-
-    # 查找 Python 开发库（要求 3.8+）
-    find_package(Python3 3.8 COMPONENTS Interpreter Development REQUIRED)
-
-    # 查找 pybind11
-    find_package(pybind11 REQUIRED)
-
-    # 设置 Python 模块输出目录
-    set(PYTHON_MODULE_OUTPUT_DIR "${CMAKE_BINARY_DIR}/python_modules")
-    ```
-
-上述基础配置的关键点：
-
-- 使用 `find_package` 查找 Python 3.8+ 开发库
-- 使用 `find_package` 查找 pybind11 绑定库
-- 设置 Python 模块输出目录用于存放编译后的绑定模块
-
-以下配置展示了如何将 Python 解释器嵌入到主程序中：
-
-=== "嵌入式解释器配置"
+    项目在 `cmake/daworkbench_3rdparty.cmake` 中封装了两个导入宏，各库（如 `DAInterface`）通过它们完成链接：
 
     ```cmake
-    # 嵌入 Python 解释器到主程序
-    target_link_libraries(DAWorkBench
-        PRIVATE
-            Python3::Python          # Python 库
-            Python3::Module          # Python 模块支持
-    )
+    # cmake/daworkbench_3rdparty.cmake:183-207  —— damacro_import_Python
+    macro(damacro_import_Python __target_name)
+        # 未固定版本号，按系统环境解析（可通过 Python3_ROOT_DIR 指定非系统 Python）
+        find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+        if(${Python3_FOUND})
+            message(STATUS "  |-find python")
+            # ... 打印 Python3_VERSION / INCLUDE_DIRS / LIBRARIES 等诊断信息
+        endif()
+        target_link_libraries(${__target_name} PRIVATE ${Python3_LIBRARIES})
+        target_include_directories(${__target_name} PRIVATE ${Python3_INCLUDE_DIRS})
+    endmacro()
 
-    target_include_directories(DAWorkBench
-        PRIVATE
-            ${Python3_INCLUDE_DIRS}  # Python 头文件
-    )
+    # cmake/daworkbench_3rdparty.cmake:209-238  —— damacro_import_pybind11
+    macro(damacro_import_pybind11 __target_name)
+        # pybind11 安装在 share/cmake 而非 lib/cmake，先按默认查找，找不到再回退到安装目录
+        find_package(pybind11)
+        if(pybind11_FOUND)
+            message(STATUS "  |-finded tsl-ordered-map")
+        else()
+            if(DEFINED DA_INSTALL_LIB_SHARE_PATH)
+                set(_lib_dir ${DA_INSTALL_LIB_SHARE_PATH}/pybind11)
+                find_package(pybind11 PATHS ${_lib_dir})  # cn:回退到本地安装目录查找
+            endif()
+        endif()
+        if(pybind11_FOUND)
+            target_link_libraries(${__target_name} PUBLIC pybind11::headers)
+        endif()
+    endmacro()
     ```
 
-上述嵌入式配置的关键点：
+    上述两个宏的关键点：
 
-- 链接 `Python3::Python` 和 `Python3::Module` 获取 Python 库支持
-- 包含 `Python3_INCLUDE_DIRS` 获取 Python 头文件
+    - **不固定 Python 版本**：`find_package(Python3 COMPONENTS Interpreter Development REQUIRED)` 不带 `3.8` 版本约束，由系统环境解析；如需指向非系统 Python，可通过 `Python3_ROOT_DIR` 改变查找路径。
+    - **不直接链接 `Python3::Python` / `Python3::Module`**：链接统一由 `damacro_import_Python` 完成（链接 `${Python3_LIBRARIES}`、包含 `${Python3_INCLUDE_DIRS}`）。
+    - **pybind11 仅链接 `pybind11::headers`**：因为绑定走 `PYBIND11_EMBEDDED_MODULE`，不需要 `pybind11::module`，也不调用 `pybind11_add_module`。
 
-以下配置展示了如何创建 Python 绑定模块：
+=== "嵌入绑定源文件（以 DAInterface 为例）"
 
-=== "Python 模块绑定配置"
+    `src/DAInterface/CMakeLists.txt` 把绑定源文件并入库源列表，再用导入宏链接依赖：
 
     ```cmake
-    # 创建 Python 绑定模块
-    pybind11_add_module(da_interface
-        ${CMAKE_SOURCE_DIR}/src/DAInterface/DAInterfacePythonBinding.cpp
+    # src/DAInterface/CMakeLists.txt:47-54  —— 绑定源文件并入 DAInterface 库
+    list(APPEND DA_LIB_HEADER_FILES
+        DAInterfacePythonBinding.h
+        DAQwtPyPlotPythonBinding.h
+    )
+    list(APPEND DA_LIB_SOURCE_FILES
+        DAInterfacePythonBinding.cpp       # cn:内含 PYBIND11_EMBEDDED_MODULE(da_interface, m)
+        DAQwtPyPlotPythonBinding.cpp       # cn:内含 PYBIND11_EMBEDDED_MODULE(da_pyplot, m)
     )
 
-    # 链接依赖库
-    target_link_libraries(da_interface
-        PRIVATE
-            DAInterface              # 接口库
-            DAPyBindQt               # Qt 绑定库
-            pybind11::module         # pybind11 模块
-    )
+    add_library(${DA_LIB_NAME} SHARED
+                ${DA_LIB_HEADER_FILES}
+                ${DA_LIB_SOURCE_FILES}
+                ${DA_GLOBAL_HEADER})
 
-    # 设置模块输出位置
-    set_target_properties(da_interface PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY "${PYTHON_MODULE_OUTPUT_DIR}"
-    )
+    # src/DAInterface/CMakeLists.txt:88-91  —— 链接 Python 与 pybind11
+    damacro_import_Python(${DA_LIB_NAME})      # cn:链接 ${Python3_LIBRARIES}
+    damacro_import_pybind11(${DA_LIB_NAME})    # cn:链接 pybind11::headers
     ```
 
-上述模块绑定配置的关键点：
+    上述嵌入配置的关键点：
 
-- 使用 `pybind11_add_module` 创建 Python 绑定模块
-- 链接 `DAInterface` 和 `DAPyBindQt` 获取接口和类型转换支持
-- 设置输出目录确保 Python 能正确导入模块
+    - 绑定源文件以 `target_sources` / 源列表方式并入库，**不**用 `pybind11_add_module` 生成独立 `.pyd`。
+    - `DAInterfacePythonBinding.cpp` 内通过 `PYBIND11_EMBEDDED_MODULE(da_interface, m)` 在进程内注册模块，Python 端 `import da_interface` 即由解释器从已注册的内置模块加载。
+    - 项目中所有绑定库（DAApp、DAInterface、DAData、DAFigure、DAPyWorkFlow 等）均沿用此模式，各自在 `CMakeLists.txt` 中调用 `damacro_import_Python` + `damacro_import_pybind11`。
+
+=== "自动部署 Python 运行时（DA_ENABLE_AUTO_INSTALL_PYTHON_ENV）"
+
+    Windows 下若 Python 未加入系统环境变量，可开启顶层选项让 CMake 自动把所需 DLL 拷贝到 bin 目录：
+
+    ```cmake
+    # CMakeLists.txt:44-46  —— 顶层选项定义
+    option(DA_ENABLE_AUTO_INSTALL_PYTHON_ENV
+        "This parameter allows cmake to automatically search for the Python environment
+         and copy the necessary DLLs from the Python environment to the bin directory
+         without manual deployment. Recommended for Windows users ..."
+        ON)
+
+    # CMakeLists.txt:257-271  —— 选项生效逻辑
+    if(DA_ENABLE_AUTO_INSTALL_PYTHON_ENV)
+        # 同样不固定版本号
+        find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+        if(${Python3_FOUND})
+            if(WIN32)
+                set(DA_PYTHON_DLL_PATH
+                    ${Python3_RUNTIME_LIBRARY_DIRS}/python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.dll)
+                # 把 dll 复制到 bin 中否则无法运行
+                file(COPY ${DA_PYTHON_DLL_PATH} DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
+                install(FILES ${DA_PYTHON_DLL_PATH} DESTINATION ${CMAKE_INSTALL_BINDIR})
+            endif()
+        endif()
+    endif()
+    ```
+
+    该选项默认 `ON`，会从 `Python3_RUNTIME_LIBRARY_DIRS` 拷贝 `python3X.dll` 到构建与安装的 bin 目录，免去 Windows 下手动部署 Python DLL 的步骤。
 
 ## 目录结构
 
@@ -175,7 +203,8 @@ data-workbench/
 │   ├── DAInterface/             # 接口模块
 │   │   └── DAInterfacePythonBinding.cpp  # 接口绑定实现
 │   └── APP/                     # 应用主程序
-│       └── DAAppCore.cpp        # Python 环境初始化
+│       ├── main.cpp            # Python 环境初始化（initializePythonInterpreter）
+│       └── DAAppCore.cpp       # 仅持有 mIsPythonInterpreterInitialized 标志
 └── plugins/
     └── DataAnalysis/            # 数据分析插件
         └── PyScripts/
@@ -189,10 +218,10 @@ data-workbench/
 
 | 模块 | 说明 |
 |------|------|
-| `DAPyBindQt` | Python 与 Qt 绑定的核心模块 |
+| `DAPyBindQt` | Python 与 Qt 绑定的核心模块，含 `DAPyDataFrame`（位于 `src/DAPyBindQt/pandas/DAPyDataFrame.h`）、`DAPythonSignalHandler`、`DAPyInterpreter` 等 |
 | `DAPyScripts` | Python 脚本包装模块 |
-| `DAData` | 数据处理模块，包含 `DAPyDataFrame` 等 |
-| `DAInterface` | 接口模块，定义核心接口 |
+| `DAData` | 数据处理模块，`DAData` 类型绑定在此 |
+| `DAInterface` | 接口模块，定义核心接口并注册 `da_interface` 绑定 |
 
 ## 参考资料
 

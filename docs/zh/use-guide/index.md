@@ -23,18 +23,19 @@ DAWorkBench（数据工作台）是一个基于工作流驱动的ETL数据分析
 
 ## 系统要求
 
-- **操作系统**：Windows
+- **操作系统**：Windows（主要支持平台）；Linux / WSL 亦可构建运行（见 [快速开始](../quick-start.md) 的 Linux 构建说明）
 - **Qt 版本**：Qt 5.14+ 或 Qt 6.x
-- **Python**：需要 Python 3.8+ 环境（程序会自动部署）
+- **Python**：Python 3.8+（推荐 3.11），程序会自动部署嵌入式 Python 环境
 
 ## 界面概览
 
 DAWorkBench 的主界面由以下几个区域组成，采用可停靠面板设计，用户可自由调整布局：
 
-- **Ribbon 菜单栏**：位于窗口顶部，提供所有操作按钮，按功能分组（基于 SARibbon 库）
+- **Ribbon 菜单栏**：位于窗口顶部，提供所有操作按钮，按功能分组（基于 SARibbon 库），其中包含独立的 **AI 分析** 标签页（提示词库 gallery + agent 管理 / 执行）
 - **工作流编辑区**：位于中央，用于编辑工作流的有向图
 - **数据操作区**：用于查看和操作 DataFrame 数据
 - **图表编辑区**：用于创建和编辑图表
+- **AI 分析 Dock**：Agent 对话窗口，含多供应商 LLM 模型下拉、网页化输入区与状态栏，可与工作区数据 / 图表交互（由 `DAAgentInterface` 提供显隐、消息收发、停止等能力）
 - **Dock 停靠面板**：位于四周，包含节点列表、属性面板、日志输出等辅助窗口
 
 各区域均为可停靠面板（基于 Qt-Advanced-Docking-System），可以自由拖拽调整布局。
@@ -83,6 +84,10 @@ DAWorkBench 使用 `.dapro` 格式的工程文件，工程文件本质上是一�
 3. 通过 Ribbon 菜单选择图表类型
 4. 在图表编辑区调整图表样式和布局
 
+### AI 分析（Agent）
+
+DAWorkBench 内置 AI 分析子系统，可在 Ribbon 的 **AI 分析** 标签页中通过提示词库 gallery 选择或管理 agent，对话窗口（AI 分析 Dock）支持多供应商 LLM 模型切换。Agent 经工具调用直接操作工作区数据与图表（内置 19 个工具，详见 [插件使用](./plugin-usage.md)），工作流与对话可协同使用。
+
 ## 命令行参数
 
 程序支持以下命令行参数，用于控制启动行为和自动化操作。完整参数列表见[程序命令参数](./command-line-arguments.md)。
@@ -93,3 +98,4 @@ DAWorkBench 使用 `.dapro` 格式的工程文件，工程文件本质上是一�
 | `--version` | 显示版本号 |
 | `[project]` | 打开工程文件 |
 | `--import-data <path>` | 导入数据文件 |
+| `--no-splash` | 禁用启动画面（调试时避免遮挡 IDE；受配置项 `show-splash` 控制） |

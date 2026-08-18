@@ -7,7 +7,7 @@
 | [总览与环境搭建](./python-binding/index.md) | 架构总览、CMake 配置、目录结构、相关模块与参考资料 |
 | [C++ 调用 Python](./python-binding/cpp-calling-python.md) | Python 解释器初始化、GIL 管理、脚本调用示例 |
 | [Python 绑定开发](./python-binding/python-binding-development.md) | 接口绑定架构与实现、所有权策略、跨线程通信、Qt 类型转换器、绑定开发实操流程、模块绑定路线图 |
-| [pybind11 ↔ Qt 类型转换器](./dapybind11-qt-caster.md) | `DAPybind11QtCaster.hpp` 完整使用指南 — 类型映射表、自动转换机制、`DA::PY` 辅助函数、`safe_pyobject`、numpy/pandas 集成 |
+| [pybind11 ↔ Qt 类型转换器](./dapybind11-qt-caster.md) | `DAPybind11QtCaster.hpp` 完整使用指南 — 类型映射表、自动转换机制、`DA::PY` 辅助函数、numpy/pandas 集成 |
 | [故障排除与最佳实践](./python-binding/troubleshooting-and-best-practices.md) | 问题诊断流程、常见错误与调试技巧、设计原则与检查清单 |
 | [Python 脚本开发实战](./python-binding/python-script-development.md) | 四种交互模式、标准脚本编写流程、getConfigValues 对话框、撤销/重做、跨线程操作、Thread Status Manager |
 | [脚本的国际化](./python-i18n.md) | Python 脚本基于 GNU gettext 的多语言支持：_() 标记、xgettext、msginit、msgfmt 完整流程 |
@@ -33,11 +33,26 @@ src/PyScripts/DAWorkbench/
 │   ├── dataframe.py                # DataFrame 操作
 │   ├── data_processing.py          # 数据处理/信号处理
 │   └── app_wrapper.py              # 应用包装器
+├── DAStatistics/             # 统计计算子包
+│   ├── __init__.py
+│   ├── _utils.py                   # 统计内部工具
+│   ├── boxplot_stats.py            # 箱线图统计
+│   ├── categorical.py             # 分类统计
+│   ├── distribution.py            # 分布拟合/检验
+│   ├── kde.py                     # 核密度估计
+│   ├── matrix.py                  # 相关/协方差矩阵
+│   └── regression.py             # 回归分析
 └── DAWorkFlowPy/              # 工作流 Python 核心
     ├── __init__.py
+    ├── workflow.py            # 工作流编排
     ├── executor.py            # 执行引擎
-    ├── node_def.py            # 节点定义装饰器（@NodeDef）
+    ├── connection.py          # 连接管理
     ├── signal_manager.py      # 信号管理器
+    ├── serializer.py          # 序列化
+    ├── syntax.py              # 语法校验
+    ├── node_def.py            # 节点定义装饰器（@NodeDef）
+    ├── node_factory.py        # 节点工厂
+    ├── node_registry.py       # 节点注册表
     ├── _debug.py              # 调试工具
     └── nodes/                 # 内置节点子包
         └── __init__.py

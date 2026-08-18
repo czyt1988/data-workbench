@@ -29,19 +29,23 @@
 ```cmake
 # 版本定义 - 项目版本号设置
 set(DA_VERSION_MAJOR 0)
-set(DA_VERSION_MINOR 0)
-set(DA_VERSION_PATCH 3)
+set(DA_VERSION_MINOR 1)
+set(DA_VERSION_PATCH 1)
 
 # 编译选项 - 可自定义的构建开关
 # Python 为强制依赖，始终参与构建，无开关
-option(DA_BUILD_PLUGINS "Build plugins" ON)              # 插件构建开关
-option(DA_AUTO_INSTALL_PREFIX "Auto install" ON)         # 自动安装路径
+option(DA_ENABLE_AUTO_INSTALL_PYTHON_ENV "...自动部署 Python 环境" ON)  # 自动拷贝 Python DLL（Windows 推荐）
+option(DA_ENABLE_AUTO_TRANSLATE "...自动调用 Linguist 翻译 ts" ON)        # 翻译文件自动处理
+option(DA_AUTO_INSTALL_PREFIX "...自动安装到本地目录" ON)               # 自动安装路径
+option(DA_AUTO_GENERATE_CONFIG_INFO "...自动生成 DAConfig.h" OFF)       # 仅库开发者需 ON，库使用者默认 OFF
+option(DA_BUILD_PLUGINS "...构建 plugin" ON)                            # 插件构建开关
+option(DA_ENABLE_TESTING "...运行测试" OFF)                             # 测试开关
 
 # Qt 版本 - 最低 Qt 版本要求
 set(DA_MIN_QT_VERSION 5.14)
 ```
 
-上述配置项决定了项目的基本构建行为，可根据需求调整各选项。
+上述配置项决定了项目的基本构建行为，可根据需求调整各选项。默认值汇总：`DA_ENABLE_AUTO_INSTALL_PYTHON_ENV=ON`、`DA_ENABLE_AUTO_TRANSLATE=ON`、`DA_AUTO_INSTALL_PREFIX=ON`、`DA_AUTO_GENERATE_CONFIG_INFO=OFF`、`DA_BUILD_PLUGINS=ON`、`DA_ENABLE_TESTING=OFF`。
 
 **构建流程**：
 
@@ -127,8 +131,9 @@ markdown_extensions:
 #define DA_VERSION_MAJOR @DA_VERSION_MAJOR@
 #define DA_VERSION_MINOR @DA_VERSION_MINOR@
 #define DA_VERSION_PATCH @DA_VERSION_PATCH@
-#define DA_COMPILE_DATETIME "@DA_COMPILE_DATETIME@"
-#define DA_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@"
+#cmakedefine DA_VERSION "@DA_VERSION@"
+#cmakedefine DA_COMPILE_DATETIME "@DA_COMPILE_DATETIME@"
+#cmakedefine DA_PROJECT_NAME "@DA_PROJECT_NAME@"
 ```
 
 **生成**：CMake 配置时生成 `DAConfigs.h`。
@@ -137,28 +142,67 @@ markdown_extensions:
 
 ### DAGlobals.h
 
-**用途**：全局定义和宏
+**用途**：全局定义和宏（PIMPL 模式宏、Qt5/6 兼容宏）。
+
+!!! warning "版本宏不在 DAGlobals.h"
+    `DAGlobals.h` **不**定义任何版本字符串（无 `DA_VERSION_STRING`）。项目版本宏（`DA_VERSION_MAJOR/MINOR/PATCH`、字符串形式的 `DA_VERSION`，当前 `"0.1.1"`）统一定义在下方**编译生成**的 `DAConfigs.h` 中。`DAGlobals.h` 在文件开头 `#include "DAConfigs.h"`，因此版本信息经此头文件传递可用。
 
 **关键内容**：
 
 ```cpp
-// 版本信息
-#define DA_VERSION_STRING "0.0.3"
+// PIMPL 前置声明与 d_ptr/q_ptr 管理
+#define DA_IMPL_FORWARD_DECL(ClassName) class ClassName##Private;
+#define DA_DECLARE_PRIVATE(classname) ...
+#define DA_DECLARE_PUBLIC(classname) ...
+#define DA_PIMPL_CONSTRUCT d_ptr(std::make_unique< PrivateData >(this))
 
-// 日志便捷宏已移至 DALogCategory.h（daInfo/daDebug/daWarning/daCritical 流式宏）
-// DAGlobals.h 不再定义 DA_LOG_* 旧宏
-
-// 常用宏
-#define DA_SAFE_DELETE(ptr) delete ptr; ptr = nullptr
+// Qt5 / Qt6 事件坐标兼容宏
+#define Qt5Qt6Compat_QXXEvent_Pos(valuePtr)   /* Qt5: pos() / Qt6: position().toPoint() */
+#define Qt5Qt6Compat_QXXEvent_x(valuePtr)     /* Qt5: pos().x() / Qt6: position().x() */
+#define Qt5Qt6Compat_QXXEvent_y(valuePtr)     /* Qt5: pos().y() / Qt6: position().y() */
 ```
+
+日志便捷宏（`daInfo`/`daDebug`/`daWarning`/`daCritical` 流式宏）位于 `DAMessageHandler/DALogCategory.h`，不在 `DAGlobals.h` 中。
 
 ---
 
 ### DAConfigs.h
 
-**用途**：编译生成的配置头文件
+**用途**：由 CMake 根据 `DAConfigs.h.in` 模板**无条件生成**的配置头文件，承载项目版本与编译时间信息。
 
-**注意**：不要手动编辑，由 CMake 自动生成。
+```cpp
+#define DA_VERSION_MAJOR 0
+#define DA_VERSION_MINOR 1
+#define DA_VERSION_PATCH 1
+#define DA_VERSION "0.1.1"          // 字符串形式版本号
+#define DA_COMPILE_DATETIME "..."   // 编译日期时间
+#define DA_PROJECT_NAME "DAWorkbench"
+```
+
+!!! note "不要手动编辑"
+    `src/DAConfigs.h` 在每次 CMake 配置时由 `configure_file()` 重新生成，任何手工改动都会被覆盖；如需调整版本号，请修改根 `CMakeLists.txt` 中的 `DA_VERSION_MAJOR/MINOR/PATCH`。
+
+---
+
+### src/DAAgent/
+
+**用途**：L4 接口层 Agent 框架模块（无 GUI 依赖）。
+
+`src/DAAgent/` 是平台内置的 Agent 框架源码目录，承载多供应商 LLM 调用、提示词库、工具注册与持久化会话等能力。主要类包括 `DAAgentInterface`（对外接口契约）、`DAAgentBridge`、`DAAgentModule`、`DAAgentManager`、`DAAgentPrompt`、`DAAgentSessionStore`、`DAAgentToolBase`。Agent 工具的具体实现以插件形式存在于 `plugins/DAAgentTools/`。
+
+!!! info "更多细节"
+    Agent 框架的架构、生命周期与扩展方式见 [:octicons-copilot-24: Agent 开发指南](./dev-guide/agent/index.md)。
+
+---
+
+### 运行时配置文件
+
+下列 INI 文件位于用户配置目录（`DA::DADir::getConfigPath()` 返回路径），由 `src/APP/main.cpp` 的 `migrateSettingsFromRegistry()` 在首次启动时从注册表迁移生成：
+
+| 文件 | 说明 |
+|------|------|
+| `agent-config.ini` | Agent LLM 配置，`[agent]` 节包含 `llm_base_url`、`llm_model`、`llm_api_key`（DPAPI 加密的 QByteArray）、`ready_timeout_sec`、`stop_timeout_sec` |
+| `recent-files.ini` | 最近打开的工程文件列表（`RecentFiles` 键） |
 
 ---
 
@@ -216,6 +260,23 @@ macro(damacro_import_qwt target install_dir)
 # 安装插件
 macro(damacro_plugin_install)
 ```
+
+---
+
+### create_win32_resource_version.cmake
+
+**用途**：为 Windows（MSVC）目标生成包含版本信息与图标的资源文件（`.rc`）。
+
+**关键函数**：
+
+```cmake
+# 生成 ${TARGET}_res.rc，写入 FILEVERSION/PRODUCTVERSION 等
+function(create_win32_resource_version
+         TARGET VERSION [COMPANY_NAME] [COPYRIGHT]
+         [DESCRIPTION] [FILE_EXTENSION] [ICONS])
+```
+
+仅在 `MSVC` 下生效，用于让最终生成的 `DAWorkbench.exe` 在文件属性中显示版本号、公司、版权与图标。
 
 ---
 

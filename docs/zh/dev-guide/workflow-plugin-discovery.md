@@ -635,7 +635,8 @@ DAAppCore 构造函数
 ### 插件示例
 
 - `plugins/DataAnalysis/` — 完整的 C++ DLL 插件示例（含界面、节点工厂、Python 脚本）
-- `plugins/CrewAIAdapter/` — Python-only 插件（仅含 PyScripts，通过 entry_points 发现）
+- `plugins/DASystemNodes/` — Python-first 插件（仅含 PyScripts，通过 entry_points 发现，提供流程控制/数据展示节点）
+- `plugins/DAAgentTools/` — Agent 工具插件（向 `DAAgentInterface` 注册 19 个内置 LLM 工具）
 - `plugins/plugin-template/` — 插件脚手架生成工具
 
 ### 相关文档

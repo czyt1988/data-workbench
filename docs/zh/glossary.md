@@ -105,6 +105,12 @@
 
 **用途**：显示工具面板、数据列表、属性编辑器等。
 
+### 嵌套停靠区 (Dock Nesting)
+
+**定义**：基于 Qt-Advanced-Docking-System（ADS）的嵌套停靠能力，允许在一个 Dock 区域内部再嵌套 Tab 形式的子 Dock。
+
+**用途**：图表操作区（`DAChartOperateWidget`）等从 `QTabWidget` 迁移到 ADS 嵌套停靠区后，可与其它 Dock 窗口统一编组、浮动、记忆布局状态。
+
 ### Ribbon
 
 **定义**：Office 风格的工具栏，包含选项卡和面板。
@@ -156,9 +162,11 @@
 
 ### 数据包 (Data Package)
 
-**定义**：DAWorkBench 的数据包装类，用于在工作流中传递数据。
+**定义**：DAWorkBench 中数据对象的统一包装，用于在工作流节点间传递数据。
 
-**内容**：可包含 DataFrame、自定义数据等。
+**实现**：公开包装类为 `DAData`（见 `src/DAData/DAData.h`），它封装 `DAAbstractData` 智能指针，支持隐式共享。`DataPackage` 是 `DAAbstractData::DataType` 中的一个数据类型分类（通过 `DAData::isDataPackage()` 判断），并非独立的类——历史上文档误写的 `DADataPackage` 类并不存在。
+
+**内容**：可包含 DataFrame、Series、自定义 Python 对象等。
 
 ### 序列化 (Serialization)
 
@@ -171,6 +179,46 @@
 **定义**：数据的长期存储，保存到文件系统。
 
 **形式**：配置文件、数据文件、缓存文件等。
+
+## AI / Agent 相关
+
+### Agent
+
+**定义**：DAWorkBench 的 AI 分析助手，由 DAAgent 模块（`src/DAAgent/`）承载，通过独立 Python 子进程（LangGraph）驱动 LLM 推理与工具调用循环。
+
+**访问**：插件通过 `DACoreInterface::getAgentInterface()` 获取 `DAAgentInterface`，注册工具、配置 LLM、管理会话与提示词库。
+
+### LLM 供应商 (LLM Provider)
+
+**定义**：一个 LLM 服务接入配置，含 `name`/`base_url`/`api_key`/`models`。支持多供应商多模型，激活供应商 + 激活模型决定实际下发给子进程的参数。
+
+**管理**：通过 `DAAgentInterface::getProviders()` / `setProviders()` 读写，运行中可热切换模型而不丢会话状态。
+
+### 提示词库 (Prompt Library)
+
+**定义**：内置的 Agent 提示词集合，以 `<daAgent>/<name>.md` 形式存储，通过 Ribbon「AI 分析」标签页的 gallery 管理与一键执行。
+
+**接口**：`registerBuiltinAgent()` 注入内置提示词，`runAgent(title)` 按标题执行，`agentPromptOps()` 提供 CRUD 回调。
+
+### 工具调用 (Tool Calling)
+
+**定义**：Agent 在推理过程中调用宿主程序注册的工具（如查询数据、生成图表、读写文件）来完成数据分析任务。
+
+**实现**：插件实现 `DAAbstractAgentTool` 并通过 `DAAgentInterface::registerTool()` 注册；内置 `DAAgentTools` 插件提供 19 个工具。
+
+### 会话 (Session)
+
+**定义**：Agent 的一次对话上下文，包含历史消息与 token 用量，随工程文件（`.dapro`）持久化为 `agent_sessions/<id>.jsonl`。
+
+**接口**：`createSession()` / `switchSession()` / `deleteSession()` / `listSessions()` 等。
+
+## 节点开发相关
+
+### @NodeDef
+
+**定义**：Python 侧的节点声明装饰器，用于自动发现并注册节点类型，生成节点元数据（名称、分类、连接点、图标等）。
+
+**用途**：Python-first 架构下，节点业务逻辑在 Python 实现，`@NodeDef` 装饰的类由 `DAPyNodeFactory` 代理加载，无需手写 C++ 节点工厂。
 
 ## 架构相关
 

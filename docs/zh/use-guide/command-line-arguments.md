@@ -23,6 +23,7 @@ DAWorkBench 支持命令行参数，通过命令行可以控制程序启动行�
 | `--version` | `-v` | 显示程序版本号并退出 |
 | `[project]` | 无 | 打开指定的工程文件（位置参数） |
 | `--import-data <path>` | 无 | 导入数据文件，支持多次使用 |
+| `--no-splash` | 无 | 禁用启动画面（调试时避免启动窗口遮挡 IDE；同时受配置项 `show-splash` 控制，二者任一关闭即不显示） |
 
 ## 使用方法
 
@@ -94,10 +95,10 @@ DAWorkBench.exe "D:\my-project.dapro" --import-data "D:\additional-data.csv"
 DAWorkBench.exe --version
 ```
 
-程序输出示例（版本号格式为 `主版本.次版本.修订号`）：
+程序输出示例（版本号格式为 `主版本.次版本.修订号`，当前工程版本为 `0.1.1`）：
 
 ```
-DAWorkBench version 1.0.0
+DAWorkBench version 0.1.1
 ```
 
 ### 显示帮助信息

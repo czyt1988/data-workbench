@@ -149,7 +149,7 @@ cmake --install .
 ```
 {安装目录}/
 ├── bin/
-│   ├── DAWorkbench.exe          # 主程序
+│   ├── DAWorkBench.exe          # 主程序
 │   └── plugins/                  # 插件目录
 │       ├── DataAnalysis.dll      # 数据分析插件
 │       └── ...
@@ -171,7 +171,7 @@ cmake --install .
 
 ### 1. 启动主程序
 
-运行 `DAWorkbench.exe`（或 Linux/macOS 对应可执行文件），查看主界面是否加载插件功能。
+运行 `DAWorkBench.exe`（或 Linux/macOS 对应可执行文件），查看主界面是否加载插件功能。
 
 ### 2. 检查插件列表
 

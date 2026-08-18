@@ -19,8 +19,9 @@
 4. [DAGui — GUI 整合层](#dagui--gui-整合层)
 5. [DAInterface — 抽象接口层](#dainterface--抽象接口层)
 6. [DAPluginSupport — 插件框架](#dapluginsupport--插件框架)
-7. [APP — 主程序](#app--主程序)
-8. [模块间交互矩阵](#模块间交互矩阵)
+7. [DAAgent — AI Agent 框架](#daagent--ai-agent-框架)
+8. [APP — 主程序](#app--主程序)
+9. [模块间交互矩阵](#模块间交互矩阵)
 
 ---
 
@@ -30,7 +31,7 @@
 
 - **职责**：Python-first 工作流引擎核心——节点代理、工厂、场景管理、执行调度、信号传播、图形渲染、序列化
 - **在系统中的位置**：L2 功能层，被 DAGui（L3）、DAPluginSupport（L4）、APP（L5）直接依赖
-- **关键文件**：50 个文件，是功能层中最大的模块
+- **关键文件**：52 个文件，是功能层中最大的模块
 
 ### 文件结构
 
@@ -257,7 +258,7 @@ flowchart TD
 
 - **职责**：数据容器抽象、数据生命周期管理、Python DataFrame 的 C++ 封装
 - **在系统中的位置**：L2 功能层，被 DAGui（L3）直接使用，依赖 DAPyBindQt（L1）
-- **关键文件**：22 个文件
+- **关键文件**：21 个文件
 
 ### 文件结构
 
@@ -375,7 +376,7 @@ flowchart TD
 
 - **职责**：基于 Qwt 的图表容器、图表编辑器、数据探针、图表序列化
 - **在系统中的位置**：L2 功能层，被 DAGui（L3）使用，依赖 DAUtils（L1）和 Qwt
-- **关键文件**：103 个文件
+- **关键文件**：85 个文件
 
 ### 文件结构
 
@@ -508,13 +509,20 @@ DAFigure 提供两套接口：
 
 - **职责**：整合所有 UI 功能——工作流 UI、图表设置面板、节点设置面板、数据管理 UI、Model/View、对话框、撤销命令
 - **在系统中的位置**：L3 界面层，被 DAInterface（L4）以 PUBLIC 方式依赖
-- **关键文件**：334 个文件（项目最大模块）
+- **关键文件**：405 个文件（项目最大模块）
 
 ### 文件结构
 
 ```
 src/DAGui/
-├── ChartSetting/ (36 文件)
+├── Chart/ (12 文件)
+│   └── 图表管理容器：DAChartOperateWidget/DAChartManageWidget/DAChartSettingWidget + DAChartItemsManager
+│
+├── ChartAddItem/ (89 文件)
+│   └── 图表添加向导面板体系：2D/3D/Stats 三组抽象基类 + 27 个 DAChartAdd* 派生 Widget + 序列选择器
+│      注：不可整目录 GLOB，应显式列出源文件，否则会改变构建行为
+│
+├── ChartSetting/ (64 文件)
 │   ├── DAAbstractChartItemSettingWidget.h   # 图表项设置基类（d_cast/s_cast）
 │   ├── DAChartItemSettingPanel.h/.cpp       # ChartItem 面板基类（Qwt 专有方法）
 │   ├── DAChartCurveSettingPanel.h/.cpp      # 曲线设置面板
@@ -524,6 +532,9 @@ src/DAGui/
 │   ├── DAChartAxisSettingPanel.h/.cpp       # 坐标轴设置面板
 │   └── DAChartItemSettingPanelFactory.h/.cpp # 面板工厂（RTTI 注册）
 │
+├── Chart3DSetting/ (26 文件)
+│   └── 3D 图表属性设置面板
+│
 ├── NodeSetting/ (8 文件, Python only)
 │   ├── DANodeParamSettingPanel.h/.cpp        # 通用节点参数面板
 │   ├── DANodeParamSettingPanelFactory.h     # 参数面板工厂
@@ -531,20 +542,29 @@ src/DAGui/
 │   ├── DANodeParameterFormAdapter.h           # DAPyNodeParameter -> DAFormSpec 适配器
 │   └── ParameterDescriptor.h                # 参数描述符
 │
-├── Commands/ (8 文件)
+├── Commands/ (10 文件)
 │   └── 工作流/DataFrame 撤销命令
 │
-├── Dialog/ (23 文件)
+├── Dialog/ (31 文件)
 │   ├── DAChartWizardDialog                  # 图表向导
 │   ├── DADataImportDialog                     # 数据导入
 │   └── ... (其他对话框)
+│
+├── MimeData/ (3 文件)
+│   └── 拖放 MIME 数据类型
 │
 ├── Models/ (22 文件)
 │   ├── DADataTreeModel                      # 数据树模型
 │   ├── DAMessageLogsModel                   # 消息日志模型
 │   └── ... (其他 Model/View)
 │
-├── (根级 116+ 文件)
+├── Agent/ (4 文件, Python only)
+│   └── DAAgentDockWidget                    # Agent 聊天 UI（与 DAAgent 接口信号链对接）
+│
+├── MarkdownView/ (2 文件, Python only)
+│   └── Markdown 预览视图
+│
+├── (根级 134 文件)
 │   ├── DAPyWorkFlowEditWidget.h/.cpp         # 工作流编辑控件
 │   ├── DAPyWorkFlowGraphicsView.h/.cpp       # 工作流图形视图
 │   ├── DAPyWorkFlowGraphicsScene.h/.cpp      # 工作流图形场景
@@ -552,11 +572,11 @@ src/DAGui/
 │   ├── DAChartManageWidget.h/.cpp            # 图表管理窗口
 │   ├── DADataManageWidget.h/.cpp             # 数据管理窗口
 │   ├── DADataOperateWidget.h/.cpp            # 数据操作窗口
-│   ├── DAPyDataFrameTableView.h/.cpp           # DataFrame 表格视图
-│   ├── DAAbstractNodeSettingWidget.h        # 节点设置抽象基类
+│   ├── DAPyDataFrameTableView.h/.cpp        # DataFrame 表格视图
+│   ├── DAAbstractNodeSettingWidget.h         # 节点设置抽象基类
 │   ├── DASplashScreen.h/.cpp                 # 启动画面
 │   ├── DAZipArchive.h/.cpp                   # ZIP 存档
-│   └── DARecentFilesManager.h/.cpp           # 最近文件管理
+│   └── DARecentFilesManager.h/.cpp          # 最近文件管理
 ```
 
 ### 核心类关系
@@ -683,7 +703,7 @@ flowchart TD
 
 - **职责**：定义系统核心抽象接口，隔离应用层与功能层
 - **在系统中的位置**：L4 接口层，被 DAPluginSupport（L4）和 APP（L5）依赖
-- **关键文件**：28 个文件
+- **关键文件**：29 个文件
 
 ### 文件结构
 
@@ -823,7 +843,7 @@ sequenceDiagram
 
 - **职责**：提供插件基类和插件管理器，支持动态加载/卸载插件
 - **在系统中的位置**：L4 接口层，被 APP（L5）使用，PUBLIC 依赖 DAInterface
-- **关键文件**：10 个文件
+- **关键文件**：9 个文件
 
 ### 文件结构
 
@@ -930,13 +950,133 @@ flowchart TD
 
 ---
 
+## DAAgent — AI Agent 框架
+
+### 模块概述
+
+- **职责**：纯 agent 框架库——多供应商 LLM 调用、提示词库、工具注册机制、agent 生命周期信号链、会话持久化。**不依赖任何 GUI 模块**（无 DAGui/DAFigure/qwt/ADS）：工具注册、聊天 UI 接线、LLM 设置页持久化全部由插件 / APP 层决定，DAGui 与 DAAgent 为兄弟模块互不依赖
+- **在系统中的位置**：L4 接口层，被 APP（L5）与 `plugins/DAAgentTools/` 消费，依赖 DAInterface/DAData/DAPyBindQt/DAPyScripts
+- **关键文件**：17 个文件
+
+### 文件结构
+
+```
+src/DAAgent/
+├── DAAgentInterface.h              # 公共接口契约（14 个生命周期/会话信号 + registerTool/registerSystemPrompt + LLM 配置读写 + 会话管理纯虚方法）
+├── DAAgentModule.h/.cpp            # 接口实现：工具注册表、系统提示词组装、懒启动、Bridge 信号转发（不持有 Dock）；agent-config.ini 持久化（api_key 内部 DPAPI 加解密）
+├── DAAgentManager.h/.cpp           # agent 管理调度
+├── DAAgentBridge.h/.cpp            # QProcess 子进程管理 + JSON Lines 协议解析
+├── DAAgentPrompt.h/.cpp            # 提示词库
+├── DAAgentPromptOps.h/.cpp         # 提示词操作集
+├── DAAgentSessionStore.h/.cpp      # 会话持久化层（JSONL 读写/索引/清理）
+├── DAAgentToolBase.h/.cpp          # 瘦工具基类（DAAgent_API 导出，供插件跨 DLL 继承）
+├── DAAbstractAgentTool.h           # 工具抽象基类
+└── DAAgentAPI.h                    # 导出宏
+```
+
+### 核心类关系
+
+```mermaid
+classDiagram
+    class DAAgentInterface {
+        <<abstract>>
+        +registerTool()
+        +registerSystemPrompt()
+        +sendUserAnswer()
+        +newSession()
+        +getLLMConfig()
+        +setLLMConfig()
+    }
+
+    class DAAgentModule {
+        +工具注册表
+        +系统提示词组装
+        +懒启动
+        +Bridge 信号转发
+    }
+
+    class DAAgentManager {
+        +调度
+    }
+
+    class DAAgentBridge {
+        +QProcess 子进程管理
+        +JSON Lines 协议解析
+    }
+
+    class DAAgentPrompt {
+        +提示词库
+    }
+
+    class DAAgentSessionStore {
+        +JSONL 读写
+        +索引/清理
+    }
+
+    class DAAgentToolBase {
+        +插件工具基类
+    }
+
+    DAAgentInterface <|-- DAAgentModule
+    DAAgentModule --> DAAgentBridge : 持有
+    DAAgentModule --> DAAgentManager : 协调
+    DAAgentModule --> DAAgentPrompt : 组装提示词
+    DAAgentModule --> DAAgentSessionStore : 持久化
+    DAAgentToolBase ..> DAAgentInterface : 经 registerTool 注册
+```
+
+### 业务逻辑流程
+
+#### 工具注册与对话
+
+```mermaid
+flowchart TD
+    A["插件 DAAgentTools 启动"] --> B["DAAgentInterface::registerTool(tool)"]
+    B --> C["DAAgentModule 记入工具注册表"]
+    C --> D["用户在 DAAgentDockWidget 输入消息"]
+    D --> E["DAAgentModule 组装系统提示词 + 历史"]
+    E --> F["DAAgentBridge 经 QProcess 调用 LLM 子进程"]
+    F --> G["JSON Lines 流式回传 token/工具调用"]
+    G --> H{"需要调用工具?"}
+    H -->|是| I["执行 DAAgentToolBase 子类\n回填结果给 LLM"]
+    I --> F
+    H -->|否| J["DAAgentSessionStore 追加会话到 JSONL"]
+    J --> K["发射生命周期信号\nUI 刷新"]
+```
+
+#### 会话持久化
+
+会话以 `agent_sessions/<id>.jsonl` 形式持久化（详见 [项目文件结构](./project-file-structure.md)）。`DAAgentSessionStore` 负责 JSONL 的读写、按 id 索引与过期清理；工程打包/加载时由 `src/APP/DAAppProject.cpp` 的 `DAZipArchiveTask_LoadAgentSessions` 在 worker 线程解压 `agent_sessions/*.jsonl`。
+
+### 核心 API
+
+| API | 签名 | 用途 | 调用时机 |
+|-----|------|------|----------|
+| `registerTool` | `DAAgentInterface::registerTool(DAAgentToolBase*) -> void` | 注册 agent 工具 | 插件 `initialize()` |
+| `registerSystemPrompt` | `DAAgentInterface::registerSystemPrompt(name, content) -> void` | 注册系统提示词片段 | 插件初始化 |
+| `sendUserAnswer` | `DAAgentInterface::sendUserAnswer(QString) -> void` | 提交用户输入 | 聊天 UI 发送 |
+| `newSession` | `DAAgentInterface::newSession() -> QString` | 新建会话并返回 id | 用户新建会话 |
+| `getLLMConfig`/`setLLMConfig` | `DAAgentInterface::get/setLLMConfig(...) ` | 读写 LLM 配置 | 设置页持久化 |
+
+### 修改指南
+
+!!! tip "修改此模块时"
+    - **可以修改**：在 `DAAgentPrompt` 中扩展提示词模板；新增 agent 生命周期信号（接口侧需同步）
+    - **不可修改**：`DAAgentInterface` 的纯虚方法签名（被 APP 与所有 agent 工具插件依赖）；`DAAgentBridge` 的 JSON Lines 协议格式（与子进程端契约绑定）
+    - **修改后需同步更新**：`plugins/DAAgentTools/` 中受影响的工具、APP 的 Dock↔接口信号链接线
+
+!!! info "更深入的 Agent 文档"
+    本节为模块级摘要。Agent 框架的完整架构、生命周期、工具开发与协议细节见 [:octicons-copilot-24: Agent 开发指南](./agent/index.md)。
+
+---
+
 ## APP — 主程序
 
 ### 模块概述
 
 - **职责**：可执行程序入口，所有接口的具体实现，项目管理，插件管理
 - **在系统中的位置**：L5 应用层，依赖 DAPluginSupport 和 DAPyWorkFlow
-- **关键文件**：190 个文件
+- **关键文件**：92 个文件
 
 ### 文件结构
 
@@ -1106,6 +1246,7 @@ flowchart TD
 | **DAGui** | 场景管理、节点创建、工作流编辑 | 数据管理、数据面板 | 图表容器、设置面板 | - | — | — | — |
 | **DAInterface** | 通过 DAGui 传递 | 通过 DAGui 传递 | 通过 DAGui 传递 | PUBLIC 链接 | - | — | — |
 | **DAPluginSupport** | DAPyNodeFactory | 通过 DAInterface | 通过 DAInterface | 通过 DAInterface | PUBLIC 链接 | - | — |
+| **DAAgent** | — | 读取数据（DADataPyObject） | — | —（兄弟模块，不依赖 GUI） | PUBLIC 链接（DAAgentInterface） | — | — |
 | **APP** | DAPyWorkFlowScene、执行控制 | DAAppDataManager 实现 | DAAppProject 图表存档 | DAAppUI/DAAppController | 实现所有接口 | DAAppPluginManager | - |
 
 ### 关键交互路径说明

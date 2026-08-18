@@ -2,6 +2,9 @@
 
 接口模块 `DAInterface` 是插件系统的核心，提供了一组抽象接口类，使得插件能够与主程序进行解耦交互。所有插件通过接口获取主程序功能，实现松耦合设计。
 
+!!! info "L4 接口层的另一契约：DAAgentInterface"
+    `DAInterface` 并非 L4 接口层唯一的接口面。`DAAgent` 模块单独暴露 `DAAgentInterface` 契约，覆盖 Agent 生命周期信号、工具注册（`registerTool`）、系统提示词库与 LLM 配置读写，供 `plugins/DAAgentTools/` 等 Agent 工具插件跨 DLL 调用。两者并列于 L4，`DAAgent` 不依赖 `DAGui`。详见 [:octicons-copilot-24: Agent 开发指南](./agent/index.md)。
+
 ## 主要功能特性
 
 **特性**

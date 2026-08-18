@@ -19,29 +19,37 @@
 
 | 内容 | 说明 |
 |------|------|
-| 工作流逻辑数据 | 节点拓扑、参数值、连接关系 |
-| 工作流视图数据 | 节点位置、图元属性、连线布局 |
-| 数据管理器状态 | 所有数据对象的元信息 |
-| 图表数据 | 图表配置和样式 |
-| 表格样式 | 单元格样式和条件格式 |
-| 插件数据 | 插件自定义的存档数据 |
+| 工作流逻辑数据 | 节点拓扑、参数值、连接关系（`workflow-data.xml`） |
+| 工作流视图数据 | 节点位置、图元属性、连线布局（`workflow.xml`） |
+| 数据管理器状态 | 所有数据对象的元信息（`data-manager.xml` + `datas/`） |
+| 图表数据 | 图表配置、数据绑定与图表数据（`charts.xml` + `chart-data/`） |
+| 表格样式 | 单元格样式和条件格式（`table-styles.xml`） |
+| Agent 会话 | 各 agent 会话的消息、工具调用与 token 用量（`agent_sessions/<id>.jsonl`） |
+| 插件数据 | 插件通过自定义归档任务存档的数据 |
 
 ### 工程文件结构
 
 ```
 project.dapro (ZIP)
-├── system-info.xml            # 系统信息（版本、创建时间）
-├── workflow.xml               # 工作流信息（节点、连接、图元）
+├── system.xml                 # 系统信息（版本、创建时间；根元素 type="system-info"）
+├── workflow-data.xml          # 工作流逻辑数据（Python 节点拓扑、参数、连接，CDATA 嵌入）
+├── workflow.xml               # 工作流视图数据（节点位置、图元属性、连线布局）
 ├── data-manager.xml           # 数据管理器配置
 ├── datas/                     # 数据文件目录
 │   └── [各种数据文件]
 ├── charts.xml                 # 绘图信息（图表配置、数据绑定）
-└── chart-data/                # 图表数据目录
-    └── [图表数据文件]
+├── chart-data/                # 图表数据目录
+│   └── [图表数据文件]
+├── table-styles.xml           # 表格样式数据（单元格样式、条件格式）
+└── agent_sessions/            # Agent 会话目录
+    └── <id>.jsonl             # 各会话的 JSONL 记录（消息、工具调用、token 用量等）
 ```
 
+!!! warning "工作流序列化双轨制"
+    工作流拆分为两个独立文件：`workflow-data.xml`（Python 逻辑数据，由 `DAPyWorkFlowSerializer` 序列化节点拓扑 / 参数 / 连接）与 `workflow.xml`（C++ 视图数据，由 `DAPyWorkFlowSceneSerializer` 序列化节点位置 / 图元属性）。**加载时逻辑数据必须先于视图数据**——先恢复节点实例与参数，再创建视图图元，顺序不可违反。旧工程若无 `workflow-data.xml`，按旧路径向后兼容。
+
 !!! note "加载顺序"
-    工程加载按系统信息→工作流→数据管理器→图表的顺序进行，每个阶段独立完成。详见 [工程文件结构](../dev-guide/project-file-structure.md)。
+    工程加载按系统信息→工作流逻辑数据→工作流视图数据→数据管理器→表格样式→图表→Agent 会话的顺序进行，每个阶段独立完成。详见 [工程文件结构](../dev-guide/project-file-structure.md)。
 
 ---
 

@@ -107,20 +107,20 @@ void MyPlugin::initialize()
 创建并添加自定义 Dock 窗口是插件扩展界面的常用方式。Dock 窗口可以停靠在主窗口的任意边缘区域。以下示例展示创建和添加 Dock 窗口的流程：
 
 ```cpp
+#include "ads_globals.h"  // ads::DockWidgetArea
+
 bool MyPlugin::initialize()
 {
     DA::DAUIInterface* ui = core()->getUiInterface();
     DA::DADockingAreaInterface* dockArea = ui->getDockingArea();
-    
-    // 创建自定义Dock窗口，设置标题和父窗口
-    QDockWidget* myDock = new QDockWidget("数据分析", core()->getMainWindow());
-    // 设置窗口内容控件
-    myDock->setWidget(new MyDataAnalysisWidget(myDock));
-    
-    // 添加到右侧Dock区域，用户可拖动调整位置
-    dockArea->addDockWidget(myDock, DA::DADockingAreaInterface::RightDockArea);
-    
-    // 效果：在右侧Dock区域显示自定义数据分析窗口
+
+    // 创建自定义 Dock 窗口内容（DADockingAreaInterface::createDockWidget 接收 QWidget*）
+    QWidget* content = new MyDataAnalysisWidget();
+    // cn:createDockWidget(QWidget*, ads::DockWidgetArea, const QString& widgetName, ...)
+    // 注意：没有 addDockWidget，也没有 RightDockArea；停靠区域用 ads::DockWidgetArea
+    dockArea->createDockWidget(content, ads::DockWidgetArea::RightDockWidgetArea, tr("数据分析"));
+
+    // 效果：在右侧 Dock 区域显示自定义数据分析窗口
     return true;
 }
 ```
@@ -137,25 +137,28 @@ bool MyPlugin::initialize()
     DA::DAUIInterface* ui = core()->getUiInterface();
     DA::DARibbonAreaInterface* ribbonArea = ui->getRibbonArea();
     DA::DAActionsInterface* actionMgr = ui->getActionInterface();
-    
-    // 在主页Category下创建自定义Panel（功能组）
-    SARibbonPanel* myPanel = ribbonArea->addPanelInCategory(
-        "主页",           // Category名称（已有标签页）
-        "自定义工具"      // Panel名称（新建功能组）
-    );
-    
-    // 创建Action并设置图标
-    QAction* action1 = actionMgr->createAction("数据导入", this);
-    QAction* action2 = actionMgr->createAction("数据导出", this);
-    
+
+    // DARibbonAreaInterface 没有 addPanelInCategory；先 ribbonBar()->addCategory 创建/取 Category
+    // 这里通过 getCategoryByObjectName 取主页（objectName 由主程序定义）
+    SARibbonCategory* category = ribbonArea->getCategoryByObjectName("da-ribbon-category-main");
+    SARibbonPanel* myPanel = (category ? category->addPanel(tr("自定义工具")) : nullptr);  // cn:新建功能组
+
+    // createAction(const char* objname) —— 参数是 object name，不是显示文本
+    QAction* action1 = actionMgr->createAction("myplugin.action.import");
+    action1->setText(tr("数据导入"));  // cn:显示文本单独设
+    QAction* action2 = actionMgr->createAction("myplugin.action.export");
+    action2->setText(tr("数据导出"));  // cn:显示文本单独设
+
     // 连接信号槽，处理按钮点击事件
     connect(action1, &QAction::triggered, this, &MyPlugin::onDataImport);
     connect(action2, &QAction::triggered, this, &MyPlugin::onDataExport);
-    
-    // 添加到Ribbon面板，指定按钮大小
-    myPanel->addAction(action1, SARibbonActionButtonOption::LargeButtonWithText);
-    myPanel->addAction(action2, SARibbonActionButtonOption::SmallButtonWithText);
-    
+
+    // 添加到 Ribbon 面板，指定按钮大小
+    if (myPanel) {
+        myPanel->addAction(action1, SARibbonActionButtonOption::LargeButtonWithText);
+        myPanel->addAction(action2, SARibbonActionButtonOption::SmallButtonWithText);
+    }
+
     // 效果：在主页的自定义工具面板中显示两个按钮
     return true;
 }
@@ -220,15 +223,14 @@ void MyPlugin::setupDockWindows()
 {
     DA::DAUIInterface* ui = core()->getUiInterface();
     DA::DADockingAreaInterface* dockArea = ui->getDockingArea();
-    
-    // 创建数据分析Dock窗口
-    m_dataDock = new QDockWidget(tr("数据分析工具"), core()->getMainWindow());
-    QWidget* dataWidget = new MyDataAnalysisWidget(m_dataDock);
-    m_dataDock->setWidget(dataWidget);
-    m_dataDock->setObjectName("plugin.dataAnalysis.dock");  // 设置唯一标识
-    
-    // 添加到右侧Dock区域
-    dockArea->addDockWidget(m_dataDock, DA::DADockingAreaInterface::RightDockArea);
+
+    // 创建数据分析 Dock 窗口内容（createDockWidget 接收 QWidget*）
+    QWidget* dataWidget = new MyDataAnalysisWidget();
+    // cn:createDockWidget(QWidget*, ads::DockWidgetArea, const QString& widgetName, ...)
+    // 没有 addDockWidget / RightDockArea
+    ads::CDockWidget* dockWidget = dockArea->createDockWidget(
+        dataWidget, ads::DockWidgetArea::RightDockWidgetArea, tr("数据分析工具"));
+    dockWidget->setObjectName("plugin.dataAnalysis.dock");  // 设置唯一标识
 }
 
 void MyPlugin::setupRibbonButtons()
@@ -236,35 +238,42 @@ void MyPlugin::setupRibbonButtons()
     DA::DAUIInterface* ui = core()->getUiInterface();
     DA::DARibbonAreaInterface* ribbonArea = ui->getRibbonArea();
     DA::DAActionsInterface* actionMgr = ui->getActionInterface();
-    
-    // 获取或创建Category（标签页）
-    SARibbonCategory* category = ribbonArea->category("数据分析");
+
+    // 获取或创建 Category（标签页）
+    // DARibbonAreaInterface 没有 category()/addCategory()；用 getCategoryByObjectName 取已有，
+    // 新建则 ribbonBar()->addCategory(...)
+    SARibbonCategory* category = ribbonArea->getCategoryByObjectName("da-ribbon-category-myplugin");
     if (!category) {
-        category = ribbonArea->addCategory("数据分析");
+        category = ribbonArea->ribbonBar()->addCategory(tr("数据分析"));
+        category->setObjectName("da-ribbon-category-myplugin");
     }
-    
-    // 创建Panel（功能组）
-    SARibbonPanel* panel = category->panel("导入导出");
+
+    // 创建 Panel（功能组）—— SARibbonCategory::addPanel
+    SARibbonPanel* panel = ribbonArea->getPanelByObjectName("myplugin.panel.io");
     if (!panel) {
-        panel = category->addPanel("导入导出");
+        panel = category->addPanel(tr("导入导出"));
+        panel->setObjectName("myplugin.panel.io");
     }
-    
-    // 创建Actions并设置图标
-    m_actionImport = actionMgr->createAction(tr("导入数据"), this);
+
+    // createAction(const char* objname) —— 参数是 object name，显示文本单独 setText
+    m_actionImport = actionMgr->createAction("myplugin.action.import");
+    m_actionImport->setText(tr("导入数据"));  // cn:显示文本
     m_actionImport->setIcon(QIcon(":/icons/import.png"));
-    
-    m_actionExport = actionMgr->createAction(tr("导出数据"), this);
+
+    m_actionExport = actionMgr->createAction("myplugin.action.export");
+    m_actionExport->setText(tr("导出数据"));  // cn:显示文本
     m_actionExport->setIcon(QIcon(":/icons/export.png"));
-    
-    QAction* actionSettings = actionMgr->createAction(tr("设置"), this);
+
+    QAction* actionSettings = actionMgr->createAction("myplugin.action.settings");
+    actionSettings->setText(tr("设置"));  // cn:显示文本
     actionSettings->setIcon(QIcon(":/icons/settings.png"));
-    
+
     // 连接信号槽
     connect(m_actionImport, &QAction::triggered, this, &MyPlugin::onDataImport);
     connect(m_actionExport, &QAction::triggered, this, &MyPlugin::onDataExport);
     connect(actionSettings, &QAction::triggered, this, &MyPlugin::onSettings);
-    
-    // 添加到Ribbon面板，设置按钮大小
+
+    // 添加到 Ribbon 面板，设置按钮大小
     panel->addAction(m_actionImport, SARibbonActionButtonOption::LargeButtonWithText);
     panel->addAction(m_actionExport, SARibbonActionButtonOption::LargeButtonWithText);
     panel->addAction(actionSettings, SARibbonActionButtonOption::SmallButtonWithText);
@@ -272,13 +281,14 @@ void MyPlugin::setupRibbonButtons()
 
 void MyPlugin::setupMenuItems()
 {
-    // 获取Action管理器添加菜单项
+    // DAActionsInterface 没有 addActionToMenu；它只暴露 createAction/recordAction/findAction
+    // 导入/导出 Action 已在 setupRibbonButtons() 中通过 createAction(objname) 创建并托管
+    // 如需在自定义菜单中复用，用 findAction(objname) 取出放入 QMenu：
     DA::DAUIInterface* ui = core()->getUiInterface();
     DA::DAActionsInterface* actionMgr = ui->getActionInterface();
-    
-    // 将Action添加到系统菜单的"工具"菜单下
-    actionMgr->addActionToMenu("工具", m_actionImport);
-    actionMgr->addActionToMenu("工具", m_actionExport);
+    QAction* importAct = actionMgr->findAction("myplugin.action.import");
+    QAction* exportAct = actionMgr->findAction("myplugin.action.export");
+    // 然后在目标控件的 contextMenuEvent 中把 importAct / exportAct 加入 QMenu
 }
 
 void MyPlugin::onDataImport()
@@ -310,20 +320,22 @@ void MyPlugin::onSettings()
 执行上述完整代码后，插件界面包含：
 - 右侧 Dock 区域的"数据分析工具"窗口
 - Ribbon 的"数据分析"标签页和"导入导出"面板
-- "工具"菜单下的导入/导出菜单项
+- 导入/导出 Action 已通过 `createAction(objname)` 注册到 Action 管理器，可通过 `findAction()` 在自定义菜单中复用
 
 ## Dock窗口布局策略
 
 ### Dock区域划分
 
-data-workbench 的 Dock 区域划分为四个主要区域，每个区域有典型的用途。下表列出了各区域的位置和推荐用途：
+data-workbench 的 Dock 区域由 Qt Advanced Docking System（ads）管理，停靠位置用 `ads::DockWidgetArea` 枚举指定（如 `ads::DockWidgetArea::LeftDockWidgetArea` / `RightDockWidgetArea` / `TopDockWidgetArea` / `BottomDockWidgetArea`）。下表列出各区域的典型用途：
 
-| 区域 | 常用位置 | 典型用途 |
-|------|----------|----------|
-| LeftDockArea | 左侧 | 工作流节点列表、数据管理 |
-| RightDockArea | 右侧 | 属性面板、数据分析 |
-| TopDockArea | 顶部 | 工具栏扩展 |
-| BottomDockArea | 底部 | 输出日志、状态信息 |
+| ads 区域 | 常用位置 | 典型用途 |
+|----------|----------|----------|
+| LeftDockWidgetArea | 左侧 | 工作流节点列表、数据管理 |
+| RightDockWidgetArea | 右侧 | 属性面板、数据分析 |
+| TopDockWidgetArea | 顶部 | 工具栏扩展 |
+| BottomDockWidgetArea | 底部 | 输出日志、状态信息 |
+
+> 内置固定 dock 还可用 `DADockingAreaInterface::DockingArea` 枚举（如 `DockingAreaWorkFlowOperate`）定位，通过 `dockingAreaToDockWidget()` / `raiseDockingArea()` 操作。
 
 ### Dock窗口示例
 
@@ -379,18 +391,26 @@ private:
 
 | 方法 | 参数 | 返回值 | 说明 |
 |------|------|--------|------|
-| `addDockWidget()` | QDockWidget*, DockArea | void | 添加Dock窗口 |
-| `hideDockWidget()` | QWidget* | void | 隐藏Dock窗口 |
-| `getWorkFlowOperateWidget()` | 无 | QWidget* | 获取工作流操作窗口 |
-| `getWorkflowNodeListWidget()` | 无 | QWidget* | 获取节点列表窗口 |
+| `createDockWidget()` | QWidget*, ads::DockWidgetArea, QString, ads::CDockAreaWidget*=nullptr | ads::CDockWidget* | 创建停靠窗体 |
+| `createDockWidgetAsTab()` | QWidget*, QString, ads::CDockAreaWidget* | ads::CDockWidget* | 作为标签页添加到指定 dockArea |
+| `createFloatingDockWidget()` | QWidget*, QString, QPoint | ads::CDockWidget* | 创建浮动窗体 |
+| `hideDockWidget()` | QWidget* | void | 隐藏 Dock 窗口 |
+| `raiseDockByWidget()` | QWidget* | void | 唤起某 widget 对应的 dock |
+| `getWorkFlowOperateWidget()` | 无 | DAPyWorkFlowOperateWidget* | 获取工作流操作窗口 |
+| `getWorkflowNodeListWidget()` | 无 | DAPyWorkFlowNodeListWidget* | 获取节点列表窗口 |
+
+> 停靠区域用 `ads::DockWidgetArea` 枚举（来自 Qt Advanced Docking System），不是 `Qt::LeftDockWidgetArea` 等。固定内置区域用 `DADockingAreaInterface::DockingArea` 枚举（如 `DockingAreaWorkFlowOperate`）。
 
 ### DARibbonAreaInterface 核心方法
 
 | 方法 | 参数 | 返回值 | 说明 |
 |------|------|--------|------|
-| `addCategory()` | QString | SARibbonCategory* | 添加Category |
-| `category()` | QString | SARibbonCategory* | 获取Category |
-| `addPanelInCategory()` | QString, QString | SARibbonPanel* | 在Category中添加Panel |
+| `ribbonBar()` | 无 | SARibbonBar* | 获取 RibbonBar，添加 Category 通过它的 `addCategory()` |
+| `getCategories()` | 无 | QList&lt;SARibbonCategory*&gt; | 获取所有标签 |
+| `getCategoryByObjectName()` | QString objname | SARibbonCategory* | 通过 objectName 获取 Category |
+| `getPanelByObjectName()` | QString objname | SARibbonPanel* | 通过 objectName 获取 Panel |
+
+> `DARibbonAreaInterface` 自身没有 `addCategory()` / `category()` / `addPanelInCategory()`；添加 Category 要通过 `ribbonBar()->addCategory(...)`，获取已有 Category/Panel 用 `getCategoryByObjectName()` / `getPanelByObjectName()`。
 
 ## 注意事项
 

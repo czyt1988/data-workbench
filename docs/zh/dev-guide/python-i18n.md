@@ -344,7 +344,7 @@ PYTHON_FILES=$(find "${PROJECT_ROOT}" -name "*.py" \
 ### 参考实现
 
 - `plugins/DASystemNodes/PyScripts/DASystemNodes/i18n/` — 节点包 i18n 标杆实现（8 节点）
-- `plugins/DataAnalysis/PyScripts/DADataAnalysisNodes/i18n/` — 数据分析节点包 i18n（22 节点）
+- `plugins/DataAnalysis/PyScripts/DADataAnalysisNodes/i18n/` — 数据分析节点包 i18n（21 节点）
 - `plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/` — GUI 包 i18n 标杆实现
 
 ## 生成语言模板文件

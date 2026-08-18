@@ -55,7 +55,7 @@ classDiagram
 | `DAAbstractAgentTool` | DAAgent | `DAAgent_API` | 纯虚基类，定义三个必须实现的接口 |
 | `DAAgentToolBase` | DAAgent | `DAAgent_API` | 瘦工具基类，提供数据访问 + 响应构建方法 |
 | `DAAgentChartToolBase` | 插件 (DAAgentTools) | 无 | 图表工具基类，提供图表操作方法 |
-| 具体工具类 | 插件 (DAAgentTools) | 无 | 16 个内置工具的具体实现 |
+| 具体工具类 | 插件 (DAAgentTools) | 无 | 19 个内置工具的具体实现 |
 
 !!! note "为什么 DAAgentToolBase 是"瘦"基类"
     在解耦重构前，`DAAgentToolBase` 同时包含数据访问方法和图表访问方法，导致 DAAgent 模块依赖 DAGui。重构后将图表方法搬到插件的 `DAAgentChartToolBase`，`DAAgentToolBase` 只保留只依赖 DAData/DAInterface 的方法。这样未来写数据工具插件只需继承瘦基类，无需拉 DAGui 依赖。
@@ -192,7 +192,7 @@ QJsonObject errorResponse(const QString& message);
 
 ### 内置工具注册
 
-16 个内置工具由 `DAAgentToolsPlugin` 在 `initialize()` 中注册：
+19 个内置工具由 `DAAgentToolsPlugin` 在 `initialize()` 中注册：
 
 ```cpp
 bool DAAgentToolsPlugin::initialize()
@@ -207,10 +207,13 @@ bool DAAgentToolsPlugin::initialize()
     agent->registerTool(new DAAgentToolColumnStats(c, this));
     agent->registerTool(new DAAgentToolExportData(c, this));
 
-    // 图表工具 (8 个)
+    // 图表工具 (11 个)
     agent->registerTool(new DAAgentToolCreateChart(c, this));
     agent->registerTool(new DAAgentToolAddCurve(c, this));
     agent->registerTool(new DAAgentToolSetChartStyle(c, this));
+    agent->registerTool(new DAAgentToolSetAxis(c, this));
+    agent->registerTool(new DAAgentToolUpdateCurveStyle(c, this));
+    agent->registerTool(new DAAgentToolRemoveChartItem(c, this));
     agent->registerTool(new DAAgentToolAddAnnotation(c, this));
     agent->registerTool(new DAAgentToolAddRegion(c, this));
     agent->registerTool(new DAAgentToolCreateSubplots(c, this));
@@ -224,8 +227,21 @@ bool DAAgentToolsPlugin::initialize()
 
     // 注册系统提示词片段
     agent->registerSystemPrompt("figure_reference",
-        "When referencing charts, use da-figure: hyperlinks. "
-        "Format: [chart title](da-figure:figure_name)");
+        "## Referencing Figures in Your Reply\n"
+        "When you create a chart with `create_chart` / `create_subplots`, the tool returns "
+        "`figure_name` and `figure_id`.\n"
+        "To let the user open a figure directly from your reply, insert a Markdown hyperlink "
+        "using the `da-figure:` scheme:\n\n"
+        "  [human-readable chart name](da-figure:<figure_name>)\n"
+        "  # precise form (use when names may duplicate):\n"
+        "  [human-readable chart name](da-figure:id=<figure_id>)\n\n"
+        "Rules:\n"
+        "- The link text should be a short human-readable name (use the chart title or figure_name).\n"
+        "- Prefer the name form for brevity; use the id form when figure names may duplicate.\n"
+        "- Only reference figures you have created in the current session "
+        "(the user can click the link to raise and focus that figure).\n"
+        "- Use `list_figures` to discover existing figures and their names/ids.\n"
+    );
 
     return true;
 }
@@ -257,13 +273,16 @@ bool DAAgentToolsPlugin::initialize()
 | `get_column_stats` | 获取列的统计信息（均值、标准差、分位数等） | `data_name`, `column` |
 | `export_data` | 导出数据到文件 | `data_name`, `file_path`, `format` |
 
-### 绘图工具（8 个）
+### 绘图工具（11 个）
 
 | 工具名 | 用途 | 关键参数 |
 |--------|------|---------|
 | `create_chart` | 创建新图表（每次调用创建新 figure） | `title`, `figure_name?` |
 | `add_curve` | 向图表添加曲线 | `data_name`, `x_column`, `y_column`, `figure_name?`, `chart_id?` |
 | `set_chart_style` | 设置图表样式（线型、颜色、标记等） | `figure_name?`, `chart_id`, `style` |
+| `set_axis` | 配置坐标轴（刻度类型、范围、颜色、标签旋转） | `figure_name?`, `chart_id?`, `axis`(`x`/`y`), `scale_type?`(`normal`/`datetime`), `date_format?`, `min?`, `max?`, `color?`, `label_rotation?` |
+| `update_curve_style` | 修改已有曲线外观（颜色、线型、线宽、标记、填充） | `figure_name?`, `chart_id?`, `curve_name`, `color?`, `width?`, `style?`, `symbol?`, `symbol_size?`, `fill_color?` |
+| `remove_chart_item` | 删除曲线 / 注释 / 区域 | `figure_name?`, `chart_id?`, `item_name`, `item_type?`(`curve`/`annotation`/`region`/`any`) |
 | `add_annotation` | 添加注释文本 | `figure_name?`, `chart_id`, `text`, `position` |
 | `add_region` | 添加区域标注 | `figure_name?`, `chart_id`, `x_range`, `color` |
 | `create_subplots` | 创建子图布局 | `rows`, `cols`, `figure_name?` |
@@ -282,7 +301,10 @@ bool DAAgentToolsPlugin::initialize()
 |--------|------|---------|
 | `read_file` | 读取文本文件内容 | `file_path`, `encoding?` |
 | `write_file` | 写入文本文件 | `file_path`, `content`, `encoding?` |
-| `save_report` | 保存分析报告（支持 docx/xlsx 导出） | `file_path`, `format`, `content` |
+| `save_report` | 保存分析报告（md/pdf/docx），保存后默认在查看器中打开 | `content`, `file_path`, `format?`(md/pdf/docx, 默认 md), `open_after_save?`(默认 true) |
+
+!!! note "save_report 的 open_after_save 行为"
+    `open_after_save` 默认 `true`。md 报告用应用内置 Markdown 查看器（`DAMarkdownView`）打开；pdf/docx 用系统默认程序（`QDesktopServices`）打开。打开失败不影响保存成功状态——返回消息附加说明，不抛异常。
 
 ---
 
@@ -418,6 +440,6 @@ sequenceDiagram
 - [架构设计](architecture.md) — 工具系统在整体架构中的位置
 - [通信协议](protocol.md) — tool_call/tool_result 消息的协议规范
 - [上下文管理](context-management.md) — 工具结果截断机制
-- `plugins/DAAgentTools/` — 16 个内置工具的完整实现
+- `plugins/DAAgentTools/` — 19 个内置工具的完整实现
 - `src/DAAgent/DAAbstractAgentTool.h` — 工具抽象基类定义
 - `src/DAAgent/DAAgentToolBase.h` — 瘦工具基类定义

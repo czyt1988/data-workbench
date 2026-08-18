@@ -147,7 +147,7 @@ graph TB
 | **插件主类** | `[Name]Plugin` | `DataAnalysisPlugin` | 类名与目录名一致，方便识别对应关系 |
 | **节点工厂** | `[Name]NodeFactory` | `DataAnalysisNodeFactory` | 旧架构遗留，新插件使用 Python `@NodeDef` 自动发现节点，无需 NodeFactory |
 | **工作节点** | `[Name]Worker` | `DataframeCleanerWorker` | 使用"Worker"后缀，表示这是具体的工作单元 |
-| **插件IID** | `Plugin.[Name]` | `Plugin.DataAnalysis` | IID（Interface Identifier）必须唯一，用于插件识别 |
+| **插件IID** | `DAABSTRACTNODEPLUGIN_IID` | `DAABSTRACTNODEPLUGIN_IID`（节点插件）/ `DAABSTRACTPLUGIN_IID`（通用插件） | IID 宏在 `DAAbstractNodePlugin.h` / `DAAbstractPlugin.h` 中定义，`Q_PLUGIN_METADATA` 引用宏而非自造字符串 |
 | **节点原型** | `[Plugin].[Factory].[Node]` | `DataAnalysis.IO.CSVReader` | 节点原型的命名采用三级结构，确保全局唯一 |
 
 **命名注意事项：**
@@ -170,90 +170,133 @@ graph TB
 
 ### DAAbstractPlugin - 插件抽象基类
 
-`DAAbstractPlugin` 是所有插件的基类，继承自 `QObject` 以支持 Qt 的信号槽机制和元对象系统。这个基类定义了插件与主程序交互的基本框架。
+`DAAbstractPlugin` 是所有插件的基类。它是一个**纯 C++ 类**（不继承 `QObject`），仅声明插件与主程序交互所需的接口契约。需要 Qt 元对象系统支持的子类（如 `DAAbstractNodePlugin`），由插件作者自行在继承列表首位置声明 `QObject`。
 
 ```cpp
-class DAAbstractPlugin : public QObject
+class DAAbstractPlugin  // 不继承 QObject，纯抽象类
 {
-    Q_OBJECT
 public:
-    // 获取核心接口 - 插件与主程序通信的唯一入口
-    DACoreInterface* core() const;
-    
-    // 插件初始化 - 必须实现
-    virtual bool initialize() = 0;
-    
-    // 语言变更回调 - 多语言支持
+    DAAbstractPlugin();
+    virtual ~DAAbstractPlugin();
+
+    // 插件元信息（纯虚，必须实现）
+    virtual QString getIID() const = 0;          // 插件 ID
+    virtual QString getName() const = 0;         // 插件名
+    virtual QString getVersion() const = 0;      // 插件版本
+    virtual QString getDescription() const = 0;  // 插件描述
+
+    // 语言变更回调（默认空实现，有翻译需求时重载）
     virtual void retranslate();
-    
-    // 插件元信息
-    virtual QString pluginName() const = 0;
-    virtual QString pluginVersion() const = 0;
-    virtual QString pluginDescription() const = 0;
+
+    // 初始化（非纯虚，默认返回 true，返回 false 则插件不放入管理器）
+    virtual bool initialize();
+    // 释放回调（非纯虚，默认返回 true，返回 false 说明卸载失败）
+    virtual bool finalize();
+    // 获取设置页（默认返回 nullptr，代表没有设置页）
+    virtual DAAbstractSettingPage* createSettingPage();
+    // 创建存档任务（isSave 为 true 表示保存任务，默认返回 nullptr）
+    virtual std::shared_ptr< DAAbstractArchiveTask > createArchiveTask(bool isSave);
+
+    // 获取 core —— 插件与主程序通信的唯一入口
+    DACoreInterface* core() const;
+
+protected:
+    void setCore(DACoreInterface* c);
 };
 ```
+
+IID 宏定义为 `DAABSTRACTPLUGIN_IID`（值为 `"org.da.abstract.plugin"`，见 `DAAbstractPlugin.h`）。
 
 **关键方法详解：**
 
 1. **`core()`**：插件通过此方法获取 `DACoreInterface` 实例，这是插件访问主程序所有功能的唯一入口。插件不应直接访问主程序的其他类，而应通过此接口进行交互，确保松耦合设计。
 
-2. **`initialize()`**：插件的初始化入口。主程序加载插件后立即调用此方法。插件应在此方法中完成：
+2. **`initialize()`**：插件的初始化入口，**非纯虚，默认返回 `true`**。主程序加载插件后立即调用此方法。插件应在此方法中完成：
    - 资源初始化（加载图标、翻译文件等）
-   - 注册节点工厂（对于工作流插件）
-   - 设置用户界面（添加菜单、工具栏等）
+   - 设置用户界面（添加 Ribbon 面板、Dock 窗口等）
    - 连接信号槽，注册事件监听器
    
-   如果初始化失败，应返回 `false`，插件将不会被加载。
+   返回 `false` 时插件将不会被放入管理器。
 
-3. **`retranslate()`**：当应用程序语言发生变更时调用。插件应在此方法中重新加载翻译文件，并更新所有用户界面元素的文本。这为插件提供了完整的国际化支持。
+3. **`finalize()`**：插件卸载时的回调，**非纯虚，默认返回 `true`**。返回 `false` 说明卸载失败。这是旧 `aboutToUnload` 概念的替代，插件应在此释放资源、断开信号连接。
 
-4. **插件元信息方法**：`pluginName()`、`pluginVersion()`、`pluginDescription()` 返回插件的基本信息，这些信息将显示在插件管理界面中，帮助用户了解插件功能和版本。
+4. **`createSettingPage()`**：返回一个 `DAAbstractSettingPage*`，用于在程序设置窗口中注册插件自有的配置页，默认返回 `nullptr`。
+
+5. **`createArchiveTask(bool isSave)`**：参与工程存档/恢复流程，`isSave` 为 `true` 时返回保存任务，为 `false` 时返回加载任务，默认返回 `nullptr`（不参与存档）。
+
+6. **`retranslate()`**：当应用程序语言发生变更时调用。插件应在此方法中重新加载翻译文件，并更新所有用户界面元素的文本。这为插件提供了完整的国际化支持。
+
+7. **插件元信息方法**：`getIID()`、`getName()`、`getVersion()`、`getDescription()` 返回插件的基本信息，这些信息将显示在插件管理界面中，帮助用户了解插件功能和版本。
 
 ### DAAbstractNodePlugin - 工作流节点插件基类
 
-对于需要提供工作流节点的插件，应继承 `DAAbstractNodePlugin`。这个基类扩展了 `DAAbstractPlugin`，增加了工作流节点的管理功能。
+对于需要提供工作流节点的插件，应继承 `DAAbstractNodePlugin`。这个基类扩展了 `DAAbstractPlugin`，增加了工作流节点的管理功能。注意：子类继承时 `QObject` 必须位于继承列表第一位（见头文件注释）。
 
 ```cpp
 class DAAbstractNodePlugin : public DAAbstractPlugin
 {
-    Q_OBJECT
 public:
-    // 获取节点工厂列表
+    DAAbstractNodePlugin();
+    virtual ~DAAbstractNodePlugin() override;
+
+    // 创建一个节点工厂（纯虚，必须实现）
     virtual DAPyNodeFactory* createNodeFactory() = 0;
-    
-    // 节点元数据注册
+    // 删除一个节点工厂（谁创建谁删除原则，纯虚，必须实现）
     virtual void destroyNodeFactory(DAPyNodeFactory* p) = 0;
+    // 回调函数，在节点生成完成并加入到 APP 后调用（默认空实现）
+    virtual void afterLoadedNodes();
+    // 获取当前激活的工作流编辑窗口
+    DAPyWorkFlowOperateWidget* getCurrentActiveWorkflowOperateWidget() const;
 };
 ```
 
+IID 宏定义为 `DAABSTRACTNODEPLUGIN_IID`（值为 `"org.da.abstract.nodePlugin"`，见 `DAAbstractNodePlugin.h`）。
+
 **扩展功能说明：**
 
-1. **`getFactories()`**：返回插件提供的所有节点工厂列表。一个插件可以包含多个节点工厂，每个工厂负责创建一类相关的节点。例如，一个数据分析插件可能包含数据导入工厂、数据清洗工厂、统计分析工厂等。
+1. **`createNodeFactory()`**：创建并返回一个 `DAPyNodeFactory*`，由插件负责构造。这是旧架构中 `getFactories()` 的替代：一个插件只返回一个工厂指针。
 
-2. **`registerNodeMetaData()`**：注册节点元数据。节点元数据描述了节点的基本信息（名称、图标、描述等）和连接点定义。主程序使用这些元数据在工作流编辑器中显示可用节点列表。
+2. **`destroyNodeFactory(DAPyNodeFactory* p)`**：销毁 `createNodeFactory()` 创建的工厂，遵循"谁创建谁删除"原则。
 
-### DAPyNodeFactory - 节点工厂代理
+3. **`afterLoadedNodes()`**：节点生成完成并加入 APP 后的回调，默认不做任何动作，插件可重载以做收尾工作（如刷新节点列表 UI）。
 
-虽然 `DAPyNodeFactory` 不是插件基类，但它是工作流插件体系的核心组成部分：
+4. **`getCurrentActiveWorkflowOperateWidget()`**：获取当前激活的工作流编辑窗口指针，供插件与活动工作流交互。
+
+### DAPyNodeFactory - 节点工厂代理（旧 C++ 架构）
+
+!!! warning "遗留架构"
+    下面展示的 `create` / `getNodeMetaDataList` / `getFactoryName` / `nodeAddedToWorkflow` / `nodeStartRemove` 等**虚函数钩子属于已废弃的 C++ 节点工厂架构**。当前 `DAPyNodeFactory`（见 `src/DAPyWorkFlow/DAPyNodeFactory.h`）已不再暴露这些虚函数，而是作为 Python 侧 `DANodeRegistry` 的代理：通过 `discoverNodes()` 发现节点、`createNode()` 创建实例、`getNodeMetadataList()` 取元数据列表。
+
+    **新插件应采用 Python-first 的 `@NodeDef` 自动发现模型**：节点用 `@NodeDef` 装饰器声明，`__init__.py` 通过 `entry_points` 注册，`DAPyNodeFactory` 在启动时扫描 Python 包自动发现，无需手写 C++ 工厂。参考 `plugins/DASystemNodes/`（纯 Python 节点插件）。旧 C++ 工厂钩子仅作历史背景保留：
+
+```cpp
+// 旧 C++ 节点工厂架构（已废弃，仅供参考）
+class DAAbstractNodeFactory  // 历史基类，当前代码库已不存在
+{
+public:
+    virtual DAAbstractNode* create(const DANodeMetaData& meta) = 0;
+    virtual QList<DANodeMetaData> getNodeMetaDataList() const = 0;
+    virtual QString getFactoryName() const = 0;
+    virtual QString getFactoryDescription() const = 0;
+    // 生命周期钩子（旧）
+    virtual void nodeAddedToWorkflow(DAAbstractNode* node);
+    virtual void nodeStartRemove(DAAbstractNode* node);
+};
+```
+
+当前 `DAPyNodeFactory` 的真实 API（代理 Python 侧）：
 
 ```cpp
 class DAPyNodeFactory : public DAPyObjectWrapper
 {
-    Q_OBJECT
 public:
-    // 创建节点实例
-    virtual DAAbstractNode* create(const DANodeMetaData& meta) = 0;
-    
-    // 获取节点元数据列表
-    virtual QList<DANodeMetaData> getNodeMetaDataList() const = 0;
-    
-    // 工厂信息
-    virtual QString getFactoryName() const = 0;
-    virtual QString getFactoryDescription() const = 0;
-    
-    // 生命周期钩子
-    virtual void nodeAddedToWorkflow(DAAbstractNode* node);
-    virtual void nodeStartRemove(DAAbstractNode* node);
+    bool discoverNodes(const QStringList& scanPaths = QStringList(), bool useEntryPoints = false);
+    DAPyNode createNode(const QString& qualifiedName);
+    DAPyNode createNode(const DAPyNodeMetaData& metaData);
+    QList< DAPyNodeMetaData > getNodeMetadataList() const;  // 注意是 Metadata，非 MetaData
+    QStringList getNodePrototypes() const;
+    QString factoryName() const;
+    QString factoryDescribe() const;
 };
 ```
 
@@ -264,42 +307,41 @@ DAWorkBench 支持多种类型的插件，形成清晰的继承层次：
 ```mermaid
 classDiagram
     direction TB
-    QObject <|-- DAAbstractPlugin
     DAAbstractPlugin <|-- DAAbstractNodePlugin
     DAAbstractPlugin <|-- 通用功能插件
     DAAbstractNodePlugin <|-- 数据分析插件
     DAAbstractNodePlugin <|-- 图表绘制插件
     DAAbstractNodePlugin <|-- 数据导入导出插件
-    
-    class QObject {
-        <<Qt基类>>
-        +objectName() QString
-        +setParent(QObject*)
-    }
-    
+
     class DAAbstractPlugin {
-        <<抽象基类>>
+        <<抽象基类，不继承 QObject>>
         +core() DACoreInterface*
+        +getIID() QString
+        +getName() QString
+        +getVersion() QString
+        +getDescription() QString
         +initialize() bool
+        +finalize() bool
         +retranslate() void
-        +pluginName() QString
-        +pluginVersion() QString
-        +pluginDescription() QString
+        +createSettingPage() DAAbstractSettingPage
+        +createArchiveTask(bool) DAAbstractArchiveTask
     }
-    
+
     class DAAbstractNodePlugin {
         <<节点插件基类>>
-        +createNodeFactory() DAPyNodeFactory*
-        +destroyNodeFactory(DAPyNodeFactory*)
+        +createNodeFactory() DAPyNodeFactory
+        +destroyNodeFactory(DAPyNodeFactory)
+        +afterLoadedNodes() void
+        +getCurrentActiveWorkflowOperateWidget() DAPyWorkFlowOperateWidget
     }
-    
+
     class 通用功能插件 {
         <<具体实现>>
         -添加工具栏按钮
         -添加设置页面
         -扩展菜单功能
     }
-    
+
     class 数据分析插件 {
         <<具体实现>>
         -数据清洗节点
@@ -333,17 +375,26 @@ classDiagram
 插件通过 `DACoreInterface` 访问主程序所有功能：
 
 ```cpp
-class DACoreInterface
+class DACoreInterface : public QObject
 {
 public:
+    // 初始化（构造 DAAppUIInterface、DADataManagerInterface 等实例）
+    virtual bool initialized() = 0;
+
     // 获取 UI 接口
-    virtual DAUIInterface* getUiInterface() = 0;
+    virtual DAUIInterface* getUiInterface() const = 0;
 
     // 获取项目管理接口
-    virtual DAProjectInterface* getProjectInterface() = 0;
+    virtual DAProjectInterface* getProjectInterface() const = 0;
 
     // 获取数据管理接口
-    virtual DADataManagerInterface* getDataManagerInterface() = 0;
+    virtual DADataManagerInterface* getDataManagerInterface() const = 0;
+
+    // 获取 Agent 接口（LLM 对话 / 工具注册）
+    virtual DAAgentInterface* getAgentInterface() const = 0;
+
+    // 创建 UI（在 SARibbonMainWindow 构造过程中调用）
+    virtual void createUi(SARibbonMainWindow* mainwindow) = 0;
 };
 ```
 
@@ -352,23 +403,29 @@ public:
 ```mermaid
 graph TB
     CI[DACoreInterface]
-    
+
     subgraph "UI 接口层"
         UI[DAUIInterface]
         RA[DARibbonAreaInterface]
         DA[DADockingAreaInterface]
         AI[DAActionsInterface]
         CI2[DACommandInterface]
+        SBI[DAStatusBarInterface]
     end
-    
+
+    AGENT[DAAgentInterface]
+
     CI --> UI
+    CI --> AGENT
     UI --> RA
     UI --> DA
     UI --> AI
     UI --> CI2
-    
+    UI --> SBI
+
     style CI fill:#e8f5e9
     style UI fill:#e1f5fe
+    style AGENT fill:#fce4ec
 ```
 
 ### 接口获取示例
@@ -404,14 +461,14 @@ bool MyPlugin::initialize()
 使用 Qt 插件机制进行注册：
 
 ```cpp
-// 在插件头文件中声明接口
-Q_DECLARE_INTERFACE(DA::DAAbstractNodePlugin, "Plugin.DAAbstractNodePlugin")
+// 在插件头文件中声明接口（IID 宏定义在 DAAbstractNodePlugin.h 中）
+Q_DECLARE_INTERFACE(DA::DAAbstractNodePlugin, DAABSTRACTNODEPLUGIN_IID)
 
 // 在插件类中声明
-class DataAnalysisPlugin : public DA::DAAbstractNodePlugin
+class DataAnalysisPlugin : public QObject, public DA::DAAbstractNodePlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "Plugin.DataAnalysis")
+    Q_PLUGIN_METADATA(IID DAABSTRACTNODEPLUGIN_IID)
     Q_INTERFACES(DA::DAAbstractNodePlugin)
 public:
     // ...
@@ -440,27 +497,50 @@ sequenceDiagram
 
 ### DAPluginManager 单例
 
+`DAPluginManager`（`src/DAPluginSupport/DAPluginManager.h`）负责扫描插件目录、加载和卸载插件：
+
 ```cpp
 class DAPluginManager : public QObject
 {
     Q_OBJECT
 public:
-    static DAPluginManager* instance();
-    
-    // 加载所有插件
-    void loadPlugins(const QString& pluginPath);
-    
-    // 获取已加载插件列表
-    QList<DAAbstractPlugin*> getPlugins() const;
-    
-    // 获取特定类型插件
-    QList<DAAbstractNodePlugin*> getNodePlugins() const;
-    
-signals:
-    void pluginLoaded(DAAbstractPlugin* plugin);
-    void pluginInitializeFailed(DAAbstractPlugin* plugin, const QString& error);
+    explicit DAPluginManager(QObject* p = nullptr);
+
+    // 加载所有插件（核心入口，传入核心接口）
+    virtual void loadAllPlugins(DACoreInterface* c);
+
+    // 是否已经加载
+    bool isLoaded() const;
+
+    // 设置插件路径
+    void setPluginPath(const QString& path);
+
+    // 插件数
+    int getPluginCount() const;
+
+    // 获取加载的插件名
+    QList< QString > getPluginNames() const;
+
+    // 获取所有插件信息（DAPluginOption 列表）
+    QList< DAPluginOption > getPluginOptions() const;
+
+    // 卸载相关
+    bool unloadPlugin(const QString& pluginName);
+    virtual bool unloadAllPlugins();
+
+    // 获取插件目录路径
+    static QString getPluginDirPath();
+
+Q_SIGNALS:
+    // 开始加载某个插件时发射（可用于启动画面）
+    void beginLoadPlugin(const QString& pluginPath);
+    // 插件卸载完成时发射
+    void pluginUnloaded(const QString& pluginPath);
 };
 ```
+
+!!! note "`getAllPlugins()` / `getNodePlugins()` 仅在派生类 `DAAppPluginManager` 上"
+    `getAllPlugins()`（返回 `QList<DAAbstractPlugin*>`）和 `getNodePlugins()`（返回 `QList<DAAbstractNodePlugin*>`）只在 APP 层的 `DAAppPluginManager`（`src/APP/DAAppPluginManager.h`）中提供，基类 `DAPluginManager` 只暴露 `getPluginOptions()`。
 
 ---
 
@@ -484,31 +564,36 @@ signals:
 ### 插件初始化时机
 
 ```cpp
-// DAPluginManager 加载插件流程
-void DAPluginManager::loadPlugin(const QString& pluginPath)
+// DAPluginManager 加载插件流程（示意）
+void DAPluginManager::loadAllPlugins(DACoreInterface* c)
 {
-    QPluginLoader loader(pluginPath);
-    QObject* pluginObj = loader.instance();
-    
-    DAAbstractPlugin* plugin = qobject_cast<DAAbstractPlugin*>(pluginObj);
-    if (!plugin) {
-        loader.unload();
-        return;
+    QString pluginDir = getPluginDirPath();
+    // 扫描目录下每个 .dll/.so
+    for (const QString& file : scanPluginDir(pluginDir)) {
+        emit beginLoadPlugin(file);  // 通知启动画面
+
+        QPluginLoader loader(file);
+        QObject* pluginObj = loader.instance();
+
+        DAAbstractPlugin* plugin = qobject_cast<DAAbstractPlugin*>(pluginObj);
+        if (!plugin) {
+            loader.unload();
+            continue;
+        }
+
+        // 设置核心接口 - 此时接口已完全就绪
+        plugin->setCore(c);
+
+        // 调用初始化（initialize 默认返回 true，可重载）
+        if (!plugin->initialize()) {
+            // 初始化失败，卸载并跳过
+            loader.unload();
+            continue;
+        }
+
+        // 注册成功
+        // ...
     }
-    
-    // 设置核心接口 - 此时接口已完全就绪
-    plugin->setCore(coreInterface);
-    
-    // 调用初始化
-    if (!plugin->initialize()) {
-        emit pluginInitializeFailed(plugin, "Initialize failed");
-        loader.unload();
-        return;
-    }
-    
-    // 注册成功
-    m_plugins.append(plugin);
-    emit pluginLoaded(plugin);
 }
 ```
 
@@ -520,9 +605,9 @@ void DAPluginManager::loadPlugin(const QString& pluginPath)
 
 继承 `DAAbstractNodePlugin`，提供工作流节点：
 
-- 必须实现 `getFactories()` 返回节点工厂
-- 节点工厂负责创建具体工作节点
-- 支持节点元数据注册
+- 必须实现 `createNodeFactory()` / `destroyNodeFactory()` 返回并销毁节点工厂
+- 节点工厂（`DAPyNodeFactory`）代理 Python 侧 `DANodeRegistry`，负责创建具体工作节点
+- 推荐使用 Python-first `@NodeDef` 自动发现节点，C++ 插件入口仅注册 Python 路径（参考 `plugins/DASystemNodes/`）
 
 ### 通用功能插件
 
@@ -538,8 +623,8 @@ void DAPluginManager::loadPlugin(const QString& pluginPath)
 |------|----------------|--------------|
 | 基类 | `DAAbstractNodePlugin` | `DAAbstractPlugin` |
 | 核心功能 | 提供工作流节点 | 界面/功能扩展 |
-| 必须实现 | `getFactories()` | `initialize()` |
-| 示例 | DataAnalysis | 自定义 Ribbon 插件 |
+| 必须实现 | `createNodeFactory()` / `destroyNodeFactory()` | `initialize()`（默认返回 true） |
+| 示例 | DataAnalysis、DASystemNodes、DAAgentTools | 自定义 Ribbon 插件 |
 
 ---
 

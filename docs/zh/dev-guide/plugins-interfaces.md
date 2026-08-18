@@ -109,18 +109,15 @@ class DAPLUGINSUPPORT_API DAAbstractNodePlugin : public DAAbstractPlugin
 public:
     // 创建节点工厂（纯虚函数，必须实现）
     virtual DAPyNodeFactory* createNodeFactory() = 0;
-    
-    // 销毁节点工厂
+
+    // 销毁节点工厂（遵循谁创建谁删除原则）
     virtual void destroyNodeFactory(DAPyNodeFactory* p) = 0;
-    
-    // 节点加载完成回调
+
+    // 节点加载完成回调（默认空实现）
     virtual void afterLoadedNodes();
-    
+
     // 获取当前激活的工作流编辑窗口
-    DAPyWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
-    
-    // 获取当前激活的工作流
-    DAPyWorkFlowOperateWidget* getWorkFlowOperateWidget() const;
+    DAPyWorkFlowOperateWidget* getCurrentActiveWorkflowOperateWidget() const;
 };
 ```
 
@@ -131,7 +128,7 @@ public:
 | `createNodeFactory()` | 创建节点工厂实例 | `DAPyNodeFactory*` |
 | `destroyNodeFactory()` | 销毁节点工厂（遵循谁创建谁删除原则） | `void` |
 | `afterLoadedNodes()` | 节点加载完成后的回调，可用于节点排序等操作 | `void` |
-| `getWorkFlowOperateWidget()` | 获取工作流操作窗口 | `DAPyWorkFlowOperateWidget*` |
+| `getCurrentActiveWorkflowOperateWidget()` | 获取当前激活的工作流编辑窗口 | `DAPyWorkFlowOperateWidget*` |
 
 ### 类继承关系
 
@@ -140,13 +137,12 @@ public:
 ```mermaid
 classDiagram
     direction TB
-    QObject <|-- DAAbstractPlugin
     DAAbstractPlugin <|-- DAAbstractNodePlugin
     DAAbstractNodePlugin <|-- DataAnalysisPlugin
     DAAbstractNodePlugin <|-- 自定义节点插件
-    
+
     class DAAbstractPlugin {
-        <<抽象基类>>
+        <<抽象基类，不继承 QObject>>
         +getIID() QString
         +getName() QString
         +getVersion() QString
@@ -155,24 +151,26 @@ classDiagram
         +finalize() bool
         +retranslate() void
         +core() DACoreInterface*
+        +createSettingPage() DAAbstractSettingPage
+        +createArchiveTask(bool) DAAbstractArchiveTask
     }
-    
+
     class DAAbstractNodePlugin {
         <<节点插件基类>>
         +createNodeFactory() DAPyNodeFactory*
         +destroyNodeFactory(DAPyNodeFactory*)
         +afterLoadedNodes() void
-        +getWorkFlowOperateWidget() DAPyWorkFlowOperateWidget*
+        +getCurrentActiveWorkflowOperateWidget() DAPyWorkFlowOperateWidget
     }
-    
+
     class DataAnalysisPlugin {
         <<具体实现>>
         -m_ui: DataAnalysisUI*
         -m_ioWorker: DataframeIOWorker*
         +initialize() bool
-+createNodeFactory()
+        +createNodeFactory() DAPyNodeFactory*
     }
-    ```
+```
 
 上图展示了插件类的继承层次：
 - `DAAbstractPlugin` 是抽象基类，定义所有插件必须实现的接口
@@ -190,38 +188,42 @@ classDiagram
 ```mermaid
 graph TB
     CI[DACoreInterface<br/>核心接口]
-    
+
     subgraph "子接口"
         UI[DAUIInterface<br/>界面接口]
         PM[DAProjectInterface<br/>项目管理接口]
         DM[DADataManagerInterface<br/>数据管理接口]
+        AG[DAAgentInterface<br/>Agent接口]
     end
-    
+
     CI --> UI
     CI --> PM
     CI --> DM
-    
+    CI --> AG
+
     subgraph "UI子接口"
         RA[DARibbonAreaInterface<br/>Ribbon区域]
         DA[DADockingAreaInterface<br/>Dock区域]
         AI[DAActionsInterface<br/>Action管理]
         SB[DAStatusBarInterface<br/>状态栏]
     end
-    
+
     UI --> RA
     UI --> DA
     UI --> AI
     UI --> SB
-    
+
     style CI fill:#e8f5e9
-style UI fill:#e1f5fe
-    ```
+    style UI fill:#e1f5fe
+    style AG fill:#fce4ec
+```
 
 上图展示了接口的层次结构：
 - `DACoreInterface` 是核心入口，提供获取其他接口的方法
 - `DAUIInterface` 提供 UI 相关功能，包含 Ribbon 区域、Dock 区域、Actions 管理和状态栏
 - `DAProjectInterface` 提供项目管理功能
 - `DADataManagerInterface` 提供数据管理功能
+- `DAAgentInterface` 提供 LLM agent / 工具注册功能
 
 ### 获取接口实例
 
@@ -237,20 +239,23 @@ bool MyPlugin::initialize()
     if (!core) {
         return false;  // 接口不可用，初始化失败
     }
-    
+
     // 获取 UI 接口
     DAUIInterface* ui = core->getUiInterface();
-    
+
     // 获取项目管理接口
     DAProjectInterface* project = core->getProjectInterface();
-    
+
     // 获取数据管理接口
     DADataManagerInterface* dataMgr = core->getDataManagerInterface();
-    
+
+    // 获取 Agent 接口（LLM 对话 / 工具注册）
+    DAAgentInterface* agent = core->getAgentInterface();
+
     // 通过 UI 接口获取子接口
     DARibbonAreaInterface* ribbon = ui->getRibbonArea();
     DADockingAreaInterface* dock = ui->getDockingArea();
-    
+
     return true;
 }
 ```
@@ -271,28 +276,27 @@ bool MyPlugin::initialize()
     DACoreInterface* core = this->core();
     DAUIInterface* ui = core->getUiInterface();
     DARibbonAreaInterface* ribbon = ui->getRibbonArea();
-    
-    // 在 Ribbon 中添加分类
-    SARibbonCategory* category = ribbon->addCategoryByPlugin(
-        tr("MyPlugin"),      // 分类名称
-        "myplugin.category" // 分类ID
-    );
-    
-    // 添加面板
-    SARibbonPannel* pannel = category->addPannel(tr("Tools"));
-    
+
+    // DARibbonAreaInterface 只暴露 ribbonBar()/getCategories()/getCategoryByObjectName()/getPanelByObjectName()
+    // 添加 Category 要通过 ribbonBar()->addCategory(...)
+    SARibbonCategory* category = ribbon->ribbonBar()->addCategory(tr("MyPlugin"));
+    category->setObjectName("myplugin.category");  // 之后可用 getCategoryByObjectName 查找
+
+    // 添加面板（SARibbonCategory::addPanel）
+    SARibbonPanel* panel = category->addPanel(tr("Tools"));
+
     // 添加按钮
     QAction* action = new QAction(tr("My Tool"), this);
-    pannel->addLargeAction(action);
-    
+    panel->addLargeAction(action);
+
     return true;
 }
 ```
 
 上述代码展示了 Ribbon 界面的创建流程：
 - 通过 `getRibbonArea()` 获取 Ribbon 区域接口
-- 使用 `addCategoryByPlugin()` 创建分类，传入名称和 ID
-- 使用 `addPannel()` 在分类中创建面板
+- 使用 `ribbonBar()->addCategory()` 创建分类（`DARibbonAreaInterface` 自身没有 `addCategoryByPlugin`）
+- 使用 `addPanel()` 在分类中创建面板
 - 创建 `QAction` 并添加到面板中
 
 ### 添加 Dock 窗口
@@ -300,16 +304,20 @@ bool MyPlugin::initialize()
 以下代码展示了如何在插件初始化时添加自定义 Dock 窗口：
 
 ```cpp
+#include "ads_globals.h"  // ads::DockWidgetArea
+
 bool MyPlugin::initialize()
 {
     DACoreInterface* core = this->core();
     DAUIInterface* ui = core->getUiInterface();
     DADockingAreaInterface* dockArea = ui->getDockingArea();
-    
-    // 创建自定义 Dock 窗口
+
+    // 创建自定义 Dock 窗口内容
     MyDockWidget* dock = new MyDockWidget();
-    dockArea->addDockWidget(dock, Qt::RightDockWidgetArea);
-    
+    // createDockWidget(QWidget*, ads::DockWidgetArea, const QString& widgetName, ...)
+    // 不是 addDockWidget(..., Qt::RightDockWidgetArea)
+    dockArea->createDockWidget(dock, ads::DockWidgetArea::RightDockWidgetArea, tr("My Dock"));
+
     return true;
 }
 ```
@@ -317,7 +325,7 @@ bool MyPlugin::initialize()
 上述代码展示了 Dock 窗口的添加流程：
 - 通过 `getDockingArea()` 获取 Dock 区域接口
 - 创建自定义 Dock 窗口实例
-- 使用 `addDockWidget()` 添加到指定区域（如右侧区域）
+- 使用 `createDockWidget(QWidget*, ads::DockWidgetArea, ...)` 创建停靠窗体，停靠区域用 `ads::DockWidgetArea`（不是 `Qt::RightDockWidgetArea`）
 
 ## 与 DAPluginSupport 的关系
 
@@ -352,8 +360,8 @@ sequenceDiagram
     IF-->>PL: 返回界面接口
     PL->>PL: 初始化界面、注册节点
     PL-->>PM: 返回 true
-PM->>PM: 注册插件到管理器
-    ```
+    PM->>PM: 注册插件到管理器
+```
 
 上图展示了插件加载的完整流程：
 

@@ -62,8 +62,16 @@ graph LR
 ### 4. 插件化架构
 
 - :material-puzzle: **松耦合设计** - 核心功能与业务逻辑分离，易于扩展
-- :material-toolbox: **插件仓库** - 内置数据分析插件，支持自定义开发
+- :material-toolbox: **插件仓库** - 内置数据分析节点插件（`DataAnalysis`）、系统流控制节点插件（`DASystemNodes`）以及 Agent 工具插件（`DAAgentTools`），支持自定义开发
 - :material-api: **开放接口** - 完整的插件开发接口和生命周期管理
+
+### 5. AI 驱动分析
+
+- :material-robot: **多供应商 LLM** - 支持多供应商（provider）多模型配置，运行时热切换模型而不丢会话状态
+- :material-library: **提示词库** - 内置 Agent 提示词库，通过 Ribbon 的「AI 分析」标签页一键管理和执行
+- :material-tools: **工具调用** - Agent 可调用 `DAAgentTools` 插件提供的 19 个内置工具（数据查询、图表生成、文件读写等）操作工作区
+- :material-history: **会话持久化** - Agent 会话随工程文件（`.dapro`）保存与恢复，支持多会话切换
+- :material-sync: **子进程架构** - DAAgent 模块通过独立 Python 子进程（LangGraph）驱动 LLM 推理与工具循环，主进程 UI 保持响应
 
 ---
 
@@ -73,9 +81,10 @@ graph LR
 |------|------|----------|
 | 语言 | C++ | C++17 |
 | GUI 框架 | Qt | 5.14+ / 6.x |
-| 数据处理 | Python + pandas | Python 3.7+ (推荐 3.11) |
+| 数据处理 | Python + pandas | Python 3.8+ (推荐 3.11) |
 | 构建系统 | CMake | 3.16+ |
 | 绑定框架 | pybind11 | - |
+| AI 子系统 | LangGraph + langchain-openai | 见 `requirements.txt` |
 
 ### 核心第三方库
 
@@ -84,6 +93,11 @@ graph LR
 - **qwt** - 科学图表库
 - **spdlog** - 高性能日志库
 - **pybind11** - Python/C++ 绑定
+- **langgraph / langchain-openai** - Agent 子系统的 LLM 编排与多供应商接入（pydantic、tiktoken 等）
+
+### 核心模块
+
+DAWorkBench 采用五层架构（基础层→功能层→界面层→接口层→应用层）。其中 `src/DAAgent/` 为 Agent 子系统所在模块，位于接口层（L4），对外暴露 `DAAgentInterface`，供插件注册工具、配置 LLM、管理会话与提示词库；其运行时由独立 Python 子进程（LangGraph）承载。详见 [API 总览](./api-reference/overview.md)。
 
 ---
 
@@ -127,7 +141,7 @@ graph LR
 
 !!! tip "前置条件"
     - Qt 5.14+ 或 Qt 6.x 开发环境
-    - Python 3.7+ 环境（推荐 3.11）
+    - Python 3.8+ 环境（推荐 3.11）
     - CMake 3.16+
     - Ninja 构建工具（推荐）
     - Git（用于拉取第三方库）

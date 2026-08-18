@@ -26,6 +26,12 @@
 | `src/3rdparty/QtPropertyBrowser` | https://github.com/czyt1988/QtPropertyBrowser | Qt 属性表/属性编辑器控件 | ⚠️ 已停用，源码保留但不参与构建（统一表单系统已替代） | MIT |
 | `src/3rdparty/qwt` | https://github.com/czyt1988/QWT | 基于 Qt 的科学/工程图表与仪表盘库 | 实时曲线、频谱图、示波器、工业监控界面 | Qwt License (LGPL-like) |
 | `src/3rdparty/ordered-map` | https://github.com/Tessil/ordered-map | 保留插入顺序的哈希表 & 树形映射 | 需要"键值+顺序"双重语义的数据结构，如 JSON 编辑器、配置树 | MIT |
+| `src/3rdparty/DAWidgets` | https://gitee.com/czyt1988/DAWidgets | Qt QWidget 界面补充控件库（灵感源自 Element UI，类以 `DA` 前缀、`namespace DA`，支持 Qt5/Qt6） | 补齐 Qt Widgets 原生控件缺失的常见交互形态（多标签下拉选择、折叠面板、流式布局等） | MIT |
+| `src/3rdparty/ctk` | vendored（本地源码，非 submodule） | 医疗影像工具包 Common Toolkit 精简版（仅用到部分组件） | 属性/设置面板等底层组件支撑 | Apache-2.0（CTK 上游） |
+
+!!! note "DAWidgets 与 ctk 的管理方式不同"
+    - `DAWidgets` 是 **git submodule**（见 `.gitmodules` 中 `[submodule "src/3rdparty/DAWidgets"]`，url 指向 Gitee），随 `git submodule update --init` 拉取。
+    - `ctk` 是 **vendored（本地直接放入源码）**，不在 `.gitmodules` 中登记，由 `src/3rdparty/CMakeLists.txt` 直接 `add_subdirectory(ctk)` 构建。
 
 ## 添加第三方库
 
@@ -113,6 +119,9 @@ GitHub 地址配置示例：
 [submodule "src/3rdparty/zlib"]
     url = https://github.com/madler/zlib.git
     active = true
+[submodule "src/3rdparty/DAWidgets"]
+    url = https://github.com/czyt1988/DAWidgets.git
+    active = true
 ```
 
 Gitee 地址配置示例：
@@ -144,6 +153,9 @@ Gitee 地址配置示例：
     active = true
 [submodule "src/3rdparty/zlib"]
     url = https://gitee.com/czyt1988/zlib.git
+    active = true
+[submodule "src/3rdparty/DAWidgets"]
+    url = https://gitee.com/czyt1988/DAWidgets
     active = true
 ```
 

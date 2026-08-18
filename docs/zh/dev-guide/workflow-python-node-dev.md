@@ -47,13 +47,14 @@ class MyNode:
 | `name` | str | 是 | 节点显示名称，用于界面展示 |
 | `category` | str | 否 | 节点所属分类，默认为空字符串 |
 | `icon` | str | 否 | 节点图标标识，默认为空字符串 |
-| `render_template` | str | 否 | 渲染模板类型，默认为 `"nodestyle"`，支持 `"nodestyle"`、`"widget"` |
+| `render_template` | str | 否 | 渲染模板类型，默认为 `"nodestyle"`，支持 `"nodestyle"`、`"rect"`、`"svg"`、`"widget"`（`rect`/`svg` 会被规范化为 `nodestyle`） |
 | `style` | NodeDisplay/dict | 否 | 节点样式配置，支持 `NodeDisplay` 实例或 dict（自动转换为 `NodeDisplay`），默认为 `None` |
 
 !!! tip "render_template 参数"
-    `render_template` 控制节点在工作流场景中的视觉呈现方式：
+    `render_template` 控制节点在工作流场景中的视觉呈现方式（`node_def.py:179-183` 的 `_normalize_render_template` 会把旧值归一化）：
     
     - `"nodestyle"`（默认）：使用 `NodeDisplay`/`DAPyNodeStyle` 配置绘制节点样式（支持 `body_shape`、`background_color` 等字段）
+    - `"rect"` / `"svg"`：旧值，规范化后等价于 `"nodestyle"`
     - `"widget"`：自定义 QWidget 节点
 
 ### 完整节点类结构
@@ -211,31 +212,63 @@ class ExampleNode:
 `Parameter` 类用于声明节点的可配置参数。
 
 ```python
+# src/PyScripts/DAWorkbench/DAWorkFlowPy/types.py:140-167
 class Parameter:
-    def __init__(self, param_type: type, default=None, description: str = "")
+    def __init__(
+        self,
+        param_type,
+        default=None,
+        description: str = "",
+        min=None,
+        max=None,
+        step=None,
+        decimals=None,
+        enum=None,
+        filter=None,
+        layout: str = "inline",
+        height=None,
+        **kwargs,
+    )
 ```
 
 #### 参数说明
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 |------|------|------|--------|------|
-| `param_type` | type | 是 | - | 参数类型，如 `str`、`int`、`float`、`bool`、`list`、`dict` |
+| `param_type` | type/str | 是 | - | 参数类型，如 `str`、`int`、`float`、`bool`、`list`、`dict`，或字符串标签 `"file"/"folder"/"enum"/"color"/"font"/"code"` |
 | `default` | any | 否 | `None` | 参数默认值 |
 | `description` | str | 否 | `""` | 参数描述信息 |
+| `min` | any | 否 | `None` | 数值最小值，写入扩展属性 |
+| `max` | any | 否 | `None` | 数值最大值 |
+| `step` | any | 否 | `None` | 数值步进 |
+| `decimals` | any | 否 | `None` | 浮点小数位 |
+| `enum` | any | 否 | `None` | 枚举可选项 |
+| `filter` | str | 否 | `None` | `file`/`folder` 类型的文件过滤器 |
+| `layout` | str | 否 | `"inline"` | 编辑器布局：`"inline"`（属性名在左、编辑器在右）或 `"below"`（属性名在上、编辑器占满整行下方，`str` 自动切多行 `QPlainTextEdit`） |
+| `height` | int | 否 | `None` | 编辑器高度（像素），仅 `below` 模式生效 |
+| `**kwargs` | - | 否 | - | 扩展字段，键名需与 C++ `DANodeParameterFormAdapter` 读取的 attributes 键一致 |
 
 #### 支持的参数类型
 
-| Python 类型 | 类型标签 | 说明 |
-|-------------|----------|------|
+`_TYPE_LABELS`（`types.py:121-135`）支持的类型标签：
+
+| 类型 | 标签 | 说明 |
+|------|------|------|
 | `str` | `"str"` | 字符串 |
 | `int` | `"int"` | 整数 |
 | `float` | `"float"` | 浮点数 |
 | `bool` | `"bool"` | 布尔值 |
 | `list` | `"list"` | 列表 |
 | `dict` | `"dict"` | 字典 |
+| `"file"` | `"file"` | 文件路径（由 C++ 端 `DAFormEditorRegistry` 渲染为 `DAFilePathEditWidget`） |
+| `"folder"` | `"folder"` | 文件夹路径 |
+| `"enum"` | `"enum"` | 枚举下拉 |
+| `"color"` | `"color"` | 颜色选择 |
+| `"font"` | `"font"` | 字体选择 |
+| `"code"` | `"code"` | 多行代码编辑（`QPlainTextEdit`） |
 
 !!! info "C++ 端扩展类型支持"
-    Python `Parameter` 原生仅支持上述 6 种类型，但 C++ 端的 `DAFormEditorRegistry` 已扩展至 **11 种编辑器类型**：`str→QLineEdit, int→QSpinBox, float→QDoubleSpinBox, bool→QCheckBox, enum→QComboBox, list→QListWidget, file→DAFilePathEditWidget, folder→DAFilePathEditWidget(dir), color→DAColorPickerButton, font→DAFontEditPannelWidget, code→QPlainTextEdit`。当 Python 节点的参数通过 `DANodeParameterFormAdapter` 转换为 `DAFormSpec` 后，`DAFormEditorRegistry` 根据 `type` 字段创建对应的编辑器控件。参见 [创建属性设置面板](./creating-setting-panel.md) 和 `src/DACommonWidgets/DAFormEditorRegistry.h`。
+    Python `Parameter` 通过 `param_type` 传 Python 内置类型（6 种）或字符串标签（再 6 种扩展类型）。扩展类型由 C++ 端的 `DAFormEditorRegistry` 渲染对应控件：`str→QLineEdit, int→QSpinBox, float→QDoubleSpinBox, bool→QCheckBox, enum→QComboBox, list→QListWidget, file→DAFilePathEditWidget, folder→DAFilePathEditWidget(dir), color→DAColorPickerButton, font→DAFontEditPannelWidget, code→QPlainTextEdit`。当 Python 节点的参数通过 `DANodeParameterFormAdapter` 转换为 `DAFormSpec` 后，`DAFormEditorRegistry` 根据 `type` 字段创建对应的编辑器控件。参见 [创建属性设置面板](./creating-setting-panel.md) 和 `src/DACommonWidgets/DAFormEditorRegistry.h`。
 
 #### 使用示例
 
@@ -666,12 +699,13 @@ class AgentNode:
     def _push_state(self, state):
         """推送节点状态变更通知"""
         try:
-            import DAWorkbench
-            DAWorkbench.da_interface.call_in_main_thread(
-                "node_state_change",
-                self.qualified_name,
-                state,
-            )
+            import da_app
+            # cn:真实跨线程 API 是 core.getPythonSignalHandler().callInMainThread(func)
+            #    （绑定在 da_interface.DAPythonSignalHandler 上，见 DAPyWorkFlowPythonBinding.cpp:178）
+            #    不存在 DAWorkbench.da_interface.call_in_main_thread(...) 这种字符串分发的自由函数
+            handler = da_app.getCore().getPythonSignalHandler()
+            qn = self.qualified_name
+            handler.callInMainThread(lambda: self._emit_state_change(qn, state))
         except (ImportError, AttributeError):
             pass
 ```
@@ -723,7 +757,7 @@ descriptor = registry.get_descriptor("my_module.DataFilter")
 registry = DANodeRegistry()
 descriptors = registry.discover(scan_paths=[
     "/path/to/plugins/DataAnalysis",
-    "/path/to/plugins/CrewAIAdapter"
+    "/path/to/plugins/DASystemNodes"
 ])
 ```
 
@@ -838,19 +872,20 @@ class WidgetNode:
 def _push_state(self, state):
     """推送节点状态变更通知"""
     try:
-        import DAWorkbench
-        DAWorkbench.da_interface.call_in_main_thread(
-            "node_state_change",
-            self.qualified_name,
-            state,
-        )
+        import da_app
+        # cn:真实跨线程 API：core.getPythonSignalHandler().callInMainThread(func)
+        #    func 是一个无参可调用对象，将在 Qt 主线程执行
+        #    不存在 DAWorkbench.da_interface.call_in_main_thread(...) 字符串分发的自由函数
+        handler = da_app.getCore().getPythonSignalHandler()
+        qn = self.qualified_name
+        handler.callInMainThread(lambda: self._emit_state_change(qn, state))
     except (ImportError, AttributeError):
-        # 在纯 Python 测试环境中，DAWorkbench 不可用
+        # 在纯 Python 测试环境中，da_app 不可用
         pass
 ```
 
 !!! warning "线程安全"
-    `callInMainThread` 在 C++ 绑定层已正确处理 GIL 管理，Python 脚本无需额外处理 GIL。但需注意回调函数不要在后台线程直接操作 UI。
+    `callInMainThread` 在 C++ 绑定层已正确处理 GIL 管理，Python 脚本无需额外处理 GIL。但需注意回调函数不要在后台线程直接操作 UI。传入的 `func` 必须是**无参**可调用对象（lambda 或函数）；如需携带参数，请通过 lambda 闭包捕获（如上例 `qn`/`state`），不要试图向 `callInMainThread` 传额外位置参数。
 
 ### 运行时状态持久化（serialize_runtime_state / deserialize_runtime_state）
 
@@ -1001,6 +1036,10 @@ def execute(self, inputs=None, params=None):
 
 - Python 模块源码：`src/PyScripts/DAWorkbench/DAWorkFlowPy/`
   - `__init__.py` — 模块导出：`DAWorkflowNode`、`NodeDisplay`、`LinkPointStyle` 等
+  - `workflow.py` — `DAWorkflow` 工作流编排与节点拓扑管理
+  - `executor.py` — `DAWorkflowExecutor` 执行引擎（节点调度、数据流转）
+  - `connection.py` — 节点连接管理（端口连接关系建模）
+  - `signal_manager.py` — 信号管理器（节点状态变更等信号协调）
   - `node_def.py` — `@NodeDef` 装饰器实现、`DAWorkflowNode` 基类、`NodeDisplay`、`LinkPointStyle`
   - `types.py` — `Input`、`Output`、`Parameter` 类定义
   - `node_registry.py` — `DANodeRegistry` 类定义
@@ -1008,8 +1047,8 @@ def execute(self, inputs=None, params=None):
   - `serializer.py` — `DAWorkflowSerializer` 工作流序列化/反序列化
   - `syntax.py` — `NodeProxy`、`NodeOutputProxy`、`NodeInputProxy`（链式连接语法糖）
 - 节点示例：`plugins/` 目录下的 Python 插件
-  - `plugins/DataAnalysis/PyScripts/DADataAnalysisPy/` — 数据分析节点
-  - `plugins/CrewAIAdapter/PyScripts/DACrewAIAdapterPy/` — AI Agent 节点
+  - `plugins/DataAnalysis/PyScripts/DADataAnalysisNodes/` — 数据分析节点
+  - `plugins/DASystemNodes/PyScripts/DASystemNodes/` — 系统内置节点（流程控制/数据展示）
 - 相关文档
   - [DAPyWorkFlow 模块概述](./workflow-overview.md)
   - [工作流生命周期](./workflow-lifecycle.md)

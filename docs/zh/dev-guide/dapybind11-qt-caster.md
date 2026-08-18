@@ -9,7 +9,7 @@
 - **基本类型**: `QString`, `QByteArray`, `QVariant`
 - **日期时间**: `QDate`, `QTime`, `QDateTime`（支持 Python `datetime`、`pandas.Timestamp`、`numpy.datetime64`）
 - **容器类型**: `QList<T>`, `QVector<T>`, `QSet<T>`, `QHash<K,V>`, `QMap<K,V>`
-- **辅助工具**: `DA::PY::` 命名空间下的便捷转换函数、`safe_pyobject` 安全 Python 对象包装器、`canCast*` 类型检测函数
+- **辅助工具**: `DA::PY::` 命名空间下的便捷转换函数、`canCast*` 类型检测函数
 
 ## 包含方式
 
@@ -360,70 +360,6 @@ bool DA::PY::canCastToQDateTime(pybind11::handle src);
 bool DA::PY::canCastToQDate(pybind11::handle src);
 bool DA::PY::canCastToQTime(pybind11::handle src);
 bool DA::PY::canCastToQString(pybind11::handle src);
-```
-
-## safe_pyobject — 安全 Python 对象包装器
-
-`DA::PY::safe_pyobject` 是一个 RAII 风格的 PyObject* 持有者，用于在 C++ 代码中安全地持有 Python 对象，避免 GIL 未初始化时的崩溃。
-
-```cpp
-class safe_pyobject {
-public:
-    // 默认构造 — 持有 nullptr
-    safe_pyobject();
-
-    // 移动构造：接管 pybind11::object 的所有权（release + dec_ref 责任转移）
-    safe_pyobject(pybind11::object&& obj);
-
-    // 禁止拷贝（引用计数由移动语义管理）
-    safe_pyobject(const safe_pyobject&) = delete;
-    safe_pyobject& operator=(const safe_pyobject&) = delete;
-
-    // 移动构造/赋值
-    safe_pyobject(safe_pyobject&& other) noexcept;
-    safe_pyobject& operator=(safe_pyobject&& other) noexcept;
-
-    // 析构：如果 Py_IsInitialized()，调用 Py_DECREF
-    ~safe_pyobject();
-
-    // 检查是否为 nullptr 或 Py_None
-    bool is_none() const;
-
-    // 返回 pybind11::handle（不增加引用计数）
-    pybind11::handle get() const;
-
-    // 隐式 bool：非空且非 None 为 true
-    operator bool() const;
-
-    // 返回 pybind11::object（borrow 引用）
-    pybind11::object object() const;
-};
-```
-
-**典型用途**：作为静态变量的延迟初始化容器，安全存储 Python 类型对象（如 `datetime.datetime`、`pandas.Timestamp` 等）。
-
-```cpp
-// 模式 1：在 type_caster 中缓存 Python 类型对象
-static DA::PY::safe_pyobject& get_datetime_type()
-{
-    static DA::PY::safe_pyobject datetime_type =
-        DA::PY::import_type_safe("datetime", "datetime");
-    return datetime_type;
-}
-
-// 模式 2：安全导入 Python 模块/类型
-DA::PY::safe_pyobject np_type = DA::PY::import_type_safe("numpy", "ndarray");
-if (np_type && pybind11::isinstance(src, np_type.get())) {
-    // 处理 numpy 数组
-}
-```
-
-**`import_type_safe()` 辅助函数**：
-
-```cpp
-// 安全导入 Python 模块中的指定类型
-// 如果 Python 未初始化或导入失败，返回空的 safe_pyobject
-inline safe_pyobject import_type_safe(const char* module_name, const char* type_name);
 ```
 
 ## 使用场景与最佳实践

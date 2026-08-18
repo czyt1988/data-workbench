@@ -183,10 +183,10 @@ command.endDataOperateCommand(dadata)
 !!! warning "beginDataOperateCommand 参数说明"
     - `data`：操作的 `DAData` 对象
     - `text`：撤销/重做列表中显示的操作描述（`std::string`）
-    - `isObjectPersist`：是否保留对象引用（默认 `True`）
+    - `isObjectPersist`：是否保留对象引用（默认 `False`）
     - `isSkipFirstRedo`：是否跳过首次重做（默认 `True`，因为操作已执行）
 
-    **务必**在操作完成后调用 `endDataOperateCommand`，否则撤销栈会处于不一致状态。
+    上述默认值以源码为准：`src/DAInterface/DAInterfacePythonBinding.cpp:259-273` 中 `isObjectPersist = false`、`isSkipFirstRedo = true`。**务必**在操作完成后调用 `endDataOperateCommand`，否则撤销栈会处于不一致状态。
 
 ### Step 5：通知界面刷新与日志
 
@@ -344,20 +344,27 @@ background_task()
     `callInMainThread` 在 C++ 绑定中已正确处理了 GIL 管理：
 
     ```cpp title="DAInterfacePythonBinding.cpp - callInMainThread 绑定实现"
+    // src/DAInterface/DAInterfacePythonBinding.cpp:57-79
     .def("callInMainThread",
         [](DA::DAPythonSignalHandler& self, pybind11::function pyFunc) {
+            //pyFunc.inc_ref();
             self.callInMainThread([pyFunc]() {
                 try {
                     pybind11::gil_scoped_acquire acquire;  // 在主线程执行时获取 GIL
                     pyFunc();
+                    //pyFunc.dec_ref();
                 } catch (const pybind11::error_already_set& e) {
                     qCritical() << "Python error in main thread callback:" << e.what();
+                    //pyFunc.dec_ref();
+                } catch (const std::exception& e) {
+                    qCritical() << "C++ error in main thread callback:" << e.what();
+                    //pyFunc.dec_ref();
                 }
             });
         })
     ```
     
-    绑定层已在回调执行前自动获取 GIL，Python 脚本无需额外处理 GIL。但需注意回调函数 `pyFunc` 的引用计数已被绑定层正确管理（通过 Lambda 捕获）。
+    绑定层已在回调执行前自动获取 GIL，Python 脚本无需额外处理 GIL。回调函数 `pyFunc` 的引用计数通过 lambda 捕获持有（`inc_ref/dec_ref` 在源码中已注释掉），且同时捕获 `pybind11::error_already_set` 与 `std::exception` 两类异常。
 
 ## Thread Status Manager 使用指南
 
@@ -472,3 +479,71 @@ status_bar.hideProgressBar()
         # 绝对不要在后台线程直接操作 UI！
         # ui.addInfoLogMessage("消息")  ← 崩溃风险
         ```
+
+## 绑定接口速查
+
+以下方法表汇总 `da_interface` 模块中常用但容易遗漏的绑定方法，便于脚本编写时查阅。均对应 `src/DAInterface/DAInterfacePythonBinding.cpp`。
+
+### DADataManagerInterface
+
+通过 `core.getDataManagerInterface()` 获取，行号见 `DAInterfacePythonBinding.cpp:82-222`。
+
+| 方法 | 签名要点 | 说明 |
+|------|---------|------|
+| `getAllDataframes()` | 无参，返回 `dict {name: df}` | 取所有 DataFrame 类型数据（`:110-122`） |
+| `getSelectDataframes()` | 无参，返回 `dict {name: df}` | 取选中数据中的 DataFrame（`:148-161`） |
+| `getSelectDatas()` | 无参，返回 `list` | 取选中的全部 DAData 对象（`:123-134`） |
+| `addSeries(series, name)` | pandas Series + 名称 | 以 Series 构造 DAData 并加入管理器（`:212-221`） |
+| `findData(name, case_sensitive=True)` | 名称 + 是否区分大小写 | 按精确名称查找，返回 DAData（`:162-170`） |
+| `findDatas(pattern, cs=0)` | 通配模式 + 0/1 | 0=不区分大小写，1=区分，返回 list（`:171-185`） |
+| `findDatasReg(regex_pattern)` | 正则字符串 | 按正则查找，返回 list（`:186-199`） |
+| `addData_(data)` | DAData | 带撤销/重做地添加数据（`:84`） |
+| `removeData_(data)` | DAData | 带撤销/重做地移除数据（`:91`） |
+| `getDataIndex(data)` | DAData | 返回数据在管理器中的索引（`:94`） |
+| `getDataById(id)` | id | 按 id 取数据（`:95`） |
+| `setSuppressSignals(on)` / `isSuppressSignals()` | bool | 批量插入时抑制 `dataAdded` 信号（`:85-87`） |
+| `emitDatasBatchAdded()` | 无参 | 批量插入后触发一次刷新（`:88-89`） |
+
+!!! tip "批量插入数据"
+    大量数据一次性 `addData` 会触发大量界面刷新。先 `setSuppressSignals(True)`，循环 `addData`，最后 `emitDatasBatchAdded()` 并 `setSuppressSignals(False)`，可显著提升性能。
+
+### DAStatusBarInterface
+
+通过 `ui.getStatusBar()` 获取，行号见 `DAInterfacePythonBinding.cpp:225-249`。
+
+| 方法 | 说明 |
+|------|------|
+| `showMessage(message, timeout=15000)` | 在状态栏显示临时消息 |
+| `clearMessage()` | 清除临时消息 |
+| `showProgressBar()` / `hideProgressBar()` | 显示/隐藏进度条 |
+| `setProgress(value)` | 设置进度值 |
+| `setProgressText(text)` | 设置进度文字 |
+| `clearProgressText()` | 清除进度文字 |
+| `setBusy(busy)` / `isBusy()` | 设置/查询繁忙状态 |
+| `resetProgress()` | 重置进度 |
+| `isProgressBarVisible()` | 查询进度条是否可见 |
+
+### DADockingAreaInterface
+
+通过 `ui.getDockingArea()` 获取，行号见 `DAInterfacePythonBinding.cpp:348-369`。
+
+| 方法 | 说明 |
+|------|------|
+| `getCurrentScene()` | 返回当前活动 `DAPyWorkFlowScene`，无活动场景返回 `None`（需先 `import da_py_workflow` 才能识别类型） |
+| `getChartOperateWidget()` | 返回管理所有 figure/chart 的 `DAChartOperateWidget` |
+| `showMarkdownFile(filePath)` | 用内置 Markdown 查看器显示文件，成功返回 `True` |
+
+!!! warning "主线程约束"
+    上述方法均须在 Qt 主线程调用；后台线程请通过 `core.getPythonSignalHandler().callInMainThread(func)` 派发。
+
+### DAChartOperateWidget
+
+通过 `dock.getChartOperateWidget()` 获取，行号见 `DAInterfacePythonBinding.cpp:378-415`。
+
+| 方法 | 说明 |
+|------|------|
+| `getCurrentChart()` | 返回当前活动 `DAChartWidget`，无活动返回 `None` |
+| `getCurrentFigure()` | 返回当前活动 `DAFigureWidget`（需 `import da_figure` 识别类型） |
+| `getAllCharts()` | 跨所有 figure 收集全部 chart，返回 `list` |
+| `getFigureCount()` | 返回 figure 数量 |
+| `createFigure(name="")` | 新建并返回一个 `DAFigureWidget` |

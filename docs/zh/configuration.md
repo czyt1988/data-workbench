@@ -6,8 +6,8 @@ DAWorkBench 支持多种配置文件格式，用于存储程序设置、项目�
 
 **特性**
 
-- ✅ **多格式支持**：支持 INI 和 JSON 两种配置文件格式
-- ✅ **分层配置**：程序配置、项目配置、工作流配置、插件配置四个层次
+- ✅ **多格式支持**：支持 XML、INI、JSON 三种配置文件格式
+- ✅ **分层配置**：程序配置、工程文件、工作流数据、插件配置四个层次
 - ✅ **跨平台路径**：自动适应 Windows、Linux、macOS 的配置目录规范
 - ✅ **优先级机制**：项目级配置 > 命令行参数 > 全局配置 > 默认配置
 - ✅ **热更新支持**：部分配置支持运行时变更，无需重启
@@ -16,196 +16,152 @@ DAWorkBench 支持多种配置文件格式，用于存储程序设置、项目�
 
 | 配置类型 | 文件格式 | 存储位置 | 说明 |
 |----------|----------|----------|------|
-| **程序配置** | INI/JSON | 用户目录 | 全局程序设置 |
-| **项目配置** | JSON | 项目目录 | 项目信息和工作流关联 |
-| **工作流配置** | JSON | 项目目录 | 工作流节点和连接信息 |
+| **程序配置** | XML/INI | 用户配置目录 | 全局程序设置（`dawork-config.xml` 及若干 `.ini`） |
+| **工程文件** | ZIP（内含 XML） | 工程目录（`.dapro`） | 单文件打包系统信息、工作流逻辑/视图、数据、图表、Agent 会话等 |
+| **工作流数据** | XML（在 `.dapro` 内） | `workflow-data.xml` + `workflow.xml` | 节点拓扑/参数 与 节点位置/图元属性 |
 | **插件配置** | JSON/INI | 插件目录 | 插件特定设置 |
 
 ## 程序全局配置
 
 ### 配置文件位置
 
-程序全局配置存储在用户目录，根据操作系统不同位置有所差异：
+程序全局配置统一存放在用户应用数据目录下的 `config/` 子目录（由 `DA::DADir::getConfigPath()` 返回，不存在则自动创建）：
 
 ```text
-Windows: C:\Users\[用户名]\AppData\Local\DAWorkbench\settings.ini
-Linux: ~/.config/DAWorkbench/settings.ini
-macOS: ~/Library/Application Support/DAWorkbench/settings.ini
+Windows: C:\Users\[用户名]\AppData\Local\<AppName>\config\
+Linux:   ~/.local/share/<AppName>/config/        （或 ~/.config/<AppName>/config/）
+macOS:   ~/Library/Application Support/<AppName>/config/
 ```
 
-上述路径使用 Qt 的 QSettings 自动管理，无需手动处理跨平台差异。
+该目录下的核心配置文件为 `dawork-config.xml`，由 `DAAppConfig`（继承 `DAProperties` + `DAXMLFileInterface`）管理。`DAAppConfig::getAbsoluteConfigFilePath()` 返回其绝对路径，启动时 `loadConfig()` 读取，退出时 `saveConfig()` 写回。
+
+!!! note "全局 QSettings 重定向"
+    `main` 启动时调用 `QSettings::setDefaultFormat(QSettings::IniFormat)` 并通过 `QSettings::setPath(...)` 将 `UserScope` 重定向到上述 `config/` 目录。这只作为安全网，用于覆盖第三方库（如 DAWidgets 的最近文件管理器副本）内部默认/两参数构造的 `QSettings`。程序自身的配置不走此路径，而是显式读写 `dawork-config.xml` 或下文所述的 `agent-config.ini` / `recent-files.ini`。
 
 ### 配置内容示例
 
-全局配置使用 INI 格式，包含语言、主题、Python 环境等基本设置。
+全局配置使用 **XML** 格式，每个配置项为一个 `<prop key="...">` 元素，值放在 `<value>` 子节点中。根节点为 `<configs name="da-app" ver="...">`。
 
-下面的 INI 示例展示了典型程序配置的内容：
+下面的 XML 示例展示了 `dawork-config.xml` 的典型内容（仅列出部分真实键，键名以 `DA_CONFIG_KEY_*` 宏定义于 `src/APP/SettingPages/DAAppConfig.h`）：
+
+```xml
+<?xml version="1.0"?>
+<configs name="da-app" ver="0.1.1">
+  <prop key="language"><value>zh_CN</value></prop>                 <!-- DA_CONFIG_KEY_LANGUAGE 界面语言，空=跟随系统 -->
+  <prop key="show-splash"><value>true</value></prop>              <!-- DA_CONFIG_KEY_SHOW_SPLASH 启动画面 -->
+  <prop key="app-font-family"><value></value></prop>              <!-- DA_CONFIG_KEY_APP_FONT_FAMILY 应用字体族，空=系统默认 -->
+  <prop key="app-font-size"><value>0</value></prop>               <!-- DA_CONFIG_KEY_APP_FONT_POINT_SIZE 字号，<=0=系统默认 -->
+  <prop key="python-extra-paths"><value></value></prop>           <!-- DA_CONFIG_KEY_PYTHON_EXTRA_PATHS Python 额外 sys.path -->
+  <prop key="log-level"><value>2</value></prop>                    <!-- DA_CONFIG_KEY_LOG_LEVEL 日志级别 -->
+  <prop key="log-queue-level"><value>3</value></prop>              <!-- DA_CONFIG_KEY_LOG_QUEUE_LEVEL UI 日志队列级别 -->
+  <prop key="log-output-stdout"><value>true</value></prop>        <!-- DA_CONFIG_KEY_LOG_OUTPUT_STDOUT 是否输出到 stdout -->
+  <prop key="log-rotation-mode"><value>0</value></prop>           <!-- DA_CONFIG_KEY_LOG_ROTATION_MODE 0=rotating 1=daily 2=console -->
+  <prop key="log-max-size"><value>10485760</value></prop>         <!-- DA_CONFIG_KEY_LOG_MAX_SIZE 单文件最大字节 -->
+  <prop key="log-max-files"><value>5</value></prop>              <!-- DA_CONFIG_KEY_LOG_MAX_FILES 保留历史日志份数 -->
+</configs>
+```
+
+### 配置项一览
+
+下表列出 `DAAppConfig` 管理的部分真实键（完整定义见 `src/APP/SettingPages/DAAppConfig.h`）：
+
+| 键宏 | 键名 | 说明 |
+|------|------|------|
+| `DA_CONFIG_KEY_LANGUAGE` | `language` | 界面语言代码（如 `zh_CN`/`en_US`），空表示跟随系统 |
+| `DA_CONFIG_KEY_SHOW_SPLASH` | `show-splash` | 是否显示启动画面（可被 `--no-splash` 命令行参数跳过） |
+| `DA_CONFIG_KEY_APP_FONT_FAMILY` | `app-font-family` | 应用字体族名，空表示系统默认 |
+| `DA_CONFIG_KEY_APP_FONT_POINT_SIZE` | `app-font-size` | 字号，`<=0` 表示系统默认 |
+| `DA_CONFIG_KEY_PYTHON_EXTRA_PATHS` | `python-extra-paths` | Python 额外模块搜索路径（`sys.path`） |
+| `DA_CONFIG_KEY_LOG_LEVEL` | `log-level` | 日志级别（对应 `DALogLevel` 枚举） |
+| `DA_CONFIG_KEY_LOG_QUEUE_LEVEL` | `log-queue-level` | UI 日志队列级别 |
+| `DA_CONFIG_KEY_LOG_OUTPUT_STDOUT` | `log-output-stdout` | 是否输出日志到 stdout |
+| `DA_CONFIG_KEY_LOG_ROTATION_MODE` | `log-rotation-mode` | 日志轮转模式：0=rotating，1=daily，2=console |
+| `DA_CONFIG_KEY_LOG_MAX_SIZE` | `log-max-size` | 单个日志文件最大字节数 |
+| `DA_CONFIG_KEY_LOG_MAX_FILES` | `log-max-files` | 保留的历史日志文件数 |
+
+!!! warning "不存在虚构配置项"
+    历史文档中曾出现 `[Performance] max_threads/cache_size`、`[Logging] max_log_size`、`[Python] python_path/python_env` 等 INI 段，这些**并非**真实配置项，请勿据此编写插件或部署脚本。日志、字体、语言、启动画面、Python 路径等均通过上表 `DA_CONFIG_KEY_*` 键管理。
+
+程序启动时（`main.cpp` 中构造 `DAAppConfig` 并调用 `loadConfig()`）自动加载此配置；其中日志、Python、字体、翻译、启动画面等在**早期初始化阶段**即读取，其变更需重启程序生效。其余项由设置对话框写入、下次启动读取。
+
+## Agent 配置（AI 分析子系统）
+
+DAAgent 模块的配置独立于 `dawork-config.xml`，单独存放在配置目录下的 `agent-config.ini` 中（路径为 `DA::DADir::getConfigPath() + "/agent-config.ini"`，即上文 `config/` 子目录内）。原因是 DAAgent 库无法链接 APP 的 `DAAppConfig`，故采用显式路径的 `QSettings(IniFormat)` 持久化。
+
+### agent-config.ini
+
+`[agent]` 段包含以下键：
+
+| 键 | 类型 | 说明 |
+|----|------|------|
+| `llm_base_url` | string | LLM 服务地址（兼容性单供应商字段） |
+| `llm_model` | string | 默认模型 id |
+| `llm_api_key` | QByteArray | API Key，**经 DPAPI 加密**存储（`encryptApiKey` 加解密，`IniFormat` 原生支持 `QByteArray`） |
+| `ready_timeout_sec` | int | 子进程就绪超时（秒） |
+| `stop_timeout_sec` | int | 子进程停止超时（秒） |
+| `providers` | string(JSON) | 多供应商配置数组（紧凑 JSON 字符串），每元素含 `name`/`base_url`/`api_key`/`models` |
 
 ```ini
-[General]
-language=zh_CN                    # 界面语言设置
-theme=default                     # 主题样式
-auto_save=true                    # 自动保存开关
-save_interval=300                 # 自动保存间隔（秒）
-
-[MainWindow]
-geometry=@ByteArray(xxxx)         # 主窗口几何信息（序列化）
-state=@ByteArray(xxxx)            # 主窗口状态（序列化）
-last_project=/path/to/last/project.dawproj  # 最近打开的项目
-
-[Python]
-enabled=true                      # Python 支持开关
-python_path=/path/to/python       # Python 可执行文件路径
-python_env=/path/to/venv          # Python 虚拟环境路径
-
-[Logging]
-log_level=info                    # 日志级别
-log_file=/path/to/log/DAWorkbench.log  # 日志文件路径
-max_log_size=10MB                 # 最大日志文件大小
-
-[Performance]
-max_threads=4                     # 最大线程数
-cache_size=100MB                  # 缓存大小限制
+[agent]
+llm_base_url=https://api.example.com/v1
+llm_model=gpt-4o-mini
+llm_api_key=@ByteArray(...)      ; DPAPI 加密 blob，不可直接编辑
+ready_timeout_sec=60
+stop_timeout_sec=30
+providers=[{"name":"OpenAI","base_url":"...","api_key":"...","models":["gpt-4o-mini"]}]
 ```
 
-程序启动时自动加载此配置，关闭时自动保存修改的设置。
+### 多供应商 LLM 配置入口
 
-## 项目配置文件 (.dawproj)
+多供应商/多模型配置通过 `DAAgentInterface` 读写，**不要直接编辑 `agent-config.ini` 的 `providers`/`llm_api_key`**：
 
-项目配置文件使用 JSON 格式，存储项目的基本信息、工作流关联、数据文件列表和插件配置。
+| 接口方法 | 用途 |
+|----------|------|
+| `getProviders()` / `setProviders()` | 读取/保存全部供应商配置（设置页 CRUD；`api_key` 在接口层明文传递，内部加密存储） |
+| `getActiveProvider()` / `getActiveModel()` | 获取当前激活供应商与模型 |
+| `setActiveModel(provider, model)` | 热切换激活模型（运行中不重启子进程、不丢会话状态） |
+| `getAvailableModels()` | 获取可选模型列表（Dock 下拉用，不含 `api_key`） |
 
-### 文件结构
+### Agent 设置页
 
-下面的 JSON 示例展示了项目配置文件的完整结构：
+设置对话框中的 Agent 页面由 `src/APP/SettingPages/DAAgentSettingsWidget` 提供。该页面经 `setAgentInterface()` 注入 `DAAgentInterface`，`loadConfig()` 调 `getLLMConfig()`、`saveConfig()` 调 `setLLMConfig()`/`setProviders()`——页面本身不接触 `QSettings` 与加解密逻辑。
 
-```json
-{
-    "version": "1.0",
-    "name": "MyDataAnalysisProject",
-    "description": "数据分析项目",
-    "created": "2024-03-10T10:30:00Z",
-    "modified": "2024-03-10T15:45:00Z",
-    
-    "workflow": {
-        "path": "workflow.daw",           // 工作流文件相对路径
-        "start_node": "node_001"          // 工作流起始节点 ID
-    },
-    
-    "data": {
-        "manager_path": "data/manager.json",  // 数据管理配置路径
-        "files": [
-            {
-                "name": "input_data",         // 数据对象名称
-                "path": "data/input.csv",     // 数据文件路径
-                "type": "csv"                 // 数据文件类型
-            },
-            {
-                "name": "config",
-                "path": "data/config.xlsx",
-                "type": "xlsx"
-            }
-        ]
-    },
-    
-    "plugins": {
-        "MyPlugin": {
-            "enabled": true,                 // 插件启用状态
-            "config_path": "plugins/MyPlugin/config.json"  // 插件配置路径
-        }
-    },
-    
-    "settings": {
-        "auto_run": false,                   // 项目特定设置
-        "output_format": "xlsx",
-        "output_path": "results/"
-    }
-}
+### recent-files.ini 与注册表迁移
+
+配置目录下还存在 `recent-files.ini`，存储最近打开文件列表（`RecentFiles` 键），由 `DARecentFilesManager` 维护。
+
+!!! info "一次性注册表→INI 迁移"
+    `main.cpp` 中的 `migrateSettingsFromRegistry()`（main.cpp:55-92）在程序首次以 INI 模式启动时，若 `agent-config.ini` / `recent-files.ini` 不存在，则从旧注册表路径（`HKCU\Software\DA\DAWorkBench`，`QSettings::NativeFormat` 显式读取，绕过全局 `setDefaultFormat`）迁移上述 5 个 agent 键与最近文件列表。旧注册表值保留不删，作为备份。迁移完成后，所有配置均以 INI/XML 文件形式存放在 `config/` 目录。
+
+
+
+## 工程文件（.dapro）
+
+DAWorkBench 的工程文件后缀为 `.dapro`，本质上是一个 **ZIP 压缩包**，内部以 XML 形式打包完整的工程状态（系统信息、工作流逻辑/视图、数据管理器、数据文件、图表、表格样式、Agent 会话、插件自定义数据）。工程读写由 `DAAppProject`（`src/APP/DAAppProject.cpp`）经 `DAZipArchive` 协调一系列 `DAZipArchiveTask_*` 任务完成。
+
+### 工程包内部结构
+
+```text
+project.dapro (ZIP)
+├── system.xml               # 系统信息（根节点 type="system-info"，版本/创建时间等）
+├── workflow-data.xml         # 工作流逻辑数据（节点拓扑、参数、连接，CDATA 承载 DAPyWorkFlowSerializer）
+├── workflow.xml              # 工作流视图数据（节点位置、图元属性、连线，DAPyWorkFlowSceneSerializer）
+├── data-manager.xml          # 数据管理器状态
+├── datas/                    # 数据文件目录
+├── charts.xml                # 图表元信息
+├── chart-data/               # 图表项数据目录
+├── table-styles.xml          # 表格样式数据
+├── agent_sessions/           # Agent 会话持久化目录（<session-id>.jsonl）
+└── plugins/                  # 插件自定义数据（[plugin-name]/ 子目录）
 ```
 
-项目配置文件包含项目元信息、工作流引用、数据文件列表和插件设置，是项目打开时的主要配置来源。
+!!! warning "工作流双轨加载顺序"
+    Python 逻辑数据 `workflow-data.xml` 必须**先于** C++ 视图数据 `workflow.xml` 加载——先恢复节点实例与参数，再创建视图图元，此顺序不可违反。旧版本工程可能不含 `workflow-data.xml`，加载流程对此做了向后兼容处理。
 
-## 工作流配置文件 (.daw)
+!!! info "工程文件版本"
+    工程根节点携带 `version` 属性（如 `1.0`/`1.1`），加载时 `DAAppProject` 读取该版本并据此做兼容迁移；未识别版本回退到 `1.1.0`。该工程文件格式版本与程序版本（`0.1.1`）是两套独立版本号。
 
-工作流配置文件存储节点列表、连接关系和分组信息，是工作流持久化的核心文件。
-
-### 文件结构
-
-下面的 JSON 示例展示了工作流配置文件的完整结构，包含元数据、节点定义和连接关系：
-
-```json
-{
-    "version": "1.0",
-    "metadata": {
-        "name": "数据处理流程",               // 工作流名称
-        "description": "CSV数据清洗和分析",   // 工作流描述
-        "author": "user",                     // 作者信息
-        "created": "2024-03-10T10:30:00Z"     // 创建时间
-    },
-    
-    "nodes": [
-        {
-            "id": "node_001",                 // 节点唯一标识
-            "prototype": "DataAnalysis.IO.CSVReader",  // 节点原型
-            "name": "读取CSV",                // 节点显示名称
-            "position": {
-                "x": 100,
-                "y": 100                      // 画布坐标位置
-            },
-            "data": {
-                "file_path": "data/input.csv",  // 节点自定义数据
-                "encoding": "UTF-8",
-                "delimiter": ","
-            }
-        },
-        {
-            "id": "node_002",
-            "prototype": "DataAnalysis.Process.Cleaner",
-            "name": "数据清洗",
-            "position": {"x": 300, "y": 100},
-            "data": {
-                "remove_null": true,          // 清洗配置参数
-                "remove_duplicates": true,
-                "trim_spaces": true
-            }
-        },
-        {
-            "id": "node_003",
-            "prototype": "DataAnalysis.IO.ExcelWriter",
-            "name": "导出Excel",
-            "position": {"x": 500, "y": 100},
-            "data": {
-                "file_path": "results/output.xlsx",
-                "sheet_name": "ProcessedData"
-            }
-        }
-    ],
-    
-    "links": [
-        {
-            "id": "link_001",                 // 连接唯一标识
-            "from_node": "node_001",          // 起始节点 ID
-            "from_key": "output_dataframe",   // 起始节点输出端口
-            "to_node": "node_002",            // 目标节点 ID
-            "to_key": "input_dataframe"       // 目标节点输入端口
-        },
-        {
-            "id": "link_002",
-            "from_node": "node_002",
-            "from_key": "output_dataframe",
-            "to_node": "node_003",
-            "to_key": "input_dataframe"
-        }
-    ],
-    
-    "groups": [
-        {
-            "id": "group_001",
-            "name": "数据IO",
-            "nodes": ["node_001", "node_003"]
-        }
-    ]
-}
-```
+工程文件的完整内部结构、保存/加载调用顺序、剪贴板 `<da-clip>` schema 详见 [工程文件格式](./dev-guide/project-file-structure.md) 与 [配置文件格式](./appendix-config.md)；序列化架构机制详见 [序列化架构](./dev-guide/project-serialization-architecture.md)。
 
 ## 插件配置文件
 
@@ -345,16 +301,16 @@ JSON 配置支持嵌套结构和数组类型，适合复杂的插件配置场景
 
 ### 主程序配置路径
 
-使用 QStandardPaths 获取跨平台的配置目录路径，无需手动处理操作系统差异。
+DAWorkBench 统一通过 `DA::DADir::getConfigPath()` 获取跨平台的配置目录（不存在则自动创建），内部已处理 Windows/Linux/macOS 的差异，不应直接使用 `QStandardPaths` 拼接路径。
 
 下面的代码展示了获取配置目录的方法：
 
 ```cpp
-// 获取配置目录 - QStandardPaths 自动适应不同操作系统
-QString configPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-// Windows: C:/Users/[user]/AppData/Local/DAWorkbench
-// Linux: ~/.config/DAWorkbench
-// macOS: ~/Library/Application Support/DAWorkbench
+// 获取配置目录 - DA::DADir 自动适应不同操作系统，目录不存在时自动创建
+QString configPath = DA::DADir::getConfigPath();
+// Windows: C:/Users/[user]/AppData/Local/DAWorkbench/config/
+// Linux:   ~/.local/share/DAWorkbench/config/  （或 ~/.config/DAWorkbench/config/）
+// macOS:   ~/Library/Application Support/DAWorkbench/config/
 ```
 
 ### 插件配置路径
@@ -382,11 +338,11 @@ QString projectConfigPath = projectPath + "/plugins/MyPlugin/config.json";
 
 ## 配置热更新
 
-部分配置支持热更新，无需重启程序：
+部分配置支持热更新，无需重启程序。DAWorkBench 自身未提供统一的 `ConfigManager` 单例；下例展示的是**插件自行管理配置变更**的通用 Qt 信号槽模式——插件在设置页保存时自行发信号、自行刷新状态：
 
 ```cpp
-// 监听配置变更
-connect(configManager, &ConfigManager::configChanged,
+// 插件设置页保存后发信号通知其他组件刷新
+connect(mySettingWidget, &MySettingWidget::configChanged,
         this, &MyPlugin::onConfigChanged);
 
 void MyPlugin::onConfigChanged(const QString& key, const QVariant& value)
@@ -397,6 +353,9 @@ void MyPlugin::onConfigChanged(const QString& key, const QVariant& value)
     }
 }
 ```
+
+!!! note "程序级配置不热更新"
+    `DAAppConfig` 的日志、Python 路径、字体、翻译、启动画面等键在**早期初始化阶段**读取，其变更需重启程序生效；其余项由设置对话框写入、下次启动读取。Agent 的多供应商/模型配置是例外——可通过 `DAAgentInterface::setActiveModel()` 在运行中热切换（不重启子进程、不丢会话状态）。
 
 ## 下一步
 

@@ -30,6 +30,26 @@ DAWorkBench 支持两种插件类型：
 - **扩展 Ribbon**：添加自定义工具栏按钮
 - **提供设置页**：在设置对话框中添加配置页
 - **自定义存档**：在工程文件中保存插件数据
+- **注册 Agent 工具**：向 AI 分析子系统的 LLM 暴露自定义工具，让 agent 直接操作插件能力（见下节）
+
+### Agent 工具扩展点
+
+插件可向 AI 分析子系统注册 LLM agent 工具，让 agent 通过 function calling 调用插件能力。注册入口为 `DAAgentInterface::registerTool`，在插件 `initialize()` 中调用：
+
+```cpp
+bool MyPlugin::initialize()
+{
+    auto* c = core();
+    auto* agent = c->getAgentInterface();
+    // 注册一个 agent 工具，this 作为 QObject parent
+    agent->registerTool(new DAAgentToolMyFeature(c, this));
+    return DAAbstractPlugin::initialize();
+}
+```
+
+工具类继承 `DAAgentToolBase`（数据 / 文件类工具）或 `DAAgentChartToolBase`（图表类工具），实现 `getToolSpec()`（返回 OpenAI function schema）与 `execute(params)`（返回结果 JSON）。schema 的 `name` 用小写 snake_case 且不翻译（参与 LLM 工具调用匹配），`description` / 参数说明写英文。
+
+平台内置的 `DAAgentTools` 插件即用此机制注册了 19 个工具（5 数据 + 11 绘图 + 3 文件 / 报告）。新增 agent 工具的完整流程见 [工具开发指南](../dev-guide/agent/tool-development.md)。
 
 ---
 
@@ -41,13 +61,18 @@ DAWorkBench 支持两种插件类型：
 2. **复制到插件目录**：将文件复制到 `bin/plugins/` 目录
 3. **启动程序**：DAWorkBench 会自动扫描并加载插件
 
+平台内置的插件随构建产物发布到 `bin/plugins/`（C++ 动态库）与 `bin/pyplugins/`（Python 节点包）两个目录：
+
 ```
 DAWorkBench/
 └── bin/
-    └── plugins/
-        ├── DataAnalysis.dll      # 数据分析插件
-        ├── CrewAIAdapter.dll     # CrewAI 适配器
-        └── MyPlugin.dll          # 自定义插件
+    ├── plugins/                  # C++ 动态库插件
+    │   ├── DataAnalysis.dll      # 数据分析插件（含 DADataAnalysisNodes 节点包加载入口）
+    │   ├── DASystemNodes.dll     # 系统节点插件（加载 DASystemNodes Python 包入口）
+    │   └── DAAgentTools.dll      # Agent 工具插件（向 LLM 暴露 19 个工具）
+    └── pyplugins/                # Python 节点包
+        ├── DADataAnalysisNodes/   # 21 个数据分析节点
+        └── DASystemNodes/        # 8 个流程控制 / 展示节点
 ```
 
 ### Python 节点包安装

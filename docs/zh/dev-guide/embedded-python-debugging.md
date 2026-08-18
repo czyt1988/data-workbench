@@ -38,15 +38,26 @@ flowchart LR
 
 ---
 
-## 第二部分：三大导出模块概览
+## 第二部分：导出模块概览
 
-data-workbench 导出了三个 Python 模块：
+data-workbench 通过 `PYBIND11_EMBEDDED_MODULE` 在进程内注册了六个 Python 模块，其中三个是核心接口模块：
 
 | 模块名 | 源码位置 | 主要内容 |
 |---------|----------|----------|
-| `da_interface` | `src/DAInterface/DAInterfacePythonBinding.cpp` | 核心接口类：DACoreInterface、DAUIInterface、DADataManagerInterface、DAStatusBarInterface、DACommandInterface、DAPythonSignalHandler |
+| `da_interface` | `src/DAInterface/DAInterfacePythonBinding.cpp` | 核心接口类：DACoreInterface、DAUIInterface、DADataManagerInterface、DAStatusBarInterface、DACommandInterface、DADockingAreaInterface、DAChartOperateWidget、DAPythonSignalHandler |
 | `da_data` | `src/DAData/DADataPythonBinding.cpp` | 数据类型：DAData、DADataManager、DataChangeType 枚举 |
 | `da_app` | `src/APP/PythonBinding/DAAppPythonBinding.cpp` | 全局入口：getCore()、addInfoLogMessage()、addWarningLogMessage()、addCriticalLogMessage() |
+
+除上述三个核心接口模块外，还有三个面向图表/工作流脚本的模块：
+
+| 模块名 | 源码位置 | 主要内容 |
+|---------|----------|----------|
+| `da_figure` | `src/DAFigure/DAFigurePythonBinding.cpp:666` | 图表绘制：FigureWidget、ChartHandle、PlotItem 等（matplotlib 风格） |
+| `da_pyplot` | `src/DAInterface/DAQwtPyPlotPythonBinding.cpp:166` | matplotlib pyplot 风格的 Qwt API：PyPlot、QwtPlot |
+| `da_py_workflow` | `src/DAPyWorkFlow/PythonBinding/DAPyWorkFlowPythonBinding.cpp:172` | 工作流场景/节点项：DAPyPainterProxy、DAPyNodeGraphicsItem、DAPyWorkFlowScene |
+
+!!! note "调试时可能需要补 stub"
+    上述六个模块均为嵌入式进程内模块（随主程序解释器初始化注册）。在标准 Python 环境或 IDE 中做代码提示/单元测试时，`da_figure`/`da_pyplot`/`da_py_workflow` 同样需要在 `stubs/` 下补 `.pyi`，或通过 `mock/` 提供 Mock 实现，否则导入会失败。
 
 ### 模块之间的关系
 

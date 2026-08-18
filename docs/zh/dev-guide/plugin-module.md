@@ -33,30 +33,30 @@ classDiagram
         +createArchiveTask() shared_ptr
         +core() DACoreInterface*
     }
-    
+
     class DAAbstractNodePlugin {
         <<abstract>>
         +createNodeFactory() DAPyNodeFactory*
         +destroyNodeFactory()
         +afterLoadedNodes()
-        +getWorkFlowOperateWidget() DAPyWorkFlowOperateWidget*
+        +getCurrentActiveWorkflowOperateWidget() DAPyWorkFlowOperateWidget*
     }
-    
+
     class DAPluginManager {
-        +loadPlugins()
-        +getPlugin(iid) DAAbstractPlugin*
-        +getAllPlugins() QList
+        +loadAllPlugins(DACoreInterface*) void
+        +getPluginOptions() QList~DAPluginOption~
+        +unloadAllPlugins() bool
     }
-    
+
     class DAPluginOption {
         +isValid() bool
         +getPlugin() DAAbstractPlugin*
     }
-    
+
     DAAbstractPlugin <|-- DAAbstractNodePlugin
     DAAbstractPlugin <-- DAPluginOption : 管理
-DAAbstractPlugin <-- DAPluginManager : 管理多个
-    ```
+    DAAbstractPlugin <-- DAPluginManager : 管理多个
+```
 
 上图展示了插件支持模块的类结构：
 
@@ -269,7 +269,7 @@ set_target_properties(MyNodePlugin PROPERTIES
 
 `DAAbstractNodePlugin`负责生成工作流的节点，可以通过编写此插件提供不同功能的节点。
 
-节点插件需要实现节点工厂`DAPyNodeFactory`，具体详见[工作流](./workflow.md)。
+节点插件需要实现节点工厂`DAPyNodeFactory`，具体详见[工作流总览](./workflow-overview.md)。
 
 ### 其他插件类型
 
@@ -280,6 +280,16 @@ data-workbench支持多种插件扩展点：
 | 节点插件 | DAAbstractNodePlugin | 提供工作流节点 |
 | 设置页面插件 | DAAbstractPlugin + createSettingPage | 提供设置界面 |
 | 存档任务插件 | DAAbstractPlugin + createArchiveTask | 自定义项目存档 |
+
+## 现有插件参考
+
+DAWorkBench 自带的三个插件（`plugins/CMakeLists.txt` 构建）是开发新插件的最佳参考：
+
+| 插件 | 路径 | 类型 | 说明 |
+|------|------|------|------|
+| **DataAnalysis** | `plugins/DataAnalysis/` | C++ + Python | 数据分析节点插件，三层 Python 包架构（Core/Gui/Nodes）参考实现 |
+| **DASystemNodes** | `plugins/DASystemNodes/` | 纯 Python | 系统级工作流节点（Start/End/If/Else/Delay/Print/TextViewer/DataToManager 等），C++ 入口仅注册 Python 路径，是 **Python-first `@NodeDef` 节点插件的最佳模板**（见 `plugins/DASystemNodes/AGENTS.md`） |
+| **DAAgentTools** | `plugins/DAAgentTools/` | C++ | 平台内置 agent 工具插件（19 个工具，通过 `DAAgentInterface::registerTool()` 注册） |
 
 ## API 参考
 
@@ -301,7 +311,7 @@ data-workbench支持多种插件扩展点：
 | `createNodeFactory()` | 无 | DAPyNodeFactory* | 创建节点工厂 |
 | `destroyNodeFactory()` | DAPyNodeFactory* | void | 销毁节点工厂 |
 | `afterLoadedNodes()` | 无 | void | 节点加载完成回调 |
-| `getWorkFlowOperateWidget()` | 无 | DAPyWorkFlowOperateWidget* | 获取工作流操作窗口 |
+| `getCurrentActiveWorkflowOperateWidget()` | 无 | DAPyWorkFlowOperateWidget* | 获取当前激活的工作流编辑窗口 |
 
 ## 注意事项
 

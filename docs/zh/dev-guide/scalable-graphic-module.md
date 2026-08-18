@@ -383,6 +383,6 @@ flowchart TD
 
 ## 参考资料
 
-- [工作流模块](workflow.md)
+- [工作流总览](./workflow-overview.md)
 - [Qt Graphics View Framework](https://doc.qt.io/qt-6/graphicsview.html)
 - 源码目录：`src/DAGraphicsView`

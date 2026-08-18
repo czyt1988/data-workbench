@@ -34,23 +34,31 @@
 | Qt 5.15 | ✅ 推荐 | Qt5 系列最稳定版本 |
 | Qt 6.x | ✅ 推荐 | 原生支持，推荐使用最新版本 |
 
-!!! warning "Qt工具链文件必须"
-    构建项目**必须**使用 Qt 工具链文件（`qt.toolchain.cmake`），否则会出现 Windows SDK 头文件找不到的问题。这是 Qt 官方推荐的方式。
+!!! warning "Qt 路径指定方式因生成器而异"
+    Qt 路径的指定方式取决于 CMake 生成器：
+
+    - **Visual Studio 生成器**：通过 `-DCMAKE_PREFIX_PATH` 指定 Qt 安装路径（如 `C:/Qt/6.7.3/msvc2019_64`），**不需要**工具链文件。VS 生成器会自动检测 MSVC 编译器与 Windows SDK。
+    - **Ninja 生成器**：通过 `-DCMAKE_TOOLCHAIN_FILE` 指定 Qt 工具链文件（`qt.toolchain.cmake`），且**必须在 Developer Command Prompt (CMD) 中运行**，否则 PowerShell 无法注入 MSVC 环境变量，出现 `fatal error C1083`。
+
+    详见 [生成器选择](#命令行构建步骤windows)。
 
 ### Python 依赖
 
-项目依赖以下 Python 库：
+项目运行时依赖的 Python 包见项目根目录 `requirements.txt`（共 16 个）。下表列出主要分组：
 
-| 库名 | 用途 |
+| 库 | 用途 |
 |------|------|
-| pandas | 数据处理核心 |
-| numpy | 数值计算 |
-| scipy | 科学计算 |
+| pandas / numpy / scipy | 数据处理与科学计算核心 |
+| openpyxl / chardet / PyWavelets / pyarrow | 文件读写与格式支持 |
+| matplotlib / seaborn | 绘图与可视化 |
+| loguru / typing_extensions | 日志与类型注解 |
+| langgraph / langchain-openai / langgraph-cli[inmem] / pydantic / tiktoken | DAAgent 子系统 AI/Agent 栈 |
 
 安装依赖：
 
 ```shell
-pip install pandas numpy scipy
+# 批量安装项目所需的全部 Python 依赖
+pip install -r requirements.txt
 ```
 
 ## 构建流程概览
@@ -240,7 +248,7 @@ cmake --build build --config Release --parallel
 cmake --build build --config Release --target install
 ```
 
-构建完成后，输出目录为 `bin_Release_qt6.7.3_GCC_x64`，包含可执行文件 `DataWorkbench` 和相关动态库。
+构建完成后，输出目录为 `bin_Release_qt6.7.3_GCC_x64`，包含可执行文件 `DAWorkBench` 和相关动态库。
 
 ## Qt Creator 构建步骤
 
@@ -295,7 +303,7 @@ bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}
 
 | 文件 | 说明 |
 |------|------|
-| `DataWorkbench.exe` | 主程序可执行文件 |
+| `DAWorkBench.exe` | 主程序可执行文件 |
 | `DAFigure.dll` | 图表模块动态库 |
 | `DAData.dll` | 数据处理模块动态库 |
 | `DAGui.dll` | GUI 模块动态库 |
@@ -309,7 +317,7 @@ bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}
 
 ```powershell
 # Windows - 检查可执行文件
-# 应显示 DataWorkbench.exe
+# 应显示 DAWorkBench.exe
 dir bin_Release_qt6.7.3_MSVC_x64\*.exe
 
 # Windows - 检查动态库
@@ -329,10 +337,10 @@ ls bin_Release_qt6.7.3_GCC_x64/
 ```powershell
 # Windows - 启动程序
 # 如果出现 DLL 缺失错误，需复制第三方库 DLL 到此目录
-.\bin_Release_qt6.7.3_MSVC_x64\DataWorkbench.exe
+.\bin_Release_qt6.7.3_MSVC_x64\DAWorkBench.exe
 
 # Linux - 启动程序
-./bin_Release_qt6.7.3_GCC_x64/DataWorkbench
+./bin_Release_qt6.7.3_GCC_x64/DAWorkBench
 ```
 
 程序启动后应显示主窗口界面，表示构建成功。
@@ -362,7 +370,7 @@ ls bin_Release_qt6.7.3_GCC_x64/
     
     ```powershell
     cd bin_Release_qt6.7.3_MSVC_x64
-    windeployqt DataWorkbench.exe
+    windeployqt DAWorkBench.exe
     ```
 
 ## 注意事项

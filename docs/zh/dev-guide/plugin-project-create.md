@@ -168,7 +168,7 @@ DA_PLUGIN_VERSION_MAJOR = 0
 DA_PLUGIN_VERSION_MINOR = 0
 DA_PLUGIN_VERSION_PATCH = 1
 DA_PLUGIN_VERSION = 0.0.1
-DA_PLUGIN_FULL_DESCRIPTION = MyDAPlugin 0.0.0|Plugin For DAWorkbench
+DA_PLUGIN_FULL_DESCRIPTION = MyDAPlugin 0.0.1|Plugin For DAWorkbench
 ```
 
 #### damacro_import_*
@@ -407,7 +407,7 @@ damacro_plugin_install()
  "plugin-base-name":"My",
     "plugin-display-name":"My Plugin",
     "plugin-description":"This is My Plugin",
-    "plugin-iid":"Plugin.MyPlugin",
+    "plugin-iid":"DAABSTRACTNODEPLUGIN_IID",
     "factory-prototypes":"My.Factory",
     "factory-name":"My Factory",
     "factory-description":"My Plugin Node Factory"
@@ -418,9 +418,30 @@ damacro_plugin_install()
 - `plugin-base-name`：插件基础名称，用于生成类名和文件名
 - `plugin-display-name`：插件显示名称，用于界面展示
 - `plugin-description`：插件功能描述
-- `plugin-iid`：插件接口标识符，需保持唯一
+- `plugin-iid`：插件接口标识符，节点插件用 `DAABSTRACTNODEPLUGIN_IID` 宏（值为 `"org.da.abstract.nodePlugin"`，定义于 `DAAbstractNodePlugin.h`），通用插件用 `DAABSTRACTPLUGIN_IID`
 - `factory-prototypes`：节点工厂原型标识
 - `factory-name`：工厂显示名称
 - `factory-description`：工厂功能描述
 
 配置后，运行`make-plugin.py`脚本，会在上级目录生成插件工程文件
+
+## Python-first 节点插件（无需 C++ NodeFactory）
+
+!!! tip "新节点插件推荐此模式"
+    新增工作流节点插件时，**无需编写 C++ NodeFactory**。参考 `plugins/DASystemNodes/`：C++ 插件入口只负责注册 Python 脚本路径，节点用 `@NodeDef` 装饰器声明，`DAPyNodeFactory::discoverNodes()` 启动时扫描 Python 包自动发现节点。详见 `plugins/DASystemNodes/AGENTS.md`。
+
+DASystemNodes 风格的纯 Python 节点插件结构（作为 src/ C++ 布局的替代方案）：
+
+```text
+MyPlugin/
+├── CMakeLists.txt                 # CMake 安装规则（复制 PyScripts 到 pyplugins/）
+├── MyPluginPlugin.cpp/h           # C++ 插件入口（仅注册 Python 路径，不定义节点）
+└── PyScripts/
+    └── MyPlugin/                  # Python 包（pip-installable，entry_points 声明）
+        ├── __init__.py            # 导出所有节点类；顶部先调 setup_i18n() 再导入节点
+        ├── setup.py               # entry_points 注册（data_workbench.plugin）
+        └── nodes/
+            └── my_node.py         # @NodeDef 装饰器定义节点
+```
+
+C++ 插件入口只需继承 `DAAbstractNodePlugin` 并实现 `createNodeFactory()`/`destroyNodeFactory()`，把工厂交由框架的 Python 自动发现机制接管，无需手写节点创建逻辑。节点执行入口为 `execute(self, inputs, params)`，输出通过 `self._output_data` 写入。

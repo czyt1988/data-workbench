@@ -87,25 +87,32 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
     // ========================================
     // 1. 绑定 DAPythonSignalHandler
     // ========================================
+    // src/DAInterface/DAInterfacePythonBinding.cpp:55-79
     py::class_<DA::DAPythonSignalHandler>(m, "DAPythonSignalHandler")
+        .def(py::init<>())  // 可以构造，但通常不会在Python中构造
         .def("callInMainThread",
             [](DA::DAPythonSignalHandler& self, py::function pyFunc) {
-                // 重要：增加引用计数，防止 Python 端提前释放
-                pyFunc.inc_ref();
+                // 将Python函数包装成std::function
+                // 注意：inc_ref/dec_ref 在源码中已被注释掉，
+                // cn:改为依赖 lambda 捕获持有的引用来保证 pyFunc 生命周期
+                //pyFunc.inc_ref();
                 self.callInMainThread([pyFunc]() {
                     try {
-                        py::gil_scoped_acquire acquire;
-                        pyFunc();
-                        pyFunc.dec_ref();
-                    } catch (...) {
-                        pyFunc.dec_ref();
-                        throw;
+                        py::gil_scoped_acquire acquire;  // 获取GIL
+                        pyFunc();                          // 调用Python函数
+                        //pyFunc.dec_ref();                      // 执行后释放
+                    } catch (const py::error_already_set& e) {
+                        qCritical() << "Python error in main thread callback:" << e.what();
+                        //pyFunc.dec_ref();  // 异常时也要释放
+                    } catch (const std::exception& e) {
+                        qCritical() << "C++ error in main thread callback:" << e.what();
+                        //pyFunc.dec_ref();  // 异常时也要释放
                     }
                 });
             },
             py::arg("func"),
-            "Schedule a Python function to be executed in Qt main thread");
-    
+            "Schedule a Python function to be executed in the Qt main thread");
+
     // ========================================
     // 2. 绑定 DADataManagerInterface
     // ========================================
@@ -171,18 +178,23 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
             },
             py::arg("msg"), py::arg("showInStatusBar") = true)
         .def("getConfigValues",
-            [](DA::DAUIInterface& self, 
-               const std::string& jsonConfig, 
-               const std::string& cacheKey = "") {
-                QString qjsonConfig = QString::fromStdString(jsonConfig);
-                QString qcacheKey = QString::fromStdString(cacheKey);
+            [](DA::DAUIInterface& self,
+               py::object formConfig,
+               const QString& cacheKey = QString()) {
+                // src/DAInterface/DAInterfacePythonBinding.cpp:315-327
+                // cn:formConfig 支持三种输入，由本地 normalizeFormConfigToJsonString() 归一化：
+                //    - str：直接作为 JSON 字符串
+                //    - dict：通过 DA::PY::pyDictToJsonString 转换
+                //    - 带 to_dict() 的对象（如 FormSpec）：先调用 to_dict() 再按 dict 处理
+                QString jsonStr = normalizeFormConfigToJsonString(formConfig);
                 QJsonObject jsonObj = self.getConfigValues(
-                    qjsonConfig, self.getMainWindow(), qcacheKey);
+                    jsonStr, self.getMainWindow(), cacheKey);
                 return DA::PY::qjsonObjectToPyDict(jsonObj);
             },
-            py::arg("jsonConfig"), py::arg("cacheKey") = "",
-            "Show config dialog and return user input as dict");
-    
+            py::arg("formConfig"), py::arg("cacheKey") = "",
+            "Execute a unified property form dialog to retrieve configuration. "
+            "formConfig can be a FormSpec, a dict, or a JSON string.");
+
     // ========================================
     // 4. 绑定 DACoreInterface
     // ========================================
@@ -372,168 +384,204 @@ UI-->>SH: 完成
 ### 实现代码
 
 ```cpp title="DAPythonSignalHandler.h"
+// src/DAPyBindQt/DAPythonSignalHandler.h:1-69
 #ifndef DAPYTHONSIGNALHANDLER_H
 #define DAPYTHONSIGNALHANDLER_H
-
 #include <QObject>
-#include <QMap>
+#include <DAPyBindQtGlobal.h>
 #include <functional>
 #include <memory>
-#include <mutex>
-
+#include "DAPyBindQtGlobal.h"
 namespace DA
 {
 /**
- * @brief Python 线程到 Qt 主线程的通信处理器
- * 
- * 允许 Python 线程通过信号槽机制安全地调用 Qt 主线程中的函数
+ * @brief Python线程到Qt主线程的通信处理器
+ *
+ * 这个类允许Python线程通过信号槽机制安全地调用Qt主线程中的函数
+ * 非单例模式，由主窗口或其他容器管理生命周期
  */
-class DAPythonSignalHandler : public QObject
+class DAPYBINDQT_API DAPythonSignalHandler : public QObject
 {
     Q_OBJECT
+    DA_DECLARE_PRIVATE(DAPythonSignalHandler)   // cn:PIMPL 宏，成员下沉到 PrivateData
 
 public:
     explicit DAPythonSignalHandler(QObject* parent = nullptr);
-    virtual ~DAPythonSignalHandler();
-    
-    // 禁止拷贝
-    DAPythonSignalHandler(const DAPythonSignalHandler&) = delete;
+    ~DAPythonSignalHandler() override;            // cn:override 而非 virtual
+
+    // 删除拷贝构造和赋值操作符
+    DAPythonSignalHandler(const DAPythonSignalHandler&)            = delete;
     DAPythonSignalHandler& operator=(const DAPythonSignalHandler&) = delete;
 
-    /**
-     * @brief 从 Python 线程调用，请求在主线程执行函数
-     * @param func 要在主线程执行的函数
-     * 
-     * 此函数是线程安全的，可以从任何线程调用
-     */
-    void callInMainThread(std::function<void()> func);
+    // 从Python线程调用，请求在主线程执行函数
+    void callInMainThread(std::function< void() > func);
 
-    /**
-     * @brief 清理所有待执行的函数
-     */
+    // 清理所有待执行的函数
     void clearPendingFunctions();
 
 Q_SIGNALS:
     /**
      * @brief 内部信号，用于触发主线程执行
+     * @param funcWrapperId 函数包装器的唯一ID
      */
     void executeRequested(int funcWrapperId);
 
 private Q_SLOTS:
+    // 在主线程执行的槽函数
     void onExecuteRequested(int funcWrapperId);
 
-private:
-    // 函数包装器
+public:
+    // 函数包装器，用于存储待执行的函数
     class FunctionWrapper
     {
     public:
-        explicit FunctionWrapper(std::function<void()> func) : m_func(func) {}
-        void execute() { if (m_func) m_func(); }
+        explicit FunctionWrapper(std::function< void() > func) : mFunc(func)
+        {
+        }
+        void execute()
+        {
+            if (mFunc)
+                mFunc();
+        }
+
     private:
-        std::function<void()> m_func;
+        std::function< void() > mFunc;
     };
-    
-    using FunctionWrapperPtr = std::shared_ptr<FunctionWrapper>;
-    
-    QMap<int, FunctionWrapperPtr> m_functionMap;  // 函数映射
-    std::mutex m_mutex;                           // 线程安全保护
-    int m_nextFuncId{0};                          // 下一个 ID
-    bool m_destroying{false};                     // 销毁标志
+
+    // 使用智能指针管理函数包装器
+    using FunctionWrapperPtr = std::shared_ptr< FunctionWrapper >;
 };
 
-}  // namespace DA
+}  // end DA
 #endif
 ```
 
 ```cpp title="DAPythonSignalHandler.cpp"
+// src/DAPyBindQt/DAPythonSignalHandler.cpp:1-161
 #include "DAPythonSignalHandler.h"
+#include <QDebug>
 #include <QThread>
 #include <QCoreApplication>
+#include <QMap>
+#include <exception>
+#include <mutex>
 
 namespace DA
 {
 
-DAPythonSignalHandler::DAPythonSignalHandler(QObject* parent)
-    : QObject(parent), m_destroying(false)
+// PIMPL：所有成员变量下沉到 PrivateData，命名采用 camelCase
+class DAPythonSignalHandler::PrivateData
 {
-    // 使用 Qt::QueuedConnection 确保跨线程调用
+    DA_DECLARE_PUBLIC(DAPythonSignalHandler)
+public:
+    PrivateData(DAPythonSignalHandler* p);
+
+    QMap< int, FunctionWrapperPtr > mFunctionMap;  ///< 存储函数包装器的映射，键是唯一ID
+    std::mutex mMutex;                             ///< 线程安全保护
+    int mNextFuncId { 0 };                         ///< 下一个函数包装器的ID
+    bool mDestroying { false };                    ///< 是否正在销毁中
+};
+
+DAPythonSignalHandler::PrivateData::PrivateData(DAPythonSignalHandler* p) : q_ptr(p)
+{
+}
+
+// 构造时连接信号槽，使用 Qt::QueuedConnection 确保跨线程调用
+DAPythonSignalHandler::DAPythonSignalHandler(QObject* parent)
+    : QObject(parent), DA_PIMPL_CONSTRUCT
+{
     connect(this, &DAPythonSignalHandler::executeRequested,
-            this, &DAPythonSignalHandler::onExecuteRequested,
-            Qt::QueuedConnection);
+            this, &DAPythonSignalHandler::onExecuteRequested, Qt::QueuedConnection);
 }
 
 DAPythonSignalHandler::~DAPythonSignalHandler()
 {
-    m_destroying = true;
+    DA_D(d);                    // 取到 d 指针
+    d->mDestroying = true;
     clearPendingFunctions();
 }
 
-void DAPythonSignalHandler::callInMainThread(std::function<void()> func)
+void DAPythonSignalHandler::callInMainThread(std::function< void() > func)
 {
-    if (!func || m_destroying) {
+    DA_D(d);
+    if (!func) {
+        qDebug() << "DAPythonSignalHandler: Attempted to call empty function";
         return;
     }
-    
+
+    // 检查是否正在销毁中
+    if (d->mDestroying) {
+        qDebug() << "DAPythonSignalHandler: Ignoring call during destruction";
+        return;
+    }
+
+    // 获取应用程序实例，cn:无 QCoreApplication 时给出 qWarning 并返回
     QCoreApplication* app = QCoreApplication::instance();
     if (!app) {
+        qWarning() << "DAPythonSignalHandler: No QCoreApplication instance exists";
         return;
     }
-    
-    // 检查是否已在主线程
+    // 已经在主线程，直接执行
     if (QThread::currentThread() == app->thread()) {
-        func();  // 直接执行
+        func();
         return;
     }
-    
+
     // 创建函数包装器并存入映射
     int funcId;
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        funcId = ++m_nextFuncId;
-        m_functionMap[funcId] = std::make_shared<FunctionWrapper>(std::move(func));
+        std::lock_guard< std::mutex > lock(d->mMutex);
+        funcId                    = ++d->mNextFuncId;
+        d->mFunctionMap[ funcId ] = std::make_shared< FunctionWrapper >(std::move(func));
     }
-    
-    // 发射信号，触发主线程执行
-    Q_EMIT executeRequested(funcId);
-}
 
-void DAPythonSignalHandler::onExecuteRequested(int funcWrapperId)
-{
-    if (m_destroying) {
-        return;
-    }
-    
-    FunctionWrapperPtr wrapper;
-    
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        auto it = m_functionMap.find(funcWrapperId);
-        if (it == m_functionMap.end()) {
-            return;
-        }
-        wrapper = it.value();
-        m_functionMap.erase(it);
-    }
-    
-    try {
-        wrapper->execute();
-    } catch (const std::exception& e) {
-        qCritical() << "Exception in main thread function:" << e.what();
-    }
+    // 发射信号，触发在主线程执行
+    Q_EMIT executeRequested(funcId);
 }
 
 void DAPythonSignalHandler::clearPendingFunctions()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_functionMap.clear();
+    DA_D(d);
+    std::lock_guard< std::mutex > lock(d->mMutex);
+    d->mFunctionMap.clear();
 }
 
-}  // namespace DA
+void DAPythonSignalHandler::onExecuteRequested(int funcWrapperId)
+{
+    DA_D(d);
+    if (d->mDestroying) {
+        return;
+    }
+
+    FunctionWrapperPtr wrapper;
+    {
+        std::lock_guard< std::mutex > lock(d->mMutex);
+        auto it = d->mFunctionMap.find(funcWrapperId);
+        if (it == d->mFunctionMap.end()) {
+            return;
+        }
+        wrapper = it.value();
+        d->mFunctionMap.erase(it);
+    }
+
+    try {
+        wrapper->execute();
+    } catch (const std::exception& e) {
+        qCritical() << "DAPythonSignalHandler: Exception in main thread function:" << e.what();
+    } catch (...) {
+        qCritical() << "DAPythonSignalHandler: Unknown exception in main thread function";
+    }
+}
+
+}  // end DA
 ```
+
+!!! note "PIMPL 模式说明"
+    `DAPythonSignalHandler` 采用 PIMPL（`d` 指针）模式：头文件中只有 `DA_DECLARE_PRIVATE(DAPythonSignalHandler)` 宏，真正的成员变量 `mFunctionMap / mMutex / mNextFuncId / mDestroying`（camelCase）都定义在 `.cpp` 的 `DAPythonSignalHandler::PrivateData` 中。实现里通过 `DA_D(d)` 取到 `d` 指针，再用 `d->mFunctionMap` 等方式访问。这与某些文档示例里直接把 `m_functionMap`（snake_case）写在头文件中的写法不同——以源码为准。
 
 ## Qt 类型转换器
 
-> **完整文档**：Qt 与 pybind11 类型转换的详细说明已独立为 [DAPybind11QtCaster.hpp 使用指南](../dapybind11-qt-caster.md)，包含每个类型的转换详解、numpy 支持、`DA::PY` 辅助函数、`safe_pyobject` 安全包装器等完整内容。本节仅列出类型映射摘要。
+> **完整文档**：Qt 与 pybind11 类型转换的详细说明已独立为 [DAPybind11QtCaster.hpp 使用指南](../dapybind11-qt-caster.md)，包含每个类型的转换详解、numpy 支持、`DA::PY` 辅助函数等完整内容。本节仅列出类型映射摘要。
 
 ### 支持的类型映射
 
@@ -1216,26 +1264,30 @@ ui.addInfoLogMessage("测试消息")  # std::string → QString 自动转换
 
 | 模块 | 绑定文件 | Python 模块名 | 主要导出类 | 说明 |
 |------|----------|---------------|-----------|------|
-| APP | `src/APP/PythonBinding/DAAppPythonBinding.cpp` | `da_app` | 全局函数 | 最简绑定，仅暴露 `getCore()` 单例和日志函数 |
-| Interface | `src/DAInterface/DAInterfacePythonBinding.cpp` | `da_interface` | `DAPythonSignalHandler`, `DADataManagerInterface`, `DAStatusBarInterface`, `DACommandInterface`, `DAUIInterface`, `DACoreInterface` | 最复杂绑定，大量 Lambda 包装处理 Qt 类型和跨线程回调 |
+| APP | `src/APP/PythonBinding/DAAppPythonBinding.cpp` | `da_app` | 全局函数 | 暴露 `getCore()` 单例、日志函数（`addInfoLogMessage` 等），并通过 `da_figure::setCurrentChartGetter(...)` 向 `da_figure` 注册图表获取回调（`DAAppPythonBinding.cpp:45-54`） |
+| Interface | `src/DAInterface/DAInterfacePythonBinding.cpp` | `da_interface` | `DAPythonSignalHandler`, `DADataManagerInterface`, `DAStatusBarInterface`, `DACommandInterface`, `DAUIInterface`, `DADockingAreaInterface`, `DAChartWidget`, `DAChartOperateWidget`, `DACoreInterface` | 最复杂绑定，大量 Lambda 包装处理 Qt 类型和跨线程回调。除核心接口外还绑定了 dock/图表操作入口（`getCurrentScene`/`getChartOperateWidget`/`showMarkdownFile`、`getCurrentChart`/`getCurrentFigure`/`getAllCharts`/`getFigureCount`/`createFigure` 等，`DAInterfacePythonBinding.cpp:348-415`） |
 | Data | `src/DAData/DADataPythonBinding.cpp` | `da_data` | `DAData`, `DataChangeType`, `DADataManager` | 数据类型绑定，包含枚举导出和重载消歧 |
+| Figure | `src/DAFigure/DAFigurePythonBinding.cpp` | `da_figure` | `FigureWidget`、`ChartHandle`、`PlotItem` 等图表绘制接口 | 已完成。`DAFigurePythonBinding.cpp:666` 定义 `PYBIND11_EMBEDDED_MODULE(da_figure, m)`，提供 matplotlib 风格的图表操作 |
+| PyPlot | `src/DAInterface/DAQwtPyPlotPythonBinding.cpp` | `da_pyplot` | `PyPlot`、`QwtPlot` | 已完成。`DAQwtPyPlotPythonBinding.cpp:166` 定义 `PYBIND11_EMBEDDED_MODULE(da_pyplot, m)`，提供 matplotlib pyplot 风格的 Qwt API |
+| PyWorkFlow | `src/DAPyWorkFlow/PythonBinding/DAPyWorkFlowPythonBinding.cpp` | `da_py_workflow` | `DAPyPainterProxy`, `DAPyNodeGraphicsItem`, `DAPyWorkFlowScene` 及相关枚举 | 已完成。`DAPyWorkFlowPythonBinding.cpp:172` 定义 `PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)`，暴露工作流场景/节点项，所有操作须在 Qt 主线程调用 |
+
+!!! note "六个嵌入式模块"
+    当前共有六个通过 `PYBIND11_EMBEDDED_MODULE` 注册的进程内模块：`da_app`、`da_interface`、`da_data`（三个核心接口模块）以及 `da_figure`、`da_pyplot`、`da_py_workflow`（面向图表/工作流脚本）。这些模块均随主程序解释器初始化一并注册，Python 端直接 `import` 即可。
 
 ### 规划中模块
 
 | 模块 | 当前状态 | 建议下一步 | 优先级理由 |
 |------|----------|-----------|-----------|
-| DAFigure | 未绑定 | 创建 `DAFigurePythonBinding.cpp`，绑定 `DAFigureInterface` | Python 脚本高频需要创建/编辑图表，是数据分析的核心输出 |
 | DAProject | 未绑定 | 创建 `DAProjectPythonBinding.cpp`，绑定 `DAProjectInterface` | 项目保存/加载是工作流持久化的基础，脚本需要操作项目状态 |
 | DAGui | 未绑定 | 创建 `DAGuiPythonBinding.cpp`，绑定关键 GUI 接口 | GUI 组件多数可通过 `da_interface` 的 `DAUIInterface` 间接访问，优先级较低 |
-| DAGraphicsView | 未绑定 | 创建 `DAGraphicsViewPythonBinding.cpp`，绑定工作流节点接口 | 工作流操作复杂，需先完成 Figure 和 Project 绑定后再考虑 |
+| DAGraphicsView | 未绑定 | 创建 `DAGraphicsViewPythonBinding.cpp`，绑定工作流节点接口 | 工作流操作复杂，需先完成 Project 绑定后再考虑 |
 
 ### 绑定优先级排序逻辑
 
 优先级排序遵循以下原则：
 
-1. **Figure > Project**：图表是数据分析的核心输出，Python 脚本最常用的功能是创建和编辑图表
-2. **Project > Workflow**：项目持久化是工作流执行的前提，保存/加载项目比操作工作流节点更基础
-3. **Workflow > Gui**：工作流节点的 Python 操作需求较少，多数 GUI 功能已通过 `DAUIInterface` 间接暴露
+1. **Project > Workflow**：项目持久化是工作流执行的前提，保存/加载项目比操作工作流节点更基础
+2. **Workflow > Gui**：工作流节点的 Python 操作需求较少，多数 GUI 功能已通过 `DAUIInterface` 间接暴露
 
 !!! info "路线图说明"
-    上述路线图为当前规划，实际优先级可能根据功能需求和用户反馈调整。建议在开始新模块绑定前，先在 `da_interface` 中检查是否已有相关接口可以间接满足需求。
+    上述路线图为当前规划，实际优先级可能根据功能需求和用户反馈调整。图表（`da_figure`/`da_pyplot`）与工作流（`da_py_workflow`）相关绑定已完成，建议在开始新模块绑定前，先在 `da_interface` 中检查是否已有相关接口可以间接满足需求。

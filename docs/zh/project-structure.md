@@ -32,7 +32,7 @@ data-workbench/
 │   ├── DAData/               # 数据管理模块 - DataFrame 操作
 │   ├── DAFigure/             # 图表模块 - 基于 qwt 的科学图表
 │   ├── DAGraphicsView/       # 图形视图模块 - 可缩放视图
-│   ├── DACommonWidgets/      # 通用控件模块 - 常用 UI 控件
+│   ├── DAAgent/              # Agent 框架模块 - L4 接口层，多供应商 LLM/工具/会话（无 GUI 依赖）
 │   ├── DAUtils/              # 核心工具模块 - 基础函数和类
 │   ├── DAMessageHandler/     # 日志处理模块 - 基于 spdlog
 │   ├── DAPyBindQt/           # Python-Qt 绑定模块 - pybind11 封装
@@ -50,6 +50,8 @@ data-workbench/
 │   └── template-python-config.json  # Python 环境配置模板
 ├── plugins/                  # 插件目录 - 各功能插件
 │   ├── DataAnalysis/         # 数据分析插件（示例）
+│   ├── DASystemNodes/        # 系统节点插件 - 内置工作流节点
+│   ├── DAAgentTools/         # Agent 工具插件 - 平台内置 Agent 工具（plan-03 从 DAAgentModule 搬迁）
 │   ├── plugin-template/      # 插件模板生成工具
 │   └── CMakeLists.txt        # 插件构建配置
 ├── docs/                     # 文档目录 - MkDocs 文档
@@ -65,6 +67,9 @@ data-workbench/
 ├── requirements.txt          # Python 运行依赖
 └── requirements-docs.txt     # 文档生成依赖
 ```
+
+!!! note "DACommonWidgets 已并入 DAGui"
+    历史 `DACommonWidgets/` 通用控件模块已整体迁移进 `DAGui/`（见 `src/DAGui/CMakeLists.txt` 中“迁移自 DACommonWidgets”说明），`src/` 下不再保留独立的 `DACommonWidgets/` 目录。
 
 上述目录结构遵循标准的大型 C++ 项目组织方式，便于维护和扩展。
 
@@ -87,11 +92,11 @@ graph TB
     subgraph "插件层"
         PS[DAPluginSupport]  # 插件加载和管理
         IF[DAInterface]      # 接口定义
+        AGENT[DAAgent]       # Agent 框架（无 GUI 依赖）
     end
-    
+
     subgraph "界面层"
         GUI[DAGui]           # 界面整合
-        CW[DACommonWidgets]  # 通用控件
     end
     
     subgraph "业务层"
@@ -115,11 +120,13 @@ graph TB
     
     APP --> PS               # 应用依赖插件支持
     PS --> IF                # 插件支持依赖接口
+    AGENT --> IF             # Agent 依赖接口契约
+    AGENT --> DATA           # Agent 依赖数据
+    AGENT --> PB             # Agent 依赖 Python 绑定
     IF --> GUI               # 接口依赖界面
     GUI --> WF               # 界面依赖工作流
     GUI --> DATA             # 界面依赖数据
     GUI --> FIG              # 界面依赖图表
-    GUI --> CW               # 界面依赖通用控件
     WF --> GV                # 工作流依赖图形视图
     DATA --> PB              # 数据依赖 Python 绑定
     PB --> PS2               # 绑定依赖脚本
@@ -130,6 +137,7 @@ graph TB
     style APP fill:#fff3e0   # 橙色：应用层
     style PS fill:#e8f5e9    # 绿色：插件层
     style IF fill:#e8f5e9    # 绿色：接口层
+    style AGENT fill:#e8f5e9 # 绿色：接口层（Agent 框架）
     style GUI fill:#e1f5fe   # 蓝色：界面层
     style WF fill:#f3e5f5    # 紫色：业务层
     style DATA fill:#f3e5f5  # 紫色：业务层
@@ -149,13 +157,13 @@ graph TB
 | **DAPyScripts** | Python 脚本封装 | DAPyBindQt |
 | **DAPyCommonWidgets** | Python 相关 Qt 控件 | DAPyBindQt |
 | **DAData** | 数据对象管理、DataFrame 操作 | DAUtils, DAPyBindQt |
-| **DACommonWidgets** | 通用 Qt 控件库 | DAUtils, SARibbonBar |
 | **DAGraphicsView** | 可缩放图形视图、redo/undo | DAUtils |
 | **DAPyWorkFlow** | Python 工作流核心 — 节点代理、工厂、场景、执行引擎、图形项、序列化 | DAUtils, DAGraphicsView, DAPyBindQt |
 | **DAFigure** | 科学图表绘制（基于 qwt） | DAUtils, qwt |
 | **DAGui** | 界面整合、Ribbon、Dock 管理（含 `ChartSetting/` 图表属性面板和 `NodeSetting/` 工作流节点通用设置面板） | 所有业务模块 |
 | **DAInterface** | 插件接口定义 | DAGui |
 | **DAPluginSupport** | 插件加载、管理 | DAInterface |
+| **DAAgent** | L4 接口层 Agent 框架 — 多供应商 LLM 调用、提示词库、工具注册与持久化会话（无 GUI 依赖，暴露 `DAAgentInterface`） | DAInterface, DAData, DAPyBindQt, DAPyScripts |
 | **DAAxOfficeWrapper** | Office 自动化（仅 Windows） | DAUtils |
 | **APP** | 主程序入口 | DAPluginSupport |
 
@@ -190,6 +198,8 @@ graph TB
 | `daworkbench_utils.cmake` | 构建辅助工具函数 |
 | `daworkbench_3rdparty.cmake` | 第三方库配置 |
 | `daworkbench_plugin_utils.cmake` | 插件构建辅助宏 |
+| `create_win32_resource_version.cmake` | Windows 平台生成 exe 资源版本信息（.rc） |
+| `DAWorkbenchConfig.cmake.in` | CMake 包配置导出模板（供 `find_package(DAWorkbench)` 使用） |
 
 ---
 
@@ -292,7 +302,8 @@ src/3rdparty/
 ├── QtPropertyBrowser/       # Qt 属性浏览器（已停用，源码保留但不构建）
 ├── ordered-map/             # 有序 map 实现
 ├── qwt/                     # 科学图表库
-├── ctk/                     # 医疗影像工具包（精简版）
+├── DAWidgets/               # Qt QWidget 补充控件库（submodule，namespace DA::DAWidgets）
+├── ctk/                     # 医疗影像工具包（精简版，vendored，非 submodule）
 └── CMakeLists.txt           # 第三方库构建配置
 ```
 

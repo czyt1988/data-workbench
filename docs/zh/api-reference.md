@@ -33,18 +33,20 @@ class DACoreInterface
 {
 public:
     // 获取 UI 接口 - 用于访问 Ribbon、Dock 等界面组件
-    virtual DAUIInterface* getUiInterface() = 0;
-    
+    virtual DAUIInterface* getUiInterface() const = 0;
+
     // 获取项目管理接口 - 用于项目创建、打开、保存等操作
-    virtual DAProjectInterface* getProjectInterface() = 0;
-    
+    virtual DAProjectInterface* getProjectInterface() const = 0;
+
     // 获取数据管理接口 - 用于数据对象的增删改查
-    virtual DADataManagerInterface* getDataManagerInterface() = 0;
-    
+    virtual DADataManagerInterface* getDataManagerInterface() const = 0;
+
+    // 获取 Agent 接口 - 用于 AI 分析子系统（LLM 配置/会话/提示词库/工具注册）
+    virtual DAAgentInterface* getAgentInterface() const = 0;
 };
 ```
 
-上述接口是插件开发的基石，通过 `core()` 方法获取 DACoreInterface 实例后，即可访问主程序的所有功能模块。
+上述接口是插件开发的基石，通过 `core()` 方法获取 DACoreInterface 实例后，即可访问主程序的所有功能模块，包括通过 `getAgentInterface()` 获取的 `DAAgentInterface`（AI 分析子系统入口，定义于 `src/DAAgent/DAAgentInterface.h`）。
 
 ### DAUIInterface
 
@@ -84,27 +86,28 @@ public:
 下面的代码展示了插件基类的核心定义：
 
 ```cpp
-class DAAbstractPlugin : public QObject
+class DAAbstractPlugin   // 注意：不继承 QObject，通过 Q_DECLARE_INTERFACE 注册 IID
 {
-    Q_OBJECT
 public:
+    // 插件元信息 - 纯虚函数，必须实现
+    virtual QString getIID() const = 0;           // 接口标识符
+    virtual QString getName() const = 0;          // 插件名称
+    virtual QString getVersion() const = 0;       // 插件版本
+    virtual QString getDescription() const = 0;   // 插件描述
+
+    // 生命周期 - 默认实现，按需重载
+    virtual bool initialize();                    // 默认返回 true
+    virtual bool finalize();                       // 默认返回 true
+    virtual void retranslate();                    // 语言变更回调，默认空实现
+    virtual DAAbstractSettingPage* createSettingPage();          // 默认返回 nullptr
+    virtual std::shared_ptr<DAAbstractArchiveTask> createArchiveTask(bool isSave);  // 默认返回 nullptr
+
     // 获取核心接口 - 插件访问主程序功能的唯一入口
     DACoreInterface* core() const;
-    
-    // 插件信息 - 必须实现的元信息方法
-    virtual QString pluginName() const = 0;       // 插件名称
-    virtual QString pluginVersion() const = 0;    // 插件版本
-    virtual QString pluginDescription() const = 0; // 插件描述
-    
-    // 初始化（必须实现）- 主程序加载插件后立即调用
-    virtual bool initialize() = 0;
-    
-    // 语言变更 - 多语言支持回调
-    virtual void retranslate();
 };
 ```
 
-插件开发者必须实现 `initialize()` 方法，在此方法中完成资源初始化、节点注册、界面设置等工作。
+插件开发者需实现元信息方法（`getIID`/`getName`/`getVersion`/`getDescription`），并按需重载 `initialize()` 完成资源初始化、节点注册、界面设置等工作；通过 `core()` 获取 `DACoreInterface` 进而访问主程序功能。导出插件还需实现 `plugin_create()` / `plugin_destory()` 两个 C 函数并使用 `Q_DECLARE_INTERFACE`/`Q_PLUGIN_METADATA` 注册。
 
 ### DAAbstractNodePlugin
 
@@ -275,28 +278,43 @@ signals:
 
 数据管理器使用信号槽机制通知数据变更，插件可以监听这些信号实现响应式更新。
 
-### DADataPackage
+### DAData
 
-数据包类，用于在工作流节点间传递数据。支持 DataFrame 等多种数据类型的封装和序列化。
+数据包装类（`src/DAData/DAData.h`），用于在工作流节点间传递数据。它封装 `DAAbstractData` 智能指针，支持隐式共享以减少数据拷贝，可包装 DataFrame、Series、Python 对象等多种数据类型。
 
-下面的代码展示了数据包的核心方法：
+下面的代码展示了数据包装器的核心方法：
 
 ```cpp
-class DADataPackage
+class DAData
 {
 public:
-    // DataFrame 操作 - pandas DataFrame 的包装
-    void setDataFrame(const py::object& df);  // 设置 DataFrame
-    py::object getDataFrame() const;          // 获取 DataFrame
-    bool hasDataFrame() const;                // 检查是否包含 DataFrame
-    
-    // 序列化 - 支持数据的保存和恢复
-    QVariant serialize() const;               // 序列化为 QVariant
-    void deserialize(const QVariant& data);   // 从 QVariant 反序列化
+    DAAbstractData::DataType getDataType() const;          // 数据类型（DataFrame/Series/DataPackage 等）
+    bool isDataFrame() const;                              // 是否为 DataFrame
+    bool isSeries() const;                                 // 是否为 Series
+    bool isDataPackage() const;                            // 是否为 DataPackage 类型
+
+    // 变量元信息
+    QString getName() const;                               // 名称
+    QString getDescribe() const;                           // 描述
+    DAAbstractData::IdType id() const;                     // 数据 id
+    std::pair<std::size_t, std::size_t> shape() const;     // 尺寸
+
+    // 转换 - 转为底层 Python 对象
+    DAPyDataFrame toDataFrame() const;
+    DAPySeries toSeries() const;
+    pybind11::object toPyObject() const;
+    void setPyObject(const pybind11::object& obj);
+
+    // 数据管理器关联
+    DADataManager* getDataManager() const;                // 所属数据管理器
+    bool isHaveDataManager() const;                       // 是否被管理器管理
+
+    // 写文件
+    static bool writeToFile(const DAData& data, const QString& filePath);
 };
 ```
 
-数据包是节点间数据传递的标准格式，支持隐式共享以减少数据拷贝。
+`DAData` 是节点间数据传递的标准包装格式，值类型语义、支持隐式共享；`DataPackage` 是 `DAAbstractData::DataType` 中的一个类型分类，并非独立类。
 
 ## 图形视图 API
 
@@ -367,9 +385,10 @@ daCritical << "critical message" << arg;  // 严重级别 - 致命错误，进 U
 | DAPyWorkFlow | 工作流模块 | DAPyWorkFlowManager, DAPyNode, DAPyNodeMetaData |
 | DAGraphicsView | 图形视图模块 | DAGraphicsScene, DAGraphicsView |
 | DAFigure | 图表模块 | DAFigureWidget, DAChart |
-| DAData | 数据模块 | DADataPackage, DADataManagerInterface |
-| DAGui | 界面模块 | DARibbonArea, DADockingArea |
-| DAInterface | 接口模块 | DACoreInterface, DAUIInterface |
+| DAData | 数据模块 | DAData, DADataManager, DAAbstractData |
+| DAGui | 界面模块 | DARibbonArea, DADockingArea, DAMarkdownView |
+| DAInterface | 接口模块 | DACoreInterface, DAUIInterface, DAAgentInterface |
+| DAAgent | AI 分析模块 | DAAgentInterface, DAAgentModule, DAAbstractAgentTool |
 | DAPluginSupport | 插件模块 | DAAbstractPlugin, DAPluginManager |
 
 ## 下一步

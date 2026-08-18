@@ -32,7 +32,7 @@
     "plugin-base-name": "My",                           # 插件基础名称
     "plugin-display-name": "My Plugin",                 # 插件显示名称
     "plugin-description": "This is My Plugin for DAWorkbench",  # 插件描述
-    "plugin-iid": "Plugin.MyPlugin",                    # 插件唯一标识符
+    "plugin-iid": "DAABSTRACTNODEPLUGIN_IID",           # 插件唯一标识符（节点插件用此宏，值为 "org.da.abstract.nodePlugin"）
     "factory-prototypes": "My.Factory",                 # 节点工厂原型前缀
     "factory-name": "My Factory",                       # 节点工厂名称
     "factory-description": "My Plugin Node Factory"     # 节点工厂描述
@@ -226,29 +226,33 @@ class MyNodeFactory;
 
 /**
  * @brief My 插件主类
+ * 注意：继承列表中 QObject 必须位于第一位（见 DAAbstractNodePlugin.h 注释）
  */
-class MyPlugin : public DA::DAAbstractNodePlugin
+class MyPlugin : public QObject, public DA::DAAbstractNodePlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "Plugin.MyPlugin")
+    Q_PLUGIN_METADATA(IID DAABSTRACTNODEPLUGIN_IID)
     Q_INTERFACES(DA::DAAbstractNodePlugin)
 public:
     MyPlugin();
-    ~MyPlugin();
+    ~MyPlugin() override;
 
-    // 插件信息
-    QString pluginName() const override { return tr("My Plugin"); }
-    QString pluginVersion() const override { return "0.0.1"; }
-    QString pluginDescription() const override { return tr("My custom plugin for DAWorkbench"); }
+    // 插件元信息（DAAbstractPlugin 纯虚接口，必须实现）
+    QString getIID() const override { return DAABSTRACTNODEPLUGIN_IID; }
+    QString getName() const override { return tr("My Plugin"); }
+    QString getVersion() const override { return "0.0.1"; }
+    QString getDescription() const override { return tr("My custom plugin for DAWorkbench"); }
 
-    // 初始化
+    // 初始化（非纯虚，默认返回 true；此处重载以创建节点工厂）
     bool initialize() override;
 
     // 语言变更
     void retranslate() override;
 
-    // 获取节点工厂
+    // 创建节点工厂（DAAbstractNodePlugin 纯虚接口，必须实现）
     DA::DAPyNodeFactory* createNodeFactory() override;
+    // 销毁节点工厂（谁创建谁删除）
+    void destroyNodeFactory(DA::DAPyNodeFactory* p) override;
 
 private:
     MyNodeFactory* m_nodeFactory;
@@ -268,9 +272,7 @@ MyPlugin::MyPlugin() : m_nodeFactory(nullptr)
 
 MyPlugin::~MyPlugin()
 {
-    if (m_nodeFactory) {
-        delete m_nodeFactory;
-    }
+    // 插件卸载时由 destroyNodeFactory 负责销毁，这里不要重复 delete
 }
 
 bool MyPlugin::initialize()
@@ -281,7 +283,7 @@ bool MyPlugin::initialize()
         return false;
     }
 
-    // 创建节点工厂
+    // 创建节点工厂（具体工厂对象在 createNodeFactory() 时返回给框架）
     m_nodeFactory = new MyNodeFactory(core);
     if (!m_nodeFactory->initialize()) {
         delete m_nodeFactory;
@@ -289,9 +291,8 @@ bool MyPlugin::initialize()
         return false;
     }
 
-    // 注册节点元数据
-    registerNodeMetaData(m_nodeFactory);
-
+    // 不再调用 registerNodeMetaData —— 旧 API 已废弃
+    // 节点元数据由 DAPyNodeFactory::discoverNodes() 扫描 Python 包自动发现
     return true;
 }
 
@@ -302,17 +303,30 @@ void MyPlugin::retranslate()
 
 DA::DAPyNodeFactory* MyPlugin::createNodeFactory()
 {
-    // Create and return node factory
-    if (m_nodeFactory) {
-        factories.append(m_nodeFactory);
+    // 把工厂指针交给框架；销毁由 destroyNodeFactory() 负责
+    return m_nodeFactory;
+}
+
+void MyPlugin::destroyNodeFactory(DA::DAPyNodeFactory* p)
+{
+    // 谁创建谁删除
+    if (p == m_nodeFactory) {
+        delete m_nodeFactory;
+        m_nodeFactory = nullptr;
+    } else {
+        delete p;
     }
-    return factories;
 }
 ```
 
 ---
 
-## 实现节点工厂
+## 实现节点工厂（旧 C++ 架构，仅参考）
+
+!!! warning "遗留架构 —— 当前推荐 Python-first `@NodeDef`"
+    下面 `MyNodeFactory` 继承 `DA::DAPyNodeFactory` 并重写 `create` / `getNodeMetaDataList` / `getFactoryName` 的写法属于**已废弃的 C++ 节点工厂架构**，当前 `DAPyNodeFactory`（`src/DAPyWorkFlow/DAPyNodeFactory.h`）不再暴露这些虚函数，上述代码无法编译。
+
+    **新插件应采用 Python-first 模型**：节点用 `@NodeDef` 装饰器声明，C++ 插件入口只负责注册 Python 脚本路径，`DAPyNodeFactory::discoverNodes()` 启动时扫描 Python 包自动发现节点，无需手写 C++ 工厂。参考 `plugins/DASystemNodes/`（纯 Python 节点插件，C++ 入口 `DASystemNodesPlugin` 仅注册 Python 路径，不定义任何节点）。本节仅作历史背景保留。
 
 ### MyNodeFactory.h
 
@@ -411,7 +425,10 @@ DA::DAAbstractNode* MyNodeFactory::create(const DA::DANodeMetaData& meta)
 
 ---
 
-## 实现工作节点
+## 实现工作节点（旧 C++ 节点，仅参考）
+
+!!! warning "遗留架构 —— 当前推荐 Python-first `@NodeDef`"
+    下面 `MyWorker` 继承 `DA::DAAbstractNode` 并重写 `exec()` 的写法属于**已废弃的 C++ 节点架构**。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，执行入口为 `execute(self, inputs, params)`，输出通过 `self._output_data` 写入，数据包装类为 `DAData`（`src/DAData/DAData.h`，**不是** `DADataPackage`）。本节仅作历史背景保留。
 
 ### MyWorker.h
 
@@ -458,20 +475,25 @@ MyWorker::~MyWorker()
 bool MyWorker::exec()
 {
     // 获取输入数据
-    QVariant inputData = getInputData("input_data");
-    
-    if (!inputData.canConvert<DA::DADataPackage>()) {
+    QVariant inputData = getInputData("input_data");  // cn:数据包装类为 DAData，非 DADataPackage
+
+    if (!inputData.canConvert<DA::DAData>()) {  // cn:类型校验用 DAData
         return false;
     }
-    
-    DA::DADataPackage pkg = inputData.value<DA::DADataPackage>();
+
+    DA::DAData data = inputData.value<DA::DAData>();  // cn:取出 DAData
+    if (!data.isDataFrame()) {
+        return false;
+    }
+    DA::DAPyDataFrame df = data.toDataFrame();
     
     // 执行数据处理逻辑
     // ... 自定义数据处理代码 ...
     
-    // 设置输出数据
+    // 设置输出数据 —— 输出也是 DAData
     QVariant outputData;
-    outputData.setValue(pkg);
+    DA::DAData outData(df);  // cn:用处理后的 DataFrame 构造 DAData
+    outputData.setValue(outData);
     setOutputData("output_data", outputData);
     
     return true;
@@ -484,6 +506,53 @@ DA::DAAbstractNodeGraphicsItem* MyWorker::createGraphicsItem()
     item->setBodySize(120, 60);
     return item;
 }
+```
+
+### Python-first `@NodeDef` 等价实现（推荐）
+
+上面 C++ 节点的功能，用 Python-first 模型可以这样实现（推荐写法，参考 `plugins/DASystemNodes/`）：
+
+```python
+# -*- coding: utf-8 -*-
+"""Data Process node."""  # docstring 改英文（作为 tooltip）
+
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
+
+
+@NodeDef(
+    name="Data Process",            # 显示名称（保持英文不翻译，参与序列化）
+    category=_("My Nodes"),          # cn:我的节点  分类路径，翻译
+)
+class DataProcessNode:
+    """Data Process node."""
+
+    class Inputs:
+        input_data = Input("DataFrame", required=True, description=_("Input DataFrame"))  # cn:输入 DataFrame
+
+    class Outputs:
+        output_data = Output("DataFrame", description=_("Output DataFrame"))  # cn:输出 DataFrame
+
+    def __init__(self):
+        super().__init__()  # 必须调用，激活 MRO 链，初始化 _output_data
+        self._cache = None
+
+    def execute(self, inputs=None, params=None):
+        # 签名必须是 (self, inputs=None, params=None)
+        if inputs is None:
+            inputs = {}
+        if params is None:
+            params = {}
+
+        df = inputs.get("input_data")
+        if df is None:
+            return False  # 必填输入缺失
+
+        # ... 自定义数据处理代码 ...
+        result = df  # 示例
+
+        # 输出通过 self._output_data 写入，不要 return 结果
+        self._output_data["output_data"] = result
+        return True
 ```
 
 ---
@@ -516,21 +585,25 @@ bool MyWorker::exec()
 
 ### 配置服务
 
+DAWorkBench 的配置由 `DAAppConfig`（`src/APP/SettingPages/DAAppConfig.h`）统一管理，配置键通过 `DA_CONFIG_KEY_*` 宏定义，生成的总头文件为 `DAConfigs.h`（注意是复数）。不要使用 `DA::getConfigValue` / `DA::setConfigValue`，也不要 `#include "DAConfig.h"`（无此文件）。
+
 ```cpp
-#include "DAConfig.h"
+#include "DAConfigs.h"  // 引入 DAAppConfig + 所有 DA_CONFIG_KEY_* 宏（生成的总头文件）
 
 bool MyPlugin::initialize()
 {
-    // 获取配置值
-    QString dataPath = DA::getConfigValue("data.default_path").toString();
-    int maxThreads = DA::getConfigValue("performance.max_threads").toInt();
-    
-    // 设置配置值
-    DA::setConfigValue("my_plugin.custom_option", true);
-    
+    // 通过 DAAppConfig 读写配置；DA_CONFIG_KEY_* 宏见 DAAppConfig.h
+    // 已有键示例：DA_CONFIG_KEY_LOG_LEVEL / DA_CONFIG_KEY_WORKFLOW_TIMEOUT 等
+    QString logLevel = DA::DAAppConfig::instance()->value(DA_CONFIG_KEY_LOG_LEVEL).toString();
+
+    // 读取自定义配置可基于已注册键名，写入后需调用 saveConfig() 持久化
+    DA::DAAppConfig::instance()->setValue(DA_CONFIG_KEY_WORKFLOW_TIMEOUT, 60);
+
     return true;
 }
 ```
+
+> 插件自有的设置页应通过重载 `DAAbstractPlugin::createSettingPage()` 返回 `DAAbstractSettingPage*`，而不是直接读写全局配置。
 
 ### 数据管理服务
 
@@ -541,13 +614,20 @@ bool MyWorker::exec()
 {
     DA::DACoreInterface* core = this->core();
     DA::DADataManagerInterface* dataMgr = core->getDataManagerInterface();
-    
-    // 获取数据对象
-    DA::DADataObject* dataObj = dataMgr->getData("my_dataframe");
-    
-    // 操作数据
-    // ...
-    
+
+    // 获取当前选中的数据列表（返回 QList<DAData>，不是 DADataObject*）
+    QList<DA::DAData> selected = dataMgr->getSelectDatas();
+
+    // 获取当前正在操作的数据（返回 DAData）
+    DA::DAData operateData = dataMgr->getOperateData();
+
+    // 按名称查找数据（返回 DAData）
+    DA::DAData data = dataMgr->findData("my_dataframe");
+    if (data.isDataFrame()) {
+        DA::DAPyDataFrame df = data.toDataFrame();  // cn:转换为 DataFrame 操作
+        // ...
+    }
+
     return true;
 }
 ```
@@ -634,6 +714,20 @@ data-workbench/bin_Release_qtX.X_MSCV_x64/bin/plugins/MyPlugin.dll
 ```
 
 运行主程序，插件将自动加载。
+
+---
+
+## 现有插件参考
+
+DAWorkBench 自带的三个插件（`plugins/CMakeLists.txt` 构建）是开发新插件的最佳参考：
+
+| 插件 | 路径 | 类型 | 说明 |
+|------|------|------|------|
+| **DataAnalysis** | `plugins/DataAnalysis/` | C++ + Python | 数据分析节点插件，三层 Python 包架构（Core/Gui/Nodes）参考实现 |
+| **DASystemNodes** | `plugins/DASystemNodes/` | 纯 Python | 系统级工作流节点（Start/End/If/Else/Delay/Print/TextViewer/DataToManager 等），C++ 入口仅注册 Python 路径，是 **Python-first `@NodeDef` 节点插件的最佳模板** |
+| **DAAgentTools** | `plugins/DAAgentTools/` | C++ | 平台内置 agent 工具插件（19 个工具，通过 `DAAgentInterface::registerTool()` 注册），供 LLM agent 调用 |
+
+> 新增 Python-first 节点插件优先参考 `plugins/DASystemNodes/`，无需编写 C++ NodeFactory。详见 `plugins/DASystemNodes/AGENTS.md`。
 
 ---
 

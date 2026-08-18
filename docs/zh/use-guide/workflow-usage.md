@@ -28,7 +28,11 @@ DAWorkBench 内置多种节点类型，按功能分类：
 
 | 分类 | 节点示例 | 说明 |
 |------|---------|------|
-| **数据处理** | Data Filter、Filter By Column、Threshold Filter、Search、Sort | DataFrame 过滤、查询、排序 |
+| **流程控制** | Start、End、If/Else、Delay | 工作流起点 / 终点 / 条件分支 / 延迟，由 DASystemNodes 插件提供 |
+| **数据展示** | Print、TextViewer | 打印到日志、文本画面展示，由 DASystemNodes 插件提供 |
+| **数据发布** | Data To Manager | 将节点数据发布到 DataManager，由 DASystemNodes 插件提供 |
+| **常量** | Constant | 输出 Python 字面量常量，由 DASystemNodes 插件提供 |
+| **数据处理** | Data Filter、Filter By Column、Threshold Filter、Search、Sort | DataFrame 过滤、查询、排序，由 DADataAnalysisNodes 插件提供 |
 | **数据变换** | Eval Expression、Fill NA、Interpolate、Replace Values、Transform Skewed | 数值计算、缺失值处理 |
 | **统计聚合** | Pivot Table、Remove Outliers IQR/Z-Score | 数据汇总和异常值检测 |
 | **数据查询** | Query | SQL 风格的 DataFrame 查询 |

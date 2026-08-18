@@ -52,7 +52,10 @@ Agent 对话历史以 JSONL 格式持久化到磁盘，支持多会话管理、�
 | `user` | `human` | 用户消息 | — | — |
 | `assistant` | `ai` | LLM 回复 | 可能 | — |
 | `tool_result` | `tool` | 工具执行结果 | — | 是 |
-| `usage` | — | Token 用量记录 | — | — |
+| `usage` | — | Token 用量记录（每轮 `message_end.usage` 与独立 `usage` 消息均落盘） | — | — |
+
+!!! note "usage 记录的累计重放"
+    `usage` 记录用于会话级 token 累计统计的持久化。切换会话时 `DAAgentModule::emitTokenUsageForSession()` 读取目标会话的全部 `usage` 记录，先清零 `mCumulativeIn/Out/TotalTokens` 再逐条累加，重新 emit `tokenUsageUpdated`——UI 立即显示该会话的累计用量与进度条，不会拘留上一会话的数值。上下文压缩不再重置这些累计值。
 
 !!! note "question/answer 复用 tool_call/tool_result 语义"
     HITL 提问（`ask_user` 工具）在 JSONL 中存储为 `assistant` 类型（含 `tool_calls`），用户回答存储为 `tool_result` 类型。一期不单独区分 question/answer 记录类型。
@@ -138,6 +141,8 @@ sequenceDiagram
     B-->>M: emit agentSessionLoaded(id)
     M->>M: emit sessionSwitched(id, allRecords)
     M->>UI: onSessionSwitched() → 重放历史到 UI
+    M->>M: emitTokenUsageForSession(id) → 从持久化 usage 记录重算累计
+    M->>UI: tokenUsageUpdated (累计输入/输出/总 token + context_window)
 
     Note over UI: 恢复输入框可用态
     Note over UI: 此后方可发下一轮 user_msg
@@ -260,9 +265,14 @@ QFile::rename(sessionsDir + "/sessions_index.json.tmp",
 ```
 DAAppController::initialize()
   → agentMod->cleanupSessions()           // 清理超限/过期会话
-  → restoreLastActiveSession()            // 填充会话下拉
-    → listSessions() → 填充 UI 下拉
-    → 不自动恢复（始终以全新对话开始）
+  → (singleShot 延迟到事件循环空闲)
+    → restoreLastActiveSession()          // 填充会话下拉
+      → listSessions() → 填充 UI 下拉
+      → mCurrentSessionId.clear() + resetCumulativeTokens()
+      → emit sessionCleared() → UI clearChat + 复位 token 控件
+      → 不自动恢复（始终以全新对话开始）
+    → pushModelSelection()                // 推送供应商/模型列表 + 激活选择到 Dock 下拉
+    → prestartAgent()                     // 预热子进程 (auto_prestart=true 时)
     → 用户可通过下拉手动切换到历史会话
 ```
 
@@ -275,8 +285,13 @@ DAAppProject 加载任务
   → agentMod->setCurrentProjectPath(path)
   → restoreLastActiveSession()
     → listSessions(projectPath) → 填充工程会话下拉
+    → mCurrentSessionId.clear() + resetCumulativeTokens()
+    → emit sessionCleared() → UI clearChat + 复位 token 控件 + 下拉不选中
     → 不自动恢复（始终以全新对话开始）
 ```
+
+!!! note "sessionCleared 清空游离会话残留"
+    `restoreLastActiveSession()` 始终 emit `sessionCleared()`（`DAAgentInterface.h`），用于在启动 / 打开工程后清空上一会话残留的聊天区、复位 token 统计控件、清空标题，并清空 `m_currentSessionId`——之后用户发消息由 `sendMessage` 懒创建绑定当前工程的新会话。打开一个无内嵌会话的工程时，此信号尤为重要（清掉此前自由会话的游离残留）。
 
 ### 保存工程
 
@@ -300,16 +315,20 @@ setLastActive(sessionId, newPath)    // 更新指针的 projectPath
 
 ## 配置参数
 
-| 参数 | 配置键 | 默认值 | 范围 | 说明 |
-|------|--------|--------|------|------|
-| 最大会话数 | `max_sessions` | 20 | 5-200 | 自由会话保留上限 |
-| 保留天数 | `session_retention_days` | 30 | 1-365 | 自由会话保留天数 |
+| 参数 | 配置键 | 默认值 | 说明 |
+|------|--------|--------|------|
+| 最大会话数 | `max_sessions` | 20 | 自由会话保留上限 |
+| 保留天数 | `session_retention_days` | 30 | 自由会话保留天数 |
+| 预启动开关 | `auto_prestart` | true | 程序启动时是否自动预热 agent 子进程（关闭则回退到懒启动，影响会话下拉填充后是否立即预热） |
 
-!!! note "三处默认值须一致"
-    `max_sessions` / `session_retention_days` 的默认值在以下三处须保持一致：
+!!! note "`max_sessions` / `session_retention_days` 默认值须一致"
+    这两项的默认值在以下三处须保持一致：
     1. 设置页 spin range/setValue（`DAAgentSettingsWidget`）
     2. `DAAgentModule::getLLMConfig` / `setLLMConfig` 的默认值
     3. `DAAgentModule::cleanupSessions` 的 QSettings 读取
+
+!!! note "`context_window` / `max_output_tokens` 已移出 Agent 设置页"
+    `context_window`（默认 262144）与 `max_output_tokens`（默认 8192）不再是 Agent 设置页的全局可编辑项，已移至**按模型派生**的属性：设置页的模型信息表只读展示每个模型的这两值，实际值由激活供应商 + 激活模型条目决定（`setActiveModel` / `syncActiveConnection` 写入），随 `init` / `reconfigure` 下发给子进程。`DAAgentSettingsWidget.cpp` 的保存逻辑显式跳过这两项（`不含 context_window/max_output_tokens，由激活模型派生`）。
 
 ---
 

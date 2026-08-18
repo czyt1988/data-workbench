@@ -143,21 +143,27 @@ cmake --build build --config Release --target install
 !!! info "默认配置"
     如果未修改第三方库安装路径，此步骤可省略。
 
-主项目的 `CMakeLists.txt` 已预配置第三方库路径。以下代码展示了第三方库查找路径的定义方式，CMake 通过这些路径定位已安装的库：
+主项目的 `CMakeLists.txt` 已预配置第三方库查找路径。当前做法是把安装目录加入 `CMAKE_PREFIX_PATH`，让 `find_package(xxx CONFIG)` 自动在 `${CMAKE_INSTALL_PREFIX}/lib/cmake/<package>` 下查找，无需为每个第三方库硬编码 `xxx_DIR`：
 
 ```cmake
-# 定义第三方库路径
-# DA_INSTALL_LIB_CMAKE_PATH 是安装目录下的 cmake 配置路径
-set(SARibbonBar_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/SARibbonBar)
-set(DALiteCtk_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/DALiteCtk)
-set(qwt_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/qwt)
-set(spdlog_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/spdlog)
+# 安装目录下的 cmake 配置路径与 share 路径
+set(DA_INSTALL_LIB_CMAKE_PATH ${CMAKE_INSTALL_PREFIX}/lib/cmake)
+set(DA_INSTALL_LIB_SHARE_PATH ${CMAKE_INSTALL_PREFIX}/share/cmake)
+list(APPEND CMAKE_MODULE_PATH ${DA_CMAKE_DIR} ${DA_INSTALL_LIB_CMAKE_PATH})
+
+# 把安装目录加入 CMAKE_PREFIX_PATH，find_package(xxx CONFIG) 会自动在
+# ${CMAKE_INSTALL_PREFIX}/lib/cmake/<package> 查找，无需为每个第三方库硬编码 xxx_DIR
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
+
+# 例外：tsl-ordered-map 的安装位置在 share/cmake，CMAKE_PREFIX_PATH 的
+# Config 模式搜索路径不覆盖该位置，因此需要显式设置 tsl-ordered-map_DIR
 set(tsl-ordered-map_DIR ${DA_INSTALL_LIB_SHARE_PATH}/tsl-ordered-map)
-# qt${QT_VERSION_MAJOR}advanceddocking 根据 Qt 版本自动选择 qt5 或 qt6
-set(qt${QT_VERSION_MAJOR}advanceddocking_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/qt${QT_VERSION_MAJOR}advanceddocking)
 ```
 
-如修改了安装路径，需在构建时通过 CMake 参数指定正确位置。
+!!! info "ADS 4.x 包名变更"
+    Qt-Advanced-Docking-System 从 4.x 起将包名由 `qt6advanceddocking`（`qt5advanceddocking`）重命名为 `qtadvanceddocking-qt6`（`qtadvanceddocking-qt5`）。项目的 `damacro_import_QtAdvancedDocking` 宏会先 `find_package(qtadvanceddocking-qt${QT_VERSION_MAJOR})` 尝试新名，失败再回退到旧名 `qt${QT_VERSION_MAJOR}advanceddocking`，因此无需手动设置 `xxx_DIR`。
+
+如修改了安装路径（非默认 `CMAKE_INSTALL_PREFIX`），需在构建时通过 `-DCMAKE_PREFIX_PATH` 或对应 `xxx_DIR` 指定正确位置。
 
 ---
 
@@ -183,7 +189,7 @@ bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}
 
 ```powershell
 # Windows - 检查输出文件
-# 应显示 DataWorkbench.exe（或 DAWorkbench.exe）
+# 应显示 DAWorkBench.exe
 dir bin_Release_qt6.7.3_MSVC_x64\*.exe
 
 # Windows - 检查动态库
@@ -192,7 +198,7 @@ dir bin_Release_qt6.7.3_MSVC_x64\*.dll
 
 # 运行程序
 # 启动主程序验证构建结果
-.\bin_Release_qt6.7.3_MSVC_x64\DAWorkbench.exe
+.\bin_Release_qt6.7.3_MSVC_x64\DAWorkBench.exe
 ```
 
 程序启动后显示主窗口界面，表示构建成功。如果出现 DLL 缺失错误，请参考下一节解决。
@@ -211,7 +217,7 @@ cd bin_Release_qt6.7.3_MSVC_x64
 
 # 使用 windeployqt 自动部署 Qt 依赖
 # 此命令会复制 Qt 核心 DLL 和插件到当前目录
-windeployqt DAWorkbench.exe
+windeployqt DAWorkBench.exe
 ```
 
 执行后，程序目录将包含所有必需的 Qt 依赖库。

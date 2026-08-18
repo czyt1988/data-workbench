@@ -20,13 +20,17 @@
 |--------|------|----------|----------|
 | zlib | 压缩库基础库 | 无依赖 | 独立构建 |
 | quazip | Qt zip 压缩库 | 依赖 zlib | 统一构建 |
+| DAWidgets | 通用 QWidget 补充库（命名空间 `DA::DAWidgets`） | 无依赖 | 统一构建 |
 | qwt | 高效绑图库 | 无依赖 | 统一构建 |
 | SARibbon | Ribbon 界面库 | 无依赖 | 统一构建 |
 | ADS | Docking 界面库 | 无依赖 | 统一构建 |
 | spdlog | 高效日志库 | 无依赖 | 统一构建 |
 | pybind11 | Python 绑定库 | 无依赖 | 统一构建 |
-| ctk | 精简 CTK 组件库 | 无依赖 | 统一构建 |
+| ctk | 精简化的 ctk 组件库（仅用到部分组件，仓库内直接 vendored，非 submodule） | 无依赖 | 统一构建 |
 | ordered-map | 有序 map 容器 | 无依赖 | 统一构建 |
+
+!!! info "submodule 与 vendored 的区别"
+    除 `ctk` 外，上表中的库均作为 git submodule 管理（见项目根目录 `.gitmodules`），克隆仓库后需执行 `git submodule update --init --recursive` 拉取。`ctk` 为仓库内直接 vendored 的精简版本（仅保留用到的组件），无需单独拉取。`DAWidgets` 也是 submodule（路径 `src/3rdparty/DAWidgets`），从 DACommonWidgets 提取，提供 DAColorPickerButton/DAPenEditWidget/DAPropertyItemWidget 等基础控件。
 
 ## 依赖关系图
 
@@ -44,6 +48,7 @@ flowchart TD
         F[spdlog<br/>日志库]
         G[pybind11<br/>Python 绑定]
         H[ctk<br/>CTK 组件]
+        I[DAWidgets<br/>QWidget 补充库]
         J[ordered-map<br/>有序容器]
     end
     
@@ -195,6 +200,7 @@ cmake -S . -B build -DZLIB_ROOT="C:\local\zlib" ...
 
 ## 参考资料
 
-- [项目构建指南](build.md)
-- [开发环境配置](dev-env.md)
+- [构建说明](./build-instructions.md)
+- [构建选项参考](./build-options.md)
+- 项目根目录 `build.md`（仓库根，非站点页面，可在源码中直接查看）
 - 第三方库目录：`src/3rdparty/`

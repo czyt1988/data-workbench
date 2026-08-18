@@ -194,20 +194,25 @@ MinGW编译器线程数据空间不足，属于编译器自身问题。
 
 | DLL名称 | 来源 | 说明 |
 |---------|------|------|
+| `SARibbonBar.dll` | SARibbonBar | Ribbon界面库 |
+| `DAWidgets.dll` | DAWidgets | 通用 QWidget 补充库 |
 | `DALiteCtk.dll` | DALiteCtk库 | CTK扩展库 |
-| `qt6advanceddocking.dll` | QtAdvancedDocking | Dock窗口库（Qt6） |
-| `qt5advanceddocking.dll` | QtAdvancedDocking | Dock窗口库（Qt5） |
+| `qwtcore.dll` | Qwt | Qwt 核心库 |
+| `qwtplot.dll` | Qwt | Qwt 绘图库 |
+| `qwtplot3d.dll` | Qwt | Qwt 3D 绘图库 |
+| `qtadvanceddocking-qt6.dll` | QtAdvancedDocking | Dock窗口库（Qt6） |
+| `qtadvanceddocking-qt5.dll` | QtAdvancedDocking | Dock窗口库（Qt5） |
 | `quazip1-qt6.dll` | QuaZip | ZIP压缩库（Qt6） |
 | `quazip1-qt5.dll` | QuaZip | ZIP压缩库（Qt5） |
-| `qwt.dll` | Qwt | 绑图库 |
-| `SARibbonBar.dll` | SARibbonBar | Ribbon界面库 |
-| `spdlog.dll` | spdlog | 日志库 |
 | `zlib.dll` | zlib | QuaZip依赖库 |
+| `python311.dll` | Python 运行时 | 脚本后端解释器 |
 
 !!! warning "注意"
-    1. DLL名称与Qt版本相关，Qt6使用`qt6xxx.dll`，Qt5使用`qt5xxx.dll`
-    2. `zlib.dll`是QuaZip的依赖，必须同时复制
-    3. Debug模式下DLL名称会添加`d`后缀，如`SARibbonBard.dll`
+    1. 带 Qt 版本号的库采用后缀形式：ADS 4.x 起上游将包名从 `qt6advanceddocking` 重命名为 `qtadvanceddocking-qt6`，故 DLL 为 `qtadvanceddocking-qt6.dll`（Qt5 对应 `qtadvanceddocking-qt5.dll`）；QuaZip 同理为 `quazip1-qt6.dll`
+    2. Qwt 已拆分为 `qwtcore.dll`/`qwtplot.dll`/`qwtplot3d.dll` 三个组件
+    3. `spdlog`、`pybind11`、`ordered-map` 为静态库或头文件库，不产生 DLL，无需复制
+    4. `zlib.dll`是QuaZip的依赖，必须同时复制
+    5. Debug模式下DLL名称会添加`d`后缀，如`SARibbonBard.dll`
 
 !!! tip "自动化方案"
     可以编写脚本自动复制DLL，或使用CMake的install命令在构建后自动部署。
@@ -232,29 +237,41 @@ MinGW编译器线程数据空间不足，属于编译器自身问题。
 
 通过配置文件指定Python环境：
 
-下面的代码展示了 python-config.json 的配置格式，用于指定 Python 解释器路径。`${current-app-dir}` 变量代表程序安装目录。
+下面的代码展示了 python-config.json 的配置格式，用于指定 Python 解释器路径。`${current-app-dir}` 变量代表程序安装目录，使配置文件可移植。
 
 ```json
 {
-  "pythonPath": "D:/Python39/python.exe",   // Python 解释器完整路径
-  "pythonHome": "D:/Python39"               // Python 安装根目录
+  "config": {
+    "interpreter": "D:/Python311/python.exe"
+  }
 }
 ```
 
-将此文件放置在程序目录下，程序启动时会优先读取此配置。
+将此文件放置在程序目录下，程序启动时会优先读取此配置。也可使用 `${current-app-dir}` 指向随程序分发的嵌入式 Python：
+
+```json
+{
+  "config": {
+    "interpreter": "${current-app-dir}/python311/python.exe"
+  }
+}
+```
 
 #### 方案二：正确配置Python环境
 
 详见[Python环境配置](./python-environment.md)，确保：
 
 - 安装正确版本的Python（推荐Python 3.9+）
-- 安装必需的Python包：pandas、numpy、scipy等
+- 安装必需的Python包：见项目根目录 `requirements.txt`（共 16 个包，含 pandas/numpy/scipy 及 DAAgent 子系统所需的 langgraph/langchain-openai 等 AI 栈）
 
 !!! info "Python依赖"
-    data-workbench依赖以下Python包：
-    - pandas - 数据处理
-    - numpy - 数值计算
-    - scipy - 科学计算
+    data-workbench 运行时依赖以下 Python 包（完整列表见项目根目录 `requirements.txt`）：
+
+    ```shell
+    pip install -r requirements.txt
+    ```
+
+    除 pandas（数据处理）、numpy（数值计算）、scipy（科学计算）等数据处理库外，还包含 DAAgent 子系统必需的 AI/Agent 栈：langgraph、langchain-openai、langgraph-cli[inmem]、pydantic、tiktoken。仅安装 pandas/numpy/scipy 会导致 Agent 相关功能无法加载。
 
 ## 错误诊断流程
 
@@ -322,6 +339,6 @@ flowchart TD
 
 ## 参考资料
 
-- [构建指南](./build-guide.md)
+- [构建说明](./build-instructions.md)
+- [构建选项参考](./build-options.md)
 - [Python环境配置](./python-environment.md)
-- [Qt版本兼容性说明](./qt-compatibility.md)

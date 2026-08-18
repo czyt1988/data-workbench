@@ -14,6 +14,9 @@
 - ✅ **配置优化**：缓存过期设置、日志级别优化
 - ✅ **性能监控**：添加计时统计、内存使用监控
 
+!!! warning "工作流节点 API：C++ 接口为遗留接口"
+    下文部分代码示例使用 C++ 节点接口的 `exec()` / `getInputData()` / `setOutputData()` / `getInputDataFrame()` 模式，这是**遗留 C++ 节点接口**，仅作历史参考。当前工作流节点推荐 **Python 优先**写法（`@NodeDef` + `execute(self, inputs, params)` + `self._output_data`），详见 [Python 节点开发](./dev-guide/workflow-python-node-dev.md)。数据包装类为 `DA::DAData`（`toDataFrame()` / `toSeries()` / `isNull()`），**不存在** `DADataPackage`；取行数用 `DAPyDataFrame::shape().first`。
+
 ## 数据处理优化
 
 ### 1. 避免深拷贝
@@ -25,10 +28,10 @@
 
 ```cpp
 // ❌ 错误：深拷贝整个 DataFrame - 内存翻倍，耗时增加
-DA::DADataPackage copy = inputData;  // 复制所有数据
+DA::DAData copy = inputData;  // 复制所有数据
 
 // ✅ 正确：使用引用 - 无额外内存开销
-const DA::DADataPackage& ref = inputData;
+const DA::DAData& ref = inputData;
 
 // ✅ 正确：Qt 隐式共享 - 自动优化，避免深拷贝
 QVariant output;
@@ -44,8 +47,8 @@ output.setValue(ref);  // Qt 自动使用隐式共享机制
 ```cpp
 bool MyWorker::exec()
 {
-    auto df = getInputDataFrame();         // 获取输入 DataFrame
-    int rowCount = df.row_count();         // 获取总行数
+    auto df = getInputData("input_data").toDataFrame();  // DAData::toDataFrame
+    int rowCount = int(df.shape().first);                // 获取总行数
     int chunkSize = 50000;                 // 分块大小：每块 5 万行
     
     for (int i = 0; i < rowCount; i += chunkSize) {
@@ -146,7 +149,7 @@ bool MyWorker::exec()
 {
     // 处理完成后立即释放临时数据
     {
-        DA::DADataPackage tempData = loadLargeData();  // 加载大数据
+        DA::DAData tempData = loadLargeData();  // 加载大数据
         processData(tempData);                          // 处理数据
     }  // tempData 自动释放，离开作用域
     
@@ -203,12 +206,12 @@ m_tableView->setUpdatesEnabled(true);    // 恢复刷新，触发一次性重绘
 
 ```cpp
 // 使用线程加载大数据 - QtConcurrent 简化异步操作
-QFuture<DA::DADataPackage> future = QtConcurrent::run([this]() {
+QFuture<DA::DAData> future = QtConcurrent::run([this]() {
     return loadLargeDataFile(m_filePath);  // 在后台线程加载
 });
 
 // 使用 watcher 监听完成 - 在主线程处理结果
-QFutureWatcher<DA::DADataPackage>* watcher = new QFutureWatcher(this);
+QFutureWatcher<DA::DAData>* watcher = new QFutureWatcher(this);
 connect(watcher, &QFutureWatcher::finished, this, [this, watcher]() {
     m_dataView->setData(watcher->result());  // 主线程更新 UI
     watcher->deleteLater();                   // 清理 watcher

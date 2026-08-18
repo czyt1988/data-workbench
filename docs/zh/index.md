@@ -25,6 +25,7 @@
     - **工作流驱动** - 自动化重复性数据处理
     - **GUI 封装 pandas** - 无需编程即可使用数据处理功能
     - **交互式可视化** - 拖拽调整，生成论文级别图片
+    - **AI 驱动分析** - 多供应商 LLM 接入、提示词库与工具调用，自然语言驱动数据分析
 
 ---
 
@@ -36,6 +37,7 @@
 | [:material-play: 快速上手](./quick-start.md) | 5 分钟完成环境搭建和构建 |
 | [:material-folder: 项目结构](./project-structure.md) | 目录组织和模块职责 |
 | [:material-tools: 构建说明](./build/build-instructions.md) | 详细构建指南 |
+| [:material-robot: Agent 开发指南](./dev-guide/agent/index.md) | AI 分析子系统：LLM 接入、提示词库与工具调用 |
 
 ---
 

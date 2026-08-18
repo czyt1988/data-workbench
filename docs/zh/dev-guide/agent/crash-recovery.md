@@ -8,35 +8,37 @@ Agent 子进程可能因 LLM API 超时、Python 异常、内存不足等原因�
 
 ### 启动流程
 
+子进程启动有两条路径，由 `auto_prestart` 配置开关（默认 `true`）决定：
+
 ```mermaid
 sequenceDiagram
-    participant U as 用户
+    participant App as DAAppController
     participant M as DAAgentModule
     participant B as DAAgentBridge
     participant P as Python 子进程
 
-    U->>M: sendMessage("你好")
-    M->>M: startAgentInternal() (懒启动)
-    M->>M: 读取 agent-config.ini (LLM 配置)
-    M->>M: 探测 Python 解释器路径
-    M->>M: 探测 agent_runner.py 路径
-    M->>B: startAgent(config, tools, prompt, python, script, ...)
+    Note over App,M: 预启动路径 (auto_prestart=true, 默认)
+    App->>M: prestartAgent() (程序启动时)
+    M->>M: 检查 auto_prestart (默认 true) + LLM 配置就绪
+    M->>B: startAgent(config, tools, prompt, ...)
     B->>P: QProcess.start(pythonExe, [scriptPath])
-    B->>B: waitForStarted(5000)
+    B->>B: emit agentStarting() (UI 进入"启动中"过渡态)
     B->>P: stdin: {"type": "init", config, tools, system_prompt}
     B->>B: 启动 ready 超时计时器 (60s)
 
     P-->>B: {"type": "booting"} (重置计时器)
     Note over P: 导入 langchain (~16s)
     P-->>B: {"type": "ready", "model": "..."}
-
     B->>B: 停止 ready 计时器
-    B->>M: emit agentReady(model)
-    M->>U: UI 显示 "就绪"
+    B->>M: emit agentReady(model) (UI 由"启动中"转为"就绪")
 
-    B->>P: stdin: {"type": "user_msg", "content": "你好"}
-    B->>B: 启动不活跃看门狗 (240s)
+    Note over App,M: 懒启动路径 (auto_prestart=false)
+    App->>M: sendMessage("你好") → startAgentInternal()
+    Note over M: 后续步骤同预启动, 但无独立"启动中"过渡
 ```
+
+!!! note "agentStarting 与 agentBusy 区分"
+    `agentStarting` 信号在子进程启动时立即发射，令 UI 进入"启动中"过渡态，与 `agentBusy(thinking)`（推理中）区分——避免冷启动期间（约 16 秒 langchain 导入）被误显示为"思考中"。`agentReady` / `agentBusy(false)` / 进程退出后清除该状态。预启动、懒启动、崩溃重启三条路径均触发 `agentStarting`。
 
 ### 停止流程
 
@@ -126,6 +128,17 @@ connect(m_bridge, &DAAgentBridge::sessionRestoreRequested,
     m_pendingCrashRecovery = true;
 });
 ```
+
+### 模型热替换：不重启的容错替代路径
+
+当需要切换 LLM 配置（供应商 / 模型 / API Key）时，不必走"杀子进程 → 重启 → 恢复会话"的崩溃恢复路径。`DAAgentModule::setActiveModel()` → `DAAgentBridge::reconfigureAgent()` 下发 `reconfigure` 消息，Python 端 `AgentRunner.reconfigure()` 在两轮之间热替换 `ChatOpenAI` 实例——不重启子进程、不丢 `MemorySaver` 会话状态。失败安全：先构造新 LLM，成功后才更新，构造失败发 `error` 不破坏旧模型。详见 [通信协议 - reconfigure](protocol.md#reconfigure--模型热替换)。
+
+### 死循环防护
+
+除无活动看门狗外，Python 侧还有两重防死循环机制，避免 agent 陷入工具调用循环最终拖垮子进程：
+
+- **`recursion_limit`**（默认 150 步）：限制 LangGraph 图最大迭代步数（`compact → agent → tools → ...`）。超出抛 `GraphRecursionError`，被 `main()` 捕获并报为 `error_type="recursion_limit"`，随后发 `done` 结束本轮。
+- **重复工具调用硬终止**：`AgentRunner` 用 `_last_full_sig` / `_full_sig_repeat_count` 跟踪连续相同的完整 `tool_calls` 签名，连续 3 次相同签名（阈值 `_repeat_terminate_threshold=3`）则 `agent_node` 强制剥离 `tool_calls` 并以最终回复结束（router → END）。配合 `tool_node` 的软引导（已执行签名重复时返回引导性 `ToolMessage` 而非重复执行），在撞到 `recursion_limit` 之前优雅终止死循环。
 
 ---
 
@@ -299,6 +312,8 @@ sequenceDiagram
 | 不活跃超时 | `inactivity_timeout_sec` | 240 | 子进程无响应的超时 |
 | 最大重试 | `max_retries` | 7 | LLM API 调用最大重试次数 |
 | 最大重启 | `max_subprocess_restarts` | 3 | 子进程崩溃最大重启次数 |
+| 图最大迭代步数 | `recursion_limit` | 150 | LangGraph 图最大迭代步数，防死循环；`GraphRecursionError` 报为 `error_type="recursion_limit"` |
+| 预启动开关 | `auto_prestart` | true | 程序启动时是否自动预热 agent 子进程（关闭则回退到懒启动） |
 
 ---
 

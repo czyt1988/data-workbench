@@ -21,6 +21,7 @@ graph TD
     subgraph L4["接口层"]
         DAI["DAInterface<br/>DACoreInterface"]
         DAPS["DAPluginSupport<br/>DAAbstractPlugin"]
+        DAAG["DAAgent<br/>DAAgentInterface"]
     end
     subgraph L3["界面层"]
         DAGui["DAGui<br/>工作流/图表/数据 UI"]
@@ -41,6 +42,7 @@ graph TD
 
     APP --> DAPS
     APP --> DAPW
+    APP --> DAAG
     DAPS --> DAI
     DAPS --> DAPW
     DAI --> DAGui
@@ -79,15 +81,20 @@ classDiagram
         +getUiInterface() DAUIInterface
         +getProjectInterface() DAProjectInterface
         +getDataManagerInterface() DADataManagerInterface
+        +getAgentInterface() DAAgentInterface
         +initialized() bool
         +createUi(mainwindow)
     }
     class DAUIInterface {
+        +mainWindow() SARibbonMainWindow
+        +getMainWindow() QMainWindow
         +getRibbonArea()
         +getDockingArea()
         +getStatusBar()
         +getActionInterface()
         +getCommandInterface()
+        +getConfigValues(json) QJsonObject
+        +setColorTheme(theme)
     }
     class DAProjectInterface {
         +load(path) bool
@@ -101,9 +108,25 @@ classDiagram
         +findData(name) DAData
         +getAllDatas() QList
     }
+    class DAAgentInterface {
+        +registerTool(tool)
+        +getProviders() QJsonArray
+        +setActiveModel(provider, model)
+        +createSession() sessionId
+        +switchSession(sessionId) bool
+        +runAgent(title) bool
+    }
     class DAAbstractPlugin {
         <<abstract>>
+        +getIID() QString
+        +getName() QString
+        +getVersion() QString
+        +getDescription() QString
         +initialize() bool
+        +finalize() bool
+        +retranslate()
+        +createSettingPage() DAAbstractSettingPage
+        +createArchiveTask(isSave) DAAbstractArchiveTask
         +core() DACoreInterface
     }
 
@@ -111,6 +134,7 @@ classDiagram
     DACoreInterface --> DAUIInterface : 获取
     DACoreInterface --> DAProjectInterface : 获取
     DACoreInterface --> DADataManagerInterface : 获取
+    DACoreInterface --> DAAgentInterface : 获取
 ```
 
 插件通过 `DAAbstractPlugin::core()` 获取 `DACoreInterface` 实例，进而访问所有功能接口。
@@ -123,10 +147,15 @@ classDiagram
 
 | 接口 | 文件 | 说明 |
 |------|------|------|
-| `DACoreInterface` | `src/DAInterface/DACoreInterface.h` | 顶层核心接口，获取所有其他接口 |
-| `DAUIInterface` | `src/DAInterface/DAUIInterface.h` | UI 管理接口（Ribbon/Docking/StatusBar） |
+| `DACoreInterface` | `src/DAInterface/DACoreInterface.h` | 顶层核心接口，获取所有其他接口（含 `getAgentInterface()`） |
+| `DAUIInterface` | `src/DAInterface/DAUIInterface.h` | UI 管理接口（Ribbon/Docking/StatusBar/主题/表单配置） |
+| `DARibbonAreaInterface` | `src/DAInterface/DARibbonAreaInterface.h` | Ribbon 区域扩展接口 |
+| `DADockingAreaInterface` | `src/DAInterface/DADockingAreaInterface.h` | Dock 停靠区域扩展接口 |
+| `DAStatusBarInterface` | `src/DAInterface/DAStatusBarInterface.h` | 状态栏扩展接口 |
+| `DAUIExtendInterface` | `src/DAInterface/DAUIExtendInterface.h` | UI 扩展接口（注册自定义扩展模块） |
 | `DAProjectInterface` | `src/DAInterface/DAProjectInterface.h` | 工程文件管理接口 |
 | `DADataManagerInterface` | `src/DAInterface/DADataManagerInterface.h` | 数据管理接口 |
+| `DAAgentInterface` | `src/DAAgent/DAAgentInterface.h` | AI 分析子系统接口（LLM 配置/会话/提示词库/工具注册） |
 | `DAActionsInterface` | `src/DAInterface/DAActionsInterface.h` | QAction 注册和查找接口 |
 | `DACommandInterface` | `src/DAInterface/DACommandInterface.h` | 撤销/重做命令管理接口 |
 
@@ -226,6 +255,7 @@ daCritical << "Failed to load plugin";         // 严重级别，进 UI 窗口
 | DAFigure | L2 | 图表容器 | DAFigureWidget, DAChartWidget |
 | DAGui | L3 | GUI 整合层 | 工作流 UI、图表设置 |
 | DAInterface | L4 | 抽象接口定义 | DACoreInterface, DAUIInterface |
+| DAAgent | L4 | AI 分析子系统 | DAAgentInterface, DAAgentModule, DAAbstractAgentTool |
 | DAPluginSupport | L4 | 插件框架 | DAAbstractPlugin, DAPluginManager |
 | APP | L5 | 应用主程序 | DAAppCore, AppMainWindow |
 

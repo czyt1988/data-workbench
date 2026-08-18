@@ -6,25 +6,27 @@ data-workbench采用分层模块化架构，各模块之间有明确的依赖关
 
 ## 主要模块概览
 
-| 模块 | 层 | 类型 | 简述 | 文件数 |
+| 模块 | 层 | 类型 | 简述 | 源文件数 |
 |------|---|------|------|:------:|
 | **DAShared** | L1 基础层 | 纯头文件 | 基础数据结构、枚举↔字符串映射、Qt5/Qt6兼容、并发容器 | 19 |
-| **DAUtils** | L1 基础层 | 共享库 | XML序列化、字符串转换、CSV读写、目录管理、颜色主题、翻译管理 | 40 |
-| **DAMessageHandler** | L1 基础层 | 共享库 | spdlog初始化、Qt消息路由、线程安全日志队列 | 9 |
-| **DAPyBindQt** | L1 基础层 | 共享库 | pybind11类型转换器、Python解释器生命周期、numpy/pandas绑定 | 28 |
-| **DAPyScripts** | L2 功能层 | 共享库 | Python脚本I/O、DataFrame操作、信号处理函数C++包装 | 12 |
-| **DAPyCommonWidgets** | L2 功能层 | 共享库 | DataFrame列选择器、dtype下拉框 | 13 |
-| **DAPyWorkFlow** | L2 功能层 | 共享库 | Python工作流节点代理、工厂、场景、执行引擎、图形项 | 51 |
-| **DAData** | L2 功能层 | 共享库 | 抽象数据基类、DAData包装器、数据管理器、Python数据封装、撤销命令 | 22 |
-| **DACommonWidgets** | L3 界面层 | 共享库 | 属性面板、颜色选择器、样式编辑器、设置对话框、对齐/文件编辑 | 82 |
-| **DAGraphicsView** | L2 功能层 | 共享库 | QGraphicsView框架（场景、视图、图元、连线、动作、撤销命令） | 54 |
-| **DAFigure** | L2 功能层 | 共享库 | Qwt图表容器、图表编辑器、数据探针、序列化 | 103 |
-| **DAGui** | L3 界面层 | 共享库 | 工作流UI、图表设置面板、数据管理UI、Model/View、对话框 | ~404 |
-| **DAInterface** | L4 接口层 | 共享库 | 抽象接口定义（Core/UI/Docking/Ribbon/Actions/Command/DataManager/Project） | 28 |
-| **DAPluginSupport** | L4 接口层 | 共享库 | 插件框架（DAAbstractPlugin/DAPluginManager/DAAbstractNodePlugin） | 10 |
-| **DAAgent** | L4 接口层 | 共享库 | 纯 agent 框架库（LLM 聊天/工具注册/信号链/会话持久化），不依赖 GUI 模块 | 11 |
-| **APP** | L5 应用层 | 可执行程序 | 主程序、接口具体实现、项目文件管理、插件管理 | 190 |
-| **DAAxOfficeWrapper** | L1 基础层 | 共享库 | Windows Office自动化封装（仅Win） | 10 |
+| **DAUtils** | L1 基础层 | 共享库 | XML序列化、字符串转换、CSV读写、目录管理、颜色主题、翻译管理 | 48 |
+| **DAMessageHandler** | L1 基础层 | 共享库 | spdlog初始化、Qt消息路由、线程安全日志队列 | 12 |
+| **DAPyBindQt** | L1 基础层 | 共享库 | pybind11类型转换器、Python解释器生命周期、numpy/pandas绑定 | 30 |
+| **DAPyScripts** | L2 功能层 | 共享库 | Python脚本I/O、DataFrame操作、信号处理函数C++包装 | 13 |
+| **DAPyCommonWidgets** | L2 功能层 | 共享库 | DataFrame列选择器、dtype下拉框 | 5 |
+| **DAPyWorkFlow** | L2 功能层 | 共享库 | Python工作流节点代理、工厂、场景、执行引擎、图形项 | 52 |
+| **DAData** | L2 功能层 | 共享库 | 抽象数据基类、DAData包装器、数据管理器、Python数据封装、撤销命令 | 21 |
+| **DAGraphicsView** | L2 功能层 | 共享库 | QGraphicsView框架（场景、视图、图元、连线、动作、撤销命令） | 51 |
+| **DAFigure** | L2 功能层 | 共享库 | Qwt图表容器、图表编辑器、数据探针、序列化 | 85 |
+| **DAGui** | L3 界面层 | 共享库 | 工作流UI、图表设置面板、数据管理UI、Model/View、对话框 | 405 |
+| **DAInterface** | L4 接口层 | 共享库 | 抽象接口定义（Core/UI/Docking/Ribbon/Actions/Command/DataManager/Project） | 29 |
+| **DAPluginSupport** | L4 接口层 | 共享库 | 插件框架（DAAbstractPlugin/DAPluginManager/DAAbstractNodePlugin） | 9 |
+| **DAAgent** | L4 接口层 | 共享库 | 纯 agent 框架库（LLM 聊天/工具注册/信号链/会话持久化），不依赖 GUI 模块 | 17 |
+| **APP** | L5 应用层 | 可执行程序 | 主程序、接口具体实现、项目文件管理、插件管理 | 92 |
+| **DAAxOfficeWrapper** | L1 基础层 | 共享库 | Windows Office自动化封装（仅Win） | 9 |
+
+!!! note "文件计数口径"
+    上表“源文件数”统计各模块目录下的 `.h` / `.hpp` / `.cpp` / `.ui` 文件数（不含资源、构建产物与子模块），由 `find src/<模块> -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.cpp' -o -name '*.ui' \) | wc -l` 得到。历史 `DACommonWidgets` 模块已并入 `DAGui`（其控件现位于 `DAGui/` 根级），不再作为独立模块列出。
 
 ---
 
@@ -37,7 +39,7 @@ data-workbench采用分层模块化架构，各模块之间有明确的依赖关
 │ Layer 4: 接口层          │ DAInterface, DAPluginSupport, │
 │                          │ DAAgent                       │
 ├──────────────────────────────────────────────────────────┤
-│ Layer 3: 界面层          │ DAGui, DACommonWidgets        │
+│ Layer 3: 界面层          │ DAGui                         │
 ├──────────────────────────────────────────────────────────┤
 │ Layer 2: 功能层          │ DAData, DAFigure, DAPyWorkFlow│
 │                          │ DAGraphicsView, DAPyScripts,  │
@@ -58,10 +60,9 @@ data-workbench采用分层模块化架构，各模块之间有明确的依赖关
        └──→ DAMessageHandler
 Python层: DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPyWorkFlow
 功能层: DAData (→DAUtils, DAPyBindQt, DAPyScripts)
-       DACommonWidgets (→DAUtils)
        DAGraphicsView (→DAUtils)
        DAFigure (→DAUtils + Qwt)
-界面层: DAGui (→ 上述所有模块 + SARibbon/ADS/qwt/DALiteCtk/quazip)
+界面层: DAGui (→ 上述所有模块 + SARibbon/ADS/qwt/DALiteCtk/quazip；含已并入的 DACommonWidgets 控件)
 接口层: DAInterface (→DAGui)
        DAPluginSupport (→DAInterface + DAPyWorkFlow)
        DAAgent (→DAInterface/DAData/DAPyBindQt/DAPyScripts；纯 agent 框架库，不依赖 GUI)
@@ -85,10 +86,9 @@ Python层: DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPyWorkFlow
 | **DAPyCommonWidgets** | Qt::Core/Gui/Widgets, DAPyBindQt, pybind11 | — | Python3 |
 | **DAPyWorkFlow** | DAUtils, DAGraphicsView, DAPyBindQt | Qt::Core/Gui/Widgets | Python3, pybind11 |
 | **DAData** | Qt::Core/Gui/Widgets, DAPyBindQt, DAPyScripts | DAUtils | Python3, pybind11 |
-| **DACommonWidgets** | Qt::Core/Gui/Widgets/Xml, DALiteCtk, SARibbon | DAUtils | — |
 | **DAGraphicsView** | Qt::Core/Gui/Widgets/Xml/Svg | DAUtils | — |
 | **DAFigure** | Qt::Core/Gui/Widgets/PrintSupport/Concurrent/OpenGL, Qwt | DAUtils | — |
-| **DAGui** | DAUtils, DAMessageHandler, DAData, DACommonWidgets, DAPyWorkFlow, DAFigure, DAPyBindQt, DAPyScripts, DAPyCommonWidgets, Qt, SARibbon, QtAdvancedDocking, qwt, DALiteCtk, quazip | Qt6::Core5Compat (if Qt6) | Python3, pybind11 |
+| **DAGui** | DAUtils, DAMessageHandler, DAData, DAPyWorkFlow, DAFigure, DAPyBindQt, DAPyScripts, DAPyCommonWidgets, Qt, SARibbon, QtAdvancedDocking, qwt, DALiteCtk, quazip | Qt6::Core5Compat (if Qt6) | Python3, pybind11 |
 | **DAInterface** | **DAGui** (PUBLIC → 传递至所有消费者) | Qt, SARibbon, QtAdvancedDocking, qwt, DALiteCtk | Python3, pybind11 |
 | **DAPluginSupport** | **DAInterface** (PUBLIC), **DAPyWorkFlow** (PUBLIC), Qt | QtAdvancedDocking | Python3, pybind11 |
 | **DAAgent** | **DAInterface**, **DAData**, **DAPyBindQt**, **DAPyScripts**, Qt::Core/Gui/Widgets | Qt::PrintSupport/Svg, DAAxOfficeWrapper (Win), Crypt32 (Win, DPAPI 加密 api_key) | Python3, pybind11 |
@@ -129,8 +129,7 @@ graph BT
     end
 
     subgraph "Layer 3 - 界面层"
-        DACW["DA<b>Common</b><br/>Widgets<br/>通用UI组件"]
-        DAGui["DA<b>Gui</b><br/>GUI整合层<br/>~404文件"]
+        DAGui["DA<b>Gui</b><br/>GUI整合层<br/>405文件"]
     end
 
     subgraph "Layer 4 - 接口层"
@@ -160,13 +159,11 @@ graph BT
     DAData --> DAPyScripts
     DAGV --> DAUtils
     DAFigure --> DAUtils
-    DACW --> DAUtils
 
     %% Layer 3 → Layer 2
     DAGui --> DAUtils
     DAGui --> DAMsg
     DAGui --> DAData
-    DAGui --> DACW
     DAGui --> DAPyWF
     DAGui --> DAFigure
     DAGui --> DAPyBind
@@ -201,7 +198,6 @@ graph BT
     style DAData fill:#e3f2fd
     style DAGV fill:#e3f2fd
     style DAFigure fill:#e3f2fd
-    style DACW fill:#fff3e0
     style DAGui fill:#fff3e0
     style DAIF fill:#f3e5f5
     style DAPS fill:#f3e5f5
@@ -366,28 +362,22 @@ graph BT
 
 ### 界面层 (L3)
 
-#### DACommonWidgets — 通用 UI 组件
+!!! info "DACommonWidgets 已并入 DAGui"
+    历史 `DACommonWidgets` 通用控件模块已整体并入 `DAGui/`（控件现位于 `DAGui/` 根级，如 `DAPropertyPanelWidget`、`DASettingDialog`、`DAAbstractSettingPage`、`DAFormEditorRegistry` 等；见 `src/DAGui/CMakeLists.txt`“迁移自 DACommonWidgets”注释）。`src/` 下不再有独立的 `DACommonWidgets/` 目录，也不再作为独立 CMake target 存在。原模块承载的控件清单见下方 DAGui 根级说明：
 
-职责：通用 UI 控件和编辑器，不绑定任何业务特定功能。
+    - 属性面板：`DAPropertyPanelWidget/ContainerWidget/ItemWidget`、`DACollapsiblePanel/GroupBox`
+    - 样式编辑器：`DAColorPickerButton`、`DABrushEditWidget/StyleComboBox`、`DAPenEditWidget/StyleComboBox`、`DAFontEditPannelWidget`、`DAShapeEditPannelWidget`
+    - 对齐/位置：`DAAligmentEditWidget`、`DAAligmentPositionEditWidget`（9宫格定位）
+    - 文件/路径：`DAFilePathEditWidget`、`DAPathLineEdit`
+    - 设置对话框：`DASettingDialog/Widget`、`DAAbstractSettingPage`、`DAPropertyFormDialog`/`DAPropertyFormWidget`（统一表单）
+    - 工具：`DAWaitCursorScoped`、`DACursorScoped`、`DAScrollArea`
 
-提供内容：
-- 属性面板：`DAPropertyPanelWidget/ContainerWidget/ItemWidget`、`DACollapsiblePanel/GroupBox`
-- 样式编辑器：`DAColorPickerButton`、`DABrushEditWidget/StyleComboBox`、`DAPenEditWidget/StyleComboBox`、`DAFontEditPannelWidget`、`DAShapeEditPannelWidget`
-- 对齐/位置：`DAAligmentEditWidget`、`DAAligmentPositionEditWidget`（9宫格定位）
-- 文件/路径：`DAFilePathEditWidget`、`DAPathLineEdit`
-- 设置对话框：`DASettingDialog/Widget`、`DAAbstractSettingPage`、`DAPropertyFormDialog`/`DAPropertyFormWidget`（统一表单）
-- 工具：`DAWaitCursorScoped`、`DACursorScoped`、`DAScrollArea`
-
-外部依赖：DAUtils (PRIVATE), DALiteCtk, SARibbon
-
-消费者：DAGui (PUBLIC link)，APP + DAPluginSupport (传递依赖)
-
-#### DAGui — GUI 整合层（最大模块，~404 文件）
+#### DAGui — GUI 整合层（最大模块，405 文件）
 
 职责：整合所有模块的 GUI 组件，提供完整用户界面。
 
-子目录（文件数含 .h/.cpp/.ui）：
-- `Chart/` (11) — 图表管理容器：`DAChartOperateWidget`(图表操作总控)/`DAChartManageWidget`(对象树)/`DAChartSettingWidget`(设置宿主) + `DAChartItemsManager`(序列化 key↔item 映射)；**非 Python 门控**
+子目录（源文件数 .h/.hpp/.cpp/.ui）：
+- `Chart/` (12) — 图表管理容器：`DAChartOperateWidget`(图表操作总控)/`DAChartManageWidget`(对象树)/`DAChartSettingWidget`(设置宿主) + `DAChartItemsManager`(序列化 key↔item 映射)；**非 Python 门控**
 - `ChartAddItem/` (89) — 图表添加向导面板体系：2D/3D/Stats 三组抽象基类 + 27 个 `DAChartAdd*` 派生 Widget + `DAChartSeriesPickerWidget`/`DAChartSeriesSelectWidget`。**不可整目录 GLOB**，应显式列出源文件，否则会改变构建行为
 - `ChartSetting/` (64) — 每种图表类型的属性设置面板 + 工厂
 - `Chart3DSetting/` (26) — 3D 图表属性设置面板
@@ -523,7 +513,7 @@ graph BT
 | 通用模板、算法、数据结构 | DAShared | 纯头文件，零编译依赖 |
 | 通用工具类（字符串、文件、进程） | DAUtils | 全项目通用 |
 | Python↔Qt 类型转换、py::object 包装 | DAPyBindQt | Python 基础设施 |
-| 通用 UI 控件（颜色选择器、属性面板） | DACommonWidgets | 界面层通用组件 |
+| 通用 UI 控件（颜色选择器、属性面板） | DAGui（根级，原 DACommonWidgets 已并入） | 界面层通用组件 |
 | 工作流节点可视化（图形项、场景） | DAPyWorkFlow | 工作流专用 |
 | 图表系统组件（编辑器、序列化） | DAFigure | 图表专用 |
 | 数据管理（DAData包装、管理器） | DAData | 数据抽象层 |
@@ -551,7 +541,7 @@ graph BT
 
 ## 参考资料
 
-- [项目构建指南](../build/build-guide.md)
+- [项目构建指南](../build/build-instructions.md)
 - [插件模块DAPluginSupport](./plugin-module.md)
 - [绘图模块概述](./figure-abstract.md)
 - [枚举/字符串转换工具](./da-enum-string-utils.md)

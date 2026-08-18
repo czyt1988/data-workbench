@@ -120,14 +120,16 @@ data-workbench/
 ├── cmake/                 # CMake 工具链模块
 │   ├── daworkbench_utils.cmake        # 工具函数
 │   ├── daworkbench_3rdparty.cmake     # 第三方库查找
-│   └── daworkbench_plugin_utils.cmake # 插件构建工具
+│   ├── daworkbench_plugin_utils.cmake # 插件构建工具
+│   ├── create_win32_resource_version.cmake # Windows 资源版本生成
+│   └── DAWorkbenchConfig.cmake.in     # 包配置模板（供 find_package）
 ├── docs/                  # 文档
 │   ├── zh/                # 中文文档
 │   └── assets/            # 截图和资源
 ├── plugins/               # 插件目录
 │   ├── DataAnalysis/      # 数据分析插件（最完整的参考）
-│   ├── DASystemNodes/     # 系统内置节点
-│   ├── CrewAIAdapter/     # CrewAI 适配器
+│   ├── DASystemNodes/     # 系统内置节点（流程控制/数据展示，Python-first）
+│   ├── DAAgentTools/      # Agent 内置工具插件（19 个 LLM 工具）
 │   └── plugin-template/   # 插件脚手架
 ├── scripts/               # 构建脚本
 │   └── build.ps1          # Windows 构建脚本

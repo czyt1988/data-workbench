@@ -29,9 +29,14 @@ project.dapro (ZIP Archive)
 ├── data-manager.xml          # 数据管理器配置
 ├── datas/                    # 数据文件目录
 │   └── [各种数据文件]
-└── chart-data/               # 图表数据目录
-    └── [图表数据文件]
+├── chart-data/               # 图表数据目录
+│   └── [图表数据文件]
+└── agent_sessions/           # Agent 会话持久化目录
+    └── <id>.jsonl            # 每个会话一个 JSON Lines 文件（按会话 id 命名）
 ```
+
+!!! note "Agent 会话持久化"
+    `agent_sessions/` 目录存放 Agent 聊天会话的 JSON Lines 持久化文件，每个文件对应一个会话（`<id>.jsonl`）。工程保存时由主线程收集活跃会话字节、子线程写入该目录；加载时由 `DAZipArchiveTask_LoadAgentSessions`（`src/APP/DAAppProject.cpp`）在 worker 线程解压 `agent_sessions/*.jsonl` 后回调导入。目录不存在或为空视为合法（空工程）。详见 [Agent 开发指南](./agent/index.md)。
 
 ### XML 顶层节点 `<root>`
 
@@ -58,14 +63,16 @@ flowchart TD
     B --> C["保存工作流<br/>workflow.xml"]
     C --> D["保存数据管理器<br/>data-manager.xml + datas/"]
     D --> E["保存图表<br/>charts.xml + chart-data/"]
-    E --> F["保存完成"]
+    E --> F["保存 Agent 会话<br/>agent_sessions/*.jsonl"]
+    F --> G["保存完成"]
 ```
 
-上图展示了工程保存的四个阶段：
+上图展示了工程保存的五个阶段：
 - **第一阶段**：保存系统信息到 `system-info.xml`，记录创建环境
 - **第二阶段**：保存工作流到 `workflow.xml`，包含节点、连接、图元
 - **第三阶段**：保存数据管理器配置和实际数据文件
 - **第四阶段**：保存图表配置和图表数据
+- **第五阶段**：保存 Agent 会话到 `agent_sessions/`（每个会话一个 `<id>.jsonl`）
 
 **保存顺序详解**
 
@@ -73,6 +80,7 @@ flowchart TD
 2. 保存工作流（`workflow.xml`）
 3. 保存数据管理器（`data-manager.xml` 及 `datas/` 目录）
 4. 保存图表（`charts.xml` 及 `chart-data/` 目录）
+5. 保存 Agent 会话（`agent_sessions/<id>.jsonl`）
 
 **工作流保存顺序**
 
@@ -321,4 +329,4 @@ flowchart LR
 
 - [项目序列化架构详解](./project-serialization-architecture.md)
 - [QuaZip 使用指南](https://github.com/stachenov/quazip)
-- [工作流系统概述](../workflow.md)
+- [工作流系统概述](./workflow-overview.md)

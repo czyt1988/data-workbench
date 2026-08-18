@@ -464,4 +464,4 @@ class CustomNode:
   - [Python 节点开发指南](workflow-python-node-dev.md) — Python 节点开发
   - [工作流生命周期](workflow-lifecycle.md) — 生命周期管理
   - [场景操作指南](workflow-scene-operation.md) — 可视化场景操作
-  - [C++ 调用 Python](../python-binding/cpp-calling-python.md) — pybind11 使用指南
+  - [C++ 调用 Python](./python-binding/cpp-calling-python.md) — pybind11 使用指南

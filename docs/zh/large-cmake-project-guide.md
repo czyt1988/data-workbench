@@ -445,6 +445,8 @@ MY_PACKAGE_TARGET_NAME是在顶层cmake定义的总的导出集，子模块的�
 │ ├─[DAGui]
 │ │ └─CMakeLists.txt
 │ ...
+│ ├─[DAAgent]
+│ │ └─CMakeLists.txt
 │ ├─[APP]
 │ │  └─CMakeLists.txt
 │ └─CMakeLists.txt

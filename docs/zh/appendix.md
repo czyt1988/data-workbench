@@ -115,8 +115,10 @@ damacro_plugin_install()
 | **DAData** | DataFrame 管理、数据对象 |
 | **DACommonWidgets** | 通用对话框、表格控件 |
 | **DAGui** | Ribbon、Dock、主界面 |
-| **DAInterface** | 所有接口定义 |
+| **DAInterface** | 所有接口定义（DACoreInterface、DAUIInterface、DAAgentInterface 等） |
+| **DAAgent** | AI 分析子系统：DAAgentInterface、DAAgentBridge、DAAgentManager、DAAgentModule、DAAgentPrompt、DAAgentSessionStore、DAAgentToolBase、DAAbstractAgentTool |
 | **DAPluginSupport** | 插件管理器、插件基类 |
+| **APP** | 应用主程序：DAAppCore、AppMainWindow、DAAppController、DAStatsPlotCoordinator、DAAppProject、DAAppConfig |
 
 ## 社区支持与反馈渠道
 

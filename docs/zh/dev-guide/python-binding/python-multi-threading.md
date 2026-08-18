@@ -3,7 +3,7 @@
 在 DAWorkBench 中，当 Python 脚本需要执行长时间运算（如读取 ZIP 文件、处理大型 CSV、调用 pandas 做聚合计算）时，直接在 Qt 主线程调用会导致界面冻结。本文详细说明如何通过 **5 层异步模式**在后台线程中运行 Python 代码，在不阻塞 UI 的前提下完成数据导入、进度报告和安全回调。
 
 !!! info "适用范围"
-    本文描述的 5 层异步模式是 **插件级实现模式**，当前仅在 `GreeDataWorkBench` 插件中确认使用。框架层提供了 `DAPythonSignalHandler` 和 `thread_status_manager` 等基础工具，具体编排方式由各插件自行决定。
+    本文描述的 5 层异步模式是 **插件级实现模式**，早期在 `GreeDataWorkBench` 插件（现已移除）中落地。框架层提供了 `DAPythonSignalHandler` 和 `thread_status_manager` 等基础工具，具体编排方式由各插件自行决定——下文代码作为该模式的典型示例保留。
 
 ## 导航
 
@@ -43,10 +43,10 @@
 
 | 层 | 位置 | 文件 | 机制 | 关键点 |
 |----|------|------|------|--------|
-| 1 | C++ 入口 | `src/GreeDataWorkBench.cpp:266` | 调用 Python，立即返回 task_id | `QTimer` 启动轮询 |
+| 1 | C++ 入口 | APP 层（`src/APP/`） | 调用 Python，立即返回 task_id | `QTimer` 启动轮询 |
 | 2 | Python 线程创建 | `data_analysis.py:16` | `threading.Thread(daemon=True)` | 非 QThread，普通 Python 线程 |
 | 3 | 工作线程 | `zip_csv_file_handle.py:924` | pandas 处理 + `ProcessingStatus` | `threading.RLock` 保护状态 |
-| 4 | C++ 轮询 | `GreeDataWorkBench.cpp:316` | `gil_scoped_release` + `QTimer(20ms)` | GIL 管理是关键 |
+| 4 | C++ 轮询 | APP 层（`src/APP/`） | `gil_scoped_release` + `QTimer(20ms)` | GIL 管理是关键 |
 | 5 | 回调桥 | `DAPythonSignalHandler.cpp` + `DAInterfacePythonBinding.cpp` | `Qt::QueuedConnection` + `gil_scoped_acquire` | 跨线程安全回调 |
 
 ### 完整时序图
@@ -97,9 +97,9 @@ C++ 层负责调用 Python 入口函数，立即获得 task_id，然后启动定
 
 ### 源代码
 
-`src/GreeDataWorkBench.cpp` 第 266–314 行：
+下方的 C++ 入口代码取自早期的 `GreeDataWorkBench.cpp`（该文件已在重构中移除，当前的非阻塞调用入口位于 `src/APP/` 层），仍作为非阻塞入口的典型模式示例：
 
-```cpp title="GreeDataWorkBench.cpp:266-314 - 非阻塞入口"
+```cpp title="C++ 非阻塞入口（GreeDataWorkBench.cpp:266-314 模式示例）"
 void GreeDataWorkBench::importZipData()
 {
     // ... 保存确认和文件对话框 ...
@@ -158,9 +158,9 @@ Python 入口函数创建并启动工作线程，然后立即返回 task_id。�
 
 ### 源代码
 
-`src/PyScripts/GreeDataWorkBench/data_analysis.py` 第 16–83 行：
+下方的 Python 线程创建代码取自早期 `GreeDataWorkBench` 插件的 `data_analysis.py`（插件已移除），作为线程创建的典型示例：
 
-```python title="data_analysis.py:16-83 - Python 线程创建"
+```python title="data_analysis.py:16-83 - Python 线程创建（模式示例）"
 import threading
 import DAWorkbench.thread_status_manager as tsm
 import GreeDataWorkBench.zip_csv_file_handle as zip_csv_file_handle
@@ -247,9 +247,9 @@ def process_zip_data_thread(zip_path: str,
 
 ### 源代码
 
-`src/PyScripts/GreeDataWorkBench/zip_csv_file_handle.py` 第 924–1079 行：
+同样取自早期 `GreeDataWorkBench` 插件的 `zip_csv_file_handle.py`（已移除），作为工作线程处理函数的典型示例：
 
-```python title="zip_csv_file_handle.py:924-1079 - 工作线程处理函数"
+```python title="zip_csv_file_handle.py:924-1079 - 工作线程处理函数（模式示例）"
 def process_zip_data(
     zip_path: str,
     callback: Callable[[Optional[Dict[str, pd.DataFrame]]], None],
@@ -347,9 +347,9 @@ C++ 主线程通过 `QTimer` 定期检查 Python 工作线程的状态，同时�
 
 ### 源代码
 
-`src/GreeDataWorkBench.cpp` 第 316–414 行：
+同样取自早期的 `GreeDataWorkBench.cpp`（已移除，当前轮询逻辑位于 `src/APP/` 层），作为 GIL 感知轮询的典型模式示例：
 
-```cpp title="GreeDataWorkBench.cpp:316-414 - GIL感知轮询"
+```cpp title="GIL 感知轮询（GreeDataWorkBench.cpp:316-414 模式示例）"
 void GreeDataWorkBench::checkZipDataImportStatus()
 {
     try {
@@ -492,9 +492,9 @@ def internal_callback(result_dict):
 
 #### (2) C++ 绑定层
 
-`data-workbench/src/DAInterface/DAInterfacePythonBinding.cpp` 第 15–42 行：
+`src/DAInterface/DAInterfacePythonBinding.cpp` 第 55–79 行：
 
-```cpp title="DAInterfacePythonBinding.cpp - callInMainThread 绑定"
+```cpp title="DAInterfacePythonBinding.cpp:55-79 - callInMainThread 绑定"
 PYBIND11_EMBEDDED_MODULE(da_interface, m)
 {
     pybind11::class_<DA::DAPythonSignalHandler>(m, "DAPythonSignalHandler")
@@ -502,12 +502,19 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
         .def(
             "callInMainThread",
             [](DA::DAPythonSignalHandler& self, pybind11::function pyFunc) {
+                // 将Python函数包装成std::function
+                //pyFunc.inc_ref();
                 self.callInMainThread([pyFunc]() {
                     try {
-                        pybind11::gil_scoped_acquire acquire;
-                        pyFunc();
+                        pybind11::gil_scoped_acquire acquire;  // 获取GIL
+                        pyFunc();                              // 调用Python函数
+                        //pyFunc.dec_ref();                      // 执行后释放
                     } catch (const pybind11::error_already_set& e) {
-                        qCritical() << "Python error:" << e.what();
+                        qCritical() << "Python error in main thread callback:" << e.what();
+                        //pyFunc.dec_ref();  // 异常时也要释放
+                    } catch (const std::exception& e) {
+                        qCritical() << "C++ error in main thread callback:" << e.what();
+                        //pyFunc.dec_ref();  // 异常时也要释放
                     }
                 });
             },
@@ -523,18 +530,45 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
     - GIL 的获取发生在主线程槽函数 `onExecuteRequested` 中
     - 这样可以确保主线程持有 GIL 时，Python 工作线程不会干扰
 
+    注意 `inc_ref()/dec_ref()` 在源码中均已注释，`pyFunc` 生命周期由 lambda 捕获持有；同时捕获了 `pybind11::error_already_set` 与 `std::exception` 两类异常。
+
 #### (3) 信号处理器
 
-`data-workbench/src/DAPyBindQt/DAPythonSignalHandler.cpp` 第 24–107 行：
+`src/DAPyBindQt/DAPythonSignalHandler.cpp` 第 44–159 行（PIMPL `d->` 形式）：
 
-```cpp title="DAPythonSignalHandler.cpp - 信号槽桥接"
+```cpp title="DAPythonSignalHandler.cpp:44-159 - 信号槽桥接（PIMPL）"
+// 成员变量下沉到 PrivateData（camelCase），通过 DA_D(d) 取 d 指针
+class DAPythonSignalHandler::PrivateData
+{
+    DA_DECLARE_PUBLIC(DAPythonSignalHandler)
+public:
+    PrivateData(DAPythonSignalHandler* p);
+    QMap<int, FunctionWrapperPtr> mFunctionMap;  // 函数映射
+    std::mutex mMutex;                           // 线程安全保护
+    int mNextFuncId{0};                           // 下一个 ID
+    bool mDestroying{false};                     // 销毁标志
+};
+
 void DAPythonSignalHandler::callInMainThread(std::function<void()> func)
 {
-    if (!func) return;
-    if (m_destroying) return;
+    DA_D(d);
+    if (!func) {
+        qDebug() << "DAPythonSignalHandler: Attempted to call empty function";
+        return;
+    }
+    if (d->mDestroying) {
+        qDebug() << "DAPythonSignalHandler: Ignoring call during destruction";
+        return;
+    }
+
+    // 获取应用程序实例，cn:无 QCoreApplication 时给出 qWarning 并返回
+    QCoreApplication* app = QCoreApplication::instance();
+    if (!app) {
+        qWarning() << "DAPythonSignalHandler: No QCoreApplication instance exists";
+        return;
+    }
 
     // 已在主线程？直接执行
-    QCoreApplication* app = QCoreApplication::instance();
     if (QThread::currentThread() == app->thread()) {
         func();
         return;
@@ -543,9 +577,9 @@ void DAPythonSignalHandler::callInMainThread(std::function<void()> func)
     // 包装函数并分配唯一ID
     int funcId;
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        funcId = ++m_nextFuncId;
-        m_functionMap[funcId] = std::make_shared<FunctionWrapper>(std::move(func));
+        std::lock_guard<std::mutex> lock(d->mMutex);
+        funcId = ++d->mNextFuncId;
+        d->mFunctionMap[funcId] = std::make_shared<FunctionWrapper>(std::move(func));
     }
 
     // 发射 QueuedConnection 信号
@@ -554,25 +588,32 @@ void DAPythonSignalHandler::callInMainThread(std::function<void()> func)
 
 void DAPythonSignalHandler::onExecuteRequested(int funcWrapperId)
 {
-    if (m_destroying) return;
-    
+    DA_D(d);
+    if (d->mDestroying) return;
+
     FunctionWrapperPtr wrapper;
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        auto it = m_functionMap.find(funcWrapperId);
-        if (it == m_functionMap.end()) return;
+        std::lock_guard<std::mutex> lock(d->mMutex);
+        auto it = d->mFunctionMap.find(funcWrapperId);
+        if (it == d->mFunctionMap.end()) return;
         wrapper = it.value();
-        m_functionMap.erase(it);
+        d->mFunctionMap.erase(it);
     }
-    
-    wrapper->execute();  // 在主线程执行
+
+    try {
+        wrapper->execute();  // 在主线程执行
+    } catch (const std::exception& e) {
+        qCritical() << "DAPythonSignalHandler: Exception in main thread function:" << e.what();
+    } catch (...) {
+        qCritical() << "DAPythonSignalHandler: Unknown exception in main thread function";
+    }
 }
 ```
 
 ### 关键设计决策
 
 - **`Qt::QueuedConnection`**：信号槽连接时指定 `Qt::QueuedConnection`，确保 `executeRequested` 信号在接收者所在线程（主线程）的队列中执行
-- **`std::mutex` 保护映射表**：`m_functionMap` 可能被工作线程（写入）和主线程（读取）同时访问，用互斥锁保护
+- **`std::mutex` 保护映射表**：`mFunctionMap`（PIMPL 中的 camelCase 成员，`d->mFunctionMap`）可能被工作线程（写入）和主线程（读取）同时访问，用互斥锁保护
 - **`std::shared_ptr<FunctionWrapper>`**：函数包装器使用智能指针管理，避免函数对象在跨线程传递过程中被提前销毁
 - **GIL 获取在 Lambda 内**：`gil_scoped_acquire` 只在回调函数执行的瞬间获取 GIL，执行完毕立即释放，最小化对 Python 工作线程的影响
 - **`pybind11::function` 引用计数**：Lambda 捕获 `pyFunc` 时自动增加引用计数，确保在跨线程传递过程中 Python 函数对象不被释放（参见 [跨线程操作模式](./python-script-development.md#跨线程操作模式)）
@@ -811,7 +852,7 @@ def background_worker():
 
 !!! warning "插件级实现模式"
     本文描述的 5 层异步模式是 **插件级实现模式**，非框架级通用模式。这意味着：
-    - 该模式目前仅在 `GreeDataWorkBench` 插件中确认使用
+    - 该模式早期在 `GreeDataWorkBench` 插件中落地（插件已移除），当前代码作为典型示例保留
     - DAWorkBench 框架提供了 `DAPythonSignalHandler` 和 `thread_status_manager` 等基础设施
     - 各插件可以根据自身需求调整其中任何一层
     - 如需自定义异步模式，请参考本文说明进行调整
