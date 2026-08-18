@@ -627,6 +627,19 @@ void DAAgentDockWidget::onSessionCleared()
     updateTitleLabel();
 }
 
+/**
+ * @brief 处理系统消息信号（用户可见但不作为 LLM 对话内容的通知）
+ * @param text 消息文本
+ * @param level 级别："info" / "warning" / "error"
+ */
+void DAAgentDockWidget::onSystemMessage(const QString& text, const QString& level)
+{
+    DA_D(d);
+    if (d->mChannel) {
+        d->mChannel->appendSystemMessage(text, level);
+    }
+}
+
 // ===========================================================================
 // 供应商/多模型选择（web 两级选择器：供应商→模型）
 // ===========================================================================

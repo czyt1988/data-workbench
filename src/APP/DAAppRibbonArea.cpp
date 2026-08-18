@@ -1195,6 +1195,7 @@ void DAAppRibbonArea::onActionRunAgent()
         QMessageBox::warning(app(), tr("Tip"), tr("Agent module is not ready"));  //cn:提示 //cn:Agent 模块未就绪
         return;
     }
+    mActions->actionShowAgentArea->trigger();  // 确保 Agent dock 可见（ActionModeShow，不会 toggle 隐藏）
     agent->runAgent(mSelectedAgentTitle);
 }
 

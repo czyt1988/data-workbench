@@ -168,13 +168,28 @@ class StdioProtocol:
             # 扫描完整行检测 type=="stop"，命中时通过 call_soon_threadsafe
             # 即时设置 stop_event，不等 main() 从 Queue 消费——退避期间
             # main() 阻塞在 runner.run()，无法消费 Queue 中的 stop 消息。
+            def _safe_call_soon(callback, *args):
+                """call_soon_threadsafe that tolerates a closed loop.
+
+                When main() exits early (e.g. invalid config), asyncio.run()
+                closes the event loop before this daemon thread finishes.
+                Unguarded call_soon_threadsafe then raises
+                RuntimeError('Event loop is closed').
+                """
+                if self._loop.is_closed():
+                    return
+                try:
+                    self._loop.call_soon_threadsafe(callback, *args)
+                except RuntimeError:
+                    pass  # loop closed between is_closed() check and call
+
             scan_buf = bytearray()
             try:
                 while True:
                     data = sys.stdin.buffer.read1(4096)
                     if not data:
                         # EOF — stdin 关闭，投递 None 作为结束标志
-                        self._loop.call_soon_threadsafe(self._data_queue.put_nowait, None)
+                        _safe_call_soon(self._data_queue.put_nowait, None)
                         return
                     # ★ 扫描完整行检测 stop 消息，即时设置 stop_event
                     if self._stop_event is not None:
@@ -187,15 +202,15 @@ class StdioProtocol:
                             try:
                                 scan_msg = json.loads(line_bytes.decode('utf-8'))
                                 if scan_msg.get("type") == "stop":
-                                    self._loop.call_soon_threadsafe(self._stop_event.set)
+                                    _safe_call_soon(self._stop_event.set)
                             except (json.JSONDecodeError, UnicodeDecodeError):
                                 pass
                     # 原始字节照常入队，main() 仍通过 receive() 正常处理所有消息
-                    self._loop.call_soon_threadsafe(self._data_queue.put_nowait, data)
+                    _safe_call_soon(self._data_queue.put_nowait, data)
             except Exception as e:
                 logger.exception("stdin reader thread crashed: %s", e)
                 # 出错也投递 EOF，避免事件循环永久挂起等待
-                self._loop.call_soon_threadsafe(self._data_queue.put_nowait, None)
+                _safe_call_soon(self._data_queue.put_nowait, None)
 
         # daemon=True: 主进程退出时线程立即终止，不阻塞解释器关闭
         self._stdin_thread = threading.Thread(target=_stdin_reader, daemon=True, name="agent-stdin")

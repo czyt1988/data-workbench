@@ -222,6 +222,18 @@ void DAAgentWebChannel::appendError(const QString& message, const QString& error
 }
 
 /**
+ * @brief 追加系统消息到聊天界面（用户可见但不作为 LLM 对话内容）
+ * @param text 消息文本
+ * @param level 级别："info" / "warning" / "error"
+ */
+void DAAgentWebChannel::appendSystemMessage(const QString& text, const QString& level)
+{
+    callJS(QString("appendSystemMessage(\"%1\", \"%2\")")
+        .arg(toJsString(text))
+        .arg(toJsString(level)));
+}
+
+/**
  * @brief 清空聊天界面
  */
 void DAAgentWebChannel::clearChat()

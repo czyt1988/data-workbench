@@ -388,6 +388,20 @@ void DAAgentModule::startAgentInternal()
     // 获取 LLM 配置（plan-06 提供真实实现）
     QJsonObject config = getLLMConfig();
 
+    // 检查 LLM 必填项是否就绪——防止空配置启动 agent 导致
+    // agent_runner.py 报 "config missing" 后进程无法正常退出、
+    // 60s ready 超时被 kill（exitCode=62097 CrashExit）
+    QString baseUrl = config.value("base_url").toString().trimmed();
+    QString apiKey  = config.value("api_key").toString().trimmed();
+    QString model   = config.value("model").toString().trimmed();
+    if (baseUrl.isEmpty() || apiKey.isEmpty() || model.isEmpty()) {
+        daWarning << tr("LLM is not configured, cannot start agent. "
+                        "Please configure LLM in settings first.");  //cn:LLM 未配置，无法启动 Agent，请先在设置中配置 LLM
+        emit systemMessage(tr("LLM is not configured. Please configure LLM in settings first."),  //cn:LLM 未配置，请先在设置中配置 LLM
+                            QStringLiteral("warning"));
+        return;
+    }
+
     // 通过 detect 方法解析路径（不依赖 config 是否包含这些键）
     QString pythonExe = detectPythonExePath();
     QString scriptPath = detectAgentScriptPath();
@@ -814,7 +828,7 @@ QJsonArray DAAgentModule::getProviders() const
         for (const QJsonValue& pv : arr) {
             QJsonObject p = pv.toObject();
             QString enc = p.value("api_key").toString();
-            p["api_key"] = enc.isEmpty() ? QString() : decryptApiKey(QByteArray::fromBase64(enc.toUtf8()));
+            p["api_key"] = enc.isEmpty() ? QString() : decryptApiKey(enc.toUtf8());
             // 规范化 models：旧格式字符串 → 对象 {id,context_window,max_output_tokens}
             QJsonArray normModels;
             const QJsonArray models = p.value("models").toArray();
@@ -1056,6 +1070,14 @@ void DAAgentModule::pushModelSelection()
 {
     if (getActiveProvider().isEmpty()) {
         syncActiveConnection();  // 兜底：取首个供应商为激活并同步 flat key
+    } else {
+        // active_provider 已有值，但 flat key 可能为空（旧 bug 清空或 DPAPI
+        // 解密失败遗留），需从 providers JSON 重新解密恢复 flat key，
+        // 否则 getLLMConfig 读到空 api_key → agent 报 config missing 崩溃
+        QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
+        if (s.value("agent/llm_api_key").toByteArray().isEmpty()) {
+            syncActiveConnection();
+        }
     }
     emit availableModelsChanged(getAvailableModels());
     emit activeModelChanged(getActiveProvider(), getActiveModel());
@@ -1309,15 +1331,17 @@ bool DAAgentModule::runAgent(const QString& title)
     if (!a || a->content.isEmpty()) {
         return false;
     }
+    showDockWidget();
     QJsonObject config = getLLMConfig();
     if (config.value("base_url").toString().isEmpty() ||
         config.value("api_key").toString().isEmpty() ||
         config.value("model").toString().isEmpty()) {
         daWarning << tr("LLM is not configured, skip agent analysis. "
                         "Please configure LLM in settings first.");  //cn:LLM 未配置，跳过 Agent 分析，请先在设置中配置 LLM
+        emit systemMessage(tr("LLM is not configured. Please configure LLM in settings first."),  //cn:LLM 未配置，请先在设置中配置 LLM
+                            QStringLiteral("warning"));
         return false;
     }
-    showDockWidget();
     sendMessage(a->content);
     return true;
 }

@@ -1006,5 +1006,38 @@ function appendError(message, errorType) {
     container.scrollTop = container.scrollHeight;
 }
 
+// 渲染系统消息：用户可见但不作为 LLM 对话内容的通知横幅（类似 MessageBox）。
+// level: "info" | "warning" | "error"，控制图标和配色。
+function appendSystemMessage(text, level) {
+    var container = document.getElementById('messages');
+    var div = document.createElement('div');
+    div.className = 'system-message';
+
+    var icon = 'ℹ️';
+    var levelClass = 'system-info';
+    if (level === 'warning') {
+        icon = '⚠️';
+        levelClass = 'system-warning';
+    } else if (level === 'error') {
+        icon = '❌';
+        levelClass = 'system-error';
+    }
+    div.classList.add(levelClass);
+
+    var iconEl = document.createElement('span');
+    iconEl.className = 'system-message-icon';
+    iconEl.textContent = icon;
+
+    var textEl = document.createElement('span');
+    textEl.className = 'system-message-text';
+    textEl.textContent = text;
+
+    div.appendChild(iconEl);
+    div.appendChild(textEl);
+    container.appendChild(div);
+
+    container.scrollTop = container.scrollHeight;
+}
+
 // 初始化
 init();

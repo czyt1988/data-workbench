@@ -841,3 +841,46 @@ body {
     border-color: #d6b3ff;
     color: #5a2d9c;
 }
+
+/* —— 系统消息（用户可见但不作为 LLM 对话内容的通知横幅）—— */
+
+.system-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 16px;
+    margin: 8px 0;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.system-message-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.system-message-text {
+    flex: 1;
+    word-wrap: break-word;
+}
+
+/* 信息——蓝色调 */
+.system-info {
+    background: #e3f2fd;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+
+/* 警告——琥珀色调 */
+.system-warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+/* 错误——红色调 */
+.system-error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}

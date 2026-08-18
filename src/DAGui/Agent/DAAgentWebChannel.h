@@ -41,6 +41,7 @@ public:
     void showRetryStatus(int attempt, int maxAttempts, int delayMs,
                          const QString& errorType, const QString& errorMessage);
     void appendError(const QString& message, const QString& errorType);
+    void appendSystemMessage(const QString& text, const QString& level);
     void clearChat();
     void loadHistory(const QVector<QJsonObject>& records);
     void setBusy(bool busy);

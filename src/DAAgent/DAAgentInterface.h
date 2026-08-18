@@ -143,6 +143,9 @@ Q_SIGNALS:
     /// 并清空 m_currentSessionId（之后用户发消息由 sendMessage 懒创建绑定工程的会话）。
     /// Dock 收到后应 clearChat + 复位 token 控件 + 下拉不选中。
     void sessionCleared();
+    /// 系统消息（用户可见但不作为 LLM 对话内容），如 LLM 未配置提示
+    /// level: "info" / "warning" / "error"
+    void systemMessage(const QString& text, const QString& level);
 
     // ---- 供应商与多模型管理信号 ----
     /// 可用模型列表变化（供应商变更/设置页 apply 后），Dock 据此填充下拉

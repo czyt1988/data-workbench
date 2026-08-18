@@ -553,6 +553,18 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
             msg["error_message"].toString()
         );
     } else if (type == "error") {
+        // error 消息（如 "config missing"）意味着 agent 初始化失败，main() 会提前退出。
+        // 停止 ready 超时计时器避免无谓等待 60s；关闭 stdin 写通道使 Python 端
+        // stdin reader daemon 线程的 read1() 收到 EOF 解除阻塞，进程能正常退出
+        // 而非被 TerminateProcess kill（exitCode=62097 CrashExit）
+        if (d->mReadyTimer) {
+            d->mReadyTimer->stop();
+            d->mReadyTimer->deleteLater();
+            d->mReadyTimer = nullptr;
+        }
+        if (d->mProcess && d->mProcess->state() != QProcess::NotRunning) {
+            d->mProcess->closeWriteChannel();
+        }
         // D9: error 消息增强为携带 error_type，用于 C++ 端选择用户文案
         QString errorType = msg.value("error_type").toString();
         QString detail    = msg.value("detail").toString();

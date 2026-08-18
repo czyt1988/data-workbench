@@ -57,6 +57,7 @@ public Q_SLOTS:
     void onSessionListChanged(QVariantList sessions);
     void onSessionCreated(const QString& sessionId);
     void onSessionCleared();
+    void onSystemMessage(const QString& text, const QString& level = QStringLiteral("info"));
 
     // ---- 供应商/多模型选择（web 两级选择器） ----
     /// 可用模型列表变化（供应商变更/设置页 apply），推送列表到 web 选择器
