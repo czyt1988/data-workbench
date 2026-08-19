@@ -233,18 +233,18 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
   - `errorResponse(msg)` / `successResponse(data|message)`
   - 图表方法已移入插件的 `DAAgentChartToolBase`（本模块不再 include 图表头文件，无 DAFigure 依赖）
 
-### 7.2 平台内置工具（19 个，由插件 `plugins/DAAgentTools/` 注册）
+### 7.2 平台内置工具（18 个，由插件 `plugins/DAAgentTools/` 注册）
 
 | 类别 | 工具（name） | 文件 |
 |------|-------------|------|
 | 数据 (5) | `list_data` / `get_data_info` / `query_data` / `get_column_stats` / `export_data` | `DAAgentToolListData` / `DAAgentToolDataInfo` / `DAAgentToolQueryData` / `DAAgentToolColumnStats` / `DAAgentToolExportData` |
-| 绘图 (11) | `create_chart` / `add_curve` / `set_chart_style` / `set_axis` / `update_curve_style` / `remove_chart_item` / `add_annotation` / `add_region` / `create_subplots` / `save_chart_image` / `list_figures` | `DAAgentToolCreateChart` / `DAAgentToolAddCurve` / `DAAgentToolSetChartStyle` / `DAAgentToolSetAxis` / `DAAgentToolUpdateCurveStyle` / `DAAgentToolRemoveChartItem` / `DAAgentToolAddAnnotation` / `DAAgentToolAddRegion` / `DAAgentToolCreateSubplots` / `DAAgentToolSaveChartImage` / `DAAgentToolListFigures` |
+| 绘图 (10) | `create_chart` / `add_curve` / `set_chart_style` / `set_axis` / `update_curve_style` / `remove_chart_item` / `add_annotation` / `create_subplots` / `save_chart_image` / `list_figures` | `DAAgentToolCreateChart` / `DAAgentToolAddCurve` / `DAAgentToolSetChartStyle` / `DAAgentToolSetAxis` / `DAAgentToolUpdateCurveStyle` / `DAAgentToolRemoveChartItem` / `DAAgentToolAddAnnotation` / `DAAgentToolCreateSubplots` / `DAAgentToolSaveChartImage` / `DAAgentToolListFigures` |
 | 文件/报告 (3) | `read_file` / `write_file` / `save_report` | `DAAgentToolReadFile` / `DAAgentToolWriteFile` / `DAAgentToolSaveReport` |
 
 #### 绘图工具关键设计
 
 - **`create_chart` / `create_subplots` 每次调用创建新 figure**：通过 `DAAgentChartToolBase::createFigure(name)` 创建新 figure（标签页），再在其内部创建 chart。不会复用已有 figure/chart，避免多张图叠加到同一绘图。
-- **`figure_name` 参数**：所有绘图工具（`add_curve` / `set_chart_style` / `add_annotation` / `add_region` / `save_chart_image`）均支持可选 `figure_name` 参数，通过 `findChart(chartId, figureName)` 在指定 figure 中定位 chart。`create_chart` / `create_subplots` 的 `figure_name` 用于命名新 figure（标签页标题）。
+- **`figure_name` 参数**：所有绘图工具（`add_curve` / `set_chart_style` / `add_annotation` / `save_chart_image`）均支持可选 `figure_name` 参数，通过 `findChart(chartId, figureName)` 在指定 figure 中定位 chart。`create_chart` / `create_subplots` 的 `figure_name` 用于命名新 figure（标签页标题）。
 - **`list_figures` 工具**：列出所有 figure 及其内部 chart 的名称/索引/标题，供 agent 检索已有绘图后通过 `figure_name` + `chart_id` 精确定位修改。
 - **坐标轴自动缩放**：`DAAgentChartToolBase::enableAutoScale(chart)` 在添加数据后调用 `setAxisAutoScale(xBottom/yLeft, true)`，因为 `DAFigureWidget::createChart()` 会通过 `setAxisScale(0,800)/(0,500)` 锁定坐标轴范围（禁用 Qwt auto-scale），不恢复会导致数据落在可见范围外而显示空白。
 

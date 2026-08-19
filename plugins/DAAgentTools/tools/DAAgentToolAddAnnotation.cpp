@@ -1,12 +1,16 @@
 #include "DAAgentToolAddAnnotation.h"
 #include "qwt_plot_marker.h"
 #include "qwt_plot_arrowmarker.h"
+#include "qwt_plot_shapeitem.h"
 #include "qwt_text.h"
 #include "qwt_symbol.h"
 #include "qwt_scale_div.h"
 #include <QColor>
 #include <QJsonArray>
 #include <QPointF>
+#include <QPainterPath>
+#include <QBrush>
+#include <QPen>
 
 namespace DA
 {
@@ -18,17 +22,19 @@ QJsonObject DAAgentToolAddAnnotation::getToolSpec() const
 {
     return QJsonObject{
         {"name", "add_annotation"},
-        {"description", "Add a text, arrow, or point annotation to a chart. For text/point use 'position' [x,y]; for arrow use 'start' [x,y] and 'end' [x,y]. Use figure_name to target a specific figure."},
+        {"description", "Add a text, arrow, point, or region annotation to a chart. For text/point use 'position' [x,y]; for arrow use 'start' [x,y] and 'end' [x,y]; for region use 'start_x' and 'end_x' to highlight a vertical band. Use figure_name to target a specific figure."},
         {"parameters", QJsonObject{
             {"type", "object"},
             {"properties", QJsonObject{
                 {"chart_id", QJsonObject{{"type", "string"}, {"description", "Chart identifier. Empty or 'current' for active chart."}}},
                 {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name to target a specific figure. Empty for current active figure."}}},
-                {"type", QJsonObject{{"type", "string"}, {"description", "Annotation type: text, arrow, point. Arrow uses start/end instead of position."}}},
+                {"type", QJsonObject{{"type", "string"}, {"description", "Annotation type: text, arrow, point, region. Arrow uses start/end; region uses start_x/end_x."}}},
                 {"position", QJsonObject{{"type", "array"}, {"description", "Position [x, y] in data coordinates (for text/point)"}, {"items", QJsonObject{{"type", "number"}}}}},
                 {"start", QJsonObject{{"type", "array"}, {"description", "Arrow start point [x, y] in data coordinates (for arrow)"}, {"items", QJsonObject{{"type", "number"}}}}},
                 {"end", QJsonObject{{"type", "array"}, {"description", "Arrow end point [x, y] in data coordinates (for arrow)"}, {"items", QJsonObject{{"type", "number"}}}}},
-                {"text", QJsonObject{{"type", "string"}, {"description", "Annotation text (for text type, or label at arrow tip)"}}},
+                {"start_x", QJsonObject{{"type", "number"}, {"description", "Start x value of the region (for region type)"}}},
+                {"end_x", QJsonObject{{"type", "number"}, {"description", "End x value of the region (for region type)"}}},
+                {"text", QJsonObject{{"type", "string"}, {"description", "Annotation text (for text type, label at arrow tip, or region label)"}}},
                 {"color", QJsonObject{{"type", "string"}, {"description", "Annotation color (hex or name)"}}}
             }},
             {"required", QJsonArray{"type"}}
@@ -151,6 +157,64 @@ QJsonObject DAAgentToolAddAnnotation::execute(const QJsonObject& params)
         }
         return successResponse(QString("Added arrow annotation from (%1, %2) to (%3, %4)%5")
             .arg(start.x()).arg(start.y()).arg(end.x()).arg(end.y()).arg(warning));
+    }
+    else if (type == "region") {
+        // Region annotation: highlighted vertical band between start_x and end_x.
+        // Ported from the former add_region tool; uses QwtPlotShapeItem with
+        // a semi-transparent fill and dashed border.
+        if (!params.contains("start_x") || !params.contains("end_x")) {
+            return errorResponse("region requires start_x and end_x parameters");
+        }
+        double startX = params["start_x"].toDouble();
+        double endX   = params["end_x"].toDouble();
+        if (qFuzzyCompare(startX, endX)) {
+            return errorResponse("start_x and end_x must be different");
+        }
+        if (startX > endX) {
+            std::swap(startX, endX);
+        }
+
+        // Re-enable auto-scale and replot so the y-axis reflects the real data
+        // range. createChart locks axes to [0,800]x[0,500] via setAxisScale, which
+        // disables Qwt auto-scaling; without this, axisScaleDiv(yLeft) below
+        // returns the stale locked range and the region spans an empty y area.
+        enableAutoScale(chart);
+        chart->replot();
+
+        // Get y-axis range to cover the full vertical extent (now the data range)
+        const QwtScaleDiv& yDiv = chart->axisScaleDiv(QwtPlot::yLeft);
+        double yMin = yDiv.lowerBound();
+        double yMax = yDiv.upperBound();
+        if (qFuzzyCompare(yMin, yMax)) {
+            yMin -= 1.0;
+            yMax += 1.0;
+        }
+
+        // Build rectangle path
+        QPainterPath path;
+        path.addRect(QRectF(startX, yMin, endX - startX, yMax - yMin));
+
+        QwtPlotShapeItem* item = chart->addShapeItem(path, text);
+        if (item) {
+            QColor fill = colorStr.isEmpty() ? QColor(255, 200, 0) : color;
+            fill.setAlpha(100);  // semi-transparent
+            item->setBrush(QBrush(fill));
+            QPen pen(fill.darker(150));
+            pen.setStyle(Qt::DashLine);
+            pen.setWidthF(1.5);
+            item->setPen(pen);
+        }
+
+        chart->replot();
+
+        // Off-screen x-range hint: warn if the region falls entirely outside the
+        // visible axis range (so the caller knows it was added but not visible).
+        QString warning;
+        const QwtScaleDiv& xDiv = chart->axisScaleDiv(QwtPlot::xBottom);
+        if (endX < xDiv.lowerBound() || startX > xDiv.upperBound()) {
+            warning = " (warning: region x-range is outside the visible axis range)";
+        }
+        return successResponse(QString("Added region [%1, %2]%3").arg(startX).arg(endX).arg(warning));
     }
     else {
         return errorResponse(QString("Unsupported annotation type: %1").arg(type));

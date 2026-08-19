@@ -2,14 +2,14 @@
 #include "DAAgentInterface.h"
 #include "DACoreInterface.h"
 #include "DAAbstractAgentTool.h"
-// 19 built-in tools (moved from src/DAAgent/tools/ by plan-03)
+// 18 built-in tools (moved from src/DAAgent/tools/ by plan-03; add_region merged into add_annotation)
 // Data tools (5) -- inherit DAAgentToolBase
 #include "tools/DAAgentToolListData.h"
 #include "tools/DAAgentToolDataInfo.h"
 #include "tools/DAAgentToolQueryData.h"
 #include "tools/DAAgentToolColumnStats.h"
 #include "tools/DAAgentToolExportData.h"
-// Chart tools (11) -- inherit DAAgentChartToolBase
+// Chart tools (10) -- inherit DAAgentChartToolBase (add_region merged into add_annotation)
 #include "tools/DAAgentToolCreateChart.h"
 #include "tools/DAAgentToolAddCurve.h"
 #include "tools/DAAgentToolSetChartStyle.h"
@@ -17,7 +17,6 @@
 #include "tools/DAAgentToolUpdateCurveStyle.h"
 #include "tools/DAAgentToolRemoveChartItem.h"
 #include "tools/DAAgentToolAddAnnotation.h"
-#include "tools/DAAgentToolAddRegion.h"
 #include "tools/DAAgentToolCreateSubplots.h"
 #include "tools/DAAgentToolSaveChartImage.h"
 #include "tools/DAAgentToolListFigures.h"
@@ -58,7 +57,7 @@ bool DAAgentToolsPlugin::initialize()
     agent->registerTool(new DAAgentToolQueryData(c, this));
     agent->registerTool(new DAAgentToolColumnStats(c, this));
     agent->registerTool(new DAAgentToolExportData(c, this));
-    // Chart tools (11) -- inherit DAAgentChartToolBase
+    // Chart tools (10) -- inherit DAAgentChartToolBase
     agent->registerTool(new DAAgentToolCreateChart(c, this));
     agent->registerTool(new DAAgentToolAddCurve(c, this));
     agent->registerTool(new DAAgentToolSetChartStyle(c, this));
@@ -66,7 +65,6 @@ bool DAAgentToolsPlugin::initialize()
     agent->registerTool(new DAAgentToolUpdateCurveStyle(c, this));
     agent->registerTool(new DAAgentToolRemoveChartItem(c, this));
     agent->registerTool(new DAAgentToolAddAnnotation(c, this));
-    agent->registerTool(new DAAgentToolAddRegion(c, this));
     agent->registerTool(new DAAgentToolCreateSubplots(c, this));
     agent->registerTool(new DAAgentToolSaveChartImage(c, this));
     agent->registerTool(new DAAgentToolListFigures(c, this));

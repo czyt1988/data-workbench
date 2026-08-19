@@ -3,15 +3,15 @@
 namespace DA
 {
 /**
- * @brief Plugin that registers the platform's 16 built-in agent tools.
+ * @brief Plugin that registers the platform's 18 built-in agent tools.
  *
  * This is the first plugin in the repo to derive directly from DAAbstractPlugin
  * (IID "org.da.abstract.plugin"); unlike DataAnalysis/DASystemNodes it does not
  * need a node factory. initialize() fetches the agent interface from the core and
- * registers the 16 tools (5 data + 8 chart + 3 file/report) that previously lived
+ * registers the 18 tools (5 data + 10 chart + 3 file/report) that previously lived
  * inside DAAgentModule::registerBuiltinTools (plan-03搬迁).
  *
- * The plugin owns the 16 tool QObjects (parented to this), so they are released
+ * The plugin owns the 18 tool QObjects (parented to this), so they are released
  * together with the plugin.
  */
 class DAAgentToolsPlugin : public QObject, public DAAbstractPlugin

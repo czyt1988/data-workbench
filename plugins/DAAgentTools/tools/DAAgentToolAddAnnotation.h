@@ -4,10 +4,10 @@
 namespace DA
 {
 /**
- * @brief add_annotation 工具：添加文本/箭头/点标注
+ * @brief add_annotation 工具：添加文本/箭头/点/区域标注
  *
- * 参数：chart_id(可选)、type(text/arrow/point)、text、color
- *       text/point 用 position([x,y])；arrow 用 start([x,y])/end([x,y])
+ * 参数：chart_id(可选)、type(text/arrow/point/region)、text、color
+ *       text/point 用 position([x,y])；arrow 用 start([x,y])/end([x,y])；region 用 start_x/end_x
  */
 class DAAgentToolAddAnnotation : public DAAgentChartToolBase
 {

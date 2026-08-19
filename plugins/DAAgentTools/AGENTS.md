@@ -1,6 +1,6 @@
 # DAAgentTools 插件开发指南
 
-DAWorkbench 平台内置 Agent 工具插件，向 LLM 暴露 **19 个工具**（5 数据 + 11 绘图 + 3 文件/报告），让 AI 能直接操作工作区数据、创建/修改图表、读写文件。工具的 OpenAI function schema 经 `DAAgentInterface::registerTool` 下发给 Python 子进程，**真实执行在 C++ 主进程**（不在 Python 端），结果经 stdin 回传。
+DAWorkbench 平台内置 Agent 工具插件，向 LLM 暴露 **18 个工具**（5 数据 + 10 绘图 + 3 文件/报告），让 AI 能直接操作工作区数据、创建/修改图表、读写文件。工具的 OpenAI function schema 经 `DAAgentInterface::registerTool` 下发给 Python 子进程，**真实执行在 C++ 主进程**（不在 Python 端），结果经 stdin 回传。
 
 > ⚠️ 本文件是 AI 开发 Agent 工具（新增/修改工具、改工具参数）的必读指南。改动前先对照 § 陷阱清单。Agent 框架本身（子进程、协议、会话持久化）的设计见 `src/DAAgent/AGENTS.md`，本文件只聚焦「工具本身怎么写」。
 
@@ -11,9 +11,9 @@ DAWorkbench 平台内置 Agent 工具插件，向 LLM 暴露 **19 个工具**（
 ```
 DAAgentTools/
 ├── CMakeLists.txt              # 插件构建（file GLOB 自动收集 .h/.cpp，新增工具通常无需改）
-├── DAAgentToolsPlugin.h/.cpp   # 插件入口：initialize() 注册 19 个工具 + figure_reference 提示词
+├── DAAgentToolsPlugin.h/.cpp   # 插件入口：initialize() 注册 18 个工具 + figure_reference 提示词
 ├── DAAgentChartToolBase.h/.cpp # 图表工具基类（7 个图表访问方法，本插件内部用，无导出宏）
-└── tools/                      # 19 个工具实现（每个一对 .h/.cpp）
+└── tools/                      # 18 个工具实现（每个一对 .h/.cpp）
     ├── DAAgentToolListData.{h,cpp}        # list_data
     ├── DAAgentToolDataInfo.{h,cpp}        # get_data_info
     ├── DAAgentToolQueryData.{h,cpp}       # query_data
@@ -25,8 +25,7 @@ DAAgentTools/
     ├── DAAgentToolSetAxis.{h,cpp}          # set_axis（坐标轴类型/范围/颜色）
     ├── DAAgentToolUpdateCurveStyle.{h,cpp} # update_curve_style（修改已有曲线样式）
     ├── DAAgentToolRemoveChartItem.{h,cpp}  # remove_chart_item（删除曲线/标注/区域）
-    ├── DAAgentToolAddAnnotation.{h,cpp}   # add_annotation
-    ├── DAAgentToolAddRegion.{h,cpp}       # add_region
+    ├── DAAgentToolAddAnnotation.{h,cpp}   # add_annotation（文本/箭头/点/区域标注）
     ├── DAAgentToolCreateSubplots.{h,cpp}  # create_subplots
     ├── DAAgentToolSaveChartImage.{h,cpp}  # save_chart_image（用 Qt::Svg/PrintSupport）
     ├── DAAgentToolListFigures.{h,cpp}     # list_figures
@@ -59,7 +58,7 @@ DAAgentChartToolBase         (本插件 DAAgentChartToolBase.h，无导出宏，
   │  chartOperateWidget() / currentFigure() / currentChart()
   │  findFigureByName(name) / createFigure(name)
   │  findChart(chartId, figureName) / enableAutoScale(chart)
-  └──► 绘图工具 (11)                         ← 继承 DAAgentChartToolBase
+  └──► 绘图工具 (10)                         ← 继承 DAAgentChartToolBase
 ```
 
 **选择基类的判据**：
@@ -74,7 +73,7 @@ DAAgentChartToolBase         (本插件 DAAgentChartToolBase.h，无导出宏，
 
 ---
 
-## 三、19 个现有工具速查
+## 三、18 个现有工具速查
 
 | 类别 | name（schema 名） | 类 | 必填参数 | 备注 |
 |------|------------------|----|----------|------|
@@ -89,8 +88,7 @@ DAAgentChartToolBase         (本插件 DAAgentChartToolBase.h，无导出宏，
 | 绘图 | `set_axis` | `DAAgentToolSetAxis` | `axis` | 坐标轴类型(normal/datetime)/日期格式/范围(min/max)/颜色/标签旋转 |
 | 绘图 | `update_curve_style` | `DAAgentToolUpdateCurveStyle` | `curve_name` | 修改已有曲线的 color/width/style/symbol/symbol_size/fill_color |
 | 绘图 | `remove_chart_item` | `DAAgentToolRemoveChartItem` | `item_name` | 删除曲线/标注/区域，按标题或索引定位 |
-| 绘图 | `add_annotation` | `DAAgentToolAddAnnotation` | — | 文本/箭头标注 |
-| 绘图 | `add_region` | `DAAgentToolAddRegion` | — | 区域高亮 |
+| 绘图 | `add_annotation` | `DAAgentToolAddAnnotation` | — | 文本/箭头/点/区域标注（type: text/arrow/point/region） |
 | 绘图 | `create_subplots` | `DAAgentToolCreateSubplots` | `layout` | 子图网格，返回 figure_id |
 | 绘图 | `save_chart_image` | `DAAgentToolSaveChartImage` | `file_path` | png/pdf/svg；链接 Qt::Svg/PrintSupport |
 | 绘图 | `list_figures` | `DAAgentToolListFigures` | — | 列出所有 figure 及内部 chart |
@@ -278,7 +276,7 @@ CMakeLists.txt 用 `file(GLOB ... *.h *.cpp)` 自动收集 `tools/` 下的新文
 | `findChart(chartId, figureName)` | 按 figure_name 定位 figure，再按 chart_id（标题/整数索引/空或"current"）定位 chart |
 | `enableAutoScale(chart)` | 恢复 xBottom/yLeft 自动缩放——加数据后必调，否则 `createChart` 锁定坐标轴 `[0,800]×[0,500]` 会导致数据落在可见范围外 |
 
-**`figure_name` + `chart_id` 定位模式**（`add_curve`/`set_chart_style`/`add_annotation`/`add_region`/`save_chart_image` 共用）：
+**`figure_name` + `chart_id` 定位模式**（`add_curve`/`set_chart_style`/`add_annotation`/`save_chart_image` 共用）：
 
 ```cpp
 QString chartId    = params["chart_id"].toString();
@@ -429,4 +427,4 @@ CMakeLists.txt 用 `file(GLOB ... CONFIGURE_DEPENDS)` 收集 `*.h/*.cpp`，新�
 - [ ] `DAAgentToolsPlugin::initialize()` 加 `registerTool(new ToolXxx(c, this))`
 - [ ] CMake 新依赖已配（Qt 模块/DA 库/三方/平台专属）
 - [ ] `.\scripts\build.ps1 -Target DAAgentTools` 构建通过
-- [ ] 运行验证：Agent 对话调用新工具，或 `da_log.log` 确认收录（19 个工具）
+- [ ] 运行验证：Agent 对话调用新工具，或 `da_log.log` 确认收录（18 个工具）
