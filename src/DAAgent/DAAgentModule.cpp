@@ -453,6 +453,14 @@ void DAAgentModule::prestartAgent()
     if (baseUrl.isEmpty() || apiKey.isEmpty() || model.isEmpty()) {
         return;  // 未配置 LLM，不预启动（发消息时走懒启动 fallback 报错提示）
     }
+    // 工具未注册时跳过预启动——init 消息会携带空工具列表发给 Python，
+    // 导致 LLM 无 list_data/run_vrf_diagnosis 等工具可调用。跳过后退回懒启动：
+    // 首次 sendMessage() 时 startAgentInternal() 会携带全部已注册工具的 init。
+    if (d->mTools.isEmpty()) {
+        daDebug << "Skip agent prestart: no tools registered yet, "
+                   "will lazily start on first message";
+        return;
+    }
     startAgentInternal();
 }
 

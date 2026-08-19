@@ -98,6 +98,8 @@ public:
     AppMainWindow* app() const;
     // 初始化--必须初始化才能生效
     void initialize();
+    // 插件加载后调用：推送模型选择 + 预启动 agent（确保工具已注册）
+    void postPluginInit();
 
 public:
     // 获取当前dataframeOperateWidget,如果没有返回nullptr,此函数不返回nullptr的前提是

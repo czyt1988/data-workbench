@@ -213,6 +213,14 @@ void AppMainWindow::init()
     mConfig->apply();
     // 给project接口设置插件管理器
     mCore->getAppProject()->setPluginMgr(mPluginMgr);
+    // 插件加载后推送模型选择 + 预启动 agent——此处所有插件工具已注册，
+    // prestartAgent 的 init 消息将携带完整工具列表。仍用 singleShot(0) 延迟到
+    // 事件循环，确保 Dock 已就绪接收信号（此前 DAAppController::initialize() 中
+    // 的 singleShot(0) 会被 updateSplash 的 processEvents() 提前触发，导致
+    // init 消息在 initPlugins 之前发出、工具列表为空）。
+    QTimer::singleShot(0, this, [this]() {
+        mController->postPluginInit();
+    });
 }
 
 void AppMainWindow::initPlugins()

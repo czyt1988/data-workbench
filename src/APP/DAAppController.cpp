@@ -303,17 +303,24 @@ void DAAppController::initialize()
         agentMod->cleanupSessions();
     }
 
-    // 启动后初始化会话 UI（plan-05 步骤3）：
-    // singleShot(0) 延迟到事件循环空闲，确保上方 Agent 信号链 connect 已执行、Dock 就绪。
-    // projectPath=null → 自由会话模式。不自动恢复上次会话，始终以全新对话开始。
-    QTimer::singleShot(0, this, [ this ]() {
-        if (auto* agentMod = qobject_cast< DAAgentModule* >(mCore->getAgentInterface())) {
-            agentMod->setCurrentProjectPath(QString());  // 启动无工程，projectPath=null
-            agentMod->restoreLastActiveSession();         // 填充下拉 + 全新对话
-            agentMod->pushModelSelection();  // 推送供应商/模型列表 + 激活选择到 Dock 下拉
-            agentMod->prestartAgent();  // 预启动 agent 子进程（受 auto_prestart 开关 + LLM 配置控制）
-        }
-    });
+    // 启动后初始化会话 UI + 预启动 agent——改由 AppMainWindow::init() 末尾调用
+    // postPluginInit()，确保在 initPlugins() 加载所有插件工具之后再执行。
+    // 此前用 QTimer::singleShot(0,...) 延迟，但 AppMainWindow 构造函数中的
+    // updateSplash() → processEvents() 会在 init() → initPlugins() 之前触发
+    // 0ms 定时器，导致 prestartAgent 的 init 消息携带空工具列表。
+}
+
+void DAAppController::postPluginInit()
+{
+    // 插件加载后调用：推送模型选择 + 预启动 agent。
+    // 由 AppMainWindow::init()（在 initPlugins() 之后）经 singleShot(0) 调用，
+    // 确保所有插件工具已注册，prestartAgent 的 init 消息将携带完整工具列表。
+    if (auto* agentMod = qobject_cast< DAAgentModule* >(mCore->getAgentInterface())) {
+        agentMod->setCurrentProjectPath(QString());  // 启动无工程，projectPath=null
+        agentMod->restoreLastActiveSession();         // 填充下拉 + 全新对话
+        agentMod->pushModelSelection();  // 推送供应商/模型列表 + 激活选择到 Dock 下拉
+        agentMod->prestartAgent();  // 预启动 agent 子进程（受 auto_prestart 开关 + LLM 配置控制）
+    }
 }
 
 /**
