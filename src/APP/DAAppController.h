@@ -11,6 +11,7 @@
 #include "DAFigureElementSelection.h"
 #include "DAFigureWidget.h"
 #include "numpy/DAPyDType.h"
+#include "DATableDisplayFormat.h"
 #include "DAChart3DWidget.h"
 #include "qwt3d_plotitem.h"
 // Qt
@@ -31,6 +32,7 @@ class CDockWidget;
 namespace DA
 {
 class DATableCellStyle;
+class DATableDisplayFormat;
 class AppMainWindow;
 class DAAppCore;
 class DAProjectInterface;
@@ -316,6 +318,11 @@ private Q_SLOTS:
     void onActionClearStyleAllTriggered();
     // 选中区样式反向同步 ribbon 控件
     void onTableStyleCurrentChanged(const DATableCellStyle& style);
+    // 表格列显示格式
+    void onTableDisplayFormatCategoryChanged(DATableDisplayFormat::Category c);
+    void onActionTableFormatCellsTriggered();
+    // 选中列显示格式反向同步 ribbon 格式下拉框
+    void onTableDisplayFormatCurrentChanged(const DATableDisplayFormat& fmt);
 
     //===================================================
     // 视图标签 View Category

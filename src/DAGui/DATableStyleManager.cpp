@@ -224,6 +224,63 @@ QList< int > DATableStyleManager::styledColumns() const
 }
 
 /**
+ * @brief 是否存在列级显示格式
+ * @param actualCol 真实列号
+ * @return 存在返回 true
+ */
+bool DATableStyleManager::hasColumnFormat(int actualCol) const
+{
+    return mColumnFormats.contains(actualCol);
+}
+
+/**
+ * @brief 获取列级显示格式
+ * @param actualCol 真实列号
+ * @return 格式对象，不存在时返回空的（invalid）DATableDisplayFormat
+ */
+DATableDisplayFormat DATableStyleManager::getColumnFormat(int actualCol) const
+{
+    auto it = mColumnFormats.find(actualCol);
+    return (it != mColumnFormats.end()) ? it.value() : DATableDisplayFormat();
+}
+
+/**
+ * @brief 设置列级显示格式
+ *
+ * 复用 styleRangeChanged(0, col, -1, col) 触发现有重渲染 lambda（widget 的 lambda →
+ * notifyDataChanged），无需新增信号接线。emitSignal=false 用于撤销命令批量还原时静默。
+ * @param actualCol 真实列号
+ * @param fmt 显示格式
+ * @param emitSignal 是否发射重渲染信号
+ */
+void DATableStyleManager::setColumnFormat(int actualCol, const DATableDisplayFormat& fmt, bool emitSignal)
+{
+    mColumnFormats[ actualCol ] = fmt;
+    if (emitSignal) {
+        Q_EMIT styleRangeChanged(0, actualCol, -1, actualCol);
+    }
+}
+
+/**
+ * @brief 清除列级显示格式
+ * @param actualCol 真实列号
+ */
+void DATableStyleManager::clearColumnFormat(int actualCol)
+{
+    mColumnFormats.remove(actualCol);
+    Q_EMIT styleRangeChanged(0, actualCol, -1, actualCol);
+}
+
+/**
+ * @brief 获取所有有显示格式的列号
+ * @return 列号列表
+ */
+QList< int > DATableStyleManager::styledFormatColumns() const
+{
+    return mColumnFormats.keys();
+}
+
+/**
  * @brief 是否存在行级样式
  * @param actualRow 真实行号
  * @return 存在返回 true
@@ -326,6 +383,7 @@ void DATableStyleManager::clearAll()
     mCellStyles.clear();
     mColumnStyles.clear();
     mRowStyles.clear();
+    mColumnFormats.clear();
     Q_EMIT styleReset();
 }
 
@@ -391,6 +449,7 @@ void DATableStyleManager::onColumnsInserted(const QList< int >& actualCols)
     for (int insertedCol : std::as_const(sortedCols)) {
         shiftHashKeysSecond(mCellStyles, insertedCol, +1);
         shiftHashKeys(mColumnStyles, insertedCol, +1);
+        shiftHashKeys(mColumnFormats, insertedCol, +1);
     }
     Q_EMIT styleReset();
 }
@@ -413,8 +472,10 @@ void DATableStyleManager::onColumnsRemoved(const QList< int >& actualCols)
         // 先删除 col == removedCol 的条目，再位移 col > removedCol 的条目
         removeHashKeysSecond(mCellStyles, removedCol);
         mColumnStyles.remove(removedCol);
+        mColumnFormats.remove(removedCol);
         shiftHashKeysSecond(mCellStyles, removedCol + 1, -1);
         shiftHashKeys(mColumnStyles, removedCol + 1, -1);
+        shiftHashKeys(mColumnFormats, removedCol + 1, -1);
     }
     Q_EMIT styleReset();
 }
@@ -449,6 +510,13 @@ void DATableStyleManager::toXml(QDomDocument& doc, QDomElement& e) const
         ce.setAttribute(QStringLiteral("col"), it.key().second);
         it.value().toXml(doc, ce);
         e.appendChild(ce);
+    }
+    // 列级显示格式
+    for (auto it = mColumnFormats.begin(); it != mColumnFormats.end(); ++it) {
+        QDomElement cf = doc.createElement(QStringLiteral("col-format"));
+        cf.setAttribute(QStringLiteral("index"), it.key());
+        it.value().toXml(doc, cf);
+        e.appendChild(cf);
     }
 }
 
@@ -487,6 +555,11 @@ bool DATableStyleManager::fromXml(const QDomElement& e)
             DATableCellStyle s;
             s.fromXml(child);
             mCellStyles[ qMakePair(row, col) ] = s;
+        } else if (tag == QLatin1String("col-format")) {
+            int index = child.attribute(QStringLiteral("index")).toInt();
+            DATableDisplayFormat fmt;
+            fmt.fromXml(child);
+            mColumnFormats[ index ] = fmt;
         }
         // 未知标签忽略
         n = n.nextSibling();
@@ -500,7 +573,7 @@ bool DATableStyleManager::fromXml(const QDomElement& e)
  */
 bool DATableStyleManager::isEmpty() const
 {
-    return mCellStyles.isEmpty() && mColumnStyles.isEmpty() && mRowStyles.isEmpty();
+    return mCellStyles.isEmpty() && mColumnStyles.isEmpty() && mRowStyles.isEmpty() && mColumnFormats.isEmpty();
 }
 
 }  // end of namespace DA

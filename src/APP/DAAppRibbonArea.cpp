@@ -35,6 +35,7 @@
 #include "numpy/DAPyDType.h"
 // Widget
 #include "DAPyDTypeComboBox.h"
+#include "DATableDisplayFormatComboBox.h"
 #include "DADataOperateOfDataFrameWidget.h"
 // Agent 提示词库（AI分析 标签页）
 #include "DAAgentInterface.h"
@@ -203,11 +204,13 @@ void DAAppRibbonArea::resetText()
     mCategoryDataframeOperate->setCategoryName(tr("Operate"));    // cn:操作
     mPannelDataframeOperateAxes->setPanelName(tr("Axes"));        // cn:坐标
     mPannelDataframeOperateDType->setPanelName(tr("Type"));       // cn:类型
+    mPannelDataframeOperateFormat->setPanelName(tr("Format"));    // cn:格式
     mCategoryDataframeStyle->setCategoryName(tr("Table Style"));  // cn:表格样式
     mPannelDataframeStyleFill->setPanelName(tr("Fill"));          // cn:底色
     mPannelDataframeStyleFont->setPanelName(tr("Font"));          // cn:字体
     mPannelDataframeStyleClear->setPanelName(tr("Clear"));        // cn:清除
     mComboxColumnTypesContainer->setPrefix(tr("Type"));  // cn:类型
+    mComboxDisplayFormatContainer->setPrefix(tr("Format"));  // cn:格式
 
     // 编辑标签
     mCategoryEdit->setCategoryName(tr("Edit"));  // cn:编辑
@@ -426,6 +429,16 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mCastActionsButtonGroup->addSeparator();
     mCastActionsButtonGroup->addAction(mActions->actionCastToDatetime);
     mPannelDataframeOperateDType->addWidget(mCastActionsButtonGroup, SARibbonPanelItem::Medium);
+
+    // Format pannel - 显示格式
+    mPannelDataframeOperateFormat = mCategoryDataframeOperate->addPanel(tr("Format"));  // cn:格式
+    mPannelDataframeOperateFormat->setObjectName(QStringLiteral("da-pannel-dataframe.operate.format"));
+    mComboxDisplayFormatContainer = new SARibbonLineWidgetContainer(mPannelDataframeOperateFormat);
+    mComboxDisplayFormat          = new DATableDisplayFormatComboBox(mComboxDisplayFormatContainer);
+    mComboxDisplayFormatContainer->setPrefix(tr("Format"));  // cn:格式
+    mComboxDisplayFormatContainer->setWidget(mComboxDisplayFormat);
+    mPannelDataframeOperateFormat->addWidget(mComboxDisplayFormatContainer, SARibbonPanelItem::Medium);
+    mPannelDataframeOperateFormat->addMediumAction(mActions->actionTableFormatCells);
 
     // ===== 表格样式 category =====
     mCategoryDataframeStyle = mContextDataFrame->addCategoryPage(tr("Table Style"));  // cn:表格样式

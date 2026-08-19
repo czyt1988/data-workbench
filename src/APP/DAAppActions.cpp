@@ -89,6 +89,8 @@ void DAAppActions::buildDataAction()
     // 表格样式清除 action
     actionClearStyleSelected = createAction("actionClearStyleSelected", ":/app/bright/Icon/removeCell.svg");
     actionClearStyleAll      = createAction("actionClearStyleAll", ":/app/bright/Icon/removeData.svg");
+    // 表格列显示格式 action
+    actionTableFormatCells   = createAction("actionTableFormatCells", ":/app/bright/Icon/tableFormat.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -562,6 +564,8 @@ void DAAppActions::retranslateUi()
     actionClearStyleSelected->setToolTip(tr("Clear styles in selected cells"));  // cn:清除选中单元格的样式
     actionClearStyleAll->setText(tr("Clear All Style"));               // cn:清除所有样式
     actionClearStyleAll->setToolTip(tr("Clear all styles in current table"));    // cn:清除当前表格所有样式
+    actionTableFormatCells->setText(tr("Format Cells..."));           // cn:设置单元格格式...
+    actionTableFormatCells->setToolTip(tr("Set number/date display format of the selected column"));  // cn:设置选中列的数值/日期显示格式
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------

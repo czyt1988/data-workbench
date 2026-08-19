@@ -68,6 +68,8 @@ set(DA_LIB_HEADER_FILES
     DASettingDialog.h
     DASettingWidget.h
     DATableCellStyle.h
+    DATableDisplayFormat.h
+    DATableDisplayFormatComboBox.h
     DATableStyleManager.h
     DATableStyleRegistry.h
     DATableStyleItemDelegate.h
@@ -124,6 +126,8 @@ set(DA_LIB_SOURCE_FILES
     DASettingDialog.cpp
     DASettingWidget.cpp
     DATableCellStyle.cpp
+    DATableDisplayFormat.cpp
+    DATableDisplayFormatComboBox.cpp
     DATableStyleManager.cpp
     DATableStyleRegistry.cpp
     DATableStyleItemDelegate.cpp
@@ -230,6 +234,7 @@ list(APPEND DA_LIB_HEADER_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogTableDisplayFormat.h
 )
 list(APPEND DA_LIB_SOURCE_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.cpp
@@ -242,6 +247,7 @@ list(APPEND DA_LIB_SOURCE_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogTableDisplayFormat.cpp
 )
 list(APPEND DA_LIB_QT_UI_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.ui
@@ -263,12 +269,14 @@ set(DA_LIB_HEADER_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandWithRedoCount.h
     ${DA_LIB_SUBDIR_Commands}/DACommandsForWorkFlow.h
     ${DA_LIB_SUBDIR_Commands}/DACommandsTableStyle.h
+    ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnFormat.h
 )
 
 set(DA_LIB_SOURCE_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandWithRedoCount.cpp
     ${DA_LIB_SUBDIR_Commands}/DACommandsForWorkFlow.cpp
     ${DA_LIB_SUBDIR_Commands}/DACommandsTableStyle.cpp
+    ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnFormat.cpp
 )
 list(APPEND DA_LIB_HEADER_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandWithTemporaryData.h

@@ -8,6 +8,7 @@
 class QUndoStack;
 namespace DA
 {
+class DATableStyleManager;
 /**
  * @brief 针对DAData的model
  *
@@ -36,6 +37,8 @@ public:
     // 设置数据
     void setData(const DAData& data);
     DAData getData() const;
+    // 设置样式管理器（用于列显示格式查询，非拥有）
+    void setStyleManager(DATableStyleManager* mgr);
     // 设置使用缓存模式，缓存模式不会频繁调用dataframe，在setdataframe时把常用的参数缓存
     void setUseCacheMode(bool on = true);
     // 设置滑动窗模式的起始行

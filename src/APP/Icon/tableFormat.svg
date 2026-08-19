@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- 表格容器：中灰边框 + 白底 -->
+  <rect x="28" y="28" width="144" height="144" rx="8" ry="8" fill="#FFFFFF" stroke="#727272" stroke-width="5"/>
+  <!-- 高亮左列（浅蓝），表示正在设置格式的列 -->
+  <rect x="30" y="30" width="46" height="140" fill="#BDCDE8"/>
+  <!-- 网格线（浅灰） -->
+  <line x1="76" y1="28" x2="76" y2="172" stroke="#B2B2B2" stroke-width="3"/>
+  <line x1="124" y1="28" x2="124" y2="172" stroke="#B2B2B2" stroke-width="3"/>
+  <line x1="28" y1="76" x2="172" y2="76" stroke="#B2B2B2" stroke-width="3"/>
+  <line x1="28" y1="124" x2="172" y2="124" stroke="#B2B2B2" stroke-width="3"/>
+  <!-- 百分号表示数值/格式化（主蓝） -->
+  <circle cx="118" cy="88" r="8" fill="#5280C1"/>
+  <circle cx="142" cy="112" r="8" fill="#5280C1"/>
+  <line x1="110" y1="120" x2="150" y2="80" stroke="#5280C1" stroke-width="6" stroke-linecap="round"/>
+</svg>

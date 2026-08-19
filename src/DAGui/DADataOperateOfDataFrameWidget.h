@@ -7,6 +7,7 @@
 #include "DAData.h"
 #include "DADataPyDataFrame.h"
 #include "numpy/DAPyDType.h"
+#include "DATableDisplayFormat.h"
 #include "DADataOperatePageWidget.h"
 namespace Ui
 {
@@ -77,6 +78,13 @@ public:
     // 获取选中区代表的样式（各属性独立判断一致性，不一致的属性 valid=false）
     DATableCellStyle getCurrentCellStyle() const;
 
+    // 设置列显示格式到选中列（列级，可撤销）
+    void setDisplayFormatToSelection(const DATableDisplayFormat& fmt);
+    // 清除选中列的显示格式（列级，保留 bg/fg/font，可撤销）
+    void clearDisplayFormatFromSelection();
+    // 获取选中列代表的显示格式（不一致返回 invalid）
+    DATableDisplayFormat getCurrentColumnDisplayFormat() const;
+
     // 获取选中的序列，如果用户打开一个表格，选中了其中一列，那么将返回那一列pd.Series作为数据，如果用户选中了多列，那么每列作为一个DAData并组成list返回
     QList< DAData > getSlectedSeries() const;
     // 刷新表格
@@ -86,6 +94,8 @@ public:
 Q_SIGNALS:
     // 选中区变化时发射当前代表样式，供 ribbon 控件反向同步
     void currentStyleChanged(const DA::DATableCellStyle& style);
+    // 选中列变化时发射当前代表显示格式，供 ribbon 格式下拉框反向同步
+    void currentDisplayFormatChanged(const DA::DATableDisplayFormat& fmt);
     /**
      * @brief 表格水平表头单击
      * @param logicalIndex 列逻辑索引

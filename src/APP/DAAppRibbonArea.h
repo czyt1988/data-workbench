@@ -53,6 +53,7 @@ class DAAppDockingArea;
 class DAAppActions;
 class DAAppCommand;
 class DAPyDTypeComboBox;
+class DATableDisplayFormatComboBox;
 class DACommandInterface;
 class DAAppDataManager;
 class DADataOperateOfDataFrameWidget;
@@ -350,6 +351,10 @@ private:
     SARibbonLineWidgetContainer* mComboxColumnTypesContainer { nullptr };  ///< 列类型选择器的container
     DAPyDTypeComboBox* mComboxColumnTypes { nullptr };                     ///< 列类型选择器
     SARibbonButtonGroupWidget* mCastActionsButtonGroup { nullptr };  ///< 管理强制转换的action的工具栏
+    // 显示格式 panel
+    SARibbonPanel* mPannelDataframeOperateFormat { nullptr };          ///< 显示格式面板
+    SARibbonLineWidgetContainer* mComboxDisplayFormatContainer { nullptr };  ///< 显示格式选择器container
+    DATableDisplayFormatComboBox* mComboxDisplayFormat { nullptr };          ///< 列显示格式选择器
     // 表格样式 category
     SARibbonCategory* mCategoryDataframeStyle { nullptr };       ///< dataframe表格样式category
     SARibbonPanel* mPannelDataframeStyleFill { nullptr };        ///< 底色面板

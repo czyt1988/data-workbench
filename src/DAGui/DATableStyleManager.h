@@ -2,6 +2,7 @@
 #define DATABLESTYLEMANAGER_H
 #include "DAGuiAPI.h"
 #include "DATableCellStyle.h"
+#include "DATableDisplayFormat.h"
 #include <QObject>
 #include <QHash>
 #include <QPair>
@@ -39,6 +40,13 @@ public:
     void setColumnStyle(int actualCol, const DATableCellStyle& s, bool merge = true);
     void clearColumn(int actualCol);
     QList< int > styledColumns() const;
+
+    // 列级显示格式（独立于 bg/fg/font 的 DATableCellStyle）
+    bool hasColumnFormat(int actualCol) const;
+    DATableDisplayFormat getColumnFormat(int actualCol) const;
+    void setColumnFormat(int actualCol, const DATableDisplayFormat& fmt, bool emitSignal = true);
+    void clearColumnFormat(int actualCol);
+    QList< int > styledFormatColumns() const;
 
     // 行级
     bool hasRowStyle(int actualRow) const;
@@ -78,6 +86,8 @@ private:
     QHash< QPair< int, int >, DATableCellStyle > mCellStyles;
     // 列级：actualCol -> style
     QHash< int, DATableCellStyle > mColumnStyles;
+    // 列级显示格式：actualCol -> display format（独立于 mColumnStyles）
+    QHash< int, DATableDisplayFormat > mColumnFormats;
     // 行级：actualRow -> style
     QHash< int, DATableCellStyle > mRowStyles;
 };

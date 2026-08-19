@@ -1,5 +1,6 @@
 #include "DADataTableModel.h"
 #include "Commands/DACommandsDataFrame.h"
+#include "DATableStyleManager.h"
 #include <QPointer>
 namespace DA
 {
@@ -19,6 +20,7 @@ public:
 
 public:
     DAData data;
+    DATableStyleManager* styleManager { nullptr };  ///< 用于列显示格式查询，非拥有
     QUndoStack* undoStack { nullptr };
     int extraColumn { 1 };  ///< 扩展的列数，也就是会多显示出externColumn个空白的列，一般多显示出来的是为了用户添加数据用的
     int extraRow { 1 };  ///< 扩展的行数，也就是会多显示出externRow个空白的行，一般多显示出来的是为了用户添加数据用的
@@ -180,12 +182,23 @@ QVariant DADataTableModel::actualData(int actualRow, int actualColumn, int role)
         return int(Qt::AlignLeft | Qt::AlignVCenter);
     case Qt::BackgroundRole:
         return QVariant();
-    case Qt::DisplayRole: {
+    case Qt::DisplayRole:
+    case Qt::EditRole: {
+        // 取原始值（EditRole 必须返回原始值，使编辑器拿到原始类型而非格式化字符串）
+        QVariant raw;
         if (d->data.isDataFrame()) {
-            return d->data.toDataFrame().iat(actualRow, actualColumn);
+            raw = d->data.toDataFrame().iat(actualRow, actualColumn);
         } else if (d->data.isSeries() && actualColumn == 0) {
-            return d->data.toSeries().value(actualRow);
+            raw = d->data.toSeries().value(actualRow);
         }
+        if (role == Qt::EditRole) {
+            return raw;
+        }
+        // DisplayRole：若有列级显示格式则格式化（同时供 Ctrl+C 复制读取）
+        if (d->styleManager && d->styleManager->hasColumnFormat(actualColumn)) {
+            return d->styleManager->getColumnFormat(actualColumn).formatValue(raw);
+        }
+        return raw;
     }
     default:
         break;
@@ -248,6 +261,11 @@ void DADataTableModel::setData(const DAData& data)
 {
     d_ptr->data = data;
     refreshData();
+}
+
+void DADataTableModel::setStyleManager(DATableStyleManager* mgr)
+{
+    d_ptr->styleManager = mgr;
 }
 
 DAData DADataTableModel::getData() const

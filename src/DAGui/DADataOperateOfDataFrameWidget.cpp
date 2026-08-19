@@ -16,6 +16,7 @@
 // cmd
 #include "Commands/DACommandsDataFrame.h"
 #include "Commands/DACommandsTableStyle.h"
+#include "Commands/DACommandsTableColumnFormat.h"
 #include "DADataManager.h"
 // table style
 #include "DATableStyleManager.h"
@@ -59,6 +60,8 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mStyleManager  = registry ? registry->getOrCreate(d) : nullptr;
     mStyleDelegate = new DATableStyleItemDelegate(mStyleManager, this);
     ui->tableView->setItemDelegate(mStyleDelegate);
+    // 模型读取列显示格式（actualData 的 DisplayRole 分支）
+    mModel->setStyleManager(mStyleManager);
     // 样式变更时触发 view 刷新（actualRow 转回 logical row 通知 model）
     connect(mStyleManager, &DATableStyleManager::styleChanged, this, [ this ](int actualRow, int actualCol) {
         if (!mModel) {
@@ -100,6 +103,7 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     if (auto sm = ui->tableView->selectionModel()) {
         connect(sm, &QItemSelectionModel::selectionChanged, this, [ this ]() {
             Q_EMIT currentStyleChanged(getCurrentCellStyle());
+            Q_EMIT currentDisplayFormatChanged(getCurrentColumnDisplayFormat());
         });
     }
 }
@@ -1343,6 +1347,107 @@ DATableCellStyle DADataOperateOfDataFrameWidget::getCurrentCellStyle() const
     }
 
     return result;
+}
+
+/**
+ * @brief 收集当前选中区涉及的列号（用于列级显示格式操作）
+ *
+ * 优先用整列选中（getFullySelectedDataframeColumns），否则取选中单元格涉及的列
+ * （getSelectedDataframeCoumns，去重）。两者都空返回空列表。
+ * @param ensureInDataframe 是否限定在 dataframe 范围内
+ * @return 列号列表
+ */
+QList< int > collectSelectedColumns(const DADataOperateOfDataFrameWidget* w, bool ensureInDataframe)
+{
+    QList< int > cols = w->getFullySelectedDataframeColumns(ensureInDataframe);
+    if (cols.isEmpty()) {
+        cols = w->getSelectedDataframeCoumns(ensureInDataframe);
+    }
+    return cols;
+}
+
+/**
+ * @brief 设置列显示格式到选中列
+ *
+ * 列级操作：对选中区涉及的所有列设置格式（可撤销）。
+ * @param fmt 显示格式
+ */
+void DADataOperateOfDataFrameWidget::setDisplayFormatToSelection(const DATableDisplayFormat& fmt)
+{
+    if (!mStyleManager) {
+        return;
+    }
+    QList< int > cols = collectSelectedColumns(this, false);
+    if (cols.isEmpty()) {
+        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
+        return;
+    }
+    std::unique_ptr< DACommandTableColumnFormat > cmd(new DACommandTableColumnFormat(mStyleManager));
+    for (int col : std::as_const(cols)) {
+        DATableDisplayFormat oldFmt =
+            mStyleManager->hasColumnFormat(col) ? mStyleManager->getColumnFormat(col) : DATableDisplayFormat();
+        cmd->addChange(col, oldFmt, fmt);
+    }
+    getUndoStack()->push(cmd.release());
+}
+
+/**
+ * @brief 清除选中列的显示格式
+ *
+ * 仅清除显示格式，保留 bg/fg/font 样式。仅对有格式的列记录变更。
+ */
+void DADataOperateOfDataFrameWidget::clearDisplayFormatFromSelection()
+{
+    if (!mStyleManager) {
+        return;
+    }
+    QList< int > cols = collectSelectedColumns(this, false);
+    if (cols.isEmpty()) {
+        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
+        return;
+    }
+    std::unique_ptr< DACommandTableColumnFormat > cmd(new DACommandTableColumnFormat(mStyleManager));
+    for (int col : std::as_const(cols)) {
+        if (mStyleManager->hasColumnFormat(col)) {
+            DATableDisplayFormat oldFmt = mStyleManager->getColumnFormat(col);
+            cmd->addChange(col, oldFmt, DATableDisplayFormat());  // invalid → 清除
+        }
+    }
+    if (cmd->isEmpty()) {
+        return;
+    }
+    getUndoStack()->push(cmd.release());
+}
+
+/**
+ * @brief 获取选中列代表的显示格式
+ *
+ * 收集选中列各自的列级格式，若全部一致（含全 invalid）返回该格式，
+ * 否则返回 invalid（ribbon 格式下拉框回退到 General）。
+ * @return 代表格式
+ */
+DATableDisplayFormat DADataOperateOfDataFrameWidget::getCurrentColumnDisplayFormat() const
+{
+    DATableDisplayFormat result;  // invalid
+    if (!mStyleManager) {
+        return result;
+    }
+    QList< int > cols = collectSelectedColumns(this, false);
+    if (cols.isEmpty()) {
+        return result;
+    }
+    QList< DATableDisplayFormat > fmts;
+    for (int col : std::as_const(cols)) {
+        fmts.append(mStyleManager->hasColumnFormat(col) ? mStyleManager->getColumnFormat(col)
+                                                        : DATableDisplayFormat());
+    }
+    const DATableDisplayFormat& first = fmts.first();
+    for (int i = 1; i < fmts.size(); ++i) {
+        if (!(fmts[ i ] == first)) {
+            return result;  // 不一致 → invalid
+        }
+    }
+    return first;
 }
 
 void DADataOperateOfDataFrameWidget::changeEvent(QEvent* e)

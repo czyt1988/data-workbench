@@ -81,6 +81,7 @@ public:
     QAction* actionChangeToIndex;      ///< 把某列转换为index
     QAction* actionClearStyleSelected { nullptr };  ///< 清除选中区表格样式
     QAction* actionClearStyleAll { nullptr };       ///< 清除整表所有样式
+    QAction* actionTableFormatCells { nullptr };    ///< 设置选中列的显示格式
 
     //===================================================
     // workflow的上下文标签

@@ -79,6 +79,8 @@
 #include "numpy/DAPyDType.h"
 // Widget
 #include "DADataOperateOfDataFrameWidget.h"
+#include "DATableDisplayFormatComboBox.h"
+#include "Dialog/DADialogTableDisplayFormat.h"
 #include "DADataTableView.h"
 // Python workflow
 #include "DAPyWorkFlowScene.h"
@@ -437,6 +439,12 @@ void DAAppController::initConnection()
             &DAFontEditPannelWidget::currentFontColorChanged,
             this,
             &DAAppController::onTableStyleFontColorChanged);
+    // 表格列显示格式
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionTableFormatCells, onActionTableFormatCellsTriggered);
+    connect(mRibbon->mComboxDisplayFormat,
+            &DATableDisplayFormatComboBox::currentFormatCategoryChanged,
+            this,
+            &DAAppController::onTableDisplayFormatCategoryChanged);
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -1312,6 +1320,8 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                 &DAAppController::onDataOperateDataFrameWidgetSelectTypeChanged);
         // 选中变化时反向同步 ribbon 样式控件
         connect(w, &DADataOperateOfDataFrameWidget::currentStyleChanged, this, &DAAppController::onTableStyleCurrentChanged);
+        // 选中列变化时反向同步 ribbon 显示格式下拉框
+        connect(w, &DADataOperateOfDataFrameWidget::currentDisplayFormatChanged, this, &DAAppController::onTableDisplayFormatCurrentChanged);
         // 表头右键菜单注入
         setupDataFrameHeaderContextMenu(w);
     } break;
@@ -1355,6 +1365,10 @@ void DAAppController::onDataOperateDataFrameWidgetSelectTypeChanged(const QList<
 {
     Q_UNUSED(column);
     mRibbon->setDataframeOperateCurrentDType(dt);
+    // 按 dtype 重建显示格式下拉框的可用类别
+    if (mRibbon && mRibbon->mComboxDisplayFormat) {
+        mRibbon->mComboxDisplayFormat->updateDType(dt);
+    }
 }
 
 /**
@@ -3150,6 +3164,74 @@ void DAAppController::onTableStyleCurrentChanged(const DA::DATableCellStyle& sty
         if (style.foregroundValid()) {
             mRibbon->mWidgetTableFont->setCurrentFontColor(style.foreground());
         }
+    }
+}
+
+/**
+ * @brief 显示格式下拉框类别变化：对选中列应用该类别（默认参数）
+ * @param c 选中的格式类别
+ */
+void DAAppController::onTableDisplayFormatCategoryChanged(DA::DATableDisplayFormat::Category c)
+{
+    DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget(false, false);
+    if (!w) {
+        return;
+    }
+    if (c == DA::DATableDisplayFormat::General) {
+        w->clearDisplayFormatFromSelection();
+    } else {
+        DA::DATableDisplayFormat fmt(c);
+        w->setDisplayFormatToSelection(fmt);
+    }
+    setDirty();
+}
+
+/**
+ * @brief “设置单元格格式”按钮：打开对话框，OK 后应用结果
+ */
+void DAAppController::onActionTableFormatCellsTriggered()
+{
+    DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget(false, false);
+    if (!w) {
+        return;
+    }
+    int col = w->getSelectedOneDataframeColumn(false);
+    if (col < 0) {
+        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
+        return;
+    }
+    DAPyDataFrame df = w->getDataframe();
+    DA::DAPyDType dt;
+    QVariant sample;
+    try {
+        if (!df.isNone()) {
+            dt     = df.dtypeObject(static_cast< std::size_t >(col));
+            sample = df.iat(0, static_cast< std::size_t >(col));
+        }
+    } catch (const std::exception& e) {
+        qWarning() << "DADialogTableDisplayFormat prepare:" << e.what();
+    }
+    DA::DADialogTableDisplayFormat dlg(w->getCurrentColumnDisplayFormat(), dt, sample, app());
+    if (dlg.exec() == QDialog::Accepted) {
+        DA::DATableDisplayFormat fmt = dlg.getResult();
+        if (fmt.isValid()) {
+            w->setDisplayFormatToSelection(fmt);
+        } else {
+            w->clearDisplayFormatFromSelection();
+        }
+        setDirty();
+    }
+}
+
+/**
+ * @brief 选中列显示格式反向同步 ribbon 格式下拉框
+ * @param fmt 当前代表格式（invalid 表示无格式）
+ */
+void DAAppController::onTableDisplayFormatCurrentChanged(const DA::DATableDisplayFormat& fmt)
+{
+    if (mRibbon && mRibbon->mComboxDisplayFormat) {
+        QSignalBlocker block(mRibbon->mComboxDisplayFormat);
+        mRibbon->mComboxDisplayFormat->setCurrentFormat(fmt);
     }
 }
 
