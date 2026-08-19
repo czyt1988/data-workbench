@@ -165,7 +165,6 @@ QwtPlotCurve* DAChartWidget::addCurve(const QVector< double >& xData, const QVec
     }
     QwtPlotCurve* curve = new QwtPlotCurve(title);
     curve->setSamples(xData, yData);
-    curve->setPen(QPen(Qt::blue, 2.0));
     curve->setRenderHint(QwtPlotItem::RenderAntialiased);
     curve->attach(this);
     return curve;
@@ -186,7 +185,6 @@ QwtPlotCurve* DAChartWidget::addCurve(const QVector< QPointF >& points, const QS
 
     QwtPlotCurve* curve = new QwtPlotCurve(title);
     curve->setSamples(points);
-    curve->setPen(QPen(Qt::blue, 2.0));
     curve->setRenderHint(QwtPlotItem::RenderAntialiased);
     curve->attach(this);
     return curve;
@@ -234,7 +232,10 @@ QwtPlotCurve* DAChartWidget::addScatter(const QVector< QPointF >& points, const 
     QwtPlotCurve* curve = addCurve(points, title);
     if (curve) {
         curve->setStyle(QwtPlotCurve::Dots);
-        QwtSymbol* symbol = new QwtSymbol(QwtSymbol::Ellipse, QBrush(Qt::red), QPen(Qt::black, 1), QSize(6, 6));
+        // Symbol left in default (uncustomized) brush/pen so the color cycle
+        // auto-colors it to match the curve pen in QwtPlotCurve::setSymbol().
+        QwtSymbol* symbol = new QwtSymbol(QwtSymbol::Ellipse);
+        symbol->setSize(QSize(6, 6));
         curve->setSymbol(symbol);
     }
     return curve;
@@ -264,10 +265,9 @@ QwtPlotBarChart* DAChartWidget::addBarChart(const QVector< double >& values, con
 
     barChart->setSamples(points);
 
-    // 设置柱状图样式
+    // 设置柱状图样式：保留凸起边框，填充色由 qwt 颜色循环在 attach 时自动分配
     QwtColumnSymbol* symbol = new QwtColumnSymbol(QwtColumnSymbol::Box);
     symbol->setFrameStyle(QwtColumnSymbol::Raised);
-    symbol->setBrush(QBrush(QColor(65, 105, 225)));  // 皇家蓝色
     barChart->setSymbol(symbol);
 
     barChart->attach(this);
@@ -290,10 +290,9 @@ QwtPlotBarChart* DAChartWidget::addBarChart(const QVector< QPointF >& points, co
     QwtPlotBarChart* barChart = new QwtPlotBarChart(title);
     barChart->setSamples(points);
 
-    // 设置柱状图样式
+    // 设置柱状图样式：保留凸起边框，填充色由 qwt 颜色循环在 attach 时自动分配
     QwtColumnSymbol* symbol = new QwtColumnSymbol(QwtColumnSymbol::Box);
     symbol->setFrameStyle(QwtColumnSymbol::Raised);
-    symbol->setBrush(QBrush(QColor(65, 105, 225)));
     barChart->setSymbol(symbol);
     barChart->attach(this);
     return barChart;
@@ -307,9 +306,10 @@ QwtPlotBarChart* DAChartWidget::addBarChart(const QVector< QPointF >& points, co
  * @param title 区间曲线标题
  * @return 创建的区间曲线指针，如果数据无效返回nullptr
  */
-QwtPlotIntervalCurve* DAChartWidget::addIntervalCurve(
-    const QVector< double >& values, const QVector< double >& mins, const QVector< double >& maxs, const QString& title
-)
+QwtPlotIntervalCurve* DAChartWidget::addIntervalCurve(const QVector< double >& values,
+                                                      const QVector< double >& mins,
+                                                      const QVector< double >& maxs,
+                                                      const QString& title)
 {
     int minSize = qMin(qMin(values.size(), mins.size()), maxs.size());
     if (minSize == 0) {
@@ -326,8 +326,8 @@ QwtPlotIntervalCurve* DAChartWidget::addIntervalCurve(
 
     QwtPlotIntervalCurve* intervalCurve = new QwtPlotIntervalCurve(title);
     intervalCurve->setSamples(samples);
-    intervalCurve->setPen(QPen(Qt::darkGreen, 1));
-    intervalCurve->setBrush(QBrush(QColor(144, 238, 144, 128)));  // 浅绿色，半透明
+    // pen/brush 不显式设置，由 qwt 颜色循环在 attach 时自动分配（pen 取循环色，
+    // brush 取同色半透明）
     intervalCurve->attach(this);
     return intervalCurve;
 }
@@ -416,8 +416,8 @@ QwtPlotBoxChart* DAChartWidget::addBoxChart(const QVector< QwtBoxSample >& sampl
 
     QwtPlotBoxChart* boxChart = new QwtPlotBoxChart(title);
     boxChart->setSamples(samples);
-    boxChart->setPen(QPen(Qt::blue, 1.0));
-    boxChart->setBrush(QBrush(QColor(100, 149, 237, 128)));
+    // pen/brush 不显式设置，由 qwt 颜色循环在 attach 时自动分配（pen 取循环色，
+    // brush 取同色半透明）
     boxChart->setOrientation(Qt::Vertical);
     boxChart->setRenderHint(QwtPlotItem::RenderAntialiased);
     boxChart->attach(this);
@@ -439,8 +439,8 @@ QwtPlotHistogram* DAChartWidget::addHistogram(const QVector< QwtIntervalSample >
 
     QwtPlotHistogram* histogram = new QwtPlotHistogram(title);
     histogram->setSamples(samples);
-    histogram->setPen(QPen(QColor(65, 105, 225)));
-    histogram->setBrush(QBrush(QColor(65, 105, 225, 128)));
+    // pen/brush 不显式设置，由 qwt 颜色循环在 attach 时自动分配（pen 取循环色，
+    // brush 取同色半透明）
     histogram->setRenderHint(QwtPlotItem::RenderAntialiased);
     histogram->attach(this);
     return histogram;
@@ -453,8 +453,9 @@ QwtPlotHistogram* DAChartWidget::addHistogram(const QVector< QwtIntervalSample >
  * @param titles 每组柱子的标题列表
  * @return 创建的多柱状图指针，如果数据无效返回nullptr
  */
-QwtPlotMultiBarChart* DAChartWidget::addMultiBarChart(
-    const QVector< double >& positions, const QVector< QVector< double > >& values, const QStringList& titles)
+QwtPlotMultiBarChart* DAChartWidget::addMultiBarChart(const QVector< double >& positions,
+                                                      const QVector< QVector< double > >& values,
+                                                      const QStringList& titles)
 {
     if (positions.isEmpty() || values.isEmpty()) {
         qWarning() << "Invalid data for multi bar chart:" << titles;
@@ -502,8 +503,8 @@ QwtPlotMultiBarChart* DAChartWidget::addMultiBarChart(
  * @param title 等高线图标题
  * @return 创建的等高线图指针，如果点集合为空返回nullptr
  */
-QwtPlotSpectroCurve* DAChartWidget::addContour(
-    const QVector< QwtPoint3D >& points, const QVector< double >& levels, const QString& title)
+QwtPlotSpectroCurve*
+DAChartWidget::addContour(const QVector< QwtPoint3D >& points, const QVector< double >& levels, const QString& title)
 {
     if (points.isEmpty()) {
         qWarning() << "Empty points for contour:" << title;
@@ -733,9 +734,7 @@ void DAChartWidget::enableGrid(bool enable)
  * @param getCurrent 获取当前状态的回调函数
  * @param setEnabled 设置状态的回调函数
  */
-void DAChartWidget::setGridAxisEnabled(bool enable,
-                                       std::function< bool() > getCurrent,
-                                       std::function< void(bool) > setEnabled)
+void DAChartWidget::setGridAxisEnabled(bool enable, std::function< bool() > getCurrent, std::function< void(bool) > setEnabled)
 {
     if (!d_ptr->grid && enable) {
         // 如果网格不存在但需要启用，先创建网格
@@ -763,9 +762,8 @@ void DAChartWidget::setGridAxisEnabled(bool enable,
  */
 void DAChartWidget::enableGridX(bool enable)
 {
-    setGridAxisEnabled(enable,
-                       [ this ]() { return d_ptr->grid->xEnabled(); },
-                       [ this ](bool e) { d_ptr->grid->enableX(e); });
+    setGridAxisEnabled(
+        enable, [ this ]() { return d_ptr->grid->xEnabled(); }, [ this ](bool e) { d_ptr->grid->enableX(e); });
 }
 
 /**
@@ -774,9 +772,8 @@ void DAChartWidget::enableGridX(bool enable)
  */
 void DAChartWidget::enableGridY(bool enable)
 {
-    setGridAxisEnabled(enable,
-                       [ this ]() { return d_ptr->grid->yEnabled(); },
-                       [ this ](bool e) { d_ptr->grid->enableY(e); });
+    setGridAxisEnabled(
+        enable, [ this ]() { return d_ptr->grid->yEnabled(); }, [ this ](bool e) { d_ptr->grid->enableY(e); });
 }
 
 /**
@@ -785,9 +782,8 @@ void DAChartWidget::enableGridY(bool enable)
  */
 void DAChartWidget::enableGridXMin(bool enable)
 {
-    setGridAxisEnabled(enable,
-                       [ this ]() { return d_ptr->grid->xMinEnabled(); },
-                       [ this ](bool e) { d_ptr->grid->enableXMin(e); });
+    setGridAxisEnabled(
+        enable, [ this ]() { return d_ptr->grid->xMinEnabled(); }, [ this ](bool e) { d_ptr->grid->enableXMin(e); });
 }
 
 /**
@@ -796,9 +792,8 @@ void DAChartWidget::enableGridXMin(bool enable)
  */
 void DAChartWidget::enableGridYMin(bool enable)
 {
-    setGridAxisEnabled(enable,
-                       [ this ]() { return d_ptr->grid->yMinEnabled(); },
-                       [ this ](bool e) { d_ptr->grid->enableYMin(e); });
+    setGridAxisEnabled(
+        enable, [ this ]() { return d_ptr->grid->yMinEnabled(); }, [ this ](bool e) { d_ptr->grid->enableYMin(e); });
 }
 
 /**

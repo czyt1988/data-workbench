@@ -43,6 +43,7 @@
 #include "DALogCategory.h"
 // qwt
 #include "qwt_figure.h"
+#include "qwt_color_cycle.h"
 #include "qwt_figure_layout.h"
 #include "qwt_scale_draw.h"
 #include "qwt_plot_series_data_picker.h"
@@ -83,6 +84,20 @@ public:
     void retranslateUi()
     {
         q_ptr->setWindowTitle(QApplication::translate("DAFigureWidget", "Figure", 0));
+    }
+
+    // 将当前颜色主题同步为 qwt 的颜色循环并设置到指定绘图上。
+    // 之后新附加到该绘图的图元会按主题自动取色（见 QwtPlot::nextColorForItem）。
+    void syncColorCycleToChart(QwtPlot* chart) const
+    {
+        if (!chart) {
+            return;
+        }
+        QList< QColor > cols = mColorTheme.toColorList();
+        if (cols.isEmpty()) {
+            cols = DAColorTheme(DAColorTheme::Style_Cassatt1).toColorList();
+        }
+        chart->setColorCycle(QwtColorCycle(QVector< QColor >(cols.cbegin(), cols.cend())));
     }
 
     std::shared_ptr< DAChartAxisRangeBinder >
@@ -521,6 +536,8 @@ void DAFigureWidget::addChart(DAChartWidget* chart, qreal xVersatile, qreal yVer
     Q_ASSERT(fig);
     // 将会发射QwtFigure::axesAdded信号
     fig->addAxes(chart, xVersatile, yVersatile, wVersatile, hVersatile);
+    // 让新绘图继承 figure 的颜色主题（qwt 颜色循环），新附加的图元据此自动取色
+    d_ptr->syncColorCycleToChart(chart);
     connect(chart, &DAChartWidget::chartPropertiesChanged, this, &DAFigureWidget::onChartPropertyChanged);
     // 由于使用了layout管理，因此要显示调用show
     chart->show();
@@ -943,9 +960,11 @@ int DAFigureWidget::getChartCount() const
 /**
  * @brief 获取默认的绘图颜色
  *
- * 每次调用figure的绘图相关函数，会调用getDefaultColor获取默认颜色为曲线填充，
- * 默认会根据颜色主题来变换颜色，也可以继承此函数，让figure每次给出自定义的颜色
- * @return
+ * @note 自颜色主题迁移到 qwt 的 QwtColorCycle 后，新图元的默认颜色改由
+ *       QwtPlot::nextColorForItem 在 attach 时自动分配，本函数已不再被
+ *       addCurve_/addScatter_/addBar_/addErrorBar_ 及图表向导调用。保留以兼容
+ *       外部继承实现，如需手动取色仍可使用。
+ * @return 下一个主题颜色
  */
 QColor DAFigureWidget::getDefaultColor() const
 {
@@ -1129,21 +1148,27 @@ QwtPlot* DAFigureWidget::findPlotById(const QString& id, bool findParasite) cons
 void DAFigureWidget::setColorTheme(const DAColorTheme& th)
 {
     d_ptr->mColorTheme = th;
-    // 同步应用样式
+    // 将主题颜色列表同步为 qwt 的颜色循环并设置到每个绘图上，这样后续新附加的
+    // 图元会按主题自动取色（QwtPlot::nextColorForItem）。
+    QList< QColor > cols = th.toColorList();
+    if (cols.isEmpty()) {
+        cols = DAColorTheme(DAColorTheme::Style_Cassatt1).toColorList();
+    }
+    const QwtColorCycle cycle(QVector< QColor >(cols.cbegin(), cols.cend()));
+    // 同步应用样式：把循环设置到每个绘图，并按现有图元顺序重新着色。
+    // 取色索引在每组坐标轴内连续递增，与原 ++theme 的行为保持一致。
     const QList< QwtPlot* > plots = figure()->allAxes();
     for (QwtPlot* plot : plots) {
         const QList< QwtPlot* > plotWithparasite = plot->plotList();
-        DAColorTheme theme                       = th;
-        if (theme.size() <= 0) {
-            theme = DAColorTheme(DAColorTheme::Style_Cassatt1);
-        }
+        int idx                                 = 0;
         for (QwtPlot* p : plotWithparasite) {
+            p->setColorCycle(cycle);
             const QwtPlotItemList items = p->itemList();
             for (QwtPlotItem* item : items) {
                 if (!DAChartUtil::isPlotGraphicsItem(item)) {
                     continue;
                 }
-                DAChartUtil::setPlotItemColor(item, ++theme);
+                DAChartUtil::setPlotItemColor(item, cycle.color(idx++));
             }
         }
     }
@@ -1394,7 +1419,7 @@ QwtPlotCurve* DAFigureWidget::addCurve_(const QVector< QPointF >& xyDatas)
         return nullptr;
     }
     QwtPlotCurve* item = chart->addCurve(xyDatas);
-    DAChartUtil::setPlotItemColor(item, getDefaultColor());
+    // 颜色由 qwt 颜色循环在 attach 时自动分配，无需显式取色
     addItem_(chart, item);
     return item;
 }
@@ -1411,7 +1436,7 @@ QwtPlotCurve* DAFigureWidget::addScatter_(const QVector< QPointF >& xyDatas)
         return nullptr;
     }
     QwtPlotCurve* item = chart->addScatter(xyDatas);
-    DAChartUtil::setPlotItemColor(item, getDefaultColor());
+    // 颜色由 qwt 颜色循环在 attach 时自动分配，无需显式取色
     addItem_(chart, item);
     return item;
 }
@@ -1428,7 +1453,7 @@ QwtPlotBarChart* DAFigureWidget::addBar_(const QVector< QPointF >& xyDatas)
         return nullptr;
     }
     QwtPlotBarChart* item = chart->addBarChart(xyDatas);
-    DAChartUtil::setPlotItemColor(item, getDefaultColor());
+    // 颜色由 qwt 颜色循环在 attach 时自动分配，无需显式取色
     addItem_(chart, item);
     return item;
 }
@@ -1444,7 +1469,7 @@ QwtPlotIntervalCurve* DAFigureWidget::addErrorBar_(const QVector< double >& valu
 {
     if (DAChartWidget* chart = gca()) {
         QwtPlotIntervalCurve* item = chart->addIntervalCurve(values, mins, maxs);
-        DAChartUtil::setPlotItemColor(item, getDefaultColor());
+        // 颜色由 qwt 颜色循环在 attach 时自动分配，无需显式取色
         addItem_(chart, item);
         return item;
     }

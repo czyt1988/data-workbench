@@ -117,7 +117,7 @@ void DAAppChartOperateWidget::onChartGuideAccept()
         if (!chart) {
             chart = fig->createChart();
         }
-        DAChartUtil::setPlotItemColor(item, fig->getDefaultColor());
+        // 颜色由 qwt 颜色循环在 addItem_ -> attach 时自动分配，无需显式取色
         fig->addItem_(chart, item);
         if (chart) {
             chart->rescaleAxes();
