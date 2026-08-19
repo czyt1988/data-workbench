@@ -145,6 +145,8 @@ void DAPySeries::castTo(VectLikeIte begin) const
             }
 
             pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > buf;
+            // naive datetime（无时区）的本地时区偏移（毫秒），用于修正时区双重偏移
+            double tz_offset_ms = 0.0;
 
             if (has_timezone) {
                 pybind11::object dt_accessor = series.attr("dt");
@@ -153,17 +155,31 @@ void DAPySeries::castTo(VectLikeIte begin) const
                           .attr("values")
                           .cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
             } else {
+                // naive datetime 代表本地时间，但 astype("int64") 将其当作 UTC 计算 epoch。
+                // 后续 QwtDateScaleDraw(Qt::LocalTime) 又会加上本地时区偏移，
+                // 导致时间整体偏移一个时区（如中国 +8 小时）。
+                // 这里减去本地 UTC 偏移，使毫秒值代表真正的 UTC 时间。
+                try {
+                    pybind11::object now       = pybind11::module::import("datetime").attr("datetime").attr("now")();
+                    pybind11::object aware     = now.attr("astimezone")();
+                    pybind11::object offset_td = aware.attr("utcoffset")();
+                    if (!offset_td.is_none()) {
+                        tz_offset_ms = pybind11::float_(offset_td.attr("total_seconds")()).cast< double >() * 1000.0;
+                    }
+                } catch (...) {
+                    tz_offset_ms = 0.0;
+                }
                 buf = series.attr("astype")("int64")
                           .attr("values")
                           .cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
             }
 
             // 使用捕获的变量进行转换
-            std::transform(buf.data(), buf.data() + buf.size(), begin, [ unit_divisor, time_unit ](int64_t raw_val) -> double {
+            std::transform(buf.data(), buf.data() + buf.size(), begin, [ unit_divisor, time_unit, tz_offset_ms ](int64_t raw_val) -> double {
                 if (time_unit == "s") {
-                    return static_cast< double >(raw_val) * 1000.0;  // 秒 -> 毫秒
+                    return static_cast< double >(raw_val) * 1000.0 - tz_offset_ms;  // 秒 -> 毫秒
                 }
-                return static_cast< double >(raw_val / unit_divisor);
+                return static_cast< double >(raw_val / unit_divisor) - tz_offset_ms;
             });
             return;
         }
@@ -256,17 +272,32 @@ void DAPySeries::castTo(VectLikeIte begin) const
                             unit_divisor = 1;
                         }
 
+                        // pd.to_datetime 对字符串产生 naive datetime（无时区），
+                        // 同 datetime64 分支一样需要减去本地 UTC 偏移，
+                        // 否则 QwtDateScaleDraw(Qt::LocalTime) 会造成时区双重偏移。
+                        double tz_offset_ms = 0.0;
+                        try {
+                            pybind11::object now       = pybind11::module::import("datetime").attr("datetime").attr("now")();
+                            pybind11::object aware     = now.attr("astimezone")();
+                            pybind11::object offset_td = aware.attr("utcoffset")();
+                            if (!offset_td.is_none()) {
+                                tz_offset_ms = pybind11::float_(offset_td.attr("total_seconds")()).cast< double >() * 1000.0;
+                            }
+                        } catch (...) {
+                            tz_offset_ms = 0.0;
+                        }
+
                         pybind11::object int_series = dt_series.attr("astype")("int64");
                         values                      = int_series.attr("values");
                         auto buf =
                             values.cast< pybind11::array_t< int64_t, pybind11::array::c_style | pybind11::array::forcecast > >();
 
                         std::transform(
-                            buf.data(), buf.data() + buf.size(), begin, [ unit_divisor, time_unit ](int64_t raw_val) -> double {
+                            buf.data(), buf.data() + buf.size(), begin, [ unit_divisor, time_unit, tz_offset_ms ](int64_t raw_val) -> double {
                                 if (time_unit == "s") {
-                                    return static_cast< double >(raw_val) * 1000.0;
+                                    return static_cast< double >(raw_val) * 1000.0 - tz_offset_ms;
                                 }
-                                return static_cast< double >(raw_val / unit_divisor);
+                                return static_cast< double >(raw_val / unit_divisor) - tz_offset_ms;
                             });
                         return;
                     } else {
