@@ -4,6 +4,8 @@
 #include "pandas/DAPySeries.h"
 #include <QVector>
 #include <QPointF>
+#include <QJsonDocument>
+#include <QStringList>
 #include <algorithm>
 #include <cmath>
 
@@ -73,6 +75,8 @@ QJsonObject DAAgentToolCreateChart::getToolSpec() const
         {"description", "Create a new figure with a chart (line/scatter/bar/hist/box) from dataset columns. "
          "If figure_name matches an existing figure, the chart is added to that figure (useful for building subplots). "
          "Otherwise a new figure is created. "
+         "The y parameter accepts an array of column names to draw multiple curves on the same chart in one call. "
+         "When the X column is a datetime type, the X-axis is automatically set to a datetime scale. "
          "The returned figure_id/figure_name can be used in da-figure: hyperlinks so the user can open this figure from your reply."},
         {"parameters", QJsonObject{
             {"type", "object"},
@@ -80,7 +84,7 @@ QJsonObject DAAgentToolCreateChart::getToolSpec() const
                 {"type", QJsonObject{{"type", "string"}, {"description", "Chart type: line, scatter, bar, hist, box"}}},
                 {"data_name", QJsonObject{{"type", "string"}, {"description", "Dataset name"}}},
                 {"x", QJsonObject{{"type", "string"}, {"description", "X-axis column name"}}},
-                {"y", QJsonObject{{"type", "string"}, {"description", "Y-axis column name(s)"}}},
+                {"y", QJsonObject{{"type", "array"}, {"items", QJsonObject{{"type", "string"}}}, {"description", "Y-axis column name(s). Pass a single-element array for one curve, or multiple column names for multiple curves on the same chart."}}},
                 {"title", QJsonObject{{"type", "string"}, {"description", "Chart title (also used as figure_name if figure_name is empty)"}}},
                 {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name. If a figure with this name already exists, the chart is added to that figure (useful for building subplots). If no match, a new figure is created. If empty, a new figure is auto-created."}}},
                 {"x_label", QJsonObject{{"type", "string"}, {"description", "X-axis label"}}},
@@ -99,14 +103,39 @@ QJsonObject DAAgentToolCreateChart::execute(const QJsonObject& params)
     QString type       = params["type"].toString().toLower();
     QString dataName  = params["data_name"].toString();
     QString xCol       = params["x"].toString();
-    QString yCol       = params["y"].toString();
     QString title      = params["title"].toString();
     QString figureName = params["figure_name"].toString();
     QString xLabel    = params["x_label"].toString();
     QString yLabel    = params["y_label"].toString();
 
-    if (type.isEmpty() || dataName.isEmpty() || xCol.isEmpty() || yCol.isEmpty()) {
+    // Parse y parameter: accept JSON array, single string, or JSON-array-as-string
+    // (some LLMs pass a JSON-encoded array string when the schema says array)
+    QStringList yCols;
+    QJsonValue yVal = params["y"];
+    if (yVal.isArray()) {
+        for (const auto& v : yVal.toArray()) {
+            yCols.append(v.toString());
+        }
+    } else if (yVal.isString()) {
+        QString yStr = yVal.toString();
+        QJsonDocument doc = QJsonDocument::fromJson(yStr.toUtf8());
+        if (doc.isArray()) {
+            for (const auto& v : doc.array()) {
+                yCols.append(v.toString());
+            }
+        } else {
+            yCols.append(yStr);
+        }
+    }
+
+    if (type.isEmpty() || dataName.isEmpty() || xCol.isEmpty() || yCols.isEmpty()) {
         return errorResponse("type, data_name, x, and y are all required");
+    }
+    // Filter out empty column names
+    for (const QString& c : yCols) {
+        if (c.isEmpty()) {
+            return errorResponse("y contains an empty column name");
+        }
     }
 
     DAData data = findData(dataName);
@@ -116,7 +145,7 @@ QJsonObject DAAgentToolCreateChart::execute(const QJsonObject& params)
 
     // Determine figure name: use figure_name if provided, else title, else auto-generate
     if (figureName.isEmpty()) {
-        figureName = title.isEmpty() ? QString("Chart - %1").arg(yCol) : title;
+        figureName = title.isEmpty() ? QString("Chart - %1").arg(yCols.first()) : title;
     }
 
     // If a figure with this name already exists, reuse it (enables subplot population).
@@ -143,58 +172,78 @@ QJsonObject DAAgentToolCreateChart::execute(const QJsonObject& params)
     DAPySeries xs = df[ xCol ];
     QVector< double > xData = toQVectorDouble(xs);
 
-    // Extract y data
-    DAPySeries ys = df[ yCol ];
-    QVector< double > yData = toQVectorDouble(ys);
-
-    // Validate data extraction — toQVectorDouble returns empty for non-numeric string columns
+    // Validate x data — toQVectorDouble returns empty for non-numeric string columns
     if (xData.isEmpty()) {
         return errorResponse(QString("Column '%1' could not be converted to numeric values. "
             "It may contain non-numeric data (text/categories). "
             "Please use a numeric column, or pre-aggregate the data using query_data.").arg(xCol));
     }
-    if (yData.isEmpty()) {
-        return errorResponse(QString("Column '%1' could not be converted to numeric values. "
-            "It may contain non-numeric data (text/categories). "
-            "Please use a numeric column, or pre-aggregate the data using query_data.").arg(yCol));
+
+    // Auto-detect: if X column is datetime64, set up a datetime axis so the X-axis
+    // displays formatted dates instead of raw epoch milliseconds.
+    bool xAxisDateTime = false;
+    if (xs.isDateTime()) {
+        chart->setupDateTimeAxis(QwtPlot::xBottom);
+        xAxisDateTime = true;
     }
 
-    int n = qMin(xData.size(), yData.size());
+    // Draw each Y column as a separate curve/item on the same chart
+    QJsonArray curvesArray;
+    int dataPoints = 0;
 
-    if (type == "line") {
-        QVector< QPointF > pts;
-        pts.reserve(n);
-        for (int i = 0; i < n; ++i) {
-            pts.append(QPointF(xData[ i ], yData[ i ]));
+    for (int yi = 0; yi < yCols.size(); ++yi) {
+        const QString& yCol = yCols[ yi ];
+
+        DAPySeries ys = df[ yCol ];
+        QVector< double > yData = toQVectorDouble(ys);
+
+        if (yData.isEmpty()) {
+            return errorResponse(QString("Column '%1' could not be converted to numeric values. "
+                "It may contain non-numeric data (text/categories). "
+                "Please use a numeric column, or pre-aggregate the data using query_data.").arg(yCol));
         }
-        chart->addCurve(pts, yCol);
-    } else if (type == "scatter") {
-        QVector< QPointF > pts;
-        pts.reserve(n);
-        for (int i = 0; i < n; ++i) {
-            pts.append(QPointF(xData[ i ], yData[ i ]));
+
+        int n = qMin(xData.size(), yData.size());
+        if (yi == 0) {
+            dataPoints = n;
         }
-        chart->addScatter(pts, yCol);
-    } else if (type == "bar") {
-        QVector< QPointF > pts;
-        pts.reserve(n);
-        for (int i = 0; i < n; ++i) {
-            pts.append(QPointF(xData[ i ], yData[ i ]));
+
+        if (type == "line") {
+            QVector< QPointF > pts;
+            pts.reserve(n);
+            for (int i = 0; i < n; ++i) {
+                pts.append(QPointF(xData[ i ], yData[ i ]));
+            }
+            chart->addCurve(pts, yCol);
+        } else if (type == "scatter") {
+            QVector< QPointF > pts;
+            pts.reserve(n);
+            for (int i = 0; i < n; ++i) {
+                pts.append(QPointF(xData[ i ], yData[ i ]));
+            }
+            chart->addScatter(pts, yCol);
+        } else if (type == "bar") {
+            QVector< QPointF > pts;
+            pts.reserve(n);
+            for (int i = 0; i < n; ++i) {
+                pts.append(QPointF(xData[ i ], yData[ i ]));
+            }
+            chart->addBarChart(pts, yCol);
+        } else if (type == "hist") {
+            int bins = 20;
+            QVector< QwtIntervalSample > samples = computeHistogram(yData, bins);
+            chart->addHistogram(samples, yCol);
+        } else if (type == "box") {
+            // Use incremental x position so multiple box plots don't overlap
+            QwtBoxSample sample = computeBoxSample(yData, static_cast< double >(yi));
+            QVector< QwtBoxSample > samples;
+            samples.append(sample);
+            chart->addBoxChart(samples, yCol);
+        } else {
+            return errorResponse(QString("Unsupported chart type: %1").arg(type));
         }
-        chart->addBarChart(pts, title.isEmpty() ? yCol : title);
-    } else if (type == "hist") {
-        // Compute histogram of y column
-        int bins = 20;
-        QVector< QwtIntervalSample > samples = computeHistogram(yData, bins);
-        chart->addHistogram(samples, title.isEmpty() ? yCol : title);
-    } else if (type == "box") {
-        // Compute box plot of y column
-        QwtBoxSample sample = computeBoxSample(yData, 0.0);
-        QVector< QwtBoxSample > samples;
-        samples.append(sample);
-        chart->addBoxChart(samples, title.isEmpty() ? yCol : title);
-    } else {
-        return errorResponse(QString("Unsupported chart type: %1").arg(type));
+
+        curvesArray.append(yCol);
     }
 
     // Apply styling
@@ -216,11 +265,13 @@ QJsonObject DAAgentToolCreateChart::execute(const QJsonObject& params)
 
     // Return structured data so the agent can reference this figure/chart later
     QJsonObject respData;
-    respData["figure_id"]   = fig->getFigureId();   // 用于 da-figure:id=<figure_id> 精确引用
+    respData["figure_id"]   = fig->getFigureId();
     respData["figure_name"] = figureName;
-    respData["chart_title"] = title.isEmpty() ? yCol : title;
+    respData["chart_title"] = title.isEmpty() ? yCols.join(", ") : title;
     respData["chart_type"]  = type;
-    respData["data_points"] = n;
+    respData["data_points"] = dataPoints;
+    respData["curves"]      = curvesArray;
+    respData["x_axis_datetime"] = xAxisDateTime;
     return successResponse(respData);
 }
 }  // namespace DA
