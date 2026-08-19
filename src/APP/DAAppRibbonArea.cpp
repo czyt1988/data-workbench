@@ -1071,9 +1071,9 @@ void DAAppRibbonArea::setDataframeOperateCurrentDType(const DAPyDType& d)
  */
 void DAAppRibbonArea::buildRibbonAgentCategory()
 {
-    mCategoryAgent = ribbonBar()->addCategoryPage(tr("AI Analysis"));  //cn:AI分析
+    mCategoryAgent = ribbonBar()->addCategoryPage(tr("AI Agent"));  //cn:AI智能体
     mCategoryAgent->setObjectName(QStringLiteral("da-ribbon-category-agent"));
-    mPanelAgent = mCategoryAgent->addPanel(tr("AI Analysis"));  //cn:AI分析
+    mPanelAgent = mCategoryAgent->addPanel(tr("AI Agent"));  //cn:AI智能体
 
     // agent 管理（large button）
     mActionAgentManage = new QAction(QIcon(":/da/icon/agent-manage.svg"), tr("Agent Manager"), this);  //cn:agent管理
