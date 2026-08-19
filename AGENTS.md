@@ -211,28 +211,38 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 
 > 📖 **详细编码规范见** [docs/zh/dev-guide/coding-standard.md](docs/zh/dev-guide/coding-standard.md)
 
-### 代码风格
+### 代码规范
 
 - 严格保持与现有代码一致（命名规范、缩进、头文件组织等）
 - 代码文件、类名统一`DA`开头，并放入`DA`命名空间
 - 遵循 Qt 开发最佳实践（使用 `Q_PROPERTY`、`Q_SIGNALS`、`Q_SLOT` 等宏，禁止使用 `slot`、`signal` 等小写命名的宏）
 - 工具类使用信号和槽进行事件通讯，属性使用 `Q_PROPERTY` 暴露
+- 继承QObject的类，不要忘记加上Q_OBJECT宏
+- ❌ 禁止头文件中使用`using namespace`
+- ❌ **严禁在线程中直接操作 GUI 控件**，必须通过 **信号槽** 或 `QMetaObject::invokeMethod()` 切回主线程执行
+- ❌ **禁止**对非 const Qt 容器直接使用范围迭代（`for(T& v : container)` 或 `for(const T& v : container)` 都会触发 COW 深拷贝）。必须用 `const` 声明容器或 `std::as_const()` 包裹。
+- 项目使用PIMPL模式，PIMPL相关宏定义在`src/DAGlobals.h`中,主要有如下宏需要使用：
+  - `DA_DECLARE_PRIVATE`:在`MyClass`中定义
+  - `DA_DECLARE_PUBLIC`:在`MyClass::PrivateData`中声明
+  - `DA_PIMPL_CONSTRUCT`:在`MyClass::在MyClass`构造函数中初始化
+  - `DA_D`:在`MyClass::fun()`中获取`MyClass::PrivateData`的指针
+  - `DA_DC`:在`MyClass::fun() const`中获取`MyClass::PrivateData`的const指针
+- 所有类、文件名统一 `DA` 前缀，放入 `DA` 命名空间
 
-### Qt 版本兼容性
+### Qt相关规范
 
-代码需兼容 Qt5 和 Qt6，差异处理使用宏判断（`Qt5Qt6Compat_*` 系列宏定义在 `src/DAGlobals.h`）：
+- 代码需兼容 Qt5 和 Qt6，差异处理使用宏判断（`Qt5Qt6Compat_*` 系列宏定义在 `src/DAGlobals.h`）：
 
-```cpp
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    ```cpp
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     // Qt5 方法
-#else
+    #else
     // Qt6 方法
-#endif
-```
+    #endif
+    ```
 
-### Qt 容器范围迭代（避免 COW 深拷贝）
-
-**禁止**对非 const Qt 容器直接使用范围迭代（`for(T& v : container)` 或 `for(const T& v : container)` 都会触发 COW 深拷贝）。必须用 `const` 声明容器或 `std::as_const()` 包裹。
+- Qt6 不再通过 `QDataStream` 隐式包含 `<QIODevice>`。如编译报 `QIODevice` 不完整类型，手动添加 `#include <QIODevice>`。
+- Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若头文件仅有前向声明，`connect` 会导致不完整类型错误。**解决方案**：在 .cpp 文件中 `#include` 完整头文件，而非仅依赖前向声明
 
 ### 图标与 UI 设计规范
 
@@ -241,13 +251,11 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 **强制规则**：**如果涉及 SVG 图标的设计（新增、替换、修改 `src/DAGui/icon/` 或 `src/APP/Icon/` 下任意 `.svg` 文件），必须先阅读上述文档**，并按其 §10 Checklist 逐项核对。该文档是项目图标与 UI 设计的唯一权威规范，涵盖：
 
 - 画布规格（viewBox：200×200 / 64×64 / 32×32 / 1024×1024）
-- 语义化色板（主蓝 `#5280C1`、中灰 `#727272`、绿 `#669E8B`、橙红 `#CE6043`、金黄 `#E6C27C` 等，不引入新色值）
+- 语义化色板（主蓝 `#5280C1`、中灰 `#727272`、绿 `#669E8B`、橙红 `#CE6043`、金黄 `#E6C27C` 等，不要随便引入新色值）
 - 色彩组合规则（容器型 / 功能操作 / 图表类型 / 数据类型 / 消息类型）
 - UI 控件配色映射（按钮、面板、状态指示与图标语义色同源）
 - 命名规范（`camelCase` 文件名、`kebab-case` 子目录）
 - 禁止事项（禁渐变/阴影、禁 `<text>`、禁动画、禁 UI 控件配色与配套图标语义色不一致）
-
-源码目录入口 [`src/DAGui/icon/AGENTS.md`](src/DAGui/icon/AGENTS.md) 仅作为目录级指引，完整规范以 docs 文档为准。
 
 ## 国际化（i18n）规范
 
@@ -269,6 +277,8 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 
 **核心原则**：函数的 Doxygen 注释写在 `.cpp` 文件中，头文件只保留单行中文简要注释（`//`）。头文件仅可写类/信号/枚举的注释，**禁止**在头文件中写入类成员函数的 Doxygen 块注释（hpp文件除外，头文件的模板函数除外）。
 
+Doxygen 注释使用中文
+
 ## 插件系统
 
 插件位于 `plugins` 目录下。涉及插件开发时请阅读：
@@ -282,7 +292,7 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 ## Git 提交规范
 
 在完成当前任务后，需提交所有更改到 Git 仓库。
-创建有意义的提交信息保证下次任务能清楚了解这次任务的实现情况
+
 提交信息最好包含以下信息：
 
 - 任务类型（例如：实现、修复、文档更新）
@@ -393,23 +403,12 @@ Linux GCC 下 `uint64_t` 是 `unsigned long`，MSVC 下是 `unsigned long long`�
 
 - **解决方案**：使用 `qulonglong`（Qt 类型，跨平台统一为 `unsigned long long`）或 `static_cast<qulonglong>()` 显式转换
 
-### Qt6 隐式头文件变化
-
-Qt6 不再通过 `QDataStream` 隐式包含 `<QIODevice>`。如编译报 `QIODevice` 不完整类型，手动添加 `#include <QIODevice>`。
-
-### 信号槽传递自定义类型指针
-
-Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若头文件仅有前向声明，`connect` 会导致不完整类型错误。
-
-- **解决方案**：在 .cpp 文件中 `#include` 完整头文件，而非仅依赖前向声明
-
 ## ANTI-PATTERNS (THIS PROJECT)
 
 - QwtPlotItem相关的类不继承QObject，不要使用Qt的信号槽机制，继承 Qwt 非 QObject 类时**不能使用 Q_OBJECT 宏**
 - 禁止使用 `slot`、`signal` 小写命名的宏，统一使用 `Q_SLOTS`、`Q_SIGNALS`
 - 禁止在头文件中写入类成员函数的 Doxygen 块注释（仅限类的注释、信号注释、枚举注释）
-- 禁止在 QwtPlotItem 子类中使用信号槽
-- 禁止使用已废弃的 DAPyNodeConfigDialog / DAPyNodeWidget — 统一使用 `src/DAGui/NodeSetting/` 中基于 `DAPropertyFormWidget` 的通用参数面板
+- **设置类窗口**统一使用 `src/DAGui/NodeSetting/` 中基于 `DAPropertyFormWidget` 的通用参数面板
 - **禁止在错误的模块创建类** — 创建新类前必须对照 § MODULE DEPENDENCY 确定它属于哪个模块（典型反面：通用工具放进 DAPyWorkFlow）
 - **禁止对非 const Qt 容器直接使用范围迭代** — `for(T& v : container)` 和 `for(const T& v : container)` 对非 const 容器都会触发 COW 深拷贝。必须用 `const` 声明容器或 `std::as_const()` 包裹（详见 § Qt 容器范围迭代）
 - **禁止在 `.cpp` 中使用 Qt↔Python 类型转换而未 `#include "DAPybind11QtCaster.hpp"`** — pybind11 的 `type_caster` 是 **per-translation-unit** 生效的，仅 include `DAPybind11InQt.h` 不够。每个 `.cpp` 文件只要出现以下任意调用形式，就必须在该文件顶部 include `src/DAPyBindQt/DAPybind11QtCaster.hpp`：
@@ -425,17 +424,6 @@ Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若�
 - **禁止用 `da*` 宏输出开发诊断信息** — `daInfo`/`daWarning`/`daCritical` 会进 UI 消息队列（用户可见）且必须翻译；带 `ClassName::method:` 前缀的技术诊断、异常 `what()` 转储等开发诊断应改用 `q*` 宏保持英文。详见 § 国际化规范
 - **禁止在 Python 节点包中遗漏 `setup_i18n()` 调用** — 必须在包 `__init__.py` 顶部、节点模块导入之前调用 `setup_i18n()`，否则 `_()` 未定义会导致节点注册失败
 
-## UNIQUE STYLES
-
-- 项目使用PIMPL模式，PIMPL相关宏定义在`src/DAGlobals.h`中,主要有如下宏需要使用：
-  - `DA_DECLARE_PRIVATE`:在`MyClass`中定义
-  - `DA_DECLARE_PUBLIC`:在`MyClass::PrivateData`中声明
-  - `DA_PIMPL_CONSTRUCT`:在`MyClass::在MyClass`构造函数中初始化
-  - `DA_D`:在`MyClass::fun()`中获取`MyClass::PrivateData`的指针
-  - `DA_DC`:在`MyClass::fun() const`中获取`MyClass::PrivateData`的const指针
-- 所有类、文件名统一 `DA` 前缀，放入 `DA` 命名空间
-- Doxygen 注释使用中文
-- 头文件保持简洁：仅单行中文注释，详细文档在 .cpp 中
 
 ## 相关文件
 
