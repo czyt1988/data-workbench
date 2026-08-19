@@ -128,6 +128,7 @@ void DADockingAreaInterface::raiseDockByWidget(QWidget* w)
             dw->toggleView();
         }
         dw->raise();
+        Q_EMIT dockWidgetRaised(w);
     }
 }
 
@@ -278,6 +279,7 @@ void DADockingAreaInterface::raiseDockingArea(DockingArea area)
             dw->toggleView();
         }
         dw->raise();
+        Q_EMIT dockWidgetRaised(dw->widget());
     }
 }
 

@@ -514,6 +514,8 @@ void DAAppController::initConnection()
     // name
     //===================================================
     connect(mDock->dockManager(), &ads::CDockManager::focusedDockWidgetChanged, this, &DAAppController::onFocusedDockWidgetChanged);
+    // 程序化raise dock窗口时也激活context category
+    connect(mDock, &DADockingAreaInterface::dockWidgetRaised, this, &DAAppController::onDockWidgetRaised);
     // DADataManageWidget 数据操作
     // DADataOperateWidget
     DADataOperateWidget* dow = mDock->getDataOperateWidget();
@@ -1068,36 +1070,35 @@ void DAAppController::onActionSettingTriggered()
 }
 
 /**
- * @brief DockWidget的焦点变化
- * @param old
- * @param now
+ * @brief 根据widget激活对应的context category
+ *
+ * 此方法从onFocusedDockWidgetChanged提取，供焦点变化和程序化raise两条路径复用
+ * @param widget dock内部维护的widget指针
  */
-void DAAppController::onFocusedDockWidgetChanged(ads::CDockWidget* old, ads::CDockWidget* now)
+void DAAppController::activateContextCategoryForWidget(QWidget* widget)
 {
-    Q_UNUSED(old);
-
-    if (nullptr == now) {
+    if (nullptr == widget) {
         mRibbon->hideContextCategory(DAAppRibbonArea::AllContextCategory);
         return;
     }
     // 数据操作窗口激活时，检查是否需要显示m_contextDataFrame
-    if (now->widget() == getDataOperateWidget()) {
+    if (widget == getDataOperateWidget()) {
         // 数据窗口激活
         mLastFocusedOpertateWidget = LastFocusedOnDataOpt;
         mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryData);
-    } else if (now->widget() == getWorkFlowOperateWidget()) {
+    } else if (widget == getWorkFlowOperateWidget()) {
         // 工作流窗口激活
         mLastFocusedOpertateWidget = LastFocusedOnWorkflowOpt;
         // 此函数会激活当前窗口的stack
         getWorkFlowOperateWidget()->setUndoStackActive();
         mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryWorkflow);
         getSettingContainerWidget()->showWorkFlowNodeItemSettingWidget();
-    } else if (now->widget() == getChartOperateWidget()) {
+    } else if (widget == getChartOperateWidget()) {
         // 绘图窗口激活
         mLastFocusedOpertateWidget = LastFocusedOnChartOpt;
         mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryChart);
         getSettingContainerWidget()->showChartSettingWidget();
-    } else if (now->widget() == getDataManageWidget()) {
+    } else if (widget == getDataManageWidget()) {
         if (mCommand) {
             QUndoStack* stack = mCommand->getDataManagerStack();
             if (stack && !(stack->isActive())) {  // Data 相关的窗口 undostack激活
@@ -1105,6 +1106,26 @@ void DAAppController::onFocusedDockWidgetChanged(ads::CDockWidget* old, ads::CDo
             }
         }
     }
+}
+
+/**
+ * @brief DockWidget的焦点变化
+ * @param old
+ * @param now
+ */
+void DAAppController::onFocusedDockWidgetChanged(ads::CDockWidget* old, ads::CDockWidget* now)
+{
+    Q_UNUSED(old);
+    activateContextCategoryForWidget(now ? now->widget() : nullptr);
+}
+
+/**
+ * @brief 程序化raise dock窗口时激活context category
+ * @param w dock内部维护的widget
+ */
+void DAAppController::onDockWidgetRaised(QWidget* w)
+{
+    activateContextCategoryForWidget(w);
 }
 
 bool DAAppController::openCheck()

@@ -174,6 +174,10 @@ public:
     // 判断DataManageWidget是否是在焦点
     bool isDataManageWidgetDockOnFocus() const;
 
+Q_SIGNALS:
+    // dock窗口被程序化唤起时发射，参数为dock内部维护的widget
+    void dockWidgetRaised(QWidget* w);
+
 public:
     // 获取当前的场景
     DAPyWorkFlowGraphicsScene* getCurrentScene() const;

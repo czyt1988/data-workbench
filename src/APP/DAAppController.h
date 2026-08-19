@@ -445,6 +445,8 @@ private Q_SLOTS:
     //===================================================
     // DockWidget的焦点变化
     void onFocusedDockWidgetChanged(ads::CDockWidget* old, ads::CDockWidget* now);
+    // 程序化raise dock窗口时激活context category
+    void onDockWidgetRaised(QWidget* w);
 
     //===================================================
     // DADataManageWidget
@@ -491,6 +493,8 @@ private:
     void executeStatsPlot(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart, const DAData& data);
     // 确保当前 Figure 和 Chart 存在（不存在则创建）
     bool ensureFigureChart(DA::DAFigureWidget*& fig, DA::DAChartWidget*& chart);
+    // 根据widget激活对应的context category
+    void activateContextCategoryForWidget(QWidget* widget);
 
 private:
     AppMainWindow* mMainWindow { nullptr };
