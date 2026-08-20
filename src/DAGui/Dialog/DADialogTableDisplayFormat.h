@@ -28,23 +28,31 @@ class DAGUI_API DADialogTableDisplayFormat : public QDialog
     Q_OBJECT
 public:
     /**
-     * @brief 构造
+     * @brief 构造：仅构建 UI 外壳，不设置当前状态（配合 setup 复用）
+     * @param parent 父窗口
+     */
+    explicit DADialogTableDisplayFormat(QWidget* parent = nullptr);
+    ~DADialogTableDisplayFormat();
+
+    /**
+     * @brief (re)初始化对话框状态：按 dtype 启用类别、按 current 设置选项、更新预览
+     *
+     * 对话框可堆分配一次后多次调用 setup 复用，无需每次重建。
      * @param current 当前格式（用于初始化选项）
      * @param dtype 列 dtype（决定哪些类别可用）
      * @param sample 样本原始值（用于预览）
-     * @param parent 父窗口
      */
-    DADialogTableDisplayFormat(const DATableDisplayFormat& current,
-                               const DAPyDType& dtype,
-                               const QVariant& sample,
-                               QWidget* parent = nullptr);
-    ~DADialogTableDisplayFormat();
+    void setup(const DATableDisplayFormat& current,
+               const DAPyDType& dtype,
+               const QVariant& sample);
 
     // 根据当前 UI 状态构造格式（General 类别返回 invalid，表示清除格式）
     DATableDisplayFormat getResult() const;
 
 private:
-    void setupUi(const DAPyDType& dtype);
+    void setupUi();                                    // 构建 UI（不依赖 dtype/current）
+    void applyDType(const DAPyDType& dtype);           // 按 dtype 启/禁类别项
+    void applyCurrentState();                          // 按 mCurrent 设置选项
     void switchToCategory(DATableDisplayFormat::Category c);
     void updatePreview();
     DATableDisplayFormat buildFormat() const;

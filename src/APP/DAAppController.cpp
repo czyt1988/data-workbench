@@ -3209,6 +3209,8 @@ void DAAppController::onTableDisplayFormatCategoryChanged(DA::DATableDisplayForm
 
 /**
  * @brief “设置单元格格式”按钮：打开对话框，OK 后应用结果
+ *
+ * 对话框堆分配、首次创建后复用，每次 setup(current/dtype/sample) 重置状态再 exec。
  */
 void DAAppController::onActionTableFormatCellsTriggered()
 {
@@ -3232,9 +3234,12 @@ void DAAppController::onActionTableFormatCellsTriggered()
     } catch (const std::exception& e) {
         qWarning() << "DADialogTableDisplayFormat prepare:" << e.what();
     }
-    DA::DADialogTableDisplayFormat dlg(w->getCurrentColumnDisplayFormat(), dt, sample, app());
-    if (dlg.exec() == QDialog::Accepted) {
-        DA::DATableDisplayFormat fmt = dlg.getResult();
+    if (!mDialogTableDisplayFormat) {
+        mDialogTableDisplayFormat = new DA::DADialogTableDisplayFormat(app());
+    }
+    mDialogTableDisplayFormat->setup(w->getCurrentColumnDisplayFormat(), dt, sample);
+    if (mDialogTableDisplayFormat->exec() == QDialog::Accepted) {
+        DA::DATableDisplayFormat fmt = mDialogTableDisplayFormat->getResult();
         if (fmt.isValid()) {
             w->setDisplayFormatToSelection(fmt);
         } else {

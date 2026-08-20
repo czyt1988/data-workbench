@@ -14,50 +14,59 @@
 #include <QButtonGroup>
 #include <QDialogButtonBox>
 #include <QHeaderView>
+#include <QSignalBlocker>
 
 namespace DA
 {
 
-/**
- * @brief 构造函数：构建 UI 并按 current 初始化
- */
-DADialogTableDisplayFormat::DADialogTableDisplayFormat(const DATableDisplayFormat& current,
-                                                       const DAPyDType& dtype,
-                                                       const QVariant& sample,
-                                                       QWidget* parent)
-    : QDialog(parent), mCurrent(current), mSample(sample)
+namespace
 {
-    setupUi(dtype);
-    // 按 current 初始化选项
-    DATableDisplayFormat::Category c = mCurrent.isValid() ? mCurrent.category() : DATableDisplayFormat::General;
-    for (int i = 0; i < mCategoryList->count(); ++i) {
-        if (static_cast< DATableDisplayFormat::Category >(mCategoryList->item(i)->data(Qt::UserRole).toInt()) == c) {
-            mCategoryList->setCurrentRow(i);
-            break;
-        }
+// 类别 -> 显示文本（英文，经 tr 翻译）
+struct CatItem
+{
+    DATableDisplayFormat::Category c;
+    const char* txt;
+};
+static const CatItem kCatItems[] = {
+    { DATableDisplayFormat::General, "General" },
+    { DATableDisplayFormat::Number, "Number" },
+    { DATableDisplayFormat::Scientific, "Scientific" },
+    { DATableDisplayFormat::Percent, "Percentage" },
+    { DATableDisplayFormat::DateTime, "Date/Time" },
+    { DATableDisplayFormat::DatetimeAsNumber, "Datetime as Number" },
+    { DATableDisplayFormat::Text, "Text" },
+};
+
+// 该类别在指定 dtype 下是否可用
+bool categoryApplicable(DATableDisplayFormat::Category c, const DAPyDType& dt)
+{
+    bool noneType = dt.isNone();
+    bool numeric  = !noneType && (dt.isFloat() || dt.isInt() || dt.isUInt()
+                                  || dt.isNullableInt() || dt.isNullableUInt());
+    bool datetime = !noneType && (dt.isDatetime() || dt.isDatetimeTZ());
+    switch (c) {
+    case DATableDisplayFormat::General:
+    case DATableDisplayFormat::Text:
+        return true;
+    case DATableDisplayFormat::Number:
+    case DATableDisplayFormat::Scientific:
+    case DATableDisplayFormat::Percent:
+        return numeric;
+    case DATableDisplayFormat::DateTime:
+    case DATableDisplayFormat::DatetimeAsNumber:
+        return datetime;
     }
-    mSpinPrecision->setValue(mCurrent.isValid() ? mCurrent.precision() : 2);
-    mEditDateTimePattern->setText(mCurrent.pattern());
-    // pattern 预设匹配
-    {
-        QSignalBlocker b(mComboDateTimePreset);
-        Q_UNUSED(b);
-        int matched = -1;
-        for (int i = 0; i < mComboDateTimePreset->count() - 1; ++i) {  // 末项为 custom
-            if (mComboDateTimePreset->itemText(i) == mCurrent.pattern()) {
-                matched = i;
-                break;
-            }
-        }
-        mComboDateTimePreset->setCurrentIndex(matched >= 0 ? matched : mComboDateTimePreset->count() - 1);
-    }
-    if (mCurrent.isValid() && mCurrent.epochUnit() == DATableDisplayFormat::EpochSeconds) {
-        mRadioEpochSeconds->setChecked(true);
-    } else {
-        mRadioEpochMillis->setChecked(true);
-    }
-    switchToCategory(c);
-    updatePreview();
+    return false;
+}
+}  // namespace
+
+/**
+ * @brief 构造：仅构建 UI 外壳，不设置当前状态
+ * @param parent 父窗口
+ */
+DADialogTableDisplayFormat::DADialogTableDisplayFormat(QWidget* parent) : QDialog(parent)
+{
+    setupUi();
 }
 
 DADialogTableDisplayFormat::~DADialogTableDisplayFormat()
@@ -65,9 +74,29 @@ DADialogTableDisplayFormat::~DADialogTableDisplayFormat()
 }
 
 /**
- * @brief 构建 UI（代码构建，无 .ui 文件）
+ * @brief (re)初始化对话框状态，供堆分配复用
+ *
+ * 按 dtype 启/禁类别项，按 current 设置选项并刷新预览。
+ * @param current 当前格式
+ * @param dtype 列 dtype
+ * @param sample 样本原始值
  */
-void DADialogTableDisplayFormat::setupUi(const DAPyDType& dtype)
+void DADialogTableDisplayFormat::setup(const DATableDisplayFormat& current,
+                                       const DAPyDType& dtype,
+                                       const QVariant& sample)
+{
+    mCurrent = current;
+    mSample  = sample;
+    applyDType(dtype);
+    applyCurrentState();
+}
+
+/**
+ * @brief 构建 UI（代码构建，无 .ui 文件）
+ *
+ * 仅创建控件、装载全部类别项（全部启用）、连接信号。不依赖 dtype/current。
+ */
+void DADialogTableDisplayFormat::setupUi()
 {
     setWindowTitle(tr("Format Cells"));  // cn:设置单元格格式
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
@@ -88,47 +117,9 @@ void DADialogTableDisplayFormat::setupUi(const DAPyDType& dtype)
     QGroupBox* catBox = new QGroupBox(tr("Category"), this);  // cn:类别
     QVBoxLayout* cl    = new QVBoxLayout(catBox);
     mCategoryList      = new QListWidget(catBox);
-    struct CatItem
-    {
-        DATableDisplayFormat::Category c;
-        const char* txt;
-    };
-    static const CatItem items[] = {
-        { DATableDisplayFormat::General, "General" },
-        { DATableDisplayFormat::Number, "Number" },
-        { DATableDisplayFormat::Scientific, "Scientific" },
-        { DATableDisplayFormat::Percent, "Percentage" },
-        { DATableDisplayFormat::DateTime, "Date/Time" },
-        { DATableDisplayFormat::DatetimeAsNumber, "Datetime as Number" },
-        { DATableDisplayFormat::Text, "Text" },
-    };
-    bool noneType = dtype.isNone();
-    bool numeric  = !noneType && (dtype.isFloat() || dtype.isInt() || dtype.isUInt()
-                                  || dtype.isNullableInt() || dtype.isNullableUInt());
-    bool datetime = !noneType && (dtype.isDatetime() || dtype.isDatetimeTZ());
-    for (const CatItem& it : items) {
+    for (const CatItem& it : kCatItems) {
         QListWidgetItem* li = new QListWidgetItem(tr(it.txt), mCategoryList);
         li->setData(Qt::UserRole, static_cast< int >(it.c));
-        bool enabled = false;
-        switch (it.c) {
-        case DATableDisplayFormat::General:
-        case DATableDisplayFormat::Text:
-            enabled = true;
-            break;
-        case DATableDisplayFormat::Number:
-        case DATableDisplayFormat::Scientific:
-        case DATableDisplayFormat::Percent:
-            enabled = numeric;
-            break;
-        case DATableDisplayFormat::DateTime:
-        case DATableDisplayFormat::DatetimeAsNumber:
-            enabled = datetime;
-            break;
-        }
-        if (!enabled) {
-            li->setFlags(li->flags() & ~Qt::ItemIsEnabled);
-            li->setBackground(Qt::gray);
-        }
         mCategoryList->addItem(li);
     }
     cl->addWidget(mCategoryList);
@@ -159,15 +150,15 @@ void DADialogTableDisplayFormat::setupUi(const DAPyDType& dtype)
         mComboDateTimePreset->addItems(DATableDisplayFormat::dateTimePresets());
         mComboDateTimePreset->addItem(tr("(custom)"));  // cn:(自定义)
         mEditDateTimePattern = new QLineEdit(w);
-        f->addRow(tr("Preset:"), mComboDateTimePreset);    // cn:预设:
-        f->addRow(tr("Pattern:"), mEditDateTimePattern);   // cn:格式串:
+        f->addRow(tr("Preset:"), mComboDateTimePreset);  // cn:预设:
+        f->addRow(tr("Pattern:"), mEditDateTimePattern);  // cn:格式串:
         mStack->addWidget(w);
     }
     // page 3: DatetimeAsNumber
     {
         QWidget* w = new QWidget(mStack);
         QVBoxLayout* v = new QVBoxLayout(w);
-        mRadioEpochSeconds = new QRadioButton(tr("Seconds since epoch"), w);  // cn:epoch 秒
+        mRadioEpochSeconds = new QRadioButton(tr("Seconds since epoch"), w);       // cn:epoch 秒
         mRadioEpochMillis  = new QRadioButton(tr("Milliseconds since epoch"), w);  // cn:epoch 毫秒
         mRadioEpochMillis->setChecked(true);
         v->addWidget(mRadioEpochSeconds);
@@ -207,6 +198,70 @@ void DADialogTableDisplayFormat::setupUi(const DAPyDType& dtype)
             });
     connect(mEditDateTimePattern, &QLineEdit::textChanged, this, [ this ]() { updatePreview(); });
     connect(mRadioEpochSeconds, &QRadioButton::toggled, this, [ this ]() { updatePreview(); });
+}
+
+/**
+ * @brief 按 dtype 启/禁类别项
+ * @param dtype 列 dtype
+ */
+void DADialogTableDisplayFormat::applyDType(const DAPyDType& dtype)
+{
+    for (int i = 0; i < mCategoryList->count(); ++i) {
+        QListWidgetItem* li = mCategoryList->item(i);
+        auto c = static_cast< DATableDisplayFormat::Category >(li->data(Qt::UserRole).toInt());
+        if (categoryApplicable(c, dtype)) {
+            li->setFlags(li->flags() | Qt::ItemIsEnabled);
+        } else {
+            li->setFlags(li->flags() & ~Qt::ItemIsEnabled);
+        }
+    }
+}
+
+/**
+ * @brief 按 mCurrent 设置类别选中、精度/格式串/epoch，并刷新预览
+ */
+void DADialogTableDisplayFormat::applyCurrentState()
+{
+    DATableDisplayFormat::Category c =
+        mCurrent.isValid() ? mCurrent.category() : DATableDisplayFormat::General;
+    // 选中 current 对应的类别；若该类别在当前 dtype 下被禁用则回退 General
+    int targetRow = -1;
+    int generalRow = -1;
+    for (int i = 0; i < mCategoryList->count(); ++i) {
+        QListWidgetItem* li = mCategoryList->item(i);
+        auto ic = static_cast< DATableDisplayFormat::Category >(li->data(Qt::UserRole).toInt());
+        if (ic == DATableDisplayFormat::General) {
+            generalRow = i;
+        }
+        if (ic == c && (li->flags() & Qt::ItemIsEnabled)) {
+            targetRow = i;
+        }
+    }
+    mCategoryList->setCurrentRow(targetRow >= 0 ? targetRow : generalRow);
+
+    mSpinPrecision->setValue(mCurrent.isValid() ? mCurrent.precision() : 2);
+    mEditDateTimePattern->setText(mCurrent.pattern());
+    {
+        QSignalBlocker b(mComboDateTimePreset);
+        int matched = -1;
+        for (int i = 0; i < mComboDateTimePreset->count() - 1; ++i) {  // 末项为 custom
+            if (mComboDateTimePreset->itemText(i) == mCurrent.pattern()) {
+                matched = i;
+                break;
+            }
+        }
+        mComboDateTimePreset->setCurrentIndex(matched >= 0 ? matched : mComboDateTimePreset->count() - 1);
+    }
+    if (mCurrent.isValid() && mCurrent.epochUnit() == DATableDisplayFormat::EpochSeconds) {
+        mRadioEpochSeconds->setChecked(true);
+    } else {
+        mRadioEpochMillis->setChecked(true);
+    }
+    switchToCategory(static_cast< DATableDisplayFormat::Category >(
+        mCategoryList->currentRow() >= 0
+            ? mCategoryList->currentItem()->data(Qt::UserRole).toInt()
+            : static_cast< int >(DATableDisplayFormat::General)));
+    updatePreview();
 }
 
 /**
@@ -253,7 +308,7 @@ void DADialogTableDisplayFormat::updatePreview()
  */
 DATableDisplayFormat DADialogTableDisplayFormat::buildFormat() const
 {
-    if (mCategoryList->currentRow() < 0) {
+    if (mCategoryList->currentRow() < 0 || !mCategoryList->currentItem()) {
         return DATableDisplayFormat();
     }
     auto c = static_cast< DATableDisplayFormat::Category >(

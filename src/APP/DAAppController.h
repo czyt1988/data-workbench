@@ -33,6 +33,7 @@ namespace DA
 {
 class DATableCellStyle;
 class DATableDisplayFormat;
+class DADialogTableDisplayFormat;
 class AppMainWindow;
 class DAAppCore;
 class DAProjectInterface;
@@ -513,6 +514,7 @@ private:
     DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
     DAAppConfig* mConfig { nullptr };                                   ///< 设置类
     DADialogStatsChartGuide* mStatsChartGuideDlg { nullptr };  ///< 统计绘图引导对话框
+    DADialogTableDisplayFormat* mDialogTableDisplayFormat { nullptr };  ///< 表格显示格式对话框（堆分配复用）
 };
 }
 
