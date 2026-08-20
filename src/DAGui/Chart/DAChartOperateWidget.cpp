@@ -15,6 +15,7 @@
 // DAFigure
 #include "DAFigureFactory.h"
 #include "DAFigureDockWidget.h"
+#include "DAFigureComponentsFactory.h"
 namespace DA
 {
 int g_figure_cnt = 0;  ///< 绘图的数量，仅限当前程序创建计数
@@ -92,6 +93,9 @@ DAChartOperateWidget::DAChartOperateWidget(QWidget* parent)
     lay->setSpacing(0);
     d_ptr->mDockManager = new ads::CDockManager(this);
     lay->addWidget(d_ptr->mDockManager);
+    // 注入自定义组件工厂：绘图 dock 选项卡右键菜单携带重命名等自定义 action，
+    // 仅影响本嵌套管理器内的 dock（即绘图 dock），不影响顶层停靠区
+    d_ptr->mDockManager->setComponentsFactory(new DAFigureComponentsFactory());
     // 禁止 figure dock 浮动为独立窗口（全局锁，对所有当前及后续 dock 生效），保留分屏/并栏/拖拽
     d_ptr->mDockManager->lockDockWidgetFeaturesGlobally(ads::CDockWidget::DockWidgetFloatable);
     // 嵌套停靠区聚焦改变：onFocusedDockChanged 内部会过滤掉非本管理器的 dock，

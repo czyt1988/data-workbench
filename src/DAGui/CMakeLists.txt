@@ -320,6 +320,8 @@ set(DA_LIB_HEADER_FILES_Chart
     ${DA_LIB_SUBDIR_Chart}/DAChartSettingWidget.h
     ${DA_LIB_SUBDIR_Chart}/DAChartItemsManager.h
     ${DA_LIB_SUBDIR_Chart}/DAFigureDockWidget.h
+    ${DA_LIB_SUBDIR_Chart}/DAFigureDockWidgetTab.h
+    ${DA_LIB_SUBDIR_Chart}/DAFigureComponentsFactory.h
 )
 set(DA_LIB_SOURCE_FILES_Chart
     ${DA_LIB_SUBDIR_Chart}/DAChartOperateWidget.cpp
@@ -327,6 +329,8 @@ set(DA_LIB_SOURCE_FILES_Chart
     ${DA_LIB_SUBDIR_Chart}/DAChartSettingWidget.cpp
     ${DA_LIB_SUBDIR_Chart}/DAChartItemsManager.cpp
     ${DA_LIB_SUBDIR_Chart}/DAFigureDockWidget.cpp
+    ${DA_LIB_SUBDIR_Chart}/DAFigureDockWidgetTab.cpp
+    ${DA_LIB_SUBDIR_Chart}/DAFigureComponentsFactory.cpp
 )
 set(DA_LIB_QT_UI_FILES_Chart
     ${DA_LIB_SUBDIR_Chart}/DAChartManageWidget.ui
