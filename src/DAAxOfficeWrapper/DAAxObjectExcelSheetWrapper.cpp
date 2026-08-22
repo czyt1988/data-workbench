@@ -100,7 +100,7 @@ DATable< QVariant > DAAxObjectExcelSheetWrapper::readTable()
         return res;
     }
     // 只有一个单元格时，是不会转换为list的
-    if (var.canConvert(QMetaType::QVariantList)) {
+    if (var.canConvert< QVariantList >()) {
         const QVariantList varRows = var.toList();
         if (varRows.isEmpty()) {
             return res;

@@ -316,7 +316,7 @@ bool DAPyNodeConnection::operator<(const DAPyNodeConnection& other) const
  */
 uint qHash(const DAPyNodeConnection& key, uint seed)
 {
-    return ::qHash(key.getConnectionId(), seed);
+    return static_cast< uint >(::qHash(key.getConnectionId(), seed));
 }
 
 /**

@@ -297,12 +297,12 @@ public:
 template< typename T >
 void DAChartUtil::getSeriesData(QVector< T >& vec, const QwtSeriesStore< T >* series)
 {
-    const auto size = series->dataSize();
+    const int size = static_cast< int >(series->dataSize());
 
     if (vec.size() < size) {
-        vec.reserve(static_cast< int >(size));
+        vec.reserve(size);
     }
-    for (auto i = 0; i < size; ++i) {
+    for (int i = 0; i < size; ++i) {
         vec.push_back(series->sample(i));
     }
 }

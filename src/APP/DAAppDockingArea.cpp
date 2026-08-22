@@ -232,7 +232,7 @@ void DAAppDockingArea::buildDockingArea()
     mAgentDock->setIcon(QIcon(":/app/bright/Icon/showAgent.svg"));
 
     // 日志窗口 —— pin to right，auto-hide 到右侧边栏
-    mMessageLogDock = new ads::CDockWidget(QStringLiteral("da_messageLogViewWidgetDock"));
+    mMessageLogDock = new ads::CDockWidget(dockManager(), QStringLiteral("da_messageLogViewWidgetDock"));
     mMessageLogDock->setWidget(mMessageLogViewWidget);
     mMessageLogDock->setIcon(QIcon(":/app/bright/Icon/showInfomation.svg"));
     dockManager()->addAutoHideDockWidget(ads::SideBarRight, mMessageLogDock);

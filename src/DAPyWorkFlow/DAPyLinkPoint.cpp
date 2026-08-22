@@ -137,7 +137,8 @@ DAAspectDirection DAPyLinkPoint::relativeDirectionOfPoint(const QPointF& p1, con
 uint qHash(const DAPyLinkPoint& key, uint seed)
 {
     // 使用全局Qt的qHash避免与DA命名空间中qHash(AspectDirection)的重载歧义
-    return ::qHash(key.name, seed) ^ ::qHash(static_cast< int >(key.position.x()), seed) ^ ::qHash(static_cast< int >(key.position.y()), seed) ^ ::qHash(static_cast< int >(key.way), seed);
+    return static_cast< uint >(::qHash(key.name, seed) ^ ::qHash(static_cast< int >(key.position.x()), seed)
+                               ^ ::qHash(static_cast< int >(key.position.y()), seed) ^ ::qHash(static_cast< int >(key.way), seed));
 }
 
 /**

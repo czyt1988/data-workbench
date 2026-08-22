@@ -4,6 +4,7 @@
 #include <QTextDocument>
 #include <QColor>
 #include <QFont>
+#include <QStringList>
 
 namespace DA
 {
@@ -20,12 +21,12 @@ DAMarkdownHighlighter::DAMarkdownHighlighter(QTextDocument* parent) : QSyntaxHig
     // 行内代码：灰底等宽
     m_codeFmt.setBackground(QColor("#F0F0F0"));
     m_codeFmt.setForeground(QColor("#515151"));
-    m_codeFmt.setFontFamily("Consolas");
+    m_codeFmt.setFontFamilies(QStringList() << QStringLiteral("Consolas"));
 
     // 代码块整体：浅灰背景等宽
     m_codeBlockFmt.setBackground(QColor("#F7F7F7"));
     m_codeBlockFmt.setForeground(QColor("#515151"));
-    m_codeBlockFmt.setFontFamily("Consolas");
+    m_codeBlockFmt.setFontFamilies(QStringList() << QStringLiteral("Consolas"));
 
     // 加粗：深灰加粗
     m_boldFmt.setForeground(QColor("#515151"));

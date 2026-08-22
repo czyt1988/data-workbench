@@ -106,7 +106,7 @@ DAPySeries DAPyDataFrame::operator[](std::size_t n) const
 {
     try {
         auto headers = columns();
-        if (n >= headers.size()) {
+        if (n >= static_cast< std::size_t >(headers.size())) {
             return DAPySeries();
         }
         QString name = headers[ static_cast< int >(n) ];

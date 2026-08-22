@@ -366,11 +366,7 @@ DAAbstractChart3DAddItemWidget* DADialogChartGuide::getChartAdd3DItemWidget(DACh
 void DADialogChartGuide::initSet3DPlotItem(Qwt3DPlotItem* item)
 {
     Q_UNUSED(item)
-    DA::DAChartTypes ct = getCurrentChartType();
-    switch (ct) {
-    default:
-        break;
-    }
+    // 当前为占位实现，3D item 属性由后续计划的设置面板处理
 }
 
 /**

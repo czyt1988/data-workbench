@@ -115,7 +115,7 @@ QVariant DAPyDataFrameTableModel::PrivateData::getDataframeIndexName(int i) cons
         qCritical() << e.what();
         return res;
     }
-    if (res.canConvert(QMetaType::QVariantList)) {
+    if (res.canConvert< QVariantList >()) {
         // 说明是复合表头
         QVariantList ss = res.toList();
         QString str;

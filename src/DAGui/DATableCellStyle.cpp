@@ -1,4 +1,5 @@
 ﻿#include "DATableCellStyle.h"
+#include "da_qt5qt6_compat.hpp"
 
 namespace DA
 {
@@ -187,7 +188,7 @@ bool DATableCellStyle::fromXml(const QDomElement& e)
                                     ? static_cast<Qt::BrushStyle>(bsInt)
                                     : Qt::SolidPattern;
             QColor c;
-            c.setNamedColor(child.attribute(QStringLiteral("color")));
+            compat::setNamedColor(c, child.attribute(QStringLiteral("color")));
             QBrush b;
             b.setStyle(bs);
             if (c.isValid()) {
@@ -196,7 +197,7 @@ bool DATableCellStyle::fromXml(const QDomElement& e)
             setBackground(b);
         } else if (tag == QLatin1String("foreground")) {
             QColor c;
-            c.setNamedColor(child.attribute(QStringLiteral("color")));
+            compat::setNamedColor(c, child.attribute(QStringLiteral("color")));
             if (c.isValid()) {
                 setForeground(c);
             }

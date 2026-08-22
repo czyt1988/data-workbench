@@ -496,7 +496,7 @@ bool DAPyNode::operator<(const DAPyNode& other) const
  */
 uint qHash(const DAPyNode& key, uint seed)
 {
-    return ::qHash(key.getNodeId(), seed);
+    return static_cast< uint >(::qHash(key.getNodeId(), seed));
 }
 
 /**

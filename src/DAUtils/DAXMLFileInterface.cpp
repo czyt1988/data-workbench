@@ -378,7 +378,7 @@ bool DAXMLFileInterface::loadElement(QPen& p, const QDomElement* ele)
 {
 	DAXMLFileInterfaceCheckEleClass(ele, "QPen");
 	QColor c;
-	c.setNamedColor(ele->attribute("color"));
+	DA::compat::setNamedColor(c, ele->attribute("color"));
 	if (c.isValid()) {
 		p.setColor(c);
 	}
@@ -458,7 +458,7 @@ bool DAXMLFileInterface::loadElement(QBrush& p, const QDomElement* ele)
 	case Qt::FDiagPattern:
 	case Qt::DiagCrossPattern: {
 		QColor c;
-		c.setNamedColor(ele->attribute("color"));
+		DA::compat::setNamedColor(c, ele->attribute("color"));
 		if (c.isValid()) {
 			p.setColor(c);
 		}
@@ -1106,7 +1106,7 @@ QVariant DA::stringToVariant(const QString& var, const QString& typeName)
 
 	case QMetaType::QColor: {
 		QColor clr;
-		clr.setNamedColor(var);
+		DA::compat::setNamedColor(clr, var);
 		return (clr);
 	}
 

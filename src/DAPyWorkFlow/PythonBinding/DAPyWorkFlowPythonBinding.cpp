@@ -95,7 +95,7 @@ DAPyNodeState getNodeState(const pybind11::object& obj)
         if (pybind11::isinstance< pybind11::int_ >(stateObj)) {
             return static_cast< DAPyNodeState >(stateObj.cast< int >());
         }
-    } catch (const std::exception& e) {
+    } catch (const std::exception&) {
         return DAPyNodeState::Idle;
     }
     return DAPyNodeState::Idle;
@@ -163,7 +163,7 @@ DAPyNodeStyle toNodeStyle(const pybind11::object& obj)
         // === 最小 body 尺寸 ===
         style.minBodyWidth  = readCastAttr< double >(obj, "min_body_width", style.minBodyWidth);
         style.minBodyHeight = readCastAttr< double >(obj, "min_body_height", style.minBodyHeight);
-    } catch (const std::exception& e) {
+    } catch (const std::exception&) {
         // 读取失败时返回默认样式
     }
 

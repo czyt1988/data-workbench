@@ -136,8 +136,7 @@ bool DAPyScriptsDataFrame::insert_column(DAPyDataFrame& df,
         args[ "name" ]  = DA::PY::toPyObject(name);
         args[ "start" ] = pybind11::cast(start);
         args[ "stop" ]  = pybind11::cast(stop);
-        if (start.canConvert(QMetaType::QDateTime) || start.canConvert(QMetaType::QDate)
-            || start.canConvert(QMetaType::QTime)) {
+        if (start.canConvert< QDateTime >() || start.canConvert< QDate >() || start.canConvert< QTime >()) {
             args[ "dtype" ] = pybind11::dtype("datetime64");
         }
         da_insert_column(**args);

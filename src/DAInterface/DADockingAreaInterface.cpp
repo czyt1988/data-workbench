@@ -334,7 +334,7 @@ bool DADockingAreaInterface::isDockingAreaFocused(DockingArea area) const
  */
 ads::CDockWidget* DADockingAreaInterface::createCenterDockWidget(QWidget* w, const QString& widgetName)
 {
-    ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
+    ads::CDockWidget* dockWidget = new ads::CDockWidget(d_ptr->mDockManager, widgetName);
     dockWidget->setWidget(w);
     d_ptr->mCenterArea = d_ptr->mDockManager->setCentralWidget(dockWidget);
     return dockWidget;
@@ -353,7 +353,7 @@ ads::CDockWidget* DADockingAreaInterface::createDockWidget(QWidget* w,
                                                            const QString& widgetName,
                                                            ads::CDockAreaWidget* dockAreaWidget)
 {
-    ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
+    ads::CDockWidget* dockWidget = new ads::CDockWidget(d_ptr->mDockManager, widgetName);
     dockWidget->setWidget(w);
     d_ptr->mDockManager->addDockWidget(area, dockWidget, dockAreaWidget);
     return dockWidget;
@@ -368,7 +368,7 @@ ads::CDockWidget* DADockingAreaInterface::createDockWidget(QWidget* w,
  */
 ads::CDockWidget* DADockingAreaInterface::createFloatingDockWidget(QWidget* w, const QString& widgetName, const QPoint& pos)
 {
-    ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
+    ads::CDockWidget* dockWidget = new ads::CDockWidget(d_ptr->mDockManager, widgetName);
     dockWidget->setWidget(w);
     ads::CFloatingDockContainer* fc = d_ptr->mDockManager->addDockWidgetFloating(dockWidget);
     fc->move(pos);
@@ -386,7 +386,7 @@ ads::CDockWidget* DADockingAreaInterface::createDockWidgetAsTab(QWidget* w,
                                                                 const QString& widgetName,
                                                                 ads::CDockAreaWidget* dockAreaWidget)
 {
-    ads::CDockWidget* dockWidget = new ads::CDockWidget(widgetName);
+    ads::CDockWidget* dockWidget = new ads::CDockWidget(d_ptr->mDockManager, widgetName);
     dockWidget->setWidget(w);
     dockWidget->setFeatures(ads::CDockWidget::DefaultDockWidgetFeatures);
     dockWidget->setMinimumSizeHintMode(ads::CDockWidget::MinimumSizeHintFromDockWidget);

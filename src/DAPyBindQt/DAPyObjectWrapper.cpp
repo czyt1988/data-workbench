@@ -486,7 +486,7 @@ bool DAPyObjectWrapper::operator<(const DAPyObjectWrapper& obj) const
  */
 uint qHash(const DAPyObjectWrapper& obj, uint seed)
 {
-    return ::qHash(reinterpret_cast<quintptr>(obj.object().ptr()), seed);
+    return static_cast< uint >(::qHash(reinterpret_cast<quintptr>(obj.object().ptr()), seed));
 }
 
 /**

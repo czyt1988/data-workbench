@@ -306,7 +306,7 @@ bool DAGraphicsResizeableItem::saveToXml(QDomDocument* doc, QDomElement* parentE
 	parentElement->appendChild(rsinfoEle);
 
 	QDomElement conEle = doc->createElement("controler");
-	bs                 = getControlerSize();
+	bs                 = d_ptr->mControlPointSize;
 	conEle.setAttribute("width", bs.width());
 	conEle.setAttribute("height", bs.height());
 
@@ -338,7 +338,8 @@ bool DAGraphicsResizeableItem::loadFromXml(const QDomElement* itemElement, const
 	QDomElement conEle = rsinfoEle.firstChildElement("controler");
 	if (!conEle.isNull()) {
 		if (getStringRealValue(conEle.attribute("width"), v1) && getStringRealValue(conEle.attribute("height"), v2)) {
-			setControlerSize(QSizeF(v1, v2));
+			d_ptr->mControlPointSize = QSizeF(v1, v2);
+			update();
 		}
 	}
 	return true;

@@ -177,7 +177,7 @@ QDebug operator<<(QDebug dbg, const DAPyNodeMetaData& meta)
  */
 uint qHash(const DAPyNodeMetaData& key, uint seed)
 {
-    return qHash(key.qualifiedName, seed);
+    return static_cast< uint >(qHash(key.qualifiedName, seed));
 }
 
 }

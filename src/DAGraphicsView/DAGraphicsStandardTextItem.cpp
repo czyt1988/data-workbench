@@ -1,6 +1,7 @@
 #include "DAGraphicsStandardTextItem.h"
 #include <QFont>
 #include <QDebug>
+#include <QStringList>
 #include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
 #include <QDomDocument>
@@ -222,8 +223,8 @@ void DAGraphicsStandardTextItem::setSelectTextFamily(const QString& v)
 		cursor.select(QTextCursor::Document);
 	}
 	QTextCharFormat format = cursor.charFormat();
-	// 设置文本颜色
-	format.setFontFamily(v);
+	// 设置文本字体
+	format.setFontFamilies(QStringList() << v);
 	// 应用格式到选中文本
 	cursor.setCharFormat(format);
 }
@@ -242,7 +243,7 @@ QString DAGraphicsStandardTextItem::getSelectTextFamily() const
 	if (!format.isValid() || format.isEmpty()) {
 		return QString();
 	}
-	return format.fontFamily();
+	return format.fontFamilies().toStringList().value(0);
 }
 
 /**

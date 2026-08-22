@@ -1246,6 +1246,26 @@ struct type_caster< QColor >
 {
     PYBIND11_TYPE_CASTER(QColor, _("tuple"));
 
+    // 解析两个十六进制字符为0~255的整数，出现非法字符返回false（替代sscanf，避免MSVC C4996警告）
+    static bool parseHexByte(const char* s, int& val)
+    {
+        auto nibble = [](char c) -> int {
+            if (c >= '0' && c <= '9')
+                return c - '0';
+            if (c >= 'a' && c <= 'f')
+                return c - 'a' + 10;
+            if (c >= 'A' && c <= 'F')
+                return c - 'A' + 10;
+            return -1;
+        };
+        const int hi = nibble(s[0]);
+        const int lo = nibble(s[1]);
+        if (hi < 0 || lo < 0)
+            return false;
+        val = (hi << 4) | lo;
+        return true;
+    }
+
     bool load(handle src, bool convert)
     {
         if (!src)
@@ -1260,13 +1280,16 @@ struct type_caster< QColor >
 
             int r = 0, g = 0, b = 0, a = 255;
             int offset = (str[0] == '#') ? 1 : 0;
+            const char* p = str + offset;
 
             if (size - offset == 6) {
                 // #RRGGBB
-                sscanf(str + offset, "%02x%02x%02x", &r, &g, &b);
+                if (!parseHexByte(p, r) || !parseHexByte(p + 2, g) || !parseHexByte(p + 4, b))
+                    return false;
             } else if (size - offset == 8) {
                 // #RRGGBBAA
-                sscanf(str + offset, "%02x%02x%02x%02x", &r, &g, &b, &a);
+                if (!parseHexByte(p, r) || !parseHexByte(p + 2, g) || !parseHexByte(p + 4, b) || !parseHexByte(p + 6, a))
+                    return false;
             } else {
                 return false;
             }
