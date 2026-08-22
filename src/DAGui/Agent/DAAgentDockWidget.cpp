@@ -145,9 +145,9 @@ void DAAgentDockWidget::setupUI()
     d->mWebView = new QWebEngineView(this);
     d->mWebView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     // 启用开发者工具（生产环境可设为 false）
-    // Qt5 无 DeveloperToolsEnabled 属性，可通过环境变量
-    // QTWEBENGINE_CHROMIUM_FLAGS=--remote-debugging-port=9222 替代
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    // DeveloperToolsEnabled 仅 Qt5.11+ 提供；Qt6 移除了该属性，
+    // 检查器可通过 QTWEBENGINE_REMOTE_DEBUGGING 环境变量或 QWebEnginePage::setInspectedPage 使用
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     d->mWebView->settings()->setAttribute(QWebEngineSettings::DeveloperToolsEnabled, true);
 #endif
     mainLayout->addWidget(d->mWebView, 1);

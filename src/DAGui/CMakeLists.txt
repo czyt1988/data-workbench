@@ -518,18 +518,35 @@ target_link_libraries(${DA_LIB_NAME} PUBLIC
     Qt${QT_VERSION_MAJOR}::Svg
 )
 # Agent UI 需要 WebEngine/WebChannel/Network（DAGui/Agent 子目录的 DAAgentDockWidget 等）
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
-    WebEngine
-    WebEngineWidgets
-    WebChannel
-    Network
-)
-target_link_libraries(${DA_LIB_NAME} PUBLIC
-    Qt${QT_VERSION_MAJOR}::WebEngine
-    Qt${QT_VERSION_MAJOR}::WebEngineWidgets
-    Qt${QT_VERSION_MAJOR}::WebChannel
-    Qt${QT_VERSION_MAJOR}::Network
-)
+# Qt5 的一体化模块 QtWebEngine 在 Qt6 中拆分为 WebEngineCore/WebEngineQuick/WebEngineWidgets，
+# 官方 Qt6 安装不再提供 Qt6WebEngine 兼容包，组件名需按大版本区分
+if(${QT_VERSION_MAJOR} EQUAL 6)
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
+        WebEngineCore
+        WebEngineWidgets
+        WebChannel
+        Network
+    )
+    target_link_libraries(${DA_LIB_NAME} PUBLIC
+        Qt${QT_VERSION_MAJOR}::WebEngineCore
+        Qt${QT_VERSION_MAJOR}::WebEngineWidgets
+        Qt${QT_VERSION_MAJOR}::WebChannel
+        Qt${QT_VERSION_MAJOR}::Network
+    )
+else()
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
+        WebEngine
+        WebEngineWidgets
+        WebChannel
+        Network
+    )
+    target_link_libraries(${DA_LIB_NAME} PUBLIC
+        Qt${QT_VERSION_MAJOR}::WebEngine
+        Qt${QT_VERSION_MAJOR}::WebEngineWidgets
+        Qt${QT_VERSION_MAJOR}::WebChannel
+        Qt${QT_VERSION_MAJOR}::Network
+    )
+endif()
 if(${QT_VERSION_MAJOR} EQUAL 6)
     target_link_libraries(${DA_LIB_NAME} PRIVATE Qt6::Core5Compat)
 endif()

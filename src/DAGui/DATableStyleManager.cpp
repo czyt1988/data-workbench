@@ -6,6 +6,15 @@ namespace DA
 
 namespace
 {
+// 把 other 合并进 hash（Qt6 移除了 QHash::unite，insert 循环在 Qt5/Qt6 下均可用）
+template < typename K, typename V >
+void mergeHash(QHash< K, V >& hash, const QHash< K, V >& other)
+{
+    for (auto it = other.constBegin(); it != other.constEnd(); ++it) {
+        hash.insert(it.key(), it.value());
+    }
+}
+
 // 位移 QHash<int, V> 的键：key >= threshold 的键 +offset
 template < typename V >
 void shiftHashKeys(QHash< int, V >& hash, int threshold, int offset)
@@ -19,7 +28,7 @@ void shiftHashKeys(QHash< int, V >& hash, int threshold, int offset)
             ++it;
         }
     }
-    hash.unite(shifted);
+    mergeHash(hash, shifted);
 }
 
 // 位移 QHash<QPair<int,int>, V> 中第一维的键
@@ -35,7 +44,7 @@ void shiftHashKeysFirst(QHash< QPair< int, int >, V >& hash, int threshold, int 
             ++it;
         }
     }
-    hash.unite(shifted);
+    mergeHash(hash, shifted);
 }
 
 // 位移 QHash<QPair<int,int>, V> 中第二维的键
@@ -51,7 +60,7 @@ void shiftHashKeysSecond(QHash< QPair< int, int >, V >& hash, int threshold, int
             ++it;
         }
     }
-    hash.unite(shifted);
+    mergeHash(hash, shifted);
 }
 
 // 删除 QHash<QPair<int,int>, V> 中第一维等于 val 的条目

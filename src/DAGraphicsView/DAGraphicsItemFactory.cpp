@@ -110,7 +110,7 @@ QGraphicsItem* DAGraphicsItemFactory::createItem(int itemType)
  * @brief 销毁图形项
  * @param i 要销毁的图形项指针
  */
-void DAGraphicsItemFactory::destoryItem(DAGraphicsItem* i)
+void DAGraphicsItemFactory::destroyItem(DAGraphicsItem* i)
 {
     delete i;
 }

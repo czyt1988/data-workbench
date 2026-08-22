@@ -438,7 +438,7 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAIResizableG
                                                                    QUndoCommand* parent)
     : QUndoCommand(parent)
     , mItem(item)
-    , mOldPos(oldpos)
+    , mOldpos(oldpos)
     , mOldSize(oldSize)
     , mNewPosition(newpos)
     , mNewSize(newSize)
@@ -464,8 +464,8 @@ DACommandsForGraphicsItemResized::DACommandsForGraphicsItemResized(DAIResizableG
 void DACommandsForGraphicsItemResized::redo()
 {
 	QUndoCommand::redo();
-	if (mSkipFirst) {
-		mSkipFirst = false;
+	if (mSkipfirst) {
+		mSkipfirst = false;
 		return;
 	}
 	if (mItem) {
