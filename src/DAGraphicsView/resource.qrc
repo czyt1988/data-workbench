@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/DAGraphicsView">
         <file>svg/draw-rect.svg</file>
+        <file>svg/rotate.svg</file>
     </qresource>
 </RCC>

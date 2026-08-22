@@ -9,10 +9,9 @@ via the DAWorkbench.DAWorkFlowPy node registry.
 
 Node list:
 - DataToManagerNode: Publish data to DataManager panel
-- TextViewerNode: Display input data as text on the node body
+- TextViewerNode: Display input data as text on the node body (with optional console logging)
 - IfElseNode: Diamond-shaped conditional node, selects true/false branch by bool input
 - ConstantNode: Output a constant value
-- PrintNode: Print input data to log/console
 - DelayNode: Delay for a specified number of seconds
 - StartNode: Workflow start point
 - EndNode: Workflow end point
@@ -27,7 +26,6 @@ from .nodes.data_to_manager import DataToManagerNode
 from .nodes.text_viewer import TextViewerNode
 from .nodes.condition_if import IfElseNode
 from .nodes.constant import ConstantNode
-from .nodes.print_node import PrintNode
 from .nodes.delay import DelayNode
 from .nodes.start import StartNode
 from .nodes.end import EndNode
@@ -37,7 +35,6 @@ __all__ = [
     "TextViewerNode",
     "IfElseNode",
     "ConstantNode",
-    "PrintNode",
     "DelayNode",
     "StartNode",
     "EndNode",

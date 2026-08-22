@@ -4,6 +4,7 @@
 #include <QStyleOptionGraphicsItem>
 #include <QGraphicsSceneMouseEvent>
 #include <QBuffer>
+#include <algorithm>
 #include "DAQtEnumTypeStringUtils.h"
 namespace DA
 {
@@ -50,11 +51,7 @@ QString DAGraphicsPixmapItem::PrivateData::pixmapToString(const QPixmap& pixmap)
 {
 	QBuffer buff;
 	pixmap.save(&buff, "PNG");
-	QByteArray dataimg;
-	// 图像转换为数据
-	dataimg.append(buff.data());
-	// 图片保存在字符串中
-	return dataimg.toBase64();
+	return buff.data().toBase64();
 }
 
 /**
@@ -256,7 +253,7 @@ bool DAGraphicsPixmapItem::isHaveValidPixmap() const
  */
 void DAGraphicsPixmapItem::setAlpha(int a)
 {
-	d_ptr->mAlpha = a;
+	d_ptr->mAlpha = std::clamp(a, 0, 255);
 	update();
 }
 
@@ -341,6 +338,9 @@ bool DAGraphicsPixmapItem::loadFromXml(const QDomElement* itemElement, const QVe
 				 << rawEle.text();
 		return false;
 	}
+	// 先设置变换模式和宽高比模式，再调用setPixmap，确保加载时缩放使用正确的模式
+	d_ptr->mTransformationMode = tm;
+	d_ptr->mAspectRatioMode = ar;
 	setPixmap(pix);
 	setTransformationMode(tm);
 	setAspectRatioMode(ar);

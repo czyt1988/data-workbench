@@ -8,6 +8,7 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Output
     name="Start",
     category=_("System / Flow Control"),  # cn:系统 / 流程控制
     icon="",
+    description=_("Marks the workflow start point. It has no inputs and emits a trigger signal (True) on execution to kick off downstream nodes."),  # cn:标记工作流起点。无输入，执行时输出触发信号（True）启动下游节点。
 )
 class StartNode:
     """Marks the workflow start point; sends a trigger signal downstream after execution."""

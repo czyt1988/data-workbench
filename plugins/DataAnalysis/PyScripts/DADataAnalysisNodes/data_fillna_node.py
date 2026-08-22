@@ -4,7 +4,12 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import fillna_impl
 
 
-@NodeDef(name="Fill NA", category=_("Data Cleaning"), icon="fill_na")  # cn:数据清洗
+@NodeDef(
+    name="Fill NA",
+    category=_("Data Cleaning"),  # cn:数据清洗
+    icon="fill_na",
+    description=_("Fills missing values (NaN) in a DataFrame using a specified method: constant value, forward fill, backward fill, mean, median, or mode."),  # cn:使用指定方法填充 DataFrame 中的缺失值（NaN）：常量值、前向填充、后向填充、均值、中位数或众数。
+)
 class DataFillNaNode:
     """Fill missing values in a DataFrame"""
 

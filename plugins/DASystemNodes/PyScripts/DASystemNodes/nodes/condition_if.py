@@ -8,6 +8,7 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, NodeDisplay, LinkPo
     name="If / Else",
     category=_("System / Flow Control"),  # cn:系统 / 流程控制
     icon="",
+    description=_("Conditional branch node. Forwards input data to the 'true' or 'false' output port based on the boolean condition input. The unmatched branch outputs None, so only one path executes downstream."),  # cn:条件分支节点。根据布尔条件输入将数据转发到 true 或 false 输出端口。未匹配的分支输出 None，仅一条路径向下执行。
     style=NodeDisplay(
         body_shape="Diamond",
         background_color="#E3F2FD",

@@ -9,10 +9,13 @@
 #include "DAGraphicsLayout.h"
 #include "DAGraphicsTextItem.h"
 #include "DAGraphicsRectItem.h"
+#include "DAGraphicsResizeOverlayItem.h"
+#include "DAIResizableGraphicsItem.h"
 #include <QPainter>
 #include <QDebug>
 #include <QApplication>
 #include <QScreen>
+#include <QPointer>
 #include "DAGraphicsCommandsFactory.h"
 namespace DA
 {
@@ -70,6 +73,8 @@ public:
 	std::unique_ptr< DAAbstractGraphicsSceneAction > mSceneAction;
 	bool mIsReadOnlyMode { false };  ///< 是否为只读状态
 	std::unique_ptr< DAGraphicsCommandsFactory > commandsFactory;
+	QPointer<DAGraphicsResizeOverlayItem> mResizeOverlay;          ///< 当前选中的可缩放 item 的 Overlay
+	QMetaObject::Connection mResizeConn;                           ///< Overlay 的 requestResize 信号连接
 };
 
 ////////////////////////////////////////////////
@@ -149,7 +154,6 @@ void DAGraphicsScene::PrivateData::renderBackgroundCache()
 	}
 	QRectF sr = q_ptr->sceneRect();
 	if (!sr.isValid()) {
-		qDebug() << "sceneRect is invalid";
 		return;
 	}
 	QRect scr = sr.toRect();
@@ -245,6 +249,18 @@ void DAGraphicsScene::init()
  */
 DAGraphicsScene::~DAGraphicsScene()
 {
+	// 断开 selectionChanged，防止 ~QGraphicsScene() 删除 item 时回调访问已释放的 d_ptr
+	disconnectSelectionChanged();
+	DA_D(d);
+	if (d->mResizeOverlay) {
+		delete d->mResizeOverlay;
+		d->mResizeOverlay = nullptr;
+	}
+}
+
+void DAGraphicsScene::disconnectSelectionChanged()
+{
+	disconnect(this, &QGraphicsScene::selectionChanged, this, &DAGraphicsScene::onSelectionChanged);
 }
 
 /**
@@ -577,6 +593,10 @@ bool DAGraphicsScene::isEnableSnapToGrid() const
 void DAGraphicsScene::setGridSize(const QSize& gs)
 {
     d_ptr->mGridSize = gs;
+    if (d_ptr->mIsPaintBackgroundInCache) {
+        d_ptr->mBackgroundCache = QPixmap();
+        d_ptr->renderBackgroundCache();
+    }
 }
 /**
  * @brief 网格尺寸
@@ -594,6 +614,10 @@ QSize DAGraphicsScene::getGridSize() const
 void DAGraphicsScene::showGridLine(bool on)
 {
     d_ptr->mShowGridLine = on;
+    if (d_ptr->mIsPaintBackgroundInCache) {
+        d_ptr->mBackgroundCache = QPixmap();
+        d_ptr->renderBackgroundCache();
+    }
 }
 
 /**
@@ -665,6 +689,10 @@ void DAGraphicsScene::setReadOnly(bool on)
 	DA_D(d);
 	d->mIsReadOnlyMode = on;
 	setIgnoreLinkEvent(on);
+	if (on && d->mResizeOverlay) {
+		delete d->mResizeOverlay;
+		d->mResizeOverlay = nullptr;
+	}
 }
 
 /**
@@ -682,6 +710,10 @@ bool DAGraphicsScene::isShowGridLine()
 void DAGraphicsScene::setGridLinePen(const QPen& p)
 {
     d_ptr->mGridLinePen = p;
+    if (d_ptr->mIsPaintBackgroundInCache) {
+        d_ptr->mBackgroundCache = QPixmap();
+        d_ptr->renderBackgroundCache();
+    }
 }
 /**
  * @brief 获取网格画笔
@@ -756,6 +788,9 @@ void DAGraphicsScene::setUndoStackActive()
  */
 void DAGraphicsScene::push(QUndoCommand* cmd)
 {
+	if (!cmd) {
+		return;
+	}
 	d_ptr->mUndoStack.push(cmd);
 }
 
@@ -1103,15 +1138,6 @@ bool DAGraphicsScene::isItemCanMove(QGraphicsItem* positem, const QPointF& scene
 	if (!positem->flags().testFlag(QGraphicsItem::ItemIsMovable)) {
 		return false;
 	}
-	// 还要确认一下是否点在了DAGraphicsResizeableItem的控制点上，点在控制点上是不能移动的
-	DAGraphicsResizeableItem* resizeitem = qgraphicsitem_cast< DAGraphicsResizeableItem* >(positem);
-	if (resizeitem) {
-		DAGraphicsResizeableItem::ControlType t = resizeitem->getControlPointByPos(resizeitem->mapFromScene(scenePos));
-		if (t != DAGraphicsResizeableItem::NotUnderAnyControlType) {
-			// 说明点击在了控制点上，也取消移动
-			return false;
-		}
-	}
 	return true;
 }
 
@@ -1212,18 +1238,6 @@ void DAGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		if (mits.isEmpty()) {
 			return;
 		}
-		// todo.如果点击的是链接和control point，不属于移动
-		for (QGraphicsItem* its : std::as_const(mits)) {
-			DAGraphicsResizeableItem* ri = dynamic_cast< DAGraphicsResizeableItem* >(its);
-			if (ri) {
-				if (DAGraphicsResizeableItem::NotUnderAnyControlType
-					!= ri->getControlPointByPos(ri->mapFromScene(mouseEvent->scenePos()))) {
-					// 说明点击在了控制点上，需要跳过
-					return;
-				}
-			}
-		}
-		//
 	}
 	// 处理鼠标移动的命令，让通过鼠标移动item也能执行redo/undo
 	commandsFactory()->sceneMousePressEvent(mouseEvent);
@@ -1324,11 +1338,115 @@ void DAGraphicsScene::drawBackground(QPainter* painter, const QRectF& rect)
  */
 void DAGraphicsScene::onSelectionChanged()
 {
-	QList< QGraphicsItem* > sits = selectedItems();
-	if (sits.isEmpty()) {
+	DA_D(d);
+
+	// === Overlay 生命周期管理 ===
+	// 销毁旧 overlay
+	if (d->mResizeOverlay) {
+		if (d->mResizeConn) {
+			disconnect(d->mResizeConn);  // delete overlay 会自动断开 mResizeConn，显式 disconnect 为代码清晰
+			d->mResizeConn = QMetaObject::Connection();
+		}
+		delete d->mResizeOverlay;
+		d->mResizeOverlay = nullptr;
+	}
+
+	// 检查新选中的 item
+	// selected.first() 用于 overlay，selected.last() 用于 checkSelectItem
+	auto selected = selectedItems();
+	if (selected.size() == 1) {
+		QGraphicsItem* selectedItem = selected.first();
+		// 尝试获取 DAIResizableGraphicsItem 接口
+		DAIResizableGraphicsItem* resizable = dynamic_cast< DAIResizableGraphicsItem* >(selectedItem);
+		// 添加 isReadOnly() 检查，只读模式下不创建 overlay
+		if (resizable && resizable->isResizable() && !isReadOnly()) {
+			// 创建 overlay
+			d->mResizeOverlay = new DAGraphicsResizeOverlayItem(resizable);
+			addItem(d->mResizeOverlay);
+			d->mResizeOverlay->syncToTarget();
+			// 连接信号
+			d->mResizeConn = connect(d->mResizeOverlay, &DAGraphicsResizeOverlayItem::requestResize,
+			                         this, &DAGraphicsScene::onRequestResize);
+			connect(d->mResizeOverlay, &DAGraphicsResizeOverlayItem::requestRotation,
+			        this, &DAGraphicsScene::onRequestRotation);
+
+			// 连接 target 的位置/旋转变化信号，确保 target 通过键盘、undo/redo、
+			// 外部代码改变位置或旋转时 Overlay 自动同步
+			// 活跃缩放期间跳过信号触发的同步，避免重复调用
+			// （mouseMoveEvent 末尾已显式调用 syncToTarget）
+			// 这些连接依赖 overlay 作为 context 对象自动断开（overlay delete 时自动清理）
+			QGraphicsItem* targetGI = resizable->graphicsItem();
+			if (auto* obj = dynamic_cast< QGraphicsObject* >(targetGI)) {
+				connect(obj, &QGraphicsObject::xChanged, d->mResizeOverlay.data(), [this]() {
+					DA_D(d);
+					if (d->mResizeOverlay && !d->mResizeOverlay->isResizing())
+						d->mResizeOverlay->syncToTarget();
+				});
+				connect(obj, &QGraphicsObject::yChanged, d->mResizeOverlay.data(), [this]() {
+					DA_D(d);
+					if (d->mResizeOverlay && !d->mResizeOverlay->isResizing())
+						d->mResizeOverlay->syncToTarget();
+				});
+				connect(obj, &QGraphicsObject::rotationChanged, d->mResizeOverlay.data(), [this]() {
+					DA_D(d);
+					if (d->mResizeOverlay && !d->mResizeOverlay->isResizing())
+						d->mResizeOverlay->syncToTarget();
+				});
+
+				// target 被删除时清理 overlay，避免悬垂指针
+				connect(obj, &QObject::destroyed, d->mResizeOverlay.data(), [this](QObject*) {
+					DA_D(d);
+					if (d->mResizeOverlay) {
+						// 重置连接，避免悬垂 Connection 对象
+						d->mResizeConn = QMetaObject::Connection();
+						delete d->mResizeOverlay;
+						d->mResizeOverlay = nullptr;
+					}
+				});
+			}
+			// 注意：此连接依赖 target 的 graphicsItem() 返回 QGraphicsObject 指针。
+			// 当前所有 DAIResizableGraphicsItem 实现都通过 DAGraphicsItem → QGraphicsObject，
+			// dynamic_cast 总会成功。若未来有非 QGraphicsObject 实现，需另行处理位置/旋转同步。
+		}
+	}
+
+	// === 原有逻辑 ===
+	if (selected.isEmpty()) {
 		return;
 	}
-	checkSelectItem(sits.last());
+	checkSelectItem(selected.last());
+}
+
+void DAGraphicsScene::onRequestResize(DAIResizableGraphicsItem* target,
+                                       const QPointF& oldPos, const QSizeF& oldSize,
+                                       const QPointF& newPos, const QSizeF& newSize)
+{
+	DA_D(d);
+	// 通过 undo command 应用变更
+	// skipfirst=true，因为 resize 已经在 mouseMove 中实时执行了
+	auto cmd = commandsFactory()->createItemResized(
+	    target,
+	    oldPos, oldSize, newPos, newSize, true  // skipfirst=true
+	);
+	push(cmd);
+	// 命令执行后 item 尺寸变化，overlay 需要同步
+	// 此处在信号同步调用链中为冗余调用（mouseReleaseEvent 已调用 syncToTarget），保留以应对未来异步信号场景
+	// undo/redo 场景下 item 状态变化由信号触发同步，此处为安全冗余
+	if (d->mResizeOverlay) {
+		d->mResizeOverlay->syncToTarget();
+	}
+}
+
+void DAGraphicsScene::onRequestRotation(DAIResizableGraphicsItem* target,
+                                        qreal oldRotation, qreal newRotation)
+{
+	DA_D(d);
+	// skipfirst=true，因为 rotation 已经在 mouseMove 中实时执行了
+	auto cmd = commandsFactory()->createItemRotation(target, oldRotation, newRotation, true);
+	push(cmd);
+	if (d->mResizeOverlay) {
+		d->mResizeOverlay->syncToTarget();
+	}
 }
 
 

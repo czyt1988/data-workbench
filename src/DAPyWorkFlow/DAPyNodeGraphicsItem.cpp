@@ -1,6 +1,7 @@
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyPainterProxy.h"
 #include "DAPyNode.h"
+#include "DAPyNodeParameter.h"
 #include "DAPyNodePalette.h"
 #include "DAPyLinkPoint.h"
 #include "DAPyWorkFlowScene.h"
@@ -39,6 +40,15 @@ class DAPyNodeGraphicsItem::PrivateData
     DA_DECLARE_PUBLIC(DAPyNodeGraphicsItem)
 
 public:
+    // 缓存的参数信息（避免paint时获取GIL）
+    struct CachedParameter {
+        QString name;        ///< 参数名
+        QString typeLabel;   ///< 类型标签
+        QVariant value;      ///< 当前值
+        bool showOnNode;     ///< 是否在节点上显示
+    };
+
+public:
     PrivateData(DAPyNodeGraphicsItem* p);
     ~PrivateData();
     // 更新连接点位置
@@ -49,11 +59,16 @@ public:
     void cleanupSvg();
     // 准备nodestyle需要的数据，包括预加载图标，预计算好位置
     void updateNodeStyle(const QRectF& bodyRect);
+    // 计算可见参数数量（showOnNode=true 且不超过 maxDisplayParams）
+    int countVisibleParameters() const;
+    // 构建tooltip文本
+    QString buildTooltip() const;
 
 public:
     DAPyNode mProxy;  ///< Python节点代理（值持有）
     // 缓存字段：从DAPyNode一次性读取，避免paint时GIL开销
     QString mName;                                   ///< 缓存的节点名称
+    QString mDescription;                            ///< 缓存的节点说明文本
     QString mQualifiedName;                          ///< 缓存的限定名
     QString mIconPath;                               ///< 缓存的图标路径
     QList< QString > mInputKeys;                     ///< 缓存的输入端口key列表
@@ -73,9 +88,14 @@ public:
     bool mPaintCallbackError { false };              ///< 绘制回调是否发生过异常
     QRectF mIconRect;                                ///< 绘制Icon的区域，仅仅有icon时才有用
     QRectF mTextRect;                                ///< 绘制text的区域
+    QRectF mParamRect;                               ///< 绘制参数的区域
     QPixmap mIconPixmap;                             ///< 记录图标的pixmap
     int smallFontSize { 7 };                         ///< 小字体大小（用于渲染节点的名字）
     int normalFontSize { 9 };                        ///< 普通字体大小（用于渲染节点名称）
+    // 参数显示控制
+    QList< CachedParameter > mCachedParameters;      ///< 缓存的参数列表
+    bool mShowParameters { true };                   ///< 是否在节点上显示参数
+    int maxDisplayParams { 10 };                      ///< 最多显示的参数行数
 };
 
 /**
@@ -93,6 +113,40 @@ DAPyNodeGraphicsItem::PrivateData::~PrivateData()
 {
     cleanupSvg();
     cleanupWidget();
+}
+
+/**
+ * @brief 计算可见参数数量
+ * @return showOnNode=true 且不超过 maxDisplayParams 的参数个数
+ */
+int DAPyNodeGraphicsItem::PrivateData::countVisibleParameters() const
+{
+    int count = 0;
+    for (const auto& cp : std::as_const(mCachedParameters)) {
+        if (cp.showOnNode) {
+            count++;
+        }
+    }
+    return qMin(count, maxDisplayParams);
+}
+
+/**
+ * @brief 构建tooltip文本
+ * @return HTML格式tooltip，包含节点名、说明文本和全部参数（不截断）
+ */
+QString DAPyNodeGraphicsItem::PrivateData::buildTooltip() const
+{
+    QString tip = QString("<b>%1</b>").arg(mName);
+    if (!mDescription.isEmpty()) {
+        tip += QString("<hr><i>%1</i>").arg(mDescription.toHtmlEscaped());
+    }
+    if (!mCachedParameters.isEmpty()) {
+        tip += "<hr>";
+        for (const auto& cp : std::as_const(mCachedParameters)) {
+            tip += QString("%1: %2<br>").arg(cp.name, cp.value.toString());
+        }
+    }
+    return tip;
 }
 
 /**
@@ -221,19 +275,38 @@ void DAPyNodeGraphicsItem::PrivateData::updateNodeStyle(const QRectF& bodyRect)
         // 如果名字是在里面，iconPosition才有用
         // 布局icon位置和text位置，存入mIconRect和mTextRect中
 
+        // 判断是否需要为参数留出空间
+        bool hasPaintCb = (mPaintCallback && !mPaintCallback.isNone());
+        bool showParams = mShowParameters && !hasPaintCb && !mCachedParameters.isEmpty();
+        int paramVisibleCount = showParams ? countVisibleParameters() : 0;
+        // 如果参数总数超过maxDisplayParams，额外留一行给"..."
+        int totalVisible = 0;
+        for (const auto& cp : std::as_const(mCachedParameters)) {
+            if (cp.showOnNode) totalVisible++;
+        }
+        bool hasOverflow = showParams && totalVisible > maxDisplayParams;
+
+        // 标题区域高度（参数显示时仅占顶部，否则占整个body）
+        QFont titleFont;
+        titleFont.setPointSize(normalFontSize);
+        QFontMetricsF titleFm(titleFont);
+        qreal titleAreaHeight = showParams
+                                     ? (qMax(iconSize, titleFm.height()) + 2 * static_cast< qreal >(qMin(4.0, s.cornerRadius)))
+                                     : (bodyRect.height() - lpTop - lpBottom);
+
         const int space = qMin(4.0, s.cornerRadius);
         if (s.isIconLeftOfText()) {
             // icon在左文字在右
             // 定位icon位置，icon位于最左边
             mIconRect.setLeft(bodyRect.left() + space + lpLeft);
-            mIconRect.setTop(bodyRect.top() + (bodyRect.height() - iconSize) / 2.0 + lpTop);
+            mIconRect.setTop(bodyRect.top() + (titleAreaHeight - iconSize) / 2.0 + lpTop);
             mIconRect.setWidth(iconSize);
             mIconRect.setHeight(iconSize);
             // 剩下的为文字区域
             mTextRect.setLeft(mIconRect.right() + space);
             mTextRect.setTop(bodyRect.top() + space + lpTop);
             mTextRect.setWidth(bodyRect.right() - mIconRect.right() - 2 * space - lpRight);
-            mTextRect.setHeight(bodyRect.height() - 2 * space - lpTop - lpBottom);
+            mTextRect.setHeight(titleAreaHeight - 2 * space);
         } else {
             // icon在上文字在下
             mIconRect.setLeft(bodyRect.left() + (bodyRect.width() - iconSize - lpRight - lpLeft) / 2.0 + lpLeft);
@@ -244,7 +317,23 @@ void DAPyNodeGraphicsItem::PrivateData::updateNodeStyle(const QRectF& bodyRect)
             mTextRect.setLeft(bodyRect.left() + space + lpLeft);
             mTextRect.setTop(mIconRect.bottom() + space);
             mTextRect.setWidth(bodyRect.width() - 2 * space - lpRight - lpLeft);
-            mTextRect.setHeight(bodyRect.bottom() - mIconRect.bottom() - 2 * space - lpBottom);
+            mTextRect.setHeight(titleAreaHeight - iconSize - 2 * space);
+        }
+
+        // 参数区域
+        if (showParams && paramVisibleCount > 0) {
+            QFont paramFont;
+            paramFont.setPointSize(smallFontSize);
+            QFontMetricsF paramFm(paramFont);
+            qreal paramStartY = bodyRect.top() + titleAreaHeight + lpTop;
+            int paramLines = paramVisibleCount + (hasOverflow ? 1 : 0);
+            qreal paramHeight = paramLines * (paramFm.height() + 2) + 8;  // 8 = separator gap
+            mParamRect.setLeft(bodyRect.left() + space + lpLeft);
+            mParamRect.setTop(paramStartY);
+            mParamRect.setWidth(bodyRect.width() - 2 * space - lpRight - lpLeft);
+            mParamRect.setHeight(paramHeight);
+        } else {
+            mParamRect = QRectF();
         }
     } else {
         // 文字放外面，icon居中布局
@@ -306,6 +395,7 @@ DAPyNodeGraphicsItem::DAPyNodeGraphicsItem(const DAPyNode& proxy, QGraphicsItem*
     // 设置可选中和可移动
     setSelectable(true);
     setMovable(true);
+    setZValue(DA::ZValue_NodeItem);  // 显式设置节点 z-value，确保高于连接线
     // 设置默认尺寸
     setProxy(proxy);
 }
@@ -366,6 +456,7 @@ void DAPyNodeGraphicsItem::setProxy(const DAPyNode& proxy)
     if (!proxy.isNone()) {
         d_ptr->mNodeState     = proxy.getNodeState();
         d_ptr->mName          = proxy.getNodeName();
+        d_ptr->mDescription   = proxy.getNodeDescription();
         d_ptr->mQualifiedName = proxy.getQualifiedName();
         d_ptr->mIconPath      = proxy.getIcon();
         d_ptr->mInputKeys     = proxy.getInputKeys();
@@ -394,11 +485,32 @@ void DAPyNodeGraphicsItem::setProxy(const DAPyNode& proxy)
             d_ptr->mPaintCallback      = DAPyObjectWrapper();
             d_ptr->mPaintCallbackError = false;
         }
+
+        // 缓存参数信息（名称/类型/值/show_on_node）
+        try {
+            QList< DAPyNodeParameter > params = proxy.getParameters();
+            d_ptr->mCachedParameters.clear();
+            for (const auto& p : std::as_const(params)) {
+                PrivateData::CachedParameter cp;
+                cp.name      = p.name();
+                cp.typeLabel = p.typeLabel();
+                cp.value     = proxy.getParameterValue(p.name());
+                QVariantHash props = p.properties();
+                cp.showOnNode      = props.value("show_on_node", true).toBool();
+                d_ptr->mCachedParameters.append(cp);
+            }
+        } catch (const std::exception& e) {
+            qWarning() << "DAPyNodeGraphicsItem setProxy parameter cache exception:" << e.what();
+            d_ptr->mCachedParameters.clear();
+        }
     } else {
         d_ptr->mPaintCallback      = DAPyObjectWrapper();
         d_ptr->mPaintCallbackError = false;
+        d_ptr->mCachedParameters.clear();
     }
     updateLinkPoints();
+    // 构建并设置tooltip（包含完整参数信息，不截断）
+    setToolTip(d_ptr->buildTooltip());
     update();
 }
 
@@ -732,11 +844,11 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
         } catch (const pybind11::error_already_set& e) {
             // Python异常必须在GIL作用域内消费，否则析构时会死锁
             qWarning() << "DAPyNodeGraphicsItem paint_callback error:" << e.what();
-            d_ptr->mPaintCallbackError = true;
-            // 回调失败，回退到rect模板渲染并添加错误标记
+            // Idle 状态下不显示错误覆盖层（首次拖入未运行工作流时静默回退）
+            d_ptr->mPaintCallbackError = (d_ptr->mNodeState != Idle);
         } catch (const std::exception& e) {
             qWarning() << "DAPyNodeGraphicsItem paint_callback exception:" << e.what();
-            d_ptr->mPaintCallbackError = true;
+            d_ptr->mPaintCallbackError = (d_ptr->mNodeState != Idle);
         }
         // GIL在gil析构时自动释放
     }
@@ -1058,6 +1170,76 @@ void DAPyNodeGraphicsItem::paintNodeStyleBody(QPainter* painter, const QRectF& b
         painter->drawText(d->mTextRect, Qt::AlignCenter, displayName);
     }
     painter->restore();
+
+    // 参数渲染（仅默认模板且无自定义paint回调时）
+    paintParameters(painter, bodyRect, d->mTextRect);
+}
+
+/**
+ * @brief 绘制节点参数
+ *
+ * 在节点标题区域下方绘制分割线和参数列表，每行一个参数：
+ *   参数名:参数值
+ * 超出宽度的行末尾显示省略号。参数数量超过 maxDisplayParams 时显示 "..."。
+ * 仅在 mShowParameters 为 true 且无自定义paint回调时生效。
+ *
+ * @param[in] painter 画笔
+ * @param[in] bodyRect 节点body矩形
+ * @param[in] titleRect 标题文字区域（分割线位于其下方）
+ */
+void DAPyNodeGraphicsItem::paintParameters(QPainter* painter, const QRectF& bodyRect, const QRectF& titleRect)
+{
+    DA_D(d);
+    // 无参数、关闭显示、有自定义paint回调时跳过
+    if (!d->mShowParameters || d->mCachedParameters.isEmpty()) {
+        return;
+    }
+    if (d->mPaintCallback && !d->mPaintCallback.isNone()) {
+        return;
+    }
+
+    painter->save();
+    QFont paramFont;
+    paramFont.setPointSize(d->smallFontSize);
+    painter->setFont(paramFont);
+    QFontMetricsF fm(paramFont);
+
+    const qreal margin    = 4;
+    const qreal separatorGap = 4;  // 分割线上下间距
+    const qreal lineStep  = fm.height() + 2;
+
+    // 分割线位于标题区域下方
+    qreal separatorY = titleRect.bottom() + separatorGap;
+    QPen sepPen(d->mStyle.borderColor);
+    sepPen.setWidthF(1.0);
+    painter->setPen(sepPen);
+    painter->drawLine(QPointF(bodyRect.left() + margin, separatorY),
+                      QPointF(bodyRect.right() - margin, separatorY));
+
+    // 参数行
+    painter->setPen(QColor(60, 60, 60));
+    qreal drawY = separatorY + separatorGap + fm.ascent();
+    qreal textWidth = bodyRect.width() - 2 * margin;
+    int shown = 0;
+
+    for (const auto& cp : std::as_const(d->mCachedParameters)) {
+        if (!cp.showOnNode) {
+            continue;
+        }
+        if (shown >= d->maxDisplayParams) {
+            painter->drawText(QRectF(bodyRect.left() + margin, drawY - fm.ascent(),
+                                     textWidth, fm.height()),
+                              Qt::AlignLeft | Qt::AlignVCenter, "...");
+            break;
+        }
+        QString valueStr = cp.value.toString();
+        QString line     = cp.name + ": " + valueStr;
+        line = fm.elidedText(line, Qt::ElideRight, textWidth);
+        painter->drawText(QPointF(bodyRect.left() + margin, drawY), line);
+        drawY += lineStep;
+        shown++;
+    }
+    painter->restore();
 }
 
 /**
@@ -1162,9 +1344,9 @@ QPainterPath DAPyNodeGraphicsItem::shape() const
     QPainterPath path;
 
     if (d->mStyle.bodyShape == DAPyNodeStyle::EllipseShape) {
-        path.addEllipse(getBodyControlRect());
+        path.addEllipse(getBodyRect());
     } else if (d->mStyle.bodyShape == DAPyNodeStyle::DiamondShape) {
-        QRectF r = getBodyControlRect();
+        QRectF r = getBodyRect();
         QPolygonF diamond;
         diamond << QPointF(r.center().x(), r.top()) << QPointF(r.right(), r.center().y())
                 << QPointF(r.center().x(), r.bottom()) << QPointF(r.left(), r.center().y());
@@ -1439,8 +1621,123 @@ void DAPyNodeGraphicsItem::updateNodeBody()
         bodyWidth = qMax(bodyWidth, calcMinPortSpanW(outputCount));
     }
 
+    // 参数渲染预留空间（仅默认模板且无自定义paint回调时）
+    bool hasPaintCallback = (d->mPaintCallback && !d->mPaintCallback.isNone());
+    if (d->mShowParameters && !hasPaintCallback && !d->mCachedParameters.isEmpty()) {
+        QFont paramFont;
+        paramFont.setPointSize(d->smallFontSize);
+        QFontMetricsF paramFm(paramFont);
+        const qreal paramMargin = 4;
+        const qreal separatorGap = 8;  // 分割线 + 上下间距
+
+        // 分割线高度
+        bodyHeight += separatorGap;
+
+        // 每个可见参数一行
+        int visibleCount = d->countVisibleParameters();
+        bodyHeight += visibleCount * (paramFm.height() + 2);
+        // 如果超过 maxDisplayParams，额外一行 "..."
+        int totalVisible = 0;
+        for (const auto& cp : std::as_const(d->mCachedParameters)) {
+            if (cp.showOnNode) totalVisible++;
+        }
+        if (totalVisible > d->maxDisplayParams) {
+            bodyHeight += paramFm.height() + 2;
+        }
+
+        // 宽度：取最长的 "name: value" 行
+        for (const auto& cp : std::as_const(d->mCachedParameters)) {
+            if (!cp.showOnNode) continue;
+            QString line = cp.name + ": " + cp.value.toString();
+            qreal lineWidth = paramFm.horizontalAdvance(line);
+            bodyWidth = qMax(bodyWidth, lineWidth + 2 * paramMargin);
+        }
+    }
+
+    // 应用最小 body 尺寸限制
+    if (s.minBodyWidth > 0) {
+        bodyWidth = qMax(bodyWidth, s.minBodyWidth);
+    }
+    if (s.minBodyHeight > 0) {
+        bodyHeight = qMax(bodyHeight, s.minBodyHeight);
+    }
+
     setBodySize(QSizeF(bodyWidth, bodyHeight));  // 内部会调用updateNodeStyleGeometry
     update();
+}
+
+/**
+ * @brief 是否在节点上显示参数
+ * @return true表示参数渲染开启
+ */
+bool DAPyNodeGraphicsItem::isShowParameters() const
+{
+    return d_ptr->mShowParameters;
+}
+
+/**
+ * @brief 设置是否在节点上显示参数
+ * @param[in] show true开启参数渲染，false关闭（恢复最简显示状态）
+ */
+void DAPyNodeGraphicsItem::setShowParameters(bool show)
+{
+    if (d_ptr->mShowParameters == show) {
+        return;
+    }
+    d_ptr->mShowParameters = show;
+    updateNodeBody();
+}
+
+/**
+ * @brief 获取最多显示的参数行数
+ * @return 最大行数
+ */
+int DAPyNodeGraphicsItem::getMaxDisplayParams() const
+{
+    return d_ptr->maxDisplayParams;
+}
+
+/**
+ * @brief 设置最多显示的参数行数
+ * @param[in] max 最大行数
+ */
+void DAPyNodeGraphicsItem::setMaxDisplayParams(int max)
+{
+    d_ptr->maxDisplayParams = qMax(1, max);
+    updateNodeBody();
+}
+
+/**
+ * @brief 刷新参数缓存
+ *
+ * 从Python节点重新读取参数名/值/show_on_node，并重建tooltip。
+ * 在参数被修改后调用以更新节点显示。
+ */
+void DAPyNodeGraphicsItem::refreshParameterCache()
+{
+    DAPyGILGuard gil;
+    if (d_ptr->mProxy.isNone()) {
+        d_ptr->mCachedParameters.clear();
+        return;
+    }
+    try {
+        QList< DAPyNodeParameter > params = d_ptr->mProxy.getParameters();
+        d_ptr->mCachedParameters.clear();
+        for (const auto& p : std::as_const(params)) {
+            PrivateData::CachedParameter cp;
+            cp.name      = p.name();
+            cp.typeLabel = p.typeLabel();
+            cp.value     = d_ptr->mProxy.getParameterValue(p.name());
+            QVariantHash props = p.properties();
+            cp.showOnNode      = props.value("show_on_node", true).toBool();
+            d_ptr->mCachedParameters.append(cp);
+        }
+    } catch (const std::exception& e) {
+        qWarning() << "DAPyNodeGraphicsItem refreshParameterCache exception:" << e.what();
+        d_ptr->mCachedParameters.clear();
+    }
+    setToolTip(d_ptr->buildTooltip());
+    updateNodeBody();
 }
 
 }  // end of namespace DA

@@ -1,4 +1,4 @@
-﻿#ifndef DAGRAPHICSCOMMANDSFACTORY_H
+#ifndef DAGRAPHICSCOMMANDSFACTORY_H
 #define DAGRAPHICSCOMMANDSFACTORY_H
 #include "DAGraphicsViewGlobal.h"
 #include "DACommandsForGraphics.h"
@@ -8,7 +8,7 @@ class sceneMouseReleaseEvent;
 namespace DA
 {
 class DAGraphicsScene;
-class DAGraphicsResizeableItem;
+class DAIResizableGraphicsItem;
 /**
  * @brief 命令工厂
  *
@@ -37,7 +37,7 @@ public:
 	// 这个命令主要针对场景鼠标移动item进行设置
 	virtual DACommandsForGraphicsItemsMoved* createItemsMoved();
 	virtual DACommandsForGraphicsItemResized* createItemResized(
-		DAGraphicsResizeableItem* item,
+		DAIResizableGraphicsItem* item,
 		const QPointF& oldpos,
 		const QSizeF& oldSize,
 		const QPointF& newpos,
@@ -45,16 +45,17 @@ public:
 		bool skipfirst = true
 	);
 	virtual DACommandsForGraphicsItemResized* createItemResized(
-		DAGraphicsResizeableItem* item, const QSizeF& oldSize, const QSizeF& newSize
+		DAIResizableGraphicsItem* item, const QSizeF& oldSize, const QSizeF& newSize
 	);
 	virtual DACommandsForGraphicsItemResizeWidth* createItemResizeWidth(
-		DAGraphicsResizeableItem* item, const qreal& oldWidth, const qreal& newWidth
+		DAIResizableGraphicsItem* item, const qreal& oldWidth, const qreal& newWidth
 	);
 	virtual DACommandsForGraphicsItemResizeHeight* createItemResizeHeight(
-		DAGraphicsResizeableItem* item, const qreal& oldHeight, const qreal& newHeight
+		DAIResizableGraphicsItem* item, const qreal& oldHeight, const qreal& newHeight
 	);
 	virtual DACommandsForGraphicsItemRotation* createItemRotation(
-		DAGraphicsResizeableItem* item, const qreal& oldRotation, const qreal& newRotation
+		DAIResizableGraphicsItem* item, const qreal& oldRotation, const qreal& newRotation,
+		bool skipfirst = false
 	);
 	virtual DACommandsForGraphicsItemGrouping* createItemGrouping(const QList< QGraphicsItem* >& groupingitems);
 	virtual DACommandsForGraphicsItemUngrouping* createItemUngrouping(QGraphicsItemGroup* group);

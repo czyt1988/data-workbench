@@ -9,6 +9,7 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Parameter
     name="Output to DataManager",
     category=_("System / Data"),  # cn:系统 / 数据
     icon="",
+    description=_("Publishes input data to the DAWorkbench DataManager panel. If data with the same name already exists, it is updated in place; otherwise a new entry is created. Recommended for DataFrame data."),  # cn:将输入数据发布到 DAWorkbench DataManager 面板。若同名数据已存在则原地更新，否则新建条目。推荐用于 DataFrame 数据。
 )
 class DataToManagerNode:
     """Publish input data (DataFrame recommended) to the DAWorkbench DataManager panel."""

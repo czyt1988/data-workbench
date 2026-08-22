@@ -1,4 +1,4 @@
-﻿#ifndef DAGRAPHICSITEMGROUP_H
+#ifndef DAGRAPHICSITEMGROUP_H
 #define DAGRAPHICSITEMGROUP_H
 #include <QGraphicsItemGroup>
 #include "DAUtils/DAXMLFileInterface.h"

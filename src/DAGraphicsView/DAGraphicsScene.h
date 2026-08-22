@@ -1,4 +1,4 @@
-﻿#ifndef DAGRAPHICSSCENE_H
+#ifndef DAGRAPHICSSCENE_H
 #define DAGRAPHICSSCENE_H
 #include "DAGraphicsViewGlobal.h"
 #include <QGraphicsScene>
@@ -16,6 +16,8 @@ class DAGraphicsItemGroup;
 class DAAbstractGraphicsSceneAction;
 class DAGraphicsLayout;
 class DAGraphicsCommandsFactory;
+class DAIResizableGraphicsItem;
+class DAGraphicsResizeOverlayItem;
 /**
  * @brief 这是带着undostack的GraphicsScene
  * 此QGraphicsScene支持：
@@ -31,6 +33,7 @@ class DAGRAPHICSVIEW_API DAGraphicsScene : public QGraphicsScene
 	Q_OBJECT
 	DA_DECLARE_PRIVATE(DAGraphicsScene)
 	friend class DAGraphicsResizeableItem;
+	friend class DAGraphicsResizeOverlayItem;
 
 public:
 	/**
@@ -264,9 +267,17 @@ protected:
 	void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent) override;
 	// 绘制背景
 	void drawBackground(QPainter* painter, const QRectF& rect) override;
+	// 断开 selectionChanged → onSelectionChanged 连接
+	// 供派生类在析构时调用，防止 clearPyScene() 等清理操作触发信号链到达已析构的对象
+	void disconnectSelectionChanged();
 private Q_SLOTS:
 	//
 	void onSelectionChanged();
+	void onRequestResize(DAIResizableGraphicsItem* target,
+	                     const QPointF& oldPos, const QSizeF& oldSize,
+	                     const QPointF& newPos, const QSizeF& newSize);
+	void onRequestRotation(DAIResizableGraphicsItem* target,
+	                        qreal oldRotation, qreal newRotation);
 
 private:
 	void init();

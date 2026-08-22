@@ -349,7 +349,7 @@ public:
     QString qualifiedName;           // 节点唯一标识名（Python qualified_name）
     QString category;                // 节点分组/分类
     QString iconPath;                // 节点图标路径
-    QString tooltip;                 // 提示文本
+    QString tooltip;                 // 节点说明文本（来自 @NodeDef description 或 docstring）
 
     bool isValid() const;            // qualifiedName 非空则有效
     QString getNodeName() const;

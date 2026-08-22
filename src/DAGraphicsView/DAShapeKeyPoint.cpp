@@ -83,7 +83,7 @@ QPoint DAShapeKeyPoint::rectKeyPoint(const QRect& r, const DAShapeKeyPoint& kp)
 	case KeyPoint::TopRight:
 		return r.topRight();
 	case KeyPoint::CenterLeft:
-		return QPoint(r.left(), r.y() + r.width() / 2);
+		return QPoint(r.left(), r.y() + r.height() / 2);
 	case KeyPoint::Center:
 		return r.center();
 	case KeyPoint::CenterRight:
@@ -116,7 +116,7 @@ QPointF DAShapeKeyPoint::rectKeyPoint(const QRectF& r, const DAShapeKeyPoint& kp
 	case KeyPoint::TopRight:
 		return r.topRight();
 	case KeyPoint::CenterLeft:
-		return QPointF(r.left(), r.y() + r.width() / 2);
+		return QPointF(r.left(), r.y() + r.height() / 2);
 	case KeyPoint::Center:
 		return r.center();
 	case KeyPoint::CenterRight:

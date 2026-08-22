@@ -137,6 +137,8 @@ class NodeDisplay:
     :param body_icon_type: 节点体图标类型，"None"/"Pixmap"/"Svg"；None → C++ 默认 None
     :param body_icon_source: 图标源路径；None → C++ 默认空
     :param body_icon_scale: 图标缩放比例；None → C++ 默认 0.8
+    :param min_body_width: 最小 body 宽度；None → 不限制。用于自定义 paint 回调节点预留渲染空间
+    :param min_body_height: 最小 body 高度；None → 不限制。用于自定义 paint 回调节点预留渲染空间
     """
 
     # 渲染属性
@@ -164,6 +166,10 @@ class NodeDisplay:
     body_icon_type: Optional[str] = None
     body_icon_source: Optional[str] = None
     body_icon_scale: Optional[float] = None
+
+    # 最小 body 尺寸（用于自定义 paint 回调的节点预留足够渲染空间）
+    min_body_width: Optional[float] = None
+    min_body_height: Optional[float] = None
 
 
 def _normalize_render_template(render_template: str) -> str:
@@ -483,6 +489,7 @@ def NodeDef(
     render_template: str = "nodestyle",
     icon: str = "",
     style=None,
+    description: str = None,
 ):
     """
     工作节点定义装饰器
@@ -529,6 +536,9 @@ def NodeDef(
         支持两种类型：
         - NodeDisplay — 类型化的样式配置（推荐，有 IDE 自动补全）
         - dict — 裸字典（snake_case 键，自动转换为 NodeDisplay）
+    :param description: 节点说明文本，显示在 tooltip 中。推荐使用 ``_("English") # cn:中文`` 模式翻译。
+        若为 None，则自动回退读取类 docstring（经 inspect.cleandoc 清理）。
+        docstring 降级时不经过 ``_()`` 翻译，仅为英文源文本。
     :return: 装饰器函数，接收 type 并返回继承 DAWorkflowNode 的新 type
     :rtype: Callable[[type], type]
     """
@@ -564,6 +574,15 @@ def NodeDef(
         new_cls.name = name
         new_cls.category = category
         new_cls.icon = icon
+
+        # 节点说明文本：优先使用显式 description 参数，降级读取类 docstring
+        import inspect
+        if description is not None:
+            new_cls.__node_description = description
+        elif cls.__doc__:
+            new_cls.__node_description = inspect.cleandoc(cls.__doc__)
+        else:
+            new_cls.__node_description = ""
 
         # 直接在 new_cls 上设置类属性（端口描述 + 参数描述映射）
         new_cls.inputs = inputs

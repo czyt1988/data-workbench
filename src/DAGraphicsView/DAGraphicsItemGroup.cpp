@@ -29,14 +29,7 @@ public:
  */
 DAGraphicsItemGroup::PrivateData::PrivateData(DAGraphicsItemGroup* p) : q_ptr(p)
 {
-	// DAGraphicsItemFactory::generateID通过一个uint32_t生成一个uint64_t的id
-	union Combine__ {
-		uint32_t a;
-		void* b;
-	};
-	Combine__ tmp;
-	tmp.b = p;
-	mID   = DAGraphicsItemFactory::generateID(tmp.a);
+	mID = DAGraphicsItemFactory::generateID(static_cast< uint32_t >(reinterpret_cast< uintptr_t >(p)));
 	mBorderPen.setColor(QColor(25, 152, 236));
 	mBorderPen.setWidthF(1.1);
 }

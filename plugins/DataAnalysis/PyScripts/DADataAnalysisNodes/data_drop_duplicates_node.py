@@ -8,6 +8,7 @@ from DADataAnalysisCore.cleaning import drop_duplicates_impl
     name="Drop Duplicates",
     category=_("Data Cleaning"),  # cn:数据清洗
     icon="drop_dup",
+    description=_("Removes duplicate rows from a DataFrame. Specify which columns to check for duplicates (comma-separated, empty = all columns) and whether to keep the first, last, or no duplicate occurrence."),  # cn:删除 DataFrame 中的重复行。指定用于识别重复的列（逗号分隔，空表示全部列），以及保留第一个、最后一个还是不保留重复项。
 )
 class DataDropDuplicatesNode:
     """Drop duplicate rows from a DataFrame."""

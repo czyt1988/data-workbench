@@ -565,10 +565,9 @@ void DAGraphicsView::clearViewAction()
  */
 void DAGraphicsView::markPoint(const QPointF& scenePoint, const QPen& pen)
 {
-	// auto act = new DAGraphicsMouseCrossLineViewAction(this);
-	// act->setDrawPen(pen);
-	// act->setCrossScenePos(scenePoint);
-	// setupViewAction(act);
+	// TODO: implement markPoint via DAGraphicsViewOverlayMouseMarker
+	Q_UNUSED(scenePoint)
+	Q_UNUSED(pen)
 }
 
 /**

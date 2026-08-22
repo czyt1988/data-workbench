@@ -4,7 +4,12 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.operations import create_pivot_table
 
 
-@NodeDef(name="Pivot Table", category=_("Data Operations"), icon="pivot")  # cn:数据操作
+@NodeDef(
+    name="Pivot Table",
+    category=_("Data Operations"),  # cn:数据操作
+    icon="pivot",
+    description=_("Creates a pivot table from a DataFrame. Specify row index columns, optional column index columns, value columns, and an aggregation function (mean, sum, count, min, or max)."),  # cn:从 DataFrame 创建透视表。指定行索引列、可选的列索引列、值列和聚合函数（均值、求和、计数、最小值或最大值）。
+)
 class DataPivotTableNode:
     """Create a pivot table"""
 

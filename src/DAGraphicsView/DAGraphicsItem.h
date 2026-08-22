@@ -1,4 +1,4 @@
-﻿#ifndef DAGRAPHICSITEM_H
+#ifndef DAGRAPHICSITEM_H
 #define DAGRAPHICSITEM_H
 #include <QGraphicsObject>
 #include "DAUtils/DAXMLFileInterface.h"
@@ -31,7 +31,7 @@ public:
 
 public:
 	DAGraphicsItem(QGraphicsItem* parent = nullptr);
-	~DAGraphicsItem();
+	virtual ~DAGraphicsItem();
 	// 保存到xml中
 	virtual bool saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const override;
 	virtual bool loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver) override;

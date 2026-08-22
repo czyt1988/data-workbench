@@ -4,7 +4,12 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.operations import filter_by_column_range
 
 
-@NodeDef(name="Filter By Column", category=_("Data Operations"), icon="filter_col")  # cn:数据操作
+@NodeDef(
+    name="Filter By Column",
+    category=_("Data Operations"),  # cn:数据操作
+    icon="filter_col",
+    description=_("Filters DataFrame rows by a numeric column's value range. Set min and/or max thresholds (inclusive); a value of 0 means no limit on that bound."),  # cn:按数值列的值范围筛选 DataFrame 行。设置最小和/或最大阈值（包含），值为 0 表示该边界不限制。
+)
 class DataFilterByColumnNode:
     """Filter data by a column value range"""
 

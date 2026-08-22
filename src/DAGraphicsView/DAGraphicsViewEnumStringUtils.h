@@ -1,9 +1,8 @@
-﻿#ifndef DAGRAPHICSVIEWENUMSTRINGUTILS_H
+#ifndef DAGRAPHICSVIEWENUMSTRINGUTILS_H
 #define DAGRAPHICSVIEWENUMSTRINGUTILS_H
 #include "DAGraphicsViewGlobal.h"
 #include "DAEnumStringUtils.hpp"
 #include "DAGraphicsLinkItem.h"
-#include "DAShapeKeyPoint.h"
 #include "DAShapeKeyPoint.h"
 /**
  * @file 枚举字符串转换类

@@ -182,17 +182,7 @@ DACommandsForGraphicsItemsMoved* DAGraphicsCommandsFactory::createItemsMoved()
 	return createItemsMoved(items, startPos, endsPos, true);
 }
 
-/**
- * @brief 创建图元缩放的撤销命令（带位置和尺寸参数）
- * @param item 要缩放的图元
- * @param oldpos 缩放前位置
- * @param oldSize 缩放前尺寸
- * @param newpos 缩放后位置
- * @param newSize 缩放后尺寸
- * @param skipfirst 是否跳过第一次执行
- * @return 图元缩放的撤销命令指针
- */
-DACommandsForGraphicsItemResized* DAGraphicsCommandsFactory::createItemResized(DAGraphicsResizeableItem* item,
+DACommandsForGraphicsItemResized* DAGraphicsCommandsFactory::createItemResized(DAIResizableGraphicsItem* item,
                                                                                const QPointF& oldpos,
                                                                                const QSizeF& oldSize,
                                                                                const QPointF& newpos,
@@ -202,60 +192,33 @@ DACommandsForGraphicsItemResized* DAGraphicsCommandsFactory::createItemResized(D
     return new DACommandsForGraphicsItemResized(item, oldpos, oldSize, newpos, newSize, skipfirst);
 }
 
-/**
- * @brief 创建图元缩放的撤销命令（仅带尺寸参数）
- * @param item 要缩放的图元
- * @param oldSize 缩放前尺寸
- * @param newSize 缩放后尺寸
- * @return 图元缩放的撤销命令指针
- */
-DACommandsForGraphicsItemResized* DAGraphicsCommandsFactory::createItemResized(DAGraphicsResizeableItem* item,
+DACommandsForGraphicsItemResized* DAGraphicsCommandsFactory::createItemResized(DAIResizableGraphicsItem* item,
                                                                                const QSizeF& oldSize,
                                                                                const QSizeF& newSize)
 {
     return new DACommandsForGraphicsItemResized(item, oldSize, newSize);
 }
 
-/**
- * @brief 创建图元宽度调整的撤销命令
- * @param item 要调整宽度的图元
- * @param oldWidth 调整前宽度
- * @param newWidth 调整后宽度
- * @return 图元宽度调整的撤销命令指针
- */
-DACommandsForGraphicsItemResizeWidth* DAGraphicsCommandsFactory::createItemResizeWidth(DAGraphicsResizeableItem* item,
+DACommandsForGraphicsItemResizeWidth* DAGraphicsCommandsFactory::createItemResizeWidth(DAIResizableGraphicsItem* item,
                                                                                        const qreal& oldWidth,
                                                                                        const qreal& newWidth)
 {
     return new DACommandsForGraphicsItemResizeWidth(item, oldWidth, newWidth);
 }
 
-/**
- * @brief 创建图元高度调整的撤销命令
- * @param item 要调整高度的图元
- * @param oldHeight 调整前高度
- * @param newHeight 调整后高度
- * @return 图元高度调整的撤销命令指针
- */
-DACommandsForGraphicsItemResizeHeight* DAGraphicsCommandsFactory::createItemResizeHeight(DAGraphicsResizeableItem* item,
+DACommandsForGraphicsItemResizeHeight* DAGraphicsCommandsFactory::createItemResizeHeight(DAIResizableGraphicsItem* item,
                                                                                          const qreal& oldHeight,
                                                                                          const qreal& newHeight)
 {
     return new DACommandsForGraphicsItemResizeHeight(item, oldHeight, newHeight);
 }
 
-/**
- * @brief 创建图元旋转的撤销命令
- * @param item 要旋转的图元
- * @param oldRotation 旋转前角度
- * @param newRotation 旋转后角度
- * @return 图元旋转的撤销命令指针
- */
-DACommandsForGraphicsItemRotation* DAGraphicsCommandsFactory::createItemRotation(DAGraphicsResizeableItem* item,
+DACommandsForGraphicsItemRotation* DAGraphicsCommandsFactory::createItemRotation(DAIResizableGraphicsItem* item,
                                                                                  const qreal& oldRotation,
-                                                                                 const qreal& newRotation)
+                                                                                 const qreal& newRotation,
+                                                                                 bool skipfirst)
 {
-    return new DACommandsForGraphicsItemRotation(item, oldRotation, newRotation);
+    return new DACommandsForGraphicsItemRotation(item, oldRotation, newRotation, skipfirst);
 }
 
 /**
@@ -297,9 +260,12 @@ void DAGraphicsCommandsFactory::sceneMousePressEvent(QGraphicsSceneMouseEvent* m
 		// 要判断当前点击下去之后是否是移动状态，有些情况，虽然选中了item，但鼠标点击下去并不是移动状态，例如拉一个选择框的过程
 		//!  1.记录选中的所有图元，如果点击的是改变尺寸的点，这个就不执行记录
 		DAGraphicsScene* sc    = scene();
+		if (!sc) {
+			return;
+		}
 		QGraphicsItem* positem = sc->itemAt(d->sceneMousePressPos, QTransform());
-		if (!sc->isItemCanMove(positem, d_ptr->sceneMousePressPos)) {
-			d_ptr->isBeginMovingItems = false;
+		if (!sc->isItemCanMove(positem, d->sceneMousePressPos)) {
+			d->isBeginMovingItems = false;
 			return;
 		}
 		QList< QGraphicsItem* > mits = d->scene->getSelectedMovableItems();

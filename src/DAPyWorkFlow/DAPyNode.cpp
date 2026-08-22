@@ -154,10 +154,21 @@ QString DAPyNode::getIcon() const
     return QString();
 }
 
-/**
- * @brief 获取输入端口key列表
- * @return 输入端口key字符串列表，代理为空时返回空列表
- */
+QString DAPyNode::getNodeDescription() const
+{
+    if (isNone()) {
+        return QString();
+    }
+    try {
+        if (hasattr("__node_description")) {
+            return attr("__node_description").cast< QString >();
+        }
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return QString();
+}
+
 QList< QString > DAPyNode::getInputKeys() const
 {
     if (isNone()) {

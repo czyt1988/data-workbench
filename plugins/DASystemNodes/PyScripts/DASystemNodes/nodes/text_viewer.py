@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """Text viewer node: display input data as text on the node body"""
 
+import logging
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Parameter, NodeDisplay
+
+logger = logging.getLogger("DASystemNodes.TextViewer")
 
 _DEFAULT_FONT = {
     "family": "Microsoft YaHei",
@@ -61,8 +64,10 @@ def _wrap_text_by_width(painter, text, max_width, font):
             current = ""
             continue
         candidate = current + ch
-        w, _ = painter.textBoundingRectWithFont(candidate, font)
-        if w > max_width and current:
+        # NOTE: 变量名用 _w 而非 _ ，避免与 gettext._() 内置函数冲突
+        # （Python 将赋值过的 _ 视为局部变量，导致后续 _("...") 调用报 UnboundLocalError）
+        text_w, _h = painter.textBoundingRectWithFont(candidate, font)
+        if text_w > max_width and current:
             lines.append(current)
             current = ch
         else:
@@ -75,10 +80,12 @@ def _wrap_text_by_width(painter, text, max_width, font):
     name="Text Viewer",
     category=_("System / Display"),  # cn:系统 / 显示
     icon="",
+    description=_("Displays input data as text directly on the node body. Supports font customization, auto-wrap, text truncation, and optional console logging. Useful for inspecting intermediate data during workflow execution."),  # cn:将输入数据以文本形式直接显示在节点体上。支持字体自定义、自动换行、文本截断和可选的控制台日志输出。用于检查工作流执行过程中的中间数据。
     style=NodeDisplay(
         background_color="#FDFDFD",
         border_color="#AAAAAA",
-        name_position="Below",
+        min_body_width=150,
+        min_body_height=80,
     ),
 )
 class TextViewerNode:
@@ -100,6 +107,11 @@ class TextViewerNode:
         default=True,
         description=_("Auto-wrap text by node body width; off for single line, excess is clipped"),  # cn:是否按节点体宽度自动换行；关闭则单行显示，超出部分被裁剪
     )
+    log_to_console = Parameter(
+        bool,
+        default=False,
+        description=_("Print input data to log/console"),  # cn:是否将输入数据打印到日志/控制台
+    )
 
     class Inputs:
         value = Input("any", required=True, description=_("Data to display"))  # cn:要显示的数据
@@ -112,11 +124,19 @@ class TextViewerNode:
         """缓存输入数据的字符串形式，实际绘制在 paint() 中完成。"""
         if inputs is None:
             inputs = {}
+        if params is None:
+            params = {}
+
         value = inputs.get("value")
         try:
             self._display_text = str(value) if value is not None else ""
         except Exception:
             self._display_text = _("<unprintable>")  # cn:<不可打印>
+
+        # 可选控制台日志输出（从 Print 节点迁移的功能）
+        if params.get("log_to_console", False):
+            logger.info("%s", self._display_text)
+
         return True
 
     def serialize_runtime_state(self) -> dict:
@@ -138,8 +158,14 @@ class TextViewerNode:
         max_text_length = getattr(self, "max_text_length", 200)
         wrap_text = getattr(self, "wrap_text", True)
 
-        color = font.get("color", "#282828") if isinstance(font, dict) else "#282828"
-        r, g, b = _hex_to_rgb(color)
+        # 背景
+        painter.fillRect(x, y, w, h, 253, 253, 253, 255)
+        # 边框
+        painter.setNoBrush()
+        painter.setPenColor(170, 170, 170, 255)
+        painter.setPenWidth(1)
+        painter.drawRect(x, y, w, h)
+
         margin = 6
 
         # 限制绘制区域，避免超出节点体
@@ -147,6 +173,7 @@ class TextViewerNode:
 
         # 设置字体和颜色
         painter.setFontFromDict(font)
+        r, g, b = _hex_to_rgb(font.get("color", "#282828") if isinstance(font, dict) else "#282828")
         painter.setPenColor(r, g, b)
 
         # 取缓存文本
@@ -157,7 +184,8 @@ class TextViewerNode:
             text = text[:max_text_length] + "…"
 
         # 测量行高
-        _, line_height = painter.textBoundingRectWithFont("A", font)
+        # NOTE: 变量名用 _w 而非 _ ，避免与 gettext._() 内置函数冲突
+        _w, line_height = painter.textBoundingRectWithFont("A", font)
         size = font.get("size", 9) if isinstance(font, dict) else 9
         line_height = max(line_height, size + 2)
 

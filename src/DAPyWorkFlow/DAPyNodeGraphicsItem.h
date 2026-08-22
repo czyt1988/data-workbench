@@ -126,6 +126,15 @@ public:
     void updateWidgetGeometry();
     // 根据NodeStyle更新绘制，在NodeStyle变化后需要调用
     void updateNodeStyleGeometry();
+
+    // 参数显示控制
+    bool isShowParameters() const;
+    void setShowParameters(bool show);
+    int getMaxDisplayParams() const;
+    void setMaxDisplayParams(int max);
+
+    // 刷新参数缓存（从Python节点重新读取参数名/值/show_on_node）
+    void refreshParameterCache();
 Q_SIGNALS:
     /**
      * @brief 节点双击信号，通知上层（DAGui）弹出配置对话框
@@ -151,6 +160,9 @@ protected:
 
     // 统一节点样式模板绘制（T7新增）
     void paintNodeStyleBody(QPainter* painter, const QRectF& bodyRect);
+
+    // 参数渲染（在节点body上显示参数名:值）
+    void paintParameters(QPainter* painter, const QRectF& bodyRect, const QRectF& titleRect);
 
     // 各种模板绘制函数（旧版，已废弃）
     void paintWidgetTemplate(QPainter* painter, const QRectF& bodyRect);

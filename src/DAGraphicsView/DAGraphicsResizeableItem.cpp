@@ -1,57 +1,13 @@
 #include "DAGraphicsResizeableItem.h"
-#include <memory>
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
-#include <QDebug>
 #include <QtMath>
-#include <QGraphicsSceneHoverEvent>
 #include <QDomDocument>
 #include <QDomElement>
 #include "DAGraphicsScene.h"
-#include "DACommandsForGraphics.h"
-#include "DAGraphicsCommandsFactory.h"
-#define Enable_DAGraphicsResizeableItemPrivateDebugPrint 0
-#if Enable_DAGraphicsResizeableItemPrivateDebugPrint
-#define DAGraphicsResizeableItemPrivateDoResizePrint(                                                                  \
-	mousePressItemPos, mousescenePos, currentControlPointTypeUnderMouse, newPos, newSize)                              \
-	do {                                                                                                               \
-		qDebug() << "mousePressItemPos=" << mousePressItemPos << ",mousescenePos=" << mousescenePos                    \
-				 << ",currentControlPointTypeUnderMouse=" << currentControlPointTypeUnderMouse << ",newPos=" << newPos \
-				 << ",newSize=" << newSize << ",current pos=" << q_ptr->pos();                                         \
-	} while (0)
-#else
-#define DAGraphicsResizeableItemPrivateDoResizePrint(                                                                  \
-	mousePressItemPos, mousescenePos, currentControlPointTypeUnderMouse, newPos, newSize)
-#endif
-
-#if Enable_DAGraphicsResizeableItemPrivateDebugPrint
-#define DAGraphicsResizeableItemPrivatePrint(msg, ...) qDebug(msg, __VA_ARGS__)
-#else
-#define DAGraphicsResizeableItemPrivatePrint(msg, ...)
-#endif
 
 namespace DA
 {
-/**
- * @brief 控制点信息
- */
-class DAGraphicsResizeableItemControlPointInfo
-{
-public:
-	/**
-	 * @brief 构造控制点信息
-	 * @param r 控制点的矩形区域
-	 * @param t 控制点类型
-	 */
-	DAGraphicsResizeableItemControlPointInfo(const QRectF& r, DAGraphicsResizeableItem::ControlType t)
-		: rect(r), isHighlight(false), controlPointType(t)
-	{
-	}
-	QRectF rect;
-	bool isHighlight;
-	DAGraphicsResizeableItem::ControlType controlPointType;
-};
-
 //===================================================
 // DAGraphicsResizeableItem::PrivateData
 //===================================================
@@ -63,47 +19,20 @@ public:
 	// 计算合理的尺寸
 	QSizeF testBodySize(const QSizeF& ts) const;
 	bool testBodySize(QSizeF& ts) const;
-	// 获取样式
-	const DAGraphicsResizeableItemPalette& getPalette() const;
-	// 重置控制点位置信息
-	void resetResizeableItemControlPointInfo();
-	//
-	void appendControlPointInfo(DAGraphicsResizeableItem::ControlType t, const QRectF& body);
-	//
-	QPair< DAGraphicsResizeableItem::ControlType, QRectF > getControlPointAndUpdateByPos(const QPointF& pos);
-	// 执行变换，返回需要移动的位置和尺寸，尺寸会考虑最大最小
-	QPair< QPointF, QSizeF > doResize(const QPointF& mousescenePos);
-	// 按照记录鼠标按下的参数计算不同角度的点
-	QPointF bodyConnerPoint(DAGraphicsResizeableItem::ControlType t);
 	// 位置坐标匹配网格
 	void adjustPosToGrid(QPointF& pos);
-	// 位置坐标匹配网格
-	void adjustSizeToGrid(QSizeF& s);
 
 public:
 	bool mEnableResize { true };                    ///< 是否允许调整大小
 	bool mAutoCenterTransformOriginPoint { true };  ///< 自动更新TransformOriginPoint
-	DAGraphicsResizeableItem::ControlType mCurrentControlTypeUnderMouse {
-		DAGraphicsResizeableItem::NotUnderAnyControlType
-	};  ///< 鼠标当前在的控制点
-	DAGraphicsScene* mSceneUndo { nullptr };  /// 保存secene
-	QSizeF mSize { 30, 30 };                  ///< 尺寸
-	QSizeF mMinSize { 5, 5 };                 ///< 最小尺寸
-	QSizeF mMaxSize { 9999, 9999 };           ///< 最大尺寸
-	QPointF mPainterRectStartPos { 0, 0 };    ///< 绘图范围的开始位置
-	QSizeF mControlPointSize { 10, 10 };      ///< 控制点的大小
-	QList< DAGraphicsResizeableItemControlPointInfo > mControlPointInfos;
-	// 下面3个参数是鼠标点击后记录的三个状态
-	QPointF mMousePressMouseOnScenePos;                           ///< 鼠标点击的scene位置
-	QPointF mMousePressItemPos;                                   ///< 记录鼠标点击时item的位置
-	QSizeF mMousePressItemSize;                                   ///< 记录鼠标按下时候的尺寸
-	std::unique_ptr< DAGraphicsResizeableItemPalette > mPalette;  ///< 记录样式
+	DAGraphicsScene* mSceneUndo { nullptr };        ///< 保存scene
+	QSizeF mSize { 30, 30 };                        ///< 尺寸
+	QSizeF mMinSize { 5, 5 };                       ///< 最小尺寸
+	QSizeF mMaxSize { 9999, 9999 };                 ///< 最大尺寸
+	QPointF mPainterRectStartPos { 0, 0 };          ///< 绘图范围的开始位置
+	QSizeF mControlPointSize { 10, 10 };            ///< 控制点的大小（deprecated，保留以维持 XML 兼容）
 };
 
-/**
- * @brief 构造PrivateData
- * @param p 父DAGraphicsResizeableItem指针
- */
 DAGraphicsResizeableItem::PrivateData::PrivateData(DAGraphicsResizeableItem* p) : q_ptr(p)
 {
 }
@@ -157,329 +86,6 @@ bool DAGraphicsResizeableItem::PrivateData::testBodySize(QSizeF& ts) const
 }
 
 /**
- * @brief 获取样式调色板，如果未设置自定义样式则返回全局默认样式
- * @return 样式调色板引用
- */
-const DAGraphicsResizeableItemPalette& DAGraphicsResizeableItem::PrivateData::getPalette() const
-{
-	if (mPalette) {
-		return *mPalette;
-	}
-	return *(daGlobalGraphicsResizeableItemPalette);
-}
-
-/**
- * @brief 重置控制点位置信息，根据body矩形重新计算所有控制点和控制线的位置
- */
-void DAGraphicsResizeableItem::PrivateData::resetResizeableItemControlPointInfo()
-{
-	mControlPointInfos.clear();
-	QRectF bd = q_ptr->getBodyRect();
-	appendControlPointInfo(DAGraphicsResizeableItem::ControlPointTopLeft, bd);
-	appendControlPointInfo(DAGraphicsResizeableItem::ControlPointTopMid, bd);
-	appendControlPointInfo(DAGraphicsResizeableItem::ControlPointTopRight, bd);
-	appendControlPointInfo(DAGraphicsResizeableItem::ControlPointRightMid, bd);
-	appendControlPointInfo(DAGraphicsResizeableItem::ControlPointBottomRight, bd);
-	appendControlPointInfo(DAGraphicsResizeableItem::ControlPointBottomMid, bd);
-	appendControlPointInfo(DAGraphicsResizeableItem::ControlPointBottomLeft, bd);
-	appendControlPointInfo(DAGraphicsResizeableItem::ControlPointLeftMid, bd);
-	// 控制线，注意控制线一定要比控制点设置靠后，否则会覆盖控制点的捕获
-	appendControlPointInfo(DAGraphicsResizeableItem::ControlLineLeft, bd);
-	appendControlPointInfo(DAGraphicsResizeableItem::ControlLineTop, bd);
-	appendControlPointInfo(DAGraphicsResizeableItem::ControlLineRight, bd);
-	appendControlPointInfo(DAGraphicsResizeableItem::ControlLineBottom, bd);
-}
-
-/**
- * @brief 添加控制点信息
- * @param t 控制点类型
- * @param body body矩形区域
- */
-void DAGraphicsResizeableItem::PrivateData::appendControlPointInfo(DAGraphicsResizeableItem::ControlType t, const QRectF& body)
-{
-	mControlPointInfos.append(DAGraphicsResizeableItemControlPointInfo(q_ptr->controlPointRect(t, body), t));
-}
-
-/**
- * @brief 根据位置获取控制点，并更新控制点的高亮状态
- * @param pos 鼠标位置（item坐标系）
- * @return 返回<控制点类型, 控制点矩形>，如果不在任何控制点上返回NotUnderAnyControlType
- */
-QPair< DAGraphicsResizeableItem::ControlType, QRectF >
-DAGraphicsResizeableItem::PrivateData::getControlPointAndUpdateByPos(const QPointF& pos)
-{
-	QPair< DAGraphicsResizeableItem::ControlType, QRectF > res =
-		qMakePair(DAGraphicsResizeableItem::NotUnderAnyControlType, QRectF());
-	//    qDebug() << "getControlPointAndUpdateByPos(" << pos << ")";
-	for (int i = 0; i < mControlPointInfos.size(); ++i) {
-		DAGraphicsResizeableItemControlPointInfo& r = mControlPointInfos[ i ];
-		if (r.rect.contains(pos)) {
-			// qDebug() << "controlPointType=" << r.controlPointType << ",rect=" << r.rect << ",pos=" << pos;
-			r.isHighlight = true;
-			// 如果位置在某个控制点里面
-			res.first  = r.controlPointType;
-			res.second = r.rect;
-			// 把剩下的设置为false
-			for (int j = i + 1; j < mControlPointInfos.size(); ++j) {
-				mControlPointInfos[ j ].isHighlight = false;
-			}
-			return res;
-		} else {
-			r.isHighlight = false;
-		}
-	}
-	return res;
-}
-
-/**
- * @brief 执行尺寸的改变
- * @param mousescenePos
- * @return 返回<位移，尺寸>，如果这两个为isNull，则不执行对应的操作
- */
-QPair< QPointF, QSizeF > DAGraphicsResizeableItem::PrivateData::doResize(const QPointF& mousescenePos)
-{
-	// df是鼠标按下到移动的距离
-	QPointF df(mousescenePos - mMousePressMouseOnScenePos);
-	DAGraphicsResizeableItemPrivatePrint("DAGraphicsResizeableItemPrivate::doResize(mousescenePos=QPointF(%g,%g))\n"
-										 "_mousePressMouseOnScenePos=QPointF(%g,%g)\n_mousePressItemSize=QSize(%g,%g)",
-										 mousescenePos.x(),
-										 mousescenePos.y(),
-										 mMousePressMouseOnScenePos.x(),
-										 mMousePressMouseOnScenePos.y(),
-										 mMousePressItemSize.width(),
-										 mMousePressItemSize.height());
-	switch (mCurrentControlTypeUnderMouse) {
-	case DAGraphicsResizeableItem::ControlPointTopLeft: {
-		// topleft的移动，需要改变pos和size,且保证bottomright位置不变
-		// 右下角位置
-		// ■-□-□
-		// |   |
-		// □   □
-		// |   |
-		// □-□-× <- fix
-		QPointF bottomRight = bodyConnerPoint(DAGraphicsResizeableItem::ControlPointBottomRight);
-		adjustPosToGrid(bottomRight);  // 把坐标点转换为网格点
-		QPointF newPos = mousescenePos;
-		adjustPosToGrid(newPos);
-		QSizeF newSize(bottomRight.x() - newPos.x(), bottomRight.y() - newPos.y());
-		//        DAGraphicsResizeableItemPrivatePrint("doResize:ControlPointTopLeft\n"
-		//                                             "bottomright=QPointF(%g,%g),newPos=QPointF(%g,%g),newSize=QSizeF(%g,%g)",
-		//                                             bottomright.x(),
-		//                                             bottomright.y(),
-		//                                             newPos.x(),
-		//                                             newPos.y(),
-		//                                             newSize.width(),
-		//                                             newSize.height());
-		// 执行变换
-		q_ptr->setBodySize(newSize);
-		// 获取变换后的大小
-		newSize = mSize;
-		// 以变换后的大小，重新调整位置
-		newPos.setX(bottomRight.x() - newSize.width());
-		newPos.setY(bottomRight.y() - newSize.height());
-		q_ptr->setPos(newPos);
-		return qMakePair(newPos, newSize);
-	} break;
-	case DAGraphicsResizeableItem::ControlPointTopMid: {
-		// 上下位置改变x不动
-		// 右下角位置
-		// 且保证bottomleft,bottomright位置不变
-		//  □-■-□
-		//  |   |
-		//  □   □
-		//  |   |
-		//  □-×-□
-		//    ↑
-		//   fix
-		QPointF bottomMid = bodyConnerPoint(DAGraphicsResizeableItem::ControlPointBottomMid);
-		adjustPosToGrid(bottomMid);
-		QPointF newPos(mMousePressItemPos.x(), mousescenePos.y());
-		// 通过newpos计算size
-		QSizeF newSize(mMousePressItemSize.width(), bottomMid.y() - newPos.y());
-		adjustSizeToGrid(newSize);
-		// 执行变换
-		q_ptr->setBodySize(newSize);
-		// 获取变换后的大小，有可能和设置的不一样，这样要调整一下newPos
-		newSize = mSize;
-		// 以变换后的大小，重新调整位置
-		newPos.setX(bottomMid.x() - newSize.width() / 2);
-		newPos.setY(bottomMid.y() - newSize.height());
-		q_ptr->setPos(newPos);
-		return qMakePair(newPos, newSize);
-	} break;
-	case DAGraphicsResizeableItem::ControlPointTopRight: {
-		// topright的移动，需要改变pos和size,且保证bottomleft位置不变
-		// 要完全做到相对位置不变，需要都要以top-left的adjustPosToGrid位置作为参考
-		// □-□-■
-		// |   |
-		// □   □
-		// |   |
-		// ×-□-□
-		// ↑
-		// fix
-		QPointF bottomLeft = bodyConnerPoint(DAGraphicsResizeableItem::ControlPointBottomLeft);
-		adjustPosToGrid(bottomLeft);
-		QPointF newPos(mMousePressItemPos.x(), mousescenePos.y());
-		QSizeF newSize(mousescenePos.x() - newPos.x(), bottomLeft.y() - mousescenePos.y());
-		adjustSizeToGrid(newSize);
-		// 执行变换
-		q_ptr->setBodySize(newSize);
-		// 获取变换后的大小
-		newSize = mSize;
-		// 以变换后的大小，重新调整位置
-		newPos.setX(bottomLeft.x());
-		newPos.setY(bottomLeft.y() - newSize.height());
-		q_ptr->setPos(newPos);
-		return qMakePair(newPos, newSize);
-	} break;
-	case DAGraphicsResizeableItem::ControlPointRightMid: {
-		// RightMid的移动，需要改变size,且保证bottomleft位置不变
-		// fix
-		// ↓
-		// ×-□-□
-		// |   |
-		// □   ■
-		// |   |
-		// □-□-□
-		QPointF topleft = bodyConnerPoint(DAGraphicsResizeableItem::ControlPointTopLeft);
-		QSizeF newSize(mousescenePos.x() - topleft.x(), mMousePressItemSize.height());
-		// 执行变换
-		q_ptr->setBodySize(newSize);
-		// 获取变换后的大小
-		newSize = mSize;
-		// 由于位置不变，pos不变
-		return qMakePair(topleft, newSize);
-	} break;
-	case DAGraphicsResizeableItem::ControlPointBottomRight: {
-		// fix
-		// ↓
-		// ×-□-□
-		// |   |
-		// □   □
-		// |   |
-		// □-□-■
-		QPointF topLeft = bodyConnerPoint(DAGraphicsResizeableItem::ControlPointTopLeft);
-		QSizeF newSize(mousescenePos.x() - topLeft.x(), mousescenePos.y() - topLeft.y());
-		// 执行变换
-		q_ptr->setBodySize(newSize);
-		// 获取变换后的大小
-		newSize = mSize;
-		// 由于位置不变，pos不变
-		return qMakePair(topLeft, newSize);
-	} break;
-	case DAGraphicsResizeableItem::ControlPointBottomMid: {
-		// fix
-		// ↓
-		// ×-□-□
-		// |   |
-		// □   □
-		// |   |
-		// □-■-□
-		QPointF topLeft = bodyConnerPoint(DAGraphicsResizeableItem::ControlPointTopLeft);
-		QSizeF newSize(mMousePressItemSize.width(), mousescenePos.y() - topLeft.y());
-		// 执行变换
-		q_ptr->setBodySize(newSize);
-		// 获取变换后的大小
-		newSize = mSize;
-		// 由于位置不变，pos不变
-		return qMakePair(topLeft, newSize);
-	} break;
-	case DAGraphicsResizeableItem::ControlPointBottomLeft: {
-		//    fix
-		//     ↓
-		// □-□-×
-		// |   |
-		// □   □
-		// |   |
-		// ■-□-□
-		QPointF topRight = bodyConnerPoint(DAGraphicsResizeableItem::ControlPointTopRight);
-		adjustPosToGrid(topRight);
-		QPointF newPos(mousescenePos.x(), mMousePressItemPos.y());
-		// 只要保证size也和grid倍数贴合，就能保证移动后不越出网格
-		QSizeF newSize(topRight.x() - newPos.x(), mousescenePos.y() - newPos.y());
-		adjustSizeToGrid(newSize);
-		// 执行变换
-		q_ptr->setBodySize(newSize);
-		// 获取变换后的大小
-		newSize = mSize;
-		// 以变换后的大小，重新调整位置
-		newPos.setX(topRight.x() - newSize.width());
-		newPos.setY(topRight.y());
-		q_ptr->setPos(newPos);
-		return qMakePair(newPos, newSize);
-	} break;
-	case DAGraphicsResizeableItem::ControlPointLeftMid: {
-		//    fix
-		//     ↓
-		// □-□-×
-		// |   |
-		// ■   □
-		// |   |
-		// □-□-□
-		QPointF topRight = bodyConnerPoint(DAGraphicsResizeableItem::ControlPointTopRight);
-		adjustPosToGrid(topRight);
-		QPointF newPos(mousescenePos.x(), mMousePressItemPos.y());
-		QSizeF newSize(topRight.x() - mousescenePos.x(), mMousePressItemSize.height());
-		adjustSizeToGrid(newSize);
-		// 执行变换
-		q_ptr->setBodySize(newSize);
-		// 获取变换后的大小
-		newSize = mSize;
-		// 以变换后的大小，重新调整位置
-		newPos.setX(topRight.x() - newSize.width());
-		newPos.setY(topRight.y());
-		q_ptr->setPos(newPos);
-		return qMakePair(newPos, newSize);
-	} break;
-	case DAGraphicsResizeableItem::ControlLineLeft:
-	case DAGraphicsResizeableItem::ControlLineTop:
-	case DAGraphicsResizeableItem::ControlLineRight:
-	case DAGraphicsResizeableItem::ControlLineBottom: {
-		// 线都是移动处理
-		QPointF newPos = mMousePressItemPos + df;
-		q_ptr->setPos(newPos);
-		return qMakePair(newPos, QSizeF());
-	}
-	default:
-		break;
-	}
-	return qMakePair(QPointF(), QSizeF());
-}
-
-/**
- * @brief 通过鼠标按下记录的数据，计算不同角度的点
- * @param t
- * @return
- */
-QPointF DAGraphicsResizeableItem::PrivateData::bodyConnerPoint(DAGraphicsResizeableItem::ControlType t)
-{
-	switch (t) {
-	case DAGraphicsResizeableItem::ControlPointTopLeft:
-		return mMousePressItemPos;
-	case DAGraphicsResizeableItem::ControlPointTopMid:
-		return QPointF(mMousePressItemPos.x() + mMousePressItemSize.width() / 2, mMousePressItemPos.y());
-	case DAGraphicsResizeableItem::ControlPointTopRight:
-		return QPointF(mMousePressItemPos.x() + mMousePressItemSize.width(), mMousePressItemPos.y());
-	case DAGraphicsResizeableItem::ControlPointRightMid:
-		return QPointF(mMousePressItemPos.x() + mMousePressItemSize.width(),
-					   mMousePressItemPos.y() + mMousePressItemSize.height() / 2);
-	case DAGraphicsResizeableItem::ControlPointBottomRight:
-		return QPointF(mMousePressItemPos.x() + mMousePressItemSize.width(),
-					   mMousePressItemPos.y() + mMousePressItemSize.height());
-	case DAGraphicsResizeableItem::ControlPointBottomMid:
-		return QPointF(mMousePressItemPos.x() + mMousePressItemSize.width() / 2,
-					   mMousePressItemPos.y() + mMousePressItemSize.height());
-	case DAGraphicsResizeableItem::ControlPointBottomLeft:
-		return QPointF(mMousePressItemPos.x(), mMousePressItemPos.y() + mMousePressItemSize.height());
-	case DAGraphicsResizeableItem::ControlPointLeftMid:
-		return QPointF(mMousePressItemPos.x(), mMousePressItemPos.y() + mMousePressItemSize.height() / 2);
-	default:
-		break;
-	}
-	return QPointF();
-}
-
-/**
  * @brief 位置坐标匹配网格
  * @param pos
  */
@@ -505,46 +111,18 @@ void DAGraphicsResizeableItem::PrivateData::adjustPosToGrid(QPointF& pos)
 	}
 }
 
-/**
- * @brief 尺寸坐标匹配网格
- * @param s 待调整的尺寸，会被修改为网格对齐后的尺寸
- */
-void DAGraphicsResizeableItem::PrivateData::adjustSizeToGrid(QSizeF& s)
-{
-	if (!q_ptr->isSnapToGrid()) {
-		return;
-	}
-	QSize gridsize = q_ptr->getGridSize();
-	if (gridsize.isValid()) {
-		s.setWidth(qRound(s.width() / gridsize.width()) * gridsize.width());
-		s.setHeight(qRound(s.height() / gridsize.height()) * gridsize.height());
-	}
-}
-
 //////////////////////////////////////////////////////////////////////////////
 // DAGraphicsResizeableItem
 //////////////////////////////////////////////////////////////////////////////
 
-/**
- * @brief 构造可缩放的图形项
- * @param parent 父QGraphicsItem
- */
 DAGraphicsResizeableItem::DAGraphicsResizeableItem(QGraphicsItem* parent) : DAGraphicsItem(parent), DA_PIMPL_CONSTRUCT
 {
 	setFlags(flags() | ItemIsSelectable | ItemIsMovable
 			 | ItemSendsGeometryChanges  // 确保位置改变时能发出QGraphicsItem::ItemPositionHasChanged
 	);
-	setAcceptHoverEvents(true);
-	// 初始化控制点
-	prepareControlInfoChange();
-	//
-	d_ptr->mMousePressItemSize = getBodySize();
-	d_ptr->mMousePressItemPos  = pos();
+	// setAcceptHoverEvents 已移除，hover 事件由 Overlay 处理
 }
 
-/**
- * @brief 析构函数
- */
 DAGraphicsResizeableItem::~DAGraphicsResizeableItem()
 {
 }
@@ -555,7 +133,7 @@ DAGraphicsResizeableItem::~DAGraphicsResizeableItem()
  */
 QRectF DAGraphicsResizeableItem::boundingRect() const
 {
-    return getBodyControlRect();
+	return getBodyRect();  // 不再膨胀控制点区域
 }
 
 /**
@@ -564,20 +142,12 @@ QRectF DAGraphicsResizeableItem::boundingRect() const
  */
 void DAGraphicsResizeableItem::setBodyPos(const QPointF& p)
 {
-	qreal wo = d_ptr->mControlPointSize.width() + 1;
-	qreal ho = d_ptr->mControlPointSize.height() + 1;
-	setPos(p.x() - wo, p.y() - ho);
+	setPos(p);
 }
 
-/**
- * @brief 设置body在场景中的位置，对setScenePos的封装，减去控制点的偏移
- * @param p 场景坐标系下的位置
- */
 void DAGraphicsResizeableItem::setBodyScenePos(const QPointF& p)
 {
-	qreal wo = d_ptr->mControlPointSize.width() + 1;
-	qreal ho = d_ptr->mControlPointSize.height() + 1;
-	setScenePos(p.x() - wo, p.y() - ho);
+	setScenePos(p);
 }
 
 /**
@@ -639,153 +209,6 @@ void DAGraphicsResizeableItem::updateTransformOriginPoint()
 }
 
 /**
- * @brief 执行尺寸的改变
- * @param mousescenePos
- * @return 返回<位移，尺寸>，如果为null，则不执行
- */
-QPair< QPointF, QSizeF > DAGraphicsResizeableItem::doItemResize(const QPointF& mousescenePos)
-{
-    return d_ptr->doResize(mousescenePos);
-}
-
-/**
- * @brief 鼠标悬停进入事件
- * @param event 悬停事件
- */
-void DAGraphicsResizeableItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
-{
-    QGraphicsItem::hoverEnterEvent(event);
-}
-
-/**
- * @brief 鼠标悬停移动事件，根据鼠标位置更新控制点高亮状态和鼠标光标形状
- * @param event 悬停事件
- */
-void DAGraphicsResizeableItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
-{
-	if (isSelected()) {
-		if (isResizable()) {
-			QPair< ControlType, QRectF > pt = d_ptr->getControlPointAndUpdateByPos(event->pos());
-			if (NotUnderAnyControlType == pt.first) {
-				// 这里说明都没在控制点上
-				if (hasCursor()) {
-					unsetCursor();
-				}
-			} else {
-				// 说明在控制点上
-				switch (pt.first) {
-				case ControlPointTopLeft:
-				case ControlPointBottomRight:
-					setCursor(Qt::SizeFDiagCursor);
-					break;
-				case ControlPointTopMid:
-				case ControlPointBottomMid:
-					setCursor(Qt::SizeVerCursor);
-					break;
-				case ControlPointTopRight:
-				case ControlPointBottomLeft:
-					setCursor(Qt::SizeBDiagCursor);
-					break;
-				case ControlPointRightMid:
-				case ControlPointLeftMid:
-					setCursor(Qt::SizeHorCursor);
-					break;
-				case ControlLineBottom:
-				case ControlLineLeft:
-				case ControlLineRight:
-				case ControlLineTop:
-					setCursor(Qt::SizeAllCursor);
-					break;
-				default:  // 不会达到
-				{
-					if (hasCursor()) {
-						unsetCursor();
-					}
-				} break;
-				}
-				if (d_ptr->mCurrentControlTypeUnderMouse != pt.first) {
-					update(pt.second);
-				}
-			}
-			d_ptr->mCurrentControlTypeUnderMouse = pt.first;
-			event->accept();  // accept该事件，停止对事件的转发
-			return;
-		} else {
-			// 非resize状态都把_currentControlTypeUnderMouse设置为NotAtControlPoint
-			if (d_ptr->mCurrentControlTypeUnderMouse != NotUnderAnyControlType) {
-				d_ptr->mCurrentControlTypeUnderMouse = NotUnderAnyControlType;
-			}
-		}
-	} else {
-		// 非resize状态都把_currentControlTypeUnderMouse设置为NotAtControlPoint
-		if (d_ptr->mCurrentControlTypeUnderMouse != NotUnderAnyControlType) {
-			d_ptr->mCurrentControlTypeUnderMouse = NotUnderAnyControlType;
-		}
-	}
-	QGraphicsItem::hoverMoveEvent(event);
-}
-
-/**
- * @brief 鼠标悬停离开事件，清除控制点高亮状态和鼠标光标
- * @param event 悬停事件
- */
-void DAGraphicsResizeableItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
-{
-	Q_UNUSED(event);
-	if (isResizable()) {
-		if (NotUnderAnyControlType != d_ptr->mCurrentControlTypeUnderMouse) {
-			d_ptr->mCurrentControlTypeUnderMouse = NotUnderAnyControlType;
-			if (hasCursor()) {
-				unsetCursor();
-				event->accept();
-				return;
-			}
-		}
-	}
-	QGraphicsItem::hoverLeaveEvent(event);
-}
-
-/**
- * @brief 鼠标按下事件，判断是否点击在控制点上，记录鼠标按下时的状态
- * @param event 鼠标事件
- */
-void DAGraphicsResizeableItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
-{
-	// 点击的时候判断点击的是哪里
-	d_ptr->mMousePressMouseOnScenePos = event->scenePos();
-	d_ptr->mMousePressItemPos         = pos();
-	if (event->buttons().testFlag(Qt::LeftButton)) {
-		if (isSelected() && isResizable()) {
-			// 开始改变尺寸
-			if (d_ptr->mCurrentControlTypeUnderMouse != NotUnderAnyControlType) {
-				// 在控制点上
-				d_ptr->mMousePressItemSize = d_ptr->mSize;
-				event->accept();
-				return;
-			}
-		}
-	}
-	QGraphicsItem::mousePressEvent(event);
-}
-
-/**
- * @brief 鼠标移动事件，如果在控制点上则执行缩放操作，否则交由父类处理移动
- * @param event 鼠标事件
- */
-void DAGraphicsResizeableItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
-{
-	if (d_ptr->mCurrentControlTypeUnderMouse != NotUnderAnyControlType) {
-		// 说明在改变大小状态
-		//  doItemResize是估算要改变尺寸的位置和大小，由于改变大小可能和估算的不一样，因此要进行第二次估算
-		doItemResize(event->scenePos());
-		// 接受鼠标移动事件，避免产生移动效果
-		event->accept();
-		return;
-	}
-
-	QGraphicsItem::mouseMoveEvent(event);
-}
-/**
  * @brief DAGraphicsResizeableItem::itemChange
  * @param change
  * @param value
@@ -799,6 +222,7 @@ QVariant DAGraphicsResizeableItem::itemChange(GraphicsItemChange change, const Q
 			return pos();
 		}
 		QPointF newPos = value.toPointF();
+		// 网格对齐逻辑保留
 		d_ptr->adjustPosToGrid(newPos);
 		return newPos;
 	}
@@ -820,38 +244,22 @@ QVariant DAGraphicsResizeableItem::itemChange(GraphicsItemChange change, const Q
 }
 
 /**
- * @brief 鼠标释放事件，如果在缩放状态则创建撤销命令并压入场景的撤销栈
- * @param event 鼠标事件
- */
-void DAGraphicsResizeableItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
-{
-	DA_D(d);
-	if (d->mCurrentControlTypeUnderMouse != NotUnderAnyControlType) {
-		// 说明在改变大小状态
-		QPair< QPointF, QSizeF > res = doItemResize(event->scenePos());
-		if (d->mSceneUndo) {
-			auto cmd = d->mSceneUndo->commandsFactory()->createItemResized(this,
-																		   d->mMousePressItemPos,
-																		   d->mMousePressItemSize,
-																		   res.first,
-																		   res.second,
-																		   true  // 已经执行了缩放，第一次跳过执行
-			);
-			d->mSceneUndo->push(cmd);
-		}
-		// 接受鼠标移动事件，避免产生移动效果
-		event->accept();
-		return;
-	}
-	QGraphicsItem::mouseReleaseEvent(event);
-}
-/**
  * @brief 用户不要继承此shape函数，而是继承bodyShape函数
  * @return
  */
 QPainterPath DAGraphicsResizeableItem::shape() const
 {
-	QPainterPath p = getBodyShape();
+	return getBodyShape();
+}
+
+/**
+ * @brief 获取绘图的shape
+ * @return
+ */
+QPainterPath DAGraphicsResizeableItem::getBodyShape() const
+{
+	QPainterPath p;
+	p.addRect(getBodyRect());  // 不再用 getBodyControlRect()
 	return p;
 }
 
@@ -866,37 +274,21 @@ QPainterPath DAGraphicsResizeableItem::shape() const
  */
 void DAGraphicsResizeableItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-	// 绘制缩放用的
 	QRectF bodyrect = getBodyRect();
 	paintBackground(painter, option, widget, bodyrect);
 	paintBorder(painter, option, widget, bodyrect);
 	paintBody(painter, option, widget, bodyrect);
-	if (isResizable()) {
-		if (isSelected()) {
-			// 绘制缩放的边框
-			paintSelectedBorder(painter, option, widget);
-			// 绘制缩放的点
-			paintResizeControlPoints(painter, option, widget);
-		}
-	} else {
-		// 不能改变大小但可选中
-		if (flags().testFlag(ItemIsSelectable)) {
-			// 可选择
-			if (isSelected()) {
-				// 绘制缩放的边框
-				paintSelectedBorder(painter, option, widget);
-			}
-		}
+	// 选中边框始终由图元自身绘制（单选/多选均显示），Overlay 仅负责控制点
+	if (isSelected()) {
+		QPen pen(QColor(32, 128, 240));
+		pen.setStyle(Qt::DashLine);
+		painter->setPen(pen);
+		painter->setBrush(Qt::NoBrush);
+		painter->drawRect(bodyrect);
 	}
+	// 不再绘制控制点 — 由 Overlay 负责（仅单选可缩放图元）
 }
 
-/**
- * @brief 将缩放项的信息保存到XML中
- * @param doc XML文档对象
- * @param parentElement 父XML元素
- * @param ver 版本号
- * @return 保存成功返回true
- */
 bool DAGraphicsResizeableItem::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
 {
 	DAGraphicsItem::saveToXml(doc, parentElement, ver);
@@ -923,12 +315,6 @@ bool DAGraphicsResizeableItem::saveToXml(QDomDocument* doc, QDomElement* parentE
 	return true;
 }
 
-/**
- * @brief 从XML中加载缩放项的信息
- * @param itemElement XML元素
- * @param ver 版本号
- * @return 加载成功返回true
- */
 bool DAGraphicsResizeableItem::loadFromXml(const QDomElement* itemElement, const QVersionNumber& ver)
 {
 	if (!DAGraphicsItem::loadFromXml(itemElement, ver)) {
@@ -959,16 +345,6 @@ bool DAGraphicsResizeableItem::loadFromXml(const QDomElement* itemElement, const
 }
 
 /**
- * @brief 测试一下setBodySize之后getBodySize能得到的尺寸
- * @param s
- * @return
- */
-QSizeF DAGraphicsResizeableItem::testBodySize(const QSizeF& s)
-{
-    return d_ptr->testBodySize(s);
-}
-
-/**
  * @brief 设置尺寸
  * @note setBodySize是虚函数，在scene鼠标动作的时候会触发此函数，
  * 如果仅仅想改变bodysize的尺寸，可以调用@sa changeBodySize
@@ -976,17 +352,14 @@ QSizeF DAGraphicsResizeableItem::testBodySize(const QSizeF& s)
  */
 void DAGraphicsResizeableItem::setBodySize(const QSizeF& s)
 {
-	QSizeF cs = testBodySize(s);
+	QSizeF cs = d_ptr->testBodySize(s);
 	if (cs != d_ptr->mSize) {
 		QSizeF oldsize = d_ptr->mSize;
-		changeBodySize(s);
 		prepareGeometryChange();
+		changeBodySize(cs);
 		if (d_ptr->mSceneUndo) {
 			d_ptr->mSceneUndo->emitItemBodySizeChanged(this, oldsize, d_ptr->mSize);
 		}
-#if DA_USE_QGRAPHICSOBJECT
-		emit itemBodySizeChanged(oldsize, d_ptr->mSize);
-#endif
 	}
 }
 
@@ -996,7 +369,7 @@ void DAGraphicsResizeableItem::setBodySize(const QSizeF& s)
  */
 QRectF DAGraphicsResizeableItem::getBodyRect() const
 {
-    return QRectF(d_ptr->mPainterRectStartPos, d_ptr->mSize);
+	return QRectF(d_ptr->mPainterRectStartPos, d_ptr->mSize);
 }
 
 /**
@@ -1005,31 +378,16 @@ QRectF DAGraphicsResizeableItem::getBodyRect() const
  */
 QSizeF DAGraphicsResizeableItem::getBodySize() const
 {
-    return d_ptr->mSize;
+	return d_ptr->mSize;
 }
 
 /**
- * @brief 获取body包含控制窗口大小，就是在改变尺寸时包含那8个控制点的最大尺寸
+ * @brief 获取body控制矩形，已废弃，等价于 getBodyRect()
  * @return
  */
 QRectF DAGraphicsResizeableItem::getBodyControlRect() const
 {
-	QRectF body = getBodyRect();
-	qreal wo    = d_ptr->mControlPointSize.width() + 1;
-	qreal ho    = d_ptr->mControlPointSize.height() + 1;
-	body.adjust(-wo, -ho, wo, ho);
-	return body;
-}
-
-/**
- * @brief 获取绘图的shape
- * @return
- */
-QPainterPath DAGraphicsResizeableItem::getBodyShape() const
-{
-	QPainterPath p;
-	p.addRect(getBodyControlRect());
-	return p;
+	return getBodyRect();  // 不再膨胀，等价于 getBodyRect()
 }
 
 /**
@@ -1056,46 +414,49 @@ void DAGraphicsResizeableItem::setBodyMaximumSize(const QSizeF& s)
  */
 QSizeF DAGraphicsResizeableItem::getBodyMinimumSize() const
 {
-    return d_ptr->mMinSize;
+	return d_ptr->mMinSize;
 }
 /**
  * @brief 获取最大尺寸
  */
 QSizeF DAGraphicsResizeableItem::getBodyMaximumSize() const
 {
-    return d_ptr->mMaxSize;
+	return d_ptr->mMaxSize;
 }
 
 /**
- * @brief 获取控制器的大小
+ * @brief 设置控制器的大小（已废弃，控制点由 Overlay 管理）
  * @param s
  */
 void DAGraphicsResizeableItem::setControlerSize(const QSizeF& s)
 {
 	d_ptr->mControlPointSize = s;
-	prepareControlInfoChange();
+	update();
+}
+
+QSizeF DAGraphicsResizeableItem::getControlerSize() const
+{
+	return d_ptr->mControlPointSize;
 }
 
 /**
- * @brief 获取控制器的大小
- * @return 控制点尺寸
+ * @brief 控制点的大小（非虚，仅返回 mControlPointSize）
+ * @return
  */
-QSizeF DAGraphicsResizeableItem::getControlerSize() const
+QSizeF DAGraphicsResizeableItem::controlPointSize() const
 {
-    return d_ptr->mControlPointSize;
+	return d_ptr->mControlPointSize;
 }
+
 /**
- * @brief 设置是否Delegate可用
+ * @brief 设置是否允许缩放
  * @param on
  */
 void DAGraphicsResizeableItem::setEnableResize(bool on)
 {
 	d_ptr->mEnableResize = on;
-	if (on) {
-		if (!acceptHoverEvents()) {
-			setAcceptHoverEvents(on);
-		}
-	}
+	update();  // 刷新选中边框显示
+	// setAcceptHoverEvents(on) 已移除，hover 事件由 Overlay 处理
 }
 /**
  * @brief 判断是否允许
@@ -1103,66 +464,7 @@ void DAGraphicsResizeableItem::setEnableResize(bool on)
  */
 bool DAGraphicsResizeableItem::isResizable() const
 {
-    return d_ptr->mEnableResize;
-}
-
-/**
- * @brief 绘制resize边框
- * @param painter
- * @param option
- * @param widget
- */
-void DAGraphicsResizeableItem::paintSelectedBorder(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
-{
-	Q_UNUSED(widget);
-	painter->save();
-	qreal wo = d_ptr->mControlPointSize.width() / 2;
-	qreal ho = d_ptr->mControlPointSize.height() / 2;
-	QPen pen(d_ptr->getPalette().resizeBorderColor);
-	pen.setStyle(Qt::DashLine);
-	painter->setPen(pen);
-	painter->setBrush(Qt::NoBrush);
-	// 绘制缩放边框
-	painter->drawRect(option->rect.adjusted(wo, ho, -wo, -ho));
-	painter->restore();
-}
-
-/**
- * @brief  绘制resize控制点
- * @param painter
- * @param option
- * @param widget
- * @param bodyRect
- */
-void DAGraphicsResizeableItem::paintResizeControlPoints(QPainter* painter,
-                                                        const QStyleOptionGraphicsItem* option,
-                                                        QWidget* widget)
-{
-	Q_UNUSED(widget);
-	Q_UNUSED(option);
-
-	const DAGraphicsResizeableItemPalette& palette = d_ptr->getPalette();
-	QPen pen(palette.resizeControlPointBorderColor);
-	pen.setStyle(Qt::SolidLine);
-	painter->save();
-	painter->setBrush(palette.resizeControlPointBrush);
-	for (const DAGraphicsResizeableItemControlPointInfo& r : std::as_const(d_ptr->mControlPointInfos)) {
-		switch (r.controlPointType) {
-		case ControlPointTopLeft:
-		case ControlPointTopMid:
-		case ControlPointTopRight:
-		case ControlPointRightMid:
-		case ControlPointBottomRight:
-		case ControlPointBottomMid:
-		case ControlPointBottomLeft:
-		case ControlPointLeftMid:
-			painter->drawRect(r.rect);
-			break;
-		default:
-			break;
-		}
-	}
-	painter->restore();
+	return d_ptr->mEnableResize;
 }
 
 /**
@@ -1210,103 +512,6 @@ void DAGraphicsResizeableItem::paintBorder(QPainter* painter,
 }
 
 /**
- * @brief 生成control points
- * @param tp
- * @return
- */
-QRectF DAGraphicsResizeableItem::controlPointRect(ControlType tp, const QRectF& bodyRect) const
-{
-	QSizeF ss = controlPointSize();
-	QRectF cr(QPointF(0, 0), ss);
-	// 说明在控制点上
-	switch (tp) {
-	case ControlPointTopLeft:
-		cr.moveTo(bodyRect.topLeft() - QPointF(ss.width(), ss.height()));
-		break;
-	case ControlPointTopMid:
-		cr.moveTo(QPointF(bodyRect.left() + bodyRect.width() / 2 - ss.width() / 2, bodyRect.top() - ss.height()));
-		break;
-	case ControlPointTopRight:
-		cr.moveTo(bodyRect.topRight() - QPointF(0, ss.height()));
-		break;
-	case ControlPointRightMid:
-		cr.moveTo(QPointF(bodyRect.right(), bodyRect.top() + bodyRect.height() / 2 - ss.height() / 2));
-		break;
-	case ControlPointBottomRight:
-		cr.moveTo(bodyRect.bottomRight());
-		break;
-	case ControlPointBottomMid:
-		cr.moveTo(QPointF(bodyRect.left() + bodyRect.width() / 2 - ss.width() / 2, bodyRect.bottom()));
-		break;
-	case ControlPointBottomLeft:
-		cr.moveTo(bodyRect.bottomLeft() - QPointF(ss.width(), 0));
-		break;
-	case ControlPointLeftMid:
-		cr.moveTo(QPointF(bodyRect.left() - ss.width(), bodyRect.top() + bodyRect.height() / 2 - ss.height() / 2));
-		break;
-	case ControlLineLeft:
-		// 控制线
-		cr = QRectF(bodyRect.topLeft() - QPointF(ss.width(), 0), QSizeF(ss.width(), bodyRect.height()));
-		break;
-	case ControlLineTop:
-		// 控制线
-		cr = QRectF(bodyRect.topLeft() - QPointF(0, ss.height()), QSizeF(bodyRect.width(), ss.height()));
-		break;
-	case ControlLineRight:
-		// 控制线
-		cr = QRectF(bodyRect.topRight(), QSizeF(ss.width(), bodyRect.height()));
-		break;
-	case ControlLineBottom:
-		// 控制线
-		cr = QRectF(bodyRect.bottomLeft(), QSizeF(bodyRect.width(), ss.height()));
-		break;
-	default:
-		break;
-	}
-	return cr;
-}
-
-/**
- * @brief 控制点的大小
- * @return
- */
-QSizeF DAGraphicsResizeableItem::controlPointSize() const
-{
-    return d_ptr->mControlPointSize;
-}
-
-/**
- * @brief 在尺寸发生变化后调用，刷新控制点的位置
- */
-void DAGraphicsResizeableItem::prepareControlInfoChange()
-{
-    d_ptr->resetResizeableItemControlPointInfo();
-}
-/**
- * @brief 测试位置是否在控制点上，如果是返回控制点的类型，如果不在返回NotAtControlPoint
- * @param pos
- * @return
- */
-DAGraphicsResizeableItem::ControlType DAGraphicsResizeableItem::getControlPointByPos(const QPointF& pos) const
-{
-	for (const DAGraphicsResizeableItemControlPointInfo& r : std::as_const(d_ptr->mControlPointInfos)) {
-		if (r.rect.contains(pos)) {
-			// 如果位置在某个控制点里面
-			return r.controlPointType;
-		}
-	}
-	return NotUnderAnyControlType;
-}
-/**
- * @brief 判断当前是否处于调整大小的状态中
- * @return 如果当前在调整大小，返回true
- */
-bool DAGraphicsResizeableItem::isResizing() const
-{
-    return d_ptr->mCurrentControlTypeUnderMouse != NotUnderAnyControlType;
-}
-
-/**
  * @brief 是否允许对齐网格
  * @return
  */
@@ -1332,6 +537,16 @@ QSize DAGraphicsResizeableItem::getGridSize() const
 }
 
 /**
+ * @brief 测试尺寸是否在最大最小范围内，返回修正后的尺寸
+ * @param s
+ * @return
+ */
+QSizeF DAGraphicsResizeableItem::testBodySize(const QSizeF& s) const
+{
+	return d_ptr->testBodySize(s);
+}
+
+/**
  * @brief 此函数和setBodySize不同，setBodySize是虚函数，且会校验尺寸的最大最小范围，此函数不进行校验
  *
  * 此函数适合继承的类在构造函数中调用，应为理论上构造函数不应该调用虚函数
@@ -1342,8 +557,32 @@ void DAGraphicsResizeableItem::changeBodySize(const QSizeF& s)
 	if (s != d_ptr->mSize) {
 		d_ptr->mSize = s;
 		updateTransformOriginPoint();
-		prepareControlInfoChange();
+		// prepareControlInfoChange() 已移除
 	}
+}
+
+//======================================================================
+// DAIResizableGraphicsItem 接口实现
+//======================================================================
+
+QPointF DAGraphicsResizeableItem::getBodyPainterStartPos() const
+{
+	return d_ptr->mPainterRectStartPos;
+}
+
+QPointF DAGraphicsResizeableItem::getBodyTransformOriginPoint() const
+{
+	return transformOriginPoint();
+}
+
+QGraphicsItem* DAGraphicsResizeableItem::graphicsItem()
+{
+	return this;
+}
+
+const QGraphicsItem* DAGraphicsResizeableItem::graphicsItem() const
+{
+	return this;
 }
 
 }  // end namespace DA

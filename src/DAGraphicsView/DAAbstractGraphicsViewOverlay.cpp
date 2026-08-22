@@ -13,7 +13,9 @@ namespace DA
  */
 DAAbstractGraphicsViewOverlay::DAAbstractGraphicsViewOverlay(QGraphicsView* parent) : DAAbstractWidgetOverlay(parent)
 {
-	parent->setMouseTracking(true);
+	if (parent) {
+		parent->setMouseTracking(true);
+	}
 	mIsInstalled = tryInstall();
 	setActive(true);
 }
@@ -80,20 +82,27 @@ bool DAAbstractGraphicsViewOverlay::eventFilter(QObject* obj, QEvent* event)
 		mIsInstalled = tryInstall();
 	}
 	if (obj && (obj == mViewPort)) {
+		QGraphicsView* v = view();
 		switch (event->type()) {
 		case QEvent::MouseMove: {
 			QMouseEvent* me = static_cast< QMouseEvent* >(event);
-			viewMouseMove(view()->mapFromGlobal(mViewPort->mapToGlobal(me->pos())));
+			if (v) {
+				viewMouseMove(v->mapFromGlobal(mViewPort->mapToGlobal(me->pos())));
+			}
 			break;
 		}
 		case QEvent::MouseButtonPress: {
 			QMouseEvent* me = static_cast< QMouseEvent* >(event);
-			viewMousePress(view()->mapFromGlobal(mViewPort->mapToGlobal(me->pos())));
+			if (v) {
+				viewMousePress(v->mapFromGlobal(mViewPort->mapToGlobal(me->pos())));
+			}
 			break;
 		}
 		case QEvent::MouseButtonRelease: {
 			QMouseEvent* me = static_cast< QMouseEvent* >(event);
-			viewMouseRelease(view()->mapFromGlobal(mViewPort->mapToGlobal(me->pos())));
+			if (v) {
+				viewMouseRelease(v->mapFromGlobal(mViewPort->mapToGlobal(me->pos())));
+			}
 			break;
 		}
 		default:
@@ -164,7 +173,10 @@ void DAAbstractGraphicsViewOverlay::viewMouseRelease(const QPoint& viewPos)
 bool DAAbstractGraphicsViewOverlay::tryInstall()
 {
 	QGraphicsView* v = view();
-	QWidget* vp      = v->viewport();
+	if (!v) {
+		return false;
+	}
+	QWidget* vp = v->viewport();
 	if (!vp) {
 		return false;
 	}

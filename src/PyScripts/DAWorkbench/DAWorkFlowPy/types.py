@@ -114,6 +114,7 @@ class Parameter:
     :param filter: 文件过滤器（"file" 类型参数适用，如 "CSV Files (*.csv);;All Files (*.*)"）
     :param layout: 编辑器布局模式，"inline"（默认，属性名在左、编辑器在右）或 "below"（属性名在上、编辑器占满整行下方）。str 类型在 below 模式下自动切换为多行 QPlainTextEdit
     :param height: 编辑器高度（像素），仅 below 模式生效。str 类型默认 80，code 类型默认 100，未设置时使用类型默认值
+    :param show_on_node: 是否在节点 body 上渲染该参数（名称:值），默认 True。设为 False 则不在节点上显示该参数
     :param kwargs: 扩展字段，用于支持额外属性（键名需与 C++ DANodeParameterFormAdapter 读取的 attributes 键一致：min/max/step/decimals/filter/layout/height/enum）
     """
 
@@ -150,6 +151,7 @@ class Parameter:
         filter=None,
         layout: str = "inline",
         height=None,
+        show_on_node: bool = True,
         **kwargs,
     ):
         self.name = ""  # 由 NodeDef 装饰器通过类属性名设置
@@ -181,6 +183,7 @@ class Parameter:
         self._extra_kwargs["layout"] = layout_norm
         if height is not None:
             self._extra_kwargs["height"] = int(height)
+        self._extra_kwargs["show_on_node"] = bool(show_on_node)
         # 保留 **kwargs 用于未来扩展
         self._extra_kwargs.update(kwargs)
 

@@ -145,7 +145,7 @@ C++ 代理类的异常处理遵循 DAPyDataFrame 模式——try/catch + 安全�
 | 模块 | 文件 | 职责 | 对外接口 |
 |------|------|------|----------|
 | 类型定义 | `types.py` | `Input`, `Output`, `Parameter` 声明类，`to_dict()` 序列化 | 供 NodeDef 装饰器使用 |
-| 节点定义 | `node_def.py` | `NodeDef` 装饰器，`DAWorkflowNode` 基类，`NodeDisplay` 渲染属性聚合 | `@NodeDef(name=, category=, icon=, render_template=, style=)` |
+| 节点定义 | `node_def.py` | `NodeDef` 装饰器，`DAWorkflowNode` 基类，`NodeDisplay` 渲染属性聚合 | `@NodeDef(name=, category=, icon=, render_template=, style=, description=)` |
 | 连接关系 | `connection.py` | `DAConnection` — 描述节点间数据连接 | `DAConnection(src_node, src_channel, dst_node, dst_channel)` |
 | 工作流模型 | `workflow.py` | `DAWorkflow` — DAG 模型，管理节点和连接，拓扑排序验证 | `add_node`, `remove_node`, `add_connection`, `topological_sort`, `is_valid_dag` |
 | 节点注册 | `node_registry.py` | `DANodeRegistry` — 发现并注册 `@NodeDef` 装饰的节点类 | `discover(scan_paths, use_entry_points)`, `get_descriptor(qualified_name)` |

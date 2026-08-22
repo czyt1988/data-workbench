@@ -40,6 +40,23 @@ void DAPyWorkFlowNodeItemSettingWidget::init()
     // 默认显示参数tab
     ui->tabWidget->setCurrentIndex(0);
 
+    // 参数变化时刷新场景中选中节点的图形项显示
+    connect(mParamSettingWidget, &DANodeParamSettingPanelWidget::fieldValueChanged,
+            this, [this](const QString& fieldName, const QVariant& value) {
+        Q_UNUSED(fieldName);
+        Q_UNUSED(value);
+        DAPyWorkFlowGraphicsScene* scene = getCurrentScene();
+        if (!scene) {
+            return;
+        }
+        const QList< QGraphicsItem* > items = scene->selectedItems();
+        for (QGraphicsItem* item : std::as_const(items)) {
+            if (DAPyNodeGraphicsItem* nodeItem = dynamic_cast< DAPyNodeGraphicsItem* >(item)) {
+                nodeItem->refreshParameterCache();
+            }
+        }
+    });
+
     // 注册默认面板
     DANodeParamSettingPanelFactory::instance().registerDefaultPanels();
 }

@@ -4,7 +4,12 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import remove_outliers_iqr_impl
 
 
-@NodeDef(name="Remove Outliers IQR", category=_("Data Cleaning"), icon="outlier_iqr")  # cn:数据清洗
+@NodeDef(
+    name="Remove Outliers IQR",
+    category=_("Data Cleaning"),  # cn:数据清洗
+    icon="outlier_iqr",
+    description=_("Removes outlier rows from a DataFrame using the IQR (interquartile range) method. Values outside 1.5×IQR (configurable) from the quartiles are treated as outliers and removed."),  # cn:使用 IQR（四分位距）方法移除 DataFrame 中的异常值行。偏离四分位数 1.5×IQR（可配置）以外的值被视为异常值并移除。
+)
 class DataRemoveOutliersIQRNode:
     """Remove outliers based on the interquartile range (IQR)"""
 

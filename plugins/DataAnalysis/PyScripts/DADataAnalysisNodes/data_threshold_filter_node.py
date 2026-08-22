@@ -4,7 +4,12 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import threshold_filter_impl
 
 
-@NodeDef(name="Threshold Filter", category=_("Data Cleaning"), icon="threshold")  # cn:数据清洗
+@NodeDef(
+    name="Threshold Filter",
+    category=_("Data Cleaning"),  # cn:数据清洗
+    icon="threshold",
+    description=_("Filters DataFrame rows by comparing a column's values against a threshold. Supports operators: >, >=, <, <=, ==, !=. Outputs the filtered data and the count of removed rows."),  # cn:通过比较列值与阈值来筛选 DataFrame 行。支持运算符：>、>=、<、<=、==、!=。输出筛选后的数据和移除的行数。
+)
 class DataThresholdFilterNode:
     """Filter data by a column-value threshold condition."""
 

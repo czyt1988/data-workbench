@@ -71,9 +71,6 @@ msgstr ""
 msgid "Outputs data when condition is True"
 msgstr ""
 
-msgid "Print"
-msgstr ""
-
 msgid "System / Data"
 msgstr ""
 

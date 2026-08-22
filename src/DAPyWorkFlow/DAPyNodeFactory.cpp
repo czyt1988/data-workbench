@@ -119,6 +119,9 @@ bool DAPyNodeFactory::discoverNodes(const QStringList& scanPaths, bool useEntryP
             if (pybind11::hasattr(nodeClassObj, "icon")) {
                 metaData.iconPath = nodeClassObj.attr("icon").cast< QString >();
             }
+            if (pybind11::hasattr(nodeClassObj, "__node_description")) {
+                metaData.tooltip = nodeClassObj.attr("__node_description").cast< QString >();
+            }
 
             if (!metaData.isValid()) {
                 qWarning() << "Invalid node metadata found, skipping";

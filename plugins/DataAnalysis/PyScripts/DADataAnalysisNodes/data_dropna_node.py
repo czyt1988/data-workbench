@@ -9,6 +9,7 @@ from DADataAnalysisCore.cleaning import dropna_impl
     name="Drop NA",
     category=_("Data Cleaning"),  # cn:数据清洗
     icon="drop_na",
+    description=_("Removes rows or columns containing missing values (NaN). Supports 'any' (drop if any value is missing) or 'all' (drop only if all values are missing) strategies, with optional column subset and minimum non-missing count threshold."),  # cn:删除包含缺失值（NaN）的行或列。支持 'any'（任一缺失即删除）或 'all'（全部缺失才删除）策略，可选列子集和非缺失值最小数量阈值。
 )
 class DataDropNaNode:
     """Drop rows or columns containing missing values."""

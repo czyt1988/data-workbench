@@ -32,7 +32,8 @@ from ..types import Input, Output
     output_port_side="South",
     input_port_style=LinkPointStyle(shape="Circle"),
     output_port_style=LinkPointStyle(shape="Circle"),
-))
+), description=_("Demonstrates ellipse body shape with name below, icon above, and circular ports (input north / output south)."),  # cn:演示椭圆体形状，名称在下方，图标在上方，圆形端口（输入北/输出南）。
+)
 class EllipseDemoNode:
     """Ellipse demo node: ellipse body, name below, circle ports"""
 
@@ -50,7 +51,8 @@ class EllipseDemoNode:
 # 2. DefaultRectNode
 #    默认样式（不设置 style 参数）
 # ============================================================================
-@NodeDef(name="Default Rect", category=_("Style Demo"))
+@NodeDef(name="Default Rect", category="Style Demo", description=_("Demonstrates the default node appearance with no custom style applied."),  # cn:演示默认节点外观，未应用任何自定义样式。
+)
 class DefaultRectNode:
     """Default rectangle node, demonstrates default style behavior"""
 
@@ -75,7 +77,8 @@ class DefaultRectNode:
     output_port_side="South",
     input_port_style=LinkPointStyle(shape="Circle"),
     output_port_style=LinkPointStyle(shape="Circle"),
-))
+), description=_("Demonstrates rectangular body with circular ports and north/south port layout."),  # cn:演示矩形体配圆形端口，端口南北布局。
+)
 class CirclePortsNode:
     """Circle ports demo node: rectangle body, circle ports, north/south layout"""
 
@@ -98,7 +101,8 @@ class CirclePortsNode:
 @NodeDef(name="Diamond Ports", category=_("Style Demo"), style=NodeDisplay(
     input_port_style=LinkPointStyle(shape="Diamond", fill_color=(255, 200, 200)),
     output_port_style=LinkPointStyle(shape="Diamond", fill_color=(200, 200, 255)),
-))
+), description=_("Demonstrates rectangular body with diamond-shaped ports and colored port fills."),  # cn:演示矩形体配菱形端口和彩色端口填充。
+)
 class DiamondPortsNode:
     """Diamond ports demo node: rectangle body, diamond ports, colored fill"""
 
@@ -121,7 +125,8 @@ class DiamondPortsNode:
 @NodeDef(name="Custom Colors", category=_("Style Demo"), style=NodeDisplay(
     background_color=(255, 200, 200),
     border_color=(0, 0, 255),
-))
+), description=_("Demonstrates custom background and border colors (red background, blue border)."),  # cn:演示自定义背景色和边框色（红色背景，蓝色边框）。
+)
 class CustomColorNode:
     """Custom color demo node: red background, blue border"""
 
@@ -146,7 +151,8 @@ class CustomColorNode:
     name_position="Below",
     output_port_style=LinkPointStyle(shape="Diamond"),
     border_color=(50, 50, 200),
-))
+), description=_("Demonstrates a mixed layout: ellipse body, name below, diamond output ports, and blue border."),  # cn:演示混合布局：椭圆体、名称在下方、菱形输出端口、蓝色边框。
+)
 class MixedLayoutNode:
     """Mixed layout demo node: ellipse body, name below, diamond ports, blue border"""
 
@@ -168,7 +174,8 @@ class MixedLayoutNode:
 
 @NodeDef(name="Large Radius", category=_("Style Demo"), style=NodeDisplay(
     corner_radius=12.0,
-))
+), description=_("Demonstrates a rectangular body with large corner radius."),  # cn:演示矩形体配大圆角半径。
+)
 class CornerRadiusNode:
     """Large corner radius demo node: rectangle body, large corner radius"""
 

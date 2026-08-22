@@ -124,7 +124,21 @@ public:
 
     // 渲染模板
     NodeRenderTemplate renderTemplate;  ///< 渲染模板
-    // 重置所有字段为默认值（与 paintRectTemplate() 硬编码值一致）
+
+    // 最小 body 尺寸（用于自定义 paint 回调的节点预留渲染空间，0 表示不限制）
+    qreal minBodyWidth { 0 };
+    qreal minBodyHeight { 0 };
+
+    // 辅助方法
+    /**
+     * @brief 重置所有字段为默认值
+     *
+     * 默认值与 DAPyNodeGraphicsItem::paintRectTemplate() 中的硬编码值一致：
+     * - 主体: RoundedRect, 名称Inside, 图标LeftOfText
+     * - 颜色: 背景(240,240,240), 边框(180,180,180), 边框宽1.0, 圆角4.0
+     * - 图标: 尺寸24.0, 类型None, 缩放0.8
+     * - 端口: 输入West, 输出East, 样式默认构造, 布局Auto
+     */
     void setDefaults()
     {
         // 主体样式
@@ -151,6 +165,10 @@ public:
 
         // 渲染模板
         renderTemplate = RenderDefaultTemplate;
+
+        // 最小 body 尺寸
+        minBodyWidth  = 0;
+        minBodyHeight = 0;
     }
     // 辅助函数
     inline bool isNameInside() const

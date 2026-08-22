@@ -4,7 +4,12 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import interpolate_impl
 
 
-@NodeDef(name="Interpolate", category=_("Data Cleaning"), icon="interpolate")  # cn:数据清洗
+@NodeDef(
+    name="Interpolate",
+    category=_("Data Cleaning"),  # cn:数据清洗
+    icon="interpolate",
+    description=_("Fills missing values (NaN) by interpolation. Supports linear, polynomial, spline, and time-based interpolation methods."),  # cn:通过插值填充缺失值（NaN）。支持线性、多项式、样条和时间插值方法。
+)
 class DataFillInterpolateNode:
     """Fill missing values using interpolation"""
 
