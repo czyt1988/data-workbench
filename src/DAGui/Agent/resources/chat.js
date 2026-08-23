@@ -140,6 +140,10 @@ function init() {
     document.addEventListener('click', function(e) {
         var dd = document.getElementById('model-dropdown');
         if (!dd || dd.hasAttribute('hidden')) return;
+        // 下拉内点击（back/供应商行）会先同步重渲染并 detach e.target，
+        // contains(e.target) 会误判为外部点击而关闭下拉；
+        // composedPath() 在事件派发时捕获完整路径，不受重渲染影响。
+        if (modelSelector && e.composedPath && e.composedPath().indexOf(modelSelector) !== -1) return;
         if (modelSelector && modelSelector.contains(e.target)) return;
         closeModelDropdown();
     });
