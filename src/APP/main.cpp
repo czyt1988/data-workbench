@@ -239,7 +239,7 @@ int main(int argc, char* argv[])
  */
 void initCommandLine(QCommandLineParser* cmd)
 {
-    cmd->setApplicationDescription(QCoreApplication::translate("main", "version:%1,compile datetime:%2")
+    cmd->setApplicationDescription(QCoreApplication::translate("main", "version:%1,compile datetime:%2")  // cn:版本：%1，编译时间：%2
                                        .arg(DA_VERSION)
                                        .arg(DA_COMPILE_DATETIME));
     cmd->addHelpOption();

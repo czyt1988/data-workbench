@@ -2,12 +2,12 @@
 # Copyright (C) 2025 DataAnalysis
 # This file is distributed under the same license as the DADataAnalysis package.
 # Automatically generated, 2025.
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: DADataAnalysis 1.0\n"
 "Report-Msgid-Bugs-To: i18n@example.com\n"
-"POT-Creation-Date: 2025-12-16 17:04+0800\n"
+"POT-Creation-Date: 2026-08-23 17:22+0800\n"
 "PO-Revision-Date: 2025-12-14 19:36+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -16,804 +16,819 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:35
-msgid "Please select a dataset first"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:39
-msgid "The selected data must be a table (DataFrame) format"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:93
+#: dataframe_cleaner.py:66
 #, python-brace-format
 msgid "Operation failed: {error}"
-msgstr ""
+msgstr "操作失败：{error}"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:114
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:172
+#: dataframe_cleaner.py:88 dataframe_cleaner.py:127
 msgid "Remove Missing Values"
-msgstr ""
+msgstr "删除缺失值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:116
+#: dataframe_cleaner.py:89
 msgid "Basic Settings"
-msgstr ""
+msgstr "基础设置"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:119
+#: dataframe_cleaner.py:90
 msgid "Removal Criteria"
-msgstr ""
+msgstr "删除条件"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:123
+#: dataframe_cleaner.py:93
 msgid "Remove row if ANY value is missing"
-msgstr ""
+msgstr "行中任意值为空时删除"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:124
+#: dataframe_cleaner.py:94
 msgid "Remove row if ALL values are missing"
 msgstr "行中所有值为空时删除"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:126
+#: dataframe_cleaner.py:96
 msgid "Choose when to remove a row based on missing values"
 msgstr "根据缺失值情况选择何时删除行"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:131
+#: dataframe_cleaner.py:97
 msgid "Minimum Non-NA Values"
-msgstr ""
+msgstr "最少非空值数量"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:134
-msgid "Minimum number of non-missing values required to keep the row (0=disable)"
+#: dataframe_cleaner.py:99
+msgid ""
+"Minimum number of non-missing values required to keep the row (0=disable)"
 msgstr "保留行所需的最少非缺失值数量（0=禁用）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:138
+#: dataframe_cleaner.py:101 dataframe_cleaner.py:606
 msgid "Advanced Settings"
-msgstr ""
+msgstr "高级设置"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:141
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:206
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:604
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:809
+#: dataframe_cleaner.py:102 dataframe_cleaner.py:154 dataframe_cleaner.py:434
+#: dataframe_cleaner.py:512 dataframe_cleaner.py:610
 msgid "Reset Row Numbers"
-msgstr ""
+msgstr "重置行号"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:143
+#: dataframe_cleaner.py:104
 msgid "Renumber rows from 0 after removing missing values"
 msgstr "删除缺失值后从0开始重新编号行"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:167
+#: dataframe_cleaner.py:122
 #, python-brace-format
 msgid "Failed to remove missing values: {error}"
-msgstr ""
+msgstr "移除缺失值失败：{error}"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:174
+#: dataframe_cleaner.py:129
 #, python-brace-format
 msgid "Removed {removed_rows} rows with missing values"
 msgstr "删除了{removed_rows}个包含缺失值的行"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:189
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:232
+#: dataframe_cleaner.py:145 dataframe_cleaner.py:177
 msgid "Remove Duplicate Rows"
-msgstr ""
+msgstr "删除重复行"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:193
+#: dataframe_cleaner.py:146
 msgid "Which to Keep"
-msgstr ""
+msgstr "保留哪个"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:197
+#: dataframe_cleaner.py:149
 msgid "Keep first occurrence, remove rest"
-msgstr ""
+msgstr "保留首次出现，删除其余"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:198
+#: dataframe_cleaner.py:150
 msgid "Keep last occurrence, remove rest"
-msgstr ""
+msgstr "保留最后出现，删除其余"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:199
+#: dataframe_cleaner.py:151
 msgid "Remove all duplicates"
 msgstr "删除所有重复值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:201
+#: dataframe_cleaner.py:153
 msgid "When duplicates are found, decide which one to keep"
-msgstr "发现重复值时，决定保留哪一个"
+msgstr "发现重复值时，决定保留哪一条"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:208
-#, fuzzy
+#: dataframe_cleaner.py:156
 msgid "Renumber rows starting from 0 after removing duplicates"
-msgstr "删除缺失值后，是否重建索引"
+msgstr "删除重复行后从 0 开始重新编号行"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:227
+#: dataframe_cleaner.py:172
 #, python-brace-format
 msgid "Failed to remove duplicates: {error}"
-msgstr ""
+msgstr "移除重复行失败：{error}"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:234
+#: dataframe_cleaner.py:179
 #, python-brace-format
 msgid "Removed {removed_rows} duplicate rows"
 msgstr "删除了{removed_rows}个重复行"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:249
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:337
+#: dataframe_cleaner.py:195 dataframe_cleaner.py:248
 msgid "Fill Missing Values"
-msgstr ""
+msgstr "填充缺失值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:251
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:254
-#, fuzzy
+#: dataframe_cleaner.py:196 dataframe_cleaner.py:197
 msgid "Fill Method"
-msgstr "删除方法"
+msgstr "填充方法"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:258
+#: dataframe_cleaner.py:200
 msgid "Fill with a specific value"
-msgstr ""
+msgstr "用特定值填充"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:259
+#: dataframe_cleaner.py:201
 msgid "Use previous non-missing value"
-msgstr ""
+msgstr "使用前一个非缺失值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:260
+#: dataframe_cleaner.py:202
 msgid "Use next non-missing value"
-msgstr ""
+msgstr "使用后一个非缺失值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:261
+#: dataframe_cleaner.py:203
 msgid "Fill with column average"
-msgstr ""
+msgstr "用列平均值填充"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:262
+#: dataframe_cleaner.py:204
 msgid "Fill with column middle value"
-msgstr ""
+msgstr "用列中位数填充"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:263
+#: dataframe_cleaner.py:205
 msgid "Fill with most common value"
 msgstr "用最常出现的值填充"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:265
+#: dataframe_cleaner.py:207
 msgid "Choose how to fill missing values"
-msgstr "选择如何填充缺失值"
+msgstr "选择填充缺失值的方式"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:269
-#, fuzzy
+#: dataframe_cleaner.py:209
 msgid "Fill Value Settings"
-msgstr "删除缺失值参数设置"
+msgstr "填充值设置"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:272
+#: dataframe_cleaner.py:210
 msgid "Fill Value"
-msgstr ""
+msgstr "填充值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:274
+#: dataframe_cleaner.py:212
 msgid "Value to use when filling with specific value"
 msgstr "使用特定值填充时使用的值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:279
+#: dataframe_cleaner.py:213
 msgid "Maximum Consecutive Fills"
-msgstr ""
+msgstr "最大连续填充数"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:283
-msgid "Maximum number of consecutive missing values to fill (leave empty for unlimited)"
+#: dataframe_cleaner.py:215
+msgid ""
+"Maximum number of consecutive missing values to fill (leave empty for "
+"unlimited)"
 msgstr "要填充的连续缺失值的最大数量（留空表示无限制）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:328
+#: dataframe_cleaner.py:239
 #, python-brace-format
 msgid "Filled {count} missing values"
-msgstr ""
+msgstr "已填充 {count} 个缺失值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:332
+#: dataframe_cleaner.py:243
 #, python-brace-format
 msgid "Failed to fill missing values: {error}"
-msgstr ""
+msgstr "填充缺失值失败：{error}"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:354
-#, fuzzy
+#: dataframe_cleaner.py:266
 msgid "Interpolate Values Parameter Settings"
-msgstr "删除缺失值参数设置"
+msgstr "插值参数设置"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:358
+#: dataframe_cleaner.py:267
 msgid "Interpolation Method"
-msgstr ""
+msgstr "插值方法"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:364
+#: dataframe_cleaner.py:270
 msgid "Linear interpolation"
-msgstr ""
+msgstr "线性插值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:365
+#: dataframe_cleaner.py:271
 msgid "Time-based interpolation"
-msgstr ""
+msgstr "基于时间的插值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:366
+#: dataframe_cleaner.py:272
 msgid "Use index values"
-msgstr ""
+msgstr "使用索引值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:367
+#: dataframe_cleaner.py:273
 msgid "Pad interpolation"
-msgstr ""
+msgstr "填充插值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:368
+#: dataframe_cleaner.py:274
 msgid "Nearest interpolation"
-msgstr ""
+msgstr "最近邻插值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:369
+#: dataframe_cleaner.py:275
 msgid "Zero-order hold"
-msgstr ""
+msgstr "零阶保持"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:370
+#: dataframe_cleaner.py:276
 msgid "Spline linear interpolation"
-msgstr ""
+msgstr "样条线性插值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:371
+#: dataframe_cleaner.py:277
 msgid "Quadratic interpolation"
-msgstr ""
+msgstr "二次插值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:372
+#: dataframe_cleaner.py:278
 msgid "Cubic interpolation"
-msgstr ""
+msgstr "三次插值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:373
+#: dataframe_cleaner.py:279
 msgid "Spline interpolation"
-msgstr ""
+msgstr "样条插值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:374
+#: dataframe_cleaner.py:280
 msgid "Barycentric interpolation"
-msgstr ""
+msgstr "重心插值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:375
+#: dataframe_cleaner.py:281
 msgid "Polynomial interpolation"
-msgstr ""
+msgstr "多项式插值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:376
+#: dataframe_cleaner.py:282
 msgid "Krogh interpolation"
-msgstr ""
+msgstr "Krogh插值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:377
+#: dataframe_cleaner.py:283
 msgid "Piecewise polynomial interpolation"
-msgstr ""
+msgstr "分段多项式插值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:378
+#: dataframe_cleaner.py:284
 msgid "PCHIP interpolation"
-msgstr ""
+msgstr "PCHIP插值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:379
+#: dataframe_cleaner.py:285
 msgid "Akima interpolation"
 msgstr "Akima插值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:381
+#: dataframe_cleaner.py:287
 msgid "Interpolation method to use"
 msgstr "使用的插值方法"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:386
+#: dataframe_cleaner.py:288
 msgid "Interpolation Limit"
-msgstr ""
+msgstr "插值限制"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:390
+#: dataframe_cleaner.py:290
 msgid "Maximum number of consecutive NaN values to interpolate"
 msgstr "要插值的连续NaN值的最大数量"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:395
+#: dataframe_cleaner.py:291
 msgid "Spline Order"
-msgstr ""
+msgstr "样条阶数"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:399
+#: dataframe_cleaner.py:293
 msgid "Order of the spline interpolator (used for 'spline' method)"
 msgstr "样条插值的阶数（用于'spline'方法）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:404
+#: dataframe_cleaner.py:294
 msgid "Inplace Interpolation"
-msgstr ""
+msgstr "原地插值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:406
+#: dataframe_cleaner.py:296
 msgid "Whether to interpolate in place or return a copy"
 msgstr "是否原地插值或返回副本"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:437
-#, python-brace-format
-msgid "Failed to interpolate column {col}: {error}"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:463
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:546
+#: dataframe_cleaner.py:339 dataframe_cleaner.py:393
 msgid "Replace Values"
-msgstr ""
+msgstr "替换值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:467
+#: dataframe_cleaner.py:340
 msgid "Values to Replace"
-msgstr ""
+msgstr "要替换的值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:469
+#: dataframe_cleaner.py:342
 msgid "Values to find and replace (comma separated for multiple values)"
 msgstr "要查找和替换的值（多个值用逗号分隔）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:474
+#: dataframe_cleaner.py:343
 msgid "Replacement Value"
-msgstr ""
+msgstr "替换值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:476
+#: dataframe_cleaner.py:345
 msgid "Value to use as replacement"
 msgstr "用作替换的值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:481
+#: dataframe_cleaner.py:346
 msgid "Case Sensitive"
-msgstr ""
+msgstr "区分大小写"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:483
+#: dataframe_cleaner.py:348
 msgid "Consider letter case when matching values (for text only)"
 msgstr "匹配值时考虑字母大小写（仅适用于文本）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:497
+#: dataframe_cleaner.py:363
 msgid "Please specify values to replace"
-msgstr ""
+msgstr "请指定要替换的值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:503
+#: dataframe_cleaner.py:368
 msgid "No valid values specified for replacement"
-msgstr ""
+msgstr "未指定有效的替换值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:532
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:665
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:718
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:876
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:946
-#, python-brace-format
-msgid "Error processing column '{col}': {error}"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:535
+#: dataframe_cleaner.py:382
 #, python-brace-format
 msgid "Replaced {count} values"
-msgstr ""
+msgstr "已替换 {count} 个值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:537
+#: dataframe_cleaner.py:384
 msgid "No matching values found to replace"
-msgstr ""
+msgstr "未找到可替换的匹配值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:541
+#: dataframe_cleaner.py:388
 #, python-brace-format
 msgid "Failed to replace values: {error}"
 msgstr "替换值失败: {error}"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:566
+#: dataframe_cleaner.py:414
 msgid "Remove Outliers (IQR Method)"
-msgstr ""
+msgstr "移除异常值（IQR 方法）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:568
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:766
+#: dataframe_cleaner.py:415 dataframe_cleaner.py:490
 msgid "Detection Settings"
-msgstr ""
+msgstr "检测设置"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:571
+#: dataframe_cleaner.py:416
 msgid "IQR Multiplier"
-msgstr ""
+msgstr "IQR乘数"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:575
-msgid "Values beyond Q1-multiplier*IQR and Q3+multiplier*IQR are outliers (typical: 1.5-3)"
-msgstr "超出Q1-乘数*IQR和Q3+乘数*IQR的值被视为异常值（典型值：1.5-3）"
+#: dataframe_cleaner.py:418
+msgid ""
+"Values beyond Q1-multiplier*IQR and Q3+multiplier*IQR are outliers (typical: "
+"1.5-3)"
+msgstr "超出 Q1-乘数*IQR 和 Q3+乘数*IQR 的值视为异常值（典型值：1.5-3）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:579
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:784
-#, fuzzy
+#: dataframe_cleaner.py:420 dataframe_cleaner.py:498
 msgid "Action Settings"
-msgstr "删除缺失值参数设置"
+msgstr "操作设置"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:582
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:787
+#: dataframe_cleaner.py:421 dataframe_cleaner.py:499
 msgid "Action on Outliers"
-msgstr ""
+msgstr "对异常值的操作"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:586
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:791
+#: dataframe_cleaner.py:424 dataframe_cleaner.py:502
 msgid "Remove rows with outliers"
-msgstr ""
+msgstr "删除包含异常值的行"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:587
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:792
+#: dataframe_cleaner.py:425 dataframe_cleaner.py:503
 msgid "Replace outliers with column mean"
-msgstr ""
+msgstr "用列平均值替换异常值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:588
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:793
+#: dataframe_cleaner.py:426 dataframe_cleaner.py:504
 msgid "Replace outliers with column median"
-msgstr ""
+msgstr "用列中位数替换异常值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:589
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:794
+#: dataframe_cleaner.py:427 dataframe_cleaner.py:505
 msgid "Replace outliers with boundary values"
-msgstr ""
+msgstr "用边界值替换异常值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:590
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:795
+#: dataframe_cleaner.py:428 dataframe_cleaner.py:506
 msgid "Replace outliers with custom value"
 msgstr "用自定义值替换异常值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:592
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:797
+#: dataframe_cleaner.py:430 dataframe_cleaner.py:508
 msgid "How to handle detected outliers"
 msgstr "如何处理检测到的异常值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:597
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:802
+#: dataframe_cleaner.py:431 dataframe_cleaner.py:509
 msgid "Custom Replacement Value"
-msgstr ""
+msgstr "自定义替换值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:599
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:804
+#: dataframe_cleaner.py:433 dataframe_cleaner.py:511
 msgid "Value to use for replacement when action is 'replace_custom'"
 msgstr "当操作为'replace_custom'时使用的替换值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:606
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:811
+#: dataframe_cleaner.py:436 dataframe_cleaner.py:514
 msgid "Renumber rows after removing outliers (only for 'remove' action)"
 msgstr "删除异常值后重新编号行（仅适用于'remove'操作）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:626
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:832
-msgid "No numeric columns found for outlier detection"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:725
+#: dataframe_cleaner.py:459
 #, python-brace-format
 msgid "Removed {count} rows containing outliers using IQR method"
-msgstr ""
+msgstr "使用 IQR 方法移除了 {count} 行含异常值的数据"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:728
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:956
-msgid "replaced with mean"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:729
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:957
-msgid "replaced with median"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:730
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:958
-msgid "replaced with boundary values"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:731
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:959
-msgid "replaced with custom value"
-msgstr "用自定义值替换"
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:733
-#, python-brace-format
-msgid "Replaced {count} outlier values using IQR method ({action})"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:737
+#: dataframe_cleaner.py:461
 msgid "No outliers detected using IQR method"
-msgstr ""
+msgstr "使用 IQR 方法未检测到异常值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:742
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:970
+#: dataframe_cleaner.py:463
+#, python-brace-format
+msgid "Outlier values processed using IQR method ({action})"
+msgstr "使用 IQR 方法处理了异常值（{action}）"
+
+#: dataframe_cleaner.py:466 dataframe_cleaner.py:546
 #, python-brace-format
 msgid "Failed to process outliers: {error}"
 msgstr "处理异常值失败: {error}"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:747
+#: dataframe_cleaner.py:471
 msgid "Remove Outliers (IQR)"
-msgstr ""
+msgstr "移除异常值（IQR）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:749
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:977
+#: dataframe_cleaner.py:473 dataframe_cleaner.py:553
 #, python-brace-format
 msgid "Removed {removed_rows} rows outliers"
 msgstr "处理了{removed_rows}行异常值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:764
+#: dataframe_cleaner.py:489
 msgid "Remove Outliers (Z-score)"
-msgstr ""
+msgstr "移除异常值（Z-score 方法）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:769
+#: dataframe_cleaner.py:491
 msgid "Z-score Threshold"
-msgstr ""
+msgstr "Z-score阈值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:773
-msgid "Values with absolute Z-score above this threshold are outliers (typical: 3)"
+#: dataframe_cleaner.py:493
+msgid ""
+"Values with absolute Z-score above this threshold are outliers (typical: 3)"
 msgstr "绝对值超过此阈值的Z-score被视为异常值（典型值：3）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:778
+#: dataframe_cleaner.py:494
 msgid "Use Robust Statistics"
-msgstr ""
+msgstr "使用稳健统计"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:780
+#: dataframe_cleaner.py:496
 msgid "Use median and MAD instead of mean and std (better for non-normal data)"
 msgstr "使用中位数和MAD代替均值和标准差（适用于非正态数据）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:953
+#: dataframe_cleaner.py:539
 #, python-brace-format
 msgid "Removed {count} rows containing outliers using Z-score method"
-msgstr ""
+msgstr "使用 Z-score 方法移除了 {count} 行含异常值的数据"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:961
-#, python-brace-format
-msgid "Replaced {count} outlier values using Z-score method ({action})"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:965
+#: dataframe_cleaner.py:541
 msgid "No outliers detected using Z-score method"
-msgstr ""
+msgstr "使用 Z-score 方法未检测到异常值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:975
+#: dataframe_cleaner.py:543
+#, python-brace-format
+msgid "Outlier values processed using Z-score method ({action})"
+msgstr "使用 Z-score 方法处理了异常值（{action}）"
+
+#: dataframe_cleaner.py:551
 msgid "Remove Outliers (Z-Score)"
-msgstr ""
+msgstr "移除异常值（Z-Score）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:995
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1080
-#, fuzzy
+#: dataframe_cleaner.py:571
+msgid ""
+"No numeric columns found in selected data. Please select numeric columns for "
+"threshold filtering."
+msgstr "所选数据中未找到数值列。请选择数值列进行上下限过滤。"
+
+#: dataframe_cleaner.py:577
+msgid "No numeric columns selected. Please select at least one numeric column."
+msgstr "未选择数值列。请至少选择一个数值列。"
+
+#: dataframe_cleaner.py:581 dataframe_cleaner.py:656
+msgid "Threshold Filter"
+msgstr "上下限过滤"
+
+#: dataframe_cleaner.py:582
+msgid "Filter Conditions"
+msgstr "过滤条件"
+
+#: dataframe_cleaner.py:583
+msgid "Filter Type"
+msgstr "过滤类型"
+
+#: dataframe_cleaner.py:586
+msgid "Remove values GREATER THAN threshold (too high)"
+msgstr "删除大于阈值的值（过高）"
+
+#: dataframe_cleaner.py:587
+msgid "Remove values LESS THAN threshold (too low)"
+msgstr "删除小于阈值的值（过低）"
+
+#: dataframe_cleaner.py:588
+msgid "Remove values WITHIN range (keep outliers)"
+msgstr "删除范围内的值（保留异常值）"
+
+#: dataframe_cleaner.py:589
+msgid "Remove values OUTSIDE range (keep normal range)"
+msgstr "删除范围外的值（保留正常范围）"
+
+#: dataframe_cleaner.py:591
+msgid ""
+"Select the type of filtering you want to apply: remove values that are too "
+"high, too low, within a specific range, or outside a specific range."
+msgstr ""
+"选择要应用的过滤类型：删除过高的值、过低的值、特定范围内的值或特定范围外的"
+"值。"
+
+#: dataframe_cleaner.py:592
+msgid "Lower Threshold"
+msgstr "下限阈值"
+
+#: dataframe_cleaner.py:594
+msgid ""
+"The minimum acceptable value. Rows with values below this (depending on "
+"filter type) will be removed."
+msgstr "可接受的最小值。低于此值的行（根据过滤类型）将被删除。"
+
+#: dataframe_cleaner.py:595
+msgid "Upper Threshold"
+msgstr "上限阈值"
+
+#: dataframe_cleaner.py:597
+msgid ""
+"The maximum acceptable value. Rows with values above this (depending on "
+"filter type) will be removed."
+msgstr "可接受的最大值。高于此值的行（根据过滤类型）将被删除。"
+
+#: dataframe_cleaner.py:598
+msgid "Row Removal Logic"
+msgstr "行删除逻辑"
+
+#: dataframe_cleaner.py:601
+msgid "Remove row if ANY selected column meets the condition"
+msgstr "任意选中的列满足条件时删除行"
+
+#: dataframe_cleaner.py:602
+msgid "Remove row only if ALL selected columns meet the condition"
+msgstr "所有选中的列都满足条件时才删除行"
+
+#: dataframe_cleaner.py:604
+msgid ""
+"When multiple columns are selected: 'Any' removes the row if any column "
+"violates the threshold; 'All' only removes the row if all columns violate "
+"the threshold."
+msgstr ""
+"当选择多个列时：'任意'表示任意列违反阈值就删除行；'所有'表示所有列都违反阈值"
+"才删除行。"
+
+#: dataframe_cleaner.py:607
+msgid "Treat NaN as Threshold Violation"
+msgstr "将NaN视为违反阈值"
+
+#: dataframe_cleaner.py:609
+msgid ""
+"If enabled, rows with NaN (missing) values in selected columns will also be "
+"removed. If disabled, NaN values will be ignored."
+msgstr "启用后，所选列中含 NaN（缺失）值的行也会被删除；禁用则忽略 NaN 值。"
+
+#: dataframe_cleaner.py:612
+msgid "Renumber rows from 0 after filtering"
+msgstr "过滤后从 0 开始重新编号行"
+
+#: dataframe_cleaner.py:635
+#, python-brace-format
+msgid "Threshold filtering failed: {error}"
+msgstr "阈值过滤失败：{error}"
+
+#: dataframe_cleaner.py:640
+msgid "Removed {removed_rows} rows with values greater than {upper_threshold}"
+msgstr "删除了 {removed_rows} 行大于 {upper_threshold} 的数据"
+
+#: dataframe_cleaner.py:643
+msgid "Removed {removed_rows} rows with values less than {lower_threshold}"
+msgstr "删除了 {removed_rows} 行小于 {lower_threshold} 的数据"
+
+#: dataframe_cleaner.py:646
+#, python-brace-format
+msgid ""
+"Removed {removed_rows} rows with values between {lower_threshold} and "
+"{upper_threshold}"
+msgstr "删除了{removed_rows}个值在{lower_threshold}和{upper_threshold}之间的行"
+
+#: dataframe_cleaner.py:649
+#, python-brace-format
+msgid ""
+"Removed {removed_rows} rows with values outside {lower_threshold} to "
+"{upper_threshold} range"
+msgstr ""
+"删除了 {removed_rows} 行超出 {lower_threshold} 到 {upper_threshold} 范围的数"
+"据"
+
+#: dataframe_cleaner.py:652
+msgid "Filtered {removed_rows} rows based on threshold conditions"
+msgstr "根据阈值条件过滤了 {removed_rows} 行"
+
+#: dataframe_cleaner.py:678 dataframe_cleaner.py:716
 msgid "Transform Skewed Data"
-msgstr "删除缺失值参数设置"
+msgstr "变换偏态数据"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:999
+#: dataframe_cleaner.py:679
 msgid "Transformation Method"
-msgstr ""
+msgstr "转换方法"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1003
+#: dataframe_cleaner.py:682
 msgid "Logarithm transformation (log(x))"
-msgstr ""
+msgstr "对数转换（log(x)）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1004
+#: dataframe_cleaner.py:683
 msgid "Square root transformation (sqrt(x))"
-msgstr ""
+msgstr "平方根转换（sqrt(x)）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1005
+#: dataframe_cleaner.py:684
 msgid "Reciprocal transformation (1/x)"
-msgstr ""
+msgstr "倒数转换（1/x）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1006
+#: dataframe_cleaner.py:685
 msgid "Power transformation (x^lambda)"
 msgstr "幂转换（x^lambda）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1008
+#: dataframe_cleaner.py:687
 msgid "Choose transformation method for reducing skewness"
 msgstr "选择减少偏度的转换方法"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1013
+#: dataframe_cleaner.py:688
 msgid "Power Lambda"
-msgstr ""
+msgstr "幂Lambda值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1017
+#: dataframe_cleaner.py:690
 msgid "Power value for power transformation (ignored for other methods)"
 msgstr "幂转换的指数值（其他方法忽略此值）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1022
+#: dataframe_cleaner.py:691
 msgid "Add 1 before transformation"
-msgstr ""
+msgstr "转换前加1"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1024
+#: dataframe_cleaner.py:693
 msgid "Add 1 to values before log/sqrt transformation (handles zeros)"
 msgstr "在对数/平方根转换前加1（处理零值）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1040
-msgid "No numeric columns found for transformation"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1068
-#, python-brace-format
-msgid "Transformed column: {col}"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1071
-#, python-brace-format
-msgid "Error transforming column '{col}': {error}"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1075
+#: dataframe_cleaner.py:711
 #, python-brace-format
 msgid "Failed to transform data: {error}"
 msgstr "数据变换失败: {error}"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1082
+#: dataframe_cleaner.py:718
 #, python-brace-format
 msgid "Transformed {changed_rows} columns"
-msgstr ""
+msgstr "变换了 {changed_rows} 列数据"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1096
-#, fuzzy
+#: dataframe_cleaner.py:733
 msgid "Scale Data Parameter Settings"
-msgstr "删除缺失值参数设置"
+msgstr "数据缩放参数设置"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1100
+#: dataframe_cleaner.py:734
 msgid "Scaling Method"
-msgstr ""
+msgstr "缩放方法"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1104
+#: dataframe_cleaner.py:737
 msgid "Standard scaling (z-score: (x-mean)/std)"
-msgstr ""
+msgstr "标准缩放（z-score：(x-均值)/标准差）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1105
+#: dataframe_cleaner.py:738
 msgid "Min-Max scaling (to [0, 1] range)"
-msgstr ""
+msgstr "最小-最大缩放（到[0, 1]范围）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1106
+#: dataframe_cleaner.py:739
 msgid "Robust scaling (using median and IQR)"
-msgstr ""
+msgstr "稳健缩放（使用中位数和IQR）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1107
+#: dataframe_cleaner.py:740
 msgid "MaxAbs scaling (to [-1, 1] range)"
-msgstr ""
+msgstr "最大绝对值缩放（到[-1, 1]范围）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1108
+#: dataframe_cleaner.py:741
 msgid "Unit vector scaling (norm=1)"
 msgstr "单位向量缩放（范数=1）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1110
+#: dataframe_cleaner.py:743
 msgid "Method for scaling data"
 msgstr "数据缩放方法"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1115
+#: dataframe_cleaner.py:744
 msgid "Feature Range (Min)"
-msgstr ""
+msgstr "特征范围（最小值）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1117
+#: dataframe_cleaner.py:746
 msgid "Minimum value for min-max scaling range"
 msgstr "最小-最大缩放范围的最小值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1122
+#: dataframe_cleaner.py:747
 msgid "Feature Range (Max)"
-msgstr ""
+msgstr "特征范围（最大值）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1124
+#: dataframe_cleaner.py:749
 msgid "Maximum value for min-max scaling range"
 msgstr "最小-最大缩放范围的最大值"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1129
+#: dataframe_cleaner.py:750
 msgid "With Mean (for standard scaling)"
-msgstr ""
+msgstr "使用均值（用于标准缩放）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1131
+#: dataframe_cleaner.py:752
 msgid "Whether to center the data before scaling (for standard scaling)"
 msgstr "是否在缩放前将数据中心化（用于标准缩放）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1136
+#: dataframe_cleaner.py:753
 msgid "With Std (for standard scaling)"
-msgstr ""
+msgstr "使用标准差（用于标准缩放）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1138
+#: dataframe_cleaner.py:755
 msgid "Whether to scale to unit variance (for standard scaling)"
 msgstr "是否缩放到单位方差（用于标准缩放）"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1143
+#: dataframe_cleaner.py:756
 msgid "Create New Columns"
-msgstr ""
+msgstr "创建新列"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1145
+#: dataframe_cleaner.py:758
 msgid "Create new columns instead of replacing original data"
 msgstr "创建新列而不是替换原始数据"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1150
+#: dataframe_cleaner.py:759
 msgid "Column Suffix"
-msgstr ""
+msgstr "列后缀"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1152
+#: dataframe_cleaner.py:761
 msgid "Suffix for new column names"
 msgstr "新列名的后缀"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1172
-msgid "No numeric columns found for scaling"
-msgstr ""
+#: dataframe_cleaner.py:785
+msgid "Failed to scale data: {error}"
+msgstr "数据缩放失败：{error}"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1246
-#, python-brace-format
-msgid "Failed to scale column {col}: {error}"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1252
+#: dataframe_cleaner.py:790
 msgid "Scale Data"
-msgstr ""
+msgstr "数据缩放"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1254
+#: dataframe_cleaner.py:792
 #, python-brace-format
 msgid "Scaled {changed_rows} columns"
 msgstr "缩放{changed_rows}列"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1273
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1352
+#: dataframe_cleaner.py:812 dataframe_cleaner.py:850
 msgid "Clean Text Strings"
-msgstr ""
+msgstr "清理文本字符串"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1277
+#: dataframe_cleaner.py:813
 msgid "Trim Spaces"
-msgstr ""
+msgstr "修剪空格"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1281
+#: dataframe_cleaner.py:816
 msgid "Remove spaces from both sides"
-msgstr ""
+msgstr "删除两侧空格"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1282
+#: dataframe_cleaner.py:817
 msgid "Remove spaces from left side only"
-msgstr ""
+msgstr "仅删除左侧空格"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1283
+#: dataframe_cleaner.py:818
 msgid "Remove spaces from right side only"
-msgstr ""
+msgstr "仅删除右侧空格"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1284
+#: dataframe_cleaner.py:819
 msgid "Do not trim spaces"
 msgstr "不修剪空格"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1286
+#: dataframe_cleaner.py:821
 msgid "Remove leading/trailing spaces from text"
 msgstr "从文本中删除前导/尾随空格"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1291
+#: dataframe_cleaner.py:822
 msgid "Convert to Lowercase"
-msgstr ""
+msgstr "转换为小写"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1293
+#: dataframe_cleaner.py:824
 msgid "Convert all text to lowercase letters"
 msgstr "将所有文本转换为小写字母"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1298
+#: dataframe_cleaner.py:825
 msgid "Remove Extra Spaces"
-msgstr ""
+msgstr "删除额外空格"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1300
+#: dataframe_cleaner.py:827
 msgid "Replace multiple spaces with single space"
 msgstr "将多个空格替换为单个空格"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1319
-msgid "No text columns found for cleaning"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1341
-#, python-brace-format
-msgid "Error cleaning column '{col}': {error}"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1343
-#, python-brace-format
-msgid "Cleaned {count} text columns"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1347
+#: dataframe_cleaner.py:845
 #, python-brace-format
 msgid "Failed to clean text: {error}"
-msgstr ""
+msgstr "文本清洗失败：{error}"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1373
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1421
+#: dataframe_cleaner.py:872 dataframe_cleaner.py:895
 msgid "Label Encoding"
-msgstr ""
+msgstr "标签编码"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1377
+#: dataframe_cleaner.py:873
 msgid "Keep Original Column"
-msgstr ""
+msgstr "保留原始列"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1379
+#: dataframe_cleaner.py:875
 msgid "Keep original text column and create new encoded column"
 msgstr "保留原始文本列并创建新的编码列"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1396
-msgid "No text columns found for label encoding"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1409
-#, python-brace-format
-msgid "Encoded '{col}' with {count} unique values"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1412
-#, python-brace-format
-msgid "Error encoding column '{col}': {error}"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1416
+#: dataframe_cleaner.py:890
 #, python-brace-format
 msgid "Failed to encode labels: {error}"
-msgstr ""
+msgstr "标签编码失败：{error}"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:126
+#: dataframe_io.py:35
 #, python-brace-format
 msgid "The specified path is not a valid folder: {file_path}"
 msgstr "指定的路径不是有效的文件夹: {file_path}"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:139
+#: dataframe_io.py:46
 msgid "export datamanager files"
 msgstr "导出数据管理器到文件"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:148
+#: dataframe_io.py:54
 #, python-brace-format
 msgid "export: {name}.{file_type}"
 msgstr "导出: {name}.{file_type}"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:154
+#: dataframe_io.py:58
 #, python-brace-format
 msgid "export success {total_count} files"
 msgstr "成功导出 {total_count} 个文件"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:158
+#: dataframe_io.py:62
 #, python-brace-format
 msgid ""
 "Failed To Export dataframe: {err1}\n"
@@ -822,26 +837,25 @@ msgstr ""
 "导出dataframe失败: {err1}\n"
 "{err2}"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:165
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:233
+#: dataframe_io.py:69 dataframe_io.py:120
 msgid "unknown error"
 msgstr "未知错误"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:207
+#: dataframe_io.py:98
 #, python-brace-format
 msgid "writing sheet: {sheet_name}"
 msgstr "正在写入工作表: {sheet_name}"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:215
+#: dataframe_io.py:105
 msgid "Failed To Export Excel File"
 msgstr "导出Excel文件失败"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:217
+#: dataframe_io.py:106
 #, python-brace-format
 msgid "export success {total_count} sheets, file: {file_path}"
 msgstr "成功导出{total_count}个工作表，文件位于: {file_path}"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:219
+#: dataframe_io.py:108
 #, python-brace-format
 msgid ""
 "Failed To Export Excel File: {err1}\n"
@@ -850,89 +864,10 @@ msgstr ""
 "导出Excel文件失败: {err1}\n"
 "{err2}"
 
-#~ msgid "No data selected"
-#~ msgstr "没有选中数据"
+#: utils.py:29
+msgid "Please select a dataset first"
+msgstr "请先选择一个数据集"
 
-#~ msgid "The data is not of DataFrame type"
-#~ msgstr "数据不是DataFrame类型"
-
-#~ msgid "Missing Value Removal Parameter Settings"
-#~ msgstr "删除缺失值参数设置"
-
-#~ msgid "Drop Method"
-#~ msgstr "删除方法"
-
-#~ msgid "If any NA values are present, drop that row"
-#~ msgstr "全部是Na值才删除"
-
-#~ msgid "If all values are NA, drop that row"
-#~ msgstr "任意一个Na值存在即删除"
-
-#~ msgid "Not Specified"
-#~ msgstr "不指定"
-
-#~ msgid "Determine if row or column is removed from DataFrame, when we have at least one NA or all NA."
-#~ msgstr "确定在 DataFrame 中存在至少一个缺失值（NA）或全部为缺失值时，需移除的维度是行还是列"
-
-#~ msgid "thresh"
-#~ msgstr "阈值"
-
-#~ msgid "Require that many non-NA values. Cannot be combined with Drop Method."
-#~ msgstr "要求指定非缺失值的数量，此参数如果设置非0，则删除方法需要指定为：不指定"
-
-#~ msgid "Reindex"
-#~ msgstr "重建索引"
-
-#~ msgid "Whether to rebuild the index after drop na values"
-#~ msgstr "删除缺失值后，是否重建索引"
-
-#, fuzzy
-#~ msgid "Duplicates Value Removal Parameter Settings"
-#~ msgstr "删除缺失值参数设置"
-
-#, fuzzy
-#~ msgid "Replace Values Parameter Settings"
-#~ msgstr "删除缺失值参数设置"
-
-#, fuzzy
-#~ msgid "Normalize Data Parameter Settings"
-#~ msgstr "删除缺失值参数设置"
-
-#, fuzzy
-#~ msgid "Strip Strings Parameter Settings"
-#~ msgstr "删除缺失值参数设置"
-
-#, fuzzy
-#~ msgid "Forward Fill Parameter Settings"
-#~ msgstr "删除缺失值参数设置"
-
-#, fuzzy
-#~ msgid "Backward Fill Parameter Settings"
-#~ msgstr "删除缺失值参数设置"
-
-#, fuzzy
-#~ msgid "Rename Columns Parameter Settings"
-#~ msgstr "删除缺失值参数设置"
-
-#, fuzzy
-#~ msgid "Drop Columns Parameter Settings"
-#~ msgstr "删除缺失值参数设置"
-
-#, fuzzy
-#~ msgid "Reset Index Parameter Settings"
-#~ msgstr "删除缺失值参数设置"
-
-#, fuzzy
-#~ msgid "Set Index Parameter Settings"
-#~ msgstr "删除缺失值参数设置"
-
-#, fuzzy
-#~ msgid "Sort Values Parameter Settings"
-#~ msgstr "删除缺失值参数设置"
-
-#, fuzzy
-#~ msgid "Encoding Method"
-#~ msgstr "删除方法"
-
-#~ msgid "DataManager is None"
-#~ msgstr "数据管理器为空"
+#: utils.py:33
+msgid "The selected data must be a table (DataFrame) format"
+msgstr "选中的数据必须是表格（DataFrame）格式"

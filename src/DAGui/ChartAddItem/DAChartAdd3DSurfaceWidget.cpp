@@ -243,8 +243,8 @@ bool DAChartAdd3DSurfaceWidget::extractScatterDataAndInterpolate(
     try {
         pybind11::module_::import("scipy");
     } catch (const pybind11::error_already_set&) {
-        daWarning << tr("scipy is not available, cannot perform scatter interpolation. "  // cn:scipy不可用，无法进行散点插值
-                           "Please install scipy: pip install scipy");
+        daWarning << tr("scipy is not available, cannot perform scatter interpolation. "
+                        "Please install scipy: pip install scipy");  // cn:scipy 不可用，无法进行散点插值。请安装 scipy：pip install scipy
         return false;
     }
     // 使用Python调用scipy.interpolate.griddata

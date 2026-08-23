@@ -2222,7 +2222,7 @@ Config</source>
         <location line="+55"/>
         <location line="+35"/>
         <source>No figure/chart available for statistical plot</source>
-        <translation type="unfinished"></translation>
+        <translation>没有可用于统计绘图的图表窗口</translation>
     </message>
     <message>
         <location line="+42"/>
@@ -2233,7 +2233,7 @@ Config</source>
         <location line="-58"/>
         <location line="+36"/>
         <source>Cannot resolve the data source for statistical plot; please ensure a dataframe is selected in the settings window</source>
-        <translation type="unfinished"></translation>
+        <translation>无法确定统计绘图的数据源，请确保在设置窗口中已选择数据表</translation>
     </message>
     <message>
         <location line="+28"/>
@@ -4117,7 +4117,7 @@ Config</source>
     <message>
         <location line="+124"/>
         <source>scipy is not available, cannot perform scatter interpolation. Please install scipy: pip install scipy</source>
-        <translation type="unfinished"></translation>
+        <translation>scipy 不可用，无法进行散点插值。请安装 scipy：pip install scipy</translation>
     </message>
 </context>
 <context>
@@ -7817,7 +7817,7 @@ Config</source>
     <message>
         <location line="+9"/>
         <source>Statistic</source>
-        <translation type="unfinished"></translation>
+        <translation>统计量</translation>
     </message>
     <message>
         <location line="+0"/>
@@ -9609,7 +9609,7 @@ Config</source>
     <message>
         <location filename="../DAGui/Chart3DSetting/DAChart3DCommonItemsSettingWidget.ui" line="+14"/>
         <source>3D Common Item Setting</source>
-        <translation type="unfinished"></translation>
+        <translation>3D 通用元素设置</translation>
     </message>
 </context>
 <context>
@@ -9617,7 +9617,7 @@ Config</source>
     <message>
         <location filename="../DAGui/Chart3DSetting/DAChart3DSettingWidget.ui" line="+14"/>
         <source>3D Chart Setting</source>
-        <translation type="unfinished"></translation>
+        <translation>3D 图表设置</translation>
     </message>
 </context>
 <context>
@@ -9625,22 +9625,22 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAdd3DBarWidget.ui" line="+14"/>
         <source>Add 3D Bar</source>
-        <translation type="unfinished"></translation>
+        <translation>添加 3D 柱状图</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Data Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>数据模式</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>1D Series (one column)</source>
-        <translation type="unfinished"></translation>
+        <translation>一维序列（单列）</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>2D Grid (DataFrame as Z matrix)</source>
-        <translation type="unfinished"></translation>
+        <translation>二维网格（DataFrame 作为 Z 矩阵）</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -9650,12 +9650,12 @@ Config</source>
     <message>
         <location line="+25"/>
         <source>Value Column</source>
-        <translation type="unfinished"></translation>
+        <translation>数值列</translation>
     </message>
     <message>
         <location line="+28"/>
         <source>Rows and columns of the DataFrame are used as Y and X coordinates, cell values as bar height.</source>
-        <translation type="unfinished"></translation>
+        <translation>DataFrame 的行和列分别作为 Y 和 X 坐标，单元格数值作为柱高</translation>
     </message>
 </context>
 <context>
@@ -9663,7 +9663,7 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAdd3DLineWidget.ui" line="+14"/>
         <source>Add 3D Line</source>
-        <translation type="unfinished"></translation>
+        <translation>添加 3D 折线图</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -9673,17 +9673,17 @@ Config</source>
     <message>
         <location line="+10"/>
         <source>X Column</source>
-        <translation type="unfinished"></translation>
+        <translation>X 列</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Y Column</source>
-        <translation type="unfinished"></translation>
+        <translation>Y 列</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Z Column</source>
-        <translation type="unfinished"></translation>
+        <translation>Z 列</translation>
     </message>
 </context>
 <context>
@@ -9691,22 +9691,22 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAdd3DSurfaceWidget.ui" line="+14"/>
         <source>Add 3D Surface</source>
-        <translation type="unfinished"></translation>
+        <translation>添加 3D 曲面图</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Data Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>数据模式</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Grid (DataFrame as Z matrix)</source>
-        <translation type="unfinished"></translation>
+        <translation>网格（DataFrame 作为 Z 矩阵）</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Scatter (X/Y/Z columns)</source>
-        <translation type="unfinished"></translation>
+        <translation>散点（X/Y/Z 列）</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -9716,22 +9716,22 @@ Config</source>
     <message>
         <location line="+25"/>
         <source>Rows and columns of the DataFrame are used as Y and X coordinates, cell values as Z height.</source>
-        <translation type="unfinished"></translation>
+        <translation>DataFrame 的行和列分别作为 Y 和 X 坐标，单元格数值作为 Z 高度</translation>
     </message>
     <message>
         <location line="+28"/>
         <source>X Column</source>
-        <translation type="unfinished"></translation>
+        <translation>X 列</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Y Column</source>
-        <translation type="unfinished"></translation>
+        <translation>Y 列</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Z Column</source>
-        <translation type="unfinished"></translation>
+        <translation>Z 列</translation>
     </message>
 </context>
 <context>
@@ -9739,7 +9739,7 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddBoxChartWidget.ui" line="+14"/>
         <source>Add Box Chart</source>
-        <translation type="unfinished"></translation>
+        <translation>添加箱线图</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -9754,7 +9754,7 @@ Config</source>
     <message>
         <location line="+9"/>
         <source>Select columns to plot as box charts</source>
-        <translation type="unfinished"></translation>
+        <translation>选择要绘制箱线图的列</translation>
     </message>
 </context>
 <context>
@@ -9762,7 +9762,7 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddContourWidget.ui" line="+14"/>
         <source>Add Contour Map</source>
-        <translation type="unfinished"></translation>
+        <translation>添加等高线图</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -9782,7 +9782,7 @@ Config</source>
     <message>
         <location line="+28"/>
         <source>Select three columns (x, y, value) to render a contour map</source>
-        <translation type="unfinished"></translation>
+        <translation>选择三列（x、y、数值）以绘制等高线图</translation>
     </message>
 </context>
 <context>
@@ -9834,22 +9834,22 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddHistogramWidget.ui" line="+14"/>
         <source>Add Histogram</source>
-        <translation type="unfinished"></translation>
+        <translation>添加直方图</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Data Series</source>
-        <translation type="unfinished"></translation>
+        <translation>数据序列</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Bins</source>
-        <translation type="unfinished"></translation>
+        <translation>分箱</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Number of bins</source>
-        <translation type="unfinished"></translation>
+        <translation>分箱数量</translation>
     </message>
     <message>
         <location line="+23"/>
@@ -9859,12 +9859,12 @@ Config</source>
     <message>
         <location line="+9"/>
         <source>Count</source>
-        <translation type="unfinished"></translation>
+        <translation>计数</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Density</source>
-        <translation type="unfinished"></translation>
+        <translation>密度</translation>
     </message>
 </context>
 <context>
@@ -9872,7 +9872,7 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddMultiBarWidget.ui" line="+14"/>
         <source>Add Multi Bar Chart</source>
-        <translation type="unfinished"></translation>
+        <translation>添加多系列柱状图</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -9882,33 +9882,33 @@ Config</source>
     <message>
         <location line="+23"/>
         <source>Autoincrement series</source>
-        <translation type="unfinished">自增序列</translation>
+        <translation>自增序列</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Initial value</source>
-        <translation type="unfinished">初始值</translation>
+        <translation>初始值</translation>
     </message>
     <message>
         <location line="+7"/>
         <location line="+14"/>
         <source>1</source>
-        <translation type="unfinished">1</translation>
+        <translation>1</translation>
     </message>
     <message>
         <location line="-7"/>
         <source>Self increasing step size</source>
-        <translation type="unfinished">自增步长</translation>
+        <translation>自增步长</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Y (Multiple)</source>
-        <translation type="unfinished"></translation>
+        <translation>Y（多选）</translation>
     </message>
     <message>
         <location line="+39"/>
         <source>Drag the data into the corresponding list. Multiple Y series will be grouped as bar sets.</source>
-        <translation type="unfinished"></translation>
+        <translation>将数据拖入对应列表，多个 Y 序列将分组为柱组</translation>
     </message>
 </context>
 <context>
@@ -10003,12 +10003,12 @@ Config</source>
     <message>
         <location line="+15"/>
         <source>Y axis (numeric, optional — empty for countplot)</source>
-        <translation type="unfinished"></translation>
+        <translation>Y 轴（数值列，可选——留空则绘制计数图）</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Hue (optional grouping column)</source>
-        <translation type="unfinished"></translation>
+        <translation>分组列（可选）</translation>
     </message>
     <message>
         <location line="+21"/>
@@ -10018,7 +10018,7 @@ Config</source>
     <message>
         <location line="+9"/>
         <source>Estimator</source>
-        <translation type="unfinished"></translation>
+        <translation>估计函数</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -10053,7 +10053,7 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>Confidence interval</source>
-        <translation type="unfinished"></translation>
+        <translation>置信区间</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -10063,22 +10063,22 @@ Config</source>
     <message>
         <location line="+5"/>
         <source>68</source>
-        <translation type="unfinished">68</translation>
+        <translation>68</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>95</source>
-        <translation type="unfinished">95</translation>
+        <translation>95</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>99</source>
-        <translation type="unfinished">99</translation>
+        <translation>99</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Bootstrap iterations</source>
-        <translation type="unfinished"></translation>
+        <translation>Bootstrap 迭代次数</translation>
     </message>
     <message>
         <location line="+20"/>
@@ -10088,22 +10088,22 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>vertical</source>
-        <translation type="unfinished"></translation>
+        <translation>垂直</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>horizontal</source>
-        <translation type="unfinished"></translation>
+        <translation>水平</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Bar width</source>
-        <translation type="unfinished"></translation>
+        <translation>柱宽</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Show legend (hue)</source>
-        <translation type="unfinished"></translation>
+        <translation>显示图例（分组）</translation>
     </message>
 </context>
 <context>
@@ -10111,17 +10111,17 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddStatsBoxplotWidget.ui" line="+14"/>
         <source>Stats Boxplot Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>统计箱线图设置</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Data (select one or more columns)</source>
-        <translation type="unfinished"></translation>
+        <translation>数据（选择一列或多列）</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Hue (optional grouping column)</source>
-        <translation type="unfinished"></translation>
+        <translation>分组列（可选）</translation>
     </message>
     <message>
         <location line="+21"/>
@@ -10131,22 +10131,22 @@ Config</source>
     <message>
         <location line="+9"/>
         <source>Whisker multiplier (IQR)</source>
-        <translation type="unfinished"></translation>
+        <translation>须线倍数（IQR）</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Box width (0-1)</source>
-        <translation type="unfinished"></translation>
+        <translation>箱体宽度（0-1）</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Show outliers</source>
-        <translation type="unfinished"></translation>
+        <translation>显示离群点</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Show means</source>
-        <translation type="unfinished"></translation>
+        <translation>显示均值</translation>
     </message>
 </context>
 <context>
@@ -10154,7 +10154,7 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddStatsEcdfplotWidget.ui" line="+14"/>
         <source>ECDF Plot Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>ECDF 图设置</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -10164,12 +10164,12 @@ Config</source>
     <message>
         <location line="+15"/>
         <source>Hue (optional grouping column)</source>
-        <translation type="unfinished"></translation>
+        <translation>分组列（可选）</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Weights (optional — overrides stat to proportion)</source>
-        <translation type="unfinished"></translation>
+        <translation>权重（可选——统计量将强制为占比）</translation>
     </message>
     <message>
         <location line="+21"/>
@@ -10179,12 +10179,12 @@ Config</source>
     <message>
         <location line="+9"/>
         <source>Statistic</source>
-        <translation type="unfinished"></translation>
+        <translation>统计量</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>proportion</source>
-        <translation type="unfinished"></translation>
+        <translation>占比</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -10194,17 +10194,17 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>Complementary CDF (1-CDF)</source>
-        <translation type="unfinished"></translation>
+        <translation>互补 CDF（1-CDF）</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Line width</source>
-        <translation type="unfinished"></translation>
+        <translation>线宽</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Show legend (hue)</source>
-        <translation type="unfinished"></translation>
+        <translation>显示图例（分组）</translation>
     </message>
 </context>
 <context>
@@ -10212,32 +10212,32 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddStatsHeatmapWidget.ui" line="+14"/>
         <source>Stats Heatmap Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>统计热力图设置</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>X axis (column direction)</source>
-        <translation type="unfinished"></translation>
+        <translation>X 轴（列方向）</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Y axis (row direction)</source>
-        <translation type="unfinished"></translation>
+        <translation>Y 轴（行方向）</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Value column (optional — unchecked = count)</source>
-        <translation type="unfinished"></translation>
+        <translation>数值列（可选——不勾选则计数）</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Aggregation &amp;&amp; Colour</source>
-        <translation type="unfinished"></translation>
+        <translation>聚合与颜色</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Aggregation function</source>
-        <translation type="unfinished"></translation>
+        <translation>聚合函数</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -10272,47 +10272,47 @@ Config</source>
     <message>
         <location line="+8"/>
         <source>Colour map</source>
-        <translation type="unfinished"></translation>
+        <translation>色图</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>viridis</source>
-        <translation type="unfinished"></translation>
+        <translation>viridis</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>plasma</source>
-        <translation type="unfinished"></translation>
+        <translation>plasma</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>inferno</source>
-        <translation type="unfinished"></translation>
+        <translation>inferno</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>magma</source>
-        <translation type="unfinished"></translation>
+        <translation>magma</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>cividis</source>
-        <translation type="unfinished"></translation>
+        <translation>cividis</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>coolwarm</source>
-        <translation type="unfinished"></translation>
+        <translation>coolwarm</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>RdBu_r</source>
-        <translation type="unfinished"></translation>
+        <translation>RdBu_r</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Standardisation</source>
-        <translation type="unfinished"></translation>
+        <translation>标准化</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -10322,52 +10322,52 @@ Config</source>
     <message>
         <location line="+5"/>
         <source>row</source>
-        <translation type="unfinished"></translation>
+        <translation>按行</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>column</source>
-        <translation type="unfinished"></translation>
+        <translation>按列</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Value Range (0 = auto)</source>
-        <translation type="unfinished"></translation>
+        <translation>数值范围（0 = 自动）</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>vmin (0 = auto)</source>
-        <translation type="unfinished"></translation>
+        <translation>最小值 vmin（0 = 自动）</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>vmax (0 = auto)</source>
-        <translation type="unfinished"></translation>
+        <translation>最大值 vmax（0 = 自动）</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>center (0 = none)</source>
-        <translation type="unfinished"></translation>
+        <translation>中心值 center（0 = 无）</translation>
     </message>
     <message>
         <location line="+26"/>
         <source>Annotations</source>
-        <translation type="unfinished"></translation>
+        <translation>标注</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Annotate cells</source>
-        <translation type="unfinished"></translation>
+        <translation>标注单元格</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Format string</source>
-        <translation type="unfinished"></translation>
+        <translation>格式字符串</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>.2f</source>
-        <translation type="unfinished"></translation>
+        <translation>.2f</translation>
     </message>
 </context>
 <context>
@@ -10375,7 +10375,7 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddStatsHistplotWidget.ui" line="+14"/>
         <source>Stats Histplot Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>统计直方图设置</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -10385,32 +10385,32 @@ Config</source>
     <message>
         <location line="+15"/>
         <source>Hue (optional grouping column)</source>
-        <translation type="unfinished"></translation>
+        <translation>分组列（可选）</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Bins</source>
-        <translation type="unfinished"></translation>
+        <translation>分箱</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Number of bins</source>
-        <translation type="unfinished"></translation>
+        <translation>分箱数量</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Bin width (0 = auto)</source>
-        <translation type="unfinished"></translation>
+        <translation>分箱宽度（0 = 自动）</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Bin range min (blank = auto)</source>
-        <translation type="unfinished"></translation>
+        <translation>分箱范围下限（留空 = 自动）</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Bin range max (blank = auto)</source>
-        <translation type="unfinished"></translation>
+        <translation>分箱范围上限（留空 = 自动）</translation>
     </message>
     <message>
         <location line="+26"/>
@@ -10420,7 +10420,7 @@ Config</source>
     <message>
         <location line="+9"/>
         <source>Y-axis statistic</source>
-        <translation type="unfinished"></translation>
+        <translation>Y 轴统计量</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -10430,52 +10430,52 @@ Config</source>
     <message>
         <location line="+5"/>
         <source>density</source>
-        <translation type="unfinished"></translation>
+        <translation>密度</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>frequency</source>
-        <translation type="unfinished"></translation>
+        <translation>频数</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>probability</source>
-        <translation type="unfinished"></translation>
+        <translation>概率</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>percent</source>
-        <translation type="unfinished"></translation>
+        <translation>百分比</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Overlay KDE curve</source>
-        <translation type="unfinished"></translation>
+        <translation>叠加 KDE 曲线</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>KDE bandwidth</source>
-        <translation type="unfinished"></translation>
+        <translation>KDE 带宽</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>scott</source>
-        <translation type="unfinished"></translation>
+        <translation>scott</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>silverman</source>
-        <translation type="unfinished"></translation>
+        <translation>silverman</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Cumulative</source>
-        <translation type="unfinished"></translation>
+        <translation>累积</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Fill bars</source>
-        <translation type="unfinished"></translation>
+        <translation>填充柱形</translation>
     </message>
 </context>
 <context>
@@ -10483,7 +10483,7 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddStatsKdeplot1dWidget.ui" line="+14"/>
         <source>Stats KDE 1D Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>统计 KDE 一维设置</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -10493,42 +10493,42 @@ Config</source>
     <message>
         <location line="+15"/>
         <source>Hue (optional grouping column)</source>
-        <translation type="unfinished"></translation>
+        <translation>分组列（可选）</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Bandwidth</source>
-        <translation type="unfinished"></translation>
+        <translation>带宽</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Bandwidth method</source>
-        <translation type="unfinished"></translation>
+        <translation>带宽方法</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>scott</source>
-        <translation type="unfinished"></translation>
+        <translation>scott</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>silverman</source>
-        <translation type="unfinished"></translation>
+        <translation>silverman</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>custom</source>
-        <translation type="unfinished">自定义</translation>
+        <translation>自定义</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Custom bandwidth value</source>
-        <translation type="unfinished"></translation>
+        <translation>自定义带宽值</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Grid size (smoothness)</source>
-        <translation type="unfinished"></translation>
+        <translation>网格大小（平滑度）</translation>
     </message>
     <message>
         <location line="+23"/>
@@ -10538,47 +10538,47 @@ Config</source>
     <message>
         <location line="+9"/>
         <source>Fill area under curve</source>
-        <translation type="unfinished"></translation>
+        <translation>填充曲线下区域</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Shade mode (low alpha)</source>
-        <translation type="unfinished"></translation>
+        <translation>阴影模式（低透明度）</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Cumulative distribution</source>
-        <translation type="unfinished"></translation>
+        <translation>累积分布</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Common normalization (hue)</source>
-        <translation type="unfinished"></translation>
+        <translation>统一归一化（按分组）</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Threshold fill (requires fill)</source>
-        <translation type="unfinished"></translation>
+        <translation>阈值填充（需启用填充）</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Fill x &lt;=</source>
-        <translation type="unfinished"></translation>
+        <translation>填充 x &lt;=</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Fill x &gt;=</source>
-        <translation type="unfinished"></translation>
+        <translation>填充 x &gt;=</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>(NaN = no lower limit)</source>
-        <translation type="unfinished"></translation>
+        <translation>（NaN = 无下限）</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>(NaN = no upper limit)</source>
-        <translation type="unfinished"></translation>
+        <translation>（NaN = 无上限）</translation>
     </message>
 </context>
 <context>
@@ -10586,7 +10586,7 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddStatsKdeplot2dWidget.ui" line="+14"/>
         <source>Stats KDE 2D Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>统计 KDE 二维设置</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -10596,62 +10596,62 @@ Config</source>
     <message>
         <location line="+18"/>
         <source>Bandwidth</source>
-        <translation type="unfinished"></translation>
+        <translation>带宽</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Bandwidth method</source>
-        <translation type="unfinished"></translation>
+        <translation>带宽方法</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>scott</source>
-        <translation type="unfinished"></translation>
+        <translation>scott</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>silverman</source>
-        <translation type="unfinished"></translation>
+        <translation>silverman</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>custom</source>
-        <translation type="unfinished">自定义</translation>
+        <translation>自定义</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Custom bandwidth value</source>
-        <translation type="unfinished"></translation>
+        <translation>自定义带宽值</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Grid size (resolution)</source>
-        <translation type="unfinished"></translation>
+        <translation>网格大小（分辨率）</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Contours</source>
-        <translation type="unfinished"></translation>
+        <translation>等高线</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Number of contour levels</source>
-        <translation type="unfinished"></translation>
+        <translation>等高线层数</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Threshold (0-1)</source>
-        <translation type="unfinished"></translation>
+        <translation>阈值（0-1）</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Fill contours</source>
-        <translation type="unfinished"></translation>
+        <translation>填充等高线区域</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Show heatmap</source>
-        <translation type="unfinished"></translation>
+        <translation>显示热力图</translation>
     </message>
     <message>
         <location line="+13"/>
@@ -10661,7 +10661,7 @@ Config</source>
     <message>
         <location line="+9"/>
         <source>Common normalization (reserved for hue)</source>
-        <translation type="unfinished"></translation>
+        <translation>统一归一化（为分组预留）</translation>
     </message>
 </context>
 <context>
@@ -10669,7 +10669,7 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddStatsRegplotWidget.ui" line="+14"/>
         <source>Regplot Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>回归图设置</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -10684,17 +10684,17 @@ Config</source>
     <message>
         <location line="+15"/>
         <source>Regression</source>
-        <translation type="unfinished"></translation>
+        <translation>回归</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Polynomial order</source>
-        <translation type="unfinished"></translation>
+        <translation>多项式阶数</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Confidence interval</source>
-        <translation type="unfinished"></translation>
+        <translation>置信区间</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -10704,57 +10704,57 @@ Config</source>
     <message>
         <location line="+5"/>
         <source>68</source>
-        <translation type="unfinished">68</translation>
+        <translation>68</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>95</source>
-        <translation type="unfinished">95</translation>
+        <translation>95</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>99</source>
-        <translation type="unfinished">99</translation>
+        <translation>99</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Bootstrap iterations</source>
-        <translation type="unfinished"></translation>
+        <translation>Bootstrap 迭代次数</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Draw scatter points</source>
-        <translation type="unfinished"></translation>
+        <translation>绘制散点</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Draw regression line</source>
-        <translation type="unfinished"></translation>
+        <translation>绘制回归线</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Scatter style</source>
-        <translation type="unfinished"></translation>
+        <translation>散点样式</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Marker size</source>
-        <translation type="unfinished"></translation>
+        <translation>标记大小</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Alpha (transparency)</source>
-        <translation type="unfinished"></translation>
+        <translation>透明度（Alpha）</translation>
     </message>
     <message>
         <location line="+26"/>
         <source>Regression line style</source>
-        <translation type="unfinished"></translation>
+        <translation>回归线样式</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Line width</source>
-        <translation type="unfinished"></translation>
+        <translation>线宽</translation>
     </message>
 </context>
 <context>
@@ -10762,7 +10762,7 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddStatsScatterplotWidget.ui" line="+14"/>
         <source>Stats Scatterplot Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>统计散点图设置</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -10777,7 +10777,7 @@ Config</source>
     <message>
         <location line="+15"/>
         <source>Hue (optional grouping column)</source>
-        <translation type="unfinished"></translation>
+        <translation>分组列（可选）</translation>
     </message>
     <message>
         <location line="+21"/>
@@ -10787,57 +10787,57 @@ Config</source>
     <message>
         <location line="+9"/>
         <source>Marker size</source>
-        <translation type="unfinished"></translation>
+        <translation>标记大小</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Marker style</source>
-        <translation type="unfinished"></translation>
+        <translation>标记样式</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>circle</source>
-        <translation type="unfinished"></translation>
+        <translation>圆形</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>square</source>
-        <translation type="unfinished"></translation>
+        <translation>方形</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>diamond</source>
-        <translation type="unfinished"></translation>
+        <translation>菱形</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>triangle</source>
-        <translation type="unfinished"></translation>
+        <translation>三角形</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>cross</source>
-        <translation type="unfinished"></translation>
+        <translation>十字形</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>plus</source>
-        <translation type="unfinished"></translation>
+        <translation>加号形</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>star</source>
-        <translation type="unfinished"></translation>
+        <translation>星形</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Alpha (transparency)</source>
-        <translation type="unfinished"></translation>
+        <translation>透明度（Alpha）</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Show legend (hue)</source>
-        <translation type="unfinished"></translation>
+        <translation>显示图例（分组）</translation>
     </message>
 </context>
 <context>
@@ -10845,7 +10845,7 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddVectorFieldWidget.ui" line="+14"/>
         <source>Add Vector Field</source>
-        <translation type="unfinished"></translation>
+        <translation>添加向量场</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -10860,17 +10860,17 @@ Config</source>
     <message>
         <location line="+15"/>
         <source>U (vector x)</source>
-        <translation type="unfinished"></translation>
+        <translation>U（向量 x 分量）</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>V (vector y)</source>
-        <translation type="unfinished"></translation>
+        <translation>V（向量 y 分量）</translation>
     </message>
     <message>
         <location line="+28"/>
         <source>Select four columns (x, y, u, v) to render a vector field</source>
-        <translation type="unfinished"></translation>
+        <translation>选择四列（x、y、u、v）以绘制向量场</translation>
     </message>
 </context>
 <context>
@@ -10937,7 +10937,7 @@ Config</source>
     <message>
         <location line="+12"/>
         <source>Add series to X</source>
-        <translation type="unfinished"></translation>
+        <translation>添加序列到 X</translation>
     </message>
     <message>
         <location line="+25"/>
@@ -10973,7 +10973,7 @@ Config</source>
     <message>
         <location line="+12"/>
         <source>Add series to Y</source>
-        <translation type="unfinished"></translation>
+        <translation>添加序列到 Y</translation>
     </message>
     <message>
         <location line="+87"/>
@@ -11035,7 +11035,7 @@ Config</source>
     <message>
         <location line="+7"/>
         <source>data[&apos;column&apos;]</source>
-        <translation type="unfinished"></translation>
+        <translation>data['column']</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -11045,7 +11045,7 @@ Config</source>
     <message>
         <location line="+3"/>
         <source>...</source>
-        <translation type="unfinished">...</translation>
+        <translation>...</translation>
     </message>
 </context>
 <context>
@@ -11053,17 +11053,17 @@ Config</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartSeriesSelectWidget.ui" line="+14"/>
         <source>Series Select</source>
-        <translation type="unfinished"></translation>
+        <translation>序列选择</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Add series</source>
-        <translation type="unfinished"></translation>
+        <translation>添加序列</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Remove selected series</source>
-        <translation type="unfinished"></translation>
+        <translation>移除所选序列</translation>
     </message>
 </context>
 <context>
@@ -11454,22 +11454,22 @@ Config</source>
     <message>
         <location filename="../DAGui/Dialog/DADialogDataframeColumnDescribe.ui" line="+14"/>
         <source>Column Statistics</source>
-        <translation type="unfinished"></translation>
+        <translation>列统计</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Column:</source>
-        <translation type="unfinished"></translation>
+        <translation>列：</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Type:</source>
-        <translation type="unfinished"></translation>
+        <translation>类型：</translation>
     </message>
     <message>
         <location line="+22"/>
         <source>Statistic</source>
-        <translation type="unfinished"></translation>
+        <translation>统计量</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -11555,7 +11555,7 @@ Config</source>
     <message>
         <location filename="../DAGui/Dialog/DADialogStatsChartGuide.ui" line="+14"/>
         <source>Statistics Chart Guide</source>
-        <translation type="unfinished"></translation>
+        <translation>统计图表向导</translation>
     </message>
 </context>
 <context>
@@ -14316,7 +14316,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../APP/main.cpp" line="-127"/>
         <source>version:%1,compile datetime:%2</source>
-        <translation type="unfinished"></translation>
+        <translation>版本：%1，编译时间：%2</translation>
     </message>
     <message>
         <location line="+6"/>

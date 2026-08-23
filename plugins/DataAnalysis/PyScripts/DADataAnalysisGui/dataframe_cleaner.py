@@ -63,7 +63,7 @@ def _execute_dataframe_operation(dadata: da_data.DAData,
         return changed_rows
         
     except Exception as e:
-        ui.addCriticalLogMessage(_("Operation failed: {error}").format(error=str(e)))  # cn: 操作失败
+        ui.addCriticalLogMessage(_("Operation failed: {error}").format(error=str(e)))  # cn: 操作失败：{error}
         logger.error(f"{operation_name} failed: {e}")
         traceback.print_exc()
         return None
@@ -119,7 +119,7 @@ def dropna() -> Optional[int]:
             return core_cleaning.dropna_impl(original_df, subset=subset, how=how,
                                               min_non_na=min_non_na, reindex=reindex)
         except Exception as e:
-            ui.addCriticalLogMessage(_("Failed to remove missing values: {error}").format(error=str(e)))
+            ui.addCriticalLogMessage(_("Failed to remove missing values: {error}").format(error=str(e)))  # cn: 移除缺失值失败：{error}
             raise
 
     return _execute_dataframe_operation(
@@ -169,7 +169,7 @@ def drop_duplicates() -> Optional[int]:
             return core_cleaning.drop_duplicates_impl(original_df, subset=subset, keep=keep,
                                                        ignore_index=ignore_index)
         except Exception as e:
-            ui.addCriticalLogMessage(_("Failed to remove duplicates: {error}").format(error=str(e)))
+            ui.addCriticalLogMessage(_("Failed to remove duplicates: {error}").format(error=str(e)))  # cn: 移除重复行失败：{error}
             raise
     
     return _execute_dataframe_operation(
@@ -236,11 +236,11 @@ def fillna() -> Optional[int]:
             new_missing_count = df[columns_to_fill].isna().sum().sum()
             filled_count = old_missing_count - new_missing_count
             if filled_count > 0:
-                ui.addInfoLogMessage(_("Filled {count} missing values").format(count=filled_count))
+                ui.addInfoLogMessage(_("Filled {count} missing values").format(count=filled_count))  # cn: 已填充 {count} 个缺失值
 
             return df
         except Exception as e:
-            ui.addCriticalLogMessage(_("Failed to fill missing values: {error}").format(error=str(e)))
+            ui.addCriticalLogMessage(_("Failed to fill missing values: {error}").format(error=str(e)))  # cn: 填充缺失值失败：{error}
             raise
     
     return _execute_dataframe_operation(
@@ -360,12 +360,12 @@ def replace_specific_values() -> Optional[int]:
     def operation(original_df):
         try:
             if not old_values_str:
-                ui.addWarningLogMessage(_("Please specify values to replace"))
+                ui.addWarningLogMessage(_("Please specify values to replace"))  # cn: 请指定要替换的值
                 return None
 
             old_values = [v.strip() for v in old_values_str.split(",") if v.strip()]
             if not old_values:
-                ui.addWarningLogMessage(_("No valid values specified for replacement"))
+                ui.addWarningLogMessage(_("No valid values specified for replacement"))  # cn: 未指定有效的替换值
                 return None
 
             columns_to_check = subset if subset else original_df.columns.tolist()
@@ -379,9 +379,9 @@ def replace_specific_values() -> Optional[int]:
                 replaced_count += (old_count[col] != df[col]).sum()
 
             if replaced_count > 0:
-                ui.addInfoLogMessage(_("Replaced {count} values").format(count=replaced_count))
+                ui.addInfoLogMessage(_("Replaced {count} values").format(count=replaced_count))  # cn: 已替换 {count} 个值
             else:
-                ui.addInfoLogMessage(_("No matching values found to replace"))
+                ui.addInfoLogMessage(_("No matching values found to replace"))  # cn: 未找到可替换的匹配值
 
             return df
         except Exception as e:
@@ -411,7 +411,7 @@ def remove_outliers_iqr() -> Optional[int]:
     ui = da_app.getCore().getUiInterface()
     
     cfg = (
-        FormBuilder(_("Remove Outliers (IQR Method)"))
+        FormBuilder(_("Remove Outliers (IQR Method)"))  # cn: 移除异常值（IQR 方法）
         .group("detection", _("Detection Settings"))  # cn: 检测设置
         .float("multiplier", label=_("IQR Multiplier"),  # cn: IQR乘数
                default=1.5, min=0.5, max=10.0,
@@ -456,11 +456,11 @@ def remove_outliers_iqr() -> Optional[int]:
             if action == "remove":
                 removed_rows = old_len - len(df)
                 if removed_rows > 0:
-                    ui.addInfoLogMessage(_("Removed {count} rows containing outliers using IQR method").format(count=removed_rows))
+                    ui.addInfoLogMessage(_("Removed {count} rows containing outliers using IQR method").format(count=removed_rows))  # cn: 使用 IQR 方法移除了 {count} 行含异常值的数据
                 else:
-                    ui.addInfoLogMessage(_("No outliers detected using IQR method"))
+                    ui.addInfoLogMessage(_("No outliers detected using IQR method"))  # cn: 使用 IQR 方法未检测到异常值
             else:
-                ui.addInfoLogMessage(_("Outlier values processed using IQR method ({action})").format(action=action))
+                ui.addInfoLogMessage(_("Outlier values processed using IQR method ({action})").format(action=action))  # cn: 使用 IQR 方法处理了异常值（{action}）
             return df
         except Exception as e:
             ui.addCriticalLogMessage(_("Failed to process outliers: {error}").format(error=str(e)))
@@ -486,7 +486,7 @@ def remove_outliers_zscore() -> Optional[int]:
     ui = da_app.getCore().getUiInterface()
     
     cfg = (
-        FormBuilder(_("Remove Outliers (Z-score)"))
+        FormBuilder(_("Remove Outliers (Z-score)"))  # cn: 移除异常值（Z-score 方法）
         .group("detection", _("Detection Settings"))  # cn: 检测设置
         .float("threshold", label=_("Z-score Threshold"),  # cn: Z-score阈值
                default=3.0, min=1.0, max=10.0,
@@ -536,11 +536,11 @@ def remove_outliers_zscore() -> Optional[int]:
             if action == "remove":
                 removed_rows = old_len - len(df)
                 if removed_rows > 0:
-                    ui.addInfoLogMessage(_("Removed {count} rows containing outliers using Z-score method").format(count=removed_rows))
+                    ui.addInfoLogMessage(_("Removed {count} rows containing outliers using Z-score method").format(count=removed_rows))  # cn: 使用 Z-score 方法移除了 {count} 行含异常值的数据
                 else:
-                    ui.addInfoLogMessage(_("No outliers detected using Z-score method"))
+                    ui.addInfoLogMessage(_("No outliers detected using Z-score method"))  # cn: 使用 Z-score 方法未检测到异常值
             else:
-                ui.addInfoLogMessage(_("Outlier values processed using Z-score method ({action})").format(action=action))
+                ui.addInfoLogMessage(_("Outlier values processed using Z-score method ({action})").format(action=action))  # cn: 使用 Z-score 方法处理了异常值（{action}）
             return df
         except Exception as e:
             ui.addCriticalLogMessage(_("Failed to process outliers: {error}").format(error=str(e)))
@@ -632,7 +632,7 @@ def threshold_filter() -> Optional[int]:
                                                         row_logic=row_removal_logic,
                                                         treat_nan=treat_nan_as_violation, reindex=reindex)
         except Exception as e:
-            ui.addCriticalLogMessage(_("Threshold filtering failed: {error}").format(error=str(e)))
+            ui.addCriticalLogMessage(_("Threshold filtering failed: {error}").format(error=str(e)))  # cn: 阈值过滤失败：{error}
             raise
     
     # 根据过滤类型生成成功消息
@@ -842,7 +842,7 @@ def clean_text_strings() -> Optional[int]:
                                                   trim_type=trim_type, lowercase=lowercase,
                                                   remove_extra_spaces=remove_extra_spaces)
         except Exception as e:
-            ui.addCriticalLogMessage(_("Failed to clean text: {error}").format(error=str(e)))
+            ui.addCriticalLogMessage(_("Failed to clean text: {error}").format(error=str(e)))  # cn: 文本清洗失败：{error}
             raise
     
     return _execute_dataframe_operation(
@@ -887,7 +887,7 @@ def encode_label() -> Optional[int]:
             return core_cleaning.encode_label_impl(original_df, columns=subset,
                                                     keep_original=keep_original)
         except Exception as e:
-            ui.addCriticalLogMessage(_("Failed to encode labels: {error}").format(error=str(e)))
+            ui.addCriticalLogMessage(_("Failed to encode labels: {error}").format(error=str(e)))  # cn: 标签编码失败：{error}
             raise
     
     return _execute_dataframe_operation(

@@ -2,12 +2,12 @@
 # Copyright (C) 2025 THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # Automatically generated, 2025.
-#
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: i18n@example.com\n"
-"POT-Creation-Date: 2025-12-16 16:55+0800\n"
+"POT-Creation-Date: 2026-08-23 17:22+0800\n"
 "PO-Revision-Date: 2025-12-14 18:13+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,919 +17,860 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:35
-msgid "Please select a dataset first"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:39
-msgid "The selected data must be a table (DataFrame) format"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:93
+#: dataframe_cleaner.py:66
 #, python-brace-format
 msgid "Operation failed: {error}"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:114
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:172
+#: dataframe_cleaner.py:88 dataframe_cleaner.py:127
 msgid "Remove Missing Values"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:116
+#: dataframe_cleaner.py:89
 msgid "Basic Settings"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:119
+#: dataframe_cleaner.py:90
 msgid "Removal Criteria"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:123
+#: dataframe_cleaner.py:93
 msgid "Remove row if ANY value is missing"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:124
+#: dataframe_cleaner.py:94
 msgid "Remove row if ALL values are missing"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:126
+#: dataframe_cleaner.py:96
 msgid "Choose when to remove a row based on missing values"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:131
+#: dataframe_cleaner.py:97
 msgid "Minimum Non-NA Values"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:134
-msgid "Minimum number of non-missing values required to keep the row (0=disable)"
+#: dataframe_cleaner.py:99
+msgid ""
+"Minimum number of non-missing values required to keep the row (0=disable)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:138
+#: dataframe_cleaner.py:101 dataframe_cleaner.py:606
 msgid "Advanced Settings"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:141
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:206
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:604
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:809
+#: dataframe_cleaner.py:102 dataframe_cleaner.py:154 dataframe_cleaner.py:434
+#: dataframe_cleaner.py:512 dataframe_cleaner.py:610
 msgid "Reset Row Numbers"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:143
+#: dataframe_cleaner.py:104
 msgid "Renumber rows from 0 after removing missing values"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:167
+#: dataframe_cleaner.py:122
 #, python-brace-format
 msgid "Failed to remove missing values: {error}"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:174
+#: dataframe_cleaner.py:129
 #, python-brace-format
 msgid "Removed {removed_rows} rows with missing values"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:189
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:232
+#: dataframe_cleaner.py:145 dataframe_cleaner.py:177
 msgid "Remove Duplicate Rows"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:193
+#: dataframe_cleaner.py:146
 msgid "Which to Keep"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:197
+#: dataframe_cleaner.py:149
 msgid "Keep first occurrence, remove rest"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:198
+#: dataframe_cleaner.py:150
 msgid "Keep last occurrence, remove rest"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:199
+#: dataframe_cleaner.py:151
 msgid "Remove all duplicates"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:201
+#: dataframe_cleaner.py:153
 msgid "When duplicates are found, decide which one to keep"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:208
+#: dataframe_cleaner.py:156
 #, fuzzy
 msgid "Renumber rows starting from 0 after removing duplicates"
 msgstr "Whether to rebuild the index after drop na values"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:227
+#: dataframe_cleaner.py:172
 #, python-brace-format
 msgid "Failed to remove duplicates: {error}"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:234
+#: dataframe_cleaner.py:179
 #, python-brace-format
 msgid "Removed {removed_rows} duplicate rows"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:249
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:337
+#: dataframe_cleaner.py:195 dataframe_cleaner.py:248
 msgid "Fill Missing Values"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:251
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:254
+#: dataframe_cleaner.py:196 dataframe_cleaner.py:197
 #, fuzzy
 msgid "Fill Method"
 msgstr "Drop Method"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:258
+#: dataframe_cleaner.py:200
 msgid "Fill with a specific value"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:259
+#: dataframe_cleaner.py:201
 msgid "Use previous non-missing value"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:260
+#: dataframe_cleaner.py:202
 msgid "Use next non-missing value"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:261
+#: dataframe_cleaner.py:203
 msgid "Fill with column average"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:262
+#: dataframe_cleaner.py:204
 msgid "Fill with column middle value"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:263
+#: dataframe_cleaner.py:205
 msgid "Fill with most common value"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:265
+#: dataframe_cleaner.py:207
 msgid "Choose how to fill missing values"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:269
+#: dataframe_cleaner.py:209
 #, fuzzy
 msgid "Fill Value Settings"
 msgstr "Missing Value Removal Parameter Settings"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:272
+#: dataframe_cleaner.py:210
 msgid "Fill Value"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:274
+#: dataframe_cleaner.py:212
 msgid "Value to use when filling with specific value"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:279
+#: dataframe_cleaner.py:213
 msgid "Maximum Consecutive Fills"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:283
-msgid "Maximum number of consecutive missing values to fill (leave empty for unlimited)"
+#: dataframe_cleaner.py:215
+msgid ""
+"Maximum number of consecutive missing values to fill (leave empty for "
+"unlimited)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:328
+#: dataframe_cleaner.py:239
 #, python-brace-format
 msgid "Filled {count} missing values"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:332
+#: dataframe_cleaner.py:243
 #, python-brace-format
 msgid "Failed to fill missing values: {error}"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:354
+#: dataframe_cleaner.py:266
 #, fuzzy
 msgid "Interpolate Values Parameter Settings"
 msgstr "Missing Value Removal Parameter Settings"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:358
+#: dataframe_cleaner.py:267
 msgid "Interpolation Method"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:364
+#: dataframe_cleaner.py:270
 msgid "Linear interpolation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:365
+#: dataframe_cleaner.py:271
 msgid "Time-based interpolation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:366
+#: dataframe_cleaner.py:272
 msgid "Use index values"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:367
+#: dataframe_cleaner.py:273
 msgid "Pad interpolation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:368
+#: dataframe_cleaner.py:274
 msgid "Nearest interpolation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:369
+#: dataframe_cleaner.py:275
 msgid "Zero-order hold"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:370
+#: dataframe_cleaner.py:276
 msgid "Spline linear interpolation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:371
+#: dataframe_cleaner.py:277
 msgid "Quadratic interpolation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:372
+#: dataframe_cleaner.py:278
 msgid "Cubic interpolation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:373
+#: dataframe_cleaner.py:279
 msgid "Spline interpolation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:374
+#: dataframe_cleaner.py:280
 msgid "Barycentric interpolation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:375
+#: dataframe_cleaner.py:281
 msgid "Polynomial interpolation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:376
+#: dataframe_cleaner.py:282
 msgid "Krogh interpolation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:377
+#: dataframe_cleaner.py:283
 msgid "Piecewise polynomial interpolation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:378
+#: dataframe_cleaner.py:284
 msgid "PCHIP interpolation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:379
+#: dataframe_cleaner.py:285
 msgid "Akima interpolation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:381
+#: dataframe_cleaner.py:287
 msgid "Interpolation method to use"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:386
+#: dataframe_cleaner.py:288
 msgid "Interpolation Limit"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:390
+#: dataframe_cleaner.py:290
 msgid "Maximum number of consecutive NaN values to interpolate"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:395
+#: dataframe_cleaner.py:291
 msgid "Spline Order"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:399
+#: dataframe_cleaner.py:293
 msgid "Order of the spline interpolator (used for 'spline' method)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:404
+#: dataframe_cleaner.py:294
 msgid "Inplace Interpolation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:406
+#: dataframe_cleaner.py:296
 msgid "Whether to interpolate in place or return a copy"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:437
-#, python-brace-format
-msgid "Failed to interpolate column {col}: {error}"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:463
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:546
+#: dataframe_cleaner.py:339 dataframe_cleaner.py:393
 msgid "Replace Values"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:467
+#: dataframe_cleaner.py:340
 msgid "Values to Replace"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:469
+#: dataframe_cleaner.py:342
 msgid "Values to find and replace (comma separated for multiple values)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:474
+#: dataframe_cleaner.py:343
 msgid "Replacement Value"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:476
+#: dataframe_cleaner.py:345
 msgid "Value to use as replacement"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:481
+#: dataframe_cleaner.py:346
 msgid "Case Sensitive"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:483
+#: dataframe_cleaner.py:348
 msgid "Consider letter case when matching values (for text only)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:497
+#: dataframe_cleaner.py:363
 msgid "Please specify values to replace"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:503
+#: dataframe_cleaner.py:368
 msgid "No valid values specified for replacement"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:532
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:665
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:718
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:876
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:946
-#, python-brace-format
-msgid "Error processing column '{col}': {error}"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:535
+#: dataframe_cleaner.py:382
 #, python-brace-format
 msgid "Replaced {count} values"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:537
+#: dataframe_cleaner.py:384
 msgid "No matching values found to replace"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:541
+#: dataframe_cleaner.py:388
 #, python-brace-format
 msgid "Failed to replace values: {error}"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:566
+#: dataframe_cleaner.py:414
 msgid "Remove Outliers (IQR Method)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:568
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:766
+#: dataframe_cleaner.py:415 dataframe_cleaner.py:490
 msgid "Detection Settings"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:571
+#: dataframe_cleaner.py:416
 msgid "IQR Multiplier"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:575
-msgid "Values beyond Q1-multiplier*IQR and Q3+multiplier*IQR are outliers (typical: 1.5-3)"
+#: dataframe_cleaner.py:418
+msgid ""
+"Values beyond Q1-multiplier*IQR and Q3+multiplier*IQR are outliers (typical: "
+"1.5-3)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:579
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:784
+#: dataframe_cleaner.py:420 dataframe_cleaner.py:498
 #, fuzzy
 msgid "Action Settings"
 msgstr "Missing Value Removal Parameter Settings"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:582
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:787
+#: dataframe_cleaner.py:421 dataframe_cleaner.py:499
 msgid "Action on Outliers"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:586
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:791
+#: dataframe_cleaner.py:424 dataframe_cleaner.py:502
 msgid "Remove rows with outliers"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:587
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:792
+#: dataframe_cleaner.py:425 dataframe_cleaner.py:503
 msgid "Replace outliers with column mean"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:588
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:793
+#: dataframe_cleaner.py:426 dataframe_cleaner.py:504
 msgid "Replace outliers with column median"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:589
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:794
+#: dataframe_cleaner.py:427 dataframe_cleaner.py:505
 msgid "Replace outliers with boundary values"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:590
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:795
+#: dataframe_cleaner.py:428 dataframe_cleaner.py:506
 msgid "Replace outliers with custom value"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:592
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:797
+#: dataframe_cleaner.py:430 dataframe_cleaner.py:508
 msgid "How to handle detected outliers"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:597
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:802
+#: dataframe_cleaner.py:431 dataframe_cleaner.py:509
 msgid "Custom Replacement Value"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:599
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:804
+#: dataframe_cleaner.py:433 dataframe_cleaner.py:511
 msgid "Value to use for replacement when action is 'replace_custom'"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:606
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:811
+#: dataframe_cleaner.py:436 dataframe_cleaner.py:514
 msgid "Renumber rows after removing outliers (only for 'remove' action)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:626
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:832
-msgid "No numeric columns found for outlier detection"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:725
+#: dataframe_cleaner.py:459
 #, python-brace-format
 msgid "Removed {count} rows containing outliers using IQR method"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:728
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:956
-msgid "replaced with mean"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:729
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:957
-msgid "replaced with median"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:730
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:958
-msgid "replaced with boundary values"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:731
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:959
-msgid "replaced with custom value"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:733
-#, python-brace-format
-msgid "Replaced {count} outlier values using IQR method ({action})"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:737
+#: dataframe_cleaner.py:461
 msgid "No outliers detected using IQR method"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:742
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:970
+#: dataframe_cleaner.py:463
+#, python-brace-format
+msgid "Outlier values processed using IQR method ({action})"
+msgstr ""
+
+#: dataframe_cleaner.py:466 dataframe_cleaner.py:546
 #, python-brace-format
 msgid "Failed to process outliers: {error}"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:747
+#: dataframe_cleaner.py:471
 msgid "Remove Outliers (IQR)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:749
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:977
+#: dataframe_cleaner.py:473 dataframe_cleaner.py:553
 #, python-brace-format
 msgid "Removed {removed_rows} rows outliers"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:764
+#: dataframe_cleaner.py:489
 msgid "Remove Outliers (Z-score)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:769
+#: dataframe_cleaner.py:491
 msgid "Z-score Threshold"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:773
-msgid "Values with absolute Z-score above this threshold are outliers (typical: 3)"
+#: dataframe_cleaner.py:493
+msgid ""
+"Values with absolute Z-score above this threshold are outliers (typical: 3)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:778
+#: dataframe_cleaner.py:494
 msgid "Use Robust Statistics"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:780
+#: dataframe_cleaner.py:496
 msgid "Use median and MAD instead of mean and std (better for non-normal data)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:953
+#: dataframe_cleaner.py:539
 #, python-brace-format
 msgid "Removed {count} rows containing outliers using Z-score method"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:961
-#, python-brace-format
-msgid "Replaced {count} outlier values using Z-score method ({action})"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:965
+#: dataframe_cleaner.py:541
 msgid "No outliers detected using Z-score method"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:975
+#: dataframe_cleaner.py:543
+#, python-brace-format
+msgid "Outlier values processed using Z-score method ({action})"
+msgstr ""
+
+#: dataframe_cleaner.py:551
 msgid "Remove Outliers (Z-Score)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:995
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1080
+#: dataframe_cleaner.py:571
+msgid ""
+"No numeric columns found in selected data. Please select numeric columns for "
+"threshold filtering."
+msgstr ""
+
+#: dataframe_cleaner.py:577
+msgid "No numeric columns selected. Please select at least one numeric column."
+msgstr ""
+
+#: dataframe_cleaner.py:581 dataframe_cleaner.py:656
+msgid "Threshold Filter"
+msgstr ""
+
+#: dataframe_cleaner.py:582
+msgid "Filter Conditions"
+msgstr ""
+
+#: dataframe_cleaner.py:583
+msgid "Filter Type"
+msgstr ""
+
+#: dataframe_cleaner.py:586
+msgid "Remove values GREATER THAN threshold (too high)"
+msgstr ""
+
+#: dataframe_cleaner.py:587
+msgid "Remove values LESS THAN threshold (too low)"
+msgstr ""
+
+#: dataframe_cleaner.py:588
+msgid "Remove values WITHIN range (keep outliers)"
+msgstr ""
+
+#: dataframe_cleaner.py:589
+msgid "Remove values OUTSIDE range (keep normal range)"
+msgstr ""
+
+#: dataframe_cleaner.py:591
+msgid ""
+"Select the type of filtering you want to apply: remove values that are too "
+"high, too low, within a specific range, or outside a specific range."
+msgstr ""
+
+#: dataframe_cleaner.py:592
+msgid "Lower Threshold"
+msgstr ""
+
+#: dataframe_cleaner.py:594
+msgid ""
+"The minimum acceptable value. Rows with values below this (depending on "
+"filter type) will be removed."
+msgstr ""
+
+#: dataframe_cleaner.py:595
+msgid "Upper Threshold"
+msgstr ""
+
+#: dataframe_cleaner.py:597
+msgid ""
+"The maximum acceptable value. Rows with values above this (depending on "
+"filter type) will be removed."
+msgstr ""
+
+#: dataframe_cleaner.py:598
+msgid "Row Removal Logic"
+msgstr ""
+
+#: dataframe_cleaner.py:601
+msgid "Remove row if ANY selected column meets the condition"
+msgstr ""
+
+#: dataframe_cleaner.py:602
+msgid "Remove row only if ALL selected columns meet the condition"
+msgstr ""
+
+#: dataframe_cleaner.py:604
+msgid ""
+"When multiple columns are selected: 'Any' removes the row if any column "
+"violates the threshold; 'All' only removes the row if all columns violate "
+"the threshold."
+msgstr ""
+
+#: dataframe_cleaner.py:607
+msgid "Treat NaN as Threshold Violation"
+msgstr ""
+
+#: dataframe_cleaner.py:609
+msgid ""
+"If enabled, rows with NaN (missing) values in selected columns will also be "
+"removed. If disabled, NaN values will be ignored."
+msgstr ""
+
+#: dataframe_cleaner.py:612
+#, fuzzy
+msgid "Renumber rows from 0 after filtering"
+msgstr "Whether to rebuild the index after drop na values"
+
+#: dataframe_cleaner.py:635
+#, python-brace-format
+msgid "Threshold filtering failed: {error}"
+msgstr ""
+
+#: dataframe_cleaner.py:640
+#, python-brace-format
+msgid "Removed {removed_rows} rows with values greater than {upper_threshold}"
+msgstr ""
+
+#: dataframe_cleaner.py:643
+#, python-brace-format
+msgid "Removed {removed_rows} rows with values less than {lower_threshold}"
+msgstr ""
+
+#: dataframe_cleaner.py:646
+#, python-brace-format
+msgid ""
+"Removed {removed_rows} rows with values between {lower_threshold} and "
+"{upper_threshold}"
+msgstr ""
+
+#: dataframe_cleaner.py:649
+#, python-brace-format
+msgid ""
+"Removed {removed_rows} rows with values outside {lower_threshold} to "
+"{upper_threshold} range"
+msgstr ""
+
+#: dataframe_cleaner.py:652
+#, python-brace-format
+msgid "Filtered {removed_rows} rows based on threshold conditions"
+msgstr ""
+
+#: dataframe_cleaner.py:678 dataframe_cleaner.py:716
 #, fuzzy
 msgid "Transform Skewed Data"
 msgstr "Missing Value Removal Parameter Settings"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:999
+#: dataframe_cleaner.py:679
 msgid "Transformation Method"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1003
+#: dataframe_cleaner.py:682
 msgid "Logarithm transformation (log(x))"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1004
+#: dataframe_cleaner.py:683
 msgid "Square root transformation (sqrt(x))"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1005
+#: dataframe_cleaner.py:684
 msgid "Reciprocal transformation (1/x)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1006
+#: dataframe_cleaner.py:685
 msgid "Power transformation (x^lambda)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1008
+#: dataframe_cleaner.py:687
 msgid "Choose transformation method for reducing skewness"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1013
+#: dataframe_cleaner.py:688
 msgid "Power Lambda"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1017
+#: dataframe_cleaner.py:690
 msgid "Power value for power transformation (ignored for other methods)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1022
+#: dataframe_cleaner.py:691
 msgid "Add 1 before transformation"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1024
+#: dataframe_cleaner.py:693
 msgid "Add 1 to values before log/sqrt transformation (handles zeros)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1040
-msgid "No numeric columns found for transformation"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1068
-#, python-brace-format
-msgid "Transformed column: {col}"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1071
-#, python-brace-format
-msgid "Error transforming column '{col}': {error}"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1075
+#: dataframe_cleaner.py:711
 #, python-brace-format
 msgid "Failed to transform data: {error}"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1082
+#: dataframe_cleaner.py:718
 #, python-brace-format
 msgid "Transformed {changed_rows} columns"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1096
+#: dataframe_cleaner.py:733
 #, fuzzy
 msgid "Scale Data Parameter Settings"
 msgstr "Missing Value Removal Parameter Settings"
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1100
+#: dataframe_cleaner.py:734
 msgid "Scaling Method"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1104
+#: dataframe_cleaner.py:737
 msgid "Standard scaling (z-score: (x-mean)/std)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1105
+#: dataframe_cleaner.py:738
 msgid "Min-Max scaling (to [0, 1] range)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1106
+#: dataframe_cleaner.py:739
 msgid "Robust scaling (using median and IQR)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1107
+#: dataframe_cleaner.py:740
 msgid "MaxAbs scaling (to [-1, 1] range)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1108
+#: dataframe_cleaner.py:741
 msgid "Unit vector scaling (norm=1)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1110
+#: dataframe_cleaner.py:743
 msgid "Method for scaling data"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1115
+#: dataframe_cleaner.py:744
 msgid "Feature Range (Min)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1117
+#: dataframe_cleaner.py:746
 msgid "Minimum value for min-max scaling range"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1122
+#: dataframe_cleaner.py:747
 msgid "Feature Range (Max)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1124
+#: dataframe_cleaner.py:749
 msgid "Maximum value for min-max scaling range"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1129
+#: dataframe_cleaner.py:750
 msgid "With Mean (for standard scaling)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1131
+#: dataframe_cleaner.py:752
 msgid "Whether to center the data before scaling (for standard scaling)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1136
+#: dataframe_cleaner.py:753
 msgid "With Std (for standard scaling)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1138
+#: dataframe_cleaner.py:755
 msgid "Whether to scale to unit variance (for standard scaling)"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1143
+#: dataframe_cleaner.py:756
 msgid "Create New Columns"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1145
+#: dataframe_cleaner.py:758
 msgid "Create new columns instead of replacing original data"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1150
+#: dataframe_cleaner.py:759
 msgid "Column Suffix"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1152
+#: dataframe_cleaner.py:761
 msgid "Suffix for new column names"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1172
-msgid "No numeric columns found for scaling"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1246
+#: dataframe_cleaner.py:785
 #, python-brace-format
-msgid "Failed to scale column {col}: {error}"
+msgid "Failed to scale data: {error}"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1252
+#: dataframe_cleaner.py:790
 msgid "Scale Data"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1254
+#: dataframe_cleaner.py:792
 #, python-brace-format
 msgid "Scaled {changed_rows} columns"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1273
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1352
+#: dataframe_cleaner.py:812 dataframe_cleaner.py:850
 msgid "Clean Text Strings"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1277
+#: dataframe_cleaner.py:813
 msgid "Trim Spaces"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1281
+#: dataframe_cleaner.py:816
 msgid "Remove spaces from both sides"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1282
+#: dataframe_cleaner.py:817
 msgid "Remove spaces from left side only"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1283
+#: dataframe_cleaner.py:818
 msgid "Remove spaces from right side only"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1284
+#: dataframe_cleaner.py:819
 msgid "Do not trim spaces"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1286
+#: dataframe_cleaner.py:821
 msgid "Remove leading/trailing spaces from text"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1291
+#: dataframe_cleaner.py:822
 msgid "Convert to Lowercase"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1293
+#: dataframe_cleaner.py:824
 msgid "Convert all text to lowercase letters"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1298
+#: dataframe_cleaner.py:825
 msgid "Remove Extra Spaces"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1300
+#: dataframe_cleaner.py:827
 msgid "Replace multiple spaces with single space"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1319
-msgid "No text columns found for cleaning"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1341
-#, python-brace-format
-msgid "Error cleaning column '{col}': {error}"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1343
-#, python-brace-format
-msgid "Cleaned {count} text columns"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1347
+#: dataframe_cleaner.py:845
 #, python-brace-format
 msgid "Failed to clean text: {error}"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1373
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1421
+#: dataframe_cleaner.py:872 dataframe_cleaner.py:895
 msgid "Label Encoding"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1377
+#: dataframe_cleaner.py:873
 msgid "Keep Original Column"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1379
+#: dataframe_cleaner.py:875
 msgid "Keep original text column and create new encoded column"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1396
-msgid "No text columns found for label encoding"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1409
-#, python-brace-format
-msgid "Encoded '{col}' with {count} unique values"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1412
-#, python-brace-format
-msgid "Error encoding column '{col}': {error}"
-msgstr ""
-
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_cleaner.py:1416
+#: dataframe_cleaner.py:890
 #, python-brace-format
 msgid "Failed to encode labels: {error}"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:126
+#: dataframe_io.py:35
 #, python-brace-format
 msgid "The specified path is not a valid folder: {file_path}"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:139
+#: dataframe_io.py:46
 msgid "export datamanager files"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:148
+#: dataframe_io.py:54
 #, python-brace-format
 msgid "export: {name}.{file_type}"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:154
+#: dataframe_io.py:58
 #, python-brace-format
 msgid "export success {total_count} files"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:158
+#: dataframe_io.py:62
 #, python-brace-format
 msgid ""
 "Failed To Export dataframe: {err1}\n"
 "{err2}"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:165
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:233
+#: dataframe_io.py:69 dataframe_io.py:120
 msgid "unknown error"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:207
+#: dataframe_io.py:98
 #, python-brace-format
 msgid "writing sheet: {sheet_name}"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:215
+#: dataframe_io.py:105
 msgid "Failed To Export Excel File"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:217
+#: dataframe_io.py:106
 #, python-brace-format
 msgid "export success {total_count} sheets, file: {file_path}"
 msgstr ""
 
-#: /f/src/gree-data-workbench/data-workbench/plugins/DataAnalysis/PyScripts/DADataAnalysis/dataframe_io.py:219
+#: dataframe_io.py:108
 #, python-brace-format
 msgid ""
 "Failed To Export Excel File: {err1}\n"
 "{err2}"
 msgstr ""
 
-#~ msgid "No data selected"
-#~ msgstr "No data selected"
+#: utils.py:29
+msgid "Please select a dataset first"
+msgstr ""
 
-#~ msgid "The data is not of DataFrame type"
-#~ msgstr "The data is not of DataFrame type"
-
-#~ msgid "Missing Value Removal Parameter Settings"
-#~ msgstr "Missing Value Removal Parameter Settings"
-
-#~ msgid "Drop Method"
-#~ msgstr "Drop Method"
-
-#~ msgid "If any NA values are present, drop that row"
-#~ msgstr "If any NA values are present, drop that row"
-
-#~ msgid "If all values are NA, drop that row"
-#~ msgstr "If all values are NA, drop that row"
-
-#~ msgid "Not Specified"
-#~ msgstr "Not Specified"
-
-#~ msgid "Determine if row or column is removed from DataFrame, when we have at least one NA or all NA."
-#~ msgstr "Determine if row or column is removed from DataFrame, when we have at least one NA or all NA."
-
-#~ msgid "thresh"
-#~ msgstr "thresh"
-
-#~ msgid "Require that many non-NA values. Cannot be combined with Drop Method."
-#~ msgstr "Require that many non-NA values. Cannot be combined with Drop Method."
-
-#~ msgid "Reindex"
-#~ msgstr "Reindex"
-
-#~ msgid "Whether to rebuild the index after drop na values"
-#~ msgstr "Whether to rebuild the index after drop na values"
-
-#, fuzzy
-#~ msgid "Duplicates Value Removal Parameter Settings"
-#~ msgstr "Missing Value Removal Parameter Settings"
-
-#, fuzzy
-#~ msgid "Replace Values Parameter Settings"
-#~ msgstr "Missing Value Removal Parameter Settings"
-
-#, fuzzy
-#~ msgid "Normalize Data Parameter Settings"
-#~ msgstr "Missing Value Removal Parameter Settings"
-
-#, fuzzy
-#~ msgid "Strip Strings Parameter Settings"
-#~ msgstr "Missing Value Removal Parameter Settings"
-
-#, fuzzy
-#~ msgid "Forward Fill Parameter Settings"
-#~ msgstr "Missing Value Removal Parameter Settings"
-
-#, fuzzy
-#~ msgid "Backward Fill Parameter Settings"
-#~ msgstr "Missing Value Removal Parameter Settings"
-
-#, fuzzy
-#~ msgid "Rename Columns Parameter Settings"
-#~ msgstr "Missing Value Removal Parameter Settings"
-
-#, fuzzy
-#~ msgid "Drop Columns Parameter Settings"
-#~ msgstr "Missing Value Removal Parameter Settings"
-
-#, fuzzy
-#~ msgid "Reset Index Parameter Settings"
-#~ msgstr "Missing Value Removal Parameter Settings"
-
-#, fuzzy
-#~ msgid "Set Index Parameter Settings"
-#~ msgstr "Missing Value Removal Parameter Settings"
-
-#, fuzzy
-#~ msgid "Sort Values Parameter Settings"
-#~ msgstr "Missing Value Removal Parameter Settings"
-
-#, fuzzy
-#~ msgid "Encoding Method"
-#~ msgstr "Drop Method"
-
-#~ msgid "DataManager is None"
-#~ msgstr "DataManager is None"
+#: utils.py:33
+msgid "The selected data must be a table (DataFrame) format"
+msgstr ""

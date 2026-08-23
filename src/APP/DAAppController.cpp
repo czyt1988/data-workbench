@@ -3275,7 +3275,7 @@ void DAAppController::onStatsPlotRequested(const QJsonObject& params, DA::DAFigu
 {
     qDebug() << "[onStatsPlotRequested] called, fig=" << fig << "chart=" << chart;
     if (!fig || !chart) {
-        daWarning << tr("No figure/chart available for statistical plot");
+        daWarning << tr("No figure/chart available for statistical plot");  //cn:没有可用于统计绘图的图表窗口
         return;
     }
 
@@ -3295,7 +3295,7 @@ void DAAppController::onStatsPlotRequested(const QJsonObject& params, DA::DAFigu
     }
     if (!data.isDataFrame()) {
         daWarning << tr("Cannot resolve the data source for statistical plot; "
-                        "please ensure a dataframe is selected in the settings window");
+                        "please ensure a dataframe is selected in the settings window");  //cn:无法确定统计绘图的数据源，请确保在设置窗口中已选择数据表
         return;
     }
 
@@ -3310,7 +3310,7 @@ void DAAppController::onStatsPlotRequested(const QJsonObject& params, DA::DAFigu
 void DAAppController::onStatsGuideAccepted(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart)
 {
     if (!fig || !chart) {
-        daWarning << tr("No figure/chart available for statistical plot");
+        daWarning << tr("No figure/chart available for statistical plot");  //cn:没有可用于统计绘图的图表窗口
         return;
     }
 
@@ -3331,7 +3331,7 @@ void DAAppController::onStatsGuideAccepted(const QJsonObject& params, DA::DAFigu
     }
     if (!data.isDataFrame()) {
         daWarning << tr("Cannot resolve the data source for statistical plot; "
-                        "please ensure a dataframe is selected in the settings window");
+                        "please ensure a dataframe is selected in the settings window");  //cn:无法确定统计绘图的数据源，请确保在设置窗口中已选择数据表
         return;
     }
 
