@@ -19,17 +19,19 @@
 
 项目文档见：[https://czyt1988.github.io/data-workbench](https://czyt1988.github.io/data-workbench)
 
-# 简介
+## 简介
 
-AI Agent 驱动的数据分析工作平台，底层是有向图工作流引擎、内嵌 Python（pandas/numpy）和交互式图表，在此之上提供一个能直接操作软件的 AI Agent：agent 自己读数据、算统计、画图、加标注、生成分析报告，整个过程用自然语言对话驱动。
+`DAWorkbench` 是一款由 AI Agent 驱动的数据分析工作平台，采用插件化设计，界面层基于 C++ 实现，具备高性能渲染能力，能够流畅绘制亿级曲线图并展示亿行级数据表格。平台内嵌 `Python` 环境（`pandas` / `numpy`），封装自研的有向图工作流引擎，实现了 `Python` 层与 C++ 层的双向对接：既可基于 `Python` 快速完成业务封装，也支持 `C++` 插件与 `Python` 插件扩展。
 
-软件主要分四大核心模块：`Agent 模块`、`work flow 引擎`、`data 数据处理`、`chart 可视化`，模块间能力互通，支持 Python 双向操作。DAWorkbench 支持纯 Python 插件，也支持 C++ 插件，让插件开发更简单。内置 pandas 库，让操作 pandas 像操作 excel 一样。
+平台内置可直接操作软件的 AI Agent，通过插件注入工具层为 Agent 提供操作能力，默认提供 19 个工具。用户可用自然语言对话驱动 Agent 直接操作 GUI，完成数据读取、统计计算、绘图、标注添加和分析报告生成等任务。同时支持通过 Markdown 自定义 Agent，实现固定流程的数据分析与报告自动生成。AI Agent基于`LangGraph`构建，使用进程间通信（每个agent会话单独一个python进程）实现和界面（C++/Qt）的数据交互。
+
+软件核心由五大模块组成：`Agent 模块`、`Workflow 引擎`、`Data 数据处理`、`Chart 可视化`及`插件接口模块`。各模块能力互通，支持 Python 双向操作。`插件接口模块`同时支持纯 Python 插件与 C++ 插件，显著降低插件开发门槛；平台内置 pandas 库，让操作 pandas 像操作 Excel 一样便捷。
 
 ![about-data-work-flow](./docs/zh/assets/PIC/about-data-work-flow.png)
 
-## 设计愿景与初衷
+### 设计愿景与初衷
 
-### 原有设计目标
+#### 原有设计目标
 
 在数据处理过程往往有很多重复性的工作，尤其针对科研实验数据，有可能要面对 n 组数据，每组数据的清洗抽取方式基本是一样的，因此我希望一个数据处理软件应该是带有工作流功能的，当然 python 是很容易实现上述功能，但要求有一定的开发基础且要熟悉一些库才能得心应手
 
@@ -39,7 +41,7 @@ python 的 `pandas`、`numpy`、`scipy` 是数据处理的三大利器，通过 
 
 本软件的设计就是为了解决上面遇到的这三个问题，因此软件会分为四大板块：工作流解决固定流程问题，数据处理板块会把 pandas 的功能进行集成，能像操作 excel 一样操作 Dataframe，chart 板块能实现交互式的数据可视化，且能生成论文级别的绘图，集成agent能力，让ai操作软件，自动分析出图
 
-## 软件可以做什么
+### 软件可以做什么
 
 - 可以定制化为数据分析系统，尤其适合实验室数据快速分析，可以一键导入，结合 python 脚本自动清洗，使用者无需掌握 python 即可操作 pandas 的核心函数
 - 把重复的数据清洗流程固定成工作流，换一批数据一键重跑，不用每次重复手工操作
@@ -48,13 +50,18 @@ python 的 `pandas`、`numpy`、`scipy` 是数据处理的三大利器，通过 
 - 可以自定义扩展模块，集成自己的数据清洗和分析方法，并进行呈现
 - 自定义 Agent，用提示词写好分析流程，让 AI 操作软件，自动分析出图，自动写报告论文
 
-# AI Agent
+## AI Agent
 
 agent 以对话面板的形式嵌在主界面里，它操作的是软件里的真实对象：查询的数据是工作区已加载的数据集，画出的图实时出现在绘图区，写好的报告在内置查看器里打开，agent 做完之后使用者还能接手继续手动调整。
 
-软件启动时 agent 子进程默认预热，打开面板就能直接对话。回复流式输出，工具调用过程和 token 用量在对话里实时可见。
+- 使用DAWorkbench的agent分析数据，自动出具报告
+    ![使用DAWorkbench的agent分析数据，出具报告](./docs/zh/assets/screenshot/agent-analysis.gif)
+- 使用DAWorkbench的agent自动绘图
+    ![使用DAWorkbench的agent自动绘图](./docs/zh/assets/screenshot/agent-auto-create-chart.gif)
 
-## agent 能做什么
+和通用Agent（如Codex，OpenClaw，deepseek harness等）不一样，DAWorkbench提供了很多内置的工具，基于这些工具AI可以快速完成数据处理、绘图、数据可视化、报告生成等任务，且所有绘图操作都基于DAWorkbench，AI绘制的图样式用户可以直接修改，也可以在绘图上进行标记，并不是一个简单的png绘图，人工可以非常轻松的介入AI创建的绘图中
+
+### agent 能做什么
 
 默认插件注册了 19 个工具，覆盖数据分析的完整流程：
 
@@ -81,24 +88,24 @@ agent 以对话面板的形式嵌在主界面里，它操作的是软件里的�
 
 数据类工具在进程内真实调用 pandas，查询的就是工作区里的数据；绘图类工具直接操作真实的图表部件，agent 画完的图在绘图区里可以继续手动调整。agent 还会在回复里插入图表链接，点击后跳转到对应的图。
 
-## 提示词库
+### 提示词库
 
 一个 agent 就是一个 markdown 文件，放在可执行文件旁边的 `daAgent` 目录，文件名即标题。首次启动会生成内置的「数据分析助手」，里面约定了数据探索、绘图、出报告的完整流程。管理对话框里可以增删改 agent，编辑器带 markdown 语法高亮。插件也可以注入内置的领域 agent，同名文件如果已被使用者修改过则不会覆盖。
 
-Ribbon 的 AI Agent 标签页把提示词库列成 gallery，选中一个点执行，agent 就按这份提示词开始分析，适合把常用分析流程固定下来一键复用。
+基于DAWorkbench的智能体编辑窗口，你可以针对你的数据特殊性创建自己的智能体来进行更针对性的分析，例如你的实验数据，如果有一个相对固定的模板，你可以制定一个智能体，输出的报告按照你需要的模板输出，这个功能在大量复杂的数据分析工作上非常实用
 
-## 模型管理
+### 模型管理
 
-支持配置多个供应商，每个供应商有自己的 base_url、API key 和模型列表，可以从供应商的 /models 接口拉取可用模型，也可以手动添加。对话面板的下拉框切换供应商和模型，运行期热切换，不中断当前会话。API key 经 Windows DPAPI 加密后落盘。
+DAWorkbench的智能体功能支持配置多个供应商，每个供应商有自己的 base_url、API key 和模型列表，可以从供应商的 /models 接口拉取可用模型，也可以手动添加。API key 经 Windows DPAPI 加密后落盘。
 
-## 会话与可靠性
+### 会话与可靠性
 
 - 对话按会话以 JSONL 落盘，支持多会话切换、重命名、删除，会话可随工程文件一起保存和恢复，token 用量按会话累计
 - 上下文接近窗口上限时自动压缩，保留开头的任务描述和近期消息，中间部分生成摘要
 - 网络波动、服务端报错自动指数退避重试，子进程崩溃自动重启并恢复会话、重发最后一条消息
 - 看门狗和防死循环机制，避免 agent 卡死或反复调用同一个工具
 
-# 工作流引擎
+## 工作流引擎
 
 工作流引擎的逻辑层在 Python（DAWorkFlowPy），渲染层在 C++：节点、连接模型、有向无环图校验、拓扑排序执行都在 Python 侧完成，界面是基于 QGraphicsView 的节点编辑器，多输入多输出端口，操作方式类似 Unreal/Blender 的节点编辑器。
 
@@ -111,7 +118,7 @@ Ribbon 的 AI Agent 标签页把提示词库列成 gallery，选中一个点执�
 
 开发新节点不需要写 C++：用 Python 的 `@NodeDef` 装饰器注册，声明端口和参数，实现 execute 方法，放到插件目录即被自动发现，也支持 pip 安装后通过 entry_points 发现。
 
-# 数据处理
+## 数据处理
 
 数据模块的底层实体是 pandas DataFrame，C++ 把常用操作封装成表格和对话框，操作 DataFrame 像操作 Excel：单元格编辑、排序、筛选、query、去重、缺失值处理、异常值剔除、透视表、表达式求值，都带撤销重做。
 
@@ -119,7 +126,7 @@ Ribbon 的 AI Agent 标签页把提示词库列成 gallery，选中一个点执�
 
 数据管理器统一管理多个数据集，支持按名称和正则查找。Windows 下还提供 Excel/Word 的 COM 互通。
 
-# 图表可视化
+## 图表可视化
 
 图表基于扩展过的 qwt，增加了类似 matplotlib Figure 的 QwtFigure 容器，一个 figure 里可以放多个子图，按网格布局排布。
 
@@ -129,7 +136,7 @@ Ribbon 的 AI Agent 标签页把提示词库列成 gallery，选中一个点执�
 
 图表可以导出 PNG、PDF、SVG，也可以复制到剪贴板；图表以 XML 存进工程文件，重新打开布局原样恢复。
 
-# 插件系统
+## 插件系统
 
 插件分 C++ 和 Python 两种。
 
@@ -143,7 +150,7 @@ C++ 插件基于 DAAbstractPlugin 接口，以动态库形式加载，工程里�
 - DataAnalysis：数据分析节点与对话框
 - DAAgentTools：agent 的内置工具
 
-# 第三方库
+## 第三方库
 
 编译前请确保已经拉取了第三方库，由于使用的是 `git submodule` 方式管理大部分第三方库，因此需要执行：
 
@@ -199,16 +206,15 @@ pip install -r requirements.txt
 | 📖 使用指南 | 命令行参数、绘图功能、配置说明 | [docs/zh/use-guide/](docs/zh/use-guide/index.md) |
 | ❓ FAQ | 构建、插件、运行时常见问题 | [docs/zh/faq.md](docs/zh/faq.md) |
 
-## 程序截图
+## 界面截图
 
-![动态演示](./docs/assets/screenshot/screenshot1.gif)
+主体界面演示：
 
-主体界面演示
-
-![01](./docs/assets/screenshot/01.png)
-
-![02](./docs/assets/screenshot/02.png)
-
-图表编辑与属性面板
-
-![chart](./docs/assets/screenshot/screenshot-01.png)
+- 数据表格
+    ![01](./docs/assets/screenshot/01.png)
+- agent绘图
+    ![02](./docs/assets/screenshot/02.png)
+- 统计绘图（类似seaborn的各种快速统计功能）
+    ![02](./docs/assets/screenshot/03.png)
+- 工作流
+    ![04](./docs/assets/screenshot/04.png)
