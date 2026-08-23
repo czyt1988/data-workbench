@@ -1200,12 +1200,16 @@ void DAAppRibbonArea::onAgentGalleryTriggered(QAction* act)
 void DAAppRibbonArea::onActionRunAgent()
 {
     if (mSelectedAgentTitle.isEmpty()) {
-        QMessageBox::warning(app(), tr("Tip"), tr("Please select an agent in the gallery first"));  //cn:提示 //cn:请先在 gallery 中选择一个 agent
+        QMessageBox::warning(app(),
+                             tr("Tip"),                                          //cn:提示
+                             tr("Please select an agent in the gallery first")); //cn:请先在 gallery 中选择一个 agent
         return;
     }
     DA::DAAgentInterface* agent = DA_APP_CORE.getAgentInterface();
     if (!agent) {
-        QMessageBox::warning(app(), tr("Tip"), tr("Agent module is not ready"));  //cn:提示 //cn:Agent 模块未就绪
+        QMessageBox::warning(app(),
+                             tr("Tip"),                            //cn:提示
+                             tr("Agent module is not ready"));     //cn:Agent 模块未就绪
         return;
     }
     mActions->actionShowAgentArea->trigger();  // 确保 Agent dock 可见（ActionModeShow，不会 toggle 隐藏）

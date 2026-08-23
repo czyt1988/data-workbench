@@ -260,12 +260,18 @@ def find_statement_start(text, cn_pos):
 
 
 def _has_code(seg):
-    """True if seg contains any non-whitespace char that is not part of a comment."""
+    """True if seg contains any non-whitespace char that is not part of a comment.
+    Commas are treated like whitespace: a segment containing only commas is not
+    code. This matters for brace-initializer entries like
+    {"key", tr("...")},  // cn:...  where the nearest boundary before the cn
+    comment is the entry's closing brace, leaving only a trailing comma between
+    the boundary and the comment. Counting that comma as code would start the
+    statement after the closing brace and miss the tr() call entirely."""
     i = 0
     n = len(seg)
     while i < n:
         c = seg[i]
-        if c in ' \t\r\n':
+        if c in ' \t\r\n,':
             i += 1
             continue
         if c == '/' and i + 1 < n and seg[i+1] == '/':
@@ -363,11 +369,14 @@ def extract_file(path):
         # Example: // cn:警告,cn:是否覆盖文件:%1  -> ["警告", "是否覆盖文件:%1"]
         cn_segments = CN_SPLIT_RE.split(cn_text_raw)
 
-        # If only one segment but multiple tr() calls, the old behavior
-        # attributed the whole comment to the last tr(). Keep that as a
-        # fallback so we don't lose data, but it indicates a source issue.
+        # If only one segment but multiple tr() calls, attribute the comment
+        # to the LAST call: the comment is physically closest to it, and
+        # earlier calls in the same statement either carry their own cn:
+        # comment on a previous line or were already paired there. Pairing
+        # with the FIRST call instead mis-annotates it and leaves the last
+        # call (the one actually commented) untranslated.
         if len(cn_segments) == 1 and len(all_found) > 1:
-            cn_segments = [cn_text_raw]  # will only pair with last call below
+            all_found = [all_found[-1]]
 
         # Pair segments with tr() calls in source order. If counts differ,
         # pair as many as possible; leftover segments or calls are skipped.

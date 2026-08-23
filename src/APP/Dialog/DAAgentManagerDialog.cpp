@@ -124,7 +124,9 @@ void DAAgentManagerDialog::onAddClicked()
             }
         }
     } else {
-        QMessageBox::warning(this, tr("Tip"), tr("Save failed"));  //cn:提示 //cn:保存失败
+        QMessageBox::warning(this,
+                             tr("Tip"),          //cn:提示
+                             tr("Save failed")); //cn:保存失败
     }
 }
 
@@ -162,7 +164,9 @@ void DAAgentManagerDialog::onEditClicked()
             }
         }
     } else {
-        QMessageBox::warning(this, tr("Tip"), tr("Save failed"));  //cn:提示 //cn:保存失败
+        QMessageBox::warning(this,
+                             tr("Tip"),          //cn:提示
+                             tr("Save failed")); //cn:保存失败
     }
 }
 
@@ -188,7 +192,9 @@ void DAAgentManagerDialog::onDeleteClicked()
     if (m_ops->deleteAgent(title)) {
         refreshList();
     } else {
-        QMessageBox::warning(this, tr("Tip"), tr("Delete failed"));  //cn:提示 //cn:删除失败
+        QMessageBox::warning(this,
+                             tr("Tip"),            //cn:提示
+                             tr("Delete failed")); //cn:删除失败
     }
 }
 

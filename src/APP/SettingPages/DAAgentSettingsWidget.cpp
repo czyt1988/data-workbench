@@ -140,7 +140,11 @@ void DAAgentSettingsWidget::setupProvidersTab()
     rightForm->addRow(tr("API Key"), mInfoApiKey);    // cn:API 密钥
     rightForm->addRow(new QLabel(tr("Models"), rightPanel));  // cn:模型
     mInfoModelTable = new QTableWidget(0, 3, rightPanel);
-    mInfoModelTable->setHorizontalHeaderLabels({ tr("Model Name"), tr("Context Size"), tr("Max Output Tokens") });  // cn:模型名//上下文大小//最大输出 token
+    mInfoModelTable->setHorizontalHeaderLabels({
+        tr("Model Name"),        // cn:模型名
+        tr("Context Size"),      // cn:上下文大小
+        tr("Max Output Tokens")  // cn:最大输出 token
+    });
     mInfoModelTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     mInfoModelTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     mInfoModelTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
@@ -383,7 +387,11 @@ void DAAgentSettingsWidget::showProviderInfo(int idx)
     mInfoBaseUrl->setText(p.value("base_url").toString());
     // api_key 脱敏：仅显示是否已设置（不显示明文/掩码）
     QString key = p.value("api_key").toString();
-    mInfoApiKey->setText(key.isEmpty() ? tr("not set") : tr("set (hidden)"));  //cn:未设置//已设置(隐藏)
+    if (key.isEmpty()) {
+        mInfoApiKey->setText(tr("not set"));  //cn:未设置
+    } else {
+        mInfoApiKey->setText(tr("set (hidden)"));  //cn:已设置(隐藏)
+    }
     const QJsonArray models = p.value("models").toArray();
     for (const QJsonValue& mv : models) {
         int row = mInfoModelTable->rowCount();

@@ -273,11 +273,11 @@ QString DAAgentModule::assembleSystemPrompt() const
         if (!content.trimmed().isEmpty()) {
             base = QString::fromUtf8(content);
         } else {
-            daWarning << tr("Agent system prompt file is empty, fallback to built-in default: %1")
+            daWarning << tr("Agent system prompt file is empty, fallback to built-in default: %1")  //cn:Agent 系统提示词文件为空，回退到内置默认提示词：%1
                          .arg(promptFile.fileName());
         }
     } else {
-        daWarning << tr("Failed to read Agent system prompt file, fallback to built-in default: %1")
+        daWarning << tr("Failed to read Agent system prompt file, fallback to built-in default: %1")  //cn:读取 Agent 系统提示词文件失败，回退到内置默认提示词：%1
                      .arg(promptFile.fileName());
     }
 

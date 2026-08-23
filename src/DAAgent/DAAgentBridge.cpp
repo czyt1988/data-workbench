@@ -468,7 +468,7 @@ void DAAgentBridge::onReadyReadStandardOutput()
         QJsonDocument doc = QJsonDocument::fromJson(lineData, &parseError);
         if (parseError.error != QJsonParseError::NoError) {
             // 不可解析的行不能静默丢弃——记录到日志便于排查协议问题
-            daWarning << tr("Failed to parse JSON line from agent stdout: %1, error: %2")
+            daWarning << tr("Failed to parse JSON line from agent stdout: %1, error: %2")  //cn:解析 agent 标准输出的 JSON 行失败：%1，错误：%2
                              .arg(QString::fromUtf8(lineData), parseError.errorString());
             continue;  // 跳过此行，继续处理后续
         }
@@ -697,7 +697,7 @@ void DAAgentBridge::onProcessFinished(int exitCode, QProcess::ExitStatus exitSta
         if (parseError.error == QJsonParseError::NoError && doc.isObject()) {
             handleJsonLine(doc.object());
         } else {
-            daWarning << tr("Failed to parse trailing JSON line from agent stdout: %1, error: %2")
+            daWarning << tr("Failed to parse trailing JSON line from agent stdout: %1, error: %2")  //cn:解析 agent 标准输出的末尾 JSON 行失败：%1，错误：%2
                              .arg(QString::fromUtf8(lastLine), parseError.errorString());
         }
     }

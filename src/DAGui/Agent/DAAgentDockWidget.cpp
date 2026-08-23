@@ -754,9 +754,9 @@ QString DAAgentDockWidget::formatTokenLabel(int totalTokens, int contextWindow, 
     // （C++ 只推这 5 原始值，标签复用 tr("input: %1") 等既有翻译，JS 做 %1→值 替换）。
     int win = contextWindow > 0 ? contextWindow : -1;
     if (source == QStringLiteral("streaming_estimate")) {
-        return tr("tokens: ~%1 / %2").arg(totalTokens).arg(win);  // cn:token: ~当前 / 窗口
+        return tr("tokens: ~%1 / %2").arg(totalTokens).arg(win);  // cn:token: ~%1 / %2
     }
-    return tr("tokens: %1 / %2").arg(totalTokens).arg(win);  // cn:token: 当前 / 窗口
+    return tr("tokens: %1 / %2").arg(totalTokens).arg(win);  // cn:token: %1 / %2
 }
 
 /**
@@ -775,13 +775,13 @@ QString DAAgentDockWidget::mapErrorMessage(const QString& original, const QStrin
         return tr("API key invalid or expired, please check settings"); //cn:API Key 无效或已过期，请在设置中检查配置
     }
     if (errorType == "rate_limit_exhausted") {
-        return tr("Failed after %1 retries: rate limited").arg(7); //cn:重试 7 次后仍失败：服务限流
+        return tr("Failed after %1 retries: rate limited").arg(7); //cn:重试 %1 次后仍失败：服务限流
     }
     if (errorType == "network_exhausted") {
-        return tr("Failed after %1 retries: network error").arg(7); //cn:重试 7 次后仍失败：网络错误
+        return tr("Failed after %1 retries: network error").arg(7); //cn:重试 %1 次后仍失败：网络错误
     }
     if (errorType == "server_error_exhausted") {
-        return tr("Failed after %1 retries: server error").arg(7); //cn:重试 7 次后仍失败：服务器错误
+        return tr("Failed after %1 retries: server error").arg(7); //cn:重试 %1 次后仍失败：服务器错误
     }
     if (errorType == "bad_request") {
         return tr("Request format error: %1").arg(original); //cn:请求格式错误：%1

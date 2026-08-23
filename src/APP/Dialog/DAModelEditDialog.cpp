@@ -44,12 +44,12 @@ void DAModelEditDialog::buildUi()
     m_ctxSpin = new QSpinBox(this);
     m_ctxSpin->setRange(1024, 2097152);
     m_ctxSpin->setSingleStep(1024);
-    m_ctxSpin->setSuffix(tr(" tokens"));
+    m_ctxSpin->setSuffix(tr(" tokens"));  // cn: token
     m_ctxSpin->setValue(262144);
     m_maxOutSpin = new QSpinBox(this);
     m_maxOutSpin->setRange(1, 1048576);
     m_maxOutSpin->setSingleStep(128);
-    m_maxOutSpin->setSuffix(tr(" tokens"));
+    m_maxOutSpin->setSuffix(tr(" tokens"));  // cn: token
     m_maxOutSpin->setValue(8192);
     form->addRow(tr("Model Id"), m_idEdit);              // cn:模型 id
     form->addRow(tr("Context Window"), m_ctxSpin);       // cn:上下文窗口

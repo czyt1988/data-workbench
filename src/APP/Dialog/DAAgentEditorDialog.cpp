@@ -86,7 +86,9 @@ bool DAAgentEditorDialog::validate()
 {
     QString title = m_titleEdit->text().trimmed();
     if (title.isEmpty()) {
-        QMessageBox::warning(this, tr("Tip"), tr("Title cannot be empty"));  //cn:提示 //cn:标题不能为空
+        QMessageBox::warning(this,
+                             tr("Tip"),                    //cn:提示
+                             tr("Title cannot be empty")); //cn:标题不能为空
         m_titleEdit->setFocus();
         return false;
     }

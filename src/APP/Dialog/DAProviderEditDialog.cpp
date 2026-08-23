@@ -75,7 +75,11 @@ void DAProviderEditDialog::buildUi()
 
     // 模型表格
     m_modelTable = new QTableWidget(0, 3, this);
-    m_modelTable->setHorizontalHeaderLabels({ tr("Model Name"), tr("Context Size"), tr("Max Output Tokens") });  // cn:模型名//上下文大小//最大输出 token
+    m_modelTable->setHorizontalHeaderLabels({
+        tr("Model Name"),        // cn:模型名
+        tr("Context Size"),      // cn:上下文大小
+        tr("Max Output Tokens")  // cn:最大输出 token
+    });
     m_modelTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     m_modelTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     m_modelTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
