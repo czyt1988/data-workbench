@@ -124,7 +124,54 @@ providers=[{"name":"OpenAI","base_url":"...","api_key":"...","models":["gpt-4o-m
 
 ### Agent 设置页
 
-设置对话框中的 Agent 页面由 `src/APP/SettingPages/DAAgentSettingsWidget` 提供。该页面经 `setAgentInterface()` 注入 `DAAgentInterface`，`loadConfig()` 调 `getLLMConfig()`、`saveConfig()` 调 `setLLMConfig()`/`setProviders()`——页面本身不接触 `QSettings` 与加解密逻辑。
+设置对话框中的 Agent 页面由 `src/APP/SettingPages/DAAgentSettingsWidget` 提供，是配置 LLM 供应商、模型与 Agent 运行参数的唯一 UI 入口。该页面经 `setAgentInterface()` 注入 `DAAgentInterface`，`loadConfig()` 调 `getLLMConfig()`、`saveConfig()` 调 `setLLMConfig()`/`setProviders()`——页面本身不接触 `QSettings` 与加解密逻辑。下面介绍如何在该页面完成 Agent 配置。
+
+#### 打开设置页
+
+在 Ribbon 上点击 **主页** → **配置** 面板 → **设置**，打开设置对话框，在左侧页面列表中选择 **Agent LLM 设置**。页面包含两个标签页：**模型供应商** 与 **Agent 设置**。
+
+![Agent LLM 设置页](../../assets/screenshot/setting-page-agent-setting.png)
+
+**模型供应商** 标签页左侧为供应商列表，上方三个按钮分别为新增（＋）、修改（铅笔）、删除（×）；右侧为只读详情面板，展示选中供应商的名称、基础地址、API 密钥是否已设置，以及模型列表（模型名 / 上下文大小 / 最大输出 token）。
+
+#### 配置模型供应商
+
+点击新增或修改按钮，打开 **供应商** 编辑对话框，按以下步骤配置：
+
+1. 填写 **名称**（如 `deepseek`）与 **基础地址**（OpenAI 兼容协议地址，如 `https://api.deepseek.com`）；
+2. 填写 **API 密钥**；
+3. 点击 **获取可用模型**，程序按 OpenAI 兼容协议向基础地址请求模型列表，在弹出的 **可用模型** 对话框中勾选要添加的模型（支持全选 / 全不选）；也可点击 **+ 新增模型** 手动填写模型 id；
+4. 点击 **确定** 回到设置页，最后点击设置对话框的 **确定** 或 **应用** 保存。
+
+![供应商编辑与获取可用模型](../../assets/screenshot/setting-page-agent-setting-set-baseurl-and-add-model.png)
+
+!!! note "API 密钥的存储"
+    API 密钥在设置页中以明文填写，保存时由接口层经 DPAPI 加密后写入 `agent-config.ini` 的 `providers` 字段；右侧详情面板仅显示「已设置(隐藏)」或「未设置」，不会回显密钥内容。请勿直接手改 ini 中的 `providers` / `llm_api_key` 字段。
+
+#### Agent 设置标签页
+
+**Agent 设置** 标签页配置 Agent 子进程的运行参数，无特殊需求保持默认值即可：
+
+| 设置项（配置键） | 默认值 | 说明 |
+|------------------|--------|------|
+| 就绪超时（`ready_timeout_sec`） | 60 s | 等待 Agent 子进程就绪的超时（5–300 s） |
+| 停止超时（`stop_timeout_sec`） | 5 s | 停止时等待子进程退出的超时（1–60 s） |
+| 压缩阈值（`compaction_threshold`） | 0.85 | 上下文压缩触发比例（相对激活模型上下文窗口），0.85 表示占用达 85% 时触发压缩 |
+| 保留最近消息数（`max_recent_messages`） | 10 | 压缩后仍保留为原文的最近消息条数（4–50） |
+| 工具结果截断阈值（`tool_result_max_chars`） | 20000 | 工具输出截断阈值（字符数） |
+| 工具结果预览长度（`tool_result_preview_chars`） | 2000 | 截断后工具输出的预览长度（字符数） |
+| 最大会话数（`max_sessions`） | 20 | 保留的自由会话最大数量（5–200） |
+| 会话保留天数（`session_retention_days`） | 30 天 | 早于此天数的自由会话在启动时删除（1–365 天） |
+| 最大重试次数（`max_retries`） | 7 次 | 临时性 LLM 错误的自动重试次数，0 表示不重试 |
+| 请求超时（`request_timeout_sec`） | 120 s | 单次 LLM 请求超时（10–600 s） |
+| 无活动超时（`inactivity_timeout_sec`） | 240 s | 看门狗超时：此时间内无消息则停止子进程（60–600 s） |
+| 最大进程重启次数（`max_subprocess_restarts`） | 3 次 | 子进程崩溃后自动重启的最大次数，0 表示不重启 |
+| 推理迭代上限（`recursion_limit`） | 150 | 图最大推理步数，每轮工具调用消耗 3 步（20–1000） |
+| 启动时自动预热（`auto_prestart`） | 开启 | 程序启动时预启动 Agent 子进程，关闭可节省内存 |
+
+#### 切换激活模型
+
+配置保存后，在 AI 分析 Dock 顶部的模型下拉框（按供应商分组）可热切换激活模型，无需重启程序、不丢失会话状态。若下拉框显示「无模型」，说明尚未配置可用供应商或模型，请回到本页完成上述配置。
 
 ### recent-files.ini 与注册表迁移
 
