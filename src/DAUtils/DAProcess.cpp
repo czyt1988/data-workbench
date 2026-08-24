@@ -34,10 +34,14 @@ void DAProcess::setEncoding(const char* codecName)
 
 void DAProcess::run(const QString& command, QIODevice::OpenMode mode)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-	start(command, mode);
-#else
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	startCommand(command, mode);
+#else
+	// Qt5 当前构建未提供 startCommand，只能用单字符串 start 重载，局部屏蔽弃用警告
+	QT_WARNING_PUSH
+	QT_WARNING_DISABLE_DEPRECATED
+	start(command, mode);
+	QT_WARNING_POP
 #endif
 }
 
@@ -146,11 +150,8 @@ void DAProcessWithThread::runProcess()
 		mProcess = new DAProcess();
 		mThread  = new QThread();
 		mProcess->moveToThread(mThread);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-		connect(mProcess, QOverload< int >::of(&DA::DAProcess::finished), mThread, &QThread::quit);  // 进程结束，线程退出
-#else
-		connect(mProcess, &DA::DAProcess::finished, mThread, &QThread::quit);  // 进程结束，线程退出
-#endif
+		// 双参 finished 重载自 Qt 5.13 前即可用（Qt6 中为唯一形式），Qt5/Qt6 均可直接使用
+		connect(mProcess, QOverload< int, QProcess::ExitStatus >::of(&DA::DAProcess::finished), mThread, &QThread::quit);  // 进程结束，线程退出
 		connect(mThread, &QThread::finished, mProcess, &DA::DAProcess::deleteLater);  // 线程结束了，实例销毁
 		connect(mThread, &QThread::finished, mThread, &QThread::deleteLater);         // 线程结束了，线程自毁
 		connect(mThread, &QThread::finished, this, [ this ]() {
@@ -171,11 +172,7 @@ void DAProcessWithThread::runProcess()
 			emit errorOccurred(error, errstr);
 		});
 		connect(mProcess, &DA::DAProcess::started, this, &DAProcessWithThread::processStarted);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-		connect(mProcess, QOverload< int >::of(&DA::DAProcess::finished), this, &DAProcessWithThread::processFinished);
-#else
-		connect(mProcess, &DA::DAProcess::finished, this, &DAProcessWithThread::processFinished);
-#endif
+		connect(mProcess, QOverload< int, QProcess::ExitStatus >::of(&DA::DAProcess::finished), this, &DAProcessWithThread::processFinished);
 		connect(mProcess, &DA::DAProcess::processStarandOutput, this, &DAProcessWithThread::processStarandOutput);
 		connect(mProcess, &DA::DAProcess::processErrorOutput, this, &DAProcessWithThread::processErrorOutput);
 		mProcess->setProgram(mProgram);

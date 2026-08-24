@@ -396,11 +396,7 @@ void DAGraphicsView::resizeEvent(QResizeEvent* event)
  */
 void DAGraphicsView::wheelZoom(QWheelEvent* event)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-	if (event->delta() > 0) {
-#else
 	if (event->angleDelta().y() > 0) {
-#endif
 		zoomIn();
 	} else {
 		zoomOut();

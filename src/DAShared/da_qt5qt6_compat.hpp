@@ -117,7 +117,7 @@ inline qreal horizontalAdvanceF(const QFontMetricsF& fm, const QString& str)
  * @brief Get vertical wheel delta value compatible with Qt5 and Qt6
  *
  * This function provides a unified interface to retrieve the vertical scroll delta
- * from a QWheelEvent, supporting both Qt5 (using delta()) and Qt6 (using angleDelta().y())
+ * from a QWheelEvent using angleDelta() (available since Qt 5.0, delta() is deprecated)
  * without changing the calling code.
  *
  * The return value represents the vertical scroll amount:
@@ -132,11 +132,7 @@ inline qreal horizontalAdvanceF(const QFontMetricsF& fm, const QString& str)
  */
 inline int wheelEventDelta(QWheelEvent* e)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    return e->delta();
-#else
     return e->angleDelta().y();
-#endif
 }
 
 inline void setNamedColor(QColor& c,const char* colorName){

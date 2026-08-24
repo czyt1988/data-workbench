@@ -44,8 +44,8 @@ QList< QFileInfo > DAPyInterpreter::wherePython()
 {
     QList< QFileInfo > validFis;
     QProcess process;
-    QString command = "where python";
-    process.start(command);
+    // 拆分为 program + arguments 形式，避免使用已废弃的单字符串 start 重载（该形式在 Qt6 中已移除）
+    process.start(QStringLiteral("where"), QStringList() << QStringLiteral("python"));
     if (!process.waitForFinished()) {
         return QList< QFileInfo >();
     }
