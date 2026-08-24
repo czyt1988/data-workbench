@@ -4,6 +4,7 @@
 #include <QtCore/qglobal.h>
 #include <QDebug>
 #include <QPointF>
+#include <QRectF>
 #include <QString>
 #include <QList>
 #include "DAGraphicsViewGlobal.h"
@@ -38,6 +39,8 @@ public:
 
     // 按方向延伸连接点位置
     QPointF elongation(int externLen) const;
+    // 鼠标拾取命中区域（节点本地坐标，以 position 为中心，略大于绘制矩形）
+    QRectF hitRegion() const;
     // 判断此连接点的方向是否与给定方向相反
     bool isDirectionOpposite(DAAspectDirection other) const;
     // 比较 way+name 是否相同（忽略位置和方向）

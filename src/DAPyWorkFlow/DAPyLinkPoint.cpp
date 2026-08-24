@@ -65,6 +65,35 @@ QPointF DAPyLinkPoint::elongation(int externLen) const
 }
 
 /**
+ * @brief 计算连接点的鼠标拾取命中区域
+ * @return 以 position 为中心的矩形（节点本地坐标）
+ *
+ * 连接点中心位于节点 body 边缘，绘制矩形约一半伸出 body 之外，
+ * 命中区域按方向感知设置并略大于绘制矩形以便点击：
+ * - 东西方向（水平矩形）：16x12
+ * - 南北方向（垂直矩形）：12x16
+ *
+ * 此函数是连接点命中尺寸的唯一来源，场景命中检测与
+ * DAPyNodeGraphicsItem::shape() 均须使用它，保证两者严格一致。
+ */
+QRectF DAPyLinkPoint::hitRegion() const
+{
+    constexpr qreal halfEW_W = 8.0;  ///< 东西方向命中半宽
+    constexpr qreal halfEW_H = 6.0;  ///< 东西方向命中半高
+    constexpr qreal halfNS_W = 6.0;  ///< 南北方向命中半宽
+    constexpr qreal halfNS_H = 8.0;  ///< 南北方向命中半高
+    qreal halfW, halfH;
+    if (direction == DAAspectDirection::East || direction == DAAspectDirection::West) {
+        halfW = halfEW_W;
+        halfH = halfEW_H;
+    } else {
+        halfW = halfNS_W;
+        halfH = halfNS_H;
+    }
+    return QRectF(position.x() - halfW, position.y() - halfH, halfW * 2, halfH * 2);
+}
+
+/**
  * @brief 判断此连接点的方向是否与给定方向相对
  * @note 委托给 DAGraphicsLinkItem::isDirectionOpposite()
  */

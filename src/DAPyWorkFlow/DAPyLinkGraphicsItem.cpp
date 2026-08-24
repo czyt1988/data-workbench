@@ -230,18 +230,22 @@ QString DAPyLinkGraphicsItem::getToInputName() const
 }
 
 /**
- * @brief 在将要结束链接的回调，验证数据类型的兼容性
+ * @brief 在将要结束链接的回调，验证连接的完整性与数据类型的兼容性
  *
- * 检查源节点输出数据类型和目标节点输入数据类型是否兼容。
- * 如果类型不兼容，返回false阻止连接完成。
+ * 先检查源节点和目标节点是否齐备：缺少任一端时返回 false，
+ * 阻止 endLink 把未完成的临时连接线固化为孤立连接线
+ * （孤立线不进 undo 栈、不同步 Python，在 DAPyWorkFlow 中不允许存在），
+ * 此时连线模式保持，临时线继续跟随鼠标，用户可重新点击有效端口或右键取消。
+ * 两端齐备时再检查源节点输出端口名和目标节点输入端口名是否有效，
+ * 类型兼容性检查可由Python侧节点自行判定。
  *
- * @return true表示类型兼容，允许连接；false表示类型不兼容，阻止连接
+ * @return true表示允许连接完成；false表示阻止连接完成
  */
 bool DAPyLinkGraphicsItem::willCompleteLink()
 {
-    // 如果没有源节点或目标节点，使用基类默认行为
+    // 源节点或目标节点缺失时拒绝完成，避免产生孤立连接线
     if (!d_ptr->mFromNode || !d_ptr->mToNode) {
-        return DAGraphicsLinkItem::willCompleteLink();
+        return false;
     }
 
     // 端口key名称匹配验证：确认输出端口和输入端口在节点中存在

@@ -1337,6 +1337,11 @@ QRectF DAPyNodeGraphicsItem::boundingRect() const
  *
  * 当 bodyShape 为 Ellipse 时，返回椭圆路径而非矩形路径，
  * 确保矩形角落的点击不会被误检测为命中。
+ *
+ * 连接点中心位于 body 边缘，其矩形约一半伸出 body 之外，
+ * 因此 shape 在 body 路径基础上并入各连接点的命中区域，
+ * 否则 QGraphicsScene::itemAt（基于 shape）在 body 外的连接点
+ * 区域无法命中节点，导致场景的连接点点击检测不生效。
  */
 QPainterPath DAPyNodeGraphicsItem::shape() const
 {
@@ -1354,6 +1359,14 @@ QPainterPath DAPyNodeGraphicsItem::shape() const
     } else {
         // RoundedRect 等保持默认矩形路径（复用基类行为）
         path = DAGraphicsResizeableItem::shape();
+    }
+
+    // 并入连接点命中区域，保证 body 外的连接点可被 itemAt 命中
+    for (const DAPyLinkPoint& lp : std::as_const(d->mInputLinkPoints)) {
+        path.addRect(lp.hitRegion());
+    }
+    for (const DAPyLinkPoint& lp : std::as_const(d->mOutputLinkPoints)) {
+        path.addRect(lp.hitRegion());
     }
 
     return path;

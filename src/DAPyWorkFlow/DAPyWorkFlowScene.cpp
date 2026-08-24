@@ -1543,17 +1543,7 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                     const QList< DAPyLinkPoint > inputPoints = nodeItem->getInputLinkPoints();
                     DAPyLinkPoint matchedPoint;
                     for (const DAPyLinkPoint& lp : inputPoints) {
-                        QPointF lpScenePos = nodeItem->mapToScene(lp.position);
-                        // 根据连接点方向计算方向感知的命中区域
-                        qreal halfW, halfH;
-                        if (lp.direction == DAAspectDirection::East || lp.direction == DAAspectDirection::West) {
-                            halfW = 8;
-                            halfH = 6;  // 水平方向: 16x12
-                        } else {
-                            halfW = 6;
-                            halfH = 8;  // 垂直方向: 12x16
-                        }
-                        QRectF hitRegion(lpScenePos.x() - halfW, lpScenePos.y() - halfH, halfW * 2, halfH * 2);
+                        QRectF hitRegion = nodeItem->mapRectToScene(lp.hitRegion());
                         if (hitRegion.contains(mouseEvent->scenePos())) {
                             matchedPoint = lp;
                             break;
@@ -1581,17 +1571,7 @@ void DAPyWorkFlowScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
                 const QList< DAPyLinkPoint > outputPoints = nodeItem->getOutputLinkPoints();
                 DAPyLinkPoint matchedPoint;
                 for (const DAPyLinkPoint& lp : outputPoints) {
-                    QPointF lpScenePos = nodeItem->mapToScene(lp.position);
-                    // 根据连接点方向计算方向感知的命中区域
-                    qreal halfW, halfH;
-                    if (lp.direction == DAAspectDirection::East || lp.direction == DAAspectDirection::West) {
-                        halfW = 8;
-                        halfH = 6;  // 水平方向: 16x12
-                    } else {
-                        halfW = 6;
-                        halfH = 8;  // 垂直方向: 12x16
-                    }
-                    QRectF hitRegion(lpScenePos.x() - halfW, lpScenePos.y() - halfH, halfW * 2, halfH * 2);
+                    QRectF hitRegion = nodeItem->mapRectToScene(lp.hitRegion());
                     if (hitRegion.contains(mouseEvent->scenePos())) {
                         matchedPoint = lp;
                         break;
