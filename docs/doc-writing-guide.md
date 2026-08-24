@@ -188,7 +188,7 @@ sequenceDiagram
 效果截图前应说明对应的示例位置：
 
 ```markdown
-工作流的示例位于 `examples/workflow/basic`，效果截图如下：
+工作流的使用说明位于 `docs/zh/use-guide/workflow-usage.md`，效果截图如下：
 
 ![workflow-demo](../assets/screenshot/workflow-demo.png)
 ```
@@ -455,7 +455,7 @@ classDiagram
 
 ## 使用方法
 
-示例位于 `examples/workflow/basic`，效果截图如下：
+在工作流编辑器中创建节点、连线并运行后的效果截图如下：
 
 ![workflow-demo](../assets/screenshot/workflow-demo.png)
 
