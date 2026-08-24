@@ -159,10 +159,31 @@ ls ..\bin_Release_qt*
 
 ## 使用 Qt Creator 构建
 
-除了命令行方式，也可以使用 Qt Creator：
+除了命令行方式，也可以使用 Qt Creator。顺序与命令行一致：先打开 `src/3rdparty/zlib/CMakeLists.txt`，配置项目后构建并安装；再打开 `src/3rdparty/CMakeLists.txt`，按以下步骤配置、构建并安装。
 
-1. 打开 `src/3rdparty/zlib/CMakeLists.txt`，配置项目后构建并安装
-2. 打开 `src/3rdparty/CMakeLists.txt`，配置项目后构建并安装
+### 1. 打开项目
+
+打开 Qt Creator，选择 **文件** → **打开文件或项目**（`Ctrl+O`），选择 `src/3rdparty/CMakeLists.txt`。项目加载后，左侧项目树会列出各第三方库的 CMake 目录结构：
+
+![build-3rdparty-cmake-qtc](../../assets/PIC/build-3rdparty-cmake-qtc-01.png)
+
+### 2. 选择构建目标
+
+切换到项目模式（`Ctrl+5`），Build 步骤选择 `all`，并勾选 `install`，使构建完成后自动安装产物到项目根目录的 `bin_*` 目录：
+
+![build-3rdparty-cmake-qtc](../../assets/PIC/build-3rdparty-cmake-qtc-02.png)
+
+### 3. 编译和安装
+
+点击左侧工具栏的运行按钮（绿色三角形，`Ctrl+R`）进行编译和安装：
+
+![build-3rdparty-cmake-qtc](../../assets/PIC/build-3rdparty-cmake-qtc-03.png)
+
+### 4. 验证安装产物
+
+构建完成后，项目根目录生成安装目录 `bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}`，其中包含 `bin/`、`lib/`、`include/` 等子目录：
+
+![build-3rdparty-cmake-qtc](../../assets/PIC/build-3rdparty-cmake-qtc-04.png)
 
 ## 常见问题
 
