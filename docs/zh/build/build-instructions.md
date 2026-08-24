@@ -42,6 +42,10 @@
 
     详见 [生成器选择](#命令行构建步骤windows)。
 
+CMake 通过 `<Qt 安装路径>/<版本>/<编译器>/lib/cmake/` 下的 CMake 配置文件（即下图中的 `Qt5`/`Qt6` 配置目录）查找 Qt，因此指定的 Qt 路径必须具备完整的目录结构：
+
+![Qt 安装目录结构](../../assets/PIC/cmake-qt-dir.png)
+
 ### Python 依赖
 
 项目运行时依赖的 Python 包见项目根目录 `requirements.txt`（共 16 个）。下表列出主要分组：
@@ -112,6 +116,10 @@ flowchart TD
 # 拉取所有子模块（包括嵌套子模块）
 git submodule update --init --recursive
 ```
+
+拉取完成后，标准源码目录结构如下，第三方库源码位于 `src/3rdparty/` 下：
+
+![标准源码目录结构](../../assets/PIC/standard-source-dir.png)
 
 !!! tip "网络问题处理"
     第三方库 `SARibbon` 包含子模块 `QWindowKit`（托管在 GitHub）。如果网络无法访问 GitHub，可以逐个拉取：

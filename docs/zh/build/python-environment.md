@@ -235,6 +235,24 @@ cmake -DPython_ROOT_DIR="C:\Python311" ...
 
 ---
 
+## 运行目录布局示例
+
+程序所在目录需同时包含 `PyScripts`（内置 Python 脚本目录）与可用的 Python 环境。构建系统会在配置/安装时自动把 `src/PyScripts` 复制到构建输出目录和安装目录（见根目录 `CMakeLists.txt`）；手动布置发布目录或使用旧版本构建产物时，可参照下图手动放置。
+
+### 复制 PyScripts
+
+将 `src/PyScripts` 目录整体复制到程序目录，与可执行文件同级：
+
+![复制 PyScripts 到程序目录](../../assets/PIC/copy-pyscripts.jpg)
+
+### 放置 Python 环境
+
+将 Python 环境（如 embeddable package）放入程序目录（例如命名为 `Python` 的目录），再通过 `python-config.json` 指向它（见上文"运行时 Python 配置"一节）：
+
+![Python 环境放入程序目录](../../assets/PIC/move-py-to-bin-dir.png)
+
+---
+
 ## 参考资料
 
 - [构建说明](./build-instructions.md) - 完整构建指南

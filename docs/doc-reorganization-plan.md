@@ -1,7 +1,7 @@
 # 文档整理方案与资源审计报告（2026-08）
 
 > 本文档记录 `docs/zh/` 文档重组的执行结果，以及 `docs/assets/` 资源审计结论。
-> **第五节的"建议删除"资源清单尚未执行删除，等待确认后再删。**
+> 第二节 🔴 "建议删除"清单已执行删除（2026-08-24）；🟡 清单已全部挂接到对应文档。
 
 ---
 
@@ -58,33 +58,13 @@ docs/
 
 合并后 `docs/assets/` 共 **62 个文件**。状态说明：✅ 被文档/站点引用；🟡 未引用但建议保留；🔴 建议删除。
 
-### 被引用，必须保留（16 个）✅
+### 未引用，建议保留（已全部挂接）🟡
 
-| 文件 | 引用者 |
-|---|---|
-| `PIC/about-data-work-flow.png` | readme.md |
-| `PIC/app-area.png`、`PIC/uml-interface.png` | dev-guide/architecture/interface-module.md |
-| `PIC/build-daworkbench-cmake-qtc-01/02.png` | build/main-program-build.md |
-| `PIC/build-daworkbenchplugins-cmake-qtc-01.png` | build/plugin-build.md |
-| `PIC/cmake-after-install.png`、`cmake-after-install2.png`、`cmake-standard-install-dir.png` | build/large-cmake-project-guide.md |
-| `PIC/palette.svg` | dev-guide/general/icon-ui-design-guide.md |
-| `PIC/resible-graphicsitem.png` | dev-guide/graphics/scalable-graphic-module.md |
-| `PIC/uml-module-last3.png`、`uml-module-relation.png` | plugin/plugin-system.md |
-| `screenshot/01.png`、`02.png` | index.md / quick-start.md / readme.md |
-| `screenshot/03.png`、`04.png`、`agent-analysis.gif`、`agent-auto-create-chart.gif` | readme.md |
-| `icon.png`、`icon.ico` | mkdocs.yml 主题 logo/favicon |
-
-### 未引用，建议保留（19 个）🟡
-
-| 文件 | 保留理由 |
-|---|---|
-| `drawio/about-data-work-flow.drawio` | readme 所用 about-data-work-flow.png 的可编辑源 |
-| `drawio/about-data-collect-system.drawio`、`data-work-flow-uml.drawio` | UML/架构图可编辑源，重绘时要用 |
-| `PIC/build-3rdparty-cmake-qtc-01~04.png`（4 张） | 第三方库构建步骤截图，建议后续挂接到 build/third-party-build.md |
-| `PIC/build-error-nopython.png`、`-02/-03/-04.png`、`build-succ-but-unable-run.png`、`error-01.png`（6 张） | 构建排障素材，建议后续挂接到 build/common-build-errors.md 或 python-environment.md |
-| `PIC/cmake-qt-dir.png`、`standard-source-dir.png`、`copy-pyscripts.jpg`、`move-py-to-bin-dir.png`（4 张） | 构建/Python 环境配置插图素材 |
-| `PIC/screenshot1.png` | 疑似断链 `screenshot1.gif` 的替代图（见第三节），确认后改引用 |
-| `screenshot/setting-page-agent-setting.png`、`setting-page-agent-setting-set-baseurl-and-add-model.png`（2 张） | Agent 设置页截图，建议挂接到 use-guide/configuration.md 的 Agent 配置节 |
+| 文件 | 保留理由 | 挂接情况 |
+|---|---|---|
+| `PIC/build-3rdparty-cmake-qtc-01~04.png`（4 张） | 第三方库构建步骤截图 | ✅ 已挂接 `build/third-party-build.md`「使用 Qt Creator 构建」一节 |
+| `PIC/cmake-qt-dir.png`、`standard-source-dir.png`（2 张） | 构建配置插图素材 | ✅ 已挂接 `build/build-instructions.md`（Qt 安装目录结构、标准源码目录结构） |
+| `PIC/copy-pyscripts.jpg`、`move-py-to-bin-dir.png`（2 张） | Python 环境配置插图素材 | ✅ 已挂接 `build/python-environment.md`「运行目录布局示例」一节 |
 
 ### 未引用，建议删除（24 个）🔴
 
@@ -101,15 +81,17 @@ docs/
 
 另：`drawio/~$about-data-work-flow.drawio.bkp`（Office 类临时备份文件）已在迁移时删除。
 
+**执行记录**：上述 24 个文件已于 2026-08-24 删除，空的 `PIC/workflow-ui/` 目录一并移除；删除前已确认均无任何文档/站点配置引用。
+
 ---
 
 ## 三、断链清单（引用了不存在的文件，未改动，待决策）
 
 | 引用位置 | 目标 | 建议 |
 |---|---|---|
-| `zh/index.md`（动态演示图） | `assets/screenshot/screenshot1.gif` | 仓库现存 `PIC/screenshot1.png`，疑似其替代图——确认后把引用改为该 PNG（并决定是否移入 screenshot/） |
-| `zh/build/plugin-build.md` | `assets/PIC/plugin-list.png` | 图片缺失，需补一张插件列表现截图或删掉该引用 |
-| `docs/doc-build.md` | `assets/screenshot/workflow-demo.png` | 图片缺失（出现 3 次），需补图或删引用 |
+| `zh/index.md`（动态演示图） | `assets/screenshot/screenshot1.gif` | `PIC/screenshot1.png` 确认不作替代图并已删除；待补录新的动态演示 GIF（截图内容见会话描述） |
+| `zh/build/plugin-build.md` | `assets/PIC/plugin-list.png` | 图片缺失，待补插件管理器截图（截图内容见会话描述）；正文入口描述已修正为实际 UI（主页 → 设置 → 插件设置） |
+| `docs/doc-writing-guide.md` 第 460 行（原误记为 doc-build.md） | `assets/screenshot/workflow-demo.png` | 第 185/193 行位于代码块示例内，不构成实际断链；实际断链仅第 460 行，待补工作流效果截图（截图内容见会话描述） |
 
 既有告警（与本次整理无关，仅记录）：若干文档链接到 `src/**` 源码文件（GitHub 上可点，站点上天然无法渲染）；`doxygen/*.html` 占位链接在本地构建时不存在（CI 部署时生成）。
 
@@ -126,6 +108,6 @@ docs/
 
 ## 五、待确认事项
 
-1. **第二节 🔴 的 24 个文件是否全部删除**（或指出需要保留的例外）。
-2. 第三节 3 处断链的处理方式（补图 / 改引用 / 删引用）。
-3. `screenshot1.png` 是否就是 `screenshot1.gif` 的替代图。
+1. ~~第二节 🔴 的 24 个文件是否全部删除~~ — 用户已核实，删除已执行（2026-08-24）。
+2. 第三节 3 处断链定为补图：截图内容已描述，待用户截图后放入 `assets/screenshot/screenshot1.gif`、`assets/PIC/plugin-list.png`、`assets/screenshot/workflow-demo.png`。
+3. ~~`screenshot1.png` 是否就是 `screenshot1.gif` 的替代图~~ — 确认不作替代图，文件已删除。
