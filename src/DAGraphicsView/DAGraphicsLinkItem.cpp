@@ -7,6 +7,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QStyleOptionGraphicsItem>
 #include <QLineF>
+#include <QtMath>
 #include <math.h>
 #include "DAGraphicsScene.h"
 #include "DAQtEnumTypeStringUtils.h"
