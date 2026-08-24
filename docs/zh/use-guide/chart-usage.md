@@ -85,7 +85,7 @@ flowchart TD
 !!! info "与单画布子图布局的区别"
     「多图布局」指**单个画布内**的多个子图（归一化坐标）；「绘图窗口停靠布局」指**图表操作区内**多个 figure 之间的分屏 / 并栏。两者可叠加使用。
 
-    停靠布局的实现细节（嵌套 `ads::CDockManager`、焦点控制器跨管理器陷阱、序列化）见 [绘图窗口停靠布局（ADS 嵌套停靠区）](../dev-guide/chart-dock-nesting.md)。
+    停靠布局的实现细节（嵌套 `ads::CDockManager`、焦点控制器跨管理器陷阱、序列化）见 [绘图窗口停靠布局（ADS 嵌套停靠区）](../dev-guide/graphics/chart-dock-nesting.md)。
 
 ---
 
@@ -204,5 +204,5 @@ flowchart TD
 - [使用指南概述](./index.md) — 软件功能总览
 - [数据管理使用](./data-management.md) — 数据导入和查看
 - [数据探针](./plot/data-probe.md) — 交互式数据查看
-- [绘图模块概述](../dev-guide/figure-abstract.md) — 图表系统架构
-- [图表设置面板](../dev-guide/creating-setting-panel.md) — 属性面板开发
+- [绘图模块概述](../dev-guide/graphics/figure-abstract.md) — 图表系统架构
+- [图表设置面板](../dev-guide/ui/creating-setting-panel.md) — 属性面板开发

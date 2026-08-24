@@ -488,8 +488,8 @@ async for chunk in llm.astream(messages):
 
 ## 参见
 
-- [架构设计](architecture.md) — 双进程模型与信号链
-- [崩溃恢复与重连](crash-recovery.md) — 进程异常退出后的协议恢复
-- [会话持久化](session-management.md) — load_session 机制的完整流程
+- [架构设计](./architecture.md) — 双进程模型与信号链
+- [崩溃恢复与重连](./crash-recovery.md) — 进程异常退出后的协议恢复
+- [会话持久化](./session-management.md) — load_session 机制的完整流程
 - `src/DAAgent/DAAgentBridge.cpp` — C++ 侧协议解析实现
 - `src/PyScripts/DAWorkbench/agent/agent_runner.py` — Python 侧协议收发实现

@@ -27,7 +27,7 @@
 
 软件核心由五大模块组成：`Agent 模块`、`Workflow 引擎`、`Data 数据处理`、`Chart 可视化`及`插件接口模块`。各模块能力互通，支持 Python 双向操作。`插件接口模块`同时支持纯 Python 插件与 C++ 插件，显著降低插件开发门槛；平台内置 pandas 库，让操作 pandas 像操作 Excel 一样便捷。
 
-![about-data-work-flow](./docs/zh/assets/PIC/about-data-work-flow.png)
+![about-data-work-flow](./docs/assets/PIC/about-data-work-flow.png)
 
 ### 设计愿景与初衷
 
@@ -55,9 +55,9 @@ python 的 `pandas`、`numpy`、`scipy` 是数据处理的三大利器，通过 
 agent 以对话面板的形式嵌在主界面里，它操作的是软件里的真实对象：查询的数据是工作区已加载的数据集，画出的图实时出现在绘图区，写好的报告在内置查看器里打开，agent 做完之后使用者还能接手继续手动调整。
 
 - 使用DAWorkbench的agent分析数据，自动出具报告
-    ![使用DAWorkbench的agent分析数据，出具报告](./docs/zh/assets/screenshot/agent-analysis.gif)
+    ![使用DAWorkbench的agent分析数据，出具报告](./docs/assets/screenshot/agent-analysis.gif)
 - 使用DAWorkbench的agent自动绘图
-    ![使用DAWorkbench的agent自动绘图](./docs/zh/assets/screenshot/agent-auto-create-chart.gif)
+    ![使用DAWorkbench的agent自动绘图](./docs/assets/screenshot/agent-auto-create-chart.gif)
 
 和通用Agent（如Codex，OpenClaw，deepseek harness等）不一样，DAWorkbench提供了很多内置的工具，基于这些工具AI可以快速完成数据处理、绘图、数据可视化、报告生成等任务，且所有绘图操作都基于DAWorkbench，AI绘制的图样式用户可以直接修改，也可以在绘图上进行标记，并不是一个简单的png绘图，人工可以非常轻松的介入AI创建的绘图中
 
@@ -199,12 +199,12 @@ pip install -r requirements.txt
 | 📝 文档构建 | 本地预览、构建部署文档站点 | [docs/doc-build.md](docs/doc-build.md) |
 | 🚀 快速上手 | 5 分钟环境搭建和首次构建 | [docs/zh/quick-start.md](docs/zh/quick-start.md) |
 | 🛠️ 开发指引 | 开发者入门完整指南 | [docs/zh/dev-guide/developer-guide.md](docs/zh/dev-guide/developer-guide.md) |
-| 🏗️ 架构设计 | 5 层架构、设计决策、扩展点 | [docs/zh/dev-guide/architecture.md](docs/zh/dev-guide/architecture.md) |
-| 📊 模块业务逻辑 | 各核心模块内部工作原理 | [docs/zh/dev-guide/module-breakdown.md](docs/zh/dev-guide/module-breakdown.md) |
+| 🏗️ 架构设计 | 5 层架构、设计决策、扩展点 | [docs/zh/dev-guide/architecture/architecture.md](docs/zh/dev-guide/architecture/architecture.md) |
+| 📊 模块业务逻辑 | 各核心模块内部工作原理 | [docs/zh/dev-guide/architecture/module-breakdown.md](docs/zh/dev-guide/architecture/module-breakdown.md) |
 | 🤖 Agent 开发 | Agent 子系统：LLM 接入、提示词库、工具调用、协议 | [docs/zh/dev-guide/agent/index.md](docs/zh/dev-guide/agent/index.md) |
-| 🔌 插件开发 | 插件系统、节点开发、插件生命周期 | [docs/zh/plugin-development.md](docs/zh/plugin-development.md) |
+| 🔌 插件开发 | 插件系统、节点开发、插件生命周期 | [docs/zh/plugin/plugin-development.md](docs/zh/plugin/plugin-development.md) |
 | 📖 使用指南 | 命令行参数、绘图功能、配置说明 | [docs/zh/use-guide/](docs/zh/use-guide/index.md) |
-| ❓ FAQ | 构建、插件、运行时常见问题 | [docs/zh/faq.md](docs/zh/faq.md) |
+| ❓ FAQ | 构建、插件、运行时常见问题 | [docs/zh/reference/faq.md](docs/zh/reference/faq.md) |
 
 ## 界面截图
 

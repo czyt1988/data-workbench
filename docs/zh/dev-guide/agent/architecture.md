@@ -295,8 +295,8 @@ graph LR
 
 ## 参见
 
-- [通信协议](protocol.md) — JSON Lines 协议的完整规范
-- [上下文管理](context-management.md) — compact_node 的压缩机制详解
-- [崩溃恢复与重连](crash-recovery.md) — 进程生命周期与自动重启
-- [工具开发指南](tool-development.md) — 工具基类与注册机制
+- [通信协议](./protocol.md) — JSON Lines 协议的完整规范
+- [上下文管理](./context-management.md) — compact_node 的压缩机制详解
+- [崩溃恢复与重连](./crash-recovery.md) — 进程生命周期与自动重启
+- [工具开发指南](./tool-development.md) — 工具基类与注册机制
 - `src/DAAgent/AGENTS.md` — 模块 AI 开发必读指南

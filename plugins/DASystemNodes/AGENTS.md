@@ -50,7 +50,7 @@ copy /Y "plugins\DASystemNodes\PyScripts\DASystemNodes\nodes\text_viewer.py" `
 
 ### 国际化（i18n）要求
 
-> ⚠️ 节点包必须实现 i18n，详见 [docs/zh/dev-guide/python-i18n.md](../../docs/zh/dev-guide/python-i18n.md#节点包-nodedef-i18n) 的"节点包 i18n"章节
+> ⚠️ 节点包必须实现 i18n，详见 [docs/zh/dev-guide/general/python-i18n.md](../../docs/zh/dev-guide/general/python-i18n.md#节点包-nodedef-i18n) 的"节点包 i18n"章节
 
 | 字段 | 是否翻译 | 写法 |
 |------|---------|------|
@@ -561,7 +561,7 @@ def deserialize_runtime_state(self, state: dict) -> None:
 | 节点缓存的派生状态可从参数 + 输入完全重建 | ❌ 不需要（重新执行即可） |
 | 节点缓存的状态无法轻易重建（如历史日志、交互历史） | ✅ 推荐 |
 
-详见 [项目序列化架构 - 运行时状态持久化](../../docs/zh/dev-guide/project-serialization-architecture.md#8-运行时状态持久化)。
+详见 [项目序列化架构 - 运行时状态持久化](../../docs/zh/dev-guide/architecture/project-serialization-architecture.md#8-运行时状态持久化)。
 
 ### ⚠️ @NodeDef 的 MRO 遮盖陷阱
 
@@ -582,4 +582,4 @@ def serialize_runtime_state(self) -> dict:
 ```
 
 !!! warning "新增 DAWorkflowNode 基类方法"
-    如果在 `DAWorkflowNode` 基类中新增需要被子类覆写的方法，**必须**使用 `super()` 转发模式。详见 [Python 节点开发指南 - MRO 遮盖陷阱](../../docs/zh/dev-guide/workflow-python-node-dev.md#nodef-的-mro-遮盖陷阱)。
+    如果在 `DAWorkflowNode` 基类中新增需要被子类覆写的方法，**必须**使用 `super()` 转发模式。详见 [Python 节点开发指南 - MRO 遮盖陷阱](../../docs/zh/dev-guide/workflow/workflow-python-node-dev.md#nodef-的-mro-遮盖陷阱)。

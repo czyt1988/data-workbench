@@ -79,7 +79,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 
 > ⚠️ **AI 开发必读**：在创建任何新类之前，**必须先判断它属于哪个模块**。将类放在错误的模块会导致模块间产生不必要的依赖、代码复用困难、项目架构混乱。
 >
-> 📖 **模块职责边界、依赖矩阵、典型放置指南详见** [docs/zh/dev-guide/module-dependency.md](docs/zh/dev-guide/module-dependency.md)
+> 📖 **模块职责边界、依赖矩阵、典型放置指南详见** [docs/zh/dev-guide/architecture/module-dependency.md](docs/zh/dev-guide/architecture/module-dependency.md)
 
 ### 五层架构总览
 
@@ -103,7 +103,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 
 ### 各模块职责边界
 
-> 📖 **完整的职责边界表、依赖矩阵、典型放置指南详见** [docs/zh/dev-guide/module-dependency.md](docs/zh/dev-guide/module-dependency.md)
+> 📖 **完整的职责边界表、依赖矩阵、典型放置指南详见** [docs/zh/dev-guide/architecture/module-dependency.md](docs/zh/dev-guide/architecture/module-dependency.md)
 
 | 层 | 模块 |
 |----|------|
@@ -124,7 +124,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 
 创建新类/文件时**必须**回答：
 
-1. 这个类的功能是否在这个模块的职责范围内？（对照 [module-dependency.md](docs/zh/dev-guide/module-dependency.md) 的职责边界表）
+1. 这个类的功能是否在这个模块的职责范围内？（对照 [module-dependency.md](docs/zh/dev-guide/architecture/module-dependency.md) 的职责边界表）
 2. 是否会引入违反依赖方向的依赖？（下层不能依赖上层）
 3. 是否可以被其他不依赖当前模块的模块复用？→ 考虑下沉到更低层
 4. 是否是通用工具/基础类型？→ DAShared（纯头文件）或 DAUtils
@@ -144,28 +144,28 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | 图表创建/编辑 | `src/DAFigure/`, `src/DAGui/ChartSetting/` | QwtFigure 容器 + 属性面板 |
 | 图形视图交互 | `src/DAGraphicsView/` | QGraphicsView 子类, 节点/连线编辑 |
 | Python 绑定 | `src/DAPyBindQt/` | pybind11 胶水代码 |
-| pybind11↔Qt 类型转换 | `src/DAPyBindQt/DAPybind11QtCaster.hpp` | **重要**：QString/QVariant/QDateTime 等自动双向转换，详见`docs/zh/dev-guide/dapybind11-qt-caster.md` |
+| pybind11↔Qt 类型转换 | `src/DAPyBindQt/DAPybind11QtCaster.hpp` | **重要**：QString/QVariant/QDateTime 等自动双向转换，详见`docs/zh/dev-guide/python-binding/dapybind11-qt-caster.md` |
 | Python 工作流节点 | `src/DAPyWorkFlow/` | Python 脚本节点执行 |
 | 命令行参数 | `src/APP/main.cpp` → `initCommandLine()` | --version, --help, import-data, 工程文件 |
 | UI 状态持久化 | `src/APP/AppMainWindow` | saveUIState/restoreUIState |
 | 翻译/国际化 | `src/i18n/`, `src/APP/App_zh_CN.ts` | DATranslatorManeger |
 | 崩溃转储 | `src/APP/DADumpCapture.h` | Windows dump 文件生成 |
-| 日志系统 | `src/DAMessageHandler/` | DALogger + daInfo/daWarning/daCritical 便捷宏，详见 `docs/zh/dev-guide/logging.md` |
+| 日志系统 | `src/DAMessageHandler/` | DALogger + daInfo/daWarning/daCritical 便捷宏，详见 `docs/zh/dev-guide/general/logging.md` |
 | PIMPL 宏定义 | `src/DAGlobals.h` | DA_DECLARE_PRIVATE, DA_D, DA_DC 等 |
 | Qt5/Qt6 兼容宏 | `src/DAGlobals.h` | Qt5Qt6Compat_* 系列宏 |
 | 通用 Widgets | `src/DACommonWidgets/` | 按钮、列表、树等基础组件 |
-| 枚举/字符串转换 | `src/DAShared/DAEnumStringUtils.hpp` | 通用枚举↔字符串映射宏，详见`docs/zh/dev-guide/da-enum-string-utils.md` |
+| 枚举/字符串转换 | `src/DAShared/DAEnumStringUtils.hpp` | 通用枚举↔字符串映射宏，详见`docs/zh/dev-guide/general/da-enum-string-utils.md` |
 | 插件开发参考 | `plugins/DataAnalysis/` | 最完整的插件示例 |
 | Agent 工具/设置 | `plugins/DAAgentTools/`（18 内置工具）/ `src/APP/SettingPages/DAAgentSettingsWidget`（LLM 设置页） | 工具由 `DAAgentToolsPlugin` 注册；设置页经 `setAgentInterface` 持久化 `agent-config.ini`（DAAgent 不依赖 DAGui） |
 | Agent 提示词库 | `src/DAAgent/DAAgentManager`（提示词引擎，实现 `DAAgentPromptOps`）/ `src/DAAgent/DAAgentPromptOps`（CRUD 回调接口）/ `src/DAAgent/DAAgentPrompt`（提示词数据结构）/ `src/DAUtils/DAMarkdownHighlighter`（通用 Markdown 高亮器）/ `src/APP/Dialog/DAAgentManagerDialog`、`DAAgentEditorDialog`（管理/编辑 UI） | 平台核心能力：`DAAgentInterface` 的 `registerBuiltinAgent`/`runAgent`/`agentPromptOps` 三方法；提示词库类型与引擎均在 DAAgent 模块内，通用高亮器在 DAUtils，对话框在 APP/Dialog（参照 `DAAgentSettingsWidget` 的 L5→L4 依赖先例）；插件经 `registerBuiltinAgent` 注入领域提示词，UI 由 `DAAppRibbonArea::buildRibbonAgentCategory` 构建「AI分析」标签页 |
-| **图标 / UI 设计** | `src/DAGui/icon/`、`src/APP/Icon/` | **🔴 涉及 SVG 图标设计必须先阅读** [docs/zh/dev-guide/icon-ui-design-guide.md](docs/zh/dev-guide/icon-ui-design-guide.md)：画布规格、语义色板、色彩组合规则、UI 配色映射、AI Checklist |
+| **图标 / UI 设计** | `src/DAGui/icon/`、`src/APP/Icon/` | **🔴 涉及 SVG 图标设计必须先阅读** [docs/zh/dev-guide/general/icon-ui-design-guide.md](docs/zh/dev-guide/general/icon-ui-design-guide.md)：画布规格、语义色板、色彩组合规则、UI 配色映射、AI Checklist |
 | Python 工作流节点开发 | `plugins/DASystemNodes/AGENTS.md` | @NodeDef 节点开发规范、**init**/paint() 等核心陷阱 |
 | 插件模板 | `plugins/plugin-template/` | 新插件脚手架 |
 | 文档源码 | `docs/zh/` | Doxygen Wiki 中文 |
 
 ## 日志输出规范
 
-AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息队列（用户可见），必须遵循以下分流规则。日志文件位置、读取方法、故障排查场景详见 [logging.md](docs/zh/dev-guide/logging.md) § 日志读取与故障排查。
+AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息队列（用户可见），必须遵循以下分流规则。日志文件位置、读取方法、故障排查场景详见 [logging.md](docs/zh/dev-guide/general/logging.md) § 日志读取与故障排查。
 
 ### 日志宏与分流
 
@@ -173,7 +173,7 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 - `qDebug` / `qInfo` / `qWarning` / `qCritical`（Qt 自身、第三方库）只写文件和控制台，不进 UI 队列
 - 第三方库日志（SARibbon、qwt、ADS、QtWebEngine 等）在文件里可见，排查时不要误认为是本项目代码——看 `[源文件:行号]` 字段，本项目代码文件路径在 `src/` 下
 
-> 📖 何时用 `da*` vs `q*` 的判断标准详见 § 国际化（i18n）规范；日志系统 API、配置、故障排查详见 [docs/zh/dev-guide/logging.md](docs/zh/dev-guide/logging.md)
+> 📖 何时用 `da*` vs `q*` 的判断标准详见 § 国际化（i18n）规范；日志系统 API、配置、故障排查详见 [docs/zh/dev-guide/general/logging.md](docs/zh/dev-guide/general/logging.md)
 > 当用户报告运行异常、崩溃、行为不符合预期时，应主动读取程序运行日志分析根因，不要凭猜测下结论，详见上述文档。
 
 ## 文档导航
@@ -182,19 +182,19 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 
 | 类别 | 关键文档 | 说明 |
 |------|---------|------|
-| **开发指南** | [module-dependency.md](docs/zh/dev-guide/module-dependency.md) | 模块职责边界、依赖矩阵 |
-| | [coding-standard.md](docs/zh/dev-guide/coding-standard.md) | 编码规范、命名约定、注释规范 |
-| | [architecture.md](docs/zh/dev-guide/architecture.md) | 架构设计与模块划分 |
+| **开发指南** | [module-dependency.md](docs/zh/dev-guide/architecture/module-dependency.md) | 模块职责边界、依赖矩阵 |
+| | [coding-standard.md](docs/zh/dev-guide/general/coding-standard.md) | 编码规范、命名约定、注释规范 |
+| | [architecture.md](docs/zh/dev-guide/architecture/architecture.md) | 架构设计与模块划分 |
 | | [developer-guide.md](docs/zh/dev-guide/developer-guide.md) | 开发者入门指引 |
-| | [module-breakdown.md](docs/zh/dev-guide/module-breakdown.md) | 各模块业务逻辑详解 |
-| | [i18n.md](docs/zh/dev-guide/i18n.md) / [python-i18n.md](docs/zh/dev-guide/python-i18n.md) | 国际化规范 |
-| | [workflow-overview.md](docs/zh/dev-guide/workflow-overview.md) | 工作流系统架构 |
-| | [workflow-python-node-dev.md](docs/zh/dev-guide/workflow-python-node-dev.md) | Python 节点开发 |
-| | [dapybind11-qt-caster.md](docs/zh/dev-guide/dapybind11-qt-caster.md) | pybind11↔Qt 类型转换 |
-| | [chart-dock-nesting.md](docs/zh/dev-guide/chart-dock-nesting.md) | 绘图窗口 ADS 嵌套停靠区、FocusHighlighting 焦点陷阱 |
-| | [logging.md](docs/zh/dev-guide/logging.md) | 日志系统、故障排查 |
-| | [creating-setting-panel.md](docs/zh/dev-guide/creating-setting-panel.md) | 创建设置面板 |
-| | [icon-ui-design-guide.md](docs/zh/dev-guide/icon-ui-design-guide.md) | 图标与 UI 设计规范（SVG 图标设计必读） |
+| | [module-breakdown.md](docs/zh/dev-guide/architecture/module-breakdown.md) | 各模块业务逻辑详解 |
+| | [i18n.md](docs/zh/dev-guide/general/i18n.md) / [python-i18n.md](docs/zh/dev-guide/general/python-i18n.md) | 国际化规范 |
+| | [workflow-overview.md](docs/zh/dev-guide/workflow/workflow-overview.md) | 工作流系统架构 |
+| | [workflow-python-node-dev.md](docs/zh/dev-guide/workflow/workflow-python-node-dev.md) | Python 节点开发 |
+| | [dapybind11-qt-caster.md](docs/zh/dev-guide/python-binding/dapybind11-qt-caster.md) | pybind11↔Qt 类型转换 |
+| | [chart-dock-nesting.md](docs/zh/dev-guide/graphics/chart-dock-nesting.md) | 绘图窗口 ADS 嵌套停靠区、FocusHighlighting 焦点陷阱 |
+| | [logging.md](docs/zh/dev-guide/general/logging.md) | 日志系统、故障排查 |
+| | [creating-setting-panel.md](docs/zh/dev-guide/ui/creating-setting-panel.md) | 创建设置面板 |
+| | [icon-ui-design-guide.md](docs/zh/dev-guide/general/icon-ui-design-guide.md) | 图标与 UI 设计规范（SVG 图标设计必读） |
 | **构建** | [build-instructions.md](docs/zh/build/build-instructions.md) | 完整构建指南 |
 | | [build-options.md](docs/zh/build/build-options.md) | CMake 构建选项参考 |
 | | [common-build-errors.md](docs/zh/build/common-build-errors.md) | 常见构建错误 |
@@ -202,14 +202,14 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 | | [workflow-usage.md](docs/zh/use-guide/workflow-usage.md) | 工作流使用 |
 | | [data-management.md](docs/zh/use-guide/data-management.md) | 数据管理使用 |
 | | [chart-usage.md](docs/zh/use-guide/chart-usage.md) | 图表使用 |
-| **顶层** | [overview.md](docs/zh/overview.md) | 项目概览 |
-| | [plugin-development.md](docs/zh/plugin-development.md) | 插件开发总览 |
-| | [api-reference.md](docs/zh/api-reference.md) / [overview.md](docs/zh/api-reference/overview.md) | API 参考 |
+| **顶层** | [overview.md](docs/zh/index.md) | 项目概览 |
+| | [plugin-development.md](docs/zh/plugin/plugin-development.md) | 插件开发总览 |
+| | [api-reference.md](docs/zh/reference/api-reference.md) / [overview.md](docs/zh/reference/api-reference/overview.md) | API 参考 |
 
 
 ## CONVENTIONS
 
-> 📖 **详细编码规范见** [docs/zh/dev-guide/coding-standard.md](docs/zh/dev-guide/coding-standard.md)
+> 📖 **详细编码规范见** [docs/zh/dev-guide/general/coding-standard.md](docs/zh/dev-guide/general/coding-standard.md)
 
 ### 代码规范
 
@@ -246,7 +246,7 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 
 ### 图标与 UI 设计规范
 
-> 📖 **详细规范见** [docs/zh/dev-guide/icon-ui-design-guide.md](docs/zh/dev-guide/icon-ui-design-guide.md)
+> 📖 **详细规范见** [docs/zh/dev-guide/general/icon-ui-design-guide.md](docs/zh/dev-guide/general/icon-ui-design-guide.md)
 
 **强制规则**：**如果涉及 SVG 图标的设计（新增、替换、修改 `src/DAGui/icon/` 或 `src/APP/Icon/` 下任意 `.svg` 文件），必须先阅读上述文档**，并按其 §10 Checklist 逐项核对。该文档是项目图标与 UI 设计的唯一权威规范，涵盖：
 
@@ -259,7 +259,7 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 
 ## 国际化（i18n）规范
 
-> 📖 **详细规范见** [docs/zh/dev-guide/i18n.md](docs/zh/dev-guide/i18n.md) | Python 详见 [docs/zh/dev-guide/python-i18n.md](docs/zh/dev-guide/python-i18n.md)
+> 📖 **详细规范见** [docs/zh/dev-guide/general/i18n.md](docs/zh/dev-guide/general/i18n.md) | Python 详见 [docs/zh/dev-guide/general/python-i18n.md](docs/zh/dev-guide/general/python-i18n.md)
 
 **核心原则**：所有显示到用户界面的字符串必须使用**英文源文本 + 行内中文注释**模式（`tr("English") //cn:中文` / `_("English") # cn:中文`），翻译通过 `.ts`/`.po` 文件提供。源码中**禁止**直接写中文作为 UI 显示文本。
 
@@ -267,13 +267,13 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 
 - **开发诊断日志不翻译**：`qInfo`/`qWarning`/`qCritical`/`qDebug`/`logger.*`/`print` 只写日志文件不进 UI 队列，保持纯英文
 - **DA 界面消息必须翻译**：`daInfo`/`daWarning`/`daCritical`（`src/DAMessageHandler/DALogCategory.h`，category=`da.user`）既写日志文件又进 UI 消息队列（用户可见），**必须**用 `tr("English")  //cn:中文` 翻译
-- **选宏判断标准**：写给用户看的操作反馈（成功/失败提示、可理解错误、状态栏消息）用 `da*` + `tr()`；写给开发者排查的技术诊断（`ClassName::method:` 前缀、异常 `what()` 转储、内部状态）用 `q*` 保持英文。开发诊断信息**禁止**用 `da*`（会污染 UI 消息队列），详见 [i18n.md](docs/zh/dev-guide/i18n.md) § da* 与 q* 宏的选择
+- **选宏判断标准**：写给用户看的操作反馈（成功/失败提示、可理解错误、状态栏消息）用 `da*` + `tr()`；写给开发者排查的技术诊断（`ClassName::method:` 前缀、异常 `what()` 转储、内部状态）用 `q*` 保持英文。开发诊断信息**禁止**用 `da*`（会污染 UI 消息队列），详见 [i18n.md](docs/zh/dev-guide/general/i18n.md) § da* 与 q* 宏的选择
 - **`@NodeDef(name=...)` 不翻译**：`name` 参与 `qualified_name` 序列化，翻译会破坏已存工程
 - **Python 包 `setup_i18n()` 必须在 `__init__.py` 顶部、节点模块导入之前调用**
 
 ## 注释与文档规范
 
-> 📖 **详细规范见** [docs/zh/dev-guide/coding-standard.md](docs/zh/dev-guide/coding-standard.md) 的"注释规范"章节
+> 📖 **详细规范见** [docs/zh/dev-guide/general/coding-standard.md](docs/zh/dev-guide/general/coding-standard.md) 的"注释规范"章节
 
 **核心原则**：函数的 Doxygen 注释写在 `.cpp` 文件中，头文件只保留单行中文简要注释（`//`）。头文件仅可写类/信号/枚举的注释，**禁止**在头文件中写入类成员函数的 Doxygen 块注释（hpp文件除外，头文件的模板函数除外）。
 
@@ -283,10 +283,10 @@ Doxygen 注释使用中文
 
 插件位于 `plugins` 目录下。涉及插件开发时请阅读：
 
-- [插件项目创建](./docs/zh/dev-guide/plugin-project-create.md)
-- [插件与接口](./docs/zh/dev-guide/plugins-interfaces.md)
-- [插件模块 DAPluginSupport](./docs/zh/dev-guide/plugin-module.md)
-- [插件开发创建 UI](./docs/zh/dev-guide/plugin-dev-create-ui.md)
+- [插件项目创建](./docs/zh/plugin/plugin-development.md)
+- [插件与接口](./docs/zh/plugin/plugin-system.md)
+- [插件模块 DAPluginSupport](./docs/zh/plugin/plugin-module.md)
+- [插件开发创建 UI](./docs/zh/plugin/plugin-dev-create-ui.md)
 - 参考现有插件结构（如 `plugins/DataAnalysis/`），确保与主程序接口兼容
 
 ## Git 提交规范
@@ -417,7 +417,7 @@ Linux GCC 下 `uint64_t` 是 `unsigned long`，MSVC 下是 `unsigned long long`�
   - `.cast<QString>()` / `.cast<QVariant>()` — 从 Python 对象 cast 到 Qt 类型
   - 涉及的 Qt 类型包括：`QString`、`QByteArray`、`QDate`、`QTime`、`QDateTime`、`QList<T>`、`QVector<T>`(Qt5)、`QSet<T>`、`QHash<K,V>`、`QMap<K,V>`、`QVariant`
 
-  遗漏 include **不会编译报错**（头文件间接可见时能编译通过），但运行时会抛 `Unable to convert call argument 'N' of type 'QString' to Python object`，且异常被 `dealException` 吞掉后表现为后续业务逻辑静默失败（如节点查找 KeyError、数据丢失等），极难排查。详见 `docs/zh/dev-guide/dapybind11-qt-caster.md` 与 `src/DAPyWorkFlow/AGENTS.md` § 类型转换铁律
+  遗漏 include **不会编译报错**（头文件间接可见时能编译通过），但运行时会抛 `Unable to convert call argument 'N' of type 'QString' to Python object`，且异常被 `dealException` 吞掉后表现为后续业务逻辑静默失败（如节点查找 KeyError、数据丢失等），极难排查。详见 `docs/zh/dev-guide/python-binding/dapybind11-qt-caster.md` 与 `src/DAPyWorkFlow/AGENTS.md` § 类型转换铁律
 - **禁止在源码中直接写中文作为 UI 显示文本** — 必须用 `tr("English") //cn:中文`（C++）或 `_("English") # cn:中文`（Python）模式。源文本统一英文，翻译放 `.ts`/`.po` 文件。详见 § 国际化（i18n）规范
 - **禁止翻译 `@NodeDef(name=...)`** — `name` 参与 `qualified_name` 序列化（如 `DASystemNodes.Delay`），翻译会破坏已存工程的节点匹配。`category`/`description` 可翻译
 - **禁止翻译开发诊断日志** — `qInfo`/`qWarning`/`qCritical`/`qDebug`/`logger.*`/`print` 只写日志文件不进 UI 队列，保持纯英文便于跨语言检索
@@ -431,7 +431,7 @@ Linux GCC 下 `uint64_t` 是 `unsigned long`，MSVC 下是 `unsigned long long`�
 |------|------|
 | [README.md](README.md) | 项目简介和第三方库说明 |
 | [docs/doc-writing-guide.md](docs/doc-writing-guide.md) | 文档撰写规范手册，涉及文档撰写时阅读 |
-| [docs/zh/dev-guide/icon-ui-design-guide.md](docs/zh/dev-guide/icon-ui-design-guide.md) | 图标与 UI 设计规范，涉及 SVG 图标设计时阅读 |
+| [docs/zh/dev-guide/general/icon-ui-design-guide.md](docs/zh/dev-guide/general/icon-ui-design-guide.md) | 图标与 UI 设计规范，涉及 SVG 图标设计时阅读 |
 | [docs/zh/index.md](docs/zh/index.md) | 中文文档入口 |
 
 ## NOTES

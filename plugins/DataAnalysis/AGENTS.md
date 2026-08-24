@@ -125,4 +125,4 @@ CMake 安装规则：
 | `PyScripts/DADataAnalysisGui/i18n/update_po.py` | `# cn:` 注释自动填充工具 |
 | `PyScripts/DADataAnalysisGui/update-i18n.sh` | 一键翻译生成脚本 |
 | `PyScripts/DADataAnalysisGui/dataframe_cleaner.py` | `_()` 用法标杆 |
-| [docs/zh/dev-guide/python-i18n.md](../../docs/zh/dev-guide/python-i18n.md) | Python i18n 完整规范 |
+| [docs/zh/dev-guide/general/python-i18n.md](../../docs/zh/dev-guide/general/python-i18n.md) | Python i18n 完整规范 |

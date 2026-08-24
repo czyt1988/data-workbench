@@ -49,7 +49,7 @@ project.dapro (ZIP)
     工作流拆分为两个独立文件：`workflow-data.xml`（Python 逻辑数据，由 `DAPyWorkFlowSerializer` 序列化节点拓扑 / 参数 / 连接）与 `workflow.xml`（C++ 视图数据，由 `DAPyWorkFlowSceneSerializer` 序列化节点位置 / 图元属性）。**加载时逻辑数据必须先于视图数据**——先恢复节点实例与参数，再创建视图图元，顺序不可违反。旧工程若无 `workflow-data.xml`，按旧路径向后兼容。
 
 !!! note "加载顺序"
-    工程加载按系统信息→工作流逻辑数据→工作流视图数据→数据管理器→表格样式→图表→Agent 会话的顺序进行，每个阶段独立完成。详见 [工程文件结构](../dev-guide/project-file-structure.md)。
+    工程加载按系统信息→工作流逻辑数据→工作流视图数据→数据管理器→表格样式→图表→Agent 会话的顺序进行，每个阶段独立完成。详见 [工程文件结构](../dev-guide/architecture/project-file-structure.md)。
 
 ---
 
@@ -161,7 +161,7 @@ DAWorkBench.exe "C:/projects/MyProject.dapro"
 ## 相关文档
 
 - [使用指南概述](./index.md) — 软件功能总览
-- [配置文件格式](../appendix-config.md) — 工程文件格式详解
-- [工程文件结构](../dev-guide/project-file-structure.md) — 文件格式技术细节
-- [项目序列化架构](../dev-guide/project-serialization-architecture.md) — 序列化系统
+- [配置文件格式](./configuration.md) — 工程文件格式详解
+- [工程文件结构](../dev-guide/architecture/project-file-structure.md) — 文件格式技术细节
+- [项目序列化架构](../dev-guide/architecture/project-serialization-architecture.md) — 序列化系统
 - [命令行参数](./command-line-arguments.md) — 命令行打开工程

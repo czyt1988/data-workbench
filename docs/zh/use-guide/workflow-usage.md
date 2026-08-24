@@ -39,7 +39,7 @@ DAWorkBench 内置多种节点类型，按功能分类：
 | **图表绘制** | Data Plot | 将数据绑定为曲线/散点图等 |
 
 !!! note "节点名称不翻译"
-    节点的 `@NodeDef(name=...)` 名称参与序列化，保持英文不翻译，确保已存工程的节点匹配。详见 [Python 节点开发规范](../dev-guide/workflow-python-node-dev.md)。
+    节点的 `@NodeDef(name=...)` 名称参与序列化，保持英文不翻译，确保已存工程的节点匹配。详见 [Python 节点开发规范](../dev-guide/workflow/workflow-python-node-dev.md)。
 
 ---
 
@@ -145,5 +145,5 @@ flowchart LR
 - [使用指南概述](./index.md) — 软件功能总览
 - [数据管理使用](./data-management.md) — 数据导入和查看
 - [图表使用指南](./chart-usage.md) — 图表创建和编辑
-- [工作流开发指南](../dev-guide/workflow-overview.md) — 工作流技术架构
-- [Python 节点开发](../dev-guide/workflow-python-node-dev.md) — 自定义节点开发
+- [工作流开发指南](../dev-guide/workflow/workflow-overview.md) — 工作流技术架构
+- [Python 节点开发](../dev-guide/workflow/workflow-python-node-dev.md) — 自定义节点开发

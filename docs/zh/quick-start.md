@@ -98,9 +98,9 @@ cmake --build build --config Release --target install
 
 ## 下一步
 
-- [:material-book: 项目概览](./overview.md) - 了解项目详情
-- [:material-folder: 项目结构](./project-structure.md) - 理解目录组织
-- [:material-puzzle: 插件开发](./plugin-development.md) - 开发自定义插件
+- [:material-book: 项目概览](./index.md) - 了解项目详情
+- [:material-folder: 项目结构](./structure/project-structure.md) - 理解目录组织
+- [:material-puzzle: 插件开发](./plugin/plugin-development.md) - 开发自定义插件
 
 ---
 

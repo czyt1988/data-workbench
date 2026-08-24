@@ -301,4 +301,4 @@ public:
 
 ## What NOT to Duplicate
 
-The 6-function lifecycle (`setTarget`, `getTarget`, `bindTarget`, `unbindTarget`, `updateUI`, `applySetting`) is documented in `docs/zh/dev-guide/settingwidget-standard.md`. Reference that document — do not re-explain it here.
+The 6-function lifecycle (`setTarget`, `getTarget`, `bindTarget`, `unbindTarget`, `updateUI`, `applySetting`) is documented in `docs/zh/dev-guide/ui/settingwidget-standard.md`. Reference that document — do not re-explain it here.

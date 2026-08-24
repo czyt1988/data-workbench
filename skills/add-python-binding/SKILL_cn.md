@@ -399,8 +399,8 @@ DAPyModuleMyLib& DAPyModuleMyLib::getInstance()
 
 - ✅ **stubs/** — 新增 `.pyi` 文件，参考现有 stub 格式（中文 docstring + 类型注解 + 跨模块导入）。注意循环导入 edge case：如果新模块被 `da_interface` 引用，`da_interface/__init__.pyi` 的 import 语句也需要更新
 - ✅ **stubs/mock/** — 新增 mock `.py` 文件，参考现有 mock 格式。注意懒加载模式：参考 `stubs/mock/da_interface.py` 的懒加载避免循环依赖
-- ✅ **docs/zh/dev-guide/python-in-cpp.md** — 更新第九部分路线图表格，新增已完成模块行
-- ✅ **docs/zh/dev-guide/embedded-python-debugging.md** — 更新第二部分模块概览表格，新增模块行
+- ✅ **docs/zh/dev-guide/python-binding/index.md** — 更新第九部分路线图表格，新增已完成模块行
+- ✅ **docs/zh/dev-guide/python-binding/embedded-python-debugging.md** — 更新第二部分模块概览表格，新增模块行
 - ✅ **CMakeLists.txt** — 无条件添加新绑定文件（Python 为强制依赖，无需包裹在任何条件编译块中）
 - ✅ **mkdocs.yml** — 如果导航结构需要更新（新模块文档页面）
 

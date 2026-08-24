@@ -241,5 +241,5 @@ flowchart TD
 ## 参考资料
 
 - [使用指南概述](../index.md)
-- [绘图模块概述](../../dev-guide/figure-abstract.md)
+- [绘图模块概述](../../dev-guide/graphics/figure-abstract.md)
 - 源码位置：`src/DAFigure/DADataProbeMarker.h`

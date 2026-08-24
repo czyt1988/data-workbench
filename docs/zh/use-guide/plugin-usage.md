@@ -185,9 +185,9 @@ flowchart TD
 ### Q：如何开发自己的插件？
 
 **A：** 参见开发文档：
-- [插件开发指南](../plugin-development.md) — 插件开发总览
-- [插件项目创建](../dev-guide/plugin-project-create.md) — 创建 C++ 插件项目
-- [Python 节点开发](../dev-guide/workflow-python-node-dev.md) — 开发 Python 节点
+- [插件开发指南](../plugin/plugin-development.md) — 插件开发总览
+- [插件项目创建](../plugin/plugin-development.md) — 创建 C++ 插件项目
+- [Python 节点开发](../dev-guide/workflow/workflow-python-node-dev.md) — 开发 Python 节点
 
 ### Q：插件可以在不同版本间通用吗？
 
@@ -201,6 +201,6 @@ flowchart TD
 
 - [使用指南概述](./index.md) — 软件功能总览
 - [工作流使用指南](./workflow-usage.md) — 工作流编排
-- [插件系统概述](../plugin-system.md) — 插件系统架构
-- [插件开发指南](../plugin-development.md) — 开发自己的插件
-- [Python 节点开发](../dev-guide/workflow-python-node-dev.md) — Python 节点开发规范
+- [插件系统概述](../plugin/plugin-system.md) — 插件系统架构
+- [插件开发指南](../plugin/plugin-development.md) — 开发自己的插件
+- [Python 节点开发](../dev-guide/workflow/workflow-python-node-dev.md) — Python 节点开发规范

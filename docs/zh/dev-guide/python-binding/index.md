@@ -9,8 +9,12 @@
 - [总览与环境搭建](./index.md) ← 当前页
 - [C++ 调用 Python](./cpp-calling-python.md)
 - [Python 绑定开发](./python-binding-development.md)
+- [Python 多线程与异步任务](./python-multi-threading.md)
 - [故障排除与最佳实践](./troubleshooting-and-best-practices.md)
 - [Python 脚本开发实战](./python-script-development.md)
+- [pybind11 ↔ Qt 类型转换器](./dapybind11-qt-caster.md)
+- [嵌入式 Python 调试](./embedded-python-debugging.md)
+- [脚本的国际化](../general/python-i18n.md)
 
 ## 概述
 
@@ -212,6 +216,76 @@ data-workbench/
                 ├── dataframe_cleaner.py
                 ├── dataframe_io.py
                 └── dataframe_operate.py
+```
+
+### 内置 Python 模块目录结构（src/PyScripts/DAWorkbench）
+
+`src/PyScripts/DAWorkbench/` 是主程序内置的 Python 模块，已重构为子包结构：
+
+```text
+src/PyScripts/DAWorkbench/
+├── __init__.py              # 模块入口，sys.modules 别名保持旧路径可用
+├── DAPyBase/                # 基础工具子包
+│   ├── __init__.py
+│   ├── form_spec.py                # FormSpec 数据结构定义
+│   ├── form_builder.py             # FormBuilder 链式构建器
+│   ├── thread_status_manager.py    # 线程状态管理
+│   ├── utils.py                    # 通用工具函数
+│   ├── da_logger.py                # 日志工具
+│   ├── io.py                       # I/O 操作
+│   ├── dataframe.py                # DataFrame 操作
+│   ├── data_processing.py          # 数据处理/信号处理
+│   └── app_wrapper.py              # 应用包装器
+├── DAStatistics/             # 统计计算子包
+│   ├── __init__.py
+│   ├── _utils.py                   # 统计内部工具
+│   ├── boxplot_stats.py            # 箱线图统计
+│   ├── categorical.py             # 分类统计
+│   ├── distribution.py            # 分布拟合/检验
+│   ├── kde.py                       # 核密度估计
+│   ├── matrix.py                    # 相关/协方差矩阵
+│   └── regression.py                # 回归分析
+└── DAWorkFlowPy/              # 工作流 Python 核心
+    ├── __init__.py
+    ├── workflow.py            # 工作流编排
+    ├── executor.py            # 执行引擎
+    ├── connection.py          # 连接管理
+    ├── signal_manager.py      # 信号管理器
+    ├── serializer.py          # 序列化
+    ├── syntax.py              # 语法校验
+    ├── node_def.py            # 节点定义装饰器（@NodeDef）
+    ├── node_factory.py        # 节点工厂
+    ├── node_registry.py       # 节点注册表
+    ├── _debug.py              # 调试工具
+    └── nodes/                 # 内置节点子包
+        └── __init__.py
+```
+
+!!! tip "旧路径兼容"
+    `__init__.py` 通过 `sys.modules` 别名机制保持 `DAWorkbench.form_builder` 等旧导入路径可用，但推荐使用新路径 `DAWorkbench.DAPyBase.form_builder`。
+
+### 插件 Python 包目录结构（plugins/DataAnalysis/PyScripts）
+
+`plugins/DataAnalysis/PyScripts/` 已从单层 `DADataAnalysis` 包重构为三层架构：
+
+```text
+plugins/DataAnalysis/PyScripts/
+├── DADataAnalysisCore/      # 纯 pandas 核心算法（无 Qt 依赖）
+│   ├── __init__.py
+│   ├── cleaning.py          # 数据清洗算法
+│   ├── io.py                # 文件读写算法
+│   └── operations.py        # DataFrame 操作算法
+├── DADataAnalysisGui/       # GUI 交互逻辑（依赖 da_app/da_interface）
+│   ├── __init__.py
+│   ├── dataframe_cleaner.py # 数据清洗 UI 交互
+│   ├── dataframe_io.py      # 数据导入导出 UI 交互
+│   ├── utils.py             # 工具函数
+│   └── i18n/                # 国际化翻译
+├── DADataAnalysisNodes/     # 工作流节点插件（自动发现）
+│   ├── __init__.py
+│   ├── *_node.py            # 20+ 节点定义文件
+│   └── setup.py             # entry_points 注册
+└── DADataAnalysis/          # 兼容旧包（可选，逐步废弃）
 ```
 
 ## 相关模块

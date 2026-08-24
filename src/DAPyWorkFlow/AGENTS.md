@@ -525,7 +525,7 @@ project.dapro (ZIP)
 ]]></workflow>
 ```
 
-`<node>` 元素下可包含 `<state>` 子元素，存储节点 `execute()` 产生的衍生状态（如 `TextViewer` 缓存的显示文本）。`<state>` 由 `DAWorkflowSerializer` 调用 `DAWorkflowNode.serialize_runtime_state()` 钩子收集，加载时通过 `deserialize_runtime_state()` 恢复。详见 `docs/zh/dev-guide/project-serialization-architecture.md` § 8。
+`<node>` 元素下可包含 `<state>` 子元素，存储节点 `execute()` 产生的衍生状态（如 `TextViewer` 缓存的显示文本）。`<state>` 由 `DAWorkflowSerializer` 调用 `DAWorkflowNode.serialize_runtime_state()` 钩子收集，加载时通过 `deserialize_runtime_state()` 恢复。详见 `docs/zh/dev-guide/architecture/project-serialization-architecture.md` § 8。
 
 ### 严格加载顺序
 
@@ -635,7 +635,7 @@ def serialize_runtime_state(self) -> dict:
         return {}  # 用户类未覆写
 ```
 
-**新增 `DAWorkflowNode` 基类方法时必须使用此模式**，否则用户类的覆写会被静默遮盖。详见 `docs/zh/dev-guide/workflow-python-node-dev.md` § @NodeDef 的 MRO 遮盖陷阱。
+**新增 `DAWorkflowNode` 基类方法时必须使用此模式**，否则用户类的覆写会被静默遮盖。详见 `docs/zh/dev-guide/workflow/workflow-python-node-dev.md` § @NodeDef 的 MRO 遮盖陷阱。
 
 ### pybind11 函数调用陷阱
 

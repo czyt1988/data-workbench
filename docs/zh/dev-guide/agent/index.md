@@ -119,12 +119,12 @@ graph TB
 
 | 文档 | 内容 |
 |------|------|
-| [架构设计](architecture.md) | 双进程模型、模块职责、信号链、核心设计决策 |
-| [通信协议](protocol.md) | JSON Lines 协议规范、消息类型、启动握手、工具 RPC |
-| [上下文管理](context-management.md) | Token 估算、上下文压缩、工具结果截断、溢出恢复 |
-| [崩溃恢复与重连](crash-recovery.md) | 进程生命周期、自动重启、会话恢复、重试退避 |
-| [工具开发指南](tool-development.md) | 工具基类、注册机制、内置工具、自定义工具开发 |
-| [会话持久化](session-management.md) | JSONL 格式、会话索引、导出导入、自动清理 |
+| [架构设计](./architecture.md) | 双进程模型、模块职责、信号链、核心设计决策 |
+| [通信协议](./protocol.md) | JSON Lines 协议规范、消息类型、启动握手、工具 RPC |
+| [上下文管理](./context-management.md) | Token 估算、上下文压缩、工具结果截断、溢出恢复 |
+| [崩溃恢复与重连](./crash-recovery.md) | 进程生命周期、自动重启、会话恢复、重试退避 |
+| [工具开发指南](./tool-development.md) | 工具基类、注册机制、内置工具、自定义工具开发 |
+| [会话持久化](./session-management.md) | JSONL 格式、会话索引、导出导入、自动清理 |
 
 ---
 
@@ -134,4 +134,4 @@ graph TB
 - `DAAgentDecouplePlan.md` — DAAgent 解耦重构方案（从 DAGui 依赖到纯框架库的演进）
 - `src/DAAgent/system_prompt.md` — 系统提示词（外部可编辑 markdown）
 - `src/PyScripts/DAWorkbench/agent/agent_runner.py` — Python 子进程入口脚本
-- `docs/zh/dev-guide/agent-runtime-watchdog.md` — Agent 运行时看门狗诊断文档
+- `docs/zh/dev-guide/agent/agent-runtime-watchdog.md` — Agent 运行时看门狗诊断文档

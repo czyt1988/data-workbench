@@ -435,9 +435,9 @@ sequenceDiagram
 
 ## 参见
 
-- [架构设计](architecture.md) — 工具系统在整体架构中的位置
-- [通信协议](protocol.md) — tool_call/tool_result 消息的协议规范
-- [上下文管理](context-management.md) — 工具结果截断机制
+- [架构设计](./architecture.md) — 工具系统在整体架构中的位置
+- [通信协议](./protocol.md) — tool_call/tool_result 消息的协议规范
+- [上下文管理](./context-management.md) — 工具结果截断机制
 - `plugins/DAAgentTools/` — 18 个内置工具的完整实现
 - `src/DAAgent/DAAbstractAgentTool.h` — 工具抽象基类定义
 - `src/DAAgent/DAAgentToolBase.h` — 瘦工具基类定义

@@ -215,6 +215,6 @@ cat ~/.config/DAWorkbench/logs/latest.log
 
 如果需要开发自定义插件，请参考以下文档：
 
-- [创建插件项目](../dev-guide/plugin-project-create.md)：了解插件项目结构和 CMake 配置
-- [插件与接口](../dev-guide/plugins-interfaces.md)：了解插件开发接口
-- [插件开发创建 UI](../dev-guide/plugin-dev-create-ui.md)：了解如何为插件创建用户界面
+- [创建插件项目](../plugin/plugin-development.md)：了解插件项目结构和 CMake 配置
+- [插件与接口](../plugin/plugin-system.md)：了解插件开发接口
+- [插件开发创建 UI](../plugin/plugin-dev-create-ui.md)：了解如何为插件创建用户界面

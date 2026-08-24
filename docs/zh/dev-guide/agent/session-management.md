@@ -359,8 +359,8 @@ cmake --build build --target DAAgentSessionStoreTest --config Release
 
 ## 参见
 
-- [崩溃恢复与重连](crash-recovery.md) — 崩溃后通过 SessionStore 恢复会话
-- [通信协议](protocol.md) — load_session / session_loaded 协议消息
-- [架构设计](architecture.md) — DAAgentSessionStore 在架构中的位置
+- [崩溃恢复与重连](./crash-recovery.md) — 崩溃后通过 SessionStore 恢复会话
+- [通信协议](./protocol.md) — load_session / session_loaded 协议消息
+- [架构设计](./architecture.md) — DAAgentSessionStore 在架构中的位置
 - `src/DAAgent/DAAgentSessionStore.h/.cpp` — 持久化层实现
 - `src/tst/DAAgentSessionStoreTest/main.cpp` — 单元测试

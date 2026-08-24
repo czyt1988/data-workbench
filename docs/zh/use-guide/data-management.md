@@ -155,7 +155,7 @@ DAWorkBench 支持单元格级条件格式：
 **A：** 对于超大文件（>100MB），导入可能较慢。建议：
 - 使用 Pickle 格式（比 CSV 快）
 - 分批导入数据
-- 参见 [性能优化建议](../performance-tips.md)
+- 参见 [性能优化建议](../reference/performance-tips.md)
 
 ### Q：如何删除数据？
 
@@ -172,5 +172,5 @@ DAWorkBench 支持单元格级条件格式：
 - [使用指南概述](./index.md) — 软件功能总览
 - [工作流使用指南](./workflow-usage.md) — 工作流编排
 - [图表使用指南](./chart-usage.md) — 数据可视化
-- [数据模块详解](../dev-guide/data-module.md) — 数据系统架构
+- [数据模块详解](../dev-guide/architecture/data-module.md) — 数据系统架构
 - [命令行参数](./command-line-arguments.md) — 命令行导入导出

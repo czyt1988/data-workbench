@@ -167,14 +167,16 @@ data-workbench/
 │   ├── css/                  # 离线 CSS 资源
 │   │   ├── extra.css         # 文档样式增强
 │   │   └── katex.min.css     # KaTeX 公式样式
-│   ├── assets/               # 截图和图标资源
+│   ├── assets/               # 图片、截图、drawio 源文件、图标
 │   └── zh/                   # 中文文档
-│       ├── index.md          # 文档首页
-│       ├── overview.md       # 项目概览
+│       ├── index.md          # 文档首页（项目概览）
 │       ├── quick-start.md    # 快速上手
+│       ├── structure/        # 项目结构
 │       ├── build/            # 构建指南
-│       ├── dev-guide/        # 开发指南
+│       ├── dev-guide/        # 开发指南（按主题分子目录）
+│       ├── plugin/           # 插件开发
 │       ├── use-guide/        # 使用指南
+│       ├── reference/        # 最佳实践、FAQ、术语表、更新日志
 │       └── ...
 ```
 

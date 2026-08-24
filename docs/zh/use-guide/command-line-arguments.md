@@ -160,6 +160,4 @@ DAWorkBench.exe "D:\batch-process.dapro" --import-data "D:\input-data.csv"
 
 ## 参考资料
 
-- [使用指南概述](../index.md)
-- [工程文件说明](../index.md#工程文件)
-- [数据导入方式](../index.md#数据导入)
+- [使用指南概述](./index.md) — 软件功能总览

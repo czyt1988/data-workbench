@@ -622,7 +622,7 @@ _node_display.body_icon_scale   # Optional[float]
 
 旧版参数 `"rect"` 和 `"svg"` 自动映射到 `"nodestyle"`，无需修改现有代码。
 
-详细说明请参阅 [节点渲染设置文档](../../docs/zh/dev-guide/node-rendering-settings.md)。
+详细说明请参阅 [节点渲染设置文档](../../docs/zh/dev-guide/workflow/node-rendering-settings.md)。
 
 ### C++ DAPyNode 通过 attr() 读取的 Python 属性
 

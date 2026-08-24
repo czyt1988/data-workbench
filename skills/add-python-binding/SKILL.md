@@ -401,8 +401,8 @@ After adding a new Python binding module, these files must be updated synchronou
 
 - ✅ **stubs/** — Add a `.pyi` file following existing stub format (Chinese docstring + type annotations + cross-module imports). Watch for circular import edge cases: if the new module is referenced by `da_interface`, update `da_interface/__init__.pyi` imports too
 - ✅ **stubs/mock/** — Add a mock `.py` file following existing mock format. Note lazy-loading pattern: see `stubs/mock/da_interface.py` for avoiding circular dependencies
-- ✅ **docs/zh/dev-guide/python-in-cpp.md** — Update section 9 roadmap table, add row for the new module
-- ✅ **docs/zh/dev-guide/embedded-python-debugging.md** — Update section 2 module overview table, add row for the new module
+- ✅ **docs/zh/dev-guide/python-binding/index.md** — Update section 9 roadmap table, add row for the new module
+- ✅ **docs/zh/dev-guide/python-binding/embedded-python-debugging.md** — Update section 2 module overview table, add row for the new module
 - ✅ **CMakeLists.txt** — Add new binding files unconditionally (Python is mandatory; do not wrap them in any conditional CMake block)
 - ✅ **mkdocs.yml** — If navigation structure needs updating (new module docs page)
 

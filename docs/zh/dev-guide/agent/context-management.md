@@ -258,7 +258,7 @@ async def compact_node(state):
 
 ## 参见
 
-- [架构设计](architecture.md) — compact_node 在 LangGraph 中的位置
-- [通信协议](protocol.md) — usage 消息的协议规范
+- [架构设计](./architecture.md) — compact_node 在 LangGraph 中的位置
+- [通信协议](./protocol.md) — usage 消息的协议规范
 - `src/PyScripts/DAWorkbench/agent/context_manager.py` — 上下文管理实现
 - `src/PyScripts/DAWorkbench/agent/agent_runner.py` — compact_node 和 agent_node 实现

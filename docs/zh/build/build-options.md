@@ -200,4 +200,4 @@ cmake --build build --config Release --parallel
 - [主程序构建](./main-program-build.md) — 主程序构建详解
 - [Python 环境配置](./python-environment.md) — Python 环境说明
 - [构建常见错误](./common-build-errors.md) — 构建问题排查
-- [工程组织](../large-cmake-project-guide.md) — CMake 工程组织指南
+- [工程组织](./large-cmake-project-guide.md) — CMake 工程组织指南

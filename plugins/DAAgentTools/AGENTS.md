@@ -367,7 +367,7 @@ CMakeLists.txt 用 `file(GLOB ... CONFIGURE_DEPENDS)` 收集 `*.h/*.cpp`，新�
 `name` 参与 LLM 工具调用匹配，翻译会破坏已存对话/提示词对工具的引用。`description`/`parameters.*.description` 写英文即可（LLM 读英文 schema，不需要中文）。
 
 ### P7. pybind11↔Qt 类型转换要 include caster
-工具 `.cpp` 里若把 `QString`/`QVariant` 等传给 Python 可调用对象、或从 Python 对象 cast 到 Qt 类型，**必须**在该 `.cpp` 顶部 `#include "DAPybind11QtCaster.hpp"`（per-translation-unit 生效，仅 include `DAPybind11InQt.h` 不够）。遗漏不报错但运行时抛 `Unable to convert call argument of type 'QString'`，被吞后静默失败。详见根 AGENTS.md「pybind11 类型转换铁律」与 `docs/zh/dev-guide/dapybind11-qt-caster.md`。现有工具多走 `DAPyDataFrame`/`DAPySeries` 的 Qt 友好 API，较少直接 cast，但扩展新操作时要留意。
+工具 `.cpp` 里若把 `QString`/`QVariant` 等传给 Python 可调用对象、或从 Python 对象 cast 到 Qt 类型，**必须**在该 `.cpp` 顶部 `#include "DAPybind11QtCaster.hpp"`（per-translation-unit 生效，仅 include `DAPybind11InQt.h` 不够）。遗漏不报错但运行时抛 `Unable to convert call argument of type 'QString'`，被吞后静默失败。详见根 AGENTS.md「pybind11 类型转换铁律」与 `docs/zh/dev-guide/python-binding/dapybind11-qt-caster.md`。现有工具多走 `DAPyDataFrame`/`DAPySeries` 的 Qt 友好 API，较少直接 cast，但扩展新操作时要留意。
 
 ### P8. 非数值列转 QVector\<double> 返回空
 `toQVectorDouble(series)` 对非数值（字符串/分类）列返回空 vector。据此判空 + 返回 errorResponse 提示「列含非数值，请用数值列或先 query_data 预聚合」（见 `create_chart.cpp:141-150`），不要让 agent 反复尝试。

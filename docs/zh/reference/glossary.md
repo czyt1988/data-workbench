@@ -1,0 +1,269 @@
+# 术语表
+
+本页面汇总 DAWorkBench 项目中使用的专业术语和缩略语，便于查阅和理解项目文档。
+
+## 主要功能特性
+
+**特性**
+
+- ✅ **核心概念术语**：工作流、节点、连接点、原型、元数据等核心概念定义
+- ✅ **图形相关术语**：图元、场景、视图等图形界面术语
+- ✅ **界面相关术语**：Dock 窗口、Ribbon、Action 等界面组件术语
+- ✅ **插件相关术语**：插件、接口、核心接口等插件系统术语
+- ✅ **数据相关术语**：DataFrame、数据包、序列化、持久化等数据处理术语
+- ✅ **架构相关术语**：MVC、松耦合、热插拔等架构设计术语
+- ✅ **英文缩写对照**：DA、ETL、GUI、API 等常用缩写解释
+
+## 核心概念
+
+### 工作流 (Workflow)
+
+**定义**：数据处理流程的有向图描述，包含节点和连接关系。
+
+**用途**：组织和自动化数据处理流程，支持可重复执行。
+
+### 节点 (Node)
+
+**定义**：工作流中的处理单元，代表一个数据处理步骤。
+
+**特性**：
+- 拥有输入和输出连接点
+- 可配置参数
+- 执行特定数据处理任务
+
+### 连接点 (Link Point)
+
+**定义**：节点的输入或输出接口，用于节点间的数据传递。
+
+**类型**：
+- **输入连接点**：接收数据
+- **输出连接点**：发送数据
+
+### 原型 (Prototype)
+
+**定义**：节点的唯一标识符，用于区分不同类型的节点。
+
+**格式**：`[Plugin].[Factory].[NodeName]`
+
+**示例**：`DataAnalysis.IO.CSVReader`
+
+### 元数据 (Metadata)
+
+**定义**：节点的固定属性描述，包括名称、图标、连接点等。
+
+**用途**：用于节点列表显示和节点创建。
+
+### 节点工厂 (Node Factory)
+
+**定义**：创建特定类型节点的工厂类。
+
+**职责**：
+- 注册节点元数据
+- 创建节点实例
+- 管理节点生命周期钩子
+
+### 执行器 (Executer)
+
+**定义**：执行工作流的引擎，负责按拓扑顺序执行节点。
+
+**特性**：
+- 在独立线程运行
+- 支持进度回调
+- 支持错误处理
+
+## 图形相关
+
+### 图元 (Graphics Item)
+
+**定义**：节点的可视化表示，显示在工作流画布上。
+
+**职责**：
+- 渲染节点外观
+- 处理用户交互
+- 管理连接点位置
+
+### 场景 (Scene)
+
+**定义**：图形视图的场景管理类，管理所有图元和连接线。
+
+**用途**：协调图元显示和工作流逻辑。
+
+### 视图 (View)
+
+**定义**：显示场景的控件，支持缩放、平移等交互。
+
+**特性**：
+- 可缩放图元
+- 支持选中、拖动
+- 支持快捷键操作
+
+## 界面相关
+
+### Dock 窗口 (Dock Widget)
+
+**定义**：可停靠的窗口控件，可在界面边缘浮动或停靠。
+
+**用途**：显示工具面板、数据列表、属性编辑器等。
+
+### 嵌套停靠区 (Dock Nesting)
+
+**定义**：基于 Qt-Advanced-Docking-System（ADS）的嵌套停靠能力，允许在一个 Dock 区域内部再嵌套 Tab 形式的子 Dock。
+
+**用途**：图表操作区（`DAChartOperateWidget`）等从 `QTabWidget` 迁移到 ADS 嵌套停靠区后，可与其它 Dock 窗口统一编组、浮动、记忆布局状态。
+
+### Ribbon
+
+**定义**：Office 风格的工具栏，包含选项卡和面板。
+
+**组成**：
+- **Category**：选项卡
+- **Panel**：面板
+- **Action**：按钮/命令
+
+### Action
+
+**定义**：Qt 的动作对象，代表一个可执行的命令。
+
+**用途**：菜单项、工具栏按钮、快捷键绑定。
+
+## 插件相关
+
+### 插件 (Plugin)
+
+**定义**：独立的扩展模块，提供额外功能。
+
+**特性**：
+- 动态加载
+- 通过接口通信
+- 独立编译
+
+### 接口 (Interface)
+
+**定义**：插件与主程序通信的抽象类。
+
+**层次**：
+- **DACoreInterface**：顶层接口
+- **DAUIInterface**：UI 接口
+- **DADataManagerInterface**：数据接口
+
+### 核心接口 (Core Interface)
+
+**定义**：顶层接口，通过它可以获取所有其他接口。
+
+**用途**：插件访问主程序功能的入口。
+
+## 数据相关
+
+### DataFrame
+
+**定义**：pandas 的二维表格数据结构。
+
+**用途**：数据处理和分析的核心数据格式。
+
+### 数据包 (Data Package)
+
+**定义**：DAWorkBench 中数据对象的统一包装，用于在工作流节点间传递数据。
+
+**实现**：公开包装类为 `DAData`（见 `src/DAData/DAData.h`），它封装 `DAAbstractData` 智能指针，支持隐式共享。`DataPackage` 是 `DAAbstractData::DataType` 中的一个数据类型分类（通过 `DAData::isDataPackage()` 判断），并非独立的类——历史上文档误写的 `DADataPackage` 类并不存在。
+
+**内容**：可包含 DataFrame、Series、自定义 Python 对象等。
+
+### 序列化 (Serialization)
+
+**定义**：对象到数据格式的转换过程。
+
+**用途**：保存工作流、节点配置、数据等。
+
+### 持久化 (Persistence)
+
+**定义**：数据的长期存储，保存到文件系统。
+
+**形式**：配置文件、数据文件、缓存文件等。
+
+## AI / Agent 相关
+
+### Agent
+
+**定义**：DAWorkBench 的 AI 分析助手，由 DAAgent 模块（`src/DAAgent/`）承载，通过独立 Python 子进程（LangGraph）驱动 LLM 推理与工具调用循环。
+
+**访问**：插件通过 `DACoreInterface::getAgentInterface()` 获取 `DAAgentInterface`，注册工具、配置 LLM、管理会话与提示词库。
+
+### LLM 供应商 (LLM Provider)
+
+**定义**：一个 LLM 服务接入配置，含 `name`/`base_url`/`api_key`/`models`。支持多供应商多模型，激活供应商 + 激活模型决定实际下发给子进程的参数。
+
+**管理**：通过 `DAAgentInterface::getProviders()` / `setProviders()` 读写，运行中可热切换模型而不丢会话状态。
+
+### 提示词库 (Prompt Library)
+
+**定义**：内置的 Agent 提示词集合，以 `<daAgent>/<name>.md` 形式存储，通过 Ribbon「AI 分析」标签页的 gallery 管理与一键执行。
+
+**接口**：`registerBuiltinAgent()` 注入内置提示词，`runAgent(title)` 按标题执行，`agentPromptOps()` 提供 CRUD 回调。
+
+### 工具调用 (Tool Calling)
+
+**定义**：Agent 在推理过程中调用宿主程序注册的工具（如查询数据、生成图表、读写文件）来完成数据分析任务。
+
+**实现**：插件实现 `DAAbstractAgentTool` 并通过 `DAAgentInterface::registerTool()` 注册；内置 `DAAgentTools` 插件提供 19 个工具。
+
+### 会话 (Session)
+
+**定义**：Agent 的一次对话上下文，包含历史消息与 token 用量，随工程文件（`.dapro`）持久化为 `agent_sessions/<id>.jsonl`。
+
+**接口**：`createSession()` / `switchSession()` / `deleteSession()` / `listSessions()` 等。
+
+## 节点开发相关
+
+### @NodeDef
+
+**定义**：Python 侧的节点声明装饰器，用于自动发现并注册节点类型，生成节点元数据（名称、分类、连接点、图标等）。
+
+**用途**：Python-first 架构下，节点业务逻辑在 Python 实现，`@NodeDef` 装饰的类由 `DAPyNodeFactory` 代理加载，无需手写 C++ 节点工厂。
+
+## 架构相关
+
+### MVC
+
+**定义**：Model-View-Controller 架构模式。
+
+**对应**：
+- **Model**：DAPyWorkFlow（工作流逻辑）
+- **View**：DAPyWorkFlowScene（图形显示）
+- **Controller**：用户交互处理
+
+### 松耦合 (Loose Coupling)
+
+**定义**：模块间通过接口通信，无直接依赖。
+
+**优势**：
+- 易于扩展
+- 易于测试
+- 易于维护
+
+### 热插拔 (Hot Plug)
+
+**定义**：插件可在运行时加载或卸载。
+
+**实现**：Qt 插件机制 + 动态库加载。
+
+## 英文缩写
+
+| 缩写 | 全称 | 中文 |
+|------|------|------|
+| DA | Data Analysis | 数据分析 |
+| ETL | Extract, Transform, Load | 数据抽取转换加载 |
+| GUI | Graphical User Interface | 图形用户界面 |
+| API | Application Programming Interface | 应用程序接口 |
+| IID | Interface Identifier | 接口标识符 |
+| Qt | Qt Framework | Qt 框架 |
+| Py | Python | Python 语言 |
+| DF | DataFrame | 数据框 |
+| JSON | JavaScript Object Notation | JSON 格式 |
+| CSV | Comma-Separated Values | CSV 格式 |
+| XML | Extensible Markup Language | XML 格式 |
+
+## 下一步
+
+- [:material-book: 开发指南](../dev-guide/general/coding-standard.md) - 编码规范
+- [:material-api: API 文档](./api-reference.md) - API 参考
+- [:material-puzzle: 插件开发](../plugin/plugin-development.md) - 插件开发指南

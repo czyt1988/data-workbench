@@ -131,7 +131,7 @@ connect(m_bridge, &DAAgentBridge::sessionRestoreRequested,
 
 ### 模型热替换：不重启的容错替代路径
 
-当需要切换 LLM 配置（供应商 / 模型 / API Key）时，不必走"杀子进程 → 重启 → 恢复会话"的崩溃恢复路径。`DAAgentModule::setActiveModel()` → `DAAgentBridge::reconfigureAgent()` 下发 `reconfigure` 消息，Python 端 `AgentRunner.reconfigure()` 在两轮之间热替换 `ChatOpenAI` 实例——不重启子进程、不丢 `MemorySaver` 会话状态。失败安全：先构造新 LLM，成功后才更新，构造失败发 `error` 不破坏旧模型。详见 [通信协议 - reconfigure](protocol.md#reconfigure--模型热替换)。
+当需要切换 LLM 配置（供应商 / 模型 / API Key）时，不必走"杀子进程 → 重启 → 恢复会话"的崩溃恢复路径。`DAAgentModule::setActiveModel()` → `DAAgentBridge::reconfigureAgent()` 下发 `reconfigure` 消息，Python 端 `AgentRunner.reconfigure()` 在两轮之间热替换 `ChatOpenAI` 实例——不重启子进程、不丢 `MemorySaver` 会话状态。失败安全：先构造新 LLM，成功后才更新，构造失败发 `error` 不破坏旧模型。详见 [通信协议 - reconfigure](./protocol.md#reconfigure--模型热替换)。
 
 ### 死循环防护
 
@@ -319,9 +319,9 @@ sequenceDiagram
 
 ## 参见
 
-- [通信协议](protocol.md) — retrying/error/done 消息的协议规范
-- [上下文管理](context-management.md) — 溢出恢复与 force_compact 机制
-- [会话持久化](session-management.md) — 崩溃后恢复会话历史的机制
+- [通信协议](./protocol.md) — retrying/error/done 消息的协议规范
+- [上下文管理](./context-management.md) — 溢出恢复与 force_compact 机制
+- [会话持久化](./session-management.md) — 崩溃后恢复会话历史的机制
 - `src/DAAgent/DAAgentBridge.cpp` — 进程管理与崩溃恢复实现
 - `src/PyScripts/DAWorkbench/agent/retry_wrapper.py` — 指数退避重试实现
 - `src/PyScripts/DAWorkbench/agent/error_classifier.py` — 错误分类实现

@@ -286,7 +286,7 @@ flowchart TD
     `name` 参与 `qualified_name` 序列化（如 `DASystemNodes.Delay`），翻译会破坏已存工程的节点匹配。
     `category` 和 `description` 可以翻译。
 
-详细规范参见 [Python 节点开发指南](./workflow-python-node-dev.md)。
+详细规范参见 [Python 节点开发指南](./workflow/workflow-python-node-dev.md)。
 
 ### 场景 2：新增一个节点设置面板
 
@@ -308,7 +308,7 @@ flowchart TD
 4. **注册到工厂**：在 `DANodeParamSettingPanelFactory` 中添加 qualifiedName → 面板类的映射
 5. **测试**：选中节点，确认右侧面板正确显示和更新参数
 
-详细规范参见 [创建设置面板指南](./creating-setting-panel.md)。
+详细规范参见 [创建设置面板指南](./ui/creating-setting-panel.md)。
 
 ### 场景 3：新增一个 C++ 插件
 
@@ -330,7 +330,7 @@ flowchart TD
 5. **编译部署**：编译为动态库，输出到插件目录
 6. **测试**：启动程序，在"插件管理"中确认插件已加载
 
-详细规范参见 [插件项目创建指南](./plugin-project-create.md)。
+详细规范参见 [插件项目创建指南](../plugin/plugin-development.md)。
 
 ### 场景 4：新增一个 Ribbon 工具栏按钮
 
@@ -350,7 +350,7 @@ flowchart TD
 4. **实现逻辑**：在 Controller 中实现具体功能
 5. **添加国际化**：使用 `tr("English text") //cn:中文文本` 模式
 
-详细步骤参见 [Action 添加方法](./adding-action-methods.md)。
+详细步骤参见 [Action 添加方法](./ui/adding-action-methods.md)。
 
 ---
 
@@ -545,7 +545,7 @@ git merge feature/my-new-feature
 
 ### Q：为什么代码中大量使用 PIMPL 模式？
 
-PIMPL 模式减少了头文件的依赖传播，修改内部实现不需要重新编译依赖方。对于 300+ 文件的大型项目（如 DAGui），这能显著加速增量编译。详见 [架构设计](./architecture.md#决策-1pimpl-模式全覆盖)。
+PIMPL 模式减少了头文件的依赖传播，修改内部实现不需要重新编译依赖方。对于 300+ 文件的大型项目（如 DAGui），这能显著加速增量编译。详见 [架构设计](./architecture/architecture.md#决策-1pimpl-模式全覆盖)。
 
 ### Q：构建失败了怎么办？
 
@@ -568,9 +568,9 @@ data_mgr = core.getDataManagerInterface()
 
 ## 延伸阅读
 
-- [架构设计详解](./architecture.md) — 5 层架构、设计决策、扩展点
-- [模块业务逻辑详解](./module-breakdown.md) — 各模块内部工作原理
-- [模块依赖关系](./module-dependency.md) — 详细的依赖矩阵和职责边界
-- [编码规范](./coding-standard.md) — 命名、注释、代码风格规范
-- [图标与 UI 设计规范](./icon-ui-design-guide.md) — SVG 图标画布/色板、UI 控件配色映射（涉及图标设计必读）
-- [贡献指南](../contribution-guide.md) — 代码评审和协作流程
+- [架构设计详解](./architecture/architecture.md) — 5 层架构、设计决策、扩展点
+- [模块业务逻辑详解](./architecture/module-breakdown.md) — 各模块内部工作原理
+- [模块依赖关系](./architecture/module-dependency.md) — 详细的依赖矩阵和职责边界
+- [编码规范](./general/coding-standard.md) — 命名、注释、代码风格规范
+- [图标与 UI 设计规范](./general/icon-ui-design-guide.md) — SVG 图标画布/色板、UI 控件配色映射（涉及图标设计必读）
+- [贡献指南](../reference/contribution-guide.md) — 代码评审和协作流程
