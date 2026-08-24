@@ -245,12 +245,12 @@ void DAChartAxisSettingPanel::buildPropertyPanel()
     hLayout->addWidget(rbDateTime);
     hLayout->addStretch();
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    connect(mScaleStyleButtonGroup, QOverload< int >::of(&QButtonGroup::buttonClicked), this, [ this ](int) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    connect(mScaleStyleButtonGroup, &QButtonGroup::idClicked, this, [ this ](int) {
         onPanelPropertyValueChanged(PID_ScaleStyle);
     });
 #else
-    connect(mScaleStyleButtonGroup, &QButtonGroup::idClicked, this, [ this ](int) {
+    connect(mScaleStyleButtonGroup, QOverload< int >::of(&QButtonGroup::buttonClicked), this, [ this ](int) {
         onPanelPropertyValueChanged(PID_ScaleStyle);
     });
 #endif

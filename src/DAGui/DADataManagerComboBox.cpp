@@ -29,14 +29,8 @@ DADataManagerComboBox::PrivateData::PrivateData(DADataManagerComboBox* p) : q_pt
 
 DADataManagerComboBox::DADataManagerComboBox(QWidget* par) : ctkTreeComboBox(par), DA_PIMPL_CONSTRUCT
 {
-#if QT_VERSION_MAJOR >= 6
+    // currentTextChanged自Qt 5.0可用，替代已废弃的currentIndexChanged(const QString&)重载
     connect(this, &QComboBox::currentTextChanged, this, &DADataManagerComboBox::onCurrentIndexChanged);
-#else
-    connect(this,
-            QOverload< const QString& >::of(&QComboBox::currentIndexChanged),
-            this,
-            &DADataManagerComboBox::onCurrentIndexChanged);
-#endif
 }
 
 DADataManagerComboBox::~DADataManagerComboBox()

@@ -189,8 +189,8 @@ QwtGridRasterData* DAChartAddtGridRasterDataWidget::makeGridDataFromUI()
 		// 将二维数据转换为一维数组
 		QVector< double > x;
 		QVector< double > y;
-		x.reserve(xSeries.size());
-		y.reserve(ySeries.size());
+		x.reserve(static_cast< int >(xSeries.size()));
+		y.reserve(static_cast< int >(ySeries.size()));
 		xSeries.castTo< double >(std::back_inserter(x));
 		ySeries.castTo< double >(std::back_inserter(y));
 

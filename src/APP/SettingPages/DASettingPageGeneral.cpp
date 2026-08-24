@@ -32,7 +32,7 @@ DASettingPageGeneral::DASettingPageGeneral(QWidget* parent)
     mButtonGroupRibbonStyle.addButton(ui->radioButtonLiteStyle, static_cast< int >(SARibbonBar::RibbonStyleCompactThreeRow));
     mButtonGroupRibbonStyle.addButton(ui->radioButtonLiteStyle2Row,
                                       static_cast< int >(SARibbonBar::RibbonStyleCompactTwoRow));
-#if QT_VERSION_MAJOR >= 6
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     connect(&mButtonGroupRibbonStyle, &QButtonGroup::idClicked, this, &DASettingPageGeneral::onButtonGroupRibbonStyleClicked);
 #else
     connect(&mButtonGroupRibbonStyle,

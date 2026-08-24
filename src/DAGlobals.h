@@ -253,15 +253,16 @@ private:                                                                        
 #endif
 
 #ifndef Qt5Qt6Compat_Connect_ButtonGroupClicked_int
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+// idClicked 自 Qt 5.15 引入（Qt6 中 buttonClicked(int) 已移除）
 #define Qt5Qt6Compat_Connect_ButtonGroupClicked_int(buttonGroup, funName)                                              \
     do {                                                                                                               \
-        connect(buttonGroup, QOverload< int >::of(&QButtonGroup::buttonClicked), this, &funName);                      \
+        connect(buttonGroup, &QButtonGroup::idClicked, this, &funName);                                                \
     } while (0)
 #else
 #define Qt5Qt6Compat_Connect_ButtonGroupClicked_int(buttonGroup, funName)                                              \
     do {                                                                                                               \
-        connect(buttonGroup, &QButtonGroup::idClicked, this, &funName);                                                \
+        connect(buttonGroup, QOverload< int >::of(&QButtonGroup::buttonClicked), this, &funName);                      \
     } while (0)
 #endif
 #endif

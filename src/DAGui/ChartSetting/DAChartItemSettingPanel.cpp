@@ -130,12 +130,12 @@ void DAChartItemSettingPanel::addOrientationProperty(int id, const QString& name
 
     mButtonGroupMap[ id ] = group;
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    connect(group, &QButtonGroup::idClicked, this, [ this, id ](int) { onPanelPropertyValueChanged(id); });
+#else
     connect(group, QOverload< int >::of(&QButtonGroup::buttonClicked), this, [ this, id ](int) {
         onPanelPropertyValueChanged(id);
     });
-#else
-    connect(group, &QButtonGroup::idClicked, this, [ this, id ](int) { onPanelPropertyValueChanged(id); });
 #endif
 
     mPanel->addProperty(id, name, container);
@@ -244,12 +244,12 @@ void DAChartItemSettingPanel::addScaleStyleProperty(int id, const QString& name)
 
     mScaleStyleGroupMap[ id ] = group;
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    connect(group, &QButtonGroup::idClicked, this, [ this, id ](int) { onPanelPropertyValueChanged(id); });
+#else
     connect(group, QOverload< int >::of(&QButtonGroup::buttonClicked), this, [ this, id ](int) {
         onPanelPropertyValueChanged(id);
     });
-#else
-    connect(group, &QButtonGroup::idClicked, this, [ this, id ](int) { onPanelPropertyValueChanged(id); });
 #endif
 
     mPanel->addProperty(id, name, container);

@@ -703,7 +703,7 @@ void DAStatsPlotCoordinator::plotBarplot(const QJsonObject& params,
             auto groupVals = pybind11::cast<pybind11::list>(groupValsObj);
             DA::DABarChartData groupBarData;
             groupBarData.categories = categories;
-            groupBarData.values.reserve(groupVals.size());
+            groupBarData.values.reserve(static_cast< int >(groupVals.size()));
             for (auto val : groupVals) {
                 if (!val.is_none()) {
                     groupBarData.values.append(pybind11::cast<double>(val));

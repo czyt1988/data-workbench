@@ -96,17 +96,9 @@ void DAPluginManager::PrivateData::ensureIgnoreFileExist()
                    u8"described in this file,only write "
                    u8"the "
                    "file base name, do not need to write suffixes"
-#if QT_VERSION_MAJOR >= 6
                 << Qt::endl;
-#else
-                << endl;
-#endif
             txt << u8"# 不想加载的插件在此文件描述，写入基本文件名，无需后缀"
-#if QT_VERSION_MAJOR >= 6
                 << Qt::endl;
-#else
-                << endl;
-#endif
         }
     }
     ignoreFile.close();
@@ -324,11 +316,7 @@ QDebug operator<<(QDebug debug, const DAPluginManager& fmg)
     debug.nospace() << DAPluginManager::tr("Plugin Manager Info: is loaded=%1, plugin counts=%2")
                            .arg(fmg.isLoaded())
                            .arg(fmg.getPluginCount())  // cn:插件管理器信息：已加载=%1，插件数量=%2
-#if QT_VERSION_MAJOR >= 6
                     << Qt::endl;
-#else
-                    << endl;
-#endif
     QList< DAPluginOption > opts = fmg.getPluginOptions();
 
     for (const DAPluginOption& opt : std::as_const(opts)) {

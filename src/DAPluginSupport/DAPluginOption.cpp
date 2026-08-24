@@ -233,11 +233,7 @@ QDebug operator<<(QDebug debug, const DAPluginOption& po)
                                 po.getPluginDescription(),
                                 po.getPluginVersion(),
                                 po.getErrorString())  // cn:插件文件名：%1，iid：%2，名称：%3，描述：%4，版本：%5，错误信息：%6
-#if QT_VERSION_MAJOR >= 6
-                    << Qt::endl;
-#else
-                    << endl;
-#endif
+                    << Qt::endl;  // Qt::endl自Qt 5.14可用，全局endl自5.15废弃
     return (debug);
 }
 }  // namespace DA

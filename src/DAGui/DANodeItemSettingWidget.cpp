@@ -212,10 +212,10 @@ QWidget* DANodeItemSettingWidget::createLinkPointWidget()
 	d->mButtonGroupOutputLocation->addButton(d->toolButtonOutRight, 6);
 	d->mButtonGroupOutputLocation->addButton(d->toolButtonOutBottom, 7);
 
-	// Qt5/Qt6兼容的按钮组信号连接
-#if QT_VERSION_MAJOR >= 6
-	connect(d->mButtonGroupInputLocation, &QButtonGroup::idClicked, this, &DANodeItemSettingWidget::onButtonGroupClicked);
-	connect(d->mButtonGroupOutputLocation, &QButtonGroup::idClicked, this, &DANodeItemSettingWidget::onButtonGroupClicked);
+	// Qt5/Qt6兼容的按钮组信号连接（idPressed自Qt 5.15引入，buttonPressed(int)自5.15废弃、Qt6移除）
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+	connect(d->mButtonGroupInputLocation, &QButtonGroup::idPressed, this, &DANodeItemSettingWidget::onButtonGroupClicked);
+	connect(d->mButtonGroupOutputLocation, &QButtonGroup::idPressed, this, &DANodeItemSettingWidget::onButtonGroupClicked);
 #else
 	connect(d->mButtonGroupInputLocation, QOverload< int >::of(&QButtonGroup::buttonPressed), this,
 			&DANodeItemSettingWidget::onButtonGroupClicked);
