@@ -130,6 +130,7 @@ nav:
       - 数据管理使用: zh/use-guide/data-management.md
       - 图表使用: zh/use-guide/chart-usage.md
       - 工程文件管理: zh/use-guide/project-management.md
+      - 脚本工作区: zh/use-guide/script-workspace.md
       - 插件使用: zh/use-guide/plugin-usage.md
       - 绘图功能:
           - 数据探针: zh/use-guide/plot/data-probe.md

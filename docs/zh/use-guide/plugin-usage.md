@@ -49,7 +49,7 @@ bool MyPlugin::initialize()
 
 工具类继承 `DAAgentToolBase`（数据 / 文件类工具）或 `DAAgentChartToolBase`（图表类工具），实现 `getToolSpec()`（返回 OpenAI function schema）与 `execute(params)`（返回结果 JSON）。schema 的 `name` 用小写 snake_case 且不翻译（参与 LLM 工具调用匹配），`description` / 参数说明写英文。
 
-平台内置的 `DAAgentTools` 插件即用此机制注册了 19 个工具（5 数据 + 11 绘图 + 3 文件 / 报告）。新增 agent 工具的完整流程见 [工具开发指南](../dev-guide/agent/tool-development.md)。
+平台内置的 `DAAgentTools` 插件即用此机制注册了 20 个工具（5 数据 + 10 绘图 + 3 文件 / 报告 + 2 脚本）。新增 agent 工具的完整流程见 [工具开发指南](../dev-guide/agent/tool-development.md)。
 
 ---
 
@@ -69,7 +69,7 @@ DAWorkBench/
     ├── plugins/                  # C++ 动态库插件
     │   ├── DataAnalysis.dll      # 数据分析插件（含 DADataAnalysisNodes 节点包加载入口）
     │   ├── DASystemNodes.dll     # 系统节点插件（加载 DASystemNodes Python 包入口）
-    │   └── DAAgentTools.dll      # Agent 工具插件（向 LLM 暴露 19 个工具）
+    │   └── DAAgentTools.dll      # Agent 工具插件（向 LLM 暴露 20 个工具）
     └── pyplugins/                # Python 节点包
         ├── DADataAnalysisNodes/   # 21 个数据分析节点
         └── DASystemNodes/        # 8 个流程控制 / 展示节点

@@ -2,7 +2,7 @@
 #include "DAAgentInterface.h"
 #include "DACoreInterface.h"
 #include "DAAbstractAgentTool.h"
-// 18 built-in tools (moved from src/DAAgent/tools/ by plan-03; add_region merged into add_annotation)
+// 20 built-in tools (moved from src/DAAgent/tools/ by plan-03; add_region merged into add_annotation)
 // Data tools (5) -- inherit DAAgentToolBase
 #include "tools/DAAgentToolListData.h"
 #include "tools/DAAgentToolDataInfo.h"
@@ -24,6 +24,9 @@
 #include "tools/DAAgentToolReadFile.h"
 #include "tools/DAAgentToolWriteFile.h"
 #include "tools/DAAgentToolSaveReport.h"
+// Script tools (2) -- inherit DAAgentToolBase (shared persistent namespace execution)
+#include "tools/DAAgentToolRunScript.h"
+#include "tools/DAAgentToolRunCode.h"
 
 namespace DA
 {
@@ -72,6 +75,9 @@ bool DAAgentToolsPlugin::initialize()
     agent->registerTool(new DAAgentToolReadFile(c, this));
     agent->registerTool(new DAAgentToolWriteFile(c, this));
     agent->registerTool(new DAAgentToolSaveReport(c, this));
+    // Script tools (2) -- inherit DAAgentToolBase (shared persistent namespace execution)
+    agent->registerTool(new DAAgentToolRunScript(c, this));
+    agent->registerTool(new DAAgentToolRunCode(c, this));
     // 绘图引用提示词：教 agent 用 da-figure: 超链接在回复中引用创建的绘图，
     // 用户点击后由程序 raise 绘图区域并定位到对应 figure。
     agent->registerSystemPrompt(QStringLiteral("figure_reference"), QStringLiteral(

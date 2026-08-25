@@ -37,6 +37,10 @@ private Q_SLOTS:
     void onToolButtonRemoveNodePathClicked();
     void onCheckBoxShowSplashStateChanged(int state);
     void onSpinBoxAutosaveIntervalValueChanged(int v);
+    void onLineEditWorkspaceDirTextChanged(const QString& text);
+    void onToolButtonWorkspaceDirBrowseClicked();
+    void onSpinBoxScriptTimeoutValueChanged(int v);
+    void onSpinBoxScriptResultMaxCharsValueChanged(int v);
 
 private:
     Ui::DASettingPageAdvanced* ui;

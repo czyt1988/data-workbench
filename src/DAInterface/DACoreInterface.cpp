@@ -9,6 +9,7 @@
 // DA Python
 #include "DAPyInterpreter.h"
 #include "DAPyScripts.h"
+#include "DAPyScriptRunner.h"
 #include "DAPythonSignalHandler.h"
 namespace DA
 {
@@ -38,6 +39,8 @@ DACoreInterface::DACoreInterface(QObject* parent) : QObject(parent), DA_PIMPL_CO
 DACoreInterface::~DACoreInterface()
 {
     d_ptr->pythonHandler.reset();
+    // 必须在 DAPyScripts::cleanup() 与解释器关闭之前清理命名空间引擎（析构 py::dict 需持 GIL）
+    DAPyScriptRunner::cleanup();
     DAPyScripts::cleanup();
     d_ptr->interpreter = nullptr;
     DAPyInterpreter::ensureShutdown();
@@ -70,6 +73,11 @@ bool DACoreInterface::initializePythonScripts()
         if (!(DAPyScripts::isInitScripts())) {
             daCritical << tr("Failed to initialize scripts");  // cn:脚本初始化失败
             return false;
+        }
+        // 脚本初始化成功后，初始化共享命名空间脚本执行引擎（失败不阻断整个 Python 环境，
+        // 仅 runScript/runCode 返回 "script runner not initialized" 错误）
+        if (!DAPyScriptRunner::init()) {
+            daCritical << tr("Failed to initialize script runner, script execution will be unavailable");  // cn:脚本执行引擎初始化失败，脚本执行功能将不可用
         }
         // 初始化python信号投递器
         d->pythonHandler = std::make_unique< DAPythonSignalHandler >();

@@ -171,11 +171,14 @@ void DAProjectInterface::clear()
 
 /**
  * @brief 工程文件的版本,版本组成有大版本.小版本.小小版本组成，例如1.0.0
+ *
+ * 1.4.0：新增工程内脚本工作区（workspace/），向后兼容——旧文件可直接打开
+ * （缺失 workspace/ 视为空工作区），故为 minor 版本升级
  * @return
  */
 QVersionNumber DAProjectInterface::getProjectVersion()
 {
-    static QVersionNumber s_version = QVersionNumber(1, 3, 0);
+    static QVersionNumber s_version = QVersionNumber(1, 4, 0);
     return s_version;
 }
 

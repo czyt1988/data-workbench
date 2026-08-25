@@ -427,7 +427,8 @@ function(dafun_deploy_3rdparty_dlls _target_name)
     # - zlib 同时有 zlib.dll 和 zlibd.dll，基名 "zlib" 匹配 zlib + zlibd，正好覆盖两个文件
     # - python311 不区分 Debug/Release，基名 "python311" 仅匹配自身
     # - 带 Qt 版本号的库用 ${QT_VERSION_MAJOR} 适配 Qt5/Qt6
-    # - spdlog/pybind11/ordered-map 是静态库或头文件库，无 DLL，不列入
+    # - spdlog 默认构建为动态库（SPDLOG_BUILD_SHARED 默认 ON），DAMessageHandler
+    #   链接后运行期依赖 spdlog.dll，必须列入；pybind11/ordered-map 是头文件库，无 DLL，不列入
     # 新增第三方库时，在此列表追加基名即可。
     set(_3rdparty_dll_basenames
         SARibbonBar
@@ -439,6 +440,7 @@ function(dafun_deploy_3rdparty_dlls _target_name)
         qtadvanceddocking-qt${QT_VERSION_MAJOR}
         quazip1-qt${QT_VERSION_MAJOR}
         zlib
+        spdlog
         python311)
 
     # 按白名单筛选：只复制基名匹配的 DLL

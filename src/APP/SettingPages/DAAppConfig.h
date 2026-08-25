@@ -92,6 +92,22 @@
  *@def 自动保存间隔(分钟)，0 表示禁用
  */
 #define DA_CONFIG_KEY_AUTOSAVE_INTERVAL "autosave-interval"
+/**
+ *@def 脚本工作区根目录，空表示用系统临时目录
+ */
+#define DA_CONFIG_KEY_WORKSPACE_DIR "workspace-dir"
+/**
+ *@def 脚本执行超时(秒)，0 表示禁用
+ */
+#define DA_CONFIG_KEY_SCRIPT_TIMEOUT "script-timeout"
+/**
+ *@def 脚本结果序列化后的最大字符数，超长截断
+ */
+#define DA_CONFIG_KEY_SCRIPT_RESULT_MAX_CHARS "script-result-max-chars"
+/**
+ *@def 打开工程时本地工作区与工程内版本冲突的策略：ask/always-local/always-zip
+ */
+#define DA_CONFIG_KEY_WORKSPACE_OVERWRITE_POLICY "workspace-overwrite-policy"
 
 namespace DA
 {

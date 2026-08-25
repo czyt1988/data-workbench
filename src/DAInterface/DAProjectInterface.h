@@ -41,6 +41,8 @@ public:
     void setProjectPath(const QString& projectPath);
     // 获取工作区
     QString getWorkingDirectory() const;
+    // 获取脚本工作区目录（工程文件内 workspace/ 在本地的缓存目录），工程未打开或未保存过返回空
+    virtual QString getScriptWorkspaceDir() const = 0;
     // 是否dirty
     bool isDirty() const;
     // 工程文件的版本,版本组成有大版本.中间版本.小版本组成，例如0.1.1

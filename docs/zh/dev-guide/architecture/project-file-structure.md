@@ -31,12 +31,40 @@ project.dapro (ZIP Archive)
 │   └── [各种数据文件]
 ├── chart-data/               # 图表数据目录
 │   └── [图表数据文件]
-└── agent_sessions/           # Agent 会话持久化目录
-    └── <id>.jsonl            # 每个会话一个 JSON Lines 文件（按会话 id 命名）
+├── agent_sessions/           # Agent 会话持久化目录
+│   └── <id>.jsonl            # 每个会话一个 JSON Lines 文件（按会话 id 命名）
+└── workspace/                # 脚本工作区（脚本+产物，任意目录树）
+    ├── scripts/              # 建议（非强制）：脚本分区
+    └── output/               # 建议（非强制）：产物分区
 ```
 
 !!! note "Agent 会话持久化"
     `agent_sessions/` 目录存放 Agent 聊天会话的 JSON Lines 持久化文件，每个文件对应一个会话（`<id>.jsonl`）。工程保存时由主线程收集活跃会话字节、子线程写入该目录；加载时由 `DAZipArchiveTask_LoadAgentSessions`（`src/APP/DAAppProject.cpp`）在 worker 线程解压 `agent_sessions/*.jsonl` 后回调导入。目录不存在或为空视为合法（空工程）。详见 [Agent 开发指南](../agent/index.md)。
+
+!!! note "脚本工作区（workspace/）"
+    `workspace/` 目录（工程版本 1.4.0 引入）存放脚本执行的脚本文件与产物，由 `DAZipArchiveTask_Workspace`（`src/APP/DAAppProject.cpp` 内 file-local 类，参照 `LoadDataManager`/`LoadAgentSessions` 先例）在保存/加载时打包/解压。工程数据**不进入** `workspace/`——脚本通过内存对象访问数据（见下文"脚本运行模型"），因此不存在数据同步问题。目录缺失视为空工作区（旧版本工程兼容）。该任务失败为非致命：单个损坏文件不会阻止工程打开/保存（内部记 `qWarning` 后降级）。
+
+### 脚本工作区本地缓存与冲突检测
+
+`workspace/` 加载时解压到**本地缓存目录**（而非临时目录），保存时把本地目录打包回 zip：
+
+```txt
+<workspaceRoot>/<工程基名>_<路径sha1前8位>/
+├── scripts/...
+└── output/...
+```
+
+- `workspaceRoot` 取设置项 `workspace-dir`（空=系统临时目录）
+- 缓存目录以**工程文件路径哈希**为键：工程改名/移动/另存为会改变目录（旧目录成为孤儿缓存不回收；改名/移动前未保存的本地改动留在旧目录；另存为后到重新打开前新目录不存在）
+- **加载前预检**（`DAAppProject::precheckWorkspaceOnLoad`，主线程同步、在任务队列启动前执行）：本地缓存存在且与工程内 `workspace/` 的**内容指纹**（相对路径 + MD5；解压不回写时间戳，故不能用 mtime 判定）不一致时，弹窗让用户选择"保留本地 / 用工程内版本覆盖 / 取消加载"；指纹一致时静默覆盖解压；策略可由设置项 `workspace-overwrite-policy`（`ask`/`always-local`/`always-zip`，默认 `ask`）控制。选择"保留本地"时工程延迟置脏（`onLoadFinish` 的 `setModified(false)` 之后），下次保存把本地内容打包回 zip
+
+### 脚本运行模型（共享命名空间）
+
+- **共享持久命名空间**：全应用唯一（类 Jupyter kernel），由 `DAPyScriptRunner`（`src/DAPyScripts/`）管理，预导入基线模块 `{da_app, da_interface, da_data}`；脚本执行期间 UI 冻结（主线程执行），由可配置超时兜底
+- **执行期间 CWD = 工作区根目录**，工作区根追加到 `sys.path` 末尾（跨脚本 `import` 可用且不易 shadow 标准库）
+- **数据访问走内存对象**：`da_app.getCore().getDataManagerInterface().getAllDataframes()` 返回 `{name: dataframe}` 字典
+- **工程切换清理**：`clear()` 重置用户符号回基线并清除工作区根（含从 `sys.modules` 移除来源于工作区的自定义模块）
+- 使用注意事项（UI 冻结/超时/编码等）详见使用指南"脚本工作区"章节
 
 ### XML 顶层节点 `<root>`
 
@@ -64,15 +92,17 @@ flowchart TD
     C --> D["保存数据管理器<br/>data-manager.xml + datas/"]
     D --> E["保存图表<br/>charts.xml + chart-data/"]
     E --> F["保存 Agent 会话<br/>agent_sessions/*.jsonl"]
-    F --> G["保存完成"]
+    F --> W["保存脚本工作区<br/>workspace/"]
+    W --> G["保存完成"]
 ```
 
-上图展示了工程保存的五个阶段：
+上图展示了工程保存的六个阶段：
 - **第一阶段**：保存系统信息到 `system-info.xml`，记录创建环境
 - **第二阶段**：保存工作流到 `workflow.xml`，包含节点、连接、图元
 - **第三阶段**：保存数据管理器配置和实际数据文件
 - **第四阶段**：保存图表配置和图表数据
 - **第五阶段**：保存 Agent 会话到 `agent_sessions/`（每个会话一个 `<id>.jsonl`）
+- **第六阶段**：保存脚本工作区（本地缓存目录打包为 `workspace/`；目录不存在时跳过）
 
 **保存顺序详解**
 
@@ -81,6 +111,7 @@ flowchart TD
 3. 保存数据管理器（`data-manager.xml` 及 `datas/` 目录）
 4. 保存图表（`charts.xml` 及 `chart-data/` 目录）
 5. 保存 Agent 会话（`agent_sessions/<id>.jsonl`）
+6. 保存脚本工作区（`workspace/`）
 
 **工作流保存顺序**
 
@@ -257,7 +288,7 @@ XML 文件中通过 `ver` 属性标识版本号，当前版本为 `1.4.0`。加�
 |------|------|
 | v1.1.0 | 旧版本节点输入输出解析 |
 | v1.3.0 | 中间版本 |
-| v1.4.0 | 当前版本 |
+| v1.4.0 | 当前版本（新增工程内脚本工作区 `workspace/`，向后兼容：旧文件可直接打开，缺失 `workspace/` 视为空工作区） |
 
 ## 剪切板数据结构
 

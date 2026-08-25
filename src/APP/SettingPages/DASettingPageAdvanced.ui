@@ -133,9 +133,55 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="groupBoxScriptWorkspace">
+     <property name="title">
+      <string>Script workspace</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutScriptWorkspace">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelWorkspaceDir">
+        <property name="text">
+         <string>Workspace directory</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="lineEditWorkspaceDir"/>
+      </item>
+      <item row="0" column="2">
+       <widget class="QToolButton" name="toolButtonWorkspaceDirBrowse">
+        <property name="text">
+         <string>Browse</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelScriptTimeout">
+        <property name="text">
+         <string>Script execution timeout</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="spinBoxScriptTimeout"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labelScriptResultMaxChars">
+        <property name="text">
+         <string>Script result max characters</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="spinBoxScriptResultMaxChars"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="labelRestartHint">
      <property name="text">
-      <string>Note: plugin path, node script paths and splash changes take effect after restarting the program</string>
+      <string>Note: plugin path, node script paths and splash changes take effect after restarting the program; script workspace directory takes effect when the project is next opened</string>
      </property>
     </widget>
    </item>

@@ -51,6 +51,8 @@ public:
 	bool appendChartsInProject(const QDomDocument& doc, DAChartItemsManager* chartmanager);
 	// 繁忙状态判断
 	virtual bool isBusy() const override;
+	// 获取脚本工作区目录（工程文件内 workspace/ 在本地的缓存目录）
+	virtual QString getScriptWorkspaceDir() const override;
 	// 生成一个数据文件对应的临时文件位置
 	QString makeDataTemporaryFilePath(const QString& dataName);
 	// 把数据名称转换为zip文档中的相对路径位置
@@ -84,6 +86,8 @@ protected:
 	void makeSaveDataOperateLayoutTask(DAZipArchiveThreadWrapper* archive);
 	// 保存Agent会话任务（主线程收集活跃会话字节→子线程写 agent_sessions/<id>.jsonl）
 	void makeSaveAgentSessionsTask(DAZipArchiveThreadWrapper* archive);
+	// 保存脚本工作区任务（本地缓存目录打包回 zip 内 workspace/）
+	void makeSaveWorkspaceTask(DAZipArchiveThreadWrapper* archive);
 	// 保存workflow相关内容（以xml形式）
 	QDomDocument createWorkflowUIDomDocument();
 	// 保存charts相关内容（以xml形式）
@@ -105,6 +109,10 @@ private:
     bool executeLoad(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started = nullptr, const QString& agentProjectPath = QString());
     bool createProjectSnapshot(QString* snapshotPath);
     bool restoreProjectSnapshot(const QString& snapshotPath, const QString& projectFilePath, bool isDirty);
+	// 加载前预检脚本工作区冲突（本地缓存与工程内容指纹比对，可弹窗保留/覆盖/取消）
+	// 返回 false 表示用户取消加载；结果经 localDir/keepLocal 输出，不直接修改成员
+	// （避免快照打包阶段误用新工程的工作区目录）
+	bool precheckWorkspaceOnLoad(const QString& projectPath, QString* localDir, bool* keepLocal);
 	void loadedWorkflowInfo(const std::shared_ptr< DAAbstractArchiveTask >& t);
 	// Python工作流逻辑数据加载回调
 	void loadedWorkflowData(const std::shared_ptr< DAAbstractArchiveTask >& t);
@@ -126,6 +134,8 @@ private:
 	std::unique_ptr< QTemporaryDir > mTempDir;
 	DAChartItemsManager mChartItemManager;
 	DAAppPluginManager* mPluginMgr { nullptr };
+	QString mWorkspaceLocalDir;             ///< 当前工程脚本工作区本地缓存目录
+	bool mWorkspaceLocalKept { false };     ///< 加载时用户选择保留本地工作区（加载收尾后延迟置脏）
 };
 
 }  // namespace DA

@@ -16,6 +16,7 @@
 #include "DALogCategory.h"
 #include "DAAbstractSettingPage.h"
 #include "DADumpCapture.h"
+#include "DAPyScriptRunner.h"
 namespace DA
 {
 
@@ -50,6 +51,11 @@ DAAppConfig::DAAppConfig()
     insert(DA_CONFIG_KEY_PLUGIN_EXTRA_PATHS, QStringList());
     insert(DA_CONFIG_KEY_SHOW_SPLASH, true);
     insert(DA_CONFIG_KEY_AUTOSAVE_INTERVAL, 0);                      // 0=禁用
+    // 脚本工作区/脚本执行引擎
+    insert(DA_CONFIG_KEY_WORKSPACE_DIR, QString());                  // 空=用系统临时目录
+    insert(DA_CONFIG_KEY_SCRIPT_TIMEOUT, 300);                       // 默认 300 秒，0=禁用（显式选择）
+    insert(DA_CONFIG_KEY_SCRIPT_RESULT_MAX_CHARS, 10000);            // 默认 10000 字符
+    insert(DA_CONFIG_KEY_WORKSPACE_OVERWRITE_POLICY, QStringLiteral("ask"));
 }
 
 DAAppConfig::~DAAppConfig()
@@ -254,6 +260,9 @@ bool DAAppConfig::apply()
         int autosaveMin = value(DA_CONFIG_KEY_AUTOSAVE_INTERVAL).toInt();
         mMainWindow->setupAutosaveTimer(autosaveMin);
     }
+    // 脚本执行引擎参数（立即生效；workspace-dir 在下次打开工程时生效）
+    DAPyScriptRunner::setScriptTimeout(value(DA_CONFIG_KEY_SCRIPT_TIMEOUT).toInt());
+    DAPyScriptRunner::setResultMaxChars(value(DA_CONFIG_KEY_SCRIPT_RESULT_MAX_CHARS).toInt());
     // 退出时是否保存ui的状态
     bool isSaveUIState = value(DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE).toBool();
     if (mMainWindow) {

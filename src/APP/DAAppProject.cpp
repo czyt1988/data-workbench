@@ -2,8 +2,13 @@
 #include <memory>
 // Qt
 #include <QBuffer>
+#include <QCryptographicHash>
+#include <QDirIterator>
 #include <QDomDocument>
 #include <QFile>
+#include <QMap>
+#include <QMessageBox>
+#include <QPushButton>
 #include <QScopedPointer>
 #include <QVariant>
 #include <QPen>
@@ -12,6 +17,7 @@
 #include <QSysInfo>
 #include <QFileDialog>
 #include <QEventLoop>
+#include <QFileInfo>
 #include <QStandardPaths>
 #include <QTemporaryFile>
 #include <QDir>
@@ -44,9 +50,14 @@
 #include "Chart/DAChartOperateWidget.h"
 #include "DAAppPluginManager.h"
 #include "DALogCategory.h"
+#include "DAAppCore.h"
+#include "DAAppUI.h"
+#include "AppMainWindow.h"
+#include "SettingPages/DAAppConfig.h"
 // python
 #include "DAPyInterpreter.h"
 #include "DAPyScripts.h"
+#include "DAPyScriptRunner.h"
 #include "DAPyScriptsDataFrame.h"
 #include "DAPyWorkFlowSerializer.h"
 #include "DAPyWorkFlowManager.h"
@@ -123,8 +134,224 @@ const QString c_dataoperatexml_save_filename = QStringLiteral("data-operate.xml"
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_DATA_OPERATE_LAYOUT
 #define DAAPPPROJECT_TASK_LOAD_ID_DATA_OPERATE_LAYOUT (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 8)
 #endif
+
+/**
+ *@def 加载任务id - 脚本工作区（解压 workspace/ 到本地缓存目录）
+ */
+#ifndef DAAPPPROJECT_TASK_LOAD_ID_WORKSPACE
+#define DAAPPPROJECT_TASK_LOAD_ID_WORKSPACE (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 9)
+#endif
 namespace DA
 {
+
+///< workspace 在 zip 内的文件夹名
+static const QString c_workspace_zip_folder = QStringLiteral("workspace");
+
+/**
+ * @brief 获取应用设置（经 DAAppCore→DAAppUI→主窗口），不可用时返回 nullptr
+ */
+static DAAppConfig* getWorkspaceAppConfig()
+{
+    DAAppUI* appUi = DAAppCore::getInstance().getAppUi();
+    if (!appUi) {
+        return nullptr;
+    }
+    AppMainWindow* mw = qobject_cast< AppMainWindow* >(appUi->getMainWindow());
+    return mw ? mw->getAppConfig() : nullptr;
+}
+
+/**
+ * @brief 计算工程文件对应的脚本工作区本地缓存目录
+ *
+ * 目录为 <workspaceRoot>/<工程基名>_<路径sha1前8位>，其中
+ * workspaceRoot 取设置项 workspace-dir（空=系统临时目录）。
+ * 以工程文件路径哈希为键，因此工程改名/移动/另存为会改变目录。
+ * @param projectFilePath 工程文件完整路径
+ * @return 本地缓存目录（不保证存在），入参为空返回空
+ */
+static QString makeScriptWorkspaceDir(const QString& projectFilePath)
+{
+    if (projectFilePath.isEmpty()) {
+        return QString();
+    }
+    QString root;
+    DAAppConfig* cfg = getWorkspaceAppConfig();
+    if (cfg) {
+        root = cfg->value(DA_CONFIG_KEY_WORKSPACE_DIR).toString().trimmed();
+    }
+    if (root.isEmpty()) {
+        root = QDir::tempPath();
+    }
+    const QFileInfo fi(projectFilePath);
+    const QString hash8 =
+        QString::fromLatin1(QCryptographicHash::hash(projectFilePath.toUtf8(), QCryptographicHash::Sha1)
+                                .toHex()
+                                .left(8));
+    return QDir::cleanPath(QDir(root).filePath(QStringLiteral("%1_%2").arg(fi.baseName(), hash8)));
+}
+
+/**
+ * @brief 计算目录下所有文件的内容指纹（相对路径 → MD5）
+ * @param dir 本地目录
+ * @return 相对路径（斜杠分隔）到内容 MD5 的映射
+ */
+static QMap< QString, QByteArray > localDirContentFingerprint(const QString& dir)
+{
+    QMap< QString, QByteArray > res;
+    QDir baseDir(dir);
+    QDirIterator it(dir, QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        QString filePath = it.next();
+        QString relPath  = baseDir.relativeFilePath(filePath);
+        relPath.replace('\\', '/');
+        QFile f(filePath);
+        if (f.open(QIODevice::ReadOnly)) {
+            res.insert(relPath, QCryptographicHash::hash(f.readAll(), QCryptographicHash::Md5));
+        }
+    }
+    return res;
+}
+
+/**
+ * @brief 计算 zip 内 workspace/ 条目的内容指纹（相对路径 → MD5）
+ *
+ * 只读打开 zip，仅读 workspace/ 前缀条目内容（不写到磁盘）。
+ * @param zipPath 工程文件路径
+ * @param ok 输出：zip 能否正常打开
+ * @return 相对路径（去掉 workspace/ 前缀）到内容 MD5 的映射
+ */
+static QMap< QString, QByteArray > zipWorkspaceContentFingerprint(const QString& zipPath, bool* ok)
+{
+    QMap< QString, QByteArray > res;
+    if (ok) {
+        *ok = false;
+    }
+    DAZipArchive zip(zipPath);
+    if (!zip.open()) {
+        return res;
+    }
+    if (ok) {
+        *ok = true;
+    }
+    const QString prefix = c_workspace_zip_folder + QLatin1String("/");
+    const QStringList allFiles = zip.getAllFiles();
+    for (const QString& entry : allFiles) {
+        if (!entry.startsWith(prefix) || entry.endsWith('/')) {
+            continue;
+        }
+        const QString relPath = entry.mid(prefix.length());
+        if (relPath.isEmpty()) {
+            continue;
+        }
+        res.insert(relPath, QCryptographicHash::hash(zip.read(entry), QCryptographicHash::Md5));
+    }
+    zip.close();
+    return res;
+}
+
+/**
+ * @brief workspace 解压/打包任务（工程文件格式专属，参照 LoadDataManager/LoadAgentSessions 先例）
+ *
+ * 单类双模式：
+ * - WriteMode（保存）：本地目录不存在直接跳过；存在则 compressDirectory 打包到
+ *   zip 内 workspace/（条目带前缀、递归）。
+ * - ReadMode（加载）：预检策略为"保留本地"时直接跳过；否则先清空本地目录
+ *   （解压只写入 zip 中存在的条目，不清空会退化成"合并"）再逐条解压
+ *   workspace/ 前缀条目（用 getAllFiles——getFolderFileNameList 非递归）。
+ *
+ * 失败容忍：workspace 是辅助内容，任何失败记 qWarning 后返回 true，
+ * 不中止整个工程的打开/保存。
+ */
+class DAZipArchiveTask_Workspace : public DAAbstractArchiveTask
+{
+public:
+    DAZipArchiveTask_Workspace() : DAAbstractArchiveTask()
+    {
+    }
+    ~DAZipArchiveTask_Workspace()
+    {
+    }
+
+    // 设置本地工作区缓存目录
+    void setLocalWorkspaceDir(const QString& dir)
+    {
+        mLocalDir = dir;
+    }
+
+    // 设置是否保留本地（预检策略为"保留本地"时跳过解压）
+    void setKeepLocal(bool keep)
+    {
+        mKeepLocal = keep;
+    }
+
+    /**
+     * @brief exec 注意此函数是在其它线程中执行，不操作 UI
+     * @param archive 归档
+     * @param mode 读写模式
+     * @return 恒为 true（失败非致命，仅 archive 为空返回 false）
+     */
+    virtual bool exec(DAAbstractArchive* archive, DAAbstractArchiveTask::Mode mode) override
+    {
+        if (!archive) {
+            return false;
+        }
+        DAZipArchive* zip = static_cast< DAZipArchive* >(archive);
+        if (mode == DAAbstractArchiveTask::WriteMode) {
+            // 本地目录不存在（如新工程从未跑过脚本）直接跳过
+            if (mLocalDir.isEmpty() || !QDir(mLocalDir).exists()) {
+                return true;
+            }
+            if (!zip->isOpened()) {
+                qWarning() << "workspace save: archive is not opened";
+                return true;  // 非致命
+            }
+            if (!DAZipArchive::compressDirectory(mLocalDir, zip->quazip(), c_workspace_zip_folder)) {
+                qWarning() << "workspace save: failed to compress directory:" << mLocalDir;
+                return true;  // 非致命
+            }
+            return true;
+        }
+        // ReadMode
+        if (mKeepLocal || mLocalDir.isEmpty()) {
+            return true;  // 预检策略为保留本地，不解压
+        }
+        if (!zip->isOpened()) {
+            if (!zip->open()) {
+                qWarning() << "workspace load: open archive error:" << zip->getBaseFilePath();
+                return true;  // 非致命
+            }
+        }
+        // 先清空本地目录：解压只写入 zip 中存在的条目，本地多出的文件不会被删除，
+        // "覆盖"会退化成"合并"，残留文件还会在下次保存时被打包回 zip
+        QDir dir(mLocalDir);
+        if (dir.exists() && !dir.removeRecursively()) {
+            qWarning() << "workspace load: failed to clean local directory:" << mLocalDir;
+            // 非致命，继续尽力解压
+        }
+        const QStringList allFiles = zip->getAllFiles();
+        const QString prefix       = c_workspace_zip_folder + QLatin1String("/");
+        for (const QString& entry : allFiles) {
+            if (!entry.startsWith(prefix) || entry.endsWith('/')) {
+                continue;  // 非 workspace 条目或目录条目
+            }
+            const QString relPath   = entry.mid(prefix.length());
+            if (relPath.isEmpty()) {
+                continue;
+            }
+            const QString localPath = QDir(mLocalDir).filePath(relPath);
+            QDir().mkpath(QFileInfo(localPath).absolutePath());
+            if (!DAZipArchive::readToFile(zip->quazip(), entry, localPath)) {
+                qWarning() << "workspace load: failed to extract" << entry << "to" << localPath;
+                // 继续解压后续文件，非致命
+            }
+        }
+        return true;
+    }
+
+private:
+    QString mLocalDir;      ///< 本地工作区缓存目录
+    bool mKeepLocal { false };  ///< 保留本地（跳过解压）
+};
 
 struct DAArchiveRunResult
 {
@@ -505,6 +732,19 @@ bool DAAppProject::isBusy() const
 }
 
 /**
+ * @brief 获取脚本工作区目录
+ *
+ * 组合工程文件路径 + 设置项 workspace-dir + sha1 哈希生成本地缓存目录。
+ * @note 已打开但未保存过的新工程 getProjectFilePath() 为空，返回空串，
+ * run_script 不可用（首次保存后即可用）
+ * @return 本地缓存目录（不保证存在），无工程或未保存返回空
+ */
+QString DAAppProject::getScriptWorkspaceDir() const
+{
+    return makeScriptWorkspaceDir(getProjectFilePath());
+}
+
+/**
  * @brief 根据数据文件名字，创建这个数据文件在本地的临时文件位置
  * @param dataName
  * @return
@@ -553,6 +793,11 @@ void DAAppProject::clear()
     DAChartOperateWidget* cow = getChartOperateWidget();
     Q_CHECK_PTR(cow);
     cow->clear();
+    // 清理脚本执行引擎：重置用户符号回基线并清除工作区根（两方法自带 isInit 守卫）
+    DAPyScriptRunner::resetNamespace();
+    DAPyScriptRunner::setWorkspaceRoot(QString());
+    mWorkspaceLocalDir.clear();
+    mWorkspaceLocalKept = false;
     DAProjectInterface::clear();
 }
 
@@ -616,6 +861,15 @@ bool DAAppProject::load(const QString& path)
         daCritical << tr("The file %1 is not a valid project file").arg(path);  // cn:文件%1不是正确的工程文件
         return false;
     }
+    // 加载前预检脚本工作区冲突（须在清空当前工程之前，用户取消时工程保持原状）。
+    // 注意：预检结果先存局部变量，待快照创建、工程清空后才写入成员——
+    // 提前写成员会让快照打包误用新工程的工作区目录
+    QString workspaceLocalDir;
+    bool workspaceKeepLocal = false;
+    if (!precheckWorkspaceOnLoad(path, &workspaceLocalDir, &workspaceKeepLocal)) {
+        daInfo << tr("Loading project %1 cancelled by user").arg(path);  // cn:用户取消了工程%1的加载
+        return false;
+    }
     const QString oldProjectFilePath = getProjectFilePath();
     const bool oldDirty              = isDirty();
     const bool needSnapshot          = oldDirty || !isEmpty();
@@ -634,12 +888,20 @@ bool DAAppProject::load(const QString& path)
     // 加载之前先清空
     clear();
 
+    // 快照已按旧工程打包完毕，此刻才把工作区预检结果写入成员，供加载任务使用
+    mWorkspaceLocalDir  = workspaceLocalDir;
+    mWorkspaceLocalKept = workspaceKeepLocal;
+
     setProjectPath(path);
     bool started = false;
     if (!executeLoad(mArchive, path, &started)) {
         if (!started) {
             setStatusBarNotBusy(tr("Failed to load project"));  // cn:无法加载工程
         }
+        // 加载失败：先复位工作区状态，避免残留目录被后续保存误打包
+        // （快照恢复成功时 restoreProjectSnapshot 会重建工作区状态）
+        mWorkspaceLocalDir.clear();
+        mWorkspaceLocalKept = false;
         if (!snapshotPath.isEmpty()) {
             setStatusBarInBusy(tr("Restoring previous project"));  // cn:正在恢复之前的工程
             if (restoreProjectSnapshot(snapshotPath, oldProjectFilePath, oldDirty)) {
@@ -722,6 +984,9 @@ bool DAAppProject::executeSave(DAZipArchiveThreadWrapper* archive, const QString
 
     // Agent会话（主线程收集活跃会话字节→子线程写 agent_sessions/<id>.jsonl）
     makeSaveAgentSessionsTask(archive);
+
+    // 脚本工作区（本地缓存目录打包回 zip 内 workspace/）
+    makeSaveWorkspaceTask(archive);
 
     // 插件
     if (mPluginMgr) {
@@ -837,6 +1102,28 @@ bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString
         }
     }
 
+    // 脚本工作区加载任务：按加载前预检（§precheckWorkspaceOnLoad）决定的策略执行——
+    // "保留本地"跳过解压；否则先清空本地目录再解压 workspace/ 前缀条目。
+    // 任务失败非致命（exec 内部自行降级）。回调（主线程）记录工作区路径并
+    // 调 DAPyScriptRunner::setWorkspaceRoot，供 run_script/跨脚本 import 使用。
+    {
+        auto wsTask = std::make_shared< DAZipArchiveTask_Workspace >();
+        wsTask->setCode(DAAPPPROJECT_TASK_LOAD_ID_WORKSPACE);
+        wsTask->setLocalWorkspaceDir(mWorkspaceLocalDir);
+        wsTask->setKeepLocal(mWorkspaceLocalKept);
+        wsTask->setName(tr("Load script workspace"));  // cn:加载脚本工作区
+        wsTask->setDescribe(tr("Extract workspace/ to local cache directory"));  // cn:解压工程内脚本工作区到本地缓存目录
+        wsTask->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) {
+            Q_UNUSED(t);
+            if (!mWorkspaceLocalDir.isEmpty()) {
+                DAPyScriptRunner::setWorkspaceRoot(mWorkspaceLocalDir);
+            }
+        });
+        if (!archive->appendTask(wsTask)) {
+            return false;
+        }
+    }
+
     // 插件
     if (mPluginMgr) {
         const QList< DAAbstractPlugin* > plugins = mPluginMgr->getAllPlugins();
@@ -888,6 +1175,11 @@ bool DAAppProject::restoreProjectSnapshot(const QString& snapshotPath, const QSt
     }
 
     clear();
+    // clear() 清除了工作区状态：按被恢复工程重建本地工作区目录。
+    // 快照由 createProjectSnapshot 用当时的本地工作区打包而来，恢复即覆盖解压
+    // （不保留本地——加载失败回滚场景下本地改动归属已不可靠）
+    mWorkspaceLocalDir  = makeScriptWorkspaceDir(projectFilePath);
+    mWorkspaceLocalKept = false;
     DAZipArchiveThreadWrapper archive;
     bool started = false;
     // 传 projectFilePath 作为 agentProjectPath：使会话加载回调用真实工程路径标记导入会话，
@@ -904,6 +1196,90 @@ bool DAAppProject::restoreProjectSnapshot(const QString& snapshotPath, const QSt
     // 亦符合 MAJOR-3 统一初始化点：restoreLastActiveSession 只在 onProjectLoaded 调一次）。
     Q_EMIT projectLoaded(projectFilePath);
     return true;
+}
+
+/**
+ * @brief 加载前预检脚本工作区冲突（主线程同步，在任务队列启动前完成）
+ *
+ * 归档任务队列无取消机制且按 FIFO 串行，冲突弹窗若放在任务回调里无法
+ * 回滚已载入的工程，因此检测整体前置到 executeLoad 之前：
+ * -# 本地缓存目录不存在 → 干净，照常解压；
+ * -# 否则按配置策略（默认 ask）做内容指纹（相对路径+MD5）比对：
+ *    一致 → 静默覆盖解压；不一致 → 弹模态框让用户选择
+ *    保留本地 / 用工程内版本覆盖 / 取消加载；
+ * -# 选"保留本地"输出 keepLocal（置脏延迟到 onLoadFinish，否则会被其
+ *    setModified(false) 擦除）；选"取消"直接返回 false，工程保持打开前状态。
+ *
+ * @note 结果仅经输出参数返回，不写成员：成员一旦提前写入，快照打包
+ * （createProjectSnapshot）会误把新工程的工作区目录当成当前工程的内容打包
+ * @param projectPath 待加载的工程文件路径
+ * @param localDir 输出：该工程对应的本地工作区缓存目录
+ * @param keepLocal 输出：是否保留本地版本（跳过解压）
+ * @return false 表示用户取消加载
+ */
+bool DAAppProject::precheckWorkspaceOnLoad(const QString& projectPath, QString* localDir, bool* keepLocal)
+{
+    if (localDir) {
+        *localDir = makeScriptWorkspaceDir(projectPath);
+    }
+    if (keepLocal) {
+        *keepLocal = false;
+    }
+    const QString wsDir = localDir ? *localDir : QString();
+    if (wsDir.isEmpty() || !QDir(wsDir).exists()) {
+        return true;  // 无本地缓存，无冲突
+    }
+    // 策略配置（默认 ask；always-local/always-zip 供高级用户免弹窗）
+    QString policy = QStringLiteral("ask");
+    if (DAAppConfig* cfg = getWorkspaceAppConfig()) {
+        const QString v = cfg->value(DA_CONFIG_KEY_WORKSPACE_OVERWRITE_POLICY).toString().trimmed();
+        if (!v.isEmpty()) {
+            policy = v;
+        }
+    }
+    if (policy == QLatin1String("always-local")) {
+        if (keepLocal) {
+            *keepLocal = true;
+        }
+        return true;
+    }
+    if (policy == QLatin1String("always-zip")) {
+        return true;  // 覆盖解压
+    }
+    // ask：指纹比对（内容 MD5；解压不回写时间戳，不能用 mtime 判定）
+    bool zipOpened = false;
+    const QMap< QString, QByteArray > zipFp   = zipWorkspaceContentFingerprint(projectPath, &zipOpened);
+    const QMap< QString, QByteArray > localFp = localDirContentFingerprint(wsDir);
+    if (zipOpened && zipFp == localFp) {
+        return true;  // 本地无改动，静默覆盖解压
+    }
+    // 冲突（含 zip 打开失败无法比对）：弹窗让用户决策
+    QWidget* parentWidget = nullptr;
+    if (core() && core()->getUiInterface()) {
+        parentWidget = core()->getUiInterface()->getMainWindow();
+    }
+    QMessageBox box(parentWidget);
+    box.setIcon(QMessageBox::Warning);
+    box.setWindowTitle(tr("Script Workspace Conflict"));  // cn:脚本工作区冲突
+    box.setText(tr("The local script workspace of this project differs from the version stored in the project "
+                   "file. Which version do you want to keep?"));  // cn:本工程的本地脚本工作区与工程文件内保存的版本不一致，请选择保留哪个版本
+    box.setInformativeText(tr("Local workspace: %1").arg(wsDir));  // cn:本地工作区：%1
+    QPushButton* keepBtn      = box.addButton(tr("Keep Local"), QMessageBox::AcceptRole);  // cn:保留本地
+    QPushButton* overwriteBtn = box.addButton(tr("Overwrite With Project Version"),
+                                              QMessageBox::DestructiveRole);  // cn:用工程内版本覆盖
+    box.addButton(tr("Cancel"), QMessageBox::RejectRole);                     // cn:取消
+    box.setDefaultButton(keepBtn);
+    box.exec();
+    if (box.clickedButton() == keepBtn) {
+        if (keepLocal) {
+            *keepLocal = true;
+        }
+        return true;
+    }
+    if (box.clickedButton() == overwriteBtn) {
+        return true;  // 覆盖解压（任务内先清空本地目录）
+    }
+    return false;  // 取消：不启动加载，工程保持打开前状态
 }
 
 /**
@@ -1209,6 +1585,24 @@ void DAAppProject::makeSaveAgentSessionsTask(DAZipArchiveThreadWrapper* archive)
     }
 }
 
+/**
+ * @brief 创建保存脚本工作区的任务
+ *
+ * 优先使用加载时记录的本地缓存目录（mWorkspaceLocalDir，脚本实际所在处，
+ * 可正确处理另存为——新路径对应的哈希目录此刻尚不存在），回退按当前
+ * 工程路径计算的目录。目录不存在时任务内部直接跳过（新工程从未跑过脚本）。
+ * @param archive ZIP归档线程包装器
+ */
+void DAAppProject::makeSaveWorkspaceTask(DAZipArchiveThreadWrapper* archive)
+{
+    const QString localDir = mWorkspaceLocalDir.isEmpty() ? getScriptWorkspaceDir() : mWorkspaceLocalDir;
+    auto task              = std::make_shared< DAZipArchiveTask_Workspace >();
+    task->setLocalWorkspaceDir(localDir);
+    task->setName(tr("Save script workspace"));  // cn:保存脚本工作区
+    task->setDescribe(tr("Pack local script workspace into the project file"));  // cn:把本地脚本工作区打包进工程文件
+    archive->appendTask(task);
+}
+
 QDomDocument DAAppProject::createWorkflowUIDomDocument()
 {
     DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();
@@ -1303,6 +1697,8 @@ void DAAppProject::onSaveFinish(bool success)
 {
     QString savePath = getProjectFilePath();
     if (success) {
+        // 保存后本地工作区与工程内容已一致，复位"保留本地"标志
+        mWorkspaceLocalKept = false;
         setModified(false);
         Q_EMIT projectSaved(savePath);
         daInfo << tr("Successfully saved archive: %1").arg(savePath);  // cn:成功保存工程:%1
@@ -1322,6 +1718,12 @@ void DAAppProject::onLoadFinish(bool success)
     QString loadPath = getProjectFilePath();
     if (success) {
         setModified(false);
+        if (mWorkspaceLocalKept) {
+            // 加载时用户选择保留本地工作区：本地内容与工程内版本不一致，
+            // 需下次保存把本地打包回 zip。置脏必须延迟到 setModified(false)
+            // 之后，否则会被擦除（任务回调里置脏无效）
+            setModified(true);
+        }
         daInfo << tr("Successfully loaded archive: %1").arg(loadPath);  // cn:成功加载工程:%1
         Q_EMIT projectLoaded(loadPath);
         setStatusBarNotBusy(tr("Project loaded successfully"));  // cn:成功加载工程
@@ -1338,6 +1740,17 @@ void DAAppProject::loadedWorkflowInfo(const std::shared_ptr< DAAbstractArchiveTa
     QDomDocument xmlDoc                                      = xmlArchive->getDomDocument();
     if (xmlDoc.isNull()) {
         return;
+    }
+    // 旧版本工程提示（友好策略）：低版本无脚本工作区，保存一次即升级到当前版本
+    QDomElement proEle = xmlDoc.documentElement().firstChildElement(QStringLiteral("project"));
+    if (!proEle.isNull() && proEle.hasAttribute(QStringLiteral("version"))) {
+        const QVersionNumber fileVer = QVersionNumber::fromString(proEle.attribute(QStringLiteral("version")));
+        if (!fileVer.isNull() && fileVer < getProjectVersion()) {
+            daInfo << tr("This project file was saved with an older version (%1). Saving it will upgrade to %2 "
+                         "and enable the script workspace feature")
+                              .arg(fileVer.toString(),
+                                   getProjectVersion().toString());  // cn:该工程文件由旧版本(%1)保存，保存后将升级到%2并启用脚本工作区功能
+        }
     }
 
     DAPyWorkFlowOperateWidget* wfo = getWorkFlowOperateWidget();

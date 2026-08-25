@@ -28,6 +28,12 @@ DASettingPageAdvanced::DASettingPageAdvanced(QWidget* parent)
     ui->spinBoxAutosaveInterval->setRange(0, 1440);
     ui->spinBoxAutosaveInterval->setSuffix(tr(" min"));  // cn: 分钟
     ui->spinBoxAutosaveInterval->setSpecialValueText(tr("Disabled"));  // cn:禁用
+    // 脚本工作区
+    ui->lineEditWorkspaceDir->setPlaceholderText(tr("Empty for system temporary directory"));  // cn:留空使用系统临时目录
+    ui->spinBoxScriptTimeout->setRange(0, 3600);
+    ui->spinBoxScriptTimeout->setSuffix(tr(" s"));
+    ui->spinBoxScriptTimeout->setSpecialValueText(tr("Disabled"));  // cn:禁用
+    ui->spinBoxScriptResultMaxChars->setRange(1000, 100000);
     // 信号连接
     connect(ui->doubleSpinBoxWorkflowTimeout,
             QOverload< double >::of(&QDoubleSpinBox::valueChanged),
@@ -53,6 +59,22 @@ DASettingPageAdvanced::DASettingPageAdvanced(QWidget* parent)
             QOverload< int >::of(&QSpinBox::valueChanged),
             this,
             &DASettingPageAdvanced::onSpinBoxAutosaveIntervalValueChanged);
+    connect(ui->lineEditWorkspaceDir,
+            &QLineEdit::textChanged,
+            this,
+            &DASettingPageAdvanced::onLineEditWorkspaceDirTextChanged);
+    connect(ui->toolButtonWorkspaceDirBrowse,
+            &QToolButton::clicked,
+            this,
+            &DASettingPageAdvanced::onToolButtonWorkspaceDirBrowseClicked);
+    connect(ui->spinBoxScriptTimeout,
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DASettingPageAdvanced::onSpinBoxScriptTimeoutValueChanged);
+    connect(ui->spinBoxScriptResultMaxChars,
+            QOverload< int >::of(&QSpinBox::valueChanged),
+            this,
+            &DASettingPageAdvanced::onSpinBoxScriptResultMaxCharsValueChanged);
 }
 
 DASettingPageAdvanced::~DASettingPageAdvanced()
@@ -83,6 +105,10 @@ void DASettingPageAdvanced::apply()
     cfg[ DA_CONFIG_KEY_NODE_SCRIPT_PATHS ] = nodePaths;
     cfg[ DA_CONFIG_KEY_SHOW_SPLASH ]       = ui->checkBoxShowSplash->isChecked();
     cfg[ DA_CONFIG_KEY_AUTOSAVE_INTERVAL ] = ui->spinBoxAutosaveInterval->value();
+    // 脚本工作区
+    cfg[ DA_CONFIG_KEY_WORKSPACE_DIR ]             = ui->lineEditWorkspaceDir->text().trimmed();
+    cfg[ DA_CONFIG_KEY_SCRIPT_TIMEOUT ]            = ui->spinBoxScriptTimeout->value();
+    cfg[ DA_CONFIG_KEY_SCRIPT_RESULT_MAX_CHARS ]   = ui->spinBoxScriptResultMaxChars->value();
     cfg.apply();
     emit settingApplyed();
 }
@@ -128,6 +154,12 @@ bool DASettingPageAdvanced::setAppConfig(DAAppConfig* p)
     ui->checkBoxShowSplash->setChecked(cfg[ DA_CONFIG_KEY_SHOW_SPLASH ].toBool());
     // 自动保存间隔
     ui->spinBoxAutosaveInterval->setValue(cfg[ DA_CONFIG_KEY_AUTOSAVE_INTERVAL ].toInt());
+    // 脚本工作区
+    ui->lineEditWorkspaceDir->setText(cfg[ DA_CONFIG_KEY_WORKSPACE_DIR ].toString());
+    int scriptTimeout = cfg[ DA_CONFIG_KEY_SCRIPT_TIMEOUT ].toInt();
+    ui->spinBoxScriptTimeout->setValue(scriptTimeout >= 0 ? scriptTimeout : 300);
+    int resultMaxChars = cfg[ DA_CONFIG_KEY_SCRIPT_RESULT_MAX_CHARS ].toInt();
+    ui->spinBoxScriptResultMaxChars->setValue(resultMaxChars > 0 ? resultMaxChars : 10000);
     return true;
 }
 
@@ -189,6 +221,33 @@ void DASettingPageAdvanced::onCheckBoxShowSplashStateChanged(int state)
 }
 
 void DASettingPageAdvanced::onSpinBoxAutosaveIntervalValueChanged(int v)
+{
+    Q_UNUSED(v);
+    emit settingChanged();
+}
+
+void DASettingPageAdvanced::onLineEditWorkspaceDirTextChanged(const QString& text)
+{
+    Q_UNUSED(text);
+    emit settingChanged();
+}
+
+void DASettingPageAdvanced::onToolButtonWorkspaceDirBrowseClicked()
+{
+    QString d = QFileDialog::getExistingDirectory(this, tr("Select script workspace directory"));  // cn:选择脚本工作区目录
+    if (!d.isEmpty()) {
+        ui->lineEditWorkspaceDir->setText(d);
+        emit settingChanged();
+    }
+}
+
+void DASettingPageAdvanced::onSpinBoxScriptTimeoutValueChanged(int v)
+{
+    Q_UNUSED(v);
+    emit settingChanged();
+}
+
+void DASettingPageAdvanced::onSpinBoxScriptResultMaxCharsValueChanged(int v)
 {
     Q_UNUSED(v);
     emit settingChanged();

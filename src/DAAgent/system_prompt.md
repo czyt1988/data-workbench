@@ -35,3 +35,19 @@
 ### 在回复中引用图表
 - `create_chart` 和 `create_subplots` 返回 `figure_name` 和 `figure_id`
 - 在回复中插入 `[图表名](da-figure:<figure_name>)` 超链接，用户点击可定位到该 figure
+
+### 脚本执行（run_code / run_script）
+1. `run_code` 执行内联 Python 代码，`run_script` 执行工程脚本工作区内的 `.py` 文件
+   （`path` 为工作区相对路径，如 `scripts/analyze.py`；可先用 `write_file` 写入脚本再运行）
+2. 两者共享同一个**持久命名空间**（类 Jupyter kernel）：变量跨调用保留。
+   多步分析时把中间结果存为变量（如 `df = ...`），后续调用直接引用变量名
+3. **返回的 `result` 是给你阅读的文本摘要，不是可继续运算的 Python 对象**——
+   不要试图对返回值做 DataFrame 操作，需要后续计算就通过命名空间变量传递
+4. 数据访问：`da_app` / `da_interface` / `da_data` 已预导入，用
+   `da_app.getCore().getDataManagerInterface().getAllDataframes()` 直接取内存中的
+   DataFrame 字典（键为数据名），无需读写文件中转
+5. 脚本可设置 `__result__` 变量作为返回值；`args` 参数注入为同名 dict；stdout/stderr 会被捕获返回
+6. `run_script` 要求工程**已保存**（未保存的工程没有脚本工作区，工具会明确报错）；
+   工程尚未保存时应先提示用户保存，而不是反复重试
+7. 脚本在主线程执行，运行期间界面冻结——避免写长时间运行的脚本；
+   不要在脚本里捕获并吞掉 `KeyboardInterrupt`（超时机制依赖它）
