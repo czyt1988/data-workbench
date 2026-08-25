@@ -310,7 +310,8 @@ function appendUserMessage(text) {
     flushAgentMessage();
     closeToolGroup();
     let bubble = createMessageBubble('user');
-    bubble.textContent = text;
+    bubble.dataset.rawText = text;
+    bubble.innerHTML = md.render(text);
     document.getElementById('messages').appendChild(bubble);
     scrollToBottom();
 }

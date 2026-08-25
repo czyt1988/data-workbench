@@ -374,7 +374,7 @@ body {
     border: 1px solid #e0e0e0;
 }
 
-.message-bubble.agent pre {
+.message-bubble pre {
     background: #f6f8fa;
     padding: 8px;
     border-radius: 4px;
@@ -382,18 +382,18 @@ body {
     font-size: 13px;
 }
 
-.message-bubble.agent table {
+.message-bubble table {
     border-collapse: collapse;
     margin: 8px 0;
 }
 
-.message-bubble.agent th,
-.message-bubble.agent td {
+.message-bubble th,
+.message-bubble td {
     border: 1px solid #ddd;
     padding: 6px 10px;
 }
 
-.message-bubble.agent th {
+.message-bubble th {
     background: #f6f8fa;
 }
 
