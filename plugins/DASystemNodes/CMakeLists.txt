@@ -135,8 +135,14 @@ damacro_plugin_install()
 install(DIRECTORY
     ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DASystemNodes
     DESTINATION ${CMAKE_INSTALL_BINDIR}/pyplugins
+    PATTERN "__pycache__" EXCLUDE
+    PATTERN "*.pyc" EXCLUDE
+    PATTERN "*.pyo" EXCLUDE
 )
 
 # 构建时复制到 build 目录，便于调试
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DASystemNodes"
-     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/pyplugins)
+     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/pyplugins
+     PATTERN "__pycache__" EXCLUDE
+     PATTERN "*.pyc" EXCLUDE
+     PATTERN "*.pyo" EXCLUDE)

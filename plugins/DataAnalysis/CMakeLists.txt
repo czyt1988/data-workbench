@@ -196,21 +196,42 @@ damacro_plugin_install()
 install(DIRECTORY
     ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisCore
     DESTINATION ${CMAKE_INSTALL_BINDIR}/PyScripts
+    PATTERN "__pycache__" EXCLUDE
+    PATTERN "*.pyc" EXCLUDE
+    PATTERN "*.pyo" EXCLUDE
 )
 
 # DADataAnalysisGui — GUI 交互逻辑
 install(DIRECTORY
     ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisGui
     DESTINATION ${CMAKE_INSTALL_BINDIR}/PyScripts
+    PATTERN "__pycache__" EXCLUDE
+    PATTERN "*.pyc" EXCLUDE
+    PATTERN "*.pyo" EXCLUDE
 )
 
 # DADataAnalysisNodes — 工作流节点插件
 install(DIRECTORY
     ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisNodes
     DESTINATION ${CMAKE_INSTALL_BINDIR}/pyplugins
+    PATTERN "__pycache__" EXCLUDE
+    PATTERN "*.pyc" EXCLUDE
+    PATTERN "*.pyo" EXCLUDE
 )
 
 # 构建期复制（用于调试运行）
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisCore" DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts)
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisGui" DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts)
-file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisNodes" DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/pyplugins)
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisCore"
+     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts
+     PATTERN "__pycache__" EXCLUDE
+     PATTERN "*.pyc" EXCLUDE
+     PATTERN "*.pyo" EXCLUDE)
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisGui"
+     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts
+     PATTERN "__pycache__" EXCLUDE
+     PATTERN "*.pyc" EXCLUDE
+     PATTERN "*.pyo" EXCLUDE)
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DADataAnalysisNodes"
+     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/pyplugins
+     PATTERN "__pycache__" EXCLUDE
+     PATTERN "*.pyc" EXCLUDE
+     PATTERN "*.pyo" EXCLUDE)
