@@ -17,6 +17,47 @@ import os
 import sys
 import threading
 
+# —— stdout/stderr 与日志必须在导入重模块（langchain 冷启动 ~16s）之前就绪 ——
+# Pin stdout/stderr to UTF-8 — required because:
+# 1. stdout 是 JSON Lines 协议通道（C++ 端 QJsonDocument::fromJson 按 UTF-8 解析）
+# 2. Windows 默认为 cp936/cp1252，会破坏中文内容
+# 3. newline="\n" 保证行尾一致（不在 Windows 上产生 \r\n）
+# ★ stderr 必须 line_buffering=True：非 TTY（QProcess 管道）下默认是块缓冲，
+#   进程被 TerminateProcess 硬杀时块缓冲里的日志/traceback 会丢失（表现为
+#   "静默崩溃 exitCode=62097 无 stderr"，用户只看到 UI 上 "Agent 错误：Unknown
+#   error" 却在 da_log.log 里查不到 Python 侧 traceback）。行缓冲保证每条日志
+#   写完即 flush 到管道，C++ 端 onReadyReadStandardError 能即时收到并写入
+#   da_log.log，让后续调试 agent 时能看到完整日志与异常 traceback。
+sys.stdout.reconfigure(encoding="utf-8", newline="\n")
+sys.stderr.reconfigure(encoding="utf-8", line_buffering=True)
+
+# 所有调试输出写入 stderr，绝对禁止写入 stdout（stdout 是协议通道）。
+# 日志先于重模块导入配置：否则下方 context_manager 导入失败时 logger 尚未定义，
+# except 分支引用 logger 会抛 NameError 掩盖原始 ImportError（latent bug）。
+logging.basicConfig(
+    stream=sys.stderr,
+    level=logging.DEBUG,
+    format='%(asctime)s [%(levelname)s] %(message)s'
+)
+logger = logging.getLogger("agent_runner")
+
+# 抑制 openai/httpx 库的 DEBUG/INFO 日志，避免请求体等巨大文本刷屏 stderr。
+# C++ 端 onReadyReadStandardError 捕获 stderr 后转发含 "[ERROR]"/"Traceback" 的内容到 UI，
+# 若不抑制，httpx 的 DEBUG 日志（含完整 Request options/traceback）会被误当错误弹给用户。
+logging.getLogger("openai").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
+# 在导入重模块（langchain_openai 冷启动 ~16s）之前立即发送 booting 心跳。
+# C++ 端 DAAgentBridge 收到 booting 后会重置 ready 超时计时器，避免进程
+# 在导入期间被 m_process->kill() 误杀——TerminateProcess 不 flush Python
+# stderr 块缓冲，会导致日志无任何 stderr 输出、表现为静默崩溃（exitCode=62097）。
+# ★ booting 必须在 langchain 导入之前发送：若放在导入之后，冷启动的 ~16s 期间
+#   C++ 收不到任何心跳、ready 计时器持续倒数，慢机器上会超时 kill（恰恰丢失
+#   stderr）。此处只能用已导入的标准库（json/sys），不能用 langchain（尚未导入）。
+sys.stdout.write('{"type": "booting"}\n')
+sys.stdout.flush()
+
+# —— 重模块导入（langchain_openai 冷启动 ~16s，在 booting 心跳之后）——
 from langchain_core.messages import (
     AIMessage, HumanMessage, SystemMessage, ToolMessage, RemoveMessage
 )
@@ -52,34 +93,19 @@ except ImportError:
 from error_classifier import classify_error, ErrorType
 from retry_wrapper import retry_with_backoff, RetryAbortedError
 
-# Pin stdout/stderr to UTF-8 — required because:
-# 1. stdout 是 JSON Lines 协议通道（C++ 端 QJsonDocument::fromJson 按 UTF-8 解析）
-# 2. Windows 默认为 cp936/cp1252，会破坏中文内容
-# 3. newline="\n" 保证行尾一致（不在 Windows 上产生 \r\n）
-sys.stdout.reconfigure(encoding="utf-8", newline="\n")
-sys.stderr.reconfigure(encoding="utf-8")
-
-# 在导入重模块（langchain_openai 冷启动 ~16s）之前立即发送 booting 心跳。
-# C++ 端 DAAgentBridge 收到 booting 后会重置 ready 超时计时器，避免进程
-# 在导入期间被 m_process->kill() 误杀——TerminateProcess 不 flush Python
-# stderr 块缓冲，会导致日志无任何 stderr 输出、表现为静默崩溃（exitCode=62097）。
-# 此处只能用已导入的标准库（json/sys），不能用 langchain（尚未导入）。
-sys.stdout.write('{"type": "booting"}\n')
-sys.stdout.flush()
-
-# 所有调试输出写入 stderr，绝对禁止写入 stdout（stdout 是协议通道）
-logging.basicConfig(
-    stream=sys.stderr,
-    level=logging.DEBUG,
-    format='%(asctime)s [%(levelname)s] %(message)s'
-)
-logger = logging.getLogger("agent_runner")
-
-# 抑制 openai/httpx 库的 DEBUG/INFO 日志，避免请求体等巨大文本刷屏 stderr。
-# C++ 端 onReadyReadStandardError 捕获 stderr 后转发含 "[ERROR]"/"Traceback" 的内容到 UI，
-# 若不抑制，httpx 的 DEBUG 日志（含完整 Request options/traceback）会被误当错误弹给用户。
-logging.getLogger("openai").setLevel(logging.WARNING)
-logging.getLogger("httpx").setLevel(logging.WARNING)
+# 兜底：未被任何 try/except 捕获的异常（如 stdin reader daemon 线程内的二次崩溃、
+# asyncio 解释器关闭期间的异常）默认写 sys.stderr，line_buffering 已保证逐行 flush；
+# 再显式设置 threading.excepthook 确保 daemon 线程的未捕获异常也落 stderr（Python
+# 3.8+ 默认只打印主线程未捕获异常，daemon 线程异常会被吞掉）。
+def _threading_excepthook(args):
+    import traceback
+    try:
+        sys.stderr.write("Unhandled exception in thread %r\n" % getattr(args, "thread", "?"))
+        traceback.print_exception(args.exc_type, args.exc_value, args.exc_traceback, file=sys.stderr)
+        sys.stderr.flush()
+    except Exception:
+        pass
+threading.excepthook = _threading_excepthook
 
 
 class AgentStoppedError(Exception):
@@ -789,6 +815,21 @@ class AgentRunner:
                     await stdio.send_message_end(loop_msg.content, None)
                     # 无 tool_calls → _should_ask_user 返回 "end" → END
                     return {"messages": [loop_msg]}
+                # 持久化中间推理内容：AIMessage 伴随 tool_calls 产生的 content（思考过程）。
+                # 此前该 content 仅以 token 流式输出到 UI（agentToken），从未落盘——
+                # C++ 端 agentToken 不持久化，而 message_end 只在无 tool_calls 的最终
+                # 回复时发送，导致崩溃恢复/切换会话时 agent 看不到自己之前的分析过程
+                # （对齐 qwen-code：每个 assistant turn 的 reasoning+tool_calls 都落盘，
+                # --resume 时完整重建含推理的历史）。token 已流式渲染，此处 message_end
+                # 仅触发 C++ appendAssistantRecord(content,{}) 落盘；UI finalizeAgentMessage
+                # 重渲染同一文本（无视觉变化）并复位气泡，使后续工具卡片正确接续。
+                # 空 content（LLM 只发 tool_calls 无叙述）跳过，避免无意义空记录。
+                _intermediate_content = (
+                    final_message.content
+                    if isinstance(final_message.content, str) else ""
+                )
+                if _intermediate_content.strip():
+                    await stdio.send_message_end(_intermediate_content, None)
                 # 有完整 tool_calls，交给 tool_node 执行
                 # （tool_call 路径不发 usage——非最终回复，下一轮 agent 还会再发）
                 return {"messages": compaction_updates + [final_message]}

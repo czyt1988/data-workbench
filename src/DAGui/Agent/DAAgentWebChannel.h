@@ -40,7 +40,7 @@ public:
     void appendQuestion(const QString& text, const QStringList& options, bool multiSelect);
     void showRetryStatus(int attempt, int maxAttempts, int delayMs,
                          const QString& errorType, const QString& errorMessage);
-    void appendError(const QString& message, const QString& errorType);
+    void appendError(const QString& message, const QString& errorType, const QString& detail = QString());
     void appendSystemMessage(const QString& text, const QString& level);
     void clearChat();
     void loadHistory(const QVector<QJsonObject>& records);

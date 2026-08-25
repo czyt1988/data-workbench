@@ -213,12 +213,15 @@ void DAAgentWebChannel::showRetryStatus(int attempt, int maxAttempts, int delayM
  * @brief 追加错误信息到聊天界面（独立错误卡片）
  * @param message 错误消息（经 mapErrorMessage 映射后的用户文案）
  * @param errorType 错误类型（用于 JS 端样式/图标选择）
+ * @param detail 原始异常详情（str(exc)，可空）。非空时 JS 渲染可折叠详情面板 +
+ *               复制按钮（面板默认折叠，<pre> 截断显示，复制按钮复制完整内容）
  */
-void DAAgentWebChannel::appendError(const QString& message, const QString& errorType)
+void DAAgentWebChannel::appendError(const QString& message, const QString& errorType, const QString& detail)
 {
-    callJS(QString("appendError(\"%1\", \"%2\")")
+    callJS(QString("appendError(\"%1\", \"%2\", \"%3\")")
         .arg(toJsString(message))
-        .arg(toJsString(errorType)));
+        .arg(toJsString(errorType))
+        .arg(toJsString(detail)));
 }
 
 /**

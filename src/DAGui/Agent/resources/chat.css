@@ -786,7 +786,7 @@ body {
 
 .error-message {
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
     gap: 8px;
     padding: 10px 16px;
     margin: 8px 0;
@@ -795,6 +795,12 @@ body {
     background: #f8d7da;
     border: 1px solid #f5c6cb;
     color: #721c24;
+}
+
+.error-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
 }
 
 .error-icon {
@@ -806,6 +812,62 @@ body {
     flex: 1;
     word-wrap: break-word;
 }
+
+/* 可折叠错误详情面板：默认折叠，避免长 traceback 占满对话界面 */
+.error-detail-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.error-detail-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 2px 0;
+    opacity: 0.85;
+}
+.error-detail-toggle:hover { opacity: 1; }
+.error-detail-toggle.open .chevron { transform: rotate(90deg); }
+.error-detail-label { font-weight: 600; }
+.error-detail-meta { opacity: 0.7; font-size: 11px; }
+.error-detail-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+}
+.error-detail-pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 240px;
+    overflow: auto;
+    margin: 0;
+    padding: 8px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.06);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    width: 100%;
+    box-sizing: border-box;
+}
+.error-detail-copy {
+    align-self: flex-start;
+    background: rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    color: inherit;
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.error-detail-copy:hover { background: rgba(0, 0, 0, 0.14); }
+.error-detail-copy.copied { opacity: 0.7; }
 
 /* 配额耗尽——蓝色调 */
 .error-quota {

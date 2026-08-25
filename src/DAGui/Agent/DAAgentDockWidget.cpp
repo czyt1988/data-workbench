@@ -242,7 +242,11 @@ void DAAgentDockWidget::onWebReady()
         {"modelEmpty", tr("No model")},               // cn:无模型
         {"modelSelectTip", tr("Select LLM model")},   // cn:选择 LLM 模型
         {"modelProvidersTitle", tr("Providers")},     // cn:供应商
-        {"modelBack", tr("Back")}                     // cn:返回
+        {"modelBack", tr("Back")},                    // cn:返回
+        {"errorDetails", tr("Details")},             // cn:详细信息
+        {"errorCopy", tr("Copy")},                   // cn:复制
+        {"errorCopied", tr("Copied")},               // cn:已复制
+        {"errorTruncated", tr("[truncated]")}        // cn:[已截断]
     });
     // 启动中优先推 starting 态，缓解 JS-ready 竞态——agent 信号若在 chat.html 加载
     // 完成前触发，此处补推当前 starting/busy 态
@@ -374,15 +378,17 @@ void DAAgentDockWidget::onAgentQuestion(const QString& text, const QStringList& 
 void DAAgentDockWidget::onAgentError(const QString& message, const QString& errorType, const QString& detail)
 {
     DA_D(d);
-    Q_UNUSED(detail);
     // switchSession 后若 load_session 失败走 agentError 而非 session_loaded，
     // 不复位 m_switching 会冻结后续渲染（守卫永真）——沿用现有逻辑
     d->mSwitching = false;
     // 根据 errorType 选择用户文案
     QString displayMessage = mapErrorMessage(message, errorType);
-    // 调用 chat.js 渲染错误（standalone error card，由 plan-06 实现）
+    // 调用 chat.js 渲染错误卡片：主文案为映射后的用户文案，detail（原始异常文本）
+    // 经可折叠面板展示（默认折叠 + 截断，避免长 traceback 占满对话界面），并提供
+    // 复制按钮一键复制完整异常信息。此前 detail 被 Q_UNUSED 丢弃，用户只看到通用
+    // "Agent 错误：Unknown error" 却查不到具体异常出处。
     if (d->mChannel) {
-        d->mChannel->appendError(displayMessage, errorType);
+        d->mChannel->appendError(displayMessage, errorType, detail);
     }
 }
 

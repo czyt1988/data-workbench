@@ -779,7 +779,12 @@ void DAAgentBridge::onReadyReadStandardError()
     // 真正的错误通过 stdout 的 {"type":"error"} 协议消息传递；
     // 进程崩溃由 onProcessFinished 处理。
     QByteArray data = d->mProcess->readAllStandardError();
-    daDebug << "Agent stderr:" << QString::fromUtf8(data);
+    // 用 qInfo（系统 logger，无 category）而非 daDebug：
+    //   1. 系统 logger 无 UI sink，不会把 httpx/openai 的 stderr 警告刷进 UI 消息队列；
+    //   2. qInfo 为 info 级别，即使用户把日志级别调到 Info（daDebug 是 debug 级会被滤掉），
+    //      Python 侧的 stderr 日志/traceback 仍能落 da_log.log，保证后续调试 agent 可见。
+    //   （默认 Trace 级别下 daDebug 也能落盘，此处升级为 qInfo 是为应对用户调高级别的场景。）
+    qInfo() << "Agent stderr:" << QString::fromUtf8(data);
 }
 
 /**

@@ -22,7 +22,8 @@ let i18n = {
     popoverTotal: 'total: %1', popoverWindow: 'window: %1',
     popoverSource: 'source: %1', popoverSourceUnknown: 'unknown',
     modelEmpty: 'No model', modelSelectTip: 'Select LLM model',
-    modelProvidersTitle: 'Providers', modelBack: 'Back'
+    modelProvidersTitle: 'Providers', modelBack: 'Back',
+    errorDetails: 'Details', errorCopy: 'Copy', errorCopied: 'Copied', errorTruncated: '[truncated]'
 };
 let agentBusy = false;          // 当前是否思考中（驱动 send-btn 的 Send/Stop 切换）
 let tokenStatsCache = null;     // 缓存最近一次 setTokenStats 的 5 值，供 popover 渲染
@@ -970,7 +971,7 @@ function formatCountdown(ms) {
 // errorType 取值见 D9 协议枚举：quota_exhausted / auth_error / rate_limit_exhausted
 // / network_exhausted / server_error_exhausted / bad_request / context_overflow
 // / crash_recovery / timeout / unknown
-function appendError(message, errorType) {
+function appendError(message, errorType, detail) {
     // 隐藏重试状态条（如果还在）
     hideRetryStatus();
 
@@ -995,19 +996,111 @@ function appendError(message, errorType) {
 
     errorDiv.classList.add(errorClass);
 
+    // 主行：图标 + 友好消息文案（C++ mapErrorMessage 映射后的用户文案）
+    const main = document.createElement('div');
+    main.className = 'error-main';
     const iconEl = document.createElement('span');
     iconEl.className = 'error-icon';
     iconEl.textContent = icon;
-
     const textEl = document.createElement('span');
     textEl.className = 'error-text';
     textEl.textContent = message;
+    main.appendChild(iconEl);
+    main.appendChild(textEl);
+    errorDiv.appendChild(main);
 
-    errorDiv.appendChild(iconEl);
-    errorDiv.appendChild(textEl);
+    // 可折叠详情面板（仅 detail 非空时）：默认折叠，避免长 traceback 占满对话界面。
+    // <pre> 截断显示（前 1500 字符 + 截断标记），复制按钮复制完整原始 detail。
+    // 标签（Details/Copy/Copied/[truncated]）由 C++ 经 setI18nLabels 注入 i18n。
+    const fullDetail = (detail != null) ? String(detail) : '';
+    if (fullDetail.trim()) {
+        const MAX_DETAIL_CHARS = 1500;
+        let displayDetail = fullDetail;
+        let truncated = false;
+        if (fullDetail.length > MAX_DETAIL_CHARS) {
+            displayDetail = fullDetail.slice(0, MAX_DETAIL_CHARS)
+                + '\n… ' + (fullDetail.length - MAX_DETAIL_CHARS) + ' chars '
+                + (i18n.errorTruncated || '[truncated]');
+            truncated = true;
+        }
+        const wrap = document.createElement('div');
+        wrap.className = 'error-detail-wrap';
+
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'error-detail-toggle';
+        toggle.innerHTML = CHEVRON_SVG
+            + '<span class="error-detail-label">' + escapeHtml(i18n.errorDetails || 'Details') + '</span>'
+            + (truncated ? '<span class="error-detail-meta">' + escapeHtml(i18n.errorTruncated || '[truncated]') + '</span>' : '');
+
+        const body = document.createElement('div');
+        body.className = 'error-detail-body';
+        body.setAttribute('hidden', '');
+
+        const pre = document.createElement('pre');
+        pre.className = 'error-detail-pre';
+        pre.textContent = displayDetail;  // textContent 防 HTML 注入
+
+        const copyBtn = document.createElement('button');
+        copyBtn.type = 'button';
+        copyBtn.className = 'error-detail-copy';
+        copyBtn.textContent = i18n.errorCopy || 'Copy';
+        copyBtn.addEventListener('click', function() {
+            copyTextToClipboard(fullDetail);
+            const orig = copyBtn.textContent;
+            copyBtn.textContent = i18n.errorCopied || 'Copied';
+            copyBtn.classList.add('copied');
+            setTimeout(function() {
+                copyBtn.textContent = orig;
+                copyBtn.classList.remove('copied');
+            }, 1500);
+        });
+
+        body.appendChild(pre);
+        body.appendChild(copyBtn);
+
+        toggle.addEventListener('click', function() {
+            if (body.hasAttribute('hidden')) {
+                body.removeAttribute('hidden');
+                toggle.classList.add('open');
+            } else {
+                body.setAttribute('hidden', '');
+                toggle.classList.remove('open');
+            }
+        });
+
+        wrap.appendChild(toggle);
+        wrap.appendChild(body);
+        errorDiv.appendChild(wrap);
+    }
+
     container.appendChild(errorDiv);
-
     container.scrollTop = container.scrollHeight;
+}
+
+// 剪贴板复制：优先 navigator.clipboard（QWebEngine Chromium 支持），失败回退 execCommand。
+// detail 可能含大量文本/特殊字符，用临时 textarea + execCommand 兜底确保复制成功。
+function copyTextToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(function() {
+            fallbackCopyTextToClipboard(text);
+        });
+    } else {
+        fallbackCopyTextToClipboard(text);
+    }
+}
+function fallbackCopyTextToClipboard(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.top = '0';
+    ta.style.left = '0';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
 }
 
 // 渲染系统消息：用户可见但不作为 LLM 对话内容的通知横幅（类似 MessageBox）。
