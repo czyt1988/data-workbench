@@ -11,19 +11,13 @@ namespace DA
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolReadFile::getToolSpec() const
+DAAgentToolSpec DAAgentToolReadFile::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "read_file"},
-        {"description", "Read the content of a text file. System directories are blocked for safety."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"file_path", QJsonObject{{"type", "string"}, {"description", "Path to the file to read"}}}
-            }},
-            {"required", QJsonArray{"file_path"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("read_file"),
+                         QStringLiteral("Read the content of a text file. System directories are blocked for safety.")};
+    spec.addParam({QStringLiteral("file_path"), QStringLiteral("Path to the file to read"), {Type::String}, true});
+    return spec;
 }
 
 /**

@@ -21,22 +21,20 @@ namespace DA
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolSaveReport::getToolSpec() const
+DAAgentToolSpec DAAgentToolSaveReport::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "save_report"},
-        {"description", "Save a markdown report as md, pdf, or docx file, then open it in the viewer."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"content", QJsonObject{{"type", "string"}, {"description", "Report content in markdown"}}},
-                {"file_path", QJsonObject{{"type", "string"}, {"description", "Output file path"}}},
-                {"format", QJsonObject{{"type", "string"}, {"description", "Output format: md, pdf, docx (default md)"}}},
-                {"open_after_save", QJsonObject{{"type", "boolean"}, {"description", "Whether to open the report in the viewer after saving (default true)"}}}
-            }},
-            {"required", QJsonArray{"content", "file_path"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("save_report"),
+                         QStringLiteral("Save a markdown report as md, pdf, or docx file, then open it in the viewer.")};
+    spec.addParam({QStringLiteral("content"), QStringLiteral("Report content in markdown"), {Type::String}, true});
+    spec.addParam({QStringLiteral("file_path"), QStringLiteral("Output file path"), {Type::String}, true});
+    spec.addParam({QStringLiteral("format"),
+                   QStringLiteral("Output format: md, pdf, docx (default md)"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("open_after_save"),
+                   QStringLiteral("Whether to open the report in the viewer after saving (default true)"),
+                   {Type::Boolean}});
+    return spec;
 }
 
 /**

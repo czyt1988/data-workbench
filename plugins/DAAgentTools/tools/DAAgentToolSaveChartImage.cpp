@@ -10,24 +10,29 @@ namespace DA
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolSaveChartImage::getToolSpec() const
+DAAgentToolSpec DAAgentToolSaveChartImage::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "save_chart_image"},
-        {"description", "Save a chart as an image file (PNG, PDF, or SVG). Use figure_name to target a specific figure."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"chart_id", QJsonObject{{"type", "string"}, {"description", "Chart identifier. Empty or 'current' for active chart."}}},
-                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name to target a specific figure. Empty for current active figure."}}},
-                {"file_path", QJsonObject{{"type", "string"}, {"description", "Output file path"}}},
-                {"format", QJsonObject{{"type", "string"}, {"description", "Image format: png, pdf, svg (default png)"}}},
-                {"width", QJsonObject{{"type", "integer"}, {"description", "Output width in pixels (PNG) or points (PDF/SVG)"}}},
-                {"height", QJsonObject{{"type", "integer"}, {"description", "Output height in pixels (PNG) or points (PDF/SVG)"}}}
-            }},
-            {"required", QJsonArray{"file_path"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("save_chart_image"),
+                         QStringLiteral("Save a chart as an image file (PNG, PDF, or SVG). Use figure_name to target "
+                                        "a specific figure.")};
+    spec.addParam({QStringLiteral("chart_id"),
+                   QStringLiteral("Chart identifier. Empty or 'current' for active chart."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("figure_name"),
+                   QStringLiteral("Figure name to target a specific figure. Empty for current active figure."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("file_path"), QStringLiteral("Output file path"), {Type::String}, true});
+    spec.addParam({QStringLiteral("format"),
+                   QStringLiteral("Image format: png, pdf, svg (default png)"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("width"),
+                   QStringLiteral("Output width in pixels (PNG) or points (PDF/SVG)"),
+                   {Type::Integer}});
+    spec.addParam({QStringLiteral("height"),
+                   QStringLiteral("Output height in pixels (PNG) or points (PDF/SVG)"),
+                   {Type::Integer}});
+    return spec;
 }
 
 /**

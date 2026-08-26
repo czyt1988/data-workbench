@@ -11,20 +11,14 @@ namespace DA
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolWriteFile::getToolSpec() const
+DAAgentToolSpec DAAgentToolWriteFile::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "write_file"},
-        {"description", "Write text content to a file. System directories are blocked for safety."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"file_path", QJsonObject{{"type", "string"}, {"description", "Path to the file to write"}}},
-                {"content", QJsonObject{{"type", "string"}, {"description", "Text content to write"}}}
-            }},
-            {"required", QJsonArray{"file_path", "content"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("write_file"),
+                         QStringLiteral("Write text content to a file. System directories are blocked for safety.")};
+    spec.addParam({QStringLiteral("file_path"), QStringLiteral("Path to the file to write"), {Type::String}, true});
+    spec.addParam({QStringLiteral("content"), QStringLiteral("Text content to write"), {Type::String}, true});
+    return spec;
 }
 
 /**

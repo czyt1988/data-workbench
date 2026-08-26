@@ -6,17 +6,12 @@ namespace DA
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolListData::getToolSpec() const
+DAAgentToolSpec DAAgentToolListData::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "list_data"},
-        {"description", "List all currently loaded datasets with their names, types, row counts, and column counts."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{}},
-            {"required", QJsonArray{}}
-        }}
-    };
+    DAAgentToolSpec spec{
+        QStringLiteral("list_data"),
+        QStringLiteral("List all currently loaded datasets with their names, types, row counts, and column counts.")};
+    return spec;
 }
 
 /**

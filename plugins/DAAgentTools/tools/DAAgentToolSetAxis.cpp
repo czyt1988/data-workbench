@@ -7,29 +7,40 @@ namespace DA
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolSetAxis::getToolSpec() const
+DAAgentToolSpec DAAgentToolSetAxis::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "set_axis"},
-        {"description", "Configure axis scale type, range, and appearance. "
-         "Supports datetime axis (for time-series data), axis range setting, and axis color. "
-         "Use figure_name/chart_id to target a specific chart."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"chart_id", QJsonObject{{"type", "string"}, {"description", "Chart identifier (title or index). Empty or 'current' for active chart."}}},
-                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name to target a specific figure. Empty for current active figure."}}},
-                {"axis", QJsonObject{{"type", "string"}, {"description", "Axis to configure: 'x' or 'y'"}}},
-                {"scale_type", QJsonObject{{"type", "string"}, {"description", "Scale type: 'normal' (linear) or 'datetime'. If omitted, scale type is unchanged."}}},
-                {"date_format", QJsonObject{{"type", "string"}, {"description", "Date format for datetime axis, e.g. 'yyyy-MM-dd', 'yyyy-MM-dd hh:mm'. Default 'yyyy-MM-dd hh:mm:ss'. Only used when scale_type is 'datetime'."}}},
-                {"min", QJsonObject{{"type", "number"}, {"description", "Axis minimum value. Only for normal (linear) scale."}}},
-                {"max", QJsonObject{{"type", "number"}, {"description", "Axis maximum value. Only for normal (linear) scale."}}},
-                {"color", QJsonObject{{"type", "string"}, {"description", "Axis color (hex or name, e.g. '#FF0000' or 'red')"}}},
-                {"label_rotation", QJsonObject{{"type", "number"}, {"description", "Axis label rotation in degrees"}}}
-            }},
-            {"required", QJsonArray{"axis"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("set_axis"),
+                         QStringLiteral("Configure axis scale type, range, and appearance. Supports datetime axis "
+                                        "(for time-series data), axis range setting, and axis color. Use "
+                                        "figure_name/chart_id to target a specific chart.")};
+    spec.addParam({QStringLiteral("chart_id"),
+                   QStringLiteral("Chart identifier (title or index). Empty or 'current' for active chart."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("figure_name"),
+                   QStringLiteral("Figure name to target a specific figure. Empty for current active figure."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("axis"), QStringLiteral("Axis to configure: 'x' or 'y'"), {Type::String}, true});
+    spec.addParam({QStringLiteral("scale_type"),
+                   QStringLiteral("Scale type: 'normal' (linear) or 'datetime'. If omitted, scale type is unchanged."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("date_format"),
+                   QStringLiteral("Date format for datetime axis, e.g. 'yyyy-MM-dd', 'yyyy-MM-dd hh:mm'. Default "
+                                  "'yyyy-MM-dd hh:mm:ss'. Only used when scale_type is 'datetime'."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("min"),
+                   QStringLiteral("Axis minimum value. Only for normal (linear) scale."),
+                   {Type::Number}});
+    spec.addParam({QStringLiteral("max"),
+                   QStringLiteral("Axis maximum value. Only for normal (linear) scale."),
+                   {Type::Number}});
+    spec.addParam({QStringLiteral("color"),
+                   QStringLiteral("Axis color (hex or name, e.g. '#FF0000' or 'red')"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("label_rotation"),
+                   QStringLiteral("Axis label rotation in degrees"),
+                   {Type::Number}});
+    return spec;
 }
 
 /**

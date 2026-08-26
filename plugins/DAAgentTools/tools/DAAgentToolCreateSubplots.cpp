@@ -8,21 +8,21 @@ namespace DA
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolCreateSubplots::getToolSpec() const
+DAAgentToolSpec DAAgentToolCreateSubplots::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "create_subplots"},
-        {"description", "Create a new figure with a grid of subplots. Each call creates a NEW figure. "
-         "The returned figure_id/figure_name can be used in da-figure: hyperlinks so the user can open this figure from your reply."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"layout", QJsonObject{{"type", "string"}, {"description", "Grid layout, e.g. '2x2' for 2 rows 2 columns"}}},
-                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name shown as tab title. If empty, auto-generates."}}}
-            }},
-            {"required", QJsonArray{"layout"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("create_subplots"),
+                         QStringLiteral("Create a new figure with a grid of subplots. Each call creates a NEW figure. "
+                                        "The returned figure_id/figure_name can be used in da-figure: hyperlinks so "
+                                        "the user can open this figure from your reply.")};
+    spec.addParam({QStringLiteral("layout"),
+                   QStringLiteral("Grid layout, e.g. '2x2' for 2 rows 2 columns"),
+                   {Type::String},
+                   true});
+    spec.addParam({QStringLiteral("figure_name"),
+                   QStringLiteral("Figure name shown as tab title. If empty, auto-generates."),
+                   {Type::String}});
+    return spec;
 }
 
 /**

@@ -9,21 +9,20 @@ namespace DA
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolQueryData::getToolSpec() const
+DAAgentToolSpec DAAgentToolQueryData::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "query_data"},
-        {"description", "Filter dataset rows using a pandas query expression and return a preview."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"data_name", QJsonObject{{"type", "string"}, {"description", "Dataset name"}}},
-                {"expr", QJsonObject{{"type", "string"}, {"description", "pandas query expression, e.g. 'col > 100'"}}},
-                {"preview_rows", QJsonObject{{"type", "integer"}, {"description", "Number of preview rows, default 10"}}}
-            }},
-            {"required", QJsonArray{"data_name", "expr"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("query_data"),
+                         QStringLiteral("Filter dataset rows using a pandas query expression and return a preview.")};
+    spec.addParam({QStringLiteral("data_name"), QStringLiteral("Dataset name"), {Type::String}, true});
+    spec.addParam({QStringLiteral("expr"),
+                   QStringLiteral("pandas query expression, e.g. 'col > 100'"),
+                   {Type::String},
+                   true});
+    spec.addParam({QStringLiteral("preview_rows"),
+                   QStringLiteral("Number of preview rows, default 10"),
+                   {Type::Integer}});
+    return spec;
 }
 
 /**

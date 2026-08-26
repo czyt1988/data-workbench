@@ -14,7 +14,7 @@ class DAAgentToolListData : public DAAgentToolBase
 public:
     using DAAgentToolBase::DAAgentToolBase;
     // 获取工具规格
-    QJsonObject getToolSpec() const override;
+    DAAgentToolSpec getToolSpec() const override;
     // 执行工具
     QJsonObject execute(const QJsonObject& params) override;
 };

@@ -10,20 +10,16 @@ namespace DA
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolDataInfo::getToolSpec() const
+DAAgentToolSpec DAAgentToolDataInfo::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "get_data_info"},
-        {"description", "Get dataset schema and a preview of the first N rows."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"data_name", QJsonObject{{"type", "string"}, {"description", "Dataset name"}}},
-                {"preview_rows", QJsonObject{{"type", "integer"}, {"description", "Number of preview rows, default 10"}}}
-            }},
-            {"required", QJsonArray{"data_name"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("get_data_info"),
+                         QStringLiteral("Get dataset schema and a preview of the first N rows.")};
+    spec.addParam({QStringLiteral("data_name"), QStringLiteral("Dataset name"), {Type::String}, true});
+    spec.addParam({QStringLiteral("preview_rows"),
+                   QStringLiteral("Number of preview rows, default 10"),
+                   {Type::Integer}});
+    return spec;
 }
 
 /**

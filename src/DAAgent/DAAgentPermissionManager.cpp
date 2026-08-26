@@ -774,7 +774,10 @@ int DAAgentPermissionManager::judgeTimeoutSec() const
 }
 
 /**
- * @brief gated_tools 的 RPC 长超时秒（默认 600，A9）
+ * @brief gated_tools 批准后的执行超时秒（默认 600，A9）
+ *
+ * 用户审批等待不计入：权限门进入 Ask 时 Bridge 下发 approval_pending，
+ * Python 侧挂起计时；批准后下发 tool_exec_start，从执行起点开始计时。
  * @return 秒数
  */
 int DAAgentPermissionManager::toolApprovalTimeoutSec() const

@@ -95,7 +95,9 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 | `DAAgentModule.h/.cpp` | 接口实现：工具注册表 `m_tools`、系统提示词 `m_systemPrompts`、懒启动、`connectSignals()`（仅 Bridge→Module 持久化/状态 lambda，**不连 Dock**）、LLM 配置读写（agent-config.ini + api_key DPAPI 加解密）、Python/脚本路径探测 |
 | `DAAgentBridge.h/.cpp` | QProcess 生命周期（start/stop/超时）、stdin/stdout 读写、JSON Lines 解析分发、工具执行兜底；`sendLoadSession` 下发历史 messages 重建 state |
 | `DAAgentSessionStore.h/.cpp` | 会话持久化层（非 QObject，PIMPL）：JSONL append-only 读写、全局索引（原子写 tmp+rename）、`cleanupOldSessions`（数量+时间双限）、`setLastActive`/`lastActiveSession`（按工程过滤的精确匹配）、自动标题、工程导入导出 |
-| `DAAbstractAgentTool.h` | 工具抽象基类（纯虚）：`getToolSpec` / `execute` / `getOwnerModule` |
+| `DAAbstractAgentTool.h` | 工具抽象基类（纯虚）：`getToolSpec`（返回结构化 `DAAgentToolSpec`）/ `execute` / `getOwnerModule` |
+| `DAAgentToolSpec.h` | 结构化工具规格值类型（`DAAgentToolSpec` / `DAAgentToolParam`，零 JSON 依赖，见 § 15.4） |
+| `DAAgentToolSpecJson.h/.cpp` | 工具规格序列化投影：`DA::toJson(const DAAgentToolSpec&)` → OpenAI function schema（见 § 15.4） |
 | `DAAgentToolBase.h/.cpp` | **瘦**工具基类（`class DAAgent_API DAAgentToolBase`，模块根目录）：`dataMgr`/`findData`/`allDatas` + `errorResponse`/`successResponse`；图表方法已移入 `DAAgentChartToolBase`（见 § 七） |
 | `DAAgentAPI.h` | `DAAgent_API` 导出宏 |
 
@@ -113,7 +115,7 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 
 | 文件 | 职责 |
 |------|------|
-| `agent_runner.py` | 唯一入口脚本：协议收发、LLM 配置、langgraph 图构建、agent 循环；权限层（permission-layer）：存储 §8 权限字段、`tool_node` 发起 `tool_call` 前对代码执行工具调 `permission_judge` 产出 `safety` 裁决、gated_tools 长超时 |
+| `agent_runner.py` | 唯一入口脚本：协议收发、LLM 配置、langgraph 图构建、agent 循环；权限层（permission-layer）：存储 §8 权限字段、`tool_node` 发起 `tool_call` 前对代码执行工具调 `permission_judge` 产出 `safety` 裁决、gated_tools 长超时与审批挂起计时（approval_pending/tool_exec_start） |
 | `permission_judge.py` | 代码内容判定管线（咨询方）：静态危险模式（deny/escalate，清单由 `code_patterns` 配置注入）+ 可选判官模型（复用当前供应商凭据），产出 `{verdict, reason, source}`；`run_script` 按 `workspace_root` 解析入口文件后走同一管线（判定边界=入口文件，不递归） |
 | `context_manager.py` / `error_classifier.py` / `retry_wrapper.py` | 上下文压缩/截断、错误分类、退避重试（agent_runner 的基础设施模块） |
 
@@ -165,6 +167,8 @@ stdout 专用于协议，**绝对禁止在 stdout 打印日志**（污染协议�
 | `init` | `config`{base_url, api_key, model, context_window, compaction_threshold, max_recent_messages, tool_result_max_chars, tool_result_preview_chars, **permission_mode, workspace_root, gated_tools[], tool_approval_timeout_sec, code_patterns{deny[],escalate[]}, judge{model,timeout_sec}**} + `tools`(schema 数组) + `system_prompt` | 启动时一次性下发；config 缺 base_url/api_key/model 任一则报错退出；上下文管理参数有默认值兜底；权限层字段由 `DAAgentBridge::buildPermissionConfig()` 组装（母文档 §8，Python 侧存储并在 auto 模式消费） |
 | `user_msg` | `content` | 用户消息，触发一轮 agent 推理 |
 | `tool_result` | `call_id` + `result` | 工具执行结果回传（RPC 应答） |
+| `approval_pending` | `call_id` | 权限门进入 Ask、挂起等待用户审批时下发；Python 侧收到后挂起工具 RPC 超时倒计时（审批等待不设时限，见铁律 T16） |
+| `tool_exec_start` | `call_id` | 工具开始真实执行（批准后/直接放行）；Python 侧以此为计时起点重新开始完整超时预算 |
 | `user_answer` | `answer` | 用户对 HITL 问题的回答，触发 `resume()` |
 | `load_session` | `session_id` + `messages`(JSON 数组，T6 记录的 message 字段) | **切换/恢复会话**时下发历史 messages 重建 langgraph state（不重启子进程）；Python 端 `graph.aupdate_state` 注入后回 `session_loaded` 确认 |
 | `reconfigure` | `config`{base_url, api_key, model, max_output_tokens, context_window, ..., 权限层字段同 `init`} | **热替换 LLM 配置**（不重启子进程、不丢 MemorySaver 会话状态）：Python 端 `AgentRunner.reconfigure()` 热替换 ChatOpenAI + compactor/token_estimator，图与 state 不动，回 `ready` 确认。消息在 stdin 排队，当前轮跑完后主循环处理，下一轮用新模型（见 §15.3）。权限模式切换/设置页保存后经此同步权限层字段（Python 仅存储 + 按模式决定是否判定） |
@@ -229,7 +233,7 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 
 ### 7.1 抽象与基类
 
-- `DAAbstractAgentTool`（纯虚）：`getToolSpec()` 返回 OpenAI function schema，`execute(params)` 返回结果 JSON，`getOwnerModule()` 返回归属模块。
+- `DAAbstractAgentTool`（纯虚）：`getToolSpec()` 返回结构化 `DAAgentToolSpec`（经 `DA::toJson` 序列化为 OpenAI function schema，见 § 15.4），`execute(params)` 返回结果 JSON，`getOwnerModule()` 返回归属模块。
 - `DAAgentToolBase`（`src/DAAgent/DAAgentToolBase.h`，`class DAAgent_API DAAgentToolBase`）：**瘦**工具基类（模块根目录，`DAAgent_API` 导出供插件跨 DLL 继承），提供数据访问 + 响应方法：
   - `dataMgr()` / `findData(name)` / `allDatas()`
   - `errorResponse(msg)` / `successResponse(data|message)`
@@ -397,10 +401,10 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 
 ### T16. 权限层（permission-layer）：判定前置、C++ 唯一执法、不落盘
 - **权限门在 `executeTool` 前置、C++ 是唯一执法点**：`DAAgentBridge::executeTool` 先调 `DAAgentPermissionManager::decide(tool, params, safety)` 产出 Allow/Deny/Ask，再执行工具；Python 只是咨询方（产出 `tool_call.safety` 裁决），不执法。工具内部**不要**再实现路径/内容安全检查（三处 `isPathSafe` 已删除）。
-- **判定由 Python 在发起 `tool_call` 之前完成**（`tool_node` 调 `permission_judge`），裁决附在 `tool_call.safety` 随消息下发。**禁止实现成"运行时 C++→Python 判定 RPC"**：run 期间 `_wait_for_result`（`agent_runner.py`）只认 `tool_result`/`stop`，其余消息类型记日志后**丢弃**——C++ 发判定请求会被丢弃、等响应挂起至超时。
+- **判定由 Python 在发起 `tool_call` 之前完成**（`tool_node` 调 `permission_judge`），裁决附在 `tool_call.safety` 随消息下发。**禁止实现成"运行时 C++→Python 判定 RPC"**：run 期间 `_wait_for_result`（`agent_runner.py`）只认 `tool_result`/`stop`/`approval_pending`/`tool_exec_start`，其余消息类型记日志后**丢弃**——C++ 发判定请求会被丢弃、等响应挂起至超时。
 - **硬 deny 全模式生效**：系统目录（`c:/windows/**` 等 4 条 `tool:"*"` deny 种子）在 yolo/auto/manual 任何模式、任何分级之前先行求值，加载时强制回填，设置页锁定不可删。
 - **审批与判定均不落盘**：审批是 `executeTool` 前置门，不进会话 JSONL（`tool_call`/`tool_result` 正常持久化，审批只延迟 result）；`safety` 裁决也不持久化。会话记忆仅内存态（仅 `file_write`，`code_exec` 永不记忆），会话切换/进程退出/崩溃即清空。
-- **模式与超时**：模式是 C++ 状态，切换即时生效（门即时消费）并经 `reconfigure` 同步 Python（仅用于决定是否花费判定成本）；gated_tools（file_write+code_exec）无论模式一律用 `tool_approval_timeout_sec` 长超时（默认 600s），与模式解耦。
+- **模式与超时**：模式是 C++ 状态，切换即时生效（门即时消费）并经 `reconfigure` 同步 Python（仅用于决定是否花费判定成本）。工具 RPC 超时只计执行时长、不计审批等待：门进入 Ask 时下发 `approval_pending`，Python 侧倒计时挂起（用户审批等待不设时限）；批准后下发 `tool_exec_start`，Python 从执行起点重新计完整超时。超时预算与模式解耦：gated_tools（file_write+code_exec）用 `tool_approval_timeout_sec`（默认 600s，覆盖长时间代码执行），其余工具 60s。
 
 ---
 
@@ -445,7 +449,7 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 - [ ] 新类归属模块正确（工具→`plugins/DAAgentTools/`，UI→DAGui，不违反依赖方向；DAAgent 不依赖 DAGui）
 - [ ] Python 改动已同步到运行时 `bin/PyScripts/` 并重启程序验证
 - [ ] 协议改动 C++/Python 两端同步，消息 type 大小写一致
-- [ ] 新工具：`getToolSpec` schema 完整（含 required）、`execute` 内部 try/catch、错误用 `errorResponse`、已在 `DAAgentToolsPlugin::initialize()` 中 `registerTool`（`registerBuiltinTools` 已删除）
+- [ ] 新工具：`getToolSpec` 返回结构化 `DAAgentToolSpec`（必填参数带 `required` 标志、name 小写 snake_case）、`execute` 内部 try/catch、错误用 `errorResponse`、已在 `DAAgentToolsPlugin::initialize()` 中 `registerTool`（`registerBuiltinTools` 已删除）
 - [ ] UI 字符串英文源 + `//cn:` 注释；`daCritical`/`daWarning` 已翻译
 - [ ] 不打印 api_key 明文日志
 - [ ] 符合根 AGENTS.md 铁律（stdout 协议、booting 心跳、单 Dock 实例、ToolMessage str 等）
@@ -527,6 +531,28 @@ connect(dock, &DAAgentDockWidget::activeModelChangeRequested, agent, &DAAgentInt
 ```
 
 **初始推送**：`DAAppController` 在接口↔Dock 信号链 connect 完成后调 `agentMod->pushModelSelection()`（DAAgentModule 非 interface 辅助方法），emit 两个信号填充 Dock 下拉；首次运行/旧配置时 `syncActiveConnection` 兜底取首个供应商为激活。
+
+### 15.4 结构化工具规格（`getToolSpec` 破坏性变更）
+
+> 工具规格从手写 `QJsonObject`（OpenAI function schema）改为结构化值类型，消灭嵌套 JSON 的
+> 拼写错误盲区，获得编译期类型约束 + 注册期校验。**下游插件须同步迁移**（本项目内
+> `plugins/DAAgentTools/` 20 个工具已迁移）。
+
+| 变更 | 旧 | 新 |
+|------|----|----|
+| `DAAbstractAgentTool::getToolSpec()` | `virtual QJsonObject ... = 0` | `virtual DAAgentToolSpec ... = 0` |
+| `DAAgentInterface::registerTool` / `DAAgentModule::registerTool` | `void`（重复注册静默覆盖） | `bool`（name 为空/重名 → `qWarning` + 拒绝；非 snake_case 仅告警） |
+| spec → wire 序列化 | 工具各自手写嵌套 JSON | 平台统一 `DA::toJson(spec)`（`DAAgentToolSpecJson.h`），`assembleToolSpecs()` 输出不变（OpenAI function schema） |
+
+要点：
+
+- `DAAgentToolSpec.h` 零 JSON 依赖（只含 QString/QList/QVariant），序列化投影独立在
+  `DAAgentToolSpecJson.h/.cpp`——只有真正序列化的消费方（`DAAgentModule`、测试）include 它。
+- `DAAgentToolParam`：`types`/`itemTypes` 为 `QList<Type>`（单元素序列化为字符串，多元素为
+  联合类型数组）；`required` 挂在参数上，序列化汇总为 `required` 数组；`enumValues`/`defaultValue`
+  空/invalid 自动省略；`{Type::Object}` 无嵌套即 free-form（如 `run_code` 的 `args`）。
+- 归一化：`required` 为空数组时省略该键（旧实现 3 个工具输出空数组，JSON Schema 语义不变）。
+- 序列化回归测试：`src/tst/DAAgentToolSpecTest/`（平参数 / 数组 / 联合类型 / free-form / enum+default / 空 required / 无参数）。
 
 ---
 

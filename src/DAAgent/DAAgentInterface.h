@@ -27,8 +27,8 @@ public:
     explicit DAAgentInterface(QObject* parent = nullptr) : QObject(parent) {}
     virtual ~DAAgentInterface() override = default;
 
-    // 注册工具供 agent 使用
-    virtual void registerTool(DAAbstractAgentTool* tool) = 0;
+    // 注册工具供 agent 使用；工具名为空或与已注册工具重复时拒绝注册并返回 false
+    virtual bool registerTool(DAAbstractAgentTool* tool) = 0;
     // 注册命名系统提示词片段
     virtual void registerSystemPrompt(const QString& name, const QString& content) = 0;
 

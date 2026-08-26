@@ -14,7 +14,7 @@ class DAAgentToolSetAxis : public DAAgentChartToolBase
 public:
     using DAAgentChartToolBase::DAAgentChartToolBase;
     // 获取工具规格
-    QJsonObject getToolSpec() const override;
+    DAAgentToolSpec getToolSpec() const override;
     // 执行工具
     QJsonObject execute(const QJsonObject& params) override;
 };

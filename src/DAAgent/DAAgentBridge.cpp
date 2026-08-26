@@ -683,8 +683,9 @@ void DAAgentBridge::setPermissionManager(DAAgentPermissionManager* manager)
  * @brief 执行工具调用（前置权限门，两阶段，母文档 §4，继承 v1 暂停-恢复范式）
  *
  * decide() 产出 Allow → executeToolNow 真实执行；Deny → 合成拒绝结果回传；
- * Ask → 登记 mPendingApprovals、停看门狗、emit agentToolApprovalRequest 并 return
- *（镜像 ask_user question 暂停态；裁决经 onToolApproval 恢复）。
+ * Ask → 登记 mPendingApprovals、停看门狗、发 approval_pending 挂起 Python 侧
+ * 计时、emit agentToolApprovalRequest 并 return（镜像 ask_user question 暂停态；
+ * 裁决经 onToolApproval 恢复）。
  * @param callId 工具调用 ID
  * @param toolName 工具名称
  * @param args 工具调用参数 JSON
@@ -718,6 +719,12 @@ void DAAgentBridge::executeTool(const QString& callId,
             pa.tier     = dec.tier;
             d->mPendingApprovals.insert(callId, pa);
             d->mInactivityTimer->stop();
+            // 通知 Python 侧暂停工具 RPC 计时——用户审批等待不设时限，
+            // 批准后由 executeToolNow 发 tool_exec_start 作为计时起点
+            QJsonObject pendingMsg;
+            pendingMsg["type"]    = "approval_pending";
+            pendingMsg["call_id"] = callId;
+            writeJson(pendingMsg);
             emit agentToolApprovalRequest(callId, toolName, args);
             return;
         }
@@ -774,6 +781,9 @@ void DAAgentBridge::onToolApproval(const QString& callId, bool approved, bool re
 
 /**
  * @brief 权限门放行后的真实执行（原 executeTool 主体，铁律 T5 try/catch 兜底）
+ *
+ * 入口处先发 tool_exec_start——Python 侧以此为工具 RPC 计时起点（审批等待
+ * 期间已由 approval_pending 挂起计时，批准/直接放行后从执行开始重新计时）。
  * @param callId 工具调用 ID
  * @param toolName 工具名称
  * @param args 工具调用参数 JSON
@@ -784,6 +794,11 @@ void DAAgentBridge::executeToolNow(const QString& callId,
 {
     DA_D(d);
     ToolExecGuard guard(this);  // RAII：暂停看门狗，覆盖所有 return 路径
+
+    QJsonObject execStart;
+    execStart["type"]    = "tool_exec_start";
+    execStart["call_id"] = callId;
+    writeJson(execStart);
 
     QJsonObject result;
 

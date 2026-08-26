@@ -20,27 +20,29 @@ static Qt::PenStyle parsePenStyle(const QString& s)
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolAddCurve::getToolSpec() const
+DAAgentToolSpec DAAgentToolAddCurve::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "add_curve"},
-        {"description", "Add a curve to an existing chart. Use figure_name to target a specific figure."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"chart_id", QJsonObject{{"type", "string"}, {"description", "Chart identifier (title or index). Empty or 'current' for active chart."}}},
-                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name to target a specific figure. Empty for current active figure."}}},
-                {"data_name", QJsonObject{{"type", "string"}, {"description", "Dataset name"}}},
-                {"x_column", QJsonObject{{"type", "string"}, {"description", "X-axis column name"}}},
-                {"y_column", QJsonObject{{"type", "string"}, {"description", "Y-axis column name"}}},
-                {"name", QJsonObject{{"type", "string"}, {"description", "Curve display name"}}},
-                {"color", QJsonObject{{"type", "string"}, {"description", "Curve color (hex or name, e.g. '#FF0000' or 'red')"}}},
-                {"width", QJsonObject{{"type", "number"}, {"description", "Line width"}}},
-                {"style", QJsonObject{{"type", "string"}, {"description", "Line style: solid, dash, dot, dashdot"}}}
-            }},
-            {"required", QJsonArray{"data_name", "x_column", "y_column"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("add_curve"),
+                         QStringLiteral("Add a curve to an existing chart. Use figure_name to target a specific figure.")};
+    spec.addParam({QStringLiteral("chart_id"),
+                   QStringLiteral("Chart identifier (title or index). Empty or 'current' for active chart."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("figure_name"),
+                   QStringLiteral("Figure name to target a specific figure. Empty for current active figure."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("data_name"), QStringLiteral("Dataset name"), {Type::String}, true});
+    spec.addParam({QStringLiteral("x_column"), QStringLiteral("X-axis column name"), {Type::String}, true});
+    spec.addParam({QStringLiteral("y_column"), QStringLiteral("Y-axis column name"), {Type::String}, true});
+    spec.addParam({QStringLiteral("name"), QStringLiteral("Curve display name"), {Type::String}});
+    spec.addParam({QStringLiteral("color"),
+                   QStringLiteral("Curve color (hex or name, e.g. '#FF0000' or 'red')"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("width"), QStringLiteral("Line width"), {Type::Number}});
+    spec.addParam({QStringLiteral("style"),
+                   QStringLiteral("Line style: solid, dash, dot, dashdot"),
+                   {Type::String}});
+    return spec;
 }
 
 /**

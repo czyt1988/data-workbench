@@ -44,28 +44,41 @@ static QwtSymbol::Style parseSymbolStyle(const QString& s)
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolUpdateCurveStyle::getToolSpec() const
+DAAgentToolSpec DAAgentToolUpdateCurveStyle::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "update_curve_style"},
-        {"description", "Modify the appearance of an existing curve (color, line style, width, symbol, fill). "
-         "Identify the curve by its title or index. Use list_figures to discover curve names."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"chart_id", QJsonObject{{"type", "string"}, {"description", "Chart identifier (title or index). Empty or 'current' for active chart."}}},
-                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name to target a specific figure. Empty for current active figure."}}},
-                {"curve_name", QJsonObject{{"type", "string"}, {"description", "Curve title or index (0-based). Use list_figures to find curve names."}}},
-                {"color", QJsonObject{{"type", "string"}, {"description", "Line color (hex or name, e.g. '#FF0000' or 'red')"}}},
-                {"width", QJsonObject{{"type", "number"}, {"description", "Line width"}}},
-                {"style", QJsonObject{{"type", "string"}, {"description", "Line style: solid, dash, dot, dashdot, dashdotdot"}}},
-                {"symbol", QJsonObject{{"type", "string"}, {"description", "Marker symbol: none, ellipse, rect, diamond, triangle, dtriangle, utriangle, cross, xcross, star1"}}},
-                {"symbol_size", QJsonObject{{"type", "integer"}, {"description", "Marker size in pixels (default 8)"}}},
-                {"fill_color", QJsonObject{{"type", "string"}, {"description", "Fill color under curve (hex or name, e.g. '#0000FF80' for semi-transparent blue)"}}}
-            }},
-            {"required", QJsonArray{"curve_name"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("update_curve_style"),
+                         QStringLiteral("Modify the appearance of an existing curve (color, line style, width, "
+                                        "symbol, fill). Identify the curve by its title or index. Use list_figures to "
+                                        "discover curve names.")};
+    spec.addParam({QStringLiteral("chart_id"),
+                   QStringLiteral("Chart identifier (title or index). Empty or 'current' for active chart."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("figure_name"),
+                   QStringLiteral("Figure name to target a specific figure. Empty for current active figure."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("curve_name"),
+                   QStringLiteral("Curve title or index (0-based). Use list_figures to find curve names."),
+                   {Type::String},
+                   true});
+    spec.addParam({QStringLiteral("color"),
+                   QStringLiteral("Line color (hex or name, e.g. '#FF0000' or 'red')"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("width"), QStringLiteral("Line width"), {Type::Number}});
+    spec.addParam({QStringLiteral("style"),
+                   QStringLiteral("Line style: solid, dash, dot, dashdot, dashdotdot"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("symbol"),
+                   QStringLiteral("Marker symbol: none, ellipse, rect, diamond, triangle, dtriangle, utriangle, cross, "
+                                  "xcross, star1"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("symbol_size"),
+                   QStringLiteral("Marker size in pixels (default 8)"),
+                   {Type::Integer}});
+    spec.addParam({QStringLiteral("fill_color"),
+                   QStringLiteral("Fill color under curve (hex or name, e.g. '#0000FF80' for semi-transparent blue)"),
+                   {Type::String}});
+    return spec;
 }
 
 /**

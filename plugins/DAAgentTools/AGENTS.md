@@ -129,7 +129,7 @@ class DAAgentToolColumnUnique : public DAAgentToolBase
 public:
     using DAAgentToolBase::DAAgentToolBase;  // 继承构造，不要手写
     // 获取工具规格
-    QJsonObject getToolSpec() const override;
+    DAAgentToolSpec getToolSpec() const override;
     // 执行工具
     QJsonObject execute(const QJsonObject& params) override;
 };
@@ -138,32 +138,36 @@ public:
 
 **头文件规范**（项目铁律）：头文件**只写单行中文注释**或类级 Doxygen 注释；**禁止**在头文件写成员函数的 Doxygen 块注释（`/// @copydoc` 等也属于此类，应移到 `.cpp` 的 Doxygen 块中）。`Q_OBJECT` 宏必填（moc 需要它生成 staticMetaObject，跨 DLL 继承要用）。构造用 `using Base::Base;` 继承，不要手写。
 
-### 步骤 3：实现 `getToolSpec()`（OpenAI function schema）
+### 步骤 3：实现 `getToolSpec()`（结构化 `DAAgentToolSpec`）
+
+`getToolSpec()` 返回结构化的 `DAAgentToolSpec`（`src/DAAgent/DAAgentToolSpec.h`），
+由平台经 `DA::toJson(spec)` 统一序列化为 OpenAI function schema 下发，工具实现者
+不再手写嵌套 `QJsonObject`：
 
 ```cpp
-QJsonObject DAAgentToolColumnUnique::getToolSpec() const
+DAAgentToolSpec DAAgentToolColumnUnique::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "get_column_unique"},
-        {"description", "Get unique values of a column in a dataset. Returns value list and count."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"data_name", QJsonObject{{"type", "string"}, {"description", "Dataset name"}}},
-                {"column", QJsonObject{{"type", "string"}, {"description", "Column name"}}},
-                {"limit", QJsonObject{{"type", "integer"}, {"description", "Max values to return (default 100)"}}}
-            }},
-            {"required", QJsonArray{"data_name", "column"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("get_column_unique"),
+                         QStringLiteral("Get unique values of a column in a dataset. Returns value list and count.")};
+    spec.addParam({QStringLiteral("data_name"), QStringLiteral("Dataset name"), {Type::String}, true});
+    spec.addParam({QStringLiteral("column"), QStringLiteral("Column name"), {Type::String}, true});
+    spec.addParam({QStringLiteral("limit"),
+                   QStringLiteral("Max values to return (default 100)"),
+                   {Type::Integer}});
+    return spec;
 }
 ```
 
-**schema 约定**：
-- `name`：**小写 snake_case，不翻译**（参与 LLM 工具调用，翻译会破坏匹配）。
+**spec 约定**：
+- `name`：**小写 snake_case，不翻译**（参与 LLM 工具调用，翻译会破坏匹配）。注册期会校验：
+  空名或重名直接拒绝注册（`registerTool` 返回 `false`），非 snake_case 仅告警。
 - `description`：英文，写清楚工具做什么、何时用。LLM 据此决定是否调用，写得越具体越好（可参考 `create_chart` 的描述，会提示 figure_name 等关联参数用法）。
-- `parameters.type` 固定 `"object"`；每个 property 给 `type` + `description`；`required` 列必填项。
-- 没有 property 时也要写空对象 `QJsonObject{}` 和空数组 `QJsonArray{}`（见 `list_figures`）。
+- 参数定义用 `DAAgentToolParam`：`types` 支持联合类型（如 `{Type::Number, Type::String}` 序列化为 `["number","string"]`）；
+  数组参数填 `itemTypes`（同样支持联合）；`required` 挂在参数上，序列化时自动汇总为 `required` 数组；
+  可选值用 `enumValues`，默认值用 `defaultValue`（空/invalid 自动省略）。
+- 无参数的工具直接返回只有 `name`/`description` 的 spec（见 `list_figures`），序列化时自动输出空 `properties`。
+- free-form 对象参数（如 `run_code` 的 `args`）：类型填 `{Type::Object}` 即可，不需要嵌套定义。
 
 ### 步骤 4：实现 `execute(params)`
 
@@ -418,6 +422,7 @@ CMakeLists.txt 用 `file(GLOB ... CONFIGURE_DEPENDS)` 收集 `*.h/*.cpp`，新�
 | 图表访问基类 | `plugins/DAAgentTools/DAAgentChartToolBase.h/.cpp` |
 | 图表 widget API | `src/DAFigure/DAChartWidget.h` + `DAFigureWidget.h` |
 | 工具抽象接口 | `src/DAAgent/DAAbstractAgentTool.h`（`getToolSpec`/`execute`/`getOwnerModule`） |
+| 工具规格结构体 | `src/DAAgent/DAAgentToolSpec.h`（`DAAgentToolSpec`/`DAAgentToolParam`）+ `DAAgentToolSpecJson.h`（`DA::toJson` 序列化） |
 | 工具基类 | `src/DAAgent/DAAgentToolBase.h`（瘦基类，数据/响应方法） |
 | 工具执行/协议 | `src/DAAgent/DAAgentBridge.cpp::executeTool()`（try/catch 兜底 + 回传 tool_result） |
 | 插件框架 | `src/DAPluginSupport/DAAbstractPlugin.h`（`initialize`/`core`/IID） |
@@ -430,7 +435,7 @@ CMakeLists.txt 用 `file(GLOB ... CONFIGURE_DEPENDS)` 收集 `*.h/*.cpp`，新�
 
 - [ ] 选对基类（数据/文件 → `DAAgentToolBase`；图表 → `DAAgentChartToolBase`）
 - [ ] 头文件只单行注释，不写成员函数 Doxygen 块；`Q_OBJECT` + `using Base::Base;`
-- [ ] `getToolSpec` 的 `name` 小写 snake_case 不翻译，`required` 完整，`description` 写清用途
+- [ ] `getToolSpec` 返回 `DAAgentToolSpec`：`name` 小写 snake_case 不翻译，必填参数带 `required` 标志，`description` 写清用途
 - [ ] `execute` 先校验必填参数 → 数据/列存在性 → 业务逻辑 → `successResponse`/`errorResponse`
 - [ ] Python 操作有 `DAPyGILGuard`；取列用 `df[col]`；数值转换判空
 - [ ] 图表工具加数据后 `enableAutoScale` + `replot`；`create_chart` 先查找已有 figure 再新建

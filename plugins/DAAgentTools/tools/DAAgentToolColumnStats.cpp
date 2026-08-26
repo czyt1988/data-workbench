@@ -9,20 +9,14 @@ namespace DA
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolColumnStats::getToolSpec() const
+DAAgentToolSpec DAAgentToolColumnStats::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "get_column_stats"},
-        {"description", "Get descriptive statistics for a column in a dataset."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"data_name", QJsonObject{{"type", "string"}, {"description", "Dataset name"}}},
-                {"column", QJsonObject{{"type", "string"}, {"description", "Column name"}}}
-            }},
-            {"required", QJsonArray{"data_name", "column"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("get_column_stats"),
+                         QStringLiteral("Get descriptive statistics for a column in a dataset.")};
+    spec.addParam({QStringLiteral("data_name"), QStringLiteral("Dataset name"), {Type::String}, true});
+    spec.addParam({QStringLiteral("column"), QStringLiteral("Column name"), {Type::String}, true});
+    return spec;
 }
 
 /**

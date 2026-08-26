@@ -40,7 +40,7 @@ public:
     void initialize(DACoreInterface* core);
 
     /// @copydoc DAAgentInterface::registerTool
-    void registerTool(DAAbstractAgentTool* tool) override;
+    bool registerTool(DAAbstractAgentTool* tool) override;
     /// @copydoc DAAgentInterface::registerSystemPrompt
     void registerSystemPrompt(const QString& name, const QString& content) override;
     /// @copydoc DAAgentInterface::showDockWidget

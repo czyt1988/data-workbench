@@ -138,7 +138,7 @@ public:
     QString judgeModel() const;
     // 判官超时秒（默认 30）
     int judgeTimeoutSec() const;
-    // 审批超时秒（gated_tools 长超时，默认 600）
+    // gated_tools 批准后执行超时秒（默认 600；审批等待经 approval_pending 协议挂起，不计时）
     int toolApprovalTimeoutSec() const;
     // manual 模式是否拦截应用内修改工具（默认 false）
     bool manualBlockInappTools() const;

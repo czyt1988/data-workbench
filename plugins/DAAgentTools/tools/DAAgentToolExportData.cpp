@@ -8,21 +8,17 @@ namespace DA
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolExportData::getToolSpec() const
+DAAgentToolSpec DAAgentToolExportData::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "export_data"},
-        {"description", "Export a dataset to a CSV or Excel file."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"data_name", QJsonObject{{"type", "string"}, {"description", "Dataset name"}}},
-                {"file_path", QJsonObject{{"type", "string"}, {"description", "Output file path"}}},
-                {"format", QJsonObject{{"type", "string"}, {"description", "Output format: csv or excel (default csv)"}}}
-            }},
-            {"required", QJsonArray{"data_name", "file_path"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("export_data"),
+                         QStringLiteral("Export a dataset to a CSV or Excel file.")};
+    spec.addParam({QStringLiteral("data_name"), QStringLiteral("Dataset name"), {Type::String}, true});
+    spec.addParam({QStringLiteral("file_path"), QStringLiteral("Output file path"), {Type::String}, true});
+    spec.addParam({QStringLiteral("format"),
+                   QStringLiteral("Output format: csv or excel (default csv)"),
+                   {Type::String}});
+    return spec;
 }
 
 /**

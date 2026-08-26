@@ -68,31 +68,42 @@ static QwtBoxSample computeBoxSample(QVector< double > data, double position = 0
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolCreateChart::getToolSpec() const
+DAAgentToolSpec DAAgentToolCreateChart::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "create_chart"},
-        {"description", "Create a new figure with a chart (line/scatter/bar/hist/box) from dataset columns. "
-         "If figure_name matches an existing figure, the chart is added to that figure (useful for building subplots). "
-         "Otherwise a new figure is created. "
-         "The y parameter accepts an array of column names to draw multiple curves on the same chart in one call. "
-         "When the X column is a datetime type, the X-axis is automatically set to a datetime scale. "
-         "The returned figure_id/figure_name can be used in da-figure: hyperlinks so the user can open this figure from your reply."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"type", QJsonObject{{"type", "string"}, {"description", "Chart type: line, scatter, bar, hist, box"}}},
-                {"data_name", QJsonObject{{"type", "string"}, {"description", "Dataset name"}}},
-                {"x", QJsonObject{{"type", "string"}, {"description", "X-axis column name"}}},
-                {"y", QJsonObject{{"type", "array"}, {"items", QJsonObject{{"type", "string"}}}, {"description", "Y-axis column name(s). Pass a single-element array for one curve, or multiple column names for multiple curves on the same chart."}}},
-                {"title", QJsonObject{{"type", "string"}, {"description", "Chart title (also used as figure_name if figure_name is empty)"}}},
-                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name. If a figure with this name already exists, the chart is added to that figure (useful for building subplots). If no match, a new figure is created. If empty, a new figure is auto-created."}}},
-                {"x_label", QJsonObject{{"type", "string"}, {"description", "X-axis label"}}},
-                {"y_label", QJsonObject{{"type", "string"}, {"description", "Y-axis label"}}}
-            }},
-            {"required", QJsonArray{"type", "data_name", "x", "y"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("create_chart"),
+                         QStringLiteral("Create a new figure with a chart (line/scatter/bar/hist/box) from dataset "
+                                        "columns. If figure_name matches an existing figure, the chart is added to "
+                                        "that figure (useful for building subplots). Otherwise a new figure is "
+                                        "created. The y parameter accepts an array of column names to draw multiple "
+                                        "curves on the same chart in one call. When the X column is a datetime type, "
+                                        "the X-axis is automatically set to a datetime scale. The returned "
+                                        "figure_id/figure_name can be used in da-figure: hyperlinks so the user can "
+                                        "open this figure from your reply.")};
+    spec.addParam({QStringLiteral("type"),
+                   QStringLiteral("Chart type: line, scatter, bar, hist, box"),
+                   {Type::String},
+                   true});
+    spec.addParam({QStringLiteral("data_name"), QStringLiteral("Dataset name"), {Type::String}, true});
+    spec.addParam({QStringLiteral("x"), QStringLiteral("X-axis column name"), {Type::String}, true});
+    DAAgentToolParam yParam{QStringLiteral("y"),
+                            QStringLiteral("Y-axis column name(s). Pass a single-element array for one curve, or "
+                                           "multiple column names for multiple curves on the same chart."),
+                            {Type::Array},
+                            true};
+    yParam.itemTypes = {Type::String};
+    spec.addParam(yParam);
+    spec.addParam({QStringLiteral("title"),
+                   QStringLiteral("Chart title (also used as figure_name if figure_name is empty)"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("figure_name"),
+                   QStringLiteral("Figure name. If a figure with this name already exists, the chart is added to that "
+                                  "figure (useful for building subplots). If no match, a new figure is created. If "
+                                  "empty, a new figure is auto-created."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("x_label"), QStringLiteral("X-axis label"), {Type::String}});
+    spec.addParam({QStringLiteral("y_label"), QStringLiteral("Y-axis label"), {Type::String}});
+    return spec;
 }
 
 /**

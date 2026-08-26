@@ -9,31 +9,32 @@ namespace DA
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolRunScript::getToolSpec() const
+DAAgentToolSpec DAAgentToolRunScript::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "run_script"},
-        {"description",
-         "Run a Python script from the current project's script workspace in a shared persistent namespace "
-         "(Jupyter-like). 'path' is relative to the workspace root (e.g. \"scripts/analyze.py\"); use write_file "
-         "to create the script first. Inside the script, modules da_app/da_interface/da_data are pre-imported; "
-         "access in-memory data via "
-         "da_app.getCore().getDataManagerInterface().getAllDataframes() (returns {name: dataframe} dict). "
-         "Variables persist across run_script/run_code calls, so store intermediate results as namespace "
-         "variables and reference them in later calls — the 'result' field is only a text summary for you to "
-         "read (a script may set the __result__ variable as its return value), NOT a Python object you can "
-         "operate on. Optional 'args' is injected as a dict named 'args'. stdout/stderr are captured. "
-         "Note: scripts run on the main thread and freeze the UI while running; a timeout (default 300s) "
-         "injects KeyboardInterrupt; scripts must be UTF-8 encoded; CWD is the workspace root."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"path", QJsonObject{{"type", "string"}, {"description", "Script path relative to the script workspace root"}}},
-                {"args", QJsonObject{{"type", "object"}, {"description", "Optional arguments injected as the 'args' dict in the namespace"}}}
-            }},
-            {"required", QJsonArray{"path"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("run_script"),
+                         QStringLiteral("Run a Python script from the current project's script workspace in a shared "
+                                        "persistent namespace (Jupyter-like). 'path' is relative to the workspace root "
+                                        "(e.g. \"scripts/analyze.py\"); use write_file to create the script first. "
+                                        "Inside the script, modules da_app/da_interface/da_data are pre-imported; "
+                                        "access in-memory data via "
+                                        "da_app.getCore().getDataManagerInterface().getAllDataframes() (returns {name: "
+                                        "dataframe} dict). Variables persist across run_script/run_code calls, so "
+                                        "store intermediate results as namespace variables and reference them in later "
+                                        "calls — the 'result' field is only a text summary for you to read (a script "
+                                        "may set the __result__ variable as its return value), NOT a Python object you "
+                                        "can operate on. Optional 'args' is injected as a dict named 'args'. "
+                                        "stdout/stderr are captured. Note: scripts run on the main thread and freeze "
+                                        "the UI while running; a timeout (default 300s) injects KeyboardInterrupt; "
+                                        "scripts must be UTF-8 encoded; CWD is the workspace root.")};
+    spec.addParam({QStringLiteral("path"),
+                   QStringLiteral("Script path relative to the script workspace root"),
+                   {Type::String},
+                   true});
+    spec.addParam({QStringLiteral("args"),
+                   QStringLiteral("Optional arguments injected as the 'args' dict in the namespace"),
+                   {Type::Object}});
+    return spec;
 }
 
 /**

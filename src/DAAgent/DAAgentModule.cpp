@@ -6,6 +6,7 @@
 #include "DAAgentManager.h"
 #include "DAAgentPromptOps.h"
 #include "DAAbstractAgentTool.h"
+#include "DAAgentToolSpecJson.h"
 #include "DAAgentInterface.h"
 #include "DACoreInterface.h"
 #include "DAPyInterpreter.h"
@@ -18,6 +19,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QRegularExpression>
 #include <QStringList>
 #include <QStandardPaths>
 #include <QUuid>
@@ -261,14 +263,37 @@ void DAAgentModule::initialize(DACoreInterface* core)
 
 /**
  * @brief 注册工具供 agent 使用
+ *
+ * 注册期校验：工具名为空或与已注册工具重复时拒绝注册并返回 false
+ * （此前重复注册会静默覆盖）；工具名不符合 snake_case 约定时仅告警。
  * @param tool 工具实现指针
+ * @return 注册成功返回 true，校验失败返回 false
  */
-void DAAgentModule::registerTool(DAAbstractAgentTool* tool)
+bool DAAgentModule::registerTool(DAAbstractAgentTool* tool)
 {
     DA_D(d);
-    QString name = tool->getToolSpec()["name"].toString();
+    if (nullptr == tool) {
+        qWarning("DAAgentModule::registerTool: null tool pointer, registration rejected");
+        return false;
+    }
+    const QString name = tool->getToolSpec().name;
+    if (name.trimmed().isEmpty()) {
+        qWarning("DAAgentModule::registerTool: tool spec has an empty name, registration rejected");
+        return false;
+    }
+    if (d->mTools.contains(name)) {
+        qWarning("DAAgentModule::registerTool: tool '%s' is already registered, registration rejected",
+                 qPrintable(name));
+        return false;
+    }
+    static const QRegularExpression reSnakeCase(QStringLiteral("^[a-z][a-z0-9_]*$"));
+    if (!reSnakeCase.match(name).hasMatch()) {
+        qWarning("DAAgentModule::registerTool: tool name '%s' is not lower snake_case (convention only, registered)",
+                 qPrintable(name));
+    }
     d->mTools[name] = tool;
     if (d->mBridge) d->mBridge->setTools(d->mTools);
+    return true;
 }
 
 /**
@@ -324,6 +349,8 @@ QString DAAgentModule::assembleSystemPrompt() const
 
 /**
  * @brief 组装工具规格 JSON 数组
+ *
+ * 逐个把结构化工具规格经 DA::toJson 序列化为 OpenAI function schema。
  * @return 工具规格 JSON 数组
  */
 QJsonArray DAAgentModule::assembleToolSpecs() const
@@ -331,7 +358,7 @@ QJsonArray DAAgentModule::assembleToolSpecs() const
     DA_DC(d);
     QJsonArray specs;
     for (auto* tool : d->mTools) {
-        specs.append(tool->getToolSpec());
+        specs.append(toJson(tool->getToolSpec()));
     }
     return specs;
 }

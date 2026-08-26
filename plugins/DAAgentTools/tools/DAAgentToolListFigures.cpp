@@ -6,18 +6,13 @@ namespace DA
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolListFigures::getToolSpec() const
+DAAgentToolSpec DAAgentToolListFigures::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "list_figures"},
-        {"description", "List all figures and their charts. Returns figure names, chart titles, and chart indices. "
-         "Use this to discover existing figures before modifying them with figure_name + chart_id."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{}},
-            {"required", QJsonArray{}}
-        }}
-    };
+    DAAgentToolSpec spec{QStringLiteral("list_figures"),
+                         QStringLiteral("List all figures and their charts. Returns figure names, chart titles, and "
+                                        "chart indices. Use this to discover existing figures before modifying them "
+                                        "with figure_name + chart_id.")};
+    return spec;
 }
 
 /**

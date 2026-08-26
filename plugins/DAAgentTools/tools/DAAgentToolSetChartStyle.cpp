@@ -16,36 +16,57 @@ static Qt::PenStyle parsePenStyle(const QString& s)
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolSetChartStyle::getToolSpec() const
+DAAgentToolSpec DAAgentToolSetChartStyle::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "set_chart_style"},
-        {"description", "Set chart title, axis labels, legend, grid, background, and other style options. "
-         "Use figure_name to target a specific figure."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"chart_id", QJsonObject{{"type", "string"}, {"description", "Chart identifier. Empty or 'current' for active chart."}}},
-                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name to target a specific figure. Empty for current active figure."}}},
-                {"title", QJsonObject{{"type", "string"}, {"description", "Chart title"}}},
-                {"x_label", QJsonObject{{"type", "string"}, {"description", "X-axis label"}}},
-                {"y_label", QJsonObject{{"type", "string"}, {"description", "Y-axis label"}}},
-                {"legend", QJsonObject{{"type", "boolean"}, {"description", "Show legend (true/false)"}}},
-                {"grid", QJsonObject{{"type", "boolean"}, {"description", "Show grid (true/false)"}}},
-                {"x_axis_type", QJsonObject{{"type", "string"}, {"description", "X-axis scale type: 'datetime' for time-series data (formats tick labels as dates), 'normal' for linear scale. If omitted, axis type is unchanged."}}},
-                {"x_date_format", QJsonObject{{"type", "string"}, {"description", "Date format for datetime axis, e.g. 'yyyy-MM-dd', 'yyyy-MM-dd hh:mm'. Default 'yyyy-MM-dd hh:mm:ss'. Only used when x_axis_type is 'datetime'."}}},
-                {"background_color", QJsonObject{{"type", "string"}, {"description", "Plot background color (hex or name, e.g. '#F5F5F5' or 'white')"}}},
-                {"border_color", QJsonObject{{"type", "string"}, {"description", "Plot border color (hex or name)"}}},
-                {"grid_major_color", QJsonObject{{"type", "string"}, {"description", "Major grid line color (hex or name)"}}},
-                {"grid_major_style", QJsonObject{{"type", "string"}, {"description", "Major grid line style: solid, dash, dot"}}},
-                {"legend_position", QJsonObject{{"type", "string"}, {"description", "Legend position: top, bottom, left, right"}}},
-                {"legend_background_color", QJsonObject{{"type", "string"}, {"description", "Legend background color (hex or name)"}}},
-                {"legend_text_color", QJsonObject{{"type", "string"}, {"description", "Legend text color (hex or name)"}}},
-                {"figure_background_color", QJsonObject{{"type", "string"}, {"description", "Figure (outer) background color (hex or name). Sets the figure background, not the chart canvas."}}}
-            }},
-            {"required", QJsonArray{}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("set_chart_style"),
+                         QStringLiteral("Set chart title, axis labels, legend, grid, background, and other style "
+                                        "options. Use figure_name to target a specific figure.")};
+    spec.addParam({QStringLiteral("chart_id"),
+                   QStringLiteral("Chart identifier. Empty or 'current' for active chart."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("figure_name"),
+                   QStringLiteral("Figure name to target a specific figure. Empty for current active figure."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("title"), QStringLiteral("Chart title"), {Type::String}});
+    spec.addParam({QStringLiteral("x_label"), QStringLiteral("X-axis label"), {Type::String}});
+    spec.addParam({QStringLiteral("y_label"), QStringLiteral("Y-axis label"), {Type::String}});
+    spec.addParam({QStringLiteral("legend"), QStringLiteral("Show legend (true/false)"), {Type::Boolean}});
+    spec.addParam({QStringLiteral("grid"), QStringLiteral("Show grid (true/false)"), {Type::Boolean}});
+    spec.addParam({QStringLiteral("x_axis_type"),
+                   QStringLiteral("X-axis scale type: 'datetime' for time-series data (formats tick labels as dates), "
+                                  "'normal' for linear scale. If omitted, axis type is unchanged."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("x_date_format"),
+                   QStringLiteral("Date format for datetime axis, e.g. 'yyyy-MM-dd', 'yyyy-MM-dd hh:mm'. Default "
+                                  "'yyyy-MM-dd hh:mm:ss'. Only used when x_axis_type is 'datetime'."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("background_color"),
+                   QStringLiteral("Plot background color (hex or name, e.g. '#F5F5F5' or 'white')"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("border_color"),
+                   QStringLiteral("Plot border color (hex or name)"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("grid_major_color"),
+                   QStringLiteral("Major grid line color (hex or name)"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("grid_major_style"),
+                   QStringLiteral("Major grid line style: solid, dash, dot"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("legend_position"),
+                   QStringLiteral("Legend position: top, bottom, left, right"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("legend_background_color"),
+                   QStringLiteral("Legend background color (hex or name)"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("legend_text_color"),
+                   QStringLiteral("Legend text color (hex or name)"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("figure_background_color"),
+                   QStringLiteral("Figure (outer) background color (hex or name). Sets the figure background, not the "
+                                  "chart canvas."),
+                   {Type::String}});
+    return spec;
 }
 
 /**

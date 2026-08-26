@@ -47,7 +47,7 @@ bool MyPlugin::initialize()
 }
 ```
 
-工具类继承 `DAAgentToolBase`（数据 / 文件类工具）或 `DAAgentChartToolBase`（图表类工具），实现 `getToolSpec()`（返回 OpenAI function schema）与 `execute(params)`（返回结果 JSON）。schema 的 `name` 用小写 snake_case 且不翻译（参与 LLM 工具调用匹配），`description` / 参数说明写英文。
+工具类继承 `DAAgentToolBase`（数据 / 文件类工具）或 `DAAgentChartToolBase`（图表类工具），实现 `getToolSpec()`（返回结构化 `DAAgentToolSpec`，平台统一序列化为 OpenAI function schema 下发）与 `execute(params)`（返回结果 JSON）。工具 `name` 用小写 snake_case 且不翻译（参与 LLM 工具调用匹配），`description` / 参数说明写英文。
 
 平台内置的 `DAAgentTools` 插件即用此机制注册了 20 个工具（5 数据 + 10 绘图 + 3 文件 / 报告 + 2 脚本）。新增 agent 工具的完整流程见 [工具开发指南](../dev-guide/agent/tool-development.md)。
 

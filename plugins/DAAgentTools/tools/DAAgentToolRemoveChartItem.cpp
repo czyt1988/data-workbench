@@ -10,23 +10,26 @@ namespace DA
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolRemoveChartItem::getToolSpec() const
+DAAgentToolSpec DAAgentToolRemoveChartItem::getToolSpec() const
 {
-    return QJsonObject{
-        {"name", "remove_chart_item"},
-        {"description", "Remove a curve, annotation, or region from a chart. "
-         "Identify the item by its title or index. Use list_figures to discover item names."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"chart_id", QJsonObject{{"type", "string"}, {"description", "Chart identifier (title or index). Empty or 'current' for active chart."}}},
-                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name to target a specific figure. Empty for current active figure."}}},
-                {"item_name", QJsonObject{{"type", "string"}, {"description", "Item title or index (0-based). Use list_figures to find item names."}}},
-                {"item_type", QJsonObject{{"type", "string"}, {"description", "Filter item type: 'curve', 'annotation', 'region', or 'any' (default)"}}}
-            }},
-            {"required", QJsonArray{"item_name"}}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("remove_chart_item"),
+                         QStringLiteral("Remove a curve, annotation, or region from a chart. Identify the item by its "
+                                        "title or index. Use list_figures to discover item names.")};
+    spec.addParam({QStringLiteral("chart_id"),
+                   QStringLiteral("Chart identifier (title or index). Empty or 'current' for active chart."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("figure_name"),
+                   QStringLiteral("Figure name to target a specific figure. Empty for current active figure."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("item_name"),
+                   QStringLiteral("Item title or index (0-based). Use list_figures to find item names."),
+                   {Type::String},
+                   true});
+    spec.addParam({QStringLiteral("item_type"),
+                   QStringLiteral("Filter item type: 'curve', 'annotation', 'region', or 'any' (default)"),
+                   {Type::String}});
+    return spec;
 }
 
 /**

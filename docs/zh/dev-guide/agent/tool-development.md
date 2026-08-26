@@ -10,7 +10,7 @@ Agent 工具是 LLM 可以调用的函数，用于执行数据分析、绘图、
 classDiagram
     class DAAbstractAgentTool {
         <<纯虚>>
-        +getToolSpec() QJsonObject
+        +getToolSpec() DAAgentToolSpec
         +execute(params) QJsonObject
         +getOwnerModule() QString
     }
@@ -33,12 +33,12 @@ classDiagram
     }
 
     class DAAgentToolListData {
-        +getToolSpec() QJsonObject
+        +getToolSpec() DAAgentToolSpec
         +execute(params) QJsonObject
     }
 
     class DAAgentToolCreateChart {
-        +getToolSpec() QJsonObject
+        +getToolSpec() DAAgentToolSpec
         +execute(params) QJsonObject
     }
 
@@ -66,35 +66,35 @@ classDiagram
 
 ### getToolSpec() — 工具规格
 
-返回 OpenAI function schema 格式的 JSON，描述工具的名称、用途和参数：
+返回结构化的 `DAAgentToolSpec`（`src/DAAgent/DAAgentToolSpec.h`），描述工具的名称、用途和参数。
+平台在组装时经 `DA::toJson(spec)`（`src/DAAgent/DAAgentToolSpecJson.h`）统一序列化为
+OpenAI function schema JSON 下发给 LLM，工具实现者不接触嵌套 `QJsonObject`：
 
 ```cpp
-QJsonObject DAAgentToolQueryData::getToolSpec() const
+DAAgentToolSpec DAAgentToolQueryData::getToolSpec() const
 {
-    return {
-        {"type", "function"},
-        {"function", QJsonObject{
-            {"name", "query_data"},
-            {"description", "Query data with pandas-like syntax. "
-                            "Supports filtering, selection, and aggregation."},
-            {"parameters", QJsonObject{
-                {"type", "object"},
-                {"properties", QJsonObject{
-                    {"data_name", QJsonObject{
-                        {"type", "string"},
-                        {"description", "Name of the data to query"}
-                    }},
-                    {"query", QJsonObject{
-                        {"type", "string"},
-                        {"description", "Pandas query expression, e.g. 'A > 100 and B < 50'"}
-                    }}
-                }},
-                {"required", QJsonArray{"data_name"}}
-            }}
-        }}
-    };
+    using Type = DAAgentToolParam::Type;
+    DAAgentToolSpec spec{QStringLiteral("query_data"),
+                         QStringLiteral("Filter dataset rows using a pandas query expression and return a preview.")};
+    spec.addParam({QStringLiteral("data_name"), QStringLiteral("Dataset name"), {Type::String}, true});
+    spec.addParam({QStringLiteral("expr"),
+                   QStringLiteral("pandas query expression, e.g. 'col > 100'"),
+                   {Type::String},
+                   true});
+    spec.addParam({QStringLiteral("preview_rows"),
+                   QStringLiteral("Number of preview rows, default 10"),
+                   {Type::Integer}});
+    return spec;
 }
 ```
+
+`DAAgentToolParam` 字段要点：
+
+- `types`：参数类型列表，单元素序列化为字符串，多元素为联合类型数组（如 `{Type::Number, Type::String}` → `["number","string"]`）。
+- `required`：必填标志，序列化时汇总为 `parameters.required` 数组。
+- `itemTypes`：数组参数（`Type::Array`）的元素类型，同样支持联合。
+- `enumValues` / `defaultValue`：可选值列表 / 默认值，空 / invalid 时序列化自动省略。
+- free-form 对象参数（如 `run_code` 的 `args`）：`types` 填 `{Type::Object}` 即可。
 
 ### execute() — 工具执行
 
@@ -250,8 +250,10 @@ bool DAAgentToolsPlugin::initialize()
 
 ```
 插件 initialize()
-  → DAAgentInterface::registerTool(tool)
+  → DAAgentInterface::registerTool(tool)        // 返回 bool，注册失败返回 false
   → DAAgentModule::registerTool(tool)
+    → 校验：name 为空 / 与已注册工具重名 → qWarning + 拒绝注册
+    → 校验：name 非 snake_case → qWarning 告警（不拒绝）
     → m_tools[toolName] = tool
     → m_bridge->setTools(m_tools)  // 更新 Bridge 的工具查找表
 ```
@@ -329,7 +331,7 @@ public:
     explicit MyAgentTool(DA::DACoreInterface* core, QObject* parent = nullptr)
         : DA::DAAgentToolBase(core, parent) {}
 
-    QJsonObject getToolSpec() const override;
+    DA::DAAgentToolSpec getToolSpec() const override;
     QJsonObject execute(const QJsonObject& params) override;
     QString getOwnerModule() const override { return "MyPlugin"; }
 };
@@ -339,25 +341,13 @@ public:
 // MyAgentTool.cpp
 #include "MyAgentTool.h"
 
-QJsonObject MyAgentTool::getToolSpec() const
+DA::DAAgentToolSpec MyAgentTool::getToolSpec() const
 {
-    return {
-        {"type", "function"},
-        {"function", QJsonObject{
-            {"name", "my_tool"},
-            {"description", "Description of what this tool does"},
-            {"parameters", QJsonObject{
-                {"type", "object"},
-                {"properties", QJsonObject{
-                    {"param1", QJsonObject{
-                        {"type", "string"},
-                        {"description", "Description of param1"}
-                    }}
-                }},
-                {"required", QJsonArray{"param1"}}
-            }}
-        }}
-    };
+    using Type = DA::DAAgentToolParam::Type;
+    DA::DAAgentToolSpec spec{QStringLiteral("my_tool"),
+                             QStringLiteral("Description of what this tool does")};
+    spec.addParam({QStringLiteral("param1"), QStringLiteral("Description of param1"), {Type::String}, true});
+    return spec;
 }
 
 QJsonObject MyAgentTool::execute(const QJsonObject& params)
@@ -441,3 +431,5 @@ sequenceDiagram
 - `plugins/DAAgentTools/` — 18 个内置工具的完整实现
 - `src/DAAgent/DAAbstractAgentTool.h` — 工具抽象基类定义
 - `src/DAAgent/DAAgentToolBase.h` — 瘦工具基类定义
+- `src/DAAgent/DAAgentToolSpec.h` — 结构化工具规格（`DAAgentToolSpec` / `DAAgentToolParam`）
+- `src/DAAgent/DAAgentToolSpecJson.h` — 工具规格 → OpenAI function schema 序列化（`DA::toJson`）

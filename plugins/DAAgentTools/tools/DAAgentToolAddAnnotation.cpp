@@ -21,36 +21,66 @@ namespace DA
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
  */
-QJsonObject DAAgentToolAddAnnotation::getToolSpec() const
+DAAgentToolSpec DAAgentToolAddAnnotation::getToolSpec() const
 {
+    using Type = DAAgentToolParam::Type;
     // X 坐标在时间轴下的输入约定：秒 / 毫秒 / ISO 字符串均可，工具自动归一化
-    static const QString xCoordDesc =
+    static const QString xCoordDesc = QStringLiteral(
         "X coordinate. On a datetime x-axis, accepts Unix seconds, Unix milliseconds, "
         "or an ISO datetime string (e.g. \"2026-05-15T11:29:14\", \"2026-05-15 11:29:14\", "
-        "\"2026-05-15\"); the tool auto-normalizes to axis units. On a linear x-axis, pass a number.";
+        "\"2026-05-15\"); the tool auto-normalizes to axis units. On a linear x-axis, pass a number.");
     static const QString yCoordDesc =
-        "Y coordinate as a number (always numeric, never a datetime).";
+        QStringLiteral("Y coordinate as a number (always numeric, never a datetime).");
 
-    return QJsonObject{
-        {"name", "add_annotation"},
-        {"description", "Add a text, arrow, point, or region annotation to a chart. For text/point use 'position' [x,y]; for arrow use 'start' [x,y] and 'end' [x,y]; for region use 'start_x' and 'end_x' to highlight a vertical band. On a datetime x-axis, x coordinates accept Unix seconds, Unix milliseconds, or ISO datetime strings (auto-normalized). Use figure_name to target a specific figure."},
-        {"parameters", QJsonObject{
-            {"type", "object"},
-            {"properties", QJsonObject{
-                {"chart_id", QJsonObject{{"type", "string"}, {"description", "Chart identifier. Empty or 'current' for active chart."}}},
-                {"figure_name", QJsonObject{{"type", "string"}, {"description", "Figure name to target a specific figure. Empty for current active figure."}}},
-                {"type", QJsonObject{{"type", "string"}, {"description", "Annotation type: text, arrow, point, region. Arrow uses start/end; region uses start_x/end_x."}}},
-                {"position", QJsonObject{{"type", "array"}, {"description", QString("Position [x, y] in data coordinates (for text/point). ") + xCoordDesc + " " + yCoordDesc}, {"items", QJsonObject{{"type", QJsonArray{"number", "string"}}}}}},
-                {"start", QJsonObject{{"type", "array"}, {"description", QString("Arrow start point [x, y] in data coordinates (for arrow). ") + xCoordDesc + " " + yCoordDesc}, {"items", QJsonObject{{"type", QJsonArray{"number", "string"}}}}}},
-                {"end", QJsonObject{{"type", "array"}, {"description", QString("Arrow end point [x, y] in data coordinates (for arrow). ") + xCoordDesc + " " + yCoordDesc}, {"items", QJsonObject{{"type", QJsonArray{"number", "string"}}}}}},
-                {"start_x", QJsonObject{{"type", QJsonArray{"number", "string"}}, {"description", "Start x value of the region (for region type). " + xCoordDesc}}},
-                {"end_x", QJsonObject{{"type", QJsonArray{"number", "string"}}, {"description", "End x value of the region (for region type). " + xCoordDesc}}},
-                {"text", QJsonObject{{"type", "string"}, {"description", "Annotation text (for text type, label at arrow tip, or region label)"}}},
-                {"color", QJsonObject{{"type", "string"}, {"description", "Annotation color (hex or name)"}}}
-            }},
-            {"required", QJsonArray{"type"}}
-        }}
-    };
+    DAAgentToolSpec spec{QStringLiteral("add_annotation"),
+                         QStringLiteral("Add a text, arrow, point, or region annotation to a chart. For text/point "
+                                        "use 'position' [x,y]; for arrow use 'start' [x,y] and 'end' [x,y]; for "
+                                        "region use 'start_x' and 'end_x' to highlight a vertical band. On a datetime "
+                                        "x-axis, x coordinates accept Unix seconds, Unix milliseconds, or ISO datetime "
+                                        "strings (auto-normalized). Use figure_name to target a specific figure.")};
+    spec.addParam({QStringLiteral("chart_id"),
+                   QStringLiteral("Chart identifier. Empty or 'current' for active chart."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("figure_name"),
+                   QStringLiteral("Figure name to target a specific figure. Empty for current active figure."),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("type"),
+                   QStringLiteral("Annotation type: text, arrow, point, region. Arrow uses start/end; region uses "
+                                  "start_x/end_x."),
+                   {Type::String},
+                   true});
+    // position/start/end：数组元素允许 number | string（datetime 轴输入约定）
+    const QList< Type > coordItemTypes{Type::Number, Type::String};
+    DAAgentToolParam position{QStringLiteral("position"),
+                              QStringLiteral("Position [x, y] in data coordinates (for text/point). ") + xCoordDesc
+                                  + QStringLiteral(" ") + yCoordDesc,
+                              {Type::Array}};
+    position.itemTypes = coordItemTypes;
+    spec.addParam(position);
+    DAAgentToolParam start{QStringLiteral("start"),
+                           QStringLiteral("Arrow start point [x, y] in data coordinates (for arrow). ") + xCoordDesc
+                               + QStringLiteral(" ") + yCoordDesc,
+                           {Type::Array}};
+    start.itemTypes = coordItemTypes;
+    spec.addParam(start);
+    DAAgentToolParam end{QStringLiteral("end"),
+                         QStringLiteral("Arrow end point [x, y] in data coordinates (for arrow). ") + xCoordDesc
+                             + QStringLiteral(" ") + yCoordDesc,
+                         {Type::Array}};
+    end.itemTypes = coordItemTypes;
+    spec.addParam(end);
+    // start_x/end_x：主类型即联合类型 ["number", "string"]
+    spec.addParam({QStringLiteral("start_x"),
+                   QStringLiteral("Start x value of the region (for region type). ") + xCoordDesc,
+                   {Type::Number, Type::String}});
+    spec.addParam({QStringLiteral("end_x"),
+                   QStringLiteral("End x value of the region (for region type). ") + xCoordDesc,
+                   {Type::Number, Type::String}});
+    spec.addParam({QStringLiteral("text"),
+                   QStringLiteral("Annotation text (for text type, label at arrow tip, or region label)"),
+                   {Type::String}});
+    spec.addParam({QStringLiteral("color"), QStringLiteral("Annotation color (hex or name)"), {Type::String}});
+    return spec;
 }
 
 /**
