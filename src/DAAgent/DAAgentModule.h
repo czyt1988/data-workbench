@@ -17,6 +17,7 @@ namespace DA
 class DAAgentBridge;
 class DAAgentSessionStore;
 class DAAgentManager;
+class DAAgentPermissionManager;
 
 /**
  * @brief DAAgent 模块的完整实现：工具注册、系统提示词组装、懒启动生命周期管理
@@ -103,6 +104,20 @@ public:
     /// @copydoc DAAgentInterface::agentPromptOps
     DAAgentPromptOps* agentPromptOps() override;
 
+    // ---- 权限层（override DAAgentInterface 契约 1 一次性 ABI 批处理 6 个纯虚） ----
+    /// @copydoc DAAgentInterface::getPermissionConfig
+    QJsonObject getPermissionConfig() const override;
+    /// @copydoc DAAgentInterface::setPermissionConfig
+    void setPermissionConfig(const QJsonObject& config) override;
+    /// @copydoc DAAgentInterface::getPermissionMode
+    QString getPermissionMode() const override;
+    /// @copydoc DAAgentInterface::setPermissionMode
+    void setPermissionMode(const QString& mode) override;
+    /// @copydoc DAAgentInterface::sendToolApproval
+    void sendToolApproval(const QString& callId, bool approved, bool rememberSession) override;
+    /// @copydoc DAAgentInterface::setScriptWorkspaceDir
+    void setScriptWorkspaceDir(const QString& dir) override;
+
     // ---- 会话管理辅助方法（非接口，plan-03 声明归属本计划） ----
     // 新建会话（UI "+" 按钮用）—— createSession + emit sessionCreated
     void newSession() override;
@@ -117,6 +132,9 @@ public:
     // 推送当前供应商/模型选择到 Dock（emit availableModelsChanged + activeModelChanged）
     // 由 DAAppController 在接口↔Dock 信号链 connect 完成后调用
     void pushModelSelection();
+    // 推送当前权限模式到 Dock（emit permissionModeChanged），与 pushModelSelection 同处
+    // 由 DAAppController 在接口↔Dock 信号链 connect 完成后调用；A13 启动 yolo 确认由 Dock 侧触发
+    void pushPermissionMode();
 
 private:
     // Helper methods

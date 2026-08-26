@@ -47,6 +47,9 @@ public:
     bool mHasTokenStats;
     // ---- MAJOR4 UI 侧切换守卫：true 时渲染槽跳过，避免旧会话残余 token 渲染到新聊天区 ----
     bool mSwitching;
+    // ---- 权限层（permission-layer P1）：web 未就绪时缓存，onWebReady flush ----
+    QString mCurrentPermissionMode;    ///< 当前权限模式（yolo/auto/manual，默认 auto）
+    bool mStartupYoloConfirmShown;     ///< A13 启动 yolo 确认卡是否已弹过（每次启动仅一次）
 };
 
 DAAgentDockWidget::PrivateData::PrivateData(DAAgentDockWidget* p)
@@ -64,6 +67,8 @@ DAAgentDockWidget::PrivateData::PrivateData(DAAgentDockWidget* p)
     , mLastContextWindow(0)
     , mHasTokenStats(false)
     , mSwitching(false)
+    , mCurrentPermissionMode(QStringLiteral("auto"))
+    , mStartupYoloConfirmShown(false)
 {
 }
 
@@ -193,6 +198,16 @@ void DAAgentDockWidget::setupWebChannel()
     // web 两级模型选择器：用户选定供应商+模型 → onModelSelect → activeModelChangeRequested
     connect(d->mChannel, &DAAgentWebChannel::modelChangeRequested,
             this, &DAAgentDockWidget::onModelSelect);
+    // ---- 权限层（permission-layer P1）：web 用户操作 → 接口 ----
+    // 权限模式选择器选定 → permissionModeChangeRequested（→ DAAgentInterface::setPermissionMode）
+    connect(d->mChannel, &DAAgentWebChannel::permissionModeChangeRequested,
+            this, &DAAgentDockWidget::onPermissionModeSelect);
+    // 审批卡裁决 → toolApprovalDecision（→ DAAgentInterface::sendToolApproval）
+    connect(d->mChannel, &DAAgentWebChannel::toolApprovalDecision,
+            this, &DAAgentDockWidget::onToolApprovalDecision);
+    // 启动 yolo 确认卡响应（A13）→ startupModeConfirmResponse
+    connect(d->mChannel, &DAAgentWebChannel::startupModeConfirmResponse,
+            this, &DAAgentDockWidget::onStartupModeConfirmResponse);
 }
 
 /**
@@ -246,7 +261,27 @@ void DAAgentDockWidget::onWebReady()
         {"errorDetails", tr("Details")},             // cn:详细信息
         {"errorCopy", tr("Copy")},                   // cn:复制
         {"errorCopied", tr("Copied")},               // cn:已复制
-        {"errorTruncated", tr("[truncated]")}        // cn:[已截断]
+        {"errorTruncated", tr("[truncated]")},       // cn:[已截断]
+        // —— 权限模式选择器（permission-layer P1）——
+        {"modeSelectTip", tr("Permission mode")},    // cn:权限模式
+        {"modeYolo", tr("Full Auto")},               // cn:全自动
+        {"modeAuto", tr("Auto")},                    // cn:自动
+        {"modeManual", tr("Ask Every Time")},        // cn:每次询问
+        {"modeYoloTip", tr("Run everything without asking (system directories still blocked)")},  // cn:全部直接执行不再询问（系统目录仍拦截）
+        {"modeAutoTip", tr("Reads and chart edits pass; file writes and code execution judged by rules")},  // cn:读取与图表编辑放行；文件写入与代码执行按规则判定
+        {"modeManualTip", tr("File writes and code execution need approval every time")},  // cn:文件写入与代码执行每次都需批准
+        {"modeYoloConfirm", tr("Switch to Full Auto mode? Code execution and file writes will no longer ask for confirmation.")},  // cn:切换到全自动模式？代码执行与文件写入将不再请求确认。
+        {"modeYoloConfirmOk", tr("Switch")},         // cn:切换
+        {"modeYoloConfirmCancel", tr("Cancel")},     // cn:取消
+        // —— 工具审批卡（permission-layer P1）——
+        {"approvalNeeds", tr("needs your approval")},  // cn:需要你的批准
+        {"approvalApprove", tr("Approve")},          // cn:批准
+        {"approvalDeny", tr("Deny")},                // cn:拒绝
+        {"approvalApproveRemember", tr("Approve && remember for this session")},  // cn:批准并本会话记住
+        {"approvalApproved", tr("Approved")},        // cn:已批准
+        {"approvalDenied", tr("Denied")},            // cn:已拒绝
+        {"approvalApprovedRemembered", tr("Approved (remembered for this session)")},  // cn:已批准（本会话已记住）
+        {"approvalCodeMoreLines", tr("%1 more lines")}  // cn:还有 %1 行
     });
     // 启动中优先推 starting 态，缓解 JS-ready 竞态——agent 信号若在 chat.html 加载
     // 完成前触发，此处补推当前 starting/busy 态
@@ -258,6 +293,16 @@ void DAAgentDockWidget::onWebReady()
     // 推送可用模型列表 + 激活供应商/模型给 web 两级选择器
     d->mChannel->setAvailableModels(d->mAvailableModels);
     d->mChannel->setActiveModel(d->mCurrentProvider, d->mCurrentModel);
+    // 权限层：推送当前权限模式给 web 模式选择器；yolo 启动弹一次确认卡（A13）
+    d->mChannel->setPermissionMode(d->mCurrentPermissionMode);
+    if (d->mCurrentPermissionMode == QLatin1String("yolo") && !d->mStartupYoloConfirmShown) {
+        d->mStartupYoloConfirmShown = true;
+        d->mChannel->appendStartupYoloConfirm(
+            tr("The permission mode is Full Auto from last session. Code execution and file writes will run without asking. Keep Full Auto mode?"),
+            //cn:上次会话留在全自动权限模式。代码执行与文件写入将不再询问直接执行。是否保持全自动模式？
+            tr("Keep Full Auto"),    //cn:保持全自动
+            tr("Switch to Auto"));   //cn:切换为自动
+    }
     if (d->mHasTokenStats) {
         d->mChannel->setTokenStats(formatTokenLabel(d->mLastTotalTokens, d->mLastContextWindow, d->mLastTokenSource),
                                   d->mLastInTokens, d->mLastOutTokens, d->mLastTotalTokens,
@@ -702,6 +747,91 @@ void DAAgentDockWidget::onModelSelect(const QString& provider, const QString& mo
     // 选择器高亮经 onActiveModelChanged 立即更新；ready 到达后模型标签确认。
     // 忙碌中切换时当前回复正常完成（message_end/done 自然到达），不截断不丢失。
     emit activeModelChangeRequested(provider, model);
+}
+
+// ===========================================================================
+// 权限层（permission-layer P1）
+// ===========================================================================
+
+/**
+ * @brief web 权限模式选择器选定模式：透传 permissionModeChangeRequested
+ *
+ * JS 侧已对切 yolo 做二次确认，到达此处即为已确认的用户意图。
+ * 已是当前模式时 JS 已拦截，此处不再重复判定。
+ * @param mode yolo / auto / manual
+ */
+void DAAgentDockWidget::onPermissionModeSelect(const QString& mode)
+{
+    emit permissionModeChangeRequested(mode);
+}
+
+/**
+ * @brief web 审批卡裁决：透传 toolApprovalDecision（→ DAAgentInterface::sendToolApproval）
+ * @param callId 工具调用 ID
+ * @param approved 是否批准
+ * @param rememberSession 是否本会话记住（仅 file_write 生效）
+ */
+void DAAgentDockWidget::onToolApprovalDecision(const QString& callId, bool approved, bool rememberSession)
+{
+    emit toolApprovalDecision(callId, approved, rememberSession);
+}
+
+/**
+ * @brief web 启动 yolo 确认卡（A13）响应：透传 startupModeConfirmResponse
+ * @param keepYolo true=保持 yolo，false=降级 auto
+ */
+void DAAgentDockWidget::onStartupModeConfirmResponse(bool keepYolo)
+{
+    emit startupModeConfirmResponse(keepYolo);
+}
+
+/**
+ * @brief 权限模式变化（启动推送/热切换）：缓存并推送到 web 模式选择器
+ * @param mode yolo / auto / manual
+ */
+void DAAgentDockWidget::onPermissionModeChanged(const QString& mode)
+{
+    DA_D(d);
+    d->mCurrentPermissionMode = mode;
+    if (d->mChannel) {
+        d->mChannel->setPermissionMode(mode);
+    }
+}
+
+/**
+ * @brief 工具调用需审批（ask 决策）：推送审批卡到 web
+ *
+ * args 已由 Module 补齐 _tier/_rememberable；此处组装 payload 转发。
+ * @param callId 工具调用 ID
+ * @param toolName 工具名称
+ * @param args 工具参数（含 _tier/_rememberable）
+ */
+void DAAgentDockWidget::onToolApprovalRequest(const QString& callId, const QString& toolName, const QJsonObject& args)
+{
+    DA_D(d);
+    if (!d->mChannel) return;
+    QJsonObject payload;
+    payload[QStringLiteral("tool")] = toolName;
+    // 剥离内部字段 _tier/_rememberable 后作为展示参数，避免用户看到实现细节
+    QJsonObject shownArgs = args;
+    const QString tier       = shownArgs.take(QStringLiteral("_tier")).toString();
+    const bool rememberable  = shownArgs.take(QStringLiteral("_rememberable")).toBool();
+    payload[QStringLiteral("args")]         = shownArgs;
+    payload[QStringLiteral("tier")]         = tier;
+    payload[QStringLiteral("rememberable")] = rememberable;
+    d->mChannel->appendToolApproval(callId, payload);
+}
+
+/**
+ * @brief 审批作废（子进程退出/崩溃/切换会话）：通知 web 撤卡
+ * @param callId 作废的审批对应工具调用 ID
+ */
+void DAAgentDockWidget::onToolApprovalDismissed(const QString& callId)
+{
+    DA_D(d);
+    if (d->mChannel) {
+        d->mChannel->dismissToolApproval(callId);
+    }
 }
 
 // ---- 辅助方法 ----

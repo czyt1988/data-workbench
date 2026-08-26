@@ -4,6 +4,7 @@
 #include "SettingPages/DASettingPageLog.h"
 #include "SettingPages/DASettingPageAdvanced.h"
 #include "SettingPages/DAAgentSettingsWidget.h"
+#include "SettingPages/DAAgentPermissionSettingsWidget.h"
 #include "DAConfigs.h"
 #include <QIcon>
 #include "AppMainWindow.h"
@@ -41,6 +42,11 @@ void DAAppSettingDialog::buildUI(DAAppConfig* config)
     DAAgentSettingsWidget* agentPage = new DAAgentSettingsWidget();
     agentPage->setAgentInterface(config->getCore()->getAgentInterface());
     settingWidget()->addPage(agentPage);
+
+    // Agent 权限设置页（permission-layer P1 骨架：模式/审批超时/判官）
+    DAAgentPermissionSettingsWidget* permissionPage = new DAAgentPermissionSettingsWidget();
+    permissionPage->setAgentInterface(config->getCore()->getAgentInterface());
+    settingWidget()->addPage(permissionPage);
 
     setPage(0);
 }

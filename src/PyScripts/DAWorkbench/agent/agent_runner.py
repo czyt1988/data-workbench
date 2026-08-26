@@ -398,6 +398,11 @@ class AgentRunner:
         self.system_prompt = system_prompt
         self.config = config
 
+        # —— 权限层字段（permission-layer P1 契约 3：仅存储，判定/消费逻辑在计划二） ——
+        # C++ 经 init/reconfigure 全量下发（母文档 §8），此处统一解析存储，
+        # 保证字段缺失时有安全默认值（模式回退 auto、超时回退 600/60）。
+        self._apply_permission_config(config)
+
         # 配置 LLM
         self.llm = ChatOpenAI(
             base_url=config["base_url"],
@@ -479,6 +484,38 @@ class AgentRunner:
         """用户请求停止——设置 stop_event 中断退避等待。"""
         self._stop_event.set()
 
+    def _apply_permission_config(self, config: dict):
+        """解析并存储权限层字段（母文档 §8，permission-layer P1 契约 3）。
+
+        P1 阶段 Python 仅存储这些字段，不做判定/消费——代码内容判定（静态规则 +
+        判官）与 `tool_call.safety` 生产属计划二。字段缺失时取安全默认值：
+        模式回退 "auto"、gated_tools 回退空集、审批超时回退 600、判官回退未配置。
+        """
+        self._permission_mode = config.get("permission_mode", "auto")
+        self._workspace_root = config.get("workspace_root", "") or ""
+        gated = config.get("gated_tools", [])
+        self._gated_tools = set(gated) if isinstance(gated, list) else set()
+        try:
+            self._tool_approval_timeout_sec = float(
+                config.get("tool_approval_timeout_sec", 600)
+            )
+        except (TypeError, ValueError):
+            self._tool_approval_timeout_sec = 600.0
+        patterns = config.get("code_patterns")
+        self._code_patterns = patterns if isinstance(patterns, dict) else {
+            "deny": [], "escalate": []
+        }
+        judge = config.get("judge")
+        self._judge_config = judge if isinstance(judge, dict) else {
+            "model": "", "timeout_sec": 30
+        }
+        logger.info(
+            "permission config stored: mode=%s workspace_root=%r gated_tools=%d "
+            "approval_timeout=%.0fs judge_model=%r",
+            self._permission_mode, self._workspace_root, len(self._gated_tools),
+            self._tool_approval_timeout_sec, self._judge_config.get("model", ""),
+        )
+
     async def reconfigure(self, config: dict):
         """热替换 LLM 配置（不重启子进程、不重建图、不丢 MemorySaver 会话状态）。
 
@@ -517,6 +554,9 @@ class AgentRunner:
         self.config = config
         self.llm = new_llm
         self.llm_with_tools = new_llm_with_tools
+        # 权限层字段热更新（permission-layer P1 契约 3：模式切换/设置页保存后经此同步；
+        # 复用既有 reconfigure 管道，不重建图）
+        self._apply_permission_config(config)
         # 更新 config 派生字段
         self.context_window = config.get("context_window", 262144)
         self.compaction_threshold = config.get("compaction_threshold", 0.85)
@@ -542,10 +582,22 @@ class AgentRunner:
                     config.get("model"), config.get("base_url"))
         await self.stdio.send_ready(config.get("model", ""))
 
-    async def _rpc_call(self, tool_call: dict, timeout: float = 60.0) -> dict:
-        """通过 stdin/stdout RPC 调用 C++ 侧工具执行器，带超时。"""
+    async def _rpc_call(self, tool_call: dict, timeout: float | None = None) -> dict:
+        """通过 stdin/stdout RPC 调用 C++ 侧工具执行器，带超时。
+
+        权限层（母文档 A9，permission-layer P1）：gated_tools（文件写入 + 代码执行
+        全集，经 init 下发）无论当前模式一律使用 tool_approval_timeout_sec 长超时
+        （默认 600s，覆盖人工审批等待），其余工具用 60s。超时列表与模式解耦，
+        模式切换无需改超时。显式传入 timeout 时尊重调用方取值。
+        """
+        name = tool_call["name"]
+        if timeout is None:
+            if name in getattr(self, "_gated_tools", set()):
+                timeout = getattr(self, "_tool_approval_timeout_sec", 600.0)
+            else:
+                timeout = 60.0
         call_id = tool_call["id"]
-        await self.stdio.send_tool_call(call_id, tool_call["name"], tool_call["args"])
+        await self.stdio.send_tool_call(call_id, name, tool_call["args"])
         try:
             result = await asyncio.wait_for(
                 self._wait_for_result(call_id),
@@ -553,7 +605,7 @@ class AgentRunner:
             )
             return result
         except asyncio.TimeoutError:
-            return {"error": f"Tool '{tool_call['name']}' timed out after {timeout}s"}
+            return {"error": f"Tool '{name}' timed out after {timeout}s"}
 
     async def _wait_for_result(self, expected_call_id: str) -> dict:
         """阻塞等待对应 expected_call_id 的 tool_result 消息。

@@ -25,6 +25,18 @@
             <!-- 两级下拉面板（向上展开） -->
             <div id="model-dropdown" hidden></div>
         </div>
+        <!-- 权限模式选择器：镜像模型选择器交互（permission-layer P1）。
+             yolo/auto/manual 三档；切 yolo 首次需二次确认（JS 侧）。 -->
+        <div id="mode-selector">
+            <button id="mode-trigger" type="button">
+                <span id="mode-trigger-text"></span>
+                <svg class="mode-trigger-chevron" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
+                    <path fill="currentColor" d="M7 10l5 5l5-5z"/>
+                </svg>
+            </button>
+            <!-- 单级下拉面板（向上展开） -->
+            <div id="mode-dropdown" hidden></div>
+        </div>
         <span id="token-label">tokens: -</span>
         <!-- token 分类明细浮层（点击 token-label 切换显隐） -->
         <div id="token-popover" hidden></div>

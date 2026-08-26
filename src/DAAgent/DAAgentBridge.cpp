@@ -1,7 +1,9 @@
 // DAAgentBridge.cpp
 #include "DAAgentBridge.h"
 #include "DAAbstractAgentTool.h"
+#include "DAAgentPermissionManager.h"
 #include <QTimer>
+#include <QHash>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -10,6 +12,13 @@
 
 namespace DA
 {
+
+/// 挂起的审批请求（executeTool 前置门 ask 路径登记，onToolApproval 消费）
+struct PendingApproval {
+    QString toolName;   ///< 工具名
+    QJsonObject args;   ///< 工具参数（批准后原样执行）
+    QString tier;       ///< 工具分级（用户拒绝时合成脱敏结果用）
+};
 
 // ===========================================================================
 // PrivateData
@@ -45,6 +54,10 @@ public:
     QJsonObject mSavedLlmConfig;            ///< 启动参数缓存（崩溃恢复时复用）
     QJsonArray mSavedToolSpecs;
     QString mSavedSystemPrompt;
+
+    // ---- 权限层（permission-layer P1） ----
+    DAAgentPermissionManager* mPermissionManager = nullptr;  ///< 权限引擎（Module 持有，非拥有）
+    QHash< QString, PendingApproval > mPendingApprovals;     ///< callId → 挂起审批
 };
 
 DAAgentBridge::PrivateData::PrivateData(DAAgentBridge* p) : q_ptr(p)
@@ -170,9 +183,16 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
             << " model=" << llmConfig.value("model").toString();
 
     // 2. 发送 init 消息（此时 state() 为 Running，writeJson 守卫通过）
+    //    config 内合并权限层字段（母文档 §8 契约 3：全量下发；Python 侧 P1 仅存储，
+    //    计划二实现消费）。合并进 config 而非顶层，与 reconfigure 单一来源对齐。
+    QJsonObject initConfig = llmConfig;
+    const QJsonObject permFields = buildPermissionConfig();
+    for (auto it = permFields.constBegin(); it != permFields.constEnd(); ++it) {
+        initConfig[it.key()] = it.value();
+    }
     QJsonObject initMsg;
     initMsg["type"]          = "init";
-    initMsg["config"]        = llmConfig;
+    initMsg["config"]        = initConfig;
     initMsg["tools"]         = toolSpecs;
     initMsg["system_prompt"] = systemPrompt;
     writeJson(initMsg);
@@ -405,13 +425,46 @@ void DAAgentBridge::sendLoadSession(const QString& sessionId, const QJsonArray& 
  * reconfigure 消息在 stdin 缓冲区排队，当前轮 run()/resume() 返回后主循环才处理，
  * 因此天然在两轮之间应用——当前轮用旧模型跑完，下一轮用新模型。Python 回 ready 确认。
  * 与 sendLoadSession 同构：不 emit agentBusy（非一轮对话），writeJson 守卫 state()==Running。
+ *
+ * 权限层（母文档 §8）：模式切换/设置页保存后经此热更新 permission_mode、workspace_root、
+ * code_patterns、judge 等字段——复用既有 reconfigure 管道，不重建图，Python 侧仅存储。
  */
 void DAAgentBridge::reconfigureAgent(const QJsonObject& config)
 {
+    QJsonObject merged = config;
+    const QJsonObject permFields = buildPermissionConfig();
+    for (auto it = permFields.constBegin(); it != permFields.constEnd(); ++it) {
+        merged[it.key()] = it.value();
+    }
     QJsonObject obj;
     obj["type"]   = "reconfigure";
-    obj["config"] = config;
+    obj["config"] = merged;
     writeJson(obj);
+}
+
+/**
+ * @brief 组装权限层下发字段（母文档 §8）
+ * @return JSON 对象，含 permission_mode/workspace_root/gated_tools/
+ *         tool_approval_timeout_sec/code_patterns/judge；未设置权限引擎时为空对象
+ */
+QJsonObject DAAgentBridge::buildPermissionConfig() const
+{
+    DA_DC(d);
+    QJsonObject p;
+    if (!d->mPermissionManager) {
+        return p;
+    }
+    const DAAgentPermissionManager* mgr = d->mPermissionManager;
+    p["permission_mode"]            = mgr->mode();
+    p["workspace_root"]             = mgr->workspaceRoot();
+    p["gated_tools"]                = QJsonArray::fromStringList(DAAgentPermissionManager::gatedTools());
+    p["tool_approval_timeout_sec"]  = mgr->toolApprovalTimeoutSec();
+    p["code_patterns"]              = mgr->codePatterns();
+    p["judge"]                      = QJsonObject{
+        {QStringLiteral("model"), mgr->judgeModel()},
+        {QStringLiteral("timeout_sec"), mgr->judgeTimeoutSec()},
+    };
+    return p;
 }
 
 // ===========================================================================
@@ -530,8 +583,11 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
         QString callId   = msg["call_id"].toString();
         QString toolName = msg["tool"].toString();
         QJsonObject args = msg["arguments"].toObject();
-        QTimer::singleShot(0, this, [this, callId, toolName, args]() {
-            executeTool(callId, toolName, args);
+        // 权限层（母文档 §8）：Python 侧安全裁决（仅 auto 模式 + code_exec 产出，
+        // 计划二上线；P1 恒为空对象，C++ 解析与消费逻辑已就绪并经测试锁定，契约 2）
+        QJsonObject safety = msg.value("safety").toObject();
+        QTimer::singleShot(0, this, [this, callId, toolName, args, safety]() {
+            executeTool(callId, toolName, args, safety);
         });
     } else if (type == "question") {
         // agent 向用户提问后 langgraph 进入 interrupt 暂停态，等待用户回答。
@@ -614,14 +670,117 @@ struct ToolExecGuard {
 };
 
 /**
- * @brief 执行工具调用，查找工具并返回结果
+ * @brief 设置权限引擎（Module 初始化时注入，非拥有指针）
+ * @param manager 权限引擎指针（nullptr=不设门，保持旧行为）
+ */
+void DAAgentBridge::setPermissionManager(DAAgentPermissionManager* manager)
+{
+    DA_D(d);
+    d->mPermissionManager = manager;
+}
+
+/**
+ * @brief 执行工具调用（前置权限门，两阶段，母文档 §4，继承 v1 暂停-恢复范式）
+ *
+ * decide() 产出 Allow → executeToolNow 真实执行；Deny → 合成拒绝结果回传；
+ * Ask → 登记 mPendingApprovals、停看门狗、emit agentToolApprovalRequest 并 return
+ *（镜像 ask_user question 暂停态；裁决经 onToolApproval 恢复）。
+ * @param callId 工具调用 ID
+ * @param toolName 工具名称
+ * @param args 工具调用参数 JSON
+ * @param safety Python 侧安全裁决（可空；计划二生产）
+ */
+void DAAgentBridge::executeTool(const QString& callId,
+                                const QString& toolName,
+                                const QJsonObject& args,
+                                const QJsonObject& safety)
+{
+    DA_D(d);
+
+    // ---- 权限门（C++ 唯一执法点，A1） ----
+    if (d->mPermissionManager) {
+        const DAAgentPermissionManager::Decision dec =
+            d->mPermissionManager->decide(toolName, args, safety);
+        if (dec.action == DAAgentPermissionManager::Deny) {
+            // 合成拒绝结果（A11 按分级脱敏：reason 已由 decide 产出）
+            QJsonObject result;
+            result["success"] = false;
+            result["error"]   = dec.reason;
+            sendToolResult(callId, result);
+            emit agentToolResult(toolName, result);
+            return;
+        }
+        if (dec.action == DAAgentPermissionManager::Ask) {
+            // 挂起等待用户裁决：登记 pending、停看门狗（用户思考时间不计无活动）
+            PendingApproval pa;
+            pa.toolName = toolName;
+            pa.args     = args;
+            pa.tier     = dec.tier;
+            d->mPendingApprovals.insert(callId, pa);
+            d->mInactivityTimer->stop();
+            emit agentToolApprovalRequest(callId, toolName, args);
+            return;
+        }
+    }
+
+    executeToolNow(callId, toolName, args);
+}
+
+/**
+ * @brief 用户对审批卡的裁决（镜像 sendUserAnswer 恢复范式）
+ *
+ * approved=true → （file_write 可选写会话记忆，A5）+ executeToolNow 真实执行；
+ * approved=false → 合成用户拒绝结果回传（code_exec 脱敏，不教 LLM 绕过）。
+ * callId 无配对（已作废/重复点击）时静默忽略。
+ * @param callId 工具调用 ID
+ * @param approved 是否批准
+ * @param rememberSession 是否本会话记住（仅 file_write 生效）
+ */
+void DAAgentBridge::onToolApproval(const QString& callId, bool approved, bool rememberSession)
+{
+    DA_D(d);
+    auto it = d->mPendingApprovals.find(callId);
+    if (it == d->mPendingApprovals.end()) {
+        return;
+    }
+    const PendingApproval pa = it.value();
+    d->mPendingApprovals.erase(it);
+
+    if (approved) {
+        // A5 [v2.1]：会话记忆仅 file_write；code_exec 一律不记忆
+        if (rememberSession && d->mPermissionManager && pa.tier == DAAgentPermissionManager::tierFileWrite()) {
+            const QString key = d->mPermissionManager->sessionScopeKey(pa.toolName, pa.args);
+            if (!key.isEmpty()) {
+                d->mPermissionManager->rememberSession(pa.toolName, key);
+            }
+        }
+        executeToolNow(callId, pa.toolName, pa.args);
+    } else {
+        QJsonObject result;
+        result["success"] = false;
+        if (pa.tier == DAAgentPermissionManager::tierCodeExec()) {
+            // 脱敏：与策略拒绝同文案，避免向 LLM 泄露"是用户拒绝"之外的信息差异
+            result["error"] = DAAgentPermissionManager::codeDenyMessage();
+        } else {
+            result["error"] = QStringLiteral("Access denied: user rejected the operation");
+        }
+        sendToolResult(callId, result);
+        emit agentToolResult(pa.toolName, result);
+    }
+
+    // 恢复看门狗（仍有其它挂起审批时由 startInactivityTimer 内部守卫拦截）
+    startInactivityTimer();
+}
+
+/**
+ * @brief 权限门放行后的真实执行（原 executeTool 主体，铁律 T5 try/catch 兜底）
  * @param callId 工具调用 ID
  * @param toolName 工具名称
  * @param args 工具调用参数 JSON
  */
-void DAAgentBridge::executeTool(const QString& callId,
-                                const QString& toolName,
-                                const QJsonObject& args)
+void DAAgentBridge::executeToolNow(const QString& callId,
+                                   const QString& toolName,
+                                   const QJsonObject& args)
 {
     DA_D(d);
     ToolExecGuard guard(this);  // RAII：暂停看门狗，覆盖所有 return 路径
@@ -707,6 +866,19 @@ void DAAgentBridge::onProcessFinished(int exitCode, QProcess::ExitStatus exitSta
     d->mToolExecuting = false;  // 重置工具执行标志，确保恢复从干净状态开始
     d->mWaitingUserAnswer = false;  // 重置等待用户回答标志，确保恢复从干净状态开始
     d->mTurnActive = false;     // 对话中断，重置对话进行中标志
+
+    // 权限层（继承 v1 P5）：子进程退出使所有挂起审批作废——逐条 emit dismissed
+    // 让 UI 撤卡，不跨重启存活。正常停止/请求停止/崩溃退出均走此路径。
+    if (!d->mPendingApprovals.isEmpty()) {
+        const QStringList pendingIds = d->mPendingApprovals.keys();
+        d->mPendingApprovals.clear();
+        for (const QString& id : pendingIds) {
+            emit agentToolApprovalDismissed(id);
+        }
+    }
+    // 进程退出钩子：Module 据此清空权限会话记忆（A5）。非 QObject manager
+    // 无法自收信号，由 Module 在 connectSignals 中显式调用。
+    emit processExited();
 
     d->mRunning = false;
 
@@ -814,6 +986,11 @@ void DAAgentBridge::startInactivityTimer()
     // 等待用户回答期间不启动看门狗——用户可能离开较长时间才回答，
     // 此时 agent 处于 langgraph interrupt 暂停态，并非"卡死"
     if (d->mWaitingUserAnswer) {
+        return;
+    }
+    // 权限层：存在挂起审批时不启动看门狗——等待用户裁决可能超过无活动阈值
+    //（继承 v1 风险项：ToolExecGuard 析构路径也经此函数恢复，统一在此守卫）
+    if (!d->mPendingApprovals.isEmpty()) {
         return;
     }
     if (d->mInactivityTimeoutMs > 0 && d->mRunning) {

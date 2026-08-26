@@ -39,6 +39,13 @@ private Q_SLOTS:
     void onWebReady();
     /// web 两级模型选择器选定供应商+模型（用户手动切换）：定稿当前流式 + emit activeModelChangeRequested
     void onModelSelect(const QString& provider, const QString& model);
+    // ---- 权限层（permission-layer P1） ----
+    /// web 权限模式选择器选定模式：透传 permissionModeChangeRequested
+    void onPermissionModeSelect(const QString& mode);
+    /// web 审批卡裁决：透传 toolApprovalDecision
+    void onToolApprovalDecision(const QString& callId, bool approved, bool rememberSession);
+    /// web 启动 yolo 确认卡响应（A13）：透传 startupModeConfirmResponse
+    void onStartupModeConfirmResponse(bool keepYolo);
 
 public Q_SLOTS:
     void onAgentToken(const QString& token);
@@ -64,6 +71,14 @@ public Q_SLOTS:
     void onAvailableModelsChanged(QVariantList models);
     /// 激活模型变化（web 选择/设置页 apply），推送激活供应商+模型到 web
     void onActiveModelChanged(const QString& provider, const QString& model);
+
+    // ---- 权限层（permission-layer P1） ----
+    /// 权限模式变化（启动推送/热切换），推送到 web 模式选择器；yolo 启动时弹确认卡（A13）
+    void onPermissionModeChanged(const QString& mode);
+    /// 工具调用需审批（ask 决策），推送审批卡到 web（args 含 _tier/_rememberable）
+    void onToolApprovalRequest(const QString& callId, const QString& toolName, const QJsonObject& args);
+    /// 审批作废（子进程退出/崩溃/切换会话），通知 web 撤卡
+    void onToolApprovalDismissed(const QString& callId);
 
 Q_SIGNALS:
     /**
@@ -101,6 +116,14 @@ Q_SIGNALS:
     // ---- 供应商/多模型选择 ----
     /// 用户在 web 两级选择器选定供应商+模型，请求设置激活（→ DAAgentInterface::setActiveModel）
     void activeModelChangeRequested(const QString& provider, const QString& model);
+
+    // ---- 权限层（permission-layer P1） ----
+    /// 用户在 web 模式选择器选定模式，请求设置（→ DAAgentInterface::setPermissionMode）
+    void permissionModeChangeRequested(const QString& mode);
+    /// 用户对审批卡的裁决（→ DAAgentInterface::sendToolApproval）
+    void toolApprovalDecision(const QString& callId, bool approved, bool rememberSession);
+    /// 启动 yolo 确认卡（A13）响应：false=用户拒绝保持，请求降级 auto（→ setPermissionMode("auto")）
+    void startupModeConfirmResponse(bool keepYolo);
 
 protected:
     bool eventFilter(QObject* obj, QEvent* ev) override;

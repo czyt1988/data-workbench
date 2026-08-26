@@ -32,6 +32,12 @@ public:
     Q_INVOKABLE void onStopRequested();
     /// JS 调用：用户在 web 两级模型选择器选定供应商+模型
     Q_INVOKABLE void onModelSelect(const QString& provider, const QString& model);
+    /// JS 调用：用户在权限模式选择器选定模式（切 yolo 前 JS 已做二次确认）
+    Q_INVOKABLE void onPermissionModeSelect(const QString& mode);
+    /// JS 调用：用户对审批卡的裁决（callId/approved/rememberSession）
+    Q_INVOKABLE void onToolApproval(const QString& callId, bool approved, bool rememberSession);
+    /// JS 调用：启动 yolo 确认卡（A13）的用户响应（true=保持 yolo）
+    Q_INVOKABLE void onModeConfirmResponse(bool keepYolo);
     void appendUserMessage(const QString& text);
     void appendToken(const QString& token);
     void finalizeAgentMessage(const QString& fullText);
@@ -51,6 +57,14 @@ public:
     void setAvailableModels(const QVariantList& models);
     /// 推送激活供应商+模型（JS 更新触发按钮文案 + 选中高亮）
     void setActiveModel(const QString& provider, const QString& model);
+    /// 推送当前权限模式（JS 更新模式选择器触发按钮 + 高亮）
+    void setPermissionMode(const QString& mode);
+    /// 推送工具审批请求（JS 渲染审批卡；payload 含 tool/args/tier/rememberable）
+    void appendToolApproval(const QString& callId, const QJsonObject& payload);
+    /// 推送审批作废（JS 撤卡）
+    void dismissToolApproval(const QString& callId);
+    /// 推送启动 yolo 确认卡（A13：启动读到 yolo 时弹一次确认，拒绝则降级 auto）
+    void appendStartupYoloConfirm(const QString& text, const QString& okLabel, const QString& cancelLabel);
     void setTokenStats(const QString& label, int inputTokens, int outputTokens,
                        int totalTokens, int contextWindow, const QString& source);
     void resetTokenStats();
@@ -93,6 +107,27 @@ Q_SIGNALS:
      * @param model 模型 id
      */
     void modelChangeRequested(const QString& provider, const QString& model);
+
+    // ---- 权限层（permission-layer P1） ----
+    /**
+     * @brief 用户在权限模式选择器选定模式信号（切 yolo 前 JS 已二次确认）
+     * @param mode yolo / auto / manual
+     */
+    void permissionModeChangeRequested(const QString& mode);
+
+    /**
+     * @brief 用户对审批卡的裁决信号
+     * @param callId 工具调用 ID
+     * @param approved 是否批准
+     * @param rememberSession 是否本会话记住（仅 file_write 生效）
+     */
+    void toolApprovalDecision(const QString& callId, bool approved, bool rememberSession);
+
+    /**
+     * @brief 启动 yolo 确认卡（A13）用户响应信号
+     * @param keepYolo true=保持 yolo，false=降级 auto
+     */
+    void startupModeConfirmResponse(bool keepYolo);
 
 private:
     void callJS(const QString& funcCall);

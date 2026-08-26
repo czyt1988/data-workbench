@@ -371,6 +371,35 @@ void DAAgentWebChannel::onModelSelect(const QString& provider, const QString& mo
 }
 
 /**
+ * @brief JS 调用：用户在权限模式选择器选定模式（切 yolo 前 JS 已二次确认）
+ * @param mode yolo / auto / manual
+ */
+void DAAgentWebChannel::onPermissionModeSelect(const QString& mode)
+{
+    emit permissionModeChangeRequested(mode);
+}
+
+/**
+ * @brief JS 调用：用户对审批卡的裁决
+ * @param callId 工具调用 ID
+ * @param approved 是否批准
+ * @param rememberSession 是否本会话记住（仅 file_write 生效，A5）
+ */
+void DAAgentWebChannel::onToolApproval(const QString& callId, bool approved, bool rememberSession)
+{
+    emit toolApprovalDecision(callId, approved, rememberSession);
+}
+
+/**
+ * @brief JS 调用：启动 yolo 确认卡（A13）的用户响应
+ * @param keepYolo true=保持 yolo，false=降级 auto
+ */
+void DAAgentWebChannel::onModeConfirmResponse(bool keepYolo)
+{
+    emit startupModeConfirmResponse(keepYolo);
+}
+
+/**
  * @brief 推送可用模型列表到 web（flat 数组，JS 据供应商分组渲染两级选择器）
  * @param models 每元素 QVariantMap{provider,model,context_window,max_output_tokens}
  */
@@ -397,6 +426,49 @@ void DAAgentWebChannel::setActiveModel(const QString& provider, const QString& m
     // JS 据此更新触发按钮文案（"provider · model"）+ 在两级选择器中标记选中
     callJS(QString("setActiveModel(\"%1\",\"%2\")")
                .arg(toJsString(provider), toJsString(model)));
+}
+
+/**
+ * @brief 推送当前权限模式到 web（JS 更新模式选择器触发按钮文案 + 高亮）
+ * @param mode yolo / auto / manual
+ */
+void DAAgentWebChannel::setPermissionMode(const QString& mode)
+{
+    callJS(QString("setPermissionMode(\"%1\")").arg(toJsString(mode)));
+}
+
+/**
+ * @brief 推送工具审批请求到 web（JS 渲染审批卡）
+ * @param callId 工具调用 ID
+ * @param payload {tool,args,tier,rememberable}；rememberable 仅 file_write（A5）
+ */
+void DAAgentWebChannel::appendToolApproval(const QString& callId, const QJsonObject& payload)
+{
+    // payload 序列化为 JSON 对象；callId 经 toJsString 转义
+    QJsonDocument doc(payload);
+    QString json = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+    callJS(QString("appendToolApproval(\"%1\",%2)").arg(toJsString(callId), json));
+}
+
+/**
+ * @brief 推送审批作废到 web（JS 撤卡）
+ * @param callId 作废的审批对应工具调用 ID
+ */
+void DAAgentWebChannel::dismissToolApproval(const QString& callId)
+{
+    callJS(QString("dismissToolApproval(\"%1\")").arg(toJsString(callId)));
+}
+
+/**
+ * @brief 推送启动 yolo 确认卡到 web（A13：启动读到 yolo 弹一次确认）
+ * @param text 确认文案
+ * @param okLabel 确认按钮文案
+ * @param cancelLabel 取消按钮文案
+ */
+void DAAgentWebChannel::appendStartupYoloConfirm(const QString& text, const QString& okLabel, const QString& cancelLabel)
+{
+    callJS(QString("appendStartupYoloConfirm(\"%1\",\"%2\",\"%3\")")
+               .arg(toJsString(text), toJsString(okLabel), toJsString(cancelLabel)));
 }
 
 /**

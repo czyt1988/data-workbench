@@ -5,25 +5,8 @@
 
 namespace DA
 {
-// isPathSafe is defined in DAAgentToolReadFile.cpp (static linkage);
-// duplicate it here to keep the translation unit self-contained.
-static bool isPathSafe_write(const QString& path)
-{
-    QString normalized = QDir::cleanPath(path).toLower();
-    static const QStringList blocked = {
-        "c:/windows",
-        "c:/windows/system32",
-        "c:/program files",
-        "c:/program files (x86)",
-        "c:/programdata",
-    };
-    for (const QString& b : blocked) {
-        if (normalized.startsWith(b)) {
-            return false;
-        }
-    }
-    return true;
-}
+// 路径安全策略已移交权限门（permission-layer P1）：工作区内放行、区外询问、
+// 系统目录硬 deny，统一由 DAAgentPermissionManager::decide() 执法。
 
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
@@ -54,9 +37,7 @@ QJsonObject DAAgentToolWriteFile::execute(const QJsonObject& params)
     if (filePath.isEmpty()) {
         return errorResponse("file_path is required");
     }
-    if (!isPathSafe_write(filePath)) {
-        return errorResponse("Access denied: path is in a system-protected directory");
-    }
+    // 系统目录硬 deny 已由权限门统一拦截（permission-layer P1），此处不再重复检查
 
     // Ensure parent directory exists
     QFileInfo fi(filePath);

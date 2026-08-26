@@ -5,25 +5,8 @@
 
 namespace DA
 {
-/// Check if a file path is safe to access (not in system-critical directories).
-static bool isPathSafe(const QString& path)
-{
-    QString normalized = QDir::cleanPath(path).toLower();
-    // Block Windows system directories
-    static const QStringList blocked = {
-        "c:/windows",
-        "c:/windows/system32",
-        "c:/program files",
-        "c:/program files (x86)",
-        "c:/programdata",
-    };
-    for (const QString& b : blocked) {
-        if (normalized.startsWith(b)) {
-            return false;
-        }
-    }
-    return true;
-}
+// 路径安全策略已移交权限门（permission-layer P1）：DAAgentBridge::executeTool 前置
+// DAAgentPermissionManager::decide()——硬 deny（系统目录）全模式生效，工具内不再重复实现。
 
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
@@ -52,9 +35,7 @@ QJsonObject DAAgentToolReadFile::execute(const QJsonObject& params)
     if (filePath.isEmpty()) {
         return errorResponse("file_path is required");
     }
-    if (!isPathSafe(filePath)) {
-        return errorResponse("Access denied: path is in a system-protected directory");
-    }
+    // 系统目录硬 deny 已由权限门统一拦截（permission-layer P1），此处不再重复检查
 
     QFile f(filePath);
     if (!f.exists()) {

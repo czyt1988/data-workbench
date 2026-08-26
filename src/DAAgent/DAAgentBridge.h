@@ -16,6 +16,7 @@ class QTimer;
 namespace DA
 {
 class DAAbstractAgentTool;
+class DAAgentPermissionManager;
 
 /**
  * @brief QProcess 桥接器：管理 agent 子进程的启停、stdin/stdout 读写、JSON Lines 协议解析
@@ -60,6 +61,12 @@ public:
 
     // 设置 C++ 侧工具映射表，供工具调用时查找执行
     void setTools(const QMap<QString, DAAbstractAgentTool*>& tools);
+
+    // 设置权限引擎（executeTool 前置门用；Module 持有，非拥有指针）
+    void setPermissionManager(DAAgentPermissionManager* manager);
+
+    // 用户对审批卡的裁决（callId 配对 pending 审批；approved→执行，否则合成拒绝）
+    void onToolApproval(const QString& callId, bool approved, bool rememberSession);
 
     // 检查 agent 子进程是否正在运行
     bool isRunning() const;
@@ -165,6 +172,31 @@ Q_SIGNALS:
      */
     void sessionRestoreRequested(const QString& sessionId);
 
+    /**
+     * @brief 工具调用需要用户审批时发射（ask 决策，executeTool 前置门）
+     *
+     * Bridge 在 ask 路径挂起该调用（记入 mPendingApprovals，停看门狗），
+     * 等待 onToolApproval 裁决。Module 经接口转发给 UI 渲染审批卡。
+     * @param callId 工具调用 ID（与 tool_result 回传配对）
+     * @param toolName 工具名称
+     * @param args 工具调用参数 JSON
+     */
+    void agentToolApprovalRequest(const QString& callId, const QString& toolName, const QJsonObject& args);
+
+    /**
+     * @brief 审批卡作废时发射（子进程退出/崩溃/切换会话清理 pending）
+     * @param callId 作废的审批对应工具调用 ID
+     */
+    void agentToolApprovalDismissed(const QString& callId);
+
+    /**
+     * @brief 子进程退出钩子（正常/请求停止/崩溃均触发）
+     *
+     * Module 据此清空权限会话记忆（A5 不跨重启存活；非 QObject manager 无法
+     * 自收信号，由 Module 显式调用）。
+     */
+    void processExited();
+
 private Q_SLOTS:
     void onReadyReadStandardOutput();
     void onReadyReadStandardError();
@@ -174,7 +206,12 @@ private Q_SLOTS:
 private:
     void handleJsonLine(const QJsonObject& msg);
     bool writeJson(const QJsonObject& msg);
-    void executeTool(const QString& callId, const QString& toolName, const QJsonObject& args);
+    void executeTool(const QString& callId, const QString& toolName, const QJsonObject& args,
+                     const QJsonObject& safety = QJsonObject());
+    // 权限门放行后的真实执行（原 executeTool 主体，含 try/catch 兜底与结果回传）
+    void executeToolNow(const QString& callId, const QString& toolName, const QJsonObject& args);
+    // 组装权限层下发字段（母文档 §8：模式/工作区/gated_tools/超时/危险模式/判官）
+    QJsonObject buildPermissionConfig() const;
     void startInactivityTimer();
     void recoverFromCrash();
     // RAII guard for tool execution watchdog management (defined in .cpp)

@@ -23,7 +23,22 @@ let i18n = {
     popoverSource: 'source: %1', popoverSourceUnknown: 'unknown',
     modelEmpty: 'No model', modelSelectTip: 'Select LLM model',
     modelProvidersTitle: 'Providers', modelBack: 'Back',
-    errorDetails: 'Details', errorCopy: 'Copy', errorCopied: 'Copied', errorTruncated: '[truncated]'
+    errorDetails: 'Details', errorCopy: 'Copy', errorCopied: 'Copied', errorTruncated: '[truncated]',
+    // —— 权限模式选择器（permission-layer P1）——
+    modeSelectTip: 'Permission mode',
+    modeYolo: 'Full Auto', modeAuto: 'Auto', modeManual: 'Ask Every Time',
+    modeYoloTip: 'Run everything without asking (system directories still blocked)',
+    modeAutoTip: 'Reads and chart edits pass; file writes and code execution judged by rules',
+    modeManualTip: 'File writes and code execution need approval every time',
+    modeYoloConfirm: 'Switch to Full Auto mode? Code execution and file writes will no longer ask for confirmation.',
+    modeYoloConfirmOk: 'Switch', modeYoloConfirmCancel: 'Cancel',
+    // —— 工具审批卡（permission-layer P1）——
+    approvalNeeds: 'needs your approval',
+    approvalApprove: 'Approve', approvalDeny: 'Deny',
+    approvalApproveRemember: 'Approve && remember for this session',
+    approvalApproved: 'Approved', approvalDenied: 'Denied',
+    approvalApprovedRemembered: 'Approved (remembered for this session)',
+    approvalCodeMoreLines: '%1 more lines'
 };
 let agentBusy = false;          // 当前是否思考中（驱动 send-btn 的 Send/Stop 切换）
 let tokenStatsCache = null;     // 缓存最近一次 setTokenStats 的 5 值，供 popover 渲染
@@ -36,6 +51,11 @@ let activeProvider = '';          // 当前激活供应商
 let activeModel = '';             // 当前激活模型 id
 let modelDropdownView = 'providers';  // 'providers'（供应商层）| 'models'（模型层）
 let modelDropdownProvider = '';       // 模型层当前展示的供应商
+
+// —— 权限模式选择器状态（permission-layer P1）——
+// 三档：yolo（全自动）/ auto（规则判定，默认）/ manual（每次询问）。
+// C++ 经 setPermissionMode 推送当前态；用户点选切 yolo 时先弹二次确认卡。
+let activePermissionMode = 'auto';   // 当前激活模式（未知态回退 auto）
 
 function initMarkdown() {
     md = window.markdownit({
@@ -148,8 +168,33 @@ function init() {
         if (modelSelector && modelSelector.contains(e.target)) return;
         closeModelDropdown();
     });
+
+    // —— 权限模式选择器：触发按钮切换 + 点外部关闭（镜像模型选择器交互）——
+    var modeTrigger = document.getElementById('mode-trigger');
+    if (modeTrigger) {
+        modeTrigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var dd = document.getElementById('mode-dropdown');
+            if (!dd) return;
+            if (dd.hasAttribute('hidden')) {
+                openModeDropdown();
+            } else {
+                closeModeDropdown();
+            }
+        });
+    }
+    var modeSelector = document.getElementById('mode-selector');
+    document.addEventListener('click', function(e) {
+        var dd = document.getElementById('mode-dropdown');
+        if (!dd || dd.hasAttribute('hidden')) return;
+        if (modeSelector && e.composedPath && e.composedPath().indexOf(modeSelector) !== -1) return;
+        if (modeSelector && modeSelector.contains(e.target)) return;
+        closeModeDropdown();
+    });
+
     // 初始化触发按钮文案
     updateModelTrigger();
+    updateModeTrigger();
 }
 
 // 用户点击发送/终止按钮。C++ 仍是编排者：JS 只负责取文本+清框+通知，
@@ -619,6 +664,312 @@ function closeModelDropdown() {
     if (dd) { dd.setAttribute('hidden', ''); }
     var trig = document.getElementById('model-trigger');
     if (trig) { trig.classList.remove('open'); }
+}
+
+// ===========================================================================
+// 权限模式选择器（permission-layer P1，镜像模型选择器交互）
+// ===========================================================================
+
+// 模式 → 触发按钮/下拉行文案
+function modeLabel(mode) {
+    if (mode === 'yolo') return i18n.modeYolo;
+    if (mode === 'manual') return i18n.modeManual;
+    return i18n.modeAuto;
+}
+
+// 模式 → 行为提示（下拉行副标题 + 触发按钮 title）
+function modeTip(mode) {
+    if (mode === 'yolo') return i18n.modeYoloTip;
+    if (mode === 'manual') return i18n.modeManualTip;
+    return i18n.modeAutoTip;
+}
+
+// C++ 经 setPermissionMode 推送当前模式（启动推送/热切换回显）
+function setPermissionMode(mode) {
+    activePermissionMode = (mode === 'yolo' || mode === 'manual') ? mode : 'auto';
+    updateModeTrigger();
+    var dd = document.getElementById('mode-dropdown');
+    if (dd && !dd.hasAttribute('hidden')) { renderModeDropdown(); }
+}
+
+// 更新触发按钮文案（data-mode 供 CSS 按模式着色）
+function updateModeTrigger() {
+    var trig = document.getElementById('mode-trigger');
+    if (!trig) return;
+    var text = document.getElementById('mode-trigger-text');
+    if (text) { text.textContent = modeLabel(activePermissionMode); }
+    trig.title = (i18n.modeSelectTip || '') + '：' + modeTip(activePermissionMode);
+    trig.dataset.mode = activePermissionMode;
+}
+
+function openModeDropdown() {
+    renderModeDropdown();
+    var dd = document.getElementById('mode-dropdown');
+    if (dd) { dd.removeAttribute('hidden'); }
+    var trig = document.getElementById('mode-trigger');
+    if (trig) { trig.classList.add('open'); }
+    // 展开模式选择器时关闭模型下拉，避免两面板叠加
+    closeModelDropdown();
+}
+
+function closeModeDropdown() {
+    var dd = document.getElementById('mode-dropdown');
+    if (dd && !dd.hasAttribute('hidden')) { dd.setAttribute('hidden', ''); }
+    var trig = document.getElementById('mode-trigger');
+    if (trig) { trig.classList.remove('open'); }
+}
+
+// 渲染三行模式列表（当前模式高亮）
+function renderModeDropdown() {
+    var dd = document.getElementById('mode-dropdown');
+    if (!dd) return;
+    dd.innerHTML = '';
+    ['auto', 'manual', 'yolo'].forEach(function(m) {
+        var row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'mode-dd-row';
+        if (m === activePermissionMode) { row.classList.add('active-mode'); }
+        var lab = document.createElement('span');
+        lab.className = 'mode-dd-label';
+        lab.textContent = modeLabel(m);
+        var tip = document.createElement('span');
+        tip.className = 'mode-dd-tip';
+        tip.textContent = modeTip(m);
+        row.appendChild(lab);
+        row.appendChild(tip);
+        row.addEventListener('click', function(e) {
+            e.stopPropagation();
+            onModeRowClick(m);
+        });
+        dd.appendChild(row);
+    });
+}
+
+// 模式行点击：切 yolo 先二次确认（含"代码执行将不再询问"警示）
+function onModeRowClick(mode) {
+    closeModeDropdown();
+    if (mode === activePermissionMode) { return; }
+    if (mode === 'yolo') {
+        showYoloSwitchConfirm();
+        return;
+    }
+    if (chatBridge && typeof chatBridge.onPermissionModeSelect === 'function') {
+        chatBridge.onPermissionModeSelect(mode);
+    }
+}
+
+// 会话内切入 yolo 的二次确认卡（JS 侧发起；A13 启动确认由 C++ 经
+// appendStartupYoloConfirm 推送，二者共用 .mode-confirm 样式）
+function showYoloSwitchConfirm() {
+    var container = document.getElementById('messages');
+    if (!container) return;
+    var card = document.createElement('div');
+    card.className = 'mode-confirm';
+    var text = document.createElement('div');
+    text.className = 'mode-confirm-text';
+    text.textContent = i18n.modeYoloConfirm;
+    card.appendChild(text);
+    var actions = document.createElement('div');
+    actions.className = 'mode-confirm-actions';
+    var okBtn = document.createElement('button');
+    okBtn.type = 'button';
+    okBtn.className = 'mode-confirm-ok';
+    okBtn.textContent = i18n.modeYoloConfirmOk;
+    okBtn.addEventListener('click', function() {
+        card.remove();
+        if (chatBridge && typeof chatBridge.onPermissionModeSelect === 'function') {
+            chatBridge.onPermissionModeSelect('yolo');
+        }
+    });
+    var cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'mode-confirm-cancel';
+    cancelBtn.textContent = i18n.modeYoloConfirmCancel;
+    cancelBtn.addEventListener('click', function() { card.remove(); });
+    actions.appendChild(okBtn);
+    actions.appendChild(cancelBtn);
+    card.appendChild(actions);
+    container.appendChild(card);
+    scrollToBottom();
+}
+
+// C++ 推送：启动读到 yolo（A13）——弹一次确认卡，用户拒绝则降级 auto。
+// 与会话内切换确认不同：响应经 onModeConfirmResponse(bool) 回 C++ 决策。
+function appendStartupYoloConfirm(text, okLabel, cancelLabel) {
+    var container = document.getElementById('messages');
+    if (!container) return;
+    var card = document.createElement('div');
+    card.className = 'mode-confirm';
+    var textEl = document.createElement('div');
+    textEl.className = 'mode-confirm-text';
+    textEl.textContent = text;
+    card.appendChild(textEl);
+    var actions = document.createElement('div');
+    actions.className = 'mode-confirm-actions';
+    var okBtn = document.createElement('button');
+    okBtn.type = 'button';
+    okBtn.className = 'mode-confirm-ok';
+    okBtn.textContent = okLabel || i18n.modeYoloConfirmOk;
+    okBtn.addEventListener('click', function() {
+        card.remove();
+        if (chatBridge && typeof chatBridge.onModeConfirmResponse === 'function') {
+            chatBridge.onModeConfirmResponse(true);
+        }
+    });
+    var cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'mode-confirm-cancel';
+    cancelBtn.textContent = cancelLabel || i18n.modeYoloConfirmCancel;
+    cancelBtn.addEventListener('click', function() {
+        card.remove();
+        if (chatBridge && typeof chatBridge.onModeConfirmResponse === 'function') {
+            chatBridge.onModeConfirmResponse(false);
+        }
+    });
+    actions.appendChild(okBtn);
+    actions.appendChild(cancelBtn);
+    card.appendChild(actions);
+    container.appendChild(card);
+    scrollToBottom();
+}
+
+// ===========================================================================
+// 工具审批卡（permission-layer P1，ask 决策的 HITL 载体）
+// ===========================================================================
+
+// C++ 推送审批请求：渲染审批卡（操作摘要 + 批准/拒绝按钮）。
+// payload: {tool, args, tier, rememberable}；rememberable 仅 file_write（A5），
+// 控制是否渲染"批准并本会话记住"按钮（code_exec 无此按钮）。
+function appendToolApproval(callId, payload) {
+    payload = payload || {};
+    var toolName = payload.tool || '';
+    var args = (payload.args && typeof payload.args === 'object') ? payload.args : {};
+    var tier = payload.tier || 'unknown';
+    var rememberable = !!payload.rememberable;
+
+    var card = document.createElement('div');
+    card.className = 'approval-card pending';
+    card.dataset.callId = callId;
+    card.dataset.tier = tier;
+
+    // 头部：图标 + 工具名 + "需要你的批准"
+    var head = document.createElement('div');
+    head.className = 'approval-head';
+    var icon = document.createElement('span');
+    icon.className = 'approval-icon';
+    icon.textContent = '\uD83D\uDEE1\uFE0F';
+    head.appendChild(icon);
+    var title = document.createElement('span');
+    title.className = 'approval-title';
+    title.textContent = toolName + ' ' + (i18n.approvalNeeds || 'needs your approval');
+    head.appendChild(title);
+    card.appendChild(head);
+
+    // 摘要区：代码执行显示代码预览/脚本路径，文件写入显示路径+参数摘要
+    var body = document.createElement('div');
+    body.className = 'approval-body';
+    if (typeof args.code === 'string' && args.code) {
+        var pre = document.createElement('pre');
+        pre.className = 'approval-code';
+        var codeText = args.code;
+        var lines = codeText.split('\n');
+        if (lines.length > 15) {
+            var more = (i18n.approvalCodeMoreLines || '%1 more lines')
+                .replace('%1', String(lines.length - 15));
+            codeText = lines.slice(0, 15).join('\n') + '\n\u2026 (' + more + ')';
+        }
+        pre.textContent = codeText;
+        body.appendChild(pre);
+    } else if (typeof args.path === 'string' && args.path) {
+        var pathEl = document.createElement('div');
+        pathEl.className = 'approval-path';
+        pathEl.textContent = args.path;
+        body.appendChild(pathEl);
+    } else {
+        var shown = {};
+        for (var k in args) {
+            if (!args.hasOwnProperty(k)) continue;
+            var v = args[k];
+            if (typeof v === 'string' && v.length > 200) { v = v.slice(0, 200) + '\u2026'; }
+            shown[k] = v;
+        }
+        var pre2 = document.createElement('pre');
+        pre2.className = 'approval-json';
+        pre2.textContent = JSON.stringify(shown, null, 2);
+        body.appendChild(pre2);
+    }
+    card.appendChild(body);
+
+    // 操作区：批准 / （可选）批准并记住 / 拒绝
+    var actions = document.createElement('div');
+    actions.className = 'approval-actions';
+    var approveBtn = document.createElement('button');
+    approveBtn.type = 'button';
+    approveBtn.className = 'approval-approve';
+    approveBtn.textContent = i18n.approvalApprove;
+    approveBtn.addEventListener('click', function() {
+        respondToolApproval(card, callId, true, false);
+    });
+    actions.appendChild(approveBtn);
+    if (rememberable) {
+        var rememberBtn = document.createElement('button');
+        rememberBtn.type = 'button';
+        rememberBtn.className = 'approval-remember';
+        rememberBtn.textContent = i18n.approvalApproveRemember;
+        rememberBtn.addEventListener('click', function() {
+            respondToolApproval(card, callId, true, true);
+        });
+        actions.appendChild(rememberBtn);
+    }
+    var denyBtn = document.createElement('button');
+    denyBtn.type = 'button';
+    denyBtn.className = 'approval-deny';
+    denyBtn.textContent = i18n.approvalDeny;
+    denyBtn.addEventListener('click', function() {
+        respondToolApproval(card, callId, false, false);
+    });
+    actions.appendChild(denyBtn);
+    card.appendChild(actions);
+
+    var container = document.getElementById('messages');
+    if (container) { container.appendChild(card); }
+    scrollToBottom();
+}
+
+// 审批卡裁决：回传 C++（sendToolApproval），禁用按钮并标记结果
+function respondToolApproval(card, callId, approved, remember) {
+    if (card.dataset.resolved === '1') return;  // 防重复点击
+    card.dataset.resolved = '1';
+    if (chatBridge && typeof chatBridge.onToolApproval === 'function') {
+        chatBridge.onToolApproval(callId, approved, remember);
+    }
+    card.classList.remove('pending');
+    card.classList.add(approved ? 'approved' : 'denied');
+    var buttons = card.querySelectorAll('.approval-actions button');
+    for (var i = 0; i < buttons.length; i++) { buttons[i].disabled = true; }
+    var note = document.createElement('div');
+    note.className = 'approval-note';
+    if (approved && remember) {
+        note.textContent = i18n.approvalApprovedRemembered;
+    } else if (approved) {
+        note.textContent = i18n.approvalApproved;
+    } else {
+        note.textContent = i18n.approvalDenied;
+    }
+    card.appendChild(note);
+}
+
+// C++ 推送审批作废（子进程退出/崩溃/切换会话清理）：撤卡
+function dismissToolApproval(callId) {
+    var container = document.getElementById('messages');
+    if (!container) return;
+    var cards = container.querySelectorAll('.approval-card');
+    for (var i = 0; i < cards.length; i++) {
+        if (cards[i].dataset.callId === callId) {
+            cards[i].remove();
+            break;
+        }
+    }
 }
 
 // 渲染下拉面板（按 modelDropdownView 分发）。

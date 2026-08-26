@@ -101,6 +101,22 @@ public:
     /// 返回的指针所有权归 DAAgentModule，调用方不销毁
     virtual DAAgentPromptOps* agentPromptOps() = 0;
 
+    // ---- 权限层（permission-layer P1 新增，一次性 ABI 批处理；同"会话管理"节惯例，
+    //      破坏性接口变更，插件需重编译；计划二不再新增纯虚/信号，不二次破坏 ABI） ----
+    /// 获取权限配置（模式/审批超时/判官/规则/危险模式/分级覆盖，设置页读）
+    virtual QJsonObject getPermissionConfig() const = 0;
+    /// 写入权限配置（contains 守卫；运行中的子进程经 reconfigure 同步）
+    virtual void setPermissionConfig(const QJsonObject& config) = 0;
+    /// 获取当前权限模式（yolo/auto/manual）
+    virtual QString getPermissionMode() const = 0;
+    /// 设置权限模式（写 ini + emit permissionModeChanged + 运行中经 reconfigure 同步）
+    virtual void setPermissionMode(const QString& mode) = 0;
+    /// 用户对审批卡的裁决（callId 配对；rememberSession 仅 file_write 生效）
+    virtual void sendToolApproval(const QString& callId, bool approved, bool rememberSession) = 0;
+    /// 设置脚本工作区根目录（供 ${workspace} 变量解析 + 下发 Python；
+    /// 复用 setCurrentProjectPath 的 L5 注入模式，由 DAAppProject 经 core() 注入）
+    virtual void setScriptWorkspaceDir(const QString& dir) = 0;
+
 Q_SIGNALS:
     // ---- 以下 10 个由 DAAgentModule 从 DAAgentBridge 转发 ----
     /// agent 生成 token 时发射（流式渲染）
@@ -153,5 +169,14 @@ Q_SIGNALS:
     void availableModelsChanged(QVariantList models);
     /// 激活模型变化（Dock 选择 / 设置页 apply 触发），Dock 据此选中下拉项 + 刷新模型标签
     void activeModelChanged(const QString& provider, const QString& model);
+
+    // ---- 权限层信号（permission-layer P1，契约 1 一次性批处理） ----
+    /// 工具调用需要用户审批时发射（ask 决策）；args 含 _tier（分级）与
+    /// _rememberable（是否渲染"本会话记住"，仅 file_write，A5）
+    void agentToolApprovalRequest(const QString& callId, const QString& toolName, const QJsonObject& args);
+    /// 审批卡作废（子进程退出/崩溃/切换会话清理），UI 据此撤卡
+    void agentToolApprovalDismissed(const QString& callId);
+    /// 权限模式变化（设置/热切换/启动推送），Dock 据此刷新模式选择器
+    void permissionModeChanged(const QString& mode);
 };
 } // namespace DA

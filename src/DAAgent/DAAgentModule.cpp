@@ -2,6 +2,7 @@
 #include "DAAgentModule.h"
 #include "DAAgentBridge.h"
 #include "DAAgentSessionStore.h"
+#include "DAAgentPermissionManager.h"
 #include "DAAgentManager.h"
 #include "DAAgentPromptOps.h"
 #include "DAAbstractAgentTool.h"
@@ -12,6 +13,7 @@
 #include "DALogCategory.h"
 // Platform built-in tools moved to plugins/DAAgentTools plugin (plan-03)
 #include <QFile>
+#include <QFileInfo>
 #include <QSettings>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -141,6 +143,10 @@ public:
     int mCumulativeInTokens = 0;                   ///< 会话累计输入 token（跨轮次累加，压缩不重置）
     int mCumulativeOutTokens = 0;                  ///< 会话累计输出 token
     int mCumulativeTotalTokens = 0;                ///< 会话累计总 token
+
+    // ---- 权限层（permission-layer P1） ----
+    DAAgentPermissionManager* mPermissionManager = nullptr;  ///< 权限引擎（非 QObject，析构显式 delete）
+    QString mScriptWorkspaceDir;                   ///< 脚本工作区根（${workspace}），由 L5 注入
 };
 
 DAAgentModule::PrivateData::PrivateData(DAAgentModule* p) : q_ptr(p)
@@ -172,6 +178,8 @@ DAAgentModule::~DAAgentModule()
     // CRITICAL1：m_sessionStore 非 QObject 无 Qt 父子所有权，需手动 delete。
     // m_bridge 是 QObject 子对象，parent=this，由 Qt 自动释放，不在此 delete。
     delete d->mSessionStore;
+    // 权限引擎同为非 QObject，手动 delete（镜像 SessionStore 惯例）
+    delete d->mPermissionManager;
 }
 
 /**
@@ -207,6 +215,30 @@ void DAAgentModule::initialize(DACoreInterface* core)
     connect(d->mBridge, &DAAgentBridge::agentBusy, this, &DAAgentInterface::agentBusy);
     connect(d->mBridge, &DAAgentBridge::agentDone, this, &DAAgentInterface::agentDone);
     connect(d->mBridge, &DAAgentBridge::agentSessionLoaded, this, &DAAgentInterface::agentSessionLoaded);
+
+    // ---- 权限层（permission-layer P1） ----
+    // 创建权限引擎（非 QObject 无参构造，镜像 SessionStore）并加载/播种配置。
+    d->mPermissionManager = new DAAgentPermissionManager();
+    d->mPermissionManager->load();
+    // 注入 Bridge：executeTool 前置门的唯一执法依据（C++ 唯一执法点，A1）
+    d->mBridge->setPermissionManager(d->mPermissionManager);
+    // 审批请求：Bridge 侧仅知工具名/参数，分级信息由 Module 补齐后转发给 UI，
+    // 使审批卡能据 _tier 决定是否渲染"本会话记住"（仅 file_write，A5）
+    connect(d->mBridge, &DAAgentBridge::agentToolApprovalRequest, this,
+            [this](const QString& callId, const QString& toolName, const QJsonObject& args) {
+        auto* d = d_func();
+        QJsonObject payload = args;
+        QString tier = DAAgentPermissionManager::tierUnknown();
+        if (d->mPermissionManager) {
+            tier = d->mPermissionManager->tierOf(toolName, args);
+        }
+        payload[QStringLiteral("_tier")]         = tier;
+        payload[QStringLiteral("_rememberable")] = (tier == DAAgentPermissionManager::tierFileWrite());
+        emit agentToolApprovalRequest(callId, toolName, payload);
+    });
+    // 审批作废：直接透传给接口，UI 据此撤卡
+    connect(d->mBridge, &DAAgentBridge::agentToolApprovalDismissed,
+            this, &DAAgentInterface::agentToolApprovalDismissed);
 
     // CRITICAL1：创建会话持久化层（非 QObject 无参构造，不传 parent）。
     // 目录就绪由 store 内部 DADir::getAppDataPath("sessions") mkpath。
@@ -565,6 +597,15 @@ void DAAgentModule::connectSignals()
             d->mBridge->sendLoadSession(sessionId, messages);
             // load_session 后 Python 回 session_loaded，经 agentSessionLoaded 信号
             // 在 agentSessionLoaded 的恢复 lambda 中重发最后消息
+        }
+    });
+
+    // ---- 权限层：子进程退出（正常/请求停止/崩溃）→ 清空会话记忆（A5 不跨重启存活） ----
+    // 非 QObject manager 无法自收信号，由本 lambda 显式调用（母文档 §6.1 [v2.1]）
+    connect(d->mBridge, &DAAgentBridge::processExited, this, [this]() {
+        auto* d = d_func();
+        if (d->mPermissionManager) {
+            d->mPermissionManager->clearSessionMemory();
         }
     });
 
@@ -1155,6 +1196,10 @@ bool DAAgentModule::switchSession(const QString& sessionId)
     QJsonArray messages = d->mSessionStore->readMessagesForLoad(sessionId);
     // MAJOR1（round-3）：实际切换前清空队列，丢弃旧会话未完成的 pending 配对
     d->mPendingToolCallUuids.clear();
+    // 权限层（A5 [v2.1]）：会话切换即清空会话记忆——审批记忆不跨会话存活
+    if (d->mPermissionManager) {
+        d->mPermissionManager->clearSessionMemory();
+    }
     d->mCurrentSessionId = sessionId;
     d->mSessionStore->setLastActive(sessionId, d->mCurrentProjectPath);  // 带工程路径
     // 2. 确保子进程：未运行则懒启动，ready 后由常驻槽发 load_session
@@ -1308,6 +1353,10 @@ void DAAgentModule::setCurrentProjectPath(const QString& path)
     // core()->getAgentInterface() 多态调用（onProjectLoaded / 工程关闭时注入），
     // 不依赖 qobject_cast。
     d->mCurrentProjectPath = path;
+    // 权限层：同步 ${project} 变量（工程文件所在目录），供路径规则解析
+    if (d->mPermissionManager) {
+        d->mPermissionManager->setProjectDir(path.isEmpty() ? QString() : QFileInfo(path).absolutePath());
+    }
 }
 
 /**
@@ -1362,6 +1411,127 @@ DAAgentPromptOps* DAAgentModule::agentPromptOps()
 {
     DA_D(d);
     return d->mAgentManager;
+}
+
+// ===========================================================================
+// 权限层接口实现（permission-layer P1，契约 1 一次性 ABI 批处理）
+// ===========================================================================
+
+/**
+ * @brief 获取权限配置（模式/审批超时/判官/规则/危险模式/分级覆盖）
+ * @return 权限配置 JSON（权限引擎未就绪时返回空对象）
+ */
+QJsonObject DAAgentModule::getPermissionConfig() const
+{
+    DA_DC(d);
+    if (!d->mPermissionManager) {
+        return QJsonObject();
+    }
+    return d->mPermissionManager->getConfig();
+}
+
+/**
+ * @brief 写入权限配置（contains 守卫；模式变更经信号 + reconfigure 同步）
+ * @param config 权限配置 JSON
+ */
+void DAAgentModule::setPermissionConfig(const QJsonObject& config)
+{
+    DA_D(d);
+    if (!d->mPermissionManager) {
+        return;
+    }
+    const QString oldMode = d->mPermissionManager->mode();
+    d->mPermissionManager->setConfig(config);
+    // 模式变更 → 通知 UI + 同步运行中的子进程（Python 据模式决定是否判定）
+    if (d->mPermissionManager->mode() != oldMode) {
+        emit permissionModeChanged(d->mPermissionManager->mode());
+        if (d->mBridge && d->mBridge->isRunning()) {
+            d->mBridge->reconfigureAgent(getLLMConfig());
+        }
+    } else if (d->mBridge && d->mBridge->isRunning()) {
+        // 非模式字段（判官/超时/危险模式等）变更也需同步运行中子进程
+        d->mBridge->reconfigureAgent(getLLMConfig());
+    }
+}
+
+/**
+ * @brief 获取当前权限模式
+ * @return yolo / auto / manual（默认 auto）
+ */
+QString DAAgentModule::getPermissionMode() const
+{
+    DA_DC(d);
+    return d->mPermissionManager ? d->mPermissionManager->mode() : DAAgentPermissionManager::modeAuto();
+}
+
+/**
+ * @brief 设置权限模式（写 ini + emit + 运行中经 reconfigure 热同步，A2 即时生效）
+ * @param mode yolo / auto / manual（非法值忽略）
+ */
+void DAAgentModule::setPermissionMode(const QString& mode)
+{
+    DA_D(d);
+    if (!d->mPermissionManager) {
+        return;
+    }
+    if (mode != DAAgentPermissionManager::modeYolo() && mode != DAAgentPermissionManager::modeAuto()
+        && mode != DAAgentPermissionManager::modeManual()) {
+        qWarning() << "DAAgentModule::setPermissionMode: invalid mode ignored:" << mode;
+        return;
+    }
+    if (d->mPermissionManager->mode() == mode) {
+        return;  // 幂等：避免重复 emit/无谓 reconfigure
+    }
+    d->mPermissionManager->setMode(mode);
+    emit permissionModeChanged(mode);
+    if (d->mBridge && d->mBridge->isRunning()) {
+        d->mBridge->reconfigureAgent(getLLMConfig());
+    }
+}
+
+/**
+ * @brief 用户对审批卡的裁决，转发给 Bridge 消费挂起审批
+ * @param callId 工具调用 ID
+ * @param approved 是否批准
+ * @param rememberSession 是否本会话记住（仅 file_write 生效，A5）
+ */
+void DAAgentModule::sendToolApproval(const QString& callId, bool approved, bool rememberSession)
+{
+    DA_D(d);
+    if (d->mBridge) {
+        d->mBridge->onToolApproval(callId, approved, rememberSession);
+    }
+}
+
+/**
+ * @brief 设置脚本工作区根目录（${workspace} 变量 + 下发 Python，契约见母文档 §6.1）
+ *
+ * 复用 setCurrentProjectPath 的 L5 注入模式：由 DAAppProject 经
+ * core()->getAgentInterface() 多态调用。存成员并转发权限引擎；运行中的
+ * 子进程经 reconfigure 同步 workspace_root（供 run_script 判定解析）。
+ * @param dir 工作区根目录（空=未保存工程/启动无工程）
+ */
+void DAAgentModule::setScriptWorkspaceDir(const QString& dir)
+{
+    DA_D(d);
+    d->mScriptWorkspaceDir = dir;
+    if (d->mPermissionManager) {
+        d->mPermissionManager->setWorkspaceRoot(dir);
+    }
+    if (d->mBridge && d->mBridge->isRunning()) {
+        d->mBridge->reconfigureAgent(getLLMConfig());
+    }
+}
+
+/**
+ * @brief 推送当前权限模式到 Dock（与 pushModelSelection 同处，启动初始化点调用）
+ *
+ * A13：若启动读到 yolo，Dock 侧据本信号弹一次确认卡（"上次留在全自动模式…"），
+ * 用户拒绝则降级为 auto。本方法只负责推送当前态。
+ */
+void DAAgentModule::pushPermissionMode()
+{
+    emit permissionModeChanged(getPermissionMode());
 }
 
 /**

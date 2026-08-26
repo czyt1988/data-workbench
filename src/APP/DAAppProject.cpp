@@ -1093,6 +1093,10 @@ bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString
             if (auto* agent = core()->getAgentInterface()) {
                 // 契约4：先设置工程路径，使后续 setLastActive/过滤命中
                 agent->setCurrentProjectPath(effAgentPath);
+                // 权限层（permission-layer P1）：注入脚本工作区根（${workspace}）。
+                // 用确定性 makeScriptWorkspaceDir(effAgentPath) 而非成员态，避免回调时序
+                // 依赖（与 DAZipArchiveTask_Workspace 的 mWorkspaceLocalDir 同源计算）
+                agent->setScriptWorkspaceDir(makeScriptWorkspaceDir(effAgentPath));
                 // 契约4：带 projectPath 导入（importSessionFiles 用 effAgentPath 标记导入会话）
                 agent->loadSessionsFromProject(loaded->takeSessions(), effAgentPath);
             }
