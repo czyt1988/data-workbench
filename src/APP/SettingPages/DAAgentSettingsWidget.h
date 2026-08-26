@@ -34,7 +34,10 @@ public:
     // 构造函数
     explicit DAAgentSettingsWidget(QWidget* parent = nullptr);
 
-    QString getSettingPageTitle() const override { return tr("Agent LLM Settings"); }  //cn:Agent LLM 设置
+    QString getSettingPageTitle() const override
+    {
+        return tr("Agent LLM Settings");  //cn:Agent LLM 设置
+    }
     QIcon getSettingPageIcon() const override;
     void apply() override;
     void setAgentInterface(DAAgentInterface* p);

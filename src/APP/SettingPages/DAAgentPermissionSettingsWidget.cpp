@@ -188,7 +188,11 @@ void DAAgentPermissionSettingsWidget::setupUI()
                           "hard safety rules and cannot be edited or removed."));  //cn:按顺序求值、首条命中生效；未命中规则的写入将征求确认。可用变量：${workspace}、${project}、${data}、${exe}、${home}。全局拒绝行（工具 = *、动作 = deny）为硬性安全规则，不可编辑或删除。
     rulesLayout->addWidget(rulesHint);
     mRulesTable = new QTableWidget(0, 3, rulesBox);
-    mRulesTable->setHorizontalHeaderLabels({tr("Tool"), tr("Scope (glob)"), tr("Action")});  //cn:工具 / 范围（glob） / 动作
+    mRulesTable->setHorizontalHeaderLabels({
+        tr("Tool"),          //cn:工具
+        tr("Scope (glob)"),  //cn:范围（glob）
+        tr("Action")         //cn:动作
+    });
     mRulesTable->horizontalHeader()->setStretchLastSection(true);
     mRulesTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
     mRulesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -244,7 +248,10 @@ void DAAgentPermissionSettingsWidget::setupUI()
                           "chart plugin tool to inapp_mutate to let it pass silently."));  //cn:为工具显式指定风险分级（通常用于插件工具）。未列出的未知插件工具默认归入 "unknown" 分级，在自动/手动模式下会征求确认；例如可把已知可逆的图表类插件工具归入 inapp_mutate 使其静默放行。
     tierLayout->addWidget(tierHint);
     mTierTable = new QTableWidget(0, 2, tierBox);
-    mTierTable->setHorizontalHeaderLabels({tr("Tool"), tr("Tier")});  //cn:工具 / 分级
+    mTierTable->setHorizontalHeaderLabels({
+        tr("Tool"),   //cn:工具
+        tr("Tier")    //cn:分级
+    });
     mTierTable->horizontalHeader()->setStretchLastSection(true);
     mTierTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     mTierTable->setMinimumHeight(100);

@@ -30,7 +30,10 @@ class DAAgentPermissionSettingsWidget : public DAAbstractSettingPage
 public:
     explicit DAAgentPermissionSettingsWidget(QWidget* parent = nullptr);
 
-    QString getSettingPageTitle() const override { return tr("Agent Permission Settings"); }  //cn:Agent 权限设置
+    QString getSettingPageTitle() const override
+    {
+        return tr("Agent Permission Settings");  //cn:Agent 权限设置
+    }
     QIcon getSettingPageIcon() const override;
     void apply() override;
     void setAgentInterface(DAAgentInterface* p);
