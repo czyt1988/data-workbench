@@ -96,9 +96,10 @@ from retry_wrapper import retry_with_backoff, RetryAbortedError
 # 代码内容判定管线（permission-layer P2）：auto 模式下 run_code/run_script 在
 # 发起 tool_call 前完成静态规则 + 判官判定，裁决以 safety 字段附在 tool_call
 # 消息上由 C++ 门消费（母文档 A1：判定一律在 tool_call 前完成，禁止运行时
-# C++→Python 判定 RPC——_wait_for_result 只认 tool_result/stop，其余消息丢弃，
-# 判定请求被丢弃会致 C++ 挂起至超时）。导入失败时降级为不判定（safety 缺省，
-# C++ 门按无裁决处理：auto+code_exec 判官未配置时 ask 兜底）。
+# C++→Python 判定 RPC——_wait_for_result 只认 tool_result/stop/approval_pending/
+# tool_exec_start，其余消息丢弃，判定请求被丢弃会致 C++ 挂起至超时）。导入失败
+# 时降级为不判定（safety 缺省，C++ 门按无裁决处理：auto+code_exec 判官未配置
+# 时 ask 兜底）。
 try:
     import permission_judge
     _HAS_PERMISSION_JUDGE = True
@@ -605,10 +606,13 @@ class AgentRunner:
                         safety: dict | None = None) -> dict:
         """通过 stdin/stdout RPC 调用 C++ 侧工具执行器，带超时。
 
-        权限层（母文档 A9，permission-layer P1）：gated_tools（文件写入 + 代码执行
-        全集，经 init 下发）无论当前模式一律使用 tool_approval_timeout_sec 长超时
-        （默认 600s，覆盖人工审批等待），其余工具用 60s。超时列表与模式解耦，
-        模式切换无需改超时。显式传入 timeout 时尊重调用方取值。
+        超时语义（权限层）：超时只计"工具执行"时长，不计用户审批等待——
+        C++ 权限门进入 Ask 后下发 approval_pending，计时挂起（用户审批等待
+        不设时限）；用户批准后 C++ 下发 tool_exec_start，从执行起点重新开始
+        完整计时（见 _wait_for_result）。
+        预算取值：gated_tools（文件写入 + 代码执行全集，经 init 下发）用
+        tool_approval_timeout_sec 长超时（默认 600s，覆盖长时间代码执行），
+        其余工具用 60s。显式传入 timeout 时尊重调用方取值。
         safety 为代码裁决（计划二），原样附在 tool_call 消息上，缺省不带。
         """
         name = tool_call["name"]
@@ -620,22 +624,38 @@ class AgentRunner:
         call_id = tool_call["id"]
         await self.stdio.send_tool_call(call_id, name, tool_call["args"], safety=safety)
         try:
-            result = await asyncio.wait_for(
-                self._wait_for_result(call_id),
-                timeout=timeout
-            )
+            result = await self._wait_for_result(call_id, timeout)
             return result
         except asyncio.TimeoutError:
             return {"error": f"Tool '{name}' timed out after {timeout}s"}
 
-    async def _wait_for_result(self, expected_call_id: str) -> dict:
-        """阻塞等待对应 expected_call_id 的 tool_result 消息。
+    async def _wait_for_result(self, expected_call_id: str, timeout: float) -> dict:
+        """阻塞等待对应 expected_call_id 的 tool_result 消息，并管理超时计时。
 
         严格匹配 call_id——避免在乱序或迟到的 tool_result 之间错配
         （当前虽为顺序执行，但显式匹配更健壮）。
+
+        计时语义（权限层）：等待分为三段——
+        1) 收到 approval_pending 前：正常倒计时（权限门几乎即时裁决，此段
+           仅作安全网）；
+        2) approval_pending → tool_exec_start：用户审批等待，**不计时**
+           （用户不点击则永不超时）；
+        3) 收到 tool_exec_start（用户批准/直接放行、工具开始执行）后：
+           从执行起点重新计完整 timeout。
+        超时抛 asyncio.TimeoutError，错误文案由 _rpc_call 统一组装。
         """
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        approval_pending = False
         while True:
-            msg = await self.stdio.receive()
+            if approval_pending:
+                # 等待用户审批——不设时限（stop 消息仍可送达并终止等待）
+                msg = await self.stdio.receive()
+            else:
+                remaining = deadline - loop.time()
+                if remaining <= 0:
+                    raise asyncio.TimeoutError()
+                msg = await asyncio.wait_for(self.stdio.receive(), timeout=remaining)
             msg_type = msg.get("type")
             if msg_type == "tool_result":
                 if msg.get("call_id") == expected_call_id:
@@ -645,6 +665,27 @@ class AgentRunner:
                     "收到 tool_result call_id=%s，期望 %s，已忽略",
                     msg.get("call_id"), expected_call_id
                 )
+            elif msg_type == "approval_pending":
+                if msg.get("call_id") == expected_call_id:
+                    approval_pending = True
+                    logger.info("工具调用 %s 等待用户审批，超时计时已挂起", expected_call_id)
+                else:
+                    logger.warning(
+                        "收到 approval_pending call_id=%s，期望 %s，已忽略",
+                        msg.get("call_id"), expected_call_id
+                    )
+            elif msg_type == "tool_exec_start":
+                if msg.get("call_id") == expected_call_id:
+                    # 用户已批准（或直接放行），工具开始执行——从执行起点重新计时
+                    approval_pending = False
+                    deadline = loop.time() + timeout
+                    logger.info("工具调用 %s 开始执行，从执行起点重新计时 %ss",
+                                expected_call_id, timeout)
+                else:
+                    logger.warning(
+                        "收到 tool_exec_start call_id=%s，期望 %s，已忽略",
+                        msg.get("call_id"), expected_call_id
+                    )
             elif msg_type == "stop":
                 raise AgentStoppedError("Received stop while waiting for tool_result, agent has stopped")
             else:
@@ -1313,6 +1354,12 @@ async def main():
             logger.warning(
                 "收到迟到的 tool_result call_id=%s，已超时或被处理，忽略",
                 msg.get("call_id")
+            )
+        elif msg_type in ("approval_pending", "tool_exec_start"):
+            # 工具 RPC 计时期间应由 _wait_for_result 消费；走到主循环说明迟到——记日志后忽略
+            logger.warning(
+                "收到迟到的 %s call_id=%s，忽略",
+                msg_type, msg.get("call_id")
             )
         elif msg_type == "load_session":
             # C++ -> Python 下发历史 messages 重建 langgraph state（多会话切换）。

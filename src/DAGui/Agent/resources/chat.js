@@ -698,7 +698,8 @@ function updateModeTrigger() {
     if (!trig) return;
     var text = document.getElementById('mode-trigger-text');
     if (text) { text.textContent = modeLabel(activePermissionMode); }
-    trig.title = (i18n.modeSelectTip || '') + '：' + modeTip(activePermissionMode);
+    // \uFF1A = 全角冒号「：」，用转义避免 lupdate 按 GBK 解析 UTF-8 字节导致语法错误
+    trig.title = (i18n.modeSelectTip || '') + '\uFF1A' + modeTip(activePermissionMode);
     trig.dataset.mode = activePermissionMode;
 }
 
@@ -1468,7 +1469,8 @@ function appendSystemMessage(text, level) {
         icon = '⚠️';
         levelClass = 'system-warning';
     } else if (level === 'error') {
-        icon = '❌';
+        // \u274C = ❌，用转义避免 lupdate 按 GBK 解析 UTF-8 字节导致语法错误
+        icon = '\u274C';
         levelClass = 'system-error';
     }
     div.classList.add(levelClass);
