@@ -70,7 +70,7 @@ class TestDAConnectionInit:
             DAConnection("src", "out", "dst", "")
 
     def test_reject_self_connection(self):
-        with pytest.raises(ValueError, match="相同"):
+        with pytest.raises(ValueError, match="self-connection"):
             DAConnection("node_1", "out", "node_1", "in")
 
     def test_connection_id_is_uuid_format(self):

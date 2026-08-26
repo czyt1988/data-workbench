@@ -24,10 +24,22 @@ def _load_types_module():
 
 
 _pkg = types.ModuleType("DAWorkbench")
+_pkg.__path__ = []  # 标记为包，node_def 内的相对导入（from ._debug import ...）需要
 sys.modules["DAWorkbench"] = _pkg
 _wfpkg = types.ModuleType("DAWorkbench.DAWorkFlowPy")
+_wfpkg.__path__ = [os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "DAWorkbench", "DAWorkFlowPy"))]
 sys.modules["DAWorkbench.DAWorkFlowPy"] = _wfpkg
 sys.modules["DAWorkbench.DAWorkFlowPy.types"] = _load_types_module()
+
+# node_def 依赖的 _debug 模块（纯 Python 调试开关，无 C++ 依赖）
+_debug_path = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "DAWorkbench", "DAWorkFlowPy", "_debug.py")
+)
+_debug_spec = importlib.util.spec_from_file_location("DAWorkbench.DAWorkFlowPy._debug", _debug_path)
+_debug_mod = importlib.util.module_from_spec(_debug_spec)
+sys.modules["DAWorkbench.DAWorkFlowPy._debug"] = _debug_mod
+_debug_spec.loader.exec_module(_debug_mod)
 
 _node_def_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "DAWorkbench", "DAWorkFlowPy", "node_def.py")
@@ -152,10 +164,12 @@ class TestNodeDefPurePython(unittest.TestCase):
         self.assertIsInstance(SampleNode._node_display.render_template, str)
         self.assertEqual(SampleNode._node_display.render_template, "nodestyle")
 
-    def test_node_display_style_is_dict_or_none(self):
+    def test_node_display_style_fields_default_none(self):
         self.assertIsInstance(SampleNode._node_display, NodeDisplay)
-        # No style provided → should be None
-        self.assertIsNone(SampleNode._node_display.style)
+        # No style provided → 扁平样式字段（NodeDisplay 重构后无聚合 style 属性）均默认 None
+        self.assertIsNone(SampleNode._node_display.body_shape)
+        self.assertIsNone(SampleNode._node_display.background_color)
+        self.assertIsNone(SampleNode._node_display.border_color)
 
     def test_input_keys_are_strings(self):
         self.assertIsInstance(SampleNode.input_keys, list)

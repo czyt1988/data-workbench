@@ -188,7 +188,7 @@ class TestAddConnection:
         c1 = DAConnection("a", "out", "b", "in")
         c2 = DAConnection("a", "out", "b", "in")
         wf.add_connection(c1)
-        with pytest.raises(ValueError, match="已存在"):
+        with pytest.raises(ValueError, match="already exists"):
             wf.add_connection(c2)
 
     def test_add_connection_different_channels_allowed(self):
@@ -387,7 +387,7 @@ class TestTopologicalSort:
         wf.add_node(make_node("test.B", node_id="b"))
         wf.connect_node("a", "out", "b", "in")
         wf.connect_node("b", "out", "a", "in")
-        with pytest.raises(ValueError, match="环"):
+        with pytest.raises(ValueError, match="cycle"):
             wf.topological_sort()
 
     def test_diamond_shape_sort(self):
