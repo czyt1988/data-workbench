@@ -48,7 +48,8 @@ public:
     // ---- MAJOR4 UI 侧切换守卫：true 时渲染槽跳过，避免旧会话残余 token 渲染到新聊天区 ----
     bool mSwitching;
     // ---- 权限层（permission-layer P1）：web 未就绪时缓存，onWebReady flush ----
-    QString mCurrentPermissionMode;    ///< 当前权限模式（yolo/auto/manual，默认 auto）
+    QString mCurrentPermissionMode;    ///< 当前权限模式（yolo/auto/manual，默认 yolo 全自动）
+    bool mPermissionModeExplicit;      ///< 模式是否由用户显式设置过（A13 确认卡仅对显式 yolo 弹出）
     bool mStartupYoloConfirmShown;     ///< A13 启动 yolo 确认卡是否已弹过（每次启动仅一次）
 };
 
@@ -67,7 +68,8 @@ DAAgentDockWidget::PrivateData::PrivateData(DAAgentDockWidget* p)
     , mLastContextWindow(0)
     , mHasTokenStats(false)
     , mSwitching(false)
-    , mCurrentPermissionMode(QStringLiteral("auto"))
+    , mCurrentPermissionMode(QStringLiteral("yolo"))
+    , mPermissionModeExplicit(false)
     , mStartupYoloConfirmShown(false)
 {
 }
@@ -293,9 +295,11 @@ void DAAgentDockWidget::onWebReady()
     // 推送可用模型列表 + 激活供应商/模型给 web 两级选择器
     d->mChannel->setAvailableModels(d->mAvailableModels);
     d->mChannel->setActiveModel(d->mCurrentProvider, d->mCurrentModel);
-    // 权限层：推送当前权限模式给 web 模式选择器；yolo 启动弹一次确认卡（A13）
+    // 权限层：推送当前权限模式给 web 模式选择器；显式设置的 yolo 启动弹一次确认卡（A13），
+    // 默认值（未显式设置）静默进入全自动不弹卡
     d->mChannel->setPermissionMode(d->mCurrentPermissionMode);
-    if (d->mCurrentPermissionMode == QLatin1String("yolo") && !d->mStartupYoloConfirmShown) {
+    if (d->mCurrentPermissionMode == QLatin1String("yolo") && d->mPermissionModeExplicit
+        && !d->mStartupYoloConfirmShown) {
         d->mStartupYoloConfirmShown = true;
         d->mChannel->appendStartupYoloConfirm(
             tr("The permission mode is Full Auto from last session. Code execution and file writes will run without asking. Keep Full Auto mode?"),
@@ -796,6 +800,19 @@ void DAAgentDockWidget::onPermissionModeChanged(const QString& mode)
     if (d->mChannel) {
         d->mChannel->setPermissionMode(mode);
     }
+}
+
+/**
+ * @brief 权限模式"显式设置"状态（启动推送）：缓存供 onWebReady 判定 A13 确认卡
+ *
+ * 热切换（模式选择器/设置页）必然写 ini，无需更新本标志；
+ * 仅启动推送时 Module 经接口下发一次。
+ * @param explicitSet true=用户曾显式写入模式；false=当前模式为默认值
+ */
+void DAAgentDockWidget::onPermissionModeExplicitChanged(bool explicitSet)
+{
+    DA_D(d);
+    d->mPermissionModeExplicit = explicitSet;
 }
 
 /**

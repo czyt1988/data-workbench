@@ -135,7 +135,7 @@ void DAAgentPermissionSettingsWidget::setupUI()
     QGroupBox* modeBox = new QGroupBox(tr("Default Permission Mode"), content);  //cn:默认权限模式
     QFormLayout* modeForm = new QFormLayout(modeBox);
     mModeCombo = new QComboBox(modeBox);
-    // 展示顺序：auto（推荐默认）→ manual → yolo；data 存协议值
+    // 展示顺序：auto → manual → yolo（未配置时默认）；data 存协议值
     mModeCombo->addItem(tr("Auto (rules + judge)"), QStringLiteral("auto"));       //cn:自动（规则+判官）
     mModeCombo->addItem(tr("Manual (ask every write/code)"), QStringLiteral("manual"));  //cn:手动（写入/代码每次询问）
     mModeCombo->addItem(tr("Full Auto (yolo)"), QStringLiteral("yolo"));           //cn:全自动（yolo）
@@ -409,7 +409,7 @@ void DAAgentPermissionSettingsWidget::loadConfig()
     const QString mode = jsonString(c, "mode");
     int idx = mModeCombo->findData(mode);
     if (idx < 0) {
-        idx = mModeCombo->findData(QStringLiteral("auto"));  // 未知/缺失回退 auto
+        idx = mModeCombo->findData(QStringLiteral("yolo"));  // 未知/缺失回退 yolo（默认全自动）
     }
     mModeCombo->setCurrentIndex(qMax(0, idx));
     mApprovalTimeoutSpin->setValue(jsonInt(c, "tool_approval_timeout_sec", 600));

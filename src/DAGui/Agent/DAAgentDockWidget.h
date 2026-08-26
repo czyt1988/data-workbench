@@ -73,8 +73,11 @@ public Q_SLOTS:
     void onActiveModelChanged(const QString& provider, const QString& model);
 
     // ---- 权限层（permission-layer P1） ----
-    /// 权限模式变化（启动推送/热切换），推送到 web 模式选择器；yolo 启动时弹确认卡（A13）
+    /// 权限模式变化（启动推送/热切换），推送到 web 模式选择器；显式 yolo 启动时弹确认卡（A13）
     void onPermissionModeChanged(const QString& mode);
+    /// 权限模式"显式设置"状态（启动推送）：缓存供 onWebReady 判定 A13 确认卡
+    /// （默认全自动不弹卡，仅用户曾显式写入的 yolo 跨重启时二次确认）
+    void onPermissionModeExplicitChanged(bool explicitSet);
     /// 工具调用需审批（ask 决策），推送审批卡到 web（args 含 _tier/_rememberable）
     void onToolApprovalRequest(const QString& callId, const QString& toolName, const QJsonObject& args);
     /// 审批作废（子进程退出/崩溃/切换会话），通知 web 撤卡

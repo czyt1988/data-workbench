@@ -493,17 +493,17 @@ void DAAgentPermissionManager::setTierOverrides(const QJsonObject& overrides)
 // ===========================================================================
 
 /**
- * @brief 当前模式（非法值回退 auto）
+ * @brief 当前模式（未配置默认 yolo 全自动，非法值回退 yolo）
  * @return yolo / auto / manual
  */
 QString DAAgentPermissionManager::mode() const
 {
     QSettings s = openAgentIni();
-    const QString m = s.value(QLatin1String(kKeyPermissionMode), QLatin1String(kModeAuto)).toString();
+    const QString m = s.value(QLatin1String(kKeyPermissionMode), QLatin1String(kModeYolo)).toString();
     if (m == QLatin1String(kModeYolo) || m == QLatin1String(kModeAuto) || m == QLatin1String(kModeManual)) {
         return m;
     }
-    return QString::fromLatin1(kModeAuto);
+    return QString::fromLatin1(kModeYolo);
 }
 
 /**
@@ -519,6 +519,19 @@ void DAAgentPermissionManager::setMode(const QString& mode)
     }
     QSettings s = openAgentIni();
     s.setValue(QLatin1String(kKeyPermissionMode), mode);
+}
+
+/**
+ * @brief 模式是否由用户显式写入过（ini 含 agent/permission_mode 键）
+ *
+ * 未显式设置时 mode() 返回默认值 yolo；A13 启动确认卡仅对显式设置的
+ * yolo 弹出——默认值静默进入全自动，不视为用户的危险态选择。
+ * @return true=ini 中存在模式键（曾显式设置）
+ */
+bool DAAgentPermissionManager::modeExplicitlySet() const
+{
+    QSettings s = openAgentIni();
+    return s.contains(QLatin1String(kKeyPermissionMode));
 }
 
 // ===========================================================================

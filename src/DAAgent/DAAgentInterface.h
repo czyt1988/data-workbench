@@ -107,7 +107,7 @@ public:
     virtual QJsonObject getPermissionConfig() const = 0;
     /// 写入权限配置（contains 守卫；运行中的子进程经 reconfigure 同步）
     virtual void setPermissionConfig(const QJsonObject& config) = 0;
-    /// 获取当前权限模式（yolo/auto/manual）
+    /// 获取当前权限模式（yolo/auto/manual，未配置默认 yolo 全自动）
     virtual QString getPermissionMode() const = 0;
     /// 设置权限模式（写 ini + emit permissionModeChanged + 运行中经 reconfigure 同步）
     virtual void setPermissionMode(const QString& mode) = 0;
@@ -178,5 +178,9 @@ Q_SIGNALS:
     void agentToolApprovalDismissed(const QString& callId);
     /// 权限模式变化（设置/热切换/启动推送），Dock 据此刷新模式选择器
     void permissionModeChanged(const QString& mode);
+    /// 权限模式"显式设置"状态（启动推送）：true=用户曾显式写入模式（ini 有键），
+    /// false=当前模式为默认值；Dock 据此决定 A13 启动 yolo 确认卡是否弹出
+    /// （默认全自动静默生效，仅显式 yolo 跨重启时二次确认）
+    void permissionModeExplicitChanged(bool explicitSet);
 };
 } // namespace DA

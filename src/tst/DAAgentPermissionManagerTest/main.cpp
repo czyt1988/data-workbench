@@ -379,8 +379,9 @@ void DAAgentPermissionManagerTest::testConfigRoundTrip()
     DAAgentPermissionManager mgr;
     QVERIFY(mgr.load());
 
-    // 默认值
-    QCOMPARE(mgr.mode(), QStringLiteral("auto"));
+    // 默认值：未配置 → yolo（默认全自动），且非显式设置（A13 启动确认卡不弹的判据）
+    QCOMPARE(mgr.mode(), QStringLiteral("yolo"));
+    QVERIFY(!mgr.modeExplicitlySet());
     QCOMPARE(mgr.toolApprovalTimeoutSec(), 600);
     QCOMPARE(mgr.judgeTimeoutSec(), 30);
     QVERIFY(!mgr.manualBlockInappTools());
@@ -395,6 +396,7 @@ void DAAgentPermissionManagerTest::testConfigRoundTrip()
     patch["judge_timeout_sec"]         = 45;
     mgr.setConfig(patch);
     QCOMPARE(mgr.mode(), QStringLiteral("manual"));
+    QVERIFY(mgr.modeExplicitlySet());  // 显式写入后 ini 含键（A13 跨重启确认判据）
     QCOMPARE(mgr.toolApprovalTimeoutSec(), 900);
     QVERIFY(mgr.manualBlockInappTools());
     QCOMPARE(mgr.judgeModel(), QStringLiteral("judge-model-x"));

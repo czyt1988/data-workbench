@@ -53,9 +53,9 @@ let modelDropdownView = 'providers';  // 'providers'（供应商层）| 'models'
 let modelDropdownProvider = '';       // 模型层当前展示的供应商
 
 // —— 权限模式选择器状态（permission-layer P1）——
-// 三档：yolo（全自动）/ auto（规则判定，默认）/ manual（每次询问）。
+// 三档：yolo（全自动，默认）/ auto（规则判定）/ manual（每次询问）。
 // C++ 经 setPermissionMode 推送当前态；用户点选切 yolo 时先弹二次确认卡。
-let activePermissionMode = 'auto';   // 当前激活模式（未知态回退 auto）
+let activePermissionMode = 'yolo';   // 当前激活模式（未知态回退 yolo，与 C++ 默认一致）
 
 function initMarkdown() {
     md = window.markdownit({
@@ -686,7 +686,7 @@ function modeTip(mode) {
 
 // C++ 经 setPermissionMode 推送当前模式（启动推送/热切换回显）
 function setPermissionMode(mode) {
-    activePermissionMode = (mode === 'yolo' || mode === 'manual') ? mode : 'auto';
+    activePermissionMode = (mode === 'auto' || mode === 'manual') ? mode : 'yolo';
     updateModeTrigger();
     var dd = document.getElementById('mode-dropdown');
     if (dd && !dd.hasAttribute('hidden')) { renderModeDropdown(); }
@@ -794,8 +794,9 @@ function showYoloSwitchConfirm() {
     scrollToBottom();
 }
 
-// C++ 推送：启动读到 yolo（A13）——弹一次确认卡，用户拒绝则降级 auto。
-// 与会话内切换确认不同：响应经 onModeConfirmResponse(bool) 回 C++ 决策。
+// C++ 推送：启动读到显式设置的 yolo（A13）——弹一次确认卡，用户拒绝则降级 auto。
+// 默认 yolo（未显式设置）不弹卡；与会话内切换确认不同，响应经
+// onModeConfirmResponse(bool) 回 C++ 决策。
 function appendStartupYoloConfirm(text, okLabel, cancelLabel) {
     var container = document.getElementById('messages');
     if (!container) return;

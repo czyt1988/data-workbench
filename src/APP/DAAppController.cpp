@@ -272,10 +272,12 @@ void DAAppController::initialize()
         connect(agent, &DAAgentInterface::availableModelsChanged, dock, &DAAgentDockWidget::onAvailableModelsChanged);
         connect(agent, &DAAgentInterface::activeModelChanged, dock, &DAAgentDockWidget::onActiveModelChanged);
         connect(dock, &DAAgentDockWidget::activeModelChangeRequested, agent, &DAAgentInterface::setActiveModel);
-        // 权限层（permission-layer P1）：接口信号 → Dock 槽（3 条），Dock 信号 → 接口方法（3 条）
+        // 权限层（permission-layer P1）：接口信号 → Dock 槽（4 条），Dock 信号 → 接口方法（3 条）
         connect(agent, &DAAgentInterface::agentToolApprovalRequest, dock, &DAAgentDockWidget::onToolApprovalRequest);
         connect(agent, &DAAgentInterface::agentToolApprovalDismissed, dock, &DAAgentDockWidget::onToolApprovalDismissed);
         connect(agent, &DAAgentInterface::permissionModeChanged, dock, &DAAgentDockWidget::onPermissionModeChanged);
+        // 模式"显式设置"状态（启动推送）：Dock 据此决定 A13 确认卡（默认全自动不弹卡）
+        connect(agent, &DAAgentInterface::permissionModeExplicitChanged, dock, &DAAgentDockWidget::onPermissionModeExplicitChanged);
         connect(dock, &DAAgentDockWidget::permissionModeChangeRequested, agent, &DAAgentInterface::setPermissionMode);
         connect(dock, &DAAgentDockWidget::toolApprovalDecision, agent, &DAAgentInterface::sendToolApproval);
         // 启动 yolo 确认卡（A13）用户拒绝 → 降级 auto
@@ -335,7 +337,7 @@ void DAAppController::postPluginInit()
         agentMod->setScriptWorkspaceDir(QString());  // 权限层：启动无工程 → ${workspace} 清空
         agentMod->restoreLastActiveSession();         // 填充下拉 + 全新对话
         agentMod->pushModelSelection();  // 推送供应商/模型列表 + 激活选择到 Dock 下拉
-        agentMod->pushPermissionMode();  // 推送权限模式到 Dock 模式选择器（yolo 时 Dock 弹启动确认，A13）
+        agentMod->pushPermissionMode();  // 推送权限模式到 Dock 模式选择器（显式 yolo 时 Dock 弹启动确认，A13）
         agentMod->prestartAgent();  // 预启动 agent 子进程（受 auto_prestart 开关 + LLM 配置控制）
     }
 }

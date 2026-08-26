@@ -1483,12 +1483,12 @@ void DAAgentModule::setPermissionConfig(const QJsonObject& config)
 
 /**
  * @brief 获取当前权限模式
- * @return yolo / auto / manual（默认 auto）
+ * @return yolo / auto / manual（默认 yolo 全自动）
  */
 QString DAAgentModule::getPermissionMode() const
 {
     DA_DC(d);
-    return d->mPermissionManager ? d->mPermissionManager->mode() : DAAgentPermissionManager::modeAuto();
+    return d->mPermissionManager ? d->mPermissionManager->mode() : DAAgentPermissionManager::modeYolo();
 }
 
 /**
@@ -1553,12 +1553,15 @@ void DAAgentModule::setScriptWorkspaceDir(const QString& dir)
 /**
  * @brief 推送当前权限模式到 Dock（与 pushModelSelection 同处，启动初始化点调用）
  *
- * A13：若启动读到 yolo，Dock 侧据本信号弹一次确认卡（"上次留在全自动模式…"），
- * 用户拒绝则降级为 auto。本方法只负责推送当前态。
+ * A13：若启动读到用户显式设置的 yolo，Dock 侧据本信号弹一次确认卡
+ * （"上次留在全自动模式…"），用户拒绝则降级为 auto；yolo 来自默认值
+ * （未显式设置）时不弹卡，静默进入全自动。本方法推送当前态与显式标志。
  */
 void DAAgentModule::pushPermissionMode()
 {
+    DA_D(d);
     emit permissionModeChanged(getPermissionMode());
+    emit permissionModeExplicitChanged(d->mPermissionManager ? d->mPermissionManager->modeExplicitlySet() : false);
 }
 
 /**

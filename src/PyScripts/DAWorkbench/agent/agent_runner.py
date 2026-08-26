@@ -420,7 +420,7 @@ class AgentRunner:
 
         # —— 权限层字段（permission-layer P1 契约 3：仅存储，判定/消费逻辑在计划二） ——
         # C++ 经 init/reconfigure 全量下发（母文档 §8），此处统一解析存储，
-        # 保证字段缺失时有安全默认值（模式回退 auto、超时回退 600/60）。
+        # 保证字段缺失时有安全默认值（模式回退 yolo、超时回退 600/60）。
         self._apply_permission_config(config)
 
         # 配置 LLM
@@ -509,9 +509,10 @@ class AgentRunner:
 
         P1 阶段 Python 仅存储这些字段，不做判定/消费——代码内容判定（静态规则 +
         判官）与 `tool_call.safety` 生产属计划二。字段缺失时取安全默认值：
-        模式回退 "auto"、gated_tools 回退空集、审批超时回退 600、判官回退未配置。
+        模式回退 "yolo"（与 C++ 默认全自动一致）、gated_tools 回退空集、
+        审批超时回退 600、判官回退未配置。
         """
-        self._permission_mode = config.get("permission_mode", "auto")
+        self._permission_mode = config.get("permission_mode", "yolo")
         self._workspace_root = config.get("workspace_root", "") or ""
         gated = config.get("gated_tools", [])
         self._gated_tools = set(gated) if isinstance(gated, list) else set()
@@ -988,7 +989,7 @@ class AgentRunner:
                 # 判定异常不阻塞工具调用：safety 置缺省，交由 C++ 门按无裁决兜底。
                 safety = None
                 if (_HAS_PERMISSION_JUDGE
-                        and getattr(self, "_permission_mode", "auto") == "auto"
+                        and getattr(self, "_permission_mode", "yolo") == "auto"
                         and name in permission_judge.CODE_EXEC_TOOLS):
                     try:
                         safety = await permission_judge.judge_tool_call(name, args, {

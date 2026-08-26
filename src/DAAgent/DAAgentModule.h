@@ -132,8 +132,9 @@ public:
     // 推送当前供应商/模型选择到 Dock（emit availableModelsChanged + activeModelChanged）
     // 由 DAAppController 在接口↔Dock 信号链 connect 完成后调用
     void pushModelSelection();
-    // 推送当前权限模式到 Dock（emit permissionModeChanged），与 pushModelSelection 同处
-    // 由 DAAppController 在接口↔Dock 信号链 connect 完成后调用；A13 启动 yolo 确认由 Dock 侧触发
+    // 推送当前权限模式到 Dock（emit permissionModeChanged + permissionModeExplicitChanged），
+    // 与 pushModelSelection 同处，由 DAAppController 在接口↔Dock 信号链 connect 完成后调用；
+    // A13 启动 yolo 确认由 Dock 侧触发（仅显式设置的 yolo 弹卡，默认值静默进入全自动）
     void pushPermissionMode();
 
 private:

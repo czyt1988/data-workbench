@@ -460,7 +460,7 @@ void DAAgentWebChannel::dismissToolApproval(const QString& callId)
 }
 
 /**
- * @brief 推送启动 yolo 确认卡到 web（A13：启动读到 yolo 弹一次确认）
+ * @brief 推送启动 yolo 确认卡到 web（A13：启动读到显式设置的 yolo 弹一次确认）
  * @param text 确认文案
  * @param okLabel 确认按钮文案
  * @param cancelLabel 取消按钮文案

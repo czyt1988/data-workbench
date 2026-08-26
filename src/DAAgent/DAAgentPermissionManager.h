@@ -89,10 +89,12 @@ public:
     void setTierOverrides(const QJsonObject& overrides);
 
     // ---- 模式（agent-config.ini agent/permission_mode） ----
-    // 当前模式（非法值回退 auto）
+    // 当前模式（未配置默认 yolo 全自动，非法值回退 yolo）
     QString mode() const;
     // 写入模式（仅接受 yolo/auto/manual）
     void setMode(const QString& mode);
+    // 模式是否由用户显式写入过（ini 含键；A13 启动确认卡仅对显式 yolo 弹出）
+    bool modeExplicitlySet() const;
 
     // ---- 工具分级（内置表 → 参数约定回退 → unknown，tier_overrides 最高优先） ----
     // 返回工具的分级名

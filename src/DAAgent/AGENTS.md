@@ -405,6 +405,7 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 - **硬 deny 全模式生效**：系统目录（`c:/windows/**` 等 4 条 `tool:"*"` deny 种子）在 yolo/auto/manual 任何模式、任何分级之前先行求值，加载时强制回填，设置页锁定不可删。
 - **审批与判定均不落盘**：审批是 `executeTool` 前置门，不进会话 JSONL（`tool_call`/`tool_result` 正常持久化，审批只延迟 result）；`safety` 裁决也不持久化。会话记忆仅内存态（仅 `file_write`，`code_exec` 永不记忆），会话切换/进程退出/崩溃即清空。
 - **模式与超时**：模式是 C++ 状态，切换即时生效（门即时消费）并经 `reconfigure` 同步 Python（仅用于决定是否花费判定成本）。工具 RPC 超时只计执行时长、不计审批等待：门进入 Ask 时下发 `approval_pending`，Python 侧倒计时挂起（用户审批等待不设时限）；批准后下发 `tool_exec_start`，Python 从执行起点重新计完整超时。超时预算与模式解耦：gated_tools（file_write+code_exec）用 `tool_approval_timeout_sec`（默认 600s，覆盖长时间代码执行），其余工具 60s。
+- **默认模式为全自动（yolo）+ A13 仅对显式设置弹卡**：ini 无 `agent/permission_mode` 键时 `mode()` 返回默认值 yolo；`modeExplicitlySet()`（ini 是否含键）区分「用户显式设置」与默认值。A13 启动确认卡仅对**显式设置**的 yolo 弹出（跨重启二次确认），默认值 yolo 静默进入全自动。`DAAgentModule::pushPermissionMode` 经 `permissionModeExplicitChanged(bool)` 下发显式标志，Dock 缓存后在 onWebReady 判定弹卡。
 
 ---
 
