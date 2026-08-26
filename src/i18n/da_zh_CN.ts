@@ -154,17 +154,17 @@
 <context>
     <name>DA::DAAgentBridge</name>
     <message>
-        <location filename="../DAAgent/DAAgentBridge.cpp" line="+162"/>
+        <location filename="../DAAgent/DAAgentBridge.cpp" line="+175"/>
         <source>Agent process startup timed out</source>
         <translation>Agent 进程启动超时</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+36"/>
         <source>Agent subprocess not ready within %1 ms, initialization may have failed, check logs</source>
         <translation>Agent 子进程启动后 %1 毫秒内未就绪，初始化可能失败，请查看日志排查</translation>
     </message>
     <message>
-        <location line="+246"/>
+        <location line="+279"/>
         <source>Failed to write to agent subprocess stdin</source>
         <translation>写入 agent 子进程 stdin 失败</translation>
     </message>
@@ -174,12 +174,12 @@
         <translation>解析 agent 标准输出的 JSON 行失败：%1，错误：%2</translation>
     </message>
     <message>
-        <location line="+229"/>
+        <location line="+350"/>
         <source>Failed to parse trailing JSON line from agent stdout: %1, error: %2</source>
         <translation>解析 agent 标准输出的末尾 JSON 行失败：%1，错误：%2</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+54"/>
         <source>Agent process crashed (exit code %1), recovering... (%2/%3)</source>
         <translation>Agent 进程异常退出（代码 %1），正在恢复... (%2/%3)</translation>
     </message>
@@ -189,7 +189,7 @@
         <translation>Agent 进程多次异常退出（%1 次），请重启程序</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+44"/>
         <source>Agent response timeout (no activity for %1 minutes)</source>
         <translation>Agent 响应超时（%1 分钟无活动）</translation>
     </message>
@@ -197,7 +197,7 @@
 <context>
     <name>DA::DAAgentDockWidget</name>
     <message>
-        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+230"/>
+        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+245"/>
         <source>Ready</source>
         <translation>就绪</translation>
     </message>
@@ -222,7 +222,7 @@
         <translation>终止</translation>
     </message>
     <message>
-        <location line="-99"/>
+        <location line="-109"/>
         <source>Session Manager</source>
         <translation>会话管理</translation>
     </message>
@@ -232,7 +232,7 @@
         <translation>新建会话</translation>
     </message>
     <message>
-        <location line="+620"/>
+        <location line="+751"/>
         <source>tokens: ~%1 / %2</source>
         <translation>token: ~%1 / %2</translation>
     </message>
@@ -242,17 +242,17 @@
         <translation>token: %1 / %2</translation>
     </message>
     <message>
-        <location line="-524"/>
+        <location line="-645"/>
         <source>tokens: -</source>
         <translation>token: -</translation>
     </message>
     <message>
-        <location line="+488"/>
+        <location line="+609"/>
         <source>(untitled)</source>
         <translation>（未命名）</translation>
     </message>
     <message>
-        <location line="-487"/>
+        <location line="-608"/>
         <source>input: %1</source>
         <translation>输入：%1</translation>
     </message>
@@ -312,7 +312,132 @@
         <translation>返回</translation>
     </message>
     <message>
-        <location line="+527"/>
+        <location line="+1"/>
+        <source>Details</source>
+        <translation>详细信息</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copied</source>
+        <translation>已复制</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>[truncated]</source>
+        <translation>[已截断]</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Permission mode</source>
+        <translation>权限模式</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Full Auto</source>
+        <translation>全自动</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Auto</source>
+        <translation>自动</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Ask Every Time</source>
+        <translation>每次询问</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Run everything without asking (system directories still blocked)</source>
+        <translation>全部直接执行不再询问（系统目录仍拦截）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reads and chart edits pass; file writes and code execution judged by rules</source>
+        <translation>读取与图表编辑放行；文件写入与代码执行按规则判定</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>File writes and code execution need approval every time</source>
+        <translation>文件写入与代码执行每次都需批准</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Switch to Full Auto mode? Code execution and file writes will no longer ask for confirmation.</source>
+        <translation>切换到全自动模式？代码执行与文件写入将不再请求确认。</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Switch</source>
+        <translation>切换</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>needs your approval</source>
+        <translation>需要你的批准</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Approve</source>
+        <translation>批准</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Deny</source>
+        <translation>拒绝</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Approve &amp;&amp; remember for this session</source>
+        <translation>批准并本会话记住</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Approved</source>
+        <translation>已批准</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Denied</source>
+        <translation>已拒绝</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Approved (remembered for this session)</source>
+        <translation>已批准（本会话已记住）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>%1 more lines</source>
+        <translation>还有 %1 行</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>The permission mode is Full Auto from last session. Code execution and file writes will run without asking. Keep Full Auto mode?</source>
+        <translation>上次会话留在全自动权限模式。代码执行与文件写入将不再询问直接执行。是否保持全自动模式？</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Keep Full Auto</source>
+        <translation>保持全自动</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Switch to Auto</source>
+        <translation>切换为自动</translation>
+    </message>
+    <message>
+        <location line="+604"/>
         <source>API quota exhausted, please check account balance or change API key</source>
         <translation>API 配额已耗尽，请检查账户余额或更换 API Key</translation>
     </message>
@@ -415,8 +540,8 @@
         <translation>取消</translation>
     </message>
     <message>
-        <location line="+23"/>
-        <location line="+7"/>
+        <location line="+24"/>
+        <location line="+8"/>
         <source>Tip</source>
         <translation>提示</translation>
     </message>
@@ -459,15 +584,15 @@
         <translation>关闭</translation>
     </message>
     <message>
-        <location line="+72"/>
-        <location line="+38"/>
-        <location line="+26"/>
+        <location line="+73"/>
+        <location line="+40"/>
+        <location line="+28"/>
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location line="-64"/>
-        <location line="+38"/>
+        <location line="-67"/>
+        <location line="+40"/>
         <source>Save failed</source>
         <translation>保存失败</translation>
     </message>
@@ -482,7 +607,7 @@
         <translation>确定删除 Agent「%1」吗？</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+11"/>
         <source>Delete failed</source>
         <translation>删除失败</translation>
     </message>
@@ -490,7 +615,7 @@
 <context>
     <name>DA::DAAgentModule</name>
     <message>
-        <location filename="../DAAgent/DAAgentModule.cpp" line="+276"/>
+        <location filename="../DAAgent/DAAgentModule.cpp" line="+333"/>
         <source>Agent system prompt file is empty, fallback to built-in default: %1</source>
         <translation>Agent 系统提示词文件为空，回退到内置默认提示词：%1</translation>
     </message>
@@ -500,18 +625,18 @@
         <translation>读取 Agent 系统提示词文件失败，回退到内置默认提示词：%1</translation>
     </message>
     <message>
-        <location line="+118"/>
+        <location line="+120"/>
         <source>LLM is not configured, cannot start agent. Please configure LLM in settings first.</source>
         <translation>LLM 未配置，无法启动 Agent，请先在设置中配置 LLM</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+949"/>
+        <location line="+966"/>
         <source>LLM is not configured. Please configure LLM in settings first.</source>
         <translation>LLM 未配置，请先在设置中配置 LLM</translation>
     </message>
     <message>
-        <location line="-938"/>
+        <location line="-955"/>
         <source>Cannot find Python interpreter path, please configure it in settings</source>
         <translation>无法找到 Python 解释器路径，请在设置页配置 Python 解释器</translation>
     </message>
@@ -521,15 +646,181 @@
         <translation>无法找到 agent_runner.py 路径: %1</translation>
     </message>
     <message>
-        <location line="+932"/>
+        <location line="+949"/>
         <source>LLM is not configured, skip agent analysis. Please configure LLM in settings first.</source>
         <translation>LLM 未配置，跳过 Agent 分析，请先在设置中配置 LLM</translation>
     </message>
 </context>
 <context>
+    <name>DA::DAAgentPermissionSettingsWidget</name>
+    <message>
+        <location filename="../APP/SettingPages/DAAgentPermissionSettingsWidget.cpp" line="+135"/>
+        <source>Default Permission Mode</source>
+        <translation>默认权限模式</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Auto (rules + judge)</source>
+        <translation>自动（规则+判官）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Manual (ask every write/code)</source>
+        <translation>手动（写入/代码每次询问）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Full Auto (yolo)</source>
+        <translation>全自动（yolo）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mode:</source>
+        <translation>模式：</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Approval</source>
+        <translation>审批</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Max wait for user approval on file writes / code execution</source>
+        <translation>文件写入/代码执行等待用户批准的最长时间</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Approval timeout:</source>
+        <translation>审批超时：</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>In manual mode, also ask before in-app chart edits</source>
+        <translation>手动模式下，应用内图表修改也需询问</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Code Judge (optional)</source>
+        <translation>代码判官（可选）</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Leave empty to disable the judge</source>
+        <translation>留空则不启用判官</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Judge model:</source>
+        <translation>判官模型：</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Judge timeout:</source>
+        <translation>判官超时：</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>When the judge model is not configured, Auto mode still asks for approval on every code execution (even if no dangerous pattern matches). Configuring a judge enables automatic allow/deny for gray-area code, and code matching no pattern is then allowed silently.</source>
+        <translation>未配置判官模型时，自动模式对代码执行仍会逐次询问（即使未命中任何危险模式）；配置判官后可对灰区代码自动放行/拒绝，未命中模式的代码将静默放行。</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>File Path Rules</source>
+        <translation>文件路径规则</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Evaluated in order, first match wins; file writes matching no rule ask for approval. Variables: ${workspace}, ${project}, ${data}, ${exe}, ${home}. Global deny rows (tool = *, action = deny) are hard safety rules and cannot be edited or removed.</source>
+        <translation>按顺序求值、首条命中生效；未命中规则的写入将征求确认。可用变量：${workspace}、${project}、${data}、${exe}、${home}。全局拒绝行（工具 = *、动作 = deny）为硬性安全规则，不可编辑或删除。</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <location line="+60"/>
+        <source>Tool</source>
+        <translation>工具</translation>
+    </message>
+    <message>
+        <location line="-59"/>
+        <source>Scope (glob)</source>
+        <translation>范围（glob）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Action</source>
+        <translation>动作</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Add Rule</source>
+        <translation>新增规则</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+59"/>
+        <source>Remove Selected</source>
+        <translation>删除选中</translation>
+    </message>
+    <message>
+        <location line="-51"/>
+        <source>Code Danger Patterns (Auto mode)</source>
+        <translation>代码危险模式（自动模式）</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>One regular expression per line; invalid expressions are skipped. Deny patterns reject code outright; Escalate patterns are referred to the judge model. Note: this judging layer is an advisory defense, not a security boundary — static patterns can be bypassed by obfuscation (e.g. indirect attribute access, importing a malicious module from a clean entry script, rewriting the script after judging). For strict scenarios use Manual mode.</source>
+        <translation>每行一条正则表达式；非法表达式将被跳过。拒绝（deny）模式直接拒绝代码；升级（escalate）模式交由判官模型裁决。注意：判定层是咨询性防线而非安全边界——静态模式可被混淆绕过（如间接属性访问、经干净入口脚本导入恶意模块、判定后改写脚本等）。严格场景请使用手动（manual）模式。</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Deny patterns (matched =&gt; reject):</source>
+        <translation>拒绝模式（命中即拒绝）：</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+5"/>
+        <source>One regex per line</source>
+        <translation>每行一条正则</translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <source>Escalate patterns (matched =&gt; consult judge):</source>
+        <translation>升级模式（命中交判官裁决）：</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Tool Tier Overrides</source>
+        <translation>工具分级覆盖</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Explicitly assign a risk tier to a tool (typically plugin tools). Unlisted unknown plugin tools default to the &quot;unknown&quot; tier, which asks for approval in Auto/Manual modes; e.g. map a known-reversible chart plugin tool to inapp_mutate to let it pass silently.</source>
+        <translation>为工具显式指定风险分级（通常用于插件工具）。未列出的未知插件工具默认归入 &quot;unknown&quot; 分级，在自动/手动模式下会征求确认；例如可把已知可逆的图表类插件工具归入 inapp_mutate 使其静默放行。</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Tier</source>
+        <translation>分级</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Add Override</source>
+        <translation>新增覆盖</translation>
+    </message>
+    <message>
+        <location line="+112"/>
+        <source>Hard safety rule: cannot be edited or removed</source>
+        <translation>硬性安全规则：不可编辑或删除</translation>
+    </message>
+    <message>
+        <location filename="../APP/SettingPages/DAAgentPermissionSettingsWidget.h" line="+35"/>
+        <source>Agent Permission Settings</source>
+        <translation>Agent 权限设置</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAAgentSettingsWidget</name>
     <message>
-        <location filename="../APP/SettingPages/DAAgentSettingsWidget.cpp" line="+177"/>
+        <location filename="../APP/SettingPages/DAAgentSettingsWidget.cpp" line="+181"/>
         <location line="+5"/>
         <source> s</source>
         <translation>秒</translation>
@@ -552,7 +843,7 @@
         <translation>秒</translation>
     </message>
     <message>
-        <location line="-95"/>
+        <location line="-99"/>
         <source>Base URL</source>
         <translation>基础地址</translation>
     </message>
@@ -562,7 +853,7 @@
         <translation>API 密钥</translation>
     </message>
     <message>
-        <location line="+113"/>
+        <location line="+117"/>
         <source>Ready Timeout</source>
         <translation>就绪超时</translation>
     </message>
@@ -572,7 +863,7 @@
         <translation>停止超时</translation>
     </message>
     <message>
-        <location line="-151"/>
+        <location line="-155"/>
         <source>Add Provider</source>
         <translation>新增供应商</translation>
     </message>
@@ -602,22 +893,22 @@
         <translation>模型</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Model Name</source>
         <translation>模型名</translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Context Size</source>
         <translation>上下文大小</translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Max Output Tokens</source>
         <translation>最大输出 token</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+19"/>
         <source>Model Providers</source>
         <translation>模型供应商</translation>
     </message>
@@ -762,19 +1053,27 @@
         <translation>（未命名）</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+21"/>
         <source>not set</source>
         <translation>未设置</translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+2"/>
         <source>set (hidden)</source>
         <translation>已设置(隐藏)</translation>
     </message>
     <message>
-        <location filename="../APP/SettingPages/DAAgentSettingsWidget.h" line="+37"/>
+        <location filename="../APP/SettingPages/DAAgentSettingsWidget.h" line="+39"/>
         <source>Agent LLM Settings</source>
         <translation>Agent LLM 设置</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAgentToolsPlugin</name>
+    <message>
+        <location filename="../../plugins/DAAgentTools/DAAgentToolsPlugin.h" line="+31"/>
+        <source>Platform built-in agent tools</source>
+        <translation>平台内置 agent 工具</translation>
     </message>
 </context>
 <context>
@@ -2057,29 +2356,29 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+676"/>
+        <location filename="../APP/DAAppController.cpp" line="+691"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+837"/>
+        <location line="+841"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-826"/>
+        <location line="-830"/>
         <source>Failed to save project! Path: %1</source>
         <translation>工程保存失败！路径为:%1</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+589"/>
+        <location line="+591"/>
         <source>Project saved successfully, path: %1</source>
         <translation>工程保存成功，路径为:%1</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+27"/>
         <source>Project loaded successfully, path: %1</source>
         <translation>工程加载成功，路径为:%1</translation>
     </message>
@@ -2099,7 +2398,7 @@ Config</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-1176"/>
+        <location line="-1180"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
@@ -2138,23 +2437,23 @@ Config</source>
         <translation>加载工程文件失败:%1</translation>
     </message>
     <message>
-        <location line="+143"/>
+        <location line="+147"/>
         <source>Image files</source>
         <translation>图片文件</translation>
     </message>
     <message>
-        <location line="-208"/>
-        <location line="+209"/>
+        <location line="-212"/>
+        <location line="+213"/>
         <source>Any files</source>
         <translation>任意文件</translation>
     </message>
     <message>
-        <location line="-210"/>
+        <location line="-214"/>
         <source>Markdown files</source>
         <translation>Markdown 文件</translation>
     </message>
     <message>
-        <location line="+324"/>
+        <location line="+328"/>
         <source>Received null project interface</source>
         <translation>获取到空工程接口</translation>
     </message>
@@ -2338,7 +2637,7 @@ Config</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+581"/>
+        <location filename="../APP/DAAppProject.cpp" line="+826"/>
         <source>Saving project</source>
         <translation>正在保存工程</translation>
     </message>
@@ -2348,12 +2647,12 @@ Config</source>
         <translation>文件%1不是正确的工程文件</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+25"/>
         <source>Loading project</source>
         <translation>正在加载工程</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+47"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -2363,12 +2662,17 @@ Config</source>
         <translation>工程文件</translation>
     </message>
     <message>
-        <location line="-48"/>
+        <location line="-56"/>
         <source>Creating project snapshot</source>
         <translation>正在创建工程快照</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="-9"/>
+        <source>Loading project %1 cancelled by user</source>
+        <translation>用户取消了工程%1的加载</translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>Failed to backup current project</source>
         <translation>无法备份当前工程</translation>
     </message>
@@ -2378,7 +2682,7 @@ Config</source>
         <translation>加载%1前备份当前工程失败</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+24"/>
         <source>Restoring previous project</source>
         <translation>正在恢复之前的工程</translation>
     </message>
@@ -2403,7 +2707,47 @@ Config</source>
         <translation>工程保存失败！路径为:%1</translation>
     </message>
     <message>
-        <location line="+238"/>
+        <location line="+168"/>
+        <source>Load script workspace</source>
+        <translation>加载脚本工作区</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Extract workspace/ to local cache directory</source>
+        <translation>解压工程内脚本工作区到本地缓存目录</translation>
+    </message>
+    <message>
+        <location line="+148"/>
+        <source>Script Workspace Conflict</source>
+        <translation>脚本工作区冲突</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The local script workspace of this project differs from the version stored in the project file. Which version do you want to keep?</source>
+        <translation>本工程的本地脚本工作区与工程文件内保存的版本不一致，请选择保留哪个版本</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Local workspace: %1</source>
+        <translation>本地工作区：%1</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Keep Local</source>
+        <translation>保留本地</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Overwrite With Project Version</source>
+        <translation>用工程内版本覆盖</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Save System Info</source>
         <translation>保存系统信息</translation>
     </message>
@@ -2463,22 +2807,37 @@ Config</source>
         <translation>保存Agent聊天会话历史</translation>
     </message>
     <message>
-        <location line="+82"/>
+        <location line="+18"/>
+        <source>Save script workspace</source>
+        <translation>保存脚本工作区</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Pack local script workspace into the project file</source>
+        <translation>把本地脚本工作区打包进工程文件</translation>
+    </message>
+    <message>
+        <location line="+81"/>
         <source>Loading workflow</source>
         <translation>正在加载工作流</translation>
     </message>
     <message>
-        <location line="+342"/>
+        <location line="+66"/>
+        <source>This project file was saved with an older version (%1). Saving it will upgrade to %2 and enable the script workspace feature</source>
+        <translation>该工程文件由旧版本(%1)保存，保存后将升级到%2并启用脚本工作区功能</translation>
+    </message>
+    <message>
+        <location line="+295"/>
         <source>Table style for data &apos;%1&apos; has no matching data, skipped</source>
         <translation>数据&apos;%1&apos;的表格样式未找到匹配数据，已跳过</translation>
     </message>
     <message>
         <location line="+92"/>
         <source>Data operate page &apos;%1&apos; has no matching data, skipped</source>
-        <translation>数据操作页'%1'未找到匹配数据，已跳过</translation>
+        <translation>数据操作页&apos;%1&apos;未找到匹配数据，已跳过</translation>
     </message>
     <message>
-        <location line="-666"/>
+        <location line="-703"/>
         <source>Save data information, including data names and data organization formats</source>
         <translation>保存数据信息，包括数据的名称数据的组织形式</translation>
     </message>
@@ -2509,7 +2868,7 @@ Config</source>
         <translation>保存表格单元格样式</translation>
     </message>
     <message>
-        <location line="+144"/>
+        <location line="+162"/>
         <source>Begin saving archive to %1</source>
         <translation>开始保存档案到%1</translation>
     </message>
@@ -2524,45 +2883,45 @@ Config</source>
         <translation>正在加载数据</translation>
     </message>
     <message>
-        <location line="+241"/>
+        <location line="+260"/>
         <source>Unable to serialize file %1 into a DataFrame</source>
         <translation>无法把文件%1序列化为DataFrame</translation>
     </message>
     <message>
-        <location line="-224"/>
+        <location line="-241"/>
         <source>Project saved successfully</source>
         <translation>成功保存工程</translation>
     </message>
     <message>
-        <location line="-722"/>
-        <location line="+725"/>
+        <location line="-877"/>
+        <location line="+880"/>
         <source>Failed to save project</source>
         <translation>无法保存工程</translation>
     </message>
     <message>
-        <location line="-735"/>
+        <location line="-890"/>
         <location line="+34"/>
         <source>The current project is busy</source>
         <translation>当前工程正繁忙</translation>
     </message>
     <message>
-        <location line="+445"/>
+        <location line="+580"/>
         <source>Save data information</source>
         <translation>保存数据信息</translation>
     </message>
     <message>
-        <location line="+271"/>
+        <location line="+297"/>
         <source>Project loaded successfully</source>
         <translation>成功加载工程</translation>
     </message>
     <message>
-        <location line="-686"/>
-        <location line="+690"/>
+        <location line="-834"/>
+        <location line="+838"/>
         <source>Failed to load project</source>
         <translation>无法加载工程</translation>
     </message>
     <message>
-        <location line="-23"/>
+        <location line="-29"/>
         <source>Successfully saved archive: %1</source>
         <translation>成功保存工程:%1</translation>
     </message>
@@ -2572,7 +2931,7 @@ Config</source>
         <translation>无法保存工程:%1</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+20"/>
         <source>Successfully loaded archive: %1</source>
         <translation>成功加载工程:%1</translation>
     </message>
@@ -2582,7 +2941,7 @@ Config</source>
         <translation>无法加载工程:%1</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+55"/>
         <source>Failed to parse workflow-data.xml</source>
         <translation>解析workflow-data.xml失败</translation>
     </message>
@@ -2792,23 +3151,23 @@ Config</source>
         <translation>Agent</translation>
     </message>
     <message>
-        <location line="+58"/>
-        <location line="+5"/>
+        <location line="+59"/>
+        <location line="+7"/>
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location line="-5"/>
+        <location line="-6"/>
         <source>Please select an agent in the gallery first</source>
         <translation>请先在 gallery 中选择一个 agent</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+7"/>
         <source>Agent module is not ready</source>
         <translation>Agent 模块未就绪</translation>
     </message>
     <message>
-        <location line="-984"/>
+        <location line="-988"/>
         <location line="+357"/>
         <source>Item</source>
         <translation>图元</translation>
@@ -6750,7 +7109,7 @@ Config</source>
     <message>
         <location line="+1"/>
         <source>Cannot resolve expression &apos;%1&apos;, expected format: data[&apos;column&apos;]</source>
-        <translation>无法解析表达式'%1'，期望格式: data['列名']</translation>
+        <translation>无法解析表达式&apos;%1&apos;，期望格式: data[&apos;列名&apos;]</translation>
     </message>
     <message>
         <location line="+83"/>
@@ -7458,7 +7817,7 @@ Config</source>
 <context>
     <name>DA::DACoreInterface</name>
     <message>
-        <location filename="../DAInterface/DACoreInterface.cpp" line="+56"/>
+        <location filename="../DAInterface/DACoreInterface.cpp" line="+59"/>
         <source>Python interpreter is not initialized</source>
         <translation>Python 解释器未初始化</translation>
     </message>
@@ -7474,6 +7833,11 @@ Config</source>
     </message>
     <message>
         <location line="+6"/>
+        <source>Failed to initialize script runner, script execution will be unavailable</source>
+        <translation>脚本执行引擎初始化失败，脚本执行功能将不可用</translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Failed to initialize Python environment: %1</source>
         <translation>初始化 Python 环境失败：%1</translation>
     </message>
@@ -8452,7 +8816,7 @@ Config</source>
         <translation>缺少插件忽略文件，将自动生成%1文件</translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+59"/>
         <source>Plugins have already been loaded, skipping duplicate load.</source>
         <translation>插件已加载，跳过重复加载</translation>
     </message>
@@ -8497,12 +8861,12 @@ Config</source>
         <translation>插件 %1 拒绝完成清理，卸载已取消</translation>
     </message>
     <message>
-        <location line="-217"/>
+        <location line="-209"/>
         <source>Failed to create plugin directory: %1</source>
         <translation>创建插件目录失败：%1</translation>
     </message>
     <message>
-        <location line="+156"/>
+        <location line="+148"/>
         <source>cannot load plugin: %1</source>
         <translation>无法加载插件：%1</translation>
     </message>
@@ -8600,22 +8964,22 @@ Config</source>
         <translation>- 删除</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+11"/>
         <source>Model Name</source>
         <translation>模型名</translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Context Size</source>
         <translation>上下文大小</translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Max Output Tokens</source>
         <translation>最大输出 token</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+14"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
@@ -9139,11 +9503,12 @@ Config</source>
     <name>DA::DASettingPageAdvanced</name>
     <message>
         <location filename="../APP/SettingPages/DASettingPageAdvanced.cpp" line="+20"/>
+        <location line="+14"/>
         <source> s</source>
         <translation>秒</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-13"/>
         <source>Unlimited</source>
         <translation>无限</translation>
     </message>
@@ -9159,16 +9524,22 @@ Config</source>
     </message>
     <message>
         <location line="+1"/>
+        <location line="+5"/>
         <source>Disabled</source>
         <translation>禁用</translation>
     </message>
     <message>
-        <location line="+62"/>
+        <location line="-3"/>
+        <source>Empty for system temporary directory</source>
+        <translation>留空使用系统临时目录</translation>
+    </message>
+    <message>
+        <location line="+86"/>
         <source>Advanced</source>
         <translation>高级</translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location line="+74"/>
         <source>Select plugin search path</source>
         <translation>选择插件搜索路径</translation>
     </message>
@@ -9176,6 +9547,11 @@ Config</source>
         <location line="+9"/>
         <source>Select node script search path</source>
         <translation>选择节点脚本搜索路径</translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>Select script workspace directory</source>
+        <translation>选择脚本工作区目录</translation>
     </message>
 </context>
 <context>
@@ -9573,7 +9949,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1423"/>
+        <location filename="../APP/DAAppController.cpp" line="-1442"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -11035,7 +11411,7 @@ Config</source>
     <message>
         <location line="+7"/>
         <source>data[&apos;column&apos;]</source>
-        <translation>data['column']</translation>
+        <translation>data[&apos;column&apos;]</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -12022,11 +12398,12 @@ Config</source>
     </message>
     <message>
         <location line="+9"/>
+        <location line="+69"/>
         <source>Browse</source>
         <translation>浏览</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="-59"/>
         <source>Node script search paths</source>
         <translation>节点脚本搜索路径</translation>
     </message>
@@ -12042,8 +12419,28 @@ Config</source>
     </message>
     <message>
         <location line="+25"/>
-        <source>Note: plugin path, node script paths and splash changes take effect after restarting the program</source>
-        <translation>注意：插件路径、节点脚本路径和启动画面更改在重启程序后生效</translation>
+        <source>Script workspace</source>
+        <translation>脚本工作区</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Workspace directory</source>
+        <translation>工作区目录</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Script execution timeout</source>
+        <translation>脚本执行超时</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Script result max characters</source>
+        <translation>脚本结果最大字符数</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Note: plugin path, node script paths and splash changes take effect after restarting the program; script workspace directory takes effect when the project is next opened</source>
+        <translation>注意：插件路径、节点脚本路径和启动画面的修改在重启程序后生效；脚本工作区目录在下次打开工程时生效</translation>
     </message>
 </context>
 <context>
@@ -14225,7 +14622,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>新项目</translation>
     </message>
     <message>
-        <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+78"/>
+        <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+84"/>
         <location line="+37"/>
         <source>Cannot open config file &quot;%1&quot;: %2</source>
         <translation>无法打开配置文件\&quot;%1\&quot;，原因是%2</translation>
@@ -14309,6 +14706,21 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location filename="../DAGui/Commands/DACommandsTableColumnFormat.cpp" line="+16"/>
         <source>change table display format</source>
         <translation>改变表格显示格式</translation>
+    </message>
+    <message>
+        <location filename="../DAPyScripts/DAPyScriptRunner.cpp" line="+268"/>
+        <source>Python interpreter is not initialized, script runner cannot start</source>
+        <translation>Python 解释器未初始化，脚本执行引擎无法启动</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Script runner failed to import baseline module %1: %2</source>
+        <translation>脚本执行引擎导入基线模块 %1 失败：%2</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Failed to initialize script runner: %1</source>
+        <translation>初始化脚本执行引擎失败：%1</translation>
     </message>
 </context>
 <context>

@@ -243,6 +243,13 @@ TRANSLATIONS = {
     # ---- DASettingPageCommon ----
     ("DASettingPageCommon", "UI"): "界面",
 
+    # ---- DASettingPageAdvanced (UI) ----
+    ("DASettingPageAdvanced", "Script workspace"): "脚本工作区",
+    ("DASettingPageAdvanced", "Workspace directory"): "工作区目录",
+    ("DASettingPageAdvanced", "Script execution timeout"): "脚本执行超时",
+    ("DASettingPageAdvanced", "Script result max characters"): "脚本结果最大字符数",
+    ("DASettingPageAdvanced", "Note: plugin path, node script paths and splash changes take effect after restarting the program; script workspace directory takes effect when the project is next opened"): "注意：插件路径、节点脚本路径和启动画面的修改在重启程序后生效；脚本工作区目录在下次打开工程时生效",
+
     # ---- DATxtFileImportDialog (UI) ----
     ("DATxtFileImportDialog", "Txt Import"): "Txt 导入",
     ("DATxtFileImportDialog", "Text File Path"): "文本文件路径",

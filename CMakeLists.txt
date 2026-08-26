@@ -336,6 +336,7 @@ if(DA_ENABLE_AUTO_TRANSLATE)
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAUtils
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAPyWorkFlow
         ${CMAKE_CURRENT_SOURCE_DIR}/plugins/DataAnalysis
+        ${CMAKE_CURRENT_SOURCE_DIR}/plugins/DAAgentTools
     )
 
     # 统一的 lupdate/lrelease 翻译流程（兼容 Qt5.3+ 和 Qt6.2+）

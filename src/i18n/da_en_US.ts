@@ -154,17 +154,17 @@
 <context>
     <name>DA::DAAgentBridge</name>
     <message>
-        <location filename="../DAAgent/DAAgentBridge.cpp" line="+162"/>
+        <location filename="../DAAgent/DAAgentBridge.cpp" line="+175"/>
         <source>Agent process startup timed out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+36"/>
         <source>Agent subprocess not ready within %1 ms, initialization may have failed, check logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+246"/>
+        <location line="+279"/>
         <source>Failed to write to agent subprocess stdin</source>
         <translation type="unfinished"></translation>
     </message>
@@ -174,12 +174,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+229"/>
+        <location line="+350"/>
         <source>Failed to parse trailing JSON line from agent stdout: %1, error: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+54"/>
         <source>Agent process crashed (exit code %1), recovering... (%2/%3)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -189,7 +189,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+44"/>
         <source>Agent response timeout (no activity for %1 minutes)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -197,7 +197,7 @@
 <context>
     <name>DA::DAAgentDockWidget</name>
     <message>
-        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+230"/>
+        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+245"/>
         <source>Ready</source>
         <translation type="unfinished"></translation>
     </message>
@@ -222,7 +222,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-99"/>
+        <location line="-109"/>
         <source>Session Manager</source>
         <translation type="unfinished"></translation>
     </message>
@@ -232,7 +232,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+620"/>
+        <location line="+751"/>
         <source>tokens: ~%1 / %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -242,17 +242,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-524"/>
+        <location line="-645"/>
         <source>tokens: -</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+488"/>
+        <location line="+609"/>
         <source>(untitled)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-487"/>
+        <location line="-608"/>
         <source>input: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -312,7 +312,132 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+527"/>
+        <location line="+1"/>
+        <source>Details</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copied</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>[truncated]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Permission mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Full Auto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Auto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Ask Every Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Run everything without asking (system directories still blocked)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reads and chart edits pass; file writes and code execution judged by rules</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>File writes and code execution need approval every time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Switch to Full Auto mode? Code execution and file writes will no longer ask for confirmation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Switch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>needs your approval</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Approve</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Deny</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Approve &amp;&amp; remember for this session</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Approved</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Denied</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Approved (remembered for this session)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>%1 more lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>The permission mode is Full Auto from last session. Code execution and file writes will run without asking. Keep Full Auto mode?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Keep Full Auto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Switch to Auto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+604"/>
         <source>API quota exhausted, please check account balance or change API key</source>
         <translation type="unfinished"></translation>
     </message>
@@ -415,8 +540,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+23"/>
-        <location line="+7"/>
+        <location line="+24"/>
+        <location line="+8"/>
         <source>Tip</source>
         <translation type="unfinished"></translation>
     </message>
@@ -459,15 +584,15 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+72"/>
-        <location line="+38"/>
-        <location line="+26"/>
+        <location line="+73"/>
+        <location line="+40"/>
+        <location line="+28"/>
         <source>Tip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-64"/>
-        <location line="+38"/>
+        <location line="-67"/>
+        <location line="+40"/>
         <source>Save failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -482,7 +607,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+11"/>
         <source>Delete failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -490,7 +615,7 @@
 <context>
     <name>DA::DAAgentModule</name>
     <message>
-        <location filename="../DAAgent/DAAgentModule.cpp" line="+276"/>
+        <location filename="../DAAgent/DAAgentModule.cpp" line="+333"/>
         <source>Agent system prompt file is empty, fallback to built-in default: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -500,18 +625,18 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+118"/>
+        <location line="+120"/>
         <source>LLM is not configured, cannot start agent. Please configure LLM in settings first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+949"/>
+        <location line="+966"/>
         <source>LLM is not configured. Please configure LLM in settings first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-938"/>
+        <location line="-955"/>
         <source>Cannot find Python interpreter path, please configure it in settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -521,15 +646,181 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+932"/>
+        <location line="+949"/>
         <source>LLM is not configured, skip agent analysis. Please configure LLM in settings first.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAgentPermissionSettingsWidget</name>
+    <message>
+        <location filename="../APP/SettingPages/DAAgentPermissionSettingsWidget.cpp" line="+135"/>
+        <source>Default Permission Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Auto (rules + judge)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Manual (ask every write/code)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Full Auto (yolo)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mode:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Approval</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Max wait for user approval on file writes / code execution</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Approval timeout:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>In manual mode, also ask before in-app chart edits</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Code Judge (optional)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Leave empty to disable the judge</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Judge model:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Judge timeout:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>When the judge model is not configured, Auto mode still asks for approval on every code execution (even if no dangerous pattern matches). Configuring a judge enables automatic allow/deny for gray-area code, and code matching no pattern is then allowed silently.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>File Path Rules</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Evaluated in order, first match wins; file writes matching no rule ask for approval. Variables: ${workspace}, ${project}, ${data}, ${exe}, ${home}. Global deny rows (tool = *, action = deny) are hard safety rules and cannot be edited or removed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <location line="+60"/>
+        <source>Tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-59"/>
+        <source>Scope (glob)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Add Rule</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+59"/>
+        <source>Remove Selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-51"/>
+        <source>Code Danger Patterns (Auto mode)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>One regular expression per line; invalid expressions are skipped. Deny patterns reject code outright; Escalate patterns are referred to the judge model. Note: this judging layer is an advisory defense, not a security boundary — static patterns can be bypassed by obfuscation (e.g. indirect attribute access, importing a malicious module from a clean entry script, rewriting the script after judging). For strict scenarios use Manual mode.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Deny patterns (matched =&gt; reject):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+5"/>
+        <source>One regex per line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <source>Escalate patterns (matched =&gt; consult judge):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Tool Tier Overrides</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Explicitly assign a risk tier to a tool (typically plugin tools). Unlisted unknown plugin tools default to the &quot;unknown&quot; tier, which asks for approval in Auto/Manual modes; e.g. map a known-reversible chart plugin tool to inapp_mutate to let it pass silently.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Tier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Add Override</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+112"/>
+        <source>Hard safety rule: cannot be edited or removed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../APP/SettingPages/DAAgentPermissionSettingsWidget.h" line="+35"/>
+        <source>Agent Permission Settings</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DA::DAAgentSettingsWidget</name>
     <message>
-        <location filename="../APP/SettingPages/DAAgentSettingsWidget.cpp" line="+177"/>
+        <location filename="../APP/SettingPages/DAAgentSettingsWidget.cpp" line="+181"/>
         <location line="+5"/>
         <source> s</source>
         <translation type="unfinished"></translation>
@@ -552,7 +843,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-95"/>
+        <location line="-99"/>
         <source>Base URL</source>
         <translation type="unfinished"></translation>
     </message>
@@ -562,7 +853,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+113"/>
+        <location line="+117"/>
         <source>Ready Timeout</source>
         <translation type="unfinished"></translation>
     </message>
@@ -572,7 +863,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-151"/>
+        <location line="-155"/>
         <source>Add Provider</source>
         <translation type="unfinished"></translation>
     </message>
@@ -602,22 +893,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Model Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Context Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Max Output Tokens</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+19"/>
         <source>Model Providers</source>
         <translation type="unfinished"></translation>
     </message>
@@ -762,18 +1053,26 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+21"/>
         <source>not set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+2"/>
         <source>set (hidden)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../APP/SettingPages/DAAgentSettingsWidget.h" line="+37"/>
+        <location filename="../APP/SettingPages/DAAgentSettingsWidget.h" line="+39"/>
         <source>Agent LLM Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAgentToolsPlugin</name>
+    <message>
+        <location filename="../../plugins/DAAgentTools/DAAgentToolsPlugin.h" line="+31"/>
+        <source>Platform built-in agent tools</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2031,29 +2330,29 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+676"/>
+        <location filename="../APP/DAAppController.cpp" line="+691"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+837"/>
+        <location line="+841"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-826"/>
+        <location line="-830"/>
         <source>Failed to save project! Path: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+589"/>
+        <location line="+591"/>
         <source>Project saved successfully, path: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+27"/>
         <source>Project loaded successfully, path: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2073,7 +2372,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1176"/>
+        <location line="-1180"/>
         <source>Please select the data operation window</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2112,23 +2411,23 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+143"/>
+        <location line="+147"/>
         <source>Image files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-208"/>
-        <location line="+209"/>
+        <location line="-212"/>
+        <location line="+213"/>
         <source>Any files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-210"/>
+        <location line="-214"/>
         <source>Markdown files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+324"/>
+        <location line="+328"/>
         <source>Received null project interface</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2312,7 +2611,7 @@ Config</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+581"/>
+        <location filename="../APP/DAAppProject.cpp" line="+826"/>
         <source>Saving project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2322,12 +2621,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+25"/>
         <source>Loading project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+47"/>
         <source>Save Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2337,12 +2636,17 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-48"/>
+        <location line="-56"/>
         <source>Creating project snapshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="-9"/>
+        <source>Loading project %1 cancelled by user</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>Failed to backup current project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2352,7 +2656,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+24"/>
         <source>Restoring previous project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2377,7 +2681,47 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+238"/>
+        <location line="+168"/>
+        <source>Load script workspace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Extract workspace/ to local cache directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+148"/>
+        <source>Script Workspace Conflict</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The local script workspace of this project differs from the version stored in the project file. Which version do you want to keep?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Local workspace: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Keep Local</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Overwrite With Project Version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+32"/>
         <source>Save System Info</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2437,12 +2781,27 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+82"/>
+        <location line="+18"/>
+        <source>Save script workspace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Pack local script workspace into the project file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+81"/>
         <source>Loading workflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+342"/>
+        <location line="+66"/>
+        <source>This project file was saved with an older version (%1). Saving it will upgrade to %2 and enable the script workspace feature</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+295"/>
         <source>Table style for data &apos;%1&apos; has no matching data, skipped</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2452,7 +2811,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-666"/>
+        <location line="-703"/>
         <source>Save data information, including data names and data organization formats</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2483,7 +2842,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+144"/>
+        <location line="+162"/>
         <source>Begin saving archive to %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2498,45 +2857,45 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+241"/>
+        <location line="+260"/>
         <source>Unable to serialize file %1 into a DataFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-224"/>
+        <location line="-241"/>
         <source>Project saved successfully</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-722"/>
-        <location line="+725"/>
+        <location line="-877"/>
+        <location line="+880"/>
         <source>Failed to save project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-735"/>
+        <location line="-890"/>
         <location line="+34"/>
         <source>The current project is busy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+445"/>
+        <location line="+580"/>
         <source>Save data information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+271"/>
+        <location line="+297"/>
         <source>Project loaded successfully</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-686"/>
-        <location line="+690"/>
+        <location line="-834"/>
+        <location line="+838"/>
         <source>Failed to load project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-23"/>
+        <location line="-29"/>
         <source>Successfully saved archive: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2546,7 +2905,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+20"/>
         <source>Successfully loaded archive: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2556,7 +2915,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+55"/>
         <source>Failed to parse workflow-data.xml</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2766,23 +3125,23 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+58"/>
-        <location line="+5"/>
+        <location line="+59"/>
+        <location line="+7"/>
         <source>Tip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-5"/>
+        <location line="-6"/>
         <source>Please select an agent in the gallery first</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+7"/>
         <source>Agent module is not ready</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-984"/>
+        <location line="-988"/>
         <location line="+357"/>
         <source>Item</source>
         <translation type="unfinished"></translation>
@@ -7432,7 +7791,7 @@ Config</source>
 <context>
     <name>DA::DACoreInterface</name>
     <message>
-        <location filename="../DAInterface/DACoreInterface.cpp" line="+56"/>
+        <location filename="../DAInterface/DACoreInterface.cpp" line="+59"/>
         <source>Python interpreter is not initialized</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7448,6 +7807,11 @@ Config</source>
     </message>
     <message>
         <location line="+6"/>
+        <source>Failed to initialize script runner, script execution will be unavailable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Failed to initialize Python environment: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8426,7 +8790,7 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+59"/>
         <source>Plugins have already been loaded, skipping duplicate load.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8471,12 +8835,12 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-217"/>
+        <location line="-209"/>
         <source>Failed to create plugin directory: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+156"/>
+        <location line="+148"/>
         <source>cannot load plugin: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8574,22 +8938,22 @@ Config</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+11"/>
         <source>Model Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Context Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+1"/>
         <source>Max Output Tokens</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+14"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9113,11 +9477,12 @@ Config</source>
     <name>DA::DASettingPageAdvanced</name>
     <message>
         <location filename="../APP/SettingPages/DASettingPageAdvanced.cpp" line="+20"/>
+        <location line="+14"/>
         <source> s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-13"/>
         <source>Unlimited</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9133,22 +9498,33 @@ Config</source>
     </message>
     <message>
         <location line="+1"/>
+        <location line="+5"/>
         <source>Disabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+62"/>
+        <location line="-3"/>
+        <source>Empty for system temporary directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+86"/>
         <source>Advanced</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location line="+74"/>
         <source>Select plugin search path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Select node script search path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>Select script workspace directory</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9547,7 +9923,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1423"/>
+        <location filename="../APP/DAAppController.cpp" line="-1442"/>
         <source>DA</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11996,11 +12372,12 @@ Config</source>
     </message>
     <message>
         <location line="+9"/>
+        <location line="+69"/>
         <source>Browse</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="-59"/>
         <source>Node script search paths</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12016,7 +12393,27 @@ Config</source>
     </message>
     <message>
         <location line="+25"/>
-        <source>Note: plugin path, node script paths and splash changes take effect after restarting the program</source>
+        <source>Script workspace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Workspace directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Script execution timeout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Script result max characters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Note: plugin path, node script paths and splash changes take effect after restarting the program; script workspace directory takes effect when the project is next opened</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -14102,7 +14499,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+78"/>
+        <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+84"/>
         <location line="+37"/>
         <source>Cannot open config file &quot;%1&quot;: %2</source>
         <translation type="unfinished"></translation>
@@ -14185,6 +14582,21 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DAGui/Commands/DACommandsTableColumnFormat.cpp" line="+16"/>
         <source>change table display format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAPyScripts/DAPyScriptRunner.cpp" line="+268"/>
+        <source>Python interpreter is not initialized, script runner cannot start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Script runner failed to import baseline module %1: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Failed to initialize script runner: %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
