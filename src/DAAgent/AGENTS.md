@@ -50,7 +50,7 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 │   DAAgentSettingsWidget — LLM 设置页（setAgentInterface 注入，  │
 │                        走 get/setLLMConfig 持久化，见 § 九）    │
 │  plugins/DAAgentTools/（工具插件）                              │
-│   DAAgentChartToolBase + tools/ — 19 个内置工具，插件注册       │
+│   DAAgentChartToolBase + tools/ — 20 个内置工具，插件注册       │
 └──────────────────────┬────────────────────────────────────────┘
                        │  QProcess 匿名管道
                        │  stdin/stdout: JSON Lines（每行一条 JSON）
@@ -113,7 +113,9 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 
 | 文件 | 职责 |
 |------|------|
-| `agent_runner.py` | 唯一入口脚本：协议收发、LLM 配置、langgraph 图构建、agent 循环 |
+| `agent_runner.py` | 唯一入口脚本：协议收发、LLM 配置、langgraph 图构建、agent 循环；权限层（permission-layer）：存储 §8 权限字段、`tool_node` 发起 `tool_call` 前对代码执行工具调 `permission_judge` 产出 `safety` 裁决、gated_tools 长超时 |
+| `permission_judge.py` | 代码内容判定管线（咨询方）：静态危险模式（deny/escalate，清单由 `code_patterns` 配置注入）+ 可选判官模型（复用当前供应商凭据），产出 `{verdict, reason, source}`；`run_script` 按 `workspace_root` 解析入口文件后走同一管线（判定边界=入口文件，不递归） |
+| `context_manager.py` / `error_classifier.py` / `retry_wrapper.py` | 上下文压缩/截断、错误分类、退避重试（agent_runner 的基础设施模块） |
 
 ### 3.4 `src/APP/`（集成点）
 
@@ -160,12 +162,12 @@ stdout 专用于协议，**绝对禁止在 stdout 打印日志**（污染协议�
 
 | type | 载荷 | 说明 |
 |------|------|------|
-| `init` | `config`{base_url, api_key, model, context_window, compaction_threshold, max_recent_messages, tool_result_max_chars, tool_result_preview_chars} + `tools`(schema 数组) + `system_prompt` | 启动时一次性下发；config 缺 base_url/api_key/model 任一则报错退出；上下文管理参数有默认值兜底 |
+| `init` | `config`{base_url, api_key, model, context_window, compaction_threshold, max_recent_messages, tool_result_max_chars, tool_result_preview_chars, **permission_mode, workspace_root, gated_tools[], tool_approval_timeout_sec, code_patterns{deny[],escalate[]}, judge{model,timeout_sec}**} + `tools`(schema 数组) + `system_prompt` | 启动时一次性下发；config 缺 base_url/api_key/model 任一则报错退出；上下文管理参数有默认值兜底；权限层字段由 `DAAgentBridge::buildPermissionConfig()` 组装（母文档 §8，Python 侧存储并在 auto 模式消费） |
 | `user_msg` | `content` | 用户消息，触发一轮 agent 推理 |
 | `tool_result` | `call_id` + `result` | 工具执行结果回传（RPC 应答） |
 | `user_answer` | `answer` | 用户对 HITL 问题的回答，触发 `resume()` |
 | `load_session` | `session_id` + `messages`(JSON 数组，T6 记录的 message 字段) | **切换/恢复会话**时下发历史 messages 重建 langgraph state（不重启子进程）；Python 端 `graph.aupdate_state` 注入后回 `session_loaded` 确认 |
-| `reconfigure` | `config`{base_url, api_key, model, max_output_tokens, context_window, ...} | **热替换 LLM 配置**（不重启子进程、不丢 MemorySaver 会话状态）：Python 端 `AgentRunner.reconfigure()` 热替换 ChatOpenAI + compactor/token_estimator，图与 state 不动，回 `ready` 确认。消息在 stdin 排队，当前轮跑完后主循环处理，下一轮用新模型（见 §15.3） |
+| `reconfigure` | `config`{base_url, api_key, model, max_output_tokens, context_window, ..., 权限层字段同 `init`} | **热替换 LLM 配置**（不重启子进程、不丢 MemorySaver 会话状态）：Python 端 `AgentRunner.reconfigure()` 热替换 ChatOpenAI + compactor/token_estimator，图与 state 不动，回 `ready` 确认。消息在 stdin 排队，当前轮跑完后主循环处理，下一轮用新模型（见 §15.3）。权限模式切换/设置页保存后经此同步权限层字段（Python 仅存储 + 按模式决定是否判定） |
 | `stop` | — | 优雅停止，子进程退出主循环 |
 
 ### 5.2 Python → C++（stdout）
@@ -176,7 +178,7 @@ stdout 专用于协议，**绝对禁止在 stdout 打印日志**（污染协议�
 | `ready` | `model` | 初始化完成（或 `reconfigure` 热替换完成），C++ 停止 ready 计时器。Module 的 `agentReady` 处理器在非恢复路径（`isRecovering()==false` 且无 pending load_session）时早返回，故 `reconfigure` 复用本信号安全无副作用 |
 | `token` | `content` | 流式 token |
 | `message_end` | `content` | 本轮最终回复（agent_node 在无 tool_calls 时发送） |
-| `tool_call` | `call_id` + `tool` + `arguments` | 请求 C++ 执行工具；C++ 回传 `tool_result` |
+| `tool_call` | `call_id` + `tool` + `arguments` + 可选 `safety`{verdict: allow/deny/uncertain, reason: str, source: rules/model/none} | 请求 C++ 执行工具；C++ 回传 `tool_result`。`safety` 为 Python 侧代码裁决，**仅 auto 模式 + code_exec 工具**（`run_code`/`run_script`）产出，其余缺省不带；C++ 权限门消费：deny→拒绝（脱敏文案）、allow→放行（判官已配置时）、uncertain/缺失→ask（判官未配置时 allow 也降级 ask，D1） |
 | `question` | `text` + `options` | HITL 提问（**只发一次**，见铁律 T8） |
 | `usage` | `input_tokens` + `output_tokens` + `total_tokens` + `source` | LLM `usage_metadata` 权威 token 统计回传（`_stream_llm` 读 `collected_chunks.usage_metadata`）；C++ 收到后发 `agentUsage` 信号供 UI 显示占比 |
 | `session_loaded` | `session_id` | `load_session` 后 Python 重建 state 完成的确认；C++ 收到才允许下一轮 `sendMessage`（见铁律 T15） |
@@ -233,13 +235,14 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
   - `errorResponse(msg)` / `successResponse(data|message)`
   - 图表方法已移入插件的 `DAAgentChartToolBase`（本模块不再 include 图表头文件，无 DAFigure 依赖）
 
-### 7.2 平台内置工具（18 个，由插件 `plugins/DAAgentTools/` 注册）
+### 7.2 平台内置工具（20 个，由插件 `plugins/DAAgentTools/` 注册）
 
 | 类别 | 工具（name） | 文件 |
 |------|-------------|------|
 | 数据 (5) | `list_data` / `get_data_info` / `query_data` / `get_column_stats` / `export_data` | `DAAgentToolListData` / `DAAgentToolDataInfo` / `DAAgentToolQueryData` / `DAAgentToolColumnStats` / `DAAgentToolExportData` |
 | 绘图 (10) | `create_chart` / `add_curve` / `set_chart_style` / `set_axis` / `update_curve_style` / `remove_chart_item` / `add_annotation` / `create_subplots` / `save_chart_image` / `list_figures` | `DAAgentToolCreateChart` / `DAAgentToolAddCurve` / `DAAgentToolSetChartStyle` / `DAAgentToolSetAxis` / `DAAgentToolUpdateCurveStyle` / `DAAgentToolRemoveChartItem` / `DAAgentToolAddAnnotation` / `DAAgentToolCreateSubplots` / `DAAgentToolSaveChartImage` / `DAAgentToolListFigures` |
 | 文件/报告 (3) | `read_file` / `write_file` / `save_report` | `DAAgentToolReadFile` / `DAAgentToolWriteFile` / `DAAgentToolSaveReport` |
+| 代码执行 (2) | `run_code` / `run_script` | `DAAgentToolRunCode` / `DAAgentToolRunScript`（`e6401be` 新增；权限分级 `code_exec`，auto 模式经 `tool_call.safety` 裁决，见铁律 T16） |
 
 #### 绘图工具关键设计
 
@@ -252,7 +255,7 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 
 ### 7.3 注册与执行
 
-- **内置工具插件**：19 个工具由独立插件 `plugins/DAAgentTools/` 提供。插件入口 `DAAgentToolsPlugin`（继承 `DAAbstractPlugin`，IID `org.da.abstract.plugin`）在 `initialize()` 中经 `core()->getAgentInterface()->registerTool(...)` 依次注册 19 个工具。继承关系：`DAAbstractAgentTool` → `DAAgentToolBase`（瘦，`DAAgent_API` 导出，数据/响应方法）→ 8 个非图表工具（5 数据 + 3 文件/报告）；`DAAgentToolBase` → `DAAgentChartToolBase`（7 个图表方法）→ 11 个图表工具。
+- **内置工具插件**：20 个工具由独立插件 `plugins/DAAgentTools/` 提供。插件入口 `DAAgentToolsPlugin`（继承 `DAAbstractPlugin`，IID `org.da.abstract.plugin`）在 `initialize()` 中经 `core()->getAgentInterface()->registerTool(...)` 依次注册 20 个工具。继承关系：`DAAbstractAgentTool` → `DAAgentToolBase`（瘦，`DAAgent_API` 导出，数据/响应方法）→ 10 个非图表工具（5 数据 + 3 文件/报告 + 2 代码执行）；`DAAgentToolBase` → `DAAgentChartToolBase`（7 个图表方法）→ 10 个图表工具。
 - **第三方扩展**：领域工具插件可继承瘦 `DAAgentToolBase`（数据工具）或 `DAAgentChartToolBase`（图表工具），经 `DAAgentInterface::registerTool` 注入，无需改 DAAgent。跨 DLL 派生需要 `DAAgent_API` 导出宏（`DAAGENT_BUILD` 只在编译 DAAgent 库时定义，`DAAgentToolBase` 已 `DAAgent_API` 导出）。
 - 注册：`DAAgentModule::registerTool` → `m_tools[name]` → `m_bridge->setTools(m_tools)`。
 - 执行：`DAAgentBridge::executeTool()` 查表 → **try/catch 兜底**（工具抛异常时返回 `{success:false, error:...}`，避免 Bridge 崩溃导致子进程永久挂起）→ 回传 `tool_result` → 同时 emit `agentToolResult` 供 UI 展示。工具未设置 `success` 字段时自动补 `true`。
@@ -318,7 +321,7 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 
 ## 十、APP 层集成（生命周期）
 
-1. `DAAppCore::initialize()` → `new DAAgentModule(this, this)` + `initialize()`（创建 Bridge、预连接 Bridge→Module 信号；**不注册工具、不创建 Dock**——19 个内置工具由插件 `DAAgentTools` 注册）。
+1. `DAAppCore::initialize()` → `new DAAgentModule(this, this)` + `initialize()`（创建 Bridge、预连接 Bridge→Module 信号；**不注册工具、不创建 Dock**——20 个内置工具由插件 `DAAgentTools` 注册）。
 2. `DAAppDockingArea::buildDockingArea()` → `new DAAgentDockWidget` + `createDockWidgetAsTab`（左侧标签页）。
 3. `DAAppController::initialize()` → 用 `connect()` 把 Dock 的 8 个信号（其中 7 个连到接口方法）↔ 接口的 14 个信号（其中 13 个连到 Dock 槽）对接（决策 D3b，替代旧的 `setDockWidget` 注入）+ 绑定 `actionShowAgentArea` toggle action（详见 § 六）。
 4. **懒启动**：首次 `sendMessage()` → `startAgentInternal()` → 读 `agent-config.ini` LLM 配置 + 探测 Python/脚本路径 → `m_bridge->startAgent(...)`。
@@ -392,6 +395,13 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 - **`last_active` 精确匹配 projectPath**：空 filter 只返回自由会话（指针 projectPath 必须空），非空 filter 精确匹配工程路径——避免启动恢复把工程绑定会话当自由会话恢复（plan-05 MAJOR-4 回归保护，见 `testLastActive`）。
 - **崩溃安全**：JSONL append-only + 每条即写 flush，崩溃后最多丢最后一两行；`parseLineTolerant` 跳过损坏行不整体丢弃。
 
+### T16. 权限层（permission-layer）：判定前置、C++ 唯一执法、不落盘
+- **权限门在 `executeTool` 前置、C++ 是唯一执法点**：`DAAgentBridge::executeTool` 先调 `DAAgentPermissionManager::decide(tool, params, safety)` 产出 Allow/Deny/Ask，再执行工具；Python 只是咨询方（产出 `tool_call.safety` 裁决），不执法。工具内部**不要**再实现路径/内容安全检查（三处 `isPathSafe` 已删除）。
+- **判定由 Python 在发起 `tool_call` 之前完成**（`tool_node` 调 `permission_judge`），裁决附在 `tool_call.safety` 随消息下发。**禁止实现成"运行时 C++→Python 判定 RPC"**：run 期间 `_wait_for_result`（`agent_runner.py`）只认 `tool_result`/`stop`，其余消息类型记日志后**丢弃**——C++ 发判定请求会被丢弃、等响应挂起至超时。
+- **硬 deny 全模式生效**：系统目录（`c:/windows/**` 等 4 条 `tool:"*"` deny 种子）在 yolo/auto/manual 任何模式、任何分级之前先行求值，加载时强制回填，设置页锁定不可删。
+- **审批与判定均不落盘**：审批是 `executeTool` 前置门，不进会话 JSONL（`tool_call`/`tool_result` 正常持久化，审批只延迟 result）；`safety` 裁决也不持久化。会话记忆仅内存态（仅 `file_write`，`code_exec` 永不记忆），会话切换/进程退出/崩溃即清空。
+- **模式与超时**：模式是 C++ 状态，切换即时生效（门即时消费）并经 `reconfigure` 同步 Python（仅用于决定是否花费判定成本）；gated_tools（file_write+code_exec）无论模式一律用 `tool_approval_timeout_sec` 长超时（默认 600s），与模式解耦。
+
 ---
 
 ## 十二、调试指南
@@ -422,6 +432,8 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 | 改协议 | `DAAgentBridge.cpp`（C++ 侧）+ `agent_runner.py` `StdioProtocol`/`main()`（Python 侧）——**两端必须同步** |
 | 改 agent 推理逻辑 | `agent_runner.py` `AgentRunner`（图构建/节点/路由） |
 | LLM 配置 | `src/APP/SettingPages/DAAgentSettingsWidget.cpp`（设置页，经 `setAgentInterface`）+ `src/DAAgent/DAAgentModule.cpp` `getLLMConfig`/`setLLMConfig`（agent-config.ini） |
+| 权限模式/规则/判官配置 | `src/APP/SettingPages/DAAgentPermissionSettingsWidget.cpp`（设置页，经 `get/setPermissionConfig`）+ `src/DAAgent/DAAgentPermissionManager.h/.cpp`（引擎：模式/分级/路径策略/会话记忆，`agent-permissions.json` + `agent-config.ini`） |
+| 代码内容判定 | `src/PyScripts/DAWorkbench/agent/permission_judge.py`（静态规则+判官）+ `agent_runner.py` `tool_node`（`tool_call.safety` 生产），见铁律 T16 |
 | Dock/Ribbon 集成 | `src/APP/DAAppDockingArea.cpp`（创建）/ `DAAppController.cpp`（connect 信号链，§ 六）/ `DAAppRibbonArea.cpp`（toggle action） |
 
 ---

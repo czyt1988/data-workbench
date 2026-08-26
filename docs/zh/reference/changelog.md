@@ -17,14 +17,15 @@
 - 🟢 **Agent / AI 分析子系统**：新增 `DAAgent` 模块（`src/DAAgent/`），通过 `DAAgentInterface` 对外暴露：
     - 多供应商多模型 LLM 配置（`getProviders`/`setProviders`/`getActiveProvider`/`setActiveModel`/`getAvailableModels`），运行中热切换模型不丢会话状态
     - 提示词库（`registerBuiltinAgent`/`runAgent`/`agentPromptOps`），Ribbon「AI 分析」标签页 gallery 一键管理/执行
-    - 工具调用：`registerTool` 注册 `DAAbstractAgentTool`；`DAAgentTools` 插件内置 19 个工具（数据查询、图表生成、文件读写等）
+    - 工具调用：`registerTool` 注册 `DAAbstractAgentTool`；`DAAgentTools` 插件内置 20 个工具（数据查询、图表生成、文件读写、代码执行等）
     - 会话持久化（`createSession`/`switchSession`/`deleteSession`/`listSessions`/`exportActiveSessions`/`loadSessionsFromProject`），随 `.dapro` 存为 `agent_sessions/<id>.jsonl`
     - 子进程架构：独立 Python 子进程（LangGraph）驱动推理与工具循环；预启动（`auto_prestart`，默认开）、3 态 UI（启动中/就绪/忙碌）、累计 token 统计（`tokenUsageUpdated`）、看门狗与空闲计时（`inactivity_timeout_sec`）、`recursion_limit` 限制
 - 🟢 **图表嵌套停靠**：`DAChartOperateWidget` 由 `QTabWidget` 迁移到 ADS 嵌套停靠区，可与其它 Dock 统一编组 / 浮动 / 记忆布局
 - 🟢 **图表文件重组**：`DAChart*` 系列源文件重新组织
-- 🟢 **插件**：新增 `DASystemNodes`（系统流控制节点）与 `DAAgentTools`（Agent 工具，19 个）插件
+- 🟢 **插件**：新增 `DASystemNodes`（系统流控制节点）与 `DAAgentTools`（Agent 工具，20 个）插件
 - 🟢 **Markdown 渲染**：新增 `DAMarkdownView` 通用 Markdown 渲染控件（`src/DAGui/MarkdownView/`）
 - 🟢 **AI 分析 Ribbon 标签**：新增「AI 分析」标签页（`mCategoryAgent` / `mAgentGallery` / `populateAgentGallery`）
+- 🟢 **Agent 权限模式**：AI 分析新增权限模式——全自动 / 智能判定 / 每次询问三档可选，聊天工具栏随时切换。文件写入与代码执行等危险操作执行前自动拦截或弹审批卡征求确认；系统目录写入在任何模式下禁止。智能判定模式下代码内容先经静态危险模式规则、再经可选判官模型自动放行/拒绝，拿不准时降级询问用户。设置页可自定义路径规则、代码危险模式清单与工具风险分级；全自动模式切入与跨重启启用均需二次确认
 
 ### 改进
 
@@ -34,6 +35,7 @@
 ### 破坏性变更
 
 - 🔴 **`DAAgentInterface` 会话 API**：新增会话管理接口（`createSession` / `switchSession` / `deleteSession` 等），见 `src/DAAgent/DAAgentInterface.h:75` 注释「破坏性接口变更，插件需重编译」——依赖该接口的插件需重新编译
+- 🔴 **`DAAgentInterface` 权限 API**：新增权限层接口（`getPermissionConfig` / `setPermissionConfig` / `getPermissionMode` / `setPermissionMode` / `sendToolApproval` / `setScriptWorkspaceDir`）与审批/模式信号（`agentToolApprovalRequest` / `agentToolApprovalDismissed` / `permissionModeChanged`）——依赖该接口的插件需重新编译
 
 ---
 

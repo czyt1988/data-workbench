@@ -1,6 +1,6 @@
 # DAAgentTools 插件开发指南
 
-DAWorkbench 平台内置 Agent 工具插件，向 LLM 暴露 **18 个工具**（5 数据 + 10 绘图 + 3 文件/报告），让 AI 能直接操作工作区数据、创建/修改图表、读写文件。工具的 OpenAI function schema 经 `DAAgentInterface::registerTool` 下发给 Python 子进程，**真实执行在 C++ 主进程**（不在 Python 端），结果经 stdin 回传。
+DAWorkbench 平台内置 Agent 工具插件，向 LLM 暴露 **20 个工具**（5 数据 + 10 绘图 + 3 文件/报告 + 2 代码执行），让 AI 能直接操作工作区数据、创建/修改图表、读写文件、执行 Python 代码。工具的 OpenAI function schema 经 `DAAgentInterface::registerTool` 下发给 Python 子进程，**真实执行在 C++ 主进程**（不在 Python 端），结果经 stdin 回传。
 
 > ⚠️ 本文件是 AI 开发 Agent 工具（新增/修改工具、改工具参数）的必读指南。改动前先对照 § 陷阱清单。Agent 框架本身（子进程、协议、会话持久化）的设计见 `src/DAAgent/AGENTS.md`，本文件只聚焦「工具本身怎么写」。
 
@@ -11,9 +11,9 @@ DAWorkbench 平台内置 Agent 工具插件，向 LLM 暴露 **18 个工具**（
 ```
 DAAgentTools/
 ├── CMakeLists.txt              # 插件构建（file GLOB 自动收集 .h/.cpp，新增工具通常无需改）
-├── DAAgentToolsPlugin.h/.cpp   # 插件入口：initialize() 注册 18 个工具 + figure_reference 提示词
+├── DAAgentToolsPlugin.h/.cpp   # 插件入口：initialize() 注册 20 个工具 + figure_reference 提示词
 ├── DAAgentChartToolBase.h/.cpp # 图表工具基类（7 个图表访问方法，本插件内部用，无导出宏）
-└── tools/                      # 18 个工具实现（每个一对 .h/.cpp）
+└── tools/                      # 20 个工具实现（每个一对 .h/.cpp）
     ├── DAAgentToolListData.{h,cpp}        # list_data
     ├── DAAgentToolDataInfo.{h,cpp}        # get_data_info
     ├── DAAgentToolQueryData.{h,cpp}       # query_data
@@ -31,7 +31,9 @@ DAAgentTools/
     ├── DAAgentToolListFigures.{h,cpp}     # list_figures
     ├── DAAgentToolReadFile.{h,cpp}        # read_file
     ├── DAAgentToolWriteFile.{h,cpp}       # write_file
-    └── DAAgentToolSaveReport.{h,cpp}      # save_report（Win 用 DAAxOfficeWrapper 写 docx）
+    ├── DAAgentToolSaveReport.{h,cpp}      # save_report（Win 用 DAAxOfficeWrapper 写 docx）
+    ├── DAAgentToolRunCode.{h,cpp}         # run_code（主进程执行内联 Python，共享命名空间）
+    └── DAAgentToolRunScript.{h,cpp}       # run_script（执行脚本工作区内 .py，path 为工作区相对路径）
 ```
 
 ### 构建与运行
@@ -73,7 +75,7 @@ DAAgentChartToolBase         (本插件 DAAgentChartToolBase.h，无导出宏，
 
 ---
 
-## 三、18 个现有工具速查
+## 三、20 个现有工具速查
 
 | 类别 | name（schema 名） | 类 | 必填参数 | 备注 |
 |------|------------------|----|----------|------|
@@ -92,9 +94,11 @@ DAAgentChartToolBase         (本插件 DAAgentChartToolBase.h，无导出宏，
 | 绘图 | `create_subplots` | `DAAgentToolCreateSubplots` | `layout` | 子图网格，返回 figure_id |
 | 绘图 | `save_chart_image` | `DAAgentToolSaveChartImage` | `file_path` | png/pdf/svg；链接 Qt::Svg/PrintSupport |
 | 绘图 | `list_figures` | `DAAgentToolListFigures` | — | 列出所有 figure 及内部 chart |
-| 文件 | `read_file` | `DAAgentToolReadFile` | `file_path` | 含路径安全检查（禁系统目录） |
+| 文件 | `read_file` | `DAAgentToolReadFile` | `file_path` | 路径安全由权限门统一执法（系统目录硬 deny，见陷阱 P11） |
 | 文件 | `write_file` | `DAAgentToolWriteFile` | `file_path`, `content` | 写文本文件 |
 | 报告 | `save_report` | `DAAgentToolSaveReport` | `content`, `file_path` | md/pdf/docx；docx 仅 Win，链接 DAAxOfficeWrapper |
+| 代码 | `run_code` | `DAAgentToolRunCode` | `code` | 主进程执行内联 Python（共享命名空间，预导入 `da_app`）；权限分级 `code_exec` |
+| 代码 | `run_script` | `DAAgentToolRunScript` | `path` | 执行脚本工作区内 `.py`（`path` 为工作区相对路径，工具内自带越界防护）；权限分级 `code_exec` |
 
 ---
 
@@ -316,7 +320,7 @@ chart->replot();          // 触发重绘
 
 ### 5.3 文件操作（read_file / write_file）
 
-- 路径安全：`read_file` 用 `isPathSafe()` 屏蔽 `c:/windows`、`c:/program files` 等系统目录（见 `DAAgentToolReadFile.cpp`）。新增读文件类工具照抄。
+- 路径安全：**工具内不做路径检查**（permission-layer P1 起 `isPathSafe` 已从三个文件工具删除）。路径策略统一由权限门执法：`DAAgentBridge::executeTool` 前置调用 `DAAgentPermissionManager::decide()`——系统目录硬 deny 全模式生效、工作区外写入按模式 ask/deny。新增文件类工具**不要**在工具内重新实现路径检查（见陷阱 P11）。
 - 写文件：`QFile` + `QIODevice::WriteOnly | QIODevice::Text`。
 - 报告导出：`save_report` 的 `pdf` 走 `QPrinter`+`QTextDocument`（需 `Qt::PrintSupport`）；`docx` 走 `DAAxObjectWordWrapper` Word COM（仅 Windows，`.cpp` 已有 `#ifdef Q_OS_WIN` 守卫，CMakeLists.txt 里 `if(WIN32)` 才 link `DAAxOfficeWrapper`）。
 
@@ -378,6 +382,12 @@ CMakeLists.txt 用 `file(GLOB ... CONFIGURE_DEPENDS)` 收集 `*.h/*.cpp`，新�
 ### P10. 工具归属模块别放错
 工具属本插件 `plugins/DAAgentTools/`（L5 应用层/插件层），**不是** `src/DAAgent/`（`src/DAAgent/` 是纯框架库，不含具体工具实现，`tools/` 子目录已删除）。基类 `DAAgentToolBase` 在 `src/DAAgent/`，但具体工具实现全在本插件。详见 `src/DAAgent/AGENTS.md` § 七。
 
+### P11. 权限与安全执法在权限门，工具内不要重复实现
+权限层（`.plan/permission-layer.md`）落地后，**工具执行前的安全检查统一由权限门执法**（`DAAgentBridge::executeTool` 前置调用 `DAAgentPermissionManager::decide()`，C++ 是唯一执法点）：系统目录硬 deny 全模式生效、文件写入走路径策略、`run_code`/`run_script` 消费 Python 侧代码裁决（`tool_call.safety`）。新增/修改工具时：
+- **不要**在工具 `execute()` 内重新实现路径黑名单/白名单检查（三处 `isPathSafe` 已于 permission-layer P1 删除）；
+- **不要**给 `run_code`/`run_script` 加内容层面拦截——代码判定是 Python 咨询 + C++ 门消费的管线，工具只管执行；
+- 工具的风险分级（read/inapp_mutate/file_write/code_exec）由 `DAAgentPermissionManager::tierOf` 按内置表 + 参数约定（含 `file_path`/`path`/`output_path`/`report_path` 参数→`file_write`，否则→`unknown` 默认 ask）推导，新工具的参数命名会影响其分级，命名时对照约定。
+
 ---
 
 ## 八、修改现有工具的检查清单
@@ -427,4 +437,4 @@ CMakeLists.txt 用 `file(GLOB ... CONFIGURE_DEPENDS)` 收集 `*.h/*.cpp`，新�
 - [ ] `DAAgentToolsPlugin::initialize()` 加 `registerTool(new ToolXxx(c, this))`
 - [ ] CMake 新依赖已配（Qt 模块/DA 库/三方/平台专属）
 - [ ] `.\scripts\build.ps1 -Target DAAgentTools` 构建通过
-- [ ] 运行验证：Agent 对话调用新工具，或 `da_log.log` 确认收录（18 个工具）
+- [ ] 运行验证：Agent 对话调用新工具，或 `da_log.log` 确认收录（20 个工具）

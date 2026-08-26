@@ -93,6 +93,19 @@ except ImportError:
 from error_classifier import classify_error, ErrorType
 from retry_wrapper import retry_with_backoff, RetryAbortedError
 
+# 代码内容判定管线（permission-layer P2）：auto 模式下 run_code/run_script 在
+# 发起 tool_call 前完成静态规则 + 判官判定，裁决以 safety 字段附在 tool_call
+# 消息上由 C++ 门消费（母文档 A1：判定一律在 tool_call 前完成，禁止运行时
+# C++→Python 判定 RPC——_wait_for_result 只认 tool_result/stop，其余消息丢弃，
+# 判定请求被丢弃会致 C++ 挂起至超时）。导入失败时降级为不判定（safety 缺省，
+# C++ 门按无裁决处理：auto+code_exec 判官未配置时 ask 兜底）。
+try:
+    import permission_judge
+    _HAS_PERMISSION_JUDGE = True
+except ImportError:
+    _HAS_PERMISSION_JUDGE = False
+    logger.warning("permission_judge module not available, code judging disabled")
+
 # 兜底：未被任何 try/except 捕获的异常（如 stdin reader daemon 线程内的二次崩溃、
 # asyncio 解释器关闭期间的异常）默认写 sys.stderr，line_buffering 已保证逐行 flush；
 # 再显式设置 threading.excepthook 确保 daemon 线程的未捕获异常也落 stderr（Python
@@ -277,11 +290,17 @@ class StdioProtocol:
     async def send_session_loaded(self, session_id):
         await self.send({"type": "session_loaded", "session_id": session_id})
 
-    async def send_tool_call(self, call_id: str, tool: str, arguments: dict):
-        await self.send({
+    async def send_tool_call(self, call_id: str, tool: str, arguments: dict,
+                             safety: dict | None = None):
+        """发送工具调用请求；safety 为权限层代码裁决（母文档 §8，仅
+        auto 模式 + code_exec 工具产出，其余缺省不带该字段）。"""
+        msg = {
             "type": "tool_call", "call_id": call_id,
             "tool": tool, "arguments": arguments
-        })
+        }
+        if safety:
+            msg["safety"] = safety
+        await self.send(msg)
 
     async def send_question(self, text: str, options: list[str], multi_select: bool = False):
         await self.send({"type": "question", "text": text, "options": options, "multi_select": multi_select})
@@ -582,13 +601,15 @@ class AgentRunner:
                     config.get("model"), config.get("base_url"))
         await self.stdio.send_ready(config.get("model", ""))
 
-    async def _rpc_call(self, tool_call: dict, timeout: float | None = None) -> dict:
+    async def _rpc_call(self, tool_call: dict, timeout: float | None = None,
+                        safety: dict | None = None) -> dict:
         """通过 stdin/stdout RPC 调用 C++ 侧工具执行器，带超时。
 
         权限层（母文档 A9，permission-layer P1）：gated_tools（文件写入 + 代码执行
         全集，经 init 下发）无论当前模式一律使用 tool_approval_timeout_sec 长超时
         （默认 600s，覆盖人工审批等待），其余工具用 60s。超时列表与模式解耦，
         模式切换无需改超时。显式传入 timeout 时尊重调用方取值。
+        safety 为代码裁决（计划二），原样附在 tool_call 消息上，缺省不带。
         """
         name = tool_call["name"]
         if timeout is None:
@@ -597,7 +618,7 @@ class AgentRunner:
             else:
                 timeout = 60.0
         call_id = tool_call["id"]
-        await self.stdio.send_tool_call(call_id, name, tool_call["args"])
+        await self.stdio.send_tool_call(call_id, name, tool_call["args"], safety=safety)
         try:
             result = await asyncio.wait_for(
                 self._wait_for_result(call_id),
@@ -919,8 +940,35 @@ class AgentRunner:
                         tool_call_id=tool_call["id"]
                     ))
                     continue
+                # 权限层判定（母文档 A1/A6/A12，permission-layer P2）：
+                # 仅 auto 模式对代码执行工具在发起 tool_call **之前**完成内容判定
+                # （静态规则 + 判官），裁决以 safety 字段随消息下发、C++ 门消费。
+                # 非 auto 模式跳过全部判定——不跑规则不跑模型，safety 缺省（A12）。
+                # 判定异常不阻塞工具调用：safety 置缺省，交由 C++ 门按无裁决兜底。
+                safety = None
+                if (_HAS_PERMISSION_JUDGE
+                        and getattr(self, "_permission_mode", "auto") == "auto"
+                        and name in permission_judge.CODE_EXEC_TOOLS):
+                    try:
+                        safety = await permission_judge.judge_tool_call(name, args, {
+                            "code_patterns": getattr(self, "_code_patterns", {}),
+                            "judge": getattr(self, "_judge_config", {}),
+                            "workspace_root": getattr(self, "_workspace_root", ""),
+                            "base_url": self.config.get("base_url", ""),
+                            "api_key": self.config.get("api_key", ""),
+                        })
+                        logger.info(
+                            "permission verdict for %s: %s (source=%s)",
+                            name,
+                            safety.get("verdict") if safety else None,
+                            safety.get("source") if safety else None,
+                        )
+                    except Exception as e:
+                        logger.exception("permission judging failed for %s, safety omitted: %s",
+                                         name, e)
+                        safety = None
                 # RPC 调用 C++ host
-                result = await self._rpc_call(tool_call)
+                result = await self._rpc_call(tool_call, safety=safety)
                 # ToolMessage.content 必须是 str/list，不能是 dict
                 content = json.dumps(result, ensure_ascii=False)  # str，而非 dict
                 # 工具结果截断：超长结果只保留预览（kimi-code v2 式）
