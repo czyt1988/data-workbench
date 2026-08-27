@@ -33,10 +33,11 @@ public:
     // 析构函数，若子进程仍在运行则自动停止
     virtual ~DAAgentBridge() override;
 
-    // 启动 agent 子进程
+    // 启动 agent 子进程（subagents 为子 agent 定义数组，随 init 下发，子 agent 一期）
     void startAgent(const QJsonObject& llmConfig,
                     const QJsonArray& toolSpecs,
                     const QString& systemPrompt,
+                    const QJsonArray& subagents,
                     const QString& pythonExePath,
                     const QString& agentScriptPath,
                     int readyTimeoutMs = 60000,
@@ -58,6 +59,9 @@ public:
     // 下发 reconfigure 消息给运行中的子进程，Python 端热替换 ChatOpenAI 实例。
     // 未运行时 writeJson 静默返回 false（调用方 setActiveModel 已守卫 isRunning）。
     void reconfigureAgent(const QJsonObject& config);
+    // 热更新子 agent 定义（不重建图、不动会话状态，Q17）：
+    // 下发 update_subagents 消息，定义增删改后由 Module 调用；未运行时静默返回。
+    void sendUpdateSubagents(const QJsonArray& subagents);
 
     // 设置 C++ 侧工具映射表，供工具调用时查找执行
     void setTools(const QMap<QString, DAAbstractAgentTool*>& tools);
@@ -100,13 +104,16 @@ Q_SIGNALS:
      * @brief 工具执行结果返回时发射，用于 UI 展示
      * @param toolName 工具名称
      * @param result 工具执行结果 JSON
+     * @param subagentId 子 agent 任务 id（子 agent 一期；主 agent 调用为空串）
      * @note 无 callId 参数。callId 仅 sendToolResult 回传子进程时需要，
      * UI 展示工具结果不需要 callId。plan-03 的 DAAgentDockWidget::onAgentToolResult
      * 槽签名为 (const QString& toolName, const QJsonObject& result)，Qt PMF connect
      * 要求槽参数是信号参数的类型兼容前缀，若信号带 callId 则位置 2 类型不匹配
      * （信号 QString vs 槽 QJsonObject）→ 编译错误。
+     * @note subagentId 为内部信号参数（模块内消化，不影响公开接口）：
+     * 非空时 Module 不转发接口 agentToolResult、不写会话 JSONL（母文档 §7 过滤规则）。
      */
-    void agentToolResult(const QString& toolName, const QJsonObject& result);
+    void agentToolResult(const QString& toolName, const QJsonObject& result, const QString& subagentId);
     /**
      * @brief agent 向用户提问时发射
      * @param text 问题文本
@@ -167,6 +174,14 @@ Q_SIGNALS:
      */
     void agentDone();
     /**
+     * @brief 子 agent 任务进度（subagent_progress 协议消息，子 agent 一期）
+     * @param progress 进度 JSON（call_id/task_id?/subagent?/state/message?/results?）
+     * @note state ∈ spawned|running|done|error|timeout|stopped；心跳为无 task_id 的 running 态。
+     * Module 原样转发为接口 agentSubagentProgress；终态/聚合的撤卡语义（Q18）
+     * 由 Bridge 在 handleJsonLine 内部消化，不经本信号。
+     */
+    void agentSubagentProgress(const QJsonObject& progress);
+    /**
      * @brief 崩溃恢复时请求 Module 从 SessionStore 读取会话历史并下发 load_session
      * @param sessionId 需要恢复的会话 ID
      */
@@ -207,9 +222,13 @@ private:
     void handleJsonLine(const QJsonObject& msg);
     bool writeJson(const QJsonObject& msg);
     void executeTool(const QString& callId, const QString& toolName, const QJsonObject& args,
-                     const QJsonObject& safety = QJsonObject());
+                     const QJsonObject& safety = QJsonObject(), const QString& subagentId = QString());
     // 权限门放行后的真实执行（原 executeTool 主体，含 try/catch 兜底与结果回传）
-    void executeToolNow(const QString& callId, const QString& toolName, const QJsonObject& args);
+    void executeToolNow(const QString& callId, const QString& toolName, const QJsonObject& args,
+                        const QString& subagentId = QString());
+    // Q18 dismissal：按子 agent 任务 id 撤销对应挂起审批卡（仅撤 subagentId 非空的条目，
+    // 主 agent 审批绝不受影响），逐条 emit agentToolApprovalDismissed
+    void dismissSubagentApprovals(const QStringList& subagentIds);
     // 组装权限层下发字段（母文档 §8：模式/工作区/gated_tools/超时/危险模式/判官）
     QJsonObject buildPermissionConfig() const;
     void startInactivityTimer();

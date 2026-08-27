@@ -102,7 +102,9 @@ public:
     virtual DAAgentPromptOps* agentPromptOps() = 0;
 
     // ---- 权限层（permission-layer P1 新增，一次性 ABI 批处理；同"会话管理"节惯例，
-    //      破坏性接口变更，插件需重编译；计划二不再新增纯虚/信号，不二次破坏 ABI） ----
+    //      破坏性接口变更，插件需重编译；权限层计划二未再破坏 ABI；
+    //      其后的第二次破坏性变更见下方"子 agent 管理"节，顺序经
+    //      permission-layer.md §13 衔接契约确认） ----
     /// 获取权限配置（模式/审批超时/判官/规则/危险模式/分级覆盖，设置页读）
     virtual QJsonObject getPermissionConfig() const = 0;
     /// 写入权限配置（contains 守卫；运行中的子进程经 reconfigure 同步）
@@ -116,6 +118,20 @@ public:
     /// 设置脚本工作区根目录（供 ${workspace} 变量解析 + 下发 Python；
     /// 复用 setCurrentProjectPath 的 L5 注入模式，由 DAAppProject 经 core() 注入）
     virtual void setScriptWorkspaceDir(const QString& dir) = 0;
+
+    // ---- 子 agent 管理（subagent-phase1 新增，破坏性接口变更，插件需重编译；
+    //      同"会话管理"节惯例，为权限层之后的第二次破坏性变更） ----
+    /// 注册内置子 agent 定义：仅当 <daAgent>/subagents/<name>.md 不存在时写入（尊重用户编辑）
+    virtual void registerBuiltinSubagent(const QString& name, const QString& content) = 0;
+    /// 获取所有子 agent 定义（管理 UI 数据源；每元素 {name, description, tools, system_prompt, permissions?}）
+    virtual QJsonArray subagentDefinitions() const = 0;
+    /// 保存子 agent 定义（def 含 name/description/tools/system_prompt/permissions?；
+    /// oldName 非空且与 name 不同表示重命名）；成功后运行中的子进程经 update_subagents 热更新
+    virtual bool saveSubagent(const QJsonObject& def, const QString& oldName = QString()) = 0;
+    /// 删除指定名称的子 agent 定义；成功后运行中的子进程经 update_subagents 热更新
+    virtual bool deleteSubagent(const QString& name) = 0;
+    /// 已注册工具名列表（子 agent 编辑器工具白名单复选框数据源）
+    virtual QStringList registeredToolNames() const = 0;
 
 Q_SIGNALS:
     // ---- 以下 10 个由 DAAgentModule 从 DAAgentBridge 转发 ----
@@ -182,5 +198,12 @@ Q_SIGNALS:
     /// false=当前模式为默认值；Dock 据此决定 A13 启动 yolo 确认卡是否弹出
     /// （默认全自动静默生效，仅显式 yolo 跨重启时二次确认）
     void permissionModeExplicitChanged(bool explicitSet);
+
+    // ---- 子 agent 信号（subagent-phase1） ----
+    /// 子 agent 任务进度（subagent_progress 协议消息原样转发；载荷含
+    /// call_id/task_id?/subagent?/state/message?/results?，见母文档 §7）
+    void agentSubagentProgress(const QJsonObject& progress);
+    /// 子 agent 定义列表变化（加载/保存/删除/插件注入后），供管理 UI 刷新
+    void subagentListChanged();
 };
 } // namespace DA

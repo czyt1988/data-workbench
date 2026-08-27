@@ -17,6 +17,7 @@ namespace DA
 class DAAgentBridge;
 class DAAgentSessionStore;
 class DAAgentManager;
+class DAAgentSubagentManager;
 class DAAgentPermissionManager;
 
 /**
@@ -118,6 +119,18 @@ public:
     /// @copydoc DAAgentInterface::setScriptWorkspaceDir
     void setScriptWorkspaceDir(const QString& dir) override;
 
+    // ---- 子 agent 管理（subagent-phase1，override DAAgentInterface 5 个新纯虚） ----
+    /// @copydoc DAAgentInterface::registerBuiltinSubagent
+    void registerBuiltinSubagent(const QString& name, const QString& content) override;
+    /// @copydoc DAAgentInterface::subagentDefinitions
+    QJsonArray subagentDefinitions() const override;
+    /// @copydoc DAAgentInterface::saveSubagent
+    bool saveSubagent(const QJsonObject& def, const QString& oldName = QString()) override;
+    /// @copydoc DAAgentInterface::deleteSubagent
+    bool deleteSubagent(const QString& name) override;
+    /// @copydoc DAAgentInterface::registeredToolNames
+    QStringList registeredToolNames() const override;
+
     // ---- 会话管理辅助方法（非接口，plan-03 声明归属本计划） ----
     // 新建会话（UI "+" 按钮用）—— createSession + emit sessionCreated
     void newSession() override;
@@ -143,6 +156,8 @@ private:
     void startAgentInternal();
     QString assembleSystemPrompt() const;
     QJsonArray assembleToolSpecs() const;
+    // 组装子 agent 定义协议数组（随 init/update_subagents 下发，协议载荷四字段）
+    QJsonArray assembleSubagentDefs() const;
     QString detectPythonExePath() const;
     QString detectAgentScriptPath() const;
     QString detectSystemPromptPath() const;

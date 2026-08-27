@@ -4,6 +4,8 @@
 #include "DAAgentSessionStore.h"
 #include "DAAgentPermissionManager.h"
 #include "DAAgentManager.h"
+#include "DAAgentSubagentManager.h"
+#include "DAAgentSubagentDef.h"
 #include "DAAgentPromptOps.h"
 #include "DAAbstractAgentTool.h"
 #include "DAAgentToolSpecJson.h"
@@ -132,6 +134,7 @@ public:
     DACoreInterface* mCore = nullptr;
     DAAgentBridge* mBridge = nullptr;
     DAAgentManager* mAgentManager = nullptr;          ///< 提示词库管理器（QObject，parent=this）
+    DAAgentSubagentManager* mSubagentManager = nullptr; ///< 子 agent 定义库（QObject，parent=this）
     QMap<QString, DAAbstractAgentTool*> mTools;        ///< tool name → impl
     QHash<QString, QString> mSystemPrompts;            ///< prompt name → content
     DAAgentSessionStore* mSessionStore = nullptr;  ///< 非 QObject 无参构造；initialize() 内 new、析构显式 delete
@@ -209,7 +212,16 @@ void DAAgentModule::initialize(DACoreInterface* core)
     connect(d->mBridge, &DAAgentBridge::agentToken, this, &DAAgentInterface::agentToken);
     connect(d->mBridge, &DAAgentBridge::agentMessageComplete, this, &DAAgentInterface::agentMessageComplete);
     connect(d->mBridge, &DAAgentBridge::agentToolCall, this, &DAAgentInterface::agentToolCall);
-    connect(d->mBridge, &DAAgentBridge::agentToolResult, this, &DAAgentInterface::agentToolResult);
+    // 子 agent 一期过滤规则（母文档 §7）：带 subagent_id 的工具结果不转发接口信号
+    //（不进主聊天流），执行照常（权限门同门执法）；主 agent 调用（空串）照常转发
+    connect(d->mBridge, &DAAgentBridge::agentToolResult, this,
+            [this](const QString& toolName, const QJsonObject& result, const QString& subagentId) {
+        if (subagentId.isEmpty()) {
+            emit agentToolResult(toolName, result);
+        }
+    });
+    // 子 agent 任务进度：Bridge 内部信号原样转发为接口信号（终态撤卡语义由 Bridge 消化）
+    connect(d->mBridge, &DAAgentBridge::agentSubagentProgress, this, &DAAgentInterface::agentSubagentProgress);
     connect(d->mBridge, &DAAgentBridge::agentQuestion, this, &DAAgentInterface::agentQuestion);
     connect(d->mBridge, &DAAgentBridge::agentError, this, &DAAgentInterface::agentError);
     connect(d->mBridge, &DAAgentBridge::agentReady, this, &DAAgentInterface::agentReady);
@@ -251,6 +263,15 @@ void DAAgentModule::initialize(DACoreInterface* core)
     d->mAgentManager = new DAAgentManager(this);
     d->mAgentManager->ensureDefaultAgent();
     d->mAgentManager->loadAgents();
+
+    // 子 agent 定义库（子 agent 一期）：播种内置 explore（仅文件缺失时写入）、
+    // 加载用户已有定义。mSubagentManager 为 QObject，parent=this，随 Module 释放。
+    d->mSubagentManager = new DAAgentSubagentManager(this);
+    d->mSubagentManager->ensureDefaultSubagents();
+    d->mSubagentManager->loadSubagents();
+    // 定义列表变化透传给接口，供管理 UI 刷新
+    connect(d->mSubagentManager, &DAAgentSubagentManager::subagentListChanged,
+            this, &DAAgentInterface::subagentListChanged);
 
     // 连接 Bridge→Module 的持久化/状态 lambda（connectSignals 不再连 Dock，
     // 守卫改为仅判 m_bridge；Dock 连接已由 DAAppController 经接口完成）。
@@ -361,6 +382,27 @@ QJsonArray DAAgentModule::assembleToolSpecs() const
         specs.append(toJson(tool->getToolSpec()));
     }
     return specs;
+}
+
+/**
+ * @brief 组装子 agent 定义协议数组（子 agent 一期）
+ * @return 协议载荷 JSON 数组，每元素 {name, description, tools, system_prompt}
+ *（母文档 §7 契约逐字一致；permissions 预留字段不下发）
+ *
+ * 随 init 一次性下发，定义增删改后经 DAAgentBridge::sendUpdateSubagents 热更新。
+ */
+QJsonArray DAAgentModule::assembleSubagentDefs() const
+{
+    DA_DC(d);
+    QJsonArray defs;
+    if (!d->mSubagentManager) {
+        return defs;
+    }
+    const QList<DAAgentSubagentDef> list = d->mSubagentManager->subagents();
+    for (const DAAgentSubagentDef& s : list) {
+        defs.append(s.toProtocolJson());
+    }
+    return defs;
 }
 
 /**
@@ -482,8 +524,9 @@ void DAAgentModule::startAgentInternal()
     int readyTimeoutMs = s.value("agent/ready_timeout_sec", 60).toInt() * 1000;
     int stopTimeoutMs   = s.value("agent/stop_timeout_sec", 5).toInt() * 1000;
 
-    // 启动
+    // 启动（子 agent 一期：init 附子 agent 定义数组，assembleSubagentDefs 协议载荷）
     d->mBridge->startAgent(config, assembleToolSpecs(), assembleSystemPrompt(),
+                           assembleSubagentDefs(),
                            pythonExe, scriptPath, readyTimeoutMs, stopTimeoutMs);
 }
 
@@ -564,8 +607,12 @@ void DAAgentModule::connectSignals()
         d->mPendingToolCallUuids.enqueue(appendToolCallRecord(d->mCurrentSessionId, tool, args));
     });
     // 工具结果
-    connect(d->mBridge, &DAAgentBridge::agentToolResult, this, [this](const QString& /*tool*/, const QJsonObject& result) {
+    // 子 agent 一期过滤（母文档 §7）：带 subagent_id 的结果不写会话 JSONL
+    //（子转录不落盘；对应的 tool_call 本就未 emit/未入队，出队配对天然一致）
+    connect(d->mBridge, &DAAgentBridge::agentToolResult, this,
+            [this](const QString& /*tool*/, const QJsonObject& result, const QString& subagentId) {
         auto* d = d_func();
+        if (!subagentId.isEmpty()) return;
         if (d->mCurrentSessionId.isEmpty()) return;
         // 契约6：FIFO 出队取配对的 tool_call uuid（_rpc_call 串行保证顺序）
         // MAJOR1（round-4）：dequeue 前加 isEmpty 守卫，防空队列未定义行为/崩溃
@@ -819,6 +866,13 @@ QJsonObject DAAgentModule::getLLMConfig() const
     config["recursion_limit"]          = s.value("agent/recursion_limit", 150).toInt();
     // 预启动开关：程序启动时是否自动预热 agent 子进程（默认 true）
     config["auto_prestart"]            = s.value("agent/auto_prestart", true).toBool();
+    // ---- 子 agent 配置（subagent-phase1 §4：随 init/reconfigure 下发 Python，全局统一） ----
+    // timeout_sec/recursion_limit 设置页可编辑；max_concurrency/batch_limit 为内部键，
+    // 钳在上限 2/4 内（可调低不可调高）
+    config["subagent_timeout_sec"]      = qMax(1, s.value("agent/subagent_timeout_sec", 600).toInt());
+    config["subagent_recursion_limit"]  = qMax(1, s.value("agent/subagent_recursion_limit", 60).toInt());
+    config["subagent_max_concurrency"]  = qBound(1, s.value("agent/subagent_max_concurrency", 2).toInt(), 2);
+    config["subagent_batch_limit"]      = qBound(1, s.value("agent/subagent_batch_limit", 4).toInt(), 4);
     return config;
 }
 
@@ -878,6 +932,15 @@ void DAAgentModule::setLLMConfig(const QJsonObject& config)
         s.setValue("agent/recursion_limit",           config.value("recursion_limit").toInt());
     if (config.contains("auto_prestart"))
         s.setValue("agent/auto_prestart",              config.value("auto_prestart").toBool());
+    // 子 agent 配置（subagent-phase1 §4）；max_concurrency/batch_limit 钳上限 2/4
+    if (config.contains("subagent_timeout_sec"))
+        s.setValue("agent/subagent_timeout_sec",      qMax(1, config.value("subagent_timeout_sec").toInt()));
+    if (config.contains("subagent_recursion_limit"))
+        s.setValue("agent/subagent_recursion_limit",  qMax(1, config.value("subagent_recursion_limit").toInt()));
+    if (config.contains("subagent_max_concurrency"))
+        s.setValue("agent/subagent_max_concurrency",  qBound(1, config.value("subagent_max_concurrency").toInt(), 2));
+    if (config.contains("subagent_batch_limit"))
+        s.setValue("agent/subagent_batch_limit",      qBound(1, config.value("subagent_batch_limit").toInt(), 4));
 }
 
 // ===========================================================================
@@ -1562,6 +1625,112 @@ void DAAgentModule::pushPermissionMode()
     DA_D(d);
     emit permissionModeChanged(getPermissionMode());
     emit permissionModeExplicitChanged(d->mPermissionManager ? d->mPermissionManager->modeExplicitlySet() : false);
+}
+
+// ===========================================================================
+// 子 agent 管理接口实现（subagent-phase1）
+// ===========================================================================
+
+/**
+ * @brief 注册内置子 agent 定义（委托 DAAgentSubagentManager，镜像 registerBuiltinAgent）
+ * @param name 子 agent 名称（文件名）
+ * @param content md + frontmatter 全文
+ */
+void DAAgentModule::registerBuiltinSubagent(const QString& name, const QString& content)
+{
+    DA_D(d);
+    if (d->mSubagentManager) {
+        d->mSubagentManager->registerBuiltin(name, content);
+        d->mSubagentManager->loadSubagents();
+    }
+}
+
+/**
+ * @brief 获取所有子 agent 定义（管理 UI 数据源）
+ * @return JSON 数组，每元素 {name, description, tools, system_prompt, permissions?}
+ */
+QJsonArray DAAgentModule::subagentDefinitions() const
+{
+    DA_DC(d);
+    QJsonArray arr;
+    if (!d->mSubagentManager) {
+        return arr;
+    }
+    const QList<DAAgentSubagentDef> list = d->mSubagentManager->subagents();
+    for (const DAAgentSubagentDef& s : list) {
+        arr.append(s.toJsonObject());
+    }
+    return arr;
+}
+
+/**
+ * @brief 保存子 agent 定义（新增或更新；oldName 非空表示重命名）
+ * @param def 定义 JSON（name/description/tools/system_prompt/permissions?）
+ * @param oldName 旧名称（重命名场景，定位旧文件删除）
+ * @return 保存成功返回 true
+ *
+ * 保存时校验工具白名单：引用未注册工具仅告警不拒绝（Python 侧求交剔除为
+ * 双保险，母文档 §9 风险表）。成功后若子进程在跑则经桥下发 update_subagents
+ * 热更新（Q17）；定义列表变化信号由 manager loadSubagents 透传。
+ */
+bool DAAgentModule::saveSubagent(const QJsonObject& def, const QString& oldName)
+{
+    DA_D(d);
+    if (!d->mSubagentManager) {
+        return false;
+    }
+    const DAAgentSubagentDef subDef = DAAgentSubagentDef::fromJsonObject(def);
+    if (!subDef.isValid()) {
+        qWarning("DAAgentModule::saveSubagent: definition has an empty name, save rejected");
+        return false;
+    }
+    // 白名单校验：引用未注册工具告警（Python 侧求交剔除兜底）
+    for (const QString& t : subDef.tools) {
+        if (!d->mTools.contains(t)) {
+            qWarning("DAAgentModule::saveSubagent: subagent '%s' references unregistered tool '%s'",
+                     qPrintable(subDef.name), qPrintable(t));
+        }
+    }
+    if (!d->mSubagentManager->saveSubagent(subDef, oldName)) {
+        return false;
+    }
+    if (d->mBridge && d->mBridge->isRunning()) {
+        d->mBridge->sendUpdateSubagents(assembleSubagentDefs());
+    }
+    return true;
+}
+
+/**
+ * @brief 删除指定名称的子 agent 定义
+ * @param name 子 agent 名称
+ * @return 删除成功返回 true
+ *
+ * 成功后若子进程在跑则经桥下发 update_subagents 热更新（Q17）；
+ * 定义全部删除后 Python 侧不再注入 dispatch_subagents 工具。
+ */
+bool DAAgentModule::deleteSubagent(const QString& name)
+{
+    DA_D(d);
+    if (!d->mSubagentManager) {
+        return false;
+    }
+    if (!d->mSubagentManager->deleteSubagent(name)) {
+        return false;
+    }
+    if (d->mBridge && d->mBridge->isRunning()) {
+        d->mBridge->sendUpdateSubagents(assembleSubagentDefs());
+    }
+    return true;
+}
+
+/**
+ * @brief 已注册工具名列表（子 agent 编辑器工具白名单复选框数据源）
+ * @return 工具名列表（注册表键序）
+ */
+QStringList DAAgentModule::registeredToolNames() const
+{
+    DA_DC(d);
+    return d->mTools.keys();
 }
 
 /**

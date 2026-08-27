@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/da/agent">
         <file>default-agent.md</file>
+        <file>subagent-explore.md</file>
     </qresource>
 </RCC>

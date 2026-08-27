@@ -16,6 +16,10 @@ damacro_lib_setting(
 ########################################################
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+# Qt 资源（da_agent.qrc：default-agent.md / subagent-explore.md 播种资源）。
+# 注意：必须加入 target 源文件 AUTORCC 才会编译——此前 qrc 未登记导致
+# DAAgentManager 的 qrc 播种静默失败（子 agent 一期修复）。
+file(GLOB DA_LIB_QT_RC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.qrc")
 
 # DAAgent 仅需要 Core/Gui/Widgets/PrintSupport/Svg；WebEngine/WebChannel/Network
 # 已随 GUI 文件迁移至 DAGui/Agent，由 DAGui/CMakeLists.txt 引入。
@@ -32,9 +36,10 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
 add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
+            ${DA_LIB_QT_RC_FILES}
             ${DA_GLOBAL_HEADER}
 )
-# AUTORCC ON 由 damacro_set_lib_properties 设置，会自动编译 .qrc
+# AUTORCC ON 由 damacro_set_lib_properties 设置，自动编译上述 .qrc 源文件
 
 # 构建库定义的宏（Private），与 DAFigure 的 DAFIGURE_BUILD 对应
 # 配合 DAAgentAPI.h：DAAGENT_BUILD 在编译本库时使 DAAgent_API 展开为 Q_DECL_EXPORT，

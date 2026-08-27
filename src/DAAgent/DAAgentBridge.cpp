@@ -4,6 +4,7 @@
 #include "DAAgentPermissionManager.h"
 #include <QTimer>
 #include <QHash>
+#include <QSet>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -16,8 +17,9 @@ namespace DA
 /// 挂起的审批请求（executeTool 前置门 ask 路径登记，onToolApproval 消费）
 struct PendingApproval {
     QString toolName;   ///< 工具名
-    QJsonObject args;   ///< 工具参数（批准后原样执行）
+    QJsonObject args;   ///< 工具参数（批准后原样执行，不含 _subagent 卡上下文）
     QString tier;       ///< 工具分级（用户拒绝时合成脱敏结果用）
+    QString subagentId; ///< 子 agent 任务 id（子 agent 一期；主 agent 调用为空，Q18 撤卡依据）
 };
 
 // ===========================================================================
@@ -54,6 +56,7 @@ public:
     QJsonObject mSavedLlmConfig;            ///< 启动参数缓存（崩溃恢复时复用）
     QJsonArray mSavedToolSpecs;
     QString mSavedSystemPrompt;
+    QJsonArray mSavedSubagents;             ///< 子 agent 定义缓存（随 init 下发，崩溃恢复复用）
 
     // ---- 权限层（permission-layer P1） ----
     DAAgentPermissionManager* mPermissionManager = nullptr;  ///< 权限引擎（Module 持有，非拥有）
@@ -97,6 +100,7 @@ DAAgentBridge::~DAAgentBridge()
  * @param llmConfig LLM 配置（base_url、api_key、model）
  * @param toolSpecs 工具规格 JSON 数组（OpenAI function schema）
  * @param systemPrompt 系统提示词
+ * @param subagents 子 agent 定义数组（随 init 下发，子 agent 一期）
  * @param pythonExePath Python 解释器路径
  * @param agentScriptPath agent 脚本路径
  * @param readyTimeoutMs 等待 ready/booting 心跳的超时（毫秒），默认 60s
@@ -105,6 +109,7 @@ DAAgentBridge::~DAAgentBridge()
 void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
                                const QJsonArray& toolSpecs,
                                const QString& systemPrompt,
+                               const QJsonArray& subagents,
                                const QString& pythonExePath,
                                const QString& agentScriptPath,
                                int readyTimeoutMs,
@@ -115,6 +120,7 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
     d->mSavedLlmConfig   = llmConfig;
     d->mSavedToolSpecs    = toolSpecs;
     d->mSavedSystemPrompt = systemPrompt;
+    d->mSavedSubagents    = subagents;
     // 从 config 读取看门狗和重启参数（plan-05 在 getLLMConfig 中添加这些 key）
     d->mInactivityTimeoutMs = llmConfig.value("inactivity_timeout_sec").toInt(240) * 1000;
     d->mMaxRestarts         = llmConfig.value("max_subprocess_restarts").toInt(3);
@@ -177,10 +183,16 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
     }
 
     // 记录 agent 启动信息(不打印 api_key 明文)——用于诊断启动失败/退出码异常
+    // 子 agent 一期：附 init 载荷中的子 agent 定义名单（验收/排查 init 下发用）
+    QStringList subagentNames;
+    for (const QJsonValue& sv : subagents) {
+        subagentNames.append(sv.toObject().value("name").toString());
+    }
     daDebug << "Starting agent: python=" << pythonExePath
             << " script=" << agentScriptPath
             << " base_url=" << llmConfig.value("base_url").toString()
-            << " model=" << llmConfig.value("model").toString();
+            << " model=" << llmConfig.value("model").toString()
+            << " subagents=[" << subagentNames.join(QStringLiteral(", ")) << "]";
 
     // 2. 发送 init 消息（此时 state() 为 Running，writeJson 守卫通过）
     //    config 内合并权限层字段（母文档 §8 契约 3：全量下发；Python 侧 P1 仅存储，
@@ -195,6 +207,9 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
     initMsg["config"]        = initConfig;
     initMsg["tools"]         = toolSpecs;
     initMsg["system_prompt"] = systemPrompt;
+    // 子 agent 一期：init 附子 agent 定义数组（母文档 §7 契约；为空时下发空数组，
+    // Python 侧据此不注入 dispatch_subagents 工具）
+    initMsg["subagents"]     = subagents;
     writeJson(initMsg);
     d->mRunning = true;
 
@@ -443,6 +458,24 @@ void DAAgentBridge::reconfigureAgent(const QJsonObject& config)
 }
 
 /**
+ * @brief 热更新子 agent 定义（不重启子进程、不重建图、不动会话状态，Q17）
+ * @param subagents 当前全量子 agent 定义数组（协议载荷格式，母文档 §7）
+ *
+ * 定义增删改后由 DAAgentModule 调用。Python 侧分发器常驻，收到后即时替换
+ * 定义集与 dispatch_subagents schema；运行中任务仍用派发时快照。
+ * 与 sendLoadSession 同构：不 emit agentBusy，writeJson 守卫 state()==Running。
+ */
+void DAAgentBridge::sendUpdateSubagents(const QJsonArray& subagents)
+{
+    DA_D(d);
+    d->mSavedSubagents = subagents;  // 同步缓存（崩溃恢复时 init 复用）
+    QJsonObject obj;
+    obj["type"]      = "update_subagents";
+    obj["subagents"] = subagents;
+    writeJson(obj);
+}
+
+/**
  * @brief 组装权限层下发字段（母文档 §8）
  * @return JSON 对象，含 permission_mode/workspace_root/gated_tools/
  *         tool_approval_timeout_sec/code_patterns/judge；未设置权限引擎时为空对象
@@ -576,19 +609,61 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
         }
     } else if (type == "tool_call") {
         emit agentBusy(true);
-        emit agentToolCall(msg["tool"].toString(), msg["arguments"].toObject());
-        // 通过 QTimer::singleShot(0) 把工具执行投递回主线程事件循环，
-        // 让当前 onReadyReadStandardOutput 尽快返回，避免在读取回调里
-        // 长时间阻塞 stdout 管道（管道阻塞会导致子进程 write 阻塞/死锁）。
         QString callId   = msg["call_id"].toString();
         QString toolName = msg["tool"].toString();
         QJsonObject args = msg["arguments"].toObject();
         // 权限层（母文档 §8）：Python 侧安全裁决（仅 auto 模式 + code_exec 产出，
         // 计划二上线；P1 恒为空对象，C++ 解析与消费逻辑已就绪并经测试锁定，契约 2）
         QJsonObject safety = msg.value("safety").toObject();
-        QTimer::singleShot(0, this, [this, callId, toolName, args, safety]() {
-            executeTool(callId, toolName, args, safety);
+        // 子 agent 一期：子图发起的调用带可选 subagent_id（与 safety 并存，母文档 §7）。
+        // 带 subagent_id 的调用不 emit agentToolCall（子转录不进主聊天流；
+        // Module 持久化 lambda 因此天然跳过），执行与权限门照常（同门执法，Q5）。
+        QString subagentId = msg.value("subagent_id").toString();
+        if (subagentId.isEmpty()) {
+            emit agentToolCall(toolName, args);
+        }
+        // 通过 QTimer::singleShot(0) 把工具执行投递回主线程事件循环，
+        // 让当前 onReadyReadStandardOutput 尽快返回，避免在读取回调里
+        // 长时间阻塞 stdout 管道（管道阻塞会导致子进程 write 阻塞/死锁）。
+        QTimer::singleShot(0, this, [this, callId, toolName, args, safety, subagentId]() {
+            executeTool(callId, toolName, args, safety, subagentId);
         });
+    } else if (type == "subagent_progress") {
+        // 子 agent 一期（母文档 §7）：任务进度消息 {call_id, task_id?, subagent?,
+        // state: spawned|running|done|error|timeout|stopped, message?, results?}。
+        // 心跳为无 task_id 的 running 态——handleJsonLine 开头的看门狗重置天然保活。
+        // Q18 dismissal 由本分支承担：任务进入终态或派发聚合结束时，按任务 id
+        // 撤销对应挂起审批卡，防"任务已死而用户事后批准"的身后执行。
+        const QString state = msg.value("state").toString();
+        static const QSet<QString> kTerminalStates = {
+            QStringLiteral("done"), QStringLiteral("error"),
+            QStringLiteral("timeout"), QStringLiteral("stopped"),
+        };
+        if (kTerminalStates.contains(state)) {
+            // 单任务终态：按 task_id 撤卡（心跳等无 task_id 消息跳过）
+            const QString taskId = msg.value("task_id").toString();
+            if (!taskId.isEmpty()) {
+                dismissSubagentApprovals({taskId});
+            }
+        }
+        if (msg.contains("results")) {
+            // 派发聚合结束：按 results 中全部 task_id 撤销残留挂起审批
+            // （覆盖未逐条上报终态的任务；主 agent 审批无 subagentId 不受影响）
+            // results 兼容两种形态：任务对象数组，或 {tasks:[...]}（B 文件 dispatch 返回形态）
+            QStringList taskIds;
+            QJsonArray results = msg.value("results").toArray();
+            if (results.isEmpty() && msg.value("results").isObject()) {
+                results = msg.value("results").toObject().value("tasks").toArray();
+            }
+            for (const QJsonValue& rv : results) {
+                const QString tid = rv.toObject().value("task_id").toString();
+                if (!tid.isEmpty()) {
+                    taskIds.append(tid);
+                }
+            }
+            dismissSubagentApprovals(taskIds);
+        }
+        emit agentSubagentProgress(msg);
     } else if (type == "question") {
         // agent 向用户提问后 langgraph 进入 interrupt 暂停态，等待用户回答。
         // 期间不应启动无活动看门狗——用户可能离开较长时间才回答，
@@ -690,11 +765,15 @@ void DAAgentBridge::setPermissionManager(DAAgentPermissionManager* manager)
  * @param toolName 工具名称
  * @param args 工具调用参数 JSON
  * @param safety Python 侧安全裁决（可空；计划二生产）
+ * @param subagentId 子 agent 任务 id（子 agent 一期；主 agent 调用为空串）。
+ * 子 agent 调用经同一门执法、天然继承父当前激活模式与分级（Q5）；
+ * Ask 路径登记 subagentId 供 Q18 终态撤卡，审批卡经 args._subagent 携带上下文。
  */
 void DAAgentBridge::executeTool(const QString& callId,
                                 const QString& toolName,
                                 const QJsonObject& args,
-                                const QJsonObject& safety)
+                                const QJsonObject& safety,
+                                const QString& subagentId)
 {
     DA_D(d);
 
@@ -708,15 +787,16 @@ void DAAgentBridge::executeTool(const QString& callId,
             result["success"] = false;
             result["error"]   = dec.reason;
             sendToolResult(callId, result);
-            emit agentToolResult(toolName, result);
+            emit agentToolResult(toolName, result, subagentId);
             return;
         }
         if (dec.action == DAAgentPermissionManager::Ask) {
             // 挂起等待用户裁决：登记 pending、停看门狗（用户思考时间不计无活动）
             PendingApproval pa;
-            pa.toolName = toolName;
-            pa.args     = args;
-            pa.tier     = dec.tier;
+            pa.toolName   = toolName;
+            pa.args       = args;
+            pa.tier       = dec.tier;
+            pa.subagentId = subagentId;
             d->mPendingApprovals.insert(callId, pa);
             d->mInactivityTimer->stop();
             // 通知 Python 侧暂停工具 RPC 计时——用户审批等待不设时限，
@@ -725,12 +805,19 @@ void DAAgentBridge::executeTool(const QString& callId,
             pendingMsg["type"]    = "approval_pending";
             pendingMsg["call_id"] = callId;
             writeJson(pendingMsg);
-            emit agentToolApprovalRequest(callId, toolName, args);
+            // 审批卡上下文：子 agent 来源以 _subagent 键写入 args（同 _tier/
+            // _rememberable 先例，不改 agentToolApprovalRequest 签名，Q18）；
+            // pa.args 保持干净，批准后执行不带该键
+            QJsonObject cardArgs = args;
+            if (!subagentId.isEmpty()) {
+                cardArgs[QStringLiteral("_subagent")] = subagentId;
+            }
+            emit agentToolApprovalRequest(callId, toolName, cardArgs);
             return;
         }
     }
 
-    executeToolNow(callId, toolName, args);
+    executeToolNow(callId, toolName, args, subagentId);
 }
 
 /**
@@ -761,7 +848,7 @@ void DAAgentBridge::onToolApproval(const QString& callId, bool approved, bool re
                 d->mPermissionManager->rememberSession(pa.toolName, key);
             }
         }
-        executeToolNow(callId, pa.toolName, pa.args);
+        executeToolNow(callId, pa.toolName, pa.args, pa.subagentId);
     } else {
         QJsonObject result;
         result["success"] = false;
@@ -772,7 +859,7 @@ void DAAgentBridge::onToolApproval(const QString& callId, bool approved, bool re
             result["error"] = QStringLiteral("Access denied: user rejected the operation");
         }
         sendToolResult(callId, result);
-        emit agentToolResult(pa.toolName, result);
+        emit agentToolResult(pa.toolName, result, pa.subagentId);
     }
 
     // 恢复看门狗（仍有其它挂起审批时由 startInactivityTimer 内部守卫拦截）
@@ -787,10 +874,12 @@ void DAAgentBridge::onToolApproval(const QString& callId, bool approved, bool re
  * @param callId 工具调用 ID
  * @param toolName 工具名称
  * @param args 工具调用参数 JSON
+ * @param subagentId 子 agent 任务 id（主 agent 调用为空串；随结果信号透传供过滤）
  */
 void DAAgentBridge::executeToolNow(const QString& callId,
                                    const QString& toolName,
-                                   const QJsonObject& args)
+                                   const QJsonObject& args,
+                                   const QString& subagentId)
 {
     DA_D(d);
     ToolExecGuard guard(this);  // RAII：暂停看门狗，覆盖所有 return 路径
@@ -808,7 +897,7 @@ void DAAgentBridge::executeToolNow(const QString& callId,
         result["error"]  = QString("Unknown tool: %1").arg(toolName);
         result["success"] = false;
         sendToolResult(callId, result);
-        emit agentToolResult(toolName, result);  // 同步推送到 UI 显示
+        emit agentToolResult(toolName, result, subagentId);  // 同步推送到 UI 显示
         return;
     }
 
@@ -833,7 +922,36 @@ void DAAgentBridge::executeToolNow(const QString& callId,
     sendToolResult(callId, result);
 
     // 4. 同时发射信号，让聊天 UI 在对话流中展示工具调用结果
-    emit agentToolResult(toolName, result);
+    // （带 subagentId 的子转录结果由 Module 过滤，不进主聊天流/不落盘，母文档 §7）
+    emit agentToolResult(toolName, result, subagentId);
+}
+
+/**
+ * @brief Q18 dismissal：按子 agent 任务 id 撤销对应挂起审批卡（母文档 §3/§7）
+ * @param subagentIds 需要撤卡的子 agent 任务 id 列表（空串忽略）
+ *
+ * 仅撤 PendingApproval.subagentId 非空且命中列表的条目——主 agent 审批
+ * （subagentId 为空）绝不受影响（风险表：Q18 dismissal 误撤主 agent 审批）。
+ * 逐条 emit agentToolApprovalDismissed 让 UI 撤卡；不回传合成结果——
+ * 任务终态后 Python 侧 Future 已取消/严格 call_id 匹配丢弃迟到结果，无害。
+ */
+void DAAgentBridge::dismissSubagentApprovals(const QStringList& subagentIds)
+{
+    DA_D(d);
+    if (d->mPendingApprovals.isEmpty() || subagentIds.isEmpty()) {
+        return;
+    }
+    const QSet<QString> idSet(subagentIds.cbegin(), subagentIds.cend());
+    QStringList toDismiss;
+    for (auto it = d->mPendingApprovals.constBegin(); it != d->mPendingApprovals.constEnd(); ++it) {
+        if (!it.value().subagentId.isEmpty() && idSet.contains(it.value().subagentId)) {
+            toDismiss.append(it.key());
+        }
+    }
+    for (const QString& callId : std::as_const(toDismiss)) {
+        d->mPendingApprovals.remove(callId);
+        emit agentToolApprovalDismissed(callId);
+    }
 }
 
 /**
@@ -1030,7 +1148,7 @@ void DAAgentBridge::recoverFromCrash()
     //   - m_readyTimer 创建（new QTimer + setSingleShot + connect timeout + start）
     //   - m_pythonExePath / m_agentScriptPath / m_readyTimeoutMs / m_stopTimeoutMs 保存
     // 避免重复实现整套启动序列（旧版本手动重建 m_readyTimer 会空指针解引用）
-    startAgent(d->mSavedLlmConfig, d->mSavedToolSpecs, d->mSavedSystemPrompt,
+    startAgent(d->mSavedLlmConfig, d->mSavedToolSpecs, d->mSavedSystemPrompt, d->mSavedSubagents,
                d->mPythonExePath, d->mAgentScriptPath,
                d->mReadyTimeoutMs, d->mStopTimeoutMs);
 
