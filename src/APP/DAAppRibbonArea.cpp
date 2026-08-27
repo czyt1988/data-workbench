@@ -124,9 +124,9 @@ using namespace DA;
 DAAppRibbonArea::DAAppRibbonArea(DAUIInterface* u) : DARibbonAreaInterface(u)
 {
     DAAppUI* appui = qobject_cast< DAAppUI* >(u);
-    mApp          = qobject_cast< AppMainWindow* >(appui->mainWindow());
-    mActions      = qobject_cast< DAAppActions* >(u->getActionInterface());
-    mAppCmd       = qobject_cast< DAAppCommand* >(u->getCommandInterface());
+    mApp           = qobject_cast< AppMainWindow* >(appui->mainWindow());
+    mActions       = qobject_cast< DAAppActions* >(u->getActionInterface());
+    mAppCmd        = qobject_cast< DAAppCommand* >(u->getCommandInterface());
     // ribbon的构建在setDockingArea进行，为了保证ribbon在dock之后构建
 }
 
@@ -209,8 +209,8 @@ void DAAppRibbonArea::resetText()
     mPannelDataframeStyleFill->setPanelName(tr("Fill"));          // cn:底色
     mPannelDataframeStyleFont->setPanelName(tr("Font"));          // cn:字体
     mPannelDataframeStyleClear->setPanelName(tr("Clear"));        // cn:清除
-    mComboxColumnTypesContainer->setPrefix(tr("Type"));  // cn:类型
-    mComboxDisplayFormatContainer->setPrefix(tr("Format"));  // cn:格式
+    mComboxColumnTypesContainer->setPrefix(tr("Type"));           // cn:类型
+    mComboxDisplayFormatContainer->setPrefix(tr("Format"));       // cn:格式
 
     // 编辑标签
     mCategoryEdit->setCategoryName(tr("Edit"));  // cn:编辑
@@ -228,14 +228,14 @@ void DAAppRibbonArea::resetText()
 
     mCategoryWorkflowRun->setCategoryName(tr("Workflow Run"));  // cn:工作流运行
     mPannelWorkflowRun->setPanelName(tr("Run"));                // cn:运行
-                                                                 //
+                                                                //
     mCategoryFigure->setCategoryName(tr("Figure"));             // cn:绘图
     mPannelFigureSetting->setPanelName(tr("Figure Setting"));   // cn:绘图设置
     mPannelChartAdd->setPanelName(tr("Add Chart"));             // cn:添加绘图
     mPannelStatsPlot->setPanelName(tr("Stats Plot"));           // cn:统计绘图
     // 绘图上下文标签
     mContextChart->setContextTitle(tr("Chart"));                         // cn:绘图
-    mCategoryChartOpt->setCategoryName(tr("Chart Edit"));                // cn:绘图编辑
+    mCategoryChartStyle->setCategoryName(tr("Chart Style"));             // cn:绘图样式
     mPannelFigureSettingForContext->setPanelName(tr("Figure Setting"));  // cn:绘图窗口设置
     mPannelChartSetting->setPanelName(tr("Chart Setting"));              // cn:图表设置
     mPanelFigureTheme->setPanelName(tr("Figure Theme"));                 // cn:绘图主题
@@ -568,7 +568,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflow()
 void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
 {
     DAPyWorkFlowOperateWidget* wfo = mDockArea->getWorkFlowOperateWidget();
-    mCategoryWorkflowGraphicsEdit = mContextWorkflow->addCategoryPage(tr("Workflow Edit"));  // cn:工作流编辑
+    mCategoryWorkflowGraphicsEdit  = mContextWorkflow->addCategoryPage(tr("Workflow Edit"));  // cn:工作流编辑
     mCategoryWorkflowGraphicsEdit->setObjectName(QStringLiteral("da-ribbon-category-workflow.edit"));
     // 条目pannel
 
@@ -614,10 +614,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
             &DAShapeEditPannelWidget::backgroundBrushChanged,
             this,
             &DAAppRibbonArea::selectedWorkflowItemBrush);
-    connect(mWorkflowFontEditPannel,
-            &DAFontEditPannelWidget::currentFontChanged,
-            this,
-            &DAAppRibbonArea::selectedWorkflowItemFont);
+    connect(mWorkflowFontEditPannel, &DAFontEditPannelWidget::currentFontChanged, this, &DAAppRibbonArea::selectedWorkflowItemFont);
     connect(mWorkflowFontEditPannel,
             &DAFontEditPannelWidget::currentFontColorChanged,
             this,
@@ -630,7 +627,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
 void DAAppRibbonArea::buildContextCategoryWorkflowView_()
 {
     DAPyWorkFlowOperateWidget* wfo = mDockArea->getWorkFlowOperateWidget();
-    mCategoryWorkflowGraphicsView = mContextWorkflow->addCategoryPage(tr("Workflow View"));  // cn:工作流视图
+    mCategoryWorkflowGraphicsView  = mContextWorkflow->addCategoryPage(tr("Workflow View"));  // cn:工作流视图
     mCategoryWorkflowGraphicsView->setObjectName(QStringLiteral("da-ribbon-category-workflow.view"));
     // View
     mPannelWorkflowView = mCategoryWorkflowGraphicsView->addPanel(tr("View"));  // cn:视图
@@ -692,17 +689,17 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
 {
     mContextChart = ribbonBar()->addContextCategory(tr("Chart Operate"));  // cn:绘图操作
     mContextChart->setObjectName(QStringLiteral("da-ribbon-contextcategory-chart"));
-    mCategoryChartOpt = mContextChart->addCategoryPage(tr("Chart Operate"));  // cn:绘图操作
-    mCategoryChartOpt->setObjectName(QStringLiteral("da-ribbon-category-chart.opt"));
+    mCategoryChartStyle = mContextChart->addCategoryPage(tr("Chart Style"));  // cn:绘图样式
+    mCategoryChartStyle->setObjectName(QStringLiteral("da-ribbon-category-chart.style"));
     // fig edit
-    mPannelFigureSettingForContext = new SARibbonPanel(mCategoryChartOpt);
+    mPannelFigureSettingForContext = new SARibbonPanel(mCategoryChartStyle);
     mPannelFigureSettingForContext->setObjectName(QStringLiteral("da-pannel-context-chartedit.fig_setting"));
     mPannelFigureSettingForContext->addLargeAction(mActions->actionAddFigure);
     mPannelFigureSettingForContext->addLargeAction(mActions->actionChartEditorResizeSubChart);
     mPannelFigureSettingForContext->addLargeAction(mActions->actionFigureNewXYAxis);  // 新建坐标系
-    mCategoryChartOpt->addPanel(mPannelFigureSettingForContext);
+    mCategoryChartStyle->addPanel(mPannelFigureSettingForContext);
     // chart edit
-    mPannelChartSetting = new SARibbonPanel(mCategoryChartOpt);
+    mPannelChartSetting = new SARibbonPanel(mCategoryChartStyle);
     mPannelChartSetting->setObjectName(QStringLiteral("da-pannel-context-chartedit.chart_setting"));
     mPannelChartSetting->addLargeAction(mActions->actionFigureSettingApplyAllChart);
     mPannelChartSetting->addSeparator();
@@ -732,9 +729,9 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
     // legend
     mPannelChartSetting->addLargeAction(mActions->actionChartEnableLegend);
 
-    mCategoryChartOpt->addPanel(mPannelChartSetting);
+    mCategoryChartStyle->addPanel(mPannelChartSetting);
 
-    mPanelFigureTheme   = new SARibbonPanel(mCategoryChartOpt);
+    mPanelFigureTheme   = new SARibbonPanel(mCategoryChartStyle);
     mFigureThemeGallery = mPanelFigureTheme->addGallery(true);
     mFigureThemeGallery->setMinimumWidth(200);
     SARibbonGalleryGroup* group1 =
@@ -746,7 +743,7 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
     mPanelFigureTheme->addAction(mActions->actionCopyFigureInClipboard);
     // 手动设置才能刷新当前界面的配置
     mFigureThemeGallery->setCurrentViewGroup(group1);
-    mCategoryChartOpt->addPanel(mPanelFigureTheme);
+    mCategoryChartStyle->addPanel(mPanelFigureTheme);
 
     //================================
     // 绘图编辑
@@ -1084,13 +1081,13 @@ void DAAppRibbonArea::setDataframeOperateCurrentDType(const DAPyDType& d)
  */
 void DAAppRibbonArea::buildRibbonAgentCategory()
 {
-    mCategoryAgent = ribbonBar()->addCategoryPage(tr("AI Agent"));  //cn:AI智能体
+    mCategoryAgent = ribbonBar()->addCategoryPage(tr("AI Agent"));  // cn:AI智能体
     mCategoryAgent->setObjectName(QStringLiteral("da-ribbon-category-agent"));
-    mPanelAgent = mCategoryAgent->addPanel(tr("AI Agent"));  //cn:AI智能体
+    mPanelAgent = mCategoryAgent->addPanel(tr("AI Agent"));  // cn:AI智能体
 
     // agent 管理（large button）
-    mActionAgentManage = new QAction(QIcon(":/da/icon/agent-manage.svg"), tr("Agent Manager"), this);  //cn:agent管理
-    mActionAgentManage->setToolTip(tr("Manage agents: add, edit, delete prompts"));  //cn:管理 agent：新增、修改、删除提示词
+    mActionAgentManage = new QAction(QIcon(":/da/icon/agent-manage.svg"), tr("Agent Manager"), this);  // cn:agent管理
+    mActionAgentManage->setToolTip(tr("Manage agents: add, edit, delete prompts"));  // cn:管理 agent：新增、修改、删除提示词
     mPanelAgent->addLargeAction(mActionAgentManage);
 
     // agent gallery（最大宽度 700px）
@@ -1098,8 +1095,9 @@ void DAAppRibbonArea::buildRibbonAgentCategory()
     mAgentGallery->setMaximumWidth(700);
 
     // 执行 agent（large button）
-    mActionRunAgent = new QAction(QIcon(":/da/icon/run-agent.svg"), tr("Run Agent"), this);  //cn:执行agent
-    mActionRunAgent->setToolTip(tr("Run AI analysis with the selected agent prompt"));  //cn:使用当前选中的 agent 提示词执行 AI 分析
+    mActionRunAgent = new QAction(QIcon(":/da/icon/run-agent.svg"), tr("Run Agent"), this);  // cn:执行agent
+    mActionRunAgent->setToolTip(
+        tr("Run AI analysis with the selected agent prompt"));  // cn:使用当前选中的 agent 提示词执行 AI 分析
     mPanelAgent->addLargeAction(mActionRunAgent);
 
     populateAgentGallery();
@@ -1134,15 +1132,16 @@ void DAAppRibbonArea::populateAgentGallery()
     for (const DA::DAAgentPrompt& a : std::as_const(prompts)) {
         QAction* act = new QAction(sAgentIcon, a.title, this);
         // tooltip 显示完整提示词内容（富文本换行）
-        QString tooltip = QString("<html><body><div style=\"white-space:pre-wrap; max-width:480px;\">%1</div></body></html>")
-                              .arg(a.content.toHtmlEscaped());
+        QString tooltip =
+            QString("<html><body><div style=\"white-space:pre-wrap; max-width:480px;\">%1</div></body></html>")
+                .arg(a.content.toHtmlEscaped());
         act->setToolTip(tooltip);
         act->setData(a.title);
         mAgentActions.append(act);
     }
     if (!mAgentGalleryGroup) {
         // 首次构建：添加分组 + 样式 + 连接信号
-        mAgentGalleryGroup = mAgentGallery->addCategoryActions(tr("Agent"), mAgentActions);  //cn:Agent
+        mAgentGalleryGroup = mAgentGallery->addCategoryActions(tr("Agent"), mAgentActions);  // cn:Agent
         mAgentGalleryGroup->setGalleryGroupStyle(SARibbonGalleryGroup::IconWithWordWrapText);
         mAgentGalleryGroup->setGridMinimumWidth(80);
         connect(mAgentGalleryGroup, &SARibbonGalleryGroup::triggered, this, &DAAppRibbonArea::onAgentGalleryTriggered);
@@ -1201,18 +1200,17 @@ void DAAppRibbonArea::onActionRunAgent()
 {
     if (mSelectedAgentTitle.isEmpty()) {
         QMessageBox::warning(app(),
-                             tr("Tip"),                                          //cn:提示
-                             tr("Please select an agent in the gallery first")); //cn:请先在 gallery 中选择一个 agent
+                             tr("Tip"),                                           // cn:提示
+                             tr("Please select an agent in the gallery first"));  // cn:请先在 gallery 中选择一个 agent
         return;
     }
     DA::DAAgentInterface* agent = DA_APP_CORE.getAgentInterface();
     if (!agent) {
         QMessageBox::warning(app(),
-                             tr("Tip"),                            //cn:提示
-                             tr("Agent module is not ready"));     //cn:Agent 模块未就绪
+                             tr("Tip"),                         // cn:提示
+                             tr("Agent module is not ready"));  // cn:Agent 模块未就绪
         return;
     }
     mActions->actionShowAgentArea->trigger();  // 确保 Agent dock 可见（ActionModeShow，不会 toggle 隐藏）
     agent->runAgent(mSelectedAgentTitle);
 }
-

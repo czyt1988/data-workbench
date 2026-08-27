@@ -19,7 +19,7 @@ public:                                                                         
     QBrush get##MiddleName##Brush() const;                                                                             \
     QFont get##MiddleName##Font() const;                                                                               \
     QColor get##MiddleName##FontColor() const;                                                                         \
-public Q_SLOTS:                                                                                                          \
+public Q_SLOTS:                                                                                                        \
     void set##MiddleName##Pen(const QPen& v);                                                                          \
     void set##MiddleName##Brush(const QBrush& v);                                                                      \
     void set##MiddleName##Font(const QFont& v);                                                                        \
@@ -177,6 +177,7 @@ public:
     // Python相关
     // 设置DataFrame的类型，【Context】 - 【dataframe】 DataFrame -> Type -> Type,此函数的调用忽略combox的currentindexchanged信号
     void setDataframeOperateCurrentDType(const DAPyDType& d);
+
 private:
     // 构建所有的action
     void buildMenu();
@@ -216,6 +217,7 @@ private Q_SLOTS:
     void onActionAgentManage();
     void onActionRunAgent();
     void onAgentGalleryTriggered(QAction* act);
+
 private:
     void populateAgentGallery();
 
@@ -305,23 +307,23 @@ private:
     DAAppDockingArea* mDockArea { nullptr };  ///< 注意这个变量不能在构造函数中调用
     AppMainWindow* mApp { nullptr };
     DAAppCommand* mAppCmd { nullptr };                  ///< cmd
-                                             //----------------------------------------------------
-                                             // main
-                                             //----------------------------------------------------
+                                                        //----------------------------------------------------
+                                                        // main
+                                                        //----------------------------------------------------
     SARibbonCategory* mCategoryMain { nullptr };        ///< 主页标签
     SARibbonPanel* mPannelMainFileOpt { nullptr };      ///< 文件操作
     SARibbonPanel* mPannelMainDataOpt { nullptr };      ///< 数据操作
     SARibbonPanel* mPannelMainChartOpt { nullptr };     ///< 数据操作
     SARibbonPanel* mPannelMainWorkflowOpt { nullptr };  ///< 工作流在main的pannel
     SARibbonPanel* mPannelSetting { nullptr };          ///< 设定
-                                             //----------------------------------------------------
-                                             // data
-                                             //----------------------------------------------------
+                                                        //----------------------------------------------------
+                                                        // data
+                                                        //----------------------------------------------------
     SARibbonCategory* mCategoryData { nullptr };        ///< 数据标签
     SARibbonPanel* mPannelDataOperate { nullptr };      ///< 数据操作
-                                             //----------------------------------------------------
-                                             // view
-                                             //----------------------------------------------------
+                                                        //----------------------------------------------------
+                                                        // view
+                                                        //----------------------------------------------------
     SARibbonCategory* mCategoryView { nullptr };        ///< 视图标签
     SARibbonPanel* mPannelViewMainView { nullptr };     ///< 主要视图操作
     //----------------------------------------------------
@@ -344,24 +346,24 @@ private:
     //----------------------------------------------------
     // Context - dataframe
     //----------------------------------------------------
-    SARibbonContextCategory* mContextDataFrame { nullptr };   ///< 对应dataframe的上下文
-    SARibbonCategory* mCategoryDataframeOperate { nullptr };  ///< dataframe对应的category
-    SARibbonPanel* mPannelDataframeOperateAxes { nullptr };   ///< 数据信息的编辑
-    SARibbonPanel* mPannelDataframeOperateDType { nullptr };  ///< 数据类型的编辑
+    SARibbonContextCategory* mContextDataFrame { nullptr };                ///< 对应dataframe的上下文
+    SARibbonCategory* mCategoryDataframeOperate { nullptr };               ///< dataframe对应的category
+    SARibbonPanel* mPannelDataframeOperateAxes { nullptr };                ///< 数据信息的编辑
+    SARibbonPanel* mPannelDataframeOperateDType { nullptr };               ///< 数据类型的编辑
     SARibbonLineWidgetContainer* mComboxColumnTypesContainer { nullptr };  ///< 列类型选择器的container
     DAPyDTypeComboBox* mComboxColumnTypes { nullptr };                     ///< 列类型选择器
-    SARibbonButtonGroupWidget* mCastActionsButtonGroup { nullptr };  ///< 管理强制转换的action的工具栏
+    SARibbonButtonGroupWidget* mCastActionsButtonGroup { nullptr };        ///< 管理强制转换的action的工具栏
     // 显示格式 panel
-    SARibbonPanel* mPannelDataframeOperateFormat { nullptr };          ///< 显示格式面板
+    SARibbonPanel* mPannelDataframeOperateFormat { nullptr };                ///< 显示格式面板
     SARibbonLineWidgetContainer* mComboxDisplayFormatContainer { nullptr };  ///< 显示格式选择器container
     DATableDisplayFormatComboBox* mComboxDisplayFormat { nullptr };          ///< 列显示格式选择器
     // 表格样式 category
-    SARibbonCategory* mCategoryDataframeStyle { nullptr };       ///< dataframe表格样式category
-    SARibbonPanel* mPannelDataframeStyleFill { nullptr };        ///< 底色面板
-    SARibbonPanel* mPannelDataframeStyleFont { nullptr };        ///< 字体面板
-    SARibbonPanel* mPannelDataframeStyleClear { nullptr };       ///< 清除面板
-    SARibbonColorToolButton* mBtnTableFillColor { nullptr };     ///< 表格底色按钮
-    DAFontEditPannelWidget* mWidgetTableFont { nullptr };        ///< 表格字体编辑面板
+    SARibbonCategory* mCategoryDataframeStyle { nullptr };    ///< dataframe表格样式category
+    SARibbonPanel* mPannelDataframeStyleFill { nullptr };     ///< 底色面板
+    SARibbonPanel* mPannelDataframeStyleFont { nullptr };     ///< 字体面板
+    SARibbonPanel* mPannelDataframeStyleClear { nullptr };    ///< 清除面板
+    SARibbonColorToolButton* mBtnTableFillColor { nullptr };  ///< 表格底色按钮
+    DAFontEditPannelWidget* mWidgetTableFont { nullptr };     ///< 表格字体编辑面板
     //----------------------------------------------------
     // Context - workflow
     //----------------------------------------------------
@@ -395,7 +397,7 @@ private:
     // Context - chart
     //----------------------------------------------------
     SARibbonContextCategory* mContextChart { nullptr };                      ///< 对应Chart的上下文
-    SARibbonCategory* mCategoryChartOpt { nullptr };                         ///< Chart操作标签
+    SARibbonCategory* mCategoryChartStyle { nullptr };                       ///< Chart样式标签
     SARibbonPanel* mPannelFigureSettingForContext { nullptr };               ///< 绘图的设置
     SARibbonPanel* mPannelChartSetting { nullptr };                          ///< 图表的设置
     SARibbonButtonGroupWidget* mChartGridDirActionsButtonGroup { nullptr };  ///< grid的方向
@@ -409,26 +411,26 @@ private:
     //----------------------------------------------------
     // AI分析（agent 提示词库）
     //----------------------------------------------------
-    SARibbonCategory* mCategoryAgent { nullptr };       ///< AI分析标签
-    SARibbonPanel* mPanelAgent { nullptr };             ///< AI分析面板
-    SARibbonGallery* mAgentGallery { nullptr };         ///< agent gallery
-    SARibbonGalleryGroup* mAgentGalleryGroup { nullptr }; ///< agent gallery 分组
-    QList< QAction* > mAgentActions;                     ///< gallery 临时 action
-    QAction* mActionAgentManage { nullptr };             ///< agent 管理
-    QAction* mActionRunAgent { nullptr };                ///< 执行 agent
-    QString mSelectedAgentTitle;                          ///< 当前选中的 agent 标题
+    SARibbonCategory* mCategoryAgent { nullptr };          ///< AI分析标签
+    SARibbonPanel* mPanelAgent { nullptr };                ///< AI分析面板
+    SARibbonGallery* mAgentGallery { nullptr };            ///< agent gallery
+    SARibbonGalleryGroup* mAgentGalleryGroup { nullptr };  ///< agent gallery 分组
+    QList< QAction* > mAgentActions;                       ///< gallery 临时 action
+    QAction* mActionAgentManage { nullptr };               ///< agent 管理
+    QAction* mActionRunAgent { nullptr };                  ///< 执行 agent
+    QString mSelectedAgentTitle;                           ///< 当前选中的 agent 标题
     //----------------------------------------------------
     //
     //----------------------------------------------------
     // ApplicationMenu
-    DAAppRibbonApplicationMenu* mApplicationMenu { nullptr };        ///< ribbon-app menu
-                                                         // 菜单相关
-    QMenu* mExportWorkflowSceneToImageMenu { nullptr };  ///< scene导出为图片菜单
-    QMenu* mMenuViewLineMarkers { nullptr };            ///< 视图标记线
-    QMenu* mMenuInsertRow { nullptr };                  ///< 针对insertrow的action menu
-    QMenu* mMenuInsertColumn { nullptr };               ///< 这对insertcol的action menu
-    QMenu* mMenuTheme { nullptr };                      ///< 主题菜单
-    QMenu* mMenuChartPickSetting { nullptr };           ///< chart的picker设置
+    DAAppRibbonApplicationMenu* mApplicationMenu { nullptr };  ///< ribbon-app menu
+                                                               // 菜单相关
+    QMenu* mExportWorkflowSceneToImageMenu { nullptr };        ///< scene导出为图片菜单
+    QMenu* mMenuViewLineMarkers { nullptr };                   ///< 视图标记线
+    QMenu* mMenuInsertRow { nullptr };                         ///< 针对insertrow的action menu
+    QMenu* mMenuInsertColumn { nullptr };                      ///< 这对insertcol的action menu
+    QMenu* mMenuTheme { nullptr };                             ///< 主题菜单
+    QMenu* mMenuChartPickSetting { nullptr };                  ///< chart的picker设置
 };
 }  // namespace DA
 #endif  // DAAPPRIBBONAREA_H
