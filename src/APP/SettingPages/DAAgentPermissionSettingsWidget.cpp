@@ -364,6 +364,9 @@ void DAAgentPermissionSettingsWidget::applyRowLock(int row)
     const QString tool = mRulesTable->item(row, 0) ? mRulesTable->item(row, 0)->text() : QString();
     const QString action = mRulesTable->item(row, 2) ? mRulesTable->item(row, 2)->text() : QString();
     const bool locked = isLockedRule(tool, action);
+    // setFlags/setToolTip 会无条件触发 cellChanged（Qt 不比较内容是否真的变化），
+    // 若不屏蔽将经本函数的 cellChanged 监听形成无限递归导致栈溢出
+    QSignalBlocker blocker(mRulesTable);
     for (int col = 0; col < mRulesTable->columnCount(); ++col) {
         QTableWidgetItem* item = mRulesTable->item(row, col);
         if (!item) {
