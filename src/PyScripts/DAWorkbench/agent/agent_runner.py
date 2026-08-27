@@ -54,8 +54,12 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 # ★ booting 必须在 langchain 导入之前发送：若放在导入之后，冷启动的 ~16s 期间
 #   C++ 收不到任何心跳、ready 计时器持续倒数，慢机器上会超时 kill（恰恰丢失
 #   stderr）。此处只能用已导入的标准库（json/sys），不能用 langchain（尚未导入）。
-sys.stdout.write('{"type": "booting"}\n')
-sys.stdout.flush()
+# ★★ 仅以入口脚本运行时发送：被测试/编排器作为模块导入时跳过，避免向协议流
+#    （或 pytest 捕获）重复注入 booting 消息。__main__ 守卫在模块自顶向下执行
+#    时即生效，不影响"先于重模块导入"的时序。
+if __name__ == "__main__":
+    sys.stdout.write('{"type": "booting"}\n')
+    sys.stdout.flush()
 
 # —— 重模块导入（langchain_openai 冷启动 ~16s，在 booting 心跳之后）——
 from langchain_core.messages import (
@@ -125,6 +129,27 @@ threading.excepthook = _threading_excepthook
 class AgentStoppedError(Exception):
     """用户主动停止 agent 时抛出，不视为错误，不应在对话中显示报错。"""
     pass
+
+
+class _PendingRpc:
+    """单个工具 RPC 的等待状态（RPC 多路复用分发器，Q20）。
+
+    由 _rpc_call 在发出 tool_call 之前注册进 AgentRunner._pending_rpcs
+    （key=call_id），分发器按 call_id 路由 tool_result / approval_pending /
+    tool_exec_start 到本对象并置 wake 事件；_wait_for_result await wake
+    循环检查状态，保持与旧版逐条消费 stdin 完全一致的三段计时语义。
+    """
+
+    __slots__ = ("result", "has_result", "approval_pending",
+                 "exec_started", "error", "wake")
+
+    def __init__(self):
+        self.result = None            #: tool_result 载荷（dict）
+        self.has_result = False       #: result 已到达
+        self.approval_pending = False #: 权限门进入 Ask，计时挂起
+        self.exec_started = False     #: 工具开始执行，从执行起点重新计时
+        self.error = None             #: 需向等待方抛出的异常（如 stop）
+        self.wake = asyncio.Event()   #: 任一状态变化时 set，唤醒等待方
 
 
 def _to_exhausted_error_type(exc: Exception, classification) -> str:
@@ -292,15 +317,20 @@ class StdioProtocol:
         await self.send({"type": "session_loaded", "session_id": session_id})
 
     async def send_tool_call(self, call_id: str, tool: str, arguments: dict,
-                             safety: dict | None = None):
+                             safety: dict | None = None,
+                             subagent_id: str | None = None):
         """发送工具调用请求；safety 为权限层代码裁决（母文档 §8，仅
-        auto 模式 + code_exec 工具产出，其余缺省不带该字段）。"""
+        auto 模式 + code_exec 工具产出，其余缺省不带该字段）；
+        subagent_id 为子 agent 任务标记（子 agent 一期，母文档 §7，仅子图
+        发起的调用携带，与 safety 并存；C++ 侧据此过滤持久化与渲染）。"""
         msg = {
             "type": "tool_call", "call_id": call_id,
             "tool": tool, "arguments": arguments
         }
         if safety:
             msg["safety"] = safety
+        if subagent_id:
+            msg["subagent_id"] = subagent_id
         await self.send(msg)
 
     async def send_question(self, text: str, options: list[str], multi_select: bool = False):
@@ -366,13 +396,18 @@ class ToolFactory:
     """
 
     @staticmethod
-    def build_tool_schemas(tool_specs: list) -> list:
+    def build_tool_schemas(tool_specs: list,
+                           dispatch_schema: dict | None = None,
+                           include_ask_user: bool = True) -> list:
         """将 C++ tool specs 转为 OpenAI function schema 字典列表。
 
         ChatOpenAI.bind_tools 接受原始 schema 字典，无需 Pydantic 模型。
-        额外注入一个 ask_user 工具供 LLM 显式调用以触发 HITL 提问
+        默认注入一个 ask_user 工具供 LLM 显式调用以触发 HITL 提问
         （LLM 无法通过 prompt 约定在 additional_kwargs 里产生标记，
-        只能通过注册为真实工具让模型以 tool_call 形式调用）。
+        只能通过注册为真实工具让模型以 tool_call 形式调用）；子图
+        （无 HITL 提问，Q7）经 include_ask_user=False 关闭注入。
+        dispatch_schema 为编排器动态生成的 dispatch_subagents schema
+        （子 agent 一期，定义集为空时为 None → 不注入）。
         """
         schemas = []
         for spec in tool_specs:
@@ -381,6 +416,10 @@ class ToolFactory:
                 "description": spec.get("description", ""),
                 "parameters": spec.get("parameters", {"type": "object", "properties": {}})
             })
+        if dispatch_schema is not None:
+            schemas.append(dispatch_schema)
+        if not include_ask_user:
+            return schemas
         # 注入 ask_user 工具用于 HITL 提问
         schemas.append({
             "name": "ask_user",
@@ -409,14 +448,491 @@ class ToolFactory:
         return schemas
 
 
+def build_agent_graph(ctx, *, system_prompt: str, stdio=None,
+                      enable_ask_user: bool = True,
+                      enable_compact: bool = True):
+    """构建参数化 LangGraph 图（子 agent 一期 P3：主图与子图共用）。
+
+    纯移动 + 参数化（行为不变）：节点逻辑与抽取前一致（compact/循环检测/
+    截断/权限判定块全部保留，Q19），差异全部经参数注入：
+
+    - ctx：运行期属性读取袋。主图传 AgentRunner 实例本身——节点闭包经
+      ctx.* call-time 读取 llm_with_tools / compactor / truncator /
+      token_estimator / 循环检测状态，使 reconfigure() 热替换 LLM 配置后
+      无需重建图即可生效（保留 MemorySaver 会话状态）；子图传
+      SubagentRunContext（固定工具子集绑定 + 独立循环检测状态，权限配置
+      穿透读 runner，天然继承主图上下文）。
+    - system_prompt：本图系统提示词（主图=平台提示词；子图=固定前导 +
+      定义正文 ± figure_reference ± 权限约定，Q10）。
+    - stdio：协议输出通道。None = 静默图（子图）——不输出 token /
+      message_end / usage / retrying（子转录不进主聊天流，Q8）。
+    - enable_ask_user：HITL 提问节点与路由（子图禁止提问，Q7）。
+    - enable_compact：上下文压缩节点（子图预算小，关闭）。
+
+    图结构：START → [compact →] agent → {ask_user | tools | END}
+             tools → [compact →] agent，ask_user → [compact →] agent
+    compact 节点在每次 agent 之前检查并压缩历史（不需要时返回空，零开销）。
+    工具执行经 ctx._rpc_call 回调汇合（主图：直接 RPC；子图：经
+    SubagentRunContext 附加 subagent_id 标记）；dispatch_subagents 经
+    ctx.subagent_orchestrator 本地编排（仅主图持有该属性，子图无此属性，
+    幻觉调用落 RPC 由 C++ 报未知工具错——深度 1 结构性禁止，Q6）。
+    """
+
+    async def _stream_llm(messages):
+        """流式调用 LLM 并输出 token 到 UI，返回 (AIMessage, usage_metadata)。
+
+        重试逻辑：仅在首个 token 之前重试（stream_yielded 追踪）。
+        首 token 后的错误不重试，直接抛出（D3 决策）。
+        error_type 的 exhausted 映射由 main() 的 catch block 负责（步骤 4）。
+        """
+
+        stream_yielded = False  # 闭包变量，追踪是否已推送 token
+
+        async def _call_llm():
+            """每次调用都是一次完整的 LLM 流式请求。"""
+            nonlocal stream_yielded
+            collected_chunks = None
+            # langchain-openai >= 0.2 经 _should_stream_usage 支持该 kwarg，
+            # 更旧版本静默忽略，不影响流式，仅 usage 为 None。
+            astream_kwargs = {"stream_options": {"include_usage": True}}
+
+            # 流式开始前：用 tiktoken 估算 input tokens，发初始 usage 让 UI
+            # 进度条即时反映上下文占用。真实 usage_metadata 在流结束后由
+            # send_message_end 回传覆盖此估算值。
+            input_estimate = 0
+            if ctx.token_estimator:
+                try:
+                    input_estimate = ctx.token_estimator.count_messages_tokens(messages)
+                except Exception:
+                    pass
+            if input_estimate > 0 and stdio is not None:
+                await stdio.send_usage(
+                    input_estimate, 0, input_estimate,
+                    source="streaming_estimate",
+                )
+
+            chunk_count = 0
+            async for chunk in ctx.llm_with_tools.astream(messages, **astream_kwargs):
+                if collected_chunks is None:
+                    collected_chunks = chunk
+                else:
+                    collected_chunks = collected_chunks + chunk  # AIMessageChunk 支持累加
+                if chunk.content:
+                    stream_yielded = True
+                    if stdio is not None:
+                        await stdio.send_token(chunk.content)
+                # 每 20 个 chunk 发一次估算 usage，让进度条/标签实时增长。
+                # 每个 astream chunk ≈ 1 token（OpenAI 流式逐 token 输出）。
+                chunk_count += 1
+                if chunk_count % 20 == 0 and stdio is not None:
+                    output_estimate = chunk_count
+                    total_estimate = input_estimate + output_estimate
+                    await stdio.send_usage(
+                        input_estimate, output_estimate, total_estimate,
+                        source="streaming_estimate",
+                    )
+            usage = getattr(collected_chunks, 'usage_metadata', None) if collected_chunks else None
+            return collected_chunks, usage
+
+        def _should_retry(exc):
+            """retryable_check 回调：只有首个 token 之前才允许重试（D3 铁律）。
+
+            retry_with_backoff 在每次捕获异常时调用此函数。
+            返回 False 时 retry_with_backoff 直接 raise，不进入退避。
+            """
+            classification = classify_error(exc)
+            if not classification.retryable:
+                return False
+            if stream_yielded:
+                return False  # 已推送 token，首 token 后不重试
+            return True
+
+        async def _on_retry(attempt, max_retries, delay_ms, classification):
+            """退避期间发送 retrying 协议消息（静默图跳过）。"""
+            if stdio is None:
+                return
+            await stdio.send_retrying(
+                attempt, max_retries, int(delay_ms),
+                classification.error_type, classification.user_message
+            )
+
+        # retry_with_backoff 在 _should_retry 返回 False 或重试耗尽时 raise 原始异常。
+        # _stream_llm 不做任何 except 处理——异常直接传播到 main() 的 catch block，
+        # 由 main() 负责分类和 *_exhausted 映射（步骤 4）。
+        return await retry_with_backoff(
+            _call_llm,
+            max_retries=ctx._max_retries,
+            on_retry=_on_retry,
+            stop_event=ctx._stop_event,
+            retryable_check=_should_retry,
+        )
+
+    async def compact_node(state: MessagesState):
+        """上下文压缩节点：在 agent 之前检查并压缩历史。
+
+        不需要压缩时返回空（{"messages": []}），不影响流程。
+        需要压缩时返回 [RemoveMessage(id=...) for middle, HumanMessage(summary)]，
+        MessagesState 的 add_messages reducer 会删除中间消息并追加摘要，
+        使下轮 agent_node 读到的是压缩后历史。
+
+        3 次熔断：连续失败 3 次后不再尝试（qwen-code 式），成功时重置计数。
+        """
+        if not ctx.compactor:
+            return {"messages": []}
+        messages = state["messages"]
+        if not ctx.compactor.should_compact(messages):
+            return {"messages": []}
+        logger.info("Starting context compaction, current tokens=%d",
+                    ctx.token_estimator.count_messages_tokens(messages))
+        try:
+            # MAJOR3：compact() 现返回 (updates, summary_usage)
+            updates, summary_usage = await ctx.compactor.compact(messages)
+            ctx.compactor._consecutive_failures = 0  # 成功重置
+            logger.info("Compaction done, returning %d updates", len(updates))
+            # summary 的 usage 经独立 send_usage(source="summary") 回传
+            # （summary 无 message_end，只能走独立 usage 消息——MAJOR6）
+            if summary_usage and stdio is not None:
+                await stdio.send_usage(
+                    summary_usage.get("input_tokens", 0),
+                    summary_usage.get("output_tokens", 0),
+                    summary_usage.get("total_tokens", 0),
+                    source="summary",
+                )
+            return {"messages": updates}
+        except Exception as e:
+            ctx.compactor._consecutive_failures += 1
+            logger.exception("Compaction failed (%d/%d): %s",
+                             ctx.compactor._consecutive_failures,
+                             ctx.compactor.MAX_FAILURES, e)
+            return {"messages": []}  # 失败不压缩，下轮再试
+
+    async def agent_node(state: MessagesState):
+        messages = state["messages"]  # 已被 compact_node 处理
+        # 在开头插入 system prompt（避免重复插入）
+        if system_prompt and not any(m.type == "system" for m in messages):
+            messages = [SystemMessage(content=system_prompt)] + messages
+
+        # 溢出恢复时产生的 state 更新（RemoveMessage + summary），
+        # 与 final_message 一起返回，让 MessagesState reducer 删除中间消息、
+        # 追加 summary，从而打断"400 → force_compact（局部）→ 400"循环。
+        compaction_updates = []
+
+        try:
+            # 正常路径：流式调用 LLM
+            final_message, usage = await _stream_llm(messages)  # 解构
+        except Exception as e:
+            # 记录异常完整信息（str(e) 对 BadRequestError 含 400 响应体 JSON），
+            # 便于在 da_log.log 中诊断 400 的确切原因（LiteLLM 返回的具体错误描述）。
+            logger.warning("LLM call failed: %s", e)
+            # 反应式溢出恢复（qwen-code 式安全网）：
+            # 当 token 估算不准导致实际请求超出上下文窗口时，
+            # API 返回 ContextWindowExceededError/BadRequestError。
+            # 此时强制压缩并重试一次。与原设计的区别：
+            # force_compact 的结果现在写回 state（RemoveMessage + summary），
+            # 使下一轮 agent_node 读到的是压缩后历史，不再 400 循环。
+            if ctx.compactor and is_context_overflow_error(e):
+                logger.warning("Context overflow detected, force-compacting and retrying")
+                # force_compact 返回 (compacted, summary_usage, removed_ids)
+                compacted, summary_usage, removed_ids = await ctx.compactor.force_compact(messages)
+                # force_compact 路径的 summary usage 也经独立
+                # send_usage(source="summary") 回传（与 compact_node 正常路径一致）
+                if summary_usage and stdio is not None:
+                    await stdio.send_usage(
+                        summary_usage.get("input_tokens", 0),
+                        summary_usage.get("output_tokens", 0),
+                        summary_usage.get("total_tokens", 0),
+                        source="summary",
+                    )
+                # 重新 prepend system prompt（force_compact 的 head 可能保留原有
+                # SystemMessage，需检查避免重复 prepend——与上方正常路径同一防护）
+                if system_prompt and not any(m.type == "system" for m in compacted):
+                    compacted = [SystemMessage(content=system_prompt)] + compacted
+                final_message, usage = await _stream_llm(compacted)  # 解构
+
+                # 构造 state 更新：删除被压缩的中间消息 + 追加 summary。
+                # MessagesState 的 add_messages reducer 会：
+                #   1. 按 RemoveMessage(id=...) 删除中间消息
+                #   2. 追加 summary HumanMessage（da_type=summary）
+                #   3. 追加 final_message（由下方 return 添加）
+                # 结果：state 从 [head][middle...][tail] 变为
+                #       [head][summary][tail][final_message]，大幅缩小。
+                compaction_updates = [RemoveMessage(id=mid) for mid in removed_ids]
+                # 从 compacted 中找到 summary 消息（HumanMessage 含 [Context Summary]）
+                for m in compacted:
+                    if (isinstance(m, HumanMessage)
+                            and "[Context Summary]" in str(m.content)):
+                        compaction_updates.append(m)
+                        break
+                # 熔断恢复——force_compact 成功说明压缩仍然有效
+                ctx.compactor._consecutive_failures = 0
+            else:
+                raise
+
+        # 从累积后的完整消息上读取 tool_calls（不是逐 chunk 读）
+        if final_message.tool_calls:
+            # —— 硬终止检测：连续相同的完整 tool_calls 签名 ——
+            # 当 LLM 连续多次发出完全相同的工具调用组合（name + args 全相同），
+            # 说明它陷入了重复循环（软引导已被忽略或未覆盖此情形）。
+            # 超阈值时剥离 tool_calls，强制以最终回复结束（router → END），
+            # 避免 agent 撞到 recursion_limit 才粗暴报错。
+            full_sig = json.dumps(
+                [(tc.get("name", ""), tc.get("args", {}))
+                 for tc in final_message.tool_calls],
+                sort_keys=True, ensure_ascii=False,
+            )
+            if full_sig == ctx._last_full_sig:
+                ctx._full_sig_repeat_count += 1
+            else:
+                ctx._full_sig_repeat_count = 1
+                ctx._last_full_sig = full_sig
+            if ctx._full_sig_repeat_count >= ctx._repeat_terminate_threshold:
+                logger.warning(
+                    "Repeated tool-call signature detected (%d consecutive), "
+                    "forcing termination to avoid loop",
+                    ctx._full_sig_repeat_count,
+                )
+                loop_msg = AIMessage(
+                    content=(
+                        "Detected repeated tool-calling pattern (possible loop). "
+                        "This turn has been automatically terminated to avoid "
+                        "wasting tokens. The information gathered so far is "
+                        "available in the conversation history. To continue, try "
+                        "shortening the conversation history, starting a new "
+                        "session, or switching to a stronger model."
+                    ),
+                    id=getattr(final_message, 'id', None),
+                )
+                if stdio is not None:
+                    await stdio.send_message_end(loop_msg.content, None)
+                # 无 tool_calls → 路由返回 "end" → END
+                return {"messages": [loop_msg]}
+            # 持久化中间推理内容：AIMessage 伴随 tool_calls 产生的 content（思考过程）。
+            # 此前该 content 仅以 token 流式输出到 UI（agentToken），从未落盘——
+            # C++ 端 agentToken 不持久化，而 message_end 只在无 tool_calls 的最终
+            # 回复时发送，导致崩溃恢复/切换会话时 agent 看不到自己之前的分析过程
+            # （对齐 qwen-code：每个 assistant turn 的 reasoning+tool_calls 都落盘，
+            # --resume 时完整重建含推理的历史）。token 已流式渲染，此处 message_end
+            # 仅触发 C++ appendAssistantRecord(content,{}) 落盘；UI finalizeAgentMessage
+            # 重渲染同一文本（无视觉变化）并复位气泡，使后续工具卡片正确接续。
+            # 空 content（LLM 只发 tool_calls 无叙述）跳过，避免无意义空记录。
+            # 静默图（子图）不发——子转录不进主聊天流不落盘（Q8）。
+            _intermediate_content = (
+                final_message.content
+                if isinstance(final_message.content, str) else ""
+            )
+            if _intermediate_content.strip() and stdio is not None:
+                await stdio.send_message_end(_intermediate_content, None)
+            # 有完整 tool_calls，交给 tool_node 执行
+            # （tool_call 路径不发 usage——非最终回复，下一轮 agent 还会再发）
+            return {"messages": compaction_updates + [final_message]}
+        else:
+            # 无 tool_calls——最终回复。agent usage 挂在 message_end 上回传
+            # （MAJOR6：不单独发 send_usage(source="agent")，避免 C++ 双发
+            # 导致 token 统计翻倍）。静默图（子图）不发协议消息，最终回复
+            # 由编排器从图终态读取作为 summary 回流（Q8）。
+            if stdio is not None:
+                await stdio.send_message_end(
+                    final_message.content if isinstance(final_message.content, str) else "",
+                    usage,
+                )
+            return {"messages": compaction_updates + [final_message]}
+
+    async def tool_node(state: MessagesState):
+        last_msg = state["messages"][-1]  # AIMessage with tool_calls
+        results = []
+        # 主图持有编排器 → dispatch_subagents 本地编排；子图无此属性（深度 1，Q6）
+        orchestrator = getattr(ctx, "subagent_orchestrator", None)
+        for tool_call in last_msg.tool_calls:
+            name = tool_call["name"]
+            args = tool_call.get("args", {})
+            # 软引导：本轮已执行过相同 (name, args) → 返回引导而非重复执行。
+            # 不同参数不受影响（签名含 args）；仅拦截本轮内重复，跨轮不累积
+            # （_executed_call_sigs 在 run()/resume() 开头已清空）。
+            sig = (name, json.dumps(args, sort_keys=True, ensure_ascii=False))
+            if sig in ctx._executed_call_sigs:
+                guidance = (
+                    f"Tool '{name}' was already called with the same arguments "
+                    f"earlier in this turn. The result is already in the conversation "
+                    f"above — re-calling with identical arguments will not produce "
+                    f"new information. Do NOT repeat this call. Use the existing result, "
+                    f"change your arguments if you need different data, or produce your "
+                    f"final answer. If uncertain how to proceed, use the ask_user tool."
+                )
+                results.append(ToolMessage(
+                    content=guidance,
+                    tool_call_id=tool_call["id"]
+                ))
+                continue
+            # —— 子 agent 派发（子 agent 一期）：主图本地编排，跳过 C++ RPC；
+            # 结果 json.dumps 后经截断器入 ToolMessage（同普通工具结果路径）
+            if name == "dispatch_subagents" and orchestrator is not None:
+                result = await orchestrator.dispatch(args, tool_call["id"])
+                # ToolMessage.content 必须是 str/list，不能是 dict（铁律 T6）
+                content = json.dumps(result, ensure_ascii=False)
+                if ctx.tool_result_truncator:
+                    content = ctx.tool_result_truncator.truncate(content)
+                results.append(ToolMessage(
+                    content=content,
+                    tool_call_id=tool_call["id"]
+                ))
+                # 记录已执行签名，供后续重复检测
+                ctx._executed_call_sigs.append(sig)
+                continue
+            # 权限层判定（母文档 A1/A6/A12，permission-layer P2）：
+            # 仅 auto 模式对代码执行工具在发起 tool_call **之前**完成内容判定
+            # （静态规则 + 判官），裁决以 safety 字段随消息下发、C++ 门消费。
+            # 非 auto 模式跳过全部判定——不跑规则不跑模型，safety 缺省（A12）。
+            # 判定异常不阻塞工具调用：safety 置缺省，交由 C++ 门按无裁决兜底。
+            # ★ 判定块随 tool_node 整体共享给子图（Q19）：判定上下文经 ctx.*
+            #   读取（子图穿透 runner），白名单含 code_exec 工具的子 agent
+            #   在 auto 模式同样产出 safety，不绕过判定管线。
+            safety = None
+            if (_HAS_PERMISSION_JUDGE
+                    and getattr(ctx, "_permission_mode", "yolo") == "auto"
+                    and name in permission_judge.CODE_EXEC_TOOLS):
+                try:
+                    safety = await permission_judge.judge_tool_call(name, args, {
+                        "code_patterns": getattr(ctx, "_code_patterns", {}),
+                        "judge": getattr(ctx, "_judge_config", {}),
+                        "workspace_root": getattr(ctx, "_workspace_root", ""),
+                        "base_url": ctx.config.get("base_url", ""),
+                        "api_key": ctx.config.get("api_key", ""),
+                    })
+                    logger.info(
+                        "permission verdict for %s: %s (source=%s)",
+                        name,
+                        safety.get("verdict") if safety else None,
+                        safety.get("source") if safety else None,
+                    )
+                except Exception as e:
+                    logger.exception("permission judging failed for %s, safety omitted: %s",
+                                     name, e)
+                    safety = None
+            # RPC 调用 C++ host（主图直接调用；子图经 SubagentRunContext
+            # 转发并附加 subagent_id 标记）
+            result = await ctx._rpc_call(tool_call, safety=safety)
+            # ToolMessage.content 必须是 str/list，不能是 dict
+            content = json.dumps(result, ensure_ascii=False)  # str，而非 dict
+            # 工具结果截断：超长结果只保留预览（kimi-code v2 式）
+            # 截断后的内容直接进 state，后续轮次受益
+            if ctx.tool_result_truncator:
+                content = ctx.tool_result_truncator.truncate(content)
+            results.append(ToolMessage(
+                content=content,
+                tool_call_id=tool_call["id"]
+            ))
+            # 记录已执行签名，供后续重复检测
+            ctx._executed_call_sigs.append(sig)
+        return {"messages": results}
+
+    async def ask_user_node(state: MessagesState):
+        """通过 interrupt() 中断图执行以向用户提问。
+
+        关键：本节点只负责构造 interrupt 值并暂停图，**不**在此处发送
+        question 给 C++——否则 resume 后节点会重新执行导致重复发送。
+        question 的实际发送由 _send_question_if_paused() 共享助手在
+        检测到 interrupt 状态后做一次（run() 与 resume() 均调用之）。
+        """
+        messages = state["messages"]
+        last_msg = messages[-1]
+
+        # 找到 ask_user 工具调用（同一 AIMessage 可能还含其它 tool_calls）
+        ask_call = None
+        if hasattr(last_msg, "tool_calls") and last_msg.tool_calls:
+            for tc in last_msg.tool_calls:
+                if tc.get("name") == "ask_user":
+                    ask_call = tc
+                    break
+
+        if not ask_call:
+            return {"messages": []}
+
+        args = ask_call.get("args", {})
+        question_text = args.get("question", "")
+        options = args.get("options", [])
+        multi_select = bool(args.get("multi_select", False))
+
+        # 中断图执行——执行暂停于此
+        # question 与 options 作为 interrupt 值，run() 通过 aget_state 读取
+        user_answer = interrupt({"question": question_text, "options": options, "multi_select": multi_select})
+
+        # 恢复后，user_answer 包含用户的回答
+        # 返回 ToolMessage（而非 HumanMessage），keyed 到 tool_call_id，
+        # 这样 LLM 能正确把回答与 ask_user 工具调用配对
+        return {
+            "messages": [
+                ToolMessage(
+                    content=str(user_answer),
+                    tool_call_id=ask_call["id"]
+                )
+            ]
+        }
+
+    def _route_agent_output(state: MessagesState) -> str:
+        """判断 agent 输出应走提问 / 工具 / 结束。
+
+        路由依据是 AIMessage.tool_calls 中是否含名为 ask_user 的调用
+        （而非 additional_kwargs['ask_user']——ChatOpenAI 永远不会
+        填充该字段，prompt 也无法让 LLM 产出该标记）。
+        enable_ask_user=False（子图）时不存在提问分支——LLM 幻觉出的
+        ask_user 调用按普通工具对待（白名单不含它，RPC 将得到未知工具错）。
+        """
+        messages = state["messages"]
+        if not messages:
+            return "tools"
+        last_msg = messages[-1]
+        if hasattr(last_msg, "tool_calls") and last_msg.tool_calls:
+            if enable_ask_user:
+                for tc in last_msg.tool_calls:
+                    if tc.get("name") == "ask_user":
+                        return "ask_user"
+            return "tools"  # 其它工具调用
+        return "end"  # 无 tool_calls，对话结束
+
+    graph = StateGraph(MessagesState)
+    graph.add_node("agent", agent_node)
+    graph.add_node("tools", tool_node)
+    if enable_compact:
+        graph.add_node("compact", compact_node)  # 上下文压缩（在 agent 之前）
+        graph.add_edge(START, "compact")           # START → compact → agent
+        graph.add_edge("compact", "agent")
+        _after = "compact"
+    else:
+        graph.add_edge(START, "agent")
+        _after = "agent"
+    # agent 条件分支：提问 / 工具 / 结束
+    if enable_ask_user:
+        graph.add_node("ask_user", ask_user_node)
+        graph.add_conditional_edges(
+            "agent", _route_agent_output,
+            {"ask_user": "ask_user", "tools": "tools", "end": END}
+        )
+        # ask_user 之后回到 compact（或 agent）继续处理用户的回答
+        graph.add_edge("ask_user", _after)
+    else:
+        graph.add_conditional_edges(
+            "agent", _route_agent_output,
+            {"tools": "tools", "end": END}
+        )
+    graph.add_edge("tools", _after)             # tools → compact → agent
+
+    # 必须带 checkpointer，否则 interrupt() 无法工作（子图无 interrupt，
+    # 独立 MemorySaver 同时保证各任务消息历史互不污染）
+    memory = MemorySaver()
+    return graph.compile(checkpointer=memory)
+
+
 class AgentRunner:
     """LangGraph agent 运行器。"""
 
     def __init__(self, config: dict, tool_specs: list[dict],
-                 system_prompt: str, stdio: StdioProtocol):
+                 system_prompt: str, stdio: StdioProtocol,
+                 subagents: list | None = None):
         self.stdio = stdio
         self.system_prompt = system_prompt
         self.config = config
+        # 保留 C++ 下发的原始工具规格（编排器为子图构建白名单子集 schema 用）
+        self.tool_specs = tool_specs
 
         # —— 权限层字段（permission-layer P1 契约 3：仅存储，判定/消费逻辑在计划二） ——
         # C++ 经 init/reconfigure 全量下发（母文档 §8），此处统一解析存储，
@@ -434,15 +950,30 @@ class AgentRunner:
             timeout=config.get("request_timeout_sec", 120),       # HTTP 请求超时（连接+首字节）
         )
 
-        # 生成工具 schema 并绑定（直接传原始 schema 字典，无 Pydantic 转换）
-        self.tool_schemas = ToolFactory.build_tool_schemas(tool_specs)
-        self.llm_with_tools = self.llm.bind_tools(self.tool_schemas)
+        # 子 agent 编排器（子 agent 一期 P3）：持有 runner 引用，复用其
+        # llm/stop_event/stdio/truncator/_rpc_call/config；负责定义热更新、
+        # dispatch_subagents schema 注入与子图派发。函数内延迟导入避免
+        # subagent_orchestrator ↔ agent_runner 的模块级循环依赖。
+        from subagent_orchestrator import SubagentOrchestrator
+        self.subagent_orchestrator = SubagentOrchestrator(self)
+
+        # 生成工具 schema 并绑定（直接传原始 schema 字典，无 Pydantic 转换）；
+        # update_definitions 会按定义集注入/移除 dispatch_subagents 并重绑
+        self.subagent_orchestrator.update_definitions(subagents or [])
 
         # 重试配置 + stop_event（plan-02 步骤 2）
         self._max_retries = config.get("max_retries", 7)
         self._stop_event = asyncio.Event()  # 用户 stop 时 set，中断退避
         # StdioProtocol 的 init_reader 后台线程在解析到 stop 消息时直接 set 此 event
         self.stdio.set_stop_event(self._stop_event, asyncio.get_running_loop())
+
+        # —— RPC 多路复用分发器状态（Q20，子 agent 一期 P3）——
+        # 挂起中的工具等待槽位（call_id → _PendingRpc），由 _dispatcher_loop
+        # 路由唤醒；控制队列承载 user_msg/user_answer/load_session/reconfigure/
+        # update_subagents/stop 等运行期消息（None 哨兵表示分发器已退出）
+        self._pending_rpcs: dict = {}
+        self._control_queue: asyncio.Queue = asyncio.Queue()
+        self._dispatcher_task: asyncio.Task | None = None
 
         # —— 重复工具调用检测（防止 LLM 陷入死循环撞 recursion_limit）——
         # 软引导：记录本轮已执行的工具调用签名 (name, args_canonical)，重复时
@@ -604,7 +1135,8 @@ class AgentRunner:
         await self.stdio.send_ready(config.get("model", ""))
 
     async def _rpc_call(self, tool_call: dict, timeout: float | None = None,
-                        safety: dict | None = None) -> dict:
+                        safety: dict | None = None,
+                        subagent_id: str | None = None) -> dict:
         """通过 stdin/stdout RPC 调用 C++ 侧工具执行器，带超时。
 
         超时语义（权限层）：超时只计"工具执行"时长，不计用户审批等待——
@@ -615,6 +1147,8 @@ class AgentRunner:
         tool_approval_timeout_sec 长超时（默认 600s，覆盖长时间代码执行），
         其余工具用 60s。显式传入 timeout 时尊重调用方取值。
         safety 为代码裁决（计划二），原样附在 tool_call 消息上，缺省不带。
+        subagent_id 为子 agent 任务标记（子 agent 一期）：子图发起的调用
+        携带该字段，C++ 侧据此过滤持久化与渲染、审批卡附加来源上下文。
         """
         name = tool_call["name"]
         if timeout is None:
@@ -623,7 +1157,17 @@ class AgentRunner:
             else:
                 timeout = 60.0
         call_id = tool_call["id"]
-        await self.stdio.send_tool_call(call_id, name, tool_call["args"], safety=safety)
+        # 先注册等待槽位再发送：分发器可能在 send 返回后立即投递结果
+        pending = _PendingRpc()
+        self._pending_rpcs[call_id] = pending
+        try:
+            await self.stdio.send_tool_call(
+                call_id, name, tool_call["args"],
+                safety=safety, subagent_id=subagent_id
+            )
+        except Exception:
+            self._pending_rpcs.pop(call_id, None)
+            raise
         try:
             result = await self._wait_for_result(call_id, timeout)
             return result
@@ -631,10 +1175,12 @@ class AgentRunner:
             return {"error": f"Tool '{name}' timed out after {timeout}s"}
 
     async def _wait_for_result(self, expected_call_id: str, timeout: float) -> dict:
-        """阻塞等待对应 expected_call_id 的 tool_result 消息，并管理超时计时。
+        """等待分发器按 call_id 路由到本调用的 tool_result，并管理超时计时。
 
-        严格匹配 call_id——避免在乱序或迟到的 tool_result 之间错配
-        （当前虽为顺序执行，但显式匹配更健壮）。
+        RPC 多路复用（Q20）：唯一 stdin 流由 _dispatcher_loop 单一读取任务
+        消费，本方法只 await 自己 call_id 对应的 _PendingRpc 状态，多个工具
+        调用（主图 + 并发子图）可同时挂起互不干扰。严格 call_id 匹配语义
+        不变——迟到/错配的 tool_result 由分发器记日志忽略。
 
         计时语义（权限层）：等待分为三段——
         1) 收到 approval_pending 前：正常倒计时（权限门几乎即时裁决，此段
@@ -643,468 +1189,155 @@ class AgentRunner:
            （用户不点击则永不超时）；
         3) 收到 tool_exec_start（用户批准/直接放行、工具开始执行）后：
            从执行起点重新计完整 timeout。
-        超时抛 asyncio.TimeoutError，错误文案由 _rpc_call 统一组装。
+        超时抛 asyncio.TimeoutError，错误文案由 _rpc_call 统一组装；
+        等待期间收到 stop 由分发器以 AgentStoppedError 置入 pending.error。
         """
+        pending = self._pending_rpcs.get(expected_call_id)
+        if pending is None:
+            # 防御分支：正常流程 _rpc_call 必先注册再发送
+            raise RuntimeError(
+                f"no pending RPC registered for call_id={expected_call_id}"
+            )
         loop = asyncio.get_running_loop()
         deadline = loop.time() + timeout
-        approval_pending = False
-        while True:
-            if approval_pending:
-                # 等待用户审批——不设时限（stop 消息仍可送达并终止等待）
-                msg = await self.stdio.receive()
-            else:
-                remaining = deadline - loop.time()
-                if remaining <= 0:
-                    raise asyncio.TimeoutError()
-                msg = await asyncio.wait_for(self.stdio.receive(), timeout=remaining)
-            msg_type = msg.get("type")
-            if msg_type == "tool_result":
-                if msg.get("call_id") == expected_call_id:
-                    return msg.get("result", {})
-                # 属于其它 call_id 的结果——记日志后继续等待本 call_id
-                logger.warning(
-                    "收到 tool_result call_id=%s，期望 %s，已忽略",
-                    msg.get("call_id"), expected_call_id
-                )
-            elif msg_type == "approval_pending":
-                if msg.get("call_id") == expected_call_id:
-                    approval_pending = True
-                    logger.info("工具调用 %s 等待用户审批，超时计时已挂起", expected_call_id)
-                else:
-                    logger.warning(
-                        "收到 approval_pending call_id=%s，期望 %s，已忽略",
-                        msg.get("call_id"), expected_call_id
-                    )
-            elif msg_type == "tool_exec_start":
-                if msg.get("call_id") == expected_call_id:
+        exec_start_applied = False
+        try:
+            while True:
+                # 先清 wake 再检查状态，最后等待——状态检查与 wait 之间
+                # 到达的事件已由 wake.set() 覆盖（wait 立即返回），无竞态
+                pending.wake.clear()
+                if pending.error is not None:
+                    raise pending.error
+                if pending.has_result:
+                    return pending.result
+                if pending.exec_started and not exec_start_applied:
                     # 用户已批准（或直接放行），工具开始执行——从执行起点重新计时
-                    approval_pending = False
+                    exec_start_applied = True
                     deadline = loop.time() + timeout
-                    logger.info("工具调用 %s 开始执行，从执行起点重新计时 %ss",
-                                expected_call_id, timeout)
-                else:
-                    logger.warning(
-                        "收到 tool_exec_start call_id=%s，期望 %s，已忽略",
-                        msg.get("call_id"), expected_call_id
+                    logger.info(
+                        "tool call %s started executing, full %ss timeout restarts "
+                        "from execution start", expected_call_id, timeout
                     )
-            elif msg_type == "stop":
-                raise AgentStoppedError("Received stop while waiting for tool_result, agent has stopped")
-            else:
-                logger.warning("期望 tool_result，但收到 type=%s", msg_type)
+                if pending.approval_pending:
+                    # 等待用户审批——不设时限（stop 消息仍可送达并终止等待）
+                    await pending.wake.wait()
+                else:
+                    remaining = deadline - loop.time()
+                    if remaining <= 0:
+                        raise asyncio.TimeoutError()
+                    try:
+                        await asyncio.wait_for(pending.wake.wait(), timeout=remaining)
+                    except asyncio.TimeoutError:
+                        raise asyncio.TimeoutError()
+        finally:
+            # 无论结果/超时/停止，等待结束即注销槽位；此后到达的同 call_id
+            # 结果由分发器按"迟到/错配"记日志忽略（语义同旧版主循环分支）
+            self._pending_rpcs.pop(expected_call_id, None)
+
+    # —— RPC 多路复用分发器（Q20，子 agent 一期 P3）——
+
+    def start_dispatcher(self):
+        """启动 RPC 多路复用分发器任务（应在 main() 创建 runner 后调用一次）。"""
+        if self._dispatcher_task is None or self._dispatcher_task.done():
+            self._dispatcher_task = asyncio.create_task(self._dispatcher_loop())
+
+    async def _dispatcher_loop(self):
+        """单一读取任务：消费唯一 stdin 流，按类型路由消息（Q20）。
+
+        - tool_result / approval_pending / tool_exec_start：按 call_id 路由到
+          对应 _PendingRpc 并唤醒等待方；无匹配槽位（迟到/错配）记日志忽略；
+        - stop：置全局 stop_event 并以 AgentStoppedError 唤醒全部挂起等待方
+          （语义同旧版 _wait_for_result 的 stop 分支），消息本身入控制队列
+          供主循环退出；
+        - 其余运行期消息（user_msg / user_answer / load_session /
+          reconfigure / update_subagents）：入控制队列由 main() 主循环消费，
+          不再依赖"轮间主循环"时机；
+        - stdin EOF / 读取异常：唤醒全部挂起等待方并投递 None 哨兵，
+          主循环据此退出（语义同旧版 receive() EOFError 逃逸）。
+        """
+        try:
+            while True:
+                msg = await self.stdio.receive()
+                msg_type = msg.get("type")
+                if msg_type == "tool_result":
+                    self._route_call_event(msg, "tool_result")
+                elif msg_type in ("approval_pending", "tool_exec_start"):
+                    self._route_call_event(msg, msg_type)
+                elif msg_type == "stop":
+                    # stdin 读取线程的扫描已即时 set stop_event，此处兜底再 set
+                    self._stop_event.set()
+                    self._fail_all_pending(AgentStoppedError(
+                        "Received stop while waiting for tool_result, agent has stopped"
+                    ))
+                    await self._control_queue.put(msg)
+                else:
+                    await self._control_queue.put(msg)
+        except EOFError:
+            logger.info("stdin closed (EOF), dispatcher exiting")
+            self._fail_all_pending(AgentStoppedError("stdin closed"))
+            await self._control_queue.put(None)
+        except Exception as e:
+            logger.exception("dispatcher loop crashed: %s", e)
+            self._fail_all_pending(AgentStoppedError(
+                f"dispatcher crashed: {e}"
+            ))
+            await self._control_queue.put(None)
+
+    def _route_call_event(self, msg: dict, kind: str):
+        """把 tool_result / approval_pending / tool_exec_start 按 call_id
+        路由到对应等待槽位；无匹配（迟到/错配）记日志忽略。"""
+        call_id = msg.get("call_id")
+        pending = self._pending_rpcs.get(call_id) if call_id else None
+        if pending is None:
+            logger.warning(
+                "received %s with unmatched call_id=%s (late or mismatched), ignored",
+                kind, call_id
+            )
+            return
+        if kind == "tool_result":
+            pending.result = msg.get("result", {})
+            pending.has_result = True
+        elif kind == "approval_pending":
+            pending.approval_pending = True
+            logger.info(
+                "tool call %s waiting for user approval, timeout countdown suspended",
+                call_id
+            )
+        elif kind == "tool_exec_start":
+            pending.approval_pending = False
+            pending.exec_started = True
+        pending.wake.set()
+
+    def _fail_all_pending(self, exc: Exception):
+        """以 exc 唤醒全部挂起的工具等待方（stop / EOF / 分发器异常）。"""
+        for pending in list(self._pending_rpcs.values()):
+            if pending.error is None and not pending.has_result:
+                pending.error = exc
+            pending.wake.set()
+
+    def _rebuild_tool_bindings(self):
+        """重建工具 schema 集与 llm_with_tools 绑定。
+
+        dispatch_subagents schema 由编排器按当前定义集动态注入（定义集为空
+        则不注入）；init / update_subagents / reconfigure 后经此重绑。图节点
+        闭包经 self.* call-time 读取 llm_with_tools，无需重建图。
+        """
+        dispatch_schema = self.subagent_orchestrator.build_dispatch_schema()
+        self.tool_schemas = ToolFactory.build_tool_schemas(
+            self.tool_specs, dispatch_schema=dispatch_schema
+        )
+        self.llm_with_tools = self.llm.bind_tools(self.tool_schemas)
 
     def _build_graph(self):
-        """构建 LangGraph 图（带 MemorySaver checkpointer 支持 interrupt/resume）。
+        """构建主图 LangGraph 图（委托模块级 build_agent_graph）。
 
-        图结构：START → compact → agent → {ask_user | tools | END}
-                 tools → compact, ask_user → compact
-        compact 节点在每次 agent 之前检查并压缩历史（不需要时返回空，零开销）。
+        主图与子图共用参数化构建器（子 agent 一期 P3）：主图以 self 作为运行期
+        上下文（节点经 self.* call-time 读取，支持 reconfigure 热替换），启用
+        ask_user 与 dispatch_subagents、compact，stdio 协议输出。
         """
-        stdio = self.stdio
-        system_prompt = self.system_prompt
-        # 注：llm_with_tools / compactor / truncator / token_estimator 不在此处捕获为局部
-        # 量，闭包内直接经 self.* call-time 读取，使 reconfigure() 热替换 LLM 配置后
-        # 无需重建图即可生效（保留 MemorySaver 会话状态）。stdio / system_prompt 不随
-        # 模型切换变化，保留局部捕获无副作用。
-
-        async def _stream_llm(messages):
-            """流式调用 LLM 并输出 token 到 UI，返回 (AIMessage, usage_metadata)。
-
-            重试逻辑：仅在首个 token 之前重试（stream_yielded 追踪）。
-            首 token 后的错误不重试，直接抛出（D3 决策）。
-            error_type 的 exhausted 映射由 main() 的 catch block 负责（步骤 4）。
-            """
-
-            stream_yielded = False  # 闭包变量，追踪是否已推送 token
-
-            async def _call_llm():
-                """每次调用都是一次完整的 LLM 流式请求。"""
-                nonlocal stream_yielded
-                collected_chunks = None
-                # langchain-openai >= 0.2 经 _should_stream_usage 支持该 kwarg，
-                # 更旧版本静默忽略，不影响流式，仅 usage 为 None。
-                astream_kwargs = {"stream_options": {"include_usage": True}}
-
-                # 流式开始前：用 tiktoken 估算 input tokens，发初始 usage 让 UI
-                # 进度条即时反映上下文占用。真实 usage_metadata 在流结束后由
-                # send_message_end 回传覆盖此估算值。
-                input_estimate = 0
-                if self.token_estimator:
-                    try:
-                        input_estimate = self.token_estimator.count_messages_tokens(messages)
-                    except Exception:
-                        pass
-                if input_estimate > 0:
-                    await stdio.send_usage(
-                        input_estimate, 0, input_estimate,
-                        source="streaming_estimate",
-                    )
-
-                chunk_count = 0
-                async for chunk in self.llm_with_tools.astream(messages, **astream_kwargs):
-                    if collected_chunks is None:
-                        collected_chunks = chunk
-                    else:
-                        collected_chunks = collected_chunks + chunk  # AIMessageChunk 支持累加
-                    if chunk.content:
-                        stream_yielded = True
-                        await stdio.send_token(chunk.content)
-                    # 每 20 个 chunk 发一次估算 usage，让进度条/标签实时增长。
-                    # 每个 astream chunk ≈ 1 token（OpenAI 流式逐 token 输出）。
-                    chunk_count += 1
-                    if chunk_count % 20 == 0:
-                        output_estimate = chunk_count
-                        total_estimate = input_estimate + output_estimate
-                        await stdio.send_usage(
-                            input_estimate, output_estimate, total_estimate,
-                            source="streaming_estimate",
-                        )
-                usage = getattr(collected_chunks, 'usage_metadata', None) if collected_chunks else None
-                return collected_chunks, usage
-
-            def _should_retry(exc):
-                """retryable_check 回调：只有首个 token 之前才允许重试（D3 铁律）。
-
-                retry_with_backoff 在每次捕获异常时调用此函数。
-                返回 False 时 retry_with_backoff 直接 raise，不进入退避。
-                """
-                classification = classify_error(exc)
-                if not classification.retryable:
-                    return False
-                if stream_yielded:
-                    return False  # 已推送 token，首 token 后不重试
-                return True
-
-            async def _on_retry(attempt, max_retries, delay_ms, classification):
-                """退避期间发送 retrying 协议消息。"""
-                await stdio.send_retrying(
-                    attempt, max_retries, int(delay_ms),
-                    classification.error_type, classification.user_message
-                )
-
-            # retry_with_backoff 在 _should_retry 返回 False 或重试耗尽时 raise 原始异常。
-            # _stream_llm 不做任何 except 处理——异常直接传播到 main() 的 catch block，
-            # 由 main() 负责分类和 *_exhausted 映射（步骤 4）。
-            return await retry_with_backoff(
-                _call_llm,
-                max_retries=self._max_retries,
-                on_retry=_on_retry,
-                stop_event=self._stop_event,
-                retryable_check=_should_retry,
-            )
-
-        async def compact_node(state: MessagesState):
-            """上下文压缩节点：在 agent 之前检查并压缩历史。
-
-            不需要压缩时返回空（{"messages": []}），不影响流程。
-            需要压缩时返回 [RemoveMessage(id=...) for middle, HumanMessage(summary)]，
-            MessagesState 的 add_messages reducer 会删除中间消息并追加摘要，
-            使下轮 agent_node 读到的是压缩后历史。
-
-            3 次熔断：连续失败 3 次后不再尝试（qwen-code 式），成功时重置计数。
-            """
-            if not self.compactor:
-                return {"messages": []}
-            messages = state["messages"]
-            if not self.compactor.should_compact(messages):
-                return {"messages": []}
-            logger.info("Starting context compaction, current tokens=%d",
-                        self.token_estimator.count_messages_tokens(messages))
-            try:
-                # MAJOR3：compact() 现返回 (updates, summary_usage)
-                updates, summary_usage = await self.compactor.compact(messages)
-                self.compactor._consecutive_failures = 0  # 成功重置
-                logger.info("Compaction done, returning %d updates", len(updates))
-                # summary 的 usage 经独立 send_usage(source="summary") 回传
-                # （summary 无 message_end，只能走独立 usage 消息——MAJOR6）
-                if summary_usage:
-                    await stdio.send_usage(
-                        summary_usage.get("input_tokens", 0),
-                        summary_usage.get("output_tokens", 0),
-                        summary_usage.get("total_tokens", 0),
-                        source="summary",
-                    )
-                return {"messages": updates}
-            except Exception as e:
-                self.compactor._consecutive_failures += 1
-                logger.exception("Compaction failed (%d/%d): %s",
-                                 self.compactor._consecutive_failures,
-                                 self.compactor.MAX_FAILURES, e)
-                return {"messages": []}  # 失败不压缩，下轮再试
-
-        async def agent_node(state: MessagesState):
-            messages = state["messages"]  # 已被 compact_node 处理
-            # 在开头插入 system prompt（避免重复插入）
-            if system_prompt and not any(m.type == "system" for m in messages):
-                messages = [SystemMessage(content=system_prompt)] + messages
-
-            # 溢出恢复时产生的 state 更新（RemoveMessage + summary），
-            # 与 final_message 一起返回，让 MessagesState reducer 删除中间消息、
-            # 追加 summary，从而打断"400 → force_compact（局部）→ 400"循环。
-            compaction_updates = []
-
-            try:
-                # 正常路径：流式调用 LLM
-                final_message, usage = await _stream_llm(messages)  # 解构
-            except Exception as e:
-                # 记录异常完整信息（str(e) 对 BadRequestError 含 400 响应体 JSON），
-                # 便于在 da_log.log 中诊断 400 的确切原因（LiteLLM 返回的具体错误描述）。
-                logger.warning("LLM call failed: %s", e)
-                # 反应式溢出恢复（qwen-code 式安全网）：
-                # 当 token 估算不准导致实际请求超出上下文窗口时，
-                # API 返回 ContextWindowExceededError/BadRequestError。
-                # 此时强制压缩并重试一次。与原设计的区别：
-                # force_compact 的结果现在写回 state（RemoveMessage + summary），
-                # 使下一轮 agent_node 读到的是压缩后历史，不再 400 循环。
-                if self.compactor and is_context_overflow_error(e):
-                    logger.warning("Context overflow detected, force-compacting and retrying")
-                    # force_compact 返回 (compacted, summary_usage, removed_ids)
-                    compacted, summary_usage, removed_ids = await self.compactor.force_compact(messages)
-                    # force_compact 路径的 summary usage 也经独立
-                    # send_usage(source="summary") 回传（与 compact_node 正常路径一致）
-                    if summary_usage:
-                        await stdio.send_usage(
-                            summary_usage.get("input_tokens", 0),
-                            summary_usage.get("output_tokens", 0),
-                            summary_usage.get("total_tokens", 0),
-                            source="summary",
-                        )
-                    # 重新 prepend system prompt（force_compact 的 head 可能保留原有
-                    # SystemMessage，需检查避免重复 prepend——与上方正常路径同一防护）
-                    if system_prompt and not any(m.type == "system" for m in compacted):
-                        compacted = [SystemMessage(content=system_prompt)] + compacted
-                    final_message, usage = await _stream_llm(compacted)  # 解构
-
-                    # 构造 state 更新：删除被压缩的中间消息 + 追加 summary。
-                    # MessagesState 的 add_messages reducer 会：
-                    #   1. 按 RemoveMessage(id=...) 删除中间消息
-                    #   2. 追加 summary HumanMessage（da_type=summary）
-                    #   3. 追加 final_message（由下方 return 添加）
-                    # 结果：state 从 [head][middle...][tail] 变为
-                    #       [head][summary][tail][final_message]，大幅缩小。
-                    compaction_updates = [RemoveMessage(id=mid) for mid in removed_ids]
-                    # 从 compacted 中找到 summary 消息（HumanMessage 含 [Context Summary]）
-                    for m in compacted:
-                        if (isinstance(m, HumanMessage)
-                                and "[Context Summary]" in str(m.content)):
-                            compaction_updates.append(m)
-                            break
-                    # 熔断恢复——force_compact 成功说明压缩仍然有效
-                    self.compactor._consecutive_failures = 0
-                else:
-                    raise
-
-            # 从累积后的完整消息上读取 tool_calls（不是逐 chunk 读）
-            if final_message.tool_calls:
-                # —— 硬终止检测：连续相同的完整 tool_calls 签名 ——
-                # 当 LLM 连续多次发出完全相同的工具调用组合（name + args 全相同），
-                # 说明它陷入了重复循环（软引导已被忽略或未覆盖此情形）。
-                # 超阈值时剥离 tool_calls，强制以最终回复结束（router → END），
-                # 避免 agent 撞到 recursion_limit 才粗暴报错。
-                full_sig = json.dumps(
-                    [(tc.get("name", ""), tc.get("args", {}))
-                     for tc in final_message.tool_calls],
-                    sort_keys=True, ensure_ascii=False,
-                )
-                if full_sig == self._last_full_sig:
-                    self._full_sig_repeat_count += 1
-                else:
-                    self._full_sig_repeat_count = 1
-                    self._last_full_sig = full_sig
-                if self._full_sig_repeat_count >= self._repeat_terminate_threshold:
-                    logger.warning(
-                        "Repeated tool-call signature detected (%d consecutive), "
-                        "forcing termination to avoid loop",
-                        self._full_sig_repeat_count,
-                    )
-                    loop_msg = AIMessage(
-                        content=(
-                            "Detected repeated tool-calling pattern (possible loop). "
-                            "This turn has been automatically terminated to avoid "
-                            "wasting tokens. The information gathered so far is "
-                            "available in the conversation history. To continue, try "
-                            "shortening the conversation history, starting a new "
-                            "session, or switching to a stronger model."
-                        ),
-                        id=getattr(final_message, 'id', None),
-                    )
-                    await stdio.send_message_end(loop_msg.content, None)
-                    # 无 tool_calls → _should_ask_user 返回 "end" → END
-                    return {"messages": [loop_msg]}
-                # 持久化中间推理内容：AIMessage 伴随 tool_calls 产生的 content（思考过程）。
-                # 此前该 content 仅以 token 流式输出到 UI（agentToken），从未落盘——
-                # C++ 端 agentToken 不持久化，而 message_end 只在无 tool_calls 的最终
-                # 回复时发送，导致崩溃恢复/切换会话时 agent 看不到自己之前的分析过程
-                # （对齐 qwen-code：每个 assistant turn 的 reasoning+tool_calls 都落盘，
-                # --resume 时完整重建含推理的历史）。token 已流式渲染，此处 message_end
-                # 仅触发 C++ appendAssistantRecord(content,{}) 落盘；UI finalizeAgentMessage
-                # 重渲染同一文本（无视觉变化）并复位气泡，使后续工具卡片正确接续。
-                # 空 content（LLM 只发 tool_calls 无叙述）跳过，避免无意义空记录。
-                _intermediate_content = (
-                    final_message.content
-                    if isinstance(final_message.content, str) else ""
-                )
-                if _intermediate_content.strip():
-                    await stdio.send_message_end(_intermediate_content, None)
-                # 有完整 tool_calls，交给 tool_node 执行
-                # （tool_call 路径不发 usage——非最终回复，下一轮 agent 还会再发）
-                return {"messages": compaction_updates + [final_message]}
-            else:
-                # 无 tool_calls——最终回复。agent usage 挂在 message_end 上回传
-                # （MAJOR6：不单独发 send_usage(source="agent")，避免 C++ 双发
-                # 导致 token 统计翻倍）
-                await stdio.send_message_end(
-                    final_message.content if isinstance(final_message.content, str) else "",
-                    usage,
-                )
-                return {"messages": compaction_updates + [final_message]}
-
-        async def tool_node(state: MessagesState):
-            last_msg = state["messages"][-1]  # AIMessage with tool_calls
-            results = []
-            for tool_call in last_msg.tool_calls:
-                name = tool_call["name"]
-                args = tool_call.get("args", {})
-                # 软引导：本轮已执行过相同 (name, args) → 返回引导而非重复执行。
-                # 不同参数不受影响（签名含 args）；仅拦截本轮内重复，跨轮不累积
-                # （_executed_call_sigs 在 run()/resume() 开头已清空）。
-                sig = (name, json.dumps(args, sort_keys=True, ensure_ascii=False))
-                if sig in self._executed_call_sigs:
-                    guidance = (
-                        f"Tool '{name}' was already called with the same arguments "
-                        f"earlier in this turn. The result is already in the conversation "
-                        f"above — re-calling with identical arguments will not produce "
-                        f"new information. Do NOT repeat this call. Use the existing result, "
-                        f"change your arguments if you need different data, or produce your "
-                        f"final answer. If uncertain how to proceed, use the ask_user tool."
-                    )
-                    results.append(ToolMessage(
-                        content=guidance,
-                        tool_call_id=tool_call["id"]
-                    ))
-                    continue
-                # 权限层判定（母文档 A1/A6/A12，permission-layer P2）：
-                # 仅 auto 模式对代码执行工具在发起 tool_call **之前**完成内容判定
-                # （静态规则 + 判官），裁决以 safety 字段随消息下发、C++ 门消费。
-                # 非 auto 模式跳过全部判定——不跑规则不跑模型，safety 缺省（A12）。
-                # 判定异常不阻塞工具调用：safety 置缺省，交由 C++ 门按无裁决兜底。
-                safety = None
-                if (_HAS_PERMISSION_JUDGE
-                        and getattr(self, "_permission_mode", "yolo") == "auto"
-                        and name in permission_judge.CODE_EXEC_TOOLS):
-                    try:
-                        safety = await permission_judge.judge_tool_call(name, args, {
-                            "code_patterns": getattr(self, "_code_patterns", {}),
-                            "judge": getattr(self, "_judge_config", {}),
-                            "workspace_root": getattr(self, "_workspace_root", ""),
-                            "base_url": self.config.get("base_url", ""),
-                            "api_key": self.config.get("api_key", ""),
-                        })
-                        logger.info(
-                            "permission verdict for %s: %s (source=%s)",
-                            name,
-                            safety.get("verdict") if safety else None,
-                            safety.get("source") if safety else None,
-                        )
-                    except Exception as e:
-                        logger.exception("permission judging failed for %s, safety omitted: %s",
-                                         name, e)
-                        safety = None
-                # RPC 调用 C++ host
-                result = await self._rpc_call(tool_call, safety=safety)
-                # ToolMessage.content 必须是 str/list，不能是 dict
-                content = json.dumps(result, ensure_ascii=False)  # str，而非 dict
-                # 工具结果截断：超长结果只保留预览（kimi-code v2 式）
-                # 截断后的内容直接进 state，后续轮次受益
-                if self.tool_result_truncator:
-                    content = self.tool_result_truncator.truncate(content)
-                results.append(ToolMessage(
-                    content=content,
-                    tool_call_id=tool_call["id"]
-                ))
-                # 记录已执行签名，供后续重复检测
-                self._executed_call_sigs.append(sig)
-            return {"messages": results}
-
-        async def ask_user_node(state: MessagesState):
-            """通过 interrupt() 中断图执行以向用户提问。
-
-            关键：本节点只负责构造 interrupt 值并暂停图，**不**在此处发送
-            question 给 C++——否则 resume 后节点会重新执行导致重复发送。
-            question 的实际发送由 _send_question_if_paused() 共享助手在
-            检测到 interrupt 状态后做一次（run() 与 resume() 均调用之）。
-            """
-            messages = state["messages"]
-            last_msg = messages[-1]
-
-            # 找到 ask_user 工具调用（同一 AIMessage 可能还含其它 tool_calls）
-            ask_call = None
-            if hasattr(last_msg, "tool_calls") and last_msg.tool_calls:
-                for tc in last_msg.tool_calls:
-                    if tc.get("name") == "ask_user":
-                        ask_call = tc
-                        break
-
-            if not ask_call:
-                return {"messages": []}
-
-            args = ask_call.get("args", {})
-            question_text = args.get("question", "")
-            options = args.get("options", [])
-            multi_select = bool(args.get("multi_select", False))
-
-            # 中断图执行——执行暂停于此
-            # question 与 options 作为 interrupt 值，run() 通过 aget_state 读取
-            user_answer = interrupt({"question": question_text, "options": options, "multi_select": multi_select})
-
-            # 恢复后，user_answer 包含用户的回答
-            # 返回 ToolMessage（而非 HumanMessage），keyed 到 tool_call_id，
-            # 这样 LLM 能正确把回答与 ask_user 工具调用配对
-            return {
-                "messages": [
-                    ToolMessage(
-                        content=str(user_answer),
-                        tool_call_id=ask_call["id"]
-                    )
-                ]
-            }
-
-        def _should_ask_user(state: MessagesState) -> str:
-            """判断 agent 输出应走提问 / 工具 / 结束。
-
-            路由依据是 AIMessage.tool_calls 中是否含名为 ask_user 的调用
-            （而非 additional_kwargs['ask_user']——ChatOpenAI 永远不会
-            填充该字段，prompt 也无法让 LLM 产出该标记）。
-            """
-            messages = state["messages"]
-            if not messages:
-                return "tools"
-            last_msg = messages[-1]
-            if hasattr(last_msg, "tool_calls") and last_msg.tool_calls:
-                for tc in last_msg.tool_calls:
-                    if tc.get("name") == "ask_user":
-                        return "ask_user"
-                return "tools"  # 其它工具调用
-            return "end"  # 无 tool_calls，对话结束
-
-        graph = StateGraph(MessagesState)
-        graph.add_node("compact", compact_node)  # 上下文压缩（在 agent 之前）
-        graph.add_node("agent", agent_node)
-        graph.add_node("tools", tool_node)
-        graph.add_node("ask_user", ask_user_node)
-        graph.add_edge(START, "compact")           # START → compact → agent
-        graph.add_edge("compact", "agent")
-        # agent 条件分支：提问 / 工具 / 结束
-        graph.add_conditional_edges(
-            "agent", _should_ask_user,
-            {"ask_user": "ask_user", "tools": "tools", "end": END}
+        return build_agent_graph(
+            self, system_prompt=self.system_prompt, stdio=self.stdio
         )
-        graph.add_edge("tools", "compact")        # tools → compact → agent
-        # ask_user 之后回到 compact 再到 agent 继续处理用户的回答
-        graph.add_edge("ask_user", "compact")      # ask_user → compact → agent
-
-        # 必须带 checkpointer，否则 interrupt() 无法工作
-        memory = MemorySaver()
-        return graph.compile(checkpointer=memory)
 
     async def _send_question_if_paused(self) -> bool:
         """检查图是否在 interrupt 处暂停。若是，发送一次 question 并返回 True。
@@ -1273,6 +1506,8 @@ async def main():
 
     tools = init_msg.get("tools", [])
     system_prompt = init_msg.get("system_prompt", "")
+    # 子 agent 一期：init 附带的定义数组（协议四字段，Q9；缺失=无子 agent）
+    subagents = init_msg.get("subagents", [])
 
     if not config.get("base_url") or not config.get("api_key") or not config.get("model"):
         #cn:config 缺少 base_url/api_key/model
@@ -1281,7 +1516,7 @@ async def main():
 
     # 2. 创建 agent（真正可能抛异常的地方——下标访问 / 网络初始化）
     try:
-        runner = AgentRunner(config, tools, system_prompt, stdio)
+        runner = AgentRunner(config, tools, system_prompt, stdio, subagents=subagents)
     except Exception as e:
         logger.exception("Agent init failed")
         await stdio.send_error(f"Agent init failed: {e}")
@@ -1289,9 +1524,18 @@ async def main():
 
     await stdio.send_ready(config.get("model", ""))
 
+    # 启动 RPC 多路复用分发器（Q20）：单一读取任务消费唯一 stdin 流，
+    # tool_result/approval_pending/tool_exec_start 按 call_id 路由到挂起等待方；
+    # 运行期消息（user_msg/user_answer/load_session/reconfigure/update_subagents/
+    # stop）入控制队列由本主循环消费
+    runner.start_dispatcher()
+
     # 3. 主循环：等待用户消息 / user_answer 恢复 / stop
     while True:
-        msg = await stdio.receive()
+        msg = await runner._control_queue.get()
+        if msg is None:
+            # stdin EOF 或分发器异常退出——结束主循环（语义同旧版 EOFError）
+            break
         msg_type = msg.get("type")
         if msg_type == "user_msg":
             try:
@@ -1350,18 +1594,17 @@ async def main():
                     detail=classification.detail,
                 )
                 await stdio.send_done()
-        elif msg_type == "tool_result":
-            # 超时后迟到的 tool_result，或已被 _wait_for_result 消费——记日志后忽略
-            logger.warning(
-                "收到迟到的 tool_result call_id=%s，已超时或被处理，忽略",
-                msg.get("call_id")
-            )
-        elif msg_type in ("approval_pending", "tool_exec_start"):
-            # 工具 RPC 计时期间应由 _wait_for_result 消费；走到主循环说明迟到——记日志后忽略
-            logger.warning(
-                "收到迟到的 %s call_id=%s，忽略",
-                msg_type, msg.get("call_id")
-            )
+        elif msg_type == "update_subagents":
+            # 子 agent 一期（Q17）：定义增删改后经此热更新——重建定义集与
+            # dispatch_subagents schema 并重绑 llm_with_tools；不重建图、不动
+            # 会话状态、无协议回复（运行中任务仍用派发时快照）。
+            subs = msg.get("subagents")
+            try:
+                runner.subagent_orchestrator.update_definitions(
+                    subs if isinstance(subs, list) else []
+                )
+            except Exception:
+                logger.exception("update_subagents failed")
         elif msg_type == "load_session":
             # C++ -> Python 下发历史 messages 重建 langgraph state（多会话切换）。
             # load_session 不发 done（重建 state 不是一轮对话）；session_loaded
