@@ -63,7 +63,7 @@ DAPyWorkFlowGraphicsScene::~DAPyWorkFlowGraphicsScene()
 DAGraphicsPixmapItem* DAPyWorkFlowGraphicsScene::setBackgroundPixmap(const QPixmap& pixmap)
 {
     DACommandWorkFlowSceneAddBackgroundPixmap* cmd = new DACommandWorkFlowSceneAddBackgroundPixmap(this, pixmap);
-    undoStack().push(cmd);
+    push(cmd);
     return mBackgroundPixmapItem;
 }
 /**
@@ -381,7 +381,7 @@ void DAPyWorkFlowGraphicsScene::onItemsPositionChanged(const QList< QGraphicsIte
     }
     // 执行关联移动（undo/redo支持）
     DACommandsForGraphicsItemsMoved* cmd = commandsFactory()->createItemsMoved(willMoveItems, startPos, endPos, false);
-    getUndoStack()->push(cmd);
+    push(cmd);
     // 关联移动后同样更新连接线端点
     for (DAPyNodeGraphicsItem* i : std::as_const(linkedItems)) {
         updateNodeLinkPositions(i);

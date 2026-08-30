@@ -783,8 +783,11 @@ void DAGraphicsScene::setUndoStackActive()
 }
 
 /**
- * @brief 等同s->undoStack().push(cmd);
- * @param cmd
+ * @brief 推入一个命令并激活本场景的undo栈
+ *
+ * push即激活，保证命令进入的栈就是QUndoGroup的active栈，
+ * 全局undo/redo action状态立即反映本场景的操作
+ * @param cmd 待推入的命令
  */
 void DAGraphicsScene::push(QUndoCommand* cmd)
 {
@@ -792,6 +795,9 @@ void DAGraphicsScene::push(QUndoCommand* cmd)
 		return;
 	}
 	d_ptr->mUndoStack.push(cmd);
+	if (!d_ptr->mUndoStack.isActive()) {
+		d_ptr->mUndoStack.setActive(true);
+	}
 }
 
 /**

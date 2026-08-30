@@ -25,6 +25,8 @@ public:
 	QUndoStack* getUndoStack();
 	// 激活此窗口的UndoStack
 	void activeUndoStack();
+	// 推入命令并激活本窗口的UndoStack
+	void push(QUndoCommand* cmd);
 
 protected:
 	QUndoStack mUndoStack;

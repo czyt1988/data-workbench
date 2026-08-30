@@ -194,7 +194,7 @@ void DADataOperateOfDataFrameWidget::insertRowAt(int row)
     if (!cmd->exec()) {
         return;
     }
-    getUndoStack()->push(cmd.release());
+    push(cmd.release());
 }
 
 /**
@@ -269,7 +269,7 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
     if (!cmd->exec()) {
         return;
     }
-    getUndoStack()->push(cmd.release());
+    push(cmd.release());
 }
 
 /**
@@ -310,7 +310,7 @@ int DADataOperateOfDataFrameWidget::removeSelectRow()
     if (!cmd->exec()) {
         return 0;
     }
-    getUndoStack()->push(cmd.release());
+    push(cmd.release());
     return rows.size();
 }
 
@@ -352,7 +352,7 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
     if (!cmd->exec()) {
         return 0;
     }
-    getUndoStack()->push(cmd.release());
+    push(cmd.release());
     return columns.size();
 }
 
@@ -391,7 +391,7 @@ int DADataOperateOfDataFrameWidget::removeSelectCell()
     if (!cmd->exec()) {
         return 0;
     }
-    getUndoStack()->push(cmd.release());
+    push(cmd.release());
     return cells.size();
 }
 
@@ -432,7 +432,7 @@ void DADataOperateOfDataFrameWidget::renameColumns()
         mgr->notifyDataChangedSignal(mData, DADataManager::ChangeDataframeColumnName);
     }
 
-    getUndoStack()->push(cmd);
+    push(cmd);
 }
 
 /**
@@ -473,7 +473,7 @@ bool DADataOperateOfDataFrameWidget::renameColumn(int col, const QString& newNam
     if (DADataManager* mgr = mData.getDataManager()) {
         mgr->notifyDataChangedSignal(mData, DADataManager::ChangeDataframeColumnName);
     }
-    getUndoStack()->push(cmd.release());
+    push(cmd.release());
     // DADataTableModel 在缓存模式下缓存了列名，headerDataChanged 信号无法刷新缓存，
     // 需显式调用 refreshData() 重置模型以刷新表头显示
     if (DADataTableModel* m = ui->tableView->getDataModel()) {
@@ -514,7 +514,7 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnType(const DAPyDType& dt)
         emit selectTypeChanged({ }, DAPyDType());
         return false;
     }
-    getUndoStack()->push(cmd.release());  // 成功，push会执行redo但会跳过
+    push(cmd.release());  // 成功，push会执行redo但会跳过
     emit selectTypeChanged(selColumns, dt);
     // 这里说明设置成功了
     return true;
@@ -554,7 +554,7 @@ void DADataOperateOfDataFrameWidget::castSelectToNum()
     if (!cmd->exec()) {
         return;
     }
-    getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+    push(cmd.release());  // 推入后不会执行redo逻辑部分
     DAPyDType dt2 = df.dtypeObject(colsIndex.first());
     if (dt != dt2) {
         emit selectTypeChanged(colsIndex, dt2);
@@ -595,7 +595,7 @@ void DADataOperateOfDataFrameWidget::castSelectToDatetime()
     if (!cmd->exec()) {
         return;
     }
-    getUndoStack()->push(cmd.release());
+    push(cmd.release());
     DAPyDType dt2 = df.dtypeObject(colsIndex.first());
     if (dt != dt2) {
         emit selectTypeChanged(colsIndex, dt2);
@@ -627,7 +627,7 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
     if (!cmd->exec()) {
         return false;
     }
-    getUndoStack()->push(cmd.release());  // 推入后不会执行redo逻辑部分
+    push(cmd.release());  // 推入后不会执行redo逻辑部分
     return true;
 }
 
@@ -1108,7 +1108,7 @@ void DADataOperateOfDataFrameWidget::mergeStyleToSelection(const DATableCellStyl
         }
     }
 
-    getUndoStack()->push(cmd.release());
+    push(cmd.release());
 }
 
 /**
@@ -1159,7 +1159,7 @@ void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyl
         }
     }
 
-    getUndoStack()->push(cmd.release());
+    push(cmd.release());
 }
 
 /**
@@ -1214,7 +1214,7 @@ void DADataOperateOfDataFrameWidget::clearStyleSelection()
     if (cmd->isEmpty()) {
         return;
     }
-    getUndoStack()->push(cmd.release());
+    push(cmd.release());
 }
 
 /**
@@ -1247,7 +1247,7 @@ void DADataOperateOfDataFrameWidget::clearStyleAll()
         DATableCellStyle oldStyle = mStyleManager->getCellStyle(key.first, key.second);
         cmd->addChange(DACommandTableStyle::Cell, key.first, key.second, oldStyle, DATableCellStyle(), false);
     }
-    getUndoStack()->push(cmd.release());
+    push(cmd.release());
 }
 
 /**
@@ -1388,7 +1388,7 @@ void DADataOperateOfDataFrameWidget::setDisplayFormatToSelection(const DATableDi
             mStyleManager->hasColumnFormat(col) ? mStyleManager->getColumnFormat(col) : DATableDisplayFormat();
         cmd->addChange(col, oldFmt, fmt);
     }
-    getUndoStack()->push(cmd.release());
+    push(cmd.release());
 }
 
 /**
@@ -1416,7 +1416,7 @@ void DADataOperateOfDataFrameWidget::clearDisplayFormatFromSelection()
     if (cmd->isEmpty()) {
         return;
     }
-    getUndoStack()->push(cmd.release());
+    push(cmd.release());
 }
 
 /**

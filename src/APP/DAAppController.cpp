@@ -39,6 +39,7 @@
 #include "DAWaitCursorScoped.h"
 #include "DADataOperateWidget.h"
 #include "DADataOperatePageWidget.h"
+#include "DAAbstractOperateWidget.h"
 #include "DADataManageWidget.h"
 #include "DAAppChartOperateWidget.h"
 #include "DAFigureWidget.h"
@@ -1104,6 +1105,8 @@ void DAAppController::activateContextCategoryForWidget(QWidget* widget)
     if (widget == getDataOperateWidget()) {
         // 数据窗口激活
         mLastFocusedOpertateWidget = LastFocusedOnDataOpt;
+        // 激活当前数据页的undo栈，保证全局undo/redo action状态同步
+        activateUndoStackForWidget(getDataOperateWidget());
         mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryData);
     } else if (widget == getWorkFlowOperateWidget()) {
         // 工作流窗口激活
@@ -1115,6 +1118,8 @@ void DAAppController::activateContextCategoryForWidget(QWidget* widget)
     } else if (widget == getChartOperateWidget()) {
         // 绘图窗口激活
         mLastFocusedOpertateWidget = LastFocusedOnChartOpt;
+        // 激活当前figure的undo栈，保证全局undo/redo action状态同步
+        activateUndoStackForWidget(getChartOperateWidget());
         mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryChart);
         getSettingContainerWidget()->showChartSettingWidget();
     } else if (widget == getDataManageWidget()) {
@@ -1124,6 +1129,25 @@ void DAAppController::activateContextCategoryForWidget(QWidget* widget)
                 stack->setActive();
             }
         }
+    }
+}
+
+/**
+ * @brief 激活操作窗口当前的undo栈
+ *
+ * 顶层dock焦点切到数据操作/绘图窗口时，嵌套管理器的focusedDockWidgetChanged可能不触发
+ * （焦点未落入嵌套dock内容区），此函数作为兜底把当前页/当前figure的栈设为active，
+ * 使QUndoGroup的undo/redo action状态跟随当前窗口
+ * @param w 操作窗口，其getUndoStack()返回当前激活页/figure的栈
+ */
+void DAAppController::activateUndoStackForWidget(DAAbstractOperateWidget* w)
+{
+    if (nullptr == w) {
+        return;
+    }
+    QUndoStack* stack = w->getUndoStack();
+    if (stack && !stack->isActive()) {
+        stack->setActive();
     }
 }
 

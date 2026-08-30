@@ -44,6 +44,7 @@ class DAAppActions;
 class DAAppDataManager;
 class DASettingContainerWidget;
 class DADataOperateOfDataFrameWidget;
+class DAAbstractOperateWidget;
 class DAPyWorkFlowOperateWidget;
 class DADataOperateWidget;
 class DAAppChartOperateWidget;
@@ -496,6 +497,8 @@ private:
     bool ensureFigureChart(DA::DAFigureWidget*& fig, DA::DAChartWidget*& chart);
     // 根据widget激活对应的context category
     void activateContextCategoryForWidget(QWidget* widget);
+    // 激活操作窗口当前的undo栈（焦点切到数据操作/绘图窗口时同步全局undo/redo action状态）
+    void activateUndoStackForWidget(DAAbstractOperateWidget* w);
 
 private:
     AppMainWindow* mMainWindow { nullptr };

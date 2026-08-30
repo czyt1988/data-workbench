@@ -493,7 +493,7 @@ void DAFigureWidget::removeChart(DAChartWidget* chart)
  */
 void DAFigureWidget::removeChart_(DAChartWidget* chart)
 {
-    d_ptr->mUndoStack.push(new DAFigureWidgetCommandRemoveChart(this, chart));
+    push(new DAFigureWidgetCommandRemoveChart(this, chart));
 }
 
 /**
@@ -516,7 +516,7 @@ DAChartWidget* DAFigureWidget::createChart_()
 DAChartWidget* DAFigureWidget::createChart_(const QRectF& versatileSize)
 {
     DAFigureWidgetCommandCreateChart* cmd = new DAFigureWidgetCommandCreateChart(this, versatileSize);
-    d_ptr->mUndoStack.push(cmd);
+    push(cmd);
     // 必须先push再获取chart
     return cmd->getChartWidget();
 }
@@ -689,7 +689,7 @@ void DAFigureWidget::remove3DChart(DAChart3DWidget* chart3d)
  */
 void DAFigureWidget::remove3DChart_(DAChart3DWidget* chart3d)
 {
-    d_ptr->mUndoStack.push(new DAFigureWidgetCommandRemove3DChart(this, chart3d));
+    push(new DAFigureWidgetCommandRemove3DChart(this, chart3d));
 }
 
 /**
@@ -709,7 +709,7 @@ DAChart3DWidget* DAFigureWidget::create3DChart_()
 DAChart3DWidget* DAFigureWidget::create3DChart_(const QRectF& versatileSize)
 {
     DAFigureWidgetCommandCreate3DChart* cmd = new DAFigureWidgetCommandCreate3DChart(this, versatileSize);
-    d_ptr->mUndoStack.push(cmd);
+    push(cmd);
     return cmd->getChart3DWidget();
 }
 
@@ -1488,12 +1488,21 @@ void DAFigureWidget::add3DItem_(DAChart3DWidget* chart3d, Qwt3DPlotItem* item, b
 }
 
 /**
- * @brief 推入一个命令
- * @param cmd
+ * @brief 推入一个命令并激活本figure的undo栈
+ *
+ * push即激活，保证命令进入的栈就是QUndoGroup的active栈，
+ * 全局undo/redo action状态立即反映本figure的操作
+ * @param cmd 待推入的命令
  */
 void DAFigureWidget::push(QUndoCommand* cmd)
 {
+    if (!cmd) {
+        return;
+    }
     d_ptr->mUndoStack.push(cmd);
+    if (!d_ptr->mUndoStack.isActive()) {
+        d_ptr->mUndoStack.setActive();
+    }
 }
 
 /**
