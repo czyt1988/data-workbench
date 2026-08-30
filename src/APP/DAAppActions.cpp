@@ -60,6 +60,12 @@ void DAAppActions::buildMainAction()
     actionPluginManager = createAction(UiNames::Action::PluginManager, ":/app/bright/Icon/plugin.svg");
     //
     actionAbout = createAction(UiNames::Action::About, ":/app/bright/Icon/about.svg");
+    // 剪贴板（按焦点路由，图标取自 DAGui 图标库）
+    actionCut       = createAction(UiNames::Action::Cut, ":/DAGui/icon/cut.svg");
+    actionCopy      = createAction(UiNames::Action::Copy, ":/DAGui/icon/copy.svg");
+    actionPaste     = createAction(UiNames::Action::Paste, ":/DAGui/icon/paste.svg");
+    actionDelete    = createAction(UiNames::Action::Delete, ":/DAGui/icon/delete.svg");
+    actionSelectAll = createAction(UiNames::Action::SelectAll, ":/DAGui/icon/select-all.svg");
 }
 
 void DAAppActions::buildDataAction()
@@ -182,6 +188,24 @@ void DAAppActions::buildChartAction()
     actionChartEnableLegend = createAction(UiNames::Action::ChartEnableLegend, ":/app/bright/Icon/chart-legend.svg", true, false);
     actionCopyFigureInClipboard = createAction(UiNames::Action::CopyFigureInClipboard, ":/app/bright/Icon/copy-figure.svg");
 
+    // 图例位置（checkable 互斥组）
+    actionGroupChartLegendPosition = new QActionGroup(this);
+    actionGroupChartLegendPosition->setObjectName(QString::fromUtf8(UiNames::Action::GroupChartLegendPosition));
+    actionGroupChartLegendPosition->setExclusive(true);
+    actionChartLegendAtTop    = createAction(
+        UiNames::Action::ChartLegendAtTop, ":/app/bright/Icon/left-top.svg", true, false, actionGroupChartLegendPosition);
+    actionChartLegendAtBottom = createAction(
+        UiNames::Action::ChartLegendAtBottom, ":/app/bright/Icon/left-bottom.svg", true, false, actionGroupChartLegendPosition);
+    actionChartLegendAtLeft   = createAction(
+        UiNames::Action::ChartLegendAtLeft, ":/app/bright/Icon/left-top.svg", true, false, actionGroupChartLegendPosition);
+    actionChartLegendAtRight  = createAction(
+        UiNames::Action::ChartLegendAtRight, ":/app/bright/Icon/right-top.svg", true, false, actionGroupChartLegendPosition);
+    actionChartLegendAtTop->setData(static_cast< int >(Qt::AlignTop));
+    actionChartLegendAtBottom->setData(static_cast< int >(Qt::AlignBottom));
+    actionChartLegendAtLeft->setData(static_cast< int >(Qt::AlignLeft));
+    actionChartLegendAtRight->setData(static_cast< int >(Qt::AlignRight));
+    actionChartLegendAtRight->setChecked(true);  ///< 默认图例在右侧
+
     actionGroupChartEditor = new QActionGroup(this);
     actionGroupChartEditor->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许所有都不选择
     actionChartEditorResizeSubChart = createAction(
@@ -235,6 +259,7 @@ void DAAppActions::buildViewAction()
     actionShowLeftSideBar = createAction(UiNames::Action::ShowLeftSideBar, ":/app/bright/Icon/left-sider-bar.svg", true, true);
     actionShowRightSideBar = createAction(UiNames::Action::ShowRightSideBar, ":/app/bright/Icon/right-sider-bar.svg", true, true);
     actionShowAgentArea = createAction(UiNames::Action::ShowAgentArea, ":/app/bright/Icon/showAgent.svg");
+    actionResetDefaultLayout = createAction(UiNames::Action::ResetDefaultLayout, ":/app/bright/Icon/viewAll.svg");
 }
 
 void DAAppActions::buildWorkflowAction()
@@ -275,12 +300,6 @@ void DAAppActions::buildWorkflowAction()
 
 void DAAppActions::buildOtherActions()
 {
-    actionGroupRibbonTheme = new QActionGroup(this);
-    actionGroupRibbonTheme->setObjectName(QString::fromUtf8(UiNames::Action::GroupRibbonTheme));
-    actionRibbonThemeOffice2013 = createAction(UiNames::Action::RibbonThemeOffice2013, true, true, actionGroupRibbonTheme);
-    actionRibbonThemeOffice2016Blue = createAction(UiNames::Action::RibbonThemeOffice2016Blue, true, false, actionGroupRibbonTheme);
-    actionRibbonThemeOffice2021Blue = createAction(UiNames::Action::RibbonThemeOffice2021Blue, true, false, actionGroupRibbonTheme);
-    actionRibbonThemeDark = createAction(UiNames::Action::RibbonThemeDark, true, false, actionGroupRibbonTheme);
 }
 
 void DAAppActions::buildColorThemeActions()
@@ -507,6 +526,14 @@ void DAAppActions::retranslateUi()
     actionChartEnableLegend->setToolTip(tr("Enable or disable legend in the chart"));  // cn:启用或禁用图表中的图例
     actionCopyFigureInClipboard->setText(tr("Copy To Clipboard"));                     // cn:复制到剪切板
     actionCopyFigureInClipboard->setToolTip(tr("Copy the figure to the clipboard"));   // cn:将绘图复制到剪切板
+    actionChartLegendAtTop->setText(tr("Legend Top"));                                  // cn:图例在上
+    actionChartLegendAtTop->setToolTip(tr("Place the legend at the top of the chart"));  // cn:图例置于图表上方
+    actionChartLegendAtBottom->setText(tr("Legend Bottom"));                            // cn:图例在下
+    actionChartLegendAtBottom->setToolTip(tr("Place the legend at the bottom of the chart"));  // cn:图例置于图表下方
+    actionChartLegendAtLeft->setText(tr("Legend Left"));                                // cn:图例在左
+    actionChartLegendAtLeft->setToolTip(tr("Place the legend at the left of the chart"));  // cn:图例置于图表左侧
+    actionChartLegendAtRight->setText(tr("Legend Right"));                              // cn:图例在右
+    actionChartLegendAtRight->setToolTip(tr("Place the legend at the right of the chart"));  // cn:图例置于图表右侧
 
     actionChartEditorRectSelector->setText(tr("Add Rect"));                                // cn:添加矩形
     actionChartEditorRectSelector->setToolTip(tr("Add a rectangle to the chart"));         // cn:添加矩形
@@ -644,10 +671,18 @@ void DAAppActions::retranslateUi()
     actionPluginManager->setText(tr("Plugin \nConfig"));             // cn:插件\n设置
     actionPluginManager->setToolTip(tr("Show the plugin manager"));  // cn:显示插件管理器
     // Other
-    actionRibbonThemeOffice2013->setText(tr("Office 2013 Theme"));      // cn:Office 2013 主题
-    actionRibbonThemeOffice2016Blue->setText(tr("Office 2016 Blue Theme"));  // cn:Office 2016 蓝色主题
-    actionRibbonThemeOffice2021Blue->setText(tr("Office 2021 Blue Theme"));  // cn:Office 2021 蓝色主题
-    actionRibbonThemeDark->setText(tr("Dark Theme"));                  // cn:深色主题
+    actionCut->setText(tr("Cut"));                                   // cn:剪切
+    actionCut->setToolTip(tr("Cut the selection to the clipboard"));  // cn:剪切选中内容到剪贴板
+    actionCopy->setText(tr("Copy"));                                  // cn:复制
+    actionCopy->setToolTip(tr("Copy the selection to the clipboard"));  // cn:复制选中内容到剪贴板
+    actionPaste->setText(tr("Paste"));                                // cn:粘贴
+    actionPaste->setToolTip(tr("Paste from the clipboard"));          // cn:从剪贴板粘贴
+    actionDelete->setText(tr("Delete"));                              // cn:删除
+    actionDelete->setToolTip(tr("Delete the selection"));             // cn:删除选中内容
+    actionSelectAll->setText(tr("Select All"));                       // cn:全选
+    actionSelectAll->setToolTip(tr("Select all content"));            // cn:全选内容
+    actionResetDefaultLayout->setText(tr("Reset \nLayout"));          // cn:恢复\n默认布局
+    actionResetDefaultLayout->setToolTip(tr("Restore the default window layout immediately"));  // cn:立即恢复默认窗口布局
 
     //
     if (actionRedo) {

@@ -29,7 +29,6 @@ namespace Ribbon
 constexpr char MainCategory[]             = "da-ribbon-category-main";             ///< 主页标签
 constexpr char DataCategory[]             = "da-ribbon-category-data";             ///< 数据标签
 constexpr char ViewCategory[]             = "da-ribbon-category-view";             ///< 视图标签
-constexpr char EditCategory[]             = "da-ribbon-category-edit";             ///< 编辑标签
 constexpr char FigureCategory[]           = "da-ribbon-category-figure";           ///< 绘图标签
 constexpr char AgentCategory[]            = "da-ribbon-category-agent";            ///< AI分析标签
 // ---- 上下文标签(context category) ----
@@ -43,25 +42,27 @@ constexpr char WorkflowEditCategory[]     = "da-ribbon-category-workflow.edit"; 
 constexpr char WorkflowViewCategory[]     = "da-ribbon-category-workflow.view";      ///< 工作流视图category
 constexpr char WorkflowRunCategory[]      = "da-ribbon-category-workflow.run";       ///< 工作流运行category
 constexpr char ChartStyleCategory[]       = "da-ribbon-category-chart.style";        ///< 图表样式category
+constexpr char ChartTextEditCategory[]    = "da-ribbon-category-chart.text";         ///< 图表文字category
 constexpr char ChartEditCategory[]        = "da-ribbon-category-chart.edit";         ///< 图表编辑category
 // ---- 主页标签下的 panel ----
-constexpr char MainCommonPanel[]          = "da-ribbon-pannel-main.common";        ///< 主页通用pannel（历史命名，前缀与其他panel不一致，保持兼容）
-constexpr char MainDataOptPanel[]         = "da-pannel-main.data-opt";             ///< 主页数据操作pannel
-constexpr char MainChartOptPanel[]        = "da-pannel-main.chart-opt";            ///< 主页绘图操作pannel
-constexpr char MainWorkflowPanel[]        = "da-pannel-main.workflow";             ///< 主页工作流pannel
+constexpr char MainCommonPanel[]          = "da-ribbon-pannel-main.common";        ///< 主页文件操作pannel（历史命名，前缀与其他panel不一致，保持兼容）
+constexpr char MainClipboardPanel[]       = "da-pannel-main.clipboard";            ///< 主页剪贴板pannel
+constexpr char MainCreatePanel[]          = "da-pannel-main.create";               ///< 主页创建pannel
+constexpr char MainWorkflowPanel[]        = "da-pannel-main.workflow";             ///< 主页工作流pannel（创建面板内的工作流组，setFeatureVisible 引用）
 constexpr char MainSettingPanel[]         = "da-pannel-main.setting";              ///< 主页设置pannel
 // ---- 数据标签下的 panel ----
 constexpr char DataOperatePanel[]         = "da-pannel-data.data-opt";             ///< 数据操作pannel
+constexpr char DataExportPanel[]          = "da-pannel-data.export";               ///< 数据导出pannel
 // ---- 视图标签下的 panel ----
-constexpr char ViewMainPanel[]            = "da-pannel-view.main";                 ///< 视图pannel
-// ---- 编辑标签下的 panel ----
-constexpr char EditWorkflowPanel[]        = "da-pannel-edit.workflow";             ///< 编辑标签工作流pannel
+constexpr char ViewMainPanel[]            = "da-pannel-view.main";                 ///< 视图显示pannel
+constexpr char ViewLayoutPanel[]          = "da-pannel-view.layout";               ///< 视图布局pannel
+constexpr char ViewAppearancePanel[]      = "da-pannel-view.appearance";           ///< 视图外观pannel
 // ---- 绘图标签下的 panel ----
-constexpr char FigureSettingPanel[]       = "da-pannel-figure.fig_setting";        ///< 绘图编辑pannel
 constexpr char FigureChartAddPanel[]      = "da-pannel-figure.chart-add";          ///< 添加绘图pannel
 constexpr char FigureStatsPlotPanel[]     = "da-pannel-figure.stats-plot";         ///< 统计绘图pannel
 // ---- DataFrame上下文标签下的 panel ----
 constexpr char DataFrameOperateAxesPanel[]   = "da-pannel-dataframe.operate.axes";    ///< 坐标设置pannel
+constexpr char DataFrameOperateColumnPanel[] = "da-pannel-dataframe.operate.column";  ///< 列操作pannel
 constexpr char DataFrameOperateDTypePanel[]  = "da-pannel-dataframe.operate.type";    ///< 类型设置pannel
 constexpr char DataFrameOperateFormatPanel[] = "da-pannel-dataframe.operate.format";  ///< 显示格式pannel
 constexpr char DataFrameStyleFillPanel[]     = "da-pannel-dataframe.style.fill";      ///< 填充样式pannel
@@ -76,8 +77,11 @@ constexpr char WorkflowViewPanel[]        = "da-pannel-context.workflow.view";  
 constexpr char WorkflowExportPanel[]      = "da-pannel-context.workflow.export";     ///< 导出pannel
 constexpr char WorkflowRunPanel[]         = "da-pannel-context.workflow.run";        ///< 运行pannel
 // ---- 图表上下文标签下的 panel ----
-constexpr char ChartEditFigureSettingPanel[] = "da-pannel-context-chartedit.fig_setting";    ///< 绘图窗口设置pannel
-constexpr char ChartEditChartSettingPanel[]  = "da-pannel-context-chartedit.chart_setting";  ///< 图表设置pannel
+constexpr char ChartEditFigureSettingPanel[]  = "da-pannel-context-chartedit.fig_setting";    ///< 绘图窗口设置pannel
+constexpr char ChartEditChartSettingPanel[]   = "da-pannel-context-chartedit.chart_setting";  ///< 图表设置pannel
+constexpr char ChartTextEditTitlePanel[]      = "da-pannel-context-charttext.title";          ///< 图表标题pannel
+constexpr char ChartTextEditFontPanel[]       = "da-pannel-context-charttext.font";           ///< 图表文字字体pannel
+constexpr char ChartTextEditLegendPanel[]     = "da-pannel-context-charttext.legend";         ///< 图表图例位置pannel
 }  // namespace Ribbon
 
 /**
@@ -98,6 +102,12 @@ constexpr char PluginManager[]  = "actionPluginManager";
 constexpr char About[]          = "actionAbout";
 constexpr char Redo[]           = "actionRedo";    ///< 由QUndoGroup创建，在DAAppRibbonArea中补充objectName
 constexpr char Undo[]           = "actionUndo";    ///< 由QUndoGroup创建，在DAAppRibbonArea中补充objectName
+// ---- 主页剪贴板（按焦点路由到工作流/表格/图表） ----
+constexpr char Cut[]        = "actionCut";
+constexpr char Copy[]       = "actionCopy";
+constexpr char Paste[]      = "actionPaste";
+constexpr char Delete[]     = "actionDelete";
+constexpr char SelectAll[]  = "actionSelectAll";
 // ---- 数据 ----
 constexpr char AddData[]        = "actionAddData";
 constexpr char RemoveData[]     = "actionRemoveData";
@@ -171,6 +181,11 @@ constexpr char ChartPickerTextFollowMouse[]   = "actionChartPickerTextFollowMous
 constexpr char ChartYPickerShowXValueEnabled[] = "actionChartYPickerShowXValueEnabled";
 constexpr char ChartEnableLegend[]    = "actionChartEnableLegend";
 constexpr char CopyFigureInClipboard[] = "actionCopyFigureInClipboard";
+constexpr char ChartLegendAtTop[]            = "actionChartLegendAtTop";
+constexpr char ChartLegendAtBottom[]         = "actionChartLegendAtBottom";
+constexpr char ChartLegendAtLeft[]           = "actionChartLegendAtLeft";
+constexpr char ChartLegendAtRight[]          = "actionChartLegendAtRight";
+constexpr char GroupChartLegendPosition[]    = "actionGroupChartLegendPosition";
 constexpr char ChartEditorResizeSubChart[]     = "actionChartEditorResizeSubChart";
 constexpr char ChartEditorRectSelector[]       = "actionChartEditorRectSelector";
 constexpr char ChartEditorEllipseSelector[]    = "actionChartEditorEllipseSelector";
@@ -195,6 +210,7 @@ constexpr char ShowSettingWidget[]      = "actionShowSettingWidget";
 constexpr char ShowLeftSideBar[]        = "actionShowLeftSideBar";
 constexpr char ShowRightSideBar[]       = "actionShowRightSideBar";
 constexpr char ShowAgentArea[]          = "actionShowAgentArea";
+constexpr char ResetDefaultLayout[]     = "actionResetDefaultLayout";
 // ---- 工作流 ----
 constexpr char WorkflowNew[]     = "actionWorkflowNew";
 constexpr char WorkflowEnableItemLinkageMove[] = "actionWorkflowEnableItemLinkageMove";
@@ -213,16 +229,10 @@ constexpr char WorkflowRun[]       = "actionWorkflowRun";
 constexpr char WorkflowTerminate[] = "actionWorkflowTerminate";
 constexpr char ExportWorkflowSceneToImage[] = "actionExportWorkflowSceneToImage";
 constexpr char ExportWorkflowSceneToPNG[]   = "actionExportWorkflowSceneToPNG";
-// ---- 主题 ----
-constexpr char RibbonThemeOffice2013[]     = "actionRibbonThemeOffice2013";
-constexpr char RibbonThemeOffice2016Blue[] = "actionRibbonThemeOffice2016Blue";
-constexpr char RibbonThemeOffice2021Blue[] = "actionRibbonThemeOffice2021Blue";
-constexpr char RibbonThemeDark[]           = "actionRibbonThemeDark";
 // ---- QActionGroup（objectName，非action，仅作统一登记） ----
 constexpr char GroupChartPickers[]         = "actionGroupChartPickers";
 constexpr char GroupChartPickerTextRegion[] = "actionGroupChartPickerTextRegion";
 constexpr char GroupWorkflowStartEdit[]    = "actionGroupWorkflowStartEdit";
-constexpr char GroupRibbonTheme[]          = "actionGroupRibbonTheme";
 }  // namespace Action
 
 /**
@@ -263,7 +273,6 @@ namespace Menu
 {
 constexpr char InsertRow[]    = "menuInsertRow";
 constexpr char InsertColumn[] = "menuInsertColumn";
-constexpr char Theme[]        = "menuTheme";
 constexpr char ExportWorkflowSceneToImage[] = "exportWorkflowSceneToImageMenu";
 constexpr char ChartPickSetting[]           = "mMenuChartPickSetting";  ///< 历史命名，保留
 constexpr char ViewLineMarkers[]            = "menuViewLineMarkers";

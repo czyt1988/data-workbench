@@ -361,12 +361,14 @@ private Q_SLOTS:
     // 允许连线
     void onActionWorkflowLinkEnableTriggered(bool on);
 
-    // 通用的字体变更
-    void onEditFontChanged(const QFont& f);
-    void onEditFontColorChanged(const QColor& c);
-    // 通用的背景和框线变更
-    void onEditBrushChanged(const QBrush& b);
-    void onEditPenChanged(const QPen& p);
+    //===================================================
+    // 主页剪贴板（按焦点路由：工作流→inner action；表格→复制/粘贴；图表→复制绘图）
+    //===================================================
+    void onActionCutTriggered();
+    void onActionCopyTriggered();
+    void onActionPasteTriggered();
+    void onActionDeleteTriggered();
+    void onActionSelectAllTriggered();
 
     // 当前工作流的字体变更
     void onCurrentWorkflowFontChanged(const QFont& f);
@@ -400,8 +402,10 @@ private Q_SLOTS:
     //===================================================
     // 其他
     //===================================================
-    // 主题切换
-    void onActionGroupRibbonThemeTriggered(QAction* a);
+    // 视图页-外观面板的主题下拉切换（写 DA_CONFIG_KEY_RIBBON_THEME 持久化）
+    void onRibbonThemeComboCurrentIndexChanged(int index);
+    // 恢复默认布局（运行时立即生效）
+    void onActionResetDefaultLayoutTriggered();
 private Q_SLOTS:
     //===================================================
     // DAPyWorkFlowOperateWidget的槽
@@ -499,6 +503,8 @@ private:
     void activateContextCategoryForWidget(QWidget* widget);
     // 激活操作窗口当前的undo栈（焦点切到数据操作/绘图窗口时同步全局undo/redo action状态）
     void activateUndoStackForWidget(DAAbstractOperateWidget* w);
+    // 视图页-外观面板：填充主题下拉（10款完整枚举，与设置页一致）并同步当前值
+    void setupRibbonThemeCombo();
 
 private:
     AppMainWindow* mMainWindow { nullptr };

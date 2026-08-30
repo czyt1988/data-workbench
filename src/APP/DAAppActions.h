@@ -54,6 +54,15 @@ public:
     QAction* actionAbout;          ///< about
 
     //===================================================
+    // 主页剪贴板（按焦点路由：工作流→inner action；表格→复制/粘贴；图表→复制绘图）
+    //===================================================
+    QAction* actionCut;        ///< 剪切（焦点路由）
+    QAction* actionCopy;       ///< 复制（焦点路由）
+    QAction* actionPaste;      ///< 粘贴（焦点路由）
+    QAction* actionDelete;     ///< 删除（焦点路由）
+    QAction* actionSelectAll;  ///< 全选（焦点路由）
+
+    //===================================================
     // 数据标签 Data Category
     //===================================================
     QAction* actionAddData;     ///< 添加数据
@@ -160,6 +169,11 @@ public:
     QAction* actionChartLinkAllPickerEnabled;   ///< 联动所有绘图
     QAction* actionChartEnableLegend;           ///< legend
     QAction* actionCopyFigureInClipboard;       ///< 把图片复制到剪切板
+    QActionGroup* actionGroupChartLegendPosition;  ///< 图例位置actionGroup
+    QAction* actionChartLegendAtTop;               ///< 图例在上
+    QAction* actionChartLegendAtBottom;            ///< 图例在下
+    QAction* actionChartLegendAtLeft;              ///< 图例在左
+    QAction* actionChartLegendAtRight;             ///< 图例在右
 
     QActionGroup* actionGroupChartPickerTextRegion;  ///< 设置ypicker时，picker text所在的位置
     QAction* actionChartPickerTextAtLeftTop;         ///< ypicker的文字在绘图的左上角
@@ -195,14 +209,7 @@ public:
     QAction* actionShowLeftSideBar;   ///< 显示/隐藏左边侧边栏
     QAction* actionShowRightSideBar;  ///< 显示/隐藏右边侧边栏
     QAction* actionShowAgentArea;  ///< 显示 Agent 助手区域
-    //===================================================
-    // 主题
-    //===================================================
-    QAction* actionRibbonThemeOffice2013;      ///< office2013主题
-    QAction* actionRibbonThemeOffice2016Blue;  ///< office2016主题
-    QAction* actionRibbonThemeOffice2021Blue;  ///< office2021主题
-    QAction* actionRibbonThemeDark;            ///< dark主题
-    QActionGroup* actionGroupRibbonTheme;      ///< actionRibbonTheme* 的actionGroup
+    QAction* actionResetDefaultLayout;  ///< 恢复默认布局（运行时立即生效）
 
     //===================================================
     // 颜色主题

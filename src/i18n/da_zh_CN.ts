@@ -72,7 +72,7 @@
         <translation>正在创建用户界面...</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+27"/>
         <source>Restore UI state</source>
         <translation>加载界面状态信息</translation>
     </message>
@@ -87,7 +87,7 @@
         <translation>正在准备界面...</translation>
     </message>
     <message>
-        <location line="+53"/>
+        <location line="+52"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
@@ -131,6 +131,16 @@
         <location line="+18"/>
         <source>UI state has been reset, the default layout will be applied on next launch</source>
         <translation>界面状态已重置，默认布局将在下次启动时应用</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Default layout snapshot is not ready</source>
+        <translation>默认布局快照尚未就绪</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Default layout restored</source>
+        <translation>已恢复默认布局</translation>
     </message>
     <message>
         <location line="+29"/>
@@ -1277,7 +1287,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+381"/>
+        <location filename="../APP/DAAppActions.cpp" line="+404"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -1731,7 +1741,7 @@ All</source>
         <translation>图例</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+52"/>
         <source>To Numeric</source>
         <translation>转换为数值类型</translation>
     </message>
@@ -1766,27 +1776,7 @@ All</source>
         <translation>信息窗口</translation>
     </message>
     <message>
-        <location line="+14"/>
-        <source>Office 2013 Theme</source>
-        <translation>Office 2013 主题</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2016 Blue Theme</source>
-        <translation>Office 2016 蓝色主题</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2021 Blue Theme</source>
-        <translation>Office 2021 蓝色主题</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Dark Theme</source>
-        <translation>深色主题</translation>
-    </message>
-    <message>
-        <location line="-141"/>
+        <location line="-134"/>
         <source>Enable or disable legend in the chart</source>
         <translation>启用或禁用图表中的图例</translation>
     </message>
@@ -1935,6 +1925,46 @@ Line 3D</source>
         <translation>将绘图复制到剪切板</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Legend Top</source>
+        <translation>图例在上</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Place the legend at the top of the chart</source>
+        <translation>图例置于图表上方</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Legend Bottom</source>
+        <translation>图例在下</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Place the legend at the bottom of the chart</source>
+        <translation>图例置于图表下方</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Legend Left</source>
+        <translation>图例在左</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Place the legend at the left of the chart</source>
+        <translation>图例置于图表左侧</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Legend Right</source>
+        <translation>图例在右</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Place the legend at the right of the chart</source>
+        <translation>图例置于图表右侧</translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>Add Rect</source>
         <translation>添加矩形</translation>
@@ -2003,6 +2033,16 @@ Line 3D</source>
         <location line="+1"/>
         <source>Add an arrow marker to the chart</source>
         <translation>添加箭头标记</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Text</source>
+        <translation>添加文本</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a text marker to the chart</source>
+        <translation>添加文本标注</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2518,7 +2558,69 @@ Config</source>
         <translation>显示插件管理器</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+2"/>
+        <source>Cut</source>
+        <translation>剪切</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cut the selection to the clipboard</source>
+        <translation>剪切选中内容到剪贴板</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy the selection to the clipboard</source>
+        <translation>复制选中内容到剪贴板</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Paste</source>
+        <translation>粘贴</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Paste from the clipboard</source>
+        <translation>从剪贴板粘贴</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete the selection</source>
+        <translation>删除选中内容</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Select All</source>
+        <translation>全选</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Select all content</source>
+        <translation>全选内容</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset 
+Layout</source>
+        <translation>恢复
+默认布局</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Restore the default window layout immediately</source>
+        <translation>立即恢复默认窗口布局</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Redo</source>
         <translation>重做</translation>
     </message>
@@ -2541,24 +2643,24 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+695"/>
+        <location filename="../APP/DAAppController.cpp" line="+707"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+841"/>
+        <location line="+847"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-830"/>
+        <location line="-836"/>
         <source>Failed to save project! Path: %1</source>
         <translation>工程保存失败！路径为:%1</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+591"/>
+        <location line="+614"/>
         <source>Project saved successfully, path: %1</source>
         <translation>工程保存成功，路径为:%1</translation>
     </message>
@@ -2578,29 +2680,29 @@ Config</source>
         <translation>图片保存失败：%1</translation>
     </message>
     <message>
-        <location line="+417"/>
+        <location line="+508"/>
         <source>Before creating a new coordinate, you need to create a figure</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-1180"/>
+        <location line="-1294"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
         <location line="-50"/>
-        <location line="+500"/>
+        <location line="+523"/>
         <location line="+73"/>
         <source>Project File</source>
         <translation>工程文件</translation>
     </message>
     <message>
-        <location line="-555"/>
+        <location line="-578"/>
         <source>Whether to overwrite the file: %1</source>
         <translation>是否覆盖文件:%1</translation>
     </message>
     <message>
-        <location line="+442"/>
+        <location line="+465"/>
         <location line="+19"/>
         <source>Question</source>
         <translation>疑问</translation>
@@ -2638,12 +2740,77 @@ Config</source>
         <translation>Markdown 文件</translation>
     </message>
     <message>
-        <location line="+328"/>
+        <location line="+311"/>
         <source>Received null project interface</source>
         <translation>获取到空工程接口</translation>
     </message>
     <message>
-        <location line="+364"/>
+        <location line="+37"/>
+        <source>Windows 7</source>
+        <translation>Windows 7</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2013</source>
+        <translation>Office 2013</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2016 Blue</source>
+        <translation>Office 2016 蓝色</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2016 Green</source>
+        <translation>Office 2016 绿色</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2016 Dark</source>
+        <translation>Office 2016 深色</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2021 Blue</source>
+        <translation>Office 2021 蓝色</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2021 Green</source>
+        <translation>Office 2021 绿色</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2021 Dark</source>
+        <translation>Office 2021 深色</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Dark</source>
+        <translation>深色</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Dark 2</source>
+        <translation>深色2</translation>
+    </message>
+    <message>
+        <location line="+54"/>
+        <source>Cut is not available for tables yet</source>
+        <translation>表格剪切功能暂未实现</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>No cells selected to copy</source>
+        <translation>没有选中可复制的单元格</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Paste is not available for tables yet</source>
+        <translation>表格粘贴功能暂未实现</translation>
+    </message>
+    <message>
+        <location line="+335"/>
         <source>Figure &apos;%1&apos; not found, it may have been closed or renamed</source>
         <translation>未找到绘图&quot;%1&quot;，可能已关闭或被重命名</translation>
     </message>
@@ -2725,7 +2892,7 @@ Config</source>
         <translation>选中的数据源为空</translation>
     </message>
     <message>
-        <location line="-1828"/>
+        <location line="-1936"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
@@ -2746,7 +2913,7 @@ Config</source>
 <context>
     <name>DA::DAAppDockingArea</name>
     <message>
-        <location filename="../APP/DAAppDockingArea.cpp" line="+69"/>
+        <location filename="../APP/DAAppDockingArea.cpp" line="+70"/>
         <source>Workflow Node</source>
         <translation>节点</translation>
     </message>
@@ -3169,36 +3336,31 @@ Config</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+190"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+183"/>
+        <location line="+3"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="-1"/>
         <source>Main</source>
         <translation>主页</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>File Operation</source>
-        <translation>文件操作</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+5"/>
         <source>Config</source>
         <translation>配置</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location line="+23"/>
-        <location line="+95"/>
-        <location line="+244"/>
+        <location line="-1"/>
+        <location line="+24"/>
+        <location line="+101"/>
+        <location line="+233"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-361"/>
-        <location line="+2"/>
+        <location line="-355"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
     </message>
@@ -3208,110 +3370,122 @@ Config</source>
         <translation>数据</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+27"/>
-        <location line="+406"/>
+        <location line="-3"/>
+        <source>Create</source>
+        <translation>创建</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location line="+28"/>
+        <location line="+401"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-432"/>
+        <location line="-428"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <location line="+197"/>
+        <location line="+1"/>
+        <source>Layout</source>
+        <translation>布局</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Appearance</source>
+        <translation>外观</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <location line="+219"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-196"/>
-        <location line="+198"/>
+        <location line="-218"/>
+        <location line="+220"/>
         <source>Operate</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location line="-197"/>
-        <location line="+200"/>
+        <location line="-219"/>
+        <location line="+222"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-199"/>
+        <location line="-221"/>
+        <location line="+234"/>
+        <source>Column</source>
+        <translation>列</translation>
+    </message>
+    <message>
+        <location line="-233"/>
         <location line="+6"/>
-        <location line="+206"/>
+        <location line="+237"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-216"/>
+        <location line="-247"/>
         <location line="+6"/>
-        <location line="+221"/>
+        <location line="+252"/>
         <location line="+4"/>
         <source>Format</source>
         <translation>格式</translation>
     </message>
     <message>
-        <location line="-230"/>
-        <location line="+236"/>
+        <location line="-261"/>
+        <location line="+267"/>
         <source>Table Style</source>
         <translation>表格样式</translation>
     </message>
     <message>
-        <location line="-235"/>
-        <location line="+239"/>
+        <location line="-266"/>
+        <location line="+270"/>
         <source>Fill</source>
         <translation>底色</translation>
     </message>
     <message>
-        <location line="-238"/>
-        <location line="+246"/>
+        <location line="-269"/>
+        <location line="+277"/>
         <source>Font</source>
         <translation>字体</translation>
     </message>
     <message>
-        <location line="-245"/>
-        <location line="+251"/>
+        <location line="-276"/>
+        <location line="+282"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>
     <message>
-        <location line="-246"/>
-        <source>Edit</source>
-        <translation>编辑</translation>
-    </message>
-    <message>
-        <location line="+4"/>
+        <location line="-276"/>
         <source>Fill Color</source>
         <translation>填充颜色</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+349"/>
+        <location line="+344"/>
         <source>Workflow Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-348"/>
-        <location line="+353"/>
+        <location line="-374"/>
+        <location line="+31"/>
+        <location line="+348"/>
         <source>Clipboard</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-338"/>
-        <location line="+454"/>
+        <location line="-334"/>
+        <location line="+452"/>
         <source>Chart Style</source>
         <translation>图表样式</translation>
     </message>
     <message>
-        <location line="-445"/>
-        <source>Set ribbon theme</source>
-        <translation>设置主题</translation>
-    </message>
-    <message>
-        <location line="+837"/>
+        <location line="+375"/>
         <location line="+2"/>
         <source>AI Agent</source>
         <translation>AI智能体</translation>
@@ -3358,49 +3532,54 @@ Config</source>
         <translation>Agent 模块未就绪</translation>
     </message>
     <message>
-        <location line="-987"/>
-        <location line="+357"/>
+        <location line="-967"/>
+        <location line="+352"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-356"/>
-        <location line="+365"/>
+        <location line="-351"/>
+        <location line="+360"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-364"/>
-        <location line="+369"/>
+        <location line="-359"/>
+        <location line="+364"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-366"/>
-        <location line="+447"/>
+        <location line="-361"/>
+        <location line="+442"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-446"/>
-        <location line="+449"/>
+        <location line="-441"/>
+        <location line="+444"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-447"/>
-        <location line="+276"/>
+        <location line="-442"/>
+        <location line="+277"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-275"/>
-        <location line="+6"/>
+        <location line="-271"/>
+        <location line="+543"/>
+        <source>Chart Text</source>
+        <translation>图表文字</translation>
+    </message>
+    <message>
+        <location line="-542"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
     <message>
-        <location line="-5"/>
+        <location line="-6"/>
         <source>Add Chart</source>
         <translation>添加绘图</translation>
     </message>
@@ -3410,13 +3589,13 @@ Config</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <location line="+509"/>
+        <location line="+6"/>
+        <location line="+504"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-511"/>
+        <location line="-506"/>
         <source>Chart Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -3427,17 +3606,17 @@ Config</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+511"/>
+        <location line="+513"/>
         <source>Select Tool</source>
         <translation>选区工具</translation>
     </message>
     <message>
-        <location line="-510"/>
+        <location line="-512"/>
         <source>Chart Assist Tool</source>
         <translation>图表辅助工具</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+2"/>
         <location line="+1"/>
         <source>View Marker</source>
         <translation>视图标记</translation>
@@ -3453,8 +3632,8 @@ Config</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="-18"/>
-        <location line="+303"/>
+        <location line="-16"/>
+        <location line="+299"/>
         <source>Stats Plot</source>
         <translation>统计绘图</translation>
     </message>
@@ -3474,23 +3653,23 @@ Config</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+26"/>
         <source>Chart Operate</source>
         <translation>绘图操作</translation>
     </message>
     <message>
-        <location line="-444"/>
-        <location line="+492"/>
+        <location line="-484"/>
+        <location line="+525"/>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+33"/>
         <source>Assist Tools</source>
         <translation>辅助工具</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+34"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
@@ -7730,6 +7909,99 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartTextMarkerSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartTextMarkerSettingPanel.cpp" line="+54"/>
+        <source>Basic</source>
+        <translation>基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation>标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation>Z 值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Axis</source>
+        <translation>X 轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Axis</source>
+        <translation>Y 轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Anchor X</source>
+        <translation>锚点 X</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Anchor Y</source>
+        <translation>锚点 Y</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Text</source>
+        <translation>文本</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Edit Rich Text...</source>
+        <translation>编辑富文本...</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Content</source>
+        <translation>内容</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Font</source>
+        <translation>字体</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Text Color</source>
+        <translation>文字颜色</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Alignment</source>
+        <translation>对齐</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Background</source>
+        <translation>背景</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Border Radius</source>
+        <translation>圆角</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Background Brush</source>
+        <translation>背景画刷</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Layout</source>
+        <translation>布局</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Spacing</source>
+        <translation>间距</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartTradingCurveSettingPanel</name>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartTradingCurveSettingPanel.cpp" line="+48"/>
@@ -8564,12 +8836,12 @@ Config</source>
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+148"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+147"/>
         <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
         <translation>意外的绘图操作：不属于 DAChartWidget 类型的图表被添加到了 figure 中</translation>
     </message>
     <message>
-        <location line="+1122"/>
+        <location line="+1142"/>
         <source>Unsupported chart editor type: %1</source>
         <translation>不支持的图表编辑器类型：%1</translation>
     </message>
@@ -10301,7 +10573,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1446"/>
+        <location filename="../APP/DAAppController.cpp" line="-1460"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -12327,7 +12599,7 @@ Config</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-1184"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-1202"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
@@ -13127,7 +13399,7 @@ Config</source>
 <context>
     <name>DataAnalysisUI</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+84"/>
+        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+87"/>
         <location line="+87"/>
         <source>Data Cleaning</source>
         <translation>数据清洗</translation>
@@ -15073,6 +15345,56 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+10"/>
         <source>Failed to initialize script runner: %1</source>
         <translation>初始化脚本执行引擎失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../DAFigure/DAChartTextEditorPopup.cpp" line="+78"/>
+        <source>Text Background Color</source>
+        <translation>文字背景色</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Strikethrough</source>
+        <translation>删除线</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Superscript</source>
+        <translation>上标</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Subscript</source>
+        <translation>下标</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Clear</source>
+        <translation>清除</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Clear character format of selected text</source>
+        <translation>清除选中文本的字符格式</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <location filename="../DAFigure/DAChartTextMarkerEditor.cpp" line="+128"/>
+        <source>Text Marker</source>
+        <translation>文本标注</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Text</source>
+        <translation>文本</translation>
     </message>
 </context>
 <context>

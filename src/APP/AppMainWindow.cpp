@@ -95,6 +95,11 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
         ;
     mController->initialize();
     ribbonBar()->setContentsMargins(3, 0, 3, 0);
+    // 快照前先应用 CompactTwoRow 样式（无状态文件时的实际样式），
+    // 保证「恢复默认布局」还原的就是首次启动的观感（R11 二选一方案：样式提前）
+    ribbonBar()->setRibbonStyle(SARibbonBar::RibbonStyleCompactTwoRow);
+    // 抓取默认布局快照：dock 已建好、未加载用户状态、早于插件加载
+    mDefaultUIStateSnapshot = saveUIState();
     // 界面状态的加载要在init之前，因为inti的插件会改变界面，如果在之后就永远改变不了界面了
     bool hasUIStateFile = isHaveStateSettingFile();
     if (hasUIStateFile) {
@@ -108,7 +113,6 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
     retranslateUi();
     setContentsMargins(3, 0, 3, 1);
     if (!hasUIStateFile) {
-        ribbonBar()->setRibbonStyle(SARibbonBar::RibbonStyleCompactTwoRow);
         showMaximized();
     }
 }
@@ -432,6 +436,26 @@ void AppMainWindow::resetUIState()
     showNormal();
     resize(1024, 768);
     daInfo << tr("UI state has been reset, the default layout will be applied on next launch");  // cn:界面状态已重置，默认布局将在下次启动时应用
+}
+
+/**
+ * @brief 运行时恢复默认布局
+ *
+ * 使用构造时抓取的快照立即还原（与 resetUIState 的重启式重置并存不冲突：
+ * 一个管运行时快照恢复、一个管删除持久化状态），仅重置顶层 dock，
+ * 不触碰图表区嵌套布局（saveChartLayout/restoreChartLayout 随工程文件管理）
+ */
+void AppMainWindow::restoreDefaultLayout()
+{
+    if (mDefaultUIStateSnapshot.isEmpty()) {
+        daWarning << tr("Default layout snapshot is not ready");  // cn:默认布局快照尚未就绪
+        return;
+    }
+    if (!restoreUIState(mDefaultUIStateSnapshot)) {
+        return;
+    }
+    showMaximized();
+    daInfo << tr("Default layout restored");  // cn:已恢复默认布局
 }
 
 /**

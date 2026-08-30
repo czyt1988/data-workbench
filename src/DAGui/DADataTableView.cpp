@@ -61,6 +61,7 @@ void DADataTableView::keyPressEvent(QKeyEvent* event)
  *
  * 逐格读取 model 的 Qt::DisplayRole（已随列显示格式格式化），故复制内容随显示格式变化。
  * 未选中的格留空，行内 Tab 分隔、行间换行，便于粘贴到 Excel。
+ * 供 keyPressEvent(Ctrl+C) 与主页剪贴板路由 actionCopy 表格分支共用。
  * @return 成功复制返回 true，无选中返回 false
  */
 bool DADataTableView::copySelectionToClipboard()

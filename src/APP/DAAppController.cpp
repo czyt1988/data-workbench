@@ -20,6 +20,9 @@
 // qwt
 #include "qwt_figure.h"
 #include "qwt_plot_series_data_picker.h"
+// SARibbon
+#include "SARibbonGlobal.h"
+#include "SARibbonMainWindow.h"
 
 // API
 #include "AppMainWindow.h"
@@ -496,8 +499,23 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemMoveWithBackground,
                                 onActionEnableItemMoveWithBackgroundTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportWorkflowSceneToPNG, onActionExportWorkflowScenePNGTriggered);
-    // other
-    connect(mActions->actionGroupRibbonTheme, &QActionGroup::triggered, this, &DAAppController::onActionGroupRibbonThemeTriggered);
+    // 导出图片大按钮（默认 action）绑定同一个 PNG 导出槽，避免点击无反应
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportWorkflowSceneToImage, onActionExportWorkflowScenePNGTriggered);
+    //===================================================
+    // 主页剪贴板（按焦点路由）
+    //===================================================
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionCut, onActionCutTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionCopy, onActionCopyTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionPaste, onActionPasteTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDelete, onActionDeleteTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionSelectAll, onActionSelectAllTriggered);
+    // 视图页-布局/外观
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionResetDefaultLayout, onActionResetDefaultLayoutTriggered);
+    setupRibbonThemeCombo();
+    connect(mRibbon->mComboxRibbonTheme,
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DAAppController::onRibbonThemeComboCurrentIndexChanged);
     //===================================================
     // setDockAreaInterface 有其他的绑定
     //===================================================
@@ -510,13 +528,6 @@ void DAAppController::initConnection()
         connect(p, &DAAppProject::projectLoaded, this, &DAAppController::onProjectLoaded);
         connect(p, &DAAppProject::dirtyStateChanged, this, &DAAppController::onProjectDirtyStateChanged);
     }
-    //===================================================
-    // Edit标签字体相关信号槽
-    //===================================================
-    connect(mRibbon, &DAAppRibbonArea::selectedFont, this, &DAAppController::onEditFontChanged);
-    connect(mRibbon, &DAAppRibbonArea::selectedFontColor, this, &DAAppController::onEditFontColorChanged);
-    connect(mRibbon, &DAAppRibbonArea::selectedBrush, this, &DAAppController::onEditBrushChanged);
-    connect(mRibbon, &DAAppRibbonArea::selectedPen, this, &DAAppController::onEditPenChanged);
 
     //===================================================
     // workflow窗口字体相关信号槽
@@ -543,7 +554,7 @@ void DAAppController::initConnection()
     // DAChartManager
     DAChartManageWidget* cmw = mDock->getChartManageWidget();
     connect(cmw, &DAChartManageWidget::figureElementClicked, this, &DAAppController::onFigureElementClicked);
-    connect(cmw, &DAChartManageWidget::figureElementClicked, this, &DAAppController::onFigureElementDbClicked);
+    connect(cmw, &DAChartManageWidget::figureElementDbClicked, this, &DAAppController::onFigureElementDbClicked);
     // figure 窗口设置按钮信号
     connect(cmw, &DAChartManageWidget::requestFigureSetting, this, [ this ](DA::DAFigureWidget* fig) {
         DASettingContainerWidget* setting = getSettingContainerWidget();
@@ -1547,23 +1558,6 @@ void DAAppController::onActionWorkflowViewReadOnlyTriggered(bool on)
     }
 }
 
-/**
-   @brief 主题切换
-   @param a
- */
-void DAAppController::onActionGroupRibbonThemeTriggered(QAction* a)
-{
-    if (mActions->actionRibbonThemeOffice2013 == a) {
-        mMainWindow->setRibbonTheme(SARibbonTheme::RibbonThemeOffice2013);
-    } else if (mActions->actionRibbonThemeOffice2016Blue == a) {
-        mMainWindow->setRibbonTheme(SARibbonTheme::RibbonThemeOffice2016Blue);
-    } else if (mActions->actionRibbonThemeOffice2021Blue == a) {
-        mMainWindow->setRibbonTheme(SARibbonTheme::RibbonThemeOffice2021Blue);
-    } else if (mActions->actionRibbonThemeDark == a) {
-        mMainWindow->setRibbonTheme(SARibbonTheme::RibbonThemeDark);
-    }
-}
-
 void DAAppController::onActionRunCurrentWorkflowTriggered()
 {
     qDebug() << "onActionRunCurrentWorkflowTriggered";
@@ -1593,35 +1587,157 @@ void DAAppController::onActionTerminateCurrentWorkflowTriggered()
     mDock->getWorkFlowOperateWidget()->terminateCurrentWorkFlow();
 }
 
-void DAAppController::onEditFontChanged(const QFont& f)
+/**
+ * @brief 视图页-外观面板：填充主题下拉并同步当前配置值
+ *
+ * 10 款完整枚举（与设置页 fillRibbonThemeCombo 一致），当前值取 DA_CONFIG_KEY_RIBBON_THEME
+ */
+void DAAppController::setupRibbonThemeCombo()
 {
-    if (isLastFocusedOnWorkflowOptWidget()) {
-        onCurrentWorkflowFontChanged(f);
-    } else if (isLastFocusedOnChartOptWidget()) {
+    QComboBox* combo = mRibbon->mComboxRibbonTheme;
+    if (!combo) {
+        return;
+    }
+    QSignalBlocker blocker(combo);
+    combo->clear();
+    // 与 DASettingPageGeneral::fillRibbonThemeCombo 保持一致
+    combo->addItem(tr("Windows 7"), static_cast< int >(SARibbonTheme::RibbonThemeWindows7));        // cn:Windows 7
+    combo->addItem(tr("Office 2013"), static_cast< int >(SARibbonTheme::RibbonThemeOffice2013));    // cn:Office 2013
+    combo->addItem(tr("Office 2016 Blue"), static_cast< int >(SARibbonTheme::RibbonThemeOffice2016Blue));  // cn:Office 2016 蓝色
+    combo->addItem(tr("Office 2016 Green"), static_cast< int >(SARibbonTheme::RibbonThemeOffice2016Green));  // cn:Office 2016 绿色
+    combo->addItem(tr("Office 2016 Dark"), static_cast< int >(SARibbonTheme::RibbonThemeOffice2016Dark));    // cn:Office 2016 深色
+    combo->addItem(tr("Office 2021 Blue"), static_cast< int >(SARibbonTheme::RibbonThemeOffice2021Blue));    // cn:Office 2021 蓝色
+    combo->addItem(tr("Office 2021 Green"), static_cast< int >(SARibbonTheme::RibbonThemeOffice2021Green));  // cn:Office 2021 绿色
+    combo->addItem(tr("Office 2021 Dark"), static_cast< int >(SARibbonTheme::RibbonThemeOffice2021Dark));    // cn:Office 2021 深色
+    combo->addItem(tr("Dark"), static_cast< int >(SARibbonTheme::RibbonThemeDark));                  // cn:深色
+    combo->addItem(tr("Dark 2"), static_cast< int >(SARibbonTheme::RibbonThemeDark2));               // cn:深色2
+    // 同步当前配置（-1=跟随框架默认主题，不选中任何项）
+    if (mConfig) {
+        int theme = (*mConfig)[ DA_CONFIG_KEY_RIBBON_THEME ].toInt();
+        int idx   = combo->findData(theme);
+        if (idx >= 0) {
+            combo->setCurrentIndex(idx);
+        }
     }
 }
 
-void DAAppController::onEditFontColorChanged(const QColor& c)
+/**
+ * @brief 视图页-外观面板：主题切换
+ *
+ * 立即应用主题并写入 DA_CONFIG_KEY_RIBBON_THEME 持久化（修复原右上角菜单不持久化问题）
+ */
+void DAAppController::onRibbonThemeComboCurrentIndexChanged(int index)
 {
-    if (isLastFocusedOnWorkflowOptWidget()) {
-        onCurrentWorkflowFontColorChanged(c);
-    } else if (isLastFocusedOnChartOptWidget()) {
+    if (index < 0 || !mMainWindow) {
+        return;
+    }
+    QComboBox* combo = mRibbon->mComboxRibbonTheme;
+    if (!combo) {
+        return;
+    }
+    int theme = combo->itemData(index).toInt();
+    mMainWindow->setRibbonTheme(static_cast< SARibbonTheme >(theme));
+    if (mConfig) {
+        (*mConfig)[ DA_CONFIG_KEY_RIBBON_THEME ] = theme;
+        mConfig->saveConfig();
     }
 }
 
-void DAAppController::onEditBrushChanged(const QBrush& b)
+/**
+ * @brief 恢复默认布局（运行时立即生效，仅重置顶层 dock）
+ */
+void DAAppController::onActionResetDefaultLayoutTriggered()
 {
-    if (isLastFocusedOnWorkflowOptWidget()) {
-        onCurrentWorkflowShapeBackgroundBrushChanged(b);
-    } else if (isLastFocusedOnChartOptWidget()) {
+    if (mMainWindow) {
+        mMainWindow->restoreDefaultLayout();
     }
 }
 
-void DAAppController::onEditPenChanged(const QPen& p)
+/**
+ * @brief 主页剪贴板-剪切（按焦点路由）
+ */
+void DAAppController::onActionCutTriggered()
 {
     if (isLastFocusedOnWorkflowOptWidget()) {
-        onCurrentWorkflowShapeBorderPenChanged(p);
+        if (QAction* act = getWorkFlowOperateWidget()->getInnerAction(DAPyWorkFlowOperateWidget::ActionCut)) {
+            act->trigger();
+        }
+    } else if (isLastFocusedOnDataOptWidget()) {
+        // 阶段二实现（表格粘贴/剪切/删除）
+        daWarning << tr("Cut is not available for tables yet");  // cn:表格剪切功能暂未实现
+    }
+}
+
+/**
+ * @brief 主页剪贴板-复制（按焦点路由）
+ */
+void DAAppController::onActionCopyTriggered()
+{
+    if (isLastFocusedOnWorkflowOptWidget()) {
+        if (QAction* act = getWorkFlowOperateWidget()->getInnerAction(DAPyWorkFlowOperateWidget::ActionCopy)) {
+            act->trigger();
+        }
+    } else if (isLastFocusedOnDataOptWidget()) {
+        if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+            DADataTableView* tv = dfopt->getDataTableView();
+            if (tv && !tv->copySelectionToClipboard()) {
+                daWarning << tr("No cells selected to copy");  // cn:没有选中可复制的单元格
+            }
+        }
     } else if (isLastFocusedOnChartOptWidget()) {
+        // 图表焦点：复制绘图到剪贴板
+        onActionCopyFigureToClipboardTriggered();
+    }
+}
+
+/**
+ * @brief 主页剪贴板-粘贴（按焦点路由）
+ */
+void DAAppController::onActionPasteTriggered()
+{
+    if (isLastFocusedOnWorkflowOptWidget()) {
+        if (QAction* act = getWorkFlowOperateWidget()->getInnerAction(DAPyWorkFlowOperateWidget::ActionPaste)) {
+            act->trigger();
+        }
+    } else if (isLastFocusedOnDataOptWidget()) {
+        // 阶段二实现（表格粘贴/剪切/删除）
+        daWarning << tr("Paste is not available for tables yet");  // cn:表格粘贴功能暂未实现
+    }
+}
+
+/**
+ * @brief 主页剪贴板-删除（按焦点路由）
+ */
+void DAAppController::onActionDeleteTriggered()
+{
+    if (isLastFocusedOnWorkflowOptWidget()) {
+        if (QAction* act = getWorkFlowOperateWidget()->getInnerAction(DAPyWorkFlowOperateWidget::ActionDelete)) {
+            act->trigger();
+        }
+    } else if (isLastFocusedOnDataOptWidget()) {
+        if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+            // 删除 = 选中单元格设置为nan（可撤销，与右键"移除单元格"同语义）
+            dfopt->removeSelectCell();
+            setDirty();
+        }
+    }
+}
+
+/**
+ * @brief 主页剪贴板-全选（按焦点路由）
+ */
+void DAAppController::onActionSelectAllTriggered()
+{
+    if (isLastFocusedOnWorkflowOptWidget()) {
+        if (QAction* act = getWorkFlowOperateWidget()->getInnerAction(DAPyWorkFlowOperateWidget::ActionSelectAll)) {
+            act->trigger();
+        }
+    } else if (isLastFocusedOnDataOptWidget()) {
+        if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+            if (DADataTableView* tv = dfopt->getDataTableView()) {
+                tv->selectAll();
+            }
+        }
     }
 }
 
@@ -1630,8 +1746,6 @@ void DAAppController::onCurrentWorkflowFontChanged(const QFont& f)
     DAPyWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
     wf->setDefaultTextFont(f);
     wf->setSelectTextFont(f);
-    // 同步
-    mRibbon->setEditFont(f);
 }
 
 void DAAppController::onCurrentWorkflowFontColorChanged(const QColor& c)
@@ -1639,8 +1753,6 @@ void DAAppController::onCurrentWorkflowFontColorChanged(const QColor& c)
     DAPyWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
     wf->setDefaultTextColor(c);
     wf->setSelectTextColor(c);
-    // 同步
-    mRibbon->setEditFontColor(c);
     setDirty();
 }
 
@@ -1648,8 +1760,6 @@ void DAAppController::onCurrentWorkflowShapeBackgroundBrushChanged(const QBrush&
 {
     DAPyWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
     wf->setSelectShapeBackgroundBrush(b);
-    // 同步
-    mRibbon->setEditBrush(b);
     setDirty();
 }
 
@@ -1657,8 +1767,6 @@ void DAAppController::onCurrentWorkflowShapeBorderPenChanged(const QPen& p)
 {
     DAPyWorkFlowOperateWidget* wf = mDock->getWorkFlowOperateWidget();
     wf->setSelectShapeBorderPen(p);
-    // 同步
-    mRibbon->setEditPen(p);
     setDirty();
 }
 
@@ -1671,16 +1779,10 @@ void DAAppController::onWorkflowSceneSelectionItemChanged(QGraphicsItem* lastSel
         // 属于DAGraphicsItem系列
         mRibbon->setWorkFlowEditBrush(daitem->getBackgroundBrush());
         mRibbon->setWorkFlowEditPen(daitem->getBorderPen());
-        // 通用编辑同步
-        mRibbon->setEditBrush(daitem->getBackgroundBrush());
-        mRibbon->setEditPen(daitem->getBorderPen());
     } else if (DAGraphicsStandardTextItem* titem = dynamic_cast< DAGraphicsStandardTextItem* >(lastSelectItem)) {
 
         mRibbon->setWorkFlowEditFont(titem->font());
         mRibbon->setWorkFlowEditFontColor(titem->defaultTextColor());
-        // 通用编辑同步
-        mRibbon->setEditFont(titem->font());
-        mRibbon->setEditFontColor(titem->defaultTextColor());
     }
 }
 
