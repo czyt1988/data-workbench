@@ -541,7 +541,7 @@ da_add_plugin(
 )
 ```
 
-### da_plugin_bootstrap —— 插件 standalone 引导
+### da_plugin_bootstrap —— 单插件工程引导
 
 插件脱离主工程独立构建时（`cmake -S plugins/<name> -B build`），在 CMakeLists 顶部调用：
 
@@ -555,6 +555,23 @@ endif()
 该函数完成 `project()` 先行、安装目录名计算（`bin_<Config>_qt<X>_<Compiler>_<Arch>`）、
 `CMAKE_PREFIX_PATH`/`CMAKE_INSTALL_PREFIX` 设置、DAWorkbench 与全部第三方包预查找、
 C++17/DEBUG_POSTFIX/MSVC `/utf-8` 设置。
+
+### da_plugin_env_setup —— 多插件宿主工程环境设置
+
+宿主工程有自己的 `project(带 VERSION)` 且包含多个插件子目录时（如 GreeDataWorkbench：
+根 project 的 VERSION 被 updater 使用，不能被插件 project() 覆盖），在根 CMakeLists 中调用：
+
+```cmake
+project(MyHost VERSION 1.0.0 LANGUAGES CXX)
+set(DAWorkbench_INSTALL_PATH "<DAWorkbench 安装目录>")   # 非默认布局时必须显式指定
+include(${DAWorkbench_INSTALL_PATH}/lib/cmake/DAWorkbench/daworkbench_plugin_utils.cmake)
+da_plugin_env_setup()
+add_subdirectory(插件目录)
+```
+
+与 `da_plugin_bootstrap` 的区别：不含 `project()`，其余环境设置（安装目录/预查找/C++17）
+完全一致；`da_add_plugin` 在此环境上增加 `OUTPUT_TO_INSTALL` 选项可使 DLL 直接输出到
+安装目录 `bin/plugins`（构建完即可被主程序加载）。
 
 ### da_link_3rdparty —— 第三方库导入
 
