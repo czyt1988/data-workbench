@@ -94,6 +94,11 @@ public:
                                         ) = 0;
     // 设置脏标志
     virtual void setDirty(bool on = true) = 0;
+
+    // 设置功能模块的整体UI可见性（UI级裁剪，非能力锁：被隐藏功能的action/工具仍可能被插件或agent触发）
+    // 一次调用隐藏/显示该功能关联的全部ribbon标签、panel、上下文标签、dock与action
+    // 当前仅支持 Workflow；未支持的功能会打印警告并直接返回
+    virtual void setFeatureVisible(DAWorkbenchFeatureType feature, bool on = true) = 0;
     // 获取/设置程序的主题
     void setColorTheme(const DAColorTheme& th);
     virtual DAColorTheme getColorTheme() const;

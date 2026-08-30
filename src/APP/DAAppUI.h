@@ -52,6 +52,9 @@ public:
     // 创建ui
     void createUi();
 
+    // 设置功能模块的整体UI可见性，当前仅支持Workflow
+    virtual void setFeatureVisible(DAWorkbenchFeatureType feature, bool on = true) override;
+
 public:
     // 获取core
     DAAppCore* getAppCore();

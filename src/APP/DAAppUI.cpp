@@ -10,6 +10,12 @@
 #include "DAAppStatusBar.h"
 #include "DALog.h"
 #include "DAPropertyFormDialog.h"
+// SARibbon
+#include "SARibbonPanel.h"
+// 以下两个头文件用于让编译器获知 DAPyWorkFlowOperateWidget/DAPyWorkFlowNodeListWidget
+// 继承自 QWidget，从而可隐式转换为 hideDockWidget(QWidget*) 的参数。
+#include "DAPyWorkFlowOperateWidget.h"
+#include "DAPyWorkFlowNodeListWidget.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -135,6 +141,53 @@ void DAAppUI::setDirty(bool on)
     QMainWindow* mw = mainWindow();
     if (mw) {
         mw->setWindowModified(on);
+    }
+}
+
+/**
+ * @brief 设置功能模块的整体UI可见性
+ *
+ * 一次调用隐藏/显示该功能关联的全部ribbon标签、panel、上下文标签、dock与action，
+ * 插件裁剪主程序功能时使用此接口，替代逐个隐藏具体控件（具体控件清单是主程序的实现细节，
+ * 后续扩展不应导致已发布的插件出现漏隐藏）。
+ *
+ * 这是UI级裁剪而非能力锁：被隐藏功能对应的action/command仍可能被插件或agent直接触发。
+ *
+ * @param feature 功能模块，当前仅支持 Workflow
+ * @param on true显示，false隐藏
+ */
+void DAAppUI::setFeatureVisible(DAWorkbenchFeatureType feature, bool on)
+{
+    switch (feature) {
+    case DAWorkbenchFeatureType::Workflow: {
+        // 两个workflow相关的dock
+        QWidget* wfOperateWidget = dockingArea->getWorkFlowOperateWidget();
+        QWidget* wfNodeListWidget = dockingArea->getWorkflowNodeListWidget();
+        if (on) {
+            dockingArea->showDockWidget(wfOperateWidget);
+            dockingArea->showDockWidget(wfNodeListWidget);
+        } else {
+            dockingArea->hideDockWidget(wfOperateWidget);
+            dockingArea->hideDockWidget(wfNodeListWidget);
+        }
+        // 主页与编辑标签下的workflow panel
+        ribbonArea->mPannelMainWorkflowOpt->setVisible(on);
+        ribbonArea->mPannelEditWorkflow->setVisible(on);
+        // workflow上下文标签（编辑工作流时出现的浮动标签组），使用类型化枚举接口
+        if (on) {
+            ribbonArea->showContextCategory(DAAppRibbonArea::ContextCategoryWorkflow);
+        } else {
+            ribbonArea->hideContextCategory(DAAppRibbonArea::ContextCategoryWorkflow);
+        }
+        // 视图标签下的workflow相关action
+        actions->actionShowWorkFlowArea->setVisible(on);
+        actions->actionShowWorkFlowManagerArea->setVisible(on);
+        break;
+    }
+    default:
+        qWarning() << "DAAppUI::setFeatureVisible: feature" << static_cast< int >(feature)
+                   << "is not supported yet, only Workflow is supported";  // cn:暂不支持该功能模块的整体显隐，当前仅支持Workflow
+        break;
     }
 }
 

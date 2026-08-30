@@ -18,6 +18,7 @@
 #include "DADockingAreaInterface.h"
 #include "DARibbonAreaInterface.h"
 #include "DAActionsInterface.h"
+#include "DAUiObjectNames.h"
 // DataAnalysisPlugin
 #include "DataframeIOWorker.h"
 #include "DataframeCleanerWorker.h"
@@ -58,9 +59,11 @@ bool DataAnalysisUI::initialize(DA::DACoreInterface* core)
 void DataAnalysisUI::buildDataCategory()
 {
     DA::DARibbonAreaInterface* ribbonArea = mUi->getRibbonArea();
-    SARibbonCategory* dataCategory = ribbonArea->getCategoryByObjectName(QStringLiteral("da-ribbon-category-data"));
+    SARibbonCategory* dataCategory =
+        ribbonArea->getCategoryByObjectName(QString::fromUtf8(DA::UiNames::Ribbon::DataCategory));
     if (dataCategory) {
-        panelDataOperate = ribbonArea->getPanelByObjectName(QStringLiteral("da-pannel-data.data-opt"));
+        panelDataOperate =
+            ribbonArea->getPanelByObjectName(QString::fromUtf8(DA::UiNames::Ribbon::DataOperatePanel));
         // 导出单个数据
         actionExportIndividualData =
             mActions->createAction("actionExportIndividualData", ":/DataAnalysisPluginIcon/icon/exportIndividualData.svg");
@@ -74,8 +77,8 @@ void DataAnalysisUI::buildDataCategory()
     }
 
     // 获取Dataframe Context Category
-    SARibbonCategory* dataframeContextCategory =
-        ribbonArea->getCategoryByObjectName(QStringLiteral("da-ribbon-category-dataframe.operate"));
+    SARibbonCategory* dataframeContextCategory = ribbonArea->getCategoryByObjectName(
+        QString::fromUtf8(DA::UiNames::Ribbon::DataFrameOperateCategory));
     if (dataframeContextCategory) {
         //----------------------------------------------------
         // 数据清洗 panel
