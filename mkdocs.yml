@@ -11,14 +11,18 @@ theme:
   language: zh
   palette:
     - scheme: default
+      primary: blue
       toggle:
         icon: material/brightness-4
         name: 切换深色
     - scheme: slate
+      primary: blue
       toggle:
         icon: material/brightness-7
         name: 切换浅色
   features:
+    - navigation.tabs          # 一级导航显示为顶部水平标签栏，左侧只显示当前 Tab 的子项
+    - navigation.tabs.sticky   # 滚动时顶部标签栏保持可见
     - navigation.sections
     - navigation.top
     - navigation.path
@@ -41,27 +45,37 @@ plugins:
   - search
   - mermaid2
 
-# 导航 - 与目录结构一一对应（2026-08 文档重组后）
+# 导航 - 顶部 Tab = 一级分类，左侧导航只显示当前 Tab 的子项（2026-08 文档重组后）
 nav:
-  - 概述:
-      - 项目概览: zh/overview.md
-      - 快速上手: zh/quick-start.md
+  - 首页: zh/index.md
+  - 快速上手:
+      - 快速上手指南: zh/quick-start.md
+      - 环境配置总览: zh/build/build-instructions.md
+      - 第三方库构建: zh/build/third-party-build.md
+      - 主程序构建: zh/build/main-program-build.md
+      - 插件构建: zh/build/plugin-build.md
+      - Python环境配置: zh/build/python-environment.md
+      - 构建常见错误: zh/build/common-build-errors.md
+      - 构建选项参考: zh/build/build-options.md
+      - 大型工程组织与构建: zh/build/large-cmake-project-guide.md
       - 文档构建: doc-build.md
-  - 项目结构:
-      - 目录结构详解: zh/structure/project-structure.md
-      - 关键文件说明: zh/structure/key-files.md
-      - 模块职责划分: zh/dev-guide/architecture/module-dependency.md
+  - 使用指南:
+      - 使用指南概述: zh/use-guide/index.md
+      - 命令行参数: zh/use-guide/command-line-arguments.md
+      - 工作流使用: zh/use-guide/workflow-usage.md
+      - 数据管理使用: zh/use-guide/data-management.md
+      - 图表使用: zh/use-guide/chart-usage.md
+      - 工程文件管理: zh/use-guide/project-management.md
+      - 脚本工作区: zh/use-guide/script-workspace.md
+      - 插件使用: zh/use-guide/plugin-usage.md
+      - 绘图功能:
+          - 数据探针: zh/use-guide/plot/data-probe.md
+      - 配置文件说明: zh/use-guide/configuration.md
   - 开发指南:
       - 开发指引: zh/dev-guide/developer-guide.md
-      - 开发环境搭建:
-          - 环境配置总览: zh/build/build-instructions.md
-          - 第三方库构建: zh/build/third-party-build.md
-          - 主程序构建: zh/build/main-program-build.md
-          - 插件构建: zh/build/plugin-build.md
-          - Python环境配置: zh/build/python-environment.md
-          - 构建常见错误: zh/build/common-build-errors.md
-          - 构建选项参考: zh/build/build-options.md
-          - 大型工程组织与构建: zh/build/large-cmake-project-guide.md
+      - 项目结构:
+          - 目录结构详解: zh/structure/project-structure.md
+          - 关键文件说明: zh/structure/key-files.md
       - 开发规范:
           - 编码规范: zh/dev-guide/general/coding-standard.md
           - 图标与UI设计规范: zh/dev-guide/general/icon-ui-design-guide.md
@@ -80,14 +94,14 @@ nav:
           - 数据模块: zh/dev-guide/architecture/data-module.md
           - 工程文件结构: zh/dev-guide/architecture/project-file-structure.md
           - 工程序列化架构: zh/dev-guide/architecture/project-serialization-architecture.md
-          - Python/C++ 集成:
-              - 总览: zh/dev-guide/python-binding/index.md
-              - C++ 调用 Python: zh/dev-guide/python-binding/cpp-calling-python.md
-              - Python 绑定开发: zh/dev-guide/python-binding/python-binding-development.md
-              - Python 多线程与异步任务: zh/dev-guide/python-binding/python-multi-threading.md
-              - 故障排除与最佳实践: zh/dev-guide/python-binding/troubleshooting-and-best-practices.md
-              - Python 脚本开发实战: zh/dev-guide/python-binding/python-script-development.md
-              - pybind11↔Qt 类型转换: zh/dev-guide/python-binding/dapybind11-qt-caster.md
+      - Python/C++ 集成:
+          - 总览: zh/dev-guide/python-binding/index.md
+          - C++ 调用 Python: zh/dev-guide/python-binding/cpp-calling-python.md
+          - Python 绑定开发: zh/dev-guide/python-binding/python-binding-development.md
+          - Python 多线程与异步任务: zh/dev-guide/python-binding/python-multi-threading.md
+          - 故障排除与最佳实践: zh/dev-guide/python-binding/troubleshooting-and-best-practices.md
+          - Python 脚本开发实战: zh/dev-guide/python-binding/python-script-development.md
+          - pybind11↔Qt 类型转换: zh/dev-guide/python-binding/dapybind11-qt-caster.md
           - 嵌入式 Python 调试指南: zh/dev-guide/python-binding/embedded-python-debugging.md
       - 核心模块:
           - 工作流模块:
@@ -123,33 +137,19 @@ nav:
       - 功能定制与扩展: zh/plugin/plugin-extension.md
       - 插件界面开发: zh/plugin/plugin-dev-create-ui.md
       - 插件模块详解: zh/plugin/plugin-module.md
-  - 使用指南:
-      - 使用指南概述: zh/use-guide/index.md
-      - 命令行参数: zh/use-guide/command-line-arguments.md
-      - 工作流使用: zh/use-guide/workflow-usage.md
-      - 数据管理使用: zh/use-guide/data-management.md
-      - 图表使用: zh/use-guide/chart-usage.md
-      - 工程文件管理: zh/use-guide/project-management.md
-      - 脚本工作区: zh/use-guide/script-workspace.md
-      - 插件使用: zh/use-guide/plugin-usage.md
-      - 绘图功能:
-          - 数据探针: zh/use-guide/plot/data-probe.md
-      - 配置文件说明: zh/use-guide/configuration.md
-  - 最佳实践:
+  - 参考:
       - 开发最佳实践: zh/reference/best-practices.md
       - 性能优化建议: zh/reference/performance-tips.md
       - 常见问题解答: zh/reference/faq.md
       - 贡献指南: zh/reference/contribution-guide.md
-  - 附录:
       - 术语表: zh/reference/glossary.md
-      - API文档索引: zh/reference/api-reference.md
+      - API 文档:
+          - API 总览: zh/reference/api-reference/overview.md
+          - API 文档索引: zh/reference/api-reference.md
+          - Doxygen 首页: doxygen/index.html
+          - 类索引: doxygen/classes.html
+          - 文件列表: doxygen/files.html
       - 更新日志: zh/reference/changelog.md
-  - API文档:
-      - API 总览: zh/reference/api-reference/overview.md
-      - API 文档索引: zh/reference/api-reference.md
-      - Doxygen 首页: doxygen/index.html
-      - 类索引: doxygen/classes.html
-      - 文件列表: doxygen/files.html
 
 markdown_extensions:
   - meta
@@ -177,7 +177,7 @@ markdown_extensions:
       smart_dollar: true
   - pymdownx.details
   - pymdownx.tabbed:
-      alternate: true
+      alternate_style: true
 
 extra_javascript:
   - js/mermaid.min.js
@@ -189,3 +189,4 @@ extra_css:
   - stylesheets/extra.css
   - css/extra.css
   - css/katex.min.css
+  - stylesheets/home.css   # 落地页样式，放最后以覆盖全局 h2 等通用样式

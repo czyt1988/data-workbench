@@ -1,0 +1,536 @@
+/* ============================================================
+   DAWorkBench Documentation Styles (Landing Page)
+   参考 qwt 文档落地页体系，品牌色采用项目语义主蓝 #5280C1
+   该文件在 extra_css 中最后加载，覆盖全局通用样式
+   ============================================================ */
+
+/* ----- Design Tokens ----- */
+:root {
+    --da-blue: #5280c1;
+    --da-blue-hover: #6b9ad4;
+    --da-blue-glow: rgba(82, 128, 193, 0.35);
+
+    --da-surface: #ffffff;
+    --da-surface-raised: #f5f7fa;
+    --da-border: #e2e8f0;
+    --da-text: #1e293b;
+    --da-text-secondary: #475569;
+    --da-text-muted: #94a3b8;
+
+    --da-card-bg: #ffffff;
+    --da-card-border: #e2e8f0;
+    --da-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --da-card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.1);
+
+    --da-code-bg: #101826;
+
+    --da-hero-bg: linear-gradient(160deg, #101826 0%, #1e3450 40%, #16202e 100%);
+    --da-hero-text: #f1f5f9;
+    --da-hero-muted: #94a3b8;
+    --da-hero-pill-bg: rgba(255, 255, 255, 0.08);
+    --da-hero-pill-border: rgba(255, 255, 255, 0.15);
+
+    --da-footer-bg: linear-gradient(160deg, #101826 0%, #1b2940 100%);
+    --da-footer-text: #f1f5f9;
+    --da-footer-muted: #8296b0;
+
+    --da-icon-color: #5280c1;
+}
+
+[data-md-color-scheme="slate"] {
+    --da-blue: #6b9ad4;
+    --da-blue-hover: #8fb3dd;
+    --da-blue-glow: rgba(107, 154, 212, 0.25);
+
+    --da-surface: #1e293b;
+    --da-surface-raised: #0f172a;
+    --da-border: #334155;
+    --da-text: #e2e8f0;
+    --da-text-secondary: #cbd5e1;
+    --da-text-muted: #64748b;
+
+    --da-card-bg: #1e293b;
+    --da-card-border: #334155;
+    --da-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --da-card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
+
+    --da-code-bg: #020617;
+
+    --da-hero-bg: linear-gradient(160deg, #020617 0%, #0f1c30 40%, #0a1422 100%);
+    --da-hero-text: #f1f5f9;
+    --da-hero-muted: #64748b;
+    --da-hero-pill-bg: rgba(255, 255, 255, 0.05);
+    --da-hero-pill-border: rgba(255, 255, 255, 0.1);
+
+    --da-footer-bg: linear-gradient(160deg, #020617 0%, #101826 100%);
+    --da-footer-text: #e2e8f0;
+    --da-footer-muted: #64748b;
+
+    --da-icon-color: #8fb3dd;
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.da-hero {
+    position: relative;
+    padding: 80px 24px 56px;
+    text-align: center;
+    overflow: hidden;
+    margin: -24px -24px 0;
+    background: var(--da-hero-bg);
+    color: var(--da-hero-text);
+}
+
+.da-hero-bg {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+}
+
+.da-hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.da-hero-badge {
+    display: inline-block;
+    padding: 5px 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #94a3b8 !important;
+    background: var(--da-hero-pill-bg);
+    border: 1px solid var(--da-hero-pill-border);
+    border-radius: 100px;
+    margin: 0 0 24px;
+}
+
+.da-hero-title {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin: 0 0 20px;
+    color: #ffffff !important;
+}
+
+.da-hero-desc {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: #94a3b8 !important;
+    margin: 0 auto 32px;
+    max-width: 560px;
+}
+
+.da-hero-pills {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+}
+
+.da-hero-pills span {
+    display: inline-block;
+    padding: 6px 16px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #cbd5e1 !important;
+    background: var(--da-hero-pill-bg);
+    border: 1px solid var(--da-hero-pill-border);
+    border-radius: 6px;
+}
+
+.da-hero-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* ----- Buttons ----- */
+.da-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 24px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.da-btn-primary {
+    background: var(--da-blue);
+    color: #fff !important;
+    box-shadow: 0 2px 12px var(--da-blue-glow);
+}
+
+.da-btn-primary:hover {
+    background: var(--da-blue-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px var(--da-blue-glow);
+}
+
+.da-btn-ghost {
+    background: transparent;
+    color: var(--da-hero-text) !important;
+    border: 1px solid var(--da-hero-pill-border);
+}
+
+.da-btn-ghost:hover {
+    background: var(--da-hero-pill-bg);
+    transform: translateY(-1px);
+}
+
+/* ============================================================
+   STATS BAR
+   ============================================================ */
+.da-stats-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 32px 24px;
+    background: var(--da-surface);
+    border-bottom: 1px solid var(--da-border);
+    flex-wrap: wrap;
+}
+
+.da-stat {
+    text-align: center;
+    padding: 8px 40px;
+}
+
+.da-stat strong {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--da-blue);
+    line-height: 1.2;
+}
+
+.da-stat span {
+    font-size: 0.8rem;
+    color: var(--da-text-muted);
+    font-weight: 500;
+}
+
+.da-stat-divider {
+    width: 1px;
+    height: 36px;
+    background: var(--da-border);
+    flex-shrink: 0;
+}
+
+/* ============================================================
+   CONTAINER & SECTION HEAD
+   ============================================================ */
+.da-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 64px 24px;
+}
+
+.da-section-head {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+/* 覆盖全局 .md-typeset h2 的下边框（css/extra.css） */
+.da-section-head h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--da-text) !important;
+    margin: 0 0 10px !important;
+    letter-spacing: -0.02em;
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+}
+
+.da-section-head p {
+    font-size: 1.05rem;
+    color: var(--da-text-secondary) !important;
+    margin: 0;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+}
+
+/* ============================================================
+   FEATURE CARDS
+   ============================================================ */
+.da-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.da-card {
+    background: var(--da-card-bg);
+    border: 1px solid var(--da-card-border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    transition: all 0.25s ease;
+    box-shadow: var(--da-card-shadow);
+}
+
+.da-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--da-card-shadow-hover);
+    border-color: var(--da-blue);
+}
+
+.da-card-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 16px;
+    color: var(--da-icon-color);
+}
+
+.da-card-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.da-card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--da-text) !important;
+    margin: 0 0 8px !important;
+}
+
+.da-card p {
+    font-size: 0.88rem;
+    color: var(--da-text-secondary) !important;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.da-card code {
+    font-size: 0.82rem;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--da-surface-raised);
+    border: 1px solid var(--da-border);
+}
+
+/* ============================================================
+   SHOWCASE GALLERY
+   ============================================================ */
+.da-showcase {
+    background: var(--da-surface-raised);
+    padding: 64px 24px;
+}
+
+.da-gallery {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    max-width: 1100px;
+    margin: 0 auto 16px;
+}
+
+.da-gallery-item {
+    position: relative;
+    display: block;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--da-card-bg);
+    border: 1px solid var(--da-card-border);
+    box-shadow: var(--da-card-shadow);
+    transition: all 0.25s ease;
+    text-decoration: none;
+}
+
+.da-gallery-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--da-card-shadow-hover);
+    border-color: var(--da-blue);
+}
+
+.da-gallery-item img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+}
+
+.da-gallery-item span {
+    display: block;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--da-text) !important;
+    text-align: center;
+}
+
+/* ============================================================
+   QUICK START
+   ============================================================ */
+.da-quickstart {
+    background: var(--da-code-bg);
+    padding: 64px 24px;
+}
+
+.da-quickstart-inner {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.da-quickstart .da-section-head h2 {
+    color: #f1f5f9 !important;
+}
+
+.da-quickstart .da-section-head p {
+    color: #94a3b8 !important;
+}
+
+.da-quickstart .tabbed-set {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Tab labels sit on the dark quickstart background — force light text so
+   the default-theme dark labels are readable, with the active tab in blue. */
+.da-quickstart .tabbed-labels {
+    background: #020617;
+}
+
+.da-quickstart .tabbed-labels label {
+    color: #94a3b8 !important;
+}
+
+.da-quickstart .tabbed-set input:nth-of-type(1):checked ~ .tabbed-labels label:nth-of-type(1),
+.da-quickstart .tabbed-set input:nth-of-type(2):checked ~ .tabbed-labels label:nth-of-type(2),
+.da-quickstart .tabbed-set input:nth-of-type(3):checked ~ .tabbed-labels label:nth-of-type(3) {
+    color: var(--da-blue-hover) !important;
+}
+
+/* ============================================================
+   FOOTER CTA
+   ============================================================ */
+.da-footer {
+    background: var(--da-footer-bg);
+    padding: 64px 24px;
+    text-align: center;
+    color: var(--da-footer-text);
+    position: relative;
+    overflow: hidden;
+}
+
+.da-footer::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+}
+
+.da-footer-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.da-footer h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 0 10px;
+    color: var(--da-footer-text) !important;
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+}
+
+.da-footer p {
+    font-size: 1.05rem;
+    color: var(--da-footer-muted) !important;
+    margin: 0 0 32px;
+}
+
+.da-footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {
+    .da-card-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .da-gallery {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Material 主题在 <960px 时 .md-content 水平 padding 变为 0，
+   hero 的负 margin 会撑破视口——在该断点内取消全宽扩展 */
+@media (max-width: 959.9px) {
+    .da-hero {
+        margin: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .da-hero {
+        padding: 48px 16px 40px;
+    }
+    .da-hero-title {
+        font-size: 2.2rem;
+    }
+    .da-hero-desc {
+        font-size: 1rem;
+    }
+    .da-card-grid {
+        grid-template-columns: 1fr;
+    }
+    .da-gallery {
+        grid-template-columns: 1fr;
+    }
+    .da-stats-bar {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .da-stat {
+        padding: 8px 20px;
+    }
+    .da-stat-divider {
+        display: none;
+    }
+    .da-container,
+    .da-showcase {
+        padding: 40px 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .da-hero-title {
+        font-size: 1.75rem;
+    }
+    .da-hero-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    .da-footer-links {
+        flex-direction: column;
+        align-items: center;
+    }
+}
