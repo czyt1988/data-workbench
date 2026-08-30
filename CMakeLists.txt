@@ -38,6 +38,8 @@ project(${DA_PROJECT_NAME}
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_utils.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_3rdparty.cmake)
+# 声明式构建 API（da_add_library / da_add_executable / da_add_plugin / da_add_test）
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/DAWorkbench.cmake)
 ########################################################
 # 可选的变量
 ########################################################
