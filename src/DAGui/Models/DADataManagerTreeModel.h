@@ -148,10 +148,13 @@ public:
     void clear();
 
     // 重写基类方法
-    /**
     virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
     virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    **/
+    // 编辑提交（重命名数据集）：EditRole 时落 DAData::setName 并刷新显示
+    virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+    // 是否允许编辑（重命名数据集），默认 false
+    void setEnableEdit(bool on);
+    bool isEnableEdit() const;
 
     // drag
     virtual Qt::DropActions supportedDragActions() const override;
