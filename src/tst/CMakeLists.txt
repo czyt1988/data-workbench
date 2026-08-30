@@ -1,6 +1,7 @@
 ﻿# 顶级测试目录的 CMakeLists.txt
 # 这个文件管理所有子目录的单元测试
 # 注意：顶层 CMakeLists.txt 已调用 project() 和 enable_testing()
+# 各测试经 da_add_test 登记，目标名记录在全局属性 DA_TEST_TARGETS
 
 # 设置 C++ 标准
 set(CMAKE_CXX_STANDARD 17)
@@ -26,15 +27,10 @@ foreach(subdir ${test_subdirectories})
     endif()
 endforeach()
 
-# 添加一个运行所有测试的自定义目标
+# 添加一个运行所有测试的自定义目标（各测试由 da_add_test 登记到全局属性）
+get_property(DA_ALL_TEST_TARGETS GLOBAL PROPERTY DA_TEST_TARGETS)
 add_custom_target(run_all_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS ${ALL_TEST_EXECUTABLES}
+    DEPENDS ${DA_ALL_TEST_TARGETS}
     COMMENT "Running all tests"
 )
-
-# TODO: 使用 OpenCppCoverage (Windows) 或 gcov (Linux) 实现覆盖率报告
-# add_custom_target(test_coverage
-#     COMMAND OpenCppCoverage --export_type=cobertura --output=${CMAKE_BINARY_DIR}/coverage.xml --sources ${CMAKE_SOURCE_DIR}/src -- $<TARGET_FILE:run_all_tests>
-#     COMMENT "Generating test coverage report"
-# )
