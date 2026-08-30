@@ -117,6 +117,26 @@ void DADockingAreaInterface::hideDockWidget(QWidget* w)
 }
 
 /**
+ * @brief 显示某个窗体对应的dockwidget，与hideDockWidget对称
+ * @param w 传入dock内部维护的widget或dockwidget都可以
+ * @note 仅恢复可见，不会唤起到前台，需要唤起使用 @ref raiseDockByWidget
+ */
+void DADockingAreaInterface::showDockWidget(QWidget* w)
+{
+    ads::CDockWidget* d = findDockWidget(w);
+    if (d) {
+        d->toggleView(true);
+    } else {
+        d = qobject_cast< ads::CDockWidget* >(w);
+        if (d) {
+            d->toggleView(true);
+        } else {
+            qDebug().noquote() << QString("cannot find widget or dock widget to show");  // cn:无法找到需要显示的dock 窗口
+        }
+    }
+}
+
+/**
  * @brief 唤起一个widget对应的dock widget，如果窗口关闭了，也会唤起
  * @param w
  * @sa raiseDockingArea

@@ -82,6 +82,9 @@ public:
     // 隐藏某个窗体对应的dockwidget
     void hideDockWidget(QWidget* w);
 
+    // 显示某个窗体对应的dockwidget（不会唤起到前台，仅恢复可见，与hideDockWidget对称）
+    void showDockWidget(QWidget* w);
+
     // 枚举DockingArea对应的窗口指针
     ads::CDockWidget* dockingAreaToDockWidget(DockingArea area) const;
 

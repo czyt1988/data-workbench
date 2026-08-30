@@ -1,8 +1,10 @@
 ﻿#include "DARibbonAreaInterface.h"
+#include <QDebug>
 #include "SARibbonMainWindow.h"
 #include "SARibbonCategory.h"
 #include "SARibbonBar.h"
 #include "SARibbonPanel.h"
+#include "SARibbonContextCategory.h"
 namespace DA
 {
 class DARibbonAreaInterface::PrivateData
@@ -56,26 +58,22 @@ QList< SARibbonCategory* > DARibbonAreaInterface::getCategories() const
 
 /**
  * @brief 通过obj-name获取Category
- * @note 运行复杂度为O(n)
+ * @note 运行复杂度为O(n)，转发SARibbonBar::categoryByObjectName
  * @param objname
  * @return 如果没找到，会返回nullptr
  */
 SARibbonCategory* DARibbonAreaInterface::getCategoryByObjectName(const QString& objname) const
 {
-    QList< SARibbonCategory* > categorys = getCategories();
-    for (SARibbonCategory* c : std::as_const(categorys)) {
-        if (c) {
-            if (c->objectName() == objname) {
-                return c;
-            }
-        }
+    SARibbonCategory* c = ribbonBar()->categoryByObjectName(objname);
+    if (nullptr == c) {
+        qWarning() << "DARibbonAreaInterface::getCategoryByObjectName: no category named" << objname;
     }
-    return nullptr;
+    return c;
 }
 
 /**
  * @brief 通过obj-name获取pannel(O(n))
- * @note 运行复杂度为O(n)
+ * @note 遍历所有category，每层转发SARibbonCategory::panelByObjectName
  * @param objname
  * @return 如果没找到，会返回nullptr
  */
@@ -83,16 +81,112 @@ SARibbonPanel* DARibbonAreaInterface::getPanelByObjectName(const QString& objnam
 {
     QList< SARibbonCategory* > categorys = getCategories();
     for (SARibbonCategory* category : std::as_const(categorys)) {
-        QList< SARibbonPanel* > pannels = category->panelList();
-        for (SARibbonPanel* pannel : std::as_const(pannels)) {
-            if (pannel) {
-                if (pannel->objectName() == objname) {
-                    return pannel;
-                }
+        if (category) {
+            if (SARibbonPanel* pannel = category->panelByObjectName(objname)) {
+                return pannel;
             }
         }
     }
+    qWarning() << "DARibbonAreaInterface::getPanelByObjectName: no panel named" << objname;
     return nullptr;
+}
+
+/**
+ * @brief 通过obj-name隐藏固定标签
+ * @param objname
+ * @return 找不到对应标签返回false
+ */
+bool DARibbonAreaInterface::hideCategory(const QString& objname)
+{
+    SARibbonCategory* c = ribbonBar()->categoryByObjectName(objname);
+    if (nullptr == c) {
+        qWarning() << "DARibbonAreaInterface::hideCategory: no category named" << objname;
+        return false;
+    }
+    ribbonBar()->hideCategory(c);
+    return true;
+}
+
+/**
+ * @brief 通过obj-name显示被隐藏的标签
+ * @param objname
+ * @return 找不到对应标签返回false
+ */
+bool DARibbonAreaInterface::showCategory(const QString& objname)
+{
+    SARibbonCategory* c = ribbonBar()->categoryByObjectName(objname);
+    if (nullptr == c) {
+        qWarning() << "DARibbonAreaInterface::showCategory: no category named" << objname;
+        return false;
+    }
+    ribbonBar()->showCategory(c);
+    return true;
+}
+
+/**
+ * @brief 通过obj-name隐藏上下文标签
+ * @param objname 上下文标签的objectname，如da-ribbon-contextcategory-workflow
+ * @return 找不到对应上下文标签返回false
+ */
+bool DARibbonAreaInterface::hideContextCategory(const QString& objname)
+{
+    QList< SARibbonContextCategory* > ctxs = ribbonBar()->contextCategoryList();
+    for (SARibbonContextCategory* ctx : std::as_const(ctxs)) {
+        if (ctx && ctx->objectName() == objname) {
+            ribbonBar()->hideContextCategory(ctx);
+            return true;
+        }
+    }
+    qWarning() << "DARibbonAreaInterface::hideContextCategory: no context category named" << objname;
+    return false;
+}
+
+/**
+ * @brief 通过obj-name显示上下文标签
+ * @param objname 上下文标签的objectname，如da-ribbon-contextcategory-workflow
+ * @return 找不到对应上下文标签返回false
+ */
+bool DARibbonAreaInterface::showContextCategory(const QString& objname)
+{
+    QList< SARibbonContextCategory* > ctxs = ribbonBar()->contextCategoryList();
+    for (SARibbonContextCategory* ctx : std::as_const(ctxs)) {
+        if (ctx && ctx->objectName() == objname) {
+            ribbonBar()->showContextCategory(ctx);
+            return true;
+        }
+    }
+    qWarning() << "DARibbonAreaInterface::showContextCategory: no context category named" << objname;
+    return false;
+}
+
+/**
+ * @brief 通过obj-name隐藏pannel
+ * @param objname
+ * @return 找不到对应pannel返回false
+ */
+bool DARibbonAreaInterface::hidePanel(const QString& objname)
+{
+    SARibbonPanel* p = getPanelByObjectName(objname);
+    if (nullptr == p) {
+        return false;
+    }
+    p->setVisible(false);
+    return true;
+}
+
+/**
+ * @brief 通过obj-name显示pannel
+ * @param objname
+ * @return 找不到对应pannel返回false
+ */
+bool DARibbonAreaInterface::showPanel(const QString& objname)
+{
+    SARibbonPanel* p = getPanelByObjectName(objname);
+    if (nullptr == p) {
+        return false;
+    }
+    p->setVisible(true);
+    return true;
 }
 
 }  // namespace DA
