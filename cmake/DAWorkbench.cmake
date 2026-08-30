@@ -29,7 +29,8 @@
 #                                       #   如 DAUTILS_BUILD / DAGUI_BUILDLIB，必须逐字一致）
 #     [VERSION <x.y.z>]                 # 默认取根 DA_VERSION（版本统一）
 #     [TYPE <SHARED|INTERFACE>]         # 默认 SHARED；INTERFACE 用于纯头文件模块（DAShared）
-#     SOURCES <src...>                  # 源文件（模块自行 GLOB 或显式清单后传入）
+#     SOURCES <src...>                  # 源文件（模块自行 GLOB 或显式清单后传入；INTERFACE 模块
+#                                       #   仅挂到 target 供 IDE 展示，需 CMake 3.19+，旧版自动省略）
 #     [QT_PUBLIC <comp...>]             # find_package + PUBLIC 链接 Qt${QT_VERSION_MAJOR}::comp
 #     [QT_PRIVATE <comp...>]
 #     [LINK_PUBLIC <mod...>]            # PUBLIC 链接 DAWorkbench::<mod>
@@ -79,7 +80,14 @@ function(da_add_library)
     endif()
 
     if(DA_AL_TYPE STREQUAL "INTERFACE")
-        add_library(${_name} INTERFACE ${DA_AL_SOURCES})
+        # add_library 给 INTERFACE 库携带源文件（仅供 IDE 工程树展示，不参与编译）需 CMake 3.19+，
+        # 更旧的 CMake（如 VS2019 自带的 3.17）会报 "requires no source arguments"，
+        # 低于 3.19 时退化为不传源文件；头文件安装由 HEADERS/HEADERS_DIRS 安装规则覆盖，不受影响
+        if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+            add_library(${_name} INTERFACE ${DA_AL_SOURCES})
+        else()
+            add_library(${_name} INTERFACE)
+        endif()
         target_include_directories(${_name} INTERFACE
             $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
             $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${DA_PROJECT_NAME}/${_name}>
