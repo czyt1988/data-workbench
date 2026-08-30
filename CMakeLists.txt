@@ -414,3 +414,18 @@ if(DA_ENABLE_AUTO_TRANSLATE)
                 DESTINATION ${CMAKE_INSTALL_BINDIR}/translations
                 COMPONENT translations)
 endif()
+
+##################################
+# 安装阶段部署 Qt 运行时（保证打包目录 DLL 齐全）
+##################################
+# install(TARGETS) 只安装 DA 自身产物，Qt 运行时 DLL 不会自动进入安装目录，
+# 直接打包 bin_<Config>_qt<X>_... 目录曾因此缺失 WebEngine 整条依赖链
+# （找不到 Qt5WebEngineWidgets.dll）。此处在安装时自动执行 windeployqt 补齐：
+# 扫描构建树中的 exe、DAGui.dll（WebEngine/Qml 是它的传递依赖）和插件 DLL，
+# 通过 --dir 部署到安装目录，与安装规则的执行顺序无关。
+if(WIN32)
+    dafun_install_deploy_qt_runtime(${DA_APP_NAME}
+        SCAN_TARGETS DAWorkbench::DAGui
+        PLUGIN_DIR bin/plugins
+    )
+endif()

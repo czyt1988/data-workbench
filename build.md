@@ -207,8 +207,14 @@ cat test_result.txt
 
 ## 注意事项
 
-1. **第三方库仅需编译一次**：首次构建或第三方库 submodule 有更新时执行 install 即可，日常开发无需重复
+1. **第三方库仅需编译一次**：首次构建或第三方 submodule 有更新时执行 install 即可，日常开发无需重复
 2. **Windows 务必使用 VS 生成器**：不要用 Ninja，PowerShell 中 MSVC 环境无法正确注入
 3. **Qt 路径**：Windows 需指定 `CMAKE_PREFIX_PATH`；Linux apt 安装的 Qt6 无需指定
 4. **Linux 必需包**：`qt6-base-private-dev` 是 ADS 在 Linux 上的硬性依赖，不可省略
 5. **GCC `-fpermissive`**：项目在 `CMakeLists.txt` 中为 GCC 自动添加此选项，允许 MSVC 风格的命名空间额外限定
+6. **Qt 运行时自动部署（Windows）**：`cmake --install build --config <Config>` 会在安装时自动执行
+   windeployqt，把完整 Qt 运行时（含 WebEngine/Qml 整条依赖链、platforms 等插件目录、翻译）
+   部署到安装目录 `bin/`，打包 `bin_<Config>_qt<X>_...` 目录时无需再手工运行 windeployqt。
+   实现见 `cmake/daworkbench_utils.cmake` 的 `dafun_install_deploy_qt_runtime()`。
+   注意：WebEngine/Qml 是 `DAGui.dll` 的传递依赖而非主程序的直接依赖，手工运行
+   windeployqt 时必须把 `DAGui.dll` 一并传入，否则会漏掉整条依赖链
